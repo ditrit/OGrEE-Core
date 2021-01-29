@@ -17,6 +17,7 @@ type Site struct {
 	Domain      string          `json:"domain"`
 	Color       string          `json:"color"`
 	Orientation ECardinalOrient `json:"eorientation"`
+	Building    []Building      `gorm:"foreignKey:Building"`
 }
 
 func (site *Site) Validate() (map[string]interface{}, bool) {
@@ -29,11 +30,11 @@ func (site *Site) Validate() (map[string]interface{}, bool) {
 	}
 
 	if site.Desc == "" {
-		return u.Message(false, "Description should be on the paylad"), false
+		return u.Message(false, "Description should be on the payload"), false
 	}
 
-	if site.Domain != "" {
-		return u.Message(false, "Domain should NULL!"), false
+	if site.Domain == "" {
+		return u.Message(false, "Domain should be on the payload!"), false
 	}
 
 	if site.Color == "" {
@@ -66,8 +67,10 @@ func (site *Site) Create() map[string]interface{} {
 
 //Would have to think about
 //these functions more
-//since accessing them via GORM
-//this way isn't valid (I think)
+//since I set it up
+//to just obtain the first site
+//The GORM command might be
+//wrong too
 func GetSite(id uint) *Site {
 	site := &Site{}
 
@@ -81,7 +84,9 @@ func GetSite(id uint) *Site {
 //Getting the Sites related to tenant
 //Would require Foreign Key (referring
 // to tenant)
-//Therefore this still needs work
+//I could design the controller
+//to invoke get tenant then
+//obtain sites
 func GetSites(user uint) []*Site {
 	sites := make([]*Site, 0)
 	//err := GetDB().Table("contacts").Where("user_id = ?", user).Find(&).Error
@@ -101,3 +106,9 @@ func GetSites(user uint) []*Site {
 
 	return sites
 }
+
+//More methods should be made to
+//Meet CRUD capabilities
+//Need Update and Delete
+//These would be a bit more complicated
+//So leave them out for now

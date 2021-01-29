@@ -13,7 +13,7 @@ type Tenant struct {
 	Desc     string `json:"description"`
 	Domain   string `json:"domain"`
 	Color    string `json:"color"`
-	Site     Site   `gorm:"foreignKey:Site"`
+	Site     []Site `gorm:"foreignKey:Site"`
 }
 
 func (tenant *Tenant) Validate() (map[string]interface{}, bool) {
@@ -31,7 +31,7 @@ func (tenant *Tenant) Validate() (map[string]interface{}, bool) {
 	}
 
 	if tenant.Domain != "" {
-		return u.Message(false, "Domain should NULL!"), false
+		return u.Message(false, "Domain should be NULL!"), false
 	}
 
 	if tenant.Color == "" {
