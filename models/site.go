@@ -17,7 +17,7 @@ type Site struct {
 	Domain      string          `json:"domain"`
 	Color       string          `json:"color"`
 	Orientation ECardinalOrient `json:"eorientation"`
-	Building    []Building      `gorm:"foreignKey:Building"`
+	Tenant      []Tenant        `gorm:"foreignKey:Tenant"`
 }
 
 func (site *Site) Validate() (map[string]interface{}, bool) {
@@ -34,7 +34,7 @@ func (site *Site) Validate() (map[string]interface{}, bool) {
 	}
 
 	if site.Domain == "" {
-		return u.Message(false, "Domain should be on the payload!"), false
+		return u.Message(false, "Domain should be on the payload"), false
 	}
 
 	if site.Color == "" {

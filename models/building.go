@@ -27,7 +27,7 @@ type Building struct {
 	SizeU   string  `json:"sizeu"`
 	Height  float32 `json:"height"`
 	HeightU string  `json:"heightu"`
-	Room    []Room  `gorm:"foreignKey:Room"`
+	Site    []Site  `gorm:"foreignKey:Site"`
 }
 
 func (bldg *Building) Validate() (map[string]interface{}, bool) {
@@ -43,8 +43,8 @@ func (bldg *Building) Validate() (map[string]interface{}, bool) {
 		return u.Message(false, "Description should be on the paylad"), false
 	}
 
-	if bldg.Domain != "" {
-		return u.Message(false, "Domain should NULL!"), false
+	if bldg.Domain == "" {
+		return u.Message(false, "Domain should should be on the payload"), false
 	}
 
 	if bldg.Pos.X < 0.0 || bldg.Pos.Y < 0.0 {

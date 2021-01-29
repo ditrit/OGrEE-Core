@@ -15,15 +15,15 @@ type Room struct {
 	Domain      string          `json:"domain"`
 	Orientation ECardinalOrient `json:"eorientation"`
 
-	Pos     Vector2 `json:"posxy"`
-	PosU    string  `json:"posxyu"`
-	PosZ    float32 `json:"posz"`
-	PosZU   string  `json:"poszu"`
-	Size    float32 `json:"size"`
-	SizeU   string  `json:"sizeu"`
-	Height  float32 `json:"height"`
-	HeightU string  `json:"heightu"`
-	Rack    []Rack  `gorm:"foreignKey:Rack"`
+	Pos      Vector2    `json:"posxy"`
+	PosU     string     `json:"posxyu"`
+	PosZ     float32    `json:"posz"`
+	PosZU    string     `json:"poszu"`
+	Size     float32    `json:"size"`
+	SizeU    string     `json:"sizeu"`
+	Height   float32    `json:"height"`
+	HeightU  string     `json:"heightu"`
+	Building []Building `gorm:"foreignKey:Building"`
 }
 
 //Validate needs to ensure that the room coords
@@ -39,11 +39,11 @@ func (room *Room) Validate() (map[string]interface{}, bool) {
 	}
 
 	if room.Desc == "" {
-		return u.Message(false, "Description should be on the paylad"), false
+		return u.Message(false, "Description should be on the payload"), false
 	}
 
-	if room.Domain != "" {
-		return u.Message(false, "Domain should NULL!"), false
+	if room.Domain == "" {
+		return u.Message(false, "Domain should should be on the payload"), false
 	}
 
 	if room.Pos.X < 0.0 || room.Pos.Y < 0.0 {

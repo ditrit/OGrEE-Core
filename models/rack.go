@@ -15,11 +15,9 @@ type Rack struct {
 	Domain      string          `json:"domain"`
 	Color       string          `json:"color"`
 	Orientation ECardinalOrient `json:"eorientation"`
+	Room        []Room          `gorm:"foreignKey:Room"`
 }
 
-//Validate needs to ensure that the rack coords
-//Are in the same bldg
-//This is not yet implemented
 func (rack *Rack) Validate() (map[string]interface{}, bool) {
 	if rack.Name == "" {
 		return u.Message(false, "Rack Name should be on payload"), false
@@ -30,11 +28,11 @@ func (rack *Rack) Validate() (map[string]interface{}, bool) {
 	}
 
 	if rack.Desc == "" {
-		return u.Message(false, "Description should be on the paylad"), false
+		return u.Message(false, "Description should be on the payload"), false
 	}
 
-	if rack.Domain != "" {
-		return u.Message(false, "Domain should NULL!"), false
+	if rack.Domain == "" {
+		return u.Message(false, "Domain should should be on the payload"), false
 	}
 
 	if rack.Color == "" {
