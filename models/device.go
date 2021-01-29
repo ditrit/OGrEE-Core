@@ -1,6 +1,7 @@
 package models
 
 import (
+	"fmt"
 	u "p3/utils"
 
 	"github.com/jinzhu/gorm"
@@ -49,3 +50,45 @@ func (device *Device) Validate() (map[string]interface{}, bool) {
 	//Successfully validated Device
 	return u.Message(true, "success"), true
 }
+
+func (device *Device) Create() map[string]interface{} {
+	if resp, ok := device.Validate(); !ok {
+		return resp
+	}
+
+	GetDB().Create(device)
+
+	resp := u.Message(true, "success")
+	resp["device"] = device
+	return resp
+}
+
+//Get the first device given the rack
+func GetDevice(rack *Rack) *Device {
+	device := &Device{}
+	err := GetDB().Table("devices").Where("foreignkey = ?", rack.ID).First(device).Error
+	if err != nil {
+		fmt.Println(err)
+		return nil
+	}
+	return device
+}
+
+//Obtain all devices of a rack
+func GetDevices(rack *Rack) []*Device {
+	devices := make([]*Device, 0)
+
+	err := GetDB().Table("devices").Where("foreignkey = ?", rack.ID).Find(&devices).Error
+	if err != nil {
+		fmt.Println(err)
+		return nil
+	}
+
+	return devices
+}
+
+//More methods should be made to
+//Meet CRUD capabilities
+//Need Update and Delete
+//These would be a bit more complicated
+//So leave them out for now
