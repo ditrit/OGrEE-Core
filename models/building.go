@@ -32,7 +32,7 @@ type Building struct {
 
 func (bldg *Building) Validate() (map[string]interface{}, bool) {
 	if bldg.Name == "" {
-		return u.Message(false, "site Name should be on payload"), false
+		return u.Message(false, "Building Name should be on payload"), false
 	}
 
 	if bldg.Category == "" {
