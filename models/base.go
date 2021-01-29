@@ -43,7 +43,7 @@ func init() {
 	fmt.Print(err)
 	db = conn
 	//Migrate database
-	db.Debug().AutoMigrate(&Account{} /*, &Contact{}*/)
+	db.Debug().AutoMigrate(&Account{}, &Tenant{}, &Site{} /*, &Contact{}*/)
 	println("GOT HERE 3")
 }
 
