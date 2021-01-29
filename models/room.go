@@ -13,11 +13,22 @@ type Room struct {
 	Category    string          `json:"category"`
 	Desc        string          `json:"description"`
 	Domain      string          `json:"domain"`
-	Color       string          `json:"color"`
 	Orientation ECardinalOrient `json:"eorientation"`
-	Rack        []Rack          `gorm:"foreignKey:Rack"`
+
+	Pos     Vector2 `json:"posxy"`
+	PosU    string  `json:"posxyu"`
+	PosZ    float32 `json:"posz"`
+	PosZU   string  `json:"poszu"`
+	Size    float32 `json:"size"`
+	SizeU   string  `json:"sizeu"`
+	Height  float32 `json:"height"`
+	HeightU string  `json:"heightu"`
+	Rack    []Rack  `gorm:"foreignKey:Rack"`
 }
 
+//Validate needs to ensure that the room coords
+//Are in the same bldg
+//This is not yet implemented
 func (room *Room) Validate() (map[string]interface{}, bool) {
 	if room.Name == "" {
 		return u.Message(false, "Room Name should be on payload"), false
@@ -35,8 +46,36 @@ func (room *Room) Validate() (map[string]interface{}, bool) {
 		return u.Message(false, "Domain should NULL!"), false
 	}
 
-	if room.Color == "" {
-		return u.Message(false, "Color should be on the payload"), false
+	if room.Pos.X < 0.0 || room.Pos.Y < 0.0 {
+		return u.Message(false, "Invalid XYcoordinates on payload"), false
+	}
+
+	if room.PosU == "" {
+		return u.Message(false, "PositionXY string should be on the payload"), false
+	}
+
+	if room.PosZ < 0.0 {
+		return u.Message(false, "Invalid Z coordinates on payload"), false
+	}
+
+	if room.PosZU == "" {
+		return u.Message(false, "PositionZ string should be on the payload"), false
+	}
+
+	if room.Size <= 0.0 {
+		return u.Message(false, "Invalid room size on the payload"), false
+	}
+
+	if room.SizeU == "" {
+		return u.Message(false, "Room size string should be on the payload"), false
+	}
+
+	if room.Height <= 0.0 {
+		return u.Message(false, "Invalid Height on payload"), false
+	}
+
+	if room.HeightU == "" {
+		return u.Message(false, "Room Height string should be on the payload"), false
 	}
 
 	switch room.Orientation {
