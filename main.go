@@ -39,6 +39,10 @@ package main
 //curl -X POST http://localhost:8000/api/user/new
 //--data '{"email": "iamlegend@gmail.com", "password" : "secret"}'
 
+//Test Case 9
+//curl -X GET
+//http://localhost:8000/api/user/sites -H 'Authorization: bearer TOKEN'
+
 import (
 	"fmt"
 	"p3/app"
@@ -65,6 +69,12 @@ func main() {
 
 	router.HandleFunc("/api/user/tenants",
 		controllers.GetTenantFor).Methods("GET")
+
+	router.HandleFunc("/api/user/sites/new",
+		controllers.CreateSite).Methods("POST")
+
+	router.HandleFunc("/api/user/sites",
+		controllers.GetSites).Methods("GET")
 
 	/*router.HandleFunc("/api/me/contacts",
 		controllers.GetContactsFor).Methods("GET")
