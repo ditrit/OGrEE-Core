@@ -29,12 +29,11 @@ package main
 //-i 'http://localhost:8000/api/newcontact'
 
 //Test Case 6
-//curl -X GET -H 'Content-Type: application/json'
-//-H 'Authorization:
-//bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.
-//eyJVc2VySWQiOjYyNTgwMjc5ODYzNjIwNDAzM30.
-//FM-K77j5439O1irfJU_O8Rx7VlVkyGpuwmi87tWLTzU'
-//--data '{"id": "625802798636204000"}' -i 'http://127.0.0.1:8000/api/me/contacts'
+//curl -X POST -H 'Content-Type: application/json'
+//-H 'Authorization: bearer TOKEN'
+//--data '{"name": "CEA", "category": "research",
+//"description": "Cant evalutate anything", "color": "red"}'
+//-i 'http://localhost:8000/api/user/tenants/new'
 
 //Test Case 7
 //curl -X POST http://localhost:8000/api/user/new
@@ -60,6 +59,12 @@ func main() {
 
 	router.HandleFunc("/api/user/login",
 		controllers.Authenticate).Methods("POST")
+
+	router.HandleFunc("/api/user/tenants/new",
+		controllers.CreateTenant).Methods("POST")
+
+	router.HandleFunc("/api/user/tenants",
+		controllers.GetTenantFor).Methods("GET")
 
 	/*router.HandleFunc("/api/me/contacts",
 		controllers.GetContactsFor).Methods("GET")

@@ -87,6 +87,8 @@ func Login(email, password string) map[string]interface{} {
 		return u.Message(false, "Connection error. Please try again later")
 	}
 
+	//Should investigate if the password is sent in
+	//cleartext over the wire
 	err = bcrypt.CompareHashAndPassword([]byte(account.Password), []byte(password))
 
 	if err != nil && err == bcrypt.ErrMismatchedHashAndPassword {
