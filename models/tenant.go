@@ -13,7 +13,7 @@ type Tenant struct {
 	Desc     string `json:"description"`
 	Domain   string `json:"domain"`
 	Color    string `json:"color"`
-	Site     []Site `gorm:"foreignKey:Site"`
+	Site     []Site
 }
 
 func (tenant *Tenant) Validate() (map[string]interface{}, bool) {

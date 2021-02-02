@@ -76,6 +76,9 @@ func main() {
 	router.HandleFunc("/api/user/sites",
 		controllers.GetSites).Methods("GET")
 
+	/*router.HandleFunc("/api/user/sites/single",
+	controllers.GetSite).Methods("GET")*/
+
 	/*router.HandleFunc("/api/me/contacts",
 		controllers.GetContactsFor).Methods("GET")
 

@@ -27,7 +27,7 @@ type Building struct {
 	SizeU   string  `json:"sizeu"`
 	Height  float32 `json:"height"`
 	HeightU string  `json:"heightu"`
-	Site    []Site  `gorm:"foreignKey:Site"`
+	Site    []Site  
 }
 
 func (bldg *Building) Validate() (map[string]interface{}, bool) {

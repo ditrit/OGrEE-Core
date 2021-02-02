@@ -17,7 +17,8 @@ type Site struct {
 	Domain      string          `json:"domain"`
 	Color       string          `json:"color"`
 	Orientation ECardinalOrient `json:"eorientation"`
-	Tenant      []Tenant        `gorm:"foreignKey:Tenant"`
+	TID         int             `json:"tid"`
+	Building    []Building
 }
 
 func (site *Site) Validate() (map[string]interface{}, bool) {
@@ -71,40 +72,23 @@ func (site *Site) Create() map[string]interface{} {
 //to just obtain the first site
 //The GORM command might be
 //wrong too
-func GetSite(id uint) *Site {
-	site := &Site{}
-
-	err := GetDB().Table("sites").Where("id = ?", id).First(site).Error
-	if err != nil {
-		return nil
-	}
-	return site
-}
-
-//Getting the Sites related to tenant
-//Would require Foreign Key (referring
-// to tenant)
-//I could design the controller
-//to invoke get tenant then
-//obtain sites
-func GetSites(user uint) []*Site {
-	sites := make([]*Site, 0)
-	//err := GetDB().Table("contacts").Where("user_id = ?", user).Find(&).Error
-
+func GetSites(id uint) []*Site {
 	tenant := &Tenant{}
-	err := GetDB().Table("tenants").Where("userid = ?", user).Find(tenant).Error
+	site := make([]*Site, 0)
+
+	err := GetDB().Table("tenants").Where("id = ?", id).First(tenant).Error
 	if err != nil {
-		fmt.Println(err)
+		fmt.Println("yo the tenant wasnt found here")
 		return nil
 	}
 
-	e := GetDB().Table("sites").Where("foriegnkey = ?", tenant.ID).Find(sites).Error
+	e := GetDB().Table("sites").Where("t_id = ?", id).Find(&site).Error
 	if e != nil {
-		fmt.Println(err)
+		fmt.Println("yo the there isnt any site matching the foreign key")
 		return nil
 	}
 
-	return sites
+	return site
 }
 
 //More methods should be made to
