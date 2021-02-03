@@ -74,7 +74,12 @@ func GetTenant(id uint) *Tenant {
 //user to have more than 1 tenant
 //This isn't realistic so this
 //will not be implemented
-func GetTenants(user uint) []*Tenant {
-	//tenants := make([]*Tenant, 0)
-	return nil
+func GetTenants() []*Tenant {
+	tenants := make([]*Tenant, 0)
+
+	err := GetDB().Table("tenants").Find(&tenants).Error
+	if err != nil {
+		return nil
+	}
+	return tenants
 }

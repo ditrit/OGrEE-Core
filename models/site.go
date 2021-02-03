@@ -14,7 +14,7 @@ type Site struct {
 	Name        string          `json:"name"`
 	Category    string          `json:"category"`
 	Desc        string          `json:"description"`
-	Domain      string          `json:"domain"`
+	Domain      int             `json:"domain"`
 	Color       string          `json:"color"`
 	Orientation ECardinalOrient `json:"eorientation"`
 	TID         int             `json:"tid"`
@@ -34,7 +34,7 @@ func (site *Site) Validate() (map[string]interface{}, bool) {
 		return u.Message(false, "Description should be on the payload"), false
 	}
 
-	if site.Domain == "" {
+	if site.Domain == 0 {
 		return u.Message(false, "Domain should be on the payload"), false
 	}
 
@@ -82,12 +82,23 @@ func GetSites(id uint) []*Site {
 		return nil
 	}
 
-	e := GetDB().Table("sites").Where("t_id = ?", id).Find(&site).Error
+	e := GetDB().Table("sites").Where("domain = ?", id).Find(&site).Error
 	if e != nil {
 		fmt.Println("yo the there isnt any site matching the foreign key")
 		return nil
 	}
 
+	return site
+}
+
+func GetSite(id uint) *Site {
+	site := &Site{}
+
+	err := GetDB().Table("sites").Where("id = ?", id).First(site).Error
+	if err != nil {
+		fmt.Println("There was an error in getting site by ID")
+		return nil
+	}
 	return site
 }
 

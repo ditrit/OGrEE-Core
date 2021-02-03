@@ -21,12 +21,11 @@ package main
 
 //Test Case 5
 //curl -X POST -H 'Content-Type: application/json'
-//-H 'Authorization: bearer
-//eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.
-//eyJVc2VySWQiOjYyNTgwMjc5ODYzNjIwNDAzM30.
-//FM-K77j5439O1irfJU_O8Rx7VlVkyGpuwmi87tWLTzU'
-//--data '{"email": "realcheat@gmail.com", "name": "Hakim", "phone": "+971555230"}'
-//-i 'http://localhost:8000/api/newcontact'
+//-H 'Authorization: bearer TOKEN'
+//--data '{"name": "SiteC", "category": "stupid",
+//"domain": 630085240294703105, "description": "Cant evalutate anything",
+//"color": "orange", "eorientation": "NW"}'
+//-i 'http://localhost:8000/api/user/sites/new'
 
 //Test Case 6
 //curl -X POST -H 'Content-Type: application/json'
@@ -75,6 +74,9 @@ func main() {
 
 	router.HandleFunc("/api/user/sites",
 		controllers.GetSites).Methods("GET")
+
+	router.HandleFunc("/api/user/site/id",
+		controllers.GetSite).Methods("GET")
 
 	/*router.HandleFunc("/api/user/sites/single",
 	controllers.GetSite).Methods("GET")*/
