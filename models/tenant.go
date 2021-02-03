@@ -112,5 +112,6 @@ func UpdateTenant(id uint, t *Tenant) map[string]interface{} {
 		tenant.Color = t.Color
 	}
 
+	GetDB().Table("tenants").Update(tenant)
 	return u.Message(true, "success")
 }
