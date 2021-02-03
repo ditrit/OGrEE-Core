@@ -17,7 +17,6 @@ type Site struct {
 	Domain      int             `json:"domain"`
 	Color       string          `json:"color"`
 	Orientation ECardinalOrient `json:"eorientation"`
-	TID         int             `json:"tid"`
 	Building    []Building
 }
 
