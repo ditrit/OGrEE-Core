@@ -39,7 +39,7 @@ var GetSite = func(w http.ResponseWriter, r *http.Request) {
 	st := &models.Site{}
 	err := json.NewDecoder(r.Body).Decode(st)
 	if err != nil {
-		return
+		u.Respond(w, u.Message(false, "Error while decoding request body"))
 	}
 	resp := u.Message(true, "success")
 

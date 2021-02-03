@@ -83,3 +83,34 @@ func GetTenants() []*Tenant {
 	}
 	return tenants
 }
+
+func UpdateTenant(id uint, t *Tenant) map[string]interface{} {
+	tenant := &Tenant{}
+
+	err := GetDB().Table("tenants").Find(&tenant).Error
+	if err != nil {
+		return u.Message(false, "Tenant was not found")
+	}
+
+	if t.Name != "" && t.Name != tenant.Name {
+		tenant.Name = t.Name
+	}
+
+	if t.Category != "" && t.Category != tenant.Category {
+		tenant.Category = t.Category
+	}
+
+	if t.Desc != "" && t.Desc != tenant.Desc {
+		tenant.Desc = t.Desc
+	}
+
+	if t.Domain != "" && t.Domain != tenant.Domain {
+		tenant.Domain = t.Domain
+	}
+
+	if t.Color != "" && t.Color != tenant.Color {
+		tenant.Color = t.Color
+	}
+
+	return u.Message(true, "success")
+}
