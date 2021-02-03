@@ -42,3 +42,9 @@ var UpdateTenant = func(w http.ResponseWriter, r *http.Request) {
 	v := models.UpdateTenant(id, tenant)
 	u.Respond(w, v)
 }
+
+var DeleteTenant = func(w http.ResponseWriter, r *http.Request) {
+	id := r.Context().Value("user").(uint)
+	v := models.DeleteTenant(id)
+	u.Respond(w, v)
+}

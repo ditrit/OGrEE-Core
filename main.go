@@ -72,6 +72,9 @@ func main() {
 	router.HandleFunc("/api/user/tenants/update",
 		controllers.UpdateTenant).Methods("PUT")
 
+	router.HandleFunc("/api/user/tenants/delete",
+		controllers.DeleteTenant).Methods("DELETE")
+
 	router.HandleFunc("/api/user/sites/new",
 		controllers.CreateSite).Methods("POST")
 
