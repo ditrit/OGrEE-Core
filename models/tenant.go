@@ -84,6 +84,9 @@ func GetTenants() []*Tenant {
 	return tenants
 }
 
+//Only update valid fields
+//If any fields are invalid
+//Message will still be successful
 func UpdateTenant(id uint, t *Tenant) map[string]interface{} {
 	tenant := &Tenant{}
 
