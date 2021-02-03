@@ -70,7 +70,7 @@ func main() {
 		controllers.GetTenantFor).Methods("GET")
 
 	router.HandleFunc("/api/user/tenants/update",
-		controllers.GetTenantFor).Methods("PUT")
+		controllers.UpdateTenant).Methods("PUT")
 
 	router.HandleFunc("/api/user/sites/new",
 		controllers.CreateSite).Methods("POST")
