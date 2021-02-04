@@ -78,10 +78,9 @@ func (site *Site) Create() map[string]interface{} {
 //The GORM command might be
 //wrong too
 func GetSites(id uint) []*Site {
-	tenant := &Tenant{}
 	site := make([]*Site, 0)
 
-	err := GetDB().Table("tenants").Where("id = ?", id).First(tenant).Error
+	err := GetDB().Table("tenants").Where("id = ?", id).First(&Tenant{}).Error
 	if err != nil {
 		fmt.Println("yo the tenant wasnt found here")
 		return nil

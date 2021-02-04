@@ -20,12 +20,30 @@ var CreateSite = func(w http.ResponseWriter, r *http.Request) {
 	u.Respond(w, resp)
 }
 
-var GetSites = func(w http.ResponseWriter, r *http.Request) {
+var GetSitesByUserID = func(w http.ResponseWriter, r *http.Request) {
 
 	id := r.Context().Value("user").(uint)
 	resp := u.Message(true, "success")
 
 	data := models.GetSites(uint(id))
+	if data == nil {
+		resp = u.Message(false, "unsuccessful")
+	}
+
+	resp["data"] = data
+	u.Respond(w, resp)
+}
+
+var GetSitesByParentID = func(w http.ResponseWriter, r *http.Request) {
+
+	st := &models.Site{}
+	err := json.NewDecoder(r.Body).Decode(st)
+	if err != nil {
+		u.Respond(w, u.Message(false, "Error while decoding request body"))
+	}
+	resp := u.Message(true, "success")
+
+	data := models.GetSites(uint(st.Domain))
 	if data == nil {
 		resp = u.Message(false, "unsuccessful")
 	}
@@ -43,7 +61,7 @@ var GetSite = func(w http.ResponseWriter, r *http.Request) {
 	}
 	resp := u.Message(true, "success")
 
-	data := models.GetSite(uint(st.Domain))
+	data := models.GetSite(uint(st.ID))
 	if data == nil {
 		resp = u.Message(false, "unsuccessful")
 	}
@@ -51,3 +69,10 @@ var GetSite = func(w http.ResponseWriter, r *http.Request) {
 	resp["data"] = data
 	u.Respond(w, resp)
 }
+
+/*var DeleteSite = func(w http.ResponseWriter, r *http.Request) {
+	id := r.Context().Value("user").(uint)
+	v := models.DeleteSite(id)
+	u.Respond(w, v)
+}
+*/
