@@ -22,9 +22,15 @@ var CreateTenant = func(w http.ResponseWriter, r *http.Request) {
 }
 
 var GetTenantFor = func(w http.ResponseWriter, r *http.Request) {
-	id := r.Context().Value("user").(uint)
+	tenant := &models.Tenant{}
+	//id := r.Context().Value("user").(uint)
 
-	data := models.GetTenant(uint(id))
+	err := json.NewDecoder(r.Body).Decode(tenant)
+	if err != nil {
+		u.Respond(w, u.Message(false, "Error while decoding request body"))
+	}
+
+	data := models.GetTenant(tenant.ID)
 	resp := u.Message(true, "success")
 	resp["data"] = data
 	u.Respond(w, resp)
