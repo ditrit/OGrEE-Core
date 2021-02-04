@@ -48,14 +48,14 @@ var GetAllTenants = func(w http.ResponseWriter, r *http.Request) {
 
 var UpdateTenant = func(w http.ResponseWriter, r *http.Request) {
 	tenant := &models.Tenant{}
-	id := r.Context().Value("user").(uint)
+	//id := r.Context().Value("user").(uint)
 
 	err := json.NewDecoder(r.Body).Decode(tenant)
 	if err != nil {
 		u.Respond(w, u.Message(false, "Error while decoding request body"))
 	}
 
-	v := models.UpdateTenant(id, tenant)
+	v := models.UpdateTenant(tenant.ID, tenant)
 	u.Respond(w, v)
 }
 

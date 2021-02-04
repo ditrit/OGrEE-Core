@@ -90,7 +90,7 @@ func GetAllTenants() []*Tenant {
 func UpdateTenant(id uint, t *Tenant) map[string]interface{} {
 	tenant := &Tenant{}
 
-	err := GetDB().Table("tenants").Find(&tenant).Error
+	err := GetDB().Table("tenants").Where("id = ?", id).First(tenant).Error
 	if err != nil {
 		return u.Message(false, "Tenant was not found")
 	}
@@ -115,7 +115,8 @@ func UpdateTenant(id uint, t *Tenant) map[string]interface{} {
 		tenant.Color = t.Color
 	}
 
-	GetDB().Table("tenants").Update(tenant)
+	GetDB().Table("tenants").Save(tenant)
+	//.Update(tenant)
 	return u.Message(true, "success")
 }
 
