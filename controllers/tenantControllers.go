@@ -59,8 +59,22 @@ var UpdateTenant = func(w http.ResponseWriter, r *http.Request) {
 	u.Respond(w, v)
 }
 
-var DeleteTenant = func(w http.ResponseWriter, r *http.Request) {
+//This delete function is for 1 tenant 1 user
+/*var DeleteTenant = func(w http.ResponseWriter, r *http.Request) {
 	id := r.Context().Value("user").(uint)
 	v := models.DeleteTenant(id)
+	u.Respond(w, v)
+}*/
+
+var DeleteTenant = func(w http.ResponseWriter, r *http.Request) {
+	tenant := &models.Tenant{}
+	//id := r.Context().Value("user").(uint)
+
+	err := json.NewDecoder(r.Body).Decode(tenant)
+	if err != nil {
+		u.Respond(w, u.Message(false, "Error while decoding request body"))
+	}
+
+	v := models.DeleteTenant(tenant.ID)
 	u.Respond(w, v)
 }
