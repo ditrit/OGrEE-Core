@@ -37,6 +37,12 @@ func (site *Site) Validate() (map[string]interface{}, bool) {
 		return u.Message(false, "Domain should be on the payload"), false
 	}
 
+	if GetDB().Table("tenants").
+		Where("id = ?", site.Domain).First(&Tenant{}).Error != nil {
+
+		return u.Message(false, "Domain should be correspond to tenant ID"), false
+	}
+
 	if site.Color == "" {
 		return u.Message(false, "Color should be on the payload"), false
 	}
