@@ -8,7 +8,7 @@ import (
 )
 
 var CreateTenant = func(w http.ResponseWriter, r *http.Request) {
-	user := r.Context().Value("user").(uint)
+	//user := r.Context().Value("user").(uint)
 	tenant := &models.Tenant{}
 
 	err := json.NewDecoder(r.Body).Decode(tenant)
@@ -16,7 +16,7 @@ var CreateTenant = func(w http.ResponseWriter, r *http.Request) {
 		u.Respond(w, u.Message(false, "Error while decoding request body"))
 		return
 	}
-	tenant.ID = user
+	//tenant.ID = user
 	resp := tenant.Create()
 	u.Respond(w, resp)
 }
@@ -25,6 +25,16 @@ var GetTenantFor = func(w http.ResponseWriter, r *http.Request) {
 	id := r.Context().Value("user").(uint)
 
 	data := models.GetTenant(uint(id))
+	resp := u.Message(true, "success")
+	resp["data"] = data
+	u.Respond(w, resp)
+}
+
+var GetAllTenants = func(w http.ResponseWriter, r *http.Request) {
+	//id := r.Context().Value("user").(uint)
+
+	//data := models.GetTenant(uint(id))
+	data := models.GetAllTenants()
 	resp := u.Message(true, "success")
 	resp["data"] = data
 	u.Respond(w, resp)
