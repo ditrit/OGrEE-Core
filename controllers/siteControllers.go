@@ -102,3 +102,18 @@ var DeleteSites = func(w http.ResponseWriter, r *http.Request) {
 	v := models.DeleteSitesOfTenant(uint(st.Domain))
 	u.Respond(w, v)
 }
+
+//Updates work by passing ID
+//and new data in the JSON Body
+var UpdateSite = func(w http.ResponseWriter, r *http.Request) {
+	site := &models.Site{}
+	//id := r.Context().Value("user").(uint)
+
+	err := json.NewDecoder(r.Body).Decode(site)
+	if err != nil {
+		u.Respond(w, u.Message(false, "Error while decoding request body"))
+	}
+
+	v := models.UpdateSite(site.ID, site)
+	u.Respond(w, v)
+}

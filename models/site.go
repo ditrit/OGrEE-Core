@@ -106,12 +106,6 @@ func GetSite(id uint) *Site {
 	return site
 }
 
-//More methods should be made to
-//Meet CRUD capabilities
-//Need Update and Delete
-//These would be a bit more complicated
-//So leave them out for now
-
 func DeleteSite(id uint) map[string]interface{} {
 
 	//First check if the site exists
@@ -152,5 +146,47 @@ func DeleteSitesOfTenant(id uint) map[string]interface{} {
 		return u.Message(false, "There was an error in deleting the site")
 	}
 
+	return u.Message(true, "success")
+}
+
+func UpdateSite(id uint, newSiteInfo *Site) map[string]interface{} {
+	site := &Site{}
+
+	err := GetDB().Table("sites").Where("id = ?", id).First(site).Error
+	if err != nil {
+		return u.Message(false, "Site was not found")
+	}
+
+	if newSiteInfo.Name != "" && newSiteInfo.Name != site.Name {
+		site.Name = newSiteInfo.Name
+	}
+
+	if newSiteInfo.Category != "" && newSiteInfo.Category != site.Category {
+		site.Category = newSiteInfo.Category
+	}
+
+	if newSiteInfo.Desc != "" && newSiteInfo.Desc != site.Desc {
+		site.Desc = newSiteInfo.Desc
+	}
+
+	//Should it be possible to update domain
+	//to new tenant? Will have to think about it more
+	//if newSiteInfo.Domain
+
+	if newSiteInfo.Color != "" && newSiteInfo.Color != site.Color {
+		site.Color = newSiteInfo.Color
+	}
+
+	if newSiteInfo.Orientation != "" {
+		switch newSiteInfo.Orientation {
+		case "NE", "NW", "SE", "SW":
+			site.Orientation = newSiteInfo.Orientation
+
+		default:
+		}
+	}
+
+	//Successfully validated the new data
+	GetDB().Table("sites").Save(site)
 	return u.Message(true, "success")
 }
