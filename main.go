@@ -82,13 +82,16 @@ func main() {
 		controllers.CreateSite).Methods("POST")
 
 	router.HandleFunc("/api/user/sites",
-		controllers.GetSites).Methods("GET")
+		controllers.GetSitesByUserID).Methods("GET")
 
 	router.HandleFunc("/api/user/sites/all",
 		controllers.GetSitesByParentID).Methods("GET")
 
 	router.HandleFunc("/api/user/site/id",
 		controllers.GetSite).Methods("GET")
+
+	router.HandleFunc("/api/user/site/",
+		controllers.DeleteSiteByID).Methods("DELETE")
 
 	/*router.HandleFunc("/api/user/sites/single",
 	controllers.GetSite).Methods("GET")*/

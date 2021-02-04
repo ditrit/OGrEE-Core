@@ -113,15 +113,21 @@ func GetSite(id uint) *Site {
 //So leave them out for now
 
 func DeleteSite(id uint) map[string]interface{} {
-	//This command is a hard delete!
-	e := GetDB().Unscoped().Table("sites").Delete(Tenant{}, id).Error
+
+	//First check if the site exists
+	if c := GetSite(id); c == nil {
+		return u.Message(false, "There was an error in finding the site")
+	}
+
+	//This is a hard delete!
+	e := GetDB().Unscoped().Table("sites").Delete(&Site{}, id).Error
 
 	//The command below is a soft delete
 	//Meaning that the 'deleted_at' field will be set
 	//the record will remain but unsearchable
 	//e := GetDB().Table("tenants").Delete(Tenant{}, id).Error
 	if e != nil {
-		return u.Message(false, "Tenant was not found")
+		return u.Message(false, "There was an error in deleting the site")
 	}
 
 	return u.Message(true, "success")

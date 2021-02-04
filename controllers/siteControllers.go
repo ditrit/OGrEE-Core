@@ -20,6 +20,7 @@ var CreateSite = func(w http.ResponseWriter, r *http.Request) {
 	u.Respond(w, resp)
 }
 
+//Retrieve sites using User ID
 var GetSitesByUserID = func(w http.ResponseWriter, r *http.Request) {
 
 	id := r.Context().Value("user").(uint)
@@ -34,6 +35,7 @@ var GetSitesByUserID = func(w http.ResponseWriter, r *http.Request) {
 	u.Respond(w, resp)
 }
 
+//Retrieve sites using Tenant ID
 var GetSitesByParentID = func(w http.ResponseWriter, r *http.Request) {
 
 	st := &models.Site{}
@@ -52,6 +54,7 @@ var GetSitesByParentID = func(w http.ResponseWriter, r *http.Request) {
 	u.Respond(w, resp)
 }
 
+//Retrieve site using Site ID
 var GetSite = func(w http.ResponseWriter, r *http.Request) {
 
 	st := &models.Site{}
@@ -76,3 +79,14 @@ var GetSite = func(w http.ResponseWriter, r *http.Request) {
 	u.Respond(w, v)
 }
 */
+
+var DeleteSiteByID = func(w http.ResponseWriter, r *http.Request) {
+	st := &models.Site{}
+	err := json.NewDecoder(r.Body).Decode(st)
+	if err != nil {
+		u.Respond(w, u.Message(false, "Error while decoding request body"))
+	}
+
+	v := models.DeleteSite(st.ID)
+	u.Respond(w, v)
+}
