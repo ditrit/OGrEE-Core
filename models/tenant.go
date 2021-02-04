@@ -107,10 +107,6 @@ func UpdateTenant(id uint, t *Tenant) map[string]interface{} {
 		tenant.Desc = t.Desc
 	}
 
-	if t.Domain != "" && t.Domain != tenant.Domain {
-		tenant.Domain = t.Domain
-	}
-
 	if t.Color != "" && t.Color != tenant.Color {
 		tenant.Color = t.Color
 	}
