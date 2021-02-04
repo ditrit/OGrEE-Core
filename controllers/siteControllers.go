@@ -90,3 +90,15 @@ var DeleteSiteByID = func(w http.ResponseWriter, r *http.Request) {
 	v := models.DeleteSite(st.ID)
 	u.Respond(w, v)
 }
+
+//Delete all sites of a tenant
+var DeleteSites = func(w http.ResponseWriter, r *http.Request) {
+	st := &models.Site{}
+	err := json.NewDecoder(r.Body).Decode(st)
+	if err != nil {
+		u.Respond(w, u.Message(false, "Error while decoding request body"))
+	}
+
+	v := models.DeleteSitesOfTenant(uint(st.Domain))
+	u.Respond(w, v)
+}
