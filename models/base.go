@@ -43,7 +43,7 @@ func init() {
 	fmt.Print(err)
 	db = conn
 	//Migrate database
-	db.Debug().AutoMigrate(&Account{}, &Tenant{}, &Site{} /*, &Contact{}*/)
+	db.Debug().AutoMigrate(&Account{}, &Tenant{}, &Site{}, &Building{} /*, &Contact{}*/)
 	db.Model(&Site{}).AddForeignKey("domain", "tenants(id)", "CASCADE", "CASCADE")
 	println("GOT HERE 3")
 }
