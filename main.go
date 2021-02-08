@@ -63,7 +63,7 @@ func main() {
 	router.HandleFunc("/api/user/login",
 		controllers.Authenticate).Methods("POST")
 
-	router.HandleFunc("/api/user/tenants/new",
+	router.HandleFunc("/api/user/tenants/",
 		controllers.CreateTenant).Methods("POST")
 
 	router.HandleFunc("/api/user/tenants/{id}",
@@ -78,26 +78,28 @@ func main() {
 	router.HandleFunc("/api/user/tenants/{id}",
 		controllers.DeleteTenant).Methods("DELETE")
 
-	router.HandleFunc("/api/user/sites/new",
+	router.HandleFunc("/api/user/sites/",
 		controllers.CreateSite).Methods("POST")
 
-	router.HandleFunc("/api/user/sites",
+	router.HandleFunc("/api/user/sites/",
 		controllers.GetSitesByUserID).Methods("GET")
 
 	router.HandleFunc("/api/user/sites/all",
 		controllers.GetSitesByParentID).Methods("GET")
 
-	router.HandleFunc("/api/user/site/{id}",
+	router.HandleFunc("/api/user/sites/{id}",
 		controllers.GetSite).Methods("GET")
 
-	router.HandleFunc("/api/user/site/{id}",
+	router.HandleFunc("/api/user/sites/{id}",
 		controllers.UpdateSite).Methods("PUT")
 
-	router.HandleFunc("/api/user/site/{id}",
+	router.HandleFunc("/api/user/sites/{id}",
 		controllers.DeleteSiteByID).Methods("DELETE")
 
 	router.HandleFunc("/api/user/sites/",
 		controllers.DeleteSites).Methods("DELETE")
+
+	// ------ BUILDING CRUD ------
 
 	/*router.HandleFunc("/api/user/sites/single",
 	controllers.GetSite).Methods("GET")*/
