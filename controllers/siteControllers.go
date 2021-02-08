@@ -5,6 +5,9 @@ import (
 	"net/http"
 	"p3/models"
 	u "p3/utils"
+	"strconv"
+
+	"github.com/gorilla/mux"
 )
 
 var CreateSite = func(w http.ResponseWriter, r *http.Request) {
@@ -57,14 +60,14 @@ var GetSitesByParentID = func(w http.ResponseWriter, r *http.Request) {
 //Retrieve site using Site ID
 var GetSite = func(w http.ResponseWriter, r *http.Request) {
 
-	st := &models.Site{}
-	err := json.NewDecoder(r.Body).Decode(st)
-	if err != nil {
-		u.Respond(w, u.Message(false, "Error while decoding request body"))
-	}
+	id, e := strconv.Atoi(mux.Vars(r)["id"])
 	resp := u.Message(true, "success")
 
-	data := models.GetSite(uint(st.ID))
+	if e != nil {
+		u.Respond(w, u.Message(false, "Error while parsing path parameters"))
+	}
+
+	data := models.GetSite(uint(id))
 	if data == nil {
 		resp = u.Message(false, "unsuccessful")
 	}

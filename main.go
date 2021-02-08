@@ -87,7 +87,7 @@ func main() {
 	router.HandleFunc("/api/user/sites/all",
 		controllers.GetSitesByParentID).Methods("GET")
 
-	router.HandleFunc("/api/user/site/id",
+	router.HandleFunc("/api/user/site/{id}",
 		controllers.GetSite).Methods("GET")
 
 	router.HandleFunc("/api/user/site/",
