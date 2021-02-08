@@ -66,7 +66,7 @@ func main() {
 	router.HandleFunc("/api/user/tenants/new",
 		controllers.CreateTenant).Methods("POST")
 
-	router.HandleFunc("/api/user/tenants",
+	router.HandleFunc("/api/user/tenants/{id}",
 		controllers.GetTenantFor).Methods("GET")
 
 	router.HandleFunc("/api/user/tenants/all",

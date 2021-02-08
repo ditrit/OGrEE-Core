@@ -5,10 +5,12 @@ import (
 	"net/http"
 	"p3/models"
 	u "p3/utils"
+	"strconv"
+
+	"github.com/gorilla/mux"
 )
 
 var CreateTenant = func(w http.ResponseWriter, r *http.Request) {
-	//user := r.Context().Value("user").(uint)
 	tenant := &models.Tenant{}
 
 	err := json.NewDecoder(r.Body).Decode(tenant)
@@ -22,24 +24,27 @@ var CreateTenant = func(w http.ResponseWriter, r *http.Request) {
 }
 
 var GetTenantFor = func(w http.ResponseWriter, r *http.Request) {
-	tenant := &models.Tenant{}
-	//id := r.Context().Value("user").(uint)
+	var resp map[string]interface{}
+	id, err := strconv.Atoi(mux.Vars(r)["id"])
 
-	err := json.NewDecoder(r.Body).Decode(tenant)
 	if err != nil {
-		u.Respond(w, u.Message(false, "Error while decoding request body"))
+		u.Respond(w, u.Message(false, "Error while extracting from path parameters"))
 	}
 
-	data := models.GetTenant(tenant.ID)
-	resp := u.Message(true, "success")
+	data := models.GetTenant(uint(id))
+
+	if data == nil {
+		resp = u.Message(false, "Not found")
+	} else {
+		resp = u.Message(true, "success")
+	}
+
 	resp["data"] = data
 	u.Respond(w, resp)
 }
 
 var GetAllTenants = func(w http.ResponseWriter, r *http.Request) {
-	//id := r.Context().Value("user").(uint)
 
-	//data := models.GetTenant(uint(id))
 	data := models.GetAllTenants()
 	resp := u.Message(true, "success")
 	resp["data"] = data
@@ -48,7 +53,6 @@ var GetAllTenants = func(w http.ResponseWriter, r *http.Request) {
 
 var UpdateTenant = func(w http.ResponseWriter, r *http.Request) {
 	tenant := &models.Tenant{}
-	//id := r.Context().Value("user").(uint)
 
 	err := json.NewDecoder(r.Body).Decode(tenant)
 	if err != nil {
