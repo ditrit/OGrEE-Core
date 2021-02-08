@@ -84,13 +84,13 @@ var GetSite = func(w http.ResponseWriter, r *http.Request) {
 */
 
 var DeleteSiteByID = func(w http.ResponseWriter, r *http.Request) {
-	st := &models.Site{}
-	err := json.NewDecoder(r.Body).Decode(st)
-	if err != nil {
-		u.Respond(w, u.Message(false, "Error while decoding request body"))
+	id, e := strconv.Atoi(mux.Vars(r)["id"])
+
+	if e != nil {
+		u.Respond(w, u.Message(false, "Error while parsing path parameters"))
 	}
 
-	v := models.DeleteSite(st.ID)
+	v := models.DeleteSite(uint(id))
 	u.Respond(w, v)
 }
 
