@@ -76,14 +76,12 @@ var UpdateTenant = func(w http.ResponseWriter, r *http.Request) {
 }*/
 
 var DeleteTenant = func(w http.ResponseWriter, r *http.Request) {
-	tenant := &models.Tenant{}
-	//id := r.Context().Value("user").(uint)
 
-	err := json.NewDecoder(r.Body).Decode(tenant)
-	if err != nil {
-		u.Respond(w, u.Message(false, "Error while decoding request body"))
+	id, e := strconv.Atoi(mux.Vars(r)["id"])
+	if e != nil {
+		u.Respond(w, u.Message(false, "Error while extracting from path parameters"))
 	}
 
-	v := models.DeleteTenant(tenant.ID)
+	v := models.DeleteTenant(uint(id))
 	u.Respond(w, v)
 }
