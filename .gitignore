@@ -4,3 +4,4 @@ jenkins
 jenkins/*
 main
 ogreedb/
+.env
