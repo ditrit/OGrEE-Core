@@ -72,7 +72,7 @@ func main() {
 	router.HandleFunc("/api/user/tenants/all",
 		controllers.GetAllTenants).Methods("GET")
 
-	router.HandleFunc("/api/user/tenants/update",
+	router.HandleFunc("/api/user/tenants/{id}",
 		controllers.UpdateTenant).Methods("PUT")
 
 	router.HandleFunc("/api/user/tenants/delete",

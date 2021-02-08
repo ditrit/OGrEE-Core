@@ -52,6 +52,11 @@ var GetAllTenants = func(w http.ResponseWriter, r *http.Request) {
 }
 
 var UpdateTenant = func(w http.ResponseWriter, r *http.Request) {
+
+	id, e := strconv.Atoi(mux.Vars(r)["id"])
+	if e != nil {
+		u.Respond(w, u.Message(false, "Error while extracting from path parameters"))
+	}
 	tenant := &models.Tenant{}
 
 	err := json.NewDecoder(r.Body).Decode(tenant)
@@ -59,7 +64,7 @@ var UpdateTenant = func(w http.ResponseWriter, r *http.Request) {
 		u.Respond(w, u.Message(false, "Error while decoding request body"))
 	}
 
-	v := models.UpdateTenant(tenant.ID, tenant)
+	v := models.UpdateTenant(uint(id), tenant)
 	u.Respond(w, v)
 }
 
