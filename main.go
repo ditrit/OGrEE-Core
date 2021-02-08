@@ -90,7 +90,7 @@ func main() {
 	router.HandleFunc("/api/user/site/{id}",
 		controllers.GetSite).Methods("GET")
 
-	router.HandleFunc("/api/user/site/",
+	router.HandleFunc("/api/user/site/{id}",
 		controllers.UpdateSite).Methods("PUT")
 
 	router.HandleFunc("/api/user/site/{id}",

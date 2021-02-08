@@ -109,14 +109,19 @@ var DeleteSites = func(w http.ResponseWriter, r *http.Request) {
 //Updates work by passing ID
 //and new data in the JSON Body
 var UpdateSite = func(w http.ResponseWriter, r *http.Request) {
+
 	site := &models.Site{}
-	//id := r.Context().Value("user").(uint)
+	id, e := strconv.Atoi(mux.Vars(r)["id"])
+
+	if e != nil {
+		u.Respond(w, u.Message(false, "Error while parsing path parameters"))
+	}
 
 	err := json.NewDecoder(r.Body).Decode(site)
 	if err != nil {
 		u.Respond(w, u.Message(false, "Error while decoding request body"))
 	}
 
-	v := models.UpdateSite(site.ID, site)
+	v := models.UpdateSite(uint(id), site)
 	u.Respond(w, v)
 }
