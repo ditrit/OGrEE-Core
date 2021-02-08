@@ -106,8 +106,7 @@ var DeleteSites = func(w http.ResponseWriter, r *http.Request) {
 	u.Respond(w, v)
 }
 
-//Updates work by passing ID
-//and new data in the JSON Body
+//Updates work by passing ID in path parameter
 var UpdateSite = func(w http.ResponseWriter, r *http.Request) {
 
 	site := &models.Site{}
