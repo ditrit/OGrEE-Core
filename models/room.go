@@ -28,7 +28,7 @@ type Room struct {
 }
 
 //Validate needs to ensure that the room coords
-//Are in the same bldg
+//Are in the same room
 //This is not yet implemented
 func (room *Room) Validate() (map[string]interface{}, bool) {
 	if room.Name == "" {
@@ -121,11 +121,11 @@ func GetRoom(id uint) *Room {
 	return room
 }
 
-//Obtain all rooms of a site
-func GetRooms(bldg *Building) []*Room {
+//Obtain all rooms of a room
+func GetRooms(room *Building) []*Room {
 	rooms := make([]*Room, 0)
 
-	err := GetDB().Table("rooms").Where("foreignkey = ?", bldg.ID).Find(&rooms).Error
+	err := GetDB().Table("rooms").Where("foreignkey = ?", room.ID).Find(&rooms).Error
 	if err != nil {
 		fmt.Println(err)
 		return nil
@@ -139,3 +139,72 @@ func GetRooms(bldg *Building) []*Room {
 //Need Update and Delete
 //These would be a bit more complicated
 //So leave them out for now
+
+func UpdateRoom(id uint, newRoomInfo *Room) map[string]interface{} {
+	room := &Room{}
+
+	err := GetDB().Table("rooms").Where("id = ?", id).First(room).Error
+	if err != nil {
+		return u.Message(false, "Room was not found")
+	}
+
+	if newRoomInfo.Name != "" && newRoomInfo.Name != room.Name {
+		room.Name = newRoomInfo.Name
+	}
+
+	if newRoomInfo.Category != "" && newRoomInfo.Category != room.Category {
+		room.Category = newRoomInfo.Category
+	}
+
+	if newRoomInfo.Desc != "" && newRoomInfo.Desc != room.Desc {
+		room.Desc = newRoomInfo.Desc
+	}
+
+	if newRoomInfo.PosX > 0.0 && newRoomInfo.PosX != room.PosX {
+		room.PosX = newRoomInfo.PosX
+	}
+
+	if newRoomInfo.PosY > 0.0 && newRoomInfo.PosY != room.PosX {
+		room.PosY = newRoomInfo.PosY
+	}
+
+	if newRoomInfo.PosU != "" && newRoomInfo.PosU != room.PosU {
+		room.PosU = newRoomInfo.PosU
+	}
+
+	if newRoomInfo.PosZ > 0.0 && newRoomInfo.PosZ != room.PosZ {
+		room.PosZ = newRoomInfo.PosZ
+	}
+
+	if newRoomInfo.PosZU != "" && newRoomInfo.PosZU != room.PosZU {
+		room.PosZU = newRoomInfo.PosZU
+	}
+
+	if newRoomInfo.Size > 0.0 && newRoomInfo.Size != room.Size {
+		room.Size = newRoomInfo.Size
+	}
+
+	if newRoomInfo.SizeU != "" && newRoomInfo.SizeU != room.SizeU {
+		room.SizeU = newRoomInfo.SizeU
+	}
+
+	if newRoomInfo.Height > 0.0 && newRoomInfo.Height != room.Height {
+		room.Height = newRoomInfo.Height
+	}
+
+	if newRoomInfo.HeightU != "" && newRoomInfo.HeightU != room.HeightU {
+		room.HeightU = newRoomInfo.HeightU
+	}
+
+	if newRoomInfo.Orientation != "" {
+		switch newRoomInfo.Orientation {
+		case "NE", "NW", "SE", "SW":
+			room.Orientation = newRoomInfo.Orientation
+
+		default:
+		}
+	}
+
+	GetDB().Table("rooms").Save(room)
+	return u.Message(true, "success")
+}
