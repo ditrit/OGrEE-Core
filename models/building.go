@@ -132,7 +132,7 @@ func UpdateBuilding(id uint, newBldgInfo *Building) map[string]interface{} {
 
 	err := GetDB().Table("buildings").Where("id = ?", id).First(bldg).Error
 	if err != nil {
-		return u.Message(false, "Site was not found")
+		return u.Message(false, "Building was not found")
 	}
 
 	if newBldgInfo.Name != "" && newBldgInfo.Name != bldg.Name {
