@@ -12,7 +12,7 @@ type Device struct {
 	Name        string          `json:"name"`
 	Category    string          `json:"category"`
 	Desc        string          `json:"description"`
-	Domain      string          `json:"domain"`
+	Domain      int             `json:"domain"`
 	Color       string          `json:"color"`
 	Orientation ECardinalOrient `json:"eorientation"`
 }
@@ -30,8 +30,14 @@ func (device *Device) Validate() (map[string]interface{}, bool) {
 		return u.Message(false, "Description should be on the paylad"), false
 	}
 
-	if device.Domain == "" {
-		return u.Message(false, "Domain should NULL!"), false
+	if device.Domain == 0 {
+		return u.Message(false, "Domain should be on the payload"), false
+	}
+
+	if GetDB().Table("racks").
+		Where("id = ?", device.Domain).First(&Rack{}).Error != nil {
+
+		return u.Message(false, "Domain should be correspond to Rack ID"), false
 	}
 
 	if device.Color == "" {
