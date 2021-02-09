@@ -35,7 +35,7 @@ func (rack *Rack) Validate() (map[string]interface{}, bool) {
 		return u.Message(false, "Domain should should be on the payload"), false
 	}
 
-	if GetDB().Table("room").
+	if GetDB().Table("rooms").
 		Where("id = ?", rack.Domain).First(&Room{}).Error != nil {
 
 		return u.Message(false, "Domain should be correspond to Room ID"), false
