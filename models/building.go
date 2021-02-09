@@ -27,7 +27,7 @@ type Building struct {
 	SizeU   string  `json:"sizeu"`
 	Height  float32 `json:"height"`
 	HeightU string  `json:"heightu"`
-	Site    []Site  
+	Site    []Site
 }
 
 func (bldg *Building) Validate() (map[string]interface{}, bool) {
@@ -95,11 +95,10 @@ func (bldg *Building) Create() map[string]interface{} {
 	return resp
 }
 
-//Obtain the first building
-//Given the site
-func GetBuilding(site *Site) *Building {
+//Get Building by ID
+func GetBuilding(id uint) *Building {
 	bldg := &Building{}
-	err := GetDB().Table("buildings").Where("foreignkey = ?", site.ID).First(bldg).Error
+	err := GetDB().Table("buildings").Where("id = ?", id).First(bldg).Error
 	if err != nil {
 		fmt.Println(err)
 		return nil
@@ -125,3 +124,80 @@ func GetBuildings(site *Site) []*Building {
 //Need Update and Delete
 //These would be a bit more complicated
 //So leave them out for now
+
+func UpdateBuilding(id uint, newBldgInfo *Building) map[string]interface{} {
+	bldg := &Building{}
+
+	err := GetDB().Table("buildings").Where("id = ?", id).First(bldg).Error
+	if err != nil {
+		return u.Message(false, "Site was not found")
+	}
+
+	if newBldgInfo.Name != "" && newBldgInfo.Name != bldg.Name {
+		bldg.Name = newBldgInfo.Name
+	}
+
+	if newBldgInfo.Category != "" && newBldgInfo.Category != bldg.Category {
+		bldg.Category = newBldgInfo.Category
+	}
+
+	if newBldgInfo.Desc != "" && newBldgInfo.Desc != bldg.Desc {
+		bldg.Desc = newBldgInfo.Desc
+	}
+
+	if newBldgInfo.Pos.X > 0.0 && newBldgInfo.Pos.X != bldg.Pos.X {
+		bldg.Pos.X = newBldgInfo.Pos.X
+	}
+
+	if newBldgInfo.Pos.Y > 0.0 && newBldgInfo.Pos.Y != bldg.Pos.X {
+		bldg.Pos.Y = newBldgInfo.Pos.Y
+	}
+
+	if newBldgInfo.PosU != "" && newBldgInfo.PosU != bldg.PosU {
+		bldg.PosU = newBldgInfo.PosU
+	}
+
+	if newBldgInfo.PosZ > 0.0 && newBldgInfo.PosZ != bldg.PosZ {
+		bldg.PosZ = newBldgInfo.PosZ
+	}
+
+	if newBldgInfo.PosZU != "" && newBldgInfo.PosZU != bldg.PosZU {
+		bldg.PosZU = newBldgInfo.PosZU
+	}
+
+	if newBldgInfo.Size > 0.0 && newBldgInfo.Size != bldg.Size {
+		bldg.Site = newBldgInfo.Site
+	}
+
+	if newBldgInfo.SizeU != "" && newBldgInfo.SizeU != bldg.SizeU {
+		bldg.SizeU = newBldgInfo.SizeU
+	}
+
+	if newBldgInfo.Height > 0.0 && newBldgInfo.Height != bldg.Height {
+		bldg.Height = newBldgInfo.Height
+	}
+
+	if newBldgInfo.HeightU != "" && newBldgInfo.HeightU != bldg.HeightU {
+		bldg.HeightU = newBldgInfo.HeightU
+	}
+
+	GetDB().Table("buildings").Save(bldg)
+	return u.Message(true, "success")
+}
+
+func DeleteBuilding(id uint) map[string]interface{} {
+
+	//This is a hard delete!
+	e := GetDB().Unscoped().Table("buildings").
+		Where("id = ?", id).Delete(&Building{}).RowsAffected
+
+	//The command below is a soft delete
+	//Meaning that the 'deleted_at' field will be set
+	//the record will remain but unsearchable
+	//e := GetDB().Table("tenants").Delete(Tenant{}, id).Error
+	if e == 0 {
+		return u.Message(false, "There was an error in deleting the site")
+	}
+
+	return u.Message(true, "success")
+}
