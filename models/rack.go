@@ -99,3 +99,68 @@ func GetRacks(room *Room) []*Rack {
 //Need Update and Delete
 //These would be a bit more complicated
 //So leave them out for now
+
+func UpdateRack(id uint, newRackInfo *Rack) map[string]interface{} {
+	rack := &Rack{}
+
+	err := GetDB().Table("racks").Where("id = ?", id).First(rack).Error
+	if err != nil {
+		return u.Message(false, "Rack was not found")
+	}
+
+	if newRackInfo.Name != "" && newRackInfo.Name != rack.Name {
+		rack.Name = newRackInfo.Name
+	}
+
+	if newRackInfo.Category != "" && newRackInfo.Category != rack.Category {
+		rack.Category = newRackInfo.Category
+	}
+
+	if newRackInfo.Desc != "" && newRackInfo.Desc != rack.Desc {
+		rack.Desc = newRackInfo.Desc
+	}
+
+	//Should it be possible to update domain
+	// Will have to think about it more
+	//if newRackInfo.Domain
+
+	if newRackInfo.Color != "" && newRackInfo.Color != rack.Color {
+		rack.Color = newRackInfo.Color
+	}
+
+	if newRackInfo.Orientation != "" {
+		switch newRackInfo.Orientation {
+		case "NE", "NW", "SE", "SW":
+			rack.Orientation = newRackInfo.Orientation
+
+		default:
+		}
+	}
+
+	//Successfully validated the new data
+	GetDB().Table("racks").Save(rack)
+	return u.Message(true, "success")
+}
+
+func DeleteRack(id uint) map[string]interface{} {
+
+	//First check if the rack exists
+	err := GetDB().Table("racks").Where("id = ?", id).First(&Rack{}).Error
+	if err != nil {
+		fmt.Println("Couldn't find the rack to delete")
+		return nil
+	}
+
+	//This is a hard delete!
+	e := GetDB().Unscoped().Table("racks").Delete(&Rack{}, id).Error
+
+	//The command below is a soft delete
+	//Meaning that the 'deleted_at' field will be set
+	//the record will remain but unsearchable
+	//e := GetDB().Table("tenants").Delete(Tenant{}, id).Error
+	if e != nil {
+		return u.Message(false, "There was an error in deleting the rack")
+	}
+
+	return u.Message(true, "success")
+}
