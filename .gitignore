@@ -5,3 +5,4 @@ jenkins/*
 main
 ogreedb/
 .env
+*.txt
