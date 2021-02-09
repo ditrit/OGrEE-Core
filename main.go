@@ -108,7 +108,7 @@ func main() {
 		controllers.DeleteDevice).Methods("DELETE")
 
 	router.HandleFunc("/api/user/devices/{id}",
-		controllers.DeleteDevice).Methods("GET")
+		controllers.GetDevice).Methods("GET")
 
 	//Attach JWT auth middleware
 	router.Use(app.JwtAuthentication)

@@ -37,7 +37,7 @@ func (device *Device) Validate() (map[string]interface{}, bool) {
 	if GetDB().Table("racks").
 		Where("id = ?", device.Domain).First(&Device{}).Error != nil {
 
-		return u.Message(false, "Domain should be correspond to Device ID"), false
+		return u.Message(false, "Domain should be correspond to Rack ID"), false
 	}
 
 	if device.Color == "" {
