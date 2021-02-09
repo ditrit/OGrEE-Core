@@ -12,7 +12,7 @@ type Rack struct {
 	Name        string          `json:"name"`
 	Category    string          `json:"category"`
 	Desc        string          `json:"description"`
-	Domain      string          `json:"domain"`
+	Domain      int             `json:"domain"`
 	Color       string          `json:"color"`
 	Orientation ECardinalOrient `json:"eorientation"`
 	Room        []Room          `gorm:"foreignKey:Room"`
@@ -31,8 +31,14 @@ func (rack *Rack) Validate() (map[string]interface{}, bool) {
 		return u.Message(false, "Description should be on the payload"), false
 	}
 
-	if rack.Domain == "" {
+	if rack.Domain == 0 {
 		return u.Message(false, "Domain should should be on the payload"), false
+	}
+
+	if GetDB().Table("room").
+		Where("id = ?", rack.Domain).First(&Room{}).Error != nil {
+
+		return u.Message(false, "Domain should be correspond to Room ID"), false
 	}
 
 	if rack.Color == "" {
@@ -64,10 +70,10 @@ func (rack *Rack) Create() map[string]interface{} {
 	return resp
 }
 
-//Get the first rack given the room
-func GetRack(room *Room) *Rack {
+//Get the rack using ID
+func GetRack(id uint) *Rack {
 	rack := &Rack{}
-	err := GetDB().Table("racks").Where("foreignkey = ?", room.ID).First(rack).Error
+	err := GetDB().Table("racks").Where("id = ?", id).First(rack).Error
 	if err != nil {
 		fmt.Println(err)
 		return nil
