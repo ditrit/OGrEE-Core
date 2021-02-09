@@ -43,7 +43,7 @@ func (bldg *Building) Validate() (map[string]interface{}, bool) {
 		return u.Message(false, "Description should be on the paylad"), false
 	}
 
-	if bldg.Domain == "" {
+	if bldg.Domain == 0 {
 		return u.Message(false, "Domain should should be on the payload"), false
 	}
 
