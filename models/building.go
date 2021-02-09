@@ -8,8 +8,8 @@ import (
 )
 
 type Vector2 struct {
-	X float32
-	Y float32
+	X float64
+	Y float64
 }
 
 type Building struct {
@@ -21,11 +21,11 @@ type Building struct {
 
 	Pos     Vector2 `json:"posxy"`
 	PosU    string  `json:"posxyu"`
-	PosZ    float32 `json:"posz"`
+	PosZ    float64 `json:"posz"`
 	PosZU   string  `json:"poszu"`
-	Size    float32 `json:"size"`
+	Size    float64 `json:"size"`
 	SizeU   string  `json:"sizeu"`
-	Height  float32 `json:"height"`
+	Height  float64 `json:"height"`
 	HeightU string  `json:"heightu"`
 	Site    []Site
 }
