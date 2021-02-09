@@ -97,14 +97,18 @@ func main() {
 	router.HandleFunc("/api/user/racks/{id}",
 		controllers.GetRack).Methods("GET")
 
-	/*router.HandleFunc("/api/user/sites/single",
-	controllers.GetSite).Methods("GET")*/
+	// ------ DEVICE CRUD ------ //
+	router.HandleFunc("/api/user/devices/",
+		controllers.CreateDevice).Methods("POST")
 
-	/*router.HandleFunc("/api/me/contacts",
-		controllers.GetContactsFor).Methods("GET")
+	router.HandleFunc("/api/user/devices/{id}",
+		controllers.UpdateDevice).Methods("PUT")
 
-	router.HandleFunc("/api/contacts/new",
-		controllers.CreateContact).Methods("POST")*/
+	router.HandleFunc("/api/user/devices/{id}",
+		controllers.DeleteDevice).Methods("DELETE")
+
+	router.HandleFunc("/api/user/devices/{id}",
+		controllers.DeleteDevice).Methods("GET")
 
 	//Attach JWT auth middleware
 	router.Use(app.JwtAuthentication)
