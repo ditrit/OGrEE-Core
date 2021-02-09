@@ -7,11 +7,6 @@ import (
 	"github.com/jinzhu/gorm"
 )
 
-type Vector2 struct {
-	X float64
-	Y float64
-}
-
 type Building struct {
 	gorm.Model
 	Name     string `json:"name"`
@@ -19,7 +14,6 @@ type Building struct {
 	Desc     string `json:"description"`
 	Domain   int    `json:"domain"`
 
-	//Pos     Vector2 `json:"posxy"`
 	PosX    float64 `json:"posx"`
 	PosY    float64 `json:"posy"`
 	PosU    string  `json:"posxyu"`

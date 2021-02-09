@@ -12,16 +12,17 @@ type Room struct {
 	Name        string          `json:"name"`
 	Category    string          `json:"category"`
 	Desc        string          `json:"description"`
-	Domain      string          `json:"domain"`
+	Domain      int             `json:"domain"`
 	Orientation ECardinalOrient `json:"eorientation"`
 
-	Pos      Vector2    `json:"posxy"`
+	PosX     float64    `json:"posx"`
+	PosY     float64    `json:"posy"`
 	PosU     string     `json:"posxyu"`
-	PosZ     float32    `json:"posz"`
+	PosZ     float64    `json:"posz"`
 	PosZU    string     `json:"poszu"`
-	Size     float32    `json:"size"`
+	Size     float64    `json:"size"`
 	SizeU    string     `json:"sizeu"`
-	Height   float32    `json:"height"`
+	Height   float64    `json:"height"`
 	HeightU  string     `json:"heightu"`
 	Building []Building `gorm:"foreignKey:Building"`
 }
@@ -42,11 +43,17 @@ func (room *Room) Validate() (map[string]interface{}, bool) {
 		return u.Message(false, "Description should be on the payload"), false
 	}
 
-	if room.Domain == "" {
+	if room.Domain == 0 {
 		return u.Message(false, "Domain should should be on the payload"), false
 	}
 
-	if room.Pos.X < 0.0 || room.Pos.Y < 0.0 {
+	if GetDB().Table("buildings").
+		Where("id = ?", room.Domain).First(&Building{}).Error != nil {
+
+		return u.Message(false, "Domain should be correspond to building ID"), false
+	}
+
+	if room.PosX < 0.0 || room.PosY < 0.0 {
 		return u.Message(false, "Invalid XYcoordinates on payload"), false
 	}
 
