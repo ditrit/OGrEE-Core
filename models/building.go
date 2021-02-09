@@ -19,7 +19,9 @@ type Building struct {
 	Desc     string `json:"description"`
 	Domain   int    `json:"domain"`
 
-	Pos     Vector2 `json:"posxy"`
+	//Pos     Vector2 `json:"posxy"`
+	PosX    float64 `json:"posx"`
+	PosY    float64 `json:"posy"`
 	PosU    string  `json:"posxyu"`
 	PosZ    float64 `json:"posz"`
 	PosZU   string  `json:"poszu"`
@@ -47,7 +49,13 @@ func (bldg *Building) Validate() (map[string]interface{}, bool) {
 		return u.Message(false, "Domain should should be on the payload"), false
 	}
 
-	if bldg.Pos.X < 0.0 || bldg.Pos.Y < 0.0 {
+	if GetDB().Table("sites").
+		Where("id = ?", bldg.Domain).First(&Site{}).Error != nil {
+
+		return u.Message(false, "Domain should be correspond to site ID"), false
+	}
+
+	if bldg.PosX < 0.0 || bldg.PosY < 0.0 {
 		return u.Message(false, "Invalid XYcoordinates on payload"), false
 	}
 
@@ -145,12 +153,12 @@ func UpdateBuilding(id uint, newBldgInfo *Building) map[string]interface{} {
 		bldg.Desc = newBldgInfo.Desc
 	}
 
-	if newBldgInfo.Pos.X > 0.0 && newBldgInfo.Pos.X != bldg.Pos.X {
-		bldg.Pos.X = newBldgInfo.Pos.X
+	if newBldgInfo.PosX > 0.0 && newBldgInfo.PosX != bldg.PosX {
+		bldg.PosX = newBldgInfo.PosX
 	}
 
-	if newBldgInfo.Pos.Y > 0.0 && newBldgInfo.Pos.Y != bldg.Pos.X {
-		bldg.Pos.Y = newBldgInfo.Pos.Y
+	if newBldgInfo.PosY > 0.0 && newBldgInfo.PosY != bldg.PosX {
+		bldg.PosY = newBldgInfo.PosY
 	}
 
 	if newBldgInfo.PosU != "" && newBldgInfo.PosU != bldg.PosU {
