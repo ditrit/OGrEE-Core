@@ -110,12 +110,12 @@ func (room *Room) Create() map[string]interface{} {
 	return resp
 }
 
-//Get the first room given the room
-func GetRoom(bldg *Building) *Room {
+//Get the room by ID
+func GetRoom(id uint) *Room {
 	room := &Room{}
-	err := GetDB().Table("rooms").Where("foreignkey = ?", bldg.ID).First(room).Error
+	err := GetDB().Table("rooms").Where("id = ?", id).First(room).Error
 	if err != nil {
-		fmt.Println(err)
+		fmt.Println("There was an error in getting room by ID")
 		return nil
 	}
 	return room
