@@ -62,6 +62,15 @@ func main() {
 	router.HandleFunc("/api/user/buildings/",
 		controllers.CreateBuilding).Methods("POST")
 
+	router.HandleFunc("/api/user/buildings/{id}",
+		controllers.UpdateBuilding).Methods("PUT")
+
+	router.HandleFunc("/api/user/buildings/{id}",
+		controllers.DeleteBuilding).Methods("DELETE")
+
+	router.HandleFunc("/api/user/buildings/{id}",
+		controllers.GetBuilding).Methods("GET")
+
 	/*router.HandleFunc("/api/user/sites/single",
 	controllers.GetSite).Methods("GET")*/
 
