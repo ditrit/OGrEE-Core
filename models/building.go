@@ -17,7 +17,7 @@ type Building struct {
 	Name     string `json:"name"`
 	Category string `json:"category"`
 	Desc     string `json:"description"`
-	Domain   string `json:"domain"`
+	Domain   int    `json:"domain"`
 
 	Pos     Vector2 `json:"posxy"`
 	PosU    string  `json:"posxyu"`

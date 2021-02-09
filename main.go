@@ -21,14 +21,14 @@ func main() {
 	router.HandleFunc("/api/user/login",
 		controllers.Authenticate).Methods("POST")
 
+	router.HandleFunc("/api/user/tenants/all",
+		controllers.GetAllTenants).Methods("GET")
+
 	router.HandleFunc("/api/user/tenants/",
 		controllers.CreateTenant).Methods("POST")
 
 	router.HandleFunc("/api/user/tenants/{id}",
 		controllers.GetTenantFor).Methods("GET")
-
-	router.HandleFunc("/api/user/tenants/all",
-		controllers.GetAllTenants).Methods("GET")
 
 	router.HandleFunc("/api/user/tenants/{id}",
 		controllers.UpdateTenant).Methods("PUT")
@@ -57,7 +57,10 @@ func main() {
 	router.HandleFunc("/api/user/sites/",
 		controllers.DeleteSites).Methods("DELETE")
 
-	// ------ BUILDING CRUD ------
+	// ------ BUILDING CRUD ------ //
+
+	router.HandleFunc("/api/user/buildings/",
+		controllers.CreateBuilding).Methods("POST")
 
 	/*router.HandleFunc("/api/user/sites/single",
 	controllers.GetSite).Methods("GET")*/
