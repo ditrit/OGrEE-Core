@@ -71,6 +71,19 @@ func main() {
 	router.HandleFunc("/api/user/buildings/{id}",
 		controllers.GetBuilding).Methods("GET")
 
+	// ------ ROOM CRUD ------ //
+	router.HandleFunc("/api/user/rooms/",
+		controllers.CreateRoom).Methods("POST")
+
+	router.HandleFunc("/api/user/rooms/{id}",
+		controllers.UpdateRoom).Methods("PUT")
+
+	router.HandleFunc("/api/user/rooms/{id}",
+		controllers.DeleteRoom).Methods("DELETE")
+
+	router.HandleFunc("/api/user/rooms/{id}",
+		controllers.GetRoom).Methods("GET")
+
 	/*router.HandleFunc("/api/user/sites/single",
 	controllers.GetSite).Methods("GET")*/
 
