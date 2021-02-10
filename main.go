@@ -15,7 +15,7 @@ func main() {
 
 	router := mux.NewRouter()
 
-	router.HandleFunc("/api/user/new",
+	router.HandleFunc("/api/user",
 		controllers.CreateAccount).Methods("POST")
 
 	router.HandleFunc("/api/user/login",
