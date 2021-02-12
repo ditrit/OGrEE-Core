@@ -10,6 +10,54 @@ import (
 	"github.com/gorilla/mux"
 )
 
+// swagger:operation POST /api/user/racks racks Create
+// Creates a Rack in the system
+// ---
+// produces:
+// - application/json
+// parameters:
+// - name: Name
+//   in: query
+//   description: Name of rack
+//   required: true
+//   type: string
+//   default: "Rack A"
+// - name: Category
+//   in: query
+//   description: Category of Rack (ex. Consumer Electronics, Medical)
+//   required: true
+//   type: string
+//   default: "Research"
+// - name: Description
+//   in: query
+//   description: Description of Rack
+//   required: true
+//   type: string
+//   default: "Some abandoned rack in Grenoble"
+// - name: Domain
+//   description: 'This an attribute that refers to
+//   an existing parent'
+//   required: true
+//   type: int
+//   default: 999
+// - name: Color
+//   in: query
+//   description: Color of Rack (useful for 3D rendering)
+//   required: true
+//   type: string
+//   default: "Silver"
+// - name: Orientation
+//   in: query
+//   description: 'Indicates the location. Only values of
+//   "NE", "NW", "SE", "SW" are acceptable'
+//   required: true
+//   type: string
+//   default: "NE"
+// responses:
+//     '200':
+//         description: Created
+//     '400':
+//         description: Bad request
 var CreateRack = func(w http.ResponseWriter, r *http.Request) {
 
 	rack := &models.Rack{}
@@ -23,7 +71,23 @@ var CreateRack = func(w http.ResponseWriter, r *http.Request) {
 	u.Respond(w, resp)
 }
 
-//Retrieve rack using Rack ID
+// swagger:operation GET /api/user/racks/{id} racks GetRack
+// Gets a Rack using Rack ID.
+// ---
+// produces:
+// - application/json
+// parameters:
+// - name: ID
+//   in: path
+//   description: ID of desired rack
+//   required: true
+//   type: int
+//   default: 999
+// responses:
+//     '204':
+//        description: Successful
+//     '400':
+//        description: Not found
 var GetRack = func(w http.ResponseWriter, r *http.Request) {
 
 	id, e := strconv.Atoi(mux.Vars(r)["id"])
@@ -42,6 +106,23 @@ var GetRack = func(w http.ResponseWriter, r *http.Request) {
 	u.Respond(w, resp)
 }
 
+// swagger:operation DELETE /api/user/racks/{id} racks DeleteRack
+// Deletes a Rack in the system.
+// ---
+// produces:
+// - application/json
+// parameters:
+// - name: ID
+//   in: path
+//   description: ID of desired rack
+//   required: true
+//   type: int
+//   default: 999
+// responses:
+//     '204':
+//        description: Successful
+//     '400':
+//        description: Not found
 var DeleteRack = func(w http.ResponseWriter, r *http.Request) {
 	id, e := strconv.Atoi(mux.Vars(r)["id"])
 
@@ -53,6 +134,57 @@ var DeleteRack = func(w http.ResponseWriter, r *http.Request) {
 	u.Respond(w, v)
 }
 
+// swagger:operation PUT /api/user/racks/{id} racks UpdateRack
+// Changes Rack data in the system.
+// If no new or any information is provided
+// an OK will still be returned
+// ---
+// produces:
+// - application/json
+// parameters:
+// - name: ID
+//   in: path
+//   description: ID of desired rack
+//   required: true
+//   type: int
+//   default: 999
+// - name: Name
+//   in: query
+//   description: Name of rack
+//   required: false
+//   type: string
+//   default: "Rack B"
+// - name: Category
+//   in: query
+//   description: Category of Rack (ex. Consumer Electronics, Medical)
+//   required: false
+//   type: string
+//   default: "Research"
+// - name: Description
+//   in: query
+//   description: Description of Rack
+//   required: false
+//   type: string
+//   default: "Some rack"
+// - name: Color
+//   in: query
+//   description: Color of Rack (useful for 3D rendering)
+//   required: false
+//   type: string
+//   default: "Blue"
+// - name: Orientation
+//   in: query
+//   description: 'Indicates the location. Only values of
+//   "NE", "NW", "SE", "SW" are acceptable'
+//   required: false
+//   type: string
+//   default: "NE"
+
+// responses:
+//     '200':
+//         description: Updated
+//     '400':
+//         description: Bad request
 //Updates work by passing ID in path parameter
 var UpdateRack = func(w http.ResponseWriter, r *http.Request) {
 
