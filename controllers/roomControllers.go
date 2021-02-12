@@ -10,6 +10,55 @@ import (
 	"github.com/gorilla/mux"
 )
 
+// swagger:operation POST /api/user/rooms rooms Create
+// Creates a Room in the system
+// ---
+// produces:
+// - application/json
+// parameters:
+// - name: Name
+//   in: query
+//   description: Name of room
+//   required: true
+//   type: string
+//   default: "Room A"
+// - name: Category
+//   in: query
+//   description: Category of Room (ex. Consumer Electronics, Medical)
+//   required: true
+//   type: string
+//   default: "Research"
+// - name: Description
+//   in: query
+//   description: Description of Room
+//   required: true
+//   type: string
+//   default: "Some abandoned room in Grenoble"
+// - name: Domain
+//   description: 'This an attribute that refers to
+//   an existing parent'
+//   required: true
+//   type: int
+//   default: 999
+// - name: Color
+//   in: query
+//   description: Color of Room (useful for 3D rendering)
+//   required: true
+//   type: string
+//   default: "Silver"
+// - name: Orientation
+//   in: query
+//   description: 'Indicates the location. Only values of
+//   "NE", "NW", "SE", "SW" are acceptable'
+//   required: true
+//   type: string
+//   default: "NE"
+// responses:
+//     '200':
+//         description: Created
+//     '400':
+//         description: Bad request
+
 var CreateRoom = func(w http.ResponseWriter, r *http.Request) {
 
 	room := &models.Room{}
@@ -22,6 +71,24 @@ var CreateRoom = func(w http.ResponseWriter, r *http.Request) {
 	resp := room.Create()
 	u.Respond(w, resp)
 }
+
+// swagger:operation GET /api/user/rooms/{id} rooms GetRoom
+// Gets Room using Room ID.
+// ---
+// produces:
+// - application/json
+// parameters:
+// - name: ID
+//   in: path
+//   description: ID of Room
+//   required: true
+//   type: int
+//   default: 999
+// responses:
+//     '200':
+//         description: Found
+//     '400':
+//         description: Not Found
 
 //Retrieve room using Room ID
 var GetRoom = func(w http.ResponseWriter, r *http.Request) {
@@ -42,6 +109,24 @@ var GetRoom = func(w http.ResponseWriter, r *http.Request) {
 	u.Respond(w, resp)
 }
 
+// swagger:operation DELETE /api/user/rooms/{id} rooms DeleteRoom
+// Deletes a Room in the system.
+// ---
+// produces:
+// - application/json
+// parameters:
+// - name: ID
+//   in: path
+//   description: ID of desired room
+//   required: true
+//   type: int
+//   default: 999
+// responses:
+//     '204':
+//        description: Successful
+//     '400':
+//        description: Not found
+
 var DeleteRoom = func(w http.ResponseWriter, r *http.Request) {
 	id, e := strconv.Atoi(mux.Vars(r)["id"])
 
@@ -52,6 +137,58 @@ var DeleteRoom = func(w http.ResponseWriter, r *http.Request) {
 	v := models.DeleteRoom(uint(id))
 	u.Respond(w, v)
 }
+
+// swagger:operation PUT /api/user/rooms/{id} rooms UpdateRoom
+// Changes Room data in the system.
+// If no new or any information is provided
+// an OK will still be returned
+// ---
+// produces:
+// - application/json
+// parameters:
+// - name: ID
+//   in: path
+//   description: ID of desired room
+//   required: true
+//   type: int
+//   default: 999
+// - name: Name
+//   in: query
+//   description: Name of room
+//   required: false
+//   type: string
+//   default: "Room B"
+// - name: Category
+//   in: query
+//   description: Category of Room (ex. Consumer Electronics, Medical)
+//   required: false
+//   type: string
+//   default: "Research"
+// - name: Description
+//   in: query
+//   description: Description of Room
+//   required: false
+//   type: string
+//   default: "Some abandoned room in Grenoble"
+// - name: Color
+//   in: query
+//   description: Color of Room (useful for 3D rendering)
+//   required: false
+//   type: string
+//   default: "Blue"
+// - name: Orientation
+//   in: query
+//   description: 'Indicates the location. Only values of
+//   "NE", "NW", "SE", "SW" are acceptable'
+//   required: false
+//   type: string
+//   default: "NE"
+
+// responses:
+//     '200':
+//         description: Updated
+//     '400':
+//         description: Bad request
 
 //Updates work by passing ID in path parameter
 var UpdateRoom = func(w http.ResponseWriter, r *http.Request) {
