@@ -126,6 +126,12 @@ var GetAllTenants = func(w http.ResponseWriter, r *http.Request) {
 // produces:
 // - application/json
 // parameters:
+// - name: ID
+//   in: path
+//   description: ID of desired site
+//   required: true
+//   type: int
+//   default: 999
 // - name: Name
 //   in: query
 //   description: Name of tenant
