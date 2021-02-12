@@ -89,6 +89,7 @@ var CreateBuilding = func(w http.ResponseWriter, r *http.Request) {
 //         description: Found
 //     '400':
 //         description: Not Found
+
 //Retrieve bldg using Bldg ID
 var GetBuilding = func(w http.ResponseWriter, r *http.Request) {
 
