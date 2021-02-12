@@ -64,16 +64,6 @@ func GetTenant(id uint) *Tenant {
 	return tenant
 }
 
-//More methods should be made to
-//Meet CRUD capabilities
-//Need Update and Delete
-//These would be a bit more complicated
-//So leave them out for now
-
-//It may be possible for an API
-//user to have more than 1 tenant
-//This isn't realistic so this
-//will not be implemented
 func GetAllTenants() []*Tenant {
 	tenants := make([]*Tenant, 0)
 

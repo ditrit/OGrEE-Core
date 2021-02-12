@@ -10,6 +10,48 @@ import (
 	"github.com/gorilla/mux"
 )
 
+// swagger:operation POST /api/user/tenants tenants Create
+// Creates a Tenant in the system
+// ---
+// produces:
+// - application/json
+// parameters:
+// - name: Name
+//   in: query
+//   description: Name of tenant
+//   required: true
+//   type: string
+//   default: "Nissan"
+// - name: Category
+//   in: query
+//   description: Category of Tenant (ex. Consumer Electronics, Medical)
+//   required: true
+//   type: string
+//   default: "Auto"
+// - name: Description
+//   in: query
+//   description: Description of Tenant
+//   required: true
+//   type: string
+//   default: "Worldwide automotive company"
+// - name: Domain
+//   description: 'This an attribute that specifies
+//   the parent (if any). NOTE: For Tenants, Domain is NULL!'
+//   required: false
+//   type: string
+//   default: NULL
+// - name: Color
+//   in: query
+//   description: Color of Tenant (useful for 3D rendering)
+//   required: true
+//   type: string
+//   default: "Silver"
+// responses:
+//     '200':
+//         description: Created
+//     '400':
+//         description: Bad request
+
 var CreateTenant = func(w http.ResponseWriter, r *http.Request) {
 	tenant := &models.Tenant{}
 
@@ -23,6 +65,25 @@ var CreateTenant = func(w http.ResponseWriter, r *http.Request) {
 	u.Respond(w, resp)
 }
 
+// swagger:operation GET /api/user/tenants tenants GetTenant
+// Gets a Tenant(s) from the system.
+// The ID must be provided in the URL parameter
+// If an ID is not provided then all tenants will be returned
+// ---
+// produces:
+// - application/json
+// parameters:
+// - name: ID
+//   in: path
+//   description: ID of desired tenant
+//   required: true
+//   type: int
+//   default: 999
+// responses:
+//     '200':
+//         description: Found
+//     '400':
+//         description: Bad request
 var GetTenantFor = func(w http.ResponseWriter, r *http.Request) {
 	var resp map[string]interface{}
 	id, err := strconv.Atoi(mux.Vars(r)["id"])
@@ -43,6 +104,12 @@ var GetTenantFor = func(w http.ResponseWriter, r *http.Request) {
 	u.Respond(w, resp)
 }
 
+// swagger:operation GET /api/user/tenants tenants GetAllTenants
+// Obtain all tenants in the system.
+// Returns JSON body with all tenants and their IDs
+// ---
+// responses:
+//     '204':
 var GetAllTenants = func(w http.ResponseWriter, r *http.Request) {
 
 	data := models.GetAllTenants()
@@ -50,6 +117,44 @@ var GetAllTenants = func(w http.ResponseWriter, r *http.Request) {
 	resp["data"] = data
 	u.Respond(w, resp)
 }
+
+// swagger:operation PUT /api/user/tenants tenants UpdateTenant
+// Changes Tenant data in the system
+// If no new or any information is provided
+// an OK will still be returned
+// ---
+// produces:
+// - application/json
+// parameters:
+// - name: Name
+//   in: query
+//   description: Name of tenant
+//   required: false
+//   type: string
+//   default: "INFINITI"
+// - name: Category
+//   in: query
+//   description: Category of Tenant (ex. Consumer Electronics, Medical)
+//   required: false
+//   type: string
+//   default: "Auto"
+// - name: Description
+//   in: query
+//   description: Description of Tenant
+//   required: false
+//   type: string
+//   default: "High End Worldwide automotive company"
+// - name: Color
+//   in: query
+//   description: Color of Tenant (useful for 3D rendering)
+//   required: true
+//   type: string
+//   default: "Black"
+// responses:
+//     '200':
+//         description: Updated
+//     '400':
+//         description: Bad request
 
 var UpdateTenant = func(w http.ResponseWriter, r *http.Request) {
 
@@ -74,6 +179,24 @@ var UpdateTenant = func(w http.ResponseWriter, r *http.Request) {
 	v := models.DeleteTenant(id)
 	u.Respond(w, v)
 }*/
+
+// swagger:operation DELETE /api/user/tenants tenants DeleteTenant
+// Deletes a Tenant in the system.
+// ---
+// produces:
+// - application/json
+// parameters:
+// - name: ID
+//   in: path
+//   description: ID of desired tenant
+//   required: true
+//   type: int
+//   default: 999
+// responses:
+//     '204':
+//        description: Successful
+//     '400':
+//        description: Not found
 
 var DeleteTenant = func(w http.ResponseWriter, r *http.Request) {
 

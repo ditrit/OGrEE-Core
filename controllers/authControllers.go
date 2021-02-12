@@ -7,6 +7,34 @@ import (
 	u "p3/utils"
 )
 
+// swagger:operation POST /api/user auth Create
+// Create an account with Email credentials, it returns
+// a JWT key to use with the API. The bullshit
+// authorize and 'Try it out' buttons don't work
+// ---
+// produces:
+// - application/json
+// parameters:
+// - name: username
+//   in: body
+//   description: Your Email Address
+//   type: string
+//   required: true
+//   default: "infiniti@nissan.com"
+// - name: password
+//   in: json
+//   description: Your password
+//   required: true
+//   format: password
+//   default: "secret"
+// responses:
+//     '200':
+//         description: Authenticated
+//     '400':
+//         description: Bad request
+//     '500':
+//         description: Internal server error
+
 var CreateAccount = func(w http.ResponseWriter, r *http.Request) {
 
 	account := &models.Account{}
