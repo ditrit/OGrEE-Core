@@ -21,7 +21,7 @@ func main() {
 	router.HandleFunc("/api/user/login",
 		controllers.Authenticate).Methods("POST")
 
-	router.HandleFunc("/api/user/tenants/all",
+	router.HandleFunc("/api/user/tenants",
 		controllers.GetAllTenants).Methods("GET")
 
 	router.HandleFunc("/api/user/tenants/",
@@ -42,7 +42,7 @@ func main() {
 	router.HandleFunc("/api/user/sites/",
 		controllers.GetSitesByUserID).Methods("GET")
 
-	router.HandleFunc("/api/user/sites/all",
+	router.HandleFunc("/api/user/sites",
 		controllers.GetSitesByParentID).Methods("GET")
 
 	router.HandleFunc("/api/user/sites/{id}",
