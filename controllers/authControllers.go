@@ -8,6 +8,7 @@ import (
 )
 
 // swagger:operation POST /api/user auth Create
+// Generate credentials for the API.
 // Create an account with Email credentials, it returns
 // a JWT key to use with the API. The
 // authorize and 'Try it out' buttons don't work
