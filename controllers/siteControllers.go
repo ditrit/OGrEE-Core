@@ -11,7 +11,7 @@ import (
 )
 
 // swagger:operation POST /api/user/sites sites Create
-// Creates a Site in the system
+// Creates a Site in the system.
 // ---
 // produces:
 // - application/json
