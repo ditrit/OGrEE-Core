@@ -11,7 +11,7 @@ import (
 )
 
 // swagger:operation POST /api/user/tenants tenants Create
-// Creates a Tenant in the system
+// Creates a Tenant in the system.
 // ---
 // produces:
 // - application/json
