@@ -65,7 +65,7 @@ var CreateTenant = func(w http.ResponseWriter, r *http.Request) {
 	u.Respond(w, resp)
 }
 
-// swagger:operation GET /api/user/tenants tenants GetTenant
+// swagger:operation GET /api/user/tenants/{id} tenants GetTenant
 // Gets a Tenant(s) from the system.
 // The ID must be provided in the URL parameter
 // If an ID is not provided then all tenants will be returned
@@ -118,7 +118,7 @@ var GetAllTenants = func(w http.ResponseWriter, r *http.Request) {
 	u.Respond(w, resp)
 }
 
-// swagger:operation PUT /api/user/tenants tenants UpdateTenant
+// swagger:operation PUT /api/user/tenants/{id} tenants UpdateTenant
 // Changes Tenant data in the system
 // If no new or any information is provided
 // an OK will still be returned
@@ -153,7 +153,7 @@ var GetAllTenants = func(w http.ResponseWriter, r *http.Request) {
 // - name: Color
 //   in: query
 //   description: Color of Tenant (useful for 3D rendering)
-//   required: true
+//   required: false
 //   type: string
 //   default: "Black"
 // responses:
@@ -186,7 +186,7 @@ var UpdateTenant = func(w http.ResponseWriter, r *http.Request) {
 	u.Respond(w, v)
 }*/
 
-// swagger:operation DELETE /api/user/tenants tenants DeleteTenant
+// swagger:operation DELETE /api/user/tenants/{id} tenants DeleteTenant
 // Deletes a Tenant in the system.
 // ---
 // produces:
