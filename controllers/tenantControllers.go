@@ -119,7 +119,7 @@ var GetAllTenants = func(w http.ResponseWriter, r *http.Request) {
 }
 
 // swagger:operation PUT /api/user/tenants/{id} tenants UpdateTenant
-// Changes Tenant data in the system
+// Changes Tenant data in the system.
 // If no new or any information is provided
 // an OK will still be returned
 // ---
