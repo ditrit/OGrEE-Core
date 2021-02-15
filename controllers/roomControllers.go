@@ -11,7 +11,7 @@ import (
 )
 
 // swagger:operation POST /api/user/rooms rooms Create
-// Creates a Room in the system
+// Creates a Room in the system.
 // ---
 // produces:
 // - application/json

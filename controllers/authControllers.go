@@ -9,7 +9,7 @@ import (
 
 // swagger:operation POST /api/user auth Create
 // Create an account with Email credentials, it returns
-// a JWT key to use with the API. The bullshit
+// a JWT key to use with the API. The
 // authorize and 'Try it out' buttons don't work
 // ---
 // produces:

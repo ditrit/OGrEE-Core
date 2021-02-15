@@ -11,7 +11,7 @@ import (
 )
 
 // swagger:operation POST /api/user/devices devices Create
-// Creates a Device in the system
+// Creates a Device in the system.
 // ---
 // produces:
 // - application/json

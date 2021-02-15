@@ -11,7 +11,7 @@ import (
 )
 
 // swagger:operation POST /api/user/racks racks Create
-// Creates a Rack in the system
+// Creates a Rack in the system.
 // ---
 // produces:
 // - application/json

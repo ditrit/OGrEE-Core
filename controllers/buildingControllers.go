@@ -11,7 +11,7 @@ import (
 )
 
 // swagger:operation POST /api/user/buildings buildings Create
-// Creates a Building in the system
+// Creates a Building in the system.
 // ---
 // produces:
 // - application/json
