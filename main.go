@@ -24,7 +24,7 @@ func main() {
 	router.HandleFunc("/api/user/tenants",
 		controllers.GetAllTenants).Methods("GET")
 
-	router.HandleFunc("/api/user/tenants/",
+	router.HandleFunc("/api/user/tenants",
 		controllers.CreateTenant).Methods("POST")
 
 	router.HandleFunc("/api/user/tenants/{id}",
@@ -36,10 +36,10 @@ func main() {
 	router.HandleFunc("/api/user/tenants/{id}",
 		controllers.DeleteTenant).Methods("DELETE")
 
-	router.HandleFunc("/api/user/sites/",
+	router.HandleFunc("/api/user/sites",
 		controllers.CreateSite).Methods("POST")
 
-	router.HandleFunc("/api/user/sites/",
+	router.HandleFunc("/api/user/sites",
 		controllers.GetSitesByUserID).Methods("GET")
 
 	router.HandleFunc("/api/user/sites",
@@ -54,12 +54,12 @@ func main() {
 	router.HandleFunc("/api/user/sites/{id}",
 		controllers.DeleteSiteByID).Methods("DELETE")
 
-	router.HandleFunc("/api/user/sites/",
+	router.HandleFunc("/api/user/sites",
 		controllers.DeleteSites).Methods("DELETE")
 
 	// ------ BUILDING CRUD ------ //
 
-	router.HandleFunc("/api/user/buildings/",
+	router.HandleFunc("/api/user/buildings",
 		controllers.CreateBuilding).Methods("POST")
 
 	router.HandleFunc("/api/user/buildings/{id}",
@@ -72,7 +72,7 @@ func main() {
 		controllers.GetBuilding).Methods("GET")
 
 	// ------ ROOM CRUD ------ //
-	router.HandleFunc("/api/user/rooms/",
+	router.HandleFunc("/api/user/rooms",
 		controllers.CreateRoom).Methods("POST")
 
 	router.HandleFunc("/api/user/rooms/{id}",
@@ -85,7 +85,7 @@ func main() {
 		controllers.GetRoom).Methods("GET")
 
 	// ------ RACK CRUD ------ //
-	router.HandleFunc("/api/user/racks/",
+	router.HandleFunc("/api/user/racks",
 		controllers.CreateRack).Methods("POST")
 
 	router.HandleFunc("/api/user/racks/{id}",
@@ -98,7 +98,7 @@ func main() {
 		controllers.GetRack).Methods("GET")
 
 	// ------ DEVICE CRUD ------ //
-	router.HandleFunc("/api/user/devices/",
+	router.HandleFunc("/api/user/devices",
 		controllers.CreateDevice).Methods("POST")
 
 	router.HandleFunc("/api/user/devices/{id}",
