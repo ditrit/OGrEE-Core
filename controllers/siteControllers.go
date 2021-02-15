@@ -108,7 +108,7 @@ var GetSitesByUserID = func(w http.ResponseWriter, r *http.Request) {
 	u.Respond(w, resp)
 }
 
-// swagger:operation GET /api/user/sites/all sites GetSite
+// swagger:operation GET /api/user/sites sites GetSite
 // Get all Sites of a Tenant using Tenant ID.
 // The ID is provided in JSON and not in
 // parameter. This is a new feature in progress
@@ -202,7 +202,7 @@ var DeleteSiteByID = func(w http.ResponseWriter, r *http.Request) {
 	u.Respond(w, v)
 }
 
-// swagger:operation DELETE /api/user/sites sites DeleteSite
+// swagger:operation DELETE /api/user/sites/{id} sites DeleteSite
 // Deletes a Site in the system.
 // ---
 // produces:
