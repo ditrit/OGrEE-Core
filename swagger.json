@@ -1,0 +1,1194 @@
+{
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
+  "schemes": [
+    "http"
+  ],
+  "swagger": "2.0",
+  "info": {
+    "description": "Testing Swagger spec. It's still in progress",
+    "title": "Golang OGREE API",
+    "contact": {
+      "name": "Ziad Khalaf",
+      "email": "ziad.khalaf@orness.com"
+    },
+    "version": "1.0"
+  },
+  "basePath": "/api/user",
+  "paths": {
+    "/api/user": {
+      "post": {
+        "description": "Create an account with Email credentials, it returns\na JWT key to use with the API. The\nauthorize and 'Try it out' buttons don't work",
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "auth"
+        ],
+        "summary": "Generate credentials for the API.",
+        "operationId": "Create",
+        "parameters": [
+          {
+            "type": "string",
+            "default": "infiniti@nissan.com",
+            "description": "Your Email Address",
+            "name": "username",
+            "in": "body",
+            "required": true
+          },
+          {
+            "format": "password",
+            "default": "secret",
+            "description": "Your password",
+            "name": "password",
+            "in": "json",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Authenticated"
+          },
+          "400": {
+            "description": "Bad request"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      }
+    },
+    "/api/user/buildings": {
+      "post": {
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "buildings"
+        ],
+        "summary": "Creates a Building in the system.",
+        "operationId": "Create",
+        "parameters": [
+          {
+            "type": "string",
+            "default": "Building A",
+            "description": "Name of building",
+            "name": "Name",
+            "in": "query",
+            "required": true
+          },
+          {
+            "type": "string",
+            "default": "Research",
+            "description": "Category of Building (ex. Consumer Electronics, Medical)",
+            "name": "Category",
+            "in": "query",
+            "required": true
+          },
+          {
+            "type": "string",
+            "default": "Some abandoned building in Grenoble",
+            "description": "Description of Building",
+            "name": "Description",
+            "in": "query",
+            "required": true
+          },
+          {
+            "type": "int",
+            "default": 999,
+            "description": "This an attribute that refers to an existing parent",
+            "name": "Domain",
+            "required": true
+          },
+          {
+            "type": "string",
+            "default": "Silver",
+            "description": "Color of Building (useful for 3D rendering)",
+            "name": "Color",
+            "in": "query",
+            "required": true
+          },
+          {
+            "type": "string",
+            "default": "NE",
+            "description": "Indicates the location. Only values of \"NE\", \"NW\", \"SE\", \"SW\" are acceptable",
+            "name": "Orientation",
+            "in": "query",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Created"
+          },
+          "400": {
+            "description": "Bad request"
+          }
+        }
+      }
+    },
+    "/api/user/buildings/{id}": {
+      "get": {
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "buildings"
+        ],
+        "summary": "Gets Building using Building ID.",
+        "operationId": "GetBuilding",
+        "parameters": [
+          {
+            "type": "int",
+            "default": 999,
+            "description": "ID of Building",
+            "name": "ID",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Found"
+          },
+          "400": {
+            "description": "Not Found"
+          }
+        }
+      },
+      "put": {
+        "description": "If no new or any information is provided\nan OK will still be returned",
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "buildings"
+        ],
+        "summary": "Changes Building data in the system.",
+        "operationId": "UpdateBuilding",
+        "parameters": [
+          {
+            "type": "int",
+            "default": 999,
+            "description": "ID of desired building",
+            "name": "ID",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "default": "Building B",
+            "description": "Name of building",
+            "name": "Name",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "default": "Research",
+            "description": "Category of Building (ex. Consumer Electronics, Medical)",
+            "name": "Category",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "default": "Some abandoned building in Grenoble",
+            "description": "Description of Building",
+            "name": "Description",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "default": "Blue",
+            "description": "Color of Building (useful for 3D rendering)",
+            "name": "Color",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "default": "NE",
+            "description": "Indicates the location. Only values of \"NE\", \"NW\", \"SE\", \"SW\" are acceptable",
+            "name": "Orientation",
+            "in": "query"
+          }
+        ]
+      },
+      "delete": {
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "buildings"
+        ],
+        "summary": "Deletes a Building.",
+        "operationId": "DeleteBuilding",
+        "parameters": [
+          {
+            "type": "int",
+            "default": 999,
+            "description": "ID of desired building",
+            "name": "ID",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful"
+          },
+          "400": {
+            "description": "Not found"
+          }
+        }
+      }
+    },
+    "/api/user/devices": {
+      "post": {
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "devices"
+        ],
+        "summary": "Creates a Device in the system.",
+        "operationId": "Create",
+        "parameters": [
+          {
+            "type": "string",
+            "default": "Device A",
+            "description": "Name of device",
+            "name": "Name",
+            "in": "query",
+            "required": true
+          },
+          {
+            "type": "string",
+            "default": "Research",
+            "description": "Category of Device (ex. Consumer Electronics, Medical)",
+            "name": "Category",
+            "in": "query",
+            "required": true
+          },
+          {
+            "type": "string",
+            "default": "Some abandoned device in Grenoble",
+            "description": "Description of Device",
+            "name": "Description",
+            "in": "query",
+            "required": true
+          },
+          {
+            "type": "int",
+            "default": 999,
+            "description": "This an attribute that refers to an existing parent",
+            "name": "Domain",
+            "required": true
+          },
+          {
+            "type": "string",
+            "default": "Silver",
+            "description": "Color of Device (useful for 3D rendering)",
+            "name": "Color",
+            "in": "query",
+            "required": true
+          },
+          {
+            "type": "string",
+            "default": "NE",
+            "description": "Indicates the location. Only values of \"NE\", \"NW\", \"SE\", \"SW\" are acceptable",
+            "name": "Orientation",
+            "in": "query",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Created"
+          },
+          "400": {
+            "description": "Bad request"
+          }
+        }
+      }
+    },
+    "/api/user/devices/{id}": {
+      "get": {
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "devices"
+        ],
+        "summary": "Gets Device using Device ID.",
+        "operationId": "GetDevice",
+        "parameters": [
+          {
+            "description": "ID of Device",
+            "name": "ID",
+            "in": "path"
+          }
+        ]
+      },
+      "put": {
+        "description": "If no new or any information is provided\nan OK will still be returned",
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "devices"
+        ],
+        "summary": "Changes Device data in the system.",
+        "operationId": "UpdateDevice",
+        "parameters": [
+          {
+            "type": "int",
+            "default": 999,
+            "description": "ID of desired device",
+            "name": "ID",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "default": "Device B",
+            "description": "Name of device",
+            "name": "Name",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "default": "Research",
+            "description": "Category of Device (ex. Consumer Electronics, Medical)",
+            "name": "Category",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "default": "Some abandoned device in Grenoble",
+            "description": "Description of Device",
+            "name": "Description",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "default": "Blue",
+            "description": "Color of Device (useful for 3D rendering)",
+            "name": "Color",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "default": "NE",
+            "description": "Indicates the location. Only values of \"NE\", \"NW\", \"SE\", \"SW\" are acceptable",
+            "name": "Orientation",
+            "in": "query"
+          }
+        ]
+      },
+      "delete": {
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "devices"
+        ],
+        "summary": "Deletes a Device in the system.",
+        "operationId": "DeleteDevice",
+        "parameters": [
+          {
+            "type": "int",
+            "default": 999,
+            "description": "ID of desired device",
+            "name": "ID",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful"
+          },
+          "400": {
+            "description": "Not found"
+          }
+        }
+      }
+    },
+    "/api/user/racks": {
+      "post": {
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "racks"
+        ],
+        "summary": "Creates a Rack in the system.",
+        "operationId": "Create",
+        "parameters": [
+          {
+            "type": "string",
+            "default": "Rack A",
+            "description": "Name of rack",
+            "name": "Name",
+            "in": "query",
+            "required": true
+          },
+          {
+            "type": "string",
+            "default": "Research",
+            "description": "Category of Rack (ex. Consumer Electronics, Medical)",
+            "name": "Category",
+            "in": "query",
+            "required": true
+          },
+          {
+            "type": "string",
+            "default": "Some abandoned rack in Grenoble",
+            "description": "Description of Rack",
+            "name": "Description",
+            "in": "query",
+            "required": true
+          },
+          {
+            "type": "int",
+            "default": 999,
+            "description": "This an attribute that refers to an existing parent",
+            "name": "Domain",
+            "required": true
+          },
+          {
+            "type": "string",
+            "default": "Silver",
+            "description": "Color of Rack (useful for 3D rendering)",
+            "name": "Color",
+            "in": "query",
+            "required": true
+          },
+          {
+            "type": "string",
+            "default": "NE",
+            "description": "Indicates the location. Only values of \"NE\", \"NW\", \"SE\", \"SW\" are acceptable",
+            "name": "Orientation",
+            "in": "query",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Created"
+          },
+          "400": {
+            "description": "Bad request"
+          }
+        }
+      }
+    },
+    "/api/user/racks/{id}": {
+      "get": {
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "racks"
+        ],
+        "summary": "Gets a Rack using Rack ID.",
+        "operationId": "GetRack",
+        "parameters": [
+          {
+            "type": "int",
+            "default": 999,
+            "description": "ID of desired rack",
+            "name": "ID",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful"
+          },
+          "400": {
+            "description": "Not found"
+          }
+        }
+      },
+      "put": {
+        "description": "If no new or any information is provided\nan OK will still be returned",
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "racks"
+        ],
+        "summary": "Changes Rack data in the system.",
+        "operationId": "UpdateRack",
+        "parameters": [
+          {
+            "type": "int",
+            "default": 999,
+            "description": "ID of desired rack",
+            "name": "ID",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "default": "Rack B",
+            "description": "Name of rack",
+            "name": "Name",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "default": "Research",
+            "description": "Category of Rack (ex. Consumer Electronics, Medical)",
+            "name": "Category",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "default": "Some rack",
+            "description": "Description of Rack",
+            "name": "Description",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "default": "Blue",
+            "description": "Color of Rack (useful for 3D rendering)",
+            "name": "Color",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "default": "NE",
+            "description": "Indicates the location. Only values of \"NE\", \"NW\", \"SE\", \"SW\" are acceptable",
+            "name": "Orientation",
+            "in": "query"
+          }
+        ]
+      },
+      "delete": {
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "racks"
+        ],
+        "summary": "Deletes a Rack in the system.",
+        "operationId": "DeleteRack",
+        "parameters": [
+          {
+            "type": "int",
+            "default": 999,
+            "description": "ID of desired rack",
+            "name": "ID",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful"
+          },
+          "400": {
+            "description": "Not found"
+          }
+        }
+      }
+    },
+    "/api/user/rooms": {
+      "post": {
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "rooms"
+        ],
+        "summary": "Creates a Room in the system.",
+        "operationId": "Create",
+        "parameters": [
+          {
+            "type": "string",
+            "default": "Room A",
+            "description": "Name of room",
+            "name": "Name",
+            "in": "query",
+            "required": true
+          },
+          {
+            "type": "string",
+            "default": "Research",
+            "description": "Category of Room (ex. Consumer Electronics, Medical)",
+            "name": "Category",
+            "in": "query",
+            "required": true
+          },
+          {
+            "type": "string",
+            "default": "Some abandoned room in Grenoble",
+            "description": "Description of Room",
+            "name": "Description",
+            "in": "query",
+            "required": true
+          },
+          {
+            "type": "int",
+            "default": 999,
+            "description": "This an attribute that refers to an existing parent",
+            "name": "Domain",
+            "required": true
+          },
+          {
+            "type": "string",
+            "default": "Silver",
+            "description": "Color of Room (useful for 3D rendering)",
+            "name": "Color",
+            "in": "query",
+            "required": true
+          },
+          {
+            "type": "string",
+            "default": "NE",
+            "description": "Indicates the location. Only values of \"NE\", \"NW\", \"SE\", \"SW\" are acceptable",
+            "name": "Orientation",
+            "in": "query",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Created"
+          },
+          "400": {
+            "description": "Bad request"
+          }
+        }
+      }
+    },
+    "/api/user/rooms/{id}": {
+      "get": {
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "rooms"
+        ],
+        "summary": "Gets Room using Room ID.",
+        "operationId": "GetRoom",
+        "parameters": [
+          {
+            "type": "int",
+            "default": 999,
+            "description": "ID of Room",
+            "name": "ID",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Found"
+          },
+          "400": {
+            "description": "Not Found"
+          }
+        }
+      },
+      "put": {
+        "description": "If no new or any information is provided\nan OK will still be returned",
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "rooms"
+        ],
+        "summary": "Changes Room data in the system.",
+        "operationId": "UpdateRoom",
+        "parameters": [
+          {
+            "type": "int",
+            "default": 999,
+            "description": "ID of desired room",
+            "name": "ID",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "default": "Room B",
+            "description": "Name of room",
+            "name": "Name",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "default": "Research",
+            "description": "Category of Room (ex. Consumer Electronics, Medical)",
+            "name": "Category",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "default": "Some abandoned room in Grenoble",
+            "description": "Description of Room",
+            "name": "Description",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "default": "Blue",
+            "description": "Color of Room (useful for 3D rendering)",
+            "name": "Color",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "default": "NE",
+            "description": "Indicates the location. Only values of \"NE\", \"NW\", \"SE\", \"SW\" are acceptable",
+            "name": "Orientation",
+            "in": "query"
+          }
+        ]
+      },
+      "delete": {
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "rooms"
+        ],
+        "summary": "Deletes a Room in the system.",
+        "operationId": "DeleteRoom",
+        "parameters": [
+          {
+            "type": "int",
+            "default": 999,
+            "description": "ID of desired room",
+            "name": "ID",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful"
+          },
+          "400": {
+            "description": "Not found"
+          }
+        }
+      }
+    },
+    "/api/user/sites": {
+      "get": {
+        "description": "The ID is provided in JSON and not in\nparameter. This is a new feature in progress",
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "sites"
+        ],
+        "summary": "Get all Sites of a Tenant using Tenant ID.",
+        "operationId": "GetSite",
+        "parameters": [
+          {
+            "type": "int",
+            "default": 999,
+            "description": "ID of user",
+            "name": "ID",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Found"
+          },
+          "400": {
+            "description": "Not Found"
+          }
+        }
+      },
+      "post": {
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "sites"
+        ],
+        "summary": "Creates a Site in the system.",
+        "operationId": "Create",
+        "parameters": [
+          {
+            "type": "string",
+            "default": "Site A",
+            "description": "Name of site",
+            "name": "Name",
+            "in": "query",
+            "required": true
+          },
+          {
+            "type": "string",
+            "default": "Research",
+            "description": "Category of Site (ex. Consumer Electronics, Medical)",
+            "name": "Category",
+            "in": "query",
+            "required": true
+          },
+          {
+            "type": "string",
+            "default": "Some abandoned site in Grenoble",
+            "description": "Description of Site",
+            "name": "Description",
+            "in": "query",
+            "required": true
+          },
+          {
+            "type": "int",
+            "default": 999,
+            "description": "This an attribute that refers to an existing parent",
+            "name": "Domain",
+            "required": true
+          },
+          {
+            "type": "string",
+            "default": "Silver",
+            "description": "Color of Site (useful for 3D rendering)",
+            "name": "Color",
+            "in": "query",
+            "required": true
+          },
+          {
+            "type": "string",
+            "default": "NE",
+            "description": "Indicates the location. Only values of \"NE\", \"NW\", \"SE\", \"SW\" are acceptable",
+            "name": "Orientation",
+            "in": "query",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Created"
+          },
+          "400": {
+            "description": "Bad request"
+          }
+        }
+      }
+    },
+    "/api/user/sites/{id}": {
+      "get": {
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "sites"
+        ],
+        "summary": "Gets a Site from the system using Site ID.",
+        "operationId": "GetSite",
+        "parameters": [
+          {
+            "type": "int",
+            "default": 999,
+            "description": "ID of desired site",
+            "name": "ID",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Found"
+          },
+          "400": {
+            "description": "Not Found"
+          }
+        }
+      },
+      "put": {
+        "description": "If no new or any information is provided\nan OK will still be returned",
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "sites"
+        ],
+        "summary": "Changes Site data in the system.",
+        "operationId": "UpdateSite",
+        "parameters": [
+          {
+            "type": "int",
+            "default": 999,
+            "description": "ID of desired site",
+            "name": "ID",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "default": "Site B",
+            "description": "Name of site",
+            "name": "Name",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "default": "Research",
+            "description": "Category of Site (ex. Consumer Electronics, Medical)",
+            "name": "Category",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "default": "Some abandoned site in Grenoble",
+            "description": "Description of Site",
+            "name": "Description",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "default": "Blue",
+            "description": "Color of Site (useful for 3D rendering)",
+            "name": "Color",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "default": "NE",
+            "description": "Indicates the location. Only values of \"NE\", \"NW\", \"SE\", \"SW\" are acceptable",
+            "name": "Orientation",
+            "in": "query"
+          }
+        ]
+      },
+      "delete": {
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "sites"
+        ],
+        "summary": "Deletes a Site in the system.",
+        "operationId": "DeleteSite",
+        "parameters": [
+          {
+            "type": "int",
+            "default": 999,
+            "description": "ID of desired site",
+            "name": "ID",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful"
+          },
+          "400": {
+            "description": "Not found"
+          }
+        }
+      }
+    },
+    "/api/user/tenants": {
+      "get": {
+        "description": "Returns JSON body with all tenants and their IDs",
+        "tags": [
+          "tenants"
+        ],
+        "summary": "Obtain all tenants in the system.",
+        "operationId": "GetAllTenants",
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        }
+      },
+      "post": {
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "tenants"
+        ],
+        "summary": "Creates a Tenant in the system.",
+        "operationId": "Create",
+        "parameters": [
+          {
+            "type": "string",
+            "default": "Nissan",
+            "description": "Name of tenant",
+            "name": "Name",
+            "in": "query",
+            "required": true
+          },
+          {
+            "type": "string",
+            "default": "Auto",
+            "description": "Category of Tenant (ex. Consumer Electronics, Medical)",
+            "name": "Category",
+            "in": "query",
+            "required": true
+          },
+          {
+            "type": "string",
+            "default": "Worldwide automotive company",
+            "description": "Description of Tenant",
+            "name": "Description",
+            "in": "query",
+            "required": true
+          },
+          {
+            "type": "string",
+            "description": "This an attribute that specifies the parent (if any). NOTE: For Tenants, Domain is NULL!",
+            "name": "Domain"
+          },
+          {
+            "type": "string",
+            "default": "Silver",
+            "description": "Color of Tenant (useful for 3D rendering)",
+            "name": "Color",
+            "in": "query",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Created"
+          },
+          "400": {
+            "description": "Bad request"
+          }
+        }
+      }
+    },
+    "/api/user/tenants/{id}": {
+      "get": {
+        "description": "The ID must be provided in the URL parameter\nIf an ID is not provided then all tenants will be returned",
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "tenants"
+        ],
+        "summary": "Gets a Tenant(s) from the system.",
+        "operationId": "GetTenant",
+        "parameters": [
+          {
+            "type": "int",
+            "default": 999,
+            "description": "ID of desired tenant",
+            "name": "ID",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Found"
+          },
+          "400": {
+            "description": "Bad request"
+          }
+        }
+      },
+      "put": {
+        "description": "If no new or any information is provided\nan OK will still be returned",
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "tenants"
+        ],
+        "summary": "Changes Tenant data in the system.",
+        "operationId": "UpdateTenant",
+        "parameters": [
+          {
+            "type": "int",
+            "default": 999,
+            "description": "ID of desired site",
+            "name": "ID",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "default": "INFINITI",
+            "description": "Name of tenant",
+            "name": "Name",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "default": "Auto",
+            "description": "Category of Tenant (ex. Consumer Electronics, Medical)",
+            "name": "Category",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "default": "High End Worldwide automotive company",
+            "description": "Description of Tenant",
+            "name": "Description",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "default": "Black",
+            "description": "Color of Tenant (useful for 3D rendering)",
+            "name": "Color",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Updated"
+          },
+          "400": {
+            "description": "Bad request"
+          }
+        }
+      },
+      "delete": {
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "tenants"
+        ],
+        "summary": "Deletes a Tenant in the system.",
+        "operationId": "DeleteTenant",
+        "parameters": [
+          {
+            "type": "int",
+            "default": 999,
+            "description": "ID of desired tenant",
+            "name": "ID",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful"
+          },
+          "400": {
+            "description": "Not found"
+          }
+        }
+      }
+    }
+  },
+  "securityDefinitions": {
+    "JWT": {
+      "type": "jwt",
+      "name": "Authorization",
+      "in": "header"
+    }
+  }
+}

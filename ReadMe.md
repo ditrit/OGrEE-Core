@@ -187,3 +187,12 @@ When execution is done be sure to remove any docker volumes (this is for testing
 ```
 docker volume rm roach3
 ```
+
+Swaggerio Docs
+--------------------------
+```
+swagger generate spec -o ./swagger.json
+```
+```
+swagger serve ./swagger.json
+```
