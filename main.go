@@ -124,8 +124,8 @@ func main() {
 	router.HandleFunc("/api/user/devices/{id}",
 		controllers.GetDevice).Methods("GET")
 
-	/*router.HandleFunc("/api/user/devices",
-	controllers.GetAllDevices).Methods("GET")*/
+	router.HandleFunc("/api/user/devices",
+		controllers.GetAllDevices).Methods("GET")
 
 	//Attach JWT auth middleware
 	router.Use(app.JwtAuthentication)

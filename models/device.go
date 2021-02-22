@@ -93,6 +93,19 @@ func GetDevices(rack *Rack) []*Device {
 	return devices
 }
 
+//Obtain all devices of a rack
+func GetAllDevices() []*Device {
+	devices := make([]*Device, 0)
+
+	err := GetDB().Table("devices").Find(&devices).Error
+	if err != nil {
+		fmt.Println(err)
+		return nil
+	}
+
+	return devices
+}
+
 //More methods should be made to
 //Meet CRUD capabilities
 //Need Update and Delete

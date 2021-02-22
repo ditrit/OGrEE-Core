@@ -100,6 +100,30 @@ var GetDevice = func(w http.ResponseWriter, r *http.Request) {
 	u.Respond(w, resp)
 }
 
+// swagger:operation GET /api/user/devices devices GetDevice
+// Gets All Devices in the system.
+// ---
+// produces:
+// - application/json
+// responses:
+//     '204':
+//        description: Successful
+//     '400':
+//        description: Not found
+//Retrieve device using Device ID
+var GetAllDevices = func(w http.ResponseWriter, r *http.Request) {
+
+	resp := u.Message(true, "success")
+
+	data := models.GetAllDevices()
+	if data == nil {
+		resp = u.Message(false, "unsuccessful")
+	}
+
+	resp["data"] = data
+	u.Respond(w, resp)
+}
+
 // swagger:operation DELETE /api/user/devices/{id} devices DeleteDevice
 // Deletes a Device in the system.
 // ---
