@@ -92,8 +92,8 @@ func main() {
 	router.HandleFunc("/api/user/rooms/{id}",
 		controllers.GetRoom).Methods("GET")
 
-	/*router.HandleFunc("/api/user/rooms",
-	controllers.GetAllRooms).Methods("GET")*/
+	router.HandleFunc("/api/user/rooms",
+		controllers.GetAllRooms).Methods("GET")
 
 	// ------ RACK CRUD ------ //
 	router.HandleFunc("/api/user/racks",

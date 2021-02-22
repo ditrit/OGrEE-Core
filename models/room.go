@@ -121,11 +121,24 @@ func GetRoom(id uint) *Room {
 	return room
 }
 
-//Obtain all rooms of a room
+//Obtain all rooms of a bldg
 func GetRooms(room *Building) []*Room {
 	rooms := make([]*Room, 0)
 
 	err := GetDB().Table("rooms").Where("foreignkey = ?", room.ID).Find(&rooms).Error
+	if err != nil {
+		fmt.Println(err)
+		return nil
+	}
+
+	return rooms
+}
+
+//Get all rooms
+func GetAllRooms() []*Room {
+	rooms := make([]*Room, 0)
+
+	err := GetDB().Table("rooms").Find(&rooms).Error
 	if err != nil {
 		fmt.Println(err)
 		return nil
