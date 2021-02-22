@@ -109,18 +109,12 @@ var GetBuilding = func(w http.ResponseWriter, r *http.Request) {
 	u.Respond(w, resp)
 }
 
-// swagger:operation GET /api/user/buildings/{id} buildings GetBuilding
-// Gets Building using Building ID.
+// swagger:operation GET /api/user/buildings/ buildings GetBuilding
+// Gets All Buildings in the system.
 // ---
 // produces:
 // - application/json
 // parameters:
-// - name: ID
-//   in: path
-//   description: ID of Building
-//   required: true
-//   type: int
-//   default: 999
 // responses:
 //     '200':
 //         description: Found
