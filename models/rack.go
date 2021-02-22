@@ -94,6 +94,19 @@ func GetRacks(room *Room) []*Rack {
 	return racks
 }
 
+//Obtain all racks
+func GetAllRacks() []*Rack {
+	racks := make([]*Rack, 0)
+
+	err := GetDB().Table("racks").Find(&racks).Error
+	if err != nil {
+		fmt.Println(err)
+		return nil
+	}
+
+	return racks
+}
+
 //More methods should be made to
 //Meet CRUD capabilities
 //Need Update and Delete

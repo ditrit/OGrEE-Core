@@ -108,8 +108,8 @@ func main() {
 	router.HandleFunc("/api/user/racks/{id}",
 		controllers.GetRack).Methods("GET")
 
-	/*router.HandleFunc("/api/user/racks",
-	controllers.GetAllRacks).Methods("GET")*/
+	router.HandleFunc("/api/user/racks",
+		controllers.GetAllRacks).Methods("GET")
 
 	// ------ DEVICE CRUD ------ //
 	router.HandleFunc("/api/user/devices",
