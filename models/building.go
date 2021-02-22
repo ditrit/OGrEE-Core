@@ -108,6 +108,17 @@ func GetBuilding(id uint) *Building {
 	return bldg
 }
 
+//Get All Buildings
+func GetAllBuildings() []*Building {
+	bldgs := make([]*Building, 0)
+	err := GetDB().Find(&bldgs).Error
+	if err != nil {
+		fmt.Println(err)
+		return nil
+	}
+	return bldgs
+}
+
 //Obtain all buildings of a site
 func GetBuildings(site *Site) []*Building {
 	bldgs := make([]*Building, 0)

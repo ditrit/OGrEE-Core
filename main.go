@@ -21,6 +21,7 @@ func main() {
 	router.HandleFunc("/api/user/login",
 		controllers.Authenticate).Methods("POST")
 
+	// ------ TENANTS CRUD ------ //
 	router.HandleFunc("/api/user/tenants",
 		controllers.GetAllTenants).Methods("GET")
 
@@ -36,6 +37,7 @@ func main() {
 	router.HandleFunc("/api/user/tenants/{id}",
 		controllers.DeleteTenant).Methods("DELETE")
 
+	// ------ SITES CRUD ------ //
 	router.HandleFunc("/api/user/sites",
 		controllers.CreateSite).Methods("POST")
 
@@ -44,6 +46,9 @@ func main() {
 
 	router.HandleFunc("/api/user/sites",
 		controllers.GetSitesByParentID).Methods("GET")
+
+	/*router.HandleFunc("/api/user/sites",
+	controllers.GetAllSites).Methods("GET")*/
 
 	router.HandleFunc("/api/user/sites/{id}",
 		controllers.GetSite).Methods("GET")
@@ -71,6 +76,9 @@ func main() {
 	router.HandleFunc("/api/user/buildings/{id}",
 		controllers.GetBuilding).Methods("GET")
 
+	router.HandleFunc("/api/user/buildings",
+		controllers.GetAllBuildings).Methods("GET")
+
 	// ------ ROOM CRUD ------ //
 	router.HandleFunc("/api/user/rooms",
 		controllers.CreateRoom).Methods("POST")
@@ -83,6 +91,9 @@ func main() {
 
 	router.HandleFunc("/api/user/rooms/{id}",
 		controllers.GetRoom).Methods("GET")
+
+	/*router.HandleFunc("/api/user/rooms",
+	controllers.GetAllRooms).Methods("GET")*/
 
 	// ------ RACK CRUD ------ //
 	router.HandleFunc("/api/user/racks",
@@ -97,6 +108,9 @@ func main() {
 	router.HandleFunc("/api/user/racks/{id}",
 		controllers.GetRack).Methods("GET")
 
+	/*router.HandleFunc("/api/user/racks",
+	controllers.GetAllRacks).Methods("GET")*/
+
 	// ------ DEVICE CRUD ------ //
 	router.HandleFunc("/api/user/devices",
 		controllers.CreateDevice).Methods("POST")
@@ -109,6 +123,9 @@ func main() {
 
 	router.HandleFunc("/api/user/devices/{id}",
 		controllers.GetDevice).Methods("GET")
+
+	/*router.HandleFunc("/api/user/devices",
+	controllers.GetAllDevices).Methods("GET")*/
 
 	//Attach JWT auth middleware
 	router.Use(app.JwtAuthentication)

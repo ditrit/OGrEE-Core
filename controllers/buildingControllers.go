@@ -109,6 +109,38 @@ var GetBuilding = func(w http.ResponseWriter, r *http.Request) {
 	u.Respond(w, resp)
 }
 
+// swagger:operation GET /api/user/buildings/{id} buildings GetBuilding
+// Gets Building using Building ID.
+// ---
+// produces:
+// - application/json
+// parameters:
+// - name: ID
+//   in: path
+//   description: ID of Building
+//   required: true
+//   type: int
+//   default: 999
+// responses:
+//     '200':
+//         description: Found
+//     '400':
+//         description: Not Found
+
+//Retrieve bldg using Bldg ID
+var GetAllBuildings = func(w http.ResponseWriter, r *http.Request) {
+
+	resp := u.Message(true, "success")
+
+	data := models.GetAllBuildings()
+	if data == nil {
+		resp = u.Message(false, "unsuccessful")
+	}
+
+	resp["data"] = data
+	u.Respond(w, resp)
+}
+
 // swagger:operation DELETE /api/user/buildings/{id} buildings DeleteBuilding
 // Deletes a Building.
 // ---
