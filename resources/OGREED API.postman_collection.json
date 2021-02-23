@@ -153,7 +153,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\"name\": \"CEA\", \"category\": \"research\",\"description\": \"Cant evalutate anything\", \"color\": \"red\"}",
+							"raw": "{\"tenant_name\": \"CEA\", \"tenant_domain\": \"research\",\"tenant_description\": \"Cant evalutate anything\", \"tenant_color\": \"red\", \"main_contact\": \"Visit them\", \"main_phone\": \"000\", \"main_email\": \"cea.com\"}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -269,7 +269,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\"name\": \"CEA\", \"category\": \"research\",\"description\": \"Cant evalutate anything\", \"color\": \"blue\"}",
+							"raw": "{\"tenant_name\": \"CEA\", \"tenant_domain\": \"research\",\"tenant_description\": \"Forsaken Joint\", \"tenant_color\": \"red\", \"main_contact\": \"Not sure\", \"main_phone\": \"000\", \"main_email\": \"cea.com\"}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -388,6 +388,31 @@
 				{
 					"name": "localhost:8000/api/user/sites",
 					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{AuthToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{URL}}/api/user/sites",
+							"host": [
+								"{{URL}}"
+							],
+							"path": [
+								"api",
+								"user",
+								"sites"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "localhost:8000/api/user/sites",
+					"request": {
 						"method": "POST",
 						"header": [
 							{
@@ -398,7 +423,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\"name\": \"SiteA\", \"category\": \"stupid\",\"domain\": {{TID}}, \"description\": \"Cant evalutate anything\",\"color\": \"orange\", \"eorientation\": \"NW\"}",
+							"raw": "{\"site_name\": \"SiteA\", \"site_parent_id\": \"{{TID}}\", \"site_domain\": \"useless\", \"site_description\":\"Cant evalutate anything\", \"site_orientation\": \"NW\", \"usable_color\": \"ABC\", \"reserved_color\":  \"ABC\", \"technical_color\": \"ABS\", \"address\": \"171 Rue Des Martyrs\", \"zipcode\": \"38000\", \"city\": \"Grenoble\", \"country\":  \"FR\", \"gps\": \"99\"}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -432,7 +457,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\"name\": \"SiteA\", \"category\": \"Useless\", \"description\": \"Derelict\",\"color\": \"orange\", \"eorientation\": \"NW\"}",
+							"raw": "{\"site_name\": \"SiteA\", \"site_parent_id\": \"{{TID}}\", \"site_domain\": \"useless\", \"site_description\":\"Derelist\", \"site_orientation\": \"NW\", \"usable_color\": \"F\", \"reserved_color\":  \"F\", \"technical_color\": \"F\", \"address\": \"???\", \"zipcode\": \"???\", \"city\": \"Grenoble\", \"country\":  \"FR\", \"gps\": \"???\"}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -514,6 +539,31 @@
 				{
 					"name": "localhost:8000/api/user/buildings",
 					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{AuthToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{URL}}/api/user/buildings",
+							"host": [
+								"{{URL}}"
+							],
+							"path": [
+								"api",
+								"user",
+								"buildings"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "localhost:8000/api/user/buildings",
+					"request": {
 						"method": "POST",
 						"header": [
 							{
@@ -524,7 +574,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\"name\": \"BldgA\", \"category\": \"none\",\"domain\": {{SID}}, \"description\": \"No description\", \"posX\":20.1,\"posY\":20.1,\"posxyu\":\"nil\",\"posz\":20.1,\"poszu\":\"nil\",\"size\":20.1,\"sizeu\":\"nil\",\"height\":20.1,\"heightu\": \"nil\"}",
+							"raw": "{\"bldg_name\": \"BldgA\", \n\"bldg_parent_id\": \"{{SID}}\", \"bldg_domain\": \"none\", \n\"bldg_description\": \"No description\", \"bldg_pos_x_y\": \"20.1,20.1\", \n\"bldg_pos_x_y_unit\": \"cm\", \"bldg_pos_z\": \"20.1\", \n\"bldg_pos_z_unit\": \"cm\", \"bldg_size\": \"10\", \"bldg_size_unit\": \"cm\", \n\"bldg_height\": \"10\", \"bldg_height_unit\": \"cm\", \"bldg_nb_floors\": \"1\"}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -558,7 +608,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\"name\": \"BldgA\", \"category\": \"Derelict\",\"domain\": {{SID}}, \"description\": \"Abandoned Building\", \"posX\":20.1,\"posY\":20.1,\"posxyu\":\"nil\",\"posz\":20.1,\"poszu\":\"nil\",\"size\":20.1,\"sizeu\":\"nil\",\"height\":20.1,\"heightu\": \"nil\"}",
+							"raw": "{\"bldg_name\": \"BldgA\", \n\"bldg_parent_id\": \"{{SID}}\", \"bldg_domain\": \"Derelict\", \n\"bldg_description\": \"Abandoned Building\", \"bldg_pos_x_y\": \"20.1,20.1\", \n\"bldg_pos_x_y_unit\": \"cm\", \"bldg_pos_z\": \"20.1\", \n\"bldg_pos_z_unit\": \"cm\", \"bldg_size\": \"10\", \"bldg_size_unit\": \"cm\", \n\"bldg_height\": \"10\", \"bldg_height_unit\": \"cm\", \"bldg_nb_floors\": \"1\"}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -640,6 +690,31 @@
 				{
 					"name": "localhost:8000/api/user/rooms",
 					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{AuthToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{URL}}/api/user/rooms",
+							"host": [
+								"{{URL}}"
+							],
+							"path": [
+								"api",
+								"user",
+								"rooms"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "localhost:8000/api/user/rooms",
+					"request": {
 						"method": "POST",
 						"header": [
 							{
@@ -650,7 +725,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\"name\":\"RoomA\",\"category\":\"none\",\"domain\":{{BID}},\"description\":\"NONE\",\"eorientation\":\"NW\",\"posX\":20,\"posY\":20,\"posxyu\":\"nil\",\"posz\":20,\"poszu\":\"NIL\",\"size\":20,\"sizeu\":\"NIL\",\"height\":99,\"heightu\":\"NIL\"}",
+							"raw": "{\"room_name\": \"RoomA\", \n\"room_parent_id\": \"{{BID}}\", \"room_domain\": \"Some room\", \n\"room_description\": \"Some room\", \"room_pos_x_y\": \"20.1,20.1\", \n\"room_pos_x_y_unit\": \"cm\", \"room_pos_z\": \"20.1\", \n\"room_pos_z_unit\": \"cm\", \"room_template\": \"Dont Know\", \"room_orientation\": \"NW\",\n\"room_size\": \"10\", \"room_size_unit\": \"cm\", \n\"room_height\": \"10\", \"room_height_unit\": \"cm\"}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -684,7 +759,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\"name\":\"RoomA\",\"category\":\"none\",\"domain\":{{BID}},\"description\":\"Abandoned Room\",\"eorientation\":\"NW\",\"posX\":20,\"posY\":20,\"posxyu\":\"nil\",\"posz\":20,\"poszu\":\"NIL\",\"size\":20,\"sizeu\":\"NIL\",\"height\":99,\"heightu\":\"NIL\"}",
+							"raw": "{\"room_name\": \"RoomA\", \n\"room_parent_id\": \"{{BID}}\", \"room_domain\": \"Derelict\", \n\"room_description\": \"Abandoned Room\", \n\"room_pos_x_y\": \"??\", \n\"room_pos_x_y_unit\": \"cm\", \"room_pos_z\": \"??\", \n\"room_pos_z_unit\": \"cm\", \"room_template\": \"???\", \"room_orientation\": \"NW\",\n\"room_size\": \"???\", \"room_size_unit\": \"cm\", \n\"room_height\": \"???\", \"room_height_unit\": \"cm\"}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -766,6 +841,31 @@
 				{
 					"name": "localhost:8000/api/user/racks",
 					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{AuthToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{URL}}/api/user/racks",
+							"host": [
+								"{{URL}}"
+							],
+							"path": [
+								"api",
+								"user",
+								"racks"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "localhost:8000/api/user/racks",
+					"request": {
 						"method": "POST",
 						"header": [
 							{
@@ -776,7 +876,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\"name\": \"RackA\", \"category\": \"stupid\",\"domain\": {{RID}}, \"description\": \"None\",\"color\": \"orange\", \"eorientation\": \"NW\"}",
+							"raw": "{\"rack_name\": \"RackA\", \n\"rack_parent_id\": \"{{RID}}\", \"rack_domain\": \"Some Rack\", \n\"rack_description\": \"Some Rack\", \"rack_pos_x_y\": \"20.1,20.1\", \n\"rack_pos_x_y_unit\": \"cm\", \"rack_pos_z\": \"20.1\", \n\"rack_pos_z_unit\": \"cm\", \"rack_template\": \"Dont Know\", \"rack_orientation\": \"front\",\n\"rack_size\": \"10\", \"rack_size_unit\": \"cm\", \n\"rack_height\": \"10\", \"rack_height_unit\": \"cm\"}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -836,7 +936,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\"name\": \"RackA\", \"category\": \"Derelict\", \"description\": \"Abandoned Rack\",\"color\": \"orange\", \"eorientation\": \"NW\"}",
+							"raw": "{\"rack_name\": \"RackA\", \n\"rack_parent_id\": \"{{RID}}\", \"rack_domain\": \"Derelict\", \n\"rack_description\": \"Abandoned Rack\", \"rack_pos_x_y\": \"\", \n\"rack_pos_x_y_unit\": \"cm\", \"rack_pos_z\": \"???\", \n\"rack_pos_z_unit\": \"cm\", \"rack_template\": \"???\", \"rack_orientation\": \"front\",\n\"rack_size\": \"???\", \"rack_size_unit\": \"cm\", \n\"rack_height\": \"???\", \"rack_height_unit\": \"cm\"}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -892,6 +992,31 @@
 				{
 					"name": "localhost:8000/api/user/devices",
 					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{AuthToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{URL}}/api/user/devices",
+							"host": [
+								"{{URL}}"
+							],
+							"path": [
+								"api",
+								"user",
+								"devices"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "localhost:8000/api/user/devices",
+					"request": {
 						"method": "POST",
 						"header": [
 							{
@@ -902,7 +1027,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\"name\": \"DeviceA\", \"category\": \"NONE\",\"domain\": {{RAID}}, \"description\": \"Cant evalutate anything\",\"color\": \"orange\", \"eorientation\": \"NW\"}",
+							"raw": "{\"device_name\": \"DeviceA\", \n\"device_parent_id\": \"{{RAID}}\", \"device_domain\": \"Some Device\", \n\"device_description\": \"Some Device\", \"device_pos_x_y\": \"20.1,20.1\", \n\"device_pos_x_y_unit\": \"cm\", \"device_pos_z\": \"20.1\", \n\"device_pos_z_unit\": \"cm\", \"device_template\": \"Dont Know\", \"device_orientation\": \"front\",\n\"device_size\": \"10\", \"device_size_unit\": \"cm\", \n\"device_height\": \"10\", \"device_height_unit\": \"cm\"}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -962,7 +1087,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\"name\": \"DeviceA\", \"category\": \"Derelict\", \"description\": \"Abandoned Device\",\"color\": \"orange\", \"eorientation\": \"NW\"}",
+							"raw": "{\"device_name\": \"DeviceA\", \n\"device_parent_id\": \"{{RAID}}\", \"device_domain\": \"Derelict\", \n\"device_description\": \"Abandoned Device\", \"device_pos_x_y\": \"???,???\", \n\"device_pos_x_y_unit\": \"cm\", \"device_pos_z\": \"???\", \n\"device_pos_z_unit\": \"cm\", \"device_template\": \"Dont Know\", \"device_orientation\": \"front\",\n\"device_size\": \"???\", \"device_size_unit\": \"cm\", \n\"device_height\": \"???\", \"device_height_unit\": \"cm\"}",
 							"options": {
 								"raw": {
 									"language": "json"
