@@ -184,6 +184,30 @@ var GetSite = func(w http.ResponseWriter, r *http.Request) {
 	u.Respond(w, resp)
 }
 
+// swagger:operation GET /api/user/sites sites GetSite
+// Gets all Sites in the system.
+// ---
+// produces:
+// - application/json
+// responses:
+//     '200':
+//         description: Found
+//     '400':
+//         description: Not Found
+//Retrieve site using Site ID
+var GetAllSites = func(w http.ResponseWriter, r *http.Request) {
+
+	resp := u.Message(true, "success")
+
+	data := models.GetAllSites()
+	if data == nil {
+		resp = u.Message(false, "unsuccessful")
+	}
+
+	resp["data"] = data
+	u.Respond(w, resp)
+}
+
 /*var DeleteSite = func(w http.ResponseWriter, r *http.Request) {
 	id := r.Context().Value("user").(uint)
 	v := models.DeleteSite(id)

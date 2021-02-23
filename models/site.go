@@ -106,6 +106,17 @@ func GetSite(id uint) *Site {
 	return site
 }
 
+func GetAllSites() []*Site {
+	sites := make([]*Site, 0)
+
+	err := GetDB().Table("sites").Find(&sites).Error
+	if err != nil {
+		fmt.Println("There was an error in getting site by ID")
+		return nil
+	}
+	return sites
+}
+
 func DeleteSite(id uint) map[string]interface{} {
 
 	//First check if the site exists
