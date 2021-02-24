@@ -15,7 +15,9 @@ cockroach start-single-node \
 
 cockroach sql 	\
 		--insecure \
-		 --host=localhost:26257 <<EOF
+		 --host=localhost:26257 <<EOF 
+$(<resources/database_table_create.sql)
+$(<resources/add_constraints.sql)
 CREATE USER maxroach;
 CREATE DATABASE ogreedb;
 SET DATABASE = ogreedb;
