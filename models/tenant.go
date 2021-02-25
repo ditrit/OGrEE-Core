@@ -13,7 +13,13 @@ type Tenant struct {
 	Desc     string `json:"description"`
 	Domain   string `json:"domain"`
 	Color    string `json:"color"`
-	Site     []Site
+	//Site     []Site
+	Attributes struct {
+		Color       string `json:"color"`
+		MainContact string `json:"mainContact"`
+		MainPhone   string `json:"mainPhone"`
+		MainEmail   string `json:"mainEmail"`
+	} `json:"attributes"`
 }
 
 func (tenant *Tenant) Validate() (map[string]interface{}, bool) {
