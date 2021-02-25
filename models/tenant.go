@@ -8,39 +8,37 @@ import (
 
 type Tenant struct {
 	gorm.Model
-	Name     string `json:"name"`
-	Category string `json:"category"`
-	Desc     string `json:"description"`
-	Domain   string `json:"domain"`
-	Color    string `json:"color"`
-	//Site     []Site
-	Attributes struct {
-		Color       string `json:"color"`
-		MainContact string `json:"mainContact"`
-		MainPhone   string `json:"mainPhone"`
-		MainEmail   string `json:"mainEmail"`
+	Tenant_Name     string `json:"name"`
+	Tenant_ParentID string `json:"parentId"`
+	Tenant_Category string `json:"category"`
+	Tenant_Domain   string `json:"domain"`
+	Attributes      struct {
+		Tenant_Color string `json:"color"`
+		MainContact  string `json:"mainContact"`
+		MainPhone    string `json:"mainPhone"`
+		MainEmail    string `json:"mainEmail"`
 	} `json:"attributes"`
 }
 
 func (tenant *Tenant) Validate() (map[string]interface{}, bool) {
 
-	if tenant.Name == "" {
+	if tenant.Tenant_Name == "" {
 		return u.Message(false, "Tenant Name should be on payload"), false
 	}
 
-	if tenant.Category == "" {
+	if tenant.Tenant_Category == "" {
 		return u.Message(false, "Category should be on the payload"), false
 	}
 
-	if tenant.Desc == "" {
+	/*if tenant.Desc == "" {
 		return u.Message(false, "Description should be on the paylad"), false
+	}*/
+
+	if tenant.Tenant_Domain == "" {
+		return u.Message(false, "Domain should be on the payload!"), false
 	}
 
-	if tenant.Domain != "" {
-		return u.Message(false, "Domain should be NULL!"), false
-	}
-
-	if tenant.Color == "" {
+	if tenant.Attributes.Tenant_Color == "" {
 		return u.Message(false, "Color should be on the payload"), false
 	}
 
@@ -53,7 +51,7 @@ func (tenant *Tenant) Create() map[string]interface{} {
 		return resp
 	}
 
-	GetDB().Create(tenant)
+	GetDB().Table("tenant").Create(tenant)
 
 	resp := u.Message(true, "success")
 	resp["tenant"] = tenant
@@ -91,21 +89,21 @@ func UpdateTenant(id uint, t *Tenant) map[string]interface{} {
 		return u.Message(false, "Tenant was not found")
 	}
 
-	if t.Name != "" && t.Name != tenant.Name {
+	/*if t.Name != "" && t.Name != tenant.Name {
 		tenant.Name = t.Name
 	}
 
 	if t.Category != "" && t.Category != tenant.Category {
 		tenant.Category = t.Category
-	}
+	}*/
 
-	if t.Desc != "" && t.Desc != tenant.Desc {
+	/*if t.Desc != "" && t.Desc != tenant.Desc {
 		tenant.Desc = t.Desc
 	}
 
 	if t.Color != "" && t.Color != tenant.Color {
 		tenant.Color = t.Color
-	}
+	}*/
 
 	GetDB().Table("tenants").Save(tenant)
 	//.Update(tenant)

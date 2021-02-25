@@ -1,10 +1,10 @@
 CREATE TABLE public.tenant (
-    tenant_id text NOT NULL,
+    id int NOT NULL,
     tenant_name text,
     tenant_parent_id text,
     tenant_domain text,
     tenant_description text[],
-    PRIMARY KEY (tenant_id)
+    PRIMARY KEY (id)
 );
 
 
@@ -81,12 +81,12 @@ CREATE TABLE public.size (
 
 
 CREATE TABLE public.tenant_attributes (
-    tenant_id text NOT NULL,
+    id text NOT NULL,
     tenant_color text,
     main_contact text,
     main_phone text,
     main_email text,
-    PRIMARY KEY (tenant_id)
+    PRIMARY KEY (id)
 );
 
 
@@ -168,12 +168,12 @@ CREATE TABLE public.device_attributes (
 );
 
 
-ALTER TABLE public.site ADD CONSTRAINT FK_site__site_parent_id FOREIGN KEY (site_parent_id) REFERENCES public.tenant(tenant_id) ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE public.site ADD CONSTRAINT FK_site__site_parent_id FOREIGN KEY (site_parent_id) REFERENCES public.tenant(id) ON DELETE CASCADE ON UPDATE CASCADE;
 ALTER TABLE public.building ADD CONSTRAINT FK_building__bldg_parent_id FOREIGN KEY (bldg_parent_id) REFERENCES public.site(site_id) ON DELETE CASCADE ON UPDATE CASCADE;
 ALTER TABLE public.room ADD CONSTRAINT FK_room__room_parent_id FOREIGN KEY (room_parent_id) REFERENCES public.building(bldg_id) ON DELETE CASCADE ON UPDATE CASCADE;
 ALTER TABLE public.rack ADD CONSTRAINT FK_rack__rack_parent_id FOREIGN KEY (rack_parent_id) REFERENCES public.room(room_id) ON DELETE CASCADE ON UPDATE CASCADE;
 ALTER TABLE public.device ADD CONSTRAINT FK_device__device_parent_id FOREIGN KEY (device_parent_id) REFERENCES public.rack(rack_id) ON DELETE CASCADE ON UPDATE CASCADE;
-ALTER TABLE public.tenant_attributes ADD CONSTRAINT FK_tenant_attributes__tenant_id FOREIGN KEY (tenant_id) REFERENCES public.tenant(tenant_id) ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE public.tenant_attributes ADD CONSTRAINT FK_tenant_attributes__tenant_id FOREIGN KEY (id) REFERENCES public.tenant(id) ON DELETE CASCADE ON UPDATE CASCADE;
 ALTER TABLE public.site_attributes ADD CONSTRAINT FK_site_attributes__site_id FOREIGN KEY (site_id) REFERENCES public.site(site_id) ON DELETE CASCADE ON UPDATE CASCADE;
 ALTER TABLE public.building_attributes ADD CONSTRAINT FK_building_attributes__bldg_id FOREIGN KEY (bldg_id) REFERENCES public.building(bldg_id) ON DELETE CASCADE ON UPDATE CASCADE;
 ALTER TABLE public.room_attributes ADD CONSTRAINT FK_room_attributes__room_id FOREIGN KEY (room_id) REFERENCES public.room(room_id) ON DELETE CASCADE ON UPDATE CASCADE;

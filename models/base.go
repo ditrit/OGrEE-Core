@@ -43,6 +43,7 @@ func init() {
 	fmt.Print(err)
 	db = conn
 	//Migrate database
+	db.Debug().SingularTable(true)
 	db.Debug().AutoMigrate(&Account{},
 		&Tenant{}, &Site{}, &Building{}, &Room{}, &Rack{}, &Device{})
 	db.Model(&Site{}).AddForeignKey("domain", "tenants(id)", "CASCADE", "CASCADE")
