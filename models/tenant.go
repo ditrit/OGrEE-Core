@@ -6,18 +6,21 @@ import (
 	"github.com/jinzhu/gorm"
 )
 
+type Tenant_Attributes struct {
+	Tenant_id    uint   "gorm:\"primary_key\""
+	Tenant_Color string `json:"color"`
+	MainContact  string `json:"mainContact"`
+	MainPhone    string `json:"mainPhone"`
+	MainEmail    string `json:"mainEmail"`
+}
+
 type Tenant struct {
 	gorm.Model
-	Tenant_Name     string `json:"name"`
-	Tenant_ParentID string `json:"parentId"`
-	Tenant_Category string `json:"category"`
-	Tenant_Domain   string `json:"domain"`
-	Attributes      struct {
-		Tenant_Color string `json:"color"`
-		MainContact  string `json:"mainContact"`
-		MainPhone    string `json:"mainPhone"`
-		MainEmail    string `json:"mainEmail"`
-	} `json:"attributes"`
+	Tenant_Name       string            `json:"name"`
+	Tenant_ParentID   string            `json:"parentId"`
+	Tenant_Category   string            `json:"category"`
+	Tenant_Domain     string            `json:"domain"`
+	Tenant_Attributes Tenant_Attributes `json:"attributes"`
 }
 
 func (tenant *Tenant) Validate() (map[string]interface{}, bool) {
@@ -38,9 +41,9 @@ func (tenant *Tenant) Validate() (map[string]interface{}, bool) {
 		return u.Message(false, "Domain should be on the payload!"), false
 	}
 
-	if tenant.Attributes.Tenant_Color == "" {
+	/*if tenant.Attributes.Tenant_Color == "" {
 		return u.Message(false, "Color should be on the payload"), false
-	}
+	}*/
 
 	//Successfully validated the Tenant
 	return u.Message(true, "success"), true
@@ -51,7 +54,9 @@ func (tenant *Tenant) Create() map[string]interface{} {
 		return resp
 	}
 
-	GetDB().Table("tenant").Create(tenant)
+	//Strategy for inserting into both tables
+	//Otherwise make 2 insert statements
+	GetDB().Table("tenant").Preload("tenant_attributes").Create(tenant)
 
 	resp := u.Message(true, "success")
 	resp["tenant"] = tenant
