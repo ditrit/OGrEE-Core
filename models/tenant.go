@@ -73,8 +73,8 @@ func (tenant *Tenant) Create() map[string]interface{} {
 	if resp, ok := tenant.Validate(); !ok {
 		return resp
 	}
-	tenant.ID = 2134567890213456
-	tenant.Tenant_Attributes.ID = tenant.ID
+	//tenant.ID = 2134567890213456
+	//tenant.Tenant_Attributes.ID = tenant.ID
 
 	println("The tenant ID: ", tenant.ID, "The attrID: ", tenant.Tenant_Attributes.ID)
 	fmt.Println("Created AT: ", tenant.CreatedAt)
