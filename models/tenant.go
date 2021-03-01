@@ -2,7 +2,8 @@ package models
 
 import (
 	u "p3/utils"
-	"time"
+
+	"github.com/jinzhu/gorm"
 )
 
 type Tenant_Attributes struct {
@@ -17,15 +18,11 @@ type Tenant_Attributes struct {
 }
 
 type Tenant struct {
-	//gorm.Model
-	ID        uint `gorm:\"primary_key\" gorm: "id"`
-	CreatedAt time.Time
-	UpdatedAt time.Time
-	DeletedAt *(time.Time) "sql:\"index\""
-	//gorm:"column:beast_id"
-	Name       string            `gorm:"column:tenant_name" json:"name"`
-	ParentID   string            `gorm:"column:tenant_parent_id" json:"parentId"`
-	Category   string            `gorm:"column:tenant_category" json:"category" gorm:"-"`
+	gorm.Model
+	Name     string `gorm:"column:tenant_name" json:"name"`
+	ParentID string `gorm:"column:tenant_parent_id" json:"parentId"`
+	Category string `gorm:"column:tenant_category" json:"category" gorm:"-"`
+	//Description []string          `gorm:"column:tenant_description" json:"description"`
 	Domain     string            `gorm:"column:tenant_domain" json:"domain"`
 	Attributes Tenant_Attributes `json:"attributes"`
 }
