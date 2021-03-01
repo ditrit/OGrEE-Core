@@ -75,13 +75,12 @@ func (tenant *Tenant) Create() map[string]interface{} {
 	//Strategy for inserting into both tables
 	//Otherwise make 2 insert statements
 	GetDB().Table("tenant").Select("tenant_name",
-		"tenant_domain", "tenant_description",
-		/*"created_at", "updated_at"*/).Create(&tenant)
+		"tenant_domain", "tenant_description").Create(&tenant)
 
 	tenant.Tenant_Attributes.ID = tenant.ID
+
 	GetDB().Table("tenant_attributes").Select("id", "tenant_color", "main_contact",
-		"main_phone", "main_email",
-		/**/).Create(&tenant.Tenant_Attributes)
+		"main_phone", "main_email").Create(&tenant.Tenant_Attributes)
 
 	resp := u.Message(true, "success")
 	resp["tenant"] = tenant
