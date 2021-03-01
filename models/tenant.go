@@ -2,8 +2,6 @@ package models
 
 import (
 	u "p3/utils"
-
-	"github.com/jinzhu/gorm"
 )
 
 type Tenant_Attributes struct {
@@ -18,7 +16,8 @@ type Tenant_Attributes struct {
 }
 
 type Tenant struct {
-	gorm.Model
+	//gorm.Model
+	ID       uint   `gorm:\"primary_key\" gorm: "id"`
 	Name     string `gorm:"column:tenant_name" json:"name"`
 	ParentID string `gorm:"column:tenant_parent_id" json:"parentId"`
 	Category string `gorm:"column:tenant_category" json:"category" gorm:"-"`
@@ -89,7 +88,7 @@ func (tenant *Tenant) Create() map[string]interface{} {
 func GetTenant(id uint) *Tenant {
 	tenant := &Tenant{}
 
-	err := GetDB().Table("tenants").Where("id = ?", id).First(tenant).Error
+	err := GetDB().Table("tenant").Where("id = ?", id).First(tenant).Error
 	if err != nil {
 		return nil
 	}
@@ -99,7 +98,7 @@ func GetTenant(id uint) *Tenant {
 func GetAllTenants() []*Tenant {
 	tenants := make([]*Tenant, 0)
 
-	err := GetDB().Table("tenants").Find(&tenants).Error
+	err := GetDB().Table("tenant").Find(&tenants).Error
 	if err != nil {
 		return nil
 	}
@@ -112,7 +111,7 @@ func GetAllTenants() []*Tenant {
 func UpdateTenant(id uint, t *Tenant) map[string]interface{} {
 	tenant := &Tenant{}
 
-	err := GetDB().Table("tenants").Where("id = ?", id).First(tenant).Error
+	err := GetDB().Table("tenant").Where("id = ?", id).First(tenant).Error
 	if err != nil {
 		return u.Message(false, "Tenant was not found")
 	}
@@ -133,7 +132,7 @@ func UpdateTenant(id uint, t *Tenant) map[string]interface{} {
 		tenant.Color = t.Color
 	}*/
 
-	GetDB().Table("tenants").Save(tenant)
+	GetDB().Table("tenant").Save(tenant)
 	//.Update(tenant)
 	return u.Message(true, "success")
 }
