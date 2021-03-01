@@ -1,24 +1,32 @@
 package models
 
 import (
+	"fmt"
 	u "p3/utils"
-
-	"github.com/jinzhu/gorm"
+	"time"
 )
 
 type Tenant_Attributes struct {
-	Tenant_id    uint   "gorm:\"primary_key\""
-	Tenant_Color string `json:"color"`
-	MainContact  string `json:"mainContact"`
-	MainPhone    string `json:"mainPhone"`
-	MainEmail    string `json:"mainEmail"`
+	ID          uint `gorm:\"primary_key\" gorm: "id"`
+	CreatedAt   time.Time
+	UpdatedAt   time.Time
+	DeletedAt   *(time.Time) "sql:\"index\""
+	TenantColor string       `json:"color"`
+	MainContact string       `json:"mainContact"`
+	MainPhone   string       `json:"mainPhone"`
+	MainEmail   string       `json:"mainEmail"`
 }
 
 type Tenant struct {
-	gorm.Model
+	//gorm.Model
+	ID        uint `gorm:\"primary_key\" gorm: "id"`
+	CreatedAt time.Time
+	UpdatedAt time.Time
+	DeletedAt *(time.Time) "sql:\"index\""
+	//gorm:"column:beast_id"
 	Tenant_Name       string            `json:"name"`
 	Tenant_ParentID   string            `json:"parentId"`
-	Tenant_Category   string            `json:"category"`
+	Tenant_Category   string            `json:"category" gorm:"-"`
 	Tenant_Domain     string            `json:"domain"`
 	Tenant_Attributes Tenant_Attributes `json:"attributes"`
 }
@@ -41,9 +49,21 @@ func (tenant *Tenant) Validate() (map[string]interface{}, bool) {
 		return u.Message(false, "Domain should be on the payload!"), false
 	}
 
-	/*if tenant.Attributes.Tenant_Color == "" {
+	if tenant.Tenant_Attributes.TenantColor == "" {
 		return u.Message(false, "Color should be on the payload"), false
-	}*/
+	}
+
+	if tenant.Tenant_Attributes.MainContact == "" {
+		return u.Message(false, "MainContact should be on the payload"), false
+	}
+
+	if tenant.Tenant_Attributes.MainPhone == "" {
+		return u.Message(false, "MainPhone should be on the payload"), false
+	}
+
+	if tenant.Tenant_Attributes.MainEmail == "" {
+		return u.Message(false, "MainEmail should be on the payload"), false
+	}
 
 	//Successfully validated the Tenant
 	return u.Message(true, "success"), true
@@ -53,10 +73,21 @@ func (tenant *Tenant) Create() map[string]interface{} {
 	if resp, ok := tenant.Validate(); !ok {
 		return resp
 	}
+	tenant.ID = 2134567890213456
+	tenant.Tenant_Attributes.ID = tenant.ID
 
+	println("The tenant ID: ", tenant.ID, "The attrID: ", tenant.Tenant_Attributes.ID)
+	fmt.Println("Created AT: ", tenant.CreatedAt)
 	//Strategy for inserting into both tables
 	//Otherwise make 2 insert statements
-	GetDB().Table("tenant").Preload("tenant_attributes").Create(tenant)
+	//tenant.ID = 99
+	//tenant.Tenant_Attributes.ID = 99
+	GetDB().Table("tenant").Select("id", "tenant_name",
+		"tenant_domain", "created_at", "updated_at").Create(&tenant)
+	/*e := GetDB().Table("tenant").Preload("tenant_attributes").Create(tenant).Error
+	if e != nil {
+		fmt.Println(e)
+	}*/
 
 	resp := u.Message(true, "success")
 	resp["tenant"] = tenant
