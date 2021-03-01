@@ -6,14 +6,14 @@ import (
 )
 
 type Tenant_Attributes struct {
-	ID          uint `gorm:\"primary_key\" gorm: "id"`
-	CreatedAt   time.Time
+	ID uint `gorm:\"primary_key\" gorm: "id"`
+	/*CreatedAt   time.Time
 	UpdatedAt   time.Time
-	DeletedAt   *(time.Time) "sql:\"index\""
-	TenantColor string       `json:"color"`
-	MainContact string       `json:"mainContact"`
-	MainPhone   string       `json:"mainPhone"`
-	MainEmail   string       `json:"mainEmail"`
+	DeletedAt   *(time.Time) "sql:\"index\""*/
+	TenantColor string `json:"color"`
+	MainContact string `json:"mainContact"`
+	MainPhone   string `json:"mainPhone"`
+	MainEmail   string `json:"mainEmail"`
 }
 
 type Tenant struct {
@@ -79,8 +79,10 @@ func (tenant *Tenant) Create() map[string]interface{} {
 
 	tenant.Tenant_Attributes.ID = tenant.ID
 
-	GetDB().Table("tenant_attributes").Select("id", "tenant_color", "main_contact",
-		"main_phone", "main_email").Create(&tenant.Tenant_Attributes)
+	/*GetDB().Table("tenant_attributes").Select("id", "tenant_color", "main_contact",
+	"main_phone", "main_email").Create(&tenant.Tenant_Attributes)*/
+
+	GetDB().Table("tenant_attributes").Create(&tenant.Tenant_Attributes)
 
 	resp := u.Message(true, "success")
 	resp["tenant"] = tenant
