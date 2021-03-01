@@ -1,7 +1,6 @@
 package models
 
 import (
-	"fmt"
 	u "p3/utils"
 	"time"
 )
@@ -73,21 +72,16 @@ func (tenant *Tenant) Create() map[string]interface{} {
 	if resp, ok := tenant.Validate(); !ok {
 		return resp
 	}
-	//tenant.ID = 2134567890213456
-	//tenant.Tenant_Attributes.ID = tenant.ID
-
-	println("The tenant ID: ", tenant.ID, "The attrID: ", tenant.Tenant_Attributes.ID)
-	fmt.Println("Created AT: ", tenant.CreatedAt)
 	//Strategy for inserting into both tables
 	//Otherwise make 2 insert statements
-	//tenant.ID = 99
-	//tenant.Tenant_Attributes.ID = 99
-	GetDB().Table("tenant").Select("id", "tenant_name",
-		"tenant_domain", "created_at", "updated_at").Create(&tenant)
-	/*e := GetDB().Table("tenant").Preload("tenant_attributes").Create(tenant).Error
-	if e != nil {
-		fmt.Println(e)
-	}*/
+	GetDB().Table("tenant").Select("tenant_name",
+		"tenant_domain", "tenant_description",
+		/*"created_at", "updated_at"*/).Create(&tenant)
+
+	tenant.Tenant_Attributes.ID = tenant.ID
+	GetDB().Table("tenant_attributes").Select("id", "tenant_color", "main_contact",
+		"main_phone", "main_email",
+		/**/).Create(&tenant.Tenant_Attributes)
 
 	resp := u.Message(true, "success")
 	resp["tenant"] = tenant

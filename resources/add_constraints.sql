@@ -1,3 +1,4 @@
+
 ALTER TABLE Tenant ADD CONSTRAINT chk_tenant_parent CHECK (tenant_parent_id IS NULL);
 
 ALTER TABLE Site ADD CONSTRAINT chk_site_parent CHECK (site_parent_id IS NOT NULL);

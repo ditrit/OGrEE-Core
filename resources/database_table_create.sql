@@ -1,7 +1,7 @@
 CREATE TABLE public.tenant (
-    id int NOT NULL,
+    id serial NOT NULL,
     tenant_name text,
-    tenant_parent_id text,
+    tenant_parent_id int,
     tenant_domain text,
     tenant_description text[],
     PRIMARY KEY (id)
@@ -9,12 +9,12 @@ CREATE TABLE public.tenant (
 
 
 CREATE TABLE public.site (
-    site_id text NOT NULL,
+    id serial NOT NULL,
     site_name text,
-    site_parent_id text NOT NULL,
+    site_parent_id int NOT NULL,
     site_domain text,
     site_description text[],
-    PRIMARY KEY (site_id)
+    PRIMARY KEY (id)
 );
 
 CREATE INDEX ON public.site
@@ -22,12 +22,12 @@ CREATE INDEX ON public.site
 
 
 CREATE TABLE public.building (
-    bldg_id text NOT NULL,
+    id serial NOT NULL,
     bldg_name text,
-    bldg_parent_id text NOT NULL,
+    bldg_parent_id int NOT NULL,
     bldg_domain text,
     bldg_description text[],
-    PRIMARY KEY (bldg_id)
+    PRIMARY KEY (id)
 );
 
 CREATE INDEX ON public.building
@@ -35,12 +35,12 @@ CREATE INDEX ON public.building
 
 
 CREATE TABLE public.room (
-    room_id text NOT NULL,
+    id serial NOT NULL,
     room_name text,
-    room_parent_id text NOT NULL,
+    room_parent_id int NOT NULL,
     room_domain text,
     room_description text[],
-    PRIMARY KEY (room_id)
+    PRIMARY KEY (id)
 );
 
 CREATE INDEX ON public.room
@@ -48,12 +48,12 @@ CREATE INDEX ON public.room
 
 
 CREATE TABLE public.rack (
-    rack_id text NOT NULL,
+    id serial NOT NULL,
     rack_name text,
-    rack_parent_id text NOT NULL,
+    rack_parent_id int NOT NULL,
     rack_domain text,
     rack_description text[],
-    PRIMARY KEY (rack_id)
+    PRIMARY KEY (id)
 );
 
 CREATE INDEX ON public.rack
@@ -61,12 +61,12 @@ CREATE INDEX ON public.rack
 
 
 CREATE TABLE public.device (
-    device_id text NOT NULL,
+    id serial NOT NULL,
     device_name text,
-    device_parent_id text NOT NULL,
+    device_parent_id int NOT NULL,
     device_domain text,
     device_description text[],
-    PRIMARY KEY (device_id)
+    PRIMARY KEY (id)
 );
 
 CREATE INDEX ON public.device
@@ -81,7 +81,7 @@ CREATE TABLE public.size (
 
 
 CREATE TABLE public.tenant_attributes (
-    id text NOT NULL,
+    id int NOT NULL,
     tenant_color text,
     main_contact text,
     main_phone text,
@@ -91,7 +91,7 @@ CREATE TABLE public.tenant_attributes (
 
 
 CREATE TABLE public.site_attributes (
-    site_id text NOT NULL,
+    id int NOT NULL,
     site_orientation text,
     usable_color text,
     reserved_color text,
@@ -101,12 +101,12 @@ CREATE TABLE public.site_attributes (
     city text,
     country text,
     gps text,
-    PRIMARY KEY (site_id)
+    PRIMARY KEY (id)
 );
 
 
 CREATE TABLE public.building_attributes (
-    bldg_id text NOT NULL,
+    id int NOT NULL,
     bldg_pos_x_y text,
     bldg_pos_x_y_unit text,
     bldg_pos_z text,
@@ -116,12 +116,12 @@ CREATE TABLE public.building_attributes (
     bldg_height text,
     bldg_height_unit text,
     bldg_nb_floors text,
-    PRIMARY KEY (bldg_id)
+    PRIMARY KEY (id)
 );
 
 
 CREATE TABLE public.room_attributes (
-    room_id text NOT NULL,
+    id int NOT NULL,
     room_pos_x_y text,
     room_pos_x_y_unit text,
     room_pos_z text,
@@ -132,12 +132,12 @@ CREATE TABLE public.room_attributes (
     room_size_unit text,
     room_height text,
     room_height_unit text,
-    PRIMARY KEY (room_id)
+    PRIMARY KEY (id)
 );
 
 
 CREATE TABLE public.rack_attributes (
-    rack_id text NOT NULL,
+    id int NOT NULL,
     rack_pos_x_y text,
     rack_pos_x_y_unit text,
     rack_pos_z text,
@@ -148,12 +148,12 @@ CREATE TABLE public.rack_attributes (
     rack_size_unit text,
     rack_height text,
     rack_height_unit text,
-    PRIMARY KEY (rack_id)
+    PRIMARY KEY (id)
 );
 
 
 CREATE TABLE public.device_attributes (
-    device_id text NOT NULL,
+    id int NOT NULL,
     device_pos_x_y text,
     device_pos_x_y_unit text,
     device_pos_z text,
@@ -164,18 +164,27 @@ CREATE TABLE public.device_attributes (
     device_size_unit text,
     device_height text,
     device_height_unit text,
-    PRIMARY KEY (device_id)
+    PRIMARY KEY (id)
+);
+
+
+CREATE TABLE public.account (
+    id serial NOT NULL,
+    email text NOT NULL,
+    password text NOT NULL,
+    token text NOT NULL,
+    PRIMARY KEY (id)
 );
 
 
 ALTER TABLE public.site ADD CONSTRAINT FK_site__site_parent_id FOREIGN KEY (site_parent_id) REFERENCES public.tenant(id) ON DELETE CASCADE ON UPDATE CASCADE;
-ALTER TABLE public.building ADD CONSTRAINT FK_building__bldg_parent_id FOREIGN KEY (bldg_parent_id) REFERENCES public.site(site_id) ON DELETE CASCADE ON UPDATE CASCADE;
-ALTER TABLE public.room ADD CONSTRAINT FK_room__room_parent_id FOREIGN KEY (room_parent_id) REFERENCES public.building(bldg_id) ON DELETE CASCADE ON UPDATE CASCADE;
-ALTER TABLE public.rack ADD CONSTRAINT FK_rack__rack_parent_id FOREIGN KEY (rack_parent_id) REFERENCES public.room(room_id) ON DELETE CASCADE ON UPDATE CASCADE;
-ALTER TABLE public.device ADD CONSTRAINT FK_device__device_parent_id FOREIGN KEY (device_parent_id) REFERENCES public.rack(rack_id) ON DELETE CASCADE ON UPDATE CASCADE;
-ALTER TABLE public.tenant_attributes ADD CONSTRAINT FK_tenant_attributes__tenant_id FOREIGN KEY (id) REFERENCES public.tenant(id) ON DELETE CASCADE ON UPDATE CASCADE;
-ALTER TABLE public.site_attributes ADD CONSTRAINT FK_site_attributes__site_id FOREIGN KEY (site_id) REFERENCES public.site(site_id) ON DELETE CASCADE ON UPDATE CASCADE;
-ALTER TABLE public.building_attributes ADD CONSTRAINT FK_building_attributes__bldg_id FOREIGN KEY (bldg_id) REFERENCES public.building(bldg_id) ON DELETE CASCADE ON UPDATE CASCADE;
-ALTER TABLE public.room_attributes ADD CONSTRAINT FK_room_attributes__room_id FOREIGN KEY (room_id) REFERENCES public.room(room_id) ON DELETE CASCADE ON UPDATE CASCADE;
-ALTER TABLE public.rack_attributes ADD CONSTRAINT FK_rack_attributes__rack_id FOREIGN KEY (rack_id) REFERENCES public.rack(rack_id) ON DELETE CASCADE ON UPDATE CASCADE;
-ALTER TABLE public.device_attributes ADD CONSTRAINT FK_device_attributes__device_id FOREIGN KEY (device_id) REFERENCES public.device(device_id) ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE public.building ADD CONSTRAINT FK_building__bldg_parent_id FOREIGN KEY (bldg_parent_id) REFERENCES public.site(id) ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE public.room ADD CONSTRAINT FK_room__room_parent_id FOREIGN KEY (room_parent_id) REFERENCES public.building(id) ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE public.rack ADD CONSTRAINT FK_rack__rack_parent_id FOREIGN KEY (rack_parent_id) REFERENCES public.room(id) ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE public.device ADD CONSTRAINT FK_device__device_parent_id FOREIGN KEY (device_parent_id) REFERENCES public.rack(id) ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE public.tenant_attributes ADD CONSTRAINT FK_tenant_attributes__id FOREIGN KEY (id) REFERENCES public.tenant(id) ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE public.site_attributes ADD CONSTRAINT FK_site_attributes__id FOREIGN KEY (id) REFERENCES public.site(id) ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE public.building_attributes ADD CONSTRAINT FK_building_attributes__id FOREIGN KEY (id) REFERENCES public.building(id) ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE public.room_attributes ADD CONSTRAINT FK_room_attributes__id FOREIGN KEY (id) REFERENCES public.room(id) ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE public.rack_attributes ADD CONSTRAINT FK_rack_attributes__id FOREIGN KEY (id) REFERENCES public.rack(id) ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE public.device_attributes ADD CONSTRAINT FK_device_attributes__id FOREIGN KEY (id) REFERENCES public.device(id) ON DELETE CASCADE ON UPDATE CASCADE;

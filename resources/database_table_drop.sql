@@ -11,3 +11,4 @@ DROP TABLE public.building_attributes CASCADE;
 DROP TABLE public.room_attributes CASCADE;
 DROP TABLE public.rack_attributes CASCADE;
 DROP TABLE public.device_attributes CASCADE;
+DROP TABLE public.account CASCADE;
