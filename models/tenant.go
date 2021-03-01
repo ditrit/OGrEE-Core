@@ -10,7 +10,7 @@ type Tenant_Attributes struct {
 	/*CreatedAt   time.Time
 	UpdatedAt   time.Time
 	DeletedAt   *(time.Time) "sql:\"index\""*/
-	TenantColor string `json:"color"`
+	Color       string `gorm:"column:tenant_color" json:"color"`
 	MainContact string `json:"mainContact"`
 	MainPhone   string `json:"mainPhone"`
 	MainEmail   string `json:"mainEmail"`
@@ -23,20 +23,20 @@ type Tenant struct {
 	UpdatedAt time.Time
 	DeletedAt *(time.Time) "sql:\"index\""
 	//gorm:"column:beast_id"
-	Tenant_Name       string            `json:"name"`
-	Tenant_ParentID   string            `json:"parentId"`
-	Tenant_Category   string            `json:"category" gorm:"-"`
-	Tenant_Domain     string            `json:"domain"`
-	Tenant_Attributes Tenant_Attributes `json:"attributes"`
+	Name       string            `gorm:"column:tenant_name" json:"name"`
+	ParentID   string            `gorm:"column:tenant_parent_id" json:"parentId"`
+	Category   string            `gorm:"column:tenant_category" json:"category" gorm:"-"`
+	Domain     string            `gorm:"column:tenant_domain" json:"domain"`
+	Attributes Tenant_Attributes `json:"attributes"`
 }
 
 func (tenant *Tenant) Validate() (map[string]interface{}, bool) {
 
-	if tenant.Tenant_Name == "" {
+	if tenant.Name == "" {
 		return u.Message(false, "Tenant Name should be on payload"), false
 	}
 
-	if tenant.Tenant_Category == "" {
+	if tenant.Category == "" {
 		return u.Message(false, "Category should be on the payload"), false
 	}
 
@@ -44,23 +44,23 @@ func (tenant *Tenant) Validate() (map[string]interface{}, bool) {
 		return u.Message(false, "Description should be on the paylad"), false
 	}*/
 
-	if tenant.Tenant_Domain == "" {
+	if tenant.Domain == "" {
 		return u.Message(false, "Domain should be on the payload!"), false
 	}
 
-	if tenant.Tenant_Attributes.TenantColor == "" {
+	if tenant.Attributes.Color == "" {
 		return u.Message(false, "Color should be on the payload"), false
 	}
 
-	if tenant.Tenant_Attributes.MainContact == "" {
+	if tenant.Attributes.MainContact == "" {
 		return u.Message(false, "MainContact should be on the payload"), false
 	}
 
-	if tenant.Tenant_Attributes.MainPhone == "" {
+	if tenant.Attributes.MainPhone == "" {
 		return u.Message(false, "MainPhone should be on the payload"), false
 	}
 
-	if tenant.Tenant_Attributes.MainEmail == "" {
+	if tenant.Attributes.MainEmail == "" {
 		return u.Message(false, "MainEmail should be on the payload"), false
 	}
 
@@ -77,12 +77,12 @@ func (tenant *Tenant) Create() map[string]interface{} {
 	GetDB().Table("tenant").Select("tenant_name",
 		"tenant_domain", "tenant_description").Create(&tenant)
 
-	tenant.Tenant_Attributes.ID = tenant.ID
+	tenant.Attributes.ID = tenant.ID
 
 	/*GetDB().Table("tenant_attributes").Select("id", "tenant_color", "main_contact",
 	"main_phone", "main_email").Create(&tenant.Tenant_Attributes)*/
 
-	GetDB().Table("tenant_attributes").Create(&tenant.Tenant_Attributes)
+	GetDB().Table("tenant_attributes").Create(&tenant.Attributes)
 
 	resp := u.Message(true, "success")
 	resp["tenant"] = tenant
