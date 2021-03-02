@@ -92,6 +92,12 @@ func GetTenant(id uint) *Tenant {
 	if err != nil {
 		return nil
 	}
+
+	err = GetDB().Table("tenant_attributes").
+		First(&tenant.Attributes).Where("id = ?", id).Error
+	if err != nil {
+		return nil
+	}
 	return tenant
 }
 
