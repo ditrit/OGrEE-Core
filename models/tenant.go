@@ -134,28 +134,44 @@ func GetAllTenants() []*Tenant {
 func UpdateTenant(id uint, t *Tenant) map[string]interface{} {
 	tenant := &Tenant{}
 
-	err := GetDB().Table("tenant").Where("id = ?", id).First(tenant).Error
+	err := GetDB().Table("tenant").First(tenant).Where("id = ?", id).Error
 	if err != nil {
 		return u.Message(false, "Tenant was not found")
 	}
 
-	/*if t.Name != "" && t.Name != tenant.Name {
+	err = GetDB().Table("tenant_attributes").
+		Where("id = ?", id).First(tenant.Attributes).Error
+
+	if t.Name != "" && t.Name != tenant.Name {
 		tenant.Name = t.Name
 	}
 
 	if t.Category != "" && t.Category != tenant.Category {
 		tenant.Category = t.Category
-	}*/
+	}
 
 	/*if t.Desc != "" && t.Desc != tenant.Desc {
 		tenant.Desc = t.Desc
-	}
-
-	if t.Color != "" && t.Color != tenant.Color {
-		tenant.Color = t.Color
 	}*/
 
-	GetDB().Table("tenant").Save(tenant)
+	if t.Attributes.Color != "" && t.Attributes.Color != tenant.Attributes.Color {
+		tenant.Attributes.Color = t.Attributes.Color
+	}
+
+	if t.Attributes.MainContact != "" && t.Attributes.MainContact != tenant.Attributes.MainContact {
+		tenant.Attributes.Color = t.Attributes.Color
+	}
+
+	if t.Attributes.MainEmail != "" && t.Attributes.MainEmail != tenant.Attributes.MainEmail {
+		tenant.Attributes.MainEmail = t.Attributes.MainEmail
+	}
+
+	if t.Attributes.MainPhone != "" && t.Attributes.MainPhone != tenant.Attributes.MainPhone {
+		tenant.Attributes.MainPhone = t.Attributes.MainPhone
+	}
+
+	GetDB().Table("tenant").Select("tenant_name", "tenant_domain").Updates(tenant)
+	GetDB().Table("tenant_attributes").Omit("id").Updates(&(tenant.Attributes))
 	//.Update(tenant)
 	return u.Message(true, "success")
 }
@@ -163,7 +179,7 @@ func UpdateTenant(id uint, t *Tenant) map[string]interface{} {
 func DeleteTenant(id uint) map[string]interface{} {
 
 	//This command is a hard delete!
-	e := GetDB().Unscoped().Table("tenants").Delete(Tenant{}, id).RowsAffected
+	e := GetDB().Unscoped().Table("tenant").Delete(Tenant{}, id).RowsAffected
 
 	//The command below is a soft delete
 	//Meaning that the 'deleted_at' field will be set
