@@ -139,8 +139,14 @@ func UpdateTenant(id uint, t *Tenant) map[string]interface{} {
 		return u.Message(false, "Tenant was not found")
 	}
 
+	fmt.Println("FAGGOT")
+
 	err = GetDB().Table("tenant_attributes").
-		Where("id = ?", id).First(tenant.Attributes).Error
+		Where("id = ?", id).First(&(tenant.Attributes)).Error
+
+	if err != nil {
+		return u.Message(false, "Tenant was not found")
+	}
 
 	if t.Name != "" && t.Name != tenant.Name {
 		tenant.Name = t.Name
@@ -148,6 +154,10 @@ func UpdateTenant(id uint, t *Tenant) map[string]interface{} {
 
 	if t.Category != "" && t.Category != tenant.Category {
 		tenant.Category = t.Category
+	}
+
+	if t.Domain != "" && t.Domain != tenant.Domain {
+		tenant.Domain = t.Domain
 	}
 
 	/*if t.Desc != "" && t.Desc != tenant.Desc {
@@ -170,7 +180,8 @@ func UpdateTenant(id uint, t *Tenant) map[string]interface{} {
 		tenant.Attributes.MainPhone = t.Attributes.MainPhone
 	}
 
-	GetDB().Table("tenant").Select("tenant_name", "tenant_domain").Updates(tenant)
+	GetDB().Exec("UPDATE tenant SET tenant_name=? , tenant_domain=?", tenant.Name, tenant.Domain)
+	//GetDB().Table("tenant").Select("tenant_name").Updates(tenant)
 	GetDB().Table("tenant_attributes").Omit("id").Updates(&(tenant.Attributes))
 	//.Update(tenant)
 	return u.Message(true, "success")
