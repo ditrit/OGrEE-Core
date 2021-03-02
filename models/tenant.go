@@ -1,6 +1,7 @@
 package models
 
 import (
+	"fmt"
 	u "p3/utils"
 )
 
@@ -107,6 +108,22 @@ func GetAllTenants() []*Tenant {
 	err := GetDB().Table("tenant").Find(&tenants).Error
 	if err != nil {
 		return nil
+	}
+
+	//Had to go Raw because the ORM can't make the
+	//query correctly otherwise
+	//This can be an efficiency issue which
+	//can be compared to making a Attribute
+	//struct slice then make the same query as above
+	//then iterate and assign attributes from the
+	//attribute slice
+	for i := range tenants {
+		GetDB().Raw("SELECT * FROM tenant_attributes WHERE id = ?", tenants[i].ID).Scan(&(tenants[i].Attributes))
+
+		fmt.Println("ITER ID: ", tenants[i].ID)
+		if err != nil {
+			return nil
+		}
 	}
 	return tenants
 }
