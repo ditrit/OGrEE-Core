@@ -88,7 +88,7 @@ func (tenant *Tenant) Create() map[string]interface{} {
 func GetTenant(id uint) *Tenant {
 	tenant := &Tenant{}
 
-	err := GetDB().Table("tenant").Where("id = ?", id).First(tenant).Error
+	err := GetDB().Table("tenant").First(tenant).Where("id = ?", id).Error
 	if err != nil {
 		return nil
 	}
