@@ -177,7 +177,7 @@ func DeleteSite(id uint) map[string]interface{} {
 	}
 
 	//This is a hard delete!
-	e := GetDB().Unscoped().Table("sites").Delete(&Site{}, id).Error
+	e := GetDB().Unscoped().Table("site").Delete(&Site{}, id).Error
 
 	//The command below is a soft delete
 	//Meaning that the 'deleted_at' field will be set
