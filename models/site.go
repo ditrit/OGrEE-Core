@@ -193,13 +193,13 @@ func DeleteSite(id uint) map[string]interface{} {
 func DeleteSitesOfTenant(id uint) map[string]interface{} {
 
 	//First check if the domain is valid
-	if GetDB().Table("sites").Where("domain = ?", id).First(&Site{}).Error != nil {
-		return u.Message(false, "The domain was not found")
+	if GetDB().Table("site").Where("site_parent_id = ?", id).First(&Site{}).Error != nil {
+		return u.Message(false, "The parent, tenant, was not found")
 	}
 
 	//This is a hard delete!
-	e := GetDB().Unscoped().Table("sites").
-		Where("domain = ?", id).Delete(&Site{}).Error
+	e := GetDB().Unscoped().Table("site").
+		Where("site_parent_id = ?", id).Delete(&Site{}).Error
 
 	//The command below is a soft delete
 	//Meaning that the 'deleted_at' field will be set
