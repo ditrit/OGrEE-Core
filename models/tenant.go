@@ -178,7 +178,10 @@ func UpdateTenant(id uint, t *Tenant) map[string]interface{} {
 		tenant.Attributes.MainPhone = t.Attributes.MainPhone
 	}
 
-	GetDB().Exec("UPDATE tenant SET tenant_name=? , tenant_domain=?", tenant.Name, tenant.Domain)
+	//fmt.Println(t.Description)
+
+	GetDB().Exec(`UPDATE tenant SET tenant_name=?, tenant_domain=?`,
+		tenant.Name, tenant.Domain /*, t.Description*/)
 	GetDB().Table("tenant_attributes").Omit("id").Updates(&(tenant.Attributes))
 	//.Update(tenant)
 	return u.Message(true, "success")
