@@ -118,7 +118,8 @@ func GetAllTenants() []*Tenant {
 	//then iterate and assign attributes from the
 	//attribute slice
 	for i := range tenants {
-		GetDB().Raw("SELECT * FROM tenant_attributes WHERE id = ?", tenants[i].ID).Scan(&(tenants[i].Attributes))
+		GetDB().Raw("SELECT * FROM tenant_attributes WHERE id = ?",
+			tenants[i].ID).Scan(&(tenants[i].Attributes))
 
 		fmt.Println("ITER ID: ", tenants[i].ID)
 		if err != nil {
