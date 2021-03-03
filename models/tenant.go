@@ -3,6 +3,8 @@ package models
 import (
 	"fmt"
 	u "p3/utils"
+
+	"github.com/lib/pq"
 )
 
 type Tenant_Attributes struct {
@@ -18,13 +20,13 @@ type Tenant_Attributes struct {
 
 type Tenant struct {
 	//gorm.Model
-	ID       uint   `gorm:\"primary_key\" gorm: "id"`
-	Name     string `gorm:"column:tenant_name" json:"name"`
-	ParentID string `gorm:"column:tenant_parent_id" json:"parentId"`
-	Category string `gorm:"column:tenant_category" json:"category" gorm:"-"`
-	//Description []string          `gorm:"column:tenant_description" json:"description"`
-	Domain     string            `gorm:"column:tenant_domain" json:"domain"`
-	Attributes Tenant_Attributes `json:"attributes"`
+	ID          uint              `gorm:\"primary_key\" gorm: "id"`
+	Name        string            `gorm:"column:tenant_name" json:"name"`
+	ParentID    string            `gorm:"column:tenant_parent_id" json:"parentId"`
+	Category    string            `gorm:"column:tenant_category" json:"category" gorm:"-"`
+	Description []string          `gorm:"column:tenant_description" gorm:"type:text[]" json:"description"`
+	Domain      string            `gorm:"column:tenant_domain" json:"domain"`
+	Attributes  Tenant_Attributes `json:"attributes"`
 }
 
 func (tenant *Tenant) Validate() (map[string]interface{}, bool) {
@@ -72,12 +74,17 @@ func (tenant *Tenant) Create() map[string]interface{} {
 	//Strategy for inserting into both tables
 	//Otherwise make 2 insert statements
 	GetDB().Table("tenant").Select("tenant_name",
-		"tenant_domain", "tenant_description").Create(&tenant)
+		"tenant_domain").Create(&tenant)
+
+	//This link explains JSON marshalling which will
+	//be needed to merge the SQL Query below to the Query
+	//above
+	//https://attilaolah.eu/2013/11/29/json-decoding-in-go/
+
+	GetDB().Exec(`UPDATE tenant SET tenant_description = ? 
+	WHERE tenant.id = ?`, pq.Array(tenant.Description), tenant.ID)
 
 	tenant.Attributes.ID = tenant.ID
-
-	/*GetDB().Table("tenant_attributes").Select("id", "tenant_color", "main_contact",
-	"main_phone", "main_email").Create(&tenant.Tenant_Attributes)*/
 
 	GetDB().Table("tenant_attributes").Create(&tenant.Attributes)
 
