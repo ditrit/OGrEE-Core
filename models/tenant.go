@@ -77,6 +77,8 @@ func (tenant *Tenant) Create() map[string]interface{} {
 	//This link explains JSON marshalling which will
 	//be needed to merge the SQL Query below to the Query
 	//above
+	//Alot of code will be added to support the
+	//custom JSON Marshalling
 	//https://attilaolah.eu/2013/11/29/json-decoding-in-go/
 
 	/*GetDB().Exec(`UPDATE tenant SET tenant_description = ?
