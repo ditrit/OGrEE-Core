@@ -3,21 +3,35 @@ package models
 import (
 	"fmt"
 	u "p3/utils"
-
-	"github.com/jinzhu/gorm"
 )
 
 type ECardinalOrient string
 
+//Desc        string          `json:"description"`
+
+type Site_Attributes struct {
+	ID             int    `json:"id" gorm:"column:id"`
+	Orientation    string `json:"orientation" gorm:"column:site_orientation"`
+	UsableColor    string `json:"usableColor" gorm:"column:usable_color"`
+	ReservedColor  string `json:"reservedColor" gorm:"column:reserved_color"`
+	TechnicalColor string `json:"technicalColor" gorm:"column:technical_color"`
+	Address        string `json:"address" gorm:"column:address"`
+	Zipcode        string `json:"zipcode" gorm:"column:zipcode"`
+	City           string `json:"city" gorm:"column:city"`
+	Country        string `json:"country" gorm:"column:country"`
+	Gps            string `json:"gps" gorm:"column:gps"`
+}
+
 type Site struct {
-	gorm.Model
-	Name        string          `json:"name"`
-	Category    string          `json:"category"`
-	Desc        string          `json:"description"`
-	Domain      int             `json:"domain"`
-	Color       string          `json:"color"`
-	Orientation ECardinalOrient `json:"eorientation"`
-	Building    []Building
+	//gorm.Model
+	ID         int             `json:"id" gorm:"column:id"`
+	Name       string          `json:"name" gorm:"column:site_name"`
+	Category   string          `json:"category" gorm:"-"`
+	Domain     string          `json:"domain" gorm:"column:site_domain"`
+	ParentID   string          `json:"parentId" gorm:"column:site_parent_id"`
+	Attributes Site_Attributes `json:"attributes"`
+
+	Building []Building
 }
 
 func (site *Site) Validate() (map[string]interface{}, bool) {
@@ -29,25 +43,25 @@ func (site *Site) Validate() (map[string]interface{}, bool) {
 		return u.Message(false, "Category should be on the payload"), false
 	}
 
-	if site.Desc == "" {
+	/*if site.Desc == "" {
 		return u.Message(false, "Description should be on the payload"), false
-	}
+	}*/
 
-	if site.Domain == 0 {
+	if site.Domain == "" {
 		return u.Message(false, "Domain should be on the payload"), false
 	}
 
-	if GetDB().Table("tenants").
-		Where("id = ?", site.Domain).First(&Tenant{}).Error != nil {
+	if GetDB().Table("tenant").
+		Where("id = ?", site.ParentID).First(&Tenant{}).Error != nil {
 
-		return u.Message(false, "Domain should be correspond to tenant ID"), false
+		return u.Message(false, "SiteParentID should be correspond to tenant ID"), false
 	}
 
-	if site.Color == "" {
+	/*if site.Color == "" {
 		return u.Message(false, "Color should be on the payload"), false
-	}
+	}*/
 
-	switch site.Orientation {
+	switch site.Attributes.Orientation {
 	case "NE", "NW", "SE", "SW":
 	case "":
 		return u.Message(false, "Orientation should be on the payload"), false
@@ -65,7 +79,13 @@ func (site *Site) Create() map[string]interface{} {
 		return resp
 	}
 
+	//GetDB().Create(site)
+
 	GetDB().Create(site)
+
+	site.Attributes.ID = site.ID
+
+	GetDB().Table("site_attributes").Create(&(site.Attributes))
 	resp := u.Message(true, "success")
 	resp["site"] = site
 	return resp
@@ -176,28 +196,28 @@ func UpdateSite(id uint, newSiteInfo *Site) map[string]interface{} {
 		site.Category = newSiteInfo.Category
 	}
 
-	if newSiteInfo.Desc != "" && newSiteInfo.Desc != site.Desc {
+	/*if newSiteInfo.Desc != "" && newSiteInfo.Desc != site.Desc {
 		site.Desc = newSiteInfo.Desc
-	}
+	}*/
 
 	//Should it be possible to update domain
 	//to new tenant? Will have to think about it more
 	//if newSiteInfo.Domain
 
-	if newSiteInfo.Color != "" && newSiteInfo.Color != site.Color {
+	/*if newSiteInfo.Color != "" && newSiteInfo.Color != site.Color {
 		site.Color = newSiteInfo.Color
-	}
+	}*/
 
-	if newSiteInfo.Orientation != "" {
-		switch newSiteInfo.Orientation {
+	if newSiteInfo.Attributes.Orientation != "" {
+		switch newSiteInfo.Attributes.Orientation {
 		case "NE", "NW", "SE", "SW":
-			site.Orientation = newSiteInfo.Orientation
+			site.Attributes.Orientation = newSiteInfo.Attributes.Orientation
 
 		default:
 		}
 	}
 
 	//Successfully validated the new data
-	GetDB().Table("sites").Save(site)
+	GetDB().Table("site").Save(site)
 	return u.Message(true, "success")
 }

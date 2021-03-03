@@ -138,7 +138,9 @@ var GetSitesByParentID = func(w http.ResponseWriter, r *http.Request) {
 	}
 	resp := u.Message(true, "success")
 
-	data := models.GetSites(uint(st.Domain))
+	id, _ := strconv.Atoi(st.Domain)
+
+	data := models.GetSites(uint(id))
 	if data == nil {
 		resp = u.Message(false, "unsuccessful")
 	}
@@ -252,7 +254,8 @@ var DeleteSites = func(w http.ResponseWriter, r *http.Request) {
 		u.Respond(w, u.Message(false, "Error while decoding request body"))
 	}
 
-	v := models.DeleteSitesOfTenant(uint(st.Domain))
+	id, _ := strconv.Atoi(st.Domain)
+	v := models.DeleteSitesOfTenant(uint(id))
 	u.Respond(w, v)
 }
 
