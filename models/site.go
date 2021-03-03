@@ -100,16 +100,31 @@ func (site *Site) Create() map[string]interface{} {
 func GetSites(id uint) []*Site {
 	site := make([]*Site, 0)
 
-	err := GetDB().Table("tenants").Where("id = ?", id).First(&Tenant{}).Error
+	err := GetDB().Table("tenant").Where("id = ?", id).First(&Tenant{}).Error
 	if err != nil {
 		fmt.Println("yo the tenant wasnt found here")
 		return nil
 	}
 
-	e := GetDB().Table("sites").Where("domain = ?", id).Find(&site).Error
+	e := GetDB().Table("site").Where("site_parent_id = ?", id).Find(&site).Error
 	if e != nil {
 		fmt.Println("yo the there isnt any site matching the foreign key")
 		return nil
+	}
+
+	//This can be an efficiency issue which
+	//can be compared to making a Attribute
+	//struct slice then make the same query as above
+	//then iterate and assign attributes from the
+	//attribute slice
+	for i := range site {
+		GetDB().Raw("SELECT * FROM site_attributes WHERE id = ?",
+			site[i].ID).Scan(&(site[i].Attributes))
+
+		fmt.Println("ITER ID: ", site[i].ID)
+		if err != nil {
+			return nil
+		}
 	}
 
 	return site
@@ -118,9 +133,16 @@ func GetSites(id uint) []*Site {
 func GetSite(id uint) *Site {
 	site := &Site{}
 
-	err := GetDB().Table("sites").Where("id = ?", id).First(site).Error
+	err := GetDB().Table("site").Where("id = ?", id).First(site).Error
 	if err != nil {
 		fmt.Println("There was an error in getting site by ID")
+		return nil
+	}
+
+	err = GetDB().Table("site_attributes").
+		Where("id = ?", id).First(&(site.Attributes)).Error
+	if err != nil {
+		fmt.Println("There was an error in getting site attr by ID")
 		return nil
 	}
 	return site
@@ -129,10 +151,20 @@ func GetSite(id uint) *Site {
 func GetAllSites() []*Site {
 	sites := make([]*Site, 0)
 
-	err := GetDB().Table("sites").Find(&sites).Error
+	err := GetDB().Table("site").Find(&sites).Error
 	if err != nil {
 		fmt.Println("There was an error in getting site by ID")
 		return nil
+	}
+
+	for i := range sites {
+		GetDB().Raw("SELECT * FROM site_attributes WHERE id = ?",
+			sites[i].ID).Scan(&(sites[i].Attributes))
+
+		fmt.Println("ITER ID: ", sites[i].ID)
+		if err != nil {
+			return nil
+		}
 	}
 	return sites
 }
