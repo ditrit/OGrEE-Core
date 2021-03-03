@@ -3,8 +3,6 @@ package models
 import (
 	"fmt"
 	u "p3/utils"
-
-	"github.com/lib/pq"
 )
 
 type Tenant_Attributes struct {
@@ -20,13 +18,13 @@ type Tenant_Attributes struct {
 
 type Tenant struct {
 	//gorm.Model
-	ID          uint              `gorm:\"primary_key\" gorm: "id"`
-	Name        string            `gorm:"column:tenant_name" json:"name"`
-	ParentID    string            `gorm:"column:tenant_parent_id" json:"parentId"`
-	Category    string            `gorm:"column:tenant_category" json:"category" gorm:"-"`
-	Description []string          `gorm:"column:tenant_description" gorm:"type:text[]" json:"description"`
-	Domain      string            `gorm:"column:tenant_domain" json:"domain"`
-	Attributes  Tenant_Attributes `json:"attributes"`
+	ID       uint   `gorm:\"primary_key\" gorm: "id"`
+	Name     string `gorm:"column:tenant_name" json:"name"`
+	ParentID string `gorm:"column:tenant_parent_id" json:"parentId"`
+	Category string `gorm:"column:tenant_category" json:"category" gorm:"-"`
+	//Description []string          `gorm:"column:tenant_description" gorm:"type:text[]" json:"description"`
+	Domain     string            `gorm:"column:tenant_domain" json:"domain"`
+	Attributes Tenant_Attributes `json:"attributes"`
 }
 
 func (tenant *Tenant) Validate() (map[string]interface{}, bool) {
@@ -81,8 +79,8 @@ func (tenant *Tenant) Create() map[string]interface{} {
 	//above
 	//https://attilaolah.eu/2013/11/29/json-decoding-in-go/
 
-	GetDB().Exec(`UPDATE tenant SET tenant_description = ? 
-	WHERE tenant.id = ?`, pq.Array(tenant.Description), tenant.ID)
+	/*GetDB().Exec(`UPDATE tenant SET tenant_description = ?
+	WHERE tenant.id = ?`, pq.Array(tenant.Description), tenant.ID)*/
 
 	tenant.Attributes.ID = tenant.ID
 
@@ -97,7 +95,7 @@ func GetTenant(id uint) *Tenant {
 	tenant := &Tenant{}
 
 	e := GetDB().Raw(`SELECT * FROM tenant INNER JOIN
-	tenant_attributes ON tenant_attributes.id = tenant.id 
+	tenant_attributes ON tenant_attributes.id = tenant.id
 	where tenant.id = ?`, id).Find(tenant).Find(&(tenant.Attributes)).Error
 
 	if e != nil {
