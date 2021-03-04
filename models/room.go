@@ -3,28 +3,37 @@ package models
 import (
 	"fmt"
 	u "p3/utils"
-
-	"github.com/jinzhu/gorm"
 )
 
-type Room struct {
-	gorm.Model
-	Name        string          `json:"name"`
-	Category    string          `json:"category"`
-	Desc        string          `json:"description"`
-	Domain      int             `json:"domain"`
-	Orientation ECardinalOrient `json:"eorientation"`
+type Room_Attributes struct {
+	ID          int    `json:"id" gorm:"column:id"`
+	PosXY       string `json:"posXY" gorm:"column:room_pos_x_y"`
+	PosXYU      string `json:"posXYUnit" gorm:"column:room_pos_x_y_unit"`
+	PosZ        string `json:"posZ" gorm:"column:room_pos_z"`
+	PosZU       string `json:"posZUnit" gorm:"column:room_pos_z_unit"`
+	Template    string `json:"template" gorm:"column:room_template"`
+	Orientation string `json:"orientation" gorm:"column:room_orientation"`
+	Size        string `json:"size" gorm:"column:room_size"`
+	SizeU       string `json:"sizeUnit" gorm:"column:room_size_unit"`
+	Height      string `json:"height" gorm:"column:room_height"`
+	HeightU     string `json:"heightUnit" gorm:"column:room_height_unit"`
+}
 
-	PosX     float64    `json:"posx"`
-	PosY     float64    `json:"posy"`
-	PosU     string     `json:"posxyu"`
-	PosZ     float64    `json:"posz"`
-	PosZU    string     `json:"poszu"`
-	Size     float64    `json:"size"`
-	SizeU    string     `json:"sizeu"`
-	Height   float64    `json:"height"`
-	HeightU  string     `json:"heightu"`
-	Building []Building `gorm:"foreignKey:Building"`
+type Room struct {
+	//gorm.Model
+	ID          int             `json:"id" gorm:"column:id"`
+	Name        string          `json:"name" gorm:"column:room_name"`
+	ParentID    string          `json:"parentId" gorm:"column:room_parent_id"`
+	Category    string          `json:"category" gorm:"-"`
+	Domain      string          `json:"domain" gorm:"column:room_domain"`
+	D           []string        `json:"description" gorm:"-"`
+	Description string          `gorm:"column:room_description"`
+	Attributes  Room_Attributes `json:"attributes"`
+
+	//Site []Site
+	//D is used to help the JSON marshalling
+	//while Description will be used in
+	//DB transactions
 }
 
 //Validate needs to ensure that the room coords
@@ -35,63 +44,67 @@ func (room *Room) Validate() (map[string]interface{}, bool) {
 		return u.Message(false, "Room Name should be on payload"), false
 	}
 
-	if room.Category == "" {
+	/*if room.Category == "" {
 		return u.Message(false, "Category should be on the payload"), false
 	}
 
 	if room.Desc == "" {
 		return u.Message(false, "Description should be on the payload"), false
-	}
+	}*/
 
-	if room.Domain == 0 {
+	if room.Domain == "" {
 		return u.Message(false, "Domain should should be on the payload"), false
 	}
 
-	if GetDB().Table("buildings").
-		Where("id = ?", room.Domain).First(&Building{}).Error != nil {
+	if GetDB().Table("building").
+		Where("id = ?", room.ParentID).RecordNotFound() == true {
 
-		return u.Message(false, "Domain should be correspond to building ID"), false
+		return u.Message(false, "ParentID should be correspond to building ID"), false
 	}
 
-	if room.PosX < 0.0 || room.PosY < 0.0 {
-		return u.Message(false, "Invalid XYcoordinates on payload"), false
+	if room.Attributes.PosXY == "" {
+		return u.Message(false, "XY coordinates should be on payload"), false
 	}
 
-	if room.PosU == "" {
-		return u.Message(false, "PositionXY string should be on the payload"), false
+	if room.Attributes.PosXYU == "" {
+		return u.Message(false, "PositionXYU string should be on the payload"), false
 	}
 
-	if room.PosZ < 0.0 {
-		return u.Message(false, "Invalid Z coordinates on payload"), false
+	if room.Attributes.PosZ == "" {
+		return u.Message(false, "Z coordinates should be on payload"), false
 	}
 
-	if room.PosZU == "" {
-		return u.Message(false, "PositionZ string should be on the payload"), false
+	if room.Attributes.PosZU == "" {
+		return u.Message(false, "PositionZU string should be on the payload"), false
 	}
 
-	if room.Size <= 0.0 {
-		return u.Message(false, "Invalid room size on the payload"), false
+	if room.Attributes.Template == "" {
+		return u.Message(false, "Invalid building size on the payload"), false
 	}
 
-	if room.SizeU == "" {
-		return u.Message(false, "Room size string should be on the payload"), false
-	}
-
-	if room.Height <= 0.0 {
-		return u.Message(false, "Invalid Height on payload"), false
-	}
-
-	if room.HeightU == "" {
-		return u.Message(false, "Room Height string should be on the payload"), false
-	}
-
-	switch room.Orientation {
+	switch room.Attributes.Orientation {
 	case "NE", "NW", "SE", "SW":
 	case "":
 		return u.Message(false, "Orientation should be on the payload"), false
 
 	default:
 		return u.Message(false, "Orientation is invalid!"), false
+	}
+
+	if room.Attributes.Size == "" {
+		return u.Message(false, "Invalid building size on the payload"), false
+	}
+
+	if room.Attributes.SizeU == "" {
+		return u.Message(false, "Room size string should be on the payload"), false
+	}
+
+	if room.Attributes.Height == "" {
+		return u.Message(false, "Invalid Height on payload"), false
+	}
+
+	if room.Attributes.HeightU == "" {
+		return u.Message(false, "Room Height string should be on the payload"), false
 	}
 
 	//Successfully validated Room
@@ -103,7 +116,10 @@ func (room *Room) Create() map[string]interface{} {
 		return resp
 	}
 
-	GetDB().Create(room)
+	//GetDB().Create(room)
+	GetDB().Omit("room_description").Create(room)
+	room.Attributes.ID = room.ID
+	GetDB().Create(&(room.Attributes))
 
 	resp := u.Message(true, "success")
 	resp["room"] = room
@@ -113,9 +129,10 @@ func (room *Room) Create() map[string]interface{} {
 //Get the room by ID
 func GetRoom(id uint) *Room {
 	room := &Room{}
-	err := GetDB().Table("rooms").Where("id = ?", id).First(room).Error
+	err := GetDB().Table("room").Where("id = ?", id).First(room).
+		Table("room_attributes").Where("id = ?", id).First(&(room.Attributes)).Error
 	if err != nil {
-		fmt.Println("There was an error in getting room by ID")
+		fmt.Println(err)
 		return nil
 	}
 	return room
@@ -137,11 +154,15 @@ func GetRooms(room *Building) []*Room {
 //Get all rooms
 func GetAllRooms() []*Room {
 	rooms := make([]*Room, 0)
-
-	err := GetDB().Table("rooms").Find(&rooms).Error
+	attrs := make([]*Room_Attributes, 0)
+	err := GetDB().Find(&rooms).Find(&attrs).Error
 	if err != nil {
 		fmt.Println(err)
 		return nil
+	}
+
+	for i := range rooms {
+		rooms[i].Attributes = *(attrs[i])
 	}
 
 	return rooms
@@ -169,7 +190,7 @@ func UpdateRoom(id uint, newRoomInfo *Room) map[string]interface{} {
 		room.Category = newRoomInfo.Category
 	}
 
-	if newRoomInfo.Desc != "" && newRoomInfo.Desc != room.Desc {
+	/*if newRoomInfo.Desc != "" && newRoomInfo.Desc != room.Desc {
 		room.Desc = newRoomInfo.Desc
 	}
 
@@ -216,7 +237,7 @@ func UpdateRoom(id uint, newRoomInfo *Room) map[string]interface{} {
 
 		default:
 		}
-	}
+	}*/
 
 	GetDB().Table("rooms").Save(room)
 	return u.Message(true, "success")
