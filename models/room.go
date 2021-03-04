@@ -245,15 +245,8 @@ func UpdateRoom(id uint, newRoomInfo *Room) map[string]interface{} {
 
 func DeleteRoom(id uint) map[string]interface{} {
 
-	//First check if the site exists
-	err := GetDB().Table("rooms").Where("id = ?", id).First(&Room{}).Error
-	if err != nil {
-		fmt.Println("Couldn't find the room to delete")
-		return nil
-	}
-
 	//This is a hard delete!
-	e := GetDB().Unscoped().Table("rooms").Delete(&Room{}, id).Error
+	e := GetDB().Unscoped().Table("room").Delete(&Room{}, id).Error
 
 	//The command below is a soft delete
 	//Meaning that the 'deleted_at' field will be set
