@@ -169,7 +169,8 @@ func GetBuildings(site *Site) []*Building {
 func UpdateBuilding(id uint, newBldgInfo *Building) map[string]interface{} {
 	bldg := &Building{}
 
-	err := GetDB().Table("buildings").Where("id = ?", id).First(bldg).Error
+	err := GetDB().Table("building").Where("id = ?", id).First(bldg).
+		Table("building_attributes").Where("id = ?", id).First(&(bldg.Attributes)).Error
 	if err != nil {
 		return u.Message(false, "Building was not found")
 	}
@@ -178,51 +179,52 @@ func UpdateBuilding(id uint, newBldgInfo *Building) map[string]interface{} {
 		bldg.Name = newBldgInfo.Name
 	}
 
-	if newBldgInfo.Category != "" && newBldgInfo.Category != bldg.Category {
-		bldg.Category = newBldgInfo.Category
+	if newBldgInfo.Domain != "" && newBldgInfo.Domain != bldg.Domain {
+		bldg.Domain = newBldgInfo.Domain
 	}
+
+	/*if newBldgInfo.Category != "" && newBldgInfo.Category != bldg.Category {
+		bldg.Category = newBldgInfo.Category
+	}*/
 
 	/*if newBldgInfo.Desc != "" && newBldgInfo.Desc != bldg.Desc {
 		bldg.Desc = newBldgInfo.Desc
 	}*/
 
-	/*if newBldgInfo.PosX > 0.0 && newBldgInfo.PosX != bldg.PosX {
-		bldg.PosX = newBldgInfo.PosX
+	if newBldgInfo.Attributes.PosXY != "" && newBldgInfo.Attributes.PosXY != bldg.Attributes.PosXY {
+		bldg.Attributes.PosXY = newBldgInfo.Attributes.PosXY
 	}
 
-	if newBldgInfo.PosY > 0.0 && newBldgInfo.PosY != bldg.PosX {
-		bldg.PosY = newBldgInfo.PosY
+	if newBldgInfo.Attributes.PosXYU != "" && newBldgInfo.Attributes.PosXYU != bldg.Attributes.PosXYU {
+		bldg.Attributes.PosXYU = newBldgInfo.Attributes.PosXYU
 	}
 
-	if newBldgInfo.PosU != "" && newBldgInfo.PosU != bldg.PosU {
-		bldg.PosU = newBldgInfo.PosU
+	if newBldgInfo.Attributes.PosZ != "" && newBldgInfo.Attributes.PosZ != bldg.Attributes.PosZ {
+		bldg.Attributes.PosZ = newBldgInfo.Attributes.PosZ
 	}
 
-	if newBldgInfo.PosZ > 0.0 && newBldgInfo.PosZ != bldg.PosZ {
-		bldg.PosZ = newBldgInfo.PosZ
+	if newBldgInfo.Attributes.PosZU != "" && newBldgInfo.Attributes.PosZU != bldg.Attributes.PosZU {
+		bldg.Attributes.PosZU = newBldgInfo.Attributes.PosZU
 	}
 
-	if newBldgInfo.PosZU != "" && newBldgInfo.PosZU != bldg.PosZU {
-		bldg.PosZU = newBldgInfo.PosZU
+	if newBldgInfo.Attributes.Size != "" && newBldgInfo.Attributes.Size != bldg.Attributes.Size {
+		bldg.Attributes.Size = newBldgInfo.Attributes.Size
 	}
 
-	if newBldgInfo.Size > 0.0 && newBldgInfo.Size != bldg.Size {
-		bldg.Site = newBldgInfo.Site
+	if newBldgInfo.Attributes.SizeU != "" && newBldgInfo.Attributes.SizeU != bldg.Attributes.SizeU {
+		bldg.Attributes.SizeU = newBldgInfo.Attributes.SizeU
 	}
 
-	if newBldgInfo.SizeU != "" && newBldgInfo.SizeU != bldg.SizeU {
-		bldg.SizeU = newBldgInfo.SizeU
+	if newBldgInfo.Attributes.Height != "" && newBldgInfo.Attributes.Height != bldg.Attributes.Height {
+		bldg.Attributes.Height = newBldgInfo.Attributes.Height
 	}
 
-	if newBldgInfo.Height > 0.0 && newBldgInfo.Height != bldg.Height {
-		bldg.Height = newBldgInfo.Height
+	if newBldgInfo.Attributes.HeightU != "" && newBldgInfo.Attributes.HeightU != bldg.Attributes.HeightU {
+		bldg.Attributes.HeightU = newBldgInfo.Attributes.HeightU
 	}
 
-	if newBldgInfo.HeightU != "" && newBldgInfo.HeightU != bldg.HeightU {
-		bldg.HeightU = newBldgInfo.HeightU
-	}*/
-
-	GetDB().Table("buildings").Save(bldg)
+	GetDB().Table("building").Omit("bldg_description").Save(bldg).
+		Table("building_attributes").Save(&(bldg.Attributes))
 	return u.Message(true, "success")
 }
 
