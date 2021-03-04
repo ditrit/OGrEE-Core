@@ -79,7 +79,7 @@ func (room *Room) Validate() (map[string]interface{}, bool) {
 	}
 
 	if room.Attributes.Template == "" {
-		return u.Message(false, "Invalid building size on the payload"), false
+		return u.Message(false, "Template should be on the payload"), false
 	}
 
 	switch room.Attributes.Orientation {
@@ -92,7 +92,7 @@ func (room *Room) Validate() (map[string]interface{}, bool) {
 	}
 
 	if room.Attributes.Size == "" {
-		return u.Message(false, "Invalid building size on the payload"), false
+		return u.Message(false, "Invalid size on the payload"), false
 	}
 
 	if room.Attributes.SizeU == "" {
@@ -177,7 +177,8 @@ func GetAllRooms() []*Room {
 func UpdateRoom(id uint, newRoomInfo *Room) map[string]interface{} {
 	room := &Room{}
 
-	err := GetDB().Table("rooms").Where("id = ?", id).First(room).Error
+	err := GetDB().Table("room").Where("id = ?", id).First(room).
+		Table("room_attributes").Where("id = ?", id).First(&(room.Attributes)).Error
 	if err != nil {
 		return u.Message(false, "Room was not found")
 	}
@@ -186,60 +187,58 @@ func UpdateRoom(id uint, newRoomInfo *Room) map[string]interface{} {
 		room.Name = newRoomInfo.Name
 	}
 
-	if newRoomInfo.Category != "" && newRoomInfo.Category != room.Category {
+	/*if newRoomInfo.Category != "" && newRoomInfo.Category != room.Category {
 		room.Category = newRoomInfo.Category
+	}*/
+
+	if newRoomInfo.Attributes.PosXY != "" && newRoomInfo.Attributes.PosXY != room.Attributes.PosXY {
+		room.Attributes.PosXY = newRoomInfo.Attributes.PosXY
 	}
 
-	/*if newRoomInfo.Desc != "" && newRoomInfo.Desc != room.Desc {
-		room.Desc = newRoomInfo.Desc
+	if newRoomInfo.Attributes.PosXYU != "" && newRoomInfo.Attributes.PosXYU != room.Attributes.PosXYU {
+		room.Attributes.PosXYU = newRoomInfo.Attributes.PosXYU
 	}
 
-	if newRoomInfo.PosX > 0.0 && newRoomInfo.PosX != room.PosX {
-		room.PosX = newRoomInfo.PosX
+	if newRoomInfo.Attributes.PosZ != "" && newRoomInfo.Attributes.PosZ != room.Attributes.PosZ {
+		room.Attributes.PosZ = newRoomInfo.Attributes.PosZ
 	}
 
-	if newRoomInfo.PosY > 0.0 && newRoomInfo.PosY != room.PosX {
-		room.PosY = newRoomInfo.PosY
+	if newRoomInfo.Attributes.PosZU != "" && newRoomInfo.Attributes.PosZU != room.Attributes.PosZU {
+		room.Attributes.PosZU = newRoomInfo.Attributes.PosZU
 	}
 
-	if newRoomInfo.PosU != "" && newRoomInfo.PosU != room.PosU {
-		room.PosU = newRoomInfo.PosU
+	if newRoomInfo.Attributes.Template != "" && newRoomInfo.Attributes.Template != room.Attributes.Template {
+		room.Attributes.Template = newRoomInfo.Attributes.Template
 	}
 
-	if newRoomInfo.PosZ > 0.0 && newRoomInfo.PosZ != room.PosZ {
-		room.PosZ = newRoomInfo.PosZ
-	}
-
-	if newRoomInfo.PosZU != "" && newRoomInfo.PosZU != room.PosZU {
-		room.PosZU = newRoomInfo.PosZU
-	}
-
-	if newRoomInfo.Size > 0.0 && newRoomInfo.Size != room.Size {
-		room.Size = newRoomInfo.Size
-	}
-
-	if newRoomInfo.SizeU != "" && newRoomInfo.SizeU != room.SizeU {
-		room.SizeU = newRoomInfo.SizeU
-	}
-
-	if newRoomInfo.Height > 0.0 && newRoomInfo.Height != room.Height {
-		room.Height = newRoomInfo.Height
-	}
-
-	if newRoomInfo.HeightU != "" && newRoomInfo.HeightU != room.HeightU {
-		room.HeightU = newRoomInfo.HeightU
-	}
-
-	if newRoomInfo.Orientation != "" {
-		switch newRoomInfo.Orientation {
+	if newRoomInfo.Attributes.Orientation != "" {
+		switch newRoomInfo.Attributes.Orientation {
 		case "NE", "NW", "SE", "SW":
-			room.Orientation = newRoomInfo.Orientation
+			room.Attributes.Orientation = newRoomInfo.Attributes.Orientation
 
 		default:
 		}
-	}*/
+	}
 
-	GetDB().Table("rooms").Save(room)
+	if newRoomInfo.Attributes.Size != "" && newRoomInfo.Attributes.Size != room.Attributes.Size {
+		room.Attributes.Size = newRoomInfo.Attributes.Size
+	}
+
+	if newRoomInfo.Attributes.SizeU != "" && newRoomInfo.Attributes.SizeU != room.Attributes.SizeU {
+		room.Attributes.SizeU = newRoomInfo.Attributes.SizeU
+	}
+
+	if newRoomInfo.Attributes.Height != "" && newRoomInfo.Attributes.Height != room.Attributes.Height {
+		room.Attributes.Height = newRoomInfo.Attributes.Height
+	}
+
+	if newRoomInfo.Attributes.HeightU != "" && newRoomInfo.Attributes.HeightU != room.Attributes.HeightU {
+		room.Attributes.HeightU = newRoomInfo.Attributes.HeightU
+	}
+
+	GetDB().Table("room").Omit("room_description").Save(room).
+		Table("room_attributes").Save(&(room.Attributes))
+
 	return u.Message(true, "success")
 }
 
