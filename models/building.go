@@ -115,7 +115,8 @@ func (bldg *Building) Create() map[string]interface{} {
 //Get Building by ID
 func GetBuilding(id uint) *Building {
 	bldg := &Building{}
-	err := GetDB().Table("buildings").Where("id = ?", id).First(bldg).Error
+	err := GetDB().Table("building").Where("id = ?", id).First(bldg).
+		Table("building_attributes").Where("id = ?", id).First(&(bldg.Attributes)).Error
 	if err != nil {
 		fmt.Println(err)
 		return nil
@@ -126,11 +127,23 @@ func GetBuilding(id uint) *Building {
 //Get All Buildings
 func GetAllBuildings() []*Building {
 	bldgs := make([]*Building, 0)
+	attrs := make([]*Building_Attributes, 0)
 	err := GetDB().Find(&bldgs).Error
 	if err != nil {
 		fmt.Println(err)
 		return nil
 	}
+
+	err = GetDB().Find(&attrs).Error
+	if err != nil {
+		fmt.Println(err)
+		return nil
+	}
+
+	for i := range bldgs {
+		bldgs[i].Attributes = *(attrs[i])
+	}
+
 	return bldgs
 }
 
