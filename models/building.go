@@ -3,27 +3,36 @@ package models
 import (
 	"fmt"
 	u "p3/utils"
-
-	"github.com/jinzhu/gorm"
 )
 
-type Building struct {
-	gorm.Model
-	Name     string `json:"name"`
-	Category string `json:"category"`
-	Desc     string `json:"description"`
-	Domain   int    `json:"domain"`
+type Building_Attributes struct {
+	ID      int    `json:"id" gorm:"column:id"`
+	PosXY   string `json:"posXY" gorm:"column:bldg_pos_x_y"`
+	PosXYU  string `json:"posXYUnit" gorm:"column:bldg_pos_x_y_unit"`
+	PosZ    string `json:"posZ" gorm:"column:bldg_pos_z"`
+	PosZU   string `json:"posZUnit" gorm:"column:bldg_pos_z_unit"`
+	Size    string `json:"size" gorm:"column:bldg_size"`
+	SizeU   string `json:"sizeUnit" gorm:"column:bldg_size_unit"`
+	Height  string `json:"height" gorm:"column:bldg_height"`
+	HeightU string `json:"heightUnit" gorm:"column:bldg_height_unit"`
+	Floors  string `json:"nbFloors" gorm:"column:bldg_nb_floors"`
+}
 
-	PosX    float64 `json:"posx"`
-	PosY    float64 `json:"posy"`
-	PosU    string  `json:"posxyu"`
-	PosZ    float64 `json:"posz"`
-	PosZU   string  `json:"poszu"`
-	Size    float64 `json:"size"`
-	SizeU   string  `json:"sizeu"`
-	Height  float64 `json:"height"`
-	HeightU string  `json:"heightu"`
-	Site    []Site
+type Building struct {
+	//gorm.Model
+	ID          int                 `json:"id" gorm:"column:id"`
+	Name        string              `json:"name" gorm:"column:bldg_name"`
+	ParentID    string              `json:"parentId" gorm:"column:bldg_parent_id"`
+	Category    string              `json:"category" gorm:"-"`
+	Domain      string              `json:"domain" gorm:"column:bldg_domain"`
+	D           []string            `json:"description" gorm:"-"`
+	Description string              `gorm:"column:bldg_description"`
+	Attributes  Building_Attributes `json:"attributes"`
+
+	//Site []Site
+	//D is used to help the JSON marshalling
+	//while Description will be used in
+	//DB transactions
 }
 
 func (bldg *Building) Validate() (map[string]interface{}, bool) {
@@ -31,54 +40,58 @@ func (bldg *Building) Validate() (map[string]interface{}, bool) {
 		return u.Message(false, "Building Name should be on payload"), false
 	}
 
-	if bldg.Category == "" {
+	/*if bldg.Category == "" {
 		return u.Message(false, "Category should be on the payload"), false
-	}
+	}*/
 
-	if bldg.Desc == "" {
-		return u.Message(false, "Description should be on the paylad"), false
-	}
+	/*if bldg.Desc == "" {
+		return u.Message(false, "Description should be on the payload"), false
+	}*/
 
-	if bldg.Domain == 0 {
+	if bldg.Domain == "" {
 		return u.Message(false, "Domain should should be on the payload"), false
 	}
 
-	if GetDB().Table("sites").
-		Where("id = ?", bldg.Domain).First(&Site{}).Error != nil {
+	if GetDB().Table("site").
+		Where("id = ?", bldg.ParentID).First(&Site{}).Error != nil {
 
 		return u.Message(false, "Domain should be correspond to site ID"), false
 	}
 
-	if bldg.PosX < 0.0 || bldg.PosY < 0.0 {
-		return u.Message(false, "Invalid XYcoordinates on payload"), false
+	if bldg.Attributes.PosXY == "" {
+		return u.Message(false, "XY coordinates should be on payload"), false
 	}
 
-	if bldg.PosU == "" {
-		return u.Message(false, "PositionXY string should be on the payload"), false
+	if bldg.Attributes.PosXYU == "" {
+		return u.Message(false, "PositionXYU string should be on the payload"), false
 	}
 
-	if bldg.PosZ < 0.0 {
-		return u.Message(false, "Invalid Z coordinates on payload"), false
+	if bldg.Attributes.PosZ == "" {
+		return u.Message(false, "Z coordinates should be on payload"), false
 	}
 
-	if bldg.PosZU == "" {
-		return u.Message(false, "PositionZ string should be on the payload"), false
+	if bldg.Attributes.PosZU == "" {
+		return u.Message(false, "PositionZU string should be on the payload"), false
 	}
 
-	if bldg.Size <= 0.0 {
+	if bldg.Attributes.Size == "" {
 		return u.Message(false, "Invalid building size on the payload"), false
 	}
 
-	if bldg.SizeU == "" {
+	if bldg.Attributes.SizeU == "" {
 		return u.Message(false, "Building size string should be on the payload"), false
 	}
 
-	if bldg.Height <= 0.0 {
+	if bldg.Attributes.Height == "" {
 		return u.Message(false, "Invalid Height on payload"), false
 	}
 
-	if bldg.HeightU == "" {
+	if bldg.Attributes.HeightU == "" {
 		return u.Message(false, "Building Height string should be on the payload"), false
+	}
+
+	if bldg.Attributes.Floors == "" {
+		return u.Message(false, "Floors string should be on the payload"), false
 	}
 
 	//Successfully validated bldg
@@ -90,7 +103,9 @@ func (bldg *Building) Create() map[string]interface{} {
 		return resp
 	}
 
-	GetDB().Create(bldg)
+	GetDB().Omit("bldg_description").Create(bldg)
+	bldg.Attributes.ID = bldg.ID
+	GetDB().Create(&(bldg.Attributes))
 
 	resp := u.Message(true, "success")
 	resp["building"] = bldg
@@ -154,11 +169,11 @@ func UpdateBuilding(id uint, newBldgInfo *Building) map[string]interface{} {
 		bldg.Category = newBldgInfo.Category
 	}
 
-	if newBldgInfo.Desc != "" && newBldgInfo.Desc != bldg.Desc {
+	/*if newBldgInfo.Desc != "" && newBldgInfo.Desc != bldg.Desc {
 		bldg.Desc = newBldgInfo.Desc
-	}
+	}*/
 
-	if newBldgInfo.PosX > 0.0 && newBldgInfo.PosX != bldg.PosX {
+	/*if newBldgInfo.PosX > 0.0 && newBldgInfo.PosX != bldg.PosX {
 		bldg.PosX = newBldgInfo.PosX
 	}
 
@@ -192,7 +207,7 @@ func UpdateBuilding(id uint, newBldgInfo *Building) map[string]interface{} {
 
 	if newBldgInfo.HeightU != "" && newBldgInfo.HeightU != bldg.HeightU {
 		bldg.HeightU = newBldgInfo.HeightU
-	}
+	}*/
 
 	GetDB().Table("buildings").Save(bldg)
 	return u.Message(true, "success")
