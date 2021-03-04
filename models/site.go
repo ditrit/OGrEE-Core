@@ -215,7 +215,12 @@ func DeleteSitesOfTenant(id uint) map[string]interface{} {
 func UpdateSite(id uint, newSiteInfo *Site) map[string]interface{} {
 	site := &Site{}
 
-	err := GetDB().Table("sites").Where("id = ?", id).First(site).Error
+	err := GetDB().Table("site").Where("id = ?", id).First(site).Error
+	if err != nil {
+		return u.Message(false, "Site was not found")
+	}
+
+	err = GetDB().Table("site_attributes").Where("id = ?", id).First(&(site.Attributes)).Error
 	if err != nil {
 		return u.Message(false, "Site was not found")
 	}
@@ -224,21 +229,17 @@ func UpdateSite(id uint, newSiteInfo *Site) map[string]interface{} {
 		site.Name = newSiteInfo.Name
 	}
 
-	if newSiteInfo.Category != "" && newSiteInfo.Category != site.Category {
+	/*if newSiteInfo.Category != "" && newSiteInfo.Category != site.Category {
 		site.Category = newSiteInfo.Category
-	}
+	}*/
 
 	/*if newSiteInfo.Desc != "" && newSiteInfo.Desc != site.Desc {
 		site.Desc = newSiteInfo.Desc
 	}*/
 
-	//Should it be possible to update domain
-	//to new tenant? Will have to think about it more
-	//if newSiteInfo.Domain
-
-	/*if newSiteInfo.Color != "" && newSiteInfo.Color != site.Color {
-		site.Color = newSiteInfo.Color
-	}*/
+	if newSiteInfo.Domain != "" && newSiteInfo.Domain != site.Domain {
+		site.Domain = newSiteInfo.Domain
+	}
 
 	if newSiteInfo.Attributes.Orientation != "" {
 		switch newSiteInfo.Attributes.Orientation {
@@ -249,7 +250,40 @@ func UpdateSite(id uint, newSiteInfo *Site) map[string]interface{} {
 		}
 	}
 
+	if newSiteInfo.Attributes.UsableColor != "" && newSiteInfo.Attributes.UsableColor != site.Attributes.UsableColor {
+		site.Attributes.UsableColor = newSiteInfo.Attributes.UsableColor
+	}
+
+	if newSiteInfo.Attributes.ReservedColor != "" && newSiteInfo.Attributes.ReservedColor != site.Attributes.ReservedColor {
+		site.Attributes.ReservedColor = newSiteInfo.Attributes.ReservedColor
+	}
+
+	if newSiteInfo.Attributes.TechnicalColor != "" && newSiteInfo.Attributes.TechnicalColor != site.Attributes.TechnicalColor {
+		site.Attributes.TechnicalColor = newSiteInfo.Attributes.TechnicalColor
+	}
+
+	if newSiteInfo.Attributes.Address != "" && newSiteInfo.Attributes.Address != site.Attributes.Address {
+		site.Attributes.Address = newSiteInfo.Attributes.Address
+	}
+
+	if newSiteInfo.Attributes.Zipcode != "" && newSiteInfo.Attributes.Zipcode != site.Attributes.Zipcode {
+		site.Attributes.Zipcode = newSiteInfo.Attributes.Zipcode
+	}
+
+	if newSiteInfo.Attributes.City != "" && newSiteInfo.Attributes.City != site.Attributes.City {
+		site.Attributes.City = newSiteInfo.Attributes.City
+	}
+
+	if newSiteInfo.Attributes.Country != "" && newSiteInfo.Attributes.Country != site.Attributes.Country {
+		site.Attributes.Country = newSiteInfo.Attributes.Country
+	}
+
+	if newSiteInfo.Attributes.Gps != "" && newSiteInfo.Attributes.Gps != site.Attributes.Gps {
+		site.Attributes.Gps = newSiteInfo.Attributes.Gps
+	}
+
 	//Successfully validated the new data
 	GetDB().Table("site").Save(site)
+	GetDB().Table("site_attributes").Save(&(site.Attributes))
 	return u.Message(true, "success")
 }
