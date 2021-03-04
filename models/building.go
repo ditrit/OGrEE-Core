@@ -229,7 +229,7 @@ func UpdateBuilding(id uint, newBldgInfo *Building) map[string]interface{} {
 func DeleteBuilding(id uint) map[string]interface{} {
 
 	//This is a hard delete!
-	e := GetDB().Unscoped().Table("buildings").
+	e := GetDB().Unscoped().Table("building").
 		Where("id = ?", id).Delete(&Building{}).RowsAffected
 
 	//The command below is a soft delete
@@ -237,7 +237,7 @@ func DeleteBuilding(id uint) map[string]interface{} {
 	//the record will remain but unsearchable
 	//e := GetDB().Table("tenants").Delete(Tenant{}, id).Error
 	if e == 0 {
-		return u.Message(false, "There was an error in deleting the site")
+		return u.Message(false, "There was an error in deleting the building")
 	}
 
 	return u.Message(true, "success")
