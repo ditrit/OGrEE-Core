@@ -147,14 +147,17 @@ func GetDevices(rack *Rack) []*Device {
 	return devices
 }
 
-//Obtain all devices of a rack
 func GetAllDevices() []*Device {
 	devices := make([]*Device, 0)
-
-	err := GetDB().Table("devices").Find(&devices).Error
+	attrs := make([]*Device_Attributes, 0)
+	err := GetDB().Find(&devices).Find(&attrs).Error
 	if err != nil {
 		fmt.Println(err)
 		return nil
+	}
+
+	for i := range devices {
+		devices[i].Attributes = *(attrs[i])
 	}
 
 	return devices
@@ -210,15 +213,8 @@ func UpdateDevice(id uint, newDeviceInfo *Device) map[string]interface{} {
 
 func DeleteDevice(id uint) map[string]interface{} {
 
-	//First check if the device exists
-	err := GetDB().Table("devices").Where("id = ?", id).First(&Device{}).Error
-	if err != nil {
-		fmt.Println("Couldn't find the device to delete")
-		return nil
-	}
-
 	//This is a hard delete!
-	e := GetDB().Unscoped().Table("devices").Delete(&Device{}, id).Error
+	e := GetDB().Unscoped().Table("device").Delete(&Device{}, id).Error
 
 	//The command below is a soft delete
 	//Meaning that the 'deleted_at' field will be set
