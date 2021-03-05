@@ -3,6 +3,7 @@ package models
 import (
 	"fmt"
 	u "p3/utils"
+	"strings"
 )
 
 type Rack_Attributes struct {
@@ -25,14 +26,14 @@ type Rack_Attributes struct {
 
 type Rack struct {
 	//gorm.Model
-	ID       int    `json:"id" gorm:"column:id"`
-	Name     string `json:"name" gorm:"column:rack_name"`
-	ParentID string `json:"parentId" gorm:"column:rack_parent_id"`
-	Category string `json:"category" gorm:"-"`
-	Domain   string `json:"domain" gorm:"column:rack_domain"`
-	//D           []string        `json:"description" gorm:"-"`
-	//Description string          `gorm:"-"`
-	Attributes Rack_Attributes `json:"attributes"`
+	ID              int             `json:"id" gorm:"column:id"`
+	Name            string          `json:"name" gorm:"column:rack_name"`
+	ParentID        string          `json:"parentId" gorm:"column:rack_parent_id"`
+	Category        string          `json:"category" gorm:"-"`
+	Domain          string          `json:"domain" gorm:"column:rack_domain"`
+	DescriptionJSON []string        `json:"description" gorm:"-"`
+	DescriptionDB   string          `json:"-" gorm:"column:rack_description"`
+	Attributes      Rack_Attributes `json:"attributes"`
 
 	//Site []Site
 	//D is used to help the JSON marshalling
@@ -117,7 +118,9 @@ func (rack *Rack) Create() map[string]interface{} {
 		return resp
 	}
 
-	GetDB().Omit("rack_description").Create(rack)
+	rack.DescriptionDB = strings.Join(rack.DescriptionJSON, "XYZ")
+
+	GetDB().Create(rack)
 	rack.Attributes.ID = rack.ID
 	GetDB().Create(&(rack.Attributes))
 
