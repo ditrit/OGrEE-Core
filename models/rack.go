@@ -138,6 +138,8 @@ func GetRack(id uint) *Rack {
 		fmt.Println(err)
 		return nil
 	}
+
+	rack.DescriptionJSON = strings.Split(rack.DescriptionDB, "XYZ")
 	return rack
 }
 
