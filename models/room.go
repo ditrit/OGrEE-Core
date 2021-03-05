@@ -138,6 +138,8 @@ func GetRoom(id uint) *Room {
 		fmt.Println(err)
 		return nil
 	}
+
+	room.DescriptionJSON = strings.Split(room.DescriptionDB, "XYZ")
 	return room
 }
 
