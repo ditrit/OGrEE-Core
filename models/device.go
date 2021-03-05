@@ -191,6 +191,10 @@ func UpdateDevice(id uint, newDeviceInfo *Device) map[string]interface{} {
 		device.Domain = newDeviceInfo.Domain
 	}
 
+	if dc := strings.Join(newDeviceInfo.D, "XYZ"); dc != "" && strings.Compare(dc, device.Description) != 0 {
+		device.Description = dc
+	}
+
 	if newDeviceInfo.Attributes.PosXY != "" && newDeviceInfo.Attributes.PosXY != device.Attributes.PosXY {
 		device.Attributes.PosXY = newDeviceInfo.Attributes.PosXY
 	}
@@ -253,7 +257,7 @@ func UpdateDevice(id uint, newDeviceInfo *Device) map[string]interface{} {
 	}
 
 	//Successfully validated the new data
-	GetDB().Table("device").Omit("device_description").Save(device).
+	GetDB().Table("device").Save(device).
 		Table("device_attributes").Save(&(device.Attributes))
 	return u.Message(true, "success")
 }
