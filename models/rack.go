@@ -168,6 +168,7 @@ func GetAllRacks() []*Rack {
 
 	for i := range racks {
 		racks[i].Attributes = *(attrs[i])
+		racks[i].DescriptionJSON = strings.Split(racks[i].DescriptionDB, "XYZ")
 	}
 
 	return racks
