@@ -177,7 +177,8 @@ func GetAllRacks() []*Rack {
 func UpdateRack(id uint, newRackInfo *Rack) map[string]interface{} {
 	rack := &Rack{}
 
-	err := GetDB().Table("racks").Where("id = ?", id).First(rack).Error
+	err := GetDB().Table("rack").Where("id = ?", id).First(rack).
+		Table("rack_attributes").Where("id = ?", id).First(&(rack.Attributes)).Error
 	if err != nil {
 		return u.Message(false, "Rack was not found")
 	}
@@ -186,47 +187,81 @@ func UpdateRack(id uint, newRackInfo *Rack) map[string]interface{} {
 		rack.Name = newRackInfo.Name
 	}
 
-	if newRackInfo.Category != "" && newRackInfo.Category != rack.Category {
-		rack.Category = newRackInfo.Category
+	if newRackInfo.Domain != "" && newRackInfo.Domain != rack.Domain {
+		rack.Domain = newRackInfo.Domain
 	}
 
-	/*if newRackInfo.Desc != "" && newRackInfo.Desc != rack.Desc {
-		rack.Desc = newRackInfo.Desc
-	}*/
-
-	//Should it be possible to update domain
-	// Will have to think about it more
-	//if newRackInfo.Domain
-
-	/*if newRackInfo.Color != "" && newRackInfo.Color != rack.Color {
-		rack.Color = newRackInfo.Color
+	if newRackInfo.Attributes.PosXY != "" && newRackInfo.Attributes.PosXY != rack.Attributes.PosXY {
+		rack.Attributes.PosXY = newRackInfo.Attributes.PosXY
 	}
 
-	if newRackInfo.Orientation != "" {
-		switch newRackInfo.Orientation {
+	if newRackInfo.Attributes.PosXYU != "" && newRackInfo.Attributes.PosXYU != rack.Attributes.PosXYU {
+		rack.Attributes.PosXYU = newRackInfo.Attributes.PosXYU
+	}
+
+	if newRackInfo.Attributes.PosZ != "" && newRackInfo.Attributes.PosZ != rack.Attributes.PosZ {
+		rack.Attributes.PosZ = newRackInfo.Attributes.PosZ
+	}
+
+	if newRackInfo.Attributes.PosZU != "" && newRackInfo.Attributes.PosZU != rack.Attributes.PosZU {
+		rack.Attributes.PosZU = newRackInfo.Attributes.PosZU
+	}
+
+	if newRackInfo.Attributes.Template != "" && newRackInfo.Attributes.Template != rack.Attributes.Template {
+		rack.Attributes.Template = newRackInfo.Attributes.Template
+	}
+
+	if newRackInfo.Attributes.Orientation != "" {
+		switch newRackInfo.Attributes.Orientation {
 		case "NE", "NW", "SE", "SW":
-			rack.Orientation = newRackInfo.Orientation
+			rack.Attributes.Orientation = newRackInfo.Attributes.Orientation
 
 		default:
 		}
-	}*/
+	}
+
+	if newRackInfo.Attributes.Size != "" && newRackInfo.Attributes.Size != rack.Attributes.Size {
+		rack.Attributes.Size = newRackInfo.Attributes.Size
+	}
+
+	if newRackInfo.Attributes.SizeU != "" && newRackInfo.Attributes.SizeU != rack.Attributes.SizeU {
+		rack.Attributes.SizeU = newRackInfo.Attributes.SizeU
+	}
+
+	if newRackInfo.Attributes.Height != "" && newRackInfo.Attributes.Height != rack.Attributes.Height {
+		rack.Attributes.Height = newRackInfo.Attributes.Height
+	}
+
+	if newRackInfo.Attributes.HeightU != "" && newRackInfo.Attributes.HeightU != rack.Attributes.HeightU {
+		rack.Attributes.HeightU = newRackInfo.Attributes.HeightU
+	}
+
+	if newRackInfo.Attributes.Vendor != "" && newRackInfo.Attributes.Vendor != rack.Attributes.Vendor {
+		rack.Attributes.Vendor = newRackInfo.Attributes.Vendor
+	}
+
+	if newRackInfo.Attributes.Type != "" && newRackInfo.Attributes.Type != rack.Attributes.Type {
+		rack.Attributes.Type = newRackInfo.Attributes.Type
+	}
+
+	if newRackInfo.Attributes.Model != "" && newRackInfo.Attributes.Model != rack.Attributes.Model {
+		rack.Attributes.Model = newRackInfo.Attributes.Model
+	}
+
+	if newRackInfo.Attributes.Serial != "" && newRackInfo.Attributes.Serial != rack.Attributes.Serial {
+		rack.Attributes.Serial = newRackInfo.Attributes.Serial
+	}
 
 	//Successfully validated the new data
-	GetDB().Table("racks").Save(rack)
+	GetDB().Table("rack").Omit("rack_description").Save(rack).
+		Table("rack_attributes").Save(&(rack.Attributes))
 	return u.Message(true, "success")
 }
 
 func DeleteRack(id uint) map[string]interface{} {
 
-	//First check if the rack exists
-	err := GetDB().Table("racks").Where("id = ?", id).First(&Rack{}).Error
-	if err != nil {
-		fmt.Println("Couldn't find the rack to delete")
-		return nil
-	}
-
 	//This is a hard delete!
-	e := GetDB().Unscoped().Table("racks").Delete(&Rack{}, id).Error
+	e := GetDB().Unscoped().Table("rack").Delete(&Rack{}, id).Error
 
 	//The command below is a soft delete
 	//Meaning that the 'deleted_at' field will be set
