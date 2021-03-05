@@ -26,18 +26,18 @@ type Device_Attributes struct {
 
 type Device struct {
 	//gorm.Model
-	ID          int               `json:"id" gorm:"column:id"`
-	Name        string            `json:"name" gorm:"column:device_name"`
-	ParentID    string            `json:"parentId" gorm:"column:device_parent_id"`
-	Category    string            `json:"category" gorm:"-"`
-	Domain      string            `json:"domain" gorm:"column:device_domain"`
-	D           []string          `json:"description" gorm:"-"`
-	Description string            `json:"-" gorm:"column:device_description"`
-	Attributes  Device_Attributes `json:"attributes"`
+	ID              int               `json:"id" gorm:"column:id"`
+	Name            string            `json:"name" gorm:"column:device_name"`
+	ParentID        string            `json:"parentId" gorm:"column:device_parent_id"`
+	Category        string            `json:"category" gorm:"-"`
+	Domain          string            `json:"domain" gorm:"column:device_domain"`
+	DescriptionJSON []string          `json:"description" gorm:"-"`
+	DescriptionDB   string            `json:"-" gorm:"column:device_description"`
+	Attributes      Device_Attributes `json:"attributes"`
 
 	//Site []Site
-	//D is used to help the JSON marshalling
-	//while Description will be used in
+	//DescriptionJSON is used to help the JSON marshalling
+	//while DescriptionDB will be used in
 	//DB transactions
 }
 
@@ -114,7 +114,7 @@ func (device *Device) Create() map[string]interface{} {
 		return resp
 	}
 
-	device.Description = strings.Join(device.D, "XYZ")
+	device.DescriptionDB = strings.Join(device.DescriptionJSON, "XYZ")
 
 	GetDB().Create(device)
 	device.Attributes.ID = device.ID
@@ -134,7 +134,7 @@ func GetDevice(id uint) *Device {
 		fmt.Println(err)
 		return nil
 	}
-	device.D = strings.Split(device.Description, "XYZ")
+	device.DescriptionJSON = strings.Split(device.DescriptionDB, "XYZ")
 	return device
 }
 
@@ -162,7 +162,7 @@ func GetAllDevices() []*Device {
 
 	for i := range devices {
 		devices[i].Attributes = *(attrs[i])
-		devices[i].D = strings.Split(devices[i].Description, "XYZ")
+		devices[i].DescriptionJSON = strings.Split(devices[i].DescriptionDB, "XYZ")
 	}
 
 	return devices
@@ -191,8 +191,8 @@ func UpdateDevice(id uint, newDeviceInfo *Device) map[string]interface{} {
 		device.Domain = newDeviceInfo.Domain
 	}
 
-	if dc := strings.Join(newDeviceInfo.D, "XYZ"); dc != "" && strings.Compare(dc, device.Description) != 0 {
-		device.Description = dc
+	if dc := strings.Join(newDeviceInfo.DescriptionJSON, "XYZ"); dc != "" && strings.Compare(dc, device.DescriptionDB) != 0 {
+		device.DescriptionDB = dc
 	}
 
 	if newDeviceInfo.Attributes.PosXY != "" && newDeviceInfo.Attributes.PosXY != device.Attributes.PosXY {
