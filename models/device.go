@@ -162,6 +162,7 @@ func GetAllDevices() []*Device {
 
 	for i := range devices {
 		devices[i].Attributes = *(attrs[i])
+		devices[i].D = strings.Split(devices[i].Description, "XYZ")
 	}
 
 	return devices
