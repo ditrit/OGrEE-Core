@@ -3,6 +3,7 @@ package models
 import (
 	"fmt"
 	u "p3/utils"
+	"strings"
 )
 
 type Room_Attributes struct {
@@ -21,14 +22,14 @@ type Room_Attributes struct {
 
 type Room struct {
 	//gorm.Model
-	ID          int             `json:"id" gorm:"column:id"`
-	Name        string          `json:"name" gorm:"column:room_name"`
-	ParentID    string          `json:"parentId" gorm:"column:room_parent_id"`
-	Category    string          `json:"category" gorm:"-"`
-	Domain      string          `json:"domain" gorm:"column:room_domain"`
-	D           []string        `json:"description" gorm:"-"`
-	Description string          `gorm:"column:room_description"`
-	Attributes  Room_Attributes `json:"attributes"`
+	ID              int             `json:"id" gorm:"column:id"`
+	Name            string          `json:"name" gorm:"column:room_name"`
+	ParentID        string          `json:"parentId" gorm:"column:room_parent_id"`
+	Category        string          `json:"category" gorm:"-"`
+	Domain          string          `json:"domain" gorm:"column:room_domain"`
+	DescriptionJSON []string        `json:"description" gorm:"-"`
+	DescriptionDB   string          `json:"-" gorm:"column:room_description"`
+	Attributes      Room_Attributes `json:"attributes"`
 
 	//Site []Site
 	//D is used to help the JSON marshalling
@@ -116,8 +117,10 @@ func (room *Room) Create() map[string]interface{} {
 		return resp
 	}
 
+	room.DescriptionDB = strings.Join(room.DescriptionJSON, "XYZ")
+
 	//GetDB().Create(room)
-	GetDB().Omit("room_description").Create(room)
+	GetDB().Create(room)
 	room.Attributes.ID = room.ID
 	GetDB().Create(&(room.Attributes))
 
