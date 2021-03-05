@@ -168,6 +168,7 @@ func GetAllRooms() []*Room {
 
 	for i := range rooms {
 		rooms[i].Attributes = *(attrs[i])
+		rooms[i].DescriptionJSON = strings.Split(rooms[i].DescriptionDB, "XYZ")
 	}
 
 	return rooms
