@@ -197,6 +197,10 @@ func UpdateRack(id uint, newRackInfo *Rack) map[string]interface{} {
 		rack.Domain = newRackInfo.Domain
 	}
 
+	if dc := strings.Join(newRackInfo.DescriptionJSON, "XYZ"); dc != "" && strings.Compare(dc, rack.DescriptionDB) != 0 {
+		rack.DescriptionDB = dc
+	}
+
 	if newRackInfo.Attributes.PosXY != "" && newRackInfo.Attributes.PosXY != rack.Attributes.PosXY {
 		rack.Attributes.PosXY = newRackInfo.Attributes.PosXY
 	}
@@ -259,7 +263,7 @@ func UpdateRack(id uint, newRackInfo *Rack) map[string]interface{} {
 	}
 
 	//Successfully validated the new data
-	GetDB().Table("rack").Omit("rack_description").Save(rack).
+	GetDB().Table("rack").Save(rack).
 		Table("rack_attributes").Save(&(rack.Attributes))
 	return u.Message(true, "success")
 }
