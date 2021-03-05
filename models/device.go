@@ -172,7 +172,8 @@ func GetAllDevices() []*Device {
 func UpdateDevice(id uint, newDeviceInfo *Device) map[string]interface{} {
 	device := &Device{}
 
-	err := GetDB().Table("devices").Where("id = ?", id).First(device).Error
+	err := GetDB().Table("device").Where("id = ?", id).First(device).
+		Table("device_attributes").Where("id = ?", id).First(&(device.Attributes)).Error
 	if err != nil {
 		return u.Message(false, "Device was not found")
 	}
@@ -181,33 +182,74 @@ func UpdateDevice(id uint, newDeviceInfo *Device) map[string]interface{} {
 		device.Name = newDeviceInfo.Name
 	}
 
-	if newDeviceInfo.Category != "" && newDeviceInfo.Category != device.Category {
-		device.Category = newDeviceInfo.Category
+	if newDeviceInfo.Domain != "" && newDeviceInfo.Domain != device.Domain {
+		device.Domain = newDeviceInfo.Domain
 	}
 
-	/*if newDeviceInfo.Desc != "" && newDeviceInfo.Desc != device.Desc {
-		device.Desc = newDeviceInfo.Desc
-	}*/
-
-	//Should it be possible to update domain
-	// Will have to think about it more
-	//if newDeviceInfo.Domain
-
-	/*if newDeviceInfo.Color != "" && newDeviceInfo.Color != device.Color {
-		device.Color = newDeviceInfo.Color
+	if newDeviceInfo.Attributes.PosXY != "" && newDeviceInfo.Attributes.PosXY != device.Attributes.PosXY {
+		device.Attributes.PosXY = newDeviceInfo.Attributes.PosXY
 	}
 
-	if newDeviceInfo.Orientation != "" {
-		switch newDeviceInfo.Orientation {
+	if newDeviceInfo.Attributes.PosXYU != "" && newDeviceInfo.Attributes.PosXYU != device.Attributes.PosXYU {
+		device.Attributes.PosXYU = newDeviceInfo.Attributes.PosXYU
+	}
+
+	if newDeviceInfo.Attributes.PosZ != "" && newDeviceInfo.Attributes.PosZ != device.Attributes.PosZ {
+		device.Attributes.PosZ = newDeviceInfo.Attributes.PosZ
+	}
+
+	if newDeviceInfo.Attributes.PosZU != "" && newDeviceInfo.Attributes.PosZU != device.Attributes.PosZU {
+		device.Attributes.PosZU = newDeviceInfo.Attributes.PosZU
+	}
+
+	if newDeviceInfo.Attributes.Template != "" && newDeviceInfo.Attributes.Template != device.Attributes.Template {
+		device.Attributes.Template = newDeviceInfo.Attributes.Template
+	}
+
+	if newDeviceInfo.Attributes.Orientation != "" {
+		switch newDeviceInfo.Attributes.Orientation {
 		case "NE", "NW", "SE", "SW":
-			device.Orientation = newDeviceInfo.Orientation
+			device.Attributes.Orientation = newDeviceInfo.Attributes.Orientation
 
 		default:
 		}
-	}*/
+	}
+
+	if newDeviceInfo.Attributes.Size != "" && newDeviceInfo.Attributes.Size != device.Attributes.Size {
+		device.Attributes.Size = newDeviceInfo.Attributes.Size
+	}
+
+	if newDeviceInfo.Attributes.SizeU != "" && newDeviceInfo.Attributes.SizeU != device.Attributes.SizeU {
+		device.Attributes.SizeU = newDeviceInfo.Attributes.SizeU
+	}
+
+	if newDeviceInfo.Attributes.Height != "" && newDeviceInfo.Attributes.Height != device.Attributes.Height {
+		device.Attributes.Height = newDeviceInfo.Attributes.Height
+	}
+
+	if newDeviceInfo.Attributes.HeightU != "" && newDeviceInfo.Attributes.HeightU != device.Attributes.HeightU {
+		device.Attributes.HeightU = newDeviceInfo.Attributes.HeightU
+	}
+
+	if newDeviceInfo.Attributes.Vendor != "" && newDeviceInfo.Attributes.Vendor != device.Attributes.Vendor {
+		device.Attributes.Vendor = newDeviceInfo.Attributes.Vendor
+	}
+
+	if newDeviceInfo.Attributes.Type != "" && newDeviceInfo.Attributes.Type != device.Attributes.Type {
+		device.Attributes.Type = newDeviceInfo.Attributes.Type
+	}
+
+	if newDeviceInfo.Attributes.Model != "" && newDeviceInfo.Attributes.Model != device.Attributes.Model {
+		device.Attributes.Model = newDeviceInfo.Attributes.Model
+	}
+
+	if newDeviceInfo.Attributes.Serial != "" && newDeviceInfo.Attributes.Serial != device.Attributes.Serial {
+		device.Attributes.Serial = newDeviceInfo.Attributes.Serial
+	}
 
 	//Successfully validated the new data
-	GetDB().Table("devices").Save(device)
+	GetDB().Table("device").Omit("device_description").Save(device).
+		Table("device_attributes").Save(&(device.Attributes))
 	return u.Message(true, "success")
 }
 
