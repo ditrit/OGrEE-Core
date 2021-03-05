@@ -154,11 +154,15 @@ func GetRacks(room *Room) []*Rack {
 //Obtain all racks
 func GetAllRacks() []*Rack {
 	racks := make([]*Rack, 0)
-
-	err := GetDB().Table("racks").Find(&racks).Error
+	attrs := make([]*Rack_Attributes, 0)
+	err := GetDB().Find(&racks).Find(&attrs).Error
 	if err != nil {
 		fmt.Println(err)
 		return nil
+	}
+
+	for i := range racks {
+		racks[i].Attributes = *(attrs[i])
 	}
 
 	return racks
