@@ -193,6 +193,14 @@ func UpdateRoom(id uint, newRoomInfo *Room) map[string]interface{} {
 		room.Name = newRoomInfo.Name
 	}
 
+	if newRoomInfo.Domain != "" && newRoomInfo.Domain != room.Domain {
+		room.Domain = newRoomInfo.Domain
+	}
+
+	if dc := strings.Join(newRoomInfo.DescriptionJSON, "XYZ"); dc != "" && strings.Compare(dc, room.DescriptionDB) != 0 {
+		room.DescriptionDB = dc
+	}
+
 	/*if newRoomInfo.Category != "" && newRoomInfo.Category != room.Category {
 		room.Category = newRoomInfo.Category
 	}*/
@@ -242,7 +250,7 @@ func UpdateRoom(id uint, newRoomInfo *Room) map[string]interface{} {
 		room.Attributes.HeightU = newRoomInfo.Attributes.HeightU
 	}
 
-	GetDB().Table("room").Omit("room_description").Save(room).
+	GetDB().Table("room").Save(room).
 		Table("room_attributes").Save(&(room.Attributes))
 
 	return u.Message(true, "success")
