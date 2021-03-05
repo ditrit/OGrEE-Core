@@ -3,6 +3,7 @@ package models
 import (
 	"fmt"
 	u "p3/utils"
+	"strings"
 )
 
 type Device_Attributes struct {
@@ -25,14 +26,14 @@ type Device_Attributes struct {
 
 type Device struct {
 	//gorm.Model
-	ID       int    `json:"id" gorm:"column:id"`
-	Name     string `json:"name" gorm:"column:device_name"`
-	ParentID string `json:"parentId" gorm:"column:device_parent_id"`
-	Category string `json:"category" gorm:"-"`
-	Domain   string `json:"domain" gorm:"column:device_domain"`
-	//D           []string        `json:"description" gorm:"-"`
-	//Description string          `gorm:"-"`
-	Attributes Device_Attributes `json:"attributes"`
+	ID          int               `json:"id" gorm:"column:id"`
+	Name        string            `json:"name" gorm:"column:device_name"`
+	ParentID    string            `json:"parentId" gorm:"column:device_parent_id"`
+	Category    string            `json:"category" gorm:"-"`
+	Domain      string            `json:"domain" gorm:"column:device_domain"`
+	D           []string          `json:"description" gorm:"-"`
+	Description string            `json:"-" gorm:"column:device_description"`
+	Attributes  Device_Attributes `json:"attributes"`
 
 	//Site []Site
 	//D is used to help the JSON marshalling
@@ -113,6 +114,8 @@ func (device *Device) Create() map[string]interface{} {
 		return resp
 	}
 
+	device.Description = strings.Join(device.D, "XYZ")
+
 	GetDB().Create(device)
 	device.Attributes.ID = device.ID
 	GetDB().Create(&(device.Attributes))
@@ -131,6 +134,7 @@ func GetDevice(id uint) *Device {
 		fmt.Println(err)
 		return nil
 	}
+	device.D = strings.Split(device.Description, "XYZ")
 	return device
 }
 
