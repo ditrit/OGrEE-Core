@@ -125,7 +125,8 @@ func (device *Device) Create() map[string]interface{} {
 //Get the device given the ID
 func GetDevice(id uint) *Device {
 	device := &Device{}
-	err := GetDB().Table("devices").Where("id = ?", id).First(device).Error
+	err := GetDB().Table("device").Where("id = ?", id).First(device).
+		Table("device_attributes").Where("id = ?", id).First(&(device.Attributes)).Error
 	if err != nil {
 		fmt.Println(err)
 		return nil
