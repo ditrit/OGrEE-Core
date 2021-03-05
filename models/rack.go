@@ -3,19 +3,41 @@ package models
 import (
 	"fmt"
 	u "p3/utils"
-
-	"github.com/jinzhu/gorm"
 )
 
+type Rack_Attributes struct {
+	ID          int    `json:"id" gorm:"column:id"`
+	PosXY       string `json:"posXY" gorm:"column:rack_pos_x_y"`
+	PosXYU      string `json:"posXYUnit" gorm:"column:rack_pos_x_y_unit"`
+	PosZ        string `json:"posZ" gorm:"column:rack_pos_z"`
+	PosZU       string `json:"posZUnit" gorm:"column:rack_pos_z_unit"`
+	Template    string `json:"template" gorm:"column:rack_template"`
+	Orientation string `json:"orientation" gorm:"column:rack_orientation"`
+	Size        string `json:"size" gorm:"column:rack_size"`
+	SizeU       string `json:"sizeUnit" gorm:"column:rack_size_unit"`
+	Height      string `json:"height" gorm:"column:rack_height"`
+	HeightU     string `json:"heightUnit" gorm:"column:rack_height_unit"`
+	Vendor      string `json:"vendor" gorm:"column:rack_vendor"`
+	Type        string `json:"type" gorm:"column:rack_type"`
+	Model       string `json:"model" gorm:"column:rack_model"`
+	Serial      string `json:"serial" gorm:"column:rack_serial"`
+}
+
 type Rack struct {
-	gorm.Model
-	Name        string          `json:"name"`
-	Category    string          `json:"category"`
-	Desc        string          `json:"description"`
-	Domain      int             `json:"domain"`
-	Color       string          `json:"color"`
-	Orientation ECardinalOrient `json:"eorientation"`
-	Room        []Room          `gorm:"foreignKey:Room"`
+	//gorm.Model
+	ID       int    `json:"id" gorm:"column:id"`
+	Name     string `json:"name" gorm:"column:rack_name"`
+	ParentID string `json:"parentId" gorm:"column:rack_parent_id"`
+	Category string `json:"category" gorm:"-"`
+	Domain   string `json:"domain" gorm:"column:rack_domain"`
+	//D           []string        `json:"description" gorm:"-"`
+	//Description string          `gorm:"-"`
+	Attributes Rack_Attributes `json:"attributes"`
+
+	//Site []Site
+	//D is used to help the JSON marshalling
+	//while Description will be used in
+	//DB transactions
 }
 
 func (rack *Rack) Validate() (map[string]interface{}, bool) {
@@ -23,35 +45,67 @@ func (rack *Rack) Validate() (map[string]interface{}, bool) {
 		return u.Message(false, "Rack Name should be on payload"), false
 	}
 
-	if rack.Category == "" {
+	/*if rack.Category == "" {
 		return u.Message(false, "Category should be on the payload"), false
 	}
 
 	if rack.Desc == "" {
 		return u.Message(false, "Description should be on the payload"), false
-	}
+	}*/
 
-	if rack.Domain == 0 {
+	if rack.Domain == "" {
 		return u.Message(false, "Domain should should be on the payload"), false
 	}
 
-	if GetDB().Table("rooms").
-		Where("id = ?", rack.Domain).First(&Room{}).Error != nil {
+	if GetDB().Table("room").
+		Where("id = ?", rack.ParentID).RecordNotFound() == true {
 
-		return u.Message(false, "Domain should be correspond to Room ID"), false
+		return u.Message(false, "ParentID should be correspond to building ID"), false
 	}
 
-	if rack.Color == "" {
-		return u.Message(false, "Color should be on the payload"), false
+	if rack.Attributes.PosXY == "" {
+		return u.Message(false, "XY coordinates should be on payload"), false
 	}
 
-	switch rack.Orientation {
-	case "NE", "NW", "SE", "SW":
+	if rack.Attributes.PosXYU == "" {
+		return u.Message(false, "PositionXYU string should be on the payload"), false
+	}
+
+	/*if rack.Attributes.PosZ == "" {
+		return u.Message(false, "Z coordinates should be on payload"), false
+	}
+
+	if rack.Attributes.PosZU == "" {
+		return u.Message(false, "PositionZU string should be on the payload"), false
+	}*/
+
+	/*if rack.Attributes.Template == "" {
+		return u.Message(false, "Template should be on the payload"), false
+	}*/
+
+	switch rack.Attributes.Orientation {
+	case "front", "rear", "left", "right":
 	case "":
 		return u.Message(false, "Orientation should be on the payload"), false
 
 	default:
 		return u.Message(false, "Orientation is invalid!"), false
+	}
+
+	if rack.Attributes.Size == "" {
+		return u.Message(false, "Invalid size on the payload"), false
+	}
+
+	if rack.Attributes.SizeU == "" {
+		return u.Message(false, "Rack size string should be on the payload"), false
+	}
+
+	if rack.Attributes.Height == "" {
+		return u.Message(false, "Invalid Height on payload"), false
+	}
+
+	if rack.Attributes.HeightU == "" {
+		return u.Message(false, "Rack Height string should be on the payload"), false
 	}
 
 	//Successfully validated Rack
@@ -63,7 +117,9 @@ func (rack *Rack) Create() map[string]interface{} {
 		return resp
 	}
 
-	GetDB().Create(rack)
+	GetDB().Omit("rack_description").Create(rack)
+	rack.Attributes.ID = rack.ID
+	GetDB().Create(&(rack.Attributes))
 
 	resp := u.Message(true, "success")
 	resp["rack"] = rack
@@ -73,7 +129,8 @@ func (rack *Rack) Create() map[string]interface{} {
 //Get the rack using ID
 func GetRack(id uint) *Rack {
 	rack := &Rack{}
-	err := GetDB().Table("racks").Where("id = ?", id).First(rack).Error
+	err := GetDB().Table("rack").Where("id = ?", id).First(rack).
+		Table("rack_attributes").Where("id = ?", id).First(&(rack.Attributes)).Error
 	if err != nil {
 		fmt.Println(err)
 		return nil
@@ -129,15 +186,15 @@ func UpdateRack(id uint, newRackInfo *Rack) map[string]interface{} {
 		rack.Category = newRackInfo.Category
 	}
 
-	if newRackInfo.Desc != "" && newRackInfo.Desc != rack.Desc {
+	/*if newRackInfo.Desc != "" && newRackInfo.Desc != rack.Desc {
 		rack.Desc = newRackInfo.Desc
-	}
+	}*/
 
 	//Should it be possible to update domain
 	// Will have to think about it more
 	//if newRackInfo.Domain
 
-	if newRackInfo.Color != "" && newRackInfo.Color != rack.Color {
+	/*if newRackInfo.Color != "" && newRackInfo.Color != rack.Color {
 		rack.Color = newRackInfo.Color
 	}
 
@@ -148,7 +205,7 @@ func UpdateRack(id uint, newRackInfo *Rack) map[string]interface{} {
 
 		default:
 		}
-	}
+	}*/
 
 	//Successfully validated the new data
 	GetDB().Table("racks").Save(rack)
