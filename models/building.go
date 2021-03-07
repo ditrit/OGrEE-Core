@@ -188,6 +188,10 @@ func UpdateBuilding(id uint, newBldgInfo *Building) map[string]interface{} {
 		bldg.Domain = newBldgInfo.Domain
 	}
 
+	if dc := strings.Join(newBldgInfo.DescriptionJSON, "XYZ"); dc != "" && strings.Compare(dc, bldg.DescriptionDB) != 0 {
+		bldg.DescriptionDB = dc
+	}
+
 	/*if newBldgInfo.Category != "" && newBldgInfo.Category != bldg.Category {
 		bldg.Category = newBldgInfo.Category
 	}*/
@@ -228,7 +232,7 @@ func UpdateBuilding(id uint, newBldgInfo *Building) map[string]interface{} {
 		bldg.Attributes.HeightU = newBldgInfo.Attributes.HeightU
 	}
 
-	GetDB().Table("building").Omit("bldg_description").Save(bldg).
+	GetDB().Table("building").Save(bldg).
 		Table("building_attributes").Save(&(bldg.Attributes))
 	return u.Message(true, "success")
 }
