@@ -110,24 +110,22 @@ func GetTenant(id uint) *Tenant {
 
 func GetAllTenants() []*Tenant {
 	tenants := make([]*Tenant, 0)
-
+	attrs := make([]*Tenant_Attributes, 0)
 	err := GetDB().Table("tenant").Find(&tenants).Error
 	if err != nil {
+		fmt.Println("There was an error in getting tenant by ID")
 		return nil
 	}
 
-	//Had to go Raw because the ORM can't make the
-	//query correctly otherwise
-	//This can be an efficiency issue which
-	//can be compared to making a Attribute
-	//struct slice then make the same query as above
-	//then iterate and assign attributes from the
-	//attribute slice
-	for i := range tenants {
-		GetDB().Raw("SELECT * FROM tenant_attributes WHERE id = ?",
-			tenants[i].ID).Scan(&(tenants[i].Attributes))
+	err = GetDB().Table("tenant_attributes").Find(&attrs).Error
+	if err != nil {
+		fmt.Println("There was an error in getting tenant attrs by ID")
+		return nil
+	}
 
-		fmt.Println("ITER ID: ", tenants[i].ID)
+	for i := range tenants {
+		tenants[i].Attributes = *(attrs[i])
+		tenants[i].DescriptionJSON = strings.Split(tenants[i].DescriptionDB, "XYZ")
 		if err != nil {
 			return nil
 		}
