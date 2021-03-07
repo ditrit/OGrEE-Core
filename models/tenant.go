@@ -3,28 +3,27 @@ package models
 import (
 	"fmt"
 	u "p3/utils"
+	"strings"
 )
 
 type Tenant_Attributes struct {
-	ID uint `gorm:\"primary_key\" gorm: "id"`
-	/*CreatedAt   time.Time
-	UpdatedAt   time.Time
-	DeletedAt   *(time.Time) "sql:\"index\""*/
-	Color       string `gorm:"column:tenant_color" json:"color"`
-	MainContact string `json:"mainContact"`
-	MainPhone   string `json:"mainPhone"`
-	MainEmail   string `json:"mainEmail"`
+	ID          int    `json:"id" gorm:"column:id"`
+	Color       string `json:"color" gorm:"column:tenant_color"`
+	MainContact string `json:"mainContact" gorm:"column:main_contact"`
+	MainPhone   string `json:"mainPhone" gorm:"column:main_phone"`
+	MainEmail   string `json:"mainEmail" gorm:"column:main_email"`
 }
 
 type Tenant struct {
 	//gorm.Model
-	ID       uint   `gorm:\"primary_key\" gorm: "id"`
-	Name     string `gorm:"column:tenant_name" json:"name"`
-	ParentID string `gorm:"column:tenant_parent_id" json:"parentId"`
-	Category string `gorm:"column:tenant_category" json:"category" gorm:"-"`
-	//Description []string          `gorm:"column:tenant_description" gorm:"type:text[]" json:"description"`
-	Domain     string            `gorm:"column:tenant_domain" json:"domain"`
-	Attributes Tenant_Attributes `json:"attributes"`
+	ID              int               `json:"id" gorm:"column:id"`
+	Name            string            `json:"name" gorm:"column:tenant_name"`
+	Category        string            `json:"category" gorm:"-"`
+	Domain          string            `json:"domain" gorm:"column:tenant_domain"`
+	ParentID        int               `json:"parentId" gorm:"column:tenant_parent_id"`
+	DescriptionJSON []string          `json:"description" gorm:"-"`
+	DescriptionDB   string            `json:"-" gorm:"column:tenant_description"`
+	Attributes      Tenant_Attributes `json:"attributes"`
 }
 
 func (tenant *Tenant) Validate() (map[string]interface{}, bool) {
@@ -71,8 +70,9 @@ func (tenant *Tenant) Create() map[string]interface{} {
 	}
 	//Strategy for inserting into both tables
 	//Otherwise make 2 insert statements
-	GetDB().Table("tenant").Select("tenant_name",
-		"tenant_domain").Create(&tenant)
+
+	tenant.DescriptionDB = strings.Join(tenant.DescriptionJSON, "XYZ")
+	GetDB().Create(tenant)
 
 	//This link explains JSON marshalling which will
 	//be needed to merge the SQL Query below to the Query
