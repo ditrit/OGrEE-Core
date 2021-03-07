@@ -3,6 +3,7 @@ package models
 import (
 	"fmt"
 	u "p3/utils"
+	"strings"
 )
 
 type Building_Attributes struct {
@@ -20,14 +21,14 @@ type Building_Attributes struct {
 
 type Building struct {
 	//gorm.Model
-	ID          int                 `json:"id" gorm:"column:id"`
-	Name        string              `json:"name" gorm:"column:bldg_name"`
-	ParentID    string              `json:"parentId" gorm:"column:bldg_parent_id"`
-	Category    string              `json:"category" gorm:"-"`
-	Domain      string              `json:"domain" gorm:"column:bldg_domain"`
-	D           []string            `json:"description" gorm:"-"`
-	Description string              `gorm:"column:bldg_description"`
-	Attributes  Building_Attributes `json:"attributes"`
+	ID              int                 `json:"id" gorm:"column:id"`
+	Name            string              `json:"name" gorm:"column:bldg_name"`
+	ParentID        string              `json:"parentId" gorm:"column:bldg_parent_id"`
+	Category        string              `json:"category" gorm:"-"`
+	Domain          string              `json:"domain" gorm:"column:bldg_domain"`
+	DescriptionJSON []string            `json:"description" gorm:"-"`
+	DescriptionDB   string              `json:"-" gorm:"column:bldg_description"`
+	Attributes      Building_Attributes `json:"attributes"`
 
 	//Site []Site
 	//D is used to help the JSON marshalling
@@ -103,7 +104,8 @@ func (bldg *Building) Create() map[string]interface{} {
 		return resp
 	}
 
-	GetDB().Omit("bldg_description").Create(bldg)
+	bldg.DescriptionDB = strings.Join(bldg.DescriptionJSON, "XYZ")
+	GetDB().Create(bldg)
 	bldg.Attributes.ID = bldg.ID
 	GetDB().Create(&(bldg.Attributes))
 
@@ -121,6 +123,8 @@ func GetBuilding(id uint) *Building {
 		fmt.Println(err)
 		return nil
 	}
+
+	bldg.DescriptionJSON = strings.Split(bldg.DescriptionDB, "XYZ")
 	return bldg
 }
 

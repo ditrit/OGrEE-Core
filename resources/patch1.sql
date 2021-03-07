@@ -18,7 +18,7 @@ SET enable_experimental_alter_column_type_general = true;
 alter table device alter column device_description SET DATA TYPE text;
 alter table rack alter column rack_description SET DATA TYPE text;
 alter table room alter column room_description SET DATA TYPE text;
-alter table building alter column building_description SET DATA TYPE text;
+alter table building alter column bldg_description SET DATA TYPE text;
 alter table site alter column site_description SET DATA TYPE text;
 alter table tenant alter column tenant_description SET DATA TYPE text;
 SET enable_experimental_alter_column_type_general = false;
