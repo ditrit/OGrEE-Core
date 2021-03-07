@@ -5,7 +5,10 @@ script to start up CockroachDB
 
 Introduction
 ------------
+Currently the most up to date version of the API is in the 'failedDesign' branch. It was thought that the design was really bad, but in fact it is actually better than the design in the master branch.
 
+**TO DO**
+Write instructions to set up API and DB on a new machine
 
 API Files
 -------------
