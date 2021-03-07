@@ -218,12 +218,8 @@ func DeleteSitesOfTenant(id uint) map[string]interface{} {
 func UpdateSite(id uint, newSiteInfo *Site) map[string]interface{} {
 	site := &Site{}
 
-	err := GetDB().Table("site").Where("id = ?", id).First(site).Error
-	if err != nil {
-		return u.Message(false, "Site was not found")
-	}
-
-	err = GetDB().Table("site_attributes").Where("id = ?", id).First(&(site.Attributes)).Error
+	err := GetDB().Table("site").Where("id = ?", id).First(site).
+		Table("site_attributes").Where("id = ?", id).First(&(site.Attributes)).Error
 	if err != nil {
 		return u.Message(false, "Site was not found")
 	}
@@ -242,6 +238,10 @@ func UpdateSite(id uint, newSiteInfo *Site) map[string]interface{} {
 
 	if newSiteInfo.Domain != "" && newSiteInfo.Domain != site.Domain {
 		site.Domain = newSiteInfo.Domain
+	}
+
+	if dc := strings.Join(newSiteInfo.DescriptionJSON, "XYZ"); dc != "" && strings.Compare(dc, site.DescriptionDB) != 0 {
+		site.DescriptionDB = dc
 	}
 
 	if newSiteInfo.Attributes.Orientation != "" {
