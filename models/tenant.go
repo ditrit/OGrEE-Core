@@ -105,7 +105,7 @@ func GetTenant(id uint) *Tenant {
 	}
 
 	//r.Scan(tenant, &(tenant.Attributes))
-
+	tenant.DescriptionJSON = strings.Split(tenant.DescriptionDB, "XYZ")
 	return tenant
 }
 
