@@ -3,6 +3,7 @@ package models
 import (
 	"fmt"
 	u "p3/utils"
+	"strings"
 )
 
 type ECardinalOrient string
@@ -24,12 +25,14 @@ type Site_Attributes struct {
 
 type Site struct {
 	//gorm.Model
-	ID         int             `json:"id" gorm:"column:id"`
-	Name       string          `json:"name" gorm:"column:site_name"`
-	Category   string          `json:"category" gorm:"-"`
-	Domain     string          `json:"domain" gorm:"column:site_domain"`
-	ParentID   string          `json:"parentId" gorm:"column:site_parent_id"`
-	Attributes Site_Attributes `json:"attributes"`
+	ID              int             `json:"id" gorm:"column:id"`
+	Name            string          `json:"name" gorm:"column:site_name"`
+	Category        string          `json:"category" gorm:"-"`
+	Domain          string          `json:"domain" gorm:"column:site_domain"`
+	ParentID        string          `json:"parentId" gorm:"column:site_parent_id"`
+	DescriptionJSON []string        `json:"description" gorm:"-"`
+	DescriptionDB   string          `json:"-" gorm:"column:site_description"`
+	Attributes      Site_Attributes `json:"attributes"`
 
 	Building []Building
 }
@@ -80,6 +83,7 @@ func (site *Site) Create() map[string]interface{} {
 	}
 
 	//GetDB().Create(site)
+	site.DescriptionDB = strings.Join(site.DescriptionJSON, "XYZ")
 
 	GetDB().Create(site)
 
@@ -133,18 +137,13 @@ func GetSites(id uint) []*Site {
 func GetSite(id uint) *Site {
 	site := &Site{}
 
-	err := GetDB().Table("site").Where("id = ?", id).First(site).Error
-	if err != nil {
-		fmt.Println("There was an error in getting site by ID")
-		return nil
-	}
-
-	err = GetDB().Table("site_attributes").
-		Where("id = ?", id).First(&(site.Attributes)).Error
+	err := GetDB().Table("site").Where("id = ?", id).First(site).
+		Table("site_attributes").Where("id = ?", id).First(&(site.Attributes)).Error
 	if err != nil {
 		fmt.Println("There was an error in getting site attr by ID")
 		return nil
 	}
+	site.DescriptionJSON = strings.Split(site.DescriptionDB, "XYZ")
 	return site
 }
 
