@@ -138,14 +138,8 @@ func GetAllTenants() []*Tenant {
 //Message will still be successful
 func UpdateTenant(id uint, t *Tenant) map[string]interface{} {
 	tenant := &Tenant{}
-
-	err := GetDB().Table("tenant").First(tenant).Where("id = ?", id).Error
-	if err != nil {
-		return u.Message(false, "Tenant was not found")
-	}
-
-	err = GetDB().Table("tenant_attributes").
-		Where("id = ?", id).First(&(tenant.Attributes)).Error
+	err := GetDB().Table("tenant").Where("id = ?", id).First(tenant).
+		Table("tenant_attributes").Where("id = ?", id).First(&(tenant.Attributes)).Error
 
 	if err != nil {
 		return u.Message(false, "Tenant was not found")
@@ -155,9 +149,13 @@ func UpdateTenant(id uint, t *Tenant) map[string]interface{} {
 		tenant.Name = t.Name
 	}
 
-	if t.Category != "" && t.Category != tenant.Category {
-		tenant.Category = t.Category
+	if dc := strings.Join(t.DescriptionJSON, "XYZ"); dc != "" && strings.Compare(dc, tenant.DescriptionDB) != 0 {
+		tenant.DescriptionDB = dc
 	}
+
+	/*if t.Category != "" && t.Category != tenant.Category {
+		tenant.Category = t.Category
+	}*/
 
 	if t.Domain != "" && t.Domain != tenant.Domain {
 		tenant.Domain = t.Domain
@@ -184,11 +182,8 @@ func UpdateTenant(id uint, t *Tenant) map[string]interface{} {
 	}
 
 	//fmt.Println(t.Description)
-
-	GetDB().Exec(`UPDATE tenant SET tenant_name=?, tenant_domain=? Where id = ?`,
-		tenant.Name, tenant.Domain, id)
-	GetDB().Table("tenant_attributes").Where("id = ?", id).Updates(&(tenant.Attributes))
-	//.Update(tenant)
+	GetDB().Table("tenant").Save(tenant)
+	GetDB().Table("tenant_attributes").Save(&(tenant.Attributes))
 	return u.Message(true, "success")
 }
 
