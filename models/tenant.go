@@ -96,9 +96,8 @@ func (tenant *Tenant) Create() map[string]interface{} {
 func GetTenant(id uint) *Tenant {
 	tenant := &Tenant{}
 
-	e := GetDB().Raw(`SELECT * FROM tenant INNER JOIN
-	tenant_attributes ON tenant_attributes.id = tenant.id
-	where tenant.id = ?`, id).Find(tenant).Find(&(tenant.Attributes)).Error
+	e := GetDB().Table("tenant").Where("id = ?", id).First(tenant).
+		Where("id = ?", id).First(&(tenant.Attributes)).Error
 
 	if e != nil {
 		fmt.Println("There was an error in finding the Tenant")
