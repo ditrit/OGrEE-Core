@@ -149,18 +149,22 @@ func GetSite(id uint) *Site {
 
 func GetAllSites() []*Site {
 	sites := make([]*Site, 0)
-
+	attrs := make([]*Site_Attributes, 0)
 	err := GetDB().Table("site").Find(&sites).Error
 	if err != nil {
 		fmt.Println("There was an error in getting site by ID")
 		return nil
 	}
 
-	for i := range sites {
-		GetDB().Raw("SELECT * FROM site_attributes WHERE id = ?",
-			sites[i].ID).Scan(&(sites[i].Attributes))
+	err = GetDB().Table("site_attributes").Find(&attrs).Error
+	if err != nil {
+		fmt.Println("There was an error in getting site attrs by ID")
+		return nil
+	}
 
-		fmt.Println("ITER ID: ", sites[i].ID)
+	for i := range sites {
+		sites[i].Attributes = *(attrs[i])
+		sites[i].DescriptionJSON = strings.Split(sites[i].DescriptionDB, "XYZ")
 		if err != nil {
 			return nil
 		}
