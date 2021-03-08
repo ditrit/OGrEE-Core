@@ -38,7 +38,7 @@ func (account *Account) Validate() (map[string]interface{}, bool) {
 	temp := &Account{}
 
 	//Error checking and duplicate emails
-	err := GetDB().Table("accounts").Where("email = ?", account.Email).First(temp).Error
+	err := GetDB().Table("account").Where("email = ?", account.Email).First(temp).Error
 	if err != nil && err != gorm.ErrRecordNotFound {
 		return u.Message(false, "Connection error. Please retry"), false
 	}
@@ -79,7 +79,7 @@ func (account *Account) Create() map[string]interface{} {
 func Login(email, password string) map[string]interface{} {
 	account := &Account{}
 
-	err := GetDB().Table("accounts").Where("email = ?", email).First(account).Error
+	err := GetDB().Table("account").Where("email = ?", email).First(account).Error
 	if err != nil {
 		if err == gorm.ErrRecordNotFound {
 			return u.Message(false, "Error, email not found")
@@ -113,7 +113,7 @@ func Login(email, password string) map[string]interface{} {
 func GetUser(u int) *Account {
 
 	acc := &Account{}
-	GetDB().Table("accounts").Where("id = ?", u).First(acc)
+	GetDB().Table("account").Where("id = ?", u).First(acc)
 	if acc.Email == "" {
 		return nil
 	}
