@@ -42,6 +42,7 @@ func init() {
 
 	fmt.Print(err)
 	db = conn
+	db.Debug().SingularTable(true)
 }
 
 func GetDB() *gorm.DB {
