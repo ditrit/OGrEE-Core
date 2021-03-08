@@ -97,7 +97,8 @@ func GetTenant(id uint) *Tenant {
 	tenant := &Tenant{}
 
 	e := GetDB().Table("tenant").Where("id = ?", id).First(tenant).
-		Where("id = ?", id).First(&(tenant.Attributes)).Error
+		Table("tenant_attributes").Where("id = ?", id).First(&(tenant.Attributes)).
+		Error
 
 	if e != nil {
 		fmt.Println("There was an error in finding the Tenant")
