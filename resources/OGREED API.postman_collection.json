@@ -371,7 +371,7 @@
 							}
 						],
 						"url": {
-							"raw": "{{URL}}/api/user/sites/{{SitedID}}",
+							"raw": "{{URL}}/api/user/sites/{{SiteID}}",
 							"host": [
 								"{{URL}}"
 							],
@@ -379,7 +379,7 @@
 								"api",
 								"user",
 								"sites",
-								"{{SitedID}}"
+								"{{SiteID}}"
 							]
 						}
 					},
@@ -465,7 +465,7 @@
 							}
 						},
 						"url": {
-							"raw": "{{URL}}/api/user/sites/{{SitedID}}",
+							"raw": "{{URL}}/api/user/sites/{{SiteID}}",
 							"host": [
 								"{{URL}}"
 							],
@@ -473,7 +473,7 @@
 								"api",
 								"user",
 								"sites",
-								"{{SitedID}}"
+								"{{SiteID}}"
 							]
 						}
 					},
@@ -491,7 +491,7 @@
 							}
 						],
 						"url": {
-							"raw": "{{URL}}/api/user/sites/{{SitedID}}",
+							"raw": "{{URL}}/api/user/sites/{{SiteID}}",
 							"host": [
 								"{{URL}}"
 							],
@@ -499,7 +499,7 @@
 								"api",
 								"user",
 								"sites",
-								"{{SitedID}}"
+								"{{SiteID}}"
 							]
 						}
 					},
@@ -574,7 +574,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"name\": \"B\",\n    \"id\": null,\n    \"parentId\": \"{{SitedID}}\",\n    \"category\": \"building\",\n    \"description\": [\n        \"Building B\"\n    ],\n    \"domain\": \"DEMO\",\n    \"attributes\": {\n        \"posXY\": \"{\\\"x\\\":-30.0,\\\"y\\\":0.0}\",\n        \"posXYUnit\": \"m\",\n        \"posZ\": \"10\",\n        \"posZUnit\": \"m\",\n        \"size\": \"{\\\"x\\\":25.0,\\\"y\\\":29.399999618530275}\",\n        \"sizeUnit\": \"m\",\n        \"height\": \"0\",\n        \"heightUnit\": \"m\",\n        \"nbFloors\": \"1\"\n    }\n}",
+							"raw": "{\n    \"name\": \"B\",\n    \"id\": null,\n    \"parentId\": \"{{SiteID}}\",\n    \"category\": \"building\",\n    \"description\": [\n        \"Building B\"\n    ],\n    \"domain\": \"DEMO\",\n    \"attributes\": {\n        \"posXY\": \"{\\\"x\\\":-30.0,\\\"y\\\":0.0}\",\n        \"posXYUnit\": \"m\",\n        \"posZ\": \"10\",\n        \"posZUnit\": \"m\",\n        \"size\": \"{\\\"x\\\":25.0,\\\"y\\\":29.399999618530275}\",\n        \"sizeUnit\": \"m\",\n        \"height\": \"0\",\n        \"heightUnit\": \"m\",\n        \"nbFloors\": \"1\"\n    }\n}",
 							"options": {
 								"raw": {
 									"language": "json"
