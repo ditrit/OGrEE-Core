@@ -15,12 +15,19 @@ ALTER TABLE device_attributes ADD device_serial text;
 -- to single string
 
 SET enable_experimental_alter_column_type_general = true;
-ALTER TABLE device ALTER column device_description SET DATA TYPE text;
-ALTER TABLE rack ALTER column rack_description SET DATA TYPE text;
-ALTER TABLE room ALTER column room_description SET DATA TYPE text;
-ALTER TABLE building ALTER column bldg_description SET DATA TYPE text;
-ALTER TABLE site ALTER column site_description SET DATA TYPE text;
-ALTER TABLE tenant ALTER column tenant_description SET DATA TYPE text;
+ALTER TABLE device DROP column device_description;
+ALTER TABLE rack DROP column rack_description;
+ALTER TABLE room DROP column room_description;
+ALTER TABLE building DROP column bldg_description;
+ALTER TABLE site DROP column site_description;
+ALTER TABLE tenant DROP column tenant_description;
+
+ALTER TABLE device ADD column device_description text;
+ALTER TABLE rack ADD column rack_description text;
+ALTER TABLE room ADD column room_description text;
+ALTER TABLE building ADD column bldg_description text;
+ALTER TABLE site ADD column site_description text;
+ALTER TABLE tenant ADD column tenant_description text;
 SET enable_experimental_alter_column_type_general = false;
 
 
