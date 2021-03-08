@@ -42,23 +42,6 @@ func init() {
 
 	fmt.Print(err)
 	db = conn
-	//Migrate database
-
-	db.Debug().SingularTable(true)
-	db.Debug().AutoMigrate(&Account{})
-	/*db.AutoMigrate(&Tenant_Attributes{})
-	db.Model(&Tenant_Attributes{}).AddForeignKey(
-		"id", "tenant(id)", "CASCADE", "CASCADE")
-
-	db.Debug().SingularTable(true)
-	db.Debug().AutoMigrate(&Account{},
-		&Tenant{} , &Site{}, &Building{}, &Room{}, &Rack{}, &Device{})
-	db.Model(&Site{}).AddForeignKey("domain", "tenant(id)", "CASCADE", "CASCADE")
-	db.Model(&Building{}).AddForeignKey("domain", "site(id)", "CASCADE", "CASCADE")
-	db.Model(&Room{}).AddForeignKey("domain", "building(id)", "CASCADE", "CASCADE")
-	db.Model(&Rack{}).AddForeignKey("domain", "room(id)", "CASCADE", "CASCADE")
-	db.Model(&Device{}).AddForeignKey("domain", "rack(id)", "CASCADE", "CASCADE")
-	println("GOT HERE 3")*/
 }
 
 func GetDB() *gorm.DB {
