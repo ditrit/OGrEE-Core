@@ -170,6 +170,7 @@ docker run -d \
 --name=roach3 \
 --hostname=roach3 \
 --net=roachnet \
+-p 26257:26257 -p 8080:8080 \
 -v "roach3:/cockroach/cockroach-data" \
 cockroachdb/cockroach start \
 --insecure \
