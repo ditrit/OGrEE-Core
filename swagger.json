@@ -1167,7 +1167,7 @@
     },
     "/api/user/tenants/{id}": {
       "get": {
-        "description": "The ID must be provided in the URL parameter\nIf an ID is not provided then all tenants will be returned",
+        "description": "The ID must be provided in the URL parameter",
         "produces": [
           "application/json"
         ],
@@ -1229,7 +1229,7 @@
             "in": "query"
           },
           {
-            "type": "string",
+            "type": "string[]",
             "default": "High End Worldwide automotive company",
             "description": "Description of Tenant",
             "name": "Description",
@@ -1237,9 +1237,36 @@
           },
           {
             "type": "string",
+            "default": "High End Auto",
+            "description": "Domain of the Tenant",
+            "name": "Domain"
+          },
+          {
+            "type": "string",
             "default": "Black",
             "description": "Color of Tenant (useful for 3D rendering)",
             "name": "Color",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "default": "Post",
+            "description": "The main method of contact for Tenant",
+            "name": "MainContact",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "default": "999",
+            "description": "Main Phone",
+            "name": "MainPhone",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "default": "infiniti@nissan.com",
+            "description": "Main Email Address of Tenant",
+            "name": "MainEmail",
             "in": "query"
           }
         ],

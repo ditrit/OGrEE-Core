@@ -85,7 +85,6 @@ var CreateTenant = func(w http.ResponseWriter, r *http.Request) {
 // swagger:operation GET /api/user/tenants/{id} tenants GetTenant
 // Gets a Tenant(s) from the system.
 // The ID must be provided in the URL parameter
-// If an ID is not provided then all tenants will be returned
 // ---
 // produces:
 // - application/json
@@ -165,14 +164,37 @@ var GetAllTenants = func(w http.ResponseWriter, r *http.Request) {
 //   in: query
 //   description: Description of Tenant
 //   required: false
-//   type: string
+//   type: string[]
 //   default: "High End Worldwide automotive company"
+// - name: Domain
+//   description: 'Domain of the Tenant'
+//   required: false
+//   type: string
+//   default: "High End Auto"
 // - name: Color
 //   in: query
 //   description: Color of Tenant (useful for 3D rendering)
 //   required: false
 //   type: string
 //   default: "Black"
+// - name: MainContact
+//   in: query
+//   description: The main method of contact for Tenant
+//   required: false
+//   type: string
+//   default: "Post"
+// - name: MainPhone
+//   in: query
+//   description: Main Phone # of Tenant
+//   required: false
+//   type: string
+//   default: "999"
+// - name: MainEmail
+//   in: query
+//   description: Main Email Address of Tenant
+//   required: false
+//   type: string
+//   default: "infiniti@nissan.com"
 // responses:
 //     '200':
 //         description: Updated
