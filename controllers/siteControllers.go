@@ -28,24 +28,22 @@ import (
 //   required: true
 //   type: string
 //   default: "Research"
+// - name: Domain
+//   description: 'Domain of Site'
+//   required: true
+//   type: int
+//   default: 999
+// - name: ParentID
+//   description: 'Parent of Site refers to Tenant ID'
+//   required: true
+//   type: int
+//   default: 999
 // - name: Description
 //   in: query
 //   description: Description of Site
 //   required: true
 //   type: string
 //   default: "Some abandoned site in Grenoble"
-// - name: Domain
-//   description: 'This an attribute that refers to
-//   an existing parent'
-//   required: true
-//   type: int
-//   default: 999
-// - name: Color
-//   in: query
-//   description: Color of Site (useful for 3D rendering)
-//   required: true
-//   type: string
-//   default: "Silver"
 // - name: Orientation
 //   in: query
 //   description: 'Indicates the location. Only values of
@@ -53,6 +51,54 @@ import (
 //   required: true
 //   type: string
 //   default: "NE"
+// - name: UsableColor
+//   in: query
+//   description: Usable Color of Site (useful for 3D rendering)
+//   required: false
+//   type: string
+//   default: "Silver"
+// - name: ReservedColor
+//   in: query
+//   description: Reserved Color of Site (useful for 3D rendering)
+//   required: false
+//   type: string
+//   default: "Silver"
+// - name: TechnicalColor
+//   in: query
+//   description: Color of Site (useful for 3D rendering)
+//   required: false
+//   type: string
+//   default: "Silver"
+// - name: Address
+//   in: query
+//   description: Address of Site
+//   required: false
+//   type: string
+//   default: "Rue pour Nissan"
+// - name: Zipcode
+//   in: query
+//   description: Zipcode of Site
+//   required: false
+//   type: string
+//   default: "10000"
+// - name: City
+//   in: query
+//   description: City of Site
+//   required: false
+//   type: string
+//   default: "Paris"
+// - name: Country
+//   in: query
+//   description: Country of Site
+//   required: false
+//   type: string
+//   default: "France"
+// - name: Gps
+//   in: query
+//   description: Gps of Site
+//   required: false
+//   type: string
+//   default: "N'25 E'55"
 // responses:
 //     '200':
 //         description: Created
@@ -292,6 +338,11 @@ var DeleteSites = func(w http.ResponseWriter, r *http.Request) {
 //   required: false
 //   type: string
 //   default: "Research"
+// - name: Domain
+//   description: 'Domain of Site'
+//   required: false
+//   type: int
+//   default: 999
 // - name: Description
 //   in: query
 //   description: Description of Site
@@ -311,13 +362,61 @@ var DeleteSites = func(w http.ResponseWriter, r *http.Request) {
 //   required: false
 //   type: string
 //   default: "NE"
-
+// - name: UsableColor
+//   in: query
+//   description: Usable Color of Site (useful for 3D rendering)
+//   required: false
+//   type: string
+//   default: "Black"
+// - name: ReservedColor
+//   in: query
+//   description: Reserved Color of Site (useful for 3D rendering)
+//   required: false
+//   type: string
+//   default: "Black"
+// - name: TechnicalColor
+//   in: query
+//   description: Color of Site (useful for 3D rendering)
+//   required: false
+//   type: string
+//   default: "Black"
+// - name: Address
+//   in: query
+//   description: Address of Site
+//   required: false
+//   type: string
+//   default: "New Rue"
+// - name: Zipcode
+//   in: query
+//   description: Zipcode of Site
+//   required: false
+//   type: string
+//   default: "99999"
+// - name: City
+//   in: query
+//   description: City of Site
+//   required: false
+//   type: string
+//   default: "Geneve"
+// - name: Country
+//   in: query
+//   description: Country of Site
+//   required: false
+//   type: string
+//   default: "Switzerland"
+// - name: Gps
+//   in: query
+//   description: Gps of Site
+//   required: false
+//   type: string
+//   default: "N'55 E'15"
 // responses:
 //     '200':
 //         description: Updated
 //     '400':
 //         description: Bad request
 //Updates work by passing ID in path parameter
+
 var UpdateSite = func(w http.ResponseWriter, r *http.Request) {
 
 	site := &models.Site{}
