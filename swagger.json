@@ -131,6 +131,26 @@
         }
       }
     },
+    "/api/user/buildings/": {
+      "get": {
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "buildings"
+        ],
+        "summary": "Gets All Buildings in the system.",
+        "operationId": "GetBuilding",
+        "responses": {
+          "200": {
+            "description": "Found"
+          },
+          "400": {
+            "description": "Not Found"
+          }
+        }
+      }
+    },
     "/api/user/buildings/{id}": {
       "get": {
         "produces": [
@@ -254,7 +274,7 @@
           "devices"
         ],
         "summary": "Creates a Device in the system.",
-        "operationId": "Create",
+        "operationId": "CreateDevice",
         "parameters": [
           {
             "type": "string",
@@ -316,21 +336,33 @@
     },
     "/api/user/devices/{id}": {
       "get": {
+        "description": "The ID must be provided in the URL parameter.",
         "produces": [
           "application/json"
         ],
         "tags": [
           "devices"
         ],
-        "summary": "Gets Device using Device ID.",
+        "summary": "Gets a Device from the system.",
         "operationId": "GetDevice",
         "parameters": [
           {
-            "description": "ID of Device",
+            "type": "int",
+            "default": 999,
+            "description": "ID of desired device",
             "name": "ID",
-            "in": "path"
+            "in": "path",
+            "required": true
           }
-        ]
+        ],
+        "responses": {
+          "200": {
+            "description": "Found"
+          },
+          "400": {
+            "description": "Bad request"
+          }
+        }
       },
       "put": {
         "description": "If no new or any information is provided\nan OK will still be returned",
@@ -482,6 +514,26 @@
           },
           "400": {
             "description": "Bad request"
+          }
+        }
+      }
+    },
+    "/api/user/racks/": {
+      "get": {
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "racks"
+        ],
+        "summary": "Gets All Racks in the system.",
+        "operationId": "GetRack",
+        "responses": {
+          "204": {
+            "description": "Successful"
+          },
+          "400": {
+            "description": "Not found"
           }
         }
       }
@@ -669,6 +721,26 @@
         }
       }
     },
+    "/api/user/rooms/": {
+      "get": {
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "rooms"
+        ],
+        "summary": "Gets All Rooms in the system.",
+        "operationId": "GetRoom",
+        "responses": {
+          "200": {
+            "description": "Found"
+          },
+          "400": {
+            "description": "Not Found"
+          }
+        }
+      }
+    },
     "/api/user/rooms/{id}": {
       "get": {
         "produces": [
@@ -792,8 +864,8 @@
         "tags": [
           "sites"
         ],
-        "summary": "Get all Sites of a Tenant using Tenant ID.",
-        "operationId": "GetSite",
+        "summary": "Get all Sites of a Site using Site ID.",
+        "operationId": "GetSitesByParentID",
         "parameters": [
           {
             "type": "int",
@@ -821,7 +893,7 @@
           "sites"
         ],
         "summary": "Creates a Site in the system.",
-        "operationId": "Create",
+        "operationId": "CreateSite",
         "parameters": [
           {
             "type": "string",
@@ -883,14 +955,15 @@
     },
     "/api/user/sites/{id}": {
       "get": {
+        "description": "The ID must be provided in the URL parameter",
         "produces": [
           "application/json"
         ],
         "tags": [
           "sites"
         ],
-        "summary": "Gets a Site from the system using Site ID.",
-        "operationId": "GetSite",
+        "summary": "Gets a Site(s) from the system.",
+        "operationId": "GetTenant",
         "parameters": [
           {
             "type": "int",
@@ -906,7 +979,7 @@
             "description": "Found"
           },
           "400": {
-            "description": "Not Found"
+            "description": "Bad request"
           }
         }
       },
@@ -1017,7 +1090,7 @@
           "tenants"
         ],
         "summary": "Creates a Tenant in the system.",
-        "operationId": "Create",
+        "operationId": "CreateTenant",
         "parameters": [
           {
             "type": "string",
@@ -1036,23 +1109,48 @@
             "required": true
           },
           {
-            "type": "string",
-            "default": "Worldwide automotive company",
-            "description": "Description of Tenant",
+            "type": "string[]",
+            "example": "Worldwide automotive company",
+            "description": "Description of the Tenant",
             "name": "Description",
-            "in": "query",
-            "required": true
+            "in": "query"
           },
           {
             "type": "string",
-            "description": "This an attribute that specifies the parent (if any). NOTE: For Tenants, Domain is NULL!",
-            "name": "Domain"
+            "default": "Auto",
+            "description": "Domain of the Tenant",
+            "name": "Domain",
+            "required": true
           },
           {
             "type": "string",
             "default": "Silver",
             "description": "Color of Tenant (useful for 3D rendering)",
             "name": "Color",
+            "in": "query",
+            "required": true
+          },
+          {
+            "type": "string",
+            "default": "Website",
+            "description": "The main method of contact for Tenant",
+            "name": "MainContact",
+            "in": "query",
+            "required": true
+          },
+          {
+            "type": "string",
+            "default": "000",
+            "description": "Main Phone",
+            "name": "MainPhone",
+            "in": "query",
+            "required": true
+          },
+          {
+            "type": "string",
+            "default": "nissan@nissan.com",
+            "description": "Main Email Address of Tenant",
+            "name": "MainEmail",
             "in": "query",
             "required": true
           }

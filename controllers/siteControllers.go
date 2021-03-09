@@ -10,7 +10,7 @@ import (
 	"github.com/gorilla/mux"
 )
 
-// swagger:operation POST /api/user/sites sites Create
+// swagger:operation POST /api/user/sites sites CreateSite
 // Creates a Site in the system.
 // ---
 // produces:
@@ -72,7 +72,7 @@ var CreateSite = func(w http.ResponseWriter, r *http.Request) {
 	u.Respond(w, resp)
 }
 
-// swagger:operation GET /api/user/sites sites GetSite
+// swagger:operation GET /api/user/sites sites GetSitesByUserID
 // Gets a Site(s) from the system using User ID.
 // The ID is automatically obtained from the Authorization header
 // This is still in progress
@@ -108,8 +108,8 @@ var GetSitesByUserID = func(w http.ResponseWriter, r *http.Request) {
 	u.Respond(w, resp)
 }
 
-// swagger:operation GET /api/user/sites sites GetSite
-// Get all Sites of a Tenant using Tenant ID.
+// swagger:operation GET /api/user/sites sites GetSitesByParentID
+// Get all Sites of a Site using Site ID.
 // The ID is provided in JSON and not in
 // parameter. This is a new feature in progress
 // ---
@@ -128,7 +128,7 @@ var GetSitesByUserID = func(w http.ResponseWriter, r *http.Request) {
 //     '400':
 //         description: Not Found
 
-//Retrieve sites using Tenant ID
+//Retrieve sites using Site ID
 var GetSitesByParentID = func(w http.ResponseWriter, r *http.Request) {
 
 	st := &models.Site{}
@@ -186,17 +186,24 @@ var GetSite = func(w http.ResponseWriter, r *http.Request) {
 	u.Respond(w, resp)
 }
 
-// swagger:operation GET /api/user/sites sites GetSite
-// Gets all Sites in the system.
+// swagger:operation GET /api/user/sites/{id} sites GetTenant
+// Gets a Site(s) from the system.
+// The ID must be provided in the URL parameter
 // ---
 // produces:
 // - application/json
+// parameters:
+// - name: ID
+//   in: path
+//   description: ID of desired site
+//   required: true
+//   type: int
+//   default: 999
 // responses:
 //     '200':
 //         description: Found
 //     '400':
-//         description: Not Found
-//Retrieve site using Site ID
+//         description: Bad request
 var GetAllSites = func(w http.ResponseWriter, r *http.Request) {
 
 	resp := u.Message(true, "success")
@@ -246,7 +253,7 @@ var DeleteSiteByID = func(w http.ResponseWriter, r *http.Request) {
 //     '400':
 //        description: Not found
 
-//Delete all sites of a tenant
+//Delete all sites of a site
 var DeleteSites = func(w http.ResponseWriter, r *http.Request) {
 	st := &models.Site{}
 	err := json.NewDecoder(r.Body).Decode(st)

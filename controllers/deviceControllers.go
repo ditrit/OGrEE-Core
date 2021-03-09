@@ -10,7 +10,7 @@ import (
 	"github.com/gorilla/mux"
 )
 
-// swagger:operation POST /api/user/devices devices Create
+// swagger:operation POST /api/user/devices devices CreateDevice
 // Creates a Device in the system.
 // ---
 // produces:
@@ -81,7 +81,6 @@ var CreateDevice = func(w http.ResponseWriter, r *http.Request) {
 //   in: path
 //   description: ID of Device
 
-//Retrieve device using Device ID
 var GetDevice = func(w http.ResponseWriter, r *http.Request) {
 
 	id, e := strconv.Atoi(mux.Vars(r)["id"])
@@ -100,17 +99,24 @@ var GetDevice = func(w http.ResponseWriter, r *http.Request) {
 	u.Respond(w, resp)
 }
 
-// swagger:operation GET /api/user/devices devices GetDevice
-// Gets All Devices in the system.
+// swagger:operation GET /api/user/devices/{id} devices GetDevice
+// Gets a Device from the system.
+// The ID must be provided in the URL parameter.
 // ---
 // produces:
 // - application/json
+// parameters:
+// - name: ID
+//   in: path
+//   description: ID of desired device
+//   required: true
+//   type: int
+//   default: 999
 // responses:
-//     '204':
-//        description: Successful
+//     '200':
+//         description: Found
 //     '400':
-//        description: Not found
-//Retrieve device using Device ID
+//         description: Bad request
 var GetAllDevices = func(w http.ResponseWriter, r *http.Request) {
 
 	resp := u.Message(true, "success")

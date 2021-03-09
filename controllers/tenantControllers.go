@@ -10,7 +10,7 @@ import (
 	"github.com/gorilla/mux"
 )
 
-// swagger:operation POST /api/user/tenants tenants Create
+// swagger:operation POST /api/user/tenants tenants CreateTenant
 // Creates a Tenant in the system.
 // ---
 // produces:
@@ -30,22 +30,39 @@ import (
 //   default: "Auto"
 // - name: Description
 //   in: query
-//   description: Description of Tenant
+//   description: 'Description of the Tenant'
+//   required: false
+//   type: string[]
+//   example: "Worldwide automotive company"
+// - name: Domain
+//   description: 'Domain of the Tenant'
 //   required: true
 //   type: string
-//   default: "Worldwide automotive company"
-// - name: Domain
-//   description: 'This an attribute that specifies
-//   the parent (if any). NOTE: For Tenants, Domain is NULL!'
-//   required: false
-//   type: string
-//   default: NULL
+//   default: "Auto"
 // - name: Color
 //   in: query
 //   description: Color of Tenant (useful for 3D rendering)
 //   required: true
 //   type: string
 //   default: "Silver"
+// - name: MainContact
+//   in: query
+//   description: The main method of contact for Tenant
+//   required: true
+//   type: string
+//   default: "Website"
+// - name: MainPhone
+//   in: query
+//   description: Main Phone # of Tenant
+//   required: true
+//   type: string
+//   default: "000"
+// - name: MainEmail
+//   in: query
+//   description: Main Email Address of Tenant
+//   required: true
+//   type: string
+//   default: "nissan@nissan.com"
 // responses:
 //     '200':
 //         description: Created
