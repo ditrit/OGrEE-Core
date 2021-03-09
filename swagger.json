@@ -1086,13 +1086,6 @@
           },
           {
             "type": "string",
-            "default": "Blue",
-            "description": "Color of Site (useful for 3D rendering)",
-            "name": "Color",
-            "in": "query"
-          },
-          {
-            "type": "string",
             "default": "NE",
             "description": "Indicates the location. Only values of \"NE\", \"NW\", \"SE\", \"SW\" are acceptable",
             "name": "Orientation",

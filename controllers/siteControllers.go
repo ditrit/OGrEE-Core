@@ -349,12 +349,6 @@ var DeleteSites = func(w http.ResponseWriter, r *http.Request) {
 //   required: false
 //   type: string
 //   default: "Some abandoned site in Grenoble"
-// - name: Color
-//   in: query
-//   description: Color of Site (useful for 3D rendering)
-//   required: false
-//   type: string
-//   default: "Blue"
 // - name: Orientation
 //   in: query
 //   description: 'Indicates the location. Only values of
