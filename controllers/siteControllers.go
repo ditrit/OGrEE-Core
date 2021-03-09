@@ -410,6 +410,7 @@ var DeleteSites = func(w http.ResponseWriter, r *http.Request) {
 //   required: false
 //   type: string
 //   default: "N'55 E'15"
+
 // responses:
 //     '200':
 //         description: Updated
