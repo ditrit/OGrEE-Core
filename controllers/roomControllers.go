@@ -27,25 +27,18 @@ import (
 //   description: Category of Room (ex. Consumer Electronics, Medical)
 //   required: true
 //   type: string
-//   default: "Research"
+//   default: "Room"
 // - name: Description
 //   in: query
 //   description: Description of Room
-//   required: true
-//   type: string
-//   default: "Some abandoned room in Grenoble"
+//   required: false
+//   type: string[]
+//   default: ["Some abandoned room in Grenoble"]
 // - name: Domain
-//   description: 'This an attribute that refers to
-//   an existing parent'
-//   required: true
-//   type: int
-//   default: 999
-// - name: Color
-//   in: query
-//   description: Color of Room (useful for 3D rendering)
+//   description: 'Domain of Room'
 //   required: true
 //   type: string
-//   default: "Silver"
+//   default: "Some Domain"
 // - name: Orientation
 //   in: query
 //   description: 'Indicates the location. Only values of
@@ -53,6 +46,65 @@ import (
 //   required: true
 //   type: string
 //   default: "NE"
+// - name: Template
+//   in: query
+//   description: 'Room template'
+//   required: true
+//   type: string
+//   default: "Some Template"
+// - name: PosXY
+//   in: query
+//   description: 'Indicates the position in a XY coordinate format'
+//   required: true
+//   type: string
+//   default: "{\"x\":-30.0,\"y\":0.0}"
+// - name: PosXYU
+//   in: query
+//   description: 'Indicates the unit of the PosXY position. Only values of
+//   "mm", "cm", "m", "U", "OU", "tile" are acceptable'
+//   required: true
+//   type: string
+//   default: "m"
+// - name: PosZ
+//   in: query
+//   description: 'Indicates the position in the Z axis'
+//   required: true
+//   type: string
+//   default: "10"
+// - name: PosZU
+//   in: query
+//   description: 'Indicates the unit of the Z coordinate position. Only values of
+//   "mm", "cm", "m", "U", "OU", "tile" are acceptable'
+//   required: true
+//   type: string
+//   default: "m"
+// - name: Size
+//   in: query
+//   description: 'Size of Room in an XY coordinate format'
+//   required: true
+//   type: string
+//   default: "{\"x\":25.0,\"y\":29.399999618530275}"
+// - name: SizeU
+//   in: query
+//   description: 'The unit for Room Size. Only values of
+//   "mm", "cm", "m", "U", "OU", "tile" are acceptable'
+//   required: true
+//   type: string
+//   default: "m"
+// - name: Height
+//   in: query
+//   description: 'Height of Room'
+//   required: true
+//   type: string
+//   default: "5"
+// - name: HeightU
+//   in: query
+//   description: 'The unit for Room Height. Only values of
+//   "mm", "cm", "m", "U", "OU", "tile" are acceptable'
+//   required: true
+//   type: string
+//   default: "m"
+
 // responses:
 //     '200':
 //         description: Created
@@ -207,6 +259,58 @@ var DeleteRoom = func(w http.ResponseWriter, r *http.Request) {
 //   type: string
 //   default: "NE"
 
+// - name: PosXY
+//   in: query
+//   description: 'Indicates the position in a XY coordinate format'
+//   required: false
+//   type: string
+//   default: "{\"x\":999,\"y\":999}"
+// - name: PosXYU
+//   in: query
+//   description: 'Indicates the unit of the PosXY position. Only values of
+//   "mm", "cm", "m", "U", "OU", "tile" are acceptable'
+//   required: false
+//   type: string
+//   default: "cm"
+// - name: PosZ
+//   in: query
+//   description: 'Indicates the position in the Z axis'
+//   required: false
+//   type: string
+//   default: "999"
+// - name: PosZU
+//   in: query
+//   description: 'Indicates the unit of the Z coordinate position. Only values of
+//   "mm", "cm", "m", "U", "OU", "tile" are acceptable'
+//   required: false
+//   type: string
+//   default: "cm"
+// - name: Size
+//   in: query
+//   description: 'Size of Room in an XY coordinate format'
+//   required: false
+//   type: string
+//   default: "{\"x\":999,\"y\":999}"
+// - name: SizeU
+//   in: query
+//   description: 'The unit for Room Size. Only values of
+//   "mm", "cm", "m", "U", "OU", "tile" are acceptable'
+//   required: false
+//   type: string
+//   default: "cm"
+// - name: Height
+//   in: query
+//   description: 'Height of Room'
+//   required: false
+//   type: string
+//   default: "999"
+// - name: HeightU
+//   in: query
+//   description: 'The unit for Room Height. Only values of
+//   "mm", "cm", "m", "U", "OU", "tile" are acceptable'
+//   required: false
+//   type: string
+//   default: "cm"
 // responses:
 //     '200':
 //         description: Updated
