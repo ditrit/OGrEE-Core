@@ -997,6 +997,34 @@
             "description": "Bad request"
           }
         }
+      },
+      "delete": {
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "sites"
+        ],
+        "summary": "Deletes all Sites of a Tenant.",
+        "operationId": "DeleteSitesOfTenant",
+        "parameters": [
+          {
+            "type": "int",
+            "default": 999,
+            "description": "ParentID of Site refers to Tenant",
+            "name": "ParentID",
+            "in": "query",
+            "required": true
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful"
+          },
+          "400": {
+            "description": "Not found"
+          }
+        }
       }
     },
     "/api/user/sites/{id}": {
@@ -1062,8 +1090,8 @@
             "in": "query"
           },
           {
-            "type": "int",
-            "default": 999,
+            "type": "string",
+            "default": "Some Domain",
             "description": "Domain of Site",
             "name": "Domain"
           },
@@ -1146,15 +1174,15 @@
         "tags": [
           "sites"
         ],
-        "summary": "Deletes a Site in the system.",
+        "summary": "Deletes a Site.",
         "operationId": "DeleteSite",
         "parameters": [
           {
             "type": "int",
             "default": 999,
-            "description": "ID of desired site",
+            "description": "ID of Site",
             "name": "ID",
-            "in": "path",
+            "in": "query",
             "required": true
           }
         ],
@@ -1163,7 +1191,7 @@
             "description": "Successful"
           },
           "400": {
-            "description": "Not found"
+            "description": "Not Found"
           }
         }
       }

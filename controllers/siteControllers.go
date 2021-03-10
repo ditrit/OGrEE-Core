@@ -351,8 +351,8 @@ var DeleteSites = func(w http.ResponseWriter, r *http.Request) {
 // - name: Domain
 //   description: 'Domain of Site'
 //   required: false
-//   type: int
-//   default: 999
+//   type: string
+//   default: "Some Domain"
 // - name: Description
 //   in: query
 //   description: Description of Site
