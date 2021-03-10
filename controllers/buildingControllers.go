@@ -36,7 +36,7 @@ import (
 // - name: Description
 //   in: query
 //   description: Description of Building
-//   required: true
+//   required: false
 //   type: string[]
 //   default: ["Some abandoned building in Grenoble"]
 // - name: Domain

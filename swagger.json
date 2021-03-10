@@ -121,8 +121,7 @@
             ],
             "description": "Description of Building",
             "name": "Description",
-            "in": "query",
-            "required": true
+            "in": "query"
           },
           {
             "type": "string",
