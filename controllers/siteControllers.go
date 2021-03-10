@@ -42,8 +42,8 @@ import (
 //   in: query
 //   description: Description of Site
 //   required: true
-//   type: string
-//   default: "Some abandoned site in Grenoble"
+//   type: string[]
+//   default: ["Some abandoned site in Grenoble"]
 // - name: Orientation
 //   in: query
 //   description: 'Indicates the location. Only values of
