@@ -766,6 +766,24 @@
       }
     },
     "/api/user/rooms": {
+      "get": {
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "rooms"
+        ],
+        "summary": "Gets All Rooms in the system.",
+        "operationId": "GetAllRooms",
+        "responses": {
+          "200": {
+            "description": "Found"
+          },
+          "400": {
+            "description": "Not Found"
+          }
+        }
+      },
       "post": {
         "produces": [
           "application/json"
@@ -799,8 +817,7 @@
             ],
             "description": "Description of Room",
             "name": "Description",
-            "in": "query",
-            "required": true
+            "in": "query"
           },
           {
             "type": "string",
@@ -892,26 +909,6 @@
         ]
       }
     },
-    "/api/user/rooms/": {
-      "get": {
-        "produces": [
-          "application/json"
-        ],
-        "tags": [
-          "rooms"
-        ],
-        "summary": "Gets All Rooms in the system.",
-        "operationId": "GetRoom",
-        "responses": {
-          "200": {
-            "description": "Found"
-          },
-          "400": {
-            "description": "Not Found"
-          }
-        }
-      }
-    },
     "/api/user/rooms/{id}": {
       "get": {
         "produces": [
@@ -983,19 +980,83 @@
           },
           {
             "type": "string",
-            "default": "Blue",
-            "description": "Color of Room (useful for 3D rendering)",
-            "name": "Color",
-            "in": "query"
-          },
-          {
-            "type": "string",
             "default": "NE",
             "description": "Indicates the location. Only values of \"NE\", \"NW\", \"SE\", \"SW\" are acceptable",
             "name": "Orientation",
             "in": "query"
+          },
+          {
+            "type": "string",
+            "default": "New Template",
+            "description": "Room template",
+            "name": "Template",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "default": "{\"x\":999,\"y\":999}",
+            "description": "Indicates the position in a XY coordinate format",
+            "name": "PosXY",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "default": "cm",
+            "description": "Indicates the unit of the PosXY position. Only values of \"mm\", \"cm\", \"m\", \"U\", \"OU\", \"tile\" are acceptable",
+            "name": "PosXYU",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "default": "999",
+            "description": "Indicates the position in the Z axis",
+            "name": "PosZ",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "default": "cm",
+            "description": "Indicates the unit of the Z coordinate position. Only values of \"mm\", \"cm\", \"m\", \"U\", \"OU\", \"tile\" are acceptable",
+            "name": "PosZU",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "default": "{\"x\":999,\"y\":999}",
+            "description": "Size of Room in an XY coordinate format",
+            "name": "Size",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "default": "cm",
+            "description": "The unit for Room Size. Only values of \"mm\", \"cm\", \"m\", \"U\", \"OU\", \"tile\" are acceptable",
+            "name": "SizeU",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "default": "999",
+            "description": "Height of Room",
+            "name": "Height",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "default": "cm",
+            "description": "The unit for Room Height. Only values of \"mm\", \"cm\", \"m\", \"U\", \"OU\", \"tile\" are acceptable",
+            "name": "HeightU",
+            "in": "query"
           }
-        ]
+        ],
+        "responses": {
+          "200": {
+            "description": "Updated"
+          },
+          "400": {
+            "description": "Bad request"
+          }
+        }
       },
       "delete": {
         "produces": [

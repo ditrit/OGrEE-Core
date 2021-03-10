@@ -31,28 +31,104 @@ import (
 // - name: Description
 //   in: query
 //   description: Description of Rack
-//   required: true
-//   type: string
+//   required: false
+//   type: string[]
 //   default: "Some abandoned rack in Grenoble"
 // - name: Domain
-//   description: 'This an attribute that refers to
-//   an existing parent'
-//   required: true
-//   type: int
-//   default: 999
-// - name: Color
-//   in: query
-//   description: Color of Rack (useful for 3D rendering)
+//   description: 'Domain of Rack'
 //   required: true
 //   type: string
-//   default: "Silver"
+//   default: "Some Domain"
 // - name: Orientation
 //   in: query
 //   description: 'Indicates the location. Only values of
-//   "NE", "NW", "SE", "SW" are acceptable'
+//   "front", "rear", "left", "right" are acceptable'
 //   required: true
 //   type: string
 //   default: "NE"
+// - name: Template
+//   in: query
+//   description: 'Room template'
+//   required: true
+//   type: string
+//   default: "Some Template"
+// - name: PosXY
+//   in: query
+//   description: 'Indicates the position in a XY coordinate format'
+//   required: true
+//   type: string
+//   default: "{\"x\":-30.0,\"y\":0.0}"
+// - name: PosXYU
+//   in: query
+//   description: 'Indicates the unit of the PosXY position. Only values of
+//   "mm", "cm", "m", "U", "OU", "tile" are acceptable'
+//   required: true
+//   type: string
+//   default: "m"
+// - name: PosZ
+//   in: query
+//   description: 'Indicates the position in the Z axis'
+//   required: true
+//   type: string
+//   default: "10"
+// - name: PosZU
+//   in: query
+//   description: 'Indicates the unit of the Z coordinate position. Only values of
+//   "mm", "cm", "m", "U", "OU", "tile" are acceptable'
+//   required: true
+//   type: string
+//   default: "m"
+// - name: Size
+//   in: query
+//   description: 'Size of Rack in an XY coordinate format'
+//   required: true
+//   type: string
+//   default: "{\"x\":25.0,\"y\":29.399999618530275}"
+// - name: SizeU
+//   in: query
+//   description: 'The unit for Rack Size. Only values of
+//   "mm", "cm", "m", "U", "OU", "tile" are acceptable'
+//   required: true
+//   type: string
+//   default: "m"
+// - name: Height
+//   in: query
+//   description: 'Height of Rack'
+//   required: true
+//   type: string
+//   default: "5"
+// - name: HeightU
+//   in: query
+//   description: 'The unit for Rack Height. Only values of
+//   "mm", "cm", "m", "U", "OU", "tile" are acceptable'
+//   required: true
+//   type: string
+//   default: "m"
+// - name: Vendor
+//   in: query
+//   description: 'Vendor of Rack'
+//   required: false
+//   type: string
+//   default: "Some Vendor"
+// - name: Model
+//   in: query
+//   description: 'Model of Rack'
+//   required: false
+//   type: string
+//   default: "Some Model"
+// - name: Type
+//   in: query
+//   description: 'Type of Rack'
+//   required: false
+//   type: string
+//   default: "Some Type"
+// - name: Serial
+//   in: query
+//   description: 'Serial of Rack'
+//   required: false
+//   type: string
+//   default: "Some Serial"
+
 // responses:
 //     '200':
 //         description: Created
@@ -202,6 +278,82 @@ var DeleteRack = func(w http.ResponseWriter, r *http.Request) {
 //   required: false
 //   type: string
 //   default: "NE"
+// - name: PosXY
+//   in: query
+//   description: 'Indicates the position in a XY coordinate format'
+//   required: true
+//   type: string
+//   default: "{\"x\":-30.0,\"y\":0.0}"
+// - name: PosXYU
+//   in: query
+//   description: 'Indicates the unit of the PosXY position. Only values of
+//   "mm", "cm", "m", "U", "OU", "tile" are acceptable'
+//   required: true
+//   type: string
+//   default: "m"
+// - name: PosZ
+//   in: query
+//   description: 'Indicates the position in the Z axis'
+//   required: true
+//   type: string
+//   default: "10"
+// - name: PosZU
+//   in: query
+//   description: 'Indicates the unit of the Z coordinate position. Only values of
+//   "mm", "cm", "m", "U", "OU", "tile" are acceptable'
+//   required: true
+//   type: string
+//   default: "m"
+// - name: Size
+//   in: query
+//   description: 'Size of Rack in an XY coordinate format'
+//   required: true
+//   type: string
+//   default: "{\"x\":25.0,\"y\":29.399999618530275}"
+// - name: SizeU
+//   in: query
+//   description: 'The unit for Rack Size. Only values of
+//   "mm", "cm", "m", "U", "OU", "tile" are acceptable'
+//   required: true
+//   type: string
+//   default: "m"
+// - name: Height
+//   in: query
+//   description: 'Height of Rack'
+//   required: true
+//   type: string
+//   default: "5"
+// - name: HeightU
+//   in: query
+//   description: 'The unit for Rack Height. Only values of
+//   "mm", "cm", "m", "U", "OU", "tile" are acceptable'
+//   required: true
+//   type: string
+//   default: "m"
+// - name: Vendor
+//   in: query
+//   description: 'Vendor of Rack'
+//   required: true
+//   type: string
+//   default: "Some Vendor"
+// - name: Model
+//   in: query
+//   description: 'Model of Rack'
+//   required: true
+//   type: string
+//   default: "Some Model"
+// - name: Type
+//   in: query
+//   description: 'Type of Rack'
+//   required: true
+//   type: string
+//   default: "Some Type"
+// - name: Serial
+//   in: query
+//   description: 'Serial of Rack'
+//   required: true
+//   type: string
+//   default: "Some Serial"
 
 // responses:
 //     '200':
