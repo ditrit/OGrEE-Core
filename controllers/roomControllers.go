@@ -243,8 +243,8 @@ var DeleteRoom = func(w http.ResponseWriter, r *http.Request) {
 //   in: query
 //   description: Description of Room
 //   required: false
-//   type: string
-//   default: "Some abandoned room in Grenoble"
+//   type: string[]
+//   default: ["Some abandoned room in Grenoble"]
 // - name: Orientation
 //   in: query
 //   description: 'Indicates the location. Only values of
