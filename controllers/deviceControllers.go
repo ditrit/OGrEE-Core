@@ -31,28 +31,104 @@ import (
 // - name: Description
 //   in: query
 //   description: Description of Device
-//   required: true
-//   type: string
-//   default: "Some abandoned device in Grenoble"
+//   required: false
+//   type: string[]
+//   default: ["Some abandoned device in Grenoble"]
 // - name: Domain
-//   description: 'This an attribute that refers to
-//   an existing parent'
-//   required: true
-//   type: int
-//   default: 999
-// - name: Color
-//   in: query
-//   description: Color of Device (useful for 3D rendering)
+//   description: 'Domain of Device'
 //   required: true
 //   type: string
-//   default: "Silver"
+//   default: "Some Domain"
 // - name: Orientation
 //   in: query
 //   description: 'Indicates the location. Only values of
-//   "NE", "NW", "SE", "SW" are acceptable'
+//   "front", "rear", "frontflipped", "rearflipped" are acceptable'
 //   required: true
 //   type: string
-//   default: "NE"
+//   default: "front"
+// - name: Template
+//   in: query
+//   description: 'Device template'
+//   required: false
+//   type: string
+//   default: "Some Template"
+// - name: PosXY
+//   in: query
+//   description: 'Indicates the position in a XY coordinate format'
+//   required: true
+//   type: string
+//   default: "{\"x\":-30.0,\"y\":0.0}"
+// - name: PosXYU
+//   in: query
+//   description: 'Indicates the unit of the PosXY position. Only values of
+//   "mm", "cm", "m", "U", "OU", "tile" are acceptable'
+//   required: true
+//   type: string
+//   default: "m"
+// - name: PosZ
+//   in: query
+//   description: 'Indicates the position in the Z axis'
+//   required: true
+//   type: string
+//   default: "10"
+// - name: PosZU
+//   in: query
+//   description: 'Indicates the unit of the Z coordinate position. Only values of
+//   "mm", "cm", "m", "U", "OU", "tile" are acceptable'
+//   required: true
+//   type: string
+//   default: "m"
+// - name: Size
+//   in: query
+//   description: 'Size of Device in an XY coordinate format'
+//   required: true
+//   type: string
+//   default: "{\"x\":25.0,\"y\":29.399999618530275}"
+// - name: SizeU
+//   in: query
+//   description: 'The unit for Device Size. Only values of
+//   "mm", "cm", "m", "U", "OU", "tile" are acceptable'
+//   required: true
+//   type: string
+//   default: "m"
+// - name: Height
+//   in: query
+//   description: 'Height of Device'
+//   required: true
+//   type: string
+//   default: "5"
+// - name: HeightU
+//   in: query
+//   description: 'The unit for Device Height. Only values of
+//   "mm", "cm", "m", "U", "OU", "tile" are acceptable'
+//   required: true
+//   type: string
+//   default: "m"
+// - name: Vendor
+//   in: query
+//   description: 'Vendor of Device'
+//   required: false
+//   type: string
+//   default: "Some Vendor"
+// - name: Model
+//   in: query
+//   description: 'Model of Device'
+//   required: false
+//   type: string
+//   default: "Some Model"
+// - name: Type
+//   in: query
+//   description: 'Type of Device'
+//   required: false
+//   type: string
+//   default: "Some Type"
+// - name: Serial
+//   in: query
+//   description: 'Serial of Device'
+//   required: false
+//   type: string
+//   default: "Some Serial"
+
 // responses:
 //     '200':
 //         description: Created
