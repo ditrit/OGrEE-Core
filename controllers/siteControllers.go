@@ -262,6 +262,24 @@ var GetAllSites = func(w http.ResponseWriter, r *http.Request) {
 }
 */
 
+// swagger:operation DELETE /api/user/sites/{id} sites DeleteSite
+// Deletes a Site.
+// ---
+// produces:
+// - application/json
+// parameters:
+// - name: ID
+//   in: query
+//   description: ID of Site
+//   required: true
+//   type: int
+//   default: 999
+// responses:
+//     '204':
+//        description: Successful
+//     '400':
+//        description: Not Found
+
 var DeleteSiteByID = func(w http.ResponseWriter, r *http.Request) {
 	id, e := strconv.Atoi(mux.Vars(r)["id"])
 
