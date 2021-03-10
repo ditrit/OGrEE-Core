@@ -273,15 +273,15 @@ var DeleteSiteByID = func(w http.ResponseWriter, r *http.Request) {
 	u.Respond(w, v)
 }
 
-// swagger:operation DELETE /api/user/sites/{id} sites DeleteSite
-// Deletes a Site in the system.
+// swagger:operation DELETE /api/user/sites sites DeleteSitesOfTenant
+// Deletes all Sites of a Tenant.
 // ---
 // produces:
 // - application/json
 // parameters:
-// - name: ID
-//   in: path
-//   description: ID of desired site
+// - name: ParentID
+//   in: query
+//   description: ParentID of Site refers to Tenant
 //   required: true
 //   type: int
 //   default: 999
@@ -291,7 +291,7 @@ var DeleteSiteByID = func(w http.ResponseWriter, r *http.Request) {
 //     '400':
 //        description: Not found
 
-//Delete all sites of a site
+//Delete all sites of a tenant
 var DeleteSites = func(w http.ResponseWriter, r *http.Request) {
 	st := &models.Site{}
 	err := json.NewDecoder(r.Body).Decode(st)
@@ -299,7 +299,7 @@ var DeleteSites = func(w http.ResponseWriter, r *http.Request) {
 		u.Respond(w, u.Message(false, "Error while decoding request body"))
 	}
 
-	id, _ := strconv.Atoi(st.Domain)
+	id, _ := strconv.Atoi(st.ParentID)
 	v := models.DeleteSitesOfTenant(uint(id))
 	u.Respond(w, v)
 }
