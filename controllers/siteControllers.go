@@ -31,7 +31,7 @@ import (
 // - name: Domain
 //   description: 'Domain of Site'
 //   required: true
-//   type: int
+//   type: string
 //   default: 999
 // - name: ParentID
 //   description: 'Parent of Site refers to Tenant ID'
@@ -293,6 +293,7 @@ var DeleteSiteByID = func(w http.ResponseWriter, r *http.Request) {
 
 // swagger:operation DELETE /api/user/sites sites DeleteSitesOfTenant
 // Deletes all Sites of a Tenant.
+// You must provide the Parent ID of Site in the JSON Body
 // ---
 // produces:
 // - application/json

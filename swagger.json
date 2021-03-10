@@ -999,6 +999,7 @@
         }
       },
       "delete": {
+        "description": "You must provide the Parent ID of Site in the JSON Body",
         "produces": [
           "application/json"
         ],
