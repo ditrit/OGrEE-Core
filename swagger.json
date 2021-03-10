@@ -10,7 +10,7 @@
   ],
   "swagger": "2.0",
   "info": {
-    "description": "Testing Swagger spec. It's still in progress",
+    "description": "Testing Swagger spec. It's still in progress\n\nThe API returns incorrect response codes and has bugs, however,\nThe essential CRUD operations are fully functional",
     "title": "Golang OGREE API",
     "contact": {
       "name": "Ziad Khalaf",
