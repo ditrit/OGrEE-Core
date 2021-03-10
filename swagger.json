@@ -127,16 +127,8 @@
           {
             "type": "string",
             "default": "Some Domain",
-            "description": "This an attribute that refers to an existing parent",
+            "description": "Domain Of Building",
             "name": "Domain",
-            "required": true
-          },
-          {
-            "type": "string",
-            "default": "Silver",
-            "description": "Color of Building (useful for 3D rendering)",
-            "name": "Color",
-            "in": "query",
             "required": true
           },
           {
@@ -150,7 +142,7 @@
           {
             "type": "string",
             "default": "m",
-            "description": "Indicates the unit of the XY coordinate position, PosXY",
+            "description": "Indicates the unit of the PosXY position. Only values of \"mm\", \"cm\", \"m\", \"U\", \"OU\", \"tile\" are acceptable",
             "name": "PosXYU",
             "in": "query",
             "required": true
@@ -166,7 +158,7 @@
           {
             "type": "string",
             "default": "m",
-            "description": "Indicates the unit of the Z coordinate position, PosZ",
+            "description": "Indicates the unit of the Z coordinate position. Only values of \"mm\", \"cm\", \"m\", \"U\", \"OU\", \"tile\" are acceptable",
             "name": "PosZU",
             "in": "query",
             "required": true
@@ -182,7 +174,7 @@
           {
             "type": "string",
             "default": "m",
-            "description": "The unit for Building Size",
+            "description": "The unit for Building Size. Only values of \"mm\", \"cm\", \"m\", \"U\", \"OU\", \"tile\" are acceptable",
             "name": "SizeU",
             "in": "query",
             "required": true
@@ -198,7 +190,7 @@
           {
             "type": "string",
             "default": "m",
-            "description": "The unit for Building Height",
+            "description": "The unit for Building Height. Only values of \"mm\", \"cm\", \"m\", \"U\", \"OU\", \"tile\" are acceptable",
             "name": "HeightU",
             "in": "query",
             "required": true
@@ -277,8 +269,11 @@
             "in": "query"
           },
           {
-            "type": "string",
-            "default": "Some abandoned building in Grenoble",
+            "type": "string[]",
+            "default": [
+              "Derelict",
+              "Building"
+            ],
             "description": "Description of Building",
             "name": "Description",
             "in": "query"

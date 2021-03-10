@@ -40,17 +40,10 @@ import (
 //   type: string[]
 //   default: ["Some abandoned building in Grenoble"]
 // - name: Domain
-//   description: 'This an attribute that refers to
-//   an existing parent'
+//   description: 'Domain Of Building'
 //   required: true
 //   type: string
 //   default: "Some Domain"
-// - name: Color
-//   in: query
-//   description: Color of Building (useful for 3D rendering)
-//   required: true
-//   type: string
-//   default: "Silver"
 // - name: PosXY
 //   in: query
 //   description: 'Indicates the position in a XY coordinate format'
@@ -59,7 +52,8 @@ import (
 //   default: "{\"x\":-30.0,\"y\":0.0}"
 // - name: PosXYU
 //   in: query
-//   description: 'Indicates the unit of the XY coordinate position, PosXY'
+//   description: 'Indicates the unit of the PosXY position. Only values of
+//   "mm", "cm", "m", "U", "OU", "tile" are acceptable'
 //   required: true
 //   type: string
 //   default: "m"
@@ -71,7 +65,8 @@ import (
 //   default: "10"
 // - name: PosZU
 //   in: query
-//   description: 'Indicates the unit of the Z coordinate position, PosZ'
+//   description: 'Indicates the unit of the Z coordinate position. Only values of
+//   "mm", "cm", "m", "U", "OU", "tile" are acceptable'
 //   required: true
 //   type: string
 //   default: "m"
@@ -83,7 +78,8 @@ import (
 //   default: "{\"x\":25.0,\"y\":29.399999618530275}"
 // - name: SizeU
 //   in: query
-//   description: 'The unit for Building Size'
+//   description: 'The unit for Building Size. Only values of
+//   "mm", "cm", "m", "U", "OU", "tile" are acceptable'
 //   required: true
 //   type: string
 //   default: "m"
@@ -95,7 +91,8 @@ import (
 //   default: "5"
 // - name: HeightU
 //   in: query
-//   description: 'The unit for Building Height'
+//   description: 'The unit for Building Height. Only values of
+//   "mm", "cm", "m", "U", "OU", "tile" are acceptable'
 //   required: true
 //   type: string
 //   default: "m"
@@ -174,7 +171,6 @@ var GetBuilding = func(w http.ResponseWriter, r *http.Request) {
 //     '400':
 //         description: Not Found
 
-//Retrieve bldg using Bldg ID
 var GetAllBuildings = func(w http.ResponseWriter, r *http.Request) {
 
 	resp := u.Message(true, "success")
@@ -246,8 +242,8 @@ var DeleteBuilding = func(w http.ResponseWriter, r *http.Request) {
 //   in: query
 //   description: Description of Building
 //   required: false
-//   type: string
-//   default: "Some abandoned building in Grenoble"
+//   type: string[]
+//   default: ["Derelict", "Building"]
 // - name: Color
 //   in: query
 //   description: Color of Building (useful for 3D rendering)
