@@ -45,7 +45,7 @@ import (
 //   "front", "rear", "left", "right" are acceptable'
 //   required: true
 //   type: string
-//   default: "NE"
+//   default: "front"
 // - name: Template
 //   in: query
 //   description: 'Room template'
@@ -265,95 +265,97 @@ var DeleteRack = func(w http.ResponseWriter, r *http.Request) {
 //   required: false
 //   type: string
 //   default: "Some rack"
-// - name: Color
+// - name: Template
 //   in: query
-//   description: Color of Rack (useful for 3D rendering)
-//   required: false
+//   description: 'Room template'
+//   required: true
 //   type: string
-//   default: "Blue"
+//   default: "Some Template"
+// - name: Orientation
+//   in: query
 // - name: Orientation
 //   in: query
 //   description: 'Indicates the location. Only values of
-//   "NE", "NW", "SE", "SW" are acceptable'
-//   required: false
+//   "front", "rear", "left", "right" are acceptable'
+//   required: true
 //   type: string
-//   default: "NE"
+//   default: "front"
 // - name: PosXY
 //   in: query
 //   description: 'Indicates the position in a XY coordinate format'
-//   required: true
+//   required: false
 //   type: string
-//   default: "{\"x\":-30.0,\"y\":0.0}"
+//   default: "{\"x\":999,\"y\":999}"
 // - name: PosXYU
 //   in: query
 //   description: 'Indicates the unit of the PosXY position. Only values of
 //   "mm", "cm", "m", "U", "OU", "tile" are acceptable'
-//   required: true
+//   required: false
 //   type: string
-//   default: "m"
+//   default: "cm"
 // - name: PosZ
 //   in: query
 //   description: 'Indicates the position in the Z axis'
-//   required: true
+//   required: false
 //   type: string
-//   default: "10"
+//   default: "999"
 // - name: PosZU
 //   in: query
 //   description: 'Indicates the unit of the Z coordinate position. Only values of
 //   "mm", "cm", "m", "U", "OU", "tile" are acceptable'
-//   required: true
+//   required: false
 //   type: string
-//   default: "m"
+//   default: "cm"
 // - name: Size
 //   in: query
 //   description: 'Size of Rack in an XY coordinate format'
-//   required: true
+//   required: false
 //   type: string
-//   default: "{\"x\":25.0,\"y\":29.399999618530275}"
+//   default: "{\"x\":999,\"y\":999}"
 // - name: SizeU
 //   in: query
 //   description: 'The unit for Rack Size. Only values of
 //   "mm", "cm", "m", "U", "OU", "tile" are acceptable'
-//   required: true
+//   required: false
 //   type: string
-//   default: "m"
+//   default: "cm"
 // - name: Height
 //   in: query
 //   description: 'Height of Rack'
-//   required: true
+//   required: false
 //   type: string
-//   default: "5"
+//   default: "999"
 // - name: HeightU
 //   in: query
 //   description: 'The unit for Rack Height. Only values of
 //   "mm", "cm", "m", "U", "OU", "tile" are acceptable'
-//   required: true
+//   required: false
 //   type: string
-//   default: "m"
+//   default: "cm"
 // - name: Vendor
 //   in: query
 //   description: 'Vendor of Rack'
-//   required: true
+//   required: false
 //   type: string
-//   default: "Some Vendor"
+//   default: "New Vendor"
 // - name: Model
 //   in: query
 //   description: 'Model of Rack'
-//   required: true
+//   required: false
 //   type: string
-//   default: "Some Model"
+//   default: "New Model"
 // - name: Type
 //   in: query
 //   description: 'Type of Rack'
-//   required: true
+//   required: false
 //   type: string
-//   default: "Some Type"
+//   default: "New Type"
 // - name: Serial
 //   in: query
 //   description: 'Serial of Rack'
-//   required: true
+//   required: false
 //   type: string
-//   default: "Some Serial"
+//   default: "New Serial"
 
 // responses:
 //     '200':

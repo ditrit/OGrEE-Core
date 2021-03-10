@@ -590,45 +590,128 @@
             "required": true
           },
           {
-            "type": "string",
+            "type": "string[]",
             "default": "Some abandoned rack in Grenoble",
             "description": "Description of Rack",
             "name": "Description",
-            "in": "query",
-            "required": true
+            "in": "query"
           },
           {
-            "type": "int",
-            "default": 999,
-            "description": "This an attribute that refers to an existing parent",
+            "type": "string",
+            "default": "Some Domain",
+            "description": "Domain of Rack",
             "name": "Domain",
             "required": true
           },
           {
             "type": "string",
-            "default": "Silver",
-            "description": "Color of Rack (useful for 3D rendering)",
-            "name": "Color",
+            "default": "NE",
+            "description": "Indicates the location. Only values of \"front\", \"rear\", \"left\", \"right\" are acceptable",
+            "name": "Orientation",
             "in": "query",
             "required": true
           },
           {
             "type": "string",
-            "default": "NE",
-            "description": "Indicates the location. Only values of \"NE\", \"NW\", \"SE\", \"SW\" are acceptable",
-            "name": "Orientation",
+            "default": "Some Template",
+            "description": "Room template",
+            "name": "Template",
             "in": "query",
             "required": true
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Created"
           },
-          "400": {
-            "description": "Bad request"
+          {
+            "type": "string",
+            "default": "{\"x\":-30.0,\"y\":0.0}",
+            "description": "Indicates the position in a XY coordinate format",
+            "name": "PosXY",
+            "in": "query",
+            "required": true
+          },
+          {
+            "type": "string",
+            "default": "m",
+            "description": "Indicates the unit of the PosXY position. Only values of \"mm\", \"cm\", \"m\", \"U\", \"OU\", \"tile\" are acceptable",
+            "name": "PosXYU",
+            "in": "query",
+            "required": true
+          },
+          {
+            "type": "string",
+            "default": "10",
+            "description": "Indicates the position in the Z axis",
+            "name": "PosZ",
+            "in": "query",
+            "required": true
+          },
+          {
+            "type": "string",
+            "default": "m",
+            "description": "Indicates the unit of the Z coordinate position. Only values of \"mm\", \"cm\", \"m\", \"U\", \"OU\", \"tile\" are acceptable",
+            "name": "PosZU",
+            "in": "query",
+            "required": true
+          },
+          {
+            "type": "string",
+            "default": "{\"x\":25.0,\"y\":29.399999618530275}",
+            "description": "Size of Rack in an XY coordinate format",
+            "name": "Size",
+            "in": "query",
+            "required": true
+          },
+          {
+            "type": "string",
+            "default": "m",
+            "description": "The unit for Rack Size. Only values of \"mm\", \"cm\", \"m\", \"U\", \"OU\", \"tile\" are acceptable",
+            "name": "SizeU",
+            "in": "query",
+            "required": true
+          },
+          {
+            "type": "string",
+            "default": "5",
+            "description": "Height of Rack",
+            "name": "Height",
+            "in": "query",
+            "required": true
+          },
+          {
+            "type": "string",
+            "default": "m",
+            "description": "The unit for Rack Height. Only values of \"mm\", \"cm\", \"m\", \"U\", \"OU\", \"tile\" are acceptable",
+            "name": "HeightU",
+            "in": "query",
+            "required": true
+          },
+          {
+            "type": "string",
+            "default": "Some Vendor",
+            "description": "Vendor of Rack",
+            "name": "Vendor",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "default": "Some Model",
+            "description": "Model of Rack",
+            "name": "Model",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "default": "Some Type",
+            "description": "Type of Rack",
+            "name": "Type",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "default": "Some Serial",
+            "description": "Serial of Rack",
+            "name": "Serial",
+            "in": "query"
           }
-        }
+        ]
       }
     },
     "/api/user/racks/": {
@@ -733,6 +816,102 @@
             "description": "Indicates the location. Only values of \"NE\", \"NW\", \"SE\", \"SW\" are acceptable",
             "name": "Orientation",
             "in": "query"
+          },
+          {
+            "type": "string",
+            "default": "{\"x\":-30.0,\"y\":0.0}",
+            "description": "Indicates the position in a XY coordinate format",
+            "name": "PosXY",
+            "in": "query",
+            "required": true
+          },
+          {
+            "type": "string",
+            "default": "m",
+            "description": "Indicates the unit of the PosXY position. Only values of \"mm\", \"cm\", \"m\", \"U\", \"OU\", \"tile\" are acceptable",
+            "name": "PosXYU",
+            "in": "query",
+            "required": true
+          },
+          {
+            "type": "string",
+            "default": "10",
+            "description": "Indicates the position in the Z axis",
+            "name": "PosZ",
+            "in": "query",
+            "required": true
+          },
+          {
+            "type": "string",
+            "default": "m",
+            "description": "Indicates the unit of the Z coordinate position. Only values of \"mm\", \"cm\", \"m\", \"U\", \"OU\", \"tile\" are acceptable",
+            "name": "PosZU",
+            "in": "query",
+            "required": true
+          },
+          {
+            "type": "string",
+            "default": "{\"x\":25.0,\"y\":29.399999618530275}",
+            "description": "Size of Rack in an XY coordinate format",
+            "name": "Size",
+            "in": "query",
+            "required": true
+          },
+          {
+            "type": "string",
+            "default": "m",
+            "description": "The unit for Rack Size. Only values of \"mm\", \"cm\", \"m\", \"U\", \"OU\", \"tile\" are acceptable",
+            "name": "SizeU",
+            "in": "query",
+            "required": true
+          },
+          {
+            "type": "string",
+            "default": "5",
+            "description": "Height of Rack",
+            "name": "Height",
+            "in": "query",
+            "required": true
+          },
+          {
+            "type": "string",
+            "default": "m",
+            "description": "The unit for Rack Height. Only values of \"mm\", \"cm\", \"m\", \"U\", \"OU\", \"tile\" are acceptable",
+            "name": "HeightU",
+            "in": "query",
+            "required": true
+          },
+          {
+            "type": "string",
+            "default": "Some Vendor",
+            "description": "Vendor of Rack",
+            "name": "Vendor",
+            "in": "query",
+            "required": true
+          },
+          {
+            "type": "string",
+            "default": "Some Model",
+            "description": "Model of Rack",
+            "name": "Model",
+            "in": "query",
+            "required": true
+          },
+          {
+            "type": "string",
+            "default": "Some Type",
+            "description": "Type of Rack",
+            "name": "Type",
+            "in": "query",
+            "required": true
+          },
+          {
+            "type": "string",
+            "default": "Some Serial",
+            "description": "Serial of Rack",
+            "name": "Serial",
+            "in": "query",
+            "required": true
           }
         ]
       },
@@ -972,8 +1151,10 @@
             "in": "query"
           },
           {
-            "type": "string",
-            "default": "Some abandoned room in Grenoble",
+            "type": "string[]",
+            "default": [
+              "Some abandoned room in Grenoble"
+            ],
             "description": "Description of Room",
             "name": "Description",
             "in": "query"
