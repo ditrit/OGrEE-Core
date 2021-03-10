@@ -101,6 +101,13 @@
           },
           {
             "type": "string",
+            "default": "999",
+            "description": "ParentID of Building refers to Site",
+            "name": "ParentID",
+            "required": true
+          },
+          {
+            "type": "string",
             "default": "Research",
             "description": "Category of Building (ex. Consumer Electronics, Medical)",
             "name": "Category",
@@ -108,16 +115,18 @@
             "required": true
           },
           {
-            "type": "string",
-            "default": "Some abandoned building in Grenoble",
+            "type": "string[]",
+            "default": [
+              "Some abandoned building in Grenoble"
+            ],
             "description": "Description of Building",
             "name": "Description",
             "in": "query",
             "required": true
           },
           {
-            "type": "int",
-            "default": 999,
+            "type": "string",
+            "default": "Some Domain",
             "description": "This an attribute that refers to an existing parent",
             "name": "Domain",
             "required": true
@@ -132,21 +141,77 @@
           },
           {
             "type": "string",
-            "default": "NE",
-            "description": "Indicates the location. Only values of \"NE\", \"NW\", \"SE\", \"SW\" are acceptable",
-            "name": "Orientation",
+            "default": "{\"x\":-30.0,\"y\":0.0}",
+            "description": "Indicates the position in a XY coordinate format",
+            "name": "PosXY",
+            "in": "query",
+            "required": true
+          },
+          {
+            "type": "string",
+            "default": "m",
+            "description": "Indicates the unit of the XY coordinate position, PosXY",
+            "name": "PosXYU",
+            "in": "query",
+            "required": true
+          },
+          {
+            "type": "string",
+            "default": "10",
+            "description": "Indicates the position in the Z axis",
+            "name": "PosZ",
+            "in": "query",
+            "required": true
+          },
+          {
+            "type": "string",
+            "default": "m",
+            "description": "Indicates the unit of the Z coordinate position, PosZ",
+            "name": "PosZU",
+            "in": "query",
+            "required": true
+          },
+          {
+            "type": "string",
+            "default": "{\"x\":25.0,\"y\":29.399999618530275}",
+            "description": "Size of Building in an XY coordinate format",
+            "name": "Size",
+            "in": "query",
+            "required": true
+          },
+          {
+            "type": "string",
+            "default": "m",
+            "description": "The unit for Building Size",
+            "name": "SizeU",
+            "in": "query",
+            "required": true
+          },
+          {
+            "type": "string",
+            "default": "5",
+            "description": "Height of Building",
+            "name": "Height",
+            "in": "query",
+            "required": true
+          },
+          {
+            "type": "string",
+            "default": "m",
+            "description": "The unit for Building Height",
+            "name": "HeightU",
+            "in": "query",
+            "required": true
+          },
+          {
+            "type": "string",
+            "default": "3",
+            "description": "Number of floors",
+            "name": "Floors",
             "in": "query",
             "required": true
           }
-        ],
-        "responses": {
-          "200": {
-            "description": "Created"
-          },
-          "400": {
-            "description": "Bad request"
-          }
-        }
+        ]
       }
     },
     "/api/user/buildings/{id}": {

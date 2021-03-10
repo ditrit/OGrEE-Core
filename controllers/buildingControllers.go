@@ -22,6 +22,11 @@ import (
 //   required: true
 //   type: string
 //   default: "Building A"
+// - name: ParentID
+//   description: 'ParentID of Building refers to Site'
+//   required: true
+//   type: string
+//   default: "999"
 // - name: Category
 //   in: query
 //   description: Category of Building (ex. Consumer Electronics, Medical)
@@ -32,27 +37,75 @@ import (
 //   in: query
 //   description: Description of Building
 //   required: true
-//   type: string
-//   default: "Some abandoned building in Grenoble"
+//   type: string[]
+//   default: ["Some abandoned building in Grenoble"]
 // - name: Domain
 //   description: 'This an attribute that refers to
 //   an existing parent'
 //   required: true
-//   type: int
-//   default: 999
+//   type: string
+//   default: "Some Domain"
 // - name: Color
 //   in: query
 //   description: Color of Building (useful for 3D rendering)
 //   required: true
 //   type: string
 //   default: "Silver"
-// - name: Orientation
+// - name: PosXY
 //   in: query
-//   description: 'Indicates the location. Only values of
-//   "NE", "NW", "SE", "SW" are acceptable'
+//   description: 'Indicates the position in a XY coordinate format'
 //   required: true
 //   type: string
-//   default: "NE"
+//   default: "{\"x\":-30.0,\"y\":0.0}"
+// - name: PosXYU
+//   in: query
+//   description: 'Indicates the unit of the XY coordinate position, PosXY'
+//   required: true
+//   type: string
+//   default: "m"
+// - name: PosZ
+//   in: query
+//   description: 'Indicates the position in the Z axis'
+//   required: true
+//   type: string
+//   default: "10"
+// - name: PosZU
+//   in: query
+//   description: 'Indicates the unit of the Z coordinate position, PosZ'
+//   required: true
+//   type: string
+//   default: "m"
+// - name: Size
+//   in: query
+//   description: 'Size of Building in an XY coordinate format'
+//   required: true
+//   type: string
+//   default: "{\"x\":25.0,\"y\":29.399999618530275}"
+// - name: SizeU
+//   in: query
+//   description: 'The unit for Building Size'
+//   required: true
+//   type: string
+//   default: "m"
+// - name: Height
+//   in: query
+//   description: 'Height of Building'
+//   required: true
+//   type: string
+//   default: "5"
+// - name: HeightU
+//   in: query
+//   description: 'The unit for Building Height'
+//   required: true
+//   type: string
+//   default: "m"
+// - name: Floors
+//   in: query
+//   description: 'Number of floors'
+//   required: true
+//   type: string
+//   default: "3"
+
 // responses:
 //     '200':
 //         description: Created
