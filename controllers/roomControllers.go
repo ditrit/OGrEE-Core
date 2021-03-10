@@ -161,7 +161,7 @@ var GetRoom = func(w http.ResponseWriter, r *http.Request) {
 	u.Respond(w, resp)
 }
 
-// swagger:operation GET /api/user/rooms/ rooms GetRoom
+// swagger:operation GET /api/user/rooms rooms GetAllRooms
 // Gets All Rooms in the system.
 // ---
 // produces:
