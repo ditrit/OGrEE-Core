@@ -245,12 +245,6 @@ var DeleteRoom = func(w http.ResponseWriter, r *http.Request) {
 //   required: false
 //   type: string
 //   default: "Some abandoned room in Grenoble"
-// - name: Color
-//   in: query
-//   description: Color of Room (useful for 3D rendering)
-//   required: false
-//   type: string
-//   default: "Blue"
 // - name: Orientation
 //   in: query
 //   description: 'Indicates the location. Only values of
@@ -258,7 +252,12 @@ var DeleteRoom = func(w http.ResponseWriter, r *http.Request) {
 //   required: false
 //   type: string
 //   default: "NE"
-
+// - name: Template
+//   in: query
+//   description: 'Room template'
+//   required: false
+//   type: string
+//   default: "New Template"
 // - name: PosXY
 //   in: query
 //   description: 'Indicates the position in a XY coordinate format'
