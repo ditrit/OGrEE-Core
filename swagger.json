@@ -412,8 +412,7 @@
             ],
             "description": "Description of Device",
             "name": "Description",
-            "in": "query",
-            "required": true
+            "in": "query"
           },
           {
             "type": "string",
@@ -596,24 +595,103 @@
             "in": "query"
           },
           {
-            "type": "string",
-            "default": "Some abandoned device in Grenoble",
+            "type": "string[]",
+            "default": [
+              "Some abandoned device in Grenoble"
+            ],
             "description": "Description of Device",
             "name": "Description",
             "in": "query"
           },
           {
             "type": "string",
-            "default": "Blue",
-            "description": "Color of Device (useful for 3D rendering)",
-            "name": "Color",
+            "default": "frontflipped",
+            "description": "Indicates the location. Only values of \"front\", \"rear\", \"frontflipped\", \"rearflipped\" are acceptable",
+            "name": "Orientation",
             "in": "query"
           },
           {
             "type": "string",
-            "default": "NE",
-            "description": "Indicates the location. Only values of \"NE\", \"NW\", \"SE\", \"SW\" are acceptable",
-            "name": "Orientation",
+            "default": "{\"x\":999,\"y\":999}",
+            "description": "Indicates the position in a XY coordinate format",
+            "name": "PosXY",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "default": "cm",
+            "description": "Indicates the unit of the PosXY position. Only values of \"mm\", \"cm\", \"m\", \"U\", \"OU\", \"tile\" are acceptable",
+            "name": "PosXYU",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "default": "999",
+            "description": "Indicates the position in the Z axis",
+            "name": "PosZ",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "default": "cm",
+            "description": "Indicates the unit of the Z coordinate position. Only values of \"mm\", \"cm\", \"m\", \"U\", \"OU\", \"tile\" are acceptable",
+            "name": "PosZU",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "default": "{\"x\":999,\"y\":999}",
+            "description": "Size of Device in an XY coordinate format",
+            "name": "Size",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "default": "cm",
+            "description": "The unit for Device Size. Only values of \"mm\", \"cm\", \"m\", \"U\", \"OU\", \"tile\" are acceptable",
+            "name": "SizeU",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "default": "999",
+            "description": "Height of Device",
+            "name": "Height",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "default": "cm",
+            "description": "The unit for Device Height. Only values of \"mm\", \"cm\", \"m\", \"U\", \"OU\", \"tile\" are acceptable",
+            "name": "HeightU",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "default": "New Vendor",
+            "description": "Vendor of Device",
+            "name": "Vendor",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "default": "New Model",
+            "description": "Model of Device",
+            "name": "Model",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "default": "New Type",
+            "description": "Type of Device",
+            "name": "Type",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "default": "New Serial",
+            "description": "Serial of Device",
+            "name": "Serial",
             "in": "query"
           }
         ]

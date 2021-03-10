@@ -264,21 +264,91 @@ var DeleteDevice = func(w http.ResponseWriter, r *http.Request) {
 //   in: query
 //   description: Description of Device
 //   required: false
-//   type: string
-//   default: "Some abandoned device in Grenoble"
-// - name: Color
-//   in: query
-//   description: Color of Device (useful for 3D rendering)
-//   required: false
-//   type: string
-//   default: "Blue"
+//   type: string[]
+//   default: ["Some abandoned device in Grenoble"]
 // - name: Orientation
 //   in: query
 //   description: 'Indicates the location. Only values of
-//   "NE", "NW", "SE", "SW" are acceptable'
+//   "front", "rear", "frontflipped", "rearflipped" are acceptable'
 //   required: false
 //   type: string
-//   default: "NE"
+//   default: "frontflipped"
+// - name: PosXY
+//   in: query
+//   description: 'Indicates the position in a XY coordinate format'
+//   required: false
+//   type: string
+//   default: "{\"x\":999,\"y\":999}"
+// - name: PosXYU
+//   in: query
+//   description: 'Indicates the unit of the PosXY position. Only values of
+//   "mm", "cm", "m", "U", "OU", "tile" are acceptable'
+//   required: false
+//   type: string
+//   default: "cm"
+// - name: PosZ
+//   in: query
+//   description: 'Indicates the position in the Z axis'
+//   required: false
+//   type: string
+//   default: "999"
+// - name: PosZU
+//   in: query
+//   description: 'Indicates the unit of the Z coordinate position. Only values of
+//   "mm", "cm", "m", "U", "OU", "tile" are acceptable'
+//   required: false
+//   type: string
+//   default: "cm"
+// - name: Size
+//   in: query
+//   description: 'Size of Device in an XY coordinate format'
+//   required: false
+//   type: string
+//   default: "{\"x\":999,\"y\":999}"
+// - name: SizeU
+//   in: query
+//   description: 'The unit for Device Size. Only values of
+//   "mm", "cm", "m", "U", "OU", "tile" are acceptable'
+//   required: false
+//   type: string
+//   default: "cm"
+// - name: Height
+//   in: query
+//   description: 'Height of Device'
+//   required: false
+//   type: string
+//   default: "999"
+// - name: HeightU
+//   in: query
+//   description: 'The unit for Device Height. Only values of
+//   "mm", "cm", "m", "U", "OU", "tile" are acceptable'
+//   required: false
+//   type: string
+//   default: "cm"
+// - name: Vendor
+//   in: query
+//   description: 'Vendor of Device'
+//   required: false
+//   type: string
+//   default: "New Vendor"
+// - name: Model
+//   in: query
+//   description: 'Model of Device'
+//   required: false
+//   type: string
+//   default: "New Model"
+// - name: Type
+//   in: query
+//   description: 'Type of Device'
+//   required: false
+//   type: string
+//   default: "New Type"
+// - name: Serial
+//   in: query
+//   description: 'Serial of Device'
+//   required: false
+//   type: string
+//   default: "New Serial"
 
 // responses:
 //     '200':
