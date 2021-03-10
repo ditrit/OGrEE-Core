@@ -109,7 +109,7 @@ var GetBuilding = func(w http.ResponseWriter, r *http.Request) {
 	u.Respond(w, resp)
 }
 
-// swagger:operation GET /api/user/buildings/ buildings GetBuilding
+// swagger:operation GET /api/user/buildings buildings GetAllBuildings
 // Gets All Buildings in the system.
 // ---
 // produces:

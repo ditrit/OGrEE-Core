@@ -63,6 +63,24 @@
       }
     },
     "/api/user/buildings": {
+      "get": {
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "buildings"
+        ],
+        "summary": "Gets All Buildings in the system.",
+        "operationId": "GetAllBuildings",
+        "responses": {
+          "200": {
+            "description": "Found"
+          },
+          "400": {
+            "description": "Not Found"
+          }
+        }
+      },
       "post": {
         "produces": [
           "application/json"
@@ -127,26 +145,6 @@
           },
           "400": {
             "description": "Bad request"
-          }
-        }
-      }
-    },
-    "/api/user/buildings/": {
-      "get": {
-        "produces": [
-          "application/json"
-        ],
-        "tags": [
-          "buildings"
-        ],
-        "summary": "Gets All Buildings in the system.",
-        "operationId": "GetBuilding",
-        "responses": {
-          "200": {
-            "description": "Found"
-          },
-          "400": {
-            "description": "Not Found"
           }
         }
       }
@@ -901,7 +899,7 @@
             "required": true
           },
           {
-            "type": "int",
+            "type": "string",
             "default": 999,
             "description": "Domain of Site",
             "name": "Domain",
