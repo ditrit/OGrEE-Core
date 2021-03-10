@@ -232,19 +232,11 @@ var GetSite = func(w http.ResponseWriter, r *http.Request) {
 	u.Respond(w, resp)
 }
 
-// swagger:operation GET /api/user/sites/{id} sites GetTenant
-// Gets a Site(s) from the system.
-// The ID must be provided in the URL parameter
+// swagger:operation GET /api/user/sites sites GetAllSites
+// Gets all Sites from the system.
 // ---
 // produces:
 // - application/json
-// parameters:
-// - name: ID
-//   in: path
-//   description: ID of desired site
-//   required: true
-//   type: int
-//   default: 999
 // responses:
 //     '200':
 //         description: Found

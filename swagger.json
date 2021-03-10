@@ -857,31 +857,20 @@
     },
     "/api/user/sites": {
       "get": {
-        "description": "The ID is provided in JSON and not in\nparameter. This is a new feature in progress",
         "produces": [
           "application/json"
         ],
         "tags": [
           "sites"
         ],
-        "summary": "Get all Sites of a Tenant using Site ID.",
-        "operationId": "GetSitesByParentID",
-        "parameters": [
-          {
-            "type": "int",
-            "default": 999,
-            "description": "ID of user",
-            "name": "ID",
-            "in": "path",
-            "required": true
-          }
-        ],
+        "summary": "Gets all Sites from the system.",
+        "operationId": "GetAllSites",
         "responses": {
           "200": {
             "description": "Found"
           },
           "400": {
-            "description": "Not Found"
+            "description": "Bad request"
           }
         }
       },
@@ -926,8 +915,10 @@
             "required": true
           },
           {
-            "type": "string",
-            "default": "Some abandoned site in Grenoble",
+            "type": "string[]",
+            "default": [
+              "Some abandoned site in Grenoble"
+            ],
             "description": "Description of Site",
             "name": "Description",
             "in": "query",
@@ -1010,15 +1001,14 @@
     },
     "/api/user/sites/{id}": {
       "get": {
-        "description": "The ID must be provided in the URL parameter",
         "produces": [
           "application/json"
         ],
         "tags": [
           "sites"
         ],
-        "summary": "Gets a Site(s) from the system.",
-        "operationId": "GetTenant",
+        "summary": "Gets a Site from the system using Site ID.",
+        "operationId": "GetSite",
         "parameters": [
           {
             "type": "int",
@@ -1034,7 +1024,7 @@
             "description": "Found"
           },
           "400": {
-            "description": "Bad request"
+            "description": "Not Found"
           }
         }
       },
