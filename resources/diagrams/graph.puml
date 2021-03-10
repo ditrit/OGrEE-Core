@@ -1,0 +1,178 @@
+@startuml
+class Token {
++UserId: uint
++: StandardClaims
+
+}
+class Account {
++: Model
++Email: string
++Password: string
++Token: string
++*Validate(): map[string]interface, bool
++*Create(): map[string]interface
+}
+class Building_Attributes {
++ID: int
++PosXY: string
++PosXYU: string
++PosZ: string
++PosZU: string
++Size: string
++SizeU: string
++Height: string
++HeightU: string
++Floors: string
+
+}
+class Building {
++ID: int
++Name: string
++ParentID: string
++Category: string
++Domain: string
++DescriptionJSON: []string
++DescriptionDB: string
++Attributes: Building_Attributes
++*Validate(): map[string]interface, bool
++*Create(): map[string]interface
+}
+class Device {
++ID: int
++Name: string
++ParentID: string
++Category: string
++Domain: string
++DescriptionJSON: []string
++DescriptionDB: string
++Attributes: Device_Attributes
++*Validate(): map[string]interface, bool
++*Create(): map[string]interface
+}
+class Device_Attributes {
++ID: int
++PosXY: string
++PosXYU: string
++PosZ: string
++PosZU: string
++Template: string
++Orientation: string
++Size: string
++SizeU: string
++Height: string
++HeightU: string
++Vendor: string
++Type: string
++Model: string
++Serial: string
+
+}
+class Rack_Attributes {
++ID: int
++PosXY: string
++PosXYU: string
++PosZ: string
++PosZU: string
++Template: string
++Orientation: string
++Size: string
++SizeU: string
++Height: string
++HeightU: string
++Vendor: string
++Type: string
++Model: string
++Serial: string
+
+}
+class Rack {
++ID: int
++Name: string
++ParentID: string
++Category: string
++Domain: string
++DescriptionJSON: []string
++DescriptionDB: string
++Attributes: Rack_Attributes
++*Validate(): map[string]interface, bool
++*Create(): map[string]interface
+}
+class Room_Attributes {
++ID: int
++PosXY: string
++PosXYU: string
++PosZ: string
++PosZU: string
++Template: string
++Orientation: string
++Size: string
++SizeU: string
++Height: string
++HeightU: string
+
+}
+class Room {
++ID: int
++Name: string
++ParentID: string
++Category: string
++Domain: string
++DescriptionJSON: []string
++DescriptionDB: string
++Attributes: Room_Attributes
++*Validate(): map[string]interface, bool
++*Create(): map[string]interface
+}
+class Site_Attributes {
++ID: int
++Orientation: string
++UsableColor: string
++ReservedColor: string
++TechnicalColor: string
++Address: string
++Zipcode: string
++City: string
++Country: string
++Gps: string
+
+}
+class Site {
++ID: int
++Name: string
++Category: string
++Domain: string
++ParentID: string
++DescriptionJSON: []string
++DescriptionDB: string
++Attributes: Site_Attributes
++Building: []Building
++*Validate(): map[string]interface, bool
++*Create(): map[string]interface
+}
+class Tenant_Attributes {
++ID: int
++Color: string
++MainContact: string
++MainPhone: string
++MainEmail: string
+
+}
+class Tenant {
++ID: int
++Name: string
++Category: string
++Domain: string
++ParentID: int
++DescriptionJSON: []string
++DescriptionDB: string
++Attributes: Tenant_Attributes
++*Validate(): map[string]interface, bool
++*Create(): map[string]interface
+}
+Building --> Building_Attributes
+Device --> Device_Attributes
+Rack --> Rack_Attributes
+Room --> Room_Attributes
+Site --> Site_Attributes
+Tenant --> Tenant_Attributes
+@enduml
