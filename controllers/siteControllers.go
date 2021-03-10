@@ -155,7 +155,7 @@ var GetSitesByUserID = func(w http.ResponseWriter, r *http.Request) {
 }
 
 // swagger:operation GET /api/user/sites sites GetSitesByParentID
-// Get all Sites of a Site using Site ID.
+// Get all Sites of a Tenant using Site ID.
 // The ID is provided in JSON and not in
 // parameter. This is a new feature in progress
 // ---
@@ -410,7 +410,6 @@ var DeleteSites = func(w http.ResponseWriter, r *http.Request) {
 //         description: Updated
 //     '400':
 //         description: Bad request
-//Updates work by passing ID in path parameter
 
 var UpdateSite = func(w http.ResponseWriter, r *http.Request) {
 

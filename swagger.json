@@ -864,7 +864,7 @@
         "tags": [
           "sites"
         ],
-        "summary": "Get all Sites of a Site using Site ID.",
+        "summary": "Get all Sites of a Tenant using Site ID.",
         "operationId": "GetSitesByParentID",
         "parameters": [
           {
