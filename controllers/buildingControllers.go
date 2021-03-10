@@ -237,26 +237,76 @@ var DeleteBuilding = func(w http.ResponseWriter, r *http.Request) {
 //   description: Category of Building (ex. Consumer Electronics, Medical)
 //   required: false
 //   type: string
-//   default: "Research"
+//   default: "New Building"
 // - name: Description
 //   in: query
 //   description: Description of Building
 //   required: false
 //   type: string[]
 //   default: ["Derelict", "Building"]
-// - name: Color
-//   in: query
-//   description: Color of Building (useful for 3D rendering)
+// - name: Domain
+//   description: 'Domain Of Building'
 //   required: false
 //   type: string
-//   default: "Blue"
-// - name: Orientation
+//   default: "Derelict Domain"
+// - name: PosXY
 //   in: query
-//   description: 'Indicates the location. Only values of
-//   "NE", "NW", "SE", "SW" are acceptable'
+//   description: 'Indicates the position in a XY coordinate format'
 //   required: false
 //   type: string
-//   default: "NE"
+//   default: "{\"x\":999,\"y\":999}"
+// - name: PosXYU
+//   in: query
+//   description: 'Indicates the unit of the PosXY position. Only values of
+//   "mm", "cm", "m", "U", "OU", "tile" are acceptable'
+//   required: false
+//   type: string
+//   default: "cm"
+// - name: PosZ
+//   in: query
+//   description: 'Indicates the position in the Z axis'
+//   required: false
+//   type: string
+//   default: "999"
+// - name: PosZU
+//   in: query
+//   description: 'Indicates the unit of the Z coordinate position. Only values of
+//   "mm", "cm", "m", "U", "OU", "tile" are acceptable'
+//   required: false
+//   type: string
+//   default: "cm"
+// - name: Size
+//   in: query
+//   description: 'Size of Building in an XY coordinate format'
+//   required: false
+//   type: string
+//   default: "{\"x\":999,\"y\":999}"
+// - name: SizeU
+//   in: query
+//   description: 'The unit for Building Size. Only values of
+//   "mm", "cm", "m", "U", "OU", "tile" are acceptable'
+//   required: false
+//   type: string
+//   default: "cm"
+// - name: Height
+//   in: query
+//   description: 'Height of Building'
+//   required: false
+//   type: string
+//   default: "999"
+// - name: HeightU
+//   in: query
+//   description: 'The unit for Building Height. Only values of
+//   "mm", "cm", "m", "U", "OU", "tile" are acceptable'
+//   required: false
+//   type: string
+//   default: "cm"
+// - name: Floors
+//   in: query
+//   description: 'Number of floors'
+//   required: false
+//   type: string
+//   default: "999"
 
 // responses:
 //     '200':

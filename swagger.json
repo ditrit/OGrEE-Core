@@ -263,7 +263,7 @@
           },
           {
             "type": "string",
-            "default": "Research",
+            "default": "New Building",
             "description": "Category of Building (ex. Consumer Electronics, Medical)",
             "name": "Category",
             "in": "query"
@@ -280,16 +280,71 @@
           },
           {
             "type": "string",
-            "default": "Blue",
-            "description": "Color of Building (useful for 3D rendering)",
-            "name": "Color",
+            "default": "Derelict Domain",
+            "description": "Domain Of Building",
+            "name": "Domain"
+          },
+          {
+            "type": "string",
+            "default": "{\"x\":999,\"y\":999}",
+            "description": "Indicates the position in a XY coordinate format",
+            "name": "PosXY",
             "in": "query"
           },
           {
             "type": "string",
-            "default": "NE",
-            "description": "Indicates the location. Only values of \"NE\", \"NW\", \"SE\", \"SW\" are acceptable",
-            "name": "Orientation",
+            "default": "cm",
+            "description": "Indicates the unit of the PosXY position. Only values of \"mm\", \"cm\", \"m\", \"U\", \"OU\", \"tile\" are acceptable",
+            "name": "PosXYU",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "default": "999",
+            "description": "Indicates the position in the Z axis",
+            "name": "PosZ",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "default": "cm",
+            "description": "Indicates the unit of the Z coordinate position. Only values of \"mm\", \"cm\", \"m\", \"U\", \"OU\", \"tile\" are acceptable",
+            "name": "PosZU",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "default": "{\"x\":999,\"y\":999}",
+            "description": "Size of Building in an XY coordinate format",
+            "name": "Size",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "default": "cm",
+            "description": "The unit for Building Size. Only values of \"mm\", \"cm\", \"m\", \"U\", \"OU\", \"tile\" are acceptable",
+            "name": "SizeU",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "default": "999",
+            "description": "Height of Building",
+            "name": "Height",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "default": "cm",
+            "description": "The unit for Building Height. Only values of \"mm\", \"cm\", \"m\", \"U\", \"OU\", \"tile\" are acceptable",
+            "name": "HeightU",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "default": "999",
+            "description": "Number of floors",
+            "name": "Floors",
             "in": "query"
           }
         ]
