@@ -1220,7 +1220,9 @@
           },
           {
             "type": "string[]",
-            "example": "Worldwide automotive company",
+            "example": [
+              "Worldwide automotive company"
+            ],
             "description": "Description of the Tenant",
             "name": "Description",
             "in": "query"

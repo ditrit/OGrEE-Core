@@ -33,7 +33,7 @@ import (
 //   description: 'Description of the Tenant'
 //   required: false
 //   type: string[]
-//   example: "Worldwide automotive company"
+//   example: ["Worldwide automotive company"]
 // - name: Domain
 //   description: 'Domain of the Tenant'
 //   required: true
