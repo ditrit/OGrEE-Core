@@ -7,22 +7,94 @@ Introduction
 ------------
 Currently the most up to date version of the API is in the 'failedDesign' branch. It was thought that the design was really bad, but in fact it is actually better than the design in the master branch. Soon I will fix this so that the best work will be on master.
 
-**TO DO**
-Write instructions to set up API and DB on a new machine
 
+Building
+------------
+This is not yet tested on Windows and macOS   
+The ReadMe assumes that you already have GO installed and your Environment PATHS properly setup  
+You must also get [CockroachDB](https://www.cockroachlabs.com/docs/stable/install-cockroachdb-linux.html)  
+For BSD systems, GO can be installed from the respective ports  
+For Linux, consult your respective Distribution docs  
+
+[Otherwise you can follow instructions from the GO site](https://golang.org/doc/install)  
+   
+  Clone the API repository  
+  Execute go build main.go It should automatically retrieve the necessary libraries. If not then execute the command below to obtain the following packages
+  ```
+  go get github.com/dgrijalva/jwt-go github.com/fsnotify/fsnotify github.com/gorilla/mux github.com/jinzhu/gorm github.com/joho/godotenv github.com/lib/pq github.com/magiconair/properties github.com/mitchellh/mapstructure github.com/pelletier/go-toml github.com/spf13/afero github.com/spf13/cobra golang.org/x/crypto golang.org/x/sys golang.org/x/text gopkg.in/ini.v1  
+  ```  
+
+   Execute go build main.go
+
+
+Running
+-------------
+You can modify the port of the API in the .env file 
+ - Execute the bash script start.sh
+ - Execute ```go run main.go```
 
 Anatomy
 -------------
-![image info](./resources/diagrams/UML.png)
+The API follows the [MVC Architecture](https://en.wikipedia.org/wiki/Model%E2%80%93view%E2%80%93controller) using an [Active Record](https://en.wikipedia.org/wiki/Active_record_pattern) Persistence Pattern (Managed by the Model)   
+The code is divided into isolated components where each component performs a certain set of tasks. The Model manages the Data and interacts with the Database   
+The Controller interacts with the View and Model   
+The View is the front end   
+<p align="center">
+  <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/a/a0/MVC-Process.svg/218px-MVC-Process.svg.png">
+</p>
 
+
+   
+This design was chosen to follow the microservices design for scalability and potential reuse in other projects such as GANDALF
+   
 API Files
 -------------
-Below are the files of the project. Docker Images are included but a work in progress [Click here for directions on cloning the repository.][cloning instructions] This section is still a WIP!
-<!-- TODO add the real files to the document and ensure that they're correct -->
-- Docker Images
-  - **jenkins/jenkins**: STUB
-  - **dind**: STUB
-  - **testingalpine**: API Image to be tested
+   
+### Folder Structure   
+```
+├─app   
+├─controllers   
+├─models    
+├─resources   
+├───diagrams   
+└─utils   
+```
+    
+
+The 'app' dir contains error and authentication files  
+The 'controllers' dir contains controller files  
+The 'models' dir contains model files  
+The 'resources' dir contains SQL files and DB Diagram information   
+The 'utils' dir contains useful functions for JSON messaging
+
+### Files of Interest in the root directory  
+```
+- start.sh   
+- main.go  
+- .env   
+- doc.go   
+- swagger.json   
+- Jenkinsfile   
+- Dockerfile   
+```
+
+   
+The start.sh is a script to start the CockroachDB   
+main.go is the entry of the API  
+.env contains variables useful for the API  
+doc.go & swagger.json are OpenAPI documentation files   
+Jenkinsfile will be used to implement a CI Pipeline later  
+Dockerfile is a file for docker to create a container of the API  
+
+
+
+
+
+### API UML   
+![image info](./resources/diagrams/UML.png)
+
+
+
 
 Setting Up Jenkins
 --------------------------
