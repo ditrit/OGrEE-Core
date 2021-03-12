@@ -116,9 +116,16 @@ var CreateSite = func(w http.ResponseWriter, r *http.Request) {
 	}
 
 	resp, e := site.Create()
-	if e == "validate" {
+
+	switch e {
+	case "validate":
 		w.WriteHeader(http.StatusBadRequest)
+	case "internal":
+		w.WriteHeader(http.StatusInternalServerError)
+	default:
+		w.WriteHeader(http.StatusCreated)
 	}
+
 	u.Respond(w, resp)
 }
 
