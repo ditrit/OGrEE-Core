@@ -37,13 +37,15 @@ type Site struct {
 	Building []Building
 }
 
-func (site *Site) Validate() (map[string]interface{}, bool) {
+func (site *Site) Validate() (map[string]interface{}, bool, string) {
 	if site.Name == "" {
-		return u.Message(false, "site Name should be on payload"), false
+		return u.Message(false, "site Name should be on payload"),
+			false, "validate"
 	}
 
 	if site.Category == "" {
-		return u.Message(false, "Category should be on the payload"), false
+		return u.Message(false, "Category should be on the payload"),
+			false, "validate"
 	}
 
 	/*if site.Desc == "" {
@@ -51,13 +53,15 @@ func (site *Site) Validate() (map[string]interface{}, bool) {
 	}*/
 
 	if site.Domain == "" {
-		return u.Message(false, "Domain should be on the payload"), false
+		return u.Message(false, "Domain should be on the payload"),
+			false, "validate"
 	}
 
 	if GetDB().Table("tenant").
 		Where("id = ?", site.ParentID).First(&Tenant{}).Error != nil {
 
-		return u.Message(false, "SiteParentID should be correspond to tenant ID"), false
+		return u.Message(false, "SiteParentID should be correspond to tenant ID"),
+			false, "validate"
 	}
 
 	/*if site.Color == "" {
@@ -67,32 +71,39 @@ func (site *Site) Validate() (map[string]interface{}, bool) {
 	switch site.Attributes.Orientation {
 	case "NE", "NW", "SE", "SW":
 	case "":
-		return u.Message(false, "Orientation should be on the payload"), false
+		return u.Message(false, `Orientation should 
+				be on the payload`), false, "validate"
 
 	default:
-		return u.Message(false, "Orientation is invalid!"), false
+		return u.Message(false, "Orientation is invalid!"), false, "validate"
 	}
 
 	//Successfully validated Site
-	return u.Message(true, "success"), true
+	return u.Message(true, "success"), true, ""
 }
 
-func (site *Site) Create() map[string]interface{} {
-	if resp, ok := site.Validate(); !ok {
-		return resp
+func (site *Site) Create() (map[string]interface{}, string) {
+	if resp, ok, e := site.Validate(); !ok {
+		return resp, e
 	}
 
 	//GetDB().Create(site)
 	site.DescriptionDB = strings.Join(site.DescriptionJSON, "XYZ")
 
-	GetDB().Create(site)
+	e := GetDB().Create(site).Error
+	if e != nil {
+		return u.Message(false, "Internal problem. Try again later."), "internal"
+	}
 
 	site.Attributes.ID = site.ID
 
-	GetDB().Table("site_attributes").Create(&(site.Attributes))
+	e = GetDB().Table("site_attributes").Create(&(site.Attributes)).Error
+	if e != nil {
+		return u.Message(false, "Internal problem. Try again later."), "internal"
+	}
 	resp := u.Message(true, "success")
 	resp["site"] = site
-	return resp
+	return resp, ""
 }
 
 //Would have to think about

@@ -110,11 +110,15 @@ var CreateSite = func(w http.ResponseWriter, r *http.Request) {
 	site := &models.Site{}
 	err := json.NewDecoder(r.Body).Decode(site)
 	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
 		u.Respond(w, u.Message(false, "Error while decoding request body"))
 		return
 	}
 
-	resp := site.Create()
+	resp, e := site.Create()
+	if e == "validate" {
+		w.WriteHeader(http.StatusBadRequest)
+	}
 	u.Respond(w, resp)
 }
 
