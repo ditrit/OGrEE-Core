@@ -56,7 +56,7 @@ func (bldg *Building) Validate() (map[string]interface{}, bool) {
 	if GetDB().Table("site").
 		Where("id = ?", bldg.ParentID).First(&Site{}).Error != nil {
 
-		return u.Message(false, "Domain should be correspond to site ID"), false
+		return u.Message(false, "ParentID should be correspond to site ID"), false
 	}
 
 	if bldg.Attributes.PosXY == "" {
