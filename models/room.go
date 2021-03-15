@@ -58,7 +58,7 @@ func (room *Room) Validate() (map[string]interface{}, bool) {
 	}
 
 	if GetDB().Table("building").
-		Where("id = ?", room.ParentID).RecordNotFound() == true {
+		Where("id = ?", room.ParentID).First(&Building{}) != nil {
 
 		return u.Message(false, "ParentID should be correspond to building ID"), false
 	}
