@@ -61,7 +61,7 @@ func (rack *Rack) Validate() (map[string]interface{}, bool) {
 	if GetDB().Table("room").
 		Where("id = ?", rack.ParentID).First(&Room{}).Error != nil {
 
-		return u.Message(false, "ParentID should be correspond to building ID"), false
+		return u.Message(false, "ParentID should be correspond to Room ID"), false
 	}
 
 	if rack.Attributes.PosXY == "" {
