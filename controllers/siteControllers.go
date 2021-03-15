@@ -191,6 +191,7 @@ var GetSitesByParentID = func(w http.ResponseWriter, r *http.Request) {
 	st := &models.Site{}
 	err := json.NewDecoder(r.Body).Decode(st)
 	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
 		u.Respond(w, u.Message(false, "Error while decoding request body"))
 	}
 	resp := u.Message(true, "success")
@@ -199,6 +200,7 @@ var GetSitesByParentID = func(w http.ResponseWriter, r *http.Request) {
 
 	data := models.GetSites(uint(id))
 	if data == nil {
+		w.WriteHeader(http.StatusNoContent)
 		resp = u.Message(false, "unsuccessful")
 	}
 
