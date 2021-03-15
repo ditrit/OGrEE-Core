@@ -271,13 +271,13 @@ func UpdateRack(id uint, newRackInfo *Rack) map[string]interface{} {
 func DeleteRack(id uint) map[string]interface{} {
 
 	//This is a hard delete!
-	e := GetDB().Unscoped().Table("rack").Delete(&Rack{}, id).Error
+	e := GetDB().Unscoped().Table("rack").Delete(&Rack{}, id).RowsAffected
 
 	//The command below is a soft delete
 	//Meaning that the 'deleted_at' field will be set
 	//the record will remain but unsearchable
 	//e := GetDB().Table("tenants").Delete(Tenant{}, id).Error
-	if e != nil {
+	if e == 0 {
 		return u.Message(false, "There was an error in deleting the rack")
 	}
 
