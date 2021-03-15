@@ -101,7 +101,8 @@ func GetTenant(id uint) *Tenant {
 		Error
 
 	if e != nil {
-		fmt.Println("There was an error in finding the Tenant")
+		//fmt.Println("There was an error in finding the Tenant")
+		return nil
 	}
 
 	//r.Scan(tenant, &(tenant.Attributes))
