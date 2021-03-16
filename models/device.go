@@ -55,7 +55,7 @@ func (device *Device) Validate() (map[string]interface{}, bool) {
 	}
 
 	if GetDB().Table("rack").
-		Where("id = ?", device.ParentID).RecordNotFound() == true {
+		Where("id = ?", device.ParentID).First(&Rack{}).Error != nil {
 
 		return u.Message(false, "Domain should be correspond to Rack ID"), false
 	}
