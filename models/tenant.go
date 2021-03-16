@@ -141,13 +141,16 @@ func GetAllTenants() []*Tenant {
 //Only update valid fields
 //If any fields are invalid
 //Message will still be successful
-func UpdateTenant(id uint, t *Tenant) map[string]interface{} {
+func UpdateTenant(id uint, t *Tenant) (map[string]interface{}, string) {
 	tenant := &Tenant{}
 	err := GetDB().Table("tenant").Where("id = ?", id).First(tenant).
 		Table("tenant_attributes").Where("id = ?", id).First(&(tenant.Attributes)).Error
 
 	if err != nil {
-		return u.Message(false, "Tenant was not found")
+		if err.Error() != "record not found" {
+			return u.Message(false, "Internal Error"), "internal"
+		}
+		return u.Message(false, "Tenant was not found"), "record not found"
 	}
 
 	if t.Name != "" && t.Name != tenant.Name {
@@ -187,9 +190,12 @@ func UpdateTenant(id uint, t *Tenant) map[string]interface{} {
 	}
 
 	//fmt.Println(t.Description)
-	GetDB().Table("tenant").Save(tenant)
-	GetDB().Table("tenant_attributes").Save(&(tenant.Attributes))
-	return u.Message(true, "success")
+	if GetDB().Table("tenant").Save(tenant).Table("tenant_attributes").
+		Save(&(tenant.Attributes)).Error != nil {
+		return u.Message(false, "failure"), "internal"
+	}
+
+	return u.Message(true, "success"), ""
 }
 
 func DeleteTenant(id uint) map[string]interface{} {

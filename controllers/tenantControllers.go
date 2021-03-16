@@ -122,9 +122,9 @@ var GetTenantFor = func(w http.ResponseWriter, r *http.Request) {
 
 	data, e := models.GetTenant(uint(id))
 
-	switch e: {
+	switch e {
 	case "record not found":
-		w.WriteHeader(http.StatusNoContent)
+		//w.WriteHeader(http.StatusNoContent)
 	default:
 		w.WriteHeader(http.StatusInternalServerError)
 	}
@@ -148,16 +148,15 @@ var GetTenantFor = func(w http.ResponseWriter, r *http.Request) {
 var GetAllTenants = func(w http.ResponseWriter, r *http.Request) {
 
 	data := models.GetAllTenants()
+	resp := u.Message(true, "success")
 	if data == nil {
 		w.WriteHeader(http.StatusInternalServerError)
-		resp := u.Message(false, "failure")
+		resp = u.Message(false, "failure")
 	} else if len(data) == 0 {
 		w.WriteHeader(http.StatusNoContent)
-		resp := u.Message(false, "failure")
-	} else {
-		resp := u.Message(true, "success")
+		resp = u.Message(false, "failure")
 	}
-	
+
 	resp["data"] = data
 	u.Respond(w, resp)
 }
@@ -244,7 +243,16 @@ var UpdateTenant = func(w http.ResponseWriter, r *http.Request) {
 		u.Respond(w, u.Message(false, "Error while decoding request body"))
 	}
 
-	v := models.UpdateTenant(uint(id), tenant)
+	v, e1 := models.UpdateTenant(uint(id), tenant)
+
+	switch e1 {
+	case "validate":
+		w.WriteHeader(http.StatusBadRequest)
+	case "internal":
+		w.WriteHeader(http.StatusInternalServerError)
+	default:
+	}
+
 	u.Respond(w, v)
 }
 
