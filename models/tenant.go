@@ -64,15 +64,17 @@ func (tenant *Tenant) Validate() (map[string]interface{}, bool) {
 	return u.Message(true, "success"), true
 }
 
-func (tenant *Tenant) Create() map[string]interface{} {
+func (tenant *Tenant) Create() (map[string]interface{}, string) {
 	if resp, ok := tenant.Validate(); !ok {
-		return resp
+		return resp, "validate"
 	}
 	//Strategy for inserting into both tables
 	//Otherwise make 2 insert statements
 
 	tenant.DescriptionDB = strings.Join(tenant.DescriptionJSON, "XYZ")
-	GetDB().Create(tenant)
+	if GetDB().Create(tenant).Error != nil {
+		return u.Message(false, "failure"), "internal"
+	}
 
 	//This link explains JSON marshalling which will
 	//be needed to merge the SQL Query below to the Query
@@ -86,14 +88,16 @@ func (tenant *Tenant) Create() map[string]interface{} {
 
 	tenant.Attributes.ID = tenant.ID
 
-	GetDB().Table("tenant_attributes").Create(&tenant.Attributes)
+	if GetDB().Table("tenant_attributes").Create(&tenant.Attributes).Error != nil {
+		return u.Message(false, "failure"), "internal"
+	}
 
 	resp := u.Message(true, "success")
 	resp["tenant"] = tenant
-	return resp
+	return resp, ""
 }
 
-func GetTenant(id uint) *Tenant {
+func GetTenant(id uint) (*Tenant, string) {
 	tenant := &Tenant{}
 
 	e := GetDB().Table("tenant").Where("id = ?", id).First(tenant).
@@ -101,13 +105,15 @@ func GetTenant(id uint) *Tenant {
 		Error
 
 	if e != nil {
-		//fmt.Println("There was an error in finding the Tenant")
-		return nil
+		//fmt.Println("BRUH")
+		//fmt.Println(e)
+		// e = record not found
+		return nil, "record not found"
 	}
 
 	//r.Scan(tenant, &(tenant.Attributes))
 	tenant.DescriptionJSON = strings.Split(tenant.DescriptionDB, "XYZ")
-	return tenant
+	return tenant, ""
 }
 
 func GetAllTenants() []*Tenant {
@@ -128,9 +134,6 @@ func GetAllTenants() []*Tenant {
 	for i := range tenants {
 		tenants[i].Attributes = *(attrs[i])
 		tenants[i].DescriptionJSON = strings.Split(tenants[i].DescriptionDB, "XYZ")
-		if err != nil {
-			return nil
-		}
 	}
 	return tenants
 }

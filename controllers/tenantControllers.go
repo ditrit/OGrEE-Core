@@ -74,11 +74,22 @@ var CreateTenant = func(w http.ResponseWriter, r *http.Request) {
 
 	err := json.NewDecoder(r.Body).Decode(tenant)
 	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
 		u.Respond(w, u.Message(false, "Error while decoding request body"))
 		return
 	}
 	//tenant.ID = user
-	resp := tenant.Create()
+	resp, e := tenant.Create()
+
+	switch e {
+	case "validate":
+		w.WriteHeader(http.StatusBadRequest)
+	case "internal":
+		w.WriteHeader(http.StatusInternalServerError)
+	default:
+		w.WriteHeader(http.StatusCreated)
+	}
+
 	u.Respond(w, resp)
 }
 
@@ -105,10 +116,18 @@ var GetTenantFor = func(w http.ResponseWriter, r *http.Request) {
 	id, err := strconv.Atoi(mux.Vars(r)["id"])
 
 	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
 		u.Respond(w, u.Message(false, "Error while extracting from path parameters"))
 	}
 
-	data := models.GetTenant(uint(id))
+	data, e := models.GetTenant(uint(id))
+
+	switch e: {
+	case "record not found":
+		w.WriteHeader(http.StatusNoContent)
+	default:
+		w.WriteHeader(http.StatusInternalServerError)
+	}
 
 	if data == nil {
 		resp = u.Message(false, "Not found")
@@ -129,7 +148,16 @@ var GetTenantFor = func(w http.ResponseWriter, r *http.Request) {
 var GetAllTenants = func(w http.ResponseWriter, r *http.Request) {
 
 	data := models.GetAllTenants()
-	resp := u.Message(true, "success")
+	if data == nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		resp := u.Message(false, "failure")
+	} else if len(data) == 0 {
+		w.WriteHeader(http.StatusNoContent)
+		resp := u.Message(false, "failure")
+	} else {
+		resp := u.Message(true, "success")
+	}
+	
 	resp["data"] = data
 	u.Respond(w, resp)
 }
