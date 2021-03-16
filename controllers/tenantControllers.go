@@ -233,12 +233,14 @@ var UpdateTenant = func(w http.ResponseWriter, r *http.Request) {
 
 	id, e := strconv.Atoi(mux.Vars(r)["id"])
 	if e != nil {
+		w.WriteHeader(http.StatusBadRequest)
 		u.Respond(w, u.Message(false, "Error while extracting from path parameters"))
 	}
 	tenant := &models.Tenant{}
 
 	err := json.NewDecoder(r.Body).Decode(tenant)
 	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
 		u.Respond(w, u.Message(false, "Error while decoding request body"))
 	}
 

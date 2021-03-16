@@ -176,9 +176,6 @@ func GetAllSites() []*Site {
 	for i := range sites {
 		sites[i].Attributes = *(attrs[i])
 		sites[i].DescriptionJSON = strings.Split(sites[i].DescriptionDB, "XYZ")
-		if err != nil {
-			return nil
-		}
 	}
 	return sites
 }
