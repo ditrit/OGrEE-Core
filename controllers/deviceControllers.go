@@ -258,6 +258,13 @@ var DeleteDevice = func(w http.ResponseWriter, r *http.Request) {
 	}
 
 	v := models.DeleteDevice(uint(id))
+
+	if v["status"] == false {
+		//
+	} else {
+		w.WriteHeader(http.StatusNoContent)
+	}
+
 	u.Respond(w, v)
 }
 
