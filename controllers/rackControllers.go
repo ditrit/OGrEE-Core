@@ -143,7 +143,16 @@ var CreateRack = func(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	resp, _ := rack.Create()
+	resp, e := rack.Create()
+
+	switch e {
+	case "validate":
+		//
+	case "internal":
+		//
+	default:
+		w.WriteHeader(http.StatusCreated)
+	}
 	u.Respond(w, resp)
 }
 
