@@ -150,7 +150,7 @@ func UpdateTenant(id uint, t *Tenant) (map[string]interface{}, string) {
 
 	if err != nil {
 		if err.Error() != "record not found" {
-			return u.Message(false, "Internal Error"), "internal"
+			return u.Message(false, "Internal Error: "+err.Error()), "internal"
 		}
 		return u.Message(false, "Tenant was not found"), "record not found"
 	}
@@ -192,9 +192,9 @@ func UpdateTenant(id uint, t *Tenant) (map[string]interface{}, string) {
 	}
 
 	//fmt.Println(t.Description)
-	if GetDB().Table("tenant").Save(tenant).Table("tenant_attributes").
-		Save(&(tenant.Attributes)).Error != nil {
-		return u.Message(false, "failure"), "internal"
+	if e := GetDB().Table("tenant").Save(tenant).Table("tenant_attributes").
+		Save(&(tenant.Attributes)).Error; e != nil {
+		return u.Message(false, "Failed to update Tenant: "+e.Error()), "internal"
 	}
 
 	return u.Message(true, "success"), ""
