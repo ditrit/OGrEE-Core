@@ -118,12 +118,12 @@ func (device *Device) Create() (map[string]interface{}, string) {
 
 	if e := GetDB().Create(device).Error; e != nil {
 		return u.Message(false, "Internal Error while creating Device: "+e.Error()),
-			"invalidate"
+			"internal"
 	}
 	device.Attributes.ID = device.ID
 	if e := GetDB().Create(&(device.Attributes)).Error; e != nil {
 		return u.Message(false, "Internal Error while creating Device Attrs: "+e.Error()),
-			"invalidate"
+			"internal"
 	}
 
 	resp := u.Message(true, "success")
