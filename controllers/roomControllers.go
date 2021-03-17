@@ -236,6 +236,13 @@ var DeleteRoom = func(w http.ResponseWriter, r *http.Request) {
 	}
 
 	v := models.DeleteRoom(uint(id))
+
+	if v["status"] == false {
+		//
+	} else {
+		w.WriteHeader(http.StatusNoContent)
+	}
+
 	u.Respond(w, v)
 }
 
