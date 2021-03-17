@@ -352,6 +352,15 @@ var UpdateBuilding = func(w http.ResponseWriter, r *http.Request) {
 		u.Respond(w, u.Message(false, "Error while decoding request body"))
 	}
 
-	v := models.UpdateBuilding(uint(id), bldg)
+	v, e1 := models.UpdateBuilding(uint(id), bldg)
+
+	switch e1 {
+	case "validate":
+		w.WriteHeader(http.StatusBadRequest)
+	case "internal":
+		w.WriteHeader(http.StatusInternalServerError)
+	default:
+	}
+
 	u.Respond(w, v)
 }

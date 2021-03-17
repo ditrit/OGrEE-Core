@@ -177,13 +177,13 @@ func GetBuildings(site *Site) []*Building {
 //These would be a bit more complicated
 //So leave them out for now
 
-func UpdateBuilding(id uint, newBldgInfo *Building) map[string]interface{} {
+func UpdateBuilding(id uint, newBldgInfo *Building) (map[string]interface{}, string) {
 	bldg := &Building{}
 
 	err := GetDB().Table("building").Where("id = ?", id).First(bldg).
 		Table("building_attributes").Where("id = ?", id).First(&(bldg.Attributes)).Error
 	if err != nil {
-		return u.Message(false, "Building was not found")
+		return u.Message(false, "Building was not found"), err.Error()
 	}
 
 	if newBldgInfo.Name != "" && newBldgInfo.Name != bldg.Name {
@@ -238,9 +238,11 @@ func UpdateBuilding(id uint, newBldgInfo *Building) map[string]interface{} {
 		bldg.Attributes.HeightU = newBldgInfo.Attributes.HeightU
 	}
 
-	GetDB().Table("building").Save(bldg).
-		Table("building_attributes").Save(&(bldg.Attributes))
-	return u.Message(true, "success")
+	if e := GetDB().Table("building").Save(bldg).
+		Table("building_attributes").Save(&(bldg.Attributes)).Error; e != nil {
+		return u.Message(false, "Error while updating Building: "+e.Error()), e.Error()
+	}
+	return u.Message(true, "success"), ""
 }
 
 func DeleteBuilding(id uint) map[string]interface{} {
