@@ -349,6 +349,15 @@ var UpdateRoom = func(w http.ResponseWriter, r *http.Request) {
 		u.Respond(w, u.Message(false, "Error while decoding request body"))
 	}
 
-	v := models.UpdateRoom(uint(id), room)
+	v, e1 := models.UpdateRoom(uint(id), room)
+
+	switch e1 {
+	case "validate":
+		w.WriteHeader(http.StatusBadRequest)
+	case "internal":
+		w.WriteHeader(http.StatusInternalServerError)
+	default:
+	}
+
 	u.Respond(w, v)
 }

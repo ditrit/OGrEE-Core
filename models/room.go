@@ -186,13 +186,13 @@ func GetAllRooms() ([]*Room, string) {
 //These would be a bit more complicated
 //So leave them out for now
 
-func UpdateRoom(id uint, newRoomInfo *Room) map[string]interface{} {
+func UpdateRoom(id uint, newRoomInfo *Room) (map[string]interface{}, string) {
 	room := &Room{}
 
 	err := GetDB().Table("room").Where("id = ?", id).First(room).
 		Table("room_attributes").Where("id = ?", id).First(&(room.Attributes)).Error
 	if err != nil {
-		return u.Message(false, "Room was not found")
+		return u.Message(false, "Error while checking Room: "+err.Error()), err.Error()
 	}
 
 	if newRoomInfo.Name != "" && newRoomInfo.Name != room.Name {
@@ -256,10 +256,12 @@ func UpdateRoom(id uint, newRoomInfo *Room) map[string]interface{} {
 		room.Attributes.HeightU = newRoomInfo.Attributes.HeightU
 	}
 
-	GetDB().Table("room").Save(room).
-		Table("room_attributes").Save(&(room.Attributes))
+	if e1 := GetDB().Table("room").Save(room).
+		Table("room_attributes").Save(&(room.Attributes)).Error; e1 != nil {
+		return u.Message(false, "Error while updating Room: "+e1.Error()), e1.Error()
+	}
 
-	return u.Message(true, "success")
+	return u.Message(true, "success"), ""
 }
 
 func DeleteRoom(id uint) map[string]interface{} {
