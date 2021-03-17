@@ -132,16 +132,16 @@ func (device *Device) Create() (map[string]interface{}, string) {
 }
 
 //Get the device given the ID
-func GetDevice(id uint) *Device {
+func GetDevice(id uint) (*Device, string) {
 	device := &Device{}
 	err := GetDB().Table("device").Where("id = ?", id).First(device).
 		Table("device_attributes").Where("id = ?", id).First(&(device.Attributes)).Error
 	if err != nil {
 		fmt.Println(err)
-		return nil
+		return nil, err.Error()
 	}
 	device.DescriptionJSON = strings.Split(device.DescriptionDB, "XYZ")
-	return device
+	return device, ""
 }
 
 //Obtain all devices of a rack
@@ -157,13 +157,13 @@ func GetDevices(rack *Rack) []*Device {
 	return devices
 }
 
-func GetAllDevices() []*Device {
+func GetAllDevices() ([]*Device, string) {
 	devices := make([]*Device, 0)
 	attrs := make([]*Device_Attributes, 0)
 	err := GetDB().Find(&devices).Find(&attrs).Error
 	if err != nil {
 		fmt.Println(err)
-		return nil
+		return nil, err.Error()
 	}
 
 	for i := range devices {
@@ -171,7 +171,7 @@ func GetAllDevices() []*Device {
 		devices[i].DescriptionJSON = strings.Split(devices[i].DescriptionDB, "XYZ")
 	}
 
-	return devices
+	return devices, ""
 }
 
 //More methods should be made to
