@@ -106,11 +106,13 @@ func (bldg *Building) Create() (map[string]interface{}, string) {
 
 	bldg.DescriptionDB = strings.Join(bldg.DescriptionJSON, "XYZ")
 	if e := GetDB().Create(bldg).Error; e != nil {
-		return u.Message(false, "Error while creating Bulding"+e.Error()), "internal"
+		return u.Message(false, "Internal Error while creating Bulding: "+e.Error()),
+			"internal"
 	}
 	bldg.Attributes.ID = bldg.ID
 	if e := GetDB().Create(&(bldg.Attributes)).Error; e != nil {
-		return u.Message(false, "Error while creating Bulding Attrs"+e.Error()), "internal"
+		return u.Message(false, "Internal Error while creating Bulding Attrs: "+e.Error()),
+			"internal"
 	}
 
 	resp := u.Message(true, "success")
