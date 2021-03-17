@@ -112,7 +112,7 @@ func (room *Room) Validate() (map[string]interface{}, bool) {
 	return u.Message(true, "success"), true
 }
 
-func (room *Room) Create() map[string]interface{} {
+func (room *Room) Create() (map[string]interface{}, string) {
 	if resp, ok := room.Validate(); !ok {
 		return resp
 	}
@@ -120,13 +120,19 @@ func (room *Room) Create() map[string]interface{} {
 	room.DescriptionDB = strings.Join(room.DescriptionJSON, "XYZ")
 
 	//GetDB().Create(room)
-	GetDB().Create(room)
+	if e := GetDB().Create(room).Error; e != nil {
+		return u.Message(false, "Internal Error while creating Room: "+e.Error()),
+			"internal"
+	}
 	room.Attributes.ID = room.ID
-	GetDB().Create(&(room.Attributes))
+	if e := GetDB().Create(&(room.Attributes)).Error; e != nil {
+		return u.Message(false, "Internal Error while creating Room Attrs: "+e.Error()),
+			"internal"
+	}
 
 	resp := u.Message(true, "success")
 	resp["room"] = room
-	return resp
+	return resp, ""
 }
 
 //Get the room by ID
