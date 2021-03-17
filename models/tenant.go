@@ -110,7 +110,7 @@ func GetTenant(id uint) (*Tenant, string) {
 		//fmt.Println("BRUH")
 		//fmt.Println(e)
 		// e = record not found
-		return nil, "record not found"
+		return nil, e.Error()
 	}
 
 	//r.Scan(tenant, &(tenant.Attributes))

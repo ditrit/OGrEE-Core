@@ -122,15 +122,15 @@ var GetTenantFor = func(w http.ResponseWriter, r *http.Request) {
 
 	data, e := models.GetTenant(uint(id))
 
-	switch e {
-	case "record not found":
-		//w.WriteHeader(http.StatusNoContent)
-	default:
-		w.WriteHeader(http.StatusInternalServerError)
-	}
-
 	if data == nil {
-		resp = u.Message(false, "Not found")
+		resp = u.Message(false, "Error: "+e)
+
+		switch e {
+		case "validate":
+			//
+		default:
+		}
+
 	} else {
 		resp = u.Message(true, "success")
 	}
