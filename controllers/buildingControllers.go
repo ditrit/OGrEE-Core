@@ -190,9 +190,18 @@ var GetAllBuildings = func(w http.ResponseWriter, r *http.Request) {
 
 	resp := u.Message(true, "success")
 
-	data := models.GetAllBuildings()
+	data, e := models.GetAllBuildings()
 	if data == nil {
-		resp = u.Message(false, "unsuccessful")
+		resp = u.Message(false, "Error while getting Building: "+e)
+
+		switch e {
+		case "validate":
+			//
+		default:
+		}
+
+	} else {
+		resp = u.Message(true, "success")
 	}
 
 	resp["data"] = data
