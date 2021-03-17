@@ -143,7 +143,16 @@ var CreateDevice = func(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	resp, _ := device.Create()
+	resp, e := device.Create()
+
+	switch e {
+	case "validate":
+		//
+	case "internal":
+		//
+	default:
+		w.WriteHeader(http.StatusCreated)
+	}
 	u.Respond(w, resp)
 }
 
