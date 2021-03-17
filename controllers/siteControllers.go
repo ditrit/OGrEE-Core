@@ -242,8 +242,8 @@ var GetSite = func(w http.ResponseWriter, r *http.Request) {
 		resp = u.Message(false, "Error while getting Site: "+e1)
 
 		switch e1 {
-		case "validate":
-			//
+		case "record not found":
+			w.WriteHeader(http.StatusNotFound)
 		default:
 		}
 
