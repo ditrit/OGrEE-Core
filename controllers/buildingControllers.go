@@ -237,7 +237,7 @@ var DeleteBuilding = func(w http.ResponseWriter, r *http.Request) {
 	v := models.DeleteBuilding(uint(id))
 
 	if v["status"] == false {
-		//
+		w.WriteHeader(http.StatusNotFound)
 	} else {
 		w.WriteHeader(http.StatusNoContent)
 	}
