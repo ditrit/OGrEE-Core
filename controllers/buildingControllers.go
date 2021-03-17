@@ -118,7 +118,13 @@ var CreateBuilding = func(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	resp := bldg.Create()
+	resp, e := bldg.Create()
+	switch e {
+	case "validate":
+		//w.WriteHeader(http.)
+	case "internal":
+		//
+	}
 	u.Respond(w, resp)
 }
 

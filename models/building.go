@@ -99,19 +99,23 @@ func (bldg *Building) Validate() (map[string]interface{}, bool) {
 	return u.Message(true, "success"), true
 }
 
-func (bldg *Building) Create() map[string]interface{} {
+func (bldg *Building) Create() (map[string]interface{}, string) {
 	if resp, ok := bldg.Validate(); !ok {
-		return resp
+		return resp, "validate"
 	}
 
 	bldg.DescriptionDB = strings.Join(bldg.DescriptionJSON, "XYZ")
-	GetDB().Create(bldg)
+	if GetDB().Create(bldg).Error != nil {
+		return u.Message(false, "Error while creating Bulding"), "internal"
+	}
 	bldg.Attributes.ID = bldg.ID
-	GetDB().Create(&(bldg.Attributes))
+	if GetDB().Create(&(bldg.Attributes)).Error != nil {
+		return u.Message(false, "Error while creating Bulding Attrs"), "internal"
+	}
 
 	resp := u.Message(true, "success")
 	resp["building"] = bldg
-	return resp
+	return resp, ""
 }
 
 //Get Building by ID
