@@ -218,13 +218,13 @@ func DeleteSitesOfTenant(id uint) map[string]interface{} {
 	return u.Message(true, "success")
 }
 
-func UpdateSite(id uint, newSiteInfo *Site) map[string]interface{} {
+func UpdateSite(id uint, newSiteInfo *Site) (map[string]interface{}, string) {
 	site := &Site{}
 
 	err := GetDB().Table("site").Where("id = ?", id).First(site).
 		Table("site_attributes").Where("id = ?", id).First(&(site.Attributes)).Error
 	if err != nil {
-		return u.Message(false, "Site was not found")
+		return u.Message(false, "Site was not found: "+err.Error()), err.Error()
 	}
 
 	if newSiteInfo.Name != "" && newSiteInfo.Name != site.Name {
@@ -289,7 +289,9 @@ func UpdateSite(id uint, newSiteInfo *Site) map[string]interface{} {
 	}
 
 	//Successfully validated the new data
-	GetDB().Table("site").Save(site)
-	GetDB().Table("site_attributes").Save(&(site.Attributes))
-	return u.Message(true, "success")
+	if e := GetDB().Table("site").Save(site).Table("site_attributes").
+		Save(&(site.Attributes)).Error; e != nil {
+		return u.Message(false, "Error while updating Site: "+e.Error()), e.Error()
+	}
+	return u.Message(true, "success"), ""
 }
