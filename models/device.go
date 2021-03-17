@@ -180,13 +180,13 @@ func GetAllDevices() ([]*Device, string) {
 //These would be a bit more complicated
 //So leave them out for now
 
-func UpdateDevice(id uint, newDeviceInfo *Device) map[string]interface{} {
+func UpdateDevice(id uint, newDeviceInfo *Device) (map[string]interface{}, string) {
 	device := &Device{}
 
 	err := GetDB().Table("device").Where("id = ?", id).First(device).
 		Table("device_attributes").Where("id = ?", id).First(&(device.Attributes)).Error
 	if err != nil {
-		return u.Message(false, "Device was not found")
+		return u.Message(false, "Error while checking device: "+err.Error()), err.Error()
 	}
 
 	if newDeviceInfo.Name != "" && newDeviceInfo.Name != device.Name {
@@ -263,9 +263,11 @@ func UpdateDevice(id uint, newDeviceInfo *Device) map[string]interface{} {
 	}
 
 	//Successfully validated the new data
-	GetDB().Table("device").Save(device).
-		Table("device_attributes").Save(&(device.Attributes))
-	return u.Message(true, "success")
+	if e1 := GetDB().Table("device").Save(device).
+		Table("device_attributes").Save(&(device.Attributes)).Error; e1 != nil {
+		return u.Message(false, "Error while updating device: "+e1.Error()), e1.Error()
+	}
+	return u.Message(true, "success"), ""
 }
 
 func DeleteDevice(id uint) map[string]interface{} {

@@ -388,6 +388,15 @@ var UpdateDevice = func(w http.ResponseWriter, r *http.Request) {
 		u.Respond(w, u.Message(false, "Error while decoding request body"))
 	}
 
-	v := models.UpdateDevice(uint(id), device)
+	v, e1 := models.UpdateDevice(uint(id), device)
+
+	switch e1 {
+	case "validate":
+		w.WriteHeader(http.StatusBadRequest)
+	case "internal":
+		w.WriteHeader(http.StatusInternalServerError)
+	default:
+	}
+
 	u.Respond(w, v)
 }

@@ -192,7 +192,7 @@ func UpdateRack(id uint, newRackInfo *Rack) (map[string]interface{}, string) {
 	err := GetDB().Table("rack").Where("id = ?", id).First(rack).
 		Table("rack_attributes").Where("id = ?", id).First(&(rack.Attributes)).Error
 	if err != nil {
-		return u.Message(false, "Error while checking Rack: "+err), err.Error()
+		return u.Message(false, "Error while checking Rack: "+err.Error()), err.Error()
 	}
 
 	if newRackInfo.Name != "" && newRackInfo.Name != rack.Name {
@@ -271,7 +271,7 @@ func UpdateRack(id uint, newRackInfo *Rack) (map[string]interface{}, string) {
 	//Successfully validated the new data
 	if e1 := GetDB().Table("rack").Save(rack).
 		Table("rack_attributes").Save(&(rack.Attributes)).Error; e1 != nil {
-		return u.Message(false, "Error while updating rack: "+e1), e1.Error()
+		return u.Message(false, "Error while updating rack: "+e1.Error()), e1.Error()
 	}
 	return u.Message(true, "success"), ""
 }
