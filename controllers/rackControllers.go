@@ -395,6 +395,15 @@ var UpdateRack = func(w http.ResponseWriter, r *http.Request) {
 		u.Respond(w, u.Message(false, "Error while decoding request body"))
 	}
 
-	v := models.UpdateRack(uint(id), rack)
+	v, e1 := models.UpdateRack(uint(id), rack)
+
+	switch e1 {
+	case "validate":
+		w.WriteHeader(http.StatusBadRequest)
+	case "internal":
+		w.WriteHeader(http.StatusInternalServerError)
+	default:
+	}
+
 	u.Respond(w, v)
 }

@@ -163,13 +163,13 @@ func GetRacks(room *Room) ([]*Rack, string) {
 }
 
 //Obtain all racks
-func GetAllRacks() []*Rack {
+func GetAllRacks() ([]*Rack, string) {
 	racks := make([]*Rack, 0)
 	attrs := make([]*Rack_Attributes, 0)
 	err := GetDB().Find(&racks).Find(&attrs).Error
 	if err != nil {
 		fmt.Println(err)
-		return nil
+		return nil, err.Error()
 	}
 
 	for i := range racks {
@@ -177,7 +177,7 @@ func GetAllRacks() []*Rack {
 		racks[i].DescriptionJSON = strings.Split(racks[i].DescriptionDB, "XYZ")
 	}
 
-	return racks
+	return racks, ""
 }
 
 //More methods should be made to
@@ -186,13 +186,13 @@ func GetAllRacks() []*Rack {
 //These would be a bit more complicated
 //So leave them out for now
 
-func UpdateRack(id uint, newRackInfo *Rack) map[string]interface{} {
+func UpdateRack(id uint, newRackInfo *Rack) (map[string]interface{}, string) {
 	rack := &Rack{}
 
 	err := GetDB().Table("rack").Where("id = ?", id).First(rack).
 		Table("rack_attributes").Where("id = ?", id).First(&(rack.Attributes)).Error
 	if err != nil {
-		return u.Message(false, "Rack was not found")
+		return u.Message(false, "Error while checking Rack: "+err), err.Error()
 	}
 
 	if newRackInfo.Name != "" && newRackInfo.Name != rack.Name {
@@ -269,9 +269,11 @@ func UpdateRack(id uint, newRackInfo *Rack) map[string]interface{} {
 	}
 
 	//Successfully validated the new data
-	GetDB().Table("rack").Save(rack).
-		Table("rack_attributes").Save(&(rack.Attributes))
-	return u.Message(true, "success")
+	if e1 := GetDB().Table("rack").Save(rack).
+		Table("rack_attributes").Save(&(rack.Attributes)).Error; e1 != nil {
+		return u.Message(false, "Error while updating rack: "+e1), e1.Error()
+	}
+	return u.Message(true, "success"), ""
 }
 
 func DeleteRack(id uint) map[string]interface{} {
