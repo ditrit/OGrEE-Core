@@ -302,5 +302,10 @@ var DeleteTenant = func(w http.ResponseWriter, r *http.Request) {
 	}
 
 	v := models.DeleteTenant(uint(id))
+	if v["status"] == false {
+		//
+	} else {
+		w.WriteHeader(http.StatusNoContent)
+	}
 	u.Respond(w, v)
 }
