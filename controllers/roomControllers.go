@@ -120,7 +120,7 @@ var CreateRoom = func(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	resp, e := room.Create()
+	resp, _ := room.Create()
 	u.Respond(w, resp)
 }
 

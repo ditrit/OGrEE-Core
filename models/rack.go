@@ -113,20 +113,26 @@ func (rack *Rack) Validate() (map[string]interface{}, bool) {
 	return u.Message(true, "success"), true
 }
 
-func (rack *Rack) Create() map[string]interface{} {
+func (rack *Rack) Create() (map[string]interface{}, string) {
 	if resp, ok := rack.Validate(); !ok {
-		return resp
+		return resp, "validate"
 	}
 
 	rack.DescriptionDB = strings.Join(rack.DescriptionJSON, "XYZ")
 
-	GetDB().Create(rack)
+	if e := GetDB().Create(rack).Error; e != nil {
+		return u.Message(false, "Internal Error while creating Rack: "+e.Error()),
+			"internal"
+	}
 	rack.Attributes.ID = rack.ID
-	GetDB().Create(&(rack.Attributes))
+	if e := GetDB().Create(&(rack.Attributes)).Error; e != nil {
+		return u.Message(false, "Internal Error while creating Rack Attrs: "+e.Error()),
+			"internal"
+	}
 
 	resp := u.Message(true, "success")
 	resp["rack"] = rack
-	return resp
+	return resp, ""
 }
 
 //Get the rack using ID

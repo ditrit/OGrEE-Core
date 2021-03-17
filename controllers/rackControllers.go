@@ -143,7 +143,7 @@ var CreateRack = func(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	resp := rack.Create()
+	resp, _ := rack.Create()
 	u.Respond(w, resp)
 }
 

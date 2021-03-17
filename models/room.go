@@ -114,7 +114,7 @@ func (room *Room) Validate() (map[string]interface{}, bool) {
 
 func (room *Room) Create() (map[string]interface{}, string) {
 	if resp, ok := room.Validate(); !ok {
-		return resp
+		return resp, "validate"
 	}
 
 	room.DescriptionDB = strings.Join(room.DescriptionJSON, "XYZ")
