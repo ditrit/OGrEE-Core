@@ -321,6 +321,11 @@ var DeleteSiteByID = func(w http.ResponseWriter, r *http.Request) {
 	}
 
 	v := models.DeleteSite(uint(id))
+	if v["status"] == false {
+		//
+	} else {
+		w.WriteHeader(http.StatusNoContent)
+	}
 	u.Respond(w, v)
 }
 
