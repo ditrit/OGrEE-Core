@@ -136,30 +136,30 @@ func (rack *Rack) Create() (map[string]interface{}, string) {
 }
 
 //Get the rack using ID
-func GetRack(id uint) *Rack {
+func GetRack(id uint) (*Rack, string) {
 	rack := &Rack{}
 	err := GetDB().Table("rack").Where("id = ?", id).First(rack).
 		Table("rack_attributes").Where("id = ?", id).First(&(rack.Attributes)).Error
 	if err != nil {
 		fmt.Println(err)
-		return nil
+		return nil, err.Error()
 	}
 
 	rack.DescriptionJSON = strings.Split(rack.DescriptionDB, "XYZ")
-	return rack
+	return rack, ""
 }
 
 //Obtain all racks of a room
-func GetRacks(room *Room) []*Rack {
+func GetRacks(room *Room) ([]*Rack, string) {
 	racks := make([]*Rack, 0)
 
 	err := GetDB().Table("racks").Where("foreignkey = ?", room.ID).Find(&racks).Error
 	if err != nil {
 		fmt.Println(err)
-		return nil
+		return nil, err.Error()
 	}
 
-	return racks
+	return racks, ""
 }
 
 //Obtain all racks
