@@ -123,13 +123,13 @@ func GetAllTenants() ([]*Tenant, string) {
 	attrs := make([]*Tenant_Attributes, 0)
 	err := GetDB().Table("tenant").Find(&tenants).Error
 	if err != nil {
-		fmt.Println("There was an error in getting tenant by ID")
+		fmt.Println("There was an error in getting tenants")
 		return nil, err.Error()
 	}
 
 	err = GetDB().Table("tenant_attributes").Find(&attrs).Error
 	if err != nil {
-		fmt.Println("There was an error in getting tenant attrs by ID")
+		fmt.Println("There was an error in getting tenant attrs")
 		return nil, err.Error()
 	}
 

@@ -126,8 +126,8 @@ var GetTenantFor = func(w http.ResponseWriter, r *http.Request) {
 		resp = u.Message(false, "Error: "+e)
 
 		switch e {
-		case "validate":
-			//
+		case "record not found":
+			w.WriteHeader(http.StatusNotFound)
 		default:
 		}
 
@@ -157,11 +157,14 @@ var GetAllTenants = func(w http.ResponseWriter, r *http.Request) {
 		resp = u.Message(false, "failure")
 	}*/
 
-	if data == nil {
+	if len(data) == 0 {
 		resp = u.Message(false, "Error: "+e)
 
 		switch e {
 		case "validate":
+
+		case "":
+			w.WriteHeader(http.StatusNotFound)
 			//
 		default:
 		}
