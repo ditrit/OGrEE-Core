@@ -121,33 +121,33 @@ func (bldg *Building) Create() (map[string]interface{}, string) {
 }
 
 //Get Building by ID
-func GetBuilding(id uint) *Building {
+func GetBuilding(id uint) (*Building, string) {
 	bldg := &Building{}
 	err := GetDB().Table("building").Where("id = ?", id).First(bldg).
 		Table("building_attributes").Where("id = ?", id).First(&(bldg.Attributes)).Error
 	if err != nil {
 		fmt.Println(err)
-		return nil
+		return nil, err.Error()
 	}
 
 	bldg.DescriptionJSON = strings.Split(bldg.DescriptionDB, "XYZ")
-	return bldg
+	return bldg, ""
 }
 
 //Get All Buildings
-func GetAllBuildings() []*Building {
+func GetAllBuildings() ([]*Building, string) {
 	bldgs := make([]*Building, 0)
 	attrs := make([]*Building_Attributes, 0)
 	err := GetDB().Find(&bldgs).Error
 	if err != nil {
 		fmt.Println(err)
-		return nil
+		return nil, err.Error()
 	}
 
 	err = GetDB().Find(&attrs).Error
 	if err != nil {
 		fmt.Println(err)
-		return nil
+		return nil, err.Error()
 	}
 
 	for i := range bldgs {
@@ -155,7 +155,7 @@ func GetAllBuildings() []*Building {
 		bldgs[i].DescriptionJSON = strings.Split(bldgs[i].DescriptionDB, "XYZ")
 	}
 
-	return bldgs
+	return bldgs, ""
 }
 
 //Obtain all buildings of a site
