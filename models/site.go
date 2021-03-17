@@ -91,14 +91,16 @@ func (site *Site) Create() (map[string]interface{}, string) {
 
 	e := GetDB().Create(site).Error
 	if e != nil {
-		return u.Message(false, "Internal problem. Try again later."), "internal"
+		return u.Message(false, "Internal Error while creating Site: "+e.Error()),
+			"internal"
 	}
 
 	site.Attributes.ID = site.ID
 
 	e = GetDB().Table("site_attributes").Create(&(site.Attributes)).Error
 	if e != nil {
-		return u.Message(false, "Internal problem. Try again later."), "internal"
+		return u.Message(false, "Internal Error while creating Site Attrs: "+e.Error()),
+			"internal"
 	}
 	resp := u.Message(true, "success")
 	resp["site"] = site
