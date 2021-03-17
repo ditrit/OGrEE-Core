@@ -146,39 +146,39 @@ func GetSites(id uint) []*Site {
 	return site
 }
 
-func GetSite(id uint) *Site {
+func GetSite(id uint) (*Site, string) {
 	site := &Site{}
 
 	err := GetDB().Table("site").Where("id = ?", id).First(site).
 		Table("site_attributes").Where("id = ?", id).First(&(site.Attributes)).Error
 	if err != nil {
-		fmt.Println("There was an error in getting site attr by ID")
-		return nil
+		fmt.Println("There was an error in getting site by ID: " + err.Error())
+		return nil, err.Error()
 	}
 	site.DescriptionJSON = strings.Split(site.DescriptionDB, "XYZ")
-	return site
+	return site, ""
 }
 
-func GetAllSites() []*Site {
+func GetAllSites() ([]*Site, string) {
 	sites := make([]*Site, 0)
 	attrs := make([]*Site_Attributes, 0)
 	err := GetDB().Table("site").Find(&sites).Error
 	if err != nil {
-		fmt.Println("There was an error in getting site by ID")
-		return nil
+		fmt.Println("There was an error in getting sites by ID: " + err.Error())
+		return nil, err.Error()
 	}
 
 	err = GetDB().Table("site_attributes").Find(&attrs).Error
 	if err != nil {
-		fmt.Println("There was an error in getting site attrs by ID")
-		return nil
+		fmt.Println("There was an error in getting site attrs by ID: " + err.Error())
+		return nil, err.Error()
 	}
 
 	for i := range sites {
 		sites[i].Attributes = *(attrs[i])
 		sites[i].DescriptionJSON = strings.Split(sites[i].DescriptionDB, "XYZ")
 	}
-	return sites
+	return sites, ""
 }
 
 func DeleteSite(id uint) map[string]interface{} {

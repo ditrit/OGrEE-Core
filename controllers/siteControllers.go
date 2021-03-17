@@ -236,9 +236,19 @@ var GetSite = func(w http.ResponseWriter, r *http.Request) {
 		u.Respond(w, u.Message(false, "Error while parsing path parameters"))
 	}
 
-	data := models.GetSite(uint(id))
+	data, e1 := models.GetSite(uint(id))
+
 	if data == nil {
-		resp = u.Message(false, "unsuccessful")
+		resp = u.Message(false, "Error while getting Site: "+e1)
+
+		switch e1 {
+		case "validate":
+			//
+		default:
+		}
+
+	} else {
+		resp = u.Message(true, "success")
 	}
 
 	resp["data"] = data
@@ -259,9 +269,19 @@ var GetAllSites = func(w http.ResponseWriter, r *http.Request) {
 
 	resp := u.Message(true, "success")
 
-	data := models.GetAllSites()
+	data, e := models.GetAllSites()
+
 	if data == nil {
-		resp = u.Message(false, "unsuccessful")
+		resp = u.Message(false, "Error while getting all sites: "+e)
+
+		switch e {
+		case "validate":
+			//
+		default:
+		}
+
+	} else {
+		resp = u.Message(true, "success")
 	}
 
 	resp["data"] = data
