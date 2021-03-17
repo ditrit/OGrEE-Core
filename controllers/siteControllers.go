@@ -271,11 +271,12 @@ var GetAllSites = func(w http.ResponseWriter, r *http.Request) {
 
 	data, e := models.GetAllSites()
 
-	if data == nil {
+	if len(data) == 0 {
 		resp = u.Message(false, "Error while getting all sites: "+e)
 
 		switch e {
-		case "validate":
+		case "":
+			w.WriteHeader(http.StatusNotFound)
 			//
 		default:
 		}
