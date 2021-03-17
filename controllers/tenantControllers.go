@@ -147,14 +147,27 @@ var GetTenantFor = func(w http.ResponseWriter, r *http.Request) {
 //     '204':
 var GetAllTenants = func(w http.ResponseWriter, r *http.Request) {
 
-	data := models.GetAllTenants()
+	data, e := models.GetAllTenants()
 	resp := u.Message(true, "success")
-	if data == nil {
+	/*if data == nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		resp = u.Message(false, "failure")
 	} else if len(data) == 0 {
 		w.WriteHeader(http.StatusNoContent)
 		resp = u.Message(false, "failure")
+	}*/
+
+	if data == nil {
+		resp = u.Message(false, "Error: "+e)
+
+		switch e {
+		case "validate":
+			//
+		default:
+		}
+
+	} else {
+		resp = u.Message(true, "success")
 	}
 
 	resp["data"] = data

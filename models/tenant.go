@@ -118,26 +118,26 @@ func GetTenant(id uint) (*Tenant, string) {
 	return tenant, ""
 }
 
-func GetAllTenants() []*Tenant {
+func GetAllTenants() ([]*Tenant, string) {
 	tenants := make([]*Tenant, 0)
 	attrs := make([]*Tenant_Attributes, 0)
 	err := GetDB().Table("tenant").Find(&tenants).Error
 	if err != nil {
 		fmt.Println("There was an error in getting tenant by ID")
-		return nil
+		return nil, err.Error()
 	}
 
 	err = GetDB().Table("tenant_attributes").Find(&attrs).Error
 	if err != nil {
 		fmt.Println("There was an error in getting tenant attrs by ID")
-		return nil
+		return nil, err.Error()
 	}
 
 	for i := range tenants {
 		tenants[i].Attributes = *(attrs[i])
 		tenants[i].DescriptionJSON = strings.Split(tenants[i].DescriptionDB, "XYZ")
 	}
-	return tenants
+	return tenants, ""
 }
 
 //Only update valid fields
