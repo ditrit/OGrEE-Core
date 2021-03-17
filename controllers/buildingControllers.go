@@ -163,8 +163,8 @@ var GetBuilding = func(w http.ResponseWriter, r *http.Request) {
 		resp = u.Message(false, "Error while getting Building: "+e1)
 
 		switch e1 {
-		case "validate":
-			//
+		case "record not found":
+			w.WriteHeader(http.StatusNotFound)
 		default:
 		}
 
@@ -193,12 +193,12 @@ var GetAllBuildings = func(w http.ResponseWriter, r *http.Request) {
 	resp := u.Message(true, "success")
 
 	data, e := models.GetAllBuildings()
-	if data == nil {
+	if len(data) == 0 {
 		resp = u.Message(false, "Error while getting Building: "+e)
 
 		switch e {
-		case "validate":
-			//
+		case "":
+			w.WriteHeader(http.StatusNotFound)
 		default:
 		}
 
