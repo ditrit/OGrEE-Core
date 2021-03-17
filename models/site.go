@@ -37,15 +37,15 @@ type Site struct {
 	Building []Building
 }
 
-func (site *Site) Validate() (map[string]interface{}, bool, string) {
+func (site *Site) Validate() (map[string]interface{}, bool) {
 	if site.Name == "" {
-		return u.Message(false, "site Name should be on payload"),
-			false, "validate"
+		return u.Message(false, "site Name should be on payload"), false
+
 	}
 
 	if site.Category == "" {
-		return u.Message(false, "Category should be on the payload"),
-			false, "validate"
+		return u.Message(false, "Category should be on the payload"), false
+
 	}
 
 	/*if site.Desc == "" {
@@ -53,15 +53,15 @@ func (site *Site) Validate() (map[string]interface{}, bool, string) {
 	}*/
 
 	if site.Domain == "" {
-		return u.Message(false, "Domain should be on the payload"),
-			false, "validate"
+		return u.Message(false, "Domain should be on the payload"), false
+
 	}
 
 	if GetDB().Table("tenant").
 		Where("id = ?", site.ParentID).First(&Tenant{}).Error != nil {
 
-		return u.Message(false, "SiteParentID should be correspond to tenant ID"),
-			false, "validate"
+		return u.Message(false, "SiteParentID should be correspond to tenant ID"), false
+
 	}
 
 	/*if site.Color == "" {
@@ -71,20 +71,19 @@ func (site *Site) Validate() (map[string]interface{}, bool, string) {
 	switch site.Attributes.Orientation {
 	case "NE", "NW", "SE", "SW":
 	case "":
-		return u.Message(false, `Orientation should 
-				be on the payload`), false, "validate"
+		return u.Message(false, "Orientation should be on the payload"), false
 
 	default:
-		return u.Message(false, "Orientation is invalid!"), false, "validate"
+		return u.Message(false, "Orientation is invalid!"), false
 	}
 
 	//Successfully validated Site
-	return u.Message(true, "success"), true, ""
+	return u.Message(true, "success"), true
 }
 
 func (site *Site) Create() (map[string]interface{}, string) {
-	if resp, ok, e := site.Validate(); !ok {
-		return resp, e
+	if resp, ok := site.Validate(); !ok {
+		return resp, "validate"
 	}
 
 	//GetDB().Create(site)
