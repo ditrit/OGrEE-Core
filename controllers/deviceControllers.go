@@ -143,7 +143,7 @@ var CreateDevice = func(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	resp := device.Create()
+	resp, _ := device.Create()
 	u.Respond(w, resp)
 }
 

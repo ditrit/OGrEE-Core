@@ -109,20 +109,26 @@ func (device *Device) Validate() (map[string]interface{}, bool) {
 	return u.Message(true, "success"), true
 }
 
-func (device *Device) Create() map[string]interface{} {
+func (device *Device) Create() (map[string]interface{}, string) {
 	if resp, ok := device.Validate(); !ok {
-		return resp
+		return resp, "validate"
 	}
 
 	device.DescriptionDB = strings.Join(device.DescriptionJSON, "XYZ")
 
-	GetDB().Create(device)
+	if e := GetDB().Create(device).Error; e != nil {
+		return u.Message(false, "Internal Error while creating Device: "+e.Error()),
+			"invalidate"
+	}
 	device.Attributes.ID = device.ID
-	GetDB().Create(&(device.Attributes))
+	if e := GetDB().Create(&(device.Attributes)).Error; e != nil {
+		return u.Message(false, "Internal Error while creating Device Attrs: "+e.Error()),
+			"invalidate"
+	}
 
 	resp := u.Message(true, "success")
 	resp["device"] = device
-	return resp
+	return resp, ""
 }
 
 //Get the device given the ID
