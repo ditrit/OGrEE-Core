@@ -152,9 +152,18 @@ var GetRoom = func(w http.ResponseWriter, r *http.Request) {
 		u.Respond(w, u.Message(false, "Error while parsing path parameters"))
 	}
 
-	data := models.GetRoom(uint(id))
+	data, e1 := models.GetRoom(uint(id))
 	if data == nil {
-		resp = u.Message(false, "unsuccessful")
+		resp = u.Message(false, "Error while getting Room: "+e1)
+
+		switch e1 {
+		case "validate":
+			//
+		default:
+		}
+
+	} else {
+		resp = u.Message(true, "success")
 	}
 
 	resp["data"] = data
@@ -175,9 +184,18 @@ var GetAllRooms = func(w http.ResponseWriter, r *http.Request) {
 
 	resp := u.Message(true, "success")
 
-	data := models.GetAllRooms()
+	data, e1 := models.GetAllRooms()
 	if data == nil {
-		resp = u.Message(false, "unsuccessful")
+		resp = u.Message(false, "Error while getting Building: "+e1)
+
+		switch e1 {
+		case "validate":
+			//
+		default:
+		}
+
+	} else {
+		resp = u.Message(true, "success")
 	}
 
 	resp["data"] = data

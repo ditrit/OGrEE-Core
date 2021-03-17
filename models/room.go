@@ -136,40 +136,40 @@ func (room *Room) Create() (map[string]interface{}, string) {
 }
 
 //Get the room by ID
-func GetRoom(id uint) *Room {
+func GetRoom(id uint) (*Room, string) {
 	room := &Room{}
 	err := GetDB().Table("room").Where("id = ?", id).First(room).
 		Table("room_attributes").Where("id = ?", id).First(&(room.Attributes)).Error
 	if err != nil {
 		fmt.Println(err)
-		return nil
+		return nil, err.Error()
 	}
 
 	room.DescriptionJSON = strings.Split(room.DescriptionDB, "XYZ")
-	return room
+	return room, ""
 }
 
 //Obtain all rooms of a bldg
-func GetRooms(room *Building) []*Room {
+func GetRooms(room *Building) ([]*Room, string) {
 	rooms := make([]*Room, 0)
 
 	err := GetDB().Table("rooms").Where("foreignkey = ?", room.ID).Find(&rooms).Error
 	if err != nil {
 		fmt.Println(err)
-		return nil
+		return nil, err.Error()
 	}
 
-	return rooms
+	return rooms, ""
 }
 
 //Get all rooms
-func GetAllRooms() []*Room {
+func GetAllRooms() ([]*Room, string) {
 	rooms := make([]*Room, 0)
 	attrs := make([]*Room_Attributes, 0)
 	err := GetDB().Find(&rooms).Find(&attrs).Error
 	if err != nil {
 		fmt.Println(err)
-		return nil
+		return nil, err.Error()
 	}
 
 	for i := range rooms {
@@ -177,7 +177,7 @@ func GetAllRooms() []*Room {
 		rooms[i].DescriptionJSON = strings.Split(rooms[i].DescriptionDB, "XYZ")
 	}
 
-	return rooms
+	return rooms, ""
 }
 
 //More methods should be made to
