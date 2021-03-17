@@ -124,6 +124,8 @@ var CreateBuilding = func(w http.ResponseWriter, r *http.Request) {
 		//w.WriteHeader(http.)
 	case "internal":
 		//
+	default:
+		w.WriteHeader(http.StatusCreated)
 	}
 	u.Respond(w, resp)
 }
@@ -360,6 +362,7 @@ var UpdateBuilding = func(w http.ResponseWriter, r *http.Request) {
 	case "internal":
 		w.WriteHeader(http.StatusInternalServerError)
 	default:
+
 	}
 
 	u.Respond(w, v)

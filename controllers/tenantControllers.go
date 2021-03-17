@@ -122,7 +122,7 @@ var GetTenantFor = func(w http.ResponseWriter, r *http.Request) {
 
 	data, e := models.GetTenant(uint(id))
 
-	if data == nil {
+	if e != "" {
 		resp = u.Message(false, "Error: "+e)
 
 		switch e {
