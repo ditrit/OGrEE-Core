@@ -72,8 +72,9 @@ func (tenant *Tenant) Create() (map[string]interface{}, string) {
 	//Otherwise make 2 insert statements
 
 	tenant.DescriptionDB = strings.Join(tenant.DescriptionJSON, "XYZ")
-	if GetDB().Create(tenant).Error != nil {
-		return u.Message(false, "failure"), "internal"
+	if e := GetDB().Create(tenant).Error; e != nil {
+		return u.Message(false, "Internal error while creating Tenant: "+e.Error()),
+			"internal"
 	}
 
 	//This link explains JSON marshalling which will
@@ -88,8 +89,9 @@ func (tenant *Tenant) Create() (map[string]interface{}, string) {
 
 	tenant.Attributes.ID = tenant.ID
 
-	if GetDB().Table("tenant_attributes").Create(&tenant.Attributes).Error != nil {
-		return u.Message(false, "failure"), "internal"
+	if e := GetDB().Table("tenant_attributes").Create(&tenant.Attributes).Error; e != nil {
+		return u.Message(false, "Internal error while creating Tenant Attrs: "+e.Error()),
+			"internal"
 	}
 
 	resp := u.Message(true, "success")
