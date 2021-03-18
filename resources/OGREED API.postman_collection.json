@@ -876,7 +876,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"name\": \"A01\",\n    \"id\": null,\n    \"parentId\": \"{{RoomID}}\",\n    \"category\": \"rack\",\n    \"description\": [\n        \"Rack A01\",\n        \"The original one\",\n        \"-3/-5\\\\nA0-Z9\"\n    ],\n    \"domain\": \"DEMO\",\n    \"attributes\": {\n        \"posXY\": \"{\\\"x\\\":10.0,\\\"y\\\":0.0}\",\n        \"posXYUnit\": \"tile\",\n        \"size\": \"{\\\"x\\\":60.0,\\\"y\\\":120.0}\",\n        \"sizeUnit\": \"cm\",\n        \"height\": \"42\",\n        \"heightUnit\": \"U\",\n        \"template\": \"\",\n        \"orientation\": \"front\",\n        \"vendor\": \"someVendor\",\n        \"type\": \"someType\",\n        \"model\": \"someModel\",\n        \"serial\": \"someSerial\"\n    }\n}",
+							"raw": "{\n    \"name\": \"A01\",\n    \"id\": null,\n    \"parentId\": \"{{RoomID}}\",\n    \"category\": \"rack\",\n    \"description\": [\n        \"Rack A01\",\n        \"The original one\",\n        \"-3/-5\\\\nA0-Z9\"\n    ],\n    \"domain\": \"DEMO\",\n    \"attributes\": {\n        \"posXY\": \"{\\\"x\\\":10.0,\\\"y\\\":0.0}\",\n        \"posXYUnit\": \"tile\",\n        \"size\": \"{\\\"x\\\":60.0,\\\"y\\\":120.0}\",\n        \"sizeUnit\": \"cm\",\n        \"posZ\": \"Some position\",\n        \"posZUnit\": \"cm\",\n        \"height\": \"42\",\n        \"heightUnit\": \"U\",\n        \"template\": \"Some template\",\n        \"orientation\": \"front\",\n        \"vendor\": \"someVendor\",\n        \"type\": \"someType\",\n        \"model\": \"someModel\",\n        \"serial\": \"someSerial\"\n    }\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -1027,7 +1027,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"name\": \"DeviceA\",\n    \"id\": null,\n    \"parentId\": \"{{RackID}}\",\n    \"category\": \"device\",\n    \"description\": [\n        \"Rack A01\",\n        \"The original one\",\n        \"-3/-5\\\\nA0-Z9\"\n    ],\n    \"domain\": \"Device DOMAIN\",\n    \"attributes\": {\n        \"posXY\": \"{\\\"x\\\":10.0,\\\"y\\\":0.0}\",\n        \"posXYUnit\": \"tile\",\n        \"size\": \"{\\\"x\\\":60.0,\\\"y\\\":120.0}\",\n        \"sizeUnit\": \"cm\",\n        \"height\": \"42\",\n        \"heightUnit\": \"U\",\n        \"template\": \"\",\n        \"orientation\": \"front\",\n        \"vendor\": \"someVendor\",\n        \"type\": \"someType\",\n        \"model\": \"someModel\",\n        \"serial\": \"someSerial\"\n    }\n}",
+							"raw": "{\n    \"name\": \"DeviceA\",\n    \"id\": null,\n    \"parentId\": \"{{RackID}}\",\n    \"category\": \"device\",\n    \"description\": [\n        \"Rack A01\",\n        \"The original one\",\n        \"-3/-5\\\\nA0-Z9\"\n    ],\n    \"domain\": \"Device DOMAIN\",\n    \"attributes\": {\n        \"posXY\": \"{\\\"x\\\":10.0,\\\"y\\\":0.0}\",\n        \"posXYUnit\": \"tile\",\n        \"posZ\": \"{\\\"x\\\":10.0,\\\"y\\\":0.0}\",\n        \"posZUnit\": \"tile\",\n        \"size\": \"{\\\"x\\\":60.0,\\\"y\\\":120.0}\",\n        \"sizeUnit\": \"cm\",\n        \"height\": \"42\",\n        \"heightUnit\": \"U\",\n        \"template\": \"Some template\",\n        \"orientation\": \"front\",\n        \"vendor\": \"someVendor\",\n        \"type\": \"someType\",\n        \"model\": \"someModel\",\n        \"serial\": \"someSerial\"\n    }\n}",
 							"options": {
 								"raw": {
 									"language": "json"
