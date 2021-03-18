@@ -119,15 +119,14 @@ func (room *Room) Create() (map[string]interface{}, string) {
 
 	room.DescriptionDB = strings.Join(room.DescriptionJSON, "XYZ")
 
-	//GetDB().Create(room)
 	if e := GetDB().Create(room).Error; e != nil {
 		return u.Message(false, "Internal Error while creating Room: "+e.Error()),
-			"internal"
+			e.Error()
 	}
 	room.Attributes.ID = room.ID
 	if e := GetDB().Create(&(room.Attributes)).Error; e != nil {
 		return u.Message(false, "Internal Error while creating Room Attrs: "+e.Error()),
-			"internal"
+			e.Error()
 	}
 
 	resp := u.Message(true, "success")
@@ -179,12 +178,6 @@ func GetAllRooms() ([]*Room, string) {
 
 	return rooms, ""
 }
-
-//More methods should be made to
-//Meet CRUD capabilities
-//Need Update and Delete
-//These would be a bit more complicated
-//So leave them out for now
 
 func UpdateRoom(id uint, newRoomInfo *Room) (map[string]interface{}, string) {
 	room := &Room{}
