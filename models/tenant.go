@@ -48,18 +48,6 @@ func (tenant *Tenant) Validate() (map[string]interface{}, bool) {
 		return u.Message(false, "Color should be on the payload"), false
 	}
 
-	if tenant.Attributes.MainContact == "" {
-		return u.Message(false, "MainContact should be on the payload"), false
-	}
-
-	if tenant.Attributes.MainPhone == "" {
-		return u.Message(false, "MainPhone should be on the payload"), false
-	}
-
-	if tenant.Attributes.MainEmail == "" {
-		return u.Message(false, "MainEmail should be on the payload"), false
-	}
-
 	//Successfully validated the Tenant
 	return u.Message(true, "success"), true
 }
