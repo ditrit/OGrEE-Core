@@ -46,13 +46,9 @@ func (rack *Rack) Validate() (map[string]interface{}, bool) {
 		return u.Message(false, "Rack Name should be on payload"), false
 	}
 
-	/*if rack.Category == "" {
+	if rack.Category == "" {
 		return u.Message(false, "Category should be on the payload"), false
 	}
-
-	if rack.Desc == "" {
-		return u.Message(false, "Description should be on the payload"), false
-	}*/
 
 	if rack.Domain == "" {
 		return u.Message(false, "Domain should should be on the payload"), false
@@ -72,17 +68,17 @@ func (rack *Rack) Validate() (map[string]interface{}, bool) {
 		return u.Message(false, "PositionXYU string should be on the payload"), false
 	}
 
-	/*if rack.Attributes.PosZ == "" {
+	if rack.Attributes.PosZ == "" {
 		return u.Message(false, "Z coordinates should be on payload"), false
 	}
 
 	if rack.Attributes.PosZU == "" {
 		return u.Message(false, "PositionZU string should be on the payload"), false
-	}*/
+	}
 
-	/*if rack.Attributes.Template == "" {
+	if rack.Attributes.Template == "" {
 		return u.Message(false, "Template should be on the payload"), false
-	}*/
+	}
 
 	switch rack.Attributes.Orientation {
 	case "front", "rear", "left", "right":
