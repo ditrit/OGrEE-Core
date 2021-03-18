@@ -418,6 +418,8 @@ var UpdateRack = func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusBadRequest)
 	case "internal":
 		w.WriteHeader(http.StatusInternalServerError)
+	case "record not found":
+		w.WriteHeader(http.StatusNotFound)
 	default:
 	}
 
