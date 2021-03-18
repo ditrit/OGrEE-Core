@@ -107,12 +107,12 @@ func (bldg *Building) Create() (map[string]interface{}, string) {
 	bldg.DescriptionDB = strings.Join(bldg.DescriptionJSON, "XYZ")
 	if e := GetDB().Create(bldg).Error; e != nil {
 		return u.Message(false, "Internal Error while creating Bulding: "+e.Error()),
-			"internal"
+			e.Error()
 	}
 	bldg.Attributes.ID = bldg.ID
 	if e := GetDB().Create(&(bldg.Attributes)).Error; e != nil {
 		return u.Message(false, "Internal Error while creating Bulding Attrs: "+e.Error()),
-			"internal"
+			e.Error()
 	}
 
 	resp := u.Message(true, "success")
@@ -170,12 +170,6 @@ func GetBuildings(site *Site) []*Building {
 
 	return bldgs
 }
-
-//More methods should be made to
-//Meet CRUD capabilities
-//Need Update and Delete
-//These would be a bit more complicated
-//So leave them out for now
 
 func UpdateBuilding(id uint, newBldgInfo *Building) (map[string]interface{}, string) {
 	bldg := &Building{}
