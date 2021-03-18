@@ -78,7 +78,7 @@ var CreateTenant = func(w http.ResponseWriter, r *http.Request) {
 		u.Respond(w, u.Message(false, "Error while decoding request body"))
 		return
 	}
-	//tenant.ID = user
+
 	resp, e := tenant.Create()
 
 	switch e {
@@ -149,13 +149,6 @@ var GetAllTenants = func(w http.ResponseWriter, r *http.Request) {
 
 	data, e := models.GetAllTenants()
 	resp := u.Message(true, "success")
-	/*if data == nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		resp = u.Message(false, "failure")
-	} else if len(data) == 0 {
-		w.WriteHeader(http.StatusNoContent)
-		resp = u.Message(false, "failure")
-	}*/
 
 	if len(data) == 0 {
 		resp = u.Message(false, "Error: "+e)
