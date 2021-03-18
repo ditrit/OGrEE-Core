@@ -121,7 +121,7 @@ var CreateBuilding = func(w http.ResponseWriter, r *http.Request) {
 	resp, e := bldg.Create()
 	switch e {
 	case "validate":
-		//w.WriteHeader(http.)
+		w.WriteHeader(http.StatusBadRequest)
 	case "internal":
 		//
 	default:
