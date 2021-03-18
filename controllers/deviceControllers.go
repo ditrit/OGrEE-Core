@@ -260,7 +260,7 @@ var DeleteDevice = func(w http.ResponseWriter, r *http.Request) {
 	v := models.DeleteDevice(uint(id))
 
 	if v["status"] == false {
-		//
+		w.WriteHeader(http.StatusNotFound)
 	} else {
 		w.WriteHeader(http.StatusNoContent)
 	}
@@ -411,6 +411,8 @@ var UpdateDevice = func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusBadRequest)
 	case "internal":
 		w.WriteHeader(http.StatusInternalServerError)
+	case "record not found":
+		w.WriteHeader(http.StatusNotFound)
 	default:
 	}
 
