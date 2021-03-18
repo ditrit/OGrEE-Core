@@ -123,7 +123,7 @@ var CreateRoom = func(w http.ResponseWriter, r *http.Request) {
 	resp, e := room.Create()
 	switch e {
 	case "validate":
-		//
+		w.WriteHeader(http.StatusBadRequest)
 	case "internal":
 		//
 	default:
