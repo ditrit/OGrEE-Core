@@ -147,7 +147,7 @@ var CreateRack = func(w http.ResponseWriter, r *http.Request) {
 
 	switch e {
 	case "validate":
-		//
+		w.WriteHeader(http.StatusBadRequest)
 	case "internal":
 		//
 	default:
