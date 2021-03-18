@@ -46,9 +46,9 @@ func (device *Device) Validate() (map[string]interface{}, bool) {
 		return u.Message(false, "Device Name should be on payload"), false
 	}
 
-	/*if device.Category == "" {
+	if device.Category == "" {
 		return u.Message(false, "Category should be on the payload"), false
-	}*/
+	}
 
 	if device.Domain == "" {
 		return u.Message(false, "Domain should be on the payload"), false
@@ -68,17 +68,17 @@ func (device *Device) Validate() (map[string]interface{}, bool) {
 		return u.Message(false, "PositionXYU string should be on the payload"), false
 	}
 
-	/*if device.Attributes.PosZ == "" {
+	if device.Attributes.PosZ == "" {
 		return u.Message(false, "Z coordinates should be on payload"), false
 	}
 
 	if device.Attributes.PosZU == "" {
 		return u.Message(false, "PositionZU string should be on the payload"), false
-	}*/
+	}
 
-	/*if device.Attributes.Template == "" {
+	if device.Attributes.Template == "" {
 		return u.Message(false, "Template should be on the payload"), false
-	}*/
+	}
 
 	switch device.Attributes.Orientation {
 	case "front", "rear", "frontflipped", "rearflipped":
