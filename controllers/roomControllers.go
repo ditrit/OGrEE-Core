@@ -193,12 +193,12 @@ var GetAllRooms = func(w http.ResponseWriter, r *http.Request) {
 	resp := u.Message(true, "success")
 
 	data, e1 := models.GetAllRooms()
-	if data == nil {
+	if len(data) == 0 {
 		resp = u.Message(false, "Error while getting Building: "+e1)
 
 		switch e1 {
-		case "validate":
-			//
+		case "":
+			w.WriteHeader(http.StatusNotFound)
 		default:
 		}
 
