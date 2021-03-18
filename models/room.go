@@ -45,13 +45,9 @@ func (room *Room) Validate() (map[string]interface{}, bool) {
 		return u.Message(false, "Room Name should be on payload"), false
 	}
 
-	/*if room.Category == "" {
+	if room.Category == "" {
 		return u.Message(false, "Category should be on the payload"), false
 	}
-
-	if room.Desc == "" {
-		return u.Message(false, "Description should be on the payload"), false
-	}*/
 
 	if room.Domain == "" {
 		return u.Message(false, "Domain should should be on the payload"), false
