@@ -174,12 +174,6 @@ func GetAllDevices() ([]*Device, string) {
 	return devices, ""
 }
 
-//More methods should be made to
-//Meet CRUD capabilities
-//Need Update and Delete
-//These would be a bit more complicated
-//So leave them out for now
-
 func UpdateDevice(id uint, newDeviceInfo *Device) (map[string]interface{}, string) {
 	device := &Device{}
 
@@ -223,7 +217,7 @@ func UpdateDevice(id uint, newDeviceInfo *Device) (map[string]interface{}, strin
 
 	if newDeviceInfo.Attributes.Orientation != "" {
 		switch newDeviceInfo.Attributes.Orientation {
-		case "NE", "NW", "SE", "SW":
+		case "front", "rear", "frontflipped", "rearflipped":
 			device.Attributes.Orientation = newDeviceInfo.Attributes.Orientation
 
 		default:
