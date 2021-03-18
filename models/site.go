@@ -92,7 +92,7 @@ func (site *Site) Create() (map[string]interface{}, string) {
 	e := GetDB().Create(site).Error
 	if e != nil {
 		return u.Message(false, "Internal Error while creating Site: "+e.Error()),
-			"internal"
+			e.Error()
 	}
 
 	site.Attributes.ID = site.ID
@@ -100,19 +100,14 @@ func (site *Site) Create() (map[string]interface{}, string) {
 	e = GetDB().Table("site_attributes").Create(&(site.Attributes)).Error
 	if e != nil {
 		return u.Message(false, "Internal Error while creating Site Attrs: "+e.Error()),
-			"internal"
+			e.Error()
 	}
 	resp := u.Message(true, "success")
 	resp["site"] = site
 	return resp, ""
 }
 
-//Would have to think about
-//these functions more
-//since I set it up
-//to just obtain the first site
-//The GORM command might be
-//wrong too
+//Get sites of a Tenant
 func GetSites(id uint) []*Site {
 	site := make([]*Site, 0)
 
