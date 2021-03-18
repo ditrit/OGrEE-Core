@@ -41,13 +41,9 @@ func (bldg *Building) Validate() (map[string]interface{}, bool) {
 		return u.Message(false, "Building Name should be on payload"), false
 	}
 
-	/*if bldg.Category == "" {
+	if bldg.Category == "" {
 		return u.Message(false, "Category should be on the payload"), false
-	}*/
-
-	/*if bldg.Desc == "" {
-		return u.Message(false, "Description should be on the payload"), false
-	}*/
+	}
 
 	if bldg.Domain == "" {
 		return u.Message(false, "Domain should should be on the payload"), false
@@ -89,10 +85,6 @@ func (bldg *Building) Validate() (map[string]interface{}, bool) {
 
 	if bldg.Attributes.HeightU == "" {
 		return u.Message(false, "Building Height string should be on the payload"), false
-	}
-
-	if bldg.Attributes.Floors == "" {
-		return u.Message(false, "Floors string should be on the payload"), false
 	}
 
 	//Successfully validated bldg
