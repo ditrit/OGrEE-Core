@@ -48,10 +48,6 @@ func (site *Site) Validate() (map[string]interface{}, bool) {
 
 	}
 
-	/*if site.Desc == "" {
-		return u.Message(false, "Description should be on the payload"), false
-	}*/
-
 	if site.Domain == "" {
 		return u.Message(false, "Domain should be on the payload"), false
 
@@ -64,10 +60,6 @@ func (site *Site) Validate() (map[string]interface{}, bool) {
 
 	}
 
-	/*if site.Color == "" {
-		return u.Message(false, "Color should be on the payload"), false
-	}*/
-
 	switch site.Attributes.Orientation {
 	case "NE", "NW", "SE", "SW":
 	case "":
@@ -75,6 +67,18 @@ func (site *Site) Validate() (map[string]interface{}, bool) {
 
 	default:
 		return u.Message(false, "Orientation is invalid!"), false
+	}
+
+	if site.Attributes.UsableColor == "" {
+		return u.Message(false, "Usable Color should be on the payload"), false
+	}
+
+	if site.Attributes.ReservedColor == "" {
+		return u.Message(false, "Reserved Color should be on the payload"), false
+	}
+
+	if site.Attributes.TechnicalColor == "" {
+		return u.Message(false, "Technical Color should be on the payload"), false
 	}
 
 	//Successfully validated Site
