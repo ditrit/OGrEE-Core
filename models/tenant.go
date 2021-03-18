@@ -74,15 +74,8 @@ func (tenant *Tenant) Create() (map[string]interface{}, string) {
 	tenant.DescriptionDB = strings.Join(tenant.DescriptionJSON, "XYZ")
 	if e := GetDB().Create(tenant).Error; e != nil {
 		return u.Message(false, "Internal error while creating Tenant: "+e.Error()),
-			"internal"
+			e.Error()
 	}
-
-	//This link explains JSON marshalling which will
-	//be needed to merge the SQL Query below to the Query
-	//above
-	//Alot of code will be added to support the
-	//custom JSON Marshalling
-	//https://attilaolah.eu/2013/11/29/json-decoding-in-go/
 
 	/*GetDB().Exec(`UPDATE tenant SET tenant_description = ?
 	WHERE tenant.id = ?`, pq.Array(tenant.Description), tenant.ID)*/
@@ -91,7 +84,7 @@ func (tenant *Tenant) Create() (map[string]interface{}, string) {
 
 	if e := GetDB().Table("tenant_attributes").Create(&tenant.Attributes).Error; e != nil {
 		return u.Message(false, "Internal error while creating Tenant Attrs: "+e.Error()),
-			"internal"
+			e.Error()
 	}
 
 	resp := u.Message(true, "success")
@@ -107,13 +100,10 @@ func GetTenant(id uint) (*Tenant, string) {
 		Error
 
 	if e != nil {
-		//fmt.Println("BRUH")
 		//fmt.Println(e)
-		// e = record not found
 		return nil, e.Error()
 	}
 
-	//r.Scan(tenant, &(tenant.Attributes))
 	tenant.DescriptionJSON = strings.Split(tenant.DescriptionDB, "XYZ")
 	return tenant, ""
 }
