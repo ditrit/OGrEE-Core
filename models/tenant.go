@@ -36,10 +36,6 @@ func (tenant *Tenant) Validate() (map[string]interface{}, bool) {
 		return u.Message(false, "Category should be on the payload"), false
 	}
 
-	/*if tenant.Desc == "" {
-		return u.Message(false, "Description should be on the paylad"), false
-	}*/
-
 	if tenant.Domain == "" {
 		return u.Message(false, "Domain should be on the payload!"), false
 	}
