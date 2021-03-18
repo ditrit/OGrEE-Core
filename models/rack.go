@@ -180,12 +180,6 @@ func GetAllRacks() ([]*Rack, string) {
 	return racks, ""
 }
 
-//More methods should be made to
-//Meet CRUD capabilities
-//Need Update and Delete
-//These would be a bit more complicated
-//So leave them out for now
-
 func UpdateRack(id uint, newRackInfo *Rack) (map[string]interface{}, string) {
 	rack := &Rack{}
 
@@ -229,7 +223,7 @@ func UpdateRack(id uint, newRackInfo *Rack) (map[string]interface{}, string) {
 
 	if newRackInfo.Attributes.Orientation != "" {
 		switch newRackInfo.Attributes.Orientation {
-		case "NE", "NW", "SE", "SW":
+		case "front", "rear", "left", "right":
 			rack.Attributes.Orientation = newRackInfo.Attributes.Orientation
 
 		default:
