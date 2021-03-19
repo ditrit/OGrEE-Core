@@ -84,10 +84,10 @@ var CreateTenant = func(w http.ResponseWriter, r *http.Request) {
 	switch e {
 	case "validate":
 		w.WriteHeader(http.StatusBadRequest)
-	case "internal":
-		w.WriteHeader(http.StatusInternalServerError)
-	default:
+	case "":
 		w.WriteHeader(http.StatusCreated)
+	default:
+		w.WriteHeader(http.StatusInternalServerError)
 	}
 
 	u.Respond(w, resp)
