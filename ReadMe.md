@@ -275,5 +275,5 @@ Swaggerio Docs
 swagger generate spec -o ./swagger.json
 ```
 ```
-swagger serve ./swagger.json
+swagger serve -p 3003 --no-open ./swagger.json
 ```
