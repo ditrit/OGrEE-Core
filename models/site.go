@@ -155,6 +155,7 @@ func GetSite(id uint) (*Site, string) {
 		return nil, err.Error()
 	}
 	site.DescriptionJSON = strings.Split(site.DescriptionDB, "XYZ")
+	site.Category = "Site"
 	return site, ""
 }
 
@@ -174,6 +175,7 @@ func GetAllSites() ([]*Site, string) {
 	}
 
 	for i := range sites {
+		sites[i].Category = "Site"
 		sites[i].Attributes = *(attrs[i])
 		sites[i].DescriptionJSON = strings.Split(sites[i].DescriptionDB, "XYZ")
 	}
