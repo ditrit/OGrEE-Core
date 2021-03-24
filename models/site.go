@@ -34,7 +34,7 @@ type Site struct {
 	DescriptionDB   string          `json:"-" gorm:"column:site_description"`
 	Attributes      Site_Attributes `json:"attributes"`
 
-	Building []Building
+	//Building []Building
 }
 
 func (site *Site) Validate() (map[string]interface{}, bool) {
