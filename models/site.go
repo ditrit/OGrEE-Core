@@ -11,7 +11,7 @@ type ECardinalOrient string
 //Desc        string          `json:"description"`
 
 type Site_Attributes struct {
-	ID             int    `json:"id" gorm:"column:id"`
+	ID             int    `json:"-" gorm:"column:id"`
 	Orientation    string `json:"orientation" gorm:"column:site_orientation"`
 	UsableColor    string `json:"usableColor" gorm:"column:usable_color"`
 	ReservedColor  string `json:"reservedColor" gorm:"column:reserved_color"`

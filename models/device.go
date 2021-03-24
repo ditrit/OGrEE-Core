@@ -7,7 +7,7 @@ import (
 )
 
 type Device_Attributes struct {
-	ID          int    `json:"id" gorm:"column:id"`
+	ID          int    `json:"-" gorm:"column:id"`
 	PosXY       string `json:"posXY" gorm:"column:device_pos_x_y"`
 	PosXYU      string `json:"posXYUnit" gorm:"column:device_pos_x_y_unit"`
 	PosZ        string `json:"posZ" gorm:"column:device_pos_z"`
