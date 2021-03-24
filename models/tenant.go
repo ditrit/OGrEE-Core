@@ -89,7 +89,7 @@ func GetTenant(id uint) (*Tenant, string) {
 	}
 
 	tenant.DescriptionJSON = strings.Split(tenant.DescriptionDB, "XYZ")
-	tenant.Category = "Tenant"
+	tenant.Category = "tenant"
 	return tenant, ""
 }
 
@@ -109,7 +109,7 @@ func GetAllTenants() ([]*Tenant, string) {
 	}
 
 	for i := range tenants {
-		tenants[i].Category = "Tenant"
+		tenants[i].Category = "tenant"
 		tenants[i].Attributes = *(attrs[i])
 		tenants[i].DescriptionJSON = strings.Split(tenants[i].DescriptionDB, "XYZ")
 	}
