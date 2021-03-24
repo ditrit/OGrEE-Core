@@ -123,7 +123,7 @@ func GetBuilding(id uint) (*Building, string) {
 	}
 
 	bldg.DescriptionJSON = strings.Split(bldg.DescriptionDB, "XYZ")
-	bldg.Category = "Building"
+	bldg.Category = "building"
 	return bldg, ""
 }
 
@@ -144,7 +144,7 @@ func GetAllBuildings() ([]*Building, string) {
 	}
 
 	for i := range bldgs {
-		bldgs[i].Category = "Building"
+		bldgs[i].Category = "building"
 		bldgs[i].Attributes = *(attrs[i])
 		bldgs[i].DescriptionJSON = strings.Split(bldgs[i].DescriptionDB, "XYZ")
 	}
