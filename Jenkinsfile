@@ -5,6 +5,17 @@ pipeline {
     agent any
     //agent {dockerfile true}
 
+    //First way
+    //properties([pipelineTriggers([githubPush()])])
+
+    //2nd Way
+    pipelineTriggers{
+        triggers {
+            githubPush()
+        }
+    }
+    
+
     stages {
         stage('Build') {
             steps {
