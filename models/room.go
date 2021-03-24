@@ -141,7 +141,7 @@ func GetRoom(id uint) (*Room, string) {
 	}
 
 	room.DescriptionJSON = strings.Split(room.DescriptionDB, "XYZ")
-	room.Category = "Room"
+	room.Category = "room"
 	return room, ""
 }
 
@@ -169,7 +169,7 @@ func GetAllRooms() ([]*Room, string) {
 	}
 
 	for i := range rooms {
-		rooms[i].Category = "Room"
+		rooms[i].Category = "room"
 		rooms[i].Attributes = *(attrs[i])
 		rooms[i].DescriptionJSON = strings.Split(rooms[i].DescriptionDB, "XYZ")
 	}
