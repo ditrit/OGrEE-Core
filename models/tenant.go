@@ -7,7 +7,7 @@ import (
 )
 
 type Tenant_Attributes struct {
-	ID          int    `json:"id" gorm:"column:id"`
+	ID          int    `json:"-" gorm:"column:id"`
 	Color       string `json:"color" gorm:"column:tenant_color"`
 	MainContact string `json:"mainContact" gorm:"column:main_contact"`
 	MainPhone   string `json:"mainPhone" gorm:"column:main_phone"`
