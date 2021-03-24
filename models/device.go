@@ -141,7 +141,7 @@ func GetDevice(id uint) (*Device, string) {
 		return nil, err.Error()
 	}
 	device.DescriptionJSON = strings.Split(device.DescriptionDB, "XYZ")
-	device.Category = "Device"
+	device.Category = "device"
 	return device, ""
 }
 
@@ -168,7 +168,7 @@ func GetAllDevices() ([]*Device, string) {
 	}
 
 	for i := range devices {
-		devices[i].Category = "Device"
+		devices[i].Category = "device"
 		devices[i].Attributes = *(attrs[i])
 		devices[i].DescriptionJSON = strings.Split(devices[i].DescriptionDB, "XYZ")
 	}
