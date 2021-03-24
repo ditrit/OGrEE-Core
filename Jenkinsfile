@@ -20,8 +20,14 @@ pipeline {
         stage('Build') {
             steps {
                 echo 'Building..'
+                bash 'cd /home/ziad/api/p3'
+                bash 'git checkout master'
+                bash 'git pull origin master'
+                bash 'go build main'
+                //bash ''
                 //cd /var/lib/jenkins/workspace/Job1prototypev2
                 //docker build -t testingalpine .
+
             }
         }
         stage('Test') {
