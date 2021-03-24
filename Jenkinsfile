@@ -2,6 +2,7 @@
 // https://raw.githubusercontent.com
 // /github/platform-samples/master/hooks/jenkins/jira-workflow/Jenkinsfile
 pipeline {
+    agent any
     //agent {dockerfile true}
 
     stages {
@@ -17,6 +18,14 @@ pipeline {
                 echo 'Testing..'
                 //docker rm $(docker ps -aq)
                 //docker run testingalpine sh -c "cd prototypev2 && go test -v ./..."
+            }
+
+            stage('Unit Tests') {
+
+            }
+
+            stage('Functional Tests') {
+                
             }
         }
         stage('Deploy') {
