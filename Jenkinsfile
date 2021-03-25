@@ -6,20 +6,17 @@ pipeline {
     //properties([pipelineTriggers([githubPush()])])
 
     //2nd Way
-    pipelineTriggers{
+    /*pipelineTriggers{
         triggers {
             githubPush()
         }
-    }
+    }*/
     
 
     stages {
         stage('Build') {
             steps {
                 echo 'Building..'
-                bash 'cd /home/ziad/api/p3'
-                bash 'git checkout master'
-                bash 'git pull origin master'
                 bash 'go build main'
                 //bash ''
                 //cd /var/lib/jenkins/workspace/Job1prototypev2
