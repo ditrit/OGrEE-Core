@@ -29,7 +29,7 @@ pipeline {
             agent {dockerfile true}
             steps {
                 echo 'Building Docker Image & Testing..'
-                sh 'go go test -v ./models/... ./utils/...'
+                sh 'go test -v ./models/... ./utils/...'
                 //bash ''
                 //cd /var/lib/jenkins/workspace/Job1prototypev2
                 //docker build -t testingalpine .
