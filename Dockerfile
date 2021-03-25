@@ -34,4 +34,4 @@ RUN go get -u golang.org/x/crypto/bcrypt
 
 #CMD ["make"]
 
-RUN cd p3 && go build main.go
+RUN cd p3 && go build main.go 
