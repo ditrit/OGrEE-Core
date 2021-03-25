@@ -25,6 +25,24 @@ pipeline {
             }
         }
 
+        stage('Functional Test') {
+            steps {
+                echo 'Functional....'
+            }
+        }
+
+        stage('Unit Testing') {
+            steps {
+                echo 'Unit....'
+            }
+        }
+
+        stage('Regression Testing') {
+            steps {
+                echo 'Regression....'
+            }
+        }
+
         stage('Deploy') {
             steps {
                 echo 'Deploying....'
