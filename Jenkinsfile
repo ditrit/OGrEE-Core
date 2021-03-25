@@ -17,14 +17,14 @@ pipeline {
         stage('Build') {
             steps {
                 echo 'Building..'
-                bash 'go build main'
+                sh 'go build main'
                 //bash ''
                 //cd /var/lib/jenkins/workspace/Job1prototypev2
                 //docker build -t testingalpine .
 
             }
         }
-        
+
         stage('Deploy') {
             steps {
                 echo 'Deploying....'
