@@ -1,6 +1,3 @@
-//The URL below is a good place to start
-// https://raw.githubusercontent.com
-// /github/platform-samples/master/hooks/jenkins/jira-workflow/Jenkinsfile
 pipeline {
     agent any
     //agent {dockerfile true}
@@ -52,3 +49,7 @@ pipeline {
         }
     }
 }
+
+//The URL below is a good place to start
+// https://raw.githubusercontent.com
+// /github/platform-samples/master/hooks/jenkins/jira-workflow/Jenkinsfile
