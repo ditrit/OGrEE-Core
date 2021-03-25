@@ -24,21 +24,7 @@ pipeline {
 
             }
         }
-        stage('Test') {
-            steps {
-                echo 'Testing..'
-                //docker rm $(docker ps -aq)
-                //docker run testingalpine sh -c "cd prototypev2 && go test -v ./..."
-            }
-
-            stage('Unit Tests') {
-
-            }
-
-            stage('Functional Tests') {
-                
-            }
-        }
+        
         stage('Deploy') {
             steps {
                 echo 'Deploying....'
