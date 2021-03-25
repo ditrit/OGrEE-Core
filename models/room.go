@@ -75,10 +75,6 @@ func (room *Room) Validate() (map[string]interface{}, bool) {
 		return u.Message(false, "PositionZU string should be on the payload"), false
 	}
 
-	if room.Attributes.Template == "" {
-		return u.Message(false, "Template should be on the payload"), false
-	}
-
 	switch room.Attributes.Orientation {
 	case "EN", "NW", "WS", "SE":
 	case "":
