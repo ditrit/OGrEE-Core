@@ -4,7 +4,7 @@
 #FROM ubuntu:latest
 #LABEL author="Ziad Khalaf"
 FROM alpine:latest
-
+USER root
 RUN apk add --no-cache git make musl-dev go
 
 # Configure Go
