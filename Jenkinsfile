@@ -25,21 +25,35 @@ pipeline {
             }
         }
 
-        stage('Functional Test') {
+        stage('Docker Test') {
+            agent {dockerfile true}
             steps {
-                echo 'Functional....'
+                echo 'Building Docker Image & Testing..'
+                sh 'go go test -v ./models/... ./utils/...'
+                //bash ''
+                //cd /var/lib/jenkins/workspace/Job1prototypev2
+                //docker build -t testingalpine .
+
             }
         }
 
         stage('Unit Testing') {
             steps {
+                sh 'go test -v ./models/... ./utils/...'
                 echo 'Unit....'
             }
         }
 
         stage('Regression Testing') {
             steps {
+                sh 'go test -cover ./models/... ./utils/...'
                 echo 'Regression....'
+            }
+        }
+
+        stage('Functional Test') {
+            steps {
+                echo 'Functional....'
             }
         }
 
