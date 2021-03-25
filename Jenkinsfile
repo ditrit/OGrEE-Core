@@ -62,6 +62,8 @@ pipeline {
         stage('Deploy') {
             steps {
                 echo 'Deploying....'
+                sh 'fuser -k 3001/tcp'
+                sh 'go run main.go'
             }
         }
     }
