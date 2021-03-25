@@ -27,11 +27,9 @@ pipeline {
 
         stage('Docker Test') {
             //This stage is useless
-            agent {
-                docker { image 'testingalpine:dockerfile' }
-            }
             steps {
                 echo 'Building Docker Image & Testing..'
+                sh 'docker run testingalpine sh -c "cd p3 && go test -v ./..."'
                 //bash '' env XDG_CACHE_HOME="/tmp/" 
                 //cd /var/lib/jenkins/workspace/Job1prototypev2
                 //docker build -t testingalpine .
