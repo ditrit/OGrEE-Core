@@ -26,7 +26,7 @@ pipeline {
         }
 
         stage('Docker Test') {
-
+            //This stage is useless
             agent {
                 docker { image 'testingalpine:dockerfile' }
             }
