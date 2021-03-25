@@ -26,7 +26,7 @@ pipeline {
         }
 
         stage('Docker Test') {
-            agent {dockerfile true}
+            agent { image 'testingalpine:dockerfile'}
             steps {
                 echo 'Building Docker Image & Testing..'
                 sh 'go test -v ./models/... ./utils/...'
