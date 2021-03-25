@@ -1,24 +1,64 @@
-//The URL below is a good place to start
-// https://raw.githubusercontent.com
-// /github/platform-samples/master/hooks/jenkins/jira-workflow/Jenkinsfile
 pipeline {
+    agent any
     //agent {dockerfile true}
+
+    //First way
+    //properties([pipelineTriggers([githubPush()])])
+
+    //2nd Way
+    /*pipelineTriggers{
+        triggers {
+            githubPush()
+        }
+    }*/
+    
 
     stages {
         stage('Build') {
             steps {
                 echo 'Building..'
+                sh 'go build main.go'
+                //bash ''
                 //cd /var/lib/jenkins/workspace/Job1prototypev2
                 //docker build -t testingalpine .
+
             }
         }
-        stage('Test') {
+
+        stage('Docker Test') {
+            //This stage is useless
+            agent {
+                docker { image 'testingalpine:dockerfile' }
+            }
             steps {
-                echo 'Testing..'
-                //docker rm $(docker ps -aq)
-                //docker run testingalpine sh -c "cd prototypev2 && go test -v ./..."
+                echo 'Building Docker Image & Testing..'
+                //bash '' env XDG_CACHE_HOME="/tmp/" 
+                //cd /var/lib/jenkins/workspace/Job1prototypev2
+                //docker build -t testingalpine .
+
             }
         }
+
+        stage('Unit Testing') {
+            steps {
+                sh 'go test -v ./models/... ./utils/...'
+                echo 'Unit....'
+            }
+        }
+
+        stage('Regression Testing') {
+            steps {
+                sh 'go test -cover ./models/... ./utils/...'
+                echo 'Regression....'
+            }
+        }
+
+        stage('Functional Test') {
+            steps {
+                echo 'Functional....'
+            }
+        }
+
         stage('Deploy') {
             steps {
                 echo 'Deploying....'
@@ -26,3 +66,7 @@ pipeline {
         }
     }
 }
+
+//The URL below is a good place to start
+// https://raw.githubusercontent.com
+// /github/platform-samples/master/hooks/jenkins/jira-workflow/Jenkinsfile

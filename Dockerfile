@@ -4,7 +4,7 @@
 #FROM ubuntu:latest
 #LABEL author="Ziad Khalaf"
 FROM alpine:latest
-
+USER root
 RUN apk add --no-cache git make musl-dev go
 
 # Configure Go
@@ -34,4 +34,4 @@ RUN go get -u golang.org/x/crypto/bcrypt
 
 #CMD ["make"]
 
-RUN cd p3 && go build main.go
+RUN cd p3 && go build main.go 
