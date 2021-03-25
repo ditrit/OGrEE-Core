@@ -29,8 +29,8 @@ pipeline {
             agent {dockerfile true}
             steps {
                 echo 'Building Docker Image & Testing..'
-                sh 'env XDG_CACHE_HOME="/tmp/" go test -v ./models/... ./utils/...'
-                //bash ''
+                sh 'go test -v ./models/... ./utils/...'
+                //bash '' env XDG_CACHE_HOME="/tmp/" 
                 //cd /var/lib/jenkins/workspace/Job1prototypev2
                 //docker build -t testingalpine .
 
