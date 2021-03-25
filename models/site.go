@@ -61,7 +61,7 @@ func (site *Site) Validate() (map[string]interface{}, bool) {
 	}
 
 	switch site.Attributes.Orientation {
-	case "NE", "NW", "SE", "SW":
+	case "EN", "NW", "WS", "SE":
 	case "":
 		return u.Message(false, "Orientation should be on the payload"), false
 

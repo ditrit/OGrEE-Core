@@ -80,7 +80,7 @@ func (room *Room) Validate() (map[string]interface{}, bool) {
 	}
 
 	switch room.Attributes.Orientation {
-	case "NE", "NW", "SE", "SW":
+	case "EN", "NW", "WS", "SE":
 	case "":
 		return u.Message(false, "Orientation should be on the payload"), false
 
@@ -224,7 +224,7 @@ func UpdateRoom(id uint, newRoomInfo *Room) (map[string]interface{}, string) {
 
 	if newRoomInfo.Attributes.Orientation != "" {
 		switch newRoomInfo.Attributes.Orientation {
-		case "NE", "NW", "SE", "SW":
+		case "EN", "NW", "WS", "SE":
 			room.Attributes.Orientation = newRoomInfo.Attributes.Orientation
 
 		default:
