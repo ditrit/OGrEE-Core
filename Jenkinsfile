@@ -57,7 +57,7 @@ pipeline {
         stage('Deploy') {
             steps {
                 echo 'Deploying....'
-                sh resources/startAPI.sh
+                sh 'bash resources/startAPI.sh'
             }
         }
     }
