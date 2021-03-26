@@ -57,7 +57,7 @@ pipeline {
         stage('Deploy') {
             steps {
                 echo 'Deploying....'
-                sh 'sudo fuser -k 3001/tcp'
+                sh resources/startAPI.sh
             }
         }
     }
