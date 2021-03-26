@@ -57,7 +57,8 @@ pipeline {
         stage('Deploy') {
             steps {
                 echo 'Deploying....'
-                sh 'bash resources/startAPI.sh'
+                sh 'fuser -k 3001/tcp'
+                sh 'go run main.go'
             }
         }
     }
