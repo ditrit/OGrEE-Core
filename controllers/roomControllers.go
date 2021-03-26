@@ -194,7 +194,7 @@ var GetAllRooms = func(w http.ResponseWriter, r *http.Request) {
 
 	data, e1 := models.GetAllRooms()
 	if len(data) == 0 {
-		resp = u.Message(false, "Error while getting Building: "+e1)
+		resp = u.Message(false, "Error while getting Room: "+e1)
 
 		switch e1 {
 		case "":
