@@ -1,2 +1,2 @@
-fuser -k 8000/tcp
-go run main.go
+fuser -k 3001/tcp
+go run main.go &
