@@ -30,9 +30,6 @@ pipeline {
             steps {
                 echo 'Building Docker Image & Testing..'
                 sh 'docker run testingalpine:dockerfile sh -c "cd p3 && go test -v ./..."'
-                //bash '' env XDG_CACHE_HOME="/tmp/" 
-                //cd /var/lib/jenkins/workspace/Job1prototypev2
-                //docker build -t testingalpine .
 
             }
         }
