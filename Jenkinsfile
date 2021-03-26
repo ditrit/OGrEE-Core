@@ -29,7 +29,7 @@ pipeline {
             //This stage is useless
             steps {
                 echo 'Building Docker Image & Testing..'
-                sh 'docker run testingalpine:dockerfile sh -c "cd p3 && go test -v ./..."'
+                //sh 'docker run testingalpine:dockerfile sh -c "cd p3 && go test -v ./..."'
 
             }
         }
@@ -57,6 +57,7 @@ pipeline {
         stage('Deploy') {
             steps {
                 echo 'Deploying....'
+                sh 'resources/startAPI.sh'
             }
         }
     }
