@@ -57,8 +57,14 @@ pipeline {
         stage('Deploy') {
             steps {
                 echo 'Deploying....'
-                //`sh 'fuser -k 3001/tcp'
-                ssh 'go run main.go'
+                //Deployment needs ssh & screen
+                //Use the below link
+                //https://stackoverflow.com/questions/54272109/ssh-step-on-a-jenkinsfile
+                sh 'ssh -p 11503 ziad@dcim.chibois.net'
+                sh 'cd /home/ziad/api/p3'
+                sh 'git pull'
+                sh 'go build main'
+                sh 'sudo systemctl restart OGRE3D.service'
             }
         }
     }
