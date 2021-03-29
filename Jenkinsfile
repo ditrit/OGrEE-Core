@@ -13,6 +13,7 @@ pipeline {
             //This stage is useless
             steps {
                 echo 'Building Docker Image & Testing..'
+                sh 'docker build -t testingalpine:dockerfile'
                 //sh 'docker run testingalpine:dockerfile sh -c "cd p3 && go test -v ./..."'
 
             }
