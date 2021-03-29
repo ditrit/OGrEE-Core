@@ -58,6 +58,7 @@ pipeline {
             steps {
                 sshagent(['myssh']) {
                      sh 'cd /home/ziad/api/p3'
+                     sh 'ssh -T git@github.com'
                      sh 'git pull'
                      
                      
