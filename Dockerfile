@@ -13,12 +13,10 @@ ENV GOPATH /go
 ENV PATH /go/bin:$PATH
 
 RUN mkdir -p ${GOPATH}/src ${GOPATH}/bin
-RUN mkdir /home/api/
-RUN mkdir /home/api/p3
-WORKDIR /home/api
+WORKDIR /home
 
-ADD . /home/api/p3
-COPY ./.env /home/api/p3
+ADD . /home/
+COPY ./.env /home/
 # RUN cd p3 && go mod init p3
 
 
