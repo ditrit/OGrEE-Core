@@ -18,6 +18,7 @@ RUN mkdir /home/api/p3
 WORKDIR /home/api
 
 ADD . /home/api/p3
+COPY ./.env /home/api/p3
 # RUN cd p3 && go mod init p3
 
 
