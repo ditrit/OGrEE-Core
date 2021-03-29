@@ -58,7 +58,7 @@ pipeline {
             steps {
                 sshagent(['myssh']) {
                      sh 'cd /home/ziad/api/p3'
-                     sh 'git pull'
+                     sh 'git pull origin master'
                      sh 'go build main'
                      sh 'sudo systemctl restart OGRE3D.service'
                 }
