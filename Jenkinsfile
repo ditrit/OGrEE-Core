@@ -58,7 +58,7 @@ pipeline {
             steps {
                 sshagent(['myssh']) {
                      sh 'cd /home/ziad/api/p3'
-                     sh '/bin/bash git pull'
+                     sh 'git pull'
                      
                      
                      sh 'go build main'
