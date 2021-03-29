@@ -13,11 +13,10 @@ ENV GOPATH /go
 ENV PATH /go/bin:$PATH
 
 RUN mkdir -p ${GOPATH}/src ${GOPATH}/bin
-RUN mkdir /home/api/
-RUN mkdir /home/api/p3
-WORKDIR /home/api
+WORKDIR /home
 
-ADD . /home/api/p3
+ADD . /home/
+COPY ./.env /home/
 # RUN cd p3 && go mod init p3
 
 
@@ -34,4 +33,4 @@ RUN go get -u golang.org/x/crypto/bcrypt
 
 #CMD ["make"]
 
-RUN cd p3 && go build main.go 
+RUN cd /home && go build main.go 
