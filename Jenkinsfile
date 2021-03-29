@@ -71,6 +71,7 @@ pipeline {
                 //https://stackoverflow.com/questions/54272109/ssh-step-on-a-jenkinsfile
                 //f7cdafde-6704-4133-8ee5-c5f0e13c7664
                 //sh 'ssh -Tp 11503 ziad@dcim.chibois.net'
+                sh 'docker run  --network=host testingalpine:dockerfile /home/main'
                
             }
         }
