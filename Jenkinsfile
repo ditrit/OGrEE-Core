@@ -56,7 +56,7 @@ pipeline {
 
         stage('Deploy') {
             steps {
-                sshagent(['myssh']) {
+                /*sshagent(['myssh']) {
                      sh 'cd /home/ziad/api/p3'
                      sh 'ssh -T git@github.com'
                      sh 'git pull'
@@ -64,7 +64,7 @@ pipeline {
                      
                      sh 'go build main'
                      sh 'sudo systemctl restart OGRE3D.service'
-                }
+                }*/
                 echo 'Deploying....'
                 //Deployment needs ssh & screen
                 //Use the below link
