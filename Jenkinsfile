@@ -71,8 +71,8 @@ pipeline {
                 //https://stackoverflow.com/questions/54272109/ssh-step-on-a-jenkinsfile
                 //f7cdafde-6704-4133-8ee5-c5f0e13c7664
                 //sh 'ssh -Tp 11503 ziad@dcim.chibois.net'
-                sh 'docker stop rotten_apple'
-                dh 'docker rm rotten_apple'
+                sh 'docker stop rotten_apple' || true
+                sh 'docker rm rotten_apple' || true
                 sh 'docker run -d --rm --network=host --name=rotten_apple testingalpine:dockerfile /home/main'
                
             }
