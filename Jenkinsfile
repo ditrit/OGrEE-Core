@@ -56,15 +56,19 @@ pipeline {
 
         stage('Deploy') {
             steps {
+                sshagent(['myssh']) {
+                     sh 'cd /home/ziad/api/p3'
+                     sh 'git pull'
+                     sh 'go build main'
+                     sh 'sudo systemctl restart OGRE3D.service'
+                }
                 echo 'Deploying....'
                 //Deployment needs ssh & screen
                 //Use the below link
                 //https://stackoverflow.com/questions/54272109/ssh-step-on-a-jenkinsfile
-                sh 'ssh -Tp 11503 ziad@dcim.chibois.net'
-                sh 'cd /home/ziad/api/p3'
-                sh 'git pull'
-                sh 'go build main'
-                sh 'sudo systemctl restart OGRE3D.service'
+                //f7cdafde-6704-4133-8ee5-c5f0e13c7664
+                //sh 'ssh -Tp 11503 ziad@dcim.chibois.net'
+               
             }
         }
     }
