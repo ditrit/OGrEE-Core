@@ -217,7 +217,7 @@ var GetAllDevices = func(w http.ResponseWriter, r *http.Request) {
 
 	data, e1 := models.GetAllDevices()
 	if len(data) == 0 {
-		resp = u.Message(false, "Error while getting Rack: "+e1)
+		resp = u.Message(false, "Error: "+e1)
 
 		switch e1 {
 		case "":
