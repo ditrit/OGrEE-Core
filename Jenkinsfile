@@ -58,7 +58,7 @@ pipeline {
             steps {
                 sshagent(['myssh']) {
                      sh 'cd /home/ziad/api/p3'
-                     withCredentials(['227be1c4-c863-4f8c-b63e-ce61dc9fc81d']) {
+                     sshagent(credentials: ['227be1c4-c863-4f8c-b63e-ce61dc9fc81d']) {
                          sh 'git pull origin master'
                      }
                      
