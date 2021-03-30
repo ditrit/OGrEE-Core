@@ -20,9 +20,9 @@ pipeline {
                 //sh 'docker run testingalpine:dockerfile sh -c \
                 //"cd p3 && go test -v ./..."'
 
-                docker run --mount type=bind,source="${pwd}"/resources/,target=/home \
+                sh 'docker run --mount type=bind,source="${pwd}"/resources/,target=/home \
                 -it postman/newman:alpine run  \
-                '/home/OGREED API.postman_collection.json || true'
+                '/home/OGREED API.postman_collection.json || true''
             }
         }
 
