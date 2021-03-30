@@ -45,7 +45,6 @@ pipeline {
                 echo 'Deploying....'
 
                 sh 'docker stop rotten_apple || true'
-                sh 'docker rm rotten_apple || true' 
                 sh 'docker run -d --rm --network=host --name=rotten_apple testingalpine:dockerfile /home/main'
                
             }
