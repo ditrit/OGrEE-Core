@@ -9,13 +9,13 @@ sleep 10
 cockroach start-single-node \
 --insecure \
 --store=ogreedb \
---listen-addr=netbox:26257 \
---http-addr=netbox:8080 \
+--listen-addr=localhost:26257 \
+--http-addr=localhost:8080 \
 --background
 
 cockroach sql 	\
 		--insecure \
-		 --host=netbox:26257 <<EOF 
+		 --host=localhost:26257 <<EOF 
 CREATE USER maxroach;
 CREATE DATABASE ogreedb;
 SET DATABASE = ogreedb;
