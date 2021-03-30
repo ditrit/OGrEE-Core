@@ -13,7 +13,7 @@ pipeline {
             //This stage is useless
             steps {
                 echo 'Building Docker Image & Testing..'
-                sh 'docker rmi $(docker images --filter "dangling=true" -q --no-trunc)'
+                sh 'docker rmi $(docker images --filter "dangling=true" -q --no-trunc) || true'
                 sh 'docker build -t testingalpine:dockerfile .'
                 //sh 'docker run testingalpine:dockerfile sh -c "cd p3 && go test -v ./..."'
 
