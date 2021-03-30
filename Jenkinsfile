@@ -16,7 +16,7 @@ pipeline {
                 sh 'docker rmi $(docker images --filter "dangling=true" -q --no-trunc) || true'
                 sh 'docker build -t testingalpine:dockerfile .'
                 //sh 'docker run testingalpine:dockerfile sh -c "cd p3 && go test -v ./..."'
-
+                //docker run --mount type=bind,source="$(pwd)"/resources/,target=/home -it postman/newman:alpine run  '/home/OGREED API.postman_collection.json'
             }
         }
 

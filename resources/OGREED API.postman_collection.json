@@ -1110,6 +1110,56 @@
 					"response": []
 				}
 			]
+		},
+		{
+			"name": "New Folder",
+			"item": [
+				{
+					"name": "New Request",
+					"request": {
+						"auth": {
+							"type": "apikey",
+							"apikey": [
+								{
+									"key": "value",
+									"value": "Token 95d2a16ddb3670eecacb1018e0de484d1b8267e7",
+									"type": "string"
+								},
+								{
+									"key": "key",
+									"value": "Authorization",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "",
+								"value": "95d2a16ddb3670eecacb1018e0de484d1b8267e7",
+								"type": "text",
+								"disabled": true
+							}
+						],
+						"url": {
+							"raw": "https://dcim.chibois.net/api/dcim/rack-roles/\n",
+							"protocol": "https",
+							"host": [
+								"dcim",
+								"chibois",
+								"net"
+							],
+							"path": [
+								"api",
+								"dcim",
+								"rack-roles",
+								"\n"
+							]
+						}
+					},
+					"response": []
+				}
+			]
 		}
 	]
 }
