@@ -14,7 +14,7 @@ ALTER TABLE building_attributes ADD CONSTRAINT chk_bldg_phu CHECK (bldg_height_u
 
 
 ALTER TABLE Room ADD CONSTRAINT chk_room_parent CHECK (room_parent_id IS NOT NULL);
-ALTER TABLE room_attributes ADD CONSTRAINT chk_room_orientation CHECK (room_orientation IN ('EN', 'NW', 'WS', 'SE'));
+ALTER TABLE room_attributes ADD CONSTRAINT chk_room_orientation CHECK (room_orientation IN ('-E-N', '-E+N', '+E-N', '+E+N','-N-W', '-N+W', '+N-W', '+N+W','-W-S', '-W+S', '+W-S', '+W+S', '-S-E', '-S+E', '+S-E', '+S+E'));
 ALTER TABLE room_attributes ADD CONSTRAINT chk_room_pxyu CHECK (room_pos_x_y_unit IN ('mm', 'cm', 'm', 'U', 'OU', 'tile'));
 ALTER TABLE room_attributes ADD CONSTRAINT chk_room_pzu CHECK (room_pos_z_unit IN ('mm', 'cm', 'm', 'U', 'OU', 'tile'));
 ALTER TABLE room_attributes ADD CONSTRAINT chk_room_sizeu CHECK (room_size_unit IN ('mm', 'cm', 'm', 'U', 'OU', 'tile'));
