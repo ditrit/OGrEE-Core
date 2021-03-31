@@ -184,7 +184,7 @@ var GetRack = func(w http.ResponseWriter, r *http.Request) {
 
 	data, e1 := models.GetRack(uint(id))
 	if data == nil {
-		resp = u.Message(false, "Error while getting Room: "+e1)
+		resp = u.Message(false, "Error while getting Rack: "+e1)
 
 		switch e1 {
 		case "record not found":
