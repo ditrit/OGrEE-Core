@@ -68,10 +68,6 @@ func (rack *Rack) Validate() (map[string]interface{}, bool) {
 		return u.Message(false, "PositionXYU string should be on the payload"), false
 	}
 
-	if rack.Attributes.Template == "" {
-		return u.Message(false, "Template should be on the payload"), false
-	}
-
 	switch rack.Attributes.Orientation {
 	case "front", "rear", "left", "right":
 	case "":
