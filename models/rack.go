@@ -68,10 +68,6 @@ func (rack *Rack) Validate() (map[string]interface{}, bool) {
 		return u.Message(false, "PositionXYU string should be on the payload"), false
 	}
 
-	if rack.Attributes.PosZ == "" {
-		return u.Message(false, "Z coordinates should be on payload"), false
-	}
-
 	if rack.Attributes.PosZU == "" {
 		return u.Message(false, "PositionZU string should be on the payload"), false
 	}
