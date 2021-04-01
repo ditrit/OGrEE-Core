@@ -112,6 +112,7 @@ var CreateSite = func(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		u.Respond(w, u.Message(false, "Error while decoding request body"))
+		u.ErrLog("Error while decoding request body", "CREATE SITE", "")
 		return
 	}
 
@@ -120,8 +121,10 @@ var CreateSite = func(w http.ResponseWriter, r *http.Request) {
 	switch e {
 	case "validate":
 		w.WriteHeader(http.StatusBadRequest)
+		u.ErrLog(e+" Error", "CREATE SITE", "")
 	case "internal":
 		w.WriteHeader(http.StatusInternalServerError)
+		u.ErrLog(e+" Error", "CREATE SITE", "")
 	default:
 		w.WriteHeader(http.StatusCreated)
 	}
@@ -234,12 +237,14 @@ var GetSite = func(w http.ResponseWriter, r *http.Request) {
 
 	if e != nil {
 		u.Respond(w, u.Message(false, "Error while parsing path parameters"))
+		u.ErrLog("Error while parsing path parameters", "GET SITE", "")
 	}
 
 	data, e1 := models.GetSite(uint(id))
 
 	if data == nil {
 		resp = u.Message(false, "Error while getting Site: "+e1)
+		u.ErrLog("Error while getting Site", "GET SITE", e1)
 
 		switch e1 {
 		case "record not found":
@@ -273,7 +278,7 @@ var GetAllSites = func(w http.ResponseWriter, r *http.Request) {
 
 	if len(data) == 0 {
 		resp = u.Message(false, "Error while getting all sites: "+e)
-
+		u.ErrLog("Error while getting all sites", "GET ALL SITES", e)
 		switch e {
 		case "":
 			w.WriteHeader(http.StatusNotFound)
@@ -355,6 +360,7 @@ var DeleteSites = func(w http.ResponseWriter, r *http.Request) {
 	err := json.NewDecoder(r.Body).Decode(st)
 	if err != nil {
 		u.Respond(w, u.Message(false, "Error while decoding request body"))
+		u.ErrLog("Error while decoding request body", "DELETE SITE", "")
 	}
 
 	id, _ := strconv.Atoi(st.ParentID)
@@ -468,11 +474,13 @@ var UpdateSite = func(w http.ResponseWriter, r *http.Request) {
 
 	if e != nil {
 		u.Respond(w, u.Message(false, "Error while parsing path parameters"))
+		u.ErrLog("Error while parsing path parameters", "UPDATE SITE", "")
 	}
 
 	err := json.NewDecoder(r.Body).Decode(site)
 	if err != nil {
 		u.Respond(w, u.Message(false, "Error while decoding request body"))
+		u.ErrLog("Error while decoding request body", "UPDATE SITE", "")
 	}
 
 	v, e1 := models.UpdateSite(uint(id), site)
@@ -480,10 +488,13 @@ var UpdateSite = func(w http.ResponseWriter, r *http.Request) {
 	switch e1 {
 	case "validate":
 		w.WriteHeader(http.StatusBadRequest)
+		u.ErrLog("Error while updating site", "UPDATE SITE", e1)
 	case "internal":
 		w.WriteHeader(http.StatusInternalServerError)
+		u.ErrLog("Error while updating site", "UPDATE SITE", e1)
 	case "record not found":
 		w.WriteHeader(http.StatusNotFound)
+		u.ErrLog("Error while updating site", "UPDATE SITE", e1)
 	default:
 	}
 

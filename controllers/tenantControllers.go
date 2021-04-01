@@ -2,9 +2,7 @@ package controllers
 
 import (
 	"encoding/json"
-	"log"
 	"net/http"
-	"os"
 	"p3/models"
 	u "p3/utils"
 	"strconv"
@@ -78,16 +76,7 @@ var CreateTenant = func(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		u.Respond(w, u.Message(false, "Error while decoding request body"))
-
-		f, err := os.OpenFile("resources/debug.log",
-			os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
-		if err != nil {
-			log.Fatalf("error opening file: %v", err)
-		}
-		defer f.Close()
-
-		log.SetOutput(f)
-		log.Println("Error while decoding request body FOR Create Tenant")
+		u.ErrLog("Error while decoding request body", "CREATE TENANT", "")
 
 		return
 	}
@@ -97,10 +86,13 @@ var CreateTenant = func(w http.ResponseWriter, r *http.Request) {
 	switch e {
 	case "validate":
 		w.WriteHeader(http.StatusBadRequest)
+		u.ErrLog("Error while creating tenant", "CREATE TENANT", e)
 	case "":
 		w.WriteHeader(http.StatusCreated)
+		u.ErrLog("Error while creating tenant", "CREATE TENANT", e)
 	default:
 		w.WriteHeader(http.StatusInternalServerError)
+		u.ErrLog("Error while creating tenant", "CREATE TENANT", e)
 	}
 
 	u.Respond(w, resp)
@@ -131,16 +123,7 @@ var GetTenantFor = func(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		u.Respond(w, u.Message(false, "Error while extracting from path parameters"))
-
-		f, err := os.OpenFile("resources/debug.log",
-			os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
-		if err != nil {
-			log.Fatalf("error opening file: %v", err)
-		}
-		defer f.Close()
-
-		log.SetOutput(f)
-		log.Println("Error while extracting from path parameters FOR GET TENANT")
+		u.ErrLog("Error while extracting from path parameters", "GET TENANT", "")
 
 	}
 
@@ -148,16 +131,7 @@ var GetTenantFor = func(w http.ResponseWriter, r *http.Request) {
 
 	if e != "" {
 		resp = u.Message(false, "Error: "+e)
-
-		f, err := os.OpenFile("resources/debug.log",
-			os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
-		if err != nil {
-			log.Fatalf("error opening file: %v", err)
-		}
-		defer f.Close()
-
-		log.SetOutput(f)
-		log.Println(e + " FOR GET TENANT")
+		u.ErrLog("Error while getting tenant", "GET TENANT", e)
 
 		switch e {
 		case "record not found":
@@ -186,16 +160,7 @@ var GetAllTenants = func(w http.ResponseWriter, r *http.Request) {
 
 	if len(data) == 0 {
 		resp = u.Message(false, "Error: "+e)
-
-		f, err := os.OpenFile("resources/debug.log",
-			os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
-		if err != nil {
-			log.Fatalf("error opening file: %v", err)
-		}
-		defer f.Close()
-
-		log.SetOutput(f)
-		log.Println(e + "FOR GET ALL TENANT")
+		u.ErrLog("Error while getting tenants", "GET ALL TENANTS", e)
 
 		switch e {
 		case "validate":
@@ -224,7 +189,7 @@ var GetAllTenants = func(w http.ResponseWriter, r *http.Request) {
 // parameters:
 // - name: ID
 //   in: path
-//   description: ID of desired site
+//   description: ID of desired tenant
 //   required: true
 //   type: int
 //   default: 999
@@ -287,15 +252,7 @@ var UpdateTenant = func(w http.ResponseWriter, r *http.Request) {
 	if e != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		u.Respond(w, u.Message(false, "Error while extracting from path parameters"))
-		f, err := os.OpenFile("resources/debug.log",
-			os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
-		if err != nil {
-			log.Fatalf("error opening file: %v", err)
-		}
-		defer f.Close()
-
-		log.SetOutput(f)
-		log.Println("Error while extracting from path parameters FOR UPDATE TENANT")
+		u.ErrLog("Error while extracting from path parameters", "UPDATE TENANT", "")
 	}
 	tenant := &models.Tenant{}
 
@@ -303,38 +260,22 @@ var UpdateTenant = func(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		u.Respond(w, u.Message(false, "Error while decoding request body"))
-
-		f, err := os.OpenFile("resources/debug.log",
-			os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
-		if err != nil {
-			log.Fatalf("error opening file: %v", err)
-		}
-		defer f.Close()
-
-		log.SetOutput(f)
-		log.Println("Error while decoding request body FOR UPDATE TENANT")
+		u.ErrLog("Error while decoding request body", "UPDATE TENANT", "")
 	}
 
 	v, e1 := models.UpdateTenant(uint(id), tenant)
-
-	f, err := os.OpenFile("resources/debug.log",
-		os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
-	if err != nil {
-		log.Fatalf("error opening file: %v", err)
-	}
-	defer f.Close()
-
-	log.SetOutput(f)
-	log.Println(e1 + " FOR UPDATE TENANT")
 
 	switch e1 {
 
 	case "validate":
 		w.WriteHeader(http.StatusBadRequest)
+		u.ErrLog("Error while updating tenant", "UPDATE TENANT", e1)
 	case "internal":
 		w.WriteHeader(http.StatusInternalServerError)
+		u.ErrLog("Error while updating tenant", "UPDATE TENANT", e1)
 	case "record not found":
 		w.WriteHeader(http.StatusNotFound)
+		u.ErrLog("Error while updating tenant", "UPDATE TENANT", e1)
 	default:
 	}
 
@@ -371,29 +312,13 @@ var DeleteTenant = func(w http.ResponseWriter, r *http.Request) {
 	id, e := strconv.Atoi(mux.Vars(r)["id"])
 	if e != nil {
 		u.Respond(w, u.Message(false, "Error while extracting from path parameters"))
-		f, err := os.OpenFile("resources/debug.log",
-			os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
-		if err != nil {
-			log.Fatalf("error opening file: %v", err)
-		}
-		defer f.Close()
-
-		log.SetOutput(f)
-		log.Println("Error while extracting from path parameters FOR DELETE TENANT")
+		u.ErrLog("Error while extracting from path parameters", "DELETE TENANT", "")
 	}
 
 	v := models.DeleteTenant(uint(id))
 	if v["status"] == false {
 		w.WriteHeader(http.StatusNotFound)
-		f, err := os.OpenFile("resources/debug.log",
-			os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
-		if err != nil {
-			log.Fatalf("error opening file: %v", err)
-		}
-		defer f.Close()
-
-		log.SetOutput(f)
-		log.Println("Not Found FOR DELETE TENANT")
+		u.ErrLog("Not Found", "DELETE TENANT", "")
 
 	} else {
 		w.WriteHeader(http.StatusNoContent)
