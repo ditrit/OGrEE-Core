@@ -140,6 +140,7 @@ var CreateRack = func(w http.ResponseWriter, r *http.Request) {
 	err := json.NewDecoder(r.Body).Decode(rack)
 	if err != nil {
 		u.Respond(w, u.Message(false, "Error while decoding request body"))
+		u.ErrLog("Error while decoding request body", "CREATE RACK", "")
 		return
 	}
 
@@ -148,6 +149,7 @@ var CreateRack = func(w http.ResponseWriter, r *http.Request) {
 	switch e {
 	case "validate":
 		w.WriteHeader(http.StatusBadRequest)
+		u.ErrLog("Error while creating rack", "CREATE RACK", e)
 	case "internal":
 		//
 	default:
@@ -180,11 +182,13 @@ var GetRack = func(w http.ResponseWriter, r *http.Request) {
 
 	if e != nil {
 		u.Respond(w, u.Message(false, "Error while parsing path parameters"))
+		u.ErrLog("Error while parsing path parameters", "GET RACK", "")
 	}
 
 	data, e1 := models.GetRack(uint(id))
 	if data == nil {
 		resp = u.Message(false, "Error while getting Rack: "+e1)
+		u.ErrLog("Error while getting Rack", "GET RACK", e1)
 
 		switch e1 {
 		case "record not found":
@@ -217,6 +221,7 @@ var GetAllRacks = func(w http.ResponseWriter, r *http.Request) {
 	data, e1 := models.GetAllRacks()
 	if len(data) == 0 {
 		resp = u.Message(false, "Error while getting Rack: "+e1)
+		u.ErrLog("Error while getting Rack", "GET ALL RACKS", e1)
 
 		switch e1 {
 		case "":
@@ -254,12 +259,14 @@ var DeleteRack = func(w http.ResponseWriter, r *http.Request) {
 
 	if e != nil {
 		u.Respond(w, u.Message(false, "Error while parsing path parameters"))
+		u.ErrLog("Error while parsing path parameters", "DELETE RACK", "")
 	}
 
 	v := models.DeleteRack(uint(id))
 
 	if v["status"] == false {
 		w.WriteHeader(http.StatusNotFound)
+		u.ErrLog("Error while deleting rack", "DELETE RACK", "Not Found")
 	} else {
 		w.WriteHeader(http.StatusNoContent)
 	}
@@ -404,11 +411,13 @@ var UpdateRack = func(w http.ResponseWriter, r *http.Request) {
 
 	if e != nil {
 		u.Respond(w, u.Message(false, "Error while parsing path parameters"))
+		u.ErrLog("Error while parsing path parameters", "UPDATE RACK", "")
 	}
 
 	err := json.NewDecoder(r.Body).Decode(rack)
 	if err != nil {
 		u.Respond(w, u.Message(false, "Error while decoding request body"))
+		u.ErrLog("Error while decoding request body", "UPDATE RACK", "")
 	}
 
 	v, e1 := models.UpdateRack(uint(id), rack)
@@ -416,10 +425,13 @@ var UpdateRack = func(w http.ResponseWriter, r *http.Request) {
 	switch e1 {
 	case "validate":
 		w.WriteHeader(http.StatusBadRequest)
+		u.ErrLog("Error while updating rack", "UPDATE RACK", e1)
 	case "internal":
 		w.WriteHeader(http.StatusInternalServerError)
+		u.ErrLog("Error while updating rack", "UPDATE RACK", e1)
 	case "record not found":
 		w.WriteHeader(http.StatusNotFound)
+		u.ErrLog("Error while updating rack", "UPDATE RACK", e1)
 	default:
 	}
 
