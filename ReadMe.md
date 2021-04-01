@@ -233,6 +233,13 @@ sudo systemctl restart jenkins
 ```
 The problem with this is that the docker group has root permissions so this is risky, I will look into a better solution later
 
+CockroachDB
+--------------------------
+Based on PSQL, it emphasises scaling, replication and reliability. It provides an Admin UI (which really isn't that much helpful) online which can be accessed via port 8080 by default unless specified otherwise. The current DB can be started using the **start.sh** script found in the root dir. The most useful interface for the DB is to access the shell. If you have started the DB already using the script you can directly execute this command to access the DB Shell
+```
+cockroach sql --url postgresql://maxroach@localhost:26257/ogreedb?sslmode=disable
+```
+
 Running a CockroachDB container
 --------------------------
 
