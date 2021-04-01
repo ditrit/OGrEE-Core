@@ -117,6 +117,7 @@ var CreateRoom = func(w http.ResponseWriter, r *http.Request) {
 	err := json.NewDecoder(r.Body).Decode(room)
 	if err != nil {
 		u.Respond(w, u.Message(false, "Error while decoding request body"))
+		u.ErrLog("Error while decoding request body", "CREATE ROOM", "")
 		return
 	}
 
@@ -124,6 +125,7 @@ var CreateRoom = func(w http.ResponseWriter, r *http.Request) {
 	switch e {
 	case "validate":
 		w.WriteHeader(http.StatusBadRequest)
+		u.ErrLog("Error while creating room", "CREATE ROOM", e)
 	case "internal":
 		//
 	default:
@@ -158,11 +160,13 @@ var GetRoom = func(w http.ResponseWriter, r *http.Request) {
 
 	if e != nil {
 		u.Respond(w, u.Message(false, "Error while parsing path parameters"))
+		u.ErrLog("Error while parsing path parameters", "GET ROOM", "")
 	}
 
 	data, e1 := models.GetRoom(uint(id))
 	if data == nil {
 		resp = u.Message(false, "Error while getting Room: "+e1)
+		u.ErrLog("Error while getting Room: ", "GET ROOM", e1)
 
 		switch e1 {
 		case "record not found":
@@ -195,6 +199,7 @@ var GetAllRooms = func(w http.ResponseWriter, r *http.Request) {
 	data, e1 := models.GetAllRooms()
 	if len(data) == 0 {
 		resp = u.Message(false, "Error while getting Room: "+e1)
+		u.ErrLog("Error while getting Room: ", "GET ALL ROOMS", e1)
 
 		switch e1 {
 		case "":
@@ -233,12 +238,14 @@ var DeleteRoom = func(w http.ResponseWriter, r *http.Request) {
 
 	if e != nil {
 		u.Respond(w, u.Message(false, "Error while parsing path parameters"))
+		u.ErrLog("Error while parsing path parameters", "DELETE ROOM", "")
 	}
 
 	v := models.DeleteRoom(uint(id))
 
 	if v["status"] == false {
 		w.WriteHeader(http.StatusNotFound)
+		u.ErrLog("Error while deleting room", "DELETE ROOM", "Not Found")
 	} else {
 		w.WriteHeader(http.StatusNoContent)
 	}
@@ -357,11 +364,13 @@ var UpdateRoom = func(w http.ResponseWriter, r *http.Request) {
 
 	if e != nil {
 		u.Respond(w, u.Message(false, "Error while parsing path parameters"))
+		u.ErrLog("Error while parsing path parameters", "UPDATE ROOM", "")
 	}
 
 	err := json.NewDecoder(r.Body).Decode(room)
 	if err != nil {
 		u.Respond(w, u.Message(false, "Error while decoding request body"))
+		u.ErrLog("Error while decoding request body", "UPDATE ROOM", "")
 	}
 
 	v, e1 := models.UpdateRoom(uint(id), room)
@@ -369,10 +378,13 @@ var UpdateRoom = func(w http.ResponseWriter, r *http.Request) {
 	switch e1 {
 	case "validate":
 		w.WriteHeader(http.StatusBadRequest)
+		u.ErrLog("Error while updating room", "UPDATE ROOM", e1)
 	case "internal":
 		w.WriteHeader(http.StatusInternalServerError)
+		u.ErrLog("Error while updating room", "UPDATE ROOM", e1)
 	case "record not found":
 		w.WriteHeader(http.StatusNotFound)
+		u.ErrLog("Error while updating room", "UPDATE ROOM", e1)
 	default:
 	}
 
