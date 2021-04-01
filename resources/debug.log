@@ -1,0 +1,5 @@
+2021/04/01 19:13:51 Error while decoding request body
+2021/04/01 20:58:36 Error while decoding request body FOR Create Tenant
+2021/04/01 21:00:20 record not foundFOR GET TENANT
+2021/04/01 21:00:58 record not foundFOR UPDATE TENANT
+2021/04/01 21:01:37 Not Found FOR DELETE TENANT
