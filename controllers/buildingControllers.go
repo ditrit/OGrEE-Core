@@ -99,12 +99,12 @@ import (
 // - name: Floors
 //   in: query
 //   description: 'Number of floors'
-//   required: true
+//   required: false
 //   type: string
 //   default: "3"
 
 // responses:
-//     '200':
+//     '201':
 //         description: Created
 //     '400':
 //         description: Bad request
@@ -147,7 +147,7 @@ var CreateBuilding = func(w http.ResponseWriter, r *http.Request) {
 // responses:
 //     '200':
 //         description: Found
-//     '400':
+//     '404':
 //         description: Not Found
 
 //Retrieve bldg using Bldg ID
@@ -189,7 +189,7 @@ var GetBuilding = func(w http.ResponseWriter, r *http.Request) {
 // responses:
 //     '200':
 //         description: Found
-//     '400':
+//     '404':
 //         description: Not Found
 
 var GetAllBuildings = func(w http.ResponseWriter, r *http.Request) {
@@ -230,7 +230,7 @@ var GetAllBuildings = func(w http.ResponseWriter, r *http.Request) {
 // responses:
 //     '204':
 //        description: Successful
-//     '400':
+//     '404':
 //        description: Not found
 var DeleteBuilding = func(w http.ResponseWriter, r *http.Request) {
 	id, e := strconv.Atoi(mux.Vars(r)["id"])
@@ -351,8 +351,8 @@ var DeleteBuilding = func(w http.ResponseWriter, r *http.Request) {
 // responses:
 //     '200':
 //         description: Updated
-//     '400':
-//         description: Bad request
+//     '404':
+//         description: Not Found
 //Updates work by passing ID in path parameter
 var UpdateBuilding = func(w http.ResponseWriter, r *http.Request) {
 
