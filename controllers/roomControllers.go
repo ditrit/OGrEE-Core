@@ -113,7 +113,7 @@ import (
 //   default: "m"
 
 // responses:
-//     '200':
+//     '201':
 //         description: Created
 //     '400':
 //         description: Bad request

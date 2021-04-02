@@ -39,6 +39,11 @@ import (
 //   required: true
 //   type: string
 //   default: "Some Domain"
+// - name: ParentID
+//   description: 'Parent of Device refers to Rack ID'
+//   required: true
+//   type: int
+//   default: 999
 // - name: Orientation
 //   in: query
 //   description: 'Indicates the location. Only values of
@@ -49,7 +54,7 @@ import (
 // - name: Template
 //   in: query
 //   description: 'Device template'
-//   required: false
+//   required: true
 //   type: string
 //   default: "Some Template"
 // - name: PosXY
@@ -130,7 +135,7 @@ import (
 //   default: "Some Serial"
 
 // responses:
-//     '200':
+//     '201':
 //         description: Created
 //     '400':
 //         description: Bad request
@@ -168,6 +173,11 @@ var CreateDevice = func(w http.ResponseWriter, r *http.Request) {
 //   in: path
 //   description: ID of Device
 
+// responses:
+//     '200':
+//         description: Found
+//     '400':
+//         description: Not Found
 var GetDevice = func(w http.ResponseWriter, r *http.Request) {
 
 	id, e := strconv.Atoi(mux.Vars(r)["id"])
@@ -197,9 +207,8 @@ var GetDevice = func(w http.ResponseWriter, r *http.Request) {
 	u.Respond(w, resp)
 }
 
-// swagger:operation GET /api/user/devices/{id} devices GetDevice
-// Gets a Device from the system.
-// The ID must be provided in the URL parameter.
+// swagger:operation GET /api/user/devices devices GetAllDevices
+// Gets all Devices from the system.
 // ---
 // produces:
 // - application/json
@@ -213,8 +222,8 @@ var GetDevice = func(w http.ResponseWriter, r *http.Request) {
 // responses:
 //     '200':
 //         description: Found
-//     '400':
-//         description: Bad request
+//     '404':
+//         description: Nothing Found
 var GetAllDevices = func(w http.ResponseWriter, r *http.Request) {
 
 	resp := u.Message(true, "success")
@@ -253,7 +262,7 @@ var GetAllDevices = func(w http.ResponseWriter, r *http.Request) {
 // responses:
 //     '204':
 //        description: Successful
-//     '400':
+//     '404':
 //        description: Not found
 var DeleteDevice = func(w http.ResponseWriter, r *http.Request) {
 	id, e := strconv.Atoi(mux.Vars(r)["id"])
@@ -396,6 +405,8 @@ var DeleteDevice = func(w http.ResponseWriter, r *http.Request) {
 //         description: Updated
 //     '400':
 //         description: Bad request
+//     '404':
+//         description: Not Found
 //Updates work by passing ID in path parameter
 var UpdateDevice = func(w http.ResponseWriter, r *http.Request) {
 
