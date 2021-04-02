@@ -39,6 +39,11 @@ import (
 //   required: true
 //   type: string
 //   default: "Some Domain"
+// - name: ParentID
+//   description: 'ParentID of Rack refers to Room'
+//   required: true
+//   type: string
+//   default: "999"
 // - name: Orientation
 //   in: query
 //   description: 'Indicates the location. Only values of
@@ -49,7 +54,7 @@ import (
 // - name: Template
 //   in: query
 //   description: 'Room template'
-//   required: true
+//   required: false
 //   type: string
 //   default: "Some Template"
 // - name: PosXY
@@ -68,14 +73,14 @@ import (
 // - name: PosZ
 //   in: query
 //   description: 'Indicates the position in the Z axis'
-//   required: true
+//   required: false
 //   type: string
 //   default: "10"
 // - name: PosZU
 //   in: query
 //   description: 'Indicates the unit of the Z coordinate position. Only values of
 //   "mm", "cm", "m", "U", "OU", "tile" are acceptable'
-//   required: true
+//   required: false
 //   type: string
 //   default: "m"
 // - name: Size
@@ -130,7 +135,7 @@ import (
 //   default: "Some Serial"
 
 // responses:
-//     '200':
+//     '201':
 //         description: Created
 //     '400':
 //         description: Bad request
@@ -171,9 +176,9 @@ var CreateRack = func(w http.ResponseWriter, r *http.Request) {
 //   type: int
 //   default: 999
 // responses:
-//     '204':
+//     '200':
 //        description: Successful
-//     '400':
+//     '404':
 //        description: Not found
 var GetRack = func(w http.ResponseWriter, r *http.Request) {
 
@@ -210,9 +215,9 @@ var GetRack = func(w http.ResponseWriter, r *http.Request) {
 // produces:
 // - application/json
 // responses:
-//     '204':
+//     '200':
 //        description: Successful
-//     '400':
+//     '404':
 //        description: Not found
 var GetAllRacks = func(w http.ResponseWriter, r *http.Request) {
 
@@ -252,7 +257,7 @@ var GetAllRacks = func(w http.ResponseWriter, r *http.Request) {
 // responses:
 //     '204':
 //        description: Successful
-//     '400':
+//     '404':
 //        description: Not found
 var DeleteRack = func(w http.ResponseWriter, r *http.Request) {
 	id, e := strconv.Atoi(mux.Vars(r)["id"])
@@ -309,16 +314,14 @@ var DeleteRack = func(w http.ResponseWriter, r *http.Request) {
 // - name: Template
 //   in: query
 //   description: 'Room template'
-//   required: true
+//   required: false
 //   type: string
 //   default: "Some Template"
 // - name: Orientation
 //   in: query
-// - name: Orientation
-//   in: query
 //   description: 'Indicates the location. Only values of
 //   "front", "rear", "left", "right" are acceptable'
-//   required: true
+//   required: false
 //   type: string
 //   default: "front"
 // - name: PosXY
@@ -401,8 +404,8 @@ var DeleteRack = func(w http.ResponseWriter, r *http.Request) {
 // responses:
 //     '200':
 //         description: Updated
-//     '400':
-//         description: Bad request
+//     '404':
+//         description: Not Found
 //Updates work by passing ID in path parameter
 var UpdateRack = func(w http.ResponseWriter, r *http.Request) {
 
