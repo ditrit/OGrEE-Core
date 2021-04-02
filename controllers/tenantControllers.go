@@ -116,6 +116,8 @@ var CreateTenant = func(w http.ResponseWriter, r *http.Request) {
 //         description: Found
 //     '400':
 //         description: Bad request
+//     '404':
+//         description: Not Found
 var GetTenantFor = func(w http.ResponseWriter, r *http.Request) {
 	var resp map[string]interface{}
 	id, err := strconv.Atoi(mux.Vars(r)["id"])
@@ -152,7 +154,10 @@ var GetTenantFor = func(w http.ResponseWriter, r *http.Request) {
 // Returns JSON body with all tenants and their IDs
 // ---
 // responses:
-//     '204':
+//     '200':
+//         description: Found
+//     '404':
+//         description: Nothing Found
 var GetAllTenants = func(w http.ResponseWriter, r *http.Request) {
 
 	data, e := models.GetAllTenants()
@@ -245,6 +250,8 @@ var GetAllTenants = func(w http.ResponseWriter, r *http.Request) {
 //         description: Updated
 //     '400':
 //         description: Bad request
+//     '404':
+//         description: Not Found
 
 var UpdateTenant = func(w http.ResponseWriter, r *http.Request) {
 
