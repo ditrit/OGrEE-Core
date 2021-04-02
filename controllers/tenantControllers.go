@@ -48,19 +48,19 @@ import (
 // - name: MainContact
 //   in: query
 //   description: The main method of contact for Tenant
-//   required: true
+//   required: false
 //   type: string
 //   default: "Website"
 // - name: MainPhone
 //   in: query
 //   description: Main Phone # of Tenant
-//   required: true
+//   required: false
 //   type: string
 //   default: "000"
 // - name: MainEmail
 //   in: query
 //   description: Main Email Address of Tenant
-//   required: true
+//   required: false
 //   type: string
 //   default: "nissan@nissan.com"
 // responses:
