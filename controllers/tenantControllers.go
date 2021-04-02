@@ -64,7 +64,7 @@ import (
 //   type: string
 //   default: "nissan@nissan.com"
 // responses:
-//     '200':
+//     '201':
 //         description: Created
 //     '400':
 //         description: Bad request

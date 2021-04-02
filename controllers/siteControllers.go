@@ -41,7 +41,7 @@ import (
 // - name: Description
 //   in: query
 //   description: Description of Site
-//   required: true
+//   required: false
 //   type: string[]
 //   default: ["Some abandoned site in Grenoble"]
 // - name: Orientation
@@ -54,19 +54,19 @@ import (
 // - name: UsableColor
 //   in: query
 //   description: Usable Color of Site (useful for 3D rendering)
-//   required: false
+//   required: true
 //   type: string
 //   default: "Silver"
 // - name: ReservedColor
 //   in: query
 //   description: Reserved Color of Site (useful for 3D rendering)
-//   required: false
+//   required: true
 //   type: string
 //   default: "Silver"
 // - name: TechnicalColor
 //   in: query
 //   description: Color of Site (useful for 3D rendering)
-//   required: false
+//   required: true
 //   type: string
 //   default: "Silver"
 // - name: Address
@@ -100,7 +100,7 @@ import (
 //   type: string
 //   default: "N'25 E'55"
 // responses:
-//     '200':
+//     '201':
 //         description: Created
 //     '400':
 //         description: Bad request
@@ -226,7 +226,7 @@ var GetSitesByParentID = func(w http.ResponseWriter, r *http.Request) {
 // responses:
 //     '200':
 //         description: Found
-//     '400':
+//     '404':
 //         description: Not Found
 
 //Retrieve site using Site ID
@@ -268,7 +268,7 @@ var GetSite = func(w http.ResponseWriter, r *http.Request) {
 // responses:
 //     '200':
 //         description: Found
-//     '400':
+//     '404':
 //         description: Bad request
 var GetAllSites = func(w http.ResponseWriter, r *http.Request) {
 
@@ -316,7 +316,7 @@ var GetAllSites = func(w http.ResponseWriter, r *http.Request) {
 // responses:
 //     '204':
 //        description: Successful
-//     '400':
+//     '404':
 //        description: Not Found
 
 var DeleteSiteByID = func(w http.ResponseWriter, r *http.Request) {
@@ -464,8 +464,8 @@ var DeleteSites = func(w http.ResponseWriter, r *http.Request) {
 // responses:
 //     '200':
 //         description: Updated
-//     '400':
-//         description: Bad request
+//     '404':
+//         description: Not Found
 
 var UpdateSite = func(w http.ResponseWriter, r *http.Request) {
 
