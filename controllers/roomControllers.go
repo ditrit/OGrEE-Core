@@ -39,17 +39,24 @@ import (
 //   required: true
 //   type: string
 //   default: "Some Domain"
+// - name: ParentID
+//   description: 'ParentID of Room refers to Building'
+//   required: true
+//   type: string
+//   default: "999"
 // - name: Orientation
 //   in: query
 //   description: 'Indicates the location. Only values of
-//   "NE", "NW", "SE", "SW" are acceptable'
+//   '-E-N', '-E+N', '+E-N', '+E+N','-N-W', '-N+W',
+//   '+N-W', '+N+W','-W-S', '-W+S', '+W-S', '+W+S',
+//   '-S-E', '-S+E', '+S-E', '+S+E' are acceptable'
 //   required: true
 //   type: string
 //   default: "NE"
 // - name: Template
 //   in: query
 //   description: 'Room template'
-//   required: true
+//   required: false
 //   type: string
 //   default: "Some Template"
 // - name: PosXY
@@ -110,6 +117,8 @@ import (
 //         description: Created
 //     '400':
 //         description: Bad request
+//     '404':
+//         description: Not Found
 
 var CreateRoom = func(w http.ResponseWriter, r *http.Request) {
 
@@ -149,7 +158,7 @@ var CreateRoom = func(w http.ResponseWriter, r *http.Request) {
 // responses:
 //     '200':
 //         description: Found
-//     '400':
+//     '404':
 //         description: Not Found
 
 //Retrieve room using Room ID
@@ -190,7 +199,7 @@ var GetRoom = func(w http.ResponseWriter, r *http.Request) {
 // responses:
 //     '200':
 //         description: Found
-//     '400':
+//     '404':
 //         description: Not Found
 var GetAllRooms = func(w http.ResponseWriter, r *http.Request) {
 
@@ -230,7 +239,7 @@ var GetAllRooms = func(w http.ResponseWriter, r *http.Request) {
 // responses:
 //     '204':
 //        description: Successful
-//     '400':
+//     '404':
 //        description: Not found
 
 var DeleteRoom = func(w http.ResponseWriter, r *http.Request) {
@@ -288,10 +297,12 @@ var DeleteRoom = func(w http.ResponseWriter, r *http.Request) {
 // - name: Orientation
 //   in: query
 //   description: 'Indicates the location. Only values of
-//   "NE", "NW", "SE", "SW" are acceptable'
+//   '-E-N', '-E+N', '+E-N', '+E+N','-N-W', '-N+W',
+//   '+N-W', '+N+W','-W-S', '-W+S', '+W-S', '+W+S',
+//   '-S-E', '-S+E', '+S-E', '+S+E' are acceptable'
 //   required: false
 //   type: string
-//   default: "NE"
+//   default: "+N+E"
 // - name: Template
 //   in: query
 //   description: 'Room template'
@@ -353,6 +364,8 @@ var DeleteRoom = func(w http.ResponseWriter, r *http.Request) {
 // responses:
 //     '200':
 //         description: Updated
+//     '404':
+//         description: Not Found
 //     '400':
 //         description: Bad request
 

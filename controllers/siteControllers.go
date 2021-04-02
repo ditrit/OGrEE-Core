@@ -466,6 +466,8 @@ var DeleteSites = func(w http.ResponseWriter, r *http.Request) {
 //         description: Updated
 //     '404':
 //         description: Not Found
+//     '400':
+//         description: Bad request
 
 var UpdateSite = func(w http.ResponseWriter, r *http.Request) {
 

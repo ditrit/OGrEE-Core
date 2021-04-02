@@ -76,7 +76,7 @@
           "200": {
             "description": "Found"
           },
-          "400": {
+          "404": {
             "description": "Not Found"
           }
         }
@@ -199,8 +199,7 @@
             "default": "3",
             "description": "Number of floors",
             "name": "Floors",
-            "in": "query",
-            "required": true
+            "in": "query"
           }
         ]
       }
@@ -229,7 +228,7 @@
           "200": {
             "description": "Found"
           },
-          "400": {
+          "404": {
             "description": "Not Found"
           }
         }
@@ -371,7 +370,7 @@
           "204": {
             "description": "Successful"
           },
-          "400": {
+          "404": {
             "description": "Not found"
           }
         }
@@ -1438,7 +1437,7 @@
           "200": {
             "description": "Found"
           },
-          "400": {
+          "404": {
             "description": "Bad request"
           }
         }
@@ -1490,8 +1489,7 @@
             ],
             "description": "Description of Site",
             "name": "Description",
-            "in": "query",
-            "required": true
+            "in": "query"
           },
           {
             "type": "string",
@@ -1506,21 +1504,24 @@
             "default": "Silver",
             "description": "Usable Color of Site (useful for 3D rendering)",
             "name": "UsableColor",
-            "in": "query"
+            "in": "query",
+            "required": true
           },
           {
             "type": "string",
             "default": "Silver",
             "description": "Reserved Color of Site (useful for 3D rendering)",
             "name": "ReservedColor",
-            "in": "query"
+            "in": "query",
+            "required": true
           },
           {
             "type": "string",
             "default": "Silver",
             "description": "Color of Site (useful for 3D rendering)",
             "name": "TechnicalColor",
-            "in": "query"
+            "in": "query",
+            "required": true
           },
           {
             "type": "string",
@@ -1559,7 +1560,7 @@
           }
         ],
         "responses": {
-          "200": {
+          "201": {
             "description": "Created"
           },
           "400": {
@@ -1621,7 +1622,7 @@
           "200": {
             "description": "Found"
           },
-          "400": {
+          "404": {
             "description": "Not Found"
           }
         }
@@ -1760,7 +1761,7 @@
           "204": {
             "description": "Successful"
           },
-          "400": {
+          "404": {
             "description": "Not Found"
           }
         }
@@ -1775,8 +1776,11 @@
         "summary": "Obtain all tenants in the system.",
         "operationId": "GetAllTenants",
         "responses": {
-          "204": {
-            "description": ""
+          "200": {
+            "description": "Found"
+          },
+          "404": {
+            "description": "Nothing Found"
           }
         }
       },
@@ -1835,28 +1839,25 @@
             "default": "Website",
             "description": "The main method of contact for Tenant",
             "name": "MainContact",
-            "in": "query",
-            "required": true
+            "in": "query"
           },
           {
             "type": "string",
             "default": "000",
             "description": "Main Phone",
             "name": "MainPhone",
-            "in": "query",
-            "required": true
+            "in": "query"
           },
           {
             "type": "string",
             "default": "nissan@nissan.com",
             "description": "Main Email Address of Tenant",
             "name": "MainEmail",
-            "in": "query",
-            "required": true
+            "in": "query"
           }
         ],
         "responses": {
-          "200": {
+          "201": {
             "description": "Created"
           },
           "400": {
@@ -1892,6 +1893,9 @@
           },
           "400": {
             "description": "Bad request"
+          },
+          "404": {
+            "description": "Not Found"
           }
         }
       },
@@ -1909,7 +1913,7 @@
           {
             "type": "int",
             "default": 999,
-            "description": "ID of desired site",
+            "description": "ID of desired tenant",
             "name": "ID",
             "in": "path",
             "required": true
@@ -1976,6 +1980,9 @@
           },
           "400": {
             "description": "Bad request"
+          },
+          "404": {
+            "description": "Not Found"
           }
         }
       },

@@ -353,6 +353,8 @@ var DeleteBuilding = func(w http.ResponseWriter, r *http.Request) {
 //         description: Updated
 //     '404':
 //         description: Not Found
+//     '400':
+//         description: Bad request
 //Updates work by passing ID in path parameter
 var UpdateBuilding = func(w http.ResponseWriter, r *http.Request) {
 
