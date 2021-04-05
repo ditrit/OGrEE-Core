@@ -48,7 +48,7 @@ import (
 //   in: query
 //   description: 'Indicates the location. Only values of
 //   (-|+)E(-|+)N, (-|+)N(-|+)W,
-//   (-|+)W(-|+)S, (-|+)S(-|+)E,
+//   (-|+)W(-|+)S, (-|+)S(-|+)E
 //   are acceptable'
 //   required: true
 //   type: string
@@ -298,7 +298,7 @@ var DeleteRoom = func(w http.ResponseWriter, r *http.Request) {
 //   in: query
 //   description: 'Indicates the location. Only values of
 //   (-|+)E(-|+)N, (-|+)N(-|+)W,
-//   (-|+)W(-|+)S, (-|+)S(-|+)E,
+//   (-|+)W(-|+)S, (-|+)S(-|+)E
 //   are acceptable'
 //   required: false
 //   type: string
