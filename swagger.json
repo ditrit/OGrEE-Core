@@ -1192,7 +1192,7 @@
           {
             "type": "string",
             "default": "NE",
-            "description": "Indicates the location. Only values of (-|+)E(-|+)N, (-|+)N(-|+)W, (-|+)W(-|+)S, (-|+)S(-|+)E, are acceptable",
+            "description": "Indicates the location. Only values of (-|+)E(-|+)N, (-|+)N(-|+)W, (-|+)W(-|+)S, (-|+)S(-|+)E are acceptable",
             "name": "Orientation",
             "in": "query",
             "required": true
@@ -1345,7 +1345,7 @@
           {
             "type": "string",
             "default": "+N+E",
-            "description": "Indicates the location. Only values of (-|+)E(-|+)N, (-|+)N(-|+)W, (-|+)W(-|+)S, (-|+)S(-|+)E, are acceptable",
+            "description": "Indicates the location. Only values of (-|+)E(-|+)N, (-|+)N(-|+)W, (-|+)W(-|+)S, (-|+)S(-|+)E are acceptable",
             "name": "Orientation",
             "in": "query"
           },
