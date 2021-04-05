@@ -377,6 +377,34 @@
       }
     },
     "/api/user/devices": {
+      "get": {
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "devices"
+        ],
+        "summary": "Gets all Devices from the system.",
+        "operationId": "GetAllDevices",
+        "parameters": [
+          {
+            "type": "int",
+            "default": 999,
+            "description": "ID of desired device",
+            "name": "ID",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Found"
+          },
+          "404": {
+            "description": "Nothing Found"
+          }
+        }
+      },
       "post": {
         "produces": [
           "application/json"
@@ -420,6 +448,13 @@
             "required": true
           },
           {
+            "type": "int",
+            "default": 999,
+            "description": "Parent of Device refers to Rack ID",
+            "name": "ParentID",
+            "required": true
+          },
+          {
             "type": "string",
             "default": "front",
             "description": "Indicates the location. Only values of \"front\", \"rear\", \"frontflipped\", \"rearflipped\" are acceptable",
@@ -432,7 +467,8 @@
             "default": "Some Template",
             "description": "Device template",
             "name": "Template",
-            "in": "query"
+            "in": "query",
+            "required": true
           },
           {
             "type": "string",
@@ -531,33 +567,21 @@
     },
     "/api/user/devices/{id}": {
       "get": {
-        "description": "The ID must be provided in the URL parameter.",
         "produces": [
           "application/json"
         ],
         "tags": [
           "devices"
         ],
-        "summary": "Gets a Device from the system.",
+        "summary": "Gets Device using Device ID.",
         "operationId": "GetDevice",
         "parameters": [
           {
-            "type": "int",
-            "default": 999,
-            "description": "ID of desired device",
+            "description": "ID of Device",
             "name": "ID",
-            "in": "path",
-            "required": true
+            "in": "path"
           }
-        ],
-        "responses": {
-          "200": {
-            "description": "Found"
-          },
-          "400": {
-            "description": "Bad request"
-          }
-        }
+        ]
       },
       "put": {
         "description": "If no new or any information is provided\nan OK will still be returned",
@@ -717,7 +741,7 @@
           "204": {
             "description": "Successful"
           },
-          "400": {
+          "404": {
             "description": "Not found"
           }
         }
@@ -766,6 +790,13 @@
           },
           {
             "type": "string",
+            "default": "999",
+            "description": "ParentID of Rack refers to Room",
+            "name": "ParentID",
+            "required": true
+          },
+          {
+            "type": "string",
             "default": "front",
             "description": "Indicates the location. Only values of \"front\", \"rear\", \"left\", \"right\" are acceptable",
             "name": "Orientation",
@@ -777,8 +808,7 @@
             "default": "Some Template",
             "description": "Room template",
             "name": "Template",
-            "in": "query",
-            "required": true
+            "in": "query"
           },
           {
             "type": "string",
@@ -801,16 +831,14 @@
             "default": "10",
             "description": "Indicates the position in the Z axis",
             "name": "PosZ",
-            "in": "query",
-            "required": true
+            "in": "query"
           },
           {
             "type": "string",
             "default": "m",
             "description": "Indicates the unit of the Z coordinate position. Only values of \"mm\", \"cm\", \"m\", \"U\", \"OU\", \"tile\" are acceptable",
             "name": "PosZU",
-            "in": "query",
-            "required": true
+            "in": "query"
           },
           {
             "type": "string",
@@ -886,10 +914,10 @@
         "summary": "Gets All Racks in the system.",
         "operationId": "GetRack",
         "responses": {
-          "204": {
+          "200": {
             "description": "Successful"
           },
-          "400": {
+          "404": {
             "description": "Not found"
           }
         }
@@ -916,10 +944,10 @@
           }
         ],
         "responses": {
-          "204": {
+          "200": {
             "description": "Successful"
           },
-          "400": {
+          "404": {
             "description": "Not found"
           }
         }
@@ -969,11 +997,6 @@
             "default": "Some Template",
             "description": "Room template",
             "name": "Template",
-            "in": "query",
-            "required": true
-          },
-          {
-            "name": "Orientation",
             "in": "query"
           },
           {
@@ -981,8 +1004,7 @@
             "default": "front",
             "description": "Indicates the location. Only values of \"front\", \"rear\", \"left\", \"right\" are acceptable",
             "name": "Orientation",
-            "in": "query",
-            "required": true
+            "in": "query"
           },
           {
             "type": "string",
@@ -1093,7 +1115,7 @@
           "204": {
             "description": "Successful"
           },
-          "400": {
+          "404": {
             "description": "Not found"
           }
         }
@@ -1113,7 +1135,7 @@
           "200": {
             "description": "Found"
           },
-          "400": {
+          "404": {
             "description": "Not Found"
           }
         }
@@ -1162,8 +1184,15 @@
           },
           {
             "type": "string",
+            "default": "999",
+            "description": "ParentID of Room refers to Building",
+            "name": "ParentID",
+            "required": true
+          },
+          {
+            "type": "string",
             "default": "NE",
-            "description": "Indicates the location. Only values of \"NE\", \"NW\", \"SE\", \"SW\" are acceptable",
+            "description": "Indicates the location. Only values of (-|+)E(-|+)N, (-|+)N(-|+)W, (-|+)W(-|+)S, (-|+)S(-|+)E, are acceptable",
             "name": "Orientation",
             "in": "query",
             "required": true
@@ -1173,8 +1202,7 @@
             "default": "Some Template",
             "description": "Room template",
             "name": "Template",
-            "in": "query",
-            "required": true
+            "in": "query"
           },
           {
             "type": "string",
@@ -1267,7 +1295,7 @@
           "200": {
             "description": "Found"
           },
-          "400": {
+          "404": {
             "description": "Not Found"
           }
         }
@@ -1316,8 +1344,8 @@
           },
           {
             "type": "string",
-            "default": "NE",
-            "description": "Indicates the location. Only values of \"NE\", \"NW\", \"SE\", \"SW\" are acceptable",
+            "default": "+N+E",
+            "description": "Indicates the location. Only values of (-|+)E(-|+)N, (-|+)N(-|+)W, (-|+)W(-|+)S, (-|+)S(-|+)E, are acceptable",
             "name": "Orientation",
             "in": "query"
           },
@@ -1391,6 +1419,9 @@
           },
           "400": {
             "description": "Bad request"
+          },
+          "404": {
+            "description": "Not Found"
           }
         }
       },
@@ -1417,7 +1448,7 @@
           "204": {
             "description": "Successful"
           },
-          "400": {
+          "404": {
             "description": "Not found"
           }
         }

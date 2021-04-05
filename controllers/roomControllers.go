@@ -47,9 +47,9 @@ import (
 // - name: Orientation
 //   in: query
 //   description: 'Indicates the location. Only values of
-//   '-E-N', '-E+N', '+E-N', '+E+N','-N-W', '-N+W',
-//   '+N-W', '+N+W','-W-S', '-W+S', '+W-S', '+W+S',
-//   '-S-E', '-S+E', '+S-E', '+S+E' are acceptable'
+//   (-|+)E(-|+)N, (-|+)N(-|+)W,
+//   (-|+)W(-|+)S, (-|+)S(-|+)E,
+//   are acceptable'
 //   required: true
 //   type: string
 //   default: "NE"
@@ -297,9 +297,9 @@ var DeleteRoom = func(w http.ResponseWriter, r *http.Request) {
 // - name: Orientation
 //   in: query
 //   description: 'Indicates the location. Only values of
-//   '-E-N', '-E+N', '+E-N', '+E+N','-N-W', '-N+W',
-//   '+N-W', '+N+W','-W-S', '-W+S', '+W-S', '+W+S',
-//   '-S-E', '-S+E', '+S-E', '+S+E' are acceptable'
+//   (-|+)E(-|+)N, (-|+)N(-|+)W,
+//   (-|+)W(-|+)S, (-|+)S(-|+)E,
+//   are acceptable'
 //   required: false
 //   type: string
 //   default: "+N+E"
