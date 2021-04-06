@@ -73,10 +73,20 @@ var CreateTenant = func(w http.ResponseWriter, r *http.Request) {
 	tenant := &models.Tenant{}
 
 	err := json.NewDecoder(r.Body).Decode(tenant)
+
+	//Copy Request if you want to reuse the JSON
+	//For Error logging
+	//bt, _ := httputil.DumpRequest(r, true)
+	//println(string(bt))
+	//q := io.TeeReader(r.Body, bytes.Buffer)
+
+	//q := r.Body
+	//s, _ := ioutil.ReadAll(q)
+	//println(string(s))
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		u.Respond(w, u.Message(false, "Error while decoding request body"))
-		u.ErrLog("Error while decoding request body", "CREATE TENANT", "")
+		u.ErrLog("Error while decoding request body", "CREATE TENANT", "", r)
 
 		return
 	}

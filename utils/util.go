@@ -19,15 +19,17 @@ func Respond(w http.ResponseWriter, data map[string]interface{}) {
 	json.NewEncoder(w).Encode(data)
 }
 
-func ErrLog(message, funcname, details string) {
+func ErrLog(message, funcname, details string, r *http.Request) {
 	f, err := os.OpenFile("resources/debug.log",
 		os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
 	if err != nil {
 		log.Fatalf("error opening file: %v", err)
 	}
 	defer f.Close()
+	ip := r.RemoteAddr
 
 	log.SetOutput(f)
 	log.Println(message + " FOR FUNCTION: " + funcname)
+	log.Println("FROM IP: " + ip)
 	log.Println(details)
 }
