@@ -114,8 +114,9 @@ var CreateBuilding = func(w http.ResponseWriter, r *http.Request) {
 	bldg := &models.Building{}
 	err := json.NewDecoder(r.Body).Decode(bldg)
 	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
 		u.Respond(w, u.Message(false, "Error while decoding request body"))
-		u.ErrLog("Error while decoding request body", "CREATE BUILDING", "" , r )
+		u.ErrLog("Error while decoding request body", "CREATE BUILDING", "", r)
 		return
 	}
 
@@ -123,9 +124,9 @@ var CreateBuilding = func(w http.ResponseWriter, r *http.Request) {
 	switch e {
 	case "validate":
 		w.WriteHeader(http.StatusBadRequest)
-		u.ErrLog("Error while creating building", "CREATE BUILDING", e , r )
+		u.ErrLog("Error while creating building", "CREATE BUILDING", e, r)
 	case "internal":
-		u.ErrLog("Error while creating building", "CREATE BUILDING", e , r )
+		u.ErrLog("Error while creating building", "CREATE BUILDING", e, r)
 	default:
 		w.WriteHeader(http.StatusCreated)
 	}
@@ -158,13 +159,13 @@ var GetBuilding = func(w http.ResponseWriter, r *http.Request) {
 
 	if e != nil {
 		u.Respond(w, u.Message(false, "Error while parsing path parameters"))
-		u.ErrLog("Error while parsing path parameters", "GET BUILDING", "" , r )
+		u.ErrLog("Error while parsing path parameters", "GET BUILDING", "", r)
 	}
 
 	data, e1 := models.GetBuilding(uint(id))
 	if data == nil {
 		resp = u.Message(false, "Error while getting Building: "+e1)
-		u.ErrLog("Error while getting building", "GET BUILDING", e1 , r )
+		u.ErrLog("Error while getting building", "GET BUILDING", e1, r)
 
 		switch e1 {
 		case "record not found":
@@ -199,7 +200,7 @@ var GetAllBuildings = func(w http.ResponseWriter, r *http.Request) {
 	data, e := models.GetAllBuildings()
 	if len(data) == 0 {
 		resp = u.Message(false, "Error while getting Building: "+e)
-		u.ErrLog("Error while getting building", "GET ALL BUILDINGS", e , r )
+		u.ErrLog("Error while getting building", "GET ALL BUILDINGS", e, r)
 
 		switch e {
 		case "":
@@ -237,14 +238,14 @@ var DeleteBuilding = func(w http.ResponseWriter, r *http.Request) {
 
 	if e != nil {
 		u.Respond(w, u.Message(false, "Error while parsing path parameters"))
-		u.ErrLog("Error while parsing path parameters", "DELETE BUILDING", "" , r )
+		u.ErrLog("Error while parsing path parameters", "DELETE BUILDING", "", r)
 	}
 
 	v := models.DeleteBuilding(uint(id))
 
 	if v["status"] == false {
 		w.WriteHeader(http.StatusNotFound)
-		u.ErrLog("Error while deleting building", "DELETE BUILDING", "Not Found" , r )
+		u.ErrLog("Error while deleting building", "DELETE BUILDING", "Not Found", r)
 	} else {
 		w.WriteHeader(http.StatusNoContent)
 	}
@@ -363,13 +364,13 @@ var UpdateBuilding = func(w http.ResponseWriter, r *http.Request) {
 
 	if e != nil {
 		u.Respond(w, u.Message(false, "Error while parsing path parameters"))
-		u.ErrLog("Error while parsing path parameters", "UPDATE BUILDING", "" , r )
+		u.ErrLog("Error while parsing path parameters", "UPDATE BUILDING", "", r)
 	}
 
 	err := json.NewDecoder(r.Body).Decode(bldg)
 	if err != nil {
 		u.Respond(w, u.Message(false, "Error while decoding request body"))
-		u.ErrLog("Error while decoding request body", "UPDATE BUILDING", "" , r )
+		u.ErrLog("Error while decoding request body", "UPDATE BUILDING", "", r)
 	}
 
 	v, e1 := models.UpdateBuilding(uint(id), bldg)
@@ -377,13 +378,13 @@ var UpdateBuilding = func(w http.ResponseWriter, r *http.Request) {
 	switch e1 {
 	case "validate":
 		w.WriteHeader(http.StatusBadRequest)
-		u.ErrLog("Error while updating building", "UPDATE BUILDING", e1 , r )
+		u.ErrLog("Error while updating building", "UPDATE BUILDING", e1, r)
 	case "internal":
 		w.WriteHeader(http.StatusInternalServerError)
-		u.ErrLog("Error while updating building", "UPDATE BUILDING", e1 , r )
+		u.ErrLog("Error while updating building", "UPDATE BUILDING", e1, r)
 	case "record not found":
 		w.WriteHeader(http.StatusNotFound)
-		u.ErrLog("Error while updating building", "UPDATE BUILDING", e1 , r )
+		u.ErrLog("Error while updating building", "UPDATE BUILDING", e1, r)
 	default:
 
 	}
