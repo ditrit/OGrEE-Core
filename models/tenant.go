@@ -3,6 +3,7 @@ package models
 import (
 	"fmt"
 	u "p3/utils"
+	"strconv"
 	"strings"
 )
 
@@ -16,7 +17,8 @@ type Tenant_Attributes struct {
 
 type Tenant struct {
 	//gorm.Model
-	ID              int               `json:"id" gorm:"column:id"`
+	ID              int               `json:"-" gorm:"column:id"`
+	IDJSON          string            `json:"id" gorm:"-"`
 	Name            string            `json:"name" gorm:"column:tenant_name"`
 	Category        string            `json:"category" gorm:"-"`
 	Domain          string            `json:"domain" gorm:"column:tenant_domain"`
@@ -63,7 +65,9 @@ func (tenant *Tenant) Create() (map[string]interface{}, string) {
 
 	/*GetDB().Exec(`UPDATE tenant SET tenant_description = ?
 	WHERE tenant.id = ?`, pq.Array(tenant.Description), tenant.ID)*/
-
+	//tenant.ID, _ = strconv.Atoi(tenant.IDJSON)
+	tenant.IDJSON = strconv.Itoa(tenant.ID)
+	println("Tenant id is: ", tenant.ID)
 	tenant.Attributes.ID = tenant.ID
 
 	if e := GetDB().Table("tenant_attributes").Create(&tenant.Attributes).Error; e != nil {
@@ -89,6 +93,7 @@ func GetTenant(id uint) (*Tenant, string) {
 	}
 
 	tenant.DescriptionJSON = strings.Split(tenant.DescriptionDB, "XYZ")
+	tenant.IDJSON = strconv.Itoa(tenant.ID)
 	tenant.Category = "tenant"
 	return tenant, ""
 }
@@ -112,6 +117,7 @@ func GetAllTenants() ([]*Tenant, string) {
 		tenants[i].Category = "tenant"
 		tenants[i].Attributes = *(attrs[i])
 		tenants[i].DescriptionJSON = strings.Split(tenants[i].DescriptionDB, "XYZ")
+		tenants[i].IDJSON = strconv.Itoa(tenants[i].ID)
 	}
 	return tenants, ""
 }
