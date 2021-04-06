@@ -71,7 +71,6 @@ import (
 
 var CreateTenant = func(w http.ResponseWriter, r *http.Request) {
 	tenant := &models.Tenant{}
-
 	err := json.NewDecoder(r.Body).Decode(tenant)
 
 	//Copy Request if you want to reuse the JSON
@@ -96,13 +95,13 @@ var CreateTenant = func(w http.ResponseWriter, r *http.Request) {
 	switch e {
 	case "validate":
 		w.WriteHeader(http.StatusBadRequest)
-		u.ErrLog("Error while creating tenant", "CREATE TENANT", e)
+		u.ErrLog("Error while creating tenant", "CREATE TENANT", e, r)
 	case "":
 		w.WriteHeader(http.StatusCreated)
-		u.ErrLog("Error while creating tenant", "CREATE TENANT", e)
+		u.ErrLog("Error while creating tenant", "CREATE TENANT", e, r)
 	default:
 		w.WriteHeader(http.StatusInternalServerError)
-		u.ErrLog("Error while creating tenant", "CREATE TENANT", e)
+		u.ErrLog("Error while creating tenant", "CREATE TENANT", e, r)
 	}
 
 	u.Respond(w, resp)
@@ -135,7 +134,7 @@ var GetTenantFor = func(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		u.Respond(w, u.Message(false, "Error while extracting from path parameters"))
-		u.ErrLog("Error while extracting from path parameters", "GET TENANT", "")
+		u.ErrLog("Error while extracting from path parameters", "GET TENANT", "", r)
 
 	}
 
@@ -143,7 +142,7 @@ var GetTenantFor = func(w http.ResponseWriter, r *http.Request) {
 
 	if e != "" {
 		resp = u.Message(false, "Error: "+e)
-		u.ErrLog("Error while getting tenant", "GET TENANT", e)
+		u.ErrLog("Error while getting tenant", "GET TENANT", e, r)
 
 		switch e {
 		case "record not found":
@@ -175,7 +174,7 @@ var GetAllTenants = func(w http.ResponseWriter, r *http.Request) {
 
 	if len(data) == 0 {
 		resp = u.Message(false, "Error: "+e)
-		u.ErrLog("Error while getting tenants", "GET ALL TENANTS", e)
+		u.ErrLog("Error while getting tenants", "GET ALL TENANTS", e, r)
 
 		switch e {
 		case "validate":
@@ -269,7 +268,7 @@ var UpdateTenant = func(w http.ResponseWriter, r *http.Request) {
 	if e != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		u.Respond(w, u.Message(false, "Error while extracting from path parameters"))
-		u.ErrLog("Error while extracting from path parameters", "UPDATE TENANT", "")
+		u.ErrLog("Error while extracting from path parameters", "UPDATE TENANT", "", r)
 	}
 	tenant := &models.Tenant{}
 
@@ -277,7 +276,7 @@ var UpdateTenant = func(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		u.Respond(w, u.Message(false, "Error while decoding request body"))
-		u.ErrLog("Error while decoding request body", "UPDATE TENANT", "")
+		u.ErrLog("Error while decoding request body", "UPDATE TENANT", "", r)
 	}
 
 	v, e1 := models.UpdateTenant(uint(id), tenant)
@@ -286,13 +285,13 @@ var UpdateTenant = func(w http.ResponseWriter, r *http.Request) {
 
 	case "validate":
 		w.WriteHeader(http.StatusBadRequest)
-		u.ErrLog("Error while updating tenant", "UPDATE TENANT", e1)
+		u.ErrLog("Error while updating tenant", "UPDATE TENANT", e1, r)
 	case "internal":
 		w.WriteHeader(http.StatusInternalServerError)
-		u.ErrLog("Error while updating tenant", "UPDATE TENANT", e1)
+		u.ErrLog("Error while updating tenant", "UPDATE TENANT", e1, r)
 	case "record not found":
 		w.WriteHeader(http.StatusNotFound)
-		u.ErrLog("Error while updating tenant", "UPDATE TENANT", e1)
+		u.ErrLog("Error while updating tenant", "UPDATE TENANT", e1, r)
 	default:
 	}
 
@@ -329,13 +328,13 @@ var DeleteTenant = func(w http.ResponseWriter, r *http.Request) {
 	id, e := strconv.Atoi(mux.Vars(r)["id"])
 	if e != nil {
 		u.Respond(w, u.Message(false, "Error while extracting from path parameters"))
-		u.ErrLog("Error while extracting from path parameters", "DELETE TENANT", "")
+		u.ErrLog("Error while extracting from path parameters", "DELETE TENANT", "", r)
 	}
 
 	v := models.DeleteTenant(uint(id))
 	if v["status"] == false {
 		w.WriteHeader(http.StatusNotFound)
-		u.ErrLog("Not Found", "DELETE TENANT", "")
+		u.ErrLog("Not Found", "DELETE TENANT", "", r)
 
 	} else {
 		w.WriteHeader(http.StatusNoContent)
