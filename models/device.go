@@ -60,10 +60,6 @@ func (device *Device) Validate() (map[string]interface{}, bool) {
 		return u.Message(false, "Domain should be correspond to Rack ID"), false
 	}
 
-	if device.Attributes.Template == "" {
-		return u.Message(false, "Template should be on the payload"), false
-	}
-
 	switch device.Attributes.Orientation {
 	case "front", "rear", "frontflipped", "rearflipped":
 	case "":
