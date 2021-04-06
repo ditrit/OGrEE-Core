@@ -6,4 +6,4 @@ main
 ogreedb/
 .env
 *.txt
-resources/*.log
+resources/debug.log
