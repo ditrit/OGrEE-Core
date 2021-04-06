@@ -60,22 +60,6 @@ func (device *Device) Validate() (map[string]interface{}, bool) {
 		return u.Message(false, "Domain should be correspond to Rack ID"), false
 	}
 
-	if device.Attributes.PosXY == "" {
-		return u.Message(false, "XY coordinates should be on payload"), false
-	}
-
-	if device.Attributes.PosXYU == "" {
-		return u.Message(false, "PositionXYU string should be on the payload"), false
-	}
-
-	if device.Attributes.PosZ == "" {
-		return u.Message(false, "Z coordinates should be on payload"), false
-	}
-
-	if device.Attributes.PosZU == "" {
-		return u.Message(false, "PositionZU string should be on the payload"), false
-	}
-
 	if device.Attributes.Template == "" {
 		return u.Message(false, "Template should be on the payload"), false
 	}
