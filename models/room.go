@@ -19,8 +19,8 @@ type Room_Attributes struct {
 	SizeU       string `json:"sizeUnit" gorm:"column:room_size_unit"`
 	Height      string `json:"height" gorm:"column:room_height"`
 	HeightU     string `json:"heightUnit" gorm:"column:room_height_unit"`
-	Technical   string `json:"technical" gorm:"column:technical"`
-	Reserved    string `json:"reserved" gorm:"column:reserved"`
+	Technical   string `json:"technical" gorm:"column:room_technical"`
+	Reserved    string `json:"reserved" gorm:"column:room_reserved"`
 }
 
 type Room struct {
