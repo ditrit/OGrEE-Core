@@ -6,6 +6,7 @@ import (
 	"p3/models"
 	u "p3/utils"
 	"strconv"
+	"strings"
 
 	"github.com/gorilla/mux"
 )
@@ -342,6 +343,35 @@ var DeleteTenant = func(w http.ResponseWriter, r *http.Request) {
 	u.Respond(w, v)
 }
 
-var NameQueryTenant = func(w http.ResponseWriter, r *http.Request) {
+var GetTenantByName = func(w http.ResponseWriter, r *http.Request) {
+	var resp map[string]interface{}
+	names := strings.Split(r.URL.String(), "=")
+
+	if names[1] == "" {
+		w.WriteHeader(http.StatusBadRequest)
+		u.Respond(w, u.Message(false, "Error while extracting from path parameters"))
+		u.ErrLog("Error while extracting from path parameters", "GET TENANT BY NAME",
+			"", r)
+		return
+	}
+
+	data, e := models.GetTenantByName(names[1])
+
+	if e != "" {
+		resp = u.Message(false, "Error: "+e)
+		u.ErrLog("Error while getting tenant", "GET TENANT", e, r)
+
+		switch e {
+		case "record not found":
+			w.WriteHeader(http.StatusNotFound)
+		default:
+		}
+
+	} else {
+		resp = u.Message(true, "success")
+	}
+
+	resp["data"] = data
+	u.Respond(w, resp)
 
 }

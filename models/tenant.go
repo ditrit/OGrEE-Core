@@ -191,3 +191,19 @@ func DeleteTenant(id uint) map[string]interface{} {
 
 	return u.Message(true, "success")
 }
+
+func GetTenantByName(name string) (*Tenant, string) {
+	tenant := &Tenant{}
+
+	e := GetDB().Raw(`SELECT * FROM tenant JOIN tenant_attributes ON 
+	tenant.id = tenant_attributes.id WHERE tenant_name = ?;`, name).Error
+
+	if e != nil {
+		//fmt.Println(e)
+		return nil, e.Error()
+	}
+
+	tenant.DescriptionJSON = strings.Split(tenant.DescriptionDB, "XYZ")
+	tenant.Category = "tenant"
+	return tenant, ""
+}

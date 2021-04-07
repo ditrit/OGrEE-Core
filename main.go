@@ -15,6 +15,9 @@ import (
 var tmatch mux.MatcherFunc = func(request *http.Request, match *mux.RouteMatch) bool {
 
 	//fmt.Println("The URL is: ", request.URL.String())
+	//https://benhoyt.com/writings/go-routing/#regex-table
+	//https://stackoverflow.com/questions/21664489/
+	//golang-mux-routing-wildcard-custom-func-match
 
 	return regexp.MustCompile(`^(\/api\/user\/tenants\?name=.+)$`).
 		MatchString(request.URL.String())
@@ -32,7 +35,7 @@ func main() {
 
 	// ------ TENANTS CRUD ------ //
 	router.HandleFunc("/api/user/tenants",
-		controllers.GetTenantFor).Methods("GET").MatcherFunc(tmatch)
+		controllers.GetTenantByName).Methods("GET").MatcherFunc(tmatch)
 
 	router.HandleFunc("/api/user/tenants",
 		controllers.GetAllTenants).Methods("GET")
