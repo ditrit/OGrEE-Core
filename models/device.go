@@ -27,7 +27,7 @@ type Device_Attributes struct {
 
 type Device struct {
 	//gorm.Model
-	ID              int               `json:"id" gorm:"column:id"`
+	ID              int               `json:"-" gorm:"column:id"`
 	IDJSON          string            `json:"id" gorm:"-"`
 	Name            string            `json:"name" gorm:"column:device_name"`
 	ParentID        string            `json:"parentId" gorm:"column:device_parent_id"`
