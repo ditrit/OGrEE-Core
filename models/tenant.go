@@ -162,7 +162,7 @@ func UpdateTenant(id uint, t *Tenant) (map[string]interface{}, string) {
 	}
 
 	if t.Attributes.MainContact != "" && t.Attributes.MainContact != tenant.Attributes.MainContact {
-		tenant.Attributes.Color = t.Attributes.Color
+		tenant.Attributes.MainContact = t.Attributes.MainContact
 	}
 
 	if t.Attributes.MainEmail != "" && t.Attributes.MainEmail != tenant.Attributes.MainEmail {
