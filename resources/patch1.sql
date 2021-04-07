@@ -38,3 +38,6 @@ ALTER TABLE account ADD column updated_at timestamp with time zone;
 
 CREATE INDEX idx_account_deleted_at ON "account"(deleted_at);
 
+
+ALTER TABLE room ADD column technical text;
+ALTER TABLE room ADD column reserved text;

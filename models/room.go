@@ -19,6 +19,8 @@ type Room_Attributes struct {
 	SizeU       string `json:"sizeUnit" gorm:"column:room_size_unit"`
 	Height      string `json:"height" gorm:"column:room_height"`
 	HeightU     string `json:"heightUnit" gorm:"column:room_height_unit"`
+	Technical   string `json:"technical" gorm:"column:technical"`
+	Reserved    string `json:"reserved" gorm:"column:reserved"`
 }
 
 type Room struct {
@@ -252,6 +254,14 @@ func UpdateRoom(id uint, newRoomInfo *Room) (map[string]interface{}, string) {
 
 	if newRoomInfo.Attributes.HeightU != "" && newRoomInfo.Attributes.HeightU != room.Attributes.HeightU {
 		room.Attributes.HeightU = newRoomInfo.Attributes.HeightU
+	}
+
+	if newRoomInfo.Attributes.Technical != "" && newRoomInfo.Attributes.Technical != room.Attributes.Technical {
+		room.Attributes.Technical = newRoomInfo.Attributes.Technical
+	}
+
+	if newRoomInfo.Attributes.Reserved != "" && newRoomInfo.Attributes.Reserved != room.Attributes.Reserved {
+		room.Attributes.Reserved = newRoomInfo.Attributes.Reserved
 	}
 
 	if e1 := GetDB().Table("room").Save(room).
