@@ -3,6 +3,7 @@ package models
 import (
 	"fmt"
 	u "p3/utils"
+	"strconv"
 	"strings"
 )
 
@@ -26,7 +27,8 @@ type Rack_Attributes struct {
 
 type Rack struct {
 	//gorm.Model
-	ID              int             `json:"id" gorm:"column:id"`
+	ID              int             `json:"-" gorm:"column:id"`
+	IDJSON          string          `json:"id" gorm:"-"`
 	Name            string          `json:"name" gorm:"column:rack_name"`
 	ParentID        string          `json:"parentId" gorm:"column:rack_parent_id"`
 	Category        string          `json:"category" gorm:"-"`
@@ -108,6 +110,7 @@ func (rack *Rack) Create() (map[string]interface{}, string) {
 		return u.Message(false, "Internal Error while creating Rack: "+e.Error()),
 			"internal"
 	}
+	rack.IDJSON = strconv.Itoa(rack.ID)
 	rack.Attributes.ID = rack.ID
 	if e := GetDB().Create(&(rack.Attributes)).Error; e != nil {
 		return u.Message(false, "Internal Error while creating Rack Attrs: "+e.Error()),
@@ -131,6 +134,7 @@ func GetRack(id uint) (*Rack, string) {
 
 	rack.DescriptionJSON = strings.Split(rack.DescriptionDB, "XYZ")
 	rack.Category = "rack"
+	rack.IDJSON = strconv.Itoa(rack.ID)
 	return rack, ""
 }
 
@@ -161,6 +165,7 @@ func GetAllRacks() ([]*Rack, string) {
 		racks[i].Category = "rack"
 		racks[i].Attributes = *(attrs[i])
 		racks[i].DescriptionJSON = strings.Split(racks[i].DescriptionDB, "XYZ")
+		racks[i].IDJSON = strconv.Itoa(racks[i].ID)
 	}
 
 	return racks, ""

@@ -3,6 +3,7 @@ package models
 import (
 	"fmt"
 	u "p3/utils"
+	"strconv"
 	"strings"
 )
 
@@ -22,7 +23,8 @@ type Room_Attributes struct {
 
 type Room struct {
 	//gorm.Model
-	ID              int             `json:"id" gorm:"column:id"`
+	ID              int             `json:"-" gorm:"column:id"`
+	IDJSON          string          `json:"id" gorm:"-"`
 	Name            string          `json:"name" gorm:"column:room_name"`
 	ParentID        string          `json:"parentId" gorm:"column:room_parent_id"`
 	Category        string          `json:"category" gorm:"-"`
@@ -118,6 +120,7 @@ func (room *Room) Create() (map[string]interface{}, string) {
 		return u.Message(false, "Internal Error while creating Room: "+e.Error()),
 			e.Error()
 	}
+	room.IDJSON = strconv.Itoa(room.ID)
 	room.Attributes.ID = room.ID
 	if e := GetDB().Create(&(room.Attributes)).Error; e != nil {
 		return u.Message(false, "Internal Error while creating Room Attrs: "+e.Error()),
@@ -141,6 +144,7 @@ func GetRoom(id uint) (*Room, string) {
 
 	room.DescriptionJSON = strings.Split(room.DescriptionDB, "XYZ")
 	room.Category = "room"
+	room.IDJSON = strconv.Itoa(room.ID)
 	return room, ""
 }
 
@@ -171,6 +175,7 @@ func GetAllRooms() ([]*Room, string) {
 		rooms[i].Category = "room"
 		rooms[i].Attributes = *(attrs[i])
 		rooms[i].DescriptionJSON = strings.Split(rooms[i].DescriptionDB, "XYZ")
+		rooms[i].IDJSON = strconv.Itoa(rooms[i].ID)
 	}
 
 	return rooms, ""
