@@ -7,9 +7,18 @@ import (
 
 	"net/http"
 	"os"
+	"regexp"
 
 	"github.com/gorilla/mux"
 )
+
+var tmatch mux.MatcherFunc = func(request *http.Request, match *mux.RouteMatch) bool {
+
+	//fmt.Println("The URL is: ", request.URL.String())
+
+	return regexp.MustCompile(`^(\/api\/user\/tenants\?name=.+)$`).
+		MatchString(request.URL.String())
+}
 
 func main() {
 
@@ -22,6 +31,9 @@ func main() {
 		controllers.Authenticate).Methods("POST")
 
 	// ------ TENANTS CRUD ------ //
+	router.HandleFunc("/api/user/tenants",
+		controllers.GetTenantFor).Methods("GET").MatcherFunc(tmatch)
+
 	router.HandleFunc("/api/user/tenants",
 		controllers.GetAllTenants).Methods("GET")
 

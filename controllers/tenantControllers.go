@@ -341,3 +341,7 @@ var DeleteTenant = func(w http.ResponseWriter, r *http.Request) {
 	}
 	u.Respond(w, v)
 }
+
+var NameQueryTenant = func(w http.ResponseWriter, r *http.Request) {
+
+}
