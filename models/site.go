@@ -3,6 +3,7 @@ package models
 import (
 	"fmt"
 	u "p3/utils"
+	"strconv"
 	"strings"
 )
 
@@ -25,7 +26,8 @@ type Site_Attributes struct {
 
 type Site struct {
 	//gorm.Model
-	ID              int             `json:"id" gorm:"column:id"`
+	ID              int             `json:"-" gorm:"column:id"`
+	IDJSON          string          `json:"id" gorm:"-"`
 	Name            string          `json:"name" gorm:"column:site_name"`
 	Category        string          `json:"category" gorm:"-"`
 	Domain          string          `json:"domain" gorm:"column:site_domain"`
@@ -99,6 +101,7 @@ func (site *Site) Create() (map[string]interface{}, string) {
 			e.Error()
 	}
 
+	site.IDJSON = strconv.Itoa(site.ID)
 	site.Attributes.ID = site.ID
 
 	e = GetDB().Table("site_attributes").Create(&(site.Attributes)).Error
@@ -156,6 +159,7 @@ func GetSite(id uint) (*Site, string) {
 	}
 	site.DescriptionJSON = strings.Split(site.DescriptionDB, "XYZ")
 	site.Category = "site"
+	site.IDJSON = strconv.Itoa(site.ID)
 	return site, ""
 }
 
@@ -178,6 +182,7 @@ func GetAllSites() ([]*Site, string) {
 		sites[i].Category = "site"
 		sites[i].Attributes = *(attrs[i])
 		sites[i].DescriptionJSON = strings.Split(sites[i].DescriptionDB, "XYZ")
+		sites[i].IDJSON = strconv.Itoa(sites[i].ID)
 	}
 	return sites, ""
 }
