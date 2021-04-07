@@ -3,6 +3,7 @@ package models
 import (
 	"fmt"
 	u "p3/utils"
+	"strconv"
 	"strings"
 )
 
@@ -27,6 +28,7 @@ type Device_Attributes struct {
 type Device struct {
 	//gorm.Model
 	ID              int               `json:"id" gorm:"column:id"`
+	IDJSON          string            `json:"id" gorm:"-"`
 	Name            string            `json:"name" gorm:"column:device_name"`
 	ParentID        string            `json:"parentId" gorm:"column:device_parent_id"`
 	Category        string            `json:"category" gorm:"-"`
@@ -104,6 +106,7 @@ func (device *Device) Create() (map[string]interface{}, string) {
 		return u.Message(false, "Internal Error while creating Device: "+e.Error()),
 			"internal"
 	}
+	device.IDJSON = strconv.Itoa(device.ID)
 	device.Attributes.ID = device.ID
 	if e := GetDB().Create(&(device.Attributes)).Error; e != nil {
 		return u.Message(false, "Internal Error while creating Device Attrs: "+e.Error()),
@@ -126,6 +129,7 @@ func GetDevice(id uint) (*Device, string) {
 	}
 	device.DescriptionJSON = strings.Split(device.DescriptionDB, "XYZ")
 	device.Category = "device"
+	device.IDJSON = strconv.Itoa(device.ID)
 	return device, ""
 }
 
@@ -155,6 +159,7 @@ func GetAllDevices() ([]*Device, string) {
 		devices[i].Category = "device"
 		devices[i].Attributes = *(attrs[i])
 		devices[i].DescriptionJSON = strings.Split(devices[i].DescriptionDB, "XYZ")
+		devices[i].IDJSON = strconv.Itoa(devices[i].ID)
 	}
 
 	return devices, ""
