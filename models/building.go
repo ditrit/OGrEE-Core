@@ -3,6 +3,7 @@ package models
 import (
 	"fmt"
 	u "p3/utils"
+	"strconv"
 	"strings"
 )
 
@@ -21,7 +22,8 @@ type Building_Attributes struct {
 
 type Building struct {
 	//gorm.Model
-	ID              int                 `json:"id" gorm:"column:id"`
+	ID              int                 `json:"-" gorm:"column:id"`
+	IDJSON          string              `json:"id" gorm:"-"`
 	Name            string              `json:"name" gorm:"column:bldg_name"`
 	ParentID        string              `json:"parentId" gorm:"column:bldg_parent_id"`
 	Category        string              `json:"category" gorm:"-"`
@@ -101,6 +103,7 @@ func (bldg *Building) Create() (map[string]interface{}, string) {
 		return u.Message(false, "Internal Error while creating Bulding: "+e.Error()),
 			e.Error()
 	}
+	bldg.IDJSON = strconv.Itoa(bldg.ID)
 	bldg.Attributes.ID = bldg.ID
 	if e := GetDB().Create(&(bldg.Attributes)).Error; e != nil {
 		return u.Message(false, "Internal Error while creating Bulding Attrs: "+e.Error()),
@@ -121,7 +124,7 @@ func GetBuilding(id uint) (*Building, string) {
 		fmt.Println(err)
 		return nil, err.Error()
 	}
-
+	bldg.IDJSON = strconv.Itoa(bldg.ID)
 	bldg.DescriptionJSON = strings.Split(bldg.DescriptionDB, "XYZ")
 	bldg.Category = "building"
 	return bldg, ""
@@ -147,6 +150,7 @@ func GetAllBuildings() ([]*Building, string) {
 		bldgs[i].Category = "building"
 		bldgs[i].Attributes = *(attrs[i])
 		bldgs[i].DescriptionJSON = strings.Split(bldgs[i].DescriptionDB, "XYZ")
+		bldgs[i].IDJSON = strconv.Itoa(bldgs[i].ID)
 	}
 
 	return bldgs, ""
