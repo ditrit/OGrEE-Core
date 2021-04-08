@@ -25,23 +25,19 @@ var tmatch mux.MatcherFunc = func(request *http.Request, match *mux.RouteMatch) 
 
 var smatch mux.MatcherFunc = func(request *http.Request, match *mux.RouteMatch) bool {
 
-	//fmt.Println("The URL is: ", request.URL.String())
-	//https://benhoyt.com/writings/go-routing/#regex-table
-	//https://stackoverflow.com/questions/21664489/
-	//golang-mux-routing-wildcard-custom-func-match
-
 	return regexp.MustCompile(`^(\/api\/user\/sites\?name=.*)$`).
 		MatchString(request.URL.String())
 }
 
 var bmatch mux.MatcherFunc = func(request *http.Request, match *mux.RouteMatch) bool {
 
-	//fmt.Println("The URL is: ", request.URL.String())
-	//https://benhoyt.com/writings/go-routing/#regex-table
-	//https://stackoverflow.com/questions/21664489/
-	//golang-mux-routing-wildcard-custom-func-match
-
 	return regexp.MustCompile(`^(\/api\/user\/buildings\?name=.*)$`).
+		MatchString(request.URL.String())
+}
+
+var rmatch mux.MatcherFunc = func(request *http.Request, match *mux.RouteMatch) bool {
+
+	return regexp.MustCompile(`^(\/api\/user\/rooms\?name=.*)$`).
 		MatchString(request.URL.String())
 }
 
@@ -122,6 +118,9 @@ func main() {
 		controllers.GetAllBuildings).Methods("GET")
 
 	// ------ ROOM CRUD ------ //
+	router.HandleFunc("/api/user/rooms",
+		controllers.GetRoomByName).Methods("GET").MatcherFunc(rmatch)
+
 	router.HandleFunc("/api/user/rooms",
 		controllers.CreateRoom).Methods("POST")
 
