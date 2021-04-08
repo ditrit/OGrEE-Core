@@ -33,7 +33,7 @@ ALTER TABLE rack_attributes ADD CONSTRAINT chk_rack_phu CHECK (rack_height_unit 
 
 ALTER TABLE Device ADD CONSTRAINT chk_device_parent CHECK (device_parent_id IS NOT NULL);
 ALTER TABLE device_attributes ADD CONSTRAINT chk_device_orientation CHECK (device_orientation IN ('front', 'rear', 'front flipped', 'rear flipped'));
-ALTER TABLE device_attributes ADD CONSTRAINT chk_device_pxyu CHECK (device_pos_x_y_unit IN ('mm', 'cm', 'm', 'U', 'OU', 'tile'));
+--ALTER TABLE device_attributes ADD CONSTRAINT chk_device_pxyu CHECK (device_pos_x_y_unit IN ('mm', 'cm', 'm', 'U', 'OU', 'tile'));
 --ALTER TABLE device_attributes ADD CONSTRAINT chk_device_pzu CHECK (device_pos_z_unit IN ('mm', 'cm', 'm', 'U', 'OU', 'tile'));
 ALTER TABLE device_attributes ADD CONSTRAINT chk_device_sizeu CHECK (device_size_unit IN ('mm', 'cm', 'm', 'U', 'OU', 'tile'));
 ALTER TABLE device_attributes ADD CONSTRAINT chk_device_phu CHECK (device_height_unit IN ('mm', 'cm', 'm', 'U', 'OU', 'tile'));
