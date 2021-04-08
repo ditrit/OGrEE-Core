@@ -34,6 +34,17 @@ var smatch mux.MatcherFunc = func(request *http.Request, match *mux.RouteMatch) 
 		MatchString(request.URL.String())
 }
 
+var bmatch mux.MatcherFunc = func(request *http.Request, match *mux.RouteMatch) bool {
+
+	//fmt.Println("The URL is: ", request.URL.String())
+	//https://benhoyt.com/writings/go-routing/#regex-table
+	//https://stackoverflow.com/questions/21664489/
+	//golang-mux-routing-wildcard-custom-func-match
+
+	return regexp.MustCompile(`^(\/api\/user\/buildings\?name=.*)$`).
+		MatchString(request.URL.String())
+}
+
 func main() {
 
 	router := mux.NewRouter()
@@ -92,6 +103,8 @@ func main() {
 		controllers.DeleteSites).Methods("DELETE")
 
 	// ------ BUILDING CRUD ------ //
+	router.HandleFunc("/api/user/buildings",
+		controllers.GetBuildingByName).Methods("GET").MatcherFunc(bmatch)
 
 	router.HandleFunc("/api/user/buildings",
 		controllers.CreateBuilding).Methods("POST")
