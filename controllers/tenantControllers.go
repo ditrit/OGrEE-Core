@@ -346,6 +346,7 @@ var DeleteTenant = func(w http.ResponseWriter, r *http.Request) {
 var GetTenantByName = func(w http.ResponseWriter, r *http.Request) {
 	var resp map[string]interface{}
 	names := strings.Split(r.URL.String(), "=")
+	//println("Heres what we got: ", names[0], "AND ", names[1])
 
 	if names[1] == "" {
 		w.WriteHeader(http.StatusBadRequest)
