@@ -6,6 +6,7 @@ import (
 	"p3/models"
 	u "p3/utils"
 	"strconv"
+	"strings"
 
 	"github.com/gorilla/mux"
 )
@@ -126,7 +127,7 @@ var CreateRoom = func(w http.ResponseWriter, r *http.Request) {
 	err := json.NewDecoder(r.Body).Decode(room)
 	if err != nil {
 		u.Respond(w, u.Message(false, "Error while decoding request body"))
-		u.ErrLog("Error while decoding request body", "CREATE ROOM", "" , r )
+		u.ErrLog("Error while decoding request body", "CREATE ROOM", "", r)
 		return
 	}
 
@@ -134,7 +135,7 @@ var CreateRoom = func(w http.ResponseWriter, r *http.Request) {
 	switch e {
 	case "validate":
 		w.WriteHeader(http.StatusBadRequest)
-		u.ErrLog("Error while creating room", "CREATE ROOM", e , r )
+		u.ErrLog("Error while creating room", "CREATE ROOM", e, r)
 	case "internal":
 		//
 	default:
@@ -169,13 +170,13 @@ var GetRoom = func(w http.ResponseWriter, r *http.Request) {
 
 	if e != nil {
 		u.Respond(w, u.Message(false, "Error while parsing path parameters"))
-		u.ErrLog("Error while parsing path parameters", "GET ROOM", "" , r )
+		u.ErrLog("Error while parsing path parameters", "GET ROOM", "", r)
 	}
 
 	data, e1 := models.GetRoom(uint(id))
 	if data == nil {
 		resp = u.Message(false, "Error while getting Room: "+e1)
-		u.ErrLog("Error while getting Room: ", "GET ROOM", e1 , r )
+		u.ErrLog("Error while getting Room: ", "GET ROOM", e1, r)
 
 		switch e1 {
 		case "record not found":
@@ -208,7 +209,7 @@ var GetAllRooms = func(w http.ResponseWriter, r *http.Request) {
 	data, e1 := models.GetAllRooms()
 	if len(data) == 0 {
 		resp = u.Message(false, "Error while getting Room: "+e1)
-		u.ErrLog("Error while getting Room: ", "GET ALL ROOMS", e1 , r )
+		u.ErrLog("Error while getting Room: ", "GET ALL ROOMS", e1, r)
 
 		switch e1 {
 		case "":
@@ -247,14 +248,14 @@ var DeleteRoom = func(w http.ResponseWriter, r *http.Request) {
 
 	if e != nil {
 		u.Respond(w, u.Message(false, "Error while parsing path parameters"))
-		u.ErrLog("Error while parsing path parameters", "DELETE ROOM", "" , r )
+		u.ErrLog("Error while parsing path parameters", "DELETE ROOM", "", r)
 	}
 
 	v := models.DeleteRoom(uint(id))
 
 	if v["status"] == false {
 		w.WriteHeader(http.StatusNotFound)
-		u.ErrLog("Error while deleting room", "DELETE ROOM", "Not Found" , r )
+		u.ErrLog("Error while deleting room", "DELETE ROOM", "Not Found", r)
 	} else {
 		w.WriteHeader(http.StatusNoContent)
 	}
@@ -377,13 +378,13 @@ var UpdateRoom = func(w http.ResponseWriter, r *http.Request) {
 
 	if e != nil {
 		u.Respond(w, u.Message(false, "Error while parsing path parameters"))
-		u.ErrLog("Error while parsing path parameters", "UPDATE ROOM", "" , r )
+		u.ErrLog("Error while parsing path parameters", "UPDATE ROOM", "", r)
 	}
 
 	err := json.NewDecoder(r.Body).Decode(room)
 	if err != nil {
 		u.Respond(w, u.Message(false, "Error while decoding request body"))
-		u.ErrLog("Error while decoding request body", "UPDATE ROOM", "" , r )
+		u.ErrLog("Error while decoding request body", "UPDATE ROOM", "", r)
 	}
 
 	v, e1 := models.UpdateRoom(uint(id), room)
@@ -391,15 +392,47 @@ var UpdateRoom = func(w http.ResponseWriter, r *http.Request) {
 	switch e1 {
 	case "validate":
 		w.WriteHeader(http.StatusBadRequest)
-		u.ErrLog("Error while updating room", "UPDATE ROOM", e1 , r )
+		u.ErrLog("Error while updating room", "UPDATE ROOM", e1, r)
 	case "internal":
 		w.WriteHeader(http.StatusInternalServerError)
-		u.ErrLog("Error while updating room", "UPDATE ROOM", e1 , r )
+		u.ErrLog("Error while updating room", "UPDATE ROOM", e1, r)
 	case "record not found":
 		w.WriteHeader(http.StatusNotFound)
-		u.ErrLog("Error while updating room", "UPDATE ROOM", e1 , r )
+		u.ErrLog("Error while updating room", "UPDATE ROOM", e1, r)
 	default:
 	}
 
 	u.Respond(w, v)
+}
+
+var GetRoomByName = func(w http.ResponseWriter, r *http.Request) {
+	var resp map[string]interface{}
+	names := strings.Split(r.URL.String(), "=")
+
+	if names[1] == "" {
+		w.WriteHeader(http.StatusBadRequest)
+		u.Respond(w, u.Message(false, "Error while extracting from path parameters"))
+		u.ErrLog("Error while extracting from path parameters", "GET ROOM BY NAME",
+			"", r)
+		return
+	}
+
+	data, e := models.GetRoomByName(names[1])
+
+	if e != "" {
+		resp = u.Message(false, "Error: "+e)
+		u.ErrLog("Error while getting room", "GET Room", e, r)
+
+		switch e {
+		case "record not found":
+			w.WriteHeader(http.StatusNotFound)
+		default:
+		}
+
+	} else {
+		resp = u.Message(true, "success")
+	}
+
+	resp["data"] = data
+	u.Respond(w, resp)
 }

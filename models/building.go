@@ -253,3 +253,20 @@ func DeleteBuilding(id uint) map[string]interface{} {
 
 	return u.Message(true, "success")
 }
+
+func GetBuildingByName(name string) (*Building, string) {
+	bldg := &Building{}
+
+	e := GetDB().Raw(`SELECT * FROM building 
+	JOIN building_attributes ON building.id = building_attributes.id 
+	WHERE bldg_name = ?;`, name).Find(bldg).Find(&bldg.Attributes).Error
+
+	if e != nil {
+		//fmt.Println(e)
+		return nil, e.Error()
+	}
+
+	bldg.DescriptionJSON = strings.Split(bldg.DescriptionDB, "XYZ")
+	bldg.Category = "bldg"
+	return bldg, ""
+}

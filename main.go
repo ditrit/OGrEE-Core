@@ -7,9 +7,51 @@ import (
 
 	"net/http"
 	"os"
+	"regexp"
 
 	"github.com/gorilla/mux"
 )
+
+var tmatch mux.MatcherFunc = func(request *http.Request, match *mux.RouteMatch) bool {
+
+	//fmt.Println("The URL is: ", request.URL.String())
+	//https://benhoyt.com/writings/go-routing/#regex-table
+	//https://stackoverflow.com/questions/21664489/
+	//golang-mux-routing-wildcard-custom-func-match
+
+	return regexp.MustCompile(`^(\/api\/user\/tenants\?name=.*)$`).
+		MatchString(request.URL.String())
+}
+
+var smatch mux.MatcherFunc = func(request *http.Request, match *mux.RouteMatch) bool {
+
+	return regexp.MustCompile(`^(\/api\/user\/sites\?name=.*)$`).
+		MatchString(request.URL.String())
+}
+
+var bmatch mux.MatcherFunc = func(request *http.Request, match *mux.RouteMatch) bool {
+
+	return regexp.MustCompile(`^(\/api\/user\/buildings\?name=.*)$`).
+		MatchString(request.URL.String())
+}
+
+var rmatch mux.MatcherFunc = func(request *http.Request, match *mux.RouteMatch) bool {
+
+	return regexp.MustCompile(`^(\/api\/user\/rooms\?name=.*)$`).
+		MatchString(request.URL.String())
+}
+
+var ramatch mux.MatcherFunc = func(request *http.Request, match *mux.RouteMatch) bool {
+
+	return regexp.MustCompile(`^(\/api\/user\/racks\?name=.*)$`).
+		MatchString(request.URL.String())
+}
+
+var dmatch mux.MatcherFunc = func(request *http.Request, match *mux.RouteMatch) bool {
+
+	return regexp.MustCompile(`^(\/api\/user\/devices\?name=.*)$`).
+		MatchString(request.URL.String())
+}
 
 func main() {
 
@@ -22,6 +64,9 @@ func main() {
 		controllers.Authenticate).Methods("POST")
 
 	// ------ TENANTS CRUD ------ //
+	router.HandleFunc("/api/user/tenants",
+		controllers.GetTenantByName).Methods("GET").MatcherFunc(tmatch)
+
 	router.HandleFunc("/api/user/tenants",
 		controllers.GetAllTenants).Methods("GET")
 
@@ -38,6 +83,9 @@ func main() {
 		controllers.DeleteTenant).Methods("DELETE")
 
 	// ------ SITES CRUD ------ //
+	router.HandleFunc("/api/user/sites",
+		controllers.GetSiteByName).Methods("GET").MatcherFunc(smatch)
+
 	router.HandleFunc("/api/user/sites",
 		controllers.CreateSite).Methods("POST")
 
@@ -63,6 +111,8 @@ func main() {
 		controllers.DeleteSites).Methods("DELETE")
 
 	// ------ BUILDING CRUD ------ //
+	router.HandleFunc("/api/user/buildings",
+		controllers.GetBuildingByName).Methods("GET").MatcherFunc(bmatch)
 
 	router.HandleFunc("/api/user/buildings",
 		controllers.CreateBuilding).Methods("POST")
@@ -81,6 +131,9 @@ func main() {
 
 	// ------ ROOM CRUD ------ //
 	router.HandleFunc("/api/user/rooms",
+		controllers.GetRoomByName).Methods("GET").MatcherFunc(rmatch)
+
+	router.HandleFunc("/api/user/rooms",
 		controllers.CreateRoom).Methods("POST")
 
 	router.HandleFunc("/api/user/rooms/{id}",
@@ -97,6 +150,9 @@ func main() {
 
 	// ------ RACK CRUD ------ //
 	router.HandleFunc("/api/user/racks",
+		controllers.GetRackByName).Methods("GET").MatcherFunc(ramatch)
+
+	router.HandleFunc("/api/user/racks",
 		controllers.CreateRack).Methods("POST")
 
 	router.HandleFunc("/api/user/racks",
@@ -112,6 +168,9 @@ func main() {
 		controllers.GetRack).Methods("GET")
 
 	// ------ DEVICE CRUD ------ //
+	router.HandleFunc("/api/user/devices",
+		controllers.GetDeviceByName).Methods("GET").MatcherFunc(dmatch)
+
 	router.HandleFunc("/api/user/devices",
 		controllers.CreateDevice).Methods("POST")
 

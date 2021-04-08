@@ -287,3 +287,20 @@ func DeleteRoom(id uint) map[string]interface{} {
 
 	return u.Message(true, "success")
 }
+
+func GetRoomByName(name string) (*Room, string) {
+	room := &Room{}
+
+	e := GetDB().Raw(`SELECT * FROM room 
+	JOIN room_attributes ON room.id = room_attributes.id 
+	WHERE room_name = ?;`, name).Find(room).Find(&room.Attributes).Error
+
+	if e != nil {
+		//fmt.Println(e)
+		return nil, e.Error()
+	}
+
+	room.DescriptionJSON = strings.Split(room.DescriptionDB, "XYZ")
+	room.Category = "room"
+	return room, ""
+}

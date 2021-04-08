@@ -301,3 +301,20 @@ func UpdateSite(id uint, newSiteInfo *Site) (map[string]interface{}, string) {
 	}
 	return u.Message(true, "success"), ""
 }
+
+func GetSiteByName(name string) (*Site, string) {
+	site := &Site{}
+
+	e := GetDB().Raw(`SELECT * FROM site 
+	JOIN site_attributes ON site.id = site_attributes.id 
+	WHERE site_name = ?;`, name).Find(site).Find(&site.Attributes).Error
+
+	if e != nil {
+		//fmt.Println(e)
+		return nil, e.Error()
+	}
+
+	site.DescriptionJSON = strings.Split(site.DescriptionDB, "XYZ")
+	site.Category = "site"
+	return site, ""
+}

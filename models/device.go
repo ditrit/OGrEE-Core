@@ -281,3 +281,20 @@ func DeleteDevice(id uint) map[string]interface{} {
 
 	return u.Message(true, "success")
 }
+
+func GetDeviceByName(name string) (*Device, string) {
+	device := &Device{}
+
+	e := GetDB().Raw(`SELECT * FROM device 
+	JOIN device_attributes ON device.id = device_attributes.id 
+	WHERE device_name = ?;`, name).Find(device).Find(&device.Attributes).Error
+
+	if e != nil {
+		//fmt.Println(e)
+		return nil, e.Error()
+	}
+
+	device.DescriptionJSON = strings.Split(device.DescriptionDB, "XYZ")
+	device.Category = "device"
+	return device, ""
+}
