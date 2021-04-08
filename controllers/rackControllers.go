@@ -6,6 +6,7 @@ import (
 	"p3/models"
 	u "p3/utils"
 	"strconv"
+	"strings"
 
 	"github.com/gorilla/mux"
 )
@@ -145,7 +146,7 @@ var CreateRack = func(w http.ResponseWriter, r *http.Request) {
 	err := json.NewDecoder(r.Body).Decode(rack)
 	if err != nil {
 		u.Respond(w, u.Message(false, "Error while decoding request body"))
-		u.ErrLog("Error while decoding request body", "CREATE RACK", "" , r )
+		u.ErrLog("Error while decoding request body", "CREATE RACK", "", r)
 		return
 	}
 
@@ -154,7 +155,7 @@ var CreateRack = func(w http.ResponseWriter, r *http.Request) {
 	switch e {
 	case "validate":
 		w.WriteHeader(http.StatusBadRequest)
-		u.ErrLog("Error while creating rack", "CREATE RACK", e , r )
+		u.ErrLog("Error while creating rack", "CREATE RACK", e, r)
 	case "internal":
 		//
 	default:
@@ -187,13 +188,13 @@ var GetRack = func(w http.ResponseWriter, r *http.Request) {
 
 	if e != nil {
 		u.Respond(w, u.Message(false, "Error while parsing path parameters"))
-		u.ErrLog("Error while parsing path parameters", "GET RACK", "" , r )
+		u.ErrLog("Error while parsing path parameters", "GET RACK", "", r)
 	}
 
 	data, e1 := models.GetRack(uint(id))
 	if data == nil {
 		resp = u.Message(false, "Error while getting Rack: "+e1)
-		u.ErrLog("Error while getting Rack", "GET RACK", e1 , r )
+		u.ErrLog("Error while getting Rack", "GET RACK", e1, r)
 
 		switch e1 {
 		case "record not found":
@@ -226,7 +227,7 @@ var GetAllRacks = func(w http.ResponseWriter, r *http.Request) {
 	data, e1 := models.GetAllRacks()
 	if len(data) == 0 {
 		resp = u.Message(false, "Error while getting Rack: "+e1)
-		u.ErrLog("Error while getting Rack", "GET ALL RACKS", e1 , r )
+		u.ErrLog("Error while getting Rack", "GET ALL RACKS", e1, r)
 
 		switch e1 {
 		case "":
@@ -264,14 +265,14 @@ var DeleteRack = func(w http.ResponseWriter, r *http.Request) {
 
 	if e != nil {
 		u.Respond(w, u.Message(false, "Error while parsing path parameters"))
-		u.ErrLog("Error while parsing path parameters", "DELETE RACK", "" , r )
+		u.ErrLog("Error while parsing path parameters", "DELETE RACK", "", r)
 	}
 
 	v := models.DeleteRack(uint(id))
 
 	if v["status"] == false {
 		w.WriteHeader(http.StatusNotFound)
-		u.ErrLog("Error while deleting rack", "DELETE RACK", "Not Found" , r )
+		u.ErrLog("Error while deleting rack", "DELETE RACK", "Not Found", r)
 	} else {
 		w.WriteHeader(http.StatusNoContent)
 	}
@@ -416,13 +417,13 @@ var UpdateRack = func(w http.ResponseWriter, r *http.Request) {
 
 	if e != nil {
 		u.Respond(w, u.Message(false, "Error while parsing path parameters"))
-		u.ErrLog("Error while parsing path parameters", "UPDATE RACK", "" , r )
+		u.ErrLog("Error while parsing path parameters", "UPDATE RACK", "", r)
 	}
 
 	err := json.NewDecoder(r.Body).Decode(rack)
 	if err != nil {
 		u.Respond(w, u.Message(false, "Error while decoding request body"))
-		u.ErrLog("Error while decoding request body", "UPDATE RACK", "" , r )
+		u.ErrLog("Error while decoding request body", "UPDATE RACK", "", r)
 	}
 
 	v, e1 := models.UpdateRack(uint(id), rack)
@@ -430,15 +431,47 @@ var UpdateRack = func(w http.ResponseWriter, r *http.Request) {
 	switch e1 {
 	case "validate":
 		w.WriteHeader(http.StatusBadRequest)
-		u.ErrLog("Error while updating rack", "UPDATE RACK", e1 , r )
+		u.ErrLog("Error while updating rack", "UPDATE RACK", e1, r)
 	case "internal":
 		w.WriteHeader(http.StatusInternalServerError)
-		u.ErrLog("Error while updating rack", "UPDATE RACK", e1 , r )
+		u.ErrLog("Error while updating rack", "UPDATE RACK", e1, r)
 	case "record not found":
 		w.WriteHeader(http.StatusNotFound)
-		u.ErrLog("Error while updating rack", "UPDATE RACK", e1 , r )
+		u.ErrLog("Error while updating rack", "UPDATE RACK", e1, r)
 	default:
 	}
 
 	u.Respond(w, v)
+}
+
+var GetRackByName = func(w http.ResponseWriter, r *http.Request) {
+	var resp map[string]interface{}
+	names := strings.Split(r.URL.String(), "=")
+
+	if names[1] == "" {
+		w.WriteHeader(http.StatusBadRequest)
+		u.Respond(w, u.Message(false, "Error while extracting from path parameters"))
+		u.ErrLog("Error while extracting from path parameters", "GET RACK BY NAME",
+			"", r)
+		return
+	}
+
+	data, e := models.GetRackByName(names[1])
+
+	if e != "" {
+		resp = u.Message(false, "Error: "+e)
+		u.ErrLog("Error while getting rack", "GET Rack", e, r)
+
+		switch e {
+		case "record not found":
+			w.WriteHeader(http.StatusNotFound)
+		default:
+		}
+
+	} else {
+		resp = u.Message(true, "success")
+	}
+
+	resp["data"] = data
+	u.Respond(w, resp)
 }

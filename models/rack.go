@@ -271,3 +271,20 @@ func DeleteRack(id uint) map[string]interface{} {
 
 	return u.Message(true, "success")
 }
+
+func GetRackByName(name string) (*Rack, string) {
+	rack := &Rack{}
+
+	e := GetDB().Raw(`SELECT * FROM rack 
+	JOIN rack_attributes ON rack.id = rack_attributes.id 
+	WHERE rack_name = ?;`, name).Find(rack).Find(&rack.Attributes).Error
+
+	if e != nil {
+		//fmt.Println(e)
+		return nil, e.Error()
+	}
+
+	rack.DescriptionJSON = strings.Split(rack.DescriptionDB, "XYZ")
+	rack.Category = "rack"
+	return rack, ""
+}
