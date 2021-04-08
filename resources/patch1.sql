@@ -41,3 +41,7 @@ CREATE INDEX idx_account_deleted_at ON "account"(deleted_at);
 
 ALTER TABLE room_attributes ADD column room_technical text;
 ALTER TABLE room_attributes ADD column room_reserved text;
+
+ALTER TABLE device_attributes ADD column device_sizeU text;
+ALTER TABLE device_attributes ADD column device_posu text;
+ALTER TABLE device_attributes ADD column device_slot text;

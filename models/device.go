@@ -16,7 +16,10 @@ type Device_Attributes struct {
 	Template    string `json:"template" gorm:"column:device_template"`
 	Orientation string `json:"orientation" gorm:"column:device_orientation"`
 	Size        string `json:"size" gorm:"column:device_size"`
-	SizeU       string `json:"sizeUnit" gorm:"column:device_size_unit"`
+	SizeUnit    string `json:"sizeUnit" gorm:"column:device_size_unit"`
+	SizeU       string `json:"sizeU" gorm:"column:device_sizeu"`
+	Slot        string `json:"slot" gorm:"column:device_slot"`
+	PosU        string `json:"posU" gorm:"column:device_posu"`
 	Height      string `json:"height" gorm:"column:device_height"`
 	HeightU     string `json:"heightUnit" gorm:"column:device_height_unit"`
 	Vendor      string `json:"vendor" gorm:"column:device_vendor"`
@@ -75,7 +78,7 @@ func (device *Device) Validate() (map[string]interface{}, bool) {
 		return u.Message(false, "Invalid size on the payload"), false
 	}
 
-	if device.Attributes.SizeU == "" {
+	if device.Attributes.SizeUnit == "" {
 		return u.Message(false, "Rack size string should be on the payload"), false
 	}
 
@@ -215,8 +218,8 @@ func UpdateDevice(id uint, newDeviceInfo *Device) (map[string]interface{}, strin
 		device.Attributes.Size = newDeviceInfo.Attributes.Size
 	}
 
-	if newDeviceInfo.Attributes.SizeU != "" && newDeviceInfo.Attributes.SizeU != device.Attributes.SizeU {
-		device.Attributes.SizeU = newDeviceInfo.Attributes.SizeU
+	if newDeviceInfo.Attributes.SizeUnit != "" && newDeviceInfo.Attributes.SizeUnit != device.Attributes.SizeUnit {
+		device.Attributes.SizeUnit = newDeviceInfo.Attributes.SizeUnit
 	}
 
 	if newDeviceInfo.Attributes.Height != "" && newDeviceInfo.Attributes.Height != device.Attributes.Height {
@@ -225,6 +228,18 @@ func UpdateDevice(id uint, newDeviceInfo *Device) (map[string]interface{}, strin
 
 	if newDeviceInfo.Attributes.HeightU != "" && newDeviceInfo.Attributes.HeightU != device.Attributes.HeightU {
 		device.Attributes.HeightU = newDeviceInfo.Attributes.HeightU
+	}
+
+	if newDeviceInfo.Attributes.SizeU != "" && newDeviceInfo.Attributes.SizeU != device.Attributes.SizeU {
+		device.Attributes.SizeU = newDeviceInfo.Attributes.SizeU
+	}
+
+	if newDeviceInfo.Attributes.PosU != "" && newDeviceInfo.Attributes.PosU != device.Attributes.PosU {
+		device.Attributes.PosU = newDeviceInfo.Attributes.PosU
+	}
+
+	if newDeviceInfo.Attributes.Slot != "" && newDeviceInfo.Attributes.Slot != device.Attributes.Slot {
+		device.Attributes.Slot = newDeviceInfo.Attributes.Slot
 	}
 
 	if newDeviceInfo.Attributes.Vendor != "" && newDeviceInfo.Attributes.Vendor != device.Attributes.Vendor {
