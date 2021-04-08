@@ -6,6 +6,7 @@ import (
 	"p3/models"
 	u "p3/utils"
 	"strconv"
+	"strings"
 
 	"github.com/gorilla/mux"
 )
@@ -145,7 +146,7 @@ var CreateDevice = func(w http.ResponseWriter, r *http.Request) {
 	err := json.NewDecoder(r.Body).Decode(device)
 	if err != nil {
 		u.Respond(w, u.Message(false, "Error while decoding request body"))
-		u.ErrLog("Error while decoding request body", "CREATE DEVICE", "" , r )
+		u.ErrLog("Error while decoding request body", "CREATE DEVICE", "", r)
 		return
 	}
 
@@ -154,7 +155,7 @@ var CreateDevice = func(w http.ResponseWriter, r *http.Request) {
 	switch e {
 	case "validate":
 		w.WriteHeader(http.StatusBadRequest)
-		u.ErrLog("Error while creating Device", "CREATE DEVICE", e , r )
+		u.ErrLog("Error while creating Device", "CREATE DEVICE", e, r)
 	case "internal":
 		//
 	default:
@@ -185,13 +186,13 @@ var GetDevice = func(w http.ResponseWriter, r *http.Request) {
 
 	if e != nil {
 		u.Respond(w, u.Message(false, "Error while parsing path parameters"))
-		u.ErrLog("Error while parsing path parameters", "GET DEVICE", "" , r )
+		u.ErrLog("Error while parsing path parameters", "GET DEVICE", "", r)
 	}
 
 	data, e1 := models.GetDevice(uint(id))
 	if data == nil {
 		resp = u.Message(false, "Error while getting Device: "+e1)
-		u.ErrLog("Error while getting Device", "GET DEVICE", "" , r )
+		u.ErrLog("Error while getting Device", "GET DEVICE", "", r)
 
 		switch e1 {
 		case "record not found":
@@ -231,7 +232,7 @@ var GetAllDevices = func(w http.ResponseWriter, r *http.Request) {
 	data, e1 := models.GetAllDevices()
 	if len(data) == 0 {
 		resp = u.Message(false, "Error: "+e1)
-		u.ErrLog("Error while getting devices", "GET ALL DEVICES", e1 , r )
+		u.ErrLog("Error while getting devices", "GET ALL DEVICES", e1, r)
 
 		switch e1 {
 		case "":
@@ -269,14 +270,14 @@ var DeleteDevice = func(w http.ResponseWriter, r *http.Request) {
 
 	if e != nil {
 		u.Respond(w, u.Message(false, "Error while parsing path parameters"))
-		u.ErrLog("Error while parsing path parameters", "DELETE DEVICE", "" , r )
+		u.ErrLog("Error while parsing path parameters", "DELETE DEVICE", "", r)
 	}
 
 	v := models.DeleteDevice(uint(id))
 
 	if v["status"] == false {
 		w.WriteHeader(http.StatusNotFound)
-		u.ErrLog("Error while deleting device", "DELETE DEVICE", "Not Found" , r )
+		u.ErrLog("Error while deleting device", "DELETE DEVICE", "Not Found", r)
 	} else {
 		w.WriteHeader(http.StatusNoContent)
 	}
@@ -415,13 +416,13 @@ var UpdateDevice = func(w http.ResponseWriter, r *http.Request) {
 
 	if e != nil {
 		u.Respond(w, u.Message(false, "Error while parsing path parameters"))
-		u.ErrLog("Error while parsing path parameters", "UPDATE DEVICE", "" , r )
+		u.ErrLog("Error while parsing path parameters", "UPDATE DEVICE", "", r)
 	}
 
 	err := json.NewDecoder(r.Body).Decode(device)
 	if err != nil {
 		u.Respond(w, u.Message(false, "Error while decoding request body"))
-		u.ErrLog("Error while decoding request body", "UPDATE DEVICE", "" , r )
+		u.ErrLog("Error while decoding request body", "UPDATE DEVICE", "", r)
 	}
 
 	v, e1 := models.UpdateDevice(uint(id), device)
@@ -429,15 +430,47 @@ var UpdateDevice = func(w http.ResponseWriter, r *http.Request) {
 	switch e1 {
 	case "validate":
 		w.WriteHeader(http.StatusBadRequest)
-		u.ErrLog("Error while updating device", "UPDATE DEVICE", e1 , r )
+		u.ErrLog("Error while updating device", "UPDATE DEVICE", e1, r)
 	case "internal":
 		w.WriteHeader(http.StatusInternalServerError)
-		u.ErrLog("Error while updating device", "UPDATE DEVICE", e1 , r )
+		u.ErrLog("Error while updating device", "UPDATE DEVICE", e1, r)
 	case "record not found":
 		w.WriteHeader(http.StatusNotFound)
-		u.ErrLog("Error while updating device", "UPDATE DEVICE", e1 , r )
+		u.ErrLog("Error while updating device", "UPDATE DEVICE", e1, r)
 	default:
 	}
 
 	u.Respond(w, v)
+}
+
+var GetDeviceByName = func(w http.ResponseWriter, r *http.Request) {
+	var resp map[string]interface{}
+	names := strings.Split(r.URL.String(), "=")
+
+	if names[1] == "" {
+		w.WriteHeader(http.StatusBadRequest)
+		u.Respond(w, u.Message(false, "Error while extracting from path parameters"))
+		u.ErrLog("Error while extracting from path parameters", "GET DEVICE BY NAME",
+			"", r)
+		return
+	}
+
+	data, e := models.GetDeviceByName(names[1])
+
+	if e != "" {
+		resp = u.Message(false, "Error: "+e)
+		u.ErrLog("Error while getting device", "GET Device", e, r)
+
+		switch e {
+		case "record not found":
+			w.WriteHeader(http.StatusNotFound)
+		default:
+		}
+
+	} else {
+		resp = u.Message(true, "success")
+	}
+
+	resp["data"] = data
+	u.Respond(w, resp)
 }
