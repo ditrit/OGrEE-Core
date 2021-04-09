@@ -92,6 +92,8 @@ func main() {
 	/*router.HandleFunc("/api/user/sites",
 		controllers.GetSitesByUserID).Methods("GET")
 
+		here is a useless change for the demo
+
 	router.HandleFunc("/api/user/sites",
 		controllers.GetSitesByParentID).Methods("GET")*/
 
