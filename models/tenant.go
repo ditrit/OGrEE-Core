@@ -210,6 +210,7 @@ func GetTenantByName(name string) (*Tenant, string) {
 		return nil, e.Error()
 	}
 
+	tenant.IDJSON = strconv.Itoa(tenant.ID)
 	tenant.DescriptionJSON = strings.Split(tenant.DescriptionDB, "XYZ")
 	tenant.Category = "tenant"
 	return tenant, ""

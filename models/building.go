@@ -266,6 +266,7 @@ func GetBuildingByName(name string) (*Building, string) {
 		return nil, e.Error()
 	}
 
+	bldg.IDJSON = strconv.Itoa(bldg.ID)
 	bldg.DescriptionJSON = strings.Split(bldg.DescriptionDB, "XYZ")
 	bldg.Category = "bldg"
 	return bldg, ""

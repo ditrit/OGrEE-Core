@@ -314,6 +314,7 @@ func GetSiteByName(name string) (*Site, string) {
 		return nil, e.Error()
 	}
 
+	site.IDJSON = strconv.Itoa(site.ID)
 	site.DescriptionJSON = strings.Split(site.DescriptionDB, "XYZ")
 	site.Category = "site"
 	return site, ""

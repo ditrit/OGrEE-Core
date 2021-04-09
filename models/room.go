@@ -300,6 +300,7 @@ func GetRoomByName(name string) (*Room, string) {
 		return nil, e.Error()
 	}
 
+	room.IDJSON = strconv.Itoa(room.ID)
 	room.DescriptionJSON = strings.Split(room.DescriptionDB, "XYZ")
 	room.Category = "room"
 	return room, ""
