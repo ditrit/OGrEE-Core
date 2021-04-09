@@ -294,6 +294,7 @@ func GetDeviceByName(name string) (*Device, string) {
 		return nil, e.Error()
 	}
 
+	device.IDJSON = strconv.Itoa(device.ID)
 	device.DescriptionJSON = strings.Split(device.DescriptionDB, "XYZ")
 	device.Category = "device"
 	return device, ""
