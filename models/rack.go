@@ -289,6 +289,7 @@ func GetRackByName(name string) (*Rack, string) {
 		return nil, e.Error()
 	}
 
+	rack.IDJSON = strconv.Itoa(rack.ID)
 	rack.DescriptionJSON = strings.Split(rack.DescriptionDB, "XYZ")
 	rack.Category = "rack"
 	return rack, ""
