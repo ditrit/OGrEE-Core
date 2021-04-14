@@ -230,10 +230,10 @@ func UpdateRoom(id uint, newRoomInfo *Room) (map[string]interface{}, string) {
 
 	if newRoomInfo.Attributes.Orientation != "" {
 		switch newRoomInfo.Attributes.Orientation {
-		case "-E-N", "-E+N", "+E-N", "+E+N":
-		case "-N-W", "-N+W", "+N-W", "+N+W":
-		case "-W-S", "-W+S", "+W-S", "+W+S":
-		case "-S-E", "-S+E", "+S-E", "+S+E":
+		case "-E-N", "-E+N", "+E-N", "+E+N",
+			"-N-W", "-N+W", "+N-W", "+N+W",
+			"-W-S", "-W+S", "+W-S", "+W+S",
+			"-S-E", "-S+E", "+S-E", "+S+E":
 			room.Attributes.Orientation = newRoomInfo.Attributes.Orientation
 
 		default:
