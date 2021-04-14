@@ -230,6 +230,10 @@ func UpdateBuilding(id uint, newBldgInfo *Building) (map[string]interface{}, str
 		bldg.Attributes.HeightU = newBldgInfo.Attributes.HeightU
 	}
 
+	if newBldgInfo.Attributes.Floors != "" && newBldgInfo.Attributes.Floors != bldg.Attributes.Floors {
+		bldg.Attributes.Floors = newBldgInfo.Attributes.Floors
+	}
+
 	if e := GetDB().Table("building").Save(bldg).
 		Table("building_attributes").Save(&(bldg.Attributes)).Error; e != nil {
 		return u.Message(false, "Error while updating Building: "+e.Error()), e.Error()
