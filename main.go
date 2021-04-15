@@ -166,6 +166,9 @@ func main() {
 	router.HandleFunc("/api/user/racks/{id}",
 		controllers.DeleteRack).Methods("DELETE")
 
+	router.HandleFunc("/api/user/racks/{id:[0-9]+}/all",
+		controllers.GetRackHierarchy).Methods("GET")
+
 	router.HandleFunc("/api/user/racks/{id}",
 		controllers.GetRack).Methods("GET")
 

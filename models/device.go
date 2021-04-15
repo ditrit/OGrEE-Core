@@ -133,16 +133,29 @@ func GetDevice(id uint) (*Device, string) {
 }
 
 //Obtain all devices of a rack
-func GetDevices(rack *Rack) []*Device {
+func GetDevicesOfParent(id uint) ([]*Device, string) {
 	devices := make([]*Device, 0)
-
-	err := GetDB().Table("devices").Where("foreignkey = ?", rack.ID).Find(&devices).Error
+	err := GetDB().Table("device").Where("device_parent_id = ?", id).Find(&devices).Error
 	if err != nil {
 		fmt.Println(err)
-		return nil
+		return nil, err.Error()
 	}
 
-	return devices
+	println("The length of device is: ", len(devices))
+	for i := range devices {
+		e := GetDB().Table("device_attributes").Where("id = ?", devices[i].ID).First(&(devices[i].Attributes)).Error
+
+		if e != nil {
+			fmt.Println(err)
+			return nil, err.Error()
+		}
+
+		devices[i].Category = "device"
+		devices[i].DescriptionJSON = strings.Split(devices[i].DescriptionDB, "XYZ")
+		devices[i].IDJSON = strconv.Itoa(devices[i].ID)
+	}
+
+	return devices, ""
 }
 
 func GetAllDevices() ([]*Device, string) {

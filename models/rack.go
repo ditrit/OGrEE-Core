@@ -294,3 +294,18 @@ func GetRackByName(name string) (*Rack, string) {
 	rack.Category = "rack"
 	return rack, ""
 }
+
+func GetRackHierarchy(id uint) (*Rack, []*Device, string) {
+	rack, e := GetRack(id)
+	if e != "" {
+		return nil, nil, e
+	}
+
+	devices, err := GetDevicesOfParent(id)
+	if err != "" {
+		return nil, nil, err
+	}
+
+	return rack, devices, ""
+
+}
