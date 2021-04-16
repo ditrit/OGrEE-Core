@@ -163,6 +163,26 @@ func GetRooms(room *Building) ([]*Room, string) {
 	return rooms, ""
 }
 
+func GetRoomHierarchy(id uint) (*Room, []*Rack, []*Device, string) {
+
+	room, e := GetRoom(id)
+	if e != "" {
+		return nil, nil, nil, e
+	}
+
+	racks, err := GetRacksOfParent(id)
+	if err != "" {
+		return nil, nil, nil, err
+	}
+
+	devices, err := GetDevicesOfParent(id)
+	if err != "" {
+		return nil, nil, nil, err
+	}
+
+	return room, racks, devices, ""
+}
+
 //Get all rooms
 func GetAllRooms() ([]*Room, string) {
 	rooms := make([]*Room, 0)

@@ -144,6 +144,9 @@ func main() {
 	router.HandleFunc("/api/user/rooms/{id}",
 		controllers.DeleteRoom).Methods("DELETE")
 
+	router.HandleFunc("/api/user/rooms/{id:[0-9]+}/all",
+		controllers.GetRoomHierarchy).Methods("GET")
+
 	router.HandleFunc("/api/user/rooms/{id}",
 		controllers.GetRoom).Methods("GET")
 

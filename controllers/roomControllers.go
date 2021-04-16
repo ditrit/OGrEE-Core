@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"p3/models"
 	u "p3/utils"
@@ -434,5 +435,37 @@ var GetRoomByName = func(w http.ResponseWriter, r *http.Request) {
 	}
 
 	resp["data"] = data
+	u.Respond(w, resp)
+}
+
+var GetRoomHierarchy = func(w http.ResponseWriter, r *http.Request) {
+	fmt.Println("me & the irishman2")
+	id, e := strconv.Atoi(mux.Vars(r)["id"])
+	resp := u.Message(true, "success")
+
+	if e != nil {
+		u.Respond(w, u.Message(false, "Error while parsing path parameters"))
+		u.ErrLog("Error while parsing path parameters", "GET ROOM", "", r)
+	}
+
+	data, racks, devices, e1 := models.GetRoomHierarchy(uint(id))
+
+	if data == nil {
+		resp = u.Message(false, "Error while getting Room: "+e1)
+		u.ErrLog("Error while getting Room", "GET ROOM", e1, r)
+
+		switch e1 {
+		case "record not found":
+			w.WriteHeader(http.StatusNotFound)
+		default:
+		}
+
+	} else {
+		resp = u.Message(true, "success")
+	}
+
+	resp["data"] = data
+	resp["tree"] = racks
+	resp["tree branch"] = devices
 	u.Respond(w, resp)
 }

@@ -171,6 +171,31 @@ func GetAllRacks() ([]*Rack, string) {
 	return racks, ""
 }
 
+func GetRacksOfParent(id uint) ([]*Rack, string) {
+	racks := make([]*Rack, 0)
+	err := GetDB().Table("rack").Where("rack_parent_id = ?", id).Find(&racks).Error
+	if err != nil {
+		fmt.Println(err)
+		return nil, err.Error()
+	}
+
+	println("The length of rack is: ", len(racks))
+	for i := range racks {
+		e := GetDB().Table("rack_attributes").Where("id = ?", racks[i].ID).First(&(racks[i].Attributes)).Error
+
+		if e != nil {
+			fmt.Println(err)
+			return nil, err.Error()
+		}
+
+		racks[i].Category = "rack"
+		racks[i].DescriptionJSON = strings.Split(racks[i].DescriptionDB, "XYZ")
+		racks[i].IDJSON = strconv.Itoa(racks[i].ID)
+	}
+
+	return racks, ""
+}
+
 func UpdateRack(id uint, newRackInfo *Rack) (map[string]interface{}, string) {
 	rack := &Rack{}
 
