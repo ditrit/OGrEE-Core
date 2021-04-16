@@ -35,7 +35,7 @@ type Room struct {
 	DescriptionDB   string          `json:"-" gorm:"column:room_description"`
 	Attributes      Room_Attributes `json:"attributes"`
 
-	//Site []Site
+	//Racks []*Rack
 	//D is used to help the JSON marshalling
 	//while Description will be used in
 	//DB transactions
@@ -163,7 +163,7 @@ func GetRooms(room *Building) ([]*Room, string) {
 	return rooms, ""
 }
 
-func GetRoomHierarchy(id uint) (*Room, []*Rack, []*Device, string) {
+func GetRoomHierarchy(id uint) (*Room, []*Rack, [][]*Device, string) {
 
 	room, e := GetRoom(id)
 	if e != "" {
@@ -175,12 +175,23 @@ func GetRoomHierarchy(id uint) (*Room, []*Rack, []*Device, string) {
 		return nil, nil, nil, err
 	}
 
-	devices, err := GetDevicesOfParent(id)
+	devtree := make([][]*Device, len(racks))
+
+	for i, _ := range racks {
+		devtree[i], err = GetDevicesOfParent(uint(racks[i].ID))
+		if err != "" {
+			return nil, nil, nil, err
+		}
+
+	}
+	/*devices, err := GetDevicesOfParent(id)
 	if err != "" {
 		return nil, nil, nil, err
-	}
+	}*/
 
-	return room, racks, devices, ""
+	//println("The length")
+
+	return room, racks, devtree, ""
 }
 
 //Get all rooms

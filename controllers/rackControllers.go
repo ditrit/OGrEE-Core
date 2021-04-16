@@ -504,6 +504,6 @@ var GetRackHierarchy = func(w http.ResponseWriter, r *http.Request) {
 	}
 
 	resp["data"] = data
-	resp["tree"] = hrcy
+	resp["tree-devices"] = hrcy
 	u.Respond(w, resp)
 }

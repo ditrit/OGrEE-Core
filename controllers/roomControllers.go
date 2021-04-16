@@ -465,7 +465,7 @@ var GetRoomHierarchy = func(w http.ResponseWriter, r *http.Request) {
 	}
 
 	resp["data"] = data
-	resp["tree"] = racks
-	resp["tree branch"] = devices
+	resp["tree-racks"] = racks
+	resp["tree-devices"] = devices
 	u.Respond(w, resp)
 }

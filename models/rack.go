@@ -334,3 +334,7 @@ func GetRackHierarchy(id uint) (*Rack, []*Device, string) {
 	return rack, devices, ""
 
 }
+
+/*func GetRackChildren(id uint) (*Rack, []*Device, string) {
+
+}*/
