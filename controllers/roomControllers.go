@@ -448,7 +448,7 @@ var GetRoomHierarchy = func(w http.ResponseWriter, r *http.Request) {
 		u.ErrLog("Error while parsing path parameters", "GET ROOM", "", r)
 	}
 
-	data, racks, devices, e1 := models.GetRoomHierarchy(uint(id))
+	data, e1 := models.GetRoomHierarchy(uint(id))
 
 	if data == nil {
 		resp = u.Message(false, "Error while getting Room: "+e1)
@@ -465,7 +465,5 @@ var GetRoomHierarchy = func(w http.ResponseWriter, r *http.Request) {
 	}
 
 	resp["data"] = data
-	resp["tree-racks"] = racks
-	resp["tree-devices"] = devices
 	u.Respond(w, resp)
 }

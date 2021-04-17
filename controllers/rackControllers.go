@@ -487,7 +487,7 @@ var GetRackHierarchy = func(w http.ResponseWriter, r *http.Request) {
 		u.ErrLog("Error while parsing path parameters", "GET RACK", "", r)
 	}
 
-	data, hrcy, e1 := models.GetRackHierarchy(uint(id))
+	data, e1 := models.GetRackHierarchy(uint(id))
 
 	if data == nil {
 		resp = u.Message(false, "Error while getting Rack: "+e1)
@@ -504,6 +504,5 @@ var GetRackHierarchy = func(w http.ResponseWriter, r *http.Request) {
 	}
 
 	resp["data"] = data
-	resp["tree-devices"] = hrcy
 	u.Respond(w, resp)
 }

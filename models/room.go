@@ -35,7 +35,7 @@ type Room struct {
 	DescriptionDB   string          `json:"-" gorm:"column:room_description"`
 	Attributes      Room_Attributes `json:"attributes"`
 
-	//Racks []*Rack
+	Racks []*Rack `json:"racks,omitempty", gorm:"-"`
 	//D is used to help the JSON marshalling
 	//while Description will be used in
 	//DB transactions
@@ -163,24 +163,24 @@ func GetRooms(room *Building) ([]*Room, string) {
 	return rooms, ""
 }
 
-func GetRoomHierarchy(id uint) (*Room, []*Rack, [][]*Device, string) {
+func GetRoomHierarchy(id uint) (*Room /*, []*Rack, [][]*Device*/, string) {
 
 	room, e := GetRoom(id)
 	if e != "" {
-		return nil, nil, nil, e
+		return nil, e
 	}
 
-	racks, err := GetRacksOfParent(id)
-	if err != "" {
-		return nil, nil, nil, err
+	room.Racks, e = GetRacksOfParent(id)
+	if e != "" {
+		return nil, e
 	}
 
-	devtree := make([][]*Device, len(racks))
+	//devtree := make([][]*Device, len(racks))
 
-	for i, _ := range racks {
-		devtree[i], err = GetDevicesOfParent(uint(racks[i].ID))
-		if err != "" {
-			return nil, nil, nil, err
+	for i, _ := range room.Racks {
+		room.Racks[i].Devices, e = GetDevicesOfParent(uint(room.Racks[i].ID))
+		if e != "" {
+			return nil, e
 		}
 
 	}
@@ -191,7 +191,32 @@ func GetRoomHierarchy(id uint) (*Room, []*Rack, [][]*Device, string) {
 
 	//println("The length")
 
-	return room, racks, devtree, ""
+	return room, ""
+}
+
+func GetRoomsOfParent(id uint) ([]*Room, string) {
+	rooms := make([]*Room, 0)
+	err := GetDB().Table("room").Where("room_parent_id = ?", id).Find(&rooms).Error
+	if err != nil {
+		fmt.Println(err)
+		return nil, err.Error()
+	}
+
+	println("The length of room is: ", len(rooms))
+	for i := range rooms {
+		e := GetDB().Table("room_attributes").Where("id = ?", rooms[i].ID).First(&(rooms[i].Attributes)).Error
+
+		if e != nil {
+			fmt.Println(err)
+			return nil, err.Error()
+		}
+
+		rooms[i].Category = "room"
+		rooms[i].DescriptionJSON = strings.Split(rooms[i].DescriptionDB, "XYZ")
+		rooms[i].IDJSON = strconv.Itoa(rooms[i].ID)
+	}
+
+	return rooms, ""
 }
 
 //Get all rooms

@@ -37,7 +37,7 @@ type Rack struct {
 	DescriptionDB   string          `json:"-" gorm:"column:rack_description"`
 	Attributes      Rack_Attributes `json:"attributes"`
 
-	//Site []Site
+	Devices []*Device `json:"devices,omitempty" gorm:"-"`
 	//D is used to help the JSON marshalling
 	//while Description will be used in
 	//DB transactions
@@ -320,18 +320,18 @@ func GetRackByName(name string) (*Rack, string) {
 	return rack, ""
 }
 
-func GetRackHierarchy(id uint) (*Rack, []*Device, string) {
+func GetRackHierarchy(id uint) (*Rack /*, []*Device*/, string) {
 	rack, e := GetRack(id)
 	if e != "" {
-		return nil, nil, e
+		return nil, e
 	}
 
-	devices, err := GetDevicesOfParent(id)
-	if err != "" {
-		return nil, nil, err
+	rack.Devices, e = GetDevicesOfParent(id)
+	if e != "" {
+		return nil, e
 	}
 
-	return rack, devices, ""
+	return rack /*, devices*/, ""
 
 }
 
