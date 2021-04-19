@@ -335,6 +335,23 @@ func GetRackHierarchy(id uint) (*Rack /*, []*Device*/, string) {
 
 }
 
+func GetRackByNameAndParentID(id int, name string) (*Rack, string) {
+	rack := &Rack{}
+	err := GetDB().Raw(`SELECT * FROM rack JOIN 
+	rack_attributes ON rack.id = rack_attributes.id
+	WHERE rack_parent_id = ? AND rack_name = ?`, id, name).
+		Find(rack).Find(&(rack.Attributes)).Error
+	if err != nil {
+		fmt.Println(err)
+		return nil, err.Error()
+	}
+
+	rack.DescriptionJSON = strings.Split(rack.DescriptionDB, "XYZ")
+	rack.Category = "rack"
+	rack.IDJSON = strconv.Itoa(rack.ID)
+	return rack, ""
+}
+
 /*func GetRackDeviceByName(id int) (*Rack, string) {
 
 	rack, e := GetRack(uint(id))
