@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"p3/models"
 	u "p3/utils"
@@ -412,6 +413,36 @@ var GetBuildingByName = func(w http.ResponseWriter, r *http.Request) {
 		u.ErrLog("Error while getting building", "GET Building", e, r)
 
 		switch e {
+		case "record not found":
+			w.WriteHeader(http.StatusNotFound)
+		default:
+		}
+
+	} else {
+		resp = u.Message(true, "success")
+	}
+
+	resp["data"] = data
+	u.Respond(w, resp)
+}
+
+var GetBuildingHierarchy = func(w http.ResponseWriter, r *http.Request) {
+	fmt.Println("me & the irishman")
+	id, e := strconv.Atoi(mux.Vars(r)["id"])
+	resp := u.Message(true, "success")
+
+	if e != nil {
+		u.Respond(w, u.Message(false, "Error while parsing path parameters"))
+		u.ErrLog("Error while parsing path parameters", "GET Building", "", r)
+	}
+
+	data, e1 := models.GetBuildingHierarchy(uint(id))
+
+	if data == nil {
+		resp = u.Message(false, "Error while getting Building: "+e1)
+		u.ErrLog("Error while getting Building", "GET Building", e1, r)
+
+		switch e1 {
 		case "record not found":
 			w.WriteHeader(http.StatusNotFound)
 		default:

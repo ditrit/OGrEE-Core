@@ -169,6 +169,36 @@ func GetBuildings(site *Site) []*Building {
 	return bldgs
 }
 
+func GetBuildingHierarchy(id uint) (*Building, string) {
+	room, e := GetRoom(id)
+	if e != "" {
+		return nil, e
+	}
+
+	room.Racks, e = GetRacksOfParent(id)
+	if e != "" {
+		return nil, e
+	}
+
+	//devtree := make([][]*Device, len(racks))
+
+	for i, _ := range room.Racks {
+		room.Racks[i].Devices, e = GetDevicesOfParent(uint(room.Racks[i].ID))
+		if e != "" {
+			return nil, e
+		}
+
+	}
+	/*devices, err := GetDevicesOfParent(id)
+	if err != "" {
+		return nil, nil, nil, err
+	}*/
+
+	//println("The length")
+
+	return room, ""
+}
+
 func UpdateBuilding(id uint, newBldgInfo *Building) (map[string]interface{}, string) {
 	bldg := &Building{}
 
