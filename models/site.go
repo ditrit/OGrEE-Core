@@ -36,7 +36,7 @@ type Site struct {
 	DescriptionDB   string          `json:"-" gorm:"column:site_description"`
 	Attributes      Site_Attributes `json:"attributes"`
 
-	//Building []Building
+	Buildings []*Building `json:"buildings,omitempty"`
 }
 
 func (site *Site) Validate() (map[string]interface{}, bool) {
@@ -160,6 +160,26 @@ func GetSite(id uint) (*Site, string) {
 	site.DescriptionJSON = strings.Split(site.DescriptionDB, "XYZ")
 	site.Category = "site"
 	site.IDJSON = strconv.Itoa(site.ID)
+	return site, ""
+}
+
+func GetSiteHierarchy(id int) (*Site, string) {
+	site, e := GetSite(uint(id))
+	if e != "" {
+		return nil, e
+	}
+
+	site.Buildings, e = GetBuildingsOfParent(id)
+	if e != "" {
+		return nil, e
+	}
+
+	for k, _ := range site.Buildings {
+		site.Buildings[k], e = GetBuildingHierarchy(uint(site.Buildings[k].ID))
+		if e != "" {
+			return nil, e
+		}
+	}
 	return site, ""
 }
 

@@ -156,6 +156,31 @@ func GetAllBuildings() ([]*Building, string) {
 	return bldgs, ""
 }
 
+func GetBuildingsOfParent(id int) ([]*Building, string) {
+	bldgs := make([]*Building, 0)
+	err := GetDB().Table("building").Where("bldg_parent_id = ?", id).Find(&bldgs).Error
+	if err != nil {
+		fmt.Println(err)
+		return nil, err.Error()
+	}
+
+	println("The length of bldg is: ", len(bldgs))
+	for i := range bldgs {
+		e := GetDB().Table("building_attributes").Where("id = ?", bldgs[i].ID).First(&(bldgs[i].Attributes)).Error
+
+		if e != nil {
+			fmt.Println(err)
+			return nil, err.Error()
+		}
+
+		bldgs[i].Category = "building"
+		bldgs[i].DescriptionJSON = strings.Split(bldgs[i].DescriptionDB, "XYZ")
+		bldgs[i].IDJSON = strconv.Itoa(bldgs[i].ID)
+	}
+
+	return bldgs, ""
+}
+
 //Obtain all buildings of a site
 func GetBuildings(site *Site) []*Building {
 	bldgs := make([]*Building, 0)

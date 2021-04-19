@@ -97,6 +97,9 @@ func main() {
 	router.HandleFunc("/api/user/sites",
 		controllers.GetSitesByParentID).Methods("GET")*/
 
+	router.HandleFunc("/api/user/sites/{id:[0-9]+}/all",
+		controllers.GetSiteHierarchy).Methods("GET")
+
 	router.HandleFunc("/api/user/sites",
 		controllers.GetAllSites).Methods("GET")
 
