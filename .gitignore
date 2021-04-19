@@ -4,7 +4,5 @@ jenkins
 jenkins/*
 main
 ogreedb/
-.env
 *.txt
-resources/debug.log
 resources/debug.log
