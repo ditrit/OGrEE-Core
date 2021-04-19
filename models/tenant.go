@@ -26,6 +26,7 @@ type Tenant struct {
 	DescriptionJSON []string          `json:"description" gorm:"-"`
 	DescriptionDB   string            `json:"-" gorm:"column:tenant_description"`
 	Attributes      Tenant_Attributes `json:"attributes"`
+	Sites           []*Site           `json:"sites,omitempty" gorm:"-"`
 }
 
 func (tenant *Tenant) Validate() (map[string]interface{}, bool) {
@@ -120,6 +121,26 @@ func GetAllTenants() ([]*Tenant, string) {
 		tenants[i].IDJSON = strconv.Itoa(tenants[i].ID)
 	}
 	return tenants, ""
+}
+
+func GetTenantHierarchy(id int) (*Tenant, string) {
+	tn, e := GetTenant(uint(id))
+	if e != "" {
+		return nil, e
+	}
+
+	tn.Sites, e = GetSitesOfParent(id)
+	if e != "" {
+		return nil, e
+	}
+
+	for k, _ := range tn.Sites {
+		tn.Sites[k], e = GetSiteHierarchy(tn.Sites[k].ID)
+		if e != "" {
+			return nil, e
+		}
+	}
+	return tn, ""
 }
 
 //Only update valid fields

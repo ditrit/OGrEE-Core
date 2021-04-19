@@ -73,6 +73,9 @@ func main() {
 	router.HandleFunc("/api/user/tenants",
 		controllers.CreateTenant).Methods("POST")
 
+	router.HandleFunc("/api/user/tenants/{id:[0-9]+}/all",
+		controllers.GetTenantHierarchy).Methods("GET")
+
 	router.HandleFunc("/api/user/tenants/{id}",
 		controllers.GetTenantFor).Methods("GET")
 

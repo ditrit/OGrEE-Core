@@ -36,7 +36,7 @@ type Site struct {
 	DescriptionDB   string          `json:"-" gorm:"column:site_description"`
 	Attributes      Site_Attributes `json:"attributes"`
 
-	Buildings []*Building `json:"buildings,omitempty"`
+	Buildings []*Building `json:"buildings,omitempty" gorm:"-"`
 }
 
 func (site *Site) Validate() (map[string]interface{}, bool) {
@@ -161,6 +161,31 @@ func GetSite(id uint) (*Site, string) {
 	site.Category = "site"
 	site.IDJSON = strconv.Itoa(site.ID)
 	return site, ""
+}
+
+func GetSitesOfParent(id int) ([]*Site, string) {
+	sites := make([]*Site, 0)
+	err := GetDB().Table("site").Where("site_parent_id = ?", id).Find(&sites).Error
+	if err != nil {
+		fmt.Println(err)
+		return nil, err.Error()
+	}
+
+	println("The length of site is: ", len(sites))
+	for i := range sites {
+		e := GetDB().Table("site_attributes").Where("id = ?", sites[i].ID).First(&(sites[i].Attributes)).Error
+
+		if e != nil {
+			fmt.Println(err)
+			return nil, err.Error()
+		}
+
+		sites[i].Category = "site"
+		sites[i].DescriptionJSON = strings.Split(sites[i].DescriptionDB, "XYZ")
+		sites[i].IDJSON = strconv.Itoa(sites[i].ID)
+	}
+
+	return sites, ""
 }
 
 func GetSiteHierarchy(id int) (*Site, string) {

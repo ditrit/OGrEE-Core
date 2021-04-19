@@ -32,7 +32,7 @@ type Building struct {
 	DescriptionDB   string              `json:"-" gorm:"column:bldg_description"`
 	Attributes      Building_Attributes `json:"attributes"`
 
-	Rooms []*Room `json:"rooms,omitempty"`
+	Rooms []*Room `json:"rooms,omitempty" gorm:"-"`
 	//D is used to help the JSON marshalling
 	//while Description will be used in
 	//DB transactions
