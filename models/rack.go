@@ -331,10 +331,38 @@ func GetRackHierarchy(id uint) (*Rack /*, []*Device*/, string) {
 		return nil, e
 	}
 
-	return rack /*, devices*/, ""
+	return rack, ""
 
 }
 
-/*func GetRackChildren(id uint) (*Rack, []*Device, string) {
+/*func GetRackDeviceByName(id int) (*Rack, string) {
 
-}*/
+	rack, e := GetRack(uint(id))
+	if e != "" {
+		return nil, e
+	}
+
+
+}
+*/
+/*
+func GetRackChildren(id uint) (*Rack, int, string) {
+	rack, e := GetRack(id)
+	if e != "" {
+		return nil, 0, e
+	}
+
+	err := GetDB().Table("device").Where("device_parent_id = ?", id).
+		Find(&(rack.Devices)).Error
+	if err != nil {
+		return nil, 0, e
+	}
+
+	for k, _ := range rack.Devices {
+		rack.Devices[i].Category = "rack"
+		//racks[i].Attributes = *(attrs[i])
+		racks[i].DescriptionJSON = strings.Split(racks[i].DescriptionDB, "XYZ")
+		racks[i].IDJSON = strconv.Itoa(racks[i].ID)
+	}
+}
+*/

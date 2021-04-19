@@ -312,3 +312,20 @@ func GetDeviceByName(name string) (*Device, string) {
 	device.Category = "device"
 	return device, ""
 }
+
+func GetDeviceByNameAndParentID(id uint, name string) (*Device, string) {
+	device := &Device{}
+	err := GetDB().Raw(`SELECT * FROM device JOIN 
+	device_attributes ON device.id = device_attributes.id
+	WHERE device_parent_id = ? AND device_name = ?`, id, name).
+		Find(device).Find(&(device.Attributes)).Error
+	if err != nil {
+		fmt.Println(err)
+		return nil, err.Error()
+	}
+
+	device.DescriptionJSON = strings.Split(device.DescriptionDB, "XYZ")
+	device.Category = "device"
+	device.IDJSON = strconv.Itoa(device.ID)
+	return device, ""
+}

@@ -514,13 +514,16 @@ var GetRackDeviceByName = func(w http.ResponseWriter, r *http.Request) {
 	resp := u.Message(true, "success")
 	if e != nil {
 		u.Respond(w, u.Message(false, "Error while parsing path parameters"))
-		u.ErrLog("Error while parsing path parameters", "GET RACK", "", r)
+		u.ErrLog("Error while parsing path parameters", "GET RACKDEVICEBYNAME", "", r)
 	}
 
-	/*data, e1 := models.GetRack(uint(id))
+	data, e1 := models.GetDeviceByNameAndParentID(uint(id), name)
+
+	/*data, e1 := models.GetRack(uint(id))*/
 	if data == nil {
-		resp = u.Message(false, "Error while getting Rack: "+e1)
-		u.ErrLog("Error while getting Rack", "GET RACK", e1, r)
+		resp = u.Message(false, "Error while getting Device: "+e1)
+		u.ErrLog("Error while getting Device by name",
+			"GET DEVICE USING PID &NAME", e1, r)
 
 		switch e1 {
 		case "record not found":
@@ -532,6 +535,6 @@ var GetRackDeviceByName = func(w http.ResponseWriter, r *http.Request) {
 		resp = u.Message(true, "success")
 	}
 
-	resp["data"] = data*/
+	resp["data"] = data
 	u.Respond(w, resp)
 }
