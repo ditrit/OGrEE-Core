@@ -170,33 +170,23 @@ func GetBuildings(site *Site) []*Building {
 }
 
 func GetBuildingHierarchy(id uint) (*Building, string) {
-	room, e := GetRoom(id)
+	bldg, e := GetBuilding(id)
 	if e != "" {
 		return nil, e
 	}
 
-	room.Racks, e = GetRacksOfParent(id)
+	bldg.Rooms, e = GetRoomsOfParent(id)
 	if e != "" {
 		return nil, e
 	}
 
-	//devtree := make([][]*Device, len(racks))
-
-	for i, _ := range room.Racks {
-		room.Racks[i].Devices, e = GetDevicesOfParent(uint(room.Racks[i].ID))
+	for k, _ := range bldg.Rooms {
+		bldg.Rooms[k], e = GetRoomHierarchy(uint(bldg.Rooms[k].ID))
 		if e != "" {
 			return nil, e
 		}
-
 	}
-	/*devices, err := GetDevicesOfParent(id)
-	if err != "" {
-		return nil, nil, nil, err
-	}*/
-
-	//println("The length")
-
-	return room, ""
+	return bldg, ""
 }
 
 func UpdateBuilding(id uint, newBldgInfo *Building) (map[string]interface{}, string) {
