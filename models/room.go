@@ -363,22 +363,21 @@ func GetRoomByName(name string) (*Room, string) {
 }
 
 func GetDevicesUsingNamedRackOfRoom(roomID int, rack_name string) ([]*Device, string) {
-	room, e := GetRoom(uint(roomID))
-	if e != "" {
+	if _, e := GetRoom(uint(roomID)); e != "" {
 		return nil, e
 	}
-	room.Racks = make([]*Rack, 1)
-	room.Racks[0], e = GetRackByName(rack_name)
+
+	rack, e := GetRackByNameAndParentID(roomID, rack_name)
 	if e != "" {
 		return nil, e
 	}
 
-	room.Racks[0].Devices, e = GetDevicesOfParent(uint(room.Racks[0].ID))
+	rack.Devices, e = GetDevicesOfParent(uint(rack.ID))
 	if e != "" {
 		return nil, e
 	}
 
-	return room.Racks[0].Devices, ""
+	return rack.Devices, ""
 }
 
 func GetNamedDeviceOfRoom(roomID int, rack_name, device_name string) (*Device, string) {
