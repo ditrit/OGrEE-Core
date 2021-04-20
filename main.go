@@ -156,6 +156,9 @@ func main() {
 	router.HandleFunc("/api/user/rooms/{id:[0-9]+}/racks/{rack_name}",
 		controllers.GetRoomRack).Methods("GET")
 
+	router.HandleFunc("/api/user/rooms/{id:[0-9]+}/racks",
+		controllers.GetRacksOfParent).Methods("GET")
+
 	router.HandleFunc("/api/user/rooms/{id:[0-9]+}/all",
 		controllers.GetRoomHierarchy).Methods("GET")
 

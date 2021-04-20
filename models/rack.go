@@ -138,19 +138,6 @@ func GetRack(id uint) (*Rack, string) {
 	return rack, ""
 }
 
-//Obtain all racks of a room
-func GetRacks(room *Room) ([]*Rack, string) {
-	racks := make([]*Rack, 0)
-
-	err := GetDB().Table("racks").Where("foreignkey = ?", room.ID).Find(&racks).Error
-	if err != nil {
-		fmt.Println(err)
-		return nil, err.Error()
-	}
-
-	return racks, ""
-}
-
 //Obtain all racks
 func GetAllRacks() ([]*Rack, string) {
 	racks := make([]*Rack, 0)
@@ -171,9 +158,14 @@ func GetAllRacks() ([]*Rack, string) {
 	return racks, ""
 }
 
+//Obtain all racks of Parent
 func GetRacksOfParent(id uint) ([]*Rack, string) {
 	racks := make([]*Rack, 0)
-	err := GetDB().Table("rack").Where("rack_parent_id = ?", id).Find(&racks).Error
+	attrs := make([]*Rack_Attributes, 0)
+	err := GetDB().Raw(`SELECT * FROM rack JOIN 
+	rack_attributes ON rack.id = rack_attributes.id
+	WHERE rack_parent_id = ?`, id).
+		Find(&racks).Find(&attrs).Error
 	if err != nil {
 		fmt.Println(err)
 		return nil, err.Error()
@@ -181,13 +173,7 @@ func GetRacksOfParent(id uint) ([]*Rack, string) {
 
 	println("The length of rack is: ", len(racks))
 	for i := range racks {
-		e := GetDB().Table("rack_attributes").Where("id = ?", racks[i].ID).First(&(racks[i].Attributes)).Error
-
-		if e != nil {
-			fmt.Println(err)
-			return nil, err.Error()
-		}
-
+		racks[i].Attributes = *(attrs[i])
 		racks[i].Category = "rack"
 		racks[i].DescriptionJSON = strings.Split(racks[i].DescriptionDB, "XYZ")
 		racks[i].IDJSON = strconv.Itoa(racks[i].ID)
