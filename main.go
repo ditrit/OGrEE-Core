@@ -106,6 +106,9 @@ func main() {
 	router.HandleFunc("/api/user/sites",
 		controllers.GetAllSites).Methods("GET")
 
+	router.HandleFunc("/api/user/sites/{id}/buildings/{building_name}/rooms",
+		controllers.GetRoomsUsingNamedBldgOfSite).Methods("GET")
+
 	router.HandleFunc("/api/user/sites/{id}/buildings/{building_name}",
 		controllers.GetNamedBuildingOfSite).Methods("GET")
 

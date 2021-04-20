@@ -441,3 +441,16 @@ func GetBuildingByNameAndParentID(id int, name string) (*Building, string) {
 	building.IDJSON = strconv.Itoa(building.ID)
 	return building, ""
 }
+
+func GetRoomsUsingNamedBldgOfSite(id int, name string) ([]*Room, string) {
+	bldg, e := GetBuildingByNameAndParentID(id, name)
+	if e != "" {
+		return nil, e
+	}
+
+	rooms, e1 := GetRoomsOfBuilding(bldg.ID)
+	if e1 != "" {
+		return nil, e1
+	}
+	return rooms, ""
+}
