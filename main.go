@@ -131,6 +131,9 @@ func main() {
 	router.HandleFunc("/api/user/buildings/{id}",
 		controllers.DeleteBuilding).Methods("DELETE")
 
+	router.HandleFunc("/api/user/buildings/{id:[0-9]+}/rooms/{room_name}/racks",
+		controllers.GetRacksUsingNamedRoomOfBuilding).Methods("GET")
+
 	router.HandleFunc("/api/user/buildings/{id:[0-9]+}/rooms/{room_name}",
 		controllers.GetNamedRoomOfBuilding).Methods("GET")
 
