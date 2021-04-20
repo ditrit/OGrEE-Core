@@ -320,3 +320,16 @@ func GetBuildingByName(name string) (*Building, string) {
 	bldg.Category = "bldg"
 	return bldg, ""
 }
+
+func GetNamedRoomOfBuilding(id int, name string) (*Room, string) {
+	if _, e := GetBuilding(uint(id)); e != "" {
+		return nil, e
+	}
+
+	room, e := GetRoomByNameAndParentID(id, name)
+	if e != "" {
+		return nil, e
+	}
+	return room, ""
+
+}

@@ -398,3 +398,20 @@ func GetNamedDeviceOfRoom(roomID int, rack_name, device_name string) (*Device, s
 
 	return device, ""
 }
+
+func GetRoomByNameAndParentID(id int, name string) (*Room, string) {
+	room := &Room{}
+	err := GetDB().Raw(`SELECT * FROM room JOIN 
+	room_attributes ON room.id = room_attributes.id
+	WHERE room_parent_id = ? AND room_name = ?`, id, name).
+		Find(room).Find(&(room.Attributes)).Error
+	if err != nil {
+		fmt.Println(err)
+		return nil, err.Error()
+	}
+
+	room.DescriptionJSON = strings.Split(room.DescriptionDB, "XYZ")
+	room.Category = "room"
+	room.IDJSON = strconv.Itoa(room.ID)
+	return room, ""
+}
