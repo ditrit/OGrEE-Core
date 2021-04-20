@@ -363,3 +363,20 @@ func GetRacksUsingNamedRoomOfBuilding(bldgid int, name string) ([]*Rack, string)
 
 	return racks, ""
 }
+
+func GetNamedRackOfBuilding(id int, room_name, rack_name string) (*Rack, string) {
+	if _, e := GetBuilding(uint(id)); e != "" {
+		return nil, e
+	}
+
+	room, e := GetRoomByNameAndParentID(id, room_name)
+	if e != "" {
+		return nil, e
+	}
+
+	rack, e1 := GetRackByNameAndParentID(room.ID, rack_name)
+	if e1 != "" {
+		return nil, e
+	}
+	return rack, ""
+}
