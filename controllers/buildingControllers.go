@@ -457,7 +457,31 @@ var GetBuildingHierarchy = func(w http.ResponseWriter, r *http.Request) {
 }
 
 var GetRoomsOfBuilding = func(w http.ResponseWriter, r *http.Request) {
+	id, e := strconv.Atoi(mux.Vars(r)["id"])
+	resp := u.Message(true, "success")
+	if e != nil {
+		u.Respond(w, u.Message(false, "Error while parsing path parameters"))
+		u.ErrLog("Error while parsing path parameters", "GET ROOMSOFBUILDING", "", r)
+	}
 
+	data, e1 := models.GetRoomsOfBuilding(id)
+	if data == nil {
+		resp = u.Message(false, "Error while getting Rooms: "+e1)
+		u.ErrLog("Error while getting Rooms of Building",
+			"GET RACKSOFPARENT", e1, r)
+
+		switch e1 {
+		case "record not found":
+			w.WriteHeader(http.StatusNotFound)
+		default:
+		}
+
+	} else {
+		resp = u.Message(true, "success")
+	}
+
+	resp["data"] = data
+	u.Respond(w, resp)
 }
 
 var GetNamedRoomOfBuilding = func(w http.ResponseWriter, r *http.Request) {

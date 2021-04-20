@@ -333,3 +333,15 @@ func GetNamedRoomOfBuilding(id int, name string) (*Room, string) {
 	return room, ""
 
 }
+
+func GetRoomsOfBuilding(id int) ([]*Room, string) {
+	if _, e := GetBuilding(uint(id)); e != "" {
+		return nil, e
+	}
+
+	rooms, e := GetRoomsOfParent(uint(id))
+	if e != "" {
+		return nil, e
+	}
+	return rooms, ""
+}

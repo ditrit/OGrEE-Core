@@ -134,6 +134,9 @@ func main() {
 	router.HandleFunc("/api/user/buildings/{id:[0-9]+}/rooms/{room_name}",
 		controllers.GetNamedRoomOfBuilding).Methods("GET")
 
+	router.HandleFunc("/api/user/buildings/{id:[0-9]+}/rooms",
+		controllers.GetRoomsOfBuilding).Methods("GET")
+
 	router.HandleFunc("/api/user/buildings/{id:[0-9]+}/all",
 		controllers.GetBuildingHierarchy).Methods("GET")
 
