@@ -376,7 +376,7 @@ func GetNamedRackOfBuilding(id int, room_name, rack_name string) (*Rack, string)
 
 	rack, e1 := GetRackByNameAndParentID(room.ID, rack_name)
 	if e1 != "" {
-		return nil, e
+		return nil, e1
 	}
 	return rack, ""
 }
@@ -401,4 +401,26 @@ func GetDevicesUsingNamedRackOfBuilding(id int, room_name, rack_name string) ([]
 		return nil, e2
 	}
 	return devices, e2
+}
+
+func GetNamedDeviceOfBuilding(id int, room_name, rack_name, device_name string) (*Device, string) {
+	if _, e := GetBuilding(uint(id)); e != "" {
+		return nil, e
+	}
+
+	room, e := GetRoomByNameAndParentID(id, room_name)
+	if e != "" {
+		return nil, e
+	}
+
+	rack, e1 := GetRackByNameAndParentID(room.ID, rack_name)
+	if e1 != "" {
+		return nil, e1
+	}
+
+	device, e2 := GetDeviceByNameAndParentID(uint(rack.ID), device_name)
+	if e2 != "" {
+		return nil, e2
+	}
+	return device, ""
 }
