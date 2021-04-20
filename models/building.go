@@ -424,3 +424,20 @@ func GetNamedDeviceOfBuilding(id int, room_name, rack_name, device_name string) 
 	}
 	return device, ""
 }
+
+func GetBuildingByNameAndParentID(id int, name string) (*Building, string) {
+	building := &Building{}
+	err := GetDB().Raw(`SELECT * FROM building JOIN 
+	building_attributes ON building.id = building_attributes.id
+	WHERE bldg_parent_id = ? AND bldg_name = ?`, id, name).
+		Find(building).Find(&(building.Attributes)).Error
+	if err != nil {
+		fmt.Println(err)
+		return nil, err.Error()
+	}
+
+	building.DescriptionJSON = strings.Split(building.DescriptionDB, "XYZ")
+	building.Category = "building"
+	building.IDJSON = strconv.Itoa(building.ID)
+	return building, ""
+}

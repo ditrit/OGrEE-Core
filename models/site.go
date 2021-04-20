@@ -372,3 +372,15 @@ func GetBuildingsOfSite(id int) ([]*Building, string) {
 	}
 	return sites, ""
 }
+
+func GetNamedBuildingOfSite(id int, bldg_name string) (*Building, string) {
+	if _, e := GetSite(uint(id)); e != "" {
+		return nil, e
+	}
+
+	bldg, e := GetBuildingByNameAndParentID(id, bldg_name)
+	if e != "" {
+		return nil, e
+	}
+	return bldg, ""
+}
