@@ -7,10 +7,6 @@ import (
 	"strings"
 )
 
-type ECardinalOrient string
-
-//Desc        string          `json:"description"`
-
 type Site_Attributes struct {
 	ID             int    `json:"-" gorm:"column:id"`
 	Orientation    string `json:"orientation" gorm:"column:site_orientation"`
@@ -363,4 +359,16 @@ func GetSiteByName(name string) (*Site, string) {
 	site.DescriptionJSON = strings.Split(site.DescriptionDB, "XYZ")
 	site.Category = "site"
 	return site, ""
+}
+
+func GetBuildingsOfSite(id int) ([]*Building, string) {
+	if _, e := GetSite(uint(id)); e != "" {
+		return nil, e
+	}
+
+	sites, e := GetBuildingsOfParent(id)
+	if e != "" {
+		return nil, e
+	}
+	return sites, ""
 }
