@@ -153,8 +153,11 @@ func main() {
 	router.HandleFunc("/api/user/rooms/{id}",
 		controllers.DeleteRoom).Methods("DELETE")
 
+	router.HandleFunc("/api/user/rooms/{id:[0-9]+}/racks/{rack_name}/devices",
+		controllers.GetDevicesUsingNamedRackOfRoom).Methods("GET")
+
 	router.HandleFunc("/api/user/rooms/{id:[0-9]+}/racks/{rack_name}",
-		controllers.GetRoomRack).Methods("GET")
+		controllers.GetRackOfRoomByName).Methods("GET")
 
 	router.HandleFunc("/api/user/rooms/{id:[0-9]+}/racks",
 		controllers.GetRacksOfParent).Methods("GET")

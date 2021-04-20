@@ -29,7 +29,6 @@ type Device_Attributes struct {
 }
 
 type Device struct {
-	//gorm.Model
 	ID              int               `json:"-" gorm:"column:id"`
 	IDJSON          string            `json:"id" gorm:"-"`
 	Name            string            `json:"name" gorm:"column:device_name"`
@@ -39,11 +38,6 @@ type Device struct {
 	DescriptionJSON []string          `json:"description" gorm:"-"`
 	DescriptionDB   string            `json:"-" gorm:"column:device_description"`
 	Attributes      Device_Attributes `json:"attributes"`
-
-	//Site []Site
-	//DescriptionJSON is used to help the JSON marshalling
-	//while DescriptionDB will be used in
-	//DB transactions
 }
 
 func (device *Device) Validate() (map[string]interface{}, bool) {

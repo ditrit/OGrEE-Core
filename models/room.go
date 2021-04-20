@@ -361,3 +361,22 @@ func GetRoomByName(name string) (*Room, string) {
 	room.Category = "room"
 	return room, ""
 }
+
+func GetDevicesUsingNamedRackOfRoom(roomID int, rack_name string) ([]*Device, string) {
+	room, e := GetRoom(uint(roomID))
+	if e != "" {
+		return nil, e
+	}
+	room.Racks = make([]*Rack, 1)
+	room.Racks[0], e = GetRackByName(rack_name)
+	if e != "" {
+		return nil, e
+	}
+
+	room.Racks[0].Devices, e = GetDevicesOfParent(uint(room.Racks[0].ID))
+	if e != "" {
+		return nil, e
+	}
+
+	return room.Racks[0].Devices, ""
+}
