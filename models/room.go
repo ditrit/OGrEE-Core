@@ -380,3 +380,21 @@ func GetDevicesUsingNamedRackOfRoom(roomID int, rack_name string) ([]*Device, st
 
 	return room.Racks[0].Devices, ""
 }
+
+func GetNamedDeviceOfRoom(roomID int, rack_name, device_name string) (*Device, string) {
+	if _, e := GetRoom(uint(roomID)); e != "" {
+		return nil, e
+	}
+
+	rack, e1 := GetRackByNameAndParentID(roomID, rack_name)
+	if e1 != "" {
+		return nil, e1
+	}
+
+	device, e2 := GetDeviceByNameAndParentID(uint(rack.ID), device_name)
+	if e2 != "" {
+		return nil, e2
+	}
+
+	return device, ""
+}
