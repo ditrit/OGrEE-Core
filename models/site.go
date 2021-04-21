@@ -359,6 +359,25 @@ func GetSiteByName(name string) (*Site, string) {
 	return site, ""
 }
 
+func GetSiteByNameAndParentID(id int, name string) (*Site, string) {
+	site := &Site{}
+
+	e := GetDB().Raw(`SELECT * FROM site 
+	JOIN site_attributes ON site.id = site_attributes.id 
+	WHERE site_parent_id = ? AND site_name = ?;`, id, name).
+		Find(site).Find(&site.Attributes).Error
+
+	if e != nil {
+		//fmt.Println(e)
+		return nil, e.Error()
+	}
+
+	site.IDJSON = strconv.Itoa(site.ID)
+	site.DescriptionJSON = strings.Split(site.DescriptionDB, "XYZ")
+	site.Category = "site"
+	return site, ""
+}
+
 func GetBuildingsOfSite(id int) ([]*Building, string) {
 	if _, e := GetSite(uint(id)); e != "" {
 		return nil, e

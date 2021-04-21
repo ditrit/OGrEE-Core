@@ -435,3 +435,32 @@ var GetSitesOfTenant = func(w http.ResponseWriter, r *http.Request) {
 	resp["data"] = data
 	u.Respond(w, resp)
 }
+
+var GetNamedSiteOfTenant = func(w http.ResponseWriter, r *http.Request) {
+	name, e := mux.Vars(r)["tenant_name"]
+	site_name, e2 := mux.Vars(r)["site_name"]
+	resp := u.Message(true, "success")
+	if e != true || e2 != true {
+		u.Respond(w, u.Message(false, "Error while parsing path parameters"))
+		u.ErrLog("Error while parsing path parameters", "GET NAMEDSITEOFTENANT", "", r)
+	}
+
+	data, e1 := models.GetNamedSiteOfTenant(name, site_name)
+	if data == nil {
+		resp = u.Message(false, "Error while getting Site: "+e1)
+		u.ErrLog("Error while getting Named Site of Tenant",
+			"GET NAMEDSITEOFTENANT", e1, r)
+
+		switch e1 {
+		case "record not found":
+			w.WriteHeader(http.StatusNotFound)
+		default:
+		}
+
+	} else {
+		resp = u.Message(true, "success")
+	}
+
+	resp["data"] = data
+	u.Respond(w, resp)
+}

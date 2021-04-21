@@ -247,3 +247,16 @@ func GetSitesOfTenant(name string) ([]*Site, string) {
 	}
 	return sites, ""
 }
+
+func GetNamedSiteOfTenant(tenant_name, site_name string) (*Site, string) {
+	tenant, e := GetTenantByName(tenant_name)
+	if e != "" {
+		return nil, e
+	}
+
+	site, e1 := GetSiteByNameAndParentID(tenant.ID, site_name)
+	if e1 != "" {
+		return nil, e1
+	}
+	return site, ""
+}
