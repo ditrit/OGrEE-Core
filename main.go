@@ -73,6 +73,9 @@ func main() {
 	router.HandleFunc("/api/user/tenants",
 		controllers.CreateTenant).Methods("POST")
 
+	router.HandleFunc("/api/user/tenants/{tenant_name}/sites/{site_name}/buildings/{building_name}/rooms/{room_name}/racks",
+		controllers.GetRacksUsingNamedRoomOfTenant).Methods("GET")
+
 	router.HandleFunc("/api/user/tenants/{tenant_name}/sites/{site_name}/buildings/{building_name}/rooms/{room_name}",
 		controllers.GetNamedRoomOfTenant).Methods("GET")
 

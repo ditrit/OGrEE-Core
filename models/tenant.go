@@ -311,3 +311,16 @@ func GetNamedRoomOfTenant(tenant_name, site_name, bldg_name, room_name string) (
 	}
 	return room, ""
 }
+
+func GetRacksUsingNamedRoomOfTenant(tenant_name, site_name, bldg_name, room_name string) ([]*Rack, string) {
+	room, e := GetNamedRoomOfTenant(tenant_name, site_name, bldg_name, room_name)
+	if e != "" {
+		return nil, e
+	}
+
+	racks, e2 := GetRacksOfParent(uint(room.ID))
+	if e2 != "" {
+		return nil, e2
+	}
+	return racks, ""
+}
