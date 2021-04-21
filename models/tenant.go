@@ -16,7 +16,6 @@ type Tenant_Attributes struct {
 }
 
 type Tenant struct {
-	//gorm.Model
 	ID              int               `json:"-" gorm:"column:id"`
 	IDJSON          string            `json:"id" gorm:"-"`
 	Name            string            `json:"name" gorm:"column:tenant_name"`
@@ -235,4 +234,16 @@ func GetTenantByName(name string) (*Tenant, string) {
 	tenant.DescriptionJSON = strings.Split(tenant.DescriptionDB, "XYZ")
 	tenant.Category = "tenant"
 	return tenant, ""
+}
+
+func GetSitesOfTenant(name string) ([]*Site, string) {
+	tenant, e := GetTenantByName(name)
+	if e != "" {
+		return nil, e
+	}
+	sites, e1 := GetSitesOfParent(tenant.ID)
+	if e1 != "" {
+		return nil, e1
+	}
+	return sites, ""
 }

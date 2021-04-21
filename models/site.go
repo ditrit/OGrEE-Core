@@ -161,7 +161,10 @@ func GetSite(id uint) (*Site, string) {
 
 func GetSitesOfParent(id int) ([]*Site, string) {
 	sites := make([]*Site, 0)
-	err := GetDB().Table("site").Where("site_parent_id = ?", id).Find(&sites).Error
+	attrs := make([]*Site_Attributes, 0)
+	err := GetDB().Raw(`SELECT * FROM site JOIN 
+	site_attributes ON site.id = site_attributes.id
+	WHERE site_parent_id = ?`, id).Find(&sites).Find(&attrs).Error
 	if err != nil {
 		fmt.Println(err)
 		return nil, err.Error()
@@ -169,13 +172,8 @@ func GetSitesOfParent(id int) ([]*Site, string) {
 
 	println("The length of site is: ", len(sites))
 	for i := range sites {
-		e := GetDB().Table("site_attributes").Where("id = ?", sites[i].ID).First(&(sites[i].Attributes)).Error
 
-		if e != nil {
-			fmt.Println(err)
-			return nil, err.Error()
-		}
-
+		sites[i].Attributes = *(attrs[i])
 		sites[i].Category = "site"
 		sites[i].DescriptionJSON = strings.Split(sites[i].DescriptionDB, "XYZ")
 		sites[i].IDJSON = strconv.Itoa(sites[i].ID)
