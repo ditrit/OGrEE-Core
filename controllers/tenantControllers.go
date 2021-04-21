@@ -553,3 +553,34 @@ var GetRoomsUsingNamedBuildingOfTenant = func(w http.ResponseWriter, r *http.Req
 	resp["data"] = data
 	u.Respond(w, resp)
 }
+
+var GetNamedRoomOfTenant = func(w http.ResponseWriter, r *http.Request) {
+	name, e := mux.Vars(r)["tenant_name"]
+	site_name, e2 := mux.Vars(r)["site_name"]
+	bldg_name, e3 := mux.Vars(r)["building_name"]
+	room_name, e4 := mux.Vars(r)["room_name"]
+	resp := u.Message(true, "success")
+	if e != true || e2 != true || e3 != true || e4 != true {
+		u.Respond(w, u.Message(false, "Error while parsing path parameters"))
+		u.ErrLog("Error while parsing path parameters", "GET NAMEDROOMOFTENANT", "", r)
+	}
+
+	data, e1 := models.GetNamedRoomOfTenant(name, site_name, bldg_name, room_name)
+	if data == nil {
+		resp = u.Message(false, "Error while getting Room: "+e1)
+		u.ErrLog("Error while getting Named Room of Tenant",
+			"GET NAMEDROOMOFTENANT", e1, r)
+
+		switch e1 {
+		case "record not found":
+			w.WriteHeader(http.StatusNotFound)
+		default:
+		}
+
+	} else {
+		resp = u.Message(true, "success")
+	}
+
+	resp["data"] = data
+	u.Respond(w, resp)
+}
