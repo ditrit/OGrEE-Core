@@ -384,3 +384,15 @@ func GetNamedBuildingOfSite(id int, bldg_name string) (*Building, string) {
 	}
 	return bldg, ""
 }
+
+func GetNamedRoomOfSite(id int, bldg_name, room_name string) (*Room, string) {
+	bldg, e := GetBuildingByNameAndParentID(id, bldg_name)
+	if e != "" {
+		return nil, e
+	}
+	room, e1 := GetNamedRoomOfBuilding(bldg.ID, room_name)
+	if e1 != "" {
+		return nil, e1
+	}
+	return room, ""
+}

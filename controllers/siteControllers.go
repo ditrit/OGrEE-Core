@@ -652,3 +652,33 @@ var GetRoomsUsingNamedBldgOfSite = func(w http.ResponseWriter, r *http.Request) 
 	resp["data"] = data
 	u.Respond(w, resp)
 }
+
+var GetNamedRoomOfSite = func(w http.ResponseWriter, r *http.Request) {
+	id, e := strconv.Atoi(mux.Vars(r)["id"])
+	bldg_name := mux.Vars(r)["building_name"]
+	room_name := mux.Vars(r)["room_name"]
+	resp := u.Message(true, "success")
+	if e != nil {
+		u.Respond(w, u.Message(false, "Error while parsing path parameters"))
+		u.ErrLog("Error while parsing path parameters", "GET NAMEDROOMOFSITE", "", r)
+	}
+
+	data, e1 := models.GetNamedRoomOfSite(id, bldg_name, room_name)
+	if data == nil {
+		resp = u.Message(false, "Error while getting Room: "+e1)
+		u.ErrLog("Error while getting Named Room Of Site",
+			"GET NAMEDROOMOFSITE", e1, r)
+
+		switch e1 {
+		case "record not found":
+			w.WriteHeader(http.StatusNotFound)
+		default:
+		}
+
+	} else {
+		resp = u.Message(true, "success")
+	}
+
+	resp["data"] = data
+	u.Respond(w, resp)
+}
