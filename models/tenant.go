@@ -350,3 +350,16 @@ func GetDevicesUsingNamedRackOfTenant(tenant_name, site_name, bldg_name, room_na
 	}
 	return devices, ""
 }
+
+func GetNamedDeviceOfTenant(tenant_name, site_name, bldg_name, room_name, rack_name, dev_name string) (*Device, string) {
+	rack, e := GetNamedRackOfTenant(tenant_name, site_name, bldg_name, room_name, rack_name)
+	if e != "" {
+		return nil, e
+	}
+
+	device, e2 := GetDeviceByNameAndParentID(uint(rack.ID), dev_name)
+	if e2 != "" {
+		return nil, e2
+	}
+	return device, ""
+}
