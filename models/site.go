@@ -409,3 +409,16 @@ func GetRacksUsingNamedRoomOfSite(id int, bldg_name, room_name string) ([]*Rack,
 	}
 	return racks, ""
 }
+
+func GetNamedRackOfSite(id int, bldg_name, room_name, rack_name string) (*Rack, string) {
+	room, e := GetNamedRoomOfSite(id, bldg_name, room_name)
+	if e != "" {
+		return nil, e
+	}
+
+	rack, e2 := GetRackByNameAndParentID(room.ID, rack_name)
+	if e2 != "" {
+		return nil, e2
+	}
+	return rack, ""
+}
