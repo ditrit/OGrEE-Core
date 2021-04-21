@@ -272,3 +272,16 @@ func GetBuildingsUsingNamedSiteOfTenant(tenant_name, site_name string) ([]*Build
 	}
 	return bldgs, ""
 }
+
+func GetNamedBuildingOfTenant(tenant_name, site_name, bldg_name string) (*Building, string) {
+	site, e := GetNamedSiteOfTenant(tenant_name, site_name)
+	if e != "" {
+		return nil, e
+	}
+
+	bldg, e2 := GetBuildingByNameAndParentID(site.ID, bldg_name)
+	if e2 != "" {
+		return nil, e2
+	}
+	return bldg, ""
+}
