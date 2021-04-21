@@ -774,3 +774,35 @@ var GetDevicesUsingNamedRackOfSite = func(w http.ResponseWriter, r *http.Request
 	resp["data"] = data
 	u.Respond(w, resp)
 }
+
+var GetNamedDeviceOfSite = func(w http.ResponseWriter, r *http.Request) {
+	id, e := strconv.Atoi(mux.Vars(r)["id"])
+	bldg_name := mux.Vars(r)["building_name"]
+	room_name := mux.Vars(r)["room_name"]
+	rack_name := mux.Vars(r)["rack_name"]
+	device_name := mux.Vars(r)["device_name"]
+	resp := u.Message(true, "success")
+	if e != nil {
+		u.Respond(w, u.Message(false, "Error while parsing path parameters"))
+		u.ErrLog("Error while parsing path parameters", "GET NAMEDDEVICEOFSITE", "", r)
+	}
+
+	data, e1 := models.GetNamedDeviceOfSite(id, bldg_name, room_name, rack_name, device_name)
+	if data == nil {
+		resp = u.Message(false, "Error while getting Device: "+e1)
+		u.ErrLog("Error while getting Named Device Of Site",
+			"GET NAMEDDEVICEOFSITE", e1, r)
+
+		switch e1 {
+		case "record not found":
+			w.WriteHeader(http.StatusNotFound)
+		default:
+		}
+
+	} else {
+		resp = u.Message(true, "success")
+	}
+
+	resp["data"] = data
+	u.Respond(w, resp)
+}

@@ -440,3 +440,16 @@ func GetDevicesUsingNamedRackOfSite(id int, bldg_name, room_name, rack_name stri
 	}
 	return devices, ""
 }
+
+func GetNamedDeviceOfSite(id int, bldg_name, room_name, rack_name, device_name string) (*Device, string) {
+	rack, e := GetNamedRackOfSite(id, bldg_name, room_name, rack_name)
+	if e != "" {
+		return nil, e
+	}
+
+	dev, e2 := GetDeviceByNameAndParentID(uint(rack.ID), device_name)
+	if e2 != "" {
+		return nil, e2
+	}
+	return dev, ""
+}
