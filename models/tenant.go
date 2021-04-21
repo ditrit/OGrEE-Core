@@ -285,3 +285,16 @@ func GetNamedBuildingOfTenant(tenant_name, site_name, bldg_name string) (*Buildi
 	}
 	return bldg, ""
 }
+
+func GetRoomsUsingNamedBuildingOfTenant(tenant_name, site_name, bldg_name string) ([]*Room, string) {
+	bldg, e := GetNamedBuildingOfTenant(tenant_name, site_name, bldg_name)
+	if e != "" {
+		return nil, e
+	}
+
+	rooms, e2 := GetRoomsOfParent(uint(bldg.ID))
+	if e2 != "" {
+		return nil, e2
+	}
+	return rooms, ""
+}
