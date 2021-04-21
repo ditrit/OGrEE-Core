@@ -422,3 +422,21 @@ func GetNamedRackOfSite(id int, bldg_name, room_name, rack_name string) (*Rack, 
 	}
 	return rack, ""
 }
+
+func GetDevicesUsingNamedRackOfSite(id int, bldg_name, room_name, rack_name string) ([]*Device, string) {
+	room, e := GetNamedRoomOfSite(id, bldg_name, room_name)
+	if e != "" {
+		return nil, e
+	}
+
+	rack, e2 := GetRackByNameAndParentID(room.ID, rack_name)
+	if e2 != "" {
+		return nil, e2
+	}
+
+	devices, e3 := GetDevicesOfParent(uint(rack.ID))
+	if e3 != "" {
+		return nil, e3
+	}
+	return devices, ""
+}
