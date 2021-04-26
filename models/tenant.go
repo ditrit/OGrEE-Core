@@ -278,31 +278,10 @@ func GetTenantByName(name string) (*Tenant, string) {
 func GetTenantQuery(q *Tenant) (*Tenant, string) {
 	tenant := &Tenant{}
 
-	/*e := GetDB().Raw(`SELECT * FROM tenant
-	JOIN tenant_attributes ON tenant.id = tenant_attributes.id
-	WHERE tenant_name = ?;`, name).Find(tenant).Find(&tenant.Attributes).Error*/
-
-	//e := GetDB().Where(q).Find(tenant).Error
-
-	/*e := GetDB().Table("tenant").Where(GetDB().Where(q).
-	Joins("JOIN tenant_attributes ON tenant.id = tenant_attributes.id").
-	Where(GetDB().Where(&(q.Attributes)))).
-	Find(tenant).Find(&(tenant.Attributes)).Error
-	*/
-	/*
-		SELECT * FROM tenant JOIN tenant_attributes ON
-		tenant_attributes.id = tenant.id WHERE tenant_name = 'DEMO'
-		 AND tenant_attributes.tenant_color = 'FFFFFF';
-	*/
 	e := GetDB().Raw(FormQuery(q)).Find(tenant).
 		Find(&(tenant.Attributes)).Error
 
 	if e != nil {
-		//fmt.Println(e)
-		/*for k, _ := range q {
-			println("Here's what's in the q: ", k)
-		}*/
-
 		return nil, e.Error()
 	}
 
