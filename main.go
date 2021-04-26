@@ -19,7 +19,7 @@ var tmatch mux.MatcherFunc = func(request *http.Request, match *mux.RouteMatch) 
 	//https://stackoverflow.com/questions/21664489/
 	//golang-mux-routing-wildcard-custom-func-match
 
-	return regexp.MustCompile(`^(\/api\/user\/tenants\?name=.*)$`).
+	return regexp.MustCompile(`^(\/api\/user\/tenants\?.*)$`).
 		MatchString(request.URL.String())
 }
 

@@ -275,20 +275,26 @@ func GetTenantByName(name string) (*Tenant, string) {
 	return tenant, ""
 }
 
-func GetTenantQuery(q *Tenant) (*Tenant, string) {
-	tenant := &Tenant{}
+func GetTenantQuery(q *Tenant) ([]*Tenant, string) {
+	tenants := make([]*Tenant, 0)
+	attrs := make([]*Tenant_Attributes, 0)
 
-	e := GetDB().Raw(FormQuery(q)).Find(tenant).
-		Find(&(tenant.Attributes)).Error
+	e := GetDB().Raw(FormQuery(q)).Find(&tenants).
+		Find(&attrs).Error
 
 	if e != nil {
 		return nil, e.Error()
 	}
 
-	tenant.IDJSON = strconv.Itoa(tenant.ID)
-	tenant.DescriptionJSON = strings.Split(tenant.DescriptionDB, "XYZ")
-	tenant.Category = "tenant"
-	return tenant, ""
+	for i := range tenants {
+		tenants[i].Attributes = *(attrs[i])
+		tenants[i].IDJSON = strconv.Itoa(tenants[i].ID)
+		tenants[i].DescriptionJSON =
+			strings.Split(tenants[i].DescriptionDB, "XYZ")
+		tenants[i].Category = "tenant"
+	}
+
+	return tenants, ""
 }
 
 func GetSitesOfTenant(name string) ([]*Site, string) {
