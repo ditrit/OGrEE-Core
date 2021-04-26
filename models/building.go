@@ -115,6 +115,68 @@ func (bldg *Building) Create() (map[string]interface{}, string) {
 	return resp, ""
 }
 
+func (b *Building) FormQuery() string {
+
+	query := "SELECT * FROM building " + u.JoinQueryGen("building")
+	if b.Name != "" {
+		query += " WHERE bldg_name = '" + b.Name + "'"
+	}
+	if b.Category != "" {
+		query += " AND bldg_category = '" + b.Category + "'"
+	}
+	if b.Domain != "" {
+		query += " AND bldg_domain = '" + b.Domain + "'"
+	}
+	if (Building_Attributes{}) != b.Attributes {
+		if b.Attributes.PosXY != "" {
+			query +=
+				" AND building_attributes.bldg_bldg_pos_x_y = '" +
+					b.Attributes.PosXY + "'"
+		}
+		if b.Attributes.PosXYU != "" {
+			query +=
+				" AND building_attributes.bldg_pos_x_y_unit = '" +
+					b.Attributes.PosXYU + "'"
+		}
+		if b.Attributes.PosZ != "" {
+			query +=
+				" AND building_attributes.bldg_pos_z = '" +
+					b.Attributes.PosZ + "'"
+		}
+		if b.Attributes.PosZU != "" {
+			query +=
+				" AND building_attributes.bldg_pos_z_unit = '" +
+					b.Attributes.PosZU + "'"
+		}
+		if b.Attributes.Size != "" {
+			query +=
+				" AND building_attributes.bldg_size = '" +
+					b.Attributes.Size + "'"
+		}
+		if b.Attributes.SizeU != "" {
+			query +=
+				" AND building_attributes.bldg_size_unit = '" +
+					b.Attributes.SizeU + "'"
+		}
+		if b.Attributes.Height != "" {
+			query +=
+				" AND building_attributes.height = '" +
+					b.Attributes.Height + "'"
+		}
+		if b.Attributes.HeightU != "" {
+			query +=
+				" AND building_attributes.bldg_height_unit = '" +
+					b.Attributes.HeightU + "'"
+		}
+		if b.Attributes.Floors != "" {
+			query +=
+				" AND building_attributes.bldg_nb_floors = '" +
+					b.Attributes.Floors + "'"
+		}
+	}
+	return query
+}
+
 //Get Building by ID
 func GetBuilding(id uint) (*Building, string) {
 	bldg := &Building{}
@@ -212,6 +274,28 @@ func GetBuildingHierarchy(id uint) (*Building, string) {
 		}
 	}
 	return bldg, ""
+}
+
+func GetBuildingByQuery(b *Building) ([]*Building, string) {
+	bldgs := make([]*Building, 0)
+	attrs := make([]*Building_Attributes, 0)
+
+	e := GetDB().Raw(b.FormQuery()).Find(&bldgs).
+		Find(&attrs).Error
+
+	if e != nil {
+		return nil, e.Error()
+	}
+
+	for i := range bldgs {
+		bldgs[i].Attributes = *(attrs[i])
+		bldgs[i].IDJSON = strconv.Itoa(bldgs[i].ID)
+		bldgs[i].DescriptionJSON =
+			strings.Split(bldgs[i].DescriptionDB, "XYZ")
+		bldgs[i].Category = "site"
+	}
+
+	return bldgs, ""
 }
 
 func UpdateBuilding(id uint, newBldgInfo *Building) (map[string]interface{}, string) {

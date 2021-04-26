@@ -394,6 +394,37 @@ var UpdateBuilding = func(w http.ResponseWriter, r *http.Request) {
 	u.Respond(w, v)
 }
 
+var GetBuildingByQuery = func(w http.ResponseWriter, r *http.Request) {
+	var resp map[string]interface{}
+
+	query := u.ParamsParse(r.URL)
+
+	mydata := &models.Building{}
+	json.Unmarshal(query, mydata)
+	json.Unmarshal(query, &(mydata.Attributes))
+	fmt.Println("This is the result: ", *mydata)
+
+	data, e := models.GetBuildingByQuery(mydata)
+
+	if len(data) == 0 {
+		resp = u.Message(false, "Error: "+e)
+		u.ErrLog("Error while getting building", "GET BLDGQUERY", e, r)
+
+		switch e {
+		case "record not found":
+			w.WriteHeader(http.StatusNotFound)
+		default:
+			w.WriteHeader(http.StatusNotFound)
+		}
+
+	} else {
+		resp = u.Message(true, "success")
+	}
+
+	resp["data"] = data
+	u.Respond(w, resp)
+}
+
 var GetBuildingByName = func(w http.ResponseWriter, r *http.Request) {
 	var resp map[string]interface{}
 	names := strings.Split(r.URL.String(), "=")

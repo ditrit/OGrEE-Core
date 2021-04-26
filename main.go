@@ -31,7 +31,7 @@ var smatch mux.MatcherFunc = func(request *http.Request, match *mux.RouteMatch) 
 
 var bmatch mux.MatcherFunc = func(request *http.Request, match *mux.RouteMatch) bool {
 
-	return regexp.MustCompile(`^(\/api\/user\/buildings\?name=.*)$`).
+	return regexp.MustCompile(`^(\/api\/user\/buildings\?.*)$`).
 		MatchString(request.URL.String())
 }
 
@@ -174,7 +174,7 @@ func main() {
 
 	// ------ BUILDING CRUD ------ //
 	router.HandleFunc("/api/user/buildings",
-		controllers.GetBuildingByName).Methods("GET").MatcherFunc(bmatch)
+		controllers.GetBuildingByQuery).Methods("GET").MatcherFunc(bmatch)
 
 	router.HandleFunc("/api/user/buildings",
 		controllers.CreateBuilding).Methods("POST")
