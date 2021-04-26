@@ -345,17 +345,6 @@ var DeleteTenant = func(w http.ResponseWriter, r *http.Request) {
 
 var GetTenantByName = func(w http.ResponseWriter, r *http.Request) {
 	var resp map[string]interface{}
-	//names := strings.Split(r.URL.String(), "=")
-	//println("Heres what we got: ", names[0], "AND ", names[1])
-	//thequery := r.
-
-	/*if names[1] == "" {
-		w.WriteHeader(http.StatusBadRequest)
-		u.Respond(w, u.Message(false, "Error while extracting from path parameters"))
-		u.ErrLog("Error while extracting from path parameters", "GET TENANT BY NAME",
-			"", r)
-		return
-	}*/
 
 	query := u.ParamsParse(r.URL)
 
@@ -368,7 +357,7 @@ var GetTenantByName = func(w http.ResponseWriter, r *http.Request) {
 
 	if e != "" {
 		resp = u.Message(false, "Error: "+e)
-		u.ErrLog("Error while getting tenant", "GET TENANT", e, r)
+		u.ErrLog("Error while getting tenant", "GET TENANTQUERY", e, r)
 
 		switch e {
 		case "record not found":
