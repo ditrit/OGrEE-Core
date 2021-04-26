@@ -348,6 +348,7 @@ var GetTenantByName = func(w http.ResponseWriter, r *http.Request) {
 	var resp map[string]interface{}
 	names := strings.Split(r.URL.String(), "=")
 	//println("Heres what we got: ", names[0], "AND ", names[1])
+	//thequery := r.
 
 	if names[1] == "" {
 		w.WriteHeader(http.StatusBadRequest)
@@ -357,7 +358,14 @@ var GetTenantByName = func(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	data, e := models.GetTenantByName(names[1])
+	query := u.ParamsParse(r.URL)
+
+	mydata := &models.Tenant{}
+	json.Unmarshal(query, mydata)
+	json.Unmarshal(query, &(mydata.Attributes))
+	fmt.Println("This is the result: ", *mydata)
+
+	data, e := models.GetTenantQuery(mydata)
 
 	if e != "" {
 		resp = u.Message(false, "Error: "+e)

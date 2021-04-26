@@ -24,7 +24,7 @@ type Tenant struct {
 	ParentID        int               `json:"parentId" gorm:"column:tenant_parent_id"`
 	DescriptionJSON []string          `json:"description" gorm:"-"`
 	DescriptionDB   string            `json:"-" gorm:"column:tenant_description"`
-	Attributes      Tenant_Attributes `json:"attributes"`
+	Attributes      Tenant_Attributes `json:"attributes" gorm:"-"`
 	Sites           []*Site           `json:"sites,omitempty" gorm:"-"`
 }
 
@@ -78,6 +78,43 @@ func (tenant *Tenant) Create() (map[string]interface{}, string) {
 	resp := u.Message(true, "success")
 	resp["tenant"] = tenant
 	return resp, ""
+}
+
+func FormQuery(t *Tenant) string {
+
+	query := "SELECT * FROM tenant " + u.JoinQueryGen("tenant")
+	if t.Name != "" {
+		query += " WHERE tenant_name = '" + t.Name + "'"
+	}
+	if t.Category != "" {
+		query += " AND tenant_category = '" + t.Category + "'"
+	}
+	if t.Domain != "" {
+		query += " AND tenant_domain = '" + t.Domain + "'"
+	}
+	if (Tenant_Attributes{}) != t.Attributes {
+		if t.Attributes.Color != "" {
+			query +=
+				" AND tenant_attributes.tenant_color = '" +
+					t.Attributes.Color + "'"
+		}
+		if t.Attributes.MainContact != "" {
+			query +=
+				" AND tenant_attributes.main_contact = '" +
+					t.Attributes.MainContact + "'"
+		}
+		if t.Attributes.MainEmail != "" {
+			query +=
+				" AND tenant_attributes.main_email = '" +
+					t.Attributes.MainEmail + "'"
+		}
+		if t.Attributes.MainPhone != "" {
+			query +=
+				" AND tenant_attributes.main_phone = '" +
+					t.Attributes.MainPhone + "'"
+		}
+	}
+	return query
 }
 
 func GetTenant(id uint) (*Tenant, string) {
@@ -221,12 +258,51 @@ func DeleteTenant(id uint) map[string]interface{} {
 func GetTenantByName(name string) (*Tenant, string) {
 	tenant := &Tenant{}
 
-	e := GetDB().Raw(`SELECT * FROM tenant 
-	JOIN tenant_attributes ON tenant.id = tenant_attributes.id 
-	WHERE tenant_name = ?;`, name).Find(tenant).Find(&tenant.Attributes).Error
+	/*e := GetDB().Raw(`SELECT * FROM tenant
+	JOIN tenant_attributes ON tenant.id = tenant_attributes.id
+	WHERE tenant_name = ?;`, name).Find(tenant).Find(&tenant.Attributes).Error*/
+
+	e := GetDB().Find(tenant).Find(&tenant.Attributes).Error
 
 	if e != nil {
 		//fmt.Println(e)
+		return nil, e.Error()
+	}
+
+	tenant.IDJSON = strconv.Itoa(tenant.ID)
+	tenant.DescriptionJSON = strings.Split(tenant.DescriptionDB, "XYZ")
+	tenant.Category = "tenant"
+	return tenant, ""
+}
+
+func GetTenantQuery(q *Tenant) (*Tenant, string) {
+	tenant := &Tenant{}
+
+	/*e := GetDB().Raw(`SELECT * FROM tenant
+	JOIN tenant_attributes ON tenant.id = tenant_attributes.id
+	WHERE tenant_name = ?;`, name).Find(tenant).Find(&tenant.Attributes).Error*/
+
+	//e := GetDB().Where(q).Find(tenant).Error
+
+	/*e := GetDB().Table("tenant").Where(GetDB().Where(q).
+	Joins("JOIN tenant_attributes ON tenant.id = tenant_attributes.id").
+	Where(GetDB().Where(&(q.Attributes)))).
+	Find(tenant).Find(&(tenant.Attributes)).Error
+	*/
+	/*
+		SELECT * FROM tenant JOIN tenant_attributes ON
+		tenant_attributes.id = tenant.id WHERE tenant_name = 'DEMO'
+		 AND tenant_attributes.tenant_color = 'FFFFFF';
+	*/
+	e := GetDB().Raw(FormQuery(q)).Find(tenant).
+		Find(&(tenant.Attributes)).Error
+
+	if e != nil {
+		//fmt.Println(e)
+		/*for k, _ := range q {
+			println("Here's what's in the q: ", k)
+		}*/
+
 		return nil, e.Error()
 	}
 
