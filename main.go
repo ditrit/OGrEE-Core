@@ -37,7 +37,7 @@ var bmatch mux.MatcherFunc = func(request *http.Request, match *mux.RouteMatch) 
 
 var rmatch mux.MatcherFunc = func(request *http.Request, match *mux.RouteMatch) bool {
 
-	return regexp.MustCompile(`^(\/api\/user\/rooms\?name=.*)$`).
+	return regexp.MustCompile(`^(\/api\/user\/rooms\?.*)$`).
 		MatchString(request.URL.String())
 }
 
@@ -214,7 +214,7 @@ func main() {
 
 	// ------ ROOM CRUD ------ //
 	router.HandleFunc("/api/user/rooms",
-		controllers.GetRoomByName).Methods("GET").MatcherFunc(rmatch)
+		controllers.GetRoomByQuery).Methods("GET").MatcherFunc(rmatch)
 
 	router.HandleFunc("/api/user/rooms",
 		controllers.CreateRoom).Methods("POST")

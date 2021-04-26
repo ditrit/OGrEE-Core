@@ -406,6 +406,37 @@ var UpdateRoom = func(w http.ResponseWriter, r *http.Request) {
 	u.Respond(w, v)
 }
 
+var GetRoomByQuery = func(w http.ResponseWriter, r *http.Request) {
+	var resp map[string]interface{}
+
+	query := u.ParamsParse(r.URL)
+
+	mydata := &models.Room{}
+	json.Unmarshal(query, mydata)
+	json.Unmarshal(query, &(mydata.Attributes))
+	fmt.Println("This is the result: ", *mydata)
+
+	data, e := models.GetRoomByQuery(mydata)
+
+	if len(data) == 0 {
+		resp = u.Message(false, "Error: "+e)
+		u.ErrLog("Error while getting room", "GET ROOMQUERY", e, r)
+
+		switch e {
+		case "record not found":
+			w.WriteHeader(http.StatusNotFound)
+		default:
+			w.WriteHeader(http.StatusNotFound)
+		}
+
+	} else {
+		resp = u.Message(true, "success")
+	}
+
+	resp["data"] = data
+	u.Respond(w, resp)
+}
+
 var GetRoomByName = func(w http.ResponseWriter, r *http.Request) {
 	var resp map[string]interface{}
 	names := strings.Split(r.URL.String(), "=")

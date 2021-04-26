@@ -134,6 +134,88 @@ func (room *Room) Create() (map[string]interface{}, string) {
 	return resp, ""
 }
 
+func (r *Room) FormQuery() string {
+
+	query := "SELECT * FROM room " + u.JoinQueryGen("room")
+	if r.Name != "" {
+		query += " WHERE room_name = '" + r.Name + "'"
+	}
+	if r.Category != "" {
+		query += " AND room_category = '" + r.Category + "'"
+	}
+	if r.Domain != "" {
+		query += " AND room_domain = '" + r.Domain + "'"
+	}
+	if (Room_Attributes{}) != r.Attributes {
+		if r.Attributes.Template != "" {
+			query +=
+				" AND room_attributes.room_template = '" +
+					r.Attributes.Template + "'"
+		}
+		if r.Attributes.PosXY != "" {
+			query +=
+				" AND room_attributes.room_pos_x_y = '" +
+					r.Attributes.PosXY + "'"
+		}
+		if r.Attributes.PosXYU != "" {
+			query +=
+				" AND room_attributes.room_pos_x_y_unit = '" +
+					r.Attributes.PosXYU + "'"
+		}
+		if r.Attributes.PosZ != "" {
+			query +=
+				" AND room_attributes.room_pos_z = '" +
+					r.Attributes.PosZ + "'"
+		}
+		if r.Attributes.PosZU != "" {
+			query +=
+				" AND room_attributes.room_pos_z_unit = '" +
+					r.Attributes.PosZU + "'"
+		}
+		if r.Attributes.Size != "" {
+			query +=
+				" AND room_attributes.room_size = '" +
+					r.Attributes.Size + "'"
+		}
+		if r.Attributes.SizeU != "" {
+			query +=
+				" AND room_attributes.room_size_unit = '" +
+					r.Attributes.SizeU + "'"
+		}
+		if r.Attributes.Height != "" {
+			query +=
+				" AND room_attributes.room_height = '" +
+					r.Attributes.Height + "'"
+		}
+		if r.Attributes.HeightU != "" {
+			query +=
+				" AND room_attributes.room_height_unit = '" +
+					r.Attributes.HeightU + "'"
+		}
+		if r.Attributes.Template != "" {
+			query +=
+				" AND room_attributes.room_template = '" +
+					r.Attributes.Template + "'"
+		}
+		if r.Attributes.Orientation != "" {
+			query +=
+				" AND room_attributes.room_orientation = '" +
+					r.Attributes.Orientation + "'"
+		}
+		if r.Attributes.Technical != "" {
+			query +=
+				" AND room_attributes.room_orientation = '" +
+					r.Attributes.Technical + "'"
+		}
+		if r.Attributes.Reserved != "" {
+			query +=
+				" AND room_attributes.room_reserved = '" +
+					r.Attributes.Reserved + "'"
+		}
+	}
+	return query
+}
+
 //Get the room by ID
 func GetRoom(id uint) (*Room, string) {
 	room := &Room{}
@@ -234,6 +316,28 @@ func GetAllRooms() ([]*Room, string) {
 		rooms[i].Attributes = *(attrs[i])
 		rooms[i].DescriptionJSON = strings.Split(rooms[i].DescriptionDB, "XYZ")
 		rooms[i].IDJSON = strconv.Itoa(rooms[i].ID)
+	}
+
+	return rooms, ""
+}
+
+func GetRoomByQuery(r *Room) ([]*Room, string) {
+	rooms := make([]*Room, 0)
+	attrs := make([]*Room_Attributes, 0)
+
+	e := GetDB().Raw(r.FormQuery()).Find(&rooms).
+		Find(&attrs).Error
+
+	if e != nil {
+		return nil, e.Error()
+	}
+
+	for i := range rooms {
+		rooms[i].Attributes = *(attrs[i])
+		rooms[i].IDJSON = strconv.Itoa(rooms[i].ID)
+		rooms[i].DescriptionJSON =
+			strings.Split(rooms[i].DescriptionDB, "XYZ")
+		rooms[i].Category = "room"
 	}
 
 	return rooms, ""
