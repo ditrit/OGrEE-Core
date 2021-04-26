@@ -25,7 +25,7 @@ var tmatch mux.MatcherFunc = func(request *http.Request, match *mux.RouteMatch) 
 
 var smatch mux.MatcherFunc = func(request *http.Request, match *mux.RouteMatch) bool {
 
-	return regexp.MustCompile(`^(\/api\/user\/sites\?name=.*)$`).
+	return regexp.MustCompile(`^(\/api\/user\/sites\?.*)$`).
 		MatchString(request.URL.String())
 }
 
@@ -117,7 +117,7 @@ func main() {
 
 	// ------ SITES CRUD ------ //
 	router.HandleFunc("/api/user/sites",
-		controllers.GetSiteByName).Methods("GET").MatcherFunc(smatch)
+		controllers.GetSiteByQuery).Methods("GET").MatcherFunc(smatch)
 
 	router.HandleFunc("/api/user/sites",
 		controllers.CreateSite).Methods("POST")

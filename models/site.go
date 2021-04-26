@@ -110,6 +110,68 @@ func (site *Site) Create() (map[string]interface{}, string) {
 	return resp, ""
 }
 
+func (s *Site) FormQuery() string {
+
+	query := "SELECT * FROM site " + u.JoinQueryGen("site")
+	if s.Name != "" {
+		query += " WHERE site_name = '" + s.Name + "'"
+	}
+	if s.Category != "" {
+		query += " AND site_category = '" + s.Category + "'"
+	}
+	if s.Domain != "" {
+		query += " AND site_domain = '" + s.Domain + "'"
+	}
+	if (Site_Attributes{}) != s.Attributes {
+		if s.Attributes.Orientation != "" {
+			query +=
+				" AND site_attributes.site_orientation = '" +
+					s.Attributes.Orientation + "'"
+		}
+		if s.Attributes.UsableColor != "" {
+			query +=
+				" AND site_attributes.usable_color = '" +
+					s.Attributes.UsableColor + "'"
+		}
+		if s.Attributes.ReservedColor != "" {
+			query +=
+				" AND site_attributes.reserved_color = '" +
+					s.Attributes.ReservedColor + "'"
+		}
+		if s.Attributes.TechnicalColor != "" {
+			query +=
+				" AND site_attributes.technical_color = '" +
+					s.Attributes.TechnicalColor + "'"
+		}
+		if s.Attributes.Address != "" {
+			query +=
+				" AND site_attributes.address = '" +
+					s.Attributes.Address + "'"
+		}
+		if s.Attributes.Zipcode != "" {
+			query +=
+				" AND site_attributes.zipcode = '" +
+					s.Attributes.Zipcode + "'"
+		}
+		if s.Attributes.City != "" {
+			query +=
+				" AND site_attributes.city = '" +
+					s.Attributes.City + "'"
+		}
+		if s.Attributes.Country != "" {
+			query +=
+				" AND site_attributes.country = '" +
+					s.Attributes.Country + "'"
+		}
+		if s.Attributes.Gps != "" {
+			query +=
+				" AND site_attributes.gps = '" +
+					s.Attributes.Gps + "'"
+		}
+	}
+	return query
+}
+
 //Get sites of a Tenant
 func GetSites(id uint) []*Site {
 	site := make([]*Site, 0)
@@ -223,6 +285,28 @@ func GetAllSites() ([]*Site, string) {
 		sites[i].DescriptionJSON = strings.Split(sites[i].DescriptionDB, "XYZ")
 		sites[i].IDJSON = strconv.Itoa(sites[i].ID)
 	}
+	return sites, ""
+}
+
+func GetSiteByQuery(s *Site) ([]*Site, string) {
+	sites := make([]*Site, 0)
+	attrs := make([]*Site_Attributes, 0)
+
+	e := GetDB().Raw(s.FormQuery()).Find(&sites).
+		Find(&attrs).Error
+
+	if e != nil {
+		return nil, e.Error()
+	}
+
+	for i := range sites {
+		sites[i].Attributes = *(attrs[i])
+		sites[i].IDJSON = strconv.Itoa(sites[i].ID)
+		sites[i].DescriptionJSON =
+			strings.Split(sites[i].DescriptionDB, "XYZ")
+		sites[i].Category = "site"
+	}
+
 	return sites, ""
 }
 

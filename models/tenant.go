@@ -80,7 +80,7 @@ func (tenant *Tenant) Create() (map[string]interface{}, string) {
 	return resp, ""
 }
 
-func FormQuery(t *Tenant) string {
+func (t *Tenant) FormQuery() string {
 
 	query := "SELECT * FROM tenant " + u.JoinQueryGen("tenant")
 	if t.Name != "" {
@@ -279,7 +279,7 @@ func GetTenantByQuery(q *Tenant) ([]*Tenant, string) {
 	tenants := make([]*Tenant, 0)
 	attrs := make([]*Tenant_Attributes, 0)
 
-	e := GetDB().Raw(FormQuery(q)).Find(&tenants).
+	e := GetDB().Raw(q.FormQuery()).Find(&tenants).
 		Find(&attrs).Error
 
 	if e != nil {
