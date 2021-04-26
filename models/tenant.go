@@ -275,7 +275,7 @@ func GetTenantByName(name string) (*Tenant, string) {
 	return tenant, ""
 }
 
-func GetTenantQuery(q *Tenant) ([]*Tenant, string) {
+func GetTenantByQuery(q *Tenant) ([]*Tenant, string) {
 	tenants := make([]*Tenant, 0)
 	attrs := make([]*Tenant_Attributes, 0)
 

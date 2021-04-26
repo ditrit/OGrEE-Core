@@ -65,7 +65,7 @@ func main() {
 
 	// ------ TENANTS CRUD ------ //
 	router.HandleFunc("/api/user/tenants",
-		controllers.GetTenantByName).Methods("GET").MatcherFunc(tmatch)
+		controllers.GetTenantByQuery).Methods("GET").MatcherFunc(tmatch)
 
 	router.HandleFunc("/api/user/tenants",
 		controllers.GetAllTenants).Methods("GET")
