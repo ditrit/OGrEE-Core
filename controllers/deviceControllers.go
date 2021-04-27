@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"p3/models"
 	u "p3/utils"
+	"reflect"
 	"strconv"
 	"strings"
 
@@ -485,6 +486,14 @@ var GetDeviceByQuery = func(w http.ResponseWriter, r *http.Request) {
 	json.Unmarshal(query, mydata)
 	json.Unmarshal(query, &(mydata.Attributes))
 	fmt.Println("This is the result: ", *mydata)
+
+	if reflect.DeepEqual(&models.Device{}, mydata) {
+		w.WriteHeader(http.StatusBadRequest)
+		u.Respond(w, u.Message(false, `Error while extracting from path parameters. Please check your query parameters.`))
+		u.ErrLog("Error while extracting from path parameters", "GET DEVICE BY QUERY",
+			"", r)
+		return
+	}
 
 	data, e := models.GetDeviceByQuery(mydata)
 
