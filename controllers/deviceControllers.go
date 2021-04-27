@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"p3/models"
 	u "p3/utils"
@@ -465,6 +466,37 @@ var GetDeviceByName = func(w http.ResponseWriter, r *http.Request) {
 		case "record not found":
 			w.WriteHeader(http.StatusNotFound)
 		default:
+		}
+
+	} else {
+		resp = u.Message(true, "success")
+	}
+
+	resp["data"] = data
+	u.Respond(w, resp)
+}
+
+var GetDeviceByQuery = func(w http.ResponseWriter, r *http.Request) {
+	var resp map[string]interface{}
+
+	query := u.ParamsParse(r.URL)
+
+	mydata := &models.Device{}
+	json.Unmarshal(query, mydata)
+	json.Unmarshal(query, &(mydata.Attributes))
+	fmt.Println("This is the result: ", *mydata)
+
+	data, e := models.GetDeviceByQuery(mydata)
+
+	if len(data) == 0 {
+		resp = u.Message(false, "Error: "+e)
+		u.ErrLog("Error while getting device", "GET DEVICEQUERY", e, r)
+
+		switch e {
+		case "record not found":
+			w.WriteHeader(http.StatusNotFound)
+		default:
+			w.WriteHeader(http.StatusNotFound)
 		}
 
 	} else {

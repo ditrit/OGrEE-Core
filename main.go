@@ -49,7 +49,7 @@ var ramatch mux.MatcherFunc = func(request *http.Request, match *mux.RouteMatch)
 
 var dmatch mux.MatcherFunc = func(request *http.Request, match *mux.RouteMatch) bool {
 
-	return regexp.MustCompile(`^(\/api\/user\/devices\?name=.*)$`).
+	return regexp.MustCompile(`^(\/api\/user\/devices\?.*)$`).
 		MatchString(request.URL.String())
 }
 
@@ -273,7 +273,7 @@ func main() {
 
 	// ------ DEVICE CRUD ------ //
 	router.HandleFunc("/api/user/devices",
-		controllers.GetDeviceByName).Methods("GET").MatcherFunc(dmatch)
+		controllers.GetDeviceByQuery).Methods("GET").MatcherFunc(dmatch)
 
 	router.HandleFunc("/api/user/devices",
 		controllers.CreateDevice).Methods("POST")

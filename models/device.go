@@ -111,6 +111,108 @@ func (device *Device) Create() (map[string]interface{}, string) {
 	return resp, ""
 }
 
+func (d *Device) FormQuery() string {
+
+	query := "SELECT * FROM device " + u.JoinQueryGen("device")
+	if d.Name != "" {
+		query += " WHERE device_name = '" + d.Name + "'"
+	}
+	if d.Category != "" {
+		query += " AND device_category = '" + d.Category + "'"
+	}
+	if d.Domain != "" {
+		query += " AND device_domain = '" + d.Domain + "'"
+	}
+	if (Device_Attributes{}) != d.Attributes {
+		if d.Attributes.Template != "" {
+			query +=
+				" AND device_attributes.device_template = '" +
+					d.Attributes.Template + "'"
+		}
+		if d.Attributes.Orientation != "" {
+			query +=
+				" AND device_attributes.device_orientation = '" +
+					d.Attributes.Orientation + "'"
+		}
+		if d.Attributes.PosXY != "" {
+			query +=
+				" AND device_attributes.device_pos_x_y = '" +
+					d.Attributes.PosXY + "'"
+		}
+		if d.Attributes.PosXYU != "" {
+			query +=
+				" AND device_attributes.device_pos_x_y_unit = '" +
+					d.Attributes.PosXYU + "'"
+		}
+		if d.Attributes.PosZ != "" {
+			query +=
+				" AND device_attributes.device_pos_z = '" +
+					d.Attributes.PosZ + "'"
+		}
+		if d.Attributes.PosZU != "" {
+			query +=
+				" AND device_attributes.device_pos_z_unit = '" +
+					d.Attributes.PosZU + "'"
+		}
+		if d.Attributes.Size != "" {
+			query +=
+				" AND device_attributes.device_size = '" +
+					d.Attributes.Size + "'"
+		}
+		if d.Attributes.SizeU != "" {
+			query +=
+				" AND device_attributes.device_sizeu = '" +
+					d.Attributes.SizeU + "'"
+		}
+		if d.Attributes.SizeUnit != "" {
+			query +=
+				" AND device_attributes.device_size_unit = '" +
+					d.Attributes.SizeUnit + "'"
+		}
+		if d.Attributes.Slot != "" {
+			query +=
+				" AND device_attributes.device_slot = '" +
+					d.Attributes.Slot + "'"
+		}
+		if d.Attributes.PosU != "" {
+			query +=
+				" AND device_attributes.device_posu= '" +
+					d.Attributes.PosU + "'"
+		}
+		if d.Attributes.Height != "" {
+			query +=
+				" AND device_attributes.device_height = '" +
+					d.Attributes.Height + "'"
+		}
+		if d.Attributes.HeightU != "" {
+			query +=
+				" AND device_attributes.device_height_unit = '" +
+					d.Attributes.HeightU + "'"
+		}
+		if d.Attributes.Vendor != "" {
+			query +=
+				" AND device_attributes.device_vendor = '" +
+					d.Attributes.Vendor + "'"
+		}
+		if d.Attributes.Type != "" {
+			query +=
+				" AND device_attributes.device_type = '" +
+					d.Attributes.Type + "'"
+		}
+		if d.Attributes.Model != "" {
+			query +=
+				" AND device_attributes.device_model = '" +
+					d.Attributes.Model + "'"
+		}
+		if d.Attributes.Serial != "" {
+			query +=
+				" AND device_attributes.device_serial = '" +
+					d.Attributes.Serial + "'"
+		}
+	}
+	return query
+}
+
 //Get the device given the ID
 func GetDevice(id uint) (*Device, string) {
 	device := &Device{}
@@ -166,6 +268,28 @@ func GetAllDevices() ([]*Device, string) {
 		devices[i].Attributes = *(attrs[i])
 		devices[i].DescriptionJSON = strings.Split(devices[i].DescriptionDB, "XYZ")
 		devices[i].IDJSON = strconv.Itoa(devices[i].ID)
+	}
+
+	return devices, ""
+}
+
+func GetDeviceByQuery(device *Device) ([]*Device, string) {
+	devices := make([]*Device, 0)
+	attrs := make([]*Device_Attributes, 0)
+
+	e := GetDB().Raw(device.FormQuery()).Find(&devices).
+		Find(&attrs).Error
+
+	if e != nil {
+		return nil, e.Error()
+	}
+
+	for i := range devices {
+		devices[i].Attributes = *(attrs[i])
+		devices[i].IDJSON = strconv.Itoa(devices[i].ID)
+		devices[i].DescriptionJSON =
+			strings.Split(devices[i].DescriptionDB, "XYZ")
+		devices[i].Category = "device"
 	}
 
 	return devices, ""
