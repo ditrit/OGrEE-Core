@@ -538,3 +538,34 @@ var GetRackDeviceByName = func(w http.ResponseWriter, r *http.Request) {
 	resp["data"] = data
 	u.Respond(w, resp)
 }
+
+var GetRackByQuery = func(w http.ResponseWriter, r *http.Request) {
+	var resp map[string]interface{}
+
+	query := u.ParamsParse(r.URL)
+
+	mydata := &models.Rack{}
+	json.Unmarshal(query, mydata)
+	json.Unmarshal(query, &(mydata.Attributes))
+	fmt.Println("This is the result: ", *mydata)
+
+	data, e := models.GetRackByQuery(mydata)
+
+	if len(data) == 0 {
+		resp = u.Message(false, "Error: "+e)
+		u.ErrLog("Error while getting rack", "GET RACKQUERY", e, r)
+
+		switch e {
+		case "record not found":
+			w.WriteHeader(http.StatusNotFound)
+		default:
+			w.WriteHeader(http.StatusNotFound)
+		}
+
+	} else {
+		resp = u.Message(true, "success")
+	}
+
+	resp["data"] = data
+	u.Respond(w, resp)
+}

@@ -292,7 +292,7 @@ func GetBuildingByQuery(b *Building) ([]*Building, string) {
 		bldgs[i].IDJSON = strconv.Itoa(bldgs[i].ID)
 		bldgs[i].DescriptionJSON =
 			strings.Split(bldgs[i].DescriptionDB, "XYZ")
-		bldgs[i].Category = "site"
+		bldgs[i].Category = "building"
 	}
 
 	return bldgs, ""

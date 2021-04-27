@@ -43,7 +43,7 @@ var rmatch mux.MatcherFunc = func(request *http.Request, match *mux.RouteMatch) 
 
 var ramatch mux.MatcherFunc = func(request *http.Request, match *mux.RouteMatch) bool {
 
-	return regexp.MustCompile(`^(\/api\/user\/racks\?name=.*)$`).
+	return regexp.MustCompile(`^(\/api\/user\/racks\?.*)$`).
 		MatchString(request.URL.String())
 }
 
@@ -248,7 +248,7 @@ func main() {
 
 	// ------ RACK CRUD ------ //
 	router.HandleFunc("/api/user/racks",
-		controllers.GetRackByName).Methods("GET").MatcherFunc(ramatch)
+		controllers.GetRackByQuery).Methods("GET").MatcherFunc(ramatch)
 
 	router.HandleFunc("/api/user/racks",
 		controllers.CreateRack).Methods("POST")

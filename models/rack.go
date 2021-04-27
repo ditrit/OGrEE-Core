@@ -122,6 +122,93 @@ func (rack *Rack) Create() (map[string]interface{}, string) {
 	return resp, ""
 }
 
+func (r *Rack) FormQuery() string {
+
+	query := "SELECT * FROM rack " + u.JoinQueryGen("rack")
+	if r.Name != "" {
+		query += " WHERE rack_name = '" + r.Name + "'"
+	}
+	if r.Category != "" {
+		query += " AND rack_category = '" + r.Category + "'"
+	}
+	if r.Domain != "" {
+		query += " AND rack_domain = '" + r.Domain + "'"
+	}
+	if (Rack_Attributes{}) != r.Attributes {
+		if r.Attributes.Template != "" {
+			query +=
+				" AND rack_attributes.rack_template = '" +
+					r.Attributes.Template + "'"
+		}
+		if r.Attributes.Orientation != "" {
+			query +=
+				" AND rack_attributes.rack_orientation = '" +
+					r.Attributes.Orientation + "'"
+		}
+		if r.Attributes.PosXY != "" {
+			query +=
+				" AND rack_attributes.rack_pos_x_y = '" +
+					r.Attributes.PosXY + "'"
+		}
+		if r.Attributes.PosXYU != "" {
+			query +=
+				" AND rack_attributes.rack_pos_x_y_unit = '" +
+					r.Attributes.PosXYU + "'"
+		}
+		if r.Attributes.PosZ != "" {
+			query +=
+				" AND rack_attributes.rack_pos_z = '" +
+					r.Attributes.PosZ + "'"
+		}
+		if r.Attributes.PosZU != "" {
+			query +=
+				" AND rack_attributes.rack_pos_z_unit = '" +
+					r.Attributes.PosZU + "'"
+		}
+		if r.Attributes.Size != "" {
+			query +=
+				" AND rack_attributes.rack_size = '" +
+					r.Attributes.Size + "'"
+		}
+		if r.Attributes.SizeU != "" {
+			query +=
+				" AND rack_attributes.rack_size_unit = '" +
+					r.Attributes.SizeU + "'"
+		}
+		if r.Attributes.Height != "" {
+			query +=
+				" AND rack_attributes.rack_height = '" +
+					r.Attributes.Height + "'"
+		}
+		if r.Attributes.HeightU != "" {
+			query +=
+				" AND rack_attributes.rack_height_unit = '" +
+					r.Attributes.HeightU + "'"
+		}
+		if r.Attributes.Vendor != "" {
+			query +=
+				" AND rack_attributes.rack_vendor = '" +
+					r.Attributes.Vendor + "'"
+		}
+		if r.Attributes.Type != "" {
+			query +=
+				" AND rack_attributes.rack_type = '" +
+					r.Attributes.Type + "'"
+		}
+		if r.Attributes.Model != "" {
+			query +=
+				" AND rack_attributes.rack_model = '" +
+					r.Attributes.Model + "'"
+		}
+		if r.Attributes.Serial != "" {
+			query +=
+				" AND rack_attributes.rack_serial = '" +
+					r.Attributes.Serial + "'"
+		}
+	}
+	return query
+}
+
 //Get the rack using ID
 func GetRack(id uint) (*Rack, string) {
 	rack := &Rack{}
@@ -177,6 +264,28 @@ func GetRacksOfParent(id uint) ([]*Rack, string) {
 		racks[i].Category = "rack"
 		racks[i].DescriptionJSON = strings.Split(racks[i].DescriptionDB, "XYZ")
 		racks[i].IDJSON = strconv.Itoa(racks[i].ID)
+	}
+
+	return racks, ""
+}
+
+func GetRackByQuery(rack *Rack) ([]*Rack, string) {
+	racks := make([]*Rack, 0)
+	attrs := make([]*Rack_Attributes, 0)
+
+	e := GetDB().Raw(rack.FormQuery()).Find(&racks).
+		Find(&attrs).Error
+
+	if e != nil {
+		return nil, e.Error()
+	}
+
+	for i := range racks {
+		racks[i].Attributes = *(attrs[i])
+		racks[i].IDJSON = strconv.Itoa(racks[i].ID)
+		racks[i].DescriptionJSON =
+			strings.Split(racks[i].DescriptionDB, "XYZ")
+		racks[i].Category = "rack"
 	}
 
 	return racks, ""
