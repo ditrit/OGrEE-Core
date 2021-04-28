@@ -265,7 +265,7 @@ func GetSiteHierarchy(id int) (*Site, string) {
 }
 
 func GetSiteHierarchyNonStandard(id int) (*Site, []*Building,
-	[][]*Room, [][]*Rack, [][]*Device, string) {
+	*[][]*Room, *[][]*Rack, *[][]*Device, string) {
 	site, e := GetSite(uint(id))
 	if e != "" {
 		return nil, nil, nil, nil, nil, e
@@ -293,7 +293,7 @@ func GetSiteHierarchyNonStandard(id int) (*Site, []*Building,
 		racks = append(racks, *tmpracks...)
 		devices = append(devices, *tmpdevices...)
 	}
-	return site, buildings, rooms, racks, devices, ""
+	return site, buildings, &rooms, &racks, &devices, ""
 }
 
 func GetAllSites() ([]*Site, string) {

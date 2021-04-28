@@ -179,6 +179,40 @@ func GetTenantHierarchy(id int) (*Tenant, string) {
 	return tn, ""
 }
 
+func GetTenantHierarchyNonStandard(id int) (*Tenant, []*Site,
+	*[][]*Building, *[][]*Room, *[][]*Rack, *[][]*Device, string) {
+	tn, e := GetTenant(uint(id))
+	if e != "" {
+		return nil, nil, nil, nil, nil, nil, e
+	}
+
+	sites, e := GetSitesOfParent(id)
+	if e != "" {
+		return nil, nil, nil, nil, nil, nil, e
+	}
+	buildings := make([][]*Building, len(sites))
+	rooms := make([][]*Room, 1)
+	racks := make([][]*Rack, 1)
+	devices := make([][]*Device, 1)
+	tmpbuildings := new([][]*Building)
+	tmprooms := new([][]*Room)
+	tmpracks := new([][]*Rack)
+	tmpdevices := new([][]*Device)
+
+	for k, _ := range sites {
+		_, buildings[k], tmprooms, tmpracks,
+			tmpdevices, e = GetSiteHierarchyNonStandard(sites[k].ID)
+		if e != "" {
+			return nil, nil, nil, nil, nil, nil, e
+		}
+		*tmpbuildings = append(*tmpbuildings, buildings...)
+		rooms = append(rooms, *tmprooms...)
+		racks = append(racks, *tmpracks...)
+		devices = append(devices, *tmpdevices...)
+	}
+	return tn, sites, tmpbuildings, &rooms, &racks, &devices, ""
+}
+
 //Only update valid fields
 //If any fields are invalid
 //Message will still be successful

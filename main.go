@@ -103,6 +103,9 @@ func main() {
 	router.HandleFunc("/api/user/tenants/{tenant_name}/sites",
 		controllers.GetSitesOfTenant).Methods("GET")
 
+	router.HandleFunc("/api/user/tenants/{id:[0-9]+}/all/nonstd",
+		controllers.GetTenantHierarchyNonStandard).Methods("GET")
+
 	router.HandleFunc("/api/user/tenants/{id:[0-9]+}/all",
 		controllers.GetTenantHierarchy).Methods("GET")
 

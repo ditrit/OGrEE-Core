@@ -419,7 +419,6 @@ var GetTenantHierarchy = func(w http.ResponseWriter, r *http.Request) {
 	u.Respond(w, resp)
 }
 
-/*
 var GetTenantHierarchyNonStandard = func(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("me & the irishman")
 	id, e := strconv.Atoi(mux.Vars(r)["id"])
@@ -430,7 +429,8 @@ var GetTenantHierarchyNonStandard = func(w http.ResponseWriter, r *http.Request)
 		u.ErrLog("Error while parsing path parameters", "GET Tenant", "", r)
 	}
 
-	data, e1 := models.GetTenantHierarchyNonStandard(id)
+	data, sites, bldgs, rooms,
+		racks, devices, e1 := models.GetTenantHierarchyNonStandard(id)
 
 	if data == nil {
 		resp = u.Message(false, "Error while getting Tenant: "+e1)
@@ -447,9 +447,14 @@ var GetTenantHierarchyNonStandard = func(w http.ResponseWriter, r *http.Request)
 	}
 
 	resp["data"] = data
+	resp["data"] = sites
+	resp["buildings"] = bldgs
+	resp["rooms"] = rooms
+	resp["racks"] = racks
+	resp["devices"] = devices
 	u.Respond(w, resp)
 }
-*/
+
 var GetSitesOfTenant = func(w http.ResponseWriter, r *http.Request) {
 	name, e := mux.Vars(r)["tenant_name"]
 	resp := u.Message(true, "success")
