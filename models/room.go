@@ -276,6 +276,37 @@ func GetRoomHierarchy(id uint) (*Room /*, []*Rack, [][]*Device*/, string) {
 	return room, ""
 }
 
+func GetRoomHierarchyNonStandard(id uint) (*Room, []*Rack, [][]*Device, string) {
+
+	room, e := GetRoom(id)
+	if e != "" {
+		return nil, nil, nil, e
+	}
+
+	racks, e1 := GetRacksOfParent(id)
+	if e1 != "" {
+		return nil, nil, nil, e1
+	}
+
+	devtree := make([][]*Device, len(racks))
+
+	for i, _ := range racks {
+		devtree[i], e = GetDevicesOfParent(uint(racks[i].ID))
+		if e != "" {
+			return nil, nil, nil, e
+		}
+
+	}
+	/*devices, err := GetDevicesOfParent(id)
+	if err != "" {
+		return nil, nil, nil, err
+	}*/
+
+	//println("The length")
+
+	return room, racks, devtree, ""
+}
+
 func GetRoomsOfParent(id uint) ([]*Room, string) {
 	rooms := make([]*Room, 0)
 	err := GetDB().Table("room").Where("room_parent_id = ?", id).Find(&rooms).Error

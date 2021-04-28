@@ -243,6 +243,9 @@ func main() {
 	router.HandleFunc("/api/user/rooms/{id:[0-9]+}/all",
 		controllers.GetRoomHierarchy).Methods("GET")
 
+	router.HandleFunc("/api/user/rooms/{id:[0-9]+}/all/nonstd",
+		controllers.GetRoomHierarchyNonStandard).Methods("GET")
+
 	router.HandleFunc("/api/user/rooms/{id}",
 		controllers.GetRoom).Methods("GET")
 
