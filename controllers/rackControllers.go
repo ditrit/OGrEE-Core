@@ -576,6 +576,10 @@ var GetRackByQuery = func(w http.ResponseWriter, r *http.Request) {
 		resp = u.Message(true, "success")
 	}
 
-	resp["data"] = data
+	if len(data) == 1 {
+		resp["data"] = data[0]
+	} else {
+		resp["data"] = data
+	}
 	u.Respond(w, resp)
 }
