@@ -277,7 +277,7 @@ func GetBuildingHierarchy(id uint) (*Building, string) {
 }
 
 func GetBuildingHierarchyNonStandard(id uint) (*Building,
-	[]*Room, [][]*Rack, [][]*Device, string) {
+	[]*Room, *[][]*Rack, *[][]*Device, string) {
 	bldg, e := GetBuilding(id)
 	if e != "" {
 		return nil, nil, nil, nil, e
@@ -298,7 +298,7 @@ func GetBuildingHierarchyNonStandard(id uint) (*Building,
 		}
 		devtree = append(devices, devtree...)
 	}
-	return bldg, rooms, racktree, devices, ""
+	return bldg, rooms, &racktree, &devices, ""
 }
 
 func GetBuildingByQuery(b *Building) ([]*Building, string) {

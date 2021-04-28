@@ -264,6 +264,38 @@ func GetSiteHierarchy(id int) (*Site, string) {
 	return site, ""
 }
 
+func GetSiteHierarchyNonStandard(id int) (*Site, []*Building,
+	[][]*Room, [][]*Rack, [][]*Device, string) {
+	site, e := GetSite(uint(id))
+	if e != "" {
+		return nil, nil, nil, nil, nil, e
+	}
+
+	buildings, e := GetBuildingsOfParent(id)
+	if e != "" {
+		return nil, nil, nil, nil, nil, e
+	}
+	rooms := make([][]*Room, 1)
+	racks := make([][]*Rack, 1)
+	devices := make([][]*Device, 1)
+	//tmproom := make([][]*Room, 1)
+	tmpracks := new([][]*Rack)
+	tmpdevices := new([][]*Device)
+
+	for k, _ := range buildings {
+		_, rooms[k], tmpracks, tmpdevices, e = GetBuildingHierarchyNonStandard(
+			uint(buildings[k].ID))
+		if e != "" {
+			return nil, nil, nil, nil, nil, e
+		}
+		/*_, _, tmpracks, tmpdevices, e = GetBuildingHierarchyNonStandard(
+		uint(site.Buildings[k].ID))*/
+		racks = append(racks, *tmpracks...)
+		devices = append(devices, *tmpdevices...)
+	}
+	return site, buildings, rooms, racks, devices, ""
+}
+
 func GetAllSites() ([]*Site, string) {
 	sites := make([]*Site, 0)
 	attrs := make([]*Site_Attributes, 0)
