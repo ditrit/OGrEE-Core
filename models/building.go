@@ -276,6 +276,31 @@ func GetBuildingHierarchy(id uint) (*Building, string) {
 	return bldg, ""
 }
 
+func GetBuildingHierarchyNonStandard(id uint) (*Building,
+	[]*Room, [][]*Rack, [][]*Device, string) {
+	bldg, e := GetBuilding(id)
+	if e != "" {
+		return nil, nil, nil, nil, e
+	}
+
+	rooms, e1 := GetRoomsOfParent(id)
+	if e1 != "" {
+		return nil, nil, nil, nil, e1
+	}
+	devtree := make([][]*Device, 1)
+	devices := make([][]*Device, 1)
+	racktree := make([][]*Rack, 1)
+
+	for k, _ := range rooms {
+		_, racktree[k], devices, e = GetRoomHierarchyNonStandard(uint(rooms[k].ID))
+		if e != "" {
+			return nil, nil, nil, nil, e
+		}
+		devtree = append(devices, devtree...)
+	}
+	return bldg, rooms, racktree, devices, ""
+}
+
 func GetBuildingByQuery(b *Building) ([]*Building, string) {
 	bldgs := make([]*Building, 0)
 	attrs := make([]*Building_Attributes, 0)

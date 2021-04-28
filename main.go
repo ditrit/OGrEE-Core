@@ -209,6 +209,9 @@ func main() {
 	router.HandleFunc("/api/user/buildings/{id:[0-9]+}/all",
 		controllers.GetBuildingHierarchy).Methods("GET")
 
+	router.HandleFunc("/api/user/buildings/{id:[0-9]+}/all/nonstd",
+		controllers.GetBuildingHierarchyNonStandard).Methods("GET")
+
 	router.HandleFunc("/api/user/buildings/{id}",
 		controllers.GetBuilding).Methods("GET")
 
