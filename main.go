@@ -106,6 +106,9 @@ func main() {
 	router.HandleFunc("/api/user/tenants/{id:[0-9]+}/all",
 		controllers.GetTenantHierarchy).Methods("GET")
 
+	/*router.HandleFunc("/api/user/tenants/{id:[0-9]+}/all/nonstd",
+	controllers.GetTenantHierarchyNonStandard).Methods("GET")*/
+
 	router.HandleFunc("/api/user/tenants/{id}",
 		controllers.GetTenantFor).Methods("GET")
 
@@ -267,6 +270,9 @@ func main() {
 
 	router.HandleFunc("/api/user/racks/{id:[0-9]+}/all",
 		controllers.GetRackHierarchy).Methods("GET")
+
+	router.HandleFunc("/api/user/racks/{id:[0-9]+}/all/nonstd",
+		controllers.GetRackHierarchyNonStandard).Methods("GET")
 
 	router.HandleFunc("/api/user/racks/{id}",
 		controllers.GetRack).Methods("GET")

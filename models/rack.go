@@ -415,7 +415,7 @@ func GetRackByName(name string) (*Rack, string) {
 	return rack, ""
 }
 
-func GetRackHierarchy(id uint) (*Rack /*, []*Device*/, string) {
+func GetRackHierarchy(id uint) (*Rack, string) {
 	rack, e := GetRack(id)
 	if e != "" {
 		return nil, e
@@ -427,6 +427,21 @@ func GetRackHierarchy(id uint) (*Rack /*, []*Device*/, string) {
 	}
 
 	return rack, ""
+
+}
+
+func GetRackHierarchyNonStandard(id uint) (*Rack, []*Device, string) {
+	rack, e := GetRack(id)
+	if e != "" {
+		return nil, nil, e
+	}
+
+	devices, e1 := GetDevicesOfParent(id)
+	if e1 != "" {
+		return nil, nil, e1
+	}
+
+	return rack, devices, ""
 
 }
 
