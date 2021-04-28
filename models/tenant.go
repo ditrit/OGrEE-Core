@@ -292,11 +292,9 @@ func DeleteTenant(id uint) map[string]interface{} {
 func GetTenantByName(name string) (*Tenant, string) {
 	tenant := &Tenant{}
 
-	/*e := GetDB().Raw(`SELECT * FROM tenant
+	e := GetDB().Raw(`SELECT * FROM tenant
 	JOIN tenant_attributes ON tenant.id = tenant_attributes.id
-	WHERE tenant_name = ?;`, name).Find(tenant).Find(&tenant.Attributes).Error*/
-
-	e := GetDB().Find(tenant).Find(&tenant.Attributes).Error
+	WHERE tenant_name = ?;`, name).Find(tenant).Find(&tenant.Attributes).Error
 
 	if e != nil {
 		//fmt.Println(e)
