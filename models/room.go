@@ -549,3 +549,25 @@ func GetRoomByNameAndParentID(id int, name string) (*Room, string) {
 	room.IDJSON = strconv.Itoa(room.ID)
 	return room, ""
 }
+
+func GetDevicesOfRoom(id int) ([]*Device, string) {
+	room, e := GetRoom(uint(id))
+	if e != "" {
+		return nil, e
+	}
+
+	room.Racks, e = GetRacksOfParent(uint(id))
+	if e != "" {
+		return nil, e
+	}
+
+	devices := make([]*Device, 0)
+	for i, _ := range room.Racks {
+		room.Racks[i].Devices, e = GetDevicesOfParent(uint(room.Racks[i].ID))
+		if e != "" {
+			return nil, e
+		}
+		devices = append(devices, room.Racks[i].Devices...)
+	}
+	return devices, ""
+}
