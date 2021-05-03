@@ -366,6 +366,27 @@ func GetBuildingsUsingNamedSiteOfTenant(tenant_name, site_name string) ([]*Build
 	return bldgs, ""
 }
 
+func GetBuildingsOfTenant(name string) ([]*Building, string) {
+	if _, e := GetTenantByName(name); e != "" {
+		return nil, e
+	}
+
+	sites, e := GetSitesOfTenant(name)
+	if e != "" {
+		return nil, e
+	}
+
+	bldgs := make([]*Building, 0)
+	for i := range sites {
+		sites[i].Buildings, e = GetBuildingsOfParent(sites[i].ID)
+		if e != "" {
+			return nil, e
+		}
+		bldgs = append(bldgs, sites[i].Buildings...)
+	}
+	return bldgs, ""
+}
+
 func GetNamedBuildingOfTenant(tenant_name, site_name, bldg_name string) (*Building, string) {
 	site, e := GetNamedSiteOfTenant(tenant_name, site_name)
 	if e != "" {
