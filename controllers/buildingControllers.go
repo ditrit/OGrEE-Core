@@ -622,6 +622,34 @@ var GetRacksUsingNamedRoomOfBuilding = func(w http.ResponseWriter, r *http.Reque
 	u.Respond(w, resp)
 }
 
+var GetRacksOfBuilding = func(w http.ResponseWriter, r *http.Request) {
+	id, e := strconv.Atoi(mux.Vars(r)["id"])
+	resp := u.Message(true, "success")
+	if e != nil {
+		u.Respond(w, u.Message(false, "Error while parsing path parameters"))
+		u.ErrLog("Error while parsing path parameters", "GET RACKSOFBUILDING", "", r)
+	}
+
+	data, e1 := models.GetRacksOfBuilding(id)
+	if data == nil {
+		resp = u.Message(false, "Error while getting Racks: "+e1)
+		u.ErrLog("Error while getting Racks of Building",
+			"GET RACKSOFBLDG", e1, r)
+
+		switch e1 {
+		case "record not found":
+			w.WriteHeader(http.StatusNotFound)
+		default:
+		}
+
+	} else {
+		resp = u.Message(true, "success")
+	}
+
+	resp["data"] = data
+	u.Respond(w, resp)
+}
+
 var GetNamedRackOfBuilding = func(w http.ResponseWriter, r *http.Request) {
 	id, e := strconv.Atoi(mux.Vars(r)["id"])
 	room_name := mux.Vars(r)["room_name"]

@@ -473,6 +473,27 @@ func GetRacksUsingNamedRoomOfBuilding(bldgid int, name string) ([]*Rack, string)
 	return racks, ""
 }
 
+func GetRacksOfBuilding(id int) ([]*Rack, string) {
+	if _, e := GetBuilding(uint(id)); e != "" {
+		return nil, e
+	}
+
+	rooms, e := GetRoomsOfParent(uint(id))
+	if e != "" {
+		return nil, e
+	}
+
+	racks := make([]*Rack, 0)
+	for k, _ := range rooms {
+		rooms[k].Racks, e = GetRacksOfParent(uint(rooms[k].ID))
+		if e != "" {
+			return nil, e
+		}
+		racks = append(racks, rooms[k].Racks...)
+	}
+	return racks, ""
+}
+
 func GetNamedRackOfBuilding(id int, room_name, rack_name string) (*Rack, string) {
 	if _, e := GetBuilding(uint(id)); e != "" {
 		return nil, e
