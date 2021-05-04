@@ -536,12 +536,6 @@ var UpdateSite = func(w http.ResponseWriter, r *http.Request) {
 //   required: false
 //   type: string
 //   default: "Some Domain"
-// - name: Description
-//   in: query
-//   description: Description of Site
-//   required: false
-//   type: string
-//   default: "Some abandoned site in Grenoble"
 // - name: Orientation
 //   in: query
 //   description: 'Indicates the location. Only values of

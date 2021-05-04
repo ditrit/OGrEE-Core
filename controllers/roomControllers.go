@@ -8,7 +8,6 @@ import (
 	u "p3/utils"
 	"reflect"
 	"strconv"
-	"strings"
 
 	"github.com/gorilla/mux"
 )
@@ -364,6 +363,18 @@ var DeleteRoom = func(w http.ResponseWriter, r *http.Request) {
 //   required: false
 //   type: string
 //   default: "cm"
+// - name: Technical
+//   in: query
+//   description: 'Unity Unique Attribute'
+//   required: false
+//   type: string
+//   default: "???"
+// - name: Reserved
+//   in: query
+//   description: 'Unity Unique Attribute'
+//   required: false
+//   type: string
+//   default: "???"
 // responses:
 //     '200':
 //         description: Updated
@@ -407,6 +418,106 @@ var UpdateRoom = func(w http.ResponseWriter, r *http.Request) {
 	u.Respond(w, v)
 }
 
+// swagger:operation GET /api/user/rooms? rooms GetRoomByQuery
+// Gets a Room using any attribute (with the exception of description) via query
+// The attributes are in the form {attr}=xyz&{attr1}=abc
+// And any combination can be provided given that at least 1 is provided.
+// ---
+// produces:
+// - application/json
+// parameters:
+// - name: ID
+//   in: path
+//   description: ID of desired room
+//   required: true
+//   type: int
+//   default: 999
+// - name: Name
+//   in: query
+//   description: Name of room
+//   required: false
+//   type: string
+//   default: "Room B"
+// - name: Category
+//   in: query
+//   description: Category of Room (ex. Consumer Electronics, Medical)
+//   required: false
+//   type: string
+//   default: "Research"
+// - name: Orientation
+//   in: query
+//   description: 'Indicates the location. Only values of
+//   (-|+)E(-|+)N, (-|+)N(-|+)W,
+//   (-|+)W(-|+)S, (-|+)S(-|+)E
+//   are acceptable'
+//   required: false
+//   type: string
+//   default: "+N+E"
+// - name: Template
+//   in: query
+//   description: 'Room template'
+//   required: false
+//   type: string
+//   default: "New Template"
+// - name: PosXY
+//   in: query
+//   description: 'Indicates the position in a XY coordinate format'
+//   required: false
+//   type: string
+//   default: "{\"x\":999,\"y\":999}"
+// - name: PosXYU
+//   in: query
+//   description: 'Indicates the unit of the PosXY position. Only values of
+//   "mm", "cm", "m", "U", "OU", "tile" are acceptable'
+//   required: false
+//   type: string
+//   default: "cm"
+// - name: PosZ
+//   in: query
+//   description: 'Indicates the position in the Z axis'
+//   required: false
+//   type: string
+//   default: "999"
+// - name: PosZU
+//   in: query
+//   description: 'Indicates the unit of the Z coordinate position. Only values of
+//   "mm", "cm", "m", "U", "OU", "tile" are acceptable'
+//   required: false
+//   type: string
+//   default: "cm"
+// - name: Size
+//   in: query
+//   description: 'Size of Room in an XY coordinate format'
+//   required: false
+//   type: string
+//   default: "{\"x\":999,\"y\":999}"
+// - name: SizeU
+//   in: query
+//   description: 'The unit for Room Size. Only values of
+//   "mm", "cm", "m", "U", "OU", "tile" are acceptable'
+//   required: false
+//   type: string
+//   default: "cm"
+// - name: Height
+//   in: query
+//   description: 'Height of Room'
+//   required: false
+//   type: string
+//   default: "999"
+// - name: HeightU
+//   in: query
+//   description: 'The unit for Room Height. Only values of
+//   "mm", "cm", "m", "U", "OU", "tile" are acceptable'
+//   required: false
+//   type: string
+//   default: "cm"
+// responses:
+//     '200':
+//         description: Updated
+//     '404':
+//         description: Not Found
+//     '400':
+//         description: Bad request
 var GetRoomByQuery = func(w http.ResponseWriter, r *http.Request) {
 	var resp map[string]interface{}
 
@@ -451,6 +562,7 @@ var GetRoomByQuery = func(w http.ResponseWriter, r *http.Request) {
 	u.Respond(w, resp)
 }
 
+/*
 var GetRoomByName = func(w http.ResponseWriter, r *http.Request) {
 	var resp map[string]interface{}
 	names := strings.Split(r.URL.String(), "=")
@@ -482,6 +594,25 @@ var GetRoomByName = func(w http.ResponseWriter, r *http.Request) {
 	resp["data"] = data
 	u.Respond(w, resp)
 }
+*/
+
+// swagger:operation GET /api/user/rooms/{id}/all rooms GetAllRooms
+// Gets Room Hierarchy.
+// ---
+// produces:
+// - application/json
+// parameters:
+// - name: ID
+//   in: path
+//   description: ID of Room
+//   required: true
+//   type: int
+//   default: 999
+// responses:
+//     '200':
+//         description: Found
+//     '404':
+//         description: Not Found
 
 var GetRoomHierarchy = func(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("me & the irishman2")
@@ -545,6 +676,30 @@ var GetRoomHierarchyNonStandard = func(w http.ResponseWriter, r *http.Request) {
 	u.Respond(w, resp)
 }
 
+// swagger:operation GET /api/user/rooms/{id}/racks/{rack_name} rooms GetAllRooms
+// Gets Rack Of Room.
+// ---
+// produces:
+// - application/json
+// parameters:
+// - name: ID
+//   in: path
+//   description: ID of Room
+//   required: true
+//   type: int
+//   default: 999
+// - name: rack_name
+//   in: path
+//   description: Name of desired rack
+//   required: true
+//   type: string
+//   default: "Rack01"
+// responses:
+//     '200':
+//         description: Found
+//     '404':
+//         description: Not Found
+
 var GetRackOfRoomByName = func(w http.ResponseWriter, r *http.Request) {
 	id, e := strconv.Atoi(mux.Vars(r)["id"])
 	name := mux.Vars(r)["rack_name"]
@@ -576,6 +731,24 @@ var GetRackOfRoomByName = func(w http.ResponseWriter, r *http.Request) {
 	u.Respond(w, resp)
 }
 
+// swagger:operation GET /api/user/rooms/{id}/racks rooms GetAllRooms
+// Gets All Racks of Room.
+// ---
+// produces:
+// - application/json
+// parameters:
+// - name: ID
+//   in: path
+//   description: ID of Room
+//   required: true
+//   type: int
+//   default: 999
+// responses:
+//     '200':
+//         description: Found
+//     '404':
+//         description: Not Found
+
 var GetRacksOfParent = func(w http.ResponseWriter, r *http.Request) {
 	id, e := strconv.Atoi(mux.Vars(r)["id"])
 	resp := u.Message(true, "success")
@@ -603,6 +776,30 @@ var GetRacksOfParent = func(w http.ResponseWriter, r *http.Request) {
 	resp["data"] = data
 	u.Respond(w, resp)
 }
+
+// swagger:operation GET /api/user/rooms/{id}/racks/{rack_name}/devices rooms GetDevicesOfRoom
+// Gets Devices of Room.
+// ---
+// produces:
+// - application/json
+// parameters:
+// - name: ID
+//   in: path
+//   description: ID of Room
+//   required: true
+//   type: int
+//   default: 999
+// - name: rack_name
+//   in: path
+//   description: Name of desired rack
+//   required: true
+//   type: string
+//   default: "Rack01"
+// responses:
+//     '200':
+//         description: Found
+//     '404':
+//         description: Not Found
 
 var GetDevicesUsingNamedRackOfRoom = func(w http.ResponseWriter, r *http.Request) {
 	id, e := strconv.Atoi(mux.Vars(r)["id"])
@@ -633,6 +830,36 @@ var GetDevicesUsingNamedRackOfRoom = func(w http.ResponseWriter, r *http.Request
 	u.Respond(w, resp)
 }
 
+// swagger:operation GET /api/user/rooms/{id}/racks/{rack_name}/devices/{device_name} rooms GetDevicesOfRoom
+// Get Device by Name of Room.
+// ---
+// produces:
+// - application/json
+// parameters:
+// - name: ID
+//   in: path
+//   description: ID of Room
+//   required: true
+//   type: int
+//   default: 999
+// - name: rack_name
+//   in: path
+//   description: Name of desired rack
+//   required: true
+//   type: string
+//   default: "Rack01"
+// - name: device_name
+//   in: path
+//   description: Name of desired device
+//   required: true
+//   type: string
+//   default: "Device01"
+// responses:
+//     '200':
+//         description: Found
+//     '404':
+//         description: Not Found
+
 var GetNamedDeviceOfRoom = func(w http.ResponseWriter, r *http.Request) {
 	id, e := strconv.Atoi(mux.Vars(r)["id"])
 	rack_name := mux.Vars(r)["rack_name"]
@@ -662,6 +889,24 @@ var GetNamedDeviceOfRoom = func(w http.ResponseWriter, r *http.Request) {
 	resp["data"] = data
 	u.Respond(w, resp)
 }
+
+// swagger:operation GET /api/user/rooms/{id}/devices rooms GetAllDevicesOfRoom
+// Gets All Devices of Room.
+// ---
+// produces:
+// - application/json
+// parameters:
+// - name: ID
+//   in: path
+//   description: ID of Room
+//   required: true
+//   type: int
+//   default: 999
+// responses:
+//     '200':
+//         description: Found
+//     '404':
+//         description: Not Found
 
 var GetDevicesOfRoom = func(w http.ResponseWriter, r *http.Request) {
 	id, e := strconv.Atoi(mux.Vars(r)["id"])

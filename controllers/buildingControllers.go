@@ -8,7 +8,6 @@ import (
 	u "p3/utils"
 	"reflect"
 	"strconv"
-	"strings"
 
 	"github.com/gorilla/mux"
 )
@@ -395,6 +394,106 @@ var UpdateBuilding = func(w http.ResponseWriter, r *http.Request) {
 	u.Respond(w, v)
 }
 
+// swagger:operation GET /api/user/buildings? buildings QueryBuilding
+// Gets a Building using any attribute (with the exception of description) via query
+// The attributes are in the form {attr}=xyz&{attr1}=abc
+// And any combination can be provided given that at least 1 is provided.
+// ---
+// produces:
+// - application/json
+// parameters:
+// - name: ID
+//   in: path
+//   description: ID of desired building
+//   required: false
+//   type: int
+//   default: 999
+// - name: Name
+//   in: query
+//   description: Name of building
+//   required: false
+//   type: string
+//   default: "Building B"
+// - name: Category
+//   in: query
+//   description: Category of Building (ex. Consumer Electronics, Medical)
+//   required: false
+//   type: string
+//   default: "New Building"
+// - name: Description
+//   in: query
+// - name: Domain
+//   description: 'Domain Of Building'
+//   required: false
+//   type: string
+//   default: "Derelict Domain"
+// - name: PosXY
+//   in: query
+//   description: 'Indicates the position in a XY coordinate format'
+//   required: false
+//   type: string
+//   default: "{\"x\":999,\"y\":999}"
+// - name: PosXYU
+//   in: query
+//   description: 'Indicates the unit of the PosXY position. Only values of
+//   "mm", "cm", "m", "U", "OU", "tile" are acceptable'
+//   required: false
+//   type: string
+//   default: "cm"
+// - name: PosZ
+//   in: query
+//   description: 'Indicates the position in the Z axis'
+//   required: false
+//   type: string
+//   default: "999"
+// - name: PosZU
+//   in: query
+//   description: 'Indicates the unit of the Z coordinate position. Only values of
+//   "mm", "cm", "m", "U", "OU", "tile" are acceptable'
+//   required: false
+//   type: string
+//   default: "cm"
+// - name: Size
+//   in: query
+//   description: 'Size of Building in an XY coordinate format'
+//   required: false
+//   type: string
+//   default: "{\"x\":999,\"y\":999}"
+// - name: SizeU
+//   in: query
+//   description: 'The unit for Building Size. Only values of
+//   "mm", "cm", "m", "U", "OU", "tile" are acceptable'
+//   required: false
+//   type: string
+//   default: "cm"
+// - name: Height
+//   in: query
+//   description: 'Height of Building'
+//   required: false
+//   type: string
+//   default: "999"
+// - name: HeightU
+//   in: query
+//   description: 'The unit for Building Height. Only values of
+//   "mm", "cm", "m", "U", "OU", "tile" are acceptable'
+//   required: false
+//   type: string
+//   default: "cm"
+// - name: Floors
+//   in: query
+//   description: 'Number of floors'
+//   required: false
+//   type: string
+//   default: "999"
+
+// responses:
+//     '200':
+//         description: Updated
+//     '404':
+//         description: Not Found
+//     '400':
+//         description: Bad request
+
 var GetBuildingByQuery = func(w http.ResponseWriter, r *http.Request) {
 	var resp map[string]interface{}
 
@@ -438,6 +537,7 @@ var GetBuildingByQuery = func(w http.ResponseWriter, r *http.Request) {
 	u.Respond(w, resp)
 }
 
+/*
 var GetBuildingByName = func(w http.ResponseWriter, r *http.Request) {
 	var resp map[string]interface{}
 	names := strings.Split(r.URL.String(), "=")
@@ -469,6 +569,25 @@ var GetBuildingByName = func(w http.ResponseWriter, r *http.Request) {
 	resp["data"] = data
 	u.Respond(w, resp)
 }
+*/
+
+// swagger:operation GET /api/user/buildings/{id}/all buildings GetBuildingHierarchy
+// Gets Building hierarchy using Building ID.
+// ---
+// produces:
+// - application/json
+// parameters:
+// - name: ID
+//   in: path
+//   description: ID of Building
+//   required: true
+//   type: int
+//   default: 999
+// responses:
+//     '200':
+//         description: Found
+//     '404':
+//         description: Not Found
 
 var GetBuildingHierarchy = func(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("me & the irishman")
@@ -534,6 +653,24 @@ var GetBuildingHierarchyNonStandard = func(w http.ResponseWriter, r *http.Reques
 	u.Respond(w, resp)
 }
 
+// swagger:operation GET /api/user/buildings/{id}/rooms buildings GetRoomsOfBuilding
+// Gets Rooms of Building.
+// ---
+// produces:
+// - application/json
+// parameters:
+// - name: ID
+//   in: path
+//   description: ID of Building
+//   required: true
+//   type: int
+//   default: 999
+// responses:
+//     '200':
+//         description: Found
+//     '404':
+//         description: Not Found
+
 var GetRoomsOfBuilding = func(w http.ResponseWriter, r *http.Request) {
 	id, e := strconv.Atoi(mux.Vars(r)["id"])
 	resp := u.Message(true, "success")
@@ -562,6 +699,29 @@ var GetRoomsOfBuilding = func(w http.ResponseWriter, r *http.Request) {
 	u.Respond(w, resp)
 }
 
+// swagger:operation GET /api/user/buildings/{id}/rooms/{room_name} buildings GetRoomsOfBuilding
+// Gets a Room of Building.
+// ---
+// produces:
+// - application/json
+// parameters:
+// - name: ID
+//   in: path
+//   description: ID of Building
+//   required: true
+//   type: int
+//   default: 999
+// - name: room_name
+//   in: path
+//   description: name of room
+//   required: true
+//   type: string
+//   default: "R1"
+// responses:
+//     '200':
+//         description: Found
+//     '404':
+//         description: Not Found
 var GetNamedRoomOfBuilding = func(w http.ResponseWriter, r *http.Request) {
 	id, e := strconv.Atoi(mux.Vars(r)["id"])
 	name := mux.Vars(r)["room_name"]
@@ -593,6 +753,29 @@ var GetNamedRoomOfBuilding = func(w http.ResponseWriter, r *http.Request) {
 	u.Respond(w, resp)
 }
 
+// swagger:operation GET /api/user/buildings/{id}/rooms/{room_name}/racks buildings GetRacksOfBuilding
+// Gets Racks of named Room of Building.
+// ---
+// produces:
+// - application/json
+// parameters:
+// - name: ID
+//   in: path
+//   description: ID of Building
+//   required: true
+//   type: int
+//   default: 999
+// - name: room_name
+//   in: path
+//   description: name of room
+//   required: true
+//   type: string
+//   default: "R1"
+// responses:
+//     '200':
+//         description: Found
+//     '404':
+//         description: Not Found
 var GetRacksUsingNamedRoomOfBuilding = func(w http.ResponseWriter, r *http.Request) {
 	id, e := strconv.Atoi(mux.Vars(r)["id"])
 	name := mux.Vars(r)["room_name"]
@@ -622,6 +805,23 @@ var GetRacksUsingNamedRoomOfBuilding = func(w http.ResponseWriter, r *http.Reque
 	u.Respond(w, resp)
 }
 
+// swagger:operation GET /api/user/buildings/{id}/racks buildings GetRacksOfBuilding
+// Gets all Racks of Building.
+// ---
+// produces:
+// - application/json
+// parameters:
+// - name: ID
+//   in: path
+//   description: ID of Building
+//   required: true
+//   type: int
+//   default: 999
+// responses:
+//     '200':
+//         description: Found
+//     '404':
+//         description: Not Found
 var GetRacksOfBuilding = func(w http.ResponseWriter, r *http.Request) {
 	id, e := strconv.Atoi(mux.Vars(r)["id"])
 	resp := u.Message(true, "success")
@@ -650,6 +850,35 @@ var GetRacksOfBuilding = func(w http.ResponseWriter, r *http.Request) {
 	u.Respond(w, resp)
 }
 
+// swagger:operation GET /api/user/buildings/{id}/rooms/{room_name}/racks/{rack_name} buildings GetRacksOfBuilding
+// Gets a Rack of Building.
+// ---
+// produces:
+// - application/json
+// parameters:
+// - name: ID
+//   in: path
+//   description: ID of Building
+//   required: true
+//   type: int
+//   default: 999
+// - name: room_name
+//   in: path
+//   description: name of room
+//   required: true
+//   type: string
+//   default: "R1"
+// - name: rack_name
+//   in: path
+//   description: name of rack
+//   required: true
+//   type: string
+//   default: "Rack01"
+// responses:
+//     '200':
+//         description: Found
+//     '404':
+//         description: Not Found
 var GetNamedRackOfBuilding = func(w http.ResponseWriter, r *http.Request) {
 	id, e := strconv.Atoi(mux.Vars(r)["id"])
 	room_name := mux.Vars(r)["room_name"]
@@ -680,6 +909,35 @@ var GetNamedRackOfBuilding = func(w http.ResponseWriter, r *http.Request) {
 	u.Respond(w, resp)
 }
 
+// swagger:operation GET /api/user/buildings/{id}/rooms/{room_name}/racks/{rack_name}/devices buildings GetDevicesOfBuilding
+// Gets a Devices of Building.
+// ---
+// produces:
+// - application/json
+// parameters:
+// - name: ID
+//   in: path
+//   description: ID of Building
+//   required: true
+//   type: int
+//   default: 999
+// - name: room_name
+//   in: path
+//   description: name of room
+//   required: true
+//   type: string
+//   default: "R1"
+// - name: rack_name
+//   in: path
+//   description: name of rack
+//   required: true
+//   type: string
+//   default: "Rack01"
+// responses:
+//     '200':
+//         description: Found
+//     '404':
+//         description: Not Found
 var GetDevicesUsingNamedRackOfBuilding = func(w http.ResponseWriter, r *http.Request) {
 	id, e := strconv.Atoi(mux.Vars(r)["id"])
 	room_name := mux.Vars(r)["room_name"]
@@ -710,6 +968,41 @@ var GetDevicesUsingNamedRackOfBuilding = func(w http.ResponseWriter, r *http.Req
 	u.Respond(w, resp)
 }
 
+// swagger:operation GET /api/user/buildings/{id}/rooms/{room_name}/racks/{rack_name}/devices/{device_name} buildings GetDevicesOfBuilding
+// Gets a Devices of Building.
+// ---
+// produces:
+// - application/json
+// parameters:
+// - name: ID
+//   in: path
+//   description: ID of Building
+//   required: true
+//   type: int
+//   default: 999
+// - name: room_name
+//   in: path
+//   description: name of room
+//   required: true
+//   type: string
+//   default: "R1"
+// - name: rack_name
+//   in: path
+//   description: name of rack
+//   required: true
+//   type: string
+//   default: "Rack01"
+// - name: device_name
+//   in: path
+//   description: name of device
+//   required: true
+//   type: int
+//   default: "Device01"
+// responses:
+//     '200':
+//         description: Found
+//     '404':
+//         description: Not Found
 var GetNamedDeviceOfBuilding = func(w http.ResponseWriter, r *http.Request) {
 	id, e := strconv.Atoi(mux.Vars(r)["id"])
 	room_name := mux.Vars(r)["room_name"]
