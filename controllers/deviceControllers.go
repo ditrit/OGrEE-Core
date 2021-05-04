@@ -8,7 +8,6 @@ import (
 	u "p3/utils"
 	"reflect"
 	"strconv"
-	"strings"
 
 	"github.com/gorilla/mux"
 )
@@ -445,38 +444,128 @@ var UpdateDevice = func(w http.ResponseWriter, r *http.Request) {
 	u.Respond(w, v)
 }
 
-var GetDeviceByName = func(w http.ResponseWriter, r *http.Request) {
-	var resp map[string]interface{}
-	names := strings.Split(r.URL.String(), "=")
+// swagger:operation GET /api/user/devices? devices GetDevice
+// Gets a Device using any attribute (with the exception of description) via query
+// The attributes are in the form {attr}=xyz&{attr1}=abc
+// And any combination can be provided given that at least 1 is provided.
+// ---
+// produces:
+// - application/json
+// parameters:
+// - name: ID
+//   in: path
+//   description: ID of desired device
+//   required: false
+//   type: int
+//   default: 999
+// - name: Name
+//   in: query
+//   description: Name of device
+//   required: false
+//   type: string
+//   default: "Device B"
+// - name: Category
+//   in: query
+//   description: Category of Device (ex. Consumer Electronics, Medical)
+//   required: false
+//   type: string
+//   default: "Research"
+// - name: Description
+//   in: query
+//   description: Description of Device
+//   required: false
+//   type: string[]
+//   default: ["Some abandoned device in Grenoble"]
+// - name: Orientation
+//   in: query
+//   description: 'Indicates the location. Only values of
+//   "front", "rear", "frontflipped", "rearflipped" are acceptable'
+//   required: false
+//   type: string
+//   default: "frontflipped"
+// - name: PosXY
+//   in: query
+//   description: 'Indicates the position in a XY coordinate format'
+//   required: false
+//   type: string
+//   default: "{\"x\":999,\"y\":999}"
+// - name: PosXYU
+//   in: query
+//   description: 'Indicates the unit of the PosXY position. Only values of
+//   "mm", "cm", "m", "U", "OU", "tile" are acceptable'
+//   required: false
+//   type: string
+//   default: "cm"
+// - name: PosZ
+//   in: query
+//   description: 'Indicates the position in the Z axis'
+//   required: false
+//   type: string
+//   default: "999"
+// - name: PosZU
+//   in: query
+//   description: 'Indicates the unit of the Z coordinate position. Only values of
+//   "mm", "cm", "m", "U", "OU", "tile" are acceptable'
+//   required: false
+//   type: string
+//   default: "cm"
+// - name: Size
+//   in: query
+//   description: 'Size of Device in an XY coordinate format'
+//   required: false
+//   type: string
+//   default: "{\"x\":999,\"y\":999}"
+// - name: SizeU
+//   in: query
+//   description: 'The unit for Device Size. Only values of
+//   "mm", "cm", "m", "U", "OU", "tile" are acceptable'
+//   required: false
+//   type: string
+//   default: "cm"
+// - name: Height
+//   in: query
+//   description: 'Height of Device'
+//   required: false
+//   type: string
+//   default: "999"
+// - name: HeightU
+//   in: query
+//   description: 'The unit for Device Height. Only values of
+//   "mm", "cm", "m", "U", "OU", "tile" are acceptable'
+//   required: false
+//   type: string
+//   default: "cm"
+// - name: Vendor
+//   in: query
+//   description: 'Vendor of Device'
+//   required: false
+//   type: string
+//   default: "New Vendor"
+// - name: Model
+//   in: query
+//   description: 'Model of Device'
+//   required: false
+//   type: string
+//   default: "New Model"
+// - name: Type
+//   in: query
+//   description: 'Type of Device'
+//   required: false
+//   type: string
+//   default: "New Type"
+// - name: Serial
+//   in: query
+//   description: 'Serial of Device'
+//   required: false
+//   type: string
+//   default: "New Serial"
 
-	if names[1] == "" {
-		w.WriteHeader(http.StatusBadRequest)
-		u.Respond(w, u.Message(false, "Error while extracting from path parameters"))
-		u.ErrLog("Error while extracting from path parameters", "GET DEVICE BY NAME",
-			"", r)
-		return
-	}
-
-	data, e := models.GetDeviceByName(names[1])
-
-	if e != "" {
-		resp = u.Message(false, "Error: "+e)
-		u.ErrLog("Error while getting device", "GET Device", e, r)
-
-		switch e {
-		case "record not found":
-			w.WriteHeader(http.StatusNotFound)
-		default:
-		}
-
-	} else {
-		resp = u.Message(true, "success")
-	}
-
-	resp["data"] = data
-	u.Respond(w, resp)
-}
-
+// responses:
+//     '200':
+//         description: Found
+//     '404':
+//         description: Not Found
+//Updates work by passing ID in path parameter
 var GetDeviceByQuery = func(w http.ResponseWriter, r *http.Request) {
 	var resp map[string]interface{}
 
