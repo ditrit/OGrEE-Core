@@ -376,6 +376,426 @@
         }
       }
     },
+    "/api/user/buildings/{id}/all": {
+      "get": {
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "buildings"
+        ],
+        "summary": "Gets Building hierarchy using Building ID.",
+        "operationId": "GetBuildingHierarchy",
+        "parameters": [
+          {
+            "type": "int",
+            "default": 999,
+            "description": "ID of Building",
+            "name": "ID",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Found"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        }
+      }
+    },
+    "/api/user/buildings/{id}/racks": {
+      "get": {
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "buildings"
+        ],
+        "summary": "Gets all Racks of Building.",
+        "operationId": "GetRacksOfBuilding",
+        "parameters": [
+          {
+            "type": "int",
+            "default": 999,
+            "description": "ID of Building",
+            "name": "ID",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Found"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        }
+      }
+    },
+    "/api/user/buildings/{id}/rooms": {
+      "get": {
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "buildings"
+        ],
+        "summary": "Gets Rooms of Building.",
+        "operationId": "GetRoomsOfBuilding",
+        "parameters": [
+          {
+            "type": "int",
+            "default": 999,
+            "description": "ID of Building",
+            "name": "ID",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Found"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        }
+      }
+    },
+    "/api/user/buildings/{id}/rooms/{room_name}": {
+      "get": {
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "buildings"
+        ],
+        "summary": "Gets a Room of Building.",
+        "operationId": "GetRoomsOfBuilding",
+        "parameters": [
+          {
+            "type": "int",
+            "default": 999,
+            "description": "ID of Building",
+            "name": "ID",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "default": "R1",
+            "description": "name of room",
+            "name": "room_name",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Found"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        }
+      }
+    },
+    "/api/user/buildings/{id}/rooms/{room_name}/racks": {
+      "get": {
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "buildings"
+        ],
+        "summary": "Gets Racks of named Room of Building.",
+        "operationId": "GetRacksOfBuilding",
+        "parameters": [
+          {
+            "type": "int",
+            "default": 999,
+            "description": "ID of Building",
+            "name": "ID",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "default": "R1",
+            "description": "name of room",
+            "name": "room_name",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Found"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        }
+      }
+    },
+    "/api/user/buildings/{id}/rooms/{room_name}/racks/{rack_name}": {
+      "get": {
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "buildings"
+        ],
+        "summary": "Gets a Rack of Building.",
+        "operationId": "GetRacksOfBuilding",
+        "parameters": [
+          {
+            "type": "int",
+            "default": 999,
+            "description": "ID of Building",
+            "name": "ID",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "default": "R1",
+            "description": "name of room",
+            "name": "room_name",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "default": "Rack01",
+            "description": "name of rack",
+            "name": "rack_name",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Found"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        }
+      }
+    },
+    "/api/user/buildings/{id}/rooms/{room_name}/racks/{rack_name}/devices": {
+      "get": {
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "buildings"
+        ],
+        "summary": "Gets a Devices of Building.",
+        "operationId": "GetDevicesOfBuilding",
+        "parameters": [
+          {
+            "type": "int",
+            "default": 999,
+            "description": "ID of Building",
+            "name": "ID",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "default": "R1",
+            "description": "name of room",
+            "name": "room_name",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "default": "Rack01",
+            "description": "name of rack",
+            "name": "rack_name",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Found"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        }
+      }
+    },
+    "/api/user/buildings/{id}/rooms/{room_name}/racks/{rack_name}/devices/{device_name}": {
+      "get": {
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "buildings"
+        ],
+        "summary": "Gets a Devices of Building.",
+        "operationId": "GetDevicesOfBuilding",
+        "parameters": [
+          {
+            "type": "int",
+            "default": 999,
+            "description": "ID of Building",
+            "name": "ID",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "default": "R1",
+            "description": "name of room",
+            "name": "room_name",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "default": "Rack01",
+            "description": "name of rack",
+            "name": "rack_name",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "int",
+            "default": "Device01",
+            "description": "name of device",
+            "name": "device_name",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Found"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        }
+      }
+    },
+    "/api/user/buildings?": {
+      "get": {
+        "description": "Gets a Building using any attribute (with the exception of description) via query\nThe attributes are in the form {attr}=xyz\u0026{attr1}=abc\nAnd any combination can be provided given that at least 1 is provided.",
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "buildings"
+        ],
+        "operationId": "QueryBuilding",
+        "parameters": [
+          {
+            "type": "int",
+            "default": 999,
+            "description": "ID of desired building",
+            "name": "ID",
+            "in": "path"
+          },
+          {
+            "type": "string",
+            "default": "Building B",
+            "description": "Name of building",
+            "name": "Name",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "default": "New Building",
+            "description": "Category of Building (ex. Consumer Electronics, Medical)",
+            "name": "Category",
+            "in": "query"
+          },
+          {
+            "name": "Description",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "default": "Derelict Domain",
+            "description": "Domain Of Building",
+            "name": "Domain"
+          },
+          {
+            "type": "string",
+            "default": "{\"x\":999,\"y\":999}",
+            "description": "Indicates the position in a XY coordinate format",
+            "name": "PosXY",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "default": "cm",
+            "description": "Indicates the unit of the PosXY position. Only values of \"mm\", \"cm\", \"m\", \"U\", \"OU\", \"tile\" are acceptable",
+            "name": "PosXYU",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "default": "999",
+            "description": "Indicates the position in the Z axis",
+            "name": "PosZ",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "default": "cm",
+            "description": "Indicates the unit of the Z coordinate position. Only values of \"mm\", \"cm\", \"m\", \"U\", \"OU\", \"tile\" are acceptable",
+            "name": "PosZU",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "default": "{\"x\":999,\"y\":999}",
+            "description": "Size of Building in an XY coordinate format",
+            "name": "Size",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "default": "cm",
+            "description": "The unit for Building Size. Only values of \"mm\", \"cm\", \"m\", \"U\", \"OU\", \"tile\" are acceptable",
+            "name": "SizeU",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "default": "999",
+            "description": "Height of Building",
+            "name": "Height",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "default": "cm",
+            "description": "The unit for Building Height. Only values of \"mm\", \"cm\", \"m\", \"U\", \"OU\", \"tile\" are acceptable",
+            "name": "HeightU",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "default": "999",
+            "description": "Number of floors",
+            "name": "Floors",
+            "in": "query"
+          }
+        ]
+      }
+    },
     "/api/user/devices": {
       "get": {
         "produces": [
@@ -1411,6 +1831,20 @@
             "description": "The unit for Room Height. Only values of \"mm\", \"cm\", \"m\", \"U\", \"OU\", \"tile\" are acceptable",
             "name": "HeightU",
             "in": "query"
+          },
+          {
+            "type": "string",
+            "default": "???",
+            "description": "Unity Unique Attribute",
+            "name": "Technical",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "default": "???",
+            "description": "Unity Unique Attribute",
+            "name": "Reserved",
+            "in": "query"
           }
         ],
         "responses": {
@@ -1450,6 +1884,335 @@
           },
           "404": {
             "description": "Not found"
+          }
+        }
+      }
+    },
+    "/api/user/rooms/{id}/all": {
+      "get": {
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "rooms"
+        ],
+        "summary": "Gets Room Hierarchy.",
+        "operationId": "GetAllRooms",
+        "parameters": [
+          {
+            "type": "int",
+            "default": 999,
+            "description": "ID of Room",
+            "name": "ID",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Found"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        }
+      }
+    },
+    "/api/user/rooms/{id}/devices": {
+      "get": {
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "rooms"
+        ],
+        "summary": "Gets All Devices of Room.",
+        "operationId": "GetAllDevicesOfRoom",
+        "parameters": [
+          {
+            "type": "int",
+            "default": 999,
+            "description": "ID of Room",
+            "name": "ID",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Found"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        }
+      }
+    },
+    "/api/user/rooms/{id}/racks": {
+      "get": {
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "rooms"
+        ],
+        "summary": "Gets All Racks of Room.",
+        "operationId": "GetAllRooms",
+        "parameters": [
+          {
+            "type": "int",
+            "default": 999,
+            "description": "ID of Room",
+            "name": "ID",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Found"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        }
+      }
+    },
+    "/api/user/rooms/{id}/racks/{rack_name}": {
+      "get": {
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "rooms"
+        ],
+        "summary": "Gets Rack Of Room.",
+        "operationId": "GetAllRooms",
+        "parameters": [
+          {
+            "type": "int",
+            "default": 999,
+            "description": "ID of Room",
+            "name": "ID",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "default": "Rack01",
+            "description": "Name of desired rack",
+            "name": "rack_name",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Found"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        }
+      }
+    },
+    "/api/user/rooms/{id}/racks/{rack_name}/devices": {
+      "get": {
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "rooms"
+        ],
+        "summary": "Gets Devices of Room.",
+        "operationId": "GetDevicesOfRoom",
+        "parameters": [
+          {
+            "type": "int",
+            "default": 999,
+            "description": "ID of Room",
+            "name": "ID",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "default": "Rack01",
+            "description": "Name of desired rack",
+            "name": "rack_name",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Found"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        }
+      }
+    },
+    "/api/user/rooms/{id}/racks/{rack_name}/devices/{device_name}": {
+      "get": {
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "rooms"
+        ],
+        "summary": "Get Device by Name of Room.",
+        "operationId": "GetDevicesOfRoom",
+        "parameters": [
+          {
+            "type": "int",
+            "default": 999,
+            "description": "ID of Room",
+            "name": "ID",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "default": "Rack01",
+            "description": "Name of desired rack",
+            "name": "rack_name",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "default": "Device01",
+            "description": "Name of desired device",
+            "name": "device_name",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Found"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        }
+      }
+    },
+    "/api/user/rooms?": {
+      "get": {
+        "description": "Gets a Room using any attribute (with the exception of description) via query\nThe attributes are in the form {attr}=xyz\u0026{attr1}=abc\nAnd any combination can be provided given that at least 1 is provided.",
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "rooms"
+        ],
+        "operationId": "GetRoomByQuery",
+        "parameters": [
+          {
+            "type": "int",
+            "default": 999,
+            "description": "ID of desired room",
+            "name": "ID",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "default": "Room B",
+            "description": "Name of room",
+            "name": "Name",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "default": "Research",
+            "description": "Category of Room (ex. Consumer Electronics, Medical)",
+            "name": "Category",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "default": "+N+E",
+            "description": "Indicates the location. Only values of (-|+)E(-|+)N, (-|+)N(-|+)W, (-|+)W(-|+)S, (-|+)S(-|+)E are acceptable",
+            "name": "Orientation",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "default": "New Template",
+            "description": "Room template",
+            "name": "Template",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "default": "{\"x\":999,\"y\":999}",
+            "description": "Indicates the position in a XY coordinate format",
+            "name": "PosXY",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "default": "cm",
+            "description": "Indicates the unit of the PosXY position. Only values of \"mm\", \"cm\", \"m\", \"U\", \"OU\", \"tile\" are acceptable",
+            "name": "PosXYU",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "default": "999",
+            "description": "Indicates the position in the Z axis",
+            "name": "PosZ",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "default": "cm",
+            "description": "Indicates the unit of the Z coordinate position. Only values of \"mm\", \"cm\", \"m\", \"U\", \"OU\", \"tile\" are acceptable",
+            "name": "PosZU",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "default": "{\"x\":999,\"y\":999}",
+            "description": "Size of Room in an XY coordinate format",
+            "name": "Size",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "default": "cm",
+            "description": "The unit for Room Size. Only values of \"mm\", \"cm\", \"m\", \"U\", \"OU\", \"tile\" are acceptable",
+            "name": "SizeU",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "default": "999",
+            "description": "Height of Room",
+            "name": "Height",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "default": "cm",
+            "description": "The unit for Room Height. Only values of \"mm\", \"cm\", \"m\", \"U\", \"OU\", \"tile\" are acceptable",
+            "name": "HeightU",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Updated"
+          },
+          "400": {
+            "description": "Bad request"
+          },
+          "404": {
+            "description": "Not Found"
           }
         }
       }
@@ -2263,13 +3026,6 @@
             "default": "Some Domain",
             "description": "Domain of Site",
             "name": "Domain"
-          },
-          {
-            "type": "string",
-            "default": "Some abandoned site in Grenoble",
-            "description": "Description of Site",
-            "name": "Description",
-            "in": "query"
           },
           {
             "type": "string",
