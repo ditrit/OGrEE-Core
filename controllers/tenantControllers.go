@@ -322,7 +322,7 @@ var UpdateTenant = func(w http.ResponseWriter, r *http.Request) {
 // responses:
 //     '204':
 //        description: Successful
-//     '400':
+//     '404':
 //        description: Not found
 
 var DeleteTenant = func(w http.ResponseWriter, r *http.Request) {
@@ -343,6 +343,61 @@ var DeleteTenant = func(w http.ResponseWriter, r *http.Request) {
 	}
 	u.Respond(w, v)
 }
+
+// swagger:operation GET /api/user/tenants/{tenant_name}? tenants GetTenant
+// Gets a Tenant using any attribute (with the exception of description) via query in the system
+// The attributes are in the form {attr}=xyz&{attr1}=abc
+// And any combination can be provided.
+// ---
+// produces:
+// - application/json
+// parameters:
+// - name: Name
+//   in: query
+//   description: Name of tenant
+//   required: false
+//   type: string
+//   default: "INFINITI"
+// - name: Category
+//   in: query
+//   description: Category of Tenant (ex. Consumer Electronics, Medical)
+//   required: false
+//   type: string
+//   default: "Auto"
+// - name: Domain
+//   description: 'Domain of the Tenant'
+//   required: false
+//   type: string
+//   default: "High End Auto"
+// - name: Color
+//   in: query
+//   description: Color of Tenant (useful for 3D rendering)
+//   required: false
+//   type: string
+//   default: "Black"
+// - name: MainContact
+//   in: query
+//   description: The main method of contact for Tenant
+//   required: false
+//   type: string
+//   default: "Post"
+// - name: MainPhone
+//   in: query
+//   description: Main Phone # of Tenant
+//   required: false
+//   type: string
+//   default: "999"
+// - name: MainEmail
+//   in: query
+//   description: Main Email Address of Tenant
+//   required: false
+//   type: string
+//   default: "infiniti@nissan.com"
+// responses:
+//     '204':
+//        description: Successful
+//     '404':
+//        description: Not found
 
 var GetTenantByQuery = func(w http.ResponseWriter, r *http.Request) {
 	var resp map[string]interface{}
@@ -388,6 +443,25 @@ var GetTenantByQuery = func(w http.ResponseWriter, r *http.Request) {
 	u.Respond(w, resp)
 
 }
+
+// swagger:operation GET /api/user/tenants/{id}/all tenants GetFromTenant
+// Obtain all objects related to tenant in the system.
+// Returns JSON body with all objects under the Tenant
+// ---
+// produces:
+// - application/json
+// parameters:
+// - name: ID
+//   in: query
+//   description: ID of tenant
+//   required: true
+//   type: int
+//   default: 999
+// responses:
+//     '200':
+//         description: Found
+//     '404':
+//         description: Nothing Found
 
 var GetTenantHierarchy = func(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("me & the irishman")
@@ -455,6 +529,25 @@ var GetTenantHierarchyNonStandard = func(w http.ResponseWriter, r *http.Request)
 	u.Respond(w, resp)
 }
 
+// swagger:operation GET /api/user/tenants/{tenant_name}/sites tenants GetFromTenant
+// Gets all sites of a Tenant from the system.
+// The Tenant name must be provided in the URL parameter
+// ---
+// produces:
+// - application/json
+// parameters:
+// - name: name
+//   in: path
+//   description: Name of desired tenant
+//   required: true
+//   type: string
+//   default: "INFINITI"
+// responses:
+//     '200':
+//         description: Found
+//     '404':
+//         description: Not Found
+
 var GetSitesOfTenant = func(w http.ResponseWriter, r *http.Request) {
 	name, e := mux.Vars(r)["tenant_name"]
 	resp := u.Message(true, "success")
@@ -482,6 +575,30 @@ var GetSitesOfTenant = func(w http.ResponseWriter, r *http.Request) {
 	resp["data"] = data
 	u.Respond(w, resp)
 }
+
+// swagger:operation GET /api/user/tenants/{tenant_name}/sites/{site_name} tenants GetFromTenant
+// Gets a site of a Tenant by name from the system.
+// ---
+// produces:
+// - application/json
+// parameters:
+// - name: tenant_name
+//   in: path
+//   description: Name of desired tenant
+//   required: true
+//   type: string
+//   default: "INFINITI"
+// - name: site_name
+//   in: path
+//   description: Name of desired site
+//   required: true
+//   type: string
+//   default: "SiteA"
+// responses:
+//     '200':
+//         description: Found
+//     '404':
+//         description: Not Found
 
 var GetNamedSiteOfTenant = func(w http.ResponseWriter, r *http.Request) {
 	name, e := mux.Vars(r)["tenant_name"]
@@ -512,6 +629,30 @@ var GetNamedSiteOfTenant = func(w http.ResponseWriter, r *http.Request) {
 	u.Respond(w, resp)
 }
 
+// swagger:operation GET /api/user/tenants/{tenant_name}/sites/{site_name}/buildings tenants GetFromTenant
+// Gets Buildings of a named site of a Tenant from the system.
+// ---
+// produces:
+// - application/json
+// parameters:
+// - name: tenant_name
+//   in: path
+//   description: Name of desired tenant
+//   required: true
+//   type: string
+//   default: "INFINITI"
+// - name: site_name
+//   in: path
+//   description: Name of desired site
+//   required: true
+//   type: string
+//   default: "SiteA"
+// responses:
+//     '200':
+//         description: Found
+//     '404':
+//         description: Not Found
+
 var GetBuildingsUsingNamedSiteOfTenant = func(w http.ResponseWriter, r *http.Request) {
 	name, e := mux.Vars(r)["tenant_name"]
 	site_name, e2 := mux.Vars(r)["site_name"]
@@ -540,6 +681,24 @@ var GetBuildingsUsingNamedSiteOfTenant = func(w http.ResponseWriter, r *http.Req
 	resp["data"] = data
 	u.Respond(w, resp)
 }
+
+// swagger:operation GET /api/user/tenants/{tenant_name}/buildings tenants GetFromTenant
+// Gets all Buildings of a Tenant from the system.
+// ---
+// produces:
+// - application/json
+// parameters:
+// - name: tenant_name
+//   in: path
+//   description: Name of desired tenant
+//   required: true
+//   type: string
+//   default: "INFINITI"
+// responses:
+//     '200':
+//         description: Found
+//     '404':
+//         description: Not Found
 
 var GetBuildingsOfTenant = func(w http.ResponseWriter, r *http.Request) {
 	name, e := mux.Vars(r)["tenant_name"]
@@ -570,6 +729,35 @@ var GetBuildingsOfTenant = func(w http.ResponseWriter, r *http.Request) {
 	u.Respond(w, resp)
 }
 
+// swagger:operation GET /api/user/tenants/{tenant_name}/sites/{site_name}/buildings/{building_name} tenants GetFromTenant
+// Gets a Building by name of a Tenant from the system.
+// ---
+// produces:
+// - application/json
+// parameters:
+// - name: tenant_name
+//   in: path
+//   description: Name of desired tenant
+//   required: true
+//   type: string
+//   default: "INFINITI"
+// - name: site_name
+//   in: path
+//   description: Name of desired site
+//   required: true
+//   type: string
+//   default: "SiteA"
+// - name: building_name
+//   in: path
+//   description: Name of desired building
+//   required: true
+//   type: string
+//   default: "BldgA"
+// responses:
+//     '200':
+//         description: Found
+//     '404':
+//         description: Not Found
 var GetNamedBuildingOfTenant = func(w http.ResponseWriter, r *http.Request) {
 	name, e := mux.Vars(r)["tenant_name"]
 	site_name, e2 := mux.Vars(r)["site_name"]
@@ -600,6 +788,35 @@ var GetNamedBuildingOfTenant = func(w http.ResponseWriter, r *http.Request) {
 	u.Respond(w, resp)
 }
 
+// swagger:operation GET /api/user/tenants/{tenant_name}/sites/{site_name}/buildings/{building_name}/rooms tenants GetFromTenant
+// Gets a Building by name of a Tenant from the system.
+// ---
+// produces:
+// - application/json
+// parameters:
+// - name: tenant_name
+//   in: path
+//   description: Name of desired tenant
+//   required: true
+//   type: string
+//   default: "INFINITI"
+// - name: site_name
+//   in: path
+//   description: Name of desired site
+//   required: true
+//   type: string
+//   default: "SiteA"
+// - name: building_name
+//   in: path
+//   description: Name of desired building
+//   required: true
+//   type: string
+//   default: "BldgA"
+// responses:
+//     '200':
+//         description: Found
+//     '404':
+//         description: Not Found
 var GetRoomsUsingNamedBuildingOfTenant = func(w http.ResponseWriter, r *http.Request) {
 	name, e := mux.Vars(r)["tenant_name"]
 	site_name, e2 := mux.Vars(r)["site_name"]
@@ -629,6 +846,42 @@ var GetRoomsUsingNamedBuildingOfTenant = func(w http.ResponseWriter, r *http.Req
 	resp["data"] = data
 	u.Respond(w, resp)
 }
+
+// swagger:operation GET /api/user/tenants/{tenant_name}/sites/{site_name}/buildings/{building_name}/rooms/{room_name} tenants GetFromTenant
+// Gets a Room by name of a Tenant from the system.
+// ---
+// produces:
+// - application/json
+// parameters:
+// - name: tenant_name
+//   in: path
+//   description: Name of desired tenant
+//   required: true
+//   type: string
+//   default: "INFINITI"
+// - name: site_name
+//   in: path
+//   description: Name of desired site
+//   required: true
+//   type: string
+//   default: "SiteA"
+// - name: building_name
+//   in: path
+//   description: Name of desired building
+//   required: true
+//   type: string
+//   default: "BldgA"
+// - name: room_name
+//   in: path
+//   description: Name of desired room
+//   required: true
+//   type: string
+//   default: "R1"
+// responses:
+//     '200':
+//         description: Found
+//     '404':
+//         description: Not Found
 
 var GetNamedRoomOfTenant = func(w http.ResponseWriter, r *http.Request) {
 	name, e := mux.Vars(r)["tenant_name"]
@@ -661,6 +914,42 @@ var GetNamedRoomOfTenant = func(w http.ResponseWriter, r *http.Request) {
 	u.Respond(w, resp)
 }
 
+// swagger:operation GET /api/user/tenants/{tenant_name}/sites/{site_name}/buildings/{building_name}/rooms/{room_name}/racks tenants GetFromTenant
+// Gets all Racks of a Room by name of a Tenant from the system.
+// ---
+// produces:
+// - application/json
+// parameters:
+// - name: tenant_name
+//   in: path
+//   description: Name of desired tenant
+//   required: true
+//   type: string
+//   default: "INFINITI"
+// - name: site_name
+//   in: path
+//   description: Name of desired site
+//   required: true
+//   type: string
+//   default: "SiteA"
+// - name: building_name
+//   in: path
+//   description: Name of desired building
+//   required: true
+//   type: string
+//   default: "BldgA"
+// - name: room_name
+//   in: path
+//   description: Name of desired room
+//   required: true
+//   type: string
+//   default: "R1"
+// responses:
+//     '200':
+//         description: Found
+//     '404':
+//         description: Not Found
+
 var GetRacksUsingNamedRoomOfTenant = func(w http.ResponseWriter, r *http.Request) {
 	name, e := mux.Vars(r)["tenant_name"]
 	site_name, e2 := mux.Vars(r)["site_name"]
@@ -691,6 +980,48 @@ var GetRacksUsingNamedRoomOfTenant = func(w http.ResponseWriter, r *http.Request
 	resp["data"] = data
 	u.Respond(w, resp)
 }
+
+// swagger:operation GET /api/user/tenants/{tenant_name}/sites/{site_name}/buildings/{building_name}/rooms/{room_name}/racks/{rack_name} tenants GetFromTenant
+// Gets a Rack by name of a Tenant from the system.
+// ---
+// produces:
+// - application/json
+// parameters:
+// - name: tenant_name
+//   in: path
+//   description: Name of desired tenant
+//   required: true
+//   type: string
+//   default: "INFINITI"
+// - name: site_name
+//   in: path
+//   description: Name of desired site
+//   required: true
+//   type: string
+//   default: "SiteA"
+// - name: building_name
+//   in: path
+//   description: Name of desired building
+//   required: true
+//   type: string
+//   default: "BldgA"
+// - name: room_name
+//   in: path
+//   description: Name of desired room
+//   required: true
+//   type: string
+//   default: "R1"
+// - name: rack_name
+//   in: path
+//   description: Name of desired rack
+//   required: true
+//   type: string
+//   default: "Rack01"
+// responses:
+//     '200':
+//         description: Found
+//     '404':
+//         description: Not Found
 
 var GetNamedRackOfTenant = func(w http.ResponseWriter, r *http.Request) {
 	name, e := mux.Vars(r)["tenant_name"]
@@ -724,6 +1055,48 @@ var GetNamedRackOfTenant = func(w http.ResponseWriter, r *http.Request) {
 	u.Respond(w, resp)
 }
 
+// swagger:operation GET /api/user/tenants/{tenant_name}/sites/{site_name}/buildings/{building_name}/rooms/{room_name}/racks/{rack_name}/devices tenants GetFromTenant
+// Gets all Devices of a Rack by name of a Tenant from the system.
+// ---
+// produces:
+// - application/json
+// parameters:
+// - name: tenant_name
+//   in: path
+//   description: Name of desired tenant
+//   required: true
+//   type: string
+//   default: "INFINITI"
+// - name: site_name
+//   in: path
+//   description: Name of desired site
+//   required: true
+//   type: string
+//   default: "SiteA"
+// - name: building_name
+//   in: path
+//   description: Name of desired building
+//   required: true
+//   type: string
+//   default: "BldgA"
+// - name: room_name
+//   in: path
+//   description: Name of desired room
+//   required: true
+//   type: string
+//   default: "R1"
+// - name: rack_name
+//   in: path
+//   description: Name of desired rack
+//   required: true
+//   type: string
+//   default: "Rack01"
+// responses:
+//     '200':
+//         description: Found
+//     '404':
+//         description: Not Found
+
 var GetDevicesUsingNamedRackOfTenant = func(w http.ResponseWriter, r *http.Request) {
 	name, e := mux.Vars(r)["tenant_name"]
 	site_name, e2 := mux.Vars(r)["site_name"]
@@ -755,6 +1128,54 @@ var GetDevicesUsingNamedRackOfTenant = func(w http.ResponseWriter, r *http.Reque
 	resp["data"] = data
 	u.Respond(w, resp)
 }
+
+// swagger:operation GET /api/user/tenants/{tenant_name}/sites/{site_name}/buildings/{building_name}/rooms/{room_name}/racks/{rack_name}/devices/{device_name} tenants GetFromTenant
+// Gets all Devices of a Rack by name of a Tenant from the system.
+// ---
+// produces:
+// - application/json
+// parameters:
+// - name: tenant_name
+//   in: path
+//   description: Name of desired tenant
+//   required: true
+//   type: string
+//   default: "INFINITI"
+// - name: site_name
+//   in: path
+//   description: Name of desired site
+//   required: true
+//   type: string
+//   default: "SiteA"
+// - name: building_name
+//   in: path
+//   description: Name of desired building
+//   required: true
+//   type: string
+//   default: "BldgA"
+// - name: room_name
+//   in: path
+//   description: Name of desired room
+//   required: true
+//   type: string
+//   default: "R1"
+// - name: rack_name
+//   in: path
+//   description: Name of desired rack
+//   required: true
+//   type: string
+//   default: "Rack01"
+// - name: device_name
+//   in: path
+//   description: Name of desired device
+//   required: true
+//   type: string
+//   default: "Device01"
+// responses:
+//     '200':
+//         description: Found
+//     '404':
+//         description: Not Found
 
 var GetNamedDeviceOfTenant = func(w http.ResponseWriter, r *http.Request) {
 	name, e := mux.Vars(r)["tenant_name"]

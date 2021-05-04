@@ -2040,7 +2040,639 @@
           "204": {
             "description": "Successful"
           },
-          "400": {
+          "404": {
+            "description": "Not found"
+          }
+        }
+      }
+    },
+    "/api/user/tenants/{id}/all": {
+      "get": {
+        "description": "Returns JSON body with all objects under the Tenant",
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "tenants"
+        ],
+        "summary": "Obtain all objects related to tenant in the system.",
+        "operationId": "GetFromTenant",
+        "parameters": [
+          {
+            "type": "int",
+            "default": 999,
+            "description": "ID of tenant",
+            "name": "ID",
+            "in": "query",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Found"
+          },
+          "404": {
+            "description": "Nothing Found"
+          }
+        }
+      }
+    },
+    "/api/user/tenants/{tenant_name}/buildings": {
+      "get": {
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "tenants"
+        ],
+        "summary": "Gets all Buildings of a Tenant from the system.",
+        "operationId": "GetFromTenant",
+        "parameters": [
+          {
+            "type": "string",
+            "default": "INFINITI",
+            "description": "Name of desired tenant",
+            "name": "tenant_name",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Found"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        }
+      }
+    },
+    "/api/user/tenants/{tenant_name}/sites": {
+      "get": {
+        "description": "The Tenant name must be provided in the URL parameter",
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "tenants"
+        ],
+        "summary": "Gets all sites of a Tenant from the system.",
+        "operationId": "GetFromTenant",
+        "parameters": [
+          {
+            "type": "string",
+            "default": "INFINITI",
+            "description": "Name of desired tenant",
+            "name": "name",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Found"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        }
+      }
+    },
+    "/api/user/tenants/{tenant_name}/sites/{site_name}": {
+      "get": {
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "tenants"
+        ],
+        "summary": "Gets a site of a Tenant by name from the system.",
+        "operationId": "GetFromTenant",
+        "parameters": [
+          {
+            "type": "string",
+            "default": "INFINITI",
+            "description": "Name of desired tenant",
+            "name": "tenant_name",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "default": "SiteA",
+            "description": "Name of desired site",
+            "name": "site_name",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Found"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        }
+      }
+    },
+    "/api/user/tenants/{tenant_name}/sites/{site_name}/buildings": {
+      "get": {
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "tenants"
+        ],
+        "summary": "Gets Buildings of a named site of a Tenant from the system.",
+        "operationId": "GetFromTenant",
+        "parameters": [
+          {
+            "type": "string",
+            "default": "INFINITI",
+            "description": "Name of desired tenant",
+            "name": "tenant_name",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "default": "SiteA",
+            "description": "Name of desired site",
+            "name": "site_name",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Found"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        }
+      }
+    },
+    "/api/user/tenants/{tenant_name}/sites/{site_name}/buildings/{building_name}": {
+      "get": {
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "tenants"
+        ],
+        "summary": "Gets a Building by name of a Tenant from the system.",
+        "operationId": "GetFromTenant",
+        "parameters": [
+          {
+            "type": "string",
+            "default": "INFINITI",
+            "description": "Name of desired tenant",
+            "name": "tenant_name",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "default": "SiteA",
+            "description": "Name of desired site",
+            "name": "site_name",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "default": "BldgA",
+            "description": "Name of desired building",
+            "name": "building_name",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Found"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        }
+      }
+    },
+    "/api/user/tenants/{tenant_name}/sites/{site_name}/buildings/{building_name}/rooms": {
+      "get": {
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "tenants"
+        ],
+        "summary": "Gets a Building by name of a Tenant from the system.",
+        "operationId": "GetFromTenant",
+        "parameters": [
+          {
+            "type": "string",
+            "default": "INFINITI",
+            "description": "Name of desired tenant",
+            "name": "tenant_name",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "default": "SiteA",
+            "description": "Name of desired site",
+            "name": "site_name",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "default": "BldgA",
+            "description": "Name of desired building",
+            "name": "building_name",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Found"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        }
+      }
+    },
+    "/api/user/tenants/{tenant_name}/sites/{site_name}/buildings/{building_name}/rooms/{room_name}": {
+      "get": {
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "tenants"
+        ],
+        "summary": "Gets a Room by name of a Tenant from the system.",
+        "operationId": "GetFromTenant",
+        "parameters": [
+          {
+            "type": "string",
+            "default": "INFINITI",
+            "description": "Name of desired tenant",
+            "name": "tenant_name",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "default": "SiteA",
+            "description": "Name of desired site",
+            "name": "site_name",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "default": "BldgA",
+            "description": "Name of desired building",
+            "name": "building_name",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "default": "R1",
+            "description": "Name of desired room",
+            "name": "room_name",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Found"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        }
+      }
+    },
+    "/api/user/tenants/{tenant_name}/sites/{site_name}/buildings/{building_name}/rooms/{room_name}/racks": {
+      "get": {
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "tenants"
+        ],
+        "summary": "Gets all Racks of a Room by name of a Tenant from the system.",
+        "operationId": "GetFromTenant",
+        "parameters": [
+          {
+            "type": "string",
+            "default": "INFINITI",
+            "description": "Name of desired tenant",
+            "name": "tenant_name",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "default": "SiteA",
+            "description": "Name of desired site",
+            "name": "site_name",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "default": "BldgA",
+            "description": "Name of desired building",
+            "name": "building_name",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "default": "R1",
+            "description": "Name of desired room",
+            "name": "room_name",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Found"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        }
+      }
+    },
+    "/api/user/tenants/{tenant_name}/sites/{site_name}/buildings/{building_name}/rooms/{room_name}/racks/{rack_name}": {
+      "get": {
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "tenants"
+        ],
+        "summary": "Gets a Rack by name of a Tenant from the system.",
+        "operationId": "GetFromTenant",
+        "parameters": [
+          {
+            "type": "string",
+            "default": "INFINITI",
+            "description": "Name of desired tenant",
+            "name": "tenant_name",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "default": "SiteA",
+            "description": "Name of desired site",
+            "name": "site_name",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "default": "BldgA",
+            "description": "Name of desired building",
+            "name": "building_name",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "default": "R1",
+            "description": "Name of desired room",
+            "name": "room_name",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "default": "Rack01",
+            "description": "Name of desired rack",
+            "name": "rack_name",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Found"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        }
+      }
+    },
+    "/api/user/tenants/{tenant_name}/sites/{site_name}/buildings/{building_name}/rooms/{room_name}/racks/{rack_name}/devices": {
+      "get": {
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "tenants"
+        ],
+        "summary": "Gets all Devices of a Rack by name of a Tenant from the system.",
+        "operationId": "GetFromTenant",
+        "parameters": [
+          {
+            "type": "string",
+            "default": "INFINITI",
+            "description": "Name of desired tenant",
+            "name": "tenant_name",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "default": "SiteA",
+            "description": "Name of desired site",
+            "name": "site_name",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "default": "BldgA",
+            "description": "Name of desired building",
+            "name": "building_name",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "default": "R1",
+            "description": "Name of desired room",
+            "name": "room_name",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "default": "Rack01",
+            "description": "Name of desired rack",
+            "name": "rack_name",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Found"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        }
+      }
+    },
+    "/api/user/tenants/{tenant_name}/sites/{site_name}/buildings/{building_name}/rooms/{room_name}/racks/{rack_name}/devices/{device_name}": {
+      "get": {
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "tenants"
+        ],
+        "summary": "Gets all Devices of a Rack by name of a Tenant from the system.",
+        "operationId": "GetFromTenant",
+        "parameters": [
+          {
+            "type": "string",
+            "default": "INFINITI",
+            "description": "Name of desired tenant",
+            "name": "tenant_name",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "default": "SiteA",
+            "description": "Name of desired site",
+            "name": "site_name",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "default": "BldgA",
+            "description": "Name of desired building",
+            "name": "building_name",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "default": "R1",
+            "description": "Name of desired room",
+            "name": "room_name",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "default": "Rack01",
+            "description": "Name of desired rack",
+            "name": "rack_name",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "default": "Device01",
+            "description": "Name of desired device",
+            "name": "device_name",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Found"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        }
+      }
+    },
+    "/api/user/tenants/{tenant_name}?": {
+      "get": {
+        "description": "Gets a Tenant using any attribute (with the exception of description) via query in the system\nThe attributes are in the form {attr}=xyz\u0026{attr1}=abc\nAnd any combination can be provided.",
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "tenants"
+        ],
+        "operationId": "GetTenant",
+        "parameters": [
+          {
+            "type": "string",
+            "default": "INFINITI",
+            "description": "Name of tenant",
+            "name": "Name",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "default": "Auto",
+            "description": "Category of Tenant (ex. Consumer Electronics, Medical)",
+            "name": "Category",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "default": "High End Auto",
+            "description": "Domain of the Tenant",
+            "name": "Domain"
+          },
+          {
+            "type": "string",
+            "default": "Black",
+            "description": "Color of Tenant (useful for 3D rendering)",
+            "name": "Color",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "default": "Post",
+            "description": "The main method of contact for Tenant",
+            "name": "MainContact",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "default": "999",
+            "description": "Main Phone",
+            "name": "MainPhone",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "default": "infiniti@nissan.com",
+            "description": "Main Email Address of Tenant",
+            "name": "MainEmail",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful"
+          },
+          "404": {
             "description": "Not found"
           }
         }
