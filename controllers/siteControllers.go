@@ -8,7 +8,6 @@ import (
 	u "p3/utils"
 	"reflect"
 	"strconv"
-	"strings"
 
 	"github.com/gorilla/mux"
 )
@@ -506,6 +505,107 @@ var UpdateSite = func(w http.ResponseWriter, r *http.Request) {
 	u.Respond(w, v)
 }
 
+// swagger:operation GET /api/user/sites? sites GetSiteByQuery
+// Gets a Site using any attribute (with the exception of description) via query in the system
+// The attributes are in the form {attr}=xyz&{attr1}=abc
+// And any combination can be provided given that at least 1 is provided.
+// ---
+// produces:
+// - application/json
+// parameters:
+// - name: ID
+//   in: path
+//   description: ID of desired site
+//   required: false
+//   type: int
+//   default: 999
+// - name: Name
+//   in: query
+//   description: Name of site
+//   required: false
+//   type: string
+//   default: "Site B"
+// - name: Category
+//   in: query
+//   description: Category of Site (ex. Consumer Electronics, Medical)
+//   required: false
+//   type: string
+//   default: "Research"
+// - name: Domain
+//   description: 'Domain of Site'
+//   required: false
+//   type: string
+//   default: "Some Domain"
+// - name: Description
+//   in: query
+//   description: Description of Site
+//   required: false
+//   type: string
+//   default: "Some abandoned site in Grenoble"
+// - name: Orientation
+//   in: query
+//   description: 'Indicates the location. Only values of
+//   "NE", "NW", "SE", "SW" are acceptable'
+//   required: false
+//   type: string
+//   default: "NE"
+// - name: UsableColor
+//   in: query
+//   description: Usable Color of Site (useful for 3D rendering)
+//   required: false
+//   type: string
+//   default: "Black"
+// - name: ReservedColor
+//   in: query
+//   description: Reserved Color of Site (useful for 3D rendering)
+//   required: false
+//   type: string
+//   default: "Black"
+// - name: TechnicalColor
+//   in: query
+//   description: Color of Site (useful for 3D rendering)
+//   required: false
+//   type: string
+//   default: "Black"
+// - name: Address
+//   in: query
+//   description: Address of Site
+//   required: false
+//   type: string
+//   default: "New Rue"
+// - name: Zipcode
+//   in: query
+//   description: Zipcode of Site
+//   required: false
+//   type: string
+//   default: "99999"
+// - name: City
+//   in: query
+//   description: City of Site
+//   required: false
+//   type: string
+//   default: "Geneve"
+// - name: Country
+//   in: query
+//   description: Country of Site
+//   required: false
+//   type: string
+//   default: "Switzerland"
+// - name: Gps
+//   in: query
+//   description: Gps of Site
+//   required: false
+//   type: string
+//   default: "N'55 E'15"
+
+// responses:
+//     '200':
+//         description: Updated
+//     '404':
+//         description: Not Found
+//     '400':
+//         description: Bad request
+
 var GetSiteByQuery = func(w http.ResponseWriter, r *http.Request) {
 	var resp map[string]interface{}
 
@@ -549,6 +649,7 @@ var GetSiteByQuery = func(w http.ResponseWriter, r *http.Request) {
 	u.Respond(w, resp)
 }
 
+/*
 var GetSiteByName = func(w http.ResponseWriter, r *http.Request) {
 	var resp map[string]interface{}
 	names := strings.Split(r.URL.String(), "=")
@@ -580,6 +681,25 @@ var GetSiteByName = func(w http.ResponseWriter, r *http.Request) {
 	resp["data"] = data
 	u.Respond(w, resp)
 }
+*/
+
+// swagger:operation GET /api/user/sites/{id}/all sites GetSite
+// Gets hierarchy of Site from the system using Site ID.
+// ---
+// produces:
+// - application/json
+// parameters:
+// - name: ID
+//   in: path
+//   description: ID of desired site
+//   required: true
+//   type: int
+//   default: 999
+// responses:
+//     '200':
+//         description: Found
+//     '404':
+//         description: Not Found
 
 var GetSiteHierarchy = func(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("me & the irishman")
@@ -646,6 +766,24 @@ var GetSiteHierarchyNonStandard = func(w http.ResponseWriter, r *http.Request) {
 	u.Respond(w, resp)
 }
 
+// swagger:operation GET /api/user/sites/{id}/buildings sites GetBuildingsOfSite
+// Gets all Buildings of a Site from the system.
+// ---
+// produces:
+// - application/json
+// parameters:
+// - name: ID
+//   in: path
+//   description: ID of desired site
+//   required: true
+//   type: int
+//   default: 999
+// responses:
+//     '200':
+//         description: Found
+//     '404':
+//         description: Not Found
+
 var GetBuildingsOfSite = func(w http.ResponseWriter, r *http.Request) {
 	id, e := strconv.Atoi(mux.Vars(r)["id"])
 	resp := u.Message(true, "success")
@@ -673,6 +811,30 @@ var GetBuildingsOfSite = func(w http.ResponseWriter, r *http.Request) {
 	resp["data"] = data
 	u.Respond(w, resp)
 }
+
+// swagger:operation GET /api/user/sites/{id}/buildings/{building_name} sites GetBuildingsOfSite
+// Gets a Building by name of a Site from the system.
+// ---
+// produces:
+// - application/json
+// parameters:
+// - name: ID
+//   in: path
+//   description: ID of desired site
+//   required: true
+//   type: int
+//   default: 999
+// - name: building_name
+//   in: path
+//   description: name of desired building
+//   required: true
+//   type: string
+//   default: "BldgA"
+// responses:
+//     '200':
+//         description: Found
+//     '404':
+//         description: Not Found
 
 var GetNamedBuildingOfSite = func(w http.ResponseWriter, r *http.Request) {
 	id, e := strconv.Atoi(mux.Vars(r)["id"])
@@ -703,6 +865,30 @@ var GetNamedBuildingOfSite = func(w http.ResponseWriter, r *http.Request) {
 	u.Respond(w, resp)
 }
 
+// swagger:operation GET /api/user/sites/{id}/buildings/{building_name}/rooms sites GetRoomsOfSite
+// Gets Rooms of a Site from the system.
+// ---
+// produces:
+// - application/json
+// parameters:
+// - name: ID
+//   in: path
+//   description: ID of desired site
+//   required: true
+//   type: int
+//   default: 999
+// - name: building_name
+//   in: path
+//   description: name of desired building
+//   required: true
+//   type: string
+//   default: "BldgA"
+// responses:
+//     '200':
+//         description: Found
+//     '404':
+//         description: Not Found
+
 var GetRoomsUsingNamedBldgOfSite = func(w http.ResponseWriter, r *http.Request) {
 	id, e := strconv.Atoi(mux.Vars(r)["id"])
 	bldg_name := mux.Vars(r)["building_name"]
@@ -732,6 +918,24 @@ var GetRoomsUsingNamedBldgOfSite = func(w http.ResponseWriter, r *http.Request) 
 	u.Respond(w, resp)
 }
 
+// swagger:operation GET /api/user/sites/{id}/rooms sites GetRoomsOfSite
+// Gets Rooms of a Site from the system.
+// ---
+// produces:
+// - application/json
+// parameters:
+// - name: ID
+//   in: path
+//   description: ID of desired site
+//   required: true
+//   type: int
+//   default: 999
+// responses:
+//     '200':
+//         description: Found
+//     '404':
+//         description: Not Found
+
 var GetRoomsOfSite = func(w http.ResponseWriter, r *http.Request) {
 	id, e := strconv.Atoi(mux.Vars(r)["id"])
 	resp := u.Message(true, "success")
@@ -759,6 +963,36 @@ var GetRoomsOfSite = func(w http.ResponseWriter, r *http.Request) {
 	resp["data"] = data
 	u.Respond(w, resp)
 }
+
+// swagger:operation GET /api/user/sites/{id}/buildings/{building_name}/rooms/{room_name} sites GetRoomsOfSite
+// Gets Room by name of a Site from the system.
+// ---
+// produces:
+// - application/json
+// parameters:
+// - name: ID
+//   in: path
+//   description: ID of desired site
+//   required: true
+//   type: int
+//   default: 999
+// - name: building_name
+//   in: path
+//   description: name of desired building
+//   required: true
+//   type: string
+//   default: "BldgA"
+// - name: room_name
+//   in: path
+//   description: name of desired room
+//   required: true
+//   type: string
+//   default: "R1"
+// responses:
+//     '200':
+//         description: Found
+//     '404':
+//         description: Not Found
 
 var GetNamedRoomOfSite = func(w http.ResponseWriter, r *http.Request) {
 	id, e := strconv.Atoi(mux.Vars(r)["id"])
@@ -790,6 +1024,36 @@ var GetNamedRoomOfSite = func(w http.ResponseWriter, r *http.Request) {
 	u.Respond(w, resp)
 }
 
+// swagger:operation GET /api/user/sites/{id}/buildings/{building_name}/rooms/{room_name}/racks sites GetRacksOfSite
+// Gets Racks of a Site from the system.
+// ---
+// produces:
+// - application/json
+// parameters:
+// - name: ID
+//   in: path
+//   description: ID of desired site
+//   required: true
+//   type: int
+//   default: 999
+// - name: building_name
+//   in: path
+//   description: name of desired building
+//   required: true
+//   type: string
+//   default: "BldgA"
+// - name: room_name
+//   in: path
+//   description: name of desired room
+//   required: true
+//   type: string
+//   default: "R1"
+// responses:
+//     '200':
+//         description: Found
+//     '404':
+//         description: Not Found
+
 var GetRacksUsingNamedRoomOfSite = func(w http.ResponseWriter, r *http.Request) {
 	id, e := strconv.Atoi(mux.Vars(r)["id"])
 	bldg_name := mux.Vars(r)["building_name"]
@@ -819,6 +1083,42 @@ var GetRacksUsingNamedRoomOfSite = func(w http.ResponseWriter, r *http.Request) 
 	resp["data"] = data
 	u.Respond(w, resp)
 }
+
+// swagger:operation GET /api/user/sites/{id}/buildings/{building_name}/rooms/{room_name}/racks/{rack_name} sites GetRacksOfSite
+// Gets a Rack by name of a Site from the system.
+// ---
+// produces:
+// - application/json
+// parameters:
+// - name: ID
+//   in: path
+//   description: ID of desired site
+//   required: true
+//   type: int
+//   default: 999
+// - name: building_name
+//   in: path
+//   description: name of desired building
+//   required: true
+//   type: string
+//   default: "BldgA"
+// - name: room_name
+//   in: path
+//   description: name of desired room
+//   required: true
+//   type: string
+//   default: "R1"
+// - name: rack_name
+//   in: path
+//   description: name of desired rack
+//   required: true
+//   type: string
+//   default: "Rack01"
+// responses:
+//     '200':
+//         description: Found
+//     '404':
+//         description: Not Found
 
 var GetNamedRackOfSite = func(w http.ResponseWriter, r *http.Request) {
 	id, e := strconv.Atoi(mux.Vars(r)["id"])
@@ -851,6 +1151,42 @@ var GetNamedRackOfSite = func(w http.ResponseWriter, r *http.Request) {
 	u.Respond(w, resp)
 }
 
+// swagger:operation GET /api/user/sites/{id}/buildings/{building_name}/rooms/{room_name}/racks/{rack_name}/devices sites GetDevicesOfSite
+// Gets Devices of a Site from the system.
+// ---
+// produces:
+// - application/json
+// parameters:
+// - name: ID
+//   in: path
+//   description: ID of desired site
+//   required: true
+//   type: int
+//   default: 999
+// - name: building_name
+//   in: path
+//   description: name of desired building
+//   required: true
+//   type: string
+//   default: "BldgA"
+// - name: room_name
+//   in: path
+//   description: name of desired room
+//   required: true
+//   type: string
+//   default: "R1"
+// - name: rack_name
+//   in: path
+//   description: name of desired rack
+//   required: true
+//   type: string
+//   default: "Rack01"
+// responses:
+//     '200':
+//         description: Found
+//     '404':
+//         description: Not Found
+
 var GetDevicesUsingNamedRackOfSite = func(w http.ResponseWriter, r *http.Request) {
 	id, e := strconv.Atoi(mux.Vars(r)["id"])
 	bldg_name := mux.Vars(r)["building_name"]
@@ -881,6 +1217,48 @@ var GetDevicesUsingNamedRackOfSite = func(w http.ResponseWriter, r *http.Request
 	resp["data"] = data
 	u.Respond(w, resp)
 }
+
+// swagger:operation GET /api/user/sites/{id}/buildings/{building_name}/rooms/{room_name}/racks/{rack_name}/devices/{device_name} sites GetDevicesOfSite
+// Gets Devices of a Site from the system.
+// ---
+// produces:
+// - application/json
+// parameters:
+// - name: ID
+//   in: path
+//   description: ID of desired site
+//   required: true
+//   type: int
+//   default: 999
+// - name: building_name
+//   in: path
+//   description: name of desired building
+//   required: true
+//   type: string
+//   default: "BldgA"
+// - name: room_name
+//   in: path
+//   description: name of desired room
+//   required: true
+//   type: string
+//   default: "R1"
+// - name: rack_name
+//   in: path
+//   description: name of desired rack
+//   required: true
+//   type: string
+//   default: "Rack01"
+// - name: device_name
+//   in: path
+//   description: name of desired device
+//   required: true
+//   type: string
+//   default: "Device01"
+// responses:
+//     '200':
+//         description: Found
+//     '404':
+//         description: Not Found
 
 var GetNamedDeviceOfSite = func(w http.ResponseWriter, r *http.Request) {
 	id, e := strconv.Atoi(mux.Vars(r)["id"])

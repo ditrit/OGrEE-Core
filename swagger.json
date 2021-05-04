@@ -1798,6 +1798,545 @@
         }
       }
     },
+    "/api/user/sites/{id}/all": {
+      "get": {
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "sites"
+        ],
+        "summary": "Gets hierarchy of Site from the system using Site ID.",
+        "operationId": "GetSite",
+        "parameters": [
+          {
+            "type": "int",
+            "default": 999,
+            "description": "ID of desired site",
+            "name": "ID",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Found"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        }
+      }
+    },
+    "/api/user/sites/{id}/buildings": {
+      "get": {
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "sites"
+        ],
+        "summary": "Gets all Buildings of a Site from the system.",
+        "operationId": "GetBuildingsOfSite",
+        "parameters": [
+          {
+            "type": "int",
+            "default": 999,
+            "description": "ID of desired site",
+            "name": "ID",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Found"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        }
+      }
+    },
+    "/api/user/sites/{id}/buildings/{building_name}": {
+      "get": {
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "sites"
+        ],
+        "summary": "Gets a Building by name of a Site from the system.",
+        "operationId": "GetBuildingsOfSite",
+        "parameters": [
+          {
+            "type": "int",
+            "default": 999,
+            "description": "ID of desired site",
+            "name": "ID",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "default": "BldgA",
+            "description": "name of desired building",
+            "name": "building_name",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Found"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        }
+      }
+    },
+    "/api/user/sites/{id}/buildings/{building_name}/rooms": {
+      "get": {
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "sites"
+        ],
+        "summary": "Gets Rooms of a Site from the system.",
+        "operationId": "GetRoomsOfSite",
+        "parameters": [
+          {
+            "type": "int",
+            "default": 999,
+            "description": "ID of desired site",
+            "name": "ID",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "default": "BldgA",
+            "description": "name of desired building",
+            "name": "building_name",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Found"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        }
+      }
+    },
+    "/api/user/sites/{id}/buildings/{building_name}/rooms/{room_name}": {
+      "get": {
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "sites"
+        ],
+        "summary": "Gets Room by name of a Site from the system.",
+        "operationId": "GetRoomsOfSite",
+        "parameters": [
+          {
+            "type": "int",
+            "default": 999,
+            "description": "ID of desired site",
+            "name": "ID",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "default": "BldgA",
+            "description": "name of desired building",
+            "name": "building_name",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "default": "R1",
+            "description": "name of desired room",
+            "name": "room_name",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Found"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        }
+      }
+    },
+    "/api/user/sites/{id}/buildings/{building_name}/rooms/{room_name}/racks": {
+      "get": {
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "sites"
+        ],
+        "summary": "Gets Racks of a Site from the system.",
+        "operationId": "GetRacksOfSite",
+        "parameters": [
+          {
+            "type": "int",
+            "default": 999,
+            "description": "ID of desired site",
+            "name": "ID",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "default": "BldgA",
+            "description": "name of desired building",
+            "name": "building_name",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "default": "R1",
+            "description": "name of desired room",
+            "name": "room_name",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Found"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        }
+      }
+    },
+    "/api/user/sites/{id}/buildings/{building_name}/rooms/{room_name}/racks/{rack_name}": {
+      "get": {
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "sites"
+        ],
+        "summary": "Gets a Rack by name of a Site from the system.",
+        "operationId": "GetRacksOfSite",
+        "parameters": [
+          {
+            "type": "int",
+            "default": 999,
+            "description": "ID of desired site",
+            "name": "ID",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "default": "BldgA",
+            "description": "name of desired building",
+            "name": "building_name",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "default": "R1",
+            "description": "name of desired room",
+            "name": "room_name",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "default": "Rack01",
+            "description": "name of desired rack",
+            "name": "rack_name",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Found"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        }
+      }
+    },
+    "/api/user/sites/{id}/buildings/{building_name}/rooms/{room_name}/racks/{rack_name}/devices": {
+      "get": {
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "sites"
+        ],
+        "summary": "Gets Devices of a Site from the system.",
+        "operationId": "GetDevicesOfSite",
+        "parameters": [
+          {
+            "type": "int",
+            "default": 999,
+            "description": "ID of desired site",
+            "name": "ID",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "default": "BldgA",
+            "description": "name of desired building",
+            "name": "building_name",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "default": "R1",
+            "description": "name of desired room",
+            "name": "room_name",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "default": "Rack01",
+            "description": "name of desired rack",
+            "name": "rack_name",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Found"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        }
+      }
+    },
+    "/api/user/sites/{id}/buildings/{building_name}/rooms/{room_name}/racks/{rack_name}/devices/{device_name}": {
+      "get": {
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "sites"
+        ],
+        "summary": "Gets Devices of a Site from the system.",
+        "operationId": "GetDevicesOfSite",
+        "parameters": [
+          {
+            "type": "int",
+            "default": 999,
+            "description": "ID of desired site",
+            "name": "ID",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "default": "BldgA",
+            "description": "name of desired building",
+            "name": "building_name",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "default": "R1",
+            "description": "name of desired room",
+            "name": "room_name",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "default": "Rack01",
+            "description": "name of desired rack",
+            "name": "rack_name",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "default": "Device01",
+            "description": "name of desired device",
+            "name": "device_name",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Found"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        }
+      }
+    },
+    "/api/user/sites/{id}/rooms": {
+      "get": {
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "sites"
+        ],
+        "summary": "Gets Rooms of a Site from the system.",
+        "operationId": "GetRoomsOfSite",
+        "parameters": [
+          {
+            "type": "int",
+            "default": 999,
+            "description": "ID of desired site",
+            "name": "ID",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Found"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        }
+      }
+    },
+    "/api/user/sites?": {
+      "get": {
+        "description": "Gets a Site using any attribute (with the exception of description) via query in the system\nThe attributes are in the form {attr}=xyz\u0026{attr1}=abc\nAnd any combination can be provided given that at least 1 is provided.",
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "sites"
+        ],
+        "operationId": "GetSiteByQuery",
+        "parameters": [
+          {
+            "type": "int",
+            "default": 999,
+            "description": "ID of desired site",
+            "name": "ID",
+            "in": "path"
+          },
+          {
+            "type": "string",
+            "default": "Site B",
+            "description": "Name of site",
+            "name": "Name",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "default": "Research",
+            "description": "Category of Site (ex. Consumer Electronics, Medical)",
+            "name": "Category",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "default": "Some Domain",
+            "description": "Domain of Site",
+            "name": "Domain"
+          },
+          {
+            "type": "string",
+            "default": "Some abandoned site in Grenoble",
+            "description": "Description of Site",
+            "name": "Description",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "default": "NE",
+            "description": "Indicates the location. Only values of \"NE\", \"NW\", \"SE\", \"SW\" are acceptable",
+            "name": "Orientation",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "default": "Black",
+            "description": "Usable Color of Site (useful for 3D rendering)",
+            "name": "UsableColor",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "default": "Black",
+            "description": "Reserved Color of Site (useful for 3D rendering)",
+            "name": "ReservedColor",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "default": "Black",
+            "description": "Color of Site (useful for 3D rendering)",
+            "name": "TechnicalColor",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "default": "New Rue",
+            "description": "Address of Site",
+            "name": "Address",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "default": "99999",
+            "description": "Zipcode of Site",
+            "name": "Zipcode",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "default": "Geneve",
+            "description": "City of Site",
+            "name": "City",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "default": "Switzerland",
+            "description": "Country of Site",
+            "name": "Country",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "default": "N'55 E'15",
+            "description": "Gps of Site",
+            "name": "Gps",
+            "in": "query"
+          }
+        ]
+      }
+    },
     "/api/user/tenants": {
       "get": {
         "description": "Returns JSON body with all tenants and their IDs",
@@ -2608,9 +3147,9 @@
         }
       }
     },
-    "/api/user/tenants/{tenant_name}?": {
+    "/api/user/tenants?": {
       "get": {
-        "description": "Gets a Tenant using any attribute (with the exception of description) via query in the system\nThe attributes are in the form {attr}=xyz\u0026{attr1}=abc\nAnd any combination can be provided.",
+        "description": "Gets a Tenant using any attribute (with the exception of description) via query in the system\nThe attributes are in the form {attr}=xyz\u0026{attr1}=abc\nAnd any combination can be provided given that at least 1 is provided.",
         "produces": [
           "application/json"
         ],

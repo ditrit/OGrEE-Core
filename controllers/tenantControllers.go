@@ -344,10 +344,10 @@ var DeleteTenant = func(w http.ResponseWriter, r *http.Request) {
 	u.Respond(w, v)
 }
 
-// swagger:operation GET /api/user/tenants/{tenant_name}? tenants GetTenant
+// swagger:operation GET /api/user/tenants? tenants GetTenant
 // Gets a Tenant using any attribute (with the exception of description) via query in the system
 // The attributes are in the form {attr}=xyz&{attr1}=abc
-// And any combination can be provided.
+// And any combination can be provided given that at least 1 is provided.
 // ---
 // produces:
 // - application/json
