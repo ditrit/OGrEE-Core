@@ -597,8 +597,6 @@ var UpdateSite = func(w http.ResponseWriter, r *http.Request) {
 //         description: Updated
 //     '404':
 //         description: Not Found
-//     '400':
-//         description: Bad request
 
 var GetSiteByQuery = func(w http.ResponseWriter, r *http.Request) {
 	var resp map[string]interface{}

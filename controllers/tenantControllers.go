@@ -395,7 +395,7 @@ var DeleteTenant = func(w http.ResponseWriter, r *http.Request) {
 //   default: "infiniti@nissan.com"
 // responses:
 //     '204':
-//        description: Successful
+//        description: Found
 //     '404':
 //        description: Not found
 

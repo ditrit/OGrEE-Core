@@ -488,11 +488,9 @@ var UpdateBuilding = func(w http.ResponseWriter, r *http.Request) {
 
 // responses:
 //     '200':
-//         description: Updated
+//         description: Found
 //     '404':
 //         description: Not Found
-//     '400':
-//         description: Bad request
 
 var GetBuildingByQuery = func(w http.ResponseWriter, r *http.Request) {
 	var resp map[string]interface{}

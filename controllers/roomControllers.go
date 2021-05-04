@@ -513,11 +513,9 @@ var UpdateRoom = func(w http.ResponseWriter, r *http.Request) {
 //   default: "cm"
 // responses:
 //     '200':
-//         description: Updated
+//         description: Found
 //     '404':
 //         description: Not Found
-//     '400':
-//         description: Bad request
 var GetRoomByQuery = func(w http.ResponseWriter, r *http.Request) {
 	var resp map[string]interface{}
 

@@ -131,14 +131,6 @@ func main() {
 	router.HandleFunc("/api/user/sites",
 		controllers.CreateSite).Methods("POST")
 
-	/*router.HandleFunc("/api/user/sites",
-		controllers.GetSitesByUserID).Methods("GET")
-
-		here is a useless change for the demo
-
-	router.HandleFunc("/api/user/sites",
-		controllers.GetSitesByParentID).Methods("GET")*/
-
 	router.HandleFunc("/api/user/sites/{id:[0-9]+}/all/nonstd",
 		controllers.GetSiteHierarchyNonStandard).Methods("GET")
 
