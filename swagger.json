@@ -1225,6 +1225,7 @@
         "tags": [
           "devices"
         ],
+        "summary": "Gets Device By Query.",
         "operationId": "GetDeviceByQuery",
         "parameters": [
           {
