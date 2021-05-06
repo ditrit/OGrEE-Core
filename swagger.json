@@ -3521,7 +3521,15 @@
             "name": "Gps",
             "in": "query"
           }
-        ]
+        ],
+        "responses": {
+          "200": {
+            "description": "Found"
+          },
+          "404": {
+            "description": "Nothing Found"
+          }
+        }
       }
     },
     "/api/user/tenants": {

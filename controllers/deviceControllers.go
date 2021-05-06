@@ -631,7 +631,7 @@ var UpdateDevice = func(w http.ResponseWriter, r *http.Request) {
 //     '200':
 //         description: Found
 //     '404':
-//         description: Not Found
+//         description: Nothing Found
 //Updates work by passing ID in path parameter
 var GetDeviceByQuery = func(w http.ResponseWriter, r *http.Request) {
 	var resp map[string]interface{}
