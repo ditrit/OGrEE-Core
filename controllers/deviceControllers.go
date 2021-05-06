@@ -502,126 +502,126 @@ var UpdateDevice = func(w http.ResponseWriter, r *http.Request) {
 //   type: int
 //   default: 999
 // - name: Name
-//   in: query
+//   in: path
 //   description: Name of device
 //   required: false
 //   type: string
 //   default: "Device B"
 // - name: Category
-//   in: query
+//   in: path
 //   description: Category of Device (ex. Consumer Electronics, Medical)
 //   required: false
 //   type: string
 //   default: "Research"
 // - name: Description
-//   in: query
+//   in: path
 //   description: Description of Device
 //   required: false
 //   type: string[]
 //   default: ["Some abandoned device in Grenoble"]
 // - name: Template
-//   in: query
+//   in: path
 //   description: 'Device template'
 //   required: false
 //   type: string
 //   default: "Some Template"
 // - name: Orientation
-//   in: query
+//   in: path
 //   description: 'Indicates the location. Only values of
 //   "front", "rear", "frontflipped", "rearflipped" are acceptable'
 //   required: false
 //   type: string
 //   default: "frontflipped"
 // - name: PosXY
-//   in: query
+//   in: path
 //   description: 'Indicates the position in a XY coordinate format'
 //   required: false
 //   type: string
 //   default: "{\"x\":999,\"y\":999}"
 // - name: PosXYU
-//   in: query
+//   in: path
 //   description: 'Indicates the unit of the PosXY position. Only values of
 //   "mm", "cm", "m", "U", "OU", "tile" are acceptable'
 //   required: false
 //   type: string
 //   default: "cm"
 // - name: PosZ
-//   in: query
+//   in: path
 //   description: 'Indicates the position in the Z axis'
 //   required: false
 //   type: string
 //   default: "999"
 // - name: PosZU
-//   in: query
+//   in: path
 //   description: 'Indicates the unit of the Z coordinate position. Only values of
 //   "mm", "cm", "m", "U", "OU", "tile" are acceptable'
 //   required: false
 //   type: string
 //   default: "cm"
 // - name: Size
-//   in: query
+//   in: path
 //   description: 'Size of Device in an XY coordinate format'
 //   required: false
 //   type: string
 //   default: "{\"x\":999,\"y\":999}"
 // - name: SizeUnit
-//   in: query
+//   in: path
 //   description: 'Extraneous Size Unit Attribute'
 //   required: false
 //   type: string
 //   default: "{\"x\":999,\"y\":999}"
 // - name: SizeU
-//   in: query
+//   in: path
 //   description: 'The unit for Device Size. Only values of
 //   "mm", "cm", "m", "U", "OU", "tile" are acceptable'
 //   required: false
 //   type: string
 //   default: "cm"
 // - name: Slot
-//   in: query
+//   in: path
 //   description: 'Device Slot (if any)'
 //   required: false
 //   type: string
 //   default: "01"
 // - name: PosU
-//   in: query
+//   in: path
 //   description: 'Extraneous Position Unit Attribute'
 //   required: false
 //   type: string
 //   default: "???"
 // - name: Height
-//   in: query
+//   in: path
 //   description: 'Height of Device'
 //   required: false
 //   type: string
 //   default: "999"
 // - name: HeightU
-//   in: query
+//   in: path
 //   description: 'The unit for Device Height. Only values of
 //   "mm", "cm", "m", "U", "OU", "tile" are acceptable'
 //   required: false
 //   type: string
 //   default: "cm"
 // - name: Vendor
-//   in: query
+//   in: path
 //   description: 'Vendor of Device'
 //   required: false
 //   type: string
 //   default: "New Vendor"
 // - name: Model
-//   in: query
+//   in: path
 //   description: 'Model of Device'
 //   required: false
 //   type: string
 //   default: "New Model"
 // - name: Type
-//   in: query
+//   in: path
 //   description: 'Type of Device'
 //   required: false
 //   type: string
 //   default: "New Type"
 // - name: Serial
-//   in: query
+//   in: path
 //   description: 'Serial of Device'
 //   required: false
 //   type: string

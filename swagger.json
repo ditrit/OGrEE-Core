@@ -1240,14 +1240,14 @@
             "default": "Device B",
             "description": "Name of device",
             "name": "Name",
-            "in": "query"
+            "in": "path"
           },
           {
             "type": "string",
             "default": "Research",
             "description": "Category of Device (ex. Consumer Electronics, Medical)",
             "name": "Category",
-            "in": "query"
+            "in": "path"
           },
           {
             "type": "string[]",
@@ -1256,126 +1256,126 @@
             ],
             "description": "Description of Device",
             "name": "Description",
-            "in": "query"
+            "in": "path"
           },
           {
             "type": "string",
             "default": "Some Template",
             "description": "Device template",
             "name": "Template",
-            "in": "query"
+            "in": "path"
           },
           {
             "type": "string",
             "default": "frontflipped",
             "description": "Indicates the location. Only values of \"front\", \"rear\", \"frontflipped\", \"rearflipped\" are acceptable",
             "name": "Orientation",
-            "in": "query"
+            "in": "path"
           },
           {
             "type": "string",
             "default": "{\"x\":999,\"y\":999}",
             "description": "Indicates the position in a XY coordinate format",
             "name": "PosXY",
-            "in": "query"
+            "in": "path"
           },
           {
             "type": "string",
             "default": "cm",
             "description": "Indicates the unit of the PosXY position. Only values of \"mm\", \"cm\", \"m\", \"U\", \"OU\", \"tile\" are acceptable",
             "name": "PosXYU",
-            "in": "query"
+            "in": "path"
           },
           {
             "type": "string",
             "default": "999",
             "description": "Indicates the position in the Z axis",
             "name": "PosZ",
-            "in": "query"
+            "in": "path"
           },
           {
             "type": "string",
             "default": "cm",
             "description": "Indicates the unit of the Z coordinate position. Only values of \"mm\", \"cm\", \"m\", \"U\", \"OU\", \"tile\" are acceptable",
             "name": "PosZU",
-            "in": "query"
+            "in": "path"
           },
           {
             "type": "string",
             "default": "{\"x\":999,\"y\":999}",
             "description": "Size of Device in an XY coordinate format",
             "name": "Size",
-            "in": "query"
+            "in": "path"
           },
           {
             "type": "string",
             "default": "{\"x\":999,\"y\":999}",
             "description": "Extraneous Size Unit Attribute",
             "name": "SizeUnit",
-            "in": "query"
+            "in": "path"
           },
           {
             "type": "string",
             "default": "cm",
             "description": "The unit for Device Size. Only values of \"mm\", \"cm\", \"m\", \"U\", \"OU\", \"tile\" are acceptable",
             "name": "SizeU",
-            "in": "query"
+            "in": "path"
           },
           {
             "type": "string",
             "default": "01",
             "description": "Device Slot (if any)",
             "name": "Slot",
-            "in": "query"
+            "in": "path"
           },
           {
             "type": "string",
             "default": "???",
             "description": "Extraneous Position Unit Attribute",
             "name": "PosU",
-            "in": "query"
+            "in": "path"
           },
           {
             "type": "string",
             "default": "999",
             "description": "Height of Device",
             "name": "Height",
-            "in": "query"
+            "in": "path"
           },
           {
             "type": "string",
             "default": "cm",
             "description": "The unit for Device Height. Only values of \"mm\", \"cm\", \"m\", \"U\", \"OU\", \"tile\" are acceptable",
             "name": "HeightU",
-            "in": "query"
+            "in": "path"
           },
           {
             "type": "string",
             "default": "New Vendor",
             "description": "Vendor of Device",
             "name": "Vendor",
-            "in": "query"
+            "in": "path"
           },
           {
             "type": "string",
             "default": "New Model",
             "description": "Model of Device",
             "name": "Model",
-            "in": "query"
+            "in": "path"
           },
           {
             "type": "string",
             "default": "New Type",
             "description": "Type of Device",
             "name": "Type",
-            "in": "query"
+            "in": "path"
           },
           {
             "type": "string",
             "default": "New Serial",
             "description": "Serial of Device",
             "name": "Serial",
-            "in": "query"
+            "in": "path"
           }
         ]
       }
