@@ -932,11 +932,32 @@
           },
           {
             "type": "string",
+            "default": "{\"x\":999,\"y\":999}",
+            "description": "Extraneous Size Unit Attribute",
+            "name": "SizeUnit",
+            "in": "query"
+          },
+          {
+            "type": "string",
             "default": "m",
             "description": "The unit for Device Size. Only values of \"mm\", \"cm\", \"m\", \"U\", \"OU\", \"tile\" are acceptable",
             "name": "SizeU",
             "in": "query",
             "required": true
+          },
+          {
+            "type": "string",
+            "default": "01",
+            "description": "Device Slot (if any)",
+            "name": "Slot",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "default": "???",
+            "description": "Extraneous Position Unit Attribute",
+            "name": "PosU",
+            "in": "query"
           },
           {
             "type": "string",
@@ -1047,6 +1068,13 @@
           },
           {
             "type": "string",
+            "default": "Some Template",
+            "description": "Device template",
+            "name": "Template",
+            "in": "query"
+          },
+          {
+            "type": "string",
             "default": "frontflipped",
             "description": "Indicates the location. Only values of \"front\", \"rear\", \"frontflipped\", \"rearflipped\" are acceptable",
             "name": "Orientation",
@@ -1089,9 +1117,30 @@
           },
           {
             "type": "string",
+            "default": "{\"x\":999,\"y\":999}",
+            "description": "Extraneous Size Unit Attribute",
+            "name": "SizeUnit",
+            "in": "query"
+          },
+          {
+            "type": "string",
             "default": "cm",
             "description": "The unit for Device Size. Only values of \"mm\", \"cm\", \"m\", \"U\", \"OU\", \"tile\" are acceptable",
             "name": "SizeU",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "default": "01",
+            "description": "Device Slot (if any)",
+            "name": "Slot",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "default": "???",
+            "description": "Extraneous Position Unit Attribute",
+            "name": "PosU",
             "in": "query"
           },
           {
@@ -1165,6 +1214,169 @@
             "description": "Not found"
           }
         }
+      }
+    },
+    "/api/user/devices?": {
+      "get": {
+        "description": "Gets a Device using any attribute (with the exception of description) via query\nThe attributes are in the form {attr}=xyz\u0026{attr1}=abc\nAnd any combination can be provided given that at least 1 is provided.",
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "devices"
+        ],
+        "operationId": "GetDevice",
+        "parameters": [
+          {
+            "type": "int",
+            "default": 999,
+            "description": "ID of desired device",
+            "name": "ID",
+            "in": "path"
+          },
+          {
+            "type": "string",
+            "default": "Device B",
+            "description": "Name of device",
+            "name": "Name",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "default": "Research",
+            "description": "Category of Device (ex. Consumer Electronics, Medical)",
+            "name": "Category",
+            "in": "query"
+          },
+          {
+            "type": "string[]",
+            "default": [
+              "Some abandoned device in Grenoble"
+            ],
+            "description": "Description of Device",
+            "name": "Description",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "default": "Some Template",
+            "description": "Device template",
+            "name": "Template",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "default": "frontflipped",
+            "description": "Indicates the location. Only values of \"front\", \"rear\", \"frontflipped\", \"rearflipped\" are acceptable",
+            "name": "Orientation",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "default": "{\"x\":999,\"y\":999}",
+            "description": "Indicates the position in a XY coordinate format",
+            "name": "PosXY",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "default": "cm",
+            "description": "Indicates the unit of the PosXY position. Only values of \"mm\", \"cm\", \"m\", \"U\", \"OU\", \"tile\" are acceptable",
+            "name": "PosXYU",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "default": "999",
+            "description": "Indicates the position in the Z axis",
+            "name": "PosZ",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "default": "cm",
+            "description": "Indicates the unit of the Z coordinate position. Only values of \"mm\", \"cm\", \"m\", \"U\", \"OU\", \"tile\" are acceptable",
+            "name": "PosZU",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "default": "{\"x\":999,\"y\":999}",
+            "description": "Size of Device in an XY coordinate format",
+            "name": "Size",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "default": "{\"x\":999,\"y\":999}",
+            "description": "Extraneous Size Unit Attribute",
+            "name": "SizeUnit",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "default": "cm",
+            "description": "The unit for Device Size. Only values of \"mm\", \"cm\", \"m\", \"U\", \"OU\", \"tile\" are acceptable",
+            "name": "SizeU",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "default": "01",
+            "description": "Device Slot (if any)",
+            "name": "Slot",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "default": "???",
+            "description": "Extraneous Position Unit Attribute",
+            "name": "PosU",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "default": "999",
+            "description": "Height of Device",
+            "name": "Height",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "default": "cm",
+            "description": "The unit for Device Height. Only values of \"mm\", \"cm\", \"m\", \"U\", \"OU\", \"tile\" are acceptable",
+            "name": "HeightU",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "default": "New Vendor",
+            "description": "Vendor of Device",
+            "name": "Vendor",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "default": "New Model",
+            "description": "Model of Device",
+            "name": "Model",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "default": "New Type",
+            "description": "Type of Device",
+            "name": "Type",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "default": "New Serial",
+            "description": "Serial of Device",
+            "name": "Serial",
+            "in": "query"
+          }
+        ]
       }
     },
     "/api/user/racks": {
@@ -1539,6 +1751,214 @@
             "description": "Not found"
           }
         }
+      }
+    },
+    "/api/user/racks/{id}/all": {
+      "get": {
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "racks"
+        ],
+        "summary": "Gets Rack Hierarchy.",
+        "operationId": "GetRack",
+        "parameters": [
+          {
+            "type": "int",
+            "default": 999,
+            "description": "ID of desired rack",
+            "name": "ID",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful"
+          },
+          "404": {
+            "description": "Not found"
+          }
+        }
+      }
+    },
+    "/api/user/racks/{id}/devices/{device_name}": {
+      "get": {
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "racks"
+        ],
+        "summary": "Gets a Device of Rack.",
+        "operationId": "GetRack",
+        "parameters": [
+          {
+            "type": "int",
+            "default": 999,
+            "description": "ID of desired rack",
+            "name": "ID",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "default": "Device01",
+            "description": "name of desired device",
+            "name": "device_name",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful"
+          },
+          "404": {
+            "description": "Not found"
+          }
+        }
+      }
+    },
+    "/api/user/racks?": {
+      "get": {
+        "description": "Gets a Rack using any attribute (with the exception of description) via query\nThe attributes are in the form {attr}=xyz\u0026{attr1}=abc\nAnd any combination can be provided given that at least 1 is provided.",
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "racks"
+        ],
+        "operationId": "UpdateRack",
+        "parameters": [
+          {
+            "type": "int",
+            "default": 999,
+            "description": "ID of desired rack",
+            "name": "ID",
+            "in": "path"
+          },
+          {
+            "type": "string",
+            "default": "Rack B",
+            "description": "Name of rack",
+            "name": "Name",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "default": "Research",
+            "description": "Category of Rack (ex. Consumer Electronics, Medical)",
+            "name": "Category",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "default": "Some rack",
+            "description": "Description of Rack",
+            "name": "Description",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "default": "Some Template",
+            "description": "Room template",
+            "name": "Template",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "default": "front",
+            "description": "Indicates the location. Only values of \"front\", \"rear\", \"left\", \"right\" are acceptable",
+            "name": "Orientation",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "default": "{\"x\":999,\"y\":999}",
+            "description": "Indicates the position in a XY coordinate format",
+            "name": "PosXY",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "default": "cm",
+            "description": "Indicates the unit of the PosXY position. Only values of \"mm\", \"cm\", \"m\", \"U\", \"OU\", \"tile\" are acceptable",
+            "name": "PosXYU",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "default": "999",
+            "description": "Indicates the position in the Z axis",
+            "name": "PosZ",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "default": "cm",
+            "description": "Indicates the unit of the Z coordinate position. Only values of \"mm\", \"cm\", \"m\", \"U\", \"OU\", \"tile\" are acceptable",
+            "name": "PosZU",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "default": "{\"x\":999,\"y\":999}",
+            "description": "Size of Rack in an XY coordinate format",
+            "name": "Size",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "default": "cm",
+            "description": "The unit for Rack Size. Only values of \"mm\", \"cm\", \"m\", \"U\", \"OU\", \"tile\" are acceptable",
+            "name": "SizeU",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "default": "999",
+            "description": "Height of Rack",
+            "name": "Height",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "default": "cm",
+            "description": "The unit for Rack Height. Only values of \"mm\", \"cm\", \"m\", \"U\", \"OU\", \"tile\" are acceptable",
+            "name": "HeightU",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "default": "New Vendor",
+            "description": "Vendor of Rack",
+            "name": "Vendor",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "default": "New Model",
+            "description": "Model of Rack",
+            "name": "Model",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "default": "New Type",
+            "description": "Type of Rack",
+            "name": "Type",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "default": "New Serial",
+            "description": "Serial of Rack",
+            "name": "Serial",
+            "in": "query"
+          }
+        ]
       }
     },
     "/api/user/rooms": {
@@ -2116,8 +2536,7 @@
             "default": 999,
             "description": "ID of desired room",
             "name": "ID",
-            "in": "path",
-            "required": true
+            "in": "path"
           },
           {
             "type": "string",
@@ -2202,14 +2621,25 @@
             "description": "The unit for Room Height. Only values of \"mm\", \"cm\", \"m\", \"U\", \"OU\", \"tile\" are acceptable",
             "name": "HeightU",
             "in": "query"
+          },
+          {
+            "type": "string",
+            "default": "???",
+            "description": "Unity Unique Attribute",
+            "name": "Technical",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "default": "???",
+            "description": "Unity Unique Attribute",
+            "name": "Reserved",
+            "in": "query"
           }
         ],
         "responses": {
           "200": {
-            "description": "Updated"
-          },
-          "400": {
-            "description": "Bad request"
+            "description": "Found"
           },
           "404": {
             "description": "Not Found"
@@ -3965,7 +4395,7 @@
         ],
         "responses": {
           "204": {
-            "description": "Successful"
+            "description": "Found"
           },
           "404": {
             "description": "Not found"

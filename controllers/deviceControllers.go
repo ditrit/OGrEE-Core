@@ -91,6 +91,12 @@ import (
 //   required: true
 //   type: string
 //   default: "{\"x\":25.0,\"y\":29.399999618530275}"
+// - name: SizeUnit
+//   in: query
+//   description: 'Extraneous Size Unit Attribute'
+//   required: false
+//   type: string
+//   default: "{\"x\":999,\"y\":999}"
 // - name: SizeU
 //   in: query
 //   description: 'The unit for Device Size. Only values of
@@ -98,6 +104,18 @@ import (
 //   required: true
 //   type: string
 //   default: "m"
+// - name: Slot
+//   in: query
+//   description: 'Device Slot (if any)'
+//   required: false
+//   type: string
+//   default: "01"
+// - name: PosU
+//   in: query
+//   description: 'Extraneous Position Unit Attribute'
+//   required: false
+//   type: string
+//   default: "???"
 // - name: Height
 //   in: query
 //   description: 'Height of Device'
@@ -318,6 +336,12 @@ var DeleteDevice = func(w http.ResponseWriter, r *http.Request) {
 //   required: false
 //   type: string[]
 //   default: ["Some abandoned device in Grenoble"]
+// - name: Template
+//   in: query
+//   description: 'Device template'
+//   required: false
+//   type: string
+//   default: "Some Template"
 // - name: Orientation
 //   in: query
 //   description: 'Indicates the location. Only values of
@@ -357,6 +381,12 @@ var DeleteDevice = func(w http.ResponseWriter, r *http.Request) {
 //   required: false
 //   type: string
 //   default: "{\"x\":999,\"y\":999}"
+// - name: SizeUnit
+//   in: query
+//   description: 'Extraneous Size Unit Attribute'
+//   required: false
+//   type: string
+//   default: "{\"x\":999,\"y\":999}"
 // - name: SizeU
 //   in: query
 //   description: 'The unit for Device Size. Only values of
@@ -364,6 +394,18 @@ var DeleteDevice = func(w http.ResponseWriter, r *http.Request) {
 //   required: false
 //   type: string
 //   default: "cm"
+// - name: Slot
+//   in: query
+//   description: 'Device Slot (if any)'
+//   required: false
+//   type: string
+//   default: "01"
+// - name: PosU
+//   in: query
+//   description: 'Extraneous Position Unit Attribute'
+//   required: false
+//   type: string
+//   default: "???"
 // - name: Height
 //   in: query
 //   description: 'Height of Device'
@@ -476,6 +518,12 @@ var UpdateDevice = func(w http.ResponseWriter, r *http.Request) {
 //   required: false
 //   type: string[]
 //   default: ["Some abandoned device in Grenoble"]
+// - name: Template
+//   in: query
+//   description: 'Device template'
+//   required: false
+//   type: string
+//   default: "Some Template"
 // - name: Orientation
 //   in: query
 //   description: 'Indicates the location. Only values of
@@ -515,6 +563,12 @@ var UpdateDevice = func(w http.ResponseWriter, r *http.Request) {
 //   required: false
 //   type: string
 //   default: "{\"x\":999,\"y\":999}"
+// - name: SizeUnit
+//   in: query
+//   description: 'Extraneous Size Unit Attribute'
+//   required: false
+//   type: string
+//   default: "{\"x\":999,\"y\":999}"
 // - name: SizeU
 //   in: query
 //   description: 'The unit for Device Size. Only values of
@@ -522,6 +576,18 @@ var UpdateDevice = func(w http.ResponseWriter, r *http.Request) {
 //   required: false
 //   type: string
 //   default: "cm"
+// - name: Slot
+//   in: query
+//   description: 'Device Slot (if any)'
+//   required: false
+//   type: string
+//   default: "01"
+// - name: PosU
+//   in: query
+//   description: 'Extraneous Position Unit Attribute'
+//   required: false
+//   type: string
+//   default: "???"
 // - name: Height
 //   in: query
 //   description: 'Height of Device'
