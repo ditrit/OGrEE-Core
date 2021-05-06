@@ -486,7 +486,7 @@ var UpdateDevice = func(w http.ResponseWriter, r *http.Request) {
 	u.Respond(w, v)
 }
 
-// swagger:operation GET /api/user/devices? devices GetDevice
+// swagger:operation GET /api/user/devices? devices GetDeviceByQuery
 // Gets a Device using any attribute (with the exception of description) via query
 // The attributes are in the form {attr}=xyz&{attr1}=abc
 // And any combination can be provided given that at least 1 is provided.
