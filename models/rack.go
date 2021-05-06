@@ -26,7 +26,6 @@ type Rack_Attributes struct {
 }
 
 type Rack struct {
-	//gorm.Model
 	ID              int             `json:"-" gorm:"column:id"`
 	IDJSON          string          `json:"id" gorm:"-"`
 	Name            string          `json:"name" gorm:"column:rack_name"`
@@ -405,7 +404,6 @@ func GetRackByName(name string) (*Rack, string) {
 	WHERE rack_name = ?;`, name).Find(rack).Find(&rack.Attributes).Error
 
 	if e != nil {
-		//fmt.Println(e)
 		return nil, e.Error()
 	}
 
@@ -461,35 +459,3 @@ func GetRackByNameAndParentID(id int, name string) (*Rack, string) {
 	rack.IDJSON = strconv.Itoa(rack.ID)
 	return rack, ""
 }
-
-/*func GetRackDeviceByName(id int) (*Rack, string) {
-
-	rack, e := GetRack(uint(id))
-	if e != "" {
-		return nil, e
-	}
-
-
-}
-*/
-/*
-func GetRackChildren(id uint) (*Rack, int, string) {
-	rack, e := GetRack(id)
-	if e != "" {
-		return nil, 0, e
-	}
-
-	err := GetDB().Table("device").Where("device_parent_id = ?", id).
-		Find(&(rack.Devices)).Error
-	if err != nil {
-		return nil, 0, e
-	}
-
-	for k, _ := range rack.Devices {
-		rack.Devices[i].Category = "rack"
-		//racks[i].Attributes = *(attrs[i])
-		racks[i].DescriptionJSON = strings.Split(racks[i].DescriptionDB, "XYZ")
-		racks[i].IDJSON = strconv.Itoa(racks[i].ID)
-	}
-}
-*/

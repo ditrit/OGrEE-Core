@@ -344,14 +344,6 @@ func UpdateBuilding(id uint, newBldgInfo *Building) (map[string]interface{}, str
 		bldg.DescriptionDB = dc
 	}
 
-	/*if newBldgInfo.Category != "" && newBldgInfo.Category != bldg.Category {
-		bldg.Category = newBldgInfo.Category
-	}*/
-
-	/*if newBldgInfo.Desc != "" && newBldgInfo.Desc != bldg.Desc {
-		bldg.Desc = newBldgInfo.Desc
-	}*/
-
 	if newBldgInfo.Attributes.PosXY != "" && newBldgInfo.Attributes.PosXY != bldg.Attributes.PosXY {
 		bldg.Attributes.PosXY = newBldgInfo.Attributes.PosXY
 	}
@@ -420,7 +412,6 @@ func GetBuildingByName(name string) (*Building, string) {
 	WHERE bldg_name = ?;`, name).Find(bldg).Find(&bldg.Attributes).Error
 
 	if e != nil {
-		//fmt.Println(e)
 		return nil, e.Error()
 	}
 

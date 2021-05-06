@@ -429,7 +429,7 @@ var UpdateRoom = func(w http.ResponseWriter, r *http.Request) {
 // - name: ID
 //   in: path
 //   description: ID of desired room
-//   required: true
+//   required: false
 //   type: int
 //   default: 999
 // - name: Name

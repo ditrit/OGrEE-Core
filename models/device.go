@@ -421,7 +421,6 @@ func GetDeviceByName(name string) (*Device, string) {
 	WHERE device_name = ?;`, name).Find(device).Find(&device.Attributes).Error
 
 	if e != nil {
-		//fmt.Println(e)
 		return nil, e.Error()
 	}
 

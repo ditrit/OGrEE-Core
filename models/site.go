@@ -21,7 +21,6 @@ type Site_Attributes struct {
 }
 
 type Site struct {
-	//gorm.Model
 	ID              int             `json:"-" gorm:"column:id"`
 	IDJSON          string          `json:"id" gorm:"-"`
 	Name            string          `json:"name" gorm:"column:site_name"`
@@ -88,7 +87,6 @@ func (site *Site) Create() (map[string]interface{}, string) {
 		return resp, "validate"
 	}
 
-	//GetDB().Create(site)
 	site.DescriptionDB = strings.Join(site.DescriptionJSON, "XYZ")
 
 	e := GetDB().Create(site).Error
@@ -278,7 +276,6 @@ func GetSiteHierarchyNonStandard(id int) (*Site, []*Building,
 	rooms := make([][]*Room, 1)
 	racks := make([][]*Rack, 1)
 	devices := make([][]*Device, 1)
-	//tmproom := make([][]*Room, 1)
 	tmpracks := new([][]*Rack)
 	tmpdevices := new([][]*Device)
 
@@ -288,8 +285,6 @@ func GetSiteHierarchyNonStandard(id int) (*Site, []*Building,
 		if e != "" {
 			return nil, nil, nil, nil, nil, e
 		}
-		/*_, _, tmpracks, tmpdevices, e = GetBuildingHierarchyNonStandard(
-		uint(site.Buildings[k].ID))*/
 		racks = append(racks, *tmpracks...)
 		devices = append(devices, *tmpdevices...)
 	}
@@ -392,14 +387,6 @@ func UpdateSite(id uint, newSiteInfo *Site) (map[string]interface{}, string) {
 		site.Name = newSiteInfo.Name
 	}
 
-	/*if newSiteInfo.Category != "" && newSiteInfo.Category != site.Category {
-		site.Category = newSiteInfo.Category
-	}*/
-
-	/*if newSiteInfo.Desc != "" && newSiteInfo.Desc != site.Desc {
-		site.Desc = newSiteInfo.Desc
-	}*/
-
 	if newSiteInfo.Domain != "" && newSiteInfo.Domain != site.Domain {
 		site.Domain = newSiteInfo.Domain
 	}
@@ -465,7 +452,6 @@ func GetSiteByName(name string) (*Site, string) {
 	WHERE site_name = ?;`, name).Find(site).Find(&site.Attributes).Error
 
 	if e != nil {
-		//fmt.Println(e)
 		return nil, e.Error()
 	}
 
@@ -484,7 +470,6 @@ func GetSiteByNameAndParentID(id int, name string) (*Site, string) {
 		Find(site).Find(&site.Attributes).Error
 
 	if e != nil {
-		//fmt.Println(e)
 		return nil, e.Error()
 	}
 

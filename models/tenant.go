@@ -125,7 +125,6 @@ func GetTenant(id uint) (*Tenant, string) {
 		Error
 
 	if e != nil {
-		//fmt.Println(e)
 		return nil, e.Error()
 	}
 
@@ -236,17 +235,9 @@ func UpdateTenant(id uint, t *Tenant) (map[string]interface{}, string) {
 		tenant.DescriptionDB = dc
 	}
 
-	/*if t.Category != "" && t.Category != tenant.Category {
-		tenant.Category = t.Category
-	}*/
-
 	if t.Domain != "" && t.Domain != tenant.Domain {
 		tenant.Domain = t.Domain
 	}
-
-	/*if t.Desc != "" && t.Desc != tenant.Desc {
-		tenant.Desc = t.Desc
-	}*/
 
 	if t.Attributes.Color != "" && t.Attributes.Color != tenant.Attributes.Color {
 		tenant.Attributes.Color = t.Attributes.Color
@@ -264,7 +255,6 @@ func UpdateTenant(id uint, t *Tenant) (map[string]interface{}, string) {
 		tenant.Attributes.MainPhone = t.Attributes.MainPhone
 	}
 
-	//fmt.Println(t.Description)
 	if e := GetDB().Table("tenant").Save(tenant).Table("tenant_attributes").
 		Save(&(tenant.Attributes)).Error; e != nil {
 		return u.Message(false, "Failed to update Tenant: "+e.Error()), "internal"
@@ -297,7 +287,6 @@ func GetTenantByName(name string) (*Tenant, string) {
 	WHERE tenant_name = ?;`, name).Find(tenant).Find(&tenant.Attributes).Error
 
 	if e != nil {
-		//fmt.Println(e)
 		return nil, e.Error()
 	}
 

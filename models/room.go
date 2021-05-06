@@ -24,7 +24,6 @@ type Room_Attributes struct {
 }
 
 type Room struct {
-	//gorm.Model
 	ID              int             `json:"-" gorm:"column:id"`
 	IDJSON          string          `json:"id" gorm:"-"`
 	Name            string          `json:"name" gorm:"column:room_name"`
@@ -245,7 +244,7 @@ func GetRooms(room *Building) ([]*Room, string) {
 	return rooms, ""
 }
 
-func GetRoomHierarchy(id uint) (*Room /*, []*Rack, [][]*Device*/, string) {
+func GetRoomHierarchy(id uint) (*Room, string) {
 
 	room, e := GetRoom(id)
 	if e != "" {
@@ -257,8 +256,6 @@ func GetRoomHierarchy(id uint) (*Room /*, []*Rack, [][]*Device*/, string) {
 		return nil, e
 	}
 
-	//devtree := make([][]*Device, len(racks))
-
 	for i, _ := range room.Racks {
 		room.Racks[i].Devices, e = GetDevicesOfParent(uint(room.Racks[i].ID))
 		if e != "" {
@@ -266,12 +263,6 @@ func GetRoomHierarchy(id uint) (*Room /*, []*Rack, [][]*Device*/, string) {
 		}
 
 	}
-	/*devices, err := GetDevicesOfParent(id)
-	if err != "" {
-		return nil, nil, nil, err
-	}*/
-
-	//println("The length")
 
 	return room, ""
 }
@@ -297,12 +288,6 @@ func GetRoomHierarchyNonStandard(id uint) (*Room, []*Rack, [][]*Device, string) 
 		}
 
 	}
-	/*devices, err := GetDevicesOfParent(id)
-	if err != "" {
-		return nil, nil, nil, err
-	}*/
-
-	//println("The length")
 
 	return room, racks, devtree, ""
 }
@@ -395,10 +380,6 @@ func UpdateRoom(id uint, newRoomInfo *Room) (map[string]interface{}, string) {
 		room.DescriptionDB = dc
 	}
 
-	/*if newRoomInfo.Category != "" && newRoomInfo.Category != room.Category {
-		room.Category = newRoomInfo.Category
-	}*/
-
 	if newRoomInfo.Attributes.PosXY != "" && newRoomInfo.Attributes.PosXY != room.Attributes.PosXY {
 		room.Attributes.PosXY = newRoomInfo.Attributes.PosXY
 	}
@@ -487,7 +468,6 @@ func GetRoomByName(name string) (*Room, string) {
 	WHERE room_name = ?;`, name).Find(room).Find(&room.Attributes).Error
 
 	if e != nil {
-		//fmt.Println(e)
 		return nil, e.Error()
 	}
 
