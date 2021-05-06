@@ -3443,14 +3443,14 @@
             "default": "Site B",
             "description": "Name of site",
             "name": "Name",
-            "in": "query"
+            "in": "path"
           },
           {
             "type": "string",
             "default": "Research",
             "description": "Category of Site (ex. Consumer Electronics, Medical)",
             "name": "Category",
-            "in": "query"
+            "in": "path"
           },
           {
             "type": "string",
@@ -3463,63 +3463,63 @@
             "default": "NE",
             "description": "Indicates the location. Only values of \"NE\", \"NW\", \"SE\", \"SW\" are acceptable",
             "name": "Orientation",
-            "in": "query"
+            "in": "path"
           },
           {
             "type": "string",
             "default": "Black",
             "description": "Usable Color of Site (useful for 3D rendering)",
             "name": "UsableColor",
-            "in": "query"
+            "in": "path"
           },
           {
             "type": "string",
             "default": "Black",
             "description": "Reserved Color of Site (useful for 3D rendering)",
             "name": "ReservedColor",
-            "in": "query"
+            "in": "path"
           },
           {
             "type": "string",
             "default": "Black",
             "description": "Color of Site (useful for 3D rendering)",
             "name": "TechnicalColor",
-            "in": "query"
+            "in": "path"
           },
           {
             "type": "string",
             "default": "New Rue",
             "description": "Address of Site",
             "name": "Address",
-            "in": "query"
+            "in": "path"
           },
           {
             "type": "string",
             "default": "99999",
             "description": "Zipcode of Site",
             "name": "Zipcode",
-            "in": "query"
+            "in": "path"
           },
           {
             "type": "string",
             "default": "Geneve",
             "description": "City of Site",
             "name": "City",
-            "in": "query"
+            "in": "path"
           },
           {
             "type": "string",
             "default": "Switzerland",
             "description": "Country of Site",
             "name": "Country",
-            "in": "query"
+            "in": "path"
           },
           {
             "type": "string",
             "default": "N'55 E'15",
             "description": "Gps of Site",
             "name": "Gps",
-            "in": "query"
+            "in": "path"
           }
         ],
         "responses": {

@@ -520,13 +520,13 @@ var UpdateSite = func(w http.ResponseWriter, r *http.Request) {
 //   type: int
 //   default: 999
 // - name: Name
-//   in: query
+//   in: path
 //   description: Name of site
 //   required: false
 //   type: string
 //   default: "Site B"
 // - name: Category
-//   in: query
+//   in: path
 //   description: Category of Site (ex. Consumer Electronics, Medical)
 //   required: false
 //   type: string
@@ -537,56 +537,56 @@ var UpdateSite = func(w http.ResponseWriter, r *http.Request) {
 //   type: string
 //   default: "Some Domain"
 // - name: Orientation
-//   in: query
+//   in: path
 //   description: 'Indicates the location. Only values of
 //   "NE", "NW", "SE", "SW" are acceptable'
 //   required: false
 //   type: string
 //   default: "NE"
 // - name: UsableColor
-//   in: query
+//   in: path
 //   description: Usable Color of Site (useful for 3D rendering)
 //   required: false
 //   type: string
 //   default: "Black"
 // - name: ReservedColor
-//   in: query
+//   in: path
 //   description: Reserved Color of Site (useful for 3D rendering)
 //   required: false
 //   type: string
 //   default: "Black"
 // - name: TechnicalColor
-//   in: query
+//   in: path
 //   description: Color of Site (useful for 3D rendering)
 //   required: false
 //   type: string
 //   default: "Black"
 // - name: Address
-//   in: query
+//   in: path
 //   description: Address of Site
 //   required: false
 //   type: string
 //   default: "New Rue"
 // - name: Zipcode
-//   in: query
+//   in: path
 //   description: Zipcode of Site
 //   required: false
 //   type: string
 //   default: "99999"
 // - name: City
-//   in: query
+//   in: path
 //   description: City of Site
 //   required: false
 //   type: string
 //   default: "Geneve"
 // - name: Country
-//   in: query
+//   in: path
 //   description: Country of Site
 //   required: false
 //   type: string
 //   default: "Switzerland"
 // - name: Gps
-//   in: query
+//   in: path
 //   description: Gps of Site
 //   required: false
 //   type: string
