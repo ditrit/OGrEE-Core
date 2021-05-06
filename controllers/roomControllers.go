@@ -511,6 +511,18 @@ var UpdateRoom = func(w http.ResponseWriter, r *http.Request) {
 //   required: false
 //   type: string
 //   default: "cm"
+// - name: Technical
+//   in: query
+//   description: 'Unity Unique Attribute'
+//   required: false
+//   type: string
+//   default: "???"
+// - name: Reserved
+//   in: query
+//   description: 'Unity Unique Attribute'
+//   required: false
+//   type: string
+//   default: "???"
 // responses:
 //     '200':
 //         description: Found
