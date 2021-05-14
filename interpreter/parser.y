@@ -11,13 +11,14 @@ package main
        TOKEN_CRUDOP TOKEN_ENTITY TOKEN_ATTR
        TOKEN_BASHTYPE TOKEN_WORD TOKEN_EQUAL 
        TOKEN_ENTER TOKEN_EQUAL TOKEN_CMDFLAG
-       TOKEN_SLASH
+       TOKEN_SLASH TOKEN_EXIT
 
 
 
 %%
 start: K      {println("@State start");}
        | Q
+       | D
 ;
 
 K:      TOKEN_CRUDOP E    {println("@State K");}
@@ -49,6 +50,9 @@ Q:    B
 B:     TOKEN_BASHTYPE TOKEN_WORD TOKEN_CMDFLAG
        | TOKEN_BASHTYPE TOKEN_WORD
        | TOKEN_BASHTYPE
+;
+
+D:    TOKEN_EXIT
 ;
 
 

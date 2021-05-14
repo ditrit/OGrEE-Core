@@ -8,6 +8,7 @@ println("We got TOKEN_CRUDOP"); return TOKEN_CRUDOP}
 {println("We got TOKEN_ATTR");return TOKEN_ATTR}
 
 /cd|pwd|clear|man|grep|ls/ {println("We got TOKEN_BASHTYPE");return TOKEN_BASHTYPE}
+/exit/ {println("We got TOKEN_EXIT"); return TOKEN_EXIT}
 /-l/ {println("We got TOKEN_CMDFLAG");return TOKEN_CMDFLAG}
 /[=]/ {println("We got TOKEN_EQUAL");return TOKEN_EQUAL}
 /\// {println("We got TOKEN_SLASH"); return TOKEN_SLASH}

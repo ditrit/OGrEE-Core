@@ -16208,6 +16208,75 @@ var dfas = []dfa{
 		},
 	}, []int{ /* Start-of-input transitions */ -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1}, []int{ /* End-of-input transitions */ -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1}, nil},
 
+	// exit
+	{[]bool{false, false, false, false, true}, []func(rune) int{ // Transitions
+		func(r rune) int {
+			switch r {
+			case 101:
+				return 1
+			case 105:
+				return -1
+			case 116:
+				return -1
+			case 120:
+				return -1
+			}
+			return -1
+		},
+		func(r rune) int {
+			switch r {
+			case 101:
+				return -1
+			case 105:
+				return -1
+			case 116:
+				return -1
+			case 120:
+				return 2
+			}
+			return -1
+		},
+		func(r rune) int {
+			switch r {
+			case 101:
+				return -1
+			case 105:
+				return 3
+			case 116:
+				return -1
+			case 120:
+				return -1
+			}
+			return -1
+		},
+		func(r rune) int {
+			switch r {
+			case 101:
+				return -1
+			case 105:
+				return -1
+			case 116:
+				return 4
+			case 120:
+				return -1
+			}
+			return -1
+		},
+		func(r rune) int {
+			switch r {
+			case 101:
+				return -1
+			case 105:
+				return -1
+			case 116:
+				return -1
+			case 120:
+				return -1
+			}
+			return -1
+		},
+	}, []int{ /* Start-of-input transitions */ -1, -1, -1, -1, -1}, []int{ /* End-of-input transitions */ -1, -1, -1, -1, -1}, nil},
+
 	// -l
 	{[]bool{false, false, true}, []func(rune) int{ // Transitions
 		func(r rune) int {
@@ -16428,25 +16497,30 @@ OUTER0:
 			}
 		case 5:
 			{
+				println("We got TOKEN_EXIT")
+				return TOKEN_EXIT
+			}
+		case 6:
+			{
 				println("We got TOKEN_CMDFLAG")
 				return TOKEN_CMDFLAG
 			}
-		case 6:
+		case 7:
 			{
 				println("We got TOKEN_EQUAL")
 				return TOKEN_EQUAL
 			}
-		case 7:
+		case 8:
 			{
 				println("We got TOKEN_SLASH")
 				return TOKEN_SLASH
 			}
-		case 8:
+		case 9:
 			{
 				println("Enter Key Pressed")
 				return TOKEN_ENTER
 			}
-		case 9:
+		case 10:
 			{
 				println("We got TOKEN_WORD")
 				return TOKEN_WORD
@@ -16463,26 +16537,6 @@ OUTER0:
 
 type TokenType int
 
-/*const (
-	TOKEN_ERROR TokenType = iota
-	TOKEN_ENTER
-/\n/ {return TOKEN_EOF}
-	TOKEN_LEFT_BRACKET
-	TOKEN_RIGHT_BRACKET
-	TOKEN_NEWLINE
-
-	TOKEN_SECTION
-	TOKEN_KEY
-	TOKEN_VALUE
-
-	TOKEN_CRUDOP
-	TOKEN_ENTITY
-	TOKEN_ATTR
-	TOKEN_BASHTYPE
-	TOKEN_WORD
-  TOKEN_EQUAL
-  TOKEN_CMDFLAG
-)*/
 func main() {
 	//NN_FUN(NewLexer(os.Stdin))
 	//yyParse(NewLexer(os.Stdin))

@@ -16,7 +16,7 @@ type yyXError struct {
 }
 
 const (
-	yyDefault      = 57355
+	yyDefault      = 57356
 	yyEofCode      = 57344
 	TOKEN_ATTR     = 57348
 	TOKEN_BASHTYPE = 57349
@@ -25,39 +25,42 @@ const (
 	TOKEN_ENTER    = 57352
 	TOKEN_ENTITY   = 57347
 	TOKEN_EQUAL    = 57351
+	TOKEN_EXIT     = 57355
 	TOKEN_SLASH    = 57354
 	TOKEN_WORD     = 57350
 	yyErrCode      = 57345
 
 	yyMaxDepth = 200
-	yyTabOfs   = -16
+	yyTabOfs   = -18
 )
 
 var (
 	yyPrec = map[int]int{}
 
 	yyXLAT = map[int]int{
-		57344: 0,  // $end (13x)
+		57344: 0,  // $end (15x)
 		57348: 1,  // TOKEN_ATTR (5x)
 		57350: 2,  // TOKEN_WORD (5x)
-		57358: 3,  // F (3x)
-		57361: 4,  // P (2x)
-		57356: 5,  // B (1x)
-		57357: 6,  // E (1x)
-		57359: 7,  // K (1x)
-		57360: 8,  // M (1x)
-		57362: 9,  // Q (1x)
-		57364: 10, // start (1x)
-		57349: 11, // TOKEN_BASHTYPE (1x)
-		57353: 12, // TOKEN_CMDFLAG (1x)
-		57346: 13, // TOKEN_CRUDOP (1x)
-		57347: 14, // TOKEN_ENTITY (1x)
-		57351: 15, // TOKEN_EQUAL (1x)
-		57354: 16, // TOKEN_SLASH (1x)
-		57363: 17, // Z (1x)
-		57355: 18, // $default (0x)
-		57345: 19, // error (0x)
-		57352: 20, // TOKEN_ENTER (0x)
+		57360: 3,  // F (3x)
+		57363: 4,  // P (2x)
+		57357: 5,  // B (1x)
+		57358: 6,  // D (1x)
+		57359: 7,  // E (1x)
+		57361: 8,  // K (1x)
+		57362: 9,  // M (1x)
+		57364: 10, // Q (1x)
+		57366: 11, // start (1x)
+		57349: 12, // TOKEN_BASHTYPE (1x)
+		57353: 13, // TOKEN_CMDFLAG (1x)
+		57346: 14, // TOKEN_CRUDOP (1x)
+		57347: 15, // TOKEN_ENTITY (1x)
+		57351: 16, // TOKEN_EQUAL (1x)
+		57355: 17, // TOKEN_EXIT (1x)
+		57354: 18, // TOKEN_SLASH (1x)
+		57365: 19, // Z (1x)
+		57356: 20, // $default (0x)
+		57345: 21, // error (0x)
+		57352: 22, // TOKEN_ENTER (0x)
 	}
 
 	yySymNames = []string{
@@ -67,6 +70,7 @@ var (
 		"F",
 		"P",
 		"B",
+		"D",
 		"E",
 		"K",
 		"M",
@@ -77,6 +81,7 @@ var (
 		"TOKEN_CRUDOP",
 		"TOKEN_ENTITY",
 		"TOKEN_EQUAL",
+		"TOKEN_EXIT",
 		"TOKEN_SLASH",
 		"Z",
 		"$default",
@@ -88,54 +93,58 @@ var (
 
 	yyReductions = map[int]struct{ xsym, components int }{
 		0:  {0, 1},
-		1:  {10, 1},
-		2:  {10, 1},
-		3:  {7, 2},
-		4:  {7, 4},
-		5:  {6, 2},
-		6:  {3, 4},
+		1:  {11, 1},
+		2:  {11, 1},
+		3:  {11, 1},
+		4:  {8, 2},
+		5:  {8, 4},
+		6:  {7, 2},
 		7:  {3, 4},
-		8:  {8, 0},
-		9:  {17, 1},
-		10: {4, 3},
-		11: {4, 1},
-		12: {9, 1},
-		13: {5, 3},
-		14: {5, 2},
-		15: {5, 1},
+		8:  {3, 4},
+		9:  {9, 0},
+		10: {19, 1},
+		11: {4, 3},
+		12: {4, 1},
+		13: {10, 1},
+		14: {5, 3},
+		15: {5, 2},
+		16: {5, 1},
+		17: {6, 1},
 	}
 
 	yyXErrors = map[yyXError]string{}
 
-	yyParseTab = [23][]uint8{
+	yyParseTab = [25][]uint8{
 		// 0
-		{5: 21, 7: 18, 9: 19, 17, 22, 13: 20},
+		{5: 24, 22, 8: 20, 10: 21, 19, 25, 14: 23, 17: 26},
+		{18},
+		{17},
 		{16},
 		{15},
-		{14},
-		{6: 25, 14: 27, 17: 26},
 		// 5
-		{4},
-		{1, 2: 23},
-		{2, 12: 24},
-		{3},
-		{13},
+		{7: 29, 15: 31, 19: 30},
+		{5},
+		{2, 2: 27},
+		{1},
+		{3, 13: 28},
 		// 10
-		{2: 35, 4: 34},
-		{1: 29, 7, 28},
-		{11},
-		{15: 30},
-		{2: 31},
-		// 15
-		{8, 29, 3: 32, 8: 33},
-		{10},
-		{9},
-		{1: 29, 3: 38},
-		{1: 5, 16: 36},
-		// 20
-		{2: 35, 4: 37},
-		{1: 6},
+		{4},
+		{14},
+		{2: 39, 4: 38},
+		{1: 33, 8, 32},
 		{12},
+		// 15
+		{16: 34},
+		{2: 35},
+		{9, 33, 3: 36, 9: 37},
+		{11},
+		{10},
+		// 20
+		{1: 33, 3: 42},
+		{1: 6, 18: 40},
+		{2: 39, 4: 41},
+		{1: 7},
+		{13},
 	}
 )
 
@@ -176,7 +185,7 @@ func yylex1(yylex yyLexer, lval *yySymType) (n int) {
 }
 
 func yyParse(yylex yyLexer) int {
-	const yyError = 19
+	const yyError = 21
 
 	yyEx, _ := yylex.(yyLexerEx)
 	var yyn int
@@ -366,13 +375,13 @@ yynewstate:
 	switch r {
 	case 1:
 		{
-			println("Sup nager start")
+			println("@State start")
 		}
-	case 3:
+	case 4:
 		{
-			println("Sup nager K")
+			println("@State K")
 		}
-	case 7:
+	case 8:
 		{
 			println("Taking the M")
 		}
