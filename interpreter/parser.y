@@ -1,6 +1,6 @@
 %{
 package main
-//import "fmt"
+import "os"
 %}
 
 %union {
@@ -52,7 +52,7 @@ B:     TOKEN_BASHTYPE TOKEN_WORD TOKEN_CMDFLAG
        | TOKEN_BASHTYPE
 ;
 
-D:    TOKEN_EXIT
+D:    TOKEN_EXIT     {os.Exit(0)}
 ;
 
 

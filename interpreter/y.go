@@ -4,7 +4,7 @@ package main
 
 import __yyfmt__ "fmt"
 
-//import "fmt"
+import "os"
 
 type yySymType struct {
 	yys int
@@ -384,6 +384,10 @@ yynewstate:
 	case 8:
 		{
 			println("Taking the M")
+		}
+	case 17:
+		{
+			os.Exit(0)
 		}
 
 	}

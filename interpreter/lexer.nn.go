@@ -16537,7 +16537,7 @@ OUTER0:
 
 type TokenType int
 
-func main() {
+func lexBegin() {
 	//NN_FUN(NewLexer(os.Stdin))
 	//yyParse(NewLexer(os.Stdin))
 
