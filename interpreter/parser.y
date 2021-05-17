@@ -13,7 +13,7 @@ import ("os"
        TOKEN_CRUDOP TOKEN_ENTITY TOKEN_ATTR
        TOKEN_BASHTYPE TOKEN_WORD TOKEN_EQUAL 
        TOKEN_ENTER TOKEN_EQUAL TOKEN_CMDFLAG
-       TOKEN_SLASH TOKEN_EXIT
+       TOKEN_SLASH TOKEN_EXIT TOKEN_HISTORY_UP
 
 
 
@@ -21,6 +21,7 @@ import ("os"
 start: K      {println("@State start");}
        | Q
        | D
+       |L
 ;
 
 K:      TOKEN_CRUDOP E    {println("@State K");}
@@ -57,5 +58,6 @@ B:     TOKEN_BASHTYPE TOKEN_WORD TOKEN_CMDFLAG
 D:    TOKEN_EXIT     {os.Exit(0)}
 ;
 
-
+L:     TOKEN_HISTORY_UP
+;
 %%
