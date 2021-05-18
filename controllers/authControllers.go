@@ -59,3 +59,16 @@ var Authenticate = func(w http.ResponseWriter, r *http.Request) {
 	resp := models.Login(account.Email, account.Password)
 	u.Respond(w, resp)
 }
+
+var Verify = func(w http.ResponseWriter, r *http.Request) {
+	/*account := &models.Account{}
+	err := json.NewDecoder(r.Body).Decode(account)
+	if err != nil {
+		u.Respond(w, u.Message(false, "Invalid request"))
+		return
+	}*/
+
+	/*var resp map[string]interface{}
+	resp["message"] = "Token OK"*/
+	u.Respond(w, u.Message(true, "working"))
+}

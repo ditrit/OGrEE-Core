@@ -63,6 +63,9 @@ func main() {
 	router.HandleFunc("/api/user/login",
 		controllers.Authenticate).Methods("POST")
 
+	router.HandleFunc("/api/token/valid",
+		controllers.Verify).Methods("GET")
+
 	// ------ TENANTS CRUD ------ //
 	router.HandleFunc("/api/user/tenants",
 		controllers.GetTenantByQuery).Methods("GET").MatcherFunc(tmatch)
