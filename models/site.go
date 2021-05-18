@@ -593,3 +593,53 @@ func GetRoomsOfSite(id int) ([]*Room, string) {
 	}
 	return rooms, ""
 }
+
+func GetSiteHierarchyToRoom(id int) (*Site, string) {
+	site, e := GetSite(uint(id))
+	if e != "" {
+		return nil, e
+	}
+
+	site.Buildings, e = GetBuildingsOfParent(id)
+	if e != "" {
+		return nil, e
+	}
+
+	for idx, _ := range site.Buildings {
+		site.Buildings[idx].Rooms, e =
+			GetRoomsOfParent(uint(site.Buildings[idx].ID))
+		if e != "" {
+			return nil, e
+		}
+	}
+	return site, ""
+}
+
+func GetSiteHierarchyToRack(id int) (*Site, string) {
+	site, e := GetSite(uint(id))
+	if e != "" {
+		return nil, e
+	}
+
+	site.Buildings, e = GetBuildingsOfParent(id)
+	if e != "" {
+		return nil, e
+	}
+
+	for idx, _ := range site.Buildings {
+		site.Buildings[idx].Rooms, e =
+			GetRoomsOfParent(uint(site.Buildings[idx].ID))
+		if e != "" {
+			return nil, e
+		}
+
+		for k, _ := range site.Buildings[idx].Rooms {
+			site.Buildings[idx].Rooms[k].Racks, e =
+				GetRacksOfParent(uint(site.Buildings[idx].Rooms[k].ID))
+			if e != "" {
+				return nil, e
+			}
+		}
+	}
+	return site, ""
+}
