@@ -518,3 +518,39 @@ func GetTenantHierarchyToRoom(tenant_name string) (*Tenant, string) {
 
 	return tenant, ""
 }
+
+func GetTenantHierarchyToRack(tenant_name string) (*Tenant, string) {
+	tenant, e := GetTenantByName(tenant_name)
+	if e != "" {
+		return nil, e
+	}
+
+	tenant.Sites, e = GetSitesOfTenant(tenant_name)
+	if e != "" {
+		return nil, e
+	}
+
+	for idx, _ := range tenant.Sites {
+		tenant.Sites[idx].Buildings, e =
+			GetBuildingsOfParent(tenant.Sites[idx].ID)
+		if e != "" {
+			return nil, e
+		}
+
+		for k, _ := range tenant.Sites[idx].Buildings {
+			tenant.Sites[idx].Buildings[k].Rooms, e =
+				GetRoomsOfParent(uint(tenant.Sites[idx].Buildings[k].ID))
+			if e != "" {
+				return nil, e
+			}
+
+			for i, _ := range tenant.Sites[idx].Buildings[k].Rooms {
+				tenant.Sites[idx].Buildings[k].Rooms[i].Racks, e =
+					GetRacksOfParent(uint(tenant.Sites[idx].
+						Buildings[k].Rooms[i].ID))
+			}
+		}
+	}
+
+	return tenant, ""
+}
