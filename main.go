@@ -109,6 +109,12 @@ func main() {
 	router.HandleFunc("/api/user/tenants/{tenant_name}/buildings",
 		controllers.GetBuildingsOfTenant).Methods("GET")
 
+	router.HandleFunc("/api/user/tenants/{tenant_name}/all/sites/buildings/rooms",
+		controllers.GetTenantHierarchyToRoom).Methods("GET")
+
+	router.HandleFunc("/api/user/tenants/{tenant_name}/all/sites/buildings",
+		controllers.GetTenantHierarchyToBuilding).Methods("GET")
+
 	router.HandleFunc("/api/user/tenants/{id:[0-9]+}/all/nonstd",
 		controllers.GetTenantHierarchyNonStandard).Methods("GET")
 
