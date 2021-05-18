@@ -575,3 +575,24 @@ func GetRoomsUsingNamedBldgOfSite(id int, name string) ([]*Room, string) {
 	}
 	return rooms, ""
 }
+
+func GetBuildingHierarchyToRack(id int) (*Building, string) {
+	bldg, e := GetBuilding(uint(id))
+	if e != "" {
+		return nil, e
+	}
+
+	bldg.Rooms, e = GetRoomsOfParent(uint(id))
+	if e != "" {
+		return nil, e
+	}
+
+	for idx, _ := range bldg.Rooms {
+		bldg.Rooms[idx].Racks, e = GetRacksOfParent(uint(bldg.Rooms[idx].ID))
+		if e != "" {
+			return nil, e
+		}
+	}
+
+	return bldg, ""
+}
