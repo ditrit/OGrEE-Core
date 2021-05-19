@@ -255,6 +255,7 @@ var GetAllDevices = func(w http.ResponseWriter, r *http.Request) {
 
 		switch e1 {
 		case "":
+			resp = u.Message(false, "Error: No Records Found")
 			w.WriteHeader(http.StatusNotFound)
 		default:
 		}
@@ -659,6 +660,9 @@ var GetDeviceByQuery = func(w http.ResponseWriter, r *http.Request) {
 
 		switch e {
 		case "record not found":
+			w.WriteHeader(http.StatusNotFound)
+		case "":
+			resp = u.Message(false, "Error: No Records Found")
 			w.WriteHeader(http.StatusNotFound)
 		default:
 			w.WriteHeader(http.StatusNotFound)
