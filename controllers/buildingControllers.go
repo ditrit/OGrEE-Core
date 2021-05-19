@@ -523,7 +523,10 @@ var GetBuildingByQuery = func(w http.ResponseWriter, r *http.Request) {
 			w.WriteHeader(http.StatusNotFound)
 		case "":
 			resp = u.Message(false, "Error: No Records Found")
+<<<<<<< HEAD
 			w.WriteHeader(http.StatusNotFound)
+=======
+>>>>>>> master
 		default:
 			w.WriteHeader(http.StatusNotFound)
 		}
