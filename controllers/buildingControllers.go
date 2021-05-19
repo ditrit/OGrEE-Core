@@ -1032,6 +1032,23 @@ var GetNamedDeviceOfBuilding = func(w http.ResponseWriter, r *http.Request) {
 	u.Respond(w, resp)
 }
 
+// swagger:operation GET /api/user/buildings/{id}/all/rooms/racks buildings GetBuildingHierarchy
+// Gets hierarchy of Building until racks.
+// ---
+// produces:
+// - application/json
+// parameters:
+// - name: ID
+//   in: path
+//   description: ID of Building
+//   required: true
+//   type: int
+//   default: 999
+// responses:
+//     '200':
+//         description: Found
+//     '404':
+//         description: Not Found
 var GetBuildingHierarchyToRack = func(w http.ResponseWriter, r *http.Request) {
 	id, e := strconv.Atoi(mux.Vars(r)["id"])
 	resp := u.Message(true, "success")
