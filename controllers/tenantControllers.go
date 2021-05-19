@@ -1210,6 +1210,23 @@ var GetNamedDeviceOfTenant = func(w http.ResponseWriter, r *http.Request) {
 	u.Respond(w, resp)
 }
 
+// swagger:operation GET /api/user/tenants/{tenant_name}/all/sites/buildings tenants GetTenantHierarchy
+// Gets hierarchy of Tenant until buildings.
+// ---
+// produces:
+// - application/json
+// parameters:
+// - name: tenant_name
+//   in: path
+//   description: Name of desired tenant
+//   required: true
+//   type: string
+//   default: "INFINITI"
+// responses:
+//     '200':
+//         description: Found
+//     '404':
+//         description: Not Found
 var GetTenantHierarchyToBuilding = func(w http.ResponseWriter, r *http.Request) {
 	name, e := mux.Vars(r)["tenant_name"]
 	resp := u.Message(true, "success")
@@ -1238,6 +1255,23 @@ var GetTenantHierarchyToBuilding = func(w http.ResponseWriter, r *http.Request) 
 	u.Respond(w, resp)
 }
 
+// swagger:operation GET /api/user/tenants/{tenant_name}/all/sites/buildings/rooms tenants GetTenantHierarchy
+// Gets hierarchy of Tenant until rooms.
+// ---
+// produces:
+// - application/json
+// parameters:
+// - name: tenant_name
+//   in: path
+//   description: Name of desired tenant
+//   required: true
+//   type: string
+//   default: "INFINITI"
+// responses:
+//     '200':
+//         description: Found
+//     '404':
+//         description: Not Found
 var GetTenantHierarchyToRoom = func(w http.ResponseWriter, r *http.Request) {
 	name, e := mux.Vars(r)["tenant_name"]
 	resp := u.Message(true, "success")
@@ -1266,6 +1300,23 @@ var GetTenantHierarchyToRoom = func(w http.ResponseWriter, r *http.Request) {
 	u.Respond(w, resp)
 }
 
+// swagger:operation GET /api/user/tenants/{tenant_name}/all/sites/buildings/rooms/racks tenants GetTenantHierarchy
+// Gets hierarchy of Tenant until racks.
+// ---
+// produces:
+// - application/json
+// parameters:
+// - name: tenant_name
+//   in: path
+//   description: Name of desired tenant
+//   required: true
+//   type: string
+//   default: "INFINITI"
+// responses:
+//     '200':
+//         description: Found
+//     '404':
+//         description: Not Found
 var GetTenantHierarchyToRack = func(w http.ResponseWriter, r *http.Request) {
 	name, e := mux.Vars(r)["tenant_name"]
 	resp := u.Message(true, "success")
