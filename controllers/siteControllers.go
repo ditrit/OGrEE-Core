@@ -1283,6 +1283,23 @@ var GetNamedDeviceOfSite = func(w http.ResponseWriter, r *http.Request) {
 	u.Respond(w, resp)
 }
 
+// swagger:operation GET /api/user/sites/{id}/all/buildings/rooms sites GetSiteHierarchy
+// Gets Hierarchy of a Site until rooms.
+// ---
+// produces:
+// - application/json
+// parameters:
+// - name: ID
+//   in: path
+//   description: ID of desired site
+//   required: true
+//   type: int
+//   default: 999
+// responses:
+//     '200':
+//         description: Found
+//     '404':
+//         description: Not Found
 var GetSiteHierarchyToRoom = func(w http.ResponseWriter, r *http.Request) {
 	id, e := strconv.Atoi(mux.Vars(r)["id"])
 	resp := u.Message(true, "success")
@@ -1311,6 +1328,23 @@ var GetSiteHierarchyToRoom = func(w http.ResponseWriter, r *http.Request) {
 	u.Respond(w, resp)
 }
 
+// swagger:operation GET /api/user/sites/{id}/all/buildings/rooms/racks sites GetSiteHierarchy
+// Gets Hierarchy of a Site until racks.
+// ---
+// produces:
+// - application/json
+// parameters:
+// - name: ID
+//   in: path
+//   description: ID of desired site
+//   required: true
+//   type: int
+//   default: 999
+// responses:
+//     '200':
+//         description: Found
+//     '404':
+//         description: Not Found
 var GetSiteHierarchyToRack = func(w http.ResponseWriter, r *http.Request) {
 	id, e := strconv.Atoi(mux.Vars(r)["id"])
 	resp := u.Message(true, "success")

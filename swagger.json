@@ -3022,6 +3022,66 @@
         }
       }
     },
+    "/api/user/sites/{id}/all/buildings/rooms": {
+      "get": {
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "sites"
+        ],
+        "summary": "Gets Hierarchy of a Site until rooms.",
+        "operationId": "GetSiteHierarchy",
+        "parameters": [
+          {
+            "type": "int",
+            "default": 999,
+            "description": "ID of desired site",
+            "name": "ID",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Found"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        }
+      }
+    },
+    "/api/user/sites/{id}/all/buildings/rooms/racks": {
+      "get": {
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "sites"
+        ],
+        "summary": "Gets Hierarchy of a Site until racks.",
+        "operationId": "GetSiteHierarchy",
+        "parameters": [
+          {
+            "type": "int",
+            "default": 999,
+            "description": "ID of desired site",
+            "name": "ID",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Found"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        }
+      }
+    },
     "/api/user/sites/{id}/buildings": {
       "get": {
         "produces": [
@@ -3812,6 +3872,66 @@
       }
     },
     "/api/user/tenants/{tenant_name}/all/sites/buildings": {
+      "get": {
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "tenants"
+        ],
+        "summary": "Gets hierarchy of Tenant until buildings.",
+        "operationId": "GetTenantHierarchy",
+        "parameters": [
+          {
+            "type": "string",
+            "default": "INFINITI",
+            "description": "Name of desired tenant",
+            "name": "tenant_name",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Found"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        }
+      }
+    },
+    "/api/user/tenants/{tenant_name}/all/sites/buildings/rooms": {
+      "get": {
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "tenants"
+        ],
+        "summary": "Gets hierarchy of Tenant until rooms.",
+        "operationId": "GetTenantHierarchy",
+        "parameters": [
+          {
+            "type": "string",
+            "default": "INFINITI",
+            "description": "Name of desired tenant",
+            "name": "tenant_name",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Found"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        }
+      }
+    },
+    "/api/user/tenants/{tenant_name}/all/sites/buildings/rooms/racks": {
       "get": {
         "produces": [
           "application/json"
