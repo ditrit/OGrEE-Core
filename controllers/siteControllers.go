@@ -292,7 +292,12 @@ var GetAllSites = func(w http.ResponseWriter, r *http.Request) {
 		resp = u.Message(true, "success")
 	}
 
-	resp["data"] = data
+	if len(data) > 1 {
+		resp["data"] = map[string]interface{}{"objects": data}
+	} else {
+		resp["data"] = data
+	}
+
 	u.Respond(w, resp)
 }
 
@@ -635,8 +640,8 @@ var GetSiteByQuery = func(w http.ResponseWriter, r *http.Request) {
 		resp = u.Message(true, "success")
 	}
 
-	if len(data) == 1 {
-		resp["data"] = data[0]
+	if len(data) > 1 {
+		resp["data"] = map[string]interface{}{"objects": data}
 	} else {
 		resp["data"] = data
 	}
@@ -787,7 +792,7 @@ var GetBuildingsOfSite = func(w http.ResponseWriter, r *http.Request) {
 	}
 
 	data, e1 := models.GetBuildingsOfSite(id)
-	if data == nil {
+	if data == nil || len(data) == 0 {
 		resp = u.Message(false, "Error while getting Buildings: "+e1)
 		u.ErrLog("Error while getting Buildings Of Site",
 			"GET BUILDINGSOFSITE", e1, r)
@@ -795,6 +800,9 @@ var GetBuildingsOfSite = func(w http.ResponseWriter, r *http.Request) {
 		switch e1 {
 		case "record not found":
 			w.WriteHeader(http.StatusNotFound)
+		case "":
+			w.WriteHeader(http.StatusNotFound)
+			resp["message"] = "Error: No Records Found"
 		default:
 		}
 
@@ -802,7 +810,12 @@ var GetBuildingsOfSite = func(w http.ResponseWriter, r *http.Request) {
 		resp = u.Message(true, "success")
 	}
 
-	resp["data"] = data
+	if len(data) > 1 {
+		resp["data"] = map[string]interface{}{"objects": data}
+	} else {
+		resp["data"] = data
+	}
+
 	u.Respond(w, resp)
 }
 
@@ -893,7 +906,7 @@ var GetRoomsUsingNamedBldgOfSite = func(w http.ResponseWriter, r *http.Request) 
 	}
 
 	data, e1 := models.GetRoomsUsingNamedBldgOfSite(id, bldg_name)
-	if data == nil {
+	if data == nil || len(data) == 0 {
 		resp = u.Message(false, "Error while getting Rooms: "+e1)
 		u.ErrLog("Error while getting Rooms of Site",
 			"GET ROOMSUSINGNAMEDBLDGOFSITE", e1, r)
@@ -901,6 +914,9 @@ var GetRoomsUsingNamedBldgOfSite = func(w http.ResponseWriter, r *http.Request) 
 		switch e1 {
 		case "record not found":
 			w.WriteHeader(http.StatusNotFound)
+		case "":
+			w.WriteHeader(http.StatusNotFound)
+			resp["message"] = "Error: No Records Found"
 		default:
 		}
 
@@ -908,7 +924,11 @@ var GetRoomsUsingNamedBldgOfSite = func(w http.ResponseWriter, r *http.Request) 
 		resp = u.Message(true, "success")
 	}
 
-	resp["data"] = data
+	if len(data) > 1 {
+		resp["data"] = map[string]interface{}{"objects": data}
+	} else {
+		resp["data"] = data
+	}
 	u.Respond(w, resp)
 }
 
@@ -939,7 +959,7 @@ var GetRoomsOfSite = func(w http.ResponseWriter, r *http.Request) {
 	}
 
 	data, e1 := models.GetRoomsOfSite(id)
-	if data == nil {
+	if data == nil || len(data) == 0 {
 		resp = u.Message(false, "Error while getting Rooms: "+e1)
 		u.ErrLog("Error while getting Rooms Of Site",
 			"GET ROOMSOFSITE", e1, r)
@@ -1059,7 +1079,7 @@ var GetRacksUsingNamedRoomOfSite = func(w http.ResponseWriter, r *http.Request) 
 	}
 
 	data, e1 := models.GetRacksUsingNamedRoomOfSite(id, bldg_name, room_name)
-	if data == nil {
+	if data == nil || len(data) == 0 {
 		resp = u.Message(false, "Error while getting Racks: "+e1)
 		u.ErrLog("Error while getting Racks using Named Room Of Site",
 			"GET RACKSUSINGNAMEDROOMOFSITE", e1, r)
@@ -1067,6 +1087,9 @@ var GetRacksUsingNamedRoomOfSite = func(w http.ResponseWriter, r *http.Request) 
 		switch e1 {
 		case "record not found":
 			w.WriteHeader(http.StatusNotFound)
+		case "":
+			w.WriteHeader(http.StatusNotFound)
+			resp["message"] = "Error: No Records Found"
 		default:
 		}
 
@@ -1074,7 +1097,11 @@ var GetRacksUsingNamedRoomOfSite = func(w http.ResponseWriter, r *http.Request) 
 		resp = u.Message(true, "success")
 	}
 
-	resp["data"] = data
+	if len(data) > 1 {
+		resp["data"] = map[string]interface{}{"objects": data}
+	} else {
+		resp["data"] = data
+	}
 	u.Respond(w, resp)
 }
 
@@ -1193,7 +1220,7 @@ var GetDevicesUsingNamedRackOfSite = func(w http.ResponseWriter, r *http.Request
 	}
 
 	data, e1 := models.GetDevicesUsingNamedRackOfSite(id, bldg_name, room_name, rack_name)
-	if data == nil {
+	if data == nil || len(data) == 0 {
 		resp = u.Message(false, "Error while getting Devices: "+e1)
 		u.ErrLog("Error while getting Devices Using Named Rack Of Site",
 			"GET DEVICESUSINGNAMEDRACKOFSITE", e1, r)
@@ -1201,6 +1228,9 @@ var GetDevicesUsingNamedRackOfSite = func(w http.ResponseWriter, r *http.Request
 		switch e1 {
 		case "record not found":
 			w.WriteHeader(http.StatusNotFound)
+		case "":
+			w.WriteHeader(http.StatusNotFound)
+			resp["message"] = "Error: No Records Found"
 		default:
 		}
 
@@ -1208,7 +1238,11 @@ var GetDevicesUsingNamedRackOfSite = func(w http.ResponseWriter, r *http.Request
 		resp = u.Message(true, "success")
 	}
 
-	resp["data"] = data
+	if len(data) > 1 {
+		resp["data"] = map[string]interface{}{"objects": data}
+	} else {
+		resp["data"] = data
+	}
 	u.Respond(w, resp)
 }
 
