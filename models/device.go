@@ -114,6 +114,18 @@ func (device *Device) Create() (map[string]interface{}, string) {
 func (d *Device) FormQuery() string {
 
 	query := "SELECT * FROM device " + u.JoinQueryGen("device")
+	if d.ParentID != "" {
+		//pid, _ := strconv.Atoi(d.ParentID)
+		query += " AND device_parent_id = " + d.ParentID
+	}
+	if d.IDJSON != "" {
+		//id, _ := strconv.Atoi(d.IDJSON)
+		query += " AND device.id = " + d.IDJSON
+	}
+	if d.ParentID != "" {
+		//pid, _ := strconv.Atoi(d.ParentID)
+		query += " AND device_parent_id = " + d.ParentID
+	}
 	if d.Name != "" {
 		query += " WHERE device_name = '" + d.Name + "'"
 	}
@@ -210,6 +222,7 @@ func (d *Device) FormQuery() string {
 					d.Attributes.Serial + "'"
 		}
 	}
+	println(query)
 	return query
 }
 

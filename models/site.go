@@ -111,6 +111,12 @@ func (site *Site) Create() (map[string]interface{}, string) {
 func (s *Site) FormQuery() string {
 
 	query := "SELECT * FROM site " + u.JoinQueryGen("site")
+	if s.ParentID != "" {
+		query += " AND site_parent_id = " + s.ParentID
+	}
+	if s.IDJSON != "" {
+		query += " AND site.id = " + s.IDJSON
+	}
 	if s.Name != "" {
 		query += " WHERE site_name = '" + s.Name + "'"
 	}

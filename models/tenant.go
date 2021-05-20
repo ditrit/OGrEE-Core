@@ -83,6 +83,9 @@ func (tenant *Tenant) Create() (map[string]interface{}, string) {
 func (t *Tenant) FormQuery() string {
 
 	query := "SELECT * FROM tenant " + u.JoinQueryGen("tenant")
+	if t.IDJSON != "" {
+		query += " AND tenant.id = " + t.IDJSON
+	}
 	if t.Name != "" {
 		query += " WHERE tenant_name = '" + t.Name + "'"
 	}

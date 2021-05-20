@@ -136,6 +136,12 @@ func (room *Room) Create() (map[string]interface{}, string) {
 func (r *Room) FormQuery() string {
 
 	query := "SELECT * FROM room " + u.JoinQueryGen("room")
+	if r.ParentID != "" {
+		query += " AND room_parent_id = " + r.ParentID
+	}
+	if r.IDJSON != "" {
+		query += " AND room.id = " + r.IDJSON
+	}
 	if r.Name != "" {
 		query += " WHERE room_name = '" + r.Name + "'"
 	}

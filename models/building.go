@@ -118,6 +118,12 @@ func (bldg *Building) Create() (map[string]interface{}, string) {
 func (b *Building) FormQuery() string {
 
 	query := "SELECT * FROM building " + u.JoinQueryGen("building")
+	if b.ParentID != "" {
+		query += " AND bldg_parent_id = " + b.ParentID
+	}
+	if b.IDJSON != "" {
+		query += " AND building.id = " + b.IDJSON
+	}
 	if b.Name != "" {
 		query += " WHERE bldg_name = '" + b.Name + "'"
 	}

@@ -124,6 +124,12 @@ func (rack *Rack) Create() (map[string]interface{}, string) {
 func (r *Rack) FormQuery() string {
 
 	query := "SELECT * FROM rack " + u.JoinQueryGen("rack")
+	if r.ParentID != "" {
+		query += " AND rack_parent_id = " + r.ParentID
+	}
+	if r.IDJSON != "" {
+		query += " AND rack.id = " + r.IDJSON
+	}
 	if r.Name != "" {
 		query += " WHERE rack_name = '" + r.Name + "'"
 	}
