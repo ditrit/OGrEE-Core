@@ -2339,36 +2339,6 @@
         }
       }
     },
-    "/api/user/rooms/{id}/devices": {
-      "get": {
-        "produces": [
-          "application/json"
-        ],
-        "tags": [
-          "rooms"
-        ],
-        "summary": "Gets All Devices of Room.",
-        "operationId": "GetAllDevicesOfRoom",
-        "parameters": [
-          {
-            "type": "int",
-            "default": 999,
-            "description": "ID of Room",
-            "name": "ID",
-            "in": "path",
-            "required": true
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Found"
-          },
-          "404": {
-            "description": "Not Found"
-          }
-        }
-      }
-    },
     "/api/user/rooms/{id}/racks": {
       "get": {
         "produces": [
