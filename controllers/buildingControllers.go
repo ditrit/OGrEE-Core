@@ -828,59 +828,6 @@ var GetRacksUsingNamedRoomOfBuilding = func(w http.ResponseWriter, r *http.Reque
 	u.Respond(w, resp)
 }
 
-// swagger:operation GET /api/user/buildings/{id}/racks buildings GetRacksOfBuilding
-// Gets all Racks of Building.
-// ---
-// produces:
-// - application/json
-// parameters:
-// - name: ID
-//   in: path
-//   description: ID of Building
-//   required: true
-//   type: int
-//   default: 999
-// responses:
-//     '200':
-//         description: Found
-//     '404':
-//         description: Not Found
-var GetRacksOfBuilding = func(w http.ResponseWriter, r *http.Request) {
-	id, e := strconv.Atoi(mux.Vars(r)["id"])
-	resp := u.Message(true, "success")
-	if e != nil {
-		u.Respond(w, u.Message(false, "Error while parsing path parameters"))
-		u.ErrLog("Error while parsing path parameters", "GET RACKSOFBUILDING", "", r)
-	}
-
-	data, e1 := models.GetRacksOfBuilding(id)
-	if data == nil || len(data) == 0 {
-		resp = u.Message(false, "Error while getting Racks: "+e1)
-		u.ErrLog("Error while getting Racks of Building",
-			"GET RACKSOFBLDG", e1, r)
-
-		switch e1 {
-		case "record not found":
-			w.WriteHeader(http.StatusNotFound)
-		case "":
-			w.WriteHeader(http.StatusNotFound)
-			resp["message"] = "Error: No Records Found"
-		default:
-		}
-
-	} else {
-		resp = u.Message(true, "success")
-	}
-
-	if len(data) > 1 {
-		resp["data"] = map[string]interface{}{"objects": data}
-	} else {
-		resp["data"] = data
-	}
-
-	u.Respond(w, resp)
-}
-
 // swagger:operation GET /api/user/buildings/{id}/rooms/{room_name}/racks/{rack_name} buildings GetRacksOfBuilding
 // Gets a Rack of Building.
 // ---

@@ -436,36 +436,6 @@
         }
       }
     },
-    "/api/user/buildings/{id}/racks": {
-      "get": {
-        "produces": [
-          "application/json"
-        ],
-        "tags": [
-          "buildings"
-        ],
-        "summary": "Gets all Racks of Building.",
-        "operationId": "GetRacksOfBuilding",
-        "parameters": [
-          {
-            "type": "int",
-            "default": 999,
-            "description": "ID of Building",
-            "name": "ID",
-            "in": "path",
-            "required": true
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Found"
-          },
-          "404": {
-            "description": "Not Found"
-          }
-        }
-      }
-    },
     "/api/user/buildings/{id}/rooms": {
       "get": {
         "produces": [
