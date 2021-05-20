@@ -932,52 +932,6 @@ var GetRoomsUsingNamedBldgOfSite = func(w http.ResponseWriter, r *http.Request) 
 	u.Respond(w, resp)
 }
 
-// swagger:operation GET /api/user/sites/{id}/rooms sites GetRoomsOfSite
-// Gets Rooms of a Site from the system.
-// ---
-// produces:
-// - application/json
-// parameters:
-// - name: ID
-//   in: path
-//   description: ID of desired site
-//   required: true
-//   type: int
-//   default: 999
-// responses:
-//     '200':
-//         description: Found
-//     '404':
-//         description: Not Found
-
-var GetRoomsOfSite = func(w http.ResponseWriter, r *http.Request) {
-	id, e := strconv.Atoi(mux.Vars(r)["id"])
-	resp := u.Message(true, "success")
-	if e != nil {
-		u.Respond(w, u.Message(false, "Error while parsing path parameters"))
-		u.ErrLog("Error while parsing path parameters", "GET ROOMSOFSITE", "", r)
-	}
-
-	data, e1 := models.GetRoomsOfSite(id)
-	if data == nil || len(data) == 0 {
-		resp = u.Message(false, "Error while getting Rooms: "+e1)
-		u.ErrLog("Error while getting Rooms Of Site",
-			"GET ROOMSOFSITE", e1, r)
-
-		switch e1 {
-		case "record not found":
-			w.WriteHeader(http.StatusNotFound)
-		default:
-		}
-
-	} else {
-		resp = u.Message(true, "success")
-	}
-
-	resp["data"] = data
-	u.Respond(w, resp)
-}
-
 // swagger:operation GET /api/user/sites/{id}/buildings/{building_name}/rooms/{room_name} sites GetRoomsOfSite
 // Gets Room by name of a Site from the system.
 // ---

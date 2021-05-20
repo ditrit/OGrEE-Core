@@ -3480,36 +3480,6 @@
         }
       }
     },
-    "/api/user/sites/{id}/rooms": {
-      "get": {
-        "produces": [
-          "application/json"
-        ],
-        "tags": [
-          "sites"
-        ],
-        "summary": "Gets Rooms of a Site from the system.",
-        "operationId": "GetRoomsOfSite",
-        "parameters": [
-          {
-            "type": "int",
-            "default": 999,
-            "description": "ID of desired site",
-            "name": "ID",
-            "in": "path",
-            "required": true
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Found"
-          },
-          "404": {
-            "description": "Not Found"
-          }
-        }
-      }
-    },
     "/api/user/sites?": {
       "get": {
         "description": "Gets a Site using any attribute (with the exception of description) via query in the system\nThe attributes are in the form {attr}=xyz\u0026{attr1}=abc\nAnd any combination can be provided given that at least 1 is provided.",
@@ -3971,36 +3941,6 @@
         ],
         "summary": "Gets hierarchy of Tenant until racks.",
         "operationId": "GetTenantHierarchy",
-        "parameters": [
-          {
-            "type": "string",
-            "default": "INFINITI",
-            "description": "Name of desired tenant",
-            "name": "tenant_name",
-            "in": "path",
-            "required": true
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Found"
-          },
-          "404": {
-            "description": "Not Found"
-          }
-        }
-      }
-    },
-    "/api/user/tenants/{tenant_name}/buildings": {
-      "get": {
-        "produces": [
-          "application/json"
-        ],
-        "tags": [
-          "tenants"
-        ],
-        "summary": "Gets all Buildings of a Tenant from the system.",
-        "operationId": "GetFromTenant",
         "parameters": [
           {
             "type": "string",

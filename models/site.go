@@ -572,28 +572,6 @@ func GetNamedDeviceOfSite(id int, bldg_name, room_name, rack_name, device_name s
 	return dev, ""
 }
 
-func GetRoomsOfSite(id int) ([]*Room, string) {
-	if _, e := GetSite(uint(id)); e != "" {
-		return nil, e
-	}
-
-	bldgs, e := GetBuildingsOfParent(id)
-	if e != "" {
-		return nil, e
-	}
-
-	rooms := make([]*Room, 0)
-
-	for i := range bldgs {
-		bldgs[i].Rooms, e = GetRoomsOfParent(uint(bldgs[i].ID))
-		if e != "" {
-			return nil, e
-		}
-		rooms = append(rooms, bldgs[i].Rooms...)
-	}
-	return rooms, ""
-}
-
 func GetSiteHierarchyToRoom(id int) (*Site, string) {
 	site, e := GetSite(uint(id))
 	if e != "" {
