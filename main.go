@@ -1,9 +1,14 @@
 package main
 
+//https://www.reddit.com/r/golang/comments/
+// kpyuw6/how_to_stop_reading_from_osstdin_with/
+
+//https://github.com/gdamore/tcell
 import (
 	"bufio"
 	"fmt"
 	"os"
+	"os/exec"
 	"strings"
 
 	"github.com/MarinX/keylogger"
@@ -36,6 +41,12 @@ func DeleteMeWhenYouCan() {
 	return
 }
 
+func tput(args ...string) error {
+	cmd := exec.Command("tput", args...)
+	cmd.Stdout = os.Stdout
+	return cmd.Run()
+}
+
 func main() {
 	for true {
 		//scanner := bufio.NewScanner(os.Stdin)
@@ -55,8 +66,9 @@ func main() {
 
 				// if the state of key is pressed
 				if e.KeyPress() && e.KeyString() == "Left" {
-					println("[event] press key ", e.KeyString())
-					println("Value: ", e.Value)
+					//println("[event] press key ", e.KeyString())
+					//println("Value: ", e.Value)
+					println("\033[1D")
 				} else if e.KeyPress() && e.KeyString() == "Right" {
 					println("[event] press key ", e.KeyString())
 					println("Value: ", e.Value)
@@ -67,8 +79,10 @@ func main() {
 					println("[event] press key ", e.KeyString())
 					println("Value: ", e.Value)
 				} else if e.KeyPress() && e.KeyString() == "ENTER" {
-					line, _ := bufio.NewReader(os.Stdin).ReadString('\n')
-					lex := NewLexer(strings.NewReader(line))
+					//line, _ := bufio.NewReader(os.Stdin).ReadString('\n')
+					var buf string
+					fmt.Scanln("%s", &buf)
+					lex := NewLexer(strings.NewReader(string(buf)))
 					//lex := NewLexer(strings.NewReader(scanner.Text()))
 					e := yyParse(lex)
 					println("Return Code: ", e)
