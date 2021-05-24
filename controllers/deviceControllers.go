@@ -206,6 +206,7 @@ var GetDevice = func(w http.ResponseWriter, r *http.Request) {
 	if e != nil {
 		u.Respond(w, u.Message(false, "Error while parsing path parameters"))
 		u.ErrLog("Error while parsing path parameters", "GET DEVICE", "", r)
+		return
 	}
 
 	data, e1 := models.GetDevice(uint(id))
@@ -291,6 +292,7 @@ var DeleteDevice = func(w http.ResponseWriter, r *http.Request) {
 	if e != nil {
 		u.Respond(w, u.Message(false, "Error while parsing path parameters"))
 		u.ErrLog("Error while parsing path parameters", "DELETE DEVICE", "", r)
+		return
 	}
 
 	v := models.DeleteDevice(uint(id))
@@ -461,6 +463,7 @@ var UpdateDevice = func(w http.ResponseWriter, r *http.Request) {
 	if e != nil {
 		u.Respond(w, u.Message(false, "Error while parsing path parameters"))
 		u.ErrLog("Error while parsing path parameters", "UPDATE DEVICE", "", r)
+		return
 	}
 
 	err := json.NewDecoder(r.Body).Decode(device)

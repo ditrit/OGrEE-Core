@@ -240,6 +240,7 @@ var GetSite = func(w http.ResponseWriter, r *http.Request) {
 	if e != nil {
 		u.Respond(w, u.Message(false, "Error while parsing path parameters"))
 		u.ErrLog("Error while parsing path parameters", "GET SITE", "", r)
+		return
 	}
 
 	data, e1 := models.GetSite(uint(id))
@@ -331,6 +332,7 @@ var DeleteSiteByID = func(w http.ResponseWriter, r *http.Request) {
 
 	if e != nil {
 		u.Respond(w, u.Message(false, "Error while parsing path parameters"))
+		return
 	}
 
 	v := models.DeleteSite(uint(id))
@@ -484,6 +486,7 @@ var UpdateSite = func(w http.ResponseWriter, r *http.Request) {
 	if e != nil {
 		u.Respond(w, u.Message(false, "Error while parsing path parameters"))
 		u.ErrLog("Error while parsing path parameters", "UPDATE SITE", "", r)
+		return
 	}
 
 	err := json.NewDecoder(r.Body).Decode(site)
@@ -708,6 +711,7 @@ var GetSiteHierarchy = func(w http.ResponseWriter, r *http.Request) {
 	if e != nil {
 		u.Respond(w, u.Message(false, "Error while parsing path parameters"))
 		u.ErrLog("Error while parsing path parameters", "GET Site", "", r)
+		return
 	}
 
 	data, e1 := models.GetSiteHierarchy(id)
@@ -738,6 +742,7 @@ var GetSiteHierarchyNonStandard = func(w http.ResponseWriter, r *http.Request) {
 	if e != nil {
 		u.Respond(w, u.Message(false, "Error while parsing path parameters"))
 		u.ErrLog("Error while parsing path parameters", "GET Site", "", r)
+		return
 	}
 
 	data, bldgs, rooms, racks, devices, e1 :=
@@ -789,6 +794,7 @@ var GetBuildingsOfSite = func(w http.ResponseWriter, r *http.Request) {
 	if e != nil {
 		u.Respond(w, u.Message(false, "Error while parsing path parameters"))
 		u.ErrLog("Error while parsing path parameters", "GET BUILDINGSOFSITE", "", r)
+		return
 	}
 
 	data, e1 := models.GetBuildingsOfSite(id)
@@ -850,6 +856,7 @@ var GetNamedBuildingOfSite = func(w http.ResponseWriter, r *http.Request) {
 	if e != nil {
 		u.Respond(w, u.Message(false, "Error while parsing path parameters"))
 		u.ErrLog("Error while parsing path parameters", "GET NAMEDBUILDINGSOFSITE", "", r)
+		return
 	}
 
 	data, e1 := models.GetNamedBuildingOfSite(id, name)
@@ -903,6 +910,7 @@ var GetRoomsUsingNamedBldgOfSite = func(w http.ResponseWriter, r *http.Request) 
 	if e != nil {
 		u.Respond(w, u.Message(false, "Error while parsing path parameters"))
 		u.ErrLog("Error while parsing path parameters", "GET ROOMSUSINGNAMEDBLDGOFSITE", "", r)
+		return
 	}
 
 	data, e1 := models.GetRoomsUsingNamedBldgOfSite(id, bldg_name)
@@ -970,6 +978,7 @@ var GetNamedRoomOfSite = func(w http.ResponseWriter, r *http.Request) {
 	if e != nil {
 		u.Respond(w, u.Message(false, "Error while parsing path parameters"))
 		u.ErrLog("Error while parsing path parameters", "GET NAMEDROOMOFSITE", "", r)
+		return
 	}
 
 	data, e1 := models.GetNamedRoomOfSite(id, bldg_name, room_name)
@@ -1030,6 +1039,7 @@ var GetRacksUsingNamedRoomOfSite = func(w http.ResponseWriter, r *http.Request) 
 	if e != nil {
 		u.Respond(w, u.Message(false, "Error while parsing path parameters"))
 		u.ErrLog("Error while parsing path parameters", "GET RACKSUSINGNAMEDROOMOFSITE", "", r)
+		return
 	}
 
 	data, e1 := models.GetRacksUsingNamedRoomOfSite(id, bldg_name, room_name)
@@ -1104,6 +1114,7 @@ var GetNamedRackOfSite = func(w http.ResponseWriter, r *http.Request) {
 	if e != nil {
 		u.Respond(w, u.Message(false, "Error while parsing path parameters"))
 		u.ErrLog("Error while parsing path parameters", "GET NAMEDRACKOFSITE", "", r)
+		return
 	}
 
 	data, e1 := models.GetNamedRackOfSite(id, bldg_name, room_name, rack_name)
@@ -1171,6 +1182,7 @@ var GetDevicesUsingNamedRackOfSite = func(w http.ResponseWriter, r *http.Request
 	if e != nil {
 		u.Respond(w, u.Message(false, "Error while parsing path parameters"))
 		u.ErrLog("Error while parsing path parameters", "GET DEVICESUSINGNAMEDRACKOFSITE", "", r)
+		return
 	}
 
 	data, e1 := models.GetDevicesUsingNamedRackOfSite(id, bldg_name, room_name, rack_name)
@@ -1252,6 +1264,7 @@ var GetNamedDeviceOfSite = func(w http.ResponseWriter, r *http.Request) {
 	if e != nil {
 		u.Respond(w, u.Message(false, "Error while parsing path parameters"))
 		u.ErrLog("Error while parsing path parameters", "GET NAMEDDEVICEOFSITE", "", r)
+		return
 	}
 
 	data, e1 := models.GetNamedDeviceOfSite(id, bldg_name, room_name, rack_name, device_name)
@@ -1297,6 +1310,7 @@ var GetSiteHierarchyToRoom = func(w http.ResponseWriter, r *http.Request) {
 	if e != nil {
 		u.Respond(w, u.Message(false, "Error while parsing path parameters"))
 		u.ErrLog("Error while parsing path parameters", "GET SITEHIERARCHYTOROOM", "", r)
+		return
 	}
 
 	data, e1 := models.GetSiteHierarchyToRoom(id)
@@ -1342,6 +1356,7 @@ var GetSiteHierarchyToRack = func(w http.ResponseWriter, r *http.Request) {
 	if e != nil {
 		u.Respond(w, u.Message(false, "Error while parsing path parameters"))
 		u.ErrLog("Error while parsing path parameters", "GET SITEHIERARCHYTORACK", "", r)
+		return
 	}
 
 	data, e1 := models.GetSiteHierarchyToRack(id)

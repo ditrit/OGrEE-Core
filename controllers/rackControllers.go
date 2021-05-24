@@ -190,6 +190,7 @@ var GetRack = func(w http.ResponseWriter, r *http.Request) {
 	if e != nil {
 		u.Respond(w, u.Message(false, "Error while parsing path parameters"))
 		u.ErrLog("Error while parsing path parameters", "GET RACK", "", r)
+		return
 	}
 
 	data, e1 := models.GetRack(uint(id))
@@ -273,6 +274,7 @@ var DeleteRack = func(w http.ResponseWriter, r *http.Request) {
 	if e != nil {
 		u.Respond(w, u.Message(false, "Error while parsing path parameters"))
 		u.ErrLog("Error while parsing path parameters", "DELETE RACK", "", r)
+		return
 	}
 
 	v := models.DeleteRack(uint(id))
@@ -425,6 +427,7 @@ var UpdateRack = func(w http.ResponseWriter, r *http.Request) {
 	if e != nil {
 		u.Respond(w, u.Message(false, "Error while parsing path parameters"))
 		u.ErrLog("Error while parsing path parameters", "UPDATE RACK", "", r)
+		return
 	}
 
 	err := json.NewDecoder(r.Body).Decode(rack)
@@ -510,6 +513,7 @@ var GetRackHierarchy = func(w http.ResponseWriter, r *http.Request) {
 	if e != nil {
 		u.Respond(w, u.Message(false, "Error while parsing path parameters"))
 		u.ErrLog("Error while parsing path parameters", "GET RACK", "", r)
+		return
 	}
 
 	data, e1 := models.GetRackHierarchy(uint(id))
@@ -540,6 +544,7 @@ var GetRackHierarchyNonStandard = func(w http.ResponseWriter, r *http.Request) {
 	if e != nil {
 		u.Respond(w, u.Message(false, "Error while parsing path parameters"))
 		u.ErrLog("Error while parsing path parameters", "GET RACK", "", r)
+		return
 	}
 
 	data, devices, e1 := models.GetRackHierarchyNonStandard(uint(id))
@@ -595,6 +600,7 @@ var GetRackDeviceByName = func(w http.ResponseWriter, r *http.Request) {
 	if e != nil {
 		u.Respond(w, u.Message(false, "Error while parsing path parameters"))
 		u.ErrLog("Error while parsing path parameters", "GET RACKDEVICEBYNAME", "", r)
+		return
 	}
 
 	data, e1 := models.GetDeviceByNameAndParentID(uint(id), name)

@@ -137,7 +137,7 @@ var GetTenantFor = func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusBadRequest)
 		u.Respond(w, u.Message(false, "Error while extracting from path parameters"))
 		u.ErrLog("Error while extracting from path parameters", "GET TENANT", "", r)
-
+		return
 	}
 
 	data, e := models.GetTenant(uint(id))
@@ -276,6 +276,7 @@ var UpdateTenant = func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusBadRequest)
 		u.Respond(w, u.Message(false, "Error while extracting from path parameters"))
 		u.ErrLog("Error while extracting from path parameters", "UPDATE TENANT", "", r)
+		return
 	}
 	tenant := &models.Tenant{}
 
@@ -336,6 +337,7 @@ var DeleteTenant = func(w http.ResponseWriter, r *http.Request) {
 	if e != nil {
 		u.Respond(w, u.Message(false, "Error while extracting from path parameters"))
 		u.ErrLog("Error while extracting from path parameters", "DELETE TENANT", "", r)
+		return
 	}
 
 	v := models.DeleteTenant(uint(id))
@@ -479,6 +481,7 @@ var GetTenantHierarchy = func(w http.ResponseWriter, r *http.Request) {
 	if e != nil {
 		u.Respond(w, u.Message(false, "Error while parsing path parameters"))
 		u.ErrLog("Error while parsing path parameters", "GET Tenant", "", r)
+		return
 	}
 
 	data, e1 := models.GetTenantHierarchy(id)
@@ -509,6 +512,7 @@ var GetTenantHierarchyNonStandard = func(w http.ResponseWriter, r *http.Request)
 	if e != nil {
 		u.Respond(w, u.Message(false, "Error while parsing path parameters"))
 		u.ErrLog("Error while parsing path parameters", "GET Tenant", "", r)
+		return
 	}
 
 	data, sites, bldgs, rooms,
@@ -562,6 +566,7 @@ var GetSitesOfTenant = func(w http.ResponseWriter, r *http.Request) {
 	if e != true {
 		u.Respond(w, u.Message(false, "Error while parsing path parameters"))
 		u.ErrLog("Error while parsing path parameters", "GET SITESOFTENANT", "", r)
+		return
 	}
 
 	data, e1 := models.GetSitesOfTenant(name)
@@ -622,6 +627,7 @@ var GetNamedSiteOfTenant = func(w http.ResponseWriter, r *http.Request) {
 	if e != true || e2 != true {
 		u.Respond(w, u.Message(false, "Error while parsing path parameters"))
 		u.ErrLog("Error while parsing path parameters", "GET NAMEDSITEOFTENANT", "", r)
+		return
 	}
 
 	data, e1 := models.GetNamedSiteOfTenant(name, site_name)
@@ -675,6 +681,7 @@ var GetBuildingsUsingNamedSiteOfTenant = func(w http.ResponseWriter, r *http.Req
 	if e != true || e2 != true {
 		u.Respond(w, u.Message(false, "Error while parsing path parameters"))
 		u.ErrLog("Error while parsing path parameters", "GET BUILDINGSUSINGNAMEDSITEOFTENANT", "", r)
+		return
 	}
 
 	data, e1 := models.GetBuildingsUsingNamedSiteOfTenant(name, site_name)
@@ -741,6 +748,7 @@ var GetNamedBuildingOfTenant = func(w http.ResponseWriter, r *http.Request) {
 	if e != true || e2 != true || e3 != true {
 		u.Respond(w, u.Message(false, "Error while parsing path parameters"))
 		u.ErrLog("Error while parsing path parameters", "GET NAMEDBLDGOFTENANT", "", r)
+		return
 	}
 
 	data, e1 := models.GetNamedBuildingOfTenant(name, site_name, bldg_name)
@@ -800,6 +808,7 @@ var GetRoomsUsingNamedBuildingOfTenant = func(w http.ResponseWriter, r *http.Req
 	if e != true || e2 != true || e3 != true {
 		u.Respond(w, u.Message(false, "Error while parsing path parameters"))
 		u.ErrLog("Error while parsing path parameters", "GET ROOMSUSINGNAMEDBLDGOFTENANT", "", r)
+		return
 	}
 
 	data, e1 := models.GetRoomsUsingNamedBuildingOfTenant(name, site_name, bldg_name)
@@ -874,6 +883,7 @@ var GetNamedRoomOfTenant = func(w http.ResponseWriter, r *http.Request) {
 	if e != true || e2 != true || e3 != true || e4 != true {
 		u.Respond(w, u.Message(false, "Error while parsing path parameters"))
 		u.ErrLog("Error while parsing path parameters", "GET NAMEDROOMOFTENANT", "", r)
+		return
 	}
 
 	data, e1 := models.GetNamedRoomOfTenant(name, site_name, bldg_name, room_name)
@@ -941,6 +951,7 @@ var GetRacksUsingNamedRoomOfTenant = func(w http.ResponseWriter, r *http.Request
 	if e != true || e2 != true || e3 != true || e4 != true {
 		u.Respond(w, u.Message(false, "Error while parsing path parameters"))
 		u.ErrLog("Error while parsing path parameters", "GET RACKSUSINGNAMEDROOMOFTENANT", "", r)
+		return
 	}
 
 	data, e1 := models.GetRacksUsingNamedRoomOfTenant(name, site_name, bldg_name, room_name)
@@ -1022,6 +1033,7 @@ var GetNamedRackOfTenant = func(w http.ResponseWriter, r *http.Request) {
 	if e != true || e2 != true || e3 != true || e4 != true || e5 != true {
 		u.Respond(w, u.Message(false, "Error while parsing path parameters"))
 		u.ErrLog("Error while parsing path parameters", "GET NAMEDRACKOFTENANT", "", r)
+		return
 	}
 
 	data, e1 := models.GetNamedRackOfTenant(name, site_name, bldg_name, room_name, rack_name)
@@ -1096,6 +1108,7 @@ var GetDevicesUsingNamedRackOfTenant = func(w http.ResponseWriter, r *http.Reque
 	if e != true || e2 != true || e3 != true || e4 != true || e5 != true {
 		u.Respond(w, u.Message(false, "Error while parsing path parameters"))
 		u.ErrLog("Error while parsing path parameters", "GET DEVICESUSINGNAMEDRACKOFTENANT", "", r)
+		return
 	}
 
 	data, e1 := models.GetDevicesUsingNamedRackOfTenant(name, site_name, bldg_name, room_name, rack_name)
@@ -1184,6 +1197,7 @@ var GetNamedDeviceOfTenant = func(w http.ResponseWriter, r *http.Request) {
 	if e != true || e2 != true || e3 != true || e4 != true || e5 != true || e6 != true {
 		u.Respond(w, u.Message(false, "Error while parsing path parameters"))
 		u.ErrLog("Error while parsing path parameters", "GET NAMEDDEVICEOFTENANT", "", r)
+		return
 	}
 
 	data, e1 := models.GetNamedDeviceOfTenant(name, site_name, bldg_name, room_name, rack_name, dev_name)
@@ -1229,6 +1243,7 @@ var GetTenantHierarchyToBuilding = func(w http.ResponseWriter, r *http.Request) 
 	if e != true {
 		u.Respond(w, u.Message(false, "Error while parsing path parameters"))
 		u.ErrLog("Error while parsing path parameters", "GET TENANTHIERARCHTOBLDG", "", r)
+		return
 	}
 
 	data, e1 := models.GetTenantHierarchyToBuilding(name)
@@ -1274,6 +1289,7 @@ var GetTenantHierarchyToRoom = func(w http.ResponseWriter, r *http.Request) {
 	if e != true {
 		u.Respond(w, u.Message(false, "Error while parsing path parameters"))
 		u.ErrLog("Error while parsing path parameters", "GET TENANTHIERARCHTOROOM", "", r)
+		return
 	}
 
 	data, e1 := models.GetTenantHierarchyToRoom(name)
@@ -1319,6 +1335,7 @@ var GetTenantHierarchyToRack = func(w http.ResponseWriter, r *http.Request) {
 	if e != true {
 		u.Respond(w, u.Message(false, "Error while parsing path parameters"))
 		u.ErrLog("Error while parsing path parameters", "GET TENANTHIERARCHTORACK", "", r)
+		return
 	}
 
 	data, e1 := models.GetTenantHierarchyToRack(name)

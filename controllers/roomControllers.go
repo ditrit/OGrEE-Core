@@ -172,6 +172,7 @@ var GetRoom = func(w http.ResponseWriter, r *http.Request) {
 	if e != nil {
 		u.Respond(w, u.Message(false, "Error while parsing path parameters"))
 		u.ErrLog("Error while parsing path parameters", "GET ROOM", "", r)
+		return
 	}
 
 	data, e1 := models.GetRoom(uint(id))
@@ -256,6 +257,7 @@ var DeleteRoom = func(w http.ResponseWriter, r *http.Request) {
 	if e != nil {
 		u.Respond(w, u.Message(false, "Error while parsing path parameters"))
 		u.ErrLog("Error while parsing path parameters", "DELETE ROOM", "", r)
+		return
 	}
 
 	v := models.DeleteRoom(uint(id))
@@ -398,6 +400,7 @@ var UpdateRoom = func(w http.ResponseWriter, r *http.Request) {
 	if e != nil {
 		u.Respond(w, u.Message(false, "Error while parsing path parameters"))
 		u.ErrLog("Error while parsing path parameters", "UPDATE ROOM", "", r)
+		return
 	}
 
 	err := json.NewDecoder(r.Body).Decode(room)
@@ -641,6 +644,7 @@ var GetRoomHierarchy = func(w http.ResponseWriter, r *http.Request) {
 	if e != nil {
 		u.Respond(w, u.Message(false, "Error while parsing path parameters"))
 		u.ErrLog("Error while parsing path parameters", "GET ROOM", "", r)
+		return
 	}
 
 	data, e1 := models.GetRoomHierarchy(uint(id))
@@ -671,6 +675,7 @@ var GetRoomHierarchyNonStandard = func(w http.ResponseWriter, r *http.Request) {
 	if e != nil {
 		u.Respond(w, u.Message(false, "Error while parsing path parameters"))
 		u.ErrLog("Error while parsing path parameters", "GET ROOM", "", r)
+		return
 	}
 
 	data, racks, devices, e1 := models.GetRoomHierarchyNonStandard(uint(id))
@@ -726,6 +731,7 @@ var GetRackOfRoomByName = func(w http.ResponseWriter, r *http.Request) {
 	if e != nil {
 		u.Respond(w, u.Message(false, "Error while parsing path parameters"))
 		u.ErrLog("Error while parsing path parameters", "GET ROOMRACKBYNAME", "", r)
+		return
 	}
 
 	data, e1 := models.GetRackByNameAndParentID(id, name)
@@ -774,6 +780,7 @@ var GetRacksOfParent = func(w http.ResponseWriter, r *http.Request) {
 	if e != nil {
 		u.Respond(w, u.Message(false, "Error while parsing path parameters"))
 		u.ErrLog("Error while parsing path parameters", "GET RACKSOFPARENT", "", r)
+		return
 	}
 
 	data, e1 := models.GetRacksOfParent(uint(id))
@@ -832,6 +839,7 @@ var GetDevicesUsingNamedRackOfRoom = func(w http.ResponseWriter, r *http.Request
 	if e != nil {
 		u.Respond(w, u.Message(false, "Error while parsing path parameters"))
 		u.ErrLog("Error while parsing path parameters", "GET RACKSOFPARENT", "", r)
+		return
 	}
 
 	data, e1 := models.GetDevicesUsingNamedRackOfRoom(id, name)
@@ -897,6 +905,7 @@ var GetNamedDeviceOfRoom = func(w http.ResponseWriter, r *http.Request) {
 	if e != nil {
 		u.Respond(w, u.Message(false, "Error while parsing path parameters"))
 		u.ErrLog("Error while parsing path parameters", "GET NAMEDDEVICEOFROOM", "", r)
+		return
 	}
 
 	data, e1 := models.GetNamedDeviceOfRoom(id, rack_name, device_name)
