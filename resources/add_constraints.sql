@@ -37,3 +37,5 @@ ALTER TABLE device_attributes ADD CONSTRAINT chk_device_orientation CHECK (devic
 --ALTER TABLE device_attributes ADD CONSTRAINT chk_device_pzu CHECK (device_pos_z_unit IN ('mm', 'cm', 'm', 'U', 'OU', 'tile'));
 ALTER TABLE device_attributes ADD CONSTRAINT chk_device_sizeu CHECK (device_size_unit IN ('mm', 'cm', 'm', 'U', 'OU', 'tile'));
 ALTER TABLE device_attributes ADD CONSTRAINT chk_device_phu CHECK (device_height_unit IN ('mm', 'cm', 'm', 'U', 'OU', 'tile'));
+
+ALTER TABLE tenant ADD CONSTRAINT tenant_name_is_unique UNIQUE (tenant_name);
