@@ -6,14 +6,17 @@ import ("os"
 %}
 
 %union {
-  n int
+  //n int
+  s string
 }
 
+%token <s> TOKEN_WORD
+%token <s> TOKEN_ENTITY
 %token
-       TOKEN_CRUDOP TOKEN_ENTITY TOKEN_ATTR
-       TOKEN_BASHTYPE TOKEN_WORD TOKEN_EQUAL 
-       TOKEN_ENTER TOKEN_EQUAL TOKEN_CMDFLAG
-       TOKEN_SLASH TOKEN_EXIT TOKEN_HISTORY_UP
+       TOKEN_CRUDOP TOKEN_ATTR 
+       TOKEN_BASHTYPE TOKEN_EQUAL 
+       TOKEN_CMDFLAG TOKEN_SLASH 
+       TOKEN_EXIT TOKEN_DOC
 
 
 
@@ -33,7 +36,7 @@ E:     TOKEN_ENTITY F
 ;
 
 F:     TOKEN_ATTR TOKEN_EQUAL TOKEN_WORD F
-       | TOKEN_ATTR TOKEN_EQUAL TOKEN_WORD M {println("Taking the M")}
+       | TOKEN_ATTR TOKEN_EQUAL TOKEN_WORD M {println("Taking the M"); println("SUP DUDE: ", $3)}
 ;
 
 M: 
@@ -58,6 +61,7 @@ B:     TOKEN_BASHTYPE TOKEN_WORD TOKEN_CMDFLAG
 D:    TOKEN_EXIT     {os.Exit(0)}
 ;
 
-L:     TOKEN_HISTORY_UP
+L:     TOKEN_DOC {cmd.Help()}
 ;
+
 %%

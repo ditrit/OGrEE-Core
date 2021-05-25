@@ -24,3 +24,8 @@ func Execute() {
 		os.Exit(1)
 	}
 }
+
+func Help() {
+	fmt.Print(`Welcome to the OGRE Shell. 
+	A Shell interface to the API and your datacenter visualisation solution`)
+}

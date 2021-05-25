@@ -11,7 +11,8 @@ import (
 
 type yySymType struct {
 	yys int
-	n   int
+	//n int
+	s string
 }
 
 type yyXError struct {
@@ -19,20 +20,19 @@ type yyXError struct {
 }
 
 const (
-	yyDefault        = 57357
-	yyEofCode        = 57344
-	TOKEN_ATTR       = 57348
-	TOKEN_BASHTYPE   = 57349
-	TOKEN_CMDFLAG    = 57353
-	TOKEN_CRUDOP     = 57346
-	TOKEN_ENTER      = 57352
-	TOKEN_ENTITY     = 57347
-	TOKEN_EQUAL      = 57351
-	TOKEN_EXIT       = 57355
-	TOKEN_HISTORY_UP = 57356
-	TOKEN_SLASH      = 57354
-	TOKEN_WORD       = 57350
-	yyErrCode        = 57345
+	yyDefault      = 57356
+	yyEofCode      = 57344
+	TOKEN_ATTR     = 57349
+	TOKEN_BASHTYPE = 57350
+	TOKEN_CMDFLAG  = 57352
+	TOKEN_CRUDOP   = 57348
+	TOKEN_DOC      = 57355
+	TOKEN_ENTITY   = 57347
+	TOKEN_EQUAL    = 57351
+	TOKEN_EXIT     = 57354
+	TOKEN_SLASH    = 57353
+	TOKEN_WORD     = 57346
+	yyErrCode      = 57345
 
 	yyMaxDepth = 200
 	yyTabOfs   = -20
@@ -43,30 +43,29 @@ var (
 
 	yyXLAT = map[int]int{
 		57344: 0,  // $end (17x)
-		57348: 1,  // TOKEN_ATTR (5x)
-		57350: 2,  // TOKEN_WORD (5x)
-		57361: 3,  // F (3x)
-		57365: 4,  // P (2x)
-		57358: 5,  // B (1x)
-		57359: 6,  // D (1x)
-		57360: 7,  // E (1x)
-		57362: 8,  // K (1x)
-		57363: 9,  // L (1x)
-		57364: 10, // M (1x)
-		57366: 11, // Q (1x)
-		57368: 12, // start (1x)
-		57349: 13, // TOKEN_BASHTYPE (1x)
-		57353: 14, // TOKEN_CMDFLAG (1x)
-		57346: 15, // TOKEN_CRUDOP (1x)
-		57347: 16, // TOKEN_ENTITY (1x)
-		57351: 17, // TOKEN_EQUAL (1x)
-		57355: 18, // TOKEN_EXIT (1x)
-		57356: 19, // TOKEN_HISTORY_UP (1x)
-		57354: 20, // TOKEN_SLASH (1x)
-		57367: 21, // Z (1x)
-		57357: 22, // $default (0x)
+		57349: 1,  // TOKEN_ATTR (5x)
+		57346: 2,  // TOKEN_WORD (5x)
+		57360: 3,  // F (3x)
+		57364: 4,  // P (2x)
+		57357: 5,  // B (1x)
+		57358: 6,  // D (1x)
+		57359: 7,  // E (1x)
+		57361: 8,  // K (1x)
+		57362: 9,  // L (1x)
+		57363: 10, // M (1x)
+		57365: 11, // Q (1x)
+		57367: 12, // start (1x)
+		57350: 13, // TOKEN_BASHTYPE (1x)
+		57352: 14, // TOKEN_CMDFLAG (1x)
+		57348: 15, // TOKEN_CRUDOP (1x)
+		57355: 16, // TOKEN_DOC (1x)
+		57347: 17, // TOKEN_ENTITY (1x)
+		57351: 18, // TOKEN_EQUAL (1x)
+		57354: 19, // TOKEN_EXIT (1x)
+		57353: 20, // TOKEN_SLASH (1x)
+		57366: 21, // Z (1x)
+		57356: 22, // $default (0x)
 		57345: 23, // error (0x)
-		57352: 24, // TOKEN_ENTER (0x)
 	}
 
 	yySymNames = []string{
@@ -86,15 +85,14 @@ var (
 		"TOKEN_BASHTYPE",
 		"TOKEN_CMDFLAG",
 		"TOKEN_CRUDOP",
+		"TOKEN_DOC",
 		"TOKEN_ENTITY",
 		"TOKEN_EQUAL",
 		"TOKEN_EXIT",
-		"TOKEN_HISTORY_UP",
 		"TOKEN_SLASH",
 		"Z",
 		"$default",
 		"error",
-		"TOKEN_ENTER",
 	}
 
 	yyTokenLiteralStrings = map[int]string{}
@@ -126,14 +124,14 @@ var (
 
 	yyParseTab = [27][]uint8{
 		// 0
-		{5: 27, 24, 8: 22, 25, 11: 23, 21, 28, 15: 26, 18: 29, 30},
+		{5: 27, 24, 8: 22, 25, 11: 23, 21, 28, 15: 26, 30, 19: 29},
 		{20},
 		{19},
 		{18},
 		{17},
 		// 5
 		{16},
-		{7: 33, 16: 35, 21: 34},
+		{7: 33, 17: 35, 21: 34},
 		{6},
 		{3, 2: 31},
 		{2},
@@ -146,7 +144,7 @@ var (
 		// 15
 		{1: 37, 9, 36},
 		{13},
-		{17: 38},
+		{18: 38},
 		{2: 39},
 		{10, 37, 3: 40, 10: 41},
 		// 20
@@ -397,6 +395,7 @@ yynewstate:
 	case 9:
 		{
 			println("Taking the M")
+			println("SUP DUDE: ", yyS[yypt-1].s)
 		}
 	case 17:
 		{
@@ -405,6 +404,10 @@ yynewstate:
 	case 18:
 		{
 			os.Exit(0)
+		}
+	case 19:
+		{
+			cmd.Help()
 		}
 
 	}

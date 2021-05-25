@@ -3,17 +3,17 @@
 {/*println("Heres what wegot: ",yylex.Text());*/
 println("We got TOKEN_CRUDOP"); return TOKEN_CRUDOP}
 
-/tenant|site|bldg|building|room|rack|device/ {println("We got TOKEN_ENTITY");return TOKEN_ENTITY}
+/tenant|site|bldg|building|room|rack|device/ {println("We got TOKEN_ENTITY");lval.s = yylex.Text();return TOKEN_ENTITY}
 /address|category|city|color|country|description|domain|gps|height|heightUnit|id|mainContact|mainEmail|mainPhone|model|name|nbFloors|orientation|parentId|posU|posXY|posXYUnit|posZ|posZUnit|reserved|reservedColor|serial|size|sizeU|sizeUnit|slot|technical|technicalColor|template|token|type|usableColor|vendor|zipcode/ 
 {println("We got TOKEN_ATTR");return TOKEN_ATTR}
 
-/cd|pwd|clear|man|grep|ls/ {println("We got TOKEN_BASHTYPE");return TOKEN_BASHTYPE}
+/cd|pwd|clear|grep|ls/ {println("We got TOKEN_BASHTYPE");return TOKEN_BASHTYPE}
 /exit/ {println("We got TOKEN_EXIT"); return TOKEN_EXIT}
 /-l/ {println("We got TOKEN_CMDFLAG");return TOKEN_CMDFLAG}
 /[=]/ {println("We got TOKEN_EQUAL");return TOKEN_EQUAL}
 /\// {println("We got TOKEN_SLASH"); return TOKEN_SLASH}
-/\/r/ {println("Enter Key Pressed");return TOKEN_ENTER}
-/[A-Za-z0-9_]+/ {println("We got TOKEN_WORD");return TOKEN_WORD}
+/man/ {println("We got TOKEN_DOC"); return TOKEN_DOC}
+/[A-Za-z0-9_]+/ {println("We got TOKEN_WORD"); lval.s = yylex.Text(); println("LVAL: ", lval.s); return TOKEN_WORD}
 //
 package main
 import ("os")
