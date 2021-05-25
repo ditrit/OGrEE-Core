@@ -2,10 +2,9 @@
 
 package main
 
-import __yyfmt__ "fmt"
-
 import (
 	"cli/cmd"
+	__yyfmt__ "fmt"
 	"os"
 )
 
@@ -315,6 +314,8 @@ yynewstate:
 			if msg == "" {
 				msg = "syntax error"
 			}
+			println("Error! Unidentified Command")
+			return -1
 			yylex.Error(msg)
 			Nerrs++
 			fallthrough
