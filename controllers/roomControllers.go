@@ -224,11 +224,7 @@ var GetAllRooms = func(w http.ResponseWriter, r *http.Request) {
 		resp = u.Message(true, "success")
 	}
 
-	if len(data) > 1 {
-		resp["data"] = map[string]interface{}{"objects": data}
-	} else {
-		resp["data"] = data
-	}
+	resp["data"] = map[string]interface{}{"objects": data}
 
 	u.Respond(w, resp)
 }
@@ -576,11 +572,7 @@ var GetRoomByQuery = func(w http.ResponseWriter, r *http.Request) {
 		resp = u.Message(true, "success")
 	}
 
-	if len(data) == 1 {
-		resp["data"] = data[0]
-	} else {
-		resp["data"] = map[string]interface{}{"objects": data}
-	}
+	resp["data"] = map[string]interface{}{"objects": data}
 	u.Respond(w, resp)
 }
 
@@ -799,11 +791,7 @@ var GetRacksOfParent = func(w http.ResponseWriter, r *http.Request) {
 		resp = u.Message(true, "success")
 	}
 
-	if len(data) > 1 {
-		resp["data"] = map[string]interface{}{"objects": data}
-	} else {
-		resp["data"] = data
-	}
+	resp["data"] = map[string]interface{}{"objects": data}
 
 	u.Respond(w, resp)
 }
@@ -858,11 +846,7 @@ var GetDevicesUsingNamedRackOfRoom = func(w http.ResponseWriter, r *http.Request
 		resp = u.Message(true, "success")
 	}
 
-	if len(data) > 1 {
-		resp["data"] = map[string]interface{}{"objects": data}
-	} else {
-		resp["data"] = data
-	}
+	resp["data"] = map[string]interface{}{"objects": data}
 
 	u.Respond(w, resp)
 }

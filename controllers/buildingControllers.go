@@ -217,11 +217,7 @@ var GetAllBuildings = func(w http.ResponseWriter, r *http.Request) {
 		resp = u.Message(true, "success")
 	}
 
-	if len(data) > 1 {
-		resp["data"] = map[string]interface{}{"objects": data}
-	} else {
-		resp["data"] = data
-	}
+	resp["data"] = map[string]interface{}{"objects": data}
 
 	u.Respond(w, resp)
 }
@@ -538,7 +534,7 @@ var GetBuildingByQuery = func(w http.ResponseWriter, r *http.Request) {
 
 	} else if len(data) == 1 {
 		resp = u.Message(true, "success")
-		resp["data"] = data[0]
+		resp["data"] = map[string]interface{}{"objects": data[0]}
 
 	} else {
 		resp = u.Message(true, "success")
@@ -711,11 +707,7 @@ var GetRoomsOfBuilding = func(w http.ResponseWriter, r *http.Request) {
 		resp = u.Message(true, "success")
 	}
 
-	if len(data) > 1 {
-		resp["data"] = map[string]interface{}{"objects": data}
-	} else {
-		resp["data"] = data
-	}
+	resp["data"] = map[string]interface{}{"objects": data}
 
 	u.Respond(w, resp)
 }
@@ -827,11 +819,7 @@ var GetRacksUsingNamedRoomOfBuilding = func(w http.ResponseWriter, r *http.Reque
 		resp = u.Message(true, "success")
 	}
 
-	if len(data) > 1 {
-		resp["data"] = map[string]interface{}{"objects": data}
-	} else {
-		resp["data"] = data
-	}
+	resp["data"] = map[string]interface{}{"objects": data}
 
 	u.Respond(w, resp)
 }
@@ -955,11 +943,7 @@ var GetDevicesUsingNamedRackOfBuilding = func(w http.ResponseWriter, r *http.Req
 		resp = u.Message(true, "success")
 	}
 
-	if len(data) > 1 {
-		resp["data"] = map[string]interface{}{"objects": data}
-	} else {
-		resp["data"] = data
-	}
+	resp["data"] = map[string]interface{}{"objects": data}
 
 	u.Respond(w, resp)
 }

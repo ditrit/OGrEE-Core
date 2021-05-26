@@ -192,11 +192,7 @@ var GetAllTenants = func(w http.ResponseWriter, r *http.Request) {
 		resp = u.Message(true, "success")
 	}
 
-	if len(data) > 1 {
-		resp["data"] = map[string]interface{}{"objects": data}
-	} else {
-		resp["data"] = data
-	}
+	resp["data"] = map[string]interface{}{"objects": data}
 	u.Respond(w, resp)
 }
 
@@ -444,11 +440,7 @@ var GetTenantByQuery = func(w http.ResponseWriter, r *http.Request) {
 		resp = u.Message(true, "success")
 	}
 
-	if len(data) > 1 {
-		resp["data"] = map[string]interface{}{"objects": data}
-	} else {
-		resp["data"] = data
-	}
+	resp["data"] = map[string]interface{}{"objects": data}
 
 	u.Respond(w, resp)
 
@@ -588,11 +580,7 @@ var GetSitesOfTenant = func(w http.ResponseWriter, r *http.Request) {
 		resp = u.Message(true, "success")
 	}
 
-	if len(data) > 1 {
-		resp["data"] = map[string]interface{}{"objects": data}
-	} else {
-		resp["data"] = data
-	}
+	resp["data"] = map[string]interface{}{"objects": data}
 	u.Respond(w, resp)
 }
 
@@ -703,11 +691,7 @@ var GetBuildingsUsingNamedSiteOfTenant = func(w http.ResponseWriter, r *http.Req
 		resp = u.Message(true, "success")
 	}
 
-	if len(data) > 1 {
-		resp["data"] = map[string]interface{}{"objects": data}
-	} else {
-		resp["data"] = data
-	}
+	resp["data"] = map[string]interface{}{"objects": data}
 	u.Respond(w, resp)
 }
 
@@ -830,11 +814,7 @@ var GetRoomsUsingNamedBuildingOfTenant = func(w http.ResponseWriter, r *http.Req
 		resp = u.Message(true, "success")
 	}
 
-	if len(data) > 1 {
-		resp["data"] = map[string]interface{}{"objects": data}
-	} else {
-		resp["data"] = data
-	}
+	resp["data"] = map[string]interface{}{"objects": data}
 	u.Respond(w, resp)
 }
 
@@ -973,11 +953,7 @@ var GetRacksUsingNamedRoomOfTenant = func(w http.ResponseWriter, r *http.Request
 		resp = u.Message(true, "success")
 	}
 
-	if len(data) > 1 {
-		resp["data"] = map[string]interface{}{"objects": data}
-	} else {
-		resp["data"] = data
-	}
+	resp["data"] = map[string]interface{}{"objects": data}
 	u.Respond(w, resp)
 }
 
@@ -1130,11 +1106,7 @@ var GetDevicesUsingNamedRackOfTenant = func(w http.ResponseWriter, r *http.Reque
 		resp = u.Message(true, "success")
 	}
 
-	if len(data) > 1 {
-		resp["data"] = map[string]interface{}{"objects": data}
-	} else {
-		resp["data"] = data
-	}
+	resp["data"] = map[string]interface{}{"objects": data}
 	u.Respond(w, resp)
 }
 
