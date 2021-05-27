@@ -9,27 +9,27 @@ func TestLoginToReturnFalse(t *testing.T) {
 	//fmt.Println(reflect.TypeOf(res["status"]))
 
 	//Test Case 1
-	if res := Login("throwaway", "password"); res["status"] != false {
+	if res, _ := Login("throwaway", "password"); res["status"] != false {
 		t.Error("Gave a false login request and did not receive error!")
 	}
 
 	//Test Case 2
-	if res := Login("", "password"); res["status"] != false {
+	if res, _ := Login("", "password"); res["status"] != false {
 		t.Error("Gave an empty email and did not receive error!")
 	}
 
 	//Test Case 3
-	if res := Login("", ""); res["status"] != false {
+	if res, _ := Login("", ""); res["status"] != false {
 		t.Error("Gave an empty email and did not receive error!")
 	}
 
 	//Test Case 4
-	if res := Login("realcheat@gmail.com", ""); res["status"] != false {
+	if res, _ := Login("realcheat@gmail.com", ""); res["status"] != false {
 		t.Error("Gave an empty email and did not receive error!")
 	}
 
 	//Test Case 5
-	if res := Login("realcheat@gmail.com", "password123"); res["status"] != false {
+	if res, _ := Login("realcheat@gmail.com", "password123"); res["status"] != false {
 		t.Error("Test Case 5 failed")
 	}
 }

@@ -45,6 +45,7 @@ var CreateAccount = func(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	resp := account.Create()
+	w.WriteHeader(http.StatusCreated)
 	u.Respond(w, resp)
 }
 
@@ -56,7 +57,14 @@ var Authenticate = func(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	resp := models.Login(account.Email, account.Password)
+	resp, e := models.Login(account.Email, account.Password)
+	if resp["status"] == false {
+		if e == "invalid" {
+			w.WriteHeader(http.StatusUnauthorized)
+		} else if e == "internal" {
+			w.WriteHeader(http.StatusInternalServerError)
+		}
+	}
 	u.Respond(w, resp)
 }
 

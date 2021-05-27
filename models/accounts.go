@@ -76,15 +76,16 @@ func (account *Account) Create() map[string]interface{} {
 	return response
 }
 
-func Login(email, password string) map[string]interface{} {
+func Login(email, password string) (map[string]interface{}, string) {
 	account := &Account{}
 
 	err := GetDB().Table("account").Where("email = ?", email).First(account).Error
 	if err != nil {
 		if err == gorm.ErrRecordNotFound {
-			return u.Message(false, "Error, email not found")
+			return u.Message(false, "Error, email not found"), "internal"
 		}
-		return u.Message(false, "Connection error. Please try again later")
+		return u.Message(false, "Connection error. Please try again later"),
+			"internal"
 	}
 
 	//Should investigate if the password is sent in
@@ -93,7 +94,7 @@ func Login(email, password string) map[string]interface{} {
 
 	if err != nil && err == bcrypt.ErrMismatchedHashAndPassword {
 		return u.Message(false,
-			"Invalid login credentials. Please try again")
+			"Invalid login credentials. Please try again"), "invalid"
 	}
 
 	//Success
@@ -107,7 +108,7 @@ func Login(email, password string) map[string]interface{} {
 
 	resp := u.Message(true, "Logged In")
 	resp["account"] = account
-	return resp
+	return resp, ""
 }
 
 func GetUser(u int) *Account {
