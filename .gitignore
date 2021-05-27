@@ -4,4 +4,5 @@ interpreter/y.output
 interpreter/main
 interpreter/lexer.nn
 interpreter/y
+.resources/
 main
