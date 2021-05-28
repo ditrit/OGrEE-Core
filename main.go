@@ -10,6 +10,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"os"
+	"strconv"
 	"strings"
 
 	"github.com/chzyer/readline"
@@ -25,7 +26,7 @@ var State ShellState
 func BeginInterpreter(str *string) {
 	lex := NewLexer(strings.NewReader(*str))
 	e := yyParse(lex)
-	println("Return Code: ", e)
+	println("\nReturn Code: ", e)
 	return
 }
 
@@ -60,23 +61,45 @@ func createCredentials() (string, string) {
 	key = (tp["account"].(map[string]interface{}))["token"].(string)
 
 	os.WriteFile("./.resources/.env",
-		[]byte("user="+user+"\n"+"apikey="+key+"\\0"),
+		[]byte("user="+user+"\n"+"apikey="+key),
 		0666)
 
 	return user, key
 }
 
+func checkKeyIsValid(key string) bool {
+	client := &http.Client{}
+
+	req, _ := http.NewRequest("GET",
+		"https://ogree.chibois.net/api/token/valid", nil)
+
+	req.Header.Set("Authorization", "Bearer "+key)
+
+	resp, e := client.Do(req)
+	if e != nil || resp.StatusCode != 200 {
+		readline.Line(e.Error())
+		readline.Line("Status code" + strconv.Itoa(resp.StatusCode))
+		return false
+	}
+	return true
+}
+
 func main() {
-	var user /*, pass */ string
+	var user, key string
 
 	e := godotenv.Load(".resources/.env")
 	if e != nil {
-		user, _ = createCredentials()
+		user, key = createCredentials()
 	} else {
 		user = os.Getenv("user")
-		//pass = os.Getenv("apikey")
+		key = os.Getenv("apikey")
+		if !checkKeyIsValid(key) {
+			readline.Line("Error while checking key. Now exiting")
+			os.Exit(-1)
+		}
 	}
 
+	user = (strings.Split(user, "@"))[0]
 	rl, err := readline.New(user + "@" + "OGRE3D:$> ")
 	if err != nil {
 		panic(err)
