@@ -4,12 +4,33 @@ package utils
 //returns json response
 
 import (
+	"container/list"
 	"encoding/json"
 	"log"
 	"net/http"
 	"net/url"
 	"os"
 )
+
+type ShellState struct {
+	currPath      string
+	sessionBuffer list.List
+}
+
+var State ShellState
+
+func writeHistoryOnExit(ss *list.List) {
+	f, err := os.OpenFile(".resources/.history",
+		os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	for i := ss.Back(); i != nil; i = ss.Back() {
+		f.Write([]byte(string(ss.Remove(i).(string) + "\n")))
+	}
+	return
+}
 
 func Message(status bool, message string) map[string]interface{} {
 	return map[string]interface{}{"status": status, "message": message}
@@ -66,4 +87,18 @@ func ParamsParse(link *url.URL) []byte {
 func JoinQueryGen(entity string) string {
 	return "JOIN " + entity +
 		"_attributes ON " + entity + "_attributes.id = " + entity + ".id"
+}
+
+func InitState() {
+	State.sessionBuffer = *State.sessionBuffer.Init()
+}
+
+func UpdateSessionState(ln *string) {
+	State.sessionBuffer.PushBack(*ln)
+}
+
+//Function is an abstraction of a normal exit
+func Exit() {
+	writeHistoryOnExit(&State.sessionBuffer)
+	os.Exit(0)
 }

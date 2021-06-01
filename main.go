@@ -5,9 +5,12 @@ package main
 //https://stackoverflow.com/
 // questions/33025599/move-the-cursor-in-a-c-program
 import (
+	"bufio"
 	"bytes"
+	u "cli/utils"
 	"encoding/json"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"os"
 	"strconv"
@@ -16,12 +19,6 @@ import (
 	"github.com/chzyer/readline"
 	"github.com/joho/godotenv"
 )
-
-type ShellState struct {
-	currPath string
-}
-
-var State ShellState
 
 func BeginInterpreter(str *string) {
 	lex := NewLexer(strings.NewReader(*str))
@@ -84,6 +81,30 @@ func checkKeyIsValid(key string) bool {
 	return true
 }
 
+func addHistory(rl *readline.Instance) {
+	readFile, err := os.Open(".resources/.history")
+
+	if err != nil {
+		log.Fatalf("failed to open file: %s", err)
+	}
+
+	fileScanner := bufio.NewScanner(readFile)
+	fileScanner.Split(bufio.ScanLines)
+	var fileTextLines []string
+
+	for fileScanner.Scan() {
+		fileTextLines = append(fileTextLines, fileScanner.Text())
+	}
+
+	readFile.Close()
+
+	for _, eachline := range fileTextLines {
+		rl.SaveHistory(strings.TrimSuffix(eachline, "\n"))
+	}
+
+	return
+}
+
 func main() {
 	var user, key string
 
@@ -104,14 +125,17 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	defer rl.Close()
 
+	defer rl.Close()
+	u.InitState()
+	addHistory(rl)
 	for {
 		line, err := rl.Readline()
 		if err != nil { // io.EOF
 			break
 		}
 		BeginInterpreter(&line)
+		u.UpdateSessionState(&line)
 	}
 
 }

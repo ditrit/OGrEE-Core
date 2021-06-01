@@ -1,7 +1,8 @@
 %{
 package main
-import ("os"
+import (
 "cli/cmd"
+"cli/utils"
 )
 %}
 
@@ -58,7 +59,7 @@ B:     TOKEN_BASHTYPE TOKEN_WORD TOKEN_CMDFLAG
        | TOKEN_BASHTYPE     {cmd.Execute()}
 ;
 
-D:    TOKEN_EXIT     {os.Exit(0)}
+D:    TOKEN_EXIT     {utils.Exit()}
 ;
 
 L:     TOKEN_DOC {cmd.Help()}

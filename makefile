@@ -3,16 +3,16 @@ GOPATH=$$(go env | grep "GOPATH=" | grep -oE '\/[^"]*')
 GOYACC=$(GOPATH)/bin/goyacc
 NEX=$(GOPATH)/bin/nex
 
-main: interpreter
+main: interpreter main.go lexer.nn.go y.go
 	go build main.go lexer.nn.go y.go 
 
 interpreter: parser lexer
 
-parser: 
+parser: interpreter/parser.y cmd/rootCmd.go cmd/man.go
 	$(GOYACC) "interpreter/parser.y" 
 
-lexer:
-	$(NEX) "interpreter/lexer.nex"; cp interpreter/lexer.nn.go .
+lexer: interpreter/lexer.nex
+	$(NEX) "interpreter/lexer.nex"; mv interpreter/lexer.nn.go .
 
 
 clean:
