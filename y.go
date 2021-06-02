@@ -9,6 +9,10 @@ import (
 	"cli/utils"
 )
 
+/*func initMap() {
+
+}*/
+
 type yySymType struct {
 	yys int
 	//n int
@@ -22,10 +26,10 @@ type yyXError struct {
 const (
 	yyDefault      = 57356
 	yyEofCode      = 57344
-	TOKEN_ATTR     = 57349
+	TOKEN_ATTR     = 57348
 	TOKEN_BASHTYPE = 57350
 	TOKEN_CMDFLAG  = 57352
-	TOKEN_CRUDOP   = 57348
+	TOKEN_CRUDOP   = 57349
 	TOKEN_DOC      = 57355
 	TOKEN_ENTITY   = 57347
 	TOKEN_EQUAL    = 57351
@@ -43,7 +47,7 @@ var (
 
 	yyXLAT = map[int]int{
 		57344: 0,  // $end (17x)
-		57349: 1,  // TOKEN_ATTR (5x)
+		57348: 1,  // TOKEN_ATTR (5x)
 		57346: 2,  // TOKEN_WORD (5x)
 		57360: 3,  // F (3x)
 		57364: 4,  // P (2x)
@@ -57,7 +61,7 @@ var (
 		57367: 12, // start (1x)
 		57350: 13, // TOKEN_BASHTYPE (1x)
 		57352: 14, // TOKEN_CMDFLAG (1x)
-		57348: 15, // TOKEN_CRUDOP (1x)
+		57349: 15, // TOKEN_CRUDOP (1x)
 		57355: 16, // TOKEN_DOC (1x)
 		57347: 17, // TOKEN_ENTITY (1x)
 		57351: 18, // TOKEN_EQUAL (1x)
@@ -392,8 +396,19 @@ yynewstate:
 		{
 			println("@State K")
 		}
+	case 6:
+		{
+			yyVAL.s = yyS[yypt-0].s
+			println("Finally: " + yyVAL.s)
+		}
+	case 8:
+		{
+			yyVAL.s = string(yyS[yypt-3].s + "#" + yyS[yypt-1].s + "," + yyS[yypt-0].s)
+			println("So we got: ", yyVAL.s)
+		}
 	case 9:
 		{
+			yyVAL.s = yyS[yypt-3].s + "#" + yyS[yypt-1].s
 			println("Taking the M")
 			println("SUP DUDE: ", yyS[yypt-1].s)
 		}

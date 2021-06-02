@@ -16355,6 +16355,7 @@ OUTER0:
 		case 3:
 			{
 				println("We got TOKEN_ATTR")
+				lval.s = yylex.Text()
 				return TOKEN_ATTR
 			}
 		case 4:
