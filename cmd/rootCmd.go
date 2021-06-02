@@ -10,3 +10,9 @@ func Execute() {
 func Exit() {
 	runtime.Goexit()
 }
+
+func Disp(x map[string]string) {
+	for i, k := range x {
+		println("We got: ", i, " and ", k)
+	}
+}

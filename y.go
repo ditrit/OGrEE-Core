@@ -7,11 +7,21 @@ import __yyfmt__ "fmt"
 import (
 	"cli/cmd"
 	"cli/utils"
+	"strings"
 )
 
-/*func initMap() {
+func resMap(x *string) map[string]string {
+	resarr := strings.Split(*x, "=")
+	res := make(map[string]string)
 
-}*/
+	for i := 0; i+1 < len(resarr); {
+		if i+1 < len(resarr) {
+			res[resarr[i]] = resarr[i+1]
+			i += 2
+		}
+	}
+	return res
+}
 
 type yySymType struct {
 	yys int
@@ -400,15 +410,16 @@ yynewstate:
 		{
 			yyVAL.s = yyS[yypt-0].s
 			println("Finally: " + yyVAL.s)
+			cmd.Disp(resMap(&yyS[yypt-0].s))
 		}
 	case 8:
 		{
-			yyVAL.s = string(yyS[yypt-3].s + "#" + yyS[yypt-1].s + "," + yyS[yypt-0].s)
+			yyVAL.s = string(yyS[yypt-3].s + "=" + yyS[yypt-1].s + "=" + yyS[yypt-0].s)
 			println("So we got: ", yyVAL.s)
 		}
 	case 9:
 		{
-			yyVAL.s = yyS[yypt-3].s + "#" + yyS[yypt-1].s
+			yyVAL.s = yyS[yypt-3].s + "=" + yyS[yypt-1].s
 			println("Taking the M")
 			println("SUP DUDE: ", yyS[yypt-1].s)
 		}

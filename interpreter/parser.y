@@ -3,11 +3,21 @@ package main
 import (
 "cli/cmd"
 "cli/utils"
+"strings"
 )
 
-/*func resMap(x *string) map[string]string {
-       
-}*/
+func resMap(x *string) map[string]string {
+       resarr := strings.Split(*x, "=")
+       res := make(map[string]string)
+
+	for i := 0; i+1 < len(resarr); {
+		if i+1 < len(resarr) {
+			res[resarr[i]] = resarr[i+1]
+			i += 2
+		}
+	}
+       return res
+}
 %}
 
 %union {
@@ -25,11 +35,6 @@ import (
        TOKEN_EXIT TOKEN_DOC
 %type <s> F 
 %type <s> K 
-/*func clrRes(x map[string]string) {
-	for k := range x {
-		delete(x,k)
-	}
-}*/
 
 
 %%
@@ -40,15 +45,15 @@ start: K      {println("@State start");}
 ;
 
 K:      TOKEN_CRUDOP E    {println("@State K");}
-       | TOKEN_CRUDOP Z P F {$$=$4; println("Finally: "+$$)}
+       | TOKEN_CRUDOP Z P F {$$=$4; println("Finally: "+$$); cmd.Disp(resMap(&$4))}
 ;
 
 
 E:     TOKEN_ENTITY F
 ;
 
-F:     TOKEN_ATTR TOKEN_EQUAL TOKEN_WORD F {$$=string($1+"#"+$3+","+$4); println("So we got: ", $$)}
-       | TOKEN_ATTR TOKEN_EQUAL TOKEN_WORD M {$$=$1+"#"+$3; println("Taking the M"); 
+F:     TOKEN_ATTR TOKEN_EQUAL TOKEN_WORD F {$$=string($1+"="+$3+"="+$4); println("So we got: ", $$)}
+       | TOKEN_ATTR TOKEN_EQUAL TOKEN_WORD M {$$=$1+"="+$3; println("Taking the M"); 
        println("SUP DUDE: ", $3);}
 ;
 
