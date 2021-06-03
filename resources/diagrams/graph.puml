@@ -12,6 +12,19 @@ class Account {
 +*Validate(): map[string]interface, bool
 +*Create(): map[string]interface
 }
+class Building_Attributes {
++ID: int
++PosXY: string
++PosXYU: string
++PosZ: string
++PosZU: string
++Size: string
++SizeU: string
++Height: string
++HeightU: string
++Floors: string
+
+}
 class Building {
 +ID: int
 +IDJSON: string
@@ -26,19 +39,6 @@ class Building {
 +*Validate(): map[string]interface, bool
 +*Create(): map[string]interface, string
 +*FormQuery(): string
-}
-class Building_Attributes {
-+ID: int
-+PosXY: string
-+PosXYU: string
-+PosZ: string
-+PosZU: string
-+Size: string
-+SizeU: string
-+Height: string
-+HeightU: string
-+Floors: string
-
 }
 class Device_Attributes {
 +ID: int
@@ -75,21 +75,6 @@ class Device {
 +*Create(): map[string]interface, string
 +*FormQuery(): string
 }
-class Rack {
-+ID: int
-+IDJSON: string
-+Name: string
-+ParentID: string
-+Category: string
-+Domain: string
-+DescriptionJSON: []string
-+DescriptionDB: string
-+Attributes: Rack_Attributes
-+Devices: []*Device
-+*Validate(): map[string]interface, bool
-+*Create(): map[string]interface, string
-+*FormQuery(): string
-}
 class Rack_Attributes {
 +ID: int
 +PosXY: string
@@ -107,6 +92,21 @@ class Rack_Attributes {
 +Model: string
 +Serial: string
 
+}
+class Rack {
++ID: int
++IDJSON: string
++Name: string
++ParentID: string
++Category: string
++Domain: string
++DescriptionJSON: []string
++DescriptionDB: string
++Attributes: Rack_Attributes
++Devices: []*Device
++*Validate(): map[string]interface, bool
++*Create(): map[string]interface, string
++*FormQuery(): string
 }
 class Room_Attributes {
 +ID: int
@@ -167,13 +167,40 @@ class Site {
 +*Create(): map[string]interface, string
 +*FormQuery(): string
 }
-class Tenant_Attributes {
+class Subdevice_Attributes {
 +ID: int
-+Color: string
-+MainContact: string
-+MainPhone: string
-+MainEmail: string
++PosXY: string
++PosXYU: string
++PosZ: string
++PosZU: string
++Template: string
++Orientation: string
++Size: string
++SizeUnit: string
++SizeU: string
++Slot: string
++PosU: string
++Height: string
++HeightU: string
++Vendor: string
++Type: string
++Model: string
++Serial: string
 
+}
+class Subdevice {
++ID: int
++IDJSON: string
++Name: string
++ParentID: string
++Category: string
++Domain: string
++DescriptionJSON: []string
++DescriptionDB: string
++Attributes: Subdevice_Attributes
++*Validate(): map[string]interface, bool
++*Create(): map[string]interface, string
++*FormQuery(): string
 }
 class Tenant {
 +ID: int
@@ -190,10 +217,19 @@ class Tenant {
 +*Create(): map[string]interface, string
 +*FormQuery(): string
 }
+class Tenant_Attributes {
++ID: int
++Color: string
++MainContact: string
++MainPhone: string
++MainEmail: string
+
+}
 Building --> Building_Attributes
 Device --> Device_Attributes
 Rack --> Rack_Attributes
 Room --> Room_Attributes
 Site --> Site_Attributes
+Subdevice --> Subdevice_Attributes
 Tenant --> Tenant_Attributes
 @enduml

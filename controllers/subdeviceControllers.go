@@ -12,7 +12,7 @@ import (
 	"github.com/gorilla/mux"
 )
 
-// swagger:operation POST /api/user/devices devices CreateSubdevice
+// swagger:operation POST /api/user/subdevices subdevices CreateSubdevice
 // Creates a Subdevice in the system.
 // ---
 // produces:
@@ -29,7 +29,7 @@ import (
 //   description: Category of Subdevice (ex. Consumer Electronics, Medical)
 //   required: true
 //   type: string
-//   default: "Research"
+//   default: "internal"
 // - name: Description
 //   in: query
 //   description: Description of Subdevice
@@ -183,7 +183,7 @@ var CreateSubdevice = func(w http.ResponseWriter, r *http.Request) {
 	u.Respond(w, resp)
 }
 
-// swagger:operation GET /api/user/devices/{id} devices GetSubdevice
+// swagger:operation GET /api/user/subdevices/{id} subdevices GetSubdevice
 // Gets Subdevice using Subdevice ID.
 // ---
 // produces:
@@ -228,7 +228,7 @@ var GetSubdevice = func(w http.ResponseWriter, r *http.Request) {
 	u.Respond(w, resp)
 }
 
-// swagger:operation GET /api/user/devices devices GetAllSubdevices
+// swagger:operation GET /api/user/subdevices devices GetAllSubdevices
 // Gets all Subdevices from the system.
 // ---
 // produces:
@@ -269,7 +269,7 @@ var GetAllSubdevices = func(w http.ResponseWriter, r *http.Request) {
 	u.Respond(w, resp)
 }
 
-// swagger:operation DELETE /api/user/devices/{id} devices DeleteSubdevice
+// swagger:operation DELETE /api/user/subdevices/{id} subdevices DeleteSubdevice
 // Deletes a Subdevice in the system.
 // ---
 // produces:
@@ -307,7 +307,7 @@ var DeleteSubdevice = func(w http.ResponseWriter, r *http.Request) {
 	u.Respond(w, v)
 }
 
-// swagger:operation PUT /api/user/devices/{id} devices UpdateSubdevice
+// swagger:operation PUT /api/user/subdevices/{id} subdevices UpdateSubdevice
 // Changes Subdevice data in the system.
 // If no new or any information is provided
 // an OK will still be returned
@@ -490,7 +490,7 @@ var UpdateSubdevice = func(w http.ResponseWriter, r *http.Request) {
 	u.Respond(w, v)
 }
 
-// swagger:operation GET /api/user/devices? devices GetSubdeviceByQuery
+// swagger:operation GET /api/user/subdevices? subdevices GetSubdeviceByQuery
 // Gets Subdevice By Query.
 // Gets a Subdevice using any attribute (with the exception of description) via query
 // The attributes are in the form {attr}=xyz&{attr1}=abc
@@ -516,7 +516,7 @@ var UpdateSubdevice = func(w http.ResponseWriter, r *http.Request) {
 //   description: Category of Subdevice (ex. Consumer Electronics, Medical)
 //   required: false
 //   type: string
-//   default: "Research"
+//   default: "internal"
 // - name: Description
 //   in: path
 //   description: Description of Subdevice
