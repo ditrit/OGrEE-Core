@@ -49,7 +49,7 @@ var ramatch mux.MatcherFunc = func(request *http.Request, match *mux.RouteMatch)
 
 var dmatch mux.MatcherFunc = func(request *http.Request, match *mux.RouteMatch) bool {
 
-	return regexp.MustCompile(`^(\/api\/user\/devices\?.*)$`).
+	return regexp.MustCompile(`^(\/api\/user\/(devices|subdevices)\?.*)$`).
 		MatchString(request.URL.String())
 }
 
@@ -317,6 +317,25 @@ func main() {
 
 	router.HandleFunc("/api/user/devices",
 		controllers.GetAllDevices).Methods("GET")
+
+	// ------ DEVICE CRUD ------ //
+	router.HandleFunc("/api/user/subdevices",
+		controllers.GetSubdeviceByQuery).Methods("GET").MatcherFunc(dmatch)
+
+	router.HandleFunc("/api/user/subdevices",
+		controllers.CreateSubdevice).Methods("POST")
+
+	router.HandleFunc("/api/user/subdevices/{id}",
+		controllers.UpdateSubdevice).Methods("PUT")
+
+	router.HandleFunc("/api/user/subdevices/{id}",
+		controllers.DeleteSubdevice).Methods("DELETE")
+
+	router.HandleFunc("/api/user/subdevices/{id}",
+		controllers.GetSubdevice).Methods("GET")
+
+	router.HandleFunc("/api/user/subdevices",
+		controllers.GetAllSubdevices).Methods("GET")
 
 	//Attach JWT auth middleware
 	router.Use(app.JwtAuthentication)

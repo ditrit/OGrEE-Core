@@ -53,7 +53,7 @@ func (subdevice *Subdevice) Validate() (map[string]interface{}, bool) {
 		return u.Message(false, "Domain should be on the payload"), false
 	}
 
-	if GetDB().Table("rack").
+	if GetDB().Table("device").
 		Where("id = ?", subdevice.ParentID).First(&Device{}).Error != nil {
 
 		return u.Message(false, "Domain should be correspond to Device ID"), false

@@ -21,6 +21,7 @@ CREATE TABLE public.subdevice_attributes (
     subdevice_height text,
     subdevice_height_unit text,
     subdevice_type text, 
+    subdevice_vendor text,
     subdevice_model text,
     subdevice_serial text,
     subdevice_sizeu text,
