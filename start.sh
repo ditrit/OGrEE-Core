@@ -23,4 +23,5 @@ GRANT ALL ON DATABASE ogreedb TO maxroach;
 $(<resources/database_table_create.sql)
 $(<resources/patch1.sql)
 $(<resources/add_constraints.sql)
+$(<resources/patch2.sql)
 EOF
