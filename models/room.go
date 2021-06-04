@@ -263,7 +263,7 @@ func GetRoomHierarchy(id uint) (*Room, string) {
 	}
 
 	for i, _ := range room.Racks {
-		room.Racks[i].Devices, e = GetDevicesOfParent(uint(room.Racks[i].ID))
+		room.Racks[i], e = GetRackHierarchy(uint(room.Racks[i].ID))
 		if e != "" {
 			return nil, e
 		}

@@ -312,6 +312,9 @@ func main() {
 	router.HandleFunc("/api/user/devices/{id}",
 		controllers.DeleteDevice).Methods("DELETE")
 
+	router.HandleFunc("/api/user/devices/{id:[0-9]+}/all",
+		controllers.GetDeviceHierarchy).Methods("GET")
+
 	router.HandleFunc("/api/user/devices/{id}",
 		controllers.GetDevice).Methods("GET")
 

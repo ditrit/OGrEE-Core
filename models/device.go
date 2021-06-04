@@ -38,6 +38,7 @@ type Device struct {
 	DescriptionJSON []string          `json:"description" gorm:"-"`
 	DescriptionDB   string            `json:"-" gorm:"column:device_description"`
 	Attributes      Device_Attributes `json:"attributes"`
+	Subdevices      []*Subdevice      `json:"subdevices,omitempty" gorm:"-"`
 }
 
 func (device *Device) Validate() (map[string]interface{}, bool) {
@@ -458,4 +459,19 @@ func GetDeviceByNameAndParentID(id uint, name string) (*Device, string) {
 	device.Category = "device"
 	device.IDJSON = strconv.Itoa(device.ID)
 	return device, ""
+}
+
+//Obtain device and all subdevices
+func GetDeviceHierarchy(id int) (*Device, string) {
+	dev, e := GetDevice(uint(id))
+	if e != "" {
+		return nil, e
+	}
+
+	dev.Subdevices, e = GetSubdevicesOfParent(uint(id))
+	if e != "" {
+		return nil, e
+	}
+
+	return dev, ""
 }

@@ -430,6 +430,10 @@ func GetRackHierarchy(id uint) (*Rack, string) {
 		return nil, e
 	}
 
+	for i, _ := range rack.Devices {
+		rack.Devices[i], e = GetDeviceHierarchy(rack.Devices[i].ID)
+	}
+
 	return rack, ""
 
 }
