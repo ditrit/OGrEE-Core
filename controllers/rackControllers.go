@@ -791,7 +791,7 @@ var GetRackByQuery = func(w http.ResponseWriter, r *http.Request) {
 	u.Respond(w, resp)
 }
 
-// swagger:operation GET /api/user/racks/{id}/devices/{device_name}/subdevices/{subdevice_name} subdevices GetRack
+// swagger:operation GET /api/user/racks/{id}/devices/{device_name}/subdevices/{subdevice_name} racks GetRack
 // Gets a Subdevice of Rack.
 // ---
 // produces:
@@ -848,5 +848,62 @@ var GetNamedSubdeviceOfRack = func(w http.ResponseWriter, r *http.Request) {
 	}
 
 	resp["data"] = data
+	u.Respond(w, resp)
+}
+
+// swagger:operation GET /api/user/racks/{id}/devices/{device_name}/subdevices racks GetRacks
+// Gets Subdevices of named device of Rack.
+// ---
+// produces:
+// - application/json
+// parameters:
+// - name: ID
+//   in: path
+//   description: ID of Rack
+//   required: true
+//   type: int
+//   default: 999
+// - name: device_name
+//   in: path
+//   description: name of device
+//   required: true
+//   type: string
+//   default: "R1"
+// responses:
+//     '200':
+//         description: Found
+//     '404':
+//         description: Not Found
+var GetSubdevicesUsingNamedDeviceOfRack = func(w http.ResponseWriter, r *http.Request) {
+	id, e := strconv.Atoi(mux.Vars(r)["id"])
+	name := mux.Vars(r)["device_name"]
+	resp := u.Message(true, "success")
+	if e != nil {
+		u.Respond(w, u.Message(false, "Error while parsing path parameters"))
+		u.ErrLog("Error while parsing path parameters", "GET SUBDEVOFNAMEDDEVOFRACK", "", r)
+		return
+	}
+
+	data, e1 := models.GetSubdevicesUsingNamedDeviceOfRack(id, name)
+	if data == nil || len(data) == 0 {
+		resp = u.Message(false, "Error while getting Subdevices: "+e1)
+		u.ErrLog("Error while getting Subdevices of Rack",
+			"GET SUBDEVOFNAMEDDEVOFRACK", e1, r)
+
+		switch e1 {
+		case "record not found":
+			w.WriteHeader(http.StatusNotFound)
+		case "":
+			resp["message"] = "Error: No Records Found"
+			w.WriteHeader(http.StatusNotFound)
+		default:
+		}
+
+	} else {
+		resp = u.Message(true, "success")
+	}
+
+	resp["data"] = map[string]interface{}{"objects": data}
+
 	u.Respond(w, resp)
 }
