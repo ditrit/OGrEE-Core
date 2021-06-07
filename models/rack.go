@@ -469,3 +469,21 @@ func GetRackByNameAndParentID(id int, name string) (*Rack, string) {
 	rack.IDJSON = strconv.Itoa(rack.ID)
 	return rack, ""
 }
+
+func GetNamedSubdeviceOfRack(id int, dev, sub string) (*Subdevice, string) {
+	_, e := GetRack(uint(id))
+	if e != "" {
+		return nil, e
+	}
+
+	device, e1 := GetDeviceByNameAndParentID(uint(id), dev)
+	if e1 != "" {
+		return nil, e1
+	}
+
+	sd, e2 := GetSubdeviceByNameAndParentID(device.ID, sub)
+	if e2 != "" {
+		return nil, e2
+	}
+	return sd, ""
+}

@@ -287,6 +287,9 @@ func main() {
 	router.HandleFunc("/api/user/racks/{id}",
 		controllers.DeleteRack).Methods("DELETE")
 
+	router.HandleFunc("/api/user/racks/{id:[0-9]+}/devices/{device_name}/subdevices/{subdevice_name}",
+		controllers.GetNamedSubdeviceOfRack).Methods("GET")
+
 	router.HandleFunc("/api/user/racks/{id:[0-9]+}/devices/{device_name}",
 		controllers.GetRackDeviceByName).Methods("GET")
 
