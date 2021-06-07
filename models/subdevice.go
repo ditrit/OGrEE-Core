@@ -439,15 +439,14 @@ func GetSubdeviceByName(name string) (*Subdevice, string) {
 	return subdevice, ""
 }
 
-func GetSubdeviceByNameAndParentID(id uint, name string) (*Subdevice, string) {
+func GetSubdeviceByNameAndParentID(id int, name string) (*Subdevice, string) {
 	subdevice := &Subdevice{}
 	err := GetDB().Raw(`SELECT * FROM subdevice JOIN 
-	subdevice_attributes ON subdevice.id = subdevice_attributes.id
-	WHERE subdevice_parent_id = ? AND subdevice_name = ?`, id, name).
+		subdevice_attributes ON subdevice.id = subdevice_attributes.id
+		WHERE subdevice_parent_id = ? AND subdevice_name = ?`, id, name).
 		Find(subdevice).Find(&(subdevice.Attributes)).Error
 	if err != nil {
-		fmt.Println(err)
-		return nil, err.Error()
+		return nil, "record not found"
 	}
 
 	subdevice.DescriptionJSON = strings.Split(subdevice.DescriptionDB, "XYZ")
