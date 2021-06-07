@@ -535,3 +535,22 @@ func GetRoomByNameAndParentID(id int, name string) (*Room, string) {
 	room.IDJSON = strconv.Itoa(room.ID)
 	return room, ""
 }
+
+func GetNamedSubdeviceOfRoom(id int, rack_name, device_name, subdev_name string) (*Subdevice, string) {
+	rack, e := GetRackByNameAndParentID(id, rack_name)
+	if e != "" {
+		return nil, e
+	}
+
+	dev, e1 := GetDeviceByNameAndParentID(uint(rack.ID), device_name)
+	if e1 != "" {
+		return nil, e1
+	}
+
+	subdev, e2 := GetSubdeviceByNameAndParentID(dev.ID, subdev_name)
+	if e2 != "" {
+		return nil, e2
+	}
+
+	return subdev, ""
+}
