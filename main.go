@@ -250,6 +250,9 @@ func main() {
 	router.HandleFunc("/api/user/rooms/{id:[0-9]+}/racks/{rack_name}/devices/{device_name}/subdevices/{subdevice_name}",
 		controllers.GetNamedSubdeviceOfRoom).Methods("GET")
 
+	router.HandleFunc("/api/user/rooms/{id:[0-9]+}/racks/{rack_name}/devices/{device_name}/subdevices",
+		controllers.GetSubdevicesUsingNamedDeviceOfRoom).Methods("GET")
+
 	router.HandleFunc("/api/user/rooms/{id:[0-9]+}/racks/{rack_name}/devices/{device_name}",
 		controllers.GetNamedDeviceOfRoom).Methods("GET")
 

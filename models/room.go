@@ -554,3 +554,22 @@ func GetNamedSubdeviceOfRoom(id int, rack_name, device_name, subdev_name string)
 
 	return subdev, ""
 }
+
+func GetSubdevicesUsingNamedDeviceOfRoom(id int, rack_name, device_name string) ([]*Subdevice, string) {
+	rack, e := GetRackByNameAndParentID(id, rack_name)
+	if e != "" {
+		return nil, e
+	}
+
+	dev, e1 := GetDeviceByNameAndParentID(uint(rack.ID), device_name)
+	if e1 != "" {
+		return nil, e1
+	}
+
+	subdevices, e2 := GetSubdevicesOfParent(uint(dev.ID))
+	if e2 != "" {
+		return nil, e2
+	}
+
+	return subdevices, ""
+}
