@@ -1354,6 +1354,52 @@ var GetSiteHierarchyToRack = func(w http.ResponseWriter, r *http.Request) {
 	u.Respond(w, resp)
 }
 
+// swagger:operation GET /api/user/sites/{id}/all/buildings/rooms/racks/devices sites GetSiteHierarchy
+// Gets Hierarchy of a Site until devices.
+// ---
+// produces:
+// - application/json
+// parameters:
+// - name: ID
+//   in: path
+//   description: ID of desired site
+//   required: true
+//   type: int
+//   default: 999
+// responses:
+//     '200':
+//         description: Found
+//     '404':
+//         description: Not Found
+var GetSiteHierarchyToDevice = func(w http.ResponseWriter, r *http.Request) {
+	id, e := strconv.Atoi(mux.Vars(r)["id"])
+	resp := u.Message(true, "success")
+	if e != nil {
+		u.Respond(w, u.Message(false, "Error while parsing path parameters"))
+		u.ErrLog("Error while parsing path parameters", "GET SITEHIERARCHYTODEVICE", "", r)
+		return
+	}
+
+	data, e1 := models.GetSiteHierarchyToDevice(id)
+	if data == nil {
+		resp = u.Message(false, "Error while getting Site Hierarchy: "+e1)
+		u.ErrLog("Error while getting Site Hierarchy",
+			"GET SITEHIERARCHYTODEVICE", e1, r)
+
+		switch e1 {
+		case "record not found":
+			w.WriteHeader(http.StatusNotFound)
+		default:
+		}
+
+	} else {
+		resp = u.Message(true, "success")
+	}
+
+	resp["data"] = data
+	u.Respond(w, resp)
+}
+
 // swagger:operation GET /api/user/sites/{id}/buildings/{building_name}/rooms/{room_name}/racks/{rack_name}/devices/{device_name}/subdevices sites GetDevicesOfSite
 // Gets Subdevices of a Named Device from Site.
 // ---
