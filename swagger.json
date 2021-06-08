@@ -3850,6 +3850,76 @@
         }
       }
     },
+    "/api/user/sites/{id}/buildings/{building_name}/rooms/{room_name}/racks/{rack_name}/devices/{device_name}/subdevices/{subdevice_name}": {
+      "get": {
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "sites"
+        ],
+        "summary": "Gets a Named Subdevice of a Site.",
+        "operationId": "GetDevicesOfSite",
+        "parameters": [
+          {
+            "type": "int",
+            "default": 999,
+            "description": "ID of desired site",
+            "name": "ID",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "default": "BldgA",
+            "description": "name of desired building",
+            "name": "building_name",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "default": "R1",
+            "description": "name of desired room",
+            "name": "room_name",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "default": "Rack01",
+            "description": "name of desired rack",
+            "name": "rack_name",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "default": "Device01",
+            "description": "name of desired device",
+            "name": "device_name",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "default": "SubDeviceA",
+            "description": "name of desired subdevice",
+            "name": "subdevice_name",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Found"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        }
+      }
+    },
     "/api/user/sites?": {
       "get": {
         "description": "Gets a Site using any attribute (with the exception of description) via query in the system\nThe attributes are in the form {attr}=xyz\u0026{attr1}=abc\nAnd any combination can be provided given that at least 1 is provided.",

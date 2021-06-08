@@ -1429,3 +1429,85 @@ var GetSubdevicesUsingNamedDeviceOfSite = func(w http.ResponseWriter, r *http.Re
 	resp["data"] = map[string]interface{}{"objects": data}
 	u.Respond(w, resp)
 }
+
+// swagger:operation GET /api/user/sites/{id}/buildings/{building_name}/rooms/{room_name}/racks/{rack_name}/devices/{device_name}/subdevices/{subdevice_name} sites GetDevicesOfSite
+// Gets a Named Subdevice of a Site.
+// ---
+// produces:
+// - application/json
+// parameters:
+// - name: ID
+//   in: path
+//   description: ID of desired site
+//   required: true
+//   type: int
+//   default: 999
+// - name: building_name
+//   in: path
+//   description: name of desired building
+//   required: true
+//   type: string
+//   default: "BldgA"
+// - name: room_name
+//   in: path
+//   description: name of desired room
+//   required: true
+//   type: string
+//   default: "R1"
+// - name: rack_name
+//   in: path
+//   description: name of desired rack
+//   required: true
+//   type: string
+//   default: "Rack01"
+// - name: device_name
+//   in: path
+//   description: name of desired device
+//   required: true
+//   type: string
+//   default: "Device01"
+// - name: subdevice_name
+//   in: path
+//   description: name of desired subdevice
+//   required: true
+//   type: string
+//   default: "SubDeviceA"
+// responses:
+//     '200':
+//         description: Found
+//     '404':
+//         description: Not Found
+var GetNamedSubdeviceOfSite = func(w http.ResponseWriter, r *http.Request) {
+	id, e := strconv.Atoi(mux.Vars(r)["id"])
+	bldg_name := mux.Vars(r)["building_name"]
+	room_name := mux.Vars(r)["room_name"]
+	rack_name := mux.Vars(r)["rack_name"]
+	device_name := mux.Vars(r)["device_name"]
+	subdevice_name := mux.Vars(r)["subdevice_name"]
+	resp := u.Message(true, "success")
+	if e != nil {
+		u.Respond(w, u.Message(false, "Error while parsing path parameters"))
+		u.ErrLog("Error while parsing path parameters", "GET NAMEDSUBDEVOFSITE", "", r)
+		return
+	}
+
+	data, e1 := models.GetNamedSubdeviceOfSite(id, bldg_name, room_name, rack_name, device_name, subdevice_name)
+	if data == nil {
+		resp = u.Message(false, "Error while getting Subdevice: "+e1)
+		u.ErrLog("Error while getting Named Subdevice Of Site",
+			"GET NAMEDSUBDEVOFSITE", e1, r)
+
+		switch e1 {
+		case "record not found":
+			w.WriteHeader(http.StatusNotFound)
+		default:
+			w.WriteHeader(http.StatusNotFound)
+		}
+
+	} else {
+		resp = u.Message(true, "success")
+	}
+
+	resp["data"] = data
+	u.Respond(w, resp)
+}
