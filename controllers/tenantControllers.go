@@ -1284,6 +1284,52 @@ var GetTenantHierarchyToRoom = func(w http.ResponseWriter, r *http.Request) {
 	u.Respond(w, resp)
 }
 
+// swagger:operation GET /api/user/tenants/{tenant_name}/all/sites/buildings/rooms/devices tenants GetTenantHierarchy
+// Gets hierarchy of Tenant until devices.
+// ---
+// produces:
+// - application/json
+// parameters:
+// - name: tenant_name
+//   in: path
+//   description: Name of desired tenant
+//   required: true
+//   type: string
+//   default: "INFINITI"
+// responses:
+//     '200':
+//         description: Found
+//     '404':
+//         description: Not Found
+var GetTenantHierarchyToDevice = func(w http.ResponseWriter, r *http.Request) {
+	name, e := mux.Vars(r)["tenant_name"]
+	resp := u.Message(true, "success")
+	if e != true {
+		u.Respond(w, u.Message(false, "Error while parsing path parameters"))
+		u.ErrLog("Error while parsing path parameters", "GET TENANTHIERARCHTODEVICE", "", r)
+		return
+	}
+
+	data, e1 := models.GetTenantHierarchyToDevice(name)
+	if data == nil {
+		resp = u.Message(false, "Error while getting Tenant Hierarchy: "+e1)
+		u.ErrLog("Error while getting Tenant Hierarchy",
+			"GET TENANTHIERARCHTODEVICE", e1, r)
+
+		switch e1 {
+		case "record not found":
+			w.WriteHeader(http.StatusNotFound)
+		default:
+		}
+
+	} else {
+		resp = u.Message(true, "success")
+	}
+
+	resp["data"] = data
+	u.Respond(w, resp)
+}
+
 // swagger:operation GET /api/user/tenants/{tenant_name}/all/sites/buildings/rooms/racks tenants GetTenantHierarchy
 // Gets hierarchy of Tenant until racks.
 // ---

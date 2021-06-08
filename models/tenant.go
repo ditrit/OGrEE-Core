@@ -537,6 +537,57 @@ func GetTenantHierarchyToRack(tenant_name string) (*Tenant, string) {
 	return tenant, ""
 }
 
+func GetTenantHierarchyToDevice(tenant_name string) (*Tenant, string) {
+	tenant, e := GetTenantByName(tenant_name)
+	if e != "" {
+		return nil, e
+	}
+
+	tenant.Sites, e = GetSitesOfTenant(tenant_name)
+	if e != "" {
+		return nil, e
+	}
+
+	for idx, _ := range tenant.Sites {
+		tenant.Sites[idx].Buildings, e =
+			GetBuildingsOfParent(tenant.Sites[idx].ID)
+		if e != "" {
+			return nil, e
+		}
+
+		for k, _ := range tenant.Sites[idx].Buildings {
+			tenant.Sites[idx].Buildings[k].Rooms, e =
+				GetRoomsOfParent(uint(tenant.Sites[idx].Buildings[k].ID))
+			if e != "" {
+				return nil, e
+			}
+
+			for i, _ := range tenant.Sites[idx].Buildings[k].Rooms {
+				tenant.Sites[idx].Buildings[k].Rooms[i].Racks, e =
+					GetRacksOfParent(uint(tenant.Sites[idx].
+						Buildings[k].Rooms[i].ID))
+				if e != "" {
+					return nil, e
+				}
+
+				for j, _ := range tenant.
+					Sites[idx].Buildings[k].Rooms[i].Racks {
+
+					tenant.Sites[idx].Buildings[k].Rooms[i].
+						Racks[j].Devices, e = GetDevicesOfParent(
+						uint(tenant.Sites[idx].Buildings[k].Rooms[i].
+							Racks[j].ID))
+					if e != "" {
+						return nil, e
+					}
+				}
+			}
+		}
+	}
+
+	return tenant, ""
+}
+
 func GetSubdevicesUsingNamedDeviceOfTenant(tenant_name, site_name,
 	bldg_name, room_name, rack_name, device_name string) ([]*Subdevice, string) {
 	device, e := GetNamedDeviceOfTenant(tenant_name, site_name, bldg_name, room_name, rack_name, device_name)
