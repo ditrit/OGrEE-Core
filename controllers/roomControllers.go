@@ -851,7 +851,7 @@ var GetDevicesUsingNamedRackOfRoom = func(w http.ResponseWriter, r *http.Request
 	u.Respond(w, resp)
 }
 
-// swagger:operation GET /api/user/rooms/{id}/racks/{rack_name}/devices rooms GetDevicesOfRoom
+// swagger:operation GET /api/user/rooms/{id}/racks/{rack_name}/devices/{device_name} rooms GetDevicesOfRoom
 // Get Named Subdevice of Room.
 // ---
 // produces:
@@ -913,7 +913,7 @@ var GetNamedDeviceOfRoom = func(w http.ResponseWriter, r *http.Request) {
 }
 
 // swagger:operation GET /api/user/rooms/{id}/racks/{rack_name}/devices/{device_name}/subdevices/{subdevice_name} rooms GetSubdevicesOfRoom
-// Get Subdevice of Room.
+// Get Named Subdevice of Room.
 // ---
 // produces:
 // - application/json
@@ -981,7 +981,7 @@ var GetNamedSubdeviceOfRoom = func(w http.ResponseWriter, r *http.Request) {
 }
 
 // swagger:operation GET /api/user/rooms/{id}/racks/{rack_name}/devices/{device_name}/subdevices rooms GetDevicesOfRoom
-// Gets Devices of Room.
+// Gets Subdevices of a Named Device in Room.
 // ---
 // produces:
 // - application/json
