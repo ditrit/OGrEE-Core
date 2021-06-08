@@ -627,3 +627,28 @@ func GetSiteHierarchyToRack(id int) (*Site, string) {
 	}
 	return site, ""
 }
+
+func GetSubdevicesUsingNamedDeviceOfSite(id int, bldg_name,
+	room_name, rack_name, device_name string) ([]*Subdevice, string) {
+
+	room, e := GetNamedRoomOfSite(id, bldg_name, room_name)
+	if e != "" {
+		return nil, e
+	}
+
+	rack, e2 := GetRackByNameAndParentID(room.ID, rack_name)
+	if e2 != "" {
+		return nil, e2
+	}
+
+	device, e3 := GetDeviceByNameAndParentID(uint(rack.ID), device_name)
+	if e3 != "" {
+		return nil, e3
+	}
+
+	subdevices, e4 := GetSubdevicesOfParent(uint(device.ID))
+	if e4 != "" {
+		return nil, e4
+	}
+	return subdevices, ""
+}

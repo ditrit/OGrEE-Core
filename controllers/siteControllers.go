@@ -1176,7 +1176,6 @@ var GetDevicesUsingNamedRackOfSite = func(w http.ResponseWriter, r *http.Request
 			w.WriteHeader(http.StatusNotFound)
 		case "":
 			w.WriteHeader(http.StatusNotFound)
-			resp["message"] = "Error: No Records Found"
 		default:
 		}
 
@@ -1352,5 +1351,81 @@ var GetSiteHierarchyToRack = func(w http.ResponseWriter, r *http.Request) {
 	}
 
 	resp["data"] = data
+	u.Respond(w, resp)
+}
+
+// swagger:operation GET /api/user/sites/{id}/buildings/{building_name}/rooms/{room_name}/racks/{rack_name}/devices/{device_name}/subdevices sites GetDevicesOfSite
+// Gets Subdevices of a Named Device from Site.
+// ---
+// produces:
+// - application/json
+// parameters:
+// - name: ID
+//   in: path
+//   description: ID of desired site
+//   required: true
+//   type: int
+//   default: 999
+// - name: building_name
+//   in: path
+//   description: name of desired building
+//   required: true
+//   type: string
+//   default: "BldgA"
+// - name: room_name
+//   in: path
+//   description: name of desired room
+//   required: true
+//   type: string
+//   default: "R1"
+// - name: rack_name
+//   in: path
+//   description: name of desired rack
+//   required: true
+//   type: string
+//   default: "Rack01"
+// - name: device_name
+//   in: path
+//   description: name of desired device
+//   required: true
+//   type: string
+//   default: "Device01"
+// responses:
+//     '200':
+//         description: Found
+//     '404':
+//         description: Not Found
+var GetSubdevicesUsingNamedDeviceOfSite = func(w http.ResponseWriter, r *http.Request) {
+	id, e := strconv.Atoi(mux.Vars(r)["id"])
+	bldg_name := mux.Vars(r)["building_name"]
+	room_name := mux.Vars(r)["room_name"]
+	rack_name := mux.Vars(r)["rack_name"]
+	dev_name := mux.Vars(r)["device_name"]
+	resp := u.Message(true, "success")
+	if e != nil {
+		u.Respond(w, u.Message(false, "Error while parsing path parameters"))
+		u.ErrLog("Error while parsing path parameters", "GET SUBDEVSUSINGNAMEDDEVICEOFSITE", "", r)
+		return
+	}
+
+	data, e1 := models.GetSubdevicesUsingNamedDeviceOfSite(id, bldg_name, room_name, rack_name, dev_name)
+	if data == nil || len(data) == 0 {
+		resp = u.Message(false, "Error while getting Subdevices: "+e1)
+		u.ErrLog("Error while getting Subdevices Using Named Device Of Site",
+			"GET SUBDEVSUSINGNAMEDDEVICEOFSITE", e1, r)
+
+		switch e1 {
+		case "record not found":
+			w.WriteHeader(http.StatusNotFound)
+		case "":
+			w.WriteHeader(http.StatusNotFound)
+		default:
+		}
+
+	} else {
+		resp = u.Message(true, "success")
+	}
+
+	resp["data"] = map[string]interface{}{"objects": data}
 	u.Respond(w, resp)
 }
