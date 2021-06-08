@@ -537,7 +537,8 @@ func GetTenantHierarchyToRack(tenant_name string) (*Tenant, string) {
 	return tenant, ""
 }
 
-func GetSubdevicesUsingNamedDeviceOfTenant(tenant_name, site_name, bldg_name, room_name, rack_name, device_name string) ([]*Subdevice, string) {
+func GetSubdevicesUsingNamedDeviceOfTenant(tenant_name, site_name,
+	bldg_name, room_name, rack_name, device_name string) ([]*Subdevice, string) {
 	device, e := GetNamedDeviceOfTenant(tenant_name, site_name, bldg_name, room_name, rack_name, device_name)
 	if e != "" {
 		return nil, e
@@ -548,4 +549,21 @@ func GetSubdevicesUsingNamedDeviceOfTenant(tenant_name, site_name, bldg_name, ro
 		return nil, e2
 	}
 	return subdevices, ""
+}
+
+func GetNamedSubdeviceOfTenant(tenant_name, site_name,
+	bldg_name, room_name, rack_name, device_name, subdevice_name string) (*Subdevice, string) {
+
+	dev, e := GetNamedDeviceOfTenant(tenant_name, site_name,
+		bldg_name, room_name, rack_name, device_name)
+	if e != "" {
+		return nil, e
+	}
+
+	subdev, e1 := GetSubdeviceByNameAndParentID(dev.ID, subdevice_name)
+	if e1 != "" {
+		return nil, e1
+	}
+
+	return subdev, ""
 }
