@@ -688,6 +688,122 @@
         }
       }
     },
+    "/api/user/buildings/{id}/rooms/{room_name}/racks/{rack_name}/devices/{device_name}/subdevices": {
+      "get": {
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "buildings"
+        ],
+        "summary": "Gets Subdevices using named Device of Building.",
+        "operationId": "GetDevicesOfBuilding",
+        "parameters": [
+          {
+            "type": "int",
+            "default": 999,
+            "description": "ID of Building",
+            "name": "ID",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "default": "R1",
+            "description": "name of room",
+            "name": "room_name",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "default": "Rack01",
+            "description": "name of rack",
+            "name": "rack_name",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "int",
+            "default": "Device01",
+            "description": "name of device",
+            "name": "device_name",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Found"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        }
+      }
+    },
+    "/api/user/buildings/{id}/rooms/{room_name}/racks/{rack_name}/devices/{device_name}/subdevices/{subdevice_name}": {
+      "get": {
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "buildings"
+        ],
+        "summary": "Gets Subdevices of Building.",
+        "operationId": "GetSubdevicesOfBuilding",
+        "parameters": [
+          {
+            "type": "int",
+            "default": 999,
+            "description": "ID of Building",
+            "name": "ID",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "default": "R1",
+            "description": "name of room",
+            "name": "room_name",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "default": "Rack01",
+            "description": "name of rack",
+            "name": "rack_name",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "int",
+            "default": "Device01",
+            "description": "name of device",
+            "name": "device_name",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "int",
+            "default": "Subdevice01",
+            "description": "name of subdevice",
+            "name": "subdevice_name",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Found"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        }
+      }
+    },
     "/api/user/buildings?": {
       "get": {
         "description": "Gets a Building using any attribute (with the exception of description) via query\nThe attributes are in the form {attr}=xyz\u0026{attr1}=abc\nAnd any combination can be provided given that at least 1 is provided.",
@@ -1890,13 +2006,51 @@
         }
       }
     },
+    "/api/user/racks/{id}/devices/{device_name}/subdevices": {
+      "get": {
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "racks"
+        ],
+        "summary": "Gets Subdevices of named device of Rack.",
+        "operationId": "GetRacks",
+        "parameters": [
+          {
+            "type": "int",
+            "default": 999,
+            "description": "ID of Rack",
+            "name": "ID",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "default": "R1",
+            "description": "name of device",
+            "name": "device_name",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Found"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        }
+      }
+    },
     "/api/user/racks/{id}/devices/{device_name}/subdevices/{subdevice_name}": {
       "get": {
         "produces": [
           "application/json"
         ],
         "tags": [
-          "subdevices"
+          "racks"
         ],
         "summary": "Gets a Subdevice of Rack.",
         "operationId": "GetRack",
@@ -2567,7 +2721,7 @@
         "tags": [
           "rooms"
         ],
-        "summary": "Get Device by Name of Room.",
+        "summary": "Get Named Subdevice of Room.",
         "operationId": "GetDevicesOfRoom",
         "parameters": [
           {
@@ -2591,6 +2745,106 @@
             "default": "Device01",
             "description": "Name of desired device",
             "name": "device_name",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Found"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        }
+      }
+    },
+    "/api/user/rooms/{id}/racks/{rack_name}/devices/{device_name}/subdevices": {
+      "get": {
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "rooms"
+        ],
+        "summary": "Gets Subdevices of a Named Device in Room.",
+        "operationId": "GetDevicesOfRoom",
+        "parameters": [
+          {
+            "type": "int",
+            "default": 999,
+            "description": "ID of Room",
+            "name": "ID",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "default": "Rack01",
+            "description": "Name of desired rack",
+            "name": "rack_name",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "default": "Device01",
+            "description": "Name of desired device",
+            "name": "device_name",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Found"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        }
+      }
+    },
+    "/api/user/rooms/{id}/racks/{rack_name}/devices/{device_name}/subdevices/{subdevice_name}": {
+      "get": {
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "rooms"
+        ],
+        "summary": "Get Named Subdevice of Room.",
+        "operationId": "GetSubdevicesOfRoom",
+        "parameters": [
+          {
+            "type": "int",
+            "default": 999,
+            "description": "ID of Room",
+            "name": "ID",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "default": "Rack01",
+            "description": "Name of desired rack",
+            "name": "rack_name",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "default": "Device01",
+            "description": "Name of desired device",
+            "name": "device_name",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "default": "SubdeviceA",
+            "description": "Name of desired subdevice",
+            "name": "subdevice_name",
             "in": "path",
             "required": true
           }
