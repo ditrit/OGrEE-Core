@@ -1329,3 +1329,88 @@ var GetTenantHierarchyToRack = func(w http.ResponseWriter, r *http.Request) {
 	resp["data"] = data
 	u.Respond(w, resp)
 }
+
+// swagger:operation GET /api/user/tenants/{tenant_name}/sites/{site_name}/buildings/{building_name}/rooms/{room_name}/racks/{rack_name}/devices/{subdevice_name}/subdevices tenants GetFromTenant
+// Gets all Subdevices of a Named Device of a Tenant from the system.
+// ---
+// produces:
+// - application/json
+// parameters:
+// - name: tenant_name
+//   in: path
+//   description: Name of desired tenant
+//   required: true
+//   type: string
+//   default: "INFINITI"
+// - name: site_name
+//   in: path
+//   description: Name of desired site
+//   required: true
+//   type: string
+//   default: "SiteA"
+// - name: building_name
+//   in: path
+//   description: Name of desired building
+//   required: true
+//   type: string
+//   default: "BldgA"
+// - name: room_name
+//   in: path
+//   description: Name of desired room
+//   required: true
+//   type: string
+//   default: "R1"
+// - name: rack_name
+//   in: path
+//   description: Name of desired rack
+//   required: true
+//   type: string
+//   default: "Rack01"
+// - name: device_name
+//   in: path
+//   description: Name of desired device
+//   required: true
+//   type: string
+//   default: "Rack01"
+// responses:
+//     '200':
+//         description: Found
+//     '404':
+//         description: Not Found
+var GetSubdevicesUsingNamedDeviceOfTenant = func(w http.ResponseWriter, r *http.Request) {
+	name, e := mux.Vars(r)["tenant_name"]
+	site_name, e2 := mux.Vars(r)["site_name"]
+	bldg_name, e3 := mux.Vars(r)["building_name"]
+	room_name, e4 := mux.Vars(r)["room_name"]
+	rack_name, e5 := mux.Vars(r)["rack_name"]
+	device_name, e6 := mux.Vars(r)["device_name"]
+	resp := u.Message(true, "success")
+	if e != true || e2 != true || e3 != true || e4 != true || e5 != true || e6 != true {
+		u.Respond(w, u.Message(false, "Error while parsing path parameters"))
+		u.ErrLog("Error while parsing path parameters",
+			"GETSUBDEVSUSINGNAMEDDEVICEOFTENANT", "", r)
+		return
+	}
+
+	data, e1 := models.GetSubdevicesUsingNamedDeviceOfTenant(name, site_name,
+		bldg_name, room_name, rack_name, device_name)
+	if data == nil || len(data) == 0 {
+		resp = u.Message(false, "Error while getting Subdevices: "+e1)
+		u.ErrLog("Error while getting Subdevices using Named Device of Tenant",
+			"GETSUBDEVSUSINGNAMEDDEVICEOFTENANT", e1, r)
+
+		switch e1 {
+		case "record not found":
+			w.WriteHeader(http.StatusNotFound)
+		case "":
+			w.WriteHeader(http.StatusNotFound)
+		default:
+		}
+
+	} else {
+		resp = u.Message(true, "success")
+	}
+
+	resp["data"] = map[string]interface{}{"objects": data}
+	u.Respond(w, resp)
+}

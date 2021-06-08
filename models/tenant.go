@@ -536,3 +536,16 @@ func GetTenantHierarchyToRack(tenant_name string) (*Tenant, string) {
 
 	return tenant, ""
 }
+
+func GetSubdevicesUsingNamedDeviceOfTenant(tenant_name, site_name, bldg_name, room_name, rack_name, device_name string) ([]*Subdevice, string) {
+	device, e := GetNamedDeviceOfTenant(tenant_name, site_name, bldg_name, room_name, rack_name, device_name)
+	if e != "" {
+		return nil, e
+	}
+
+	subdevices, e2 := GetSubdevicesOfParent(uint(device.ID))
+	if e2 != "" {
+		return nil, e2
+	}
+	return subdevices, ""
+}
