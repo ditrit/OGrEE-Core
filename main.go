@@ -332,6 +332,9 @@ func main() {
 	router.HandleFunc("/api/user/racks/{id:[0-9]+}/devices/{device_name}",
 		controllers.GetRackDeviceByName).Methods("GET")
 
+	router.HandleFunc("/api/user/racks/{id:[0-9]+}/all/devices",
+		controllers.GetRackHierarchyToDevices).Methods("GET")
+
 	router.HandleFunc("/api/user/racks/{id:[0-9]+}/all",
 		controllers.GetRackHierarchy).Methods("GET")
 

@@ -438,6 +438,19 @@ func GetRackHierarchy(id uint) (*Rack, string) {
 
 }
 
+func GetRackHierarchyToDevices(id int) (*Rack, string) {
+	rack, e := GetRack(uint(id))
+	if e != "" {
+		return nil, e
+	}
+
+	rack.Devices, e = GetDevicesOfParent(uint(id))
+	if e != "" {
+		return nil, e
+	}
+	return rack, ""
+}
+
 func GetRackHierarchyNonStandard(id uint) (*Rack, []*Device, string) {
 	rack, e := GetRack(id)
 	if e != "" {
