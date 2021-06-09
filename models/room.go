@@ -129,7 +129,7 @@ func (room *Room) Create() (map[string]interface{}, string) {
 	}
 
 	resp := u.Message(true, "success")
-	resp["room"] = room
+	resp["data"] = map[string]interface{}{"room": room}
 	return resp, ""
 }
 
