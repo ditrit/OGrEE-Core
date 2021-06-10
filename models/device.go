@@ -108,7 +108,7 @@ func (device *Device) Create() (map[string]interface{}, string) {
 	}
 
 	resp := u.Message(true, "success")
-	resp["device"] = device
+	resp["data"] = map[string]interface{}{"device": device}
 	return resp, ""
 }
 

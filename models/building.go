@@ -111,7 +111,7 @@ func (bldg *Building) Create() (map[string]interface{}, string) {
 	}
 
 	resp := u.Message(true, "success")
-	resp["building"] = bldg
+	resp["data"] = map[string]interface{}{"building": bldg}
 	return resp, ""
 }
 

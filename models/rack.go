@@ -117,7 +117,7 @@ func (rack *Rack) Create() (map[string]interface{}, string) {
 	}
 
 	resp := u.Message(true, "success")
-	resp["rack"] = rack
+	resp["data"] = map[string]interface{}{"rack": rack}
 	return resp, ""
 }
 
