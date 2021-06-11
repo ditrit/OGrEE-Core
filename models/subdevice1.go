@@ -241,7 +241,7 @@ func GetSubdevice1(id int) (*Subdevice1, string) {
 }
 
 //Obtain all subdevices1 of a subdevice
-func GetSubdevices1OfParent(id uint) ([]*Subdevice1, string) {
+func GetSubdevices1OfParent(id int) ([]*Subdevice1, string) {
 	subdevices1 := make([]*Subdevice1, 0)
 	err := GetDB().Table("subdevice1").Where("subdevice1_parent_id = ?", id).Find(&subdevices1).Error
 	if err != nil {

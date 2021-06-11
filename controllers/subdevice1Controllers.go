@@ -266,3 +266,186 @@ var GetAllSubdevices1 = func(w http.ResponseWriter, r *http.Request) {
 	resp["data"] = map[string]interface{}{"objects": data}
 	u.Respond(w, resp)
 }
+
+// swagger:operation PUT /api/user/subdevices1/{id} subdevices1 UpdateSubdevice1
+// Changes Subdevice1 data in the system.
+// If no new or any information is provided
+// an OK will still be returned
+// ---
+// produces:
+// - application/json
+// parameters:
+// - name: ID
+//   in: path
+//   description: ID of desired subdevice1
+//   required: true
+//   type: int
+//   default: 999
+// - name: Name
+//   in: query
+//   description: Name of subdevice1
+//   required: false
+//   type: string
+//   default: "Subdevice1 B"
+// - name: Category
+//   in: query
+//   description: Category of Subdevice1 (ex. Consumer Electronics, Medical)
+//   required: false
+//   type: string
+//   default: "Research"
+// - name: Description
+//   in: query
+//   description: Description of Subdevice1
+//   required: false
+//   type: string[]
+//   default: ["Some abandoned subdevice1 in Grenoble"]
+// - name: Template
+//   in: query
+//   description: 'Subdevice1 template'
+//   required: false
+//   type: string
+//   default: "Some Template"
+// - name: Orientation
+//   in: query
+//   description: 'Indicates the location. Only values of
+//   "front", "rear", "frontflipped", "rearflipped" are acceptable'
+//   required: false
+//   type: string
+//   default: "frontflipped"
+// - name: PosXY
+//   in: query
+//   description: 'Indicates the position in a XY coordinate format'
+//   required: false
+//   type: string
+//   default: "{\"x\":999,\"y\":999}"
+// - name: PosXYU
+//   in: query
+//   description: 'Indicates the unit of the PosXY position. Only values of
+//   "mm", "cm", "m", "U", "OU", "tile" are acceptable'
+//   required: false
+//   type: string
+//   default: "cm"
+// - name: PosZ
+//   in: query
+//   description: 'Indicates the position in the Z axis'
+//   required: false
+//   type: string
+//   default: "999"
+// - name: PosZU
+//   in: query
+//   description: 'Indicates the unit of the Z coordinate position. Only values of
+//   "mm", "cm", "m", "U", "OU", "tile" are acceptable'
+//   required: false
+//   type: string
+//   default: "cm"
+// - name: Size
+//   in: query
+//   description: 'Size of Subdevice1 in an XY coordinate format'
+//   required: false
+//   type: string
+//   default: "{\"x\":999,\"y\":999}"
+// - name: SizeUnit
+//   in: query
+//   description: 'Extraneous Size Unit Attribute'
+//   required: false
+//   type: string
+//   default: "{\"x\":999,\"y\":999}"
+// - name: SizeU
+//   in: query
+//   description: 'The unit for Subdevice1 Size. Only values of
+//   "mm", "cm", "m", "U", "OU", "tile" are acceptable'
+//   required: false
+//   type: string
+//   default: "cm"
+// - name: Slot
+//   in: query
+//   description: 'Subdevice1 Slot (if any)'
+//   required: false
+//   type: string
+//   default: "01"
+// - name: PosU
+//   in: query
+//   description: 'Extraneous Position Unit Attribute'
+//   required: false
+//   type: string
+//   default: "???"
+// - name: Height
+//   in: query
+//   description: 'Height of Subdevice1'
+//   required: false
+//   type: string
+//   default: "999"
+// - name: HeightU
+//   in: query
+//   description: 'The unit for Subdevice1 Height. Only values of
+//   "mm", "cm", "m", "U", "OU", "tile" are acceptable'
+//   required: false
+//   type: string
+//   default: "cm"
+// - name: Vendor
+//   in: query
+//   description: 'Vendor of Subdevice1'
+//   required: false
+//   type: string
+//   default: "New Vendor"
+// - name: Model
+//   in: query
+//   description: 'Model of Subdevice1'
+//   required: false
+//   type: string
+//   default: "New Model"
+// - name: Type
+//   in: query
+//   description: 'Type of Subdevice1'
+//   required: false
+//   type: string
+//   default: "New Type"
+// - name: Serial
+//   in: query
+//   description: 'Serial of Subdevice1'
+//   required: false
+//   type: string
+//   default: "New Serial"
+
+// responses:
+//     '200':
+//         description: Updated
+//     '400':
+//         description: Bad request
+//     '404':
+//         description: Not Found
+//Updates work by passing ID in path parameter
+var UpdateSubdevice1 = func(w http.ResponseWriter, r *http.Request) {
+
+	subdevice1 := &models.Subdevice1{}
+	id, e := strconv.Atoi(mux.Vars(r)["id"])
+
+	if e != nil {
+		u.Respond(w, u.Message(false, "Error while parsing path parameters"))
+		u.ErrLog("Error while parsing path parameters", "UPDATE SUBDEVICE1", "", r)
+		return
+	}
+
+	err := json.NewDecoder(r.Body).Decode(subdevice1)
+	if err != nil {
+		u.Respond(w, u.Message(false, "Error while decoding request body"))
+		u.ErrLog("Error while decoding request body", "UPDATE SUBDEVICE1", "", r)
+	}
+
+	v, e1 := models.UpdateSubdevice1(id, subdevice1)
+
+	switch e1 {
+	case "validate":
+		w.WriteHeader(http.StatusBadRequest)
+		u.ErrLog("Error while updating subdevice", "UPDATE SUBDEVICE1", e1, r)
+	case "internal":
+		w.WriteHeader(http.StatusInternalServerError)
+		u.ErrLog("Error while updating subdevice", "UPDATE SUBDEVICE1", e1, r)
+	case "record not found":
+		w.WriteHeader(http.StatusNotFound)
+		u.ErrLog("Error while updating subdevice", "UPDATE SUBDEVICE1", e1, r)
+	default:
+	}
+
+	u.Respond(w, v)
+}
