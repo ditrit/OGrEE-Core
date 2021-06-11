@@ -1998,6 +1998,36 @@
         }
       }
     },
+    "/api/user/racks/{id}/all/devices": {
+      "get": {
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "racks"
+        ],
+        "summary": "Gets Devices of Rack.",
+        "operationId": "GetRack",
+        "parameters": [
+          {
+            "type": "int",
+            "default": 999,
+            "description": "ID of desired rack",
+            "name": "ID",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful"
+          },
+          "404": {
+            "description": "Not found"
+          }
+        }
+      }
+    },
     "/api/user/racks/{id}/devices/{device_name}": {
       "get": {
         "produces": [
@@ -2616,6 +2646,36 @@
           "rooms"
         ],
         "summary": "Gets Room Hierarchy.",
+        "operationId": "GetAllRooms",
+        "parameters": [
+          {
+            "type": "int",
+            "default": 999,
+            "description": "ID of Room",
+            "name": "ID",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Found"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        }
+      }
+    },
+    "/api/user/rooms/{id}/all/racks/devices": {
+      "get": {
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "rooms"
+        ],
+        "summary": "Gets Room Hierarchy to Devices.",
         "operationId": "GetAllRooms",
         "parameters": [
           {
@@ -4510,6 +4570,620 @@
             "description": "Not found"
           }
         }
+      }
+    },
+    "/api/user/subdevices/{id}/all": {
+      "get": {
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "subdevices"
+        ],
+        "summary": "Gets Subdevice Hierarchy.",
+        "operationId": "GetSubdevice",
+        "parameters": [
+          {
+            "type": "int",
+            "default": 999,
+            "description": "ID of desired subdevice",
+            "name": "ID",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful"
+          },
+          "404": {
+            "description": "Not found"
+          }
+        }
+      }
+    },
+    "/api/user/subdevices1": {
+      "get": {
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "subdevices1"
+        ],
+        "summary": "Gets all Subdevices1 from the system.",
+        "operationId": "GetAllSubdevices1",
+        "parameters": [
+          {
+            "type": "int",
+            "default": 999,
+            "description": "ID of desired subdevice1",
+            "name": "ID",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Found"
+          },
+          "404": {
+            "description": "Nothing Found"
+          }
+        }
+      },
+      "post": {
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "subdevices1"
+        ],
+        "summary": "Creates a Subdevice1 in the system.",
+        "operationId": "CreateSubdevice1",
+        "parameters": [
+          {
+            "type": "string",
+            "default": "Subdevice1A",
+            "description": "Name of subdevice1",
+            "name": "Name",
+            "in": "query",
+            "required": true
+          },
+          {
+            "type": "string",
+            "default": "internal",
+            "description": "Category of Subdevice1 (ex. Consumer Electronics, Medical)",
+            "name": "Category",
+            "in": "query",
+            "required": true
+          },
+          {
+            "type": "string[]",
+            "default": [
+              "Some abandoned subdevice1 in Grenoble"
+            ],
+            "description": "Description of Subdevice1",
+            "name": "Description",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "default": "Some Domain",
+            "description": "Domain of Subdevice1",
+            "name": "Domain",
+            "required": true
+          },
+          {
+            "type": "int",
+            "default": 999,
+            "description": "Parent of Subdevice1 refers to Rack ID",
+            "name": "ParentID",
+            "required": true
+          },
+          {
+            "type": "string",
+            "default": "front",
+            "description": "Indicates the location. Only values of \"front\", \"rear\", \"frontflipped\", \"rearflipped\" are acceptable",
+            "name": "Orientation",
+            "in": "query",
+            "required": true
+          },
+          {
+            "type": "string",
+            "default": "Some Template",
+            "description": "Subdevice1 template",
+            "name": "Template",
+            "in": "query",
+            "required": true
+          },
+          {
+            "type": "string",
+            "default": "{\"x\":-30.0,\"y\":0.0}",
+            "description": "Indicates the position in a XY coordinate format",
+            "name": "PosXY",
+            "in": "query",
+            "required": true
+          },
+          {
+            "type": "string",
+            "default": "m",
+            "description": "Indicates the unit of the PosXY position. Only values of \"mm\", \"cm\", \"m\", \"U\", \"OU\", \"tile\" are acceptable",
+            "name": "PosXYU",
+            "in": "query",
+            "required": true
+          },
+          {
+            "type": "string",
+            "default": "10",
+            "description": "Indicates the position in the Z axis",
+            "name": "PosZ",
+            "in": "query",
+            "required": true
+          },
+          {
+            "type": "string",
+            "default": "m",
+            "description": "Indicates the unit of the Z coordinate position. Only values of \"mm\", \"cm\", \"m\", \"U\", \"OU\", \"tile\" are acceptable",
+            "name": "PosZU",
+            "in": "query",
+            "required": true
+          },
+          {
+            "type": "string",
+            "default": "{\"x\":25.0,\"y\":29.399999618530275}",
+            "description": "Size of Subdevice in an XY coordinate format",
+            "name": "Size",
+            "in": "query",
+            "required": true
+          },
+          {
+            "type": "string",
+            "default": "{\"x\":999,\"y\":999}",
+            "description": "Extraneous Size Unit Attribute",
+            "name": "SizeUnit",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "default": "m",
+            "description": "The unit for Subdevice1 Size. Only values of \"mm\", \"cm\", \"m\", \"U\", \"OU\", \"tile\" are acceptable",
+            "name": "SizeU",
+            "in": "query",
+            "required": true
+          },
+          {
+            "type": "string",
+            "default": "01",
+            "description": "Subdevice1 Slot (if any)",
+            "name": "Slot",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "default": "???",
+            "description": "Extraneous Position Unit Attribute",
+            "name": "PosU",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "default": "5",
+            "description": "Height of Subdevice1",
+            "name": "Height",
+            "in": "query",
+            "required": true
+          },
+          {
+            "type": "string",
+            "default": "m",
+            "description": "The unit for Subdevice1 Height. Only values of \"mm\", \"cm\", \"m\", \"U\", \"OU\", \"tile\" are acceptable",
+            "name": "HeightU",
+            "in": "query",
+            "required": true
+          },
+          {
+            "type": "string",
+            "default": "Some Vendor",
+            "description": "Vendor of Subdevice1",
+            "name": "Vendor",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "default": "Some Model",
+            "description": "Model of Subdevice1",
+            "name": "Model",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "default": "Some Type",
+            "description": "Type of Subdevice1",
+            "name": "Type",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "default": "Some Serial",
+            "description": "Serial of Subdevice1",
+            "name": "Serial",
+            "in": "query"
+          }
+        ]
+      }
+    },
+    "/api/user/subdevices1/{id}": {
+      "get": {
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "subdevices1"
+        ],
+        "summary": "Gets Subdevice1 using Subdevice1 ID.",
+        "operationId": "GetSubdevice1",
+        "parameters": [
+          {
+            "description": "ID of Subdevice1",
+            "name": "ID",
+            "in": "path"
+          }
+        ]
+      },
+      "put": {
+        "description": "If no new or any information is provided\nan OK will still be returned",
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "subdevices1"
+        ],
+        "summary": "Changes Subdevice1 data in the system.",
+        "operationId": "UpdateSubdevice1",
+        "parameters": [
+          {
+            "type": "int",
+            "default": 999,
+            "description": "ID of desired subdevice1",
+            "name": "ID",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "default": "Subdevice1 B",
+            "description": "Name of subdevice1",
+            "name": "Name",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "default": "Research",
+            "description": "Category of Subdevice1 (ex. Consumer Electronics, Medical)",
+            "name": "Category",
+            "in": "query"
+          },
+          {
+            "type": "string[]",
+            "default": [
+              "Some abandoned subdevice1 in Grenoble"
+            ],
+            "description": "Description of Subdevice1",
+            "name": "Description",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "default": "Some Template",
+            "description": "Subdevice1 template",
+            "name": "Template",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "default": "frontflipped",
+            "description": "Indicates the location. Only values of \"front\", \"rear\", \"frontflipped\", \"rearflipped\" are acceptable",
+            "name": "Orientation",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "default": "{\"x\":999,\"y\":999}",
+            "description": "Indicates the position in a XY coordinate format",
+            "name": "PosXY",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "default": "cm",
+            "description": "Indicates the unit of the PosXY position. Only values of \"mm\", \"cm\", \"m\", \"U\", \"OU\", \"tile\" are acceptable",
+            "name": "PosXYU",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "default": "999",
+            "description": "Indicates the position in the Z axis",
+            "name": "PosZ",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "default": "cm",
+            "description": "Indicates the unit of the Z coordinate position. Only values of \"mm\", \"cm\", \"m\", \"U\", \"OU\", \"tile\" are acceptable",
+            "name": "PosZU",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "default": "{\"x\":999,\"y\":999}",
+            "description": "Size of Subdevice1 in an XY coordinate format",
+            "name": "Size",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "default": "{\"x\":999,\"y\":999}",
+            "description": "Extraneous Size Unit Attribute",
+            "name": "SizeUnit",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "default": "cm",
+            "description": "The unit for Subdevice1 Size. Only values of \"mm\", \"cm\", \"m\", \"U\", \"OU\", \"tile\" are acceptable",
+            "name": "SizeU",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "default": "01",
+            "description": "Subdevice1 Slot (if any)",
+            "name": "Slot",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "default": "???",
+            "description": "Extraneous Position Unit Attribute",
+            "name": "PosU",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "default": "999",
+            "description": "Height of Subdevice1",
+            "name": "Height",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "default": "cm",
+            "description": "The unit for Subdevice1 Height. Only values of \"mm\", \"cm\", \"m\", \"U\", \"OU\", \"tile\" are acceptable",
+            "name": "HeightU",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "default": "New Vendor",
+            "description": "Vendor of Subdevice1",
+            "name": "Vendor",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "default": "New Model",
+            "description": "Model of Subdevice1",
+            "name": "Model",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "default": "New Type",
+            "description": "Type of Subdevice1",
+            "name": "Type",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "default": "New Serial",
+            "description": "Serial of Subdevice1",
+            "name": "Serial",
+            "in": "query"
+          }
+        ]
+      },
+      "delete": {
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "subdevices1"
+        ],
+        "summary": "Deletes a Subdevice1 in the system.",
+        "operationId": "DeleteSubdevice1",
+        "parameters": [
+          {
+            "type": "int",
+            "default": 999,
+            "description": "ID of desired subdevice1",
+            "name": "ID",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful"
+          },
+          "404": {
+            "description": "Not found"
+          }
+        }
+      }
+    },
+    "/api/user/subdevices1?": {
+      "get": {
+        "description": "Gets a Subdevice1 using any attribute (with the exception of description) via query\nThe attributes are in the form {attr}=xyz\u0026{attr1}=abc\nAnd any combination can be provided given that at least 1 is provided.",
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "subdevices1"
+        ],
+        "summary": "Gets Subdevice1 By Query.",
+        "operationId": "GetSubdevice1ByQuery",
+        "parameters": [
+          {
+            "type": "int",
+            "default": 999,
+            "description": "ID of desired subdevice1",
+            "name": "ID",
+            "in": "path"
+          },
+          {
+            "type": "string",
+            "default": "Subdevice1 B",
+            "description": "Name of subdevice1",
+            "name": "Name",
+            "in": "path"
+          },
+          {
+            "type": "string",
+            "default": "internal",
+            "description": "Category of Subdevice1 (ex. Consumer Electronics, Medical)",
+            "name": "Category",
+            "in": "path"
+          },
+          {
+            "type": "string[]",
+            "default": [
+              "Some abandoned subdevice1 in Grenoble"
+            ],
+            "description": "Description of Subdevice1",
+            "name": "Description",
+            "in": "path"
+          },
+          {
+            "type": "string",
+            "default": "Some Template",
+            "description": "Subdevice1 template",
+            "name": "Template",
+            "in": "path"
+          },
+          {
+            "type": "string",
+            "default": "frontflipped",
+            "description": "Indicates the location. Only values of \"front\", \"rear\", \"frontflipped\", \"rearflipped\" are acceptable",
+            "name": "Orientation",
+            "in": "path"
+          },
+          {
+            "type": "string",
+            "default": "{\"x\":999,\"y\":999}",
+            "description": "Indicates the position in a XY coordinate format",
+            "name": "PosXY",
+            "in": "path"
+          },
+          {
+            "type": "string",
+            "default": "cm",
+            "description": "Indicates the unit of the PosXY position. Only values of \"mm\", \"cm\", \"m\", \"U\", \"OU\", \"tile\" are acceptable",
+            "name": "PosXYU",
+            "in": "path"
+          },
+          {
+            "type": "string",
+            "default": "999",
+            "description": "Indicates the position in the Z axis",
+            "name": "PosZ",
+            "in": "path"
+          },
+          {
+            "type": "string",
+            "default": "cm",
+            "description": "Indicates the unit of the Z coordinate position. Only values of \"mm\", \"cm\", \"m\", \"U\", \"OU\", \"tile\" are acceptable",
+            "name": "PosZU",
+            "in": "path"
+          },
+          {
+            "type": "string",
+            "default": "{\"x\":999,\"y\":999}",
+            "description": "Size of Subdevice1 in an XY coordinate format",
+            "name": "Size",
+            "in": "path"
+          },
+          {
+            "type": "string",
+            "default": "{\"x\":999,\"y\":999}",
+            "description": "Extraneous Size Unit Attribute",
+            "name": "SizeUnit",
+            "in": "path"
+          },
+          {
+            "type": "string",
+            "default": "cm",
+            "description": "The unit for Subdevice1 Size. Only values of \"mm\", \"cm\", \"m\", \"U\", \"OU\", \"tile\" are acceptable",
+            "name": "SizeU",
+            "in": "path"
+          },
+          {
+            "type": "string",
+            "default": "01",
+            "description": "Subdevice1 Slot (if any)",
+            "name": "Slot",
+            "in": "path"
+          },
+          {
+            "type": "string",
+            "default": "???",
+            "description": "Extraneous Position Unit Attribute",
+            "name": "PosU",
+            "in": "path"
+          },
+          {
+            "type": "string",
+            "default": "999",
+            "description": "Height of Subdevice1",
+            "name": "Height",
+            "in": "path"
+          },
+          {
+            "type": "string",
+            "default": "cm",
+            "description": "The unit for Subdevice1 Height. Only values of \"mm\", \"cm\", \"m\", \"U\", \"OU\", \"tile\" are acceptable",
+            "name": "HeightU",
+            "in": "path"
+          },
+          {
+            "type": "string",
+            "default": "New Vendor",
+            "description": "Vendor of Subdevice1",
+            "name": "Vendor",
+            "in": "path"
+          },
+          {
+            "type": "string",
+            "default": "New Model",
+            "description": "Model of Subdevice1",
+            "name": "Model",
+            "in": "path"
+          },
+          {
+            "type": "string",
+            "default": "New Type",
+            "description": "Type of Subdevice1",
+            "name": "Type",
+            "in": "path"
+          },
+          {
+            "type": "string",
+            "default": "New Serial",
+            "description": "Serial of Subdevice1",
+            "name": "Serial",
+            "in": "path"
+          }
+        ]
       }
     },
     "/api/user/subdevices?": {

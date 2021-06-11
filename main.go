@@ -332,7 +332,7 @@ func main() {
 	router.HandleFunc("/api/user/racks/{id:[0-9]+}/devices/{device_name}",
 		controllers.GetRackDeviceByName).Methods("GET")
 
-	router.HandleFunc("/api/user/racks/{id:[0-9]+}/all/devices",
+	router.HandleFunc("/api/user/racks/{id:[0-9]+}/devices",
 		controllers.GetRackHierarchyToDevices).Methods("GET")
 
 	router.HandleFunc("/api/user/racks/{id:[0-9]+}/all",
@@ -369,7 +369,7 @@ func main() {
 	router.HandleFunc("/api/user/devices",
 		controllers.GetAllDevices).Methods("GET")
 
-	// ------ DEVICE CRUD ------ //
+	// ------ SUBDEVICE CRUD ------ //
 	router.HandleFunc("/api/user/subdevices",
 		controllers.GetSubdeviceByQuery).Methods("GET").MatcherFunc(dmatch)
 
@@ -381,6 +381,9 @@ func main() {
 
 	router.HandleFunc("/api/user/subdevices/{id}",
 		controllers.DeleteSubdevice).Methods("DELETE")
+
+	router.HandleFunc("/api/user/subdevices/{id:[0-9]+}/all",
+		controllers.GetSubdeviceHierarchy).Methods("GET")
 
 	router.HandleFunc("/api/user/subdevices/{id}",
 		controllers.GetSubdevice).Methods("GET")

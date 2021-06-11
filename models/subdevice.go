@@ -38,6 +38,8 @@ type Subdevice struct {
 	DescriptionJSON []string             `json:"description" gorm:"-"`
 	DescriptionDB   string               `json:"-" gorm:"column:subdevice_description"`
 	Attributes      Subdevice_Attributes `json:"attributes"`
+
+	Subdevs1 []*Subdevice1 `json:"subdevices1,omitempty", gorm:"-"`
 }
 
 func (subdevice *Subdevice) Validate() (map[string]interface{}, bool) {
@@ -453,4 +455,17 @@ func GetSubdeviceByNameAndParentID(id int, name string) (*Subdevice, string) {
 	subdevice.Category = "subdevice"
 	subdevice.IDJSON = strconv.Itoa(subdevice.ID)
 	return subdevice, ""
+}
+
+func GetSubdeviceHierarchy(id int) (*Subdevice, string) {
+	subdev, e := GetSubdevice(uint(id))
+	if e != "" {
+		return nil, e
+	}
+
+	subdev.Subdevs1, e = GetSubdevices1OfParent(id)
+	if e != "" {
+		return nil, e
+	}
+	return subdev, ""
 }
