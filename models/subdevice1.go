@@ -107,7 +107,7 @@ func (subdevice1 *Subdevice1) Create() (map[string]interface{}, string) {
 	}
 
 	resp := u.Message(true, "success")
-	resp["subdevice1"] = map[string]interface{}{"object": subdevice1}
+	resp["data"] = map[string]interface{}{"subdevice1": subdevice1}
 	return resp, ""
 }
 
