@@ -54,7 +54,7 @@ CREATE TABLE public.subdevice1 (
 );
 
 
-CREATE TABLE public.subdevice_attributes1 (
+CREATE TABLE public.subdevice1_attributes (
     id int NOT NULL,
     subdevice1_pos_x_y text,
     subdevice1_pos_x_y_unit text,
