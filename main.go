@@ -389,14 +389,11 @@ func main() {
 		controllers.GetAllSubdevices).Methods("GET")
 
 	// ------ SUBDEVICE1 CRUD ------ //
-	//router.HandleFunc("/api/user/subdevices",
-	//	controllers.GetSubdevice1ByQuery).Methods("GET").MatcherFunc(dmatch)
+	router.HandleFunc("/api/user/subdevices",
+		controllers.GetSubdevice1ByQuery).Methods("GET").MatcherFunc(dmatch)
 
 	router.HandleFunc("/api/user/subdevices1",
 		controllers.CreateSubdevice1).Methods("POST")
-
-	//router.HandleFunc("/api/user/subdevices1/{id}",
-	//	controllers.UpdateSubdevice1).Methods("PUT")
 
 	router.HandleFunc("/api/user/subdevices1/{id}",
 		controllers.UpdateSubdevice1).Methods("PUT")
