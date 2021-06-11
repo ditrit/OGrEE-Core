@@ -5,6 +5,9 @@ import (
 	"net/http"
 	"p3/models"
 	u "p3/utils"
+	"strconv"
+
+	"github.com/gorilla/mux"
 )
 
 // swagger:operation POST /api/user/subdevices1 subdevices1 CreateSubdevice1
@@ -175,5 +178,50 @@ var CreateSubdevice1 = func(w http.ResponseWriter, r *http.Request) {
 	default:
 		w.WriteHeader(http.StatusCreated)
 	}
+	u.Respond(w, resp)
+}
+
+// swagger:operation GET /api/user/subdevices1/{id} subdevices1 GetSubdevice1
+// Gets Subdevice1 using Subdevice1 ID.
+// ---
+// produces:
+// - application/json
+// parameters:
+// - name: ID
+//   in: path
+//   description: ID of Subdevice1
+
+// responses:
+//     '200':
+//         description: Found
+//     '400':
+//         description: Not Found
+var GetSubdevice1 = func(w http.ResponseWriter, r *http.Request) {
+
+	id, e := strconv.Atoi(mux.Vars(r)["id"])
+	resp := u.Message(true, "success")
+
+	if e != nil {
+		u.Respond(w, u.Message(false, "Error while parsing path parameters"))
+		u.ErrLog("Error while parsing path parameters", "GET SUBDEVICE1", "", r)
+		return
+	}
+
+	data, e1 := models.GetSubdevice1(id)
+	if data == nil {
+		resp = u.Message(false, "Error while getting Subdevice1: "+e1)
+		u.ErrLog("Error while getting Subdevice", "GET SUBDEVICE1", "", r)
+
+		switch e1 {
+		case "record not found":
+			w.WriteHeader(http.StatusNotFound)
+		default:
+		}
+
+	} else {
+		resp = u.Message(true, "success")
+	}
+
+	resp["data"] = data
 	u.Respond(w, resp)
 }
