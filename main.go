@@ -402,6 +402,9 @@ func main() {
 		controllers.UpdateSubdevice1).Methods("PUT")
 
 	router.HandleFunc("/api/user/subdevices1/{id}",
+		controllers.DeleteSubdevice1).Methods("DELETE")
+
+	router.HandleFunc("/api/user/subdevices1/{id}",
 		controllers.GetSubdevice1).Methods("GET")
 
 	router.HandleFunc("/api/user/subdevices1",

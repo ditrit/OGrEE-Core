@@ -267,6 +267,44 @@ var GetAllSubdevices1 = func(w http.ResponseWriter, r *http.Request) {
 	u.Respond(w, resp)
 }
 
+// swagger:operation DELETE /api/user/subdevices1/{id} subdevices1 DeleteSubdevice1
+// Deletes a Subdevice1 in the system.
+// ---
+// produces:
+// - application/json
+// parameters:
+// - name: ID
+//   in: path
+//   description: ID of desired subdevice1
+//   required: true
+//   type: int
+//   default: 999
+// responses:
+//     '204':
+//        description: Successful
+//     '404':
+//        description: Not found
+var DeleteSubdevice1 = func(w http.ResponseWriter, r *http.Request) {
+	id, e := strconv.Atoi(mux.Vars(r)["id"])
+
+	if e != nil {
+		u.Respond(w, u.Message(false, "Error while parsing path parameters"))
+		u.ErrLog("Error while parsing path parameters", "DELETE SUBDEVICE1", "", r)
+		return
+	}
+
+	v := models.DeleteSubdevice1(id)
+
+	if v["status"] == false {
+		w.WriteHeader(http.StatusNotFound)
+		u.ErrLog("Error while deleting subdevice1", "DELETE SUBDEVICE1", "Not Found", r)
+	} else {
+		w.WriteHeader(http.StatusNoContent)
+	}
+
+	u.Respond(w, v)
+}
+
 // swagger:operation PUT /api/user/subdevices1/{id} subdevices1 UpdateSubdevice1
 // Changes Subdevice1 data in the system.
 // If no new or any information is provided
