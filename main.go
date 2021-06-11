@@ -395,8 +395,14 @@ func main() {
 	router.HandleFunc("/api/user/subdevices1",
 		controllers.CreateSubdevice1).Methods("POST")
 
+	//router.HandleFunc("/api/user/subdevices1/{id}",
+	//	controllers.UpdateSubdevice1).Methods("PUT")
+
 	router.HandleFunc("/api/user/subdevices1/{id}",
 		controllers.GetSubdevice1).Methods("GET")
+
+	router.HandleFunc("/api/user/subdevices1",
+		controllers.GetAllSubdevices1).Methods("GET")
 
 	//Attach JWT auth middleware
 	router.Use(app.JwtAuthentication)

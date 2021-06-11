@@ -225,3 +225,44 @@ var GetSubdevice1 = func(w http.ResponseWriter, r *http.Request) {
 	resp["data"] = data
 	u.Respond(w, resp)
 }
+
+// swagger:operation GET /api/user/subdevices1 subdevices1 GetAllSubdevices1
+// Gets all Subdevices1 from the system.
+// ---
+// produces:
+// - application/json
+// parameters:
+// - name: ID
+//   in: path
+//   description: ID of desired subdevice1
+//   required: true
+//   type: int
+//   default: 999
+// responses:
+//     '200':
+//         description: Found
+//     '404':
+//         description: Nothing Found
+var GetAllSubdevices1 = func(w http.ResponseWriter, r *http.Request) {
+
+	resp := u.Message(true, "success")
+
+	data, e1 := models.GetAllSubdevices1()
+	if len(data) == 0 {
+		resp = u.Message(false, "Error: "+e1)
+		u.ErrLog("Error while getting devices", "GET ALL SUBDEVICES1", e1, r)
+
+		switch e1 {
+		case "":
+			resp = u.Message(false, "Error: No Records Found")
+			w.WriteHeader(http.StatusNotFound)
+		default:
+		}
+
+	} else {
+		resp = u.Message(true, "success")
+	}
+
+	resp["data"] = map[string]interface{}{"objects": data}
+	u.Respond(w, resp)
+}
