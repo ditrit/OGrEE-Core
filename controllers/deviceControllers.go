@@ -882,3 +882,57 @@ var GetSubdevicesOfDevice = func(w http.ResponseWriter, r *http.Request) {
 
 	u.Respond(w, resp)
 }
+
+// swagger:operation GET /api/user/devices/{id}/subdevices/{subdevice_name}/subdevice1s devices GetDevice
+// Gets Subdevice1s of Device.
+// ---
+// produces:
+// - application/json
+// parameters:
+// - name: ID
+//   in: path
+//   description: ID of desired device
+//   required: true
+//   type: int
+//   default: 999
+// - name: subdevice_name
+//   in: path
+//   description: Name of desired subdevice
+//   required: true
+//   type: int
+//   default: "Subdev1"
+// responses:
+//     '200':
+//        description: Successful
+//     '404':
+//        description: Not found
+var GetSubdevice1sUsingNamedSubdeviceOfDevice = func(w http.ResponseWriter, r *http.Request) {
+	id, e := strconv.Atoi(mux.Vars(r)["id"])
+	name := mux.Vars(r)["subdevice_name"]
+	resp := u.Message(true, "success")
+	if e != nil {
+		u.Respond(w, u.Message(false, "Error while parsing path parameters"))
+		u.ErrLog("Error while parsing path parameters", "GET SUBDEV1SOFNAMEDSUBDEVOFDEVICE", "", r)
+		return
+	}
+
+	data, e1 := models.GetSubdevice1sUsingNamedSubdeviceOfDevice(id, name)
+	if data == nil {
+		resp = u.Message(false, "Error while getting Subdevice1s: "+e1)
+		u.ErrLog("Error while getting Subdevice1s using Named Subdevice of Device",
+			"GET SUBDEV1SOFNAMEDSUBDEVOFDEVICE", e1, r)
+
+		switch e1 {
+		case "record not found":
+			w.WriteHeader(http.StatusNotFound)
+		default:
+		}
+
+	} else {
+		resp = u.Message(true, "success")
+	}
+
+	resp["data"] = map[string]interface{}{"objects": data}
+
+	u.Respond(w, resp)
+}

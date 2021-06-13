@@ -498,3 +498,16 @@ func GetSubdevicesOfDevice(id int) ([]*Subdevice, string) {
 
 	return subdevs, ""
 }
+
+func GetSubdevice1sUsingNamedSubdeviceOfDevice(id int, name string) ([]*Subdevice1, string) {
+	subdev, e := GetSubdeviceByNameAndParentID(id, name)
+	if e != "" {
+		return nil, e
+	}
+
+	sd1s, e1 := GetSubdevices1OfParent(subdev.ID)
+	if e1 != "" {
+		return nil, e1
+	}
+	return sd1s, ""
+}

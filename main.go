@@ -357,8 +357,11 @@ func main() {
 	router.HandleFunc("/api/user/devices/{id}",
 		controllers.DeleteDevice).Methods("DELETE")
 
-	router.HandleFunc("/api/user/devices/{id:[0-9]+}/subdevices/{subdevice_name}/subdevices1/{subdevone_name}",
+	router.HandleFunc("/api/user/devices/{id:[0-9]+}/subdevices/{subdevice_name}/subdevice1s/{subdevone_name}",
 		controllers.GetNamedSubdevice1OfDevice).Methods("GET")
+
+	router.HandleFunc("/api/user/devices/{id:[0-9]+}/subdevices/{subdevice_name}/subdevice1s",
+		controllers.GetSubdevice1sUsingNamedSubdeviceOfDevice).Methods("GET")
 
 	router.HandleFunc("/api/user/devices/{id:[0-9]+}/subdevices/{subdevice_name}",
 		controllers.GetDeviceSubdeviceByName).Methods("GET")

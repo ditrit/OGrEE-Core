@@ -1460,6 +1460,44 @@
         }
       }
     },
+    "/api/user/devices/{id}/subdevices/{subdevice_name}/subdevice1s": {
+      "get": {
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "devices"
+        ],
+        "summary": "Gets Subdevice1s of Device.",
+        "operationId": "GetDevice",
+        "parameters": [
+          {
+            "type": "int",
+            "default": 999,
+            "description": "ID of desired device",
+            "name": "ID",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "int",
+            "default": "Subdev1",
+            "description": "Name of desired subdevice",
+            "name": "subdevice_name",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful"
+          },
+          "404": {
+            "description": "Not found"
+          }
+        }
+      }
+    },
     "/api/user/devices?": {
       "get": {
         "description": "Gets a Device using any attribute (with the exception of description) via query\nThe attributes are in the form {attr}=xyz\u0026{attr1}=abc\nAnd any combination can be provided given that at least 1 is provided.",
