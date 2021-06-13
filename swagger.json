@@ -2264,6 +2264,60 @@
         }
       }
     },
+    "/api/user/racks/{id}/devices/{device_name}/subdevices/{subdevice_name}/subdevice1s/{subdevice1_name}": {
+      "get": {
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "racks"
+        ],
+        "summary": "Gets Subdevice1 of Rack by name.",
+        "operationId": "GetRacks",
+        "parameters": [
+          {
+            "type": "int",
+            "default": 999,
+            "description": "ID of Rack",
+            "name": "ID",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "default": "R1",
+            "description": "name of device",
+            "name": "device_name",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "default": "S1",
+            "description": "name of subdevice",
+            "name": "subdevice_name",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "default": "SUBDEV1",
+            "description": "name of subdevice1",
+            "name": "subdevice1_name",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Found"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        }
+      }
+    },
     "/api/user/racks?": {
       "get": {
         "description": "Gets a Rack using any attribute (with the exception of description) via query\nThe attributes are in the form {attr}=xyz\u0026{attr1}=abc\nAnd any combination can be provided given that at least 1 is provided.",

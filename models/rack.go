@@ -527,3 +527,21 @@ func GetSubdevice1sUsingNamedSubdeviceOfRack(id int, dev, subdev string) ([]*Sub
 	}
 	return sd1s, ""
 }
+
+func GetNamedSubdevice1OfRack(id int, dev, subdev, sd1 string) (*Subdevice1, string) {
+	device, e := GetDeviceByNameAndParentID(uint(id), dev)
+	if e != "" {
+		return nil, e
+	}
+
+	subdevice, e1 := GetSubdeviceByNameAndParentID(device.ID, subdev)
+	if e1 != "" {
+		return nil, e1
+	}
+
+	subdev1, e2 := GetSubdevice1ByNameAndParentID(subdevice.ID, sd1)
+	if e2 != "" {
+		return nil, e2
+	}
+	return subdev1, ""
+}
