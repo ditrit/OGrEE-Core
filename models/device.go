@@ -475,3 +475,17 @@ func GetDeviceHierarchy(id int) (*Device, string) {
 
 	return dev, ""
 }
+
+func GetNamedSubdevice1OfDevice(id int, sd, sd1 string) (*Subdevice1, string) {
+	subdev, e := GetSubdeviceByNameAndParentID(id, sd)
+	if e != "" {
+		return nil, ""
+	}
+
+	subdev1, e := GetSubdevice1ByNameAndParentID(subdev.ID, sd1)
+	if e != "" {
+		return nil, ""
+	}
+
+	return subdev1, ""
+}
