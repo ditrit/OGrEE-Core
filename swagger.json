@@ -1392,6 +1392,36 @@
         }
       }
     },
+    "/api/user/devices/{id}/subdevices": {
+      "get": {
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "devices"
+        ],
+        "summary": "Gets Subdevices of Device.",
+        "operationId": "GetDevice",
+        "parameters": [
+          {
+            "type": "int",
+            "default": 999,
+            "description": "ID of desired device",
+            "name": "ID",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful"
+          },
+          "404": {
+            "description": "Not found"
+          }
+        }
+      }
+    },
     "/api/user/devices/{id}/subdevices/{subdevice_name}": {
       "get": {
         "produces": [

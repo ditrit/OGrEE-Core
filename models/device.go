@@ -489,3 +489,12 @@ func GetNamedSubdevice1OfDevice(id int, sd, sd1 string) (*Subdevice1, string) {
 
 	return subdev1, ""
 }
+
+func GetSubdevicesOfDevice(id int) ([]*Subdevice, string) {
+	subdevs, e := GetSubdevicesOfParent(uint(id))
+	if e != "" {
+		return nil, ""
+	}
+
+	return subdevs, ""
+}
