@@ -149,6 +149,9 @@ func main() {
 	router.HandleFunc("/api/user/sites/{id:[0-9]+}/all/nonstd",
 		controllers.GetSiteHierarchyNonStandard).Methods("GET")
 
+	router.HandleFunc("/api/user/sites/{id:[0-9]+}/all/buildings/rooms/racks/devices/subdevices",
+		controllers.GetSiteHierarchyToSubdevice).Methods("GET")
+
 	router.HandleFunc("/api/user/sites/{id:[0-9]+}/all/buildings/rooms/racks/devices",
 		controllers.GetSiteHierarchyToDevice).Methods("GET")
 

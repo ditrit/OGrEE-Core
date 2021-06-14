@@ -4000,6 +4000,36 @@
         }
       }
     },
+    "/api/user/sites/{id}/all/buildings/rooms/racks/devices/subdevices": {
+      "get": {
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "sites"
+        ],
+        "summary": "Gets Hierarchy of a Site until subdevices.",
+        "operationId": "GetSiteHierarchy",
+        "parameters": [
+          {
+            "type": "int",
+            "default": 999,
+            "description": "ID of desired site",
+            "name": "ID",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Found"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        }
+      }
+    },
     "/api/user/sites/{id}/buildings": {
       "get": {
         "produces": [

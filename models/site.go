@@ -666,6 +666,54 @@ func GetSiteHierarchyToDevice(id int) (*Site, string) {
 	return site, ""
 }
 
+func GetSiteHierarchyToSubdevice(id int) (*Site, string) {
+	site, e := GetSite(uint(id))
+	if e != "" {
+		return nil, e
+	}
+
+	site.Buildings, e = GetBuildingsOfParent(id)
+	if e != "" {
+		return nil, e
+	}
+
+	for idx, _ := range site.Buildings {
+		site.Buildings[idx].Rooms, e =
+			GetRoomsOfParent(uint(site.Buildings[idx].ID))
+		if e != "" {
+			return nil, e
+		}
+
+		for k, _ := range site.Buildings[idx].Rooms {
+			site.Buildings[idx].Rooms[k].Racks, e =
+				GetRacksOfParent(uint(site.Buildings[idx].Rooms[k].ID))
+			if e != "" {
+				return nil, e
+			}
+
+			for i, _ := range site.Buildings[idx].Rooms[k].Racks {
+				site.Buildings[idx].Rooms[k].Racks[i].Devices, e =
+					GetDevicesOfParent(uint(site.Buildings[idx].Rooms[k].
+						Racks[i].ID))
+				if e != "" {
+					return nil, e
+				}
+
+				for h, _ := range site.Buildings[idx].Rooms[k].Racks[i].Devices {
+					site.Buildings[idx].Rooms[k].
+						Racks[i].Devices[h].Subdevices, e =
+						GetSubdevicesOfParent(uint(site.Buildings[idx].
+							Rooms[k].Racks[i].Devices[h].ID))
+					if e != "" {
+						return nil, e
+					}
+				}
+			}
+		}
+	}
+	return site, ""
+}
+
 func GetSubdevicesUsingNamedDeviceOfSite(id int, bldg_name,
 	room_name, rack_name, device_name string) ([]*Subdevice, string) {
 
