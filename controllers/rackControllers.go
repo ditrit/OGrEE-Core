@@ -580,6 +580,54 @@ var GetRackHierarchyToDevices = func(w http.ResponseWriter, r *http.Request) {
 	u.Respond(w, resp)
 }
 
+// swagger:operation GET /api/user/racks/{id}/all/devices/subdevices racks GetRack
+// Gets hierarchy of Rack to subdevices.
+// ---
+// produces:
+// - application/json
+// parameters:
+// - name: ID
+//   in: path
+//   description: ID of desired rack
+//   required: true
+//   type: int
+//   default: 999
+// responses:
+//     '200':
+//        description: Successful
+//     '404':
+//        description: Not found
+var GetRackHierarchyToSubdevices = func(w http.ResponseWriter, r *http.Request) {
+	id, e := strconv.Atoi(mux.Vars(r)["id"])
+	resp := u.Message(true, "success")
+
+	if e != nil {
+		u.Respond(w, u.Message(false, "Error while parsing path parameters"))
+		u.ErrLog("Error while parsing path parameters", "GET RACKHIERARCHYTOSUBDEVICES", "", r)
+		return
+	}
+
+	data, e1 := models.GetRackHierarchyToSubdevices(id)
+
+	if data == nil {
+		resp = u.Message(false, "Error while getting Rack Hierarchy: "+e1)
+		u.ErrLog("Error while getting Rack", "GET RACKHIERARCHYTOSUBDEVICES", e1, r)
+
+		switch e1 {
+		case "record not found":
+			w.WriteHeader(http.StatusNotFound)
+		default:
+			w.WriteHeader(http.StatusNotFound)
+		}
+
+	} else {
+		resp = u.Message(true, "success")
+	}
+
+	resp["data"] = data
+	u.Respond(w, resp)
+}
+
 var GetRackHierarchyNonStandard = func(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("me & the irishman")
 	id, e := strconv.Atoi(mux.Vars(r)["id"])

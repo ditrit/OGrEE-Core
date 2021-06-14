@@ -473,6 +473,10 @@ func GetDeviceHierarchy(id int) (*Device, string) {
 		return nil, e
 	}
 
+	for i, _ := range dev.Subdevices {
+		dev.Subdevices[i], e = GetSubdeviceHierarchy(dev.Subdevices[i].ID)
+	}
+
 	return dev, ""
 }
 

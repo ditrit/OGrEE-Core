@@ -2096,6 +2096,36 @@
         }
       }
     },
+    "/api/user/racks/{id}/all/devices/subdevices": {
+      "get": {
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "racks"
+        ],
+        "summary": "Gets hierarchy of Rack to subdevices.",
+        "operationId": "GetRack",
+        "parameters": [
+          {
+            "type": "int",
+            "default": 999,
+            "description": "ID of desired rack",
+            "name": "ID",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful"
+          },
+          "404": {
+            "description": "Not found"
+          }
+        }
+      }
+    },
     "/api/user/racks/{id}/devices/{device_name}": {
       "get": {
         "produces": [
