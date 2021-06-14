@@ -896,6 +896,76 @@
         }
       }
     },
+    "/api/user/buildings/{id}/rooms/{room_name}/racks/{rack_name}/devices/{device_name}/subdevices/{subdevice_name}/subdevice1s/{subdevice1_name}": {
+      "get": {
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "buildings"
+        ],
+        "summary": "Gets Subdevice1 of Building.",
+        "operationId": "GetSubdevicesOfBuilding",
+        "parameters": [
+          {
+            "type": "int",
+            "default": 999,
+            "description": "ID of Building",
+            "name": "ID",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "default": "R1",
+            "description": "name of room",
+            "name": "room_name",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "default": "Rack01",
+            "description": "name of rack",
+            "name": "rack_name",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "int",
+            "default": "Device01",
+            "description": "name of device",
+            "name": "device_name",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "int",
+            "default": "Subdevice01",
+            "description": "name of subdevice",
+            "name": "subdevice_name",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "int",
+            "default": "Subdev1",
+            "description": "name of subdevice1",
+            "name": "subdevice1_name",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Found"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        }
+      }
+    },
     "/api/user/buildings?": {
       "get": {
         "description": "Gets a Building using any attribute (with the exception of description) via query\nThe attributes are in the form {attr}=xyz\u0026{attr1}=abc\nAnd any combination can be provided given that at least 1 is provided.",
