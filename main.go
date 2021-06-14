@@ -274,6 +274,9 @@ func main() {
 	router.HandleFunc("/api/user/rooms/{id}",
 		controllers.DeleteRoom).Methods("DELETE")
 
+	router.HandleFunc("/api/user/rooms/{id:[0-9]+}/racks/{rack_name}/devices/{device_name}/subdevices/{subdevice_name}/subdevice1s/{subdevice1_name}",
+		controllers.GetNamedSubdevice1OfRoom).Methods("GET")
+
 	router.HandleFunc("/api/user/rooms/{id:[0-9]+}/racks/{rack_name}/devices/{device_name}/subdevices/{subdevice_name}/subdevice1s",
 		controllers.GetSubdevice1sUsingUsingNamedSubdeviceOfRoom).Methods("GET")
 
@@ -416,19 +419,19 @@ func main() {
 	router.HandleFunc("/api/user/subdevices",
 		controllers.GetSubdevice1ByQuery).Methods("GET").MatcherFunc(dmatch)
 
-	router.HandleFunc("/api/user/subdevices1",
+	router.HandleFunc("/api/user/subdevice1s",
 		controllers.CreateSubdevice1).Methods("POST")
 
-	router.HandleFunc("/api/user/subdevices1/{id}",
+	router.HandleFunc("/api/user/subdevice1s/{id}",
 		controllers.UpdateSubdevice1).Methods("PUT")
 
-	router.HandleFunc("/api/user/subdevices1/{id}",
+	router.HandleFunc("/api/user/subdevice1s/{id}",
 		controllers.DeleteSubdevice1).Methods("DELETE")
 
-	router.HandleFunc("/api/user/subdevices1/{id}",
+	router.HandleFunc("/api/user/subdevice1s/{id}",
 		controllers.GetSubdevice1).Methods("GET")
 
-	router.HandleFunc("/api/user/subdevices1",
+	router.HandleFunc("/api/user/subdevice1s",
 		controllers.GetAllSubdevices1).Methods("GET")
 
 	//Attach JWT auth middleware

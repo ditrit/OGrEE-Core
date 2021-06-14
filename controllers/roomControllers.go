@@ -1010,7 +1010,7 @@ var GetNamedSubdeviceOfRoom = func(w http.ResponseWriter, r *http.Request) {
 
 	data, e1 := models.GetNamedSubdeviceOfRoom(id, rack_name, device_name, subdev_name)
 	if data == nil {
-		resp = u.Message(false, "Error while getting Subevice: "+e1)
+		resp = u.Message(false, "Error while getting Subdevice: "+e1)
 		u.ErrLog("Error while getting Named Subdevice of Room",
 			"GET NAMEDSUBDEVOFROOM", e1, r)
 
@@ -1119,7 +1119,7 @@ var GetSubdevicesUsingNamedDeviceOfRoom = func(w http.ResponseWriter, r *http.Re
 //   description: Name of desired subdevice
 //   required: true
 //   type: string
-//   default: "Device01"
+//   default: "SubdeviceA"
 // responses:
 //     '200':
 //         description: Found
@@ -1155,5 +1155,80 @@ var GetSubdevice1sUsingUsingNamedSubdeviceOfRoom = func(w http.ResponseWriter, r
 
 	resp["data"] = map[string]interface{}{"objects": data}
 
+	u.Respond(w, resp)
+}
+
+// swagger:operation GET /api/user/rooms/{id}/racks/{rack_name}/devices/{device_name}/subdevices/{subdevice_name}/subdevice1s/{subdev1_name} rooms GetDevicesOfRoom
+// Get Named Subdevice1 of Room.
+// ---
+// produces:
+// - application/json
+// parameters:
+// - name: ID
+//   in: path
+//   description: ID of Room
+//   required: true
+//   type: int
+//   default: 999
+// - name: rack_name
+//   in: path
+//   description: Name of desired rack
+//   required: true
+//   type: string
+//   default: "Rack01"
+// - name: device_name
+//   in: path
+//   description: Name of desired device
+//   required: true
+//   type: string
+//   default: "Device01"
+// - name: subdevice_name
+//   in: path
+//   description: Name of desired subdevice
+//   required: true
+//   type: string
+//   default: "Subdevice01"
+// - name: subdev1_name
+//   in: path
+//   description: Name of desired subdevice1
+//   required: true
+//   type: string
+//   default: "SubDev1"
+// responses:
+//     '200':
+//         description: Found
+//     '404':
+//         description: Not Found
+var GetNamedSubdevice1OfRoom = func(w http.ResponseWriter, r *http.Request) {
+	id, e := strconv.Atoi(mux.Vars(r)["id"])
+	rack_name := mux.Vars(r)["rack_name"]
+	device_name := mux.Vars(r)["device_name"]
+	subdev_name := mux.Vars(r)["subdevice_name"]
+	sd1_name := mux.Vars(r)["subdevice1_name"]
+	resp := u.Message(true, "success")
+	if e != nil {
+		u.Respond(w, u.Message(false, "Error while parsing path parameters"))
+		u.ErrLog("Error while parsing path parameters", "GET NAMEDSUBDEV1OFROOM", "", r)
+		return
+	}
+
+	data, e1 := models.GetNamedSubdevice1OfRoom(id, rack_name,
+		device_name, subdev_name, sd1_name)
+	if data == nil {
+		resp = u.Message(false, "Error while getting Subdevice1: "+e1)
+		u.ErrLog("Error while getting Named Subdevice1 of Room",
+			"GET NAMEDSUBDEV1OFROOM", e1, r)
+
+		switch e1 {
+		case "record not found":
+			w.WriteHeader(http.StatusNotFound)
+		default:
+		}
+
+	} else {
+		resp = u.Message(true, "success")
+	}
+
+	resp["data"] = data
 	u.Respond(w, resp)
 }

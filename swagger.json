@@ -3084,7 +3084,7 @@
           },
           {
             "type": "string",
-            "default": "Device01",
+            "default": "SubdeviceA",
             "description": "Name of desired subdevice",
             "name": "subdevice_name",
             "in": "path",
@@ -3141,6 +3141,68 @@
             "default": "SubdeviceA",
             "description": "Name of desired subdevice",
             "name": "subdevice_name",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Found"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        }
+      }
+    },
+    "/api/user/rooms/{id}/racks/{rack_name}/devices/{device_name}/subdevices/{subdevice_name}/subdevice1s/{subdev1_name}": {
+      "get": {
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "rooms"
+        ],
+        "summary": "Get Named Subdevice1 of Room.",
+        "operationId": "GetDevicesOfRoom",
+        "parameters": [
+          {
+            "type": "int",
+            "default": 999,
+            "description": "ID of Room",
+            "name": "ID",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "default": "Rack01",
+            "description": "Name of desired rack",
+            "name": "rack_name",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "default": "Device01",
+            "description": "Name of desired device",
+            "name": "device_name",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "default": "Subdevice01",
+            "description": "Name of desired subdevice",
+            "name": "subdevice_name",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "default": "SubDev1",
+            "description": "Name of desired subdevice1",
+            "name": "subdev1_name",
             "in": "path",
             "required": true
           }
