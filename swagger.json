@@ -2895,6 +2895,36 @@
         }
       }
     },
+    "/api/user/rooms/{id}/all/racks/devices/subdevices": {
+      "get": {
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "rooms"
+        ],
+        "summary": "Gets Room Hierarchy to Subdevices.",
+        "operationId": "GetAllRooms",
+        "parameters": [
+          {
+            "type": "int",
+            "default": 999,
+            "description": "ID of Room",
+            "name": "ID",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Found"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        }
+      }
+    },
     "/api/user/rooms/{id}/racks": {
       "get": {
         "produces": [

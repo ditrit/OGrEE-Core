@@ -293,6 +293,31 @@ func GetRoomHierarchyToDevices(id int) (*Room, string) {
 	return room, ""
 }
 
+func GetRoomHierarchyToSubdevices(id int) (*Room, string) {
+	room, e := GetRoom(uint(id))
+	if e != "" {
+		return nil, e
+	}
+
+	room.Racks, e = GetRacksOfParent(uint(id))
+	if e != "" {
+		return nil, e
+	}
+
+	for i, _ := range room.Racks {
+		room.Racks[i].Devices, e = GetDevicesOfParent(uint(room.Racks[i].ID))
+		if e != "" {
+			return nil, e
+		}
+
+		for k, _ := range room.Racks[i].Devices {
+			room.Racks[i].Devices[k].Subdevices, e =
+				GetSubdevicesOfParent(uint(room.Racks[i].Devices[k].ID))
+		}
+	}
+	return room, ""
+}
+
 func GetRoomHierarchyNonStandard(id uint) (*Room, []*Rack, [][]*Device, string) {
 
 	room, e := GetRoom(id)

@@ -707,6 +707,54 @@ var GetRoomHierarchyToDevices = func(w http.ResponseWriter, r *http.Request) {
 	u.Respond(w, resp)
 }
 
+// swagger:operation GET /api/user/rooms/{id}/all/racks/devices/subdevices rooms GetAllRooms
+// Gets Room Hierarchy to Subdevices.
+// ---
+// produces:
+// - application/json
+// parameters:
+// - name: ID
+//   in: path
+//   description: ID of Room
+//   required: true
+//   type: int
+//   default: 999
+// responses:
+//     '200':
+//         description: Found
+//     '404':
+//         description: Not Found
+var GetRoomHierarchyToSubdevices = func(w http.ResponseWriter, r *http.Request) {
+	id, e := strconv.Atoi(mux.Vars(r)["id"])
+	resp := u.Message(true, "success")
+
+	if e != nil {
+		u.Respond(w, u.Message(false, "Error while parsing path parameters"))
+		u.ErrLog("Error while parsing path parameters", "GET ROOMHIERARCHYTOSUBDEVICES", "", r)
+		return
+	}
+
+	data, e1 := models.GetRoomHierarchyToSubdevices(id)
+
+	if data == nil {
+		resp = u.Message(false, "Error while getting Room Hierarchy: "+e1)
+		u.ErrLog("Error while getting Room", "GET ROOMHIERARCHYTOSUBDEVICES", e1, r)
+
+		switch e1 {
+		case "record not found":
+			w.WriteHeader(http.StatusNotFound)
+		default:
+			w.WriteHeader(http.StatusNotFound)
+		}
+
+	} else {
+		resp = u.Message(true, "success")
+	}
+
+	resp["data"] = data
+	u.Respond(w, resp)
+}
+
 var GetRoomHierarchyNonStandard = func(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("me & the irishman2")
 	id, e := strconv.Atoi(mux.Vars(r)["id"])
