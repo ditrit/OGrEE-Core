@@ -618,3 +618,21 @@ func GetNamedSubdeviceOfTenant(tenant_name, site_name,
 
 	return subdev, ""
 }
+
+func GetSubdevice1sUsingNamedSubdeviceOfTenant(tenant_name, site_name,
+	bldg_name, room_name, rack_name, dev_name,
+	subdev_name string) ([]*Subdevice1, string) {
+
+	device, e := GetNamedDeviceOfTenant(tenant_name, site_name,
+		bldg_name, room_name, rack_name, dev_name)
+	if e != "" {
+		return nil, e
+	}
+
+	subdevice, e2 := GetSubdeviceByNameAndParentID(device.ID, subdev_name)
+	if e2 != "" {
+		return nil, e2
+	}
+	return GetSubdevices1OfParent(subdevice.ID)
+
+}

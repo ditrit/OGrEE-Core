@@ -1537,3 +1537,89 @@ var GetNamedSubdeviceOfTenant = func(w http.ResponseWriter, r *http.Request) {
 	resp["data"] = data
 	u.Respond(w, resp)
 }
+
+// swagger:operation GET /api/user/tenants/{tenant_name}/sites/{site_name}/buildings/{building_name}/rooms/{room_name}/racks/{rack_name}/devices/{subdevice_name}/subdevices/{subdevice_name}/{subdevice1_name} tenants GetFromTenant
+// Gets all Subdevice1s of a Named Subdevice of a Tenant from the system.
+// ---
+// produces:
+// - application/json
+// parameters:
+// - name: tenant_name
+//   in: path
+//   description: Name of desired tenant
+//   required: true
+//   type: string
+//   default: "INFINITI"
+// - name: site_name
+//   in: path
+//   description: Name of desired site
+//   required: true
+//   type: string
+//   default: "SiteA"
+// - name: building_name
+//   in: path
+//   description: Name of desired building
+//   required: true
+//   type: string
+//   default: "BldgA"
+// - name: room_name
+//   in: path
+//   description: Name of desired room
+//   required: true
+//   type: string
+//   default: "R1"
+// - name: rack_name
+//   in: path
+//   description: Name of desired rack
+//   required: true
+//   type: string
+//   default: "Rack01"
+// - name: device_name
+//   in: path
+//   description: Name of desired device
+//   required: true
+//   type: string
+//   default: "Rack01"
+// - name: subdevice_name
+//   in: path
+//   description: Name of desired subdevice
+//   required: true
+//   type: string
+//   default: "SubdeviceA"
+// responses:
+//     '200':
+//         description: Found
+//     '404':
+//         description: Not Found
+var GetSubdevice1sUsingNamedSubdeviceOfTenant = func(w http.ResponseWriter, r *http.Request) {
+	name := mux.Vars(r)["tenant_name"]
+	site_name := mux.Vars(r)["site_name"]
+	bldg_name := mux.Vars(r)["building_name"]
+	room_name := mux.Vars(r)["room_name"]
+	rack_name := mux.Vars(r)["rack_name"]
+	device_name := mux.Vars(r)["device_name"]
+	subdevice_name := mux.Vars(r)["subdevice_name"]
+	resp := u.Message(true, "success")
+
+	data, e1 := models.GetSubdevice1sUsingNamedSubdeviceOfTenant(name, site_name,
+		bldg_name, room_name, rack_name, device_name, subdevice_name)
+	if data == nil || len(data) == 0 {
+		resp = u.Message(false, "Error while getting Subdevice1s: "+e1)
+		u.ErrLog("Error while getting Subdevice1s using Named Subdevice of Tenant",
+			"GETSUBDEV1SUSINGNAMEDDEVICEOFTENANT", e1, r)
+
+		switch e1 {
+		case "record not found":
+			w.WriteHeader(http.StatusNotFound)
+		case "":
+			w.WriteHeader(http.StatusNotFound)
+		default:
+		}
+
+	} else {
+		resp = u.Message(true, "success")
+	}
+
+	resp["data"] = map[string]interface{}{"objects": data}
+	u.Respond(w, resp)
+}
