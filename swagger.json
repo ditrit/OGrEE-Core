@@ -6966,6 +6966,92 @@
         }
       }
     },
+    "/api/user/tenants/{tenant_name}/sites/{site_name}/buildings/{building_name}/rooms/{room_name}/racks/{rack_name}/devices/{device_name}/subdevices/{subdevice_name}/subdevice1s/{subdevice1_name}": {
+      "get": {
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "tenants"
+        ],
+        "summary": "Gets Subdevice1 of a Tenant from the system.",
+        "operationId": "GetFromTenant",
+        "parameters": [
+          {
+            "type": "string",
+            "default": "INFINITI",
+            "description": "Name of desired tenant",
+            "name": "tenant_name",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "default": "SiteA",
+            "description": "Name of desired site",
+            "name": "site_name",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "default": "BldgA",
+            "description": "Name of desired building",
+            "name": "building_name",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "default": "R1",
+            "description": "Name of desired room",
+            "name": "room_name",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "default": "Rack01",
+            "description": "Name of desired rack",
+            "name": "rack_name",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "default": "Device01",
+            "description": "Name of desired device",
+            "name": "device_name",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "default": "SubDeviceA",
+            "description": "Name of desired subdevice",
+            "name": "subdevice_name",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "default": "SubDevice1A",
+            "description": "Name of desired subdevice1",
+            "name": "subdevice1_name",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Found"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        }
+      }
+    },
     "/api/user/tenants/{tenant_name}/sites/{site_name}/buildings/{building_name}/rooms/{room_name}/racks/{rack_name}/devices/{subdevice_name}/subdevices": {
       "get": {
         "produces": [
@@ -7036,7 +7122,7 @@
         }
       }
     },
-    "/api/user/tenants/{tenant_name}/sites/{site_name}/buildings/{building_name}/rooms/{room_name}/racks/{rack_name}/devices/{subdevice_name}/subdevices/{subdevice_name}/{subdevice1_name}": {
+    "/api/user/tenants/{tenant_name}/sites/{site_name}/buildings/{building_name}/rooms/{room_name}/racks/{rack_name}/devices/{subdevice_name}/subdevices/{subdevice_name}/subdevice1s/{subdevice1_name}": {
       "get": {
         "produces": [
           "application/json"

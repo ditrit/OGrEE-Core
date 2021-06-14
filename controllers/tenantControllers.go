@@ -1538,7 +1538,7 @@ var GetNamedSubdeviceOfTenant = func(w http.ResponseWriter, r *http.Request) {
 	u.Respond(w, resp)
 }
 
-// swagger:operation GET /api/user/tenants/{tenant_name}/sites/{site_name}/buildings/{building_name}/rooms/{room_name}/racks/{rack_name}/devices/{subdevice_name}/subdevices/{subdevice_name}/{subdevice1_name} tenants GetFromTenant
+// swagger:operation GET /api/user/tenants/{tenant_name}/sites/{site_name}/buildings/{building_name}/rooms/{room_name}/racks/{rack_name}/devices/{subdevice_name}/subdevices/{subdevice_name}/subdevice1s/{subdevice1_name} tenants GetFromTenant
 // Gets all Subdevice1s of a Named Subdevice of a Tenant from the system.
 // ---
 // produces:
@@ -1621,5 +1621,96 @@ var GetSubdevice1sUsingNamedSubdeviceOfTenant = func(w http.ResponseWriter, r *h
 	}
 
 	resp["data"] = map[string]interface{}{"objects": data}
+	u.Respond(w, resp)
+}
+
+// swagger:operation GET /api/user/tenants/{tenant_name}/sites/{site_name}/buildings/{building_name}/rooms/{room_name}/racks/{rack_name}/devices/{device_name}/subdevices/{subdevice_name}/subdevice1s/{subdevice1_name} tenants GetFromTenant
+// Gets Subdevice1 of a Tenant from the system.
+// ---
+// produces:
+// - application/json
+// parameters:
+// - name: tenant_name
+//   in: path
+//   description: Name of desired tenant
+//   required: true
+//   type: string
+//   default: "INFINITI"
+// - name: site_name
+//   in: path
+//   description: Name of desired site
+//   required: true
+//   type: string
+//   default: "SiteA"
+// - name: building_name
+//   in: path
+//   description: Name of desired building
+//   required: true
+//   type: string
+//   default: "BldgA"
+// - name: room_name
+//   in: path
+//   description: Name of desired room
+//   required: true
+//   type: string
+//   default: "R1"
+// - name: rack_name
+//   in: path
+//   description: Name of desired rack
+//   required: true
+//   type: string
+//   default: "Rack01"
+// - name: device_name
+//   in: path
+//   description: Name of desired device
+//   required: true
+//   type: string
+//   default: "Device01"
+// - name: subdevice_name
+//   in: path
+//   description: Name of desired subdevice
+//   required: true
+//   type: string
+//   default: "SubDeviceA"
+// - name: subdevice1_name
+//   in: path
+//   description: Name of desired subdevice1
+//   required: true
+//   type: string
+//   default: "SubDevice1A"
+// responses:
+//     '200':
+//         description: Found
+//     '404':
+//         description: Not Found
+var GetNamedSubdevice1OfTenant = func(w http.ResponseWriter, r *http.Request) {
+	name := mux.Vars(r)["tenant_name"]
+	site_name := mux.Vars(r)["site_name"]
+	bldg_name := mux.Vars(r)["building_name"]
+	room_name := mux.Vars(r)["room_name"]
+	rack_name := mux.Vars(r)["rack_name"]
+	dev_name := mux.Vars(r)["device_name"]
+	subdev_name := mux.Vars(r)["subdevice_name"]
+	subdev1_name := mux.Vars(r)["subdevice1_name"]
+	resp := u.Message(true, "success")
+
+	data, e1 := models.GetNamedSubdevice1OfTenant(name, site_name, bldg_name, room_name,
+		rack_name, dev_name, subdev_name, subdev1_name)
+	if data == nil {
+		resp = u.Message(false, "Error while getting Subdevic1e: "+e1)
+		u.ErrLog("Error while getting Named Subdevice1 of Tenant",
+			"GET NAMEDSUBDEV1OFTENANT", e1, r)
+
+		switch e1 {
+		case "record not found":
+			w.WriteHeader(http.StatusNotFound)
+		default:
+		}
+
+	} else {
+		resp = u.Message(true, "success")
+	}
+
+	resp["data"] = data
 	u.Respond(w, resp)
 }
