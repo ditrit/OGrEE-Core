@@ -611,6 +611,45 @@ func GetBuildingHierarchyToDevice(id int) (*Building, string) {
 	return bldg, ""
 }
 
+func GetBuildingHierarchyToSubdevice(id int) (*Building, string) {
+	bldg, e := GetBuilding(uint(id))
+	if e != "" {
+		return nil, e
+	}
+
+	bldg.Rooms, e = GetRoomsOfParent(uint(id))
+	if e != "" {
+		return nil, e
+	}
+
+	for idx, _ := range bldg.Rooms {
+		bldg.Rooms[idx].Racks, e = GetRacksOfParent(uint(bldg.Rooms[idx].ID))
+		if e != "" {
+			return nil, e
+		}
+
+		for k, _ := range bldg.Rooms[idx].Racks {
+			bldg.Rooms[idx].Racks[k].Devices, e =
+				GetDevicesOfParent(uint(bldg.Rooms[idx].Racks[k].ID))
+			if e != "" {
+				return nil, e
+			}
+
+			for h, _ := range bldg.Rooms[idx].Racks[k].Devices {
+				bldg.Rooms[idx].Racks[k].Devices[h].Subdevices, e =
+					GetSubdevicesOfParent(uint(bldg.Rooms[idx].
+						Racks[k].Devices[h].ID))
+				if e != "" {
+					return nil, e
+				}
+
+			}
+		}
+	}
+
+	return bldg, ""
+}
+
 func GetSubdevicesUsingNamedDeviceOfBuilding(id int, room_name,
 	rack_name, device_name string) ([]*Subdevice, string) {
 

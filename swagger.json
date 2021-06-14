@@ -466,6 +466,36 @@
         }
       }
     },
+    "/api/user/buildings/{id}/all/rooms/racks/devices/subdevices": {
+      "get": {
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "buildings"
+        ],
+        "summary": "Gets hierarchy of Building until subdevices.",
+        "operationId": "GetBuildingHierarchy",
+        "parameters": [
+          {
+            "type": "int",
+            "default": 999,
+            "description": "ID of Building",
+            "name": "ID",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Found"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        }
+      }
+    },
     "/api/user/buildings/{id}/rooms": {
       "get": {
         "produces": [
