@@ -3081,6 +3081,14 @@
             "name": "device_name",
             "in": "path",
             "required": true
+          },
+          {
+            "type": "string",
+            "default": "Device01",
+            "description": "Name of desired subdevice",
+            "name": "subdevice_name",
+            "in": "path",
+            "required": true
           }
         ],
         "responses": {
