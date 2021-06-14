@@ -167,6 +167,9 @@ func main() {
 	router.HandleFunc("/api/user/sites",
 		controllers.GetAllSites).Methods("GET")
 
+	router.HandleFunc("/api/user/sites/{id}/buildings/{building_name}/rooms/{room_name}/racks/{rack_name}/devices/{device_name}/subdevices/{subdevice_name}/subdevice1s/{subdevice1_name}",
+		controllers.GetNamedSubdevice1OfSite).Methods("GET")
+
 	router.HandleFunc("/api/user/sites/{id}/buildings/{building_name}/rooms/{room_name}/racks/{rack_name}/devices/{device_name}/subdevices/{subdevice_name}/subdevice1s",
 		controllers.GetSubdevice1sUsingNamedSubdeviceOfSite).Methods("GET")
 

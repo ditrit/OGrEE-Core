@@ -778,3 +778,20 @@ func GetSubdevice1sUsingNamedSubdeviceOfSite(id int, bldg_name, room_name,
 
 	return GetSubdevices1OfParent(sdv.ID)
 }
+
+func GetNamedSubdevice1OfSite(id int, bldg_name, room_name, rack_name,
+	device_name, subdev_name, sd1_name string) (*Subdevice1, string) {
+
+	dev, e := GetNamedDeviceOfSite(id, bldg_name, room_name,
+		rack_name, device_name)
+	if e != "" {
+		return nil, e
+	}
+
+	subdev, e1 := GetSubdeviceByNameAndParentID(dev.ID, subdev_name)
+	if e1 != "" {
+		return nil, e1
+	}
+
+	return GetSubdevice1ByNameAndParentID(subdev.ID, sd1_name)
+}
