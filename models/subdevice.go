@@ -238,7 +238,7 @@ func GetSubdevice(id uint) (*Subdevice, string) {
 		return nil, err.Error()
 	}
 	subdevice.DescriptionJSON = strings.Split(subdevice.DescriptionDB, "XYZ")
-	subdevice.Category = "subdevice"
+	subdevice.Category = "device"
 	subdevice.IDJSON = strconv.Itoa(subdevice.ID)
 	return subdevice, ""
 }
@@ -261,7 +261,7 @@ func GetSubdevicesOfParent(id uint) ([]*Subdevice, string) {
 			return nil, err.Error()
 		}
 
-		subdevices[i].Category = "subdevice"
+		subdevices[i].Category = "device"
 		subdevices[i].DescriptionJSON = strings.Split(subdevices[i].DescriptionDB, "XYZ")
 		subdevices[i].IDJSON = strconv.Itoa(subdevices[i].ID)
 	}
@@ -279,7 +279,7 @@ func GetAllSubdevices() ([]*Subdevice, string) {
 	}
 
 	for i := range subdevices {
-		subdevices[i].Category = "subdevice"
+		subdevices[i].Category = "device"
 		subdevices[i].Attributes = *(attrs[i])
 		subdevices[i].DescriptionJSON = strings.Split(subdevices[i].DescriptionDB, "XYZ")
 		subdevices[i].IDJSON = strconv.Itoa(subdevices[i].ID)
@@ -304,7 +304,7 @@ func GetSubdeviceByQuery(subdevice *Subdevice) ([]*Subdevice, string) {
 		subdevices[i].IDJSON = strconv.Itoa(subdevices[i].ID)
 		subdevices[i].DescriptionJSON =
 			strings.Split(subdevices[i].DescriptionDB, "XYZ")
-		subdevices[i].Category = "subdevice"
+		subdevices[i].Category = "device"
 	}
 
 	return subdevices, ""
@@ -437,7 +437,7 @@ func GetSubdeviceByName(name string) (*Subdevice, string) {
 
 	subdevice.IDJSON = strconv.Itoa(subdevice.ID)
 	subdevice.DescriptionJSON = strings.Split(subdevice.DescriptionDB, "XYZ")
-	subdevice.Category = "subdevice"
+	subdevice.Category = "device"
 	return subdevice, ""
 }
 
@@ -452,7 +452,7 @@ func GetSubdeviceByNameAndParentID(id int, name string) (*Subdevice, string) {
 	}
 
 	subdevice.DescriptionJSON = strings.Split(subdevice.DescriptionDB, "XYZ")
-	subdevice.Category = "subdevice"
+	subdevice.Category = "device"
 	subdevice.IDJSON = strconv.Itoa(subdevice.ID)
 	return subdevice, ""
 }

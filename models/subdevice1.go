@@ -235,7 +235,7 @@ func GetSubdevice1(id int) (*Subdevice1, string) {
 		return nil, err.Error()
 	}
 	subdevice1.DescriptionJSON = strings.Split(subdevice1.DescriptionDB, "XYZ")
-	subdevice1.Category = "subdevice1"
+	subdevice1.Category = "device"
 	subdevice1.IDJSON = strconv.Itoa(subdevice1.ID)
 	return subdevice1, ""
 }
@@ -258,7 +258,7 @@ func GetSubdevices1OfParent(id int) ([]*Subdevice1, string) {
 			return nil, err.Error()
 		}
 
-		subdevices1[i].Category = "subdevice"
+		subdevices1[i].Category = "device"
 		subdevices1[i].DescriptionJSON = strings.Split(subdevices1[i].DescriptionDB, "XYZ")
 		subdevices1[i].IDJSON = strconv.Itoa(subdevices1[i].ID)
 	}
@@ -276,7 +276,7 @@ func GetAllSubdevices1() ([]*Subdevice1, string) {
 	}
 
 	for i := range subdevices1 {
-		subdevices1[i].Category = "subdevice1"
+		subdevices1[i].Category = "device"
 		subdevices1[i].Attributes = *(attrs[i])
 		subdevices1[i].DescriptionJSON = strings.Split(subdevices1[i].DescriptionDB, "XYZ")
 		subdevices1[i].IDJSON = strconv.Itoa(subdevices1[i].ID)
@@ -301,7 +301,7 @@ func GetSubdevice1ByQuery(subdevice1 *Subdevice1) ([]*Subdevice1, string) {
 		subdevices1[i].IDJSON = strconv.Itoa(subdevices1[i].ID)
 		subdevices1[i].DescriptionJSON =
 			strings.Split(subdevices1[i].DescriptionDB, "XYZ")
-		subdevices1[i].Category = "subdevice"
+		subdevices1[i].Category = "device"
 	}
 
 	return subdevices1, ""
@@ -434,7 +434,7 @@ func GetSubdevice1ByName(name string) (*Subdevice1, string) {
 
 	subdevice1.IDJSON = strconv.Itoa(subdevice1.ID)
 	subdevice1.DescriptionJSON = strings.Split(subdevice1.DescriptionDB, "XYZ")
-	subdevice1.Category = "subdevice1"
+	subdevice1.Category = "device"
 	return subdevice1, ""
 }
 
@@ -449,7 +449,7 @@ func GetSubdevice1ByNameAndParentID(id int, name string) (*Subdevice1, string) {
 	}
 
 	subdevice1.DescriptionJSON = strings.Split(subdevice1.DescriptionDB, "XYZ")
-	subdevice1.Category = "subdevice1"
+	subdevice1.Category = "device"
 	subdevice1.IDJSON = strconv.Itoa(subdevice1.ID)
 	return subdevice1, ""
 }
