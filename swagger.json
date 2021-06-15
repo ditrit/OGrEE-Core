@@ -6357,6 +6357,36 @@
         }
       }
     },
+    "/api/user/tenants/{tenant_name}/all/sites/buildings/rooms/devices/subdevices": {
+      "get": {
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "tenants"
+        ],
+        "summary": "Gets hierarchy of Tenant until subdevices.",
+        "operationId": "GetTenantHierarchy",
+        "parameters": [
+          {
+            "type": "string",
+            "default": "INFINITI",
+            "description": "Name of desired tenant",
+            "name": "tenant_name",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Found"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        }
+      }
+    },
     "/api/user/tenants/{tenant_name}/all/sites/buildings/rooms/racks": {
       "get": {
         "produces": [

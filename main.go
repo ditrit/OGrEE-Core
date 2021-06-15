@@ -118,6 +118,9 @@ func main() {
 	router.HandleFunc("/api/user/tenants/{tenant_name}/sites",
 		controllers.GetSitesOfTenant).Methods("GET")
 
+	router.HandleFunc("/api/user/tenants/{tenant_name}/all/sites/buildings/rooms/racks/devices/subdevices",
+		controllers.GetTenantHierarchyToSubdevice).Methods("GET")
+
 	router.HandleFunc("/api/user/tenants/{tenant_name}/all/sites/buildings/rooms/racks/devices",
 		controllers.GetTenantHierarchyToDevice).Methods("GET")
 
