@@ -104,7 +104,7 @@ func (site *Site) Create() (map[string]interface{}, string) {
 			e.Error()
 	}
 	resp := u.Message(true, "success")
-	resp["data"] = map[string]interface{}{"site": site}
+	resp["data"] = site
 	return resp, ""
 }
 

@@ -76,7 +76,7 @@ func (tenant *Tenant) Create() (map[string]interface{}, string) {
 	}
 
 	resp := u.Message(true, "success")
-	resp["data"] = map[string]interface{}{"tenant": tenant}
+	resp["data"] = tenant
 	return resp, ""
 }
 
