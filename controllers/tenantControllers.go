@@ -8,6 +8,7 @@ import (
 	u "p3/utils"
 	"reflect"
 	"strconv"
+	"strings"
 
 	"github.com/gorilla/mux"
 )
@@ -100,10 +101,15 @@ var CreateTenant = func(w http.ResponseWriter, r *http.Request) {
 		u.ErrLog("Error while creating tenant", "CREATE TENANT", e, r)
 	case "":
 		w.WriteHeader(http.StatusCreated)
-		u.ErrLog("Error while creating tenant", "CREATE TENANT", e, r)
 	default:
-		w.WriteHeader(http.StatusInternalServerError)
-		u.ErrLog("Error while creating tenant", "CREATE TENANT", e, r)
+		if strings.Split(e, " ")[1] == "duplicate" {
+			w.WriteHeader(http.StatusBadRequest)
+			u.ErrLog("Error: Duplicate tenant is forbidden",
+				"CREATE TENANT", e, r)
+		} else {
+			w.WriteHeader(http.StatusInternalServerError)
+			u.ErrLog("Error while creating tenant", "CREATE TENANT", e, r)
+		}
 	}
 
 	u.Respond(w, resp)
