@@ -8,6 +8,7 @@ import (
 	u "p3/utils"
 	"reflect"
 	"strconv"
+	"strings"
 
 	"github.com/gorilla/mux"
 )
@@ -172,13 +173,22 @@ var CreateSubdevice = func(w http.ResponseWriter, r *http.Request) {
 	resp, e := subdevice.Create()
 
 	switch e {
+	case "":
+		w.WriteHeader(http.StatusCreated)
 	case "validate":
 		w.WriteHeader(http.StatusBadRequest)
 		u.ErrLog("Error while creating Subdevice", "CREATE SUBDEVICE", e, r)
 	case "internal":
-		//
+		w.WriteHeader(http.StatusInternalServerError)
+		u.ErrLog(e+" Error", "CREATE SUBDEVICE", "", r)
 	default:
-		w.WriteHeader(http.StatusCreated)
+		if strings.Split(e, " ")[1] == "duplicate" {
+			w.WriteHeader(http.StatusBadRequest)
+			u.ErrLog("Error: Duplicate Subdev is forbidden",
+				"CREATE SUBDEVICE", e, r)
+		} else {
+			w.WriteHeader(http.StatusCreated)
+		}
 	}
 	u.Respond(w, resp)
 }

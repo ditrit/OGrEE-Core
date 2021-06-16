@@ -86,3 +86,12 @@ ALTER TABLE subdevice1_attributes ADD CONSTRAINT chk_subdevice1_orientation CHEC
 --ALTER TABLE device_attributes ADD CONSTRAINT chk_device_pzu CHECK (device_pos_z_unit IN ('mm', 'cm', 'm', 'U', 'OU', 'tile'));
 ALTER TABLE subdevice1_attributes ADD CONSTRAINT chk_subdevice1_sizeu CHECK (subdevice1_size_unit IN ('mm', 'cm', 'm', 'U', 'OU', 'tile'));
 ALTER TABLE subdevice1_attributes ADD CONSTRAINT chk_subdevice1_phu CHECK (subdevice1_height_unit IN ('mm', 'cm', 'm', 'U', 'OU', 'tile'));
+
+-- Unique Children Exclusive --
+ALTER TABLE site ADD UNIQUE (site_name,site_parent_id);
+ALTER TABLE building ADD UNIQUE (bldg_name,bldg_parent_id);
+ALTER TABLE room ADD UNIQUE (room_name,room_parent_id);
+ALTER TABLE rack ADD UNIQUE (rack_name,rack_parent_id);
+ALTER TABLE device ADD UNIQUE (device_name,device_parent_id);
+ALTER TABLE subdevice ADD UNIQUE (subdevice_name,subdevice_parent_id);
+ALTER TABLE subdevice1 ADD UNIQUE (subdevice1_name,subdevice1_parent_id);

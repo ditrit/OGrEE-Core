@@ -8,6 +8,7 @@ import (
 	u "p3/utils"
 	"reflect"
 	"strconv"
+	"strings"
 
 	"github.com/gorilla/mux"
 )
@@ -154,13 +155,22 @@ var CreateRack = func(w http.ResponseWriter, r *http.Request) {
 	resp, e := rack.Create()
 
 	switch e {
+	case "":
+		w.WriteHeader(http.StatusCreated)
 	case "validate":
 		w.WriteHeader(http.StatusBadRequest)
 		u.ErrLog("Error while creating rack", "CREATE RACK", e, r)
 	case "internal":
-		//
+		w.WriteHeader(http.StatusInternalServerError)
+		u.ErrLog(e+" Error", "CREATE RACK", "", r)
 	default:
-		w.WriteHeader(http.StatusCreated)
+		if strings.Split(e, " ")[1] == "duplicate" {
+			w.WriteHeader(http.StatusBadRequest)
+			u.ErrLog("Error: Duplicate rack is forbidden",
+				"CREATE RACK", e, r)
+		} else {
+			w.WriteHeader(http.StatusCreated)
+		}
 	}
 	u.Respond(w, resp)
 }

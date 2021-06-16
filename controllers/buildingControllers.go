@@ -8,6 +8,7 @@ import (
 	u "p3/utils"
 	"reflect"
 	"strconv"
+	"strings"
 
 	"github.com/gorilla/mux"
 )
@@ -124,13 +125,22 @@ var CreateBuilding = func(w http.ResponseWriter, r *http.Request) {
 
 	resp, e := bldg.Create()
 	switch e {
+	case "":
+		w.WriteHeader(http.StatusCreated)
 	case "validate":
 		w.WriteHeader(http.StatusBadRequest)
 		u.ErrLog("Error while creating building", "CREATE BUILDING", e, r)
 	case "internal":
+		w.WriteHeader(http.StatusInternalServerError)
 		u.ErrLog("Error while creating building", "CREATE BUILDING", e, r)
 	default:
-		w.WriteHeader(http.StatusCreated)
+		if strings.Split(e, " ")[1] == "duplicate" {
+			w.WriteHeader(http.StatusBadRequest)
+			u.ErrLog("Error: Duplicate bldg is forbidden",
+				"CREATE BLDG", e, r)
+		} else {
+			w.WriteHeader(http.StatusCreated)
+		}
 	}
 	u.Respond(w, resp)
 }
