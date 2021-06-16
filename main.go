@@ -446,7 +446,7 @@ func main() {
 		controllers.GetAllSubdevices).Methods("GET")
 
 	// ------ SUBDEVICE1 CRUD ------ //
-	router.HandleFunc("/api/user/subdevices",
+	router.HandleFunc("/api/user/subdevice1s",
 		controllers.GetSubdevice1ByQuery).Methods("GET").MatcherFunc(dmatch)
 
 	router.HandleFunc("/api/user/subdevice1s",
