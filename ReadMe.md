@@ -1,11 +1,11 @@
 # Notes for The API
-Designed with JWT, Casbin, CockroachDB and CI tested using Jenkins and docker with a
+Designed with JWT, CockroachDB and CI tested using Jenkins and docker with a
 script to start up CockroachDB
 
 
 Introduction
 ------------
-Currently the most up to date version of the API is in the 'failedDesign' branch. It was thought that the design was really bad, but in fact it is actually better than the design in the master branch. Soon I will fix this so that the best work will be on master.
+This is an API interfacing with a CockroachDB cluster for data centre management.
 
 
 Building
@@ -96,102 +96,8 @@ Dockerfile is a file for docker to create a container of the API
 
 
 
-Setting Up Jenkins
---------------------------
-https://www.jenkins.io/doc/book/installing/docker/
-
-Jenkins Username: admin
-
-Jenkins Password: 
-```
-0e33d7d079fa4848b3dee52494674c33
-```
-
-
-
-Establish the network bridge
-```
-docker network create jenkins
-```
-
-Obtain the dind image to allow jenkins to execute docker commands
-```
-docker run --name jenkins-docker --rm --detach \
-  --privileged --network jenkins --network-alias docker \
-  --env DOCKER_TLS_CERTDIR=/certs \
-  --volume jenkins-docker-certs:/certs/client \
-  --volume jenkins-data:/var/jenkins_home \
-  --publish 2376:2376 docker:dind
-```
-
-Build the custom Jenkins image called 'blueocean' using the Dockerfile
-in jenkins/
-```
-docker build -t myjenkins-blueocean:1.1 ./jenkins
-```
-
-Finally create a container of blueocean
-```
-docker run --name jenkins-blueocean --rm --detach \
-  --network jenkins --env DOCKER_HOST=tcp://docker:2376 \
-  --env DOCKER_CERT_PATH=/certs/client --env DOCKER_TLS_VERIFY=1 \
-  --publish 8080:8080 --publish 50000:50000 \
-  --volume jenkins-data:/var/jenkins_home \
-  --volume jenkins-docker-certs:/certs/client:ro \
-  myjenkins-blueocean:1.1
-```
-
-Interesting Note
-------------------
-Apparently the Jenkins test setup can be mobilised using this docker compose file
-below
-```
-version: '3'services:
-  jenkins:
-    image: jenkins/jenkins:alpine
-    container_name: jenkins
-    ports:
-      - 9090:8080
-      - 50000:50000
-    volumes:
-      - ./docker_volumes/jenkins:/var/jenkins_home
-```
-
-### STUB
-STUB Paragraph
-- **STUB**: Stub
-- **STUB**: 
-
-**Note STUB**: Useless text here, will be updated later 
-
 Jenkins
 --------------------------
-
-### Jenkins & Docker-in-Docker
-https://medium.com/@davidessienshare/how-to-run-jenkins-in-a-docker-container-e782647b3259
-
-https://tutorials.releaseworksacademy.com/learn/the-simple-way-to-run-docker-in-docker-for-ci
-
-This runs Jenkins in a container which will then create docker containers inside of the jenkins docker. It can optionally also create docker containers outside by binding the docker socket (-v /var/run/docker.sock:/var/run/docker.sock), however, running Jenkins in a container proved to be a bit challenging so this unfinished.
-
-Jenkins Username: admin
-
-Jenkins Password: 
-```
-d00e252af1f943878b88444e8395fe0c
-```
-
-You might end up with issues regarding the permissions with volume directories
- I solved this by:
-```
-mkdir jenkins-home; chmod -R 777 jenkins-home
-```
-
-Then I launched the jenkins container using:
-```
-docker run -dit --name jenkins -p 3002:8080 -p 3003:50000 -v /home/ziad/jenkins-home:/var/jenkins_home c5eca72556f6
-```
-
 
 ### Jenkins Standalone
 
