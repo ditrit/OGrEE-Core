@@ -4,6 +4,9 @@ package main
 //it may be worth switching to peterh/liner
 //https://stackoverflow.com/
 // questions/33025599/move-the-cursor-in-a-c-program
+
+// Adding TAB completion support
+//https://thoughtbot.com/blog/tab-completion-in-gnu-readline
 import (
 	"bufio"
 	"bytes"

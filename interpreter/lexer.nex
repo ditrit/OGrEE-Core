@@ -1,9 +1,18 @@
 /[ \t]/  { /* Skip blanks and tabs. */ }
-/create|get|update|delete/ 
-{/*println("Heres what wegot: ",yylex.Text());*/
-println("We got TOKEN_CRUDOP"); return TOKEN_CRUDOP}
+/create/ {println("We got TOKEN_CREATE"); return TOKEN_CREATE}
+/get/ {println("We got TOKEN_GET"); return TOKEN_GET}
+/update/ {println("We got TOKEN_UPDATE"); return TOKEN_UPDATE}
+/delete/ {println("We got TOKEN_DELETE"); return TOKEN_DELETE}
 
-/tenant|site|bldg|building|room|rack|device/ {println("We got TOKEN_ENTITY");lval.s = yylex.Text();return TOKEN_ENTITY}
+
+/tenant/ {println("We got TOKEN_TENANT");lval.s = yylex.Text();return TOKEN_TENANT}
+/site/ {println("We got TOKEN_SITE");lval.s = yylex.Text();return TOKEN_SITE}
+/bldg|building/ {println("We got TOKEN_BLDG");lval.s = yylex.Text();return TOKEN_BLDG}
+/room/ {println("We got TOKEN_ROOM");lval.s = yylex.Text();return TOKEN_ROOM}
+/rack/ {println("We got TOKEN_RACK");lval.s = yylex.Text();return TOKEN_RACK}
+/device/ {println("We got TOKEN_DEVICE");lval.s = yylex.Text();return TOKEN_DEVICE}
+/subdevice/ {println("We got TOKEN_SUBDEVICE");lval.s = yylex.Text();return TOKEN_SUBDEVICE}
+/subdevice1/{println("We got TOKEN_SUBDEVICE1");lval.s = yylex.Text();return TOKEN_SUBDEVICE1}
 /address|category|city|color|country|description|domain|gps|height|heightUnit|id|mainContact|mainEmail|mainPhone|model|name|nbFloors|orientation|parentId|posU|posXY|posXYUnit|posZ|posZUnit|reserved|reservedColor|serial|size|sizeU|sizeUnit|slot|technical|technicalColor|template|token|type|usableColor|vendor|zipcode/ 
 {println("We got TOKEN_ATTR");lval.s = yylex.Text();return TOKEN_ATTR}
 

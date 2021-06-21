@@ -26,10 +26,12 @@ func resMap(x *string) map[string]string {
 }
 
 %token <s> TOKEN_WORD
-%token <s> TOKEN_ENTITY
+%token <s> TOKEN_TENANT TOKEN_SITE TOKEN_BLDG TOKEN_ROOM
+%token <s> TOKEN_RACK TOKEN_DEVICE TOKEN_SUBDEVICE TOKEN_SUBDEVICE1
 %token <s> TOKEN_ATTR
 %token
-       TOKEN_CRUDOP TOKEN_ATTR 
+       TOKEN_CREATE TOKEN_GET TOKEN_UPDATE
+       TOKEN_ATTR TOKEN_DELETE
        TOKEN_BASHTYPE TOKEN_EQUAL 
        TOKEN_CMDFLAG TOKEN_SLASH 
        TOKEN_EXIT TOKEN_DOC
@@ -44,12 +46,26 @@ start: K      {println("@State start");}
        |L
 ;
 
-K:      TOKEN_CRUDOP E    {println("@State K");}
-       | TOKEN_CRUDOP Z P F {$$=$4; println("Finally: "+$$); cmd.Disp(resMap(&$4))}
+K:      NT_CRUD E F   {println("@State K");}
+       | NT_CRUD E P F {$$=$4; println("Finally: "+$$); cmd.Disp(resMap(&$4))}
+;
+
+NT_CRUD: TOKEN_CREATE
+       | TOKEN_GET
+       | TOKEN_UPDATE
+       | TOKEN_DELETE
 ;
 
 
-E:     TOKEN_ENTITY F
+
+E:     TOKEN_TENANT 
+       | TOKEN_SITE 
+       | TOKEN_BLDG 
+       | TOKEN_ROOM 
+       | TOKEN_RACK 
+       | TOKEN_DEVICE 
+       | TOKEN_SUBDEVICE 
+       | TOKEN_SUBDEVICE1 
 ;
 
 F:     TOKEN_ATTR TOKEN_EQUAL TOKEN_WORD F {$$=string($1+"="+$3+"="+$4); println("So we got: ", $$)}
@@ -60,8 +76,6 @@ F:     TOKEN_ATTR TOKEN_EQUAL TOKEN_WORD F {$$=string($1+"="+$3+"="+$4); println
 M: 
 ;
 
-Z: TOKEN_ENTITY
-;
 
 P: TOKEN_WORD TOKEN_SLASH P
        | TOKEN_WORD

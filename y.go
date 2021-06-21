@@ -34,58 +34,86 @@ type yyXError struct {
 }
 
 const (
-	yyDefault      = 57356
-	yyEofCode      = 57344
-	TOKEN_ATTR     = 57348
-	TOKEN_BASHTYPE = 57350
-	TOKEN_CMDFLAG  = 57352
-	TOKEN_CRUDOP   = 57349
-	TOKEN_DOC      = 57355
-	TOKEN_ENTITY   = 57347
-	TOKEN_EQUAL    = 57351
-	TOKEN_EXIT     = 57354
-	TOKEN_SLASH    = 57353
-	TOKEN_WORD     = 57346
-	yyErrCode      = 57345
+	yyDefault        = 57366
+	yyEofCode        = 57344
+	TOKEN_ATTR       = 57355
+	TOKEN_BASHTYPE   = 57360
+	TOKEN_BLDG       = 57349
+	TOKEN_CMDFLAG    = 57362
+	TOKEN_CREATE     = 57356
+	TOKEN_DELETE     = 57359
+	TOKEN_DEVICE     = 57352
+	TOKEN_DOC        = 57365
+	TOKEN_EQUAL      = 57361
+	TOKEN_EXIT       = 57364
+	TOKEN_GET        = 57357
+	TOKEN_RACK       = 57351
+	TOKEN_ROOM       = 57350
+	TOKEN_SITE       = 57348
+	TOKEN_SLASH      = 57363
+	TOKEN_SUBDEVICE  = 57353
+	TOKEN_SUBDEVICE1 = 57354
+	TOKEN_TENANT     = 57347
+	TOKEN_UPDATE     = 57358
+	TOKEN_WORD       = 57346
+	yyErrCode        = 57345
 
 	yyMaxDepth = 200
-	yyTabOfs   = -20
+	yyTabOfs   = -30
 )
 
 var (
 	yyPrec = map[int]int{}
 
 	yyXLAT = map[int]int{
-		57344: 0,  // $end (17x)
-		57348: 1,  // TOKEN_ATTR (5x)
-		57346: 2,  // TOKEN_WORD (5x)
-		57360: 3,  // F (3x)
-		57364: 4,  // P (2x)
-		57357: 5,  // B (1x)
-		57358: 6,  // D (1x)
-		57359: 7,  // E (1x)
-		57361: 8,  // K (1x)
-		57362: 9,  // L (1x)
-		57363: 10, // M (1x)
-		57365: 11, // Q (1x)
-		57367: 12, // start (1x)
-		57350: 13, // TOKEN_BASHTYPE (1x)
-		57352: 14, // TOKEN_CMDFLAG (1x)
-		57349: 15, // TOKEN_CRUDOP (1x)
-		57355: 16, // TOKEN_DOC (1x)
-		57347: 17, // TOKEN_ENTITY (1x)
-		57351: 18, // TOKEN_EQUAL (1x)
-		57354: 19, // TOKEN_EXIT (1x)
-		57353: 20, // TOKEN_SLASH (1x)
-		57366: 21, // Z (1x)
-		57356: 22, // $default (0x)
-		57345: 23, // error (0x)
+		57344: 0,  // $end (16x)
+		57355: 1,  // TOKEN_ATTR (13x)
+		57346: 2,  // TOKEN_WORD (12x)
+		57349: 3,  // TOKEN_BLDG (5x)
+		57352: 4,  // TOKEN_DEVICE (5x)
+		57351: 5,  // TOKEN_RACK (5x)
+		57350: 6,  // TOKEN_ROOM (5x)
+		57348: 7,  // TOKEN_SITE (5x)
+		57353: 8,  // TOKEN_SUBDEVICE (5x)
+		57354: 9,  // TOKEN_SUBDEVICE1 (5x)
+		57347: 10, // TOKEN_TENANT (5x)
+		57370: 11, // F (3x)
+		57375: 12, // P (2x)
+		57367: 13, // B (1x)
+		57368: 14, // D (1x)
+		57369: 15, // E (1x)
+		57371: 16, // K (1x)
+		57372: 17, // L (1x)
+		57373: 18, // M (1x)
+		57374: 19, // NT_CRUD (1x)
+		57376: 20, // Q (1x)
+		57377: 21, // start (1x)
+		57360: 22, // TOKEN_BASHTYPE (1x)
+		57362: 23, // TOKEN_CMDFLAG (1x)
+		57356: 24, // TOKEN_CREATE (1x)
+		57359: 25, // TOKEN_DELETE (1x)
+		57365: 26, // TOKEN_DOC (1x)
+		57361: 27, // TOKEN_EQUAL (1x)
+		57364: 28, // TOKEN_EXIT (1x)
+		57357: 29, // TOKEN_GET (1x)
+		57363: 30, // TOKEN_SLASH (1x)
+		57358: 31, // TOKEN_UPDATE (1x)
+		57366: 32, // $default (0x)
+		57345: 33, // error (0x)
 	}
 
 	yySymNames = []string{
 		"$end",
 		"TOKEN_ATTR",
 		"TOKEN_WORD",
+		"TOKEN_BLDG",
+		"TOKEN_DEVICE",
+		"TOKEN_RACK",
+		"TOKEN_ROOM",
+		"TOKEN_SITE",
+		"TOKEN_SUBDEVICE",
+		"TOKEN_SUBDEVICE1",
+		"TOKEN_TENANT",
 		"F",
 		"P",
 		"B",
@@ -94,17 +122,19 @@ var (
 		"K",
 		"L",
 		"M",
+		"NT_CRUD",
 		"Q",
 		"start",
 		"TOKEN_BASHTYPE",
 		"TOKEN_CMDFLAG",
-		"TOKEN_CRUDOP",
+		"TOKEN_CREATE",
+		"TOKEN_DELETE",
 		"TOKEN_DOC",
-		"TOKEN_ENTITY",
 		"TOKEN_EQUAL",
 		"TOKEN_EXIT",
+		"TOKEN_GET",
 		"TOKEN_SLASH",
-		"Z",
+		"TOKEN_UPDATE",
 		"$default",
 		"error",
 	}
@@ -113,63 +143,85 @@ var (
 
 	yyReductions = map[int]struct{ xsym, components int }{
 		0:  {0, 1},
-		1:  {12, 1},
-		2:  {12, 1},
-		3:  {12, 1},
-		4:  {12, 1},
-		5:  {8, 2},
-		6:  {8, 4},
-		7:  {7, 2},
-		8:  {3, 4},
-		9:  {3, 4},
-		10: {10, 0},
-		11: {21, 1},
-		12: {4, 3},
-		13: {4, 1},
-		14: {11, 1},
-		15: {5, 3},
-		16: {5, 2},
-		17: {5, 1},
-		18: {6, 1},
-		19: {9, 1},
+		1:  {21, 1},
+		2:  {21, 1},
+		3:  {21, 1},
+		4:  {21, 1},
+		5:  {16, 3},
+		6:  {16, 4},
+		7:  {19, 1},
+		8:  {19, 1},
+		9:  {19, 1},
+		10: {19, 1},
+		11: {15, 1},
+		12: {15, 1},
+		13: {15, 1},
+		14: {15, 1},
+		15: {15, 1},
+		16: {15, 1},
+		17: {15, 1},
+		18: {15, 1},
+		19: {11, 4},
+		20: {11, 4},
+		21: {18, 0},
+		22: {12, 3},
+		23: {12, 1},
+		24: {20, 1},
+		25: {13, 3},
+		26: {13, 2},
+		27: {13, 1},
+		28: {14, 1},
+		29: {17, 1},
 	}
 
 	yyXErrors = map[yyXError]string{}
 
-	yyParseTab = [27][]uint8{
+	yyParseTab = [37][]uint8{
 		// 0
-		{5: 27, 24, 8: 22, 25, 11: 23, 21, 28, 15: 26, 30, 19: 29},
-		{20},
-		{19},
-		{18},
-		{17},
+		{13: 41, 34, 16: 32, 35, 19: 36, 33, 31, 42, 24: 37, 40, 44, 28: 43, 38, 31: 39},
+		{30},
+		{29},
+		{28},
+		{27},
 		// 5
-		{16},
-		{7: 33, 17: 35, 21: 34},
-		{6},
-		{3, 2: 31},
-		{2},
+		{26},
+		{3: 50, 53, 52, 51, 49, 54, 55, 48, 15: 47},
+		{3: 23, 23, 23, 23, 23, 23, 23, 23},
+		{3: 22, 22, 22, 22, 22, 22, 22, 22},
+		{3: 21, 21, 21, 21, 21, 21, 21, 21},
 		// 10
+		{3: 20, 20, 20, 20, 20, 20, 20, 20},
+		{6},
+		{3, 2: 45},
+		{2},
 		{1},
-		{4, 14: 32},
-		{5},
-		{15},
-		{2: 43, 4: 42},
 		// 15
-		{1: 37, 9, 36},
-		{13},
-		{18: 38},
-		{2: 39},
-		{10, 37, 3: 40, 10: 41},
+		{4, 23: 46},
+		{5},
+		{1: 58, 59, 11: 56, 57},
+		{1: 19, 19},
+		{1: 18, 18},
 		// 20
-		{12},
-		{11},
-		{1: 37, 3: 46},
-		{1: 7, 20: 44},
-		{2: 43, 4: 45},
+		{1: 17, 17},
+		{1: 16, 16},
+		{1: 15, 15},
+		{1: 14, 14},
+		{1: 13, 13},
 		// 25
+		{1: 12, 12},
+		{25},
+		{1: 58, 11: 66},
+		{27: 62},
+		{1: 7, 30: 60},
+		// 30
+		{2: 59, 12: 61},
 		{1: 8},
-		{14},
+		{2: 63},
+		{9, 58, 11: 64, 18: 65},
+		{11},
+		// 35
+		{10},
+		{24},
 	}
 )
 
@@ -210,7 +262,7 @@ func yylex1(yylex yyLexer, lval *yySymType) (n int) {
 }
 
 func yyParse(yylex yyLexer) int {
-	const yyError = 23
+	const yyError = 33
 
 	yyEx, _ := yylex.(yyLexerEx)
 	var yyn int
@@ -412,26 +464,26 @@ yynewstate:
 			println("Finally: " + yyVAL.s)
 			cmd.Disp(resMap(&yyS[yypt-0].s))
 		}
-	case 8:
+	case 19:
 		{
 			yyVAL.s = string(yyS[yypt-3].s + "=" + yyS[yypt-1].s + "=" + yyS[yypt-0].s)
 			println("So we got: ", yyVAL.s)
 		}
-	case 9:
+	case 20:
 		{
 			yyVAL.s = yyS[yypt-3].s + "=" + yyS[yypt-1].s
 			println("Taking the M")
 			println("SUP DUDE: ", yyS[yypt-1].s)
 		}
-	case 17:
+	case 27:
 		{
 			cmd.Execute()
 		}
-	case 18:
+	case 28:
 		{
 			utils.Exit()
 		}
-	case 19:
+	case 29:
 		{
 			cmd.Help()
 		}
