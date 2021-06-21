@@ -16,7 +16,11 @@
 /address|category|city|color|country|description|domain|gps|height|heightUnit|id|mainContact|mainEmail|mainPhone|model|name|nbFloors|orientation|parentId|posU|posXY|posXYUnit|posZ|posZUnit|reserved|reservedColor|serial|size|sizeU|sizeUnit|slot|technical|technicalColor|template|token|type|usableColor|vendor|zipcode/ 
 {println("We got TOKEN_ATTR");lval.s = yylex.Text();return TOKEN_ATTR}
 
-/cd|pwd|clear|grep|ls/ {println("We got TOKEN_BASHTYPE");return TOKEN_BASHTYPE}
+/cd/ {println("We got TOKEN_CD");return TOKEN_CD}
+/pwd/ {println("We got TOKEN_PWD");return TOKEN_PWD}
+/clear/ {println("We got TOKEN_CLR");return TOKEN_CLR}
+/grep/ {println("We got TOKEN_GREP");return TOKEN_GREP}
+/ls/ {println("We got TOKEN_LS");return TOKEN_LS}
 /exit/ {println("We got TOKEN_EXIT"); return TOKEN_EXIT}
 /-l/ {println("We got TOKEN_CMDFLAG");return TOKEN_CMDFLAG}
 /[=]/ {println("We got TOKEN_EQUAL");return TOKEN_EQUAL}

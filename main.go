@@ -140,5 +140,4 @@ func main() {
 		BeginInterpreter(&line)
 		u.UpdateSessionState(&line)
 	}
-
 }

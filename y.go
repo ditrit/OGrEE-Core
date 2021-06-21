@@ -34,11 +34,13 @@ type yyXError struct {
 }
 
 const (
-	yyDefault        = 57366
+	yyDefault        = 57371
 	yyEofCode        = 57344
 	TOKEN_ATTR       = 57355
 	TOKEN_BASHTYPE   = 57360
 	TOKEN_BLDG       = 57349
+	TOKEN_CD         = 57366
+	TOKEN_CLR        = 57368
 	TOKEN_CMDFLAG    = 57362
 	TOKEN_CREATE     = 57356
 	TOKEN_DELETE     = 57359
@@ -47,6 +49,9 @@ const (
 	TOKEN_EQUAL      = 57361
 	TOKEN_EXIT       = 57364
 	TOKEN_GET        = 57357
+	TOKEN_GREP       = 57369
+	TOKEN_LS         = 57370
+	TOKEN_PWD        = 57367
 	TOKEN_RACK       = 57351
 	TOKEN_ROOM       = 57350
 	TOKEN_SITE       = 57348
@@ -59,53 +64,62 @@ const (
 	yyErrCode        = 57345
 
 	yyMaxDepth = 200
-	yyTabOfs   = -30
+	yyTabOfs   = -39
 )
 
 var (
 	yyPrec = map[int]int{}
 
 	yyXLAT = map[int]int{
-		57344: 0,  // $end (16x)
-		57355: 1,  // TOKEN_ATTR (13x)
-		57346: 2,  // TOKEN_WORD (12x)
-		57349: 3,  // TOKEN_BLDG (5x)
-		57352: 4,  // TOKEN_DEVICE (5x)
-		57351: 5,  // TOKEN_RACK (5x)
-		57350: 6,  // TOKEN_ROOM (5x)
-		57348: 7,  // TOKEN_SITE (5x)
-		57353: 8,  // TOKEN_SUBDEVICE (5x)
-		57354: 9,  // TOKEN_SUBDEVICE1 (5x)
-		57347: 10, // TOKEN_TENANT (5x)
-		57370: 11, // F (3x)
-		57375: 12, // P (2x)
-		57367: 13, // B (1x)
-		57368: 14, // D (1x)
-		57369: 15, // E (1x)
-		57371: 16, // K (1x)
-		57372: 17, // L (1x)
-		57373: 18, // M (1x)
-		57374: 19, // NT_CRUD (1x)
-		57376: 20, // Q (1x)
-		57377: 21, // start (1x)
-		57360: 22, // TOKEN_BASHTYPE (1x)
-		57362: 23, // TOKEN_CMDFLAG (1x)
-		57356: 24, // TOKEN_CREATE (1x)
-		57359: 25, // TOKEN_DELETE (1x)
-		57365: 26, // TOKEN_DOC (1x)
-		57361: 27, // TOKEN_EQUAL (1x)
-		57364: 28, // TOKEN_EXIT (1x)
-		57357: 29, // TOKEN_GET (1x)
-		57363: 30, // TOKEN_SLASH (1x)
-		57358: 31, // TOKEN_UPDATE (1x)
-		57366: 32, // $default (0x)
-		57345: 33, // error (0x)
+		57344: 0,  // $end (29x)
+		57346: 1,  // TOKEN_WORD (22x)
+		57355: 2,  // TOKEN_ATTR (19x)
+		57374: 3,  // F (9x)
+		57381: 4,  // P (5x)
+		57373: 5,  // E (4x)
+		57349: 6,  // TOKEN_BLDG (4x)
+		57352: 7,  // TOKEN_DEVICE (4x)
+		57351: 8,  // TOKEN_RACK (4x)
+		57350: 9,  // TOKEN_ROOM (4x)
+		57348: 10, // TOKEN_SITE (4x)
+		57353: 11, // TOKEN_SUBDEVICE (4x)
+		57354: 12, // TOKEN_SUBDEVICE1 (4x)
+		57347: 13, // TOKEN_TENANT (4x)
+		57362: 14, // TOKEN_CMDFLAG (2x)
+		57372: 15, // BASH (1x)
+		57375: 16, // K (1x)
+		57376: 17, // M (1x)
+		57377: 18, // NT_CREATE (1x)
+		57378: 19, // NT_DEL (1x)
+		57379: 20, // NT_GET (1x)
+		57380: 21, // NT_UPDATE (1x)
+		57382: 22, // Q (1x)
+		57383: 23, // start (1x)
+		57366: 24, // TOKEN_CD (1x)
+		57368: 25, // TOKEN_CLR (1x)
+		57356: 26, // TOKEN_CREATE (1x)
+		57359: 27, // TOKEN_DELETE (1x)
+		57365: 28, // TOKEN_DOC (1x)
+		57361: 29, // TOKEN_EQUAL (1x)
+		57364: 30, // TOKEN_EXIT (1x)
+		57357: 31, // TOKEN_GET (1x)
+		57369: 32, // TOKEN_GREP (1x)
+		57370: 33, // TOKEN_LS (1x)
+		57367: 34, // TOKEN_PWD (1x)
+		57363: 35, // TOKEN_SLASH (1x)
+		57358: 36, // TOKEN_UPDATE (1x)
+		57371: 37, // $default (0x)
+		57345: 38, // error (0x)
+		57360: 39, // TOKEN_BASHTYPE (0x)
 	}
 
 	yySymNames = []string{
 		"$end",
-		"TOKEN_ATTR",
 		"TOKEN_WORD",
+		"TOKEN_ATTR",
+		"F",
+		"P",
+		"E",
 		"TOKEN_BLDG",
 		"TOKEN_DEVICE",
 		"TOKEN_RACK",
@@ -114,114 +128,150 @@ var (
 		"TOKEN_SUBDEVICE",
 		"TOKEN_SUBDEVICE1",
 		"TOKEN_TENANT",
-		"F",
-		"P",
-		"B",
-		"D",
-		"E",
+		"TOKEN_CMDFLAG",
+		"BASH",
 		"K",
-		"L",
 		"M",
-		"NT_CRUD",
+		"NT_CREATE",
+		"NT_DEL",
+		"NT_GET",
+		"NT_UPDATE",
 		"Q",
 		"start",
-		"TOKEN_BASHTYPE",
-		"TOKEN_CMDFLAG",
+		"TOKEN_CD",
+		"TOKEN_CLR",
 		"TOKEN_CREATE",
 		"TOKEN_DELETE",
 		"TOKEN_DOC",
 		"TOKEN_EQUAL",
 		"TOKEN_EXIT",
 		"TOKEN_GET",
+		"TOKEN_GREP",
+		"TOKEN_LS",
+		"TOKEN_PWD",
 		"TOKEN_SLASH",
 		"TOKEN_UPDATE",
 		"$default",
 		"error",
+		"TOKEN_BASHTYPE",
 	}
 
 	yyTokenLiteralStrings = map[int]string{}
 
 	yyReductions = map[int]struct{ xsym, components int }{
 		0:  {0, 1},
-		1:  {21, 1},
-		2:  {21, 1},
-		3:  {21, 1},
-		4:  {21, 1},
-		5:  {16, 3},
-		6:  {16, 4},
-		7:  {19, 1},
-		8:  {19, 1},
-		9:  {19, 1},
-		10: {19, 1},
-		11: {15, 1},
-		12: {15, 1},
-		13: {15, 1},
-		14: {15, 1},
-		15: {15, 1},
-		16: {15, 1},
-		17: {15, 1},
-		18: {15, 1},
-		19: {11, 4},
-		20: {11, 4},
-		21: {18, 0},
-		22: {12, 3},
-		23: {12, 1},
-		24: {20, 1},
-		25: {13, 3},
-		26: {13, 2},
-		27: {13, 1},
-		28: {14, 1},
-		29: {17, 1},
+		1:  {23, 1},
+		2:  {23, 1},
+		3:  {16, 1},
+		4:  {16, 1},
+		5:  {16, 1},
+		6:  {16, 1},
+		7:  {18, 3},
+		8:  {18, 4},
+		9:  {20, 3},
+		10: {20, 4},
+		11: {21, 3},
+		12: {21, 4},
+		13: {19, 3},
+		14: {19, 4},
+		15: {5, 1},
+		16: {5, 1},
+		17: {5, 1},
+		18: {5, 1},
+		19: {5, 1},
+		20: {5, 1},
+		21: {5, 1},
+		22: {5, 1},
+		23: {3, 4},
+		24: {3, 4},
+		25: {17, 0},
+		26: {4, 3},
+		27: {4, 1},
+		28: {22, 3},
+		29: {22, 3},
+		30: {22, 2},
+		31: {22, 1},
+		32: {15, 1},
+		33: {15, 1},
+		34: {15, 1},
+		35: {15, 1},
+		36: {15, 1},
+		37: {15, 1},
+		38: {15, 1},
 	}
 
 	yyXErrors = map[yyXError]string{}
 
-	yyParseTab = [37][]uint8{
+	yyParseTab = [57][]uint8{
 		// 0
-		{13: 41, 34, 16: 32, 35, 19: 36, 33, 31, 42, 24: 37, 40, 44, 28: 43, 38, 31: 39},
-		{30},
-		{29},
-		{28},
-		{27},
+		{15: 53, 41, 18: 43, 46, 44, 45, 42, 40, 51, 54, 47, 50, 58, 30: 57, 48, 55, 52, 56, 36: 49},
+		{39},
+		{38},
+		{37},
+		{36},
 		// 5
-		{26},
-		{3: 50, 53, 52, 51, 49, 54, 55, 48, 15: 47},
-		{3: 23, 23, 23, 23, 23, 23, 23, 23},
-		{3: 22, 22, 22, 22, 22, 22, 22, 22},
-		{3: 21, 21, 21, 21, 21, 21, 21, 21},
+		{35},
+		{34},
+		{33},
+		{5: 92, 67, 70, 69, 68, 66, 71, 72, 65},
+		{5: 88, 67, 70, 69, 68, 66, 71, 72, 65},
 		// 10
-		{3: 20, 20, 20, 20, 20, 20, 20, 20},
-		{6},
-		{3, 2: 45},
-		{2},
-		{1},
+		{5: 84, 67, 70, 69, 68, 66, 71, 72, 65},
+		{5: 64, 67, 70, 69, 68, 66, 71, 72, 65},
+		{7, 62},
+		{4, 60},
+		{8, 59},
 		// 15
-		{4, 23: 46},
-		{5},
-		{1: 58, 59, 11: 56, 57},
+		{6, 6},
+		{5, 5},
+		{3, 3},
+		{2, 2},
+		{1, 1},
+		// 20
+		{9},
+		{14: 61},
+		{10},
+		{14: 63},
+		{11},
+		// 25
+		{1: 76, 75, 73, 74},
+		{1: 24, 24},
+		{1: 23, 23},
+		{1: 22, 22},
+		{1: 21, 21},
+		// 30
+		{1: 20, 20},
 		{1: 19, 19},
 		{1: 18, 18},
-		// 20
 		{1: 17, 17},
-		{1: 16, 16},
-		{1: 15, 15},
-		{1: 14, 14},
-		{1: 13, 13},
-		// 25
-		{1: 12, 12},
-		{25},
-		{1: 58, 11: 66},
-		{27: 62},
-		{1: 7, 30: 60},
-		// 30
-		{2: 59, 12: 61},
-		{1: 8},
-		{2: 63},
-		{9, 58, 11: 64, 18: 65},
-		{11},
+		{26},
 		// 35
-		{10},
-		{24},
+		{2: 75, 83},
+		{29: 79},
+		{2: 12, 35: 77},
+		{1: 76, 4: 78},
+		{2: 13},
+		// 40
+		{1: 80},
+		{14, 2: 75, 81, 17: 82},
+		{16},
+		{15},
+		{25},
+		// 45
+		{1: 76, 75, 85, 86},
+		{28},
+		{2: 75, 87},
+		{27},
+		{1: 76, 75, 89, 90},
+		// 50
+		{30},
+		{2: 75, 91},
+		{29},
+		{1: 76, 75, 93, 94},
+		{32},
+		// 55
+		{2: 75, 95},
+		{31},
 	}
 )
 
@@ -262,7 +312,7 @@ func yylex1(yylex yyLexer, lval *yySymType) (n int) {
 }
 
 func yyParse(yylex yyLexer) int {
-	const yyError = 33
+	const yyError = 38
 
 	yyEx, _ := yylex.(yyLexerEx)
 	var yyn int
@@ -454,36 +504,66 @@ yynewstate:
 		{
 			println("@State start")
 		}
-	case 5:
+	case 7:
 		{
-			println("@State K")
+			println("@State NT_CR")
 		}
-	case 6:
+	case 8:
 		{
-			yyVAL.s = yyS[yypt-0].s
-			println("Finally: " + yyVAL.s)
+			yyVAL.s = yyS[yypt-0].s /*println("Finally: "+$$);*/
 			cmd.Disp(resMap(&yyS[yypt-0].s))
 		}
-	case 19:
+	case 9:
+		{
+			println("@State NT_GET")
+		}
+	case 10:
+		{
+			yyVAL.s = yyS[yypt-0].s
+			cmd.Disp(resMap(&yyS[yypt-0].s))
+		}
+	case 11:
+		{
+			println("@State NT_UPD")
+		}
+	case 12:
+		{
+			yyVAL.s = yyS[yypt-0].s
+			cmd.Disp(resMap(&yyS[yypt-0].s))
+		}
+	case 13:
+		{
+			println("@State NT_DEL")
+		}
+	case 14:
+		{
+			yyVAL.s = yyS[yypt-0].s
+			cmd.Disp(resMap(&yyS[yypt-0].s))
+		}
+	case 23:
 		{
 			yyVAL.s = string(yyS[yypt-3].s + "=" + yyS[yypt-1].s + "=" + yyS[yypt-0].s)
 			println("So we got: ", yyVAL.s)
 		}
-	case 20:
+	case 24:
 		{
 			yyVAL.s = yyS[yypt-3].s + "=" + yyS[yypt-1].s
 			println("Taking the M")
 			println("SUP DUDE: ", yyS[yypt-1].s)
 		}
-	case 27:
+	case 31:
 		{
 			cmd.Execute()
 		}
-	case 28:
+	case 36:
+		{
+			cmd.PWD(&(utils.State.CurrPath))
+		}
+	case 37:
 		{
 			utils.Exit()
 		}
-	case 29:
+	case 38:
 		{
 			cmd.Help()
 		}

@@ -35,28 +35,38 @@ func resMap(x *string) map[string]string {
        TOKEN_BASHTYPE TOKEN_EQUAL 
        TOKEN_CMDFLAG TOKEN_SLASH 
        TOKEN_EXIT TOKEN_DOC
+       TOKEN_CD TOKEN_PWD
+       TOKEN_CLR TOKEN_GREP TOKEN_LS
 %type <s> F 
-%type <s> K 
+%type <s> K NT_CREATE NT_DEL NT_GET NT_UPDATE
 
 
 %%
 start: K      {println("@State start");}
        | Q
-       | D
-       |L
 ;
 
-K:      NT_CRUD E F   {println("@State K");}
-       | NT_CRUD E P F {$$=$4; println("Finally: "+$$); cmd.Disp(resMap(&$4))}
+K: NT_CREATE
+       | NT_GET
+       | NT_UPDATE
+       | NT_DEL
 ;
 
-NT_CRUD: TOKEN_CREATE
-       | TOKEN_GET
-       | TOKEN_UPDATE
-       | TOKEN_DELETE
+NT_CREATE: TOKEN_CREATE E F {println("@State NT_CR");}
+       | TOKEN_CREATE E P F {$$=$4; /*println("Finally: "+$$);*/ cmd.Disp(resMap(&$4))}
 ;
 
+NT_GET: TOKEN_GET E F {println("@State NT_GET");}
+       | TOKEN_GET E P F {$$=$4;cmd.Disp(resMap(&$4))}
+;
 
+NT_UPDATE: TOKEN_UPDATE E F {println("@State NT_UPD");}
+       | TOKEN_UPDATE E P F {$$=$4;cmd.Disp(resMap(&$4))}
+;
+
+NT_DEL: TOKEN_DELETE E F {println("@State NT_DEL");}
+       | TOKEN_DELETE E P F {$$=$4;cmd.Disp(resMap(&$4))}
+;
 
 E:     TOKEN_TENANT 
        | TOKEN_SITE 
@@ -69,11 +79,8 @@ E:     TOKEN_TENANT
 ;
 
 F:     TOKEN_ATTR TOKEN_EQUAL TOKEN_WORD F {$$=string($1+"="+$3+"="+$4); println("So we got: ", $$)}
-       | TOKEN_ATTR TOKEN_EQUAL TOKEN_WORD M {$$=$1+"="+$3; println("Taking the M"); 
+       | TOKEN_ATTR TOKEN_EQUAL TOKEN_WORD {$$=$1+"="+$3; println("Taking the M"); 
        println("SUP DUDE: ", $3);}
-;
-
-M: 
 ;
 
 
@@ -82,18 +89,21 @@ P: TOKEN_WORD TOKEN_SLASH P
 ;
 
 
-Q:    B
+
+Q:     TOKEN_CD TOKEN_WORD TOKEN_CMDFLAG
+       | TOKEN_LS TOKEN_WORD TOKEN_CMDFLAG
+       | BASH TOKEN_WORD
+       | BASH     {cmd.Execute()}
 ;
 
-B:     TOKEN_BASHTYPE TOKEN_WORD TOKEN_CMDFLAG
-       | TOKEN_BASHTYPE TOKEN_WORD
-       | TOKEN_BASHTYPE     {cmd.Execute()}
+BASH:  TOKEN_CD
+       | TOKEN_CLR
+       | TOKEN_GREP
+       | TOKEN_LS
+       | TOKEN_PWD {cmd.PWD(&(utils.State.CurrPath))}
+       | TOKEN_EXIT     {utils.Exit()}
+       | TOKEN_DOC {cmd.Help()}
 ;
 
-D:    TOKEN_EXIT     {utils.Exit()}
-;
-
-L:     TOKEN_DOC {cmd.Help()}
-;
 
 %%

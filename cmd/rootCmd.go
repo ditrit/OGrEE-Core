@@ -11,6 +11,10 @@ func Exit() {
 	runtime.Goexit()
 }
 
+func PWD(currPath *string) {
+	println(*currPath)
+}
+
 func Disp(x map[string]string) {
 	for i, k := range x {
 		println("We got: ", i, " and ", k)

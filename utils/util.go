@@ -13,7 +13,7 @@ import (
 )
 
 type ShellState struct {
-	currPath      string
+	CurrPath      string
 	sessionBuffer list.List
 }
 
@@ -91,6 +91,7 @@ func JoinQueryGen(entity string) string {
 
 func InitState() {
 	State.sessionBuffer = *State.sessionBuffer.Init()
+	State.CurrPath = "/"
 }
 
 func UpdateSessionState(ln *string) {
