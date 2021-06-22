@@ -19,7 +19,7 @@ func resMap(x *string) map[string]interface{} {
 		if i+1 < len(resarr) {
 			switch resarr[i] {
 			case "id", "name", "category", "parentID",
-				"description", "domain":
+				"description", "domain", "parentid", "parentId":
 				res[resarr[i]] = resarr[i+1]
 
 			default:
@@ -515,7 +515,8 @@ yynewstate:
 		}
 	case 8:
 		{
-			yyVAL.s = yyS[yypt-0].s /*println("Finally: "+$$); cmd.Disp(resMap(&$4))*/
+			yyVAL.s = yyS[yypt-0].s /*println("Finally: "+$$);*/
+			cmd.Disp(resMap(&yyS[yypt-0].s))
 			cmd.PostObj(yyS[yypt-2].s, resMap(&yyS[yypt-0].s))
 		}
 	case 9:

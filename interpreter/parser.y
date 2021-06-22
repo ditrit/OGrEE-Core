@@ -15,7 +15,7 @@ func resMap(x *string) map[string]interface{} {
               if i+1 < len(resarr) {
                      switch resarr[i] {
                             case "id", "name", "category", "parentID", 
-                            "description", "domain":
+                            "description", "domain", "parentid", "parentId":
                                    res[resarr[i]] = resarr[i+1]
                             
                             default:
@@ -62,7 +62,7 @@ K: NT_CREATE
 ;
 
 NT_CREATE: TOKEN_CREATE E F {println("@State NT_CR");}
-       | TOKEN_CREATE E P F {$$=$4; /*println("Finally: "+$$); cmd.Disp(resMap(&$4))*/ cmd.PostObj($2, resMap(&$4)) }
+       | TOKEN_CREATE E P F {$$=$4; /*println("Finally: "+$$);*/ cmd.Disp(resMap(&$4)); cmd.PostObj($2, resMap(&$4)) }
 ;
 
 NT_GET: TOKEN_GET E F {println("@State NT_GET");}

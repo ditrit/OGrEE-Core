@@ -26,7 +26,7 @@
 /[=]/ {println("We got TOKEN_EQUAL");return TOKEN_EQUAL}
 /\// {println("We got TOKEN_SLASH"); return TOKEN_SLASH}
 /man/ {println("We got TOKEN_DOC"); return TOKEN_DOC}
-/[A-Za-z0-9_]+/ {println("We got TOKEN_WORD"); lval.s = yylex.Text(); println("LVAL: ", lval.s); return TOKEN_WORD}
+/[A-Za-z0-9_\+\-]+/ {println("We got TOKEN_WORD"); lval.s = yylex.Text(); println("LVAL: ", lval.s); return TOKEN_WORD}
 //
 package main
 import ("os")
