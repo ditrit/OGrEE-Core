@@ -4,6 +4,7 @@ package utils
 //returns json response
 
 import (
+	"bytes"
 	"container/list"
 	"encoding/json"
 	"log"
@@ -102,4 +103,17 @@ func UpdateSessionState(ln *string) {
 func Exit() {
 	writeHistoryOnExit(&State.sessionBuffer)
 	os.Exit(0)
+}
+
+//Function helps with API Requests
+func Send(method, URL string, data map[string]interface{}) (*http.Response,
+	error) {
+	client := &http.Client{}
+	key := os.Getenv("apikey")
+	dataJSON, _ := json.Marshal(data)
+
+	req, _ := http.NewRequest(method, URL, bytes.NewBuffer(dataJSON))
+	req.Header.Set("Authorization", "Bearer "+key)
+	return client.Do(req)
+
 }

@@ -1,10 +1,9 @@
 package cmd
 
 import (
-	"bytes"
+	"cli/utils"
 	"encoding/json"
 	"io/ioutil"
-	"net/http"
 	"os"
 	"runtime"
 )
@@ -32,17 +31,29 @@ func Disp(x map[string]interface{}) {
 	println("JSON: ", string(jx))
 }
 
-func PostObj(entity string, entMap map[string]interface{}) {
-	client := &http.Client{}
-	key := os.Getenv("apikey")
+func PostObj(entity string, data map[string]interface{}) {
 
-	entJson, _ := json.Marshal(entMap)
-	req, _ := http.NewRequest("POST",
-		"https://ogree.chibois.net/api/user/"+entity+"s",
-		bytes.NewBuffer(entJson))
+	resp, e := utils.Send("POST",
+		"https://ogree.chibois.net/api/user/"+entity+"s", data)
 
-	req.Header.Set("Authorization", "Bearer "+key)
-	resp, e := client.Do(req)
+	println("Response Code: ", resp.Status)
+	if e != nil {
+		println("There was an error!")
+	}
+	defer resp.Body.Close()
+	bodyBytes, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		println("Error: " + err.Error() + " Now Exiting")
+		os.Exit(-1)
+	}
+	println(string(bodyBytes))
+	return
+}
+
+func DeleteObj(entity string, data map[string]interface{}) {
+	resp, e := utils.Send("DELETE",
+		"https://ogree.chibois.net/api/user/"+entity+"s/"+
+			string(data["id"].(string)), nil)
 	println("Response Code: ", resp.Status)
 	if e != nil {
 		println("There was an error!")

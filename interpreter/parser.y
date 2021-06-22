@@ -74,7 +74,7 @@ NT_UPDATE: TOKEN_UPDATE E F {println("@State NT_UPD");}
 ;
 
 NT_DEL: TOKEN_DELETE E F {println("@State NT_DEL");}
-       | TOKEN_DELETE E P F {$$=$4;cmd.Disp(resMap(&$4))}
+       | TOKEN_DELETE E P F {$$=$4;cmd.Disp(resMap(&$4)); cmd.DeleteObj($2,resMap(&$4) )}
 ;
 
 E:     TOKEN_TENANT 
