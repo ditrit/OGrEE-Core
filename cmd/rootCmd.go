@@ -95,5 +95,28 @@ func GetObjQ(entity string, data map[string]interface{}) {
 		os.Exit(-1)
 	}
 	println(string(bodyBytes))
-	return
+}
+
+func UpdateObj(entity string, data map[string]interface{}) {
+	println("OK. Attempting to update...")
+	if data["id"] != nil {
+		URL := "https://ogree.chibois.net/api/user/" + entity + "s/" +
+			string(data["id"].(string))
+
+		resp, e := utils.Send("PUT", URL, data)
+		println("Response Code: ", resp.Status)
+		if e != nil {
+			println("There was an error!")
+		}
+		defer resp.Body.Close()
+		bodyBytes, err := ioutil.ReadAll(resp.Body)
+		if err != nil {
+			println("Error: " + err.Error() + " Now Exiting")
+			os.Exit(-1)
+		}
+		println(string(bodyBytes))
+	} else {
+		println("Error! Please enter ID of Object to be updated")
+	}
+
 }

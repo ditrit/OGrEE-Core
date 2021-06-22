@@ -70,7 +70,7 @@ NT_GET: TOKEN_GET E F {println("@State NT_GET");}
 ;
 
 NT_UPDATE: TOKEN_UPDATE E F {println("@State NT_UPD");}
-       | TOKEN_UPDATE E P F {$$=$4;cmd.Disp(resMap(&$4))}
+       | TOKEN_UPDATE E P F {$$=$4;cmd.Disp(resMap(&$4)); cmd.UpdateObj($2, resMap(&$4))}
 ;
 
 NT_DEL: TOKEN_DELETE E F {println("@State NT_DEL");}
