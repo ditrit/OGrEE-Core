@@ -6,16 +6,25 @@ import (
 "strings"
 )
 
-func resMap(x *string) map[string]string {
+func resMap(x *string) map[string]interface{} {
        resarr := strings.Split(*x, "=")
-       res := make(map[string]string)
+       res := make(map[string]interface{})
+       attrs := make(map[string]string)
 
 	for i := 0; i+1 < len(resarr); {
-		if i+1 < len(resarr) {
-			res[resarr[i]] = resarr[i+1]
+              if i+1 < len(resarr) {
+                     switch resarr[i] {
+                            case "id", "name", "category", "parentID", 
+                            "description", "domain":
+                                   res[resarr[i]] = resarr[i+1]
+                            
+                            default:
+                            attrs[resarr[i]] = resarr[i+1]
+                     }
 			i += 2
 		}
 	}
+       res["attributes"] = attrs
        return res
 }
 %}
@@ -37,7 +46,7 @@ func resMap(x *string) map[string]string {
        TOKEN_EXIT TOKEN_DOC
        TOKEN_CD TOKEN_PWD
        TOKEN_CLR TOKEN_GREP TOKEN_LS
-%type <s> F 
+%type <s> F E
 %type <s> K NT_CREATE NT_DEL NT_GET NT_UPDATE
 
 
@@ -53,7 +62,7 @@ K: NT_CREATE
 ;
 
 NT_CREATE: TOKEN_CREATE E F {println("@State NT_CR");}
-       | TOKEN_CREATE E P F {$$=$4; /*println("Finally: "+$$);*/ cmd.Disp(resMap(&$4))}
+       | TOKEN_CREATE E P F {$$=$4; /*println("Finally: "+$$); cmd.Disp(resMap(&$4))*/ cmd.PostObj($2, resMap(&$4)) }
 ;
 
 NT_GET: TOKEN_GET E F {println("@State NT_GET");}
