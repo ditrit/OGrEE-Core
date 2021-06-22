@@ -527,6 +527,7 @@ yynewstate:
 		{
 			yyVAL.s = yyS[yypt-0].s
 			cmd.Disp(resMap(&yyS[yypt-0].s))
+			cmd.GetObjQ(yyS[yypt-2].s, resMap(&yyS[yypt-0].s))
 		}
 	case 11:
 		{

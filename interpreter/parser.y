@@ -66,7 +66,7 @@ NT_CREATE: TOKEN_CREATE E F {println("@State NT_CR");}
 ;
 
 NT_GET: TOKEN_GET E F {println("@State NT_GET");}
-       | TOKEN_GET E P F {$$=$4;cmd.Disp(resMap(&$4))}
+       | TOKEN_GET E P F {$$=$4;cmd.Disp(resMap(&$4)); cmd.GetObjQ($2, resMap(&$4))}
 ;
 
 NT_UPDATE: TOKEN_UPDATE E F {println("@State NT_UPD");}

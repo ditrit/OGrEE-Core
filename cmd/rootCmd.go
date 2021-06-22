@@ -67,3 +67,33 @@ func DeleteObj(entity string, data map[string]interface{}) {
 	println(string(bodyBytes))
 	return
 }
+
+func GetObjQ(entity string, data map[string]interface{}) {
+	URL := "https://ogree.chibois.net/api/user/" + entity + "s?"
+
+	for i, k := range data {
+		if i == "attributes" {
+			for j, _ := range k.(map[string]string) {
+				URL = URL + "&" + j + "=" + data[i].(map[string]string)[j]
+			}
+		} else {
+			URL = URL + "&" + i + "=" + string(data[i].(string))
+		}
+	}
+
+	println("Here is URL: ", URL)
+
+	resp, e := utils.Send("GET", URL, nil)
+	println("Response Code: ", resp.Status)
+	if e != nil {
+		println("There was an error!")
+	}
+	defer resp.Body.Close()
+	bodyBytes, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		println("Error: " + err.Error() + " Now Exiting")
+		os.Exit(-1)
+	}
+	println(string(bodyBytes))
+	return
+}
