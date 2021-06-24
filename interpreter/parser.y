@@ -107,9 +107,9 @@ Q:     TOKEN_CD TOKEN_WORD TOKEN_CMDFLAG
 
 BASH:  TOKEN_CD
        | TOKEN_CLR
-       | TOKEN_GREP
-       | TOKEN_LS
-       | TOKEN_PWD {cmd.PWD(&(utils.State.CurrPath))}
+       | TOKEN_GREP {cmd.DispTree()}
+       | TOKEN_LS {cmd.LS()}
+       | TOKEN_PWD {cmd.PWD()}
        | TOKEN_EXIT     {utils.Exit()}
        | TOKEN_DOC {cmd.Help()}
 ;

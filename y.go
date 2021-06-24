@@ -564,9 +564,17 @@ yynewstate:
 		{
 			cmd.Execute()
 		}
+	case 33:
+		{
+			cmd.DispTree()
+		}
+	case 34:
+		{
+			cmd.LS()
+		}
 	case 35:
 		{
-			cmd.PWD(&(utils.State.CurrPath))
+			cmd.PWD()
 		}
 	case 36:
 		{
