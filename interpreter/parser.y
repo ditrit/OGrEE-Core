@@ -2,7 +2,6 @@
 package main
 import (
 "cli/cmd"
-"cli/utils"
 "strings"
 )
 
@@ -111,7 +110,7 @@ BASH:  TOKEN_CD
        | TOKEN_LS {cmd.LS()}
        | TOKEN_LS P {cmd.DispTree1()}
        | TOKEN_PWD {cmd.PWD()}
-       | TOKEN_EXIT     {utils.Exit()}
+       | TOKEN_EXIT     {cmd.Exit()}
        | TOKEN_DOC {cmd.Help()}
 ;
 

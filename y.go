@@ -6,7 +6,6 @@ import __yyfmt__ "fmt"
 
 import (
 	"cli/cmd"
-	"cli/utils"
 	"strings"
 )
 
@@ -584,7 +583,7 @@ yynewstate:
 		}
 	case 37:
 		{
-			utils.Exit()
+			cmd.Exit()
 		}
 	case 38:
 		{

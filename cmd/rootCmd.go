@@ -1,12 +1,12 @@
 package cmd
 
 import (
+	"cli/models"
 	"cli/utils"
 	"encoding/json"
 	"io/ioutil"
 	"os"
 	"runtime"
-	"strings"
 )
 
 func Execute() {
@@ -15,11 +15,12 @@ func Execute() {
 }
 
 func Exit() {
+	models.Exit()
 	runtime.Goexit()
 }
 
 func PWD() {
-	println(utils.State.CurrPath)
+	println(models.State.CurrPath)
 }
 
 func Disp(x map[string]interface{}) {
@@ -126,7 +127,7 @@ func LS() {
 	URL := "https://ogree.chibois.net/api/user/"
 	var jarr map[string]interface{}
 
-	switch utils.State.CurrPath {
+	switch models.State.CurrPath {
 	case "/":
 		URL += "tenants"
 	case "":
@@ -157,72 +158,9 @@ func LS() {
 }
 
 func DispTree() {
-	nd := &(utils.Node{})
-	nd.Entity = -1
-	utils.Populate(&nd, 0)
-	println("Now viewing the tree...")
-	View(nd, 0)
-}
-
-func View(root *utils.Node, dt int) {
-	if dt != 7 || root != nil {
-		arr := (*root).Nodes
-		for i := arr.Front(); i != nil; i = i.Next() {
-
-			println("Now Printing children of: ",
-				(*utils.Node)((i.Value).(*utils.Node)).Name)
-			//println()
-			View(((i.Value).(*utils.Node)), dt+1)
-		}
-	}
+	models.DispTree()
 }
 
 func DispTree1() {
-	nd := &(utils.Node{})
-	nd.Entity = -1
-	utils.Populate(&nd, 0)
-	println("Now viewing the tree...")
-	//View(nd, 0)
-	DispAtLevel(&nd, *(strToStack(utils.State.CurrPath)))
-}
-
-func strToStack(x string) *Stack {
-	stk := Stack{}
-	sarr := strings.Split(x, "/")
-	for i := len(sarr) - 1; i >= 0; i-- {
-		println("PUSHING TO STACK: ", sarr[i])
-		if sarr[i] != "" {
-			stk.Push(sarr[i])
-		}
-
-	}
-	return &stk
-}
-
-func getNextInPath(name string, root *utils.Node) *utils.Node {
-	for i := root.Nodes.Front(); i != nil; i = i.Next() {
-		if (i.Value.(*utils.Node)).Name == name {
-			return (i.Value.(*utils.Node))
-		}
-	}
-	return nil
-}
-
-func DispAtLevel(root **utils.Node, x Stack) {
-	if x.Len() > 0 {
-		name := x.Peek()
-		node := getNextInPath(name.(string), *root)
-		if node == nil {
-			println("Name doesn't exist! ", string(name.(string)))
-			return
-		}
-		x.Pop()
-		DispAtLevel(&node, x)
-	} else {
-		println("This is what we got:")
-		for i := (*root).Nodes.Front(); i != nil; i = i.Next() {
-			println(string(i.Value.(*utils.Node).Name))
-		}
-	}
-	return
+	models.DispTree1()
 }
