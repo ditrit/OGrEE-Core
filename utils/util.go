@@ -263,7 +263,8 @@ func JoinQueryGen(entity string) string {
 func InitState() {
 	State.sessionBuffer = *State.sessionBuffer.Init()
 	State.treeHierarchy = *State.treeHierarchy.Init()
-	State.CurrPath = "/"
+	//State.CurrPath = "/"
+	State.CurrPath = "/CED/BETA/A"
 }
 
 func UpdateSessionState(ln *string) {

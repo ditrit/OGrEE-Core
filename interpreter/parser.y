@@ -46,7 +46,7 @@ func resMap(x *string) map[string]interface{} {
        TOKEN_EXIT TOKEN_DOC
        TOKEN_CD TOKEN_PWD
        TOKEN_CLR TOKEN_GREP TOKEN_LS
-%type <s> F E
+%type <s> F E P
 %type <s> K NT_CREATE NT_DEL NT_GET NT_UPDATE
 
 
@@ -109,6 +109,7 @@ BASH:  TOKEN_CD
        | TOKEN_CLR
        | TOKEN_GREP {cmd.DispTree()}
        | TOKEN_LS {cmd.LS()}
+       | TOKEN_LS P {cmd.DispTree1()}
        | TOKEN_PWD {cmd.PWD()}
        | TOKEN_EXIT     {utils.Exit()}
        | TOKEN_DOC {cmd.Help()}

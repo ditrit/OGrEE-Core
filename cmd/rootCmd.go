@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"os"
 	"runtime"
+	"strings"
 )
 
 func Execute() {
@@ -174,4 +175,54 @@ func View(root *utils.Node, dt int) {
 			View(((i.Value).(*utils.Node)), dt+1)
 		}
 	}
+}
+
+func DispTree1() {
+	nd := &(utils.Node{})
+	nd.Entity = -1
+	utils.Populate(&nd, 0)
+	println("Now viewing the tree...")
+	//View(nd, 0)
+	DispAtLevel(&nd, *(strToStack(utils.State.CurrPath)))
+}
+
+func strToStack(x string) *Stack {
+	stk := Stack{}
+	sarr := strings.Split(x, "/")
+	for i := len(sarr) - 1; i >= 0; i-- {
+		println("PUSHING TO STACK: ", sarr[i])
+		if sarr[i] != "" {
+			stk.Push(sarr[i])
+		}
+
+	}
+	return &stk
+}
+
+func getNextInPath(name string, root *utils.Node) *utils.Node {
+	for i := root.Nodes.Front(); i != nil; i = i.Next() {
+		if (i.Value.(*utils.Node)).Name == name {
+			return (i.Value.(*utils.Node))
+		}
+	}
+	return nil
+}
+
+func DispAtLevel(root **utils.Node, x Stack) {
+	if x.Len() > 0 {
+		name := x.Peek()
+		node := getNextInPath(name.(string), *root)
+		if node == nil {
+			println("Name doesn't exist! ", string(name.(string)))
+			return
+		}
+		x.Pop()
+		DispAtLevel(&node, x)
+	} else {
+		println("This is what we got:")
+		for i := (*root).Nodes.Front(); i != nil; i = i.Next() {
+			println(string(i.Value.(*utils.Node).Name))
+		}
+	}
+	return
 }
