@@ -124,7 +124,8 @@ func UpdateObj(entity string, data map[string]interface{}) {
 }
 
 func LS() {
-
+	models.DispAtLevel(&models.State.TreeHierarchy,
+		*models.StrToStack(models.State.CurrPath))
 }
 
 //This version prints out comments
@@ -133,5 +134,9 @@ func DispTree() {
 }
 
 func DispTree1() {
-	models.DispTree1()
+	//models.DispTree1()
+}
+
+func CD(x string) {
+	models.State.CurrPath += "/" + x
 }

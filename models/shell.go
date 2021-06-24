@@ -54,7 +54,7 @@ func writeHistoryOnExit(ss *list.List) {
 func InitState() {
 	State.sessionBuffer = *State.sessionBuffer.Init()
 	State.CurrPath = "/"
-	DispTree1()
+	BuildTree()
 }
 
 func UpdateSessionState(ln *string) {
@@ -71,10 +71,8 @@ func Exit() {
 //structure
 func Populate(root **Node, dt int) {
 	if dt != SUBDEV1 || root != nil {
-		println("Now getting children...")
 		arr := getChildren(*root)
 		for i := range arr {
-			println("Now populating: ", arr[i].Name)
 			Populate(&arr[i], dt+1)
 			(*root).Nodes.PushBack(arr[i])
 		}
@@ -84,17 +82,14 @@ func Populate(root **Node, dt int) {
 func getChildren(curr *Node) []*Node {
 	switch curr.Entity {
 	case -1:
-		println("Getting list of tenants now...")
 		resp, e := u.Send("GET",
 			"https://ogree.chibois.net/api/user/tenants", nil)
 		if e != nil {
 			println("Error while getting children!")
 			Exit()
 		}
-		println("Turning the list into nodes...")
 		return makeNodeArrFromResp(resp, TENANT)
 	case TENANT:
-		println("Getting list of sites now...")
 		resp, e := u.Send("GET",
 			"https://ogree.chibois.net/api/user/tenants/"+curr.Name+"/sites",
 			nil)
@@ -102,10 +97,8 @@ func getChildren(curr *Node) []*Node {
 			println("Error while getting children!")
 			Exit()
 		}
-		println("Turning the list into nodes...")
 		return makeNodeArrFromResp(resp, SITE)
 	case SITE:
-		println("Getting list of bldgs now...")
 		resp, e := u.Send("GET",
 			"https://ogree.chibois.net/api/user/sites/"+
 				strconv.Itoa(curr.ID)+"/buildings",
@@ -114,10 +107,8 @@ func getChildren(curr *Node) []*Node {
 			println("Error while getting children!")
 			Exit()
 		}
-		println("Turning the list into nodes...")
 		return makeNodeArrFromResp(resp, BLDG)
 	case BLDG:
-		println("Getting list of rooms now...")
 		resp, e := u.Send("GET",
 			"https://ogree.chibois.net/api/user/buildings/"+
 				strconv.Itoa(curr.ID)+"/rooms",
@@ -126,10 +117,8 @@ func getChildren(curr *Node) []*Node {
 			println("Error while getting children!")
 			Exit()
 		}
-		println("Turning the list into nodes...")
 		return makeNodeArrFromResp(resp, ROOM)
 	case ROOM:
-		println("Getting list of racks now...")
 		resp, e := u.Send("GET",
 			"https://ogree.chibois.net/api/user/rooms/"+
 				strconv.Itoa(curr.ID)+"/racks",
@@ -138,10 +127,8 @@ func getChildren(curr *Node) []*Node {
 			println("Error while getting children!")
 			Exit()
 		}
-		println("Turning the list into nodes...")
 		return makeNodeArrFromResp(resp, RACK)
 	case RACK:
-		println("Getting list of devices now...")
 		resp, e := u.Send("GET",
 			"https://ogree.chibois.net/api/user/racks/"+
 				strconv.Itoa(curr.ID)+"/devices",
@@ -150,10 +137,8 @@ func getChildren(curr *Node) []*Node {
 			println("Error while getting children!")
 			Exit()
 		}
-		println("Turning the list into nodes...")
 		return makeNodeArrFromResp(resp, DEVICE)
 	case DEVICE:
-		println("Getting list of subdevices now...")
 		resp, e := u.Send("GET",
 			"https://ogree.chibois.net/api/user/devices/"+
 				strconv.Itoa(curr.ID)+"/subdevices",
@@ -162,10 +147,8 @@ func getChildren(curr *Node) []*Node {
 			println("Error while getting children!")
 			Exit()
 		}
-		println("Turning the list into nodes...")
 		return makeNodeArrFromResp(resp, SUBDEV)
 	case SUBDEV:
-		println("Getting list of subdevice1 now...")
 		resp, e := u.Send("GET",
 			"https://ogree.chibois.net/api/user/subdevices/"+
 				strconv.Itoa(curr.ID)+"/all",
@@ -174,7 +157,6 @@ func getChildren(curr *Node) []*Node {
 			println("Error while getting children!")
 			Exit()
 		}
-		println("Turning the list into nodes...")
 		return makeNodeArrFromResp(resp, SUBDEV1)
 	}
 	return nil
@@ -200,18 +182,12 @@ func makeNodeArrFromResp(resp *http.Response, entity int) []*Node {
 	} else if ok1 && !ok {
 		objs = sd1obj
 	}
-	println("Now creating the nodes..")
 	for i, _ := range objs {
 		node := &Node{}
 		node.Entity = entity
 		node.Name = (string((objs[i].(map[string]interface{}))["name"].(string)))
 		node.ID, _ = strconv.Atoi((objs[i].(map[string]interface{}))["id"].(string))
-		println("We got: ", node.Name)
 		arr = append(arr, node)
-	}
-	println("Printing before returning the nodes...")
-	for i := range arr {
-		println(arr[i].Name)
 	}
 	return arr
 }
@@ -237,16 +213,15 @@ func View(root *Node, dt int) {
 	}
 }
 
-func DispTree1() {
+func BuildTree() {
 	(State.TreeHierarchy) = &(Node{})
 	(*(State.TreeHierarchy)).Entity = -1
 	Populate(&State.TreeHierarchy, 0)
-	println("Now viewing the tree...")
-	DispAtLevel(&State.TreeHierarchy,
-		*(strToStack(State.CurrPath)))
+	/*DispAtLevel(&State.TreeHierarchy,
+	*(strToStack(State.CurrPath)))*/
 }
 
-func strToStack(x string) *Stack {
+func StrToStack(x string) *Stack {
 	stk := Stack{}
 	sarr := strings.Split(x, "/")
 	for i := len(sarr) - 1; i >= 0; i-- {
