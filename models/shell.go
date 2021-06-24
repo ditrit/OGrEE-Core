@@ -261,3 +261,7 @@ func DispAtLevel(root **Node, x Stack) {
 	}
 	return
 }
+
+func CheckPathExists(root **Node, x *Stack) {
+
+}

@@ -138,5 +138,10 @@ func DispTree1() {
 }
 
 func CD(x string) {
+	if x == ".." {
+		//strings.Split(models.State.CurrPath, "/")
+		//strings.
+		//models.State.CurrPath =
+	}
 	models.State.CurrPath += "/" + x
 }
