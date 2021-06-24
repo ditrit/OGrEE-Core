@@ -54,6 +54,7 @@ func writeHistoryOnExit(ss *list.List) {
 func InitState() {
 	State.sessionBuffer = *State.sessionBuffer.Init()
 	State.CurrPath = "/"
+	DispTree1()
 }
 
 func UpdateSessionState(ln *string) {

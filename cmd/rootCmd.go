@@ -124,39 +124,10 @@ func UpdateObj(entity string, data map[string]interface{}) {
 }
 
 func LS() {
-	URL := "https://ogree.chibois.net/api/user/"
-	var jarr map[string]interface{}
-
-	switch models.State.CurrPath {
-	case "/":
-		URL += "tenants"
-	case "":
-	}
-
-	resp, e := utils.Send("GET", URL, nil)
-	if e != nil {
-		println("Error while printing curr dir contents!")
-	}
-	defer resp.Body.Close()
-	bodyBytes, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		println("Error: " + err.Error() + " Now Exiting")
-		os.Exit(-1)
-	}
-	//println(string(bodyBytes))
-
-	/*for i, k := range bodyBytes {
-		println("AT: ", i, "We Have: ", k)
-	}*/
-
-	json.Unmarshal(bodyBytes, &jarr)
-	objs := ((jarr["data"]).(map[string]interface{})["objects"]).([]interface{})
-	for i, _ := range objs {
-		println(string((objs[i].(map[string]interface{}))["name"].(string)))
-	}
 
 }
 
+//This version prints out comments
 func DispTree() {
 	models.DispTree()
 }
