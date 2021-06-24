@@ -542,7 +542,7 @@ var GetRackHierarchy = func(w http.ResponseWriter, r *http.Request) {
 	u.Respond(w, resp)
 }
 
-// swagger:operation GET /api/user/racks/{id}/all/devices racks GetRack
+// swagger:operation GET /api/user/racks/{id}/devices racks GetRack
 // Gets Devices of Rack.
 // ---
 // produces:
@@ -559,21 +559,21 @@ var GetRackHierarchy = func(w http.ResponseWriter, r *http.Request) {
 //        description: Successful
 //     '404':
 //        description: Not found
-var GetRackHierarchyToDevices = func(w http.ResponseWriter, r *http.Request) {
+var GetDevicesOfRack = func(w http.ResponseWriter, r *http.Request) {
 	id, e := strconv.Atoi(mux.Vars(r)["id"])
 	resp := u.Message(true, "success")
 
 	if e != nil {
 		u.Respond(w, u.Message(false, "Error while parsing path parameters"))
-		u.ErrLog("Error while parsing path parameters", "GET RACKHIERARCHYTODEVICES", "", r)
+		u.ErrLog("Error while parsing path parameters", "GET DEVICESOFRACK", "", r)
 		return
 	}
 
-	data, e1 := models.GetRackHierarchyToDevices(id)
+	data, e1 := models.GetDevicesOfRack(id)
 
 	if data == nil {
 		resp = u.Message(false, "Error while getting Rack: "+e1)
-		u.ErrLog("Error while getting Rack", "GET RACKHIERARCHYTODEVICES", e1, r)
+		u.ErrLog("Error while getting Rack", "GET DEVICESOFRACK", e1, r)
 
 		switch e1 {
 		case "record not found":
@@ -586,7 +586,7 @@ var GetRackHierarchyToDevices = func(w http.ResponseWriter, r *http.Request) {
 		resp = u.Message(true, "success")
 	}
 
-	resp["data"] = data
+	resp["data"] = map[string]interface{}{"objects": data}
 	u.Respond(w, resp)
 }
 

@@ -375,7 +375,7 @@ func main() {
 		controllers.GetRackDeviceByName).Methods("GET")
 
 	router.HandleFunc("/api/user/racks/{id:[0-9]+}/devices",
-		controllers.GetRackHierarchyToDevices).Methods("GET")
+		controllers.GetDevicesOfRack).Methods("GET")
 
 	router.HandleFunc("/api/user/racks/{id:[0-9]+}/all/devices/subdevices",
 		controllers.GetRackHierarchyToSubdevices).Methods("GET")
