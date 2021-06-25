@@ -67,7 +67,7 @@ func CheckKeyIsValid(key string) bool {
 }
 
 func Login() (string, string) {
-	println("LOGGING IN NOW")
+	//println("LOGGING IN NOW")
 	var user, key string
 	e := godotenv.Load(".resources/.env")
 	if e != nil {
@@ -81,8 +81,8 @@ func Login() (string, string) {
 		}
 	}
 
-	println("Checking credentials...")
-	println(CheckKeyIsValid(key))
+	//println("Checking credentials...")
+	//println(CheckKeyIsValid(key))
 
 	user = (strings.Split(user, "@"))[0]
 	return user, key

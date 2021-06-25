@@ -8,17 +8,10 @@ package main
 // Adding TAB completion support
 //https://thoughtbot.com/blog/tab-completion-in-gnu-readline
 import (
-	"bytes"
 	c "cli/controllers"
-	"encoding/json"
-	"io/ioutil"
-	"net/http"
-	"os"
-	"strconv"
 	"strings"
 
 	"github.com/chzyer/readline"
-	"github.com/joho/godotenv"
 )
 
 func BeginInterpreter(str *string) {
@@ -28,74 +21,9 @@ func BeginInterpreter(str *string) {
 	return
 }
 
-func createCredentials() (string, string) {
-	var tp map[string]interface{}
-	var key string
-	client := &http.Client{}
-
-	user, _ := readline.Line("Please Enter desired user email: ")
-	pass, _ := readline.Password("Please Enter desired password: ")
-
-	buf, _ := json.Marshal(map[string]interface{}{"email": user,
-		"password": pass})
-
-	req, _ := http.NewRequest("POST",
-		"https://ogree.chibois.net/api/user",
-		bytes.NewBuffer(buf))
-
-	resp, e := client.Do(req)
-	if e != nil || resp.StatusCode != http.StatusCreated {
-		readline.
-			Line("Error while creating credentials on server! Now exiting")
-		os.Exit(-1)
-	}
-	defer resp.Body.Close()
-	bodyBytes, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		readline.Line("Error: " + err.Error() + " Now Exiting")
-		os.Exit(-1)
-	}
-	json.Unmarshal(bodyBytes, &tp)
-	key = (tp["account"].(map[string]interface{}))["token"].(string)
-
-	os.WriteFile("./.resources/.env",
-		[]byte("user="+user+"\n"+"apikey="+key),
-		0666)
-
-	return user, key
-}
-
-func checkKeyIsValid(key string) bool {
-	client := &http.Client{}
-
-	req, _ := http.NewRequest("GET",
-		"https://ogree.chibois.net/api/token/valid", nil)
-
-	req.Header.Set("Authorization", "Bearer "+key)
-
-	resp, e := client.Do(req)
-	if e != nil || resp.StatusCode != 200 {
-		readline.Line(e.Error())
-		readline.Line("Status code" + strconv.Itoa(resp.StatusCode))
-		return false
-	}
-	return true
-}
-
 func main() {
-	var user, key string
 
-	e := godotenv.Load(".resources/.env")
-	if e != nil {
-		user, key = createCredentials()
-	} else {
-		user = os.Getenv("user")
-		key = os.Getenv("apikey")
-		if !checkKeyIsValid(key) {
-			readline.Line("Error while checking key. Now exiting")
-			os.Exit(-1)
-		}
-	}
+	user, _ := c.Login()
 
 	user = (strings.Split(user, "@"))[0]
 	rl, err := readline.New(user + "@" + "OGRE3D:$> ")
