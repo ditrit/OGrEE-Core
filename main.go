@@ -8,12 +8,10 @@ package main
 // Adding TAB completion support
 //https://thoughtbot.com/blog/tab-completion-in-gnu-readline
 import (
-	"bufio"
 	"bytes"
-	"cli/controllers"
+	c "cli/controllers"
 	"encoding/json"
 	"io/ioutil"
-	"log"
 	"net/http"
 	"os"
 	"strconv"
@@ -84,30 +82,6 @@ func checkKeyIsValid(key string) bool {
 	return true
 }
 
-func addHistory(rl *readline.Instance) {
-	readFile, err := os.Open(".resources/.history")
-
-	if err != nil {
-		log.Fatalf("failed to open file: %s", err)
-	}
-
-	fileScanner := bufio.NewScanner(readFile)
-	fileScanner.Split(bufio.ScanLines)
-	var fileTextLines []string
-
-	for fileScanner.Scan() {
-		fileTextLines = append(fileTextLines, fileScanner.Text())
-	}
-
-	readFile.Close()
-
-	for _, eachline := range fileTextLines {
-		rl.SaveHistory(strings.TrimSuffix(eachline, "\n"))
-	}
-
-	return
-}
-
 func main() {
 	var user, key string
 
@@ -130,14 +104,14 @@ func main() {
 	}
 
 	defer rl.Close()
-	controllers.InitState()
-	addHistory(rl)
+	c.InitState()
+	c.AddHistory(rl)
 	for {
 		line, err := rl.Readline()
 		if err != nil { // io.EOF
 			break
 		}
 		BeginInterpreter(&line)
-		controllers.UpdateSessionState(&line)
+		c.UpdateSessionState(&line)
 	}
 }
