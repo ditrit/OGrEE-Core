@@ -10,7 +10,7 @@ package main
 import (
 	"bufio"
 	"bytes"
-	"cli/models"
+	"cli/controllers"
 	"encoding/json"
 	"io/ioutil"
 	"log"
@@ -130,7 +130,7 @@ func main() {
 	}
 
 	defer rl.Close()
-	models.InitState()
+	controllers.InitState()
 	addHistory(rl)
 	for {
 		line, err := rl.Readline()
@@ -138,6 +138,6 @@ func main() {
 			break
 		}
 		BeginInterpreter(&line)
-		models.UpdateSessionState(&line)
+		controllers.UpdateSessionState(&line)
 	}
 }

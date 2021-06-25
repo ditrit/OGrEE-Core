@@ -1,7 +1,7 @@
 package cmd
 
 import (
-	"cli/models"
+	"cli/controllers"
 	"cli/utils"
 	"encoding/json"
 	"io/ioutil"
@@ -15,12 +15,12 @@ func Execute() {
 }
 
 func Exit() {
-	models.Exit()
+	controllers.Exit()
 	runtime.Goexit()
 }
 
 func PWD() {
-	println(models.State.CurrPath)
+	println(controllers.State.CurrPath)
 }
 
 func Disp(x map[string]interface{}) {
@@ -124,24 +124,24 @@ func UpdateObj(entity string, data map[string]interface{}) {
 }
 
 func LS() {
-	models.DispAtLevel(&models.State.TreeHierarchy,
-		*models.StrToStack(models.State.CurrPath))
+	controllers.DispAtLevel(&controllers.State.TreeHierarchy,
+		*controllers.StrToStack(controllers.State.CurrPath))
 }
 
 //This version prints out comments
 func DispTree() {
-	models.DispTree()
+	controllers.DispTree()
 }
 
 func DispTree1() {
-	//models.DispTree1()
+	//controllers.DispTree1()
 }
 
 func CD(x string) {
 	if x == ".." {
-		//strings.Split(models.State.CurrPath, "/")
+		//strings.Split(controllers.State.CurrPath, "/")
 		//strings.
-		//models.State.CurrPath =
+		//controllers.State.CurrPath =
 	}
-	models.State.CurrPath += "/" + x
+	controllers.State.CurrPath += "/" + x
 }
