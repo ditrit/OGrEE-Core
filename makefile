@@ -8,7 +8,7 @@ main: interpreter main.go lexer.nn.go y.go
 
 interpreter: parser lexer
 
-parser: interpreter/parser.y cmd/rootCmd.go cmd/man.go
+parser: interpreter/parser.y controllers/commandController.go
 	$(GOYACC) "interpreter/parser.y" 
 
 lexer: interpreter/lexer.nex

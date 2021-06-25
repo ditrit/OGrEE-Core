@@ -1,7 +1,7 @@
 %{
 package main
 import (
-"cli/cmd"
+cmd "cli/controllers"
 "strings"
 )
 

@@ -64,6 +64,7 @@ func UpdateSessionState(ln *string) {
 //Function is an abstraction of a normal exit
 func Exit() {
 	writeHistoryOnExit(&State.sessionBuffer)
+	//runtime.Goexit()
 	os.Exit(0)
 }
 

@@ -14,7 +14,7 @@ import (
 	"github.com/chzyer/readline"
 )
 
-func BeginInterpreter(str *string) {
+func InterpretLine(str *string) {
 	lex := NewLexer(strings.NewReader(*str))
 	e := yyParse(lex)
 	println("\nReturn Code: ", e)
@@ -39,7 +39,7 @@ func main() {
 		if err != nil { // io.EOF
 			break
 		}
-		BeginInterpreter(&line)
+		InterpretLine(&line)
 		c.UpdateSessionState(&line)
 	}
 }

@@ -5,7 +5,7 @@ package main
 import __yyfmt__ "fmt"
 
 import (
-	"cli/cmd"
+	cmd "cli/controllers"
 	"strings"
 )
 
