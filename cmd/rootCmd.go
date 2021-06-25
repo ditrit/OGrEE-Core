@@ -2,7 +2,7 @@ package cmd
 
 import (
 	"cli/controllers"
-	"cli/utils"
+	"cli/models"
 	"encoding/json"
 	"io/ioutil"
 	"os"
@@ -35,7 +35,7 @@ func Disp(x map[string]interface{}) {
 
 func PostObj(entity string, data map[string]interface{}) {
 
-	resp, e := utils.Send("POST",
+	resp, e := models.Send("POST",
 		"https://ogree.chibois.net/api/user/"+entity+"s", data)
 
 	println("Response Code: ", resp.Status)
@@ -53,7 +53,7 @@ func PostObj(entity string, data map[string]interface{}) {
 }
 
 func DeleteObj(entity string, data map[string]interface{}) {
-	resp, e := utils.Send("DELETE",
+	resp, e := models.Send("DELETE",
 		"https://ogree.chibois.net/api/user/"+entity+"s/"+
 			string(data["id"].(string)), nil)
 	println("Response Code: ", resp.Status)
@@ -85,7 +85,7 @@ func GetObjQ(entity string, data map[string]interface{}) {
 
 	println("Here is URL: ", URL)
 
-	resp, e := utils.Send("GET", URL, nil)
+	resp, e := models.Send("GET", URL, nil)
 	println("Response Code: ", resp.Status)
 	if e != nil {
 		println("There was an error!")
@@ -105,7 +105,7 @@ func UpdateObj(entity string, data map[string]interface{}) {
 		URL := "https://ogree.chibois.net/api/user/" + entity + "s/" +
 			string(data["id"].(string))
 
-		resp, e := utils.Send("PUT", URL, data)
+		resp, e := models.Send("PUT", URL, data)
 		println("Response Code: ", resp.Status)
 		if e != nil {
 			println("There was an error!")

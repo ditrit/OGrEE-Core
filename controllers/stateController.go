@@ -1,7 +1,7 @@
 package controllers
 
 import (
-	u "cli/utils"
+	"cli/models"
 	"container/list"
 	"encoding/json"
 	"io/ioutil"
@@ -82,7 +82,7 @@ func Populate(root **Node, dt int) {
 func getChildren(curr *Node) []*Node {
 	switch curr.Entity {
 	case -1:
-		resp, e := u.Send("GET",
+		resp, e := models.Send("GET",
 			"https://ogree.chibois.net/api/user/tenants", nil)
 		if e != nil {
 			println("Error while getting children!")
@@ -90,7 +90,7 @@ func getChildren(curr *Node) []*Node {
 		}
 		return makeNodeArrFromResp(resp, TENANT)
 	case TENANT:
-		resp, e := u.Send("GET",
+		resp, e := models.Send("GET",
 			"https://ogree.chibois.net/api/user/tenants/"+curr.Name+"/sites",
 			nil)
 		if e != nil {
@@ -99,7 +99,7 @@ func getChildren(curr *Node) []*Node {
 		}
 		return makeNodeArrFromResp(resp, SITE)
 	case SITE:
-		resp, e := u.Send("GET",
+		resp, e := models.Send("GET",
 			"https://ogree.chibois.net/api/user/sites/"+
 				strconv.Itoa(curr.ID)+"/buildings",
 			nil)
@@ -109,7 +109,7 @@ func getChildren(curr *Node) []*Node {
 		}
 		return makeNodeArrFromResp(resp, BLDG)
 	case BLDG:
-		resp, e := u.Send("GET",
+		resp, e := models.Send("GET",
 			"https://ogree.chibois.net/api/user/buildings/"+
 				strconv.Itoa(curr.ID)+"/rooms",
 			nil)
@@ -119,7 +119,7 @@ func getChildren(curr *Node) []*Node {
 		}
 		return makeNodeArrFromResp(resp, ROOM)
 	case ROOM:
-		resp, e := u.Send("GET",
+		resp, e := models.Send("GET",
 			"https://ogree.chibois.net/api/user/rooms/"+
 				strconv.Itoa(curr.ID)+"/racks",
 			nil)
@@ -129,7 +129,7 @@ func getChildren(curr *Node) []*Node {
 		}
 		return makeNodeArrFromResp(resp, RACK)
 	case RACK:
-		resp, e := u.Send("GET",
+		resp, e := models.Send("GET",
 			"https://ogree.chibois.net/api/user/racks/"+
 				strconv.Itoa(curr.ID)+"/devices",
 			nil)
@@ -139,7 +139,7 @@ func getChildren(curr *Node) []*Node {
 		}
 		return makeNodeArrFromResp(resp, DEVICE)
 	case DEVICE:
-		resp, e := u.Send("GET",
+		resp, e := models.Send("GET",
 			"https://ogree.chibois.net/api/user/devices/"+
 				strconv.Itoa(curr.ID)+"/subdevices",
 			nil)
@@ -149,7 +149,7 @@ func getChildren(curr *Node) []*Node {
 		}
 		return makeNodeArrFromResp(resp, SUBDEV)
 	case SUBDEV:
-		resp, e := u.Send("GET",
+		resp, e := models.Send("GET",
 			"https://ogree.chibois.net/api/user/subdevices/"+
 				strconv.Itoa(curr.ID)+"/all",
 			nil)
