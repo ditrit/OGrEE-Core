@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"bufio"
 	"cli/models"
 	"container/list"
 	"encoding/json"
@@ -10,6 +11,8 @@ import (
 	"os"
 	"strconv"
 	"strings"
+
+	"github.com/chzyer/readline"
 )
 
 const (
@@ -48,6 +51,30 @@ func writeHistoryOnExit(ss *list.List) {
 	for i := ss.Back(); i != nil; i = ss.Back() {
 		f.Write([]byte(string(ss.Remove(i).(string) + "\n")))
 	}
+	return
+}
+
+func AddHistory(rl *readline.Instance) {
+	readFile, err := os.Open(".resources/.history")
+
+	if err != nil {
+		log.Fatalf("failed to open file: %s", err)
+	}
+
+	fileScanner := bufio.NewScanner(readFile)
+	fileScanner.Split(bufio.ScanLines)
+	var fileTextLines []string
+
+	for fileScanner.Scan() {
+		fileTextLines = append(fileTextLines, fileScanner.Text())
+	}
+
+	readFile.Close()
+
+	for _, eachline := range fileTextLines {
+		rl.SaveHistory(strings.TrimSuffix(eachline, "\n"))
+	}
+
 	return
 }
 
@@ -244,23 +271,28 @@ func getNextInPath(name string, root *Node) *Node {
 	return nil
 }
 
-func DispAtLevel(root **Node, x Stack) {
+func DispAtLevel(root **Node, x Stack) []string {
 	if x.Len() > 0 {
 		name := x.Peek()
 		node := getNextInPath(name.(string), *root)
 		if node == nil {
 			println("Name doesn't exist! ", string(name.(string)))
-			return
+			return nil
 		}
 		x.Pop()
 		DispAtLevel(&node, x)
 	} else {
+		var items = make([]string, 0)
+		var nm string
 		println("This is what we got:")
 		for i := (*root).Nodes.Front(); i != nil; i = i.Next() {
-			println(string(i.Value.(*Node).Name))
+			nm = string(i.Value.(*Node).Name)
+			println(nm)
+			items = append(items, nm)
 		}
+		return items
 	}
-	return
+	return nil
 }
 
 func CheckPathExists(root **Node, x *Stack) {

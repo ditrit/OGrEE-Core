@@ -92,14 +92,15 @@ F:     TOKEN_ATTR TOKEN_EQUAL TOKEN_WORD F {$$=string($1+"="+$3+"="+$4); println
 ;
 
 
-P: TOKEN_WORD TOKEN_SLASH P
-       | TOKEN_WORD
+P: TOKEN_WORD TOKEN_SLASH P {$$=$1+"/"+$3}
+       | TOKEN_WORD {$$=$1}
 ;
 
 
 
 Q:     TOKEN_CD TOKEN_WORD TOKEN_CMDFLAG
        |TOKEN_CD TOKEN_WORD {cmd.CD($2)}
+       | TOKEN_LS P {cmd.LS($2)}
        | TOKEN_LS TOKEN_WORD TOKEN_CMDFLAG
        | BASH TOKEN_WORD
        | BASH     {cmd.Execute()}
@@ -108,7 +109,7 @@ Q:     TOKEN_CD TOKEN_WORD TOKEN_CMDFLAG
 BASH:  TOKEN_CD
        | TOKEN_CLR
        | TOKEN_GREP {cmd.DispTree()}
-       | TOKEN_LS {cmd.LS()}
+       | TOKEN_LS {cmd.LS("")}
        | TOKEN_LS P {cmd.DispTree1()}
        | TOKEN_PWD {cmd.PWD()}
        | TOKEN_EXIT     {cmd.Exit()}
