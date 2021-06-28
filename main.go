@@ -36,7 +36,8 @@ func listFiles(path string) func(string) []string {
 
 func listEntities(path string) func(string) []string {
 	return func(line string) []string {
-		items := c.DispAtLevel(&c.State.TreeHierarchy, *c.StrToStack(path))
+		items := c.DispAtLevelTAB(&c.State.TreeHierarchy,
+			*c.StrToStackTAB(path))
 		return items
 	}
 }

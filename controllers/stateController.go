@@ -262,6 +262,19 @@ func StrToStack(x string) *Stack {
 	return &stk
 }
 
+func StrToStackTAB(x string) *Stack {
+	stk := Stack{}
+	sarr := strings.Split(x, "/")
+	for i := len(sarr) - 1; i >= 0; i-- {
+		//println("PUSHING TO STACK: ", sarr[i])
+		if sarr[i] != "" {
+			stk.Push(sarr[i])
+		}
+
+	}
+	return &stk
+}
+
 func getNextInPath(name string, root *Node) *Node {
 	for i := root.Nodes.Front(); i != nil; i = i.Next() {
 		if (i.Value.(*Node)).Name == name {
@@ -288,6 +301,30 @@ func DispAtLevel(root **Node, x Stack) []string {
 		for i := (*root).Nodes.Front(); i != nil; i = i.Next() {
 			nm = string(i.Value.(*Node).Name)
 			println(nm)
+			items = append(items, nm)
+		}
+		return items
+	}
+	return nil
+}
+
+func DispAtLevelTAB(root **Node, x Stack) []string {
+	if x.Len() > 0 {
+		name := x.Peek()
+		node := getNextInPath(name.(string), *root)
+		if node == nil {
+			//println("Name doesn't exist! ", string(name.(string)))
+			return nil
+		}
+		x.Pop()
+		DispAtLevel(&node, x)
+	} else {
+		var items = make([]string, 0)
+		var nm string
+		//println("This is what we got:")
+		for i := (*root).Nodes.Front(); i != nil; i = i.Next() {
+			nm = string(i.Value.(*Node).Name)
+			//println(nm)
 			items = append(items, nm)
 		}
 		return items
