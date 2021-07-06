@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+	"strings"
 )
 
 func Execute() {
@@ -132,11 +133,28 @@ func DispTree1() {
 
 func CD(x string) {
 	if x == ".." {
-		//strings.Split(State.CurrPath, "/")
-		//strings.
-		//State.CurrPath =
+		lastIdx := strings.LastIndexByte(State.CurrPath, '/')
+		if lastIdx != -1 {
+			if lastIdx == 0 {
+				lastIdx += 1
+			}
+			State.CurrPath =
+				State.CurrPath[0:lastIdx]
+		}
+
+	} else if x == "" {
+		State.CurrPath = "/"
+	} else if x == "." {
+		//Do nothing
+	} else {
+		if len(State.CurrPath) != 1 {
+			State.CurrPath += "/" + x
+		} else {
+			State.CurrPath += x
+		}
+
 	}
-	State.CurrPath += "/" + x
+
 }
 
 func Help() {

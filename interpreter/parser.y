@@ -106,7 +106,7 @@ Q:     TOKEN_CD TOKEN_WORD TOKEN_CMDFLAG
        | BASH     {cmd.Execute()}
 ;
 
-BASH:  TOKEN_CD
+BASH:  TOKEN_CD {cmd.CD("")}
        | TOKEN_CLR
        | TOKEN_GREP {cmd.DispTree()}
        | TOKEN_LS {cmd.LS("")}

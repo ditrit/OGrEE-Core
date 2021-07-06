@@ -583,6 +583,10 @@ yynewstate:
 		{
 			cmd.Execute()
 		}
+	case 33:
+		{
+			cmd.CD("")
+		}
 	case 35:
 		{
 			cmd.DispTree()
