@@ -28,6 +28,7 @@ const (
 
 type ShellState struct {
 	CurrPath      string
+	PrevPath      string
 	sessionBuffer list.List
 	TreeHierarchy *Node
 }
@@ -332,6 +333,13 @@ func DispAtLevelTAB(root **Node, x Stack) []string {
 	return nil
 }
 
-func CheckPathExists(root **Node, x *Stack) {
-
+func CheckPathExists(root **Node, x *Stack) bool {
+	if x.Len() > 0 {
+		nd := getNextInPath((x.Pop()).(string), *root)
+		if nd == nil {
+			return false
+		}
+		return CheckPathExists(&nd, x)
+	}
+	return true
 }

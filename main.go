@@ -58,7 +58,8 @@ var completer = readline.NewPrefixCompleter(
 		readline.PcItem("hello"),
 		readline.PcItem("bye"),
 	),*/
-	readline.PcItem("cd"),
+	readline.PcItem("cd",
+		readline.PcItemDynamic(listEntities(""))),
 	readline.PcItem("pwd"),
 	readline.PcItem("clear"),
 	readline.PcItem("exit"),

@@ -100,6 +100,7 @@ P: TOKEN_WORD TOKEN_SLASH P {$$=$1+"/"+$3}
 
 Q:     TOKEN_CD TOKEN_WORD TOKEN_CMDFLAG
        |TOKEN_CD TOKEN_WORD {cmd.CD($2)}
+       |TOKEN_CD P {cmd.CD($2)}
        | TOKEN_LS P {cmd.LS($2)}
        | TOKEN_LS TOKEN_WORD TOKEN_CMDFLAG
        | BASH TOKEN_WORD

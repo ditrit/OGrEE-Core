@@ -138,18 +138,34 @@ func CD(x string) {
 			if lastIdx == 0 {
 				lastIdx += 1
 			}
+			State.PrevPath = State.CurrPath
 			State.CurrPath =
 				State.CurrPath[0:lastIdx]
 		}
 
 	} else if x == "" {
+		State.PrevPath = State.CurrPath
 		State.CurrPath = "/"
 	} else if x == "." {
 		//Do nothing
+	} else if x == "-" {
+		//Change to previous path
+		tmp := State.CurrPath
+		State.CurrPath = State.PrevPath
+		State.PrevPath = tmp
+	} else if strings.Count(x, "/") >= 1 {
+		if CheckPathExists(&State.TreeHierarchy, StrToStack(x)) == true ||
+			CheckPathExists(&State.TreeHierarchy, StrToStack(State.CurrPath+"/"+x)) {
+			println("Path exists")
+		} else {
+			println("Path does not exist")
+		}
 	} else {
 		if len(State.CurrPath) != 1 {
+			State.PrevPath = State.CurrPath
 			State.CurrPath += "/" + x
 		} else {
+			State.PrevPath = State.CurrPath
 			State.CurrPath += x
 		}
 
