@@ -143,6 +143,6 @@ func main() {
 			break
 		}
 		InterpretLine(&line)
-		c.UpdateSessionState(&line)
+		//c.UpdateSessionState(&line)
 	}
 }

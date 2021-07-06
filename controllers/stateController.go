@@ -79,7 +79,7 @@ func AddHistory(rl *readline.Instance) {
 }
 
 func InitState() {
-	State.sessionBuffer = *State.sessionBuffer.Init()
+	//State.sessionBuffer = *State.sessionBuffer.Init()
 	State.CurrPath = "/"
 	BuildTree()
 }
@@ -90,7 +90,7 @@ func UpdateSessionState(ln *string) {
 
 //Function is an abstraction of a normal exit
 func Exit() {
-	writeHistoryOnExit(&State.sessionBuffer)
+	//writeHistoryOnExit(&State.sessionBuffer)
 	//runtime.Goexit()
 	os.Exit(0)
 }
