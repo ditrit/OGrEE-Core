@@ -373,4 +373,12 @@ func main() {
 	if CheckPath(&State.TreeHierarchy, StrToStack(State.CurrPath+"/"+query), New()) == true {
 		println("TEST CASE 6 Passed!")
 	}
+
+	//TEST CASE 7
+	State.CurrPath = "/CED/BETA/A/R1/A09"
+	query = "../../../../..//CED/BETA/A/R1/A09/chassis01"
+	if CheckPath(&State.TreeHierarchy,
+		StrToStack(State.CurrPath+"/"+query), New()) == true {
+		println("TEST CASE 7 Passed!")
+	}
 }
