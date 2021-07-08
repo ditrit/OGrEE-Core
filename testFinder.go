@@ -273,6 +273,8 @@ func BuildTree() {
 
 func CheckPath(root **Node, x, pstk *Stack) bool {
 	if x.Len() == 0 {
+		_, path := GetPathStrAtPtr(&State.TreeHierarchy, root, "")
+		println(path)
 		return true
 	}
 
@@ -284,6 +286,8 @@ func CheckPath(root **Node, x, pstk *Stack) bool {
 		for ; p != nil && string(p.(string)) == ".."; p = x.Pop() {
 		}
 		if p == nil {
+			_, path := GetPathStrAtPtr(&State.TreeHierarchy, root, "/")
+			println(path)
 			return true
 		}
 
@@ -303,19 +307,24 @@ func CheckPath(root **Node, x, pstk *Stack) bool {
 
 }
 
-func GetPathStrAtPtr(root, curr **Node) bool, string {
-	if x.Len() > 0 {
-		nd := getNextInPath((x.Pop()).(string), *root)
-		if nd == nil {
-			return false
-		}
-		return CheckPathExists(&nd, x)
-	}
-	return true
-
+func GetPathStrAtPtr(root, curr **Node, path string) (bool, string) {
 	if root == nil || *root == nil {
 		return false, ""
 	}
+
+	if *root == *curr {
+		return true, path
+	}
+
+	for i := (**root).Nodes.Front(); i != nil; i = i.Next() {
+		nd := (*Node)((i.Value.(*Node)))
+		exist, path := GetPathStrAtPtr(&nd,
+			curr, path+"/"+i.Value.(*Node).Name)
+		if exist == true {
+			return exist, path
+		}
+	}
+	return false, path
 }
 
 func InitState() {
