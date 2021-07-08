@@ -333,7 +333,72 @@ func DispAtLevelTAB(root **Node, x Stack) []string {
 	return nil
 }
 
-func CheckPathExists(root **Node, x *Stack) bool {
+func DispStk(x Stack) {
+	for i := x.Pop(); i != nil; i = x.Pop() {
+		println((i.(*Node)).Name)
+	}
+}
+
+func GetPathStrAtPtr(root, curr **Node, path string) (bool, string) {
+	if root == nil || *root == nil {
+		return false, ""
+	}
+
+	if *root == *curr {
+		if path == "" {
+			path = "/"
+		}
+		return true, path
+	}
+
+	for i := (**root).Nodes.Front(); i != nil; i = i.Next() {
+		nd := (*Node)((i.Value.(*Node)))
+		exist, path := GetPathStrAtPtr(&nd,
+			curr, path+"/"+i.Value.(*Node).Name)
+		if exist == true {
+			return exist, path
+		}
+	}
+	return false, path
+}
+
+func CheckPath(root **Node, x, pstk *Stack) (bool, string) {
+	if x.Len() == 0 {
+		_, path := GetPathStrAtPtr(&State.TreeHierarchy, root, "")
+		//println(path)
+		return true, path
+	}
+
+	p := x.Pop()
+
+	//At Root
+	if pstk.Len() == 0 && string(p.(string)) == ".." {
+		//Pop until p != ".."
+		for ; p != nil && string(p.(string)) == ".."; p = x.Pop() {
+		}
+		if p == nil {
+			_, path := GetPathStrAtPtr(&State.TreeHierarchy, root, "/")
+			//println(path)
+			return true, path
+		}
+
+		//Somewhere in tree
+	} else if pstk.Len() > 0 && string(p.(string)) == ".." {
+		prevNode := (pstk.Pop()).(*Node)
+		return CheckPath(&prevNode, x, pstk)
+	}
+
+	nd := getNextInPath(string(p.(string)), *root)
+	if nd == nil {
+		return false, ""
+	}
+
+	pstk.Push(*root)
+	return CheckPath(&nd, x, pstk)
+
+}
+
+/*func CheckPathExists(root **Node, x *Stack) bool {
 	if x.Len() > 0 {
 		nd := getNextInPath((x.Pop()).(string), *root)
 		if nd == nil {
@@ -343,3 +408,4 @@ func CheckPathExists(root **Node, x *Stack) bool {
 	}
 	return true
 }
+*/

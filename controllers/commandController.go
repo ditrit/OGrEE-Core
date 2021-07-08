@@ -154,19 +154,40 @@ func CD(x string) {
 		State.CurrPath = State.PrevPath
 		State.PrevPath = tmp
 	} else if strings.Count(x, "/") >= 1 {
-		if CheckPathExists(&State.TreeHierarchy, StrToStack(x)) == true ||
-			CheckPathExists(&State.TreeHierarchy, StrToStack(State.CurrPath+"/"+x)) {
-			println("Path exists")
+		exist := false
+		var pth string
+
+		if string(x[0]) != "/" {
+			exist, pth = CheckPath(&State.TreeHierarchy, StrToStack(State.CurrPath+"/"+x), New())
+		} else {
+			exist, pth = CheckPath(&State.TreeHierarchy, StrToStack(x), New())
+		}
+		if exist == true {
+			println("THE PATH: ", pth)
+			State.PrevPath = State.CurrPath
+			State.CurrPath = pth
 		} else {
 			println("Path does not exist")
 		}
 	} else {
 		if len(State.CurrPath) != 1 {
-			State.PrevPath = State.CurrPath
-			State.CurrPath += "/" + x
+			if exist, _ := CheckPath(&State.TreeHierarchy,
+				StrToStack(State.CurrPath+"/"+x), New()); exist == true {
+				State.PrevPath = State.CurrPath
+				State.CurrPath += "/" + x
+			} else {
+				println("OGREE: ", x, " : No such object")
+			}
+
 		} else {
-			State.PrevPath = State.CurrPath
-			State.CurrPath += x
+			if exist, _ := CheckPath(&State.TreeHierarchy,
+				StrToStack(State.CurrPath+x), New()); exist == true {
+				State.PrevPath = State.CurrPath
+				State.CurrPath += x
+			} else {
+				println("OGREE: ", x, " : No such object")
+			}
+
 		}
 
 	}
