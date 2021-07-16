@@ -9,7 +9,8 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/chzyer/readline"
+	"cli/readline"
+
 	"github.com/joho/godotenv"
 )
 
