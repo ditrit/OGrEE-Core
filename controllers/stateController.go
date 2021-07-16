@@ -294,7 +294,7 @@ func DispAtLevel(root **Node, x Stack) []string {
 			return nil
 		}
 		x.Pop()
-		DispAtLevel(&node, x)
+		return DispAtLevel(&node, x)
 	} else {
 		var items = make([]string, 0)
 		var nm string
@@ -318,7 +318,7 @@ func DispAtLevelTAB(root **Node, x Stack) []string {
 			return nil
 		}
 		x.Pop()
-		DispAtLevel(&node, x)
+		return DispAtLevelTAB(&node, x)
 	} else {
 		var items = make([]string, 0)
 		var nm string

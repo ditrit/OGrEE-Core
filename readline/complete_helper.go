@@ -124,7 +124,7 @@ func doInternal(p PrefixCompleterInterface, line []rune, pos int, origLine []run
 	//println("POS ARG:", pos)
 	//println("ORIGLINE ARG:", string(origLine))
 	line = runes.TrimSpaceLeft(line[:pos])
-	line = []rune(MyTrimPrecedingSlash(string(line)))
+	//line = []rune(MyTrimPrecedingSlash(string(line)))
 	goNext := false
 	var lineCompleter PrefixCompleterInterface
 	//println("JUST B4 THE LOOP")
@@ -138,6 +138,7 @@ func doInternal(p PrefixCompleterInterface, line []rune, pos int, origLine []run
 				//println("CHILDGETNAME: ", child.GetName())
 				//println("Calling the Dynamic Names Func")
 				childNames = childDynamic.GetDynamicNames(origLine)
+				line = []rune(MyTrimPrecedingSlash(string(line)))
 				//println("LENGTH OF childNames: ", len(childNames))
 			} else {
 				//println("MYSTERY BLOCK RIGHT HERE!")

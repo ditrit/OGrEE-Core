@@ -36,11 +36,40 @@ func listFiles(path string) func(string) []string {
 
 func listEntities(path string) func(string) []string {
 	return func(line string) []string {
+		//var path string
+		println("TAB COMPLETER INVOKED")
+		x := rlPtr.RetrieveDynamicQuery()
+		//println("WE GOT", x)
+		if x[2:] == "" || x[2:] == " " || x[2:] == "  " {
+			path = c.State.CurrPath
+		} else {
+			path = TrimToSlash(x[3:])
+		}
 		items := c.DispAtLevelTAB(&c.State.TreeHierarchy,
 			*c.StrToStackTAB(path))
 		return items
 	}
 }
+
+func TrimToSlash(x string) string {
+	idx := strings.LastIndex(x, "/")
+	return x[:idx+1]
+}
+
+/*func listMy(x string) func(string) []string {
+	return func(line string) []string {
+		var tmp string
+		x := rlPtr.RetrieveDynamicQuery()
+		ans := ls(TrimToSlash(x))
+		for i := range ans {
+			tmp += " " + ans[i]
+		}
+		//println("NAMES: ", tmp)
+		return ans
+	}
+}*/
+
+var rlPtr *readline.Instance
 
 func main() {
 
@@ -112,7 +141,11 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-
+	rlPtr = rl
+	rl.Operation.SetDynamicFileSystemCompletion((true))
+	//rl.Operation.SetDynamicFileSystemCompletion(true)
+	//rl.Operation.GetConfig().AutoComplete.Do()
+	//rl.
 	defer rl.Close()
 	c.InitState()
 	//c.AddHistory(rl)
