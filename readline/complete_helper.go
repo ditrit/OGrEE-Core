@@ -11,6 +11,8 @@ type DynamicCompleteFunc func(string) []string
 type PrefixCompleterInterface interface {
 	Print(prefix string, level int, buf *bytes.Buffer)
 	Do(line []rune, pos int) (newLine [][]rune, length int)
+	DoDynamicFS(line []rune, pos int) (newLine [][]rune, length int, fs bool)
+	ReturnFileSysMode() bool
 	GetName() []rune
 	GetChildren() []PrefixCompleterInterface
 	SetChildren(children []PrefixCompleterInterface)
@@ -23,10 +25,11 @@ type DynamicPrefixCompleterInterface interface {
 }
 
 type PrefixCompleter struct {
-	Name     []rune
-	Dynamic  bool
-	Callback DynamicCompleteFunc
-	Children []PrefixCompleterInterface
+	Name        []rune
+	Dynamic     bool
+	FileSysMode bool
+	Callback    DynamicCompleteFunc
+	Children    []PrefixCompleterInterface
 }
 
 func MyTrimPrecedingSlash(x string) string {
@@ -67,6 +70,11 @@ func (p *PrefixCompleter) IsDynamic() bool {
 	return p.Dynamic
 }
 
+func (p *PrefixCompleter) IsFileSysMode() bool {
+	//println("FOR SURE IT IS PREFIX ITEM DEPENDENT!")
+	return p.FileSysMode
+}
+
 func (p *PrefixCompleter) GetName() []rune {
 	return p.Name
 }
@@ -87,25 +95,27 @@ func (p *PrefixCompleter) SetChildren(children []PrefixCompleterInterface) {
 	p.Children = children
 }
 
-func NewPrefixCompleter(pc ...PrefixCompleterInterface) *PrefixCompleter {
-	return PcItem("", pc...)
+func NewPrefixCompleter(x bool, pc ...PrefixCompleterInterface) *PrefixCompleter {
+	return PcItem("", x, pc...)
 }
 
-func PcItem(name string, pc ...PrefixCompleterInterface) *PrefixCompleter {
+func PcItem(name string, fileSysOption bool, pc ...PrefixCompleterInterface) *PrefixCompleter {
 	name += " "
 	return &PrefixCompleter{
-		Name:     []rune(name),
-		Dynamic:  false,
-		Children: pc,
+		Name:        []rune(name),
+		Dynamic:     false,
+		FileSysMode: fileSysOption,
+		Children:    pc,
 	}
 }
 
-func PcItemDynamic(callback DynamicCompleteFunc, pc ...PrefixCompleterInterface) *PrefixCompleter {
+func PcItemDynamic(callback DynamicCompleteFunc, fileSysOption bool, pc ...PrefixCompleterInterface) *PrefixCompleter {
 	//println("2nd PLACE")
 	return &PrefixCompleter{
-		Callback: callback,
-		Dynamic:  true,
-		Children: pc,
+		Callback:    callback,
+		Dynamic:     true,
+		FileSysMode: true,
+		Children:    pc,
 	}
 }
 
@@ -202,4 +212,72 @@ func doInternal(p PrefixCompleterInterface, line []rune, pos int, origLine []run
 		return doInternal(lineCompleter, nil, 0, origLine)
 	}
 	return
+}
+
+func (p *PrefixCompleter) ReturnFileSysMode() bool {
+	return p.IsFileSysMode()
+}
+
+func doDynamicInternal(p PrefixCompleterInterface, line []rune, pos int, origLine []rune) (newLine [][]rune, offset int, fs bool) {
+	line = runes.TrimSpaceLeft(line[:pos])
+	goNext := false
+	var lineCompleter PrefixCompleterInterface
+	fs = p.ReturnFileSysMode()
+	for _, child := range p.GetChildren() {
+		childNames := make([][]rune, 1)
+
+		childDynamic, ok := child.(DynamicPrefixCompleterInterface)
+		if ok && childDynamic.IsDynamic() {
+			childNames = childDynamic.GetDynamicNames(origLine)
+			line = []rune(MyTrimPrecedingSlash(string(line)))
+			//fs = childDynamic.ReturnFileSysMode()
+		} else {
+			childNames[0] = child.GetName()
+			//fs = p.ReturnFileSysMode()
+		}
+
+		for _, childName := range childNames {
+			if len(line) >= len(childName) {
+				if runes.HasPrefix(line, childName) {
+					if len(line) == len(childName) {
+						newLine = append(newLine, []rune{' '})
+					} else {
+						newLine = append(newLine, childName)
+					}
+					offset = len(childName)
+					lineCompleter = child
+					goNext = true
+				}
+			} else {
+				if runes.HasPrefix(childName, line) {
+					newLine = append(newLine, childName[len(line):])
+					offset = len(line)
+					lineCompleter = child
+				}
+			}
+		}
+	}
+
+	if len(newLine) != 1 {
+		return
+	}
+
+	tmpLine := make([]rune, 0, len(line))
+	for i := offset; i < len(line); i++ {
+		if line[i] == ' ' {
+			continue
+		}
+
+		tmpLine = append(tmpLine, line[i:]...)
+		return doDynamicInternal(lineCompleter, tmpLine, len(tmpLine), origLine)
+	}
+
+	if goNext {
+		return doDynamicInternal(lineCompleter, nil, 0, origLine)
+	}
+	return
+}
+
+func (p *PrefixCompleter) DoDynamicFS(line []rune, pos int) (newLine [][]rune, offset int, fs bool) {
+	return doDynamicInternal(p, line, pos, line)
 }

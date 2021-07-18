@@ -16,12 +16,23 @@ type AutoCompleter interface {
 	//   Do("gi", 2) => ["t", "t-shell"], 2
 	//   Do("git", 3) => ["", "-shell"], 3
 	Do(line []rune, pos int) (newLine [][]rune, length int)
+	DoDynamicFS(line []rune, pos int) (newLine [][]rune, length int, fs bool)
+	ReturnFileSysMode() bool
 }
 
 type TabCompleter struct{}
 
 func (t *TabCompleter) Do([]rune, int) ([][]rune, int) {
 	return [][]rune{[]rune("\t")}, 0
+}
+
+func (t *TabCompleter) DoDynamicFS([]rune, int) ([][]rune, int, bool) {
+	return [][]rune{[]rune("\t")}, 0, false
+}
+
+func (t *TabCompleter) ReturnFileSysMode() bool {
+	println("HITTING THE TAB COMPLETER")
+	return false
 }
 
 type opCompleter struct {
@@ -51,12 +62,12 @@ func (o *opCompleter) doSelect() {
 	if len(o.candidate) == 1 {
 		//Append slash to end of completion
 		//word if FileSysMode is enabled
-		if o.op.IsInFileSystemMode() {
-			o.op.buf.WriteRunes(append(
-				o.candidate[0][:len(o.candidate[0])-1], '/'))
-		} else {
-			o.op.buf.WriteRunes(o.candidate[0])
-		}
+		//if o.op.IsInFileSystemMode() {
+		//	o.op.buf.WriteRunes(append(
+		//		o.candidate[0][:len(o.candidate[0])-1], '/'))
+		//} else {
+		o.op.buf.WriteRunes(o.candidate[0])
+		//}
 
 		o.ExitCompleteMode(false)
 		return
@@ -105,8 +116,11 @@ func (o *opCompleter) OnComplete() bool {
 	o.ExitCompleteSelectMode()
 	o.candidateSource = rs
 	//println("I THOUGHT WE FIXED THE RS BUT HERE IT IS: ", string(rs))
-	newLines, offset := o.op.cfg.AutoComplete.Do(rs, buf.idx)
+	//newLines, offset := o.op.cfg.AutoComplete.Do(rs, buf.idx)
 	//println("LENGTH OF AUTOComplete.DO: ", len(newLines))
+	newLines, offset, fs := o.op.cfg.AutoComplete.DoDynamicFS(rs, buf.idx)
+	//println("ARE WE IN FS MODE? WHICH PREFIX ARE WE USING?", fs)
+
 	if len(newLines) == 0 {
 		//println("CLASSIC HAVENT PLAYED IT YET")
 		//This block executes when there are no matches
@@ -122,7 +136,7 @@ func (o *opCompleter) OnComplete() bool {
 		if len(newLines) == 1 {
 			//Append a slash to completing word
 			//if FileSysMode is enabled
-			if o.IsInFileSystemMode() {
+			if fs == true {
 				buf.WriteRunes(append(
 					newLines[0][:len(newLines[0])-1], '/'))
 			} else {
@@ -171,13 +185,13 @@ func (o *opCompleter) HandleCompleteSelect(r rune) bool {
 		next = false
 		//Append slash on completing word
 		//if FileSysMode is enabled
-		if o.IsInFileSystemMode() {
-			outString := o.op.candidate[o.op.candidateChoise]
-			outString = append(outString[:len(outString)-1], '/')
-			o.op.buf.WriteRunes(outString)
-		} else {
-			o.op.buf.WriteRunes(o.op.candidate[o.op.candidateChoise])
-		}
+		//if fs == true {
+		//	outString := o.op.candidate[o.op.candidateChoise]
+		//	outString = append(outString[:len(outString)-1], '/')
+		//	o.op.buf.WriteRunes(outString)
+		//} else {
+		o.op.buf.WriteRunes(o.op.candidate[o.op.candidateChoise])
+		//}
 
 		o.ExitCompleteMode(false)
 	case CharLineStart:

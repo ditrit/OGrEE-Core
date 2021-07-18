@@ -15,6 +15,8 @@ type SegmentCompleter interface {
 	//   DoTree([a, a1, ], 0) [a11]
 	//   DoTree([a, a1, a], 1) [a11]
 	DoSegment([][]rune, int) [][]rune
+	DoDynamicFS(line []rune, pos int) (newLine [][]rune, length int, fs bool)
+	ReturnFileSysMode() bool
 }
 
 type dumpSegmentCompleter struct {
@@ -23,6 +25,14 @@ type dumpSegmentCompleter struct {
 
 func (d *dumpSegmentCompleter) DoSegment(segment [][]rune, n int) [][]rune {
 	return d.f(segment, n)
+}
+
+func (d *dumpSegmentCompleter) DoDynamicFS(segment []rune, n int) ([][]rune, int, bool) {
+	return d.f([][]rune{segment}, n), 0, false
+}
+
+func (d *dumpSegmentCompleter) ReturnFileSysMode() bool {
+	return false
 }
 
 func SegmentFunc(f func([][]rune, int) [][]rune) AutoCompleter {
