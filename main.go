@@ -42,9 +42,12 @@ func listEntities(path string) func(string) []string {
 		//println("WE GOT", x)
 		if x[2:] == "" || x[2:] == " " || x[2:] == "  " {
 			path = c.State.CurrPath
+		} else if x[2:] == ".." {
+			path = c.State.CurrPath + "/.."
 		} else {
 			path = TrimToSlash(x[3:])
 		}
+		_, path = c.CheckPath(&c.State.TreeHierarchy, c.StrToStackTAB(path), c.New())
 		items := c.DispAtLevelTAB(&c.State.TreeHierarchy,
 			*c.StrToStackTAB(path))
 		return items
