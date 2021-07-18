@@ -147,7 +147,8 @@ func main() {
 	//rl.Operation.GetConfig().AutoComplete.Do()
 	//rl.
 	defer rl.Close()
-	c.InitState()
+	//c.InitState()
+	c.InitStateDummy()
 	//c.AddHistory(rl)
 	//readline.NewPrefixCompleter
 	//readline.SegmentCompleter
