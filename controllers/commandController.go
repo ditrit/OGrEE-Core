@@ -119,16 +119,13 @@ func UpdateObj(entity string, data map[string]interface{}) {
 }
 
 func LS(x string) {
-	switch x {
-	case "", ".":
+	if x == "" || x == "." {
 		DispAtLevel(&State.TreeHierarchy, *StrToStack(State.CurrPath))
-	default:
+	} else if string(x[0]) == "/" {
 		DispAtLevel(&State.TreeHierarchy, *StrToStack(x))
+	} else {
+		DispAtLevel(&State.TreeHierarchy, *StrToStack(State.CurrPath + "/" + x))
 	}
-}
-
-func DispTree1() {
-	//DispTree1()
 }
 
 func CD(x string) {

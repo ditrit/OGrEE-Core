@@ -1,18 +1,14 @@
 package controllers
 
 import (
-	"bufio"
 	"cli/models"
 	"container/list"
 	"encoding/json"
 	"io/ioutil"
-	"log"
 	"net/http"
 	"os"
 	"strconv"
 	"strings"
-
-	"cli/readline"
 )
 
 const (
@@ -41,43 +37,6 @@ type Node struct {
 }
 
 var State ShellState
-
-func writeHistoryOnExit(ss *list.List) {
-	f, err := os.OpenFile(".resources/.history",
-		os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	for i := ss.Back(); i != nil; i = ss.Back() {
-		f.Write([]byte(string(ss.Remove(i).(string) + "\n")))
-	}
-	return
-}
-
-func AddHistory(rl *readline.Instance) {
-	readFile, err := os.Open(".resources/.history")
-
-	if err != nil {
-		log.Fatalf("failed to open file: %s", err)
-	}
-
-	fileScanner := bufio.NewScanner(readFile)
-	fileScanner.Split(bufio.ScanLines)
-	var fileTextLines []string
-
-	for fileScanner.Scan() {
-		fileTextLines = append(fileTextLines, fileScanner.Text())
-	}
-
-	readFile.Close()
-
-	for _, eachline := range fileTextLines {
-		rl.SaveHistory(strings.TrimSuffix(eachline, "\n"))
-	}
-
-	return
-}
 
 func InitState() {
 	//State.sessionBuffer = *State.sessionBuffer.Init()
@@ -342,23 +301,9 @@ func BuildTree() {
 
 func StrToStack(x string) *Stack {
 	stk := Stack{}
-	sarr := strings.Split(x, "/")
-	for i := len(sarr) - 1; i >= 0; i-- {
-		println("PUSHING TO STACK: ", sarr[i])
-		if sarr[i] != "" {
-			stk.Push(sarr[i])
-		}
-
-	}
-	return &stk
-}
-
-func StrToStackTAB(x string) *Stack {
-	stk := Stack{}
 	numPrev := 0
 	sarr := strings.Split(x, "/")
 	for i := len(sarr) - 1; i >= 0; i-- {
-		//println("PUSHING TO STACK: ", sarr[i])
 		if sarr[i] == ".." {
 			numPrev += 1
 		} else if sarr[i] != "" {

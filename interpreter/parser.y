@@ -111,7 +111,7 @@ BASH:  TOKEN_CD {cmd.CD("")}
        | TOKEN_CLR
        | TOKEN_GREP {cmd.DispTree()}
        | TOKEN_LS {cmd.LS("")}
-       | TOKEN_LS P {cmd.DispTree1()}
+       | TOKEN_LS P {cmd.DispTree()}
        | TOKEN_PWD {cmd.PWD()}
        | TOKEN_EXIT     {cmd.Exit()}
        | TOKEN_DOC {cmd.Help()}

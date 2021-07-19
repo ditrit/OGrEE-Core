@@ -603,7 +603,7 @@ yynewstate:
 		}
 	case 38:
 		{
-			cmd.DispTree1()
+			cmd.DispTree()
 		}
 	case 39:
 		{

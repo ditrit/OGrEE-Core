@@ -40,7 +40,7 @@ func listEntities(path string) func(string) []string {
 		}
 
 		items := c.DispAtLevelTAB(&c.State.TreeHierarchy,
-			*c.StrToStackTAB(path))
+			*c.StrToStack(path))
 		return items
 	}
 }
