@@ -45,7 +45,7 @@ func listEntities(path string) func(string) []string {
 		} else {
 			path = TrimToSlash(x[3:])
 			if len(x) > 4 {
-				if strings.TrimSpace(x[2:])[:2] == ".." {
+				if strings.TrimSpace(x[2:])[:2] == ".." || strings.TrimSpace(x[2:])[:1] != "/" {
 					path = c.State.CurrPath + "/" + path
 				}
 			}
