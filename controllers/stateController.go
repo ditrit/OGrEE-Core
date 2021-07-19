@@ -355,14 +355,18 @@ func StrToStack(x string) *Stack {
 
 func StrToStackTAB(x string) *Stack {
 	stk := Stack{}
+	numPrev := 0
 	sarr := strings.Split(x, "/")
 	for i := len(sarr) - 1; i >= 0; i-- {
 		//println("PUSHING TO STACK: ", sarr[i])
-		/*if sarr[i] == ".." {
-			stk.Pop()
-		}*/
-		if sarr[i] != "" {
-			stk.Push(sarr[i])
+		if sarr[i] == ".." {
+			numPrev += 1
+		} else if sarr[i] != "" {
+			if numPrev == 0 {
+				stk.Push(sarr[i])
+			} else {
+				numPrev--
+			}
 		}
 
 	}

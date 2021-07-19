@@ -40,14 +40,17 @@ func listEntities(path string) func(string) []string {
 		//println("TAB COMPLETER INVOKED")
 		x := rlPtr.RetrieveDynamicQuery()
 		//println("WE GOT", x)
-		if x[2:] == "" || x[2:] == " " || x[2:] == "  " {
+		if strings.TrimSpace(x[2:]) == "" {
 			path = c.State.CurrPath
-		} else if x[2:] == ".." {
-			path = c.State.CurrPath + "/.."
 		} else {
 			path = TrimToSlash(x[3:])
+			if len(x) > 4 {
+				if strings.TrimSpace(x[2:])[:2] == ".." {
+					path = c.State.CurrPath + "/" + path
+				}
+			}
 		}
-		_, path = c.CheckPath(&c.State.TreeHierarchy, c.StrToStackTAB(path), c.New())
+		//_, path = c.CheckPath(&c.State.TreeHierarchy, c.StrToStackTAB(path), c.New())
 		items := c.DispAtLevelTAB(&c.State.TreeHierarchy,
 			*c.StrToStackTAB(path))
 		return items
