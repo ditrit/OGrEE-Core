@@ -121,8 +121,6 @@ func main() {
 		panic(err)
 	}
 
-	rl.Operation.SetDynamicFileSystemCompletion((true))
-
 	defer rl.Close()
 	//c.InitState()
 	c.InitStateDummy()

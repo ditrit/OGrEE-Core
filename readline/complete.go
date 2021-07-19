@@ -40,14 +40,13 @@ type opCompleter struct {
 	op    *Operation
 	width int
 
-	inCompleteMode   bool
-	inSelectMode     bool
-	inFileSystemMode bool
-	candidate        [][]rune
-	candidateSource  []rune
-	candidateOff     int
-	candidateChoise  int
-	candidateColNum  int
+	inCompleteMode  bool
+	inSelectMode    bool
+	candidate       [][]rune
+	candidateSource []rune
+	candidateOff    int
+	candidateChoise int
+	candidateColNum int
 }
 
 func newOpCompleter(w io.Writer, op *Operation, width int) *opCompleter {
@@ -168,10 +167,6 @@ func (o *opCompleter) IsInCompleteSelectMode() bool {
 
 func (o *opCompleter) IsInCompleteMode() bool {
 	return o.inCompleteMode
-}
-
-func (o *opCompleter) IsInFileSystemMode() bool {
-	return o.inFileSystemMode
 }
 
 //When you already pressed TAB

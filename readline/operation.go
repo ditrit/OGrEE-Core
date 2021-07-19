@@ -97,10 +97,6 @@ func (o *Operation) SetMaskRune(r rune) {
 	o.buf.SetMask(r)
 }
 
-func (o *Operation) SetDynamicFileSystemCompletion(option bool) {
-	o.inFileSystemMode = option
-}
-
 func (o *Operation) GetConfig() *Config {
 	o.m.Lock()
 	cfg := *o.cfg
