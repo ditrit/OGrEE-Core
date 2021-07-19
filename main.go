@@ -49,6 +49,10 @@ func listEntities(path string) func(string) []string {
 					path = c.State.CurrPath + "/" + path
 				}
 			}
+
+			if path == "" {
+				path = c.State.CurrPath
+			}
 		}
 		//_, path = c.CheckPath(&c.State.TreeHierarchy, c.StrToStackTAB(path), c.New())
 		items := c.DispAtLevelTAB(&c.State.TreeHierarchy,
