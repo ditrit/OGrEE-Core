@@ -5,8 +5,6 @@ package main
 //https://stackoverflow.com/
 // questions/33025599/move-the-cursor-in-a-c-program
 
-// Adding TAB completion support
-//https://thoughtbot.com/blog/tab-completion-in-gnu-readline
 import (
 	c "cli/controllers"
 	"strings"
@@ -21,40 +19,26 @@ func InterpretLine(str *string) {
 	return
 }
 
-/*
-func listFiles(path string) func(string) []string {
-	return func(line string) []string {
-		names := make([]string, 0)
-		files, _ := ioutil.ReadDir(path)
-		for _, f := range files {
-			names = append(names, f.Name())
-		}
-		return names
-	}
-}
-*/
-
 func listEntities(path string) func(string) []string {
 	return func(line string) []string {
-		//var path string
-		//println("TAB COMPLETER INVOKED")
-		x := rlPtr.RetrieveDynamicQuery()
-		//println("WE GOT", x)
-		if strings.TrimSpace(x[2:]) == "" {
+
+		if strings.TrimSpace(line[2:]) == "" {
 			path = c.State.CurrPath
 		} else {
-			path = TrimToSlash(x[3:])
-			if len(x) > 4 {
-				if strings.TrimSpace(x[2:])[:2] == ".." || strings.TrimSpace(x[2:])[:1] != "/" {
+			path = TrimToSlash(line[3:])
+			if len(line) > 4 {
+				if strings.TrimSpace(line[2:])[:2] == ".." || strings.TrimSpace(line[2:])[:1] != "/" {
 					path = c.State.CurrPath + "/" + path
 				}
 			}
 
 			if path == "" {
 				path = c.State.CurrPath
-			}
+			} /*else if path == "/" {
+				path = "/"
+			}*/
 		}
-		//_, path = c.CheckPath(&c.State.TreeHierarchy, c.StrToStackTAB(path), c.New())
+
 		items := c.DispAtLevelTAB(&c.State.TreeHierarchy,
 			*c.StrToStackTAB(path))
 		return items
@@ -65,21 +49,6 @@ func TrimToSlash(x string) string {
 	idx := strings.LastIndex(x, "/")
 	return x[:idx+1]
 }
-
-/*func listMy(x string) func(string) []string {
-	return func(line string) []string {
-		var tmp string
-		x := rlPtr.RetrieveDynamicQuery()
-		ans := ls(TrimToSlash(x))
-		for i := range ans {
-			tmp += " " + ans[i]
-		}
-		//println("NAMES: ", tmp)
-		return ans
-	}
-}*/
-
-var rlPtr *readline.Instance
 
 func main() {
 
@@ -151,21 +120,12 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	rlPtr = rl
+
 	rl.Operation.SetDynamicFileSystemCompletion((true))
-	//rl.Operation.SetDynamicFileSystemCompletion(true)
-	//rl.Operation.GetConfig().AutoComplete.Do()
-	//rl.
+
 	defer rl.Close()
 	//c.InitState()
 	c.InitStateDummy()
-	//c.AddHistory(rl)
-	//readline.NewPrefixCompleter
-	//readline.SegmentCompleter
-	//readline.SetAutoComplete
-	//readline.AutoCompleter
-	//readline.FuncListener
-	//readline.AutoCompleter
 	for {
 		line, err := rl.Readline()
 		if err != nil { // io.EOF
