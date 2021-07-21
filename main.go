@@ -122,9 +122,8 @@ func main() {
 	}
 
 	defer rl.Close()
-	//c.InitState()
-	//c.InitStateDummy()
-	c.NewBuildTree()
+	println("Caching data... please wait")
+	c.InitState()
 	for {
 		line, err := rl.Readline()
 		if err != nil { // io.EOF
