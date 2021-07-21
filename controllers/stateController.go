@@ -9,6 +9,7 @@ import (
 	"os"
 	"strconv"
 	"strings"
+	"time"
 )
 
 const (
@@ -31,6 +32,7 @@ type ShellState struct {
 
 type Node struct {
 	ID     int
+	PID    int
 	Entity int
 	Name   string
 	Nodes  list.List
@@ -38,10 +40,133 @@ type Node struct {
 
 var State ShellState
 
+func NewInitState() {
+	State.CurrPath = "/"
+	(State.TreeHierarchy) = &(Node{})
+	(*(State.TreeHierarchy)).Entity = -1
+
+}
+
 func InitState() {
 	//State.sessionBuffer = *State.sessionBuffer.Init()
 	State.CurrPath = "/"
-	BuildTree()
+	NewBuildTree()
+}
+
+func NewBuildTree() {
+	State.TreeHierarchy = &(Node{})
+	(*(State.TreeHierarchy)).Entity = 0
+	State.TreeHierarchy.PID = -1
+	State.CurrPath = "/"
+	x := NewgetChildren(0)
+	for i := range x {
+		State.TreeHierarchy.Nodes.PushBack(x[i])
+	}
+
+	for i := 1; i < 7; i++ {
+		time.Sleep(1 * time.Second)
+		x := NewgetChildren(i)
+		for k := range x {
+			SearchAndInsert(&State.TreeHierarchy, x[k], i)
+		}
+	}
+}
+func NewgetChildren(curr int) []*Node {
+	switch curr {
+	case -1:
+		resp, e := models.Send("GET",
+			"https://ogree.chibois.net/api/user/tenants", nil)
+		if e != nil {
+			println("Error while getting children!")
+			Exit()
+		}
+		return makeNodeArrFromResp(resp, TENANT)
+	case TENANT:
+		println("TENANT")
+		resp, e := models.Send("GET",
+			"https://ogree.chibois.net/api/user/tenants",
+			nil)
+		if e != nil {
+			println("Error while getting children!")
+			Exit()
+		}
+		return makeNodeArrFromResp(resp, SITE)
+	case SITE:
+		println("SITE")
+		resp, e := models.Send("GET",
+			"https://ogree.chibois.net/api/user/sites",
+			nil)
+		if e != nil {
+			println("Error while getting children!")
+			Exit()
+		}
+		return makeNodeArrFromResp(resp, BLDG)
+	case BLDG:
+		println("BLDG")
+		resp, e := models.Send("GET",
+			"https://ogree.chibois.net/api/user/buildings",
+			nil)
+		if e != nil {
+			println("Error while getting children!")
+			Exit()
+		}
+		return makeNodeArrFromResp(resp, ROOM)
+	case ROOM:
+		println("ROOM")
+		resp, e := models.Send("GET",
+			"https://ogree.chibois.net/api/user/rooms",
+			nil)
+		if e != nil {
+			println("Error while getting children!")
+			Exit()
+		}
+		return makeNodeArrFromResp(resp, RACK)
+	case RACK:
+		println("RACK")
+		resp, e := models.Send("GET",
+			"https://ogree.chibois.net/api/user/racks",
+			nil)
+		if e != nil {
+			println("Error while getting children!")
+			Exit()
+		}
+		return makeNodeArrFromResp(resp, DEVICE)
+	case DEVICE:
+		println("DEVICE")
+		resp, e := models.Send("GET",
+			"https://ogree.chibois.net/api/user/devices",
+			nil)
+		if e != nil {
+			println("Error while getting children!")
+			Exit()
+		}
+		return makeNodeArrFromResp(resp, SUBDEV)
+	case SUBDEV:
+		println("SUBDEV")
+		resp, e := models.Send("GET",
+			"https://ogree.chibois.net/api/user/subdevices",
+			nil)
+		if e != nil {
+			println("Error while getting children!")
+			Exit()
+		}
+		return makeNodeArrFromResp(resp, SUBDEV1)
+	}
+	return nil
+}
+
+func SearchAndInsert(root **Node, node *Node, dt int) {
+	if root != nil && dt != SUBDEV1+1 {
+		for i := (*root).Nodes.Front(); i != nil; i = i.Next() {
+			if node.PID == (*root).ID {
+				(i.Value).(*Node).Nodes.PushBack(node)
+				return
+			}
+			x := (i.Value).(*Node)
+			SearchAndInsert(&x, node, dt+1)
+		}
+	}
+	return
 }
 
 func InitStateDummy() {

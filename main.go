@@ -123,7 +123,8 @@ func main() {
 
 	defer rl.Close()
 	//c.InitState()
-	c.InitStateDummy()
+	//c.InitStateDummy()
+	c.NewBuildTree()
 	for {
 		line, err := rl.Readline()
 		if err != nil { // io.EOF
