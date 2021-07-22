@@ -593,17 +593,13 @@ yynewstate:
 		{
 			cmd.CD("")
 		}
-	case 36:
-		{
-			cmd.DispTree()
-		}
 	case 37:
 		{
 			cmd.LS("")
 		}
 	case 38:
 		{
-			cmd.DispTree()
+			cmd.LS(yyS[yypt-0].s)
 		}
 	case 39:
 		{
