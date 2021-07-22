@@ -165,10 +165,6 @@ func SearchAndInsert(root **Node, node *Node, dt int) {
 	return
 }
 
-func UpdateSessionState(ln *string) {
-	State.sessionBuffer.PushBack(*ln)
-}
-
 //Function is an abstraction of a normal exit
 func Exit() {
 	//writeHistoryOnExit(&State.sessionBuffer)
@@ -372,4 +368,23 @@ func CheckPath(root **Node, x, pstk *Stack) (bool, string) {
 	pstk.Push(*root)
 	return CheckPath(&nd, x, pstk)
 
+}
+
+func UpdateTree(root **Node, curr *Node, ctr int) bool {
+	if ctr != curr.Entity-1 { //Recursive call until we reach curr parent
+		for i := (*root).Nodes.Front(); i != nil; i = i.Next() {
+			next := i.Value.(*Node)
+			return UpdateTree(&(next), curr, ctr+1)
+		}
+	} else {
+		for i := (*root).Nodes.Front(); i != nil; i = i.Next() {
+			if i.Value.(*Node).ID == curr.PID {
+				//(*root).Nodes.PushBack(curr)
+				i.Value.(*Node).Nodes.PushBack(curr)
+				return true
+			}
+		}
+
+	}
+	return false
 }

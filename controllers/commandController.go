@@ -5,7 +5,9 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"net/http"
 	"os"
+	"strconv"
 	"strings"
 )
 
@@ -28,12 +30,11 @@ func Disp(x map[string]interface{}) {
 	println("JSON: ", string(jx))
 }
 
-func PostObj(entity string, data map[string]interface{}) {
-
+func PostObj(entity, path string, data map[string]interface{}) {
+	var respMap map[string]interface{}
 	resp, e := models.Send("POST",
 		"https://ogree.chibois.net/api/user/"+entity+"s", data)
 
-	println("Response Code: ", resp.Status)
 	if e != nil {
 		println("There was an error!")
 	}
@@ -43,7 +44,32 @@ func PostObj(entity string, data map[string]interface{}) {
 		println("Error: " + err.Error() + " Now Exiting")
 		os.Exit(-1)
 	}
-	println(string(bodyBytes))
+
+	json.Unmarshal(bodyBytes, &respMap)
+	println(string(respMap["message"].(string)) /*bodyBytes*/)
+	if resp.StatusCode == http.StatusCreated {
+		//Insert object into tree
+		node := &Node{}
+		node.ID, _ = strconv.Atoi(respMap["data"].(map[string]interface{})["id"].(string))
+		node.Name = respMap["data"].(map[string]interface{})["name"].(string)
+		_, ok := respMap["data"].(map[string]interface{})["parentId"].(float64)
+		//node.PID = int(respMap["data"].(map[string]interface{})["parentId"].(float64))
+		if ok {
+			node.PID = int(respMap["data"].(map[string]interface{})["parentId"].(float64))
+		} else {
+			node.PID, _ = strconv.Atoi(respMap["data"].(map[string]interface{})["parentId"].(string))
+		}
+		switch entity {
+		case "tenant":
+			node.Entity = TENANT
+			State.TreeHierarchy.Nodes.PushBack(node)
+		case "site":
+			node.Entity = SITE
+			UpdateTree(&State.TreeHierarchy, node, 0)
+
+		}
+
+	}
 	return
 }
 

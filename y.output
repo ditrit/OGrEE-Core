@@ -131,86 +131,87 @@ state 11 // TOKEN_DELETE
 
 state 12 // TOKEN_CD
 
-   27 Q: TOKEN_CD . TOKEN_WORD TOKEN_CMDFLAG
-   28 Q: TOKEN_CD . TOKEN_WORD
-   29 Q: TOKEN_CD . P
-   34 BASH: TOKEN_CD .  [$end, TOKEN_WORD]
+   28 Q: TOKEN_CD . TOKEN_WORD TOKEN_CMDFLAG
+   29 Q: TOKEN_CD . TOKEN_WORD
+   30 Q: TOKEN_CD . P
+   35 BASH: TOKEN_CD .  [$end, TOKEN_WORD]
 
-    $end        reduce using rule 34 (BASH)
+    $end        reduce using rule 35 (BASH)
     TOKEN_WORD  shift, and goto state 27
 
     P  goto state 28
 
-    conflict on TOKEN_WORD, shift, and goto state 27, reduce using rule 34
+    conflict on TOKEN_WORD, shift, and goto state 27, reduce using rule 35
 
 state 13 // TOKEN_LS
 
-   30 Q: TOKEN_LS . P
-   31 Q: TOKEN_LS . TOKEN_WORD TOKEN_CMDFLAG
-   37 BASH: TOKEN_LS .  [$end, TOKEN_WORD]
-   38 BASH: TOKEN_LS . P
+   31 Q: TOKEN_LS . P
+   32 Q: TOKEN_LS . TOKEN_WORD TOKEN_CMDFLAG
+   38 BASH: TOKEN_LS .  [$end, TOKEN_WORD]
+   39 BASH: TOKEN_LS . P
 
-    $end        reduce using rule 37 (BASH)
+    $end        reduce using rule 38 (BASH)
     TOKEN_WORD  shift, and goto state 21
 
     P  goto state 22
 
-    conflict on TOKEN_WORD, shift, and goto state 21, reduce using rule 37
+    conflict on TOKEN_WORD, shift, and goto state 21, reduce using rule 38
 
 state 14 // TOKEN_CD [$end]
 
-   32 Q: BASH . TOKEN_WORD
-   33 Q: BASH .  [$end]
+   33 Q: BASH . TOKEN_WORD
+   34 Q: BASH .  [$end]
 
-    $end        reduce using rule 33 (Q)
+    $end        reduce using rule 34 (Q)
     TOKEN_WORD  shift, and goto state 20
 
 state 15 // TOKEN_CLR
 
-   35 BASH: TOKEN_CLR .  [$end, TOKEN_WORD]
-
-    $end        reduce using rule 35 (BASH)
-    TOKEN_WORD  reduce using rule 35 (BASH)
-
-state 16 // TOKEN_GREP
-
-   36 BASH: TOKEN_GREP .  [$end, TOKEN_WORD]
+   36 BASH: TOKEN_CLR .  [$end, TOKEN_WORD]
 
     $end        reduce using rule 36 (BASH)
     TOKEN_WORD  reduce using rule 36 (BASH)
 
+state 16 // TOKEN_GREP
+
+   37 BASH: TOKEN_GREP .  [$end, TOKEN_WORD]
+
+    $end        reduce using rule 37 (BASH)
+    TOKEN_WORD  reduce using rule 37 (BASH)
+
 state 17 // TOKEN_PWD
 
-   39 BASH: TOKEN_PWD .  [$end, TOKEN_WORD]
-
-    $end        reduce using rule 39 (BASH)
-    TOKEN_WORD  reduce using rule 39 (BASH)
-
-state 18 // TOKEN_EXIT
-
-   40 BASH: TOKEN_EXIT .  [$end, TOKEN_WORD]
+   40 BASH: TOKEN_PWD .  [$end, TOKEN_WORD]
 
     $end        reduce using rule 40 (BASH)
     TOKEN_WORD  reduce using rule 40 (BASH)
 
-state 19 // TOKEN_DOC
+state 18 // TOKEN_EXIT
 
-   41 BASH: TOKEN_DOC .  [$end, TOKEN_WORD]
+   41 BASH: TOKEN_EXIT .  [$end, TOKEN_WORD]
 
     $end        reduce using rule 41 (BASH)
     TOKEN_WORD  reduce using rule 41 (BASH)
 
+state 19 // TOKEN_DOC
+
+   42 BASH: TOKEN_DOC .  [$end, TOKEN_WORD]
+
+    $end        reduce using rule 42 (BASH)
+    TOKEN_WORD  reduce using rule 42 (BASH)
+
 state 20 // TOKEN_CD TOKEN_WORD
 
-   32 Q: BASH TOKEN_WORD .  [$end]
+   33 Q: BASH TOKEN_WORD .  [$end]
 
-    $end  reduce using rule 32 (Q)
+    $end  reduce using rule 33 (Q)
 
 state 21 // TOKEN_LS TOKEN_WORD
 
    25 P: TOKEN_WORD . TOKEN_SLASH P
    26 P: TOKEN_WORD .  [$end, TOKEN_WORD]
-   31 Q: TOKEN_LS TOKEN_WORD . TOKEN_CMDFLAG
+   27 P: TOKEN_WORD . TOKEN_SLASH
+   32 Q: TOKEN_LS TOKEN_WORD . TOKEN_CMDFLAG
 
     $end           reduce using rule 26 (P)
     TOKEN_CMDFLAG  shift, and goto state 24
@@ -219,31 +220,37 @@ state 21 // TOKEN_LS TOKEN_WORD
 
 state 22 // TOKEN_LS TOKEN_WORD [$end]
 
-   30 Q: TOKEN_LS P .  [$end]
-   38 BASH: TOKEN_LS P .  [$end, TOKEN_WORD]
+   31 Q: TOKEN_LS P .  [$end]
+   39 BASH: TOKEN_LS P .  [$end, TOKEN_WORD]
 
-    $end        reduce using rule 30 (Q)
-    TOKEN_WORD  reduce using rule 38 (BASH)
-    conflict on $end, reduce using rule 30, reduce using rule 38
+    $end        reduce using rule 31 (Q)
+    TOKEN_WORD  reduce using rule 39 (BASH)
+    conflict on $end, reduce using rule 31, reduce using rule 39
 
 state 23 // TOKEN_LS TOKEN_WORD TOKEN_SLASH
 
    25 P: TOKEN_WORD TOKEN_SLASH . P
+   27 P: TOKEN_WORD TOKEN_SLASH .  [$end, TOKEN_ATTR, TOKEN_WORD]
 
+    $end        reduce using rule 27 (P)
+    TOKEN_ATTR  reduce using rule 27 (P)
     TOKEN_WORD  shift, and goto state 25
 
     P  goto state 26
 
+    conflict on TOKEN_WORD, shift, and goto state 25, reduce using rule 27
+
 state 24 // TOKEN_LS TOKEN_WORD TOKEN_CMDFLAG
 
-   31 Q: TOKEN_LS TOKEN_WORD TOKEN_CMDFLAG .  [$end]
+   32 Q: TOKEN_LS TOKEN_WORD TOKEN_CMDFLAG .  [$end]
 
-    $end  reduce using rule 31 (Q)
+    $end  reduce using rule 32 (Q)
 
 state 25 // TOKEN_UPDATE TOKEN_BLDG TOKEN_WORD
 
    25 P: TOKEN_WORD . TOKEN_SLASH P
    26 P: TOKEN_WORD .  [$end, TOKEN_ATTR, TOKEN_WORD]
+   27 P: TOKEN_WORD . TOKEN_SLASH
 
     $end         reduce using rule 26 (P)
     TOKEN_ATTR   reduce using rule 26 (P)
@@ -262,25 +269,26 @@ state 27 // TOKEN_CD TOKEN_WORD
 
    25 P: TOKEN_WORD . TOKEN_SLASH P
    26 P: TOKEN_WORD .  [$end]
-   27 Q: TOKEN_CD TOKEN_WORD . TOKEN_CMDFLAG
-   28 Q: TOKEN_CD TOKEN_WORD .  [$end]
+   27 P: TOKEN_WORD . TOKEN_SLASH
+   28 Q: TOKEN_CD TOKEN_WORD . TOKEN_CMDFLAG
+   29 Q: TOKEN_CD TOKEN_WORD .  [$end]
 
     $end           reduce using rule 26 (P)
     TOKEN_CMDFLAG  shift, and goto state 29
     TOKEN_SLASH    shift, and goto state 23
-    conflict on $end, reduce using rule 26, reduce using rule 28
+    conflict on $end, reduce using rule 26, reduce using rule 29
 
 state 28 // TOKEN_CD TOKEN_WORD [$end]
 
-   29 Q: TOKEN_CD P .  [$end]
+   30 Q: TOKEN_CD P .  [$end]
 
-    $end  reduce using rule 29 (Q)
+    $end  reduce using rule 30 (Q)
 
 state 29 // TOKEN_CD TOKEN_WORD TOKEN_CMDFLAG
 
-   27 Q: TOKEN_CD TOKEN_WORD TOKEN_CMDFLAG .  [$end]
+   28 Q: TOKEN_CD TOKEN_WORD TOKEN_CMDFLAG .  [$end]
 
-    $end  reduce using rule 27 (Q)
+    $end  reduce using rule 28 (Q)
 
 state 30 // TOKEN_DELETE TOKEN_BLDG [TOKEN_ATTR]
 

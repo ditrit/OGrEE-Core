@@ -60,8 +60,8 @@ K: NT_CREATE
        | NT_DEL
 ;
 
-NT_CREATE: TOKEN_CREATE E F {println("@State NT_CR");}
-       | TOKEN_CREATE E P F {$$=$4; /*println("Finally: "+$$);*/ cmd.Disp(resMap(&$4)); cmd.PostObj($2, resMap(&$4)) }
+NT_CREATE: TOKEN_CREATE E F {cmd.PostObj($2, "", resMap(&$3))/*println("@State NT_CR");*/}
+       | TOKEN_CREATE E P F {$$=$4; /*println("Finally: "+$$);*/ cmd.Disp(resMap(&$4)); cmd.PostObj($2,$3, resMap(&$4)) }
 ;
 
 NT_GET: TOKEN_GET E F {println("@State NT_GET");}
@@ -94,6 +94,7 @@ F:     TOKEN_ATTR TOKEN_EQUAL TOKEN_WORD F {$$=string($1+"="+$3+"="+$4); println
 
 P: TOKEN_WORD TOKEN_SLASH P {$$=$1+"/"+$3}
        | TOKEN_WORD {$$=$1}
+       | TOKEN_WORD TOKEN_SLASH {$$=$1}
 ;
 
 
