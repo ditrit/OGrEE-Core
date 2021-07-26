@@ -53,7 +53,7 @@ func InitState() {
 	}
 
 	for i := 1; i < 8; i++ {
-		time.Sleep(1 * time.Second)
+		time.Sleep(2 * time.Second)
 		x := GetChildren(i)
 		for k := range x {
 			SearchAndInsert(&State.TreeHierarchy, x[k], i)
@@ -370,21 +370,23 @@ func CheckPath(root **Node, x, pstk *Stack) (bool, string) {
 
 }
 
-func UpdateTree(root **Node, curr *Node, ctr int) bool {
-	if ctr != curr.Entity-1 { //Recursive call until we reach curr parent
-		for i := (*root).Nodes.Front(); i != nil; i = i.Next() {
-			next := i.Value.(*Node)
-			return UpdateTree(&(next), curr, ctr+1)
-		}
-	} else {
-		for i := (*root).Nodes.Front(); i != nil; i = i.Next() {
-			if i.Value.(*Node).ID == curr.PID {
-				//(*root).Nodes.PushBack(curr)
-				i.Value.(*Node).Nodes.PushBack(curr)
-				return true
-			}
-		}
+func UpdateTree(root **Node, curr *Node) bool {
+	if root == nil {
+		return false
+	}
 
+	//Add only when the PID matches Parent's ID
+	if (*root).ID == curr.PID && curr.Entity == (*root).Entity+1 {
+		(*root).Nodes.PushBack(curr)
+		return true
+	}
+
+	for i := (*root).Nodes.Front(); i != nil; i = i.Next() {
+		nxt := (i.Value).(*Node)
+		x := UpdateTree(&nxt, curr)
+		if x != false {
+			return true
+		}
 	}
 	return false
 }

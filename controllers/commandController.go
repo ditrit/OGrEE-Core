@@ -65,7 +65,32 @@ func PostObj(entity, path string, data map[string]interface{}) {
 			State.TreeHierarchy.Nodes.PushBack(node)
 		case "site":
 			node.Entity = SITE
-			UpdateTree(&State.TreeHierarchy, node, 0)
+			UpdateTree(&State.TreeHierarchy, node)
+
+		case "building":
+			node.Entity = BLDG
+			val := UpdateTree(&State.TreeHierarchy, node)
+			println("BLDG ADDED?", val)
+
+		case "room":
+			node.Entity = ROOM
+			UpdateTree(&State.TreeHierarchy, node)
+
+		case "rack":
+			node.Entity = RACK
+			UpdateTree(&State.TreeHierarchy, node)
+
+		case "device":
+			node.Entity = DEVICE
+			UpdateTree(&State.TreeHierarchy, node)
+
+		case "subdevice":
+			node.Entity = SUBDEV
+			UpdateTree(&State.TreeHierarchy, node)
+
+		case "subdevice1":
+			node.Entity = SUBDEV1
+			UpdateTree(&State.TreeHierarchy, node)
 
 		}
 
