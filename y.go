@@ -548,6 +548,7 @@ yynewstate:
 	case 13:
 		{
 			println("@State NT_DEL")
+			cmd.DeleteObj(yyS[yypt-1].s, resMap(&yyS[yypt-0].s))
 		}
 	case 14:
 		{

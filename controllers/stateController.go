@@ -390,3 +390,26 @@ func UpdateTree(root **Node, curr *Node) bool {
 	}
 	return false
 }
+
+//Return extra bool so that the Parent can delete
+//leaf and keep track without stack
+func DeleteNodeInTree(root **Node, ID, ent int) (bool, bool) {
+	if root == nil {
+		return false, false
+	}
+
+	//Delete only when the PID matches Parent's ID
+	if (*root).ID == ID && ent == (*root).Entity {
+		return true, false
+	}
+
+	for i := (*root).Nodes.Front(); i != nil; i = i.Next() {
+		nxt := (i.Value).(*Node)
+		first, deleted := DeleteNodeInTree(&nxt, ID, ent)
+		if first == true && deleted == false {
+			(*root).Nodes.Remove(i)
+			return true, true
+		}
+	}
+	return false, false
+}

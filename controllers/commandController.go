@@ -102,17 +102,38 @@ func DeleteObj(entity string, data map[string]interface{}) {
 	resp, e := models.Send("DELETE",
 		"https://ogree.chibois.net/api/user/"+entity+"s/"+
 			string(data["id"].(string)), nil)
-	println("Response Code: ", resp.Status)
 	if e != nil {
 		println("There was an error!")
 	}
-	defer resp.Body.Close()
-	bodyBytes, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		println("Error: " + err.Error() + " Now Exiting")
-		os.Exit(-1)
+	if resp.StatusCode != http.StatusNoContent {
+		println("Unsuccessful!")
+	} else {
+		println("Success")
 	}
-	println(string(bodyBytes))
+
+	ID, _ := strconv.Atoi(data["id"].(string))
+	var ent int
+	switch entity {
+	case "tenant":
+		ent = TENANT
+	case "site":
+		ent = SITE
+	case "building":
+		ent = BLDG
+	case "room":
+		ent = ROOM
+	case "rack":
+		ent = RACK
+	case "device":
+		ent = DEVICE
+	case "subdevice":
+		ent = SUBDEV
+	case "subdevice1":
+		ent = SUBDEV1
+	}
+
+	DeleteNodeInTree(&State.TreeHierarchy, ID, ent)
+
 	return
 }
 
