@@ -413,3 +413,64 @@ func DeleteNodeInTree(root **Node, ID, ent int) (bool, bool) {
 	}
 	return false, false
 }
+
+func FindNodeInTree(root **Node, path *Stack) *Node {
+	if root == nil {
+		return nil
+	}
+
+	if path.Len() > 0 {
+		name := path.Peek()
+		node := getNextInPath(name.(string), *root)
+		if node == nil {
+			println("Name doesn't exist! ", string(name.(string)))
+			return nil
+		}
+		path.Pop()
+		return FindNodeInTree(&node, path)
+	} else {
+		return *root
+	}
+}
+
+func EntityToString(entity int) string {
+	switch entity {
+	case TENANT:
+		return "tenant"
+	case SITE:
+		return "site"
+	case BLDG:
+		return "building"
+	case ROOM:
+		return "room"
+	case RACK:
+		return "rack"
+	case DEVICE:
+		return "device"
+	case SUBDEV:
+		return "subdevice"
+	default:
+		return "subdevice1"
+	}
+}
+
+func EntityStrToInt(entity string) int {
+	switch entity {
+	case "tenant":
+		return TENANT
+	case "site":
+		return SITE
+	case "building":
+		return BLDG
+	case "room":
+		return ROOM
+	case "rack":
+		return RACK
+	case "device":
+		return DEVICE
+	case "subdevice":
+		return SUBDEV
+	default:
+		return SUBDEV1
+	}
+}

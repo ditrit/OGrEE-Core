@@ -137,7 +137,8 @@ func DeleteObj(entity string, data map[string]interface{}) {
 	return
 }
 
-func GetObjQ(entity string, data map[string]interface{}) {
+//Search for objects
+func SearchObjects(entity string, data map[string]interface{}) {
 	URL := "https://ogree.chibois.net/api/user/" + entity + "s?"
 
 	for i, k := range data {
@@ -164,6 +165,54 @@ func GetObjQ(entity string, data map[string]interface{}) {
 		os.Exit(-1)
 	}
 	println(string(bodyBytes))
+}
+
+func GetObject(path string) {
+	URL := "https://ogree.chibois.net/api/user/"
+	nd := &Node{}
+	var data map[string]interface{}
+
+	switch path {
+	case "":
+		nd = FindNodeInTree(&State.TreeHierarchy, StrToStack(State.CurrPath))
+	default:
+		nd = FindNodeInTree(&State.TreeHierarchy, StrToStack(path))
+	}
+
+	if nd == nil {
+		println("Error finding Object from given path!")
+		return
+	}
+
+	URL += EntityToString(nd.Entity) + "s/" + strconv.Itoa(nd.ID)
+	resp, e := models.Send("GET", URL, nil)
+	if e != nil {
+		println("Error while obtaining Object details!")
+		return
+	}
+	defer resp.Body.Close()
+	bodyBytes, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		println("Error while reading response!")
+		return
+	}
+	json.Unmarshal(bodyBytes, &data)
+	if resp.StatusCode == http.StatusOK {
+		if data["data"] != nil {
+			obj := data["data"].(map[string]interface{})
+			for i := range obj {
+				if i == "attributes" {
+					for q := range obj[i].(map[string]interface{}) {
+						println(q, ":", string(obj[i].(map[string]interface{})[q].(string)))
+					}
+				} else {
+					println(i, ":", obj[i])
+				}
+
+			}
+		}
+	}
+
 }
 
 func UpdateObj(entity string, data map[string]interface{}) {

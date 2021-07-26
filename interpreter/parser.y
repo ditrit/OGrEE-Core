@@ -64,8 +64,8 @@ NT_CREATE: TOKEN_CREATE E F {cmd.PostObj($2, "", resMap(&$3))/*println("@State N
        | TOKEN_CREATE E P F {$$=$4; /*println("Finally: "+$$);*/ cmd.Disp(resMap(&$4)); cmd.PostObj($2,$3, resMap(&$4)) }
 ;
 
-NT_GET: TOKEN_GET E F {println("@State NT_GET");}
-       | TOKEN_GET E P F {$$=$4;cmd.Disp(resMap(&$4)); cmd.GetObjQ($2, resMap(&$4))}
+NT_GET: TOKEN_GET {println("@State NT_GET"); cmd.GetObject("")}
+       | TOKEN_GET E P F {$$=$4;cmd.Disp(resMap(&$4)); cmd.SearchObjects($2, resMap(&$4))}
 ;
 
 NT_UPDATE: TOKEN_UPDATE E F {println("@State NT_UPD");}
