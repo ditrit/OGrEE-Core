@@ -43,6 +43,7 @@ func CreateCredentials() (string, string) {
 	json.Unmarshal(bodyBytes, &tp)
 	key = (tp["account"].(map[string]interface{}))["token"].(string)
 
+	os.Mkdir(".resources", 0755)
 	os.WriteFile("./.resources/.env",
 		[]byte("user="+user+"\n"+"apikey="+key),
 		0666)

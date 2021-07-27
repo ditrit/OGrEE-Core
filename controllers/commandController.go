@@ -206,7 +206,12 @@ func GetObject(path string) {
 						println(q, ":", string(obj[i].(map[string]interface{})[q].(string)))
 					}
 				} else {
-					println(i, ":", obj[i])
+					if i != "description" {
+						println(i, ":", string(obj[i].(string)))
+					} else {
+						println(i, ":", []string(obj[i].([]string)))
+					}
+
 				}
 
 			}
