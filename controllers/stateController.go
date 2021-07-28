@@ -66,7 +66,7 @@ func GetChildren(curr int) []*Node {
 	case TENANT:
 		println("TENANT")
 		resp, e := models.Send("GET",
-			"https://ogree.chibois.net/api/user/tenants",
+			"https://ogree.chibois.net/api/user/tenants", GetKey(),
 			nil)
 		if e != nil {
 			println("Error while getting children!")
@@ -76,7 +76,7 @@ func GetChildren(curr int) []*Node {
 	case SITE:
 		println("SITE")
 		resp, e := models.Send("GET",
-			"https://ogree.chibois.net/api/user/sites",
+			"https://ogree.chibois.net/api/user/sites", GetKey(),
 			nil)
 		if e != nil {
 			println("Error while getting children!")
@@ -86,7 +86,7 @@ func GetChildren(curr int) []*Node {
 	case BLDG:
 		println("BLDG")
 		resp, e := models.Send("GET",
-			"https://ogree.chibois.net/api/user/buildings",
+			"https://ogree.chibois.net/api/user/buildings", GetKey(),
 			nil)
 		if e != nil {
 			println("Error while getting children!")
@@ -96,7 +96,7 @@ func GetChildren(curr int) []*Node {
 	case ROOM:
 		println("ROOM")
 		resp, e := models.Send("GET",
-			"https://ogree.chibois.net/api/user/rooms",
+			"https://ogree.chibois.net/api/user/rooms", GetKey(),
 			nil)
 		if e != nil {
 			println("Error while getting children!")
@@ -106,7 +106,7 @@ func GetChildren(curr int) []*Node {
 	case RACK:
 		println("RACK")
 		resp, e := models.Send("GET",
-			"https://ogree.chibois.net/api/user/racks",
+			"https://ogree.chibois.net/api/user/racks", GetKey(),
 			nil)
 		if e != nil {
 			println("Error while getting children!")
@@ -116,7 +116,7 @@ func GetChildren(curr int) []*Node {
 	case DEVICE:
 		println("DEVICE")
 		resp, e := models.Send("GET",
-			"https://ogree.chibois.net/api/user/devices",
+			"https://ogree.chibois.net/api/user/devices", GetKey(),
 			nil)
 		if e != nil {
 			println("Error while getting children!")
@@ -126,7 +126,7 @@ func GetChildren(curr int) []*Node {
 	case SUBDEV:
 		println("SUBDEV")
 		resp, e := models.Send("GET",
-			"https://ogree.chibois.net/api/user/subdevices",
+			"https://ogree.chibois.net/api/user/subdevices", GetKey(),
 			nil)
 		if e != nil {
 			println("Error while getting children!")
@@ -137,7 +137,7 @@ func GetChildren(curr int) []*Node {
 	case SUBDEV1:
 		println("SUBDEV1")
 		resp, e := models.Send("GET",
-			"https://ogree.chibois.net/api/user/subdevice1s",
+			"https://ogree.chibois.net/api/user/subdevice1s", GetKey(),
 			nil)
 		if e != nil {
 			println("Error while getting children!")

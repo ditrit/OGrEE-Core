@@ -33,7 +33,7 @@ func Disp(x map[string]interface{}) {
 func PostObj(entity, path string, data map[string]interface{}) {
 	var respMap map[string]interface{}
 	resp, e := models.Send("POST",
-		"https://ogree.chibois.net/api/user/"+entity+"s", data)
+		"https://ogree.chibois.net/api/user/"+entity+"s", GetKey(), data)
 
 	if e != nil {
 		println("There was an error!")
@@ -101,7 +101,7 @@ func PostObj(entity, path string, data map[string]interface{}) {
 func DeleteObj(entity string, data map[string]interface{}) {
 	resp, e := models.Send("DELETE",
 		"https://ogree.chibois.net/api/user/"+entity+"s/"+
-			string(data["id"].(string)), nil)
+			string(data["id"].(string)), GetKey(), nil)
 	if e != nil {
 		println("There was an error!")
 	}
@@ -153,7 +153,7 @@ func SearchObjects(entity string, data map[string]interface{}) {
 
 	println("Here is URL: ", URL)
 
-	resp, e := models.Send("GET", URL, nil)
+	resp, e := models.Send("GET", URL, GetKey(), nil)
 	println("Response Code: ", resp.Status)
 	if e != nil {
 		println("There was an error!")
@@ -185,7 +185,7 @@ func GetObject(path string) {
 	}
 
 	URL += EntityToString(nd.Entity) + "s/" + strconv.Itoa(nd.ID)
-	resp, e := models.Send("GET", URL, nil)
+	resp, e := models.Send("GET", URL, GetKey(), nil)
 	if e != nil {
 		println("Error while obtaining Object details!")
 		return
@@ -226,7 +226,7 @@ func UpdateObj(entity string, data map[string]interface{}) {
 		URL := "https://ogree.chibois.net/api/user/" + entity + "s/" +
 			string(data["id"].(string))
 
-		resp, e := models.Send("PUT", URL, data)
+		resp, e := models.Send("PUT", URL, GetKey(), data)
 		println("Response Code: ", resp.Status)
 		if e != nil {
 			println("There was an error!")

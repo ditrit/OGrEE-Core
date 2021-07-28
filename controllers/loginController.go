@@ -1,8 +1,10 @@
 package controllers
 
 import (
+	"bufio"
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"net/http"
 	"os"
@@ -10,9 +12,28 @@ import (
 	"strings"
 
 	"cli/readline"
-
-	"github.com/joho/godotenv"
 )
+
+func GetKey() string {
+	file, err := os.Open("./.resources/.env")
+	if err != nil {
+		fmt.Println(err)
+	}
+	defer file.Close()
+
+	scanner := bufio.NewScanner(file)
+	scanner.Split(bufio.ScanWords) // use scanwords
+	for scanner.Scan() {
+		if strings.HasPrefix(scanner.Text(), "apikey=") {
+			return scanner.Text()[7:]
+		}
+	}
+
+	if err := scanner.Err(); err != nil {
+		fmt.Println(err)
+	}
+	return ""
+}
 
 func CreateCredentials() (string, string) {
 	var tp map[string]interface{}
@@ -69,19 +90,33 @@ func CheckKeyIsValid(key string) bool {
 }
 
 func Login() (string, string) {
-	//println("LOGGING IN NOW")
 	var user, key string
-	e := godotenv.Load(".resources/.env")
-	if e != nil {
+	file, err := os.Open("./.resources/.env")
+	if err != nil {
 		user, key = CreateCredentials()
 	} else {
-		user = os.Getenv("user")
-		key = os.Getenv("apikey")
+		scanner := bufio.NewScanner(file)
+		scanner.Split(bufio.ScanWords) // use scanwords
+		for scanner.Scan() {
+			if strings.HasPrefix(scanner.Text(), "apikey=") {
+				key = scanner.Text()[7:]
+			}
+
+			if strings.HasPrefix(scanner.Text(), "user=") {
+				user = scanner.Text()[5:]
+			}
+		}
+
+		if err := scanner.Err(); err != nil {
+			fmt.Println(err)
+		}
+
 		if !CheckKeyIsValid(key) {
 			println("Error while checking key. Now exiting")
 			os.Exit(-1)
 		}
 	}
+	defer file.Close()
 
 	//println("Checking credentials...")
 	//println(CheckKeyIsValid(key))
