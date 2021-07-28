@@ -443,7 +443,8 @@ yynewstate:
 			if msg == "" {
 				msg = "syntax error"
 			}
-			yylex.Error(msg)
+			println("OGREE: Unrecognised command!")
+			/*yylex.Error(msg)*/
 			Nerrs++
 			fallthrough
 
