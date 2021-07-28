@@ -139,6 +139,7 @@ func DeleteObj(entity string, data map[string]interface{}) {
 
 //Search for objects
 func SearchObjects(entity string, data map[string]interface{}) {
+	var jsonResp map[string]interface{}
 	URL := "https://ogree.chibois.net/api/user/" + entity + "s?"
 
 	for i, k := range data {
@@ -164,7 +165,19 @@ func SearchObjects(entity string, data map[string]interface{}) {
 		println("Error: " + err.Error() + " Now Exiting")
 		os.Exit(-1)
 	}
-	println(string(bodyBytes))
+	//println(string(bodyBytes))
+	json.Unmarshal(bodyBytes, &jsonResp)
+	if resp.StatusCode == http.StatusOK {
+		obj := jsonResp["data"].(map[string]interface{})["objects"].([]interface{})
+		for idx := range obj {
+			println()
+			println()
+			println("OBJECT: ", idx)
+			displayObject(obj[idx].(map[string]interface{}))
+			println()
+		}
+
+	}
 }
 
 func GetObject(path string) {

@@ -15898,7 +15898,7 @@ OUTER0:
 			}
 		case 5:
 			{
-				println("We got TOKEN_DELETE")
+				println("We got TOKEN_SEARCH")
 				return TOKEN_SEARCH
 			}
 		case 6:

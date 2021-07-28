@@ -76,6 +76,14 @@ func main() {
 		),
 
 		readline.PcItem("gt", true,
+			readline.PcItem("tenant", false),
+			readline.PcItem("site", false),
+			readline.PcItem("building", false),
+			readline.PcItem("room", false),
+			readline.PcItem("rack", false),
+			readline.PcItem("device", false),
+			readline.PcItem("subdevice", false),
+			readline.PcItem("subdevice1", false),
 			readline.PcItemDynamic(listEntities(""), false)),
 		readline.PcItem("update", false,
 			readline.PcItem("tenant", false),
@@ -97,7 +105,7 @@ func main() {
 			readline.PcItem("subdevice", false),
 			readline.PcItem("subdevice1", false),
 		),
-		readline.PcItem("search", false,
+		/*readline.PcItem("gt", false,
 			readline.PcItem("tenant", false),
 			readline.PcItem("site", false),
 			readline.PcItem("building", false),
@@ -106,7 +114,7 @@ func main() {
 			readline.PcItem("device", false),
 			readline.PcItem("subdevice", false),
 			readline.PcItem("subdevice1", false),
-		),
+		),*/
 	)
 
 	rl, err := readline.NewEx(&readline.Config{
