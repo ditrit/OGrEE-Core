@@ -315,12 +315,10 @@ var dfas = []dfa{
 		},
 	}, []int{ /* Start-of-input transitions */ -1, -1, -1, -1, -1, -1, -1}, []int{ /* End-of-input transitions */ -1, -1, -1, -1, -1, -1, -1}, nil},
 
-	// get
-	{[]bool{false, false, false, true}, []func(rune) int{ // Transitions
+	// gt
+	{[]bool{false, false, true}, []func(rune) int{ // Transitions
 		func(r rune) int {
 			switch r {
-			case 101:
-				return -1
 			case 103:
 				return 1
 			case 116:
@@ -330,30 +328,15 @@ var dfas = []dfa{
 		},
 		func(r rune) int {
 			switch r {
-			case 101:
+			case 103:
+				return -1
+			case 116:
 				return 2
-			case 103:
-				return -1
-			case 116:
-				return -1
 			}
 			return -1
 		},
 		func(r rune) int {
 			switch r {
-			case 101:
-				return -1
-			case 103:
-				return -1
-			case 116:
-				return 3
-			}
-			return -1
-		},
-		func(r rune) int {
-			switch r {
-			case 101:
-				return -1
 			case 103:
 				return -1
 			case 116:
@@ -361,7 +344,7 @@ var dfas = []dfa{
 			}
 			return -1
 		},
-	}, []int{ /* Start-of-input transitions */ -1, -1, -1, -1}, []int{ /* End-of-input transitions */ -1, -1, -1, -1}, nil},
+	}, []int{ /* Start-of-input transitions */ -1, -1, -1}, []int{ /* End-of-input transitions */ -1, -1, -1}, nil},
 
 	// update
 	{[]bool{false, false, false, false, false, false, true}, []func(rune) int{ // Transitions
@@ -575,6 +558,129 @@ var dfas = []dfa{
 			case 108:
 				return -1
 			case 116:
+				return -1
+			}
+			return -1
+		},
+	}, []int{ /* Start-of-input transitions */ -1, -1, -1, -1, -1, -1, -1}, []int{ /* End-of-input transitions */ -1, -1, -1, -1, -1, -1, -1}, nil},
+
+	// search
+	{[]bool{false, false, false, false, false, false, true}, []func(rune) int{ // Transitions
+		func(r rune) int {
+			switch r {
+			case 97:
+				return -1
+			case 99:
+				return -1
+			case 101:
+				return -1
+			case 104:
+				return -1
+			case 114:
+				return -1
+			case 115:
+				return 1
+			}
+			return -1
+		},
+		func(r rune) int {
+			switch r {
+			case 97:
+				return -1
+			case 99:
+				return -1
+			case 101:
+				return 2
+			case 104:
+				return -1
+			case 114:
+				return -1
+			case 115:
+				return -1
+			}
+			return -1
+		},
+		func(r rune) int {
+			switch r {
+			case 97:
+				return 3
+			case 99:
+				return -1
+			case 101:
+				return -1
+			case 104:
+				return -1
+			case 114:
+				return -1
+			case 115:
+				return -1
+			}
+			return -1
+		},
+		func(r rune) int {
+			switch r {
+			case 97:
+				return -1
+			case 99:
+				return -1
+			case 101:
+				return -1
+			case 104:
+				return -1
+			case 114:
+				return 4
+			case 115:
+				return -1
+			}
+			return -1
+		},
+		func(r rune) int {
+			switch r {
+			case 97:
+				return -1
+			case 99:
+				return 5
+			case 101:
+				return -1
+			case 104:
+				return -1
+			case 114:
+				return -1
+			case 115:
+				return -1
+			}
+			return -1
+		},
+		func(r rune) int {
+			switch r {
+			case 97:
+				return -1
+			case 99:
+				return -1
+			case 101:
+				return -1
+			case 104:
+				return 6
+			case 114:
+				return -1
+			case 115:
+				return -1
+			}
+			return -1
+		},
+		func(r rune) int {
+			switch r {
+			case 97:
+				return -1
+			case 99:
+				return -1
+			case 101:
+				return -1
+			case 104:
+				return -1
+			case 114:
+				return -1
+			case 115:
 				return -1
 			}
 			return -1
@@ -15792,109 +15898,114 @@ OUTER0:
 			}
 		case 5:
 			{
+				println("We got TOKEN_DELETE")
+				return TOKEN_SEARCH
+			}
+		case 6:
+			{
 				println("We got TOKEN_TENANT")
 				lval.s = yylex.Text()
 				return TOKEN_TENANT
 			}
-		case 6:
+		case 7:
 			{
 				println("We got TOKEN_SITE")
 				lval.s = yylex.Text()
 				return TOKEN_SITE
 			}
-		case 7:
+		case 8:
 			{
 				println("We got TOKEN_BLDG")
 				lval.s = yylex.Text()
 				return TOKEN_BLDG
 			}
-		case 8:
+		case 9:
 			{
 				println("We got TOKEN_ROOM")
 				lval.s = yylex.Text()
 				return TOKEN_ROOM
 			}
-		case 9:
+		case 10:
 			{
 				println("We got TOKEN_RACK")
 				lval.s = yylex.Text()
 				return TOKEN_RACK
 			}
-		case 10:
+		case 11:
 			{
 				println("We got TOKEN_DEVICE")
 				lval.s = yylex.Text()
 				return TOKEN_DEVICE
 			}
-		case 11:
+		case 12:
 			{
 				println("We got TOKEN_SUBDEVICE")
 				lval.s = yylex.Text()
 				return TOKEN_SUBDEVICE
 			}
-		case 12:
+		case 13:
 			{
 				println("We got TOKEN_SUBDEVICE1")
 				lval.s = yylex.Text()
 				return TOKEN_SUBDEVICE1
 			}
-		case 13:
+		case 14:
 			{
 				println("We got TOKEN_ATTR")
 				lval.s = yylex.Text()
 				return TOKEN_ATTR
 			}
-		case 14:
+		case 15:
 			{
 				println("We got TOKEN_CD")
 				return TOKEN_CD
 			}
-		case 15:
+		case 16:
 			{
 				println("We got TOKEN_PWD")
 				return TOKEN_PWD
 			}
-		case 16:
+		case 17:
 			{
 				println("We got TOKEN_CLR")
 				return TOKEN_CLR
 			}
-		case 17:
+		case 18:
 			{
 				println("We got TOKEN_GREP")
 				return TOKEN_GREP
 			}
-		case 18:
+		case 19:
 			{
 				println("We got TOKEN_LS")
 				return TOKEN_LS
 			}
-		case 19:
+		case 20:
 			{
 				println("We got TOKEN_EXIT")
 				return TOKEN_EXIT
 			}
-		case 20:
+		case 21:
 			{
 				println("We got TOKEN_CMDFLAG")
 				return TOKEN_CMDFLAG
 			}
-		case 21:
+		case 22:
 			{
 				println("We got TOKEN_EQUAL")
 				return TOKEN_EQUAL
 			}
-		case 22:
+		case 23:
 			{
 				println("We got TOKEN_SLASH")
 				return TOKEN_SLASH
 			}
-		case 23:
+		case 24:
 			{
 				println("We got TOKEN_DOC")
 				return TOKEN_DOC
 			}
-		case 24:
+		case 25:
 			{
 				println("We got TOKEN_WORD")
 				lval.s = yylex.Text()

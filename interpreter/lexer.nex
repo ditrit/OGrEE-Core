@@ -1,8 +1,9 @@
 /[ \t]/  { /* Skip blanks and tabs. */ }
 /create/ {println("We got TOKEN_CREATE"); return TOKEN_CREATE}
-/get/ {println("We got TOKEN_GET"); return TOKEN_GET}
+/gt/ {println("We got TOKEN_GET"); return TOKEN_GET}
 /update/ {println("We got TOKEN_UPDATE"); return TOKEN_UPDATE}
 /delete/ {println("We got TOKEN_DELETE"); return TOKEN_DELETE}
+/search/ {println("We got TOKEN_SEARCH"); return TOKEN_SEARCH}
 
 
 /tenant/ {println("We got TOKEN_TENANT");lval.s = yylex.Text();return TOKEN_TENANT}

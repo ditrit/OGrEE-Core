@@ -200,21 +200,7 @@ func GetObject(path string) {
 	if resp.StatusCode == http.StatusOK {
 		if data["data"] != nil {
 			obj := data["data"].(map[string]interface{})
-			for i := range obj {
-				if i == "attributes" {
-					for q := range obj[i].(map[string]interface{}) {
-						println(q, ":", string(obj[i].(map[string]interface{})[q].(string)))
-					}
-				} else {
-					if i != "description" {
-						println(i, ":", string(obj[i].(string)))
-					} else {
-						println(i, ":", []string(obj[i].([]string)))
-					}
-
-				}
-
-			}
+			displayObject(obj)
 		}
 	}
 
@@ -319,4 +305,36 @@ func CD(x string) {
 
 func Help() {
 	fmt.Printf(`A Shell interface to the API and your datacenter visualisation solution`)
+}
+
+func displayObject(obj map[string]interface{}) {
+	for i := range obj {
+		if i == "attributes" {
+			for q := range obj[i].(map[string]interface{}) {
+				val := string(obj[i].(map[string]interface{})[q].(string))
+				if val == "" {
+					println(q, ":", "NONE")
+				} else {
+					println(q, ":", val)
+				}
+			}
+		} else {
+			if i == "description" {
+				print(i)
+				inf := obj[i].([]interface{})
+				for idx := range inf {
+					println(inf[idx].(string))
+				}
+			} else if val, ok := obj[i].(string); ok == true {
+				if val == "" {
+					println(i, ":", "NONE")
+				} else {
+					println(i, ":", val)
+				}
+			} else {
+				println(obj[i].(float64))
+			}
+		}
+
+	}
 }

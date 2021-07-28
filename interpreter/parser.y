@@ -39,7 +39,7 @@ func resMap(x *string) map[string]interface{} {
 %token <s> TOKEN_ATTR
 %token
        TOKEN_CREATE TOKEN_GET TOKEN_UPDATE
-       TOKEN_ATTR TOKEN_DELETE
+       TOKEN_ATTR TOKEN_DELETE TOKEN_SEARCH
        TOKEN_BASHTYPE TOKEN_EQUAL 
        TOKEN_CMDFLAG TOKEN_SLASH 
        TOKEN_EXIT TOKEN_DOC
@@ -66,7 +66,7 @@ NT_CREATE: TOKEN_CREATE E F {cmd.PostObj($2, "", resMap(&$3))/*println("@State N
 
 NT_GET: TOKEN_GET {println("@State NT_GET"); cmd.GetObject("")}
        | TOKEN_GET P {cmd.GetObject($2)}
-       | TOKEN_GET E P F {$$=$4;/*cmd.Disp(resMap(&$4)); cmd.SearchObjects($2, resMap(&$4))*/ }
+       | TOKEN_SEARCH E F {/*cmd.Disp(resMap(&$4)); */cmd.SearchObjects($2, resMap(&$3)) }
 ;
 
 NT_UPDATE: TOKEN_UPDATE E F {println("@State NT_UPD");}
