@@ -73,8 +73,8 @@ NT_UPDATE: TOKEN_UPDATE  F {println("@State NT_UPD"); cmd.UpdateObj("", resMap(&
        | TOKEN_UPDATE P F {$$=$3;/*cmd.Disp(resMap(&$4));*/ cmd.UpdateObj($2, resMap(&$3))}
 ;
 
-NT_DEL: TOKEN_DELETE E F {println("@State NT_DEL");cmd.DeleteObj($2, resMap(&$3))}
-       | TOKEN_DELETE E P F {$$=$4;cmd.Disp(resMap(&$4)); cmd.DeleteObj($2,resMap(&$4) )}
+NT_DEL: TOKEN_DELETE {println("@State NT_DEL");cmd.DeleteObj("")}
+       | TOKEN_DELETE P {/*$$=$4;cmd.Disp(resMap(&$4));*/ cmd.DeleteObj($2) }
 ;
 
 E:     TOKEN_TENANT 

@@ -29,7 +29,7 @@ state 1 // TOKEN_CD [$end]
 
     $end  accept
 
-state 2 // TOKEN_GET [$end]
+state 2 // TOKEN_DELETE [$end]
 
     1 start: K .  [$end]
 
@@ -59,7 +59,7 @@ state 6 // TOKEN_UPDATE TOKEN_ATTR TOKEN_EQUAL TOKEN_WORD [$end]
 
     $end  reduce using rule 5 (K)
 
-state 7 // TOKEN_DELETE TOKEN_BLDG TOKEN_ATTR TOKEN_EQUAL TOKEN_WORD [$end]
+state 7 // TOKEN_DELETE [$end]
 
     6 K: NT_DEL .  [$end]
 
@@ -70,16 +70,16 @@ state 8 // TOKEN_CREATE
     7 NT_CREATE: TOKEN_CREATE . E F
     8 NT_CREATE: TOKEN_CREATE . E P F
 
-    TOKEN_BLDG        shift, and goto state 33
-    TOKEN_DEVICE      shift, and goto state 36
-    TOKEN_RACK        shift, and goto state 35
-    TOKEN_ROOM        shift, and goto state 34
-    TOKEN_SITE        shift, and goto state 32
-    TOKEN_SUBDEVICE   shift, and goto state 37
-    TOKEN_SUBDEVICE1  shift, and goto state 38
-    TOKEN_TENANT      shift, and goto state 31
+    TOKEN_BLDG        shift, and goto state 42
+    TOKEN_DEVICE      shift, and goto state 45
+    TOKEN_RACK        shift, and goto state 44
+    TOKEN_ROOM        shift, and goto state 43
+    TOKEN_SITE        shift, and goto state 41
+    TOKEN_SUBDEVICE   shift, and goto state 46
+    TOKEN_SUBDEVICE1  shift, and goto state 47
+    TOKEN_TENANT      shift, and goto state 40
 
-    E  goto state 52
+    E  goto state 49
 
 state 9 // TOKEN_GET
 
@@ -88,45 +88,39 @@ state 9 // TOKEN_GET
    11 NT_GET: TOKEN_GET . E F
 
     $end              reduce using rule 9 (NT_GET)
-    TOKEN_BLDG        shift, and goto state 33
-    TOKEN_DEVICE      shift, and goto state 36
-    TOKEN_RACK        shift, and goto state 35
-    TOKEN_ROOM        shift, and goto state 34
-    TOKEN_SITE        shift, and goto state 32
-    TOKEN_SUBDEVICE   shift, and goto state 37
-    TOKEN_SUBDEVICE1  shift, and goto state 38
-    TOKEN_TENANT      shift, and goto state 31
+    TOKEN_BLDG        shift, and goto state 42
+    TOKEN_DEVICE      shift, and goto state 45
+    TOKEN_RACK        shift, and goto state 44
+    TOKEN_ROOM        shift, and goto state 43
+    TOKEN_SITE        shift, and goto state 41
+    TOKEN_SUBDEVICE   shift, and goto state 46
+    TOKEN_SUBDEVICE1  shift, and goto state 47
+    TOKEN_TENANT      shift, and goto state 40
     TOKEN_WORD        shift, and goto state 25
 
-    E  goto state 50
-    P  goto state 49
+    E  goto state 39
+    P  goto state 38
 
 state 10 // TOKEN_UPDATE
 
    12 NT_UPDATE: TOKEN_UPDATE . F
    13 NT_UPDATE: TOKEN_UPDATE . P F
 
-    TOKEN_ATTR  shift, and goto state 41
+    TOKEN_ATTR  shift, and goto state 33
     TOKEN_WORD  shift, and goto state 25
 
-    F  goto state 46
-    P  goto state 47
+    F  goto state 31
+    P  goto state 32
 
 state 11 // TOKEN_DELETE
 
-   14 NT_DEL: TOKEN_DELETE . E F
-   15 NT_DEL: TOKEN_DELETE . E P F
+   14 NT_DEL: TOKEN_DELETE .  [$end]
+   15 NT_DEL: TOKEN_DELETE . P
 
-    TOKEN_BLDG        shift, and goto state 33
-    TOKEN_DEVICE      shift, and goto state 36
-    TOKEN_RACK        shift, and goto state 35
-    TOKEN_ROOM        shift, and goto state 34
-    TOKEN_SITE        shift, and goto state 32
-    TOKEN_SUBDEVICE   shift, and goto state 37
-    TOKEN_SUBDEVICE1  shift, and goto state 38
-    TOKEN_TENANT      shift, and goto state 31
+    $end        reduce using rule 14 (NT_DEL)
+    TOKEN_WORD  shift, and goto state 25
 
-    E  goto state 30
+    P  goto state 30
 
 state 12 // TOKEN_CD
 
@@ -245,7 +239,7 @@ state 24 // TOKEN_LS TOKEN_WORD TOKEN_CMDFLAG
 
     $end  reduce using rule 33 (Q)
 
-state 25 // TOKEN_UPDATE TOKEN_WORD
+state 25 // TOKEN_DELETE TOKEN_WORD
 
    26 P: TOKEN_WORD . TOKEN_SLASH P
    27 P: TOKEN_WORD .  [$end, TOKEN_ATTR, TOKEN_WORD]
@@ -289,189 +283,164 @@ state 29 // TOKEN_CD TOKEN_WORD TOKEN_CMDFLAG
 
     $end  reduce using rule 29 (Q)
 
-state 30 // TOKEN_DELETE TOKEN_BLDG [TOKEN_ATTR]
+state 30 // TOKEN_DELETE TOKEN_WORD [$end]
 
-   14 NT_DEL: TOKEN_DELETE E . F
-   15 NT_DEL: TOKEN_DELETE E . P F
+   15 NT_DEL: TOKEN_DELETE P .  [$end]
 
-    TOKEN_ATTR  shift, and goto state 41
-    TOKEN_WORD  shift, and goto state 25
+    $end  reduce using rule 15 (NT_DEL)
 
-    F  goto state 39
-    P  goto state 40
+state 31 // TOKEN_UPDATE TOKEN_ATTR TOKEN_EQUAL TOKEN_WORD [$end]
 
-state 31 // TOKEN_DELETE TOKEN_TENANT
+   12 NT_UPDATE: TOKEN_UPDATE F .  [$end]
+
+    $end  reduce using rule 12 (NT_UPDATE)
+
+state 32 // TOKEN_UPDATE TOKEN_WORD [TOKEN_ATTR]
+
+   13 NT_UPDATE: TOKEN_UPDATE P . F
+
+    TOKEN_ATTR  shift, and goto state 33
+
+    F  goto state 37
+
+state 33 // TOKEN_UPDATE TOKEN_ATTR
+
+   24 F: TOKEN_ATTR . TOKEN_EQUAL TOKEN_WORD F
+   25 F: TOKEN_ATTR . TOKEN_EQUAL TOKEN_WORD
+
+    TOKEN_EQUAL  shift, and goto state 34
+
+state 34 // TOKEN_UPDATE TOKEN_ATTR TOKEN_EQUAL
+
+   24 F: TOKEN_ATTR TOKEN_EQUAL . TOKEN_WORD F
+   25 F: TOKEN_ATTR TOKEN_EQUAL . TOKEN_WORD
+
+    TOKEN_WORD  shift, and goto state 35
+
+state 35 // TOKEN_UPDATE TOKEN_ATTR TOKEN_EQUAL TOKEN_WORD
+
+   24 F: TOKEN_ATTR TOKEN_EQUAL TOKEN_WORD . F
+   25 F: TOKEN_ATTR TOKEN_EQUAL TOKEN_WORD .  [$end]
+
+    $end        reduce using rule 25 (F)
+    TOKEN_ATTR  shift, and goto state 33
+
+    F  goto state 36
+
+state 36 // TOKEN_UPDATE TOKEN_ATTR TOKEN_EQUAL TOKEN_WORD TOKEN_ATTR TOKEN_EQUAL TOKEN_WORD [$end]
+
+   24 F: TOKEN_ATTR TOKEN_EQUAL TOKEN_WORD F .  [$end]
+
+    $end  reduce using rule 24 (F)
+
+state 37 // TOKEN_UPDATE TOKEN_WORD TOKEN_ATTR TOKEN_EQUAL TOKEN_WORD [$end]
+
+   13 NT_UPDATE: TOKEN_UPDATE P F .  [$end]
+
+    $end  reduce using rule 13 (NT_UPDATE)
+
+state 38 // TOKEN_GET TOKEN_WORD [$end]
+
+   10 NT_GET: TOKEN_GET P .  [$end]
+
+    $end  reduce using rule 10 (NT_GET)
+
+state 39 // TOKEN_GET TOKEN_BLDG [TOKEN_ATTR]
+
+   11 NT_GET: TOKEN_GET E . F
+
+    TOKEN_ATTR  shift, and goto state 33
+
+    F  goto state 48
+
+state 40 // TOKEN_GET TOKEN_TENANT
 
    16 E: TOKEN_TENANT .  [TOKEN_ATTR, TOKEN_WORD]
 
     TOKEN_ATTR  reduce using rule 16 (E)
     TOKEN_WORD  reduce using rule 16 (E)
 
-state 32 // TOKEN_DELETE TOKEN_SITE
+state 41 // TOKEN_GET TOKEN_SITE
 
    17 E: TOKEN_SITE .  [TOKEN_ATTR, TOKEN_WORD]
 
     TOKEN_ATTR  reduce using rule 17 (E)
     TOKEN_WORD  reduce using rule 17 (E)
 
-state 33 // TOKEN_GET TOKEN_BLDG
+state 42 // TOKEN_CREATE TOKEN_BLDG
 
    18 E: TOKEN_BLDG .  [TOKEN_ATTR, TOKEN_WORD]
 
     TOKEN_ATTR  reduce using rule 18 (E)
     TOKEN_WORD  reduce using rule 18 (E)
 
-state 34 // TOKEN_DELETE TOKEN_ROOM
+state 43 // TOKEN_GET TOKEN_ROOM
 
    19 E: TOKEN_ROOM .  [TOKEN_ATTR, TOKEN_WORD]
 
     TOKEN_ATTR  reduce using rule 19 (E)
     TOKEN_WORD  reduce using rule 19 (E)
 
-state 35 // TOKEN_DELETE TOKEN_RACK
+state 44 // TOKEN_CREATE TOKEN_RACK
 
    20 E: TOKEN_RACK .  [TOKEN_ATTR, TOKEN_WORD]
 
     TOKEN_ATTR  reduce using rule 20 (E)
     TOKEN_WORD  reduce using rule 20 (E)
 
-state 36 // TOKEN_GET TOKEN_DEVICE
+state 45 // TOKEN_GET TOKEN_DEVICE
 
    21 E: TOKEN_DEVICE .  [TOKEN_ATTR, TOKEN_WORD]
 
     TOKEN_ATTR  reduce using rule 21 (E)
     TOKEN_WORD  reduce using rule 21 (E)
 
-state 37 // TOKEN_CREATE TOKEN_SUBDEVICE
+state 46 // TOKEN_GET TOKEN_SUBDEVICE
 
    22 E: TOKEN_SUBDEVICE .  [TOKEN_ATTR, TOKEN_WORD]
 
     TOKEN_ATTR  reduce using rule 22 (E)
     TOKEN_WORD  reduce using rule 22 (E)
 
-state 38 // TOKEN_DELETE TOKEN_SUBDEVICE1
+state 47 // TOKEN_GET TOKEN_SUBDEVICE1
 
    23 E: TOKEN_SUBDEVICE1 .  [TOKEN_ATTR, TOKEN_WORD]
 
     TOKEN_ATTR  reduce using rule 23 (E)
     TOKEN_WORD  reduce using rule 23 (E)
 
-state 39 // TOKEN_DELETE TOKEN_BLDG TOKEN_ATTR TOKEN_EQUAL TOKEN_WORD [$end]
-
-   14 NT_DEL: TOKEN_DELETE E F .  [$end]
-
-    $end  reduce using rule 14 (NT_DEL)
-
-state 40 // TOKEN_DELETE TOKEN_BLDG TOKEN_WORD [TOKEN_ATTR]
-
-   15 NT_DEL: TOKEN_DELETE E P . F
-
-    TOKEN_ATTR  shift, and goto state 41
-
-    F  goto state 45
-
-state 41 // TOKEN_UPDATE TOKEN_ATTR
-
-   24 F: TOKEN_ATTR . TOKEN_EQUAL TOKEN_WORD F
-   25 F: TOKEN_ATTR . TOKEN_EQUAL TOKEN_WORD
-
-    TOKEN_EQUAL  shift, and goto state 42
-
-state 42 // TOKEN_UPDATE TOKEN_ATTR TOKEN_EQUAL
-
-   24 F: TOKEN_ATTR TOKEN_EQUAL . TOKEN_WORD F
-   25 F: TOKEN_ATTR TOKEN_EQUAL . TOKEN_WORD
-
-    TOKEN_WORD  shift, and goto state 43
-
-state 43 // TOKEN_UPDATE TOKEN_ATTR TOKEN_EQUAL TOKEN_WORD
-
-   24 F: TOKEN_ATTR TOKEN_EQUAL TOKEN_WORD . F
-   25 F: TOKEN_ATTR TOKEN_EQUAL TOKEN_WORD .  [$end]
-
-    $end        reduce using rule 25 (F)
-    TOKEN_ATTR  shift, and goto state 41
-
-    F  goto state 44
-
-state 44 // TOKEN_UPDATE TOKEN_ATTR TOKEN_EQUAL TOKEN_WORD TOKEN_ATTR TOKEN_EQUAL TOKEN_WORD [$end]
-
-   24 F: TOKEN_ATTR TOKEN_EQUAL TOKEN_WORD F .  [$end]
-
-    $end  reduce using rule 24 (F)
-
-state 45 // TOKEN_DELETE TOKEN_BLDG TOKEN_WORD TOKEN_ATTR TOKEN_EQUAL TOKEN_WORD [$end]
-
-   15 NT_DEL: TOKEN_DELETE E P F .  [$end]
-
-    $end  reduce using rule 15 (NT_DEL)
-
-state 46 // TOKEN_UPDATE TOKEN_ATTR TOKEN_EQUAL TOKEN_WORD [$end]
-
-   12 NT_UPDATE: TOKEN_UPDATE F .  [$end]
-
-    $end  reduce using rule 12 (NT_UPDATE)
-
-state 47 // TOKEN_UPDATE TOKEN_WORD [TOKEN_ATTR]
-
-   13 NT_UPDATE: TOKEN_UPDATE P . F
-
-    TOKEN_ATTR  shift, and goto state 41
-
-    F  goto state 48
-
-state 48 // TOKEN_UPDATE TOKEN_WORD TOKEN_ATTR TOKEN_EQUAL TOKEN_WORD [$end]
-
-   13 NT_UPDATE: TOKEN_UPDATE P F .  [$end]
-
-    $end  reduce using rule 13 (NT_UPDATE)
-
-state 49 // TOKEN_GET TOKEN_WORD [$end]
-
-   10 NT_GET: TOKEN_GET P .  [$end]
-
-    $end  reduce using rule 10 (NT_GET)
-
-state 50 // TOKEN_GET TOKEN_BLDG [TOKEN_ATTR]
-
-   11 NT_GET: TOKEN_GET E . F
-
-    TOKEN_ATTR  shift, and goto state 41
-
-    F  goto state 51
-
-state 51 // TOKEN_GET TOKEN_BLDG TOKEN_ATTR TOKEN_EQUAL TOKEN_WORD [$end]
+state 48 // TOKEN_GET TOKEN_BLDG TOKEN_ATTR TOKEN_EQUAL TOKEN_WORD [$end]
 
    11 NT_GET: TOKEN_GET E F .  [$end]
 
     $end  reduce using rule 11 (NT_GET)
 
-state 52 // TOKEN_CREATE TOKEN_BLDG [TOKEN_ATTR]
+state 49 // TOKEN_CREATE TOKEN_BLDG [TOKEN_ATTR]
 
     7 NT_CREATE: TOKEN_CREATE E . F
     8 NT_CREATE: TOKEN_CREATE E . P F
 
-    TOKEN_ATTR  shift, and goto state 41
+    TOKEN_ATTR  shift, and goto state 33
     TOKEN_WORD  shift, and goto state 25
 
-    F  goto state 53
-    P  goto state 54
+    F  goto state 50
+    P  goto state 51
 
-state 53 // TOKEN_CREATE TOKEN_BLDG TOKEN_ATTR TOKEN_EQUAL TOKEN_WORD [$end]
+state 50 // TOKEN_CREATE TOKEN_BLDG TOKEN_ATTR TOKEN_EQUAL TOKEN_WORD [$end]
 
     7 NT_CREATE: TOKEN_CREATE E F .  [$end]
 
     $end  reduce using rule 7 (NT_CREATE)
 
-state 54 // TOKEN_CREATE TOKEN_BLDG TOKEN_WORD [TOKEN_ATTR]
+state 51 // TOKEN_CREATE TOKEN_BLDG TOKEN_WORD [TOKEN_ATTR]
 
     8 NT_CREATE: TOKEN_CREATE E P . F
 
-    TOKEN_ATTR  shift, and goto state 41
+    TOKEN_ATTR  shift, and goto state 33
 
-    F  goto state 55
+    F  goto state 52
 
-state 55 // TOKEN_CREATE TOKEN_BLDG TOKEN_WORD TOKEN_ATTR TOKEN_EQUAL TOKEN_WORD [$end]
+state 52 // TOKEN_CREATE TOKEN_BLDG TOKEN_WORD TOKEN_ATTR TOKEN_EQUAL TOKEN_WORD [$end]
 
     8 NT_CREATE: TOKEN_CREATE E P F .  [$end]
 

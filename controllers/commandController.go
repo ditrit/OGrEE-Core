@@ -47,7 +47,7 @@ func PostObj(entity, path string, data map[string]interface{}) {
 
 	json.Unmarshal(bodyBytes, &respMap)
 	println(string(respMap["message"].(string)) /*bodyBytes*/)
-	if resp.StatusCode == http.StatusCreated {
+	if resp.StatusCode == http.StatusCreated && respMap["status"].(bool) == true {
 		//Insert object into tree
 		node := &Node{}
 		node.ID, _ = strconv.Atoi(respMap["data"].(map[string]interface{})["id"].(string))
@@ -69,8 +69,7 @@ func PostObj(entity, path string, data map[string]interface{}) {
 
 		case "building":
 			node.Entity = BLDG
-			val := UpdateTree(&State.TreeHierarchy, node)
-			println("BLDG ADDED?", val)
+			UpdateTree(&State.TreeHierarchy, node)
 
 		case "room":
 			node.Entity = ROOM
@@ -98,41 +97,41 @@ func PostObj(entity, path string, data map[string]interface{}) {
 	return
 }
 
-func DeleteObj(entity string, data map[string]interface{}) {
-	resp, e := models.Send("DELETE",
-		"https://ogree.chibois.net/api/user/"+entity+"s/"+
-			string(data["id"].(string)), GetKey(), nil)
+func DeleteObj(path string) {
+	URL := "https://ogree.chibois.net/api/user/"
+	nd := new(*Node)
+
+	switch path {
+	case "":
+		nd = FindNodeInTree(&State.TreeHierarchy, StrToStack(State.CurrPath))
+	default:
+		if path[0] != '/' && len(State.CurrPath) > 1 {
+			nd = FindNodeInTree(&State.TreeHierarchy,
+				StrToStack(State.CurrPath+"/"+path))
+		} else {
+			nd = FindNodeInTree(&State.TreeHierarchy, StrToStack(path))
+		}
+	}
+
+	if nd == nil {
+		println("Error finding Object from given path!")
+		return
+	}
+
+	URL += EntityToString((*nd).Entity) + "s/" + strconv.Itoa((*nd).ID)
+	resp, e := models.Send("DELETE", URL, GetKey(), nil)
 	if e != nil {
-		println("There was an error!")
+		println("Error while obtaining Object details!")
+		return
 	}
-	if resp.StatusCode != http.StatusNoContent {
-		println("Unsuccessful!")
-	} else {
+	defer resp.Body.Close()
+	if resp.StatusCode == http.StatusNoContent {
+		DeleteNodeInTree(&State.TreeHierarchy, (*nd).ID, (*nd).Entity)
 		println("Success")
+	} else {
+		println("Error while object!")
+		//json.Unmarshal()
 	}
-
-	ID, _ := strconv.Atoi(data["id"].(string))
-	var ent int
-	switch entity {
-	case "tenant":
-		ent = TENANT
-	case "site":
-		ent = SITE
-	case "building":
-		ent = BLDG
-	case "room":
-		ent = ROOM
-	case "rack":
-		ent = RACK
-	case "device":
-		ent = DEVICE
-	case "subdevice":
-		ent = SUBDEV
-	case "subdevice1":
-		ent = SUBDEV1
-	}
-
-	DeleteNodeInTree(&State.TreeHierarchy, ID, ent)
 
 	return
 }
