@@ -182,7 +182,7 @@ func SearchObjects(entity string, data map[string]interface{}) {
 
 func GetObject(path string) {
 	URL := "https://ogree.chibois.net/api/user/"
-	nd := &Node{}
+	nd := new(*Node)
 	var data map[string]interface{}
 
 	switch path {
@@ -202,7 +202,7 @@ func GetObject(path string) {
 		return
 	}
 
-	URL += EntityToString(nd.Entity) + "s/" + strconv.Itoa(nd.ID)
+	URL += EntityToString((*nd).Entity) + "s/" + strconv.Itoa((*nd).ID)
 	resp, e := models.Send("GET", URL, GetKey(), nil)
 	if e != nil {
 		println("Error while obtaining Object details!")
@@ -224,14 +224,33 @@ func GetObject(path string) {
 
 }
 
-func UpdateObj(entity string, data map[string]interface{}) {
+func UpdateObj(path string, data map[string]interface{}) {
 	println("OK. Attempting to update...")
-	if data["id"] != nil {
-		URL := "https://ogree.chibois.net/api/user/" + entity + "s/" +
-			string(data["id"].(string))
+	if data != nil {
+		var respJson map[string]string
+		nd := new(*Node)
+		switch path {
+		case "":
+			nd = FindNodeInTree(&State.TreeHierarchy, StrToStack(State.CurrPath))
+		default:
+			if path[0] != '/' && len(State.CurrPath) > 1 {
+				nd = FindNodeInTree(&State.TreeHierarchy,
+					StrToStack(State.CurrPath+"/"+path))
+			} else {
+				nd = FindNodeInTree(&State.TreeHierarchy, StrToStack(path))
+			}
+		}
+
+		if nd == nil {
+			println("Error finding Object from given path!")
+			return
+		}
+
+		URL := "https://ogree.chibois.net/api/user/" +
+			EntityToString((*nd).Entity) + "s/" + strconv.Itoa((*nd).ID)
 
 		resp, e := models.Send("PUT", URL, GetKey(), data)
-		println("Response Code: ", resp.Status)
+		//println("Response Code: ", resp.Status)
 		if e != nil {
 			println("There was an error!")
 		}
@@ -241,9 +260,15 @@ func UpdateObj(entity string, data map[string]interface{}) {
 			println("Error: " + err.Error() + " Now Exiting")
 			os.Exit(-1)
 		}
-		println(string(bodyBytes))
+		json.Unmarshal(bodyBytes, &respJson)
+		println(respJson["message"])
+		if resp.StatusCode == http.StatusOK && data["name"] != nil {
+			//Need to update name of Obj in tree
+			(*nd).Name = string(data["name"].(string))
+		}
+		//println(string(bodyBytes))
 	} else {
-		println("Error! Please enter ID of Object to be updated")
+		println("Error! Please enter desired parameters of Object to be updated")
 	}
 
 }

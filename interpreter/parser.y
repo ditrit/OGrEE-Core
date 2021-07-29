@@ -69,8 +69,8 @@ NT_GET: TOKEN_GET {println("@State NT_GET"); cmd.GetObject("")}
        | TOKEN_GET E F {/*cmd.Disp(resMap(&$4)); */cmd.SearchObjects($2, resMap(&$3)) }
 ;
 
-NT_UPDATE: TOKEN_UPDATE E F {println("@State NT_UPD");}
-       | TOKEN_UPDATE E P F {$$=$4;cmd.Disp(resMap(&$4)); cmd.UpdateObj($2, resMap(&$4))}
+NT_UPDATE: TOKEN_UPDATE  F {println("@State NT_UPD"); cmd.UpdateObj("", resMap(&$2))}
+       | TOKEN_UPDATE P F {$$=$3;/*cmd.Disp(resMap(&$4));*/ cmd.UpdateObj($2, resMap(&$3))}
 ;
 
 NT_DEL: TOKEN_DELETE E F {println("@State NT_DEL");cmd.DeleteObj($2, resMap(&$3))}

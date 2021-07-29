@@ -414,7 +414,7 @@ func DeleteNodeInTree(root **Node, ID, ent int) (bool, bool) {
 	return false, false
 }
 
-func FindNodeInTree(root **Node, path *Stack) *Node {
+func FindNodeInTree(root **Node, path *Stack) **Node {
 	if root == nil {
 		return nil
 	}
@@ -429,7 +429,7 @@ func FindNodeInTree(root **Node, path *Stack) *Node {
 		path.Pop()
 		return FindNodeInTree(&node, path)
 	} else {
-		return *root
+		return root
 	}
 }
 
