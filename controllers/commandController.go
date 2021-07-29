@@ -345,8 +345,38 @@ func CD(x string) {
 
 }
 
-func Help() {
-	fmt.Printf(`A Shell interface to the API and your datacenter visualisation solution`)
+func Help(entry string) {
+	switch entry {
+	case "ls":
+		fmt.Println(`Usage: `, entry, "[PATH] (optional)")
+		fmt.Println(`Displays objects in a given directory`)
+	case "cd":
+		fmt.Println(`Usage: `, entry, "[PATH] (optional)")
+		fmt.Println(`Changes current directory`)
+	case "create":
+		fmt.Println(`Usage: `, entry, "ENTITY [PATH](optional)  [ATTRIBUTES]")
+		fmt.Println(`Creates an object in a given directory`)
+		printAttributeOptions()
+	case "gt":
+		fmt.Println(`Usage: `, entry, "ENTITY (optional) [PATH](optional)  [ATTRIBUTES](optional)")
+		fmt.Println(`Obtains object(s) details. 
+				If ENTITY is specified then it will enter a 'search mode' 
+				and at least 1 ATTRIBUTE must be specified. Otherwise an 
+				object's details will be retrieved`)
+		printAttributeOptions()
+	case "update":
+		fmt.Println(`Usage: `, entry, "[PATH](optional)  [ATTRIBUTES]")
+		fmt.Println(`Modify an object by specifying new attribute values`)
+		printAttributeOptions()
+	case "delete":
+		fmt.Println(`Usage: `, entry, "[PATH]")
+		fmt.Println(`Delete an object`)
+	case "grep":
+		fmt.Println("NOT YET IMPLEMENTED")
+	default:
+		fmt.Printf(`A Shell interface to the API and your datacenter visualisation solution`)
+	}
+
 }
 
 func displayObject(obj map[string]interface{}) {
@@ -378,5 +408,21 @@ func displayObject(obj map[string]interface{}) {
 			}
 		}
 
+	}
+}
+
+func printAttributeOptions() {
+	attrArr := []string{"address", "category", "city", "color",
+		"country", "description", "domain", "gps", "height",
+		"heightUnit", "id", "mainContact", "mainEmail", "mainPhone",
+		"model", "name", "nbFloors", "orientation", "parentId", "posU",
+		"posXY", "posXYUnit", "posZ", "posZUnit", "reserved", "reservedColor",
+		"serial", "size", "sizeU", "sizeUnit", "slot", "technical",
+		"technicalColor", "template", "token", "type", "usableColor",
+		"vendor", "zipcode"}
+	fmt.Println("Attributes: ")
+	//fmt.Println("")
+	for i := range attrArr {
+		fmt.Println("", attrArr[i])
 	}
 }

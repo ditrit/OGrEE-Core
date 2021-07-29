@@ -116,7 +116,14 @@ BASH:  TOKEN_CD {cmd.CD("")}
        | TOKEN_LS P {cmd.LS($2)}
        | TOKEN_PWD {cmd.PWD()}
        | TOKEN_EXIT     {cmd.Exit()}
-       | TOKEN_DOC {cmd.Help()}
+       | TOKEN_DOC {cmd.Help("")}
+       | TOKEN_DOC TOKEN_LS {cmd.Help("ls")}
+       | TOKEN_DOC TOKEN_CD {cmd.Help("cd")}
+       | TOKEN_DOC TOKEN_CREATE {cmd.Help("create")}
+       | TOKEN_DOC TOKEN_GET {cmd.Help("gt")}
+       | TOKEN_DOC TOKEN_UPDATE {cmd.Help("update")}
+       | TOKEN_DOC TOKEN_DELETE {cmd.Help("delete")}
+       | TOKEN_DOC TOKEN_WORD {cmd.Help($2)}
 ;
 
 
