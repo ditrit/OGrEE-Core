@@ -189,10 +189,11 @@ func GetObject(path string) {
 	case "":
 		nd = FindNodeInTree(&State.TreeHierarchy, StrToStack(State.CurrPath))
 	default:
-		nd = FindNodeInTree(&State.TreeHierarchy, StrToStack(path))
-		if nd == nil {
+		if path[0] != '/' && len(State.CurrPath) > 1 {
 			nd = FindNodeInTree(&State.TreeHierarchy,
 				StrToStack(State.CurrPath+"/"+path))
+		} else {
+			nd = FindNodeInTree(&State.TreeHierarchy, StrToStack(path))
 		}
 	}
 
