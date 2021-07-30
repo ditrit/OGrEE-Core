@@ -45,20 +45,18 @@ func resMap(x *string) map[string]interface{} {
        TOKEN_EXIT TOKEN_DOC
        TOKEN_CD TOKEN_PWD
        TOKEN_CLR TOKEN_GREP TOKEN_LS
-%type <s> F E P
-%type <s> K NT_CREATE NT_DEL NT_GET NT_UPDATE
+%type <s> F E P P1
+%type <s> NT_CREATE NT_DEL NT_GET NT_UPDATE
 
 
 %%
-start: K      {println("@State start");}
-       | Q
-;
-
-K: NT_CREATE
+start: NT_CREATE     {println("@State start");}
        | NT_GET
        | NT_UPDATE
        | NT_DEL
+       | Q
 ;
+
 
 NT_CREATE: TOKEN_CREATE E F {cmd.PostObj($2, "", resMap(&$3))/*println("@State NT_CR");*/}
        | TOKEN_CREATE E P F {$$=$4; /*println("Finally: "+$$);*/ cmd.Disp(resMap(&$4)); cmd.PostObj($2,$3, resMap(&$4)) }
@@ -73,8 +71,7 @@ NT_UPDATE: TOKEN_UPDATE  F {println("@State NT_UPD"); cmd.UpdateObj("", resMap(&
        | TOKEN_UPDATE P F {$$=$3;/*cmd.Disp(resMap(&$4));*/ cmd.UpdateObj($2, resMap(&$3))}
 ;
 
-NT_DEL: TOKEN_DELETE {println("@State NT_DEL");cmd.DeleteObj("")}
-       | TOKEN_DELETE P {/*$$=$4;cmd.Disp(resMap(&$4));*/ cmd.DeleteObj($2) }
+NT_DEL: TOKEN_DELETE P {println("@State NT_DEL");cmd.DeleteObj($2)}
 ;
 
 E:     TOKEN_TENANT 
@@ -88,32 +85,29 @@ E:     TOKEN_TENANT
 ;
 
 F:     TOKEN_ATTR TOKEN_EQUAL TOKEN_WORD F {$$=string($1+"="+$3+"="+$4); println("So we got: ", $$)}
-       | TOKEN_ATTR TOKEN_EQUAL TOKEN_WORD {$$=$1+"="+$3; println("Taking the M"); 
-       println("SUP DUDE: ", $3);}
+       | TOKEN_ATTR TOKEN_EQUAL TOKEN_WORD {$$=$1+"="+$3}
 ;
 
 
-P: TOKEN_WORD TOKEN_SLASH P {$$=$1+"/"+$3}
+P:     P1
+       | TOKEN_SLASH P1 {$$="/"+$2}
+;
+
+P1:    TOKEN_WORD TOKEN_SLASH P1 {$$=$1+"/"+$3}
        | TOKEN_WORD {$$=$1}
-       | TOKEN_WORD TOKEN_SLASH {$$=$1}
+       | {$$=""}
 ;
-
-
 
 Q:     TOKEN_CD TOKEN_WORD TOKEN_CMDFLAG
        |TOKEN_CD TOKEN_WORD {cmd.CD($2)}
        |TOKEN_CD P {cmd.CD($2)}
        | TOKEN_LS P {cmd.LS($2)}
        | TOKEN_LS TOKEN_WORD TOKEN_CMDFLAG
-       | BASH TOKEN_WORD
        | BASH     {cmd.Execute()}
 ;
 
-BASH:  TOKEN_CD {cmd.CD("")}
-       | TOKEN_CLR
+BASH:  TOKEN_CLR
        | TOKEN_GREP {}
-       | TOKEN_LS {cmd.LS("")}
-       | TOKEN_LS P {cmd.LS($2)}
        | TOKEN_PWD {cmd.PWD()}
        | TOKEN_EXIT     {cmd.Exit()}
        | TOKEN_DOC {cmd.Help("")}
