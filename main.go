@@ -109,7 +109,7 @@ func main() {
 	)
 
 	rl, err := readline.NewEx(&readline.Config{
-		Prompt:          user + "@" + "OGrEE3D:$> ",
+		Prompt:          "\u001b[31m" + user + "@" + "OGrEE3D:$> " + " \u001b[0m",
 		HistoryFile:     ".resources/.history",
 		AutoComplete:    completer,
 		InterruptPrompt: "^C",
@@ -133,6 +133,7 @@ func main() {
 		InterpretLine(&line)
 		//c.UpdateSessionState(&line)
 		//Update Prompt
-		rl.SetPrompt(user + "@" + "OGrEE3D:$" + c.State.CurrPath + "> ")
+		rl.SetPrompt("\u001b[31m" + user + "@" + "OGrEE3D:" +
+			"\u001b[32m" + c.State.CurrPath + ">" + "$\u001b[0m")
 	}
 }
