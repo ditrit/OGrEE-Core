@@ -3,7 +3,7 @@ state 0 //
     0 $accept: . start
 
     TOKEN_CD      shift, and goto state 11
-    TOKEN_CLR     shift, and goto state 14
+    TOKEN_CLR     shift, and goto state 15
     TOKEN_CREATE  shift, and goto state 7
     TOKEN_DELETE  shift, and goto state 10
     TOKEN_DOC     shift, and goto state 19
@@ -12,10 +12,10 @@ state 0 //
     TOKEN_GREP    shift, and goto state 16
     TOKEN_LS      shift, and goto state 12
     TOKEN_PWD     shift, and goto state 17
-    TOKEN_TREE    shift, and goto state 15
+    TOKEN_TREE    shift, and goto state 13
     TOKEN_UPDATE  shift, and goto state 9
 
-    BASH       goto state 13
+    BASH       goto state 14
     NT_CREATE  goto state 2
     NT_DEL     goto state 5
     NT_GET     goto state 3
@@ -88,15 +88,15 @@ state 8 // TOKEN_GET
     TOKEN_RACK        shift, and goto state 56
     TOKEN_ROOM        shift, and goto state 55
     TOKEN_SITE        shift, and goto state 53
-    TOKEN_SLASH       shift, and goto state 31
+    TOKEN_SLASH       shift, and goto state 28
     TOKEN_SUBDEVICE   shift, and goto state 58
     TOKEN_SUBDEVICE1  shift, and goto state 59
     TOKEN_TENANT      shift, and goto state 52
-    TOKEN_WORD        shift, and goto state 36
+    TOKEN_WORD        shift, and goto state 29
 
     E   goto state 51
     P   goto state 50
-    P1  goto state 30
+    P1  goto state 27
 
     conflict on $end, reduce using rule 8, reduce using rule 28
 
@@ -107,12 +107,12 @@ state 9 // TOKEN_UPDATE
    28 P1: .  [TOKEN_ATTR]
 
     TOKEN_ATTR   shift, and goto state 45
-    TOKEN_SLASH  shift, and goto state 31
-    TOKEN_WORD   shift, and goto state 36
+    TOKEN_SLASH  shift, and goto state 28
+    TOKEN_WORD   shift, and goto state 29
 
     F   goto state 43
     P   goto state 44
-    P1  goto state 30
+    P1  goto state 27
 
     conflict on TOKEN_ATTR, shift, and goto state 45, reduce using rule 28
 
@@ -122,11 +122,11 @@ state 10 // TOKEN_DELETE
    28 P1: .  [$end]
 
     $end         reduce using rule 28 (P1)
-    TOKEN_SLASH  shift, and goto state 31
-    TOKEN_WORD   shift, and goto state 36
+    TOKEN_SLASH  shift, and goto state 28
+    TOKEN_WORD   shift, and goto state 29
 
     P   goto state 42
-    P1  goto state 30
+    P1  goto state 27
 
 state 11 // TOKEN_CD
 
@@ -136,11 +136,11 @@ state 11 // TOKEN_CD
    28 P1: .  [$end]
 
     $end         reduce using rule 28 (P1)
-    TOKEN_SLASH  shift, and goto state 31
+    TOKEN_SLASH  shift, and goto state 28
     TOKEN_WORD   shift, and goto state 39
 
     P   goto state 40
-    P1  goto state 30
+    P1  goto state 27
 
 state 12 // TOKEN_LS
 
@@ -149,32 +149,40 @@ state 12 // TOKEN_LS
    28 P1: .  [$end]
 
     $end         reduce using rule 28 (P1)
-    TOKEN_SLASH  shift, and goto state 31
-    TOKEN_WORD   shift, and goto state 32
+    TOKEN_SLASH  shift, and goto state 28
+    TOKEN_WORD   shift, and goto state 36
 
-    P   goto state 33
-    P1  goto state 30
+    P   goto state 37
+    P1  goto state 27
 
-state 13 // TOKEN_CLR [$end]
+state 13 // TOKEN_TREE
 
-   34 Q: BASH .  [$end]
+   34 Q: TOKEN_TREE . TOKEN_NUM
+   35 Q: TOKEN_TREE . P
+   36 Q: TOKEN_TREE . P TOKEN_NUM
+   28 P1: .  [$end, TOKEN_NUM]
 
-    $end  reduce using rule 34 (Q)
+    $end         reduce using rule 28 (P1)
+    TOKEN_NUM    shift, and goto state 30
+    TOKEN_SLASH  shift, and goto state 28
+    TOKEN_WORD   shift, and goto state 29
 
-state 14 // TOKEN_CLR
+    P   goto state 31
+    P1  goto state 27
 
-   35 BASH: TOKEN_CLR .  [$end]
+    conflict on TOKEN_NUM, shift, and goto state 30, reduce using rule 28
 
-    $end  reduce using rule 35 (BASH)
+state 14 // TOKEN_CLR [$end]
 
-state 15 // TOKEN_TREE
+   37 Q: BASH .  [$end]
 
-   36 BASH: TOKEN_TREE . TOKEN_WORD TOKEN_NUM
-   37 BASH: TOKEN_TREE . TOKEN_NUM
-   38 BASH: TOKEN_TREE . TOKEN_WORD
+    $end  reduce using rule 37 (Q)
 
-    TOKEN_NUM   shift, and goto state 28
-    TOKEN_WORD  shift, and goto state 27
+state 15 // TOKEN_CLR
+
+   38 BASH: TOKEN_CLR .  [$end]
+
+    $end  reduce using rule 38 (BASH)
 
 state 16 // TOKEN_GREP
 
@@ -256,99 +264,105 @@ state 26 // TOKEN_DOC TOKEN_WORD
 
     $end  reduce using rule 49 (BASH)
 
-state 27 // TOKEN_TREE TOKEN_WORD
+state 27 // TOKEN_CD [$end]
 
-   36 BASH: TOKEN_TREE TOKEN_WORD . TOKEN_NUM
-   38 BASH: TOKEN_TREE TOKEN_WORD .  [$end]
-
-    $end       reduce using rule 38 (BASH)
-    TOKEN_NUM  shift, and goto state 29
-
-state 28 // TOKEN_TREE TOKEN_NUM
-
-   37 BASH: TOKEN_TREE TOKEN_NUM .  [$end]
-
-    $end  reduce using rule 37 (BASH)
-
-state 29 // TOKEN_TREE TOKEN_WORD TOKEN_NUM
-
-   36 BASH: TOKEN_TREE TOKEN_WORD TOKEN_NUM .  [$end]
-
-    $end  reduce using rule 36 (BASH)
-
-state 30 // TOKEN_CD [$end]
-
-   24 P: P1 .  [$end, TOKEN_ATTR]
+   24 P: P1 .  [$end, TOKEN_ATTR, TOKEN_NUM]
 
     $end        reduce using rule 24 (P)
     TOKEN_ATTR  reduce using rule 24 (P)
+    TOKEN_NUM   reduce using rule 24 (P)
 
-state 31 // TOKEN_DELETE TOKEN_SLASH
+state 28 // TOKEN_DELETE TOKEN_SLASH
 
    25 P: TOKEN_SLASH . P1
-   28 P1: .  [$end, TOKEN_ATTR]
+   28 P1: .  [$end, TOKEN_ATTR, TOKEN_NUM]
 
     $end        reduce using rule 28 (P1)
     TOKEN_ATTR  reduce using rule 28 (P1)
-    TOKEN_WORD  shift, and goto state 36
+    TOKEN_NUM   reduce using rule 28 (P1)
+    TOKEN_WORD  shift, and goto state 29
 
-    P1  goto state 38
+    P1  goto state 35
 
-state 32 // TOKEN_LS TOKEN_WORD
+state 29 // TOKEN_UPDATE TOKEN_WORD
+
+   26 P1: TOKEN_WORD . TOKEN_SLASH P1
+   27 P1: TOKEN_WORD .  [$end, TOKEN_ATTR, TOKEN_NUM]
+
+    $end         reduce using rule 27 (P1)
+    TOKEN_ATTR   reduce using rule 27 (P1)
+    TOKEN_NUM    reduce using rule 27 (P1)
+    TOKEN_SLASH  shift, and goto state 33
+
+state 30 // TOKEN_TREE TOKEN_NUM
+
+   34 Q: TOKEN_TREE TOKEN_NUM .  [$end]
+
+    $end  reduce using rule 34 (Q)
+
+state 31 // TOKEN_TREE [$end]
+
+   35 Q: TOKEN_TREE P .  [$end]
+   36 Q: TOKEN_TREE P . TOKEN_NUM
+
+    $end       reduce using rule 35 (Q)
+    TOKEN_NUM  shift, and goto state 32
+
+state 32 // TOKEN_TREE TOKEN_NUM
+
+   36 Q: TOKEN_TREE P TOKEN_NUM .  [$end]
+
+    $end  reduce using rule 36 (Q)
+
+state 33 // TOKEN_UPDATE TOKEN_WORD TOKEN_SLASH
+
+   26 P1: TOKEN_WORD TOKEN_SLASH . P1
+   28 P1: .  [$end, TOKEN_ATTR, TOKEN_NUM]
+
+    $end        reduce using rule 28 (P1)
+    TOKEN_ATTR  reduce using rule 28 (P1)
+    TOKEN_NUM   reduce using rule 28 (P1)
+    TOKEN_WORD  shift, and goto state 29
+
+    P1  goto state 34
+
+state 34 // TOKEN_UPDATE TOKEN_WORD TOKEN_SLASH [$end]
+
+   26 P1: TOKEN_WORD TOKEN_SLASH P1 .  [$end, TOKEN_ATTR, TOKEN_NUM]
+
+    $end        reduce using rule 26 (P1)
+    TOKEN_ATTR  reduce using rule 26 (P1)
+    TOKEN_NUM   reduce using rule 26 (P1)
+
+state 35 // TOKEN_DELETE TOKEN_SLASH [$end]
+
+   25 P: TOKEN_SLASH P1 .  [$end, TOKEN_ATTR, TOKEN_NUM]
+
+    $end        reduce using rule 25 (P)
+    TOKEN_ATTR  reduce using rule 25 (P)
+    TOKEN_NUM   reduce using rule 25 (P)
+
+state 36 // TOKEN_LS TOKEN_WORD
 
    26 P1: TOKEN_WORD . TOKEN_SLASH P1
    27 P1: TOKEN_WORD .  [$end]
    33 Q: TOKEN_LS TOKEN_WORD . TOKEN_CMDFLAG
 
     $end           reduce using rule 27 (P1)
-    TOKEN_CMDFLAG  shift, and goto state 35
-    TOKEN_SLASH    shift, and goto state 34
+    TOKEN_CMDFLAG  shift, and goto state 38
+    TOKEN_SLASH    shift, and goto state 33
 
-state 33 // TOKEN_LS [$end]
+state 37 // TOKEN_LS [$end]
 
    32 Q: TOKEN_LS P .  [$end]
 
     $end  reduce using rule 32 (Q)
 
-state 34 // TOKEN_LS TOKEN_WORD TOKEN_SLASH
-
-   26 P1: TOKEN_WORD TOKEN_SLASH . P1
-   28 P1: .  [$end, TOKEN_ATTR]
-
-    $end        reduce using rule 28 (P1)
-    TOKEN_ATTR  reduce using rule 28 (P1)
-    TOKEN_WORD  shift, and goto state 36
-
-    P1  goto state 37
-
-state 35 // TOKEN_LS TOKEN_WORD TOKEN_CMDFLAG
+state 38 // TOKEN_LS TOKEN_WORD TOKEN_CMDFLAG
 
    33 Q: TOKEN_LS TOKEN_WORD TOKEN_CMDFLAG .  [$end]
 
     $end  reduce using rule 33 (Q)
-
-state 36 // TOKEN_UPDATE TOKEN_WORD
-
-   26 P1: TOKEN_WORD . TOKEN_SLASH P1
-   27 P1: TOKEN_WORD .  [$end, TOKEN_ATTR]
-
-    $end         reduce using rule 27 (P1)
-    TOKEN_ATTR   reduce using rule 27 (P1)
-    TOKEN_SLASH  shift, and goto state 34
-
-state 37 // TOKEN_LS TOKEN_WORD TOKEN_SLASH [$end]
-
-   26 P1: TOKEN_WORD TOKEN_SLASH P1 .  [$end, TOKEN_ATTR]
-
-    $end        reduce using rule 26 (P1)
-    TOKEN_ATTR  reduce using rule 26 (P1)
-
-state 38 // TOKEN_DELETE TOKEN_SLASH [$end]
-
-   25 P: TOKEN_SLASH P1 .  [$end, TOKEN_ATTR]
-
-    $end        reduce using rule 25 (P)
-    TOKEN_ATTR  reduce using rule 25 (P)
 
 state 39 // TOKEN_CD TOKEN_WORD
 
@@ -359,7 +373,7 @@ state 39 // TOKEN_CD TOKEN_WORD
 
     $end           reduce using rule 27 (P1)
     TOKEN_CMDFLAG  shift, and goto state 41
-    TOKEN_SLASH    shift, and goto state 34
+    TOKEN_SLASH    shift, and goto state 33
     conflict on $end, reduce using rule 27, reduce using rule 30
 
 state 40 // TOKEN_CD [$end]
@@ -492,7 +506,7 @@ state 57 // TOKEN_GET TOKEN_DEVICE
     TOKEN_SLASH  reduce using rule 19 (E)
     TOKEN_WORD   reduce using rule 19 (E)
 
-state 58 // TOKEN_CREATE TOKEN_SUBDEVICE
+state 58 // TOKEN_GET TOKEN_SUBDEVICE
 
    20 E: TOKEN_SUBDEVICE .  [TOKEN_ATTR, TOKEN_SLASH, TOKEN_WORD]
 
@@ -521,12 +535,12 @@ state 61 // TOKEN_CREATE TOKEN_BLDG [TOKEN_ATTR]
    28 P1: .  [TOKEN_ATTR]
 
     TOKEN_ATTR   shift, and goto state 45
-    TOKEN_SLASH  shift, and goto state 31
-    TOKEN_WORD   shift, and goto state 36
+    TOKEN_SLASH  shift, and goto state 28
+    TOKEN_WORD   shift, and goto state 29
 
     F   goto state 62
     P   goto state 63
-    P1  goto state 30
+    P1  goto state 27
 
     conflict on TOKEN_ATTR, shift, and goto state 45, reduce using rule 28
 

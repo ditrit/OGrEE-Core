@@ -472,16 +472,13 @@ func tree(base string, prefix string, depth int) {
 
 func Tree(x string, depth int) {
 	if x == "" || x == "." {
-		println("FIRST PATH")
-		println("DEPTH: ", depth)
+		println(State.CurrPath)
 		tree(State.CurrPath, "", depth)
 	} else if string(x[0]) == "/" {
-		println("SECOND PATH")
-		println("DEPTH: ", depth)
+		println(x)
 		tree(x, "", depth)
 	} else {
-		println("THIRD PATH")
-		println("DEPTH: ", depth)
+		println(State.CurrPath + "/" + x)
 		tree(State.CurrPath+"/"+x, "", depth)
 	}
 }

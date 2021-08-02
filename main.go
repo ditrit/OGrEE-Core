@@ -97,6 +97,7 @@ func main() {
 			readline.PcItem("subdevice", false),
 			readline.PcItem("subdevice1", false),
 		),
+		readline.PcItem("tree", false),
 		/*readline.PcItem("gt", false,
 			readline.PcItem("tenant", false),
 			readline.PcItem("site", false),

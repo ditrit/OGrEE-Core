@@ -105,13 +105,13 @@ Q:     TOKEN_CD TOKEN_WORD TOKEN_CMDFLAG
        |TOKEN_CD P {cmd.CD($2)}
        | TOKEN_LS P {cmd.LS($2)}
        | TOKEN_LS TOKEN_WORD TOKEN_CMDFLAG
+       | TOKEN_TREE TOKEN_NUM {cmd.Tree("", $2)}
+       | TOKEN_TREE P {cmd.Tree($2, 0)}
+       | TOKEN_TREE P TOKEN_NUM {cmd.Tree($2, $3)}
        | BASH     {cmd.Execute()}
 ;
 
 BASH:  TOKEN_CLR
-       | TOKEN_TREE TOKEN_WORD TOKEN_NUM {cmd.Tree($2, $3)}
-       | TOKEN_TREE TOKEN_NUM {cmd.Tree("", $2)}
-       | TOKEN_TREE TOKEN_WORD {cmd.Tree($2, 0)}
        | TOKEN_GREP {}
        | TOKEN_PWD {cmd.PWD()}
        | TOKEN_EXIT     {cmd.Exit()}
