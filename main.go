@@ -52,6 +52,7 @@ func TrimToSlash(x string) string {
 
 func main() {
 
+	c.InitLogs()
 	user, _ := c.Login()
 
 	var completer = readline.NewPrefixCompleter(false,

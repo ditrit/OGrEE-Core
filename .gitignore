@@ -5,3 +5,4 @@ interpreter/*.go
 interpreter/y
 .resources/
 main
+log.txt

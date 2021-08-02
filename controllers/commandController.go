@@ -36,12 +36,14 @@ func PostObj(entity, path string, data map[string]interface{}) {
 		"https://ogree.chibois.net/api/user/"+entity+"s", GetKey(), data)
 
 	if e != nil {
+		WarningLogger.Println("Error while sending POST to server: ", e)
 		println("There was an error!")
 	}
 	defer resp.Body.Close()
 	bodyBytes, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		println("Error: " + err.Error() + " Now Exiting")
+		ErrorLogger.Println("Error while trying to read server response: ", err)
 		os.Exit(-1)
 	}
 
@@ -115,13 +117,15 @@ func DeleteObj(path string) {
 
 	if nd == nil {
 		println("Error finding Object from given path!")
+		WarningLogger.Println("Object to DELETE was not found")
 		return
 	}
 
 	URL += EntityToString((*nd).Entity) + "s/" + strconv.Itoa((*nd).ID)
 	resp, e := models.Send("DELETE", URL, GetKey(), nil)
 	if e != nil {
-		println("Error while obtaining Object details!")
+		println("Error while deleting Object!")
+		WarningLogger.Println("Error while deleting Object!", e)
 		return
 	}
 	defer resp.Body.Close()
@@ -129,7 +133,8 @@ func DeleteObj(path string) {
 		DeleteNodeInTree(&State.TreeHierarchy, (*nd).ID, (*nd).Entity)
 		println("Success")
 	} else {
-		println("Error while object!")
+		println("Error while deleting object in cache!")
+		WarningLogger.Println("Error while deleting object in tree")
 		//json.Unmarshal()
 	}
 
@@ -151,17 +156,20 @@ func SearchObjects(entity string, data map[string]interface{}) {
 		}
 	}
 
-	println("Here is URL: ", URL)
+	//println("Here is URL: ", URL)
+	InfoLogger.Println("Search query URL:", URL)
 
 	resp, e := models.Send("GET", URL, GetKey(), nil)
 	println("Response Code: ", resp.Status)
 	if e != nil {
+		WarningLogger.Println("Error while sending GET to server", e)
 		println("There was an error!")
 	}
 	defer resp.Body.Close()
 	bodyBytes, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		println("Error: " + err.Error() + " Now Exiting")
+		ErrorLogger.Println("Error while trying to read server response: ", err)
 		os.Exit(-1)
 	}
 	//println(string(bodyBytes))
@@ -198,6 +206,7 @@ func GetObject(path string) {
 
 	if nd == nil {
 		println("Error finding Object from given path!")
+		WarningLogger.Println("Object to Get not found")
 		return
 	}
 
@@ -205,12 +214,14 @@ func GetObject(path string) {
 	resp, e := models.Send("GET", URL, GetKey(), nil)
 	if e != nil {
 		println("Error while obtaining Object details!")
+		WarningLogger.Println("Error while sending GET to server", e)
 		return
 	}
 	defer resp.Body.Close()
 	bodyBytes, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		println("Error while reading response!")
+		ErrorLogger.Println("Error while trying to read server response: ", err)
 		return
 	}
 	json.Unmarshal(bodyBytes, &data)
@@ -242,6 +253,7 @@ func UpdateObj(path string, data map[string]interface{}) {
 
 		if nd == nil {
 			println("Error finding Object from given path!")
+			WarningLogger.Println("Object to Update not found")
 			return
 		}
 
@@ -252,12 +264,14 @@ func UpdateObj(path string, data map[string]interface{}) {
 		//println("Response Code: ", resp.Status)
 		if e != nil {
 			println("There was an error!")
+			WarningLogger.Println("Error while sending UPDATE to server", e)
 		}
 		defer resp.Body.Close()
 		bodyBytes, err := ioutil.ReadAll(resp.Body)
 		if err != nil {
-			println("Error: " + err.Error() + " Now Exiting")
-			os.Exit(-1)
+			println("Error while reading response: " + err.Error())
+			ErrorLogger.Println("Error while trying to read server response: ", err)
+			return
 		}
 		json.Unmarshal(bodyBytes, &respJson)
 		println(respJson["message"])
@@ -319,6 +333,7 @@ func CD(x string) {
 			State.CurrPath = pth
 		} else {
 			println("Path does not exist")
+			WarningLogger.Println("Path: ", x, " does not exist")
 		}
 	} else {
 		if len(State.CurrPath) != 1 {
@@ -328,6 +343,7 @@ func CD(x string) {
 				State.CurrPath += "/" + x
 			} else {
 				println("OGREE: ", x, " : No such object")
+				WarningLogger.Println("No such object: ", x)
 			}
 
 		} else {
@@ -337,6 +353,7 @@ func CD(x string) {
 				State.CurrPath += x
 			} else {
 				println("OGREE: ", x, " : No such object")
+				WarningLogger.Println("No such object: ", x)
 			}
 
 		}
