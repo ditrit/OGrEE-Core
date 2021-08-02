@@ -9,7 +9,7 @@ with open(os.getcwd()+"/y.go", "r") as f:
 x = m.find("yylex.Error(msg)")
 
 m=m.replace("yylex.Error(msg)", 
-    "println(\"OGREE: Unrecognised command!\")\n\t\t\t/*yylex.Error(msg)*/")
+    "println(\"OGREE: Unrecognised command!\")\ncmd.WarningLogger.Println(\"Unknown Command\")\t\t\t/*yylex.Error(msg)*/")
 
     #k = f.readline()
     #while k:

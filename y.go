@@ -467,7 +467,7 @@ yynewstate:
 				msg = "syntax error"
 			}
 			println("OGREE: Unrecognised command!")
-			/*yylex.Error(msg)*/
+cmd.WarningLogger.Println("Unknown Command")			/*yylex.Error(msg)*/
 			Nerrs++
 			fallthrough
 
