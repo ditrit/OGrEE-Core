@@ -33,8 +33,8 @@ func resMap(x *string) map[string]interface{} {
 
 type yySymType struct {
 	yys int
-	//n int
-	s string
+	n   int
+	s   string
 }
 
 type yyXError struct {
@@ -42,84 +42,88 @@ type yyXError struct {
 }
 
 const (
-	yyDefault        = 57372
+	yyDefault        = 57374
 	yyEofCode        = 57344
-	TOKEN_ATTR       = 57355
-	TOKEN_BASHTYPE   = 57361
-	TOKEN_BLDG       = 57349
-	TOKEN_CD         = 57367
-	TOKEN_CLR        = 57369
-	TOKEN_CMDFLAG    = 57363
-	TOKEN_CREATE     = 57356
-	TOKEN_DELETE     = 57359
-	TOKEN_DEVICE     = 57352
-	TOKEN_DOC        = 57366
-	TOKEN_EQUAL      = 57362
-	TOKEN_EXIT       = 57365
-	TOKEN_GET        = 57357
-	TOKEN_GREP       = 57370
-	TOKEN_LS         = 57371
-	TOKEN_PWD        = 57368
-	TOKEN_RACK       = 57351
-	TOKEN_ROOM       = 57350
-	TOKEN_SEARCH     = 57360
-	TOKEN_SITE       = 57348
-	TOKEN_SLASH      = 57364
-	TOKEN_SUBDEVICE  = 57353
-	TOKEN_SUBDEVICE1 = 57354
-	TOKEN_TENANT     = 57347
-	TOKEN_UPDATE     = 57358
-	TOKEN_WORD       = 57346
+	TOKEN_ATTR       = 57356
+	TOKEN_BASHTYPE   = 57362
+	TOKEN_BLDG       = 57350
+	TOKEN_CD         = 57368
+	TOKEN_CLR        = 57370
+	TOKEN_CMDFLAG    = 57364
+	TOKEN_CREATE     = 57357
+	TOKEN_DELETE     = 57360
+	TOKEN_DEVICE     = 57353
+	TOKEN_DOC        = 57367
+	TOKEN_EQUAL      = 57363
+	TOKEN_EXIT       = 57366
+	TOKEN_GET        = 57358
+	TOKEN_GREP       = 57371
+	TOKEN_LS         = 57372
+	TOKEN_NUM        = 57346
+	TOKEN_PWD        = 57369
+	TOKEN_RACK       = 57352
+	TOKEN_ROOM       = 57351
+	TOKEN_SEARCH     = 57361
+	TOKEN_SITE       = 57349
+	TOKEN_SLASH      = 57365
+	TOKEN_SUBDEVICE  = 57354
+	TOKEN_SUBDEVICE1 = 57355
+	TOKEN_TENANT     = 57348
+	TOKEN_TREE       = 57373
+	TOKEN_UPDATE     = 57359
+	TOKEN_WORD       = 57347
 	yyErrCode        = 57345
 
 	yyMaxDepth = 200
-	yyTabOfs   = -47
+	yyTabOfs   = -50
 )
 
 var (
 	yyPrec = map[int]int{}
 
 	yyXLAT = map[int]int{
-		57344: 0,  // $end (44x)
-		57355: 1,  // TOKEN_ATTR (20x)
-		57346: 2,  // TOKEN_WORD (18x)
-		57364: 3,  // TOKEN_SLASH (17x)
-		57381: 4,  // P1 (8x)
-		57375: 5,  // F (6x)
-		57380: 6,  // P (6x)
-		57374: 7,  // E (2x)
-		57349: 8,  // TOKEN_BLDG (2x)
-		57367: 9,  // TOKEN_CD (2x)
-		57363: 10, // TOKEN_CMDFLAG (2x)
-		57356: 11, // TOKEN_CREATE (2x)
-		57359: 12, // TOKEN_DELETE (2x)
-		57352: 13, // TOKEN_DEVICE (2x)
-		57357: 14, // TOKEN_GET (2x)
-		57371: 15, // TOKEN_LS (2x)
-		57351: 16, // TOKEN_RACK (2x)
-		57350: 17, // TOKEN_ROOM (2x)
-		57348: 18, // TOKEN_SITE (2x)
-		57353: 19, // TOKEN_SUBDEVICE (2x)
-		57354: 20, // TOKEN_SUBDEVICE1 (2x)
-		57347: 21, // TOKEN_TENANT (2x)
-		57358: 22, // TOKEN_UPDATE (2x)
-		57373: 23, // BASH (1x)
-		57376: 24, // NT_CREATE (1x)
-		57377: 25, // NT_DEL (1x)
-		57378: 26, // NT_GET (1x)
-		57379: 27, // NT_UPDATE (1x)
-		57382: 28, // Q (1x)
-		57383: 29, // start (1x)
-		57369: 30, // TOKEN_CLR (1x)
-		57366: 31, // TOKEN_DOC (1x)
-		57362: 32, // TOKEN_EQUAL (1x)
-		57365: 33, // TOKEN_EXIT (1x)
-		57370: 34, // TOKEN_GREP (1x)
-		57368: 35, // TOKEN_PWD (1x)
-		57372: 36, // $default (0x)
-		57345: 37, // error (0x)
-		57361: 38, // TOKEN_BASHTYPE (0x)
-		57360: 39, // TOKEN_SEARCH (0x)
+		57344: 0,  // $end (47x)
+		57356: 1,  // TOKEN_ATTR (20x)
+		57347: 2,  // TOKEN_WORD (19x)
+		57365: 3,  // TOKEN_SLASH (17x)
+		57383: 4,  // P1 (8x)
+		57377: 5,  // F (6x)
+		57382: 6,  // P (6x)
+		57376: 7,  // E (2x)
+		57350: 8,  // TOKEN_BLDG (2x)
+		57368: 9,  // TOKEN_CD (2x)
+		57364: 10, // TOKEN_CMDFLAG (2x)
+		57357: 11, // TOKEN_CREATE (2x)
+		57360: 12, // TOKEN_DELETE (2x)
+		57353: 13, // TOKEN_DEVICE (2x)
+		57358: 14, // TOKEN_GET (2x)
+		57372: 15, // TOKEN_LS (2x)
+		57346: 16, // TOKEN_NUM (2x)
+		57352: 17, // TOKEN_RACK (2x)
+		57351: 18, // TOKEN_ROOM (2x)
+		57349: 19, // TOKEN_SITE (2x)
+		57354: 20, // TOKEN_SUBDEVICE (2x)
+		57355: 21, // TOKEN_SUBDEVICE1 (2x)
+		57348: 22, // TOKEN_TENANT (2x)
+		57359: 23, // TOKEN_UPDATE (2x)
+		57375: 24, // BASH (1x)
+		57378: 25, // NT_CREATE (1x)
+		57379: 26, // NT_DEL (1x)
+		57380: 27, // NT_GET (1x)
+		57381: 28, // NT_UPDATE (1x)
+		57384: 29, // Q (1x)
+		57385: 30, // start (1x)
+		57370: 31, // TOKEN_CLR (1x)
+		57367: 32, // TOKEN_DOC (1x)
+		57363: 33, // TOKEN_EQUAL (1x)
+		57366: 34, // TOKEN_EXIT (1x)
+		57371: 35, // TOKEN_GREP (1x)
+		57369: 36, // TOKEN_PWD (1x)
+		57373: 37, // TOKEN_TREE (1x)
+		57374: 38, // $default (0x)
+		57345: 39, // error (0x)
+		57362: 40, // TOKEN_BASHTYPE (0x)
+		57361: 41, // TOKEN_SEARCH (0x)
 	}
 
 	yySymNames = []string{
@@ -139,6 +143,7 @@ var (
 		"TOKEN_DEVICE",
 		"TOKEN_GET",
 		"TOKEN_LS",
+		"TOKEN_NUM",
 		"TOKEN_RACK",
 		"TOKEN_ROOM",
 		"TOKEN_SITE",
@@ -159,6 +164,7 @@ var (
 		"TOKEN_EXIT",
 		"TOKEN_GREP",
 		"TOKEN_PWD",
+		"TOKEN_TREE",
 		"$default",
 		"error",
 		"TOKEN_BASHTYPE",
@@ -169,19 +175,19 @@ var (
 
 	yyReductions = map[int]struct{ xsym, components int }{
 		0:  {0, 1},
-		1:  {29, 1},
-		2:  {29, 1},
-		3:  {29, 1},
-		4:  {29, 1},
-		5:  {29, 1},
-		6:  {24, 3},
-		7:  {24, 4},
-		8:  {26, 1},
-		9:  {26, 2},
-		10: {26, 3},
-		11: {27, 2},
-		12: {27, 3},
-		13: {25, 2},
+		1:  {30, 1},
+		2:  {30, 1},
+		3:  {30, 1},
+		4:  {30, 1},
+		5:  {30, 1},
+		6:  {25, 3},
+		7:  {25, 4},
+		8:  {27, 1},
+		9:  {27, 2},
+		10: {27, 3},
+		11: {28, 2},
+		12: {28, 3},
+		13: {26, 2},
 		14: {7, 1},
 		15: {7, 1},
 		16: {7, 1},
@@ -197,103 +203,110 @@ var (
 		26: {4, 3},
 		27: {4, 1},
 		28: {4, 0},
-		29: {28, 3},
-		30: {28, 2},
-		31: {28, 2},
-		32: {28, 2},
-		33: {28, 3},
-		34: {28, 1},
-		35: {23, 1},
-		36: {23, 1},
-		37: {23, 1},
-		38: {23, 1},
-		39: {23, 1},
-		40: {23, 2},
-		41: {23, 2},
-		42: {23, 2},
-		43: {23, 2},
-		44: {23, 2},
-		45: {23, 2},
-		46: {23, 2},
+		29: {29, 3},
+		30: {29, 2},
+		31: {29, 2},
+		32: {29, 2},
+		33: {29, 3},
+		34: {29, 1},
+		35: {24, 1},
+		36: {24, 3},
+		37: {24, 2},
+		38: {24, 2},
+		39: {24, 1},
+		40: {24, 1},
+		41: {24, 1},
+		42: {24, 1},
+		43: {24, 2},
+		44: {24, 2},
+		45: {24, 2},
+		46: {24, 2},
+		47: {24, 2},
+		48: {24, 2},
+		49: {24, 2},
 	}
 
 	yyXErrors = map[yyXError]string{}
 
-	yyParseTab = [61][]uint8{
+	yyParseTab = [65][]uint8{
 		// 0
-		{9: 58, 11: 54, 57, 14: 55, 59, 22: 56, 60, 49, 52, 50, 51, 53, 48, 61, 65, 33: 64, 62, 63},
+		{9: 61, 11: 57, 60, 14: 58, 62, 23: 59, 63, 52, 55, 53, 54, 56, 51, 64, 69, 34: 68, 66, 67, 65},
+		{50},
+		{49},
+		{48},
 		{47},
+		// 5
 		{46},
 		{45},
-		{44},
-		// 5
-		{43},
-		{42},
-		{7: 104, 97, 13: 100, 16: 99, 98, 96, 101, 102, 95},
-		{39, 2: 79, 74, 73, 6: 93, 94, 97, 13: 100, 16: 99, 98, 96, 101, 102, 95},
-		{1: 88, 79, 74, 73, 86, 87},
+		{7: 111, 104, 13: 107, 17: 106, 105, 103, 108, 109, 102},
+		{42, 2: 86, 81, 80, 6: 100, 101, 104, 13: 107, 17: 106, 105, 103, 108, 109, 102},
+		{1: 95, 86, 81, 80, 93, 94},
 		// 10
-		{19, 2: 79, 74, 73, 6: 85},
-		{19, 2: 82, 74, 73, 6: 83},
-		{19, 2: 75, 74, 73, 6: 76},
-		{13},
-		{12},
+		{22, 2: 86, 81, 80, 6: 92},
+		{22, 2: 89, 81, 80, 6: 90},
+		{22, 2: 82, 81, 80, 6: 83},
+		{16},
+		{15},
 		// 15
+		{2: 77, 16: 78},
 		{11},
 		{10},
 		{9},
-		{8, 2: 72, 9: 67, 11: 68, 71, 14: 69, 66, 22: 70},
-		{7},
+		{8, 2: 76, 9: 71, 11: 72, 75, 14: 73, 70, 23: 74},
 		// 20
+		{7},
 		{6},
 		{5},
 		{4},
 		{3},
-		{2},
 		// 25
+		{2},
 		{1},
-		{23, 23},
-		{19, 19, 79, 4: 81},
-		{20, 3: 77, 10: 78},
-		{15},
-		// 30
-		{19, 19, 79, 4: 80},
+		{12, 16: 79},
+		{13},
 		{14},
-		{20, 20, 3: 77},
-		{21, 21},
-		{22, 22},
-		// 35
-		{20, 3: 77, 10: 84},
-		{16},
+		// 30
+		{26, 26},
+		{22, 22, 86, 4: 88},
+		{23, 3: 84, 10: 85},
 		{18},
-		{34},
-		{36},
+		{22, 22, 86, 4: 87},
+		// 35
+		{17},
+		{23, 23, 3: 84},
+		{24, 24},
+		{25, 25},
+		{23, 3: 84, 10: 91},
 		// 40
-		{1: 88, 5: 92},
-		{32: 89},
-		{2: 90},
-		{24, 88, 5: 91},
-		{25},
+		{19},
+		{21},
+		{37},
+		{39},
+		{1: 95, 5: 99},
 		// 45
-		{35},
+		{33: 96},
+		{2: 97},
+		{27, 95, 5: 98},
+		{28},
 		{38},
-		{1: 88, 5: 103},
+		// 50
+		{41},
+		{1: 95, 5: 110},
+		{1: 36, 36, 36},
+		{1: 35, 35, 35},
+		{1: 34, 34, 34},
+		// 55
 		{1: 33, 33, 33},
 		{1: 32, 32, 32},
-		// 50
 		{1: 31, 31, 31},
 		{1: 30, 30, 30},
 		{1: 29, 29, 29},
-		{1: 28, 28, 28},
-		{1: 27, 27, 27},
-		// 55
-		{1: 26, 26, 26},
-		{37},
-		{1: 88, 79, 74, 73, 105, 106},
-		{41},
-		{1: 88, 5: 107},
 		// 60
 		{40},
+		{1: 95, 86, 81, 80, 112, 113},
+		{44},
+		{1: 95, 5: 114},
+		{43},
 	}
 )
 
@@ -334,7 +347,7 @@ func yylex1(yylex yyLexer, lval *yySymType) (n int) {
 }
 
 func yyParse(yylex yyLexer) int {
-	const yyError = 37
+	const yyError = 39
 
 	yyEx, _ := yylex.(yyLexerEx)
 	var yyn int
@@ -606,43 +619,55 @@ yynewstate:
 		{
 			cmd.Execute()
 		}
+	case 36:
+		{
+			cmd.Tree(yyS[yypt-1].s, yyS[yypt-0].n)
+		}
 	case 37:
 		{
-			cmd.PWD()
+			cmd.Tree("", yyS[yypt-0].n)
 		}
 	case 38:
 		{
-			cmd.Exit()
-		}
-	case 39:
-		{
-			cmd.Help("")
+			cmd.Tree(yyS[yypt-0].s, 0)
 		}
 	case 40:
 		{
-			cmd.Help("ls")
+			cmd.PWD()
 		}
 	case 41:
 		{
-			cmd.Help("cd")
+			cmd.Exit()
 		}
 	case 42:
 		{
-			cmd.Help("create")
+			cmd.Help("")
 		}
 	case 43:
 		{
-			cmd.Help("gt")
+			cmd.Help("ls")
 		}
 	case 44:
 		{
-			cmd.Help("update")
+			cmd.Help("cd")
 		}
 	case 45:
 		{
-			cmd.Help("delete")
+			cmd.Help("create")
 		}
 	case 46:
+		{
+			cmd.Help("gt")
+		}
+	case 47:
+		{
+			cmd.Help("update")
+		}
+	case 48:
+		{
+			cmd.Help("delete")
+		}
+	case 49:
 		{
 			cmd.Help(yyS[yypt-0].s)
 		}

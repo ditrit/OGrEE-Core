@@ -17,6 +17,8 @@
 /address|category|city|color|country|description|domain|gps|height|heightUnit|id|mainContact|mainEmail|mainPhone|model|name|nbFloors|orientation|parentId|posU|posXY|posXYUnit|posZ|posZUnit|reserved|reservedColor|serial|size|sizeU|sizeUnit|slot|technical|technicalColor|template|token|type|usableColor|vendor|zipcode/ 
 {println("We got TOKEN_ATTR");lval.s = yylex.Text();return TOKEN_ATTR}
 
+/[0-9]+/ {println("We got TOKEN_NUM");lval.n = atoi(yylex.Text()); return TOKEN_NUM}
+/tree/ {println("We got TOKEN_TREE"); return TOKEN_TREE}
 /cd/ {println("We got TOKEN_CD");return TOKEN_CD}
 /pwd/ {println("We got TOKEN_PWD");return TOKEN_PWD}
 /clear/ {println("We got TOKEN_CLR");return TOKEN_CLR}
@@ -30,8 +32,20 @@
 /[A-Za-z0-9_\+\-\.]+/ {println("We got TOKEN_WORD"); lval.s = yylex.Text(); println("LVAL: ", lval.s); return TOKEN_WORD}
 //
 package main
-import ("os")
+import (
+	"os"
+	"strconv"
+)
 type TokenType int
+
+func atoi(x string) int {
+	v, e := strconv.Atoi(x)
+	if e != nil {
+		println("STRCONV ERROR!")
+		return 0
+	}
+	return v
+}
 
 func lexBegin() {
   //NN_FUN(NewLexer(os.Stdin))

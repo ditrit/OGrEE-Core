@@ -443,3 +443,45 @@ func printAttributeOptions() {
 		fmt.Println("", attrArr[i])
 	}
 }
+
+func tree(base string, prefix string, depth int) {
+	names := NodesAtLevel(&State.TreeHierarchy, *StrToStack(base))
+
+	for index, name := range names {
+		/*if name[0] == '.' {
+			continue
+		}*/
+		//subpath := path.Join(base, name)
+		subpath := base + "/" + name
+		//counter.index(subpath)
+
+		if index == len(names)-1 {
+			fmt.Println(prefix+"└──", (name))
+			if depth != 0 {
+				tree(subpath, prefix+"    ", depth-1)
+			}
+
+		} else {
+			fmt.Println(prefix+("├──"), (name))
+			if depth != 0 {
+				tree(subpath, prefix+("│   "), depth-1)
+			}
+		}
+	}
+}
+
+func Tree(x string, depth int) {
+	if x == "" || x == "." {
+		println("FIRST PATH")
+		println("DEPTH: ", depth)
+		tree(State.CurrPath, "", depth)
+	} else if string(x[0]) == "/" {
+		println("SECOND PATH")
+		println("DEPTH: ", depth)
+		tree(x, "", depth)
+	} else {
+		println("THIRD PATH")
+		println("DEPTH: ", depth)
+		tree(State.CurrPath+"/"+x, "", depth)
+	}
+}

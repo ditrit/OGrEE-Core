@@ -2,6 +2,7 @@ package main
 
 import (
 	"os"
+	"strconv"
 )
 import (
 	"bufio"
@@ -15315,6 +15316,83 @@ var dfas = []dfa{
 		},
 	}, []int{ /* Start-of-input transitions */ -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1}, []int{ /* End-of-input transitions */ -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1}, nil},
 
+	// [0-9]+
+	{[]bool{false, true}, []func(rune) int{ // Transitions
+		func(r rune) int {
+			switch {
+			case 48 <= r && r <= 57:
+				return 1
+			}
+			return -1
+		},
+		func(r rune) int {
+			switch {
+			case 48 <= r && r <= 57:
+				return 1
+			}
+			return -1
+		},
+	}, []int{ /* Start-of-input transitions */ -1, -1}, []int{ /* End-of-input transitions */ -1, -1}, nil},
+
+	// tree
+	{[]bool{false, false, false, false, true}, []func(rune) int{ // Transitions
+		func(r rune) int {
+			switch r {
+			case 101:
+				return -1
+			case 114:
+				return -1
+			case 116:
+				return 1
+			}
+			return -1
+		},
+		func(r rune) int {
+			switch r {
+			case 101:
+				return -1
+			case 114:
+				return 2
+			case 116:
+				return -1
+			}
+			return -1
+		},
+		func(r rune) int {
+			switch r {
+			case 101:
+				return 3
+			case 114:
+				return -1
+			case 116:
+				return -1
+			}
+			return -1
+		},
+		func(r rune) int {
+			switch r {
+			case 101:
+				return 4
+			case 114:
+				return -1
+			case 116:
+				return -1
+			}
+			return -1
+		},
+		func(r rune) int {
+			switch r {
+			case 101:
+				return -1
+			case 114:
+				return -1
+			case 116:
+				return -1
+			}
+			return -1
+		},
+	}, []int{ /* Start-of-input transitions */ -1, -1, -1, -1, -1}, []int{ /* End-of-input transitions */ -1, -1, -1, -1, -1}, nil},
+
 	// cd
 	{[]bool{false, false, true}, []func(rune) int{ // Transitions
 		func(r rune) int {
@@ -15957,55 +16035,66 @@ OUTER0:
 			}
 		case 15:
 			{
+				println("We got TOKEN_NUM")
+				lval.n = atoi(yylex.Text())
+				return TOKEN_NUM
+			}
+		case 16:
+			{
+				println("We got TOKEN_TREE")
+				return TOKEN_TREE
+			}
+		case 17:
+			{
 				println("We got TOKEN_CD")
 				return TOKEN_CD
 			}
-		case 16:
+		case 18:
 			{
 				println("We got TOKEN_PWD")
 				return TOKEN_PWD
 			}
-		case 17:
+		case 19:
 			{
 				println("We got TOKEN_CLR")
 				return TOKEN_CLR
 			}
-		case 18:
+		case 20:
 			{
 				println("We got TOKEN_GREP")
 				return TOKEN_GREP
 			}
-		case 19:
+		case 21:
 			{
 				println("We got TOKEN_LS")
 				return TOKEN_LS
 			}
-		case 20:
+		case 22:
 			{
 				println("We got TOKEN_EXIT")
 				return TOKEN_EXIT
 			}
-		case 21:
+		case 23:
 			{
 				println("We got TOKEN_CMDFLAG")
 				return TOKEN_CMDFLAG
 			}
-		case 22:
+		case 24:
 			{
 				println("We got TOKEN_EQUAL")
 				return TOKEN_EQUAL
 			}
-		case 23:
+		case 25:
 			{
 				println("We got TOKEN_SLASH")
 				return TOKEN_SLASH
 			}
-		case 24:
+		case 26:
 			{
 				println("We got TOKEN_DOC")
 				return TOKEN_DOC
 			}
-		case 25:
+		case 27:
 			{
 				println("We got TOKEN_WORD")
 				lval.s = yylex.Text()
@@ -16023,6 +16112,15 @@ OUTER0:
 }
 
 type TokenType int
+
+func atoi(x string) int {
+	v, e := strconv.Atoi(x)
+	if e != nil {
+		println("STRCONV ERROR!")
+		return 0
+	}
+	return v
+}
 
 func lexBegin() {
 	//NN_FUN(NewLexer(os.Stdin))

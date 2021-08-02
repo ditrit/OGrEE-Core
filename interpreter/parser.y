@@ -29,10 +29,12 @@ func resMap(x *string) map[string]interface{} {
 %}
 
 %union {
-  //n int
+  n int
   s string
 }
 
+%type <n> TOKEN_NUM
+%token <n> TOKEN_NUM
 %token <s> TOKEN_WORD
 %token <s> TOKEN_TENANT TOKEN_SITE TOKEN_BLDG TOKEN_ROOM
 %token <s> TOKEN_RACK TOKEN_DEVICE TOKEN_SUBDEVICE TOKEN_SUBDEVICE1
@@ -44,7 +46,7 @@ func resMap(x *string) map[string]interface{} {
        TOKEN_CMDFLAG TOKEN_SLASH 
        TOKEN_EXIT TOKEN_DOC
        TOKEN_CD TOKEN_PWD
-       TOKEN_CLR TOKEN_GREP TOKEN_LS
+       TOKEN_CLR TOKEN_GREP TOKEN_LS TOKEN_TREE
 %type <s> F E P P1
 %type <s> NT_CREATE NT_DEL NT_GET NT_UPDATE
 
@@ -107,6 +109,9 @@ Q:     TOKEN_CD TOKEN_WORD TOKEN_CMDFLAG
 ;
 
 BASH:  TOKEN_CLR
+       | TOKEN_TREE TOKEN_WORD TOKEN_NUM {cmd.Tree($2, $3)}
+       | TOKEN_TREE TOKEN_NUM {cmd.Tree("", $2)}
+       | TOKEN_TREE TOKEN_WORD {cmd.Tree($2, 0)}
        | TOKEN_GREP {}
        | TOKEN_PWD {cmd.PWD()}
        | TOKEN_EXIT     {cmd.Exit()}

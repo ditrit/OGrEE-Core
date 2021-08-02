@@ -263,6 +263,7 @@ func DispAtLevel(root **Node, x Stack) []string {
 		node := getNextInPath(name.(string), *root)
 		if node == nil {
 			println("Name doesn't exist! ", string(name.(string)))
+			WarningLogger.Println("Node name: ", string(name.(string)), "doesn't exist!")
 			return nil
 		}
 		x.Pop()
@@ -473,4 +474,29 @@ func EntityStrToInt(entity string) int {
 	default:
 		return SUBDEV1
 	}
+}
+
+func NodesAtLevel(root **Node, x Stack) []string {
+	if x.Len() > 0 {
+		name := x.Peek()
+		node := getNextInPath(name.(string), *root)
+		if node == nil {
+			println("Name doesn't exist! ", string(name.(string)))
+			WarningLogger.Println("Node name: ", string(name.(string)), "doesn't exist!")
+			return nil
+		}
+		x.Pop()
+		return NodesAtLevel(&node, x)
+	} else {
+		var items = make([]string, 0)
+		var nm string
+		//println("This is what we got:")
+		for i := (*root).Nodes.Front(); i != nil; i = i.Next() {
+			nm = string(i.Value.(*Node).Name)
+			//println(nm)
+			items = append(items, nm)
+		}
+		return items
+	}
+	return nil
 }
