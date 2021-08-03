@@ -23,6 +23,8 @@ const (
 	SUBDEV1
 )
 
+var BuildTime string
+
 type ShellState struct {
 	CurrPath      string
 	PrevPath      string

@@ -47,6 +47,7 @@ func resMap(x *string) map[string]interface{} {
        TOKEN_EXIT TOKEN_DOC
        TOKEN_CD TOKEN_PWD
        TOKEN_CLR TOKEN_GREP TOKEN_LS TOKEN_TREE
+       TOKEN_LSOG
 %type <s> F E P P1
 %type <s> NT_CREATE NT_DEL NT_GET NT_UPDATE
 
@@ -113,6 +114,7 @@ Q:     TOKEN_CD TOKEN_WORD TOKEN_CMDFLAG
 
 BASH:  TOKEN_CLR
        | TOKEN_GREP {}
+       | TOKEN_LSOG {cmd.LSOG()}
        | TOKEN_PWD {cmd.PWD()}
        | TOKEN_EXIT     {cmd.Exit()}
        | TOKEN_DOC {cmd.Help("")}
@@ -124,6 +126,7 @@ BASH:  TOKEN_CLR
        | TOKEN_DOC TOKEN_DELETE {cmd.Help("delete")}
        | TOKEN_DOC TOKEN_WORD {cmd.Help($2)}
        | TOKEN_DOC TOKEN_TREE {cmd.Help("tree")}
+       | TOKEN_DOC TOKEN_LSOG {cmd.Help("lsog")}
 ;
 
 

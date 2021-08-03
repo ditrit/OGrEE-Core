@@ -15393,6 +15393,75 @@ var dfas = []dfa{
 		},
 	}, []int{ /* Start-of-input transitions */ -1, -1, -1, -1, -1}, []int{ /* End-of-input transitions */ -1, -1, -1, -1, -1}, nil},
 
+	// lsog
+	{[]bool{false, false, false, false, true}, []func(rune) int{ // Transitions
+		func(r rune) int {
+			switch r {
+			case 103:
+				return -1
+			case 108:
+				return 1
+			case 111:
+				return -1
+			case 115:
+				return -1
+			}
+			return -1
+		},
+		func(r rune) int {
+			switch r {
+			case 103:
+				return -1
+			case 108:
+				return -1
+			case 111:
+				return -1
+			case 115:
+				return 2
+			}
+			return -1
+		},
+		func(r rune) int {
+			switch r {
+			case 103:
+				return -1
+			case 108:
+				return -1
+			case 111:
+				return 3
+			case 115:
+				return -1
+			}
+			return -1
+		},
+		func(r rune) int {
+			switch r {
+			case 103:
+				return 4
+			case 108:
+				return -1
+			case 111:
+				return -1
+			case 115:
+				return -1
+			}
+			return -1
+		},
+		func(r rune) int {
+			switch r {
+			case 103:
+				return -1
+			case 108:
+				return -1
+			case 111:
+				return -1
+			case 115:
+				return -1
+			}
+			return -1
+		},
+	}, []int{ /* Start-of-input transitions */ -1, -1, -1, -1, -1}, []int{ /* End-of-input transitions */ -1, -1, -1, -1, -1}, nil},
+
 	// cd
 	{[]bool{false, false, true}, []func(rune) int{ // Transitions
 		func(r rune) int {
@@ -16046,55 +16115,60 @@ OUTER0:
 			}
 		case 17:
 			{
+				println("We got TOKEN_LSOG")
+				return TOKEN_LSOG
+			}
+		case 18:
+			{
 				println("We got TOKEN_CD")
 				return TOKEN_CD
 			}
-		case 18:
+		case 19:
 			{
 				println("We got TOKEN_PWD")
 				return TOKEN_PWD
 			}
-		case 19:
+		case 20:
 			{
 				println("We got TOKEN_CLR")
 				return TOKEN_CLR
 			}
-		case 20:
+		case 21:
 			{
 				println("We got TOKEN_GREP")
 				return TOKEN_GREP
 			}
-		case 21:
+		case 22:
 			{
 				println("We got TOKEN_LS")
 				return TOKEN_LS
 			}
-		case 22:
+		case 23:
 			{
 				println("We got TOKEN_EXIT")
 				return TOKEN_EXIT
 			}
-		case 23:
+		case 24:
 			{
 				println("We got TOKEN_CMDFLAG")
 				return TOKEN_CMDFLAG
 			}
-		case 24:
+		case 25:
 			{
 				println("We got TOKEN_EQUAL")
 				return TOKEN_EQUAL
 			}
-		case 25:
+		case 26:
 			{
 				println("We got TOKEN_SLASH")
 				return TOKEN_SLASH
 			}
-		case 26:
+		case 27:
 			{
 				println("We got TOKEN_DOC")
 				return TOKEN_DOC
 			}
-		case 27:
+		case 28:
 			{
 				println("We got TOKEN_WORD")
 				lval.s = yylex.Text()

@@ -35,6 +35,27 @@ func GetKey() string {
 	return ""
 }
 
+func GetEmail() string {
+	file, err := os.Open("./.resources/.env")
+	if err != nil {
+		fmt.Println(err)
+	}
+	defer file.Close()
+
+	scanner := bufio.NewScanner(file)
+	scanner.Split(bufio.ScanWords) // use scanwords
+	for scanner.Scan() {
+		if strings.HasPrefix(scanner.Text(), "user=") {
+			return scanner.Text()[5:]
+		}
+	}
+
+	if err := scanner.Err(); err != nil {
+		fmt.Println(err)
+	}
+	return ""
+}
+
 func CreateCredentials() (string, string) {
 	var tp map[string]interface{}
 	var key string

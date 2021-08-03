@@ -296,6 +296,14 @@ func LS(x string) {
 	}
 }
 
+func LSOG() {
+	fmt.Println("USER EMAIL:", GetEmail())
+	fmt.Println("API URL:", "https://ogree.chibois.net/api/user/")
+	fmt.Println("BUILD DATE:", BuildTime)
+	fmt.Println("LOG PATH:", "./log.txt")
+	fmt.Println("HISTORY FILE PATH:", ".resources/.history")
+}
+
 func CD(x string) {
 	if x == ".." {
 		lastIdx := strings.LastIndexByte(State.CurrPath, '/')
@@ -374,7 +382,7 @@ func Help(entry string) {
 		fmt.Println(`Usage: `, entry, "[PATH] (optional) DEPTH (optional)")
 		fmt.Println(`Recursively display hierarchy with depth indentation`)
 		fmt.Println(`If no options specified then tree executes with`)
-		fmt.Println(`current path and depth of 1`)
+		fmt.Println(`current path and depth of 0`)
 	case "create":
 		fmt.Println(`Usage: `, entry, "ENTITY [PATH](optional)  [ATTRIBUTES]")
 		fmt.Println(`Creates an object in a given directory`)
@@ -393,6 +401,9 @@ func Help(entry string) {
 	case "delete":
 		fmt.Println(`Usage: `, entry, "[PATH]")
 		fmt.Println(`Delete an object`)
+	case "lsog":
+		fmt.Println(`Usage: `, entry)
+		fmt.Println(`Displays system information`)
 	case "grep":
 		fmt.Println("NOT YET IMPLEMENTED")
 	default:
