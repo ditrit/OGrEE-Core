@@ -123,6 +123,7 @@ BASH:  TOKEN_CLR
        | TOKEN_DOC TOKEN_UPDATE {cmd.Help("update")}
        | TOKEN_DOC TOKEN_DELETE {cmd.Help("delete")}
        | TOKEN_DOC TOKEN_WORD {cmd.Help($2)}
+       | TOKEN_DOC TOKEN_TREE {cmd.Help("tree")}
 ;
 
 
