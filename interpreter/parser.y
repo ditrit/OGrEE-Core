@@ -47,7 +47,9 @@ func resMap(x *string) map[string]interface{} {
        TOKEN_EXIT TOKEN_DOC
        TOKEN_CD TOKEN_PWD
        TOKEN_CLR TOKEN_GREP TOKEN_LS TOKEN_TREE
-       TOKEN_LSOG
+       TOKEN_LSOG TOKEN_LSTEN TOKEN_LSSITE TOKEN_LSBLDG
+       TOKEN_LSROOM TOKEN_LSRACK TOKEN_LSDEV
+       TOKEN_LSSUBDEV TOKEN_LSSUBDEV1
 %type <s> F E P P1
 %type <s> NT_CREATE NT_DEL NT_GET NT_UPDATE
 
@@ -102,10 +104,16 @@ P1:    TOKEN_WORD TOKEN_SLASH P1 {$$=$1+"/"+$3}
 ;
 
 Q:     TOKEN_CD TOKEN_WORD TOKEN_CMDFLAG
-       |TOKEN_CD TOKEN_WORD {cmd.CD($2)}
        |TOKEN_CD P {cmd.CD($2)}
        | TOKEN_LS P {cmd.LS($2)}
-       | TOKEN_LS TOKEN_WORD TOKEN_CMDFLAG
+       | TOKEN_LSTEN P {cmd.LSOBJECT($2, 0)}
+       | TOKEN_LSSITE P {cmd.LSOBJECT($2, 1)}
+       | TOKEN_LSBLDG P {cmd.LSOBJECT($2, 2)}
+       | TOKEN_LSROOM P {cmd.LSOBJECT($2, 3)}
+       | TOKEN_LSRACK P {cmd.LSOBJECT($2, 4)}
+       | TOKEN_LSDEV P {cmd.LSOBJECT($2, 5)}
+       | TOKEN_LSSUBDEV P {cmd.LSOBJECT($2, 6)}
+       | TOKEN_LSSUBDEV1 P {cmd.LSOBJECT($2, 7)}
        | TOKEN_TREE TOKEN_NUM {cmd.Tree("", $2)}
        | TOKEN_TREE P {cmd.Tree($2, 0)}
        | TOKEN_TREE P TOKEN_NUM {cmd.Tree($2, $3)}

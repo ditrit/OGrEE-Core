@@ -304,6 +304,49 @@ func LSOG() {
 	fmt.Println("HISTORY FILE PATH:", ".resources/.history")
 }
 
+func LSOBJECT(x string, entity int) {
+	objs := []*Node{}
+	if x == "" || x == "." {
+		ok, _, r := CheckPath(&State.TreeHierarchy,
+			StrToStack(State.CurrPath), New())
+		if !ok {
+			println("Path not valid!")
+			WarningLogger.Println("Path not found: ", x)
+			return
+		}
+		objs = GetNodes(r, entity)
+	} else if string(x[0]) == "/" {
+		ok, _, r := CheckPath(&State.TreeHierarchy, StrToStack(x), New())
+		if !ok {
+			println("Path not valid!")
+			WarningLogger.Println("Path not found: ", x)
+			return
+		}
+		objs = GetNodes(r, entity)
+	} else {
+		ok, _, r := CheckPath(&State.TreeHierarchy,
+			StrToStack(State.CurrPath+"/"+x), New())
+		if !ok {
+			println("Path not valid!")
+			WarningLogger.Println("Path not found: ", x)
+			return
+		}
+		objs = GetNodes(r, entity)
+	}
+
+	//Special tenant case
+	//this will remain until CheckPath is improved
+	if len(objs) == 1 && entity == TENANT && x == "/" {
+		for k := State.TreeHierarchy.Nodes.Front(); k != nil; k = k.Next() {
+			objs = append(objs, k.Value.(*Node))
+		}
+	}
+
+	for i := range objs {
+		println(i, ":", objs[i].Name)
+	}
+}
+
 func CD(x string) {
 	if x == ".." {
 		lastIdx := strings.LastIndexByte(State.CurrPath, '/')
@@ -331,9 +374,9 @@ func CD(x string) {
 		var pth string
 
 		if string(x[0]) != "/" {
-			exist, pth = CheckPath(&State.TreeHierarchy, StrToStack(State.CurrPath+"/"+x), New())
+			exist, pth, _ = CheckPath(&State.TreeHierarchy, StrToStack(State.CurrPath+"/"+x), New())
 		} else {
-			exist, pth = CheckPath(&State.TreeHierarchy, StrToStack(x), New())
+			exist, pth, _ = CheckPath(&State.TreeHierarchy, StrToStack(x), New())
 		}
 		if exist == true {
 			println("THE PATH: ", pth)
@@ -345,7 +388,7 @@ func CD(x string) {
 		}
 	} else {
 		if len(State.CurrPath) != 1 {
-			if exist, _ := CheckPath(&State.TreeHierarchy,
+			if exist, _, _ := CheckPath(&State.TreeHierarchy,
 				StrToStack(State.CurrPath+"/"+x), New()); exist == true {
 				State.PrevPath = State.CurrPath
 				State.CurrPath += "/" + x
@@ -355,7 +398,7 @@ func CD(x string) {
 			}
 
 		} else {
-			if exist, _ := CheckPath(&State.TreeHierarchy,
+			if exist, _, _ := CheckPath(&State.TreeHierarchy,
 				StrToStack(State.CurrPath+x), New()); exist == true {
 				State.PrevPath = State.CurrPath
 				State.CurrPath += x

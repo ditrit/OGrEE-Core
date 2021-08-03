@@ -18,6 +18,14 @@
 {println("We got TOKEN_ATTR");lval.s = yylex.Text();return TOKEN_ATTR}
 
 /[0-9]+/ {println("We got TOKEN_NUM");lval.n = atoi(yylex.Text()); return TOKEN_NUM}
+/lsten/ {println("We got TOKEN_LSTEN"); return TOKEN_LSTEN}
+/lssite/ {println("We got TOKEN_LSSITE"); return TOKEN_LSSITE}
+/lsbldg/ {println("We got TOKEN_LSBLDG"); return TOKEN_LSBLDG}
+/lsroom/ {println("We got TOKEN_LSROOM"); return TOKEN_LSROOM}
+/lsrack/ {println("We got TOKEN_LSRACK"); return TOKEN_LSRACK}
+/lsdev/ {println("We got TOKEN_LSDEV"); return TOKEN_LSDEV}
+/lssubdev/ {println("We got TOKEN_LSSUBDEV"); return TOKEN_LSSUBDEV}
+/lssubdev1/ {println("We got TOKEN_LSSUBDEV1"); return TOKEN_LSSUBDEV1}
 /tree/ {println("We got TOKEN_TREE"); return TOKEN_TREE}
 /lsog/ {println("We got TOKEN_LSOG"); return TOKEN_LSOG}
 /cd/ {println("We got TOKEN_CD");return TOKEN_CD}

@@ -337,11 +337,11 @@ func GetPathStrAtPtr(root, curr **Node, path string) (bool, string) {
 	return false, path
 }
 
-func CheckPath(root **Node, x, pstk *Stack) (bool, string) {
+func CheckPath(root **Node, x, pstk *Stack) (bool, string, **Node) {
 	if x.Len() == 0 {
 		_, path := GetPathStrAtPtr(&State.TreeHierarchy, root, "")
 		//println(path)
-		return true, path
+		return true, path, root
 	}
 
 	p := x.Pop()
@@ -354,7 +354,7 @@ func CheckPath(root **Node, x, pstk *Stack) (bool, string) {
 		if p == nil {
 			_, path := GetPathStrAtPtr(&State.TreeHierarchy, root, "/")
 			//println(path)
-			return true, path
+			return true, path, root
 		}
 
 		//Somewhere in tree
@@ -365,7 +365,7 @@ func CheckPath(root **Node, x, pstk *Stack) (bool, string) {
 
 	nd := getNextInPath(string(p.(string)), *root)
 	if nd == nil {
-		return false, ""
+		return false, "", nil
 	}
 
 	pstk.Push(*root)
@@ -434,6 +434,23 @@ func FindNodeInTree(root **Node, path *Stack) **Node {
 	} else {
 		return root
 	}
+}
+
+func GetNodes(root **Node, entity int) []*Node {
+	if root == nil {
+		return nil
+	}
+
+	if (*root).Entity == entity {
+		return []*Node{(*root)}
+	}
+
+	ans := []*Node{}
+	for i := (*root).Nodes.Front(); i != nil; i = i.Next() {
+		nd := i.Value.(*Node)
+		ans = append(ans, GetNodes(&nd, entity)...)
+	}
+	return ans
 }
 
 func EntityToString(entity int) string {
