@@ -334,14 +334,6 @@ func LSOBJECT(x string, entity int) {
 		objs = GetNodes(r, entity)
 	}
 
-	//Special tenant case
-	//this will remain until CheckPath is improved
-	if len(objs) == 1 && entity == TENANT && x == "/" {
-		for k := State.TreeHierarchy.Nodes.Front(); k != nil; k = k.Next() {
-			objs = append(objs, k.Value.(*Node))
-		}
-	}
-
 	for i := range objs {
 		println(i, ":", objs[i].Name)
 	}

@@ -24,11 +24,11 @@ const (
 )
 
 var BuildTime string
+var State ShellState
 
 type ShellState struct {
 	CurrPath      string
 	PrevPath      string
-	sessionBuffer list.List
 	TreeHierarchy *Node
 }
 
@@ -40,13 +40,11 @@ type Node struct {
 	Nodes  list.List
 }
 
-var State ShellState
-
 //Populate hierarchy into B Tree like
 //structure
 func InitState() {
 	State.TreeHierarchy = &(Node{})
-	(*(State.TreeHierarchy)).Entity = 0
+	(*(State.TreeHierarchy)).Entity = -1
 	State.TreeHierarchy.PID = -1
 	State.CurrPath = "/"
 	x := GetChildren(0)

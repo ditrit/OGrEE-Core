@@ -83,8 +83,7 @@ func main() {
 			readline.PcItem("create", false),
 			readline.PcItem("gt", false),
 			readline.PcItem("update", false),
-			readline.PcItem("delete", false),
-			readline.PcItem("create", false)),
+			readline.PcItem("delete", false)),
 
 		readline.PcItem("create", false,
 			readline.PcItem("tenant", false),
