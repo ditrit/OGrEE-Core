@@ -126,6 +126,7 @@ func main() {
 		readline.PcItem("lsdev", false),
 		readline.PcItem("lssubdev", false),
 		readline.PcItem("lssubdev1", false),
+		readline.PcItem("lsog", false),
 		/*readline.PcItem("gt", false,
 			readline.PcItem("tenant", false),
 			readline.PcItem("site", false),

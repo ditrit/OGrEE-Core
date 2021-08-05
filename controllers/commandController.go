@@ -300,6 +300,8 @@ func LSOG() {
 	fmt.Println("USER EMAIL:", GetEmail())
 	fmt.Println("API URL:", "https://ogree.chibois.net/api/user/")
 	fmt.Println("BUILD DATE:", BuildTime)
+	fmt.Println("BUILD TREE:", BuildTree)
+	fmt.Println("BUILD HASH:", BuildHash)
 	fmt.Println("LOG PATH:", "./log.txt")
 	fmt.Println("HISTORY FILE PATH:", ".resources/.history")
 }
