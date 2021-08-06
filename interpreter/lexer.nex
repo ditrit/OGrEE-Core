@@ -4,7 +4,19 @@
 /update/ {println("We got TOKEN_UPDATE"); return TOKEN_UPDATE}
 /delete/ {println("We got TOKEN_DELETE"); return TOKEN_DELETE}
 /search/ {println("We got TOKEN_SEARCH"); return TOKEN_SEARCH}
+/\+/ {println("We got TOKEN_PLUS");lval.s = yylex.Text(); return TOKEN_PLUS}
+/-/ {println("We got TOKEN_OCDEL");lval.s = yylex.Text(); return TOKEN_OCDEL}
+/:/ {println("We got TOKEN_OCPSPEC"); return TOKEN_OCPSPEC}
+/@/ {println("We got TOKEN_ATTRSPEC"); return TOKEN_ATTRSPEC}
 
+/tn/ {println("We got TOKEN_OCTENANT");return TOKEN_OCTENANT}
+/si/ {println("We got TOKEN_OCSITE");return TOKEN_OCSITE}
+/bd/ {println("We got TOKEN_OCBLDG");return TOKEN_OCBLDG}
+/ro/ {println("We got TOKEN_OCROOM");return TOKEN_OCROOM}
+/rk/ {println("We got TOKEN_OCRACK");return TOKEN_OCRACK}
+/dv/ {println("We got TOKEN_OCDEV");return TOKEN_OCDEV}
+/sd/ {println("We got TOKEN_OCSDEV");return TOKEN_OCSDEV}
+/sd1/ {println("We got TOKEN_OCSDEV1");return TOKEN_OCSDEV1}
 
 /tenant/ {println("We got TOKEN_TENANT");lval.s = yylex.Text();return TOKEN_TENANT}
 /site/ {println("We got TOKEN_SITE");lval.s = yylex.Text();return TOKEN_SITE}
@@ -38,7 +50,7 @@
 /[=]/ {println("We got TOKEN_EQUAL");return TOKEN_EQUAL}
 /\// {println("We got TOKEN_SLASH"); return TOKEN_SLASH}
 /man/ {println("We got TOKEN_DOC"); return TOKEN_DOC}
-/[A-Za-z0-9_\+\-\.]+/ {println("We got TOKEN_WORD"); lval.s = yylex.Text(); println("LVAL: ", lval.s); return TOKEN_WORD}
+/[A-Za-z0-9_\.]+/ {println("We got TOKEN_WORD"); lval.s = yylex.Text(); println("LVAL: ", lval.s); return TOKEN_WORD}
 //
 package main
 import (

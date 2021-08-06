@@ -688,6 +688,343 @@ var dfas = []dfa{
 		},
 	}, []int{ /* Start-of-input transitions */ -1, -1, -1, -1, -1, -1, -1}, []int{ /* End-of-input transitions */ -1, -1, -1, -1, -1, -1, -1}, nil},
 
+	// \+
+	{[]bool{false, true}, []func(rune) int{ // Transitions
+		func(r rune) int {
+			switch r {
+			case 43:
+				return 1
+			}
+			return -1
+		},
+		func(r rune) int {
+			switch r {
+			case 43:
+				return -1
+			}
+			return -1
+		},
+	}, []int{ /* Start-of-input transitions */ -1, -1}, []int{ /* End-of-input transitions */ -1, -1}, nil},
+
+	// -
+	{[]bool{false, true}, []func(rune) int{ // Transitions
+		func(r rune) int {
+			switch r {
+			case 45:
+				return 1
+			}
+			return -1
+		},
+		func(r rune) int {
+			switch r {
+			case 45:
+				return -1
+			}
+			return -1
+		},
+	}, []int{ /* Start-of-input transitions */ -1, -1}, []int{ /* End-of-input transitions */ -1, -1}, nil},
+
+	// :
+	{[]bool{false, true}, []func(rune) int{ // Transitions
+		func(r rune) int {
+			switch r {
+			case 58:
+				return 1
+			}
+			return -1
+		},
+		func(r rune) int {
+			switch r {
+			case 58:
+				return -1
+			}
+			return -1
+		},
+	}, []int{ /* Start-of-input transitions */ -1, -1}, []int{ /* End-of-input transitions */ -1, -1}, nil},
+
+	// @
+	{[]bool{false, true}, []func(rune) int{ // Transitions
+		func(r rune) int {
+			switch r {
+			case 64:
+				return 1
+			}
+			return -1
+		},
+		func(r rune) int {
+			switch r {
+			case 64:
+				return -1
+			}
+			return -1
+		},
+	}, []int{ /* Start-of-input transitions */ -1, -1}, []int{ /* End-of-input transitions */ -1, -1}, nil},
+
+	// tn
+	{[]bool{false, false, true}, []func(rune) int{ // Transitions
+		func(r rune) int {
+			switch r {
+			case 110:
+				return -1
+			case 116:
+				return 1
+			}
+			return -1
+		},
+		func(r rune) int {
+			switch r {
+			case 110:
+				return 2
+			case 116:
+				return -1
+			}
+			return -1
+		},
+		func(r rune) int {
+			switch r {
+			case 110:
+				return -1
+			case 116:
+				return -1
+			}
+			return -1
+		},
+	}, []int{ /* Start-of-input transitions */ -1, -1, -1}, []int{ /* End-of-input transitions */ -1, -1, -1}, nil},
+
+	// si
+	{[]bool{false, false, true}, []func(rune) int{ // Transitions
+		func(r rune) int {
+			switch r {
+			case 105:
+				return -1
+			case 115:
+				return 1
+			}
+			return -1
+		},
+		func(r rune) int {
+			switch r {
+			case 105:
+				return 2
+			case 115:
+				return -1
+			}
+			return -1
+		},
+		func(r rune) int {
+			switch r {
+			case 105:
+				return -1
+			case 115:
+				return -1
+			}
+			return -1
+		},
+	}, []int{ /* Start-of-input transitions */ -1, -1, -1}, []int{ /* End-of-input transitions */ -1, -1, -1}, nil},
+
+	// bd
+	{[]bool{false, false, true}, []func(rune) int{ // Transitions
+		func(r rune) int {
+			switch r {
+			case 98:
+				return 1
+			case 100:
+				return -1
+			}
+			return -1
+		},
+		func(r rune) int {
+			switch r {
+			case 98:
+				return -1
+			case 100:
+				return 2
+			}
+			return -1
+		},
+		func(r rune) int {
+			switch r {
+			case 98:
+				return -1
+			case 100:
+				return -1
+			}
+			return -1
+		},
+	}, []int{ /* Start-of-input transitions */ -1, -1, -1}, []int{ /* End-of-input transitions */ -1, -1, -1}, nil},
+
+	// ro
+	{[]bool{false, false, true}, []func(rune) int{ // Transitions
+		func(r rune) int {
+			switch r {
+			case 111:
+				return -1
+			case 114:
+				return 1
+			}
+			return -1
+		},
+		func(r rune) int {
+			switch r {
+			case 111:
+				return 2
+			case 114:
+				return -1
+			}
+			return -1
+		},
+		func(r rune) int {
+			switch r {
+			case 111:
+				return -1
+			case 114:
+				return -1
+			}
+			return -1
+		},
+	}, []int{ /* Start-of-input transitions */ -1, -1, -1}, []int{ /* End-of-input transitions */ -1, -1, -1}, nil},
+
+	// rk
+	{[]bool{false, false, true}, []func(rune) int{ // Transitions
+		func(r rune) int {
+			switch r {
+			case 107:
+				return -1
+			case 114:
+				return 1
+			}
+			return -1
+		},
+		func(r rune) int {
+			switch r {
+			case 107:
+				return 2
+			case 114:
+				return -1
+			}
+			return -1
+		},
+		func(r rune) int {
+			switch r {
+			case 107:
+				return -1
+			case 114:
+				return -1
+			}
+			return -1
+		},
+	}, []int{ /* Start-of-input transitions */ -1, -1, -1}, []int{ /* End-of-input transitions */ -1, -1, -1}, nil},
+
+	// dv
+	{[]bool{false, false, true}, []func(rune) int{ // Transitions
+		func(r rune) int {
+			switch r {
+			case 100:
+				return 1
+			case 118:
+				return -1
+			}
+			return -1
+		},
+		func(r rune) int {
+			switch r {
+			case 100:
+				return -1
+			case 118:
+				return 2
+			}
+			return -1
+		},
+		func(r rune) int {
+			switch r {
+			case 100:
+				return -1
+			case 118:
+				return -1
+			}
+			return -1
+		},
+	}, []int{ /* Start-of-input transitions */ -1, -1, -1}, []int{ /* End-of-input transitions */ -1, -1, -1}, nil},
+
+	// sd
+	{[]bool{false, false, true}, []func(rune) int{ // Transitions
+		func(r rune) int {
+			switch r {
+			case 100:
+				return -1
+			case 115:
+				return 1
+			}
+			return -1
+		},
+		func(r rune) int {
+			switch r {
+			case 100:
+				return 2
+			case 115:
+				return -1
+			}
+			return -1
+		},
+		func(r rune) int {
+			switch r {
+			case 100:
+				return -1
+			case 115:
+				return -1
+			}
+			return -1
+		},
+	}, []int{ /* Start-of-input transitions */ -1, -1, -1}, []int{ /* End-of-input transitions */ -1, -1, -1}, nil},
+
+	// sd1
+	{[]bool{false, false, false, true}, []func(rune) int{ // Transitions
+		func(r rune) int {
+			switch r {
+			case 49:
+				return -1
+			case 100:
+				return -1
+			case 115:
+				return 1
+			}
+			return -1
+		},
+		func(r rune) int {
+			switch r {
+			case 49:
+				return -1
+			case 100:
+				return 2
+			case 115:
+				return -1
+			}
+			return -1
+		},
+		func(r rune) int {
+			switch r {
+			case 49:
+				return 3
+			case 100:
+				return -1
+			case 115:
+				return -1
+			}
+			return -1
+		},
+		func(r rune) int {
+			switch r {
+			case 49:
+				return -1
+			case 100:
+				return -1
+			case 115:
+				return -1
+			}
+			return -1
+		},
+	}, []int{ /* Start-of-input transitions */ -1, -1, -1, -1}, []int{ /* End-of-input transitions */ -1, -1, -1, -1}, nil},
+
 	// tenant
 	{[]bool{false, false, false, false, false, false, true}, []func(rune) int{ // Transitions
 		func(r rune) int {
@@ -16946,16 +17283,16 @@ var dfas = []dfa{
 		},
 	}, []int{ /* Start-of-input transitions */ -1, -1, -1, -1}, []int{ /* End-of-input transitions */ -1, -1, -1, -1}, nil},
 
-	// [A-Za-z0-9_\+\-\.]+
+	// [A-Za-z0-9_\.]+
 	{[]bool{false, true}, []func(rune) int{ // Transitions
 		func(r rune) int {
 			switch r {
+			case 46:
+				return 1
 			case 95:
 				return 1
 			}
 			switch {
-			case 43 <= r && r <= 46:
-				return 1
 			case 48 <= r && r <= 57:
 				return 1
 			case 65 <= r && r <= 90:
@@ -16967,12 +17304,12 @@ var dfas = []dfa{
 		},
 		func(r rune) int {
 			switch r {
+			case 46:
+				return 1
 			case 95:
 				return 1
 			}
 			switch {
-			case 43 <= r && r <= 46:
-				return 1
 			case 48 <= r && r <= 57:
 				return 1
 			case 65 <= r && r <= 90:
@@ -17077,165 +17414,227 @@ OUTER0:
 			}
 		case 6:
 			{
+				println("We got TOKEN_PLUS")
+				lval.s = yylex.Text()
+				return TOKEN_PLUS
+			}
+		case 7:
+			{
+				println("We got TOKEN_OCDEL")
+				lval.s = yylex.Text()
+				return TOKEN_OCDEL
+			}
+		case 8:
+			{
+				println("We got TOKEN_OCPSPEC")
+				return TOKEN_OCPSPEC
+			}
+		case 9:
+			{
+				println("We got TOKEN_ATTRSPEC")
+				return TOKEN_ATTRSPEC
+			}
+		case 10:
+			{
+				println("We got TOKEN_OCTENANT")
+				return TOKEN_OCTENANT
+			}
+		case 11:
+			{
+				println("We got TOKEN_OCSITE")
+				return TOKEN_OCSITE
+			}
+		case 12:
+			{
+				println("We got TOKEN_OCBLDG")
+				return TOKEN_OCBLDG
+			}
+		case 13:
+			{
+				println("We got TOKEN_OCROOM")
+				return TOKEN_OCROOM
+			}
+		case 14:
+			{
+				println("We got TOKEN_OCRACK")
+				return TOKEN_OCRACK
+			}
+		case 15:
+			{
+				println("We got TOKEN_OCDEV")
+				return TOKEN_OCDEV
+			}
+		case 16:
+			{
+				println("We got TOKEN_OCSDEV")
+				return TOKEN_OCSDEV
+			}
+		case 17:
+			{
+				println("We got TOKEN_OCSDEV1")
+				return TOKEN_OCSDEV1
+			}
+		case 18:
+			{
 				println("We got TOKEN_TENANT")
 				lval.s = yylex.Text()
 				return TOKEN_TENANT
 			}
-		case 7:
+		case 19:
 			{
 				println("We got TOKEN_SITE")
 				lval.s = yylex.Text()
 				return TOKEN_SITE
 			}
-		case 8:
+		case 20:
 			{
 				println("We got TOKEN_BLDG")
 				lval.s = yylex.Text()
 				return TOKEN_BLDG
 			}
-		case 9:
+		case 21:
 			{
 				println("We got TOKEN_ROOM")
 				lval.s = yylex.Text()
 				return TOKEN_ROOM
 			}
-		case 10:
+		case 22:
 			{
 				println("We got TOKEN_RACK")
 				lval.s = yylex.Text()
 				return TOKEN_RACK
 			}
-		case 11:
+		case 23:
 			{
 				println("We got TOKEN_DEVICE")
 				lval.s = yylex.Text()
 				return TOKEN_DEVICE
 			}
-		case 12:
+		case 24:
 			{
 				println("We got TOKEN_SUBDEVICE")
 				lval.s = yylex.Text()
 				return TOKEN_SUBDEVICE
 			}
-		case 13:
+		case 25:
 			{
 				println("We got TOKEN_SUBDEVICE1")
 				lval.s = yylex.Text()
 				return TOKEN_SUBDEVICE1
 			}
-		case 14:
+		case 26:
 			{
 				println("We got TOKEN_ATTR")
 				lval.s = yylex.Text()
 				return TOKEN_ATTR
 			}
-		case 15:
+		case 27:
 			{
 				println("We got TOKEN_NUM")
 				lval.n = atoi(yylex.Text())
 				return TOKEN_NUM
 			}
-		case 16:
+		case 28:
 			{
 				println("We got TOKEN_LSTEN")
 				return TOKEN_LSTEN
 			}
-		case 17:
+		case 29:
 			{
 				println("We got TOKEN_LSSITE")
 				return TOKEN_LSSITE
 			}
-		case 18:
+		case 30:
 			{
 				println("We got TOKEN_LSBLDG")
 				return TOKEN_LSBLDG
 			}
-		case 19:
+		case 31:
 			{
 				println("We got TOKEN_LSROOM")
 				return TOKEN_LSROOM
 			}
-		case 20:
+		case 32:
 			{
 				println("We got TOKEN_LSRACK")
 				return TOKEN_LSRACK
 			}
-		case 21:
+		case 33:
 			{
 				println("We got TOKEN_LSDEV")
 				return TOKEN_LSDEV
 			}
-		case 22:
+		case 34:
 			{
 				println("We got TOKEN_LSSUBDEV")
 				return TOKEN_LSSUBDEV
 			}
-		case 23:
+		case 35:
 			{
 				println("We got TOKEN_LSSUBDEV1")
 				return TOKEN_LSSUBDEV1
 			}
-		case 24:
+		case 36:
 			{
 				println("We got TOKEN_TREE")
 				return TOKEN_TREE
 			}
-		case 25:
+		case 37:
 			{
 				println("We got TOKEN_LSOG")
 				return TOKEN_LSOG
 			}
-		case 26:
+		case 38:
 			{
 				println("We got TOKEN_CD")
 				return TOKEN_CD
 			}
-		case 27:
+		case 39:
 			{
 				println("We got TOKEN_PWD")
 				return TOKEN_PWD
 			}
-		case 28:
+		case 40:
 			{
 				println("We got TOKEN_CLR")
 				return TOKEN_CLR
 			}
-		case 29:
+		case 41:
 			{
 				println("We got TOKEN_GREP")
 				return TOKEN_GREP
 			}
-		case 30:
+		case 42:
 			{
 				println("We got TOKEN_LS")
 				return TOKEN_LS
 			}
-		case 31:
+		case 43:
 			{
 				println("We got TOKEN_EXIT")
 				return TOKEN_EXIT
 			}
-		case 32:
+		case 44:
 			{
 				println("We got TOKEN_CMDFLAG")
 				return TOKEN_CMDFLAG
 			}
-		case 33:
+		case 45:
 			{
 				println("We got TOKEN_EQUAL")
 				return TOKEN_EQUAL
 			}
-		case 34:
+		case 46:
 			{
 				println("We got TOKEN_SLASH")
 				return TOKEN_SLASH
 			}
-		case 35:
+		case 47:
 			{
 				println("We got TOKEN_DOC")
 				return TOKEN_DOC
 			}
-		case 36:
+		case 48:
 			{
 				println("We got TOKEN_WORD")
 				lval.s = yylex.Text()

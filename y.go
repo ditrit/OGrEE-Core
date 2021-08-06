@@ -6,6 +6,7 @@ import __yyfmt__ "fmt"
 
 import (
 	cmd "cli/controllers"
+	"strconv"
 	"strings"
 )
 
@@ -42,139 +43,178 @@ type yyXError struct {
 }
 
 const (
-	yyDefault        = 57383
+	yyDefault        = 57395
 	yyEofCode        = 57344
 	TOKEN_ATTR       = 57356
-	TOKEN_BASHTYPE   = 57362
+	TOKEN_ATTRSPEC   = 57389
+	TOKEN_BASHTYPE   = 57364
 	TOKEN_BLDG       = 57350
-	TOKEN_CD         = 57368
-	TOKEN_CLR        = 57370
-	TOKEN_CMDFLAG    = 57364
-	TOKEN_CREATE     = 57357
-	TOKEN_DELETE     = 57360
+	TOKEN_CD         = 57370
+	TOKEN_CLR        = 57372
+	TOKEN_CMDFLAG    = 57366
+	TOKEN_CREATE     = 57359
+	TOKEN_DELETE     = 57362
 	TOKEN_DEVICE     = 57353
-	TOKEN_DOC        = 57367
-	TOKEN_EQUAL      = 57363
-	TOKEN_EXIT       = 57366
-	TOKEN_GET        = 57358
-	TOKEN_GREP       = 57371
-	TOKEN_LS         = 57372
-	TOKEN_LSBLDG     = 57377
-	TOKEN_LSDEV      = 57380
-	TOKEN_LSOG       = 57374
-	TOKEN_LSRACK     = 57379
-	TOKEN_LSROOM     = 57378
-	TOKEN_LSSITE     = 57376
-	TOKEN_LSSUBDEV   = 57381
-	TOKEN_LSSUBDEV1  = 57382
-	TOKEN_LSTEN      = 57375
+	TOKEN_DOC        = 57369
+	TOKEN_EQUAL      = 57365
+	TOKEN_EXIT       = 57368
+	TOKEN_GET        = 57360
+	TOKEN_GREP       = 57373
+	TOKEN_LS         = 57374
+	TOKEN_LSBLDG     = 57379
+	TOKEN_LSDEV      = 57382
+	TOKEN_LSOG       = 57376
+	TOKEN_LSRACK     = 57381
+	TOKEN_LSROOM     = 57380
+	TOKEN_LSSITE     = 57378
+	TOKEN_LSSUBDEV   = 57383
+	TOKEN_LSSUBDEV1  = 57384
+	TOKEN_LSTEN      = 57377
 	TOKEN_NUM        = 57346
-	TOKEN_PWD        = 57369
+	TOKEN_OCBLDG     = 57385
+	TOKEN_OCDEL      = 57358
+	TOKEN_OCDEV      = 57386
+	TOKEN_OCPSPEC    = 57394
+	TOKEN_OCRACK     = 57387
+	TOKEN_OCROOM     = 57388
+	TOKEN_OCSDEV     = 57392
+	TOKEN_OCSDEV1    = 57393
+	TOKEN_OCSITE     = 57390
+	TOKEN_OCTENANT   = 57391
+	TOKEN_PLUS       = 57357
+	TOKEN_PWD        = 57371
 	TOKEN_RACK       = 57352
 	TOKEN_ROOM       = 57351
-	TOKEN_SEARCH     = 57361
+	TOKEN_SEARCH     = 57363
 	TOKEN_SITE       = 57349
-	TOKEN_SLASH      = 57365
+	TOKEN_SLASH      = 57367
 	TOKEN_SUBDEVICE  = 57354
 	TOKEN_SUBDEVICE1 = 57355
 	TOKEN_TENANT     = 57348
-	TOKEN_TREE       = 57373
-	TOKEN_UPDATE     = 57359
+	TOKEN_TREE       = 57375
+	TOKEN_UPDATE     = 57361
 	TOKEN_WORD       = 57347
 	yyErrCode        = 57345
 
 	yyMaxDepth = 200
-	yyTabOfs   = -59
+	yyTabOfs   = -82
 )
 
 var (
 	yyPrec = map[int]int{}
 
 	yyXLAT = map[int]int{
-		57344: 0,  // $end (65x)
-		57347: 1,  // TOKEN_WORD (27x)
-		57365: 2,  // TOKEN_SLASH (25x)
-		57356: 3,  // TOKEN_ATTR (20x)
-		57392: 4,  // P1 (17x)
-		57391: 5,  // P (15x)
-		57346: 6,  // TOKEN_NUM (8x)
-		57386: 7,  // F (6x)
-		57385: 8,  // E (2x)
-		57350: 9,  // TOKEN_BLDG (2x)
-		57368: 10, // TOKEN_CD (2x)
-		57357: 11, // TOKEN_CREATE (2x)
-		57360: 12, // TOKEN_DELETE (2x)
-		57353: 13, // TOKEN_DEVICE (2x)
-		57358: 14, // TOKEN_GET (2x)
-		57372: 15, // TOKEN_LS (2x)
-		57374: 16, // TOKEN_LSOG (2x)
-		57352: 17, // TOKEN_RACK (2x)
-		57351: 18, // TOKEN_ROOM (2x)
-		57349: 19, // TOKEN_SITE (2x)
-		57354: 20, // TOKEN_SUBDEVICE (2x)
-		57355: 21, // TOKEN_SUBDEVICE1 (2x)
-		57348: 22, // TOKEN_TENANT (2x)
-		57373: 23, // TOKEN_TREE (2x)
-		57359: 24, // TOKEN_UPDATE (2x)
-		57384: 25, // BASH (1x)
-		57387: 26, // NT_CREATE (1x)
-		57388: 27, // NT_DEL (1x)
-		57389: 28, // NT_GET (1x)
-		57390: 29, // NT_UPDATE (1x)
-		57393: 30, // Q (1x)
-		57394: 31, // start (1x)
-		57370: 32, // TOKEN_CLR (1x)
-		57364: 33, // TOKEN_CMDFLAG (1x)
-		57367: 34, // TOKEN_DOC (1x)
-		57363: 35, // TOKEN_EQUAL (1x)
-		57366: 36, // TOKEN_EXIT (1x)
-		57371: 37, // TOKEN_GREP (1x)
-		57377: 38, // TOKEN_LSBLDG (1x)
-		57380: 39, // TOKEN_LSDEV (1x)
-		57379: 40, // TOKEN_LSRACK (1x)
-		57378: 41, // TOKEN_LSROOM (1x)
-		57376: 42, // TOKEN_LSSITE (1x)
-		57381: 43, // TOKEN_LSSUBDEV (1x)
-		57382: 44, // TOKEN_LSSUBDEV1 (1x)
-		57375: 45, // TOKEN_LSTEN (1x)
-		57369: 46, // TOKEN_PWD (1x)
-		57383: 47, // $default (0x)
-		57345: 48, // error (0x)
-		57362: 49, // TOKEN_BASHTYPE (0x)
-		57361: 50, // TOKEN_SEARCH (0x)
+		57344: 0,  // $end (86x)
+		57347: 1,  // TOKEN_WORD (65x)
+		57389: 2,  // TOKEN_ATTRSPEC (38x)
+		57367: 3,  // TOKEN_SLASH (38x)
+		57409: 4,  // P1 (30x)
+		57408: 5,  // P (28x)
+		57356: 6,  // TOKEN_ATTR (23x)
+		57394: 7,  // TOKEN_OCPSPEC (12x)
+		57346: 8,  // TOKEN_NUM (9x)
+		57398: 9,  // F (6x)
+		57350: 10, // TOKEN_BLDG (3x)
+		57353: 11, // TOKEN_DEVICE (3x)
+		57358: 12, // TOKEN_OCDEL (3x)
+		57357: 13, // TOKEN_PLUS (3x)
+		57352: 14, // TOKEN_RACK (3x)
+		57351: 15, // TOKEN_ROOM (3x)
+		57349: 16, // TOKEN_SITE (3x)
+		57348: 17, // TOKEN_TENANT (3x)
+		57397: 18, // E (2x)
+		57407: 19, // ORIENTN (2x)
+		57370: 20, // TOKEN_CD (2x)
+		57359: 21, // TOKEN_CREATE (2x)
+		57362: 22, // TOKEN_DELETE (2x)
+		57360: 23, // TOKEN_GET (2x)
+		57374: 24, // TOKEN_LS (2x)
+		57376: 25, // TOKEN_LSOG (2x)
+		57354: 26, // TOKEN_SUBDEVICE (2x)
+		57355: 27, // TOKEN_SUBDEVICE1 (2x)
+		57375: 28, // TOKEN_TREE (2x)
+		57361: 29, // TOKEN_UPDATE (2x)
+		57396: 30, // BASH (1x)
+		57399: 31, // K (1x)
+		57400: 32, // NT_CREATE (1x)
+		57401: 33, // NT_DEL (1x)
+		57402: 34, // NT_GET (1x)
+		57403: 35, // NT_UPDATE (1x)
+		57404: 36, // OCCR (1x)
+		57405: 37, // OCDEL (1x)
+		57406: 38, // OCLISYNTX (1x)
+		57410: 39, // Q (1x)
+		57412: 40, // start (1x)
+		57372: 41, // TOKEN_CLR (1x)
+		57366: 42, // TOKEN_CMDFLAG (1x)
+		57369: 43, // TOKEN_DOC (1x)
+		57365: 44, // TOKEN_EQUAL (1x)
+		57368: 45, // TOKEN_EXIT (1x)
+		57373: 46, // TOKEN_GREP (1x)
+		57379: 47, // TOKEN_LSBLDG (1x)
+		57382: 48, // TOKEN_LSDEV (1x)
+		57381: 49, // TOKEN_LSRACK (1x)
+		57380: 50, // TOKEN_LSROOM (1x)
+		57378: 51, // TOKEN_LSSITE (1x)
+		57383: 52, // TOKEN_LSSUBDEV (1x)
+		57384: 53, // TOKEN_LSSUBDEV1 (1x)
+		57377: 54, // TOKEN_LSTEN (1x)
+		57385: 55, // TOKEN_OCBLDG (1x)
+		57386: 56, // TOKEN_OCDEV (1x)
+		57387: 57, // TOKEN_OCRACK (1x)
+		57388: 58, // TOKEN_OCROOM (1x)
+		57390: 59, // TOKEN_OCSITE (1x)
+		57391: 60, // TOKEN_OCTENANT (1x)
+		57371: 61, // TOKEN_PWD (1x)
+		57411: 62, // WORDORNUM (1x)
+		57395: 63, // $default (0x)
+		57345: 64, // error (0x)
+		57364: 65, // TOKEN_BASHTYPE (0x)
+		57392: 66, // TOKEN_OCSDEV (0x)
+		57393: 67, // TOKEN_OCSDEV1 (0x)
+		57363: 68, // TOKEN_SEARCH (0x)
 	}
 
 	yySymNames = []string{
 		"$end",
 		"TOKEN_WORD",
+		"TOKEN_ATTRSPEC",
 		"TOKEN_SLASH",
-		"TOKEN_ATTR",
 		"P1",
 		"P",
+		"TOKEN_ATTR",
+		"TOKEN_OCPSPEC",
 		"TOKEN_NUM",
 		"F",
-		"E",
 		"TOKEN_BLDG",
-		"TOKEN_CD",
-		"TOKEN_CREATE",
-		"TOKEN_DELETE",
 		"TOKEN_DEVICE",
-		"TOKEN_GET",
-		"TOKEN_LS",
-		"TOKEN_LSOG",
+		"TOKEN_OCDEL",
+		"TOKEN_PLUS",
 		"TOKEN_RACK",
 		"TOKEN_ROOM",
 		"TOKEN_SITE",
+		"TOKEN_TENANT",
+		"E",
+		"ORIENTN",
+		"TOKEN_CD",
+		"TOKEN_CREATE",
+		"TOKEN_DELETE",
+		"TOKEN_GET",
+		"TOKEN_LS",
+		"TOKEN_LSOG",
 		"TOKEN_SUBDEVICE",
 		"TOKEN_SUBDEVICE1",
-		"TOKEN_TENANT",
 		"TOKEN_TREE",
 		"TOKEN_UPDATE",
 		"BASH",
+		"K",
 		"NT_CREATE",
 		"NT_DEL",
 		"NT_GET",
 		"NT_UPDATE",
+		"OCCR",
+		"OCDEL",
+		"OCLISYNTX",
 		"Q",
 		"start",
 		"TOKEN_CLR",
@@ -191,10 +231,19 @@ var (
 		"TOKEN_LSSUBDEV",
 		"TOKEN_LSSUBDEV1",
 		"TOKEN_LSTEN",
+		"TOKEN_OCBLDG",
+		"TOKEN_OCDEV",
+		"TOKEN_OCRACK",
+		"TOKEN_OCROOM",
+		"TOKEN_OCSITE",
+		"TOKEN_OCTENANT",
 		"TOKEN_PWD",
+		"WORDORNUM",
 		"$default",
 		"error",
 		"TOKEN_BASHTYPE",
+		"TOKEN_OCSDEV",
+		"TOKEN_OCSDEV1",
 		"TOKEN_SEARCH",
 	}
 
@@ -202,168 +251,300 @@ var (
 
 	yyReductions = map[int]struct{ xsym, components int }{
 		0:  {0, 1},
-		1:  {31, 1},
-		2:  {31, 1},
-		3:  {31, 1},
+		1:  {40, 1},
+		2:  {40, 1},
+		3:  {40, 1},
 		4:  {31, 1},
 		5:  {31, 1},
-		6:  {26, 3},
-		7:  {26, 4},
-		8:  {28, 1},
-		9:  {28, 2},
-		10: {28, 3},
-		11: {29, 2},
-		12: {29, 3},
-		13: {27, 2},
-		14: {8, 1},
-		15: {8, 1},
-		16: {8, 1},
-		17: {8, 1},
-		18: {8, 1},
-		19: {8, 1},
-		20: {8, 1},
-		21: {8, 1},
-		22: {7, 4},
-		23: {7, 3},
-		24: {5, 1},
-		25: {5, 2},
-		26: {4, 3},
-		27: {4, 1},
-		28: {4, 0},
-		29: {30, 3},
-		30: {30, 2},
-		31: {30, 2},
-		32: {30, 2},
-		33: {30, 2},
-		34: {30, 2},
-		35: {30, 2},
-		36: {30, 2},
-		37: {30, 2},
-		38: {30, 2},
-		39: {30, 2},
-		40: {30, 2},
-		41: {30, 2},
-		42: {30, 3},
-		43: {30, 1},
-		44: {25, 1},
-		45: {25, 1},
-		46: {25, 1},
-		47: {25, 1},
-		48: {25, 1},
-		49: {25, 1},
-		50: {25, 2},
-		51: {25, 2},
-		52: {25, 2},
-		53: {25, 2},
-		54: {25, 2},
-		55: {25, 2},
-		56: {25, 2},
-		57: {25, 2},
-		58: {25, 2},
+		6:  {31, 1},
+		7:  {31, 1},
+		8:  {32, 3},
+		9:  {32, 4},
+		10: {34, 1},
+		11: {34, 2},
+		12: {34, 3},
+		13: {35, 2},
+		14: {35, 3},
+		15: {33, 2},
+		16: {18, 1},
+		17: {18, 1},
+		18: {18, 1},
+		19: {18, 1},
+		20: {18, 1},
+		21: {18, 1},
+		22: {18, 1},
+		23: {18, 1},
+		24: {19, 1},
+		25: {19, 1},
+		26: {19, 0},
+		27: {62, 1},
+		28: {62, 1},
+		29: {62, 4},
+		30: {9, 4},
+		31: {9, 3},
+		32: {5, 1},
+		33: {5, 2},
+		34: {4, 3},
+		35: {4, 1},
+		36: {4, 0},
+		37: {39, 3},
+		38: {39, 2},
+		39: {39, 2},
+		40: {39, 2},
+		41: {39, 2},
+		42: {39, 2},
+		43: {39, 2},
+		44: {39, 2},
+		45: {39, 2},
+		46: {39, 2},
+		47: {39, 2},
+		48: {39, 2},
+		49: {39, 2},
+		50: {39, 3},
+		51: {39, 1},
+		52: {30, 1},
+		53: {30, 1},
+		54: {30, 1},
+		55: {30, 1},
+		56: {30, 1},
+		57: {30, 1},
+		58: {30, 2},
+		59: {30, 2},
+		60: {30, 2},
+		61: {30, 2},
+		62: {30, 2},
+		63: {30, 2},
+		64: {30, 2},
+		65: {30, 2},
+		66: {30, 2},
+		67: {38, 2},
+		68: {38, 1},
+		69: {36, 5},
+		70: {36, 5},
+		71: {36, 5},
+		72: {36, 5},
+		73: {36, 7},
+		74: {36, 7},
+		75: {36, 7},
+		76: {36, 7},
+		77: {36, 7},
+		78: {36, 7},
+		79: {36, 7},
+		80: {36, 7},
+		81: {37, 2},
 	}
 
 	yyXErrors = map[yyXError]string{}
 
-	yyParseTab = [82][]uint16{
+	yyParseTab = [173][]uint16{
 		// 0
-		{10: 70, 66, 69, 14: 67, 71, 84, 23: 80, 68, 81, 61, 64, 62, 63, 65, 60, 82, 34: 87, 36: 86, 83, 74, 77, 76, 75, 73, 78, 79, 72, 85},
-		{59},
-		{58},
-		{57},
-		{56},
+		{12: 115, 113, 20: 95, 91, 94, 92, 96, 109, 28: 105, 93, 106, 84, 87, 90, 88, 89, 37: 114, 86, 85, 83, 107, 43: 112, 45: 111, 108, 99, 102, 101, 100, 98, 103, 104, 97, 61: 110},
+		{82},
+		{81},
+		{80},
+		{79},
 		// 5
-		{55},
-		{54},
-		{8: 137, 130, 13: 133, 17: 132, 131, 129, 134, 135, 128},
-		{51, 99, 98, 4: 97, 126, 8: 127, 130, 13: 133, 17: 132, 131, 129, 134, 135, 128},
-		{1: 99, 98, 121, 97, 120, 7: 119},
+		{78},
+		{77},
+		{76},
+		{75},
+		{10: 244, 247, 14: 246, 245, 243, 242, 251, 26: 248, 249},
 		// 10
-		{31, 99, 98, 4: 97, 118},
-		{31, 115, 98, 4: 97, 116},
-		{31, 99, 98, 4: 97, 114},
-		{31, 99, 98, 4: 97, 113},
-		{31, 99, 98, 4: 97, 112},
+		{72, 118, 3: 117, 116, 240, 10: 244, 247, 14: 246, 245, 243, 242, 241, 26: 248, 249},
+		{1: 118, 3: 117, 116, 226, 227, 9: 225},
+		{46, 118, 3: 117, 116, 224},
+		{46, 221, 3: 117, 116, 222},
+		{46, 118, 3: 117, 116, 220},
 		// 15
-		{31, 99, 98, 4: 97, 111},
-		{31, 99, 98, 4: 97, 110},
-		{31, 99, 98, 4: 97, 109},
-		{31, 99, 98, 4: 97, 108},
-		{31, 99, 98, 4: 97, 107},
+		{46, 118, 3: 117, 116, 219},
+		{46, 118, 3: 117, 116, 218},
+		{46, 118, 3: 117, 116, 217},
+		{46, 118, 3: 117, 116, 216},
+		{46, 118, 3: 117, 116, 215},
 		// 20
-		{31, 99, 98, 4: 97, 106},
-		{31, 99, 98, 4: 97, 101, 100},
-		{16},
-		{15},
-		{14},
+		{46, 118, 3: 117, 116, 214},
+		{46, 118, 3: 117, 116, 213},
+		{46, 118, 3: 117, 116, 212},
+		{46, 118, 3: 117, 116, 210, 8: 209},
+		{31},
 		// 25
-		{13},
-		{12},
-		{11},
-		{10, 94, 10: 89, 90, 93, 14: 91, 88, 96, 23: 95, 92},
-		{9},
-		// 30
-		{8},
-		{7},
-		{6},
-		{5},
-		{4},
-		// 35
-		{3},
-		{2},
-		{1},
-		{35, 3: 35, 6: 35},
-		{31, 99, 3: 31, 105, 6: 31},
-		// 40
-		{32, 2: 103, 32, 6: 32},
-		{19},
-		{18, 6: 102},
-		{17},
-		{31, 99, 3: 31, 104, 6: 31},
-		// 45
-		{33, 3: 33, 6: 33},
-		{34, 3: 34, 6: 34},
-		{20},
-		{21},
-		{22},
-		// 50
-		{23},
-		{24},
-		{25},
-		{26},
-		{27},
-		// 55
-		{28},
-		{32, 2: 103, 33: 117},
-		{29},
 		{30},
-		{46},
+		{29},
+		{28},
+		{27},
+		{26},
+		// 30
+		{25, 206, 20: 201, 202, 205, 203, 200, 208, 28: 207, 204},
+		{10: 129, 135, 14: 133, 131, 127, 125, 36: 123, 55: 128, 134, 132, 130, 126, 124},
+		{14},
+		{46, 118, 3: 117, 116, 119},
+		{50, 2: 50, 6: 50, 8: 50},
+		// 35
+		{46, 118, 46, 4: 122, 6: 46, 8: 46},
+		{47, 2: 47, 120, 6: 47, 8: 47},
+		{1},
+		{46, 118, 46, 4: 121, 6: 46, 8: 46},
+		{48, 2: 48, 6: 48, 8: 48},
+		// 40
+		{49, 2: 49, 6: 49, 8: 49},
+		{15},
+		{7: 196},
+		{7: 192},
+		{7: 188},
+		// 45
+		{7: 184},
+		{7: 178},
+		{7: 172},
+		{7: 166},
+		{7: 160},
+		// 50
+		{7: 154},
+		{7: 148},
+		{7: 142},
+		{7: 136},
+		{1: 118, 46, 117, 116, 137},
+		// 55
+		{2: 138},
+		{1: 139},
+		{2: 140},
+		{1: 141},
+		{2},
 		// 60
-		{48},
-		{3: 121, 7: 125},
-		{35: 122},
-		{1: 123},
-		{36, 3: 121, 7: 124},
+		{1: 118, 46, 117, 116, 143},
+		{2: 144},
+		{1: 145},
+		{2: 146},
+		{1: 147},
 		// 65
-		{37},
-		{47},
-		{50},
-		{3: 121, 7: 136},
-		{1: 45, 45, 45},
+		{3},
+		{1: 118, 46, 117, 116, 149},
+		{2: 150},
+		{1: 151},
+		{2: 152},
 		// 70
-		{1: 44, 44, 44},
-		{1: 43, 43, 43},
-		{1: 42, 42, 42},
-		{1: 41, 41, 41},
-		{1: 40, 40, 40},
+		{1: 153},
+		{4},
+		{1: 118, 46, 117, 116, 155},
+		{2: 156},
+		{1: 157},
 		// 75
-		{1: 39, 39, 39},
-		{1: 38, 38, 38},
-		{49},
-		{1: 99, 98, 121, 97, 139, 7: 138},
-		{53},
+		{2: 158},
+		{1: 159},
+		{5},
+		{1: 118, 46, 117, 116, 161},
+		{2: 162},
 		// 80
-		{3: 121, 7: 140},
+		{1: 163},
+		{2: 164},
+		{1: 165},
+		{6},
+		{1: 118, 46, 117, 116, 167},
+		// 85
+		{2: 168},
+		{1: 169},
+		{2: 170},
+		{1: 171},
+		{7},
+		// 90
+		{1: 118, 46, 117, 116, 173},
+		{2: 174},
+		{1: 175},
+		{2: 176},
+		{1: 177},
+		// 95
+		{8},
+		{1: 118, 46, 117, 116, 179},
+		{2: 180},
+		{1: 181},
+		{2: 182},
+		// 100
+		{1: 183},
+		{9},
+		{1: 118, 46, 117, 116, 185},
+		{2: 186},
+		{1: 187},
+		// 105
+		{10},
+		{1: 118, 46, 117, 116, 189},
+		{2: 190},
+		{1: 191},
+		{11},
+		// 110
+		{1: 118, 46, 117, 116, 193},
+		{2: 194},
+		{1: 195},
+		{12},
+		{1: 118, 46, 117, 116, 197},
+		// 115
+		{2: 198},
+		{1: 199},
+		{13},
+		{24},
+		{23},
+		// 120
+		{22},
+		{21},
+		{20},
+		{19},
+		{18},
+		// 125
+		{17},
+		{16},
+		{34},
+		{33, 8: 211},
+		{32},
+		// 130
+		{35},
+		{36},
+		{37},
+		{38},
+		{39},
+		// 135
+		{40},
+		{41},
+		{42},
+		{43},
+		{47, 3: 120, 42: 223},
+		// 140
+		{44},
+		{45},
+		{67},
+		{69},
+		{6: 227, 9: 239},
+		// 145
+		{44: 228},
+		{1: 231, 8: 232, 12: 230, 229, 19: 233, 62: 234},
+		{1: 58},
+		{1: 57},
+		{55, 6: 55},
+		// 150
+		{54, 6: 54},
+		{1: 236},
+		{51, 6: 227, 9: 235},
 		{52},
+		{1: 56, 12: 230, 229, 19: 237},
+		// 155
+		{1: 238},
+		{53, 6: 53},
+		{68},
+		{71},
+		{6: 227, 9: 250},
+		// 160
+		{1: 66, 3: 66, 6: 66},
+		{1: 65, 3: 65, 6: 65},
+		{1: 64, 3: 64, 6: 64},
+		{1: 63, 3: 63, 6: 63},
+		{1: 62, 3: 62, 6: 62},
+		// 165
+		{1: 61, 3: 61, 6: 61},
+		{1: 60, 3: 60, 6: 60},
+		{1: 59, 3: 59, 6: 59},
+		{70},
+		{1: 118, 3: 117, 116, 253, 227, 9: 252},
+		// 170
+		{74},
+		{6: 227, 9: 254},
+		{73},
 	}
 )
 
@@ -404,7 +585,7 @@ func yylex1(yylex yyLexer, lval *yySymType) (n int) {
 }
 
 func yyParse(yylex yyLexer) int {
-	const yyError = 48
+	const yyError = 64
 
 	yyEx, _ := yylex.(yyLexerEx)
 	var yyn int
@@ -593,64 +774,59 @@ cmd.WarningLogger.Println("Unknown Command")			/*yylex.Error(msg)*/
 	}
 
 	switch r {
-	case 1:
+	case 4:
 		{
 			println("@State start")
 		}
-	case 6:
+	case 8:
 		{
 			cmd.PostObj(yyS[yypt-1].s, "", resMap(&yyS[yypt-0].s)) /*println("@State NT_CR");*/
 		}
-	case 7:
+	case 9:
 		{
 			yyVAL.s = yyS[yypt-0].s /*println("Finally: "+$$);*/
 			cmd.Disp(resMap(&yyS[yypt-0].s))
 			cmd.PostObj(yyS[yypt-2].s, yyS[yypt-1].s, resMap(&yyS[yypt-0].s))
 		}
-	case 8:
+	case 10:
 		{
 			println("@State NT_GET")
 			cmd.GetObject("")
 		}
-	case 9:
+	case 11:
 		{
 			cmd.GetObject(yyS[yypt-0].s)
 		}
-	case 10:
+	case 12:
 		{ /*cmd.Disp(resMap(&$4)); */
 			cmd.SearchObjects(yyS[yypt-1].s, resMap(&yyS[yypt-0].s))
 		}
-	case 11:
+	case 13:
 		{
 			println("@State NT_UPD")
 			cmd.UpdateObj("", resMap(&yyS[yypt-0].s))
 		}
-	case 12:
+	case 14:
 		{
 			yyVAL.s = yyS[yypt-0].s /*cmd.Disp(resMap(&$4));*/
 			cmd.UpdateObj(yyS[yypt-1].s, resMap(&yyS[yypt-0].s))
 		}
-	case 13:
+	case 15:
 		{
 			println("@State NT_DEL")
 			cmd.DeleteObj(yyS[yypt-0].s)
 		}
-	case 22:
+	case 24:
 		{
-			yyVAL.s = string(yyS[yypt-3].s + "=" + yyS[yypt-1].s + "=" + yyS[yypt-0].s)
-			println("So we got: ", yyVAL.s)
-		}
-	case 23:
-		{
-			yyVAL.s = yyS[yypt-2].s + "=" + yyS[yypt-0].s
+			yyVAL.s = yyS[yypt-0].s
 		}
 	case 25:
 		{
-			yyVAL.s = "/" + yyS[yypt-0].s
+			yyVAL.s = yyS[yypt-0].s
 		}
 	case 26:
 		{
-			yyVAL.s = yyS[yypt-2].s + "/" + yyS[yypt-0].s
+			yyVAL.s = ""
 		}
 	case 27:
 		{
@@ -658,115 +834,197 @@ cmd.WarningLogger.Println("Unknown Command")			/*yylex.Error(msg)*/
 		}
 	case 28:
 		{
-			yyVAL.s = ""
+			x := strconv.Itoa(yyS[yypt-0].n)
+			yyVAL.s = x
+		}
+	case 29:
+		{
+			yyVAL.s = yyS[yypt-3].s + yyS[yypt-2].s + yyS[yypt-1].s + yyS[yypt-0].s
 		}
 	case 30:
 		{
-			cmd.CD(yyS[yypt-0].s)
+			yyVAL.s = string(yyS[yypt-3].s + "=" + yyS[yypt-1].s + "=" + yyS[yypt-0].s)
+			println("So we got: ", yyVAL.s)
 		}
 	case 31:
 		{
-			cmd.LS(yyS[yypt-0].s)
-		}
-	case 32:
-		{
-			cmd.LSOBJECT(yyS[yypt-0].s, 0)
+			yyVAL.s = yyS[yypt-2].s + "=" + yyS[yypt-0].s
 		}
 	case 33:
 		{
-			cmd.LSOBJECT(yyS[yypt-0].s, 1)
+			yyVAL.s = "/" + yyS[yypt-0].s
 		}
 	case 34:
 		{
-			cmd.LSOBJECT(yyS[yypt-0].s, 2)
+			yyVAL.s = yyS[yypt-2].s + "/" + yyS[yypt-0].s
 		}
 	case 35:
 		{
-			cmd.LSOBJECT(yyS[yypt-0].s, 3)
+			yyVAL.s = yyS[yypt-0].s
 		}
 	case 36:
 		{
-			cmd.LSOBJECT(yyS[yypt-0].s, 4)
-		}
-	case 37:
-		{
-			cmd.LSOBJECT(yyS[yypt-0].s, 5)
+			yyVAL.s = ""
 		}
 	case 38:
 		{
-			cmd.LSOBJECT(yyS[yypt-0].s, 6)
+			cmd.CD(yyS[yypt-0].s)
 		}
 	case 39:
 		{
-			cmd.LSOBJECT(yyS[yypt-0].s, 7)
+			cmd.LS(yyS[yypt-0].s)
 		}
 	case 40:
 		{
-			cmd.Tree("", yyS[yypt-0].n)
+			cmd.LSOBJECT(yyS[yypt-0].s, 0)
 		}
 	case 41:
 		{
-			cmd.Tree(yyS[yypt-0].s, 0)
+			cmd.LSOBJECT(yyS[yypt-0].s, 1)
 		}
 	case 42:
 		{
-			cmd.Tree(yyS[yypt-1].s, yyS[yypt-0].n)
+			cmd.LSOBJECT(yyS[yypt-0].s, 2)
 		}
 	case 43:
 		{
-			cmd.Execute()
+			cmd.LSOBJECT(yyS[yypt-0].s, 3)
+		}
+	case 44:
+		{
+			cmd.LSOBJECT(yyS[yypt-0].s, 4)
+		}
+	case 45:
+		{
+			cmd.LSOBJECT(yyS[yypt-0].s, 5)
 		}
 	case 46:
 		{
-			cmd.LSOG()
+			cmd.LSOBJECT(yyS[yypt-0].s, 6)
 		}
 	case 47:
 		{
-			cmd.PWD()
+			cmd.LSOBJECT(yyS[yypt-0].s, 7)
 		}
 	case 48:
 		{
-			cmd.Exit()
+			cmd.Tree("", yyS[yypt-0].n)
 		}
 	case 49:
 		{
-			cmd.Help("")
+			cmd.Tree(yyS[yypt-0].s, 0)
 		}
 	case 50:
 		{
-			cmd.Help("ls")
+			cmd.Tree(yyS[yypt-1].s, yyS[yypt-0].n)
 		}
 	case 51:
 		{
-			cmd.Help("cd")
-		}
-	case 52:
-		{
-			cmd.Help("create")
-		}
-	case 53:
-		{
-			cmd.Help("gt")
+			cmd.Execute()
 		}
 	case 54:
 		{
-			cmd.Help("update")
+			cmd.LSOG()
 		}
 	case 55:
 		{
-			cmd.Help("delete")
+			cmd.PWD()
 		}
 	case 56:
 		{
-			cmd.Help(yyS[yypt-0].s)
+			cmd.Exit()
 		}
 	case 57:
 		{
-			cmd.Help("tree")
+			cmd.Help("")
 		}
 	case 58:
 		{
+			cmd.Help("ls")
+		}
+	case 59:
+		{
+			cmd.Help("cd")
+		}
+	case 60:
+		{
+			cmd.Help("create")
+		}
+	case 61:
+		{
+			cmd.Help("gt")
+		}
+	case 62:
+		{
+			cmd.Help("update")
+		}
+	case 63:
+		{
+			cmd.Help("delete")
+		}
+	case 64:
+		{
+			cmd.Help(yyS[yypt-0].s)
+		}
+	case 65:
+		{
+			cmd.Help("tree")
+		}
+	case 66:
+		{
 			cmd.Help("lsog")
+		}
+	case 69:
+		{
+			println("You need to give more attrs")
+		}
+	case 70:
+		{
+			println("You need to give more attrs")
+		}
+	case 71:
+		{
+			println("You need to give more attrs")
+		}
+	case 72:
+		{
+			println("You need to give more attrs")
+		}
+	case 73:
+		{
+			println("You need to give more attrs")
+		}
+	case 74:
+		{
+			println("You need to give more attrs")
+		}
+	case 75:
+		{
+			println("You need to give more attrs")
+		}
+	case 76:
+		{
+			println("You need to give more attrs")
+		}
+	case 77:
+		{
+			println("You need to give more attrs")
+		}
+	case 78:
+		{
+			println("You need to give more attrs")
+		}
+	case 79:
+		{
+			println("You need to give more attrs")
+		}
+	case 80:
+		{
+			println("You need to give more attrs")
+		}
+	case 81:
+		{
+			println()
 		}
 
 	}

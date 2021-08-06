@@ -3,6 +3,7 @@ package main
 import (
 cmd "cli/controllers"
 "strings"
+"strconv"
 )
 
 func resMap(x *string) map[string]interface{} {
@@ -38,7 +39,7 @@ func resMap(x *string) map[string]interface{} {
 %token <s> TOKEN_WORD
 %token <s> TOKEN_TENANT TOKEN_SITE TOKEN_BLDG TOKEN_ROOM
 %token <s> TOKEN_RACK TOKEN_DEVICE TOKEN_SUBDEVICE TOKEN_SUBDEVICE1
-%token <s> TOKEN_ATTR
+%token <s> TOKEN_ATTR TOKEN_PLUS TOKEN_OCDEL
 %token
        TOKEN_CREATE TOKEN_GET TOKEN_UPDATE
        TOKEN_ATTR TOKEN_DELETE TOKEN_SEARCH
@@ -50,18 +51,25 @@ func resMap(x *string) map[string]interface{} {
        TOKEN_LSOG TOKEN_LSTEN TOKEN_LSSITE TOKEN_LSBLDG
        TOKEN_LSROOM TOKEN_LSRACK TOKEN_LSDEV
        TOKEN_LSSUBDEV TOKEN_LSSUBDEV1
-%type <s> F E P P1
+       TOKEN_OCBLDG TOKEN_OCDEV
+       TOKEN_OCRACK TOKEN_OCROOM TOKEN_ATTRSPEC
+       TOKEN_OCSITE TOKEN_OCTENANT
+       TOKEN_OCSDEV TOKEN_OCSDEV1 TOKEN_OCPSPEC
+%type <s> F E P P1 ORIENTN WORDORNUM
 %type <s> NT_CREATE NT_DEL NT_GET NT_UPDATE
 
 
 %%
-start: NT_CREATE     {println("@State start");}
+start: K
+       | Q
+       | OCLISYNTX
+;
+
+K: NT_CREATE     {println("@State start");}
        | NT_GET
        | NT_UPDATE
        | NT_DEL
-       | Q
 ;
-
 
 NT_CREATE: TOKEN_CREATE E F {cmd.PostObj($2, "", resMap(&$3))/*println("@State NT_CR");*/}
        | TOKEN_CREATE E P F {$$=$4; /*println("Finally: "+$$);*/ cmd.Disp(resMap(&$4)); cmd.PostObj($2,$3, resMap(&$4)) }
@@ -89,8 +97,17 @@ E:     TOKEN_TENANT
        | TOKEN_SUBDEVICE1 
 ;
 
-F:     TOKEN_ATTR TOKEN_EQUAL TOKEN_WORD F {$$=string($1+"="+$3+"="+$4); println("So we got: ", $$)}
-       | TOKEN_ATTR TOKEN_EQUAL TOKEN_WORD {$$=$1+"="+$3}
+ORIENTN: TOKEN_PLUS {$$=$1}
+         | TOKEN_OCDEL {$$=$1}
+         | {$$=""}
+         ;
+
+WORDORNUM: TOKEN_WORD {$$=$1}
+           |TOKEN_NUM {x := strconv.Itoa($1);$$=x}
+           |ORIENTN TOKEN_WORD ORIENTN TOKEN_WORD {$$=$1+$2+$3+$4}
+
+F:     TOKEN_ATTR TOKEN_EQUAL WORDORNUM F {$$=string($1+"="+$3+"="+$4); println("So we got: ", $$)}
+       | TOKEN_ATTR TOKEN_EQUAL WORDORNUM {$$=$1+"="+$3}
 ;
 
 
@@ -136,6 +153,26 @@ BASH:  TOKEN_CLR
        | TOKEN_DOC TOKEN_TREE {cmd.Help("tree")}
        | TOKEN_DOC TOKEN_LSOG {cmd.Help("lsog")}
 ;
+
+OCLISYNTX:  TOKEN_PLUS OCCR
+            |OCDEL
+            ;
+
+
+OCCR:   TOKEN_OCTENANT TOKEN_OCPSPEC P TOKEN_ATTRSPEC TOKEN_WORD {println("You need to give more attrs")}
+        |TOKEN_TENANT TOKEN_OCPSPEC P TOKEN_ATTRSPEC TOKEN_WORD {println("You need to give more attrs")}
+        |TOKEN_OCSITE TOKEN_OCPSPEC P TOKEN_ATTRSPEC TOKEN_WORD {println("You need to give more attrs")}
+        |TOKEN_SITE TOKEN_OCPSPEC P TOKEN_ATTRSPEC TOKEN_WORD {println("You need to give more attrs")}
+        |TOKEN_OCBLDG TOKEN_OCPSPEC P TOKEN_ATTRSPEC TOKEN_WORD TOKEN_ATTRSPEC TOKEN_WORD {println("You need to give more attrs")}
+        |TOKEN_BLDG TOKEN_OCPSPEC P TOKEN_ATTRSPEC TOKEN_WORD TOKEN_ATTRSPEC TOKEN_WORD {println("You need to give more attrs")}
+        |TOKEN_OCROOM TOKEN_OCPSPEC P TOKEN_ATTRSPEC TOKEN_WORD TOKEN_ATTRSPEC TOKEN_WORD {println("You need to give more attrs")}
+        |TOKEN_ROOM TOKEN_OCPSPEC P TOKEN_ATTRSPEC TOKEN_WORD TOKEN_ATTRSPEC TOKEN_WORD {println("You need to give more attrs")}
+        |TOKEN_OCRACK TOKEN_OCPSPEC P TOKEN_ATTRSPEC TOKEN_WORD TOKEN_ATTRSPEC TOKEN_WORD {println("You need to give more attrs")}
+        |TOKEN_RACK TOKEN_OCPSPEC P TOKEN_ATTRSPEC TOKEN_WORD TOKEN_ATTRSPEC TOKEN_WORD {println("You need to give more attrs")}
+        |TOKEN_OCDEV TOKEN_OCPSPEC P TOKEN_ATTRSPEC TOKEN_WORD TOKEN_ATTRSPEC TOKEN_WORD {println("You need to give more attrs")}
+        |TOKEN_DEVICE TOKEN_OCPSPEC P TOKEN_ATTRSPEC TOKEN_WORD TOKEN_ATTRSPEC TOKEN_WORD {println("You need to give more attrs")}
+        
+OCDEL:  TOKEN_OCDEL P {println()}
 
 
 %%
