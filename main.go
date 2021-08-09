@@ -12,6 +12,8 @@ import (
 	"cli/readline"
 )
 
+var rlPtr *readline.Instance
+
 func InterpretLine(str *string) {
 	lex := NewLexer(strings.NewReader(*str))
 	e := yyParse(lex)
@@ -154,6 +156,7 @@ func main() {
 	}
 
 	defer rl.Close()
+	rlPtr = rl
 	println("Caching data... please wait")
 	c.InitState()
 	for {

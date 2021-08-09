@@ -105,6 +105,7 @@ ORIENTN: TOKEN_PLUS {$$=$1}
 WORDORNUM: TOKEN_WORD {$$=$1}
            |TOKEN_NUM {x := strconv.Itoa($1);$$=x}
            |ORIENTN TOKEN_WORD ORIENTN TOKEN_WORD {$$=$1+$2+$3+$4}
+           ;
 
 F:     TOKEN_ATTR TOKEN_EQUAL WORDORNUM F {$$=string($1+"="+$3+"="+$4); println("So we got: ", $$)}
        | TOKEN_ATTR TOKEN_EQUAL WORDORNUM {$$=$1+"="+$3}
@@ -156,23 +157,28 @@ BASH:  TOKEN_CLR
 
 OCLISYNTX:  TOKEN_PLUS OCCR
             |OCDEL
+            |OCUPDATE
             ;
 
 
-OCCR:   TOKEN_OCTENANT TOKEN_OCPSPEC P TOKEN_ATTRSPEC TOKEN_WORD {println("You need to give more attrs")}
-        |TOKEN_TENANT TOKEN_OCPSPEC P TOKEN_ATTRSPEC TOKEN_WORD {println("You need to give more attrs")}
-        |TOKEN_OCSITE TOKEN_OCPSPEC P TOKEN_ATTRSPEC TOKEN_WORD {println("You need to give more attrs")}
-        |TOKEN_SITE TOKEN_OCPSPEC P TOKEN_ATTRSPEC TOKEN_WORD {println("You need to give more attrs")}
-        |TOKEN_OCBLDG TOKEN_OCPSPEC P TOKEN_ATTRSPEC TOKEN_WORD TOKEN_ATTRSPEC TOKEN_WORD {println("You need to give more attrs")}
-        |TOKEN_BLDG TOKEN_OCPSPEC P TOKEN_ATTRSPEC TOKEN_WORD TOKEN_ATTRSPEC TOKEN_WORD {println("You need to give more attrs")}
-        |TOKEN_OCROOM TOKEN_OCPSPEC P TOKEN_ATTRSPEC TOKEN_WORD TOKEN_ATTRSPEC TOKEN_WORD {println("You need to give more attrs")}
-        |TOKEN_ROOM TOKEN_OCPSPEC P TOKEN_ATTRSPEC TOKEN_WORD TOKEN_ATTRSPEC TOKEN_WORD {println("You need to give more attrs")}
-        |TOKEN_OCRACK TOKEN_OCPSPEC P TOKEN_ATTRSPEC TOKEN_WORD TOKEN_ATTRSPEC TOKEN_WORD {println("You need to give more attrs")}
-        |TOKEN_RACK TOKEN_OCPSPEC P TOKEN_ATTRSPEC TOKEN_WORD TOKEN_ATTRSPEC TOKEN_WORD {println("You need to give more attrs")}
-        |TOKEN_OCDEV TOKEN_OCPSPEC P TOKEN_ATTRSPEC TOKEN_WORD TOKEN_ATTRSPEC TOKEN_WORD {println("You need to give more attrs")}
-        |TOKEN_DEVICE TOKEN_OCPSPEC P TOKEN_ATTRSPEC TOKEN_WORD TOKEN_ATTRSPEC TOKEN_WORD {println("You need to give more attrs")}
-        
+OCCR:   TOKEN_OCTENANT TOKEN_OCPSPEC P TOKEN_ATTRSPEC TOKEN_WORD {cmd.GetOCLIAtrributes(cmd.StrToStack($3),cmd.TENANT,map[string]interface{}{"attributes":map[string]interface{}{"color":$5}} ,rlPtr)}
+        |TOKEN_TENANT TOKEN_OCPSPEC P TOKEN_ATTRSPEC TOKEN_WORD {cmd.GetOCLIAtrributes(cmd.StrToStack($3),cmd.TENANT,map[string]interface{}{"attributes":map[string]interface{}{"color":$5}} ,rlPtr)}
+        |TOKEN_OCSITE TOKEN_OCPSPEC P TOKEN_ATTRSPEC TOKEN_WORD {cmd.GetOCLIAtrributes(cmd.StrToStack($3),cmd.SITE,map[string]interface{}{"attributes":map[string]interface{}{"orientation":$5}} ,rlPtr)}
+        |TOKEN_SITE TOKEN_OCPSPEC P TOKEN_ATTRSPEC TOKEN_WORD {cmd.GetOCLIAtrributes(cmd.StrToStack($3),cmd.SITE,map[string]interface{}{"attributes":map[string]interface{}{"orientation":$5}} ,rlPtr)}
+        |TOKEN_OCBLDG TOKEN_OCPSPEC P TOKEN_ATTRSPEC TOKEN_WORD TOKEN_ATTRSPEC TOKEN_WORD {cmd.GetOCLIAtrributes(cmd.StrToStack($3),cmd.BLDG,map[string]interface{}{"attributes":map[string]interface{}{"posXY":$5, "size":$7}} ,rlPtr)}
+        |TOKEN_BLDG TOKEN_OCPSPEC P TOKEN_ATTRSPEC TOKEN_WORD TOKEN_ATTRSPEC TOKEN_WORD {cmd.GetOCLIAtrributes(cmd.StrToStack($3),cmd.BLDG,map[string]interface{}{"attributes":map[string]interface{}{"posXY":$5, "size":$7}} ,rlPtr)}
+        |TOKEN_OCROOM TOKEN_OCPSPEC P TOKEN_ATTRSPEC TOKEN_WORD TOKEN_ATTRSPEC TOKEN_WORD {cmd.GetOCLIAtrributes(cmd.StrToStack($3),cmd.ROOM,map[string]interface{}{"attributes":map[string]interface{}{"posXY":$5, "size":$7}} ,rlPtr)}
+        |TOKEN_ROOM TOKEN_OCPSPEC P TOKEN_ATTRSPEC TOKEN_WORD TOKEN_ATTRSPEC TOKEN_WORD {cmd.GetOCLIAtrributes(cmd.StrToStack($3),cmd.ROOM,map[string]interface{}{"attributes":map[string]interface{}{"posXY":$5, "size":$7}} ,rlPtr)}
+        |TOKEN_OCRACK TOKEN_OCPSPEC P TOKEN_ATTRSPEC TOKEN_WORD TOKEN_ATTRSPEC TOKEN_WORD {cmd.GetOCLIAtrributes(cmd.StrToStack($3),cmd.RACK,map[string]interface{}{"attributes":map[string]interface{}{"posXY":$5, "size":$7}} ,rlPtr)}
+        |TOKEN_RACK TOKEN_OCPSPEC P TOKEN_ATTRSPEC TOKEN_WORD TOKEN_ATTRSPEC TOKEN_WORD {cmd.GetOCLIAtrributes(cmd.StrToStack($3),cmd.RACK,map[string]interface{}{"attributes":map[string]interface{}{"posXY":$5, "size":$7}} ,rlPtr)}
+        |TOKEN_OCDEV TOKEN_OCPSPEC P TOKEN_ATTRSPEC TOKEN_WORD TOKEN_ATTRSPEC TOKEN_WORD {cmd.GetOCLIAtrributes(cmd.StrToStack($3),cmd.DEVICE,map[string]interface{}{"attributes":map[string]interface{}{"slot":$5, "sizeUnit":$7}} ,rlPtr)}
+        |TOKEN_DEVICE TOKEN_OCPSPEC P TOKEN_ATTRSPEC TOKEN_WORD TOKEN_ATTRSPEC TOKEN_WORD {cmd.GetOCLIAtrributes(cmd.StrToStack($3),cmd.DEVICE,map[string]interface{}{"attributes":map[string]interface{}{"slot":$5, "sizeUnit":$7}} ,rlPtr)}
+       ; 
 OCDEL:  TOKEN_OCDEL P {println()}
+;
+
+OCUPDATE: P TOKEN_EQUAL WORDORNUM {println("Attribute Acquired")}
+;
 
 
 %%

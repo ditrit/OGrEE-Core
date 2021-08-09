@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"cli/models"
+	"cli/readline"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -594,5 +595,59 @@ func Tree(x string, depth int) {
 	} else {
 		println(State.CurrPath + "/" + x)
 		tree(State.CurrPath+"/"+x, "", depth)
+	}
+}
+
+func GetOCLIAtrributes(path *Stack, ent int, data map[string]interface{}, term *readline.Instance) {
+
+	data["name"] = string(path.Peek().(string))
+
+	switch ent {
+	case TENANT:
+		for data["domain"] == nil || data["category"] == nil {
+			println("Enter attribute")
+			x, e := term.Readline()
+			if e != nil {
+				println("Error bru: ", e)
+				return
+			}
+			//arr := strings.Split(x, "/")
+			//println("LAST VAL", arr[len(arr)-1])
+			//v := strings.Split(arr[len(arr)-1], "=")
+			i := 0
+			end := 0
+			iter := 0
+			for ; iter < len(x); iter++ {
+				if string(x[iter]) == "." {
+					i = iter
+				}
+
+				if string(x[iter]) == "=" {
+					end = iter
+					iter = len(x)
+				}
+			}
+
+			a := x[i+1 : end]
+			v := x[end+1:]
+
+			//println("SPLITTING LAST VAL:", a)
+			//println("SPLITTING LAST VAL:", v)
+			data[a] = v
+
+		}
+		println("We got:", data["domain"])
+		println("We got:", data["category"])
+		println("We got:", data["name"])
+	case SITE:
+		println()
+	case BLDG:
+		println()
+	case ROOM:
+		println()
+	case RACK:
+		println()
+	case DEVICE:
+		println()
 	}
 }
