@@ -71,8 +71,8 @@ K: NT_CREATE     {println("@State start");}
        | NT_DEL
 ;
 
-NT_CREATE: TOKEN_CREATE E F {cmd.PostObj($2, "", resMap(&$3))/*println("@State NT_CR");*/}
-       | TOKEN_CREATE E P F {$$=$4; /*println("Finally: "+$$);*/ cmd.Disp(resMap(&$4)); cmd.PostObj($2,$3, resMap(&$4)) }
+NT_CREATE: TOKEN_CREATE E F {cmd.PostObj(cmd.EntityStrToInt($2),$2, resMap(&$3))/*println("@State NT_CR");*/}
+       | TOKEN_CREATE E P F {$$=$4; /*println("Finally: "+$$);*/ cmd.Disp(resMap(&$4)); cmd.PostObj(cmd.EntityStrToInt($2),$2, resMap(&$4)) }
 ;
 
 NT_GET: TOKEN_GET {println("@State NT_GET"); cmd.GetObject("")}

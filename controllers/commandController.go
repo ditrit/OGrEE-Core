@@ -31,7 +31,7 @@ func Disp(x map[string]interface{}) {
 	println("JSON: ", string(jx))
 }
 
-func PostObj(entity, path string, data map[string]interface{}) {
+func PostObj(ent int, entity string, data map[string]interface{}) {
 	var respMap map[string]interface{}
 	resp, e := models.Send("POST",
 		"https://ogree.chibois.net/api/user/"+entity+"s", GetKey(), data)
@@ -62,7 +62,14 @@ func PostObj(entity, path string, data map[string]interface{}) {
 		} else {
 			node.PID, _ = strconv.Atoi(respMap["data"].(map[string]interface{})["parentId"].(string))
 		}
-		switch entity {
+		node.Entity = ent
+		switch ent {
+		case TENANT:
+			State.TreeHierarchy.Nodes.PushBack(node)
+		default:
+			UpdateTree(&State.TreeHierarchy, node)
+		}
+		/*switch entity {
 		case "tenant":
 			node.Entity = TENANT
 			State.TreeHierarchy.Nodes.PushBack(node)
@@ -94,7 +101,7 @@ func PostObj(entity, path string, data map[string]interface{}) {
 			node.Entity = SUBDEV1
 			UpdateTree(&State.TreeHierarchy, node)
 
-		}
+		}*/
 
 	}
 	return
@@ -598,8 +605,27 @@ func Tree(x string, depth int) {
 	}
 }
 
-func GetOCLIAtrributes(path *Stack, ent int, data map[string]interface{}, term *readline.Instance) {
+func getAttrAndVal(x string) (string, string) {
+	i := 0
+	end := 0
+	iter := 0
+	for ; iter < len(x); iter++ {
+		if string(x[iter]) == "." {
+			i = iter
+		}
 
+		if string(x[iter]) == "=" {
+			end = iter
+			iter = len(x)
+		}
+	}
+
+	a := x[i+1 : end]
+	v := x[end+1:]
+	return a, v
+}
+
+func GetOCLIAtrributes(path *Stack, ent int, data map[string]interface{}, term *readline.Instance) {
 	data["name"] = string(path.Peek().(string))
 
 	switch ent {
@@ -608,37 +634,25 @@ func GetOCLIAtrributes(path *Stack, ent int, data map[string]interface{}, term *
 			println("Enter attribute")
 			x, e := term.Readline()
 			if e != nil {
-				println("Error bru: ", e)
+				println("Error reading attribute: ", e)
+				ErrorLogger.Println("Error reading attribute: ", e)
 				return
 			}
-			//arr := strings.Split(x, "/")
-			//println("LAST VAL", arr[len(arr)-1])
-			//v := strings.Split(arr[len(arr)-1], "=")
-			i := 0
-			end := 0
-			iter := 0
-			for ; iter < len(x); iter++ {
-				if string(x[iter]) == "." {
-					i = iter
-				}
+			a, v := getAttrAndVal(x)
+			switch a {
+			case "id", "name", "category", "parentID",
+				"description", "domain", "parentid", "parentId":
+				data[a] = v
 
-				if string(x[iter]) == "=" {
-					end = iter
-					iter = len(x)
-				}
+			default:
+				data["attributes"].(map[string]interface{})[a] = v
 			}
-
-			a := x[i+1 : end]
-			v := x[end+1:]
-
-			//println("SPLITTING LAST VAL:", a)
-			//println("SPLITTING LAST VAL:", v)
-			data[a] = v
-
 		}
-		println("We got:", data["domain"])
-		println("We got:", data["category"])
-		println("We got:", data["name"])
+		println("We got:", string(data["domain"].(string)))
+		println("We got:", string(data["category"].(string)))
+		//println("We got:", string(data["mainContact"].(string)))
+		PostObj(ent, "tenant", data)
+
 	case SITE:
 		println()
 	case BLDG:

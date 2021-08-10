@@ -789,13 +789,13 @@ cmd.WarningLogger.Println("Unknown Command")			/*yylex.Error(msg)*/
 		}
 	case 8:
 		{
-			cmd.PostObj(yyS[yypt-1].s, "", resMap(&yyS[yypt-0].s)) /*println("@State NT_CR");*/
+			cmd.PostObj(cmd.EntityStrToInt(yyS[yypt-1].s), yyS[yypt-1].s, resMap(&yyS[yypt-0].s)) /*println("@State NT_CR");*/
 		}
 	case 9:
 		{
 			yyVAL.s = yyS[yypt-0].s /*println("Finally: "+$$);*/
 			cmd.Disp(resMap(&yyS[yypt-0].s))
-			cmd.PostObj(yyS[yypt-2].s, yyS[yypt-1].s, resMap(&yyS[yypt-0].s))
+			cmd.PostObj(cmd.EntityStrToInt(yyS[yypt-2].s), yyS[yypt-2].s, resMap(&yyS[yypt-0].s))
 		}
 	case 10:
 		{
