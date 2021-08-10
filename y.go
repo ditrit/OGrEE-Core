@@ -1033,7 +1033,7 @@ cmd.WarningLogger.Println("Unknown Command")			/*yylex.Error(msg)*/
 		}
 	case 82:
 		{
-			println()
+			cmd.DeleteObj(yyS[yypt-0].s)
 		}
 	case 83:
 		{

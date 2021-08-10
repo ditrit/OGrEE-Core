@@ -174,7 +174,7 @@ OCCR:   TOKEN_OCTENANT TOKEN_OCPSPEC P TOKEN_ATTRSPEC WORDORNUM {cmd.GetOCLIAtrr
         |TOKEN_OCDEV TOKEN_OCPSPEC P TOKEN_ATTRSPEC WORDORNUM TOKEN_ATTRSPEC WORDORNUM {cmd.GetOCLIAtrributes(cmd.StrToStack($3),cmd.DEVICE,map[string]interface{}{"attributes":map[string]interface{}{"slot":$5, "sizeUnit":$7}} ,rlPtr)}
         |TOKEN_DEVICE TOKEN_OCPSPEC P TOKEN_ATTRSPEC WORDORNUM TOKEN_ATTRSPEC WORDORNUM {cmd.GetOCLIAtrributes(cmd.StrToStack($3),cmd.DEVICE,map[string]interface{}{"attributes":map[string]interface{}{"slot":$5, "sizeUnit":$7}} ,rlPtr)}
        ; 
-OCDEL:  TOKEN_OCDEL P {println()}
+OCDEL:  TOKEN_OCDEL P {cmd.DeleteObj($2)}
 ;
 
 OCUPDATE: P TOKEN_EQUAL WORDORNUM {println("Attribute Acquired")}
