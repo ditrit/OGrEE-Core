@@ -1038,6 +1038,9 @@ cmd.WarningLogger.Println("Unknown Command")			/*yylex.Error(msg)*/
 	case 83:
 		{
 			println("Attribute Acquired")
+			q := strings.LastIndex(yyS[yypt-2].s, ".")
+			val := yyS[yypt-2].s[q+1:] + "=" + yyS[yypt-0].s
+			cmd.UpdateObj(yyS[yypt-2].s[:q], resMap(&val)) /*cmd.OcliUpdate($1,$3)*/
 		}
 
 	}
