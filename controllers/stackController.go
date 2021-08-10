@@ -3,6 +3,7 @@ package controllers
 type (
 	Stack struct {
 		top    *node
+		bottom *node
 		length int
 	}
 	node struct {
@@ -13,7 +14,7 @@ type (
 
 // Create a new stack
 func New() *Stack {
-	return &Stack{nil, 0}
+	return &Stack{nil, nil, 0}
 }
 
 // Return the number of items in the stack
@@ -27,6 +28,13 @@ func (this *Stack) Peek() interface{} {
 		return nil
 	}
 	return this.top.value
+}
+
+func (this *Stack) PeekLast() interface{} {
+	if this.length == 0 {
+		return nil
+	}
+	return this.bottom.value
 }
 
 // Pop the top item of the stack and return it
@@ -44,6 +52,9 @@ func (this *Stack) Pop() interface{} {
 // Push a value onto the top of the stack
 func (this *Stack) Push(value interface{}) {
 	n := &node{value, this.top}
+	if this.length == 0 {
+		this.bottom = n
+	}
 	this.top = n
 	this.length++
 }

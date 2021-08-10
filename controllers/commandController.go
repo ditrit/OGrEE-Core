@@ -626,8 +626,10 @@ func getAttrAndVal(x string) (string, string) {
 }
 
 func GetOCLIAtrributes(path *Stack, ent int, data map[string]interface{}, term *readline.Instance) {
-	data["name"] = string(path.Peek().(string))
-
+	//data["name"] = string(path.Peek().(string))
+	//data["attributes"] = map[string]interface{}{}
+	data["name"] = string(path.PeekLast().(string))
+	println("NAME:", string(data["name"].(string)))
 	switch ent {
 	case TENANT:
 		for data["domain"] == nil || data["category"] == nil {
@@ -645,18 +647,80 @@ func GetOCLIAtrributes(path *Stack, ent int, data map[string]interface{}, term *
 				data[a] = v
 
 			default:
-				data["attributes"].(map[string]interface{})[a] = v
+				//data["attributes"].(map[string]interface{})[a] = v
+				if _, ok := data["attributes"].(map[string]interface{}); ok {
+					data["attributes"].(map[string]interface{})[a] = v
+				} else {
+					data["attributes"].(map[string]string)[a] = v
+				}
 			}
 		}
-		println("We got:", string(data["domain"].(string)))
-		println("We got:", string(data["category"].(string)))
-		//println("We got:", string(data["mainContact"].(string)))
+		//println("Color:", data["attributes"].(map[string]string)["color"])
 		PostObj(ent, "tenant", data)
 
 	case SITE:
-		println()
+		//loop until user gives all neccessary attributes
+		for data["domain"] == nil || data["category"] == nil ||
+			data["parentId"] == nil ||
+			data["attributes"].(map[string]interface{})["orientation"] == nil ||
+			data["attributes"].(map[string]interface{})["usableColor"] == nil ||
+			data["attributes"].(map[string]interface{})["reservedColor"] == nil ||
+			data["attributes"].(map[string]interface{})["technicalColor"] == nil {
+			println("Enter attribute")
+			x, e := term.Readline()
+			if e != nil {
+				println("Error reading attribute: ", e)
+				ErrorLogger.Println("Error reading attribute: ", e)
+				return
+			}
+			a, v := getAttrAndVal(x)
+			switch a {
+			case "id", "name", "category", "parentID",
+				"description", "domain", "parentid", "parentId":
+				data[a] = v
+
+			default:
+				if _, ok := data["attributes"].(map[string]interface{}); ok {
+					data["attributes"].(map[string]interface{})[a] = v
+				} else {
+					data["attributes"].(map[string]string)[a] = v
+				}
+			}
+		}
+		PostObj(ent, "site", data)
 	case BLDG:
-		println()
+		for data["domain"] == nil || data["category"] == nil ||
+			data["parentId"] == nil ||
+			data["attributes"].(map[string]interface{})["posXY"] == nil ||
+			data["attributes"].(map[string]interface{})["posXYUnit"] == nil ||
+			data["attributes"].(map[string]interface{})["posZ"] == nil ||
+			data["attributes"].(map[string]interface{})["posZUnit"] == nil ||
+			data["attributes"].(map[string]interface{})["size"] == nil ||
+			data["attributes"].(map[string]interface{})["sizeUnit"] == nil ||
+			data["attributes"].(map[string]interface{})["height"] == nil ||
+			data["attributes"].(map[string]interface{})["heightUnit"] == nil {
+			println("Enter attribute")
+			x, e := term.Readline()
+			if e != nil {
+				println("Error reading attribute: ", e)
+				ErrorLogger.Println("Error reading attribute: ", e)
+				return
+			}
+			a, v := getAttrAndVal(x)
+			switch a {
+			case "id", "name", "category", "parentID",
+				"description", "domain", "parentid", "parentId":
+				data[a] = v
+
+			default:
+				if _, ok := data["attributes"].(map[string]interface{}); ok {
+					data["attributes"].(map[string]interface{})[a] = v
+				} else {
+					data["attributes"].(map[string]string)[a] = v
+				}
+			}
+		}
+		PostObj(ent, "building", data)
 	case ROOM:
 		println()
 	case RACK:
