@@ -148,6 +148,8 @@ func main() {
 			readline.PcItem("subdevice", false),
 			readline.PcItem("subdevice1", false),
 		),*/
+		readline.PcItem("=", true,
+			readline.PcItemDynamic(listEntities(""), false)),
 	)
 
 	rl, err := readline.NewEx(&readline.Config{

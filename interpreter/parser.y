@@ -158,6 +158,7 @@ BASH:  TOKEN_CLR
 OCLISYNTX:  TOKEN_PLUS OCCR
             |OCDEL
             |OCUPDATE
+            |OCGET
             ;
 
 
@@ -180,5 +181,7 @@ OCDEL:  TOKEN_OCDEL P {cmd.DeleteObj($2)}
 OCUPDATE: P TOKEN_EQUAL WORDORNUM {println("Attribute Acquired"); q := strings.LastIndex($1,"."); val := $1[q+1:]+"="+$3; cmd.UpdateObj($1[:q], resMap(&val))}
 ;
 
+OCGET: TOKEN_EQUAL P {cmd.GetObject($2)}
+;
 
 %%
