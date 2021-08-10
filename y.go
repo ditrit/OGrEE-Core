@@ -32,6 +32,10 @@ func resMap(x *string) map[string]interface{} {
 	return res
 }
 
+func replaceOCLICurrPath(x string) string {
+	return strings.Replace(x, "_", cmd.State.CurrPath, 1)
+}
+
 type yySymType struct {
 	yys int
 	n   int
@@ -992,66 +996,67 @@ cmd.WarningLogger.Println("Unknown Command")			/*yylex.Error(msg)*/
 		}
 	case 71:
 		{
-			cmd.GetOCLIAtrributes(cmd.StrToStack(yyS[yypt-2].s), cmd.TENANT, map[string]interface{}{"attributes": map[string]interface{}{"color": yyS[yypt-0].s}}, rlPtr)
+			cmd.GetOCLIAtrributes(cmd.StrToStack(replaceOCLICurrPath(yyS[yypt-2].s)), cmd.TENANT, map[string]interface{}{"attributes": map[string]interface{}{"color": yyS[yypt-0].s}}, rlPtr)
 		}
 	case 72:
 		{
-			cmd.GetOCLIAtrributes(cmd.StrToStack(yyS[yypt-2].s), cmd.TENANT, map[string]interface{}{"attributes": map[string]interface{}{"color": yyS[yypt-0].s}}, rlPtr)
+			cmd.GetOCLIAtrributes(cmd.StrToStack(replaceOCLICurrPath(yyS[yypt-2].s)), cmd.TENANT, map[string]interface{}{"attributes": map[string]interface{}{"color": yyS[yypt-0].s}}, rlPtr)
 		}
 	case 73:
 		{
-			cmd.GetOCLIAtrributes(cmd.StrToStack(yyS[yypt-2].s), cmd.SITE, map[string]interface{}{"attributes": map[string]interface{}{"orientation": yyS[yypt-0].s}}, rlPtr)
+			cmd.GetOCLIAtrributes(cmd.StrToStack(replaceOCLICurrPath(yyS[yypt-2].s)), cmd.SITE, map[string]interface{}{"attributes": map[string]interface{}{"orientation": yyS[yypt-0].s}}, rlPtr)
 		}
 	case 74:
 		{
-			cmd.GetOCLIAtrributes(cmd.StrToStack(yyS[yypt-2].s), cmd.SITE, map[string]interface{}{"attributes": map[string]interface{}{"orientation": yyS[yypt-0].s}}, rlPtr)
+			cmd.GetOCLIAtrributes(cmd.StrToStack(replaceOCLICurrPath(yyS[yypt-2].s)), cmd.SITE, map[string]interface{}{"attributes": map[string]interface{}{"orientation": yyS[yypt-0].s}}, rlPtr)
 		}
 	case 75:
 		{
-			cmd.GetOCLIAtrributes(cmd.StrToStack(yyS[yypt-4].s), cmd.BLDG, map[string]interface{}{"attributes": map[string]interface{}{"posXY": yyS[yypt-2].s, "size": yyS[yypt-0].s}}, rlPtr)
+			cmd.GetOCLIAtrributes(cmd.StrToStack(replaceOCLICurrPath(yyS[yypt-4].s)), cmd.BLDG, map[string]interface{}{"attributes": map[string]interface{}{"posXY": yyS[yypt-2].s, "size": yyS[yypt-0].s}}, rlPtr)
 		}
 	case 76:
 		{
-			cmd.GetOCLIAtrributes(cmd.StrToStack(yyS[yypt-4].s), cmd.BLDG, map[string]interface{}{"attributes": map[string]interface{}{"posXY": yyS[yypt-2].s, "size": yyS[yypt-0].s}}, rlPtr)
+			cmd.GetOCLIAtrributes(cmd.StrToStack(replaceOCLICurrPath(yyS[yypt-4].s)), cmd.BLDG, map[string]interface{}{"attributes": map[string]interface{}{"posXY": yyS[yypt-2].s, "size": yyS[yypt-0].s}}, rlPtr)
 		}
 	case 77:
 		{
-			cmd.GetOCLIAtrributes(cmd.StrToStack(yyS[yypt-4].s), cmd.ROOM, map[string]interface{}{"attributes": map[string]interface{}{"posXY": yyS[yypt-2].s, "size": yyS[yypt-0].s}}, rlPtr)
+			cmd.GetOCLIAtrributes(cmd.StrToStack(replaceOCLICurrPath(yyS[yypt-4].s)), cmd.ROOM, map[string]interface{}{"attributes": map[string]interface{}{"posXY": yyS[yypt-2].s, "size": yyS[yypt-0].s}}, rlPtr)
 		}
 	case 78:
 		{
-			cmd.GetOCLIAtrributes(cmd.StrToStack(yyS[yypt-4].s), cmd.ROOM, map[string]interface{}{"attributes": map[string]interface{}{"posXY": yyS[yypt-2].s, "size": yyS[yypt-0].s}}, rlPtr)
+			cmd.GetOCLIAtrributes(cmd.StrToStack(replaceOCLICurrPath(yyS[yypt-4].s)), cmd.ROOM, map[string]interface{}{"attributes": map[string]interface{}{"posXY": yyS[yypt-2].s, "size": yyS[yypt-0].s}}, rlPtr)
 		}
 	case 79:
 		{
-			cmd.GetOCLIAtrributes(cmd.StrToStack(yyS[yypt-4].s), cmd.RACK, map[string]interface{}{"attributes": map[string]interface{}{"posXY": yyS[yypt-2].s, "size": yyS[yypt-0].s}}, rlPtr)
+			cmd.GetOCLIAtrributes(cmd.StrToStack(replaceOCLICurrPath(yyS[yypt-4].s)), cmd.RACK, map[string]interface{}{"attributes": map[string]interface{}{"posXY": yyS[yypt-2].s, "size": yyS[yypt-0].s}}, rlPtr)
 		}
 	case 80:
 		{
-			cmd.GetOCLIAtrributes(cmd.StrToStack(yyS[yypt-4].s), cmd.RACK, map[string]interface{}{"attributes": map[string]interface{}{"posXY": yyS[yypt-2].s, "size": yyS[yypt-0].s}}, rlPtr)
+			cmd.GetOCLIAtrributes(cmd.StrToStack(replaceOCLICurrPath(yyS[yypt-4].s)), cmd.RACK, map[string]interface{}{"attributes": map[string]interface{}{"posXY": yyS[yypt-2].s, "size": yyS[yypt-0].s}}, rlPtr)
 		}
 	case 81:
 		{
-			cmd.GetOCLIAtrributes(cmd.StrToStack(yyS[yypt-4].s), cmd.DEVICE, map[string]interface{}{"attributes": map[string]interface{}{"slot": yyS[yypt-2].s, "sizeUnit": yyS[yypt-0].s}}, rlPtr)
+			cmd.GetOCLIAtrributes(cmd.StrToStack(replaceOCLICurrPath(yyS[yypt-4].s)), cmd.DEVICE, map[string]interface{}{"attributes": map[string]interface{}{"slot": yyS[yypt-2].s, "sizeUnit": yyS[yypt-0].s}}, rlPtr)
 		}
 	case 82:
 		{
-			cmd.GetOCLIAtrributes(cmd.StrToStack(yyS[yypt-4].s), cmd.DEVICE, map[string]interface{}{"attributes": map[string]interface{}{"slot": yyS[yypt-2].s, "sizeUnit": yyS[yypt-0].s}}, rlPtr)
+			cmd.GetOCLIAtrributes(cmd.StrToStack(replaceOCLICurrPath(yyS[yypt-4].s)), cmd.DEVICE, map[string]interface{}{"attributes": map[string]interface{}{"slot": yyS[yypt-2].s, "sizeUnit": yyS[yypt-0].s}}, rlPtr)
 		}
 	case 83:
 		{
-			cmd.DeleteObj(yyS[yypt-0].s)
+			cmd.DeleteObj(replaceOCLICurrPath(yyS[yypt-0].s))
 		}
 	case 84:
 		{
 			println("Attribute Acquired")
-			q := strings.LastIndex(yyS[yypt-2].s, ".")
-			val := yyS[yypt-2].s[q+1:] + "=" + yyS[yypt-0].s
-			cmd.UpdateObj(yyS[yypt-2].s[:q], resMap(&val))
+			newStr := replaceOCLICurrPath(yyS[yypt-2].s)
+			q := strings.LastIndex(newStr, ".")
+			val := newStr[q+1:] + "=" + yyS[yypt-0].s
+			cmd.UpdateObj(newStr[:q], resMap(&val))
 		}
 	case 85:
 		{
-			cmd.GetObject(yyS[yypt-0].s)
+			cmd.GetObject(replaceOCLICurrPath(yyS[yypt-0].s))
 		}
 
 	}

@@ -27,6 +27,10 @@ func resMap(x *string) map[string]interface{} {
        res["attributes"] = attrs
        return res
 }
+
+func replaceOCLICurrPath(x string) string {
+       return strings.Replace(x, "_", cmd.State.CurrPath, 1)
+}
 %}
 
 %union {
@@ -162,26 +166,26 @@ OCLISYNTX:  TOKEN_PLUS OCCR
             ;
 
 
-OCCR:   TOKEN_OCTENANT TOKEN_OCPSPEC P TOKEN_ATTRSPEC WORDORNUM {cmd.GetOCLIAtrributes(cmd.StrToStack($3),cmd.TENANT,map[string]interface{}{"attributes":map[string]interface{}{"color":$5}} ,rlPtr)}
-        |TOKEN_TENANT TOKEN_OCPSPEC P TOKEN_ATTRSPEC WORDORNUM {cmd.GetOCLIAtrributes(cmd.StrToStack($3),cmd.TENANT,map[string]interface{}{"attributes":map[string]interface{}{"color":$5}} ,rlPtr)}
-        |TOKEN_OCSITE TOKEN_OCPSPEC P TOKEN_ATTRSPEC WORDORNUM {cmd.GetOCLIAtrributes(cmd.StrToStack($3),cmd.SITE,map[string]interface{}{"attributes":map[string]interface{}{"orientation":$5}} ,rlPtr)}
-        |TOKEN_SITE TOKEN_OCPSPEC P TOKEN_ATTRSPEC WORDORNUM {cmd.GetOCLIAtrributes(cmd.StrToStack($3),cmd.SITE,map[string]interface{}{"attributes":map[string]interface{}{"orientation":$5}} ,rlPtr)}
-        |TOKEN_OCBLDG TOKEN_OCPSPEC P TOKEN_ATTRSPEC WORDORNUM TOKEN_ATTRSPEC WORDORNUM {cmd.GetOCLIAtrributes(cmd.StrToStack($3),cmd.BLDG,map[string]interface{}{"attributes":map[string]interface{}{"posXY":$5, "size":$7}} ,rlPtr)}
-        |TOKEN_BLDG TOKEN_OCPSPEC P TOKEN_ATTRSPEC WORDORNUM TOKEN_ATTRSPEC WORDORNUM {cmd.GetOCLIAtrributes(cmd.StrToStack($3),cmd.BLDG,map[string]interface{}{"attributes":map[string]interface{}{"posXY":$5, "size":$7}} ,rlPtr)}
-        |TOKEN_OCROOM TOKEN_OCPSPEC P TOKEN_ATTRSPEC WORDORNUM TOKEN_ATTRSPEC WORDORNUM {cmd.GetOCLIAtrributes(cmd.StrToStack($3),cmd.ROOM,map[string]interface{}{"attributes":map[string]interface{}{"posXY":$5, "size":$7}} ,rlPtr)}
-        |TOKEN_ROOM TOKEN_OCPSPEC P TOKEN_ATTRSPEC WORDORNUM TOKEN_ATTRSPEC WORDORNUM {cmd.GetOCLIAtrributes(cmd.StrToStack($3),cmd.ROOM,map[string]interface{}{"attributes":map[string]interface{}{"posXY":$5, "size":$7}} ,rlPtr)}
-        |TOKEN_OCRACK TOKEN_OCPSPEC P TOKEN_ATTRSPEC WORDORNUM TOKEN_ATTRSPEC WORDORNUM {cmd.GetOCLIAtrributes(cmd.StrToStack($3),cmd.RACK,map[string]interface{}{"attributes":map[string]interface{}{"posXY":$5, "size":$7}} ,rlPtr)}
-        |TOKEN_RACK TOKEN_OCPSPEC P TOKEN_ATTRSPEC WORDORNUM TOKEN_ATTRSPEC WORDORNUM {cmd.GetOCLIAtrributes(cmd.StrToStack($3),cmd.RACK,map[string]interface{}{"attributes":map[string]interface{}{"posXY":$5, "size":$7}} ,rlPtr)}
-        |TOKEN_OCDEV TOKEN_OCPSPEC P TOKEN_ATTRSPEC WORDORNUM TOKEN_ATTRSPEC WORDORNUM {cmd.GetOCLIAtrributes(cmd.StrToStack($3),cmd.DEVICE,map[string]interface{}{"attributes":map[string]interface{}{"slot":$5, "sizeUnit":$7}} ,rlPtr)}
-        |TOKEN_DEVICE TOKEN_OCPSPEC P TOKEN_ATTRSPEC WORDORNUM TOKEN_ATTRSPEC WORDORNUM {cmd.GetOCLIAtrributes(cmd.StrToStack($3),cmd.DEVICE,map[string]interface{}{"attributes":map[string]interface{}{"slot":$5, "sizeUnit":$7}} ,rlPtr)}
+OCCR:   TOKEN_OCTENANT TOKEN_OCPSPEC P TOKEN_ATTRSPEC WORDORNUM {cmd.GetOCLIAtrributes(cmd.StrToStack(replaceOCLICurrPath($3)),cmd.TENANT,map[string]interface{}{"attributes":map[string]interface{}{"color":$5}} ,rlPtr)}
+        |TOKEN_TENANT TOKEN_OCPSPEC P TOKEN_ATTRSPEC WORDORNUM {cmd.GetOCLIAtrributes(cmd.StrToStack(replaceOCLICurrPath($3)),cmd.TENANT,map[string]interface{}{"attributes":map[string]interface{}{"color":$5}} ,rlPtr)}
+        |TOKEN_OCSITE TOKEN_OCPSPEC P TOKEN_ATTRSPEC WORDORNUM {cmd.GetOCLIAtrributes(cmd.StrToStack(replaceOCLICurrPath($3)),cmd.SITE,map[string]interface{}{"attributes":map[string]interface{}{"orientation":$5}} ,rlPtr)}
+        |TOKEN_SITE TOKEN_OCPSPEC P TOKEN_ATTRSPEC WORDORNUM {cmd.GetOCLIAtrributes(cmd.StrToStack(replaceOCLICurrPath($3)),cmd.SITE,map[string]interface{}{"attributes":map[string]interface{}{"orientation":$5}} ,rlPtr)}
+        |TOKEN_OCBLDG TOKEN_OCPSPEC P TOKEN_ATTRSPEC WORDORNUM TOKEN_ATTRSPEC WORDORNUM {cmd.GetOCLIAtrributes(cmd.StrToStack(replaceOCLICurrPath($3)),cmd.BLDG,map[string]interface{}{"attributes":map[string]interface{}{"posXY":$5, "size":$7}} ,rlPtr)}
+        |TOKEN_BLDG TOKEN_OCPSPEC P TOKEN_ATTRSPEC WORDORNUM TOKEN_ATTRSPEC WORDORNUM {cmd.GetOCLIAtrributes(cmd.StrToStack(replaceOCLICurrPath($3)),cmd.BLDG,map[string]interface{}{"attributes":map[string]interface{}{"posXY":$5, "size":$7}} ,rlPtr)}
+        |TOKEN_OCROOM TOKEN_OCPSPEC P TOKEN_ATTRSPEC WORDORNUM TOKEN_ATTRSPEC WORDORNUM {cmd.GetOCLIAtrributes(cmd.StrToStack(replaceOCLICurrPath($3)),cmd.ROOM,map[string]interface{}{"attributes":map[string]interface{}{"posXY":$5, "size":$7}} ,rlPtr)}
+        |TOKEN_ROOM TOKEN_OCPSPEC P TOKEN_ATTRSPEC WORDORNUM TOKEN_ATTRSPEC WORDORNUM {cmd.GetOCLIAtrributes(cmd.StrToStack(replaceOCLICurrPath($3)),cmd.ROOM,map[string]interface{}{"attributes":map[string]interface{}{"posXY":$5, "size":$7}} ,rlPtr)}
+        |TOKEN_OCRACK TOKEN_OCPSPEC P TOKEN_ATTRSPEC WORDORNUM TOKEN_ATTRSPEC WORDORNUM {cmd.GetOCLIAtrributes(cmd.StrToStack(replaceOCLICurrPath($3)),cmd.RACK,map[string]interface{}{"attributes":map[string]interface{}{"posXY":$5, "size":$7}} ,rlPtr)}
+        |TOKEN_RACK TOKEN_OCPSPEC P TOKEN_ATTRSPEC WORDORNUM TOKEN_ATTRSPEC WORDORNUM {cmd.GetOCLIAtrributes(cmd.StrToStack(replaceOCLICurrPath($3)),cmd.RACK,map[string]interface{}{"attributes":map[string]interface{}{"posXY":$5, "size":$7}} ,rlPtr)}
+        |TOKEN_OCDEV TOKEN_OCPSPEC P TOKEN_ATTRSPEC WORDORNUM TOKEN_ATTRSPEC WORDORNUM {cmd.GetOCLIAtrributes(cmd.StrToStack(replaceOCLICurrPath($3)),cmd.DEVICE,map[string]interface{}{"attributes":map[string]interface{}{"slot":$5, "sizeUnit":$7}} ,rlPtr)}
+        |TOKEN_DEVICE TOKEN_OCPSPEC P TOKEN_ATTRSPEC WORDORNUM TOKEN_ATTRSPEC WORDORNUM {cmd.GetOCLIAtrributes(cmd.StrToStack(replaceOCLICurrPath($3)),cmd.DEVICE,map[string]interface{}{"attributes":map[string]interface{}{"slot":$5, "sizeUnit":$7}} ,rlPtr)}
        ; 
-OCDEL:  TOKEN_OCDEL P {cmd.DeleteObj($2)}
+OCDEL:  TOKEN_OCDEL P {cmd.DeleteObj(replaceOCLICurrPath($2))}
 ;
 
-OCUPDATE: P TOKEN_EQUAL WORDORNUM {println("Attribute Acquired"); q := strings.LastIndex($1,"."); val := $1[q+1:]+"="+$3; cmd.UpdateObj($1[:q], resMap(&val))}
+OCUPDATE: P TOKEN_EQUAL WORDORNUM {println("Attribute Acquired"); newStr := replaceOCLICurrPath($1);  q := strings.LastIndex(newStr,"."); val := newStr[q+1:]+"="+$3; cmd.UpdateObj(newStr[:q], resMap(&val))}
 ;
 
-OCGET: TOKEN_EQUAL P {cmd.GetObject($2)}
+OCGET: TOKEN_EQUAL P {cmd.GetObject(replaceOCLICurrPath($2))}
 ;
 
 %%
