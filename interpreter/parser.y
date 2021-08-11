@@ -63,15 +63,22 @@ func replaceOCLICurrPath(x string) string {
        TOKEN_SELECT TOKEN_LBRAC TOKEN_RBRAC
        TOKEN_COMMA TOKEN_DOT TOKEN_CMDS
        TOKEN_TEMPLATE TOKEN_VAR TOKEN_DEREF
+       TOKEN_STMNT
 %type <s> F E P P1 ORIENTN WORDORNUM
 %type <s> NT_CREATE NT_DEL NT_GET NT_UPDATE
 %type <sarr> GETOBJS
 
 
 %%
-start: K
-       | Q
-       | OCLISYNTX
+start: stmnts
+;
+
+stmnts: stmnts stmnt TOKEN_STMNT | stmnt |
+
+stmnt: K
+       |Q
+       |OCLISYNTX
+       |
 ;
 
 K: NT_CREATE     {println("@State start");}

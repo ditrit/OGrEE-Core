@@ -9,6 +9,7 @@
 /:/ {println("We got TOKEN_OCPSPEC"); return TOKEN_OCPSPEC}
 /@/ {println("We got TOKEN_ATTRSPEC"); return TOKEN_ATTRSPEC}
 /\$/ {println("We got TOKEN_DEREF"); return TOKEN_DEREF}
+/;/ {println("We got TOKEN_STMNT"); return TOKEN_STMNT}
 
 /tn/ {println("We got TOKEN_OCTENANT");return TOKEN_OCTENANT}
 /si/ {println("We got TOKEN_OCSITE");return TOKEN_OCSITE}
