@@ -17,6 +17,11 @@
 /dv/ {println("We got TOKEN_OCDEV");return TOKEN_OCDEV}
 /sd/ {println("We got TOKEN_OCSDEV");return TOKEN_OCSDEV}
 /sd1/ {println("We got TOKEN_OCSDEV1");return TOKEN_OCSDEV1}
+/selection/ {println("We got TOKEN_SELECT"); return TOKEN_SELECT}
+/{/ {println("We got TOKEN_LBRAC");return TOKEN_LBRAC}
+/}/ {println("We got TOKEN_RBRAC");return TOKEN_RBRAC}
+/,/ {println("We got TOKEN_COMMA"); return TOKEN_COMMA}
+/\./ {println("We got TOKEN_DOT"); return TOKEN_DOT}
 
 /tenant/ {println("We got TOKEN_TENANT");lval.s = yylex.Text();return TOKEN_TENANT}
 /site/ {println("We got TOKEN_SITE");lval.s = yylex.Text();return TOKEN_SITE}
@@ -50,7 +55,7 @@
 /[=]/ {println("We got TOKEN_EQUAL");return TOKEN_EQUAL}
 /\// {println("We got TOKEN_SLASH"); return TOKEN_SLASH}
 /man/ {println("We got TOKEN_DOC"); return TOKEN_DOC}
-/[A-Za-z0-9_\.]+/ {println("We got TOKEN_WORD"); lval.s = yylex.Text(); println("LVAL: ", lval.s); return TOKEN_WORD}
+/[A-Za-z0-9_]+/ {println("We got TOKEN_WORD"); lval.s = yylex.Text(); println("LVAL: ", lval.s); return TOKEN_WORD}
 //
 package main
 import (

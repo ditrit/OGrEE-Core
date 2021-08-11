@@ -128,6 +128,7 @@ func main() {
 			readline.PcItem("subdevice", false),
 			readline.PcItem("subdevice1", false),
 		),
+		readline.PcItem("selection", false),
 		readline.PcItem("tree", false),
 		readline.PcItem("lsten", false),
 		readline.PcItem("lssite", false),

@@ -36,6 +36,7 @@ func replaceOCLICurrPath(x string) string {
 %union {
   n int
   s string
+  sarr []string
 }
 
 
@@ -59,8 +60,11 @@ func replaceOCLICurrPath(x string) string {
        TOKEN_OCRACK TOKEN_OCROOM TOKEN_ATTRSPEC
        TOKEN_OCSITE TOKEN_OCTENANT
        TOKEN_OCSDEV TOKEN_OCSDEV1 TOKEN_OCPSPEC
+       TOKEN_SELECT TOKEN_LBRAC TOKEN_RBRAC
+       TOKEN_COMMA TOKEN_DOT
 %type <s> F E P P1 ORIENTN WORDORNUM
 %type <s> NT_CREATE NT_DEL NT_GET NT_UPDATE
+%type <sarr> GETOBJS
 
 
 %%
@@ -75,17 +79,15 @@ K: NT_CREATE     {println("@State start");}
        | NT_DEL
 ;
 
-NT_CREATE: TOKEN_CREATE E F {cmd.PostObj(cmd.EntityStrToInt($2),$2, resMap(&$3))/*println("@State NT_CR");*/}
-       | TOKEN_CREATE E P F {$$=$4; /*println("Finally: "+$$);*/ cmd.Disp(resMap(&$4)); cmd.PostObj(cmd.EntityStrToInt($2),$2, resMap(&$4)) }
+NT_CREATE: TOKEN_CREATE E F {cmd.PostObj(cmd.EntityStrToInt($2),$2, resMap(&$3))}
+       | TOKEN_CREATE E P F {$$=$4; cmd.Disp(resMap(&$4)); cmd.PostObj(cmd.EntityStrToInt($2),$2, resMap(&$4)) }
 ;
 
-NT_GET: TOKEN_GET {println("@State NT_GET"); cmd.GetObject("")}
-       | TOKEN_GET P {cmd.GetObject($2)}
+NT_GET: TOKEN_GET P {cmd.GetObject($2)}
        | TOKEN_GET E F {/*cmd.Disp(resMap(&$4)); */cmd.SearchObjects($2, resMap(&$3)) }
 ;
 
-NT_UPDATE: TOKEN_UPDATE  F {println("@State NT_UPD"); cmd.UpdateObj("", resMap(&$2))}
-       | TOKEN_UPDATE P F {$$=$3;/*cmd.Disp(resMap(&$4));*/ cmd.UpdateObj($2, resMap(&$3))}
+NT_UPDATE: TOKEN_UPDATE P F {$$=$3;/*cmd.Disp(resMap(&$4));*/ cmd.UpdateObj($2, resMap(&$3))}
 ;
 
 NT_DEL: TOKEN_DELETE P {println("@State NT_DEL");cmd.DeleteObj($2)}
@@ -122,11 +124,13 @@ P:     P1
 
 P1:    TOKEN_WORD TOKEN_SLASH P1 {$$=$1+"/"+$3}
        | TOKEN_WORD {$$=$1}
+       | TOKEN_DOT TOKEN_DOT TOKEN_SLASH P1 {$$="../"+$4}
+       | TOKEN_WORD {$$=$1}
+       | TOKEN_DOT TOKEN_DOT {$$=".."}
        | {$$=""}
 ;
 
-Q:     TOKEN_CD TOKEN_WORD TOKEN_CMDFLAG
-       |TOKEN_CD P {cmd.CD($2)}
+Q:     TOKEN_CD P {cmd.CD($2)}
        | TOKEN_LS P {cmd.LS($2)}
        | TOKEN_LSTEN P {cmd.LSOBJECT($2, 0)}
        | TOKEN_LSSITE P {cmd.LSOBJECT($2, 1)}
@@ -163,6 +167,9 @@ OCLISYNTX:  TOKEN_PLUS OCCR
             |OCDEL
             |OCUPDATE
             |OCGET
+            |OCCHOOSE
+            |TOKEN_SELECT {cmd.ShowClipBoard()}
+            |TOKEN_SELECT TOKEN_DOT TOKEN_ATTR TOKEN_EQUAL TOKEN_WORD {x := $3+"="+$5;cmd.UpdateSelection(resMap(&x))}
             ;
 
 
@@ -182,10 +189,18 @@ OCCR:   TOKEN_OCTENANT TOKEN_OCPSPEC P TOKEN_ATTRSPEC WORDORNUM {cmd.GetOCLIAtrr
 OCDEL:  TOKEN_OCDEL P {cmd.DeleteObj(replaceOCLICurrPath($2))}
 ;
 
-OCUPDATE: P TOKEN_EQUAL WORDORNUM {println("Attribute Acquired"); newStr := replaceOCLICurrPath($1);  q := strings.LastIndex(newStr,"."); val := newStr[q+1:]+"="+$3; cmd.UpdateObj(newStr[:q], resMap(&val))}
+OCUPDATE: P TOKEN_DOT TOKEN_ATTR TOKEN_EQUAL WORDORNUM {println("Attribute Acquired");val := $3+"="+$5;cmd.UpdateObj(replaceOCLICurrPath($1), resMap(&val))}
 ;
 
 OCGET: TOKEN_EQUAL P {cmd.GetObject(replaceOCLICurrPath($2))}
 ;
+
+GETOBJS:      TOKEN_WORD TOKEN_COMMA GETOBJS {x := make([]string,0); x = append(x, cmd.State.CurrPath+"/"+$1); x = append(x, $3...); $$=x}
+              | TOKEN_WORD {$$=[]string{cmd.State.CurrPath+"/"+$1}}
+              ;
+
+OCCHOOSE: TOKEN_EQUAL TOKEN_LBRAC GETOBJS TOKEN_RBRAC {cmd.State.ClipBoard = &$3; println("Selection made!")}
+;
+
 
 %%

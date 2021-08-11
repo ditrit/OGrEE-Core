@@ -31,6 +31,7 @@ var State ShellState
 type ShellState struct {
 	CurrPath      string
 	PrevPath      string
+	ClipBoard     *[]string
 	TreeHierarchy *Node
 }
 
@@ -45,6 +46,7 @@ type Node struct {
 //Populate hierarchy into B Tree like
 //structure
 func InitState() {
+	State.ClipBoard = nil
 	State.TreeHierarchy = &(Node{})
 	(*(State.TreeHierarchy)).Entity = -1
 	State.TreeHierarchy.PID = -1
@@ -427,6 +429,7 @@ func FindNodeInTree(root **Node, path *Stack) **Node {
 		node := getNextInPath(name.(string), *root)
 		if node == nil {
 			println("Name doesn't exist! ", string(name.(string)))
+			WarningLogger.Println("Name doesn't exist! ", string(name.(string)))
 			return nil
 		}
 		path.Pop()

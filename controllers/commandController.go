@@ -817,3 +817,21 @@ func GetOCLIAtrributes(path *Stack, ent int, data map[string]interface{}, term *
 		PostObj(ent, "device", data)
 	}
 }
+
+func ShowClipBoard() {
+	if State.ClipBoard != nil {
+		for _, k := range *State.ClipBoard {
+			println(k)
+		}
+	}
+
+}
+
+func UpdateSelection(data map[string]interface{}) {
+	if State.ClipBoard != nil {
+		for _, k := range *State.ClipBoard {
+			UpdateObj(k, data)
+		}
+	}
+
+}

@@ -37,9 +37,10 @@ func replaceOCLICurrPath(x string) string {
 }
 
 type yySymType struct {
-	yys int
-	n   int
-	s   string
+	yys  int
+	n    int
+	s    string
+	sarr []string
 }
 
 type yyXError struct {
@@ -47,7 +48,7 @@ type yyXError struct {
 }
 
 const (
-	yyDefault        = 57395
+	yyDefault        = 57400
 	yyEofCode        = 57344
 	TOKEN_ATTR       = 57356
 	TOKEN_ATTRSPEC   = 57389
@@ -56,14 +57,17 @@ const (
 	TOKEN_CD         = 57370
 	TOKEN_CLR        = 57372
 	TOKEN_CMDFLAG    = 57366
+	TOKEN_COMMA      = 57398
 	TOKEN_CREATE     = 57359
 	TOKEN_DELETE     = 57362
 	TOKEN_DEVICE     = 57353
 	TOKEN_DOC        = 57369
+	TOKEN_DOT        = 57399
 	TOKEN_EQUAL      = 57365
 	TOKEN_EXIT       = 57368
 	TOKEN_GET        = 57360
 	TOKEN_GREP       = 57373
+	TOKEN_LBRAC      = 57396
 	TOKEN_LS         = 57374
 	TOKEN_LSBLDG     = 57379
 	TOKEN_LSDEV      = 57382
@@ -88,8 +92,10 @@ const (
 	TOKEN_PLUS       = 57357
 	TOKEN_PWD        = 57371
 	TOKEN_RACK       = 57352
+	TOKEN_RBRAC      = 57397
 	TOKEN_ROOM       = 57351
 	TOKEN_SEARCH     = 57363
+	TOKEN_SELECT     = 57395
 	TOKEN_SITE       = 57349
 	TOKEN_SLASH      = 57367
 	TOKEN_SUBDEVICE  = 57354
@@ -101,109 +107,119 @@ const (
 	yyErrCode        = 57345
 
 	yyMaxDepth = 200
-	yyTabOfs   = -86
+	yyTabOfs   = -92
 )
 
 var (
 	yyPrec = map[int]int{}
 
 	yyXLAT = map[int]int{
-		57344: 0,  // $end (91x)
-		57347: 1,  // TOKEN_WORD (68x)
-		57389: 2,  // TOKEN_ATTRSPEC (41x)
-		57367: 3,  // TOKEN_SLASH (40x)
-		57411: 4,  // P1 (32x)
-		57410: 5,  // P (30x)
-		57346: 6,  // TOKEN_NUM (30x)
-		57358: 7,  // TOKEN_OCDEL (24x)
-		57357: 8,  // TOKEN_PLUS (24x)
-		57409: 9,  // ORIENTN (23x)
-		57356: 10, // TOKEN_ATTR (23x)
-		57413: 11, // WORDORNUM (22x)
-		57394: 12, // TOKEN_OCPSPEC (12x)
-		57365: 13, // TOKEN_EQUAL (9x)
-		57398: 14, // F (6x)
-		57350: 15, // TOKEN_BLDG (3x)
-		57353: 16, // TOKEN_DEVICE (3x)
-		57352: 17, // TOKEN_RACK (3x)
-		57351: 18, // TOKEN_ROOM (3x)
-		57349: 19, // TOKEN_SITE (3x)
-		57348: 20, // TOKEN_TENANT (3x)
-		57397: 21, // E (2x)
-		57370: 22, // TOKEN_CD (2x)
-		57359: 23, // TOKEN_CREATE (2x)
-		57362: 24, // TOKEN_DELETE (2x)
-		57360: 25, // TOKEN_GET (2x)
-		57374: 26, // TOKEN_LS (2x)
-		57376: 27, // TOKEN_LSOG (2x)
-		57354: 28, // TOKEN_SUBDEVICE (2x)
-		57355: 29, // TOKEN_SUBDEVICE1 (2x)
-		57375: 30, // TOKEN_TREE (2x)
-		57361: 31, // TOKEN_UPDATE (2x)
-		57396: 32, // BASH (1x)
-		57399: 33, // K (1x)
-		57400: 34, // NT_CREATE (1x)
-		57401: 35, // NT_DEL (1x)
-		57402: 36, // NT_GET (1x)
-		57403: 37, // NT_UPDATE (1x)
-		57404: 38, // OCCR (1x)
-		57405: 39, // OCDEL (1x)
-		57406: 40, // OCGET (1x)
-		57407: 41, // OCLISYNTX (1x)
-		57408: 42, // OCUPDATE (1x)
-		57412: 43, // Q (1x)
-		57414: 44, // start (1x)
-		57372: 45, // TOKEN_CLR (1x)
-		57366: 46, // TOKEN_CMDFLAG (1x)
-		57369: 47, // TOKEN_DOC (1x)
-		57368: 48, // TOKEN_EXIT (1x)
-		57373: 49, // TOKEN_GREP (1x)
-		57379: 50, // TOKEN_LSBLDG (1x)
-		57382: 51, // TOKEN_LSDEV (1x)
-		57381: 52, // TOKEN_LSRACK (1x)
-		57380: 53, // TOKEN_LSROOM (1x)
-		57378: 54, // TOKEN_LSSITE (1x)
-		57383: 55, // TOKEN_LSSUBDEV (1x)
-		57384: 56, // TOKEN_LSSUBDEV1 (1x)
-		57377: 57, // TOKEN_LSTEN (1x)
-		57385: 58, // TOKEN_OCBLDG (1x)
-		57386: 59, // TOKEN_OCDEV (1x)
-		57387: 60, // TOKEN_OCRACK (1x)
-		57388: 61, // TOKEN_OCROOM (1x)
-		57390: 62, // TOKEN_OCSITE (1x)
-		57391: 63, // TOKEN_OCTENANT (1x)
-		57371: 64, // TOKEN_PWD (1x)
-		57395: 65, // $default (0x)
-		57345: 66, // error (0x)
-		57364: 67, // TOKEN_BASHTYPE (0x)
-		57392: 68, // TOKEN_OCSDEV (0x)
-		57393: 69, // TOKEN_OCSDEV1 (0x)
-		57363: 70, // TOKEN_SEARCH (0x)
+		57344: 0,  // $end (95x)
+		57347: 1,  // TOKEN_WORD (72x)
+		57399: 2,  // TOKEN_DOT (50x)
+		57389: 3,  // TOKEN_ATTRSPEC (44x)
+		57367: 4,  // TOKEN_SLASH (40x)
+		57418: 5,  // P1 (33x)
+		57346: 6,  // TOKEN_NUM (33x)
+		57417: 7,  // P (30x)
+		57356: 8,  // TOKEN_ATTR (28x)
+		57358: 9,  // TOKEN_OCDEL (24x)
+		57357: 10, // TOKEN_PLUS (24x)
+		57416: 11, // ORIENTN (23x)
+		57420: 12, // WORDORNUM (22x)
+		57394: 13, // TOKEN_OCPSPEC (12x)
+		57403: 14, // F (5x)
+		57365: 15, // TOKEN_EQUAL (4x)
+		57350: 16, // TOKEN_BLDG (3x)
+		57353: 17, // TOKEN_DEVICE (3x)
+		57352: 18, // TOKEN_RACK (3x)
+		57397: 19, // TOKEN_RBRAC (3x)
+		57351: 20, // TOKEN_ROOM (3x)
+		57349: 21, // TOKEN_SITE (3x)
+		57348: 22, // TOKEN_TENANT (3x)
+		57402: 23, // E (2x)
+		57404: 24, // GETOBJS (2x)
+		57370: 25, // TOKEN_CD (2x)
+		57359: 26, // TOKEN_CREATE (2x)
+		57362: 27, // TOKEN_DELETE (2x)
+		57360: 28, // TOKEN_GET (2x)
+		57374: 29, // TOKEN_LS (2x)
+		57376: 30, // TOKEN_LSOG (2x)
+		57354: 31, // TOKEN_SUBDEVICE (2x)
+		57355: 32, // TOKEN_SUBDEVICE1 (2x)
+		57375: 33, // TOKEN_TREE (2x)
+		57361: 34, // TOKEN_UPDATE (2x)
+		57401: 35, // BASH (1x)
+		57405: 36, // K (1x)
+		57406: 37, // NT_CREATE (1x)
+		57407: 38, // NT_DEL (1x)
+		57408: 39, // NT_GET (1x)
+		57409: 40, // NT_UPDATE (1x)
+		57410: 41, // OCCHOOSE (1x)
+		57411: 42, // OCCR (1x)
+		57412: 43, // OCDEL (1x)
+		57413: 44, // OCGET (1x)
+		57414: 45, // OCLISYNTX (1x)
+		57415: 46, // OCUPDATE (1x)
+		57419: 47, // Q (1x)
+		57421: 48, // start (1x)
+		57372: 49, // TOKEN_CLR (1x)
+		57398: 50, // TOKEN_COMMA (1x)
+		57369: 51, // TOKEN_DOC (1x)
+		57368: 52, // TOKEN_EXIT (1x)
+		57373: 53, // TOKEN_GREP (1x)
+		57396: 54, // TOKEN_LBRAC (1x)
+		57379: 55, // TOKEN_LSBLDG (1x)
+		57382: 56, // TOKEN_LSDEV (1x)
+		57381: 57, // TOKEN_LSRACK (1x)
+		57380: 58, // TOKEN_LSROOM (1x)
+		57378: 59, // TOKEN_LSSITE (1x)
+		57383: 60, // TOKEN_LSSUBDEV (1x)
+		57384: 61, // TOKEN_LSSUBDEV1 (1x)
+		57377: 62, // TOKEN_LSTEN (1x)
+		57385: 63, // TOKEN_OCBLDG (1x)
+		57386: 64, // TOKEN_OCDEV (1x)
+		57387: 65, // TOKEN_OCRACK (1x)
+		57388: 66, // TOKEN_OCROOM (1x)
+		57390: 67, // TOKEN_OCSITE (1x)
+		57391: 68, // TOKEN_OCTENANT (1x)
+		57371: 69, // TOKEN_PWD (1x)
+		57395: 70, // TOKEN_SELECT (1x)
+		57400: 71, // $default (0x)
+		57345: 72, // error (0x)
+		57364: 73, // TOKEN_BASHTYPE (0x)
+		57366: 74, // TOKEN_CMDFLAG (0x)
+		57392: 75, // TOKEN_OCSDEV (0x)
+		57393: 76, // TOKEN_OCSDEV1 (0x)
+		57363: 77, // TOKEN_SEARCH (0x)
 	}
 
 	yySymNames = []string{
 		"$end",
 		"TOKEN_WORD",
+		"TOKEN_DOT",
 		"TOKEN_ATTRSPEC",
 		"TOKEN_SLASH",
 		"P1",
-		"P",
 		"TOKEN_NUM",
+		"P",
+		"TOKEN_ATTR",
 		"TOKEN_OCDEL",
 		"TOKEN_PLUS",
 		"ORIENTN",
-		"TOKEN_ATTR",
 		"WORDORNUM",
 		"TOKEN_OCPSPEC",
-		"TOKEN_EQUAL",
 		"F",
+		"TOKEN_EQUAL",
 		"TOKEN_BLDG",
 		"TOKEN_DEVICE",
 		"TOKEN_RACK",
+		"TOKEN_RBRAC",
 		"TOKEN_ROOM",
 		"TOKEN_SITE",
 		"TOKEN_TENANT",
 		"E",
+		"GETOBJS",
 		"TOKEN_CD",
 		"TOKEN_CREATE",
 		"TOKEN_DELETE",
@@ -220,6 +236,7 @@ var (
 		"NT_DEL",
 		"NT_GET",
 		"NT_UPDATE",
+		"OCCHOOSE",
 		"OCCR",
 		"OCDEL",
 		"OCGET",
@@ -228,10 +245,11 @@ var (
 		"Q",
 		"start",
 		"TOKEN_CLR",
-		"TOKEN_CMDFLAG",
+		"TOKEN_COMMA",
 		"TOKEN_DOC",
 		"TOKEN_EXIT",
 		"TOKEN_GREP",
+		"TOKEN_LBRAC",
 		"TOKEN_LSBLDG",
 		"TOKEN_LSDEV",
 		"TOKEN_LSRACK",
@@ -247,9 +265,11 @@ var (
 		"TOKEN_OCSITE",
 		"TOKEN_OCTENANT",
 		"TOKEN_PWD",
+		"TOKEN_SELECT",
 		"$default",
 		"error",
 		"TOKEN_BASHTYPE",
+		"TOKEN_CMDFLAG",
 		"TOKEN_OCSDEV",
 		"TOKEN_OCSDEV1",
 		"TOKEN_SEARCH",
@@ -259,312 +279,336 @@ var (
 
 	yyReductions = map[int]struct{ xsym, components int }{
 		0:  {0, 1},
-		1:  {44, 1},
-		2:  {44, 1},
-		3:  {44, 1},
-		4:  {33, 1},
-		5:  {33, 1},
-		6:  {33, 1},
-		7:  {33, 1},
-		8:  {34, 3},
-		9:  {34, 4},
-		10: {36, 1},
-		11: {36, 2},
-		12: {36, 3},
-		13: {37, 2},
-		14: {37, 3},
-		15: {35, 2},
-		16: {21, 1},
-		17: {21, 1},
-		18: {21, 1},
-		19: {21, 1},
-		20: {21, 1},
-		21: {21, 1},
-		22: {21, 1},
-		23: {21, 1},
-		24: {9, 1},
-		25: {9, 1},
-		26: {9, 0},
-		27: {11, 1},
-		28: {11, 1},
-		29: {11, 4},
-		30: {14, 4},
-		31: {14, 3},
-		32: {5, 1},
-		33: {5, 2},
-		34: {4, 3},
-		35: {4, 1},
-		36: {4, 0},
-		37: {43, 3},
-		38: {43, 2},
-		39: {43, 2},
-		40: {43, 2},
-		41: {43, 2},
-		42: {43, 2},
-		43: {43, 2},
-		44: {43, 2},
-		45: {43, 2},
-		46: {43, 2},
-		47: {43, 2},
-		48: {43, 2},
-		49: {43, 2},
-		50: {43, 3},
-		51: {43, 1},
-		52: {32, 1},
-		53: {32, 1},
-		54: {32, 1},
-		55: {32, 1},
-		56: {32, 1},
-		57: {32, 1},
-		58: {32, 2},
-		59: {32, 2},
-		60: {32, 2},
-		61: {32, 2},
-		62: {32, 2},
-		63: {32, 2},
-		64: {32, 2},
-		65: {32, 2},
-		66: {32, 2},
-		67: {41, 2},
-		68: {41, 1},
-		69: {41, 1},
-		70: {41, 1},
-		71: {38, 5},
-		72: {38, 5},
-		73: {38, 5},
-		74: {38, 5},
-		75: {38, 7},
-		76: {38, 7},
-		77: {38, 7},
-		78: {38, 7},
-		79: {38, 7},
-		80: {38, 7},
-		81: {38, 7},
-		82: {38, 7},
-		83: {39, 2},
-		84: {42, 3},
-		85: {40, 2},
+		1:  {48, 1},
+		2:  {48, 1},
+		3:  {48, 1},
+		4:  {36, 1},
+		5:  {36, 1},
+		6:  {36, 1},
+		7:  {36, 1},
+		8:  {37, 3},
+		9:  {37, 4},
+		10: {39, 2},
+		11: {39, 3},
+		12: {40, 3},
+		13: {38, 2},
+		14: {23, 1},
+		15: {23, 1},
+		16: {23, 1},
+		17: {23, 1},
+		18: {23, 1},
+		19: {23, 1},
+		20: {23, 1},
+		21: {23, 1},
+		22: {11, 1},
+		23: {11, 1},
+		24: {11, 0},
+		25: {12, 1},
+		26: {12, 1},
+		27: {12, 4},
+		28: {14, 4},
+		29: {14, 3},
+		30: {7, 1},
+		31: {7, 2},
+		32: {5, 3},
+		33: {5, 1},
+		34: {5, 4},
+		35: {5, 1},
+		36: {5, 2},
+		37: {5, 0},
+		38: {47, 2},
+		39: {47, 2},
+		40: {47, 2},
+		41: {47, 2},
+		42: {47, 2},
+		43: {47, 2},
+		44: {47, 2},
+		45: {47, 2},
+		46: {47, 2},
+		47: {47, 2},
+		48: {47, 2},
+		49: {47, 2},
+		50: {47, 3},
+		51: {47, 1},
+		52: {35, 1},
+		53: {35, 1},
+		54: {35, 1},
+		55: {35, 1},
+		56: {35, 1},
+		57: {35, 1},
+		58: {35, 2},
+		59: {35, 2},
+		60: {35, 2},
+		61: {35, 2},
+		62: {35, 2},
+		63: {35, 2},
+		64: {35, 2},
+		65: {35, 2},
+		66: {35, 2},
+		67: {45, 2},
+		68: {45, 1},
+		69: {45, 1},
+		70: {45, 1},
+		71: {45, 1},
+		72: {45, 1},
+		73: {45, 5},
+		74: {42, 5},
+		75: {42, 5},
+		76: {42, 5},
+		77: {42, 5},
+		78: {42, 7},
+		79: {42, 7},
+		80: {42, 7},
+		81: {42, 7},
+		82: {42, 7},
+		83: {42, 7},
+		84: {42, 7},
+		85: {42, 7},
+		86: {43, 2},
+		87: {46, 5},
+		88: {44, 2},
+		89: {24, 3},
+		90: {24, 1},
+		91: {41, 4},
 	}
 
 	yyXErrors = map[yyXError]string{}
 
-	yyParseTab = [180][]uint16{
+	yyParseTab = [195][]uint16{
 		// 0
-		{1: 101, 3: 100, 99, 125, 7: 124, 120, 13: 126, 22: 102, 95, 98, 96, 103, 116, 30: 112, 97, 113, 88, 91, 94, 92, 93, 39: 121, 123, 90, 122, 89, 87, 114, 47: 119, 118, 115, 106, 109, 108, 107, 105, 110, 111, 104, 64: 117},
+		{1: 107, 108, 4: 106, 105, 7: 134, 9: 133, 127, 15: 135, 25: 109, 101, 104, 102, 110, 123, 33: 119, 103, 120, 94, 97, 100, 98, 99, 131, 43: 128, 130, 96, 129, 95, 93, 121, 51: 126, 125, 122, 55: 113, 116, 115, 114, 112, 117, 118, 111, 69: 124, 132},
+		{92},
+		{91},
+		{90},
+		{89},
+		// 5
+		{88},
+		{87},
 		{86},
 		{85},
-		{84},
-		{83},
-		// 5
-		{82},
-		{81},
-		{80},
-		{79},
-		{15: 255, 258, 257, 256, 254, 253, 262, 28: 259, 260},
+		{16: 276, 279, 278, 20: 277, 275, 274, 283, 31: 280, 281},
 		// 10
-		{76, 101, 3: 100, 99, 251, 15: 255, 258, 257, 256, 254, 253, 252, 28: 259, 260},
-		{1: 101, 3: 100, 99, 245, 10: 246, 14: 244},
-		{50, 101, 3: 100, 99, 243},
-		{54, 2: 54, 6: 54, 10: 54, 13: 54},
-		{50, 101, 50, 4: 242, 6: 50, 10: 50, 13: 50},
+		{55, 107, 108, 4: 106, 105, 7: 272, 16: 276, 279, 278, 20: 277, 275, 274, 273, 31: 280, 281},
+		{1: 107, 108, 4: 106, 105, 7: 266, 55},
+		{55, 107, 108, 4: 106, 105, 7: 265},
+		{62, 2: 62, 62, 6: 62, 8: 62},
+		{55, 107, 108, 55, 5: 264, 55, 8: 55},
 		// 15
-		{51, 2: 51, 239, 6: 51, 10: 51, 13: 51},
-		{50, 237, 3: 100, 99, 238},
-		{50, 101, 3: 100, 99, 236},
-		{50, 101, 3: 100, 99, 235},
-		{50, 101, 3: 100, 99, 234},
+		{59, 2: 59, 59, 262, 6: 59, 8: 59},
+		{2: 259},
+		{55, 107, 108, 4: 106, 105, 7: 258},
+		{55, 107, 108, 4: 106, 105, 7: 257},
+		{55, 107, 108, 4: 106, 105, 7: 256},
 		// 20
-		{50, 101, 3: 100, 99, 233},
-		{50, 101, 3: 100, 99, 232},
-		{50, 101, 3: 100, 99, 231},
-		{50, 101, 3: 100, 99, 230},
-		{50, 101, 3: 100, 99, 229},
+		{55, 107, 108, 4: 106, 105, 7: 255},
+		{55, 107, 108, 4: 106, 105, 7: 254},
+		{55, 107, 108, 4: 106, 105, 7: 253},
+		{55, 107, 108, 4: 106, 105, 7: 252},
+		{55, 107, 108, 4: 106, 105, 7: 251},
 		// 25
-		{50, 101, 3: 100, 99, 228},
-		{50, 101, 3: 100, 99, 226, 225},
-		{35},
-		{34},
-		{33},
+		{55, 107, 108, 4: 106, 105, 7: 250},
+		{55, 107, 108, 4: 106, 105, 7: 249},
+		{55, 107, 108, 4: 106, 105, 246, 247},
+		{41},
+		{40},
 		// 30
-		{32},
-		{31},
-		{30},
-		{29, 222, 22: 217, 218, 221, 219, 216, 224, 30: 223, 220},
-		{15: 145, 151, 149, 147, 143, 141, 38: 139, 58: 144, 150, 148, 146, 142, 140},
+		{39},
+		{38},
+		{37},
+		{36},
+		{35, 243, 25: 238, 239, 242, 240, 237, 245, 33: 244, 241},
 		// 35
-		{18},
-		{17},
-		{16},
-		{50, 101, 3: 100, 99, 138},
-		{13: 128},
-		// 40
-		{50, 101, 3: 100, 99, 127},
-		{1},
-		{1: 131, 6: 132, 130, 129, 133, 11: 134},
-		{1: 62},
-		{1: 61},
-		// 45
-		{59, 2: 59, 10: 59},
-		{58, 2: 58, 10: 58},
-		{1: 135},
-		{2},
-		{1: 60, 7: 130, 129, 136},
-		// 50
-		{1: 137},
-		{57, 2: 57, 10: 57},
-		{3},
-		{19},
-		{12: 212},
-		// 55
-		{12: 208},
-		{12: 204},
-		{12: 200},
-		{12: 194},
-		{12: 188},
-		// 60
-		{12: 182},
-		{12: 176},
-		{12: 170},
-		{12: 164},
-		{12: 158},
-		// 65
-		{12: 152},
-		{1: 101, 50, 100, 99, 153},
-		{2: 154},
-		{1: 131, 6: 132, 130, 129, 133, 11: 155},
-		{2: 156},
-		// 70
-		{1: 131, 6: 132, 130, 129, 133, 11: 157},
-		{4},
-		{1: 101, 50, 100, 99, 159},
-		{2: 160},
-		{1: 131, 6: 132, 130, 129, 133, 11: 161},
-		// 75
-		{2: 162},
-		{1: 131, 6: 132, 130, 129, 133, 11: 163},
-		{5},
-		{1: 101, 50, 100, 99, 165},
-		{2: 166},
-		// 80
-		{1: 131, 6: 132, 130, 129, 133, 11: 167},
-		{2: 168},
-		{1: 131, 6: 132, 130, 129, 133, 11: 169},
-		{6},
-		{1: 101, 50, 100, 99, 171},
-		// 85
-		{2: 172},
-		{1: 131, 6: 132, 130, 129, 133, 11: 173},
-		{2: 174},
-		{1: 131, 6: 132, 130, 129, 133, 11: 175},
-		{7},
-		// 90
-		{1: 101, 50, 100, 99, 177},
-		{2: 178},
-		{1: 131, 6: 132, 130, 129, 133, 11: 179},
-		{2: 180},
-		{1: 131, 6: 132, 130, 129, 133, 11: 181},
-		// 95
-		{8},
-		{1: 101, 50, 100, 99, 183},
-		{2: 184},
-		{1: 131, 6: 132, 130, 129, 133, 11: 185},
-		{2: 186},
-		// 100
-		{1: 131, 6: 132, 130, 129, 133, 11: 187},
-		{9},
-		{1: 101, 50, 100, 99, 189},
-		{2: 190},
-		{1: 131, 6: 132, 130, 129, 133, 11: 191},
-		// 105
-		{2: 192},
-		{1: 131, 6: 132, 130, 129, 133, 11: 193},
-		{10},
-		{1: 101, 50, 100, 99, 195},
-		{2: 196},
-		// 110
-		{1: 131, 6: 132, 130, 129, 133, 11: 197},
-		{2: 198},
-		{1: 131, 6: 132, 130, 129, 133, 11: 199},
-		{11},
-		{1: 101, 50, 100, 99, 201},
-		// 115
-		{2: 202},
-		{1: 131, 6: 132, 130, 129, 133, 11: 203},
-		{12},
-		{1: 101, 50, 100, 99, 205},
-		{2: 206},
-		// 120
-		{1: 131, 6: 132, 130, 129, 133, 11: 207},
-		{13},
-		{1: 101, 50, 100, 99, 209},
-		{2: 210},
-		{1: 131, 6: 132, 130, 129, 133, 11: 211},
-		// 125
-		{14},
-		{1: 101, 50, 100, 99, 213},
-		{2: 214},
-		{1: 131, 6: 132, 130, 129, 133, 11: 215},
-		{15},
-		// 130
-		{28},
-		{27},
-		{26},
-		{25},
+		{16: 166, 172, 170, 20: 168, 164, 162, 42: 160, 63: 165, 171, 169, 167, 163, 161},
 		{24},
-		// 135
 		{23},
 		{22},
 		{21},
-		{20},
-		{38},
+		// 40
+		{20, 2: 156},
+		{55, 107, 108, 4: 106, 105, 7: 155},
+		{2: 143},
+		{55, 107, 108, 4: 106, 105, 7: 136, 54: 137},
+		{4},
+		// 45
+		{1: 138, 24: 139},
+		{19: 2, 50: 141},
+		{19: 140},
+		{1},
+		{1: 138, 24: 142},
+		// 50
+		{19: 3},
+		{8: 144},
+		{15: 145},
+		{1: 148, 6: 149, 9: 147, 146, 150, 151},
+		{1: 70},
+		// 55
+		{1: 69},
+		{67, 3: 67, 8: 67},
+		{66, 3: 66, 8: 66},
+		{1: 152},
+		{5},
+		// 60
+		{1: 68, 9: 147, 146, 153},
+		{1: 154},
+		{65, 3: 65, 8: 65},
+		{6},
+		{8: 157},
+		// 65
+		{15: 158},
+		{1: 159},
+		{19},
+		{25},
+		{13: 233},
+		// 70
+		{13: 229},
+		{13: 225},
+		{13: 221},
+		{13: 215},
+		{13: 209},
+		// 75
+		{13: 203},
+		{13: 197},
+		{13: 191},
+		{13: 185},
+		{13: 179},
+		// 80
+		{13: 173},
+		{1: 107, 108, 55, 106, 105, 7: 174},
+		{3: 175},
+		{1: 148, 6: 149, 9: 147, 146, 150, 176},
+		{3: 177},
+		// 85
+		{1: 148, 6: 149, 9: 147, 146, 150, 178},
+		{7},
+		{1: 107, 108, 55, 106, 105, 7: 180},
+		{3: 181},
+		{1: 148, 6: 149, 9: 147, 146, 150, 182},
+		// 90
+		{3: 183},
+		{1: 148, 6: 149, 9: 147, 146, 150, 184},
+		{8},
+		{1: 107, 108, 55, 106, 105, 7: 186},
+		{3: 187},
+		// 95
+		{1: 148, 6: 149, 9: 147, 146, 150, 188},
+		{3: 189},
+		{1: 148, 6: 149, 9: 147, 146, 150, 190},
+		{9},
+		{1: 107, 108, 55, 106, 105, 7: 192},
+		// 100
+		{3: 193},
+		{1: 148, 6: 149, 9: 147, 146, 150, 194},
+		{3: 195},
+		{1: 148, 6: 149, 9: 147, 146, 150, 196},
+		{10},
+		// 105
+		{1: 107, 108, 55, 106, 105, 7: 198},
+		{3: 199},
+		{1: 148, 6: 149, 9: 147, 146, 150, 200},
+		{3: 201},
+		{1: 148, 6: 149, 9: 147, 146, 150, 202},
+		// 110
+		{11},
+		{1: 107, 108, 55, 106, 105, 7: 204},
+		{3: 205},
+		{1: 148, 6: 149, 9: 147, 146, 150, 206},
+		{3: 207},
+		// 115
+		{1: 148, 6: 149, 9: 147, 146, 150, 208},
+		{12},
+		{1: 107, 108, 55, 106, 105, 7: 210},
+		{3: 211},
+		{1: 148, 6: 149, 9: 147, 146, 150, 212},
+		// 120
+		{3: 213},
+		{1: 148, 6: 149, 9: 147, 146, 150, 214},
+		{13},
+		{1: 107, 108, 55, 106, 105, 7: 216},
+		{3: 217},
+		// 125
+		{1: 148, 6: 149, 9: 147, 146, 150, 218},
+		{3: 219},
+		{1: 148, 6: 149, 9: 147, 146, 150, 220},
+		{14},
+		{1: 107, 108, 55, 106, 105, 7: 222},
+		// 130
+		{3: 223},
+		{1: 148, 6: 149, 9: 147, 146, 150, 224},
+		{15},
+		{1: 107, 108, 55, 106, 105, 7: 226},
+		{3: 227},
+		// 135
+		{1: 148, 6: 149, 9: 147, 146, 150, 228},
+		{16},
+		{1: 107, 108, 55, 106, 105, 7: 230},
+		{3: 231},
+		{1: 148, 6: 149, 9: 147, 146, 150, 232},
 		// 140
-		{37, 6: 227},
-		{36},
-		{39},
-		{40},
-		{41},
+		{17},
+		{1: 107, 108, 55, 106, 105, 7: 234},
+		{3: 235},
+		{1: 148, 6: 149, 9: 147, 146, 150, 236},
+		{18},
 		// 145
-		{42},
-		{43},
+		{34},
+		{33},
+		{32},
+		{31},
+		{30},
+		// 150
+		{29},
+		{28},
+		{27},
+		{26},
 		{44},
+		// 155
+		{43, 6: 248},
+		{42},
 		{45},
 		{46},
-		// 150
 		{47},
-		{51, 3: 239, 46: 240},
-		{48},
-		{50, 101, 50, 4: 241, 6: 50, 10: 50, 13: 50},
-		{49},
-		// 155
-		{52, 2: 52, 6: 52, 10: 52, 13: 52},
-		{53, 2: 53, 6: 53, 10: 53, 13: 53},
-		{71},
-		{73},
-		{10: 246, 14: 250},
 		// 160
-		{13: 247},
-		{1: 131, 6: 132, 130, 129, 133, 11: 248},
-		{55, 10: 246, 14: 249},
-		{56},
-		{72},
+		{48},
+		{49},
+		{50},
+		{51},
+		{52},
 		// 165
-		{75},
-		{10: 246, 14: 261},
-		{1: 70, 3: 70, 10: 70},
-		{1: 69, 3: 69, 10: 69},
-		{1: 68, 3: 68, 10: 68},
+		{53},
+		{54},
+		{56, 2: 56, 56, 260, 6: 56, 8: 56},
+		{55, 107, 108, 55, 5: 261, 55, 8: 55},
+		{58, 2: 58, 58, 6: 58, 8: 58},
 		// 170
-		{1: 67, 3: 67, 10: 67},
-		{1: 66, 3: 66, 10: 66},
-		{1: 65, 3: 65, 10: 65},
-		{1: 64, 3: 64, 10: 64},
-		{1: 63, 3: 63, 10: 63},
+		{55, 107, 108, 55, 5: 263, 55, 8: 55},
+		{60, 2: 60, 60, 6: 60, 8: 60},
+		{61, 2: 61, 61, 6: 61, 8: 61},
+		{79},
+		{8: 268, 14: 267},
 		// 175
-		{74},
-		{1: 101, 3: 100, 99, 264, 10: 246, 14: 263},
-		{78},
-		{10: 246, 14: 265},
-		{77},
+		{80},
+		{15: 269},
+		{1: 148, 6: 149, 9: 147, 146, 150, 270},
+		{63, 8: 268, 14: 271},
+		{64},
+		// 180
+		{82},
+		{8: 268, 14: 282},
+		{1: 78, 78, 4: 78, 8: 78},
+		{1: 77, 77, 4: 77, 8: 77},
+		{1: 76, 76, 4: 76, 8: 76},
+		// 185
+		{1: 75, 75, 4: 75, 8: 75},
+		{1: 74, 74, 4: 74, 8: 74},
+		{1: 73, 73, 4: 73, 8: 73},
+		{1: 72, 72, 4: 72, 8: 72},
+		{1: 71, 71, 4: 71, 8: 71},
+		// 190
+		{81},
+		{1: 107, 108, 4: 106, 105, 7: 285, 268, 14: 284},
+		{84},
+		{8: 268, 14: 286},
+		{83},
 	}
 )
 
@@ -605,7 +649,7 @@ func yylex1(yylex yyLexer, lval *yySymType) (n int) {
 }
 
 func yyParse(yylex yyLexer) int {
-	const yyError = 66
+	const yyError = 72
 
 	yyEx, _ := yylex.(yyLexerEx)
 	var yyn int
@@ -800,45 +844,43 @@ cmd.WarningLogger.Println("Unknown Command")			/*yylex.Error(msg)*/
 		}
 	case 8:
 		{
-			cmd.PostObj(cmd.EntityStrToInt(yyS[yypt-1].s), yyS[yypt-1].s, resMap(&yyS[yypt-0].s)) /*println("@State NT_CR");*/
+			cmd.PostObj(cmd.EntityStrToInt(yyS[yypt-1].s), yyS[yypt-1].s, resMap(&yyS[yypt-0].s))
 		}
 	case 9:
 		{
-			yyVAL.s = yyS[yypt-0].s /*println("Finally: "+$$);*/
+			yyVAL.s = yyS[yypt-0].s
 			cmd.Disp(resMap(&yyS[yypt-0].s))
 			cmd.PostObj(cmd.EntityStrToInt(yyS[yypt-2].s), yyS[yypt-2].s, resMap(&yyS[yypt-0].s))
 		}
 	case 10:
 		{
-			println("@State NT_GET")
-			cmd.GetObject("")
-		}
-	case 11:
-		{
 			cmd.GetObject(yyS[yypt-0].s)
 		}
-	case 12:
+	case 11:
 		{ /*cmd.Disp(resMap(&$4)); */
 			cmd.SearchObjects(yyS[yypt-1].s, resMap(&yyS[yypt-0].s))
 		}
-	case 13:
-		{
-			println("@State NT_UPD")
-			cmd.UpdateObj("", resMap(&yyS[yypt-0].s))
-		}
-	case 14:
+	case 12:
 		{
 			yyVAL.s = yyS[yypt-0].s /*cmd.Disp(resMap(&$4));*/
 			cmd.UpdateObj(yyS[yypt-1].s, resMap(&yyS[yypt-0].s))
 		}
-	case 15:
+	case 13:
 		{
 			println("@State NT_DEL")
 			cmd.DeleteObj(yyS[yypt-0].s)
 		}
-	case 24:
+	case 22:
 		{
 			yyVAL.s = yyS[yypt-0].s
+		}
+	case 23:
+		{
+			yyVAL.s = yyS[yypt-0].s
+		}
+	case 24:
+		{
+			yyVAL.s = ""
 		}
 	case 25:
 		{
@@ -846,43 +888,47 @@ cmd.WarningLogger.Println("Unknown Command")			/*yylex.Error(msg)*/
 		}
 	case 26:
 		{
-			yyVAL.s = ""
-		}
-	case 27:
-		{
-			yyVAL.s = yyS[yypt-0].s
-		}
-	case 28:
-		{
 			x := strconv.Itoa(yyS[yypt-0].n)
 			yyVAL.s = x
 		}
-	case 29:
+	case 27:
 		{
 			yyVAL.s = yyS[yypt-3].s + yyS[yypt-2].s + yyS[yypt-1].s + yyS[yypt-0].s
 		}
-	case 30:
+	case 28:
 		{
 			yyVAL.s = string(yyS[yypt-3].s + "=" + yyS[yypt-1].s + "=" + yyS[yypt-0].s)
 			println("So we got: ", yyVAL.s)
 		}
-	case 31:
+	case 29:
 		{
 			yyVAL.s = yyS[yypt-2].s + "=" + yyS[yypt-0].s
 		}
-	case 33:
+	case 31:
 		{
 			yyVAL.s = "/" + yyS[yypt-0].s
 		}
-	case 34:
+	case 32:
 		{
 			yyVAL.s = yyS[yypt-2].s + "/" + yyS[yypt-0].s
+		}
+	case 33:
+		{
+			yyVAL.s = yyS[yypt-0].s
+		}
+	case 34:
+		{
+			yyVAL.s = "../" + yyS[yypt-0].s
 		}
 	case 35:
 		{
 			yyVAL.s = yyS[yypt-0].s
 		}
 	case 36:
+		{
+			yyVAL.s = ".."
+		}
+	case 37:
 		{
 			yyVAL.s = ""
 		}
@@ -994,69 +1040,92 @@ cmd.WarningLogger.Println("Unknown Command")			/*yylex.Error(msg)*/
 		{
 			cmd.Help("lsog")
 		}
-	case 71:
-		{
-			cmd.GetOCLIAtrributes(cmd.StrToStack(replaceOCLICurrPath(yyS[yypt-2].s)), cmd.TENANT, map[string]interface{}{"attributes": map[string]interface{}{"color": yyS[yypt-0].s}}, rlPtr)
-		}
 	case 72:
 		{
-			cmd.GetOCLIAtrributes(cmd.StrToStack(replaceOCLICurrPath(yyS[yypt-2].s)), cmd.TENANT, map[string]interface{}{"attributes": map[string]interface{}{"color": yyS[yypt-0].s}}, rlPtr)
+			cmd.ShowClipBoard()
 		}
 	case 73:
 		{
-			cmd.GetOCLIAtrributes(cmd.StrToStack(replaceOCLICurrPath(yyS[yypt-2].s)), cmd.SITE, map[string]interface{}{"attributes": map[string]interface{}{"orientation": yyS[yypt-0].s}}, rlPtr)
+			x := yyS[yypt-2].s + "=" + yyS[yypt-0].s
+			cmd.UpdateSelection(resMap(&x))
 		}
 	case 74:
 		{
-			cmd.GetOCLIAtrributes(cmd.StrToStack(replaceOCLICurrPath(yyS[yypt-2].s)), cmd.SITE, map[string]interface{}{"attributes": map[string]interface{}{"orientation": yyS[yypt-0].s}}, rlPtr)
+			cmd.GetOCLIAtrributes(cmd.StrToStack(replaceOCLICurrPath(yyS[yypt-2].s)), cmd.TENANT, map[string]interface{}{"attributes": map[string]interface{}{"color": yyS[yypt-0].s}}, rlPtr)
 		}
 	case 75:
 		{
-			cmd.GetOCLIAtrributes(cmd.StrToStack(replaceOCLICurrPath(yyS[yypt-4].s)), cmd.BLDG, map[string]interface{}{"attributes": map[string]interface{}{"posXY": yyS[yypt-2].s, "size": yyS[yypt-0].s}}, rlPtr)
+			cmd.GetOCLIAtrributes(cmd.StrToStack(replaceOCLICurrPath(yyS[yypt-2].s)), cmd.TENANT, map[string]interface{}{"attributes": map[string]interface{}{"color": yyS[yypt-0].s}}, rlPtr)
 		}
 	case 76:
 		{
-			cmd.GetOCLIAtrributes(cmd.StrToStack(replaceOCLICurrPath(yyS[yypt-4].s)), cmd.BLDG, map[string]interface{}{"attributes": map[string]interface{}{"posXY": yyS[yypt-2].s, "size": yyS[yypt-0].s}}, rlPtr)
+			cmd.GetOCLIAtrributes(cmd.StrToStack(replaceOCLICurrPath(yyS[yypt-2].s)), cmd.SITE, map[string]interface{}{"attributes": map[string]interface{}{"orientation": yyS[yypt-0].s}}, rlPtr)
 		}
 	case 77:
 		{
-			cmd.GetOCLIAtrributes(cmd.StrToStack(replaceOCLICurrPath(yyS[yypt-4].s)), cmd.ROOM, map[string]interface{}{"attributes": map[string]interface{}{"posXY": yyS[yypt-2].s, "size": yyS[yypt-0].s}}, rlPtr)
+			cmd.GetOCLIAtrributes(cmd.StrToStack(replaceOCLICurrPath(yyS[yypt-2].s)), cmd.SITE, map[string]interface{}{"attributes": map[string]interface{}{"orientation": yyS[yypt-0].s}}, rlPtr)
 		}
 	case 78:
 		{
-			cmd.GetOCLIAtrributes(cmd.StrToStack(replaceOCLICurrPath(yyS[yypt-4].s)), cmd.ROOM, map[string]interface{}{"attributes": map[string]interface{}{"posXY": yyS[yypt-2].s, "size": yyS[yypt-0].s}}, rlPtr)
+			cmd.GetOCLIAtrributes(cmd.StrToStack(replaceOCLICurrPath(yyS[yypt-4].s)), cmd.BLDG, map[string]interface{}{"attributes": map[string]interface{}{"posXY": yyS[yypt-2].s, "size": yyS[yypt-0].s}}, rlPtr)
 		}
 	case 79:
 		{
-			cmd.GetOCLIAtrributes(cmd.StrToStack(replaceOCLICurrPath(yyS[yypt-4].s)), cmd.RACK, map[string]interface{}{"attributes": map[string]interface{}{"posXY": yyS[yypt-2].s, "size": yyS[yypt-0].s}}, rlPtr)
+			cmd.GetOCLIAtrributes(cmd.StrToStack(replaceOCLICurrPath(yyS[yypt-4].s)), cmd.BLDG, map[string]interface{}{"attributes": map[string]interface{}{"posXY": yyS[yypt-2].s, "size": yyS[yypt-0].s}}, rlPtr)
 		}
 	case 80:
 		{
-			cmd.GetOCLIAtrributes(cmd.StrToStack(replaceOCLICurrPath(yyS[yypt-4].s)), cmd.RACK, map[string]interface{}{"attributes": map[string]interface{}{"posXY": yyS[yypt-2].s, "size": yyS[yypt-0].s}}, rlPtr)
+			cmd.GetOCLIAtrributes(cmd.StrToStack(replaceOCLICurrPath(yyS[yypt-4].s)), cmd.ROOM, map[string]interface{}{"attributes": map[string]interface{}{"posXY": yyS[yypt-2].s, "size": yyS[yypt-0].s}}, rlPtr)
 		}
 	case 81:
 		{
-			cmd.GetOCLIAtrributes(cmd.StrToStack(replaceOCLICurrPath(yyS[yypt-4].s)), cmd.DEVICE, map[string]interface{}{"attributes": map[string]interface{}{"slot": yyS[yypt-2].s, "sizeUnit": yyS[yypt-0].s}}, rlPtr)
+			cmd.GetOCLIAtrributes(cmd.StrToStack(replaceOCLICurrPath(yyS[yypt-4].s)), cmd.ROOM, map[string]interface{}{"attributes": map[string]interface{}{"posXY": yyS[yypt-2].s, "size": yyS[yypt-0].s}}, rlPtr)
 		}
 	case 82:
 		{
-			cmd.GetOCLIAtrributes(cmd.StrToStack(replaceOCLICurrPath(yyS[yypt-4].s)), cmd.DEVICE, map[string]interface{}{"attributes": map[string]interface{}{"slot": yyS[yypt-2].s, "sizeUnit": yyS[yypt-0].s}}, rlPtr)
+			cmd.GetOCLIAtrributes(cmd.StrToStack(replaceOCLICurrPath(yyS[yypt-4].s)), cmd.RACK, map[string]interface{}{"attributes": map[string]interface{}{"posXY": yyS[yypt-2].s, "size": yyS[yypt-0].s}}, rlPtr)
 		}
 	case 83:
 		{
-			cmd.DeleteObj(replaceOCLICurrPath(yyS[yypt-0].s))
+			cmd.GetOCLIAtrributes(cmd.StrToStack(replaceOCLICurrPath(yyS[yypt-4].s)), cmd.RACK, map[string]interface{}{"attributes": map[string]interface{}{"posXY": yyS[yypt-2].s, "size": yyS[yypt-0].s}}, rlPtr)
 		}
 	case 84:
 		{
-			println("Attribute Acquired")
-			newStr := replaceOCLICurrPath(yyS[yypt-2].s)
-			q := strings.LastIndex(newStr, ".")
-			val := newStr[q+1:] + "=" + yyS[yypt-0].s
-			cmd.UpdateObj(newStr[:q], resMap(&val))
+			cmd.GetOCLIAtrributes(cmd.StrToStack(replaceOCLICurrPath(yyS[yypt-4].s)), cmd.DEVICE, map[string]interface{}{"attributes": map[string]interface{}{"slot": yyS[yypt-2].s, "sizeUnit": yyS[yypt-0].s}}, rlPtr)
 		}
 	case 85:
 		{
+			cmd.GetOCLIAtrributes(cmd.StrToStack(replaceOCLICurrPath(yyS[yypt-4].s)), cmd.DEVICE, map[string]interface{}{"attributes": map[string]interface{}{"slot": yyS[yypt-2].s, "sizeUnit": yyS[yypt-0].s}}, rlPtr)
+		}
+	case 86:
+		{
+			cmd.DeleteObj(replaceOCLICurrPath(yyS[yypt-0].s))
+		}
+	case 87:
+		{
+			println("Attribute Acquired")
+			val := yyS[yypt-2].s + "=" + yyS[yypt-0].s
+			cmd.UpdateObj(replaceOCLICurrPath(yyS[yypt-4].s), resMap(&val))
+		}
+	case 88:
+		{
 			cmd.GetObject(replaceOCLICurrPath(yyS[yypt-0].s))
+		}
+	case 89:
+		{
+			x := make([]string, 0)
+			x = append(x, cmd.State.CurrPath+"/"+yyS[yypt-2].s)
+			x = append(x, yyS[yypt-0].sarr...)
+			yyVAL.sarr = x
+		}
+	case 90:
+		{
+			yyVAL.sarr = []string{cmd.State.CurrPath + "/" + yyS[yypt-0].s}
+		}
+	case 91:
+		{
+			cmd.State.ClipBoard = &yyS[yypt-1].sarr
+			println("Selection made!")
 		}
 
 	}
