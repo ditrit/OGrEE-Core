@@ -8,6 +8,7 @@
 /-/ {println("We got TOKEN_OCDEL");lval.s = yylex.Text(); return TOKEN_OCDEL}
 /:/ {println("We got TOKEN_OCPSPEC"); return TOKEN_OCPSPEC}
 /@/ {println("We got TOKEN_ATTRSPEC"); return TOKEN_ATTRSPEC}
+/\$/ {println("We got TOKEN_DEREF"); return TOKEN_DEREF}
 
 /tn/ {println("We got TOKEN_OCTENANT");return TOKEN_OCTENANT}
 /si/ {println("We got TOKEN_OCSITE");return TOKEN_OCSITE}
@@ -18,6 +19,9 @@
 /sd/ {println("We got TOKEN_OCSDEV");return TOKEN_OCSDEV}
 /sd1/ {println("We got TOKEN_OCSDEV1");return TOKEN_OCSDEV1}
 /selection/ {println("We got TOKEN_SELECT"); return TOKEN_SELECT}
+/cmds/ {println("We got TOKEN_CMDS"); return TOKEN_CMDS}
+/template/ {println("We got TOKEN_TEMPLATE"); return TOKEN_TEMPLATE}
+/var/ {println("We got TOKEN_VAR");return TOKEN_VAR}
 /{/ {println("We got TOKEN_LBRAC");return TOKEN_LBRAC}
 /}/ {println("We got TOKEN_RBRAC");return TOKEN_RBRAC}
 /,/ {println("We got TOKEN_COMMA"); return TOKEN_COMMA}

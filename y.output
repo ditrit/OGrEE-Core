@@ -7,9 +7,10 @@ state 0 //
     TOKEN_CLR        shift, and goto state 29
     TOKEN_CREATE     shift, and goto state 9
     TOKEN_DELETE     shift, and goto state 12
+    TOKEN_DEREF      shift, and goto state 45
     TOKEN_DOC        shift, and goto state 34
     TOKEN_DOT        shift, and goto state 16
-    TOKEN_EQUAL      shift, and goto state 43
+    TOKEN_EQUAL      shift, and goto state 44
     TOKEN_EXIT       shift, and goto state 33
     TOKEN_GET        shift, and goto state 10
     TOKEN_GREP       shift, and goto state 30
@@ -23,10 +24,10 @@ state 0 //
     TOKEN_LSSUBDEV   shift, and goto state 25
     TOKEN_LSSUBDEV1  shift, and goto state 26
     TOKEN_LSTEN      shift, and goto state 19
-    TOKEN_OCDEL      shift, and goto state 41
+    TOKEN_OCDEL      shift, and goto state 42
     TOKEN_PLUS       shift, and goto state 35
     TOKEN_PWD        shift, and goto state 32
-    TOKEN_SELECT     shift, and goto state 40
+    TOKEN_SELECT     shift, and goto state 46
     TOKEN_SLASH      shift, and goto state 14
     TOKEN_TREE       shift, and goto state 27
     TOKEN_UPDATE     shift, and goto state 11
@@ -40,10 +41,12 @@ state 0 //
     NT_UPDATE  goto state 7
     OCCHOOSE   goto state 39
     OCDEL      goto state 36
+    OCDOT      goto state 40
     OCGET      goto state 38
     OCLISYNTX  goto state 4
+    OCSEL      goto state 41
     OCUPDATE   goto state 37
-    P          goto state 42
+    P          goto state 43
     P1         goto state 13
     Q          goto state 3
     start      goto state 1
@@ -103,16 +106,16 @@ state 9 // TOKEN_CREATE
     8 NT_CREATE: TOKEN_CREATE . E F
     9 NT_CREATE: TOKEN_CREATE . E P F
 
-    TOKEN_BLDG        shift, and goto state 184
-    TOKEN_DEVICE      shift, and goto state 187
-    TOKEN_RACK        shift, and goto state 186
-    TOKEN_ROOM        shift, and goto state 185
-    TOKEN_SITE        shift, and goto state 183
-    TOKEN_SUBDEVICE   shift, and goto state 188
-    TOKEN_SUBDEVICE1  shift, and goto state 189
-    TOKEN_TENANT      shift, and goto state 182
+    TOKEN_BLDG        shift, and goto state 202
+    TOKEN_DEVICE      shift, and goto state 205
+    TOKEN_RACK        shift, and goto state 204
+    TOKEN_ROOM        shift, and goto state 203
+    TOKEN_SITE        shift, and goto state 201
+    TOKEN_SUBDEVICE   shift, and goto state 206
+    TOKEN_SUBDEVICE1  shift, and goto state 207
+    TOKEN_TENANT      shift, and goto state 200
 
-    E  goto state 191
+    E  goto state 209
 
 state 10 // TOKEN_GET
 
@@ -121,20 +124,20 @@ state 10 // TOKEN_GET
    37 P1: .  [$end]
 
     $end              reduce using rule 37 (P1)
-    TOKEN_BLDG        shift, and goto state 184
-    TOKEN_DEVICE      shift, and goto state 187
-    TOKEN_DOT         shift, and goto state 16
-    TOKEN_RACK        shift, and goto state 186
-    TOKEN_ROOM        shift, and goto state 185
-    TOKEN_SITE        shift, and goto state 183
+    TOKEN_BLDG        shift, and goto state 202
+    TOKEN_DEVICE      shift, and goto state 205
+    TOKEN_DOT         shift, and goto state 54
+    TOKEN_RACK        shift, and goto state 204
+    TOKEN_ROOM        shift, and goto state 203
+    TOKEN_SITE        shift, and goto state 201
     TOKEN_SLASH       shift, and goto state 14
-    TOKEN_SUBDEVICE   shift, and goto state 188
-    TOKEN_SUBDEVICE1  shift, and goto state 189
-    TOKEN_TENANT      shift, and goto state 182
+    TOKEN_SUBDEVICE   shift, and goto state 206
+    TOKEN_SUBDEVICE1  shift, and goto state 207
+    TOKEN_TENANT      shift, and goto state 200
     TOKEN_WORD        shift, and goto state 15
 
-    E   goto state 181
-    P   goto state 180
+    E   goto state 199
+    P   goto state 198
     P1  goto state 13
 
 state 11 // TOKEN_UPDATE
@@ -143,11 +146,11 @@ state 11 // TOKEN_UPDATE
    37 P1: .  [TOKEN_ATTR]
 
     TOKEN_ATTR   reduce using rule 37 (P1)
-    TOKEN_DOT    shift, and goto state 16
+    TOKEN_DOT    shift, and goto state 54
     TOKEN_SLASH  shift, and goto state 14
     TOKEN_WORD   shift, and goto state 15
 
-    P   goto state 174
+    P   goto state 192
     P1  goto state 13
 
 state 12 // TOKEN_DELETE
@@ -156,11 +159,11 @@ state 12 // TOKEN_DELETE
    37 P1: .  [$end]
 
     $end         reduce using rule 37 (P1)
-    TOKEN_DOT    shift, and goto state 16
+    TOKEN_DOT    shift, and goto state 54
     TOKEN_SLASH  shift, and goto state 14
     TOKEN_WORD   shift, and goto state 15
 
-    P   goto state 173
+    P   goto state 191
     P1  goto state 13
 
 state 13 //
@@ -181,13 +184,13 @@ state 14 // TOKEN_SLASH
     $end            reduce using rule 37 (P1)
     TOKEN_ATTR      reduce using rule 37 (P1)
     TOKEN_ATTRSPEC  reduce using rule 37 (P1)
-    TOKEN_DOT       shift, and goto state 16
+    TOKEN_DOT       shift, and goto state 54
     TOKEN_NUM       reduce using rule 37 (P1)
     TOKEN_WORD      shift, and goto state 15
 
-    P1  goto state 172
+    P1  goto state 190
 
-    conflict on TOKEN_DOT, shift, and goto state 16, reduce using rule 37
+    conflict on TOKEN_DOT, shift, and goto state 54, reduce using rule 37
 
 state 15 // TOKEN_WORD
 
@@ -200,7 +203,7 @@ state 15 // TOKEN_WORD
     TOKEN_ATTRSPEC  reduce using rule 33 (P1)
     TOKEN_DOT       reduce using rule 33 (P1)
     TOKEN_NUM       reduce using rule 33 (P1)
-    TOKEN_SLASH     shift, and goto state 170
+    TOKEN_SLASH     shift, and goto state 188
     conflict on $end, reduce using rule 33, reduce using rule 35
     conflict on TOKEN_ATTR, reduce using rule 33, reduce using rule 35
     conflict on TOKEN_ATTRSPEC, reduce using rule 33, reduce using rule 35
@@ -211,8 +214,14 @@ state 16 // TOKEN_DOT
 
    34 P1: TOKEN_DOT . TOKEN_DOT TOKEN_SLASH P1
    36 P1: TOKEN_DOT . TOKEN_DOT
+   92 OCDOT: TOKEN_DOT . TOKEN_VAR TOKEN_OCPSPEC TOKEN_WORD TOKEN_EQUAL WORDORNUM
+   93 OCDOT: TOKEN_DOT . TOKEN_CMDS TOKEN_OCPSPEC P
+   94 OCDOT: TOKEN_DOT . TOKEN_TEMPLATE TOKEN_OCPSPEC P
 
-    TOKEN_DOT  shift, and goto state 167
+    TOKEN_CMDS      shift, and goto state 178
+    TOKEN_DOT       shift, and goto state 62
+    TOKEN_TEMPLATE  shift, and goto state 179
+    TOKEN_VAR       shift, and goto state 177
 
 state 17 // TOKEN_CD
 
@@ -220,11 +229,11 @@ state 17 // TOKEN_CD
    37 P1: .  [$end]
 
     $end         reduce using rule 37 (P1)
-    TOKEN_DOT    shift, and goto state 16
+    TOKEN_DOT    shift, and goto state 54
     TOKEN_SLASH  shift, and goto state 14
     TOKEN_WORD   shift, and goto state 15
 
-    P   goto state 166
+    P   goto state 176
     P1  goto state 13
 
 state 18 // TOKEN_LS
@@ -233,11 +242,11 @@ state 18 // TOKEN_LS
    37 P1: .  [$end]
 
     $end         reduce using rule 37 (P1)
-    TOKEN_DOT    shift, and goto state 16
+    TOKEN_DOT    shift, and goto state 54
     TOKEN_SLASH  shift, and goto state 14
     TOKEN_WORD   shift, and goto state 15
 
-    P   goto state 165
+    P   goto state 175
     P1  goto state 13
 
 state 19 // TOKEN_LSTEN
@@ -246,11 +255,11 @@ state 19 // TOKEN_LSTEN
    37 P1: .  [$end]
 
     $end         reduce using rule 37 (P1)
-    TOKEN_DOT    shift, and goto state 16
+    TOKEN_DOT    shift, and goto state 54
     TOKEN_SLASH  shift, and goto state 14
     TOKEN_WORD   shift, and goto state 15
 
-    P   goto state 164
+    P   goto state 174
     P1  goto state 13
 
 state 20 // TOKEN_LSSITE
@@ -259,11 +268,11 @@ state 20 // TOKEN_LSSITE
    37 P1: .  [$end]
 
     $end         reduce using rule 37 (P1)
-    TOKEN_DOT    shift, and goto state 16
+    TOKEN_DOT    shift, and goto state 54
     TOKEN_SLASH  shift, and goto state 14
     TOKEN_WORD   shift, and goto state 15
 
-    P   goto state 163
+    P   goto state 173
     P1  goto state 13
 
 state 21 // TOKEN_LSBLDG
@@ -272,11 +281,11 @@ state 21 // TOKEN_LSBLDG
    37 P1: .  [$end]
 
     $end         reduce using rule 37 (P1)
-    TOKEN_DOT    shift, and goto state 16
+    TOKEN_DOT    shift, and goto state 54
     TOKEN_SLASH  shift, and goto state 14
     TOKEN_WORD   shift, and goto state 15
 
-    P   goto state 162
+    P   goto state 172
     P1  goto state 13
 
 state 22 // TOKEN_LSROOM
@@ -285,11 +294,11 @@ state 22 // TOKEN_LSROOM
    37 P1: .  [$end]
 
     $end         reduce using rule 37 (P1)
-    TOKEN_DOT    shift, and goto state 16
+    TOKEN_DOT    shift, and goto state 54
     TOKEN_SLASH  shift, and goto state 14
     TOKEN_WORD   shift, and goto state 15
 
-    P   goto state 161
+    P   goto state 171
     P1  goto state 13
 
 state 23 // TOKEN_LSRACK
@@ -298,11 +307,11 @@ state 23 // TOKEN_LSRACK
    37 P1: .  [$end]
 
     $end         reduce using rule 37 (P1)
-    TOKEN_DOT    shift, and goto state 16
+    TOKEN_DOT    shift, and goto state 54
     TOKEN_SLASH  shift, and goto state 14
     TOKEN_WORD   shift, and goto state 15
 
-    P   goto state 160
+    P   goto state 170
     P1  goto state 13
 
 state 24 // TOKEN_LSDEV
@@ -311,11 +320,11 @@ state 24 // TOKEN_LSDEV
    37 P1: .  [$end]
 
     $end         reduce using rule 37 (P1)
-    TOKEN_DOT    shift, and goto state 16
+    TOKEN_DOT    shift, and goto state 54
     TOKEN_SLASH  shift, and goto state 14
     TOKEN_WORD   shift, and goto state 15
 
-    P   goto state 159
+    P   goto state 169
     P1  goto state 13
 
 state 25 // TOKEN_LSSUBDEV
@@ -324,11 +333,11 @@ state 25 // TOKEN_LSSUBDEV
    37 P1: .  [$end]
 
     $end         reduce using rule 37 (P1)
-    TOKEN_DOT    shift, and goto state 16
+    TOKEN_DOT    shift, and goto state 54
     TOKEN_SLASH  shift, and goto state 14
     TOKEN_WORD   shift, and goto state 15
 
-    P   goto state 158
+    P   goto state 168
     P1  goto state 13
 
 state 26 // TOKEN_LSSUBDEV1
@@ -337,11 +346,11 @@ state 26 // TOKEN_LSSUBDEV1
    37 P1: .  [$end]
 
     $end         reduce using rule 37 (P1)
-    TOKEN_DOT    shift, and goto state 16
+    TOKEN_DOT    shift, and goto state 54
     TOKEN_SLASH  shift, and goto state 14
     TOKEN_WORD   shift, and goto state 15
 
-    P   goto state 157
+    P   goto state 167
     P1  goto state 13
 
 state 27 // TOKEN_TREE
@@ -352,15 +361,15 @@ state 27 // TOKEN_TREE
    37 P1: .  [$end, TOKEN_NUM]
 
     $end         reduce using rule 37 (P1)
-    TOKEN_DOT    shift, and goto state 16
-    TOKEN_NUM    shift, and goto state 154
+    TOKEN_DOT    shift, and goto state 54
+    TOKEN_NUM    shift, and goto state 164
     TOKEN_SLASH  shift, and goto state 14
     TOKEN_WORD   shift, and goto state 15
 
-    P   goto state 155
+    P   goto state 165
     P1  goto state 13
 
-    conflict on TOKEN_NUM, shift, and goto state 154, reduce using rule 37
+    conflict on TOKEN_NUM, shift, and goto state 164, reduce using rule 37
 
 state 28 // TOKEN_CLR [$end]
 
@@ -412,34 +421,34 @@ state 34 // TOKEN_DOC
    66 BASH: TOKEN_DOC . TOKEN_LSOG
 
     $end          reduce using rule 57 (BASH)
-    TOKEN_CD      shift, and goto state 146
-    TOKEN_CREATE  shift, and goto state 147
-    TOKEN_DELETE  shift, and goto state 150
-    TOKEN_GET     shift, and goto state 148
-    TOKEN_LS      shift, and goto state 145
-    TOKEN_LSOG    shift, and goto state 153
-    TOKEN_TREE    shift, and goto state 152
-    TOKEN_UPDATE  shift, and goto state 149
-    TOKEN_WORD    shift, and goto state 151
+    TOKEN_CD      shift, and goto state 156
+    TOKEN_CREATE  shift, and goto state 157
+    TOKEN_DELETE  shift, and goto state 160
+    TOKEN_GET     shift, and goto state 158
+    TOKEN_LS      shift, and goto state 155
+    TOKEN_LSOG    shift, and goto state 163
+    TOKEN_TREE    shift, and goto state 162
+    TOKEN_UPDATE  shift, and goto state 159
+    TOKEN_WORD    shift, and goto state 161
 
 state 35 // TOKEN_PLUS
 
    67 OCLISYNTX: TOKEN_PLUS . OCCR
 
-    TOKEN_BLDG      shift, and goto state 74
-    TOKEN_DEVICE    shift, and goto state 80
-    TOKEN_OCBLDG    shift, and goto state 73
-    TOKEN_OCDEV     shift, and goto state 79
-    TOKEN_OCRACK    shift, and goto state 77
-    TOKEN_OCROOM    shift, and goto state 75
-    TOKEN_OCSITE    shift, and goto state 71
-    TOKEN_OCTENANT  shift, and goto state 69
-    TOKEN_RACK      shift, and goto state 78
-    TOKEN_ROOM      shift, and goto state 76
-    TOKEN_SITE      shift, and goto state 72
-    TOKEN_TENANT    shift, and goto state 70
+    TOKEN_BLDG      shift, and goto state 84
+    TOKEN_DEVICE    shift, and goto state 90
+    TOKEN_OCBLDG    shift, and goto state 83
+    TOKEN_OCDEV     shift, and goto state 89
+    TOKEN_OCRACK    shift, and goto state 87
+    TOKEN_OCROOM    shift, and goto state 85
+    TOKEN_OCSITE    shift, and goto state 81
+    TOKEN_OCTENANT  shift, and goto state 79
+    TOKEN_RACK      shift, and goto state 88
+    TOKEN_ROOM      shift, and goto state 86
+    TOKEN_SITE      shift, and goto state 82
+    TOKEN_TENANT    shift, and goto state 80
 
-    OCCR  goto state 68
+    OCCR  goto state 78
 
 state 36 // TOKEN_OCDEL [$end]
 
@@ -465,1079 +474,164 @@ state 39 // TOKEN_EQUAL TOKEN_LBRAC TOKEN_WORD TOKEN_RBRAC [$end]
 
     $end  reduce using rule 71 (OCLISYNTX)
 
-state 40 // TOKEN_SELECT
+state 40 // TOKEN_DOT TOKEN_CMDS TOKEN_OCPSPEC [$end]
 
-   72 OCLISYNTX: TOKEN_SELECT .  [$end]
-   73 OCLISYNTX: TOKEN_SELECT . TOKEN_DOT TOKEN_ATTR TOKEN_EQUAL TOKEN_WORD
+   72 OCLISYNTX: OCDOT .  [$end]
 
-    $end       reduce using rule 72 (OCLISYNTX)
-    TOKEN_DOT  shift, and goto state 64
+    $end  reduce using rule 72 (OCLISYNTX)
 
-state 41 // TOKEN_OCDEL
+state 41 // TOKEN_SELECT [$end]
+
+   73 OCLISYNTX: OCSEL .  [$end]
+
+    $end  reduce using rule 73 (OCLISYNTX)
+
+state 42 // TOKEN_OCDEL
 
    86 OCDEL: TOKEN_OCDEL . P
    37 P1: .  [$end]
 
     $end         reduce using rule 37 (P1)
-    TOKEN_DOT    shift, and goto state 16
+    TOKEN_DOT    shift, and goto state 54
     TOKEN_SLASH  shift, and goto state 14
     TOKEN_WORD   shift, and goto state 15
 
-    P   goto state 63
+    P   goto state 77
     P1  goto state 13
 
-state 42 //
+state 43 //
 
    87 OCUPDATE: P . TOKEN_DOT TOKEN_ATTR TOKEN_EQUAL WORDORNUM
 
-    TOKEN_DOT  shift, and goto state 51
+    TOKEN_DOT  shift, and goto state 65
 
-state 43 // TOKEN_EQUAL
+state 44 // TOKEN_EQUAL
 
    88 OCGET: TOKEN_EQUAL . P
    91 OCCHOOSE: TOKEN_EQUAL . TOKEN_LBRAC GETOBJS TOKEN_RBRAC
    37 P1: .  [$end]
 
     $end         reduce using rule 37 (P1)
-    TOKEN_DOT    shift, and goto state 16
-    TOKEN_LBRAC  shift, and goto state 45
+    TOKEN_DOT    shift, and goto state 54
+    TOKEN_LBRAC  shift, and goto state 56
     TOKEN_SLASH  shift, and goto state 14
     TOKEN_WORD   shift, and goto state 15
 
-    P   goto state 44
+    P   goto state 55
     P1  goto state 13
 
-state 44 // TOKEN_EQUAL [$end]
+state 45 // TOKEN_DEREF
+
+   95 OCDOT: TOKEN_DEREF . TOKEN_LBRAC TOKEN_WORD TOKEN_RBRAC
+
+    TOKEN_LBRAC  shift, and goto state 51
+
+state 46 // TOKEN_SELECT
+
+   96 OCSEL: TOKEN_SELECT .  [$end]
+   97 OCSEL: TOKEN_SELECT . TOKEN_DOT TOKEN_ATTR TOKEN_EQUAL TOKEN_WORD
+
+    $end       reduce using rule 96 (OCSEL)
+    TOKEN_DOT  shift, and goto state 47
+
+state 47 // TOKEN_SELECT TOKEN_DOT
+
+   97 OCSEL: TOKEN_SELECT TOKEN_DOT . TOKEN_ATTR TOKEN_EQUAL TOKEN_WORD
+
+    TOKEN_ATTR  shift, and goto state 48
+
+state 48 // TOKEN_SELECT TOKEN_DOT TOKEN_ATTR
+
+   97 OCSEL: TOKEN_SELECT TOKEN_DOT TOKEN_ATTR . TOKEN_EQUAL TOKEN_WORD
+
+    TOKEN_EQUAL  shift, and goto state 49
+
+state 49 // TOKEN_SELECT TOKEN_DOT TOKEN_ATTR TOKEN_EQUAL
+
+   97 OCSEL: TOKEN_SELECT TOKEN_DOT TOKEN_ATTR TOKEN_EQUAL . TOKEN_WORD
+
+    TOKEN_WORD  shift, and goto state 50
+
+state 50 // TOKEN_SELECT TOKEN_DOT TOKEN_ATTR TOKEN_EQUAL TOKEN_WORD
+
+   97 OCSEL: TOKEN_SELECT TOKEN_DOT TOKEN_ATTR TOKEN_EQUAL TOKEN_WORD .  [$end]
+
+    $end  reduce using rule 97 (OCSEL)
+
+state 51 // TOKEN_DEREF TOKEN_LBRAC
+
+   95 OCDOT: TOKEN_DEREF TOKEN_LBRAC . TOKEN_WORD TOKEN_RBRAC
+
+    TOKEN_WORD  shift, and goto state 52
+
+state 52 // TOKEN_DEREF TOKEN_LBRAC TOKEN_WORD
+
+   95 OCDOT: TOKEN_DEREF TOKEN_LBRAC TOKEN_WORD . TOKEN_RBRAC
+
+    TOKEN_RBRAC  shift, and goto state 53
+
+state 53 // TOKEN_DEREF TOKEN_LBRAC TOKEN_WORD TOKEN_RBRAC
+
+   95 OCDOT: TOKEN_DEREF TOKEN_LBRAC TOKEN_WORD TOKEN_RBRAC .  [$end]
+
+    $end  reduce using rule 95 (OCDOT)
+
+state 54 // TOKEN_GET TOKEN_DOT
+
+   34 P1: TOKEN_DOT . TOKEN_DOT TOKEN_SLASH P1
+   36 P1: TOKEN_DOT . TOKEN_DOT
+
+    TOKEN_DOT  shift, and goto state 62
+
+state 55 // TOKEN_EQUAL [$end]
 
    88 OCGET: TOKEN_EQUAL P .  [$end]
 
     $end  reduce using rule 88 (OCGET)
 
-state 45 // TOKEN_EQUAL TOKEN_LBRAC
+state 56 // TOKEN_EQUAL TOKEN_LBRAC
 
    91 OCCHOOSE: TOKEN_EQUAL TOKEN_LBRAC . GETOBJS TOKEN_RBRAC
 
-    TOKEN_WORD  shift, and goto state 46
+    TOKEN_WORD  shift, and goto state 57
 
-    GETOBJS  goto state 47
+    GETOBJS  goto state 58
 
-state 46 // TOKEN_EQUAL TOKEN_LBRAC TOKEN_WORD
+state 57 // TOKEN_EQUAL TOKEN_LBRAC TOKEN_WORD
 
    89 GETOBJS: TOKEN_WORD . TOKEN_COMMA GETOBJS
    90 GETOBJS: TOKEN_WORD .  [TOKEN_RBRAC]
 
-    TOKEN_COMMA  shift, and goto state 49
+    TOKEN_COMMA  shift, and goto state 60
     TOKEN_RBRAC  reduce using rule 90 (GETOBJS)
 
-state 47 // TOKEN_EQUAL TOKEN_LBRAC TOKEN_WORD [TOKEN_RBRAC]
+state 58 // TOKEN_EQUAL TOKEN_LBRAC TOKEN_WORD [TOKEN_RBRAC]
 
    91 OCCHOOSE: TOKEN_EQUAL TOKEN_LBRAC GETOBJS . TOKEN_RBRAC
 
-    TOKEN_RBRAC  shift, and goto state 48
+    TOKEN_RBRAC  shift, and goto state 59
 
-state 48 // TOKEN_EQUAL TOKEN_LBRAC TOKEN_WORD TOKEN_RBRAC
+state 59 // TOKEN_EQUAL TOKEN_LBRAC TOKEN_WORD TOKEN_RBRAC
 
    91 OCCHOOSE: TOKEN_EQUAL TOKEN_LBRAC GETOBJS TOKEN_RBRAC .  [$end]
 
     $end  reduce using rule 91 (OCCHOOSE)
 
-state 49 // TOKEN_EQUAL TOKEN_LBRAC TOKEN_WORD TOKEN_COMMA
+state 60 // TOKEN_EQUAL TOKEN_LBRAC TOKEN_WORD TOKEN_COMMA
 
    89 GETOBJS: TOKEN_WORD TOKEN_COMMA . GETOBJS
 
-    TOKEN_WORD  shift, and goto state 46
+    TOKEN_WORD  shift, and goto state 57
 
-    GETOBJS  goto state 50
+    GETOBJS  goto state 61
 
-state 50 // TOKEN_EQUAL TOKEN_LBRAC TOKEN_WORD TOKEN_COMMA TOKEN_WORD [TOKEN_RBRAC]
+state 61 // TOKEN_EQUAL TOKEN_LBRAC TOKEN_WORD TOKEN_COMMA TOKEN_WORD [TOKEN_RBRAC]
 
    89 GETOBJS: TOKEN_WORD TOKEN_COMMA GETOBJS .  [TOKEN_RBRAC]
 
     TOKEN_RBRAC  reduce using rule 89 (GETOBJS)
 
-state 51 // TOKEN_DOT
-
-   87 OCUPDATE: P TOKEN_DOT . TOKEN_ATTR TOKEN_EQUAL WORDORNUM
-
-    TOKEN_ATTR  shift, and goto state 52
-
-state 52 // TOKEN_DOT TOKEN_ATTR
-
-   87 OCUPDATE: P TOKEN_DOT TOKEN_ATTR . TOKEN_EQUAL WORDORNUM
-
-    TOKEN_EQUAL  shift, and goto state 53
-
-state 53 // TOKEN_DOT TOKEN_ATTR TOKEN_EQUAL
-
-   87 OCUPDATE: P TOKEN_DOT TOKEN_ATTR TOKEN_EQUAL . WORDORNUM
-   24 ORIENTN: .  [TOKEN_WORD]
-
-    TOKEN_NUM    shift, and goto state 57
-    TOKEN_OCDEL  shift, and goto state 55
-    TOKEN_PLUS   shift, and goto state 54
-    TOKEN_WORD   shift, and goto state 56
-
-    ORIENTN    goto state 58
-    WORDORNUM  goto state 59
-
-    conflict on TOKEN_WORD, shift, and goto state 56, reduce using rule 24
-
-state 54 // TOKEN_DOT TOKEN_ATTR TOKEN_EQUAL TOKEN_PLUS
-
-   22 ORIENTN: TOKEN_PLUS .  [TOKEN_WORD]
-
-    TOKEN_WORD  reduce using rule 22 (ORIENTN)
-
-state 55 // TOKEN_DOT TOKEN_ATTR TOKEN_EQUAL TOKEN_OCDEL
-
-   23 ORIENTN: TOKEN_OCDEL .  [TOKEN_WORD]
-
-    TOKEN_WORD  reduce using rule 23 (ORIENTN)
-
-state 56 // TOKEN_DOT TOKEN_ATTR TOKEN_EQUAL TOKEN_WORD
-
-   25 WORDORNUM: TOKEN_WORD .  [$end, TOKEN_ATTR, TOKEN_ATTRSPEC]
-
-    $end            reduce using rule 25 (WORDORNUM)
-    TOKEN_ATTR      reduce using rule 25 (WORDORNUM)
-    TOKEN_ATTRSPEC  reduce using rule 25 (WORDORNUM)
-
-state 57 // TOKEN_DOT TOKEN_ATTR TOKEN_EQUAL TOKEN_NUM
-
-   26 WORDORNUM: TOKEN_NUM .  [$end, TOKEN_ATTR, TOKEN_ATTRSPEC]
-
-    $end            reduce using rule 26 (WORDORNUM)
-    TOKEN_ATTR      reduce using rule 26 (WORDORNUM)
-    TOKEN_ATTRSPEC  reduce using rule 26 (WORDORNUM)
-
-state 58 // TOKEN_UPDATE TOKEN_ATTR TOKEN_EQUAL
-
-   27 WORDORNUM: ORIENTN . TOKEN_WORD ORIENTN TOKEN_WORD
-
-    TOKEN_WORD  shift, and goto state 60
-
-state 59 // TOKEN_DOT TOKEN_ATTR TOKEN_EQUAL TOKEN_NUM
-
-   87 OCUPDATE: P TOKEN_DOT TOKEN_ATTR TOKEN_EQUAL WORDORNUM .  [$end]
-
-    $end  reduce using rule 87 (OCUPDATE)
-
-state 60 // TOKEN_UPDATE TOKEN_ATTR TOKEN_EQUAL TOKEN_WORD
-
-   27 WORDORNUM: ORIENTN TOKEN_WORD . ORIENTN TOKEN_WORD
-   24 ORIENTN: .  [TOKEN_WORD]
-
-    TOKEN_OCDEL  shift, and goto state 55
-    TOKEN_PLUS   shift, and goto state 54
-    TOKEN_WORD   reduce using rule 24 (ORIENTN)
-
-    ORIENTN  goto state 61
-
-state 61 // TOKEN_UPDATE TOKEN_ATTR TOKEN_EQUAL TOKEN_WORD
-
-   27 WORDORNUM: ORIENTN TOKEN_WORD ORIENTN . TOKEN_WORD
-
-    TOKEN_WORD  shift, and goto state 62
-
-state 62 // TOKEN_UPDATE TOKEN_ATTR TOKEN_EQUAL TOKEN_WORD TOKEN_WORD
-
-   27 WORDORNUM: ORIENTN TOKEN_WORD ORIENTN TOKEN_WORD .  [$end, TOKEN_ATTR, TOKEN_ATTRSPEC]
-
-    $end            reduce using rule 27 (WORDORNUM)
-    TOKEN_ATTR      reduce using rule 27 (WORDORNUM)
-    TOKEN_ATTRSPEC  reduce using rule 27 (WORDORNUM)
-
-state 63 // TOKEN_OCDEL [$end]
-
-   86 OCDEL: TOKEN_OCDEL P .  [$end]
-
-    $end  reduce using rule 86 (OCDEL)
-
-state 64 // TOKEN_SELECT TOKEN_DOT
-
-   73 OCLISYNTX: TOKEN_SELECT TOKEN_DOT . TOKEN_ATTR TOKEN_EQUAL TOKEN_WORD
-
-    TOKEN_ATTR  shift, and goto state 65
-
-state 65 // TOKEN_SELECT TOKEN_DOT TOKEN_ATTR
-
-   73 OCLISYNTX: TOKEN_SELECT TOKEN_DOT TOKEN_ATTR . TOKEN_EQUAL TOKEN_WORD
-
-    TOKEN_EQUAL  shift, and goto state 66
-
-state 66 // TOKEN_SELECT TOKEN_DOT TOKEN_ATTR TOKEN_EQUAL
-
-   73 OCLISYNTX: TOKEN_SELECT TOKEN_DOT TOKEN_ATTR TOKEN_EQUAL . TOKEN_WORD
-
-    TOKEN_WORD  shift, and goto state 67
-
-state 67 // TOKEN_SELECT TOKEN_DOT TOKEN_ATTR TOKEN_EQUAL TOKEN_WORD
-
-   73 OCLISYNTX: TOKEN_SELECT TOKEN_DOT TOKEN_ATTR TOKEN_EQUAL TOKEN_WORD .  [$end]
-
-    $end  reduce using rule 73 (OCLISYNTX)
-
-state 68 // TOKEN_PLUS TOKEN_OCSITE TOKEN_OCPSPEC TOKEN_ATTRSPEC TOKEN_NUM [$end]
-
-   67 OCLISYNTX: TOKEN_PLUS OCCR .  [$end]
-
-    $end  reduce using rule 67 (OCLISYNTX)
-
-state 69 // TOKEN_PLUS TOKEN_OCTENANT
-
-   74 OCCR: TOKEN_OCTENANT . TOKEN_OCPSPEC P TOKEN_ATTRSPEC WORDORNUM
-
-    TOKEN_OCPSPEC  shift, and goto state 141
-
-state 70 // TOKEN_PLUS TOKEN_TENANT
-
-   75 OCCR: TOKEN_TENANT . TOKEN_OCPSPEC P TOKEN_ATTRSPEC WORDORNUM
-
-    TOKEN_OCPSPEC  shift, and goto state 137
-
-state 71 // TOKEN_PLUS TOKEN_OCSITE
-
-   76 OCCR: TOKEN_OCSITE . TOKEN_OCPSPEC P TOKEN_ATTRSPEC WORDORNUM
-
-    TOKEN_OCPSPEC  shift, and goto state 133
-
-state 72 // TOKEN_PLUS TOKEN_SITE
-
-   77 OCCR: TOKEN_SITE . TOKEN_OCPSPEC P TOKEN_ATTRSPEC WORDORNUM
-
-    TOKEN_OCPSPEC  shift, and goto state 129
-
-state 73 // TOKEN_PLUS TOKEN_OCBLDG
-
-   78 OCCR: TOKEN_OCBLDG . TOKEN_OCPSPEC P TOKEN_ATTRSPEC WORDORNUM TOKEN_ATTRSPEC WORDORNUM
-
-    TOKEN_OCPSPEC  shift, and goto state 123
-
-state 74 // TOKEN_PLUS TOKEN_BLDG
-
-   79 OCCR: TOKEN_BLDG . TOKEN_OCPSPEC P TOKEN_ATTRSPEC WORDORNUM TOKEN_ATTRSPEC WORDORNUM
-
-    TOKEN_OCPSPEC  shift, and goto state 117
-
-state 75 // TOKEN_PLUS TOKEN_OCROOM
-
-   80 OCCR: TOKEN_OCROOM . TOKEN_OCPSPEC P TOKEN_ATTRSPEC WORDORNUM TOKEN_ATTRSPEC WORDORNUM
-
-    TOKEN_OCPSPEC  shift, and goto state 111
-
-state 76 // TOKEN_PLUS TOKEN_ROOM
-
-   81 OCCR: TOKEN_ROOM . TOKEN_OCPSPEC P TOKEN_ATTRSPEC WORDORNUM TOKEN_ATTRSPEC WORDORNUM
-
-    TOKEN_OCPSPEC  shift, and goto state 105
-
-state 77 // TOKEN_PLUS TOKEN_OCRACK
-
-   82 OCCR: TOKEN_OCRACK . TOKEN_OCPSPEC P TOKEN_ATTRSPEC WORDORNUM TOKEN_ATTRSPEC WORDORNUM
-
-    TOKEN_OCPSPEC  shift, and goto state 99
-
-state 78 // TOKEN_PLUS TOKEN_RACK
-
-   83 OCCR: TOKEN_RACK . TOKEN_OCPSPEC P TOKEN_ATTRSPEC WORDORNUM TOKEN_ATTRSPEC WORDORNUM
-
-    TOKEN_OCPSPEC  shift, and goto state 93
-
-state 79 // TOKEN_PLUS TOKEN_OCDEV
-
-   84 OCCR: TOKEN_OCDEV . TOKEN_OCPSPEC P TOKEN_ATTRSPEC WORDORNUM TOKEN_ATTRSPEC WORDORNUM
-
-    TOKEN_OCPSPEC  shift, and goto state 87
-
-state 80 // TOKEN_PLUS TOKEN_DEVICE
-
-   85 OCCR: TOKEN_DEVICE . TOKEN_OCPSPEC P TOKEN_ATTRSPEC WORDORNUM TOKEN_ATTRSPEC WORDORNUM
-
-    TOKEN_OCPSPEC  shift, and goto state 81
-
-state 81 // TOKEN_PLUS TOKEN_DEVICE TOKEN_OCPSPEC
-
-   85 OCCR: TOKEN_DEVICE TOKEN_OCPSPEC . P TOKEN_ATTRSPEC WORDORNUM TOKEN_ATTRSPEC WORDORNUM
-   37 P1: .  [TOKEN_ATTRSPEC]
-
-    TOKEN_ATTRSPEC  reduce using rule 37 (P1)
-    TOKEN_DOT       shift, and goto state 16
-    TOKEN_SLASH     shift, and goto state 14
-    TOKEN_WORD      shift, and goto state 15
-
-    P   goto state 82
-    P1  goto state 13
-
-state 82 // TOKEN_PLUS TOKEN_DEVICE TOKEN_OCPSPEC [TOKEN_ATTRSPEC]
-
-   85 OCCR: TOKEN_DEVICE TOKEN_OCPSPEC P . TOKEN_ATTRSPEC WORDORNUM TOKEN_ATTRSPEC WORDORNUM
-
-    TOKEN_ATTRSPEC  shift, and goto state 83
-
-state 83 // TOKEN_PLUS TOKEN_DEVICE TOKEN_OCPSPEC TOKEN_ATTRSPEC
-
-   85 OCCR: TOKEN_DEVICE TOKEN_OCPSPEC P TOKEN_ATTRSPEC . WORDORNUM TOKEN_ATTRSPEC WORDORNUM
-   24 ORIENTN: .  [TOKEN_WORD]
-
-    TOKEN_NUM    shift, and goto state 57
-    TOKEN_OCDEL  shift, and goto state 55
-    TOKEN_PLUS   shift, and goto state 54
-    TOKEN_WORD   shift, and goto state 56
-
-    ORIENTN    goto state 58
-    WORDORNUM  goto state 84
-
-    conflict on TOKEN_WORD, shift, and goto state 56, reduce using rule 24
-
-state 84 // TOKEN_PLUS TOKEN_DEVICE TOKEN_OCPSPEC TOKEN_ATTRSPEC TOKEN_NUM [TOKEN_ATTRSPEC]
-
-   85 OCCR: TOKEN_DEVICE TOKEN_OCPSPEC P TOKEN_ATTRSPEC WORDORNUM . TOKEN_ATTRSPEC WORDORNUM
-
-    TOKEN_ATTRSPEC  shift, and goto state 85
-
-state 85 // TOKEN_PLUS TOKEN_DEVICE TOKEN_OCPSPEC TOKEN_ATTRSPEC TOKEN_NUM TOKEN_ATTRSPEC
-
-   85 OCCR: TOKEN_DEVICE TOKEN_OCPSPEC P TOKEN_ATTRSPEC WORDORNUM TOKEN_ATTRSPEC . WORDORNUM
-   24 ORIENTN: .  [TOKEN_WORD]
-
-    TOKEN_NUM    shift, and goto state 57
-    TOKEN_OCDEL  shift, and goto state 55
-    TOKEN_PLUS   shift, and goto state 54
-    TOKEN_WORD   shift, and goto state 56
-
-    ORIENTN    goto state 58
-    WORDORNUM  goto state 86
-
-    conflict on TOKEN_WORD, shift, and goto state 56, reduce using rule 24
-
-state 86 // TOKEN_PLUS TOKEN_DEVICE TOKEN_OCPSPEC TOKEN_ATTRSPEC TOKEN_NUM TOKEN_ATTRSPEC TOKEN_NUM [$end]
-
-   85 OCCR: TOKEN_DEVICE TOKEN_OCPSPEC P TOKEN_ATTRSPEC WORDORNUM TOKEN_ATTRSPEC WORDORNUM .  [$end]
-
-    $end  reduce using rule 85 (OCCR)
-
-state 87 // TOKEN_PLUS TOKEN_OCDEV TOKEN_OCPSPEC
-
-   84 OCCR: TOKEN_OCDEV TOKEN_OCPSPEC . P TOKEN_ATTRSPEC WORDORNUM TOKEN_ATTRSPEC WORDORNUM
-   37 P1: .  [TOKEN_ATTRSPEC]
-
-    TOKEN_ATTRSPEC  reduce using rule 37 (P1)
-    TOKEN_DOT       shift, and goto state 16
-    TOKEN_SLASH     shift, and goto state 14
-    TOKEN_WORD      shift, and goto state 15
-
-    P   goto state 88
-    P1  goto state 13
-
-state 88 // TOKEN_PLUS TOKEN_OCDEV TOKEN_OCPSPEC [TOKEN_ATTRSPEC]
-
-   84 OCCR: TOKEN_OCDEV TOKEN_OCPSPEC P . TOKEN_ATTRSPEC WORDORNUM TOKEN_ATTRSPEC WORDORNUM
-
-    TOKEN_ATTRSPEC  shift, and goto state 89
-
-state 89 // TOKEN_PLUS TOKEN_OCDEV TOKEN_OCPSPEC TOKEN_ATTRSPEC
-
-   84 OCCR: TOKEN_OCDEV TOKEN_OCPSPEC P TOKEN_ATTRSPEC . WORDORNUM TOKEN_ATTRSPEC WORDORNUM
-   24 ORIENTN: .  [TOKEN_WORD]
-
-    TOKEN_NUM    shift, and goto state 57
-    TOKEN_OCDEL  shift, and goto state 55
-    TOKEN_PLUS   shift, and goto state 54
-    TOKEN_WORD   shift, and goto state 56
-
-    ORIENTN    goto state 58
-    WORDORNUM  goto state 90
-
-    conflict on TOKEN_WORD, shift, and goto state 56, reduce using rule 24
-
-state 90 // TOKEN_PLUS TOKEN_OCDEV TOKEN_OCPSPEC TOKEN_ATTRSPEC TOKEN_NUM [TOKEN_ATTRSPEC]
-
-   84 OCCR: TOKEN_OCDEV TOKEN_OCPSPEC P TOKEN_ATTRSPEC WORDORNUM . TOKEN_ATTRSPEC WORDORNUM
-
-    TOKEN_ATTRSPEC  shift, and goto state 91
-
-state 91 // TOKEN_PLUS TOKEN_OCDEV TOKEN_OCPSPEC TOKEN_ATTRSPEC TOKEN_NUM TOKEN_ATTRSPEC
-
-   84 OCCR: TOKEN_OCDEV TOKEN_OCPSPEC P TOKEN_ATTRSPEC WORDORNUM TOKEN_ATTRSPEC . WORDORNUM
-   24 ORIENTN: .  [TOKEN_WORD]
-
-    TOKEN_NUM    shift, and goto state 57
-    TOKEN_OCDEL  shift, and goto state 55
-    TOKEN_PLUS   shift, and goto state 54
-    TOKEN_WORD   shift, and goto state 56
-
-    ORIENTN    goto state 58
-    WORDORNUM  goto state 92
-
-    conflict on TOKEN_WORD, shift, and goto state 56, reduce using rule 24
-
-state 92 // TOKEN_PLUS TOKEN_OCDEV TOKEN_OCPSPEC TOKEN_ATTRSPEC TOKEN_NUM TOKEN_ATTRSPEC TOKEN_NUM [$end]
-
-   84 OCCR: TOKEN_OCDEV TOKEN_OCPSPEC P TOKEN_ATTRSPEC WORDORNUM TOKEN_ATTRSPEC WORDORNUM .  [$end]
-
-    $end  reduce using rule 84 (OCCR)
-
-state 93 // TOKEN_PLUS TOKEN_RACK TOKEN_OCPSPEC
-
-   83 OCCR: TOKEN_RACK TOKEN_OCPSPEC . P TOKEN_ATTRSPEC WORDORNUM TOKEN_ATTRSPEC WORDORNUM
-   37 P1: .  [TOKEN_ATTRSPEC]
-
-    TOKEN_ATTRSPEC  reduce using rule 37 (P1)
-    TOKEN_DOT       shift, and goto state 16
-    TOKEN_SLASH     shift, and goto state 14
-    TOKEN_WORD      shift, and goto state 15
-
-    P   goto state 94
-    P1  goto state 13
-
-state 94 // TOKEN_PLUS TOKEN_RACK TOKEN_OCPSPEC [TOKEN_ATTRSPEC]
-
-   83 OCCR: TOKEN_RACK TOKEN_OCPSPEC P . TOKEN_ATTRSPEC WORDORNUM TOKEN_ATTRSPEC WORDORNUM
-
-    TOKEN_ATTRSPEC  shift, and goto state 95
-
-state 95 // TOKEN_PLUS TOKEN_RACK TOKEN_OCPSPEC TOKEN_ATTRSPEC
-
-   83 OCCR: TOKEN_RACK TOKEN_OCPSPEC P TOKEN_ATTRSPEC . WORDORNUM TOKEN_ATTRSPEC WORDORNUM
-   24 ORIENTN: .  [TOKEN_WORD]
-
-    TOKEN_NUM    shift, and goto state 57
-    TOKEN_OCDEL  shift, and goto state 55
-    TOKEN_PLUS   shift, and goto state 54
-    TOKEN_WORD   shift, and goto state 56
-
-    ORIENTN    goto state 58
-    WORDORNUM  goto state 96
-
-    conflict on TOKEN_WORD, shift, and goto state 56, reduce using rule 24
-
-state 96 // TOKEN_PLUS TOKEN_RACK TOKEN_OCPSPEC TOKEN_ATTRSPEC TOKEN_NUM [TOKEN_ATTRSPEC]
-
-   83 OCCR: TOKEN_RACK TOKEN_OCPSPEC P TOKEN_ATTRSPEC WORDORNUM . TOKEN_ATTRSPEC WORDORNUM
-
-    TOKEN_ATTRSPEC  shift, and goto state 97
-
-state 97 // TOKEN_PLUS TOKEN_RACK TOKEN_OCPSPEC TOKEN_ATTRSPEC TOKEN_NUM TOKEN_ATTRSPEC
-
-   83 OCCR: TOKEN_RACK TOKEN_OCPSPEC P TOKEN_ATTRSPEC WORDORNUM TOKEN_ATTRSPEC . WORDORNUM
-   24 ORIENTN: .  [TOKEN_WORD]
-
-    TOKEN_NUM    shift, and goto state 57
-    TOKEN_OCDEL  shift, and goto state 55
-    TOKEN_PLUS   shift, and goto state 54
-    TOKEN_WORD   shift, and goto state 56
-
-    ORIENTN    goto state 58
-    WORDORNUM  goto state 98
-
-    conflict on TOKEN_WORD, shift, and goto state 56, reduce using rule 24
-
-state 98 // TOKEN_PLUS TOKEN_RACK TOKEN_OCPSPEC TOKEN_ATTRSPEC TOKEN_NUM TOKEN_ATTRSPEC TOKEN_NUM [$end]
-
-   83 OCCR: TOKEN_RACK TOKEN_OCPSPEC P TOKEN_ATTRSPEC WORDORNUM TOKEN_ATTRSPEC WORDORNUM .  [$end]
-
-    $end  reduce using rule 83 (OCCR)
-
-state 99 // TOKEN_PLUS TOKEN_OCRACK TOKEN_OCPSPEC
-
-   82 OCCR: TOKEN_OCRACK TOKEN_OCPSPEC . P TOKEN_ATTRSPEC WORDORNUM TOKEN_ATTRSPEC WORDORNUM
-   37 P1: .  [TOKEN_ATTRSPEC]
-
-    TOKEN_ATTRSPEC  reduce using rule 37 (P1)
-    TOKEN_DOT       shift, and goto state 16
-    TOKEN_SLASH     shift, and goto state 14
-    TOKEN_WORD      shift, and goto state 15
-
-    P   goto state 100
-    P1  goto state 13
-
-state 100 // TOKEN_PLUS TOKEN_OCRACK TOKEN_OCPSPEC [TOKEN_ATTRSPEC]
-
-   82 OCCR: TOKEN_OCRACK TOKEN_OCPSPEC P . TOKEN_ATTRSPEC WORDORNUM TOKEN_ATTRSPEC WORDORNUM
-
-    TOKEN_ATTRSPEC  shift, and goto state 101
-
-state 101 // TOKEN_PLUS TOKEN_OCRACK TOKEN_OCPSPEC TOKEN_ATTRSPEC
-
-   82 OCCR: TOKEN_OCRACK TOKEN_OCPSPEC P TOKEN_ATTRSPEC . WORDORNUM TOKEN_ATTRSPEC WORDORNUM
-   24 ORIENTN: .  [TOKEN_WORD]
-
-    TOKEN_NUM    shift, and goto state 57
-    TOKEN_OCDEL  shift, and goto state 55
-    TOKEN_PLUS   shift, and goto state 54
-    TOKEN_WORD   shift, and goto state 56
-
-    ORIENTN    goto state 58
-    WORDORNUM  goto state 102
-
-    conflict on TOKEN_WORD, shift, and goto state 56, reduce using rule 24
-
-state 102 // TOKEN_PLUS TOKEN_OCRACK TOKEN_OCPSPEC TOKEN_ATTRSPEC TOKEN_NUM [TOKEN_ATTRSPEC]
-
-   82 OCCR: TOKEN_OCRACK TOKEN_OCPSPEC P TOKEN_ATTRSPEC WORDORNUM . TOKEN_ATTRSPEC WORDORNUM
-
-    TOKEN_ATTRSPEC  shift, and goto state 103
-
-state 103 // TOKEN_PLUS TOKEN_OCRACK TOKEN_OCPSPEC TOKEN_ATTRSPEC TOKEN_NUM TOKEN_ATTRSPEC
-
-   82 OCCR: TOKEN_OCRACK TOKEN_OCPSPEC P TOKEN_ATTRSPEC WORDORNUM TOKEN_ATTRSPEC . WORDORNUM
-   24 ORIENTN: .  [TOKEN_WORD]
-
-    TOKEN_NUM    shift, and goto state 57
-    TOKEN_OCDEL  shift, and goto state 55
-    TOKEN_PLUS   shift, and goto state 54
-    TOKEN_WORD   shift, and goto state 56
-
-    ORIENTN    goto state 58
-    WORDORNUM  goto state 104
-
-    conflict on TOKEN_WORD, shift, and goto state 56, reduce using rule 24
-
-state 104 // TOKEN_PLUS TOKEN_OCRACK TOKEN_OCPSPEC TOKEN_ATTRSPEC TOKEN_NUM TOKEN_ATTRSPEC TOKEN_NUM [$end]
-
-   82 OCCR: TOKEN_OCRACK TOKEN_OCPSPEC P TOKEN_ATTRSPEC WORDORNUM TOKEN_ATTRSPEC WORDORNUM .  [$end]
-
-    $end  reduce using rule 82 (OCCR)
-
-state 105 // TOKEN_PLUS TOKEN_ROOM TOKEN_OCPSPEC
-
-   81 OCCR: TOKEN_ROOM TOKEN_OCPSPEC . P TOKEN_ATTRSPEC WORDORNUM TOKEN_ATTRSPEC WORDORNUM
-   37 P1: .  [TOKEN_ATTRSPEC]
-
-    TOKEN_ATTRSPEC  reduce using rule 37 (P1)
-    TOKEN_DOT       shift, and goto state 16
-    TOKEN_SLASH     shift, and goto state 14
-    TOKEN_WORD      shift, and goto state 15
-
-    P   goto state 106
-    P1  goto state 13
-
-state 106 // TOKEN_PLUS TOKEN_ROOM TOKEN_OCPSPEC [TOKEN_ATTRSPEC]
-
-   81 OCCR: TOKEN_ROOM TOKEN_OCPSPEC P . TOKEN_ATTRSPEC WORDORNUM TOKEN_ATTRSPEC WORDORNUM
-
-    TOKEN_ATTRSPEC  shift, and goto state 107
-
-state 107 // TOKEN_PLUS TOKEN_ROOM TOKEN_OCPSPEC TOKEN_ATTRSPEC
-
-   81 OCCR: TOKEN_ROOM TOKEN_OCPSPEC P TOKEN_ATTRSPEC . WORDORNUM TOKEN_ATTRSPEC WORDORNUM
-   24 ORIENTN: .  [TOKEN_WORD]
-
-    TOKEN_NUM    shift, and goto state 57
-    TOKEN_OCDEL  shift, and goto state 55
-    TOKEN_PLUS   shift, and goto state 54
-    TOKEN_WORD   shift, and goto state 56
-
-    ORIENTN    goto state 58
-    WORDORNUM  goto state 108
-
-    conflict on TOKEN_WORD, shift, and goto state 56, reduce using rule 24
-
-state 108 // TOKEN_PLUS TOKEN_ROOM TOKEN_OCPSPEC TOKEN_ATTRSPEC TOKEN_NUM [TOKEN_ATTRSPEC]
-
-   81 OCCR: TOKEN_ROOM TOKEN_OCPSPEC P TOKEN_ATTRSPEC WORDORNUM . TOKEN_ATTRSPEC WORDORNUM
-
-    TOKEN_ATTRSPEC  shift, and goto state 109
-
-state 109 // TOKEN_PLUS TOKEN_ROOM TOKEN_OCPSPEC TOKEN_ATTRSPEC TOKEN_NUM TOKEN_ATTRSPEC
-
-   81 OCCR: TOKEN_ROOM TOKEN_OCPSPEC P TOKEN_ATTRSPEC WORDORNUM TOKEN_ATTRSPEC . WORDORNUM
-   24 ORIENTN: .  [TOKEN_WORD]
-
-    TOKEN_NUM    shift, and goto state 57
-    TOKEN_OCDEL  shift, and goto state 55
-    TOKEN_PLUS   shift, and goto state 54
-    TOKEN_WORD   shift, and goto state 56
-
-    ORIENTN    goto state 58
-    WORDORNUM  goto state 110
-
-    conflict on TOKEN_WORD, shift, and goto state 56, reduce using rule 24
-
-state 110 // TOKEN_PLUS TOKEN_ROOM TOKEN_OCPSPEC TOKEN_ATTRSPEC TOKEN_NUM TOKEN_ATTRSPEC TOKEN_NUM [$end]
-
-   81 OCCR: TOKEN_ROOM TOKEN_OCPSPEC P TOKEN_ATTRSPEC WORDORNUM TOKEN_ATTRSPEC WORDORNUM .  [$end]
-
-    $end  reduce using rule 81 (OCCR)
-
-state 111 // TOKEN_PLUS TOKEN_OCROOM TOKEN_OCPSPEC
-
-   80 OCCR: TOKEN_OCROOM TOKEN_OCPSPEC . P TOKEN_ATTRSPEC WORDORNUM TOKEN_ATTRSPEC WORDORNUM
-   37 P1: .  [TOKEN_ATTRSPEC]
-
-    TOKEN_ATTRSPEC  reduce using rule 37 (P1)
-    TOKEN_DOT       shift, and goto state 16
-    TOKEN_SLASH     shift, and goto state 14
-    TOKEN_WORD      shift, and goto state 15
-
-    P   goto state 112
-    P1  goto state 13
-
-state 112 // TOKEN_PLUS TOKEN_OCROOM TOKEN_OCPSPEC [TOKEN_ATTRSPEC]
-
-   80 OCCR: TOKEN_OCROOM TOKEN_OCPSPEC P . TOKEN_ATTRSPEC WORDORNUM TOKEN_ATTRSPEC WORDORNUM
-
-    TOKEN_ATTRSPEC  shift, and goto state 113
-
-state 113 // TOKEN_PLUS TOKEN_OCROOM TOKEN_OCPSPEC TOKEN_ATTRSPEC
-
-   80 OCCR: TOKEN_OCROOM TOKEN_OCPSPEC P TOKEN_ATTRSPEC . WORDORNUM TOKEN_ATTRSPEC WORDORNUM
-   24 ORIENTN: .  [TOKEN_WORD]
-
-    TOKEN_NUM    shift, and goto state 57
-    TOKEN_OCDEL  shift, and goto state 55
-    TOKEN_PLUS   shift, and goto state 54
-    TOKEN_WORD   shift, and goto state 56
-
-    ORIENTN    goto state 58
-    WORDORNUM  goto state 114
-
-    conflict on TOKEN_WORD, shift, and goto state 56, reduce using rule 24
-
-state 114 // TOKEN_PLUS TOKEN_OCROOM TOKEN_OCPSPEC TOKEN_ATTRSPEC TOKEN_NUM [TOKEN_ATTRSPEC]
-
-   80 OCCR: TOKEN_OCROOM TOKEN_OCPSPEC P TOKEN_ATTRSPEC WORDORNUM . TOKEN_ATTRSPEC WORDORNUM
-
-    TOKEN_ATTRSPEC  shift, and goto state 115
-
-state 115 // TOKEN_PLUS TOKEN_OCROOM TOKEN_OCPSPEC TOKEN_ATTRSPEC TOKEN_NUM TOKEN_ATTRSPEC
-
-   80 OCCR: TOKEN_OCROOM TOKEN_OCPSPEC P TOKEN_ATTRSPEC WORDORNUM TOKEN_ATTRSPEC . WORDORNUM
-   24 ORIENTN: .  [TOKEN_WORD]
-
-    TOKEN_NUM    shift, and goto state 57
-    TOKEN_OCDEL  shift, and goto state 55
-    TOKEN_PLUS   shift, and goto state 54
-    TOKEN_WORD   shift, and goto state 56
-
-    ORIENTN    goto state 58
-    WORDORNUM  goto state 116
-
-    conflict on TOKEN_WORD, shift, and goto state 56, reduce using rule 24
-
-state 116 // TOKEN_PLUS TOKEN_OCROOM TOKEN_OCPSPEC TOKEN_ATTRSPEC TOKEN_NUM TOKEN_ATTRSPEC TOKEN_NUM [$end]
-
-   80 OCCR: TOKEN_OCROOM TOKEN_OCPSPEC P TOKEN_ATTRSPEC WORDORNUM TOKEN_ATTRSPEC WORDORNUM .  [$end]
-
-    $end  reduce using rule 80 (OCCR)
-
-state 117 // TOKEN_PLUS TOKEN_BLDG TOKEN_OCPSPEC
-
-   79 OCCR: TOKEN_BLDG TOKEN_OCPSPEC . P TOKEN_ATTRSPEC WORDORNUM TOKEN_ATTRSPEC WORDORNUM
-   37 P1: .  [TOKEN_ATTRSPEC]
-
-    TOKEN_ATTRSPEC  reduce using rule 37 (P1)
-    TOKEN_DOT       shift, and goto state 16
-    TOKEN_SLASH     shift, and goto state 14
-    TOKEN_WORD      shift, and goto state 15
-
-    P   goto state 118
-    P1  goto state 13
-
-state 118 // TOKEN_PLUS TOKEN_BLDG TOKEN_OCPSPEC [TOKEN_ATTRSPEC]
-
-   79 OCCR: TOKEN_BLDG TOKEN_OCPSPEC P . TOKEN_ATTRSPEC WORDORNUM TOKEN_ATTRSPEC WORDORNUM
-
-    TOKEN_ATTRSPEC  shift, and goto state 119
-
-state 119 // TOKEN_PLUS TOKEN_BLDG TOKEN_OCPSPEC TOKEN_ATTRSPEC
-
-   79 OCCR: TOKEN_BLDG TOKEN_OCPSPEC P TOKEN_ATTRSPEC . WORDORNUM TOKEN_ATTRSPEC WORDORNUM
-   24 ORIENTN: .  [TOKEN_WORD]
-
-    TOKEN_NUM    shift, and goto state 57
-    TOKEN_OCDEL  shift, and goto state 55
-    TOKEN_PLUS   shift, and goto state 54
-    TOKEN_WORD   shift, and goto state 56
-
-    ORIENTN    goto state 58
-    WORDORNUM  goto state 120
-
-    conflict on TOKEN_WORD, shift, and goto state 56, reduce using rule 24
-
-state 120 // TOKEN_PLUS TOKEN_BLDG TOKEN_OCPSPEC TOKEN_ATTRSPEC TOKEN_NUM [TOKEN_ATTRSPEC]
-
-   79 OCCR: TOKEN_BLDG TOKEN_OCPSPEC P TOKEN_ATTRSPEC WORDORNUM . TOKEN_ATTRSPEC WORDORNUM
-
-    TOKEN_ATTRSPEC  shift, and goto state 121
-
-state 121 // TOKEN_PLUS TOKEN_BLDG TOKEN_OCPSPEC TOKEN_ATTRSPEC TOKEN_NUM TOKEN_ATTRSPEC
-
-   79 OCCR: TOKEN_BLDG TOKEN_OCPSPEC P TOKEN_ATTRSPEC WORDORNUM TOKEN_ATTRSPEC . WORDORNUM
-   24 ORIENTN: .  [TOKEN_WORD]
-
-    TOKEN_NUM    shift, and goto state 57
-    TOKEN_OCDEL  shift, and goto state 55
-    TOKEN_PLUS   shift, and goto state 54
-    TOKEN_WORD   shift, and goto state 56
-
-    ORIENTN    goto state 58
-    WORDORNUM  goto state 122
-
-    conflict on TOKEN_WORD, shift, and goto state 56, reduce using rule 24
-
-state 122 // TOKEN_PLUS TOKEN_BLDG TOKEN_OCPSPEC TOKEN_ATTRSPEC TOKEN_NUM TOKEN_ATTRSPEC TOKEN_NUM [$end]
-
-   79 OCCR: TOKEN_BLDG TOKEN_OCPSPEC P TOKEN_ATTRSPEC WORDORNUM TOKEN_ATTRSPEC WORDORNUM .  [$end]
-
-    $end  reduce using rule 79 (OCCR)
-
-state 123 // TOKEN_PLUS TOKEN_OCBLDG TOKEN_OCPSPEC
-
-   78 OCCR: TOKEN_OCBLDG TOKEN_OCPSPEC . P TOKEN_ATTRSPEC WORDORNUM TOKEN_ATTRSPEC WORDORNUM
-   37 P1: .  [TOKEN_ATTRSPEC]
-
-    TOKEN_ATTRSPEC  reduce using rule 37 (P1)
-    TOKEN_DOT       shift, and goto state 16
-    TOKEN_SLASH     shift, and goto state 14
-    TOKEN_WORD      shift, and goto state 15
-
-    P   goto state 124
-    P1  goto state 13
-
-state 124 // TOKEN_PLUS TOKEN_OCBLDG TOKEN_OCPSPEC [TOKEN_ATTRSPEC]
-
-   78 OCCR: TOKEN_OCBLDG TOKEN_OCPSPEC P . TOKEN_ATTRSPEC WORDORNUM TOKEN_ATTRSPEC WORDORNUM
-
-    TOKEN_ATTRSPEC  shift, and goto state 125
-
-state 125 // TOKEN_PLUS TOKEN_OCBLDG TOKEN_OCPSPEC TOKEN_ATTRSPEC
-
-   78 OCCR: TOKEN_OCBLDG TOKEN_OCPSPEC P TOKEN_ATTRSPEC . WORDORNUM TOKEN_ATTRSPEC WORDORNUM
-   24 ORIENTN: .  [TOKEN_WORD]
-
-    TOKEN_NUM    shift, and goto state 57
-    TOKEN_OCDEL  shift, and goto state 55
-    TOKEN_PLUS   shift, and goto state 54
-    TOKEN_WORD   shift, and goto state 56
-
-    ORIENTN    goto state 58
-    WORDORNUM  goto state 126
-
-    conflict on TOKEN_WORD, shift, and goto state 56, reduce using rule 24
-
-state 126 // TOKEN_PLUS TOKEN_OCBLDG TOKEN_OCPSPEC TOKEN_ATTRSPEC TOKEN_NUM [TOKEN_ATTRSPEC]
-
-   78 OCCR: TOKEN_OCBLDG TOKEN_OCPSPEC P TOKEN_ATTRSPEC WORDORNUM . TOKEN_ATTRSPEC WORDORNUM
-
-    TOKEN_ATTRSPEC  shift, and goto state 127
-
-state 127 // TOKEN_PLUS TOKEN_OCBLDG TOKEN_OCPSPEC TOKEN_ATTRSPEC TOKEN_NUM TOKEN_ATTRSPEC
-
-   78 OCCR: TOKEN_OCBLDG TOKEN_OCPSPEC P TOKEN_ATTRSPEC WORDORNUM TOKEN_ATTRSPEC . WORDORNUM
-   24 ORIENTN: .  [TOKEN_WORD]
-
-    TOKEN_NUM    shift, and goto state 57
-    TOKEN_OCDEL  shift, and goto state 55
-    TOKEN_PLUS   shift, and goto state 54
-    TOKEN_WORD   shift, and goto state 56
-
-    ORIENTN    goto state 58
-    WORDORNUM  goto state 128
-
-    conflict on TOKEN_WORD, shift, and goto state 56, reduce using rule 24
-
-state 128 // TOKEN_PLUS TOKEN_OCBLDG TOKEN_OCPSPEC TOKEN_ATTRSPEC TOKEN_NUM TOKEN_ATTRSPEC TOKEN_NUM [$end]
-
-   78 OCCR: TOKEN_OCBLDG TOKEN_OCPSPEC P TOKEN_ATTRSPEC WORDORNUM TOKEN_ATTRSPEC WORDORNUM .  [$end]
-
-    $end  reduce using rule 78 (OCCR)
-
-state 129 // TOKEN_PLUS TOKEN_SITE TOKEN_OCPSPEC
-
-   77 OCCR: TOKEN_SITE TOKEN_OCPSPEC . P TOKEN_ATTRSPEC WORDORNUM
-   37 P1: .  [TOKEN_ATTRSPEC]
-
-    TOKEN_ATTRSPEC  reduce using rule 37 (P1)
-    TOKEN_DOT       shift, and goto state 16
-    TOKEN_SLASH     shift, and goto state 14
-    TOKEN_WORD      shift, and goto state 15
-
-    P   goto state 130
-    P1  goto state 13
-
-state 130 // TOKEN_PLUS TOKEN_SITE TOKEN_OCPSPEC [TOKEN_ATTRSPEC]
-
-   77 OCCR: TOKEN_SITE TOKEN_OCPSPEC P . TOKEN_ATTRSPEC WORDORNUM
-
-    TOKEN_ATTRSPEC  shift, and goto state 131
-
-state 131 // TOKEN_PLUS TOKEN_SITE TOKEN_OCPSPEC TOKEN_ATTRSPEC
-
-   77 OCCR: TOKEN_SITE TOKEN_OCPSPEC P TOKEN_ATTRSPEC . WORDORNUM
-   24 ORIENTN: .  [TOKEN_WORD]
-
-    TOKEN_NUM    shift, and goto state 57
-    TOKEN_OCDEL  shift, and goto state 55
-    TOKEN_PLUS   shift, and goto state 54
-    TOKEN_WORD   shift, and goto state 56
-
-    ORIENTN    goto state 58
-    WORDORNUM  goto state 132
-
-    conflict on TOKEN_WORD, shift, and goto state 56, reduce using rule 24
-
-state 132 // TOKEN_PLUS TOKEN_SITE TOKEN_OCPSPEC TOKEN_ATTRSPEC TOKEN_NUM [$end]
-
-   77 OCCR: TOKEN_SITE TOKEN_OCPSPEC P TOKEN_ATTRSPEC WORDORNUM .  [$end]
-
-    $end  reduce using rule 77 (OCCR)
-
-state 133 // TOKEN_PLUS TOKEN_OCSITE TOKEN_OCPSPEC
-
-   76 OCCR: TOKEN_OCSITE TOKEN_OCPSPEC . P TOKEN_ATTRSPEC WORDORNUM
-   37 P1: .  [TOKEN_ATTRSPEC]
-
-    TOKEN_ATTRSPEC  reduce using rule 37 (P1)
-    TOKEN_DOT       shift, and goto state 16
-    TOKEN_SLASH     shift, and goto state 14
-    TOKEN_WORD      shift, and goto state 15
-
-    P   goto state 134
-    P1  goto state 13
-
-state 134 // TOKEN_PLUS TOKEN_OCSITE TOKEN_OCPSPEC [TOKEN_ATTRSPEC]
-
-   76 OCCR: TOKEN_OCSITE TOKEN_OCPSPEC P . TOKEN_ATTRSPEC WORDORNUM
-
-    TOKEN_ATTRSPEC  shift, and goto state 135
-
-state 135 // TOKEN_PLUS TOKEN_OCSITE TOKEN_OCPSPEC TOKEN_ATTRSPEC
-
-   76 OCCR: TOKEN_OCSITE TOKEN_OCPSPEC P TOKEN_ATTRSPEC . WORDORNUM
-   24 ORIENTN: .  [TOKEN_WORD]
-
-    TOKEN_NUM    shift, and goto state 57
-    TOKEN_OCDEL  shift, and goto state 55
-    TOKEN_PLUS   shift, and goto state 54
-    TOKEN_WORD   shift, and goto state 56
-
-    ORIENTN    goto state 58
-    WORDORNUM  goto state 136
-
-    conflict on TOKEN_WORD, shift, and goto state 56, reduce using rule 24
-
-state 136 // TOKEN_PLUS TOKEN_OCSITE TOKEN_OCPSPEC TOKEN_ATTRSPEC TOKEN_NUM [$end]
-
-   76 OCCR: TOKEN_OCSITE TOKEN_OCPSPEC P TOKEN_ATTRSPEC WORDORNUM .  [$end]
-
-    $end  reduce using rule 76 (OCCR)
-
-state 137 // TOKEN_PLUS TOKEN_TENANT TOKEN_OCPSPEC
-
-   75 OCCR: TOKEN_TENANT TOKEN_OCPSPEC . P TOKEN_ATTRSPEC WORDORNUM
-   37 P1: .  [TOKEN_ATTRSPEC]
-
-    TOKEN_ATTRSPEC  reduce using rule 37 (P1)
-    TOKEN_DOT       shift, and goto state 16
-    TOKEN_SLASH     shift, and goto state 14
-    TOKEN_WORD      shift, and goto state 15
-
-    P   goto state 138
-    P1  goto state 13
-
-state 138 // TOKEN_PLUS TOKEN_TENANT TOKEN_OCPSPEC [TOKEN_ATTRSPEC]
-
-   75 OCCR: TOKEN_TENANT TOKEN_OCPSPEC P . TOKEN_ATTRSPEC WORDORNUM
-
-    TOKEN_ATTRSPEC  shift, and goto state 139
-
-state 139 // TOKEN_PLUS TOKEN_TENANT TOKEN_OCPSPEC TOKEN_ATTRSPEC
-
-   75 OCCR: TOKEN_TENANT TOKEN_OCPSPEC P TOKEN_ATTRSPEC . WORDORNUM
-   24 ORIENTN: .  [TOKEN_WORD]
-
-    TOKEN_NUM    shift, and goto state 57
-    TOKEN_OCDEL  shift, and goto state 55
-    TOKEN_PLUS   shift, and goto state 54
-    TOKEN_WORD   shift, and goto state 56
-
-    ORIENTN    goto state 58
-    WORDORNUM  goto state 140
-
-    conflict on TOKEN_WORD, shift, and goto state 56, reduce using rule 24
-
-state 140 // TOKEN_PLUS TOKEN_TENANT TOKEN_OCPSPEC TOKEN_ATTRSPEC TOKEN_NUM [$end]
-
-   75 OCCR: TOKEN_TENANT TOKEN_OCPSPEC P TOKEN_ATTRSPEC WORDORNUM .  [$end]
-
-    $end  reduce using rule 75 (OCCR)
-
-state 141 // TOKEN_PLUS TOKEN_OCTENANT TOKEN_OCPSPEC
-
-   74 OCCR: TOKEN_OCTENANT TOKEN_OCPSPEC . P TOKEN_ATTRSPEC WORDORNUM
-   37 P1: .  [TOKEN_ATTRSPEC]
-
-    TOKEN_ATTRSPEC  reduce using rule 37 (P1)
-    TOKEN_DOT       shift, and goto state 16
-    TOKEN_SLASH     shift, and goto state 14
-    TOKEN_WORD      shift, and goto state 15
-
-    P   goto state 142
-    P1  goto state 13
-
-state 142 // TOKEN_PLUS TOKEN_OCTENANT TOKEN_OCPSPEC [TOKEN_ATTRSPEC]
-
-   74 OCCR: TOKEN_OCTENANT TOKEN_OCPSPEC P . TOKEN_ATTRSPEC WORDORNUM
-
-    TOKEN_ATTRSPEC  shift, and goto state 143
-
-state 143 // TOKEN_PLUS TOKEN_OCTENANT TOKEN_OCPSPEC TOKEN_ATTRSPEC
-
-   74 OCCR: TOKEN_OCTENANT TOKEN_OCPSPEC P TOKEN_ATTRSPEC . WORDORNUM
-   24 ORIENTN: .  [TOKEN_WORD]
-
-    TOKEN_NUM    shift, and goto state 57
-    TOKEN_OCDEL  shift, and goto state 55
-    TOKEN_PLUS   shift, and goto state 54
-    TOKEN_WORD   shift, and goto state 56
-
-    ORIENTN    goto state 58
-    WORDORNUM  goto state 144
-
-    conflict on TOKEN_WORD, shift, and goto state 56, reduce using rule 24
-
-state 144 // TOKEN_PLUS TOKEN_OCTENANT TOKEN_OCPSPEC TOKEN_ATTRSPEC TOKEN_NUM [$end]
-
-   74 OCCR: TOKEN_OCTENANT TOKEN_OCPSPEC P TOKEN_ATTRSPEC WORDORNUM .  [$end]
-
-    $end  reduce using rule 74 (OCCR)
-
-state 145 // TOKEN_DOC TOKEN_LS
-
-   58 BASH: TOKEN_DOC TOKEN_LS .  [$end]
-
-    $end  reduce using rule 58 (BASH)
-
-state 146 // TOKEN_DOC TOKEN_CD
-
-   59 BASH: TOKEN_DOC TOKEN_CD .  [$end]
-
-    $end  reduce using rule 59 (BASH)
-
-state 147 // TOKEN_DOC TOKEN_CREATE
-
-   60 BASH: TOKEN_DOC TOKEN_CREATE .  [$end]
-
-    $end  reduce using rule 60 (BASH)
-
-state 148 // TOKEN_DOC TOKEN_GET
-
-   61 BASH: TOKEN_DOC TOKEN_GET .  [$end]
-
-    $end  reduce using rule 61 (BASH)
-
-state 149 // TOKEN_DOC TOKEN_UPDATE
-
-   62 BASH: TOKEN_DOC TOKEN_UPDATE .  [$end]
-
-    $end  reduce using rule 62 (BASH)
-
-state 150 // TOKEN_DOC TOKEN_DELETE
-
-   63 BASH: TOKEN_DOC TOKEN_DELETE .  [$end]
-
-    $end  reduce using rule 63 (BASH)
-
-state 151 // TOKEN_DOC TOKEN_WORD
-
-   64 BASH: TOKEN_DOC TOKEN_WORD .  [$end]
-
-    $end  reduce using rule 64 (BASH)
-
-state 152 // TOKEN_DOC TOKEN_TREE
-
-   65 BASH: TOKEN_DOC TOKEN_TREE .  [$end]
-
-    $end  reduce using rule 65 (BASH)
-
-state 153 // TOKEN_DOC TOKEN_LSOG
-
-   66 BASH: TOKEN_DOC TOKEN_LSOG .  [$end]
-
-    $end  reduce using rule 66 (BASH)
-
-state 154 // TOKEN_TREE TOKEN_NUM
-
-   48 Q: TOKEN_TREE TOKEN_NUM .  [$end]
-
-    $end  reduce using rule 48 (Q)
-
-state 155 // TOKEN_TREE [$end]
-
-   49 Q: TOKEN_TREE P .  [$end]
-   50 Q: TOKEN_TREE P . TOKEN_NUM
-
-    $end       reduce using rule 49 (Q)
-    TOKEN_NUM  shift, and goto state 156
-
-state 156 // TOKEN_TREE TOKEN_NUM
-
-   50 Q: TOKEN_TREE P TOKEN_NUM .  [$end]
-
-    $end  reduce using rule 50 (Q)
-
-state 157 // TOKEN_LSSUBDEV1 [$end]
-
-   47 Q: TOKEN_LSSUBDEV1 P .  [$end]
-
-    $end  reduce using rule 47 (Q)
-
-state 158 // TOKEN_LSSUBDEV [$end]
-
-   46 Q: TOKEN_LSSUBDEV P .  [$end]
-
-    $end  reduce using rule 46 (Q)
-
-state 159 // TOKEN_LSDEV [$end]
-
-   45 Q: TOKEN_LSDEV P .  [$end]
-
-    $end  reduce using rule 45 (Q)
-
-state 160 // TOKEN_LSRACK [$end]
-
-   44 Q: TOKEN_LSRACK P .  [$end]
-
-    $end  reduce using rule 44 (Q)
-
-state 161 // TOKEN_LSROOM [$end]
-
-   43 Q: TOKEN_LSROOM P .  [$end]
-
-    $end  reduce using rule 43 (Q)
-
-state 162 // TOKEN_LSBLDG [$end]
-
-   42 Q: TOKEN_LSBLDG P .  [$end]
-
-    $end  reduce using rule 42 (Q)
-
-state 163 // TOKEN_LSSITE [$end]
-
-   41 Q: TOKEN_LSSITE P .  [$end]
-
-    $end  reduce using rule 41 (Q)
-
-state 164 // TOKEN_LSTEN [$end]
-
-   40 Q: TOKEN_LSTEN P .  [$end]
-
-    $end  reduce using rule 40 (Q)
-
-state 165 // TOKEN_LS [$end]
-
-   39 Q: TOKEN_LS P .  [$end]
-
-    $end  reduce using rule 39 (Q)
-
-state 166 // TOKEN_CD [$end]
-
-   38 Q: TOKEN_CD P .  [$end]
-
-    $end  reduce using rule 38 (Q)
-
-state 167 // TOKEN_DOT TOKEN_DOT
+state 62 // TOKEN_DOT TOKEN_DOT
 
    34 P1: TOKEN_DOT TOKEN_DOT . TOKEN_SLASH P1
    36 P1: TOKEN_DOT TOKEN_DOT .  [$end, TOKEN_ATTR, TOKEN_ATTRSPEC, TOKEN_DOT, TOKEN_NUM]
@@ -1547,9 +641,9 @@ state 167 // TOKEN_DOT TOKEN_DOT
     TOKEN_ATTRSPEC  reduce using rule 36 (P1)
     TOKEN_DOT       reduce using rule 36 (P1)
     TOKEN_NUM       reduce using rule 36 (P1)
-    TOKEN_SLASH     shift, and goto state 168
+    TOKEN_SLASH     shift, and goto state 63
 
-state 168 // TOKEN_DOT TOKEN_DOT TOKEN_SLASH
+state 63 // TOKEN_DOT TOKEN_DOT TOKEN_SLASH
 
    34 P1: TOKEN_DOT TOKEN_DOT TOKEN_SLASH . P1
    37 P1: .  [$end, TOKEN_ATTR, TOKEN_ATTRSPEC, TOKEN_DOT, TOKEN_NUM]
@@ -1557,15 +651,15 @@ state 168 // TOKEN_DOT TOKEN_DOT TOKEN_SLASH
     $end            reduce using rule 37 (P1)
     TOKEN_ATTR      reduce using rule 37 (P1)
     TOKEN_ATTRSPEC  reduce using rule 37 (P1)
-    TOKEN_DOT       shift, and goto state 16
+    TOKEN_DOT       shift, and goto state 54
     TOKEN_NUM       reduce using rule 37 (P1)
     TOKEN_WORD      shift, and goto state 15
 
-    P1  goto state 169
+    P1  goto state 64
 
-    conflict on TOKEN_DOT, shift, and goto state 16, reduce using rule 37
+    conflict on TOKEN_DOT, shift, and goto state 54, reduce using rule 37
 
-state 169 // TOKEN_DOT TOKEN_DOT TOKEN_SLASH [$end]
+state 64 // TOKEN_DOT TOKEN_DOT TOKEN_SLASH [$end]
 
    34 P1: TOKEN_DOT TOKEN_DOT TOKEN_SLASH P1 .  [$end, TOKEN_ATTR, TOKEN_ATTRSPEC, TOKEN_DOT, TOKEN_NUM]
 
@@ -1575,7 +669,1054 @@ state 169 // TOKEN_DOT TOKEN_DOT TOKEN_SLASH [$end]
     TOKEN_DOT       reduce using rule 34 (P1)
     TOKEN_NUM       reduce using rule 34 (P1)
 
-state 170 // TOKEN_WORD TOKEN_SLASH
+state 65 // TOKEN_DOT
+
+   87 OCUPDATE: P TOKEN_DOT . TOKEN_ATTR TOKEN_EQUAL WORDORNUM
+
+    TOKEN_ATTR  shift, and goto state 66
+
+state 66 // TOKEN_DOT TOKEN_ATTR
+
+   87 OCUPDATE: P TOKEN_DOT TOKEN_ATTR . TOKEN_EQUAL WORDORNUM
+
+    TOKEN_EQUAL  shift, and goto state 67
+
+state 67 // TOKEN_DOT TOKEN_ATTR TOKEN_EQUAL
+
+   87 OCUPDATE: P TOKEN_DOT TOKEN_ATTR TOKEN_EQUAL . WORDORNUM
+   24 ORIENTN: .  [TOKEN_WORD]
+
+    TOKEN_NUM    shift, and goto state 71
+    TOKEN_OCDEL  shift, and goto state 69
+    TOKEN_PLUS   shift, and goto state 68
+    TOKEN_WORD   shift, and goto state 70
+
+    ORIENTN    goto state 72
+    WORDORNUM  goto state 73
+
+    conflict on TOKEN_WORD, shift, and goto state 70, reduce using rule 24
+
+state 68 // TOKEN_DOT TOKEN_ATTR TOKEN_EQUAL TOKEN_PLUS
+
+   22 ORIENTN: TOKEN_PLUS .  [TOKEN_WORD]
+
+    TOKEN_WORD  reduce using rule 22 (ORIENTN)
+
+state 69 // TOKEN_DOT TOKEN_ATTR TOKEN_EQUAL TOKEN_OCDEL
+
+   23 ORIENTN: TOKEN_OCDEL .  [TOKEN_WORD]
+
+    TOKEN_WORD  reduce using rule 23 (ORIENTN)
+
+state 70 // TOKEN_DOT TOKEN_ATTR TOKEN_EQUAL TOKEN_WORD
+
+   25 WORDORNUM: TOKEN_WORD .  [$end, TOKEN_ATTR, TOKEN_ATTRSPEC]
+
+    $end            reduce using rule 25 (WORDORNUM)
+    TOKEN_ATTR      reduce using rule 25 (WORDORNUM)
+    TOKEN_ATTRSPEC  reduce using rule 25 (WORDORNUM)
+
+state 71 // TOKEN_DOT TOKEN_ATTR TOKEN_EQUAL TOKEN_NUM
+
+   26 WORDORNUM: TOKEN_NUM .  [$end, TOKEN_ATTR, TOKEN_ATTRSPEC]
+
+    $end            reduce using rule 26 (WORDORNUM)
+    TOKEN_ATTR      reduce using rule 26 (WORDORNUM)
+    TOKEN_ATTRSPEC  reduce using rule 26 (WORDORNUM)
+
+state 72 // TOKEN_UPDATE TOKEN_ATTR TOKEN_EQUAL
+
+   27 WORDORNUM: ORIENTN . TOKEN_WORD ORIENTN TOKEN_WORD
+
+    TOKEN_WORD  shift, and goto state 74
+
+state 73 // TOKEN_DOT TOKEN_ATTR TOKEN_EQUAL TOKEN_NUM
+
+   87 OCUPDATE: P TOKEN_DOT TOKEN_ATTR TOKEN_EQUAL WORDORNUM .  [$end]
+
+    $end  reduce using rule 87 (OCUPDATE)
+
+state 74 // TOKEN_UPDATE TOKEN_ATTR TOKEN_EQUAL TOKEN_WORD
+
+   27 WORDORNUM: ORIENTN TOKEN_WORD . ORIENTN TOKEN_WORD
+   24 ORIENTN: .  [TOKEN_WORD]
+
+    TOKEN_OCDEL  shift, and goto state 69
+    TOKEN_PLUS   shift, and goto state 68
+    TOKEN_WORD   reduce using rule 24 (ORIENTN)
+
+    ORIENTN  goto state 75
+
+state 75 // TOKEN_UPDATE TOKEN_ATTR TOKEN_EQUAL TOKEN_WORD
+
+   27 WORDORNUM: ORIENTN TOKEN_WORD ORIENTN . TOKEN_WORD
+
+    TOKEN_WORD  shift, and goto state 76
+
+state 76 // TOKEN_UPDATE TOKEN_ATTR TOKEN_EQUAL TOKEN_WORD TOKEN_WORD
+
+   27 WORDORNUM: ORIENTN TOKEN_WORD ORIENTN TOKEN_WORD .  [$end, TOKEN_ATTR, TOKEN_ATTRSPEC]
+
+    $end            reduce using rule 27 (WORDORNUM)
+    TOKEN_ATTR      reduce using rule 27 (WORDORNUM)
+    TOKEN_ATTRSPEC  reduce using rule 27 (WORDORNUM)
+
+state 77 // TOKEN_OCDEL [$end]
+
+   86 OCDEL: TOKEN_OCDEL P .  [$end]
+
+    $end  reduce using rule 86 (OCDEL)
+
+state 78 // TOKEN_PLUS TOKEN_OCSITE TOKEN_OCPSPEC TOKEN_ATTRSPEC TOKEN_NUM [$end]
+
+   67 OCLISYNTX: TOKEN_PLUS OCCR .  [$end]
+
+    $end  reduce using rule 67 (OCLISYNTX)
+
+state 79 // TOKEN_PLUS TOKEN_OCTENANT
+
+   74 OCCR: TOKEN_OCTENANT . TOKEN_OCPSPEC P TOKEN_ATTRSPEC WORDORNUM
+
+    TOKEN_OCPSPEC  shift, and goto state 151
+
+state 80 // TOKEN_PLUS TOKEN_TENANT
+
+   75 OCCR: TOKEN_TENANT . TOKEN_OCPSPEC P TOKEN_ATTRSPEC WORDORNUM
+
+    TOKEN_OCPSPEC  shift, and goto state 147
+
+state 81 // TOKEN_PLUS TOKEN_OCSITE
+
+   76 OCCR: TOKEN_OCSITE . TOKEN_OCPSPEC P TOKEN_ATTRSPEC WORDORNUM
+
+    TOKEN_OCPSPEC  shift, and goto state 143
+
+state 82 // TOKEN_PLUS TOKEN_SITE
+
+   77 OCCR: TOKEN_SITE . TOKEN_OCPSPEC P TOKEN_ATTRSPEC WORDORNUM
+
+    TOKEN_OCPSPEC  shift, and goto state 139
+
+state 83 // TOKEN_PLUS TOKEN_OCBLDG
+
+   78 OCCR: TOKEN_OCBLDG . TOKEN_OCPSPEC P TOKEN_ATTRSPEC WORDORNUM TOKEN_ATTRSPEC WORDORNUM
+
+    TOKEN_OCPSPEC  shift, and goto state 133
+
+state 84 // TOKEN_PLUS TOKEN_BLDG
+
+   79 OCCR: TOKEN_BLDG . TOKEN_OCPSPEC P TOKEN_ATTRSPEC WORDORNUM TOKEN_ATTRSPEC WORDORNUM
+
+    TOKEN_OCPSPEC  shift, and goto state 127
+
+state 85 // TOKEN_PLUS TOKEN_OCROOM
+
+   80 OCCR: TOKEN_OCROOM . TOKEN_OCPSPEC P TOKEN_ATTRSPEC WORDORNUM TOKEN_ATTRSPEC WORDORNUM
+
+    TOKEN_OCPSPEC  shift, and goto state 121
+
+state 86 // TOKEN_PLUS TOKEN_ROOM
+
+   81 OCCR: TOKEN_ROOM . TOKEN_OCPSPEC P TOKEN_ATTRSPEC WORDORNUM TOKEN_ATTRSPEC WORDORNUM
+
+    TOKEN_OCPSPEC  shift, and goto state 115
+
+state 87 // TOKEN_PLUS TOKEN_OCRACK
+
+   82 OCCR: TOKEN_OCRACK . TOKEN_OCPSPEC P TOKEN_ATTRSPEC WORDORNUM TOKEN_ATTRSPEC WORDORNUM
+
+    TOKEN_OCPSPEC  shift, and goto state 109
+
+state 88 // TOKEN_PLUS TOKEN_RACK
+
+   83 OCCR: TOKEN_RACK . TOKEN_OCPSPEC P TOKEN_ATTRSPEC WORDORNUM TOKEN_ATTRSPEC WORDORNUM
+
+    TOKEN_OCPSPEC  shift, and goto state 103
+
+state 89 // TOKEN_PLUS TOKEN_OCDEV
+
+   84 OCCR: TOKEN_OCDEV . TOKEN_OCPSPEC P TOKEN_ATTRSPEC WORDORNUM TOKEN_ATTRSPEC WORDORNUM
+
+    TOKEN_OCPSPEC  shift, and goto state 97
+
+state 90 // TOKEN_PLUS TOKEN_DEVICE
+
+   85 OCCR: TOKEN_DEVICE . TOKEN_OCPSPEC P TOKEN_ATTRSPEC WORDORNUM TOKEN_ATTRSPEC WORDORNUM
+
+    TOKEN_OCPSPEC  shift, and goto state 91
+
+state 91 // TOKEN_PLUS TOKEN_DEVICE TOKEN_OCPSPEC
+
+   85 OCCR: TOKEN_DEVICE TOKEN_OCPSPEC . P TOKEN_ATTRSPEC WORDORNUM TOKEN_ATTRSPEC WORDORNUM
+   37 P1: .  [TOKEN_ATTRSPEC]
+
+    TOKEN_ATTRSPEC  reduce using rule 37 (P1)
+    TOKEN_DOT       shift, and goto state 54
+    TOKEN_SLASH     shift, and goto state 14
+    TOKEN_WORD      shift, and goto state 15
+
+    P   goto state 92
+    P1  goto state 13
+
+state 92 // TOKEN_PLUS TOKEN_DEVICE TOKEN_OCPSPEC [TOKEN_ATTRSPEC]
+
+   85 OCCR: TOKEN_DEVICE TOKEN_OCPSPEC P . TOKEN_ATTRSPEC WORDORNUM TOKEN_ATTRSPEC WORDORNUM
+
+    TOKEN_ATTRSPEC  shift, and goto state 93
+
+state 93 // TOKEN_PLUS TOKEN_DEVICE TOKEN_OCPSPEC TOKEN_ATTRSPEC
+
+   85 OCCR: TOKEN_DEVICE TOKEN_OCPSPEC P TOKEN_ATTRSPEC . WORDORNUM TOKEN_ATTRSPEC WORDORNUM
+   24 ORIENTN: .  [TOKEN_WORD]
+
+    TOKEN_NUM    shift, and goto state 71
+    TOKEN_OCDEL  shift, and goto state 69
+    TOKEN_PLUS   shift, and goto state 68
+    TOKEN_WORD   shift, and goto state 70
+
+    ORIENTN    goto state 72
+    WORDORNUM  goto state 94
+
+    conflict on TOKEN_WORD, shift, and goto state 70, reduce using rule 24
+
+state 94 // TOKEN_PLUS TOKEN_DEVICE TOKEN_OCPSPEC TOKEN_ATTRSPEC TOKEN_NUM [TOKEN_ATTRSPEC]
+
+   85 OCCR: TOKEN_DEVICE TOKEN_OCPSPEC P TOKEN_ATTRSPEC WORDORNUM . TOKEN_ATTRSPEC WORDORNUM
+
+    TOKEN_ATTRSPEC  shift, and goto state 95
+
+state 95 // TOKEN_PLUS TOKEN_DEVICE TOKEN_OCPSPEC TOKEN_ATTRSPEC TOKEN_NUM TOKEN_ATTRSPEC
+
+   85 OCCR: TOKEN_DEVICE TOKEN_OCPSPEC P TOKEN_ATTRSPEC WORDORNUM TOKEN_ATTRSPEC . WORDORNUM
+   24 ORIENTN: .  [TOKEN_WORD]
+
+    TOKEN_NUM    shift, and goto state 71
+    TOKEN_OCDEL  shift, and goto state 69
+    TOKEN_PLUS   shift, and goto state 68
+    TOKEN_WORD   shift, and goto state 70
+
+    ORIENTN    goto state 72
+    WORDORNUM  goto state 96
+
+    conflict on TOKEN_WORD, shift, and goto state 70, reduce using rule 24
+
+state 96 // TOKEN_PLUS TOKEN_DEVICE TOKEN_OCPSPEC TOKEN_ATTRSPEC TOKEN_NUM TOKEN_ATTRSPEC TOKEN_NUM [$end]
+
+   85 OCCR: TOKEN_DEVICE TOKEN_OCPSPEC P TOKEN_ATTRSPEC WORDORNUM TOKEN_ATTRSPEC WORDORNUM .  [$end]
+
+    $end  reduce using rule 85 (OCCR)
+
+state 97 // TOKEN_PLUS TOKEN_OCDEV TOKEN_OCPSPEC
+
+   84 OCCR: TOKEN_OCDEV TOKEN_OCPSPEC . P TOKEN_ATTRSPEC WORDORNUM TOKEN_ATTRSPEC WORDORNUM
+   37 P1: .  [TOKEN_ATTRSPEC]
+
+    TOKEN_ATTRSPEC  reduce using rule 37 (P1)
+    TOKEN_DOT       shift, and goto state 54
+    TOKEN_SLASH     shift, and goto state 14
+    TOKEN_WORD      shift, and goto state 15
+
+    P   goto state 98
+    P1  goto state 13
+
+state 98 // TOKEN_PLUS TOKEN_OCDEV TOKEN_OCPSPEC [TOKEN_ATTRSPEC]
+
+   84 OCCR: TOKEN_OCDEV TOKEN_OCPSPEC P . TOKEN_ATTRSPEC WORDORNUM TOKEN_ATTRSPEC WORDORNUM
+
+    TOKEN_ATTRSPEC  shift, and goto state 99
+
+state 99 // TOKEN_PLUS TOKEN_OCDEV TOKEN_OCPSPEC TOKEN_ATTRSPEC
+
+   84 OCCR: TOKEN_OCDEV TOKEN_OCPSPEC P TOKEN_ATTRSPEC . WORDORNUM TOKEN_ATTRSPEC WORDORNUM
+   24 ORIENTN: .  [TOKEN_WORD]
+
+    TOKEN_NUM    shift, and goto state 71
+    TOKEN_OCDEL  shift, and goto state 69
+    TOKEN_PLUS   shift, and goto state 68
+    TOKEN_WORD   shift, and goto state 70
+
+    ORIENTN    goto state 72
+    WORDORNUM  goto state 100
+
+    conflict on TOKEN_WORD, shift, and goto state 70, reduce using rule 24
+
+state 100 // TOKEN_PLUS TOKEN_OCDEV TOKEN_OCPSPEC TOKEN_ATTRSPEC TOKEN_NUM [TOKEN_ATTRSPEC]
+
+   84 OCCR: TOKEN_OCDEV TOKEN_OCPSPEC P TOKEN_ATTRSPEC WORDORNUM . TOKEN_ATTRSPEC WORDORNUM
+
+    TOKEN_ATTRSPEC  shift, and goto state 101
+
+state 101 // TOKEN_PLUS TOKEN_OCDEV TOKEN_OCPSPEC TOKEN_ATTRSPEC TOKEN_NUM TOKEN_ATTRSPEC
+
+   84 OCCR: TOKEN_OCDEV TOKEN_OCPSPEC P TOKEN_ATTRSPEC WORDORNUM TOKEN_ATTRSPEC . WORDORNUM
+   24 ORIENTN: .  [TOKEN_WORD]
+
+    TOKEN_NUM    shift, and goto state 71
+    TOKEN_OCDEL  shift, and goto state 69
+    TOKEN_PLUS   shift, and goto state 68
+    TOKEN_WORD   shift, and goto state 70
+
+    ORIENTN    goto state 72
+    WORDORNUM  goto state 102
+
+    conflict on TOKEN_WORD, shift, and goto state 70, reduce using rule 24
+
+state 102 // TOKEN_PLUS TOKEN_OCDEV TOKEN_OCPSPEC TOKEN_ATTRSPEC TOKEN_NUM TOKEN_ATTRSPEC TOKEN_NUM [$end]
+
+   84 OCCR: TOKEN_OCDEV TOKEN_OCPSPEC P TOKEN_ATTRSPEC WORDORNUM TOKEN_ATTRSPEC WORDORNUM .  [$end]
+
+    $end  reduce using rule 84 (OCCR)
+
+state 103 // TOKEN_PLUS TOKEN_RACK TOKEN_OCPSPEC
+
+   83 OCCR: TOKEN_RACK TOKEN_OCPSPEC . P TOKEN_ATTRSPEC WORDORNUM TOKEN_ATTRSPEC WORDORNUM
+   37 P1: .  [TOKEN_ATTRSPEC]
+
+    TOKEN_ATTRSPEC  reduce using rule 37 (P1)
+    TOKEN_DOT       shift, and goto state 54
+    TOKEN_SLASH     shift, and goto state 14
+    TOKEN_WORD      shift, and goto state 15
+
+    P   goto state 104
+    P1  goto state 13
+
+state 104 // TOKEN_PLUS TOKEN_RACK TOKEN_OCPSPEC [TOKEN_ATTRSPEC]
+
+   83 OCCR: TOKEN_RACK TOKEN_OCPSPEC P . TOKEN_ATTRSPEC WORDORNUM TOKEN_ATTRSPEC WORDORNUM
+
+    TOKEN_ATTRSPEC  shift, and goto state 105
+
+state 105 // TOKEN_PLUS TOKEN_RACK TOKEN_OCPSPEC TOKEN_ATTRSPEC
+
+   83 OCCR: TOKEN_RACK TOKEN_OCPSPEC P TOKEN_ATTRSPEC . WORDORNUM TOKEN_ATTRSPEC WORDORNUM
+   24 ORIENTN: .  [TOKEN_WORD]
+
+    TOKEN_NUM    shift, and goto state 71
+    TOKEN_OCDEL  shift, and goto state 69
+    TOKEN_PLUS   shift, and goto state 68
+    TOKEN_WORD   shift, and goto state 70
+
+    ORIENTN    goto state 72
+    WORDORNUM  goto state 106
+
+    conflict on TOKEN_WORD, shift, and goto state 70, reduce using rule 24
+
+state 106 // TOKEN_PLUS TOKEN_RACK TOKEN_OCPSPEC TOKEN_ATTRSPEC TOKEN_NUM [TOKEN_ATTRSPEC]
+
+   83 OCCR: TOKEN_RACK TOKEN_OCPSPEC P TOKEN_ATTRSPEC WORDORNUM . TOKEN_ATTRSPEC WORDORNUM
+
+    TOKEN_ATTRSPEC  shift, and goto state 107
+
+state 107 // TOKEN_PLUS TOKEN_RACK TOKEN_OCPSPEC TOKEN_ATTRSPEC TOKEN_NUM TOKEN_ATTRSPEC
+
+   83 OCCR: TOKEN_RACK TOKEN_OCPSPEC P TOKEN_ATTRSPEC WORDORNUM TOKEN_ATTRSPEC . WORDORNUM
+   24 ORIENTN: .  [TOKEN_WORD]
+
+    TOKEN_NUM    shift, and goto state 71
+    TOKEN_OCDEL  shift, and goto state 69
+    TOKEN_PLUS   shift, and goto state 68
+    TOKEN_WORD   shift, and goto state 70
+
+    ORIENTN    goto state 72
+    WORDORNUM  goto state 108
+
+    conflict on TOKEN_WORD, shift, and goto state 70, reduce using rule 24
+
+state 108 // TOKEN_PLUS TOKEN_RACK TOKEN_OCPSPEC TOKEN_ATTRSPEC TOKEN_NUM TOKEN_ATTRSPEC TOKEN_NUM [$end]
+
+   83 OCCR: TOKEN_RACK TOKEN_OCPSPEC P TOKEN_ATTRSPEC WORDORNUM TOKEN_ATTRSPEC WORDORNUM .  [$end]
+
+    $end  reduce using rule 83 (OCCR)
+
+state 109 // TOKEN_PLUS TOKEN_OCRACK TOKEN_OCPSPEC
+
+   82 OCCR: TOKEN_OCRACK TOKEN_OCPSPEC . P TOKEN_ATTRSPEC WORDORNUM TOKEN_ATTRSPEC WORDORNUM
+   37 P1: .  [TOKEN_ATTRSPEC]
+
+    TOKEN_ATTRSPEC  reduce using rule 37 (P1)
+    TOKEN_DOT       shift, and goto state 54
+    TOKEN_SLASH     shift, and goto state 14
+    TOKEN_WORD      shift, and goto state 15
+
+    P   goto state 110
+    P1  goto state 13
+
+state 110 // TOKEN_PLUS TOKEN_OCRACK TOKEN_OCPSPEC [TOKEN_ATTRSPEC]
+
+   82 OCCR: TOKEN_OCRACK TOKEN_OCPSPEC P . TOKEN_ATTRSPEC WORDORNUM TOKEN_ATTRSPEC WORDORNUM
+
+    TOKEN_ATTRSPEC  shift, and goto state 111
+
+state 111 // TOKEN_PLUS TOKEN_OCRACK TOKEN_OCPSPEC TOKEN_ATTRSPEC
+
+   82 OCCR: TOKEN_OCRACK TOKEN_OCPSPEC P TOKEN_ATTRSPEC . WORDORNUM TOKEN_ATTRSPEC WORDORNUM
+   24 ORIENTN: .  [TOKEN_WORD]
+
+    TOKEN_NUM    shift, and goto state 71
+    TOKEN_OCDEL  shift, and goto state 69
+    TOKEN_PLUS   shift, and goto state 68
+    TOKEN_WORD   shift, and goto state 70
+
+    ORIENTN    goto state 72
+    WORDORNUM  goto state 112
+
+    conflict on TOKEN_WORD, shift, and goto state 70, reduce using rule 24
+
+state 112 // TOKEN_PLUS TOKEN_OCRACK TOKEN_OCPSPEC TOKEN_ATTRSPEC TOKEN_NUM [TOKEN_ATTRSPEC]
+
+   82 OCCR: TOKEN_OCRACK TOKEN_OCPSPEC P TOKEN_ATTRSPEC WORDORNUM . TOKEN_ATTRSPEC WORDORNUM
+
+    TOKEN_ATTRSPEC  shift, and goto state 113
+
+state 113 // TOKEN_PLUS TOKEN_OCRACK TOKEN_OCPSPEC TOKEN_ATTRSPEC TOKEN_NUM TOKEN_ATTRSPEC
+
+   82 OCCR: TOKEN_OCRACK TOKEN_OCPSPEC P TOKEN_ATTRSPEC WORDORNUM TOKEN_ATTRSPEC . WORDORNUM
+   24 ORIENTN: .  [TOKEN_WORD]
+
+    TOKEN_NUM    shift, and goto state 71
+    TOKEN_OCDEL  shift, and goto state 69
+    TOKEN_PLUS   shift, and goto state 68
+    TOKEN_WORD   shift, and goto state 70
+
+    ORIENTN    goto state 72
+    WORDORNUM  goto state 114
+
+    conflict on TOKEN_WORD, shift, and goto state 70, reduce using rule 24
+
+state 114 // TOKEN_PLUS TOKEN_OCRACK TOKEN_OCPSPEC TOKEN_ATTRSPEC TOKEN_NUM TOKEN_ATTRSPEC TOKEN_NUM [$end]
+
+   82 OCCR: TOKEN_OCRACK TOKEN_OCPSPEC P TOKEN_ATTRSPEC WORDORNUM TOKEN_ATTRSPEC WORDORNUM .  [$end]
+
+    $end  reduce using rule 82 (OCCR)
+
+state 115 // TOKEN_PLUS TOKEN_ROOM TOKEN_OCPSPEC
+
+   81 OCCR: TOKEN_ROOM TOKEN_OCPSPEC . P TOKEN_ATTRSPEC WORDORNUM TOKEN_ATTRSPEC WORDORNUM
+   37 P1: .  [TOKEN_ATTRSPEC]
+
+    TOKEN_ATTRSPEC  reduce using rule 37 (P1)
+    TOKEN_DOT       shift, and goto state 54
+    TOKEN_SLASH     shift, and goto state 14
+    TOKEN_WORD      shift, and goto state 15
+
+    P   goto state 116
+    P1  goto state 13
+
+state 116 // TOKEN_PLUS TOKEN_ROOM TOKEN_OCPSPEC [TOKEN_ATTRSPEC]
+
+   81 OCCR: TOKEN_ROOM TOKEN_OCPSPEC P . TOKEN_ATTRSPEC WORDORNUM TOKEN_ATTRSPEC WORDORNUM
+
+    TOKEN_ATTRSPEC  shift, and goto state 117
+
+state 117 // TOKEN_PLUS TOKEN_ROOM TOKEN_OCPSPEC TOKEN_ATTRSPEC
+
+   81 OCCR: TOKEN_ROOM TOKEN_OCPSPEC P TOKEN_ATTRSPEC . WORDORNUM TOKEN_ATTRSPEC WORDORNUM
+   24 ORIENTN: .  [TOKEN_WORD]
+
+    TOKEN_NUM    shift, and goto state 71
+    TOKEN_OCDEL  shift, and goto state 69
+    TOKEN_PLUS   shift, and goto state 68
+    TOKEN_WORD   shift, and goto state 70
+
+    ORIENTN    goto state 72
+    WORDORNUM  goto state 118
+
+    conflict on TOKEN_WORD, shift, and goto state 70, reduce using rule 24
+
+state 118 // TOKEN_PLUS TOKEN_ROOM TOKEN_OCPSPEC TOKEN_ATTRSPEC TOKEN_NUM [TOKEN_ATTRSPEC]
+
+   81 OCCR: TOKEN_ROOM TOKEN_OCPSPEC P TOKEN_ATTRSPEC WORDORNUM . TOKEN_ATTRSPEC WORDORNUM
+
+    TOKEN_ATTRSPEC  shift, and goto state 119
+
+state 119 // TOKEN_PLUS TOKEN_ROOM TOKEN_OCPSPEC TOKEN_ATTRSPEC TOKEN_NUM TOKEN_ATTRSPEC
+
+   81 OCCR: TOKEN_ROOM TOKEN_OCPSPEC P TOKEN_ATTRSPEC WORDORNUM TOKEN_ATTRSPEC . WORDORNUM
+   24 ORIENTN: .  [TOKEN_WORD]
+
+    TOKEN_NUM    shift, and goto state 71
+    TOKEN_OCDEL  shift, and goto state 69
+    TOKEN_PLUS   shift, and goto state 68
+    TOKEN_WORD   shift, and goto state 70
+
+    ORIENTN    goto state 72
+    WORDORNUM  goto state 120
+
+    conflict on TOKEN_WORD, shift, and goto state 70, reduce using rule 24
+
+state 120 // TOKEN_PLUS TOKEN_ROOM TOKEN_OCPSPEC TOKEN_ATTRSPEC TOKEN_NUM TOKEN_ATTRSPEC TOKEN_NUM [$end]
+
+   81 OCCR: TOKEN_ROOM TOKEN_OCPSPEC P TOKEN_ATTRSPEC WORDORNUM TOKEN_ATTRSPEC WORDORNUM .  [$end]
+
+    $end  reduce using rule 81 (OCCR)
+
+state 121 // TOKEN_PLUS TOKEN_OCROOM TOKEN_OCPSPEC
+
+   80 OCCR: TOKEN_OCROOM TOKEN_OCPSPEC . P TOKEN_ATTRSPEC WORDORNUM TOKEN_ATTRSPEC WORDORNUM
+   37 P1: .  [TOKEN_ATTRSPEC]
+
+    TOKEN_ATTRSPEC  reduce using rule 37 (P1)
+    TOKEN_DOT       shift, and goto state 54
+    TOKEN_SLASH     shift, and goto state 14
+    TOKEN_WORD      shift, and goto state 15
+
+    P   goto state 122
+    P1  goto state 13
+
+state 122 // TOKEN_PLUS TOKEN_OCROOM TOKEN_OCPSPEC [TOKEN_ATTRSPEC]
+
+   80 OCCR: TOKEN_OCROOM TOKEN_OCPSPEC P . TOKEN_ATTRSPEC WORDORNUM TOKEN_ATTRSPEC WORDORNUM
+
+    TOKEN_ATTRSPEC  shift, and goto state 123
+
+state 123 // TOKEN_PLUS TOKEN_OCROOM TOKEN_OCPSPEC TOKEN_ATTRSPEC
+
+   80 OCCR: TOKEN_OCROOM TOKEN_OCPSPEC P TOKEN_ATTRSPEC . WORDORNUM TOKEN_ATTRSPEC WORDORNUM
+   24 ORIENTN: .  [TOKEN_WORD]
+
+    TOKEN_NUM    shift, and goto state 71
+    TOKEN_OCDEL  shift, and goto state 69
+    TOKEN_PLUS   shift, and goto state 68
+    TOKEN_WORD   shift, and goto state 70
+
+    ORIENTN    goto state 72
+    WORDORNUM  goto state 124
+
+    conflict on TOKEN_WORD, shift, and goto state 70, reduce using rule 24
+
+state 124 // TOKEN_PLUS TOKEN_OCROOM TOKEN_OCPSPEC TOKEN_ATTRSPEC TOKEN_NUM [TOKEN_ATTRSPEC]
+
+   80 OCCR: TOKEN_OCROOM TOKEN_OCPSPEC P TOKEN_ATTRSPEC WORDORNUM . TOKEN_ATTRSPEC WORDORNUM
+
+    TOKEN_ATTRSPEC  shift, and goto state 125
+
+state 125 // TOKEN_PLUS TOKEN_OCROOM TOKEN_OCPSPEC TOKEN_ATTRSPEC TOKEN_NUM TOKEN_ATTRSPEC
+
+   80 OCCR: TOKEN_OCROOM TOKEN_OCPSPEC P TOKEN_ATTRSPEC WORDORNUM TOKEN_ATTRSPEC . WORDORNUM
+   24 ORIENTN: .  [TOKEN_WORD]
+
+    TOKEN_NUM    shift, and goto state 71
+    TOKEN_OCDEL  shift, and goto state 69
+    TOKEN_PLUS   shift, and goto state 68
+    TOKEN_WORD   shift, and goto state 70
+
+    ORIENTN    goto state 72
+    WORDORNUM  goto state 126
+
+    conflict on TOKEN_WORD, shift, and goto state 70, reduce using rule 24
+
+state 126 // TOKEN_PLUS TOKEN_OCROOM TOKEN_OCPSPEC TOKEN_ATTRSPEC TOKEN_NUM TOKEN_ATTRSPEC TOKEN_NUM [$end]
+
+   80 OCCR: TOKEN_OCROOM TOKEN_OCPSPEC P TOKEN_ATTRSPEC WORDORNUM TOKEN_ATTRSPEC WORDORNUM .  [$end]
+
+    $end  reduce using rule 80 (OCCR)
+
+state 127 // TOKEN_PLUS TOKEN_BLDG TOKEN_OCPSPEC
+
+   79 OCCR: TOKEN_BLDG TOKEN_OCPSPEC . P TOKEN_ATTRSPEC WORDORNUM TOKEN_ATTRSPEC WORDORNUM
+   37 P1: .  [TOKEN_ATTRSPEC]
+
+    TOKEN_ATTRSPEC  reduce using rule 37 (P1)
+    TOKEN_DOT       shift, and goto state 54
+    TOKEN_SLASH     shift, and goto state 14
+    TOKEN_WORD      shift, and goto state 15
+
+    P   goto state 128
+    P1  goto state 13
+
+state 128 // TOKEN_PLUS TOKEN_BLDG TOKEN_OCPSPEC [TOKEN_ATTRSPEC]
+
+   79 OCCR: TOKEN_BLDG TOKEN_OCPSPEC P . TOKEN_ATTRSPEC WORDORNUM TOKEN_ATTRSPEC WORDORNUM
+
+    TOKEN_ATTRSPEC  shift, and goto state 129
+
+state 129 // TOKEN_PLUS TOKEN_BLDG TOKEN_OCPSPEC TOKEN_ATTRSPEC
+
+   79 OCCR: TOKEN_BLDG TOKEN_OCPSPEC P TOKEN_ATTRSPEC . WORDORNUM TOKEN_ATTRSPEC WORDORNUM
+   24 ORIENTN: .  [TOKEN_WORD]
+
+    TOKEN_NUM    shift, and goto state 71
+    TOKEN_OCDEL  shift, and goto state 69
+    TOKEN_PLUS   shift, and goto state 68
+    TOKEN_WORD   shift, and goto state 70
+
+    ORIENTN    goto state 72
+    WORDORNUM  goto state 130
+
+    conflict on TOKEN_WORD, shift, and goto state 70, reduce using rule 24
+
+state 130 // TOKEN_PLUS TOKEN_BLDG TOKEN_OCPSPEC TOKEN_ATTRSPEC TOKEN_NUM [TOKEN_ATTRSPEC]
+
+   79 OCCR: TOKEN_BLDG TOKEN_OCPSPEC P TOKEN_ATTRSPEC WORDORNUM . TOKEN_ATTRSPEC WORDORNUM
+
+    TOKEN_ATTRSPEC  shift, and goto state 131
+
+state 131 // TOKEN_PLUS TOKEN_BLDG TOKEN_OCPSPEC TOKEN_ATTRSPEC TOKEN_NUM TOKEN_ATTRSPEC
+
+   79 OCCR: TOKEN_BLDG TOKEN_OCPSPEC P TOKEN_ATTRSPEC WORDORNUM TOKEN_ATTRSPEC . WORDORNUM
+   24 ORIENTN: .  [TOKEN_WORD]
+
+    TOKEN_NUM    shift, and goto state 71
+    TOKEN_OCDEL  shift, and goto state 69
+    TOKEN_PLUS   shift, and goto state 68
+    TOKEN_WORD   shift, and goto state 70
+
+    ORIENTN    goto state 72
+    WORDORNUM  goto state 132
+
+    conflict on TOKEN_WORD, shift, and goto state 70, reduce using rule 24
+
+state 132 // TOKEN_PLUS TOKEN_BLDG TOKEN_OCPSPEC TOKEN_ATTRSPEC TOKEN_NUM TOKEN_ATTRSPEC TOKEN_NUM [$end]
+
+   79 OCCR: TOKEN_BLDG TOKEN_OCPSPEC P TOKEN_ATTRSPEC WORDORNUM TOKEN_ATTRSPEC WORDORNUM .  [$end]
+
+    $end  reduce using rule 79 (OCCR)
+
+state 133 // TOKEN_PLUS TOKEN_OCBLDG TOKEN_OCPSPEC
+
+   78 OCCR: TOKEN_OCBLDG TOKEN_OCPSPEC . P TOKEN_ATTRSPEC WORDORNUM TOKEN_ATTRSPEC WORDORNUM
+   37 P1: .  [TOKEN_ATTRSPEC]
+
+    TOKEN_ATTRSPEC  reduce using rule 37 (P1)
+    TOKEN_DOT       shift, and goto state 54
+    TOKEN_SLASH     shift, and goto state 14
+    TOKEN_WORD      shift, and goto state 15
+
+    P   goto state 134
+    P1  goto state 13
+
+state 134 // TOKEN_PLUS TOKEN_OCBLDG TOKEN_OCPSPEC [TOKEN_ATTRSPEC]
+
+   78 OCCR: TOKEN_OCBLDG TOKEN_OCPSPEC P . TOKEN_ATTRSPEC WORDORNUM TOKEN_ATTRSPEC WORDORNUM
+
+    TOKEN_ATTRSPEC  shift, and goto state 135
+
+state 135 // TOKEN_PLUS TOKEN_OCBLDG TOKEN_OCPSPEC TOKEN_ATTRSPEC
+
+   78 OCCR: TOKEN_OCBLDG TOKEN_OCPSPEC P TOKEN_ATTRSPEC . WORDORNUM TOKEN_ATTRSPEC WORDORNUM
+   24 ORIENTN: .  [TOKEN_WORD]
+
+    TOKEN_NUM    shift, and goto state 71
+    TOKEN_OCDEL  shift, and goto state 69
+    TOKEN_PLUS   shift, and goto state 68
+    TOKEN_WORD   shift, and goto state 70
+
+    ORIENTN    goto state 72
+    WORDORNUM  goto state 136
+
+    conflict on TOKEN_WORD, shift, and goto state 70, reduce using rule 24
+
+state 136 // TOKEN_PLUS TOKEN_OCBLDG TOKEN_OCPSPEC TOKEN_ATTRSPEC TOKEN_NUM [TOKEN_ATTRSPEC]
+
+   78 OCCR: TOKEN_OCBLDG TOKEN_OCPSPEC P TOKEN_ATTRSPEC WORDORNUM . TOKEN_ATTRSPEC WORDORNUM
+
+    TOKEN_ATTRSPEC  shift, and goto state 137
+
+state 137 // TOKEN_PLUS TOKEN_OCBLDG TOKEN_OCPSPEC TOKEN_ATTRSPEC TOKEN_NUM TOKEN_ATTRSPEC
+
+   78 OCCR: TOKEN_OCBLDG TOKEN_OCPSPEC P TOKEN_ATTRSPEC WORDORNUM TOKEN_ATTRSPEC . WORDORNUM
+   24 ORIENTN: .  [TOKEN_WORD]
+
+    TOKEN_NUM    shift, and goto state 71
+    TOKEN_OCDEL  shift, and goto state 69
+    TOKEN_PLUS   shift, and goto state 68
+    TOKEN_WORD   shift, and goto state 70
+
+    ORIENTN    goto state 72
+    WORDORNUM  goto state 138
+
+    conflict on TOKEN_WORD, shift, and goto state 70, reduce using rule 24
+
+state 138 // TOKEN_PLUS TOKEN_OCBLDG TOKEN_OCPSPEC TOKEN_ATTRSPEC TOKEN_NUM TOKEN_ATTRSPEC TOKEN_NUM [$end]
+
+   78 OCCR: TOKEN_OCBLDG TOKEN_OCPSPEC P TOKEN_ATTRSPEC WORDORNUM TOKEN_ATTRSPEC WORDORNUM .  [$end]
+
+    $end  reduce using rule 78 (OCCR)
+
+state 139 // TOKEN_PLUS TOKEN_SITE TOKEN_OCPSPEC
+
+   77 OCCR: TOKEN_SITE TOKEN_OCPSPEC . P TOKEN_ATTRSPEC WORDORNUM
+   37 P1: .  [TOKEN_ATTRSPEC]
+
+    TOKEN_ATTRSPEC  reduce using rule 37 (P1)
+    TOKEN_DOT       shift, and goto state 54
+    TOKEN_SLASH     shift, and goto state 14
+    TOKEN_WORD      shift, and goto state 15
+
+    P   goto state 140
+    P1  goto state 13
+
+state 140 // TOKEN_PLUS TOKEN_SITE TOKEN_OCPSPEC [TOKEN_ATTRSPEC]
+
+   77 OCCR: TOKEN_SITE TOKEN_OCPSPEC P . TOKEN_ATTRSPEC WORDORNUM
+
+    TOKEN_ATTRSPEC  shift, and goto state 141
+
+state 141 // TOKEN_PLUS TOKEN_SITE TOKEN_OCPSPEC TOKEN_ATTRSPEC
+
+   77 OCCR: TOKEN_SITE TOKEN_OCPSPEC P TOKEN_ATTRSPEC . WORDORNUM
+   24 ORIENTN: .  [TOKEN_WORD]
+
+    TOKEN_NUM    shift, and goto state 71
+    TOKEN_OCDEL  shift, and goto state 69
+    TOKEN_PLUS   shift, and goto state 68
+    TOKEN_WORD   shift, and goto state 70
+
+    ORIENTN    goto state 72
+    WORDORNUM  goto state 142
+
+    conflict on TOKEN_WORD, shift, and goto state 70, reduce using rule 24
+
+state 142 // TOKEN_PLUS TOKEN_SITE TOKEN_OCPSPEC TOKEN_ATTRSPEC TOKEN_NUM [$end]
+
+   77 OCCR: TOKEN_SITE TOKEN_OCPSPEC P TOKEN_ATTRSPEC WORDORNUM .  [$end]
+
+    $end  reduce using rule 77 (OCCR)
+
+state 143 // TOKEN_PLUS TOKEN_OCSITE TOKEN_OCPSPEC
+
+   76 OCCR: TOKEN_OCSITE TOKEN_OCPSPEC . P TOKEN_ATTRSPEC WORDORNUM
+   37 P1: .  [TOKEN_ATTRSPEC]
+
+    TOKEN_ATTRSPEC  reduce using rule 37 (P1)
+    TOKEN_DOT       shift, and goto state 54
+    TOKEN_SLASH     shift, and goto state 14
+    TOKEN_WORD      shift, and goto state 15
+
+    P   goto state 144
+    P1  goto state 13
+
+state 144 // TOKEN_PLUS TOKEN_OCSITE TOKEN_OCPSPEC [TOKEN_ATTRSPEC]
+
+   76 OCCR: TOKEN_OCSITE TOKEN_OCPSPEC P . TOKEN_ATTRSPEC WORDORNUM
+
+    TOKEN_ATTRSPEC  shift, and goto state 145
+
+state 145 // TOKEN_PLUS TOKEN_OCSITE TOKEN_OCPSPEC TOKEN_ATTRSPEC
+
+   76 OCCR: TOKEN_OCSITE TOKEN_OCPSPEC P TOKEN_ATTRSPEC . WORDORNUM
+   24 ORIENTN: .  [TOKEN_WORD]
+
+    TOKEN_NUM    shift, and goto state 71
+    TOKEN_OCDEL  shift, and goto state 69
+    TOKEN_PLUS   shift, and goto state 68
+    TOKEN_WORD   shift, and goto state 70
+
+    ORIENTN    goto state 72
+    WORDORNUM  goto state 146
+
+    conflict on TOKEN_WORD, shift, and goto state 70, reduce using rule 24
+
+state 146 // TOKEN_PLUS TOKEN_OCSITE TOKEN_OCPSPEC TOKEN_ATTRSPEC TOKEN_NUM [$end]
+
+   76 OCCR: TOKEN_OCSITE TOKEN_OCPSPEC P TOKEN_ATTRSPEC WORDORNUM .  [$end]
+
+    $end  reduce using rule 76 (OCCR)
+
+state 147 // TOKEN_PLUS TOKEN_TENANT TOKEN_OCPSPEC
+
+   75 OCCR: TOKEN_TENANT TOKEN_OCPSPEC . P TOKEN_ATTRSPEC WORDORNUM
+   37 P1: .  [TOKEN_ATTRSPEC]
+
+    TOKEN_ATTRSPEC  reduce using rule 37 (P1)
+    TOKEN_DOT       shift, and goto state 54
+    TOKEN_SLASH     shift, and goto state 14
+    TOKEN_WORD      shift, and goto state 15
+
+    P   goto state 148
+    P1  goto state 13
+
+state 148 // TOKEN_PLUS TOKEN_TENANT TOKEN_OCPSPEC [TOKEN_ATTRSPEC]
+
+   75 OCCR: TOKEN_TENANT TOKEN_OCPSPEC P . TOKEN_ATTRSPEC WORDORNUM
+
+    TOKEN_ATTRSPEC  shift, and goto state 149
+
+state 149 // TOKEN_PLUS TOKEN_TENANT TOKEN_OCPSPEC TOKEN_ATTRSPEC
+
+   75 OCCR: TOKEN_TENANT TOKEN_OCPSPEC P TOKEN_ATTRSPEC . WORDORNUM
+   24 ORIENTN: .  [TOKEN_WORD]
+
+    TOKEN_NUM    shift, and goto state 71
+    TOKEN_OCDEL  shift, and goto state 69
+    TOKEN_PLUS   shift, and goto state 68
+    TOKEN_WORD   shift, and goto state 70
+
+    ORIENTN    goto state 72
+    WORDORNUM  goto state 150
+
+    conflict on TOKEN_WORD, shift, and goto state 70, reduce using rule 24
+
+state 150 // TOKEN_PLUS TOKEN_TENANT TOKEN_OCPSPEC TOKEN_ATTRSPEC TOKEN_NUM [$end]
+
+   75 OCCR: TOKEN_TENANT TOKEN_OCPSPEC P TOKEN_ATTRSPEC WORDORNUM .  [$end]
+
+    $end  reduce using rule 75 (OCCR)
+
+state 151 // TOKEN_PLUS TOKEN_OCTENANT TOKEN_OCPSPEC
+
+   74 OCCR: TOKEN_OCTENANT TOKEN_OCPSPEC . P TOKEN_ATTRSPEC WORDORNUM
+   37 P1: .  [TOKEN_ATTRSPEC]
+
+    TOKEN_ATTRSPEC  reduce using rule 37 (P1)
+    TOKEN_DOT       shift, and goto state 54
+    TOKEN_SLASH     shift, and goto state 14
+    TOKEN_WORD      shift, and goto state 15
+
+    P   goto state 152
+    P1  goto state 13
+
+state 152 // TOKEN_PLUS TOKEN_OCTENANT TOKEN_OCPSPEC [TOKEN_ATTRSPEC]
+
+   74 OCCR: TOKEN_OCTENANT TOKEN_OCPSPEC P . TOKEN_ATTRSPEC WORDORNUM
+
+    TOKEN_ATTRSPEC  shift, and goto state 153
+
+state 153 // TOKEN_PLUS TOKEN_OCTENANT TOKEN_OCPSPEC TOKEN_ATTRSPEC
+
+   74 OCCR: TOKEN_OCTENANT TOKEN_OCPSPEC P TOKEN_ATTRSPEC . WORDORNUM
+   24 ORIENTN: .  [TOKEN_WORD]
+
+    TOKEN_NUM    shift, and goto state 71
+    TOKEN_OCDEL  shift, and goto state 69
+    TOKEN_PLUS   shift, and goto state 68
+    TOKEN_WORD   shift, and goto state 70
+
+    ORIENTN    goto state 72
+    WORDORNUM  goto state 154
+
+    conflict on TOKEN_WORD, shift, and goto state 70, reduce using rule 24
+
+state 154 // TOKEN_PLUS TOKEN_OCTENANT TOKEN_OCPSPEC TOKEN_ATTRSPEC TOKEN_NUM [$end]
+
+   74 OCCR: TOKEN_OCTENANT TOKEN_OCPSPEC P TOKEN_ATTRSPEC WORDORNUM .  [$end]
+
+    $end  reduce using rule 74 (OCCR)
+
+state 155 // TOKEN_DOC TOKEN_LS
+
+   58 BASH: TOKEN_DOC TOKEN_LS .  [$end]
+
+    $end  reduce using rule 58 (BASH)
+
+state 156 // TOKEN_DOC TOKEN_CD
+
+   59 BASH: TOKEN_DOC TOKEN_CD .  [$end]
+
+    $end  reduce using rule 59 (BASH)
+
+state 157 // TOKEN_DOC TOKEN_CREATE
+
+   60 BASH: TOKEN_DOC TOKEN_CREATE .  [$end]
+
+    $end  reduce using rule 60 (BASH)
+
+state 158 // TOKEN_DOC TOKEN_GET
+
+   61 BASH: TOKEN_DOC TOKEN_GET .  [$end]
+
+    $end  reduce using rule 61 (BASH)
+
+state 159 // TOKEN_DOC TOKEN_UPDATE
+
+   62 BASH: TOKEN_DOC TOKEN_UPDATE .  [$end]
+
+    $end  reduce using rule 62 (BASH)
+
+state 160 // TOKEN_DOC TOKEN_DELETE
+
+   63 BASH: TOKEN_DOC TOKEN_DELETE .  [$end]
+
+    $end  reduce using rule 63 (BASH)
+
+state 161 // TOKEN_DOC TOKEN_WORD
+
+   64 BASH: TOKEN_DOC TOKEN_WORD .  [$end]
+
+    $end  reduce using rule 64 (BASH)
+
+state 162 // TOKEN_DOC TOKEN_TREE
+
+   65 BASH: TOKEN_DOC TOKEN_TREE .  [$end]
+
+    $end  reduce using rule 65 (BASH)
+
+state 163 // TOKEN_DOC TOKEN_LSOG
+
+   66 BASH: TOKEN_DOC TOKEN_LSOG .  [$end]
+
+    $end  reduce using rule 66 (BASH)
+
+state 164 // TOKEN_TREE TOKEN_NUM
+
+   48 Q: TOKEN_TREE TOKEN_NUM .  [$end]
+
+    $end  reduce using rule 48 (Q)
+
+state 165 // TOKEN_TREE [$end]
+
+   49 Q: TOKEN_TREE P .  [$end]
+   50 Q: TOKEN_TREE P . TOKEN_NUM
+
+    $end       reduce using rule 49 (Q)
+    TOKEN_NUM  shift, and goto state 166
+
+state 166 // TOKEN_TREE TOKEN_NUM
+
+   50 Q: TOKEN_TREE P TOKEN_NUM .  [$end]
+
+    $end  reduce using rule 50 (Q)
+
+state 167 // TOKEN_LSSUBDEV1 [$end]
+
+   47 Q: TOKEN_LSSUBDEV1 P .  [$end]
+
+    $end  reduce using rule 47 (Q)
+
+state 168 // TOKEN_LSSUBDEV [$end]
+
+   46 Q: TOKEN_LSSUBDEV P .  [$end]
+
+    $end  reduce using rule 46 (Q)
+
+state 169 // TOKEN_LSDEV [$end]
+
+   45 Q: TOKEN_LSDEV P .  [$end]
+
+    $end  reduce using rule 45 (Q)
+
+state 170 // TOKEN_LSRACK [$end]
+
+   44 Q: TOKEN_LSRACK P .  [$end]
+
+    $end  reduce using rule 44 (Q)
+
+state 171 // TOKEN_LSROOM [$end]
+
+   43 Q: TOKEN_LSROOM P .  [$end]
+
+    $end  reduce using rule 43 (Q)
+
+state 172 // TOKEN_LSBLDG [$end]
+
+   42 Q: TOKEN_LSBLDG P .  [$end]
+
+    $end  reduce using rule 42 (Q)
+
+state 173 // TOKEN_LSSITE [$end]
+
+   41 Q: TOKEN_LSSITE P .  [$end]
+
+    $end  reduce using rule 41 (Q)
+
+state 174 // TOKEN_LSTEN [$end]
+
+   40 Q: TOKEN_LSTEN P .  [$end]
+
+    $end  reduce using rule 40 (Q)
+
+state 175 // TOKEN_LS [$end]
+
+   39 Q: TOKEN_LS P .  [$end]
+
+    $end  reduce using rule 39 (Q)
+
+state 176 // TOKEN_CD [$end]
+
+   38 Q: TOKEN_CD P .  [$end]
+
+    $end  reduce using rule 38 (Q)
+
+state 177 // TOKEN_DOT TOKEN_VAR
+
+   92 OCDOT: TOKEN_DOT TOKEN_VAR . TOKEN_OCPSPEC TOKEN_WORD TOKEN_EQUAL WORDORNUM
+
+    TOKEN_OCPSPEC  shift, and goto state 184
+
+state 178 // TOKEN_DOT TOKEN_CMDS
+
+   93 OCDOT: TOKEN_DOT TOKEN_CMDS . TOKEN_OCPSPEC P
+
+    TOKEN_OCPSPEC  shift, and goto state 182
+
+state 179 // TOKEN_DOT TOKEN_TEMPLATE
+
+   94 OCDOT: TOKEN_DOT TOKEN_TEMPLATE . TOKEN_OCPSPEC P
+
+    TOKEN_OCPSPEC  shift, and goto state 180
+
+state 180 // TOKEN_DOT TOKEN_TEMPLATE TOKEN_OCPSPEC
+
+   94 OCDOT: TOKEN_DOT TOKEN_TEMPLATE TOKEN_OCPSPEC . P
+   37 P1: .  [$end]
+
+    $end         reduce using rule 37 (P1)
+    TOKEN_DOT    shift, and goto state 54
+    TOKEN_SLASH  shift, and goto state 14
+    TOKEN_WORD   shift, and goto state 15
+
+    P   goto state 181
+    P1  goto state 13
+
+state 181 // TOKEN_DOT TOKEN_TEMPLATE TOKEN_OCPSPEC [$end]
+
+   94 OCDOT: TOKEN_DOT TOKEN_TEMPLATE TOKEN_OCPSPEC P .  [$end]
+
+    $end  reduce using rule 94 (OCDOT)
+
+state 182 // TOKEN_DOT TOKEN_CMDS TOKEN_OCPSPEC
+
+   93 OCDOT: TOKEN_DOT TOKEN_CMDS TOKEN_OCPSPEC . P
+   37 P1: .  [$end]
+
+    $end         reduce using rule 37 (P1)
+    TOKEN_DOT    shift, and goto state 54
+    TOKEN_SLASH  shift, and goto state 14
+    TOKEN_WORD   shift, and goto state 15
+
+    P   goto state 183
+    P1  goto state 13
+
+state 183 // TOKEN_DOT TOKEN_CMDS TOKEN_OCPSPEC [$end]
+
+   93 OCDOT: TOKEN_DOT TOKEN_CMDS TOKEN_OCPSPEC P .  [$end]
+
+    $end  reduce using rule 93 (OCDOT)
+
+state 184 // TOKEN_DOT TOKEN_VAR TOKEN_OCPSPEC
+
+   92 OCDOT: TOKEN_DOT TOKEN_VAR TOKEN_OCPSPEC . TOKEN_WORD TOKEN_EQUAL WORDORNUM
+
+    TOKEN_WORD  shift, and goto state 185
+
+state 185 // TOKEN_DOT TOKEN_VAR TOKEN_OCPSPEC TOKEN_WORD
+
+   92 OCDOT: TOKEN_DOT TOKEN_VAR TOKEN_OCPSPEC TOKEN_WORD . TOKEN_EQUAL WORDORNUM
+
+    TOKEN_EQUAL  shift, and goto state 186
+
+state 186 // TOKEN_DOT TOKEN_VAR TOKEN_OCPSPEC TOKEN_WORD TOKEN_EQUAL
+
+   92 OCDOT: TOKEN_DOT TOKEN_VAR TOKEN_OCPSPEC TOKEN_WORD TOKEN_EQUAL . WORDORNUM
+   24 ORIENTN: .  [TOKEN_WORD]
+
+    TOKEN_NUM    shift, and goto state 71
+    TOKEN_OCDEL  shift, and goto state 69
+    TOKEN_PLUS   shift, and goto state 68
+    TOKEN_WORD   shift, and goto state 70
+
+    ORIENTN    goto state 72
+    WORDORNUM  goto state 187
+
+    conflict on TOKEN_WORD, shift, and goto state 70, reduce using rule 24
+
+state 187 // TOKEN_DOT TOKEN_VAR TOKEN_OCPSPEC TOKEN_WORD TOKEN_EQUAL TOKEN_NUM [$end]
+
+   92 OCDOT: TOKEN_DOT TOKEN_VAR TOKEN_OCPSPEC TOKEN_WORD TOKEN_EQUAL WORDORNUM .  [$end]
+
+    $end  reduce using rule 92 (OCDOT)
+
+state 188 // TOKEN_WORD TOKEN_SLASH
 
    32 P1: TOKEN_WORD TOKEN_SLASH . P1
    37 P1: .  [$end, TOKEN_ATTR, TOKEN_ATTRSPEC, TOKEN_DOT, TOKEN_NUM]
@@ -1583,15 +1724,15 @@ state 170 // TOKEN_WORD TOKEN_SLASH
     $end            reduce using rule 37 (P1)
     TOKEN_ATTR      reduce using rule 37 (P1)
     TOKEN_ATTRSPEC  reduce using rule 37 (P1)
-    TOKEN_DOT       shift, and goto state 16
+    TOKEN_DOT       shift, and goto state 54
     TOKEN_NUM       reduce using rule 37 (P1)
     TOKEN_WORD      shift, and goto state 15
 
-    P1  goto state 171
+    P1  goto state 189
 
-    conflict on TOKEN_DOT, shift, and goto state 16, reduce using rule 37
+    conflict on TOKEN_DOT, shift, and goto state 54, reduce using rule 37
 
-state 171 // TOKEN_WORD TOKEN_SLASH [$end]
+state 189 // TOKEN_WORD TOKEN_SLASH [$end]
 
    32 P1: TOKEN_WORD TOKEN_SLASH P1 .  [$end, TOKEN_ATTR, TOKEN_ATTRSPEC, TOKEN_DOT, TOKEN_NUM]
 
@@ -1601,7 +1742,7 @@ state 171 // TOKEN_WORD TOKEN_SLASH [$end]
     TOKEN_DOT       reduce using rule 32 (P1)
     TOKEN_NUM       reduce using rule 32 (P1)
 
-state 172 // TOKEN_SLASH [$end]
+state 190 // TOKEN_SLASH [$end]
 
    31 P: TOKEN_SLASH P1 .  [$end, TOKEN_ATTR, TOKEN_ATTRSPEC, TOKEN_DOT, TOKEN_NUM]
 
@@ -1611,80 +1752,80 @@ state 172 // TOKEN_SLASH [$end]
     TOKEN_DOT       reduce using rule 31 (P)
     TOKEN_NUM       reduce using rule 31 (P)
 
-state 173 // TOKEN_DELETE [$end]
+state 191 // TOKEN_DELETE [$end]
 
    13 NT_DEL: TOKEN_DELETE P .  [$end]
 
     $end  reduce using rule 13 (NT_DEL)
 
-state 174 // TOKEN_UPDATE [TOKEN_ATTR]
+state 192 // TOKEN_UPDATE [TOKEN_ATTR]
 
    12 NT_UPDATE: TOKEN_UPDATE P . F
 
-    TOKEN_ATTR  shift, and goto state 176
+    TOKEN_ATTR  shift, and goto state 194
 
-    F  goto state 175
+    F  goto state 193
 
-state 175 // TOKEN_UPDATE TOKEN_ATTR TOKEN_EQUAL TOKEN_NUM [$end]
+state 193 // TOKEN_UPDATE TOKEN_ATTR TOKEN_EQUAL TOKEN_NUM [$end]
 
    12 NT_UPDATE: TOKEN_UPDATE P F .  [$end]
 
     $end  reduce using rule 12 (NT_UPDATE)
 
-state 176 // TOKEN_UPDATE TOKEN_ATTR
+state 194 // TOKEN_UPDATE TOKEN_ATTR
 
    28 F: TOKEN_ATTR . TOKEN_EQUAL WORDORNUM F
    29 F: TOKEN_ATTR . TOKEN_EQUAL WORDORNUM
 
-    TOKEN_EQUAL  shift, and goto state 177
+    TOKEN_EQUAL  shift, and goto state 195
 
-state 177 // TOKEN_UPDATE TOKEN_ATTR TOKEN_EQUAL
+state 195 // TOKEN_UPDATE TOKEN_ATTR TOKEN_EQUAL
 
    28 F: TOKEN_ATTR TOKEN_EQUAL . WORDORNUM F
    29 F: TOKEN_ATTR TOKEN_EQUAL . WORDORNUM
    24 ORIENTN: .  [TOKEN_WORD]
 
-    TOKEN_NUM    shift, and goto state 57
-    TOKEN_OCDEL  shift, and goto state 55
-    TOKEN_PLUS   shift, and goto state 54
-    TOKEN_WORD   shift, and goto state 56
+    TOKEN_NUM    shift, and goto state 71
+    TOKEN_OCDEL  shift, and goto state 69
+    TOKEN_PLUS   shift, and goto state 68
+    TOKEN_WORD   shift, and goto state 70
 
-    ORIENTN    goto state 58
-    WORDORNUM  goto state 178
+    ORIENTN    goto state 72
+    WORDORNUM  goto state 196
 
-    conflict on TOKEN_WORD, shift, and goto state 56, reduce using rule 24
+    conflict on TOKEN_WORD, shift, and goto state 70, reduce using rule 24
 
-state 178 // TOKEN_UPDATE TOKEN_ATTR TOKEN_EQUAL TOKEN_NUM [$end]
+state 196 // TOKEN_UPDATE TOKEN_ATTR TOKEN_EQUAL TOKEN_NUM [$end]
 
    28 F: TOKEN_ATTR TOKEN_EQUAL WORDORNUM . F
    29 F: TOKEN_ATTR TOKEN_EQUAL WORDORNUM .  [$end]
 
     $end        reduce using rule 29 (F)
-    TOKEN_ATTR  shift, and goto state 176
+    TOKEN_ATTR  shift, and goto state 194
 
-    F  goto state 179
+    F  goto state 197
 
-state 179 // TOKEN_UPDATE TOKEN_ATTR TOKEN_EQUAL TOKEN_NUM TOKEN_ATTR TOKEN_EQUAL TOKEN_NUM [$end]
+state 197 // TOKEN_UPDATE TOKEN_ATTR TOKEN_EQUAL TOKEN_NUM TOKEN_ATTR TOKEN_EQUAL TOKEN_NUM [$end]
 
    28 F: TOKEN_ATTR TOKEN_EQUAL WORDORNUM F .  [$end]
 
     $end  reduce using rule 28 (F)
 
-state 180 // TOKEN_GET [$end]
+state 198 // TOKEN_GET [$end]
 
    10 NT_GET: TOKEN_GET P .  [$end]
 
     $end  reduce using rule 10 (NT_GET)
 
-state 181 // TOKEN_GET TOKEN_BLDG [TOKEN_ATTR]
+state 199 // TOKEN_GET TOKEN_BLDG [TOKEN_ATTR]
 
    11 NT_GET: TOKEN_GET E . F
 
-    TOKEN_ATTR  shift, and goto state 176
+    TOKEN_ATTR  shift, and goto state 194
 
-    F  goto state 190
+    F  goto state 208
 
-state 182 // TOKEN_CREATE TOKEN_TENANT
+state 200 // TOKEN_CREATE TOKEN_TENANT
 
    14 E: TOKEN_TENANT .  [TOKEN_ATTR, TOKEN_DOT, TOKEN_SLASH, TOKEN_WORD]
 
@@ -1693,7 +1834,7 @@ state 182 // TOKEN_CREATE TOKEN_TENANT
     TOKEN_SLASH  reduce using rule 14 (E)
     TOKEN_WORD   reduce using rule 14 (E)
 
-state 183 // TOKEN_GET TOKEN_SITE
+state 201 // TOKEN_CREATE TOKEN_SITE
 
    15 E: TOKEN_SITE .  [TOKEN_ATTR, TOKEN_DOT, TOKEN_SLASH, TOKEN_WORD]
 
@@ -1702,7 +1843,7 @@ state 183 // TOKEN_GET TOKEN_SITE
     TOKEN_SLASH  reduce using rule 15 (E)
     TOKEN_WORD   reduce using rule 15 (E)
 
-state 184 // TOKEN_GET TOKEN_BLDG
+state 202 // TOKEN_GET TOKEN_BLDG
 
    16 E: TOKEN_BLDG .  [TOKEN_ATTR, TOKEN_DOT, TOKEN_SLASH, TOKEN_WORD]
 
@@ -1711,7 +1852,7 @@ state 184 // TOKEN_GET TOKEN_BLDG
     TOKEN_SLASH  reduce using rule 16 (E)
     TOKEN_WORD   reduce using rule 16 (E)
 
-state 185 // TOKEN_GET TOKEN_ROOM
+state 203 // TOKEN_CREATE TOKEN_ROOM
 
    17 E: TOKEN_ROOM .  [TOKEN_ATTR, TOKEN_DOT, TOKEN_SLASH, TOKEN_WORD]
 
@@ -1720,7 +1861,7 @@ state 185 // TOKEN_GET TOKEN_ROOM
     TOKEN_SLASH  reduce using rule 17 (E)
     TOKEN_WORD   reduce using rule 17 (E)
 
-state 186 // TOKEN_GET TOKEN_RACK
+state 204 // TOKEN_GET TOKEN_RACK
 
    18 E: TOKEN_RACK .  [TOKEN_ATTR, TOKEN_DOT, TOKEN_SLASH, TOKEN_WORD]
 
@@ -1729,7 +1870,7 @@ state 186 // TOKEN_GET TOKEN_RACK
     TOKEN_SLASH  reduce using rule 18 (E)
     TOKEN_WORD   reduce using rule 18 (E)
 
-state 187 // TOKEN_GET TOKEN_DEVICE
+state 205 // TOKEN_GET TOKEN_DEVICE
 
    19 E: TOKEN_DEVICE .  [TOKEN_ATTR, TOKEN_DOT, TOKEN_SLASH, TOKEN_WORD]
 
@@ -1738,7 +1879,7 @@ state 187 // TOKEN_GET TOKEN_DEVICE
     TOKEN_SLASH  reduce using rule 19 (E)
     TOKEN_WORD   reduce using rule 19 (E)
 
-state 188 // TOKEN_GET TOKEN_SUBDEVICE
+state 206 // TOKEN_CREATE TOKEN_SUBDEVICE
 
    20 E: TOKEN_SUBDEVICE .  [TOKEN_ATTR, TOKEN_DOT, TOKEN_SLASH, TOKEN_WORD]
 
@@ -1747,7 +1888,7 @@ state 188 // TOKEN_GET TOKEN_SUBDEVICE
     TOKEN_SLASH  reduce using rule 20 (E)
     TOKEN_WORD   reduce using rule 20 (E)
 
-state 189 // TOKEN_GET TOKEN_SUBDEVICE1
+state 207 // TOKEN_GET TOKEN_SUBDEVICE1
 
    21 E: TOKEN_SUBDEVICE1 .  [TOKEN_ATTR, TOKEN_DOT, TOKEN_SLASH, TOKEN_WORD]
 
@@ -1756,44 +1897,44 @@ state 189 // TOKEN_GET TOKEN_SUBDEVICE1
     TOKEN_SLASH  reduce using rule 21 (E)
     TOKEN_WORD   reduce using rule 21 (E)
 
-state 190 // TOKEN_GET TOKEN_BLDG TOKEN_ATTR TOKEN_EQUAL TOKEN_NUM [$end]
+state 208 // TOKEN_GET TOKEN_BLDG TOKEN_ATTR TOKEN_EQUAL TOKEN_NUM [$end]
 
    11 NT_GET: TOKEN_GET E F .  [$end]
 
     $end  reduce using rule 11 (NT_GET)
 
-state 191 // TOKEN_CREATE TOKEN_BLDG [TOKEN_ATTR]
+state 209 // TOKEN_CREATE TOKEN_BLDG [TOKEN_ATTR]
 
     8 NT_CREATE: TOKEN_CREATE E . F
     9 NT_CREATE: TOKEN_CREATE E . P F
    37 P1: .  [TOKEN_ATTR]
 
-    TOKEN_ATTR   shift, and goto state 176
-    TOKEN_DOT    shift, and goto state 16
+    TOKEN_ATTR   shift, and goto state 194
+    TOKEN_DOT    shift, and goto state 54
     TOKEN_SLASH  shift, and goto state 14
     TOKEN_WORD   shift, and goto state 15
 
-    F   goto state 192
-    P   goto state 193
+    F   goto state 210
+    P   goto state 211
     P1  goto state 13
 
-    conflict on TOKEN_ATTR, shift, and goto state 176, reduce using rule 37
+    conflict on TOKEN_ATTR, shift, and goto state 194, reduce using rule 37
 
-state 192 // TOKEN_CREATE TOKEN_BLDG TOKEN_ATTR TOKEN_EQUAL TOKEN_NUM [$end]
+state 210 // TOKEN_CREATE TOKEN_BLDG TOKEN_ATTR TOKEN_EQUAL TOKEN_NUM [$end]
 
     8 NT_CREATE: TOKEN_CREATE E F .  [$end]
 
     $end  reduce using rule 8 (NT_CREATE)
 
-state 193 // TOKEN_CREATE TOKEN_BLDG
+state 211 // TOKEN_CREATE TOKEN_BLDG
 
     9 NT_CREATE: TOKEN_CREATE E P . F
 
-    TOKEN_ATTR  shift, and goto state 176
+    TOKEN_ATTR  shift, and goto state 194
 
-    F  goto state 194
+    F  goto state 212
 
-state 194 // TOKEN_CREATE TOKEN_BLDG TOKEN_ATTR TOKEN_EQUAL TOKEN_NUM
+state 212 // TOKEN_CREATE TOKEN_BLDG TOKEN_ATTR TOKEN_EQUAL TOKEN_NUM
 
     9 NT_CREATE: TOKEN_CREATE E P F .  [$end]
 

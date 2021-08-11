@@ -61,7 +61,8 @@ func replaceOCLICurrPath(x string) string {
        TOKEN_OCSITE TOKEN_OCTENANT
        TOKEN_OCSDEV TOKEN_OCSDEV1 TOKEN_OCPSPEC
        TOKEN_SELECT TOKEN_LBRAC TOKEN_RBRAC
-       TOKEN_COMMA TOKEN_DOT
+       TOKEN_COMMA TOKEN_DOT TOKEN_CMDS
+       TOKEN_TEMPLATE TOKEN_VAR TOKEN_DEREF
 %type <s> F E P P1 ORIENTN WORDORNUM
 %type <s> NT_CREATE NT_DEL NT_GET NT_UPDATE
 %type <sarr> GETOBJS
@@ -168,8 +169,8 @@ OCLISYNTX:  TOKEN_PLUS OCCR
             |OCUPDATE
             |OCGET
             |OCCHOOSE
-            |TOKEN_SELECT {cmd.ShowClipBoard()}
-            |TOKEN_SELECT TOKEN_DOT TOKEN_ATTR TOKEN_EQUAL TOKEN_WORD {x := $3+"="+$5;cmd.UpdateSelection(resMap(&x))}
+            |OCDOT
+            |OCSEL
             ;
 
 
@@ -202,5 +203,13 @@ GETOBJS:      TOKEN_WORD TOKEN_COMMA GETOBJS {x := make([]string,0); x = append(
 OCCHOOSE: TOKEN_EQUAL TOKEN_LBRAC GETOBJS TOKEN_RBRAC {cmd.State.ClipBoard = &$3; println("Selection made!")}
 ;
 
+OCDOT:      TOKEN_DOT TOKEN_VAR TOKEN_OCPSPEC TOKEN_WORD TOKEN_EQUAL WORDORNUM {println("You want to assign",$4, "with value of", $6)}
+            |TOKEN_DOT TOKEN_CMDS TOKEN_OCPSPEC P {cmd.LoadFile($4)}
+            |TOKEN_DOT TOKEN_TEMPLATE TOKEN_OCPSPEC P {cmd.LoadFile($4)}
+            |TOKEN_DEREF TOKEN_LBRAC TOKEN_WORD TOKEN_RBRAC {println("So You want the value")}
+;
+
+OCSEL:      TOKEN_SELECT {cmd.ShowClipBoard()}
+            |TOKEN_SELECT TOKEN_DOT TOKEN_ATTR TOKEN_EQUAL TOKEN_WORD {x := $3+"="+$5;cmd.UpdateSelection(resMap(&x))}
 
 %%
