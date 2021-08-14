@@ -12,11 +12,6 @@ import (
 	"strings"
 )
 
-type DynamicVar struct {
-	Val     interface{}
-	ValType string
-}
-
 func Execute() {
 	println("Congratulations, nobody cares")
 	return

@@ -8,8 +8,8 @@ cmd "cli/controllers"
 
 var dynamicVarLimit = []int{0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15}
 var dynamicMap = make(map[string]int)
-var dynamicSymbolTable = make(map[int]cmd.DynamicVar)
-var dCatchPtr = new(cmd.DynamicVar)
+var dynamicSymbolTable = make(map[int]interface{})
+var dCatchPtr interface{}
 var varCtr = 0
 
 func resMap(x *string) map[string]interface{} {
@@ -218,24 +218,40 @@ GETOBJS:      TOKEN_WORD TOKEN_COMMA GETOBJS {x := make([]string,0); x = append(
 OCCHOOSE: TOKEN_EQUAL TOKEN_LBRAC GETOBJS TOKEN_RBRAC {cmd.State.ClipBoard = &$3; println("Selection made!")}
 ;
 
-DWORDORNUM: TOKEN_WORD {dCatchPtr = &cmd.DynamicVar{$1, "string"};}
-           |TOKEN_NUM {dCatchPtr = &cmd.DynamicVar{$1, "int"};}
-           |TOKEN_BOOL {var x bool;if $1=="false"{x = false}else{x=true};dCatchPtr = &cmd.DynamicVar{x, "bool"};}
-           |ORIENTN TOKEN_WORD ORIENTN TOKEN_WORD {dCatchPtr = &cmd.DynamicVar{$1, "string"};}
+DWORDORNUM: TOKEN_WORD {dCatchPtr = $1;}
+           |TOKEN_NUM {dCatchPtr = $1;}
+           |TOKEN_BOOL {var x bool;if $1=="false"{x = false}else{x=true};dCatchPtr = x;}
+           |ORIENTN TOKEN_WORD ORIENTN TOKEN_WORD {dCatchPtr = $1+$2+$3+$4;}
            ;
 
-OCDOT:      TOKEN_DOT TOKEN_VAR TOKEN_OCPSPEC TOKEN_WORD TOKEN_EQUAL DWORDORNUM {dynamicMap[$4] = varCtr; dynamicSymbolTable[varCtr] = *dCatchPtr; varCtr+=1;println("You want to assign",$4, "with value of", dCatchPtr.Val)}
+OCDOT:      TOKEN_DOT TOKEN_VAR TOKEN_OCPSPEC TOKEN_WORD TOKEN_EQUAL DWORDORNUM {dynamicMap[$4] = varCtr; dynamicSymbolTable[varCtr] = dCatchPtr; varCtr+=1;  switch dCatchPtr.(type) {
+	case string:
+              x := dCatchPtr.(string)
+              println("You want to assign",$4, "with value of", x)
+	case int:
+		x := dCatchPtr.(int)
+              println("You want to assign",$4, "with value of", x)
+	case bool:
+		x := dCatchPtr.(bool)
+              println("You want to assign",$4, "with value of", x)
+       case float64, float32:
+		x := dCatchPtr.(float64)
+              println("You want to assign",$4, "with value of", x)
+	}}
             |TOKEN_DOT TOKEN_CMDS TOKEN_OCPSPEC P {cmd.LoadFile($4)}
             |TOKEN_DOT TOKEN_TEMPLATE TOKEN_OCPSPEC P {cmd.LoadFile($4)}
-            |TOKEN_DEREF TOKEN_WORD {v := dynamicSymbolTable[dynamicMap[$2]]; switch v.ValType {
-	case "string":
-		x := string(v.Val.(string))
+            |TOKEN_DEREF TOKEN_WORD {v := dynamicSymbolTable[dynamicMap[$2]]; switch v.(type) {
+	case string:
+              x := v.(string)
               println("So You want the value: ",x)
-	case "int":
-		x := int(v.Val.(int))
+	case int:
+		x := v.(int)
               println("So You want the value: ",x)
-	case "bool":
-		x := v.Val.(bool)
+	case bool:
+		x := v.(bool)
+              println("So You want the value: ",x)
+       case float64, float32:
+		x := dCatchPtr.(float64)
               println("So You want the value: ",x)
 	} }
 ;

@@ -12,8 +12,8 @@ import (
 
 var dynamicVarLimit = []int{0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15}
 var dynamicMap = make(map[string]int)
-var dynamicSymbolTable = make(map[int]cmd.DynamicVar)
-var dCatchPtr = new(cmd.DynamicVar)
+var dynamicSymbolTable = make(map[int]interface{})
+var dCatchPtr interface{}
 var varCtr = 0
 
 func resMap(x *string) map[string]interface{} {
@@ -1210,11 +1210,11 @@ cmd.WarningLogger.Println("Unknown Command")			/*yylex.Error(msg)*/
 		}
 	case 97:
 		{
-			dCatchPtr = &cmd.DynamicVar{yyS[yypt-0].s, "string"}
+			dCatchPtr = yyS[yypt-0].s
 		}
 	case 98:
 		{
-			dCatchPtr = &cmd.DynamicVar{yyS[yypt-0].n, "int"}
+			dCatchPtr = yyS[yypt-0].n
 		}
 	case 99:
 		{
@@ -1224,18 +1224,31 @@ cmd.WarningLogger.Println("Unknown Command")			/*yylex.Error(msg)*/
 			} else {
 				x = true
 			}
-			dCatchPtr = &cmd.DynamicVar{x, "bool"}
+			dCatchPtr = x
 		}
 	case 100:
 		{
-			dCatchPtr = &cmd.DynamicVar{yyS[yypt-3].s, "string"}
+			dCatchPtr = yyS[yypt-3].s + yyS[yypt-2].s + yyS[yypt-1].s + yyS[yypt-0].s
 		}
 	case 101:
 		{
 			dynamicMap[yyS[yypt-2].s] = varCtr
-			dynamicSymbolTable[varCtr] = *dCatchPtr
+			dynamicSymbolTable[varCtr] = dCatchPtr
 			varCtr += 1
-			println("You want to assign", yyS[yypt-2].s, "with value of", dCatchPtr.Val)
+			switch dCatchPtr.(type) {
+			case string:
+				x := dCatchPtr.(string)
+				println("You want to assign", yyS[yypt-2].s, "with value of", x)
+			case int:
+				x := dCatchPtr.(int)
+				println("You want to assign", yyS[yypt-2].s, "with value of", x)
+			case bool:
+				x := dCatchPtr.(bool)
+				println("You want to assign", yyS[yypt-2].s, "with value of", x)
+			case float64, float32:
+				x := dCatchPtr.(float64)
+				println("You want to assign", yyS[yypt-2].s, "with value of", x)
+			}
 		}
 	case 102:
 		{
@@ -1248,15 +1261,18 @@ cmd.WarningLogger.Println("Unknown Command")			/*yylex.Error(msg)*/
 	case 104:
 		{
 			v := dynamicSymbolTable[dynamicMap[yyS[yypt-0].s]]
-			switch v.ValType {
-			case "string":
-				x := string(v.Val.(string))
+			switch v.(type) {
+			case string:
+				x := v.(string)
 				println("So You want the value: ", x)
-			case "int":
-				x := int(v.Val.(int))
+			case int:
+				x := v.(int)
 				println("So You want the value: ", x)
-			case "bool":
-				x := v.Val.(bool)
+			case bool:
+				x := v.(bool)
+				println("So You want the value: ", x)
+			case float64, float32:
+				x := dCatchPtr.(float64)
 				println("So You want the value: ", x)
 			}
 		}
