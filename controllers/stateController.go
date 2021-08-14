@@ -4,12 +4,10 @@ import (
 	"cli/models"
 	"container/list"
 	"encoding/json"
-	"io/ioutil"
 	"net/http"
 	"os"
 	"strconv"
 	"strings"
-	"time"
 )
 
 const (
@@ -57,7 +55,7 @@ func InitState() {
 	}
 
 	for i := 1; i < 8; i++ {
-		time.Sleep(2 * time.Second)
+		//time.Sleep(2 * time.Second)
 		x := GetChildren(i)
 		for k := range x {
 			SearchAndInsert(&State.TreeHierarchy, x[k], i)
@@ -66,90 +64,22 @@ func InitState() {
 }
 
 func GetChildren(curr int) []*Node {
-	switch curr {
-	case TENANT:
-		println("TENANT")
-		resp, e := models.Send("GET",
-			"https://ogree.chibois.net/api/user/tenants", GetKey(),
-			nil)
-		if e != nil {
-			println("Error while getting children!")
-			Exit()
-		}
-		return makeNodeArrFromResp(resp, TENANT)
-	case SITE:
-		println("SITE")
-		resp, e := models.Send("GET",
-			"https://ogree.chibois.net/api/user/sites", GetKey(),
-			nil)
-		if e != nil {
-			println("Error while getting children!")
-			Exit()
-		}
-		return makeNodeArrFromResp(resp, SITE)
-	case BLDG:
-		println("BLDG")
-		resp, e := models.Send("GET",
-			"https://ogree.chibois.net/api/user/buildings", GetKey(),
-			nil)
-		if e != nil {
-			println("Error while getting children!")
-			Exit()
-		}
-		return makeNodeArrFromResp(resp, BLDG)
-	case ROOM:
-		println("ROOM")
-		resp, e := models.Send("GET",
-			"https://ogree.chibois.net/api/user/rooms", GetKey(),
-			nil)
-		if e != nil {
-			println("Error while getting children!")
-			Exit()
-		}
-		return makeNodeArrFromResp(resp, ROOM)
-	case RACK:
-		println("RACK")
-		resp, e := models.Send("GET",
-			"https://ogree.chibois.net/api/user/racks", GetKey(),
-			nil)
-		if e != nil {
-			println("Error while getting children!")
-			Exit()
-		}
-		return makeNodeArrFromResp(resp, RACK)
-	case DEVICE:
-		println("DEVICE")
-		resp, e := models.Send("GET",
-			"https://ogree.chibois.net/api/user/devices", GetKey(),
-			nil)
-		if e != nil {
-			println("Error while getting children!")
-			Exit()
-		}
-		return makeNodeArrFromResp(resp, DEVICE)
-	case SUBDEV:
-		println("SUBDEV")
-		resp, e := models.Send("GET",
-			"https://ogree.chibois.net/api/user/subdevices", GetKey(),
-			nil)
-		if e != nil {
-			println("Error while getting children!")
-			Exit()
-		}
-		return makeNodeArrFromResp(resp, SUBDEV)
 
-	case SUBDEV1:
-		println("SUBDEV1")
+	//Loop because sometimes a
+	//Stream Error occurs
+	for {
 		resp, e := models.Send("GET",
-			"https://ogree.chibois.net/api/user/subdevice1s", GetKey(),
-			nil)
+			"https://ogree.chibois.net/api/user/"+EntityToString(curr)+"s",
+			GetKey(), nil)
 		if e != nil {
 			println("Error while getting children!")
 			Exit()
 		}
-		return makeNodeArrFromResp(resp, SUBDEV1)
+		x := makeNodeArrFromResp(resp, curr)
+		if x != nil {
+			return x
+		}
 	}
-	return nil
 }
 
 func SearchAndInsert(root **Node, node *Node, dt int) {
@@ -179,14 +109,12 @@ func Exit() {
 func makeNodeArrFromResp(resp *http.Response, entity int) []*Node {
 	arr := []*Node{}
 	var jsonResp map[string]interface{}
-
+	err := json.NewDecoder(resp.Body).Decode(&jsonResp)
 	defer resp.Body.Close()
-	bodyBytes, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		println("Error: " + err.Error() + " Now Exiting")
-		Exit()
+		println("Error: " + err.Error())
+		return nil
 	}
-	json.Unmarshal(bodyBytes, &jsonResp)
 
 	objs, ok := ((jsonResp["data"]).(map[string]interface{})["objects"]).([]interface{})
 	sd1obj, ok1 := ((jsonResp["data"]).(map[string]interface{})["subdevices1"]).([]interface{})

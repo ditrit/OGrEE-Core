@@ -6,6 +6,12 @@ cmd "cli/controllers"
 "strconv"
 )
 
+var dynamicVarLimit = []int{0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15}
+var dynamicMap = make(map[string]int)
+var dynamicSymbolTable = make(map[int]cmd.DynamicVar)
+var dCatchPtr = new(cmd.DynamicVar)
+var varCtr = 0
+
 func resMap(x *string) map[string]interface{} {
        resarr := strings.Split(*x, "=")
        res := make(map[string]interface{})
@@ -39,7 +45,7 @@ func replaceOCLICurrPath(x string) string {
   sarr []string
 }
 
-
+%token <s> TOKEN_BOOL
 %token <n> TOKEN_NUM
 %token <s> TOKEN_WORD
 %token <s> TOKEN_TENANT TOKEN_SITE TOKEN_BLDG TOKEN_ROOM
@@ -63,17 +69,17 @@ func replaceOCLICurrPath(x string) string {
        TOKEN_SELECT TOKEN_LBRAC TOKEN_RBRAC
        TOKEN_COMMA TOKEN_DOT TOKEN_CMDS
        TOKEN_TEMPLATE TOKEN_VAR TOKEN_DEREF
-       TOKEN_STMNT
+       TOKEN_SEMICOL
 %type <s> F E P P1 ORIENTN WORDORNUM
 %type <s> NT_CREATE NT_DEL NT_GET NT_UPDATE
 %type <sarr> GETOBJS
 
 
 %%
-start: stmnts
-;
 
-stmnts: stmnts stmnt TOKEN_STMNT | stmnt |
+start: stmnt
+       |stmnt TOKEN_SEMICOL start
+;
 
 stmnt: K
        |Q
@@ -135,6 +141,8 @@ P1:    TOKEN_WORD TOKEN_SLASH P1 {$$=$1+"/"+$3}
        | TOKEN_DOT TOKEN_DOT TOKEN_SLASH P1 {$$="../"+$4}
        | TOKEN_WORD {$$=$1}
        | TOKEN_DOT TOKEN_DOT {$$=".."}
+       | TOKEN_OCDEL {$$="-"}
+       | TOKEN_DEREF TOKEN_WORD {$$=""}
        | {$$=""}
 ;
 
@@ -210,10 +218,26 @@ GETOBJS:      TOKEN_WORD TOKEN_COMMA GETOBJS {x := make([]string,0); x = append(
 OCCHOOSE: TOKEN_EQUAL TOKEN_LBRAC GETOBJS TOKEN_RBRAC {cmd.State.ClipBoard = &$3; println("Selection made!")}
 ;
 
-OCDOT:      TOKEN_DOT TOKEN_VAR TOKEN_OCPSPEC TOKEN_WORD TOKEN_EQUAL WORDORNUM {println("You want to assign",$4, "with value of", $6)}
+DWORDORNUM: TOKEN_WORD {dCatchPtr = &cmd.DynamicVar{$1, "string"};}
+           |TOKEN_NUM {dCatchPtr = &cmd.DynamicVar{$1, "int"};}
+           |TOKEN_BOOL {var x bool;if $1=="false"{x = false}else{x=true};dCatchPtr = &cmd.DynamicVar{x, "bool"};}
+           |ORIENTN TOKEN_WORD ORIENTN TOKEN_WORD {dCatchPtr = &cmd.DynamicVar{$1, "string"};}
+           ;
+
+OCDOT:      TOKEN_DOT TOKEN_VAR TOKEN_OCPSPEC TOKEN_WORD TOKEN_EQUAL DWORDORNUM {dynamicMap[$4] = varCtr; dynamicSymbolTable[varCtr] = *dCatchPtr; varCtr+=1;println("You want to assign",$4, "with value of", dCatchPtr.Val)}
             |TOKEN_DOT TOKEN_CMDS TOKEN_OCPSPEC P {cmd.LoadFile($4)}
             |TOKEN_DOT TOKEN_TEMPLATE TOKEN_OCPSPEC P {cmd.LoadFile($4)}
-            |TOKEN_DEREF TOKEN_LBRAC TOKEN_WORD TOKEN_RBRAC {println("So You want the value")}
+            |TOKEN_DEREF TOKEN_WORD {v := dynamicSymbolTable[dynamicMap[$2]]; switch v.ValType {
+	case "string":
+		x := string(v.Val.(string))
+              println("So You want the value: ",x)
+	case "int":
+		x := int(v.Val.(int))
+              println("So You want the value: ",x)
+	case "bool":
+		x := v.Val.(bool)
+              println("So You want the value: ",x)
+	} }
 ;
 
 OCSEL:      TOKEN_SELECT {cmd.ShowClipBoard()}
