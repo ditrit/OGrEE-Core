@@ -122,9 +122,10 @@ ORIENTN: TOKEN_PLUS {$$=$1}
          | {$$=""}
          ;
 
-WORDORNUM: TOKEN_WORD {$$=$1}
-           |TOKEN_NUM {x := strconv.Itoa($1);$$=x}
-           |ORIENTN TOKEN_WORD ORIENTN TOKEN_WORD {$$=$1+$2+$3+$4}
+WORDORNUM: TOKEN_WORD {$$=$1; dCatchPtr = $1;}
+           |TOKEN_NUM {x := strconv.Itoa($1);$$=x;dCatchPtr = $1;}
+           |ORIENTN TOKEN_WORD ORIENTN TOKEN_WORD {$$=$1+$2+$3+$4; dCatchPtr = $1+$2+$3+$4;}
+           |TOKEN_BOOL {var x bool;if $1=="false"{x = false}else{x=true};dCatchPtr = x;}
            ;
 
 F:     TOKEN_ATTR TOKEN_EQUAL WORDORNUM F {$$=string($1+"="+$3+"="+$4); println("So we got: ", $$)}
@@ -218,13 +219,7 @@ GETOBJS:      TOKEN_WORD TOKEN_COMMA GETOBJS {x := make([]string,0); x = append(
 OCCHOOSE: TOKEN_EQUAL TOKEN_LBRAC GETOBJS TOKEN_RBRAC {cmd.State.ClipBoard = &$3; println("Selection made!")}
 ;
 
-DWORDORNUM: TOKEN_WORD {dCatchPtr = $1;}
-           |TOKEN_NUM {dCatchPtr = $1;}
-           |TOKEN_BOOL {var x bool;if $1=="false"{x = false}else{x=true};dCatchPtr = x;}
-           |ORIENTN TOKEN_WORD ORIENTN TOKEN_WORD {dCatchPtr = $1+$2+$3+$4;}
-           ;
-
-OCDOT:      TOKEN_DOT TOKEN_VAR TOKEN_OCPSPEC TOKEN_WORD TOKEN_EQUAL DWORDORNUM {dynamicMap[$4] = varCtr; dynamicSymbolTable[varCtr] = dCatchPtr; varCtr+=1;  switch dCatchPtr.(type) {
+OCDOT:      TOKEN_DOT TOKEN_VAR TOKEN_OCPSPEC TOKEN_WORD TOKEN_EQUAL WORDORNUM {dynamicMap[$4] = varCtr; dynamicSymbolTable[varCtr] = dCatchPtr; varCtr+=1;  switch dCatchPtr.(type) {
 	case string:
               x := dCatchPtr.(string)
               println("You want to assign",$4, "with value of", x)
