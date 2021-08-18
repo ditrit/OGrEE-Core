@@ -19902,7 +19902,6 @@ OUTER0:
 		case 78:
 			{
 				println("We got TOK_WORD")
-				lval.symbol = lookup(yytext)
 				lval.s = yylex.Text()
 				println("LVAL: ", lval.s)
 				return TOK_WORD

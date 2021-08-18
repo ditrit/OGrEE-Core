@@ -10,12 +10,6 @@ import (
 	"strings"
 )
 
-var dynamicVarLimit = []int{0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15}
-var dynamicMap = make(map[string]int)
-var dynamicSymbolTable = make(map[int]interface{})
-var dCatchPtr interface{}
-var varCtr = 0
-
 func resMap(x *string) map[string]interface{} {
 	resarr := strings.Split(*x, "=")
 	res := make(map[string]interface{})
@@ -43,10 +37,20 @@ func replaceOCLICurrPath(x string) string {
 }
 
 type yySymType struct {
-	yys  int
-	n    int
-	s    string
-	sarr []string
+	yys     int
+	n       int
+	s       string
+	sarr    []string
+	ast     ast
+	wNode   whileNode
+	fNode   forNode
+	iNode   ifNode
+	rNode   symbolReferenceNode
+	cNode   comparatorNode
+	aNode   arithNode
+	bNode   boolNode
+	nNode   numNode
+	comNode commonNode
 }
 
 type yyXError struct {
@@ -57,11 +61,11 @@ const (
 	yyDefault      = 57424
 	yyEofCode      = 57344
 	TOK_AND        = 57415
-	TOK_ATTR       = 57357
+	TOK_ATTR       = 57356
 	TOK_ATTRSPEC   = 57390
 	TOK_BASHTYPE   = 57365
-	TOK_BLDG       = 57351
-	TOK_BOOL       = 57346
+	TOK_BLDG       = 57350
+	TOK_BOOL       = 57359
 	TOK_CD         = 57371
 	TOK_CLR        = 57373
 	TOK_CMDFLAG    = 57367
@@ -70,7 +74,7 @@ const (
 	TOK_CREATE     = 57360
 	TOK_DELETE     = 57363
 	TOK_DEREF      = 57404
-	TOK_DEVICE     = 57354
+	TOK_DEVICE     = 57353
 	TOK_DIV        = 57417
 	TOK_DOC        = 57370
 	TOK_DONE       = 57423
@@ -100,9 +104,9 @@ const (
 	TOK_LSTEN      = 57378
 	TOK_MULT       = 57418
 	TOK_NOT        = 57416
-	TOK_NUM        = 57347
+	TOK_NUM        = 57346
 	TOK_OCBLDG     = 57386
-	TOK_OCDEL      = 57359
+	TOK_OCDEL      = 57358
 	TOK_OCDEV      = 57387
 	TOK_OCPSPEC    = 57395
 	TOK_OCRACK     = 57388
@@ -112,28 +116,28 @@ const (
 	TOK_OCSITE     = 57391
 	TOK_OCTENANT   = 57392
 	TOK_OR         = 57414
-	TOK_PLUS       = 57358
+	TOK_PLUS       = 57357
 	TOK_PWD        = 57372
-	TOK_RACK       = 57353
+	TOK_RACK       = 57352
 	TOK_RBLOCK     = 57411
 	TOK_RBRAC      = 57398
-	TOK_ROOM       = 57352
+	TOK_ROOM       = 57351
 	TOK_RPAREN     = 57413
 	TOK_SEARCH     = 57364
 	TOK_SELECT     = 57396
 	TOK_SEMICOL    = 57405
-	TOK_SITE       = 57350
+	TOK_SITE       = 57349
 	TOK_SLASH      = 57368
-	TOK_SUBDEVICE  = 57355
-	TOK_SUBDEVICE1 = 57356
+	TOK_SUBDEVICE  = 57354
+	TOK_SUBDEVICE1 = 57355
 	TOK_TEMPLATE   = 57402
-	TOK_TENANT     = 57349
+	TOK_TENANT     = 57348
 	TOK_THEN       = 57421
 	TOK_TREE       = 57376
 	TOK_UPDATE     = 57362
 	TOK_VAR        = 57403
 	TOK_WHILE      = 57408
-	TOK_WORD       = 57348
+	TOK_WORD       = 57347
 	yyErrCode      = 57345
 
 	yyMaxDepth = 200
@@ -141,28 +145,34 @@ const (
 )
 
 var (
-	yyPrec = map[int]int{}
+	yyPrec = map[int]int{
+		TOK_MULT:  0,
+		TOK_OCDEL: 0,
+		TOK_DIV:   0,
+		TOK_PLUS:  0,
+		TOK_EQUAL: 1,
+	}
 
 	yyXLAT = map[int]int{
 		57344: 0,   // $end (119x)
 		57422: 1,   // TOK_FI (118x)
 		57423: 2,   // TOK_DONE (116x)
 		57409: 3,   // TOK_ELSE (113x)
-		57359: 4,   // TOK_OCDEL (111x)
+		57358: 4,   // TOK_OCDEL (111x)
 		57405: 5,   // TOK_SEMICOL (108x)
-		57348: 6,   // TOK_WORD (104x)
+		57347: 6,   // TOK_WORD (104x)
 		57400: 7,   // TOK_DOT (62x)
-		57347: 8,   // TOK_NUM (56x)
+		57346: 8,   // TOK_NUM (56x)
 		57404: 9,   // TOK_DEREF (49x)
-		57358: 10,  // TOK_PLUS (49x)
+		57357: 10,  // TOK_PLUS (49x)
 		57368: 11,  // TOK_SLASH (48x)
 		57390: 12,  // TOK_ATTRSPEC (47x)
-		57346: 13,  // TOK_BOOL (43x)
+		57359: 13,  // TOK_BOOL (43x)
 		57416: 14,  // TOK_NOT (43x)
 		57450: 15,  // P1 (41x)
 		57449: 16,  // P (38x)
 		57366: 17,  // TOK_EQUAL (38x)
-		57357: 18,  // TOK_ATTR (31x)
+		57356: 18,  // TOK_ATTR (31x)
 		57414: 19,  // TOK_OR (31x)
 		57413: 20,  // TOK_RPAREN (30x)
 		57411: 21,  // TOK_RBLOCK (26x)
@@ -225,20 +235,20 @@ var (
 		57430: 78,  // EXPR (6x)
 		57447: 79,  // OPEN_STMT (6x)
 		57431: 80,  // F (5x)
-		57351: 81,  // TOK_BLDG (3x)
-		57354: 82,  // TOK_DEVICE (3x)
-		57353: 83,  // TOK_RACK (3x)
+		57350: 81,  // TOK_BLDG (3x)
+		57353: 82,  // TOK_DEVICE (3x)
+		57352: 83,  // TOK_RACK (3x)
 		57398: 84,  // TOK_RBRAC (3x)
-		57352: 85,  // TOK_ROOM (3x)
-		57350: 86,  // TOK_SITE (3x)
-		57349: 87,  // TOK_TENANT (3x)
+		57351: 85,  // TOK_ROOM (3x)
+		57349: 86,  // TOK_SITE (3x)
+		57348: 87,  // TOK_TENANT (3x)
 		57427: 88,  // CTRL (2x)
 		57428: 89,  // E (2x)
 		57432: 90,  // GETOBJS (2x)
 		57456: 91,  // start (2x)
 		57410: 92,  // TOK_LBLOCK (2x)
-		57355: 93,  // TOK_SUBDEVICE (2x)
-		57356: 94,  // TOK_SUBDEVICE1 (2x)
+		57354: 93,  // TOK_SUBDEVICE (2x)
+		57355: 94,  // TOK_SUBDEVICE1 (2x)
 		57421: 95,  // TOK_THEN (2x)
 		57440: 96,  // OCCR (1x)
 		57401: 97,  // TOK_CMDS (1x)

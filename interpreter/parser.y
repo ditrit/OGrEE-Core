@@ -6,11 +6,6 @@ cmd "cli/controllers"
 "strconv"
 )
 
-var dynamicVarLimit = []int{0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15}
-var dynamicMap = make(map[string]int)
-var dynamicSymbolTable = make(map[int]interface{})
-var dCatchPtr interface{}
-var varCtr = 0
 
 func resMap(x *string) map[string]interface{} {
        resarr := strings.Split(*x, "=")
@@ -43,40 +38,42 @@ func replaceOCLICurrPath(x string) string {
   n int
   s string
   sarr []string
+  ast ast
+  wNode whileNode
+  fNode forNode
+  iNode ifNode
+  rNode symbolReferenceNode
+  cNode comparatorNode
+  aNode arithNode
+  bNode boolNode
+  nNode numNode
+  comNode commonNode
 }
 
-%token <s> TOK_BOOL
 %token <n> TOK_NUM
-%token <s> TOK_WORD
-%token <s> TOK_TENANT TOK_SITE TOK_BLDG TOK_ROOM
+%token <s> TOK_WORD TOK_TENANT TOK_SITE TOK_BLDG TOK_ROOM
 %token <s> TOK_RACK TOK_DEVICE TOK_SUBDEVICE TOK_SUBDEVICE1
-%token <s> TOK_ATTR TOK_PLUS TOK_OCDEL
+%token <s> TOK_ATTR TOK_PLUS TOK_OCDEL TOK_BOOL
 %token
-       TOK_CREATE TOK_GET TOK_UPDATE
-       TOK_DELETE TOK_SEARCH
-       TOK_BASHTYPE TOK_EQUAL 
-       TOK_CMDFLAG TOK_SLASH 
-       TOK_EXIT TOK_DOC
-       TOK_CD TOK_PWD
+       TOK_CREATE TOK_GET TOK_UPDATE TOK_DELETE TOK_SEARCH
+       TOK_BASHTYPE TOK_EQUAL TOK_CMDFLAG TOK_SLASH 
+       TOK_EXIT TOK_DOC TOK_CD TOK_PWD
        TOK_CLR TOK_GREP TOK_LS TOK_TREE
        TOK_LSOG TOK_LSTEN TOK_LSSITE TOK_LSBLDG
        TOK_LSROOM TOK_LSRACK TOK_LSDEV
-       TOK_LSSUBDEV TOK_LSSUBDEV1
-       TOK_OCBLDG TOK_OCDEV
-       TOK_OCRACK TOK_OCROOM TOK_ATTRSPEC
-       TOK_OCSITE TOK_OCTENANT
-       TOK_OCSDEV TOK_OCSDEV1 TOK_OCPSPEC
-       TOK_SELECT TOK_LBRAC TOK_RBRAC
-       TOK_COMMA TOK_DOT TOK_CMDS
-       TOK_TEMPLATE TOK_VAR TOK_DEREF
+       TOK_LSSUBDEV TOK_LSSUBDEV1 TOK_OCBLDG TOK_OCDEV
+       TOK_OCRACK TOK_OCROOM TOK_ATTRSPEC TOK_OCSITE TOK_OCTENANT
+       TOK_OCSDEV TOK_OCSDEV1 TOK_OCPSPEC TOK_SELECT TOK_LBRAC TOK_RBRAC
+       TOK_COMMA TOK_DOT TOK_CMDS TOK_TEMPLATE TOK_VAR TOK_DEREF
        TOK_SEMICOL TOK_IF TOK_FOR TOK_WHILE
        TOK_ELSE TOK_LBLOCK TOK_RBLOCK
        TOK_LPAREN TOK_RPAREN TOK_OR TOK_AND
-       TOK_NOT TOK_DIV TOK_MULT TOK_GREATER
-       TOK_LESS TOK_THEN TOK_FI TOK_DONE
-%type <s> F E P P1 ORIENTN WORDORNUM
-%type <s> NT_CREATE NT_DEL NT_GET NT_UPDATE
+       TOK_NOT TOK_DIV TOK_MULT TOK_GREATER TOK_LESS TOK_THEN TOK_FI TOK_DONE
+       
+%type <s> F E P P1 ORIENTN WORDORNUM NT_CREATE NT_DEL NT_GET NT_UPDATE
 %type <sarr> GETOBJS
+%left TOK_MULT TOK_OCDEL TOK_DIV TOK_PLUS
+%right TOK_EQUAL
 
 
 %%
