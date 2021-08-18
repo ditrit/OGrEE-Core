@@ -1,75 +1,93 @@
 /[ \t]/  { /* Skip blanks and tabs. */ }
-/create/ {println("We got TOKEN_CREATE"); return TOKEN_CREATE}
-/gt/ {println("We got TOKEN_GET"); return TOKEN_GET}
-/update/ {println("We got TOKEN_UPDATE"); return TOKEN_UPDATE}
-/delete/ {println("We got TOKEN_DELETE"); return TOKEN_DELETE}
-/search/ {println("We got TOKEN_SEARCH"); return TOKEN_SEARCH}
-/\+/ {println("We got TOKEN_PLUS");lval.s = yylex.Text(); return TOKEN_PLUS}
-/-/ {println("We got TOKEN_OCDEL");lval.s = yylex.Text(); return TOKEN_OCDEL}
-/:/ {println("We got TOKEN_OCPSPEC"); return TOKEN_OCPSPEC}
-/@/ {println("We got TOKEN_ATTRSPEC"); return TOKEN_ATTRSPEC}
-/\$/ {println("We got TOKEN_DEREF"); return TOKEN_DEREF}
-/;/ {println("We got TOKEN_SEMICOL"); return TOKEN_SEMICOL}
-/false/ {println("We got TOKEN_BOOL");lval.s = yylex.Text(); return TOKEN_BOOL}
-/true/ {println("We got TOKEN_BOOL");lval.s = yylex.Text(); return TOKEN_BOOL}
+/create/ {println("We got TOK_CREATE"); return TOK_CREATE}
+/gt/ {println("We got TOK_GET"); return TOK_GET}
+/update/ {println("We got TOK_UPDATE"); return TOK_UPDATE}
+/delete/ {println("We got TOK_DELETE"); return TOK_DELETE}
+/search/ {println("We got TOK_SEARCH"); return TOK_SEARCH}
+/\+/ {println("We got TOK_PLUS");lval.s = yylex.Text(); return TOK_PLUS}
+/-/ {println("We got TOK_OCDEL");lval.s = yylex.Text(); return TOK_OCDEL}
+/:/ {println("We got TOK_OCPSPEC"); return TOK_OCPSPEC}
+/@/ {println("We got TOK_ATTRSPEC"); return TOK_ATTRSPEC}
+/\$/ {println("We got TOK_DEREF"); return TOK_DEREF}
+/;/ {println("We got TOK_SEMICOL"); return TOK_SEMICOL}
+/\[/ {println("We got TOK_LBLOCK"); return TOK_LBLOCK}
+/\]/ {println("We got TOK_RBLOCK"); return TOK_RBLOCK}
+/\(/ {println("We got TOK_LPAREN"); return TOK_LPAREN}
+/\)/ {println("We got TOK_RPAREN"); return TOK_RPAREN}
+/||/ {println("We got TOK_OR"); return TOK_OR}
+/&&/ {println("We got TOK_AND"); return TOK_AND}
+/\!/ {println("We got TOK_NOT"); return TOK_NOT}
+/\// {println("We got TOK_DIV"); return TOK_DIV}
+/\*/ {println("We got TOK_MULT"); return TOK_MULT}
+/>/ {println("We got TOK_GREATER"); return TOK_GREATER}
+/</ {println("We got TOK_LESS"); return TOK_LESS}
+/false/ {println("We got TOK_BOOL");lval.s = yylex.Text(); return TOK_BOOL}
+/true/ {println("We got TOK_BOOL");lval.s = yylex.Text(); return TOK_BOOL}
+/if/ {println("We got TOK_IF"); return TOK_IF}
+/for/ {println("We got TOK_FOR"); return TOK_FOR}
+/while/ {println("We got TOK_WHILE"); return TOK_WHILE}
+/else/ {println("We got TOK_ELSE"); return TOK_ELSE}
+/then/ {println("We got TOK_THEN"); return TOK_THEN}
+/fi/ {println("We got TOK_FI"); return TOK_FI}
+/done/ {println("We got TOK_DONE"); return TOK_DONE}
 
-/tn/ {println("We got TOKEN_OCTENANT");return TOKEN_OCTENANT}
-/si/ {println("We got TOKEN_OCSITE");return TOKEN_OCSITE}
-/bd/ {println("We got TOKEN_OCBLDG");return TOKEN_OCBLDG}
-/ro/ {println("We got TOKEN_OCROOM");return TOKEN_OCROOM}
-/rk/ {println("We got TOKEN_OCRACK");return TOKEN_OCRACK}
-/dv/ {println("We got TOKEN_OCDEV");return TOKEN_OCDEV}
-/sd/ {println("We got TOKEN_OCSDEV");return TOKEN_OCSDEV}
-/sd1/ {println("We got TOKEN_OCSDEV1");return TOKEN_OCSDEV1}
-/selection/ {println("We got TOKEN_SELECT"); return TOKEN_SELECT}
-/cmds/ {println("We got TOKEN_CMDS"); return TOKEN_CMDS}
-/template/ {println("We got TOKEN_TEMPLATE"); return TOKEN_TEMPLATE}
-/var/ {println("We got TOKEN_VAR");return TOKEN_VAR}
-/{/ {println("We got TOKEN_LBRAC");return TOKEN_LBRAC}
-/}/ {println("We got TOKEN_RBRAC");return TOKEN_RBRAC}
-/,/ {println("We got TOKEN_COMMA"); return TOKEN_COMMA}
-/\./ {println("We got TOKEN_DOT"); return TOKEN_DOT}
+/tn/ {println("We got TOK_OCTENANT");return TOK_OCTENANT}
+/si/ {println("We got TOK_OCSITE");return TOK_OCSITE}
+/bd/ {println("We got TOK_OCBLDG");return TOK_OCBLDG}
+/ro/ {println("We got TOK_OCROOM");return TOK_OCROOM}
+/rk/ {println("We got TOK_OCRACK");return TOK_OCRACK}
+/dv/ {println("We got TOK_OCDEV");return TOK_OCDEV}
+/sd/ {println("We got TOK_OCSDEV");return TOK_OCSDEV}
+/sd1/ {println("We got TOK_OCSDEV1");return TOK_OCSDEV1}
+/selection/ {println("We got TOK_SELECT"); return TOK_SELECT}
+/cmds/ {println("We got TOK_CMDS"); return TOK_CMDS}
+/template/ {println("We got TOK_TEMPLATE"); return TOK_TEMPLATE}
+/var/ {println("We got TOK_VAR");return TOK_VAR}
+/{/ {println("We got TOK_LBRAC");return TOK_LBRAC}
+/}/ {println("We got TOK_RBRAC");return TOK_RBRAC}
+/,/ {println("We got TOK_COMMA"); return TOK_COMMA}
+/\./ {println("We got TOK_DOT"); return TOK_DOT}
 
-/tenant/ {println("We got TOKEN_TENANT");lval.s = yylex.Text();return TOKEN_TENANT}
-/site/ {println("We got TOKEN_SITE");lval.s = yylex.Text();return TOKEN_SITE}
-/bldg|building/ {println("We got TOKEN_BLDG");lval.s = yylex.Text();return TOKEN_BLDG}
-/room/ {println("We got TOKEN_ROOM");lval.s = yylex.Text();return TOKEN_ROOM}
-/rack/ {println("We got TOKEN_RACK");lval.s = yylex.Text();return TOKEN_RACK}
-/device/ {println("We got TOKEN_DEVICE");lval.s = yylex.Text();return TOKEN_DEVICE}
-/subdevice/ {println("We got TOKEN_SUBDEVICE");lval.s = yylex.Text();return TOKEN_SUBDEVICE}
-/subdevice1/{println("We got TOKEN_SUBDEVICE1");lval.s = yylex.Text();return TOKEN_SUBDEVICE1}
-/address|category|city|color|country|description|domain|gps|height|heightUnit|id|mainContact|mainEmail|mainPhone|model|name|nbFloors|orientation|parentId|posU|posXY|posXYUnit|posZ|posZUnit|reserved|reservedColor|serial|size|sizeU|sizeUnit|slot|technical|technicalColor|template|token|type|usableColor|vendor|zipcode/ 
-{println("We got TOKEN_ATTR");lval.s = yylex.Text();return TOKEN_ATTR}
+/tenant/ {println("We got TOK_TENANT");lval.s = yylex.Text();return TOK_TENANT}
+/site/ {println("We got TOK_SITE");lval.s = yylex.Text();return TOK_SITE}
+/bldg|building/ {println("We got TOK_BLDG");lval.s = yylex.Text();return TOK_BLDG}
+/room/ {println("We got TOK_ROOM");lval.s = yylex.Text();return TOK_ROOM}
+/rack/ {println("We got TOK_RACK");lval.s = yylex.Text();return TOK_RACK}
+/device/ {println("We got TOK_DEVICE");lval.s = yylex.Text();return TOK_DEVICE}
+/subdevice/ {println("We got TOK_SUBDEVICE");lval.s = yylex.Text();return TOK_SUBDEVICE}
+/subdevice1/{println("We got TOK_SUBDEVICE1");lval.s = yylex.Text();return TOK_SUBDEVICE1}
+/address|category|city|color|country|description|domain|gps|height|heightUnit|id|mainContact|mainEmail|mainPhone|model|name|nbFloors|orientation|parentId|posU|posXY|posXYUnit|posZ|posZUnit|reserved|reservedColor|serial|size|sizeU|sizeUnit|slot|technical|technicalColor|template|TOK|type|usableColor|vendor|zipcode/ 
+{println("We got TOK_ATTR");lval.s = yylex.Text();return TOK_ATTR}
 
-/[0-9]+/ {println("We got TOKEN_NUM");lval.n = atoi(yylex.Text()); return TOKEN_NUM}
-/lsten/ {println("We got TOKEN_LSTEN"); return TOKEN_LSTEN}
-/lssite/ {println("We got TOKEN_LSSITE"); return TOKEN_LSSITE}
-/lsbldg/ {println("We got TOKEN_LSBLDG"); return TOKEN_LSBLDG}
-/lsroom/ {println("We got TOKEN_LSROOM"); return TOKEN_LSROOM}
-/lsrack/ {println("We got TOKEN_LSRACK"); return TOKEN_LSRACK}
-/lsdev/ {println("We got TOKEN_LSDEV"); return TOKEN_LSDEV}
-/lssubdev/ {println("We got TOKEN_LSSUBDEV"); return TOKEN_LSSUBDEV}
-/lssubdev1/ {println("We got TOKEN_LSSUBDEV1"); return TOKEN_LSSUBDEV1}
-/tree/ {println("We got TOKEN_TREE"); return TOKEN_TREE}
-/lsog/ {println("We got TOKEN_LSOG"); return TOKEN_LSOG}
-/cd/ {println("We got TOKEN_CD");return TOKEN_CD}
-/pwd/ {println("We got TOKEN_PWD");return TOKEN_PWD}
-/clear/ {println("We got TOKEN_CLR");return TOKEN_CLR}
-/grep/ {println("We got TOKEN_GREP");return TOKEN_GREP}
-/ls/ {println("We got TOKEN_LS");return TOKEN_LS}
-/exit/ {println("We got TOKEN_EXIT"); return TOKEN_EXIT}
-/-l/ {println("We got TOKEN_CMDFLAG");return TOKEN_CMDFLAG}
-/[=]/ {println("We got TOKEN_EQUAL");return TOKEN_EQUAL}
-/\// {println("We got TOKEN_SLASH"); return TOKEN_SLASH}
-/man/ {println("We got TOKEN_DOC"); return TOKEN_DOC}
-/[A-Za-z0-9_]+/ {println("We got TOKEN_WORD"); lval.s = yylex.Text(); println("LVAL: ", lval.s); return TOKEN_WORD}
+/[0-9]+/ {println("We got TOK_NUM");lval.n = atoi(yylex.Text()); return TOK_NUM}
+/lsten/ {println("We got TOK_LSTEN"); return TOK_LSTEN}
+/lssite/ {println("We got TOK_LSSITE"); return TOK_LSSITE}
+/lsbldg/ {println("We got TOK_LSBLDG"); return TOK_LSBLDG}
+/lsroom/ {println("We got TOK_LSROOM"); return TOK_LSROOM}
+/lsrack/ {println("We got TOK_LSRACK"); return TOK_LSRACK}
+/lsdev/ {println("We got TOK_LSDEV"); return TOK_LSDEV}
+/lssubdev/ {println("We got TOK_LSSUBDEV"); return TOK_LSSUBDEV}
+/lssubdev1/ {println("We got TOK_LSSUBDEV1"); return TOK_LSSUBDEV1}
+/tree/ {println("We got TOK_TREE"); return TOK_TREE}
+/lsog/ {println("We got TOK_LSOG"); return TOK_LSOG}
+/cd/ {println("We got TOK_CD");return TOK_CD}
+/pwd/ {println("We got TOK_PWD");return TOK_PWD}
+/clear/ {println("We got TOK_CLR");return TOK_CLR}
+/grep/ {println("We got TOK_GREP");return TOK_GREP}
+/ls/ {println("We got TOK_LS");return TOK_LS}
+/exit/ {println("We got TOK_EXIT"); return TOK_EXIT}
+/-l/ {println("We got TOK_CMDFLAG");return TOK_CMDFLAG}
+/[=]/ {println("We got TOK_EQUAL");return TOK_EQUAL}
+/\// {println("We got TOK_SLASH"); return TOK_SLASH}
+/man/ {println("We got TOK_DOC"); return TOK_DOC}
+/[A-Za-z0-9_]+/ {println("We got TOK_WORD"); lval.s = yylex.Text(); println("LVAL: ", lval.s); return TOK_WORD}
 //
 package main
 import (
 	"os"
 	"strconv"
 )
-type TokenType int
+type TOKType int
 
 func atoi(x string) int {
 	v, e := strconv.Atoi(x)
