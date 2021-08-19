@@ -41,16 +41,16 @@ type yySymType struct {
 	n       int
 	s       string
 	sarr    []string
-	ast     ast
-	wNode   whileNode
-	fNode   forNode
-	iNode   ifNode
-	rNode   symbolReferenceNode
-	cNode   comparatorNode
-	aNode   arithNode
-	bNode   boolNode
-	nNode   numNode
-	comNode commonNode
+	ast     *ast
+	wNode   *whileNode
+	fNode   *forNode
+	iNode   *ifNode
+	rNode   *symbolReferenceNode
+	cNode   *comparatorNode
+	aNode   *arithNode
+	bNode   *boolNode
+	nNode   *numNode
+	comNode *commonNode
 }
 
 type yyXError struct {
@@ -1133,6 +1133,12 @@ cmd.WarningLogger.Println("Unknown Command")			/*yylex.Error(msg)*/
 	}
 
 	switch r {
+	case 6:
+		{
+			x := yyS[yypt-0].comNode
+			println("now calling exectute")
+			x.execute()
+		}
 	case 43:
 		{
 			println("@State start")
@@ -1356,6 +1362,35 @@ cmd.WarningLogger.Println("Unknown Command")			/*yylex.Error(msg)*/
 		{
 			cmd.Help("lsog")
 		}
+	case 109:
+		{
+			yyVAL.comNode = &commonNode{COMMON, cmd.ShowClipBoard, "select", nil}
+		}
+	case 110:
+		{
+			yyVAL.comNode = yyS[yypt-0].comNode
+		}
+	case 111:
+		{
+			yyVAL.comNode = &commonNode{COMMON, cmd.ShowClipBoard, "select", nil}
+		}
+	case 112:
+		{
+			yyVAL.comNode = yyS[yypt-0].comNode
+		}
+	case 113:
+		{
+			yyVAL.comNode = &commonNode{COMMON, nil, "select", nil}
+		}
+	case 114:
+		{
+			yyVAL.comNode = &commonNode{COMMON, cmd.ShowClipBoard, "select", nil}
+		}
+	case 115:
+		{
+			yyVAL.comNode = yyS[yypt-0].comNode
+			println("Alright")
+		}
 	case 116:
 		{
 			cmd.GetOCLIAtrributes(cmd.StrToStack(replaceOCLICurrPath(yyS[yypt-2].s)), cmd.TENANT, map[string]interface{}{"attributes": map[string]interface{}{"color": yyS[yypt-0].s}}, rlPtr)
@@ -1406,7 +1441,7 @@ cmd.WarningLogger.Println("Unknown Command")			/*yylex.Error(msg)*/
 		}
 	case 128:
 		{
-			cmd.DeleteObj(replaceOCLICurrPath(yyS[yypt-0].s))
+			yyVAL.comNode = &commonNode{COMMON, cmd.DeleteObj, "delete", replaceOCLICurrPath(yyS[yypt-0].s)}
 		}
 	case 129:
 		{
@@ -1416,7 +1451,7 @@ cmd.WarningLogger.Println("Unknown Command")			/*yylex.Error(msg)*/
 		}
 	case 130:
 		{
-			cmd.GetObject(replaceOCLICurrPath(yyS[yypt-0].s))
+			yyVAL.comNode = &commonNode{COMMON, cmd.GetObject, "get", replaceOCLICurrPath(yyS[yypt-0].s)}
 		}
 	case 131:
 		{
@@ -1482,12 +1517,13 @@ cmd.WarningLogger.Println("Unknown Command")			/*yylex.Error(msg)*/
 		}
 	case 138:
 		{
-			cmd.ShowClipBoard()
+			yyVAL.comNode = &commonNode{COMMON, cmd.ShowClipBoard, "select", nil}
+			println("So we haven't done anythig")
 		}
 	case 139:
 		{
 			x := yyS[yypt-2].s + "=" + yyS[yypt-0].s
-			cmd.UpdateSelection(resMap(&x))
+			yyVAL.comNode = &commonNode{COMMON, cmd.UpdateSelection, "select", resMap(&x)}
 		}
 
 	}

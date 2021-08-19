@@ -17,7 +17,6 @@
 /||/ {println("We got TOK_OR"); return TOK_OR}
 /&&/ {println("We got TOK_AND"); return TOK_AND}
 /\!/ {println("We got TOK_NOT"); return TOK_NOT}
-/\// {println("We got TOK_DIV"); return TOK_DIV}
 /\*/ {println("We got TOK_MULT"); return TOK_MULT}
 />/ {println("We got TOK_GREATER"); return TOK_GREATER}
 /</ {println("We got TOK_LESS"); return TOK_LESS}

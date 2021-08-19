@@ -38,16 +38,16 @@ func replaceOCLICurrPath(x string) string {
   n int
   s string
   sarr []string
-  ast ast
-  wNode whileNode
-  fNode forNode
-  iNode ifNode
-  rNode symbolReferenceNode
-  cNode comparatorNode
-  aNode arithNode
-  bNode boolNode
-  nNode numNode
-  comNode commonNode
+  ast *ast
+  wNode *whileNode
+  fNode *forNode
+  iNode *ifNode
+  rNode *symbolReferenceNode
+  cNode *comparatorNode
+  aNode *arithNode
+  bNode *boolNode
+  nNode *numNode
+  comNode *commonNode
 }
 
 %token <n> TOK_NUM
@@ -72,6 +72,7 @@ func replaceOCLICurrPath(x string) string {
        
 %type <s> F E P P1 ORIENTN WORDORNUM NT_CREATE NT_DEL NT_GET NT_UPDATE
 %type <sarr> GETOBJS
+%type <comNode> OCSEL OCLISYNTX OCDEL OCGET
 %left TOK_MULT TOK_OCDEL TOK_DIV TOK_PLUS
 %right TOK_EQUAL
 
@@ -85,7 +86,7 @@ start: stmnt
 
 stmnt: K
        |Q
-       |OCLISYNTX
+       |OCLISYNTX {x := $1;println("now calling exectute"); x.execute()}
        |
 ;
 
@@ -239,13 +240,13 @@ BASH:  TOK_CLR
        | TOK_DOC TOK_LSOG {cmd.Help("lsog")}
 ;
 
-OCLISYNTX:  TOK_PLUS OCCR
-            |OCDEL
-            |OCUPDATE
-            |OCGET
-            |OCCHOOSE
-            |OCDOT
-            |OCSEL
+OCLISYNTX:  TOK_PLUS OCCR {$$=&commonNode{COMMON, cmd.ShowClipBoard, "select", nil}}
+            |OCDEL {$$=$1;}
+            |OCUPDATE {$$=&commonNode{COMMON, cmd.ShowClipBoard, "select", nil}}
+            |OCGET {$$=$1}
+            |OCCHOOSE {$$=&commonNode{COMMON, nil, "select", nil}}
+            |OCDOT {$$=&commonNode{COMMON, cmd.ShowClipBoard, "select", nil}}
+            |OCSEL {$$=$1; println("Alright");}
             ;
 
 
@@ -262,13 +263,13 @@ OCCR:   TOK_OCTENANT TOK_OCPSPEC P TOK_ATTRSPEC WORDORNUM {cmd.GetOCLIAtrributes
         |TOK_OCDEV TOK_OCPSPEC P TOK_ATTRSPEC WORDORNUM TOK_ATTRSPEC WORDORNUM {cmd.GetOCLIAtrributes(cmd.StrToStack(replaceOCLICurrPath($3)),cmd.DEVICE,map[string]interface{}{"attributes":map[string]interface{}{"slot":$5, "sizeUnit":$7}} ,rlPtr)}
         |TOK_DEVICE TOK_OCPSPEC P TOK_ATTRSPEC WORDORNUM TOK_ATTRSPEC WORDORNUM {cmd.GetOCLIAtrributes(cmd.StrToStack(replaceOCLICurrPath($3)),cmd.DEVICE,map[string]interface{}{"attributes":map[string]interface{}{"slot":$5, "sizeUnit":$7}} ,rlPtr)}
        ; 
-OCDEL:  TOK_OCDEL P {cmd.DeleteObj(replaceOCLICurrPath($2))}
+OCDEL:  TOK_OCDEL P {$$=&commonNode{COMMON, cmd.DeleteObj, "delete", replaceOCLICurrPath($2)}}
 ;
 
 OCUPDATE: P TOK_DOT TOK_ATTR TOK_EQUAL WORDORNUM {println("Attribute Acquired");val := $3+"="+$5;cmd.UpdateObj(replaceOCLICurrPath($1), resMap(&val))}
 ;
 
-OCGET: TOK_EQUAL P {cmd.GetObject(replaceOCLICurrPath($2))}
+OCGET: TOK_EQUAL P {$$=&commonNode{COMMON, cmd.GetObject, "get", replaceOCLICurrPath($2)}}
 ;
 
 GETOBJS:      TOK_WORD TOK_COMMA GETOBJS {x := make([]string,0); x = append(x, cmd.State.CurrPath+"/"+$1); x = append(x, $3...); $$=x}
@@ -310,7 +311,7 @@ OCDOT:      TOK_DOT TOK_VAR TOK_OCPSPEC TOK_WORD TOK_EQUAL WORDORNUM {dynamicMap
 	} }
 ;
 
-OCSEL:      TOK_SELECT {cmd.ShowClipBoard()}
-            |TOK_SELECT TOK_DOT TOK_ATTR TOK_EQUAL TOK_WORD {x := $3+"="+$5;cmd.UpdateSelection(resMap(&x))}
+OCSEL:      TOK_SELECT {$$=&commonNode{COMMON, cmd.ShowClipBoard, "select", nil}; println("So we haven't done anythig");}
+            |TOK_SELECT TOK_DOT TOK_ATTR TOK_EQUAL TOK_WORD {x := $3+"="+$5; $$=&commonNode{COMMON, cmd.UpdateSelection, "select", resMap(&x)};}
 
 %%
