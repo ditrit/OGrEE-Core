@@ -48,6 +48,7 @@ func replaceOCLICurrPath(x string) string {
   bNode *boolNode
   nNode *numNode
   comNode *commonNode
+  node node
 }
 
 %token <n> TOK_NUM
@@ -70,9 +71,10 @@ func replaceOCLICurrPath(x string) string {
        TOK_LPAREN TOK_RPAREN TOK_OR TOK_AND
        TOK_NOT TOK_DIV TOK_MULT TOK_GREATER TOK_LESS TOK_THEN TOK_FI TOK_DONE
        
-%type <s> F E P P1 ORIENTN WORDORNUM NT_CREATE NT_DEL NT_GET NT_UPDATE
+%type <s> F E P P1 ORIENTN WORDORNUM 
 %type <sarr> GETOBJS
-%type <comNode> OCSEL OCLISYNTX OCDEL OCGET
+%type <node> OCSEL OCLISYNTX OCDEL OCGET NT_CREATE NT_GET NT_DEL 
+%type <node> NT_UPDATE K Q BASH OCUPDATE OCCHOOSE OCCR OCDOT
 %left TOK_MULT TOK_OCDEL TOK_DIV TOK_PLUS
 %right TOK_EQUAL
 
@@ -84,8 +86,8 @@ start: stmnt
        |CTRL
 ;
 
-stmnt: K
-       |Q
+stmnt: K {($1).execute()}
+       |Q {($1).execute()}
        |OCLISYNTX {x := $1;println("now calling exectute"); x.execute()}
        |
 ;
@@ -141,30 +143,30 @@ unary: TOK_NOT unary
        |factor
        ;
 
-factor: TOK_LPAREN EXPR TOK_RPAREN
-       |TOK_NUM
-       |TOK_WORD
-       |TOK_BOOL
+factor: TOK_LPAREN EXPR TOK_RPAREN {$$=$2}
+       |TOK_NUM {$$=&numNode{NUM, $1}}
+       |TOK_WORD {}
+       |TOK_BOOL {$$=&boolNode{BOOL, $1}}
        ;
 
 K: NT_CREATE     {println("@State start");}
        | NT_GET
-       | NT_UPDATE
-       | NT_DEL
+       | NT_UPDATE 
+       | NT_DEL 
 ;
 
-NT_CREATE: TOK_CREATE E F {cmd.PostObj(cmd.EntityStrToInt($2),$2, resMap(&$3))}
-       | TOK_CREATE E P F {$$=$4; cmd.Disp(resMap(&$4)); cmd.PostObj(cmd.EntityStrToInt($2),$2, resMap(&$4)) }
+NT_CREATE: TOK_CREATE E F {$$=&commonNode{COMMON, cmd.PostObj,"PostObj", []interface{}{cmd.EntityStrToInt($2),$2, resMap(&$3)}};}
+       | TOK_CREATE E P F {cmd.Disp(resMap(&$4)); $$=&commonNode{COMMON, cmd.PostObj, "PostObj", []interface{}{cmd.EntityStrToInt($2),$2, resMap(&$4)}}}
 ;
 
-NT_GET: TOK_GET P {cmd.GetObject($2)}
-       | TOK_GET E F {/*cmd.Disp(resMap(&$4)); */cmd.SearchObjects($2, resMap(&$3)) }
+NT_GET: TOK_GET P {$$=&commonNode{COMMON, cmd.GetObject, "GetObject", []interface{}{$2}}}
+       | TOK_GET E F {/*cmd.Disp(resMap(&$4)); */$$=&commonNode{COMMON, cmd.SearchObjects, "SearchObjects", []interface{}{$2, resMap(&$3)}} }
 ;
 
-NT_UPDATE: TOK_UPDATE P F {$$=$3;/*cmd.Disp(resMap(&$4));*/ cmd.UpdateObj($2, resMap(&$3))}
+NT_UPDATE: TOK_UPDATE P F {$$=&commonNode{COMMON, cmd.UpdateObj, "UpdateObj", []interface{}{$2, resMap(&$3)}}}
 ;
 
-NT_DEL: TOK_DELETE P {println("@State NT_DEL");cmd.DeleteObj($2)}
+NT_DEL: TOK_DELETE P {println("@State NT_DEL"); $$=&commonNode{COMMON, cmd.DeleteObj, "DeleteObj", []interface{}{$2}}}
 ;
 
 E:     TOK_TENANT 
@@ -207,111 +209,85 @@ P1:    TOK_WORD TOK_SLASH P1 {$$=$1+"/"+$3}
        | {$$=""}
 ;
 
-Q:     TOK_CD P {cmd.CD($2)}
-       | TOK_LS P {cmd.LS($2)}
-       | TOK_LSTEN P {cmd.LSOBJECT($2, 0)}
-       | TOK_LSSITE P {cmd.LSOBJECT($2, 1)}
-       | TOK_LSBLDG P {cmd.LSOBJECT($2, 2)}
-       | TOK_LSROOM P {cmd.LSOBJECT($2, 3)}
-       | TOK_LSRACK P {cmd.LSOBJECT($2, 4)}
-       | TOK_LSDEV P {cmd.LSOBJECT($2, 5)}
-       | TOK_LSSUBDEV P {cmd.LSOBJECT($2, 6)}
-       | TOK_LSSUBDEV1 P {cmd.LSOBJECT($2, 7)}
-       | TOK_TREE TOK_NUM {cmd.Tree("", $2)}
-       | TOK_TREE P {cmd.Tree($2, 0)}
-       | TOK_TREE P TOK_NUM {cmd.Tree($2, $3)}
-       | BASH     {cmd.Execute()}
+Q:     TOK_CD P {/*cmd.CD($2);*/ $$=&commonNode{COMMON, cmd.CD, "CD", []interface{}{$2}};}
+       | TOK_LS P {/*cmd.LS($2)*/$$=&commonNode{COMMON, cmd.LS, "LS", []interface{}{$2}};}
+       | TOK_LSTEN P {$$=&commonNode{COMMON, cmd.LSOBJECT, "LSOBJ", []interface{}{$2, 0}}}
+       | TOK_LSSITE P { $$=&commonNode{COMMON, cmd.LSOBJECT, "LSOBJ", []interface{}{$2, 1}}}
+       | TOK_LSBLDG P { $$=&commonNode{COMMON, cmd.LSOBJECT, "LSOBJ", []interface{}{$2, 2}}}
+       | TOK_LSROOM P { $$=&commonNode{COMMON, cmd.LSOBJECT, "LSOBJ", []interface{}{$2, 3}}}
+       | TOK_LSRACK P { $$=&commonNode{COMMON, cmd.LSOBJECT, "LSOBJ", []interface{}{$2, 4}}}
+       | TOK_LSDEV P {$$=&commonNode{COMMON, cmd.LSOBJECT, "LSOBJ", []interface{}{$2, 5}}}
+       | TOK_LSSUBDEV P { $$=&commonNode{COMMON, cmd.LSOBJECT, "LSOBJ", []interface{}{$2, 6}}}
+       | TOK_LSSUBDEV1 P {$$=&commonNode{COMMON, cmd.LSOBJECT, "LSOBJ", []interface{}{$2, 7}}}
+       | TOK_TREE TOK_NUM {$$=&commonNode{COMMON, cmd.Tree, "Tree", []interface{}{"", $2}}}
+       | TOK_TREE P {$$=&commonNode{COMMON, cmd.Tree, "Tree", []interface{}{$2, 0}}}
+       | TOK_TREE P TOK_NUM {$$=&commonNode{COMMON, cmd.Tree, "Tree", []interface{}{$2, $3}}}
+       | BASH     {$$=$1}
 ;
 
-BASH:  TOK_CLR
-       | TOK_GREP {}
-       | TOK_LSOG {cmd.LSOG()}
-       | TOK_PWD {cmd.PWD()}
-       | TOK_EXIT     {cmd.Exit()}
-       | TOK_DOC {cmd.Help("")}
-       | TOK_DOC TOK_LS {cmd.Help("ls")}
-       | TOK_DOC TOK_CD {cmd.Help("cd")}
-       | TOK_DOC TOK_CREATE {cmd.Help("create")}
-       | TOK_DOC TOK_GET {cmd.Help("gt")}
-       | TOK_DOC TOK_UPDATE {cmd.Help("update")}
-       | TOK_DOC TOK_DELETE {cmd.Help("delete")}
-       | TOK_DOC TOK_WORD {cmd.Help($2)}
-       | TOK_DOC TOK_TREE {cmd.Help("tree")}
-       | TOK_DOC TOK_LSOG {cmd.Help("lsog")}
+BASH:  TOK_CLR {$$=&commonNode{COMMON, nil, "CLR", nil}}
+       | TOK_GREP {$$=&commonNode{COMMON, nil, "Grep", nil}}
+       | TOK_LSOG {$$=&commonNode{COMMON, cmd.LSOG, "LSOG", nil}}
+       | TOK_PWD {$$=&commonNode{COMMON, cmd.LSOG, "LSOG", nil}}
+       | TOK_EXIT {$$=&commonNode{COMMON, cmd.Exit, "Exit", nil}}
+       | TOK_DOC {$$=&commonNode{COMMON, cmd.Help, "Help", []interface{}{""}}}
+       | TOK_DOC TOK_LS {$$=&commonNode{COMMON, cmd.Help, "Help", []interface{}{"ls"}}}
+       | TOK_DOC TOK_CD {$$=&commonNode{COMMON, cmd.Help, "Help", []interface{}{"cd"}}}
+       | TOK_DOC TOK_CREATE {$$=&commonNode{COMMON, cmd.Help, "Help", []interface{}{"create"}}}
+       | TOK_DOC TOK_GET {$$=&commonNode{COMMON, cmd.Help, "Help", []interface{}{"gt"}}}
+       | TOK_DOC TOK_UPDATE {$$=&commonNode{COMMON, cmd.Help, "Help", []interface{}{"update"}}}
+       | TOK_DOC TOK_DELETE {$$=&commonNode{COMMON, cmd.Help, "Help", []interface{}{"delete"}}}
+       | TOK_DOC TOK_WORD {$$=&commonNode{COMMON, cmd.Help, "Help", []interface{}{$2}}}
+       | TOK_DOC TOK_TREE {$$=&commonNode{COMMON, cmd.Help, "Help", []interface{}{"tree"}}}
+       | TOK_DOC TOK_LSOG {$$=&commonNode{COMMON, cmd.Help, "Help", []interface{}{"lsog"}}}
 ;
 
-OCLISYNTX:  TOK_PLUS OCCR {$$=&commonNode{COMMON, cmd.ShowClipBoard, "select", nil}}
-            |OCDEL {$$=$1;}
-            |OCUPDATE {$$=&commonNode{COMMON, cmd.ShowClipBoard, "select", nil}}
+OCLISYNTX:  TOK_PLUS OCCR {$$=$2}
+            |OCDEL {$$=$1}
+            |OCUPDATE {$$=$1}
             |OCGET {$$=$1}
-            |OCCHOOSE {$$=&commonNode{COMMON, nil, "select", nil}}
-            |OCDOT {$$=&commonNode{COMMON, cmd.ShowClipBoard, "select", nil}}
+            |OCCHOOSE {$$=$1}
+            |OCDOT {$$=$1}
             |OCSEL {$$=$1; println("Alright");}
             ;
 
 
-OCCR:   TOK_OCTENANT TOK_OCPSPEC P TOK_ATTRSPEC WORDORNUM {cmd.GetOCLIAtrributes(cmd.StrToStack(replaceOCLICurrPath($3)),cmd.TENANT,map[string]interface{}{"attributes":map[string]interface{}{"color":$5}} ,rlPtr)}
-        |TOK_TENANT TOK_OCPSPEC P TOK_ATTRSPEC WORDORNUM {cmd.GetOCLIAtrributes(cmd.StrToStack(replaceOCLICurrPath($3)),cmd.TENANT,map[string]interface{}{"attributes":map[string]interface{}{"color":$5}} ,rlPtr)}
-        |TOK_OCSITE TOK_OCPSPEC P TOK_ATTRSPEC WORDORNUM {cmd.GetOCLIAtrributes(cmd.StrToStack(replaceOCLICurrPath($3)),cmd.SITE,map[string]interface{}{"attributes":map[string]interface{}{"orientation":$5}} ,rlPtr)}
-        |TOK_SITE TOK_OCPSPEC P TOK_ATTRSPEC WORDORNUM {cmd.GetOCLIAtrributes(cmd.StrToStack(replaceOCLICurrPath($3)),cmd.SITE,map[string]interface{}{"attributes":map[string]interface{}{"orientation":$5}} ,rlPtr)}
-        |TOK_OCBLDG TOK_OCPSPEC P TOK_ATTRSPEC WORDORNUM TOK_ATTRSPEC WORDORNUM {cmd.GetOCLIAtrributes(cmd.StrToStack(replaceOCLICurrPath($3)),cmd.BLDG,map[string]interface{}{"attributes":map[string]interface{}{"posXY":$5, "size":$7}} ,rlPtr)}
-        |TOK_BLDG TOK_OCPSPEC P TOK_ATTRSPEC WORDORNUM TOK_ATTRSPEC WORDORNUM {cmd.GetOCLIAtrributes(cmd.StrToStack(replaceOCLICurrPath($3)),cmd.BLDG,map[string]interface{}{"attributes":map[string]interface{}{"posXY":$5, "size":$7}} ,rlPtr)}
-        |TOK_OCROOM TOK_OCPSPEC P TOK_ATTRSPEC WORDORNUM TOK_ATTRSPEC WORDORNUM {cmd.GetOCLIAtrributes(cmd.StrToStack(replaceOCLICurrPath($3)),cmd.ROOM,map[string]interface{}{"attributes":map[string]interface{}{"posXY":$5, "size":$7}} ,rlPtr)}
-        |TOK_ROOM TOK_OCPSPEC P TOK_ATTRSPEC WORDORNUM TOK_ATTRSPEC WORDORNUM {cmd.GetOCLIAtrributes(cmd.StrToStack(replaceOCLICurrPath($3)),cmd.ROOM,map[string]interface{}{"attributes":map[string]interface{}{"posXY":$5, "size":$7}} ,rlPtr)}
-        |TOK_OCRACK TOK_OCPSPEC P TOK_ATTRSPEC WORDORNUM TOK_ATTRSPEC WORDORNUM {cmd.GetOCLIAtrributes(cmd.StrToStack(replaceOCLICurrPath($3)),cmd.RACK,map[string]interface{}{"attributes":map[string]interface{}{"posXY":$5, "size":$7}} ,rlPtr)}
-        |TOK_RACK TOK_OCPSPEC P TOK_ATTRSPEC WORDORNUM TOK_ATTRSPEC WORDORNUM {cmd.GetOCLIAtrributes(cmd.StrToStack(replaceOCLICurrPath($3)),cmd.RACK,map[string]interface{}{"attributes":map[string]interface{}{"posXY":$5, "size":$7}} ,rlPtr)}
-        |TOK_OCDEV TOK_OCPSPEC P TOK_ATTRSPEC WORDORNUM TOK_ATTRSPEC WORDORNUM {cmd.GetOCLIAtrributes(cmd.StrToStack(replaceOCLICurrPath($3)),cmd.DEVICE,map[string]interface{}{"attributes":map[string]interface{}{"slot":$5, "sizeUnit":$7}} ,rlPtr)}
-        |TOK_DEVICE TOK_OCPSPEC P TOK_ATTRSPEC WORDORNUM TOK_ATTRSPEC WORDORNUM {cmd.GetOCLIAtrributes(cmd.StrToStack(replaceOCLICurrPath($3)),cmd.DEVICE,map[string]interface{}{"attributes":map[string]interface{}{"slot":$5, "sizeUnit":$7}} ,rlPtr)}
+OCCR:   TOK_OCTENANT TOK_OCPSPEC P TOK_ATTRSPEC WORDORNUM {$$=&commonNode{COMMON, cmd.GetOCLIAtrributes, "GetOCAttr", []interface{}{cmd.StrToStack(replaceOCLICurrPath($3)),cmd.TENANT,map[string]interface{}{"attributes":map[string]interface{}{"color":$5}} ,rlPtr}}}
+        |TOK_TENANT TOK_OCPSPEC P TOK_ATTRSPEC WORDORNUM {$$=&commonNode{COMMON, cmd.GetOCLIAtrributes, "GetOCAttr", []interface{}{cmd.StrToStack(replaceOCLICurrPath($3)),cmd.TENANT,map[string]interface{}{"attributes":map[string]interface{}{"color":$5}} ,rlPtr}}}
+        |TOK_OCSITE TOK_OCPSPEC P TOK_ATTRSPEC WORDORNUM {$$=&commonNode{COMMON, cmd.GetOCLIAtrributes, "GetOCAttr", []interface{}{cmd.StrToStack(replaceOCLICurrPath($3)),cmd.SITE,map[string]interface{}{"attributes":map[string]interface{}{"orientation":$5}} ,rlPtr}}}
+        |TOK_SITE TOK_OCPSPEC P TOK_ATTRSPEC WORDORNUM {$$=&commonNode{COMMON, cmd.GetOCLIAtrributes, "GetOCAttr", []interface{}{cmd.StrToStack(replaceOCLICurrPath($3)),cmd.SITE,map[string]interface{}{"attributes":map[string]interface{}{"orientation":$5}} ,rlPtr}}}
+        |TOK_OCBLDG TOK_OCPSPEC P TOK_ATTRSPEC WORDORNUM TOK_ATTRSPEC WORDORNUM {$$=&commonNode{COMMON, cmd.GetOCLIAtrributes, "GetOCAttr", []interface{}{cmd.StrToStack(replaceOCLICurrPath($3)),cmd.BLDG,map[string]interface{}{"attributes":map[string]interface{}{"posXY":$5, "size":$7}} ,rlPtr}}}
+        |TOK_BLDG TOK_OCPSPEC P TOK_ATTRSPEC WORDORNUM TOK_ATTRSPEC WORDORNUM {$$=&commonNode{COMMON, cmd.GetOCLIAtrributes, "GetOCAttr", []interface{}{cmd.StrToStack(replaceOCLICurrPath($3)),cmd.BLDG,map[string]interface{}{"attributes":map[string]interface{}{"posXY":$5, "size":$7}} ,rlPtr}}}
+        |TOK_OCROOM TOK_OCPSPEC P TOK_ATTRSPEC WORDORNUM TOK_ATTRSPEC WORDORNUM {$$=&commonNode{COMMON, cmd.GetOCLIAtrributes, "GetOCAttr", []interface{}{cmd.StrToStack(replaceOCLICurrPath($3)),cmd.ROOM,map[string]interface{}{"attributes":map[string]interface{}{"posXY":$5, "size":$7}} ,rlPtr}}}
+        |TOK_ROOM TOK_OCPSPEC P TOK_ATTRSPEC WORDORNUM TOK_ATTRSPEC WORDORNUM {$$=&commonNode{COMMON, cmd.GetOCLIAtrributes, "GetOCAttr", []interface{}{cmd.StrToStack(replaceOCLICurrPath($3)),cmd.ROOM,map[string]interface{}{"attributes":map[string]interface{}{"posXY":$5, "size":$7}} ,rlPtr}}}
+        |TOK_OCRACK TOK_OCPSPEC P TOK_ATTRSPEC WORDORNUM TOK_ATTRSPEC WORDORNUM {$$=&commonNode{COMMON, cmd.GetOCLIAtrributes, "GetOCAttr", []interface{}{cmd.StrToStack(replaceOCLICurrPath($3)),cmd.RACK,map[string]interface{}{"attributes":map[string]interface{}{"posXY":$5, "size":$7}} ,rlPtr}}}
+        |TOK_RACK TOK_OCPSPEC P TOK_ATTRSPEC WORDORNUM TOK_ATTRSPEC WORDORNUM {$$=&commonNode{COMMON, cmd.GetOCLIAtrributes, "GetOCAttr", []interface{}{cmd.StrToStack(replaceOCLICurrPath($3)),cmd.RACK,map[string]interface{}{"attributes":map[string]interface{}{"posXY":$5, "size":$7}} ,rlPtr}}}
+        |TOK_OCDEV TOK_OCPSPEC P TOK_ATTRSPEC WORDORNUM TOK_ATTRSPEC WORDORNUM {$$=&commonNode{COMMON, cmd.GetOCLIAtrributes, "GetOCAttr", []interface{}{cmd.StrToStack(replaceOCLICurrPath($3)),cmd.DEVICE,map[string]interface{}{"attributes":map[string]interface{}{"slot":$5, "sizeUnit":$7}} ,rlPtr}}}
+        |TOK_DEVICE TOK_OCPSPEC P TOK_ATTRSPEC WORDORNUM TOK_ATTRSPEC WORDORNUM {$$=&commonNode{COMMON, cmd.GetOCLIAtrributes, "GetOCAttr", []interface{}{cmd.StrToStack(replaceOCLICurrPath($3)),cmd.DEVICE,map[string]interface{}{"attributes":map[string]interface{}{"slot":$5, "sizeUnit":$7}} ,rlPtr}}}
        ; 
-OCDEL:  TOK_OCDEL P {$$=&commonNode{COMMON, cmd.DeleteObj, "delete", replaceOCLICurrPath($2)}}
+OCDEL:  TOK_OCDEL P {$$=&commonNode{COMMON, cmd.DeleteObj, "delete", []interface{}{replaceOCLICurrPath($2)}}}
 ;
 
-OCUPDATE: P TOK_DOT TOK_ATTR TOK_EQUAL WORDORNUM {println("Attribute Acquired");val := $3+"="+$5;cmd.UpdateObj(replaceOCLICurrPath($1), resMap(&val))}
+OCUPDATE: P TOK_DOT TOK_ATTR TOK_EQUAL WORDORNUM {println("Attribute Acquired");val := $3+"="+$5; $$=&commonNode{COMMON, cmd.UpdateObj, "UpdateObj", []interface{}{replaceOCLICurrPath($1), resMap(&val)}}}
 ;
 
-OCGET: TOK_EQUAL P {$$=&commonNode{COMMON, cmd.GetObject, "get", replaceOCLICurrPath($2)}}
+OCGET: TOK_EQUAL P {$$=&commonNode{COMMON, cmd.GetObject, "get", []interface{}{replaceOCLICurrPath($2)}}}
 ;
 
 GETOBJS:      TOK_WORD TOK_COMMA GETOBJS {x := make([]string,0); x = append(x, cmd.State.CurrPath+"/"+$1); x = append(x, $3...); $$=x}
               | TOK_WORD {$$=[]string{cmd.State.CurrPath+"/"+$1}}
               ;
 
-OCCHOOSE: TOK_EQUAL TOK_LBRAC GETOBJS TOK_RBRAC {cmd.State.ClipBoard = &$3; println("Selection made!")}
+OCCHOOSE: TOK_EQUAL TOK_LBRAC GETOBJS TOK_RBRAC {$$=&commonNode{COMMON, cmd.SetClipBoard, "setCB", []interface{}{&$3}}; println("Selection made!")}
 ;
 
-OCDOT:      TOK_DOT TOK_VAR TOK_OCPSPEC TOK_WORD TOK_EQUAL WORDORNUM {dynamicMap[$4] = varCtr; dynamicSymbolTable[varCtr] = dCatchPtr; varCtr+=1;  switch dCatchPtr.(type) {
-	case string:
-              x := dCatchPtr.(string)
-              println("You want to assign",$4, "with value of", x)
-	case int:
-		x := dCatchPtr.(int)
-              println("You want to assign",$4, "with value of", x)
-	case bool:
-		x := dCatchPtr.(bool)
-              println("You want to assign",$4, "with value of", x)
-       case float64, float32:
-		x := dCatchPtr.(float64)
-              println("You want to assign",$4, "with value of", x)
-	}}
-            |TOK_DOT TOK_CMDS TOK_OCPSPEC P {cmd.LoadFile($4)}
-            |TOK_DOT TOK_TEMPLATE TOK_OCPSPEC P {cmd.LoadFile($4)}
-            |TOK_DEREF TOK_WORD {v := dynamicSymbolTable[dynamicMap[$2]]; switch v.(type) {
-	case string:
-              x := v.(string)
-              println("So You want the value: ",x)
-	case int:
-		x := v.(int)
-              println("So You want the value: ",x)
-	case bool:
-		x := v.(bool)
-              println("So You want the value: ",x)
-       case float64, float32:
-		x := dCatchPtr.(float64)
-              println("So You want the value: ",x)
-	} }
+OCDOT:      TOK_DOT TOK_VAR TOK_OCPSPEC TOK_WORD TOK_EQUAL WORDORNUM {$$=&assignNode{ASSIGN, $4}}
+            |TOK_DOT TOK_CMDS TOK_OCPSPEC P {$$=&commonNode{COMMON, cmd.LoadFile, "Load", []interface{}{$4}};}
+            |TOK_DOT TOK_TEMPLATE TOK_OCPSPEC P {$$=&commonNode{COMMON, cmd.LoadFile, "Load", []interface{}{$4}}}
+            |TOK_DEREF TOK_WORD {$$=&symbolReferenceNode{REFERENCE, $2}}
 ;
 
 OCSEL:      TOK_SELECT {$$=&commonNode{COMMON, cmd.ShowClipBoard, "select", nil}; println("So we haven't done anythig");}
-            |TOK_SELECT TOK_DOT TOK_ATTR TOK_EQUAL TOK_WORD {x := $3+"="+$5; $$=&commonNode{COMMON, cmd.UpdateSelection, "select", resMap(&x)};}
+            |TOK_SELECT TOK_DOT TOK_ATTR TOK_EQUAL TOK_WORD {x := $3+"="+$5; $$=&commonNode{COMMON, cmd.UpdateSelection, "select", []interface{}{resMap(&x)}};}
 
 %%

@@ -51,6 +51,7 @@ type yySymType struct {
 	bNode   *boolNode
 	nNode   *numNode
 	comNode *commonNode
+	node    node
 }
 
 type yyXError struct {
@@ -1133,9 +1134,17 @@ cmd.WarningLogger.Println("Unknown Command")			/*yylex.Error(msg)*/
 	}
 
 	switch r {
+	case 4:
+		{
+			(yyS[yypt-0].node).execute()
+		}
+	case 5:
+		{
+			(yyS[yypt-0].node).execute()
+		}
 	case 6:
 		{
-			x := yyS[yypt-0].comNode
+			x := yyS[yypt-0].node
 			println("now calling exectute")
 			x.execute()
 		}
@@ -1145,31 +1154,29 @@ cmd.WarningLogger.Println("Unknown Command")			/*yylex.Error(msg)*/
 		}
 	case 47:
 		{
-			cmd.PostObj(cmd.EntityStrToInt(yyS[yypt-1].s), yyS[yypt-1].s, resMap(&yyS[yypt-0].s))
+			yyVAL.node = &commonNode{COMMON, cmd.PostObj, "PostObj", []interface{}{cmd.EntityStrToInt(yyS[yypt-1].s), yyS[yypt-1].s, resMap(&yyS[yypt-0].s)}}
 		}
 	case 48:
 		{
-			yyVAL.s = yyS[yypt-0].s
 			cmd.Disp(resMap(&yyS[yypt-0].s))
-			cmd.PostObj(cmd.EntityStrToInt(yyS[yypt-2].s), yyS[yypt-2].s, resMap(&yyS[yypt-0].s))
+			yyVAL.node = &commonNode{COMMON, cmd.PostObj, "PostObj", []interface{}{cmd.EntityStrToInt(yyS[yypt-2].s), yyS[yypt-2].s, resMap(&yyS[yypt-0].s)}}
 		}
 	case 49:
 		{
-			cmd.GetObject(yyS[yypt-0].s)
+			yyVAL.node = &commonNode{COMMON, cmd.GetObject, "GetObject", []interface{}{yyS[yypt-0].s}}
 		}
 	case 50:
 		{ /*cmd.Disp(resMap(&$4)); */
-			cmd.SearchObjects(yyS[yypt-1].s, resMap(&yyS[yypt-0].s))
+			yyVAL.node = &commonNode{COMMON, cmd.SearchObjects, "SearchObjects", []interface{}{yyS[yypt-1].s, resMap(&yyS[yypt-0].s)}}
 		}
 	case 51:
 		{
-			yyVAL.s = yyS[yypt-0].s /*cmd.Disp(resMap(&$4));*/
-			cmd.UpdateObj(yyS[yypt-1].s, resMap(&yyS[yypt-0].s))
+			yyVAL.node = &commonNode{COMMON, cmd.UpdateObj, "UpdateObj", []interface{}{yyS[yypt-1].s, resMap(&yyS[yypt-0].s)}}
 		}
 	case 52:
 		{
 			println("@State NT_DEL")
-			cmd.DeleteObj(yyS[yypt-0].s)
+			yyVAL.node = &commonNode{COMMON, cmd.DeleteObj, "DeleteObj", []interface{}{yyS[yypt-0].s}}
 		}
 	case 61:
 		{
@@ -1255,203 +1262,212 @@ cmd.WarningLogger.Println("Unknown Command")			/*yylex.Error(msg)*/
 			yyVAL.s = ""
 		}
 	case 80:
-		{
-			cmd.CD(yyS[yypt-0].s)
+		{ /*cmd.CD($2);*/
+			yyVAL.node = &commonNode{COMMON, cmd.CD, "CD", []interface{}{yyS[yypt-0].s}}
 		}
 	case 81:
-		{
-			cmd.LS(yyS[yypt-0].s)
+		{ /*cmd.LS($2)*/
+			println("faggot")
+			yyVAL.node = &commonNode{COMMON, cmd.LS, "LS", []interface{}{yyS[yypt-0].s}}
 		}
 	case 82:
 		{
-			cmd.LSOBJECT(yyS[yypt-0].s, 0)
+			yyVAL.node = &commonNode{COMMON, cmd.LSOBJECT, "LSOBJ", []interface{}{yyS[yypt-0].s, 0}}
 		}
 	case 83:
 		{
-			cmd.LSOBJECT(yyS[yypt-0].s, 1)
+			yyVAL.node = &commonNode{COMMON, cmd.LSOBJECT, "LSOBJ", []interface{}{yyS[yypt-0].s, 1}}
 		}
 	case 84:
 		{
-			cmd.LSOBJECT(yyS[yypt-0].s, 2)
+			yyVAL.node = &commonNode{COMMON, cmd.LSOBJECT, "LSOBJ", []interface{}{yyS[yypt-0].s, 2}}
 		}
 	case 85:
 		{
-			cmd.LSOBJECT(yyS[yypt-0].s, 3)
+			yyVAL.node = &commonNode{COMMON, cmd.LSOBJECT, "LSOBJ", []interface{}{yyS[yypt-0].s, 3}}
 		}
 	case 86:
 		{
-			cmd.LSOBJECT(yyS[yypt-0].s, 4)
+			yyVAL.node = &commonNode{COMMON, cmd.LSOBJECT, "LSOBJ", []interface{}{yyS[yypt-0].s, 4}}
 		}
 	case 87:
 		{
-			cmd.LSOBJECT(yyS[yypt-0].s, 5)
+			yyVAL.node = &commonNode{COMMON, cmd.LSOBJECT, "LSOBJ", []interface{}{yyS[yypt-0].s, 5}}
 		}
 	case 88:
 		{
-			cmd.LSOBJECT(yyS[yypt-0].s, 6)
+			yyVAL.node = &commonNode{COMMON, cmd.LSOBJECT, "LSOBJ", []interface{}{yyS[yypt-0].s, 6}}
 		}
 	case 89:
 		{
-			cmd.LSOBJECT(yyS[yypt-0].s, 7)
+			yyVAL.node = &commonNode{COMMON, cmd.LSOBJECT, "LSOBJ", []interface{}{yyS[yypt-0].s, 7}}
 		}
 	case 90:
 		{
-			cmd.Tree("", yyS[yypt-0].n)
+			yyVAL.node = &commonNode{COMMON, cmd.Tree, "Tree", []interface{}{"", yyS[yypt-0].n}}
 		}
 	case 91:
 		{
-			cmd.Tree(yyS[yypt-0].s, 0)
+			yyVAL.node = &commonNode{COMMON, cmd.Tree, "Tree", []interface{}{yyS[yypt-0].s, 0}}
 		}
 	case 92:
 		{
-			cmd.Tree(yyS[yypt-1].s, yyS[yypt-0].n)
+			yyVAL.node = &commonNode{COMMON, cmd.Tree, "Tree", []interface{}{yyS[yypt-1].s, yyS[yypt-0].n}}
 		}
 	case 93:
 		{
-			cmd.Execute()
+			yyVAL.node = yyS[yypt-0].node
+		}
+	case 94:
+		{
+			yyVAL.node = &commonNode{COMMON, nil, "CLR", nil}
+		}
+	case 95:
+		{
+			yyVAL.node = &commonNode{COMMON, nil, "Grep", nil}
 		}
 	case 96:
 		{
-			cmd.LSOG()
+			yyVAL.node = &commonNode{COMMON, cmd.LSOG, "LSOG", nil}
 		}
 	case 97:
 		{
-			cmd.PWD()
+			yyVAL.node = &commonNode{COMMON, cmd.LSOG, "LSOG", nil}
 		}
 	case 98:
 		{
-			cmd.Exit()
+			yyVAL.node = &commonNode{COMMON, cmd.Exit, "Exit", nil}
 		}
 	case 99:
 		{
-			cmd.Help("")
+			yyVAL.node = &commonNode{COMMON, cmd.Help, "Help", []interface{}{""}}
 		}
 	case 100:
 		{
-			cmd.Help("ls")
+			yyVAL.node = &commonNode{COMMON, cmd.Help, "Help", []interface{}{"ls"}}
 		}
 	case 101:
 		{
-			cmd.Help("cd")
+			yyVAL.node = &commonNode{COMMON, cmd.Help, "Help", []interface{}{"cd"}}
 		}
 	case 102:
 		{
-			cmd.Help("create")
+			yyVAL.node = &commonNode{COMMON, cmd.Help, "Help", []interface{}{"create"}}
 		}
 	case 103:
 		{
-			cmd.Help("gt")
+			yyVAL.node = &commonNode{COMMON, cmd.Help, "Help", []interface{}{"gt"}}
 		}
 	case 104:
 		{
-			cmd.Help("update")
+			yyVAL.node = &commonNode{COMMON, cmd.Help, "Help", []interface{}{"update"}}
 		}
 	case 105:
 		{
-			cmd.Help("delete")
+			yyVAL.node = &commonNode{COMMON, cmd.Help, "Help", []interface{}{"delete"}}
 		}
 	case 106:
 		{
-			cmd.Help(yyS[yypt-0].s)
+			yyVAL.node = &commonNode{COMMON, cmd.Help, "Help", []interface{}{yyS[yypt-0].s}}
 		}
 	case 107:
 		{
-			cmd.Help("tree")
+			yyVAL.node = &commonNode{COMMON, cmd.Help, "Help", []interface{}{"tree"}}
 		}
 	case 108:
 		{
-			cmd.Help("lsog")
+			yyVAL.node = &commonNode{COMMON, cmd.Help, "Help", []interface{}{"lsog"}}
 		}
 	case 109:
 		{
-			yyVAL.comNode = &commonNode{COMMON, cmd.ShowClipBoard, "select", nil}
+			yyVAL.node = yyS[yypt-0].node
 		}
 	case 110:
 		{
-			yyVAL.comNode = yyS[yypt-0].comNode
+			yyVAL.node = yyS[yypt-0].node
 		}
 	case 111:
 		{
-			yyVAL.comNode = &commonNode{COMMON, cmd.ShowClipBoard, "select", nil}
+			yyVAL.node = yyS[yypt-0].node
 		}
 	case 112:
 		{
-			yyVAL.comNode = yyS[yypt-0].comNode
+			yyVAL.node = yyS[yypt-0].node
 		}
 	case 113:
 		{
-			yyVAL.comNode = &commonNode{COMMON, nil, "select", nil}
+			yyVAL.node = yyS[yypt-0].node
 		}
 	case 114:
 		{
-			yyVAL.comNode = &commonNode{COMMON, cmd.ShowClipBoard, "select", nil}
+			yyVAL.node = yyS[yypt-0].node
 		}
 	case 115:
 		{
-			yyVAL.comNode = yyS[yypt-0].comNode
+			yyVAL.node = yyS[yypt-0].node
 			println("Alright")
 		}
 	case 116:
 		{
-			cmd.GetOCLIAtrributes(cmd.StrToStack(replaceOCLICurrPath(yyS[yypt-2].s)), cmd.TENANT, map[string]interface{}{"attributes": map[string]interface{}{"color": yyS[yypt-0].s}}, rlPtr)
+			yyVAL.node = &commonNode{COMMON, cmd.GetOCLIAtrributes, "GetOCAttr", []interface{}{cmd.StrToStack(replaceOCLICurrPath(yyS[yypt-2].s)), cmd.TENANT, map[string]interface{}{"attributes": map[string]interface{}{"color": yyS[yypt-0].s}}, rlPtr}}
 		}
 	case 117:
 		{
-			cmd.GetOCLIAtrributes(cmd.StrToStack(replaceOCLICurrPath(yyS[yypt-2].s)), cmd.TENANT, map[string]interface{}{"attributes": map[string]interface{}{"color": yyS[yypt-0].s}}, rlPtr)
+			yyVAL.node = &commonNode{COMMON, cmd.GetOCLIAtrributes, "GetOCAttr", []interface{}{cmd.StrToStack(replaceOCLICurrPath(yyS[yypt-2].s)), cmd.TENANT, map[string]interface{}{"attributes": map[string]interface{}{"color": yyS[yypt-0].s}}, rlPtr}}
 		}
 	case 118:
 		{
-			cmd.GetOCLIAtrributes(cmd.StrToStack(replaceOCLICurrPath(yyS[yypt-2].s)), cmd.SITE, map[string]interface{}{"attributes": map[string]interface{}{"orientation": yyS[yypt-0].s}}, rlPtr)
+			yyVAL.node = &commonNode{COMMON, cmd.GetOCLIAtrributes, "GetOCAttr", []interface{}{cmd.StrToStack(replaceOCLICurrPath(yyS[yypt-2].s)), cmd.SITE, map[string]interface{}{"attributes": map[string]interface{}{"orientation": yyS[yypt-0].s}}, rlPtr}}
 		}
 	case 119:
 		{
-			cmd.GetOCLIAtrributes(cmd.StrToStack(replaceOCLICurrPath(yyS[yypt-2].s)), cmd.SITE, map[string]interface{}{"attributes": map[string]interface{}{"orientation": yyS[yypt-0].s}}, rlPtr)
+			yyVAL.node = &commonNode{COMMON, cmd.GetOCLIAtrributes, "GetOCAttr", []interface{}{cmd.StrToStack(replaceOCLICurrPath(yyS[yypt-2].s)), cmd.SITE, map[string]interface{}{"attributes": map[string]interface{}{"orientation": yyS[yypt-0].s}}, rlPtr}}
 		}
 	case 120:
 		{
-			cmd.GetOCLIAtrributes(cmd.StrToStack(replaceOCLICurrPath(yyS[yypt-4].s)), cmd.BLDG, map[string]interface{}{"attributes": map[string]interface{}{"posXY": yyS[yypt-2].s, "size": yyS[yypt-0].s}}, rlPtr)
+			yyVAL.node = &commonNode{COMMON, cmd.GetOCLIAtrributes, "GetOCAttr", []interface{}{cmd.StrToStack(replaceOCLICurrPath(yyS[yypt-4].s)), cmd.BLDG, map[string]interface{}{"attributes": map[string]interface{}{"posXY": yyS[yypt-2].s, "size": yyS[yypt-0].s}}, rlPtr}}
 		}
 	case 121:
 		{
-			cmd.GetOCLIAtrributes(cmd.StrToStack(replaceOCLICurrPath(yyS[yypt-4].s)), cmd.BLDG, map[string]interface{}{"attributes": map[string]interface{}{"posXY": yyS[yypt-2].s, "size": yyS[yypt-0].s}}, rlPtr)
+			yyVAL.node = &commonNode{COMMON, cmd.GetOCLIAtrributes, "GetOCAttr", []interface{}{cmd.StrToStack(replaceOCLICurrPath(yyS[yypt-4].s)), cmd.BLDG, map[string]interface{}{"attributes": map[string]interface{}{"posXY": yyS[yypt-2].s, "size": yyS[yypt-0].s}}, rlPtr}}
 		}
 	case 122:
 		{
-			cmd.GetOCLIAtrributes(cmd.StrToStack(replaceOCLICurrPath(yyS[yypt-4].s)), cmd.ROOM, map[string]interface{}{"attributes": map[string]interface{}{"posXY": yyS[yypt-2].s, "size": yyS[yypt-0].s}}, rlPtr)
+			yyVAL.node = &commonNode{COMMON, cmd.GetOCLIAtrributes, "GetOCAttr", []interface{}{cmd.StrToStack(replaceOCLICurrPath(yyS[yypt-4].s)), cmd.ROOM, map[string]interface{}{"attributes": map[string]interface{}{"posXY": yyS[yypt-2].s, "size": yyS[yypt-0].s}}, rlPtr}}
 		}
 	case 123:
 		{
-			cmd.GetOCLIAtrributes(cmd.StrToStack(replaceOCLICurrPath(yyS[yypt-4].s)), cmd.ROOM, map[string]interface{}{"attributes": map[string]interface{}{"posXY": yyS[yypt-2].s, "size": yyS[yypt-0].s}}, rlPtr)
+			yyVAL.node = &commonNode{COMMON, cmd.GetOCLIAtrributes, "GetOCAttr", []interface{}{cmd.StrToStack(replaceOCLICurrPath(yyS[yypt-4].s)), cmd.ROOM, map[string]interface{}{"attributes": map[string]interface{}{"posXY": yyS[yypt-2].s, "size": yyS[yypt-0].s}}, rlPtr}}
 		}
 	case 124:
 		{
-			cmd.GetOCLIAtrributes(cmd.StrToStack(replaceOCLICurrPath(yyS[yypt-4].s)), cmd.RACK, map[string]interface{}{"attributes": map[string]interface{}{"posXY": yyS[yypt-2].s, "size": yyS[yypt-0].s}}, rlPtr)
+			yyVAL.node = &commonNode{COMMON, cmd.GetOCLIAtrributes, "GetOCAttr", []interface{}{cmd.StrToStack(replaceOCLICurrPath(yyS[yypt-4].s)), cmd.RACK, map[string]interface{}{"attributes": map[string]interface{}{"posXY": yyS[yypt-2].s, "size": yyS[yypt-0].s}}, rlPtr}}
 		}
 	case 125:
 		{
-			cmd.GetOCLIAtrributes(cmd.StrToStack(replaceOCLICurrPath(yyS[yypt-4].s)), cmd.RACK, map[string]interface{}{"attributes": map[string]interface{}{"posXY": yyS[yypt-2].s, "size": yyS[yypt-0].s}}, rlPtr)
+			yyVAL.node = &commonNode{COMMON, cmd.GetOCLIAtrributes, "GetOCAttr", []interface{}{cmd.StrToStack(replaceOCLICurrPath(yyS[yypt-4].s)), cmd.RACK, map[string]interface{}{"attributes": map[string]interface{}{"posXY": yyS[yypt-2].s, "size": yyS[yypt-0].s}}, rlPtr}}
 		}
 	case 126:
 		{
-			cmd.GetOCLIAtrributes(cmd.StrToStack(replaceOCLICurrPath(yyS[yypt-4].s)), cmd.DEVICE, map[string]interface{}{"attributes": map[string]interface{}{"slot": yyS[yypt-2].s, "sizeUnit": yyS[yypt-0].s}}, rlPtr)
+			yyVAL.node = &commonNode{COMMON, cmd.GetOCLIAtrributes, "GetOCAttr", []interface{}{cmd.StrToStack(replaceOCLICurrPath(yyS[yypt-4].s)), cmd.DEVICE, map[string]interface{}{"attributes": map[string]interface{}{"slot": yyS[yypt-2].s, "sizeUnit": yyS[yypt-0].s}}, rlPtr}}
 		}
 	case 127:
 		{
-			cmd.GetOCLIAtrributes(cmd.StrToStack(replaceOCLICurrPath(yyS[yypt-4].s)), cmd.DEVICE, map[string]interface{}{"attributes": map[string]interface{}{"slot": yyS[yypt-2].s, "sizeUnit": yyS[yypt-0].s}}, rlPtr)
+			yyVAL.node = &commonNode{COMMON, cmd.GetOCLIAtrributes, "GetOCAttr", []interface{}{cmd.StrToStack(replaceOCLICurrPath(yyS[yypt-4].s)), cmd.DEVICE, map[string]interface{}{"attributes": map[string]interface{}{"slot": yyS[yypt-2].s, "sizeUnit": yyS[yypt-0].s}}, rlPtr}}
 		}
 	case 128:
 		{
-			yyVAL.comNode = &commonNode{COMMON, cmd.DeleteObj, "delete", replaceOCLICurrPath(yyS[yypt-0].s)}
+			yyVAL.node = &commonNode{COMMON, cmd.DeleteObj, "delete", []interface{}{replaceOCLICurrPath(yyS[yypt-0].s)}}
 		}
 	case 129:
 		{
 			println("Attribute Acquired")
 			val := yyS[yypt-2].s + "=" + yyS[yypt-0].s
-			cmd.UpdateObj(replaceOCLICurrPath(yyS[yypt-4].s), resMap(&val))
+			yyVAL.node = &commonNode{COMMON, cmd.UpdateObj, "UpdateObj", []interface{}{replaceOCLICurrPath(yyS[yypt-4].s), resMap(&val)}}
 		}
 	case 130:
 		{
-			yyVAL.comNode = &commonNode{COMMON, cmd.GetObject, "get", replaceOCLICurrPath(yyS[yypt-0].s)}
+			yyVAL.node = &commonNode{COMMON, cmd.GetObject, "get", []interface{}{replaceOCLICurrPath(yyS[yypt-0].s)}}
 		}
 	case 131:
 		{
@@ -1466,64 +1482,34 @@ cmd.WarningLogger.Println("Unknown Command")			/*yylex.Error(msg)*/
 		}
 	case 133:
 		{
-			cmd.State.ClipBoard = &yyS[yypt-1].sarr
+			yyVAL.node = &commonNode{COMMON, cmd.SetClipBoard, "setCB", []interface{}{&yyS[yypt-1].sarr}}
 			println("Selection made!")
 		}
 	case 134:
 		{
-			dynamicMap[yyS[yypt-2].s] = varCtr
-			dynamicSymbolTable[varCtr] = dCatchPtr
-			varCtr += 1
-			switch dCatchPtr.(type) {
-			case string:
-				x := dCatchPtr.(string)
-				println("You want to assign", yyS[yypt-2].s, "with value of", x)
-			case int:
-				x := dCatchPtr.(int)
-				println("You want to assign", yyS[yypt-2].s, "with value of", x)
-			case bool:
-				x := dCatchPtr.(bool)
-				println("You want to assign", yyS[yypt-2].s, "with value of", x)
-			case float64, float32:
-				x := dCatchPtr.(float64)
-				println("You want to assign", yyS[yypt-2].s, "with value of", x)
-			}
+			yyVAL.node = &assignNode{ASSIGN, yyS[yypt-2].s}
 		}
 	case 135:
 		{
-			cmd.LoadFile(yyS[yypt-0].s)
+			yyVAL.node = &commonNode{COMMON, cmd.LoadFile, "Load", []interface{}{yyS[yypt-0].s}}
 		}
 	case 136:
 		{
-			cmd.LoadFile(yyS[yypt-0].s)
+			yyVAL.node = &commonNode{COMMON, cmd.LoadFile, "Load", []interface{}{yyS[yypt-0].s}}
 		}
 	case 137:
 		{
-			v := dynamicSymbolTable[dynamicMap[yyS[yypt-0].s]]
-			switch v.(type) {
-			case string:
-				x := v.(string)
-				println("So You want the value: ", x)
-			case int:
-				x := v.(int)
-				println("So You want the value: ", x)
-			case bool:
-				x := v.(bool)
-				println("So You want the value: ", x)
-			case float64, float32:
-				x := dCatchPtr.(float64)
-				println("So You want the value: ", x)
-			}
+			yyVAL.node = &symbolReferenceNode{REFERENCE, yyS[yypt-0].s}
 		}
 	case 138:
 		{
-			yyVAL.comNode = &commonNode{COMMON, cmd.ShowClipBoard, "select", nil}
+			yyVAL.node = &commonNode{COMMON, cmd.ShowClipBoard, "select", nil}
 			println("So we haven't done anythig")
 		}
 	case 139:
 		{
 			x := yyS[yypt-2].s + "=" + yyS[yypt-0].s
-			yyVAL.comNode = &commonNode{COMMON, cmd.UpdateSelection, "select", resMap(&x)}
+			yyVAL.node = &commonNode{COMMON, cmd.UpdateSelection, "select", []interface{}{resMap(&x)}}
 		}
 
 	}

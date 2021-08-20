@@ -18,6 +18,7 @@ const (
 	IF
 	FOR
 	WHILE
+	ASSIGN
 )
 
 type controllerAST struct{}
@@ -30,7 +31,7 @@ type commonNode struct {
 	nodeType int
 	fun      interface{}
 	val      string
-	args     interface{}
+	args     []interface{}
 }
 
 func (c *commonNode) execute() interface{} {
@@ -41,6 +42,37 @@ func (c *commonNode) execute() interface{} {
 			f()
 		}
 		//c.fun.(func())()
+	}
+
+	switch c.val {
+	case "PostObj":
+		if f, ok := c.fun.(func(int, string, map[string]interface{})); ok {
+			f(c.args[0].(int),
+				c.args[1].(string), c.args[2].(map[string]interface{}))
+		}
+
+	case "GetObject", "DeleteObj", "CD", "LS", "Help", "Load":
+		if f, ok := c.fun.(func(string)); ok {
+			f(c.args[0].(string))
+		}
+
+	case "SearchObjects", "UpdateObj":
+		if f, ok := c.fun.(func(string, map[string]interface{})); ok {
+			f(c.args[0].(string), c.args[1].(map[string]interface{}))
+		}
+
+	case "Tree":
+		if f, ok := c.fun.(func(string, int)); ok {
+			f(c.args[0].(string), c.args[1].(int))
+		}
+
+	case "LSOG", "PWD", "select", "Exit":
+		if f, ok := c.fun.(func()); ok {
+			f()
+		}
+
+	case "ASSIGN":
+
 	}
 	return nil
 }
@@ -162,13 +194,52 @@ func (c *comparatorNode) execute() interface{} {
 type symbolReferenceNode struct {
 	nodeType int
 	val      interface{}
-	symbol   interface{}
 }
 
 func (s *symbolReferenceNode) execute() interface{} {
-	if ref, ok := s.symbol.(string); ok {
+	if ref, ok := s.val.(string); ok {
 		val := dynamicSymbolTable[dynamicMap[ref]]
+		switch val.(type) {
+		case string:
+			x := val.(string)
+			println("So You want the value: ", x)
+		case int:
+			x := val.(int)
+			println("So You want the value: ", x)
+		case bool:
+			x := val.(bool)
+			println("So You want the value: ", x)
+		case float64, float32:
+			x := dCatchPtr.(float64)
+			println("So You want the value: ", x)
+		}
 		return val
+	}
+	return nil
+}
+
+type assignNode struct {
+	nodeType int
+	arg      interface{}
+}
+
+func (a *assignNode) execute() interface{} {
+	dynamicMap[a.arg.(string)] = varCtr
+	dynamicSymbolTable[varCtr] = dCatchPtr
+	varCtr += 1
+	switch dCatchPtr.(type) {
+	case string:
+		x := dCatchPtr.(string)
+		println("You want to assign", a.arg.(string), "with value of", x)
+	case int:
+		x := dCatchPtr.(int)
+		println("You want to assign", a.arg.(string), "with value of", x)
+	case bool:
+		x := dCatchPtr.(bool)
+		println("You want to assign", a.arg.(string), "with value of", x)
+	case float64, float32:
+		x := dCatchPtr.(float64)
+		println("You want to assign", a.arg.(string), "with value of", x)
 	}
 	return nil
 }

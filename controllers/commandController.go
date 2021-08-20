@@ -168,7 +168,7 @@ func SearchObjects(entity string, data map[string]interface{}) {
 	InfoLogger.Println("Search query URL:", URL)
 
 	resp, e := models.Send("GET", URL, GetKey(), nil)
-	println("Response Code: ", resp.Status)
+	//println("Response Code: ", resp.Status)
 	if e != nil {
 		WarningLogger.Println("Error while sending GET to server", e)
 		println("There was an error!")
@@ -845,4 +845,8 @@ func LoadFile(path string) {
 	defer file.Close()
 
 	//scanner := bufio.NewScanner(file)
+}
+
+func SetClipBoard(x *[]string) {
+	State.ClipBoard = x
 }
