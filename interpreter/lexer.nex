@@ -20,8 +20,7 @@
 /\*/ {println("We got TOK_MULT"); return TOK_MULT}
 />/ {println("We got TOK_GREATER"); return TOK_GREATER}
 /</ {println("We got TOK_LESS"); return TOK_LESS}
-/false/ {println("We got TOK_BOOL");lval.s = yylex.Text(); return TOK_BOOL}
-/true/ {println("We got TOK_BOOL");lval.s = yylex.Text(); return TOK_BOOL}
+/false|true/ {println("We got TOK_BOOL");lval.s = yylex.Text(); return TOK_BOOL}
 /if/ {println("We got TOK_IF"); return TOK_IF}
 /for/ {println("We got TOK_FOR"); return TOK_FOR}
 /while/ {println("We got TOK_WHILE"); return TOK_WHILE}

@@ -6,6 +6,7 @@ cmd "cli/controllers"
 "strconv"
 )
 
+var root []node 
 
 func resMap(x *string) map[string]interface{} {
        resarr := strings.Split(*x, "=")
@@ -39,16 +40,8 @@ func replaceOCLICurrPath(x string) string {
   s string
   sarr []string
   ast *ast
-  wNode *whileNode
-  fNode *forNode
-  iNode *ifNode
-  rNode *symbolReferenceNode
-  cNode *comparatorNode
-  aNode *arithNode
-  bNode *boolNode
-  nNode *numNode
-  comNode *commonNode
   node node
+  nodeArr []node
 }
 
 %token <n> TOK_NUM
@@ -75,78 +68,82 @@ func replaceOCLICurrPath(x string) string {
 %type <sarr> GETOBJS
 %type <node> OCSEL OCLISYNTX OCDEL OCGET NT_CREATE NT_GET NT_DEL 
 %type <node> NT_UPDATE K Q BASH OCUPDATE OCCHOOSE OCCR OCDOT
+%type <node> EXPR REL CLSD_STMT OPEN_STMT CTRL nex factor unary EQAL term
+%type <node> stmnt JOIN
+%type <nodeArr> st2
 %left TOK_MULT TOK_OCDEL TOK_DIV TOK_PLUS
 %right TOK_EQUAL
 
 
 %%
 
-start: stmnt
-       |stmnt TOK_SEMICOL start
-       |CTRL
+start: st2 {root = append(root, ($1)...)}
+
+st2: stmnt {$$=[]node{$1}}
+       |stmnt TOK_SEMICOL st2 {$$=append([]node{$1}, $3...)}
+       |CTRL {$$=[]node{$1}}
 ;
 
-stmnt: K {($1).execute()}
-       |Q {($1).execute()}
-       |OCLISYNTX {x := $1;println("now calling exectute"); x.execute()}
-       |
+stmnt: K {$$=$1}
+       |Q {$$=$1}
+       |OCLISYNTX {$$=$1}
+       |{$$=nil}
 ;
 
-CTRL: OPEN_STMT
-       |CLSD_STMT
+CTRL: OPEN_STMT {$$=$1}
+       |CLSD_STMT {$$=$1}
        ;
 
-OPEN_STMT:    TOK_IF TOK_LBLOCK EXPR TOK_RBLOCK TOK_THEN stmnt TOK_FI
-              |TOK_IF TOK_LBLOCK EXPR TOK_RBLOCK TOK_THEN OPEN_STMT TOK_FI
-              |TOK_IF TOK_LBLOCK EXPR TOK_RBLOCK TOK_THEN CLSD_STMT TOK_ELSE OPEN_STMT TOK_FI
-              |TOK_WHILE TOK_LPAREN EXPR TOK_RPAREN OPEN_STMT TOK_DONE
+OPEN_STMT:    TOK_IF TOK_LBLOCK EXPR TOK_RBLOCK TOK_THEN stmnt TOK_FI {$$=&ifNode{IF, $3, $6, nil}}
+              |TOK_IF TOK_LBLOCK EXPR TOK_RBLOCK TOK_THEN OPEN_STMT TOK_FI {$$=&ifNode{IF, $3, $6, nil}}
+              |TOK_IF TOK_LBLOCK EXPR TOK_RBLOCK TOK_THEN CLSD_STMT TOK_ELSE OPEN_STMT TOK_FI {$$=&ifNode{IF, $3, $6, $8}}
+              |TOK_WHILE TOK_LPAREN EXPR TOK_RPAREN OPEN_STMT TOK_DONE {$$=&whileNode{WHILE, $3, $5}}
               ;
 
-CLSD_STMT: stmnt
-              | TOK_IF TOK_LPAREN EXPR TOK_RPAREN TOK_THEN CLSD_STMT TOK_ELSE CLSD_STMT TOK_FI
-              |TOK_WHILE TOK_LPAREN EXPR TOK_RPAREN CLSD_STMT TOK_DONE
+CLSD_STMT: stmnt {$$=$1}
+              | TOK_IF TOK_LPAREN EXPR TOK_RPAREN TOK_THEN CLSD_STMT TOK_ELSE CLSD_STMT TOK_FI {$$=&ifNode{IF, $3, $6,  $8}}
+              |TOK_WHILE TOK_LPAREN EXPR TOK_RPAREN CLSD_STMT TOK_DONE {$$=&whileNode{WHILE, $3, $5}}
               ;
 
 EXPR: EXPR TOK_OR JOIN
        |JOIN
        ;
 
-JOIN: JOIN TOK_AND EQAL
-       |EQAL
+JOIN: JOIN TOK_AND EQAL 
+       |EQAL {$$=$1}
        ;
 
-EQAL: EQAL TOK_EQUAL TOK_EQUAL REL
-       |EQAL TOK_NOT TOK_EQUAL REL
-       |REL
+EQAL: EQAL TOK_EQUAL TOK_EQUAL REL {$$=&comparatorNode{COMPARATOR, "==", $1, $4}}
+       |EQAL TOK_NOT TOK_EQUAL REL {$$=&comparatorNode{COMPARATOR, "!=", $1, $4}}
+       |REL {$$=$1}
        ;
 
-REL: nex TOK_LESS nex
-       |nex TOK_LESS TOK_EQUAL nex
-       |nex TOK_GREATER TOK_EQUAL nex
-       |nex TOK_GREATER TOK_EQUAL nex
-       |nex TOK_GREATER nex
-       |nex
+REL: nex TOK_LESS nex {$$=&comparatorNode{COMPARATOR, "<", $1, $3}}
+       |nex TOK_LESS TOK_EQUAL nex {$$=&comparatorNode{COMPARATOR, "<=", $1, $4}}
+       |nex TOK_GREATER TOK_EQUAL nex {$$=&comparatorNode{COMPARATOR, ">=", $1, $4}}
+       |nex TOK_GREATER nex {$$=&comparatorNode{COMPARATOR, ">", $1, $3}}
+       |nex {$$=$1}
        ;
 
-nex: nex TOK_PLUS term
-       |nex TOK_OCDEL term 
-       |term
+nex: nex TOK_PLUS term {$$=&arithNode{ARITHMETIC, "+", $1, $2}}
+       |nex TOK_OCDEL term {$$=&arithNode{ARITHMETIC, "-", $1, $2}}
+       |term {$$=$1}
        ;
 
-term: term TOK_MULT unary
-       |term TOK_DIV unary
-       |unary
+term: term TOK_MULT unary {$$=&arithNode{ARITHMETIC, "*", $1, $3}}
+       |term TOK_DIV unary {$$=&arithNode{ARITHMETIC, "/", $1, $3}}
+       |unary {$$=$1}
        ;
 
-unary: TOK_NOT unary 
-       |TOK_OCDEL unary
-       |factor
+unary: TOK_NOT unary {$$=&boolOpNode{BOOLOP, "!", $2}}
+       |TOK_OCDEL unary {left := &numNode{NUM, 0};$$=&arithNode{ARITHMETIC, "-",left,$2 }}
+       |factor {$$=$1}
        ;
 
 factor: TOK_LPAREN EXPR TOK_RPAREN {$$=$2}
        |TOK_NUM {$$=&numNode{NUM, $1}}
-       |TOK_WORD {}
-       |TOK_BOOL {$$=&boolNode{BOOL, $1}}
+       |TOK_WORD {$$=&symbolReferenceNode{REFERENCE, $1}}
+       |TOK_BOOL {var x bool;if $1=="false"{x = false}else{x=true};$$=&boolNode{BOOL, x}}
        ;
 
 K: NT_CREATE     {println("@State start");}
@@ -228,7 +225,7 @@ Q:     TOK_CD P {/*cmd.CD($2);*/ $$=&commonNode{COMMON, cmd.CD, "CD", []interfac
 BASH:  TOK_CLR {$$=&commonNode{COMMON, nil, "CLR", nil}}
        | TOK_GREP {$$=&commonNode{COMMON, nil, "Grep", nil}}
        | TOK_LSOG {$$=&commonNode{COMMON, cmd.LSOG, "LSOG", nil}}
-       | TOK_PWD {$$=&commonNode{COMMON, cmd.LSOG, "LSOG", nil}}
+       | TOK_PWD {$$=&commonNode{COMMON, cmd.PWD, "PWD", nil}}
        | TOK_EXIT {$$=&commonNode{COMMON, cmd.Exit, "Exit", nil}}
        | TOK_DOC {$$=&commonNode{COMMON, cmd.Help, "Help", []interface{}{""}}}
        | TOK_DOC TOK_LS {$$=&commonNode{COMMON, cmd.Help, "Help", []interface{}{"ls"}}}
@@ -248,7 +245,7 @@ OCLISYNTX:  TOK_PLUS OCCR {$$=$2}
             |OCGET {$$=$1}
             |OCCHOOSE {$$=$1}
             |OCDOT {$$=$1}
-            |OCSEL {$$=$1; println("Alright");}
+            |OCSEL {$$=$1;}
             ;
 
 
@@ -265,13 +262,13 @@ OCCR:   TOK_OCTENANT TOK_OCPSPEC P TOK_ATTRSPEC WORDORNUM {$$=&commonNode{COMMON
         |TOK_OCDEV TOK_OCPSPEC P TOK_ATTRSPEC WORDORNUM TOK_ATTRSPEC WORDORNUM {$$=&commonNode{COMMON, cmd.GetOCLIAtrributes, "GetOCAttr", []interface{}{cmd.StrToStack(replaceOCLICurrPath($3)),cmd.DEVICE,map[string]interface{}{"attributes":map[string]interface{}{"slot":$5, "sizeUnit":$7}} ,rlPtr}}}
         |TOK_DEVICE TOK_OCPSPEC P TOK_ATTRSPEC WORDORNUM TOK_ATTRSPEC WORDORNUM {$$=&commonNode{COMMON, cmd.GetOCLIAtrributes, "GetOCAttr", []interface{}{cmd.StrToStack(replaceOCLICurrPath($3)),cmd.DEVICE,map[string]interface{}{"attributes":map[string]interface{}{"slot":$5, "sizeUnit":$7}} ,rlPtr}}}
        ; 
-OCDEL:  TOK_OCDEL P {$$=&commonNode{COMMON, cmd.DeleteObj, "delete", []interface{}{replaceOCLICurrPath($2)}}}
+OCDEL:  TOK_OCDEL P {$$=&commonNode{COMMON, cmd.DeleteObj, "DeleteObj", []interface{}{replaceOCLICurrPath($2)}}}
 ;
 
-OCUPDATE: P TOK_DOT TOK_ATTR TOK_EQUAL WORDORNUM {println("Attribute Acquired");val := $3+"="+$5; $$=&commonNode{COMMON, cmd.UpdateObj, "UpdateObj", []interface{}{replaceOCLICurrPath($1), resMap(&val)}}}
+OCUPDATE: P TOK_DOT TOK_ATTR TOK_EQUAL WORDORNUM {val := $3+"="+$5; $$=&commonNode{COMMON, cmd.UpdateObj, "UpdateObj", []interface{}{replaceOCLICurrPath($1), resMap(&val)}};println("Attribute Acquired");}
 ;
 
-OCGET: TOK_EQUAL P {$$=&commonNode{COMMON, cmd.GetObject, "get", []interface{}{replaceOCLICurrPath($2)}}}
+OCGET: TOK_EQUAL P {$$=&commonNode{COMMON, cmd.GetObject, "GetObject", []interface{}{replaceOCLICurrPath($2)}}}
 ;
 
 GETOBJS:      TOK_WORD TOK_COMMA GETOBJS {x := make([]string,0); x = append(x, cmd.State.CurrPath+"/"+$1); x = append(x, $3...); $$=x}
@@ -287,7 +284,7 @@ OCDOT:      TOK_DOT TOK_VAR TOK_OCPSPEC TOK_WORD TOK_EQUAL WORDORNUM {$$=&assign
             |TOK_DEREF TOK_WORD {$$=&symbolReferenceNode{REFERENCE, $2}}
 ;
 
-OCSEL:      TOK_SELECT {$$=&commonNode{COMMON, cmd.ShowClipBoard, "select", nil}; println("So we haven't done anythig");}
-            |TOK_SELECT TOK_DOT TOK_ATTR TOK_EQUAL TOK_WORD {x := $3+"="+$5; $$=&commonNode{COMMON, cmd.UpdateSelection, "select", []interface{}{resMap(&x)}};}
+OCSEL:      TOK_SELECT {$$=&commonNode{COMMON, cmd.ShowClipBoard, "select", nil};}
+            |TOK_SELECT TOK_DOT TOK_ATTR TOK_EQUAL TOK_WORD {x := $3+"="+$5; $$=&commonNode{COMMON, cmd.UpdateSelection, "UpdateSelect", []interface{}{resMap(&x)}};}
 
 %%
