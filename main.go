@@ -17,9 +17,7 @@ var rlPtr *readline.Instance
 func InterpretLine(str *string) {
 	lex := NewLexer(strings.NewReader(*str))
 	e := yyParse(lex)
-	for i := range root {
-		root[i].execute()
-	}
+	root.execute()
 	root = nil
 	println("\nReturn Code: ", e)
 	return

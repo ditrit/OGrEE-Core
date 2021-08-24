@@ -9,12 +9,14 @@ var dynamicVarLimit = []int{0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15
 var dynamicMap = make(map[string]int)
 var dynamicSymbolTable = make(map[int]interface{})
 var dCatchPtr interface{}
+var dCatchNodePtr interface{}
 var varCtr = 0
 
 const (
 	COMMON = iota
 	NUM
 	BOOL
+	STR
 	BOOLOP
 	ARITHMETIC
 	COMPARATOR
@@ -23,9 +25,8 @@ const (
 	FOR
 	WHILE
 	ASSIGN
+	BLOCK
 )
-
-type controllerAST struct{}
 
 type node interface {
 	execute() interface{}
@@ -95,6 +96,15 @@ type numNode struct {
 
 func (n *numNode) execute() interface{} {
 	return n.val
+}
+
+type strNode struct {
+	nodeType int
+	val      string
+}
+
+func (s *strNode) execute() interface{} {
+	return s.val
 }
 
 type boolNode struct {
@@ -262,24 +272,26 @@ func (s *symbolReferenceNode) execute() interface{} {
 type assignNode struct {
 	nodeType int
 	arg      interface{}
+	val      interface{}
 }
 
 func (a *assignNode) execute() interface{} {
+	v := a.val.(node).execute()
 	dynamicMap[a.arg.(string)] = varCtr
-	dynamicSymbolTable[varCtr] = dCatchPtr
+	dynamicSymbolTable[varCtr] = v
 	varCtr += 1
-	switch dCatchPtr.(type) {
+	switch v.(type) {
 	case string:
-		x := dCatchPtr.(string)
+		x := v.(string)
 		println("You want to assign", a.arg.(string), "with value of", x)
 	case int:
-		x := dCatchPtr.(int)
+		x := v.(int)
 		println("You want to assign", a.arg.(string), "with value of", x)
 	case bool:
-		x := dCatchPtr.(bool)
+		x := v.(bool)
 		println("You want to assign", a.arg.(string), "with value of", x)
 	case float64, float32:
-		x := dCatchPtr.(float64)
+		x := v.(float64)
 		println("You want to assign", a.arg.(string), "with value of", x)
 	}
 	return nil
@@ -305,11 +317,18 @@ func (i *ifNode) execute() interface{} {
 
 type forNode struct {
 	nodeType    int
-	val         interface{}
 	init        interface{}
 	condition   interface{}
 	incrementor interface{}
 	body        interface{}
+}
+
+func (f *forNode) execute() interface{} {
+
+	for f.init.(node).execute(); f.condition.(node).execute().(bool); f.incrementor.(node).execute() {
+		f.body.(node).execute()
+	}
+	return nil
 }
 
 type whileNode struct {
@@ -331,8 +350,13 @@ func (w *whileNode) execute() interface{} {
 }
 
 type ast struct {
-	nodeType int
-	val      interface{}
-	left     interface{}
-	right    interface{}
+	nodeType   int
+	statements []node
+}
+
+func (a *ast) execute() interface{} {
+	for i, _ := range a.statements {
+		a.statements[i].execute()
+	}
+	return nil
 }

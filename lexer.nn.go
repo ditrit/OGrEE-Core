@@ -1265,6 +1265,37 @@ var dfas = []dfa{
 		},
 	}, []int{ /* Start-of-input transitions */ -1, -1, -1, -1}, []int{ /* End-of-input transitions */ -1, -1, -1, -1}, nil},
 
+	// in
+	{[]bool{false, false, true}, []func(rune) int{ // Transitions
+		func(r rune) int {
+			switch r {
+			case 105:
+				return 1
+			case 110:
+				return -1
+			}
+			return -1
+		},
+		func(r rune) int {
+			switch r {
+			case 105:
+				return -1
+			case 110:
+				return 2
+			}
+			return -1
+		},
+		func(r rune) int {
+			switch r {
+			case 105:
+				return -1
+			case 110:
+				return -1
+			}
+			return -1
+		},
+	}, []int{ /* Start-of-input transitions */ -1, -1, -1}, []int{ /* End-of-input transitions */ -1, -1, -1}, nil},
+
 	// while
 	{[]bool{false, false, false, false, false, true}, []func(rune) int{ // Transitions
 		func(r rune) int {
@@ -19658,270 +19689,275 @@ OUTER0:
 			}
 		case 25:
 			{
+				println("We got TOK_IN")
+				return TOK_IN
+			}
+		case 26:
+			{
 				println("We got TOK_WHILE")
 				return TOK_WHILE
 			}
-		case 26:
+		case 27:
 			{
 				println("We got TOK_ELSE")
 				return TOK_ELSE
 			}
-		case 27:
+		case 28:
 			{
 				println("We got TOK_THEN")
 				return TOK_THEN
 			}
-		case 28:
+		case 29:
 			{
 				println("We got TOK_FI")
 				return TOK_FI
 			}
-		case 29:
+		case 30:
 			{
 				println("We got TOK_DONE")
 				return TOK_DONE
 			}
-		case 30:
+		case 31:
 			{
 				println("We got TOK_OCTENANT")
 				return TOK_OCTENANT
 			}
-		case 31:
+		case 32:
 			{
 				println("We got TOK_OCSITE")
 				return TOK_OCSITE
 			}
-		case 32:
+		case 33:
 			{
 				println("We got TOK_OCBLDG")
 				return TOK_OCBLDG
 			}
-		case 33:
+		case 34:
 			{
 				println("We got TOK_OCROOM")
 				return TOK_OCROOM
 			}
-		case 34:
+		case 35:
 			{
 				println("We got TOK_OCRACK")
 				return TOK_OCRACK
 			}
-		case 35:
+		case 36:
 			{
 				println("We got TOK_OCDEV")
 				return TOK_OCDEV
 			}
-		case 36:
+		case 37:
 			{
 				println("We got TOK_OCSDEV")
 				return TOK_OCSDEV
 			}
-		case 37:
+		case 38:
 			{
 				println("We got TOK_OCSDEV1")
 				return TOK_OCSDEV1
 			}
-		case 38:
+		case 39:
 			{
 				println("We got TOK_SELECT")
 				return TOK_SELECT
 			}
-		case 39:
+		case 40:
 			{
 				println("We got TOK_CMDS")
 				return TOK_CMDS
 			}
-		case 40:
+		case 41:
 			{
 				println("We got TOK_TEMPLATE")
 				return TOK_TEMPLATE
 			}
-		case 41:
+		case 42:
 			{
 				println("We got TOK_VAR")
 				return TOK_VAR
 			}
-		case 42:
+		case 43:
 			{
 				println("We got TOK_LBRAC")
 				return TOK_LBRAC
 			}
-		case 43:
+		case 44:
 			{
 				println("We got TOK_RBRAC")
 				return TOK_RBRAC
 			}
-		case 44:
+		case 45:
 			{
 				println("We got TOK_COMMA")
 				return TOK_COMMA
 			}
-		case 45:
+		case 46:
 			{
 				println("We got TOK_DOT")
 				return TOK_DOT
 			}
-		case 46:
+		case 47:
 			{
 				println("We got TOK_TENANT")
 				lval.s = yylex.Text()
 				return TOK_TENANT
 			}
-		case 47:
+		case 48:
 			{
 				println("We got TOK_SITE")
 				lval.s = yylex.Text()
 				return TOK_SITE
 			}
-		case 48:
+		case 49:
 			{
 				println("We got TOK_BLDG")
 				lval.s = yylex.Text()
 				return TOK_BLDG
 			}
-		case 49:
+		case 50:
 			{
 				println("We got TOK_ROOM")
 				lval.s = yylex.Text()
 				return TOK_ROOM
 			}
-		case 50:
+		case 51:
 			{
 				println("We got TOK_RACK")
 				lval.s = yylex.Text()
 				return TOK_RACK
 			}
-		case 51:
+		case 52:
 			{
 				println("We got TOK_DEVICE")
 				lval.s = yylex.Text()
 				return TOK_DEVICE
 			}
-		case 52:
+		case 53:
 			{
 				println("We got TOK_SUBDEVICE")
 				lval.s = yylex.Text()
 				return TOK_SUBDEVICE
 			}
-		case 53:
+		case 54:
 			{
 				println("We got TOK_SUBDEVICE1")
 				lval.s = yylex.Text()
 				return TOK_SUBDEVICE1
 			}
-		case 54:
+		case 55:
 			{
 				println("We got TOK_ATTR")
 				lval.s = yylex.Text()
 				return TOK_ATTR
 			}
-		case 55:
+		case 56:
 			{
 				println("We got TOK_NUM")
 				lval.n = atoi(yylex.Text())
 				return TOK_NUM
 			}
-		case 56:
+		case 57:
 			{
 				println("We got TOK_LSTEN")
 				return TOK_LSTEN
 			}
-		case 57:
+		case 58:
 			{
 				println("We got TOK_LSSITE")
 				return TOK_LSSITE
 			}
-		case 58:
+		case 59:
 			{
 				println("We got TOK_LSBLDG")
 				return TOK_LSBLDG
 			}
-		case 59:
+		case 60:
 			{
 				println("We got TOK_LSROOM")
 				return TOK_LSROOM
 			}
-		case 60:
+		case 61:
 			{
 				println("We got TOK_LSRACK")
 				return TOK_LSRACK
 			}
-		case 61:
+		case 62:
 			{
 				println("We got TOK_LSDEV")
 				return TOK_LSDEV
 			}
-		case 62:
+		case 63:
 			{
 				println("We got TOK_LSSUBDEV")
 				return TOK_LSSUBDEV
 			}
-		case 63:
+		case 64:
 			{
 				println("We got TOK_LSSUBDEV1")
 				return TOK_LSSUBDEV1
 			}
-		case 64:
+		case 65:
 			{
 				println("We got TOK_TREE")
 				return TOK_TREE
 			}
-		case 65:
+		case 66:
 			{
 				println("We got TOK_LSOG")
 				return TOK_LSOG
 			}
-		case 66:
+		case 67:
 			{
 				println("We got TOK_CD")
 				return TOK_CD
 			}
-		case 67:
+		case 68:
 			{
 				println("We got TOK_PWD")
 				return TOK_PWD
 			}
-		case 68:
+		case 69:
 			{
 				println("We got TOK_CLR")
 				return TOK_CLR
 			}
-		case 69:
+		case 70:
 			{
 				println("We got TOK_GREP")
 				return TOK_GREP
 			}
-		case 70:
+		case 71:
 			{
 				println("We got TOK_LS")
 				return TOK_LS
 			}
-		case 71:
+		case 72:
 			{
 				println("We got TOK_EXIT")
 				return TOK_EXIT
 			}
-		case 72:
+		case 73:
 			{
 				println("We got TOK_CMDFLAG")
 				return TOK_CMDFLAG
 			}
-		case 73:
+		case 74:
 			{
 				println("We got TOK_EQUAL")
 				return TOK_EQUAL
 			}
-		case 74:
+		case 75:
 			{
 				println("We got TOK_SLASH")
 				return TOK_SLASH
 			}
-		case 75:
+		case 76:
 			{
 				println("We got TOK_DOC")
 				return TOK_DOC
 			}
-		case 76:
+		case 77:
 			{
 				println("We got TOK_WORD")
 				lval.s = yylex.Text()

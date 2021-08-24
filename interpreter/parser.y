@@ -6,7 +6,7 @@ cmd "cli/controllers"
 "strconv"
 )
 
-var root []node 
+var root node 
 
 func resMap(x *string) map[string]interface{} {
        resarr := strings.Split(*x, "=")
@@ -61,7 +61,7 @@ func replaceOCLICurrPath(x string) string {
        TOK_COMMA TOK_DOT TOK_CMDS TOK_TEMPLATE TOK_VAR TOK_DEREF
        TOK_SEMICOL TOK_IF TOK_FOR TOK_WHILE
        TOK_ELSE TOK_LBLOCK TOK_RBLOCK
-       TOK_LPAREN TOK_RPAREN TOK_OR TOK_AND
+       TOK_LPAREN TOK_RPAREN TOK_OR TOK_AND TOK_IN
        TOK_NOT TOK_DIV TOK_MULT TOK_GREATER TOK_LESS TOK_THEN TOK_FI TOK_DONE
        
 %type <s> F E P P1 ORIENTN WORDORNUM 
@@ -70,18 +70,18 @@ func replaceOCLICurrPath(x string) string {
 %type <node> NT_UPDATE K Q BASH OCUPDATE OCCHOOSE OCCR OCDOT
 %type <node> EXPR REL CLSD_STMT OPEN_STMT CTRL nex factor unary EQAL term
 %type <node> stmnt JOIN
-%type <nodeArr> st2
+%type <node> st2
 %left TOK_MULT TOK_OCDEL TOK_DIV TOK_PLUS
 %right TOK_EQUAL
 
 
 %%
 
-start: st2 {root = append(root, ($1)...)}
+start: st2 {root = $1}
 
-st2: stmnt {$$=[]node{$1}}
-       |stmnt TOK_SEMICOL st2 {$$=append([]node{$1}, $3...)}
-       |CTRL {$$=[]node{$1}}
+st2: stmnt {/*$$=[]node{$1}*/ $$=&ast{BLOCK,[]node{$1} }}
+       |stmnt TOK_SEMICOL st2 {$$=&ast{BLOCK,[]node{$1, $3}}}
+       |CTRL {$$=&ast{IF,[]node{$1}}}
 ;
 
 stmnt: K {$$=$1}
@@ -94,10 +94,26 @@ CTRL: OPEN_STMT {$$=$1}
        |CLSD_STMT {$$=$1}
        ;
 
-OPEN_STMT:    TOK_IF TOK_LBLOCK EXPR TOK_RBLOCK TOK_THEN stmnt TOK_FI {$$=&ifNode{IF, $3, $6, nil}}
+OPEN_STMT:    TOK_IF TOK_LBLOCK EXPR TOK_RBLOCK TOK_THEN st2 TOK_FI {$$=&ifNode{IF, $3, $6, nil}}
               |TOK_IF TOK_LBLOCK EXPR TOK_RBLOCK TOK_THEN OPEN_STMT TOK_FI {$$=&ifNode{IF, $3, $6, nil}}
               |TOK_IF TOK_LBLOCK EXPR TOK_RBLOCK TOK_THEN CLSD_STMT TOK_ELSE OPEN_STMT TOK_FI {$$=&ifNode{IF, $3, $6, $8}}
               |TOK_WHILE TOK_LPAREN EXPR TOK_RPAREN OPEN_STMT TOK_DONE {$$=&whileNode{WHILE, $3, $5}}
+              |TOK_FOR TOK_LPAREN TOK_LPAREN TOK_WORD TOK_EQUAL WORDORNUM TOK_SEMICOL EXPR TOK_SEMICOL stmnt TOK_RPAREN TOK_RPAREN TOK_SEMICOL stmnt TOK_DONE 
+              {initnd:=&assignNode{ASSIGN, $4, dCatchNodePtr};$$=&forNode{FOR,initnd,$8,$10,$14}}
+              |TOK_FOR TOK_WORD TOK_IN TOK_LBRAC TOK_NUM TOK_DOT TOK_DOT TOK_NUM TOK_RBRAC TOK_SEMICOL stmnt TOK_DONE 
+              {n1:=&numNode{NUM, $5}; n2:= &numNode{NUM, $8};initnd:=&assignNode{ASSIGN, $2, n1}; var cond *comparatorNode; var incr *arithNode;
+              
+              if $5 < $8 {
+              cond=&comparatorNode{COMPARATOR, "<", n1, n2}
+              incr=&arithNode{ARITHMETIC, "+", n1, &numNode{NUM, 1}}
+              } else if $5 == $8 {
+
+              } else { //$5 > 8
+              cond=&comparatorNode{COMPARATOR, ">", n1, n2}
+              incr=&arithNode{ARITHMETIC, "-", n1, &numNode{NUM, 1}}
+              } 
+              $$=&forNode{FOR, initnd, cond, incr,$11 }
+              }
               ;
 
 CLSD_STMT: stmnt {$$=$1}
@@ -181,10 +197,10 @@ ORIENTN: TOK_PLUS {$$=$1}
          | {$$=""}
          ;
 
-WORDORNUM: TOK_WORD {$$=$1; dCatchPtr = $1;}
-           |TOK_NUM {x := strconv.Itoa($1);$$=x;dCatchPtr = $1;}
-           |ORIENTN TOK_WORD ORIENTN TOK_WORD {$$=$1+$2+$3+$4; dCatchPtr = $1+$2+$3+$4;}
-           |TOK_BOOL {var x bool;if $1=="false"{x = false}else{x=true};dCatchPtr = x;}
+WORDORNUM: TOK_WORD {$$=$1; dCatchPtr = $1; dCatchNodePtr=&strNode{STR, $1}}
+           |TOK_NUM {x := strconv.Itoa($1);$$=x;dCatchPtr = $1; dCatchNodePtr=&numNode{NUM, $1}}
+           |ORIENTN TOK_WORD ORIENTN TOK_WORD {$$=$1+$2+$3+$4; dCatchPtr = $1+$2+$3+$4; dCatchNodePtr=&strNode{STR, $1+$2+$3+$4}}
+           |TOK_BOOL {var x bool;if $1=="false"{x = false}else{x=true};dCatchPtr = x; dCatchNodePtr=&boolNode{BOOL, x}}
            ;
 
 F:     TOK_ATTR TOK_EQUAL WORDORNUM F {$$=string($1+"="+$3+"="+$4); println("So we got: ", $$)}
@@ -278,7 +294,7 @@ GETOBJS:      TOK_WORD TOK_COMMA GETOBJS {x := make([]string,0); x = append(x, c
 OCCHOOSE: TOK_EQUAL TOK_LBRAC GETOBJS TOK_RBRAC {$$=&commonNode{COMMON, cmd.SetClipBoard, "setCB", []interface{}{&$3}}; println("Selection made!")}
 ;
 
-OCDOT:      TOK_DOT TOK_VAR TOK_OCPSPEC TOK_WORD TOK_EQUAL WORDORNUM {$$=&assignNode{ASSIGN, $4}}
+OCDOT:      TOK_DOT TOK_VAR TOK_OCPSPEC TOK_WORD TOK_EQUAL WORDORNUM {$$=&assignNode{ASSIGN, $4, dCatchNodePtr}}
             |TOK_DOT TOK_CMDS TOK_OCPSPEC P {$$=&commonNode{COMMON, cmd.LoadFile, "Load", []interface{}{$4}};}
             |TOK_DOT TOK_TEMPLATE TOK_OCPSPEC P {$$=&commonNode{COMMON, cmd.LoadFile, "Load", []interface{}{$4}}}
             |TOK_DEREF TOK_WORD {$$=&symbolReferenceNode{REFERENCE, $2}}

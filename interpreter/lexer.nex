@@ -23,6 +23,7 @@
 /false|true/ {println("We got TOK_BOOL");lval.s = yylex.Text(); return TOK_BOOL}
 /if/ {println("We got TOK_IF"); return TOK_IF}
 /for/ {println("We got TOK_FOR"); return TOK_FOR}
+/in/ {println("We got TOK_IN"); return TOK_IN}
 /while/ {println("We got TOK_WHILE"); return TOK_WHILE}
 /else/ {println("We got TOK_ELSE"); return TOK_ELSE}
 /then/ {println("We got TOK_THEN"); return TOK_THEN}
