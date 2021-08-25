@@ -61,10 +61,10 @@ func replaceOCLICurrPath(x string) string {
        TOK_COMMA TOK_DOT TOK_CMDS TOK_TEMPLATE TOK_VAR TOK_DEREF
        TOK_SEMICOL TOK_IF TOK_FOR TOK_WHILE
        TOK_ELSE TOK_LBLOCK TOK_RBLOCK
-       TOK_LPAREN TOK_RPAREN TOK_OR TOK_AND TOK_IN
+       TOK_LPAREN TOK_RPAREN TOK_OR TOK_AND TOK_IN TOK_PRNT TOK_QUOT
        TOK_NOT TOK_DIV TOK_MULT TOK_GREATER TOK_LESS TOK_THEN TOK_FI TOK_DONE
        
-%type <s> F E P P1 ORIENTN WORDORNUM 
+%type <s> F E P P1 ORIENTN WORDORNUM STRARG
 %type <sarr> GETOBJS
 %type <node> OCSEL OCLISYNTX OCDEL OCGET NT_CREATE NT_GET NT_DEL 
 %type <node> NT_UPDATE K Q BASH OCUPDATE OCCHOOSE OCCR OCDOT
@@ -245,6 +245,7 @@ Q:     TOK_CD P {/*cmd.CD($2);*/ $$=&commonNode{COMMON, cmd.CD, "CD", []interfac
 
 BASH:  TOK_CLR {$$=&commonNode{COMMON, nil, "CLR", nil}}
        | TOK_GREP {$$=&commonNode{COMMON, nil, "Grep", nil}}
+       | TOK_PRNT TOK_QUOT STRARG TOK_QUOT{$$=&commonNode{COMMON, cmd.Print, "Print", []interface{}{$3}}}
        | TOK_LSOG {$$=&commonNode{COMMON, cmd.LSOG, "LSOG", nil}}
        | TOK_PWD {$$=&commonNode{COMMON, cmd.PWD, "PWD", nil}}
        | TOK_EXIT {$$=&commonNode{COMMON, cmd.Exit, "Exit", nil}}
@@ -309,5 +310,9 @@ OCDOT:      TOK_DOT TOK_VAR TOK_COL TOK_WORD TOK_EQUAL WORDORNUM {$$=&assignNode
 
 OCSEL:      TOK_SELECT {$$=&commonNode{COMMON, cmd.ShowClipBoard, "select", nil};}
             |TOK_SELECT TOK_DOT TOK_ATTR TOK_EQUAL TOK_WORD {x := $3+"="+$5; $$=&commonNode{COMMON, cmd.UpdateSelection, "UpdateSelect", []interface{}{resMap(&x)}};}
+;
 
+STRARG: WORDORNUM STRARG {$$=$1+" "+$2}
+       | {$$=""}
+;
 %%

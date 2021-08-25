@@ -850,3 +850,7 @@ func LoadFile(path string) {
 func SetClipBoard(x *[]string) {
 	State.ClipBoard = x
 }
+
+func Print(x string) {
+	fmt.Println(x)
+}

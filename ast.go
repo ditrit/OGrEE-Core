@@ -5,7 +5,6 @@ import (
 	"cli/readline"
 )
 
-var dynamicVarLimit = []int{0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15}
 var dynamicMap = make(map[string]int)
 var dynamicSymbolTable = make(map[int]interface{})
 var dCatchPtr interface{}
@@ -47,7 +46,7 @@ func (c *commonNode) execute() interface{} {
 				c.args[1].(string), c.args[2].(map[string]interface{}))
 		}
 
-	case "GetObject", "DeleteObj", "CD", "LS", "Help", "Load":
+	case "GetObject", "DeleteObj", "CD", "LS", "Help", "Load", "Print":
 		if f, ok := c.fun.(func(string)); ok {
 			f(c.args[0].(string))
 		}

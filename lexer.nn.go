@@ -1618,6 +1618,118 @@ var dfas = []dfa{
 		},
 	}, []int{ /* Start-of-input transitions */ -1, -1, -1, -1, -1}, []int{ /* End-of-input transitions */ -1, -1, -1, -1, -1}, nil},
 
+	// print
+	{[]bool{false, false, false, false, false, true}, []func(rune) int{ // Transitions
+		func(r rune) int {
+			switch r {
+			case 105:
+				return -1
+			case 110:
+				return -1
+			case 112:
+				return 1
+			case 114:
+				return -1
+			case 116:
+				return -1
+			}
+			return -1
+		},
+		func(r rune) int {
+			switch r {
+			case 105:
+				return -1
+			case 110:
+				return -1
+			case 112:
+				return -1
+			case 114:
+				return 2
+			case 116:
+				return -1
+			}
+			return -1
+		},
+		func(r rune) int {
+			switch r {
+			case 105:
+				return 3
+			case 110:
+				return -1
+			case 112:
+				return -1
+			case 114:
+				return -1
+			case 116:
+				return -1
+			}
+			return -1
+		},
+		func(r rune) int {
+			switch r {
+			case 105:
+				return -1
+			case 110:
+				return 4
+			case 112:
+				return -1
+			case 114:
+				return -1
+			case 116:
+				return -1
+			}
+			return -1
+		},
+		func(r rune) int {
+			switch r {
+			case 105:
+				return -1
+			case 110:
+				return -1
+			case 112:
+				return -1
+			case 114:
+				return -1
+			case 116:
+				return 5
+			}
+			return -1
+		},
+		func(r rune) int {
+			switch r {
+			case 105:
+				return -1
+			case 110:
+				return -1
+			case 112:
+				return -1
+			case 114:
+				return -1
+			case 116:
+				return -1
+			}
+			return -1
+		},
+	}, []int{ /* Start-of-input transitions */ -1, -1, -1, -1, -1, -1}, []int{ /* End-of-input transitions */ -1, -1, -1, -1, -1, -1}, nil},
+
+	// \"
+	{[]bool{false, true}, []func(rune) int{ // Transitions
+		func(r rune) int {
+			switch r {
+			case 34:
+				return 1
+			}
+			return -1
+		},
+		func(r rune) int {
+			switch r {
+			case 34:
+				return -1
+			}
+			return -1
+		},
+	}, []int{ /* Start-of-input transitions */ -1, -1}, []int{ /* End-of-input transitions */ -1, -1}, nil},
+
 	// tn
 	{[]bool{false, false, true}, []func(rune) int{ // Transitions
 		func(r rune) int {
@@ -19719,245 +19831,255 @@ OUTER0:
 			}
 		case 31:
 			{
+				println("We got TOK_PRNT")
+				return TOK_PRNT
+			}
+		case 32:
+			{
+				println("We got TOK_QUOT")
+				return TOK_QUOT
+			}
+		case 33:
+			{
 				println("We got TOK_OCTENANT")
 				return TOK_OCTENANT
 			}
-		case 32:
+		case 34:
 			{
 				println("We got TOK_OCSITE")
 				return TOK_OCSITE
 			}
-		case 33:
+		case 35:
 			{
 				println("We got TOK_OCBLDG")
 				return TOK_OCBLDG
 			}
-		case 34:
+		case 36:
 			{
 				println("We got TOK_OCROOM")
 				return TOK_OCROOM
 			}
-		case 35:
+		case 37:
 			{
 				println("We got TOK_OCRACK")
 				return TOK_OCRACK
 			}
-		case 36:
+		case 38:
 			{
 				println("We got TOK_OCDEV")
 				return TOK_OCDEV
 			}
-		case 37:
+		case 39:
 			{
 				println("We got TOK_OCSDEV")
 				return TOK_OCSDEV
 			}
-		case 38:
+		case 40:
 			{
 				println("We got TOK_OCSDEV1")
 				return TOK_OCSDEV1
 			}
-		case 39:
+		case 41:
 			{
 				println("We got TOK_SELECT")
 				return TOK_SELECT
 			}
-		case 40:
+		case 42:
 			{
 				println("We got TOK_CMDS")
 				return TOK_CMDS
 			}
-		case 41:
+		case 43:
 			{
 				println("We got TOK_TEMPLATE")
 				return TOK_TEMPLATE
 			}
-		case 42:
+		case 44:
 			{
 				println("We got TOK_VAR")
 				return TOK_VAR
 			}
-		case 43:
+		case 45:
 			{
 				println("We got TOK_LBRAC")
 				return TOK_LBRAC
 			}
-		case 44:
+		case 46:
 			{
 				println("We got TOK_RBRAC")
 				return TOK_RBRAC
 			}
-		case 45:
+		case 47:
 			{
 				println("We got TOK_COMMA")
 				return TOK_COMMA
 			}
-		case 46:
+		case 48:
 			{
 				println("We got TOK_DOT")
 				return TOK_DOT
 			}
-		case 47:
+		case 49:
 			{
 				println("We got TOK_TENANT")
 				lval.s = yylex.Text()
 				return TOK_TENANT
 			}
-		case 48:
+		case 50:
 			{
 				println("We got TOK_SITE")
 				lval.s = yylex.Text()
 				return TOK_SITE
 			}
-		case 49:
+		case 51:
 			{
 				println("We got TOK_BLDG")
 				lval.s = yylex.Text()
 				return TOK_BLDG
 			}
-		case 50:
+		case 52:
 			{
 				println("We got TOK_ROOM")
 				lval.s = yylex.Text()
 				return TOK_ROOM
 			}
-		case 51:
+		case 53:
 			{
 				println("We got TOK_RACK")
 				lval.s = yylex.Text()
 				return TOK_RACK
 			}
-		case 52:
+		case 54:
 			{
 				println("We got TOK_DEVICE")
 				lval.s = yylex.Text()
 				return TOK_DEVICE
 			}
-		case 53:
+		case 55:
 			{
 				println("We got TOK_SUBDEVICE")
 				lval.s = yylex.Text()
 				return TOK_SUBDEVICE
 			}
-		case 54:
+		case 56:
 			{
 				println("We got TOK_SUBDEVICE1")
 				lval.s = yylex.Text()
 				return TOK_SUBDEVICE1
 			}
-		case 55:
+		case 57:
 			{
 				println("We got TOK_ATTR")
 				lval.s = yylex.Text()
 				return TOK_ATTR
 			}
-		case 56:
+		case 58:
 			{
 				println("We got TOK_NUM")
 				lval.n = atoi(yylex.Text())
 				return TOK_NUM
 			}
-		case 57:
+		case 59:
 			{
 				println("We got TOK_LSTEN")
 				return TOK_LSTEN
 			}
-		case 58:
+		case 60:
 			{
 				println("We got TOK_LSSITE")
 				return TOK_LSSITE
 			}
-		case 59:
+		case 61:
 			{
 				println("We got TOK_LSBLDG")
 				return TOK_LSBLDG
 			}
-		case 60:
+		case 62:
 			{
 				println("We got TOK_LSROOM")
 				return TOK_LSROOM
 			}
-		case 61:
+		case 63:
 			{
 				println("We got TOK_LSRACK")
 				return TOK_LSRACK
 			}
-		case 62:
+		case 64:
 			{
 				println("We got TOK_LSDEV")
 				return TOK_LSDEV
 			}
-		case 63:
+		case 65:
 			{
 				println("We got TOK_LSSUBDEV")
 				return TOK_LSSUBDEV
 			}
-		case 64:
+		case 66:
 			{
 				println("We got TOK_LSSUBDEV1")
 				return TOK_LSSUBDEV1
 			}
-		case 65:
+		case 67:
 			{
 				println("We got TOK_TREE")
 				return TOK_TREE
 			}
-		case 66:
+		case 68:
 			{
 				println("We got TOK_LSOG")
 				return TOK_LSOG
 			}
-		case 67:
+		case 69:
 			{
 				println("We got TOK_CD")
 				return TOK_CD
 			}
-		case 68:
+		case 70:
 			{
 				println("We got TOK_PWD")
 				return TOK_PWD
 			}
-		case 69:
+		case 71:
 			{
 				println("We got TOK_CLR")
 				return TOK_CLR
 			}
-		case 70:
+		case 72:
 			{
 				println("We got TOK_GREP")
 				return TOK_GREP
 			}
-		case 71:
+		case 73:
 			{
 				println("We got TOK_LS")
 				return TOK_LS
 			}
-		case 72:
+		case 74:
 			{
 				println("We got TOK_EXIT")
 				return TOK_EXIT
 			}
-		case 73:
+		case 75:
 			{
 				println("We got TOK_CMDFLAG")
 				return TOK_CMDFLAG
 			}
-		case 74:
+		case 76:
 			{
 				println("We got TOK_EQUAL")
 				return TOK_EQUAL
 			}
-		case 75:
+		case 77:
 			{
 				println("We got TOK_SLASH")
 				return TOK_SLASH
 			}
-		case 76:
+		case 78:
 			{
 				println("We got TOK_DOC")
 				return TOK_DOC
 			}
-		case 77:
+		case 79:
 			{
 				println("We got TOK_WORD")
 				lval.s = yylex.Text()
