@@ -1,3 +1,5 @@
+# '$$' refers to shell variable not make variable
+# https://ftp.gnu.org/old-gnu/Manuals/make-3.79.1/html_chapter/make_6.html
 BASH=/bin/bash
 GOPATH=$$(go env | grep "GOPATH=" | grep -oE '\/[^"]*')
 GOYACC=$(GOPATH)/bin/goyacc

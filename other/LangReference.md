@@ -1,0 +1,45 @@
+Introduction
+------------
+The OGREE Language Reference. The scripting language is modelled to behave like bash but has some differences.
+
+
+Variables 
+------------
+ In OGREE, all variables by default are defined as global, even if declared inside a function. There is no support yet for local variables.
+
+ Variables shall be declared as follows:
+ ```
+ .var:myvar=xyz
+ ```
+
+ Variables can be unset via the unset command:
+ ```
+ unset -v myvar
+ ```
+
+Functions
+------------
+Functions have only one way of declaration and just like bash, they are not executed unless exclusively invoked. 
+Function declaration:
+```
+myfunc() {command1;command2;...}
+```
+Unlike bash, semicolons must be added to the end of each command if a block has more than 1 command. Functions can also be unset using the unset -f command:
+```
+unset -f myfunc
+```
+
+
+Loops
+------------
+Loops are of varying types in Bash, there is limited support for the 'dynamic type' (such as iterating over a result of a command, range in arrays) of loops that are found in bash. Those dynamic loop types are still in progress. OGREE supports FOR and WHILE loops
+
+
+Execution Control
+------------
+If statements are of 2 types:
+```
+if [condition] then {} done
+if [condition] then {} else {} done
+```
+Elifs are not yet supported
