@@ -290,23 +290,27 @@ func (a *assignNode) execute() interface{} {
 		varCtr += 1
 		id = a.arg.(string)
 	}
-	v := a.val.(node).execute() //Obtain val
-	dynamicSymbolTable[idx] = v //Assign val into DStable
 
-	switch v.(type) {
-	case string:
-		x := v.(string)
-		println("You want to assign", id, "with value of", x)
-	case int:
-		x := v.(int)
-		println("You want to assign", id, "with value of", x)
-	case bool:
-		x := v.(bool)
-		println("You want to assign", id, "with value of", x)
-	case float64, float32:
-		x := v.(float64)
-		println("You want to assign", id, "with value of", x)
+	if a.val != nil {
+		v := a.val.(node).execute() //Obtain val
+		dynamicSymbolTable[idx] = v //Assign val into DStable
+
+		switch v.(type) {
+		case string:
+			x := v.(string)
+			println("You want to assign", id, "with value of", x)
+		case int:
+			x := v.(int)
+			println("You want to assign", id, "with value of", x)
+		case bool:
+			x := v.(bool)
+			println("You want to assign", id, "with value of", x)
+		case float64, float32:
+			x := v.(float64)
+			println("You want to assign", id, "with value of", x)
+		}
 	}
+
 	return nil
 }
 
@@ -353,8 +357,11 @@ type whileNode struct {
 
 func (w *whileNode) execute() interface{} {
 	if condNode, ok := w.condition.(node); ok {
-		if val, cok := condNode.execute().(bool); cok {
-			for val == true {
+		if _, cok := condNode.execute().(bool); cok {
+			/*for val == true {
+				w.body.(node).execute()
+			}*/
+			for condNode.execute().(bool) {
 				w.body.(node).execute()
 			}
 		}

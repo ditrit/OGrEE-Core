@@ -19603,8 +19603,8 @@ OUTER0:
 			}
 		case 8:
 			{
-				println("We got TOK_OCPSPEC")
-				return TOK_OCPSPEC
+				println("We got TOK_COL")
+				return TOK_COL
 			}
 		case 9:
 			{

@@ -6,7 +6,7 @@
 /search/ {println("We got TOK_SEARCH"); return TOK_SEARCH}
 /\+/ {println("We got TOK_PLUS");lval.s = yylex.Text(); return TOK_PLUS}
 /-/ {println("We got TOK_OCDEL");lval.s = yylex.Text(); return TOK_OCDEL}
-/:/ {println("We got TOK_OCPSPEC"); return TOK_OCPSPEC}
+/:/ {println("We got TOK_COL"); return TOK_COL}
 /@/ {println("We got TOK_ATTRSPEC"); return TOK_ATTRSPEC}
 /\$/ {println("We got TOK_DEREF"); return TOK_DEREF}
 /;/ {println("We got TOK_SEMICOL"); return TOK_SEMICOL}
