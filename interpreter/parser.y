@@ -102,6 +102,20 @@ OPEN_STMT:    TOK_IF TOK_LBLOCK EXPR TOK_RBLOCK TOK_THEN st2 TOK_FI {$$=&ifNode{
               |TOK_WHILE TOK_LPAREN EXPR TOK_RPAREN st2 TOK_DONE {$$=&whileNode{WHILE, $3, $5}}
               |TOK_FOR TOK_LPAREN TOK_LPAREN TOK_WORD TOK_EQUAL WORDORNUM TOK_SEMICOL EXPR TOK_SEMICOL stmnt TOK_RPAREN TOK_RPAREN TOK_SEMICOL st2 TOK_DONE 
               {initnd:=&assignNode{ASSIGN, $4, dCatchNodePtr};$$=&forNode{FOR,initnd,$8,$10,$14}}
+              |TOK_FOR TOK_WORD TOK_IN EXPR TOK_SEMICOL st2 TOK_DONE 
+              {var incr *arithNode; var incrAssign *assignNode; 
+              n1:=&numNode{NUM, 0};
+              
+              initd:=&assignNode{ASSIGN, $2, n1}; 
+              iter:=&symbolReferenceNode{REFERENCE, $2}; 
+              cmp:=&comparatorNode{COMPARATOR, "<", iter, $4}
+              incr=&arithNode{ARITHMETIC, "+", iter, &numNode{NUM, 1}}
+              incrAssign=&assignNode{ASSIGN, iter,incr}
+              $$=&forNode{FOR,initd, cmp, incrAssign, $6}
+               
+               
+                }
+
               |TOK_FOR TOK_WORD TOK_IN TOK_LBRAC TOK_NUM TOK_DOT TOK_DOT TOK_NUM TOK_RBRAC TOK_SEMICOL st2 TOK_DONE 
               {n1:=&numNode{NUM, $5}; n2:= &numNode{NUM, $8};initnd:=&assignNode{ASSIGN, $2, n1};
                var cond *comparatorNode; var incr *arithNode; var iter *symbolReferenceNode;
