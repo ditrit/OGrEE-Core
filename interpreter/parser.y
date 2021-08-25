@@ -70,7 +70,7 @@ func replaceOCLICurrPath(x string) string {
 %type <node> NT_UPDATE K Q BASH OCUPDATE OCCHOOSE OCCR OCDOT
 %type <node> EXPR REL OPEN_STMT CTRL nex factor unary EQAL term
 %type <node> stmnt JOIN
-%type <node> st2
+%type <node> st2 FUNC
 %left TOK_MULT TOK_OCDEL TOK_DIV TOK_PLUS
 %right TOK_EQUAL
 
@@ -91,6 +91,7 @@ opn: TOK_SEMICOL
 stmnt: K {$$=$1}
        |Q {$$=$1}
        |OCLISYNTX {$$=$1}
+       |FUNC {$$=$1}
        |{$$=nil}
 ;
 
@@ -329,4 +330,7 @@ OCSEL:      TOK_SELECT {$$=&commonNode{COMMON, cmd.ShowClipBoard, "select", nil}
 STRARG: WORDORNUM STRARG {$$=$1+" "+$2}
        | {$$=""}
 ;
+
+FUNC: TOK_WORD TOK_LPAREN TOK_RPAREN TOK_LBRAC st2 TOK_RBRAC {$$=nil;funcTable[$1]=&funcNode{FUNC, $5}}
+       |TOK_WORD {x:=funcTable[$1]; if _,ok:=x.(node); ok {$$=x.(node)}else{$$=nil};}
 %%

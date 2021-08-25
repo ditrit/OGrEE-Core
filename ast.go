@@ -7,6 +7,7 @@ import (
 
 var dynamicMap = make(map[string]int)
 var dynamicSymbolTable = make(map[int]interface{})
+var funcTable = make(map[string]interface{})
 var dCatchPtr interface{}
 var dCatchNodePtr interface{}
 var varCtr = 0
@@ -25,6 +26,7 @@ const (
 	WHILE
 	ASSIGN
 	BLOCK
+	FUNC
 )
 
 type node interface {
@@ -375,7 +377,23 @@ type ast struct {
 
 func (a *ast) execute() interface{} {
 	for i, _ := range a.statements {
-		a.statements[i].execute()
+		if a.statements[i] != nil {
+			a.statements[i].execute()
+		}
+
+	}
+
+	return nil
+}
+
+type funcNode struct {
+	nodeType int
+	block    interface{}
+}
+
+func (f *funcNode) execute() interface{} {
+	if f.block != nil {
+		f.block.(*ast).execute()
 	}
 	return nil
 }
