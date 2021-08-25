@@ -68,7 +68,7 @@ func replaceOCLICurrPath(x string) string {
 %type <sarr> GETOBJS
 %type <node> OCSEL OCLISYNTX OCDEL OCGET NT_CREATE NT_GET NT_DEL 
 %type <node> NT_UPDATE K Q BASH OCUPDATE OCCHOOSE OCCR OCDOT
-%type <node> EXPR REL CLSD_STMT OPEN_STMT CTRL nex factor unary EQAL term
+%type <node> EXPR REL OPEN_STMT CTRL nex factor unary EQAL term
 %type <node> stmnt JOIN
 %type <node> st2
 %left TOK_MULT TOK_OCDEL TOK_DIV TOK_PLUS
@@ -79,10 +79,14 @@ func replaceOCLICurrPath(x string) string {
 
 start: st2 {root = $1}
 
-st2: stmnt {/*$$=[]node{$1}*/ $$=&ast{BLOCK,[]node{$1} }}
+st2: stmnt opn {/*$$=[]node{$1}*/ $$=&ast{BLOCK,[]node{$1} }}
        |stmnt TOK_SEMICOL st2 {$$=&ast{BLOCK,[]node{$1, $3}}}
        |CTRL {$$=&ast{IF,[]node{$1}}}
 ;
+
+opn: TOK_SEMICOL
+       |
+       ;
 
 stmnt: K {$$=$1}
        |Q {$$=$1}
@@ -91,35 +95,35 @@ stmnt: K {$$=$1}
 ;
 
 CTRL: OPEN_STMT {$$=$1}
-       |CLSD_STMT {$$=$1}
        ;
 
 OPEN_STMT:    TOK_IF TOK_LBLOCK EXPR TOK_RBLOCK TOK_THEN st2 TOK_FI {$$=&ifNode{IF, $3, $6, nil}}
-              |TOK_IF TOK_LBLOCK EXPR TOK_RBLOCK TOK_THEN OPEN_STMT TOK_FI {$$=&ifNode{IF, $3, $6, nil}}
-              |TOK_IF TOK_LBLOCK EXPR TOK_RBLOCK TOK_THEN CLSD_STMT TOK_ELSE OPEN_STMT TOK_FI {$$=&ifNode{IF, $3, $6, $8}}
-              |TOK_WHILE TOK_LPAREN EXPR TOK_RPAREN OPEN_STMT TOK_DONE {$$=&whileNode{WHILE, $3, $5}}
-              |TOK_FOR TOK_LPAREN TOK_LPAREN TOK_WORD TOK_EQUAL WORDORNUM TOK_SEMICOL EXPR TOK_SEMICOL stmnt TOK_RPAREN TOK_RPAREN TOK_SEMICOL stmnt TOK_DONE 
+              |TOK_IF TOK_LBLOCK EXPR TOK_RBLOCK TOK_THEN st2 TOK_ELSE st2 TOK_FI {$$=&ifNode{IF, $3, $6, $8}}
+              |TOK_WHILE TOK_LPAREN EXPR TOK_RPAREN st2 TOK_DONE {$$=&whileNode{WHILE, $3, $5}}
+              |TOK_FOR TOK_LPAREN TOK_LPAREN TOK_WORD TOK_EQUAL WORDORNUM TOK_SEMICOL EXPR TOK_SEMICOL stmnt TOK_RPAREN TOK_RPAREN TOK_SEMICOL st2 TOK_DONE 
               {initnd:=&assignNode{ASSIGN, $4, dCatchNodePtr};$$=&forNode{FOR,initnd,$8,$10,$14}}
-              |TOK_FOR TOK_WORD TOK_IN TOK_LBRAC TOK_NUM TOK_DOT TOK_DOT TOK_NUM TOK_RBRAC TOK_SEMICOL stmnt TOK_DONE 
-              {n1:=&numNode{NUM, $5}; n2:= &numNode{NUM, $8};initnd:=&assignNode{ASSIGN, $2, n1}; var cond *comparatorNode; var incr *arithNode;
+              |TOK_FOR TOK_WORD TOK_IN TOK_LBRAC TOK_NUM TOK_DOT TOK_DOT TOK_NUM TOK_RBRAC TOK_SEMICOL st2 TOK_DONE 
+              {n1:=&numNode{NUM, $5}; n2:= &numNode{NUM, $8};initnd:=&assignNode{ASSIGN, $2, n1};
+               var cond *comparatorNode; var incr *arithNode; var iter *symbolReferenceNode;
+               var incrAssign *assignNode;
               
+              iter = &symbolReferenceNode{NUM, $2}
+
               if $5 < $8 {
-              cond=&comparatorNode{COMPARATOR, "<", n1, n2}
-              incr=&arithNode{ARITHMETIC, "+", n1, &numNode{NUM, 1}}
+              cond=&comparatorNode{COMPARATOR, "<", iter, n2}
+              incr=&arithNode{ARITHMETIC, "+", iter, &numNode{NUM, 1}}
+              incrAssign=&assignNode{ASSIGN, iter, incr} //Maybe redundant
               } else if $5 == $8 {
 
               } else { //$5 > 8
-              cond=&comparatorNode{COMPARATOR, ">", n1, n2}
-              incr=&arithNode{ARITHMETIC, "-", n1, &numNode{NUM, 1}}
+              cond=&comparatorNode{COMPARATOR, ">", iter, n2}
+              incr=&arithNode{ARITHMETIC, "-", iter, &numNode{NUM, 1}}
+              incrAssign=&assignNode{ASSIGN, iter, incr}
               } 
-              $$=&forNode{FOR, initnd, cond, incr,$11 }
+              $$=&forNode{FOR, initnd, cond, incrAssign,$11 }
               }
               ;
 
-CLSD_STMT: stmnt {$$=$1}
-              | TOK_IF TOK_LPAREN EXPR TOK_RPAREN TOK_THEN CLSD_STMT TOK_ELSE CLSD_STMT TOK_FI {$$=&ifNode{IF, $3, $6,  $8}}
-              |TOK_WHILE TOK_LPAREN EXPR TOK_RPAREN CLSD_STMT TOK_DONE {$$=&whileNode{WHILE, $3, $5}}
-              ;
 
 EXPR: EXPR TOK_OR JOIN
        |JOIN
@@ -141,8 +145,8 @@ REL: nex TOK_LESS nex {$$=&comparatorNode{COMPARATOR, "<", $1, $3}}
        |nex {$$=$1}
        ;
 
-nex: nex TOK_PLUS term {$$=&arithNode{ARITHMETIC, "+", $1, $2}}
-       |nex TOK_OCDEL term {$$=&arithNode{ARITHMETIC, "-", $1, $2}}
+nex: nex TOK_PLUS term {$$=&arithNode{ARITHMETIC, "+", $1, $3}}
+       |nex TOK_OCDEL term {$$=&arithNode{ARITHMETIC, "-", $1, $3}}
        |term {$$=$1}
        ;
 

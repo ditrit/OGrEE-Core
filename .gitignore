@@ -6,3 +6,4 @@ interpreter/y
 .resources/
 main
 log.txt
+__debug_bin

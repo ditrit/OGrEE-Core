@@ -146,8 +146,11 @@ func (a *arithNode) execute() interface{} {
 		switch v {
 		case "+":
 			lv, lok := (a.left.(node).execute()).(int)
+			println("Left:", lv)
 			rv, rok := (a.right.(node).execute()).(int)
+			println("Right: ", rv)
 			if lok && rok {
+				//println("Adding", lv, rv)
 				return lv + rv
 			}
 			return nil
@@ -276,23 +279,33 @@ type assignNode struct {
 }
 
 func (a *assignNode) execute() interface{} {
-	v := a.val.(node).execute()
-	dynamicMap[a.arg.(string)] = varCtr
-	dynamicSymbolTable[varCtr] = v
-	varCtr += 1
+	var idx int
+	var id string
+	if identifier, ok := a.arg.(*symbolReferenceNode); ok {
+		idx = dynamicMap[identifier.val.(string)] //Get the idx
+		id = identifier.val.(string)
+	} else {
+		idx = varCtr
+		dynamicMap[a.arg.(string)] = idx
+		varCtr += 1
+		id = a.arg.(string)
+	}
+	v := a.val.(node).execute() //Obtain val
+	dynamicSymbolTable[idx] = v //Assign val into DStable
+
 	switch v.(type) {
 	case string:
 		x := v.(string)
-		println("You want to assign", a.arg.(string), "with value of", x)
+		println("You want to assign", id, "with value of", x)
 	case int:
 		x := v.(int)
-		println("You want to assign", a.arg.(string), "with value of", x)
+		println("You want to assign", id, "with value of", x)
 	case bool:
 		x := v.(bool)
-		println("You want to assign", a.arg.(string), "with value of", x)
+		println("You want to assign", id, "with value of", x)
 	case float64, float32:
 		x := v.(float64)
-		println("You want to assign", a.arg.(string), "with value of", x)
+		println("You want to assign", id, "with value of", x)
 	}
 	return nil
 }
