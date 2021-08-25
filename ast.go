@@ -10,7 +10,7 @@ var dynamicSymbolTable = make(map[int]interface{})
 var funcTable = make(map[string]interface{})
 var dCatchPtr interface{}
 var dCatchNodePtr interface{}
-var varCtr = 0
+var varCtr = 1 //Started at 1 because unset could cause var data loss
 
 const (
 	COMMON = iota
@@ -76,6 +76,11 @@ func (c *commonNode) execute() interface{} {
 	case "UpdateSelect":
 		if f, ok := c.fun.(func(map[string]interface{})); ok {
 			f(c.args[0].(map[string]interface{}))
+		}
+
+	case "Unset":
+		if f, ok := c.fun.(func(string, string)); ok {
+			f(c.args[0].(string), c.args[1].(string))
 		}
 
 	case "GetOCAttr":
@@ -396,4 +401,14 @@ func (f *funcNode) execute() interface{} {
 		f.block.(*ast).execute()
 	}
 	return nil
+}
+
+func UnsetUtil(x, name string) {
+	switch x {
+	case "-f":
+		funcTable[name] = nil
+	case "-v":
+		v := dynamicMap[name]
+		dynamicSymbolTable[v] = nil
+	}
 }

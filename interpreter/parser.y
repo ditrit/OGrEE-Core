@@ -63,6 +63,7 @@ func replaceOCLICurrPath(x string) string {
        TOK_ELSE TOK_LBLOCK TOK_RBLOCK
        TOK_LPAREN TOK_RPAREN TOK_OR TOK_AND TOK_IN TOK_PRNT TOK_QUOT
        TOK_NOT TOK_DIV TOK_MULT TOK_GREATER TOK_LESS TOK_THEN TOK_FI TOK_DONE
+       TOK_UNSET
        
 %type <s> F E P P1 ORIENTN WORDORNUM STRARG
 %type <sarr> GETOBJS
@@ -255,6 +256,7 @@ Q:     TOK_CD P {/*cmd.CD($2);*/ $$=&commonNode{COMMON, cmd.CD, "CD", []interfac
        | TOK_TREE TOK_NUM {$$=&commonNode{COMMON, cmd.Tree, "Tree", []interface{}{"", $2}}}
        | TOK_TREE P {$$=&commonNode{COMMON, cmd.Tree, "Tree", []interface{}{$2, 0}}}
        | TOK_TREE P TOK_NUM {$$=&commonNode{COMMON, cmd.Tree, "Tree", []interface{}{$2, $3}}}
+       | TOK_UNSET TOK_OCDEL TOK_WORD TOK_WORD {$$=&commonNode{COMMON,UnsetUtil, "Unset",[]interface{}{$2+$3, $4} }}
        | BASH     {$$=$1}
 ;
 
