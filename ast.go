@@ -27,6 +27,7 @@ const (
 	ASSIGN
 	BLOCK
 	FUNC
+	ELIF
 )
 
 type node interface {
@@ -325,17 +326,43 @@ type ifNode struct {
 	condition  interface{}
 	ifBranch   interface{}
 	elseBranch interface{}
+	elif       interface{}
 }
 
 func (i *ifNode) execute() interface{} {
 	if c, ok := i.condition.(node).execute().(bool); ok {
 		if c == true {
 			i.ifBranch.(node).execute()
-		} else if i.elseBranch != nil {
+		} else {
+			//Check the array of Elif cases
+			println("Now checking the elifs......")
+			if _, ok := i.elif.([]elifNode); ok {
+				for idx := range i.elif.([]elifNode) {
+					if i.elif.([]elifNode)[idx].execute() == true {
+						return true
+					}
+				}
+			}
+
 			i.elseBranch.(node).execute()
 		}
+
 	}
 	return nil
+}
+
+type elifNode struct {
+	nodeType int
+	cond     interface{}
+	taken    interface{}
+}
+
+func (e *elifNode) execute() interface{} {
+	if e.cond.(node).execute().(bool) == true {
+		e.taken.(node).execute()
+		return true
+	}
+	return false
 }
 
 type forNode struct {

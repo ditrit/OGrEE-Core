@@ -28,6 +28,7 @@
 /else/ {println("We got TOK_ELSE"); return TOK_ELSE}
 /then/ {println("We got TOK_THEN"); return TOK_THEN}
 /fi/ {println("We got TOK_FI"); return TOK_FI}
+/elif/ {println("We got TOK_ELIF"); return TOK_ELIF}
 /done/ {println("We got TOK_DONE"); return TOK_DONE}
 /print/ {println("We got TOK_PRNT"); return TOK_PRNT}
 /unset/ {println("We got TOK_UNSET"); return TOK_UNSET}

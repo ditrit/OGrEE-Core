@@ -24,22 +24,27 @@ Function declaration:
 ```
 myfunc() {command1;command2;...}
 ```
+Use:
+```
+myfun
+```
 Unlike bash, semicolons must be added to the end of each command if a block has more than 1 command. Functions can also be unset using the unset -f command:
 ```
 unset -f myfunc
 ```
+Because all variables are global, functions do not support parameters
 
 
 Loops
 ------------
-Loops are of varying types in Bash, there is limited support for the 'dynamic type' (such as iterating over a result of a command, range in arrays) of loops that are found in bash. Those dynamic loop types are still in progress. OGREE supports FOR and WHILE loops
+Loops are of varying types in Bash, there is limited support for the 'dynamic type' (such as iterating over a result of a command, range etc.) of loops that are found in bash. Those dynamic loop types are still in progress. OGREE supports FOR and WHILE loops
 
 
 Execution Control
 ------------
-If statements are of 2 types:
+If statements are of 3 types:
 ```
-if [condition] then {} done
-if [condition] then {} else {} done
+if [condition] then {} fi
+if [condition] then {} else {} fi
+if [condition] then {} elif [condition] then {} else {} fi
 ```
-Elifs are not yet supported
