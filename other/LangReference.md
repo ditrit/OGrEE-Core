@@ -35,9 +35,19 @@ unset -f myfunc
 Because all variables are global, functions do not support parameters
 
 
+Comparators
+------------
+For now comparisons only work between INTEGER type variables
+
 Loops
 ------------
 Loops are of varying types in Bash, there is limited support for the 'dynamic type' (such as iterating over a result of a command, range etc.) of loops that are found in bash. Those dynamic loop types are still in progress. OGREE supports FOR and WHILE loops
+
+For Loops:
+```
+for var in {INTEGER..INTEGER}; {commands;} done
+for ((init; condition; increment)); {commands;} done
+```
 
 
 Execution Control

@@ -3,6 +3,7 @@ package main
 import (
 	cmd "cli/controllers"
 	"cli/readline"
+	"reflect"
 )
 
 var dynamicMap = make(map[string]int)
@@ -201,46 +202,82 @@ func (c *comparatorNode) execute() interface{} {
 	if op, ok := c.op.(string); ok {
 		switch op {
 		case "<":
-			lv, lok := c.left.(node).execute().(int)
-			rv, rok := c.right.(node).execute().(int)
-			if lok && rok {
-				return lv < rv
+			lvint, lokint := c.left.(node).execute().(int)
+			rvint, rokint := c.right.(node).execute().(int)
+
+			if lokint && rokint {
+				return lvint < rvint
 			}
+
+			lvf64, lokf64 := c.left.(node).execute().(float64)
+			rvf64, rokf64 := c.right.(node).execute().(float64)
+
+			if lokf64 && rokf64 {
+				return lvf64 < rvf64
+			}
+
 			return nil
 		case "<=":
-			lv, lok := c.left.(node).execute().(int)
-			rv, rok := c.right.(node).execute().(int)
-			if lok && rok {
-				return lv <= rv
+			lvint, lokint := c.left.(node).execute().(int)
+			rvint, rokint := c.right.(node).execute().(int)
+
+			if lokint && rokint {
+				return lvint <= rvint
 			}
+
+			lvf64, lokf64 := c.left.(node).execute().(float64)
+			rvf64, rokf64 := c.right.(node).execute().(float64)
+
+			if lokf64 && rokf64 {
+				return lvf64 <= rvf64
+			}
+
 			return nil
 		case "==":
-			lv, lok := c.left.(node).execute().(int)
-			rv, rok := c.right.(node).execute().(int)
-			if lok && rok {
-				return lv == rv
+			left := c.left.(node).execute()
+			right := c.right.(node).execute()
+			if checkTypesAreSame(left, right) == true {
+				return left == right
 			}
 			return nil
 		case "!=":
-			lv, lok := c.left.(node).execute().(int)
-			rv, rok := c.right.(node).execute().(int)
-			if lok && rok {
-				return lv != rv
+			left := c.left.(node).execute()
+			right := c.right.(node).execute()
+			if checkTypesAreSame(left, right) == true {
+				return left != right
 			}
 			return nil
 		case ">":
-			lv, lok := c.left.(node).execute().(int)
-			rv, rok := c.right.(node).execute().(int)
-			if lok && rok {
-				return lv > rv
+			lvint, lokint := c.left.(node).execute().(int)
+			rvint, rokint := c.right.(node).execute().(int)
+
+			if lokint && rokint {
+				return lvint > rvint
 			}
+
+			lvf64, lokf64 := c.left.(node).execute().(float64)
+			rvf64, rokf64 := c.right.(node).execute().(float64)
+
+			if lokf64 && rokf64 {
+				return lvf64 > rvf64
+			}
+
 			return nil
 		case ">=":
-			lv, lok := c.left.(node).execute().(int)
-			rv, rok := c.right.(node).execute().(int)
-			if lok && rok {
-				return lv >= rv
+			lvint, lokint := c.left.(node).execute().(int)
+			rvint, rokint := c.right.(node).execute().(int)
+
+			if lokint && rokint {
+				return lvint >= rvint
 			}
+
+			lvf64, lokf64 := c.left.(node).execute().(float64)
+			rvf64, rokf64 := c.right.(node).execute().(float64)
+
+			if lokf64 && rokf64 {
+				return lvf64 >= rvf64
+			}
+
 			return nil
 		}
 	}
@@ -343,8 +380,10 @@ func (i *ifNode) execute() interface{} {
 					}
 				}
 			}
+			if i.elseBranch != nil {
+				i.elseBranch.(node).execute()
+			}
 
-			i.elseBranch.(node).execute()
 		}
 
 	}
@@ -438,4 +477,26 @@ func UnsetUtil(x, name string) {
 		v := dynamicMap[name]
 		dynamicSymbolTable[v] = nil
 	}
+}
+
+func checkTypesAreSame(x, y interface{}) bool {
+	return reflect.TypeOf(x) == reflect.TypeOf(y)
+}
+
+func checkTypeAreNumeric(x, y interface{}) bool {
+	var xOK, yOK bool
+	switch x.(type) {
+	case int, float64, float32:
+		xOK = true
+	default:
+		xOK = false
+	}
+
+	switch y.(type) {
+	case int, float64, float32:
+		yOK = true
+	default:
+		yOK = false
+	}
+	return xOK == yOK
 }
