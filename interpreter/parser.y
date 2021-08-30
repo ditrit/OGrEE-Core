@@ -8,6 +8,32 @@ cmd "cli/controllers"
 
 var root node 
 
+//Since the CFG will only execute rules
+//when production is fully met.
+//We need to catch values of array as they are coming,
+//otherwise, only the last elt will be captured.
+//The best way here is to catch array of strings
+//then return array of maps
+func retNodeArray(input []interface{}) []map[int]interface{}{
+       res := []map[int]interface{}{}
+       for idx := range input {
+              if input[idx].(string) == "false" {
+                     x := map[int]interface{}{0: &boolNode{BOOL, false}}
+                     res = append(res, x)
+              } else if input[idx].(string) == "true" {
+                     x := map[int]interface{}{0: &boolNode{BOOL, true}}
+                     res = append(res, x)
+              } else if v,e := strconv.Atoi(input[idx].(string)); e == nil {
+                     x := map[int]interface{}{0: &numNode{NUM, v}}
+                     res = append(res, x)
+              } else {
+                     x := map[int]interface{}{0: &strNode{STR, input[idx].(string)}}
+                     res = append(res, x)
+              }
+       }
+       return res
+}
+
 func resMap(x *string) map[string]interface{} {
        resarr := strings.Split(*x, "=")
        res := make(map[string]interface{})
@@ -43,6 +69,8 @@ func replaceOCLICurrPath(x string) string {
   node node
   nodeArr []node
   elifArr []elifNode
+  arr []interface{}
+  mapArr []map[int]interface{}
 }
 
 %token <n> TOK_NUM
@@ -67,6 +95,7 @@ func replaceOCLICurrPath(x string) string {
        TOK_UNSET TOK_ELIF
        
 %type <s> F E P P1 ORIENTN WORDORNUM STRARG
+%type <arr> WNARG
 %type <sarr> GETOBJS
 %type <elifArr> EIF
 %type <node> OCSEL OCLISYNTX OCDEL OCGET NT_CREATE NT_GET NT_DEL 
@@ -111,7 +140,7 @@ OPEN_STMT:    TOK_IF TOK_LBLOCK EXPR TOK_RBLOCK TOK_THEN st2 TOK_FI {$$=&ifNode{
               n1:=&numNode{NUM, 0};
               
               initd:=&assignNode{ASSIGN, $2, n1}; 
-              iter:=&symbolReferenceNode{REFERENCE, $2}; 
+              iter:=&symbolReferenceNode{REFERENCE, $2, 0}; 
               cmp:=&comparatorNode{COMPARATOR, "<", iter, $4}
               incr=&arithNode{ARITHMETIC, "+", iter, &numNode{NUM, 1}}
               incrAssign=&assignNode{ASSIGN, iter,incr}
@@ -125,7 +154,7 @@ OPEN_STMT:    TOK_IF TOK_LBLOCK EXPR TOK_RBLOCK TOK_THEN st2 TOK_FI {$$=&ifNode{
                var cond *comparatorNode; var incr *arithNode; var iter *symbolReferenceNode;
                var incrAssign *assignNode;
               
-              iter = &symbolReferenceNode{NUM, $2}
+              iter = &symbolReferenceNode{NUM, $2,0}
 
               if $5 < $8 {
               cond=&comparatorNode{COMPARATOR, "<", iter, n2}
@@ -184,8 +213,9 @@ unary: TOK_NOT unary {$$=&boolOpNode{BOOLOP, "!", $2}}
 
 factor: TOK_LPAREN EXPR TOK_RPAREN {$$=$2}
        |TOK_NUM {$$=&numNode{NUM, $1}}
-       |TOK_DEREF TOK_WORD {$$=&symbolReferenceNode{REFERENCE, $2}}
-       |TOK_WORD {$$=&symbolReferenceNode{REFERENCE, $1}}
+       |TOK_DEREF TOK_WORD {$$=&symbolReferenceNode{REFERENCE, $2, 0}}
+       |TOK_DEREF TOK_WORD TOK_LBLOCK TOK_NUM TOK_RBLOCK {$$=&symbolReferenceNode{REFERENCE, $2, $4}}
+       |TOK_WORD {$$=&symbolReferenceNode{REFERENCE, $1,0}}
        |TOK_BOOL {var x bool;if $1=="false"{x = false}else{x=true};$$=&boolNode{BOOL, x}}
        ;
 
@@ -325,11 +355,13 @@ OCCHOOSE: TOK_EQUAL TOK_LBRAC GETOBJS TOK_RBRAC {$$=&commonNode{COMMON, cmd.SetC
 
 OCDOT:      TOK_DOT TOK_VAR TOK_COL TOK_WORD TOK_EQUAL WORDORNUM {$$=&assignNode{ASSIGN, $4, dCatchNodePtr}}
             |TOK_DOT TOK_VAR TOK_COL TOK_WORD TOK_EQUAL TOK_QUOT STRARG TOK_QUOT{$$=&assignNode{ASSIGN, $4, &strNode{STR, $7}}}
+            |TOK_DOT TOK_VAR TOK_COL TOK_WORD TOK_EQUAL TOK_LPAREN WNARG TOK_RPAREN {$$=&assignNode{ASSIGN, $4, &arrNode{ARRAY, len($7),retNodeArray($7)}}}
             |TOK_DOT TOK_CMDS TOK_COL P {$$=&commonNode{COMMON, cmd.LoadFile, "Load", []interface{}{$4}};}
             |TOK_DOT TOK_TEMPLATE TOK_COL P {$$=&commonNode{COMMON, cmd.LoadFile, "Load", []interface{}{$4}}}
-            |TOK_DEREF TOK_WORD {$$=&symbolReferenceNode{REFERENCE, $2}}
-            |TOK_DEREF TOK_WORD TOK_EQUAL WORDORNUM {n:=&symbolReferenceNode{REFERENCE, $2};$$=&assignNode{ASSIGN,n,dCatchNodePtr }}
-            |TOK_DEREF TOK_WORD TOK_EQUAL EXPR {n:=&symbolReferenceNode{REFERENCE, $2};$$=&assignNode{ASSIGN,n,$4 }}
+            |TOK_DEREF TOK_WORD {$$=&symbolReferenceNode{REFERENCE, $2, 0}}
+            |TOK_DEREF TOK_WORD TOK_LBLOCK TOK_NUM TOK_RBLOCK {$$=&symbolReferenceNode{REFERENCE, $2, $4}}
+            |TOK_DEREF TOK_WORD TOK_EQUAL WORDORNUM {n:=&symbolReferenceNode{REFERENCE, $2, 0};$$=&assignNode{ASSIGN,n,dCatchNodePtr }}
+            |TOK_DEREF TOK_WORD TOK_EQUAL EXPR {n:=&symbolReferenceNode{REFERENCE, $2, 0};$$=&assignNode{ASSIGN,n,$4 }}
 ;
 
 OCSEL:      TOK_SELECT {$$=&commonNode{COMMON, cmd.ShowClipBoard, "select", nil};}
@@ -339,6 +371,10 @@ OCSEL:      TOK_SELECT {$$=&commonNode{COMMON, cmd.ShowClipBoard, "select", nil}
 STRARG: WORDORNUM STRARG {$$=$1+" "+$2}
        | {$$=""}
 ;
+
+WNARG: WORDORNUM WNARG {x:=[]interface{}{$1}; $$=append(x, $2...)}
+       | {$$=nil}
+       ;
 
 FUNC: TOK_WORD TOK_LPAREN TOK_RPAREN TOK_LBRAC st2 TOK_RBRAC {$$=nil;funcTable[$1]=&funcNode{FUNC, $5}}
        |TOK_WORD {x:=funcTable[$1]; if _,ok:=x.(node); ok {$$=x.(node)}else{$$=nil};}

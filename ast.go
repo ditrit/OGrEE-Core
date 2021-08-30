@@ -29,6 +29,7 @@ const (
 	BLOCK
 	FUNC
 	ELIF
+	ARRAY
 )
 
 type node interface {
@@ -95,6 +96,16 @@ func (c *commonNode) execute() interface{} {
 		}
 	}
 	return nil
+}
+
+type arrNode struct {
+	nodeType int
+	len      int
+	val      []map[int]interface{}
+}
+
+func (a *arrNode) execute() interface{} {
+	return a.val
 }
 
 type numNode struct {
@@ -287,6 +298,7 @@ func (c *comparatorNode) execute() interface{} {
 type symbolReferenceNode struct {
 	nodeType int
 	val      interface{}
+	offset   int //Used to index into arrays
 }
 
 func (s *symbolReferenceNode) execute() interface{} {
@@ -308,6 +320,28 @@ func (s *symbolReferenceNode) execute() interface{} {
 				case float64, float32:
 					x := dCatchPtr.(float64)
 					println("So You want the value: ", x)
+				case []map[int]interface{}:
+					x := val.([]map[int]interface{})
+					if s.offset >= len(x) {
+						println("Index out of range error!")
+						println("Array Length Of: ", len(x))
+						println("But desired index at: ", s.offset)
+						cmd.WarningLogger.Println("Index out of range error!")
+						return nil
+					}
+					q := ((x[s.offset][0]).(node).execute())
+					switch q.(type) {
+					case bool:
+						println("So you want the value: ", q.(bool))
+					case int:
+						println("So you want the value: ", q.(int))
+					case float64:
+						println("So you want the value: ", q.(float64))
+					case string:
+						println("So you want the value: ", q.(string))
+					}
+
+					val = q
 				}
 				return val
 			}
@@ -372,7 +406,7 @@ func (i *ifNode) execute() interface{} {
 			i.ifBranch.(node).execute()
 		} else {
 			//Check the array of Elif cases
-			println("Now checking the elifs......")
+			//println("Now checking the elifs......")
 			if _, ok := i.elif.([]elifNode); ok {
 				for idx := range i.elif.([]elifNode) {
 					if i.elif.([]elifNode)[idx].execute() == true {
@@ -480,6 +514,7 @@ func UnsetUtil(x, name string) {
 }
 
 func checkTypesAreSame(x, y interface{}) bool {
+	//println(reflect.TypeOf(x))
 	return reflect.TypeOf(x) == reflect.TypeOf(y)
 }
 

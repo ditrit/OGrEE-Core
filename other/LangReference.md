@@ -16,6 +16,11 @@ Variables
  ```
  unset -v myvar
  ```
+ Variables can have their values changed in 2 ways:
+ ```
+ .var:myvar=123
+ $myvar=123
+ ```
 
 Functions
 ------------
