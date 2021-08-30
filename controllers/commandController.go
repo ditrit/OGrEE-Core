@@ -837,13 +837,8 @@ func UpdateSelection(data map[string]interface{}) {
 }
 
 func LoadFile(path string) {
-	file, err := os.Open(path)
-	if err != nil {
-		println("Error:", err)
-		WarningLogger.Println("Error:", err)
-	}
-	defer file.Close()
-
+	State.ScriptCalled = true
+	State.ScriptPath = path
 	//scanner := bufio.NewScanner(file)
 }
 

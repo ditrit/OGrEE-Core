@@ -6,7 +6,9 @@ package main
 // questions/33025599/move-the-cursor-in-a-c-program
 
 import (
+	"bufio"
 	c "cli/controllers"
+	"os"
 	"strings"
 
 	"cli/readline"
@@ -55,6 +57,35 @@ func listEntities(path string) func(string) []string {
 func TrimToSlash(x string) string {
 	idx := strings.LastIndex(x, "/")
 	return x[:idx+1]
+}
+
+func loadFile() {
+	file, err := os.Open(c.State.ScriptPath)
+	if err != nil {
+		println("Error:", err)
+		c.WarningLogger.Println("Error:", err)
+	}
+	defer file.Close()
+	fullcom := ""
+	keepScanning := false
+	scanner := bufio.NewScanner(file)
+	for scanner.Scan() {
+		x := scanner.Text()
+		if len(x) > 0 {
+			if string(x[len(x)-1]) == "\\" {
+				fullcom += x
+				keepScanning = true
+			} else if keepScanning == true {
+				fullcom += x
+				InterpretLine(&fullcom)
+				keepScanning = false
+				fullcom = ""
+			} else {
+				InterpretLine(&x)
+			}
+		}
+
+	}
 }
 
 func main() {
@@ -187,11 +218,19 @@ func main() {
 	println("Caching data... please wait")
 	c.InitState()
 	for {
-		line, err := rl.Readline()
-		if err != nil { // io.EOF
-			break
+		if c.State.ScriptCalled == true {
+			//Load the path and
+			//call interpret line
+			loadFile()
+			c.State.ScriptCalled = false
+		} else {
+			line, err := rl.Readline()
+			if err != nil { // io.EOF
+				break
+			}
+			InterpretLine(&line)
 		}
-		InterpretLine(&line)
+
 		//c.UpdateSessionState(&line)
 		//Update Prompt
 		rl.SetPrompt("\u001b[1m\u001b[32m" + user + "@" + "OGrEE3D:" +

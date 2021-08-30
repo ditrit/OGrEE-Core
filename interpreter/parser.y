@@ -272,7 +272,7 @@ P:     P1
 P1:    TOK_WORD TOK_SLASH P1 {$$=$1+"/"+$3}
        | TOK_WORD {$$=$1}
        | TOK_DOT TOK_DOT TOK_SLASH P1 {$$="../"+$4}
-       | TOK_WORD {$$=$1}
+       | TOK_WORD TOK_DOT TOK_WORD {$$=$1+"."+$3}
        | TOK_DOT TOK_DOT {$$=".."}
        | TOK_OCDEL {$$="-"}
        | TOK_DEREF TOK_WORD {$$=""}

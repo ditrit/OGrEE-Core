@@ -63,3 +63,10 @@ if [condition] then {} fi
 if [condition] then {} else {} fi
 if [condition] then {} elif [condition] then {} else {} fi
 ```
+
+Scripts
+------------
+Scripts can be loaded. The commands follow the OGREE language specification, with the exception of multi line commands such as functions and loops. Multi Line commands must have a '\\' before each newline. The last line shall not have the '\\'. The file extension does not matter, for now the only way to invoke a script is to launch the OGREE shell and:
+```
+.cmds:[PATH/TO/YOUR/FILE]
+```

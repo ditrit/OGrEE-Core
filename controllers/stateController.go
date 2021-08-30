@@ -31,6 +31,8 @@ type ShellState struct {
 	PrevPath      string
 	ClipBoard     *[]string
 	TreeHierarchy *Node
+	ScriptCalled  bool
+	ScriptPath    string
 }
 
 type Node struct {
