@@ -225,8 +225,7 @@ K: NT_CREATE     {println("@State start");}
        | NT_DEL 
 ;
 
-NT_CREATE: TOK_CREATE E F {$$=&commonNode{COMMON, cmd.PostObj,"PostObj", []interface{}{cmd.EntityStrToInt($2),$2, resMap(&$3)}};}
-       | TOK_CREATE E P F {cmd.Disp(resMap(&$4)); $$=&commonNode{COMMON, cmd.PostObj, "PostObj", []interface{}{cmd.EntityStrToInt($2),$2, resMap(&$4)}}}
+NT_CREATE: TOK_CREATE E P F {cmd.Disp(resMap(&$4)); $$=&commonNode{COMMON, cmd.PostObj, "PostObj", []interface{}{cmd.EntityStrToInt($2),$2, resMap(&$4)}}}
 ;
 
 NT_GET: TOK_GET P {$$=&commonNode{COMMON, cmd.GetObject, "GetObject", []interface{}{$2}}}
