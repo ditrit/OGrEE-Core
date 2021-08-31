@@ -7,3 +7,6 @@ interpreter/y
 main
 log.txt
 __debug_bin
+parser.tab.c
+BisonExmple.txt
+delme.sh
