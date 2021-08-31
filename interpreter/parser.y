@@ -111,14 +111,12 @@ func replaceOCLICurrPath(x string) string {
 
 start: st2 {root = $1}
 
-st2: stmnt opn {$$=&ast{BLOCK,[]node{$1} }}
+st2: stmnt {$$=&ast{BLOCK,[]node{$1} }}
        |stmnt TOK_SEMICOL st2 {$$=&ast{BLOCK,[]node{$1, $3}}}
        |CTRL {$$=&ast{IF,[]node{$1}}}
 ;
 
-opn: TOK_SEMICOL
-       |
-       ;
+
 
 stmnt: K {$$=$1}
        |Q {$$=$1}
