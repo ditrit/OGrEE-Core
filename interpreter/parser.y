@@ -373,6 +373,7 @@ STRARG: WORDORNUM STRARG {$$=$1+" "+$2}
 ;
 
 WNARG: WORDORNUM WNARG {x:=[]interface{}{$1}; $$=append(x, $2...)}
+       |TOK_QUOT WORDORNUM TOK_QUOT WNARG {x:=[]interface{}{$2}; $$=append(x, $4...)}
        | {$$=nil}
        ;
 
