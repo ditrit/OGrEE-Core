@@ -354,6 +354,7 @@ OCDOT:      TOK_DOT TOK_VAR TOK_COL TOK_WORD TOK_EQUAL WORDORNUM {$$=&assignNode
             |TOK_DOT TOK_CMDS TOK_COL P {$$=&commonNode{COMMON, cmd.LoadFile, "Load", []interface{}{$4}};}
             |TOK_DOT TOK_TEMPLATE TOK_COL P {$$=&commonNode{COMMON, cmd.LoadFile, "Load", []interface{}{$4}}}
             |TOK_DEREF TOK_WORD {$$=&symbolReferenceNode{REFERENCE, $2, 0}}
+            |TOK_DEREF TOK_WORD TOK_EQUAL TOK_QUOT STRARG TOK_QUOT {x:=&symbolReferenceNode{REFERENCE, $2, 0};$$=&assignNode{ASSIGN, x, &strNode{STR, $5}}  }
             |TOK_DEREF TOK_WORD TOK_LBLOCK TOK_NUM TOK_RBLOCK {$$=&symbolReferenceNode{REFERENCE, $2, $4}}
             |TOK_DEREF TOK_WORD TOK_EQUAL EXPR {n:=&symbolReferenceNode{REFERENCE, $2, 0};$$=&assignNode{ASSIGN,n,$4 }}
 ;
