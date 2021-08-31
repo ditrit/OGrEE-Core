@@ -322,6 +322,7 @@ func (s *symbolReferenceNode) execute() interface{} {
 					println("So You want the value: ", x)
 				case []map[int]interface{}:
 					x := val.([]map[int]interface{})
+					println("Referring to Array")
 					if s.offset >= len(x) {
 						println("Index out of range error!")
 						println("Array Length Of: ", len(x))
@@ -371,7 +372,11 @@ func (a *assignNode) execute() interface{} {
 
 	if a.val != nil {
 		v := a.val.(node).execute() //Obtain val
-		dynamicSymbolTable[idx] = v //Assign val into DStable
+		if arr, e := dynamicSymbolTable[idx].([]map[int]interface{}); e == true {
+			arr[idx][0] = v
+		} else {
+			dynamicSymbolTable[idx] = v //Assign val into DStable
+		}
 
 		switch v.(type) {
 		case string:

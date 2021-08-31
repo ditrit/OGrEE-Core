@@ -356,6 +356,7 @@ OCDOT:      TOK_DOT TOK_VAR TOK_COL TOK_WORD TOK_EQUAL WORDORNUM {$$=&assignNode
             |TOK_DEREF TOK_WORD {$$=&symbolReferenceNode{REFERENCE, $2, 0}}
             |TOK_DEREF TOK_WORD TOK_EQUAL TOK_QUOT STRARG TOK_QUOT {x:=&symbolReferenceNode{REFERENCE, $2, 0};$$=&assignNode{ASSIGN, x, &strNode{STR, $5}}  }
             |TOK_DEREF TOK_WORD TOK_LBLOCK TOK_NUM TOK_RBLOCK {$$=&symbolReferenceNode{REFERENCE, $2, $4}}
+            |TOK_DEREF TOK_WORD TOK_LBLOCK TOK_NUM TOK_RBLOCK TOK_EQUAL EXPR {v:=&symbolReferenceNode{REFERENCE, $2, $4}; $$=&assignNode{ASSIGN, v, $7} }
             |TOK_DEREF TOK_WORD TOK_EQUAL EXPR {n:=&symbolReferenceNode{REFERENCE, $2, 0};$$=&assignNode{ASSIGN,n,$4 }}
 ;
 

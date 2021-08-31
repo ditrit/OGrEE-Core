@@ -89,7 +89,7 @@ state 3 // [$end]
     TOK_ELSE     reduce using rule 2 (st2)
     TOK_FI       reduce using rule 2 (st2)
     TOK_RBRAC    reduce using rule 2 (st2)
-    TOK_SEMICOL  shift, and goto state 364
+    TOK_SEMICOL  shift, and goto state 366
 
 state 4 // TOK_WHILE TOK_LPAREN TOK_BOOL TOK_RPAREN TOK_DONE [$end]
 
@@ -170,13 +170,13 @@ state 10 // TOK_IF
    11 OPEN_STMT: TOK_IF . TOK_LBLOCK EXPR TOK_RBLOCK TOK_THEN st2 TOK_FI
    12 OPEN_STMT: TOK_IF . TOK_LBLOCK EXPR TOK_RBLOCK TOK_THEN st2 EIF TOK_ELSE st2 TOK_FI
 
-    TOK_LBLOCK  shift, and goto state 347
+    TOK_LBLOCK  shift, and goto state 349
 
 state 11 // TOK_WHILE
 
    13 OPEN_STMT: TOK_WHILE . TOK_LPAREN EXPR TOK_RPAREN st2 TOK_DONE
 
-    TOK_LPAREN  shift, and goto state 342
+    TOK_LPAREN  shift, and goto state 344
 
 state 12 // TOK_FOR
 
@@ -184,8 +184,8 @@ state 12 // TOK_FOR
    15 OPEN_STMT: TOK_FOR . TOK_WORD TOK_IN EXPR TOK_SEMICOL st2 TOK_DONE
    16 OPEN_STMT: TOK_FOR . TOK_WORD TOK_IN TOK_LBRAC TOK_NUM TOK_DOT TOK_DOT TOK_NUM TOK_RBRAC TOK_SEMICOL st2 TOK_DONE
 
-    TOK_LPAREN  shift, and goto state 313
-    TOK_WORD    shift, and goto state 314
+    TOK_LPAREN  shift, and goto state 315
+    TOK_WORD    shift, and goto state 316
 
 state 13 // TOK_CREATE TOK_BLDG TOK_ATTR TOK_EQUAL TOK_BOOL [$end]
 
@@ -243,16 +243,16 @@ state 17 // TOK_CREATE
 
    50 NT_CREATE: TOK_CREATE . E P F
 
-    TOK_BLDG        shift, and goto state 303
-    TOK_DEVICE      shift, and goto state 306
-    TOK_RACK        shift, and goto state 305
-    TOK_ROOM        shift, and goto state 304
-    TOK_SITE        shift, and goto state 302
-    TOK_SUBDEVICE   shift, and goto state 307
-    TOK_SUBDEVICE1  shift, and goto state 308
-    TOK_TENANT      shift, and goto state 301
+    TOK_BLDG        shift, and goto state 305
+    TOK_DEVICE      shift, and goto state 308
+    TOK_RACK        shift, and goto state 307
+    TOK_ROOM        shift, and goto state 306
+    TOK_SITE        shift, and goto state 304
+    TOK_SUBDEVICE   shift, and goto state 309
+    TOK_SUBDEVICE1  shift, and goto state 310
+    TOK_TENANT      shift, and goto state 303
 
-    E  goto state 310
+    E  goto state 312
 
 state 18 // TOK_GET
 
@@ -261,29 +261,29 @@ state 18 // TOK_GET
    81 P1: .  [$end, TOK_DONE, TOK_ELIF, TOK_ELSE, TOK_FI, TOK_RBRAC, TOK_RPAREN, TOK_SEMICOL]
 
     $end            reduce using rule 81 (P1)
-    TOK_BLDG        shift, and goto state 303
+    TOK_BLDG        shift, and goto state 305
     TOK_DEREF       shift, and goto state 64
-    TOK_DEVICE      shift, and goto state 306
+    TOK_DEVICE      shift, and goto state 308
     TOK_DONE        reduce using rule 81 (P1)
     TOK_DOT         shift, and goto state 62
     TOK_ELIF        reduce using rule 81 (P1)
     TOK_ELSE        reduce using rule 81 (P1)
     TOK_FI          reduce using rule 81 (P1)
     TOK_OCDEL       shift, and goto state 63
-    TOK_RACK        shift, and goto state 305
+    TOK_RACK        shift, and goto state 307
     TOK_RBRAC       reduce using rule 81 (P1)
-    TOK_ROOM        shift, and goto state 304
+    TOK_ROOM        shift, and goto state 306
     TOK_RPAREN      reduce using rule 81 (P1)
     TOK_SEMICOL     reduce using rule 81 (P1)
-    TOK_SITE        shift, and goto state 302
+    TOK_SITE        shift, and goto state 304
     TOK_SLASH       shift, and goto state 22
-    TOK_SUBDEVICE   shift, and goto state 307
-    TOK_SUBDEVICE1  shift, and goto state 308
-    TOK_TENANT      shift, and goto state 301
+    TOK_SUBDEVICE   shift, and goto state 309
+    TOK_SUBDEVICE1  shift, and goto state 310
+    TOK_TENANT      shift, and goto state 303
     TOK_WORD        shift, and goto state 61
 
-    E   goto state 300
-    P   goto state 299
+    E   goto state 302
+    P   goto state 301
     P1  goto state 21
 
 state 19 // TOK_UPDATE
@@ -298,7 +298,7 @@ state 19 // TOK_UPDATE
     TOK_SLASH  shift, and goto state 22
     TOK_WORD   shift, and goto state 61
 
-    P   goto state 293
+    P   goto state 295
     P1  goto state 21
 
 state 20 // TOK_DELETE
@@ -320,7 +320,7 @@ state 20 // TOK_DELETE
     TOK_SLASH    shift, and goto state 22
     TOK_WORD     shift, and goto state 61
 
-    P   goto state 292
+    P   goto state 294
     P1  goto state 21
 
 state 21 //
@@ -361,7 +361,7 @@ state 22 // TOK_SLASH
     TOK_SEMICOL   reduce using rule 81 (P1)
     TOK_WORD      shift, and goto state 61
 
-    P1  goto state 291
+    P1  goto state 293
 
     conflict on TOK_DOT, shift, and goto state 62, reduce using rule 81
 
@@ -370,19 +370,19 @@ state 23 // TOK_WORD
    74 P1: TOK_WORD . TOK_SLASH P1
    75 P1: TOK_WORD .  [TOK_DOT]
    77 P1: TOK_WORD . TOK_DOT TOK_WORD
-  153 FUNC: TOK_WORD . TOK_LPAREN TOK_RPAREN TOK_LBRAC st2 TOK_RBRAC
-  154 FUNC: TOK_WORD .  [$end, TOK_DONE, TOK_ELIF, TOK_ELSE, TOK_FI, TOK_RBRAC, TOK_RPAREN, TOK_SEMICOL]
+  154 FUNC: TOK_WORD . TOK_LPAREN TOK_RPAREN TOK_LBRAC st2 TOK_RBRAC
+  155 FUNC: TOK_WORD .  [$end, TOK_DONE, TOK_ELIF, TOK_ELSE, TOK_FI, TOK_RBRAC, TOK_RPAREN, TOK_SEMICOL]
 
-    $end         reduce using rule 154 (FUNC)
-    TOK_DONE     reduce using rule 154 (FUNC)
+    $end         reduce using rule 155 (FUNC)
+    TOK_DONE     reduce using rule 155 (FUNC)
     TOK_DOT      shift, and goto state 77
-    TOK_ELIF     reduce using rule 154 (FUNC)
-    TOK_ELSE     reduce using rule 154 (FUNC)
-    TOK_FI       reduce using rule 154 (FUNC)
-    TOK_LPAREN   shift, and goto state 286
-    TOK_RBRAC    reduce using rule 154 (FUNC)
-    TOK_RPAREN   reduce using rule 154 (FUNC)
-    TOK_SEMICOL  reduce using rule 154 (FUNC)
+    TOK_ELIF     reduce using rule 155 (FUNC)
+    TOK_ELSE     reduce using rule 155 (FUNC)
+    TOK_FI       reduce using rule 155 (FUNC)
+    TOK_LPAREN   shift, and goto state 288
+    TOK_RBRAC    reduce using rule 155 (FUNC)
+    TOK_RPAREN   reduce using rule 155 (FUNC)
+    TOK_SEMICOL  reduce using rule 155 (FUNC)
     TOK_SLASH    shift, and goto state 76
     conflict on TOK_DOT, shift, and goto state 77, reduce using rule 75
 
@@ -396,10 +396,10 @@ state 24 // TOK_DOT
   140 OCDOT: TOK_DOT . TOK_CMDS TOK_COL P
   141 OCDOT: TOK_DOT . TOK_TEMPLATE TOK_COL P
 
-    TOK_CMDS      shift, and goto state 264
+    TOK_CMDS      shift, and goto state 266
     TOK_DOT       shift, and goto state 73
-    TOK_TEMPLATE  shift, and goto state 265
-    TOK_VAR       shift, and goto state 263
+    TOK_TEMPLATE  shift, and goto state 267
+    TOK_VAR       shift, and goto state 265
 
 state 25 // TOK_OCDEL
 
@@ -421,7 +421,7 @@ state 25 // TOK_OCDEL
     TOK_SLASH    shift, and goto state 22
     TOK_WORD     shift, and goto state 61
 
-    P   goto state 262
+    P   goto state 264
     P1  goto state 21
 
     conflict on TOK_DOT, shift, and goto state 62, reduce using rule 79
@@ -432,7 +432,8 @@ state 26 // TOK_DEREF
   142 OCDOT: TOK_DEREF . TOK_WORD
   143 OCDOT: TOK_DEREF . TOK_WORD TOK_EQUAL TOK_QUOT STRARG TOK_QUOT
   144 OCDOT: TOK_DEREF . TOK_WORD TOK_LBLOCK TOK_NUM TOK_RBLOCK
-  145 OCDOT: TOK_DEREF . TOK_WORD TOK_EQUAL EXPR  // assoc %right, prec 2
+  145 OCDOT: TOK_DEREF . TOK_WORD TOK_LBLOCK TOK_NUM TOK_RBLOCK TOK_EQUAL EXPR  // assoc %right, prec 2
+  146 OCDOT: TOK_DEREF . TOK_WORD TOK_EQUAL EXPR  // assoc %right, prec 2
 
     TOK_WORD  shift, and goto state 205
 
@@ -930,49 +931,49 @@ state 55 // TOK_EQUAL
 
 state 56 // TOK_SELECT
 
-  146 OCSEL: TOK_SELECT .  [$end, TOK_DONE, TOK_ELIF, TOK_ELSE, TOK_FI, TOK_RBRAC, TOK_RPAREN, TOK_SEMICOL]
-  147 OCSEL: TOK_SELECT . TOK_DOT TOK_ATTR TOK_EQUAL TOK_WORD
-
-    $end         reduce using rule 146 (OCSEL)
-    TOK_DONE     reduce using rule 146 (OCSEL)
-    TOK_DOT      shift, and goto state 57
-    TOK_ELIF     reduce using rule 146 (OCSEL)
-    TOK_ELSE     reduce using rule 146 (OCSEL)
-    TOK_FI       reduce using rule 146 (OCSEL)
-    TOK_RBRAC    reduce using rule 146 (OCSEL)
-    TOK_RPAREN   reduce using rule 146 (OCSEL)
-    TOK_SEMICOL  reduce using rule 146 (OCSEL)
-
-state 57 // TOK_SELECT TOK_DOT
-
-  147 OCSEL: TOK_SELECT TOK_DOT . TOK_ATTR TOK_EQUAL TOK_WORD
-
-    TOK_ATTR  shift, and goto state 58
-
-state 58 // TOK_SELECT TOK_DOT TOK_ATTR
-
-  147 OCSEL: TOK_SELECT TOK_DOT TOK_ATTR . TOK_EQUAL TOK_WORD
-
-    TOK_EQUAL  shift, and goto state 59
-
-state 59 // TOK_SELECT TOK_DOT TOK_ATTR TOK_EQUAL
-
-  147 OCSEL: TOK_SELECT TOK_DOT TOK_ATTR TOK_EQUAL . TOK_WORD
-
-    TOK_WORD  shift, and goto state 60
-
-state 60 // TOK_SELECT TOK_DOT TOK_ATTR TOK_EQUAL TOK_WORD
-
-  147 OCSEL: TOK_SELECT TOK_DOT TOK_ATTR TOK_EQUAL TOK_WORD .  [$end, TOK_DONE, TOK_ELIF, TOK_ELSE, TOK_FI, TOK_RBRAC, TOK_RPAREN, TOK_SEMICOL]
+  147 OCSEL: TOK_SELECT .  [$end, TOK_DONE, TOK_ELIF, TOK_ELSE, TOK_FI, TOK_RBRAC, TOK_RPAREN, TOK_SEMICOL]
+  148 OCSEL: TOK_SELECT . TOK_DOT TOK_ATTR TOK_EQUAL TOK_WORD
 
     $end         reduce using rule 147 (OCSEL)
     TOK_DONE     reduce using rule 147 (OCSEL)
+    TOK_DOT      shift, and goto state 57
     TOK_ELIF     reduce using rule 147 (OCSEL)
     TOK_ELSE     reduce using rule 147 (OCSEL)
     TOK_FI       reduce using rule 147 (OCSEL)
     TOK_RBRAC    reduce using rule 147 (OCSEL)
     TOK_RPAREN   reduce using rule 147 (OCSEL)
     TOK_SEMICOL  reduce using rule 147 (OCSEL)
+
+state 57 // TOK_SELECT TOK_DOT
+
+  148 OCSEL: TOK_SELECT TOK_DOT . TOK_ATTR TOK_EQUAL TOK_WORD
+
+    TOK_ATTR  shift, and goto state 58
+
+state 58 // TOK_SELECT TOK_DOT TOK_ATTR
+
+  148 OCSEL: TOK_SELECT TOK_DOT TOK_ATTR . TOK_EQUAL TOK_WORD
+
+    TOK_EQUAL  shift, and goto state 59
+
+state 59 // TOK_SELECT TOK_DOT TOK_ATTR TOK_EQUAL
+
+  148 OCSEL: TOK_SELECT TOK_DOT TOK_ATTR TOK_EQUAL . TOK_WORD
+
+    TOK_WORD  shift, and goto state 60
+
+state 60 // TOK_SELECT TOK_DOT TOK_ATTR TOK_EQUAL TOK_WORD
+
+  148 OCSEL: TOK_SELECT TOK_DOT TOK_ATTR TOK_EQUAL TOK_WORD .  [$end, TOK_DONE, TOK_ELIF, TOK_ELSE, TOK_FI, TOK_RBRAC, TOK_RPAREN, TOK_SEMICOL]
+
+    $end         reduce using rule 148 (OCSEL)
+    TOK_DONE     reduce using rule 148 (OCSEL)
+    TOK_ELIF     reduce using rule 148 (OCSEL)
+    TOK_ELSE     reduce using rule 148 (OCSEL)
+    TOK_FI       reduce using rule 148 (OCSEL)
+    TOK_RBRAC    reduce using rule 148 (OCSEL)
+    TOK_RPAREN   reduce using rule 148 (OCSEL)
+    TOK_SEMICOL  reduce using rule 148 (OCSEL)
 
 state 61 // TOK_LSSITE TOK_WORD
 
@@ -2369,13 +2370,13 @@ state 184 // TOK_DOC TOK_LSOG
 state 185 // TOK_PRNT TOK_QUOT
 
    98 BASH: TOK_PRNT TOK_QUOT . STRARG TOK_QUOT
-  149 STRARG: .  [TOK_QUOT]
+  150 STRARG: .  [TOK_QUOT]
 
     TOK_BOOL   shift, and goto state 87
     TOK_NUM    shift, and goto state 84
     TOK_OCDEL  shift, and goto state 86
     TOK_PLUS   shift, and goto state 85
-    TOK_QUOT   reduce using rule 149 (STRARG)
+    TOK_QUOT   reduce using rule 150 (STRARG)
     TOK_WORD   shift, and goto state 83
 
     STRARG     goto state 186
@@ -2389,14 +2390,14 @@ state 186 // TOK_PRNT TOK_QUOT [TOK_QUOT]
 
 state 187 // TOK_PRNT TOK_QUOT TOK_BOOL [TOK_BOOL]
 
-  148 STRARG: WORDORNUM . STRARG
-  149 STRARG: .  [TOK_QUOT]
+  149 STRARG: WORDORNUM . STRARG
+  150 STRARG: .  [TOK_QUOT]
 
     TOK_BOOL   shift, and goto state 87
     TOK_NUM    shift, and goto state 84
     TOK_OCDEL  shift, and goto state 86
     TOK_PLUS   shift, and goto state 85
-    TOK_QUOT   reduce using rule 149 (STRARG)
+    TOK_QUOT   reduce using rule 150 (STRARG)
     TOK_WORD   shift, and goto state 83
 
     STRARG     goto state 188
@@ -2404,9 +2405,9 @@ state 187 // TOK_PRNT TOK_QUOT TOK_BOOL [TOK_BOOL]
 
 state 188 // TOK_PRNT TOK_QUOT TOK_BOOL [TOK_QUOT]
 
-  148 STRARG: WORDORNUM STRARG .  [TOK_QUOT]
+  149 STRARG: WORDORNUM STRARG .  [TOK_QUOT]
 
-    TOK_QUOT  reduce using rule 148 (STRARG)
+    TOK_QUOT  reduce using rule 149 (STRARG)
 
 state 189 // TOK_PRNT TOK_QUOT TOK_QUOT
 
@@ -2610,7 +2611,8 @@ state 205 // TOK_DEREF TOK_WORD
   142 OCDOT: TOK_DEREF TOK_WORD .  [$end, TOK_DONE, TOK_ELIF, TOK_ELSE, TOK_FI, TOK_RBRAC, TOK_RPAREN, TOK_SEMICOL]
   143 OCDOT: TOK_DEREF TOK_WORD . TOK_EQUAL TOK_QUOT STRARG TOK_QUOT
   144 OCDOT: TOK_DEREF TOK_WORD . TOK_LBLOCK TOK_NUM TOK_RBLOCK
-  145 OCDOT: TOK_DEREF TOK_WORD . TOK_EQUAL EXPR  // assoc %right, prec 2
+  145 OCDOT: TOK_DEREF TOK_WORD . TOK_LBLOCK TOK_NUM TOK_RBLOCK TOK_EQUAL EXPR  // assoc %right, prec 2
+  146 OCDOT: TOK_DEREF TOK_WORD . TOK_EQUAL EXPR  // assoc %right, prec 2
 
     $end         reduce using rule 142 (OCDOT)
     TOK_DONE     reduce using rule 142 (OCDOT)
@@ -2627,73 +2629,98 @@ state 205 // TOK_DEREF TOK_WORD
 state 206 // TOK_DEREF TOK_WORD TOK_EQUAL
 
   143 OCDOT: TOK_DEREF TOK_WORD TOK_EQUAL . TOK_QUOT STRARG TOK_QUOT
-  145 OCDOT: TOK_DEREF TOK_WORD TOK_EQUAL . EXPR  // assoc %right, prec 2
+  146 OCDOT: TOK_DEREF TOK_WORD TOK_EQUAL . EXPR  // assoc %right, prec 2
 
-    TOK_BOOL    shift, and goto state 224
-    TOK_DEREF   shift, and goto state 222
-    TOK_LPAREN  shift, and goto state 220
-    TOK_NOT     shift, and goto state 217
-    TOK_NUM     shift, and goto state 221
-    TOK_OCDEL   shift, and goto state 218
-    TOK_QUOT    shift, and goto state 225
-    TOK_WORD    shift, and goto state 223
+    TOK_BOOL    shift, and goto state 225
+    TOK_DEREF   shift, and goto state 223
+    TOK_LPAREN  shift, and goto state 221
+    TOK_NOT     shift, and goto state 218
+    TOK_NUM     shift, and goto state 222
+    TOK_OCDEL   shift, and goto state 219
+    TOK_QUOT    shift, and goto state 261
+    TOK_WORD    shift, and goto state 224
 
-    EQAL    goto state 212
-    EXPR    goto state 210
-    JOIN    goto state 211
-    REL     goto state 213
-    factor  goto state 219
-    nex     goto state 214
-    term    goto state 215
-    unary   goto state 216
+    EQAL    goto state 213
+    EXPR    goto state 260
+    JOIN    goto state 212
+    REL     goto state 214
+    factor  goto state 220
+    nex     goto state 215
+    term    goto state 216
+    unary   goto state 217
 
 state 207 // TOK_DEREF TOK_WORD TOK_LBLOCK
 
   144 OCDOT: TOK_DEREF TOK_WORD TOK_LBLOCK . TOK_NUM TOK_RBLOCK
+  145 OCDOT: TOK_DEREF TOK_WORD TOK_LBLOCK . TOK_NUM TOK_RBLOCK TOK_EQUAL EXPR  // assoc %right, prec 2
 
     TOK_NUM  shift, and goto state 208
 
 state 208 // TOK_DEREF TOK_WORD TOK_LBLOCK TOK_NUM
 
   144 OCDOT: TOK_DEREF TOK_WORD TOK_LBLOCK TOK_NUM . TOK_RBLOCK
+  145 OCDOT: TOK_DEREF TOK_WORD TOK_LBLOCK TOK_NUM . TOK_RBLOCK TOK_EQUAL EXPR  // assoc %right, prec 2
 
     TOK_RBLOCK  shift, and goto state 209
 
 state 209 // TOK_DEREF TOK_WORD TOK_LBLOCK TOK_NUM TOK_RBLOCK
 
   144 OCDOT: TOK_DEREF TOK_WORD TOK_LBLOCK TOK_NUM TOK_RBLOCK .  [$end, TOK_DONE, TOK_ELIF, TOK_ELSE, TOK_FI, TOK_RBRAC, TOK_RPAREN, TOK_SEMICOL]
+  145 OCDOT: TOK_DEREF TOK_WORD TOK_LBLOCK TOK_NUM TOK_RBLOCK . TOK_EQUAL EXPR  // assoc %right, prec 2
 
     $end         reduce using rule 144 (OCDOT)
     TOK_DONE     reduce using rule 144 (OCDOT)
     TOK_ELIF     reduce using rule 144 (OCDOT)
     TOK_ELSE     reduce using rule 144 (OCDOT)
+    TOK_EQUAL    shift, and goto state 210
     TOK_FI       reduce using rule 144 (OCDOT)
     TOK_RBRAC    reduce using rule 144 (OCDOT)
     TOK_RPAREN   reduce using rule 144 (OCDOT)
     TOK_SEMICOL  reduce using rule 144 (OCDOT)
 
-state 210 // TOK_DEREF TOK_WORD TOK_EQUAL TOK_BOOL [$end]
+state 210 // TOK_DEREF TOK_WORD TOK_LBLOCK TOK_NUM TOK_RBLOCK TOK_EQUAL
+
+  145 OCDOT: TOK_DEREF TOK_WORD TOK_LBLOCK TOK_NUM TOK_RBLOCK TOK_EQUAL . EXPR  // assoc %right, prec 2
+
+    TOK_BOOL    shift, and goto state 225
+    TOK_DEREF   shift, and goto state 223
+    TOK_LPAREN  shift, and goto state 221
+    TOK_NOT     shift, and goto state 218
+    TOK_NUM     shift, and goto state 222
+    TOK_OCDEL   shift, and goto state 219
+    TOK_WORD    shift, and goto state 224
+
+    EQAL    goto state 213
+    EXPR    goto state 211
+    JOIN    goto state 212
+    REL     goto state 214
+    factor  goto state 220
+    nex     goto state 215
+    term    goto state 216
+    unary   goto state 217
+
+state 211 // TOK_DEREF TOK_WORD TOK_LBLOCK TOK_NUM TOK_RBLOCK TOK_EQUAL TOK_BOOL [$end]
 
    19 EXPR: EXPR . TOK_OR JOIN
-  145 OCDOT: TOK_DEREF TOK_WORD TOK_EQUAL EXPR .  [$end, TOK_DONE, TOK_ELIF, TOK_ELSE, TOK_FI, TOK_RBRAC, TOK_RPAREN, TOK_SEMICOL]  // assoc %right, prec 2
+  145 OCDOT: TOK_DEREF TOK_WORD TOK_LBLOCK TOK_NUM TOK_RBLOCK TOK_EQUAL EXPR .  [$end, TOK_DONE, TOK_ELIF, TOK_ELSE, TOK_FI, TOK_RBRAC, TOK_RPAREN, TOK_SEMICOL]  // assoc %right, prec 2
 
     $end         reduce using rule 145 (OCDOT)
     TOK_DONE     reduce using rule 145 (OCDOT)
     TOK_ELIF     reduce using rule 145 (OCDOT)
     TOK_ELSE     reduce using rule 145 (OCDOT)
     TOK_FI       reduce using rule 145 (OCDOT)
-    TOK_OR       shift, and goto state 233
+    TOK_OR       shift, and goto state 231
     TOK_RBRAC    reduce using rule 145 (OCDOT)
     TOK_RPAREN   reduce using rule 145 (OCDOT)
     TOK_SEMICOL  reduce using rule 145 (OCDOT)
 
-state 211 // TOK_WHILE TOK_LPAREN TOK_BOOL [$end]
+state 212 // TOK_WHILE TOK_LPAREN TOK_BOOL [$end]
 
    20 EXPR: JOIN .  [$end, TOK_DONE, TOK_ELIF, TOK_ELSE, TOK_FI, TOK_OR, TOK_RBLOCK, TOK_RBRAC, TOK_RPAREN, TOK_SEMICOL]
    21 JOIN: JOIN . TOK_AND EQAL
 
     $end         reduce using rule 20 (EXPR)
-    TOK_AND      shift, and goto state 236
+    TOK_AND      shift, and goto state 234
     TOK_DONE     reduce using rule 20 (EXPR)
     TOK_ELIF     reduce using rule 20 (EXPR)
     TOK_ELSE     reduce using rule 20 (EXPR)
@@ -2704,7 +2731,7 @@ state 211 // TOK_WHILE TOK_LPAREN TOK_BOOL [$end]
     TOK_RPAREN   reduce using rule 20 (EXPR)
     TOK_SEMICOL  reduce using rule 20 (EXPR)
 
-state 212 // TOK_WHILE TOK_LPAREN TOK_BOOL [$end]
+state 213 // TOK_WHILE TOK_LPAREN TOK_BOOL [$end]
 
    22 JOIN: EQAL .  [$end, TOK_AND, TOK_DONE, TOK_ELIF, TOK_ELSE, TOK_FI, TOK_OR, TOK_RBLOCK, TOK_RBRAC, TOK_RPAREN, TOK_SEMICOL]
    23 EQAL: EQAL . TOK_EQUAL TOK_EQUAL REL  // assoc %right, prec 2
@@ -2715,16 +2742,16 @@ state 212 // TOK_WHILE TOK_LPAREN TOK_BOOL [$end]
     TOK_DONE     reduce using rule 22 (JOIN)
     TOK_ELIF     reduce using rule 22 (JOIN)
     TOK_ELSE     reduce using rule 22 (JOIN)
-    TOK_EQUAL    shift, and goto state 238
+    TOK_EQUAL    shift, and goto state 236
     TOK_FI       reduce using rule 22 (JOIN)
-    TOK_NOT      shift, and goto state 239
+    TOK_NOT      shift, and goto state 237
     TOK_OR       reduce using rule 22 (JOIN)
     TOK_RBLOCK   reduce using rule 22 (JOIN)
     TOK_RBRAC    reduce using rule 22 (JOIN)
     TOK_RPAREN   reduce using rule 22 (JOIN)
     TOK_SEMICOL  reduce using rule 22 (JOIN)
 
-state 213 // TOK_WHILE TOK_LPAREN TOK_BOOL [$end]
+state 214 // TOK_WHILE TOK_LPAREN TOK_BOOL [$end]
 
    25 EQAL: REL .  [$end, TOK_AND, TOK_DONE, TOK_ELIF, TOK_ELSE, TOK_EQUAL, TOK_FI, TOK_NOT, TOK_OR, TOK_RBLOCK, TOK_RBRAC, TOK_RPAREN, TOK_SEMICOL]
 
@@ -2742,7 +2769,7 @@ state 213 // TOK_WHILE TOK_LPAREN TOK_BOOL [$end]
     TOK_RPAREN   reduce using rule 25 (EQAL)
     TOK_SEMICOL  reduce using rule 25 (EQAL)
 
-state 214 // TOK_WHILE TOK_LPAREN TOK_BOOL [$end]
+state 215 // TOK_WHILE TOK_LPAREN TOK_BOOL [$end]
 
    26 REL: nex . TOK_LESS nex
    27 REL: nex . TOK_LESS TOK_EQUAL nex  // assoc %right, prec 2
@@ -2759,18 +2786,18 @@ state 214 // TOK_WHILE TOK_LPAREN TOK_BOOL [$end]
     TOK_ELSE     reduce using rule 30 (REL)
     TOK_EQUAL    reduce using rule 30 (REL)
     TOK_FI       reduce using rule 30 (REL)
-    TOK_GREATER  shift, and goto state 251
-    TOK_LESS     shift, and goto state 250
+    TOK_GREATER  shift, and goto state 249
+    TOK_LESS     shift, and goto state 248
     TOK_NOT      reduce using rule 30 (REL)
-    TOK_OCDEL    shift, and goto state 253
+    TOK_OCDEL    shift, and goto state 251
     TOK_OR       reduce using rule 30 (REL)
-    TOK_PLUS     shift, and goto state 252
+    TOK_PLUS     shift, and goto state 250
     TOK_RBLOCK   reduce using rule 30 (REL)
     TOK_RBRAC    reduce using rule 30 (REL)
     TOK_RPAREN   reduce using rule 30 (REL)
     TOK_SEMICOL  reduce using rule 30 (REL)
 
-state 215 // TOK_IF TOK_LBLOCK TOK_BOOL [$end]
+state 216 // TOK_IF TOK_LBLOCK TOK_BOOL [$end]
 
    33 nex: term .  [$end, TOK_AND, TOK_DONE, TOK_ELIF, TOK_ELSE, TOK_EQUAL, TOK_FI, TOK_GREATER, TOK_LESS, TOK_NOT, TOK_OCDEL, TOK_OR, TOK_PLUS, TOK_RBLOCK, TOK_RBRAC, TOK_RPAREN, TOK_SEMICOL]
    34 term: term . TOK_MULT unary  // assoc %left, prec 1
@@ -2778,7 +2805,7 @@ state 215 // TOK_IF TOK_LBLOCK TOK_BOOL [$end]
 
     $end         reduce using rule 33 (nex)
     TOK_AND      reduce using rule 33 (nex)
-    TOK_DIV      shift, and goto state 247
+    TOK_DIV      shift, and goto state 245
     TOK_DONE     reduce using rule 33 (nex)
     TOK_ELIF     reduce using rule 33 (nex)
     TOK_ELSE     reduce using rule 33 (nex)
@@ -2786,7 +2813,7 @@ state 215 // TOK_IF TOK_LBLOCK TOK_BOOL [$end]
     TOK_FI       reduce using rule 33 (nex)
     TOK_GREATER  reduce using rule 33 (nex)
     TOK_LESS     reduce using rule 33 (nex)
-    TOK_MULT     shift, and goto state 246
+    TOK_MULT     shift, and goto state 244
     TOK_NOT      reduce using rule 33 (nex)
     TOK_OCDEL    reduce using rule 33 (nex)
     TOK_OR       reduce using rule 33 (nex)
@@ -2796,7 +2823,7 @@ state 215 // TOK_IF TOK_LBLOCK TOK_BOOL [$end]
     TOK_RPAREN   reduce using rule 33 (nex)
     TOK_SEMICOL  reduce using rule 33 (nex)
 
-state 216 // TOK_IF TOK_LBLOCK TOK_BOOL [$end]
+state 217 // TOK_IF TOK_LBLOCK TOK_BOOL [$end]
 
    36 term: unary .  [$end, TOK_AND, TOK_DIV, TOK_DONE, TOK_ELIF, TOK_ELSE, TOK_EQUAL, TOK_FI, TOK_GREATER, TOK_LESS, TOK_MULT, TOK_NOT, TOK_OCDEL, TOK_OR, TOK_PLUS, TOK_RBLOCK, TOK_RBRAC, TOK_RPAREN, TOK_SEMICOL]
 
@@ -2820,37 +2847,37 @@ state 216 // TOK_IF TOK_LBLOCK TOK_BOOL [$end]
     TOK_RPAREN   reduce using rule 36 (term)
     TOK_SEMICOL  reduce using rule 36 (term)
 
-state 217 // TOK_IF TOK_LBLOCK TOK_NOT
+state 218 // TOK_IF TOK_LBLOCK TOK_NOT
 
    37 unary: TOK_NOT . unary
 
-    TOK_BOOL    shift, and goto state 224
-    TOK_DEREF   shift, and goto state 222
-    TOK_LPAREN  shift, and goto state 220
-    TOK_NOT     shift, and goto state 217
-    TOK_NUM     shift, and goto state 221
-    TOK_OCDEL   shift, and goto state 218
-    TOK_WORD    shift, and goto state 223
+    TOK_BOOL    shift, and goto state 225
+    TOK_DEREF   shift, and goto state 223
+    TOK_LPAREN  shift, and goto state 221
+    TOK_NOT     shift, and goto state 218
+    TOK_NUM     shift, and goto state 222
+    TOK_OCDEL   shift, and goto state 219
+    TOK_WORD    shift, and goto state 224
 
-    factor  goto state 219
-    unary   goto state 245
+    factor  goto state 220
+    unary   goto state 243
 
-state 218 // TOK_WHILE TOK_LPAREN TOK_OCDEL
+state 219 // TOK_WHILE TOK_LPAREN TOK_OCDEL
 
    38 unary: TOK_OCDEL . unary  // assoc %left, prec 1
 
-    TOK_BOOL    shift, and goto state 224
-    TOK_DEREF   shift, and goto state 222
-    TOK_LPAREN  shift, and goto state 220
-    TOK_NOT     shift, and goto state 217
-    TOK_NUM     shift, and goto state 221
-    TOK_OCDEL   shift, and goto state 218
-    TOK_WORD    shift, and goto state 223
+    TOK_BOOL    shift, and goto state 225
+    TOK_DEREF   shift, and goto state 223
+    TOK_LPAREN  shift, and goto state 221
+    TOK_NOT     shift, and goto state 218
+    TOK_NUM     shift, and goto state 222
+    TOK_OCDEL   shift, and goto state 219
+    TOK_WORD    shift, and goto state 224
 
-    factor  goto state 219
-    unary   goto state 244
+    factor  goto state 220
+    unary   goto state 242
 
-state 219 // TOK_WHILE TOK_LPAREN TOK_BOOL [$end]
+state 220 // TOK_WHILE TOK_LPAREN TOK_BOOL [$end]
 
    39 unary: factor .  [$end, TOK_AND, TOK_DIV, TOK_DONE, TOK_ELIF, TOK_ELSE, TOK_EQUAL, TOK_FI, TOK_GREATER, TOK_LESS, TOK_MULT, TOK_NOT, TOK_OCDEL, TOK_OR, TOK_PLUS, TOK_RBLOCK, TOK_RBRAC, TOK_RPAREN, TOK_SEMICOL]
 
@@ -2874,28 +2901,28 @@ state 219 // TOK_WHILE TOK_LPAREN TOK_BOOL [$end]
     TOK_RPAREN   reduce using rule 39 (unary)
     TOK_SEMICOL  reduce using rule 39 (unary)
 
-state 220 // TOK_IF TOK_LBLOCK TOK_LPAREN
+state 221 // TOK_IF TOK_LBLOCK TOK_LPAREN
 
    40 factor: TOK_LPAREN . EXPR TOK_RPAREN
 
-    TOK_BOOL    shift, and goto state 224
-    TOK_DEREF   shift, and goto state 222
-    TOK_LPAREN  shift, and goto state 220
-    TOK_NOT     shift, and goto state 217
-    TOK_NUM     shift, and goto state 221
-    TOK_OCDEL   shift, and goto state 218
-    TOK_WORD    shift, and goto state 223
+    TOK_BOOL    shift, and goto state 225
+    TOK_DEREF   shift, and goto state 223
+    TOK_LPAREN  shift, and goto state 221
+    TOK_NOT     shift, and goto state 218
+    TOK_NUM     shift, and goto state 222
+    TOK_OCDEL   shift, and goto state 219
+    TOK_WORD    shift, and goto state 224
 
-    EQAL    goto state 212
-    EXPR    goto state 232
-    JOIN    goto state 211
-    REL     goto state 213
-    factor  goto state 219
-    nex     goto state 214
-    term    goto state 215
-    unary   goto state 216
+    EQAL    goto state 213
+    EXPR    goto state 230
+    JOIN    goto state 212
+    REL     goto state 214
+    factor  goto state 220
+    nex     goto state 215
+    term    goto state 216
+    unary   goto state 217
 
-state 221 // TOK_IF TOK_LBLOCK TOK_NUM
+state 222 // TOK_IF TOK_LBLOCK TOK_NUM
 
    41 factor: TOK_NUM .  [$end, TOK_AND, TOK_DIV, TOK_DONE, TOK_ELIF, TOK_ELSE, TOK_EQUAL, TOK_FI, TOK_GREATER, TOK_LESS, TOK_MULT, TOK_NOT, TOK_OCDEL, TOK_OR, TOK_PLUS, TOK_RBLOCK, TOK_RBRAC, TOK_RPAREN, TOK_SEMICOL]
 
@@ -2919,14 +2946,14 @@ state 221 // TOK_IF TOK_LBLOCK TOK_NUM
     TOK_RPAREN   reduce using rule 41 (factor)
     TOK_SEMICOL  reduce using rule 41 (factor)
 
-state 222 // TOK_IF TOK_LBLOCK TOK_DEREF
+state 223 // TOK_IF TOK_LBLOCK TOK_DEREF
 
    42 factor: TOK_DEREF . TOK_WORD
    43 factor: TOK_DEREF . TOK_WORD TOK_LBLOCK TOK_NUM TOK_RBLOCK
 
-    TOK_WORD  shift, and goto state 228
+    TOK_WORD  shift, and goto state 226
 
-state 223 // TOK_IF TOK_LBLOCK TOK_WORD
+state 224 // TOK_IF TOK_LBLOCK TOK_WORD
 
    44 factor: TOK_WORD .  [$end, TOK_AND, TOK_DIV, TOK_DONE, TOK_ELIF, TOK_ELSE, TOK_EQUAL, TOK_FI, TOK_GREATER, TOK_LESS, TOK_MULT, TOK_NOT, TOK_OCDEL, TOK_OR, TOK_PLUS, TOK_RBLOCK, TOK_RBRAC, TOK_RPAREN, TOK_SEMICOL]
 
@@ -2950,7 +2977,7 @@ state 223 // TOK_IF TOK_LBLOCK TOK_WORD
     TOK_RPAREN   reduce using rule 44 (factor)
     TOK_SEMICOL  reduce using rule 44 (factor)
 
-state 224 // TOK_IF TOK_LBLOCK TOK_BOOL
+state 225 // TOK_IF TOK_LBLOCK TOK_BOOL
 
    45 factor: TOK_BOOL .  [$end, TOK_AND, TOK_DIV, TOK_DONE, TOK_ELIF, TOK_ELSE, TOK_EQUAL, TOK_FI, TOK_GREATER, TOK_LESS, TOK_MULT, TOK_NOT, TOK_OCDEL, TOK_OR, TOK_PLUS, TOK_RBLOCK, TOK_RBRAC, TOK_RPAREN, TOK_SEMICOL]
 
@@ -2974,41 +3001,7 @@ state 224 // TOK_IF TOK_LBLOCK TOK_BOOL
     TOK_RPAREN   reduce using rule 45 (factor)
     TOK_SEMICOL  reduce using rule 45 (factor)
 
-state 225 // TOK_DEREF TOK_WORD TOK_EQUAL TOK_QUOT
-
-  143 OCDOT: TOK_DEREF TOK_WORD TOK_EQUAL TOK_QUOT . STRARG TOK_QUOT
-  149 STRARG: .  [TOK_QUOT]
-
-    TOK_BOOL   shift, and goto state 87
-    TOK_NUM    shift, and goto state 84
-    TOK_OCDEL  shift, and goto state 86
-    TOK_PLUS   shift, and goto state 85
-    TOK_QUOT   reduce using rule 149 (STRARG)
-    TOK_WORD   shift, and goto state 83
-
-    STRARG     goto state 226
-    WORDORNUM  goto state 187
-
-state 226 // TOK_DEREF TOK_WORD TOK_EQUAL TOK_QUOT [TOK_QUOT]
-
-  143 OCDOT: TOK_DEREF TOK_WORD TOK_EQUAL TOK_QUOT STRARG . TOK_QUOT
-
-    TOK_QUOT  shift, and goto state 227
-
-state 227 // TOK_DEREF TOK_WORD TOK_EQUAL TOK_QUOT TOK_QUOT
-
-  143 OCDOT: TOK_DEREF TOK_WORD TOK_EQUAL TOK_QUOT STRARG TOK_QUOT .  [$end, TOK_DONE, TOK_ELIF, TOK_ELSE, TOK_FI, TOK_RBRAC, TOK_RPAREN, TOK_SEMICOL]
-
-    $end         reduce using rule 143 (OCDOT)
-    TOK_DONE     reduce using rule 143 (OCDOT)
-    TOK_ELIF     reduce using rule 143 (OCDOT)
-    TOK_ELSE     reduce using rule 143 (OCDOT)
-    TOK_FI       reduce using rule 143 (OCDOT)
-    TOK_RBRAC    reduce using rule 143 (OCDOT)
-    TOK_RPAREN   reduce using rule 143 (OCDOT)
-    TOK_SEMICOL  reduce using rule 143 (OCDOT)
-
-state 228 // TOK_IF TOK_LBLOCK TOK_DEREF TOK_WORD
+state 226 // TOK_IF TOK_LBLOCK TOK_DEREF TOK_WORD
 
    42 factor: TOK_DEREF TOK_WORD .  [$end, TOK_AND, TOK_DIV, TOK_DONE, TOK_ELIF, TOK_ELSE, TOK_EQUAL, TOK_FI, TOK_GREATER, TOK_LESS, TOK_MULT, TOK_NOT, TOK_OCDEL, TOK_OR, TOK_PLUS, TOK_RBLOCK, TOK_RBRAC, TOK_RPAREN, TOK_SEMICOL]
    43 factor: TOK_DEREF TOK_WORD . TOK_LBLOCK TOK_NUM TOK_RBLOCK
@@ -3022,7 +3015,7 @@ state 228 // TOK_IF TOK_LBLOCK TOK_DEREF TOK_WORD
     TOK_EQUAL    reduce using rule 42 (factor)
     TOK_FI       reduce using rule 42 (factor)
     TOK_GREATER  reduce using rule 42 (factor)
-    TOK_LBLOCK   shift, and goto state 229
+    TOK_LBLOCK   shift, and goto state 227
     TOK_LESS     reduce using rule 42 (factor)
     TOK_MULT     reduce using rule 42 (factor)
     TOK_NOT      reduce using rule 42 (factor)
@@ -3034,19 +3027,19 @@ state 228 // TOK_IF TOK_LBLOCK TOK_DEREF TOK_WORD
     TOK_RPAREN   reduce using rule 42 (factor)
     TOK_SEMICOL  reduce using rule 42 (factor)
 
-state 229 // TOK_IF TOK_LBLOCK TOK_DEREF TOK_WORD TOK_LBLOCK
+state 227 // TOK_IF TOK_LBLOCK TOK_DEREF TOK_WORD TOK_LBLOCK
 
    43 factor: TOK_DEREF TOK_WORD TOK_LBLOCK . TOK_NUM TOK_RBLOCK
 
-    TOK_NUM  shift, and goto state 230
+    TOK_NUM  shift, and goto state 228
 
-state 230 // TOK_IF TOK_LBLOCK TOK_DEREF TOK_WORD TOK_LBLOCK TOK_NUM
+state 228 // TOK_IF TOK_LBLOCK TOK_DEREF TOK_WORD TOK_LBLOCK TOK_NUM
 
    43 factor: TOK_DEREF TOK_WORD TOK_LBLOCK TOK_NUM . TOK_RBLOCK
 
-    TOK_RBLOCK  shift, and goto state 231
+    TOK_RBLOCK  shift, and goto state 229
 
-state 231 // TOK_IF TOK_LBLOCK TOK_DEREF TOK_WORD TOK_LBLOCK TOK_NUM TOK_RBLOCK
+state 229 // TOK_IF TOK_LBLOCK TOK_DEREF TOK_WORD TOK_LBLOCK TOK_NUM TOK_RBLOCK
 
    43 factor: TOK_DEREF TOK_WORD TOK_LBLOCK TOK_NUM TOK_RBLOCK .  [$end, TOK_AND, TOK_DIV, TOK_DONE, TOK_ELIF, TOK_ELSE, TOK_EQUAL, TOK_FI, TOK_GREATER, TOK_LESS, TOK_MULT, TOK_NOT, TOK_OCDEL, TOK_OR, TOK_PLUS, TOK_RBLOCK, TOK_RBRAC, TOK_RPAREN, TOK_SEMICOL]
 
@@ -3070,35 +3063,35 @@ state 231 // TOK_IF TOK_LBLOCK TOK_DEREF TOK_WORD TOK_LBLOCK TOK_NUM TOK_RBLOCK
     TOK_RPAREN   reduce using rule 43 (factor)
     TOK_SEMICOL  reduce using rule 43 (factor)
 
-state 232 // TOK_IF TOK_LBLOCK TOK_LPAREN TOK_BOOL [TOK_OR]
+state 230 // TOK_IF TOK_LBLOCK TOK_LPAREN TOK_BOOL [TOK_OR]
 
    19 EXPR: EXPR . TOK_OR JOIN
    40 factor: TOK_LPAREN EXPR . TOK_RPAREN
 
-    TOK_OR      shift, and goto state 233
-    TOK_RPAREN  shift, and goto state 234
+    TOK_OR      shift, and goto state 231
+    TOK_RPAREN  shift, and goto state 232
 
-state 233 // TOK_WHILE TOK_LPAREN TOK_BOOL TOK_OR
+state 231 // TOK_WHILE TOK_LPAREN TOK_BOOL TOK_OR
 
    19 EXPR: EXPR TOK_OR . JOIN
 
-    TOK_BOOL    shift, and goto state 224
-    TOK_DEREF   shift, and goto state 222
-    TOK_LPAREN  shift, and goto state 220
-    TOK_NOT     shift, and goto state 217
-    TOK_NUM     shift, and goto state 221
-    TOK_OCDEL   shift, and goto state 218
-    TOK_WORD    shift, and goto state 223
+    TOK_BOOL    shift, and goto state 225
+    TOK_DEREF   shift, and goto state 223
+    TOK_LPAREN  shift, and goto state 221
+    TOK_NOT     shift, and goto state 218
+    TOK_NUM     shift, and goto state 222
+    TOK_OCDEL   shift, and goto state 219
+    TOK_WORD    shift, and goto state 224
 
-    EQAL    goto state 212
-    JOIN    goto state 235
-    REL     goto state 213
-    factor  goto state 219
-    nex     goto state 214
-    term    goto state 215
-    unary   goto state 216
+    EQAL    goto state 213
+    JOIN    goto state 233
+    REL     goto state 214
+    factor  goto state 220
+    nex     goto state 215
+    term    goto state 216
+    unary   goto state 217
 
-state 234 // TOK_IF TOK_LBLOCK TOK_LPAREN TOK_BOOL TOK_RPAREN
+state 232 // TOK_IF TOK_LBLOCK TOK_LPAREN TOK_BOOL TOK_RPAREN
 
    40 factor: TOK_LPAREN EXPR TOK_RPAREN .  [$end, TOK_AND, TOK_DIV, TOK_DONE, TOK_ELIF, TOK_ELSE, TOK_EQUAL, TOK_FI, TOK_GREATER, TOK_LESS, TOK_MULT, TOK_NOT, TOK_OCDEL, TOK_OR, TOK_PLUS, TOK_RBLOCK, TOK_RBRAC, TOK_RPAREN, TOK_SEMICOL]
 
@@ -3122,13 +3115,13 @@ state 234 // TOK_IF TOK_LBLOCK TOK_LPAREN TOK_BOOL TOK_RPAREN
     TOK_RPAREN   reduce using rule 40 (factor)
     TOK_SEMICOL  reduce using rule 40 (factor)
 
-state 235 // TOK_WHILE TOK_LPAREN TOK_BOOL TOK_OR TOK_BOOL [$end]
+state 233 // TOK_WHILE TOK_LPAREN TOK_BOOL TOK_OR TOK_BOOL [$end]
 
    19 EXPR: EXPR TOK_OR JOIN .  [$end, TOK_DONE, TOK_ELIF, TOK_ELSE, TOK_FI, TOK_OR, TOK_RBLOCK, TOK_RBRAC, TOK_RPAREN, TOK_SEMICOL]
    21 JOIN: JOIN . TOK_AND EQAL
 
     $end         reduce using rule 19 (EXPR)
-    TOK_AND      shift, and goto state 236
+    TOK_AND      shift, and goto state 234
     TOK_DONE     reduce using rule 19 (EXPR)
     TOK_ELIF     reduce using rule 19 (EXPR)
     TOK_ELSE     reduce using rule 19 (EXPR)
@@ -3139,26 +3132,26 @@ state 235 // TOK_WHILE TOK_LPAREN TOK_BOOL TOK_OR TOK_BOOL [$end]
     TOK_RPAREN   reduce using rule 19 (EXPR)
     TOK_SEMICOL  reduce using rule 19 (EXPR)
 
-state 236 // TOK_WHILE TOK_LPAREN TOK_BOOL TOK_AND
+state 234 // TOK_WHILE TOK_LPAREN TOK_BOOL TOK_AND
 
    21 JOIN: JOIN TOK_AND . EQAL
 
-    TOK_BOOL    shift, and goto state 224
-    TOK_DEREF   shift, and goto state 222
-    TOK_LPAREN  shift, and goto state 220
-    TOK_NOT     shift, and goto state 217
-    TOK_NUM     shift, and goto state 221
-    TOK_OCDEL   shift, and goto state 218
-    TOK_WORD    shift, and goto state 223
+    TOK_BOOL    shift, and goto state 225
+    TOK_DEREF   shift, and goto state 223
+    TOK_LPAREN  shift, and goto state 221
+    TOK_NOT     shift, and goto state 218
+    TOK_NUM     shift, and goto state 222
+    TOK_OCDEL   shift, and goto state 219
+    TOK_WORD    shift, and goto state 224
 
-    EQAL    goto state 237
-    REL     goto state 213
-    factor  goto state 219
-    nex     goto state 214
-    term    goto state 215
-    unary   goto state 216
+    EQAL    goto state 235
+    REL     goto state 214
+    factor  goto state 220
+    nex     goto state 215
+    term    goto state 216
+    unary   goto state 217
 
-state 237 // TOK_WHILE TOK_LPAREN TOK_BOOL TOK_AND TOK_BOOL [$end]
+state 235 // TOK_WHILE TOK_LPAREN TOK_BOOL TOK_AND TOK_BOOL [$end]
 
    21 JOIN: JOIN TOK_AND EQAL .  [$end, TOK_AND, TOK_DONE, TOK_ELIF, TOK_ELSE, TOK_FI, TOK_OR, TOK_RBLOCK, TOK_RBRAC, TOK_RPAREN, TOK_SEMICOL]
    23 EQAL: EQAL . TOK_EQUAL TOK_EQUAL REL  // assoc %right, prec 2
@@ -3169,46 +3162,46 @@ state 237 // TOK_WHILE TOK_LPAREN TOK_BOOL TOK_AND TOK_BOOL [$end]
     TOK_DONE     reduce using rule 21 (JOIN)
     TOK_ELIF     reduce using rule 21 (JOIN)
     TOK_ELSE     reduce using rule 21 (JOIN)
-    TOK_EQUAL    shift, and goto state 238
+    TOK_EQUAL    shift, and goto state 236
     TOK_FI       reduce using rule 21 (JOIN)
-    TOK_NOT      shift, and goto state 239
+    TOK_NOT      shift, and goto state 237
     TOK_OR       reduce using rule 21 (JOIN)
     TOK_RBLOCK   reduce using rule 21 (JOIN)
     TOK_RBRAC    reduce using rule 21 (JOIN)
     TOK_RPAREN   reduce using rule 21 (JOIN)
     TOK_SEMICOL  reduce using rule 21 (JOIN)
 
-state 238 // TOK_WHILE TOK_LPAREN TOK_BOOL TOK_EQUAL
+state 236 // TOK_WHILE TOK_LPAREN TOK_BOOL TOK_EQUAL
 
    23 EQAL: EQAL TOK_EQUAL . TOK_EQUAL REL  // assoc %right, prec 2
 
-    TOK_EQUAL  shift, and goto state 242
+    TOK_EQUAL  shift, and goto state 240
 
-state 239 // TOK_WHILE TOK_LPAREN TOK_BOOL TOK_NOT
+state 237 // TOK_WHILE TOK_LPAREN TOK_BOOL TOK_NOT
 
    24 EQAL: EQAL TOK_NOT . TOK_EQUAL REL  // assoc %right, prec 2
 
-    TOK_EQUAL  shift, and goto state 240
+    TOK_EQUAL  shift, and goto state 238
 
-state 240 // TOK_WHILE TOK_LPAREN TOK_BOOL TOK_NOT TOK_EQUAL
+state 238 // TOK_WHILE TOK_LPAREN TOK_BOOL TOK_NOT TOK_EQUAL
 
    24 EQAL: EQAL TOK_NOT TOK_EQUAL . REL  // assoc %right, prec 2
 
-    TOK_BOOL    shift, and goto state 224
-    TOK_DEREF   shift, and goto state 222
-    TOK_LPAREN  shift, and goto state 220
-    TOK_NOT     shift, and goto state 217
-    TOK_NUM     shift, and goto state 221
-    TOK_OCDEL   shift, and goto state 218
-    TOK_WORD    shift, and goto state 223
+    TOK_BOOL    shift, and goto state 225
+    TOK_DEREF   shift, and goto state 223
+    TOK_LPAREN  shift, and goto state 221
+    TOK_NOT     shift, and goto state 218
+    TOK_NUM     shift, and goto state 222
+    TOK_OCDEL   shift, and goto state 219
+    TOK_WORD    shift, and goto state 224
 
-    REL     goto state 241
-    factor  goto state 219
-    nex     goto state 214
-    term    goto state 215
-    unary   goto state 216
+    REL     goto state 239
+    factor  goto state 220
+    nex     goto state 215
+    term    goto state 216
+    unary   goto state 217
 
-state 241 // TOK_WHILE TOK_LPAREN TOK_BOOL TOK_NOT TOK_EQUAL TOK_BOOL [$end]
+state 239 // TOK_WHILE TOK_LPAREN TOK_BOOL TOK_NOT TOK_EQUAL TOK_BOOL [$end]
 
    24 EQAL: EQAL TOK_NOT TOK_EQUAL REL .  [$end, TOK_AND, TOK_DONE, TOK_ELIF, TOK_ELSE, TOK_EQUAL, TOK_FI, TOK_NOT, TOK_OR, TOK_RBLOCK, TOK_RBRAC, TOK_RPAREN, TOK_SEMICOL]  // assoc %right, prec 2
 
@@ -3226,25 +3219,25 @@ state 241 // TOK_WHILE TOK_LPAREN TOK_BOOL TOK_NOT TOK_EQUAL TOK_BOOL [$end]
     TOK_RPAREN   reduce using rule 24 (EQAL)
     TOK_SEMICOL  reduce using rule 24 (EQAL)
 
-state 242 // TOK_WHILE TOK_LPAREN TOK_BOOL TOK_EQUAL TOK_EQUAL
+state 240 // TOK_WHILE TOK_LPAREN TOK_BOOL TOK_EQUAL TOK_EQUAL
 
    23 EQAL: EQAL TOK_EQUAL TOK_EQUAL . REL  // assoc %right, prec 2
 
-    TOK_BOOL    shift, and goto state 224
-    TOK_DEREF   shift, and goto state 222
-    TOK_LPAREN  shift, and goto state 220
-    TOK_NOT     shift, and goto state 217
-    TOK_NUM     shift, and goto state 221
-    TOK_OCDEL   shift, and goto state 218
-    TOK_WORD    shift, and goto state 223
+    TOK_BOOL    shift, and goto state 225
+    TOK_DEREF   shift, and goto state 223
+    TOK_LPAREN  shift, and goto state 221
+    TOK_NOT     shift, and goto state 218
+    TOK_NUM     shift, and goto state 222
+    TOK_OCDEL   shift, and goto state 219
+    TOK_WORD    shift, and goto state 224
 
-    REL     goto state 243
-    factor  goto state 219
-    nex     goto state 214
-    term    goto state 215
-    unary   goto state 216
+    REL     goto state 241
+    factor  goto state 220
+    nex     goto state 215
+    term    goto state 216
+    unary   goto state 217
 
-state 243 // TOK_WHILE TOK_LPAREN TOK_BOOL TOK_EQUAL TOK_EQUAL TOK_BOOL [$end]
+state 241 // TOK_WHILE TOK_LPAREN TOK_BOOL TOK_EQUAL TOK_EQUAL TOK_BOOL [$end]
 
    23 EQAL: EQAL TOK_EQUAL TOK_EQUAL REL .  [$end, TOK_AND, TOK_DONE, TOK_ELIF, TOK_ELSE, TOK_EQUAL, TOK_FI, TOK_NOT, TOK_OR, TOK_RBLOCK, TOK_RBRAC, TOK_RPAREN, TOK_SEMICOL]  // assoc %right, prec 2
 
@@ -3262,7 +3255,7 @@ state 243 // TOK_WHILE TOK_LPAREN TOK_BOOL TOK_EQUAL TOK_EQUAL TOK_BOOL [$end]
     TOK_RPAREN   reduce using rule 23 (EQAL)
     TOK_SEMICOL  reduce using rule 23 (EQAL)
 
-state 244 // TOK_WHILE TOK_LPAREN TOK_OCDEL TOK_BOOL [$end]
+state 242 // TOK_WHILE TOK_LPAREN TOK_OCDEL TOK_BOOL [$end]
 
    38 unary: TOK_OCDEL unary .  [$end, TOK_AND, TOK_DIV, TOK_DONE, TOK_ELIF, TOK_ELSE, TOK_EQUAL, TOK_FI, TOK_GREATER, TOK_LESS, TOK_MULT, TOK_NOT, TOK_OCDEL, TOK_OR, TOK_PLUS, TOK_RBLOCK, TOK_RBRAC, TOK_RPAREN, TOK_SEMICOL]  // assoc %left, prec 1
 
@@ -3286,7 +3279,7 @@ state 244 // TOK_WHILE TOK_LPAREN TOK_OCDEL TOK_BOOL [$end]
     TOK_RPAREN   reduce using rule 38 (unary)
     TOK_SEMICOL  reduce using rule 38 (unary)
 
-state 245 // TOK_IF TOK_LBLOCK TOK_NOT TOK_BOOL [$end]
+state 243 // TOK_IF TOK_LBLOCK TOK_NOT TOK_BOOL [$end]
 
    37 unary: TOK_NOT unary .  [$end, TOK_AND, TOK_DIV, TOK_DONE, TOK_ELIF, TOK_ELSE, TOK_EQUAL, TOK_FI, TOK_GREATER, TOK_LESS, TOK_MULT, TOK_NOT, TOK_OCDEL, TOK_OR, TOK_PLUS, TOK_RBLOCK, TOK_RBRAC, TOK_RPAREN, TOK_SEMICOL]
 
@@ -3310,37 +3303,37 @@ state 245 // TOK_IF TOK_LBLOCK TOK_NOT TOK_BOOL [$end]
     TOK_RPAREN   reduce using rule 37 (unary)
     TOK_SEMICOL  reduce using rule 37 (unary)
 
-state 246 // TOK_IF TOK_LBLOCK TOK_BOOL TOK_MULT
+state 244 // TOK_IF TOK_LBLOCK TOK_BOOL TOK_MULT
 
    34 term: term TOK_MULT . unary  // assoc %left, prec 1
 
-    TOK_BOOL    shift, and goto state 224
-    TOK_DEREF   shift, and goto state 222
-    TOK_LPAREN  shift, and goto state 220
-    TOK_NOT     shift, and goto state 217
-    TOK_NUM     shift, and goto state 221
-    TOK_OCDEL   shift, and goto state 218
-    TOK_WORD    shift, and goto state 223
+    TOK_BOOL    shift, and goto state 225
+    TOK_DEREF   shift, and goto state 223
+    TOK_LPAREN  shift, and goto state 221
+    TOK_NOT     shift, and goto state 218
+    TOK_NUM     shift, and goto state 222
+    TOK_OCDEL   shift, and goto state 219
+    TOK_WORD    shift, and goto state 224
 
-    factor  goto state 219
-    unary   goto state 249
+    factor  goto state 220
+    unary   goto state 247
 
-state 247 // TOK_IF TOK_LBLOCK TOK_BOOL TOK_DIV
+state 245 // TOK_IF TOK_LBLOCK TOK_BOOL TOK_DIV
 
    35 term: term TOK_DIV . unary  // assoc %left, prec 1
 
-    TOK_BOOL    shift, and goto state 224
-    TOK_DEREF   shift, and goto state 222
-    TOK_LPAREN  shift, and goto state 220
-    TOK_NOT     shift, and goto state 217
-    TOK_NUM     shift, and goto state 221
-    TOK_OCDEL   shift, and goto state 218
-    TOK_WORD    shift, and goto state 223
+    TOK_BOOL    shift, and goto state 225
+    TOK_DEREF   shift, and goto state 223
+    TOK_LPAREN  shift, and goto state 221
+    TOK_NOT     shift, and goto state 218
+    TOK_NUM     shift, and goto state 222
+    TOK_OCDEL   shift, and goto state 219
+    TOK_WORD    shift, and goto state 224
 
-    factor  goto state 219
-    unary   goto state 248
+    factor  goto state 220
+    unary   goto state 246
 
-state 248 // TOK_IF TOK_LBLOCK TOK_BOOL TOK_DIV TOK_BOOL [$end]
+state 246 // TOK_IF TOK_LBLOCK TOK_BOOL TOK_DIV TOK_BOOL [$end]
 
    35 term: term TOK_DIV unary .  [$end, TOK_AND, TOK_DIV, TOK_DONE, TOK_ELIF, TOK_ELSE, TOK_EQUAL, TOK_FI, TOK_GREATER, TOK_LESS, TOK_MULT, TOK_NOT, TOK_OCDEL, TOK_OR, TOK_PLUS, TOK_RBLOCK, TOK_RBRAC, TOK_RPAREN, TOK_SEMICOL]  // assoc %left, prec 1
 
@@ -3364,7 +3357,7 @@ state 248 // TOK_IF TOK_LBLOCK TOK_BOOL TOK_DIV TOK_BOOL [$end]
     TOK_RPAREN   reduce using rule 35 (term)
     TOK_SEMICOL  reduce using rule 35 (term)
 
-state 249 // TOK_IF TOK_LBLOCK TOK_BOOL TOK_MULT TOK_BOOL [$end]
+state 247 // TOK_IF TOK_LBLOCK TOK_BOOL TOK_MULT TOK_BOOL [$end]
 
    34 term: term TOK_MULT unary .  [$end, TOK_AND, TOK_DIV, TOK_DONE, TOK_ELIF, TOK_ELSE, TOK_EQUAL, TOK_FI, TOK_GREATER, TOK_LESS, TOK_MULT, TOK_NOT, TOK_OCDEL, TOK_OR, TOK_PLUS, TOK_RBLOCK, TOK_RBRAC, TOK_RPAREN, TOK_SEMICOL]  // assoc %left, prec 1
 
@@ -3388,77 +3381,77 @@ state 249 // TOK_IF TOK_LBLOCK TOK_BOOL TOK_MULT TOK_BOOL [$end]
     TOK_RPAREN   reduce using rule 34 (term)
     TOK_SEMICOL  reduce using rule 34 (term)
 
-state 250 // TOK_WHILE TOK_LPAREN TOK_BOOL TOK_LESS
+state 248 // TOK_WHILE TOK_LPAREN TOK_BOOL TOK_LESS
 
    26 REL: nex TOK_LESS . nex
    27 REL: nex TOK_LESS . TOK_EQUAL nex  // assoc %right, prec 2
 
-    TOK_BOOL    shift, and goto state 224
-    TOK_DEREF   shift, and goto state 222
-    TOK_EQUAL   shift, and goto state 260
-    TOK_LPAREN  shift, and goto state 220
-    TOK_NOT     shift, and goto state 217
-    TOK_NUM     shift, and goto state 221
-    TOK_OCDEL   shift, and goto state 218
-    TOK_WORD    shift, and goto state 223
+    TOK_BOOL    shift, and goto state 225
+    TOK_DEREF   shift, and goto state 223
+    TOK_EQUAL   shift, and goto state 258
+    TOK_LPAREN  shift, and goto state 221
+    TOK_NOT     shift, and goto state 218
+    TOK_NUM     shift, and goto state 222
+    TOK_OCDEL   shift, and goto state 219
+    TOK_WORD    shift, and goto state 224
 
-    factor  goto state 219
-    nex     goto state 259
-    term    goto state 215
-    unary   goto state 216
+    factor  goto state 220
+    nex     goto state 257
+    term    goto state 216
+    unary   goto state 217
 
-state 251 // TOK_WHILE TOK_LPAREN TOK_BOOL TOK_GREATER
+state 249 // TOK_WHILE TOK_LPAREN TOK_BOOL TOK_GREATER
 
    28 REL: nex TOK_GREATER . TOK_EQUAL nex  // assoc %right, prec 2
    29 REL: nex TOK_GREATER . nex
 
-    TOK_BOOL    shift, and goto state 224
-    TOK_DEREF   shift, and goto state 222
-    TOK_EQUAL   shift, and goto state 256
-    TOK_LPAREN  shift, and goto state 220
-    TOK_NOT     shift, and goto state 217
-    TOK_NUM     shift, and goto state 221
-    TOK_OCDEL   shift, and goto state 218
-    TOK_WORD    shift, and goto state 223
+    TOK_BOOL    shift, and goto state 225
+    TOK_DEREF   shift, and goto state 223
+    TOK_EQUAL   shift, and goto state 254
+    TOK_LPAREN  shift, and goto state 221
+    TOK_NOT     shift, and goto state 218
+    TOK_NUM     shift, and goto state 222
+    TOK_OCDEL   shift, and goto state 219
+    TOK_WORD    shift, and goto state 224
 
-    factor  goto state 219
-    nex     goto state 257
-    term    goto state 215
-    unary   goto state 216
+    factor  goto state 220
+    nex     goto state 255
+    term    goto state 216
+    unary   goto state 217
 
-state 252 // TOK_WHILE TOK_LPAREN TOK_BOOL TOK_PLUS
+state 250 // TOK_WHILE TOK_LPAREN TOK_BOOL TOK_PLUS
 
    31 nex: nex TOK_PLUS . term  // assoc %left, prec 1
 
-    TOK_BOOL    shift, and goto state 224
-    TOK_DEREF   shift, and goto state 222
-    TOK_LPAREN  shift, and goto state 220
-    TOK_NOT     shift, and goto state 217
-    TOK_NUM     shift, and goto state 221
-    TOK_OCDEL   shift, and goto state 218
-    TOK_WORD    shift, and goto state 223
+    TOK_BOOL    shift, and goto state 225
+    TOK_DEREF   shift, and goto state 223
+    TOK_LPAREN  shift, and goto state 221
+    TOK_NOT     shift, and goto state 218
+    TOK_NUM     shift, and goto state 222
+    TOK_OCDEL   shift, and goto state 219
+    TOK_WORD    shift, and goto state 224
 
-    factor  goto state 219
-    term    goto state 255
-    unary   goto state 216
+    factor  goto state 220
+    term    goto state 253
+    unary   goto state 217
 
-state 253 // TOK_WHILE TOK_LPAREN TOK_BOOL TOK_OCDEL
+state 251 // TOK_WHILE TOK_LPAREN TOK_BOOL TOK_OCDEL
 
    32 nex: nex TOK_OCDEL . term  // assoc %left, prec 1
 
-    TOK_BOOL    shift, and goto state 224
-    TOK_DEREF   shift, and goto state 222
-    TOK_LPAREN  shift, and goto state 220
-    TOK_NOT     shift, and goto state 217
-    TOK_NUM     shift, and goto state 221
-    TOK_OCDEL   shift, and goto state 218
-    TOK_WORD    shift, and goto state 223
+    TOK_BOOL    shift, and goto state 225
+    TOK_DEREF   shift, and goto state 223
+    TOK_LPAREN  shift, and goto state 221
+    TOK_NOT     shift, and goto state 218
+    TOK_NUM     shift, and goto state 222
+    TOK_OCDEL   shift, and goto state 219
+    TOK_WORD    shift, and goto state 224
 
-    factor  goto state 219
-    term    goto state 254
-    unary   goto state 216
+    factor  goto state 220
+    term    goto state 252
+    unary   goto state 217
 
-state 254 // TOK_WHILE TOK_LPAREN TOK_BOOL TOK_OCDEL TOK_BOOL [$end]
+state 252 // TOK_WHILE TOK_LPAREN TOK_BOOL TOK_OCDEL TOK_BOOL [$end]
 
    32 nex: nex TOK_OCDEL term .  [$end, TOK_AND, TOK_DONE, TOK_ELIF, TOK_ELSE, TOK_EQUAL, TOK_FI, TOK_GREATER, TOK_LESS, TOK_NOT, TOK_OCDEL, TOK_OR, TOK_PLUS, TOK_RBLOCK, TOK_RBRAC, TOK_RPAREN, TOK_SEMICOL]  // assoc %left, prec 1
    34 term: term . TOK_MULT unary  // assoc %left, prec 1
@@ -3466,7 +3459,7 @@ state 254 // TOK_WHILE TOK_LPAREN TOK_BOOL TOK_OCDEL TOK_BOOL [$end]
 
     $end         reduce using rule 32 (nex)
     TOK_AND      reduce using rule 32 (nex)
-    TOK_DIV      shift, and goto state 247
+    TOK_DIV      shift, and goto state 245
     TOK_DONE     reduce using rule 32 (nex)
     TOK_ELIF     reduce using rule 32 (nex)
     TOK_ELSE     reduce using rule 32 (nex)
@@ -3474,7 +3467,7 @@ state 254 // TOK_WHILE TOK_LPAREN TOK_BOOL TOK_OCDEL TOK_BOOL [$end]
     TOK_FI       reduce using rule 32 (nex)
     TOK_GREATER  reduce using rule 32 (nex)
     TOK_LESS     reduce using rule 32 (nex)
-    TOK_MULT     shift, and goto state 246
+    TOK_MULT     shift, and goto state 244
     TOK_NOT      reduce using rule 32 (nex)
     TOK_OCDEL    reduce using rule 32 (nex)
     TOK_OR       reduce using rule 32 (nex)
@@ -3484,7 +3477,7 @@ state 254 // TOK_WHILE TOK_LPAREN TOK_BOOL TOK_OCDEL TOK_BOOL [$end]
     TOK_RPAREN   reduce using rule 32 (nex)
     TOK_SEMICOL  reduce using rule 32 (nex)
 
-state 255 // TOK_WHILE TOK_LPAREN TOK_BOOL TOK_PLUS TOK_BOOL [$end]
+state 253 // TOK_WHILE TOK_LPAREN TOK_BOOL TOK_PLUS TOK_BOOL [$end]
 
    31 nex: nex TOK_PLUS term .  [$end, TOK_AND, TOK_DONE, TOK_ELIF, TOK_ELSE, TOK_EQUAL, TOK_FI, TOK_GREATER, TOK_LESS, TOK_NOT, TOK_OCDEL, TOK_OR, TOK_PLUS, TOK_RBLOCK, TOK_RBRAC, TOK_RPAREN, TOK_SEMICOL]  // assoc %left, prec 1
    34 term: term . TOK_MULT unary  // assoc %left, prec 1
@@ -3492,7 +3485,7 @@ state 255 // TOK_WHILE TOK_LPAREN TOK_BOOL TOK_PLUS TOK_BOOL [$end]
 
     $end         reduce using rule 31 (nex)
     TOK_AND      reduce using rule 31 (nex)
-    TOK_DIV      shift, and goto state 247
+    TOK_DIV      shift, and goto state 245
     TOK_DONE     reduce using rule 31 (nex)
     TOK_ELIF     reduce using rule 31 (nex)
     TOK_ELSE     reduce using rule 31 (nex)
@@ -3500,7 +3493,7 @@ state 255 // TOK_WHILE TOK_LPAREN TOK_BOOL TOK_PLUS TOK_BOOL [$end]
     TOK_FI       reduce using rule 31 (nex)
     TOK_GREATER  reduce using rule 31 (nex)
     TOK_LESS     reduce using rule 31 (nex)
-    TOK_MULT     shift, and goto state 246
+    TOK_MULT     shift, and goto state 244
     TOK_NOT      reduce using rule 31 (nex)
     TOK_OCDEL    reduce using rule 31 (nex)
     TOK_OR       reduce using rule 31 (nex)
@@ -3510,24 +3503,24 @@ state 255 // TOK_WHILE TOK_LPAREN TOK_BOOL TOK_PLUS TOK_BOOL [$end]
     TOK_RPAREN   reduce using rule 31 (nex)
     TOK_SEMICOL  reduce using rule 31 (nex)
 
-state 256 // TOK_WHILE TOK_LPAREN TOK_BOOL TOK_GREATER TOK_EQUAL
+state 254 // TOK_WHILE TOK_LPAREN TOK_BOOL TOK_GREATER TOK_EQUAL
 
    28 REL: nex TOK_GREATER TOK_EQUAL . nex  // assoc %right, prec 2
 
-    TOK_BOOL    shift, and goto state 224
-    TOK_DEREF   shift, and goto state 222
-    TOK_LPAREN  shift, and goto state 220
-    TOK_NOT     shift, and goto state 217
-    TOK_NUM     shift, and goto state 221
-    TOK_OCDEL   shift, and goto state 218
-    TOK_WORD    shift, and goto state 223
+    TOK_BOOL    shift, and goto state 225
+    TOK_DEREF   shift, and goto state 223
+    TOK_LPAREN  shift, and goto state 221
+    TOK_NOT     shift, and goto state 218
+    TOK_NUM     shift, and goto state 222
+    TOK_OCDEL   shift, and goto state 219
+    TOK_WORD    shift, and goto state 224
 
-    factor  goto state 219
-    nex     goto state 258
-    term    goto state 215
-    unary   goto state 216
+    factor  goto state 220
+    nex     goto state 256
+    term    goto state 216
+    unary   goto state 217
 
-state 257 // TOK_WHILE TOK_LPAREN TOK_BOOL TOK_GREATER TOK_BOOL [$end]
+state 255 // TOK_WHILE TOK_LPAREN TOK_BOOL TOK_GREATER TOK_BOOL [$end]
 
    29 REL: nex TOK_GREATER nex .  [$end, TOK_AND, TOK_DONE, TOK_ELIF, TOK_ELSE, TOK_EQUAL, TOK_FI, TOK_NOT, TOK_OR, TOK_RBLOCK, TOK_RBRAC, TOK_RPAREN, TOK_SEMICOL]
    31 nex: nex . TOK_PLUS term  // assoc %left, prec 1
@@ -3541,15 +3534,15 @@ state 257 // TOK_WHILE TOK_LPAREN TOK_BOOL TOK_GREATER TOK_BOOL [$end]
     TOK_EQUAL    reduce using rule 29 (REL)
     TOK_FI       reduce using rule 29 (REL)
     TOK_NOT      reduce using rule 29 (REL)
-    TOK_OCDEL    shift, and goto state 253
+    TOK_OCDEL    shift, and goto state 251
     TOK_OR       reduce using rule 29 (REL)
-    TOK_PLUS     shift, and goto state 252
+    TOK_PLUS     shift, and goto state 250
     TOK_RBLOCK   reduce using rule 29 (REL)
     TOK_RBRAC    reduce using rule 29 (REL)
     TOK_RPAREN   reduce using rule 29 (REL)
     TOK_SEMICOL  reduce using rule 29 (REL)
 
-state 258 // TOK_WHILE TOK_LPAREN TOK_BOOL TOK_GREATER TOK_EQUAL TOK_BOOL [$end]
+state 256 // TOK_WHILE TOK_LPAREN TOK_BOOL TOK_GREATER TOK_EQUAL TOK_BOOL [$end]
 
    28 REL: nex TOK_GREATER TOK_EQUAL nex .  [$end, TOK_AND, TOK_DONE, TOK_ELIF, TOK_ELSE, TOK_EQUAL, TOK_FI, TOK_NOT, TOK_OR, TOK_RBLOCK, TOK_RBRAC, TOK_RPAREN, TOK_SEMICOL]  // assoc %right, prec 2
    31 nex: nex . TOK_PLUS term  // assoc %left, prec 1
@@ -3563,15 +3556,15 @@ state 258 // TOK_WHILE TOK_LPAREN TOK_BOOL TOK_GREATER TOK_EQUAL TOK_BOOL [$end]
     TOK_EQUAL    reduce using rule 28 (REL)
     TOK_FI       reduce using rule 28 (REL)
     TOK_NOT      reduce using rule 28 (REL)
-    TOK_OCDEL    shift, and goto state 253
+    TOK_OCDEL    shift, and goto state 251
     TOK_OR       reduce using rule 28 (REL)
-    TOK_PLUS     shift, and goto state 252
+    TOK_PLUS     shift, and goto state 250
     TOK_RBLOCK   reduce using rule 28 (REL)
     TOK_RBRAC    reduce using rule 28 (REL)
     TOK_RPAREN   reduce using rule 28 (REL)
     TOK_SEMICOL  reduce using rule 28 (REL)
 
-state 259 // TOK_WHILE TOK_LPAREN TOK_BOOL TOK_LESS TOK_BOOL [$end]
+state 257 // TOK_WHILE TOK_LPAREN TOK_BOOL TOK_LESS TOK_BOOL [$end]
 
    26 REL: nex TOK_LESS nex .  [$end, TOK_AND, TOK_DONE, TOK_ELIF, TOK_ELSE, TOK_EQUAL, TOK_FI, TOK_NOT, TOK_OR, TOK_RBLOCK, TOK_RBRAC, TOK_RPAREN, TOK_SEMICOL]
    31 nex: nex . TOK_PLUS term  // assoc %left, prec 1
@@ -3585,32 +3578,32 @@ state 259 // TOK_WHILE TOK_LPAREN TOK_BOOL TOK_LESS TOK_BOOL [$end]
     TOK_EQUAL    reduce using rule 26 (REL)
     TOK_FI       reduce using rule 26 (REL)
     TOK_NOT      reduce using rule 26 (REL)
-    TOK_OCDEL    shift, and goto state 253
+    TOK_OCDEL    shift, and goto state 251
     TOK_OR       reduce using rule 26 (REL)
-    TOK_PLUS     shift, and goto state 252
+    TOK_PLUS     shift, and goto state 250
     TOK_RBLOCK   reduce using rule 26 (REL)
     TOK_RBRAC    reduce using rule 26 (REL)
     TOK_RPAREN   reduce using rule 26 (REL)
     TOK_SEMICOL  reduce using rule 26 (REL)
 
-state 260 // TOK_WHILE TOK_LPAREN TOK_BOOL TOK_LESS TOK_EQUAL
+state 258 // TOK_WHILE TOK_LPAREN TOK_BOOL TOK_LESS TOK_EQUAL
 
    27 REL: nex TOK_LESS TOK_EQUAL . nex  // assoc %right, prec 2
 
-    TOK_BOOL    shift, and goto state 224
-    TOK_DEREF   shift, and goto state 222
-    TOK_LPAREN  shift, and goto state 220
-    TOK_NOT     shift, and goto state 217
-    TOK_NUM     shift, and goto state 221
-    TOK_OCDEL   shift, and goto state 218
-    TOK_WORD    shift, and goto state 223
+    TOK_BOOL    shift, and goto state 225
+    TOK_DEREF   shift, and goto state 223
+    TOK_LPAREN  shift, and goto state 221
+    TOK_NOT     shift, and goto state 218
+    TOK_NUM     shift, and goto state 222
+    TOK_OCDEL   shift, and goto state 219
+    TOK_WORD    shift, and goto state 224
 
-    factor  goto state 219
-    nex     goto state 261
-    term    goto state 215
-    unary   goto state 216
+    factor  goto state 220
+    nex     goto state 259
+    term    goto state 216
+    unary   goto state 217
 
-state 261 // TOK_WHILE TOK_LPAREN TOK_BOOL TOK_LESS TOK_EQUAL TOK_BOOL [$end]
+state 259 // TOK_WHILE TOK_LPAREN TOK_BOOL TOK_LESS TOK_EQUAL TOK_BOOL [$end]
 
    27 REL: nex TOK_LESS TOK_EQUAL nex .  [$end, TOK_AND, TOK_DONE, TOK_ELIF, TOK_ELSE, TOK_EQUAL, TOK_FI, TOK_NOT, TOK_OR, TOK_RBLOCK, TOK_RBRAC, TOK_RPAREN, TOK_SEMICOL]  // assoc %right, prec 2
    31 nex: nex . TOK_PLUS term  // assoc %left, prec 1
@@ -3624,15 +3617,64 @@ state 261 // TOK_WHILE TOK_LPAREN TOK_BOOL TOK_LESS TOK_EQUAL TOK_BOOL [$end]
     TOK_EQUAL    reduce using rule 27 (REL)
     TOK_FI       reduce using rule 27 (REL)
     TOK_NOT      reduce using rule 27 (REL)
-    TOK_OCDEL    shift, and goto state 253
+    TOK_OCDEL    shift, and goto state 251
     TOK_OR       reduce using rule 27 (REL)
-    TOK_PLUS     shift, and goto state 252
+    TOK_PLUS     shift, and goto state 250
     TOK_RBLOCK   reduce using rule 27 (REL)
     TOK_RBRAC    reduce using rule 27 (REL)
     TOK_RPAREN   reduce using rule 27 (REL)
     TOK_SEMICOL  reduce using rule 27 (REL)
 
-state 262 // TOK_OCDEL [$end]
+state 260 // TOK_DEREF TOK_WORD TOK_EQUAL TOK_BOOL [$end]
+
+   19 EXPR: EXPR . TOK_OR JOIN
+  146 OCDOT: TOK_DEREF TOK_WORD TOK_EQUAL EXPR .  [$end, TOK_DONE, TOK_ELIF, TOK_ELSE, TOK_FI, TOK_RBRAC, TOK_RPAREN, TOK_SEMICOL]  // assoc %right, prec 2
+
+    $end         reduce using rule 146 (OCDOT)
+    TOK_DONE     reduce using rule 146 (OCDOT)
+    TOK_ELIF     reduce using rule 146 (OCDOT)
+    TOK_ELSE     reduce using rule 146 (OCDOT)
+    TOK_FI       reduce using rule 146 (OCDOT)
+    TOK_OR       shift, and goto state 231
+    TOK_RBRAC    reduce using rule 146 (OCDOT)
+    TOK_RPAREN   reduce using rule 146 (OCDOT)
+    TOK_SEMICOL  reduce using rule 146 (OCDOT)
+
+state 261 // TOK_DEREF TOK_WORD TOK_EQUAL TOK_QUOT
+
+  143 OCDOT: TOK_DEREF TOK_WORD TOK_EQUAL TOK_QUOT . STRARG TOK_QUOT
+  150 STRARG: .  [TOK_QUOT]
+
+    TOK_BOOL   shift, and goto state 87
+    TOK_NUM    shift, and goto state 84
+    TOK_OCDEL  shift, and goto state 86
+    TOK_PLUS   shift, and goto state 85
+    TOK_QUOT   reduce using rule 150 (STRARG)
+    TOK_WORD   shift, and goto state 83
+
+    STRARG     goto state 262
+    WORDORNUM  goto state 187
+
+state 262 // TOK_DEREF TOK_WORD TOK_EQUAL TOK_QUOT [TOK_QUOT]
+
+  143 OCDOT: TOK_DEREF TOK_WORD TOK_EQUAL TOK_QUOT STRARG . TOK_QUOT
+
+    TOK_QUOT  shift, and goto state 263
+
+state 263 // TOK_DEREF TOK_WORD TOK_EQUAL TOK_QUOT TOK_QUOT
+
+  143 OCDOT: TOK_DEREF TOK_WORD TOK_EQUAL TOK_QUOT STRARG TOK_QUOT .  [$end, TOK_DONE, TOK_ELIF, TOK_ELSE, TOK_FI, TOK_RBRAC, TOK_RPAREN, TOK_SEMICOL]
+
+    $end         reduce using rule 143 (OCDOT)
+    TOK_DONE     reduce using rule 143 (OCDOT)
+    TOK_ELIF     reduce using rule 143 (OCDOT)
+    TOK_ELSE     reduce using rule 143 (OCDOT)
+    TOK_FI       reduce using rule 143 (OCDOT)
+    TOK_RBRAC    reduce using rule 143 (OCDOT)
+    TOK_RPAREN   reduce using rule 143 (OCDOT)
+    TOK_SEMICOL  reduce using rule 143 (OCDOT)
+
+state 264 // TOK_OCDEL [$end]
 
   131 OCDEL: TOK_OCDEL P .  [$end, TOK_DONE, TOK_ELIF, TOK_ELSE, TOK_FI, TOK_RBRAC, TOK_RPAREN, TOK_SEMICOL]  // assoc %left, prec 1
 
@@ -3645,64 +3687,29 @@ state 262 // TOK_OCDEL [$end]
     TOK_RPAREN   reduce using rule 131 (OCDEL)
     TOK_SEMICOL  reduce using rule 131 (OCDEL)
 
-state 263 // TOK_DOT TOK_VAR
+state 265 // TOK_DOT TOK_VAR
 
   137 OCDOT: TOK_DOT TOK_VAR . TOK_COL TOK_WORD TOK_EQUAL WORDORNUM  // assoc %right, prec 2
   138 OCDOT: TOK_DOT TOK_VAR . TOK_COL TOK_WORD TOK_EQUAL TOK_QUOT STRARG TOK_QUOT
   139 OCDOT: TOK_DOT TOK_VAR . TOK_COL TOK_WORD TOK_EQUAL TOK_LPAREN WNARG TOK_RPAREN
 
-    TOK_COL  shift, and goto state 270
+    TOK_COL  shift, and goto state 272
 
-state 264 // TOK_DOT TOK_CMDS
+state 266 // TOK_DOT TOK_CMDS
 
   140 OCDOT: TOK_DOT TOK_CMDS . TOK_COL P
 
-    TOK_COL  shift, and goto state 268
+    TOK_COL  shift, and goto state 270
 
-state 265 // TOK_DOT TOK_TEMPLATE
+state 267 // TOK_DOT TOK_TEMPLATE
 
   141 OCDOT: TOK_DOT TOK_TEMPLATE . TOK_COL P
 
-    TOK_COL  shift, and goto state 266
+    TOK_COL  shift, and goto state 268
 
-state 266 // TOK_DOT TOK_TEMPLATE TOK_COL
+state 268 // TOK_DOT TOK_TEMPLATE TOK_COL
 
   141 OCDOT: TOK_DOT TOK_TEMPLATE TOK_COL . P
-   81 P1: .  [$end, TOK_DONE, TOK_ELIF, TOK_ELSE, TOK_FI, TOK_RBRAC, TOK_RPAREN, TOK_SEMICOL]
-
-    $end         reduce using rule 81 (P1)
-    TOK_DEREF    shift, and goto state 64
-    TOK_DONE     reduce using rule 81 (P1)
-    TOK_DOT      shift, and goto state 62
-    TOK_ELIF     reduce using rule 81 (P1)
-    TOK_ELSE     reduce using rule 81 (P1)
-    TOK_FI       reduce using rule 81 (P1)
-    TOK_OCDEL    shift, and goto state 63
-    TOK_RBRAC    reduce using rule 81 (P1)
-    TOK_RPAREN   reduce using rule 81 (P1)
-    TOK_SEMICOL  reduce using rule 81 (P1)
-    TOK_SLASH    shift, and goto state 22
-    TOK_WORD     shift, and goto state 61
-
-    P   goto state 267
-    P1  goto state 21
-
-state 267 // TOK_DOT TOK_TEMPLATE TOK_COL [$end]
-
-  141 OCDOT: TOK_DOT TOK_TEMPLATE TOK_COL P .  [$end, TOK_DONE, TOK_ELIF, TOK_ELSE, TOK_FI, TOK_RBRAC, TOK_RPAREN, TOK_SEMICOL]
-
-    $end         reduce using rule 141 (OCDOT)
-    TOK_DONE     reduce using rule 141 (OCDOT)
-    TOK_ELIF     reduce using rule 141 (OCDOT)
-    TOK_ELSE     reduce using rule 141 (OCDOT)
-    TOK_FI       reduce using rule 141 (OCDOT)
-    TOK_RBRAC    reduce using rule 141 (OCDOT)
-    TOK_RPAREN   reduce using rule 141 (OCDOT)
-    TOK_SEMICOL  reduce using rule 141 (OCDOT)
-
-state 268 // TOK_DOT TOK_CMDS TOK_COL
-
-  140 OCDOT: TOK_DOT TOK_CMDS TOK_COL . P
    81 P1: .  [$end, TOK_DONE, TOK_ELIF, TOK_ELSE, TOK_FI, TOK_RBRAC, TOK_RPAREN, TOK_SEMICOL]
 
     $end         reduce using rule 81 (P1)
@@ -3722,7 +3729,42 @@ state 268 // TOK_DOT TOK_CMDS TOK_COL
     P   goto state 269
     P1  goto state 21
 
-state 269 // TOK_DOT TOK_CMDS TOK_COL [$end]
+state 269 // TOK_DOT TOK_TEMPLATE TOK_COL [$end]
+
+  141 OCDOT: TOK_DOT TOK_TEMPLATE TOK_COL P .  [$end, TOK_DONE, TOK_ELIF, TOK_ELSE, TOK_FI, TOK_RBRAC, TOK_RPAREN, TOK_SEMICOL]
+
+    $end         reduce using rule 141 (OCDOT)
+    TOK_DONE     reduce using rule 141 (OCDOT)
+    TOK_ELIF     reduce using rule 141 (OCDOT)
+    TOK_ELSE     reduce using rule 141 (OCDOT)
+    TOK_FI       reduce using rule 141 (OCDOT)
+    TOK_RBRAC    reduce using rule 141 (OCDOT)
+    TOK_RPAREN   reduce using rule 141 (OCDOT)
+    TOK_SEMICOL  reduce using rule 141 (OCDOT)
+
+state 270 // TOK_DOT TOK_CMDS TOK_COL
+
+  140 OCDOT: TOK_DOT TOK_CMDS TOK_COL . P
+   81 P1: .  [$end, TOK_DONE, TOK_ELIF, TOK_ELSE, TOK_FI, TOK_RBRAC, TOK_RPAREN, TOK_SEMICOL]
+
+    $end         reduce using rule 81 (P1)
+    TOK_DEREF    shift, and goto state 64
+    TOK_DONE     reduce using rule 81 (P1)
+    TOK_DOT      shift, and goto state 62
+    TOK_ELIF     reduce using rule 81 (P1)
+    TOK_ELSE     reduce using rule 81 (P1)
+    TOK_FI       reduce using rule 81 (P1)
+    TOK_OCDEL    shift, and goto state 63
+    TOK_RBRAC    reduce using rule 81 (P1)
+    TOK_RPAREN   reduce using rule 81 (P1)
+    TOK_SEMICOL  reduce using rule 81 (P1)
+    TOK_SLASH    shift, and goto state 22
+    TOK_WORD     shift, and goto state 61
+
+    P   goto state 271
+    P1  goto state 21
+
+state 271 // TOK_DOT TOK_CMDS TOK_COL [$end]
 
   140 OCDOT: TOK_DOT TOK_CMDS TOK_COL P .  [$end, TOK_DONE, TOK_ELIF, TOK_ELSE, TOK_FI, TOK_RBRAC, TOK_RPAREN, TOK_SEMICOL]
 
@@ -3735,39 +3777,39 @@ state 269 // TOK_DOT TOK_CMDS TOK_COL [$end]
     TOK_RPAREN   reduce using rule 140 (OCDOT)
     TOK_SEMICOL  reduce using rule 140 (OCDOT)
 
-state 270 // TOK_DOT TOK_VAR TOK_COL
+state 272 // TOK_DOT TOK_VAR TOK_COL
 
   137 OCDOT: TOK_DOT TOK_VAR TOK_COL . TOK_WORD TOK_EQUAL WORDORNUM  // assoc %right, prec 2
   138 OCDOT: TOK_DOT TOK_VAR TOK_COL . TOK_WORD TOK_EQUAL TOK_QUOT STRARG TOK_QUOT
   139 OCDOT: TOK_DOT TOK_VAR TOK_COL . TOK_WORD TOK_EQUAL TOK_LPAREN WNARG TOK_RPAREN
 
-    TOK_WORD  shift, and goto state 271
+    TOK_WORD  shift, and goto state 273
 
-state 271 // TOK_DOT TOK_VAR TOK_COL TOK_WORD
+state 273 // TOK_DOT TOK_VAR TOK_COL TOK_WORD
 
   137 OCDOT: TOK_DOT TOK_VAR TOK_COL TOK_WORD . TOK_EQUAL WORDORNUM  // assoc %right, prec 2
   138 OCDOT: TOK_DOT TOK_VAR TOK_COL TOK_WORD . TOK_EQUAL TOK_QUOT STRARG TOK_QUOT
   139 OCDOT: TOK_DOT TOK_VAR TOK_COL TOK_WORD . TOK_EQUAL TOK_LPAREN WNARG TOK_RPAREN
 
-    TOK_EQUAL  shift, and goto state 272
+    TOK_EQUAL  shift, and goto state 274
 
-state 272 // TOK_DOT TOK_VAR TOK_COL TOK_WORD TOK_EQUAL
+state 274 // TOK_DOT TOK_VAR TOK_COL TOK_WORD TOK_EQUAL
 
   137 OCDOT: TOK_DOT TOK_VAR TOK_COL TOK_WORD TOK_EQUAL . WORDORNUM  // assoc %right, prec 2
   138 OCDOT: TOK_DOT TOK_VAR TOK_COL TOK_WORD TOK_EQUAL . TOK_QUOT STRARG TOK_QUOT
   139 OCDOT: TOK_DOT TOK_VAR TOK_COL TOK_WORD TOK_EQUAL . TOK_LPAREN WNARG TOK_RPAREN
 
     TOK_BOOL    shift, and goto state 87
-    TOK_LPAREN  shift, and goto state 275
+    TOK_LPAREN  shift, and goto state 277
     TOK_NUM     shift, and goto state 84
     TOK_OCDEL   shift, and goto state 86
     TOK_PLUS    shift, and goto state 85
-    TOK_QUOT    shift, and goto state 274
+    TOK_QUOT    shift, and goto state 276
     TOK_WORD    shift, and goto state 83
 
-    WORDORNUM  goto state 273
+    WORDORNUM  goto state 275
 
-state 273 // TOK_DOT TOK_VAR TOK_COL TOK_WORD TOK_EQUAL TOK_BOOL [$end]
+state 275 // TOK_DOT TOK_VAR TOK_COL TOK_WORD TOK_EQUAL TOK_BOOL [$end]
 
   137 OCDOT: TOK_DOT TOK_VAR TOK_COL TOK_WORD TOK_EQUAL WORDORNUM .  [$end, TOK_DONE, TOK_ELIF, TOK_ELSE, TOK_FI, TOK_RBRAC, TOK_RPAREN, TOK_SEMICOL]  // assoc %right, prec 2
 
@@ -3780,62 +3822,62 @@ state 273 // TOK_DOT TOK_VAR TOK_COL TOK_WORD TOK_EQUAL TOK_BOOL [$end]
     TOK_RPAREN   reduce using rule 137 (OCDOT)
     TOK_SEMICOL  reduce using rule 137 (OCDOT)
 
-state 274 // TOK_DOT TOK_VAR TOK_COL TOK_WORD TOK_EQUAL TOK_QUOT
+state 276 // TOK_DOT TOK_VAR TOK_COL TOK_WORD TOK_EQUAL TOK_QUOT
 
   138 OCDOT: TOK_DOT TOK_VAR TOK_COL TOK_WORD TOK_EQUAL TOK_QUOT . STRARG TOK_QUOT
-  149 STRARG: .  [TOK_QUOT]
+  150 STRARG: .  [TOK_QUOT]
 
     TOK_BOOL   shift, and goto state 87
     TOK_NUM    shift, and goto state 84
     TOK_OCDEL  shift, and goto state 86
     TOK_PLUS   shift, and goto state 85
-    TOK_QUOT   reduce using rule 149 (STRARG)
+    TOK_QUOT   reduce using rule 150 (STRARG)
     TOK_WORD   shift, and goto state 83
 
-    STRARG     goto state 284
+    STRARG     goto state 286
     WORDORNUM  goto state 187
 
-state 275 // TOK_DOT TOK_VAR TOK_COL TOK_WORD TOK_EQUAL TOK_LPAREN
+state 277 // TOK_DOT TOK_VAR TOK_COL TOK_WORD TOK_EQUAL TOK_LPAREN
 
   139 OCDOT: TOK_DOT TOK_VAR TOK_COL TOK_WORD TOK_EQUAL TOK_LPAREN . WNARG TOK_RPAREN
-  152 WNARG: .  [TOK_RPAREN]
+  153 WNARG: .  [TOK_RPAREN]
 
     TOK_BOOL    shift, and goto state 87
     TOK_NUM     shift, and goto state 84
     TOK_OCDEL   shift, and goto state 86
     TOK_PLUS    shift, and goto state 85
-    TOK_QUOT    shift, and goto state 278
-    TOK_RPAREN  reduce using rule 152 (WNARG)
+    TOK_QUOT    shift, and goto state 280
+    TOK_RPAREN  reduce using rule 153 (WNARG)
     TOK_WORD    shift, and goto state 83
 
-    WNARG      goto state 276
-    WORDORNUM  goto state 277
+    WNARG      goto state 278
+    WORDORNUM  goto state 279
 
-state 276 // TOK_DOT TOK_VAR TOK_COL TOK_WORD TOK_EQUAL TOK_LPAREN [TOK_RPAREN]
+state 278 // TOK_DOT TOK_VAR TOK_COL TOK_WORD TOK_EQUAL TOK_LPAREN [TOK_RPAREN]
 
   139 OCDOT: TOK_DOT TOK_VAR TOK_COL TOK_WORD TOK_EQUAL TOK_LPAREN WNARG . TOK_RPAREN
 
-    TOK_RPAREN  shift, and goto state 283
+    TOK_RPAREN  shift, and goto state 285
 
-state 277 // TOK_DOT TOK_VAR TOK_COL TOK_WORD TOK_EQUAL TOK_LPAREN TOK_BOOL [TOK_BOOL]
+state 279 // TOK_DOT TOK_VAR TOK_COL TOK_WORD TOK_EQUAL TOK_LPAREN TOK_BOOL [TOK_BOOL]
 
-  150 WNARG: WORDORNUM . WNARG
-  152 WNARG: .  [TOK_RPAREN]
+  151 WNARG: WORDORNUM . WNARG
+  153 WNARG: .  [TOK_RPAREN]
 
     TOK_BOOL    shift, and goto state 87
     TOK_NUM     shift, and goto state 84
     TOK_OCDEL   shift, and goto state 86
     TOK_PLUS    shift, and goto state 85
-    TOK_QUOT    shift, and goto state 278
-    TOK_RPAREN  reduce using rule 152 (WNARG)
+    TOK_QUOT    shift, and goto state 280
+    TOK_RPAREN  reduce using rule 153 (WNARG)
     TOK_WORD    shift, and goto state 83
 
-    WNARG      goto state 282
-    WORDORNUM  goto state 277
+    WNARG      goto state 284
+    WORDORNUM  goto state 279
 
-state 278 // TOK_DOT TOK_VAR TOK_COL TOK_WORD TOK_EQUAL TOK_LPAREN TOK_QUOT
+state 280 // TOK_DOT TOK_VAR TOK_COL TOK_WORD TOK_EQUAL TOK_LPAREN TOK_QUOT
 
-  151 WNARG: TOK_QUOT . WORDORNUM TOK_QUOT WNARG
+  152 WNARG: TOK_QUOT . WORDORNUM TOK_QUOT WNARG
 
     TOK_BOOL   shift, and goto state 87
     TOK_NUM    shift, and goto state 84
@@ -3843,43 +3885,43 @@ state 278 // TOK_DOT TOK_VAR TOK_COL TOK_WORD TOK_EQUAL TOK_LPAREN TOK_QUOT
     TOK_PLUS   shift, and goto state 85
     TOK_WORD   shift, and goto state 83
 
-    WORDORNUM  goto state 279
+    WORDORNUM  goto state 281
 
-state 279 // TOK_DOT TOK_VAR TOK_COL TOK_WORD TOK_EQUAL TOK_LPAREN TOK_QUOT TOK_BOOL [TOK_QUOT]
+state 281 // TOK_DOT TOK_VAR TOK_COL TOK_WORD TOK_EQUAL TOK_LPAREN TOK_QUOT TOK_BOOL [TOK_QUOT]
 
-  151 WNARG: TOK_QUOT WORDORNUM . TOK_QUOT WNARG
+  152 WNARG: TOK_QUOT WORDORNUM . TOK_QUOT WNARG
 
-    TOK_QUOT  shift, and goto state 280
+    TOK_QUOT  shift, and goto state 282
 
-state 280 // TOK_DOT TOK_VAR TOK_COL TOK_WORD TOK_EQUAL TOK_LPAREN TOK_QUOT TOK_BOOL TOK_QUOT
+state 282 // TOK_DOT TOK_VAR TOK_COL TOK_WORD TOK_EQUAL TOK_LPAREN TOK_QUOT TOK_BOOL TOK_QUOT
 
-  151 WNARG: TOK_QUOT WORDORNUM TOK_QUOT . WNARG
-  152 WNARG: .  [TOK_RPAREN]
+  152 WNARG: TOK_QUOT WORDORNUM TOK_QUOT . WNARG
+  153 WNARG: .  [TOK_RPAREN]
 
     TOK_BOOL    shift, and goto state 87
     TOK_NUM     shift, and goto state 84
     TOK_OCDEL   shift, and goto state 86
     TOK_PLUS    shift, and goto state 85
-    TOK_QUOT    shift, and goto state 278
-    TOK_RPAREN  reduce using rule 152 (WNARG)
+    TOK_QUOT    shift, and goto state 280
+    TOK_RPAREN  reduce using rule 153 (WNARG)
     TOK_WORD    shift, and goto state 83
 
-    WNARG      goto state 281
-    WORDORNUM  goto state 277
+    WNARG      goto state 283
+    WORDORNUM  goto state 279
 
-state 281 // TOK_DOT TOK_VAR TOK_COL TOK_WORD TOK_EQUAL TOK_LPAREN TOK_QUOT TOK_BOOL TOK_QUOT [TOK_RPAREN]
+state 283 // TOK_DOT TOK_VAR TOK_COL TOK_WORD TOK_EQUAL TOK_LPAREN TOK_QUOT TOK_BOOL TOK_QUOT [TOK_RPAREN]
 
-  151 WNARG: TOK_QUOT WORDORNUM TOK_QUOT WNARG .  [TOK_RPAREN]
+  152 WNARG: TOK_QUOT WORDORNUM TOK_QUOT WNARG .  [TOK_RPAREN]
+
+    TOK_RPAREN  reduce using rule 152 (WNARG)
+
+state 284 // TOK_DOT TOK_VAR TOK_COL TOK_WORD TOK_EQUAL TOK_LPAREN TOK_BOOL [TOK_RPAREN]
+
+  151 WNARG: WORDORNUM WNARG .  [TOK_RPAREN]
 
     TOK_RPAREN  reduce using rule 151 (WNARG)
 
-state 282 // TOK_DOT TOK_VAR TOK_COL TOK_WORD TOK_EQUAL TOK_LPAREN TOK_BOOL [TOK_RPAREN]
-
-  150 WNARG: WORDORNUM WNARG .  [TOK_RPAREN]
-
-    TOK_RPAREN  reduce using rule 150 (WNARG)
-
-state 283 // TOK_DOT TOK_VAR TOK_COL TOK_WORD TOK_EQUAL TOK_LPAREN TOK_RPAREN
+state 285 // TOK_DOT TOK_VAR TOK_COL TOK_WORD TOK_EQUAL TOK_LPAREN TOK_RPAREN
 
   139 OCDOT: TOK_DOT TOK_VAR TOK_COL TOK_WORD TOK_EQUAL TOK_LPAREN WNARG TOK_RPAREN .  [$end, TOK_DONE, TOK_ELIF, TOK_ELSE, TOK_FI, TOK_RBRAC, TOK_RPAREN, TOK_SEMICOL]
 
@@ -3892,13 +3934,13 @@ state 283 // TOK_DOT TOK_VAR TOK_COL TOK_WORD TOK_EQUAL TOK_LPAREN TOK_RPAREN
     TOK_RPAREN   reduce using rule 139 (OCDOT)
     TOK_SEMICOL  reduce using rule 139 (OCDOT)
 
-state 284 // TOK_DOT TOK_VAR TOK_COL TOK_WORD TOK_EQUAL TOK_QUOT [TOK_QUOT]
+state 286 // TOK_DOT TOK_VAR TOK_COL TOK_WORD TOK_EQUAL TOK_QUOT [TOK_QUOT]
 
   138 OCDOT: TOK_DOT TOK_VAR TOK_COL TOK_WORD TOK_EQUAL TOK_QUOT STRARG . TOK_QUOT
 
-    TOK_QUOT  shift, and goto state 285
+    TOK_QUOT  shift, and goto state 287
 
-state 285 // TOK_DOT TOK_VAR TOK_COL TOK_WORD TOK_EQUAL TOK_QUOT TOK_QUOT
+state 287 // TOK_DOT TOK_VAR TOK_COL TOK_WORD TOK_EQUAL TOK_QUOT TOK_QUOT
 
   138 OCDOT: TOK_DOT TOK_VAR TOK_COL TOK_WORD TOK_EQUAL TOK_QUOT STRARG TOK_QUOT .  [$end, TOK_DONE, TOK_ELIF, TOK_ELSE, TOK_FI, TOK_RBRAC, TOK_RPAREN, TOK_SEMICOL]
 
@@ -3911,21 +3953,21 @@ state 285 // TOK_DOT TOK_VAR TOK_COL TOK_WORD TOK_EQUAL TOK_QUOT TOK_QUOT
     TOK_RPAREN   reduce using rule 138 (OCDOT)
     TOK_SEMICOL  reduce using rule 138 (OCDOT)
 
-state 286 // TOK_WORD TOK_LPAREN
+state 288 // TOK_WORD TOK_LPAREN
 
-  153 FUNC: TOK_WORD TOK_LPAREN . TOK_RPAREN TOK_LBRAC st2 TOK_RBRAC
+  154 FUNC: TOK_WORD TOK_LPAREN . TOK_RPAREN TOK_LBRAC st2 TOK_RBRAC
 
-    TOK_RPAREN  shift, and goto state 287
+    TOK_RPAREN  shift, and goto state 289
 
-state 287 // TOK_WORD TOK_LPAREN TOK_RPAREN
+state 289 // TOK_WORD TOK_LPAREN TOK_RPAREN
 
-  153 FUNC: TOK_WORD TOK_LPAREN TOK_RPAREN . TOK_LBRAC st2 TOK_RBRAC
+  154 FUNC: TOK_WORD TOK_LPAREN TOK_RPAREN . TOK_LBRAC st2 TOK_RBRAC
 
-    TOK_LBRAC  shift, and goto state 288
+    TOK_LBRAC  shift, and goto state 290
 
-state 288 // TOK_WORD TOK_LPAREN TOK_RPAREN TOK_LBRAC
+state 290 // TOK_WORD TOK_LPAREN TOK_RPAREN TOK_LBRAC
 
-  153 FUNC: TOK_WORD TOK_LPAREN TOK_RPAREN TOK_LBRAC . st2 TOK_RBRAC
+  154 FUNC: TOK_WORD TOK_LPAREN TOK_RPAREN TOK_LBRAC . st2 TOK_RBRAC
     9 stmnt: .  [TOK_RBRAC, TOK_SEMICOL]
    81 P1: .  [TOK_DOT]
 
@@ -3985,31 +4027,31 @@ state 288 // TOK_WORD TOK_LPAREN TOK_RPAREN TOK_LBRAC
     P          goto state 54
     P1         goto state 21
     Q          goto state 6
-    st2        goto state 289
+    st2        goto state 291
     stmnt      goto state 3
 
     conflict on TOK_DOT, shift, and goto state 24, reduce using rule 81
 
-state 289 // TOK_WORD TOK_LPAREN TOK_RPAREN TOK_LBRAC [TOK_RBRAC]
+state 291 // TOK_WORD TOK_LPAREN TOK_RPAREN TOK_LBRAC [TOK_RBRAC]
 
-  153 FUNC: TOK_WORD TOK_LPAREN TOK_RPAREN TOK_LBRAC st2 . TOK_RBRAC
+  154 FUNC: TOK_WORD TOK_LPAREN TOK_RPAREN TOK_LBRAC st2 . TOK_RBRAC
 
-    TOK_RBRAC  shift, and goto state 290
+    TOK_RBRAC  shift, and goto state 292
 
-state 290 // TOK_WORD TOK_LPAREN TOK_RPAREN TOK_LBRAC TOK_RBRAC
+state 292 // TOK_WORD TOK_LPAREN TOK_RPAREN TOK_LBRAC TOK_RBRAC
 
-  153 FUNC: TOK_WORD TOK_LPAREN TOK_RPAREN TOK_LBRAC st2 TOK_RBRAC .  [$end, TOK_DONE, TOK_ELIF, TOK_ELSE, TOK_FI, TOK_RBRAC, TOK_RPAREN, TOK_SEMICOL]
+  154 FUNC: TOK_WORD TOK_LPAREN TOK_RPAREN TOK_LBRAC st2 TOK_RBRAC .  [$end, TOK_DONE, TOK_ELIF, TOK_ELSE, TOK_FI, TOK_RBRAC, TOK_RPAREN, TOK_SEMICOL]
 
-    $end         reduce using rule 153 (FUNC)
-    TOK_DONE     reduce using rule 153 (FUNC)
-    TOK_ELIF     reduce using rule 153 (FUNC)
-    TOK_ELSE     reduce using rule 153 (FUNC)
-    TOK_FI       reduce using rule 153 (FUNC)
-    TOK_RBRAC    reduce using rule 153 (FUNC)
-    TOK_RPAREN   reduce using rule 153 (FUNC)
-    TOK_SEMICOL  reduce using rule 153 (FUNC)
+    $end         reduce using rule 154 (FUNC)
+    TOK_DONE     reduce using rule 154 (FUNC)
+    TOK_ELIF     reduce using rule 154 (FUNC)
+    TOK_ELSE     reduce using rule 154 (FUNC)
+    TOK_FI       reduce using rule 154 (FUNC)
+    TOK_RBRAC    reduce using rule 154 (FUNC)
+    TOK_RPAREN   reduce using rule 154 (FUNC)
+    TOK_SEMICOL  reduce using rule 154 (FUNC)
 
-state 291 // TOK_SLASH [$end]
+state 293 // TOK_SLASH [$end]
 
    73 P: TOK_SLASH P1 .  [$end, TOK_ATTR, TOK_ATTRSPEC, TOK_DONE, TOK_DOT, TOK_ELIF, TOK_ELSE, TOK_FI, TOK_NUM, TOK_RBRAC, TOK_RPAREN, TOK_SEMICOL]
 
@@ -4026,7 +4068,7 @@ state 291 // TOK_SLASH [$end]
     TOK_RPAREN    reduce using rule 73 (P)
     TOK_SEMICOL   reduce using rule 73 (P)
 
-state 292 // TOK_DELETE [$end]
+state 294 // TOK_DELETE [$end]
 
    54 NT_DEL: TOK_DELETE P .  [$end, TOK_DONE, TOK_ELIF, TOK_ELSE, TOK_FI, TOK_RBRAC, TOK_RPAREN, TOK_SEMICOL]
 
@@ -4039,15 +4081,15 @@ state 292 // TOK_DELETE [$end]
     TOK_RPAREN   reduce using rule 54 (NT_DEL)
     TOK_SEMICOL  reduce using rule 54 (NT_DEL)
 
-state 293 // TOK_UPDATE [TOK_ATTR]
+state 295 // TOK_UPDATE [TOK_ATTR]
 
    53 NT_UPDATE: TOK_UPDATE P . F
 
-    TOK_ATTR  shift, and goto state 295
+    TOK_ATTR  shift, and goto state 297
 
-    F  goto state 294
+    F  goto state 296
 
-state 294 // TOK_UPDATE TOK_ATTR TOK_EQUAL TOK_BOOL [$end]
+state 296 // TOK_UPDATE TOK_ATTR TOK_EQUAL TOK_BOOL [$end]
 
    53 NT_UPDATE: TOK_UPDATE P F .  [$end, TOK_DONE, TOK_ELIF, TOK_ELSE, TOK_FI, TOK_RBRAC, TOK_RPAREN, TOK_SEMICOL]
 
@@ -4060,14 +4102,14 @@ state 294 // TOK_UPDATE TOK_ATTR TOK_EQUAL TOK_BOOL [$end]
     TOK_RPAREN   reduce using rule 53 (NT_UPDATE)
     TOK_SEMICOL  reduce using rule 53 (NT_UPDATE)
 
-state 295 // TOK_UPDATE TOK_ATTR
+state 297 // TOK_UPDATE TOK_ATTR
 
    70 F: TOK_ATTR . TOK_EQUAL WORDORNUM F  // assoc %right, prec 2
    71 F: TOK_ATTR . TOK_EQUAL WORDORNUM  // assoc %right, prec 2
 
-    TOK_EQUAL  shift, and goto state 296
+    TOK_EQUAL  shift, and goto state 298
 
-state 296 // TOK_UPDATE TOK_ATTR TOK_EQUAL
+state 298 // TOK_UPDATE TOK_ATTR TOK_EQUAL
 
    70 F: TOK_ATTR TOK_EQUAL . WORDORNUM F  // assoc %right, prec 2
    71 F: TOK_ATTR TOK_EQUAL . WORDORNUM  // assoc %right, prec 2
@@ -4078,15 +4120,15 @@ state 296 // TOK_UPDATE TOK_ATTR TOK_EQUAL
     TOK_PLUS   shift, and goto state 85
     TOK_WORD   shift, and goto state 83
 
-    WORDORNUM  goto state 297
+    WORDORNUM  goto state 299
 
-state 297 // TOK_UPDATE TOK_ATTR TOK_EQUAL TOK_BOOL [$end]
+state 299 // TOK_UPDATE TOK_ATTR TOK_EQUAL TOK_BOOL [$end]
 
    70 F: TOK_ATTR TOK_EQUAL WORDORNUM . F  // assoc %right, prec 2
    71 F: TOK_ATTR TOK_EQUAL WORDORNUM .  [$end, TOK_DONE, TOK_ELIF, TOK_ELSE, TOK_FI, TOK_RBRAC, TOK_RPAREN, TOK_SEMICOL]  // assoc %right, prec 2
 
     $end         reduce using rule 71 (F)
-    TOK_ATTR     shift, and goto state 295
+    TOK_ATTR     shift, and goto state 297
     TOK_DONE     reduce using rule 71 (F)
     TOK_ELIF     reduce using rule 71 (F)
     TOK_ELSE     reduce using rule 71 (F)
@@ -4095,9 +4137,9 @@ state 297 // TOK_UPDATE TOK_ATTR TOK_EQUAL TOK_BOOL [$end]
     TOK_RPAREN   reduce using rule 71 (F)
     TOK_SEMICOL  reduce using rule 71 (F)
 
-    F  goto state 298
+    F  goto state 300
 
-state 298 // TOK_UPDATE TOK_ATTR TOK_EQUAL TOK_BOOL TOK_ATTR TOK_EQUAL TOK_BOOL [$end]
+state 300 // TOK_UPDATE TOK_ATTR TOK_EQUAL TOK_BOOL TOK_ATTR TOK_EQUAL TOK_BOOL [$end]
 
    70 F: TOK_ATTR TOK_EQUAL WORDORNUM F .  [$end, TOK_DONE, TOK_ELIF, TOK_ELSE, TOK_FI, TOK_RBRAC, TOK_RPAREN, TOK_SEMICOL]  // assoc %right, prec 2
 
@@ -4110,7 +4152,7 @@ state 298 // TOK_UPDATE TOK_ATTR TOK_EQUAL TOK_BOOL TOK_ATTR TOK_EQUAL TOK_BOOL 
     TOK_RPAREN   reduce using rule 70 (F)
     TOK_SEMICOL  reduce using rule 70 (F)
 
-state 299 // TOK_GET [$end]
+state 301 // TOK_GET [$end]
 
    51 NT_GET: TOK_GET P .  [$end, TOK_DONE, TOK_ELIF, TOK_ELSE, TOK_FI, TOK_RBRAC, TOK_RPAREN, TOK_SEMICOL]
 
@@ -4123,15 +4165,15 @@ state 299 // TOK_GET [$end]
     TOK_RPAREN   reduce using rule 51 (NT_GET)
     TOK_SEMICOL  reduce using rule 51 (NT_GET)
 
-state 300 // TOK_GET TOK_BLDG [TOK_ATTR]
+state 302 // TOK_GET TOK_BLDG [TOK_ATTR]
 
    52 NT_GET: TOK_GET E . F
 
-    TOK_ATTR  shift, and goto state 295
+    TOK_ATTR  shift, and goto state 297
 
-    F  goto state 309
+    F  goto state 311
 
-state 301 // TOK_CREATE TOK_TENANT
+state 303 // TOK_CREATE TOK_TENANT
 
    55 E: TOK_TENANT .  [TOK_ATTR, TOK_DEREF, TOK_DOT, TOK_OCDEL, TOK_SLASH, TOK_WORD]
 
@@ -4142,7 +4184,7 @@ state 301 // TOK_CREATE TOK_TENANT
     TOK_SLASH  reduce using rule 55 (E)
     TOK_WORD   reduce using rule 55 (E)
 
-state 302 // TOK_CREATE TOK_SITE
+state 304 // TOK_CREATE TOK_SITE
 
    56 E: TOK_SITE .  [TOK_ATTR, TOK_DEREF, TOK_DOT, TOK_OCDEL, TOK_SLASH, TOK_WORD]
 
@@ -4153,7 +4195,7 @@ state 302 // TOK_CREATE TOK_SITE
     TOK_SLASH  reduce using rule 56 (E)
     TOK_WORD   reduce using rule 56 (E)
 
-state 303 // TOK_CREATE TOK_BLDG
+state 305 // TOK_CREATE TOK_BLDG
 
    57 E: TOK_BLDG .  [TOK_ATTR, TOK_DEREF, TOK_DOT, TOK_OCDEL, TOK_SLASH, TOK_WORD]
 
@@ -4164,7 +4206,7 @@ state 303 // TOK_CREATE TOK_BLDG
     TOK_SLASH  reduce using rule 57 (E)
     TOK_WORD   reduce using rule 57 (E)
 
-state 304 // TOK_GET TOK_ROOM
+state 306 // TOK_GET TOK_ROOM
 
    58 E: TOK_ROOM .  [TOK_ATTR, TOK_DEREF, TOK_DOT, TOK_OCDEL, TOK_SLASH, TOK_WORD]
 
@@ -4175,7 +4217,7 @@ state 304 // TOK_GET TOK_ROOM
     TOK_SLASH  reduce using rule 58 (E)
     TOK_WORD   reduce using rule 58 (E)
 
-state 305 // TOK_CREATE TOK_RACK
+state 307 // TOK_CREATE TOK_RACK
 
    59 E: TOK_RACK .  [TOK_ATTR, TOK_DEREF, TOK_DOT, TOK_OCDEL, TOK_SLASH, TOK_WORD]
 
@@ -4186,7 +4228,7 @@ state 305 // TOK_CREATE TOK_RACK
     TOK_SLASH  reduce using rule 59 (E)
     TOK_WORD   reduce using rule 59 (E)
 
-state 306 // TOK_CREATE TOK_DEVICE
+state 308 // TOK_CREATE TOK_DEVICE
 
    60 E: TOK_DEVICE .  [TOK_ATTR, TOK_DEREF, TOK_DOT, TOK_OCDEL, TOK_SLASH, TOK_WORD]
 
@@ -4197,7 +4239,7 @@ state 306 // TOK_CREATE TOK_DEVICE
     TOK_SLASH  reduce using rule 60 (E)
     TOK_WORD   reduce using rule 60 (E)
 
-state 307 // TOK_CREATE TOK_SUBDEVICE
+state 309 // TOK_CREATE TOK_SUBDEVICE
 
    61 E: TOK_SUBDEVICE .  [TOK_ATTR, TOK_DEREF, TOK_DOT, TOK_OCDEL, TOK_SLASH, TOK_WORD]
 
@@ -4208,7 +4250,7 @@ state 307 // TOK_CREATE TOK_SUBDEVICE
     TOK_SLASH  reduce using rule 61 (E)
     TOK_WORD   reduce using rule 61 (E)
 
-state 308 // TOK_CREATE TOK_SUBDEVICE1
+state 310 // TOK_CREATE TOK_SUBDEVICE1
 
    62 E: TOK_SUBDEVICE1 .  [TOK_ATTR, TOK_DEREF, TOK_DOT, TOK_OCDEL, TOK_SLASH, TOK_WORD]
 
@@ -4219,7 +4261,7 @@ state 308 // TOK_CREATE TOK_SUBDEVICE1
     TOK_SLASH  reduce using rule 62 (E)
     TOK_WORD   reduce using rule 62 (E)
 
-state 309 // TOK_GET TOK_BLDG TOK_ATTR TOK_EQUAL TOK_BOOL [$end]
+state 311 // TOK_GET TOK_BLDG TOK_ATTR TOK_EQUAL TOK_BOOL [$end]
 
    52 NT_GET: TOK_GET E F .  [$end, TOK_DONE, TOK_ELIF, TOK_ELSE, TOK_FI, TOK_RBRAC, TOK_RPAREN, TOK_SEMICOL]
 
@@ -4232,7 +4274,7 @@ state 309 // TOK_GET TOK_BLDG TOK_ATTR TOK_EQUAL TOK_BOOL [$end]
     TOK_RPAREN   reduce using rule 52 (NT_GET)
     TOK_SEMICOL  reduce using rule 52 (NT_GET)
 
-state 310 // TOK_CREATE TOK_BLDG [TOK_ATTR]
+state 312 // TOK_CREATE TOK_BLDG [TOK_ATTR]
 
    50 NT_CREATE: TOK_CREATE E . P F
    81 P1: .  [TOK_ATTR]
@@ -4244,18 +4286,18 @@ state 310 // TOK_CREATE TOK_BLDG [TOK_ATTR]
     TOK_SLASH  shift, and goto state 22
     TOK_WORD   shift, and goto state 61
 
-    P   goto state 311
+    P   goto state 313
     P1  goto state 21
 
-state 311 // TOK_CREATE TOK_BLDG [TOK_ATTR]
+state 313 // TOK_CREATE TOK_BLDG [TOK_ATTR]
 
    50 NT_CREATE: TOK_CREATE E P . F
 
-    TOK_ATTR  shift, and goto state 295
+    TOK_ATTR  shift, and goto state 297
 
-    F  goto state 312
+    F  goto state 314
 
-state 312 // TOK_CREATE TOK_BLDG TOK_ATTR TOK_EQUAL TOK_BOOL [$end]
+state 314 // TOK_CREATE TOK_BLDG TOK_ATTR TOK_EQUAL TOK_BOOL [$end]
 
    50 NT_CREATE: TOK_CREATE E P F .  [$end, TOK_DONE, TOK_ELIF, TOK_ELSE, TOK_FI, TOK_RBRAC, TOK_RPAREN, TOK_SEMICOL]
 
@@ -4268,87 +4310,87 @@ state 312 // TOK_CREATE TOK_BLDG TOK_ATTR TOK_EQUAL TOK_BOOL [$end]
     TOK_RPAREN   reduce using rule 50 (NT_CREATE)
     TOK_SEMICOL  reduce using rule 50 (NT_CREATE)
 
-state 313 // TOK_FOR TOK_LPAREN
+state 315 // TOK_FOR TOK_LPAREN
 
    14 OPEN_STMT: TOK_FOR TOK_LPAREN . TOK_LPAREN TOK_WORD TOK_EQUAL WORDORNUM TOK_SEMICOL EXPR TOK_SEMICOL stmnt TOK_RPAREN TOK_RPAREN TOK_SEMICOL st2 TOK_DONE
 
-    TOK_LPAREN  shift, and goto state 329
+    TOK_LPAREN  shift, and goto state 331
 
-state 314 // TOK_FOR TOK_WORD
+state 316 // TOK_FOR TOK_WORD
 
    15 OPEN_STMT: TOK_FOR TOK_WORD . TOK_IN EXPR TOK_SEMICOL st2 TOK_DONE
    16 OPEN_STMT: TOK_FOR TOK_WORD . TOK_IN TOK_LBRAC TOK_NUM TOK_DOT TOK_DOT TOK_NUM TOK_RBRAC TOK_SEMICOL st2 TOK_DONE
 
-    TOK_IN  shift, and goto state 315
+    TOK_IN  shift, and goto state 317
 
-state 315 // TOK_FOR TOK_WORD TOK_IN
+state 317 // TOK_FOR TOK_WORD TOK_IN
 
    15 OPEN_STMT: TOK_FOR TOK_WORD TOK_IN . EXPR TOK_SEMICOL st2 TOK_DONE
    16 OPEN_STMT: TOK_FOR TOK_WORD TOK_IN . TOK_LBRAC TOK_NUM TOK_DOT TOK_DOT TOK_NUM TOK_RBRAC TOK_SEMICOL st2 TOK_DONE
 
-    TOK_BOOL    shift, and goto state 224
-    TOK_DEREF   shift, and goto state 222
-    TOK_LBRAC   shift, and goto state 317
-    TOK_LPAREN  shift, and goto state 220
-    TOK_NOT     shift, and goto state 217
-    TOK_NUM     shift, and goto state 221
-    TOK_OCDEL   shift, and goto state 218
-    TOK_WORD    shift, and goto state 223
+    TOK_BOOL    shift, and goto state 225
+    TOK_DEREF   shift, and goto state 223
+    TOK_LBRAC   shift, and goto state 319
+    TOK_LPAREN  shift, and goto state 221
+    TOK_NOT     shift, and goto state 218
+    TOK_NUM     shift, and goto state 222
+    TOK_OCDEL   shift, and goto state 219
+    TOK_WORD    shift, and goto state 224
 
-    EQAL    goto state 212
-    EXPR    goto state 316
-    JOIN    goto state 211
-    REL     goto state 213
-    factor  goto state 219
-    nex     goto state 214
-    term    goto state 215
-    unary   goto state 216
+    EQAL    goto state 213
+    EXPR    goto state 318
+    JOIN    goto state 212
+    REL     goto state 214
+    factor  goto state 220
+    nex     goto state 215
+    term    goto state 216
+    unary   goto state 217
 
-state 316 // TOK_FOR TOK_WORD TOK_IN TOK_BOOL [TOK_OR]
+state 318 // TOK_FOR TOK_WORD TOK_IN TOK_BOOL [TOK_OR]
 
    15 OPEN_STMT: TOK_FOR TOK_WORD TOK_IN EXPR . TOK_SEMICOL st2 TOK_DONE
    19 EXPR: EXPR . TOK_OR JOIN
 
-    TOK_OR       shift, and goto state 233
-    TOK_SEMICOL  shift, and goto state 326
+    TOK_OR       shift, and goto state 231
+    TOK_SEMICOL  shift, and goto state 328
 
-state 317 // TOK_FOR TOK_WORD TOK_IN TOK_LBRAC
+state 319 // TOK_FOR TOK_WORD TOK_IN TOK_LBRAC
 
    16 OPEN_STMT: TOK_FOR TOK_WORD TOK_IN TOK_LBRAC . TOK_NUM TOK_DOT TOK_DOT TOK_NUM TOK_RBRAC TOK_SEMICOL st2 TOK_DONE
 
-    TOK_NUM  shift, and goto state 318
+    TOK_NUM  shift, and goto state 320
 
-state 318 // TOK_FOR TOK_WORD TOK_IN TOK_LBRAC TOK_NUM
+state 320 // TOK_FOR TOK_WORD TOK_IN TOK_LBRAC TOK_NUM
 
    16 OPEN_STMT: TOK_FOR TOK_WORD TOK_IN TOK_LBRAC TOK_NUM . TOK_DOT TOK_DOT TOK_NUM TOK_RBRAC TOK_SEMICOL st2 TOK_DONE
 
-    TOK_DOT  shift, and goto state 319
+    TOK_DOT  shift, and goto state 321
 
-state 319 // TOK_FOR TOK_WORD TOK_IN TOK_LBRAC TOK_NUM TOK_DOT
+state 321 // TOK_FOR TOK_WORD TOK_IN TOK_LBRAC TOK_NUM TOK_DOT
 
    16 OPEN_STMT: TOK_FOR TOK_WORD TOK_IN TOK_LBRAC TOK_NUM TOK_DOT . TOK_DOT TOK_NUM TOK_RBRAC TOK_SEMICOL st2 TOK_DONE
 
-    TOK_DOT  shift, and goto state 320
+    TOK_DOT  shift, and goto state 322
 
-state 320 // TOK_FOR TOK_WORD TOK_IN TOK_LBRAC TOK_NUM TOK_DOT TOK_DOT
+state 322 // TOK_FOR TOK_WORD TOK_IN TOK_LBRAC TOK_NUM TOK_DOT TOK_DOT
 
    16 OPEN_STMT: TOK_FOR TOK_WORD TOK_IN TOK_LBRAC TOK_NUM TOK_DOT TOK_DOT . TOK_NUM TOK_RBRAC TOK_SEMICOL st2 TOK_DONE
 
-    TOK_NUM  shift, and goto state 321
+    TOK_NUM  shift, and goto state 323
 
-state 321 // TOK_FOR TOK_WORD TOK_IN TOK_LBRAC TOK_NUM TOK_DOT TOK_DOT TOK_NUM
+state 323 // TOK_FOR TOK_WORD TOK_IN TOK_LBRAC TOK_NUM TOK_DOT TOK_DOT TOK_NUM
 
    16 OPEN_STMT: TOK_FOR TOK_WORD TOK_IN TOK_LBRAC TOK_NUM TOK_DOT TOK_DOT TOK_NUM . TOK_RBRAC TOK_SEMICOL st2 TOK_DONE
 
-    TOK_RBRAC  shift, and goto state 322
+    TOK_RBRAC  shift, and goto state 324
 
-state 322 // TOK_FOR TOK_WORD TOK_IN TOK_LBRAC TOK_NUM TOK_DOT TOK_DOT TOK_NUM TOK_RBRAC
+state 324 // TOK_FOR TOK_WORD TOK_IN TOK_LBRAC TOK_NUM TOK_DOT TOK_DOT TOK_NUM TOK_RBRAC
 
    16 OPEN_STMT: TOK_FOR TOK_WORD TOK_IN TOK_LBRAC TOK_NUM TOK_DOT TOK_DOT TOK_NUM TOK_RBRAC . TOK_SEMICOL st2 TOK_DONE
 
-    TOK_SEMICOL  shift, and goto state 323
+    TOK_SEMICOL  shift, and goto state 325
 
-state 323 // TOK_FOR TOK_WORD TOK_IN TOK_LBRAC TOK_NUM TOK_DOT TOK_DOT TOK_NUM TOK_RBRAC TOK_SEMICOL
+state 325 // TOK_FOR TOK_WORD TOK_IN TOK_LBRAC TOK_NUM TOK_DOT TOK_DOT TOK_NUM TOK_RBRAC TOK_SEMICOL
 
    16 OPEN_STMT: TOK_FOR TOK_WORD TOK_IN TOK_LBRAC TOK_NUM TOK_DOT TOK_DOT TOK_NUM TOK_RBRAC TOK_SEMICOL . st2 TOK_DONE
     9 stmnt: .  [TOK_DONE, TOK_SEMICOL]
@@ -4410,18 +4452,18 @@ state 323 // TOK_FOR TOK_WORD TOK_IN TOK_LBRAC TOK_NUM TOK_DOT TOK_DOT TOK_NUM T
     P          goto state 54
     P1         goto state 21
     Q          goto state 6
-    st2        goto state 324
+    st2        goto state 326
     stmnt      goto state 3
 
     conflict on TOK_DOT, shift, and goto state 24, reduce using rule 81
 
-state 324 // TOK_FOR TOK_WORD TOK_IN TOK_LBRAC TOK_NUM TOK_DOT TOK_DOT TOK_NUM TOK_RBRAC TOK_SEMICOL [TOK_DONE]
+state 326 // TOK_FOR TOK_WORD TOK_IN TOK_LBRAC TOK_NUM TOK_DOT TOK_DOT TOK_NUM TOK_RBRAC TOK_SEMICOL [TOK_DONE]
 
    16 OPEN_STMT: TOK_FOR TOK_WORD TOK_IN TOK_LBRAC TOK_NUM TOK_DOT TOK_DOT TOK_NUM TOK_RBRAC TOK_SEMICOL st2 . TOK_DONE
 
-    TOK_DONE  shift, and goto state 325
+    TOK_DONE  shift, and goto state 327
 
-state 325 // TOK_FOR TOK_WORD TOK_IN TOK_LBRAC TOK_NUM TOK_DOT TOK_DOT TOK_NUM TOK_RBRAC TOK_SEMICOL TOK_DONE
+state 327 // TOK_FOR TOK_WORD TOK_IN TOK_LBRAC TOK_NUM TOK_DOT TOK_DOT TOK_NUM TOK_RBRAC TOK_SEMICOL TOK_DONE
 
    16 OPEN_STMT: TOK_FOR TOK_WORD TOK_IN TOK_LBRAC TOK_NUM TOK_DOT TOK_DOT TOK_NUM TOK_RBRAC TOK_SEMICOL st2 TOK_DONE .  [$end, TOK_DONE, TOK_ELIF, TOK_ELSE, TOK_FI, TOK_RBRAC]
 
@@ -4432,7 +4474,7 @@ state 325 // TOK_FOR TOK_WORD TOK_IN TOK_LBRAC TOK_NUM TOK_DOT TOK_DOT TOK_NUM T
     TOK_FI     reduce using rule 16 (OPEN_STMT)
     TOK_RBRAC  reduce using rule 16 (OPEN_STMT)
 
-state 326 // TOK_FOR TOK_WORD TOK_IN TOK_BOOL TOK_SEMICOL
+state 328 // TOK_FOR TOK_WORD TOK_IN TOK_BOOL TOK_SEMICOL
 
    15 OPEN_STMT: TOK_FOR TOK_WORD TOK_IN EXPR TOK_SEMICOL . st2 TOK_DONE
     9 stmnt: .  [TOK_DONE, TOK_SEMICOL]
@@ -4494,18 +4536,18 @@ state 326 // TOK_FOR TOK_WORD TOK_IN TOK_BOOL TOK_SEMICOL
     P          goto state 54
     P1         goto state 21
     Q          goto state 6
-    st2        goto state 327
+    st2        goto state 329
     stmnt      goto state 3
 
     conflict on TOK_DOT, shift, and goto state 24, reduce using rule 81
 
-state 327 // TOK_FOR TOK_WORD TOK_IN TOK_BOOL TOK_SEMICOL [TOK_DONE]
+state 329 // TOK_FOR TOK_WORD TOK_IN TOK_BOOL TOK_SEMICOL [TOK_DONE]
 
    15 OPEN_STMT: TOK_FOR TOK_WORD TOK_IN EXPR TOK_SEMICOL st2 . TOK_DONE
 
-    TOK_DONE  shift, and goto state 328
+    TOK_DONE  shift, and goto state 330
 
-state 328 // TOK_FOR TOK_WORD TOK_IN TOK_BOOL TOK_SEMICOL TOK_DONE
+state 330 // TOK_FOR TOK_WORD TOK_IN TOK_BOOL TOK_SEMICOL TOK_DONE
 
    15 OPEN_STMT: TOK_FOR TOK_WORD TOK_IN EXPR TOK_SEMICOL st2 TOK_DONE .  [$end, TOK_DONE, TOK_ELIF, TOK_ELSE, TOK_FI, TOK_RBRAC]
 
@@ -4516,19 +4558,19 @@ state 328 // TOK_FOR TOK_WORD TOK_IN TOK_BOOL TOK_SEMICOL TOK_DONE
     TOK_FI     reduce using rule 15 (OPEN_STMT)
     TOK_RBRAC  reduce using rule 15 (OPEN_STMT)
 
-state 329 // TOK_FOR TOK_LPAREN TOK_LPAREN
+state 331 // TOK_FOR TOK_LPAREN TOK_LPAREN
 
    14 OPEN_STMT: TOK_FOR TOK_LPAREN TOK_LPAREN . TOK_WORD TOK_EQUAL WORDORNUM TOK_SEMICOL EXPR TOK_SEMICOL stmnt TOK_RPAREN TOK_RPAREN TOK_SEMICOL st2 TOK_DONE
 
-    TOK_WORD  shift, and goto state 330
+    TOK_WORD  shift, and goto state 332
 
-state 330 // TOK_FOR TOK_LPAREN TOK_LPAREN TOK_WORD
+state 332 // TOK_FOR TOK_LPAREN TOK_LPAREN TOK_WORD
 
    14 OPEN_STMT: TOK_FOR TOK_LPAREN TOK_LPAREN TOK_WORD . TOK_EQUAL WORDORNUM TOK_SEMICOL EXPR TOK_SEMICOL stmnt TOK_RPAREN TOK_RPAREN TOK_SEMICOL st2 TOK_DONE
 
-    TOK_EQUAL  shift, and goto state 331
+    TOK_EQUAL  shift, and goto state 333
 
-state 331 // TOK_FOR TOK_LPAREN TOK_LPAREN TOK_WORD TOK_EQUAL
+state 333 // TOK_FOR TOK_LPAREN TOK_LPAREN TOK_WORD TOK_EQUAL
 
    14 OPEN_STMT: TOK_FOR TOK_LPAREN TOK_LPAREN TOK_WORD TOK_EQUAL . WORDORNUM TOK_SEMICOL EXPR TOK_SEMICOL stmnt TOK_RPAREN TOK_RPAREN TOK_SEMICOL st2 TOK_DONE
 
@@ -4538,44 +4580,44 @@ state 331 // TOK_FOR TOK_LPAREN TOK_LPAREN TOK_WORD TOK_EQUAL
     TOK_PLUS   shift, and goto state 85
     TOK_WORD   shift, and goto state 83
 
-    WORDORNUM  goto state 332
+    WORDORNUM  goto state 334
 
-state 332 // TOK_FOR TOK_LPAREN TOK_LPAREN TOK_WORD TOK_EQUAL TOK_BOOL [TOK_SEMICOL]
+state 334 // TOK_FOR TOK_LPAREN TOK_LPAREN TOK_WORD TOK_EQUAL TOK_BOOL [TOK_SEMICOL]
 
    14 OPEN_STMT: TOK_FOR TOK_LPAREN TOK_LPAREN TOK_WORD TOK_EQUAL WORDORNUM . TOK_SEMICOL EXPR TOK_SEMICOL stmnt TOK_RPAREN TOK_RPAREN TOK_SEMICOL st2 TOK_DONE
 
-    TOK_SEMICOL  shift, and goto state 333
+    TOK_SEMICOL  shift, and goto state 335
 
-state 333 // TOK_FOR TOK_LPAREN TOK_LPAREN TOK_WORD TOK_EQUAL TOK_BOOL TOK_SEMICOL
+state 335 // TOK_FOR TOK_LPAREN TOK_LPAREN TOK_WORD TOK_EQUAL TOK_BOOL TOK_SEMICOL
 
    14 OPEN_STMT: TOK_FOR TOK_LPAREN TOK_LPAREN TOK_WORD TOK_EQUAL WORDORNUM TOK_SEMICOL . EXPR TOK_SEMICOL stmnt TOK_RPAREN TOK_RPAREN TOK_SEMICOL st2 TOK_DONE
 
-    TOK_BOOL    shift, and goto state 224
-    TOK_DEREF   shift, and goto state 222
-    TOK_LPAREN  shift, and goto state 220
-    TOK_NOT     shift, and goto state 217
-    TOK_NUM     shift, and goto state 221
-    TOK_OCDEL   shift, and goto state 218
-    TOK_WORD    shift, and goto state 223
+    TOK_BOOL    shift, and goto state 225
+    TOK_DEREF   shift, and goto state 223
+    TOK_LPAREN  shift, and goto state 221
+    TOK_NOT     shift, and goto state 218
+    TOK_NUM     shift, and goto state 222
+    TOK_OCDEL   shift, and goto state 219
+    TOK_WORD    shift, and goto state 224
 
-    EQAL    goto state 212
-    EXPR    goto state 334
-    JOIN    goto state 211
-    REL     goto state 213
-    factor  goto state 219
-    nex     goto state 214
-    term    goto state 215
-    unary   goto state 216
+    EQAL    goto state 213
+    EXPR    goto state 336
+    JOIN    goto state 212
+    REL     goto state 214
+    factor  goto state 220
+    nex     goto state 215
+    term    goto state 216
+    unary   goto state 217
 
-state 334 // TOK_FOR TOK_LPAREN TOK_LPAREN TOK_WORD TOK_EQUAL TOK_BOOL TOK_SEMICOL TOK_BOOL [TOK_OR]
+state 336 // TOK_FOR TOK_LPAREN TOK_LPAREN TOK_WORD TOK_EQUAL TOK_BOOL TOK_SEMICOL TOK_BOOL [TOK_OR]
 
    14 OPEN_STMT: TOK_FOR TOK_LPAREN TOK_LPAREN TOK_WORD TOK_EQUAL WORDORNUM TOK_SEMICOL EXPR . TOK_SEMICOL stmnt TOK_RPAREN TOK_RPAREN TOK_SEMICOL st2 TOK_DONE
    19 EXPR: EXPR . TOK_OR JOIN
 
-    TOK_OR       shift, and goto state 233
-    TOK_SEMICOL  shift, and goto state 335
+    TOK_OR       shift, and goto state 231
+    TOK_SEMICOL  shift, and goto state 337
 
-state 335 // TOK_FOR TOK_LPAREN TOK_LPAREN TOK_WORD TOK_EQUAL TOK_BOOL TOK_SEMICOL TOK_BOOL TOK_SEMICOL
+state 337 // TOK_FOR TOK_LPAREN TOK_LPAREN TOK_WORD TOK_EQUAL TOK_BOOL TOK_SEMICOL TOK_BOOL TOK_SEMICOL
 
    14 OPEN_STMT: TOK_FOR TOK_LPAREN TOK_LPAREN TOK_WORD TOK_EQUAL WORDORNUM TOK_SEMICOL EXPR TOK_SEMICOL . stmnt TOK_RPAREN TOK_RPAREN TOK_SEMICOL st2 TOK_DONE
     9 stmnt: .  [TOK_RPAREN]
@@ -4631,29 +4673,29 @@ state 335 // TOK_FOR TOK_LPAREN TOK_LPAREN TOK_WORD TOK_EQUAL TOK_BOOL TOK_SEMIC
     P          goto state 54
     P1         goto state 21
     Q          goto state 6
-    stmnt      goto state 336
+    stmnt      goto state 338
 
     conflict on TOK_DOT, shift, and goto state 24, reduce using rule 81
 
-state 336 // TOK_FOR TOK_LPAREN TOK_LPAREN TOK_WORD TOK_EQUAL TOK_BOOL TOK_SEMICOL TOK_BOOL TOK_SEMICOL [TOK_RPAREN]
+state 338 // TOK_FOR TOK_LPAREN TOK_LPAREN TOK_WORD TOK_EQUAL TOK_BOOL TOK_SEMICOL TOK_BOOL TOK_SEMICOL [TOK_RPAREN]
 
    14 OPEN_STMT: TOK_FOR TOK_LPAREN TOK_LPAREN TOK_WORD TOK_EQUAL WORDORNUM TOK_SEMICOL EXPR TOK_SEMICOL stmnt . TOK_RPAREN TOK_RPAREN TOK_SEMICOL st2 TOK_DONE
 
-    TOK_RPAREN  shift, and goto state 337
+    TOK_RPAREN  shift, and goto state 339
 
-state 337 // TOK_FOR TOK_LPAREN TOK_LPAREN TOK_WORD TOK_EQUAL TOK_BOOL TOK_SEMICOL TOK_BOOL TOK_SEMICOL TOK_RPAREN
+state 339 // TOK_FOR TOK_LPAREN TOK_LPAREN TOK_WORD TOK_EQUAL TOK_BOOL TOK_SEMICOL TOK_BOOL TOK_SEMICOL TOK_RPAREN
 
    14 OPEN_STMT: TOK_FOR TOK_LPAREN TOK_LPAREN TOK_WORD TOK_EQUAL WORDORNUM TOK_SEMICOL EXPR TOK_SEMICOL stmnt TOK_RPAREN . TOK_RPAREN TOK_SEMICOL st2 TOK_DONE
 
-    TOK_RPAREN  shift, and goto state 338
+    TOK_RPAREN  shift, and goto state 340
 
-state 338 // TOK_FOR TOK_LPAREN TOK_LPAREN TOK_WORD TOK_EQUAL TOK_BOOL TOK_SEMICOL TOK_BOOL TOK_SEMICOL TOK_RPAREN TOK_RPAREN
+state 340 // TOK_FOR TOK_LPAREN TOK_LPAREN TOK_WORD TOK_EQUAL TOK_BOOL TOK_SEMICOL TOK_BOOL TOK_SEMICOL TOK_RPAREN TOK_RPAREN
 
    14 OPEN_STMT: TOK_FOR TOK_LPAREN TOK_LPAREN TOK_WORD TOK_EQUAL WORDORNUM TOK_SEMICOL EXPR TOK_SEMICOL stmnt TOK_RPAREN TOK_RPAREN . TOK_SEMICOL st2 TOK_DONE
 
-    TOK_SEMICOL  shift, and goto state 339
+    TOK_SEMICOL  shift, and goto state 341
 
-state 339 // TOK_FOR TOK_LPAREN TOK_LPAREN TOK_WORD TOK_EQUAL TOK_BOOL TOK_SEMICOL TOK_BOOL TOK_SEMICOL TOK_RPAREN TOK_RPAREN TOK_SEMICOL
+state 341 // TOK_FOR TOK_LPAREN TOK_LPAREN TOK_WORD TOK_EQUAL TOK_BOOL TOK_SEMICOL TOK_BOOL TOK_SEMICOL TOK_RPAREN TOK_RPAREN TOK_SEMICOL
 
    14 OPEN_STMT: TOK_FOR TOK_LPAREN TOK_LPAREN TOK_WORD TOK_EQUAL WORDORNUM TOK_SEMICOL EXPR TOK_SEMICOL stmnt TOK_RPAREN TOK_RPAREN TOK_SEMICOL . st2 TOK_DONE
     9 stmnt: .  [TOK_DONE, TOK_SEMICOL]
@@ -4715,18 +4757,18 @@ state 339 // TOK_FOR TOK_LPAREN TOK_LPAREN TOK_WORD TOK_EQUAL TOK_BOOL TOK_SEMIC
     P          goto state 54
     P1         goto state 21
     Q          goto state 6
-    st2        goto state 340
+    st2        goto state 342
     stmnt      goto state 3
 
     conflict on TOK_DOT, shift, and goto state 24, reduce using rule 81
 
-state 340 // TOK_FOR TOK_LPAREN TOK_LPAREN TOK_WORD TOK_EQUAL TOK_BOOL TOK_SEMICOL TOK_BOOL TOK_SEMICOL TOK_RPAREN TOK_RPAREN TOK_SEMICOL [TOK_DONE]
+state 342 // TOK_FOR TOK_LPAREN TOK_LPAREN TOK_WORD TOK_EQUAL TOK_BOOL TOK_SEMICOL TOK_BOOL TOK_SEMICOL TOK_RPAREN TOK_RPAREN TOK_SEMICOL [TOK_DONE]
 
    14 OPEN_STMT: TOK_FOR TOK_LPAREN TOK_LPAREN TOK_WORD TOK_EQUAL WORDORNUM TOK_SEMICOL EXPR TOK_SEMICOL stmnt TOK_RPAREN TOK_RPAREN TOK_SEMICOL st2 . TOK_DONE
 
-    TOK_DONE  shift, and goto state 341
+    TOK_DONE  shift, and goto state 343
 
-state 341 // TOK_FOR TOK_LPAREN TOK_LPAREN TOK_WORD TOK_EQUAL TOK_BOOL TOK_SEMICOL TOK_BOOL TOK_SEMICOL TOK_RPAREN TOK_RPAREN TOK_SEMICOL TOK_DONE
+state 343 // TOK_FOR TOK_LPAREN TOK_LPAREN TOK_WORD TOK_EQUAL TOK_BOOL TOK_SEMICOL TOK_BOOL TOK_SEMICOL TOK_RPAREN TOK_RPAREN TOK_SEMICOL TOK_DONE
 
    14 OPEN_STMT: TOK_FOR TOK_LPAREN TOK_LPAREN TOK_WORD TOK_EQUAL WORDORNUM TOK_SEMICOL EXPR TOK_SEMICOL stmnt TOK_RPAREN TOK_RPAREN TOK_SEMICOL st2 TOK_DONE .  [$end, TOK_DONE, TOK_ELIF, TOK_ELSE, TOK_FI, TOK_RBRAC]
 
@@ -4737,36 +4779,36 @@ state 341 // TOK_FOR TOK_LPAREN TOK_LPAREN TOK_WORD TOK_EQUAL TOK_BOOL TOK_SEMIC
     TOK_FI     reduce using rule 14 (OPEN_STMT)
     TOK_RBRAC  reduce using rule 14 (OPEN_STMT)
 
-state 342 // TOK_WHILE TOK_LPAREN
+state 344 // TOK_WHILE TOK_LPAREN
 
    13 OPEN_STMT: TOK_WHILE TOK_LPAREN . EXPR TOK_RPAREN st2 TOK_DONE
 
-    TOK_BOOL    shift, and goto state 224
-    TOK_DEREF   shift, and goto state 222
-    TOK_LPAREN  shift, and goto state 220
-    TOK_NOT     shift, and goto state 217
-    TOK_NUM     shift, and goto state 221
-    TOK_OCDEL   shift, and goto state 218
-    TOK_WORD    shift, and goto state 223
+    TOK_BOOL    shift, and goto state 225
+    TOK_DEREF   shift, and goto state 223
+    TOK_LPAREN  shift, and goto state 221
+    TOK_NOT     shift, and goto state 218
+    TOK_NUM     shift, and goto state 222
+    TOK_OCDEL   shift, and goto state 219
+    TOK_WORD    shift, and goto state 224
 
-    EQAL    goto state 212
-    EXPR    goto state 343
-    JOIN    goto state 211
-    REL     goto state 213
-    factor  goto state 219
-    nex     goto state 214
-    term    goto state 215
-    unary   goto state 216
+    EQAL    goto state 213
+    EXPR    goto state 345
+    JOIN    goto state 212
+    REL     goto state 214
+    factor  goto state 220
+    nex     goto state 215
+    term    goto state 216
+    unary   goto state 217
 
-state 343 // TOK_WHILE TOK_LPAREN TOK_BOOL [TOK_OR]
+state 345 // TOK_WHILE TOK_LPAREN TOK_BOOL [TOK_OR]
 
    13 OPEN_STMT: TOK_WHILE TOK_LPAREN EXPR . TOK_RPAREN st2 TOK_DONE
    19 EXPR: EXPR . TOK_OR JOIN
 
-    TOK_OR      shift, and goto state 233
-    TOK_RPAREN  shift, and goto state 344
+    TOK_OR      shift, and goto state 231
+    TOK_RPAREN  shift, and goto state 346
 
-state 344 // TOK_WHILE TOK_LPAREN TOK_BOOL TOK_RPAREN
+state 346 // TOK_WHILE TOK_LPAREN TOK_BOOL TOK_RPAREN
 
    13 OPEN_STMT: TOK_WHILE TOK_LPAREN EXPR TOK_RPAREN . st2 TOK_DONE
     9 stmnt: .  [TOK_DONE, TOK_SEMICOL]
@@ -4828,18 +4870,18 @@ state 344 // TOK_WHILE TOK_LPAREN TOK_BOOL TOK_RPAREN
     P          goto state 54
     P1         goto state 21
     Q          goto state 6
-    st2        goto state 345
+    st2        goto state 347
     stmnt      goto state 3
 
     conflict on TOK_DOT, shift, and goto state 24, reduce using rule 81
 
-state 345 // TOK_WHILE TOK_LPAREN TOK_BOOL TOK_RPAREN [TOK_DONE]
+state 347 // TOK_WHILE TOK_LPAREN TOK_BOOL TOK_RPAREN [TOK_DONE]
 
    13 OPEN_STMT: TOK_WHILE TOK_LPAREN EXPR TOK_RPAREN st2 . TOK_DONE
 
-    TOK_DONE  shift, and goto state 346
+    TOK_DONE  shift, and goto state 348
 
-state 346 // TOK_WHILE TOK_LPAREN TOK_BOOL TOK_RPAREN TOK_DONE
+state 348 // TOK_WHILE TOK_LPAREN TOK_BOOL TOK_RPAREN TOK_DONE
 
    13 OPEN_STMT: TOK_WHILE TOK_LPAREN EXPR TOK_RPAREN st2 TOK_DONE .  [$end, TOK_DONE, TOK_ELIF, TOK_ELSE, TOK_FI, TOK_RBRAC]
 
@@ -4850,45 +4892,45 @@ state 346 // TOK_WHILE TOK_LPAREN TOK_BOOL TOK_RPAREN TOK_DONE
     TOK_FI     reduce using rule 13 (OPEN_STMT)
     TOK_RBRAC  reduce using rule 13 (OPEN_STMT)
 
-state 347 // TOK_IF TOK_LBLOCK
+state 349 // TOK_IF TOK_LBLOCK
 
    11 OPEN_STMT: TOK_IF TOK_LBLOCK . EXPR TOK_RBLOCK TOK_THEN st2 TOK_FI
    12 OPEN_STMT: TOK_IF TOK_LBLOCK . EXPR TOK_RBLOCK TOK_THEN st2 EIF TOK_ELSE st2 TOK_FI
 
-    TOK_BOOL    shift, and goto state 224
-    TOK_DEREF   shift, and goto state 222
-    TOK_LPAREN  shift, and goto state 220
-    TOK_NOT     shift, and goto state 217
-    TOK_NUM     shift, and goto state 221
-    TOK_OCDEL   shift, and goto state 218
-    TOK_WORD    shift, and goto state 223
+    TOK_BOOL    shift, and goto state 225
+    TOK_DEREF   shift, and goto state 223
+    TOK_LPAREN  shift, and goto state 221
+    TOK_NOT     shift, and goto state 218
+    TOK_NUM     shift, and goto state 222
+    TOK_OCDEL   shift, and goto state 219
+    TOK_WORD    shift, and goto state 224
 
-    EQAL    goto state 212
-    EXPR    goto state 348
-    JOIN    goto state 211
-    REL     goto state 213
-    factor  goto state 219
-    nex     goto state 214
-    term    goto state 215
-    unary   goto state 216
+    EQAL    goto state 213
+    EXPR    goto state 350
+    JOIN    goto state 212
+    REL     goto state 214
+    factor  goto state 220
+    nex     goto state 215
+    term    goto state 216
+    unary   goto state 217
 
-state 348 // TOK_IF TOK_LBLOCK TOK_BOOL [TOK_OR]
+state 350 // TOK_IF TOK_LBLOCK TOK_BOOL [TOK_OR]
 
    11 OPEN_STMT: TOK_IF TOK_LBLOCK EXPR . TOK_RBLOCK TOK_THEN st2 TOK_FI
    12 OPEN_STMT: TOK_IF TOK_LBLOCK EXPR . TOK_RBLOCK TOK_THEN st2 EIF TOK_ELSE st2 TOK_FI
    19 EXPR: EXPR . TOK_OR JOIN
 
-    TOK_OR      shift, and goto state 233
-    TOK_RBLOCK  shift, and goto state 349
+    TOK_OR      shift, and goto state 231
+    TOK_RBLOCK  shift, and goto state 351
 
-state 349 // TOK_IF TOK_LBLOCK TOK_BOOL TOK_RBLOCK
+state 351 // TOK_IF TOK_LBLOCK TOK_BOOL TOK_RBLOCK
 
    11 OPEN_STMT: TOK_IF TOK_LBLOCK EXPR TOK_RBLOCK . TOK_THEN st2 TOK_FI
    12 OPEN_STMT: TOK_IF TOK_LBLOCK EXPR TOK_RBLOCK . TOK_THEN st2 EIF TOK_ELSE st2 TOK_FI
 
-    TOK_THEN  shift, and goto state 350
+    TOK_THEN  shift, and goto state 352
 
-state 350 // TOK_IF TOK_LBLOCK TOK_BOOL TOK_RBLOCK TOK_THEN
+state 352 // TOK_IF TOK_LBLOCK TOK_BOOL TOK_RBLOCK TOK_THEN
 
    11 OPEN_STMT: TOK_IF TOK_LBLOCK EXPR TOK_RBLOCK TOK_THEN . st2 TOK_FI
    12 OPEN_STMT: TOK_IF TOK_LBLOCK EXPR TOK_RBLOCK TOK_THEN . st2 EIF TOK_ELSE st2 TOK_FI
@@ -4953,24 +4995,24 @@ state 350 // TOK_IF TOK_LBLOCK TOK_BOOL TOK_RBLOCK TOK_THEN
     P          goto state 54
     P1         goto state 21
     Q          goto state 6
-    st2        goto state 351
+    st2        goto state 353
     stmnt      goto state 3
 
     conflict on TOK_DOT, shift, and goto state 24, reduce using rule 81
 
-state 351 // TOK_IF TOK_LBLOCK TOK_BOOL TOK_RBLOCK TOK_THEN [TOK_ELIF]
+state 353 // TOK_IF TOK_LBLOCK TOK_BOOL TOK_RBLOCK TOK_THEN [TOK_ELIF]
 
    11 OPEN_STMT: TOK_IF TOK_LBLOCK EXPR TOK_RBLOCK TOK_THEN st2 . TOK_FI
    12 OPEN_STMT: TOK_IF TOK_LBLOCK EXPR TOK_RBLOCK TOK_THEN st2 . EIF TOK_ELSE st2 TOK_FI
    18 EIF: .  [TOK_ELSE]
 
-    TOK_ELIF  shift, and goto state 354
+    TOK_ELIF  shift, and goto state 356
     TOK_ELSE  reduce using rule 18 (EIF)
-    TOK_FI    shift, and goto state 352
+    TOK_FI    shift, and goto state 354
 
-    EIF  goto state 353
+    EIF  goto state 355
 
-state 352 // TOK_IF TOK_LBLOCK TOK_BOOL TOK_RBLOCK TOK_THEN TOK_FI
+state 354 // TOK_IF TOK_LBLOCK TOK_BOOL TOK_RBLOCK TOK_THEN TOK_FI
 
    11 OPEN_STMT: TOK_IF TOK_LBLOCK EXPR TOK_RBLOCK TOK_THEN st2 TOK_FI .  [$end, TOK_DONE, TOK_ELIF, TOK_ELSE, TOK_FI, TOK_RBRAC]
 
@@ -4981,54 +5023,54 @@ state 352 // TOK_IF TOK_LBLOCK TOK_BOOL TOK_RBLOCK TOK_THEN TOK_FI
     TOK_FI     reduce using rule 11 (OPEN_STMT)
     TOK_RBRAC  reduce using rule 11 (OPEN_STMT)
 
-state 353 // TOK_IF TOK_LBLOCK TOK_BOOL TOK_RBLOCK TOK_THEN [TOK_ELSE]
+state 355 // TOK_IF TOK_LBLOCK TOK_BOOL TOK_RBLOCK TOK_THEN [TOK_ELSE]
 
    12 OPEN_STMT: TOK_IF TOK_LBLOCK EXPR TOK_RBLOCK TOK_THEN st2 EIF . TOK_ELSE st2 TOK_FI
 
-    TOK_ELSE  shift, and goto state 361
+    TOK_ELSE  shift, and goto state 363
 
-state 354 // TOK_IF TOK_LBLOCK TOK_BOOL TOK_RBLOCK TOK_THEN TOK_ELIF
+state 356 // TOK_IF TOK_LBLOCK TOK_BOOL TOK_RBLOCK TOK_THEN TOK_ELIF
 
    17 EIF: TOK_ELIF . TOK_LBLOCK EXPR TOK_RBLOCK TOK_THEN st2 EIF
 
-    TOK_LBLOCK  shift, and goto state 355
+    TOK_LBLOCK  shift, and goto state 357
 
-state 355 // TOK_IF TOK_LBLOCK TOK_BOOL TOK_RBLOCK TOK_THEN TOK_ELIF TOK_LBLOCK
+state 357 // TOK_IF TOK_LBLOCK TOK_BOOL TOK_RBLOCK TOK_THEN TOK_ELIF TOK_LBLOCK
 
    17 EIF: TOK_ELIF TOK_LBLOCK . EXPR TOK_RBLOCK TOK_THEN st2 EIF
 
-    TOK_BOOL    shift, and goto state 224
-    TOK_DEREF   shift, and goto state 222
-    TOK_LPAREN  shift, and goto state 220
-    TOK_NOT     shift, and goto state 217
-    TOK_NUM     shift, and goto state 221
-    TOK_OCDEL   shift, and goto state 218
-    TOK_WORD    shift, and goto state 223
+    TOK_BOOL    shift, and goto state 225
+    TOK_DEREF   shift, and goto state 223
+    TOK_LPAREN  shift, and goto state 221
+    TOK_NOT     shift, and goto state 218
+    TOK_NUM     shift, and goto state 222
+    TOK_OCDEL   shift, and goto state 219
+    TOK_WORD    shift, and goto state 224
 
-    EQAL    goto state 212
-    EXPR    goto state 356
-    JOIN    goto state 211
-    REL     goto state 213
-    factor  goto state 219
-    nex     goto state 214
-    term    goto state 215
-    unary   goto state 216
+    EQAL    goto state 213
+    EXPR    goto state 358
+    JOIN    goto state 212
+    REL     goto state 214
+    factor  goto state 220
+    nex     goto state 215
+    term    goto state 216
+    unary   goto state 217
 
-state 356 // TOK_IF TOK_LBLOCK TOK_BOOL TOK_RBLOCK TOK_THEN TOK_ELIF TOK_LBLOCK TOK_BOOL [TOK_OR]
+state 358 // TOK_IF TOK_LBLOCK TOK_BOOL TOK_RBLOCK TOK_THEN TOK_ELIF TOK_LBLOCK TOK_BOOL [TOK_OR]
 
    17 EIF: TOK_ELIF TOK_LBLOCK EXPR . TOK_RBLOCK TOK_THEN st2 EIF
    19 EXPR: EXPR . TOK_OR JOIN
 
-    TOK_OR      shift, and goto state 233
-    TOK_RBLOCK  shift, and goto state 357
+    TOK_OR      shift, and goto state 231
+    TOK_RBLOCK  shift, and goto state 359
 
-state 357 // TOK_IF TOK_LBLOCK TOK_BOOL TOK_RBLOCK TOK_THEN TOK_ELIF TOK_LBLOCK TOK_BOOL TOK_RBLOCK
+state 359 // TOK_IF TOK_LBLOCK TOK_BOOL TOK_RBLOCK TOK_THEN TOK_ELIF TOK_LBLOCK TOK_BOOL TOK_RBLOCK
 
    17 EIF: TOK_ELIF TOK_LBLOCK EXPR TOK_RBLOCK . TOK_THEN st2 EIF
 
-    TOK_THEN  shift, and goto state 358
+    TOK_THEN  shift, and goto state 360
 
-state 358 // TOK_IF TOK_LBLOCK TOK_BOOL TOK_RBLOCK TOK_THEN TOK_ELIF TOK_LBLOCK TOK_BOOL TOK_RBLOCK TOK_THEN
+state 360 // TOK_IF TOK_LBLOCK TOK_BOOL TOK_RBLOCK TOK_THEN TOK_ELIF TOK_LBLOCK TOK_BOOL TOK_RBLOCK TOK_THEN
 
    17 EIF: TOK_ELIF TOK_LBLOCK EXPR TOK_RBLOCK TOK_THEN . st2 EIF
     9 stmnt: .  [TOK_ELIF, TOK_ELSE, TOK_SEMICOL]
@@ -5091,28 +5133,28 @@ state 358 // TOK_IF TOK_LBLOCK TOK_BOOL TOK_RBLOCK TOK_THEN TOK_ELIF TOK_LBLOCK 
     P          goto state 54
     P1         goto state 21
     Q          goto state 6
-    st2        goto state 359
+    st2        goto state 361
     stmnt      goto state 3
 
     conflict on TOK_DOT, shift, and goto state 24, reduce using rule 81
 
-state 359 // TOK_IF TOK_LBLOCK TOK_BOOL TOK_RBLOCK TOK_THEN TOK_ELIF TOK_LBLOCK TOK_BOOL TOK_RBLOCK TOK_THEN [TOK_ELIF]
+state 361 // TOK_IF TOK_LBLOCK TOK_BOOL TOK_RBLOCK TOK_THEN TOK_ELIF TOK_LBLOCK TOK_BOOL TOK_RBLOCK TOK_THEN [TOK_ELIF]
 
    17 EIF: TOK_ELIF TOK_LBLOCK EXPR TOK_RBLOCK TOK_THEN st2 . EIF
    18 EIF: .  [TOK_ELSE]
 
-    TOK_ELIF  shift, and goto state 354
+    TOK_ELIF  shift, and goto state 356
     TOK_ELSE  reduce using rule 18 (EIF)
 
-    EIF  goto state 360
+    EIF  goto state 362
 
-state 360 // TOK_IF TOK_LBLOCK TOK_BOOL TOK_RBLOCK TOK_THEN TOK_ELIF TOK_LBLOCK TOK_BOOL TOK_RBLOCK TOK_THEN [TOK_ELSE]
+state 362 // TOK_IF TOK_LBLOCK TOK_BOOL TOK_RBLOCK TOK_THEN TOK_ELIF TOK_LBLOCK TOK_BOOL TOK_RBLOCK TOK_THEN [TOK_ELSE]
 
    17 EIF: TOK_ELIF TOK_LBLOCK EXPR TOK_RBLOCK TOK_THEN st2 EIF .  [TOK_ELSE]
 
     TOK_ELSE  reduce using rule 17 (EIF)
 
-state 361 // TOK_IF TOK_LBLOCK TOK_BOOL TOK_RBLOCK TOK_THEN TOK_ELSE
+state 363 // TOK_IF TOK_LBLOCK TOK_BOOL TOK_RBLOCK TOK_THEN TOK_ELSE
 
    12 OPEN_STMT: TOK_IF TOK_LBLOCK EXPR TOK_RBLOCK TOK_THEN st2 EIF TOK_ELSE . st2 TOK_FI
     9 stmnt: .  [TOK_FI, TOK_SEMICOL]
@@ -5174,18 +5216,18 @@ state 361 // TOK_IF TOK_LBLOCK TOK_BOOL TOK_RBLOCK TOK_THEN TOK_ELSE
     P          goto state 54
     P1         goto state 21
     Q          goto state 6
-    st2        goto state 362
+    st2        goto state 364
     stmnt      goto state 3
 
     conflict on TOK_DOT, shift, and goto state 24, reduce using rule 81
 
-state 362 // TOK_IF TOK_LBLOCK TOK_BOOL TOK_RBLOCK TOK_THEN TOK_ELSE [TOK_FI]
+state 364 // TOK_IF TOK_LBLOCK TOK_BOOL TOK_RBLOCK TOK_THEN TOK_ELSE [TOK_FI]
 
    12 OPEN_STMT: TOK_IF TOK_LBLOCK EXPR TOK_RBLOCK TOK_THEN st2 EIF TOK_ELSE st2 . TOK_FI
 
-    TOK_FI  shift, and goto state 363
+    TOK_FI  shift, and goto state 365
 
-state 363 // TOK_IF TOK_LBLOCK TOK_BOOL TOK_RBLOCK TOK_THEN TOK_ELSE TOK_FI
+state 365 // TOK_IF TOK_LBLOCK TOK_BOOL TOK_RBLOCK TOK_THEN TOK_ELSE TOK_FI
 
    12 OPEN_STMT: TOK_IF TOK_LBLOCK EXPR TOK_RBLOCK TOK_THEN st2 EIF TOK_ELSE st2 TOK_FI .  [$end, TOK_DONE, TOK_ELIF, TOK_ELSE, TOK_FI, TOK_RBRAC]
 
@@ -5196,7 +5238,7 @@ state 363 // TOK_IF TOK_LBLOCK TOK_BOOL TOK_RBLOCK TOK_THEN TOK_ELSE TOK_FI
     TOK_FI     reduce using rule 12 (OPEN_STMT)
     TOK_RBRAC  reduce using rule 12 (OPEN_STMT)
 
-state 364 // TOK_SEMICOL
+state 366 // TOK_SEMICOL
 
     3 st2: stmnt TOK_SEMICOL . st2
     9 stmnt: .  [$end, TOK_DONE, TOK_ELIF, TOK_ELSE, TOK_FI, TOK_RBRAC, TOK_SEMICOL]
@@ -5263,12 +5305,12 @@ state 364 // TOK_SEMICOL
     P          goto state 54
     P1         goto state 21
     Q          goto state 6
-    st2        goto state 365
+    st2        goto state 367
     stmnt      goto state 3
 
     conflict on TOK_DOT, shift, and goto state 24, reduce using rule 81
 
-state 365 // TOK_SEMICOL [$end]
+state 367 // TOK_SEMICOL [$end]
 
     3 st2: stmnt TOK_SEMICOL st2 .  [$end, TOK_DONE, TOK_ELIF, TOK_ELSE, TOK_FI, TOK_RBRAC]
 
