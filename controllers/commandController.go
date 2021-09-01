@@ -17,8 +17,9 @@ func Execute() {
 	return
 }
 
-func PWD() {
+func PWD() string {
 	println(State.CurrPath)
+	return State.CurrPath
 }
 
 func Disp(x map[string]interface{}) {
@@ -69,39 +70,6 @@ func PostObj(ent int, entity string, data map[string]interface{}) {
 		default:
 			UpdateTree(&State.TreeHierarchy, node)
 		}
-		/*switch entity {
-		case "tenant":
-			node.Entity = TENANT
-			State.TreeHierarchy.Nodes.PushBack(node)
-		case "site":
-			node.Entity = SITE
-			UpdateTree(&State.TreeHierarchy, node)
-
-		case "building":
-			node.Entity = BLDG
-			UpdateTree(&State.TreeHierarchy, node)
-
-		case "room":
-			node.Entity = ROOM
-			UpdateTree(&State.TreeHierarchy, node)
-
-		case "rack":
-			node.Entity = RACK
-			UpdateTree(&State.TreeHierarchy, node)
-
-		case "device":
-			node.Entity = DEVICE
-			UpdateTree(&State.TreeHierarchy, node)
-
-		case "subdevice":
-			node.Entity = SUBDEV
-			UpdateTree(&State.TreeHierarchy, node)
-
-		case "subdevice1":
-			node.Entity = SUBDEV1
-			UpdateTree(&State.TreeHierarchy, node)
-
-		}*/
 
 	}
 	return

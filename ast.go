@@ -66,9 +66,14 @@ func (c *commonNode) execute() interface{} {
 			f(c.args[0].(string), c.args[1].(int))
 		}
 
-	case "LSOG", "PWD", "select", "Exit":
+	case "LSOG", "select", "Exit":
 		if f, ok := c.fun.(func()); ok {
 			f()
+		}
+
+	case "PWD":
+		if f, ok := c.fun.(func() string); ok {
+			return f()
 		}
 
 	case "setCB":
@@ -343,6 +348,8 @@ func (s *symbolReferenceNode) execute() interface{} {
 					}
 
 					val = q
+				case *commonNode:
+					val = val.(node).execute()
 				}
 				return val
 			}
@@ -371,7 +378,13 @@ func (a *assignNode) execute() interface{} {
 	}
 
 	if a.val != nil {
-		v := a.val.(node).execute() //Obtain val
+		var v interface{}
+		if _, ok := a.val.(*commonNode); !ok {
+			v = a.val.(node).execute() //Obtain val
+		} else {
+			v = a.val.(node)
+		}
+
 		if arr, e := dynamicSymbolTable[idx].([]map[int]interface{}); e == true {
 			arr[idx][0] = v
 		} else {
