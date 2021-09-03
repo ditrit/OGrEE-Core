@@ -30,10 +30,17 @@ const (
 	FUNC
 	ELIF
 	ARRAY
+	OBJND
+	JSONND
 )
 
 type node interface {
 	execute() interface{}
+}
+
+type array interface {
+	node
+	getLength() int
 }
 
 type commonNode struct {
@@ -46,29 +53,74 @@ type commonNode struct {
 func (c *commonNode) execute() interface{} {
 	switch c.val {
 	case "PostObj":
-		if f, ok := c.fun.(func(int, string, map[string]interface{})); ok {
-			f(c.args[0].(int),
+		if f, ok := c.fun.(func(int, string, map[string]interface{}) map[string]interface{}); ok {
+			v := f(c.args[0].(int),
 				c.args[1].(string), c.args[2].(map[string]interface{}))
+			return &jsonObjNode{JSONND, v}
 		}
 
-	case "GetObject", "DeleteObj", "CD", "LS", "Help", "Load", "Print":
+	case "Help":
 		if f, ok := c.fun.(func(string)); ok {
 			f(c.args[0].(string))
 		}
 
-	case "SearchObjects", "UpdateObj":
-		if f, ok := c.fun.(func(string, map[string]interface{})); ok {
-			f(c.args[0].(string), c.args[1].(map[string]interface{}))
+	case "CD", "Print", "Load":
+		if f, ok := c.fun.(func(string) string); ok {
+			v := f(c.args[0].(string))
+			return &strNode{STR, v}
 		}
 
-	case "Tree", "LSOBJ":
+	case "LS":
+		if f, ok := c.fun.(func(string) []string); ok {
+			v := f(c.args[0].(string))
+			return &strArrNode{COMMON, len(v), v}
+
+		}
+
+	case "DeleteObj":
+		if f, ok := c.fun.(func(string) *cmd.Node); ok {
+			v := f(c.args[0].(string))
+			return &objNdNode{OBJND, v}
+		}
+
+	case "GetObject":
+		if f, ok := c.fun.(func(string) map[string]interface{}); ok {
+			v := f(c.args[0].(string))
+			return &jsonObjNode{COMMON, v}
+		}
+
+	case "SearchObjects":
+		if f, ok := c.fun.(func(string, map[string]interface{}) []map[string]interface{}); ok {
+			v := f(c.args[0].(string), c.args[1].(map[string]interface{}))
+			return &jsonObjArrNode{COMMON, len(v), v}
+		}
+
+	case "UpdateObj":
+		if f, ok := c.fun.(func(string, map[string]interface{}) map[string]interface{}); ok {
+			v := f(c.args[0].(string), c.args[1].(map[string]interface{}))
+			return &jsonObjNode{COMMON, v}
+		}
+
+	case "LSOBJ":
+		if f, ok := c.fun.(func(string, int) []*cmd.Node); ok {
+			v := f(c.args[0].(string), c.args[1].(int))
+			return &objNdArrNode{COMMON, len(v), v}
+		}
+
+	case "Tree":
 		if f, ok := c.fun.(func(string, int)); ok {
 			f(c.args[0].(string), c.args[1].(int))
 		}
 
-	case "LSOG", "select", "Exit":
+	case "LSOG", "Exit":
 		if f, ok := c.fun.(func()); ok {
 			f()
+		}
+
+	case "select":
+		if f, ok := c.fun.(func() []string); ok {
+			v := f()
+			return &strArrNode{COMMON, len(v), v}
 		}
 
 	case "PWD":
@@ -77,8 +129,9 @@ func (c *commonNode) execute() interface{} {
 		}
 
 	case "setCB":
-		if f, ok := c.fun.(func(*[]string)); ok {
-			f(c.args[0].(*[]string))
+		if f, ok := c.fun.(func(*[]string) []string); ok {
+			v := f(c.args[0].(*[]string))
+			return &strArrNode{COMMON, len(v), v}
 		}
 
 	case "UpdateSelect":
@@ -113,6 +166,56 @@ func (a *arrNode) execute() interface{} {
 	return a.val
 }
 
+func (a *arrNode) getLength() int {
+	return a.len
+}
+
+type objNdNode struct {
+	nodeType int
+	val      *cmd.Node
+}
+
+func (n *objNdNode) execute() interface{} {
+	return n.val
+}
+
+type objNdArrNode struct {
+	nodeType int
+	len      int
+	val      []*cmd.Node
+}
+
+func (o *objNdArrNode) execute() interface{} {
+	return o.val
+}
+
+func (o *objNdArrNode) getLength() int {
+	return o.len
+}
+
+type jsonObjNode struct {
+	nodeType int
+	val      map[string]interface{}
+}
+
+func (j *jsonObjNode) execute() interface{} {
+	return j.val
+}
+
+type jsonObjArrNode struct {
+	nodeType int
+	len      int
+	val      []map[string]interface{}
+}
+
+func (j *jsonObjArrNode) execute() interface{} {
+	return j.val
+}
+
+func (j *jsonObjArrNode) getLength() int {
+	return j.len
+}
+
 type numNode struct {
 	nodeType int
 	val      int
@@ -129,6 +232,20 @@ type strNode struct {
 
 func (s *strNode) execute() interface{} {
 	return s.val
+}
+
+type strArrNode struct {
+	nodeType int
+	len      int
+	val      []string
+}
+
+func (s *strArrNode) execute() interface{} {
+	return s.val
+}
+
+func (s *strArrNode) getLength() int {
+	return s.len
 }
 
 type boolNode struct {
@@ -303,7 +420,7 @@ func (c *comparatorNode) execute() interface{} {
 type symbolReferenceNode struct {
 	nodeType int
 	val      interface{}
-	offset   int //Used to index into arrays
+	offset   interface{} //Used to index into arrays
 }
 
 func (s *symbolReferenceNode) execute() interface{} {
@@ -328,14 +445,14 @@ func (s *symbolReferenceNode) execute() interface{} {
 				case []map[int]interface{}:
 					x := val.([]map[int]interface{})
 					println("Referring to Array")
-					if s.offset >= len(x) {
+					if s.offset.(node).execute().(int) >= len(x) {
 						println("Index out of range error!")
 						println("Array Length Of: ", len(x))
-						println("But desired index at: ", s.offset)
+						println("But desired index at: ", s.offset.(node).execute().(int))
 						cmd.WarningLogger.Println("Index out of range error!")
 						return nil
 					}
-					q := ((x[s.offset][0]).(node).execute())
+					q := ((x[s.offset.(node).execute().(int)][0]).(node).execute())
 					switch q.(type) {
 					case bool:
 						println("So you want the value: ", q.(bool))
@@ -348,8 +465,9 @@ func (s *symbolReferenceNode) execute() interface{} {
 					}
 
 					val = q
-				case *commonNode:
-					val = val.(node).execute()
+
+				case []string:
+					val = val.([]string)[s.offset.(node).execute().(int)]
 				}
 				return val
 			}
@@ -381,6 +499,11 @@ func (a *assignNode) execute() interface{} {
 		var v interface{}
 		if _, ok := a.val.(*commonNode); !ok {
 			v = a.val.(node).execute() //Obtain val
+			/*if id == "_internalRes" {
+				println("You need to check v here")
+				q := a.val.(array).getLength()
+				v = v.([]string)[q-1]
+			}*/
 		} else {
 			v = a.val.(node)
 		}
@@ -465,9 +588,33 @@ type forNode struct {
 }
 
 func (f *forNode) execute() interface{} {
-
-	for f.init.(node).execute(); f.condition.(node).execute().(bool); f.incrementor.(node).execute() {
+	f.init.(node).execute()
+	for ; f.condition.(node).execute().(bool); f.incrementor.(node).execute() {
 		f.body.(node).execute()
+	}
+	return nil
+}
+
+type rangeNode struct {
+	nodeType  int
+	init      interface{}
+	container interface{}
+	body      interface{}
+}
+
+func (r *rangeNode) execute() interface{} {
+	r.init.(node).execute()
+	data := r.container.(node).execute()
+	switch data.(type) {
+	case ([]string):
+		for range data.([]string) {
+			r.body.(node).execute()
+		}
+
+	case ([]*cmd.Node):
+		for range data.([]*cmd.Node) {
+			r.body.(node).execute()
+		}
 	}
 	return nil
 }

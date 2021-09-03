@@ -32,7 +32,7 @@ func Disp(x map[string]interface{}) {
 	println("JSON: ", string(jx))
 }
 
-func PostObj(ent int, entity string, data map[string]interface{}) {
+func PostObj(ent int, entity string, data map[string]interface{}) map[string]interface{} {
 	var respMap map[string]interface{}
 	resp, e := models.Send("POST",
 		"https://ogree.chibois.net/api/user/"+entity+"s", GetKey(), data)
@@ -72,10 +72,10 @@ func PostObj(ent int, entity string, data map[string]interface{}) {
 		}
 
 	}
-	return
+	return respMap["data"].(map[string]interface{})
 }
 
-func DeleteObj(path string) {
+func DeleteObj(path string) *Node {
 	URL := "https://ogree.chibois.net/api/user/"
 	nd := new(*Node)
 
@@ -94,7 +94,7 @@ func DeleteObj(path string) {
 	if nd == nil {
 		println("Error finding Object from given path!")
 		WarningLogger.Println("Object to DELETE was not found")
-		return
+		return nil
 	}
 
 	URL += EntityToString((*nd).Entity) + "s/" + strconv.Itoa((*nd).ID)
@@ -102,7 +102,7 @@ func DeleteObj(path string) {
 	if e != nil {
 		println("Error while deleting Object!")
 		WarningLogger.Println("Error while deleting Object!", e)
-		return
+		return nil
 	}
 	defer resp.Body.Close()
 	if resp.StatusCode == http.StatusNoContent {
@@ -114,11 +114,11 @@ func DeleteObj(path string) {
 		//json.Unmarshal()
 	}
 
-	return
+	return *nd
 }
 
 //Search for objects
-func SearchObjects(entity string, data map[string]interface{}) {
+func SearchObjects(entity string, data map[string]interface{}) []map[string]interface{} {
 	var jsonResp map[string]interface{}
 	URL := "https://ogree.chibois.net/api/user/" + entity + "s?"
 
@@ -159,11 +159,12 @@ func SearchObjects(entity string, data map[string]interface{}) {
 			displayObject(obj[idx].(map[string]interface{}))
 			println()
 		}
-
+		return jsonResp["data"].(map[string]interface{})["objects"].([]map[string]interface{})
 	}
+	return nil
 }
 
-func GetObject(path string) {
+func GetObject(path string) map[string]interface{} {
 	URL := "https://ogree.chibois.net/api/user/"
 	nd := new(*Node)
 	var data map[string]interface{}
@@ -183,7 +184,7 @@ func GetObject(path string) {
 	if nd == nil {
 		println("Error finding Object from given path!")
 		WarningLogger.Println("Object to Get not found")
-		return
+		return nil
 	}
 
 	URL += EntityToString((*nd).Entity) + "s/" + strconv.Itoa((*nd).ID)
@@ -191,14 +192,14 @@ func GetObject(path string) {
 	if e != nil {
 		println("Error while obtaining Object details!")
 		WarningLogger.Println("Error while sending GET to server", e)
-		return
+		return nil
 	}
 	defer resp.Body.Close()
 	bodyBytes, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		println("Error while reading response!")
 		ErrorLogger.Println("Error while trying to read server response: ", err)
-		return
+		return nil
 	}
 	json.Unmarshal(bodyBytes, &data)
 	if resp.StatusCode == http.StatusOK {
@@ -206,11 +207,12 @@ func GetObject(path string) {
 			obj := data["data"].(map[string]interface{})
 			displayObject(obj)
 		}
+		return data["data"].(map[string]interface{})
 	}
-
+	return nil
 }
 
-func UpdateObj(path string, data map[string]interface{}) {
+func UpdateObj(path string, data map[string]interface{}) map[string]interface{} {
 	println("OK. Attempting to update...")
 	if data != nil {
 		var respJson map[string]string
@@ -230,7 +232,7 @@ func UpdateObj(path string, data map[string]interface{}) {
 		if nd == nil {
 			println("Error finding Object from given path!")
 			WarningLogger.Println("Object to Update not found")
-			return
+			return nil
 		}
 
 		URL := "https://ogree.chibois.net/api/user/" +
@@ -247,7 +249,7 @@ func UpdateObj(path string, data map[string]interface{}) {
 		if err != nil {
 			println("Error while reading response: " + err.Error())
 			ErrorLogger.Println("Error while trying to read server response: ", err)
-			return
+			return nil
 		}
 		json.Unmarshal(bodyBytes, &respJson)
 		println(respJson["message"])
@@ -259,16 +261,16 @@ func UpdateObj(path string, data map[string]interface{}) {
 	} else {
 		println("Error! Please enter desired parameters of Object to be updated")
 	}
-
+	return data
 }
 
-func LS(x string) {
+func LS(x string) []string {
 	if x == "" || x == "." {
-		DispAtLevel(&State.TreeHierarchy, *StrToStack(State.CurrPath))
+		return DispAtLevel(&State.TreeHierarchy, *StrToStack(State.CurrPath))
 	} else if string(x[0]) == "/" {
-		DispAtLevel(&State.TreeHierarchy, *StrToStack(x))
+		return DispAtLevel(&State.TreeHierarchy, *StrToStack(x))
 	} else {
-		DispAtLevel(&State.TreeHierarchy, *StrToStack(State.CurrPath + "/" + x))
+		return DispAtLevel(&State.TreeHierarchy, *StrToStack(State.CurrPath + "/" + x))
 	}
 }
 
@@ -282,7 +284,7 @@ func LSOG() {
 	fmt.Println("HISTORY FILE PATH:", ".resources/.history")
 }
 
-func LSOBJECT(x string, entity int) {
+func LSOBJECT(x string, entity int) []*Node {
 	objs := []*Node{}
 	if x == "" || x == "." {
 		ok, _, r := CheckPath(&State.TreeHierarchy,
@@ -290,7 +292,7 @@ func LSOBJECT(x string, entity int) {
 		if !ok {
 			println("Path not valid!")
 			WarningLogger.Println("Path not found: ", x)
-			return
+			return nil
 		}
 		objs = GetNodes(r, entity)
 	} else if string(x[0]) == "/" {
@@ -298,7 +300,7 @@ func LSOBJECT(x string, entity int) {
 		if !ok {
 			println("Path not valid!")
 			WarningLogger.Println("Path not found: ", x)
-			return
+			return nil
 		}
 		objs = GetNodes(r, entity)
 	} else {
@@ -307,7 +309,7 @@ func LSOBJECT(x string, entity int) {
 		if !ok {
 			println("Path not valid!")
 			WarningLogger.Println("Path not found: ", x)
-			return
+			return nil
 		}
 		objs = GetNodes(r, entity)
 	}
@@ -315,9 +317,10 @@ func LSOBJECT(x string, entity int) {
 	for i := range objs {
 		println(i, ":", objs[i].Name)
 	}
+	return objs
 }
 
-func CD(x string) {
+func CD(x string) string {
 	if x == ".." {
 		lastIdx := strings.LastIndexByte(State.CurrPath, '/')
 		if lastIdx != -1 {
@@ -380,7 +383,7 @@ func CD(x string) {
 		}
 
 	}
-
+	return State.CurrPath
 }
 
 func Help(entry string) {
@@ -786,13 +789,13 @@ func GetOCLIAtrributes(path *Stack, ent int, data map[string]interface{}, term *
 	}
 }
 
-func ShowClipBoard() {
+func ShowClipBoard() []string {
 	if State.ClipBoard != nil {
 		for _, k := range *State.ClipBoard {
 			println(k)
 		}
 	}
-
+	return *State.ClipBoard
 }
 
 func UpdateSelection(data map[string]interface{}) {
@@ -804,16 +807,19 @@ func UpdateSelection(data map[string]interface{}) {
 
 }
 
-func LoadFile(path string) {
+func LoadFile(path string) string {
 	State.ScriptCalled = true
 	State.ScriptPath = path
+	return path
 	//scanner := bufio.NewScanner(file)
 }
 
-func SetClipBoard(x *[]string) {
+func SetClipBoard(x *[]string) []string {
 	State.ClipBoard = x
+	return *State.ClipBoard
 }
 
-func Print(x string) {
+func Print(x string) string {
 	fmt.Println(x)
+	return x
 }

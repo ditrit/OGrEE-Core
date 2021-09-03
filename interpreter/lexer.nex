@@ -30,6 +30,7 @@
 /fi/ {println("We got TOK_FI"); return TOK_FI}
 /elif/ {println("We got TOK_ELIF"); return TOK_ELIF}
 /done/ {println("We got TOK_DONE"); return TOK_DONE}
+/do/ {println("We got TOK_DO"); return TOK_DO}
 /print/ {println("We got TOK_PRNT"); return TOK_PRNT}
 /unset/ {println("We got TOK_UNSET"); return TOK_UNSET}
 /\"/ {println("We got TOK_QUOT"); return TOK_QUOT}

@@ -92,7 +92,7 @@ func replaceOCLICurrPath(x string) string {
        TOK_ELSE TOK_LBLOCK TOK_RBLOCK
        TOK_LPAREN TOK_RPAREN TOK_OR TOK_AND TOK_IN TOK_PRNT TOK_QUOT
        TOK_NOT TOK_DIV TOK_MULT TOK_GREATER TOK_LESS TOK_THEN TOK_FI TOK_DONE
-       TOK_UNSET TOK_ELIF
+       TOK_UNSET TOK_ELIF TOK_DO
        
 %type <s> F E P P1 WORDORNUM STRARG
 %type <arr> WNARG
@@ -138,7 +138,7 @@ OPEN_STMT:    TOK_IF TOK_LBLOCK EXPR TOK_RBLOCK TOK_THEN st2 TOK_FI {$$=&ifNode{
               n1:=&numNode{NUM, 0};
               
               initd:=&assignNode{ASSIGN, $2, n1}; 
-              iter:=&symbolReferenceNode{REFERENCE, $2, 0}; 
+              iter:=&symbolReferenceNode{REFERENCE, $2, &numNode{NUM,0}}; 
               cmp:=&comparatorNode{COMPARATOR, "<", iter, $4}
               incr=&arithNode{ARITHMETIC, "+", iter, &numNode{NUM, 1}}
               incrAssign=&assignNode{ASSIGN, iter,incr}
@@ -152,7 +152,7 @@ OPEN_STMT:    TOK_IF TOK_LBLOCK EXPR TOK_RBLOCK TOK_THEN st2 TOK_FI {$$=&ifNode{
                var cond *comparatorNode; var incr *arithNode; var iter *symbolReferenceNode;
                var incrAssign *assignNode;
               
-              iter = &symbolReferenceNode{NUM, $2,0}
+              iter = &symbolReferenceNode{NUM, $2,&numNode{NUM,0}}
 
               if $5 < $8 {
               cond=&comparatorNode{COMPARATOR, "<", iter, n2}
@@ -167,6 +167,34 @@ OPEN_STMT:    TOK_IF TOK_LBLOCK EXPR TOK_RBLOCK TOK_THEN st2 TOK_FI {$$=&ifNode{
               } 
               $$=&forNode{FOR, initnd, cond, incrAssign,$11 }
               }
+              |TOK_FOR TOK_WORD TOK_IN TOK_DEREF Q TOK_DO st2 TOK_DONE 
+              {internalIter:=&assignNode{ASSIGN, "_internalIdx", &numNode{NUM,0}}
+              arr:=$5
+              qRes :=&assignNode{ASSIGN, "_internalRes", arr.execute()}
+              varIter:=&assignNode{ASSIGN, $2, 
+                     &symbolReferenceNode{REFERENCE, "_internalRes", &numNode{NUM,0}}}
+              end:=&assignNode{ASSIGN, "_internalEnd", &numNode{NUM, arr.execute().(array).getLength()}}
+              init:=&ast{ASSIGN, []node{internalIter, qRes, varIter, end}}
+              
+              cond:=&comparatorNode{COMPARATOR, "<", 
+              &symbolReferenceNode{REFERENCE, "_internalIdx", &numNode{NUM,0}}, 
+              &symbolReferenceNode{REFERENCE, "_internalEnd", &numNode{NUM,0}}}
+
+              iterAssign:=&assignNode{ASSIGN, 
+              &symbolReferenceNode{REFERENCE, "_internalIdx", &numNode{NUM,0}},
+              &arithNode{ARITHMETIC, "+",
+                     &symbolReferenceNode{REFERENCE, "_internalIdx", &numNode{NUM,0}},
+                     &numNode{NUM, 1}}}
+
+              offset := &symbolReferenceNode{REFERENCE, "_internalIdx", &numNode{NUM,0}}
+              varIterAssign:=&assignNode{ASSIGN, 
+              &symbolReferenceNode{REFERENCE, $2,&numNode{NUM,0}}, 
+              &symbolReferenceNode{REFERENCE, "_internalRes", 
+              offset}}
+
+              incr:=&ast{ASSIGN, []node{iterAssign, varIterAssign}}
+
+              $$=&forNode{FOR, init, cond, incr,$7 }}
               ;
 
 EIF: TOK_ELIF TOK_LBLOCK EXPR TOK_RBLOCK TOK_THEN st2 EIF 
@@ -211,9 +239,9 @@ unary: TOK_NOT unary {$$=&boolOpNode{BOOLOP, "!", $2}}
 
 factor: TOK_LPAREN EXPR TOK_RPAREN {$$=$2}
        |TOK_NUM {$$=&numNode{NUM, $1}}
-       |TOK_DEREF TOK_WORD {$$=&symbolReferenceNode{REFERENCE, $2, 0}}
-       |TOK_DEREF TOK_WORD TOK_LBLOCK TOK_NUM TOK_RBLOCK {$$=&symbolReferenceNode{REFERENCE, $2, $4}}
-       |TOK_WORD {$$=&symbolReferenceNode{REFERENCE, $1,0}}
+       |TOK_DEREF TOK_WORD {$$=&symbolReferenceNode{REFERENCE, $2, &numNode{NUM,0}}}
+       |TOK_DEREF TOK_WORD TOK_LBLOCK TOK_NUM TOK_RBLOCK {$$=&symbolReferenceNode{REFERENCE, $2, &numNode{NUM,$4}}}
+       |TOK_WORD {$$=&symbolReferenceNode{REFERENCE, $1,&numNode{NUM,0}}}
        |TOK_QUOT STRARG TOK_QUOT {$$=&strNode{STR, $2}}
        |TOK_BOOL {var x bool;if $1=="false"{x = false}else{x=true};$$=&boolNode{BOOL, x}}
        ;
@@ -357,17 +385,17 @@ OCDOT:      TOK_DOT TOK_VAR TOK_COL TOK_WORD TOK_EQUAL WORDORNUM {$$=&assignNode
             |TOK_DOT TOK_VAR TOK_COL TOK_WORD TOK_EQUAL Q {$$=&assignNode{ASSIGN, $4, $6}}
             |TOK_DOT TOK_VAR TOK_COL TOK_WORD TOK_EQUAL K {$$=&assignNode{ASSIGN, $4, $6}}
             |TOK_DOT TOK_VAR TOK_COL TOK_WORD TOK_EQUAL OCLISYNTX {$$=&assignNode{ASSIGN, $4, $6}}
-            |TOK_DEREF TOK_WORD {$$=&symbolReferenceNode{REFERENCE, $2, 0}}
-            |TOK_DEREF TOK_WORD TOK_LBLOCK TOK_NUM TOK_RBLOCK {$$=&symbolReferenceNode{REFERENCE, $2, $4}}
-            |TOK_DEREF TOK_WORD TOK_LBLOCK TOK_NUM TOK_RBLOCK TOK_EQUAL EXPR {v:=&symbolReferenceNode{REFERENCE, $2, $4}; $$=&assignNode{ASSIGN, v, $7} }
-            |TOK_DEREF TOK_WORD TOK_EQUAL EXPR {n:=&symbolReferenceNode{REFERENCE, $2, 0};$$=&assignNode{ASSIGN,n,$4 }}
+            |TOK_DEREF TOK_WORD {$$=&symbolReferenceNode{REFERENCE, $2, &numNode{NUM,0}}}
+            |TOK_DEREF TOK_WORD TOK_LBLOCK TOK_NUM TOK_RBLOCK {$$=&symbolReferenceNode{REFERENCE, $2, &numNode{NUM,$4}}}
+            |TOK_DEREF TOK_WORD TOK_LBLOCK TOK_NUM TOK_RBLOCK TOK_EQUAL EXPR {v:=&symbolReferenceNode{REFERENCE, $2, &numNode{NUM,$4}}; $$=&assignNode{ASSIGN, v, $7} }
+            |TOK_DEREF TOK_WORD TOK_EQUAL EXPR {n:=&symbolReferenceNode{REFERENCE, $2, &numNode{NUM,0}};$$=&assignNode{ASSIGN,n,$4 }}
 ;
 
 OCSEL:      TOK_SELECT {$$=&commonNode{COMMON, cmd.ShowClipBoard, "select", nil};}
             |TOK_SELECT TOK_DOT TOK_ATTR TOK_EQUAL TOK_WORD {x := $3+"="+$5; $$=&commonNode{COMMON, cmd.UpdateSelection, "UpdateSelect", []interface{}{resMap(&x)}};}
 ;
 
-STRARG: WORDORNUM STRARG {$$=$1+" "+$2}
+STRARG: WORDORNUM STRARG {if $2 != "" {$$=$1+" "+$2} else {$$=$1};}
        | {$$=""}
 ;
 
