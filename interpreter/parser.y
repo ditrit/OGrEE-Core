@@ -167,24 +167,15 @@ OPEN_STMT:    TOK_IF TOK_LBLOCK EXPR TOK_RBLOCK TOK_THEN st2 TOK_FI {$$=&ifNode{
               } 
               $$=&forNode{FOR, initnd, cond, incrAssign,$11 }
               }
-              |TOK_FOR TOK_WORD TOK_IN TOK_DEREF Q TOK_DO st2 TOK_DONE 
-              {internalIter:=&assignNode{ASSIGN, "_internalIdx", &numNode{NUM,0}}
-              arr:=$5
-              qRes :=&assignNode{ASSIGN, "_internalRes", arr.execute()}
+              |TOK_FOR TOK_WORD TOK_IN TOK_DEREF TOK_LPAREN Q TOK_RPAREN TOK_DO st2 TOK_DONE 
+              {
+              arrNd:=$6
+              arrRes:= arrNd.execute()
+              qRes :=&assignNode{ASSIGN, "_internalRes", arrRes}
               varIter:=&assignNode{ASSIGN, $2, 
                      &symbolReferenceNode{REFERENCE, "_internalRes", &numNode{NUM,0}}}
-              end:=&assignNode{ASSIGN, "_internalEnd", &numNode{NUM, arr.execute().(array).getLength()}}
-              init:=&ast{ASSIGN, []node{internalIter, qRes, varIter, end}}
-              
-              cond:=&comparatorNode{COMPARATOR, "<", 
-              &symbolReferenceNode{REFERENCE, "_internalIdx", &numNode{NUM,0}}, 
-              &symbolReferenceNode{REFERENCE, "_internalEnd", &numNode{NUM,0}}}
+              init:=&ast{ASSIGN, []node{qRes, varIter}}
 
-              iterAssign:=&assignNode{ASSIGN, 
-              &symbolReferenceNode{REFERENCE, "_internalIdx", &numNode{NUM,0}},
-              &arithNode{ARITHMETIC, "+",
-                     &symbolReferenceNode{REFERENCE, "_internalIdx", &numNode{NUM,0}},
-                     &numNode{NUM, 1}}}
 
               offset := &symbolReferenceNode{REFERENCE, "_internalIdx", &numNode{NUM,0}}
               varIterAssign:=&assignNode{ASSIGN, 
@@ -192,9 +183,9 @@ OPEN_STMT:    TOK_IF TOK_LBLOCK EXPR TOK_RBLOCK TOK_THEN st2 TOK_FI {$$=&ifNode{
               &symbolReferenceNode{REFERENCE, "_internalRes", 
               offset}}
 
-              incr:=&ast{ASSIGN, []node{iterAssign, varIterAssign}}
-
-              $$=&forNode{FOR, init, cond, incr,$7 }}
+              incr:=&ast{ASSIGN, []node{varIterAssign}}
+              body:=&ast{BLOCK, []node{incr,$9}}
+              $$=&rangeNode{FOR, init, arrRes,body }}
               ;
 
 EIF: TOK_ELIF TOK_LBLOCK EXPR TOK_RBLOCK TOK_THEN st2 EIF 

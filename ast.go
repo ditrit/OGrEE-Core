@@ -607,7 +607,11 @@ func (r *rangeNode) execute() interface{} {
 	data := r.container.(node).execute()
 	switch data.(type) {
 	case ([]string):
-		for range data.([]string) {
+		var i int
+		dynamicMap["_internalIdx"] = 0
+		dynamicSymbolTable[0] = i
+		for i := range data.([]string) {
+			dynamicSymbolTable[0] = i
 			r.body.(node).execute()
 		}
 
