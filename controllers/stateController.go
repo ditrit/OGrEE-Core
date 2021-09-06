@@ -40,6 +40,7 @@ type Node struct {
 	PID    int
 	Entity int
 	Name   string
+	Path   string
 	Nodes  list.List
 }
 
@@ -53,6 +54,7 @@ func InitState() {
 	State.CurrPath = "/"
 	x := GetChildren(0)
 	for i := range x {
+		x[i].Path = "/" + x[i].Name
 		State.TreeHierarchy.Nodes.PushBack(x[i])
 	}
 
@@ -60,7 +62,7 @@ func InitState() {
 		//time.Sleep(2 * time.Second)
 		x := GetChildren(i)
 		for k := range x {
-			SearchAndInsert(&State.TreeHierarchy, x[k], i)
+			SearchAndInsert(&State.TreeHierarchy, x[k], i, "")
 		}
 	}
 }
@@ -84,18 +86,19 @@ func GetChildren(curr int) []*Node {
 	}
 }
 
-func SearchAndInsert(root **Node, node *Node, dt int) {
+func SearchAndInsert(root **Node, node *Node, dt int, path string) {
 	if root != nil {
 		for i := (*root).Nodes.Front(); i != nil; i = i.Next() {
 			if node.PID == (i.Value).(*Node).ID {
 				//println("NODE ", node.Name, "WITH PID: ", node.PID)
 				//println("Matched with PARENT ")
 				//println()
+				node.Path = path + "/" + (i.Value).(*Node).Name + "/" + node.Name
 				(i.Value).(*Node).Nodes.PushBack(node)
 				return
 			}
 			x := (i.Value).(*Node)
-			SearchAndInsert(&x, node, dt+1)
+			SearchAndInsert(&x, node, dt+1, path+"/"+x.Name)
 		}
 	}
 	return
@@ -128,6 +131,7 @@ func makeNodeArrFromResp(resp *http.Response, entity int) []*Node {
 	}
 	for i, _ := range objs {
 		node := &Node{}
+		node.Path = ""
 		node.Entity = entity
 		node.Name = (string((objs[i].(map[string]interface{}))["name"].(string)))
 		node.ID, _ = strconv.Atoi((objs[i].(map[string]interface{}))["id"].(string))
@@ -208,7 +212,6 @@ func DispAtLevel(root **Node, x Stack) []string {
 		println("This is what we got:")
 		for i := (*root).Nodes.Front(); i != nil; i = i.Next() {
 			nm = string(i.Value.(*Node).Name)
-			println(nm)
 			items = append(items, nm)
 		}
 		return items

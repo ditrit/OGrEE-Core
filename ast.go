@@ -420,7 +420,7 @@ func (c *comparatorNode) execute() interface{} {
 type symbolReferenceNode struct {
 	nodeType int
 	val      interface{}
-	offset   interface{} //Used to index into arrays
+	offset   interface{} //Used to index into arrays and node types
 }
 
 func (s *symbolReferenceNode) execute() interface{} {
@@ -466,6 +466,20 @@ func (s *symbolReferenceNode) execute() interface{} {
 
 					val = q
 
+				case map[string]interface{}:
+					if o, ok := s.offset.(node).execute().(string); ok {
+						switch o {
+						case "id", "name", "category", "parentID",
+							"description", "domain", "parentid", "parentId":
+							val = val.(map[string]interface{})[o]
+
+						default:
+							val = val.(map[string]interface{})["attributes"].(map[string]interface{})[o]
+						}
+
+					} else if _, ok := s.offset.(node).execute().(int); ok {
+						val = val.(map[string]interface{})["name"]
+					}
 				case []string:
 					val = val.([]string)[s.offset.(node).execute().(int)]
 				}
