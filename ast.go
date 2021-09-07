@@ -530,9 +530,8 @@ func (a *assignNode) execute() interface{} {
 		if arr, e := dynamicSymbolTable[idx].([]map[int]interface{}); e == true {
 			arr[idx][0] = v
 		} else if mp, e := dynamicSymbolTable[idx].(map[string]interface{}); e == true {
-			//strIdx := a.arg.(node).offset.execute().(string)
 			strIdx := a.arg.(*symbolReferenceNode).offset.(node).execute().(string)
-			mp[strIdx] = v
+			mp[strIdx] = v //Assign val into map[str]inf{} (node) type
 		} else {
 			dynamicSymbolTable[idx] = v //Assign val into DStable
 		}

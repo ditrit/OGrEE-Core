@@ -81,3 +81,15 @@ $x[ATTRIBUTE]="someValue"
 ```
 Where ATTRIBUTE is an attribute and "someValue" must be in quotes
 
+
+Variable types
+------------
+string
+int 
+node
+json
+bool
+array
+
+Function return types
+------------

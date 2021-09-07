@@ -256,6 +256,7 @@ func UpdateObj(path string, data map[string]interface{}) map[string]interface{} 
 		if resp.StatusCode == http.StatusOK && data["name"] != nil {
 			//Need to update name of Obj in tree
 			(*nd).Name = string(data["name"].(string))
+			(*nd).Path = (*nd).Path[:strings.LastIndex((*nd).Path, "/")+1] + (*nd).Name
 		}
 		//println(string(bodyBytes))
 	} else {
