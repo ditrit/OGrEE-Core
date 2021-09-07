@@ -70,12 +70,12 @@ func PostObj(ent int, entity string, data map[string]interface{}) map[string]int
 		default:
 			UpdateTree(&State.TreeHierarchy, node)
 		}
-
+		return respMap["data"].(map[string]interface{})
 	}
-	return respMap["data"].(map[string]interface{})
+	return nil
 }
 
-func DeleteObj(path string) *Node {
+func DeleteObj(path string) bool {
 	URL := "https://ogree.chibois.net/api/user/"
 	nd := new(*Node)
 
@@ -94,7 +94,7 @@ func DeleteObj(path string) *Node {
 	if nd == nil {
 		println("Error finding Object from given path!")
 		WarningLogger.Println("Object to DELETE was not found")
-		return nil
+		return false
 	}
 
 	URL += EntityToString((*nd).Entity) + "s/" + strconv.Itoa((*nd).ID)
@@ -102,7 +102,7 @@ func DeleteObj(path string) *Node {
 	if e != nil {
 		println("Error while deleting Object!")
 		WarningLogger.Println("Error while deleting Object!", e)
-		return nil
+		return false
 	}
 	defer resp.Body.Close()
 	if resp.StatusCode == http.StatusNoContent {
@@ -114,7 +114,7 @@ func DeleteObj(path string) *Node {
 		//json.Unmarshal()
 	}
 
-	return *nd
+	return true
 }
 
 //Search for objects

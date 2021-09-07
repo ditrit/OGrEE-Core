@@ -78,9 +78,9 @@ func (c *commonNode) execute() interface{} {
 		}
 
 	case "DeleteObj":
-		if f, ok := c.fun.(func(string) *cmd.Node); ok {
+		if f, ok := c.fun.(func(string) bool); ok {
 			v := f(c.args[0].(string))
-			return &objNdNode{OBJND, v}
+			return &boolNode{BOOL, v}
 		}
 
 	case "GetObject":
