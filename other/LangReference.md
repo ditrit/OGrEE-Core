@@ -70,3 +70,14 @@ Scripts can be loaded. The commands follow the OGREE language specification, wit
 ```
 .cmds:[PATH/TO/YOUR/FILE]
 ```
+
+Modifying Nodes
+------------
+Variables must be assigned to the result of a get operation to modify nodes.
+Node attributes can be modified using the following syntax:
+```
+.var:x=$gt
+$x[ATTRIBUTE]="someValue"
+```
+Where ATTRIBUTE is an attribute and "someValue" must be in quotes
+

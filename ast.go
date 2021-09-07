@@ -477,8 +477,13 @@ func (s *symbolReferenceNode) execute() interface{} {
 							val = val.(map[string]interface{})["attributes"].(map[string]interface{})[o]
 						}
 
-					} else if _, ok := s.offset.(node).execute().(int); ok {
-						val = val.(map[string]interface{})["name"]
+					} else if idx, ok := s.offset.(node).execute().(int); ok {
+						if idx != -1 {
+							val = val.(map[string]interface{})["name"]
+						} else {
+							val = val.(map[string]interface{})
+						}
+
 					}
 				case []string:
 					val = val.([]string)[s.offset.(node).execute().(int)]
@@ -524,6 +529,10 @@ func (a *assignNode) execute() interface{} {
 
 		if arr, e := dynamicSymbolTable[idx].([]map[int]interface{}); e == true {
 			arr[idx][0] = v
+		} else if mp, e := dynamicSymbolTable[idx].(map[string]interface{}); e == true {
+			//strIdx := a.arg.(node).offset.execute().(string)
+			strIdx := a.arg.(*symbolReferenceNode).offset.(node).execute().(string)
+			mp[strIdx] = v
 		} else {
 			dynamicSymbolTable[idx] = v //Assign val into DStable
 		}

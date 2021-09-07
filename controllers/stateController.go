@@ -212,6 +212,7 @@ func DispAtLevel(root **Node, x Stack) []string {
 		println("This is what we got:")
 		for i := (*root).Nodes.Front(); i != nil; i = i.Next() {
 			nm = string(i.Value.(*Node).Name)
+			println(nm)
 			items = append(items, nm)
 		}
 		return items
@@ -416,7 +417,7 @@ func EntityStrToInt(entity string) int {
 		return TENANT
 	case "site":
 		return SITE
-	case "building":
+	case "building", "bldg":
 		return BLDG
 	case "room":
 		return ROOM

@@ -34,6 +34,20 @@ func retNodeArray(input []interface{}) []map[int]interface{}{
        return res
 }
 
+//This func helps to build the correct map[str]interface{}
+//based on the input string x
+func retMapInf(x string, y interface{}) map[string]interface{} {
+       switch x {
+              case "id", "name", "category", "parentID", 
+              "description", "domain", "parentid", "parentId":
+                     return map[string]interface{}{x:y}
+              
+              default:
+              return map[string]interface{}{
+                     "attributes":map[string]interface{}{x:y}}
+       }
+}
+
 func resMap(x *string) map[string]interface{} {
        resarr := strings.Split(*x, "=")
        res := make(map[string]interface{})
@@ -58,6 +72,21 @@ func resMap(x *string) map[string]interface{} {
 
 func replaceOCLICurrPath(x string) string {
        return strings.Replace(x, "_", cmd.State.CurrPath, 1)
+}
+
+func getNodeFromMapInf(x map[string]interface{}) *cmd.Node {
+       ent := x["category"]
+       pid,_ := strconv.Atoi(x["parentId"].(string))
+       id,_ := strconv.Atoi(x["id"].(string))
+
+       entNum := cmd.EntityStrToInt(ent.(string))
+       nodes := cmd.GetNodes(&cmd.State.TreeHierarchy, entNum)
+       for i := range nodes {
+              if nodes[i].PID == pid && nodes[i].ID == id {
+                     return nodes[i]
+              }
+       }
+       return nil
 }
 %}
 
@@ -230,6 +259,8 @@ unary: TOK_NOT unary {$$=&boolOpNode{BOOLOP, "!", $2}}
 
 factor: TOK_LPAREN EXPR TOK_RPAREN {$$=$2}
        |TOK_NUM {$$=&numNode{NUM, $1}}
+       |TOK_DEREF TOK_WORD TOK_LBLOCK TOK_ATTR TOK_RBLOCK {$$=&symbolReferenceNode{REFERENCE, $2, &strNode{STR,$4}}}
+       |TOK_DEREF TOK_WORD TOK_LBLOCK TOK_WORD TOK_RBLOCK {$$=&symbolReferenceNode{REFERENCE, $2, &strNode{STR,$4}}}
        |TOK_DEREF TOK_WORD {$$=&symbolReferenceNode{REFERENCE, $2, &numNode{NUM,0}}}
        |TOK_DEREF TOK_WORD TOK_LBLOCK TOK_NUM TOK_RBLOCK {$$=&symbolReferenceNode{REFERENCE, $2, &numNode{NUM,$4}}}
        |TOK_WORD {$$=&symbolReferenceNode{REFERENCE, $1,&numNode{NUM,0}}}
@@ -378,6 +409,8 @@ OCDOT:      TOK_DOT TOK_VAR TOK_COL TOK_WORD TOK_EQUAL WORDORNUM {$$=&assignNode
             |TOK_DOT TOK_VAR TOK_COL TOK_WORD TOK_EQUAL K {$$=&assignNode{ASSIGN, $4, $6}}
             |TOK_DOT TOK_VAR TOK_COL TOK_WORD TOK_EQUAL OCLISYNTX {$$=&assignNode{ASSIGN, $4, $6}}
             |TOK_DEREF TOK_WORD {$$=&symbolReferenceNode{REFERENCE, $2, &numNode{NUM,0}}}
+            |TOK_DEREF TOK_WORD TOK_LBLOCK TOK_ATTR TOK_RBLOCK TOK_EQUAL EXPR 
+            {y:=&symbolReferenceNode{REFERENCE, $2, &strNode{STR, $4}}; x:=&assignNode{ASSIGN, y, $7};mp:=&symbolReferenceNode{REFERENCE, $2, &numNode{NUM, -1}}; q:=getNodeFromMapInf(mp.execute().(map[string]interface{})) ;z:=&commonNode{COMMON,cmd.UpdateObj, "UpdateObj", []interface{}{q.Path, retMapInf($4,($7).execute() ) }};$$=&ast{ASSIGN, []node{x, z}}}
             |TOK_DEREF TOK_WORD TOK_LBLOCK TOK_ATTR TOK_RBLOCK {$$=&symbolReferenceNode{REFERENCE, $2, &strNode{STR, $4}}}
             |TOK_DEREF TOK_WORD TOK_LBLOCK TOK_NUM TOK_RBLOCK {$$=&symbolReferenceNode{REFERENCE, $2, &numNode{NUM,$4}}}
             |TOK_DEREF TOK_WORD TOK_LBLOCK TOK_NUM TOK_RBLOCK TOK_EQUAL EXPR {v:=&symbolReferenceNode{REFERENCE, $2, &numNode{NUM,$4}}; $$=&assignNode{ASSIGN, v, $7} }
