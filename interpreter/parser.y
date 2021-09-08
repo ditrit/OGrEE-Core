@@ -74,6 +74,7 @@ func replaceOCLICurrPath(x string) string {
        return strings.Replace(x, "_", cmd.State.CurrPath, 1)
 }
 
+//Gets node from Tree Hierarchy using a map[string]interface
 func getNodeFromMapInf(x map[string]interface{}) *cmd.Node {
        ent := x["category"]
        pid,_ := strconv.Atoi(x["parentId"].(string))
@@ -88,6 +89,19 @@ func getNodeFromMapInf(x map[string]interface{}) *cmd.Node {
        }
        return nil
 }
+
+func genNodeFromCommonRes(x node) node {
+       val := x.execute()
+       switch val.(type) {
+              case string:
+              return &strNode{STR, val.(string)}
+
+              case []map[string]interface{}:
+              return &jsonObjArrNode{JSONND, 
+              len(val.([]map[string]interface{})), val.([]map[string]interface{})}
+       }
+       return nil
+} 
 %}
 
 %union {
@@ -403,6 +417,7 @@ OCDOT:      TOK_DOT TOK_VAR TOK_COL TOK_WORD TOK_EQUAL WORDORNUM {$$=&assignNode
             |TOK_DOT TOK_VAR TOK_COL TOK_WORD TOK_EQUAL TOK_QUOT STRARG TOK_QUOT{$$=&assignNode{ASSIGN, $4, &strNode{STR, $7}}}
             |TOK_DOT TOK_VAR TOK_COL TOK_WORD TOK_EQUAL TOK_LPAREN WNARG TOK_RPAREN {$$=&assignNode{ASSIGN, $4, &arrNode{ARRAY, len($7),retNodeArray($7)}}}
             |TOK_DOT TOK_VAR TOK_COL TOK_WORD TOK_EQUAL TOK_DEREF K {$$=&assignNode{ASSIGN, $4, ($7).(node).execute()}}
+            |TOK_DOT TOK_VAR TOK_COL TOK_WORD TOK_EQUAL TOK_DEREF TOK_LPAREN Q  TOK_RPAREN {$$=&assignNode{ASSIGN, $4, ($8).(node).execute()}}
             |TOK_DOT TOK_CMDS TOK_COL P {$$=&commonNode{COMMON, cmd.LoadFile, "Load", []interface{}{$4}};}
             |TOK_DOT TOK_TEMPLATE TOK_COL P {$$=&commonNode{COMMON, cmd.LoadFile, "Load", []interface{}{$4}}}
             |TOK_DOT TOK_VAR TOK_COL TOK_WORD TOK_EQUAL Q {$$=&assignNode{ASSIGN, $4, $6}}

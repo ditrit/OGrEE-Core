@@ -71,9 +71,9 @@ func (c *commonNode) execute() interface{} {
 		}
 
 	case "LS":
-		if f, ok := c.fun.(func(string) []string); ok {
+		if f, ok := c.fun.(func(string) []map[string]interface{}); ok {
 			v := f(c.args[0].(string))
-			return &strArrNode{COMMON, len(v), v}
+			return &jsonObjArrNode{JSONND, len(v), v}
 
 		}
 
@@ -125,7 +125,8 @@ func (c *commonNode) execute() interface{} {
 
 	case "PWD":
 		if f, ok := c.fun.(func() string); ok {
-			return f()
+			v := f()
+			return &strNode{STR, v}
 		}
 
 	case "setCB":
@@ -466,6 +467,13 @@ func (s *symbolReferenceNode) execute() interface{} {
 
 					val = q
 
+				case []map[string]interface{}:
+					/*if o, ok := s.offset.(node).execute().(int); ok {
+						x := val.([]map[string]interface{})[o]
+
+					}*/
+					println("This is a mapSTRINFArr but maybe it should be anode")
+
 				case map[string]interface{}:
 					if o, ok := s.offset.(node).execute().(string); ok {
 						switch o {
@@ -517,7 +525,8 @@ func (a *assignNode) execute() interface{} {
 	if a.val != nil {
 		var v interface{}
 		if _, ok := a.val.(*commonNode); !ok {
-			v = a.val.(node).execute() //Obtain val
+			v = a.val.(node).execute() //Obtain val, execute block to get value
+			// if it is not a common node
 			/*if id == "_internalRes" {
 				println("You need to check v here")
 				q := a.val.(array).getLength()

@@ -265,14 +265,33 @@ func UpdateObj(path string, data map[string]interface{}) map[string]interface{} 
 	return data
 }
 
-func LS(x string) []string {
+func LS(x string) []map[string]interface{} {
 	if x == "" || x == "." {
-		return DispAtLevel(&State.TreeHierarchy, *StrToStack(State.CurrPath))
+		ans := []map[string]interface{}{}
+		path := State.CurrPath
+		res := DispAtLevel(&State.TreeHierarchy, *StrToStack(State.CurrPath))
+		for i := range res {
+			ans = append(ans, GetObject(path+"/"+res[i]))
+		}
+		return ans
 	} else if string(x[0]) == "/" {
-		return DispAtLevel(&State.TreeHierarchy, *StrToStack(x))
+		ans := []map[string]interface{}{}
+		path := x
+		res := DispAtLevel(&State.TreeHierarchy, *StrToStack(x))
+		for i := range res {
+			ans = append(ans, GetObject(path+"/"+res[i]))
+		}
+		return ans
 	} else {
-		return DispAtLevel(&State.TreeHierarchy, *StrToStack(State.CurrPath + "/" + x))
+		res := DispAtLevel(&State.TreeHierarchy, *StrToStack(State.CurrPath + "/" + x))
+		ans := []map[string]interface{}{}
+		path := State.CurrPath + "/" + x
+		for i := range res {
+			ans = append(ans, GetObject(path+"/"+res[i]))
+		}
+		return ans
 	}
+
 }
 
 func LSOG() {
