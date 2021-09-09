@@ -19655,6 +19655,54 @@ var dfas = []dfa{
 		},
 	}, []int{ /* Start-of-input transitions */ -1, -1, -1, -1, -1}, []int{ /* End-of-input transitions */ -1, -1, -1, -1, -1}, nil},
 
+	// len
+	{[]bool{false, false, false, true}, []func(rune) int{ // Transitions
+		func(r rune) int {
+			switch r {
+			case 101:
+				return -1
+			case 108:
+				return 1
+			case 110:
+				return -1
+			}
+			return -1
+		},
+		func(r rune) int {
+			switch r {
+			case 101:
+				return 2
+			case 108:
+				return -1
+			case 110:
+				return -1
+			}
+			return -1
+		},
+		func(r rune) int {
+			switch r {
+			case 101:
+				return -1
+			case 108:
+				return -1
+			case 110:
+				return 3
+			}
+			return -1
+		},
+		func(r rune) int {
+			switch r {
+			case 101:
+				return -1
+			case 108:
+				return -1
+			case 110:
+				return -1
+			}
+			return -1
+		},
+	}, []int{ /* Start-of-input transitions */ -1, -1, -1, -1}, []int{ /* End-of-input transitions */ -1, -1, -1, -1}, nil},
+
 	// -l
 	{[]bool{false, false, true}, []func(rune) int{ // Transitions
 		func(r rune) int {
@@ -20270,25 +20318,30 @@ OUTER0:
 			}
 		case 78:
 			{
+				println("We got TOK_LEN")
+				return TOK_LEN
+			}
+		case 79:
+			{
 				println("We got TOK_CMDFLAG")
 				return TOK_CMDFLAG
 			}
-		case 79:
+		case 80:
 			{
 				println("We got TOK_EQUAL")
 				return TOK_EQUAL
 			}
-		case 80:
+		case 81:
 			{
 				println("We got TOK_SLASH")
 				return TOK_SLASH
 			}
-		case 81:
+		case 82:
 			{
 				println("We got TOK_DOC")
 				return TOK_DOC
 			}
-		case 82:
+		case 83:
 			{
 				println("We got TOK_WORD")
 				lval.s = yylex.Text()

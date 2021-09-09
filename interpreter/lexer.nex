@@ -80,6 +80,7 @@
 /grep/ {println("We got TOK_GREP");return TOK_GREP}
 /ls/ {println("We got TOK_LS");return TOK_LS}
 /exit/ {println("We got TOK_EXIT"); return TOK_EXIT}
+/len/ {println("We got TOK_LEN"); return TOK_LEN}
 /-l/ {println("We got TOK_CMDFLAG");return TOK_CMDFLAG}
 /[=]/ {println("We got TOK_EQUAL");return TOK_EQUAL}
 /\// {println("We got TOK_SLASH"); return TOK_SLASH}

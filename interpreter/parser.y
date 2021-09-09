@@ -135,7 +135,7 @@ func genNodeFromCommonRes(x node) node {
        TOK_ELSE TOK_LBLOCK TOK_RBLOCK
        TOK_LPAREN TOK_RPAREN TOK_OR TOK_AND TOK_IN TOK_PRNT TOK_QUOT
        TOK_NOT TOK_DIV TOK_MULT TOK_GREATER TOK_LESS TOK_THEN TOK_FI TOK_DONE
-       TOK_UNSET TOK_ELIF TOK_DO
+       TOK_UNSET TOK_ELIF TOK_DO TOK_LEN
        
 %type <s> F E P P1 WORDORNUM STRARG
 %type <arr> WNARG
@@ -277,6 +277,7 @@ factor: TOK_LPAREN EXPR TOK_RPAREN {$$=$2}
        |TOK_DEREF TOK_WORD TOK_LBLOCK TOK_WORD TOK_RBLOCK {$$=&symbolReferenceNode{REFERENCE, $2, &strNode{STR,$4}, nil}}
        |TOK_DEREF TOK_WORD {$$=&symbolReferenceNode{REFERENCE, $2, &numNode{NUM,0}, nil}}
        |TOK_DEREF TOK_WORD TOK_LBLOCK TOK_NUM TOK_RBLOCK {$$=&symbolReferenceNode{REFERENCE, $2, &numNode{NUM,$4}, nil}}
+       |TOK_LEN TOK_LPAREN TOK_WORD TOK_RPAREN {x:=&symbolReferenceNode{REFERENCE, $3, &numNode{NUM, -1}, nil};$$=&numNode{NUM, x.execute().(int)}}
        |TOK_WORD {$$=&symbolReferenceNode{REFERENCE, $1,&numNode{NUM,0}, nil}}
        |TOK_QUOT STRARG TOK_QUOT {$$=&strNode{STR, $2}}
        |TOK_BOOL {var x bool;if $1=="false"{x = false}else{x=true};$$=&boolNode{BOOL, x}}

@@ -447,26 +447,32 @@ func (s *symbolReferenceNode) execute() interface{} {
 				case []map[int]interface{}:
 					x := val.([]map[int]interface{})
 					println("Referring to Array")
-					if s.offset.(node).execute().(int) >= len(x) {
+					i := s.offset.(node).execute().(int)
+					if i >= len(x) {
 						println("Index out of range error!")
 						println("Array Length Of: ", len(x))
-						println("But desired index at: ", s.offset.(node).execute().(int))
+						println("But desired index at: ", i)
 						cmd.WarningLogger.Println("Index out of range error!")
 						return nil
 					}
-					q := ((x[s.offset.(node).execute().(int)][0]).(node).execute())
-					switch q.(type) {
-					case bool:
-						println("So you want the value: ", q.(bool))
-					case int:
-						println("So you want the value: ", q.(int))
-					case float64:
-						println("So you want the value: ", q.(float64))
-					case string:
-						println("So you want the value: ", q.(string))
-					}
+					//A bad implementation to implement len
+					if i == -1 {
+						val = len(x)
+					} else {
+						q := ((x[i][0]).(node).execute())
+						switch q.(type) {
+						case bool:
+							println("So you want the value: ", q.(bool))
+						case int:
+							println("So you want the value: ", q.(int))
+						case float64:
+							println("So you want the value: ", q.(float64))
+						case string:
+							println("So you want the value: ", q.(string))
+						}
 
-					val = q
+						val = q
+					}
 
 				case []map[string]interface{}:
 					if o, ok := s.offset.(node).execute().(int); ok {
