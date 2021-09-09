@@ -102,9 +102,10 @@ func (c *commonNode) execute() interface{} {
 		}
 
 	case "LSOBJ":
-		if f, ok := c.fun.(func(string, int) []*cmd.Node); ok {
+		if f, ok := c.fun.(func(string, int) []map[string]interface{}); ok {
 			v := f(c.args[0].(string), c.args[1].(int))
-			return &objNdArrNode{COMMON, len(v), v}
+			//return &objNdArrNode{COMMON, len(v), v}
+			return &jsonObjArrNode{JSONND, len(v), v}
 		}
 
 	case "Tree":
@@ -575,7 +576,7 @@ func (a *assignNode) execute() interface{} {
 					println("I think should assign here")
 
 				}
-				println("I think I should do nothing here")
+				//println("I think I should do nothing here")
 				dynamicSymbolTable[idx] = v
 			}
 

@@ -304,7 +304,7 @@ func LSOG() {
 	fmt.Println("HISTORY FILE PATH:", ".resources/.history")
 }
 
-func LSOBJECT(x string, entity int) []*Node {
+func LSOBJECT(x string, entity int) []map[string]interface{} {
 	objs := []*Node{}
 	if x == "" || x == "." {
 		ok, _, r := CheckPath(&State.TreeHierarchy,
@@ -337,7 +337,14 @@ func LSOBJECT(x string, entity int) []*Node {
 	for i := range objs {
 		println(i, ":", objs[i].Name)
 	}
-	return objs
+
+	//Slow but necessary part
+	ans := []map[string]interface{}{}
+	for i := range objs {
+		ans = append(ans, silencedGetObj(objs[i].Path))
+	}
+
+	return ans
 }
 
 func CD(x string) string {
