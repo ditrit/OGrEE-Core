@@ -52,6 +52,7 @@ For Loops:
 ```
 for var in {INTEGER..INTEGER}; {commands;} done
 for ((init; condition; increment)); {commands;} done
+for var in $(command) do {commands;} done
 ```
 
 

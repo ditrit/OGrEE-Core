@@ -560,8 +560,19 @@ func (a *assignNode) execute() interface{} {
 		if arr, e := dynamicSymbolTable[idx].([]map[int]interface{}); e == true {
 			arr[idx][0] = v
 		} else if mp, e := dynamicSymbolTable[idx].(map[string]interface{}); e == true {
-			strIdx := a.arg.(*symbolReferenceNode).offset.(node).execute().(string)
-			mp[strIdx] = v //Assign val into map[str]inf{} (node) type
+			locIdx := a.arg.(*symbolReferenceNode).offset.(node).execute()
+			switch locIdx.(type) {
+			case string:
+				mp[locIdx.(string)] = v //Assign val into map[str]inf{} (node) type
+			case int:
+				if locIdx.(int) > 0 {
+					println("I think should assign here")
+
+				}
+				println("I think I should do nothing here")
+				dynamicSymbolTable[idx] = v
+			}
+
 		} else {
 			dynamicSymbolTable[idx] = v //Assign val into DStable
 		}
@@ -657,18 +668,33 @@ type rangeNode struct {
 func (r *rangeNode) execute() interface{} {
 	r.init.(node).execute()
 	data := r.container.(node).execute()
+	var i int
+	dynamicMap["_internalIdx"] = 0
+	dynamicSymbolTable[0] = i
+
 	switch data.(type) {
 	case ([]string):
-		var i int
-		dynamicMap["_internalIdx"] = 0
-		dynamicSymbolTable[0] = i
+
 		for i := range data.([]string) {
 			dynamicSymbolTable[0] = i
 			r.body.(node).execute()
 		}
 
 	case ([]*cmd.Node):
-		for range data.([]*cmd.Node) {
+		for i := range data.([]*cmd.Node) {
+			dynamicSymbolTable[0] = i
+			r.body.(node).execute()
+		}
+
+	case ([]map[string]interface{}):
+		for i := range data.([]map[string]interface{}) {
+			dynamicSymbolTable[0] = i
+			r.body.(node).execute()
+		}
+
+	case ([]map[int]interface{}):
+		for i := range data.([]map[int]interface{}) {
+			dynamicSymbolTable[0] = i
 			r.body.(node).execute()
 		}
 	}

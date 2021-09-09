@@ -271,7 +271,7 @@ func LS(x string) []map[string]interface{} {
 		path := State.CurrPath
 		res := DispAtLevel(&State.TreeHierarchy, *StrToStack(State.CurrPath))
 		for i := range res {
-			ans = append(ans, GetObject(path+"/"+res[i]))
+			ans = append(ans, silencedGetObj(path+"/"+res[i]))
 		}
 		return ans
 	} else if string(x[0]) == "/" {
@@ -279,7 +279,7 @@ func LS(x string) []map[string]interface{} {
 		path := x
 		res := DispAtLevel(&State.TreeHierarchy, *StrToStack(x))
 		for i := range res {
-			ans = append(ans, GetObject(path+"/"+res[i]))
+			ans = append(ans, silencedGetObj(path+"/"+res[i]))
 		}
 		return ans
 	} else {
@@ -287,7 +287,7 @@ func LS(x string) []map[string]interface{} {
 		ans := []map[string]interface{}{}
 		path := State.CurrPath + "/" + x
 		for i := range res {
-			ans = append(ans, GetObject(path+"/"+res[i]))
+			ans = append(ans, silencedGetObj(path+"/"+res[i]))
 		}
 		return ans
 	}
@@ -842,4 +842,51 @@ func SetClipBoard(x *[]string) []string {
 func Print(x string) string {
 	fmt.Println(x)
 	return x
+}
+
+//Silenced functions
+//These are useful for command output assignments etc
+//otherwise the terminal would be polluted by debug statements
+func silencedGetObj(path string) map[string]interface{} {
+	URL := "https://ogree.chibois.net/api/user/"
+	nd := new(*Node)
+	var data map[string]interface{}
+
+	switch path {
+	case "":
+		nd = FindNodeInTree(&State.TreeHierarchy, StrToStack(State.CurrPath))
+	default:
+		if path[0] != '/' && len(State.CurrPath) > 1 {
+			nd = FindNodeInTree(&State.TreeHierarchy,
+				StrToStack(State.CurrPath+"/"+path))
+		} else {
+			nd = FindNodeInTree(&State.TreeHierarchy, StrToStack(path))
+		}
+	}
+
+	if nd == nil {
+		println("Error finding Object from given path!")
+		WarningLogger.Println("Object to Get not found")
+		return nil
+	}
+
+	URL += EntityToString((*nd).Entity) + "s/" + strconv.Itoa((*nd).ID)
+	resp, e := models.Send("GET", URL, GetKey(), nil)
+	if e != nil {
+		println("Error while obtaining Object details!")
+		WarningLogger.Println("Error while sending GET to server", e)
+		return nil
+	}
+	defer resp.Body.Close()
+	bodyBytes, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		println("Error while reading response!")
+		ErrorLogger.Println("Error while trying to read server response: ", err)
+		return nil
+	}
+	json.Unmarshal(bodyBytes, &data)
+	if resp.StatusCode == http.StatusOK {
+		return data["data"].(map[string]interface{})
+	}
+	return nil
 }
