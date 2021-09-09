@@ -22,6 +22,37 @@ Variables
  $myvar=123
  ```
 
+ ### Variable types
+ ```
+ string
+int 
+node
+json
+bool
+array
+```
+
+### Arrays
+Arrays are declared as:
+```
+.var:array=(x y z)
+```
+Index into arrays:
+```
+$array[1]
+```
+$array is equivalent to $array[0]
+
+### Modifying Nodes
+Nodes cannot be created manually and are obtained as a result of a command.
+Node attributes can be modified using the following syntax:
+```
+.var:x=$gt
+$x[ATTRIBUTE]="someValue"
+```
+Where ATTRIBUTE is an attribute and "someValue" must be in quotes
+
+
 Functions
 ------------
 Functions have only one way of declaration and just like bash, they are not executed unless exclusively invoked. 
@@ -39,10 +70,33 @@ unset -f myfunc
 ```
 Because all variables are global, functions do not support parameters
 
+### Function Return Types
+```
+gt          -> node
+gt (search) -> []node
+create      -> node
+delete      -> bool
+update      -> json //containing only the changed entries
+ls          -> []node
+cd          -> string
+print       -> string
+pwd         -> string
+.cmds       -> string
+selection   -> []string
+tree        -> null
+lsog        -> null
+man         -> null
+```
+
+### Assigning function return values
+```
+.var:x=$(ls)
+```
 
 Comparators
 ------------
-For now comparisons only work between INTEGER type variables
+Comparisons exclusively work between variables of the same type. **NOTE**
+That almost all members of a node data type are string
 
 Loops
 ------------
@@ -52,7 +106,24 @@ For Loops:
 ```
 for var in {INTEGER..INTEGER}; {commands;} done
 for ((init; condition; increment)); {commands;} done
+for var in expression; {commands;} done
+```
+
+While Loop:
+```
+while (expression) {commands;} done
+```
+
+Range / Dynamic:
+```
 for var in $(command) do {commands;} done
+```
+
+### Special Case
+Iterating through array variables is not possible using the range loop.
+```
+.var:array=(1 2 3 4)
+for k in len(array); {commands;} done
 ```
 
 
@@ -72,25 +143,10 @@ Scripts can be loaded. The commands follow the OGREE language specification, wit
 .cmds:[PATH/TO/YOUR/FILE]
 ```
 
-Modifying Nodes
+
+Command Substitution
 ------------
-Variables must be assigned to the result of a get operation to modify nodes.
-Node attributes can be modified using the following syntax:
 ```
-.var:x=$gt
-$x[ATTRIBUTE]="someValue"
+.var:a=cd
+$a
 ```
-Where ATTRIBUTE is an attribute and "someValue" must be in quotes
-
-
-Variable types
-------------
-string
-int 
-node
-json
-bool
-array
-
-Function return types
-------------

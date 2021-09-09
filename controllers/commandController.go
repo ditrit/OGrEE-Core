@@ -814,8 +814,9 @@ func ShowClipBoard() []string {
 		for _, k := range *State.ClipBoard {
 			println(k)
 		}
+		return *State.ClipBoard
 	}
-	return *State.ClipBoard
+	return nil
 }
 
 func UpdateSelection(data map[string]interface{}) {
