@@ -422,6 +422,7 @@ type symbolReferenceNode struct {
 	nodeType int
 	val      interface{}
 	offset   interface{} //Used to index into arrays and node types
+	key      interface{} //Used to index in []map[string] types
 }
 
 func (s *symbolReferenceNode) execute() interface{} {
@@ -468,11 +469,28 @@ func (s *symbolReferenceNode) execute() interface{} {
 					val = q
 
 				case []map[string]interface{}:
-					/*if o, ok := s.offset.(node).execute().(int); ok {
+					if o, ok := s.offset.(node).execute().(int); ok {
+						if o >= len(val.([]map[string]interface{})) {
+							println("Index out of range error!")
+							println("Array Length Of: ",
+								len(val.([]map[string]interface{})))
+							println("But desired index at: ", o)
+							cmd.WarningLogger.Println("Index out of range error!")
+							return nil
+						}
 						x := val.([]map[string]interface{})[o]
+						if s.key != nil {
+							if i, ok := s.key.(node).execute().(string); ok {
+								val = x[i]
+							} else {
+								val = x
+							}
+						} else {
+							val = x
+						}
 
-					}*/
-					println("This is a mapSTRINFArr but maybe it should be anode")
+					}
+					//println("This is a mapSTRINFArr but maybe it should be anode")
 
 				case map[string]interface{}:
 					if o, ok := s.offset.(node).execute().(string); ok {
@@ -495,6 +513,9 @@ func (s *symbolReferenceNode) execute() interface{} {
 					}
 				case []string:
 					val = val.([]string)[s.offset.(node).execute().(int)]
+
+				case (*commonNode):
+					val = val.(node).execute()
 				}
 				return val
 			}

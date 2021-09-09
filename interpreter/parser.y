@@ -181,7 +181,7 @@ OPEN_STMT:    TOK_IF TOK_LBLOCK EXPR TOK_RBLOCK TOK_THEN st2 TOK_FI {$$=&ifNode{
               n1:=&numNode{NUM, 0};
               
               initd:=&assignNode{ASSIGN, $2, n1}; 
-              iter:=&symbolReferenceNode{REFERENCE, $2, &numNode{NUM,0}}; 
+              iter:=&symbolReferenceNode{REFERENCE, $2, &numNode{NUM,0}, nil}; 
               cmp:=&comparatorNode{COMPARATOR, "<", iter, $4}
               incr=&arithNode{ARITHMETIC, "+", iter, &numNode{NUM, 1}}
               incrAssign=&assignNode{ASSIGN, iter,incr}
@@ -195,7 +195,7 @@ OPEN_STMT:    TOK_IF TOK_LBLOCK EXPR TOK_RBLOCK TOK_THEN st2 TOK_FI {$$=&ifNode{
                var cond *comparatorNode; var incr *arithNode; var iter *symbolReferenceNode;
                var incrAssign *assignNode;
               
-              iter = &symbolReferenceNode{NUM, $2,&numNode{NUM,0}}
+              iter = &symbolReferenceNode{NUM, $2,&numNode{NUM,0}, nil}
 
               if $5 < $8 {
               cond=&comparatorNode{COMPARATOR, "<", iter, n2}
@@ -216,15 +216,15 @@ OPEN_STMT:    TOK_IF TOK_LBLOCK EXPR TOK_RBLOCK TOK_THEN st2 TOK_FI {$$=&ifNode{
               arrRes:= arrNd.execute()
               qRes :=&assignNode{ASSIGN, "_internalRes", arrRes}
               varIter:=&assignNode{ASSIGN, $2, 
-                     &symbolReferenceNode{REFERENCE, "_internalRes", &numNode{NUM,0}}}
+                     &symbolReferenceNode{REFERENCE, "_internalRes", &numNode{NUM,0}, nil}}
               init:=&ast{ASSIGN, []node{qRes, varIter}}
 
 
-              offset := &symbolReferenceNode{REFERENCE, "_internalIdx", &numNode{NUM,0}}
+              offset := &symbolReferenceNode{REFERENCE, "_internalIdx", &numNode{NUM,0},nil}
               varIterAssign:=&assignNode{ASSIGN, 
-              &symbolReferenceNode{REFERENCE, $2,&numNode{NUM,0}}, 
+              &symbolReferenceNode{REFERENCE, $2,&numNode{NUM,0},nil}, 
               &symbolReferenceNode{REFERENCE, "_internalRes", 
-              offset}}
+              offset, nil}}
 
               incr:=&ast{ASSIGN, []node{varIterAssign}}
               body:=&ast{BLOCK, []node{incr,$9}}
@@ -273,11 +273,11 @@ unary: TOK_NOT unary {$$=&boolOpNode{BOOLOP, "!", $2}}
 
 factor: TOK_LPAREN EXPR TOK_RPAREN {$$=$2}
        |TOK_NUM {$$=&numNode{NUM, $1}}
-       |TOK_DEREF TOK_WORD TOK_LBLOCK TOK_ATTR TOK_RBLOCK {$$=&symbolReferenceNode{REFERENCE, $2, &strNode{STR,$4}}}
-       |TOK_DEREF TOK_WORD TOK_LBLOCK TOK_WORD TOK_RBLOCK {$$=&symbolReferenceNode{REFERENCE, $2, &strNode{STR,$4}}}
-       |TOK_DEREF TOK_WORD {$$=&symbolReferenceNode{REFERENCE, $2, &numNode{NUM,0}}}
-       |TOK_DEREF TOK_WORD TOK_LBLOCK TOK_NUM TOK_RBLOCK {$$=&symbolReferenceNode{REFERENCE, $2, &numNode{NUM,$4}}}
-       |TOK_WORD {$$=&symbolReferenceNode{REFERENCE, $1,&numNode{NUM,0}}}
+       |TOK_DEREF TOK_WORD TOK_LBLOCK TOK_ATTR TOK_RBLOCK {$$=&symbolReferenceNode{REFERENCE, $2, &strNode{STR,$4}, nil}}
+       |TOK_DEREF TOK_WORD TOK_LBLOCK TOK_WORD TOK_RBLOCK {$$=&symbolReferenceNode{REFERENCE, $2, &strNode{STR,$4}, nil}}
+       |TOK_DEREF TOK_WORD {$$=&symbolReferenceNode{REFERENCE, $2, &numNode{NUM,0}, nil}}
+       |TOK_DEREF TOK_WORD TOK_LBLOCK TOK_NUM TOK_RBLOCK {$$=&symbolReferenceNode{REFERENCE, $2, &numNode{NUM,$4}, nil}}
+       |TOK_WORD {$$=&symbolReferenceNode{REFERENCE, $1,&numNode{NUM,0}, nil}}
        |TOK_QUOT STRARG TOK_QUOT {$$=&strNode{STR, $2}}
        |TOK_BOOL {var x bool;if $1=="false"{x = false}else{x=true};$$=&boolNode{BOOL, x}}
        ;
@@ -423,13 +423,14 @@ OCDOT:      TOK_DOT TOK_VAR TOK_COL TOK_WORD TOK_EQUAL WORDORNUM {$$=&assignNode
             |TOK_DOT TOK_VAR TOK_COL TOK_WORD TOK_EQUAL Q {$$=&assignNode{ASSIGN, $4, $6}}
             |TOK_DOT TOK_VAR TOK_COL TOK_WORD TOK_EQUAL K {$$=&assignNode{ASSIGN, $4, $6}}
             |TOK_DOT TOK_VAR TOK_COL TOK_WORD TOK_EQUAL OCLISYNTX {$$=&assignNode{ASSIGN, $4, $6}}
-            |TOK_DEREF TOK_WORD {$$=&symbolReferenceNode{REFERENCE, $2, &numNode{NUM,0}}}
+            |TOK_DEREF TOK_WORD {$$=&symbolReferenceNode{REFERENCE, $2, &numNode{NUM,0}, nil}}
             |TOK_DEREF TOK_WORD TOK_LBLOCK TOK_ATTR TOK_RBLOCK TOK_EQUAL EXPR 
-            {y:=&symbolReferenceNode{REFERENCE, $2, &strNode{STR, $4}}; x:=&assignNode{ASSIGN, y, $7};mp:=&symbolReferenceNode{REFERENCE, $2, &numNode{NUM, -1}}; q:=getNodeFromMapInf(mp.execute().(map[string]interface{})) ;z:=&commonNode{COMMON,cmd.UpdateObj, "UpdateObj", []interface{}{q.Path, retMapInf($4,($7).execute() ) }};$$=&ast{ASSIGN, []node{x, z}}}
-            |TOK_DEREF TOK_WORD TOK_LBLOCK TOK_ATTR TOK_RBLOCK {$$=&symbolReferenceNode{REFERENCE, $2, &strNode{STR, $4}}}
-            |TOK_DEREF TOK_WORD TOK_LBLOCK TOK_NUM TOK_RBLOCK {$$=&symbolReferenceNode{REFERENCE, $2, &numNode{NUM,$4}}}
-            |TOK_DEREF TOK_WORD TOK_LBLOCK TOK_NUM TOK_RBLOCK TOK_EQUAL EXPR {v:=&symbolReferenceNode{REFERENCE, $2, &numNode{NUM,$4}}; $$=&assignNode{ASSIGN, v, $7} }
-            |TOK_DEREF TOK_WORD TOK_EQUAL EXPR {n:=&symbolReferenceNode{REFERENCE, $2, &numNode{NUM,0}};$$=&assignNode{ASSIGN,n,$4 }}
+            {y:=&symbolReferenceNode{REFERENCE, $2, &strNode{STR, $4}, nil}; x:=&assignNode{ASSIGN, y, $7};mp:=&symbolReferenceNode{REFERENCE, $2, &numNode{NUM, -1},nil}; q:=getNodeFromMapInf(mp.execute().(map[string]interface{})) ;z:=&commonNode{COMMON,cmd.UpdateObj, "UpdateObj", []interface{}{q.Path, retMapInf($4,($7).execute() ) }};$$=&ast{ASSIGN, []node{x, z}}}
+            |TOK_DEREF TOK_WORD TOK_LBLOCK TOK_ATTR TOK_RBLOCK {$$=&symbolReferenceNode{REFERENCE, $2, &strNode{STR, $4}, nil}}
+            |TOK_DEREF TOK_WORD TOK_LBLOCK TOK_NUM TOK_RBLOCK {$$=&symbolReferenceNode{REFERENCE, $2, &numNode{NUM,$4}, nil}}
+            |TOK_DEREF TOK_WORD TOK_LBLOCK TOK_NUM TOK_RBLOCK TOK_EQUAL EXPR {v:=&symbolReferenceNode{REFERENCE, $2, &numNode{NUM,$4}, nil}; $$=&assignNode{ASSIGN, v, $7} }
+            |TOK_DEREF TOK_WORD TOK_LBLOCK TOK_NUM TOK_RBLOCK TOK_LBLOCK TOK_ATTR TOK_RBLOCK {$$=&symbolReferenceNode{REFERENCE, $2, &numNode{NUM,$4}, &strNode{STR, $7}}}
+            |TOK_DEREF TOK_WORD TOK_EQUAL EXPR {n:=&symbolReferenceNode{REFERENCE, $2, &numNode{NUM,0}, nil};$$=&assignNode{ASSIGN,n,$4 }}
 ;
 
 OCSEL:      TOK_SELECT {$$=&commonNode{COMMON, cmd.ShowClipBoard, "select", nil};}
