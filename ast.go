@@ -289,9 +289,13 @@ func (a *arithNode) execute() interface{} {
 		switch v {
 		case "+":
 			lv, lok := (a.left.(node).execute()).(int)
-			println("Left:", lv)
+			if cmd.State.DebugLvl >= 3 {
+				println("Left:", lv)
+			}
 			rv, rok := (a.right.(node).execute()).(int)
-			println("Right: ", rv)
+			if cmd.State.DebugLvl >= 3 {
+				println("Right: ", rv)
+			}
 			if lok && rok {
 				//println("Adding", lv, rv)
 				return lv + rv
@@ -435,19 +439,29 @@ func (s *symbolReferenceNode) execute() interface{} {
 				switch val.(type) {
 				case string:
 					x := val.(string)
-					println("So You want the value: ", x)
+					if cmd.State.DebugLvl >= 3 {
+						println("So You want the value: ", x)
+					}
 				case int:
 					x := val.(int)
-					println("So You want the value: ", x)
+					if cmd.State.DebugLvl >= 3 {
+						println("So You want the value: ", x)
+					}
 				case bool:
 					x := val.(bool)
-					println("So You want the value: ", x)
+					if cmd.State.DebugLvl >= 3 {
+						println("So You want the value: ", x)
+					}
 				case float64, float32:
 					x := dCatchPtr.(float64)
-					println("So You want the value: ", x)
+					if cmd.State.DebugLvl >= 3 {
+						println("So You want the value: ", x)
+					}
 				case []map[int]interface{}:
 					x := val.([]map[int]interface{})
-					println("Referring to Array")
+					if cmd.State.DebugLvl >= 3 {
+						println("Referring to Array")
+					}
 					i := s.offset.(node).execute().(int)
 					if i >= len(x) {
 						println("Index out of range error!")
@@ -463,13 +477,21 @@ func (s *symbolReferenceNode) execute() interface{} {
 						q := ((x[i][0]).(node).execute())
 						switch q.(type) {
 						case bool:
-							println("So you want the value: ", q.(bool))
+							if cmd.State.DebugLvl >= 3 {
+								println("So you want the value: ", q.(bool))
+							}
 						case int:
-							println("So you want the value: ", q.(int))
+							if cmd.State.DebugLvl >= 3 {
+								println("So you want the value: ", q.(int))
+							}
 						case float64:
-							println("So you want the value: ", q.(float64))
+							if cmd.State.DebugLvl >= 3 {
+								println("So you want the value: ", q.(float64))
+							}
 						case string:
-							println("So you want the value: ", q.(string))
+							if cmd.State.DebugLvl >= 3 {
+								println("So you want the value: ", q.(string))
+							}
 						}
 
 						val = q
@@ -573,7 +595,9 @@ func (a *assignNode) execute() interface{} {
 				mp[locIdx.(string)] = v //Assign val into map[str]inf{} (node) type
 			case int:
 				if locIdx.(int) > 0 {
-					println("I think should assign here")
+					if cmd.State.DebugLvl >= 3 {
+						println("I think should assign here")
+					}
 
 				}
 				//println("I think I should do nothing here")
@@ -583,20 +607,21 @@ func (a *assignNode) execute() interface{} {
 		} else {
 			dynamicSymbolTable[idx] = v //Assign val into DStable
 		}
-
-		switch v.(type) {
-		case string:
-			x := v.(string)
-			println("You want to assign", id, "with value of", x)
-		case int:
-			x := v.(int)
-			println("You want to assign", id, "with value of", x)
-		case bool:
-			x := v.(bool)
-			println("You want to assign", id, "with value of", x)
-		case float64, float32:
-			x := v.(float64)
-			println("You want to assign", id, "with value of", x)
+		if cmd.State.DebugLvl >= 3 {
+			switch v.(type) {
+			case string:
+				x := v.(string)
+				println("You want to assign", id, "with value of", x)
+			case int:
+				x := v.(int)
+				println("You want to assign", id, "with value of", x)
+			case bool:
+				x := v.(bool)
+				println("You want to assign", id, "with value of", x)
+			case float64, float32:
+				x := v.(float64)
+				println("You want to assign", id, "with value of", x)
+			}
 		}
 	}
 

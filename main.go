@@ -8,6 +8,7 @@ package main
 import (
 	"bufio"
 	c "cli/controllers"
+	"flag"
 	"os"
 	"strings"
 
@@ -18,13 +19,13 @@ var rlPtr *readline.Instance
 
 func InterpretLine(str *string) {
 	lex := NewLexer(strings.NewReader(*str))
-	e := yyParse(lex)
+	yyParse(lex)
 	if root != nil {
 		root.execute()
 		root = nil
 	}
 
-	println("\nReturn Code: ", e)
+	//println("\nReturn Code: ", e)
 	return
 }
 
@@ -89,6 +90,12 @@ func loadFile() {
 }
 
 func main() {
+	var verboseLevel int
+
+	flag.IntVar(&verboseLevel, "v", 0,
+		"Indicates level of debugging messages. 0 being the least, 4 is max")
+
+	flag.Parse()
 
 	c.InitLogs()
 	user, _ := c.Login()
@@ -216,7 +223,7 @@ func main() {
 	defer rl.Close()
 	rlPtr = rl
 	println("Caching data... please wait")
-	c.InitState()
+	c.InitState(verboseLevel)
 	for {
 		if c.State.ScriptCalled == true {
 			//Load the path and

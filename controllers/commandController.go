@@ -12,11 +12,6 @@ import (
 	"strings"
 )
 
-func Execute() {
-	println("Congratulations, nobody cares")
-	return
-}
-
 func PWD() string {
 	println(State.CurrPath)
 	return State.CurrPath
@@ -380,7 +375,9 @@ func CD(x string) string {
 			exist, pth, _ = CheckPath(&State.TreeHierarchy, StrToStack(x), New())
 		}
 		if exist == true {
-			println("THE PATH: ", pth)
+			if State.DebugLvl >= 1 {
+				println("THE PATH: ", pth)
+			}
 			State.PrevPath = State.CurrPath
 			State.CurrPath = pth
 		} else {

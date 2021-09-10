@@ -1644,7 +1644,9 @@ cmd.WarningLogger.Println("Unknown Command")			/*yylex.Error(msg)*/
 		}
 	case 51:
 		{
-			println("@State start")
+			if cmd.State.DebugLvl >= 3 {
+				println("@State start")
+			}
 		}
 	case 55:
 		{
@@ -1665,7 +1667,9 @@ cmd.WarningLogger.Println("Unknown Command")			/*yylex.Error(msg)*/
 		}
 	case 59:
 		{
-			println("@State NT_DEL")
+			if cmd.State.DebugLvl >= 3 {
+				println("@State NT_DEL")
+			}
 			yyVAL.node = &commonNode{COMMON, cmd.DeleteObj, "DeleteObj", []interface{}{yyS[yypt-0].s}}
 		}
 	case 68:
@@ -1719,7 +1723,9 @@ cmd.WarningLogger.Println("Unknown Command")			/*yylex.Error(msg)*/
 	case 75:
 		{
 			yyVAL.s = string(yyS[yypt-3].s + "=" + yyS[yypt-1].s + "=" + yyS[yypt-0].s)
-			println("So we got: ", yyVAL.s)
+			if cmd.State.DebugLvl >= 3 {
+				println("So we got: ", yyVAL.s)
+			}
 		}
 	case 76:
 		{
@@ -1965,7 +1971,9 @@ cmd.WarningLogger.Println("Unknown Command")			/*yylex.Error(msg)*/
 		{
 			val := yyS[yypt-2].s + "=" + yyS[yypt-0].s
 			yyVAL.node = &commonNode{COMMON, cmd.UpdateObj, "UpdateObj", []interface{}{replaceOCLICurrPath(yyS[yypt-4].s), resMap(&val)}}
-			println("Attribute Acquired")
+			if cmd.State.DebugLvl >= 3 {
+				println("Attribute Acquired")
+			}
 		}
 	case 138:
 		{

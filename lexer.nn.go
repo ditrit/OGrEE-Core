@@ -1,6 +1,7 @@
 package main
 
 import (
+	cmd "cli/controllers"
 	"os"
 	"strconv"
 )
@@ -19920,432 +19921,432 @@ OUTER0:
 			}
 		case 1:
 			{
-				println("We got TOK_CREATE")
+				printToks("TOK_CREATE")
 				return TOK_CREATE
 			}
 		case 2:
 			{
-				println("We got TOK_GET")
+				printToks("TOK_GET")
 				return TOK_GET
 			}
 		case 3:
 			{
-				println("We got TOK_UPDATE")
+				printToks("TOK_UPDATE")
 				return TOK_UPDATE
 			}
 		case 4:
 			{
-				println("We got TOK_DELETE")
+				printToks("TOK_DELETE")
 				return TOK_DELETE
 			}
 		case 5:
 			{
-				println("We got TOK_SEARCH")
+				printToks("TOK_SEARCH")
 				return TOK_SEARCH
 			}
 		case 6:
 			{
-				println("We got TOK_PLUS")
+				printToks("TOK_PLUS")
 				lval.s = yylex.Text()
 				return TOK_PLUS
 			}
 		case 7:
 			{
-				println("We got TOK_OCDEL")
+				printToks("TOK_OCDEL")
 				lval.s = yylex.Text()
 				return TOK_OCDEL
 			}
 		case 8:
 			{
-				println("We got TOK_COL")
+				printToks("TOK_COL")
 				return TOK_COL
 			}
 		case 9:
 			{
-				println("We got TOK_ATTRSPEC")
+				printToks("TOK_ATTRSPEC")
 				return TOK_ATTRSPEC
 			}
 		case 10:
 			{
-				println("We got TOK_DEREF")
+				printToks("TOK_DEREF")
 				return TOK_DEREF
 			}
 		case 11:
 			{
-				println("We got TOK_SEMICOL")
+				printToks("TOK_SEMICOL")
 				return TOK_SEMICOL
 			}
 		case 12:
 			{
-				println("We got TOK_LBLOCK")
+				printToks("TOK_LBLOCK")
 				return TOK_LBLOCK
 			}
 		case 13:
 			{
-				println("We got TOK_RBLOCK")
+				printToks("TOK_RBLOCK")
 				return TOK_RBLOCK
 			}
 		case 14:
 			{
-				println("We got TOK_LPAREN")
+				printToks("TOK_LPAREN")
 				return TOK_LPAREN
 			}
 		case 15:
 			{
-				println("We got TOK_RPAREN")
+				printToks("TOK_RPAREN")
 				return TOK_RPAREN
 			}
 		case 16:
 			{
-				println("We got TOK_OR")
+				printToks("TOK_OR")
 				return TOK_OR
 			}
 		case 17:
 			{
-				println("We got TOK_AND")
+				printToks("TOK_AND")
 				return TOK_AND
 			}
 		case 18:
 			{
-				println("We got TOK_NOT")
+				printToks("TOK_NOT")
 				return TOK_NOT
 			}
 		case 19:
 			{
-				println("We got TOK_MULT")
+				printToks("TOK_MULT")
 				return TOK_MULT
 			}
 		case 20:
 			{
-				println("We got TOK_GREATER")
+				printToks("TOK_GREATER")
 				return TOK_GREATER
 			}
 		case 21:
 			{
-				println("We got TOK_LESS")
+				printToks("TOK_LESS")
 				return TOK_LESS
 			}
 		case 22:
 			{
-				println("We got TOK_BOOL")
+				printToks("TOK_BOOL")
 				lval.s = yylex.Text()
 				return TOK_BOOL
 			}
 		case 23:
 			{
-				println("We got TOK_IF")
+				printToks("TOK_IF")
 				return TOK_IF
 			}
 		case 24:
 			{
-				println("We got TOK_FOR")
+				printToks("TOK_FOR")
 				return TOK_FOR
 			}
 		case 25:
 			{
-				println("We got TOK_IN")
+				printToks("TOK_IN")
 				return TOK_IN
 			}
 		case 26:
 			{
-				println("We got TOK_WHILE")
+				printToks("TOK_WHILE")
 				return TOK_WHILE
 			}
 		case 27:
 			{
-				println("We got TOK_ELSE")
+				printToks("TOK_ELSE")
 				return TOK_ELSE
 			}
 		case 28:
 			{
-				println("We got TOK_THEN")
+				printToks("TOK_THEN")
 				return TOK_THEN
 			}
 		case 29:
 			{
-				println("We got TOK_FI")
+				printToks("TOK_FI")
 				return TOK_FI
 			}
 		case 30:
 			{
-				println("We got TOK_ELIF")
+				printToks("TOK_ELIF")
 				return TOK_ELIF
 			}
 		case 31:
 			{
-				println("We got TOK_DONE")
+				printToks("TOK_DONE")
 				return TOK_DONE
 			}
 		case 32:
 			{
-				println("We got TOK_DO")
+				printToks("TOK_DO")
 				return TOK_DO
 			}
 		case 33:
 			{
-				println("We got TOK_PRNT")
+				printToks("TOK_PRNT")
 				return TOK_PRNT
 			}
 		case 34:
 			{
-				println("We got TOK_UNSET")
+				printToks("TOK_UNSET")
 				return TOK_UNSET
 			}
 		case 35:
 			{
-				println("We got TOK_QUOT")
+				printToks("TOK_QUOT")
 				return TOK_QUOT
 			}
 		case 36:
 			{
-				println("We got TOK_OCTENANT")
+				printToks("TOK_OCTENANT")
 				return TOK_OCTENANT
 			}
 		case 37:
 			{
-				println("We got TOK_OCSITE")
+				printToks("TOK_OCSITE")
 				return TOK_OCSITE
 			}
 		case 38:
 			{
-				println("We got TOK_OCBLDG")
+				printToks("TOK_OCBLDG")
 				return TOK_OCBLDG
 			}
 		case 39:
 			{
-				println("We got TOK_OCROOM")
+				printToks("TOK_OCROOM")
 				return TOK_OCROOM
 			}
 		case 40:
 			{
-				println("We got TOK_OCRACK")
+				printToks("TOK_OCRACK")
 				return TOK_OCRACK
 			}
 		case 41:
 			{
-				println("We got TOK_OCDEV")
+				printToks("TOK_OCDEV")
 				return TOK_OCDEV
 			}
 		case 42:
 			{
-				println("We got TOK_OCSDEV")
+				printToks("TOK_OCSDEV")
 				return TOK_OCSDEV
 			}
 		case 43:
 			{
-				println("We got TOK_OCSDEV1")
+				printToks("TOK_OCSDEV1")
 				return TOK_OCSDEV1
 			}
 		case 44:
 			{
-				println("We got TOK_SELECT")
+				printToks("TOK_SELECT")
 				return TOK_SELECT
 			}
 		case 45:
 			{
-				println("We got TOK_CMDS")
+				printToks("TOK_CMDS")
 				return TOK_CMDS
 			}
 		case 46:
 			{
-				println("We got TOK_TEMPLATE")
+				printToks("TOK_TEMPLATE")
 				return TOK_TEMPLATE
 			}
 		case 47:
 			{
-				println("We got TOK_VAR")
+				printToks("TOK_VAR")
 				return TOK_VAR
 			}
 		case 48:
 			{
-				println("We got TOK_LBRAC")
+				printToks("TOK_LBRAC")
 				return TOK_LBRAC
 			}
 		case 49:
 			{
-				println("We got TOK_RBRAC")
+				printToks("TOK_RBRAC")
 				return TOK_RBRAC
 			}
 		case 50:
 			{
-				println("We got TOK_COMMA")
+				printToks("TOK_COMMA")
 				return TOK_COMMA
 			}
 		case 51:
 			{
-				println("We got TOK_DOT")
+				printToks("TOK_DOT")
 				return TOK_DOT
 			}
 		case 52:
 			{
-				println("We got TOK_TENANT")
+				printToks("TOK_TENANT")
 				lval.s = yylex.Text()
 				return TOK_TENANT
 			}
 		case 53:
 			{
-				println("We got TOK_SITE")
+				printToks("TOK_SITE")
 				lval.s = yylex.Text()
 				return TOK_SITE
 			}
 		case 54:
 			{
-				println("We got TOK_BLDG")
+				printToks("TOK_BLDG")
 				lval.s = yylex.Text()
 				return TOK_BLDG
 			}
 		case 55:
 			{
-				println("We got TOK_ROOM")
+				printToks("TOK_ROOM")
 				lval.s = yylex.Text()
 				return TOK_ROOM
 			}
 		case 56:
 			{
-				println("We got TOK_RACK")
+				printToks("TOK_RACK")
 				lval.s = yylex.Text()
 				return TOK_RACK
 			}
 		case 57:
 			{
-				println("We got TOK_DEVICE")
+				printToks("TOK_DEVICE")
 				lval.s = yylex.Text()
 				return TOK_DEVICE
 			}
 		case 58:
 			{
-				println("We got TOK_SUBDEVICE")
+				printToks("TOK_SUBDEVICE")
 				lval.s = yylex.Text()
 				return TOK_SUBDEVICE
 			}
 		case 59:
 			{
-				println("We got TOK_SUBDEVICE1")
+				printToks("TOK_SUBDEVICE1")
 				lval.s = yylex.Text()
 				return TOK_SUBDEVICE1
 			}
 		case 60:
 			{
-				println("We got TOK_ATTR")
+				printToks("TOK_ATTR")
 				lval.s = yylex.Text()
 				return TOK_ATTR
 			}
 		case 61:
 			{
-				println("We got TOK_NUM")
+				printToks("TOK_NUM")
 				lval.n = atoi(yylex.Text())
 				return TOK_NUM
 			}
 		case 62:
 			{
-				println("We got TOK_LSTEN")
+				printToks("TOK_LSTEN")
 				return TOK_LSTEN
 			}
 		case 63:
 			{
-				println("We got TOK_LSSITE")
+				printToks("TOK_LSSITE")
 				return TOK_LSSITE
 			}
 		case 64:
 			{
-				println("We got TOK_LSBLDG")
+				printToks("TOK_LSBLDG")
 				return TOK_LSBLDG
 			}
 		case 65:
 			{
-				println("We got TOK_LSROOM")
+				printToks("TOK_LSROOM")
 				return TOK_LSROOM
 			}
 		case 66:
 			{
-				println("We got TOK_LSRACK")
+				printToks("TOK_LSRACK")
 				return TOK_LSRACK
 			}
 		case 67:
 			{
-				println("We got TOK_LSDEV")
+				printToks("TOK_LSDEV")
 				return TOK_LSDEV
 			}
 		case 68:
 			{
-				println("We got TOK_LSSUBDEV")
+				printToks("TOK_LSSUBDEV")
 				return TOK_LSSUBDEV
 			}
 		case 69:
 			{
-				println("We got TOK_LSSUBDEV1")
+				printToks("TOK_LSSUBDEV1")
 				return TOK_LSSUBDEV1
 			}
 		case 70:
 			{
-				println("We got TOK_TREE")
+				printToks("TOK_TREE")
 				return TOK_TREE
 			}
 		case 71:
 			{
-				println("We got TOK_LSOG")
+				printToks("TOK_LSOG")
 				return TOK_LSOG
 			}
 		case 72:
 			{
-				println("We got TOK_CD")
+				printToks("TOK_CD")
 				return TOK_CD
 			}
 		case 73:
 			{
-				println("We got TOK_PWD")
+				printToks("TOK_PWD")
 				return TOK_PWD
 			}
 		case 74:
 			{
-				println("We got TOK_CLR")
+				printToks("TOK_CLR")
 				return TOK_CLR
 			}
 		case 75:
 			{
-				println("We got TOK_GREP")
+				printToks("TOK_GREP")
 				return TOK_GREP
 			}
 		case 76:
 			{
-				println("We got TOK_LS")
+				printToks("TOK_LS")
 				return TOK_LS
 			}
 		case 77:
 			{
-				println("We got TOK_EXIT")
+				printToks("TOK_EXIT")
 				return TOK_EXIT
 			}
 		case 78:
 			{
-				println("We got TOK_LEN")
+				printToks("TOK_LEN")
 				return TOK_LEN
 			}
 		case 79:
 			{
-				println("We got TOK_CMDFLAG")
+				printToks("TOK_CMDFLAG")
 				return TOK_CMDFLAG
 			}
 		case 80:
 			{
-				println("We got TOK_EQUAL")
+				printToks("TOK_EQUAL")
 				return TOK_EQUAL
 			}
 		case 81:
 			{
-				println("We got TOK_SLASH")
+				printToks("TOK_SLASH")
 				return TOK_SLASH
 			}
 		case 82:
 			{
-				println("We got TOK_DOC")
+				printToks("TOK_DOC")
 				return TOK_DOC
 			}
 		case 83:
 			{
-				println("We got TOK_WORD")
+				printToks("TOK_WORD")
 				lval.s = yylex.Text()
-				println("LVAL: ", lval.s)
+				printCapturedWord(lval.s)
 				return TOK_WORD
 			}
 		default:
@@ -20367,6 +20368,18 @@ func atoi(x string) int {
 		return 0
 	}
 	return v
+}
+
+func printToks(tok string) {
+	if cmd.State.DebugLvl >= 2 {
+		println("We got ", tok)
+	}
+}
+
+func printCapturedWord(x string) {
+	if cmd.State.DebugLvl >= 2 {
+		println("LVAL: ", x)
+	}
 }
 
 func lexBegin() {

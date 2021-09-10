@@ -34,6 +34,7 @@ type ShellState struct {
 	TreeHierarchy *Node
 	ScriptCalled  bool
 	ScriptPath    string
+	DebugLvl      int
 }
 
 type Node struct {
@@ -47,7 +48,8 @@ type Node struct {
 
 //Populate hierarchy into B Tree like
 //structure
-func InitState() {
+func InitState(debugLvl int) {
+	State.DebugLvl = debugLvl
 	State.ClipBoard = nil
 	State.TreeHierarchy = &(Node{})
 	(*(State.TreeHierarchy)).Entity = -1
@@ -210,7 +212,9 @@ func DispAtLevel(root **Node, x Stack) []string {
 	} else {
 		var items = make([]string, 0)
 		var nm string
-		println("This is what we got:")
+		if State.DebugLvl >= 2 {
+			println("This is what we got:")
+		}
 		for i := (*root).Nodes.Front(); i != nil; i = i.Next() {
 			nm = string(i.Value.(*Node).Name)
 			println(nm)
