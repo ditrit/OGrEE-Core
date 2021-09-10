@@ -7,11 +7,13 @@ NEX=$(GOPATH)/bin/nex
 DATE=$$(date +%Y.%m.%d//%T)
 GITHASH=$$(git rev-parse HEAD)
 GITBRANCH=$$(git branch --show-current)
+GITHASHDATE=$$(git show -s --format=%ci HEAD | sed 's/ /\//g')
 
 main: interpreter main.go ast.go lexer.nn.go y.go 
 	go build \-ldflags="-X  cli/controllers.BuildHash=$(GITHASH) \
 	-X cli/controllers.BuildTree=$(GITBRANCH) \
-	-X cli/controllers.BuildTime=$(DATE)" main.go ast.go lexer.nn.go y.go 
+	-X cli/controllers.BuildTime=$(DATE) \
+	-X cli/controllers.GitCommitDate=$(GITHASHDATE)" main.go ast.go lexer.nn.go y.go 
 
 interpreter: parser lexer buildTimeScript
 

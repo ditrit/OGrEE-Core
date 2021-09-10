@@ -300,6 +300,7 @@ func LSOG() {
 	fmt.Println("BUILD DATE:", BuildTime)
 	fmt.Println("BUILD TREE:", BuildTree)
 	fmt.Println("BUILD HASH:", BuildHash)
+	fmt.Println("COMMIT DATE: ", GitCommitDate)
 	fmt.Println("LOG PATH:", "./log.txt")
 	fmt.Println("HISTORY FILE PATH:", ".resources/.history")
 }

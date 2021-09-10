@@ -24,6 +24,7 @@ const (
 var BuildTime string
 var BuildHash string
 var BuildTree string
+var GitCommitDate string
 var State ShellState
 
 type ShellState struct {
