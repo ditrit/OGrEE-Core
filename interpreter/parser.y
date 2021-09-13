@@ -372,7 +372,21 @@ BASH:  TOK_CLR {$$=&commonNode{COMMON, nil, "CLR", nil}}
        | TOK_DOC TOK_DELETE {$$=&commonNode{COMMON, cmd.Help, "Help", []interface{}{"delete"}}}
        | TOK_DOC TOK_WORD {$$=&commonNode{COMMON, cmd.Help, "Help", []interface{}{$2}}}
        | TOK_DOC TOK_TREE {$$=&commonNode{COMMON, cmd.Help, "Help", []interface{}{"tree"}}}
+       | TOK_DOC TOK_IF {$$=&commonNode{COMMON, cmd.Help, "Help", []interface{}{"if"}}}
+       | TOK_DOC TOK_WHILE {$$=&commonNode{COMMON, cmd.Help, "Help", []interface{}{"while"}}}
+       | TOK_DOC TOK_FOR {$$=&commonNode{COMMON, cmd.Help, "Help", []interface{}{"for"}}}
+       | TOK_DOC TOK_UNSET {$$=&commonNode{COMMON, cmd.Help, "Help", []interface{}{"unset"}}}
+       | TOK_DOC TOK_SELECT {$$=&commonNode{COMMON, cmd.Help, "Help", []interface{}{"select"}}}
+       | TOK_DOC TOK_CMDS {$$=&commonNode{COMMON, cmd.Help, "Help", []interface{}{"cmds"}}}
        | TOK_DOC TOK_LSOG {$$=&commonNode{COMMON, cmd.Help, "Help", []interface{}{"lsog"}}}
+       | TOK_DOC TOK_LSTEN {$$=&commonNode{COMMON, cmd.Help, "Help", []interface{}{"lsten"}}}
+       | TOK_DOC TOK_LSSITE {$$=&commonNode{COMMON, cmd.Help, "Help", []interface{}{"lssite"}}} 
+       | TOK_DOC TOK_LSBLDG {$$=&commonNode{COMMON, cmd.Help, "Help", []interface{}{"lsbldg"}}}
+       | TOK_DOC TOK_LSROOM {$$=&commonNode{COMMON, cmd.Help, "Help", []interface{}{"lsroom"}}}
+       | TOK_DOC TOK_LSRACK {$$=&commonNode{COMMON, cmd.Help, "Help", []interface{}{"lsrack"}}}
+       | TOK_DOC TOK_LSDEV {$$=&commonNode{COMMON, cmd.Help, "Help", []interface{}{"lsdev"}}}
+       | TOK_DOC TOK_LSSUBDEV {$$=&commonNode{COMMON, cmd.Help, "Help", []interface{}{"lssubdev"}}}
+       | TOK_DOC TOK_LSSUBDEV1 {$$=&commonNode{COMMON, cmd.Help, "Help", []interface{}{"lssubdev1"}}}
 ;
 
 OCLISYNTX:  TOK_PLUS OCCR {$$=$2}

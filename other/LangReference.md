@@ -150,3 +150,13 @@ Command Substitution
 .var:a=cd
 $a
 ```
+
+Debugging
+------------
+There are 3 levels of debugging messages output. And are specified as program arguments ```-v=x``` where x is in the range 0 -> 3. Any number above 3 is still valid. When 
+```
+-v=1       Normal debugging messages output
+-v=2       Normal + Lexer messages output
+-v=3       Normal + Lexer + Parser messages output
+```
+If program is executed with no arguments then the default level is 0
