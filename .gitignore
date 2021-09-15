@@ -4,5 +4,7 @@ jenkins
 jenkins/*
 main
 ogreedb/
+mongod.log
+mdb/*
 *.txt
 resources/debug.log
