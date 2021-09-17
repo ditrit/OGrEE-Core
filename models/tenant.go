@@ -5,27 +5,29 @@ import (
 	u "p3/utils"
 	"strconv"
 	"strings"
+
+	"go.mongodb.org/mongo-driver/bson"
 )
 
 type Tenant_Attributes struct {
-	ID          int    `json:"-" gorm:"column:id"`
-	Color       string `json:"color" gorm:"column:tenant_color"`
-	MainContact string `json:"mainContact" gorm:"column:main_contact"`
-	MainPhone   string `json:"mainPhone" gorm:"column:main_phone"`
-	MainEmail   string `json:"mainEmail" gorm:"column:main_email"`
+	ID          int    `json:"-" bson:"id"`
+	Color       string `json:"color" bson:"tenant_color"`
+	MainContact string `json:"mainContact" bson:"main_contact"`
+	MainPhone   string `json:"mainPhone" bson:"main_phone"`
+	MainEmail   string `json:"mainEmail" bson:"main_email"`
 }
 
 type Tenant struct {
-	ID              int               `json:"-" gorm:"column:id"`
-	IDJSON          string            `json:"id" gorm:"-"`
-	Name            string            `json:"name" gorm:"column:tenant_name"`
-	Category        string            `json:"category" gorm:"-"`
-	Domain          string            `json:"domain" gorm:"column:tenant_domain"`
-	ParentID        int               `json:"parentId" gorm:"column:tenant_parent_id"`
-	DescriptionJSON []string          `json:"description" gorm:"-"`
-	DescriptionDB   string            `json:"-" gorm:"column:tenant_description"`
-	Attributes      Tenant_Attributes `json:"attributes" gorm:"-"`
-	Sites           []*Site           `json:"sites,omitempty" gorm:"-"`
+	ID              int               `json:"-" bson:"id"`
+	IDJSON          string            `json:"_id" bson:"-"`
+	Name            string            `json:"name" bson:"tenant_name"`
+	Category        string            `json:"category" bson:"-"`
+	Domain          string            `json:"domain" bson:"tenant_domain"`
+	ParentID        int               `json:"parentId" bson:"tenant_parent_id"`
+	DescriptionJSON []string          `json:"description" bson:"-"`
+	DescriptionDB   string            `json:"-" bson:"tenant_description"`
+	Attributes      Tenant_Attributes `json:"attributes" bson:"attributes"`
+	Sites           []*Site           `json:"sites,omitempty" bson:"-"`
 }
 
 func (tenant *Tenant) Validate() (map[string]interface{}, bool) {
@@ -58,7 +60,7 @@ func (tenant *Tenant) Create() (map[string]interface{}, string) {
 	//Otherwise make 2 insert statements
 
 	tenant.DescriptionDB = strings.Join(tenant.DescriptionJSON, "XYZ")
-	if e := GetDB().Create(tenant).Error; e != nil {
+	if _, e := GetDB().Collection("tenant").InsertOne(GetCtx(), tenant); e != nil {
 		return u.Message(false, "Internal error while creating Tenant: "+e.Error()),
 			e.Error()
 	}
@@ -68,12 +70,12 @@ func (tenant *Tenant) Create() (map[string]interface{}, string) {
 	//tenant.ID, _ = strconv.Atoi(tenant.IDJSON)
 	tenant.IDJSON = strconv.Itoa(tenant.ID)
 	println("Tenant id is: ", tenant.ID)
-	tenant.Attributes.ID = tenant.ID
+	/*tenant.Attributes.ID = tenant.ID
 
 	if e := GetDB().Table("tenant_attributes").Create(&tenant.Attributes).Error; e != nil {
 		return u.Message(false, "Internal error while creating Tenant Attrs: "+e.Error()),
 			e.Error()
-	}
+	}*/
 
 	resp := u.Message(true, "success")
 	resp["data"] = tenant
@@ -123,9 +125,7 @@ func (t *Tenant) FormQuery() string {
 func GetTenant(id uint) (*Tenant, string) {
 	tenant := &Tenant{}
 
-	e := GetDB().Table("tenant").Where("id = ?", id).First(tenant).
-		Table("tenant_attributes").Where("id = ?", id).First(&(tenant.Attributes)).
-		Error
+	e := GetDB().Collection("tenant").FindOne(GetCtx(), bson.M{"id": id}).Decode(tenant)
 
 	if e != nil {
 		return nil, e.Error()
@@ -139,14 +139,27 @@ func GetTenant(id uint) (*Tenant, string) {
 
 func GetAllTenants() ([]*Tenant, string) {
 	tenants := make([]*Tenant, 0)
-	attrs := make([]*Tenant_Attributes, 0)
-	err := GetDB().Table("tenant").Find(&tenants).Error
+	//attrs := make([]*Tenant_Attributes, 0)
+	ctx, cancel := u.Connect()
+	c, err := GetDB().Collection("tenant").Find(ctx, bson.D{{}})
 	if err != nil {
 		fmt.Println("There was an error in getting tenants")
 		return nil, err.Error()
 	}
+	defer cancel()
 
-	err = GetDB().Table("tenant_attributes").Find(&attrs).Error
+	for c.Next(ctx) {
+		t := &Tenant{}
+		if e := c.Decode(t); e != nil {
+			fmt.Println("There was an error in getting tenants")
+			return nil, err.Error()
+		}
+		t.Category = "TAKEUSDOWN"
+		tenants = append(tenants, t)
+	}
+	defer c.Close(ctx)
+
+	/*err = GetDB().Collection("tenant_attributes").Find(&attrs).Error
 	if err != nil {
 		fmt.Println("There was an error in getting tenant attrs")
 		return nil, err.Error()
@@ -157,7 +170,7 @@ func GetAllTenants() ([]*Tenant, string) {
 		tenants[i].Attributes = *(attrs[i])
 		tenants[i].DescriptionJSON = strings.Split(tenants[i].DescriptionDB, "XYZ")
 		tenants[i].IDJSON = strconv.Itoa(tenants[i].ID)
-	}
+	}*/
 	return tenants, ""
 }
 
@@ -218,9 +231,9 @@ func GetTenantHierarchyNonStandard(id int) (*Tenant, []*Site,
 //Only update valid fields
 //If any fields are invalid
 //Message will still be successful
-func UpdateTenant(id uint, t *Tenant) (map[string]interface{}, string) {
-	tenant := &Tenant{}
-	err := GetDB().Table("tenant").Where("id = ?", id).First(tenant).
+func UpdateTenant(id uint, t *map[string]interface{}) (map[string]interface{}, string) {
+	/*tenant := &Tenant{}
+	err := GetDB().Collection("tenant").Where("id = ?", id).First(tenant).
 		Table("tenant_attributes").Where("id = ?", id).First(&(tenant.Attributes)).Error
 
 	if err != nil {
@@ -258,24 +271,27 @@ func UpdateTenant(id uint, t *Tenant) (map[string]interface{}, string) {
 		tenant.Attributes.MainPhone = t.Attributes.MainPhone
 	}
 
-	if e := GetDB().Table("tenant").Save(tenant).Table("tenant_attributes").
+	if e := GetDB().Collection("tenant").Save(tenant).Collection("tenant_attributes").
 		Save(&(tenant.Attributes)).Error; e != nil {
 		return u.Message(false, "Failed to update Tenant: "+e.Error()), "internal"
+	}*/
+	e := GetDB().Collection("tenant").FindOneAndUpdate(GetCtx(), bson.M{"_id": id}, bson.M{"$set": *t}).Err()
+	if e != nil {
+		return u.Message(false, "failure: "+e.Error()), e.Error()
 	}
-
 	return u.Message(true, "success"), ""
 }
 
 func DeleteTenant(id uint) map[string]interface{} {
 
 	//This command is a hard delete!
-	e := GetDB().Unscoped().Table("tenant").Delete(Tenant{}, id).RowsAffected
+	c, _ := GetDB().Collection("tenant").DeleteOne(GetCtx(), bson.M{"_id": id})
 
 	//The command below is a soft delete
 	//Meaning that the 'deleted_at' field will be set
 	//the record will remain but unsearchable
 	//e := GetDB().Table("tenants").Delete(Tenant{}, id).Error
-	if e == 0 {
+	if c.DeletedCount == 0 {
 		return u.Message(false, "Tenant was not found")
 	}
 
@@ -285,9 +301,10 @@ func DeleteTenant(id uint) map[string]interface{} {
 func GetTenantByName(name string) (*Tenant, string) {
 	tenant := &Tenant{}
 
-	e := GetDB().Raw(`SELECT * FROM tenant
+	/*e := GetDB().Raw(`SELECT * FROM tenant
 	JOIN tenant_attributes ON tenant.id = tenant_attributes.id
-	WHERE tenant_name = ?;`, name).Find(tenant).Find(&tenant.Attributes).Error
+	WHERE tenant_name = ?;`, name).Find(tenant).Find(&tenant.Attributes).Error*/
+	e := GetDB().Collection("tenant").FindOne(GetCtx(), bson.M{"tenant_name": name}).Decode(tenant)
 
 	if e != nil {
 		return nil, e.Error()
@@ -300,7 +317,7 @@ func GetTenantByName(name string) (*Tenant, string) {
 }
 
 func GetTenantByQuery(q *Tenant) ([]*Tenant, string) {
-	tenants := make([]*Tenant, 0)
+	/*tenants := make([]*Tenant, 0)
 	attrs := make([]*Tenant_Attributes, 0)
 
 	e := GetDB().Raw(q.FormQuery()).Find(&tenants).
@@ -318,7 +335,8 @@ func GetTenantByQuery(q *Tenant) ([]*Tenant, string) {
 		tenants[i].Category = "tenant"
 	}
 
-	return tenants, ""
+	return tenants, ""*/
+	return nil, ""
 }
 
 func GetSitesOfTenant(name string) ([]*Site, string) {

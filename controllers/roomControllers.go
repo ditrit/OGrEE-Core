@@ -400,7 +400,7 @@ var DeleteRoom = func(w http.ResponseWriter, r *http.Request) {
 //Updates work by passing ID in path parameter
 var UpdateRoom = func(w http.ResponseWriter, r *http.Request) {
 
-	room := &models.Room{}
+	room := map[string]interface{}{}
 	id, e := strconv.Atoi(mux.Vars(r)["id"])
 
 	if e != nil {
@@ -409,13 +409,13 @@ var UpdateRoom = func(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err := json.NewDecoder(r.Body).Decode(room)
+	err := json.NewDecoder(r.Body).Decode(&room)
 	if err != nil {
 		u.Respond(w, u.Message(false, "Error while decoding request body"))
 		u.ErrLog("Error while decoding request body", "UPDATE ROOM", "", r)
 	}
 
-	v, e1 := models.UpdateRoom(uint(id), room)
+	v, e1 := models.UpdateRoom(uint(id), &room)
 
 	switch e1 {
 	case "validate":

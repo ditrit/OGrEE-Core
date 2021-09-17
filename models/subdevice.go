@@ -5,41 +5,43 @@ import (
 	u "p3/utils"
 	"strconv"
 	"strings"
+
+	"go.mongodb.org/mongo-driver/bson"
 )
 
 type Subdevice_Attributes struct {
-	ID          int    `json:"-" gorm:"column:id"`
-	PosXY       string `json:"posXY" gorm:"column:subdevice_pos_x_y"`
-	PosXYU      string `json:"posXYUnit" gorm:"column:subdevice_pos_x_y_unit"`
-	PosZ        string `json:"posZ" gorm:"column:subdevice_pos_z"`
-	PosZU       string `json:"posZUnit" gorm:"column:subdevice_pos_z_unit"`
-	Template    string `json:"template" gorm:"column:subdevice_template"`
-	Orientation string `json:"orientation" gorm:"column:subdevice_orientation"`
-	Size        string `json:"size" gorm:"column:subdevice_size"`
-	SizeUnit    string `json:"sizeUnit" gorm:"column:subdevice_size_unit"`
-	SizeU       string `json:"sizeU" gorm:"column:subdevice_sizeu"`
-	Slot        string `json:"slot" gorm:"column:subdevice_slot"`
-	PosU        string `json:"posU" gorm:"column:subdevice_posu"`
-	Height      string `json:"height" gorm:"column:subdevice_height"`
-	HeightU     string `json:"heightUnit" gorm:"column:subdevice_height_unit"`
-	Vendor      string `json:"vendor" gorm:"column:subdevice_vendor"`
-	Type        string `json:"type" gorm:"column:subdevice_type"`
-	Model       string `json:"model" gorm:"column:subdevice_model"`
-	Serial      string `json:"serial" gorm:"column:subdevice_serial"`
+	ID          int    `json:"-" bson:"id"`
+	PosXY       string `json:"posXY" bson:"subdevice_pos_x_y"`
+	PosXYU      string `json:"posXYUnit" bson:"subdevice_pos_x_y_unit"`
+	PosZ        string `json:"posZ" bson:"subdevice_pos_z"`
+	PosZU       string `json:"posZUnit" bson:"subdevice_pos_z_unit"`
+	Template    string `json:"template" bson:"subdevice_template"`
+	Orientation string `json:"orientation" bson:"subdevice_orientation"`
+	Size        string `json:"size" bson:"subdevice_size"`
+	SizeUnit    string `json:"sizeUnit" bson:"subdevice_size_unit"`
+	SizeU       string `json:"sizeU" bson:"subdevice_sizeu"`
+	Slot        string `json:"slot" bson:"subdevice_slot"`
+	PosU        string `json:"posU" bson:"subdevice_posu"`
+	Height      string `json:"height" bson:"subdevice_height"`
+	HeightU     string `json:"heightUnit" bson:"subdevice_height_unit"`
+	Vendor      string `json:"vendor" bson:"subdevice_vendor"`
+	Type        string `json:"type" bson:"subdevice_type"`
+	Model       string `json:"model" bson:"subdevice_model"`
+	Serial      string `json:"serial" bson:"subdevice_serial"`
 }
 
 type Subdevice struct {
-	ID              int                  `json:"-" gorm:"column:id"`
-	IDJSON          string               `json:"id" gorm:"-"`
-	Name            string               `json:"name" gorm:"column:subdevice_name"`
-	ParentID        string               `json:"parentId" gorm:"column:subdevice_parent_id"`
-	Category        string               `json:"category" gorm:"-"`
-	Domain          string               `json:"domain" gorm:"column:subdevice_domain"`
-	DescriptionJSON []string             `json:"description" gorm:"-"`
-	DescriptionDB   string               `json:"-" gorm:"column:subdevice_description"`
+	ID              int                  `json:"-" bson:"id"`
+	IDJSON          string               `json:"id" bson:"-"`
+	Name            string               `json:"name" bson:"subdevice_name"`
+	ParentID        string               `json:"parentId" bson:"subdevice_parent_id"`
+	Category        string               `json:"category" bson:"-"`
+	Domain          string               `json:"domain" bson:"subdevice_domain"`
+	DescriptionJSON []string             `json:"description" bson:"-"`
+	DescriptionDB   string               `json:"-" bson:"subdevice_description"`
 	Attributes      Subdevice_Attributes `json:"attributes"`
 
-	Subdevs1 []*Subdevice1 `json:"subdevices1,omitempty", gorm:"-"`
+	Subdevs1 []*Subdevice1 `json:"subdevices1,omitempty", bson:"-"`
 }
 
 func (subdevice *Subdevice) Validate() (map[string]interface{}, bool) {
@@ -55,9 +57,7 @@ func (subdevice *Subdevice) Validate() (map[string]interface{}, bool) {
 		return u.Message(false, "Domain should be on the payload"), false
 	}
 
-	if GetDB().Table("device").
-		Where("id = ?", subdevice.ParentID).First(&Device{}).Error != nil {
-
+	if GetDB().Collection("device").FindOne(GetCtx(), bson.M{"_id": subdevice.ParentID}).Err() != nil {
 		return u.Message(false, "Domain should be correspond to Device ID"), false
 	}
 
@@ -97,16 +97,16 @@ func (subdevice *Subdevice) Create() (map[string]interface{}, string) {
 
 	subdevice.DescriptionDB = strings.Join(subdevice.DescriptionJSON, "XYZ")
 
-	if e := GetDB().Create(subdevice).Error; e != nil {
+	if _, e := GetDB().Collection("subdevice").InsertOne(GetCtx(), subdevice); e != nil {
 		return u.Message(false, "Internal Error while creating Subdevice: "+e.Error()),
 			"internal"
 	}
 	subdevice.IDJSON = strconv.Itoa(subdevice.ID)
-	subdevice.Attributes.ID = subdevice.ID
+	/*subdevice.Attributes.ID = subdevice.ID
 	if e := GetDB().Create(&(subdevice.Attributes)).Error; e != nil {
 		return u.Message(false, "Internal Error while creating Subdevice Attrs: "+e.Error()),
 			"internal"
-	}
+	}*/
 
 	resp := u.Message(true, "success")
 	resp["data"] = subdevice
@@ -231,8 +231,10 @@ func (d *Subdevice) FormQuery() string {
 //Get the subdevice given the ID
 func GetSubdevice(id uint) (*Subdevice, string) {
 	subdevice := &Subdevice{}
-	err := GetDB().Table("subdevice").Where("id = ?", id).First(subdevice).
-		Table("subdevice_attributes").Where("id = ?", id).First(&(subdevice.Attributes)).Error
+	/*err := GetDB().Collection("subdevice").Where("id = ?", id).First(subdevice).
+	Table("subdevice_attributes").Where("id = ?", id).First(&(subdevice.Attributes)).Error
+	*/
+	err := GetDB().Collection("subdevice").FindOne(GetCtx(), bson.M{"_id": id}).Decode(subdevice)
 	if err != nil {
 		fmt.Println(err)
 		return nil, err.Error()
@@ -246,15 +248,25 @@ func GetSubdevice(id uint) (*Subdevice, string) {
 //Obtain all subdevices of a device
 func GetSubdevicesOfParent(id uint) ([]*Subdevice, string) {
 	subdevices := make([]*Subdevice, 0)
-	err := GetDB().Table("subdevice").Where("subdevice_parent_id = ?", id).Find(&subdevices).Error
+	c, err := GetDB().Collection("subdevice").Find(GetCtx(), bson.M{"subdevice_parent_id": id})
 	if err != nil {
 		fmt.Println(err)
 		return nil, err.Error()
 	}
 
+	for c.Next(GetCtx()) {
+		s := &Subdevice{}
+		e := c.Decode(s)
+		if e != nil {
+			fmt.Println(err)
+			return nil, err.Error()
+		}
+		subdevices = append(subdevices, s)
+	}
+
 	println("The length of subdevice is: ", len(subdevices))
-	for i := range subdevices {
-		e := GetDB().Table("subdevice_attributes").Where("id = ?", subdevices[i].ID).First(&(subdevices[i].Attributes)).Error
+	/*for i := range subdevices {
+		e := GetDB().Collection("subdevice_attributes").Where("id = ?", subdevices[i].ID).First(&(subdevices[i].Attributes)).Error
 
 		if e != nil {
 			fmt.Println(err)
@@ -264,32 +276,41 @@ func GetSubdevicesOfParent(id uint) ([]*Subdevice, string) {
 		subdevices[i].Category = "device"
 		subdevices[i].DescriptionJSON = strings.Split(subdevices[i].DescriptionDB, "XYZ")
 		subdevices[i].IDJSON = strconv.Itoa(subdevices[i].ID)
-	}
+	}*/
 
 	return subdevices, ""
 }
 
 func GetAllSubdevices() ([]*Subdevice, string) {
 	subdevices := make([]*Subdevice, 0)
-	attrs := make([]*Subdevice_Attributes, 0)
-	err := GetDB().Find(&subdevices).Find(&attrs).Error
+	//attrs := make([]*Subdevice_Attributes, 0)
+	c, err := GetDB().Collection("subdevice").Find(GetCtx(), bson.D{{}})
 	if err != nil {
 		fmt.Println(err)
 		return nil, err.Error()
 	}
 
-	for i := range subdevices {
+	for c.Next(GetCtx()) {
+		s := &Subdevice{}
+		if e := c.Decode(s); e != nil {
+			fmt.Println(err)
+			return nil, err.Error()
+		}
+		subdevices = append(subdevices, s)
+	}
+
+	/*for i := range subdevices {
 		subdevices[i].Category = "device"
 		subdevices[i].Attributes = *(attrs[i])
 		subdevices[i].DescriptionJSON = strings.Split(subdevices[i].DescriptionDB, "XYZ")
 		subdevices[i].IDJSON = strconv.Itoa(subdevices[i].ID)
-	}
+	}*/
 
 	return subdevices, ""
 }
 
 func GetSubdeviceByQuery(subdevice *Subdevice) ([]*Subdevice, string) {
-	subdevices := make([]*Subdevice, 0)
+	/*subdevices := make([]*Subdevice, 0)
 	attrs := make([]*Subdevice_Attributes, 0)
 
 	e := GetDB().Raw(subdevice.FormQuery()).Find(&subdevices).
@@ -307,13 +328,14 @@ func GetSubdeviceByQuery(subdevice *Subdevice) ([]*Subdevice, string) {
 		subdevices[i].Category = "device"
 	}
 
-	return subdevices, ""
+	return subdevices, ""*/
+	return nil, ""
 }
 
-func UpdateSubdevice(id uint, newSubdeviceInfo *Subdevice) (map[string]interface{}, string) {
-	subdevice := &Subdevice{}
+func UpdateSubdevice(id uint, newSubdeviceInfo *map[string]interface{}) (map[string]interface{}, string) {
+	/*subdevice := &Subdevice{}
 
-	err := GetDB().Table("subdevice").Where("id = ?", id).First(subdevice).
+	err := GetDB().Collection("subdevice").Where("id = ?", id).First(subdevice).
 		Table("subdevice_attributes").Where("id = ?", id).First(&(subdevice.Attributes)).Error
 	if err != nil {
 		return u.Message(false, "Error while checking subdevice: "+err.Error()), err.Error()
@@ -405,9 +427,14 @@ func UpdateSubdevice(id uint, newSubdeviceInfo *Subdevice) (map[string]interface
 	}
 
 	//Successfully validated the new data
-	if e1 := GetDB().Table("subdevice").Save(subdevice).
+	if e1 := GetDB().Collection("subdevice").Save(subdevice).
 		Table("subdevice_attributes").Save(&(subdevice.Attributes)).Error; e1 != nil {
 		return u.Message(false, "Error while updating subdevice: "+e1.Error()), e1.Error()
+	}*/
+
+	e := GetDB().Collection("subdevice").FindOneAndUpdate(GetCtx(), bson.M{"_id": id}, bson.M{"$set": *newSubdeviceInfo}).Err()
+	if e != nil {
+		return u.Message(false, "failure: "+e.Error()), e.Error()
 	}
 	return u.Message(true, "success"), ""
 }
@@ -415,9 +442,9 @@ func UpdateSubdevice(id uint, newSubdeviceInfo *Subdevice) (map[string]interface
 func DeleteSubdevice(id uint) map[string]interface{} {
 
 	//This is a hard delete!
-	e := GetDB().Unscoped().Table("subdevice").Delete(&Subdevice{}, id).RowsAffected
+	c, _ := GetDB().Collection("subdevice").DeleteOne(GetCtx(), bson.M{"_id": id})
 
-	if e == 0 {
+	if c.DeletedCount == 0 {
 		return u.Message(false, "There was an error in deleting the subdevice")
 	}
 
@@ -427,10 +454,11 @@ func DeleteSubdevice(id uint) map[string]interface{} {
 func GetSubdeviceByName(name string) (*Subdevice, string) {
 	subdevice := &Subdevice{}
 
-	e := GetDB().Raw(`SELECT * FROM subdevice 
-	JOIN subdevice_attributes ON subdevice.id = subdevice_attributes.id 
+	/*e := GetDB().Raw(`SELECT * FROM subdevice
+	JOIN subdevice_attributes ON subdevice.id = subdevice_attributes.id
 	WHERE subdevice_name = ?;`, name).Find(subdevice).Find(&subdevice.Attributes).Error
-
+	*/
+	e := GetDB().Collection("subdevice").FindOne(GetCtx(), bson.M{"subdevice_name": name}).Decode(subdevice)
 	if e != nil {
 		return nil, e.Error()
 	}
@@ -443,10 +471,12 @@ func GetSubdeviceByName(name string) (*Subdevice, string) {
 
 func GetSubdeviceByNameAndParentID(id int, name string) (*Subdevice, string) {
 	subdevice := &Subdevice{}
-	err := GetDB().Raw(`SELECT * FROM subdevice JOIN 
-		subdevice_attributes ON subdevice.id = subdevice_attributes.id
-		WHERE subdevice_parent_id = ? AND subdevice_name = ?`, id, name).
-		Find(subdevice).Find(&(subdevice.Attributes)).Error
+	/*err := GetDB().Raw(`SELECT * FROM subdevice JOIN
+	subdevice_attributes ON subdevice.id = subdevice_attributes.id
+	WHERE subdevice_parent_id = ? AND subdevice_name = ?`, id, name).
+	Find(subdevice).Find(&(subdevice.Attributes)).Error*/
+	err := GetDB().Collection("subdevice").FindOne(GetCtx(), bson.M{"subdevice_parent_id": id, "subdevice_name": name}).Decode(subdevice)
+
 	if err != nil {
 		return nil, "record not found"
 	}

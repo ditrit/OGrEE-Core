@@ -5,36 +5,38 @@ import (
 	u "p3/utils"
 	"strconv"
 	"strings"
+
+	"go.mongodb.org/mongo-driver/bson"
 )
 
 type Room_Attributes struct {
-	ID          int    `json:"-" gorm:"column:id"`
-	PosXY       string `json:"posXY" gorm:"column:room_pos_x_y"`
-	PosXYU      string `json:"posXYUnit" gorm:"column:room_pos_x_y_unit"`
-	PosZ        string `json:"posZ" gorm:"column:room_pos_z"`
-	PosZU       string `json:"posZUnit" gorm:"column:room_pos_z_unit"`
-	Template    string `json:"template" gorm:"column:room_template"`
-	Orientation string `json:"orientation" gorm:"column:room_orientation"`
-	Size        string `json:"size" gorm:"column:room_size"`
-	SizeU       string `json:"sizeUnit" gorm:"column:room_size_unit"`
-	Height      string `json:"height" gorm:"column:room_height"`
-	HeightU     string `json:"heightUnit" gorm:"column:room_height_unit"`
-	Technical   string `json:"technical" gorm:"column:room_technical"`
-	Reserved    string `json:"reserved" gorm:"column:room_reserved"`
+	ID          int    `json:"-" bson:"id"`
+	PosXY       string `json:"posXY" bson:"room_pos_x_y"`
+	PosXYU      string `json:"posXYUnit" bson:"room_pos_x_y_unit"`
+	PosZ        string `json:"posZ" bson:"room_pos_z"`
+	PosZU       string `json:"posZUnit" bson:"room_pos_z_unit"`
+	Template    string `json:"template" bson:"room_template"`
+	Orientation string `json:"orientation" bson:"room_orientation"`
+	Size        string `json:"size" bson:"room_size"`
+	SizeU       string `json:"sizeUnit" bson:"room_size_unit"`
+	Height      string `json:"height" bson:"room_height"`
+	HeightU     string `json:"heightUnit" bson:"room_height_unit"`
+	Technical   string `json:"technical" bson:"room_technical"`
+	Reserved    string `json:"reserved" bson:"room_reserved"`
 }
 
 type Room struct {
-	ID              int             `json:"-" gorm:"column:id"`
-	IDJSON          string          `json:"id" gorm:"-"`
-	Name            string          `json:"name" gorm:"column:room_name"`
-	ParentID        string          `json:"parentId" gorm:"column:room_parent_id"`
-	Category        string          `json:"category" gorm:"-"`
-	Domain          string          `json:"domain" gorm:"column:room_domain"`
-	DescriptionJSON []string        `json:"description" gorm:"-"`
-	DescriptionDB   string          `json:"-" gorm:"column:room_description"`
+	ID              int             `json:"-" bson:"id"`
+	IDJSON          string          `json:"id" bson:"-"`
+	Name            string          `json:"name" bson:"room_name"`
+	ParentID        string          `json:"parentId" bson:"room_parent_id"`
+	Category        string          `json:"category" bson:"-"`
+	Domain          string          `json:"domain" bson:"room_domain"`
+	DescriptionJSON []string        `json:"description" bson:"-"`
+	DescriptionDB   string          `json:"-" bson:"room_description"`
 	Attributes      Room_Attributes `json:"attributes"`
 
-	Racks []*Rack `json:"racks,omitempty", gorm:"-"`
+	Racks []*Rack `json:"racks,omitempty", bson:"-"`
 	//D is used to help the JSON marshalling
 	//while Description will be used in
 	//DB transactions
@@ -56,9 +58,7 @@ func (room *Room) Validate() (map[string]interface{}, bool) {
 		return u.Message(false, "Domain should should be on the payload"), false
 	}
 
-	if GetDB().Table("building").
-		Where("id = ?", room.ParentID).First(&Building{}).Error != nil {
-
+	if GetDB().Collection("building").FindOne(GetCtx(), bson.M{"_id": room.ParentID}).Decode(&Building{}) != nil {
 		return u.Message(false, "ParentID should be correspond to building ID"), false
 	}
 
@@ -117,16 +117,16 @@ func (room *Room) Create() (map[string]interface{}, string) {
 
 	room.DescriptionDB = strings.Join(room.DescriptionJSON, "XYZ")
 
-	if e := GetDB().Create(room).Error; e != nil {
+	if _, e := GetDB().Collection("room").InsertOne(GetCtx(), room); e != nil {
 		return u.Message(false, "Internal Error while creating Room: "+e.Error()),
 			e.Error()
 	}
 	room.IDJSON = strconv.Itoa(room.ID)
-	room.Attributes.ID = room.ID
+	/*room.Attributes.ID = room.ID
 	if e := GetDB().Create(&(room.Attributes)).Error; e != nil {
 		return u.Message(false, "Internal Error while creating Room Attrs: "+e.Error()),
 			e.Error()
-	}
+	}*/
 
 	resp := u.Message(true, "success")
 	resp["data"] = room
@@ -224,8 +224,10 @@ func (r *Room) FormQuery() string {
 //Get the room by ID
 func GetRoom(id uint) (*Room, string) {
 	room := &Room{}
-	err := GetDB().Table("room").Where("id = ?", id).First(room).
-		Table("room_attributes").Where("id = ?", id).First(&(room.Attributes)).Error
+	/*err := GetDB().Collection("room").Where("id = ?", id).First(room).
+	Table("room_attributes").Where("id = ?", id).First(&(room.Attributes)).Error
+	*/
+	err := GetDB().Collection("room").FindOne(GetCtx(), bson.M{"_id": id}).Decode(room)
 	if err != nil {
 		fmt.Println(err)
 		return nil, err.Error()
@@ -241,10 +243,20 @@ func GetRoom(id uint) (*Room, string) {
 func GetRooms(room *Building) ([]*Room, string) {
 	rooms := make([]*Room, 0)
 
-	err := GetDB().Table("rooms").Where("foreignkey = ?", room.ID).Find(&rooms).Error
+	c, err := GetDB().Collection("room").Find(GetCtx(), bson.M{"room_parent_id": room.ID})
 	if err != nil {
 		fmt.Println(err)
 		return nil, err.Error()
+	}
+
+	for c.Next(GetCtx()) {
+		r := &Room{}
+		e := c.Decode(r)
+		if e != nil {
+			fmt.Println(e)
+			return nil, e.Error()
+		}
+		rooms = append(rooms, r)
 	}
 
 	return rooms, ""
@@ -345,15 +357,26 @@ func GetRoomHierarchyNonStandard(id uint) (*Room, []*Rack, [][]*Device, string) 
 
 func GetRoomsOfParent(id uint) ([]*Room, string) {
 	rooms := make([]*Room, 0)
-	err := GetDB().Table("room").Where("room_parent_id = ?", id).Find(&rooms).Error
+	//err := GetDB().Collection("room").Where("room_parent_id = ?", id).Find(&rooms).Error
+	c, err := GetDB().Collection("room").Find(GetCtx(), bson.M{"room_parent_id": id})
 	if err != nil {
 		fmt.Println(err)
 		return nil, err.Error()
 	}
 
+	for c.Next(GetCtx()) {
+		r := &Room{}
+		e := c.Decode(r)
+		if e != nil {
+			fmt.Println(e)
+			return nil, e.Error()
+		}
+		rooms = append(rooms, r)
+	}
+
 	println("The length of room is: ", len(rooms))
-	for i := range rooms {
-		e := GetDB().Table("room_attributes").Where("id = ?", rooms[i].ID).First(&(rooms[i].Attributes)).Error
+	/*for i := range rooms {
+		e := GetDB().Collection("room_attributes").Where("id = ?", rooms[i].ID).First(&(rooms[i].Attributes)).Error
 
 		if e != nil {
 			fmt.Println(err)
@@ -363,7 +386,7 @@ func GetRoomsOfParent(id uint) ([]*Room, string) {
 		rooms[i].Category = "room"
 		rooms[i].DescriptionJSON = strings.Split(rooms[i].DescriptionDB, "XYZ")
 		rooms[i].IDJSON = strconv.Itoa(rooms[i].ID)
-	}
+	}*/
 
 	return rooms, ""
 }
@@ -371,25 +394,35 @@ func GetRoomsOfParent(id uint) ([]*Room, string) {
 //Get all rooms
 func GetAllRooms() ([]*Room, string) {
 	rooms := make([]*Room, 0)
-	attrs := make([]*Room_Attributes, 0)
-	err := GetDB().Find(&rooms).Find(&attrs).Error
+	//attrs := make([]*Room_Attributes, 0)
+	c, err := GetDB().Collection("room").Find(GetCtx(), bson.D{{}})
 	if err != nil {
 		fmt.Println(err)
 		return nil, err.Error()
 	}
 
-	for i := range rooms {
+	for c.Next(GetCtx()) {
+		r := &Room{}
+		e := c.Decode(r)
+		if e != nil {
+			fmt.Println(err)
+			return nil, err.Error()
+		}
+		rooms = append(rooms, r)
+	}
+
+	/*for i := range rooms {
 		rooms[i].Category = "room"
 		rooms[i].Attributes = *(attrs[i])
 		rooms[i].DescriptionJSON = strings.Split(rooms[i].DescriptionDB, "XYZ")
 		rooms[i].IDJSON = strconv.Itoa(rooms[i].ID)
-	}
+	}*/
 
 	return rooms, ""
 }
 
 func GetRoomByQuery(r *Room) ([]*Room, string) {
-	rooms := make([]*Room, 0)
+	/*rooms := make([]*Room, 0)
 	attrs := make([]*Room_Attributes, 0)
 
 	e := GetDB().Raw(r.FormQuery()).Find(&rooms).
@@ -407,13 +440,14 @@ func GetRoomByQuery(r *Room) ([]*Room, string) {
 		rooms[i].Category = "room"
 	}
 
-	return rooms, ""
+	return rooms, ""*/
+	return nil, ""
 }
 
-func UpdateRoom(id uint, newRoomInfo *Room) (map[string]interface{}, string) {
-	room := &Room{}
+func UpdateRoom(id uint, newRoomInfo *map[string]interface{}) (map[string]interface{}, string) {
+	/*room := &Room{}
 
-	err := GetDB().Table("room").Where("id = ?", id).First(room).
+	err := GetDB().Collection("room").Where("id = ?", id).First(room).
 		Table("room_attributes").Where("id = ?", id).First(&(room.Attributes)).Error
 	if err != nil {
 		return u.Message(false, "Error while checking Room: "+err.Error()), err.Error()
@@ -487,24 +521,27 @@ func UpdateRoom(id uint, newRoomInfo *Room) (map[string]interface{}, string) {
 		room.Attributes.Reserved = newRoomInfo.Attributes.Reserved
 	}
 
-	if e1 := GetDB().Table("room").Save(room).
+	if e1 := GetDB().Collection("room").Save(room).
 		Table("room_attributes").Save(&(room.Attributes)).Error; e1 != nil {
 		return u.Message(false, "Error while updating Room: "+e1.Error()), e1.Error()
+	}*/
+	e := GetDB().Collection("room").FindOneAndUpdate(GetCtx(), bson.M{"_id": id}, bson.M{"$set": *newRoomInfo}).Err()
+	if e != nil {
+		return u.Message(false, "failure: "+e.Error()), e.Error()
 	}
-
 	return u.Message(true, "success"), ""
 }
 
 func DeleteRoom(id uint) map[string]interface{} {
 
 	//This is a hard delete!
-	e := GetDB().Unscoped().Table("room").Delete(&Room{}, id).RowsAffected
+	c, _ := GetDB().Collection("room").DeleteOne(GetCtx(), bson.M{"_id": id})
 
 	//The command below is a soft delete
 	//Meaning that the 'deleted_at' field will be set
 	//the record will remain but unsearchable
 	//e := GetDB().Table("tenants").Delete(Tenant{}, id).Error
-	if e == 0 {
+	if c.DeletedCount == 0 {
 		return u.Message(false, "There was an error in deleting the room")
 	}
 
@@ -514,9 +551,11 @@ func DeleteRoom(id uint) map[string]interface{} {
 func GetRoomByName(name string) (*Room, string) {
 	room := &Room{}
 
-	e := GetDB().Raw(`SELECT * FROM room 
-	JOIN room_attributes ON room.id = room_attributes.id 
+	/*e := GetDB().Raw(`SELECT * FROM room
+	JOIN room_attributes ON room.id = room_attributes.id
 	WHERE room_name = ?;`, name).Find(room).Find(&room.Attributes).Error
+	*/
+	e := GetDB().Collection("room").FindOne(GetCtx(), bson.M{"name": name}).Decode(room)
 
 	if e != nil {
 		return nil, e.Error()
@@ -566,10 +605,11 @@ func GetNamedDeviceOfRoom(roomID int, rack_name, device_name string) (*Device, s
 
 func GetRoomByNameAndParentID(id int, name string) (*Room, string) {
 	room := &Room{}
-	err := GetDB().Raw(`SELECT * FROM room JOIN 
+	/*err := GetDB().Raw(`SELECT * FROM room JOIN
 	room_attributes ON room.id = room_attributes.id
 	WHERE room_parent_id = ? AND room_name = ?`, id, name).
-		Find(room).Find(&(room.Attributes)).Error
+		Find(room).Find(&(room.Attributes)).Error*/
+	err := GetDB().Collection("room").FindOne(GetCtx(), bson.M{"room_parent_id": id, "name": name}).Decode(room)
 	if err != nil {
 		fmt.Println(err)
 		return nil, err.Error()

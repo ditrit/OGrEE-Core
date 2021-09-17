@@ -5,33 +5,35 @@ import (
 	u "p3/utils"
 	"strconv"
 	"strings"
+
+	"go.mongodb.org/mongo-driver/bson"
 )
 
 type Site_Attributes struct {
-	ID             int    `json:"-" gorm:"column:id"`
-	Orientation    string `json:"orientation" gorm:"column:site_orientation"`
-	UsableColor    string `json:"usableColor" gorm:"column:usable_color"`
-	ReservedColor  string `json:"reservedColor" gorm:"column:reserved_color"`
-	TechnicalColor string `json:"technicalColor" gorm:"column:technical_color"`
-	Address        string `json:"address" gorm:"column:address"`
-	Zipcode        string `json:"zipcode" gorm:"column:zipcode"`
-	City           string `json:"city" gorm:"column:city"`
-	Country        string `json:"country" gorm:"column:country"`
-	Gps            string `json:"gps" gorm:"column:gps"`
+	ID             int    `json:"-" bson:"id"`
+	Orientation    string `json:"orientation" bson:"site_orientation"`
+	UsableColor    string `json:"usableColor" bson:"usable_color"`
+	ReservedColor  string `json:"reservedColor" bson:"reserved_color"`
+	TechnicalColor string `json:"technicalColor" bson:"technical_color"`
+	Address        string `json:"address" bson:"address"`
+	Zipcode        string `json:"zipcode" bson:"zipcode"`
+	City           string `json:"city" bson:"city"`
+	Country        string `json:"country" bson:"country"`
+	Gps            string `json:"gps" bson:"gps"`
 }
 
 type Site struct {
-	ID              int             `json:"-" gorm:"column:id"`
-	IDJSON          string          `json:"id" gorm:"-"`
-	Name            string          `json:"name" gorm:"column:site_name"`
-	Category        string          `json:"category" gorm:"-"`
-	Domain          string          `json:"domain" gorm:"column:site_domain"`
-	ParentID        string          `json:"parentId" gorm:"column:site_parent_id"`
-	DescriptionJSON []string        `json:"description" gorm:"-"`
-	DescriptionDB   string          `json:"-" gorm:"column:site_description"`
-	Attributes      Site_Attributes `json:"attributes"`
+	ID              int             `json:"-" bson:"id"`
+	IDJSON          string          `json:"id" bson:"-"`
+	Name            string          `json:"name" bson:"site_name"`
+	Category        string          `json:"category" bson:"-"`
+	Domain          string          `json:"domain" bson:"site_domain"`
+	ParentID        string          `json:"parentId" bson:"site_parent_id"`
+	DescriptionJSON []string        `json:"description" bson:"-"`
+	DescriptionDB   string          `json:"-" bson:"site_description"`
+	Attributes      Site_Attributes `json:"attributes" bson:"attributes"`
 
-	Buildings []*Building `json:"buildings,omitempty" gorm:"-"`
+	Buildings []*Building `json:"buildings,omitempty" bson:"-"`
 }
 
 func (site *Site) Validate() (map[string]interface{}, bool) {
@@ -50,9 +52,8 @@ func (site *Site) Validate() (map[string]interface{}, bool) {
 
 	}
 
-	if GetDB().Table("tenant").
-		Where("id = ?", site.ParentID).First(&Tenant{}).Error != nil {
-
+	if GetDB().Collection("tenant").
+		FindOne(GetCtx(), bson.M{"_id": site.ParentID}).Err() != nil {
 		return u.Message(false, "SiteParentID should be correspond to tenant ID"), false
 
 	}
@@ -89,20 +90,20 @@ func (site *Site) Create() (map[string]interface{}, string) {
 
 	site.DescriptionDB = strings.Join(site.DescriptionJSON, "XYZ")
 
-	e := GetDB().Create(site).Error
+	_, e := GetDB().Collection("site").InsertOne(GetCtx(), site)
 	if e != nil {
 		return u.Message(false, "Internal Error while creating Site: "+e.Error()),
 			e.Error()
 	}
 
-	site.IDJSON = strconv.Itoa(site.ID)
+	/*site.IDJSON = strconv.Itoa(site.ID)
 	site.Attributes.ID = site.ID
 
-	e = GetDB().Table("site_attributes").Create(&(site.Attributes)).Error
+	e = GetDB().Collection("site_attributes").Create(&(site.Attributes)).Error
 	if e != nil {
 		return u.Message(false, "Internal Error while creating Site Attrs: "+e.Error()),
 			e.Error()
-	}
+	}*/
 	resp := u.Message(true, "success")
 	resp["data"] = site
 	return resp, ""
@@ -178,26 +179,36 @@ func (s *Site) FormQuery() string {
 
 //Get sites of a Tenant
 func GetSites(id uint) []*Site {
-	site := make([]*Site, 0)
+	sites := make([]*Site, 0)
 
-	err := GetDB().Table("tenant").Where("id = ?", id).First(&Tenant{}).Error
+	c, err := GetDB().Collection("site").Find(GetCtx(), bson.M{"site_parent_id": id})
 	if err != nil {
-		fmt.Println("yo the tenant wasnt found here")
+		fmt.Println(err)
 		return nil
 	}
 
-	e := GetDB().Table("site").Where("site_parent_id = ?", id).Find(&site).Error
+	for c.Next(GetCtx()) {
+		d := &Site{}
+		e := c.Decode(d)
+		if e != nil {
+			fmt.Println(e)
+			return nil
+		}
+		sites = append(sites, d)
+	}
+
+	/*e := GetDB().Collection("site").Where("site_parent_id = ?", id).Find(&site).Error
 	if e != nil {
 		fmt.Println("yo the there isnt any site matching the foreign key")
 		return nil
-	}
+	}*/
 
 	//This can be an efficiency issue which
 	//can be compared to making a Attribute
 	//struct slice then make the same query as above
 	//then iterate and assign attributes from the
 	//attribute slice
-	for i := range site {
+	/*for i := range site {
 		GetDB().Raw("SELECT * FROM site_attributes WHERE id = ?",
 			site[i].ID).Scan(&(site[i].Attributes))
 
@@ -205,19 +216,18 @@ func GetSites(id uint) []*Site {
 		if err != nil {
 			return nil
 		}
-	}
+	}*/
 
-	return site
+	return sites
 }
 
 func GetSite(id uint) (*Site, string) {
 	site := &Site{}
 
-	err := GetDB().Table("site").Where("id = ?", id).First(site).
-		Table("site_attributes").Where("id = ?", id).First(&(site.Attributes)).Error
-	if err != nil {
-		fmt.Println("There was an error in getting site by ID: " + err.Error())
-		return nil, err.Error()
+	err := GetDB().Collection("site").FindOne(GetCtx(), bson.M{"_id": id}).Decode(site).Error()
+	if err != "" {
+		fmt.Println("There was an error in getting site by ID: " + err)
+		return nil, err
 	}
 	site.DescriptionJSON = strings.Split(site.DescriptionDB, "XYZ")
 	site.Category = "site"
@@ -227,23 +237,31 @@ func GetSite(id uint) (*Site, string) {
 
 func GetSitesOfParent(id int) ([]*Site, string) {
 	sites := make([]*Site, 0)
-	attrs := make([]*Site_Attributes, 0)
-	err := GetDB().Raw(`SELECT * FROM site JOIN 
-	site_attributes ON site.id = site_attributes.id
-	WHERE site_parent_id = ?`, id).Find(&sites).Find(&attrs).Error
+	//attrs := make([]*Site_Attributes, 0)
+	c, err := GetDB().Collection("site").Find(GetCtx(), bson.M{"site_parent_id": id})
 	if err != nil {
 		fmt.Println(err)
 		return nil, err.Error()
 	}
 
+	for c.Next(GetCtx()) {
+		s := &Site{}
+		e := c.Decode(s)
+		if e != nil {
+			fmt.Println(err)
+			return nil, err.Error()
+		}
+		sites = append(sites, s)
+	}
+
 	println("The length of site is: ", len(sites))
-	for i := range sites {
+	/*for i := range sites {
 
 		sites[i].Attributes = *(attrs[i])
 		sites[i].Category = "site"
 		sites[i].DescriptionJSON = strings.Split(sites[i].DescriptionDB, "XYZ")
 		sites[i].IDJSON = strconv.Itoa(sites[i].ID)
-	}
+	}*/
 
 	return sites, ""
 }
@@ -299,30 +317,35 @@ func GetSiteHierarchyNonStandard(id int) (*Site, []*Building,
 
 func GetAllSites() ([]*Site, string) {
 	sites := make([]*Site, 0)
-	attrs := make([]*Site_Attributes, 0)
-	err := GetDB().Table("site").Find(&sites).Error
+	//attrs := make([]*Site_Attributes, 0)
+	c, err := GetDB().Collection("site").Find(GetCtx(), bson.D{{}})
 	if err != nil {
-		fmt.Println("There was an error in getting sites by ID: " + err.Error())
+		fmt.Println(err)
 		return nil, err.Error()
 	}
 
-	err = GetDB().Table("site_attributes").Find(&attrs).Error
-	if err != nil {
-		fmt.Println("There was an error in getting site attrs by ID: " + err.Error())
-		return nil, err.Error()
+	for c.Next(GetCtx()) {
+		d := &Site{}
+		e := c.Decode(d)
+		if e != nil {
+			fmt.Println(err)
+			return nil, err.Error()
+		}
+		d.Category = "site"
+		sites = append(sites, d)
 	}
 
-	for i := range sites {
+	/*for i := range sites {
 		sites[i].Category = "site"
 		sites[i].Attributes = *(attrs[i])
 		sites[i].DescriptionJSON = strings.Split(sites[i].DescriptionDB, "XYZ")
 		sites[i].IDJSON = strconv.Itoa(sites[i].ID)
-	}
+	}*/
 	return sites, ""
 }
 
 func GetSiteByQuery(s *Site) ([]*Site, string) {
-	sites := make([]*Site, 0)
+	/*sites := make([]*Site, 0)
 	attrs := make([]*Site_Attributes, 0)
 
 	e := GetDB().Raw(s.FormQuery()).Find(&sites).
@@ -340,18 +363,19 @@ func GetSiteByQuery(s *Site) ([]*Site, string) {
 		sites[i].Category = "site"
 	}
 
-	return sites, ""
+	return sites, ""*/
+	return nil, ""
 }
 
 func DeleteSite(id uint) map[string]interface{} {
 	//This is a hard delete!
-	e := GetDB().Unscoped().Table("site").Delete(&Site{}, id).RowsAffected
+	c, _ := GetDB().Collection("site").DeleteOne(GetCtx(), bson.M{"_id": id})
 
 	//The command below is a soft delete
 	//Meaning that the 'deleted_at' field will be set
 	//the record will remain but unsearchable
-	//e := GetDB().Table("tenants").Delete(Tenant{}, id).Error
-	if e == 0 {
+	//e := GetDB().Collection("tenants").Delete(Tenant{}, id).Error
+	if c.DeletedCount == 0 {
 		return u.Message(false, "There was an error in deleting the site")
 	}
 
@@ -361,29 +385,28 @@ func DeleteSite(id uint) map[string]interface{} {
 func DeleteSitesOfTenant(id uint) map[string]interface{} {
 
 	//First check if the domain is valid
-	if GetDB().Table("site").Where("site_parent_id = ?", id).First(&Site{}).Error != nil {
+	/*if GetDB().Collection("site").Where("site_parent_id = ?", id).First(&Site{}).Error != nil {
 		return u.Message(false, "The parent, tenant, was not found")
-	}
+	}*/
 
 	//This is a hard delete!
-	e := GetDB().Unscoped().Table("site").
-		Where("site_parent_id = ?", id).Delete(&Site{}).Error
+	c, _ := GetDB().Collection("site").DeleteMany(GetCtx(), bson.M{"site_parent_id": id})
 
 	//The command below is a soft delete
 	//Meaning that the 'deleted_at' field will be set
 	//the record will remain but unsearchable
-	//e := GetDB().Table("tenants").Delete(Tenant{}, id).Error
-	if e != nil {
-		return u.Message(false, "There was an error in deleting the site")
+	//e := GetDB().Collection("tenants").Delete(Tenant{}, id).Error
+	if c.DeletedCount == 0 {
+		return u.Message(false, "There was an error in deleting the site(s)")
 	}
 
 	return u.Message(true, "success")
 }
 
-func UpdateSite(id uint, newSiteInfo *Site) (map[string]interface{}, string) {
-	site := &Site{}
+func UpdateSite(id uint, newSiteInfo *map[string]interface{}) (map[string]interface{}, string) {
+	/*site := &Site{}
 
-	err := GetDB().Table("site").Where("id = ?", id).First(site).
+	err := GetDB().Collection("site").Where("id = ?", id).First(site).
 		Table("site_attributes").Where("id = ?", id).First(&(site.Attributes)).Error
 	if err != nil {
 		return u.Message(false, "Site was not found: "+err.Error()), err.Error()
@@ -443,9 +466,14 @@ func UpdateSite(id uint, newSiteInfo *Site) (map[string]interface{}, string) {
 	}
 
 	//Successfully validated the new data
-	if e := GetDB().Table("site").Save(site).Table("site_attributes").
+	if e := GetDB().Collection("site").Save(site).Collection("site_attributes").
 		Save(&(site.Attributes)).Error; e != nil {
 		return u.Message(false, "Error while updating Site: "+e.Error()), e.Error()
+	}*/
+
+	e := GetDB().Collection("site").FindOneAndUpdate(GetCtx(), bson.M{"_id": id}, bson.M{"$set": *newSiteInfo}).Err()
+	if e != nil {
+		return u.Message(false, "failure: "+e.Error()), e.Error()
 	}
 	return u.Message(true, "success"), ""
 }
@@ -453,9 +481,11 @@ func UpdateSite(id uint, newSiteInfo *Site) (map[string]interface{}, string) {
 func GetSiteByName(name string) (*Site, string) {
 	site := &Site{}
 
-	e := GetDB().Raw(`SELECT * FROM site 
-	JOIN site_attributes ON site.id = site_attributes.id 
-	WHERE site_name = ?;`, name).Find(site).Find(&site.Attributes).Error
+	/*e := GetDB().Raw(`SELECT * FROM site
+	JOIN site_attributes ON site.id = site_attributes.id
+	WHERE site_name = ?;`, name).Find(site).Find(&site.Attributes).Error*/
+
+	e := GetDB().Collection("site").FindOne(GetCtx(), bson.M{"name": name}).Decode(site)
 
 	if e != nil {
 		return nil, e.Error()
@@ -470,13 +500,15 @@ func GetSiteByName(name string) (*Site, string) {
 func GetSiteByNameAndParentID(id int, name string) (*Site, string) {
 	site := &Site{}
 
-	e := GetDB().Raw(`SELECT * FROM site 
-	JOIN site_attributes ON site.id = site_attributes.id 
+	/*e := GetDB().Raw(`SELECT * FROM site
+	JOIN site_attributes ON site.id = site_attributes.id
 	WHERE site_parent_id = ? AND site_name = ?;`, id, name).
-		Find(site).Find(&site.Attributes).Error
+		Find(site).Find(&site.Attributes).Error*/
 
-	if e != nil {
-		return nil, e.Error()
+	err := GetDB().Collection("site").FindOne(GetCtx(), bson.M{"site_parent_id": id, "name": name}).Decode(site)
+
+	if err != nil {
+		return nil, err.Error()
 	}
 
 	site.IDJSON = strconv.Itoa(site.ID)

@@ -1,6 +1,7 @@
 //localhost = 127.0.0.1
 var db = connect('localhost:27017/ogree')
 
+db.createCollection('account');
 db.createCollection('tenant');
 db.createCollection('site');
 db.createCollection('building');

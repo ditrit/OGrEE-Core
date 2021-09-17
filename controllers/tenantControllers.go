@@ -280,16 +280,16 @@ var UpdateTenant = func(w http.ResponseWriter, r *http.Request) {
 		u.ErrLog("Error while extracting from path parameters", "UPDATE TENANT", "", r)
 		return
 	}
-	tenant := &models.Tenant{}
+	tenant := map[string]interface{}{}
 
-	err := json.NewDecoder(r.Body).Decode(tenant)
+	err := json.NewDecoder(r.Body).Decode(&tenant)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		u.Respond(w, u.Message(false, "Error while decoding request body"))
 		u.ErrLog("Error while decoding request body", "UPDATE TENANT", "", r)
 	}
 
-	v, e1 := models.UpdateTenant(uint(id), tenant)
+	v, e1 := models.UpdateTenant(uint(id), &tenant)
 
 	switch e1 {
 

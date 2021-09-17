@@ -427,7 +427,7 @@ var DeleteRack = func(w http.ResponseWriter, r *http.Request) {
 //Updates work by passing ID in path parameter
 var UpdateRack = func(w http.ResponseWriter, r *http.Request) {
 
-	rack := &models.Rack{}
+	rack := map[string]interface{}{}
 	id, e := strconv.Atoi(mux.Vars(r)["id"])
 
 	if e != nil {
@@ -436,13 +436,13 @@ var UpdateRack = func(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err := json.NewDecoder(r.Body).Decode(rack)
+	err := json.NewDecoder(r.Body).Decode(&rack)
 	if err != nil {
 		u.Respond(w, u.Message(false, "Error while decoding request body"))
 		u.ErrLog("Error while decoding request body", "UPDATE RACK", "", r)
 	}
 
-	v, e1 := models.UpdateRack(uint(id), rack)
+	v, e1 := models.UpdateRack(uint(id), &rack)
 
 	switch e1 {
 	case "validate":

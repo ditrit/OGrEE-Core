@@ -14,6 +14,7 @@ require (
 	github.com/pelletier/go-toml v1.8.1 // indirect
 	github.com/spf13/afero v1.5.1 // indirect
 	github.com/spf13/cobra v1.1.3 // indirect
+	go.mongodb.org/mongo-driver v1.7.2 // indirect
 	golang.org/x/crypto v0.0.0-20201221181555-eec23a3978ad
 	golang.org/x/sys v0.0.0-20210309074719-68d13333faf2 // indirect
 	golang.org/x/text v0.3.5 // indirect

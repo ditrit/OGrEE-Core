@@ -4,12 +4,18 @@ package utils
 //returns json response
 
 import (
+	"context"
 	"encoding/json"
 	"log"
 	"net/http"
 	"net/url"
 	"os"
+	"time"
 )
+
+func Connect() (context.Context, context.CancelFunc) {
+	return context.WithTimeout(context.Background(), 30*time.Second)
+}
 
 func Message(status bool, message string) map[string]interface{} {
 	return map[string]interface{}{"status": status, "message": message}

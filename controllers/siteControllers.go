@@ -485,7 +485,7 @@ var DeleteSites = func(w http.ResponseWriter, r *http.Request) {
 
 var UpdateSite = func(w http.ResponseWriter, r *http.Request) {
 
-	site := &models.Site{}
+	site := map[string]interface{}{}
 	id, e := strconv.Atoi(mux.Vars(r)["id"])
 
 	if e != nil {
@@ -494,13 +494,13 @@ var UpdateSite = func(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err := json.NewDecoder(r.Body).Decode(site)
+	err := json.NewDecoder(r.Body).Decode(&site)
 	if err != nil {
 		u.Respond(w, u.Message(false, "Error while decoding request body"))
 		u.ErrLog("Error while decoding request body", "UPDATE SITE", "", r)
 	}
 
-	v, e1 := models.UpdateSite(uint(id), site)
+	v, e1 := models.UpdateSite(uint(id), &site)
 
 	switch e1 {
 	case "validate":

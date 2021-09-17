@@ -376,7 +376,7 @@ var DeleteBuilding = func(w http.ResponseWriter, r *http.Request) {
 //Updates work by passing ID in path parameter
 var UpdateBuilding = func(w http.ResponseWriter, r *http.Request) {
 
-	bldg := &models.Building{}
+	bldg := map[string]interface{}{}
 	id, e := strconv.Atoi(mux.Vars(r)["id"])
 
 	if e != nil {
@@ -385,13 +385,13 @@ var UpdateBuilding = func(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err := json.NewDecoder(r.Body).Decode(bldg)
+	err := json.NewDecoder(r.Body).Decode(&bldg)
 	if err != nil {
 		u.Respond(w, u.Message(false, "Error while decoding request body"))
 		u.ErrLog("Error while decoding request body", "UPDATE BUILDING", "", r)
 	}
 
-	v, e1 := models.UpdateBuilding(uint(id), bldg)
+	v, e1 := models.UpdateBuilding(uint(id), &bldg)
 
 	switch e1 {
 	case "validate":

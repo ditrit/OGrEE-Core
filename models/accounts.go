@@ -7,6 +7,8 @@ import (
 
 	"github.com/dgrijalva/jwt-go"
 	"github.com/jinzhu/gorm"
+	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/mongo"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -38,8 +40,8 @@ func (account *Account) Validate() (map[string]interface{}, bool) {
 	temp := &Account{}
 
 	//Error checking and duplicate emails
-	err := GetDB().Table("account").Where("email = ?", account.Email).First(temp).Error
-	if err != nil && err != gorm.ErrRecordNotFound {
+	err := GetDB().Collection("accounts").FindOne(GetCtx(), bson.M{"email": account.Email}).Decode(&temp) //.Where("email = ?", account.Email).First(temp).Error
+	if err != nil && err != mongo.ErrNoDocuments {
 		return u.Message(false, "Connection error. Please retry"), false
 	}
 	return u.Message(false, "Requirement passed"), true
@@ -56,7 +58,7 @@ func (account *Account) Create() map[string]interface{} {
 
 	account.Password = string(hashedPassword)
 
-	GetDB().Create(account)
+	GetDB().Collection("accounts").InsertOne(GetCtx(), account)
 
 	if account.ID <= 0 {
 		return u.Message(false, "Failed to create account, connection error.")
@@ -79,9 +81,10 @@ func (account *Account) Create() map[string]interface{} {
 func Login(email, password string) (map[string]interface{}, string) {
 	account := &Account{}
 
-	err := GetDB().Table("account").Where("email = ?", email).First(account).Error
+	err := GetDB().Collection("accounts").FindOne(GetCtx(), bson.M{"email": email}).Decode(account)
+	//err := GetDB().Table("account").Where("email = ?", email).First(account).Error
 	if err != nil {
-		if err == gorm.ErrRecordNotFound {
+		if err == mongo.ErrNoDocuments {
 			return u.Message(false, "Error, email not found"), "internal"
 		}
 		return u.Message(false, "Connection error. Please try again later"),
@@ -114,7 +117,7 @@ func Login(email, password string) (map[string]interface{}, string) {
 func GetUser(u int) *Account {
 
 	acc := &Account{}
-	GetDB().Table("account").Where("id = ?", u).First(acc)
+	GetDB().Collection("accounts").FindOne(GetCtx(), bson.M{"_id": u}).Decode(acc)
 	if acc.Email == "" {
 		return nil
 	}

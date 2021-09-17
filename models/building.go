@@ -5,34 +5,36 @@ import (
 	u "p3/utils"
 	"strconv"
 	"strings"
+
+	"go.mongodb.org/mongo-driver/bson"
 )
 
 type Building_Attributes struct {
-	ID      int    `json:"-" gorm:"column:id"`
-	PosXY   string `json:"posXY" gorm:"column:bldg_pos_x_y"`
-	PosXYU  string `json:"posXYUnit" gorm:"column:bldg_pos_x_y_unit"`
-	PosZ    string `json:"posZ" gorm:"column:bldg_pos_z"`
-	PosZU   string `json:"posZUnit" gorm:"column:bldg_pos_z_unit"`
-	Size    string `json:"size" gorm:"column:bldg_size"`
-	SizeU   string `json:"sizeUnit" gorm:"column:bldg_size_unit"`
-	Height  string `json:"height" gorm:"column:bldg_height"`
-	HeightU string `json:"heightUnit" gorm:"column:bldg_height_unit"`
-	Floors  string `json:"nbFloors" gorm:"column:bldg_nb_floors"`
+	ID      int    `json:"-" bson:"id"`
+	PosXY   string `json:"posXY" bson:"bldg_pos_x_y"`
+	PosXYU  string `json:"posXYUnit" bson:"bldg_pos_x_y_unit"`
+	PosZ    string `json:"posZ" bson:"bldg_pos_z"`
+	PosZU   string `json:"posZUnit" bson:"bldg_pos_z_unit"`
+	Size    string `json:"size" bson:"bldg_size"`
+	SizeU   string `json:"sizeUnit" bson:"bldg_size_unit"`
+	Height  string `json:"height" bson:"bldg_height"`
+	HeightU string `json:"heightUnit" bson:"bldg_height_unit"`
+	Floors  string `json:"nbFloors" bson:"bldg_nb_floors"`
 }
 
 type Building struct {
 	//gorm.Model
-	ID              int                 `json:"-" gorm:"column:id"`
-	IDJSON          string              `json:"id" gorm:"-"`
-	Name            string              `json:"name" gorm:"column:bldg_name"`
-	ParentID        string              `json:"parentId" gorm:"column:bldg_parent_id"`
-	Category        string              `json:"category" gorm:"-"`
-	Domain          string              `json:"domain" gorm:"column:bldg_domain"`
-	DescriptionJSON []string            `json:"description" gorm:"-"`
-	DescriptionDB   string              `json:"-" gorm:"column:bldg_description"`
-	Attributes      Building_Attributes `json:"attributes"`
+	ID              int                 `json:"-" bson:"id"`
+	IDJSON          string              `json:"id" bson:"-"`
+	Name            string              `json:"name" bson:"bldg_name"`
+	ParentID        string              `json:"parentId" bson:"bldg_parent_id"`
+	Category        string              `json:"category" bson:"-"`
+	Domain          string              `json:"domain" bson:"bldg_domain"`
+	DescriptionJSON []string            `json:"description" bson:"-"`
+	DescriptionDB   string              `json:"-" bson:"bldg_description"`
+	Attributes      Building_Attributes `json:"attributes" bson:"attributes"`
 
-	Rooms []*Room `json:"rooms,omitempty" gorm:"-"`
+	Rooms []*Room `json:"rooms,omitempty" bson:"-"`
 	//D is used to help the JSON marshalling
 	//while Description will be used in
 	//DB transactions
@@ -51,9 +53,7 @@ func (bldg *Building) Validate() (map[string]interface{}, bool) {
 		return u.Message(false, "Domain should should be on the payload"), false
 	}
 
-	if GetDB().Table("site").
-		Where("id = ?", bldg.ParentID).First(&Site{}).Error != nil {
-
+	if GetDB().Collection("sites").FindOne(GetCtx(), bson.M{"_id": bldg.ParentID}, nil).Decode(&Site{}) != nil {
 		return u.Message(false, "ParentID should be correspond to site ID"), false
 	}
 
@@ -99,16 +99,11 @@ func (bldg *Building) Create() (map[string]interface{}, string) {
 	}
 
 	bldg.DescriptionDB = strings.Join(bldg.DescriptionJSON, "XYZ")
-	if e := GetDB().Create(bldg).Error; e != nil {
+	if _, e := GetDB().Collection("buildings").InsertOne(GetCtx(), bldg); e != nil {
 		return u.Message(false, "Internal Error while creating Bulding: "+e.Error()),
 			e.Error()
 	}
 	bldg.IDJSON = strconv.Itoa(bldg.ID)
-	bldg.Attributes.ID = bldg.ID
-	if e := GetDB().Create(&(bldg.Attributes)).Error; e != nil {
-		return u.Message(false, "Internal Error while creating Bulding Attrs: "+e.Error()),
-			e.Error()
-	}
 
 	resp := u.Message(true, "success")
 	resp["data"] = bldg
@@ -186,8 +181,8 @@ func (b *Building) FormQuery() string {
 //Get Building by ID
 func GetBuilding(id uint) (*Building, string) {
 	bldg := &Building{}
-	err := GetDB().Table("building").Where("id = ?", id).First(bldg).
-		Table("building_attributes").Where("id = ?", id).First(&(bldg.Attributes)).Error
+	err := GetDB().Collection("buildings").FindOne(GetCtx(),
+		bson.M{"_id": id}).Decode(bldg)
 	if err != nil {
 		fmt.Println(err)
 		return nil, err.Error()
@@ -201,22 +196,33 @@ func GetBuilding(id uint) (*Building, string) {
 //Get All Buildings
 func GetAllBuildings() ([]*Building, string) {
 	bldgs := make([]*Building, 0)
-	attrs := make([]*Building_Attributes, 0)
-	err := GetDB().Find(&bldgs).Error
+	//attrs := make([]*Building_Attributes, 0)
+	c, err := GetDB().Collection("buildings").Find(GetCtx(), bson.M{})
+	//err := GetDB().Find(&bldgs).Error
 	if err != nil {
 		fmt.Println(err)
 		return nil, err.Error()
 	}
 
-	err = GetDB().Find(&attrs).Error
-	if err != nil {
+	//err = GetDB().Find(&attrs).Error
+	/*if err != nil {
 		fmt.Println(err)
 		return nil, err.Error()
+	}*/
+	for c.Next(GetCtx()) {
+		b := &Building{}
+		e := c.Decode(b)
+		if e != nil {
+			fmt.Println(err)
+			return nil, err.Error()
+		}
+		bldgs = append(bldgs, b)
+		//bldgs[i]
 	}
 
 	for i := range bldgs {
 		bldgs[i].Category = "building"
-		bldgs[i].Attributes = *(attrs[i])
+		//bldgs[i].Attributes = *(attrs[i])
 		bldgs[i].DescriptionJSON = strings.Split(bldgs[i].DescriptionDB, "XYZ")
 		bldgs[i].IDJSON = strconv.Itoa(bldgs[i].ID)
 	}
@@ -226,14 +232,27 @@ func GetAllBuildings() ([]*Building, string) {
 
 func GetBuildingsOfParent(id int) ([]*Building, string) {
 	bldgs := make([]*Building, 0)
-	err := GetDB().Table("building").Where("bldg_parent_id = ?", id).Find(&bldgs).Error
+	//err := GetDB().Table("building").Where("bldg_parent_id = ?", id).Find(&bldgs).Error
+	filter := bson.M{"bldg_parent_id": id}
+	c, err := GetDB().Collection("buildings").Find(GetCtx(), filter)
 	if err != nil {
 		fmt.Println(err)
 		return nil, err.Error()
 	}
 
+	for c.Next(GetCtx()) {
+		b := &Building{}
+		err := c.Decode(b)
+		if err != nil {
+			fmt.Println(err)
+			return nil, err.Error()
+		}
+		b.Category = "building"
+		bldgs = append(bldgs, b)
+	}
+
 	println("The length of bldg is: ", len(bldgs))
-	for i := range bldgs {
+	/*for i := range bldgs {
 		e := GetDB().Table("building_attributes").Where("id = ?", bldgs[i].ID).First(&(bldgs[i].Attributes)).Error
 
 		if e != nil {
@@ -244,7 +263,7 @@ func GetBuildingsOfParent(id int) ([]*Building, string) {
 		bldgs[i].Category = "building"
 		bldgs[i].DescriptionJSON = strings.Split(bldgs[i].DescriptionDB, "XYZ")
 		bldgs[i].IDJSON = strconv.Itoa(bldgs[i].ID)
-	}
+	}*/
 
 	return bldgs, ""
 }
@@ -253,10 +272,21 @@ func GetBuildingsOfParent(id int) ([]*Building, string) {
 func GetBuildings(site *Site) []*Building {
 	bldgs := make([]*Building, 0)
 
-	err := GetDB().Table("buildings").Where("foreignkey = ?", site.ID).Find(&bldgs).Error
+	c, err := GetDB().Collection("buildings").Find(GetCtx(), bson.M{"bldg_parent_id": site.ID})
+	//err := GetDB().Collection("buildings").Where("foreignkey = ?", site.ID).Find(&bldgs).Error
 	if err != nil {
 		fmt.Println(err)
 		return nil
+	}
+
+	for c.Next(GetCtx()) {
+		b := &Building{}
+		e := c.Decode(b)
+		if e != nil {
+			fmt.Println(err)
+			return nil
+		}
+		bldgs = append(bldgs, b)
 	}
 
 	return bldgs
@@ -308,7 +338,7 @@ func GetBuildingHierarchyNonStandard(id uint) (*Building,
 }
 
 func GetBuildingByQuery(b *Building) ([]*Building, string) {
-	bldgs := make([]*Building, 0)
+	/*bldgs := make([]*Building, 0)
 	attrs := make([]*Building_Attributes, 0)
 
 	e := GetDB().Raw(b.FormQuery()).Find(&bldgs).
@@ -324,16 +354,18 @@ func GetBuildingByQuery(b *Building) ([]*Building, string) {
 		bldgs[i].DescriptionJSON =
 			strings.Split(bldgs[i].DescriptionDB, "XYZ")
 		bldgs[i].Category = "building"
-	}
+	}*/
 
-	return bldgs, ""
+	return nil, ""
 }
 
-func UpdateBuilding(id uint, newBldgInfo *Building) (map[string]interface{}, string) {
-	bldg := &Building{}
+func UpdateBuilding(id uint, newBldgInfo *map[string]interface{}) (map[string]interface{}, string) {
+	//bldg := &Building{}
+	/*updateInf := map[string]interface{}
 
-	err := GetDB().Table("building").Where("id = ?", id).First(bldg).
-		Table("building_attributes").Where("id = ?", id).First(&(bldg.Attributes)).Error
+	json.Unmarshal()
+
+	err := GetDB().Collection("building").FindOne(GetCtx(), bson.M{"_id":id}).Decode(bldg)
 	if err != nil {
 		return u.Message(false, "Building was not found"), err.Error()
 	}
@@ -384,11 +416,15 @@ func UpdateBuilding(id uint, newBldgInfo *Building) (map[string]interface{}, str
 
 	if newBldgInfo.Attributes.Floors != "" && newBldgInfo.Attributes.Floors != bldg.Attributes.Floors {
 		bldg.Attributes.Floors = newBldgInfo.Attributes.Floors
-	}
+	}*/
 
-	if e := GetDB().Table("building").Save(bldg).
+	/*if e := GetDB().Table("building").Save(bldg).
 		Table("building_attributes").Save(&(bldg.Attributes)).Error; e != nil {
 		return u.Message(false, "Error while updating Building: "+e.Error()), e.Error()
+	}*/
+	c := GetDB().Collection("building").FindOneAndUpdate(GetCtx(), bson.M{"_id": id}, bson.M{"$set": *newBldgInfo}).Err()
+	if c != nil {
+		return u.Message(false, "failure: "+c.Error()), c.Error()
 	}
 	return u.Message(true, "success"), ""
 }
@@ -396,14 +432,13 @@ func UpdateBuilding(id uint, newBldgInfo *Building) (map[string]interface{}, str
 func DeleteBuilding(id uint) map[string]interface{} {
 
 	//This is a hard delete!
-	e := GetDB().Unscoped().Table("building").
-		Where("id = ?", id).Delete(&Building{}).RowsAffected
+	c, _ := GetDB().Collection("building").DeleteOne(GetCtx(), bson.M{"_id": id})
 
 	//The command below is a soft delete
 	//Meaning that the 'deleted_at' field will be set
 	//the record will remain but unsearchable
 	//e := GetDB().Table("tenants").Delete(Tenant{}, id).Error
-	if e == 0 {
+	if c.DeletedCount == 0 {
 		return u.Message(false, "There was an error in deleting the building")
 	}
 
@@ -413,9 +448,8 @@ func DeleteBuilding(id uint) map[string]interface{} {
 func GetBuildingByName(name string) (*Building, string) {
 	bldg := &Building{}
 
-	e := GetDB().Raw(`SELECT * FROM building 
-	JOIN building_attributes ON building.id = building_attributes.id 
-	WHERE bldg_name = ?;`, name).Find(bldg).Find(&bldg.Attributes).Error
+	e := GetDB().Collection("building").
+		FindOne(GetCtx(), bson.M{"bldg_name": name}).Decode(bldg)
 
 	if e != nil {
 		return nil, e.Error()
@@ -533,10 +567,15 @@ func GetNamedDeviceOfBuilding(id int, room_name, rack_name, device_name string) 
 
 func GetBuildingByNameAndParentID(id int, name string) (*Building, string) {
 	building := &Building{}
-	err := GetDB().Raw(`SELECT * FROM building JOIN 
+	/*err := GetDB().Raw(`SELECT * FROM building JOIN
 	building_attributes ON building.id = building_attributes.id
 	WHERE bldg_parent_id = ? AND bldg_name = ?`, id, name).
-		Find(building).Find(&(building.Attributes)).Error
+		Find(building).Find(&(building.Attributes)).Error*/
+
+	err := GetDB().Collection("building").
+		FindOne(GetCtx(),
+			bson.M{"bldg_name": name, "bldg_parent_id": id}).Decode(building)
+
 	if err != nil {
 		fmt.Println(err)
 		return nil, err.Error()

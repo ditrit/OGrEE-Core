@@ -467,7 +467,7 @@ var DeleteSubdevice = func(w http.ResponseWriter, r *http.Request) {
 //Updates work by passing ID in path parameter
 var UpdateSubdevice = func(w http.ResponseWriter, r *http.Request) {
 
-	subdevice := &models.Subdevice{}
+	subdevice := map[string]interface{}{}
 	id, e := strconv.Atoi(mux.Vars(r)["id"])
 
 	if e != nil {
@@ -476,13 +476,13 @@ var UpdateSubdevice = func(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err := json.NewDecoder(r.Body).Decode(subdevice)
+	err := json.NewDecoder(r.Body).Decode(&subdevice)
 	if err != nil {
 		u.Respond(w, u.Message(false, "Error while decoding request body"))
 		u.ErrLog("Error while decoding request body", "UPDATE SUBDEVICE", "", r)
 	}
 
-	v, e1 := models.UpdateSubdevice(uint(id), subdevice)
+	v, e1 := models.UpdateSubdevice(uint(id), &subdevice)
 
 	switch e1 {
 	case "validate":
