@@ -110,8 +110,8 @@ import (
 
 var CreateSite = func(w http.ResponseWriter, r *http.Request) {
 
-	site := &models.Site{}
-	err := json.NewDecoder(r.Body).Decode(site)
+	site := map[string]interface{}{}
+	err := json.NewDecoder(r.Body).Decode(&site)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		u.Respond(w, u.Message(false, "Error while decoding request body"))
@@ -119,7 +119,7 @@ var CreateSite = func(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	resp, e := site.Create()
+	resp, e := models.CreateEntity(SITE, site)
 
 	switch e {
 	case "validate":

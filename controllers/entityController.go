@@ -10,8 +10,10 @@ import (
 
 var CreateEntity = func(w http.ResponseWriter, r *http.Request) {
 	//tenant := &models.Tenant{}
-	tenant := map[string]interface{}{}
-	err := json.NewDecoder(r.Body).Decode(&tenant)
+	entStr := r.URL.Path[5 : len(r.URL.Path)-1] //strip the '/api' in URL
+	entUpper := strings.ToUpper(entStr)         // and the trailing 's'
+	entity := map[string]interface{}{}
+	err := json.NewDecoder(r.Body).Decode(&entity)
 
 	//Copy Request if you want to reuse the JSON
 	//For Error logging
@@ -25,27 +27,31 @@ var CreateEntity = func(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		u.Respond(w, u.Message(false, "Error while decoding request body"))
-		u.ErrLog("Error while decoding request body", "CREATE TENANT", "", r)
+		u.ErrLog("Error while decoding request body", "CREATE "+entStr, "", r)
 
 		return
 	}
 
-	resp, e := models.CreateEntity(TENANT, tenant)
+	i := u.EntityStrToInt(entStr)
+	println("ENT: ", entStr)
+	println("ENUM VAL: ", i)
+
+	resp, e := models.CreateEntity(i, entity)
 
 	switch e {
 	case "validate":
 		w.WriteHeader(http.StatusBadRequest)
-		u.ErrLog("Error while creating tenant", "CREATE TENANT", e, r)
+		u.ErrLog("Error while creating "+entStr, "CREATE "+entUpper, e, r)
 	case "":
 		w.WriteHeader(http.StatusCreated)
 	default:
 		if strings.Split(e, " ")[1] == "duplicate" {
 			w.WriteHeader(http.StatusBadRequest)
-			u.ErrLog("Error: Duplicate tenant is forbidden",
-				"CREATE TENANT", e, r)
+			u.ErrLog("Error: Duplicate "+entStr+" is forbidden",
+				"CREATE "+entUpper, e, r)
 		} else {
 			w.WriteHeader(http.StatusInternalServerError)
-			u.ErrLog("Error while creating tenant", "CREATE TENANT", e, r)
+			u.ErrLog("Error while creating "+entStr, "CREATE "+entUpper, e, r)
 		}
 	}
 

@@ -9,7 +9,7 @@
 			"name": "Login",
 			"item": [
 				{
-					"name": "https://ogree.chibois.net/api/user",
+					"name": "https://ogree.chibois.net/api",
 					"event": [
 						{
 							"listen": "test",
@@ -53,7 +53,7 @@
 							}
 						},
 						"url": {
-							"raw": "{{URL}}/api/user",
+							"raw": "{{URL}}/api",
 							"host": [
 								"{{URL}}"
 							],
@@ -66,7 +66,7 @@
 					"response": []
 				},
 				{
-					"name": "https://ogree.chibois.net/api/user/login",
+					"name": "https://ogree.chibois.net/api/login",
 					"event": [
 						{
 							"listen": "test",
@@ -97,7 +97,7 @@
 							}
 						},
 						"url": {
-							"raw": "{{URL}}/api/user/login",
+							"raw": "{{URL}}/api/login",
 							"host": [
 								"{{URL}}"
 							],
@@ -116,7 +116,7 @@
 			"name": "Tenant",
 			"item": [
 				{
-					"name": "https://ogree.chibois.net/api/user/tenants",
+					"name": "https://ogree.chibois.net/api/tenants",
 					"event": [
 						{
 							"listen": "test",
@@ -161,7 +161,7 @@
 							}
 						},
 						"url": {
-							"raw": "{{URL}}/api/user/tenants",
+							"raw": "{{URL}}/api/tenants",
 							"host": [
 								"{{URL}}"
 							],
@@ -175,7 +175,7 @@
 					"response": []
 				},
 				{
-					"name": "https://ogree.chibois.net/api/user/tenants/{id}",
+					"name": "https://ogree.chibois.net/api/tenants/{id}",
 					"event": [
 						{
 							"listen": "prerequest",
@@ -220,7 +220,7 @@
 							}
 						},
 						"url": {
-							"raw": "{{URL}}/api/user/tenants/{{TenantID}}",
+							"raw": "{{URL}}/api/tenants/{{TenantID}}",
 							"host": [
 								"{{URL}}"
 							],
@@ -235,7 +235,7 @@
 					"response": []
 				},
 				{
-					"name": "https://ogree.chibois.net/api/user/tenants/{id}",
+					"name": "https://ogree.chibois.net/api/tenants/{id}",
 					"event": [
 						{
 							"listen": "prerequest",
@@ -277,7 +277,7 @@
 							}
 						},
 						"url": {
-							"raw": "{{URL}}/api/user/tenants/{{TenantID}}",
+							"raw": "{{URL}}/api/tenants/{{TenantID}}",
 							"host": [
 								"{{URL}}"
 							],
@@ -292,7 +292,7 @@
 					"response": []
 				},
 				{
-					"name": "https://ogree.chibois.net/api/user/tenants/{id}",
+					"name": "https://ogree.chibois.net/api/tenants/{id}",
 					"request": {
 						"method": "DELETE",
 						"header": [
@@ -303,7 +303,7 @@
 							}
 						],
 						"url": {
-							"raw": "{{URL}}/api/user/tenants/{{TenantID}}",
+							"raw": "{{URL}}/api/tenants/{{TenantID}}",
 							"host": [
 								"{{URL}}"
 							],
@@ -318,7 +318,7 @@
 					"response": []
 				},
 				{
-					"name": "https://ogree.chibois.net/api/user/tenants",
+					"name": "https://ogree.chibois.net/api/tenants",
 					"protocolProfileBehavior": {
 						"disableBodyPruning": true
 					},
@@ -341,7 +341,7 @@
 							}
 						},
 						"url": {
-							"raw": "{{URL}}/api/user/tenants",
+							"raw": "{{URL}}/api/tenants",
 							"host": [
 								"{{URL}}"
 							],
@@ -360,7 +360,7 @@
 			"name": "Site",
 			"item": [
 				{
-					"name": "https://ogree.chibois.net/api/user/sites/{id}",
+					"name": "https://ogree.chibois.net/api/sites/{id}",
 					"request": {
 						"method": "GET",
 						"header": [
@@ -371,7 +371,7 @@
 							}
 						],
 						"url": {
-							"raw": "{{URL}}/api/user/sites/{{SiteID}}",
+							"raw": "{{URL}}/api/sites/{{SiteID}}",
 							"host": [
 								"{{URL}}"
 							],
@@ -386,7 +386,7 @@
 					"response": []
 				},
 				{
-					"name": "https://ogree.chibois.net/api/user/sites",
+					"name": "https://ogree.chibois.net/api/sites",
 					"request": {
 						"method": "GET",
 						"header": [
@@ -397,7 +397,7 @@
 							}
 						],
 						"url": {
-							"raw": "{{URL}}/api/user/sites",
+							"raw": "{{URL}}/api/sites",
 							"host": [
 								"{{URL}}"
 							],
@@ -411,7 +411,7 @@
 					"response": []
 				},
 				{
-					"name": "https://ogree.chibois.net/api/user/sites",
+					"name": "https://ogree.chibois.net/api/sites",
 					"request": {
 						"method": "POST",
 						"header": [
@@ -431,7 +431,7 @@
 							}
 						},
 						"url": {
-							"raw": "{{URL}}/api/user/sites",
+							"raw": "{{URL}}/api/sites",
 							"host": [
 								"{{URL}}"
 							],
@@ -445,7 +445,7 @@
 					"response": []
 				},
 				{
-					"name": "https://ogree.chibois.net/api/user/sites/{id}",
+					"name": "https://ogree.chibois.net/api/sites/{id}",
 					"request": {
 						"method": "PUT",
 						"header": [
@@ -465,7 +465,7 @@
 							}
 						},
 						"url": {
-							"raw": "{{URL}}/api/user/sites/{{SiteID}}",
+							"raw": "{{URL}}/api/sites/{{SiteID}}",
 							"host": [
 								"{{URL}}"
 							],
@@ -480,7 +480,7 @@
 					"response": []
 				},
 				{
-					"name": "https://ogree.chibois.net/api/user/sites/{id}",
+					"name": "https://ogree.chibois.net/api/sites/{id}",
 					"request": {
 						"method": "DELETE",
 						"header": [
@@ -491,7 +491,7 @@
 							}
 						],
 						"url": {
-							"raw": "{{URL}}/api/user/sites/{{SiteID}}",
+							"raw": "{{URL}}/api/sites/{{SiteID}}",
 							"host": [
 								"{{URL}}"
 							],
@@ -511,7 +511,7 @@
 			"name": "Building",
 			"item": [
 				{
-					"name": "https://ogree.chibois.net/api/user/buildings/{id}",
+					"name": "https://ogree.chibois.net/api/buildings/{id}",
 					"request": {
 						"method": "GET",
 						"header": [
@@ -522,7 +522,7 @@
 							}
 						],
 						"url": {
-							"raw": "{{URL}}/api/user/buildings/{{BuildingID}}",
+							"raw": "{{URL}}/api/buildings/{{BuildingID}}",
 							"host": [
 								"{{URL}}"
 							],
@@ -537,7 +537,7 @@
 					"response": []
 				},
 				{
-					"name": "https://ogree.chibois.net/api/user/buildings",
+					"name": "https://ogree.chibois.net/api/buildings",
 					"request": {
 						"method": "GET",
 						"header": [
@@ -548,7 +548,7 @@
 							}
 						],
 						"url": {
-							"raw": "{{URL}}/api/user/buildings",
+							"raw": "{{URL}}/api/buildings",
 							"host": [
 								"{{URL}}"
 							],
@@ -562,7 +562,7 @@
 					"response": []
 				},
 				{
-					"name": "https://ogree.chibois.net/api/user/buildings",
+					"name": "https://ogree.chibois.net/api/buildings",
 					"request": {
 						"method": "POST",
 						"header": [
@@ -582,7 +582,7 @@
 							}
 						},
 						"url": {
-							"raw": "{{URL}}/api/user/buildings",
+							"raw": "{{URL}}/api/buildings",
 							"host": [
 								"{{URL}}"
 							],
@@ -596,7 +596,7 @@
 					"response": []
 				},
 				{
-					"name": "https://ogree.chibois.net/api/user/buildings/{id}",
+					"name": "https://ogree.chibois.net/api/buildings/{id}",
 					"request": {
 						"method": "PUT",
 						"header": [
@@ -616,7 +616,7 @@
 							}
 						},
 						"url": {
-							"raw": "{{URL}}/api/user/buildings/{{BuildingID}}",
+							"raw": "{{URL}}/api/buildings/{{BuildingID}}",
 							"host": [
 								"{{URL}}"
 							],
@@ -631,7 +631,7 @@
 					"response": []
 				},
 				{
-					"name": "https://ogree.chibois.net/api/user/buildings/{id}",
+					"name": "https://ogree.chibois.net/api/buildings/{id}",
 					"request": {
 						"method": "DELETE",
 						"header": [
@@ -642,7 +642,7 @@
 							}
 						],
 						"url": {
-							"raw": "{{URL}}/api/user/buildings/{{BuildingID}}",
+							"raw": "{{URL}}/api/buildings/{{BuildingID}}",
 							"host": [
 								"{{URL}}"
 							],
@@ -662,7 +662,7 @@
 			"name": "Room",
 			"item": [
 				{
-					"name": "https://ogree.chibois.net/api/user/rooms/{id}",
+					"name": "https://ogree.chibois.net/api/rooms/{id}",
 					"request": {
 						"method": "GET",
 						"header": [
@@ -673,7 +673,7 @@
 							}
 						],
 						"url": {
-							"raw": "{{URL}}/api/user/rooms/{{RoomID}}",
+							"raw": "{{URL}}/api/rooms/{{RoomID}}",
 							"host": [
 								"{{URL}}"
 							],
@@ -688,7 +688,7 @@
 					"response": []
 				},
 				{
-					"name": "https://ogree.chibois.net/api/user/rooms",
+					"name": "https://ogree.chibois.net/api/rooms",
 					"request": {
 						"method": "GET",
 						"header": [
@@ -699,7 +699,7 @@
 							}
 						],
 						"url": {
-							"raw": "{{URL}}/api/user/rooms",
+							"raw": "{{URL}}/api/rooms",
 							"host": [
 								"{{URL}}"
 							],
@@ -713,7 +713,7 @@
 					"response": []
 				},
 				{
-					"name": "https://ogree.chibois.net/api/user/rooms",
+					"name": "https://ogree.chibois.net/api/rooms",
 					"request": {
 						"method": "POST",
 						"header": [
@@ -733,7 +733,7 @@
 							}
 						},
 						"url": {
-							"raw": "{{URL}}/api/user/rooms",
+							"raw": "{{URL}}/api/rooms",
 							"host": [
 								"{{URL}}"
 							],
@@ -747,7 +747,7 @@
 					"response": []
 				},
 				{
-					"name": "https://ogree.chibois.net/api/user/rooms/{id}",
+					"name": "https://ogree.chibois.net/api/rooms/{id}",
 					"request": {
 						"method": "PUT",
 						"header": [
@@ -767,7 +767,7 @@
 							}
 						},
 						"url": {
-							"raw": "{{URL}}/api/user/rooms/{{RoomID}}",
+							"raw": "{{URL}}/api/rooms/{{RoomID}}",
 							"host": [
 								"{{URL}}"
 							],
@@ -782,7 +782,7 @@
 					"response": []
 				},
 				{
-					"name": "https://ogree.chibois.net/api/user/rooms/{id}",
+					"name": "https://ogree.chibois.net/api/rooms/{id}",
 					"request": {
 						"method": "DELETE",
 						"header": [
@@ -793,7 +793,7 @@
 							}
 						],
 						"url": {
-							"raw": "{{URL}}/api/user/rooms/{{RoomID}}",
+							"raw": "{{URL}}/api/rooms/{{RoomID}}",
 							"host": [
 								"{{URL}}"
 							],
@@ -813,7 +813,7 @@
 			"name": "Rack",
 			"item": [
 				{
-					"name": "https://ogree.chibois.net/api/user/racks/{id}",
+					"name": "https://ogree.chibois.net/api/racks/{id}",
 					"request": {
 						"method": "GET",
 						"header": [
@@ -824,7 +824,7 @@
 							}
 						],
 						"url": {
-							"raw": "{{URL}}/api/user/racks/{{RackID}}",
+							"raw": "{{URL}}/api/racks/{{RackID}}",
 							"host": [
 								"{{URL}}"
 							],
@@ -839,7 +839,7 @@
 					"response": []
 				},
 				{
-					"name": "https://ogree.chibois.net/api/user/racks",
+					"name": "https://ogree.chibois.net/api/racks",
 					"request": {
 						"method": "GET",
 						"header": [
@@ -850,7 +850,7 @@
 							}
 						],
 						"url": {
-							"raw": "{{URL}}/api/user/racks",
+							"raw": "{{URL}}/api/racks",
 							"host": [
 								"{{URL}}"
 							],
@@ -864,7 +864,7 @@
 					"response": []
 				},
 				{
-					"name": "https://ogree.chibois.net/api/user/racks",
+					"name": "https://ogree.chibois.net/api/racks",
 					"request": {
 						"method": "POST",
 						"header": [
@@ -884,7 +884,7 @@
 							}
 						},
 						"url": {
-							"raw": "{{URL}}/api/user/racks",
+							"raw": "{{URL}}/api/racks",
 							"host": [
 								"{{URL}}"
 							],
@@ -898,7 +898,7 @@
 					"response": []
 				},
 				{
-					"name": "https://ogree.chibois.net/api/user/racks/{id}",
+					"name": "https://ogree.chibois.net/api/racks/{id}",
 					"request": {
 						"method": "DELETE",
 						"header": [
@@ -909,7 +909,7 @@
 							}
 						],
 						"url": {
-							"raw": "{{URL}}/api/user/racks/{{RackID}}",
+							"raw": "{{URL}}/api/racks/{{RackID}}",
 							"host": [
 								"{{URL}}"
 							],
@@ -924,7 +924,7 @@
 					"response": []
 				},
 				{
-					"name": "https://ogree.chibois.net/api/user/racks/{id}",
+					"name": "https://ogree.chibois.net/api/racks/{id}",
 					"request": {
 						"method": "PUT",
 						"header": [
@@ -944,7 +944,7 @@
 							}
 						},
 						"url": {
-							"raw": "{{URL}}/api/user/racks/{{RackID}}",
+							"raw": "{{URL}}/api/racks/{{RackID}}",
 							"host": [
 								"{{URL}}"
 							],
@@ -964,7 +964,7 @@
 			"name": "Device",
 			"item": [
 				{
-					"name": "https://ogree.chibois.net/api/user/devices/{id}",
+					"name": "https://ogree.chibois.net/api/devices/{id}",
 					"request": {
 						"method": "GET",
 						"header": [
@@ -975,7 +975,7 @@
 							}
 						],
 						"url": {
-							"raw": "{{URL}}/api/user/devices/{{DeviceID}}",
+							"raw": "{{URL}}/api/devices/{{DeviceID}}",
 							"host": [
 								"{{URL}}"
 							],
@@ -990,7 +990,7 @@
 					"response": []
 				},
 				{
-					"name": "https://ogree.chibois.net/api/user/devices",
+					"name": "https://ogree.chibois.net/api/devices",
 					"request": {
 						"method": "GET",
 						"header": [
@@ -1001,7 +1001,7 @@
 							}
 						],
 						"url": {
-							"raw": "{{URL}}/api/user/devices",
+							"raw": "{{URL}}/api/devices",
 							"host": [
 								"{{URL}}"
 							],
@@ -1015,7 +1015,7 @@
 					"response": []
 				},
 				{
-					"name": "https://ogree.chibois.net/api/user/devices",
+					"name": "https://ogree.chibois.net/api/devices",
 					"request": {
 						"method": "POST",
 						"header": [
@@ -1035,7 +1035,7 @@
 							}
 						},
 						"url": {
-							"raw": "{{URL}}/api/user/devices",
+							"raw": "{{URL}}/api/devices",
 							"host": [
 								"{{URL}}"
 							],
@@ -1049,7 +1049,7 @@
 					"response": []
 				},
 				{
-					"name": "https://ogree.chibois.net/api/user/devices/{id}",
+					"name": "https://ogree.chibois.net/api/devices/{id}",
 					"request": {
 						"method": "DELETE",
 						"header": [
@@ -1060,7 +1060,7 @@
 							}
 						],
 						"url": {
-							"raw": "{{URL}}/api/user/devices/{{DeviceID}}",
+							"raw": "{{URL}}/api/devices/{{DeviceID}}",
 							"host": [
 								"{{URL}}"
 							],
@@ -1075,7 +1075,7 @@
 					"response": []
 				},
 				{
-					"name": "https://ogree.chibois.net/api/user/devices",
+					"name": "https://ogree.chibois.net/api/devices",
 					"request": {
 						"method": "PUT",
 						"header": [
@@ -1095,7 +1095,7 @@
 							}
 						},
 						"url": {
-							"raw": "{{URL}}/api/user/devices/{{DeviceID}}",
+							"raw": "{{URL}}/api/devices/{{DeviceID}}",
 							"host": [
 								"{{URL}}"
 							],
