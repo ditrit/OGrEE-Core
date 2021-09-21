@@ -13,6 +13,17 @@ import (
 	"time"
 )
 
+const (
+	TENANT = iota
+	SITE
+	BLDG
+	ROOM
+	RACK
+	DEVICE
+	SUBDEV
+	SUBDEV1
+)
+
 func Connect() (context.Context, context.CancelFunc) {
 	return context.WithTimeout(context.Background(), 30*time.Second)
 }
@@ -72,4 +83,46 @@ func ParamsParse(link *url.URL) []byte {
 func JoinQueryGen(entity string) string {
 	return "JOIN " + entity +
 		"_attributes ON " + entity + "_attributes.id = " + entity + ".id"
+}
+
+func EntityToString(entity int) string {
+	switch entity {
+	case TENANT:
+		return "tenant"
+	case SITE:
+		return "site"
+	case BLDG:
+		return "building"
+	case ROOM:
+		return "room"
+	case RACK:
+		return "rack"
+	case DEVICE:
+		return "device"
+	case SUBDEV:
+		return "subdevice"
+	default:
+		return "subdevice1"
+	}
+}
+
+func EntityStrToInt(entity string) int {
+	switch entity {
+	case "tenant":
+		return TENANT
+	case "site":
+		return SITE
+	case "building", "bldg":
+		return BLDG
+	case "room":
+		return ROOM
+	case "rack":
+		return RACK
+	case "device":
+		return DEVICE
+	case "subdevice":
+		return SUBDEV
+	default:
+		return SUBDEV1
+	}
 }

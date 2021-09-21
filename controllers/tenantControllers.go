@@ -13,6 +13,17 @@ import (
 	"github.com/gorilla/mux"
 )
 
+const (
+	TENANT = iota
+	SITE
+	BLDG
+	ROOM
+	RACK
+	DEVICE
+	SUBDEV
+	SUBDEV1
+)
+
 // swagger:operation POST /api/user/tenants tenants CreateTenant
 // Creates a Tenant in the system.
 // ---
@@ -73,8 +84,9 @@ import (
 //         description: Bad request
 
 var CreateTenant = func(w http.ResponseWriter, r *http.Request) {
-	tenant := &models.Tenant{}
-	err := json.NewDecoder(r.Body).Decode(tenant)
+	//tenant := &models.Tenant{}
+	tenant := map[string]interface{}{}
+	err := json.NewDecoder(r.Body).Decode(&tenant)
 
 	//Copy Request if you want to reuse the JSON
 	//For Error logging
@@ -93,7 +105,7 @@ var CreateTenant = func(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	resp, e := tenant.Create()
+	resp, e := models.CreateEntity(TENANT, tenant)
 
 	switch e {
 	case "validate":
