@@ -71,7 +71,7 @@ func main() {
 		controllers.GetTenantByQuery).Methods("GET").MatcherFunc(tmatch)
 
 	router.HandleFunc("/api/tenants",
-		controllers.GetAllTenants).Methods("GET")
+		controllers.GetAllEntities).Methods("GET")
 
 	router.HandleFunc("/api/tenants",
 		controllers.CreateEntity).Methods("POST")
@@ -174,7 +174,7 @@ func main() {
 		controllers.GetSiteHierarchy).Methods("GET")
 
 	router.HandleFunc("/api/sites",
-		controllers.GetAllSites).Methods("GET")
+		controllers.GetAllEntities).Methods("GET")
 
 	router.HandleFunc("/api/sites/{id}/buildings/{building_name}/rooms/{room_name}/racks/{rack_name}/devices/{device_name}/subdevices/{subdevice_name}/subdevice1s/{subdevice1_name}",
 		controllers.GetNamedSubdevice1OfSite).Methods("GET")
@@ -286,7 +286,7 @@ func main() {
 		controllers.GetBuilding).Methods("GET")
 
 	router.HandleFunc("/api/buildings",
-		controllers.GetAllBuildings).Methods("GET")
+		controllers.GetAllEntities).Methods("GET")
 
 	// ------ ROOM CRUD ------ //
 	router.HandleFunc("/api/rooms",
@@ -341,7 +341,7 @@ func main() {
 		controllers.GetRoom).Methods("GET")
 
 	router.HandleFunc("/api/rooms",
-		controllers.GetAllRooms).Methods("GET")
+		controllers.GetAllEntities).Methods("GET")
 
 	// ------ RACK CRUD ------ //
 	router.HandleFunc("/api/racks",
@@ -351,7 +351,7 @@ func main() {
 		controllers.CreateEntity).Methods("POST")
 
 	router.HandleFunc("/api/racks",
-		controllers.GetAllRacks).Methods("GET")
+		controllers.GetAllEntities).Methods("GET")
 
 	router.HandleFunc("/api/racks/{id}",
 		controllers.UpdateRack).Methods("PUT")
@@ -421,7 +421,7 @@ func main() {
 		controllers.GetDevice).Methods("GET")
 
 	router.HandleFunc("/api/devices",
-		controllers.GetAllDevices).Methods("GET")
+		controllers.GetAllEntities).Methods("GET")
 
 	// ------ SUBDEVICE CRUD ------ //
 	router.HandleFunc("/api/subdevices",
@@ -443,7 +443,7 @@ func main() {
 		controllers.GetSubdevice).Methods("GET")
 
 	router.HandleFunc("/api/subdevices",
-		controllers.GetAllSubdevices).Methods("GET")
+		controllers.GetAllEntities).Methods("GET")
 
 	// ------ SUBDEVICE1 CRUD ------ //
 	router.HandleFunc("/api/subdevice1s",
@@ -462,7 +462,7 @@ func main() {
 		controllers.GetSubdevice1).Methods("GET")
 
 	router.HandleFunc("/api/subdevice1s",
-		controllers.GetAllSubdevices1).Methods("GET")
+		controllers.GetAllEntities).Methods("GET")
 
 	//Attach JWT auth middleware
 	router.Use(app.JwtAuthentication)

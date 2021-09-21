@@ -1,6 +1,7 @@
 package models
 
 import (
+	"fmt"
 	u "p3/utils"
 
 	"go.mongodb.org/mongo-driver/bson"
@@ -287,4 +288,27 @@ func CreateEntity(entity int, t map[string]interface{}) (map[string]interface{},
 	resp := u.Message(true, "success")
 	resp["data"] = t
 	return resp, ""
+}
+
+func GetAllEntities(ent string) ([]map[string]interface{}, string) {
+	data := make([]map[string]interface{}, 0)
+	ctx, cancel := u.Connect()
+	c, err := GetDB().Collection(ent).Find(ctx, bson.D{{}})
+	if err != nil {
+		fmt.Println(err)
+		return nil, err.Error()
+	}
+	defer cancel()
+
+	for c.Next(GetCtx()) {
+		x := map[string]interface{}{}
+		e := c.Decode(x)
+		if e != nil {
+			fmt.Println(err)
+			return nil, err.Error()
+		}
+		data = append(data, x)
+	}
+
+	return data, ""
 }
