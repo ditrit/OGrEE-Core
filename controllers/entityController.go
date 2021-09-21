@@ -6,6 +6,9 @@ import (
 	"p3/models"
 	u "p3/utils"
 	"strings"
+
+	"github.com/gorilla/mux"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 var CreateEntity = func(w http.ResponseWriter, r *http.Request) {
@@ -86,4 +89,34 @@ var GetAllEntities = func(w http.ResponseWriter, r *http.Request) {
 	resp["data"] = map[string]interface{}{"objects": data}
 
 	u.Respond(w, resp)
+}
+
+var DeleteEntity = func(w http.ResponseWriter, r *http.Request) {
+	id, e := mux.Vars(r)["id"]
+	if e == false {
+		u.Respond(w, u.Message(false, "Error while parsing path parameters"))
+		u.ErrLog("Error while parsing path parameters", "DELETE ENTITY", "", r)
+		return
+	}
+
+	objID, err := primitive.ObjectIDFromHex(id)
+	if err != nil {
+		u.Respond(w, u.Message(false, "Error while converting ID to ObjectID"))
+		u.ErrLog("Error while converting ID to ObjectID", "DELETE ENTITY", "", r)
+		return
+	}
+
+	//Get entity from URL and strip trailing 's'
+	entity := r.URL.Path[5 : strings.LastIndex(r.URL.Path, "/")-1]
+
+	v := models.DeleteEntity(entity, objID)
+
+	if v["status"] == false {
+		w.WriteHeader(http.StatusNotFound)
+		u.ErrLog("Error while deleting entity", "DELETE ENTITY", "Not Found", r)
+	} else {
+		w.WriteHeader(http.StatusNoContent)
+	}
+
+	u.Respond(w, v)
 }

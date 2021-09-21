@@ -19,37 +19,37 @@ var tmatch mux.MatcherFunc = func(request *http.Request, match *mux.RouteMatch) 
 	//https://stackoverflow.com/questions/21664489/
 	//golang-mux-routing-wildcard-custom-func-match
 
-	return regexp.MustCompile(`^(\/api\/user\/tenants\?.*)$`).
+	return regexp.MustCompile(`^(\/api\/tenants\?.*)$`).
 		MatchString(request.URL.String())
 }
 
 var smatch mux.MatcherFunc = func(request *http.Request, match *mux.RouteMatch) bool {
 
-	return regexp.MustCompile(`^(\/api\/user\/sites\?.*)$`).
+	return regexp.MustCompile(`^(\/api\/sites\?.*)$`).
 		MatchString(request.URL.String())
 }
 
 var bmatch mux.MatcherFunc = func(request *http.Request, match *mux.RouteMatch) bool {
 
-	return regexp.MustCompile(`^(\/api\/user\/buildings\?.*)$`).
+	return regexp.MustCompile(`^(\/api\/buildings\?.*)$`).
 		MatchString(request.URL.String())
 }
 
 var rmatch mux.MatcherFunc = func(request *http.Request, match *mux.RouteMatch) bool {
 
-	return regexp.MustCompile(`^(\/api\/user\/rooms\?.*)$`).
+	return regexp.MustCompile(`^(\/api\/rooms\?.*)$`).
 		MatchString(request.URL.String())
 }
 
 var ramatch mux.MatcherFunc = func(request *http.Request, match *mux.RouteMatch) bool {
 
-	return regexp.MustCompile(`^(\/api\/user\/racks\?.*)$`).
+	return regexp.MustCompile(`^(\/api\/racks\?.*)$`).
 		MatchString(request.URL.String())
 }
 
 var dmatch mux.MatcherFunc = func(request *http.Request, match *mux.RouteMatch) bool {
 
-	return regexp.MustCompile(`^(\/api\/user\/(devices|subdevices|subdevices1)\?.*)$`).
+	return regexp.MustCompile(`^(\/api\/(devices|subdevices|subdevices1)\?.*)$`).
 		MatchString(request.URL.String())
 }
 
@@ -219,7 +219,7 @@ func main() {
 		controllers.UpdateSite).Methods("PUT")
 
 	router.HandleFunc("/api/sites/{id}",
-		controllers.DeleteSiteByID).Methods("DELETE")
+		controllers.DeleteEntity).Methods("DELETE")
 
 	router.HandleFunc("/api/sites",
 		controllers.DeleteSites).Methods("DELETE")
@@ -235,7 +235,7 @@ func main() {
 		controllers.UpdateBuilding).Methods("PUT")
 
 	router.HandleFunc("/api/buildings/{id}",
-		controllers.DeleteBuilding).Methods("DELETE")
+		controllers.DeleteEntity).Methods("DELETE")
 
 	router.HandleFunc("/api/buildings/{id:[0-9]+}/rooms/{room_name}/racks/{rack_name}/devices/{device_name}/subdevices/{subdevice_name}/subdevice1s/{subdevice1_name}",
 		controllers.GetNamedSubdevice1OfBuilding).Methods("GET")
@@ -299,7 +299,7 @@ func main() {
 		controllers.UpdateRoom).Methods("PUT")
 
 	router.HandleFunc("/api/rooms/{id}",
-		controllers.DeleteRoom).Methods("DELETE")
+		controllers.DeleteEntity).Methods("DELETE")
 
 	router.HandleFunc("/api/rooms/{id:[0-9]+}/racks/{rack_name}/devices/{device_name}/subdevices/{subdevice_name}/subdevice1s/{subdevice1_name}",
 		controllers.GetNamedSubdevice1OfRoom).Methods("GET")
@@ -357,7 +357,7 @@ func main() {
 		controllers.UpdateRack).Methods("PUT")
 
 	router.HandleFunc("/api/racks/{id}",
-		controllers.DeleteRack).Methods("DELETE")
+		controllers.DeleteEntity).Methods("DELETE")
 
 	router.HandleFunc("/api/racks/{id:[0-9]+}/devices/{device_name}/subdevices/{subdevice_name}/subdevice1s/{subdevice1_name}",
 		controllers.GetNamedSubdevice1OfRack).Methods("GET")
@@ -400,7 +400,7 @@ func main() {
 		controllers.UpdateDevice).Methods("PUT")
 
 	router.HandleFunc("/api/devices/{id}",
-		controllers.DeleteDevice).Methods("DELETE")
+		controllers.DeleteEntity).Methods("DELETE")
 
 	router.HandleFunc("/api/devices/{id:[0-9]+}/subdevices/{subdevice_name}/subdevice1s/{subdevone_name}",
 		controllers.GetNamedSubdevice1OfDevice).Methods("GET")
@@ -434,7 +434,7 @@ func main() {
 		controllers.UpdateSubdevice).Methods("PUT")
 
 	router.HandleFunc("/api/subdevices/{id}",
-		controllers.DeleteSubdevice).Methods("DELETE")
+		controllers.DeleteEntity).Methods("DELETE")
 
 	router.HandleFunc("/api/subdevices/{id:[0-9]+}/all",
 		controllers.GetSubdeviceHierarchy).Methods("GET")
@@ -456,7 +456,7 @@ func main() {
 		controllers.UpdateSubdevice1).Methods("PUT")
 
 	router.HandleFunc("/api/subdevice1s/{id}",
-		controllers.DeleteSubdevice1).Methods("DELETE")
+		controllers.DeleteEntity).Methods("DELETE")
 
 	router.HandleFunc("/api/subdevice1s/{id}",
 		controllers.GetSubdevice1).Methods("GET")

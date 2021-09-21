@@ -264,16 +264,6 @@ func CreateEntity(entity int, t map[string]interface{}) (map[string]interface{},
 
 	ctx, cancel := u.Connect()
 
-	/*switch entity {
-	case TENANT:
-
-		if _, e := GetDB().Collection("tenant").InsertOne(ctx, t); e != nil {
-			return u.Message(false, "Internal error while creating Tenant: "+e.Error()),
-				e.Error()
-		}
-
-	}*/
-
 	entStr := u.EntityToString(entity)
 	res, e := GetDB().Collection(entStr).InsertOne(ctx, t)
 	if e != nil {
@@ -311,4 +301,15 @@ func GetAllEntities(ent string) ([]map[string]interface{}, string) {
 	}
 
 	return data, ""
+}
+
+func DeleteEntity(entity string, id primitive.ObjectID) map[string]interface{} {
+	ctx, cancel := u.Connect()
+	c, _ := GetDB().Collection(entity).DeleteOne(ctx, bson.M{"_id": id})
+	if c.DeletedCount == 0 {
+		return u.Message(false, "There was an error in deleting the rack")
+	}
+	defer cancel()
+
+	return u.Message(true, "success")
 }
