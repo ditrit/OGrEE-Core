@@ -327,3 +327,13 @@ func DeleteEntity(entity string, id primitive.ObjectID) map[string]interface{} {
 
 	return u.Message(true, "success")
 }
+
+func UpdateEntity(ent string, id primitive.ObjectID, t *map[string]interface{}) (map[string]interface{}, string) {
+	ctx, cancel := u.Connect()
+	e := GetDB().Collection(ent).FindOneAndUpdate(ctx, bson.M{"_id": id}, bson.M{"$set": *t}).Err()
+	if e != nil {
+		return u.Message(false, "failure: "+e.Error()), e.Error()
+	}
+	defer cancel()
+	return u.Message(true, "success"), ""
+}

@@ -143,7 +143,7 @@ func main() {
 		controllers.GetEntity).Methods("GET")
 
 	router.HandleFunc("/api/tenants/{id}",
-		controllers.UpdateTenant).Methods("PUT")
+		controllers.UpdateEntity).Methods("PUT")
 
 	router.HandleFunc("/api/tenants/{id}",
 		controllers.DeleteTenant).Methods("DELETE")
@@ -216,7 +216,7 @@ func main() {
 		controllers.GetEntity).Methods("GET")
 
 	router.HandleFunc("/api/sites/{id}",
-		controllers.UpdateSite).Methods("PUT")
+		controllers.UpdateEntity).Methods("PUT")
 
 	router.HandleFunc("/api/sites/{id}",
 		controllers.DeleteEntity).Methods("DELETE")
@@ -232,7 +232,7 @@ func main() {
 		controllers.CreateEntity).Methods("POST")
 
 	router.HandleFunc("/api/buildings/{id}",
-		controllers.UpdateBuilding).Methods("PUT")
+		controllers.UpdateEntity).Methods("PUT")
 
 	router.HandleFunc("/api/buildings/{id}",
 		controllers.DeleteEntity).Methods("DELETE")
@@ -283,7 +283,7 @@ func main() {
 		controllers.GetBuildingHierarchy).Methods("GET")
 
 	router.HandleFunc("/api/buildings/{id}",
-		controllers.GetBuilding).Methods("GET")
+		controllers.GetEntity).Methods("GET")
 
 	router.HandleFunc("/api/buildings",
 		controllers.GetAllEntities).Methods("GET")
@@ -296,7 +296,7 @@ func main() {
 		controllers.CreateEntity).Methods("POST")
 
 	router.HandleFunc("/api/rooms/{id}",
-		controllers.UpdateRoom).Methods("PUT")
+		controllers.UpdateEntity).Methods("PUT")
 
 	router.HandleFunc("/api/rooms/{id}",
 		controllers.DeleteEntity).Methods("DELETE")
@@ -338,7 +338,7 @@ func main() {
 		controllers.GetRoomHierarchyNonStandard).Methods("GET")
 
 	router.HandleFunc("/api/rooms/{id}",
-		controllers.GetRoom).Methods("GET")
+		controllers.GetEntity).Methods("GET")
 
 	router.HandleFunc("/api/rooms",
 		controllers.GetAllEntities).Methods("GET")
@@ -354,7 +354,7 @@ func main() {
 		controllers.GetAllEntities).Methods("GET")
 
 	router.HandleFunc("/api/racks/{id}",
-		controllers.UpdateRack).Methods("PUT")
+		controllers.UpdateEntity).Methods("PUT")
 
 	router.HandleFunc("/api/racks/{id}",
 		controllers.DeleteEntity).Methods("DELETE")
@@ -387,7 +387,7 @@ func main() {
 		controllers.GetRackHierarchyNonStandard).Methods("GET")
 
 	router.HandleFunc("/api/racks/{id}",
-		controllers.GetRack).Methods("GET")
+		controllers.GetEntity).Methods("GET")
 
 	// ------ DEVICE CRUD ------ //
 	router.HandleFunc("/api/devices",
@@ -397,7 +397,7 @@ func main() {
 		controllers.CreateEntity).Methods("POST")
 
 	router.HandleFunc("/api/devices/{id}",
-		controllers.UpdateDevice).Methods("PUT")
+		controllers.UpdateEntity).Methods("PUT")
 
 	router.HandleFunc("/api/devices/{id}",
 		controllers.DeleteEntity).Methods("DELETE")
@@ -418,7 +418,7 @@ func main() {
 		controllers.GetDeviceHierarchy).Methods("GET")
 
 	router.HandleFunc("/api/devices/{id}",
-		controllers.GetDevice).Methods("GET")
+		controllers.GetEntity).Methods("GET")
 
 	router.HandleFunc("/api/devices",
 		controllers.GetAllEntities).Methods("GET")
@@ -431,7 +431,7 @@ func main() {
 		controllers.CreateEntity).Methods("POST")
 
 	router.HandleFunc("/api/subdevices/{id}",
-		controllers.UpdateSubdevice).Methods("PUT")
+		controllers.UpdateEntity).Methods("PUT")
 
 	router.HandleFunc("/api/subdevices/{id}",
 		controllers.DeleteEntity).Methods("DELETE")
@@ -440,7 +440,7 @@ func main() {
 		controllers.GetSubdeviceHierarchy).Methods("GET")
 
 	router.HandleFunc("/api/subdevices/{id}",
-		controllers.GetSubdevice).Methods("GET")
+		controllers.GetEntity).Methods("GET")
 
 	router.HandleFunc("/api/subdevices",
 		controllers.GetAllEntities).Methods("GET")
@@ -453,13 +453,13 @@ func main() {
 		controllers.CreateEntity).Methods("POST")
 
 	router.HandleFunc("/api/subdevice1s/{id}",
-		controllers.UpdateSubdevice1).Methods("PUT")
+		controllers.UpdateEntity).Methods("PUT")
 
 	router.HandleFunc("/api/subdevice1s/{id}",
 		controllers.DeleteEntity).Methods("DELETE")
 
 	router.HandleFunc("/api/subdevice1s/{id}",
-		controllers.GetSubdevice1).Methods("GET")
+		controllers.GetEntity).Methods("GET")
 
 	router.HandleFunc("/api/subdevice1s",
 		controllers.GetAllEntities).Methods("GET")

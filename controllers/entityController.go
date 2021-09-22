@@ -158,3 +158,50 @@ var DeleteEntity = func(w http.ResponseWriter, r *http.Request) {
 
 	u.Respond(w, v)
 }
+
+var UpdateEntity = func(w http.ResponseWriter, r *http.Request) {
+	updateData := map[string]interface{}{}
+
+	id, e := mux.Vars(r)["id"]
+	if e == false {
+		w.WriteHeader(http.StatusBadRequest)
+		u.Respond(w, u.Message(false, "Error while extracting from path parameters"))
+		u.ErrLog("Error while extracting from path parameters", "UPDATE ENTITY", "", r)
+		return
+	}
+
+	err := json.NewDecoder(r.Body).Decode(&updateData)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		u.Respond(w, u.Message(false, "Error while decoding request body"))
+		u.ErrLog("Error while decoding request body", "UPDATE ENTITY", "", r)
+	}
+
+	objID, err := primitive.ObjectIDFromHex(id)
+	if err != nil {
+		u.Respond(w, u.Message(false, "Error while converting ID to ObjectID"))
+		u.ErrLog("Error while converting ID to ObjectID", "DELETE ENTITY", "", r)
+		return
+	}
+
+	//Get entity from URL and strip trailing 's'
+	entity := r.URL.Path[5 : strings.LastIndex(r.URL.Path, "/")-1]
+
+	v, e1 := models.UpdateEntity(entity, objID, &updateData)
+
+	switch e1 {
+
+	case "validate":
+		w.WriteHeader(http.StatusBadRequest)
+		u.ErrLog("Error while updating "+entity, "UPDATE "+strings.ToUpper(entity), e1, r)
+	case "internal":
+		w.WriteHeader(http.StatusInternalServerError)
+		u.ErrLog("Error while updating "+entity, "UPDATE "+strings.ToUpper(entity), e1, r)
+	case "record not found":
+		w.WriteHeader(http.StatusNotFound)
+		u.ErrLog("Error while updating "+entity, "UPDATE "+strings.ToUpper(entity), e1, r)
+	default:
+	}
+
+	u.Respond(w, v)
+}
