@@ -116,7 +116,7 @@ func main() {
 		controllers.GetNamedSiteOfTenant).Methods("GET")
 
 	router.HandleFunc("/api/tenants/{tenant_name}/sites",
-		controllers.GetSitesOfTenant).Methods("GET")
+		controllers.GetEntitiesOfParent).Methods("GET")
 
 	router.HandleFunc("/api/tenants/{tenant_name}/all/sites/buildings/rooms/racks/devices/subdevices",
 		controllers.GetTenantHierarchyToSubdevice).Methods("GET")
@@ -210,7 +210,7 @@ func main() {
 		controllers.GetNamedBuildingOfSite).Methods("GET")
 
 	router.HandleFunc("/api/sites/{id}/buildings",
-		controllers.GetBuildingsOfSite).Methods("GET")
+		controllers.GetEntitiesOfParent).Methods("GET")
 
 	router.HandleFunc("/api/sites/{id}",
 		controllers.GetEntity).Methods("GET")
@@ -265,7 +265,7 @@ func main() {
 		controllers.GetNamedRoomOfBuilding).Methods("GET")
 
 	router.HandleFunc("/api/buildings/{id:[0-9]+}/rooms",
-		controllers.GetRoomsOfBuilding).Methods("GET")
+		controllers.GetEntitiesOfParent).Methods("GET")
 
 	router.HandleFunc("/api/buildings/{id:[0-9]+}/all/nonstd",
 		controllers.GetBuildingHierarchyNonStandard).Methods("GET")
@@ -323,7 +323,7 @@ func main() {
 		controllers.GetRackOfRoomByName).Methods("GET")
 
 	router.HandleFunc("/api/rooms/{id:[0-9]+}/racks",
-		controllers.GetRacksOfParent).Methods("GET")
+		controllers.GetEntitiesOfParent).Methods("GET")
 
 	router.HandleFunc("/api/rooms/{id:[0-9]+}/all/racks/devices/subdevices",
 		controllers.GetRoomHierarchyToSubdevices).Methods("GET")
@@ -375,7 +375,7 @@ func main() {
 		controllers.GetRackDeviceByName).Methods("GET")
 
 	router.HandleFunc("/api/racks/{id:[0-9]+}/devices",
-		controllers.GetDevicesOfRack).Methods("GET")
+		controllers.GetEntitiesOfParent).Methods("GET")
 
 	router.HandleFunc("/api/racks/{id:[0-9]+}/all/devices/subdevices",
 		controllers.GetRackHierarchyToSubdevices).Methods("GET")
@@ -412,7 +412,7 @@ func main() {
 		controllers.GetDeviceSubdeviceByName).Methods("GET")
 
 	router.HandleFunc("/api/devices/{id:[0-9]+}/subdevices",
-		controllers.GetSubdevicesOfDevice).Methods("GET")
+		controllers.GetEntitiesOfParent).Methods("GET")
 
 	router.HandleFunc("/api/devices/{id:[0-9]+}/all",
 		controllers.GetDeviceHierarchy).Methods("GET")

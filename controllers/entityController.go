@@ -240,3 +240,49 @@ var GetEntityByQuery = func(w http.ResponseWriter, r *http.Request) {
 
 	u.Respond(w, resp)
 }
+
+var GetEntitiesOfParent = func(w http.ResponseWriter, r *http.Request) {
+	var id string
+	var e bool
+	//Extract string between /api and /{id}
+	idx := strings.Index(r.URL.Path[5:], "/") + 4
+	entStr := r.URL.Path[5:idx]
+
+	//s, _ := getObjID(id)
+	enum := u.EntityStrToInt(entStr)
+	childBase := u.EntityToString(enum + 1)
+
+	resp := u.Message(true, "success")
+
+	if enum == TENANT {
+		id, e = mux.Vars(r)["tenant_name"]
+	} else {
+		id, e = mux.Vars(r)["id"]
+	}
+
+	if e == false {
+		u.Respond(w, u.Message(false, "Error while parsing path parameters"))
+		u.ErrLog("Error while parsing path parameters", "GET CHILDRENOFPARENT", "", r)
+		return
+	}
+
+	data, e1 := models.GetEntitiesOfParent(childBase, id)
+	if data == nil {
+		resp = u.Message(false, "Error while getting "+entStr+"s: "+e1)
+		u.ErrLog("Error while getting children of "+entStr,
+			"GET CHILDRENOFPARENT", e1, r)
+
+		switch e1 {
+		case "record not found":
+			w.WriteHeader(http.StatusNotFound)
+		default:
+		}
+
+	} else {
+		resp = u.Message(true, "success")
+	}
+
+	resp["data"] = map[string]interface{}{"objects": data}
+
+	u.Respond(w, resp)
+}

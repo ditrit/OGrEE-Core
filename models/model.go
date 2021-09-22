@@ -3,6 +3,9 @@ package models
 import (
 	"fmt"
 	u "p3/utils"
+	"strings"
+
+	"go.mongodb.org/mongo-driver/mongo"
 
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -294,6 +297,18 @@ func GetEntity(entityID primitive.ObjectID, ent string) (map[string]interface{},
 	return t, ""
 }
 
+func GetEntityByName(name, ent string) (map[string]interface{}, string) {
+	t := map[string]interface{}{}
+
+	ctx, cancel := u.Connect()
+	e := GetDB().Collection(ent).FindOne(ctx, bson.M{"name": name}).Decode(&t)
+	if e != nil {
+		return nil, e.Error()
+	}
+	defer cancel()
+	return t, ""
+}
+
 func GetAllEntities(ent string) ([]map[string]interface{}, string) {
 	data := make([]map[string]interface{}, 0)
 	ctx, cancel := u.Connect()
@@ -360,4 +375,50 @@ func GetEntityByQuery(ent string, query bson.M) ([]map[string]interface{}, strin
 	}
 
 	return results, ""
+}
+
+func GetEntitiesOfParent(ent, id string) ([]map[string]interface{}, string) {
+	var c *mongo.Cursor
+	var err error
+	enfants := make([]map[string]interface{}, 0)
+	ctx, cancel := u.Connect()
+	if ent == "site" {
+		t, e := GetEntityByName(id, "tenant")
+		if e != "" {
+			fmt.Println(err)
+			return nil, err.Error()
+		}
+		//ObjectID is a hassle
+		oID := t["_id"].(primitive.ObjectID).String()
+		leftIdx := strings.Index(oID, "\"")
+		rightIdx := strings.LastIndex(oID, "\"")
+		x := oID[leftIdx+1 : rightIdx]
+
+		c, err = GetDB().Collection(ent).Find(ctx, bson.M{"parentId": x})
+		if err != nil {
+			fmt.Println(err)
+			return nil, err.Error()
+		}
+	} else {
+		c, err = GetDB().Collection(ent).Find(ctx, bson.M{"parentId": id})
+		if err != nil {
+			fmt.Println(err)
+			return nil, err.Error()
+		}
+	}
+	defer cancel()
+
+	for c.Next(GetCtx()) {
+		s := map[string]interface{}{}
+		e := c.Decode(&s)
+		if e != nil {
+			fmt.Println(err)
+			return nil, err.Error()
+		}
+		enfants = append(enfants, s)
+	}
+
+	//println("The length of children is: ", len(enfants))
+
+	return enfants, ""
 }
