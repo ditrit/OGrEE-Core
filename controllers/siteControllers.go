@@ -6,7 +6,6 @@ import (
 	"net/http"
 	"p3/models"
 	u "p3/utils"
-	"reflect"
 	"strconv"
 	"strings"
 
@@ -613,7 +612,7 @@ var UpdateSite = func(w http.ResponseWriter, r *http.Request) {
 var GetSiteByQuery = func(w http.ResponseWriter, r *http.Request) {
 	var resp map[string]interface{}
 
-	query := u.ParamsParse(r.URL)
+	/*query := u.ParamsParse(r.URL)
 
 	mydata := &models.Site{}
 	json.Unmarshal(query, mydata)
@@ -648,7 +647,7 @@ var GetSiteByQuery = func(w http.ResponseWriter, r *http.Request) {
 		resp = u.Message(true, "success")
 	}
 
-	resp["data"] = map[string]interface{}{"objects": data}
+	resp["data"] = map[string]interface{}{"objects": data}*/
 	u.Respond(w, resp)
 }
 

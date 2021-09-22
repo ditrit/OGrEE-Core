@@ -52,32 +52,19 @@ func ErrLog(message, funcname, details string, r *http.Request) {
 	log.Println(details)
 }
 
-func ParamsParse(link *url.URL) []byte {
+func ParamsParse(link *url.URL) map[string]interface{} {
 	q, _ := url.ParseQuery(link.RawQuery)
-	values := make(map[string]string)
+	values := make(map[string]interface{})
 	for key, _ := range q {
-		values[key] = q.Get(key)
+		switch key {
+		case "id", "name", "category", "parentID",
+			"description", "domain", "parentid", "parentId":
+			values[key] = q.Get(key)
+		default:
+			values["attributes."+key] = q.Get(key)
+		}
 	}
-
-	//If you marshal it then
-	//Unmarshal it, you can parse
-	//the URL into a struct of choice!
-	//Note that you would have to
-	//Unmarshal twice to catch the
-	//inner struct
-	js, err := json.Marshal(values)
-	if err != nil {
-		panic(err)
-	}
-
-	return js
-
-	/*
-		mydata := &models.Tenant{}
-		json.Unmarshal(query, mydata)
-		json.Unmarshal(query, &(mydata.Attributes))
-	*/
-	//return values
+	return values
 }
 
 func JoinQueryGen(entity string) string {

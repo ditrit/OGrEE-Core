@@ -68,7 +68,7 @@ func main() {
 
 	// ------ TENANTS CRUD ------ //
 	router.HandleFunc("/api/tenants",
-		controllers.GetTenantByQuery).Methods("GET").MatcherFunc(tmatch)
+		controllers.GetEntityByQuery).Methods("GET").MatcherFunc(tmatch)
 
 	router.HandleFunc("/api/tenants",
 		controllers.GetAllEntities).Methods("GET")
@@ -150,7 +150,7 @@ func main() {
 
 	// ------ SITES CRUD ------ //
 	router.HandleFunc("/api/sites",
-		controllers.GetSiteByQuery).Methods("GET").MatcherFunc(smatch)
+		controllers.GetEntityByQuery).Methods("GET").MatcherFunc(smatch)
 
 	router.HandleFunc("/api/sites",
 		controllers.CreateEntity).Methods("POST")
@@ -226,7 +226,7 @@ func main() {
 
 	// ------ BUILDING CRUD ------ //
 	router.HandleFunc("/api/buildings",
-		controllers.GetBuildingByQuery).Methods("GET").MatcherFunc(bmatch)
+		controllers.GetEntityByQuery).Methods("GET").MatcherFunc(bmatch)
 
 	router.HandleFunc("/api/buildings",
 		controllers.CreateEntity).Methods("POST")
@@ -290,7 +290,7 @@ func main() {
 
 	// ------ ROOM CRUD ------ //
 	router.HandleFunc("/api/rooms",
-		controllers.GetRoomByQuery).Methods("GET").MatcherFunc(rmatch)
+		controllers.GetEntityByQuery).Methods("GET").MatcherFunc(rmatch)
 
 	router.HandleFunc("/api/rooms",
 		controllers.CreateEntity).Methods("POST")
@@ -345,7 +345,7 @@ func main() {
 
 	// ------ RACK CRUD ------ //
 	router.HandleFunc("/api/racks",
-		controllers.GetRackByQuery).Methods("GET").MatcherFunc(ramatch)
+		controllers.GetEntityByQuery).Methods("GET").MatcherFunc(ramatch)
 
 	router.HandleFunc("/api/racks",
 		controllers.CreateEntity).Methods("POST")
@@ -391,7 +391,7 @@ func main() {
 
 	// ------ DEVICE CRUD ------ //
 	router.HandleFunc("/api/devices",
-		controllers.GetDeviceByQuery).Methods("GET").MatcherFunc(dmatch)
+		controllers.GetEntityByQuery).Methods("GET").MatcherFunc(dmatch)
 
 	router.HandleFunc("/api/devices",
 		controllers.CreateEntity).Methods("POST")
@@ -425,7 +425,7 @@ func main() {
 
 	// ------ SUBDEVICE CRUD ------ //
 	router.HandleFunc("/api/subdevices",
-		controllers.GetSubdeviceByQuery).Methods("GET").MatcherFunc(dmatch)
+		controllers.GetEntityByQuery).Methods("GET").MatcherFunc(dmatch)
 
 	router.HandleFunc("/api/subdevices",
 		controllers.CreateEntity).Methods("POST")
@@ -447,7 +447,7 @@ func main() {
 
 	// ------ SUBDEVICE1 CRUD ------ //
 	router.HandleFunc("/api/subdevice1s",
-		controllers.GetSubdevice1ByQuery).Methods("GET").MatcherFunc(dmatch)
+		controllers.GetEntityByQuery).Methods("GET").MatcherFunc(dmatch)
 
 	router.HandleFunc("/api/subdevice1s",
 		controllers.CreateEntity).Methods("POST")

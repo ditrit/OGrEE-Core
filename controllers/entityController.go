@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	"github.com/gorilla/mux"
+	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
@@ -204,4 +205,38 @@ var UpdateEntity = func(w http.ResponseWriter, r *http.Request) {
 	}
 
 	u.Respond(w, v)
+}
+
+var GetEntityByQuery = func(w http.ResponseWriter, r *http.Request) {
+	var resp map[string]interface{}
+	var bsonMap bson.M
+	entStr := r.URL.Path[5 : len(r.URL.Path)-1] //strip the '/api' in URL
+
+	query := u.ParamsParse(r.URL)
+	js, _ := json.Marshal(query)
+	json.Unmarshal(js, &bsonMap)
+
+	data, e := models.GetEntityByQuery(entStr, bsonMap)
+
+	if len(data) == 0 {
+		resp = u.Message(false, "Error: "+e)
+		u.ErrLog("Error while getting "+entStr, "GET ENTITYQUERY", e, r)
+
+		switch e {
+		case "record not found":
+			w.WriteHeader(http.StatusNotFound)
+		case "":
+			resp = u.Message(false, "Error: No Records Found")
+			w.WriteHeader(http.StatusNotFound)
+		default:
+			w.WriteHeader(http.StatusNotFound)
+		}
+
+	} else {
+		resp = u.Message(true, "success")
+	}
+
+	resp["data"] = map[string]interface{}{"objects": data}
+
+	u.Respond(w, resp)
 }
