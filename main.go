@@ -140,7 +140,7 @@ func main() {
 		controllers.GetTenantHierarchy).Methods("GET")
 
 	router.HandleFunc("/api/tenants/{id}",
-		controllers.GetTenantFor).Methods("GET")
+		controllers.GetEntity).Methods("GET")
 
 	router.HandleFunc("/api/tenants/{id}",
 		controllers.UpdateTenant).Methods("PUT")
@@ -213,7 +213,7 @@ func main() {
 		controllers.GetBuildingsOfSite).Methods("GET")
 
 	router.HandleFunc("/api/sites/{id}",
-		controllers.GetSite).Methods("GET")
+		controllers.GetEntity).Methods("GET")
 
 	router.HandleFunc("/api/sites/{id}",
 		controllers.UpdateSite).Methods("PUT")

@@ -11,6 +11,14 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
+func getObjID(x string) (primitive.ObjectID, error) {
+	objID, err := primitive.ObjectIDFromHex(x)
+	if err != nil {
+		return objID, err
+	}
+	return objID, nil
+}
+
 var CreateEntity = func(w http.ResponseWriter, r *http.Request) {
 	//tenant := &models.Tenant{}
 	entStr := r.URL.Path[5 : len(r.URL.Path)-1] //strip the '/api' in URL
@@ -18,15 +26,6 @@ var CreateEntity = func(w http.ResponseWriter, r *http.Request) {
 	entity := map[string]interface{}{}
 	err := json.NewDecoder(r.Body).Decode(&entity)
 
-	//Copy Request if you want to reuse the JSON
-	//For Error logging
-	//bt, _ := httputil.DumpRequest(r, true)
-	//println(string(bt))
-	//q := io.TeeReader(r.Body, bytes.Buffer)
-
-	//q := r.Body
-	//s, _ := ioutil.ReadAll(q)
-	//println(string(s))
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		u.Respond(w, u.Message(false, "Error while decoding request body"))
@@ -58,6 +57,45 @@ var CreateEntity = func(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
+	u.Respond(w, resp)
+}
+
+var GetEntity = func(w http.ResponseWriter, r *http.Request) {
+	id, e := mux.Vars(r)["id"]
+	resp := u.Message(true, "success")
+
+	if e == false {
+		u.Respond(w, u.Message(false, "Error while parsing path parameters"))
+		u.ErrLog("Error while parsing path parameters", "GET ENTITY", "", r)
+		return
+	}
+
+	x, e2 := getObjID(id)
+	if e2 != nil {
+		u.Respond(w, u.Message(false, "Error while converting ID to ObjectID"))
+		u.ErrLog("Error while converting ID to ObjectID", "GET ENTITY", "", r)
+		return
+	}
+
+	//Get entity type and strip trailing 's'
+	s := r.URL.Path[5 : strings.LastIndex(r.URL.Path, "/")-1]
+
+	data, e1 := models.GetEntity(x, s)
+	if data == nil {
+		resp = u.Message(false, "Error while getting "+s+": "+e1)
+		u.ErrLog("Error while getting "+s, "GET "+strings.ToUpper(s), "", r)
+
+		switch e1 {
+		case "record not found":
+			w.WriteHeader(http.StatusNotFound)
+		default:
+		}
+
+	} else {
+		resp = u.Message(true, "success")
+	}
+
+	resp["data"] = data
 	u.Respond(w, resp)
 }
 

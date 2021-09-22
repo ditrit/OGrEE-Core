@@ -20,7 +20,8 @@ const (
 )
 
 func ValidateEntity(entity int, t map[string]interface{}) (map[string]interface{}, bool) {
-
+	var objID primitive.ObjectID
+	var err error
 	if t["name"] == "" {
 		return u.Message(false, "Name should be on payload"), false
 	}
@@ -32,14 +33,15 @@ func ValidateEntity(entity int, t map[string]interface{}) (map[string]interface{
 	if t["domain"] == "" {
 		return u.Message(false, "Domain should be on the payload"), false
 	}
-	objID, err := primitive.ObjectIDFromHex(t["parentId"].(string))
-	if err != nil {
-		return u.Message(false, "ParentID is not valid"), false
-	}
 
 	//Check if Parent ID is valid
 	//Tenants do not have Parents
 	if entity > TENANT {
+
+		objID, err = primitive.ObjectIDFromHex(t["parentId"].(string))
+		if err != nil {
+			return u.Message(false, "ParentID is not valid"), false
+		}
 		parent := u.EntityToString(entity - 1)
 
 		ctx, cancel := u.Connect()
@@ -278,6 +280,18 @@ func CreateEntity(entity int, t map[string]interface{}) (map[string]interface{},
 	resp := u.Message(true, "success")
 	resp["data"] = t
 	return resp, ""
+}
+
+func GetEntity(entityID primitive.ObjectID, ent string) (map[string]interface{}, string) {
+	t := map[string]interface{}{}
+
+	ctx, cancel := u.Connect()
+	e := GetDB().Collection(ent).FindOne(ctx, bson.M{"_id": entityID}).Decode(&t)
+	if e != nil {
+		return nil, e.Error()
+	}
+	defer cancel()
+	return t, ""
 }
 
 func GetAllEntities(ent string) ([]map[string]interface{}, string) {
