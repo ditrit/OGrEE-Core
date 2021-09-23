@@ -31,7 +31,6 @@ var CreateEntity = func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusBadRequest)
 		u.Respond(w, u.Message(false, "Error while decoding request body"))
 		u.ErrLog("Error while decoding request body", "CREATE "+entStr, "", r)
-
 		return
 	}
 
@@ -284,5 +283,42 @@ var GetEntitiesOfParent = func(w http.ResponseWriter, r *http.Request) {
 
 	resp["data"] = map[string]interface{}{"objects": data}
 
+	u.Respond(w, resp)
+}
+
+var GetEntityHierarchy = func(w http.ResponseWriter, r *http.Request) {
+	//Extract string between /api and /{id}
+	idx := strings.Index(r.URL.Path[5:], "/") + 4
+	entity := r.URL.Path[5:idx]
+	resp := u.Message(true, "success")
+
+	id, e := mux.Vars(r)["id"]
+	if e == false {
+		u.Respond(w, u.Message(false, "Error while parsing path parameters"))
+		u.ErrLog("Error while parsing path parameters", "GET ENTITYHIERARCHY", "", r)
+		return
+	}
+
+	oID, _ := getObjID(id)
+
+	entNum := u.EntityStrToInt(entity)
+
+	data, e1 := models.GetEntityHierarchy(entity, oID, entNum, SUBDEV1)
+
+	if data == nil {
+		resp = u.Message(false, "Error while getting :"+entity+","+e1)
+		u.ErrLog("Error while getting "+entity, "GET "+entity, e1, r)
+
+		switch e1 {
+		case "record not found":
+			w.WriteHeader(http.StatusNotFound)
+		default:
+		}
+
+	} else {
+		resp = u.Message(true, "success")
+	}
+
+	resp["data"] = data
 	u.Respond(w, resp)
 }

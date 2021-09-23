@@ -297,6 +297,7 @@ func GetEntity(entityID primitive.ObjectID, ent string) (map[string]interface{},
 	return t, ""
 }
 
+//Only useful for tenant since tenants are unique in the DB
 func GetEntityByName(name, ent string) (map[string]interface{}, string) {
 	t := map[string]interface{}{}
 
@@ -377,6 +378,11 @@ func GetEntityByQuery(ent string, query bson.M) ([]map[string]interface{}, strin
 	return results, ""
 }
 
+//Gets children of an entity
+//Example: /api/buildings/{id}/rooms
+//will return all rooms associated with
+//the BldgID
+//Be sure to pass the Child Entity and NOT Parent Entity
 func GetEntitiesOfParent(ent, id string) ([]map[string]interface{}, string) {
 	var c *mongo.Cursor
 	var err error
@@ -386,7 +392,7 @@ func GetEntitiesOfParent(ent, id string) ([]map[string]interface{}, string) {
 		t, e := GetEntityByName(id, "tenant")
 		if e != "" {
 			fmt.Println(err)
-			return nil, err.Error()
+			return nil, e
 		}
 		//ObjectID is a hassle
 		oID := t["_id"].(primitive.ObjectID).String()
@@ -421,4 +427,47 @@ func GetEntitiesOfParent(ent, id string) ([]map[string]interface{}, string) {
 	//println("The length of children is: ", len(enfants))
 
 	return enfants, ""
+}
+
+func GetEntityHierarchy(entity string, ID primitive.ObjectID, entnum, end int) (map[string]interface{}, string) {
+
+	//Check if at the end of the hierarchy
+	if entnum != end {
+
+		//Get the top entity
+		top, e := GetEntity(ID, entity)
+		if e != "" {
+			return nil, e
+		}
+
+		subEnt := u.EntityToString(entnum + 1)
+
+		//Get immediate children
+		children, e1 := GetEntitiesOfParent(subEnt, getRawID(ID))
+		if e1 != "" {
+			return nil, e1
+		}
+		top[subEnt+"s"] = children
+
+		//Get the rest of hierarchy for children
+		for i := range children {
+			subIdx := u.EntityToString(entnum + 1)
+			subID := (children[i]["_id"].(primitive.ObjectID))
+			children[i], _ =
+				GetEntityHierarchy(subIdx, subID, entnum+1, end)
+		}
+
+		return top, ""
+	}
+	return nil, ""
+}
+
+//The ObjectID is a bit of a hassle
+//this func will return the string we want
+func getRawID(x primitive.ObjectID) string {
+	oID := x.String()
+	leftIdx := strings.Index(oID, "\"")
+	rightIdx := strings.LastIndex(oID, "\"")
+	res := oID[leftIdx+1 : rightIdx]
+	return res
 }
