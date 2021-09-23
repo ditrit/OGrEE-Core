@@ -340,3 +340,71 @@ var GetEntityHierarchy = func(w http.ResponseWriter, r *http.Request) {
 	resp["data"] = data
 	u.Respond(w, resp)
 }
+
+var GetEntitiesUsingNamesOfParents = func(w http.ResponseWriter, r *http.Request) {
+	//Extract string between /api and /{id}
+	idx := strings.Index(r.URL.Path[5:], "/") + 4
+	entity := r.URL.Path[5:idx]
+	ancestry := make(map[string]string, 0)
+	resp := u.Message(true, "success")
+
+	id, e := mux.Vars(r)["id"]
+	if e == false {
+		u.Respond(w, u.Message(false, "Error while parsing path parameters"))
+		u.ErrLog("Error while parsing path parameters", "GET ENTITIESUSINGANCESTORNAMES", "", r)
+		return
+	}
+
+	arr := (strings.Split(r.URL.Path, "/")[4:])
+
+	for i, k := range arr {
+		if i%2 == 0 { //The keys (entities) are at the even indexes
+			if i+1 >= len(arr) {
+				ancestry[k[:len(k)-1]] = "all"
+			} else {
+				ancestry[k[:len(k)-1]] = arr[i+1]
+			}
+		}
+	}
+
+	oID, _ := getObjID(id)
+
+	if len(arr)%2 != 0 { //This means we are getting entities
+		data, e := models.GetEntitiesUsingAncestorNames(entity, oID, ancestry)
+		if data == nil {
+			resp = u.Message(false, "Error while getting :"+entity+","+e)
+			u.ErrLog("Error while getting "+entity, "GET "+entity, e, r)
+
+			switch e {
+			case "record not found":
+				w.WriteHeader(http.StatusNotFound)
+			default:
+			}
+
+		} else {
+			resp = u.Message(true, "success")
+		}
+
+		resp["data"] = data
+		u.Respond(w, resp)
+	} else { //We are only retrieving an entity
+		data, e := models.GetEntityUsingAncestorNames(entity, oID, ancestry)
+		if data == nil {
+			resp = u.Message(false, "Error while getting :"+entity+","+e)
+			u.ErrLog("Error while getting "+entity, "GET "+entity, e, r)
+
+			switch e {
+			case "record not found":
+				w.WriteHeader(http.StatusNotFound)
+			default:
+			}
+
+		} else {
+			resp = u.Message(true, "success")
+		}
+
+		resp["data"] = data
+		u.Respond(w, resp)
+	}
+
+}

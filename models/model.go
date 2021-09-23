@@ -462,6 +462,71 @@ func GetEntityHierarchy(entity string, ID primitive.ObjectID, entnum, end int) (
 	return nil, ""
 }
 
+func GetEntityByNameAndParentID(ent, id, name string) (map[string]interface{}, string) {
+	t := map[string]interface{}{}
+
+	ctx, cancel := u.Connect()
+	e := GetDB().Collection(ent).FindOne(ctx, bson.M{"name": name, "parentId": id}).Decode(&t)
+	if e != nil {
+		return nil, e.Error()
+	}
+	defer cancel()
+	return t, ""
+}
+
+func GetEntitiesUsingAncestorNames(ent string, id primitive.ObjectID, ancestry map[string]string) ([]map[string]interface{}, string) {
+	top, e := GetEntity(id, ent)
+	if e != "" {
+		return nil, e
+	}
+
+	pid := getRawID(top["_id"].(primitive.ObjectID))
+
+	var x map[string]interface{}
+	var e1 string
+	for k, v := range ancestry {
+
+		println("KEY:", k, " VAL:", v)
+
+		if v == "all" {
+			println("K:", k)
+			println("ID", x["_id"].(primitive.ObjectID).String())
+			return GetEntitiesOfParent(k, getRawID(x["_id"].(primitive.ObjectID)))
+		}
+		x, e1 = GetEntityByNameAndParentID(k, pid, v)
+		if e1 != "" {
+			println("Failing here")
+			return nil, ""
+		}
+		pid = getRawID(x["_id"].(primitive.ObjectID))
+	}
+	return nil, ""
+}
+
+func GetEntityUsingAncestorNames(ent string, id primitive.ObjectID, ancestry map[string]string) (map[string]interface{}, string) {
+	top, e := GetEntity(id, ent)
+	if e != "" {
+		return nil, e
+	}
+
+	pid := getRawID(top["_id"].(primitive.ObjectID))
+
+	var x map[string]interface{}
+	var e1 string
+	for k, v := range ancestry {
+
+		println("KEY:", k, " VAL:", v)
+
+		x, e1 = GetEntityByNameAndParentID(k, pid, v)
+		if e1 != "" {
+			println("Failing here")
+			return nil, ""
+		}
+		pid = getRawID(x["_id"].(primitive.ObjectID))
+	}
+	return x, ""
+}
+
 //The ObjectID is a bit of a hassle
 //this func will return the string we want
 func getRawID(x primitive.ObjectID) string {
