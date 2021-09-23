@@ -133,11 +133,11 @@ func main() {
 	router.HandleFunc("/api/tenants/{tenant_name}/all/sites/buildings",
 		controllers.GetTenantHierarchyToBuilding).Methods("GET")
 
-	router.HandleFunc("/api/tenants/{id:[0-9]+}/all/nonstd",
+	router.HandleFunc("/api/tenants/{id}/all/nonstd",
 		controllers.GetTenantHierarchyNonStandard).Methods("GET")
 
-	router.HandleFunc("/api/tenants/{id:[0-9]+}/all",
-		controllers.GetTenantHierarchy).Methods("GET")
+	router.HandleFunc("/api/tenants/{id}/all",
+		controllers.GetEntityHierarchy).Methods("GET")
 
 	router.HandleFunc("/api/tenants/{id}",
 		controllers.GetEntity).Methods("GET")
@@ -155,20 +155,20 @@ func main() {
 	router.HandleFunc("/api/sites",
 		controllers.CreateEntity).Methods("POST")
 
-	router.HandleFunc("/api/sites/{id:[0-9]+}/all/nonstd",
+	router.HandleFunc("/api/sites/{id}/all/nonstd",
 		controllers.GetSiteHierarchyNonStandard).Methods("GET")
 
-	router.HandleFunc("/api/sites/{id:[0-9]+}/all/buildings/rooms/racks/devices/subdevices",
-		controllers.GetSiteHierarchyToSubdevice).Methods("GET")
+	router.HandleFunc("/api/sites/{id}/all/buildings/rooms/racks/devices/subdevices",
+		controllers.GetEntityHierarchy).Methods("GET")
 
-	router.HandleFunc("/api/sites/{id:[0-9]+}/all/buildings/rooms/racks/devices",
-		controllers.GetSiteHierarchyToDevice).Methods("GET")
+	router.HandleFunc("/api/sites/{id}/all/buildings/rooms/racks/devices",
+		controllers.GetEntityHierarchy).Methods("GET")
 
-	router.HandleFunc("/api/sites/{id:[0-9]+}/all/buildings/rooms/racks",
-		controllers.GetSiteHierarchyToRack).Methods("GET")
+	router.HandleFunc("/api/sites/{id}/all/buildings/rooms/racks",
+		controllers.GetEntityHierarchy).Methods("GET")
 
-	router.HandleFunc("/api/sites/{id:[0-9]+}/all/buildings/rooms",
-		controllers.GetSiteHierarchyToRoom).Methods("GET")
+	router.HandleFunc("/api/sites/{id}/all/buildings/rooms",
+		controllers.GetEntityHierarchy).Methods("GET")
 
 	router.HandleFunc("/api/sites/{id}/all",
 		controllers.GetEntityHierarchy).Methods("GET")
@@ -237,47 +237,47 @@ func main() {
 	router.HandleFunc("/api/buildings/{id}",
 		controllers.DeleteEntity).Methods("DELETE")
 
-	router.HandleFunc("/api/buildings/{id:[0-9]+}/rooms/{room_name}/racks/{rack_name}/devices/{device_name}/subdevices/{subdevice_name}/subdevice1s/{subdevice1_name}",
+	router.HandleFunc("/api/buildings/{id}/rooms/{room_name}/racks/{rack_name}/devices/{device_name}/subdevices/{subdevice_name}/subdevice1s/{subdevice1_name}",
 		controllers.GetNamedSubdevice1OfBuilding).Methods("GET")
 
-	router.HandleFunc("/api/buildings/{id:[0-9]+}/rooms/{room_name}/racks/{rack_name}/devices/{device_name}/subdevices/{subdevice_name}/subdevice1s",
+	router.HandleFunc("/api/buildings/{id}/rooms/{room_name}/racks/{rack_name}/devices/{device_name}/subdevices/{subdevice_name}/subdevice1s",
 		controllers.GetSubdevice1sUsingNamedSubdeviceOfBuilding).Methods("GET")
 
-	router.HandleFunc("/api/buildings/{id:[0-9]+}/rooms/{room_name}/racks/{rack_name}/devices/{device_name}/subdevices/{subdevice_name}",
+	router.HandleFunc("/api/buildings/{id}/rooms/{room_name}/racks/{rack_name}/devices/{device_name}/subdevices/{subdevice_name}",
 		controllers.GetNamedSubdeviceOfBuilding).Methods("GET")
 
-	router.HandleFunc("/api/buildings/{id:[0-9]+}/rooms/{room_name}/racks/{rack_name}/devices/{device_name}/subdevices",
+	router.HandleFunc("/api/buildings/{id}/rooms/{room_name}/racks/{rack_name}/devices/{device_name}/subdevices",
 		controllers.GetSubdevicesUsingNamedDeviceOfBuilding).Methods("GET")
 
-	router.HandleFunc("/api/buildings/{id:[0-9]+}/rooms/{room_name}/racks/{rack_name}/devices/{device_name}",
+	router.HandleFunc("/api/buildings/{id}/rooms/{room_name}/racks/{rack_name}/devices/{device_name}",
 		controllers.GetNamedDeviceOfBuilding).Methods("GET")
 
-	router.HandleFunc("/api/buildings/{id:[0-9]+}/rooms/{room_name}/racks/{rack_name}/devices",
+	router.HandleFunc("/api/buildings/{id}/rooms/{room_name}/racks/{rack_name}/devices",
 		controllers.GetDevicesUsingNamedRackOfBuilding).Methods("GET")
 
-	router.HandleFunc("/api/buildings/{id:[0-9]+}/rooms/{room_name}/racks/{rack_name}",
+	router.HandleFunc("/api/buildings/{id}/rooms/{room_name}/racks/{rack_name}",
 		controllers.GetNamedRackOfBuilding).Methods("GET")
 
-	router.HandleFunc("/api/buildings/{id:[0-9]+}/rooms/{room_name}/racks",
+	router.HandleFunc("/api/buildings/{id}/rooms/{room_name}/racks",
 		controllers.GetRacksUsingNamedRoomOfBuilding).Methods("GET")
 
-	router.HandleFunc("/api/buildings/{id:[0-9]+}/rooms/{room_name}",
+	router.HandleFunc("/api/buildings/{id}/rooms/{room_name}",
 		controllers.GetNamedRoomOfBuilding).Methods("GET")
 
-	router.HandleFunc("/api/buildings/{id:[0-9]+}/rooms",
+	router.HandleFunc("/api/buildings/{id}/rooms",
 		controllers.GetEntitiesOfParent).Methods("GET")
 
-	router.HandleFunc("/api/buildings/{id:[0-9]+}/all/nonstd",
+	router.HandleFunc("/api/buildings/{id}/all/nonstd",
 		controllers.GetBuildingHierarchyNonStandard).Methods("GET")
 
-	router.HandleFunc("/api/buildings/{id:[0-9]+}/all/rooms/racks/devices/subdevices",
-		controllers.GetBuildingHierarchyToSubdevice).Methods("GET")
+	router.HandleFunc("/api/buildings/{id}/all/rooms/racks/devices/subdevices",
+		controllers.GetEntityHierarchy).Methods("GET")
 
-	router.HandleFunc("/api/buildings/{id:[0-9]+}/all/rooms/racks/devices",
-		controllers.GetBuildingHierarchyToDevice).Methods("GET")
+	router.HandleFunc("/api/buildings/{id}/all/rooms/racks/devices",
+		controllers.GetEntityHierarchy).Methods("GET")
 
-	router.HandleFunc("/api/buildings/{id:[0-9]+}/all/rooms/racks",
-		controllers.GetBuildingHierarchyToRack).Methods("GET")
+	router.HandleFunc("/api/buildings/{id}/all/rooms/racks",
+		controllers.GetEntityHierarchy).Methods("GET")
 
 	router.HandleFunc("/api/buildings/{id}/all",
 		controllers.GetEntityHierarchy).Methods("GET")
@@ -301,40 +301,40 @@ func main() {
 	router.HandleFunc("/api/rooms/{id}",
 		controllers.DeleteEntity).Methods("DELETE")
 
-	router.HandleFunc("/api/rooms/{id:[0-9]+}/racks/{rack_name}/devices/{device_name}/subdevices/{subdevice_name}/subdevice1s/{subdevice1_name}",
+	router.HandleFunc("/api/rooms/{id}/racks/{rack_name}/devices/{device_name}/subdevices/{subdevice_name}/subdevice1s/{subdevice1_name}",
 		controllers.GetNamedSubdevice1OfRoom).Methods("GET")
 
-	router.HandleFunc("/api/rooms/{id:[0-9]+}/racks/{rack_name}/devices/{device_name}/subdevices/{subdevice_name}/subdevice1s",
+	router.HandleFunc("/api/rooms/{id}/racks/{rack_name}/devices/{device_name}/subdevices/{subdevice_name}/subdevice1s",
 		controllers.GetSubdevice1sUsingUsingNamedSubdeviceOfRoom).Methods("GET")
 
-	router.HandleFunc("/api/rooms/{id:[0-9]+}/racks/{rack_name}/devices/{device_name}/subdevices/{subdevice_name}",
+	router.HandleFunc("/api/rooms/{id}/racks/{rack_name}/devices/{device_name}/subdevices/{subdevice_name}",
 		controllers.GetNamedSubdeviceOfRoom).Methods("GET")
 
-	router.HandleFunc("/api/rooms/{id:[0-9]+}/racks/{rack_name}/devices/{device_name}/subdevices",
+	router.HandleFunc("/api/rooms/{id}/racks/{rack_name}/devices/{device_name}/subdevices",
 		controllers.GetSubdevicesUsingNamedDeviceOfRoom).Methods("GET")
 
-	router.HandleFunc("/api/rooms/{id:[0-9]+}/racks/{rack_name}/devices/{device_name}",
+	router.HandleFunc("/api/rooms/{id}/racks/{rack_name}/devices/{device_name}",
 		controllers.GetNamedDeviceOfRoom).Methods("GET")
 
-	router.HandleFunc("/api/rooms/{id:[0-9]+}/racks/{rack_name}/devices",
+	router.HandleFunc("/api/rooms/{id}/racks/{rack_name}/devices",
 		controllers.GetDevicesUsingNamedRackOfRoom).Methods("GET")
 
-	router.HandleFunc("/api/rooms/{id:[0-9]+}/racks/{rack_name}",
+	router.HandleFunc("/api/rooms/{id}/racks/{rack_name}",
 		controllers.GetRackOfRoomByName).Methods("GET")
 
-	router.HandleFunc("/api/rooms/{id:[0-9]+}/racks",
+	router.HandleFunc("/api/rooms/{id}/racks",
 		controllers.GetEntitiesOfParent).Methods("GET")
 
-	router.HandleFunc("/api/rooms/{id:[0-9]+}/all/racks/devices/subdevices",
-		controllers.GetRoomHierarchyToSubdevices).Methods("GET")
+	router.HandleFunc("/api/rooms/{id}/all/racks/devices/subdevices",
+		controllers.GetEntityHierarchy).Methods("GET")
 
-	router.HandleFunc("/api/rooms/{id:[0-9]+}/all/racks/devices",
-		controllers.GetRoomHierarchyToDevices).Methods("GET")
+	router.HandleFunc("/api/rooms/{id}/all/racks/devices",
+		controllers.GetEntityHierarchy).Methods("GET")
 
 	router.HandleFunc("/api/rooms/{id}/all",
 		controllers.GetEntityHierarchy).Methods("GET")
 
-	router.HandleFunc("/api/rooms/{id:[0-9]+}/all/nonstd",
+	router.HandleFunc("/api/rooms/{id}/all/nonstd",
 		controllers.GetRoomHierarchyNonStandard).Methods("GET")
 
 	router.HandleFunc("/api/rooms/{id}",
@@ -359,31 +359,31 @@ func main() {
 	router.HandleFunc("/api/racks/{id}",
 		controllers.DeleteEntity).Methods("DELETE")
 
-	router.HandleFunc("/api/racks/{id:[0-9]+}/devices/{device_name}/subdevices/{subdevice_name}/subdevice1s/{subdevice1_name}",
+	router.HandleFunc("/api/racks/{id}/devices/{device_name}/subdevices/{subdevice_name}/subdevice1s/{subdevice1_name}",
 		controllers.GetNamedSubdevice1OfRack).Methods("GET")
 
-	router.HandleFunc("/api/racks/{id:[0-9]+}/devices/{device_name}/subdevices/{subdevice_name}/subdevice1s",
+	router.HandleFunc("/api/racks/{id}/devices/{device_name}/subdevices/{subdevice_name}/subdevice1s",
 		controllers.GetSubdevice1sUsingNamedSubdeviceOfRack).Methods("GET")
 
-	router.HandleFunc("/api/racks/{id:[0-9]+}/devices/{device_name}/subdevices/{subdevice_name}",
+	router.HandleFunc("/api/racks/{id}/devices/{device_name}/subdevices/{subdevice_name}",
 		controllers.GetNamedSubdeviceOfRack).Methods("GET")
 
-	router.HandleFunc("/api/racks/{id:[0-9]+}/devices/{device_name}/subdevices",
+	router.HandleFunc("/api/racks/{id}/devices/{device_name}/subdevices",
 		controllers.GetSubdevicesUsingNamedDeviceOfRack).Methods("GET")
 
-	router.HandleFunc("/api/racks/{id:[0-9]+}/devices/{device_name}",
+	router.HandleFunc("/api/racks/{id}/devices/{device_name}",
 		controllers.GetRackDeviceByName).Methods("GET")
 
-	router.HandleFunc("/api/racks/{id:[0-9]+}/devices",
+	router.HandleFunc("/api/racks/{id}/devices",
 		controllers.GetEntitiesOfParent).Methods("GET")
 
-	router.HandleFunc("/api/racks/{id:[0-9]+}/all/devices/subdevices",
-		controllers.GetRackHierarchyToSubdevices).Methods("GET")
+	router.HandleFunc("/api/racks/{id}/all/devices/subdevices",
+		controllers.GetEntityHierarchy).Methods("GET")
 
 	router.HandleFunc("/api/racks/{id}/all",
 		controllers.GetEntityHierarchy).Methods("GET")
 
-	router.HandleFunc("/api/racks/{id:[0-9]+}/all/nonstd",
+	router.HandleFunc("/api/racks/{id}/all/nonstd",
 		controllers.GetRackHierarchyNonStandard).Methods("GET")
 
 	router.HandleFunc("/api/racks/{id}",
@@ -402,16 +402,16 @@ func main() {
 	router.HandleFunc("/api/devices/{id}",
 		controllers.DeleteEntity).Methods("DELETE")
 
-	router.HandleFunc("/api/devices/{id:[0-9]+}/subdevices/{subdevice_name}/subdevice1s/{subdevone_name}",
+	router.HandleFunc("/api/devices/{id}/subdevices/{subdevice_name}/subdevice1s/{subdevone_name}",
 		controllers.GetNamedSubdevice1OfDevice).Methods("GET")
 
-	router.HandleFunc("/api/devices/{id:[0-9]+}/subdevices/{subdevice_name}/subdevice1s",
+	router.HandleFunc("/api/devices/{id}/subdevices/{subdevice_name}/subdevice1s",
 		controllers.GetSubdevice1sUsingNamedSubdeviceOfDevice).Methods("GET")
 
-	router.HandleFunc("/api/devices/{id:[0-9]+}/subdevices/{subdevice_name}",
+	router.HandleFunc("/api/devices/{id}/subdevices/{subdevice_name}",
 		controllers.GetDeviceSubdeviceByName).Methods("GET")
 
-	router.HandleFunc("/api/devices/{id:[0-9]+}/subdevices",
+	router.HandleFunc("/api/devices/{id}/subdevices",
 		controllers.GetEntitiesOfParent).Methods("GET")
 
 	router.HandleFunc("/api/devices/{id}/all",

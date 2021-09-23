@@ -291,6 +291,7 @@ var GetEntityHierarchy = func(w http.ResponseWriter, r *http.Request) {
 	idx := strings.Index(r.URL.Path[5:], "/") + 4
 	entity := r.URL.Path[5:idx]
 	resp := u.Message(true, "success")
+	var limit int
 
 	id, e := mux.Vars(r)["id"]
 	if e == false {
@@ -299,11 +300,28 @@ var GetEntityHierarchy = func(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	//Check if the request is a ranged hierarchy
+	lastSlashIdx := strings.LastIndex(r.URL.Path, "/")
+	indicator := r.URL.Path[lastSlashIdx+1:]
+	switch indicator {
+	case "all":
+		//set to SUBDEV1
+		limit = SUBDEV1
+	case "nonstd":
+		//special case
+	default:
+		//set to int equivalent
+		//This strips the trailing s
+		limit = u.EntityStrToInt(indicator[:len(indicator)-1])
+	}
+	println("Indicator: ", indicator)
+	println("The limit is: ", limit)
+
 	oID, _ := getObjID(id)
 
 	entNum := u.EntityStrToInt(entity)
 
-	data, e1 := models.GetEntityHierarchy(entity, oID, entNum, SUBDEV1)
+	data, e1 := models.GetEntityHierarchy(entity, oID, entNum, limit+1)
 
 	if data == nil {
 		resp = u.Message(false, "Error while getting :"+entity+","+e1)
