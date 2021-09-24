@@ -3,7 +3,6 @@ package models
 import (
 	"fmt"
 	u "p3/utils"
-	"strings"
 
 	"go.mongodb.org/mongo-driver/mongo"
 
@@ -388,29 +387,10 @@ func GetEntitiesOfParent(ent, id string) ([]map[string]interface{}, string) {
 	var err error
 	enfants := make([]map[string]interface{}, 0)
 	ctx, cancel := u.Connect()
-	if ent == "site" {
-		t, e := GetEntityByName(id, "tenant")
-		if e != "" {
-			fmt.Println(err)
-			return nil, e
-		}
-		//ObjectID is a hassle
-		oID := t["_id"].(primitive.ObjectID).String()
-		leftIdx := strings.Index(oID, "\"")
-		rightIdx := strings.LastIndex(oID, "\"")
-		x := oID[leftIdx+1 : rightIdx]
-
-		c, err = GetDB().Collection(ent).Find(ctx, bson.M{"parentId": x})
-		if err != nil {
-			fmt.Println(err)
-			return nil, err.Error()
-		}
-	} else {
-		c, err = GetDB().Collection(ent).Find(ctx, bson.M{"parentId": id})
-		if err != nil {
-			fmt.Println(err)
-			return nil, err.Error()
-		}
+	c, err = GetDB().Collection(ent).Find(ctx, bson.M{"parentId": id})
+	if err != nil {
+		fmt.Println(err)
+		return nil, err.Error()
 	}
 	defer cancel()
 
@@ -443,8 +423,11 @@ func GetEntityHierarchy(entity string, ID primitive.ObjectID, entnum, end int) (
 		subEnt := u.EntityToString(entnum + 1)
 
 		//Get immediate children
-		children, e1 := GetEntitiesOfParent(subEnt, getRawID(ID))
+		children, e1 := GetEntitiesOfParent(subEnt, ID.Hex())
 		if e1 != "" {
+			println("Are we here")
+			println("SUBENT: ", subEnt)
+			println("PID: ", ID.Hex())
 			return nil, e1
 		}
 		top[subEnt+"s"] = children
@@ -480,7 +463,7 @@ func GetEntitiesUsingAncestorNames(ent string, id primitive.ObjectID, ancestry m
 		return nil, e
 	}
 
-	pid := getRawID(top["_id"].(primitive.ObjectID))
+	pid := (top["_id"].(primitive.ObjectID)).Hex()
 
 	var x map[string]interface{}
 	var e1 string
@@ -491,14 +474,14 @@ func GetEntitiesUsingAncestorNames(ent string, id primitive.ObjectID, ancestry m
 		if v == "all" {
 			println("K:", k)
 			println("ID", x["_id"].(primitive.ObjectID).String())
-			return GetEntitiesOfParent(k, getRawID(x["_id"].(primitive.ObjectID)))
+			return GetEntitiesOfParent(k, (x["_id"].(primitive.ObjectID)).Hex())
 		}
 		x, e1 = GetEntityByNameAndParentID(k, pid, v)
 		if e1 != "" {
 			println("Failing here")
 			return nil, ""
 		}
-		pid = getRawID(x["_id"].(primitive.ObjectID))
+		pid = (x["_id"].(primitive.ObjectID)).Hex()
 	}
 	return nil, ""
 }
@@ -509,7 +492,7 @@ func GetEntityUsingAncestorNames(ent string, id primitive.ObjectID, ancestry map
 		return nil, e
 	}
 
-	pid := getRawID(top["_id"].(primitive.ObjectID))
+	pid := (top["_id"].(primitive.ObjectID)).Hex()
 
 	var x map[string]interface{}
 	var e1 string
@@ -522,17 +505,93 @@ func GetEntityUsingAncestorNames(ent string, id primitive.ObjectID, ancestry map
 			println("Failing here")
 			return nil, ""
 		}
-		pid = getRawID(x["_id"].(primitive.ObjectID))
+		pid = (x["_id"].(primitive.ObjectID)).Hex()
 	}
 	return x, ""
 }
 
-//The ObjectID is a bit of a hassle
-//this func will return the string we want
-func getRawID(x primitive.ObjectID) string {
-	oID := x.String()
-	leftIdx := strings.Index(oID, "\"")
-	rightIdx := strings.LastIndex(oID, "\"")
-	res := oID[leftIdx+1 : rightIdx]
-	return res
+func GetTenantHierarchy(entity, name string, entnum, end int) (map[string]interface{}, string) {
+
+	t, e := GetEntityByName(name, "tenant")
+	if e != "" {
+		fmt.Println(e)
+		return nil, e
+	}
+
+	subEnt := u.EntityToString(entnum + 1)
+	tid := t["_id"].(primitive.ObjectID).Hex()
+
+	//Get immediate children
+	children, e1 := GetEntitiesOfParent(subEnt, tid)
+	if e1 != "" {
+		println("Are we here")
+		println("SUBENT: ", subEnt)
+		println("PID: ", tid)
+		return nil, e1
+	}
+	t[subEnt+"s"] = children
+
+	//Get the rest of hierarchy for children
+	for i := range children {
+		subIdx := u.EntityToString(entnum + 1)
+		subID := (children[i]["_id"].(primitive.ObjectID))
+		children[i], _ =
+			GetEntityHierarchy(subIdx, subID, entnum+1, end)
+	}
+
+	return t, ""
+
+}
+
+func GetEntitiesUsingTenantAsAncestor(ent, id string, ancestry map[string]string) ([]map[string]interface{}, string) {
+	top, e := GetEntityByName(id, ent)
+	if e != "" {
+		return nil, e
+	}
+
+	pid := (top["_id"].(primitive.ObjectID)).Hex()
+
+	var x map[string]interface{}
+	var e1 string
+	for k, v := range ancestry {
+
+		println("KEY:", k, " VAL:", v)
+
+		if v == "all" {
+			println("K:", k)
+			println("ID", x["_id"].(primitive.ObjectID).String())
+			return GetEntitiesOfParent(k, (x["_id"].(primitive.ObjectID)).Hex())
+		}
+		x, e1 = GetEntityByNameAndParentID(k, pid, v)
+		if e1 != "" {
+			println("Failing here")
+			return nil, ""
+		}
+		pid = (x["_id"].(primitive.ObjectID)).Hex()
+	}
+	return nil, ""
+}
+
+func GetEntityUsingTenantAsAncestor(ent, id string, ancestry map[string]string) (map[string]interface{}, string) {
+	top, e := GetEntityByName(id, ent)
+	if e != "" {
+		return nil, e
+	}
+
+	pid := (top["_id"].(primitive.ObjectID)).Hex()
+
+	var x map[string]interface{}
+	var e1 string
+	for k, v := range ancestry {
+
+		println("KEY:", k, " VAL:", v)
+
+		x, e1 = GetEntityByNameAndParentID(k, pid, v)
+		if e1 != "" {
+			println("Failing here")
+			return nil, ""
+		}
+		pid = (x["_id"].(primitive.ObjectID)).Hex()
+	}
+	return x, ""
 }

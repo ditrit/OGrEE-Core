@@ -481,7 +481,7 @@ var GetTenantByQuery = func(w http.ResponseWriter, r *http.Request) {
 //         description: Found
 //     '404':
 //         description: Nothing Found
-
+/*
 var GetTenantHierarchy = func(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("me & the irishman")
 	id, e := strconv.Atoi(mux.Vars(r)["id"])
@@ -512,7 +512,7 @@ var GetTenantHierarchy = func(w http.ResponseWriter, r *http.Request) {
 	resp["data"] = data
 	u.Respond(w, resp)
 }
-
+*/
 var GetTenantHierarchyNonStandard = func(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("me & the irishman")
 	id, e := strconv.Atoi(mux.Vars(r)["id"])

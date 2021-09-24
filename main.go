@@ -77,67 +77,67 @@ func main() {
 		controllers.CreateEntity).Methods("POST")
 
 	router.HandleFunc("/api/tenants/{tenant_name}/sites/{site_name}/buildings/{building_name}/rooms/{room_name}/racks/{rack_name}/devices/{device_name}/subdevices/{subdevice_name}/subdevice1s/{subdevice1_name}",
-		controllers.GetNamedSubdevice1OfTenant).Methods("GET")
+		controllers.GetEntitiesUsingNameOfTenant).Methods("GET")
 
 	router.HandleFunc("/api/tenants/{tenant_name}/sites/{site_name}/buildings/{building_name}/rooms/{room_name}/racks/{rack_name}/devices/{device_name}/subdevices/{subdevice_name}/subdevice1s",
-		controllers.GetSubdevice1sUsingNamedSubdeviceOfTenant).Methods("GET")
+		controllers.GetEntitiesUsingNameOfTenant).Methods("GET")
 
 	router.HandleFunc("/api/tenants/{tenant_name}/sites/{site_name}/buildings/{building_name}/rooms/{room_name}/racks/{rack_name}/devices/{device_name}/subdevices/{subdevice_name}",
-		controllers.GetNamedSubdeviceOfTenant).Methods("GET")
+		controllers.GetEntitiesUsingNameOfTenant).Methods("GET")
 
 	router.HandleFunc("/api/tenants/{tenant_name}/sites/{site_name}/buildings/{building_name}/rooms/{room_name}/racks/{rack_name}/devices/{device_name}/subdevices",
-		controllers.GetSubdevicesUsingNamedDeviceOfTenant).Methods("GET")
+		controllers.GetEntitiesUsingNameOfTenant).Methods("GET")
 
 	router.HandleFunc("/api/tenants/{tenant_name}/sites/{site_name}/buildings/{building_name}/rooms/{room_name}/racks/{rack_name}/devices/{device_name}",
-		controllers.GetNamedDeviceOfTenant).Methods("GET")
+		controllers.GetEntitiesUsingNameOfTenant).Methods("GET")
 
 	router.HandleFunc("/api/tenants/{tenant_name}/sites/{site_name}/buildings/{building_name}/rooms/{room_name}/racks/{rack_name}/devices",
-		controllers.GetDevicesUsingNamedRackOfTenant).Methods("GET")
+		controllers.GetEntitiesUsingNameOfTenant).Methods("GET")
 
 	router.HandleFunc("/api/tenants/{tenant_name}/sites/{site_name}/buildings/{building_name}/rooms/{room_name}/racks/{rack_name}",
-		controllers.GetNamedRackOfTenant).Methods("GET")
+		controllers.GetEntitiesUsingNameOfTenant).Methods("GET")
 
 	router.HandleFunc("/api/tenants/{tenant_name}/sites/{site_name}/buildings/{building_name}/rooms/{room_name}/racks",
-		controllers.GetRacksUsingNamedRoomOfTenant).Methods("GET")
+		controllers.GetEntitiesUsingNameOfTenant).Methods("GET")
 
 	router.HandleFunc("/api/tenants/{tenant_name}/sites/{site_name}/buildings/{building_name}/rooms/{room_name}",
-		controllers.GetNamedRoomOfTenant).Methods("GET")
+		controllers.GetEntitiesUsingNameOfTenant).Methods("GET")
 
 	router.HandleFunc("/api/tenants/{tenant_name}/sites/{site_name}/buildings/{building_name}/rooms",
-		controllers.GetRoomsUsingNamedBuildingOfTenant).Methods("GET")
+		controllers.GetEntitiesUsingNameOfTenant).Methods("GET")
 
 	router.HandleFunc("/api/tenants/{tenant_name}/sites/{site_name}/buildings/{building_name}",
-		controllers.GetNamedBuildingOfTenant).Methods("GET")
+		controllers.GetEntitiesUsingNameOfTenant).Methods("GET")
 
 	router.HandleFunc("/api/tenants/{tenant_name}/sites/{site_name}/buildings",
-		controllers.GetBuildingsUsingNamedSiteOfTenant).Methods("GET")
+		controllers.GetEntitiesUsingNameOfTenant).Methods("GET")
 
 	router.HandleFunc("/api/tenants/{tenant_name}/sites/{site_name}",
-		controllers.GetNamedSiteOfTenant).Methods("GET")
+		controllers.GetEntitiesUsingNameOfTenant).Methods("GET")
 
 	router.HandleFunc("/api/tenants/{tenant_name}/sites",
 		controllers.GetEntitiesOfParent).Methods("GET")
 
 	router.HandleFunc("/api/tenants/{tenant_name}/all/sites/buildings/rooms/racks/devices/subdevices",
-		controllers.GetTenantHierarchyToSubdevice).Methods("GET")
+		controllers.GetTenantHierarchy).Methods("GET")
 
 	router.HandleFunc("/api/tenants/{tenant_name}/all/sites/buildings/rooms/racks/devices",
-		controllers.GetTenantHierarchyToDevice).Methods("GET")
+		controllers.GetTenantHierarchy).Methods("GET")
 
 	router.HandleFunc("/api/tenants/{tenant_name}/all/sites/buildings/rooms/racks",
-		controllers.GetTenantHierarchyToRack).Methods("GET")
+		controllers.GetTenantHierarchy).Methods("GET")
 
 	router.HandleFunc("/api/tenants/{tenant_name}/all/sites/buildings/rooms",
-		controllers.GetTenantHierarchyToRoom).Methods("GET")
+		controllers.GetTenantHierarchy).Methods("GET")
 
 	router.HandleFunc("/api/tenants/{tenant_name}/all/sites/buildings",
-		controllers.GetTenantHierarchyToBuilding).Methods("GET")
+		controllers.GetTenantHierarchy).Methods("GET")
 
-	router.HandleFunc("/api/tenants/{id}/all/nonstd",
+	router.HandleFunc("/api/tenants/{tenant_name}/all/nonstd",
 		controllers.GetTenantHierarchyNonStandard).Methods("GET")
 
-	router.HandleFunc("/api/tenants/{id}/all",
-		controllers.GetEntityHierarchy).Methods("GET")
+	router.HandleFunc("/api/tenants/{tenant_name}/all",
+		controllers.GetTenantHierarchy).Methods("GET")
 
 	router.HandleFunc("/api/tenants/{id}",
 		controllers.GetEntity).Methods("GET")
@@ -146,7 +146,7 @@ func main() {
 		controllers.UpdateEntity).Methods("PUT")
 
 	router.HandleFunc("/api/tenants/{id}",
-		controllers.DeleteTenant).Methods("DELETE")
+		controllers.DeleteEntity).Methods("DELETE")
 
 	// ------ SITES CRUD ------ //
 	router.HandleFunc("/api/sites",

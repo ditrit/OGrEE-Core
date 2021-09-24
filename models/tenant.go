@@ -174,6 +174,7 @@ func GetAllTenants() ([]*Tenant, string) {
 	return tenants, ""
 }
 
+/*
 func GetTenantHierarchy(id int) (*Tenant, string) {
 	tn, e := GetTenant(uint(id))
 	if e != "" {
@@ -193,7 +194,7 @@ func GetTenantHierarchy(id int) (*Tenant, string) {
 	}
 	return tn, ""
 }
-
+*/
 func GetTenantHierarchyNonStandard(id int) (*Tenant, []*Site,
 	*[][]*Building, *[][]*Room, *[][]*Rack, *[][]*Device, string) {
 	tn, e := GetTenant(uint(id))
