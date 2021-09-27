@@ -2,8 +2,7 @@
 //
 // Testing Swagger spec. It's still in progress
 //
-// The API returns incorrect response codes and has bugs, however,
-// The essential CRUD operations are fully functional
+// The API may return incorrect response codes and have bugs.
 //	Schemes: http
 //	BasePath: /api/user
 //	Version: 1.0

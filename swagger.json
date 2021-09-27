@@ -10,7 +10,7 @@
   ],
   "swagger": "2.0",
   "info": {
-    "description": "Testing Swagger spec. It's still in progress\n\nThe API returns incorrect response codes and has bugs, however,\nThe essential CRUD operations are fully functional",
+    "description": "Testing Swagger spec. It's still in progress\n\nThe API may return incorrect response codes and have bugs.",
     "title": "Golang OGREE API",
     "contact": {
       "name": "Ziad Khalaf",
@@ -95,7 +95,7 @@
     },
     "/api/{objs}": {
       "get": {
-        "description": "Returns JSON body with all specified objects of type and their IDs\nobjs = {tenants|sites|buildings|rooms|racks|devices|subdevices|subdevice1s}",
+        "description": "Returns JSON body with all specified objects of type and their IDs",
         "produces": [
           "application/json"
         ],
@@ -126,7 +126,7 @@
     },
     "/api/{objs}/{id}": {
       "get": {
-        "description": "The ID must be provided in the URL parameter\nThe name can be used instead of ID if the obj is Tenant\nobjs = {tenants|sites|buildings|rooms|racks|devices|subdevices|subdevice1s}",
+        "description": "The ID must be provided in the URL parameter\nThe name can be used instead of ID if the obj is tenant",
         "produces": [
           "application/json"
         ],
