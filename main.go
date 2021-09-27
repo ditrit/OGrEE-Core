@@ -134,7 +134,7 @@ func main() {
 		controllers.GetTenantHierarchy).Methods("GET")
 
 	router.HandleFunc("/api/tenants/{tenant_name}/all/nonstd",
-		controllers.GetTenantHierarchyNonStandard).Methods("GET")
+		controllers.GetEntityHierarchyNonStd).Methods("GET")
 
 	router.HandleFunc("/api/tenants/{tenant_name}/all",
 		controllers.GetTenantHierarchy).Methods("GET")

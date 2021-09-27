@@ -20,6 +20,40 @@ func getObjID(x string) (primitive.ObjectID, error) {
 	return objID, nil
 }
 
+func parseDataForNonStdResult(ent string, eNum int, x map[string]interface{}) map[string][]map[string]interface{} {
+
+	ans := map[string][]map[string]interface{}{}
+
+	first := u.EntityToString(eNum+1) + "s"
+	println("FIRST: ", first)
+	println(x[first])
+
+	subEnt := x[first].([]map[string]interface{}) //Get Sites Arr
+	arr := subEnt
+	ans[first] = arr //Assign Sites Arr
+
+	for idx := eNum + 1; idx < SUBDEV1; idx++ {
+		add := []map[string]interface{}{}
+		nxt := u.EntityToString(idx)
+		subEnt := x[nxt+"s"].([]map[string]interface{})
+		subArr := subEnt
+
+		for i := range subArr {
+			subIdx := subArr[i][u.EntityToString(idx+1)+"s"].([]map[string]interface{})
+			add = append(add, subIdx...)
+			delete(subArr[i], u.EntityToString(idx+1)+"s")
+		}
+		ans[u.EntityToString(idx+1)+"s"] = add
+	}
+	/*for i := range arr {
+		subIdx := arr[i][u.EntityToString(eNum+2)+"s"].([]map[string]interface{})
+		add = append(add, subIdx...)
+		delete(arr[i], "buildings")
+	}*/
+	//ans["buildings"] = add
+	return ans
+}
+
 var CreateEntity = func(w http.ResponseWriter, r *http.Request) {
 	//tenant := &models.Tenant{}
 	entStr := r.URL.Path[5 : len(r.URL.Path)-1] //strip the '/api' in URL
@@ -543,4 +577,64 @@ var GetEntitiesUsingNameOfTenant = func(w http.ResponseWriter, r *http.Request) 
 		u.Respond(w, resp)
 	}
 
+}
+
+var GetEntityHierarchyNonStd = func(w http.ResponseWriter, r *http.Request) {
+	var e, e1 bool
+	var err string
+	//Extract string between /api and /{id}
+	idx := strings.Index(r.URL.Path[5:], "/") + 4
+	entity := r.URL.Path[5:idx]
+
+	id, e := mux.Vars(r)["id"]
+	resp := u.Message(true, "success")
+	data := map[string]interface{}{}
+	//result := map[string][]map[string]interface{}{}
+
+	if e == false {
+		if id, e1 = mux.Vars(r)["tenant_name"]; e1 == false {
+			u.Respond(w, u.Message(false, "Error while parsing Tpath parameters"))
+			u.ErrLog("Error while parsing path parameters", "GETHIERARCHYNONSTD", "", r)
+			return
+		}
+	}
+
+	entNum := u.EntityStrToInt(entity)
+
+	if entity == "tenant" {
+		println("Getting TENANT HEIRARCHY")
+		println("With ID: ", id)
+		data, err = models.GetTenantHierarchy(entity, id, entNum, SUBDEV1)
+		if err != "" {
+			println("We have ERR")
+		}
+	} else {
+		oID, _ := getObjID(id)
+		data, err = models.GetEntityHierarchy(entity, oID, entNum, SUBDEV1)
+	}
+
+	if data == nil {
+		resp = u.Message(false, "Error while getting NonStandard Hierarchy: "+err)
+		u.ErrLog("Error while getting NonStdHierarchy", "GETNONSTDHIERARCHY", err, r)
+
+		switch err {
+		case "record not found":
+			w.WriteHeader(http.StatusNotFound)
+		default:
+		}
+
+	} else {
+		resp = u.Message(true, "success")
+		result := parseDataForNonStdResult(entity, entNum, data)
+		resp["data"] = result
+		//u.Respond(w, resp)
+	}
+
+	//resp["data"] = data
+	/*resp["data"] = sites
+	resp["buildings"] = bldgs
+	resp["rooms"] = rooms
+	resp["racks"] = racks
+	resp["devices"] = devices*/
+	u.Respond(w, resp)
 }

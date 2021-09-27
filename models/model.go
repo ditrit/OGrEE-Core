@@ -595,3 +595,7 @@ func GetEntityUsingTenantAsAncestor(ent, id string, ancestry map[string]string) 
 	}
 	return x, ""
 }
+
+func GetEntityHierarchyNonStd() {
+
+}
