@@ -222,7 +222,7 @@ func main() {
 		controllers.DeleteEntity).Methods("DELETE")
 
 	router.HandleFunc("/api/sites",
-		controllers.DeleteSites).Methods("DELETE")
+		controllers.DeleteEntity).Methods("DELETE")
 
 	// ------ BUILDING CRUD ------ //
 	router.HandleFunc("/api/buildings",
