@@ -20,37 +20,69 @@ func getObjID(x string) (primitive.ObjectID, error) {
 	return objID, nil
 }
 
-func parseDataForNonStdResult(ent string, eNum int, x map[string]interface{}) map[string][]map[string]interface{} {
+func parseDataForNonStdResult(ent string, eNum int, data map[string]interface{}) map[string][]map[string]interface{} {
 
 	ans := map[string][]map[string]interface{}{}
+	add := []map[string]interface{}{}
 
-	first := u.EntityToString(eNum+1) + "s"
-	println("FIRST: ", first)
-	println(x[first])
+	firstIndex := u.EntityToString(eNum + 1)
+	firstArr := data[firstIndex+"s"].([]map[string]interface{})
 
-	subEnt := x[first].([]map[string]interface{}) //Get Sites Arr
-	arr := subEnt
-	ans[first] = arr //Assign Sites Arr
+	ans[firstIndex+"s"] = firstArr
 
-	for idx := eNum + 1; idx < SUBDEV1; idx++ {
-		add := []map[string]interface{}{}
-		nxt := u.EntityToString(idx)
-		subEnt := x[nxt+"s"].([]map[string]interface{})
-		subArr := subEnt
-
-		for i := range subArr {
-			subIdx := subArr[i][u.EntityToString(idx+1)+"s"].([]map[string]interface{})
-			add = append(add, subIdx...)
-			delete(subArr[i], u.EntityToString(idx+1)+"s")
-		}
-		ans[u.EntityToString(idx+1)+"s"] = add
+	for i := range firstArr {
+		nxt := u.EntityToString(eNum + 2)
+		add = append(add, firstArr[i][nxt+"s"].([]map[string]interface{})...)
 	}
-	/*for i := range arr {
-		subIdx := arr[i][u.EntityToString(eNum+2)+"s"].([]map[string]interface{})
-		add = append(add, subIdx...)
-		delete(arr[i], "buildings")
+
+	ans[u.EntityToString(eNum+2)+"s"] = add
+	newAdd := []map[string]interface{}{}
+	for i := range add {
+		nxt := u.EntityToString(eNum + 3)
+		newAdd = append(newAdd, add[i][nxt+"s"].([]map[string]interface{})...)
+	}
+
+	ans[u.EntityToString(eNum+3)+"s"] = newAdd
+
+	newAdd2 := []map[string]interface{}{}
+	for i := range newAdd {
+		nxt := u.EntityToString(eNum + 4)
+		newAdd2 = append(newAdd2, newAdd[i][nxt+"s"].([]map[string]interface{})...)
+	}
+
+	ans[u.EntityToString(eNum+4)+"s"] = newAdd2
+	newAdd3 := []map[string]interface{}{}
+
+	for i := range newAdd2 {
+		nxt := u.EntityToString(eNum + 5)
+		newAdd3 = append(newAdd3, newAdd2[i][nxt+"s"].([]map[string]interface{})...)
+	}
+	ans[u.EntityToString(eNum+5)+"s"] = newAdd3
+
+	newAdd4 := []map[string]interface{}{}
+
+	for i := range newAdd3 {
+		nxt := u.EntityToString(eNum + 6)
+		newAdd4 = append(newAdd4, newAdd3[i][nxt+"s"].([]map[string]interface{})...)
+	}
+
+	ans[u.EntityToString(eNum+6)+"s"] = newAdd4
+
+	newAdd5 := []map[string]interface{}{}
+
+	for i := range newAdd4 {
+		nxt := u.EntityToString(eNum + 7)
+		newAdd5 = append(newAdd5, newAdd4[i][nxt+"s"].([]map[string]interface{})...)
+	}
+
+	ans[u.EntityToString(eNum+7)+"s"] = newAdd5
+
+	//add := []map[string]interface{}{}
+
+	//Get All first entities
+	/*for i := eNum + 1; i < SUBDEV1; i++ {
+		add = append(add, firstArr[i])
 	}*/
-	//ans["buildings"] = add
 	return ans
 }
 

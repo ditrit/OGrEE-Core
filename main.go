@@ -156,7 +156,7 @@ func main() {
 		controllers.CreateEntity).Methods("POST")
 
 	router.HandleFunc("/api/sites/{id}/all/nonstd",
-		controllers.GetSiteHierarchyNonStandard).Methods("GET")
+		controllers.GetEntityHierarchyNonStd).Methods("GET")
 
 	router.HandleFunc("/api/sites/{id}/all/buildings/rooms/racks/devices/subdevices",
 		controllers.GetEntityHierarchy).Methods("GET")
@@ -268,7 +268,7 @@ func main() {
 		controllers.GetEntitiesOfParent).Methods("GET")
 
 	router.HandleFunc("/api/buildings/{id}/all/nonstd",
-		controllers.GetBuildingHierarchyNonStandard).Methods("GET")
+		controllers.GetEntityHierarchyNonStd).Methods("GET")
 
 	router.HandleFunc("/api/buildings/{id}/all/rooms/racks/devices/subdevices",
 		controllers.GetEntityHierarchy).Methods("GET")
@@ -335,7 +335,7 @@ func main() {
 		controllers.GetEntityHierarchy).Methods("GET")
 
 	router.HandleFunc("/api/rooms/{id}/all/nonstd",
-		controllers.GetRoomHierarchyNonStandard).Methods("GET")
+		controllers.GetEntityHierarchyNonStd).Methods("GET")
 
 	router.HandleFunc("/api/rooms/{id}",
 		controllers.GetEntity).Methods("GET")
@@ -384,7 +384,7 @@ func main() {
 		controllers.GetEntityHierarchy).Methods("GET")
 
 	router.HandleFunc("/api/racks/{id}/all/nonstd",
-		controllers.GetRackHierarchyNonStandard).Methods("GET")
+		controllers.GetEntityHierarchyNonStd).Methods("GET")
 
 	router.HandleFunc("/api/racks/{id}",
 		controllers.GetEntity).Methods("GET")
