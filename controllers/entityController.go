@@ -12,6 +12,17 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
+const (
+	TENANT = iota
+	SITE
+	BLDG
+	ROOM
+	RACK
+	DEVICE
+	SUBDEV
+	SUBDEV1
+)
+
 func getObjID(x string) (primitive.ObjectID, error) {
 	objID, err := primitive.ObjectIDFromHex(x)
 	if err != nil {
@@ -86,6 +97,58 @@ func parseDataForNonStdResult(ent string, eNum int, data map[string]interface{})
 	return ans
 }
 
+// swagger:operation POST /api/{obj} objects CreateObject
+// Creates an object in the system.
+// ---
+// produces:
+// - application/json
+// parameters:
+// - name: objs
+//   in: query
+//   description: 'Indicates the location. Only values of "tenants", "sites",
+//   "buildings", "rooms", "racks", "devices", "subdevices", "subdevice1s" are acceptable'
+//   required: true
+//   type: string
+//   default: "sites"
+// - name: Name
+//   in: query
+//   description: Name of object
+//   required: true
+//   type: string
+//   default: "Object A"
+// - name: Category
+//   in: query
+//   description: Category of Object (ex. Consumer Electronics, Medical)
+//   required: true
+//   type: string
+//   default: "Research"
+// - name: Domain
+//   description: 'Domain of Object'
+//   required: true
+//   type: string
+//   default: 999
+// - name: ParentID
+//   description: 'All objects are linked to a parent with the exception of Tenant since it is at the top and has no parent'
+//   required: true
+//   type: int
+//   default: 999
+// - name: Description
+//   in: query
+//   description: Description of Object
+//   required: false
+//   type: string[]
+//   default: ["Some abandoned object in Grenoble"]
+// - name: Attributes
+//   in: query
+//   description: Any other object attributes can be added
+//   required: false
+//   type: json
+// responses:
+//     '201':
+//         description: Created
+//     '400':
+//         description: Bad request
+
 var CreateEntity = func(w http.ResponseWriter, r *http.Request) {
 	//tenant := &models.Tenant{}
 	entStr := r.URL.Path[5 : len(r.URL.Path)-1] //strip the '/api' in URL
@@ -126,6 +189,34 @@ var CreateEntity = func(w http.ResponseWriter, r *http.Request) {
 	u.Respond(w, resp)
 }
 
+// swagger:operation GET /api/{objs}/{id} objects GetObject
+// Gets an Object from the system.
+// The ID must be provided in the URL parameter
+// The name can be used instead of ID if the obj is tenant
+// ---
+// produces:
+// - application/json
+// parameters:
+// - name: objs
+//   in: query
+//   description: 'Indicates the location. Only values of "tenants", "sites",
+//   "buildings", "rooms", "racks", "devices", "subdevices", "subdevice1s" are acceptable'
+//   required: true
+//   type: string
+//   default: "sites"
+// - name: ID
+//   in: path
+//   description: ID of desired object or Name of Tenant
+//   required: true
+//   type: int
+//   default: 999
+// responses:
+//     '200':
+//         description: Found
+//     '400':
+//         description: Bad request
+//     '404':
+//         description: Not Found
 var GetEntity = func(w http.ResponseWriter, r *http.Request) {
 	id, e := mux.Vars(r)["id"]
 	resp := u.Message(true, "success")
@@ -165,6 +256,25 @@ var GetEntity = func(w http.ResponseWriter, r *http.Request) {
 	u.Respond(w, resp)
 }
 
+// swagger:operation GET /api/{objs} objects GetAllObjects
+// Gets all present objects for specified category in the system.
+// Returns JSON body with all specified objects of type and their IDs
+// ---
+// produces:
+// - application/json
+// parameters:
+// - name: objs
+//   in: query
+//   description: 'Indicates the location. Only values of "tenants", "sites",
+//   "buildings", "rooms", "racks", "devices", "subdevices", "subdevice1s" are acceptable'
+//   required: true
+//   type: string
+//   default: "sites"
+// responses:
+//     '200':
+//         description: Found
+//     '404':
+//         description: Nothing Found
 var GetAllEntities = func(w http.ResponseWriter, r *http.Request) {
 	entStr := r.URL.Path[5 : len(r.URL.Path)-1] //strip the '/api' in URL
 	entUpper := strings.ToUpper(entStr)         // and the trailing 's'
@@ -195,6 +305,30 @@ var GetAllEntities = func(w http.ResponseWriter, r *http.Request) {
 	u.Respond(w, resp)
 }
 
+// swagger:operation DELETE /api/{objs}/{id} objects DeleteObject
+// Deletes an Object in the system.
+// ---
+// produces:
+// - application/json
+// parameters:
+// - name: objs
+//   in: query
+//   description: 'Indicates the location. Only values of "tenants", "sites",
+//   "buildings", "rooms", "racks", "devices", "subdevices", "subdevice1s" are acceptable'
+//   required: true
+//   type: string
+//   default: "sites"
+// - name: ID
+//   in: path
+//   description: ID of desired object
+//   required: true
+//   type: int
+//   default: 999
+// responses:
+//     '204':
+//        description: Successful
+//     '404':
+//        description: Not found
 var DeleteEntity = func(w http.ResponseWriter, r *http.Request) {
 	id, e := mux.Vars(r)["id"]
 	if e == false {
@@ -224,6 +358,63 @@ var DeleteEntity = func(w http.ResponseWriter, r *http.Request) {
 
 	u.Respond(w, v)
 }
+
+// swagger:operation PUT /api/{objs}/{id} objects UpdateObject
+// Changes Object data in the system.
+// If no new or any information is provided
+// an OK will still be returned
+// ---
+// produces:
+// - application/json
+// parameters:
+// - name: objs
+//   in: query
+//   description: 'Indicates the location. Only values of "tenants", "sites",
+//   "buildings", "rooms", "racks", "devices", "subdevices", "subdevice1s" are acceptable'
+//   required: true
+//   type: string
+//   default: "sites"
+// - name: ID
+//   in: path
+//   description: ID of desired Object
+//   required: true
+//   type: int
+//   default: 999
+// - name: Name
+//   in: query
+//   description: Name of Object
+//   required: false
+//   type: string
+//   default: "INFINITI"
+// - name: Category
+//   in: query
+//   description: Category of Object (ex. Consumer Electronics, Medical)
+//   required: false
+//   type: string
+//   default: "Auto"
+// - name: Description
+//   in: query
+//   description: Description of Object
+//   required: false
+//   type: string[]
+//   default: "High End Worldwide automotive company"
+// - name: Domain
+//   description: 'Domain of the Object'
+//   required: false
+//   type: string
+//   default: "High End Auto"
+// - name: Attributes
+//   in: query
+//   description: Any other object attributes can be updated
+//   required: false
+//   type: json
+// responses:
+//     '200':
+//         description: Updated
+//     '400':
+//         description: Bad request
+//     '404':
+//         description: Not Found
 
 var UpdateEntity = func(w http.ResponseWriter, r *http.Request) {
 	updateData := map[string]interface{}{}
@@ -272,6 +463,48 @@ var UpdateEntity = func(w http.ResponseWriter, r *http.Request) {
 	u.Respond(w, v)
 }
 
+// swagger:operation GET /api/{objs}? objects GetObject
+// Gets an Object using any attribute (with the exception of description) via query in the system
+// The attributes are in the form {attr}=xyz&{attr1}=abc
+// And any combination can be used given that at least 1 is provided.
+// ---
+// produces:
+// - application/json
+// parameters:
+// - name: objs
+//   in: query
+//   description: 'Indicates the location. Only values of "tenants", "sites",
+//   "buildings", "rooms", "racks", "devices", "subdevices", "subdevice1s" are acceptable'
+//   required: true
+//   type: string
+//   default: "sites"
+// - name: Name
+//   in: query
+//   description: Name of tenant
+//   required: false
+//   type: string
+//   default: "INFINITI"
+// - name: Category
+//   in: query
+//   description: Category of Tenant (ex. Consumer Electronics, Medical)
+//   required: false
+//   type: string
+//   default: "Auto"
+// - name: Domain
+//   description: 'Domain of the Tenant'
+//   required: false
+//   type: string
+//   default: "High End Auto"
+// - name: Attributes
+//   in: query
+//   description: Any other object attributes can be queried
+//   required: false
+//   type: json
+// responses:
+//     '204':
+//        description: Found
+//     '404':
+//        description: Not found
 var GetEntityByQuery = func(w http.ResponseWriter, r *http.Request) {
 	var resp map[string]interface{}
 	var bsonMap bson.M
@@ -352,6 +585,31 @@ var GetEntitiesOfParent = func(w http.ResponseWriter, r *http.Request) {
 	u.Respond(w, resp)
 }
 
+// swagger:operation GET /api/{objs}/{id}/all objects GetFromObject
+// Obtain all objects related to specified object in the system.
+// Returns JSON body with all subobjects under the Object
+// ---
+// produces:
+// - application/json
+// parameters:
+// - name: objs
+//   in: query
+//   description: 'Indicates the location. Only values of "tenants", "sites",
+//   "buildings", "rooms", "racks", "devices", "subdevices", "subdevice1s" are acceptable'
+//   required: true
+//   type: string
+//   default: "sites"
+// - name: ID
+//   in: query
+//   description: ID of object
+//   required: true
+//   type: int
+//   default: 999
+// responses:
+//     '200':
+//         description: Found
+//     '404':
+//         description: Nothing Found
 var GetEntityHierarchy = func(w http.ResponseWriter, r *http.Request) {
 	//Extract string between /api and /{id}
 	idx := strings.Index(r.URL.Path[5:], "/") + 4
@@ -428,6 +686,24 @@ var GetEntityHierarchy = func(w http.ResponseWriter, r *http.Request) {
 	u.Respond(w, resp)
 }
 
+// swagger:operation GET /api/tenants/{name}/all objects GetFromObject
+// Obtain all objects related to Tenant in the system.
+// Returns JSON body with all subobjects under the Tenant
+// ---
+// produces:
+// - application/json
+// parameters:
+// - name: name
+//   in: query
+//   description: Name of Tenant
+//   required: true
+//   type: int
+//   default: 999
+// responses:
+//     '200':
+//         description: Found
+//     '404':
+//         description: Nothing Found
 var GetTenantHierarchy = func(w http.ResponseWriter, r *http.Request) {
 	entity := "tenant"
 	resp := u.Message(true, "success")
@@ -477,6 +753,36 @@ var GetTenantHierarchy = func(w http.ResponseWriter, r *http.Request) {
 	u.Respond(w, resp)
 }
 
+// swagger:operation GET /api/{objs}/{id}/* objects GetFromObect
+// A category of objects of a Parent Object can be retrieved from the system.
+// ---
+// produces:
+// - application/json
+// parameters:
+// - name: objs
+//   in: query
+//   description: 'Indicates the location. Only values of "tenants", "sites",
+//   "buildings", "rooms", "racks", "devices", "subdevices", "subdevice1s" are acceptable'
+//   required: true
+//   type: string
+//   default: "sites"
+// - name: ID
+//   in: path
+//   description: ID of desired object
+//   required: true
+//   type: string
+//   default: "INFINITI"
+// - name: '*'
+//   in: path
+//   description: Hierarchal path to desired object(s)
+//   required: true
+//   type: string
+//   default: "/buildings/BuildingB/RoomA"
+// responses:
+//     '200':
+//         description: Found
+//     '404':
+//         description: Not Found
 var GetEntitiesUsingNamesOfParents = func(w http.ResponseWriter, r *http.Request) {
 	//Extract string between /api and /{id}
 	idx := strings.Index(r.URL.Path[5:], "/") + 4
@@ -545,6 +851,30 @@ var GetEntitiesUsingNamesOfParents = func(w http.ResponseWriter, r *http.Request
 
 }
 
+// swagger:operation GET /api/{objs}/{tenant_name}/{*} objects GetFromTenant
+// A category of objects of a Tenant can be retrieved from the system.
+// The Tenant name must be provided in the URL parameter
+// ---
+// produces:
+// - application/json
+// parameters:
+// - name: name
+//   in: path
+//   description: Name of desired tenant
+//   required: true
+//   type: string
+//   default: "INFINITI"
+// - name: '*'
+//   in: path
+//   description: Hierarchal path to desired object(s)
+//   required: true
+//   type: string
+//   default: "/sites"
+// responses:
+//     '200':
+//         description: Found
+//     '404':
+//         description: Not Found
 var GetEntitiesUsingNameOfTenant = func(w http.ResponseWriter, r *http.Request) {
 	//Extract string between /api and /{id}
 	idx := strings.Index(r.URL.Path[5:], "/") + 4
