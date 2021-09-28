@@ -22,10 +22,8 @@ COPY ./.env /home/
 
 # Install Dependencies
 RUN go get -u github.com/gorilla/mux
-RUN go get -u github.com/jinzhu/gorm
-RUN go get -u github.com/jinzhu/gorm/dialects/postgres
+RUN go get -u go.mongodb.org/mongo-driver
 RUN go get -u github.com/dgrijalva/jwt-go
-RUN go get -u github.com/lib/pq
 RUN go get -u github.com/joho/godotenv
 RUN go get -u golang.org/x/crypto/bcrypt
 
