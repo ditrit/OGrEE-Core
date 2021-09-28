@@ -100,14 +100,6 @@ func ValidateEntity(entity int, t map[string]interface{}) (map[string]interface{
 					return u.Message(false, "PositionXYU string should be on the payload"), false
 				}
 
-				if v["posZ"] == "" {
-					return u.Message(false, "Z coordinates should be on payload"), false
-				}
-
-				if v["posZU"] == "" {
-					return u.Message(false, "PositionZU string should be on the payload"), false
-				}
-
 				if v["size"] == "" {
 					return u.Message(false, "Invalid building size on the payload"), false
 				}
@@ -131,14 +123,6 @@ func ValidateEntity(entity int, t map[string]interface{}) (map[string]interface{
 
 				if v["posXYU"] == "" {
 					return u.Message(false, "PositionXYU string should be on the payload"), false
-				}
-
-				if v["posZ"] == "" {
-					return u.Message(false, "Z coordinates should be on payload"), false
-				}
-
-				if v["posZU"] == "" {
-					return u.Message(false, "PositionZU string should be on the payload"), false
 				}
 
 				switch v["orientation"] {
