@@ -12,44 +12,14 @@ import (
 	"github.com/gorilla/mux"
 )
 
-var tmatch mux.MatcherFunc = func(request *http.Request, match *mux.RouteMatch) bool {
+var dmatch mux.MatcherFunc = func(request *http.Request, match *mux.RouteMatch) bool {
 
 	//fmt.Println("The URL is: ", request.URL.String())
 	//https://benhoyt.com/writings/go-routing/#regex-table
 	//https://stackoverflow.com/questions/21664489/
 	//golang-mux-routing-wildcard-custom-func-match
 
-	return regexp.MustCompile(`^(\/api\/tenants\?.*)$`).
-		MatchString(request.URL.String())
-}
-
-var smatch mux.MatcherFunc = func(request *http.Request, match *mux.RouteMatch) bool {
-
-	return regexp.MustCompile(`^(\/api\/sites\?.*)$`).
-		MatchString(request.URL.String())
-}
-
-var bmatch mux.MatcherFunc = func(request *http.Request, match *mux.RouteMatch) bool {
-
-	return regexp.MustCompile(`^(\/api\/buildings\?.*)$`).
-		MatchString(request.URL.String())
-}
-
-var rmatch mux.MatcherFunc = func(request *http.Request, match *mux.RouteMatch) bool {
-
-	return regexp.MustCompile(`^(\/api\/rooms\?.*)$`).
-		MatchString(request.URL.String())
-}
-
-var ramatch mux.MatcherFunc = func(request *http.Request, match *mux.RouteMatch) bool {
-
-	return regexp.MustCompile(`^(\/api\/racks\?.*)$`).
-		MatchString(request.URL.String())
-}
-
-var dmatch mux.MatcherFunc = func(request *http.Request, match *mux.RouteMatch) bool {
-
-	return regexp.MustCompile(`^(\/api\/(devices|subdevices|subdevices1)\?.*)$`).
+	return regexp.MustCompile(`^(\/api\/(tenants|sites|buildings|rooms|racks|devices|subdevices|subdevices1)\?.*)$`).
 		MatchString(request.URL.String())
 }
 
@@ -68,7 +38,7 @@ func main() {
 
 	// ------ TENANTS CRUD ------ //
 	router.HandleFunc("/api/tenants",
-		controllers.GetEntityByQuery).Methods("GET").MatcherFunc(tmatch)
+		controllers.GetEntityByQuery).Methods("GET").MatcherFunc(dmatch)
 
 	router.HandleFunc("/api/tenants",
 		controllers.GetAllEntities).Methods("GET")
@@ -150,7 +120,7 @@ func main() {
 
 	// ------ SITES CRUD ------ //
 	router.HandleFunc("/api/sites",
-		controllers.GetEntityByQuery).Methods("GET").MatcherFunc(smatch)
+		controllers.GetEntityByQuery).Methods("GET").MatcherFunc(dmatch)
 
 	router.HandleFunc("/api/sites",
 		controllers.CreateEntity).Methods("POST")
@@ -226,7 +196,7 @@ func main() {
 
 	// ------ BUILDING CRUD ------ //
 	router.HandleFunc("/api/buildings",
-		controllers.GetEntityByQuery).Methods("GET").MatcherFunc(bmatch)
+		controllers.GetEntityByQuery).Methods("GET").MatcherFunc(dmatch)
 
 	router.HandleFunc("/api/buildings",
 		controllers.CreateEntity).Methods("POST")
@@ -290,7 +260,7 @@ func main() {
 
 	// ------ ROOM CRUD ------ //
 	router.HandleFunc("/api/rooms",
-		controllers.GetEntityByQuery).Methods("GET").MatcherFunc(rmatch)
+		controllers.GetEntityByQuery).Methods("GET").MatcherFunc(dmatch)
 
 	router.HandleFunc("/api/rooms",
 		controllers.CreateEntity).Methods("POST")
@@ -345,7 +315,7 @@ func main() {
 
 	// ------ RACK CRUD ------ //
 	router.HandleFunc("/api/racks",
-		controllers.GetEntityByQuery).Methods("GET").MatcherFunc(ramatch)
+		controllers.GetEntityByQuery).Methods("GET").MatcherFunc(dmatch)
 
 	router.HandleFunc("/api/racks",
 		controllers.CreateEntity).Methods("POST")

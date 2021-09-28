@@ -21,7 +21,7 @@ For Linux, consult your respective Distribution docs
   Clone the API repository  
   Execute go build main.go It should automatically retrieve the necessary libraries. If not then execute the command below to obtain the following packages
   ```
-  go get github.com/dgrijalva/jwt-go github.com/fsnotify/fsnotify github.com/gorilla/mux github.com/jinzhu/gorm github.com/joho/godotenv github.com/lib/pq github.com/magiconair/properties github.com/mitchellh/mapstructure github.com/crypto golang.org/x/sys golang.org/x/text gopkg.in/ini.v1  
+  go get github.com/dgrijalva/jwt-go github.com/fsnotify/fsnotify github.com/gorilla/mux go.mongodb.org/mongo-driver github.com/joho/godotenv gopkg.in/check.v1 github.com/crypto golang.org/x/sys golang.org/x/text gopkg.in/ini.v1  
   ```  
 
    Execute go build main.go

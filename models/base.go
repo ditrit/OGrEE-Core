@@ -9,11 +9,10 @@ import (
 	"os"
 	"time"
 
-	_ "github.com/jinzhu/gorm/dialects/postgres"
 	"github.com/joho/godotenv"
-	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
+	"go.mongodb.org/mongo-driver/mongo/readpref"
 )
 
 //Database
@@ -40,26 +39,6 @@ func init() {
 
 	fmt.Println(dbUri)
 
-	/*clientOptions := options.Client().ApplyURI(dbUri)
-	client, err := mongo.Connect(context.TODO(), clientOptions)
-
-	if err != nil {
-		log.Fatal(err)
-		println("Error while connecting")
-	}
-
-	fmt.Println("Connected to MongoDB!")
-
-	//conn, err := gorm.Open("postgres", dbUri)
-	println("GOT HERE 2")
-	if err != nil {
-		fmt.Println("FAILURE!!!")
-		fmt.Print(err)
-	}
-
-	fmt.Print(err)
-	db = client.Database("ogree")*/
-
 	client, err := mongo.NewClient(options.Client().ApplyURI(dbUri))
 	if err != nil {
 		log.Fatal(err)
@@ -77,37 +56,15 @@ func init() {
 	if db == nil {
 		println("Error while connecting")
 	} else {
-		println("Printing collection names")
-		x, _ := db.ListCollectionNames(GetCtx(), bson.M{})
-		println(len(x))
-		if len(x) == 0 {
-			println("ERROR!")
-			os.Exit(-1)
+		err = client.Ping(ctx, readpref.Primary())
+		if err != nil {
+			log.Fatal(err)
+		} else {
+			println("Successfully connected to DB")
 		}
 
 	}
-	//db.Debug().SingularTable(true)
 }
-
-// ConnectDB : This is helper function to connect mongoDB
-/*func ConnectDB() *mongo.Collection {
-
-	// Set client options
-	clientOptions := options.Client().ApplyURI("your_cluster_endpoint")
-
-	// Connect to MongoDB
-	client, err := mongo.Connect(context.TODO(), clientOptions)
-
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	fmt.Println("Connected to MongoDB!")
-
-	collection := client.Database("ogree").Collection("books")
-
-	return collection
-}*/
 
 func GetDB() *mongo.Database {
 	return db

@@ -6,7 +6,6 @@ import (
 	"strings"
 
 	"github.com/dgrijalva/jwt-go"
-	"github.com/jinzhu/gorm"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"golang.org/x/crypto/bcrypt"
@@ -20,7 +19,7 @@ type Token struct {
 
 //a struct for rep user account
 type Account struct {
-	gorm.Model
+	ID       uint
 	Email    string `json: "email"`
 	Password string `json: "password"`
 	Token    string `json:"token";sql:"-"`
