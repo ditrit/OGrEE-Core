@@ -21,6 +21,66 @@ const (
 	SUBDEV1
 )
 
+func parseDataForNonStdResult(ent string, eNum int, data map[string]interface{}) map[string][]map[string]interface{} {
+
+	ans := map[string][]map[string]interface{}{}
+	add := []map[string]interface{}{}
+
+	firstIndex := u.EntityToString(eNum + 1)
+	firstArr := data[firstIndex+"s"].([]map[string]interface{})
+
+	ans[firstIndex+"s"] = firstArr
+
+	for i := range firstArr {
+		nxt := u.EntityToString(eNum + 2)
+		add = append(add, firstArr[i][nxt+"s"].([]map[string]interface{})...)
+	}
+
+	ans[u.EntityToString(eNum+2)+"s"] = add
+	newAdd := []map[string]interface{}{}
+	for i := range add {
+		nxt := u.EntityToString(eNum + 3)
+		newAdd = append(newAdd, add[i][nxt+"s"].([]map[string]interface{})...)
+	}
+
+	ans[u.EntityToString(eNum+3)+"s"] = newAdd
+
+	newAdd2 := []map[string]interface{}{}
+	for i := range newAdd {
+		nxt := u.EntityToString(eNum + 4)
+		newAdd2 = append(newAdd2, newAdd[i][nxt+"s"].([]map[string]interface{})...)
+	}
+
+	ans[u.EntityToString(eNum+4)+"s"] = newAdd2
+	newAdd3 := []map[string]interface{}{}
+
+	for i := range newAdd2 {
+		nxt := u.EntityToString(eNum + 5)
+		newAdd3 = append(newAdd3, newAdd2[i][nxt+"s"].([]map[string]interface{})...)
+	}
+	ans[u.EntityToString(eNum+5)+"s"] = newAdd3
+
+	newAdd4 := []map[string]interface{}{}
+
+	for i := range newAdd3 {
+		nxt := u.EntityToString(eNum + 6)
+		newAdd4 = append(newAdd4, newAdd3[i][nxt+"s"].([]map[string]interface{})...)
+	}
+
+	ans[u.EntityToString(eNum+6)+"s"] = newAdd4
+
+	newAdd5 := []map[string]interface{}{}
+
+	for i := range newAdd4 {
+		nxt := u.EntityToString(eNum + 7)
+		newAdd5 = append(newAdd5, newAdd4[i][nxt+"s"].([]map[string]interface{})...)
+	}
+
+	ans[u.EntityToString(eNum+7)+"s"] = newAdd5
+
+	return ans
+}
+
 func ValidateEntity(entity int, t map[string]interface{}) (map[string]interface{}, bool) {
 	var objID primitive.ObjectID
 	var err error
@@ -316,15 +376,41 @@ func GetAllEntities(ent string) ([]map[string]interface{}, string) {
 	return data, ""
 }
 
-func DeleteEntity(entity string, id primitive.ObjectID) map[string]interface{} {
+func DeleteEntity(entity string, id primitive.ObjectID) (map[string]interface{}, string) {
+	eNum := u.EntityStrToInt(entity)
+	t, e := GetEntityHierarchy(entity, id, eNum, SUBDEV1)
+	if e != "" {
+		return u.Message(false,
+			"There was an error in deleting the entity: "+e), "not found"
+	}
+
+	data := parseDataForNonStdResult(entity, eNum, t)
+
+	//Delete the Subentities
+	for i := SUBDEV1; i > eNum; i-- {
+		eStr := u.EntityToString(i)
+		if arr, ok := data[eStr+"s"]; ok {
+
+			for idx := range arr {
+				locID := arr[idx]["_id"].(primitive.ObjectID)
+				ctx, cancel := u.Connect()
+				c, _ := GetDB().Collection(eStr).DeleteOne(ctx, bson.M{"_id": locID})
+				if c.DeletedCount == 0 {
+					return u.Message(false, "There was an error in deleting the entity"), "not found"
+				}
+				defer cancel()
+			}
+		}
+	}
+	//Finally delete the Entity
 	ctx, cancel := u.Connect()
 	c, _ := GetDB().Collection(entity).DeleteOne(ctx, bson.M{"_id": id})
 	if c.DeletedCount == 0 {
-		return u.Message(false, "There was an error in deleting the rack")
+		return u.Message(false, "There was an error in deleting the entity"), "not found"
 	}
 	defer cancel()
 
-	return u.Message(true, "success")
+	return u.Message(true, "success"), ""
 }
 
 func UpdateEntity(ent string, id primitive.ObjectID, t *map[string]interface{}) (map[string]interface{}, string) {

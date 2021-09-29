@@ -347,7 +347,7 @@ var DeleteEntity = func(w http.ResponseWriter, r *http.Request) {
 	//Get entity from URL and strip trailing 's'
 	entity := r.URL.Path[5 : strings.LastIndex(r.URL.Path, "/")-1]
 
-	v := models.DeleteEntity(entity, objID)
+	v, _ := models.DeleteEntity(entity, objID)
 
 	if v["status"] == false {
 		w.WriteHeader(http.StatusNotFound)
