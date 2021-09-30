@@ -246,6 +246,7 @@ var GetEntity = func(w http.ResponseWriter, r *http.Request) {
 		case "record not found":
 			w.WriteHeader(http.StatusNotFound)
 		default:
+			w.WriteHeader(http.StatusNotFound) //For now
 		}
 
 	} else {

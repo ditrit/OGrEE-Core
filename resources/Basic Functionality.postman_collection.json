@@ -1,7 +1,7 @@
 {
 	"info": {
-		"_postman_id": "7550ac30-906c-456e-97b0-3d6eca86ede0",
-		"name": "Basic Functionality",
+		"_postman_id": "ecb848e4-262f-4c9e-a04c-7564edbf9573",
+		"name": "Basic Functionality (MDB)",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
 	"item": [
@@ -18,8 +18,8 @@
 									"var data = pm.response.json();",
 									"tests[\"Successful POST Request\"] = responseCode.code === 201;",
 									"",
-									"pm.environment.set(\"TenantID\", data[\"tenant\"][\"id\"])",
-									"console.log(\"The ID is: \", data[\"tenant\"][\"id\"])",
+									"pm.environment.set(\"TenantID\", data[\"data\"][\"id\"])",
+									"console.log(\"The ID is: \", data[\"data\"][\"id\"])",
 									"pm.environment.set(\"TenantJSON\", data)"
 								],
 								"type": "text/javascript"
@@ -64,7 +64,6 @@
 							],
 							"path": [
 								"api",
-								"user",
 								"tenants"
 							]
 						}
@@ -89,34 +88,83 @@
 								"exec": [
 									"tests[\"Successful GET\"] = responseCode.code === 200;",
 									"var data =  pm.response.json();",
+									"var OGdata = pm.environment.get(\"TenantJSON\");",
 									"",
-									"var locjson = {",
-									"    \"data\": {",
-									"        \"id\": pm.environment.get(\"TenantID\"),",
-									"        \"name\": \"DEMO\",",
-									"        \"category\": \"tenant\",",
-									"        \"domain\": \"DEMO\",",
-									"        \"parentId\": 0,",
-									"        \"description\": [",
-									"            \"\"",
-									"        ],",
-									"        \"attributes\": {",
-									"            \"color\": \"FFFFFF\",",
-									"            \"mainContact\": \"Ced\",",
-									"            \"mainPhone\": \"0612345678\",",
-									"            \"mainEmail\": \"ced@ogree3D.com\"",
+									"function isEqual(x, y) {",
+									"    // if both are function",
+									"    if (x instanceof Function) {",
+									"        if (y instanceof Function) {",
+									"            return x.toString() === y.toString();",
 									"        }",
-									"    },",
-									"    \"message\": \"success\",",
-									"    \"status\": true",
-									"};",
+									"        return false;",
+									"    }",
+									"    if (x === null || x === undefined || y === null || y === undefined) { return x === y; }",
+									"    if (x === y || x.valueOf() === y.valueOf()) { return true; }",
+									"",
+									"    // if one of them is date, they must had equal valueOf",
+									"    if (x instanceof Date) { return false; }",
+									"    if (y instanceof Date) { return false; }",
+									"",
+									"    // if they are not function or strictly equal, they both need to be Objects",
+									"    if (!(x instanceof Object)) { return false; }",
+									"    if (!(y instanceof Object)) { return false; }",
+									"",
+									"    var p = Object.keys(x);",
+									"    return Object.keys(y).every(function (i) { return p.indexOf(i) !== -1; }) ?",
+									"            p.every(function (i) { return isEqual(x[i], y[i]); }) : false;",
+									"}",
 									"",
 									"function isEqualsJson(obj1, obj2) {",
-									"    return JSON.stringify(obj1) == JSON.stringify(obj2)",
+									"    const obj1Keys = Object.keys(obj1);",
+									"    const obj2Keys = Object.keys(obj2);",
+									"",
+									"    if(obj1Keys.length !== obj2Keys.length) {",
+									"        return false;",
+									"    }",
+									"",
+									"    for (let objKey of obj1Keys) {",
+									"        if (obj1[objKey] !== obj2[objKey]) {",
+									"            if(typeof obj1[objKey] == \"object\" && typeof obj2[objKey] == \"object\") {",
+									"                if(!isEqual(obj1[objKey], obj2[objKey])) {",
+									"                    return false;",
+									"                }",
+									"            } ",
+									"            else {",
+									"                return false;",
+									"            }",
+									"        }",
+									"    }",
+									"",
+									"    return true;",
 									"}",
 									"",
 									"",
-									"tests[\"Successful Create & Get Request\"] = isEqualsJson(data, locjson) == true;"
+									"",
+									"/*var locjson = {",
+									"    \"data\": {",
+									"            \"attributes\": {",
+									"            \"color\": \"FFFFFF\",",
+									"            \"mainContact\": \"Ced\",",
+									"            \"mainEmail\": \"ced@ogree3D.com\",",
+									"            \"mainPhone\": \"0612345678\"",
+									"        },",
+									"        \"category\": \"tenant\",",
+									"        \"description\": [],",
+									"        \"domain\": \"DEMO\",",
+									"        \"_id\": pm.environment.get(\"TenantID\"),",
+									"        \"name\": \"DEMO\",",
+									"        \"parentId\": null",
+									"    },",
+									"    \"message\": \"success\",",
+									"    \"status\": true",
+									"};*/",
+									"",
+									"/*function isEqualsJson(obj1, obj2) {",
+									"    return JSON.stringify(obj1) == JSON.stringify(obj2)",
+									"}*/",
+									"",
+									"",
+									"tests[\"Successful Create & Get Request\"] = isEqualsJson(data, OGdata) == true;"
 								],
 								"type": "text/javascript"
 							}
@@ -161,7 +209,6 @@
 							],
 							"path": [
 								"api",
-								"user",
 								"tenants",
 								"{{TenantID}}"
 							]
@@ -179,7 +226,7 @@
 									"var data = pm.response.json();",
 									"tests[\"Successful POST Request\"] = responseCode.code === 201;",
 									"",
-									"pm.environment.set(\"SiteID\", data[\"site\"][\"id\"])",
+									"pm.environment.set(\"SiteID\", data[\"data\"][\"id\"])",
 									"pm.environment.set(\"SiteJSONStr\", JSON.stringify(data));"
 								],
 								"type": "text/javascript"
@@ -211,7 +258,6 @@
 							],
 							"path": [
 								"api",
-								"user",
 								"sites"
 							]
 						}
@@ -313,7 +359,6 @@
 							],
 							"path": [
 								"api",
-								"user",
 								"sites",
 								"{{SiteID}}"
 							]
@@ -331,7 +376,7 @@
 									"var data = pm.response.json();",
 									"tests[\"Successful POST Request\"] = responseCode.code === 201;",
 									"",
-									"pm.environment.set(\"BuildingID\", data[\"building\"][\"id\"])",
+									"pm.environment.set(\"BuildingID\", data[\"data\"][\"id\"])",
 									"pm.environment.set(\"BldgJSONStr\", JSON.stringify(data[\"building\"]))"
 								],
 								"type": "text/javascript"
@@ -363,7 +408,6 @@
 							],
 							"path": [
 								"api",
-								"user",
 								"buildings"
 							]
 						}
@@ -442,87 +486,6 @@
 							],
 							"path": [
 								"api",
-								"user",
-								"buildings",
-								"{{BuildingID}}"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Verify Create Building Copy",
-					"event": [
-						{
-							"listen": "prerequest",
-							"script": {
-								"exec": [
-									""
-								],
-								"type": "text/javascript"
-							}
-						},
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"tests[\"Successful GET\"] = responseCode.code === 200;",
-									"var data =  pm.response.json();",
-									"",
-									"locjson = pm.environment.get(\"BldgJSONStr\")",
-									"",
-									"function isEqualsJson(obj1, obj2) {",
-									"    return obj1 == obj2",
-									"}",
-									"",
-									"console.log(\"The loc is: \", JSON.stringify(locjson))",
-									"console.log(\"The received response is: \", JSON.stringify(data))",
-									"tests[\"Successful Create & Get Request\"] = isEqualsJson(JSON.stringify(data[\"data\"]), locjson) == true;"
-								],
-								"type": "text/javascript"
-							}
-						}
-					],
-					"protocolProfileBehavior": {
-						"disableBodyPruning": true
-					},
-					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": [
-								{
-									"key": "token",
-									"value": "{{AuthToken}}",
-									"type": "string"
-								}
-							]
-						},
-						"method": "GET",
-						"header": [
-							{
-								"warning": "This is a duplicate header and will be overridden by the Authorization header generated by Postman.",
-								"key": "Authorization",
-								"value": "{{AuthToken}}",
-								"type": "text"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{URL}}/api/buildings/{{BuildingID}}",
-							"host": [
-								"{{URL}}"
-							],
-							"path": [
-								"api",
-								"user",
 								"buildings",
 								"{{BuildingID}}"
 							]
@@ -540,7 +503,7 @@
 									"var data = pm.response.json();",
 									"tests[\"Successful POST Request\"] = responseCode.code === 201;",
 									"",
-									"pm.environment.set(\"RoomID\", data[\"room\"][\"id\"])",
+									"pm.environment.set(\"RoomID\", data[\"data\"][\"id\"])",
 									"pm.environment.set(\"RoomJSONStr\", JSON.stringify(data[\"room\"]))"
 								],
 								"type": "text/javascript"
@@ -572,7 +535,6 @@
 							],
 							"path": [
 								"api",
-								"user",
 								"rooms"
 							]
 						}
@@ -651,7 +613,6 @@
 							],
 							"path": [
 								"api",
-								"user",
 								"rooms",
 								"{{RoomID}}"
 							]
@@ -669,7 +630,7 @@
 									"var data = pm.response.json();",
 									"tests[\"Successful POST Request\"] = responseCode.code === 201;",
 									"",
-									"pm.environment.set(\"RackID\", data[\"rack\"][\"id\"])",
+									"pm.environment.set(\"RackID\", data[\"data\"][\"id\"])",
 									"pm.environment.set(\"RackJSONStr\", JSON.stringify(data[\"rack\"]))"
 								],
 								"type": "text/javascript"
@@ -701,7 +662,6 @@
 							],
 							"path": [
 								"api",
-								"user",
 								"racks"
 							]
 						}
@@ -780,7 +740,6 @@
 							],
 							"path": [
 								"api",
-								"user",
 								"racks",
 								"{{RackID}}"
 							]
@@ -798,7 +757,7 @@
 									"var data = pm.response.json();",
 									"tests[\"Successful POST Request\"] = responseCode.code === 201;",
 									"",
-									"pm.environment.set(\"DeviceID\", data[\"device\"][\"id\"])",
+									"pm.environment.set(\"DeviceID\", data[\"data\"][\"id\"])",
 									"pm.environment.set(\"DeviceJSONStr\", JSON.stringify(data[\"device\"]))"
 								],
 								"type": "text/javascript"
@@ -830,7 +789,6 @@
 							],
 							"path": [
 								"api",
-								"user",
 								"devices"
 							]
 						}
@@ -909,7 +867,6 @@
 							],
 							"path": [
 								"api",
-								"user",
 								"devices",
 								"{{DeviceID}}"
 							]
@@ -977,7 +934,7 @@
 							}
 						},
 						"url": {
-							"raw": "{{URL}}/api/tenants/{{TenantID}}",
+							"raw": "{{URL}}/api/user/tenants/{{TenantID}}",
 							"host": [
 								"{{URL}}"
 							],
@@ -1078,7 +1035,7 @@
 							}
 						},
 						"url": {
-							"raw": "{{URL}}/api/tenants/{{TenantID}}",
+							"raw": "{{URL}}/api/user/tenants/{{TenantID}}",
 							"host": [
 								"{{URL}}"
 							],
@@ -1127,7 +1084,7 @@
 							}
 						},
 						"url": {
-							"raw": "{{URL}}/api/sites/{{SiteID}}",
+							"raw": "{{URL}}/api/user/sites/{{SiteID}}",
 							"host": [
 								"{{URL}}"
 							],
@@ -1196,7 +1153,7 @@
 							}
 						],
 						"url": {
-							"raw": "{{URL}}/api/sites/{{SiteID}}",
+							"raw": "{{URL}}/api/user/sites/{{SiteID}}",
 							"host": [
 								"{{URL}}"
 							],
@@ -1245,7 +1202,7 @@
 							}
 						},
 						"url": {
-							"raw": "{{URL}}/api/buildings/{{BuildingID}}",
+							"raw": "{{URL}}/api/user/buildings/{{BuildingID}}",
 							"host": [
 								"{{URL}}"
 							],
@@ -1314,7 +1271,7 @@
 							}
 						],
 						"url": {
-							"raw": "{{URL}}/api/buildings/{{BuildingID}}",
+							"raw": "{{URL}}/api/user/buildings/{{BuildingID}}",
 							"host": [
 								"{{URL}}"
 							],
@@ -1363,7 +1320,7 @@
 							}
 						},
 						"url": {
-							"raw": "{{URL}}/api/rooms/{{RoomID}}",
+							"raw": "{{URL}}/api/user/rooms/{{RoomID}}",
 							"host": [
 								"{{URL}}"
 							],
@@ -1437,7 +1394,7 @@
 							}
 						],
 						"url": {
-							"raw": "{{URL}}/api/rooms/{{RoomID}}",
+							"raw": "{{URL}}/api/user/rooms/{{RoomID}}",
 							"host": [
 								"{{URL}}"
 							],
@@ -1486,7 +1443,7 @@
 							}
 						},
 						"url": {
-							"raw": "{{URL}}/api/racks/{{RackID}}",
+							"raw": "{{URL}}/api/user/racks/{{RackID}}",
 							"host": [
 								"{{URL}}"
 							],
@@ -1560,7 +1517,7 @@
 							}
 						],
 						"url": {
-							"raw": "{{URL}}/api/racks/{{RackID}}",
+							"raw": "{{URL}}/api/user/racks/{{RackID}}",
 							"host": [
 								"{{URL}}"
 							],
@@ -1609,7 +1566,7 @@
 							}
 						},
 						"url": {
-							"raw": "{{URL}}/api/devices/{{DeviceID}}",
+							"raw": "{{URL}}/api/user/devices/{{DeviceID}}",
 							"host": [
 								"{{URL}}"
 							],
@@ -1683,7 +1640,7 @@
 							}
 						],
 						"url": {
-							"raw": "{{URL}}/api/devices/{{DeviceID}}",
+							"raw": "{{URL}}/api/user/devices/{{DeviceID}}",
 							"host": [
 								"{{URL}}"
 							],
@@ -1731,7 +1688,6 @@
 							],
 							"path": [
 								"api",
-								"user",
 								"tenants",
 								"{{TenantID}}"
 							]
@@ -1800,7 +1756,6 @@
 							],
 							"path": [
 								"api",
-								"user",
 								"tenants",
 								"{{TenantID}}"
 							]
@@ -1837,7 +1792,6 @@
 							],
 							"path": [
 								"api",
-								"user",
 								"sites",
 								"{{SiteID}}"
 							]
@@ -1868,14 +1822,14 @@
 							}
 						],
 						"url": {
-							"raw": "{{URL}}/api/buildings",
+							"raw": "{{URL}}/api/buildings/{{BuildingID}}",
 							"host": [
 								"{{URL}}"
 							],
 							"path": [
 								"api",
-								"user",
-								"buildings"
+								"buildings",
+								"{{BuildingID}}"
 							]
 						}
 					},
@@ -1910,7 +1864,6 @@
 							],
 							"path": [
 								"api",
-								"user",
 								"rooms",
 								"{{RoomID}}"
 							]
@@ -1947,7 +1900,6 @@
 							],
 							"path": [
 								"api",
-								"user",
 								"racks",
 								"{{RackID}}"
 							]
@@ -1984,7 +1936,6 @@
 							],
 							"path": [
 								"api",
-								"user",
 								"devices",
 								"{{DeviceID}}"
 							]
@@ -2038,7 +1989,6 @@
 							],
 							"path": [
 								"api",
-								"user",
 								"tenants"
 							]
 						}
@@ -2074,7 +2024,6 @@
 							],
 							"path": [
 								"api",
-								"user",
 								"sites"
 							]
 						}
@@ -2110,7 +2059,6 @@
 							],
 							"path": [
 								"api",
-								"user",
 								"buildings"
 							]
 						}
@@ -2146,7 +2094,6 @@
 							],
 							"path": [
 								"api",
-								"user",
 								"rooms"
 							]
 						}
@@ -2182,7 +2129,6 @@
 							],
 							"path": [
 								"api",
-								"user",
 								"racks"
 							]
 						}
@@ -2218,7 +2164,6 @@
 							],
 							"path": [
 								"api",
-								"user",
 								"devices"
 							]
 						}
