@@ -1,6 +1,5 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 import requests,json, os, sys
-from dotenv import load_dotenv
 
 
 #CONSTANTS
