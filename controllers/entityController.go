@@ -251,6 +251,8 @@ var GetEntity = func(w http.ResponseWriter, r *http.Request) {
 
 	} else {
 		resp = u.Message(true, "success")
+		data["id"] = data["_id"]
+		delete(data, "_id")
 	}
 
 	resp["data"] = data
