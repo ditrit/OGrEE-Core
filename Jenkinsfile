@@ -46,7 +46,7 @@ pipeline {
             steps {
                 echo 'Functional....'
                 sh 'docker run -d --rm --network=roachnet --name=lapd mongo:latest'
-                sh 'docker run -d --rm --network=roachnet --name=rotten_apple_test testingalpine:dockerfile /home/test/scenario1.py'
+                sh 'docker run -d --rm --network=roachnet --name=rotten_apple_test testingalpine:dockerfile /home/scenario1.py'
                 sh 'docker stop rotten_apple_test || true'
                 sh 'docker stop lapd || true'
             }
