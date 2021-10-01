@@ -17,6 +17,7 @@ WORKDIR /home
 
 ADD . /home/
 COPY ./.env /home/
+COPY ./resources/test/ /home/
 # RUN cd p3 && go mod init p3
 
 
@@ -26,6 +27,9 @@ RUN go get -u go.mongodb.org/mongo-driver
 RUN go get -u github.com/dgrijalva/jwt-go
 RUN go get -u github.com/joho/godotenv
 RUN go get -u golang.org/x/crypto/bcrypt
+RUN apk add --no-cache python3 py3-pip
+RUN apk add --no-cache -X http://dl-cdn.alpinelinux.org/alpine/edge/community py3-pip
+
 
 #WORKDIR $GOPATH
 

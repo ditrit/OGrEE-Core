@@ -29,6 +29,7 @@ pipeline {
         stage('Unit Testing') {
             steps {
                 //sh 'go test -v ./models/... ./utils/...'
+                sh 'go test -v  ./utils/...'
                 echo 'Unit....'
             }
         }
@@ -36,6 +37,7 @@ pipeline {
         stage('Regression Testing') {
             steps {
                 //sh 'go test -cover ./models/... ./utils/...'
+                sh 'go test -cover ./utils/...'
                 echo 'Regression....'
             }
         }
@@ -43,6 +45,10 @@ pipeline {
         stage('Functional Test') {
             steps {
                 echo 'Functional....'
+                sh 'docker run -d --rm --network=roachnet --name=lapd mongo:latest'
+                sh 'docker run -d --rm --network=roachnet --name=rotten_apple_test testingalpine:dockerfile /home/test/scenario1.py'
+                sh 'docker stop rotten_apple_test || true'
+                sh 'docker stop lapd || true'
             }
         }
 

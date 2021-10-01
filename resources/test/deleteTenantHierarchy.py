@@ -1,6 +1,5 @@
 #!/usr/bin/env python
-import requests, argparse, os,json
-from dotenv import load_dotenv
+import requests, argparse, os, json
 
 
 #CONSTANT

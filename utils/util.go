@@ -67,11 +67,6 @@ func ParamsParse(link *url.URL) map[string]interface{} {
 	return values
 }
 
-func JoinQueryGen(entity string) string {
-	return "JOIN " + entity +
-		"_attributes ON " + entity + "_attributes.id = " + entity + ".id"
-}
-
 func EntityToString(entity int) string {
 	switch entity {
 	case TENANT:
