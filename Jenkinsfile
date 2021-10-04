@@ -46,7 +46,7 @@ pipeline {
             steps {
                 echo 'Functional....'
                 sh 'docker stop lapd || true'
-                sh 'docker run -d --rm --name=lapd  -v /home/ziad/testMDB:/docker-entrypoint-initdb.d/ -p 27018:27018 mongo:latest'
+                sh 'docker run --name lapd -d -v /home/ziad/testMDB:/docker-entrypoint-initdb.d/ -p 27018:27017 mongo'
                 sh 'docker run -d --rm --name=rotten_apple_test testingalpine:dockerfile /home/scenario1.py'
                 sh 'docker logs -f rotten_apple_test'
                 sh 'docker stop rotten_apple_test || true'
