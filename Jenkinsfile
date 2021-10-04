@@ -46,8 +46,8 @@ pipeline {
             steps {
                 echo 'Functional....'
                 sh 'docker stop lapd || true'
-                sh 'docker run --name lapd --network=roachnet --rm -v /home/ziad/testMDB:/docker-entrypoint-initdb.d/ -p 27018:27018 -d mongo:latest'
-                sh 'docker run -d --rm --network=roachnet --name=rotten_apple_test testingalpine:dockerfile /home/scenario1.py'
+                sh 'docker run --name lapd --rm -v /home/ziad/testMDB:/docker-entrypoint-initdb.d/ -p 27018:27018 -d mongo:latest'
+                sh 'docker run -d --rm --name=rotten_apple_test testingalpine:dockerfile /home/scenario1.py'
                 sh 'docker logs -f rotten_apple_test'
                 sh 'docker stop rotten_apple_test || true'
                 sh 'docker stop lapd || true'
