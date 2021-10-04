@@ -17,7 +17,7 @@ def checkResponse(code, entity):
         print(entity+" Empty: Fail")
 
 def writeEnv():
-    with open('.env', 'r') as file:
+    with open('.localenv', 'r') as file:
         data = file.read() # use `json.loads` to do the reverse
         x = json.loads(data)
         for i in x:

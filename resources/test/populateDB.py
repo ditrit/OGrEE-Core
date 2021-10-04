@@ -37,7 +37,7 @@ def verifyOutput(j1, j2):
 
 
 def writeEnv():
-    with open('.env', 'w') as file:
+    with open('.localenv', 'w') as file:
         file.write(json.dumps(PIDS)) # use `json.loads` to do the reverse
 
     
