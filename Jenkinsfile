@@ -5,8 +5,8 @@ pipeline {
             steps {
                 echo 'Building..'
                 sh 'go build main.go'
-                sh 'pwd'
-                sh 'cat ./resources/test/Dockerfile'
+                sh 'mv main ./resources/test/'
+                //sh 'cat ./resources/test/Dockerfile'
 
             }
         }
@@ -48,15 +48,17 @@ pipeline {
             steps {
                 echo 'Functional....'
                 sh 'docker stop lapd || true'
-                sh 'cd ./resources/test && docker build -t apitester:dockerfile .'
+                //sh 'cd ./resources/test && docker build -t apitester:dockerfile .'
                 
-                sh 'docker run --rm --network=roachnet --name lapd -d -v /home/ziad/testMDB:/docker-entrypoint-initdb.d/ mongo'
-                sh 'docker run -d --rm --network=roachnet --name=rotten_apple_test testingalpine:dockerfile /bin/sh -c /home/main'
-                sh 'docker run -d --rm --network=roachnet --name=tester apitester:dockerfile /home/scenario1.py'
-                sh 'docker logs -f rotten_apple_test'
-                sh 'docker logs -f tester'
-                sh 'docker stop rotten_apple_test || true'
-                sh 'docker stop lapd || true'
+                sh 'docker run --rm --network=roachnet -p 27018:27017 --name lapd -d -v /home/ziad/testMDB:/docker-entrypoint-initdb.d/ mongo'
+                sh './resources/test/main &'
+                sh './resources/test/scenario1.py'
+                //sh 'docker run -d --rm --network=roachnet --name=rotten_apple_test testingalpine:dockerfile /bin/sh -c /home/main'
+                //sh 'docker run -d --rm --network=roachnet --name=tester apitester:dockerfile /home/scenario1.py'
+                //sh 'docker logs -f rotten_apple_test'
+                //sh 'docker logs -f tester'
+                //sh 'docker stop rotten_apple_test || true'
+                //sh 'docker stop lapd || true'
             }
         }
 

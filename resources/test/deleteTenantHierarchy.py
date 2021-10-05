@@ -38,7 +38,7 @@ tid = PIDS['tenantID']
 args = vars(parser.parse_args())
 if ('url' not in args or args['url'] == None):
     print('API URL not specified... using default URL')
-    url = "http://rotten_apple_test:3001/api"
+    url = "http://localhost:27019/api"
 else:
     url = args['url']
 
