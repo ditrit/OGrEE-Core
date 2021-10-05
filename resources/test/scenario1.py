@@ -1,9 +1,6 @@
 #!/usr/bin/env python3
 import os
 
-#In Docker Container
-os.system("/home/main &")
-
 #Empty, populate then delete all
 #which should test the cascade
 #relationship enforced by the API
