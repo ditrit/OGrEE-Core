@@ -2,7 +2,7 @@
 import os
 
 #In Docker Container
-os.system("/home/main")
+os.system("/home/main &")
 
 #Empty, populate then delete all
 #which should test the cascade
