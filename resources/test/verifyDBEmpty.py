@@ -2,7 +2,7 @@
 import requests
 expected = 404
 
-url = "http://localhost:27019/api/"
+url = "http://localhost:27020/api/"
 
 def checkResponse(code, entity):
     if code == expected:
