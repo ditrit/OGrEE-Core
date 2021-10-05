@@ -5,6 +5,7 @@ pipeline {
             steps {
                 echo 'Building..'
                 sh 'go build main.go'
+                sh 'cat ./resources/test/Dockerfile'
 
             }
         }
