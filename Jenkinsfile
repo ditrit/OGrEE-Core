@@ -46,7 +46,7 @@ pipeline {
             steps {
                 echo 'Functional....'
                 sh 'docker stop lapd || true'
-                sh 'cd ./resources/test && docker build -t clientTester:dockerfile .'
+                sh 'cd ./resources/test && docker build -t apitester:dockerfile .'
                 
                 sh 'docker run --network=roachnet --name lapd -d -v /home/ziad/testMDB:/docker-entrypoint-initdb.d/ mongo'
                 sh 'docker run -d --rm --network=roachnet --name=rotten_apple_test testingalpine:dockerfile /home/main'
