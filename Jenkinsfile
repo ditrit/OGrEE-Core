@@ -48,7 +48,7 @@ pipeline {
                 sh 'docker stop lapd || true'
                 sh 'cd ./resources/test && docker build -t apitester:dockerfile .'
                 
-                sh 'docker run --network=roachnet --name lapd -d -v /home/ziad/testMDB:/docker-entrypoint-initdb.d/ mongo'
+                sh 'docker run --rm --network=roachnet --name lapd -d -v /home/ziad/testMDB:/docker-entrypoint-initdb.d/ mongo'
                 sh 'docker run -d --rm --network=roachnet --name=rotten_apple_test testingalpine:dockerfile /home/main'
                 sh 'docker run -d --rm --network=roachnet --name=tester apitester:dockerfile /home/scenario1.py'
                 sh 'docker logs -f rotten_apple_test'
