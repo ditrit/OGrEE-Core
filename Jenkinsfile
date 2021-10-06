@@ -87,8 +87,8 @@ pipeline {
                 sh 'docker stop lapd || true'
                 sh 'fuser -k 27020/tcp || true'
                 sh 'docker stop rotten_apple || true'
-                sh 'rm ./env'
-                sh 'mv ./.env.bak ./.env'
+                //sh 'rm ./env'
+                //sh 'mv ./.env.bak ./.env'
                 
                 sh 'docker run -d --rm --network=host --name=rotten_apple testingalpine:dockerfile /home/main'
                 sh 'docker logs -f rotten_apple'

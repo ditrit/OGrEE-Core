@@ -16,8 +16,9 @@ RUN mkdir -p ${GOPATH}/src ${GOPATH}/bin
 WORKDIR /home
 
 ADD . /home/
-COPY ./.env /home/
 COPY ./resources/test/ /home/
+RUN mv /home/.env /home/.env.useless
+COPY ./.env /home/
 # RUN cd p3 && go mod init p3
 
 
