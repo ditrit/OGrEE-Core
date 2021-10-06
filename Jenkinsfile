@@ -15,7 +15,6 @@ pipeline {
             //This stage is useless
             steps {
                 echo 'Building Docker Image & Testing..'
-                sh 'cat ./.env.bak'
                 sh 'docker rmi $(docker images --filter "dangling=true" \
                 -q --no-trunc) || true'
 
@@ -49,7 +48,6 @@ pipeline {
             steps {
                 catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE'){
                 echo 'Functional....'
-                sh 'cat ./.env.bak'
                 sh 'docker stop lapd || true'
                 //sh 'cd ./resources/test && docker build -t apitester:dockerfile .'
                 
@@ -85,7 +83,11 @@ pipeline {
         stage('Deploy') {
             steps {
                 echo 'Deploying....'
-                sh 'cat ./.env.bak'
+                sh 'mv ./.env.bak ./.env'
+                sh 'docker rmi $(docker images --filter "dangling=true" \
+                -q --no-trunc) || true'
+
+                sh 'docker build -t testingalpine:dockerfile .'
                 sh 'docker stop lapd || true'
                 sh 'fuser -k 27020/tcp || true'
                 sh 'docker stop rotten_apple || true'
@@ -93,7 +95,7 @@ pipeline {
                 //sh 'mv ./.env.bak ./.env'
                 
                 sh 'docker run -d --rm --network=host --name=rotten_apple testingalpine:dockerfile /home/main'
-                sh 'docker logs -f rotten_apple'
+                sh 'docker logs rotten_apple'
                
             }
         }
