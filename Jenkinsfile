@@ -53,7 +53,7 @@ pipeline {
                 
                 sh 'docker run --rm --network=roachnet -p 27018:27017 --name lapd -d -v /home/ziad/testMDB:/docker-entrypoint-initdb.d/ mongo'
                 sh 'sudo ./main &'
-                sh './resources/test/scenario1.py'
+                sh 'sudo ./resources/test/scenario1.py'
                 sh 'fuser -k 27020/tcp'
                 sh 'mv ./.env.bak ./.env'
                 //sh 'docker run -d --rm --network=roachnet --name=rotten_apple_test testingalpine:dockerfile /bin/sh -c /home/main'
