@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
-import requests, argparse, os, json
+import requests, argparse, os, json, sys
 
+#FLAG
+res = True
 
 #CONSTANT
 expected = 404
@@ -11,9 +13,11 @@ PIDS={  "tenantID":None, "siteID":None, "buildingID":None,
 
 #Function
 def checkResponse(code, entity):
+    global res
     if code == expected:
         print(entity+" Empty: Successful")
     else:
+        res = False
         print(entity+" Empty: Fail")
 
 def writeEnv():
@@ -65,3 +69,10 @@ for i in entRange:
   checkResponse(response.status_code, i)
 
   #print(response.text)
+
+#RETURN VALUE
+if res != True:
+    sys.exit(-1)
+
+#else success
+sys.exit(1)

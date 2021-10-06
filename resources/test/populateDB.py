@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 import requests,json, os, sys
 
+#RETURN FLAG
+res = True
 
 #CONSTANTS
 PIDS={"tenantID":None, "siteID":None, "buildingID":None,
@@ -14,21 +16,27 @@ headers = {
 
 #FUNCTIONS
 def verifyCreate(code, entity):
+  global res
   if code == 201:
     print('Successfully created '+entity)
   else:
+    res = False
     print('Failed to create '+entity)
 
 def verifyGet(code,entity):
+  global res
   if code == 200:
     print('Successfully got '+entity)
   else:
+    res = False
     print('Failed to get '+entity)
 
 def verifyOutput(j1, j2):
+    global res
     if sorted(j1.items()) == sorted(j2.items()):
         print("JSON Match: Success")
     else:
+        res = False
         print("JSON Match: Fail")
         print("J1")
         print(sorted(j1.items()))
@@ -275,3 +283,11 @@ PIDS['roomID'] = roomID
 PIDS['rackID'] = rackID
 PIDS['deviceID'] = deviceID
 writeEnv()
+
+
+#RETURN VALUE
+if res != True:
+    sys.exit(-1)
+
+#else success
+sys.exit(1)

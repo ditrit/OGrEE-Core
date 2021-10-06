@@ -53,7 +53,10 @@ pipeline {
                 sh 'docker run --rm --network=roachnet -p 27018:27017 --name lapd -d -v /home/ziad/testMDB:/docker-entrypoint-initdb.d/ mongo'
                 sh 'sleep 1'
                 sh 'sudo ./main &'
-                sh 'sudo ./resources/test/scenario1.py'
+                def res = sh 'sudo ./resources/test/scenario1.py'
+                if (res.equals(-1)) {
+                    error("API failed the testing")
+                }
                 sh 'fuser -k 27020/tcp'
                 sh 'mv ./.env.bak ./.env'
                 //sh 'docker run -d --rm --network=roachnet --name=rotten_apple_test testingalpine:dockerfile /bin/sh -c /home/main'
