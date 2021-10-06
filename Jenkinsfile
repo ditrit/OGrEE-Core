@@ -7,7 +7,6 @@ pipeline {
                 sh 'go build main.go'
                 sh 'mv ./.env ./.env.bak'
                 sh 'cp ./resources/test/.env .'
-                //sh 'cat ./resources/test/Dockerfile'
 
             }
         }
@@ -52,7 +51,7 @@ pipeline {
                 //sh 'cd ./resources/test && docker build -t apitester:dockerfile .'
                 
                 sh 'docker run --rm --network=roachnet -p 27018:27017 --name lapd -d -v /home/ziad/testMDB:/docker-entrypoint-initdb.d/ mongo'
-                sh 'sudo ./main &'
+                sh 'sudo ./main '
                 sh 'sudo ./resources/test/scenario1.py'
                 sh 'fuser -k 27020/tcp'
                 sh 'mv ./.env.bak ./.env'
