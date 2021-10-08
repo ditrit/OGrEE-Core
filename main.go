@@ -268,6 +268,15 @@ func main() {
 	router.HandleFunc("/api/rooms/{id}",
 		controllers.UpdateEntity).Methods("PUT")
 
+	router.HandleFunc("/api/rooms/{id}/walls/{nest}",
+		controllers.DeleteNestedEntity).Methods("DELETE")
+
+	router.HandleFunc("/api/rooms/{id}/acs/{nest}",
+		controllers.DeleteNestedEntity).Methods("DELETE")
+
+	router.HandleFunc("/api/rooms/{id}/panels/{nest}",
+		controllers.DeleteNestedEntity).Methods("DELETE")
+
 	router.HandleFunc("/api/rooms/{id}",
 		controllers.DeleteEntity).Methods("DELETE")
 
@@ -306,6 +315,15 @@ func main() {
 
 	router.HandleFunc("/api/rooms/{id}/all/nonstd",
 		controllers.GetEntityHierarchyNonStd).Methods("GET")
+
+	router.HandleFunc("/api/rooms/{id}/walls",
+		controllers.GetAllNestedEntities).Methods("GET")
+
+	router.HandleFunc("/api/rooms/{id}/acs",
+		controllers.GetAllNestedEntities).Methods("GET")
+
+	router.HandleFunc("/api/rooms/{id}/panels",
+		controllers.GetAllNestedEntities).Methods("GET")
 
 	router.HandleFunc("/api/rooms/{id}",
 		controllers.GetEntity).Methods("GET")
@@ -433,6 +451,27 @@ func main() {
 
 	router.HandleFunc("/api/subdevice1s",
 		controllers.GetAllEntities).Methods("GET")
+
+	// ------ TEMPLATE CRUD ------ //
+
+	// ------ AC/PWR/WALL CRUD ------ //
+	router.HandleFunc("/api/acs",
+		controllers.CreateNestedEntity).Methods("POST")
+
+	router.HandleFunc("/api/panels",
+		controllers.CreateNestedEntity).Methods("POST")
+
+	router.HandleFunc("/api/walls",
+		controllers.CreateNestedEntity).Methods("POST")
+
+	router.HandleFunc("/api/acs/{id}",
+		controllers.GetNestedEntity).Methods("GET")
+
+	router.HandleFunc("/api/panels/{id}",
+		controllers.GetNestedEntity).Methods("GET")
+
+	router.HandleFunc("/api/walls/{id}",
+		controllers.GetNestedEntity).Methods("GET")
 
 	//Attach JWT auth middleware
 	router.Use(app.JwtAuthentication)

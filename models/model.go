@@ -19,6 +19,9 @@ const (
 	DEVICE
 	SUBDEV
 	SUBDEV1
+	AC
+	PWRPNL
+	WALL
 )
 
 func parseDataForNonStdResult(ent string, eNum int, data map[string]interface{}) map[string][]map[string]interface{} {
@@ -104,13 +107,14 @@ func ValidateEntity(entity int, t map[string]interface{}) (map[string]interface{
 		if err != nil {
 			return u.Message(false, "ParentID is not valid"), false
 		}
-		parent := u.EntityToString(entity - 1)
+		parent := u.EntityToString(u.GetParentOfEntityByInt(entity))
 
 		ctx, cancel := u.Connect()
 		if GetDB().Collection(parent).
 			FindOne(ctx, bson.M{"_id": objID}).Err() != nil {
-			println("We got: ", t["parentId"].(string))
-			return u.Message(false, "SiteParentID should be correspond to tenant ID"), false
+			println("ENTITY VALUE: ", entity)
+			println("We got Parent: ", parent, " with ID:", t["parentId"].(string))
+			return u.Message(false, "ParentID should be correspond to Existing ID"), false
 
 		}
 		defer cancel()
@@ -666,6 +670,117 @@ func GetEntityUsingTenantAsAncestor(ent, id string, ancestry map[string]string) 
 	return x, ""
 }
 
-func GetEntityHierarchyNonStd() {
+func GetNestedEntity(ID string, ent string) (map[string]interface{}, string) {
+	t := map[string]interface{}{}
+
+	ctx, cancel := u.Connect()
+	parent := u.EntityToString(u.GetParentOfEntityByInt(u.EntityStrToInt(ent)))
+	println("Nested Entity Get: ", ent)
+	println("The ID is: ", ID)
+	println("The parent is: ", parent)
+	e := GetDB().Collection(parent).FindOne(ctx, bson.M{ent + "s.id": ID}).Decode(&t)
+	if e != nil {
+		return nil, e.Error()
+	}
+
+	//Because applying filters to the Mongo Request is a hassle
+	//for now
+	for _, entry := range t[ent+"s"].(primitive.A) {
+		if entry.(map[string]interface{})["id"] == ID {
+			t = entry.(map[string]interface{})
+			break
+		}
+	}
+	defer cancel()
+	return t, ""
+}
+
+func CreateNestedEntity(entity int, eStr string, t map[string]interface{}) (map[string]interface{}, string) {
+	if resp, ok := ValidateEntity(entity, t); !ok {
+		return resp, "validate"
+	}
+
+	ctx, cancel := u.Connect()
+
+	parent := u.EntityToString(u.GetParentOfEntityByInt(entity))
+	pid, _ := primitive.ObjectIDFromHex(t["parentId"].(string))
+	println("ParentID: ", pid.Hex())
+	t["id"] = primitive.NewObjectID().Hex()
+	_, e := GetDB().Collection(parent).UpdateOne(ctx, bson.M{"_id": pid}, bson.M{"$addToSet": bson.M{eStr + "s": t}})
+	if e != nil {
+		return u.Message(false,
+				"Internal error while creating "+eStr+": "+e.Error()),
+			e.Error()
+	}
+	defer cancel()
+
+	resp := u.Message(true, "success")
+	resp["data"] = t
+	return resp, ""
+}
+
+func GetAllNestedEntities(ID primitive.ObjectID, ent string) ([]interface{}, string) {
+	t := map[string]interface{}{}
+	data := []interface{}{}
+
+	ctx, cancel := u.Connect()
+	parent := u.EntityToString(u.GetParentOfEntityByInt(u.EntityStrToInt(ent)))
+	println("Nested Entity Get: ", ent)
+	//println("The ID is: ", ID)
+	println("The parent is: ", parent)
+	e := GetDB().Collection(parent).FindOne(ctx, bson.M{"_id": ID}).Decode(&t)
+	if e != nil {
+		return nil, e.Error()
+	}
+
+	//Because applying filters to the Mongo Request is a hassle
+	//for now
+	if v, ok := t[ent+"s"].(primitive.A); ok {
+		data = v
+	}
+
+	defer cancel()
+	return data, ""
+}
+
+func DeleteNestedEntity(ent string, ID primitive.ObjectID, nestID string) (map[string]interface{}, string) {
+	t := map[string]interface{}{}
+	newSubEnts := []interface{}{}
+
+	ctx, cancel := u.Connect()
+	parent := u.EntityToString(u.GetParentOfEntityByInt(u.EntityStrToInt(ent)))
+	println("Nested Entity Get(DEL): ", ent)
+	println("The ID is: ", ID.Hex())
+	println("The parent is: ", parent)
+	criteria := bson.M{"_id": ID, ent + "s.id": nestID}
+	e := GetDB().Collection(parent).FindOne(ctx, criteria).Decode(&t)
+	if e != nil {
+		return u.Message(false,
+			"There was an error in deleting the entity1: "+e.Error()), "parent not found"
+	}
+	defer cancel()
+
+	if v, ok := t[ent+"s"].(primitive.A); ok {
+		for i := range v {
+			if v[i].(map[string]interface{})["id"] != nestID {
+				newSubEnts = append(newSubEnts, v[i])
+			}
+		}
+	}
+
+	t[ent+"s"] = newSubEnts
+
+	c1, cancel2 := u.Connect()
+	_, e1 := GetDB().Collection(parent).UpdateOne(c1, criteria, bson.M{"$set": t})
+	if e1 != nil {
+		return u.Message(false,
+			"There was an error in deleting the entity2: "+e.Error()), "unable update"
+	}
+	defer cancel2()
+
+	return t, ""
+}
+
+func UpdateNestedEntity() {
 
 }

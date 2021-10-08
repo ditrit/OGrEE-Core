@@ -22,6 +22,9 @@ const (
 	DEVICE
 	SUBDEV
 	SUBDEV1
+	AC
+	PWRPNL
+	WALL
 )
 
 func Connect() (context.Context, context.CancelFunc) {
@@ -83,6 +86,12 @@ func EntityToString(entity int) string {
 		return "device"
 	case SUBDEV:
 		return "subdevice"
+	case AC:
+		return "ac"
+	case PWRPNL:
+		return "panel"
+	case WALL:
+		return "wall"
 	default:
 		return "subdevice1"
 	}
@@ -104,7 +113,33 @@ func EntityStrToInt(entity string) int {
 		return DEVICE
 	case "subdevice":
 		return SUBDEV
-	default:
+	case "subdevice1":
 		return SUBDEV1
+	case "ac":
+		return AC
+	case "panel":
+		return PWRPNL
+	case "wall":
+		return WALL
+	default:
+		return -1
 	}
 }
+
+func GetParentOfEntityByInt(entity int) int {
+	switch entity {
+	case AC, PWRPNL, WALL:
+		return ROOM
+	default:
+		return entity - 1
+	}
+}
+
+//func GetParentOfEntityByStr(entity string) int {
+//	switch entity {
+//	case AC,PWRPNL,WALL:
+//		return "room"
+//	default:
+//		return
+//	}
+//}

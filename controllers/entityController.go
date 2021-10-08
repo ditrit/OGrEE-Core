@@ -1003,3 +1003,165 @@ var GetEntityHierarchyNonStd = func(w http.ResponseWriter, r *http.Request) {
 	resp["devices"] = devices*/
 	u.Respond(w, resp)
 }
+
+var GetNestedEntity = func(w http.ResponseWriter, r *http.Request) {
+	id, e := mux.Vars(r)["id"]
+	resp := u.Message(true, "success")
+
+	if e == false {
+		u.Respond(w, u.Message(false, "Error while parsing path parameters"))
+		u.ErrLog("Error while parsing path parameters", "GET NESTDENTITY", "", r)
+		return
+	}
+
+	//x, e2 := getObjID(id)
+	//if e2 != nil {
+	//	u.Respond(w, u.Message(false, "Error while converting ID to ObjectID"))
+	//	u.ErrLog("Error while converting ID to ObjectID", "GET NESTDENTITY", "", r)
+	//	return
+	//}
+
+	//Get entity type and strip trailing 's'
+	s := r.URL.Path[5 : strings.LastIndex(r.URL.Path, "/")-1]
+
+	data, e1 := models.GetNestedEntity(id, s)
+	if data == nil {
+		resp = u.Message(false, "Error while getting "+s+": "+e1)
+		u.ErrLog("Error while getting "+s, "GET NESTD"+strings.ToUpper(s), "", r)
+
+		switch e1 {
+		case "record not found":
+			w.WriteHeader(http.StatusNotFound)
+		default:
+			w.WriteHeader(http.StatusNotFound) //For now
+		}
+
+	} else {
+		resp = u.Message(true, "success")
+	}
+
+	resp["data"] = data
+	u.Respond(w, resp)
+}
+
+var CreateNestedEntity = func(w http.ResponseWriter, r *http.Request) {
+	entStr := r.URL.Path[5 : len(r.URL.Path)-1] //strip the '/api' in URL
+	entUpper := strings.ToUpper(entStr)         // and the trailing 's'
+	entity := map[string]interface{}{}
+	err := json.NewDecoder(r.Body).Decode(&entity)
+
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		u.Respond(w, u.Message(false, "Error while decoding request body"))
+		u.ErrLog("Error while decoding request body", "CREATE NESTD"+entStr, "", r)
+		return
+	}
+
+	i := u.EntityStrToInt(entStr)
+	println("ENT: ", entStr)
+	println("ENUM VAL: ", i)
+	//if _, ok := entity["parentId"]; ok {
+	//	entity["parentId"], _ = getObjID(entity["parentId"].(string))
+	//} else {
+	//	w.WriteHeader(http.StatusBadRequest)
+	//	u.Respond(w, u.Message(false, "Error while decoding request body"))
+	//	u.ErrLog("Error while decoding request body", "CREATE NESTD"+entStr, "", r)
+	//	return
+	//}
+
+	resp, e := models.CreateNestedEntity(i, entStr, entity)
+
+	switch e {
+	case "validate":
+		w.WriteHeader(http.StatusBadRequest)
+		u.ErrLog("Error while creating "+entStr, "CREATE NESTD"+entUpper, e, r)
+	case "":
+		w.WriteHeader(http.StatusCreated)
+	default:
+		if strings.Split(e, " ")[1] == "duplicate" {
+			w.WriteHeader(http.StatusBadRequest)
+			u.ErrLog("Error: Duplicate "+entStr+" is forbidden",
+				"CREATE "+entUpper, e, r)
+		} else {
+			w.WriteHeader(http.StatusInternalServerError)
+			u.ErrLog("Error while creating "+entStr, "CREATE NESTD"+entUpper, e, r)
+		}
+	}
+
+	u.Respond(w, resp)
+}
+
+var GetAllNestedEntities = func(w http.ResponseWriter, r *http.Request) {
+	lastSlashIdx := strings.LastIndex(r.URL.Path, "/")
+	entStr := r.URL.Path[lastSlashIdx+1 : len(r.URL.Path)-1]
+	entUpper := strings.ToUpper(entStr)
+	id, e1 := mux.Vars(r)["id"]
+
+	if e1 == false {
+		u.Respond(w, u.Message(false, "Error while parsing path parameters"))
+		u.ErrLog("Error while parsing path parameters", "GET ENTITY", "", r)
+		return
+	}
+
+	resp := u.Message(true, "success")
+
+	ID, _ := getObjID(id)
+
+	data, e := models.GetAllNestedEntities(ID, entStr)
+	if len(data) == 0 {
+		resp = u.Message(false, "Error while getting "+entStr+": "+e)
+		u.ErrLog("Error while getting "+entStr+"s", "GET ALL "+entUpper, e, r)
+
+		switch e {
+		case "":
+			resp = u.Message(false,
+				"Error while getting "+entStr+"s: No Records Found")
+			w.WriteHeader(http.StatusNotFound)
+		default:
+		}
+
+	} else {
+		resp = u.Message(true, "success")
+	}
+
+	resp["data"] = map[string]interface{}{"objects": data}
+
+	u.Respond(w, resp)
+}
+
+var DeleteNestedEntity = func(w http.ResponseWriter, r *http.Request) {
+	id, e := mux.Vars(r)["id"]
+	if e == false {
+		u.Respond(w, u.Message(false, "Error while parsing path parameters"))
+		u.ErrLog("Error while parsing path parameters", "DELETE ENTITY", "", r)
+		return
+	}
+	nestID, e1 := mux.Vars(r)["nest"]
+	if e1 == false {
+		u.Respond(w, u.Message(false, "Error while parsing path parameters"))
+		u.ErrLog("Error while parsing path parameters", "DELETE ENTITY", "", r)
+		return
+	}
+
+	objID, err := primitive.ObjectIDFromHex(id)
+	if err != nil {
+		u.Respond(w, u.Message(false, "Error while converting ID to ObjectID"))
+		u.ErrLog("Error while converting ID to ObjectID", "DELETE ENTITY", "", r)
+		return
+	}
+
+	//Get entity from URL
+	idx := strings.SplitAfter(r.URL.Path, "/")[4]
+	entity := idx[:len(idx)-2]
+
+	v, _ := models.DeleteNestedEntity(entity, objID, nestID)
+
+	if v["status"] == false {
+		w.WriteHeader(http.StatusNotFound)
+		u.ErrLog("Error while deleting entity", "DELETE ENTITY", "Not Found", r)
+	} else {
+		w.WriteHeader(http.StatusNoContent)
+	}
+
+	u.Respond(w, v)
+}
