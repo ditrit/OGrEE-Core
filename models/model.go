@@ -756,7 +756,7 @@ func DeleteNestedEntity(ent string, ID primitive.ObjectID, nestID string) (map[s
 	e := GetDB().Collection(parent).FindOne(ctx, criteria).Decode(&t)
 	if e != nil {
 		return u.Message(false,
-			"There was an error in deleting the entity1: "+e.Error()), "parent not found"
+			"There was an error in deleting the entity: "+e.Error()), "parent not found"
 	}
 	defer cancel()
 
@@ -781,6 +781,44 @@ func DeleteNestedEntity(ent string, ID primitive.ObjectID, nestID string) (map[s
 	return t, ""
 }
 
-func UpdateNestedEntity() {
+func UpdateNestedEntity(ent string, ID primitive.ObjectID,
+	nestID string, t map[string]interface{}) (map[string]interface{}, string) {
+	foundParent := map[string]interface{}{}
 
+	ctx, cancel := u.Connect()
+	parent := u.EntityToString(u.GetParentOfEntityByInt(u.EntityStrToInt(ent)))
+	println("Nested Entity Get(DEL): ", ent)
+	println("The ID is: ", ID.Hex())
+	println("The parent is: ", parent)
+	criteria := bson.M{"_id": ID, ent + "s.id": nestID}
+	e := GetDB().Collection(parent).FindOne(ctx, criteria).Decode(&foundParent)
+	if e != nil {
+		return u.Message(false,
+			"There was an error in updating the entity: "+e.Error()), "parent not found"
+	}
+	defer cancel()
+
+	if v, ok := foundParent[ent+"s"].(primitive.A); ok {
+		for i := range v {
+			if v[i].(map[string]interface{})["id"] == nestID {
+				old := v[i].(map[string]interface{})
+				for key := range t {
+					if _, ok := old[key]; ok && key != "id" {
+						old[key] = t[key]
+					}
+				}
+				break
+			}
+		}
+	}
+
+	c1, cancel2 := u.Connect()
+	_, e1 := GetDB().Collection(parent).UpdateOne(c1, criteria, bson.M{"$set": foundParent})
+	if e1 != nil {
+		return u.Message(false,
+			"There was an error in deleting the entity2: "+e.Error()), "unable update"
+	}
+	defer cancel2()
+
+	return t, ""
 }

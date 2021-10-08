@@ -265,6 +265,15 @@ func main() {
 	router.HandleFunc("/api/rooms",
 		controllers.CreateEntity).Methods("POST")
 
+	router.HandleFunc("/api/rooms/{id}/acs/{nest}",
+		controllers.UpdateNestedEntity).Methods("PUT")
+
+	router.HandleFunc("/api/rooms/{id}/panels/{nest}",
+		controllers.UpdateNestedEntity).Methods("PUT")
+
+	router.HandleFunc("/api/rooms/{id}/walls/{nest}",
+		controllers.UpdateNestedEntity).Methods("PUT")
+
 	router.HandleFunc("/api/rooms/{id}",
 		controllers.UpdateEntity).Methods("PUT")
 

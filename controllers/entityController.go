@@ -1165,3 +1165,56 @@ var DeleteNestedEntity = func(w http.ResponseWriter, r *http.Request) {
 
 	u.Respond(w, v)
 }
+
+var UpdateNestedEntity = func(w http.ResponseWriter, r *http.Request) {
+	updateData := map[string]interface{}{}
+	id, e := mux.Vars(r)["id"]
+	if e == false {
+		u.Respond(w, u.Message(false, "Error while parsing path parameters"))
+		u.ErrLog("Error while parsing path parameters", "UPDATE ENTITY", "", r)
+		return
+	}
+
+	err := json.NewDecoder(r.Body).Decode(&updateData)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		u.Respond(w, u.Message(false, "Error while decoding request body"))
+		u.ErrLog("Error while decoding request body", "UPDATE ENTITY", "", r)
+	}
+
+	nestID, e1 := mux.Vars(r)["nest"]
+	if e1 == false {
+		u.Respond(w, u.Message(false, "Error while parsing path parameters"))
+		u.ErrLog("Error while parsing path parameters", "UPDATE ENTITY", "", r)
+		return
+	}
+
+	objID, err := primitive.ObjectIDFromHex(id)
+	if err != nil {
+		u.Respond(w, u.Message(false, "Error while converting ID to ObjectID"))
+		u.ErrLog("Error while converting ID to ObjectID", "UPDATE ENTITY", "", r)
+		return
+	}
+
+	//Get entity from URL
+	idx := strings.SplitAfter(r.URL.Path, "/")[4]
+	entity := idx[:len(idx)-2]
+
+	v, e2 := models.UpdateNestedEntity(entity, objID, nestID, updateData)
+
+	switch e2 {
+
+	case "validate":
+		w.WriteHeader(http.StatusBadRequest)
+		u.ErrLog("Error while updating "+entity, "UPDATE "+strings.ToUpper(entity), e2, r)
+	case "internal":
+		w.WriteHeader(http.StatusInternalServerError)
+		u.ErrLog("Error while updating "+entity, "UPDATE "+strings.ToUpper(entity), e2, r)
+	case "record not found":
+		w.WriteHeader(http.StatusNotFound)
+		u.ErrLog("Error while updating "+entity, "UPDATE "+strings.ToUpper(entity), e2, r)
+	default:
+	}
+
+	u.Respond(w, v)
+}
