@@ -218,6 +218,7 @@ var CreateEntity = func(w http.ResponseWriter, r *http.Request) {
 //     '404':
 //         description: Not Found
 var GetEntity = func(w http.ResponseWriter, r *http.Request) {
+	//println(r.URL.Path)
 	id, e := mux.Vars(r)["id"]
 	resp := u.Message(true, "success")
 
@@ -1014,17 +1015,21 @@ var GetNestedEntity = func(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	//x, e2 := getObjID(id)
-	//if e2 != nil {
-	//	u.Respond(w, u.Message(false, "Error while converting ID to ObjectID"))
-	//	u.ErrLog("Error while converting ID to ObjectID", "GET NESTDENTITY", "", r)
-	//	return
-	//}
+	nestID, err := mux.Vars(r)["nest"]
+
+	if err == false {
+		u.Respond(w, u.Message(false, "Error while parsing path parameters"))
+		u.ErrLog("Error while parsing path parameters", "GET NESTDENTITY", "", r)
+		return
+	}
 
 	//Get entity type and strip trailing 's'
-	s := r.URL.Path[5 : strings.LastIndex(r.URL.Path, "/")-1]
+	idx := strings.SplitAfter(r.URL.Path, "/")[4]
+	s := idx[:len(idx)-2]
 
-	data, e1 := models.GetNestedEntity(id, s)
+	ID, _ := getObjID(id)
+
+	data, e1 := models.GetNestedEntity(ID, s, nestID)
 	if data == nil {
 		resp = u.Message(false, "Error while getting "+s+": "+e1)
 		u.ErrLog("Error while getting "+s, "GET NESTD"+strings.ToUpper(s), "", r)
@@ -1217,4 +1222,41 @@ var UpdateNestedEntity = func(w http.ResponseWriter, r *http.Request) {
 	}
 
 	u.Respond(w, v)
+}
+
+var GetNestedEntityByQuery = func(w http.ResponseWriter, r *http.Request) {
+	var resp map[string]interface{}
+	var bsonMap bson.M
+
+	arr := strings.Split(r.URL.Path, "/")
+	parent := arr[2][:len(arr[2])-1]
+	sub := arr[3][:len(arr[3])-1] //Not sure why this doesn't include rest of string
+
+	query := u.ParamsParse(r.URL)
+	js, _ := json.Marshal(query)
+	json.Unmarshal(js, &bsonMap)
+
+	data, e := models.GetNestedEntityByQuery(parent, sub, bsonMap)
+
+	if len(data) == 0 {
+		resp = u.Message(false, "Error: "+e)
+		u.ErrLog("Error while getting "+sub, "GET ENTITYQUERY", e, r)
+
+		switch e {
+		case "record not found":
+			w.WriteHeader(http.StatusNotFound)
+		case "":
+			resp = u.Message(false, "Error: No Records Found")
+			w.WriteHeader(http.StatusNotFound)
+		default:
+			w.WriteHeader(http.StatusNotFound)
+		}
+
+	} else {
+		resp = u.Message(true, "success")
+	}
+
+	resp["data"] = map[string]interface{}{"objects": data}
+
+	u.Respond(w, resp)
 }

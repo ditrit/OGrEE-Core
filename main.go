@@ -18,8 +18,7 @@ var dmatch mux.MatcherFunc = func(request *http.Request, match *mux.RouteMatch) 
 	//https://benhoyt.com/writings/go-routing/#regex-table
 	//https://stackoverflow.com/questions/21664489/
 	//golang-mux-routing-wildcard-custom-func-match
-
-	return regexp.MustCompile(`^(\/api\/(tenants|sites|buildings|rooms|racks|devices|subdevices|subdevices1)\?.*)$`).
+	return regexp.MustCompile(`^(\/api\/(tenants|sites|buildings|rooms|rooms\/acs|rooms\/panels|rooms\/walls|racks|devices|subdevices|subdevices1)\?.*)$`).
 		MatchString(request.URL.String())
 }
 
@@ -259,6 +258,15 @@ func main() {
 		controllers.GetAllEntities).Methods("GET")
 
 	// ------ ROOM CRUD ------ //
+	router.HandleFunc("/api/rooms/acs",
+		controllers.GetNestedEntityByQuery).Methods("GET").MatcherFunc(dmatch)
+
+	router.HandleFunc("/api/rooms/walls",
+		controllers.GetNestedEntityByQuery).Methods("GET").MatcherFunc(dmatch)
+
+	router.HandleFunc("/api/rooms/panels",
+		controllers.GetNestedEntityByQuery).Methods("GET").MatcherFunc(dmatch)
+
 	router.HandleFunc("/api/rooms",
 		controllers.GetEntityByQuery).Methods("GET").MatcherFunc(dmatch)
 
@@ -333,6 +341,15 @@ func main() {
 
 	router.HandleFunc("/api/rooms/{id}/panels",
 		controllers.GetAllNestedEntities).Methods("GET")
+
+	router.HandleFunc("/api/rooms/{id}/acs/{nest}",
+		controllers.GetNestedEntity).Methods("GET")
+
+	router.HandleFunc("/api/rooms/{id}/acs/{nest}",
+		controllers.GetNestedEntity).Methods("GET")
+
+	router.HandleFunc("/api/rooms/{id}/acs/{nest}",
+		controllers.GetNestedEntity).Methods("GET")
 
 	router.HandleFunc("/api/rooms/{id}",
 		controllers.GetEntity).Methods("GET")
@@ -472,15 +489,6 @@ func main() {
 
 	router.HandleFunc("/api/walls",
 		controllers.CreateNestedEntity).Methods("POST")
-
-	router.HandleFunc("/api/acs/{id}",
-		controllers.GetNestedEntity).Methods("GET")
-
-	router.HandleFunc("/api/panels/{id}",
-		controllers.GetNestedEntity).Methods("GET")
-
-	router.HandleFunc("/api/walls/{id}",
-		controllers.GetNestedEntity).Methods("GET")
 
 	//Attach JWT auth middleware
 	router.Use(app.JwtAuthentication)

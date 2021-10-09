@@ -670,15 +670,14 @@ func GetEntityUsingTenantAsAncestor(ent, id string, ancestry map[string]string) 
 	return x, ""
 }
 
-func GetNestedEntity(ID string, ent string) (map[string]interface{}, string) {
+//ent string, ID primitive.ObjectID, nestID string
+func GetNestedEntity(ID primitive.ObjectID, ent, nestID string) (map[string]interface{}, string) {
 	t := map[string]interface{}{}
 
 	ctx, cancel := u.Connect()
 	parent := u.EntityToString(u.GetParentOfEntityByInt(u.EntityStrToInt(ent)))
-	println("Nested Entity Get: ", ent)
-	println("The ID is: ", ID)
-	println("The parent is: ", parent)
-	e := GetDB().Collection(parent).FindOne(ctx, bson.M{ent + "s.id": ID}).Decode(&t)
+	criteria := bson.M{"_id": ID, ent + "s.id": nestID}
+	e := GetDB().Collection(parent).FindOne(ctx, criteria).Decode(&t)
 	if e != nil {
 		return nil, e.Error()
 	}
@@ -686,7 +685,7 @@ func GetNestedEntity(ID string, ent string) (map[string]interface{}, string) {
 	//Because applying filters to the Mongo Request is a hassle
 	//for now
 	for _, entry := range t[ent+"s"].(primitive.A) {
-		if entry.(map[string]interface{})["id"] == ID {
+		if entry.(map[string]interface{})["id"] == nestID {
 			t = entry.(map[string]interface{})
 			break
 		}
@@ -704,7 +703,6 @@ func CreateNestedEntity(entity int, eStr string, t map[string]interface{}) (map[
 
 	parent := u.EntityToString(u.GetParentOfEntityByInt(entity))
 	pid, _ := primitive.ObjectIDFromHex(t["parentId"].(string))
-	println("ParentID: ", pid.Hex())
 	t["id"] = primitive.NewObjectID().Hex()
 	_, e := GetDB().Collection(parent).UpdateOne(ctx, bson.M{"_id": pid}, bson.M{"$addToSet": bson.M{eStr + "s": t}})
 	if e != nil {
@@ -725,9 +723,6 @@ func GetAllNestedEntities(ID primitive.ObjectID, ent string) ([]interface{}, str
 
 	ctx, cancel := u.Connect()
 	parent := u.EntityToString(u.GetParentOfEntityByInt(u.EntityStrToInt(ent)))
-	println("Nested Entity Get: ", ent)
-	//println("The ID is: ", ID)
-	println("The parent is: ", parent)
 	e := GetDB().Collection(parent).FindOne(ctx, bson.M{"_id": ID}).Decode(&t)
 	if e != nil {
 		return nil, e.Error()
@@ -749,9 +744,6 @@ func DeleteNestedEntity(ent string, ID primitive.ObjectID, nestID string) (map[s
 
 	ctx, cancel := u.Connect()
 	parent := u.EntityToString(u.GetParentOfEntityByInt(u.EntityStrToInt(ent)))
-	println("Nested Entity Get(DEL): ", ent)
-	println("The ID is: ", ID.Hex())
-	println("The parent is: ", parent)
 	criteria := bson.M{"_id": ID, ent + "s.id": nestID}
 	e := GetDB().Collection(parent).FindOne(ctx, criteria).Decode(&t)
 	if e != nil {
@@ -787,9 +779,6 @@ func UpdateNestedEntity(ent string, ID primitive.ObjectID,
 
 	ctx, cancel := u.Connect()
 	parent := u.EntityToString(u.GetParentOfEntityByInt(u.EntityStrToInt(ent)))
-	println("Nested Entity Get(DEL): ", ent)
-	println("The ID is: ", ID.Hex())
-	println("The parent is: ", parent)
 	criteria := bson.M{"_id": ID, ent + "s.id": nestID}
 	e := GetDB().Collection(parent).FindOne(ctx, criteria).Decode(&foundParent)
 	if e != nil {
@@ -797,13 +786,14 @@ func UpdateNestedEntity(ent string, ID primitive.ObjectID,
 			"There was an error in updating the entity: "+e.Error()), "parent not found"
 	}
 	defer cancel()
+	delete(t, "id")
 
 	if v, ok := foundParent[ent+"s"].(primitive.A); ok {
 		for i := range v {
 			if v[i].(map[string]interface{})["id"] == nestID {
 				old := v[i].(map[string]interface{})
 				for key := range t {
-					if _, ok := old[key]; ok && key != "id" {
+					if _, ok := old[key]; ok {
 						old[key] = t[key]
 					}
 				}
@@ -822,3 +812,67 @@ func UpdateNestedEntity(ent string, ID primitive.ObjectID,
 
 	return t, ""
 }
+
+func GetNestedEntityByQuery(parent, entity string, query bson.M) ([]map[string]interface{}, string) {
+	ans := make([]map[string]interface{}, 0)
+	parents, e := GetAllEntities(parent)
+	if e != "" {
+		return nil, e
+	}
+
+	//Now get all subentities from parents
+	for i := range parents {
+		pid := parents[i]["_id"].(primitive.ObjectID)
+		nestedEnts, e1 := GetAllNestedEntities(pid, entity)
+		if e1 != "" {
+			return nil, e1
+		}
+
+		//Iterate over the nestedEntities to see if they match the query
+		for k := range nestedEnts {
+
+			if nestedEntity, ok :=
+				nestedEnts[k].(map[string]interface{}); ok {
+
+				match := true
+				//Check if the ent matches
+				for q := range query {
+					if nestedEntity[q] != query[q] {
+						match = false
+						break
+					}
+				}
+
+				//The entity matches
+				if match == true {
+					ans = append(ans, nestedEntity)
+				}
+			}
+		}
+	}
+	return ans, ""
+}
+
+/*
+	results := make([]map[string]interface{}, 0)
+	ctx, cancel := u.Connect()
+	println("ENT: ", ent)
+	c, err := GetDB().Collection(ent).Find(ctx, query)
+	if err != nil {
+		fmt.Println(err)
+		return nil, err.Error()
+	}
+	defer cancel()
+
+	for c.Next(GetCtx()) {
+		x := map[string]interface{}{}
+		e := c.Decode(x)
+		if e != nil {
+			fmt.Println(err)
+			return nil, err.Error()
+		}
+		results = append(results, x)
+	}
+
+	return results, ""
+*/
