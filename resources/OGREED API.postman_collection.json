@@ -3939,6 +3939,165 @@
 					"response": []
 				},
 				{
+					"name": "Get WallsOfRoom",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{AuthToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{URL}}/api/rooms/{{RoomID}}/walls",
+							"host": [
+								"{{URL}}"
+							],
+							"path": [
+								"api",
+								"rooms",
+								"{{RoomID}}",
+								"walls"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Wall",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{AuthToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{URL}}/api/rooms/{{RoomID}}/walls/{{WallID}}",
+							"host": [
+								"{{URL}}"
+							],
+							"path": [
+								"api",
+								"rooms",
+								"{{RoomID}}",
+								"walls",
+								"{{WallID}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get ACsOfRoom",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{AuthToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{URL}}/api/rooms/{{RoomID}}/acs",
+							"host": [
+								"{{URL}}"
+							],
+							"path": [
+								"api",
+								"rooms",
+								"{{RoomID}}",
+								"acs"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get AC",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{AuthToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{URL}}/api/rooms/{{RoomID}}/acs/{{ACID}}",
+							"host": [
+								"{{URL}}"
+							],
+							"path": [
+								"api",
+								"rooms",
+								"{{RoomID}}",
+								"acs",
+								"{{ACID}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get PanelsOfRoom",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{AuthToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{URL}}/api/rooms/{{RoomID}}/panels",
+							"host": [
+								"{{URL}}"
+							],
+							"path": [
+								"api",
+								"rooms",
+								"{{RoomID}}",
+								"panels"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Panel",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{AuthToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{URL}}/api/rooms/{{RoomID}}/panels/{{PanelID}}",
+							"host": [
+								"{{URL}}"
+							],
+							"path": [
+								"api",
+								"rooms",
+								"{{RoomID}}",
+								"panels",
+								"{{PanelID}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
 					"name": "Get NamedDeviceOfRoom",
 					"request": {
 						"method": "GET",
@@ -4453,6 +4612,78 @@
 					"response": []
 				},
 				{
+					"name": "Update AC",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{AuthToken}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"AquaSky01\",\n    \"id\": \"12353\",\n    \"parentId\": \"{{RoomID}}\",\n    \"category\": \"ac\",\n    \"description\": [\n        \"SPEED\"\n    ],\n    \"domain\": \"AC DOMAIN\",\n    \"attributes\": {\n        \"new\": \"IDX\"\n    }\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{URL}}/api/rooms/{{RoomID}}/acs/{{ACID}}",
+							"host": [
+								"{{URL}}"
+							],
+							"path": [
+								"api",
+								"rooms",
+								"{{RoomID}}",
+								"acs",
+								"{{ACID}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Panel",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{AuthToken}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Power Panel 99\",\n    \"id\": null,\n    \"parentId\": \"{{RoomID}}\",\n    \"category\": \"panel\",\n    \"description\": [\n        \"GRENOBLE DERELICT\"\n    ],\n    \"domain\": \"PANEL DOMAIN\",\n    \"attributes\": {\n        \"new\": \"IDX\"\n    }\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{URL}}/api/rooms/{{RoomID}}/panels/61609eb467f57bb0f621df24",
+							"host": [
+								"{{URL}}"
+							],
+							"path": [
+								"api",
+								"rooms",
+								"{{RoomID}}",
+								"panels",
+								"61609eb467f57bb0f621df24"
+							]
+						}
+					},
+					"response": []
+				},
+				{
 					"name": "Delete Room",
 					"request": {
 						"method": "DELETE",
@@ -4472,6 +4703,87 @@
 								"api",
 								"rooms",
 								"{{RoomID}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Wall",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{AuthToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{URL}}/api/rooms/{{RoomID}}/walls/615f6926248062c0ac51c431",
+							"host": [
+								"{{URL}}"
+							],
+							"path": [
+								"api",
+								"rooms",
+								"{{RoomID}}",
+								"walls",
+								"615f6926248062c0ac51c431"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Panel",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{AuthToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{URL}}/api/rooms/{{RoomID}}/panels/{{PanelID}",
+							"host": [
+								"{{URL}}"
+							],
+							"path": [
+								"api",
+								"rooms",
+								"{{RoomID}}",
+								"panels",
+								"{{PanelID}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete AC",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{AuthToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{URL}}/api/rooms/{{RoomID}}/acs/615f6926248062c0ac51c431",
+							"host": [
+								"{{URL}}"
+							],
+							"path": [
+								"api",
+								"rooms",
+								"{{RoomID}}",
+								"acs",
+								"615f6926248062c0ac51c431"
 							]
 						}
 					},
@@ -5809,6 +6121,324 @@
 								"api",
 								"subdevice1s",
 								"{{Subdevice1ID}}"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "ACs",
+			"item": [
+				{
+					"name": "Get By Query",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"/*tests[\"Successful GET\"] = responseCode.code === 200;",
+									"",
+									"var data = JSON.parse(responseBody)",
+									"//console.log(\"Here is what we got: \", data[\"tenant\"][\"id\"])",
+									"",
+									"var ID = data[\"tenant\"][\"name\"]*/",
+									"",
+									"//tests[\"Successful PUT Request\"] = ID == "
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{AuthToken}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{URL}}/api/rooms/acs?name=AquaSky01",
+							"host": [
+								"{{URL}}"
+							],
+							"path": [
+								"api",
+								"rooms",
+								"acs"
+							],
+							"query": [
+								{
+									"key": "name",
+									"value": "AquaSky01"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create AC",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"tests[\"Successful POST Request\"] = responseCode.code === 201;",
+									"",
+									"var data = JSON.parse(responseBody)",
+									"//console.log(\"Here is what we got: \", data[\"tenant\"][\"id\"])",
+									"",
+									"var ID = data[\"data\"][\"id\"]",
+									"pm.environment.set(\"ACID\", ID)"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{AuthToken}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"TCL 2021\",\n    \"id\": null,\n    \"parentId\": \"{{RoomID}}\",\n    \"category\": \"ac\",\n    \"description\": [\n        \"TCL\"\n    ],\n    \"domain\": \"AC DOMAIN\",\n    \"attributes\": {\n    }\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{URL}}/api/acs",
+							"host": [
+								"{{URL}}"
+							],
+							"path": [
+								"api",
+								"acs"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Power Panels",
+			"item": [
+				{
+					"name": "Get By Query",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{AuthToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{URL}}/api/rooms/panels?category=powerpanel",
+							"host": [
+								"{{URL}}"
+							],
+							"path": [
+								"api",
+								"rooms",
+								"panels"
+							],
+							"query": [
+								{
+									"key": "category",
+									"value": "powerpanel"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create Panel",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"tests[\"Successful POST Request\"] = responseCode.code === 201;",
+									"",
+									"var data = JSON.parse(responseBody)",
+									"//console.log(\"Here is what we got: \", data[\"tenant\"][\"id\"])",
+									"",
+									"var ID = data[\"data\"][\"id\"]",
+									"pm.environment.set(\"PanelID\", ID)"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{AuthToken}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Panel A\",\n    \"id\": null,\n    \"parentId\": \"{{RoomID}}\",\n    \"category\": \"powerpanel\",\n    \"description\": [\n        \"YINGLI\"\n    ],\n    \"domain\": \"Panel DOMAIN\",\n    \"attributes\": {\n    }\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{URL}}/api/panels",
+							"host": [
+								"{{URL}}"
+							],
+							"path": [
+								"api",
+								"panels"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Walls",
+			"item": [
+				{
+					"name": "Get By Query",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"/*tests[\"Successful GET\"] = responseCode.code === 200;",
+									"",
+									"var data = JSON.parse(responseBody)",
+									"//console.log(\"Here is what we got: \", data[\"tenant\"][\"id\"])",
+									"",
+									"var ID = data[\"tenant\"][\"name\"]*/",
+									"",
+									"//tests[\"Successful PUT Request\"] = ID == "
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{AuthToken}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{URL}}/api/rooms/walls?category=wall",
+							"host": [
+								"{{URL}}"
+							],
+							"path": [
+								"api",
+								"rooms",
+								"walls"
+							],
+							"query": [
+								{
+									"key": "category",
+									"value": "wall"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create Wall",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"tests[\"Successful POST Request\"] = responseCode.code === 201;",
+									"",
+									"var data = JSON.parse(responseBody)",
+									"//console.log(\"Here is what we got: \", data[\"tenant\"][\"id\"])",
+									"",
+									"var ID = data[\"data\"][\"id\"]",
+									"pm.environment.set(\"WallID\", ID)"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{AuthToken}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Undercover\",\n    \"id\": null,\n    \"parentId\": \"{{RoomID}}\",\n    \"category\": \"wall\",\n    \"description\": [\n        \"2008\"\n    ],\n    \"domain\": \"Wall DOMAIN\",\n    \"attributes\": {\n    }\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{URL}}/api/walls",
+							"host": [
+								"{{URL}}"
+							],
+							"path": [
+								"api",
+								"walls"
 							]
 						}
 					},

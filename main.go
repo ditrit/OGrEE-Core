@@ -345,10 +345,10 @@ func main() {
 	router.HandleFunc("/api/rooms/{id}/acs/{nest}",
 		controllers.GetNestedEntity).Methods("GET")
 
-	router.HandleFunc("/api/rooms/{id}/acs/{nest}",
+	router.HandleFunc("/api/rooms/{id}/walls/{nest}",
 		controllers.GetNestedEntity).Methods("GET")
 
-	router.HandleFunc("/api/rooms/{id}/acs/{nest}",
+	router.HandleFunc("/api/rooms/{id}/panels/{nest}",
 		controllers.GetNestedEntity).Methods("GET")
 
 	router.HandleFunc("/api/rooms/{id}",
