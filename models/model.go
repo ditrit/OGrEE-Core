@@ -944,6 +944,18 @@ func GetNestedEntityByQuery(parent, entity string, query bson.M) ([]map[string]i
 	return ans, ""
 }
 
+func DeleteEntityBySlug(entity, id string) (map[string]interface{}, string) {
+	//Finally delete the Entity
+	ctx, cancel := u.Connect()
+	c, _ := GetDB().Collection(entity).DeleteOne(ctx, bson.M{"slug": id})
+	if c.DeletedCount == 0 {
+		return u.Message(false, "There was an error in deleting the entity"), "not found"
+	}
+	defer cancel()
+
+	return u.Message(true, "success"), ""
+}
+
 /*
 	results := make([]map[string]interface{}, 0)
 	ctx, cancel := u.Connect()
