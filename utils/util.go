@@ -96,11 +96,11 @@ func EntityToString(entity int) string {
 	case WALL:
 		return "wall"
 	case ROOMTMPL:
-		return "room-template"
+		return "room_template"
 	case RACKTMPL:
-		return "rack-template"
+		return "rack_template"
 	case DEVTMPL:
-		return "device-template"
+		return "device_template"
 	default:
 		return "subdevice1"
 	}
@@ -130,11 +130,11 @@ func EntityStrToInt(entity string) int {
 		return PWRPNL
 	case "wall":
 		return WALL
-	case "room-template":
+	case "room_template":
 		return ROOMTMPL
-	case "rack-template":
+	case "rack_template":
 		return RACKTMPL
-	case "device-template":
+	case "device_template":
 		return DEVTMPL
 	default:
 		return -1

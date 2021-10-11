@@ -488,6 +488,15 @@ func main() {
 	router.HandleFunc("/api/device-templates",
 		controllers.CreateEntity).Methods("POST")
 
+	router.HandleFunc("/api/room-templates/{name}",
+		controllers.GetEntityByName).Methods("GET")
+
+	router.HandleFunc("/api/rack-templates/{name}",
+		controllers.GetEntityByName).Methods("GET")
+
+	router.HandleFunc("/api/device-templates/{name}",
+		controllers.GetEntityByName).Methods("GET")
+
 	// ------ AC/PWR/WALL CRUD ------ //
 	router.HandleFunc("/api/acs",
 		controllers.CreateNestedEntity).Methods("POST")

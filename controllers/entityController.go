@@ -169,13 +169,12 @@ var CreateEntity = func(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	i := u.EntityStrToInt(entStr)
-
 	//If creating templates, format them
 	if idx := strings.Index(entStr, "-"); idx != -1 {
 		//entStr[idx] = '_'
 		entStr = entStr[:idx] + "_" + entStr[idx+1:]
 	}
+	i := u.EntityStrToInt(entStr)
 
 	println("ENT: ", entStr)
 	println("ENUM VAL: ", i)
@@ -231,7 +230,6 @@ var CreateEntity = func(w http.ResponseWriter, r *http.Request) {
 //     '404':
 //         description: Not Found
 var GetEntity = func(w http.ResponseWriter, r *http.Request) {
-	//println(r.URL.Path)
 	id, e := mux.Vars(r)["id"]
 	resp := u.Message(true, "success")
 
@@ -252,6 +250,52 @@ var GetEntity = func(w http.ResponseWriter, r *http.Request) {
 	s := r.URL.Path[5 : strings.LastIndex(r.URL.Path, "/")-1]
 
 	data, e1 := models.GetEntity(x, s)
+	if data == nil {
+		resp = u.Message(false, "Error while getting "+s+": "+e1)
+		u.ErrLog("Error while getting "+s, "GET "+strings.ToUpper(s), "", r)
+
+		switch e1 {
+		case "record not found":
+			w.WriteHeader(http.StatusNotFound)
+		default:
+			w.WriteHeader(http.StatusNotFound) //For now
+		}
+
+	} else {
+		resp = u.Message(true, "success")
+		data["id"] = data["_id"]
+		delete(data, "_id")
+	}
+
+	resp["data"] = data
+	u.Respond(w, resp)
+}
+
+var GetEntityByName = func(w http.ResponseWriter, r *http.Request) {
+	println("We ALL HERE")
+	var data map[string]interface{}
+	var e1 string
+	id, e := mux.Vars(r)["name"]
+	resp := u.Message(true, "success")
+
+	if e == false {
+		u.Respond(w, u.Message(false, "Error while parsing path parameters"))
+		u.ErrLog("Error while parsing path parameters", "GET ENTITY", "", r)
+		return
+	}
+
+	//Get entity type and strip trailing 's'
+	s := r.URL.Path[5 : strings.LastIndex(r.URL.Path, "/")-1]
+
+	//If creating templates, format them
+	if idx := strings.Index(s, "-"); idx != -1 {
+		s = s[:idx] + "_" + s[idx+1:]
+		println("SHould be here")
+		data, e1 = models.GetEntityBySlug(id, s)
+	} else {
+		data, e1 = models.GetEntityByName(id, s)
+	}
+
 	if data == nil {
 		resp = u.Message(false, "Error while getting "+s+": "+e1)
 		u.ErrLog("Error while getting "+s, "GET "+strings.ToUpper(s), "", r)

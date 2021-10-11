@@ -394,7 +394,6 @@ func CreateEntity(entity int, t map[string]interface{}) (map[string]interface{},
 	}
 
 	ctx, cancel := u.Connect()
-
 	entStr := u.EntityToString(entity)
 	res, e := GetDB().Collection(entStr).InsertOne(ctx, t)
 	if e != nil {
@@ -429,6 +428,19 @@ func GetEntityByName(name, ent string) (map[string]interface{}, string) {
 
 	ctx, cancel := u.Connect()
 	e := GetDB().Collection(ent).FindOne(ctx, bson.M{"name": name}).Decode(&t)
+	if e != nil {
+		return nil, e.Error()
+	}
+	defer cancel()
+	return t, ""
+}
+
+//Only useful for tenant since tenants are unique in the DB
+func GetEntityBySlug(name, ent string) (map[string]interface{}, string) {
+	t := map[string]interface{}{}
+
+	ctx, cancel := u.Connect()
+	e := GetDB().Collection(ent).FindOne(ctx, bson.M{"slug": name}).Decode(&t)
 	if e != nil {
 		return nil, e.Error()
 	}
