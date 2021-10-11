@@ -22,6 +22,9 @@ const (
 	AC
 	PWRPNL
 	WALL
+	ROOMTMPL
+	RACKTMPL
+	DEVTMPL
 )
 
 func parseDataForNonStdResult(ent string, eNum int, data map[string]interface{}) map[string][]map[string]interface{} {
@@ -87,219 +90,295 @@ func parseDataForNonStdResult(ent string, eNum int, data map[string]interface{})
 func ValidateEntity(entity int, t map[string]interface{}) (map[string]interface{}, bool) {
 	var objID primitive.ObjectID
 	var err error
-	if t["name"] == "" {
-		return u.Message(false, "Name should be on payload"), false
-	}
-
-	if t["category"] == "" {
-		return u.Message(false, "Category should be on the payload"), false
-	}
-
-	if t["domain"] == "" {
-		return u.Message(false, "Domain should be on the payload"), false
-	}
-
-	//Check if Parent ID is valid
-	//Tenants do not have Parents
-	if entity > TENANT {
-
-		objID, err = primitive.ObjectIDFromHex(t["parentId"].(string))
-		if err != nil {
-			return u.Message(false, "ParentID is not valid"), false
+	switch entity {
+	case TENANT, SITE, BLDG, ROOM, RACK, DEVICE, SUBDEV,
+		SUBDEV1, AC, PWRPNL, WALL:
+		if t["name"] == "" {
+			return u.Message(false, "Name should be on payload"), false
 		}
-		parent := u.EntityToString(u.GetParentOfEntityByInt(entity))
 
-		ctx, cancel := u.Connect()
-		if GetDB().Collection(parent).
-			FindOne(ctx, bson.M{"_id": objID}).Err() != nil {
-			println("ENTITY VALUE: ", entity)
-			println("We got Parent: ", parent, " with ID:", t["parentId"].(string))
-			return u.Message(false, "ParentID should be correspond to Existing ID"), false
-
+		if t["category"] == "" {
+			return u.Message(false, "Category should be on the payload"), false
 		}
-		defer cancel()
-	}
 
-	if _, ok := t["attributes"]; !ok {
-		return u.Message(false, "Attributes should be on the payload"), false
-	} else {
-		if v, ok := t["attributes"].(map[string]interface{}); !ok {
+		if t["domain"] == "" {
+			return u.Message(false, "Domain should be on the payload"), false
+		}
+
+		//Check if Parent ID is valid
+		//Tenants do not have Parents
+		if entity > TENANT && entity <= SUBDEV1 {
+
+			objID, err = primitive.ObjectIDFromHex(t["parentId"].(string))
+			if err != nil {
+				return u.Message(false, "ParentID is not valid"), false
+			}
+			parent := u.EntityToString(u.GetParentOfEntityByInt(entity))
+
+			ctx, cancel := u.Connect()
+			if GetDB().Collection(parent).
+				FindOne(ctx, bson.M{"_id": objID}).Err() != nil {
+				println("ENTITY VALUE: ", entity)
+				println("We got Parent: ", parent, " with ID:", t["parentId"].(string))
+				return u.Message(false, "ParentID should be correspond to Existing ID"), false
+
+			}
+			defer cancel()
+		}
+
+		if _, ok := t["attributes"]; !ok {
 			return u.Message(false, "Attributes should be on the payload"), false
 		} else {
-			switch entity {
-			case TENANT:
-				if _, ok := v["color"]; !ok {
-					return u.Message(false,
-						"Color Attribute must be specified on the payload"), false
+			if v, ok := t["attributes"].(map[string]interface{}); !ok {
+				return u.Message(false, "Attributes should be on the payload"), false
+			} else {
+				switch entity {
+				case TENANT:
+					if _, ok := v["color"]; !ok {
+						return u.Message(false,
+							"Color Attribute must be specified on the payload"), false
+					}
+
+				case SITE:
+					switch v["orientation"] {
+					case "EN", "NW", "WS", "SE":
+					case "":
+						return u.Message(false, "Orientation should be on the payload"), false
+
+					default:
+						return u.Message(false, "Orientation is invalid!"), false
+					}
+
+					if v["usableColor"] == "" {
+						return u.Message(false, "Usable Color should be on the payload"), false
+					}
+
+					if v["reservedColor"] == "" {
+						return u.Message(false, "Reserved Color should be on the payload"), false
+					}
+
+					if v["technicalColor"] == "" {
+						return u.Message(false, "Technical Color should be on the payload"), false
+					}
+
+				case BLDG:
+					if v["posXY"] == "" {
+						return u.Message(false, "XY coordinates should be on payload"), false
+					}
+
+					if v["posXYU"] == "" {
+						return u.Message(false, "PositionXYU string should be on the payload"), false
+					}
+
+					if v["size"] == "" {
+						return u.Message(false, "Invalid building size on the payload"), false
+					}
+
+					if v["sizeU"] == "" {
+						return u.Message(false, "Building size string should be on the payload"), false
+					}
+
+					if v["height"] == "" {
+						return u.Message(false, "Invalid Height on payload"), false
+					}
+
+					if v["heightU"] == "" {
+						return u.Message(false, "Building Height string should be on the payload"), false
+					}
+
+				case ROOM:
+					if v["posXY"] == "" {
+						return u.Message(false, "XY coordinates should be on payload"), false
+					}
+
+					if v["posXYU"] == "" {
+						return u.Message(false, "PositionXYU string should be on the payload"), false
+					}
+
+					switch v["orientation"] {
+					case "-E-N", "-E+N", "+E-N", "+E+N":
+					case "-N-W", "-N+W", "+N-W", "+N+W":
+					case "-W-S", "-W+S", "+W-S", "+W+S":
+					case "-S-E", "-S+E", "+S-E", "+S+E":
+					case "":
+						return u.Message(false, "Orientation should be on the payload"), false
+
+					default:
+						return u.Message(false, "Orientation is invalid!"), false
+					}
+
+					if v["size"] == "" {
+						return u.Message(false, "Invalid size on the payload"), false
+					}
+
+					if v["sizeU"] == "" {
+						return u.Message(false, "Room size string should be on the payload"), false
+					}
+
+					if v["height"] == "" {
+						return u.Message(false, "Invalid Height on payload"), false
+					}
+
+					if v["heightU"] == "" {
+						return u.Message(false, "Room Height string should be on the payload"), false
+					}
+				case RACK:
+					if v["posXY"] == "" {
+						return u.Message(false, "XY coordinates should be on payload"), false
+					}
+
+					if v["posXYU"] == "" {
+						return u.Message(false, "PositionXYU string should be on the payload"), false
+					}
+
+					switch v["orientation"] {
+					case "front", "rear", "left", "right":
+					case "":
+						return u.Message(false, "Orientation should be on the payload"), false
+
+					default:
+						return u.Message(false, "Orientation is invalid!"), false
+					}
+
+					if v["size"] == "" {
+						return u.Message(false, "Invalid size on the payload"), false
+					}
+
+					if v["sizeU"] == "" {
+						return u.Message(false, "Rack size string should be on the payload"), false
+					}
+
+					if v["height"] == "" {
+						return u.Message(false, "Invalid Height on payload"), false
+					}
+
+					if v["heightU"] == "" {
+						return u.Message(false, "Rack Height string should be on the payload"), false
+					}
+				case DEVICE:
+					switch v["orientation"] {
+					case "front", "rear", "frontflipped", "rearflipped":
+					case "":
+						return u.Message(false, "Orientation should be on the payload"), false
+
+					default:
+						return u.Message(false, "Orientation is invalid!"), false
+					}
+
+					if v["size"] == "" {
+						return u.Message(false, "Invalid size on the payload"), false
+					}
+
+					if v["sizeUnit"] == "" {
+						return u.Message(false, "Rack size string should be on the payload"), false
+					}
+
+					if v["height"] == "" {
+						return u.Message(false, "Invalid Height on payload"), false
+					}
+
+					if v["heightU"] == "" {
+						return u.Message(false, "Rack Height string should be on the payload"), false
+					}
+				case SUBDEV, SUBDEV1:
+
+					switch v["orientation"] {
+					case "front", "rear", "frontflipped", "rearflipped":
+					case "":
+						return u.Message(false, "Orientation should be on the payload"), false
+
+					default:
+						return u.Message(false, "Orientation is invalid!"), false
+					}
+
+					if v["size"] == "" {
+						return u.Message(false, "Invalid size on the payload"), false
+					}
+
+					if v["sizeUnit"] == "" {
+						return u.Message(false, "Subdevice size string should be on the payload"), false
+					}
+
+					if v["height"] == "" {
+						return u.Message(false, "Invalid Height on payload"), false
+					}
+
+					if v["heightU"] == "" {
+						return u.Message(false, "Subdevice Height string should be on the payload"), false
+					}
 				}
+			}
+		}
+	case ROOMTMPL, RACKTMPL, DEVTMPL:
+		if t["slug"] == "" {
+			return u.Message(false, "Slug should be on payload"), false
+		}
 
-			case SITE:
-				switch v["orientation"] {
-				case "EN", "NW", "WS", "SE":
-				case "":
-					return u.Message(false, "Orientation should be on the payload"), false
+		if _, ok := t["colors"]; !ok {
+			return u.Message(false,
+				"Colors should be on payload"), false
+		}
 
-				default:
-					return u.Message(false, "Orientation is invalid!"), false
-				}
+		if entity == RACKTMPL || entity == DEVTMPL {
+			if _, ok := t["description"]; !ok {
+				return u.Message(false,
+					"Description should be on payload"), false
+			}
 
-				if v["usableColor"] == "" {
-					return u.Message(false, "Usable Color should be on the payload"), false
-				}
+			if _, ok := t["category"]; !ok {
+				return u.Message(false,
+					"Category should be on payload"), false
+			}
 
-				if v["reservedColor"] == "" {
-					return u.Message(false, "Reserved Color should be on the payload"), false
-				}
+			if _, ok := t["sizeWDHmm"]; !ok {
+				return u.Message(false,
+					"Size,Width,Depth (mm) Array should be on payload"), false
+			}
 
-				if v["technicalColor"] == "" {
-					return u.Message(false, "Technical Color should be on the payload"), false
-				}
+			if _, ok := t["fbxModel"]; !ok {
+				return u.Message(false,
+					"fbxModel should be on payload"), false
+			}
 
-			case BLDG:
-				if v["posXY"] == "" {
-					return u.Message(false, "XY coordinates should be on payload"), false
-				}
+			if _, ok := t["attributes"]; !ok {
+				return u.Message(false,
+					"Attributes should be on payload"), false
+			}
 
-				if v["posXYU"] == "" {
-					return u.Message(false, "PositionXYU string should be on the payload"), false
-				}
+			if _, ok := t["slots"]; !ok {
+				return u.Message(false,
+					"fbxModel should be on payload"), false
+			}
 
-				if v["size"] == "" {
-					return u.Message(false, "Invalid building size on the payload"), false
-				}
+		} else { //ROOMTMPL
+			if _, ok := t["orientation"]; !ok {
+				return u.Message(false,
+					"Orientation should be on payload"), false
+			}
 
-				if v["sizeU"] == "" {
-					return u.Message(false, "Building size string should be on the payload"), false
-				}
+			if _, ok := t["sizeWDHm"]; !ok {
+				return u.Message(false,
+					"Size,Width,Depth Array should be on payload"), false
+			}
 
-				if v["height"] == "" {
-					return u.Message(false, "Invalid Height on payload"), false
-				}
+			if _, ok := t["technicalArea"]; !ok {
+				return u.Message(false,
+					"TechnicalArea should be on payload"), false
+			}
 
-				if v["heightU"] == "" {
-					return u.Message(false, "Building Height string should be on the payload"), false
-				}
+			if _, ok := t["reservedArea"]; !ok {
+				return u.Message(false,
+					"ReservedArea should be on payload"), false
+			}
 
-			case ROOM:
-				if v["posXY"] == "" {
-					return u.Message(false, "XY coordinates should be on payload"), false
-				}
+			if _, ok := t["separators"]; !ok {
+				return u.Message(false,
+					"Separators should be on payload"), false
+			}
 
-				if v["posXYU"] == "" {
-					return u.Message(false, "PositionXYU string should be on the payload"), false
-				}
-
-				switch v["orientation"] {
-				case "-E-N", "-E+N", "+E-N", "+E+N":
-				case "-N-W", "-N+W", "+N-W", "+N+W":
-				case "-W-S", "-W+S", "+W-S", "+W+S":
-				case "-S-E", "-S+E", "+S-E", "+S+E":
-				case "":
-					return u.Message(false, "Orientation should be on the payload"), false
-
-				default:
-					return u.Message(false, "Orientation is invalid!"), false
-				}
-
-				if v["size"] == "" {
-					return u.Message(false, "Invalid size on the payload"), false
-				}
-
-				if v["sizeU"] == "" {
-					return u.Message(false, "Room size string should be on the payload"), false
-				}
-
-				if v["height"] == "" {
-					return u.Message(false, "Invalid Height on payload"), false
-				}
-
-				if v["heightU"] == "" {
-					return u.Message(false, "Room Height string should be on the payload"), false
-				}
-			case RACK:
-				if v["posXY"] == "" {
-					return u.Message(false, "XY coordinates should be on payload"), false
-				}
-
-				if v["posXYU"] == "" {
-					return u.Message(false, "PositionXYU string should be on the payload"), false
-				}
-
-				switch v["orientation"] {
-				case "front", "rear", "left", "right":
-				case "":
-					return u.Message(false, "Orientation should be on the payload"), false
-
-				default:
-					return u.Message(false, "Orientation is invalid!"), false
-				}
-
-				if v["size"] == "" {
-					return u.Message(false, "Invalid size on the payload"), false
-				}
-
-				if v["sizeU"] == "" {
-					return u.Message(false, "Rack size string should be on the payload"), false
-				}
-
-				if v["height"] == "" {
-					return u.Message(false, "Invalid Height on payload"), false
-				}
-
-				if v["heightU"] == "" {
-					return u.Message(false, "Rack Height string should be on the payload"), false
-				}
-			case DEVICE:
-				switch v["orientation"] {
-				case "front", "rear", "frontflipped", "rearflipped":
-				case "":
-					return u.Message(false, "Orientation should be on the payload"), false
-
-				default:
-					return u.Message(false, "Orientation is invalid!"), false
-				}
-
-				if v["size"] == "" {
-					return u.Message(false, "Invalid size on the payload"), false
-				}
-
-				if v["sizeUnit"] == "" {
-					return u.Message(false, "Rack size string should be on the payload"), false
-				}
-
-				if v["height"] == "" {
-					return u.Message(false, "Invalid Height on payload"), false
-				}
-
-				if v["heightU"] == "" {
-					return u.Message(false, "Rack Height string should be on the payload"), false
-				}
-			case SUBDEV, SUBDEV1:
-
-				switch v["orientation"] {
-				case "front", "rear", "frontflipped", "rearflipped":
-				case "":
-					return u.Message(false, "Orientation should be on the payload"), false
-
-				default:
-					return u.Message(false, "Orientation is invalid!"), false
-				}
-
-				if v["size"] == "" {
-					return u.Message(false, "Invalid size on the payload"), false
-				}
-
-				if v["sizeUnit"] == "" {
-					return u.Message(false, "Subdevice size string should be on the payload"), false
-				}
-
-				if v["height"] == "" {
-					return u.Message(false, "Invalid Height on payload"), false
-				}
-
-				if v["heightU"] == "" {
-					return u.Message(false, "Subdevice Height string should be on the payload"), false
-				}
+			if _, ok := t["tiles"]; !ok {
+				return u.Message(false,
+					"Tiles should be on payload"), false
 			}
 		}
 	}

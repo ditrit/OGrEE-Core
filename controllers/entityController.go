@@ -21,6 +21,12 @@ const (
 	DEVICE
 	SUBDEV
 	SUBDEV1
+	AC
+	PWRPNL
+	WALL
+	ROOMTMPL
+	RACKTMPL
+	DEVTMPL
 )
 
 func getObjID(x string) (primitive.ObjectID, error) {
@@ -164,6 +170,13 @@ var CreateEntity = func(w http.ResponseWriter, r *http.Request) {
 	}
 
 	i := u.EntityStrToInt(entStr)
+
+	//If creating templates, format them
+	if idx := strings.Index(entStr, "-"); idx != -1 {
+		//entStr[idx] = '_'
+		entStr = entStr[:idx] + "_" + entStr[idx+1:]
+	}
+
 	println("ENT: ", entStr)
 	println("ENUM VAL: ", i)
 

@@ -479,6 +479,14 @@ func main() {
 		controllers.GetAllEntities).Methods("GET")
 
 	// ------ TEMPLATE CRUD ------ //
+	router.HandleFunc("/api/room-templates",
+		controllers.CreateEntity).Methods("POST")
+
+	router.HandleFunc("/api/rack-templates",
+		controllers.CreateEntity).Methods("POST")
+
+	router.HandleFunc("/api/device-templates",
+		controllers.CreateEntity).Methods("POST")
 
 	// ------ AC/PWR/WALL CRUD ------ //
 	router.HandleFunc("/api/acs",
