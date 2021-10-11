@@ -272,7 +272,6 @@ var GetEntity = func(w http.ResponseWriter, r *http.Request) {
 }
 
 var GetEntityByName = func(w http.ResponseWriter, r *http.Request) {
-	println("We ALL HERE")
 	var data map[string]interface{}
 	var e1 string
 	id, e := mux.Vars(r)["name"]
@@ -290,7 +289,6 @@ var GetEntityByName = func(w http.ResponseWriter, r *http.Request) {
 	//If creating templates, format them
 	if idx := strings.Index(s, "-"); idx != -1 {
 		s = s[:idx] + "_" + s[idx+1:]
-		println("SHould be here")
 		data, e1 = models.GetEntityBySlug(id, s)
 	} else {
 		data, e1 = models.GetEntityByName(id, s)
@@ -1329,7 +1327,7 @@ var DeleteEntityBySlug = func(w http.ResponseWriter, r *http.Request) {
 	//Get entity from URL and strip trailing 's'
 	entity := r.URL.Path[5 : strings.LastIndex(r.URL.Path, "/")-1]
 
-	//If creating templates, format them
+	//If templates, format them
 	if idx := strings.Index(entity, "-"); idx != -1 {
 		entity = entity[:idx] + "_" + entity[idx+1:]
 	}
@@ -1340,6 +1338,49 @@ var DeleteEntityBySlug = func(w http.ResponseWriter, r *http.Request) {
 		u.ErrLog("Error while deleting entity", "DELETE ENTITY", "Not Found", r)
 	} else {
 		w.WriteHeader(http.StatusNoContent)
+	}
+
+	u.Respond(w, v)
+}
+
+var UpdateEntityBySlug = func(w http.ResponseWriter, r *http.Request) {
+	updateData := map[string]interface{}{}
+
+	id, e := mux.Vars(r)["name"]
+	if e == false {
+		w.WriteHeader(http.StatusBadRequest)
+		u.Respond(w, u.Message(false, "Error while extracting from path parameters"))
+		u.ErrLog("Error while extracting from path parameters", "UPDATE ENTITY", "", r)
+		return
+	}
+
+	err := json.NewDecoder(r.Body).Decode(&updateData)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		u.Respond(w, u.Message(false, "Error while decoding request body"))
+		u.ErrLog("Error while decoding request body", "UPDATE ENTITY", "", r)
+	}
+	//Get entity from URL and strip trailing 's'
+	entity := r.URL.Path[5 : strings.LastIndex(r.URL.Path, "/")-1]
+	//If templates, format them
+	if idx := strings.Index(entity, "-"); idx != -1 {
+		entity = entity[:idx] + "_" + entity[idx+1:]
+	}
+
+	v, e1 := models.UpdateEntityBySlug(entity, id, &updateData)
+
+	switch e1 {
+
+	case "validate":
+		w.WriteHeader(http.StatusBadRequest)
+		u.ErrLog("Error while updating "+entity, "UPDATE "+strings.ToUpper(entity), e1, r)
+	case "internal":
+		w.WriteHeader(http.StatusInternalServerError)
+		u.ErrLog("Error while updating "+entity, "UPDATE "+strings.ToUpper(entity), e1, r)
+	case "record not found":
+	default:
+		w.WriteHeader(http.StatusNotFound)
+		u.ErrLog("Error while updating "+entity, "UPDATE "+strings.ToUpper(entity), e1, r)
 	}
 
 	u.Respond(w, v)

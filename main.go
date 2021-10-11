@@ -506,6 +506,15 @@ func main() {
 	router.HandleFunc("/api/device-templates/{name}",
 		controllers.DeleteEntityBySlug).Methods("DELETE")
 
+	router.HandleFunc("/api/room-templates/{name}",
+		controllers.UpdateEntityBySlug).Methods("PUT")
+
+	router.HandleFunc("/api/rack-templates/{name}",
+		controllers.UpdateEntityBySlug).Methods("PUT")
+
+	router.HandleFunc("/api/device-templates/{name}",
+		controllers.UpdateEntityBySlug).Methods("PUT")
+
 	// ------ AC/PWR/WALL CRUD ------ //
 	router.HandleFunc("/api/acs",
 		controllers.CreateNestedEntity).Methods("POST")

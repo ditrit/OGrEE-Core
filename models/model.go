@@ -956,6 +956,16 @@ func DeleteEntityBySlug(entity, id string) (map[string]interface{}, string) {
 	return u.Message(true, "success"), ""
 }
 
+func UpdateEntityBySlug(ent, id string, t *map[string]interface{}) (map[string]interface{}, string) {
+	ctx, cancel := u.Connect()
+	e := GetDB().Collection(ent).FindOneAndUpdate(ctx, bson.M{"slug": id}, bson.M{"$set": *t}).Err()
+	if e != nil {
+		return u.Message(false, "failure: "+e.Error()), e.Error()
+	}
+	defer cancel()
+	return u.Message(true, "success"), ""
+}
+
 /*
 	results := make([]map[string]interface{}, 0)
 	ctx, cancel := u.Connect()
