@@ -243,14 +243,27 @@ var GetEntity = func(w http.ResponseWriter, r *http.Request) {
 
 	//GET By ID
 	if id, e = mux.Vars(r)["id"]; e == true {
-		x, e2 = getObjID(id)
-		if e2 != nil {
-			u.Respond(w, u.Message(false, "Error while converting ID to ObjectID"))
-			u.ErrLog("Error while converting ID to ObjectID", "GET ENTITY", "", r)
-			return
+
+		if nestID, err := mux.Vars(r)["nest"]; err == true { //If nested
+			//Get entity type and strip trailing 's'
+			idx := strings.SplitAfter(r.URL.Path, "/")[4]
+			s = idx[:len(idx)-2]
+			ID, _ := getObjID(id)
+			println("NESTID: ", nestID)
+			println("Entity: ", s)
+			println("ID: ", ID.Hex())
+			data, e1 = models.GetNestedEntity(ID, s, nestID)
+		} else { // Not Nested
+
+			x, e2 = getObjID(id)
+			if e2 != nil {
+				u.Respond(w, u.Message(false, "Error while converting ID to ObjectID"))
+				u.ErrLog("Error while converting ID to ObjectID", "GET ENTITY", "", r)
+				return
+			}
+			data, e1 = models.GetEntity(x, s)
 		}
 
-		data, e1 = models.GetEntity(x, s)
 	} else if id, e = mux.Vars(r)["name"]; e == true { //GET By String
 		//If templates, format them
 		if idx := strings.Index(s, "-"); idx != -1 { //GET By Slug
@@ -280,8 +293,10 @@ var GetEntity = func(w http.ResponseWriter, r *http.Request) {
 
 	} else {
 		resp = u.Message(true, "success")
-		data["id"] = data["_id"]
-		delete(data, "_id")
+		if _, ok := data["id"]; ok {
+			data["id"] = data["_id"]
+			delete(data, "_id")
+		}
 	}
 
 	resp["data"] = data
@@ -1030,50 +1045,6 @@ var GetEntityHierarchyNonStd = func(w http.ResponseWriter, r *http.Request) {
 	resp["rooms"] = rooms
 	resp["racks"] = racks
 	resp["devices"] = devices*/
-	u.Respond(w, resp)
-}
-
-var GetNestedEntity = func(w http.ResponseWriter, r *http.Request) {
-	id, e := mux.Vars(r)["id"]
-	resp := u.Message(true, "success")
-
-	if e == false {
-		u.Respond(w, u.Message(false, "Error while parsing path parameters"))
-		u.ErrLog("Error while parsing path parameters", "GET NESTDENTITY", "", r)
-		return
-	}
-
-	nestID, err := mux.Vars(r)["nest"]
-
-	if err == false {
-		u.Respond(w, u.Message(false, "Error while parsing path parameters"))
-		u.ErrLog("Error while parsing path parameters", "GET NESTDENTITY", "", r)
-		return
-	}
-
-	//Get entity type and strip trailing 's'
-	idx := strings.SplitAfter(r.URL.Path, "/")[4]
-	s := idx[:len(idx)-2]
-
-	ID, _ := getObjID(id)
-
-	data, e1 := models.GetNestedEntity(ID, s, nestID)
-	if data == nil {
-		resp = u.Message(false, "Error while getting "+s+": "+e1)
-		u.ErrLog("Error while getting "+s, "GET NESTD"+strings.ToUpper(s), "", r)
-
-		switch e1 {
-		case "record not found":
-			w.WriteHeader(http.StatusNotFound)
-		default:
-			w.WriteHeader(http.StatusNotFound) //For now
-		}
-
-	} else {
-		resp = u.Message(true, "success")
-	}
-
-	resp["data"] = data
 	u.Respond(w, resp)
 }
 
