@@ -230,68 +230,41 @@ var CreateEntity = func(w http.ResponseWriter, r *http.Request) {
 //     '404':
 //         description: Not Found
 var GetEntity = func(w http.ResponseWriter, r *http.Request) {
-	id, e := mux.Vars(r)["id"]
+	var data map[string]interface{}
+	var id, e1 string
+	var x primitive.ObjectID
+	var e bool
+	var e2 error
+
 	resp := u.Message(true, "success")
-
-	if e == false {
-		u.Respond(w, u.Message(false, "Error while parsing path parameters"))
-		u.ErrLog("Error while parsing path parameters", "GET ENTITY", "", r)
-		return
-	}
-
-	x, e2 := getObjID(id)
-	if e2 != nil {
-		u.Respond(w, u.Message(false, "Error while converting ID to ObjectID"))
-		u.ErrLog("Error while converting ID to ObjectID", "GET ENTITY", "", r)
-		return
-	}
 
 	//Get entity type and strip trailing 's'
 	s := r.URL.Path[5 : strings.LastIndex(r.URL.Path, "/")-1]
 
-	data, e1 := models.GetEntity(x, s)
-	if data == nil {
-		resp = u.Message(false, "Error while getting "+s+": "+e1)
-		u.ErrLog("Error while getting "+s, "GET "+strings.ToUpper(s), "", r)
-
-		switch e1 {
-		case "record not found":
-			w.WriteHeader(http.StatusNotFound)
-		default:
-			w.WriteHeader(http.StatusNotFound) //For now
+	//GET By ID
+	if id, e = mux.Vars(r)["id"]; e == true {
+		x, e2 = getObjID(id)
+		if e2 != nil {
+			u.Respond(w, u.Message(false, "Error while converting ID to ObjectID"))
+			u.ErrLog("Error while converting ID to ObjectID", "GET ENTITY", "", r)
+			return
 		}
 
-	} else {
-		resp = u.Message(true, "success")
-		data["id"] = data["_id"]
-		delete(data, "_id")
+		data, e1 = models.GetEntity(x, s)
+	} else if id, e = mux.Vars(r)["name"]; e == true { //GET By String
+		//If templates, format them
+		if idx := strings.Index(s, "-"); idx != -1 { //GET By Slug
+			s = s[:idx] + "_" + s[idx+1:]
+			data, e1 = models.GetEntityBySlug(id, s)
+		} else {
+			data, e1 = models.GetEntityByName(id, s) //GET By Name
+		}
 	}
-
-	resp["data"] = data
-	u.Respond(w, resp)
-}
-
-var GetEntityByName = func(w http.ResponseWriter, r *http.Request) {
-	var data map[string]interface{}
-	var e1 string
-	id, e := mux.Vars(r)["name"]
-	resp := u.Message(true, "success")
 
 	if e == false {
 		u.Respond(w, u.Message(false, "Error while parsing path parameters"))
 		u.ErrLog("Error while parsing path parameters", "GET ENTITY", "", r)
 		return
-	}
-
-	//Get entity type and strip trailing 's'
-	s := r.URL.Path[5 : strings.LastIndex(r.URL.Path, "/")-1]
-
-	//If creating templates, format them
-	if idx := strings.Index(s, "-"); idx != -1 {
-		s = s[:idx] + "_" + s[idx+1:]
-		data, e1 = models.GetEntityBySlug(id, s)
-	} else {
-		data, e1 = models.GetEntityByName(id, s)
 	}
 
 	if data == nil {

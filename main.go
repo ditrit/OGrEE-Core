@@ -489,13 +489,13 @@ func main() {
 		controllers.CreateEntity).Methods("POST")
 
 	router.HandleFunc("/api/room-templates/{name}",
-		controllers.GetEntityByName).Methods("GET")
+		controllers.GetEntity).Methods("GET")
 
 	router.HandleFunc("/api/rack-templates/{name}",
-		controllers.GetEntityByName).Methods("GET")
+		controllers.GetEntity).Methods("GET")
 
 	router.HandleFunc("/api/device-templates/{name}",
-		controllers.GetEntityByName).Methods("GET")
+		controllers.GetEntity).Methods("GET")
 
 	router.HandleFunc("/api/room-templates/{name}",
 		controllers.DeleteEntityBySlug).Methods("DELETE")
