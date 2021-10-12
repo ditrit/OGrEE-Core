@@ -286,13 +286,13 @@ func main() {
 		controllers.UpdateEntity).Methods("PUT")
 
 	router.HandleFunc("/api/rooms/{id}/walls/{nest}",
-		controllers.DeleteNestedEntity).Methods("DELETE")
+		controllers.DeleteEntity).Methods("DELETE")
 
 	router.HandleFunc("/api/rooms/{id}/acs/{nest}",
-		controllers.DeleteNestedEntity).Methods("DELETE")
+		controllers.DeleteEntity).Methods("DELETE")
 
 	router.HandleFunc("/api/rooms/{id}/panels/{nest}",
-		controllers.DeleteNestedEntity).Methods("DELETE")
+		controllers.DeleteEntity).Methods("DELETE")
 
 	router.HandleFunc("/api/rooms/{id}",
 		controllers.DeleteEntity).Methods("DELETE")
@@ -498,13 +498,13 @@ func main() {
 		controllers.GetEntity).Methods("GET")
 
 	router.HandleFunc("/api/room-templates/{name}",
-		controllers.DeleteEntityBySlug).Methods("DELETE")
+		controllers.DeleteEntity).Methods("DELETE")
 
 	router.HandleFunc("/api/rack-templates/{name}",
-		controllers.DeleteEntityBySlug).Methods("DELETE")
+		controllers.DeleteEntity).Methods("DELETE")
 
 	router.HandleFunc("/api/device-templates/{name}",
-		controllers.DeleteEntityBySlug).Methods("DELETE")
+		controllers.DeleteEntity).Methods("DELETE")
 
 	router.HandleFunc("/api/room-templates/{name}",
 		controllers.UpdateEntityBySlug).Methods("PUT")

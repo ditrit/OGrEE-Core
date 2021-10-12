@@ -249,9 +249,6 @@ var GetEntity = func(w http.ResponseWriter, r *http.Request) {
 			idx := strings.SplitAfter(r.URL.Path, "/")[4]
 			s = idx[:len(idx)-2]
 			ID, _ := getObjID(id)
-			println("NESTID: ", nestID)
-			println("Entity: ", s)
-			println("ID: ", ID.Hex())
 			data, e1 = models.GetNestedEntity(ID, s, nestID)
 		} else { // Not Nested
 
@@ -394,24 +391,48 @@ var GetAllEntities = func(w http.ResponseWriter, r *http.Request) {
 //     '404':
 //        description: Not found
 var DeleteEntity = func(w http.ResponseWriter, r *http.Request) {
+	var v map[string]interface{}
 	id, e := mux.Vars(r)["id"]
-	if e == false {
+	nest, e1 := mux.Vars(r)["nest"]
+	name, e2 := mux.Vars(r)["name"]
+
+	switch {
+	case e2 == true: // DELETE SLUG
+		//Get entity from URL and strip trailing 's'
+		entity := r.URL.Path[5 : strings.LastIndex(r.URL.Path, "/")-1]
+
+		//If templates, format them
+		if idx := strings.Index(entity, "-"); idx != -1 {
+			entity = entity[:idx] + "_" + entity[idx+1:]
+		}
+		v, _ = models.DeleteEntityBySlug(entity, name)
+
+	case e1 == true && e == true: // DELETE NESTED
+
+		//Get entity from URL
+		idx := strings.SplitAfter(r.URL.Path, "/")[4]
+		entity := idx[:len(idx)-2]
+
+		objID, _ := getObjID(id)
+		v, _ = models.DeleteNestedEntity(entity, objID, nest)
+
+	case e == true: // DELETE NORMAL
+		objID, err := primitive.ObjectIDFromHex(id)
+		if err != nil {
+			u.Respond(w, u.Message(false, "Error while converting ID to ObjectID"))
+			u.ErrLog("Error while converting ID to ObjectID", "DELETE ENTITY", "", r)
+			return
+		}
+
+		//Get entity from URL and strip trailing 's'
+		entity := r.URL.Path[5 : strings.LastIndex(r.URL.Path, "/")-1]
+
+		v, _ = models.DeleteEntity(entity, objID)
+	default:
 		u.Respond(w, u.Message(false, "Error while parsing path parameters"))
 		u.ErrLog("Error while parsing path parameters", "DELETE ENTITY", "", r)
 		return
 	}
-
-	objID, err := primitive.ObjectIDFromHex(id)
-	if err != nil {
-		u.Respond(w, u.Message(false, "Error while converting ID to ObjectID"))
-		u.ErrLog("Error while converting ID to ObjectID", "DELETE ENTITY", "", r)
-		return
-	}
-
-	//Get entity from URL and strip trailing 's'
-	entity := r.URL.Path[5 : strings.LastIndex(r.URL.Path, "/")-1]
-
-	v, _ := models.DeleteEntity(entity, objID)
 
 	if v["status"] == false {
 		w.WriteHeader(http.StatusNotFound)
@@ -1112,43 +1133,6 @@ var CreateNestedEntity = func(w http.ResponseWriter, r *http.Request) {
 	u.Respond(w, resp)
 }
 
-var DeleteNestedEntity = func(w http.ResponseWriter, r *http.Request) {
-	id, e := mux.Vars(r)["id"]
-	if e == false {
-		u.Respond(w, u.Message(false, "Error while parsing path parameters"))
-		u.ErrLog("Error while parsing path parameters", "DELETE ENTITY", "", r)
-		return
-	}
-	nestID, e1 := mux.Vars(r)["nest"]
-	if e1 == false {
-		u.Respond(w, u.Message(false, "Error while parsing path parameters"))
-		u.ErrLog("Error while parsing path parameters", "DELETE ENTITY", "", r)
-		return
-	}
-
-	objID, err := primitive.ObjectIDFromHex(id)
-	if err != nil {
-		u.Respond(w, u.Message(false, "Error while converting ID to ObjectID"))
-		u.ErrLog("Error while converting ID to ObjectID", "DELETE ENTITY", "", r)
-		return
-	}
-
-	//Get entity from URL
-	idx := strings.SplitAfter(r.URL.Path, "/")[4]
-	entity := idx[:len(idx)-2]
-
-	v, _ := models.DeleteNestedEntity(entity, objID, nestID)
-
-	if v["status"] == false {
-		w.WriteHeader(http.StatusNotFound)
-		u.ErrLog("Error while deleting entity", "DELETE ENTITY", "Not Found", r)
-	} else {
-		w.WriteHeader(http.StatusNoContent)
-	}
-
-	u.Respond(w, v)
-}
-
 var UpdateNestedEntity = func(w http.ResponseWriter, r *http.Request) {
 	updateData := map[string]interface{}{}
 	id, e := mux.Vars(r)["id"]
@@ -1237,33 +1221,6 @@ var GetNestedEntityByQuery = func(w http.ResponseWriter, r *http.Request) {
 	resp["data"] = map[string]interface{}{"objects": data}
 
 	u.Respond(w, resp)
-}
-
-var DeleteEntityBySlug = func(w http.ResponseWriter, r *http.Request) {
-	id, e := mux.Vars(r)["name"]
-	if e == false {
-		u.Respond(w, u.Message(false, "Error while parsing path parameters"))
-		u.ErrLog("Error while parsing path parameters", "DELETE ENTITY", "", r)
-		return
-	}
-
-	//Get entity from URL and strip trailing 's'
-	entity := r.URL.Path[5 : strings.LastIndex(r.URL.Path, "/")-1]
-
-	//If templates, format them
-	if idx := strings.Index(entity, "-"); idx != -1 {
-		entity = entity[:idx] + "_" + entity[idx+1:]
-	}
-	v, _ := models.DeleteEntityBySlug(entity, id)
-
-	if v["status"] == false {
-		w.WriteHeader(http.StatusNotFound)
-		u.ErrLog("Error while deleting entity", "DELETE ENTITY", "Not Found", r)
-	} else {
-		w.WriteHeader(http.StatusNoContent)
-	}
-
-	u.Respond(w, v)
 }
 
 var UpdateEntityBySlug = func(w http.ResponseWriter, r *http.Request) {
