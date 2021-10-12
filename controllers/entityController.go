@@ -323,14 +323,31 @@ var GetEntity = func(w http.ResponseWriter, r *http.Request) {
 //     '404':
 //         description: Nothing Found
 var GetAllEntities = func(w http.ResponseWriter, r *http.Request) {
-	entStr := r.URL.Path[5 : len(r.URL.Path)-1] //strip the '/api' in URL
-	entUpper := strings.ToUpper(entStr)         // and the trailing 's'
+	var data []map[string]interface{}
+	var e, entStr string
+	arr := strings.Split(r.URL.Path, "/")
+	if len(arr) < 4 { //Main hierarchy objects
 
+		entStr = arr[2][:len(arr[2])-1]
+		data, e = models.GetAllEntities(entStr)
+
+	} else { //Nested objects
+
+		entStr = arr[4][:len(arr[4])-1]
+		id, e1 := mux.Vars(r)["id"]
+		if e1 == false {
+			u.Respond(w, u.Message(false, "Error while parsing path parameters"))
+			u.ErrLog("Error while parsing path parameters", "GET ENTITY", "", r)
+			return
+		}
+
+		ID, _ := getObjID(id)
+		data, e = models.GetAllNestedEntities(ID, entStr)
+	}
+
+	entUpper := strings.ToUpper(entStr) // and the trailing 's'
 	resp := u.Message(true, "success")
 
-	//entInt := u.EntityStrToInt(entStr)
-
-	data, e := models.GetAllEntities(entStr)
 	if len(data) == 0 {
 		resp = u.Message(false, "Error while getting "+entStr+": "+e)
 		u.ErrLog("Error while getting "+entStr+"s", "GET ALL "+entUpper, e, r)
@@ -1091,44 +1108,6 @@ var CreateNestedEntity = func(w http.ResponseWriter, r *http.Request) {
 			u.ErrLog("Error while creating "+entStr, "CREATE NESTD"+entUpper, e, r)
 		}
 	}
-
-	u.Respond(w, resp)
-}
-
-var GetAllNestedEntities = func(w http.ResponseWriter, r *http.Request) {
-	lastSlashIdx := strings.LastIndex(r.URL.Path, "/")
-	entStr := r.URL.Path[lastSlashIdx+1 : len(r.URL.Path)-1]
-	entUpper := strings.ToUpper(entStr)
-	id, e1 := mux.Vars(r)["id"]
-
-	if e1 == false {
-		u.Respond(w, u.Message(false, "Error while parsing path parameters"))
-		u.ErrLog("Error while parsing path parameters", "GET ENTITY", "", r)
-		return
-	}
-
-	resp := u.Message(true, "success")
-
-	ID, _ := getObjID(id)
-
-	data, e := models.GetAllNestedEntities(ID, entStr)
-	if len(data) == 0 {
-		resp = u.Message(false, "Error while getting "+entStr+": "+e)
-		u.ErrLog("Error while getting "+entStr+"s", "GET ALL "+entUpper, e, r)
-
-		switch e {
-		case "":
-			resp = u.Message(false,
-				"Error while getting "+entStr+"s: No Records Found")
-			w.WriteHeader(http.StatusNotFound)
-		default:
-		}
-
-	} else {
-		resp = u.Message(true, "success")
-	}
-
-	resp["data"] = map[string]interface{}{"objects": data}
 
 	u.Respond(w, resp)
 }

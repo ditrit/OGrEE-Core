@@ -334,13 +334,13 @@ func main() {
 		controllers.GetEntityHierarchyNonStd).Methods("GET")
 
 	router.HandleFunc("/api/rooms/{id}/walls",
-		controllers.GetAllNestedEntities).Methods("GET")
+		controllers.GetAllEntities).Methods("GET")
 
 	router.HandleFunc("/api/rooms/{id}/acs",
-		controllers.GetAllNestedEntities).Methods("GET")
+		controllers.GetAllEntities).Methods("GET")
 
 	router.HandleFunc("/api/rooms/{id}/panels",
-		controllers.GetAllNestedEntities).Methods("GET")
+		controllers.GetAllEntities).Methods("GET")
 
 	router.HandleFunc("/api/rooms/{id}/acs/{nest}",
 		controllers.GetEntity).Methods("GET")

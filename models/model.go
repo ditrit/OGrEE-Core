@@ -808,8 +808,9 @@ func CreateNestedEntity(entity int, eStr string, t map[string]interface{}) (map[
 	return resp, ""
 }
 
-func GetAllNestedEntities(ID primitive.ObjectID, ent string) ([]interface{}, string) {
+func GetAllNestedEntities(ID primitive.ObjectID, ent string) ([]map[string]interface{}, string) {
 	t := map[string]interface{}{}
+	ans := []map[string]interface{}{}
 	data := []interface{}{}
 
 	ctx, cancel := u.Connect()
@@ -825,8 +826,15 @@ func GetAllNestedEntities(ID primitive.ObjectID, ent string) ([]interface{}, str
 		data = v
 	}
 
+	for i := range data {
+		if x, ok := data[i].(map[string]interface{}); ok {
+			ans = append(ans, x)
+		}
+	}
+
+	println("LENANS: ", len(ans))
 	defer cancel()
-	return data, ""
+	return ans, ""
 }
 
 func DeleteNestedEntity(ent string, ID primitive.ObjectID, nestID string) (map[string]interface{}, string) {
@@ -922,23 +930,22 @@ func GetNestedEntityByQuery(parent, entity string, query bson.M) ([]map[string]i
 		//Iterate over the nestedEntities to see if they match the query
 		for k := range nestedEnts {
 
-			if nestedEntity, ok :=
-				nestedEnts[k].(map[string]interface{}); ok {
+			nestedEntity := nestedEnts[k]
 
-				match := true
-				//Check if the ent matches
-				for q := range query {
-					if nestedEntity[q] != query[q] {
-						match = false
-						break
-					}
-				}
-
-				//The entity matches
-				if match == true {
-					ans = append(ans, nestedEntity)
+			match := true
+			//Check if the ent matches
+			for q := range query {
+				if nestedEntity[q] != query[q] {
+					match = false
+					break
 				}
 			}
+
+			//The entity matches
+			if match == true {
+				ans = append(ans, nestedEntity)
+			}
+
 		}
 	}
 	return ans, ""
