@@ -521,7 +521,6 @@ func UpdateEntity(ent string, id primitive.ObjectID, t *map[string]interface{}) 
 func GetEntityByQuery(ent string, query bson.M) ([]map[string]interface{}, string) {
 	results := make([]map[string]interface{}, 0)
 	ctx, cancel := u.Connect()
-	println("ENT: ", ent)
 	c, err := GetDB().Collection(ent).Find(ctx, query)
 	if err != nil {
 		fmt.Println(err)

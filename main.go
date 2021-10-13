@@ -18,7 +18,7 @@ var dmatch mux.MatcherFunc = func(request *http.Request, match *mux.RouteMatch) 
 	//https://benhoyt.com/writings/go-routing/#regex-table
 	//https://stackoverflow.com/questions/21664489/
 	//golang-mux-routing-wildcard-custom-func-match
-	return regexp.MustCompile(`^(\/api\/(tenants|sites|buildings|rooms|rooms\/acs|rooms\/panels|rooms\/walls|racks|devices|subdevices|subdevices1)\?.*)$`).
+	return regexp.MustCompile(`^(\/api\/(tenants|sites|buildings|rooms|rooms\/acs|rooms\/panels|rooms\/walls|racks|devices|subdevices|subdevices1|(device|rack|room)-templates\?.*))$`).
 		MatchString(request.URL.String())
 }
 
@@ -479,6 +479,15 @@ func main() {
 		controllers.GetAllEntities).Methods("GET")
 
 	// ------ TEMPLATE CRUD ------ //
+	router.HandleFunc("/api/room-templates",
+		controllers.GetEntityByQuery).Methods("GET").MatcherFunc(dmatch)
+
+	router.HandleFunc("/api/rack-templates",
+		controllers.GetEntityByQuery).Methods("GET").MatcherFunc(dmatch)
+
+	router.HandleFunc("/api/device-templates",
+		controllers.GetEntityByQuery).Methods("GET").MatcherFunc(dmatch)
+
 	router.HandleFunc("/api/room-templates",
 		controllers.CreateEntity).Methods("POST")
 

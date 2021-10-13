@@ -58,17 +58,30 @@ func ErrLog(message, funcname, details string, r *http.Request) {
 	log.Println(details)
 }
 
-func ParamsParse(link *url.URL) map[string]interface{} {
+func ParamsParse(link *url.URL, objType int) map[string]interface{} {
 	q, _ := url.ParseQuery(link.RawQuery)
 	values := make(map[string]interface{})
+
+	//Building Attribute query varies based on
+	//object type
 	for key, _ := range q {
-		switch key {
-		case "id", "name", "category", "parentID",
-			"description", "domain", "parentid", "parentId":
-			values[key] = q.Get(key)
-		default:
-			values["attributes."+key] = q.Get(key)
+		if objType < ROOMTMPL { //Non template objects
+			switch key {
+			case "id", "name", "category", "parentID",
+				"description", "domain", "parentid", "parentId":
+				values[key] = q.Get(key)
+			default:
+				values["attributes."+key] = q.Get(key)
+			}
+		} else { //Template objects
+			switch key {
+			case "description", "slug", "category", "sizeWDHmm", "fbxModel":
+				values[key] = q.Get(key)
+			default:
+				values["attributes."+key] = q.Get(key)
+			}
 		}
+
 	}
 	return values
 }

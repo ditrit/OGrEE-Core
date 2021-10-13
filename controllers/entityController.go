@@ -627,7 +627,12 @@ var GetEntityByQuery = func(w http.ResponseWriter, r *http.Request) {
 	var bsonMap bson.M
 	entStr := r.URL.Path[5 : len(r.URL.Path)-1] //strip the '/api' in URL
 
-	query := u.ParamsParse(r.URL)
+	//If templates, format them
+	if idx := strings.Index(entStr, "-"); idx != -1 {
+		entStr = entStr[:idx] + "_" + entStr[idx+1:]
+	}
+
+	query := u.ParamsParse(r.URL, u.EntityStrToInt(entStr))
 	js, _ := json.Marshal(query)
 	json.Unmarshal(js, &bsonMap)
 
@@ -1173,7 +1178,7 @@ var GetNestedEntityByQuery = func(w http.ResponseWriter, r *http.Request) {
 	parent := arr[2][:len(arr[2])-1]
 	sub := arr[3][:len(arr[3])-1] //Not sure why this doesn't include rest of string
 
-	query := u.ParamsParse(r.URL)
+	query := u.ParamsParse(r.URL, u.EntityStrToInt(parent))
 	js, _ := json.Marshal(query)
 	json.Unmarshal(js, &bsonMap)
 
