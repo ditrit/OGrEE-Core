@@ -506,6 +506,15 @@ func main() {
 	router.HandleFunc("/api/device-templates/{name}",
 		controllers.GetEntity).Methods("GET")
 
+	router.HandleFunc("/api/room-templates",
+		controllers.GetAllEntities).Methods("GET")
+
+	router.HandleFunc("/api/rack-templates",
+		controllers.GetAllEntities).Methods("GET")
+
+	router.HandleFunc("/api/device-templates",
+		controllers.GetAllEntities).Methods("GET")
+
 	router.HandleFunc("/api/room-templates/{name}",
 		controllers.DeleteEntity).Methods("DELETE")
 

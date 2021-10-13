@@ -326,6 +326,12 @@ var GetAllEntities = func(w http.ResponseWriter, r *http.Request) {
 	if len(arr) < 4 { //Main hierarchy objects
 
 		entStr = arr[2][:len(arr[2])-1]
+
+		//If templates, format them
+		if idx := strings.Index(entStr, "-"); idx != -1 {
+			entStr = entStr[:idx] + "_" + entStr[idx+1:]
+		}
+
 		data, e = models.GetAllEntities(entStr)
 
 	} else { //Nested objects
