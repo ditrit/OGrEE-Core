@@ -18,7 +18,7 @@ var dmatch mux.MatcherFunc = func(request *http.Request, match *mux.RouteMatch) 
 	//https://benhoyt.com/writings/go-routing/#regex-table
 	//https://stackoverflow.com/questions/21664489/
 	//golang-mux-routing-wildcard-custom-func-match
-	return regexp.MustCompile(`^(\/api\/(tenants|sites|buildings|rooms|rooms\/acs|rooms\/panels|rooms\/walls|racks|devices|subdevices|subdevices1|(device|rack|room)-templates\?.*))$`).
+	return regexp.MustCompile(`^(\/api\/(tenants|sites|buildings|rooms|rooms\/acs|rooms\/panels|rooms\/walls|racks|devices|subdevices|subdevices1|(room|rack|device)-templates)\?.*)$`).
 		MatchString(request.URL.String())
 }
 
@@ -259,13 +259,13 @@ func main() {
 
 	// ------ ROOM CRUD ------ //
 	router.HandleFunc("/api/rooms/acs",
-		controllers.GetNestedEntityByQuery).Methods("GET").MatcherFunc(dmatch)
+		controllers.GetEntityByQuery).Methods("GET").MatcherFunc(dmatch)
 
 	router.HandleFunc("/api/rooms/walls",
-		controllers.GetNestedEntityByQuery).Methods("GET").MatcherFunc(dmatch)
+		controllers.GetEntityByQuery).Methods("GET").MatcherFunc(dmatch)
 
 	router.HandleFunc("/api/rooms/panels",
-		controllers.GetNestedEntityByQuery).Methods("GET").MatcherFunc(dmatch)
+		controllers.GetEntityByQuery).Methods("GET").MatcherFunc(dmatch)
 
 	router.HandleFunc("/api/rooms",
 		controllers.GetEntityByQuery).Methods("GET").MatcherFunc(dmatch)
@@ -535,6 +535,7 @@ func main() {
 		controllers.CreateNestedEntity).Methods("POST")
 
 	//Attach JWT auth middleware
+	//router.Use(app.Log)
 	router.Use(app.JwtAuthentication)
 
 	//Get port from .env file, no port was specified

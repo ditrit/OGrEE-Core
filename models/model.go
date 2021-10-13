@@ -971,27 +971,3 @@ func UpdateEntityBySlug(ent, id string, t *map[string]interface{}) (map[string]i
 	defer cancel()
 	return u.Message(true, "success"), ""
 }
-
-/*
-	results := make([]map[string]interface{}, 0)
-	ctx, cancel := u.Connect()
-	println("ENT: ", ent)
-	c, err := GetDB().Collection(ent).Find(ctx, query)
-	if err != nil {
-		fmt.Println(err)
-		return nil, err.Error()
-	}
-	defer cancel()
-
-	for c.Next(GetCtx()) {
-		x := map[string]interface{}{}
-		e := c.Decode(x)
-		if e != nil {
-			fmt.Println(err)
-			return nil, err.Error()
-		}
-		results = append(results, x)
-	}
-
-	return results, ""
-*/

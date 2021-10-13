@@ -623,20 +623,36 @@ var UpdateEntity = func(w http.ResponseWriter, r *http.Request) {
 //     '404':
 //        description: Not found
 var GetEntityByQuery = func(w http.ResponseWriter, r *http.Request) {
+	var data []map[string]interface{}
 	var resp map[string]interface{}
 	var bsonMap bson.M
-	entStr := r.URL.Path[5 : len(r.URL.Path)-1] //strip the '/api' in URL
+	var e, entStr string
 
-	//If templates, format them
-	if idx := strings.Index(entStr, "-"); idx != -1 {
-		entStr = entStr[:idx] + "_" + entStr[idx+1:]
+	if strings.Count(r.URL.Path, "/") == 3 { //We are querying NestedObjs
+		query := u.ParamsParse(r.URL, u.EntityStrToInt(entStr))
+		js, _ := json.Marshal(query)
+		json.Unmarshal(js, &bsonMap)
+
+		arr := strings.Split(r.URL.Path, "/")
+		entStr = arr[2][:len(arr[2])-1]
+		sub := arr[3][:len(arr[3])-1] //Not sure why this doesn't include rest of string
+
+		data, e = models.GetNestedEntityByQuery(entStr, sub, bsonMap)
+	} else {
+
+		entStr = r.URL.Path[5 : len(r.URL.Path)-1]
+
+		//If templates, format them
+		if idx := strings.Index(entStr, "-"); idx != -1 {
+			entStr = entStr[:idx] + "_" + entStr[idx+1:]
+		}
+
+		query := u.ParamsParse(r.URL, u.EntityStrToInt(entStr))
+		js, _ := json.Marshal(query)
+		json.Unmarshal(js, &bsonMap)
+
+		data, e = models.GetEntityByQuery(entStr, bsonMap)
 	}
-
-	query := u.ParamsParse(r.URL, u.EntityStrToInt(entStr))
-	js, _ := json.Marshal(query)
-	json.Unmarshal(js, &bsonMap)
-
-	data, e := models.GetEntityByQuery(entStr, bsonMap)
 
 	if len(data) == 0 {
 		resp = u.Message(false, "Error: "+e)
@@ -1166,43 +1182,6 @@ var CreateNestedEntity = func(w http.ResponseWriter, r *http.Request) {
 			u.ErrLog("Error while creating "+entStr, "CREATE NESTD"+entUpper, e, r)
 		}
 	}
-
-	u.Respond(w, resp)
-}
-
-var GetNestedEntityByQuery = func(w http.ResponseWriter, r *http.Request) {
-	var resp map[string]interface{}
-	var bsonMap bson.M
-
-	arr := strings.Split(r.URL.Path, "/")
-	parent := arr[2][:len(arr[2])-1]
-	sub := arr[3][:len(arr[3])-1] //Not sure why this doesn't include rest of string
-
-	query := u.ParamsParse(r.URL, u.EntityStrToInt(parent))
-	js, _ := json.Marshal(query)
-	json.Unmarshal(js, &bsonMap)
-
-	data, e := models.GetNestedEntityByQuery(parent, sub, bsonMap)
-
-	if len(data) == 0 {
-		resp = u.Message(false, "Error: "+e)
-		u.ErrLog("Error while getting "+sub, "GET ENTITYQUERY", e, r)
-
-		switch e {
-		case "record not found":
-			w.WriteHeader(http.StatusNotFound)
-		case "":
-			resp = u.Message(false, "Error: No Records Found")
-			w.WriteHeader(http.StatusNotFound)
-		default:
-			w.WriteHeader(http.StatusNotFound)
-		}
-
-	} else {
-		resp = u.Message(true, "success")
-	}
-
-	resp["data"] = map[string]interface{}{"objects": data}
 
 	u.Respond(w, resp)
 }

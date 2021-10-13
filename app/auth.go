@@ -13,6 +13,15 @@ import (
 	jwt "github.com/dgrijalva/jwt-go"
 )
 
+var Log = func(next http.Handler) http.Handler {
+
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		println("Selected Path: ", r.URL.Path)
+		println("Raw Query: ", r.URL.RawQuery)
+		next.ServeHTTP(w, r) //proceed in the middleware chain!
+	})
+}
+
 var JwtAuthentication = func(next http.Handler) http.Handler {
 
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
