@@ -274,13 +274,13 @@ func main() {
 		controllers.CreateEntity).Methods("POST")
 
 	router.HandleFunc("/api/rooms/{id}/acs/{nest}",
-		controllers.UpdateNestedEntity).Methods("PUT")
+		controllers.UpdateEntity).Methods("PUT")
 
 	router.HandleFunc("/api/rooms/{id}/panels/{nest}",
-		controllers.UpdateNestedEntity).Methods("PUT")
+		controllers.UpdateEntity).Methods("PUT")
 
 	router.HandleFunc("/api/rooms/{id}/walls/{nest}",
-		controllers.UpdateNestedEntity).Methods("PUT")
+		controllers.UpdateEntity).Methods("PUT")
 
 	router.HandleFunc("/api/rooms/{id}",
 		controllers.UpdateEntity).Methods("PUT")
@@ -507,13 +507,13 @@ func main() {
 		controllers.DeleteEntity).Methods("DELETE")
 
 	router.HandleFunc("/api/room-templates/{name}",
-		controllers.UpdateEntityBySlug).Methods("PUT")
+		controllers.UpdateEntity).Methods("PUT")
 
 	router.HandleFunc("/api/rack-templates/{name}",
-		controllers.UpdateEntityBySlug).Methods("PUT")
+		controllers.UpdateEntity).Methods("PUT")
 
 	router.HandleFunc("/api/device-templates/{name}",
-		controllers.UpdateEntityBySlug).Methods("PUT")
+		controllers.UpdateEntity).Methods("PUT")
 
 	// ------ AC/PWR/WALL CRUD ------ //
 	router.HandleFunc("/api/acs",
