@@ -15,6 +15,7 @@ db.createCollection('subdevice1');
 db.createCollection('room_template');
 db.createCollection('rack_template');
 db.createCollection('device_template');
+db.createCollection('fbx_template');
 
 
 //Enfore unique Tenant Names

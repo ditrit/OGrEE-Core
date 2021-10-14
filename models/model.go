@@ -25,6 +25,7 @@ const (
 	ROOMTMPL
 	RACKTMPL
 	DEVTMPL
+	FBXTMPL
 )
 
 func parseDataForNonStdResult(ent string, eNum int, data map[string]interface{}) map[string][]map[string]interface{} {
@@ -381,6 +382,8 @@ func ValidateEntity(entity int, t map[string]interface{}) (map[string]interface{
 					"Tiles should be on payload"), false
 			}
 		}
+	case FBXTMPL:
+		//Do Nothing on FBX
 	}
 
 	//Successfully validated the Object

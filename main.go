@@ -497,6 +497,9 @@ func main() {
 	router.HandleFunc("/api/device-templates",
 		controllers.CreateEntity).Methods("POST")
 
+	router.HandleFunc("/api/fbx-templates",
+		controllers.CreateEntity).Methods("POST")
+
 	router.HandleFunc("/api/room-templates/{name}",
 		controllers.GetEntity).Methods("GET")
 
@@ -504,6 +507,9 @@ func main() {
 		controllers.GetEntity).Methods("GET")
 
 	router.HandleFunc("/api/device-templates/{name}",
+		controllers.GetEntity).Methods("GET")
+
+	router.HandleFunc("/api/fbx-templates/{name}",
 		controllers.GetEntity).Methods("GET")
 
 	router.HandleFunc("/api/room-templates",
@@ -515,6 +521,9 @@ func main() {
 	router.HandleFunc("/api/device-templates",
 		controllers.GetAllEntities).Methods("GET")
 
+	router.HandleFunc("/api/fbx-templates",
+		controllers.GetAllEntities).Methods("GET")
+
 	router.HandleFunc("/api/room-templates/{name}",
 		controllers.DeleteEntity).Methods("DELETE")
 
@@ -524,6 +533,9 @@ func main() {
 	router.HandleFunc("/api/device-templates/{name}",
 		controllers.DeleteEntity).Methods("DELETE")
 
+	router.HandleFunc("/api/fbx-templates/{name}",
+		controllers.DeleteEntity).Methods("DELETE")
+
 	router.HandleFunc("/api/room-templates/{name}",
 		controllers.UpdateEntity).Methods("PUT")
 
@@ -531,6 +543,9 @@ func main() {
 		controllers.UpdateEntity).Methods("PUT")
 
 	router.HandleFunc("/api/device-templates/{name}",
+		controllers.UpdateEntity).Methods("PUT")
+
+	router.HandleFunc("/api/fbx-templates/{name}",
 		controllers.UpdateEntity).Methods("PUT")
 
 	// ------ AC/PWR/WALL CRUD ------ //

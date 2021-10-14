@@ -28,6 +28,7 @@ const (
 	ROOMTMPL
 	RACKTMPL
 	DEVTMPL
+	FBXTMPL
 )
 
 func Connect() (context.Context, context.CancelFunc) {
@@ -74,6 +75,8 @@ func ParamsParse(link *url.URL, objType int) map[string]interface{} {
 				values["attributes."+key] = q.Get(key)
 			}
 		} else { //Template objects
+			//Not sure how to search FBX TEMPLATES
+			//For now it is disabled
 			switch key {
 			case "description", "slug", "category", "sizeWDHmm", "fbxModel":
 				values[key] = q.Get(key)
@@ -114,6 +117,8 @@ func EntityToString(entity int) string {
 		return "rack_template"
 	case DEVTMPL:
 		return "device_template"
+	case FBXTMPL:
+		return "fbx_template"
 	default:
 		return "subdevice1"
 	}
@@ -149,6 +154,8 @@ func EntityStrToInt(entity string) int {
 		return RACKTMPL
 	case "device_template":
 		return DEVTMPL
+	case "fbx_template":
+		return FBXTMPL
 	default:
 		return -1
 	}
@@ -158,7 +165,7 @@ func GetParentOfEntityByInt(entity int) int {
 	switch entity {
 	case AC, PWRPNL, WALL:
 		return ROOM
-	case ROOMTMPL, RACKTMPL, DEVTMPL:
+	case ROOMTMPL, RACKTMPL, DEVTMPL, FBXTMPL:
 		return -1
 	default:
 		return entity - 1
