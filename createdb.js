@@ -32,7 +32,11 @@ db.subdevice1.createIndex({parentId:1, name:1}, { unique: true });
 //Enforcing that the Parent Exists is done at the ORM Level for now
 
 
-//Make slugs as unique identifiers for templates
+//Make slugs unique identifiers for templates
 db.room_template.createIndex({slug:1}, { unique: true });
 db.rack_template.createIndex({slug:1}, { unique: true });
 db.device_template.createIndex({slug:1}, { unique: true });
+
+
+//Nested objects for Room cannot be ensured unique in the DB
+//since Mongo rearranges JSON contents to optimise storage space

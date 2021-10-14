@@ -793,7 +793,6 @@ func CreateNestedEntity(entity int, eStr string, t map[string]interface{}) (map[
 
 	parent := u.EntityToString(u.GetParentOfEntityByInt(entity))
 	pid, _ := primitive.ObjectIDFromHex(t["parentId"].(string))
-	t["id"] = primitive.NewObjectID().Hex()
 	_, e := GetDB().Collection(parent).UpdateOne(ctx, bson.M{"_id": pid}, bson.M{"$addToSet": bson.M{eStr + "s": t}})
 	if e != nil {
 		return u.Message(false,

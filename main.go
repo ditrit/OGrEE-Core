@@ -535,13 +535,13 @@ func main() {
 
 	// ------ AC/PWR/WALL CRUD ------ //
 	router.HandleFunc("/api/acs",
-		controllers.CreateNestedEntity).Methods("POST")
+		controllers.CreateEntity).Methods("POST")
 
 	router.HandleFunc("/api/panels",
-		controllers.CreateNestedEntity).Methods("POST")
+		controllers.CreateEntity).Methods("POST")
 
 	router.HandleFunc("/api/walls",
-		controllers.CreateNestedEntity).Methods("POST")
+		controllers.CreateEntity).Methods("POST")
 
 	//Attach JWT auth middleware
 	//router.Use(app.Log)

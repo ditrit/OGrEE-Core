@@ -156,7 +156,8 @@ func parseDataForNonStdResult(ent string, eNum int, data map[string]interface{})
 //         description: Bad request
 
 var CreateEntity = func(w http.ResponseWriter, r *http.Request) {
-	//tenant := &models.Tenant{}
+	var e string
+	var resp map[string]interface{}
 	entStr := r.URL.Path[5 : len(r.URL.Path)-1] //strip the '/api' in URL
 	entUpper := strings.ToUpper(entStr)         // and the trailing 's'
 	entity := map[string]interface{}{}
@@ -169,17 +170,27 @@ var CreateEntity = func(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	//If creating templates, format them
-	if idx := strings.Index(entStr, "-"); idx != -1 {
-		//entStr[idx] = '_'
-		entStr = entStr[:idx] + "_" + entStr[idx+1:]
+	switch entStr {
+	case "ac", "panel", "wall": //NESTED Objects
+		entity["id"] = primitive.NewObjectID().Hex()
+
+		i := u.EntityStrToInt(entStr)
+		println("ENT: ", entStr)
+		println("ENUM VAL: ", i)
+		resp, e = models.CreateNestedEntity(i, entStr, entity)
+	default:
+		//If creating templates, format them
+		if idx := strings.Index(entStr, "-"); idx != -1 {
+			//entStr[idx] = '_'
+			entStr = entStr[:idx] + "_" + entStr[idx+1:]
+		}
+		i := u.EntityStrToInt(entStr)
+
+		println("ENT: ", entStr)
+		println("ENUM VAL: ", i)
+
+		resp, e = models.CreateEntity(i, entity)
 	}
-	i := u.EntityStrToInt(entStr)
-
-	println("ENT: ", entStr)
-	println("ENUM VAL: ", i)
-
-	resp, e := models.CreateEntity(i, entity)
 
 	switch e {
 	case "validate":
@@ -1142,52 +1153,5 @@ var GetEntityHierarchyNonStd = func(w http.ResponseWriter, r *http.Request) {
 	resp["rooms"] = rooms
 	resp["racks"] = racks
 	resp["devices"] = devices*/
-	u.Respond(w, resp)
-}
-
-var CreateNestedEntity = func(w http.ResponseWriter, r *http.Request) {
-	entStr := r.URL.Path[5 : len(r.URL.Path)-1] //strip the '/api' in URL
-	entUpper := strings.ToUpper(entStr)         // and the trailing 's'
-	entity := map[string]interface{}{}
-	err := json.NewDecoder(r.Body).Decode(&entity)
-
-	if err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		u.Respond(w, u.Message(false, "Error while decoding request body"))
-		u.ErrLog("Error while decoding request body", "CREATE NESTD"+entStr, "", r)
-		return
-	}
-
-	i := u.EntityStrToInt(entStr)
-	println("ENT: ", entStr)
-	println("ENUM VAL: ", i)
-	//if _, ok := entity["parentId"]; ok {
-	//	entity["parentId"], _ = getObjID(entity["parentId"].(string))
-	//} else {
-	//	w.WriteHeader(http.StatusBadRequest)
-	//	u.Respond(w, u.Message(false, "Error while decoding request body"))
-	//	u.ErrLog("Error while decoding request body", "CREATE NESTD"+entStr, "", r)
-	//	return
-	//}
-
-	resp, e := models.CreateNestedEntity(i, entStr, entity)
-
-	switch e {
-	case "validate":
-		w.WriteHeader(http.StatusBadRequest)
-		u.ErrLog("Error while creating "+entStr, "CREATE NESTD"+entUpper, e, r)
-	case "":
-		w.WriteHeader(http.StatusCreated)
-	default:
-		if strings.Split(e, " ")[1] == "duplicate" {
-			w.WriteHeader(http.StatusBadRequest)
-			u.ErrLog("Error: Duplicate "+entStr+" is forbidden",
-				"CREATE "+entUpper, e, r)
-		} else {
-			w.WriteHeader(http.StatusInternalServerError)
-			u.ErrLog("Error while creating "+entStr, "CREATE NESTD"+entUpper, e, r)
-		}
-	}
-
 	u.Respond(w, resp)
 }
