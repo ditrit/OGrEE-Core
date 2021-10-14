@@ -8,7 +8,8 @@ res = True
 expected = 404
 PIDS={  "tenantID":None, "siteID":None, "buildingID":None,
         "roomID":None, "rackID":None, "deviceID":None, 
-        "subdeviceID":None, "subdevice1ID":None
+        "subdeviceID":None, "subdevice1ID":None, "room-templateID":None,
+        "rack-templateID":None,"device-templateID":None
      }
 
 #Function
@@ -48,7 +49,8 @@ else:
 
 
 entRange=entRange=["tenant","site","building","room",
-          "rack","device"]
+          "rack","device","room-template","rack-template",
+          "device-template"]
 payload={}
 headers = {
   'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJVc2VySWQiOjY2NDA0NjEyNzM0MjQxOTk2OX0.cB1VkYQLlXCatzMiEWGFfJKKx9h8Vsr2vdlylNMe7hs'

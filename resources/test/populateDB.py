@@ -6,7 +6,10 @@ res = True
 
 #CONSTANTS
 PIDS={"tenantID":None, "siteID":None, "buildingID":None,
-        "roomID":None, "rackID":None, "deviceID":None}
+        "roomID":None, "ACID":None, "panelID":None,
+        "wallID":None, "rackID":None, "deviceID":None,
+        "room-templateID": None, "rack-templateID": None,
+        "device-templateID": None}
 url = "http://localhost:27020/api"
 headers = {
   'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJVc2VySWQiOjY2NDA0NjEyNzM0MjQxOTk2OX0.cB1VkYQLlXCatzMiEWGFfJKKx9h8Vsr2vdlylNMe7hs',
@@ -184,6 +187,94 @@ print()
 print()
 
 
+#AC CREATE & GET
+payload={
+    "name": "TCL 2021",
+    "id": None,
+    "parentId": None,
+    "category": "ac",
+    "description": [
+        "TCL"
+    ],
+    "domain": "AC DOMAIN",
+    "attributes": {
+    }
+}
+payload['parentId'] = roomID
+response = requests.request("POST", url+"/acs",
+              headers=headers, data=json.dumps(payload))
+verifyCreate(response.status_code, "AC")
+ID = response.json()['data']['id']
+j1=response.json()['data']
+ACID=ID
+
+response = requests.request("GET", url+"/rooms/"+roomID+"/acs/"+ID, headers=headers, data={})
+verifyGet(response.status_code, "AC")
+j2=response.json()['data']
+verifyOutput(j1, j2)
+print()
+print()
+
+
+#POWERPANEL CREATE & GET
+payload={
+    "name": "Panel A",
+    "id": None,
+    "parentId": None,
+    "category": "powerpanel",
+    "description": [
+        "YINGLI"
+    ],
+    "domain": "Panel DOMAIN",
+    "attributes": {
+    }
+}
+payload['parentId'] = roomID
+response = requests.request("POST", url+"/panels",
+              headers=headers, data=json.dumps(payload))
+verifyCreate(response.status_code, "Panel")
+ID = response.json()['data']['id']
+j1=response.json()['data']
+panelID=ID
+
+response = requests.request("GET", url+"/rooms/"+roomID+"/panels/"+ID, headers=headers, data={})
+verifyGet(response.status_code, "Panel")
+j2=response.json()['data']
+verifyOutput(j1, j2)
+print()
+print()
+
+
+#WALL CREATE & GET
+payload={
+    "name": "Undercover",
+    "id": None,
+    "parentId": None,
+    "category": "wall",
+    "description": [
+        "2008"
+    ],
+    "domain": "Wall DOMAIN",
+    "attributes": {
+    }
+}
+payload['parentId'] = roomID
+response = requests.request("POST", url+"/walls",
+              headers=headers, data=json.dumps(payload))
+verifyCreate(response.status_code, "Wall")
+ID = response.json()['data']['id']
+j1=response.json()['data']
+wallID=ID
+
+response = requests.request("GET", url+"/rooms/"+roomID+"/walls/"+ID, headers=headers, data={})
+verifyGet(response.status_code, "Wall")
+j2=response.json()['data']
+verifyOutput(j1, j2)
+print()
+print()
+
+
+
 
 #RACK CREATE & GET
 payload={
@@ -274,14 +365,116 @@ print()
 print()
 
 
+#ROOM-TEMPLATE CREATE & GET
+payload={
+  "slug"          : "RT1",
+  "orientation"   : "+N+E",
+  "sizeWDHm"      : ["width","depth","height"],
+  "technicalArea" : ["width","depth","height"],
+  "reservedArea"  : ["width","depth","height"],
+  "separators"    : [
+  ],
+  "colors"        : [
+  ],
+  "tiles"         : [
+  ],
+  "aisles"        : [
+  ]
+}
+response = requests.request("POST", url+"/room-templates",
+              headers=headers, data=json.dumps(payload))
+verifyCreate(response.status_code, "Room-Template")
+ID = response.json()['data']['slug']
+j1=response.json()['data']
+roomTemplateID=ID
+
+response = requests.request("GET", url+"/room-templates/"+ID, headers=headers, data={})
+verifyGet(response.status_code, "Room-Template")
+j2=response.json()['data']
+verifyOutput(j1, j2)
+print()
+print()
+
+
+
+#RACK-TEMPLATE CREATE & GET
+payload={
+  "slug"        : "RACK1T",
+  "description" : "Rack Template 1",
+  "category"    : "rack",
+  "sizeWDHmm"   : ["width","depth","height"],
+  "fbxModel"    : "1",
+  "attributes"  : {
+    "type" : ""
+  },
+  "colors"      : [
+  ],
+  "components"  : [
+  ],
+  "slots"       : [
+  ]
+}
+response = requests.request("POST", url+"/rack-templates",
+              headers=headers, data=json.dumps(payload))
+verifyCreate(response.status_code, "Rack-Template")
+ID = response.json()['data']['slug']
+j1=response.json()['data']
+rackTemplateID=ID
+
+response = requests.request("GET", url+"/rack-templates/"+ID, headers=headers, data={})
+verifyGet(response.status_code, "Rack-Template")
+j2=response.json()['data']
+verifyOutput(j1, j2)
+print()
+print()
+
+
+#DEVICE-TEMPLATE CREATE & GET
+payload={
+  "slug"        : "DEVICE1T",
+  "description" : "Device Template 1",
+  "category"    : "device",
+  "sizeWDHmm"   : ["width","depth","height"],
+  "fbxModel"    : "1",
+  "attributes"  : {
+    "type" : ""
+  },
+  "colors"      : [
+  ],
+  "components"  : [
+  ],
+  "slots"       : [
+  ]
+}
+response = requests.request("POST", url+"/device-templates",
+              headers=headers, data=json.dumps(payload))
+verifyCreate(response.status_code, "Device-Template")
+ID = response.json()['data']['slug']
+j1=response.json()['data']
+deviceTemplateID=ID
+
+response = requests.request("GET", url+"/device-templates/"+ID, headers=headers, data={})
+verifyGet(response.status_code, "Device-Template")
+j2=response.json()['data']
+verifyOutput(j1, j2)
+print()
+print()
+
+
 
 #UPDATE THE ID LIST
 PIDS['tenantID'] = tenantID
 PIDS['siteID'] = siteID
 PIDS['buildingID'] = buildingID
 PIDS['roomID'] = roomID
+PIDS['ACID'] = ACID
+PIDS['panelID'] = panelID
+PIDS['wallID'] = wallID
 PIDS['rackID'] = rackID
 PIDS['deviceID'] = deviceID
+PIDS['room-templateID'] = roomTemplateID
+PIDS['rack-templateID'] = roomTemplateID
+PIDS['device-templateID'] = deviceTemplateID
 writeEnv()
 
 
