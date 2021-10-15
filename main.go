@@ -482,70 +482,37 @@ func main() {
 	router.HandleFunc("/api/room-templates",
 		controllers.GetEntityByQuery).Methods("GET").MatcherFunc(dmatch)
 
-	router.HandleFunc("/api/rack-templates",
-		controllers.GetEntityByQuery).Methods("GET").MatcherFunc(dmatch)
-
-	router.HandleFunc("/api/device-templates",
+	router.HandleFunc("/api/obj-templates",
 		controllers.GetEntityByQuery).Methods("GET").MatcherFunc(dmatch)
 
 	router.HandleFunc("/api/room-templates",
 		controllers.CreateEntity).Methods("POST")
 
-	router.HandleFunc("/api/rack-templates",
-		controllers.CreateEntity).Methods("POST")
-
-	router.HandleFunc("/api/device-templates",
-		controllers.CreateEntity).Methods("POST")
-
-	router.HandleFunc("/api/fbx-templates",
+	router.HandleFunc("/api/obj-templates",
 		controllers.CreateEntity).Methods("POST")
 
 	router.HandleFunc("/api/room-templates/{name}",
 		controllers.GetEntity).Methods("GET")
 
-	router.HandleFunc("/api/rack-templates/{name}",
-		controllers.GetEntity).Methods("GET")
-
-	router.HandleFunc("/api/device-templates/{name}",
-		controllers.GetEntity).Methods("GET")
-
-	router.HandleFunc("/api/fbx-templates/{name}",
+	router.HandleFunc("/api/obj-templates/{name}",
 		controllers.GetEntity).Methods("GET")
 
 	router.HandleFunc("/api/room-templates",
 		controllers.GetAllEntities).Methods("GET")
 
-	router.HandleFunc("/api/rack-templates",
-		controllers.GetAllEntities).Methods("GET")
-
-	router.HandleFunc("/api/device-templates",
-		controllers.GetAllEntities).Methods("GET")
-
-	router.HandleFunc("/api/fbx-templates",
+	router.HandleFunc("/api/obj-templates",
 		controllers.GetAllEntities).Methods("GET")
 
 	router.HandleFunc("/api/room-templates/{name}",
 		controllers.DeleteEntity).Methods("DELETE")
 
-	router.HandleFunc("/api/rack-templates/{name}",
-		controllers.DeleteEntity).Methods("DELETE")
-
-	router.HandleFunc("/api/device-templates/{name}",
-		controllers.DeleteEntity).Methods("DELETE")
-
-	router.HandleFunc("/api/fbx-templates/{name}",
+	router.HandleFunc("/api/obj-templates/{name}",
 		controllers.DeleteEntity).Methods("DELETE")
 
 	router.HandleFunc("/api/room-templates/{name}",
 		controllers.UpdateEntity).Methods("PUT")
 
-	router.HandleFunc("/api/rack-templates/{name}",
-		controllers.UpdateEntity).Methods("PUT")
-
-	router.HandleFunc("/api/device-templates/{name}",
-		controllers.UpdateEntity).Methods("PUT")
-
-	router.HandleFunc("/api/fbx-templates/{name}",
+	router.HandleFunc("/api/obj-templates/{name}",
 		controllers.UpdateEntity).Methods("PUT")
 
 	// ------ AC/PWR/WALL CRUD ------ //

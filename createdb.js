@@ -13,9 +13,7 @@ db.createCollection('subdevice1');
 
 //Template Collections
 db.createCollection('room_template');
-db.createCollection('rack_template');
-db.createCollection('device_template');
-db.createCollection('fbx_template');
+db.createCollection('obj_template');
 
 
 //Enfore unique Tenant Names
@@ -35,8 +33,7 @@ db.subdevice1.createIndex({parentId:1, name:1}, { unique: true });
 
 //Make slugs unique identifiers for templates
 db.room_template.createIndex({slug:1}, { unique: true });
-db.rack_template.createIndex({slug:1}, { unique: true });
-db.device_template.createIndex({slug:1}, { unique: true });
+db.obj_template.createIndex({slug:1}, { unique: true });
 
 
 //Nested objects for Room cannot be ensured unique in the DB

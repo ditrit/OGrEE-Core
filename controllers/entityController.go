@@ -25,9 +25,7 @@ const (
 	PWRPNL
 	WALL
 	ROOMTMPL
-	RACKTMPL
-	DEVTMPL
-	FBXTMPL
+	OBJTMPL
 )
 
 func getObjID(x string) (primitive.ObjectID, error) {

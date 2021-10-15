@@ -23,9 +23,7 @@ const (
 	PWRPNL
 	WALL
 	ROOMTMPL
-	RACKTMPL
-	DEVTMPL
-	FBXTMPL
+	OBJTMPL
 )
 
 func parseDataForNonStdResult(ent string, eNum int, data map[string]interface{}) map[string][]map[string]interface{} {
@@ -310,7 +308,7 @@ func ValidateEntity(entity int, t map[string]interface{}) (map[string]interface{
 				}
 			}
 		}
-	case ROOMTMPL, RACKTMPL, DEVTMPL:
+	case ROOMTMPL, OBJTMPL:
 		if t["slug"] == "" {
 			return u.Message(false, "Slug should be on payload"), false
 		}
@@ -320,7 +318,7 @@ func ValidateEntity(entity int, t map[string]interface{}) (map[string]interface{
 				"Colors should be on payload"), false
 		}
 
-		if entity == RACKTMPL || entity == DEVTMPL {
+		if entity == OBJTMPL {
 			if _, ok := t["description"]; !ok {
 				return u.Message(false,
 					"Description should be on payload"), false
@@ -382,8 +380,6 @@ func ValidateEntity(entity int, t map[string]interface{}) (map[string]interface{
 					"Tiles should be on payload"), false
 			}
 		}
-	case FBXTMPL:
-		//Do Nothing on FBX
 	}
 
 	//Successfully validated the Object
