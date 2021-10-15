@@ -8,8 +8,8 @@ res = True
 PIDS={"tenantID":None, "siteID":None, "buildingID":None,
         "roomID":None, "ACID":None, "panelID":None,
         "wallID":None, "rackID":None, "deviceID":None,
-        "room-templateID": None, "rack-templateID": None,
-        "device-templateID": None}
+        "room-templateID": None, "obj-templateID": None}
+        
 url = "http://localhost:27020/api"
 headers = {
   'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJVc2VySWQiOjY2NDA0NjEyNzM0MjQxOTk2OX0.cB1VkYQLlXCatzMiEWGFfJKKx9h8Vsr2vdlylNMe7hs',
@@ -414,52 +414,19 @@ payload={
   "slots"       : [
   ]
 }
-response = requests.request("POST", url+"/rack-templates",
+response = requests.request("POST", url+"/obj-templates",
               headers=headers, data=json.dumps(payload))
-verifyCreate(response.status_code, "Rack-Template")
+verifyCreate(response.status_code, "Obj-Template")
 ID = response.json()['data']['slug']
 j1=response.json()['data']
-rackTemplateID=ID
+objTemplateID=ID
 
-response = requests.request("GET", url+"/rack-templates/"+ID, headers=headers, data={})
-verifyGet(response.status_code, "Rack-Template")
+response = requests.request("GET", url+"/obj-templates/"+ID, headers=headers, data={})
+verifyGet(response.status_code, "Obj-Template")
 j2=response.json()['data']
 verifyOutput(j1, j2)
 print()
 print()
-
-
-#DEVICE-TEMPLATE CREATE & GET
-payload={
-  "slug"        : "DEVICE1T",
-  "description" : "Device Template 1",
-  "category"    : "device",
-  "sizeWDHmm"   : ["width","depth","height"],
-  "fbxModel"    : "1",
-  "attributes"  : {
-    "type" : ""
-  },
-  "colors"      : [
-  ],
-  "components"  : [
-  ],
-  "slots"       : [
-  ]
-}
-response = requests.request("POST", url+"/device-templates",
-              headers=headers, data=json.dumps(payload))
-verifyCreate(response.status_code, "Device-Template")
-ID = response.json()['data']['slug']
-j1=response.json()['data']
-deviceTemplateID=ID
-
-response = requests.request("GET", url+"/device-templates/"+ID, headers=headers, data={})
-verifyGet(response.status_code, "Device-Template")
-j2=response.json()['data']
-verifyOutput(j1, j2)
-print()
-print()
-
 
 
 #UPDATE THE ID LIST
@@ -473,8 +440,7 @@ PIDS['wallID'] = wallID
 PIDS['rackID'] = rackID
 PIDS['deviceID'] = deviceID
 PIDS['room-templateID'] = roomTemplateID
-PIDS['rack-templateID'] = roomTemplateID
-PIDS['device-templateID'] = deviceTemplateID
+PIDS['obj-templateID'] = objTemplateID
 writeEnv()
 
 
