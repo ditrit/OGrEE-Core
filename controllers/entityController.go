@@ -586,7 +586,11 @@ var UpdateEntity = func(w http.ResponseWriter, r *http.Request) {
 		//Get entity from URL and strip trailing 's'
 		entity = r.URL.Path[5 : strings.LastIndex(r.URL.Path, "/")-1]
 
-		v, e3 = models.UpdateEntity(entity, objID, &updateData)
+		if entity == "device" {
+			v, e3 = models.UpdateDeviceF(objID, &updateData)
+		} else {
+			v, e3 = models.UpdateEntity(entity, objID, &updateData)
+		}
 
 	default:
 		w.WriteHeader(http.StatusBadRequest)

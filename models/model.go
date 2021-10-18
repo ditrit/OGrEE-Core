@@ -1063,3 +1063,26 @@ func GetDeviceF(entityID primitive.ObjectID) (map[string]interface{}, string) {
 
 	return t, ""
 }
+
+func UpdateDeviceF(entityID primitive.ObjectID, t *map[string]interface{}) (map[string]interface{}, string) {
+	var x map[string]interface{}
+	var e string
+
+	//CHECK DEVICE
+	x, e = UpdateEntity("device", entityID, t)
+	if e != "" {
+
+		//CHECK SUBDEV
+		x, e = UpdateEntity("subdevice", entityID, t)
+		if e != "" {
+
+			//CHECK SUBDEV1
+			x, e = UpdateEntity("subdevice1", entityID, t)
+			if e != "" {
+				return nil, e
+			}
+		}
+	}
+
+	return x, e
+}
