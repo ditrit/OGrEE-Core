@@ -1,6 +1,7 @@
 package models
 
 import (
+	"crypto/rand"
 	"fmt"
 	u "p3/utils"
 
@@ -84,6 +85,46 @@ func parseDataForNonStdResult(ent string, eNum int, data map[string]interface{})
 	ans[u.EntityToString(eNum+7)+"s"] = newAdd5
 
 	return ans
+}
+
+func genID(length int) string {
+	chars := "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890-"
+	ll := len(chars)
+	b := make([]byte, length)
+	rand.Read(b) // generates len(b) random bytes
+	for i := 0; i < length; i++ {
+		b[i] = chars[int(b[i])%ll]
+	}
+	return string(b)
+}
+
+func CreateParentPlaceHolder(ent, pid string) (map[string]interface{}, string) {
+	name := "Device-" + genID(4)
+	category := "device"
+	domain := "placeholder"
+	t := map[string]interface{}{"name": name,
+		"category": category, "domain": domain, "parentId": pid}
+	x, e := CreateEntity(DEVICE, t)
+
+	if e == "" {
+		switch ent {
+		case "subdevice":
+			return x, ""
+		case "subdevice1":
+			parent := x["parentId"]
+			category = "subdevice"
+			subName := "Subdevice-" + genID(4)
+			t1 := map[string]interface{}{"name": subName,
+				"category": category, "domain": domain, "parentId": parent}
+			y, e1 := CreateEntity(SUBDEV, t1)
+			if e1 != "" {
+				return nil, e1
+			}
+			x["subdevice"] = y
+			return x, ""
+		}
+	}
+	return nil, "error"
 }
 
 func ValidateEntity(entity int, t map[string]interface{}) (map[string]interface{}, bool) {
@@ -968,4 +1009,57 @@ func UpdateEntityBySlug(ent, id string, t *map[string]interface{}) (map[string]i
 	}
 	defer cancel()
 	return u.Message(true, "success"), ""
+}
+
+func GetDeviceF(entityID primitive.ObjectID) (map[string]interface{}, string) {
+	t := map[string]interface{}{}
+
+	//CHECK DEVICE
+	x, e := GetEntity(entityID, "device")
+	if e != "" {
+
+		//CHECK SUBDEV
+		x1, e1 := GetEntity(entityID, "subdevice")
+		if e1 != "" {
+
+			//CHECK SUBDEV1
+			x2, e2 := GetEntity(entityID, "subdevice1")
+			if e2 != "" {
+				return nil, e2
+			} else { //FOUND AS SUBDEV1
+
+				//GET PARENT
+				ID, _ := primitive.ObjectIDFromHex(x2["parentId"].(string))
+				s, err := GetEntity(ID, "subdevice")
+				if err != "" {
+					return nil, err
+				}
+
+				//GET PARENT PARENT
+				PID, _ := primitive.ObjectIDFromHex(s["parentId"].(string))
+				d, err1 := GetEntity(PID, "device")
+				if err1 != "" {
+					return nil, err
+				}
+				s["subdevice1"] = x2
+				d["subdevice"] = s
+				t = d
+			}
+		} else { //FOUND AS SUBDEV
+
+			//GET PARENT
+			ID, _ := primitive.ObjectIDFromHex(x1["parentId"].(string))
+			d, err := GetEntity(ID, "device")
+			if err != "" {
+				return nil, err
+			}
+			t = x1
+			t["subdevice"] = d
+		}
+
+	} else { //FOUND AS DEV
+		t = x
+	}
+
+	return t, ""
 }

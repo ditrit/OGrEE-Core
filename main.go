@@ -438,11 +438,11 @@ func main() {
 		controllers.GetAllEntities).Methods("GET")
 
 	// ------ SUBDEVICE CRUD ------ //
-	router.HandleFunc("/api/subdevices",
+	/*router.HandleFunc("/api/subdevices",
 		controllers.GetEntityByQuery).Methods("GET").MatcherFunc(dmatch)
 
 	router.HandleFunc("/api/subdevices",
-		controllers.CreateEntity).Methods("POST")
+		controllers.CreateSplitEntity).Methods("POST")
 
 	router.HandleFunc("/api/subdevices/{id}",
 		controllers.UpdateEntity).Methods("PUT")
@@ -457,10 +457,10 @@ func main() {
 		controllers.GetEntity).Methods("GET")
 
 	router.HandleFunc("/api/subdevices",
-		controllers.GetAllEntities).Methods("GET")
+		controllers.GetAllEntities).Methods("GET")*/
 
 	// ------ SUBDEVICE1 CRUD ------ //
-	router.HandleFunc("/api/subdevice1s",
+	/*router.HandleFunc("/api/subdevice1s",
 		controllers.GetEntityByQuery).Methods("GET").MatcherFunc(dmatch)
 
 	router.HandleFunc("/api/subdevice1s",
@@ -476,7 +476,7 @@ func main() {
 		controllers.GetEntity).Methods("GET")
 
 	router.HandleFunc("/api/subdevice1s",
-		controllers.GetAllEntities).Methods("GET")
+		controllers.GetAllEntities).Methods("GET")*/
 
 	// ------ TEMPLATE CRUD ------ //
 	router.HandleFunc("/api/room-templates",

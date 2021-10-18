@@ -188,7 +188,15 @@ var CreateEntity = func(w http.ResponseWriter, r *http.Request) {
 		println("ENT: ", entStr)
 		println("ENUM VAL: ", i)
 
-		resp, e = models.CreateEntity(i, entity)
+		if v, ok := entity["category"]; ok &&
+			(v.(string) == "subdevice" ||
+				v.(string) == "subdevice1") {
+			println("Creating SPLE")
+			resp, e = CreateSplitEntity(entity, i)
+		} else {
+			resp, e = models.CreateEntity(i, entity)
+		}
+
 	}
 
 	switch e {
@@ -268,7 +276,14 @@ var GetEntity = func(w http.ResponseWriter, r *http.Request) {
 				u.ErrLog("Error while converting ID to ObjectID", "GET ENTITY", "", r)
 				return
 			}
-			data, e1 = models.GetEntity(x, s)
+
+			//Check for Device family
+			if s == "device" {
+				data, e1 = models.GetDeviceF(x)
+			} else {
+				data, e1 = models.GetEntity(x, s)
+			}
+
 		}
 
 	} else if id, e = mux.Vars(r)["name"]; e == true { //GET By String
@@ -1153,4 +1168,59 @@ var GetEntityHierarchyNonStd = func(w http.ResponseWriter, r *http.Request) {
 	resp["racks"] = racks
 	resp["devices"] = devices*/
 	u.Respond(w, resp)
+}
+
+//Manage Device Family
+func CreateSplitEntity(entity map[string]interface{}, i int) (map[string]interface{}, string) {
+
+	v := entity["category"].(string)
+	if v == "subdevice" {
+		//CHECK IF PARENT EXISTS
+		pid, _ := primitive.ObjectIDFromHex(entity["parentId"].(string))
+		_, e1 := models.GetEntity(pid, "device")
+		if e1 != "" {
+			println("PARENT DOESNT EXIST")
+			//CREATE DEVICE PARENT
+			x, e := models.CreateParentPlaceHolder("subdevice",
+				entity["parentId"].(string))
+			if e != "" {
+				return nil, e
+			}
+			entity["parentId"] = x["id"]
+			sub, e1 := models.CreateEntity(i, entity)
+			e = e1
+			x["subdevice"] = sub
+			return x, e1
+		}
+
+		//PARENT EXISTS
+		println("PARENT EXISTS")
+		return models.CreateEntity(SUBDEV, entity)
+
+	} else if v == "subdevice1" {
+		//CHECK IF PARENT EXISTS
+		pid, _ := primitive.ObjectIDFromHex(entity["parentId"].(string))
+		_, e1 := models.GetEntity(pid, "subdevice")
+		if e1 != "" {
+			//CREATE SUBDEVICE PARENT
+			x, e := models.CreateParentPlaceHolder("subdevice1",
+				entity["parentId"].(string))
+			if e != "" {
+				return nil, e
+			}
+
+			entity["parentId"] = x["id"]
+			sub, e1 := models.CreateEntity(SUBDEV, entity)
+			e = e1
+			x["subdevice1"] = sub
+			return x, e1
+		}
+
+		//PARENT EXISTS
+		return models.CreateEntity(SUBDEV1, entity)
+
+	} else {
+		return models.CreateEntity(SUBDEV1, entity)
+	}
+
 }
