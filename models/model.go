@@ -55,6 +55,33 @@ func parseDataForNonStdResult(ent string, eNum, end int, data map[string]interfa
 	return ans
 }
 
+func delSubEnts(eNum int, data map[string][]map[string]interface{}) (map[string]interface{}, string) {
+	//Delete the Subentities
+	for i := SUBDEV1; i > eNum; i-- {
+		eStr := u.EntityToString(i)
+		if arr, ok := data[eStr+"s"]; ok {
+
+			for idx := range arr {
+				println("LEN: ", len(arr[idx]))
+
+				if len(arr[idx]) > 0 {
+
+					locID := arr[idx]["_id"].(primitive.ObjectID)
+					ctx, cancel := u.Connect()
+					println("Now deleting: ", eStr)
+					c, _ := GetDB().Collection(eStr).DeleteOne(ctx, bson.M{"_id": locID})
+					if c.DeletedCount == 0 {
+						return u.Message(false, "There was an error in deleting the entity"), "not found"
+					}
+					defer cancel()
+				}
+
+			}
+		}
+	}
+	return u.Message(true, "success"), ""
+}
+
 func genID(length int) string {
 	chars := "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890-"
 	ll := len(chars)
@@ -488,7 +515,6 @@ func DeleteEntity(entity string, id primitive.ObjectID) (map[string]interface{},
 	}
 
 	data := parseDataForNonStdResult(entity, eNum, AC, t)
-	println("Len res: ", len(data))
 
 	//Delete the Subentities
 	for i := SUBDEV1; i > eNum; i-- {
@@ -1096,8 +1122,8 @@ func RetrieveDeviceHierarch(devType string, ID primitive.ObjectID, entnum, end i
 			}
 			top[subEnt+"s"] = children
 
-			println("Child Len: ", len(children))
-			println("@ ", subEnt)
+			//println("Child Len: ", len(children))
+			//println("@ ", subEnt)
 
 			if entnum+1 <= end {
 				//Get the rest of hierarchy for children
@@ -1207,38 +1233,45 @@ func UpdateDeviceF(entityID primitive.ObjectID, t *map[string]interface{}) (map[
 }
 
 func DeleteDeviceF(entityID primitive.ObjectID) (map[string]interface{}, string) {
-	var x map[string]interface{}
-	var e string
+	//var x map[string]interface{}
+	//var e string
 	var deviceType string
 
 	//Check if in Family and what type
-	x, e = GetDeviceF(entityID)
-	if e != "" {
-		return nil, e
-	}
-
-	deviceType = x["category"].(string)
+	_, deviceType = IdentifyDevType(entityID)
 
 	switch deviceType {
 	case "device":
-		/*d, e1 := GetEntityHierarchy("device", entityID, DEVICE, SUBDEV1)
-		if e1 != "" {
-			return nil, e1
-		}*/
+		t, e := RetrieveDeviceHierarch(deviceType, entityID, DEVICE, SUBDEV)
+		if e != "" {
+
+			return nil, e
+		}
+		del := parseDataForNonStdResult(deviceType, DEVICE, SUBDEV1+1, t)
+		println("LEN OF DEL: ", len(del))
+		delSubEnts(DEVICE, del)
+
+		ctx, cancel := u.Connect()
+		c, _ := GetDB().Collection(deviceType).DeleteOne(ctx, bson.M{"_id": entityID})
+		if c.DeletedCount == 0 {
+			return u.Message(false, "There was an error in deleting the entity"), "not found"
+		}
+		defer cancel()
 
 	case "subdevice":
+
 		ctx, cancel := u.Connect()
-		pid := entityID.Hex()
-		c, _ := GetDB().Collection("subdevice1").DeleteOne(ctx, bson.M{"parentId": pid})
+		c, _ := GetDB().Collection("subdevice1").DeleteMany(ctx, bson.M{"parentId": entityID.Hex()})
 		if c.DeletedCount == 0 {
 			return u.Message(false, "There was an error in deleting the entity"), "not found"
 		}
 
-		c1, _ := GetDB().Collection("subdevice").DeleteOne(ctx, bson.M{"_id": entityID})
+		c1, _ := GetDB().Collection(deviceType).DeleteOne(ctx, bson.M{"_id": entityID})
 		if c1.DeletedCount == 0 {
 			return u.Message(false, "There was an error in deleting the entity"), "not found"
 		}
 		defer cancel()
+
 	case "subdevice1":
 		ctx, cancel := u.Connect()
 		c, _ := GetDB().Collection("subdevice1").DeleteOne(ctx, bson.M{"_id": entityID})
@@ -1246,6 +1279,8 @@ func DeleteDeviceF(entityID primitive.ObjectID) (map[string]interface{}, string)
 			return u.Message(false, "There was an error in deleting the entity"), "not found"
 		}
 		defer cancel()
+	default:
+		return u.Message(false, "Error: "+deviceType), deviceType
 	}
 	return nil, ""
 }
