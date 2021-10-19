@@ -27,62 +27,29 @@ const (
 	OBJTMPL
 )
 
-func parseDataForNonStdResult(ent string, eNum int, data map[string]interface{}) map[string][]map[string]interface{} {
-
+//Function will recursively iterate through nested obj
+//and accumulate whatever is found into category arrays
+func parseDataForNonStdResult(ent string, eNum, end int, data map[string]interface{}) map[string][]map[string]interface{} {
+	var nxt string
 	ans := map[string][]map[string]interface{}{}
-	add := []map[string]interface{}{}
+	add := data[u.EntityToString(eNum+1)+"s"].([]map[string]interface{})
 
-	firstIndex := u.EntityToString(eNum + 1)
-	firstArr := data[firstIndex+"s"].([]map[string]interface{})
+	//NEW REWRITE
+	for i := eNum; i < end; i++ {
+		idx := u.EntityToString(i + 1)
+		//println("trying IDX: ", idx)
+		firstArr := add
 
-	ans[firstIndex+"s"] = firstArr
+		ans[idx+"s"] = firstArr
 
-	for i := range firstArr {
-		nxt := u.EntityToString(eNum + 2)
-		add = append(add, firstArr[i][nxt+"s"].([]map[string]interface{})...)
+		for q := range firstArr {
+			nxt = u.EntityToString(i + 2)
+			ans[nxt+"s"] = append(ans[nxt+"s"],
+				ans[idx+"s"][q][nxt+"s"].([]map[string]interface{})...)
+		}
+		add = ans[nxt+"s"]
+
 	}
-
-	ans[u.EntityToString(eNum+2)+"s"] = add
-	newAdd := []map[string]interface{}{}
-	for i := range add {
-		nxt := u.EntityToString(eNum + 3)
-		newAdd = append(newAdd, add[i][nxt+"s"].([]map[string]interface{})...)
-	}
-
-	ans[u.EntityToString(eNum+3)+"s"] = newAdd
-
-	newAdd2 := []map[string]interface{}{}
-	for i := range newAdd {
-		nxt := u.EntityToString(eNum + 4)
-		newAdd2 = append(newAdd2, newAdd[i][nxt+"s"].([]map[string]interface{})...)
-	}
-
-	ans[u.EntityToString(eNum+4)+"s"] = newAdd2
-	newAdd3 := []map[string]interface{}{}
-
-	for i := range newAdd2 {
-		nxt := u.EntityToString(eNum + 5)
-		newAdd3 = append(newAdd3, newAdd2[i][nxt+"s"].([]map[string]interface{})...)
-	}
-	ans[u.EntityToString(eNum+5)+"s"] = newAdd3
-
-	newAdd4 := []map[string]interface{}{}
-
-	for i := range newAdd3 {
-		nxt := u.EntityToString(eNum + 6)
-		newAdd4 = append(newAdd4, newAdd3[i][nxt+"s"].([]map[string]interface{})...)
-	}
-
-	ans[u.EntityToString(eNum+6)+"s"] = newAdd4
-
-	newAdd5 := []map[string]interface{}{}
-
-	for i := range newAdd4 {
-		nxt := u.EntityToString(eNum + 7)
-		newAdd5 = append(newAdd5, newAdd4[i][nxt+"s"].([]map[string]interface{})...)
-	}
-
-	ans[u.EntityToString(eNum+7)+"s"] = newAdd5
 
 	return ans
 }
@@ -519,7 +486,7 @@ func DeleteEntity(entity string, id primitive.ObjectID) (map[string]interface{},
 			"There was an error in deleting the entity: "+e), "not found"
 	}
 
-	data := parseDataForNonStdResult(entity, eNum, t)
+	data := parseDataForNonStdResult(entity, eNum, SUBDEV1, t)
 
 	//Delete the Subentities
 	for i := SUBDEV1; i > eNum; i-- {
@@ -1085,4 +1052,48 @@ func UpdateDeviceF(entityID primitive.ObjectID, t *map[string]interface{}) (map[
 	}
 
 	return x, e
+}
+
+func DeleteDeviceF(entityID primitive.ObjectID) (map[string]interface{}, string) {
+	var x map[string]interface{}
+	var e string
+	var deviceType string
+
+	//Check if in Family and what type
+	x, e = GetDeviceF(entityID)
+	if e != "" {
+		return nil, e
+	}
+
+	deviceType = x["category"].(string)
+
+	switch deviceType {
+	case "device":
+		/*d, e1 := GetEntityHierarchy("device", entityID, DEVICE, SUBDEV1)
+		if e1 != "" {
+			return nil, e1
+		}*/
+
+	case "subdevice":
+		ctx, cancel := u.Connect()
+		pid := entityID.Hex()
+		c, _ := GetDB().Collection("subdevice1").DeleteOne(ctx, bson.M{"parentId": pid})
+		if c.DeletedCount == 0 {
+			return u.Message(false, "There was an error in deleting the entity"), "not found"
+		}
+
+		c1, _ := GetDB().Collection("subdevice").DeleteOne(ctx, bson.M{"_id": entityID})
+		if c1.DeletedCount == 0 {
+			return u.Message(false, "There was an error in deleting the entity"), "not found"
+		}
+		defer cancel()
+	case "subdevice1":
+		ctx, cancel := u.Connect()
+		c, _ := GetDB().Collection("subdevice1").DeleteOne(ctx, bson.M{"_id": entityID})
+		if c.DeletedCount == 0 {
+			return u.Message(false, "There was an error in deleting the entity"), "not found"
+		}
+		defer cancel()
+	}
+	return nil, ""
 }
