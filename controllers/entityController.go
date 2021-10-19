@@ -279,6 +279,7 @@ var GetEntity = func(w http.ResponseWriter, r *http.Request) {
 
 			//Check for Device family
 			if s == "device" {
+				println("Calling GetDeviceF")
 				data, e1 = models.GetDeviceF(x)
 			} else {
 				data, e1 = models.GetEntity(x, s)
@@ -458,7 +459,12 @@ var DeleteEntity = func(w http.ResponseWriter, r *http.Request) {
 		//Get entity from URL and strip trailing 's'
 		entity := r.URL.Path[5 : strings.LastIndex(r.URL.Path, "/")-1]
 
-		v, _ = models.DeleteEntity(entity, objID)
+		if entity == "device" {
+			v, _ = models.DeleteDeviceF(objID)
+		} else {
+			v, _ = models.DeleteEntity(entity, objID)
+		}
+
 	default:
 		u.Respond(w, u.Message(false, "Error while parsing path parameters"))
 		u.ErrLog("Error while parsing path parameters", "DELETE ENTITY", "", r)

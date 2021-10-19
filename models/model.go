@@ -35,7 +35,7 @@ func parseDataForNonStdResult(ent string, eNum, end int, data map[string]interfa
 	add := data[u.EntityToString(eNum+1)+"s"].([]map[string]interface{})
 
 	//NEW REWRITE
-	for i := eNum; i < end; i++ {
+	for i := eNum; i+2 < end; i++ {
 		idx := u.EntityToString(i + 1)
 		//println("trying IDX: ", idx)
 		firstArr := add
@@ -44,6 +44,7 @@ func parseDataForNonStdResult(ent string, eNum, end int, data map[string]interfa
 
 		for q := range firstArr {
 			nxt = u.EntityToString(i + 2)
+			println("NXT: ", nxt)
 			ans[nxt+"s"] = append(ans[nxt+"s"],
 				ans[idx+"s"][q][nxt+"s"].([]map[string]interface{})...)
 		}
@@ -486,7 +487,8 @@ func DeleteEntity(entity string, id primitive.ObjectID) (map[string]interface{},
 			"There was an error in deleting the entity: "+e), "not found"
 	}
 
-	data := parseDataForNonStdResult(entity, eNum, SUBDEV1, t)
+	data := parseDataForNonStdResult(entity, eNum, AC, t)
+	println("Len res: ", len(data))
 
 	//Delete the Subentities
 	for i := SUBDEV1; i > eNum; i-- {
@@ -494,13 +496,19 @@ func DeleteEntity(entity string, id primitive.ObjectID) (map[string]interface{},
 		if arr, ok := data[eStr+"s"]; ok {
 
 			for idx := range arr {
-				locID := arr[idx]["_id"].(primitive.ObjectID)
-				ctx, cancel := u.Connect()
-				c, _ := GetDB().Collection(eStr).DeleteOne(ctx, bson.M{"_id": locID})
-				if c.DeletedCount == 0 {
-					return u.Message(false, "There was an error in deleting the entity"), "not found"
+				println("LEN: ", len(arr[idx]))
+
+				if len(arr[idx]) > 0 {
+
+					locID := arr[idx]["_id"].(primitive.ObjectID)
+					ctx, cancel := u.Connect()
+					c, _ := GetDB().Collection(eStr).DeleteOne(ctx, bson.M{"_id": locID})
+					if c.DeletedCount == 0 {
+						return u.Message(false, "There was an error in deleting the entity"), "not found"
+					}
+					defer cancel()
 				}
-				defer cancel()
+
 			}
 		}
 	}
@@ -978,11 +986,154 @@ func UpdateEntityBySlug(ent, id string, t *map[string]interface{}) (map[string]i
 	return u.Message(true, "success"), ""
 }
 
-func GetDeviceF(entityID primitive.ObjectID) (map[string]interface{}, string) {
+func IdentifyDevType(entityID primitive.ObjectID) (map[string]interface{}, string) {
 	t := map[string]interface{}{}
+	flag := ""
 
 	//CHECK DEVICE
 	x, e := GetEntity(entityID, "device")
+	if e != "" {
+
+		//CHECK SUBDEV
+		x1, e1 := GetEntity(entityID, "subdevice")
+		if e1 != "" {
+
+			//CHECK SUBDEV1
+			x2, e2 := GetEntity(entityID, "subdevice1")
+			if e2 != "" {
+				return nil, e2
+			} else { //FOUND AS SUBDEV1
+
+				//GET PARENT
+				//ID, _ := primitive.ObjectIDFromHex(x2["parentId"].(string))
+				//s, err := GetEntity(ID, "subdevice")
+				//if err != "" {
+				//	return nil, err
+				//}
+				//
+				////GET PARENT PARENT
+				//PID, _ := primitive.ObjectIDFromHex(s["parentId"].(string))
+				//d, err1 := GetEntity(PID, "device")
+				//if err1 != "" {
+				//	return nil, err
+				//}
+				//s["subdevice1"] = x2
+				//d["subdevice"] = s
+				//t = d
+				t = x2
+				flag = "subdevice1"
+			}
+		} else { //FOUND AS SUBDEV
+
+			//GET PARENT
+			ID, _ := primitive.ObjectIDFromHex(x1["parentId"].(string))
+			d, err := GetEntity(ID, "device")
+			if err != "" {
+				return nil, err
+			}
+			t = x1
+			t["subdevice"] = d
+			flag = "subdevice"
+		}
+
+	} else { //FOUND AS DEV
+		//ch, _ := GetEntitiesOfParent("subdevice", entityID.Hex())
+		t = x
+		flag = "device"
+	}
+
+	return t, flag
+}
+
+func GetDevEntitiesOfParent(ent, id string) ([]map[string]interface{}, string) {
+	var c *mongo.Cursor
+	var err error
+	enfants := make([]map[string]interface{}, 0)
+	ctx, cancel := u.Connect()
+	c, err = GetDB().Collection(ent).Find(ctx, bson.M{"parentId": id})
+	if err != nil {
+		fmt.Println(err)
+		return nil, err.Error()
+	}
+	defer cancel()
+
+	for c.Next(GetCtx()) {
+		s := map[string]interface{}{}
+		e := c.Decode(&s)
+		if e != nil {
+			fmt.Println(err)
+			return nil, err.Error()
+		}
+		enfants = append(enfants, s)
+	}
+
+	//println("The length of children is: ", len(enfants))
+
+	return enfants, ""
+}
+
+func RetrieveDeviceHierarch(devType string, ID primitive.ObjectID, entnum, end int) (map[string]interface{}, string) {
+
+	if entnum <= end {
+		//Check if at the end of the hierarchy
+		switch devType {
+		case "device", "subdevice", "subdevice1":
+			//Get the top entity
+			top, e := GetEntity(ID, devType)
+			if e != "" {
+				return nil, e
+			}
+
+			subEnt := u.EntityToString(entnum + 1)
+
+			//Get immediate children
+			children, e1 := GetEntitiesOfParent(subEnt, ID.Hex())
+			if e1 != "" {
+				println("Are we here")
+				println("SUBENT: ", subEnt)
+				println("PID: ", ID.Hex())
+				return nil, e1
+			}
+			top[subEnt+"s"] = children
+
+			println("Child Len: ", len(children))
+			println("@ ", subEnt)
+
+			if entnum+1 <= end {
+				//Get the rest of hierarchy for children
+				for i := range children {
+					subIdx := u.EntityToString(entnum + 1)
+					subID := (children[i]["_id"].(primitive.ObjectID))
+					children[i], _ =
+						RetrieveDeviceHierarch(subIdx, subID, entnum+1, end)
+				}
+			}
+
+			return top, ""
+		}
+	}
+
+	return nil, ""
+}
+
+func GetDeviceF(entityID primitive.ObjectID) (map[string]interface{}, string) {
+	//t := map[string]interface{}{}
+
+	d, e := IdentifyDevType(entityID)
+	switch e {
+	case "device":
+		println("Found device")
+		return RetrieveDeviceHierarch("device", entityID, DEVICE, SUBDEV)
+	case "subdevice":
+		return RetrieveDeviceHierarch("subdevice", entityID, SUBDEV, SUBDEV)
+	case "subdevice1":
+		println("Identified SUBDEV1")
+		return d, e
+	default:
+		return nil, e
+	}
+	//CHECK DEVICE
+	/*x, e := GetEntity(entityID, "device")
 	if e != "" {
 
 		//CHECK SUBDEV
@@ -1025,10 +1176,11 @@ func GetDeviceF(entityID primitive.ObjectID) (map[string]interface{}, string) {
 		}
 
 	} else { //FOUND AS DEV
+		//ch, _ := GetEntitiesOfParent("subdevice", entityID.Hex())
 		t = x
 	}
 
-	return t, ""
+	return t, ""*/
 }
 
 func UpdateDeviceF(entityID primitive.ObjectID, t *map[string]interface{}) (map[string]interface{}, string) {
