@@ -1284,3 +1284,15 @@ func DeleteDeviceF(entityID primitive.ObjectID) (map[string]interface{}, string)
 	}
 	return nil, ""
 }
+
+func GetDeviceFByQuery(query bson.M) ([]map[string]interface{}, string) {
+	var ans []map[string]interface{}
+	devs, _ := GetEntityByQuery("device", query)
+	sdev, _ := GetEntityByQuery("subdevice", query)
+	sdev1, _ := GetEntityByQuery("subdevice1", query)
+
+	ans = append(ans, devs...)
+	ans = append(ans, sdev...)
+	ans = append(ans, sdev1...)
+	return ans, ""
+}

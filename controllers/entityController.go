@@ -692,7 +692,12 @@ var GetEntityByQuery = func(w http.ResponseWriter, r *http.Request) {
 		js, _ := json.Marshal(query)
 		json.Unmarshal(js, &bsonMap)
 
-		data, e = models.GetEntityByQuery(entStr, bsonMap)
+		if entStr == "device" {
+			data, e = models.GetDeviceFByQuery(bsonMap)
+		} else {
+			data, e = models.GetEntityByQuery(entStr, bsonMap)
+		}
+
 	}
 
 	if len(data) == 0 {
@@ -706,6 +711,7 @@ var GetEntityByQuery = func(w http.ResponseWriter, r *http.Request) {
 			resp = u.Message(false, "Error: No Records Found")
 			w.WriteHeader(http.StatusNotFound)
 		default:
+			resp = u.Message(false, "Error: No Records Found")
 			w.WriteHeader(http.StatusNotFound)
 		}
 
