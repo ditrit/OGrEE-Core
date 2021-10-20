@@ -1,6 +1,7 @@
 package models
 
 import (
+	"context"
 	"crypto/rand"
 	"fmt"
 	u "p3/utils"
@@ -679,8 +680,12 @@ func GetEntitiesUsingAncestorNames(ent string, id primitive.ObjectID, ancestry m
 		if v == "all" {
 			println("K:", k)
 			println("ID", x["_id"].(primitive.ObjectID).String())
+			if k == "device" {
+				return GetDeviceFByParentID(x["_id"].(primitive.ObjectID).Hex())
+			}
 			return GetEntitiesOfParent(k, (x["_id"].(primitive.ObjectID)).Hex())
 		}
+
 		x, e1 = GetEntityByNameAndParentID(k, pid, v)
 		if e1 != "" {
 			println("Failing here")
@@ -704,6 +709,22 @@ func GetEntityUsingAncestorNames(ent string, id primitive.ObjectID, ancestry map
 	for k, v := range ancestry {
 
 		println("KEY:", k, " VAL:", v)
+
+		if k == "device" {
+			println("entered")
+			q, e2 := GetDeviceFByNameAndParentID(pid, v)
+			if e2 != "" {
+				println("Failing here")
+				return nil, ""
+			}
+
+			if len(q) == 1 {
+				x = q[0]
+			} else {
+				x = map[string]interface{}{"devices": q}
+			}
+			return x, ""
+		}
 
 		x, e1 = GetEntityByNameAndParentID(k, pid, v)
 		if e1 != "" {
@@ -765,8 +786,12 @@ func GetEntitiesUsingTenantAsAncestor(ent, id string, ancestry map[string]string
 		if v == "all" {
 			println("K:", k)
 			println("ID", x["_id"].(primitive.ObjectID).String())
+			if k == "device" {
+				return GetDeviceFByParentID(x["_id"].(primitive.ObjectID).Hex())
+			}
 			return GetEntitiesOfParent(k, (x["_id"].(primitive.ObjectID)).Hex())
 		}
+
 		x, e1 = GetEntityByNameAndParentID(k, pid, v)
 		if e1 != "" {
 			println("Failing here")
@@ -790,6 +815,22 @@ func GetEntityUsingTenantAsAncestor(ent, id string, ancestry map[string]string) 
 	for k, v := range ancestry {
 
 		println("KEY:", k, " VAL:", v)
+
+		if k == "device" {
+			println("entered")
+			q, e2 := GetDeviceFByNameAndParentID(pid, v)
+			if e2 != "" {
+				println("Failing here")
+				return nil, ""
+			}
+
+			if len(q) == 1 {
+				x = q[0]
+			} else {
+				x = map[string]interface{}{"devices": q}
+			}
+			return x, ""
+		}
 
 		x, e1 = GetEntityByNameAndParentID(k, pid, v)
 		if e1 != "" {
@@ -1012,6 +1053,7 @@ func UpdateEntityBySlug(ent, id string, t *map[string]interface{}) (map[string]i
 	return u.Message(true, "success"), ""
 }
 
+//DEV FAMILY FUNCS
 func IdentifyDevType(entityID primitive.ObjectID) (map[string]interface{}, string) {
 	t := map[string]interface{}{}
 	flag := ""
@@ -1294,5 +1336,145 @@ func GetDeviceFByQuery(query bson.M) ([]map[string]interface{}, string) {
 	ans = append(ans, devs...)
 	ans = append(ans, sdev...)
 	ans = append(ans, sdev1...)
+	return ans, ""
+}
+
+func GetDeviceFByNameAndParentID(id, name string) ([]map[string]interface{}, string) {
+	t := map[string]interface{}{}
+	var sdevs []map[string]interface{}
+	var sdevs1 []map[string]interface{}
+
+	ctx, cancel := u.Connect()
+	e := GetDB().Collection("device").FindOne(ctx, bson.M{"name": name, "parentId": id}).Decode(&t)
+	if e != nil {
+
+		//CHECK SDEV BLOCK
+		x, _ := GetDB().Collection("device").Find(ctx, bson.M{"parentId": id})
+		devs, err := ExtractCursor(x, ctx)
+		if len(devs) == 0 {
+			return nil, "nothing found"
+		}
+		if err != "" {
+			return nil, err
+		}
+
+		//CHECK SDEVS
+		for i := range devs {
+			c1, e2 := GetDB().Collection("subdevice").Find(ctx,
+				bson.M{"name": name,
+					"parentId": devs[i]["_id"].(primitive.ObjectID).Hex()})
+			if e2 != nil {
+				return nil, e2.Error()
+			}
+			sdevs, _ = ExtractCursor(c1, ctx)
+			if len(sdevs) == 0 {
+
+				//NEED TO CHECK SDEV1
+				c2, e3 := GetDB().Collection("subdevice").Find(ctx,
+					bson.M{"parentId": id})
+				if e3 != nil {
+					return nil, e3.Error()
+				}
+				sdevs, _ = ExtractCursor(c2, ctx)
+
+				for i := range sdevs {
+					c3, e4 := GetDB().Collection("subdevice1").Find(ctx,
+						bson.M{"name": name,
+							"parentId": sdevs[i]["_id"].(primitive.ObjectID).Hex()})
+					if e4 != nil {
+						return nil, e4.Error()
+					}
+					sdevs1, _ = ExtractCursor(c3, ctx)
+					if len(sdevs1) == 0 {
+						return nil, "no documents in result"
+					}
+
+					return sdevs1, ""
+				}
+
+			} else {
+				//GET SDEVS HIERARCHY & RETURN
+				var ans []map[string]interface{}
+				for i := range sdevs {
+
+					x, _ := RetrieveDeviceHierarch("subdevice",
+						sdevs[i]["_id"].(primitive.ObjectID), SUBDEV, SUBDEV)
+					ans = append(ans, x)
+				}
+				return ans, ""
+			}
+
+		}
+
+	} else { //FOUND DEV
+		d, e := RetrieveDeviceHierarch("device",
+			t["_id"].(primitive.ObjectID), DEVICE, SUBDEV)
+		return []map[string]interface{}{d}, e
+	}
+	defer cancel()
+
+	return nil, ""
+}
+
+func GetDeviceFByParentID(id string) ([]map[string]interface{}, string) {
+	//t := map[string]interface{}{}
+	var sdevs []map[string]interface{}
+	//var sdevs1 []map[string]interface{}
+
+	ctx, cancel := u.Connect()
+	c, e := GetDB().Collection("device").Find(ctx, bson.M{"parentId": id})
+	if e != nil {
+
+		c1, e1 := GetDB().Collection("subdevice").Find(ctx, bson.M{"parentId": id})
+		if e1 != nil {
+
+			//CHECK SUBDEV1
+			c2, e2 := GetDB().Collection("subdevice1").Find(ctx, bson.M{"parentId": id})
+			if e2 != nil {
+				return nil, e2.Error()
+			}
+
+			sdevs1, _ := ExtractCursor(c2, ctx)
+			return sdevs1, ""
+
+		}
+		sdevExtract, _ := ExtractCursor(c1, ctx)
+		for i := range sdevExtract {
+			x, _ := RetrieveDeviceHierarch("subdevice",
+				sdevExtract[i]["_id"].(primitive.ObjectID), SUBDEV, SUBDEV)
+			sdevs = append(sdevs, x)
+		}
+		return sdevs, ""
+
+	} else { //FOUND DEV
+		var ans []map[string]interface{}
+
+		d, _ := ExtractCursor(c, ctx)
+		for i := range d {
+			x, err := RetrieveDeviceHierarch("device",
+				d[i]["_id"].(primitive.ObjectID), DEVICE, SUBDEV)
+			if err != "" {
+				return nil, err
+			}
+			ans = append(ans, x)
+		}
+		return ans, ""
+	}
+	defer cancel()
+
+	return nil, ""
+}
+
+func ExtractCursor(c *mongo.Cursor, ctx context.Context) ([]map[string]interface{}, string) {
+	var ans []map[string]interface{}
+	for c.Next(ctx) {
+		x := map[string]interface{}{}
+		err := c.Decode(x)
+		if err != nil {
+			fmt.Println(err)
+			return nil, err.Error()
+		}
+		ans = append(ans, x)
+	}
 	return ans, ""
 }

@@ -45,18 +45,6 @@ func main() {
 	router.HandleFunc("/api/tenants",
 		controllers.CreateEntity).Methods("POST")
 
-	router.HandleFunc("/api/tenants/{tenant_name}/sites/{site_name}/buildings/{building_name}/rooms/{room_name}/racks/{rack_name}/devices/{device_name}/subdevices/{subdevice_name}/subdevice1s/{subdevice1_name}",
-		controllers.GetEntitiesUsingNameOfTenant).Methods("GET")
-
-	router.HandleFunc("/api/tenants/{tenant_name}/sites/{site_name}/buildings/{building_name}/rooms/{room_name}/racks/{rack_name}/devices/{device_name}/subdevices/{subdevice_name}/subdevice1s",
-		controllers.GetEntitiesUsingNameOfTenant).Methods("GET")
-
-	router.HandleFunc("/api/tenants/{tenant_name}/sites/{site_name}/buildings/{building_name}/rooms/{room_name}/racks/{rack_name}/devices/{device_name}/subdevices/{subdevice_name}",
-		controllers.GetEntitiesUsingNameOfTenant).Methods("GET")
-
-	router.HandleFunc("/api/tenants/{tenant_name}/sites/{site_name}/buildings/{building_name}/rooms/{room_name}/racks/{rack_name}/devices/{device_name}/subdevices",
-		controllers.GetEntitiesUsingNameOfTenant).Methods("GET")
-
 	router.HandleFunc("/api/tenants/{tenant_name}/sites/{site_name}/buildings/{building_name}/rooms/{room_name}/racks/{rack_name}/devices/{device_name}",
 		controllers.GetEntitiesUsingNameOfTenant).Methods("GET")
 
@@ -86,9 +74,6 @@ func main() {
 
 	router.HandleFunc("/api/tenants/{tenant_name}/sites",
 		controllers.GetEntitiesOfParent).Methods("GET")
-
-	router.HandleFunc("/api/tenants/{tenant_name}/all/sites/buildings/rooms/racks/devices/subdevices",
-		controllers.GetTenantHierarchy).Methods("GET")
 
 	router.HandleFunc("/api/tenants/{tenant_name}/all/sites/buildings/rooms/racks/devices",
 		controllers.GetTenantHierarchy).Methods("GET")
@@ -127,9 +112,6 @@ func main() {
 	router.HandleFunc("/api/sites/{id}/all/nonstd",
 		controllers.GetEntityHierarchyNonStd).Methods("GET")
 
-	router.HandleFunc("/api/sites/{id}/all/buildings/rooms/racks/devices/subdevices",
-		controllers.GetEntityHierarchy).Methods("GET")
-
 	router.HandleFunc("/api/sites/{id}/all/buildings/rooms/racks/devices",
 		controllers.GetEntityHierarchy).Methods("GET")
 
@@ -144,18 +126,6 @@ func main() {
 
 	router.HandleFunc("/api/sites",
 		controllers.GetAllEntities).Methods("GET")
-
-	router.HandleFunc("/api/sites/{id}/buildings/{building_name}/rooms/{room_name}/racks/{rack_name}/devices/{device_name}/subdevices/{subdevice_name}/subdevice1s/{subdevice1_name}",
-		controllers.GetEntitiesUsingNamesOfParents).Methods("GET")
-
-	router.HandleFunc("/api/sites/{id}/buildings/{building_name}/rooms/{room_name}/racks/{rack_name}/devices/{device_name}/subdevices/{subdevice_name}/subdevice1s",
-		controllers.GetEntitiesUsingNamesOfParents).Methods("GET")
-
-	router.HandleFunc("/api/sites/{id}/buildings/{building_name}/rooms/{room_name}/racks/{rack_name}/devices/{device_name}/subdevices/{subdevice_name}",
-		controllers.GetEntitiesUsingNamesOfParents).Methods("GET")
-
-	router.HandleFunc("/api/sites/{id}/buildings/{building_name}/rooms/{room_name}/racks/{rack_name}/devices/{device_name}/subdevices",
-		controllers.GetEntitiesUsingNamesOfParents).Methods("GET")
 
 	router.HandleFunc("/api/sites/{id}/buildings/{building_name}/rooms/{room_name}/racks/{rack_name}/devices/{device_name}",
 		controllers.GetEntitiesUsingNamesOfParents).Methods("GET")
@@ -206,18 +176,6 @@ func main() {
 	router.HandleFunc("/api/buildings/{id}",
 		controllers.DeleteEntity).Methods("DELETE")
 
-	router.HandleFunc("/api/buildings/{id}/rooms/{room_name}/racks/{rack_name}/devices/{device_name}/subdevices/{subdevice_name}/subdevice1s/{subdevice1_name}",
-		controllers.GetEntitiesUsingNamesOfParents).Methods("GET")
-
-	router.HandleFunc("/api/buildings/{id}/rooms/{room_name}/racks/{rack_name}/devices/{device_name}/subdevices/{subdevice_name}/subdevice1s",
-		controllers.GetEntitiesUsingNamesOfParents).Methods("GET")
-
-	router.HandleFunc("/api/buildings/{id}/rooms/{room_name}/racks/{rack_name}/devices/{device_name}/subdevices/{subdevice_name}",
-		controllers.GetEntitiesUsingNamesOfParents).Methods("GET")
-
-	router.HandleFunc("/api/buildings/{id}/rooms/{room_name}/racks/{rack_name}/devices/{device_name}/subdevices",
-		controllers.GetEntitiesUsingNamesOfParents).Methods("GET")
-
 	router.HandleFunc("/api/buildings/{id}/rooms/{room_name}/racks/{rack_name}/devices/{device_name}",
 		controllers.GetEntitiesUsingNamesOfParents).Methods("GET")
 
@@ -238,9 +196,6 @@ func main() {
 
 	router.HandleFunc("/api/buildings/{id}/all/nonstd",
 		controllers.GetEntityHierarchyNonStd).Methods("GET")
-
-	router.HandleFunc("/api/buildings/{id}/all/rooms/racks/devices/subdevices",
-		controllers.GetEntityHierarchy).Methods("GET")
 
 	router.HandleFunc("/api/buildings/{id}/all/rooms/racks/devices",
 		controllers.GetEntityHierarchy).Methods("GET")
@@ -297,18 +252,6 @@ func main() {
 	router.HandleFunc("/api/rooms/{id}",
 		controllers.DeleteEntity).Methods("DELETE")
 
-	router.HandleFunc("/api/rooms/{id}/racks/{rack_name}/devices/{device_name}/subdevices/{subdevice_name}/subdevice1s/{subdevice1_name}",
-		controllers.GetEntitiesUsingNamesOfParents).Methods("GET")
-
-	router.HandleFunc("/api/rooms/{id}/racks/{rack_name}/devices/{device_name}/subdevices/{subdevice_name}/subdevice1s",
-		controllers.GetEntitiesUsingNamesOfParents).Methods("GET")
-
-	router.HandleFunc("/api/rooms/{id}/racks/{rack_name}/devices/{device_name}/subdevices/{subdevice_name}",
-		controllers.GetEntitiesUsingNamesOfParents).Methods("GET")
-
-	router.HandleFunc("/api/rooms/{id}/racks/{rack_name}/devices/{device_name}/subdevices",
-		controllers.GetEntitiesUsingNamesOfParents).Methods("GET")
-
 	router.HandleFunc("/api/rooms/{id}/racks/{rack_name}/devices/{device_name}",
 		controllers.GetEntitiesUsingNamesOfParents).Methods("GET")
 
@@ -320,9 +263,6 @@ func main() {
 
 	router.HandleFunc("/api/rooms/{id}/racks",
 		controllers.GetEntitiesOfParent).Methods("GET")
-
-	router.HandleFunc("/api/rooms/{id}/all/racks/devices/subdevices",
-		controllers.GetEntityHierarchy).Methods("GET")
 
 	router.HandleFunc("/api/rooms/{id}/all/racks/devices",
 		controllers.GetEntityHierarchy).Methods("GET")
@@ -373,26 +313,8 @@ func main() {
 	router.HandleFunc("/api/racks/{id}",
 		controllers.DeleteEntity).Methods("DELETE")
 
-	router.HandleFunc("/api/racks/{id}/devices/{device_name}/subdevices/{subdevice_name}/subdevice1s/{subdevice1_name}",
-		controllers.GetEntitiesUsingNamesOfParents).Methods("GET")
-
-	router.HandleFunc("/api/racks/{id}/devices/{device_name}/subdevices/{subdevice_name}/subdevice1s",
-		controllers.GetEntitiesUsingNamesOfParents).Methods("GET")
-
-	router.HandleFunc("/api/racks/{id}/devices/{device_name}/subdevices/{subdevice_name}",
-		controllers.GetEntitiesUsingNamesOfParents).Methods("GET")
-
-	router.HandleFunc("/api/racks/{id}/devices/{device_name}/subdevices",
-		controllers.GetEntitiesUsingNamesOfParents).Methods("GET")
-
 	router.HandleFunc("/api/racks/{id}/devices/{device_name}",
 		controllers.GetEntitiesUsingNamesOfParents).Methods("GET")
-
-	router.HandleFunc("/api/racks/{id}/devices",
-		controllers.GetEntitiesOfParent).Methods("GET")
-
-	router.HandleFunc("/api/racks/{id}/all/devices/subdevices",
-		controllers.GetEntityHierarchy).Methods("GET")
 
 	router.HandleFunc("/api/racks/{id}/all",
 		controllers.GetEntityHierarchy).Methods("GET")
@@ -416,67 +338,11 @@ func main() {
 	router.HandleFunc("/api/devices/{id}",
 		controllers.DeleteEntity).Methods("DELETE")
 
-	router.HandleFunc("/api/devices/{id}/subdevices/{subdevice_name}/subdevice1s/{subdevone_name}",
-		controllers.GetEntitiesUsingNamesOfParents).Methods("GET")
-
-	router.HandleFunc("/api/devices/{id}/subdevices/{subdevice_name}/subdevice1s",
-		controllers.GetEntitiesUsingNamesOfParents).Methods("GET")
-
-	router.HandleFunc("/api/devices/{id}/subdevices/{subdevice_name}",
-		controllers.GetEntitiesUsingNamesOfParents).Methods("GET")
-
-	router.HandleFunc("/api/devices/{id}/subdevices",
-		controllers.GetEntitiesOfParent).Methods("GET")
-
-	router.HandleFunc("/api/devices/{id}/all",
-		controllers.GetEntityHierarchy).Methods("GET")
-
 	router.HandleFunc("/api/devices/{id}",
 		controllers.GetEntity).Methods("GET")
 
 	router.HandleFunc("/api/devices",
 		controllers.GetAllEntities).Methods("GET")
-
-	// ------ SUBDEVICE CRUD ------ //
-	/*router.HandleFunc("/api/subdevices",
-		controllers.GetEntityByQuery).Methods("GET").MatcherFunc(dmatch)
-
-	router.HandleFunc("/api/subdevices",
-		controllers.CreateSplitEntity).Methods("POST")
-
-	router.HandleFunc("/api/subdevices/{id}",
-		controllers.UpdateEntity).Methods("PUT")
-
-	router.HandleFunc("/api/subdevices/{id}",
-		controllers.DeleteEntity).Methods("DELETE")
-
-	router.HandleFunc("/api/subdevices/{id}/all",
-		controllers.GetEntityHierarchy).Methods("GET")
-
-	router.HandleFunc("/api/subdevices/{id}",
-		controllers.GetEntity).Methods("GET")
-
-	router.HandleFunc("/api/subdevices",
-		controllers.GetAllEntities).Methods("GET")*/
-
-	// ------ SUBDEVICE1 CRUD ------ //
-	/*router.HandleFunc("/api/subdevice1s",
-		controllers.GetEntityByQuery).Methods("GET").MatcherFunc(dmatch)
-
-	router.HandleFunc("/api/subdevice1s",
-		controllers.CreateEntity).Methods("POST")
-
-	router.HandleFunc("/api/subdevice1s/{id}",
-		controllers.UpdateEntity).Methods("PUT")
-
-	router.HandleFunc("/api/subdevice1s/{id}",
-		controllers.DeleteEntity).Methods("DELETE")
-
-	router.HandleFunc("/api/subdevice1s/{id}",
-		controllers.GetEntity).Methods("GET")
-
-	router.HandleFunc("/api/subdevice1s",
-		controllers.GetAllEntities).Methods("GET")*/
 
 	// ------ TEMPLATE CRUD ------ //
 	router.HandleFunc("/api/room-templates",
