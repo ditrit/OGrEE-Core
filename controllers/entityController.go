@@ -257,16 +257,21 @@ var GetEntity = func(w http.ResponseWriter, r *http.Request) {
 	resp := u.Message(true, "success")
 
 	//Get entity type and strip trailing 's'
-	s := r.URL.Path[5 : strings.LastIndex(r.URL.Path, "/")-1]
+	//s := r.URL.Path[5 : strings.LastIndex(r.URL.Path, "/")-1]
+	s, _ := mux.Vars(r)["entity"]
+	s = s[:len(s)-1]
+	println("S ENTITY: ", s)
 
 	//GET By ID
 	if id, e = mux.Vars(r)["id"]; e == true {
 
 		if nestID, err := mux.Vars(r)["nest"]; err == true { //If nested
-			//Get entity type and strip trailing 's'
-			idx := strings.SplitAfter(r.URL.Path, "/")[4]
-			s = idx[:len(idx)-2]
+			//Get subentity type and strip trailing 's'
+			s, _ = mux.Vars(r)["subent"]
+			s = s[:len(s)-1]
+			println("SUBENT: ", s)
 			ID, _ := getObjID(id)
+
 			data, e1 = models.GetNestedEntity(ID, s, nestID)
 		} else { // Not Nested
 

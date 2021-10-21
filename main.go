@@ -94,9 +94,6 @@ func main() {
 		controllers.GetTenantHierarchy).Methods("GET")
 
 	router.HandleFunc("/api/tenants/{id}",
-		controllers.GetEntity).Methods("GET")
-
-	router.HandleFunc("/api/tenants/{id}",
 		controllers.UpdateEntity).Methods("PUT")
 
 	router.HandleFunc("/api/tenants/{id}",
@@ -152,9 +149,6 @@ func main() {
 		controllers.GetEntitiesOfParent).Methods("GET")
 
 	router.HandleFunc("/api/sites/{id}",
-		controllers.GetEntity).Methods("GET")
-
-	router.HandleFunc("/api/sites/{id}",
 		controllers.UpdateEntity).Methods("PUT")
 
 	router.HandleFunc("/api/sites/{id}",
@@ -205,9 +199,6 @@ func main() {
 
 	router.HandleFunc("/api/buildings/{id}/all",
 		controllers.GetEntityHierarchy).Methods("GET")
-
-	router.HandleFunc("/api/buildings/{id}",
-		controllers.GetEntity).Methods("GET")
 
 	router.HandleFunc("/api/buildings",
 		controllers.GetAllEntities).Methods("GET")
@@ -282,18 +273,6 @@ func main() {
 	router.HandleFunc("/api/rooms/{id}/panels",
 		controllers.GetAllEntities).Methods("GET")
 
-	router.HandleFunc("/api/rooms/{id}/acs/{nest}",
-		controllers.GetEntity).Methods("GET")
-
-	router.HandleFunc("/api/rooms/{id}/walls/{nest}",
-		controllers.GetEntity).Methods("GET")
-
-	router.HandleFunc("/api/rooms/{id}/panels/{nest}",
-		controllers.GetEntity).Methods("GET")
-
-	router.HandleFunc("/api/rooms/{id}",
-		controllers.GetEntity).Methods("GET")
-
 	router.HandleFunc("/api/rooms",
 		controllers.GetAllEntities).Methods("GET")
 
@@ -322,9 +301,6 @@ func main() {
 	router.HandleFunc("/api/racks/{id}/all/nonstd",
 		controllers.GetEntityHierarchyNonStd).Methods("GET")
 
-	router.HandleFunc("/api/racks/{id}",
-		controllers.GetEntity).Methods("GET")
-
 	// ------ DEVICE CRUD ------ //
 	router.HandleFunc("/api/devices",
 		controllers.GetEntityByQuery).Methods("GET").MatcherFunc(dmatch)
@@ -337,9 +313,6 @@ func main() {
 
 	router.HandleFunc("/api/devices/{id}",
 		controllers.DeleteEntity).Methods("DELETE")
-
-	router.HandleFunc("/api/devices/{id}",
-		controllers.GetEntity).Methods("GET")
 
 	router.HandleFunc("/api/devices",
 		controllers.GetAllEntities).Methods("GET")
@@ -356,12 +329,6 @@ func main() {
 
 	router.HandleFunc("/api/obj-templates",
 		controllers.CreateEntity).Methods("POST")
-
-	router.HandleFunc("/api/room-templates/{name}",
-		controllers.GetEntity).Methods("GET")
-
-	router.HandleFunc("/api/obj-templates/{name}",
-		controllers.GetEntity).Methods("GET")
 
 	router.HandleFunc("/api/room-templates",
 		controllers.GetAllEntities).Methods("GET")
@@ -390,6 +357,18 @@ func main() {
 
 	router.HandleFunc("/api/walls",
 		controllers.CreateEntity).Methods("POST")
+
+	// ------ GET ------ //
+	//GET ENTITY
+
+	router.HandleFunc("/api/{entity}/{id:[a-zA-Z0-9]{24}}/{subent}/{nest}",
+		controllers.GetEntity).Methods("GET")
+
+	router.HandleFunc("/api/{entity}/{id:[a-zA-Z0-9]{24}}",
+		controllers.GetEntity).Methods("GET")
+
+	router.HandleFunc("/api/{entity}/{name}",
+		controllers.GetEntity).Methods("GET")
 
 	//Attach JWT auth middleware
 	//router.Use(app.Log)

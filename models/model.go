@@ -1185,7 +1185,6 @@ func RetrieveDeviceHierarch(devType string, ID primitive.ObjectID, entnum, end i
 }
 
 func GetDeviceF(entityID primitive.ObjectID) (map[string]interface{}, string) {
-	//t := map[string]interface{}{}
 
 	d, e := IdentifyDevType(entityID)
 	switch e {
@@ -1200,55 +1199,6 @@ func GetDeviceF(entityID primitive.ObjectID) (map[string]interface{}, string) {
 	default:
 		return nil, e
 	}
-	//CHECK DEVICE
-	/*x, e := GetEntity(entityID, "device")
-	if e != "" {
-
-		//CHECK SUBDEV
-		x1, e1 := GetEntity(entityID, "subdevice")
-		if e1 != "" {
-
-			//CHECK SUBDEV1
-			x2, e2 := GetEntity(entityID, "subdevice1")
-			if e2 != "" {
-				return nil, e2
-			} else { //FOUND AS SUBDEV1
-
-				//GET PARENT
-				ID, _ := primitive.ObjectIDFromHex(x2["parentId"].(string))
-				s, err := GetEntity(ID, "subdevice")
-				if err != "" {
-					return nil, err
-				}
-
-				//GET PARENT PARENT
-				PID, _ := primitive.ObjectIDFromHex(s["parentId"].(string))
-				d, err1 := GetEntity(PID, "device")
-				if err1 != "" {
-					return nil, err
-				}
-				s["subdevice1"] = x2
-				d["subdevice"] = s
-				t = d
-			}
-		} else { //FOUND AS SUBDEV
-
-			//GET PARENT
-			ID, _ := primitive.ObjectIDFromHex(x1["parentId"].(string))
-			d, err := GetEntity(ID, "device")
-			if err != "" {
-				return nil, err
-			}
-			t = x1
-			t["subdevice"] = d
-		}
-
-	} else { //FOUND AS DEV
-		//ch, _ := GetEntitiesOfParent("subdevice", entityID.Hex())
-		t = x
-	}
-
-	return t, ""*/
 }
 
 func UpdateDeviceF(entityID primitive.ObjectID, t *map[string]interface{}) (map[string]interface{}, string) {
