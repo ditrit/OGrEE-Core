@@ -157,10 +157,20 @@ func parseDataForNonStdResult(ent string, eNum int, data map[string]interface{})
 var CreateEntity = func(w http.ResponseWriter, r *http.Request) {
 	var e string
 	var resp map[string]interface{}
-	entStr := r.URL.Path[5 : len(r.URL.Path)-1] //strip the '/api' in URL
-	entUpper := strings.ToUpper(entStr)         // and the trailing 's'
 	entity := map[string]interface{}{}
 	err := json.NewDecoder(r.Body).Decode(&entity)
+
+	//strip the '/api' in URL
+	entStr, e1 := mux.Vars(r)["entity"]
+	if e1 == false {
+		w.WriteHeader(http.StatusBadRequest)
+		u.Respond(w, u.Message(false, "Error while parsing path params"))
+		u.ErrLog("Error while parsing path params", "CREATE "+entStr, "", r)
+		return
+	}
+
+	entStr = entStr[:len(entStr)-1] // and the trailing 's'
+	entUpper := strings.ToUpper(entStr)
 
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
@@ -189,8 +199,8 @@ var CreateEntity = func(w http.ResponseWriter, r *http.Request) {
 		println("ENUM VAL: ", i)
 
 		if v, ok := entity["category"]; ok &&
-			(v.(string) == "subdevice" ||
-				v.(string) == "subdevice1") {
+			(v.(string) == "subdevice" && entStr == "device" ||
+				v.(string) == "subdevice1") && entStr == "device" {
 			println("Creating SPLE")
 			resp, e = CreateSplitEntity(entity, i)
 		} else {
@@ -257,10 +267,8 @@ var GetEntity = func(w http.ResponseWriter, r *http.Request) {
 	resp := u.Message(true, "success")
 
 	//Get entity type and strip trailing 's'
-	//s := r.URL.Path[5 : strings.LastIndex(r.URL.Path, "/")-1]
 	s, _ := mux.Vars(r)["entity"]
 	s = s[:len(s)-1]
-	println("S ENTITY: ", s)
 
 	//GET By ID
 	if id, e = mux.Vars(r)["id"]; e == true {
@@ -269,7 +277,6 @@ var GetEntity = func(w http.ResponseWriter, r *http.Request) {
 			//Get subentity type and strip trailing 's'
 			s, _ = mux.Vars(r)["subent"]
 			s = s[:len(s)-1]
-			println("SUBENT: ", s)
 			ID, _ := getObjID(id)
 
 			data, e1 = models.GetNestedEntity(ID, s, nestID)
@@ -356,7 +363,10 @@ var GetAllEntities = func(w http.ResponseWriter, r *http.Request) {
 	arr := strings.Split(r.URL.Path, "/")
 	if len(arr) < 4 { //Main hierarchy objects
 
-		entStr = arr[2][:len(arr[2])-1]
+		//entStr = arr[2][:len(arr[2])-1]
+		entStr, _ = mux.Vars(r)["entity"]
+		entStr = entStr[:len(entStr)-1]
+		println("ENTSTR: ", entStr)
 
 		//If templates, format them
 		if idx := strings.Index(entStr, "-"); idx != -1 {
@@ -367,13 +377,16 @@ var GetAllEntities = func(w http.ResponseWriter, r *http.Request) {
 
 	} else { //Nested objects
 
-		entStr = arr[4][:len(arr[4])-1]
+		entStr, e2 := mux.Vars(r)["subent"]
 		id, e1 := mux.Vars(r)["id"]
-		if e1 == false {
+		if e1 == false || e2 == false {
 			u.Respond(w, u.Message(false, "Error while parsing path parameters"))
 			u.ErrLog("Error while parsing path parameters", "GET ENTITY", "", r)
 			return
 		}
+
+		//strip trailing 's'
+		entStr = entStr[:len(entStr)-1]
 
 		ID, _ := getObjID(id)
 		data, e = models.GetAllNestedEntities(ID, entStr)
@@ -428,6 +441,7 @@ var GetAllEntities = func(w http.ResponseWriter, r *http.Request) {
 //     '404':
 //        description: Not found
 var DeleteEntity = func(w http.ResponseWriter, r *http.Request) {
+	println("CALLING DEL")
 	var v map[string]interface{}
 	id, e := mux.Vars(r)["id"]
 	nest, e1 := mux.Vars(r)["nest"]
@@ -436,7 +450,8 @@ var DeleteEntity = func(w http.ResponseWriter, r *http.Request) {
 	switch {
 	case e2 == true: // DELETE SLUG
 		//Get entity from URL and strip trailing 's'
-		entity := r.URL.Path[5 : strings.LastIndex(r.URL.Path, "/")-1]
+		entity, _ := mux.Vars(r)["entity"]
+		entity = entity[:len(entity)-1]
 
 		//If templates, format them
 		if idx := strings.Index(entity, "-"); idx != -1 {
@@ -446,9 +461,9 @@ var DeleteEntity = func(w http.ResponseWriter, r *http.Request) {
 
 	case e1 == true && e == true: // DELETE NESTED
 
-		//Get entity from URL
-		idx := strings.SplitAfter(r.URL.Path, "/")[4]
-		entity := idx[:len(idx)-2]
+		//Get entity from URL and strip trailing 's'
+		entity, _ := mux.Vars(r)["subent"]
+		entity = entity[:len(entity)-1]
 
 		objID, _ := getObjID(id)
 		v, _ = models.DeleteNestedEntity(entity, objID, nest)
@@ -462,7 +477,8 @@ var DeleteEntity = func(w http.ResponseWriter, r *http.Request) {
 		}
 
 		//Get entity from URL and strip trailing 's'
-		entity := r.URL.Path[5 : strings.LastIndex(r.URL.Path, "/")-1]
+		entity, _ := mux.Vars(r)["entity"]
+		entity = entity[:len(entity)-1]
 
 		if entity == "device" {
 			v, _ = models.DeleteDeviceF(objID)
@@ -562,7 +578,10 @@ var UpdateEntity = func(w http.ResponseWriter, r *http.Request) {
 
 	switch {
 	case e2 == true: // UPDATE SLUG
-		entity = r.URL.Path[5 : strings.LastIndex(r.URL.Path, "/")-1]
+
+		//Get entity from URL and strip trailing 's'
+		entity, _ = mux.Vars(r)["entity"]
+		entity = entity[:len(entity)-1]
 
 		//If templates, format them
 		if idx := strings.Index(entity, "-"); idx != -1 {
@@ -595,7 +614,8 @@ var UpdateEntity = func(w http.ResponseWriter, r *http.Request) {
 		}
 
 		//Get entity from URL and strip trailing 's'
-		entity = r.URL.Path[5 : strings.LastIndex(r.URL.Path, "/")-1]
+		entity, _ = mux.Vars(r)["entity"]
+		entity = entity[:len(entity)-1]
 
 		if entity == "device" {
 			v, e3 = models.UpdateDeviceF(objID, &updateData)

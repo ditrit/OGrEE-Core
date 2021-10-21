@@ -112,7 +112,7 @@ func EntityToString(entity int) string {
 	case ROOMTMPL:
 		return "room_template"
 	case OBJTMPL:
-		return "rack_template"
+		return "obj_template"
 	default:
 		return "subdevice1"
 	}

@@ -989,7 +989,7 @@ func UpdateNestedEntity(ent string, ID primitive.ObjectID,
 	}
 	defer cancel2()
 
-	return t, ""
+	return u.Message(true, "success"), ""
 }
 
 func GetNestedEntityByQuery(parent, entity string, query bson.M) ([]map[string]interface{}, string) {
