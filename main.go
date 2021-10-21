@@ -18,7 +18,20 @@ var dmatch mux.MatcherFunc = func(request *http.Request, match *mux.RouteMatch) 
 	//https://benhoyt.com/writings/go-routing/#regex-table
 	//https://stackoverflow.com/questions/21664489/
 	//golang-mux-routing-wildcard-custom-func-match
-	return regexp.MustCompile(`^(\/api\/(tenants|sites|buildings|rooms|rooms\/acs|rooms\/panels|rooms\/walls|racks|devices|subdevices|subdevices1|(room|obj)-templates)\?.*)$`).
+	println("Checking MATCH")
+	return regexp.MustCompile(`^(\/api\/(tenants|sites|buildings|rooms|rooms\/acs|rooms\/panels|rooms\/walls|racks|devices(room|obj)-templates)\?.*)$`).
+		MatchString(request.URL.String())
+}
+
+var hmatch mux.MatcherFunc = func(request *http.Request, match *mux.RouteMatch) bool {
+	println("CHECKING H-MATCH")
+	return regexp.MustCompile(`^(\/api\/(tenants|sites|buildings|rooms|rooms|racks|devices)\/[a-zA-Z0-9]{24}\/all(\/.*)+)$`).
+		MatchString(request.URL.String())
+}
+
+var pmatch mux.MatcherFunc = func(request *http.Request, match *mux.RouteMatch) bool {
+	println("CHECKING P-MATCH")
+	return regexp.MustCompile(`^(\/api\/(tenants|sites|buildings|rooms|rooms|racks|devices)\/[a-zA-Z0-9]{24}(\/.*)+)$`).
 		MatchString(request.URL.String())
 }
 
@@ -64,9 +77,6 @@ func main() {
 	router.HandleFunc("/api/tenants/{tenant_name}/sites/{site_name}",
 		controllers.GetEntitiesUsingNameOfTenant).Methods("GET")
 
-	router.HandleFunc("/api/tenants/{tenant_name}/sites",
-		controllers.GetEntitiesOfParent).Methods("GET")
-
 	router.HandleFunc("/api/tenants/{tenant_name}/all/sites/buildings/rooms/racks/devices",
 		controllers.GetTenantHierarchy).Methods("GET")
 
@@ -76,127 +86,27 @@ func main() {
 	router.HandleFunc("/api/tenants/{tenant_name}/all/sites/buildings/rooms",
 		controllers.GetTenantHierarchy).Methods("GET")
 
-	router.HandleFunc("/api/tenants/{tenant_name}/all/sites/buildings",
-		controllers.GetTenantHierarchy).Methods("GET")
+	/*router.HandleFunc("/api/tenants/{tenant_name}/all/sites/buildings",
+	controllers.GetTenantHierarchy).Methods("GET")*/
 
-	router.HandleFunc("/api/tenants/{tenant_name}/all/nonstd",
-		controllers.GetEntityHierarchyNonStd).Methods("GET")
+	// ------ GET ------ //
+	//GET ENTITY HIERARCHY
+	router.NewRoute().PathPrefix("/api/tenants/{tenant_name}/all").
+		MatcherFunc(hmatch).HandlerFunc(controllers.GetTenantHierarchy)
+
+	router.NewRoute().PathPrefix("/api/{entity}/{id:[a-zA-Z0-9]{24}}/all").
+		MatcherFunc(hmatch).HandlerFunc(controllers.GetEntityHierarchy)
+
+	router.HandleFunc("/api/{entity}/{id:[a-zA-Z0-9]{24}}/all",
+		controllers.GetEntityHierarchy).Methods("GET")
 
 	router.HandleFunc("/api/tenants/{tenant_name}/all",
 		controllers.GetTenantHierarchy).Methods("GET")
 
-	// ------ SITES CRUD ------ //
+	//GET BY NAME OF PARENT
+	router.NewRoute().PathPrefix("/api/{entity}/{id:[a-zA-Z0-9]{24}}").
+		MatcherFunc(pmatch).HandlerFunc(controllers.GetEntitiesUsingNamesOfParents)
 
-	router.HandleFunc("/api/sites/{id}/all/nonstd",
-		controllers.GetEntityHierarchyNonStd).Methods("GET")
-
-	router.HandleFunc("/api/sites/{id}/all/buildings/rooms/racks/devices",
-		controllers.GetEntityHierarchy).Methods("GET")
-
-	router.HandleFunc("/api/sites/{id}/all/buildings/rooms/racks",
-		controllers.GetEntityHierarchy).Methods("GET")
-
-	router.HandleFunc("/api/sites/{id}/all/buildings/rooms",
-		controllers.GetEntityHierarchy).Methods("GET")
-
-	router.HandleFunc("/api/sites/{id}/all",
-		controllers.GetEntityHierarchy).Methods("GET")
-
-	router.HandleFunc("/api/sites/{id}/buildings/{building_name}/rooms/{room_name}/racks/{rack_name}/devices/{device_name}",
-		controllers.GetEntitiesUsingNamesOfParents).Methods("GET")
-
-	router.HandleFunc("/api/sites/{id}/buildings/{building_name}/rooms/{room_name}/racks/{rack_name}/devices",
-		controllers.GetEntitiesUsingNamesOfParents).Methods("GET")
-
-	router.HandleFunc("/api/sites/{id}/buildings/{building_name}/rooms/{room_name}/racks/{rack_name}",
-		controllers.GetEntitiesUsingNamesOfParents).Methods("GET")
-
-	router.HandleFunc("/api/sites/{id}/buildings/{building_name}/rooms/{room_name}/racks",
-		controllers.GetEntitiesUsingNamesOfParents).Methods("GET")
-
-	router.HandleFunc("/api/sites/{id}/buildings/{building_name}/rooms/{room_name}",
-		controllers.GetEntitiesUsingNamesOfParents).Methods("GET")
-
-	router.HandleFunc("/api/sites/{id}/buildings/{building_name}/rooms",
-		controllers.GetEntitiesUsingNamesOfParents).Methods("GET")
-
-	router.HandleFunc("/api/sites/{id}/buildings/{building_name}",
-		controllers.GetEntitiesUsingNamesOfParents).Methods("GET")
-
-	router.HandleFunc("/api/sites/{id}/buildings",
-		controllers.GetEntitiesOfParent).Methods("GET")
-
-	// ------ BUILDING CRUD ------ //
-
-	router.HandleFunc("/api/buildings/{id}/rooms/{room_name}/racks/{rack_name}/devices/{device_name}",
-		controllers.GetEntitiesUsingNamesOfParents).Methods("GET")
-
-	router.HandleFunc("/api/buildings/{id}/rooms/{room_name}/racks/{rack_name}/devices",
-		controllers.GetEntitiesUsingNamesOfParents).Methods("GET")
-
-	router.HandleFunc("/api/buildings/{id}/rooms/{room_name}/racks/{rack_name}",
-		controllers.GetEntitiesUsingNamesOfParents).Methods("GET")
-
-	router.HandleFunc("/api/buildings/{id}/rooms/{room_name}/racks",
-		controllers.GetEntitiesUsingNamesOfParents).Methods("GET")
-
-	router.HandleFunc("/api/buildings/{id}/rooms/{room_name}",
-		controllers.GetEntitiesUsingNamesOfParents).Methods("GET")
-
-	router.HandleFunc("/api/buildings/{id}/rooms",
-		controllers.GetEntitiesOfParent).Methods("GET")
-
-	router.HandleFunc("/api/buildings/{id}/all/nonstd",
-		controllers.GetEntityHierarchyNonStd).Methods("GET")
-
-	router.HandleFunc("/api/buildings/{id}/all/rooms/racks/devices",
-		controllers.GetEntityHierarchy).Methods("GET")
-
-	router.HandleFunc("/api/buildings/{id}/all/rooms/racks",
-		controllers.GetEntityHierarchy).Methods("GET")
-
-	router.HandleFunc("/api/buildings/{id}/all",
-		controllers.GetEntityHierarchy).Methods("GET")
-
-	// ------ ROOM CRUD ------ //
-
-	router.HandleFunc("/api/rooms/{id}/racks/{rack_name}/devices/{device_name}",
-		controllers.GetEntitiesUsingNamesOfParents).Methods("GET")
-
-	router.HandleFunc("/api/rooms/{id}/racks/{rack_name}/devices",
-		controllers.GetEntitiesUsingNamesOfParents).Methods("GET")
-
-	router.HandleFunc("/api/rooms/{id}/racks/{rack_name}",
-		controllers.GetEntitiesUsingNamesOfParents).Methods("GET")
-
-	router.HandleFunc("/api/rooms/{id}/racks",
-		controllers.GetEntitiesOfParent).Methods("GET")
-
-	router.HandleFunc("/api/rooms/{id}/all/racks/devices",
-		controllers.GetEntityHierarchy).Methods("GET")
-
-	router.HandleFunc("/api/rooms/{id}/all",
-		controllers.GetEntityHierarchy).Methods("GET")
-
-	router.HandleFunc("/api/rooms/{id}/all/nonstd",
-		controllers.GetEntityHierarchyNonStd).Methods("GET")
-
-	// ------ RACK CRUD ------ //
-
-	router.HandleFunc("/api/racks/{id}/devices/{device_name}",
-		controllers.GetEntitiesUsingNamesOfParents).Methods("GET")
-
-	router.HandleFunc("/api/racks/{id}/all",
-		controllers.GetEntityHierarchy).Methods("GET")
-
-	router.HandleFunc("/api/racks/{id}/all/nonstd",
-		controllers.GetEntityHierarchyNonStd).Methods("GET")
-
-	// ------ DEVICE CRUD ------ //
-
-	// ------ TEMPLATE CRUD ------ //
-
-	// ------ GET ------ //
 	// GET BY QUERY
 	router.HandleFunc("/api/{entity:[a-z]+}",
 		controllers.GetEntityByQuery).Methods("GET").MatcherFunc(dmatch)
@@ -214,6 +124,20 @@ func main() {
 
 	router.HandleFunc("/api/{entity}/{name}",
 		controllers.GetEntity).Methods("GET")
+
+	// GET IMMEDIATE CHILDREN
+	router.HandleFunc("/api/tenants/{tenant_name}/sites",
+		controllers.GetEntitiesOfParent).Methods("GET")
+
+	router.HandleFunc("/api/{entity}/{id:[a-zA-Z0-9]{24}}/{child}",
+		controllers.GetEntitiesOfParent).Methods("GET")
+
+	//GET ALL NONSTD
+	router.HandleFunc("/api/tenants/{tenant_name}/all/nonstd",
+		controllers.GetEntityHierarchyNonStd).Methods("GET")
+
+	router.HandleFunc("/api/{entity}/{id:[a-zA-Z0-9]{24}}/all/nonstd",
+		controllers.GetEntityHierarchyNonStd).Methods("GET")
 
 	// GET ALL ENTITY
 	router.HandleFunc("/api/{entity}",
