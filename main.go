@@ -75,7 +75,7 @@ func main() {
 
 	//GET BY NAME OF PARENT
 	router.NewRoute().PathPrefix("/api/tenants/{tenant_name}").
-		MatcherFunc(tmatch).HandlerFunc(controllers.GetEntitiesUsingNameOfTenant)
+		MatcherFunc(tmatch).HandlerFunc(controllers.GetEntitiesUsingNamesOfParents)
 
 	router.NewRoute().PathPrefix("/api/{entity}/{id:[a-zA-Z0-9]{24}}").
 		MatcherFunc(pmatch).HandlerFunc(controllers.GetEntitiesUsingNamesOfParents)

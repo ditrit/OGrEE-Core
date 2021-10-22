@@ -679,11 +679,11 @@ func GetEntitiesUsingAncestorNames(ent string, id primitive.ObjectID, ancestry m
 
 		if v == "all" {
 			println("K:", k)
-			println("ID", x["_id"].(primitive.ObjectID).String())
+			//println("ID", x["_id"].(primitive.ObjectID).String())
 			if k == "device" {
-				return GetDeviceFByParentID(x["_id"].(primitive.ObjectID).Hex())
+				return GetDeviceFByParentID(pid)
 			}
-			return GetEntitiesOfParent(k, (x["_id"].(primitive.ObjectID)).Hex())
+			return GetEntitiesOfParent(k, pid)
 		}
 
 		x, e1 = GetEntityByNameAndParentID(k, pid, v)
@@ -785,11 +785,11 @@ func GetEntitiesUsingTenantAsAncestor(ent, id string, ancestry map[string]string
 
 		if v == "all" {
 			println("K:", k)
-			println("ID", x["_id"].(primitive.ObjectID).String())
+			//println("ID", x["_id"].(primitive.ObjectID).String())
 			if k == "device" {
-				return GetDeviceFByParentID(x["_id"].(primitive.ObjectID).Hex())
+				return GetDeviceFByParentID(pid)
 			}
-			return GetEntitiesOfParent(k, (x["_id"].(primitive.ObjectID)).Hex())
+			return GetEntitiesOfParent(k, pid)
 		}
 
 		x, e1 = GetEntityByNameAndParentID(k, pid, v)

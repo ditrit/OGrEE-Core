@@ -1001,7 +1001,8 @@ var GetEntitiesUsingNamesOfParents = func(w http.ResponseWriter, r *http.Request
 	resp := u.Message(true, "success")
 
 	id, e := mux.Vars(r)["id"]
-	if e == false {
+	tname, e1 := mux.Vars(r)["tenant_name"]
+	if e == false && e1 == false {
 		u.Respond(w, u.Message(false, "Error while parsing path parameters"))
 		u.ErrLog("Error while parsing path parameters", "GET ENTITIESUSINGANCESTORNAMES", "", r)
 		return
@@ -1022,12 +1023,20 @@ var GetEntitiesUsingNamesOfParents = func(w http.ResponseWriter, r *http.Request
 	oID, _ := getObjID(id)
 
 	if len(arr)%2 != 0 { //This means we are getting entities
-		data, e := models.GetEntitiesUsingAncestorNames(entity, oID, ancestry)
-		if data == nil {
-			resp = u.Message(false, "Error while getting :"+entity+","+e)
-			u.ErrLog("Error while getting "+entity, "GET "+entity, e, r)
+		var data []map[string]interface{}
+		var e3 string
+		if e1 == true {
+			println("we are getting entities here")
+			data, e3 = models.GetEntitiesUsingTenantAsAncestor(entity, tname, ancestry)
+		} else {
+			data, e3 = models.GetEntitiesUsingAncestorNames(entity, oID, ancestry)
+		}
 
-			switch e {
+		if data == nil {
+			resp = u.Message(false, "Error while getting :"+entity+","+e3)
+			u.ErrLog("Error while getting "+entity, "GET "+entity, e3, r)
+
+			switch e3 {
 			case "record not found":
 				w.WriteHeader(http.StatusNotFound)
 			default:
@@ -1040,102 +1049,20 @@ var GetEntitiesUsingNamesOfParents = func(w http.ResponseWriter, r *http.Request
 		resp["data"] = data
 		u.Respond(w, resp)
 	} else { //We are only retrieving an entity
-		data, e := models.GetEntityUsingAncestorNames(entity, oID, ancestry)
-		if data == nil {
-			resp = u.Message(false, "Error while getting :"+entity+","+e)
-			u.ErrLog("Error while getting "+entity, "GET "+entity, e, r)
-
-			switch e {
-			case "record not found":
-				w.WriteHeader(http.StatusNotFound)
-			default:
-			}
-
+		var data map[string]interface{}
+		var e3 string
+		if e1 == true {
+			data, e3 = models.GetEntityUsingTenantAsAncestor(entity, tname, ancestry)
 		} else {
-			resp = u.Message(true, "success")
+			data, e3 = models.GetEntityUsingAncestorNames(entity, oID, ancestry)
 		}
 
-		resp["data"] = data
-		u.Respond(w, resp)
-	}
-
-}
-
-// swagger:operation GET /api/{objs}/{tenant_name}/{*} objects GetFromTenant
-// A category of objects of a Tenant can be retrieved from the system.
-// The Tenant name must be provided in the URL parameter
-// ---
-// produces:
-// - application/json
-// parameters:
-// - name: name
-//   in: path
-//   description: Name of desired tenant
-//   required: true
-//   type: string
-//   default: "INFINITI"
-// - name: '*'
-//   in: path
-//   description: Hierarchal path to desired object(s)
-//   required: true
-//   type: string
-//   default: "/sites"
-// responses:
-//     '200':
-//         description: Found
-//     '404':
-//         description: Not Found
-var GetEntitiesUsingNameOfTenant = func(w http.ResponseWriter, r *http.Request) {
-	//Extract string between /api and /{id}
-	idx := strings.Index(r.URL.Path[5:], "/") + 4
-	entity := r.URL.Path[5:idx]
-	ancestry := make(map[string]string, 0)
-	resp := u.Message(true, "success")
-
-	id, e := mux.Vars(r)["tenant_name"]
-	if e == false {
-		u.Respond(w, u.Message(false, "Error while parsing path parameters"))
-		u.ErrLog("Error while parsing path parameters", "GET ENTITIESUSINGNAMEOFTENANT", "", r)
-		return
-	}
-
-	arr := (strings.Split(r.URL.Path, "/")[4:])
-
-	for i, k := range arr {
-		if i%2 == 0 { //The keys (entities) are at the even indexes
-			if i+1 >= len(arr) {
-				ancestry[k[:len(k)-1]] = "all"
-			} else {
-				ancestry[k[:len(k)-1]] = arr[i+1]
-			}
-		}
-	}
-
-	if len(arr)%2 != 0 { //This means we are getting entities
-		data, e := models.GetEntitiesUsingTenantAsAncestor(entity, id, ancestry)
+		//data, e := models.GetEntityUsingAncestorNames(entity, oID, ancestry)
 		if data == nil {
-			resp = u.Message(false, "Error while getting :"+entity+","+e)
-			u.ErrLog("Error while getting "+entity, "GET "+entity, e, r)
+			resp = u.Message(false, "Error while getting :"+entity+","+e3)
+			u.ErrLog("Error while getting "+entity, "GET "+entity, e3, r)
 
-			switch e {
-			case "record not found":
-				w.WriteHeader(http.StatusNotFound)
-			default:
-			}
-
-		} else {
-			resp = u.Message(true, "success")
-		}
-
-		resp["data"] = data
-		u.Respond(w, resp)
-	} else { //We are only retrieving an entity
-		data, e := models.GetEntityUsingTenantAsAncestor(entity, id, ancestry)
-		if data == nil {
-			resp = u.Message(false, "Error while getting :"+entity+","+e)
-			u.ErrLog("Error while getting "+entity, "GET "+entity, e, r)
-
-			switch e {
+			switch e3 {
 			case "record not found":
 				w.WriteHeader(http.StatusNotFound)
 			default:
