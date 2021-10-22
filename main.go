@@ -12,6 +12,7 @@ import (
 	"github.com/gorilla/mux"
 )
 
+//Obtain by query
 var dmatch mux.MatcherFunc = func(request *http.Request, match *mux.RouteMatch) bool {
 
 	//fmt.Println("The URL is: ", request.URL.String())
@@ -23,15 +24,24 @@ var dmatch mux.MatcherFunc = func(request *http.Request, match *mux.RouteMatch) 
 		MatchString(request.URL.String())
 }
 
+//Obtain object hierarchy
 var hmatch mux.MatcherFunc = func(request *http.Request, match *mux.RouteMatch) bool {
 	println("CHECKING H-MATCH")
 	return regexp.MustCompile(`^(\/api\/(tenants|sites|buildings|rooms|rooms|racks|devices)\/[a-zA-Z0-9]{24}\/all(\/.*)+)$`).
 		MatchString(request.URL.String())
 }
 
+//For Obtaining objects using parent
 var pmatch mux.MatcherFunc = func(request *http.Request, match *mux.RouteMatch) bool {
 	println("CHECKING P-MATCH")
 	return regexp.MustCompile(`^(\/api\/(tenants|sites|buildings|rooms|rooms|racks|devices)\/[a-zA-Z0-9]{24}(\/.*)+)$`).
+		MatchString(request.URL.String())
+}
+
+//For Obtaining Tenant hierarchy
+var tmatch mux.MatcherFunc = func(request *http.Request, match *mux.RouteMatch) bool {
+	println("CHECKING T-MATCH")
+	return regexp.MustCompile(`^(\/api\/(tenants)(\/.*)+)$`).
 		MatchString(request.URL.String())
 }
 
@@ -48,51 +58,11 @@ func main() {
 	router.HandleFunc("/api/token/valid",
 		controllers.Verify).Methods("GET")
 
-	// ------ TENANTS CRUD ------ //
-
-	router.HandleFunc("/api/tenants/{tenant_name}/sites/{site_name}/buildings/{building_name}/rooms/{room_name}/racks/{rack_name}/devices/{device_name}",
-		controllers.GetEntitiesUsingNameOfTenant).Methods("GET")
-
-	router.HandleFunc("/api/tenants/{tenant_name}/sites/{site_name}/buildings/{building_name}/rooms/{room_name}/racks/{rack_name}/devices",
-		controllers.GetEntitiesUsingNameOfTenant).Methods("GET")
-
-	router.HandleFunc("/api/tenants/{tenant_name}/sites/{site_name}/buildings/{building_name}/rooms/{room_name}/racks/{rack_name}",
-		controllers.GetEntitiesUsingNameOfTenant).Methods("GET")
-
-	router.HandleFunc("/api/tenants/{tenant_name}/sites/{site_name}/buildings/{building_name}/rooms/{room_name}/racks",
-		controllers.GetEntitiesUsingNameOfTenant).Methods("GET")
-
-	router.HandleFunc("/api/tenants/{tenant_name}/sites/{site_name}/buildings/{building_name}/rooms/{room_name}",
-		controllers.GetEntitiesUsingNameOfTenant).Methods("GET")
-
-	router.HandleFunc("/api/tenants/{tenant_name}/sites/{site_name}/buildings/{building_name}/rooms",
-		controllers.GetEntitiesUsingNameOfTenant).Methods("GET")
-
-	router.HandleFunc("/api/tenants/{tenant_name}/sites/{site_name}/buildings/{building_name}",
-		controllers.GetEntitiesUsingNameOfTenant).Methods("GET")
-
-	router.HandleFunc("/api/tenants/{tenant_name}/sites/{site_name}/buildings",
-		controllers.GetEntitiesUsingNameOfTenant).Methods("GET")
-
-	router.HandleFunc("/api/tenants/{tenant_name}/sites/{site_name}",
-		controllers.GetEntitiesUsingNameOfTenant).Methods("GET")
-
-	router.HandleFunc("/api/tenants/{tenant_name}/all/sites/buildings/rooms/racks/devices",
-		controllers.GetTenantHierarchy).Methods("GET")
-
-	router.HandleFunc("/api/tenants/{tenant_name}/all/sites/buildings/rooms/racks",
-		controllers.GetTenantHierarchy).Methods("GET")
-
-	router.HandleFunc("/api/tenants/{tenant_name}/all/sites/buildings/rooms",
-		controllers.GetTenantHierarchy).Methods("GET")
-
-	/*router.HandleFunc("/api/tenants/{tenant_name}/all/sites/buildings",
-	controllers.GetTenantHierarchy).Methods("GET")*/
-
 	// ------ GET ------ //
 	//GET ENTITY HIERARCHY
+	//This matches ranged Tenant Hierarchy
 	router.NewRoute().PathPrefix("/api/tenants/{tenant_name}/all").
-		MatcherFunc(hmatch).HandlerFunc(controllers.GetTenantHierarchy)
+		MatcherFunc(tmatch).HandlerFunc(controllers.GetTenantHierarchy)
 
 	router.NewRoute().PathPrefix("/api/{entity}/{id:[a-zA-Z0-9]{24}}/all").
 		MatcherFunc(hmatch).HandlerFunc(controllers.GetEntityHierarchy)
@@ -104,6 +74,9 @@ func main() {
 		controllers.GetTenantHierarchy).Methods("GET")
 
 	//GET BY NAME OF PARENT
+	router.NewRoute().PathPrefix("/api/tenants/{tenant_name}").
+		MatcherFunc(tmatch).HandlerFunc(controllers.GetEntitiesUsingNameOfTenant)
+
 	router.NewRoute().PathPrefix("/api/{entity}/{id:[a-zA-Z0-9]{24}}").
 		MatcherFunc(pmatch).HandlerFunc(controllers.GetEntitiesUsingNamesOfParents)
 
