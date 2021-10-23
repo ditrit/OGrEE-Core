@@ -611,11 +611,6 @@ var UpdateEntity = func(w http.ResponseWriter, r *http.Request) {
 		entity, _ = mux.Vars(r)["entity"]
 		entity = entity[:len(entity)-1]
 
-		/*if entity == "device" {
-			v, e3 = models.UpdateDeviceF(objID, &updateData)
-		} else {
-
-		}*/
 		v, e3 = models.UpdateEntity(entity, objID, &updateData)
 
 	default:
@@ -712,11 +707,7 @@ var GetEntityByQuery = func(w http.ResponseWriter, r *http.Request) {
 		js, _ := json.Marshal(query)
 		json.Unmarshal(js, &bsonMap)
 
-		if entStr == "device" {
-			data, e = models.GetDeviceFByQuery(bsonMap)
-		} else {
-			data, e = models.GetEntityByQuery(entStr, bsonMap)
-		}
+		data, e = models.GetEntityByQuery(entStr, bsonMap)
 
 	}
 

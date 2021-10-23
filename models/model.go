@@ -1068,64 +1068,6 @@ func UpdateEntityBySlug(ent, id string, t *map[string]interface{}) (map[string]i
 }
 
 //DEV FAMILY FUNCS
-func IdentifyDevType(entityID primitive.ObjectID) (map[string]interface{}, string) {
-	t := map[string]interface{}{}
-	flag := ""
-
-	//CHECK DEVICE
-	x, e := GetEntity(entityID, "device")
-	if e != "" {
-
-		//CHECK SUBDEV
-		x1, e1 := GetEntity(entityID, "subdevice")
-		if e1 != "" {
-
-			//CHECK SUBDEV1
-			x2, e2 := GetEntity(entityID, "subdevice1")
-			if e2 != "" {
-				return nil, e2
-			} else { //FOUND AS SUBDEV1
-
-				//GET PARENT
-				//ID, _ := primitive.ObjectIDFromHex(x2["parentId"].(string))
-				//s, err := GetEntity(ID, "subdevice")
-				//if err != "" {
-				//	return nil, err
-				//}
-				//
-				////GET PARENT PARENT
-				//PID, _ := primitive.ObjectIDFromHex(s["parentId"].(string))
-				//d, err1 := GetEntity(PID, "device")
-				//if err1 != "" {
-				//	return nil, err
-				//}
-				//s["subdevice1"] = x2
-				//d["subdevice"] = s
-				//t = d
-				t = x2
-				flag = "subdevice1"
-			}
-		} else { //FOUND AS SUBDEV
-
-			//GET PARENT
-			ID, _ := primitive.ObjectIDFromHex(x1["parentId"].(string))
-			d, err := GetEntity(ID, "device")
-			if err != "" {
-				return nil, err
-			}
-			t = x1
-			t["subdevice"] = d
-			flag = "subdevice"
-		}
-
-	} else { //FOUND AS DEV
-		//ch, _ := GetEntitiesOfParent("subdevice", entityID.Hex())
-		t = x
-		flag = "device"
-	}
-
-	return t, flag
-}
 
 func GetDevEntitiesOfParent(ent, id string) ([]map[string]interface{}, string) {
 	var c *mongo.Cursor
@@ -1155,8 +1097,6 @@ func GetDevEntitiesOfParent(ent, id string) ([]map[string]interface{}, string) {
 }
 
 func RetrieveDeviceHierarch(ID primitive.ObjectID) (map[string]interface{}, string) {
-	//var subChildren []map[string]interface{}
-
 	//Get the top entity
 	top, e := GetEntity(ID, "device")
 	if e != "" {
@@ -1178,48 +1118,6 @@ func RetrieveDeviceHierarch(ID primitive.ObjectID) (map[string]interface{}, stri
 	return top, ""
 }
 
-/*
-func GetDeviceF(entityID primitive.ObjectID) (map[string]interface{}, string) {
-
-	d, e := IdentifyDevType(entityID)
-	switch e {
-	case "device":
-		println("Found device")
-		return RetrieveDeviceHierarch("device", entityID, DEVICE, SUBDEV)
-	case "subdevice":
-		return RetrieveDeviceHierarch("subdevice", entityID, SUBDEV, SUBDEV)
-	case "subdevice1":
-		println("Identified SUBDEV1")
-		return d, e
-	default:
-		return nil, e
-	}
-}
-*/
-/*
-func UpdateDeviceF(entityID primitive.ObjectID, t *map[string]interface{}) (map[string]interface{}, string) {
-	var x map[string]interface{}
-	var e string
-
-	//CHECK DEVICE
-	x, e = UpdateEntity("device", entityID, t)
-	if e != "" {
-
-		//CHECK SUBDEV
-		x, e = UpdateEntity("subdevice", entityID, t)
-		if e != "" {
-
-			//CHECK SUBDEV1
-			x, e = UpdateEntity("subdevice1", entityID, t)
-			if e != "" {
-				return nil, e
-			}
-		}
-	}
-
-	return x, e
-}*/
-
 func DeleteDeviceF(entityID primitive.ObjectID) (map[string]interface{}, string) {
 	var deviceType string
 
@@ -1240,147 +1138,6 @@ func DeleteDeviceF(entityID primitive.ObjectID) (map[string]interface{}, string)
 
 	return nil, ""
 }
-
-func GetDeviceFByQuery(query bson.M) ([]map[string]interface{}, string) {
-	var ans []map[string]interface{}
-	devs, _ := GetEntityByQuery("device", query)
-	sdev, _ := GetEntityByQuery("subdevice", query)
-	sdev1, _ := GetEntityByQuery("subdevice1", query)
-
-	ans = append(ans, devs...)
-	ans = append(ans, sdev...)
-	ans = append(ans, sdev1...)
-	return ans, ""
-}
-
-/*
-func GetDeviceFByNameAndParentID(id, name string) ([]map[string]interface{}, string) {
-	t := map[string]interface{}{}
-	var sdevs []map[string]interface{}
-	var sdevs1 []map[string]interface{}
-
-	ctx, cancel := u.Connect()
-	e := GetDB().Collection("device").FindOne(ctx, bson.M{"name": name, "parentId": id}).Decode(&t)
-	if e != nil {
-
-		//CHECK SDEV BLOCK
-		x, _ := GetDB().Collection("device").Find(ctx, bson.M{"parentId": id})
-		devs, err := ExtractCursor(x, ctx)
-		if len(devs) == 0 {
-			return nil, "nothing found"
-		}
-		if err != "" {
-			return nil, err
-		}
-
-		//CHECK SDEVS
-		for i := range devs {
-			c1, e2 := GetDB().Collection("subdevice").Find(ctx,
-				bson.M{"name": name,
-					"parentId": devs[i]["_id"].(primitive.ObjectID).Hex()})
-			if e2 != nil {
-				return nil, e2.Error()
-			}
-			sdevs, _ = ExtractCursor(c1, ctx)
-			if len(sdevs) == 0 {
-
-				//NEED TO CHECK SDEV1
-				c2, e3 := GetDB().Collection("subdevice").Find(ctx,
-					bson.M{"parentId": id})
-				if e3 != nil {
-					return nil, e3.Error()
-				}
-				sdevs, _ = ExtractCursor(c2, ctx)
-
-				for i := range sdevs {
-					c3, e4 := GetDB().Collection("subdevice1").Find(ctx,
-						bson.M{"name": name,
-							"parentId": sdevs[i]["_id"].(primitive.ObjectID).Hex()})
-					if e4 != nil {
-						return nil, e4.Error()
-					}
-					sdevs1, _ = ExtractCursor(c3, ctx)
-					if len(sdevs1) == 0 {
-						return nil, "no documents in result"
-					}
-
-					return sdevs1, ""
-				}
-
-			} else {
-				//GET SDEVS HIERARCHY & RETURN
-				var ans []map[string]interface{}
-				for i := range sdevs {
-
-					x, _ := RetrieveDeviceHierarch("subdevice",
-						sdevs[i]["_id"].(primitive.ObjectID), SUBDEV, SUBDEV)
-					ans = append(ans, x)
-				}
-				return ans, ""
-			}
-
-		}
-
-	} else { //FOUND DEV
-		d, e := RetrieveDeviceHierarch("device",
-			t["_id"].(primitive.ObjectID), DEVICE, SUBDEV)
-		return []map[string]interface{}{d}, e
-	}
-	defer cancel()
-
-	return nil, ""
-}
-*/
-/*
-func GetDeviceFByParentID(id string) ([]map[string]interface{}, string) {
-	//t := map[string]interface{}{}
-	var sdevs []map[string]interface{}
-	//var sdevs1 []map[string]interface{}
-
-	ctx, cancel := u.Connect()
-	c, e := GetDB().Collection("device").Find(ctx, bson.M{"parentId": id})
-	if e != nil {
-
-		c1, e1 := GetDB().Collection("subdevice").Find(ctx, bson.M{"parentId": id})
-		if e1 != nil {
-
-			//CHECK SUBDEV1
-			c2, e2 := GetDB().Collection("subdevice1").Find(ctx, bson.M{"parentId": id})
-			if e2 != nil {
-				return nil, e2.Error()
-			}
-
-			sdevs1, _ := ExtractCursor(c2, ctx)
-			return sdevs1, ""
-
-		}
-		sdevExtract, _ := ExtractCursor(c1, ctx)
-		for i := range sdevExtract {
-			x, _ := RetrieveDeviceHierarch("subdevice",
-				sdevExtract[i]["_id"].(primitive.ObjectID), SUBDEV, SUBDEV)
-			sdevs = append(sdevs, x)
-		}
-		return sdevs, ""
-
-	} else { //FOUND DEV
-		var ans []map[string]interface{}
-
-		d, _ := ExtractCursor(c, ctx)
-		for i := range d {
-			x, err := RetrieveDeviceHierarch("device",
-				d[i]["_id"].(primitive.ObjectID), DEVICE, SUBDEV)
-			if err != "" {
-				return nil, err
-			}
-			ans = append(ans, x)
-		}
-		return ans, ""
-	}
-	defer cancel()
-
-	return nil, ""
-}
-*/
 
 func ExtractCursor(c *mongo.Cursor, ctx context.Context) ([]map[string]interface{}, string) {
 	var ans []map[string]interface{}
