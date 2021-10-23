@@ -611,11 +611,12 @@ var UpdateEntity = func(w http.ResponseWriter, r *http.Request) {
 		entity, _ = mux.Vars(r)["entity"]
 		entity = entity[:len(entity)-1]
 
-		if entity == "device" {
+		/*if entity == "device" {
 			v, e3 = models.UpdateDeviceF(objID, &updateData)
 		} else {
-			v, e3 = models.UpdateEntity(entity, objID, &updateData)
-		}
+
+		}*/
+		v, e3 = models.UpdateEntity(entity, objID, &updateData)
 
 	default:
 		w.WriteHeader(http.StatusBadRequest)

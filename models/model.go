@@ -1196,7 +1196,7 @@ func GetDeviceF(entityID primitive.ObjectID) (map[string]interface{}, string) {
 	}
 }
 */
-
+/*
 func UpdateDeviceF(entityID primitive.ObjectID, t *map[string]interface{}) (map[string]interface{}, string) {
 	var x map[string]interface{}
 	var e string
@@ -1218,7 +1218,7 @@ func UpdateDeviceF(entityID primitive.ObjectID, t *map[string]interface{}) (map[
 	}
 
 	return x, e
-}
+}*/
 
 func DeleteDeviceF(entityID primitive.ObjectID) (map[string]interface{}, string) {
 	var deviceType string
