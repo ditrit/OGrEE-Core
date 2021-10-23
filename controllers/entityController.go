@@ -198,14 +198,7 @@ var CreateEntity = func(w http.ResponseWriter, r *http.Request) {
 		println("ENT: ", entStr)
 		println("ENUM VAL: ", i)
 
-		if v, ok := entity["category"]; ok &&
-			(v.(string) == "subdevice" && entStr == "device" ||
-				v.(string) == "subdevice1") && entStr == "device" {
-			println("Creating SPLE")
-			resp, e = CreateSplitEntity(entity, i)
-		} else {
-			resp, e = models.CreateEntity(i, entity)
-		}
+		resp, e = models.CreateEntity(i, entity)
 
 	}
 
@@ -290,12 +283,13 @@ var GetEntity = func(w http.ResponseWriter, r *http.Request) {
 			}
 
 			//Check for Device family
-			if s == "device" {
+			/*if s == "device" {
 				println("Calling GetDeviceF")
 				data, e1 = models.GetDeviceF(x)
 			} else {
 				data, e1 = models.GetEntity(x, s)
-			}
+			}*/
+			data, e1 = models.GetEntity(x, s)
 
 		}
 
@@ -826,6 +820,8 @@ var GetEntityHierarchy = func(w http.ResponseWriter, r *http.Request) {
 	entity := r.URL.Path[5:idx]
 	resp := u.Message(true, "success")
 	var limit int
+	var data map[string]interface{}
+	var e1 string
 
 	id, e := mux.Vars(r)["id"]
 	if e == false {
@@ -876,7 +872,12 @@ var GetEntityHierarchy = func(w http.ResponseWriter, r *http.Request) {
 	entNum := u.EntityStrToInt(entity)
 
 	println("Entity: ", entity, " & OID: ", oID.Hex())
-	data, e1 := models.GetEntityHierarchy(entity, oID, entNum, limit+1)
+	if entity == "device" {
+		println("RETREIVE")
+		data, e1 = models.RetrieveDeviceHierarch(oID)
+	} else {
+		data, e1 = models.GetEntityHierarchy(entity, oID, entNum, limit+1)
+	}
 
 	if data == nil {
 		resp = u.Message(false, "Error while getting :"+entity+","+e1)
@@ -1139,6 +1140,7 @@ var GetEntityHierarchyNonStd = func(w http.ResponseWriter, r *http.Request) {
 }
 
 //Manage Device Family
+/*
 func CreateSplitEntity(entity map[string]interface{}, i int) (map[string]interface{}, string) {
 
 	v := entity["category"].(string)
@@ -1192,3 +1194,4 @@ func CreateSplitEntity(entity map[string]interface{}, i int) (map[string]interfa
 	}
 
 }
+*/

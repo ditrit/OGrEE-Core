@@ -143,8 +143,22 @@ func ValidateEntity(entity int, t map[string]interface{}) (map[string]interface{
 
 		//Check if Parent ID is valid
 		//Tenants do not have Parents
-		if entity > TENANT && entity <= SUBDEV1 {
+		if entity == DEVICE {
+			objID, err = primitive.ObjectIDFromHex(t["parentId"].(string))
+			if err != nil {
+				return u.Message(false, "ParentID is not valid"), false
+			}
 
+			ctx, cancel := u.Connect()
+			if GetDB().Collection("rack").FindOne(ctx,
+				bson.M{"_id": objID}).Err() != nil &&
+				GetDB().Collection("device").FindOne(ctx,
+					bson.M{"_id": objID}).Err() != nil {
+				return u.Message(false, "ParentID should be correspond to Existing ID"), false
+			}
+			defer cancel()
+
+		} else if entity > TENANT && entity <= WALL {
 			objID, err = primitive.ObjectIDFromHex(t["parentId"].(string))
 			if err != nil {
 				return u.Message(false, "ParentID is not valid"), false
@@ -680,9 +694,9 @@ func GetEntitiesUsingAncestorNames(ent string, id primitive.ObjectID, ancestry m
 		if v == "all" {
 			println("K:", k)
 			//println("ID", x["_id"].(primitive.ObjectID).String())
-			if k == "device" {
-				return GetDeviceFByParentID(pid)
-			}
+			/*if k == "device" {
+				return GetDeviceFByParentID(pid) nil, ""
+			}*/
 			return GetEntitiesOfParent(k, pid)
 		}
 
@@ -710,7 +724,7 @@ func GetEntityUsingAncestorNames(ent string, id primitive.ObjectID, ancestry map
 
 		println("KEY:", k, " VAL:", v)
 
-		if k == "device" {
+		/*if k == "device" {
 			println("entered")
 			q, e2 := GetDeviceFByNameAndParentID(pid, v)
 			if e2 != "" {
@@ -724,7 +738,7 @@ func GetEntityUsingAncestorNames(ent string, id primitive.ObjectID, ancestry map
 				x = map[string]interface{}{"devices": q}
 			}
 			return x, ""
-		}
+		}*/
 
 		x, e1 = GetEntityByNameAndParentID(k, pid, v)
 		if e1 != "" {
@@ -786,9 +800,9 @@ func GetEntitiesUsingTenantAsAncestor(ent, id string, ancestry map[string]string
 		if v == "all" {
 			println("K:", k)
 			//println("ID", x["_id"].(primitive.ObjectID).String())
-			if k == "device" {
-				return GetDeviceFByParentID(pid)
-			}
+			/*if k == "device" {
+				return GetDeviceFByParentID(pid) nil, ""
+			}*/
 			return GetEntitiesOfParent(k, pid)
 		}
 
@@ -816,7 +830,7 @@ func GetEntityUsingTenantAsAncestor(ent, id string, ancestry map[string]string) 
 
 		println("KEY:", k, " VAL:", v)
 
-		if k == "device" {
+		/*if k == "device" {
 			println("entered")
 			q, e2 := GetDeviceFByNameAndParentID(pid, v)
 			if e2 != "" {
@@ -830,7 +844,7 @@ func GetEntityUsingTenantAsAncestor(ent, id string, ancestry map[string]string) 
 				x = map[string]interface{}{"devices": q}
 			}
 			return x, ""
-		}
+		}*/
 
 		x, e1 = GetEntityByNameAndParentID(k, pid, v)
 		if e1 != "" {
@@ -1140,50 +1154,31 @@ func GetDevEntitiesOfParent(ent, id string) ([]map[string]interface{}, string) {
 	return enfants, ""
 }
 
-func RetrieveDeviceHierarch(devType string, ID primitive.ObjectID, entnum, end int) (map[string]interface{}, string) {
+func RetrieveDeviceHierarch(ID primitive.ObjectID) (map[string]interface{}, string) {
+	//var subChildren []map[string]interface{}
 
-	if entnum <= end {
-		//Check if at the end of the hierarchy
-		switch devType {
-		case "device", "subdevice", "subdevice1":
-			//Get the top entity
-			top, e := GetEntity(ID, devType)
-			if e != "" {
-				return nil, e
-			}
-
-			subEnt := u.EntityToString(entnum + 1)
-
-			//Get immediate children
-			children, e1 := GetEntitiesOfParent(subEnt, ID.Hex())
-			if e1 != "" {
-				println("Are we here")
-				println("SUBENT: ", subEnt)
-				println("PID: ", ID.Hex())
-				return nil, e1
-			}
-			top[subEnt+"s"] = children
-
-			//println("Child Len: ", len(children))
-			//println("@ ", subEnt)
-
-			if entnum+1 <= end {
-				//Get the rest of hierarchy for children
-				for i := range children {
-					subIdx := u.EntityToString(entnum + 1)
-					subID := (children[i]["_id"].(primitive.ObjectID))
-					children[i], _ =
-						RetrieveDeviceHierarch(subIdx, subID, entnum+1, end)
-				}
-			}
-
-			return top, ""
-		}
+	//Get the top entity
+	top, e := GetEntity(ID, "device")
+	if e != "" {
+		return nil, e
 	}
 
-	return nil, ""
+	children, e1 := GetEntitiesOfParent("device", ID.Hex())
+	if e1 != "" {
+		return top, ""
+	}
+
+	for i := range children {
+		children[i], _ = RetrieveDeviceHierarch(
+			children[i]["_id"].(primitive.ObjectID))
+	}
+
+	top["children"] = children
+
+	return top, ""
 }
 
+/*
 func GetDeviceF(entityID primitive.ObjectID) (map[string]interface{}, string) {
 
 	d, e := IdentifyDevType(entityID)
@@ -1200,6 +1195,7 @@ func GetDeviceF(entityID primitive.ObjectID) (map[string]interface{}, string) {
 		return nil, e
 	}
 }
+*/
 
 func UpdateDeviceF(entityID primitive.ObjectID, t *map[string]interface{}) (map[string]interface{}, string) {
 	var x map[string]interface{}
@@ -1225,55 +1221,23 @@ func UpdateDeviceF(entityID primitive.ObjectID, t *map[string]interface{}) (map[
 }
 
 func DeleteDeviceF(entityID primitive.ObjectID) (map[string]interface{}, string) {
-	//var x map[string]interface{}
-	//var e string
 	var deviceType string
 
-	//Check if in Family and what type
-	_, deviceType = IdentifyDevType(entityID)
-
-	switch deviceType {
-	case "device":
-		t, e := RetrieveDeviceHierarch(deviceType, entityID, DEVICE, SUBDEV)
-		if e != "" {
-
-			return nil, e
-		}
-		del := parseDataForNonStdResult(deviceType, DEVICE, SUBDEV1+1, t)
-		println("LEN OF DEL: ", len(del))
-		delSubEnts(DEVICE, del)
-
-		ctx, cancel := u.Connect()
-		c, _ := GetDB().Collection(deviceType).DeleteOne(ctx, bson.M{"_id": entityID})
-		if c.DeletedCount == 0 {
-			return u.Message(false, "There was an error in deleting the entity"), "not found"
-		}
-		defer cancel()
-
-	case "subdevice":
-
-		ctx, cancel := u.Connect()
-		c, _ := GetDB().Collection("subdevice1").DeleteMany(ctx, bson.M{"parentId": entityID.Hex()})
-		if c.DeletedCount == 0 {
-			return u.Message(false, "There was an error in deleting the entity"), "not found"
-		}
-
-		c1, _ := GetDB().Collection(deviceType).DeleteOne(ctx, bson.M{"_id": entityID})
-		if c1.DeletedCount == 0 {
-			return u.Message(false, "There was an error in deleting the entity"), "not found"
-		}
-		defer cancel()
-
-	case "subdevice1":
-		ctx, cancel := u.Connect()
-		c, _ := GetDB().Collection("subdevice1").DeleteOne(ctx, bson.M{"_id": entityID})
-		if c.DeletedCount == 0 {
-			return u.Message(false, "There was an error in deleting the entity"), "not found"
-		}
-		defer cancel()
-	default:
-		return u.Message(false, "Error: "+deviceType), deviceType
+	t, e := RetrieveDeviceHierarch(entityID)
+	if e != "" {
+		return nil, e
 	}
+	del := parseDataForNonStdResult(deviceType, DEVICE, SUBDEV1+1, t)
+	println("LEN OF DEL: ", len(del))
+	delSubEnts(DEVICE, del)
+
+	ctx, cancel := u.Connect()
+	c, _ := GetDB().Collection("device").DeleteOne(ctx, bson.M{"_id": entityID})
+	if c.DeletedCount == 0 {
+		return u.Message(false, "There was an error in deleting the entity"), "not found"
+	}
+	defer cancel()
+
 	return nil, ""
 }
 
@@ -1289,6 +1253,7 @@ func GetDeviceFByQuery(query bson.M) ([]map[string]interface{}, string) {
 	return ans, ""
 }
 
+/*
 func GetDeviceFByNameAndParentID(id, name string) ([]map[string]interface{}, string) {
 	t := map[string]interface{}{}
 	var sdevs []map[string]interface{}
@@ -1365,7 +1330,8 @@ func GetDeviceFByNameAndParentID(id, name string) ([]map[string]interface{}, str
 
 	return nil, ""
 }
-
+*/
+/*
 func GetDeviceFByParentID(id string) ([]map[string]interface{}, string) {
 	//t := map[string]interface{}{}
 	var sdevs []map[string]interface{}
@@ -1414,6 +1380,7 @@ func GetDeviceFByParentID(id string) ([]map[string]interface{}, string) {
 
 	return nil, ""
 }
+*/
 
 func ExtractCursor(c *mongo.Cursor, ctx context.Context) ([]map[string]interface{}, string) {
 	var ans []map[string]interface{}
