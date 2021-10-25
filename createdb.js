@@ -8,8 +8,6 @@ db.createCollection('building');
 db.createCollection('room');
 db.createCollection('rack');
 db.createCollection('device');
-db.createCollection('subdevice');
-db.createCollection('subdevice1');
 
 //Template Collections
 db.createCollection('room_template');
@@ -25,9 +23,6 @@ db.building.createIndex({parentId:1, name:1}, { unique: true });
 db.room.createIndex({parentId:1, name:1}, { unique: true });
 db.rack.createIndex({parentId:1, name:1}, { unique: true });
 db.device.createIndex({parentId:1, name:1}, { unique: true });
-db.subdevice.createIndex({parentId:1, name:1}, { unique: true });
-db.subdevice1.createIndex({parentId:1, name:1}, { unique: true });
-
 //Enforcing that the Parent Exists is done at the ORM Level for now
 
 

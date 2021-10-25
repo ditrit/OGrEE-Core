@@ -148,7 +148,7 @@ mongo --shell
 
 Running a MongoDB container
 --------------------------
-
+docker run --name mdb -v /home/ziad/mongoDir:/docker-entrypoint-initdb.d/ -p 27017:27017 -d mongo:latest
 
 Swaggerio Docs
 --------------------------
