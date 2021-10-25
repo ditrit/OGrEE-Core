@@ -111,7 +111,7 @@ func parseDataForNonStdResult(ent string, eNum int, data map[string]interface{})
 // - name: objs
 //   in: query
 //   description: 'Indicates the location. Only values of "tenants", "sites",
-//   "buildings", "rooms", "racks", "devices", "subdevices", "subdevice1s" are acceptable'
+//   "buildings", "rooms", "racks", "devices", "acs", "panels", "walls","room-templates", "obj-templates" are acceptable'
 //   required: true
 //   type: string
 //   default: "sites"
@@ -133,7 +133,7 @@ func parseDataForNonStdResult(ent string, eNum int, data map[string]interface{})
 //   type: string
 //   default: 999
 // - name: ParentID
-//   description: 'All objects are linked to a parent with the exception of Tenant since it is at the top and has no parent'
+//   description: 'All objects are linked to a parent with the exception of Tenant since it has no parent'
 //   required: true
 //   type: int
 //   default: 999
@@ -145,8 +145,8 @@ func parseDataForNonStdResult(ent string, eNum int, data map[string]interface{})
 //   default: ["Some abandoned object in Grenoble"]
 // - name: Attributes
 //   in: query
-//   description: Any other object attributes can be added
-//   required: false
+//   description: Any other object attributes can be added. They are required depending on obj type
+//   required: true
 //   type: json
 // responses:
 //     '201':
@@ -233,7 +233,8 @@ var CreateEntity = func(w http.ResponseWriter, r *http.Request) {
 // - name: objs
 //   in: query
 //   description: 'Indicates the location. Only values of "tenants", "sites",
-//   "buildings", "rooms", "racks", "devices", "subdevices", "subdevice1s" are acceptable'
+//   "buildings", "rooms", "racks", "devices", "room-templates", "obj-templates" are acceptable
+//   For rooms, walls, acs and panels can be obtained by appending /subobj type and subobj id'
 //   required: true
 //   type: string
 //   default: "sites"
@@ -342,7 +343,8 @@ var GetEntity = func(w http.ResponseWriter, r *http.Request) {
 // - name: objs
 //   in: query
 //   description: 'Indicates the location. Only values of "tenants", "sites",
-//   "buildings", "rooms", "racks", "devices", "subdevices", "subdevice1s" are acceptable'
+//   "buildings", "rooms", "racks", "devices", "room-templates", "obj-templates" are acceptable
+//   For rooms, walls, acs and panels can be obtained by appending /subobj type'
 //   required: true
 //   type: string
 //   default: "sites"
@@ -419,7 +421,8 @@ var GetAllEntities = func(w http.ResponseWriter, r *http.Request) {
 // - name: objs
 //   in: query
 //   description: 'Indicates the location. Only values of "tenants", "sites",
-//   "buildings", "rooms", "racks", "devices", "subdevices", "subdevice1s" are acceptable'
+//   "buildings", "rooms", "racks", "devices", "room-templates", "obj-templates" are acceptable
+//   For rooms, walls, acs and panels can be deleted by appending /subobj type and subobj id'
 //   required: true
 //   type: string
 //   default: "sites"
@@ -507,7 +510,8 @@ var DeleteEntity = func(w http.ResponseWriter, r *http.Request) {
 // - name: objs
 //   in: query
 //   description: 'Indicates the location. Only values of "tenants", "sites",
-//   "buildings", "rooms", "racks", "devices", "subdevices", "subdevice1s" are acceptable'
+//   "buildings", "rooms", "racks", "devices", "room-templates", "obj-templates" are acceptable.
+//   For rooms, walls, acs and panels can be updated by appending /subobj type and subobj id'
 //   required: true
 //   type: string
 //   default: "sites"
@@ -647,7 +651,7 @@ var UpdateEntity = func(w http.ResponseWriter, r *http.Request) {
 // - name: objs
 //   in: query
 //   description: 'Indicates the location. Only values of "tenants", "sites",
-//   "buildings", "rooms", "racks", "devices", "subdevices", "subdevice1s" are acceptable'
+//   "buildings", "rooms", "racks", "devices", "room-templates", "obj-templates", "walls","acs","panels" are acceptable'
 //   required: true
 //   type: string
 //   default: "sites"
@@ -791,7 +795,7 @@ var GetEntitiesOfParent = func(w http.ResponseWriter, r *http.Request) {
 // - name: objs
 //   in: query
 //   description: 'Indicates the location. Only values of "tenants", "sites",
-//   "buildings", "rooms", "racks", "devices", "subdevices", "subdevice1s" are acceptable'
+//   "buildings", "rooms", "racks", "devices" are acceptable'
 //   required: true
 //   type: string
 //   default: "sites"
@@ -965,7 +969,7 @@ var GetTenantHierarchy = func(w http.ResponseWriter, r *http.Request) {
 // - name: objs
 //   in: query
 //   description: 'Indicates the location. Only values of "tenants", "sites",
-//   "buildings", "rooms", "racks", "devices", "subdevices", "subdevice1s" are acceptable'
+//   "buildings", "rooms", "racks", "devices" are acceptable'
 //   required: true
 //   type: string
 //   default: "sites"
@@ -977,7 +981,7 @@ var GetTenantHierarchy = func(w http.ResponseWriter, r *http.Request) {
 //   default: "INFINITI"
 // - name: '*'
 //   in: path
-//   description: Hierarchal path to desired object(s)
+//   description: Hierarchal path to desired object(s). For rooms it can additionally have "acs" or "panels" or "walls"
 //   required: true
 //   type: string
 //   default: "/buildings/BuildingB/RoomA"
@@ -1130,60 +1134,3 @@ var GetEntityHierarchyNonStd = func(w http.ResponseWriter, r *http.Request) {
 	resp["devices"] = devices*/
 	u.Respond(w, resp)
 }
-
-//Manage Device Family
-/*
-func CreateSplitEntity(entity map[string]interface{}, i int) (map[string]interface{}, string) {
-
-	v := entity["category"].(string)
-	if v == "subdevice" {
-		//CHECK IF PARENT EXISTS
-		pid, _ := primitive.ObjectIDFromHex(entity["parentId"].(string))
-		_, e1 := models.GetEntity(pid, "device")
-		if e1 != "" {
-			println("PARENT DOESNT EXIST")
-			//CREATE DEVICE PARENT
-			x, e := models.CreateParentPlaceHolder("subdevice",
-				entity["parentId"].(string))
-			if e != "" {
-				return nil, e
-			}
-			entity["parentId"] = x["id"]
-			sub, e1 := models.CreateEntity(i, entity)
-			e = e1
-			x["subdevice"] = sub
-			return x, e1
-		}
-
-		//PARENT EXISTS
-		println("PARENT EXISTS")
-		return models.CreateEntity(SUBDEV, entity)
-
-	} else if v == "subdevice1" {
-		//CHECK IF PARENT EXISTS
-		pid, _ := primitive.ObjectIDFromHex(entity["parentId"].(string))
-		_, e1 := models.GetEntity(pid, "subdevice")
-		if e1 != "" {
-			//CREATE SUBDEVICE PARENT
-			x, e := models.CreateParentPlaceHolder("subdevice1",
-				entity["parentId"].(string))
-			if e != "" {
-				return nil, e
-			}
-
-			entity["parentId"] = x["id"]
-			sub, e1 := models.CreateEntity(SUBDEV, entity)
-			e = e1
-			x["subdevice1"] = sub
-			return x, e1
-		}
-
-		//PARENT EXISTS
-		return models.CreateEntity(SUBDEV1, entity)
-
-	} else {
-		return models.CreateEntity(SUBDEV1, entity)
-	}
-
-}
-*/

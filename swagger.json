@@ -108,7 +108,7 @@
           {
             "type": "string",
             "default": "sites",
-            "description": "Indicates the location. Only values of \"tenants\", \"sites\", \"buildings\", \"rooms\", \"racks\", \"devices\", \"subdevices\", \"subdevice1s\" are acceptable",
+            "description": "Indicates the location. Only values of \"tenants\", \"sites\", \"buildings\", \"rooms\", \"racks\", \"devices\", \"room-templates\", \"obj-templates\" are acceptable For rooms, walls, acs and panels can be obtained by appending /obj type",
             "name": "objs",
             "in": "query",
             "required": true
@@ -139,7 +139,7 @@
           {
             "type": "string",
             "default": "sites",
-            "description": "Indicates the location. Only values of \"tenants\", \"sites\", \"buildings\", \"rooms\", \"racks\", \"devices\", \"subdevices\", \"subdevice1s\" are acceptable",
+            "description": "Indicates the location. Only values of \"tenants\", \"sites\", \"buildings\", \"rooms\", \"racks\", \"devices\", \"room-templates\", \"obj-templates\" are acceptable For rooms, walls, acs and panels can be obtained by appending /obj type and obj id",
             "name": "objs",
             "in": "query",
             "required": true
@@ -179,7 +179,7 @@
           {
             "type": "string",
             "default": "sites",
-            "description": "Indicates the location. Only values of \"tenants\", \"sites\", \"buildings\", \"rooms\", \"racks\", \"devices\", \"subdevices\", \"subdevice1s\" are acceptable",
+            "description": "Indicates the location. Only values of \"tenants\", \"sites\", \"buildings\", \"rooms\", \"racks\", \"devices\", \"room-templates\", \"obj-templates\" are acceptable. For rooms, walls, acs and panels can be updated by appending /obj type and obj id",
             "name": "objs",
             "in": "query",
             "required": true
@@ -251,7 +251,7 @@
           {
             "type": "string",
             "default": "sites",
-            "description": "Indicates the location. Only values of \"tenants\", \"sites\", \"buildings\", \"rooms\", \"racks\", \"devices\", \"subdevices\", \"subdevice1s\" are acceptable",
+            "description": "Indicates the location. Only values of \"tenants\", \"sites\", \"buildings\", \"rooms\", \"racks\", \"devices\", \"room-templates\", \"obj-templates\" are acceptable For rooms, walls, acs and panels can be deleted by appending /obj type and obj id",
             "name": "objs",
             "in": "query",
             "required": true
@@ -289,7 +289,7 @@
           {
             "type": "string",
             "default": "sites",
-            "description": "Indicates the location. Only values of \"tenants\", \"sites\", \"buildings\", \"rooms\", \"racks\", \"devices\", \"subdevices\", \"subdevice1s\" are acceptable",
+            "description": "Indicates the location. Only values of \"tenants\", \"sites\", \"buildings\", \"rooms\", \"racks\", \"devices\" are acceptable",
             "name": "objs",
             "in": "query",
             "required": true
@@ -305,7 +305,7 @@
           {
             "type": "string",
             "default": "/buildings/BuildingB/RoomA",
-            "description": "Hierarchal path to desired object(s)",
+            "description": "Hierarchal path to desired object(s). For rooms it can additionally have \"acs\" or \"panels\" or \"walls\"",
             "name": "*",
             "in": "path",
             "required": true
@@ -336,7 +336,7 @@
           {
             "type": "string",
             "default": "sites",
-            "description": "Indicates the location. Only values of \"tenants\", \"sites\", \"buildings\", \"rooms\", \"racks\", \"devices\", \"subdevices\", \"subdevice1s\" are acceptable",
+            "description": "Indicates the location. Only values of \"tenants\", \"sites\", \"buildings\", \"rooms\", \"racks\", \"devices\" are acceptable",
             "name": "objs",
             "in": "query",
             "required": true
@@ -360,45 +360,6 @@
         }
       }
     },
-    "/api/{objs}/{tenant_name}/{*}": {
-      "get": {
-        "description": "The Tenant name must be provided in the URL parameter",
-        "produces": [
-          "application/json"
-        ],
-        "tags": [
-          "objects"
-        ],
-        "summary": "A category of objects of a Tenant can be retrieved from the system.",
-        "operationId": "GetFromTenant",
-        "parameters": [
-          {
-            "type": "string",
-            "default": "INFINITI",
-            "description": "Name of desired tenant",
-            "name": "name",
-            "in": "path",
-            "required": true
-          },
-          {
-            "type": "string",
-            "default": "/sites",
-            "description": "Hierarchal path to desired object(s)",
-            "name": "*",
-            "in": "path",
-            "required": true
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Found"
-          },
-          "404": {
-            "description": "Not Found"
-          }
-        }
-      }
-    },
     "/api/{objs}?": {
       "get": {
         "description": "Gets an Object using any attribute (with the exception of description) via query in the system\nThe attributes are in the form {attr}=xyz\u0026{attr1}=abc\nAnd any combination can be used given that at least 1 is provided.",
@@ -413,7 +374,7 @@
           {
             "type": "string",
             "default": "sites",
-            "description": "Indicates the location. Only values of \"tenants\", \"sites\", \"buildings\", \"rooms\", \"racks\", \"devices\", \"subdevices\", \"subdevice1s\" are acceptable",
+            "description": "Indicates the location. Only values of \"tenants\", \"sites\", \"buildings\", \"rooms\", \"racks\", \"devices\", \"room-templates\", \"obj-templates\", \"walls\",\"acs\",\"panels\" are acceptable",
             "name": "objs",
             "in": "query",
             "required": true
@@ -469,7 +430,7 @@
           {
             "type": "string",
             "default": "sites",
-            "description": "Indicates the location. Only values of \"tenants\", \"sites\", \"buildings\", \"rooms\", \"racks\", \"devices\", \"subdevices\", \"subdevice1s\" are acceptable",
+            "description": "Indicates the location. Only values of \"tenants\", \"sites\", \"buildings\", \"rooms\", \"racks\", \"devices\", \"acs\", \"panels\", \"walls\",\"room-templates\", \"obj-templates\" are acceptable",
             "name": "objs",
             "in": "query",
             "required": true
@@ -500,7 +461,7 @@
           {
             "type": "int",
             "default": 999,
-            "description": "All objects are linked to a parent with the exception of Tenant since it is at the top and has no parent",
+            "description": "All objects are linked to a parent with the exception of Tenant since it has no parent",
             "name": "ParentID",
             "required": true
           },
@@ -515,9 +476,10 @@
           },
           {
             "type": "json",
-            "description": "Any other object attributes can be added",
+            "description": "Any other object attributes can be added. They are required depending on obj type",
             "name": "Attributes",
-            "in": "query"
+            "in": "query",
+            "required": true
           }
         ],
         "responses": {
