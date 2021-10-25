@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"p3/models"
 	u "p3/utils"
@@ -252,6 +253,9 @@ var CreateEntity = func(w http.ResponseWriter, r *http.Request) {
 //     '404':
 //         description: Not Found
 var GetEntity = func(w http.ResponseWriter, r *http.Request) {
+	fmt.Println("******************************************************")
+	fmt.Println("FUNCTION: GetEntity called")
+	fmt.Println("******************************************************")
 	var data map[string]interface{}
 	var id, e1 string
 	var x primitive.ObjectID
@@ -354,6 +358,9 @@ var GetEntity = func(w http.ResponseWriter, r *http.Request) {
 //     '404':
 //         description: Nothing Found
 var GetAllEntities = func(w http.ResponseWriter, r *http.Request) {
+	fmt.Println("******************************************************")
+	fmt.Println("FUNCTION: GetAllEntities called")
+	fmt.Println("******************************************************")
 	var data []map[string]interface{}
 	var e, entStr string
 	arr := strings.Split(r.URL.Path, "/")
@@ -438,7 +445,9 @@ var GetAllEntities = func(w http.ResponseWriter, r *http.Request) {
 //     '404':
 //        description: Not found
 var DeleteEntity = func(w http.ResponseWriter, r *http.Request) {
-	println("CALLING DEL")
+	fmt.Println("******************************************************")
+	fmt.Println("FUNCTION: DeleteEntity called")
+	fmt.Println("******************************************************")
 	var v map[string]interface{}
 	id, e := mux.Vars(r)["id"]
 	nest, e1 := mux.Vars(r)["nest"]
@@ -558,6 +567,9 @@ var DeleteEntity = func(w http.ResponseWriter, r *http.Request) {
 //         description: Not Found
 
 var UpdateEntity = func(w http.ResponseWriter, r *http.Request) {
+	fmt.Println("******************************************************")
+	fmt.Println("FUNCTION: UpdateEntity called")
+	fmt.Println("******************************************************")
 	var v map[string]interface{}
 	var e3 string
 	var entity string
@@ -683,6 +695,9 @@ var UpdateEntity = func(w http.ResponseWriter, r *http.Request) {
 //     '404':
 //        description: Not found
 var GetEntityByQuery = func(w http.ResponseWriter, r *http.Request) {
+	fmt.Println("******************************************************")
+	fmt.Println("FUNCTION: GetEntityByQuery called")
+	fmt.Println("******************************************************")
 	var data []map[string]interface{}
 	var resp map[string]interface{}
 	var bsonMap bson.M
@@ -740,6 +755,9 @@ var GetEntityByQuery = func(w http.ResponseWriter, r *http.Request) {
 }
 
 var GetEntitiesOfParent = func(w http.ResponseWriter, r *http.Request) {
+	fmt.Println("******************************************************")
+	fmt.Println("FUNCTION: GetEntitiesOfParent called")
+	fmt.Println("******************************************************")
 	var id string
 	var e bool
 	//Extract string between /api and /{id}
@@ -811,6 +829,9 @@ var GetEntitiesOfParent = func(w http.ResponseWriter, r *http.Request) {
 //     '404':
 //         description: Nothing Found
 var GetEntityHierarchy = func(w http.ResponseWriter, r *http.Request) {
+	fmt.Println("******************************************************")
+	fmt.Println("FUNCTION: GetEntityHierarchy called")
+	fmt.Println("******************************************************")
 	//Extract string between /api and /{id}
 	idx := strings.Index(r.URL.Path[5:], "/") + 4
 	entity := r.URL.Path[5:idx]
@@ -912,6 +933,9 @@ var GetEntityHierarchy = func(w http.ResponseWriter, r *http.Request) {
 //     '404':
 //         description: Nothing Found
 var GetTenantHierarchy = func(w http.ResponseWriter, r *http.Request) {
+	fmt.Println("******************************************************")
+	fmt.Println("FUNCTION: GetTenantHierarchy called")
+	fmt.Println("******************************************************")
 	entity := "tenant"
 	resp := u.Message(true, "success")
 	var limit int
@@ -991,6 +1015,9 @@ var GetTenantHierarchy = func(w http.ResponseWriter, r *http.Request) {
 //     '404':
 //         description: Not Found
 var GetEntitiesUsingNamesOfParents = func(w http.ResponseWriter, r *http.Request) {
+	fmt.Println("******************************************************")
+	fmt.Println("FUNCTION: GetEntitiesUsingNamesOfParents called")
+	fmt.Println("******************************************************")
 	//Extract string between /api and /{id}
 	idx := strings.Index(r.URL.Path[5:], "/") + 4
 	entity := r.URL.Path[5:idx]
@@ -1076,6 +1103,9 @@ var GetEntitiesUsingNamesOfParents = func(w http.ResponseWriter, r *http.Request
 }
 
 var GetEntityHierarchyNonStd = func(w http.ResponseWriter, r *http.Request) {
+	fmt.Println("******************************************************")
+	fmt.Println("FUNCTION: GetEntityHierarchyNonStd called")
+	fmt.Println("******************************************************")
 	var e, e1 bool
 	var err string
 	//Extract string between /api and /{id}

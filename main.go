@@ -41,7 +41,7 @@ var pmatch mux.MatcherFunc = func(request *http.Request, match *mux.RouteMatch) 
 //For Obtaining Tenant hierarchy
 var tmatch mux.MatcherFunc = func(request *http.Request, match *mux.RouteMatch) bool {
 	println("CHECKING T-MATCH")
-	return regexp.MustCompile(`^(\/api\/(tenants)(\/.*)+)$`).
+	return regexp.MustCompile(`^(\/api\/(tenants)(\/[a-zA-Z]+)(\/.*)+)$`).
 		MatchString(request.URL.String())
 }
 
