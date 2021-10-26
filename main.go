@@ -20,14 +20,14 @@ var dmatch mux.MatcherFunc = func(request *http.Request, match *mux.RouteMatch) 
 	//https://stackoverflow.com/questions/21664489/
 	//golang-mux-routing-wildcard-custom-func-match
 	println("Checking MATCH")
-	return regexp.MustCompile(`^(\/api\/(tenants|sites|buildings|rooms|rooms\/acs|rooms\/panels|rooms\/walls|racks|devices(room|obj)-templates)\?.*)$`).
+	return regexp.MustCompile(`^(\/api\/(tenants|sites|buildings|rooms|rooms\/acs|rooms\/panels|rooms\/walls|racks|devices|(room|obj)-templates)\?.*)$`).
 		MatchString(request.URL.String())
 }
 
 //Obtain object hierarchy
 var hmatch mux.MatcherFunc = func(request *http.Request, match *mux.RouteMatch) bool {
 	println("CHECKING H-MATCH")
-	return regexp.MustCompile(`^(\/api\/(tenants|sites|buildings|rooms|rooms|racks|devices)\/[a-zA-Z0-9]{24}\/all(\/.*)+)$`).
+	return regexp.MustCompile(`^(\/api\/(tenants|sites|buildings|rooms|rooms|racks|devices)\/[a-zA-Z0-9]{24}\/all)$`).
 		MatchString(request.URL.String())
 }
 
@@ -67,11 +67,31 @@ func main() {
 	router.NewRoute().PathPrefix("/api/{entity}/{id:[a-zA-Z0-9]{24}}/all").
 		MatcherFunc(hmatch).HandlerFunc(controllers.GetEntityHierarchy)
 
-	/*router.HandleFunc("/api/{entity}/{id:[a-zA-Z0-9]{24}}/all",
-	controllers.GetEntityHierarchy).Methods("GET")*/
+	//GET EXCEPTIONS
+	router.HandleFunc("/api/tenants/{tenant_name}/buildings",
+		controllers.GetEntitiesOfAncestor).Methods("GET")
 
-	router.HandleFunc("/api/tenants/{tenant_name}/all",
-		controllers.GetTenantHierarchy).Methods("GET")
+	router.HandleFunc("/api/sites/{id:[a-zA-Z0-9]{24}}/rooms",
+		controllers.GetEntitiesOfAncestor).Methods("GET")
+
+	router.HandleFunc("/api/buildings/{id:[a-zA-Z0-9]{24}}/racks",
+		controllers.GetEntitiesOfAncestor).Methods("GET")
+
+	router.HandleFunc("/api/rooms/{id:[a-zA-Z0-9]{24}}/devices",
+		controllers.GetEntitiesOfAncestor).Methods("GET")
+
+	router.HandleFunc("/api/{entity:rooms}/{id:[a-zA-Z0-9]{24}}/{subent:acs|walls|panels}",
+		controllers.GetAllEntities).Methods("GET")
+
+	//GET ENTITY
+	router.HandleFunc("/api/{entity}/{id:[a-zA-Z0-9]{24}}/{subent:[a-zA-Z0-9]+}/{nest:[a-zA-Z0-9]{24}}",
+		controllers.GetEntity).Methods("GET")
+
+	router.HandleFunc("/api/{entity}/{id:[a-zA-Z0-9]{24}}",
+		controllers.GetEntity).Methods("GET")
+
+	router.HandleFunc("/api/{entity}/{name}",
+		controllers.GetEntity).Methods("GET")
 
 	//GET BY NAME OF PARENT
 	router.NewRoute().PathPrefix("/api/tenants/{tenant_name}").
@@ -81,29 +101,18 @@ func main() {
 		MatcherFunc(pmatch).HandlerFunc(controllers.GetEntitiesUsingNamesOfParents)
 
 	// GET BY QUERY
-	router.HandleFunc("/api/{entity:[a-z]+}",
-		controllers.GetEntityByQuery).Methods("GET").MatcherFunc(dmatch)
-
 	router.HandleFunc("/api/{entity}/{subent}",
 		controllers.GetEntityByQuery).Methods("GET").MatcherFunc(dmatch)
 
-	//GET ENTITY
+	router.HandleFunc("/api/{entity}",
+		controllers.GetEntityByQuery).Methods("GET").MatcherFunc(dmatch)
 
-	router.HandleFunc("/api/{entity}/{id:[a-zA-Z0-9]{24}}/{subent}/{nest}",
-		controllers.GetEntity).Methods("GET")
+	// GET ALL ENTITY
+	router.HandleFunc("/api/{entity}/{id:[a-zA-Z0-9]{24}/{subent:[a-z]+}",
+		controllers.GetAllEntities).Methods("GET")
 
-	router.HandleFunc("/api/{entity}/{id:[a-zA-Z0-9]{24}}",
-		controllers.GetEntity).Methods("GET")
-
-	router.HandleFunc("/api/{entity}/{name}",
-		controllers.GetEntity).Methods("GET")
-
-	// GET IMMEDIATE CHILDREN
-	router.HandleFunc("/api/tenants/{tenant_name}/sites",
-		controllers.GetEntitiesOfParent).Methods("GET")
-
-	router.HandleFunc("/api/{entity}/{id:[a-zA-Z0-9]{24}}/{child}",
-		controllers.GetEntitiesOfParent).Methods("GET")
+	router.HandleFunc("/api/{entity}",
+		controllers.GetAllEntities).Methods("GET")
 
 	//GET ALL NONSTD
 	router.HandleFunc("/api/tenants/{tenant_name}/all/nonstd",
@@ -111,13 +120,6 @@ func main() {
 
 	router.HandleFunc("/api/{entity}/{id:[a-zA-Z0-9]{24}}/all/nonstd",
 		controllers.GetEntityHierarchyNonStd).Methods("GET")
-
-	// GET ALL ENTITY
-	router.HandleFunc("/api/{entity}",
-		controllers.GetAllEntities).Methods("GET")
-
-	router.HandleFunc("/api/{entity}/{id:[a-zA-Z0-9]{24}/{subent}",
-		controllers.GetAllEntities).Methods("GET")
 
 	// CREATE ENTITY
 	router.HandleFunc("/api/{entity}",

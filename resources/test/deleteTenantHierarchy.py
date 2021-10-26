@@ -28,6 +28,10 @@ def writeEnv():
         for i in x:
             PIDS[i] = x[i]
 
+def delObj(uri):
+    return requests.request("DELETE", uri, 
+                              headers=headers, data=payload)
+
 
 #Setup Arg and ENV
 parser = argparse.ArgumentParser(description=
@@ -43,7 +47,7 @@ tid = PIDS['tenantID']
 args = vars(parser.parse_args())
 if ('url' not in args or args['url'] == None):
     print('API URL not specified... using default URL')
-    url = "http://localhost:3001/api"
+    url = "http://localhost:27020/api"
 else:
     url = args['url']
 
@@ -57,12 +61,27 @@ headers = {
 
 
 #START
-response = requests.request("DELETE", url+"/tenants/"+tid, 
-                              headers=headers, data=payload)
+response = delObj(url+"/tenants/"+tid)
 if response.status_code == 204:
     print("Tenant successfully deleted")
 else:
     print("Failed to delete Tenant")
+
+
+response = delObj(url+"/room-templates/"+PIDS["room-templateID"])
+if response.status_code == 204:
+    print("Room Template successfully deleted")
+else:
+    print("Failed to delete Room Template")
+
+
+response = delObj(url+"/obj-templates/"+PIDS["obj-templateID"])
+if response.status_code == 204:
+    print("Obj Template successfully deleted")
+else:
+    print("Failed to delete Obj Template")
+
+
 
 for i in entRange:
   ID = PIDS[i+"ID"]

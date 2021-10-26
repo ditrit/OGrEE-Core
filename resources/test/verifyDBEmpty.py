@@ -2,7 +2,7 @@
 import requests, sys
 expected = 404
 
-url = "http://localhost:3001/api/"
+url = "http://localhost:27020/api/"
 res = True
 
 def checkResponse(code, entity):
@@ -14,8 +14,7 @@ def checkResponse(code, entity):
         print(entity+" Empty: Fail")
 
 entRange=["tenants","sites","buildings","rooms","racks","devices",
-            "subdevices","subdevice1s","room-templates",
-            "obj-templates"]
+            "room-templates","obj-templates"]
 payload={}
 headers = {
   'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJVc2VySWQiOjY2NDA0NjEyNzM0MjQxOTk2OX0.cB1VkYQLlXCatzMiEWGFfJKKx9h8Vsr2vdlylNMe7hs'

@@ -99,8 +99,6 @@ func fixID(data map[string]interface{}) map[string]interface{} {
 	if v, ok := data["_id"]; ok {
 		data["id"] = v
 		delete(data, "_id")
-		println("OH I C IT WAS ALL A DREAM")
-		println("DATAID: ", data["id"].(primitive.ObjectID).Hex())
 	}
 	return data
 }
@@ -802,10 +800,6 @@ func GetEntitiesUsingTenantAsAncestor(ent, id string, ancestry map[string]string
 
 		if v == "all" {
 			println("K:", k)
-			//println("ID", x["_id"].(primitive.ObjectID).String())
-			/*if k == "device" {
-				return GetDeviceFByParentID(pid) nil, ""
-			}*/
 			return GetEntitiesOfParent(k, pid)
 		}
 
@@ -833,22 +827,6 @@ func GetEntityUsingTenantAsAncestor(ent, id string, ancestry map[string]string) 
 
 		println("KEY:", k, " VAL:", v)
 
-		/*if k == "device" {
-			println("entered")
-			q, e2 := GetDeviceFByNameAndParentID(pid, v)
-			if e2 != "" {
-				println("Failing here")
-				return nil, ""
-			}
-
-			if len(q) == 1 {
-				x = q[0]
-			} else {
-				x = map[string]interface{}{"devices": q}
-			}
-			return x, ""
-		}*/
-
 		x, e1 = GetEntityByNameAndParentID(k, pid, v)
 		if e1 != "" {
 			println("Failing here")
@@ -859,6 +837,37 @@ func GetEntityUsingTenantAsAncestor(ent, id string, ancestry map[string]string) 
 	return x, ""
 }
 
+func GetEntitiesOfAncestor(id interface{}, ent int, entStr string) ([]map[string]interface{}, string) {
+	var ans []map[string]interface{}
+	var t map[string]interface{}
+	var e, e1 string
+	if ent == TENANT {
+
+		t, e = GetEntityByName(id.(string), "tenant")
+		if e != "" {
+			return nil, e
+		}
+
+	} else {
+		ID, _ := primitive.ObjectIDFromHex(id.(string))
+		t, e = GetEntity(ID, entStr)
+		if e != "" {
+			return nil, e
+		}
+	}
+
+	sub, e1 := GetEntitiesOfParent(u.EntityToString(ent+1),
+		t["id"].(primitive.ObjectID).Hex())
+	if e1 != "" {
+		return nil, e1
+	}
+	for i := range sub {
+		x, _ := GetEntitiesOfParent(u.EntityToString(ent+2), sub[i]["id"].(primitive.ObjectID).Hex())
+		ans = append(ans, x...)
+	}
+	return ans, ""
+}
+
 //ent string, ID primitive.ObjectID, nestID string
 func GetNestedEntity(ID primitive.ObjectID, ent, nestID string) (map[string]interface{}, string) {
 	t := map[string]interface{}{}
@@ -866,10 +875,13 @@ func GetNestedEntity(ID primitive.ObjectID, ent, nestID string) (map[string]inte
 	ctx, cancel := u.Connect()
 	parent := u.EntityToString(u.GetParentOfEntityByInt(u.EntityStrToInt(ent)))
 	criteria := bson.M{"_id": ID, ent + "s.id": nestID}
+	println("COLLECTION: ", parent)
 	e := GetDB().Collection(parent).FindOne(ctx, criteria).Decode(&t)
 	if e != nil {
 		return nil, e.Error()
 	}
+
+	println("NAMEOBT:", t["name"].(string))
 
 	//Because applying filters to the Mongo Request is a hassle
 	//for now

@@ -254,7 +254,7 @@ var CreateEntity = func(w http.ResponseWriter, r *http.Request) {
 //         description: Not Found
 var GetEntity = func(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("******************************************************")
-	fmt.Println("FUNCTION: GetEntity called")
+	fmt.Println("FUNCTION CALL: 	 GetEntity ")
 	fmt.Println("******************************************************")
 	var data map[string]interface{}
 	var id, e1 string
@@ -276,6 +276,10 @@ var GetEntity = func(w http.ResponseWriter, r *http.Request) {
 			s, _ = mux.Vars(r)["subent"]
 			s = s[:len(s)-1]
 			ID, _ := getObjID(id)
+			println("Should be really nested")
+			println("ID: ", ID.Hex())
+			println("ENTTYPE: ", s)
+			println("NESTID: ", nestID)
 
 			data, e1 = models.GetNestedEntity(ID, s, nestID)
 		} else { // Not Nested
@@ -348,7 +352,7 @@ var GetEntity = func(w http.ResponseWriter, r *http.Request) {
 //         description: Nothing Found
 var GetAllEntities = func(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("******************************************************")
-	fmt.Println("FUNCTION: GetAllEntities called")
+	fmt.Println("FUNCTION CALL: 	 GetAllEntities ")
 	fmt.Println("******************************************************")
 	var data []map[string]interface{}
 	var e, entStr string
@@ -435,7 +439,7 @@ var GetAllEntities = func(w http.ResponseWriter, r *http.Request) {
 //        description: Not found
 var DeleteEntity = func(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("******************************************************")
-	fmt.Println("FUNCTION: DeleteEntity called")
+	fmt.Println("FUNCTION CALL: 	 DeleteEntity ")
 	fmt.Println("******************************************************")
 	var v map[string]interface{}
 	id, e := mux.Vars(r)["id"]
@@ -557,7 +561,7 @@ var DeleteEntity = func(w http.ResponseWriter, r *http.Request) {
 
 var UpdateEntity = func(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("******************************************************")
-	fmt.Println("FUNCTION: UpdateEntity called")
+	fmt.Println("FUNCTION CALL: 	 UpdateEntity ")
 	fmt.Println("******************************************************")
 	var v map[string]interface{}
 	var e3 string
@@ -685,7 +689,7 @@ var UpdateEntity = func(w http.ResponseWriter, r *http.Request) {
 //        description: Not found
 var GetEntityByQuery = func(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("******************************************************")
-	fmt.Println("FUNCTION: GetEntityByQuery called")
+	fmt.Println("FUNCTION CALL: 	 GetEntityByQuery ")
 	fmt.Println("******************************************************")
 	var data []map[string]interface{}
 	var resp map[string]interface{}
@@ -743,9 +747,9 @@ var GetEntityByQuery = func(w http.ResponseWriter, r *http.Request) {
 	u.Respond(w, resp)
 }
 
-var GetEntitiesOfParent = func(w http.ResponseWriter, r *http.Request) {
+var GetEntitiesOfAncestor = func(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("******************************************************")
-	fmt.Println("FUNCTION: GetEntitiesOfParent called")
+	fmt.Println("FUNCTION CALL: 	 GetEntitiesOfAncestor ")
 	fmt.Println("******************************************************")
 	var id string
 	var e bool
@@ -755,7 +759,7 @@ var GetEntitiesOfParent = func(w http.ResponseWriter, r *http.Request) {
 
 	//s, _ := getObjID(id)
 	enum := u.EntityStrToInt(entStr)
-	childBase := u.EntityToString(enum + 1)
+	//childBase := u.EntityToString(enum + 1)
 
 	resp := u.Message(true, "success")
 
@@ -771,7 +775,7 @@ var GetEntitiesOfParent = func(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	data, e1 := models.GetEntitiesOfParent(childBase, id)
+	data, e1 := models.GetEntitiesOfAncestor(id, enum, entStr)
 	if data == nil {
 		resp = u.Message(false, "Error while getting "+entStr+"s: "+e1)
 		u.ErrLog("Error while getting children of "+entStr,
@@ -819,7 +823,7 @@ var GetEntitiesOfParent = func(w http.ResponseWriter, r *http.Request) {
 //         description: Nothing Found
 var GetEntityHierarchy = func(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("******************************************************")
-	fmt.Println("FUNCTION: GetEntityHierarchy called")
+	fmt.Println("FUNCTION CALL: 	 GetEntityHierarchy ")
 	fmt.Println("******************************************************")
 	//Extract string between /api and /{id}
 	idx := strings.Index(r.URL.Path[5:], "/") + 4
@@ -923,7 +927,7 @@ var GetEntityHierarchy = func(w http.ResponseWriter, r *http.Request) {
 //         description: Nothing Found
 var GetTenantHierarchy = func(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("******************************************************")
-	fmt.Println("FUNCTION: GetTenantHierarchy called")
+	fmt.Println("FUNCTION CALL: 	 GetTenantHierarchy ")
 	fmt.Println("******************************************************")
 	entity := "tenant"
 	resp := u.Message(true, "success")
@@ -1005,7 +1009,7 @@ var GetTenantHierarchy = func(w http.ResponseWriter, r *http.Request) {
 //         description: Not Found
 var GetEntitiesUsingNamesOfParents = func(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("******************************************************")
-	fmt.Println("FUNCTION: GetEntitiesUsingNamesOfParents called")
+	fmt.Println("FUNCTION CALL: 	 GetEntitiesUsingNamesOfParents ")
 	fmt.Println("******************************************************")
 	//Extract string between /api and /{id}
 	idx := strings.Index(r.URL.Path[5:], "/") + 4
@@ -1093,7 +1097,7 @@ var GetEntitiesUsingNamesOfParents = func(w http.ResponseWriter, r *http.Request
 
 var GetEntityHierarchyNonStd = func(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("******************************************************")
-	fmt.Println("FUNCTION: GetEntityHierarchyNonStd called")
+	fmt.Println("FUNCTION CALL: 	 GetEntityHierarchyNonStd ")
 	fmt.Println("******************************************************")
 	var e, e1 bool
 	var err string

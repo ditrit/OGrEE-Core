@@ -10,7 +10,7 @@ PIDS={"tenantID":None, "siteID":None, "buildingID":None,
         "wallID":None, "rackID":None, "deviceID":None,
         "room-templateID": None, "obj-templateID": None}
         
-url = "http://localhost:3001/api"
+url = "http://localhost:27020/api"
 headers = {
   'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJVc2VySWQiOjY2NDA0NjEyNzM0MjQxOTk2OX0.cB1VkYQLlXCatzMiEWGFfJKKx9h8Vsr2vdlylNMe7hs',
   'Content-Type': 'application/json'
@@ -210,7 +210,7 @@ verifyCreate(response.status_code, "AC")
 ID = response.json()['data']['id']
 j1=response.json()['data']
 ACID=ID
-print("TESTING: "+url+"/rooms/"+roomID+"/acs/"+ID)
+
 response = requests.request("GET", url+"/rooms/"+roomID+"/acs/"+ID, headers=headers, data={})
 verifyGet(response.status_code, "AC")
 j2=response.json()['data']
