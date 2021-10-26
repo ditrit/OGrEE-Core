@@ -67,7 +67,7 @@ func delSubEnts(eNum int, data map[string][]map[string]interface{}) (map[string]
 
 				if len(arr[idx]) > 0 {
 
-					locID := arr[idx]["_id"].(primitive.ObjectID)
+					locID := arr[idx]["id"].(primitive.ObjectID)
 					ctx, cancel := u.Connect()
 					println("Now deleting: ", eStr)
 					c, _ := GetDB().Collection(eStr).DeleteOne(ctx, bson.M{"_id": locID})
@@ -94,33 +94,15 @@ func genID(length int) string {
 	return string(b)
 }
 
-func CreateParentPlaceHolder(ent, pid string) (map[string]interface{}, string) {
-	name := "Device-" + genID(4)
-	category := "device"
-	domain := "placeholder"
-	t := map[string]interface{}{"name": name,
-		"category": category, "domain": domain, "parentId": pid}
-	x, e := CreateEntity(DEVICE, t)
-
-	if e == "" {
-		switch ent {
-		case "subdevice":
-			return x, ""
-		case "subdevice1":
-			parent := x["parentId"]
-			category = "subdevice"
-			subName := "Subdevice-" + genID(4)
-			t1 := map[string]interface{}{"name": subName,
-				"category": category, "domain": domain, "parentId": parent}
-			y, e1 := CreateEntity(SUBDEV, t1)
-			if e1 != "" {
-				return nil, e1
-			}
-			x["subdevice"] = y
-			return x, ""
-		}
+//Mongo returns '_id' instead of id
+func fixID(data map[string]interface{}) map[string]interface{} {
+	if v, ok := data["_id"]; ok {
+		data["id"] = v
+		delete(data, "_id")
+		println("OH I C IT WAS ALL A DREAM")
+		println("DATAID: ", data["id"].(primitive.ObjectID).Hex())
 	}
-	return nil, "error"
+	return data
 }
 
 func ValidateEntity(entity int, t map[string]interface{}) (map[string]interface{}, bool) {
@@ -453,7 +435,10 @@ func CreateEntity(entity int, t map[string]interface{}) (map[string]interface{},
 	}
 	defer cancel()
 
+	//Remove _id
+	println("Check one heck one")
 	t["id"] = res.InsertedID
+	//t = fixID(t)
 
 	resp := u.Message(true, "success")
 	resp["data"] = t
@@ -469,6 +454,8 @@ func GetEntity(entityID primitive.ObjectID, ent string) (map[string]interface{},
 		return nil, e.Error()
 	}
 	defer cancel()
+	//Remove _id
+	t = fixID(t)
 	return t, ""
 }
 
@@ -482,6 +469,8 @@ func GetEntityByName(name, ent string) (map[string]interface{}, string) {
 		return nil, e.Error()
 	}
 	defer cancel()
+	//Remove _id
+	t = fixID(t)
 	return t, ""
 }
 
@@ -495,6 +484,8 @@ func GetEntityBySlug(name, ent string) (map[string]interface{}, string) {
 		return nil, e.Error()
 	}
 	defer cancel()
+	//Remove _id
+	t = fixID(t)
 	return t, ""
 }
 
@@ -515,6 +506,8 @@ func GetAllEntities(ent string) ([]map[string]interface{}, string) {
 			fmt.Println(err)
 			return nil, err.Error()
 		}
+		//Remove _id
+		x = fixID(x)
 		data = append(data, x)
 	}
 
@@ -541,7 +534,7 @@ func DeleteEntity(entity string, id primitive.ObjectID) (map[string]interface{},
 
 				if len(arr[idx]) > 0 {
 
-					locID := arr[idx]["_id"].(primitive.ObjectID)
+					locID := arr[idx]["id"].(primitive.ObjectID)
 					ctx, cancel := u.Connect()
 					c, _ := GetDB().Collection(eStr).DeleteOne(ctx, bson.M{"_id": locID})
 					if c.DeletedCount == 0 {
@@ -591,6 +584,8 @@ func GetEntityByQuery(ent string, query bson.M) ([]map[string]interface{}, strin
 			fmt.Println(err)
 			return nil, err.Error()
 		}
+		//Remove _id
+		x = fixID(x)
 		results = append(results, x)
 	}
 
@@ -621,6 +616,8 @@ func GetEntitiesOfParent(ent, id string) ([]map[string]interface{}, string) {
 			fmt.Println(err)
 			return nil, err.Error()
 		}
+		//Remove _id
+		s = fixID(s)
 		enfants = append(enfants, s)
 	}
 
@@ -640,6 +637,9 @@ func GetEntityHierarchy(entity string, ID primitive.ObjectID, entnum, end int) (
 			return nil, e
 		}
 
+		//Remove _id
+		top = fixID(top)
+
 		subEnt := u.EntityToString(entnum + 1)
 
 		//Get immediate children
@@ -655,7 +655,7 @@ func GetEntityHierarchy(entity string, ID primitive.ObjectID, entnum, end int) (
 		//Get the rest of hierarchy for children
 		for i := range children {
 			subIdx := u.EntityToString(entnum + 1)
-			subID := (children[i]["_id"].(primitive.ObjectID))
+			subID := (children[i]["id"].(primitive.ObjectID))
 			children[i], _ =
 				GetEntityHierarchy(subIdx, subID, entnum+1, end)
 		}
@@ -674,6 +674,8 @@ func GetEntityByNameAndParentID(ent, id, name string) (map[string]interface{}, s
 		return nil, e.Error()
 	}
 	defer cancel()
+	//Remove _id
+	t = fixID(t)
 	return t, ""
 }
 
@@ -683,7 +685,10 @@ func GetEntitiesUsingAncestorNames(ent string, id primitive.ObjectID, ancestry m
 		return nil, e
 	}
 
-	pid := (top["_id"].(primitive.ObjectID)).Hex()
+	//Remove _id
+	top = fixID(top)
+
+	pid := (top["id"].(primitive.ObjectID)).Hex()
 
 	var x map[string]interface{}
 	var e1 string
@@ -705,7 +710,7 @@ func GetEntitiesUsingAncestorNames(ent string, id primitive.ObjectID, ancestry m
 			println("Failing here")
 			return nil, ""
 		}
-		pid = (x["_id"].(primitive.ObjectID)).Hex()
+		pid = (x["id"].(primitive.ObjectID)).Hex()
 	}
 	return nil, ""
 }
@@ -716,7 +721,10 @@ func GetEntityUsingAncestorNames(ent string, id primitive.ObjectID, ancestry map
 		return nil, e
 	}
 
-	pid := (top["_id"].(primitive.ObjectID)).Hex()
+	//Remove _id
+	top = fixID(top)
+
+	pid := (top["id"].(primitive.ObjectID)).Hex()
 
 	var x map[string]interface{}
 	var e1 string
@@ -724,29 +732,18 @@ func GetEntityUsingAncestorNames(ent string, id primitive.ObjectID, ancestry map
 
 		println("KEY:", k, " VAL:", v)
 
-		/*if k == "device" {
-			println("entered")
-			q, e2 := GetDeviceFByNameAndParentID(pid, v)
-			if e2 != "" {
-				println("Failing here")
-				return nil, ""
-			}
-
-			if len(q) == 1 {
-				x = q[0]
-			} else {
-				x = map[string]interface{}{"devices": q}
-			}
-			return x, ""
-		}*/
-
 		x, e1 = GetEntityByNameAndParentID(k, pid, v)
 		if e1 != "" {
+			println("ENT: ", k)
+			println("PID: ", pid)
+			println("NAME: ", v)
 			println("Failing here")
 			return nil, ""
 		}
-		pid = (x["_id"].(primitive.ObjectID)).Hex()
+		pid = (x["id"].(primitive.ObjectID)).Hex()
 	}
+	//Remove _id
+	x = fixID(x)
 	return x, ""
 }
 
@@ -758,8 +755,11 @@ func GetTenantHierarchy(entity, name string, entnum, end int) (map[string]interf
 		return nil, e
 	}
 
+	//Remove _id
+	t = fixID(t)
+
 	subEnt := u.EntityToString(entnum + 1)
-	tid := t["_id"].(primitive.ObjectID).Hex()
+	tid := t["id"].(primitive.ObjectID).Hex()
 
 	//Get immediate children
 	children, e1 := GetEntitiesOfParent(subEnt, tid)
@@ -774,7 +774,7 @@ func GetTenantHierarchy(entity, name string, entnum, end int) (map[string]interf
 	//Get the rest of hierarchy for children
 	for i := range children {
 		subIdx := u.EntityToString(entnum + 1)
-		subID := (children[i]["_id"].(primitive.ObjectID))
+		subID := (children[i]["id"].(primitive.ObjectID))
 		children[i], _ =
 			GetEntityHierarchy(subIdx, subID, entnum+1, end)
 	}
@@ -789,7 +789,10 @@ func GetEntitiesUsingTenantAsAncestor(ent, id string, ancestry map[string]string
 		return nil, e
 	}
 
-	pid := (top["_id"].(primitive.ObjectID)).Hex()
+	//Remove _id
+	top = fixID(top)
+
+	pid := (top["id"].(primitive.ObjectID)).Hex()
 
 	var x map[string]interface{}
 	var e1 string
@@ -811,7 +814,7 @@ func GetEntitiesUsingTenantAsAncestor(ent, id string, ancestry map[string]string
 			println("Failing here")
 			return nil, ""
 		}
-		pid = (x["_id"].(primitive.ObjectID)).Hex()
+		pid = (x["id"].(primitive.ObjectID)).Hex()
 	}
 	return nil, ""
 }
@@ -822,7 +825,7 @@ func GetEntityUsingTenantAsAncestor(ent, id string, ancestry map[string]string) 
 		return nil, e
 	}
 
-	pid := (top["_id"].(primitive.ObjectID)).Hex()
+	pid := (top["id"].(primitive.ObjectID)).Hex()
 
 	var x map[string]interface{}
 	var e1 string
@@ -851,7 +854,7 @@ func GetEntityUsingTenantAsAncestor(ent, id string, ancestry map[string]string) 
 			println("Failing here")
 			return nil, ""
 		}
-		pid = (x["_id"].(primitive.ObjectID)).Hex()
+		pid = (x["id"].(primitive.ObjectID)).Hex()
 	}
 	return x, ""
 }
@@ -1015,7 +1018,7 @@ func GetNestedEntityByQuery(parent, entity string, query bson.M) ([]map[string]i
 
 	//Now get all subentities from parents
 	for i := range parents {
-		pid := parents[i]["_id"].(primitive.ObjectID)
+		pid := parents[i]["id"].(primitive.ObjectID)
 		nestedEnts, e1 := GetAllNestedEntities(pid, entity)
 		if e1 != "" {
 			return nil, e1
@@ -1110,7 +1113,7 @@ func RetrieveDeviceHierarch(ID primitive.ObjectID) (map[string]interface{}, stri
 
 	for i := range children {
 		children[i], _ = RetrieveDeviceHierarch(
-			children[i]["_id"].(primitive.ObjectID))
+			children[i]["id"].(primitive.ObjectID))
 	}
 
 	top["children"] = children

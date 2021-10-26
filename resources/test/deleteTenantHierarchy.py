@@ -43,7 +43,7 @@ tid = PIDS['tenantID']
 args = vars(parser.parse_args())
 if ('url' not in args or args['url'] == None):
     print('API URL not specified... using default URL')
-    url = "http://localhost:27020/api"
+    url = "http://localhost:3001/api"
 else:
     url = args['url']
 
@@ -66,6 +66,7 @@ else:
 
 for i in entRange:
   ID = PIDS[i+"ID"]
+  print("Now testing: ", url+"/"+i+"s"+"/"+ID)
   response = requests.request("GET", url+"/"+i+"s"+"/"+ID, headers=headers, data=payload)
   checkResponse(response.status_code, i)
 

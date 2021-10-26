@@ -2,7 +2,7 @@
 import requests, sys
 expected = 404
 
-url = "http://localhost:27020/api/"
+url = "http://localhost:3001/api/"
 res = True
 
 def checkResponse(code, entity):

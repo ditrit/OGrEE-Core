@@ -67,8 +67,8 @@ func main() {
 	router.NewRoute().PathPrefix("/api/{entity}/{id:[a-zA-Z0-9]{24}}/all").
 		MatcherFunc(hmatch).HandlerFunc(controllers.GetEntityHierarchy)
 
-	router.HandleFunc("/api/{entity}/{id:[a-zA-Z0-9]{24}}/all",
-		controllers.GetEntityHierarchy).Methods("GET")
+	/*router.HandleFunc("/api/{entity}/{id:[a-zA-Z0-9]{24}}/all",
+	controllers.GetEntityHierarchy).Methods("GET")*/
 
 	router.HandleFunc("/api/tenants/{tenant_name}/all",
 		controllers.GetTenantHierarchy).Methods("GET")

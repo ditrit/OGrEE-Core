@@ -10,7 +10,7 @@ PIDS={"tenantID":None, "siteID":None, "buildingID":None,
         "wallID":None, "rackID":None, "deviceID":None,
         "room-templateID": None, "obj-templateID": None}
         
-url = "http://localhost:27020/api"
+url = "http://localhost:3001/api"
 headers = {
   'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJVc2VySWQiOjY2NDA0NjEyNzM0MjQxOTk2OX0.cB1VkYQLlXCatzMiEWGFfJKKx9h8Vsr2vdlylNMe7hs',
   'Content-Type': 'application/json'
@@ -68,6 +68,7 @@ response = requests.request("GET", url+"/tenants/"+ID, headers=headers, data={})
 verifyGet(response.status_code, "Tenant")
 j2=response.json()['data']
 verifyOutput(j1, j2)
+response.close()
 print()
 print()
 
@@ -106,6 +107,7 @@ response = requests.request("GET", url+"/sites/"+ID, headers=headers, data={})
 verifyGet(response.status_code, "Site")
 j2=response.json()['data']
 verifyOutput(j1, j2)
+response.close()
 print()
 print()
 
@@ -144,6 +146,7 @@ response = requests.request("GET", url+"/buildings/"+ID, headers=headers, data={
 verifyGet(response.status_code, "Building")
 j2=response.json()['data']
 verifyOutput(j1, j2)
+response.close()
 print()
 print()
 
@@ -207,11 +210,12 @@ verifyCreate(response.status_code, "AC")
 ID = response.json()['data']['id']
 j1=response.json()['data']
 ACID=ID
-
+print("TESTING: "+url+"/rooms/"+roomID+"/acs/"+ID)
 response = requests.request("GET", url+"/rooms/"+roomID+"/acs/"+ID, headers=headers, data={})
 verifyGet(response.status_code, "AC")
 j2=response.json()['data']
 verifyOutput(j1, j2)
+response.close()
 print()
 print()
 
@@ -241,6 +245,7 @@ response = requests.request("GET", url+"/rooms/"+roomID+"/panels/"+ID, headers=h
 verifyGet(response.status_code, "Panel")
 j2=response.json()['data']
 verifyOutput(j1, j2)
+response.close()
 print()
 print()
 
@@ -270,6 +275,7 @@ response = requests.request("GET", url+"/rooms/"+roomID+"/walls/"+ID, headers=he
 verifyGet(response.status_code, "Wall")
 j2=response.json()['data']
 verifyOutput(j1, j2)
+response.close()
 print()
 print()
 
@@ -316,6 +322,7 @@ response = requests.request("GET", url+"/racks/"+ID, headers=headers, data={})
 verifyGet(response.status_code, "Rack")
 j2=response.json()['data']
 verifyOutput(j1, j2)
+response.close()
 print()
 print()
 
@@ -361,6 +368,7 @@ response = requests.request("GET", url+"/devices/"+ID, headers=headers, data={})
 verifyGet(response.status_code, "Device")
 j2=response.json()['data']
 verifyOutput(j1, j2)
+response.close()
 print()
 print()
 
@@ -392,6 +400,7 @@ response = requests.request("GET", url+"/room-templates/"+ID, headers=headers, d
 verifyGet(response.status_code, "Room-Template")
 j2=response.json()['data']
 verifyOutput(j1, j2)
+response.close()
 print()
 print()
 
@@ -425,6 +434,7 @@ response = requests.request("GET", url+"/obj-templates/"+ID, headers=headers, da
 verifyGet(response.status_code, "Obj-Template")
 j2=response.json()['data']
 verifyOutput(j1, j2)
+response.close()
 print()
 print()
 

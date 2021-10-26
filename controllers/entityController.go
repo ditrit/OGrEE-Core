@@ -287,13 +287,6 @@ var GetEntity = func(w http.ResponseWriter, r *http.Request) {
 				return
 			}
 
-			//Check for Device family
-			/*if s == "device" {
-				println("Calling GetDeviceF")
-				data, e1 = models.GetDeviceF(x)
-			} else {
-				data, e1 = models.GetEntity(x, s)
-			}*/
 			data, e1 = models.GetEntity(x, s)
 
 		}
@@ -327,10 +320,6 @@ var GetEntity = func(w http.ResponseWriter, r *http.Request) {
 
 	} else {
 		resp = u.Message(true, "success")
-		if _, ok := data["id"]; ok {
-			data["id"] = data["_id"]
-			delete(data, "_id")
-		}
 	}
 
 	resp["data"] = data
