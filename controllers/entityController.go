@@ -276,10 +276,6 @@ var GetEntity = func(w http.ResponseWriter, r *http.Request) {
 			s, _ = mux.Vars(r)["subent"]
 			s = s[:len(s)-1]
 			ID, _ := getObjID(id)
-			println("Should be really nested")
-			println("ID: ", ID.Hex())
-			println("ENTTYPE: ", s)
-			println("NESTID: ", nestID)
 
 			data, e1 = models.GetNestedEntity(ID, s, nestID)
 		} else { // Not Nested
@@ -747,6 +743,39 @@ var GetEntityByQuery = func(w http.ResponseWriter, r *http.Request) {
 	u.Respond(w, resp)
 }
 
+// swagger:operation GET /api/{obj}/{id}/{subent} objects GetFromObject
+// Obtain all objects 2 levels lower in the system.
+// For Example: /api/tenants/{id}/buildings
+// Will return all buildings of a tenant
+// Returns JSON body with all subobjects under the Object
+// ---
+// produces:
+// - application/json
+// parameters:
+// - name: obj
+//   in: query
+//   description: 'Indicates the location. Only values of "tenants", "sites",
+//   "buildings", "rooms" are acceptable'
+//   required: true
+//   type: string
+//   default: "tenants"
+// - name: ID
+//   in: query
+//   description: ID of object
+//   required: true
+//   type: int
+//   default: 999
+// - name: subent
+//   in: query
+//   description: Objects which 2 are levels lower in the hierarchy.
+//   required: true
+//   type: string
+//   default: buildings
+// responses:
+//     '200':
+//         description: Found
+//     '404':
+//         description: Nothing Found
 var GetEntitiesOfAncestor = func(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("******************************************************")
 	fmt.Println("FUNCTION CALL: 	 GetEntitiesOfAncestor ")

@@ -875,13 +875,10 @@ func GetNestedEntity(ID primitive.ObjectID, ent, nestID string) (map[string]inte
 	ctx, cancel := u.Connect()
 	parent := u.EntityToString(u.GetParentOfEntityByInt(u.EntityStrToInt(ent)))
 	criteria := bson.M{"_id": ID, ent + "s.id": nestID}
-	println("COLLECTION: ", parent)
 	e := GetDB().Collection(parent).FindOne(ctx, criteria).Decode(&t)
 	if e != nil {
 		return nil, e.Error()
 	}
-
-	println("NAMEOBT:", t["name"].(string))
 
 	//Because applying filters to the Mongo Request is a hassle
 	//for now
