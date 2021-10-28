@@ -20,7 +20,7 @@ var dmatch mux.MatcherFunc = func(request *http.Request, match *mux.RouteMatch) 
 	//https://stackoverflow.com/questions/21664489/
 	//golang-mux-routing-wildcard-custom-func-match
 	println("Checking MATCH")
-	return regexp.MustCompile(`^(\/api\/(tenants|sites|buildings|rooms|rooms\/acs|rooms\/panels|rooms\/walls|rooms\/cabinets|rooms\/aisles|rooms\/tiles|racks|devices|(room|obj)-templates)\?.*)$`).
+	return regexp.MustCompile(`^(\/api\/(tenants|sites|buildings|rooms|rooms\/acs|rooms\/panels|rooms\/walls|rooms\/cabinets|rooms\/aisles|rooms\/tiles|rooms\/groups|rooms\/corridors|racks|devices|(room|obj)-templates)\?.*)$`).
 		MatchString(request.URL.String())
 }
 
@@ -80,7 +80,7 @@ func main() {
 	router.HandleFunc("/api/rooms/{id:[a-zA-Z0-9]{24}}/devices",
 		controllers.GetEntitiesOfAncestor).Methods("GET")
 
-	router.HandleFunc("/api/{entity:rooms}/{id:[a-zA-Z0-9]{24}}/{subent:acs|walls|panels|cabinets|tiles|aisles}",
+	router.HandleFunc("/api/{entity:rooms}/{id:[a-zA-Z0-9]{24}}/{subent:acs|walls|panels|cabinets|tiles|aisles|groups|corridors}",
 		controllers.GetAllEntities).Methods("GET")
 
 	// GET BY QUERY

@@ -28,6 +28,8 @@ const (
 	CABINET
 	AISLE
 	TILE
+	GROUP
+	CORIDOR
 	ROOMTMPL
 	OBJTMPL
 )
@@ -187,7 +189,8 @@ var CreateEntity = func(w http.ResponseWriter, r *http.Request) {
 	}
 
 	switch entStr {
-	case "ac", "panel", "wall", "cabinet", "tile", "aisle": //NESTED Objects
+	case "ac", "panel", "wall", "cabinet", "tile", //NESTED Objects
+		"aisle", "group", "corridor":
 		entity["id"] = primitive.NewObjectID().Hex()
 
 		i := u.EntityStrToInt(entStr)
@@ -218,7 +221,7 @@ var CreateEntity = func(w http.ResponseWriter, r *http.Request) {
 	}
 
 	switch e {
-	case "validate":
+	case "validate", "duplicate":
 		w.WriteHeader(http.StatusBadRequest)
 		u.ErrLog("Error while creating "+entStr, "CREATE "+entUpper, e, r)
 	case "":

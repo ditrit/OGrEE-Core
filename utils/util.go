@@ -28,6 +28,8 @@ const (
 	CABINET
 	AISLE
 	TILE
+	GROUP
+	CORIDOR
 	ROOMTMPL
 	OBJTMPL
 )
@@ -122,6 +124,10 @@ func EntityToString(entity int) string {
 		return "aisle"
 	case TILE:
 		return "tile"
+	case GROUP:
+		return "group"
+	case CORIDOR:
+		return "corridor"
 	default:
 		return "INVALID"
 	}
@@ -161,6 +167,10 @@ func EntityStrToInt(entity string) int {
 		return AISLE
 	case "tile":
 		return TILE
+	case "group":
+		return GROUP
+	case "corridor":
+		return CORIDOR
 	default:
 		return -1
 	}
@@ -168,7 +178,7 @@ func EntityStrToInt(entity string) int {
 
 func GetParentOfEntityByInt(entity int) int {
 	switch entity {
-	case AC, PWRPNL, WALL, CABINET, TILE, AISLE:
+	case AC, PWRPNL, WALL, CABINET, TILE, AISLE, CORIDOR, GROUP:
 		return ROOM
 	case ROOMTMPL, OBJTMPL:
 		return -1

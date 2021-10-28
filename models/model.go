@@ -27,6 +27,8 @@ const (
 	CABINET
 	AISLE
 	TILE
+	GROUP
+	CORIDOR
 	ROOMTMPL
 	OBJTMPL
 )
@@ -111,7 +113,7 @@ func ValidateEntity(entity int, t map[string]interface{}) (map[string]interface{
 	var err error
 	switch entity {
 	case TENANT, SITE, BLDG, ROOM, RACK, DEVICE, SUBDEV,
-		SUBDEV1, AC, PWRPNL, WALL, CABINET, AISLE, TILE:
+		SUBDEV1, AC, PWRPNL, WALL, CABINET, AISLE, TILE, GROUP, CORIDOR:
 		if t["name"] == "" {
 			return u.Message(false, "Name should be on payload"), false
 		}
@@ -141,7 +143,7 @@ func ValidateEntity(entity int, t map[string]interface{}) (map[string]interface{
 			}
 			defer cancel()
 
-		} else if entity > TENANT && entity <= TILE {
+		} else if entity > TENANT && entity <= CORIDOR {
 			objID, err = primitive.ObjectIDFromHex(t["parentId"].(string))
 			if err != nil {
 				return u.Message(false, "ParentID is not valid"), false
@@ -159,7 +161,8 @@ func ValidateEntity(entity int, t map[string]interface{}) (map[string]interface{
 			defer cancel()
 		}
 
-		if entity != CABINET && entity != TILE && entity != AISLE {
+		if entity != CABINET && entity != TILE && entity != AISLE &&
+			entity != GROUP && entity != CORIDOR {
 			if _, ok := t["attributes"]; !ok {
 				return u.Message(false, "Attributes should be on the payload"), false
 			} else {
@@ -873,6 +876,7 @@ func GetNestedEntity(ID primitive.ObjectID, ent, nestID string) (map[string]inte
 }
 
 func CreateNestedEntity(entity int, eStr string, t map[string]interface{}) (map[string]interface{}, string) {
+	var check map[string]interface{}
 	if resp, ok := ValidateEntity(entity, t); !ok {
 		return resp, "validate"
 	}
@@ -881,6 +885,28 @@ func CreateNestedEntity(entity int, eStr string, t map[string]interface{}) (map[
 
 	parent := u.EntityToString(u.GetParentOfEntityByInt(entity))
 	pid, _ := primitive.ObjectIDFromHex(t["parentId"].(string))
+
+	//CHECK FOR DUPLICATE SECTION
+	e1 := GetDB().Collection(parent).FindOne(ctx, bson.M{"_id": pid}).Decode(&check)
+	if e1 != nil {
+		return u.Message(false,
+				"Internal error while creating "+eStr+": "+e1.Error()),
+			e1.Error()
+	}
+
+	if v, ok := check[eStr+"s"].(primitive.A); ok {
+		for i := range v {
+			if elt, ok := v[i].(map[string]interface{}); ok {
+				if elt["name"].(string) == t["name"] { //DUPLICATE FOUND
+					return u.Message(false,
+							"Error: Cannot create duplicate object. Please use a different name"),
+						"duplicate"
+				}
+			}
+		}
+	}
+	//CHECK FOR DUPLICATE SECTION FINISH
+
 	_, e := GetDB().Collection(parent).UpdateOne(ctx, bson.M{"_id": pid}, bson.M{"$addToSet": bson.M{eStr + "s": t}})
 	if e != nil {
 		return u.Message(false,
