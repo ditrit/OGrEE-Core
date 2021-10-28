@@ -25,6 +25,9 @@ const (
 	AC
 	PWRPNL
 	WALL
+	CABINET
+	AISLE
+	TILE
 	ROOMTMPL
 	OBJTMPL
 )
@@ -156,6 +159,9 @@ func parseDataForNonStdResult(ent string, eNum int, data map[string]interface{})
 //         description: Bad request
 
 var CreateEntity = func(w http.ResponseWriter, r *http.Request) {
+	fmt.Println("******************************************************")
+	fmt.Println("FUNCTION CALL: 	 CreateEntity ")
+	fmt.Println("******************************************************")
 	var e string
 	var resp map[string]interface{}
 	entity := map[string]interface{}{}
@@ -181,7 +187,7 @@ var CreateEntity = func(w http.ResponseWriter, r *http.Request) {
 	}
 
 	switch entStr {
-	case "ac", "panel", "wall": //NESTED Objects
+	case "ac", "panel", "wall", "cabinet", "tile", "aisle": //NESTED Objects
 		entity["id"] = primitive.NewObjectID().Hex()
 
 		i := u.EntityStrToInt(entStr)
@@ -198,6 +204,14 @@ var CreateEntity = func(w http.ResponseWriter, r *http.Request) {
 
 		println("ENT: ", entStr)
 		println("ENUM VAL: ", i)
+
+		//Prevents Mongo from creating a new unidentified collection
+		if i < 0 {
+			w.WriteHeader(http.StatusNotFound)
+			u.Respond(w, u.Message(false, "Invalid object: Please provide a valid object"))
+			u.ErrLog("Cannot create invalid object", "CREATE "+entStr, "", r)
+			return
+		}
 
 		resp, e = models.CreateEntity(i, entity)
 

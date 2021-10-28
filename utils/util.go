@@ -25,6 +25,9 @@ const (
 	AC
 	PWRPNL
 	WALL
+	CABINET
+	AISLE
+	TILE
 	ROOMTMPL
 	OBJTMPL
 )
@@ -113,8 +116,14 @@ func EntityToString(entity int) string {
 		return "room_template"
 	case OBJTMPL:
 		return "obj_template"
+	case CABINET:
+		return "cabinet"
+	case AISLE:
+		return "aisle"
+	case TILE:
+		return "tile"
 	default:
-		return "subdevice1"
+		return "INVALID"
 	}
 }
 
@@ -146,6 +155,12 @@ func EntityStrToInt(entity string) int {
 		return ROOMTMPL
 	case "obj_template":
 		return OBJTMPL
+	case "cabinet":
+		return CABINET
+	case "aisle":
+		return AISLE
+	case "tile":
+		return TILE
 	default:
 		return -1
 	}
@@ -153,7 +168,7 @@ func EntityStrToInt(entity string) int {
 
 func GetParentOfEntityByInt(entity int) int {
 	switch entity {
-	case AC, PWRPNL, WALL:
+	case AC, PWRPNL, WALL, CABINET, TILE, AISLE:
 		return ROOM
 	case ROOMTMPL, OBJTMPL:
 		return -1
