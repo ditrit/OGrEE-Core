@@ -108,7 +108,7 @@
           {
             "type": "string",
             "default": "sites",
-            "description": "Indicates the location. Only values of \"tenants\", \"sites\", \"buildings\", \"rooms\", \"racks\", \"devices\", \"room-templates\", \"obj-templates\" are acceptable For rooms, walls, acs and panels can be obtained by appending /obj type",
+            "description": "Indicates the object. Only values of \"tenants\", \"sites\", \"buildings\", \"rooms\", \"racks\", \"devices\", \"room-templates\", \"obj-templates\" are acceptable For rooms, walls, acs, panels, aisles, tiles, cabinets, groups, and corridors can be obtained by appending /subobj type and subobj id",
             "name": "objs",
             "in": "query",
             "required": true
@@ -139,7 +139,7 @@
           {
             "type": "string",
             "default": "sites",
-            "description": "Indicates the location. Only values of \"tenants\", \"sites\", \"buildings\", \"rooms\", \"racks\", \"devices\", \"room-templates\", \"obj-templates\" are acceptable For rooms, walls, acs and panels can be obtained by appending /obj type and obj id",
+            "description": "Indicates the location. Only values of \"tenants\", \"sites\", \"buildings\", \"rooms\", \"racks\", \"devices\", \"room-templates\", \"obj-templates\" are acceptable For rooms, walls, acs, panels, aisles, tiles, cabinets, groups, and corridors can be obtained by appending /subobj type and subobj id",
             "name": "objs",
             "in": "query",
             "required": true
@@ -179,7 +179,7 @@
           {
             "type": "string",
             "default": "sites",
-            "description": "Indicates the location. Only values of \"tenants\", \"sites\", \"buildings\", \"rooms\", \"racks\", \"devices\", \"room-templates\", \"obj-templates\" are acceptable. For rooms, walls, acs and panels can be updated by appending /obj type and obj id",
+            "description": "Indicates the object. Only values of \"tenants\", \"sites\", \"buildings\", \"rooms\", \"racks\", \"devices\", \"room-templates\", \"obj-templates\" are acceptable. For rooms, walls, acs, panels, aisles, tiles, cabinets, groups, and corridors can be obtained by appending /subobj type and subobj id",
             "name": "objs",
             "in": "query",
             "required": true
@@ -251,7 +251,7 @@
           {
             "type": "string",
             "default": "sites",
-            "description": "Indicates the location. Only values of \"tenants\", \"sites\", \"buildings\", \"rooms\", \"racks\", \"devices\", \"room-templates\", \"obj-templates\" are acceptable For rooms, walls, acs and panels can be deleted by appending /obj type and obj id",
+            "description": "Indicates the object. Only values of \"tenants\", \"sites\", \"buildings\", \"rooms\", \"racks\", \"devices\", \"room-templates\", \"obj-templates\" are acceptable For rooms, walls, acs, panels, aisles, tiles, cabinets, groups, and corridors can be obtained by appending /subobj type and subobj id",
             "name": "objs",
             "in": "query",
             "required": true
@@ -289,7 +289,7 @@
           {
             "type": "string",
             "default": "sites",
-            "description": "Indicates the location. Only values of \"tenants\", \"sites\", \"buildings\", \"rooms\", \"racks\", \"devices\" are acceptable",
+            "description": "Indicates the object. Only values of \"tenants\", \"sites\", \"buildings\", \"rooms\", \"racks\", \"devices\" are acceptable",
             "name": "objs",
             "in": "query",
             "required": true
@@ -336,7 +336,7 @@
           {
             "type": "string",
             "default": "sites",
-            "description": "Indicates the location. Only values of \"tenants\", \"sites\", \"buildings\", \"rooms\", \"racks\", \"devices\" are acceptable",
+            "description": "Indicates the object. Only values of \"tenants\", \"sites\", \"buildings\", \"rooms\", \"racks\", \"devices\" are acceptable",
             "name": "objs",
             "in": "query",
             "required": true
@@ -362,7 +362,7 @@
     },
     "/api/{objs}?": {
       "get": {
-        "description": "Gets an Object using any attribute (with the exception of description) via query in the system\nThe attributes are in the form {attr}=xyz\u0026{attr1}=abc\nAnd any combination can be used given that at least 1 is provided.",
+        "description": "Gets an Object using any attribute (with the exception of description)\nvia query in the system\nThe attributes are in the form {attr}=xyz\u0026{attr1}=abc\nAnd any combination can be used given that at least 1 is provided.",
         "produces": [
           "application/json"
         ],
@@ -374,7 +374,7 @@
           {
             "type": "string",
             "default": "sites",
-            "description": "Indicates the location. Only values of \"tenants\", \"sites\", \"buildings\", \"rooms\", \"racks\", \"devices\", \"room-templates\", \"obj-templates\", \"walls\",\"acs\",\"panels\" are acceptable",
+            "description": "Indicates the object. Only values of \"tenants\", \"sites\", \"buildings\", \"rooms\", \"racks\", \"devices\", \"room-templates\", \"obj-templates\", \"walls\",\"acs\",\"panels\", \"aisles\", \"tiles\", \"cabinets\", \"groups\", and \"corridors\" are acceptable",
             "name": "objs",
             "in": "query",
             "required": true
@@ -430,7 +430,7 @@
           {
             "type": "string",
             "default": "sites",
-            "description": "Indicates the location. Only values of \"tenants\", \"sites\", \"buildings\", \"rooms\", \"racks\", \"devices\", \"acs\", \"panels\", \"walls\",\"room-templates\", \"obj-templates\" are acceptable",
+            "description": "Indicates the Object. Only values of \"tenants\", \"sites\", \"buildings\", \"rooms\", \"racks\", \"devices\", \"acs\", \"panels\", \"walls\",\"aisles\", \"tiles\", \"cabinets\", \"groups\", \"corridors\", \"room-templates\", \"obj-templates\" are acceptable",
             "name": "objs",
             "in": "query",
             "required": true
@@ -476,7 +476,7 @@
           },
           {
             "type": "json",
-            "description": "Any other object attributes can be added. They are required depending on obj type",
+            "description": "Any other object attributes can be added. They are required depending on the obj type.",
             "name": "Attributes",
             "in": "query",
             "required": true
@@ -488,6 +488,53 @@
           },
           "400": {
             "description": "Bad request"
+          }
+        }
+      }
+    },
+    "/api/{obj}/{id}/{subent}": {
+      "get": {
+        "description": "For Example: /api/tenants/{id}/buildings\nWill return all buildings of a tenant\nReturns JSON body with all subobjects under the Object",
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "objects"
+        ],
+        "summary": "Obtain all objects 2 levels lower in the system.",
+        "operationId": "GetFromObject",
+        "parameters": [
+          {
+            "type": "string",
+            "default": "tenants",
+            "description": "Indicates the object. Only values of \"tenants\", \"sites\", \"buildings\", \"rooms\" are acceptable",
+            "name": "obj",
+            "in": "query",
+            "required": true
+          },
+          {
+            "type": "int",
+            "default": 999,
+            "description": "ID of object",
+            "name": "ID",
+            "in": "query",
+            "required": true
+          },
+          {
+            "type": "string",
+            "default": "buildings",
+            "description": "Objects which 2 are levels lower in the hierarchy.",
+            "name": "subent",
+            "in": "query",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Found"
+          },
+          "404": {
+            "description": "Nothing Found"
           }
         }
       }
