@@ -119,7 +119,8 @@ func parseDataForNonStdResult(ent string, eNum int, data map[string]interface{})
 //   description: 'Indicates the Object. Only values of "tenants", "sites",
 //   "buildings", "rooms", "racks", "devices", "acs", "panels",
 //   "walls","aisles", "tiles", "cabinets", "groups", "corridors",
-//   "room-templates", "obj-templates" are acceptable'
+//   "room-templates", "obj-templates",
+//   "racksensors","devicesensors" are acceptable'
 //   required: true
 //   type: string
 //   default: "sites"
@@ -194,7 +195,7 @@ var CreateEntity = func(w http.ResponseWriter, r *http.Request) {
 
 	switch entStr {
 	case "ac", "panel", "wall", "cabinet", "tile", //NESTED Objects
-		"aisle", "group", "corridor":
+		"aisle", "group", "corridor", "racksensor", "devicesensor":
 		entity["id"] = primitive.NewObjectID().Hex()
 
 		i := u.EntityStrToInt(entStr)
@@ -258,7 +259,8 @@ var CreateEntity = func(w http.ResponseWriter, r *http.Request) {
 //   "buildings", "rooms", "racks", "devices", "room-templates",
 //   "obj-templates" are acceptable
 //   For rooms, walls, acs, panels, aisles, tiles, cabinets, groups,
-//   and corridors can be obtained by appending /subobj type and subobj id'
+//   corridors, racksensors, and devicesensors
+//   can be obtained by appending /subobj type and subobj id'
 //   required: true
 //   type: string
 //   default: "sites"
@@ -362,7 +364,8 @@ var GetEntity = func(w http.ResponseWriter, r *http.Request) {
 //   "buildings", "rooms", "racks", "devices", "room-templates",
 //   "obj-templates" are acceptable
 //   For rooms, walls, acs, panels, aisles, tiles, cabinets, groups,
-//   and corridors can be obtained by appending /subobj type and subobj id'
+//   corridors, racksensors, and devicesensors
+//   can be obtained by appending /subobj type and subobj id'
 //   required: true
 //   type: string
 //   default: "sites"
@@ -445,7 +448,8 @@ var GetAllEntities = func(w http.ResponseWriter, r *http.Request) {
 //   "buildings", "rooms", "racks", "devices", "room-templates",
 //   "obj-templates" are acceptable
 //   For rooms, walls, acs, panels, aisles, tiles, cabinets, groups,
-//   and corridors can be obtained by appending /subobj type and subobj id'
+//   corridors, racksensors, and devicesensors
+//   can be obtained by appending /subobj type and subobj id'
 //   required: true
 //   type: string
 //   default: "sites"
@@ -538,7 +542,8 @@ var DeleteEntity = func(w http.ResponseWriter, r *http.Request) {
 //   "buildings", "rooms", "racks", "devices", "room-templates",
 //   "obj-templates" are acceptable.
 //   For rooms, walls, acs, panels, aisles, tiles, cabinets, groups,
-//   and corridors can be obtained by appending /subobj type and subobj id'
+//   corridors, racksensors, and devicesensors
+//   can be obtained by appending /subobj type and subobj id'
 //   required: true
 //   type: string
 //   default: "sites"
@@ -684,7 +689,8 @@ var UpdateEntity = func(w http.ResponseWriter, r *http.Request) {
 //   description: 'Indicates the object. Only values of "tenants", "sites",
 //   "buildings", "rooms", "racks", "devices", "room-templates",
 //   "obj-templates", "walls","acs","panels", "aisles", "tiles",
-//   "cabinets", "groups", and "corridors" are acceptable'
+//   "cabinets", "groups", "corridors", "racksensors", and "devicesensors"
+//   are acceptable'
 //   required: true
 //   type: string
 //   default: "sites"

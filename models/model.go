@@ -29,6 +29,8 @@ const (
 	TILE
 	GROUP
 	CORIDOR
+	RACKSENSOR
+	DEVICESENSOR
 	ROOMTMPL
 	OBJTMPL
 )
@@ -113,7 +115,8 @@ func ValidateEntity(entity int, t map[string]interface{}) (map[string]interface{
 	var err error
 	switch entity {
 	case TENANT, SITE, BLDG, ROOM, RACK, DEVICE, SUBDEV,
-		SUBDEV1, AC, PWRPNL, WALL, CABINET, AISLE, TILE, GROUP, CORIDOR:
+		SUBDEV1, AC, PWRPNL, WALL, CABINET, AISLE,
+		TILE, GROUP, CORIDOR, RACKSENSOR, DEVICESENSOR:
 		if t["name"] == "" {
 			return u.Message(false, "Name should be on payload"), false
 		}
@@ -143,7 +146,7 @@ func ValidateEntity(entity int, t map[string]interface{}) (map[string]interface{
 			}
 			defer cancel()
 
-		} else if entity > TENANT && entity <= CORIDOR {
+		} else if entity > TENANT && entity <= DEVICESENSOR {
 			objID, err = primitive.ObjectIDFromHex(t["parentId"].(string))
 			if err != nil {
 				return u.Message(false, "ParentID is not valid"), false
@@ -161,8 +164,7 @@ func ValidateEntity(entity int, t map[string]interface{}) (map[string]interface{
 			defer cancel()
 		}
 
-		if entity != CABINET && entity != TILE && entity != AISLE &&
-			entity != GROUP && entity != CORIDOR {
+		if entity < CABINET || entity > DEVICESENSOR {
 			if _, ok := t["attributes"]; !ok {
 				return u.Message(false, "Attributes should be on the payload"), false
 			} else {
