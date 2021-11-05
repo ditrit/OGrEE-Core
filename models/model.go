@@ -482,7 +482,7 @@ func GetAllEntities(ent string) ([]map[string]interface{}, string) {
 	}
 	defer cancel()
 
-	for c.Next(GetCtx()) {
+	for c.Next(ctx) {
 		x := map[string]interface{}{}
 		e := c.Decode(x)
 		if e != nil {
@@ -560,7 +560,7 @@ func GetEntityByQuery(ent string, query bson.M) ([]map[string]interface{}, strin
 	}
 	defer cancel()
 
-	for c.Next(GetCtx()) {
+	for c.Next(ctx) {
 		x := map[string]interface{}{}
 		e := c.Decode(x)
 		if e != nil {
@@ -592,7 +592,7 @@ func GetEntitiesOfParent(ent, id string) ([]map[string]interface{}, string) {
 	}
 	defer cancel()
 
-	for c.Next(GetCtx()) {
+	for c.Next(ctx) {
 		s := map[string]interface{}{}
 		e := c.Decode(&s)
 		if e != nil {
@@ -662,7 +662,7 @@ func GetEntityByNameAndParentID(ent, id, name string) (map[string]interface{}, s
 	return t, ""
 }
 
-func GetEntitiesUsingAncestorNames(ent string, id primitive.ObjectID, ancestry map[string]string) ([]map[string]interface{}, string) {
+func GetEntitiesUsingAncestorNames(ent string, id primitive.ObjectID, ancestry []map[string]string) ([]map[string]interface{}, string) {
 	top, e := GetEntity(id, ent)
 	if e != "" {
 		return nil, e
@@ -675,30 +675,33 @@ func GetEntitiesUsingAncestorNames(ent string, id primitive.ObjectID, ancestry m
 
 	var x map[string]interface{}
 	var e1 string
-	for k, v := range ancestry {
+	for i := range ancestry {
+		for k, v := range ancestry[i] {
 
-		println("KEY:", k, " VAL:", v)
+			println("KEY:", k, " VAL:", v)
 
-		if v == "all" {
-			println("K:", k)
-			//println("ID", x["_id"].(primitive.ObjectID).String())
-			/*if k == "device" {
-				return GetDeviceFByParentID(pid) nil, ""
-			}*/
-			return GetEntitiesOfParent(k, pid)
+			if v == "all" {
+				println("K:", k)
+				//println("ID", x["_id"].(primitive.ObjectID).String())
+				/*if k == "device" {
+					return GetDeviceFByParentID(pid) nil, ""
+				}*/
+				return GetEntitiesOfParent(k, pid)
+			}
+
+			x, e1 = GetEntityByNameAndParentID(k, pid, v)
+			if e1 != "" {
+				println("Failing here")
+				return nil, ""
+			}
+			pid = (x["id"].(primitive.ObjectID)).Hex()
 		}
-
-		x, e1 = GetEntityByNameAndParentID(k, pid, v)
-		if e1 != "" {
-			println("Failing here")
-			return nil, ""
-		}
-		pid = (x["id"].(primitive.ObjectID)).Hex()
 	}
+
 	return nil, ""
 }
 
-func GetEntityUsingAncestorNames(ent string, id primitive.ObjectID, ancestry map[string]string) (map[string]interface{}, string) {
+func GetEntityUsingAncestorNames(ent string, id primitive.ObjectID, ancestry []map[string]string) (map[string]interface{}, string) {
 	top, e := GetEntity(id, ent)
 	if e != "" {
 		return nil, e
@@ -711,20 +714,20 @@ func GetEntityUsingAncestorNames(ent string, id primitive.ObjectID, ancestry map
 
 	var x map[string]interface{}
 	var e1 string
-	for k, v := range ancestry {
+	for i := range ancestry {
+		for k, v := range ancestry[i] {
 
-		println("KEY:", k, " VAL:", v)
+			println("KEY:", k, " VAL:", v)
 
-		x, e1 = GetEntityByNameAndParentID(k, pid, v)
-		if e1 != "" {
-			println("ENT: ", k)
-			println("PID: ", pid)
-			println("NAME: ", v)
-			println("Failing here")
-			return nil, ""
+			x, e1 = GetEntityByNameAndParentID(k, pid, v)
+			if e1 != "" {
+				println("Failing here")
+				return nil, ""
+			}
+			pid = (x["id"].(primitive.ObjectID)).Hex()
 		}
-		pid = (x["id"].(primitive.ObjectID)).Hex()
 	}
+
 	//Remove _id
 	x = fixID(x)
 	return x, ""
@@ -766,7 +769,7 @@ func GetTenantHierarchy(entity, name string, entnum, end int) (map[string]interf
 
 }
 
-func GetEntitiesUsingTenantAsAncestor(ent, id string, ancestry map[string]string) ([]map[string]interface{}, string) {
+func GetEntitiesUsingTenantAsAncestor(ent, id string, ancestry []map[string]string) ([]map[string]interface{}, string) {
 	top, e := GetEntityByName(id, ent)
 	if e != "" {
 		return nil, e
@@ -779,26 +782,31 @@ func GetEntitiesUsingTenantAsAncestor(ent, id string, ancestry map[string]string
 
 	var x map[string]interface{}
 	var e1 string
-	for k, v := range ancestry {
+	println("ANCS-LEN: ", len(ancestry))
+	for i := range ancestry {
+		for k, v := range ancestry[i] {
 
-		println("KEY:", k, " VAL:", v)
+			println("KEY:", k, " VAL:", v)
 
-		if v == "all" {
-			println("K:", k)
-			return GetEntitiesOfParent(k, pid)
+			if v == "all" {
+				println("K:", k)
+				return GetEntitiesOfParent(k, pid)
+			}
+
+			x, e1 = GetEntityByNameAndParentID(k, pid, v)
+			if e1 != "" {
+				println("Failing here")
+				println("E1: ", e1)
+				return nil, ""
+			}
+			pid = (x["id"].(primitive.ObjectID)).Hex()
 		}
-
-		x, e1 = GetEntityByNameAndParentID(k, pid, v)
-		if e1 != "" {
-			println("Failing here")
-			return nil, ""
-		}
-		pid = (x["id"].(primitive.ObjectID)).Hex()
 	}
+
 	return nil, ""
 }
 
-func GetEntityUsingTenantAsAncestor(ent, id string, ancestry map[string]string) (map[string]interface{}, string) {
+func GetEntityUsingTenantAsAncestor(ent, id string, ancestry []map[string]string) (map[string]interface{}, string) {
 	top, e := GetEntityByName(id, ent)
 	if e != "" {
 		return nil, e
@@ -808,17 +816,20 @@ func GetEntityUsingTenantAsAncestor(ent, id string, ancestry map[string]string) 
 
 	var x map[string]interface{}
 	var e1 string
-	for k, v := range ancestry {
+	for i := range ancestry {
+		for k, v := range ancestry[i] {
 
-		println("KEY:", k, " VAL:", v)
+			println("KEY:", k, " VAL:", v)
 
-		x, e1 = GetEntityByNameAndParentID(k, pid, v)
-		if e1 != "" {
-			println("Failing here")
-			return nil, ""
+			x, e1 = GetEntityByNameAndParentID(k, pid, v)
+			if e1 != "" {
+				println("Failing here")
+				return nil, ""
+			}
+			pid = (x["id"].(primitive.ObjectID)).Hex()
 		}
-		pid = (x["id"].(primitive.ObjectID)).Hex()
 	}
+
 	return x, ""
 }
 
@@ -1101,7 +1112,7 @@ func GetDevEntitiesOfParent(ent, id string) ([]map[string]interface{}, string) {
 	}
 	defer cancel()
 
-	for c.Next(GetCtx()) {
+	for c.Next(ctx) {
 		s := map[string]interface{}{}
 		e := c.Decode(&s)
 		if e != nil {
