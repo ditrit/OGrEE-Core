@@ -81,25 +81,11 @@ func TestEntityStrToIntToReturnTrue(t *testing.T) {
 		t.Error("Test Case 6 failed")
 	}
 
-	//Test Case 7
-	testString = "subdevice"
-	ent = EntityStrToInt(testString)
-	if ent != SUBDEV {
-		t.Error("Test Case 7 failed")
-	}
-
-	//Test Case 8
-	testString = "subdevice1"
-	ent = EntityStrToInt(testString)
-	if ent != SUBDEV1 {
-		t.Error("Test Case 8 failed")
-	}
-
 	//Test Case 9
 	testString = "bldg"
 	ent = EntityStrToInt(testString)
 	if ent != BLDG {
-		t.Error("Test Case 9 failed")
+		t.Error("Test Case 7 failed")
 	}
 }
 
@@ -144,19 +130,5 @@ func TestEntityToStringToReturnTrue(t *testing.T) {
 	ent = EntityToString(testString)
 	if ent != "device" {
 		t.Error("Test Case 6 failed")
-	}
-
-	//Test Case 7
-	testString = SUBDEV
-	ent = EntityToString(testString)
-	if ent != "subdevice" {
-		t.Error("Test Case 7 failed")
-	}
-
-	//Test Case 8
-	testString = SUBDEV1
-	ent = EntityToString(testString)
-	if ent != "subdevice1" {
-		t.Error("Test Case 8 failed")
 	}
 }
