@@ -147,6 +147,10 @@ func ValidateEntity(entity int, t map[string]interface{}) (map[string]interface{
 			defer cancel()
 
 		} else if entity > TENANT && entity <= DEVICESENSOR {
+			_, ok := t["parentId"].(string)
+			if !ok {
+				return u.Message(false, "ParentID is not valid"), false
+			}
 			objID, err = primitive.ObjectIDFromHex(t["parentId"].(string))
 			if err != nil {
 				return u.Message(false, "ParentID is not valid"), false
