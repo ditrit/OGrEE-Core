@@ -6,7 +6,6 @@ import (
 	"encoding/json"
 	"net/http"
 	"os"
-	"strconv"
 	"strings"
 )
 
@@ -38,8 +37,8 @@ type ShellState struct {
 }
 
 type Node struct {
-	ID     int
-	PID    int
+	ID     string
+	PID    string
 	Entity int
 	Name   string
 	Path   string
@@ -53,7 +52,7 @@ func InitState(debugLvl int) {
 	State.ClipBoard = nil
 	State.TreeHierarchy = &(Node{})
 	(*(State.TreeHierarchy)).Entity = -1
-	State.TreeHierarchy.PID = -1
+	State.TreeHierarchy.PID = ""
 	State.CurrPath = "/"
 	x := GetChildren(0)
 	for i := range x {
@@ -61,7 +60,7 @@ func InitState(debugLvl int) {
 		State.TreeHierarchy.Nodes.PushBack(x[i])
 	}
 
-	for i := 1; i < 8; i++ {
+	for i := 1; i < DEVICE; i++ {
 		//time.Sleep(2 * time.Second)
 		x := GetChildren(i)
 		for k := range x {
@@ -76,12 +75,14 @@ func GetChildren(curr int) []*Node {
 	//Stream Error occurs
 	for {
 		resp, e := models.Send("GET",
-			"https://ogree.chibois.net/api/user/"+EntityToString(curr)+"s",
+			"https://ogree.chibois.net/api/"+EntityToString(curr)+"s",
 			GetKey(), nil)
 		if e != nil {
 			println("Error while getting children!")
 			Exit()
 		}
+		println("REQ:", "https://ogree.chibois.net/api/"+EntityToString(curr)+"s")
+
 		x := makeNodeArrFromResp(resp, curr)
 		if x != nil {
 			return x
@@ -124,6 +125,13 @@ func makeNodeArrFromResp(resp *http.Response, entity int) []*Node {
 		return nil
 	}
 
+	//println("NOW@,", entity)
+	//println("MSG: ", jsonResp["message"].(string))
+	//for i := range jsonResp {
+	//	println("KEY:", i)
+	//}
+	//println("STATUS:", jsonResp["status"].(bool))
+
 	objs, ok := ((jsonResp["data"]).(map[string]interface{})["objects"]).([]interface{})
 	sd1obj, ok1 := ((jsonResp["data"]).(map[string]interface{})["subdevices1"]).([]interface{})
 	if !ok && !ok1 {
@@ -132,30 +140,28 @@ func makeNodeArrFromResp(resp *http.Response, entity int) []*Node {
 	} else if ok1 && !ok {
 		objs = sd1obj
 	}
+	//println("LEN-OBJS:", len(objs))
 	for i, _ := range objs {
 		node := &Node{}
 		node.Path = ""
 		node.Entity = entity
 		node.Name = (string((objs[i].(map[string]interface{}))["name"].(string)))
-		node.ID, _ = strconv.Atoi((objs[i].(map[string]interface{}))["id"].(string))
-		num, ok := objs[i].(map[string]interface{})["parentId"].(float64)
+		node.ID, _ = (objs[i].(map[string]interface{}))["id"].(string)
+		num, ok := objs[i].(map[string]interface{})["parentId"].(string)
 		if !ok {
-			node.PID, _ = strconv.Atoi((objs[i].(map[string]interface{}))["parentId"].(string))
+			if entity == 0 { //We have TENANT
+				node.PID = ""
+			} else {
+				//ERROR Case
+				node.PID = "ERR"
+			}
 		} else {
-			node.PID = int(num)
+			node.PID = num
 		}
 		arr = append(arr, node)
 	}
 	return arr
 }
-
-//func DispTree() {
-//	nd := &(Node{})
-//	nd.Entity = -1
-//	Populate(&nd, 0)
-//	println("Now viewing the tree...")
-//	View(nd, 0)
-//}
 
 func View(root *Node, dt int) {
 	if dt != 7 || root != nil {
@@ -337,7 +343,7 @@ func UpdateTree(root **Node, curr *Node) bool {
 
 //Return extra bool so that the Parent can delete
 //leaf and keep track without stack
-func DeleteNodeInTree(root **Node, ID, ent int) (bool, bool) {
+func DeleteNodeInTree(root **Node, ID string, ent int) (bool, bool) {
 	if root == nil {
 		return false, false
 	}

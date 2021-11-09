@@ -77,8 +77,8 @@ func replaceOCLICurrPath(x string) string {
 //Gets node from Tree Hierarchy using a map[string]interface
 func getNodeFromMapInf(x map[string]interface{}) *cmd.Node {
        ent := x["category"]
-       pid,_ := strconv.Atoi(x["parentId"].(string))
-       id,_ := strconv.Atoi(x["id"].(string))
+       pid,_ := x["parentId"].(string)
+       id,_ := x["id"].(string)
 
        entNum := cmd.EntityStrToInt(ent.(string))
        nodes := cmd.GetNodes(&cmd.State.TreeHierarchy, entNum)

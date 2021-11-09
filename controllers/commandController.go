@@ -6,9 +6,9 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"os"
-	"strconv"
 	"strings"
 )
 
@@ -30,7 +30,7 @@ func Disp(x map[string]interface{}) {
 func PostObj(ent int, entity string, data map[string]interface{}) map[string]interface{} {
 	var respMap map[string]interface{}
 	resp, e := models.Send("POST",
-		"https://ogree.chibois.net/api/user/"+entity+"s", GetKey(), data)
+		"https://ogree.chibois.net/api/"+entity+"s", GetKey(), data)
 
 	if e != nil {
 		WarningLogger.Println("Error while sending POST to server: ", e)
@@ -47,17 +47,21 @@ func PostObj(ent int, entity string, data map[string]interface{}) map[string]int
 	json.Unmarshal(bodyBytes, &respMap)
 	println(string(respMap["message"].(string)) /*bodyBytes*/)
 	if resp.StatusCode == http.StatusCreated && respMap["status"].(bool) == true {
+		var ok bool
 		//Insert object into tree
 		node := &Node{}
-		node.ID, _ = strconv.Atoi(respMap["data"].(map[string]interface{})["id"].(string))
+		node.ID, _ = respMap["data"].(map[string]interface{})["id"].(string)
 		node.Name = respMap["data"].(map[string]interface{})["name"].(string)
-		_, ok := respMap["data"].(map[string]interface{})["parentId"].(float64)
-		//node.PID = int(respMap["data"].(map[string]interface{})["parentId"].(float64))
-		if ok {
+		//_, ok := respMap["data"].(map[string]interface{})["parentId"].(float64)
+		node.PID, ok = respMap["data"].(map[string]interface{})["parentId"].(string)
+		if !ok && ent == TENANT {
+			node.PID = ""
+		}
+		/*if ok {
 			node.PID = int(respMap["data"].(map[string]interface{})["parentId"].(float64))
 		} else {
 			node.PID, _ = strconv.Atoi(respMap["data"].(map[string]interface{})["parentId"].(string))
-		}
+		}*/
 		node.Entity = ent
 		switch ent {
 		case TENANT:
@@ -71,7 +75,7 @@ func PostObj(ent int, entity string, data map[string]interface{}) map[string]int
 }
 
 func DeleteObj(path string) bool {
-	URL := "https://ogree.chibois.net/api/user/"
+	URL := "https://ogree.chibois.net/api/"
 	nd := new(*Node)
 
 	switch path {
@@ -92,7 +96,7 @@ func DeleteObj(path string) bool {
 		return false
 	}
 
-	URL += EntityToString((*nd).Entity) + "s/" + strconv.Itoa((*nd).ID)
+	URL += EntityToString((*nd).Entity) + "s/" + (*nd).ID
 	resp, e := models.Send("DELETE", URL, GetKey(), nil)
 	if e != nil {
 		println("Error while deleting Object!")
@@ -115,7 +119,7 @@ func DeleteObj(path string) bool {
 //Search for objects
 func SearchObjects(entity string, data map[string]interface{}) []map[string]interface{} {
 	var jsonResp map[string]interface{}
-	URL := "https://ogree.chibois.net/api/user/" + entity + "s?"
+	URL := "https://ogree.chibois.net/api/" + entity + "s?"
 
 	for i, k := range data {
 		if i == "attributes" {
@@ -147,20 +151,23 @@ func SearchObjects(entity string, data map[string]interface{}) []map[string]inte
 	json.Unmarshal(bodyBytes, &jsonResp)
 	if resp.StatusCode == http.StatusOK {
 		obj := jsonResp["data"].(map[string]interface{})["objects"].([]interface{})
+		objects := []map[string]interface{}{}
 		for idx := range obj {
 			println()
 			println()
 			println("OBJECT: ", idx)
 			displayObject(obj[idx].(map[string]interface{}))
+			objects = append(objects, obj[idx].(map[string]interface{}))
 			println()
 		}
-		return jsonResp["data"].(map[string]interface{})["objects"].([]map[string]interface{})
+		return objects
+
 	}
 	return nil
 }
 
 func GetObject(path string) map[string]interface{} {
-	URL := "https://ogree.chibois.net/api/user/"
+	URL := "https://ogree.chibois.net/api/"
 	nd := new(*Node)
 	var data map[string]interface{}
 
@@ -182,7 +189,7 @@ func GetObject(path string) map[string]interface{} {
 		return nil
 	}
 
-	URL += EntityToString((*nd).Entity) + "s/" + strconv.Itoa((*nd).ID)
+	URL += EntityToString((*nd).Entity) + "s/" + (*nd).ID
 	resp, e := models.Send("GET", URL, GetKey(), nil)
 	if e != nil {
 		println("Error while obtaining Object details!")
@@ -200,6 +207,7 @@ func GetObject(path string) map[string]interface{} {
 	if resp.StatusCode == http.StatusOK {
 		if data["data"] != nil {
 			obj := data["data"].(map[string]interface{})
+
 			displayObject(obj)
 		}
 		return data["data"].(map[string]interface{})
@@ -230,8 +238,8 @@ func UpdateObj(path string, data map[string]interface{}) map[string]interface{} 
 			return nil
 		}
 
-		URL := "https://ogree.chibois.net/api/user/" +
-			EntityToString((*nd).Entity) + "s/" + strconv.Itoa((*nd).ID)
+		URL := "https://ogree.chibois.net/api/" +
+			EntityToString((*nd).Entity) + "s/" + (*nd).ID
 
 		resp, e := models.Send("PUT", URL, GetKey(), data)
 		//println("Response Code: ", resp.Status)
@@ -291,7 +299,7 @@ func LS(x string) []map[string]interface{} {
 
 func LSOG() {
 	fmt.Println("USER EMAIL:", GetEmail())
-	fmt.Println("API URL:", "https://ogree.chibois.net/api/user/")
+	fmt.Println("API URL:", "https://ogree.chibois.net/api/")
 	fmt.Println("BUILD DATE:", BuildTime)
 	fmt.Println("BUILD TREE:", BuildTree)
 	fmt.Println("BUILD HASH:", BuildHash)
@@ -597,34 +605,11 @@ func Help(entry string) {
 }
 
 func displayObject(obj map[string]interface{}) {
-	for i := range obj {
-		if i == "attributes" {
-			for q := range obj[i].(map[string]interface{}) {
-				val := string(obj[i].(map[string]interface{})[q].(string))
-				if val == "" {
-					println(q, ":", "NONE")
-				} else {
-					println(q, ":", val)
-				}
-			}
-		} else {
-			if i == "description" {
-				print(i)
-				inf := obj[i].([]interface{})
-				for idx := range inf {
-					println(inf[idx].(string))
-				}
-			} else if val, ok := obj[i].(string); ok == true {
-				if val == "" {
-					println(i, ":", "NONE")
-				} else {
-					println(i, ":", val)
-				}
-			} else {
-				println(obj[i].(float64))
-			}
-		}
+	enc := json.NewEncoder(os.Stdout)
+	enc.SetIndent("", "    ")
 
+	if err := enc.Encode(obj); err != nil {
+		log.Fatal(err)
 	}
 }
 
@@ -744,7 +729,7 @@ func GetOCLIAtrributes(path *Stack, ent int, data map[string]interface{}, term *
 			data["attributes"].(map[string]interface{})["usableColor"] == nil ||
 			data["attributes"].(map[string]interface{})["reservedColor"] == nil ||
 			data["attributes"].(map[string]interface{})["technicalColor"] == nil {
-			println("Enter attribute")
+			println("Enter attribute yo")
 			x, e := term.Readline()
 			if e != nil {
 				println("Error reading attribute: ", e)
@@ -936,7 +921,7 @@ func Print(x string) string {
 //These are useful for command output assignments etc
 //otherwise the terminal would be polluted by debug statements
 func silencedGetObj(path string) map[string]interface{} {
-	URL := "https://ogree.chibois.net/api/user/"
+	URL := "https://ogree.chibois.net/api/"
 	nd := new(*Node)
 	var data map[string]interface{}
 
@@ -958,7 +943,7 @@ func silencedGetObj(path string) map[string]interface{} {
 		return nil
 	}
 
-	URL += EntityToString((*nd).Entity) + "s/" + strconv.Itoa((*nd).ID)
+	URL += EntityToString((*nd).Entity) + "s/" + (*nd).ID
 	resp, e := models.Send("GET", URL, GetKey(), nil)
 	if e != nil {
 		println("Error while obtaining Object details!")
