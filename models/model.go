@@ -67,7 +67,7 @@ func delSubEnts(eNum int, data map[string][]map[string]interface{}) (map[string]
 	//Delete the Subentities
 	for i := SUBDEV1; i > eNum; i-- {
 		eStr := u.EntityToString(i)
-		if arr, ok := data[eStr+"s"]; ok {
+		if arr, ok := data["children"]; ok {
 
 			for idx := range arr {
 				println("LEN: ", len(arr[idx]))
@@ -637,14 +637,22 @@ func GetEntityHierarchy(entity string, ID primitive.ObjectID, entnum, end int) (
 			println("PID: ", ID.Hex())
 			return nil, e1
 		}
-		top[subEnt+"s"] = children
+
+		top["children"] = children
 
 		//Get the rest of hierarchy for children
 		for i := range children {
+			var x map[string]interface{}
 			subIdx := u.EntityToString(entnum + 1)
 			subID := (children[i]["id"].(primitive.ObjectID))
-			children[i], _ =
+			x, _ =
 				GetEntityHierarchy(subIdx, subID, entnum+1, end)
+
+			//So that output JSON will not have
+			// "children": [null]
+			if x != nil {
+				children[i] = x
+			}
 		}
 
 		return top, ""
@@ -759,14 +767,18 @@ func GetTenantHierarchy(entity, name string, entnum, end int) (map[string]interf
 		println("PID: ", tid)
 		return nil, e1
 	}
-	t[subEnt+"s"] = children
+	t["children"] = children
 
 	//Get the rest of hierarchy for children
 	for i := range children {
+		var x map[string]interface{}
 		subIdx := u.EntityToString(entnum + 1)
 		subID := (children[i]["id"].(primitive.ObjectID))
-		children[i], _ =
+		x, _ =
 			GetEntityHierarchy(subIdx, subID, entnum+1, end)
+		if x != nil {
+			children[i] = x
+		}
 	}
 
 	return t, ""
