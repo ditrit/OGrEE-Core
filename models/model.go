@@ -185,56 +185,56 @@ func ValidateEntity(entity int, t map[string]interface{}) (map[string]interface{
 					case SITE:
 						switch v["orientation"] {
 						case "EN", "NW", "WS", "SE":
-						case "":
+						case "", nil:
 							return u.Message(false, "Orientation should be on the payload"), false
 
 						default:
 							return u.Message(false, "Orientation is invalid!"), false
 						}
 
-						if v["usableColor"] == "" {
+						if v["usableColor"] == "" || v["usableColor"] == nil {
 							return u.Message(false, "Usable Color should be on the payload"), false
 						}
 
-						if v["reservedColor"] == "" {
+						if v["reservedColor"] == "" || v["reservedColor"] == nil {
 							return u.Message(false, "Reserved Color should be on the payload"), false
 						}
 
-						if v["technicalColor"] == "" {
+						if v["technicalColor"] == "" || v["technicalColor"] == nil {
 							return u.Message(false, "Technical Color should be on the payload"), false
 						}
 
 					case BLDG:
-						if v["posXY"] == "" {
+						if v["posXY"] == "" || v["posXY"] == nil {
 							return u.Message(false, "XY coordinates should be on payload"), false
 						}
 
-						if v["posXYU"] == "" {
+						if v["posXYU"] == "" || v["posXYU"] == nil {
 							return u.Message(false, "PositionXYU string should be on the payload"), false
 						}
 
-						if v["size"] == "" {
+						if v["size"] == "" || v["size"] == nil {
 							return u.Message(false, "Invalid building size on the payload"), false
 						}
 
-						if v["sizeU"] == "" {
+						if v["sizeU"] == "" || v["sizeU"] == nil {
 							return u.Message(false, "Building size string should be on the payload"), false
 						}
 
-						if v["height"] == "" {
+						if v["height"] == "" || v["height"] == nil {
 							return u.Message(false, "Invalid Height on payload"), false
 						}
 
-						if v["heightU"] == "" {
+						if v["heightU"] == "" || v["heightU"] == nil {
 							return u.Message(false, "Building Height string should be on the payload"), false
 						}
 
 					case ROOM:
-						if v["posXY"] == "" {
+						if v["posXY"] == "" || v["posXY"] == nil {
 							return u.Message(false, "XY coordinates should be on payload"), false
 						}
 
-						if v["posXYU"] == "" {
+						if v["posXYU"] == "" || v["posXYU"] == nil {
 							return u.Message(false, "PositionXYU string should be on the payload"), false
 						}
 
@@ -243,84 +243,84 @@ func ValidateEntity(entity int, t map[string]interface{}) (map[string]interface{
 						case "-N-W", "-N+W", "+N-W", "+N+W":
 						case "-W-S", "-W+S", "+W-S", "+W+S":
 						case "-S-E", "-S+E", "+S-E", "+S+E":
-						case "":
+						case "", nil:
 							return u.Message(false, "Orientation should be on the payload"), false
 
 						default:
 							return u.Message(false, "Orientation is invalid!"), false
 						}
 
-						if v["size"] == "" {
+						if v["size"] == "" || v["size"] == nil {
 							return u.Message(false, "Invalid size on the payload"), false
 						}
 
-						if v["sizeU"] == "" {
+						if v["sizeU"] == "" || v["sizeU"] == nil {
 							return u.Message(false, "Room size string should be on the payload"), false
 						}
 
-						if v["height"] == "" {
+						if v["height"] == "" || v["height"] == nil {
 							return u.Message(false, "Invalid Height on payload"), false
 						}
 
-						if v["heightU"] == "" {
+						if v["heightU"] == "" || v["heightU"] == nil {
 							return u.Message(false, "Room Height string should be on the payload"), false
 						}
 					case RACK:
-						if v["posXY"] == "" {
+						if v["posXY"] == "" || v["posXY"] == nil {
 							return u.Message(false, "XY coordinates should be on payload"), false
 						}
 
-						if v["posXYU"] == "" {
+						if v["posXYU"] == "" || v["posXYU"] == nil {
 							return u.Message(false, "PositionXYU string should be on the payload"), false
 						}
 
 						switch v["orientation"] {
 						case "front", "rear", "left", "right":
-						case "":
+						case "", nil:
 							return u.Message(false, "Orientation should be on the payload"), false
 
 						default:
 							return u.Message(false, "Orientation is invalid!"), false
 						}
 
-						if v["size"] == "" {
+						if v["size"] == "" || v["size"] == nil {
 							return u.Message(false, "Invalid size on the payload"), false
 						}
 
-						if v["sizeU"] == "" {
+						if v["sizeU"] == "" || v["sizeU"] == nil {
 							return u.Message(false, "Rack size string should be on the payload"), false
 						}
 
-						if v["height"] == "" {
+						if v["height"] == "" || v["height"] == nil {
 							return u.Message(false, "Invalid Height on payload"), false
 						}
 
-						if v["heightU"] == "" {
+						if v["heightU"] == "" || v["heightU"] == nil {
 							return u.Message(false, "Rack Height string should be on the payload"), false
 						}
 					case DEVICE:
 						switch v["orientation"] {
 						case "front", "rear", "frontflipped", "rearflipped":
-						case "":
+						case "", nil:
 							return u.Message(false, "Orientation should be on the payload"), false
 
 						default:
 							return u.Message(false, "Orientation is invalid!"), false
 						}
 
-						if v["size"] == "" {
+						if v["size"] == "" || v["size"] == nil {
 							return u.Message(false, "Invalid size on the payload"), false
 						}
 
-						if v["sizeUnit"] == "" {
+						if v["sizeUnit"] == "" || v["sizeUnit"] == nil {
 							return u.Message(false, "Rack size string should be on the payload"), false
 						}
 
-						if v["height"] == "" {
+						if v["height"] == "" || v["height"] == nil {
 							return u.Message(false, "Invalid Height on payload"), false
 						}
 
-						if v["heightU"] == "" {
+						if v["heightU"] == "" || v["heightU"] == nil {
 							return u.Message(false, "Rack Height string should be on the payload"), false
 						}
 					case SUBDEV, SUBDEV1:
@@ -330,7 +330,7 @@ func ValidateEntity(entity int, t map[string]interface{}) (map[string]interface{
 			}
 		}
 	case ROOMTMPL, OBJTMPL:
-		if t["slug"] == "" {
+		if t["slug"] == "" || t["slug"] == nil {
 			return u.Message(false, "Slug should be on payload"), false
 		}
 
@@ -509,39 +509,39 @@ func DeleteEntity(entity string, id primitive.ObjectID) (map[string]interface{},
 			"There was an error in deleting the entity: "+e), "not found"
 	}
 
-	data := parseDataForNonStdResult(entity, eNum, AC, t)
+	return deleteHelper(t, eNum)
+}
 
-	//Delete the Subentities
-	for i := SUBDEV1; i > eNum; i-- {
-		eStr := u.EntityToString(i)
-		if arr, ok := data[eStr+"s"]; ok {
+func deleteHelper(t map[string]interface{}, ent int) (map[string]interface{}, string) {
+	if t == nil {
+		return nil, ""
+	}
 
-			for idx := range arr {
-				println("LEN: ", len(arr[idx]))
-
-				if len(arr[idx]) > 0 {
-
-					locID := arr[idx]["id"].(primitive.ObjectID)
-					ctx, cancel := u.Connect()
-					c, _ := GetDB().Collection(eStr).DeleteOne(ctx, bson.M{"_id": locID})
-					if c.DeletedCount == 0 {
-						return u.Message(false, "There was an error in deleting the entity"), "not found"
-					}
-					defer cancel()
-				}
-
+	if v, ok := t["children"]; ok {
+		if x, ok := v.([]map[string]interface{}); ok {
+			for i := range x {
+				deleteHelper(x[i], ent+1)
 			}
+		} else {
+			println("JSON not formatted as expected")
+			return u.Message(false,
+				"There was an error in deleting the entity"), "not found"
 		}
 	}
-	//Finally delete the Entity
-	ctx, cancel := u.Connect()
-	c, _ := GetDB().Collection(entity).DeleteOne(ctx, bson.M{"_id": id})
-	if c.DeletedCount == 0 {
-		return u.Message(false, "There was an error in deleting the entity"), "not found"
-	}
-	defer cancel()
 
-	return u.Message(true, "success"), ""
+	if ent == DEVICE {
+		DeleteDeviceF(t["id"].(primitive.ObjectID))
+	} else {
+		ctx, cancel := u.Connect()
+		entity := u.EntityToString(ent)
+		c, _ := GetDB().Collection(entity).DeleteOne(ctx, bson.M{"_id": t["id"].(primitive.ObjectID)})
+		if c.DeletedCount == 0 {
+			return u.Message(false, "There was an error in deleting the entity"), "not found"
+		}
+		defer cancel()
+
+	}
+	return nil, ""
 }
 
 func UpdateEntity(ent string, id primitive.ObjectID, t *map[string]interface{}) (map[string]interface{}, string) {
