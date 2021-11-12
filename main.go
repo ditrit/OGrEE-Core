@@ -73,7 +73,9 @@ func loadFile() {
 	for scanner.Scan() {
 		x := scanner.Text()
 		if len(x) > 0 {
-			if string(x[len(x)-1]) == "\\" {
+			if commentIdx := strings.Index(x, "#"); commentIdx != -1 { //Comment found
+				fullcom += x[:commentIdx]
+			} else if string(x[len(x)-1]) == "\\" {
 				fullcom += x
 				keepScanning = true
 			} else if keepScanning == true {
@@ -133,6 +135,10 @@ func main() {
 			readline.PcItem("create", false),
 			readline.PcItem("gt", false),
 			readline.PcItem("update", false),
+			readline.PcItem(".template", false),
+			readline.PcItem("=", false),
+			readline.PcItem("-", false),
+			readline.PcItem("+", false),
 			readline.PcItem("delete", false)),
 		readline.PcItem("+", false,
 			readline.PcItem("tn:", false),
