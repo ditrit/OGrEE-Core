@@ -142,7 +142,10 @@ func main() {
 			readline.PcItem("rk:", false),
 			readline.PcItem("dv:", false),
 			readline.PcItem("sd:", false),
-			readline.PcItem("sd1:", false)),
+			readline.PcItem("sd1:", false),
+			readline.PcItem("gr:", false),
+			readline.PcItem("co:", false),
+			readline.PcItem("wa:", false)),
 
 		readline.PcItem("create", false,
 			readline.PcItem("tenant", false),
@@ -153,6 +156,9 @@ func main() {
 			readline.PcItem("device", false),
 			readline.PcItem("subdevice", false),
 			readline.PcItem("subdevice1", false),
+			readline.PcItem("wall", false),
+			readline.PcItem("corridor", false),
+			readline.PcItem("group", false),
 		),
 
 		readline.PcItem("gt", true,

@@ -668,23 +668,15 @@ func Tree(x string, depth int) {
 	}
 }
 
+//When creating via OCLI syntax
+//{entity}.attribute=someVal
+//Gets stripped and returns
+//attribute, someVal
 func getAttrAndVal(x string) (string, string) {
-	i := 0
-	end := 0
-	iter := 0
-	for ; iter < len(x); iter++ {
-		if string(x[iter]) == "." {
-			i = iter
-		}
+	arr := strings.Split(x, "=")
 
-		if string(x[iter]) == "=" {
-			end = iter
-			iter = len(x)
-		}
-	}
-
-	a := x[i+1 : end]
-	v := x[end+1:]
+	a := arr[0]
+	v := arr[1]
 	return a, v
 }
 
@@ -717,6 +709,7 @@ func GetOCLIAtrributes(path *Stack, ent int, data map[string]interface{}, term *
 					data["attributes"].(map[string]string)[a] = v
 				}
 			}
+			//println("Checking for domain:", data["domain"].(string))
 		}
 		//println("Color:", data["attributes"].(map[string]string)["color"])
 		PostObj(ent, "tenant", data)
@@ -878,6 +871,41 @@ func GetOCLIAtrributes(path *Stack, ent int, data map[string]interface{}, term *
 			}
 		}
 		PostObj(ent, "device", data)
+
+	case WALL, CORRIDOR, GROUP:
+		//name, category, domain, pid
+		data["attributes"] = map[string]interface{}{}
+		for data["name"] == nil || data["domain"] == nil || data["category"] == nil ||
+			data["parentId"] == nil {
+			println("Enter attribute")
+			x, e := term.Readline()
+			if e != nil {
+				println("Error reading attribute: ", e)
+				ErrorLogger.Println("Error reading attribute: ", e)
+				return
+			}
+			a, v := getAttrAndVal(x)
+			switch a {
+			case "id", "name", "category", "parentID",
+				"description", "domain", "parentid", "parentId":
+				data[a] = v
+
+			default:
+				if _, ok := data["attributes"].(map[string]interface{}); ok {
+					data["attributes"].(map[string]interface{})[a] = v
+				} else {
+					data["attributes"].(map[string]string)[a] = v
+				}
+			}
+		}
+
+		if ent == WALL {
+			PostObj(ent, "wall", data)
+		} else if ent == CORRIDOR {
+			PostObj(ent, "corridor", data)
+		} else {
+			PostObj(ent, "group", data)
+		}
 	}
 }
 

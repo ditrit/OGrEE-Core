@@ -18,6 +18,9 @@ const (
 	DEVICE
 	SUBDEV
 	SUBDEV1
+	WALL
+	CORRIDOR
+	GROUP
 )
 
 var BuildTime string
@@ -81,7 +84,7 @@ func GetChildren(curr int) []*Node {
 			println("Error while getting children!")
 			Exit()
 		}
-		println("REQ:", "https://ogree.chibois.net/api/"+EntityToString(curr)+"s")
+		//println("REQ:", "https://ogree.chibois.net/api/"+EntityToString(curr)+"s")
 
 		x := makeNodeArrFromResp(resp, curr)
 		if x != nil {
