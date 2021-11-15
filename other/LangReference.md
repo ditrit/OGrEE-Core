@@ -151,6 +151,14 @@ Command Substitution
 $a
 ```
 
+Updating Objects
+------------
+Objects can be updated in 2 ways
+```
+update [PATH(optional)] attribute=myNewValue
+PATH:attribute=myNewValue
+```
+
 Debugging
 ------------
 There are 3 levels of debugging messages output. And are specified as program arguments ```-v=x``` where x is in the range 0 -> 3. Any number above 3 is still valid. When 
