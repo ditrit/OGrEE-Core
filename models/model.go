@@ -63,33 +63,6 @@ func parseDataForNonStdResult(ent string, eNum, end int, data map[string]interfa
 	return ans
 }
 
-func delSubEnts(eNum int, data map[string][]map[string]interface{}) (map[string]interface{}, string) {
-	//Delete the Subentities
-	for i := SUBDEV1; i > eNum; i-- {
-		eStr := u.EntityToString(i)
-		if arr, ok := data["children"]; ok {
-
-			for idx := range arr {
-				println("LEN: ", len(arr[idx]))
-
-				if len(arr[idx]) > 0 {
-
-					locID := arr[idx]["id"].(primitive.ObjectID)
-					ctx, cancel := u.Connect()
-					println("Now deleting: ", eStr)
-					c, _ := GetDB().Collection(eStr).DeleteOne(ctx, bson.M{"_id": locID})
-					if c.DeletedCount == 0 {
-						return u.Message(false, "There was an error in deleting the entity"), "not found"
-					}
-					defer cancel()
-				}
-
-			}
-		}
-	}
-	return u.Message(true, "success"), ""
-}
-
 func genID(length int) string {
 	chars := "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890-"
 	ll := len(chars)
@@ -513,33 +486,32 @@ func DeleteEntity(entity string, id primitive.ObjectID) (map[string]interface{},
 }
 
 func deleteHelper(t map[string]interface{}, ent int) (map[string]interface{}, string) {
-	if t == nil {
-		return nil, ""
-	}
+	if t != nil {
 
-	if v, ok := t["children"]; ok {
-		if x, ok := v.([]map[string]interface{}); ok {
-			for i := range x {
-				deleteHelper(x[i], ent+1)
+		if v, ok := t["children"]; ok {
+			if x, ok := v.([]map[string]interface{}); ok {
+				for i := range x {
+					deleteHelper(x[i], ent+1)
+				}
+			} else {
+				println("JSON not formatted as expected")
+				return u.Message(false,
+					"There was an error in deleting the entity"), "not found"
 			}
+		}
+
+		if ent == DEVICE {
+			DeleteDeviceF(t["id"].(primitive.ObjectID))
 		} else {
-			println("JSON not formatted as expected")
-			return u.Message(false,
-				"There was an error in deleting the entity"), "not found"
-		}
-	}
+			ctx, cancel := u.Connect()
+			entity := u.EntityToString(ent)
+			c, _ := GetDB().Collection(entity).DeleteOne(ctx, bson.M{"_id": t["id"].(primitive.ObjectID)})
+			if c.DeletedCount == 0 {
+				return u.Message(false, "There was an error in deleting the entity"), "not found"
+			}
+			defer cancel()
 
-	if ent == DEVICE {
-		DeleteDeviceF(t["id"].(primitive.ObjectID))
-	} else {
-		ctx, cancel := u.Connect()
-		entity := u.EntityToString(ent)
-		c, _ := GetDB().Collection(entity).DeleteOne(ctx, bson.M{"_id": t["id"].(primitive.ObjectID)})
-		if c.DeletedCount == 0 {
-			return u.Message(false, "There was an error in deleting the entity"), "not found"
 		}
-		defer cancel()
-
 	}
 	return nil, ""
 }
@@ -1166,15 +1138,13 @@ func RetrieveDeviceHierarch(ID primitive.ObjectID) (map[string]interface{}, stri
 }
 
 func DeleteDeviceF(entityID primitive.ObjectID) (map[string]interface{}, string) {
-	var deviceType string
+	//var deviceType string
 
 	t, e := RetrieveDeviceHierarch(entityID)
 	if e != "" {
 		return nil, e
 	}
-	del := parseDataForNonStdResult(deviceType, DEVICE, SUBDEV1+1, t)
-	println("LEN OF DEL: ", len(del))
-	delSubEnts(DEVICE, del)
+	deleteDeviceHelper(t)
 
 	ctx, cancel := u.Connect()
 	c, _ := GetDB().Collection("device").DeleteOne(ctx, bson.M{"_id": entityID})
@@ -1183,6 +1153,32 @@ func DeleteDeviceF(entityID primitive.ObjectID) (map[string]interface{}, string)
 	}
 	defer cancel()
 
+	return nil, ""
+}
+
+func deleteDeviceHelper(t map[string]interface{}) (map[string]interface{}, string) {
+	if t != nil {
+
+		if v, ok := t["children"]; ok {
+			if x, ok := v.([]map[string]interface{}); ok {
+				for i := range x {
+					deleteDeviceHelper(x[i])
+				}
+			} else {
+				println("JSON not formatted as expected")
+				return u.Message(false,
+					"There was an error in deleting the entity"), "not found"
+			}
+		}
+
+		ctx, cancel := u.Connect()
+		c, _ := GetDB().Collection("device").DeleteOne(ctx, bson.M{"_id": t["id"].(primitive.ObjectID)})
+		if c.DeletedCount == 0 {
+			return u.Message(false, "There was an error in deleting the entity"), "not found"
+		}
+		defer cancel()
+
+	}
 	return nil, ""
 }
 
