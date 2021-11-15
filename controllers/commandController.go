@@ -424,6 +424,12 @@ func Help(entry string) {
 	case "ls":
 		fmt.Println(`Usage: `, entry, "[PATH] (optional)")
 		fmt.Println(`Displays objects in a given directory`)
+	case "pwd":
+		fmt.Println(`Usage: `, entry)
+		fmt.Println(`Prints the full filename of the current working directory.`)
+	case "print":
+		fmt.Println(`Usage: `, entry, "\"[STRING]\"")
+		fmt.Println(`Prints string to output`)
 	case "cd":
 		fmt.Println(`Usage: `, entry, "[PATH] (optional)")
 		fmt.Println(`Changes current directory`)
@@ -436,20 +442,75 @@ func Help(entry string) {
 		fmt.Println(`Usage: `, entry, "ENTITY [PATH](optional)  [ATTRIBUTES]")
 		fmt.Println(`Creates an object in a given directory`)
 		printAttributeOptions()
+	case "+":
+		fmt.Println(`Usage: `, entry, "[OCLIENTITY]:[PATH]@[OCLIOPTIONS]")
+		fmt.Println(`Shorthand syntax for creating objects`)
+		fmt.Println()
+		fmt.Println(`Each entity type has a specific OCLIOPTIONS`)
+		fmt.Println(`When properly executed, the user will be prompted`)
+		fmt.Println(`to enter the attributes of the object in question.`)
+		fmt.Println(`Once the sufficient necessary options have been`)
+		fmt.Println(`entered. The object will be created.`)
+		fmt.Println(`The required attributes for each object is found: `)
+		fmt.Println(`https://github.com/ditrit/OGREE-3D/wiki/How-it-works#ogreeobject-class`)
+		fmt.Println()
+		fmt.Println(`USAGES`)
+		fmt.Println()
+		fmt.Println(`+tn:PATH/TENANT_NAME@TENANT_NAME@COLOR`)
+		fmt.Println(`+tenant:PATH/TENANT_NAME@TENANT_NAME@COLOR`)
+		fmt.Println(`User must specify the path, TENANT_NAME and COLOR`)
+		fmt.Println()
+		fmt.Println()
+		fmt.Println(`+si:PATH/SITE_NAME@ORIENTATION`)
+		fmt.Println(`+site:PATH/SITE_NAME@ORIENTATION`)
+		fmt.Println(`User must specify the path, SITE_NAME and ORIENTATION`)
+		fmt.Println()
+		fmt.Println()
+		fmt.Println(`+bd:PATH/BLDG_NAME@POSITION@SIZE`)
+		fmt.Println(`+building:PATH/BLDG_NAME@POSITION@SIZE`)
+		fmt.Println(`User must specify the path, BLDG_NAME, POSITION and SIZE`)
+		fmt.Println()
+		fmt.Println()
+		fmt.Println(`+ro:PATH/ROOM_NAME@POSITION@SIZE`)
+		fmt.Println(`+room:PATH/ROOM_NAME@POSITION@SIZE`)
+		fmt.Println(`User must specify the path, ROOM_NAME, POSITION and SIZE`)
+		fmt.Println()
+		fmt.Println()
+		fmt.Println(`+rk:PATH/RACK_NAME@POSITION@SIZE`)
+		fmt.Println(`+rack:PATH/RACK_NAME@POSITION@SIZE`)
+		fmt.Println(`User must specify the path, RACK_NAME, POSITION and SIZE`)
+		fmt.Println()
+		fmt.Println()
+		fmt.Println(`+dv:PATH/DEVICE_NAME@SLOT@SIZEUNIT`)
+		fmt.Println(`+device:PATH/DEVICE_NAME@SLOT@SIZEUNIT`)
+		fmt.Println(`User must specify the path, DEVICE_NAME, SLOT and SIZEUNIT`)
+		//printAttributeOptions()
 	case "gt":
 		fmt.Println(`Usage: `, entry, "ENTITY (optional) [PATH](optional)  [ATTRIBUTES](optional)")
 		fmt.Println(`Obtains object(s) details. 
-				If ENTITY is specified then it will enter a 'search mode' 
-				and at least 1 ATTRIBUTE must be specified. Otherwise an 
-				object's details will be retrieved`)
+	If ENTITY is specified then it will enter a 'search mode' 
+	and at least 1 ATTRIBUTE must be specified. Otherwise an 
+	object's details will be retrieved`)
 		printAttributeOptions()
+
+	case "=":
+		fmt.Println(`Usage: `, entry, "[PATH](optional)")
+		fmt.Println(`Obtains object(s) details. 
+	If PATH is not specified then the current working 
+	directory will be used`)
+
 	case "update":
 		fmt.Println(`Usage: `, entry, "[PATH](optional)  [ATTRIBUTES]")
 		fmt.Println(`Modify an object by specifying new attribute values`)
+		fmt.Println(`If a path is not specified then the current directory`)
+		fmt.Println(`path will be used`)
 		printAttributeOptions()
 	case "delete":
 		fmt.Println(`Usage: `, entry, "[PATH]")
 		fmt.Println(`Delete an object`)
+	case "-":
+		fmt.Println(`Usage: `, entry)
+		fmt.Println(`Delete an object at current path`)
 	case "lsog":
 		fmt.Println(`Usage: `, entry)
 		fmt.Println(`Displays system information`)
@@ -529,6 +590,22 @@ func Help(entry string) {
 		fmt.Println()
 		fmt.Println("-v\t\tDeletes variable")
 		fmt.Println("-f\t\tDeletes function")
+	case ".template":
+		fmt.Println(`Usage: `, entry, ": [PATH]")
+		fmt.Println(`Loads a template from provided path`)
+		fmt.Println()
+		fmt.Println("The function of this is not yet decided")
+	case ".cmds":
+		fmt.Println(`Usage: `, entry, ": [PATH]")
+		fmt.Println(`Loads and executes a script in PATH`)
+	case ".var":
+		fmt.Println(`Usage: `, entry, ":[VAR_NAME] = [VALUE]")
+		fmt.Println(`Assigns a value to a variable`)
+		fmt.Println()
+		fmt.Println(`Variable names are solely alphanumeric characters`)
+		fmt.Println(`With the first character being a letter`)
+		fmt.Println(`Assignable values are bool, int, string, array, function, node, json`)
+		fmt.Println(`Variables are dynamically reassignable using the same syntax`)
 	case "select":
 		fmt.Println("Usage: selection")
 		fmt.Println("Displays selected objects in clipboard")

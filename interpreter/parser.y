@@ -367,6 +367,8 @@ BASH:  TOK_CLR {$$=&commonNode{COMMON, nil, "CLR", nil}}
        | TOK_EXIT {$$=&commonNode{COMMON, cmd.Exit, "Exit", nil}}
        | TOK_DOC {$$=&commonNode{COMMON, cmd.Help, "Help", []interface{}{""}}}
        | TOK_DOC TOK_LS {$$=&commonNode{COMMON, cmd.Help, "Help", []interface{}{"ls"}}}
+       | TOK_DOC TOK_PWD {$$=&commonNode{COMMON, cmd.Help, "Help", []interface{}{"pwd"}}}
+       | TOK_DOC TOK_PRNT {$$=&commonNode{COMMON, cmd.Help, "Help", []interface{}{"print"}}}
        | TOK_DOC TOK_CD {$$=&commonNode{COMMON, cmd.Help, "Help", []interface{}{"cd"}}}
        | TOK_DOC TOK_CREATE {$$=&commonNode{COMMON, cmd.Help, "Help", []interface{}{"create"}}}
        | TOK_DOC TOK_GET {$$=&commonNode{COMMON, cmd.Help, "Help", []interface{}{"gt"}}}
@@ -389,6 +391,13 @@ BASH:  TOK_CLR {$$=&commonNode{COMMON, nil, "CLR", nil}}
        | TOK_DOC TOK_LSDEV {$$=&commonNode{COMMON, cmd.Help, "Help", []interface{}{"lsdev"}}}
        | TOK_DOC TOK_LSSUBDEV {$$=&commonNode{COMMON, cmd.Help, "Help", []interface{}{"lssubdev"}}}
        | TOK_DOC TOK_LSSUBDEV1 {$$=&commonNode{COMMON, cmd.Help, "Help", []interface{}{"lssubdev1"}}}
+       | TOK_DOC TOK_OCDEL {$$=&commonNode{COMMON, cmd.Help, "Help", []interface{}{"-"}}}
+       | TOK_DOC TOK_DOT TOK_TEMPLATE {$$=&commonNode{COMMON, cmd.Help, "Help", []interface{}{".template"}}}
+       | TOK_DOC TOK_DOT TOK_CMDS {$$=&commonNode{COMMON, cmd.Help, "Help", []interface{}{".cmds"}}}
+       | TOK_DOC TOK_DOT TOK_VAR {$$=&commonNode{COMMON, cmd.Help, "Help", []interface{}{".var"}}}
+       | TOK_DOC TOK_PLUS {$$=&commonNode{COMMON, cmd.Help, "Help", []interface{}{"+"}}}
+       | TOK_DOC TOK_EQUAL {$$=&commonNode{COMMON, cmd.Help, "Help", []interface{}{"="}}}
+
 ;
 
 OCLISYNTX:  TOK_PLUS OCCR {$$=$2}
