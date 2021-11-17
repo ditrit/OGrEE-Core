@@ -96,8 +96,37 @@ func (c *commonNode) execute() interface{} {
 		}
 
 	case "UpdateObj":
+		var v map[string]interface{}
 		if f, ok := c.fun.(func(string, map[string]interface{}) map[string]interface{}); ok {
-			v := f(c.args[0].(string), c.args[1].(map[string]interface{}))
+			if x := len(c.args); c.args[x-1].(bool) == true {
+				//Weird edge case
+				//to solve issue with:
+				// for i in $(ls) do $i[attr]="string"
+
+				//c.args[0] = referenceToNode
+				//c.args[1] = attributeString, (used as an index)
+				//c.args[2] = someValue (usually a string)
+				mp := c.args[0]
+				nd := getNodeFromMapInf(mp.(node).execute().(map[string]interface{}))
+
+				v = f(nd.Path,
+					retMapInf(c.args[1].(string), c.args[2].(node).execute()))
+			} else {
+				v = f(c.args[0].(string), c.args[1].(map[string]interface{}))
+			}
+			return &jsonObjNode{COMMON, v}
+		}
+
+	case "UpdateNodeOnIteration":
+		if f, ok := c.fun.(func(string, map[string]interface{}) map[string]interface{}); ok {
+			//c.args[0] = referenceToNode
+			//c.args[1] = attributeString, (used as an index)
+			//c.args[2] = someValue (usually a string)
+			mp := c.args[0]
+			nd := getNodeFromMapInf(mp.(node).execute().(map[string]interface{}))
+
+			v := f(nd.Path,
+				retMapInf(c.args[1].(string), c.args[2].(node).execute()))
 			return &jsonObjNode{COMMON, v}
 		}
 
