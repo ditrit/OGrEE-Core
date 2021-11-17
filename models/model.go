@@ -182,24 +182,24 @@ func ValidateEntity(entity int, t map[string]interface{}) (map[string]interface{
 							return u.Message(false, "XY coordinates should be on payload"), false
 						}
 
-						if v["posXYU"] == "" || v["posXYU"] == nil {
-							return u.Message(false, "PositionXYU string should be on the payload"), false
+						if v["posXYUnit"] == "" || v["posXYUnit"] == nil {
+							return u.Message(false, "PositionXYUnit should be on the payload"), false
 						}
 
 						if v["size"] == "" || v["size"] == nil {
 							return u.Message(false, "Invalid building size on the payload"), false
 						}
 
-						if v["sizeU"] == "" || v["sizeU"] == nil {
-							return u.Message(false, "Building size string should be on the payload"), false
+						if v["sizeUnit"] == "" || v["sizeUnit"] == nil {
+							return u.Message(false, "Building size unit should be on the payload"), false
 						}
 
 						if v["height"] == "" || v["height"] == nil {
 							return u.Message(false, "Invalid Height on payload"), false
 						}
 
-						if v["heightU"] == "" || v["heightU"] == nil {
-							return u.Message(false, "Building Height string should be on the payload"), false
+						if v["heightUnit"] == "" || v["heightUnit"] == nil {
+							return u.Message(false, "Building Height unit should be on the payload"), false
 						}
 
 					case ROOM:
@@ -207,8 +207,8 @@ func ValidateEntity(entity int, t map[string]interface{}) (map[string]interface{
 							return u.Message(false, "XY coordinates should be on payload"), false
 						}
 
-						if v["posXYU"] == "" || v["posXYU"] == nil {
-							return u.Message(false, "PositionXYU string should be on the payload"), false
+						if v["posXYUnit"] == "" || v["posXYUnit"] == nil {
+							return u.Message(false, "PositionXYUnit should be on the payload"), false
 						}
 
 						switch v["orientation"] {
@@ -227,24 +227,25 @@ func ValidateEntity(entity int, t map[string]interface{}) (map[string]interface{
 							return u.Message(false, "Invalid size on the payload"), false
 						}
 
-						if v["sizeU"] == "" || v["sizeU"] == nil {
-							return u.Message(false, "Room size string should be on the payload"), false
+						if v["sizeUnit"] == "" || v["sizeUnit"] == nil {
+							return u.Message(false, "Room size unit should be on the payload"), false
 						}
 
 						if v["height"] == "" || v["height"] == nil {
 							return u.Message(false, "Invalid Height on payload"), false
 						}
 
-						if v["heightU"] == "" || v["heightU"] == nil {
-							return u.Message(false, "Room Height string should be on the payload"), false
+						if v["heightUnit"] == "" || v["heightUnit"] == nil {
+							return u.Message(false, "Room Height unit should be on the payload"), false
 						}
+
 					case RACK:
 						if v["posXY"] == "" || v["posXY"] == nil {
 							return u.Message(false, "XY coordinates should be on payload"), false
 						}
 
-						if v["posXYU"] == "" || v["posXYU"] == nil {
-							return u.Message(false, "PositionXYU string should be on the payload"), false
+						if v["posXYUnit"] == "" || v["posXYUnit"] == nil {
+							return u.Message(false, "PositionXYUnit should be on the payload"), false
 						}
 
 						switch v["orientation"] {
@@ -260,17 +261,18 @@ func ValidateEntity(entity int, t map[string]interface{}) (map[string]interface{
 							return u.Message(false, "Invalid size on the payload"), false
 						}
 
-						if v["sizeU"] == "" || v["sizeU"] == nil {
-							return u.Message(false, "Rack size string should be on the payload"), false
+						if v["sizeUnit"] == "" || v["sizeUnit"] == nil {
+							return u.Message(false, "Rack size unit should be on the payload"), false
 						}
 
 						if v["height"] == "" || v["height"] == nil {
 							return u.Message(false, "Invalid Height on payload"), false
 						}
 
-						if v["heightU"] == "" || v["heightU"] == nil {
-							return u.Message(false, "Rack Height string should be on the payload"), false
+						if v["heightUnit"] == "" || v["heightUnit"] == nil {
+							return u.Message(false, "Rack Height unit should be on the payload"), false
 						}
+
 					case DEVICE:
 						switch v["orientation"] {
 						case "front", "rear", "frontflipped", "rearflipped":
@@ -286,16 +288,17 @@ func ValidateEntity(entity int, t map[string]interface{}) (map[string]interface{
 						}
 
 						if v["sizeUnit"] == "" || v["sizeUnit"] == nil {
-							return u.Message(false, "Rack size string should be on the payload"), false
+							return u.Message(false, "Device size unit should be on the payload"), false
 						}
 
 						if v["height"] == "" || v["height"] == nil {
 							return u.Message(false, "Invalid Height on payload"), false
 						}
 
-						if v["heightU"] == "" || v["heightU"] == nil {
-							return u.Message(false, "Rack Height string should be on the payload"), false
+						if v["heightUnit"] == "" || v["heightUnit"] == nil {
+							return u.Message(false, "Device Height unit should be on the payload"), false
 						}
+
 					case SUBDEV, SUBDEV1:
 
 					}
