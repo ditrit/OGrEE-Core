@@ -2325,9 +2325,10 @@ cmd.WarningLogger.Println("Unknown Command")			/*yylex.Error(msg)*/
 			y := &symbolReferenceNode{REFERENCE, yyS[yypt-5].s, &strNode{STR, yyS[yypt-3].s}, nil}
 			x := &assignNode{ASSIGN, y, yyS[yypt-0].node}
 			mp := &symbolReferenceNode{REFERENCE, yyS[yypt-5].s, &numNode{NUM, -1}, nil}
-			q := getNodeFromMapInf(mp.execute().(map[string]interface{}))
-			z := &commonNode{COMMON, cmd.UpdateObj, "UpdateObj", []interface{}{q.Path, retMapInf(yyS[yypt-3].s, (yyS[yypt-0].node).execute())}}
+
+			z := &commonNode{COMMON, cmd.UpdateObj, "UpdateObj", []interface{}{mp, yyS[yypt-3].s, yyS[yypt-0].node, true}}
 			yyVAL.node = &ast{ASSIGN, []node{x, z}}
+
 		}
 	case 188:
 		{

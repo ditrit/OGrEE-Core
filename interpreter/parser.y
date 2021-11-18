@@ -213,7 +213,6 @@ OPEN_STMT:    TOK_IF TOK_LBLOCK EXPR TOK_RBLOCK TOK_THEN st2 TOK_FI {$$=&ifNode{
               }
               |TOK_FOR TOK_WORD TOK_IN TOK_DEREF TOK_LPAREN Q TOK_RPAREN TOK_DO st2 TOK_DONE 
               {
-                     println("WE MUST BE HERE")
               arrNd:=$6
               arrRes:= arrNd.execute()
               qRes :=&assignNode{ASSIGN, "_internalRes", arrRes}
@@ -463,19 +462,14 @@ OCDOT:      TOK_DOT TOK_VAR TOK_COL TOK_WORD TOK_EQUAL WORDORNUM {$$=&assignNode
             |TOK_DOT TOK_VAR TOK_COL TOK_WORD TOK_EQUAL OCLISYNTX {$$=&assignNode{ASSIGN, $4, $6}}
             |TOK_DEREF TOK_WORD {$$=&symbolReferenceNode{REFERENCE, $2, &numNode{NUM,0}, nil}}
             |TOK_DEREF TOK_WORD TOK_LBLOCK TOK_ATTR TOK_RBLOCK TOK_EQUAL EXPR 
-            {println("YAO");
+            {
             y:=&symbolReferenceNode{REFERENCE, $2, &strNode{STR, $4}, nil}; 
             x:=&assignNode{ASSIGN, y, $7};
             mp:=&symbolReferenceNode{REFERENCE, $2, &numNode{NUM, -1},nil}; 
-            if mp.execute() == nil { // Edge case for ranged iterator loops
+            
               z:=&commonNode{COMMON, cmd.UpdateObj, "UpdateObj", []interface{}{mp, $4, $7, true}}
               $$=&ast{ASSIGN, []node{x, z}}
               
-              } else {
-
-                   q:=getNodeFromMapInf(mp.execute().(map[string]interface{})) ;
-            z:=&commonNode{COMMON,cmd.UpdateObj, "UpdateObj", []interface{}{q.Path, retMapInf($4,($7).execute() ),false }};
-            $$=&ast{ASSIGN, []node{x, z}}}
             }
               
             
