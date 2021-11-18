@@ -484,6 +484,21 @@ func Help(entry string) {
 		fmt.Println(`+dv:PATH/DEVICE_NAME@SLOT@SIZEUNIT`)
 		fmt.Println(`+device:PATH/DEVICE_NAME@SLOT@SIZEUNIT`)
 		fmt.Println(`User must specify the path, DEVICE_NAME, SLOT and SIZEUNIT`)
+		fmt.Println()
+		fmt.Println()
+		fmt.Println(`+co:PATH/ROOM_NAME@CORRIDOR_NAME@LEFT_RACK@RIGHT_RACK@TEMPERATURE`)
+		fmt.Println(`+corridor:PATH/ROOM_NAME@CORRIDOR_NAME@LEFT_RACK@RIGHT_RACK@TEMPERATURE`)
+		fmt.Println(`User must specify the path, ROOM_NAME, CORRIDOR_NAME, LEFT_RACK, RIGHT_RACK and TEMPERATURE`)
+		fmt.Println()
+		fmt.Println()
+		fmt.Println(`+gr:PATH/ROOM_NAME@RACK0@...@RACKN`)
+		fmt.Println(`+group:PATH/ROOM_NAME@RACK0@...@RACKN`)
+		fmt.Println(`User must specify the path, ROOM_NAME, and all RACKs`)
+		fmt.Println()
+		fmt.Println()
+		fmt.Println(`+wa:PATH/ROOM_NAME@WALL_NAME@POSITION1@POSITION2`)
+		fmt.Println(`+wall:PATH/ROOM_NAME@WALL_NAME@POSITION1@POSITION2`)
+		fmt.Println(`User must specify the path, ROOM_NAME, WALL_NAME POSITION 1 and 2`)
 		//printAttributeOptions()
 	case "gt":
 		fmt.Println(`Usage: `, entry, "ENTITY (optional) [PATH](optional)  [ATTRIBUTES](optional)")
@@ -752,8 +767,8 @@ func Tree(x string, depth int) {
 func getAttrAndVal(x string) (string, string) {
 	arr := strings.Split(x, "=")
 
-	a := arr[0]
-	v := arr[1]
+	a := strings.TrimSpace(arr[0])
+	v := strings.TrimSpace(arr[1])
 	return a, v
 }
 
