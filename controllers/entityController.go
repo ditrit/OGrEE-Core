@@ -3,7 +3,9 @@ package controllers
 import (
 	"encoding/json"
 	"fmt"
+	"log"
 	"net/http"
+	"os"
 	"p3/models"
 	u "p3/utils"
 	"strings"
@@ -106,6 +108,19 @@ func parseDataForNonStdResult(ent string, eNum int, data map[string]interface{})
 		add = append(add, firstArr[i])
 	}*/
 	return ans
+}
+
+//This function is useful for debugging
+//purposes. It displays any JSON
+func viewJson(r *http.Request) {
+	var updateData map[string]interface{}
+	json.NewDecoder(r.Body).Decode(&updateData)
+	enc := json.NewEncoder(os.Stdout)
+	enc.SetIndent("", "    ")
+
+	if err := enc.Encode(updateData); err != nil {
+		log.Fatal(err)
+	}
 }
 
 // swagger:operation POST /api/{obj} objects CreateObject
@@ -602,6 +617,8 @@ var UpdateEntity = func(w http.ResponseWriter, r *http.Request) {
 	nest, e1 := mux.Vars(r)["nest"]
 	name, e2 := mux.Vars(r)["name"]
 
+	//viewJson(r)
+
 	err := json.NewDecoder(r.Body).Decode(&updateData)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
@@ -611,7 +628,7 @@ var UpdateEntity = func(w http.ResponseWriter, r *http.Request) {
 
 	switch {
 	case e2 == true: // UPDATE SLUG
-
+		println("updating slug")
 		//Get entity from URL and strip trailing 's'
 		entity, _ = mux.Vars(r)["entity"]
 		entity = entity[:len(entity)-1]
@@ -623,6 +640,7 @@ var UpdateEntity = func(w http.ResponseWriter, r *http.Request) {
 
 		v, e3 = models.UpdateEntityBySlug(entity, name, &updateData)
 	case e1 == true && e == true: // UPDATE NESTED
+		println("updating nested")
 		objID, err := primitive.ObjectIDFromHex(id)
 		if err != nil {
 			w.WriteHeader(http.StatusBadRequest)
@@ -638,6 +656,7 @@ var UpdateEntity = func(w http.ResponseWriter, r *http.Request) {
 		v, e3 = models.UpdateNestedEntity(entity, objID, nest, updateData)
 
 	case e == true: // UPDATE NORMAL
+		println("updating Normale")
 		objID, err := primitive.ObjectIDFromHex(id)
 		if err != nil {
 			w.WriteHeader(http.StatusBadRequest)
@@ -649,10 +668,13 @@ var UpdateEntity = func(w http.ResponseWriter, r *http.Request) {
 		//Get entity from URL and strip trailing 's'
 		entity, _ = mux.Vars(r)["entity"]
 		entity = entity[:len(entity)-1]
+		println("OBJID:", objID.Hex())
+		println("Entity;", entity)
 
 		v, e3 = models.UpdateEntity(entity, objID, &updateData)
 
 	default:
+		println("ERRYO")
 		w.WriteHeader(http.StatusBadRequest)
 		u.Respond(w, u.Message(false, "Error while extracting from path parameters"))
 		u.ErrLog("Error while extracting from path parameters", "UPDATE ENTITY", "", r)
