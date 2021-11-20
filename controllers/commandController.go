@@ -626,7 +626,7 @@ func Help(entry string) {
 		fmt.Println("Displays selected objects in clipboard")
 		fmt.Println("Select objects by: ={obj1 obj2 ...}")
 	case "lsobj", "lsten", "lssite", "lsbldg", "lsroom", "lsrack",
-		"lsdev", "lssubdev", "lssubdev1":
+		"lsdev":
 		fmt.Println("Usage: ", entry, "[PATH]")
 		fmt.Println("Recursively displays specified object type from given path")
 	default:

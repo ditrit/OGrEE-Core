@@ -41,8 +41,6 @@
 /ro/ { printToks("TOK_OCROOM");return TOK_OCROOM}
 /rk/ { printToks("TOK_OCRACK");return TOK_OCRACK}
 /dv/ { printToks("TOK_OCDEV");return TOK_OCDEV}
-/sd/ { printToks("TOK_OCSDEV");return TOK_OCSDEV}
-/sd1/ { printToks("TOK_OCSDEV1");return TOK_OCSDEV1}
 /gr/ { printToks("TOK_OCGROUP");return TOK_OCGROUP}
 /wa/ { printToks("TOK_OCWALL");return TOK_OCWALL}
 /co/ { printToks("TOK_OCCORIDOR");return TOK_OCCORIDOR}
@@ -61,13 +59,9 @@
 /room/ { printToks("TOK_ROOM");lval.s = yylex.Text();return TOK_ROOM}
 /rack/ { printToks("TOK_RACK");lval.s = yylex.Text();return TOK_RACK}
 /device/ { printToks("TOK_DEVICE");lval.s = yylex.Text();return TOK_DEVICE}
-/subdevice/ { printToks("TOK_SUBDEVICE");lval.s = yylex.Text();return TOK_SUBDEVICE}
-/subdevice1/{ printToks("TOK_SUBDEVICE1");lval.s = yylex.Text();return TOK_SUBDEVICE1}
 /group/ { printToks("TOK_GROUP");lval.s = yylex.Text();return TOK_GROUP}
 /corridor/ { printToks("TOK_CORIDOR");lval.s = yylex.Text();return TOK_CORIDOR}
 /wall/ { printToks("TOK_WALL");lval.s = yylex.Text();return TOK_WALL}
-/address|category|city|color|country|description|domain|gps|height|heightUnit|id|mainContact|mainEmail|mainPhone|model|name|nbFloors|orientation|parentId|posU|posXY|posXYUnit|posZ|posZUnit|reserved|reservedColor|serial|size|sizeU|sizeUnit|slot|technical|technicalColor|template|TOK|type|usableColor|vendor|zipcode/ 
-{ printToks("TOK_ATTR");lval.s = yylex.Text();return TOK_ATTR}
 
 /[0-9]+/ { printToks("TOK_NUM");lval.n = atoi(yylex.Text()); return TOK_NUM}
 /lsten/ { printToks("TOK_LSTEN"); return TOK_LSTEN}
@@ -76,8 +70,6 @@
 /lsroom/ { printToks("TOK_LSROOM"); return TOK_LSROOM}
 /lsrack/ { printToks("TOK_LSRACK"); return TOK_LSRACK}
 /lsdev/ { printToks("TOK_LSDEV"); return TOK_LSDEV}
-/lssubdev/ { printToks("TOK_LSSUBDEV"); return TOK_LSSUBDEV}
-/lssubdev1/ {printToks("TOK_LSSUBDEV1"); return TOK_LSSUBDEV1}
 /tree/ {printToks("TOK_TREE"); return TOK_TREE}
 /lsog/ {printToks("TOK_LSOG"); return TOK_LSOG}
 /cd/ {printToks("TOK_CD");return TOK_CD}

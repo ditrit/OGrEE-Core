@@ -118,9 +118,9 @@ func genNodeFromCommonRes(x node) node {
 
 %token <n> TOK_NUM
 %token <s> TOK_WORD TOK_TENANT TOK_SITE TOK_BLDG TOK_ROOM
-%token <s> TOK_RACK TOK_DEVICE TOK_SUBDEVICE TOK_SUBDEVICE1
+%token <s> TOK_RACK TOK_DEVICE
 %token <s> TOK_CORIDOR TOK_GROUP TOK_WALL
-%token <s> TOK_ATTR TOK_PLUS TOK_OCDEL TOK_BOOL
+%token <s> TOK_PLUS TOK_OCDEL TOK_BOOL
 %token
        TOK_CREATE TOK_GET TOK_UPDATE TOK_DELETE TOK_SEARCH
        TOK_BASHTYPE TOK_EQUAL TOK_CMDFLAG TOK_SLASH 
@@ -128,9 +128,9 @@ func genNodeFromCommonRes(x node) node {
        TOK_CLR TOK_GREP TOK_LS TOK_TREE
        TOK_LSOG TOK_LSTEN TOK_LSSITE TOK_LSBLDG
        TOK_LSROOM TOK_LSRACK TOK_LSDEV
-       TOK_LSSUBDEV TOK_LSSUBDEV1 TOK_OCBLDG TOK_OCDEV
+       TOK_OCBLDG TOK_OCDEV
        TOK_OCRACK TOK_OCROOM TOK_ATTRSPEC TOK_OCSITE TOK_OCTENANT
-       TOK_OCSDEV TOK_OCSDEV1 TOK_COL TOK_SELECT TOK_LBRAC TOK_RBRAC
+       TOK_COL TOK_SELECT TOK_LBRAC TOK_RBRAC
        TOK_COMMA TOK_DOT TOK_CMDS TOK_TEMPLATE TOK_VAR TOK_DEREF
        TOK_SEMICOL TOK_IF TOK_FOR TOK_WHILE
        TOK_ELSE TOK_LBLOCK TOK_RBLOCK
@@ -230,6 +230,29 @@ OPEN_STMT:    TOK_IF TOK_LBLOCK EXPR TOK_RBLOCK TOK_THEN st2 TOK_FI {$$=&ifNode{
               incr:=&ast{ASSIGN, []node{varIterAssign}}
               body:=&ast{BLOCK, []node{incr,$9}}
               $$=&rangeNode{FOR, init, arrRes,body }}
+              
+              |TOK_FOR TOK_WORD TOK_IN TOK_DEREF TOK_LPAREN factor TOK_RPAREN TOK_DO st2 TOK_DONE 
+              {
+              arrNd:= $6
+              //This NonTerminal is broken, it is kept
+              //here to show that eventuall the feature
+              //must be added
+              arrRes:= arrNd.execute()
+              qRes :=&assignNode{ASSIGN, "_internalRes", arrRes}
+              varIter:=&assignNode{ASSIGN, $2, 
+                     &symbolReferenceNode{REFERENCE, "_internalRes", &numNode{NUM,0}, nil}}
+              init:=&ast{ASSIGN, []node{qRes, varIter}}
+
+
+              offset := &symbolReferenceNode{REFERENCE, "_internalIdx", &numNode{NUM,0},nil}
+              varIterAssign:=&assignNode{ASSIGN, 
+              &symbolReferenceNode{REFERENCE, $2,&numNode{NUM,0},nil}, 
+              &symbolReferenceNode{REFERENCE, "_internalRes", 
+              offset, nil}}
+
+              incr:=&ast{ASSIGN, []node{varIterAssign}}
+              body:=&ast{BLOCK, []node{incr,$9}}
+              $$=&rangeNode{FOR, init, arrRes,body }}
               ;
 
 EIF: TOK_ELIF TOK_LBLOCK EXPR TOK_RBLOCK TOK_THEN st2 EIF 
@@ -274,7 +297,6 @@ unary: TOK_NOT unary {$$=&boolOpNode{BOOLOP, "!", $2}}
 
 factor: TOK_LPAREN EXPR TOK_RPAREN {$$=$2}
        |TOK_NUM {$$=&numNode{NUM, $1}}
-       |TOK_DEREF TOK_WORD TOK_LBLOCK TOK_ATTR TOK_RBLOCK {$$=&symbolReferenceNode{REFERENCE, $2, &strNode{STR,$4}, nil}}
        |TOK_DEREF TOK_WORD TOK_LBLOCK TOK_WORD TOK_RBLOCK {$$=&symbolReferenceNode{REFERENCE, $2, &strNode{STR,$4}, nil}}
        |TOK_DEREF TOK_WORD {$$=&symbolReferenceNode{REFERENCE, $2, &numNode{NUM,0}, nil}}
        |TOK_DEREF TOK_WORD TOK_LBLOCK TOK_NUM TOK_RBLOCK {$$=&symbolReferenceNode{REFERENCE, $2, &numNode{NUM,$4}, nil}}
@@ -309,8 +331,6 @@ E:     TOK_TENANT
        | TOK_ROOM 
        | TOK_RACK 
        | TOK_DEVICE 
-       | TOK_SUBDEVICE 
-       | TOK_SUBDEVICE1 
 ;
 
 
@@ -323,8 +343,8 @@ WORDORNUM: TOK_WORD {$$=$1; dCatchPtr = $1; dCatchNodePtr=&strNode{STR, $1}}
            |TOK_BOOL {var x bool;if $1=="false"{x = false}else{x=true};dCatchPtr = x; dCatchNodePtr=&boolNode{BOOL, x}}
            ;
 
-F:     TOK_ATTR TOK_EQUAL WORDORNUM F {$$=string($1+"="+$3+"="+$4); if cmd.State.DebugLvl >= 3 {println("So we got: ", $$);}}
-       | TOK_ATTR TOK_EQUAL WORDORNUM {$$=$1+"="+$3}
+F:     TOK_WORD TOK_EQUAL WORDORNUM F {$$=string($1+"="+$3+"="+$4); if cmd.State.DebugLvl >= 3 {println("So we got: ", $$);}}
+       | TOK_WORD TOK_EQUAL WORDORNUM {$$=$1+"="+$3}
 ;
 
 
@@ -350,8 +370,6 @@ Q:     TOK_CD P {/*cmd.CD($2);*/ $$=&commonNode{COMMON, cmd.CD, "CD", []interfac
        | TOK_LSROOM P { $$=&commonNode{COMMON, cmd.LSOBJECT, "LSOBJ", []interface{}{$2, 3}}}
        | TOK_LSRACK P { $$=&commonNode{COMMON, cmd.LSOBJECT, "LSOBJ", []interface{}{$2, 4}}}
        | TOK_LSDEV P {$$=&commonNode{COMMON, cmd.LSOBJECT, "LSOBJ", []interface{}{$2, 5}}}
-       | TOK_LSSUBDEV P { $$=&commonNode{COMMON, cmd.LSOBJECT, "LSOBJ", []interface{}{$2, 6}}}
-       | TOK_LSSUBDEV1 P {$$=&commonNode{COMMON, cmd.LSOBJECT, "LSOBJ", []interface{}{$2, 7}}}
        | TOK_TREE P {$$=&commonNode{COMMON, cmd.Tree, "Tree", []interface{}{$2, 0}}}
        | TOK_TREE P TOK_NUM {$$=&commonNode{COMMON, cmd.Tree, "Tree", []interface{}{$2, $3}}}
        | TOK_UNSET TOK_OCDEL TOK_WORD TOK_WORD {$$=&commonNode{COMMON,UnsetUtil, "Unset",[]interface{}{$2+$3, $4} }}
@@ -388,8 +406,6 @@ BASH:  TOK_CLR {$$=&commonNode{COMMON, nil, "CLR", nil}}
        | TOK_DOC TOK_LSROOM {$$=&commonNode{COMMON, cmd.Help, "Help", []interface{}{"lsroom"}}}
        | TOK_DOC TOK_LSRACK {$$=&commonNode{COMMON, cmd.Help, "Help", []interface{}{"lsrack"}}}
        | TOK_DOC TOK_LSDEV {$$=&commonNode{COMMON, cmd.Help, "Help", []interface{}{"lsdev"}}}
-       | TOK_DOC TOK_LSSUBDEV {$$=&commonNode{COMMON, cmd.Help, "Help", []interface{}{"lssubdev"}}}
-       | TOK_DOC TOK_LSSUBDEV1 {$$=&commonNode{COMMON, cmd.Help, "Help", []interface{}{"lssubdev1"}}}
        | TOK_DOC TOK_OCDEL {$$=&commonNode{COMMON, cmd.Help, "Help", []interface{}{"-"}}}
        | TOK_DOC TOK_DOT TOK_TEMPLATE {$$=&commonNode{COMMON, cmd.Help, "Help", []interface{}{".template"}}}
        | TOK_DOC TOK_DOT TOK_CMDS {$$=&commonNode{COMMON, cmd.Help, "Help", []interface{}{".cmds"}}}
@@ -431,7 +447,7 @@ OCCR:   TOK_OCTENANT TOK_COL P TOK_ATTRSPEC WORDORNUM {$$=&commonNode{COMMON, cm
 OCDEL:  TOK_OCDEL P {$$=&commonNode{COMMON, cmd.DeleteObj, "DeleteObj", []interface{}{replaceOCLICurrPath($2)}}}
 ;
 
-OCUPDATE:  P TOK_COL TOK_ATTR TOK_EQUAL WORDORNUM {val := $3+"="+$5; $$=&commonNode{COMMON, cmd.UpdateObj, "UpdateObj", []interface{}{replaceOCLICurrPath($1), resMap(&val)}};if cmd.State.DebugLvl >= 3 {println("Attribute Acquired");}}
+OCUPDATE:  P TOK_COL TOK_WORD TOK_EQUAL WORDORNUM {val := $3+"="+$5; $$=&commonNode{COMMON, cmd.UpdateObj, "UpdateObj", []interface{}{replaceOCLICurrPath($1), resMap(&val)}};if cmd.State.DebugLvl >= 3 {println("Attribute Acquired");}}
 ;
 
 OCGET: TOK_EQUAL P {$$=&commonNode{COMMON, cmd.GetObject, "GetObject", []interface{}{replaceOCLICurrPath($2)}}}
@@ -461,7 +477,7 @@ OCDOT:      TOK_DOT TOK_VAR TOK_COL TOK_WORD TOK_EQUAL WORDORNUM {$$=&assignNode
             |TOK_DOT TOK_VAR TOK_COL TOK_WORD TOK_EQUAL K {$$=&assignNode{ASSIGN, $4, $6}}
             |TOK_DOT TOK_VAR TOK_COL TOK_WORD TOK_EQUAL OCLISYNTX {$$=&assignNode{ASSIGN, $4, $6}}
             |TOK_DEREF TOK_WORD {$$=&symbolReferenceNode{REFERENCE, $2, &numNode{NUM,0}, nil}}
-            |TOK_DEREF TOK_WORD TOK_LBLOCK TOK_ATTR TOK_RBLOCK TOK_EQUAL EXPR 
+            |TOK_DEREF TOK_WORD TOK_LBLOCK TOK_WORD TOK_RBLOCK TOK_EQUAL EXPR 
             {
             y:=&symbolReferenceNode{REFERENCE, $2, &strNode{STR, $4}, nil}; 
             x:=&assignNode{ASSIGN, y, $7};
@@ -475,15 +491,15 @@ OCDOT:      TOK_DOT TOK_VAR TOK_COL TOK_WORD TOK_EQUAL WORDORNUM {$$=&assignNode
             
             
             
-            |TOK_DEREF TOK_WORD TOK_LBLOCK TOK_ATTR TOK_RBLOCK {$$=&symbolReferenceNode{REFERENCE, $2, &strNode{STR, $4}, nil}}
+            |TOK_DEREF TOK_WORD TOK_LBLOCK TOK_WORD TOK_RBLOCK {$$=&symbolReferenceNode{REFERENCE, $2, &strNode{STR, $4}, nil}}
             |TOK_DEREF TOK_WORD TOK_LBLOCK TOK_NUM TOK_RBLOCK {$$=&symbolReferenceNode{REFERENCE, $2, &numNode{NUM,$4}, nil}}
             |TOK_DEREF TOK_WORD TOK_LBLOCK TOK_NUM TOK_RBLOCK TOK_EQUAL EXPR {v:=&symbolReferenceNode{REFERENCE, $2, &numNode{NUM,$4}, nil}; $$=&assignNode{ASSIGN, v, $7} }
-            |TOK_DEREF TOK_WORD TOK_LBLOCK TOK_NUM TOK_RBLOCK TOK_LBLOCK TOK_ATTR TOK_RBLOCK {$$=&symbolReferenceNode{REFERENCE, $2, &numNode{NUM,$4}, &strNode{STR, $7}}}
+            |TOK_DEREF TOK_WORD TOK_LBLOCK TOK_NUM TOK_RBLOCK TOK_LBLOCK TOK_WORD TOK_RBLOCK {$$=&symbolReferenceNode{REFERENCE, $2, &numNode{NUM,$4}, &strNode{STR, $7}}}
             |TOK_DEREF TOK_WORD TOK_EQUAL EXPR {n:=&symbolReferenceNode{REFERENCE, $2, &numNode{NUM,0}, nil};$$=&assignNode{ASSIGN,n,$4 }}
 ;
 
 OCSEL:      TOK_SELECT {$$=&commonNode{COMMON, cmd.ShowClipBoard, "select", nil};}
-            |TOK_SELECT TOK_DOT TOK_ATTR TOK_EQUAL TOK_WORD {x := $3+"="+$5; $$=&commonNode{COMMON, cmd.UpdateSelection, "UpdateSelect", []interface{}{resMap(&x)}};}
+            |TOK_SELECT TOK_DOT TOK_WORD TOK_EQUAL TOK_WORD {x := $3+"="+$5; $$=&commonNode{COMMON, cmd.UpdateSelection, "UpdateSelect", []interface{}{resMap(&x)}};}
 ;
 
 STRARG: WORDORNUM STRARG {if $2 != "" {$$=$1+" "+$2} else {$$=$1};}
