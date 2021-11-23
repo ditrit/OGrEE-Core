@@ -1114,32 +1114,35 @@ func GetDevEntitiesOfParent(ent, id string) ([]map[string]interface{}, string) {
 	return enfants, ""
 }
 
-func RetrieveDeviceHierarch(ID primitive.ObjectID) (map[string]interface{}, string) {
-	//Get the top entity
-	top, e := GetEntity(ID, "device")
-	if e != "" {
-		return nil, e
-	}
+func RetrieveDeviceHierarch(ID primitive.ObjectID, start, end int) (map[string]interface{}, string) {
+	if start < end {
+		//Get the top entity
+		top, e := GetEntity(ID, "device")
+		if e != "" {
+			return nil, e
+		}
 
-	children, e1 := GetEntitiesOfParent("device", ID.Hex())
-	if e1 != "" {
+		children, e1 := GetEntitiesOfParent("device", ID.Hex())
+		if e1 != "" {
+			return top, ""
+		}
+
+		for i := range children {
+			children[i], _ = RetrieveDeviceHierarch(
+				children[i]["id"].(primitive.ObjectID), start+1, end)
+		}
+
+		top["children"] = children
+
 		return top, ""
 	}
-
-	for i := range children {
-		children[i], _ = RetrieveDeviceHierarch(
-			children[i]["id"].(primitive.ObjectID))
-	}
-
-	top["children"] = children
-
-	return top, ""
+	return nil, ""
 }
 
 func DeleteDeviceF(entityID primitive.ObjectID) (map[string]interface{}, string) {
 	//var deviceType string
 
-	t, e := RetrieveDeviceHierarch(entityID)
+	t, e := RetrieveDeviceHierarch(entityID, 0, 999)
 	if e != "" {
 		return nil, e
 	}

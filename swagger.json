@@ -348,6 +348,13 @@
             "name": "ID",
             "in": "query",
             "required": true
+          },
+          {
+            "type": "string",
+            "default": 1,
+            "description": "Limits the level of hierarchy for devices, if not specified then the default value is maximum. Example: /api/devices/{id}/all?limit=2",
+            "name": "limit",
+            "in": "query"
           }
         ],
         "responses": {

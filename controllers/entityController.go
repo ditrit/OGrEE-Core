@@ -8,6 +8,7 @@ import (
 	"os"
 	"p3/models"
 	u "p3/utils"
+	"strconv"
 	"strings"
 
 	"github.com/gorilla/mux"
@@ -1007,6 +1008,14 @@ var GetEntitiesOfAncestor = func(w http.ResponseWriter, r *http.Request) {
 //   required: true
 //   type: int
 //   default: 999
+// - name: limit
+//   in: query
+//   description: 'Limits the level of hierarchy for devices, if not
+//   specified then the default value is maximum.
+//   Example: /api/devices/{id}/all?limit=2'
+//   required: false
+//   type: string
+//   default: 1
 // responses:
 //     '200':
 //         description: Found
@@ -1083,7 +1092,13 @@ var GetEntityHierarchy = func(w http.ResponseWriter, r *http.Request) {
 	println("Entity: ", entity, " & OID: ", oID.Hex())
 	if entity == "device" {
 		println("RETREIVE")
-		data, e1 = models.RetrieveDeviceHierarch(oID)
+		end := 999 //Arbitrary value for just obtaining everything
+		arr := strings.SplitAfter(r.URL.RawQuery, "limit=")
+		if len(arr) == 2 { //limit={number} was provided
+			end, _ = strconv.Atoi(arr[1])
+			end += 1
+		}
+		data, e1 = models.RetrieveDeviceHierarch(oID, 0, end)
 	} else {
 		data, e1 = models.GetEntityHierarchy(entity, oID, entNum, limit+1)
 	}
