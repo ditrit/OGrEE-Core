@@ -22,8 +22,6 @@ const (
 	ROOM
 	RACK
 	DEVICE
-	SUBDEV
-	SUBDEV1
 	AC
 	PWRPNL
 	WALL
@@ -231,7 +229,7 @@ var CreateEntity = func(w http.ResponseWriter, r *http.Request) {
 		//Prevents Mongo from creating a new unidentified collection
 		if i < 0 {
 			w.WriteHeader(http.StatusNotFound)
-			u.Respond(w, u.Message(false, "Invalid object: Please provide a valid object"))
+			u.Respond(w, u.Message(false, "Invalid object in URL:"+entStr+" Please provide a valid object"))
 			u.ErrLog("Cannot create invalid object", "CREATE "+entStr, "", r)
 			return
 		}
@@ -317,6 +315,14 @@ var GetEntity = func(w http.ResponseWriter, r *http.Request) {
 			s = s[:len(s)-1]
 			ID, _ := getObjID(id)
 
+			//Prevents API from creating a new unidentified collection
+			if i := u.EntityStrToInt(s); i < 0 {
+				w.WriteHeader(http.StatusNotFound)
+				u.Respond(w, u.Message(false, "Invalid object in URL:"+s+" Please provide a valid object"))
+				u.ErrLog("Cannot get invalid object", "GET "+s, "", r)
+				return
+			}
+
 			data, e1 = models.GetNestedEntity(ID, s, nestID)
 		} else { // Not Nested
 
@@ -324,6 +330,14 @@ var GetEntity = func(w http.ResponseWriter, r *http.Request) {
 			if e2 != nil {
 				u.Respond(w, u.Message(false, "Error while converting ID to ObjectID"))
 				u.ErrLog("Error while converting ID to ObjectID", "GET ENTITY", "", r)
+				return
+			}
+
+			//Prevents API from creating a new unidentified collection
+			if i := u.EntityStrToInt(s); i < 0 {
+				w.WriteHeader(http.StatusNotFound)
+				u.Respond(w, u.Message(false, "Invalid object in URL:"+s+" Please provide a valid object"))
+				u.ErrLog("Cannot get invalid object", "GET "+s, "", r)
 				return
 			}
 
@@ -403,6 +417,14 @@ var GetAllEntities = func(w http.ResponseWriter, r *http.Request) {
 		entStr = entStr[:len(entStr)-1]
 		println("ENTSTR: ", entStr)
 
+		//Prevents Mongo from creating a new unidentified collection
+		if i := u.EntityStrToInt(entStr); i < 0 {
+			w.WriteHeader(http.StatusNotFound)
+			u.Respond(w, u.Message(false, "Invalid object in URL:"+entStr+" Please provide a valid object"))
+			u.ErrLog("Cannot get invalid object", "GET "+entStr, "", r)
+			return
+		}
+
 		//If templates, format them
 		if idx := strings.Index(entStr, "-"); idx != -1 {
 			entStr = entStr[:idx] + "_" + entStr[idx+1:]
@@ -422,6 +444,14 @@ var GetAllEntities = func(w http.ResponseWriter, r *http.Request) {
 
 		//strip trailing 's'
 		entStr = entStr[:len(entStr)-1]
+
+		//Prevents Mongo from creating a new unidentified collection
+		if i := u.EntityStrToInt(entStr); i < 0 {
+			w.WriteHeader(http.StatusNotFound)
+			u.Respond(w, u.Message(false, "Invalid object in URL:"+entStr+" Please provide a valid object"))
+			u.ErrLog("Cannot get invalid object", "GET "+entStr, "", r)
+			return
+		}
 
 		ID, _ := getObjID(id)
 		data, e = models.GetAllNestedEntities(ID, entStr)
@@ -498,6 +528,15 @@ var DeleteEntity = func(w http.ResponseWriter, r *http.Request) {
 		if idx := strings.Index(entity, "-"); idx != -1 {
 			entity = entity[:idx] + "_" + entity[idx+1:]
 		}
+
+		//Prevents Mongo from creating a new unidentified collection
+		if u.EntityStrToInt(entity) < 0 {
+			w.WriteHeader(http.StatusNotFound)
+			u.Respond(w, u.Message(false, "Invalid object in URL:"+entity+" Please provide a valid object"))
+			u.ErrLog("Cannot delete invalid object", "DELETE "+entity, "", r)
+			return
+		}
+
 		v, _ = models.DeleteEntityBySlug(entity, name)
 
 	case e1 == true && e == true: // DELETE NESTED
@@ -505,6 +544,14 @@ var DeleteEntity = func(w http.ResponseWriter, r *http.Request) {
 		//Get entity from URL and strip trailing 's'
 		entity, _ := mux.Vars(r)["subent"]
 		entity = entity[:len(entity)-1]
+
+		//Prevents Mongo from creating a new unidentified collection
+		if u.EntityStrToInt(entity) < 0 || u.EntityStrToInt(nest) < 0 {
+			w.WriteHeader(http.StatusNotFound)
+			u.Respond(w, u.Message(false, "Invalid object in URL: Please provide a valid object"))
+			u.ErrLog("Cannot delete invalid object", "DELETE "+entity, "", r)
+			return
+		}
 
 		objID, _ := getObjID(id)
 		v, _ = models.DeleteNestedEntity(entity, objID, nest)
@@ -520,6 +567,14 @@ var DeleteEntity = func(w http.ResponseWriter, r *http.Request) {
 		//Get entity from URL and strip trailing 's'
 		entity, _ := mux.Vars(r)["entity"]
 		entity = entity[:len(entity)-1]
+
+		//Prevents Mongo from creating a new unidentified collection
+		if u.EntityStrToInt(entity) < 0 {
+			w.WriteHeader(http.StatusNotFound)
+			u.Respond(w, u.Message(false, "Invalid object in URL:"+entity+" Please provide a valid object"))
+			u.ErrLog("Cannot delete invalid object", "DELETE "+entity, "", r)
+			return
+		}
 
 		if entity == "device" {
 			v, _ = models.DeleteDeviceF(objID)
@@ -638,6 +693,14 @@ var UpdateEntity = func(w http.ResponseWriter, r *http.Request) {
 			entity = entity[:idx] + "_" + entity[idx+1:]
 		}
 
+		//Prevents Mongo from creating a new unidentified collection
+		if u.EntityStrToInt(entity) < 0 {
+			w.WriteHeader(http.StatusNotFound)
+			u.Respond(w, u.Message(false, "Invalid object in URL:"+entity+" Please provide a valid object"))
+			u.ErrLog("Cannot update invalid object", "UPDATE "+entity, "", r)
+			return
+		}
+
 		v, e3 = models.UpdateEntityBySlug(entity, name, &updateData)
 	case e1 == true && e == true: // UPDATE NESTED
 		println("updating nested")
@@ -645,13 +708,21 @@ var UpdateEntity = func(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			w.WriteHeader(http.StatusBadRequest)
 			u.Respond(w, u.Message(false, "Error while converting ID to ObjectID"))
-			u.ErrLog("Error while converting ID to ObjectID", "DELETE ENTITY", "", r)
+			u.ErrLog("Error while converting ID to ObjectID", "UPDATE ENTITY", "", r)
 			return
 		}
 
 		//Get entity from URL
 		idx := strings.SplitAfter(r.URL.Path, "/")[4]
 		entity = idx[:len(idx)-2]
+
+		//Prevents Mongo from creating a new unidentified collection
+		if u.EntityStrToInt(entity) < 0 || u.EntityStrToInt(nest) < 0 {
+			w.WriteHeader(http.StatusNotFound)
+			u.Respond(w, u.Message(false, "Invalid object in URL: Please provide a valid object"))
+			u.ErrLog("Cannot update invalid object", "UPDATE "+entity, "", r)
+			return
+		}
 
 		v, e3 = models.UpdateNestedEntity(entity, objID, nest, updateData)
 
@@ -671,10 +742,17 @@ var UpdateEntity = func(w http.ResponseWriter, r *http.Request) {
 		println("OBJID:", objID.Hex())
 		println("Entity;", entity)
 
+		//Prevents Mongo from creating a new unidentified collection
+		if u.EntityStrToInt(entity) < 0 {
+			w.WriteHeader(http.StatusNotFound)
+			u.Respond(w, u.Message(false, "Invalid object in URL:"+entity+" Please provide a valid object"))
+			u.ErrLog("Cannot update invalid object", "UPDATE "+entity, "", r)
+			return
+		}
+
 		v, e3 = models.UpdateEntity(entity, objID, &updateData)
 
 	default:
-		println("ERRYO")
 		w.WriteHeader(http.StatusBadRequest)
 		u.Respond(w, u.Message(false, "Error while extracting from path parameters"))
 		u.ErrLog("Error while extracting from path parameters", "UPDATE ENTITY", "", r)
@@ -761,6 +839,14 @@ var GetEntityByQuery = func(w http.ResponseWriter, r *http.Request) {
 		entStr = arr[2][:len(arr[2])-1]
 		sub := arr[3][:len(arr[3])-1] //Not sure why this doesn't include rest of string
 
+		//Prevents Mongo from creating a new unidentified collection
+		if u.EntityStrToInt(entStr) < 0 || u.EntityStrToInt(sub) < 0 {
+			w.WriteHeader(http.StatusNotFound)
+			u.Respond(w, u.Message(false, "Invalid object in URL: Please provide a valid object"))
+			u.ErrLog("Cannot get invalid object", "GET ENTITYQUERY"+entStr, "", r)
+			return
+		}
+
 		data, e = models.GetNestedEntityByQuery(entStr, sub, bsonMap)
 	} else {
 
@@ -774,6 +860,14 @@ var GetEntityByQuery = func(w http.ResponseWriter, r *http.Request) {
 		query := u.ParamsParse(r.URL, u.EntityStrToInt(entStr))
 		js, _ := json.Marshal(query)
 		json.Unmarshal(js, &bsonMap)
+
+		//Prevents Mongo from creating a new unidentified collection
+		if u.EntityStrToInt(entStr) < 0 {
+			w.WriteHeader(http.StatusNotFound)
+			u.Respond(w, u.Message(false, "Invalid object in URL:"+entStr+" Please provide a valid object"))
+			u.ErrLog("Cannot get invalid object", "GET ENTITYQUERY"+entStr, "", r)
+			return
+		}
 
 		data, e = models.GetEntityByQuery(entStr, bsonMap)
 
@@ -849,6 +943,14 @@ var GetEntitiesOfAncestor = func(w http.ResponseWriter, r *http.Request) {
 	//s, _ := getObjID(id)
 	enum := u.EntityStrToInt(entStr)
 	//childBase := u.EntityToString(enum + 1)
+
+	//Prevents Mongo from creating a new unidentified collection
+	if enum < 0 {
+		w.WriteHeader(http.StatusNotFound)
+		u.Respond(w, u.Message(false, "Invalid object in URL:"+entStr+" Please provide a valid object"))
+		u.ErrLog("Cannot get invalid object", "CREATE CHILDRENOFPARENT"+entStr, "", r)
+		return
+	}
 
 	resp := u.Message(true, "success")
 
@@ -954,8 +1056,8 @@ var GetEntityHierarchy = func(w http.ResponseWriter, r *http.Request) {
 	indicator := r.URL.Path[lastSlashIdx+1:]
 	switch indicator {
 	case "all":
-		//set to SUBDEV1
-		limit = SUBDEV1
+		//set to AC1
+		limit = AC
 	case "nonstd":
 		//special case
 	default:
@@ -969,6 +1071,14 @@ var GetEntityHierarchy = func(w http.ResponseWriter, r *http.Request) {
 	oID, _ := getObjID(id)
 
 	entNum := u.EntityStrToInt(entity)
+
+	//Prevents Mongo from creating a new unidentified collection
+	if entNum < 0 {
+		w.WriteHeader(http.StatusNotFound)
+		u.Respond(w, u.Message(false, "Invalid object in URL:"+entity+" Please provide a valid object"))
+		u.ErrLog("Cannot get invalid object", "GET ENTITYHIERARCHY "+entity, "", r)
+		return
+	}
 
 	println("Entity: ", entity, " & OID: ", oID.Hex())
 	if entity == "device" {
@@ -1034,8 +1144,8 @@ var GetTenantHierarchy = func(w http.ResponseWriter, r *http.Request) {
 	indicator := r.URL.Path[lastSlashIdx+1:]
 	switch indicator {
 	case "all":
-		//set to SUBDEV1
-		limit = SUBDEV1
+		//set to AC1
+		limit = AC
 	case "nonstd":
 		//special case
 	default:
@@ -1113,6 +1223,14 @@ var GetEntitiesUsingNamesOfParents = func(w http.ResponseWriter, r *http.Request
 		return
 	}
 
+	//Prevents Mongo from creating a new unidentified collection
+	if u.EntityStrToInt(entity) < 0 {
+		w.WriteHeader(http.StatusNotFound)
+		u.Respond(w, u.Message(false, "Invalid object in URL:"+entity+" Please provide a valid object"))
+		u.ErrLog("Cannot get invalid object", "GET ENTITIESUSINGANCESTORNAMES "+entity, "", r)
+		return
+	}
+
 	arr := (strings.Split(r.URL.Path, "/")[4:])
 	ancestry := make([]map[string]string, 0)
 
@@ -1122,6 +1240,14 @@ var GetEntitiesUsingNamesOfParents = func(w http.ResponseWriter, r *http.Request
 				ancestry = append(ancestry,
 					map[string]string{k[:len(k)-1]: "all"})
 			} else {
+
+				//Prevents Mongo from creating a new unidentified collection
+				if u.EntityStrToInt(k[:len(k)-1]) < 0 {
+					w.WriteHeader(http.StatusNotFound)
+					u.Respond(w, u.Message(false, "Invalid object in URL:"+k[:len(k)-1]+" Please provide a valid object"))
+					u.ErrLog("Cannot get invalid object", "GET "+k[:len(k)-1], "", r)
+					return
+				}
 				ancestry = append(ancestry,
 					map[string]string{k[:len(k)-1]: arr[i+1]})
 			}
@@ -1217,13 +1343,13 @@ var GetEntityHierarchyNonStd = func(w http.ResponseWriter, r *http.Request) {
 	if entity == "tenant" {
 		println("Getting TENANT HEIRARCHY")
 		println("With ID: ", id)
-		data, err = models.GetTenantHierarchy(entity, id, entNum, SUBDEV1)
+		data, err = models.GetTenantHierarchy(entity, id, entNum, AC)
 		if err != "" {
 			println("We have ERR")
 		}
 	} else {
 		oID, _ := getObjID(id)
-		data, err = models.GetEntityHierarchy(entity, oID, entNum, SUBDEV1)
+		data, err = models.GetEntityHierarchy(entity, oID, entNum, AC)
 	}
 
 	if data == nil {

@@ -20,8 +20,6 @@ const (
 	ROOM
 	RACK
 	DEVICE
-	SUBDEV
-	SUBDEV1
 	AC
 	PWRPNL
 	WALL
@@ -108,8 +106,6 @@ func EntityToString(entity int) string {
 		return "rack"
 	case DEVICE:
 		return "device"
-	case SUBDEV:
-		return "subdevice"
 	case AC:
 		return "ac"
 	case PWRPNL:
@@ -153,10 +149,6 @@ func EntityStrToInt(entity string) int {
 		return RACK
 	case "device":
 		return DEVICE
-	case "subdevice":
-		return SUBDEV
-	case "subdevice1":
-		return SUBDEV1
 	case "ac":
 		return AC
 	case "panel":

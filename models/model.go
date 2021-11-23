@@ -19,8 +19,6 @@ const (
 	ROOM
 	RACK
 	DEVICE
-	SUBDEV
-	SUBDEV1
 	AC
 	PWRPNL
 	WALL
@@ -87,8 +85,8 @@ func ValidateEntity(entity int, t map[string]interface{}) (map[string]interface{
 	var objID primitive.ObjectID
 	var err error
 	switch entity {
-	case TENANT, SITE, BLDG, ROOM, RACK, DEVICE, SUBDEV,
-		SUBDEV1, AC, PWRPNL, WALL, CABINET, AISLE,
+	case TENANT, SITE, BLDG, ROOM, RACK, DEVICE, AC,
+		PWRPNL, WALL, CABINET, AISLE,
 		TILE, GROUP, CORIDOR, RACKSENSOR, DEVICESENSOR:
 		if t["name"] == "" {
 			return u.Message(false, "Name should be on payload"), false
@@ -299,8 +297,6 @@ func ValidateEntity(entity int, t map[string]interface{}) (map[string]interface{
 							return u.Message(false, "Device Height unit should be on the payload"), false
 						}
 
-					case SUBDEV, SUBDEV1:
-
 					}
 				}
 			}
@@ -479,7 +475,7 @@ func GetAllEntities(ent string) ([]map[string]interface{}, string) {
 
 func DeleteEntity(entity string, id primitive.ObjectID) (map[string]interface{}, string) {
 	eNum := u.EntityStrToInt(entity)
-	t, e := GetEntityHierarchy(entity, id, eNum, SUBDEV1)
+	t, e := GetEntityHierarchy(entity, id, eNum, AC)
 	if e != "" {
 		return u.Message(false,
 			"There was an error in deleting the entity: "+e), "not found"
