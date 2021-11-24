@@ -515,14 +515,32 @@ func deleteHelper(t map[string]interface{}, ent int) (map[string]interface{}, st
 	return nil, ""
 }
 
-func UpdateEntity(ent string, id primitive.ObjectID, t *map[string]interface{}) (map[string]interface{}, string) {
+func UpdateEntity(ent string, id primitive.ObjectID, t *map[string]interface{}, isPatch bool) (map[string]interface{}, string) {
+	updatedDoc := bson.M{}
 	ctx, cancel := u.Connect()
-	e := GetDB().Collection(ent).FindOneAndUpdate(ctx, bson.M{"_id": id}, bson.M{"$set": *t}).Err()
-	if e != nil {
-		return u.Message(false, "failure: "+e.Error()), e.Error()
+	if isPatch == true {
+		println("PATCHING")
+		e := GetDB().Collection(ent).FindOneAndUpdate(ctx, bson.M{"_id": id}, bson.M{"$set": *t})
+		if e.Err() != nil {
+			return u.Message(false, "failure: "+e.Err().Error()), e.Err().Error()
+		}
+
+		e.Decode(&updatedDoc)
+	} else {
+		e := GetDB().Collection(ent).FindOneAndReplace(ctx, bson.M{"_id": id}, *t)
+		if e.Err() != nil {
+			return u.Message(false, "failure: "+e.Err().Error()), e.Err().Error()
+		}
+		e.Decode(&updatedDoc)
 	}
+
+	//Fix the _id / id discrepancy
+	updatedDoc = fixID(updatedDoc)
+
 	defer cancel()
-	return u.Message(true, "success"), ""
+	resp := u.Message(true, "success")
+	resp["data"] = updatedDoc
+	return resp, ""
 }
 
 func GetEntityByQuery(ent string, query bson.M) ([]map[string]interface{}, string) {
@@ -985,9 +1003,12 @@ func DeleteNestedEntity(ent string, ID primitive.ObjectID, nestID string) (map[s
 }
 
 func UpdateNestedEntity(ent string, ID primitive.ObjectID,
-	nestID string, t map[string]interface{}) (map[string]interface{}, string) {
+	nestID string, t map[string]interface{}, isPatch bool) (map[string]interface{}, string) {
 	foundParent := map[string]interface{}{}
+	updateDoc := map[string]interface{}{}
+	var idx int
 
+	//OG WAY///////////////////////////////////////
 	ctx, cancel := u.Connect()
 	parent := u.EntityToString(u.GetParentOfEntityByInt(u.EntityStrToInt(ent)))
 	criteria := bson.M{"_id": ID, ent + "s.id": nestID}
@@ -999,29 +1020,45 @@ func UpdateNestedEntity(ent string, ID primitive.ObjectID,
 	defer cancel()
 	delete(t, "id")
 
+	//Once parent is found, search the nested array
+	//for matching NestID and change the attributes
 	if v, ok := foundParent[ent+"s"].(primitive.A); ok {
 		for i := range v {
 			if v[i].(map[string]interface{})["id"] == nestID {
 				old := v[i].(map[string]interface{})
-				for key := range t {
-					if _, ok := old[key]; ok {
+				idx = i
+
+				//Ensure the ID & PID are
+				//preserved
+				t["id"] = nestID
+				t["parentId"] = old["parentId"]
+
+				if isPatch == true {
+					for key := range t {
 						old[key] = t[key]
 					}
+				} else {
+					foundParent[ent+"s"].(primitive.A)[i] = t
 				}
+
+				updateDoc = old
 				break
 			}
 		}
 	}
 
 	c1, cancel2 := u.Connect()
-	_, e1 := GetDB().Collection(parent).UpdateOne(c1, criteria, bson.M{"$set": foundParent})
-	if e1 != nil {
+	e1 := GetDB().Collection(parent).FindOneAndUpdate(c1, criteria, bson.M{"$set": foundParent})
+	if e1.Err() != nil {
 		return u.Message(false,
 			"There was an error in deleting the entity2: "+e.Error()), "unable update"
 	}
 	defer cancel2()
+	e1.Decode(&updateDoc)
 
-	return u.Message(true, "success"), ""
+	resp := u.Message(true, "success")
+	resp["data"] = updateDoc[ent+"s"].(primitive.A)[idx]
+	return resp, ""
 }
 
 func GetNestedEntityByQuery(parent, entity string, query bson.M) ([]map[string]interface{}, string) {
@@ -1075,14 +1112,35 @@ func DeleteEntityBySlug(entity, id string) (map[string]interface{}, string) {
 	return u.Message(true, "success"), ""
 }
 
-func UpdateEntityBySlug(ent, id string, t *map[string]interface{}) (map[string]interface{}, string) {
+func UpdateEntityBySlug(ent, id string, t *map[string]interface{},
+	isPatch bool) (map[string]interface{}, string) {
+	updatedDoc := map[string]interface{}{}
 	ctx, cancel := u.Connect()
-	e := GetDB().Collection(ent).FindOneAndUpdate(ctx, bson.M{"slug": id}, bson.M{"$set": *t}).Err()
-	if e != nil {
-		return u.Message(false, "failure: "+e.Error()), e.Error()
+	if isPatch == true {
+		e := GetDB().Collection(ent).FindOneAndUpdate(ctx,
+			bson.M{"slug": id}, bson.M{"$set": *t})
+		if e.Err() != nil {
+			return u.Message(false, "failure: "+e.Err().Error()), e.Err().Error()
+		}
+		e.Decode(&updatedDoc)
+	} else {
+		//Preserve the slug if not
+		//provided
+		if _, ok := (*t)["slug"]; !ok {
+			(*t)["slug"] = id
+		}
+		e := GetDB().Collection(ent).FindOneAndReplace(ctx,
+			bson.M{"slug": id}, *t)
+		if e.Err() != nil {
+			return u.Message(false, "failure: "+e.Err().Error()), e.Err().Error()
+		}
+		e.Decode(&updatedDoc)
 	}
+
 	defer cancel()
-	return u.Message(true, "success"), ""
+	resp := u.Message(true, "success")
+	resp["data"] = updatedDoc
+	return resp, ""
 }
 
 //DEV FAMILY FUNCS

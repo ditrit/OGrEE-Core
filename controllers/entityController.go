@@ -122,6 +122,26 @@ func viewJson(r *http.Request) {
 	}
 }
 
+//'Flattens' the map[string]interface{}
+//for PATCH requests
+func Flatten(prefix string, src map[string]interface{}, dest map[string]interface{}) {
+	if len(prefix) > 0 {
+		prefix += "."
+	}
+	for k, v := range src {
+		switch child := v.(type) {
+		case map[string]interface{}:
+			Flatten(prefix+k, child, dest)
+		case []interface{}:
+			for i := 0; i < len(child); i++ {
+				dest[prefix+k+"."+strconv.Itoa(i)] = child[i]
+			}
+		default:
+			dest[prefix+k] = v
+		}
+	}
+}
+
 // swagger:operation POST /api/{obj} objects CreateObject
 // Creates an object in the system.
 // ---
@@ -599,8 +619,77 @@ var DeleteEntity = func(w http.ResponseWriter, r *http.Request) {
 	u.Respond(w, v)
 }
 
+// swagger:operation PATCH /api/{objs}/{id} objects PartialUpdateObject
+// Partially update data in the system.
+// This is the preferred method for modifying data in the system.
+// If you want to do a full data replace, please use PUT instead.
+// If the operation succeeds, the data result will be returned.
+// If no new or any information is provided
+// an OK will still be returned
+// ---
+// produces:
+// - application/json
+// parameters:
+// - name: objs
+//   in: query
+//   description: 'Indicates the object. Only values of "tenants", "sites",
+//   "buildings", "rooms", "racks", "devices", "room-templates",
+//   "obj-templates" are acceptable.
+//   For rooms, walls, acs, panels, aisles, tiles, cabinets, groups,
+//   corridors, racksensors, and devicesensors
+//   can be obtained by appending /subobj type and subobj id'
+//   required: true
+//   type: string
+//   default: "sites"
+// - name: ID
+//   in: path
+//   description: 'ID of desired Object. If modifying templates, the "slug"
+//   should be used instead of ID'
+//   required: true
+//   type: int
+//   default: 999
+// - name: Name
+//   in: query
+//   description: Name of Object
+//   required: false
+//   type: string
+//   default: "INFINITI"
+// - name: Category
+//   in: query
+//   description: Category of Object (ex. Consumer Electronics, Medical)
+//   required: false
+//   type: string
+//   default: "Auto"
+// - name: Description
+//   in: query
+//   description: Description of Object
+//   required: false
+//   type: string[]
+//   default: "High End Worldwide automotive company"
+// - name: Domain
+//   description: 'Domain of the Object'
+//   required: false
+//   type: string
+//   default: "High End Auto"
+// - name: Attributes
+//   in: query
+//   description: Any other object attributes can be updated
+//   required: false
+//   type: json
+// responses:
+//     '200':
+//         description: Updated
+//     '400':
+//         description: Bad request
+//     '404':
+//         description: Not Found
+
 // swagger:operation PUT /api/{objs}/{id} objects UpdateObject
 // Changes Object data in the system.
+// This method will replace the existing data with the JSON
+// received, thus fully replacing the data. If you do not
+// want to do this, please use PATCH.
+// If the operation succeeds, the data result will be returned.
 // If no new or any information is provided
 // an OK will still be returned
 // ---
@@ -672,6 +761,11 @@ var UpdateEntity = func(w http.ResponseWriter, r *http.Request) {
 	id, e := mux.Vars(r)["id"]
 	nest, e1 := mux.Vars(r)["nest"]
 	name, e2 := mux.Vars(r)["name"]
+	isPatch := false
+	if r.Method == "PATCH" {
+		isPatch = true
+	}
+	println(r.Method)
 
 	//viewJson(r)
 
@@ -702,7 +796,15 @@ var UpdateEntity = func(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		v, e3 = models.UpdateEntityBySlug(entity, name, &updateData)
+		//Flatten updateData if we have
+		//a PATCH request
+		if isPatch {
+			newUpdateData := map[string]interface{}{}
+			Flatten("", updateData, newUpdateData)
+			updateData = newUpdateData
+		}
+
+		v, e3 = models.UpdateEntityBySlug(entity, name, &updateData, isPatch)
 	case e1 == true && e == true: // UPDATE NESTED
 		println("updating nested")
 		objID, err := primitive.ObjectIDFromHex(id)
@@ -718,14 +820,14 @@ var UpdateEntity = func(w http.ResponseWriter, r *http.Request) {
 		entity = idx[:len(idx)-2]
 
 		//Prevents Mongo from creating a new unidentified collection
-		if u.EntityStrToInt(entity) < 0 || u.EntityStrToInt(nest) < 0 {
+		if u.EntityStrToInt(entity) < 0 {
 			w.WriteHeader(http.StatusNotFound)
-			u.Respond(w, u.Message(false, "Invalid object in URL: Please provide a valid object"))
+			u.Respond(w, u.Message(false, "Invalid object in URL:"+entity+" Please provide a valid object"))
 			u.ErrLog("Cannot update invalid object", "UPDATE "+entity, "", r)
 			return
 		}
 
-		v, e3 = models.UpdateNestedEntity(entity, objID, nest, updateData)
+		v, e3 = models.UpdateNestedEntity(entity, objID, nest, updateData, isPatch)
 
 	case e == true: // UPDATE NORMAL
 		println("updating Normale")
@@ -751,7 +853,15 @@ var UpdateEntity = func(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		v, e3 = models.UpdateEntity(entity, objID, &updateData)
+		//Flatten updateData if we have
+		//a PATCH request
+		if isPatch {
+			newUpdateData := map[string]interface{}{}
+			Flatten("", updateData, newUpdateData)
+			updateData = newUpdateData
+		}
+
+		v, e3 = models.UpdateEntity(entity, objID, &updateData, isPatch)
 
 	default:
 		w.WriteHeader(http.StatusBadRequest)

@@ -143,13 +143,13 @@ func main() {
 
 	// UPDATE ENTITY
 	router.HandleFunc("/api/{entity}/{id:[a-zA-Z0-9]{24}}/{subent}/{nest}",
-		controllers.UpdateEntity).Methods("PUT")
+		controllers.UpdateEntity).Methods("PUT", "PATCH")
 
 	router.HandleFunc("/api/{entity}/{id:[a-zA-Z0-9]{24}}",
-		controllers.UpdateEntity).Methods("PUT")
+		controllers.UpdateEntity).Methods("PUT", "PATCH")
 
 	router.HandleFunc("/api/{entity}/{name}",
-		controllers.UpdateEntity).Methods("PUT")
+		controllers.UpdateEntity).Methods("PUT", "PATCH")
 
 	//Attach JWT auth middleware
 	//router.Use(app.Log)

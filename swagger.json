@@ -166,7 +166,7 @@
         }
       },
       "put": {
-        "description": "If no new or any information is provided\nan OK will still be returned",
+        "description": "This method will replace the existing data with the JSON\nreceived, thus fully replacing the data. If you do not\nwant to do this, please use PATCH.\nIf the operation succeeds, the data result will be returned.\nIf no new or any information is provided\nan OK will still be returned",
         "produces": [
           "application/json"
         ],
@@ -271,6 +271,79 @@
           },
           "404": {
             "description": "Not found"
+          }
+        }
+      },
+      "patch": {
+        "description": "This is the preferred method for modifying data in the system.\nIf you want to do a full data replace, please use PUT instead.\nIf the operation succeeds, the data result will be returned.\nIf no new or any information is provided\nan OK will still be returned",
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "objects"
+        ],
+        "summary": "Partially update data in the system.",
+        "operationId": "PartialUpdateObject",
+        "parameters": [
+          {
+            "type": "string",
+            "default": "sites",
+            "description": "Indicates the object. Only values of \"tenants\", \"sites\", \"buildings\", \"rooms\", \"racks\", \"devices\", \"room-templates\", \"obj-templates\" are acceptable. For rooms, walls, acs, panels, aisles, tiles, cabinets, groups, corridors, racksensors, and devicesensors can be obtained by appending /subobj type and subobj id",
+            "name": "objs",
+            "in": "query",
+            "required": true
+          },
+          {
+            "type": "int",
+            "default": 999,
+            "description": "ID of desired Object. If modifying templates, the \"slug\" should be used instead of ID",
+            "name": "ID",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "default": "INFINITI",
+            "description": "Name of Object",
+            "name": "Name",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "default": "Auto",
+            "description": "Category of Object (ex. Consumer Electronics, Medical)",
+            "name": "Category",
+            "in": "query"
+          },
+          {
+            "type": "string[]",
+            "default": "High End Worldwide automotive company",
+            "description": "Description of Object",
+            "name": "Description",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "default": "High End Auto",
+            "description": "Domain of the Object",
+            "name": "Domain"
+          },
+          {
+            "type": "json",
+            "description": "Any other object attributes can be updated",
+            "name": "Attributes",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Updated"
+          },
+          "400": {
+            "description": "Bad request"
+          },
+          "404": {
+            "description": "Not Found"
           }
         }
       }
