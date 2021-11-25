@@ -7,6 +7,7 @@ import (
 	u "p3/utils"
 
 	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -516,25 +517,32 @@ func deleteHelper(t map[string]interface{}, ent int) (map[string]interface{}, st
 }
 
 func UpdateEntity(ent string, id primitive.ObjectID, t *map[string]interface{}, isPatch bool) (map[string]interface{}, string) {
+	var e *mongo.SingleResult
 	updatedDoc := bson.M{}
+	retDoc := options.ReturnDocument(options.After)
+
 	ctx, cancel := u.Connect()
 	if isPatch == true {
-		println("PATCHING")
-		e := GetDB().Collection(ent).FindOneAndUpdate(ctx, bson.M{"_id": id}, bson.M{"$set": *t})
+		e = GetDB().Collection(ent).FindOneAndUpdate(ctx,
+			bson.M{"_id": id}, bson.M{"$set": *t},
+			&options.FindOneAndUpdateOptions{ReturnDocument: &retDoc})
 		if e.Err() != nil {
 			return u.Message(false, "failure: "+e.Err().Error()), e.Err().Error()
 		}
-
-		e.Decode(&updatedDoc)
 	} else {
-		e := GetDB().Collection(ent).FindOneAndReplace(ctx, bson.M{"_id": id}, *t)
+
+		e = GetDB().Collection(ent).FindOneAndReplace(ctx,
+			bson.M{"_id": id}, *t,
+			&options.FindOneAndReplaceOptions{ReturnDocument: &retDoc})
+
 		if e.Err() != nil {
 			return u.Message(false, "failure: "+e.Err().Error()), e.Err().Error()
 		}
-		e.Decode(&updatedDoc)
 	}
 
+	//Obtain new document then
 	//Fix the _id / id discrepancy
+	e.Decode(&updatedDoc)
 	updatedDoc = fixID(updatedDoc)
 
 	defer cancel()
@@ -1047,8 +1055,12 @@ func UpdateNestedEntity(ent string, ID primitive.ObjectID,
 		}
 	}
 
+	retDoc := options.After
+
 	c1, cancel2 := u.Connect()
-	e1 := GetDB().Collection(parent).FindOneAndUpdate(c1, criteria, bson.M{"$set": foundParent})
+	e1 := GetDB().Collection(parent).FindOneAndUpdate(c1,
+		criteria, bson.M{"$set": foundParent},
+		&options.FindOneAndUpdateOptions{ReturnDocument: &retDoc})
 	if e1.Err() != nil {
 		return u.Message(false,
 			"There was an error in deleting the entity2: "+e.Error()), "unable update"
@@ -1114,28 +1126,34 @@ func DeleteEntityBySlug(entity, id string) (map[string]interface{}, string) {
 
 func UpdateEntityBySlug(ent, id string, t *map[string]interface{},
 	isPatch bool) (map[string]interface{}, string) {
+	var e *mongo.SingleResult
 	updatedDoc := map[string]interface{}{}
+	retDoc := options.After
+
 	ctx, cancel := u.Connect()
 	if isPatch == true {
-		e := GetDB().Collection(ent).FindOneAndUpdate(ctx,
-			bson.M{"slug": id}, bson.M{"$set": *t})
+		e = GetDB().Collection(ent).FindOneAndUpdate(ctx,
+			bson.M{"slug": id}, bson.M{"$set": *t},
+			&options.FindOneAndUpdateOptions{ReturnDocument: &retDoc})
 		if e.Err() != nil {
 			return u.Message(false, "failure: "+e.Err().Error()), e.Err().Error()
 		}
-		e.Decode(&updatedDoc)
 	} else {
 		//Preserve the slug if not
 		//provided
 		if _, ok := (*t)["slug"]; !ok {
 			(*t)["slug"] = id
 		}
-		e := GetDB().Collection(ent).FindOneAndReplace(ctx,
-			bson.M{"slug": id}, *t)
+		e = GetDB().Collection(ent).FindOneAndReplace(ctx,
+			bson.M{"slug": id}, *t,
+			&options.FindOneAndReplaceOptions{ReturnDocument: &retDoc})
 		if e.Err() != nil {
 			return u.Message(false, "failure: "+e.Err().Error()), e.Err().Error()
 		}
-		e.Decode(&updatedDoc)
 	}
+
+	//Retrieve the result
+	e.Decode(&updatedDoc)
 
 	defer cancel()
 	resp := u.Message(true, "success")
