@@ -438,17 +438,17 @@ var GetAllEntities = func(w http.ResponseWriter, r *http.Request) {
 		entStr = entStr[:len(entStr)-1]
 		println("ENTSTR: ", entStr)
 
+		//If templates, format them
+		if idx := strings.Index(entStr, "-"); idx != -1 {
+			entStr = entStr[:idx] + "_" + entStr[idx+1:]
+		}
+
 		//Prevents Mongo from creating a new unidentified collection
 		if i := u.EntityStrToInt(entStr); i < 0 {
 			w.WriteHeader(http.StatusNotFound)
 			u.Respond(w, u.Message(false, "Invalid object in URL:"+entStr+" Please provide a valid object"))
 			u.ErrLog("Cannot get invalid object", "GET "+entStr, "", r)
 			return
-		}
-
-		//If templates, format them
-		if idx := strings.Index(entStr, "-"); idx != -1 {
-			entStr = entStr[:idx] + "_" + entStr[idx+1:]
 		}
 
 		data, e = models.GetAllEntities(entStr)

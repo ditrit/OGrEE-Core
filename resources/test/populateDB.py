@@ -6,8 +6,10 @@ res = True
 
 #CONSTANTS
 PIDS={"tenantID":None, "siteID":None, "buildingID":None,
-        "roomID":None, "ACID":None, "panelID":None,
-        "wallID":None, "rackID":None, "deviceID":None,
+        "roomID":None, "acID":None, "panelID":None,
+        "wallID":None, "aisleID":None,"tileID":None, 
+        "cabinetID":None, "groupID":None, "corridorID":None,
+        "rackID":None, "deviceID":None,
         "room-templateID": None, "obj-templateID": None}
         
 url = "http://localhost:27020/api"
@@ -209,7 +211,7 @@ response = requests.request("POST", url+"/acs",
 verifyCreate(response.status_code, "AC")
 ID = response.json()['data']['id']
 j1=response.json()['data']
-ACID=ID
+acID=ID
 
 response = requests.request("GET", url+"/rooms/"+roomID+"/acs/"+ID, headers=headers, data={})
 verifyGet(response.status_code, "AC")
@@ -280,6 +282,124 @@ print()
 print()
 
 
+#AISLE CREATE & GET
+payload={
+  "name"        : "AisleA",
+  "locationY"   : "101,101",
+  "orientation" : "+N+E",
+  "parentId" : None
+}
+payload['parentId'] = roomID
+response = requests.request("POST", url+"/aisles",
+              headers=headers, data=json.dumps(payload))
+verifyCreate(response.status_code, "Aisle")
+ID = response.json()['data']['id']
+j1=response.json()['data']
+aisleID=ID
+
+response = requests.request("GET", url+"/rooms/"+roomID+"/aisles/"+ID, headers=headers, data={})
+verifyGet(response.status_code, "Aisle")
+j2=response.json()['data']
+verifyOutput(j1, j2)
+response.close()
+print()
+print()
+
+
+#TILE CREATE & GET
+payload={
+  "location" : "101,101",
+  "name"     : "TileA",
+  "label"    : "TileA",
+  "texture"  : "Smooth",
+  "color"    : "FAA",
+  "parentId" : None
+}
+payload['parentId'] = roomID
+response = requests.request("POST", url+"/tiles",
+              headers=headers, data=json.dumps(payload))
+verifyCreate(response.status_code, "Tile")
+ID = response.json()['data']['id']
+j1=response.json()['data']
+tileID=ID
+
+response = requests.request("GET", url+"/rooms/"+roomID+"/tiles/"+ID, headers=headers, data={})
+verifyGet(response.status_code, "Tile")
+j2=response.json()['data']
+verifyOutput(j1, j2)
+response.close()
+print()
+print()
+
+
+
+#CABINET CREATE & GET
+payload={
+    "name": "CabinetA",
+  "parentId" : None
+}
+payload['parentId'] = roomID
+response = requests.request("POST", url+"/cabinets",
+              headers=headers, data=json.dumps(payload))
+verifyCreate(response.status_code, "Cabinet")
+ID = response.json()['data']['id']
+j1=response.json()['data']
+cabinetID=ID
+
+response = requests.request("GET", url+"/rooms/"+roomID+"/cabinets/"+ID, headers=headers, data={})
+verifyGet(response.status_code, "Cabinet")
+j2=response.json()['data']
+verifyOutput(j1, j2)
+response.close()
+print()
+print()
+
+
+
+#GROUP CREATE & GET
+payload={
+    "name": "GroupA",
+    "parentId" : None,
+    "contents":  []
+}
+payload['parentId'] = roomID
+response = requests.request("POST", url+"/groups",
+              headers=headers, data=json.dumps(payload))
+verifyCreate(response.status_code, "Group")
+ID = response.json()['data']['id']
+j1=response.json()['data']
+groupID=ID
+
+response = requests.request("GET", url+"/rooms/"+roomID+"/groups/"+ID, headers=headers, data={})
+verifyGet(response.status_code, "Group")
+j2=response.json()['data']
+verifyOutput(j1, j2)
+response.close()
+print()
+print()
+
+
+#CORRIDOR CREATE & GET
+payload={
+    "name": "CorridorA",
+    "parentId" : None,
+    "temperature": "warm"
+}
+payload['parentId'] = roomID
+response = requests.request("POST", url+"/corridors",
+              headers=headers, data=json.dumps(payload))
+verifyCreate(response.status_code, "Corridor")
+ID = response.json()['data']['id']
+j1=response.json()['data']
+corridorID=ID
+
+response = requests.request("GET", url+"/rooms/"+roomID+"/corridors/"+ID, headers=headers, data={})
+verifyGet(response.status_code, "Corridor")
+j2=response.json()['data']
+verifyOutput(j1, j2)
+response.close()
+print()
+print()
 
 
 #RACK CREATE & GET
@@ -444,9 +564,15 @@ PIDS['tenantID'] = tenantID
 PIDS['siteID'] = siteID
 PIDS['buildingID'] = buildingID
 PIDS['roomID'] = roomID
-PIDS['ACID'] = ACID
+PIDS['acID'] = acID
 PIDS['panelID'] = panelID
 PIDS['wallID'] = wallID
+PIDS['aisleID'] = aisleID
+PIDS['tileID'] = tileID
+PIDS['cabinetID'] = cabinetID
+PIDS['groupID'] = groupID
+PIDS['corridorID'] = corridorID
+
 PIDS['rackID'] = rackID
 PIDS['deviceID'] = deviceID
 PIDS['room-templateID'] = roomTemplateID

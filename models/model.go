@@ -1154,6 +1154,7 @@ func UpdateEntityBySlug(ent, id string, t *map[string]interface{},
 
 	//Retrieve the result
 	e.Decode(&updatedDoc)
+	updatedDoc = fixID(updatedDoc)
 
 	defer cancel()
 	resp := u.Message(true, "success")

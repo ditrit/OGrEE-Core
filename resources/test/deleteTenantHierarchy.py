@@ -8,8 +8,7 @@ res = True
 expected = 404
 PIDS={  "tenantID":None, "siteID":None, "buildingID":None,
         "roomID":None, "rackID":None, "deviceID":None, 
-        "subdeviceID":None, "subdevice1ID":None, "room-templateID":None,
-        "obj-templateID":None
+        "room-templateID":None, "obj-templateID":None
      }
 
 #Function
@@ -73,6 +72,7 @@ if response.status_code == 204:
     print("Room Template successfully deleted")
 else:
     print("Failed to delete Room Template")
+    print(PIDS["room-templateID"])
 
 
 response = delObj(url+"/obj-templates/"+PIDS["obj-templateID"])
@@ -80,6 +80,7 @@ if response.status_code == 204:
     print("Obj Template successfully deleted")
 else:
     print("Failed to delete Obj Template")
+    print(PIDS["obj-templateID"])
 
 
 
