@@ -210,6 +210,15 @@ func ValidateEntity(entity int, t map[string]interface{}) (map[string]interface{
 							return u.Message(false, "PositionXYUnit should be on the payload"), false
 						}
 
+						switch v["floorUnit"] {
+						case "f", "m", "t":
+						case "", nil:
+							return u.Message(false, "floorUnit should be on the payload"), false
+						default:
+							return u.Message(false, "floorUnit is invalid!"), false
+
+						}
+
 						switch v["orientation"] {
 						case "-E-N", "-E+N", "+E-N", "+E+N":
 						case "-N-W", "-N+W", "+N-W", "+N+W":
