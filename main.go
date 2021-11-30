@@ -20,7 +20,7 @@ var dmatch mux.MatcherFunc = func(request *http.Request, match *mux.RouteMatch) 
 	//https://stackoverflow.com/questions/21664489/
 	//golang-mux-routing-wildcard-custom-func-match
 	println("Checking MATCH")
-	return regexp.MustCompile(`^(\/api\/(tenants|sites|buildings|rooms|rooms\/acs|rooms\/panels|rooms\/walls|rooms\/cabinets|rooms\/aisles|rooms\/tiles|rooms\/groups|rooms\/corridors|racks|devices|racks\/racksensors|devices\/devicesensors|(room|obj)-templates)\?.*)$`).
+	return regexp.MustCompile(`^(\/api\/(tenants|sites|buildings|rooms|acs|panels|walls|cabinets|aisles|tiles|groups|corridors|racks|devices|racksensors|devicesensors|(room|obj)-templates)\?.*)$`).
 		MatchString(request.URL.String())
 }
 
@@ -80,26 +80,11 @@ func main() {
 	router.HandleFunc("/api/rooms/{id:[a-zA-Z0-9]{24}}/devices",
 		controllers.GetEntitiesOfAncestor).Methods("GET")
 
-	router.HandleFunc("/api/{entity:racks}/{id:[a-zA-Z0-9]{24}}/{subent:racksensors}",
-		controllers.GetAllEntities).Methods("GET")
-
-	router.HandleFunc("/api/{entity:devices}/{id:[a-zA-Z0-9]{24}}/{subent:devicesensors}",
-		controllers.GetAllEntities).Methods("GET")
-
-	router.HandleFunc("/api/{entity:rooms}/{id:[a-zA-Z0-9]{24}}/{subent:acs|walls|panels|cabinets|tiles|aisles|groups|corridors}",
-		controllers.GetAllEntities).Methods("GET")
-
 	// GET BY QUERY
-	router.NewRoute().PathPrefix("/api/{entity:[a-z]+}/{subent:[a-z]+}").MatcherFunc(dmatch).
-		HandlerFunc(controllers.GetEntityByQuery).Methods("GET")
-
 	router.NewRoute().PathPrefix("/api/{entity:[a-z]+}").MatcherFunc(dmatch).
 		HandlerFunc(controllers.GetEntityByQuery).Methods("GET")
 
 	//GET ENTITY
-	router.HandleFunc("/api/{entity}/{id:[a-zA-Z0-9]{24}}/{subent:[a-zA-Z0-9]+}/{nest:[a-zA-Z0-9]{24}}",
-		controllers.GetEntity).Methods("GET")
-
 	router.HandleFunc("/api/{entity}/{id:[a-zA-Z0-9]{24}}",
 		controllers.GetEntity).Methods("GET")
 
@@ -114,8 +99,6 @@ func main() {
 		MatcherFunc(pmatch).HandlerFunc(controllers.GetEntitiesUsingNamesOfParents).Methods("GET")
 
 	// GET ALL ENTITY
-	router.HandleFunc("/api/{entity}/{id:[a-zA-Z0-9]{24}/{subent:[a-z]+}",
-		controllers.GetAllEntities).Methods("GET")
 
 	router.HandleFunc("/api/{entity}",
 		controllers.GetAllEntities).Methods("GET")
@@ -132,9 +115,6 @@ func main() {
 		controllers.CreateEntity).Methods("POST")
 
 	//DELETE ENTITY
-	router.HandleFunc("/api/{entity}/{id:[a-zA-Z0-9]{24}}/{subent:[a-z]+}/{nest}",
-		controllers.DeleteEntity).Methods("DELETE")
-
 	router.HandleFunc("/api/{entity}/{id:[a-zA-Z0-9]{24}}",
 		controllers.DeleteEntity).Methods("DELETE")
 
@@ -142,9 +122,6 @@ func main() {
 		controllers.DeleteEntity).Methods("DELETE")
 
 	// UPDATE ENTITY
-	router.HandleFunc("/api/{entity}/{id:[a-zA-Z0-9]{24}}/{subent}/{nest}",
-		controllers.UpdateEntity).Methods("PUT", "PATCH")
-
 	router.HandleFunc("/api/{entity}/{id:[a-zA-Z0-9]{24}}",
 		controllers.UpdateEntity).Methods("PUT", "PATCH")
 

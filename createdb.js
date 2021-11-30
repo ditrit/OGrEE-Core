@@ -14,6 +14,23 @@ db.createCollection('room_template');
 db.createCollection('obj_template');
 
 
+//Nonhierarchal objects
+db.createCollection('ac');
+db.createCollection('panel');
+db.createCollection('wall');
+db.createCollection('aisle');
+db.createCollection('tile');
+db.createCollection('cabinet');
+db.createCollection('group');
+db.createCollection('corridor');
+
+
+//Sensors
+db.createCollection('room_sensor');
+db.createCollection('rack_sensor');
+db.createCollection('device_sensor');
+
+
 //Enfore unique Tenant Names
 db.tenant.createIndex( {"name":1}, { unique: true } );
 
@@ -31,5 +48,17 @@ db.room_template.createIndex({slug:1}, { unique: true });
 db.obj_template.createIndex({slug:1}, { unique: true });
 
 
-//Nested objects for Room cannot be ensured unique in the DB
-//since Mongo rearranges JSON contents to optimise storage space
+//Unique children restriction for nonhierarchal objects and sensors
+db.ac.createIndex({parentId:1, name:1}, { unique: true });
+db.panel.createIndex({parentId:1, name:1}, { unique: true });
+db.wall.createIndex({parentId:1, name:1}, { unique: true });
+db.aisle.createIndex({parentId:1, name:1}, { unique: true });
+db.tile.createIndex({parentId:1, name:1}, { unique: true });
+db.cabinet.createIndex({parentId:1, name:1}, { unique: true });
+db.group.createIndex({parentId:1, name:1}, { unique: true });
+db.corridor.createIndex({parentId:1, name:1}, { unique: true });
+
+//Enforce unique children sensors
+db.room_sensor.createIndex({parentId:1, name:1}, { unique: true });
+db.rack_sensor.createIndex({parentId:1, name:1}, { unique: true });
+db.device_sensor.createIndex({parentId:1, name:1}, { unique: true });

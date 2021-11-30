@@ -227,37 +227,25 @@ var CreateEntity = func(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	switch entStr {
-	case "ac", "panel", "wall", "cabinet", "tile", //NESTED Objects
-		"aisle", "group", "corridor", "racksensor", "devicesensor":
-		entity["id"] = primitive.NewObjectID().Hex()
-
-		i := u.EntityStrToInt(entStr)
-		println("ENT: ", entStr)
-		println("ENUM VAL: ", i)
-		resp, e = models.CreateNestedEntity(i, entStr, entity)
-	default:
-		//If creating templates, format them
-		if idx := strings.Index(entStr, "-"); idx != -1 {
-			//entStr[idx] = '_'
-			entStr = entStr[:idx] + "_" + entStr[idx+1:]
-		}
-		i := u.EntityStrToInt(entStr)
-
-		println("ENT: ", entStr)
-		println("ENUM VAL: ", i)
-
-		//Prevents Mongo from creating a new unidentified collection
-		if i < 0 {
-			w.WriteHeader(http.StatusNotFound)
-			u.Respond(w, u.Message(false, "Invalid object in URL:"+entStr+" Please provide a valid object"))
-			u.ErrLog("Cannot create invalid object", "CREATE "+entStr, "", r)
-			return
-		}
-
-		resp, e = models.CreateEntity(i, entity)
-
+	//If creating templates, format them
+	if idx := strings.Index(entStr, "-"); idx != -1 {
+		//entStr[idx] = '_'
+		entStr = entStr[:idx] + "_" + entStr[idx+1:]
 	}
+	i := u.EntityStrToInt(entStr)
+
+	println("ENT: ", entStr)
+	println("ENUM VAL: ", i)
+
+	//Prevents Mongo from creating a new unidentified collection
+	if i < 0 {
+		w.WriteHeader(http.StatusBadRequest)
+		u.Respond(w, u.Message(false, "Invalid object in URL:"+entStr+" Please provide a valid object"))
+		u.ErrLog("Cannot create invalid object", "CREATE "+entStr, "", r)
+		return
+	}
+
+	resp, e = models.CreateEntity(i, entity)
 
 	switch e {
 	case "validate", "duplicate":
@@ -327,49 +315,34 @@ var GetEntity = func(w http.ResponseWriter, r *http.Request) {
 	s, _ := mux.Vars(r)["entity"]
 	s = s[:len(s)-1]
 
+	//If sensors or templates, format them
+	if idx := strings.Index(s, "-"); idx != -1 {
+		s = s[:idx] + "_" + s[idx+1:]
+	}
+
 	//GET By ID
 	if id, e = mux.Vars(r)["id"]; e == true {
 
-		if nestID, err := mux.Vars(r)["nest"]; err == true { //If nested
-			//Get subentity type and strip trailing 's'
-			s, _ = mux.Vars(r)["subent"]
-			s = s[:len(s)-1]
-			ID, _ := getObjID(id)
-
-			//Prevents API from creating a new unidentified collection
-			if i := u.EntityStrToInt(s); i < 0 {
-				w.WriteHeader(http.StatusNotFound)
-				u.Respond(w, u.Message(false, "Invalid object in URL:"+s+" Please provide a valid object"))
-				u.ErrLog("Cannot get invalid object", "GET "+s, "", r)
-				return
-			}
-
-			data, e1 = models.GetNestedEntity(ID, s, nestID)
-		} else { // Not Nested
-
-			x, e2 = getObjID(id)
-			if e2 != nil {
-				u.Respond(w, u.Message(false, "Error while converting ID to ObjectID"))
-				u.ErrLog("Error while converting ID to ObjectID", "GET ENTITY", "", r)
-				return
-			}
-
-			//Prevents API from creating a new unidentified collection
-			if i := u.EntityStrToInt(s); i < 0 {
-				w.WriteHeader(http.StatusNotFound)
-				u.Respond(w, u.Message(false, "Invalid object in URL:"+s+" Please provide a valid object"))
-				u.ErrLog("Cannot get invalid object", "GET "+s, "", r)
-				return
-			}
-
-			data, e1 = models.GetEntity(x, s)
-
+		x, e2 = getObjID(id)
+		if e2 != nil {
+			u.Respond(w, u.Message(false, "Error while converting ID to ObjectID"))
+			u.ErrLog("Error while converting ID to ObjectID", "GET ENTITY", "", r)
+			return
 		}
 
+		//Prevents API from creating a new unidentified collection
+		if i := u.EntityStrToInt(s); i < 0 {
+			w.WriteHeader(http.StatusNotFound)
+			u.Respond(w, u.Message(false, "Invalid object in URL:"+s+" Please provide a valid object"))
+			u.ErrLog("Cannot get invalid object", "GET "+s, "", r)
+			return
+		}
+
+		data, e1 = models.GetEntity(x, s)
+
 	} else if id, e = mux.Vars(r)["name"]; e == true { //GET By String
-		//If templates, format them
-		if idx := strings.Index(s, "-"); idx != -1 { //GET By Slug
-			s = s[:idx] + "_" + s[idx+1:]
+
+		if idx := strings.Contains(s, "_"); idx == true { //GET By Slug
 			data, e1 = models.GetEntityBySlug(id, s)
 		} else {
 			data, e1 = models.GetEntityByName(id, s) //GET By Name
@@ -430,53 +403,28 @@ var GetAllEntities = func(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("******************************************************")
 	var data []map[string]interface{}
 	var e, entStr string
-	arr := strings.Split(r.URL.Path, "/")
-	if len(arr) < 4 { //Main hierarchy objects
 
-		//entStr = arr[2][:len(arr[2])-1]
-		entStr, _ = mux.Vars(r)["entity"]
-		entStr = entStr[:len(entStr)-1]
-		println("ENTSTR: ", entStr)
+	//Main hierarchy objects
 
-		//If templates, format them
-		if idx := strings.Index(entStr, "-"); idx != -1 {
-			entStr = entStr[:idx] + "_" + entStr[idx+1:]
-		}
+	//entStr = arr[2][:len(arr[2])-1]
+	entStr, _ = mux.Vars(r)["entity"]
+	entStr = entStr[:len(entStr)-1]
+	println("ENTSTR: ", entStr)
 
-		//Prevents Mongo from creating a new unidentified collection
-		if i := u.EntityStrToInt(entStr); i < 0 {
-			w.WriteHeader(http.StatusNotFound)
-			u.Respond(w, u.Message(false, "Invalid object in URL:"+entStr+" Please provide a valid object"))
-			u.ErrLog("Cannot get invalid object", "GET "+entStr, "", r)
-			return
-		}
-
-		data, e = models.GetAllEntities(entStr)
-
-	} else { //Nested objects
-
-		entStr, e2 := mux.Vars(r)["subent"]
-		id, e1 := mux.Vars(r)["id"]
-		if e1 == false || e2 == false {
-			u.Respond(w, u.Message(false, "Error while parsing path parameters"))
-			u.ErrLog("Error while parsing path parameters", "GET ENTITY", "", r)
-			return
-		}
-
-		//strip trailing 's'
-		entStr = entStr[:len(entStr)-1]
-
-		//Prevents Mongo from creating a new unidentified collection
-		if i := u.EntityStrToInt(entStr); i < 0 {
-			w.WriteHeader(http.StatusNotFound)
-			u.Respond(w, u.Message(false, "Invalid object in URL:"+entStr+" Please provide a valid object"))
-			u.ErrLog("Cannot get invalid object", "GET "+entStr, "", r)
-			return
-		}
-
-		ID, _ := getObjID(id)
-		data, e = models.GetAllNestedEntities(ID, entStr)
+	//If templates, format them
+	if idx := strings.Index(entStr, "-"); idx != -1 {
+		entStr = entStr[:idx] + "_" + entStr[idx+1:]
 	}
+
+	//Prevents Mongo from creating a new unidentified collection
+	if i := u.EntityStrToInt(entStr); i < 0 {
+		w.WriteHeader(http.StatusNotFound)
+		u.Respond(w, u.Message(false, "Invalid object in URL:"+entStr+" Please provide a valid object"))
+		u.ErrLog("Cannot get invalid object", "GET "+entStr, "", r)
+		return
+	}
+
+	data, e = models.GetAllEntities(entStr)
 
 	entUpper := strings.ToUpper(entStr) // and the trailing 's'
 	resp := u.Message(true, "success")
@@ -536,64 +484,35 @@ var DeleteEntity = func(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("******************************************************")
 	var v map[string]interface{}
 	id, e := mux.Vars(r)["id"]
-	nest, e1 := mux.Vars(r)["nest"]
 	name, e2 := mux.Vars(r)["name"]
 
+	//Get entity from URL and strip trailing 's'
+	entity, _ := mux.Vars(r)["entity"]
+	entity = entity[:len(entity)-1]
+
+	//If sensors or templates, format them
+	if idx := strings.Index(entity, "-"); idx != -1 {
+		entity = entity[:idx] + "_" + entity[idx+1:]
+	}
+
+	//Prevents Mongo from creating a new unidentified collection
+	if u.EntityStrToInt(entity) < 0 {
+		w.WriteHeader(http.StatusNotFound)
+		u.Respond(w, u.Message(false, "Invalid object in URL:"+entity+" Please provide a valid object"))
+		u.ErrLog("Cannot delete invalid object", "DELETE "+entity, "", r)
+		return
+	}
+
 	switch {
-	case e2 == true: // DELETE SLUG
-		//Get entity from URL and strip trailing 's'
-		entity, _ := mux.Vars(r)["entity"]
-		entity = entity[:len(entity)-1]
-
-		//If templates, format them
-		if idx := strings.Index(entity, "-"); idx != -1 {
-			entity = entity[:idx] + "_" + entity[idx+1:]
-		}
-
-		//Prevents Mongo from creating a new unidentified collection
-		if u.EntityStrToInt(entity) < 0 {
-			w.WriteHeader(http.StatusNotFound)
-			u.Respond(w, u.Message(false, "Invalid object in URL:"+entity+" Please provide a valid object"))
-			u.ErrLog("Cannot delete invalid object", "DELETE "+entity, "", r)
-			return
-		}
+	case e2 == true && e == false: // DELETE SLUG
 
 		v, _ = models.DeleteEntityBySlug(entity, name)
 
-	case e1 == true && e == true: // DELETE NESTED
-
-		//Get entity from URL and strip trailing 's'
-		entity, _ := mux.Vars(r)["subent"]
-		entity = entity[:len(entity)-1]
-
-		//Prevents Mongo from creating a new unidentified collection
-		if u.EntityStrToInt(entity) < 0 || u.EntityStrToInt(nest) < 0 {
-			w.WriteHeader(http.StatusNotFound)
-			u.Respond(w, u.Message(false, "Invalid object in URL: Please provide a valid object"))
-			u.ErrLog("Cannot delete invalid object", "DELETE "+entity, "", r)
-			return
-		}
-
-		objID, _ := getObjID(id)
-		v, _ = models.DeleteNestedEntity(entity, objID, nest)
-
-	case e == true: // DELETE NORMAL
+	case e == true && e2 == false: // DELETE NORMAL
 		objID, err := primitive.ObjectIDFromHex(id)
 		if err != nil {
 			u.Respond(w, u.Message(false, "Error while converting ID to ObjectID"))
 			u.ErrLog("Error while converting ID to ObjectID", "DELETE ENTITY", "", r)
-			return
-		}
-
-		//Get entity from URL and strip trailing 's'
-		entity, _ := mux.Vars(r)["entity"]
-		entity = entity[:len(entity)-1]
-
-		//Prevents Mongo from creating a new unidentified collection
-		if u.EntityStrToInt(entity) < 0 {
-			w.WriteHeader(http.StatusNotFound)
-			u.Respond(w, u.Message(false, "Invalid object in URL:"+entity+" Please provide a valid object"))
-			u.ErrLog("Cannot delete invalid object", "DELETE "+entity, "", r)
 			return
 		}
 
@@ -759,7 +678,6 @@ var UpdateEntity = func(w http.ResponseWriter, r *http.Request) {
 
 	updateData := map[string]interface{}{}
 	id, e := mux.Vars(r)["id"]
-	nest, e1 := mux.Vars(r)["nest"]
 	name, e2 := mux.Vars(r)["name"]
 	isPatch := false
 	if r.Method == "PATCH" {
@@ -776,58 +694,36 @@ var UpdateEntity = func(w http.ResponseWriter, r *http.Request) {
 		u.ErrLog("Error while decoding request body", "UPDATE ENTITY", "", r)
 	}
 
+	//Get entity from URL and strip trailing 's'
+	entity, _ = mux.Vars(r)["entity"]
+	entity = entity[:len(entity)-1]
+
+	//If sensors or templates, format them
+	if idx := strings.Index(entity, "-"); idx != -1 {
+		entity = entity[:idx] + "_" + entity[idx+1:]
+	}
+
+	//Prevents Mongo from creating a new unidentified collection
+	if u.EntityStrToInt(entity) < 0 {
+		w.WriteHeader(http.StatusNotFound)
+		u.Respond(w, u.Message(false, "Invalid object in URL:"+entity+" Please provide a valid object"))
+		u.ErrLog("Cannot update invalid object", "UPDATE "+entity, "", r)
+		return
+	}
+
+	//Flatten updateData if we have
+	//a PATCH request
+	if isPatch {
+		newUpdateData := map[string]interface{}{}
+		Flatten("", updateData, newUpdateData)
+		updateData = newUpdateData
+	}
+
 	switch {
 	case e2 == true: // UPDATE SLUG
 		println("updating slug")
-		//Get entity from URL and strip trailing 's'
-		entity, _ = mux.Vars(r)["entity"]
-		entity = entity[:len(entity)-1]
-
-		//If templates, format them
-		if idx := strings.Index(entity, "-"); idx != -1 {
-			entity = entity[:idx] + "_" + entity[idx+1:]
-		}
-
-		//Prevents Mongo from creating a new unidentified collection
-		if u.EntityStrToInt(entity) < 0 {
-			w.WriteHeader(http.StatusNotFound)
-			u.Respond(w, u.Message(false, "Invalid object in URL:"+entity+" Please provide a valid object"))
-			u.ErrLog("Cannot update invalid object", "UPDATE "+entity, "", r)
-			return
-		}
-
-		//Flatten updateData if we have
-		//a PATCH request
-		if isPatch {
-			newUpdateData := map[string]interface{}{}
-			Flatten("", updateData, newUpdateData)
-			updateData = newUpdateData
-		}
 
 		v, e3 = models.UpdateEntityBySlug(entity, name, &updateData, isPatch)
-	case e1 == true && e == true: // UPDATE NESTED
-		println("updating nested")
-		objID, err := primitive.ObjectIDFromHex(id)
-		if err != nil {
-			w.WriteHeader(http.StatusBadRequest)
-			u.Respond(w, u.Message(false, "Error while converting ID to ObjectID"))
-			u.ErrLog("Error while converting ID to ObjectID", "UPDATE ENTITY", "", r)
-			return
-		}
-
-		//Get entity from URL
-		idx := strings.SplitAfter(r.URL.Path, "/")[4]
-		entity = idx[:len(idx)-2]
-
-		//Prevents Mongo from creating a new unidentified collection
-		if u.EntityStrToInt(entity) < 0 {
-			w.WriteHeader(http.StatusNotFound)
-			u.Respond(w, u.Message(false, "Invalid object in URL:"+entity+" Please provide a valid object"))
-			u.ErrLog("Cannot update invalid object", "UPDATE "+entity, "", r)
-			return
-		}
-
-		v, e3 = models.UpdateNestedEntity(entity, objID, nest, updateData, isPatch)
 
 	case e == true: // UPDATE NORMAL
 		println("updating Normale")
@@ -839,27 +735,8 @@ var UpdateEntity = func(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		//Get entity from URL and strip trailing 's'
-		entity, _ = mux.Vars(r)["entity"]
-		entity = entity[:len(entity)-1]
 		println("OBJID:", objID.Hex())
 		println("Entity;", entity)
-
-		//Prevents Mongo from creating a new unidentified collection
-		if u.EntityStrToInt(entity) < 0 {
-			w.WriteHeader(http.StatusNotFound)
-			u.Respond(w, u.Message(false, "Invalid object in URL:"+entity+" Please provide a valid object"))
-			u.ErrLog("Cannot update invalid object", "UPDATE "+entity, "", r)
-			return
-		}
-
-		//Flatten updateData if we have
-		//a PATCH request
-		if isPatch {
-			newUpdateData := map[string]interface{}{}
-			Flatten("", updateData, newUpdateData)
-			updateData = newUpdateData
-		}
 
 		v, e3 = models.UpdateEntity(entity, objID, &updateData, isPatch)
 
@@ -941,48 +818,26 @@ var GetEntityByQuery = func(w http.ResponseWriter, r *http.Request) {
 	var bsonMap bson.M
 	var e, entStr string
 
-	if strings.Count(r.URL.Path, "/") == 3 { //We are querying NestedObjs
-		query := u.ParamsParse(r.URL, u.EntityStrToInt(entStr))
-		js, _ := json.Marshal(query)
-		json.Unmarshal(js, &bsonMap)
+	entStr = r.URL.Path[5 : len(r.URL.Path)-1]
 
-		arr := strings.Split(r.URL.Path, "/")
-		entStr = arr[2][:len(arr[2])-1]
-		sub := arr[3][:len(arr[3])-1] //Not sure why this doesn't include rest of string
-
-		//Prevents Mongo from creating a new unidentified collection
-		if u.EntityStrToInt(entStr) < 0 || u.EntityStrToInt(sub) < 0 {
-			w.WriteHeader(http.StatusNotFound)
-			u.Respond(w, u.Message(false, "Invalid object in URL: Please provide a valid object"))
-			u.ErrLog("Cannot get invalid object", "GET ENTITYQUERY"+entStr, "", r)
-			return
-		}
-
-		data, e = models.GetNestedEntityByQuery(entStr, sub, bsonMap)
-	} else {
-
-		entStr = r.URL.Path[5 : len(r.URL.Path)-1]
-
-		//If templates, format them
-		if idx := strings.Index(entStr, "-"); idx != -1 {
-			entStr = entStr[:idx] + "_" + entStr[idx+1:]
-		}
-
-		query := u.ParamsParse(r.URL, u.EntityStrToInt(entStr))
-		js, _ := json.Marshal(query)
-		json.Unmarshal(js, &bsonMap)
-
-		//Prevents Mongo from creating a new unidentified collection
-		if u.EntityStrToInt(entStr) < 0 {
-			w.WriteHeader(http.StatusNotFound)
-			u.Respond(w, u.Message(false, "Invalid object in URL:"+entStr+" Please provide a valid object"))
-			u.ErrLog("Cannot get invalid object", "GET ENTITYQUERY"+entStr, "", r)
-			return
-		}
-
-		data, e = models.GetEntityByQuery(entStr, bsonMap)
-
+	//If templates, format them
+	if idx := strings.Index(entStr, "-"); idx != -1 {
+		entStr = entStr[:idx] + "_" + entStr[idx+1:]
 	}
+
+	query := u.ParamsParse(r.URL, u.EntityStrToInt(entStr))
+	js, _ := json.Marshal(query)
+	json.Unmarshal(js, &bsonMap)
+
+	//Prevents Mongo from creating a new unidentified collection
+	if u.EntityStrToInt(entStr) < 0 {
+		w.WriteHeader(http.StatusNotFound)
+		u.Respond(w, u.Message(false, "Invalid object in URL:"+entStr+" Please provide a valid object"))
+		u.ErrLog("Cannot get invalid object", "GET ENTITYQUERY"+entStr, "", r)
+		return
+	}
+
+	data, e = models.GetEntityByQuery(entStr, bsonMap)
 
 	if len(data) == 0 {
 		resp = u.Message(false, "Error: "+e)
@@ -1360,21 +1215,29 @@ var GetEntitiesUsingNamesOfParents = func(w http.ResponseWriter, r *http.Request
 	ancestry := make([]map[string]string, 0)
 
 	for i, k := range arr {
+
+		key := k[:len(k)-1]
+
+		//If templates, format them
+		if idx := strings.Index(key, "-"); idx != -1 {
+			key = key[:idx] + "_" + key[idx+1:]
+		}
+
 		if i%2 == 0 { //The keys (entities) are at the even indexes
 			if i+1 >= len(arr) {
 				ancestry = append(ancestry,
-					map[string]string{k[:len(k)-1]: "all"})
+					map[string]string{key: "all"})
 			} else {
 
 				//Prevents Mongo from creating a new unidentified collection
-				if u.EntityStrToInt(k[:len(k)-1]) < 0 {
+				if u.EntityStrToInt(key) < 0 {
 					w.WriteHeader(http.StatusNotFound)
-					u.Respond(w, u.Message(false, "Invalid object in URL:"+k[:len(k)-1]+" Please provide a valid object"))
-					u.ErrLog("Cannot get invalid object", "GET "+k[:len(k)-1], "", r)
+					u.Respond(w, u.Message(false, "Invalid object in URL:"+key+" Please provide a valid object"))
+					u.ErrLog("Cannot get invalid object", "GET "+key, "", r)
 					return
 				}
 				ancestry = append(ancestry,
-					map[string]string{k[:len(k)-1]: arr[i+1]})
+					map[string]string{key: arr[i+1]})
 			}
 		}
 	}

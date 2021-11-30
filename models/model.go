@@ -28,6 +28,7 @@ const (
 	TILE
 	GROUP
 	CORIDOR
+	ROOMSENSOR
 	RACKSENSOR
 	DEVICESENSOR
 	ROOMTMPL
@@ -134,7 +135,7 @@ func ValidateEntity(entity int, t map[string]interface{}) (map[string]interface{
 				FindOne(ctx, bson.M{"_id": objID}).Err() != nil {
 				println("ENTITY VALUE: ", entity)
 				println("We got Parent: ", parent, " with ID:", t["parentId"].(string))
-				return u.Message(false, "ParentID should be correspond to Existing ID"), false
+				return u.Message(false, "ParentID should correspond to Existing ID"), false
 
 			}
 			defer cancel()
@@ -484,8 +485,17 @@ func GetAllEntities(ent string) ([]map[string]interface{}, string) {
 }
 
 func DeleteEntity(entity string, id primitive.ObjectID) (map[string]interface{}, string) {
+	var t map[string]interface{}
+	var e string
 	eNum := u.EntityStrToInt(entity)
-	t, e := GetEntityHierarchy(entity, id, eNum, AC)
+	if eNum > DEVICE && eNum < ROOMTMPL {
+		//Delete the non hierarchal objects
+		t, e = GetEntityHierarchy(entity, id, eNum, eNum+1)
+
+	} else {
+		t, e = GetEntityHierarchy(entity, id, eNum, AC)
+	}
+
 	if e != "" {
 		return u.Message(false,
 			"There was an error in deleting the entity: "+e), "not found"
@@ -507,6 +517,26 @@ func deleteHelper(t map[string]interface{}, ent int) (map[string]interface{}, st
 				return u.Message(false,
 					"There was an error in deleting the entity"), "not found"
 			}
+		}
+
+		println("So we got: ", ent)
+
+		if ent == RACK {
+			ctx, cancel := u.Connect()
+			GetDB().Collection("rack_sensor").DeleteMany(ctx,
+				bson.M{"parentId": t["id"].(primitive.ObjectID).Hex()})
+			defer cancel()
+		}
+
+		//Delete associated non hierarchal objs
+		if ent == ROOM {
+			//ITER Through all nonhierarchal objs
+			ctx, cancel := u.Connect()
+			for i := AC; i < RACKSENSOR; i++ {
+				ent := u.EntityToString(i)
+				GetDB().Collection(ent).DeleteMany(ctx, bson.M{"parentId": t["id"].(primitive.ObjectID).Hex()})
+			}
+			defer cancel()
 		}
 
 		if ent == DEVICE {
@@ -632,6 +662,34 @@ func GetEntityHierarchy(entity string, ID primitive.ObjectID, entnum, end int) (
 
 		//Remove _id
 		top = fixID(top)
+
+		//Retrieve associated nonhierarchal objects
+		if entity == "device" {
+			x, e := GetEntitiesOfParent("device_sensor",
+				top["id"].(primitive.ObjectID).Hex())
+			if e == "" {
+				top["device_sensors"] = x
+			}
+		}
+
+		if entity == "rack" {
+			x, e := GetEntitiesOfParent("rack_sensor",
+				top["id"].(primitive.ObjectID).Hex())
+			if e == "" {
+				top["rack_sensors"] = x
+			}
+		}
+
+		if entity == "room" {
+			//ITER Through all nonhierarchal objs
+			for i := AC; i < RACKSENSOR; i++ {
+				ent := u.EntityToString(i)
+				x, e := GetEntitiesOfParent(ent, top["id"].(primitive.ObjectID).Hex())
+				if e == "" {
+					top[ent+"s"] = x
+				}
+			}
+		}
 
 		subEnt := u.EntityToString(entnum + 1)
 
@@ -1208,6 +1266,27 @@ func RetrieveDeviceHierarch(ID primitive.ObjectID, start, end int) (map[string]i
 			return nil, e
 		}
 
+		//Retrieve sensors
+		ctx, cancel := u.Connect()
+		x, err := GetDB().Collection("device_sensor").Find(ctx,
+			bson.M{"parentId": top["id"].(primitive.ObjectID).Hex()})
+		if err == nil {
+			data := []map[string]interface{}{}
+			for x.Next(ctx) {
+				v := map[string]interface{}{}
+				e := x.Decode(v)
+				if e != nil {
+					fmt.Println(err)
+					return nil, err.Error()
+				}
+				//Remove _id
+				v = fixID(v)
+				data = append(data, v)
+			}
+			top["device_sensors"] = data
+		}
+		defer cancel()
+
 		children, e1 := GetEntitiesOfParent("device", ID.Hex())
 		if e1 != "" {
 			return top, ""
@@ -1230,21 +1309,15 @@ func DeleteDeviceF(entityID primitive.ObjectID) (map[string]interface{}, string)
 
 	t, e := RetrieveDeviceHierarch(entityID, 0, 999)
 	if e != "" {
-		return nil, e
+		return u.Message(false,
+			"There was an error in deleting the entity"), "not found"
 	}
-	deleteDeviceHelper(t)
 
-	ctx, cancel := u.Connect()
-	c, _ := GetDB().Collection("device").DeleteOne(ctx, bson.M{"_id": entityID})
-	if c.DeletedCount == 0 {
-		return u.Message(false, "There was an error in deleting the entity"), "not found"
-	}
-	defer cancel()
-
-	return nil, ""
+	return deleteDeviceHelper(t)
 }
 
 func deleteDeviceHelper(t map[string]interface{}) (map[string]interface{}, string) {
+	println("entered ddH")
 	if t != nil {
 
 		if v, ok := t["children"]; ok {
@@ -1260,6 +1333,10 @@ func deleteDeviceHelper(t map[string]interface{}) (map[string]interface{}, strin
 		}
 
 		ctx, cancel := u.Connect()
+		//Delete relevant non hierarchal objects
+		GetDB().Collection("device_sensor").DeleteMany(ctx,
+			bson.M{"parentId": t["id"].(primitive.ObjectID).Hex()})
+
 		c, _ := GetDB().Collection("device").DeleteOne(ctx, bson.M{"_id": t["id"].(primitive.ObjectID)})
 		if c.DeletedCount == 0 {
 			return u.Message(false, "There was an error in deleting the entity"), "not found"
