@@ -153,8 +153,8 @@ func Flatten(prefix string, src map[string]interface{}, dest map[string]interfac
 //   description: 'Indicates the Object. Only values of "tenants", "sites",
 //   "buildings", "rooms", "racks", "devices", "acs", "panels",
 //   "walls","aisles", "tiles", "cabinets", "groups", "corridors",
-//   "room-templates", "obj-templates",
-//   "racksensors","devicesensors" are acceptable'
+//   "room-templates", "obj-templates", "room-sensors",
+//   "rack-sensors","device-sensors" are acceptable'
 //   required: true
 //   type: string
 //   default: "sites"
@@ -279,16 +279,16 @@ var CreateEntity = func(w http.ResponseWriter, r *http.Request) {
 //   in: query
 //   description: 'Indicates the location. Only values of "tenants", "sites",
 //   "buildings", "rooms", "racks", "devices", "room-templates",
-//   "obj-templates" are acceptable
-//   For rooms, walls, acs, panels, aisles, tiles, cabinets, groups,
-//   corridors, racksensors, and devicesensors
-//   can be obtained by appending /subobj type and subobj id'
+//   "obj-templates", "rooms", "walls", "acs", "panels", "aisles",
+//   "tiles", "cabinets", "groups", "corridors","room-sensors",
+//   "rack-sensors", and "device-sensors" are acceptable'
 //   required: true
 //   type: string
 //   default: "sites"
 // - name: ID
 //   in: path
-//   description: ID of desired object or Name of Tenant
+//   description: 'ID of desired object or Name of Tenant.
+//   For templates the slug is the ID'
 //   required: true
 //   type: int
 //   default: 999
@@ -383,12 +383,11 @@ var GetEntity = func(w http.ResponseWriter, r *http.Request) {
 // parameters:
 // - name: objs
 //   in: query
-//   description: 'Indicates the object. Only values of "tenants", "sites",
+//   description: 'Indicates the location. Only values of "tenants", "sites",
 //   "buildings", "rooms", "racks", "devices", "room-templates",
-//   "obj-templates" are acceptable
-//   For rooms, walls, acs, panels, aisles, tiles, cabinets, groups,
-//   corridors, racksensors, and devicesensors
-//   can be obtained by appending /subobj type and subobj id'
+//   "obj-templates", "rooms", "walls", "acs", "panels", "aisles",
+//   "tiles", "cabinets", "groups", "corridors", "room-sensors",
+//   "rack-sensors", and "device-sensors" are acceptable'
 //   required: true
 //   type: string
 //   default: "sites"
@@ -458,18 +457,17 @@ var GetAllEntities = func(w http.ResponseWriter, r *http.Request) {
 // parameters:
 // - name: objs
 //   in: query
-//   description: 'Indicates the object. Only values of "tenants", "sites",
+//   description: 'Indicates the location. Only values of "tenants", "sites",
 //   "buildings", "rooms", "racks", "devices", "room-templates",
-//   "obj-templates" are acceptable
-//   For rooms, walls, acs, panels, aisles, tiles, cabinets, groups,
-//   corridors, racksensors, and devicesensors
-//   can be obtained by appending /subobj type and subobj id'
+//   "obj-templates", "rooms", "walls", "acs", "panels", "aisles",
+//   "tiles", "cabinets", "groups", "corridors","room-sensors",
+//   "rack-sensors", and "device-sensors" are acceptable'
 //   required: true
 //   type: string
 //   default: "sites"
 // - name: ID
 //   in: path
-//   description: ID of desired object
+//   description: ID of desired object. For templates the slug is the ID
 //   required: true
 //   type: int
 //   default: 999
@@ -551,12 +549,11 @@ var DeleteEntity = func(w http.ResponseWriter, r *http.Request) {
 // parameters:
 // - name: objs
 //   in: query
-//   description: 'Indicates the object. Only values of "tenants", "sites",
+//   description: 'Indicates the location. Only values of "tenants", "sites",
 //   "buildings", "rooms", "racks", "devices", "room-templates",
-//   "obj-templates" are acceptable.
-//   For rooms, walls, acs, panels, aisles, tiles, cabinets, groups,
-//   corridors, racksensors, and devicesensors
-//   can be obtained by appending /subobj type and subobj id'
+//   "obj-templates", "rooms", "walls", "acs", "panels", "aisles",
+//   "tiles", "cabinets", "groups", "corridors", "room-sensors",
+//   "rack-sensors", and "device-sensors" are acceptable'
 //   required: true
 //   type: string
 //   default: "sites"
@@ -617,18 +614,18 @@ var DeleteEntity = func(w http.ResponseWriter, r *http.Request) {
 // parameters:
 // - name: objs
 //   in: query
-//   description: 'Indicates the object. Only values of "tenants", "sites",
+//   description: 'Indicates the location. Only values of "tenants", "sites",
 //   "buildings", "rooms", "racks", "devices", "room-templates",
-//   "obj-templates" are acceptable.
-//   For rooms, walls, acs, panels, aisles, tiles, cabinets, groups,
-//   corridors, racksensors, and devicesensors
-//   can be obtained by appending /subobj type and subobj id'
+//   "obj-templates", "rooms", "walls", "acs", "panels", "aisles",
+//   "tiles", "cabinets", "groups", "corridors","room-sensors",
+//   "rack-sensors", and "device-sensors" are acceptable'
 //   required: true
 //   type: string
 //   default: "sites"
 // - name: ID
 //   in: path
-//   description: ID of desired Object
+//   description: 'ID of desired Object. If modifying templates, the "slug"
+//   should be used instead of ID'
 //   required: true
 //   type: int
 //   default: 999
@@ -932,6 +929,9 @@ var GetEntitiesOfAncestor = func(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	println("ENUM:", enum)
+	println("ENT:", entStr)
+
 	data, e1 := models.GetEntitiesOfAncestor(id, enum, entStr)
 	if data == nil {
 		resp = u.Message(false, "Error while getting "+entStr+"s: "+e1)
@@ -955,7 +955,9 @@ var GetEntitiesOfAncestor = func(w http.ResponseWriter, r *http.Request) {
 
 // swagger:operation GET /api/{objs}/{id}/all objects GetFromObject
 // Obtain all objects related to specified object in the system.
-// Returns JSON body with all subobjects under the Object
+// Returns JSON body with all subobjects under the Object.
+// Note that objects returned will also included relevant objects.
+// (ie Room will contain acs, walls etc. Racks and devices will contain sensors)
 // ---
 // produces:
 // - application/json
@@ -975,8 +977,8 @@ var GetEntitiesOfAncestor = func(w http.ResponseWriter, r *http.Request) {
 //   default: 999
 // - name: limit
 //   in: query
-//   description: 'Limits the level of hierarchy for devices, if not
-//   specified then the default value is maximum.
+//   description: 'Limits the level of hierarchy for retrieval. if not
+//   specified for devices then the default value is maximum.
 //   Example: /api/devices/{id}/all?limit=2'
 //   required: false
 //   type: string
@@ -1182,6 +1184,7 @@ var GetTenantHierarchy = func(w http.ResponseWriter, r *http.Request) {
 
 // swagger:operation GET /api/{objs}/{id}/* objects GetFromObect
 // A category of objects of a Parent Object can be retrieved from the system.
+// The path can only contain object type or object names
 // ---
 // produces:
 // - application/json
@@ -1201,7 +1204,11 @@ var GetTenantHierarchy = func(w http.ResponseWriter, r *http.Request) {
 //   default: "INFINITI"
 // - name: '*'
 //   in: path
-//   description: Hierarchal path to desired object(s). For rooms it can additionally have "acs" or "panels" or "walls"
+//   description: 'Hierarchal path to desired object(s).
+//   For rooms it can additionally have "acs","panels","walls",
+//   "aisles","tiles","corridors", "room-sensors" and "cabinets".
+//   For devices it can have "device-sensors"
+//   For racks it can have "rack-sensors"'
 //   required: true
 //   type: string
 //   default: "/buildings/BuildingB/RoomA"

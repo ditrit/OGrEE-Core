@@ -20,8 +20,9 @@ Perform an HTTP POST operation with the appropriate JSON
 /api/cabinets
 /api/groups
 /api/corridors
-/api/racksensors
-/api/devicesensors
+/api/room-sensors
+/api/rack-sensors
+/api/device-sensors
 /api/racks
 /api/devices
 /api/room-templates
@@ -39,16 +40,17 @@ Perform an HTTP DELETE operation without JSON body
 /api/sites
 /api/buildings/{id}
 /api/rooms/{id}
-/api/rooms/{id}/acs/{id}
-/api/rooms/{id}/panels/{id}
-/api/rooms/{id}/walls/{id}
-/api/rooms/{id}/aisles/{id}
-/api/rooms/{id}/tiles/{id}
-/api/rooms/{id}/cabinets/{id}
-/api/rooms/{id}/groups/{id}
-/api/rooms/{id}/corridors/{id}
-/api/racks/{id}/racksensors/{id}
-/api/devices/{id}/devicesensors/{id}
+/api/acs/{id}
+/api/panels/{id}
+/api/walls/{id}
+/api/aisles/{id}
+/api/tiles/{id}
+/api/cabinets/{id}
+/api/groups/{id}
+/api/corridors/{id}
+/api/room-sensors/{id}
+/api/rack-sensors/{id}
+/api/device-sensors/{id}
 /api/racks/{id}
 /api/devices/{id}
 /api/room-templates/{template_name}
@@ -64,16 +66,17 @@ Perform an HTTP PUT operation with desired JSON body
 /api/sites/{id}
 /api/buildings/{id}
 /api/rooms/{id}
-/api/rooms/{id}/acs/{id}
-/api/rooms/{id}/panels/{id}
-/api/rooms/{id}/walls/{id}
-/api/rooms/{id}/aisles/{id}
-/api/rooms/{id}/tiles/{id}
-/api/rooms/{id}/cabinets/{id}
-/api/rooms/{id}/groups/{id}
-/api/rooms/{id}/corridors/{id}
-/api/racks/{id}/racksensors/{id}
-/api/devices/{id}/devicesensors/{id}
+/api/acs/{id}
+/api/panels/{id}
+/api/walls/{id}
+/api/aisles/{id}
+/api/tiles/{id}
+/api/cabinets/{id}
+/api/groups/{id}
+/api/corridors/{id}
+/api/room-sensors/{id}
+/api/rack-sensors/{id}
+/api/device-sensors/{id}
 /api/racks/{id}
 /api/devices/{id}
 /api/room-templates/{template_name}
@@ -88,16 +91,17 @@ Perform an HTTP PUT operation with desired JSON body
 /api/sites/{id}
 /api/buildings/{id}
 /api/rooms/{id}
-/api/rooms/{id}/acs/{id}
-/api/rooms/{id}/panels/{id}
-/api/rooms/{id}/walls/{id}
-/api/rooms/{id}/aisles/{id}
-/api/rooms/{id}/tiles/{id}
-/api/rooms/{id}/cabinets/{id}
-/api/rooms/{id}/groups/{id}
-/api/rooms/{id}/corridors/{id}
-/api/racks/{id}/racksensors/{id}
-/api/devices/{id}/devicesensors/{id}
+/api/acs/{id}
+/api/panels/{id}
+/api/walls/{id}
+/api/aisles/{id}
+/api/tiles/{id}
+/api/cabinets/{id}
+/api/groups/{id}
+/api/corridors/{id}
+/api/room-sensors/{id}
+/api/rack-sensors/{id}
+/api/device-sensors/{id}
 /api/racks/{id}
 /api/devices/{id}
 /api/room-templates/{template_name}
@@ -124,6 +128,18 @@ This URL is for development purposes only
 /api/devices
 /api/room-templates
 /api/obj-templates
+/api/groups
+/api/rack-sensors
+/api/room-sensors
+/api/device-sensors
+/api/acs
+/api/panels
+/api/walls
+/api/aisles
+/api/tiles
+/api/cabinets
+/api/groups
+/api/corridors
 ```
 
 ### Get by ID (non hierarchal)
@@ -138,6 +154,18 @@ Template_name is the 'slug'
 /api/devices/{id}
 /api/room-templates/{template_name}
 /api/obj-templates/{template_name}
+/api/groups/{id}
+/api/rack-sensors/{id}
+/api/room-sensors/{id}
+/api/device-sensors/{id}
+/api/acs/{id}
+/api/panels/{id}
+/api/walls/{id}
+/api/aisles/{id}
+/api/tiles/{id}
+/api/cabinets/{id}
+/api/groups/{id}
+/api/corridors/{id}
 ```
 
 ### Search Objects
@@ -160,34 +188,22 @@ will return silver devices with name 'myValue'
 /api/cabinets?
 /api/groups?
 /api/corridors?
-/api/racksensors?
-/api/devicesensors?
 /api/room-templates?
 /api/obj-templates?
+/api/groups?
+/api/rack-sensors?
+/api/room-sensors?
+/api/device-sensors?
+/api/acs?
+/api/panels?
+/api/walls?
+/api/aisles?
+/api/tiles?
+/api/cabinets?
+/api/groups?
+/api/corridors?
 ```
 
-### Objects Only Obtainable via hierarchal GET
-These objects cannot be obtained directly and must have their hierarchy specified in the URL. If the URL does not have {id}, then all objects under the given hierarchy will be returned
-```
-/api/rooms/{id}/acs
-/api/rooms/{id}/panels
-/api/rooms/{id}/walls
-/api/rooms/{id}/acs/{id}
-/api/rooms/{id}/panels/{id}
-/api/rooms/{id}/walls/{id}
-/api/rooms/{id}/aisles
-/api/rooms/{id}/tiles
-/api/rooms/{id}/cabinets
-/api/rooms/{id}/groups
-/api/rooms/{id}/corridors
-/api/rooms/{id}/aisles/{id}
-/api/rooms/{id}/tiles/{id}
-/api/rooms/{id}/cabinets/{id}
-/api/rooms/{id}/groups/{id}
-/api/rooms/{id}/corridors/{id}
-/api/racks/{id}/racksensors/{id}
-/api/devices/{id}/devicesensors/{id}
-```
 
 ### Get all Objects 2 levels lower
 ```
@@ -226,6 +242,18 @@ URL given.
 /api/buildings/{id}/all/rooms/racks
 
 /api/rooms/{id}/all/racks/devices
+```
+
+### Get an Object's ranged hierarchy (using limit parameter)
+The object and everything related until the number specified by limit will be returned    
+in a nested JSON fashion
+```
+/api/tenants/{tenant_name}/all?limit={#}
+/api/sites/{id}/all?limit={#}
+/api/buildings/{id}/all?limit={#}
+/api/rooms/{id}/all?limit={#}
+/api/racks/{id}/all?limit={#}
+/api/devices/{id}/all?limit={#}
 ```
 
 ### Get objects through the hierarchy
@@ -268,8 +296,30 @@ Returns an object if name given or all the objects immediately under the given U
 /api/rooms/{id}/racks
 
 
+/api/rooms/{id}/acs/{ac_name}
+/api/rooms/{id}/acs
+/api/rooms/{id}/panels/{panel_name}
+/api/rooms/{id}/panels
+/api/rooms/{id}/walls/{wall_name}
+/api/rooms/{id}/walls
+/api/rooms/{id}/aisles/{aisle_name}
+/api/rooms/{id}/aisles
+/api/rooms/{id}/tiles/{tile_name}
+/api/rooms/{id}/tiles
+/api/rooms/{id}/cabinets/{cabinet_name}
+/api/rooms/{id}/cabinets
+/api/rooms/{id}/corridors/{corridor_name}
+/api/rooms/{id}/corridors
+
+
+/api/racks/{id}/rack-sensors/{rack-sensor_name}
+/api/racks/{id}/rack-sensors
+
 /api/racks/{id}/devices/{device_name}
 /api/racks/{id}/devices
+
+/api/devices/{id}/device-sensors/{device-sensor_name}
+/api/devices/{id}/device-sensors
 ```
 
 ### Get object's hierarchy (non standard)
