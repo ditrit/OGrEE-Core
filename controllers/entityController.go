@@ -995,8 +995,11 @@ var GetEntityHierarchy = func(w http.ResponseWriter, r *http.Request) {
 	entity := r.URL.Path[5:idx]
 	resp := u.Message(true, "success")
 	var limit int
+	var end int
+	var lastSlashIdx int
 	var data map[string]interface{}
 	var e1 string
+	var indicator string
 
 	id, e := mux.Vars(r)["id"]
 	if e == false {
@@ -1026,19 +1029,28 @@ var GetEntityHierarchy = func(w http.ResponseWriter, r *http.Request) {
 	}
 
 	//Check if the request is a ranged hierarchy
-	lastSlashIdx := strings.LastIndex(r.URL.Path, "/")
-	indicator := r.URL.Path[lastSlashIdx+1:]
-	switch indicator {
-	case "all":
-		//set to AC1
-		limit = AC
-	case "nonstd":
-		//special case
-	default:
-		//set to int equivalent
-		//This strips the trailing s
-		limit = u.EntityStrToInt(indicator[:len(indicator)-1])
+	arr := strings.SplitAfter(r.URL.RawQuery, "limit=")
+	if len(arr) == 2 { //limit={number} was provided
+		end, _ = strconv.Atoi(arr[1])
+		limit = u.EntityStrToInt(entity) + end - 1
+
+	} else {
+
+		lastSlashIdx = strings.LastIndex(r.URL.Path, "/")
+		indicator = r.URL.Path[lastSlashIdx+1:]
+		switch indicator {
+		case "all":
+			//set to AC1
+			limit = AC
+		case "nonstd":
+			//special case
+		default:
+			//set to int equivalent
+			//This strips the trailing s
+			limit = u.EntityStrToInt(indicator[:len(indicator)-1])
+		}
 	}
+
 	println("Indicator: ", indicator)
 	println("The limit is: ", limit)
 
@@ -1057,7 +1069,7 @@ var GetEntityHierarchy = func(w http.ResponseWriter, r *http.Request) {
 	println("Entity: ", entity, " & OID: ", oID.Hex())
 	if entity == "device" {
 		println("RETREIVE")
-		end := 999 //Arbitrary value for just obtaining everything
+		end = 999 //Arbitrary value for just obtaining everything
 		arr := strings.SplitAfter(r.URL.RawQuery, "limit=")
 		if len(arr) == 2 { //limit={number} was provided
 			end, _ = strconv.Atoi(arr[1])
@@ -1110,7 +1122,10 @@ var GetTenantHierarchy = func(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("******************************************************")
 	entity := "tenant"
 	resp := u.Message(true, "success")
+	var indicator string
 	var limit int
+	var lastSlashIdx int
+	var end int
 
 	id, e := mux.Vars(r)["tenant_name"]
 	if e == false {
@@ -1120,19 +1135,28 @@ var GetTenantHierarchy = func(w http.ResponseWriter, r *http.Request) {
 	}
 
 	//Check if the request is a ranged hierarchy
-	lastSlashIdx := strings.LastIndex(r.URL.Path, "/")
-	indicator := r.URL.Path[lastSlashIdx+1:]
-	switch indicator {
-	case "all":
-		//set to AC1
-		limit = AC
-	case "nonstd":
-		//special case
-	default:
-		//set to int equivalent
-		//This strips the trailing s
-		limit = u.EntityStrToInt(indicator[:len(indicator)-1])
+	arr := strings.SplitAfter(r.URL.RawQuery, "limit=")
+	if len(arr) == 2 { //limit={number} was provided
+		end, _ = strconv.Atoi(arr[1])
+		limit = u.EntityStrToInt(entity) + end - 1
+
+	} else {
+
+		lastSlashIdx = strings.LastIndex(r.URL.Path, "/")
+		indicator = r.URL.Path[lastSlashIdx+1:]
+		switch indicator {
+		case "all":
+			//set to AC1
+			limit = AC
+		case "nonstd":
+			//special case
+		default:
+			//set to int equivalent
+			//This strips the trailing s
+			limit = u.EntityStrToInt(indicator[:len(indicator)-1])
+		}
 	}
+
 	println("Indicator: ", indicator)
 	println("The limit is: ", limit)
 
