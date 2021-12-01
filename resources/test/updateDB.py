@@ -23,7 +23,7 @@ PIDS={"tenantID":None, "siteID":None, "buildingID":None,
         "rackID":None, "deviceID":None,
         "room-templateID": None, "obj-templateID": None}
         
-url = "http://localhost:3001/api"
+url = "http://localhost:27020/api"
 headers = {
   'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJVc2VySWQiOjY2NDA0NjEyNzM0MjQxOTk2OX0.cB1VkYQLlXCatzMiEWGFfJKKx9h8Vsr2vdlylNMe7hs',
   'Content-Type': 'application/json'
@@ -88,6 +88,9 @@ payloadTable = {
     "room":{"name": "Abandoned Room","id": None,"parentId": PIDS["buildingID"],"category": "999","description": ["999"],"domain": "999","attributes": {    "posXY": "999",    "posXYUnit": "m",    "posZ": "999",    "posZUnit": "m",    "template": "999",    "orientation": "-N-W",    "size": "999",    "sizeUnit": "m",    "height": "999",    "heightUnit": "m"}},
     "rack":{"name": "Abandoned Rack","id": None,"parentId": PIDS["roomID"],"category": "rack","description": ["99","999","9999"],"domain": "Abandoned Rack","attributes": {    "posXY": "999",    "posXYUnit": "tile",    "size": "99",    "sizeUnit": "cm",    "height": "999",    "heightUnit": "U",    "template": "",    "orientation": "front",    "vendor": "999",    "type": "999",    "model": "999",    "serial": "999"}},
     "device":{"name": "Abandoned Device","id": None,"parentId": PIDS["rackID"],"category": "999","description": ["Rack A01","The original one","-3/-5\\nA0-Z9"],"domain": "99","attributes": {"posXY": "99","posXYUnit": "tile","size": "99","sizeUnit": "cm","height": "99","heightUnit": "U","template": "","orientation": "front","vendor": "99","type": "99","model": "99","serial": "99"}},
+    "room-sensor":{"name": "Corridor909","parentId" : PIDS["roomID"],"temperature": "cold"},
+    "rack-sensor":{"name": "Corridor909","parentId" : PIDS["rackID"],"temperature": "cold"},
+    "device-sensor":{"name": "Corridor909","parentId" : PIDS["deviceID"],"temperature": "cold"},
     "room-template":{"slug"          : "HOTTESTDNB","orientation"   : "+N+W","sizeWDHm"      : [],"technicalArea" : [],"reservedArea"  : [],"separators"    : [],"colors"        : [],"tiles"         : [],"aisles"        : []},
     "obj-template":{"slug"        : "RACK2000","description" : "Rack Template 2000","category"    : "rack","sizeWDHmm"   : [],"fbxModel"    : "1","attributes"  : {  "type" : ""},"colors"      : [],"components"  : [],"slots"       : []}
     }
@@ -101,13 +104,7 @@ roomID = PIDS["roomID"]
 for i in payloadTable:
     payload = payloadTable[i]
 
-    if (i == "ac" or i == "wall"
-        or i == "panel" or i == "aisle" 
-        or i == "tile" or i == "cabinet" 
-        or i == "group" or i == "corridor"):
-            URL = url+"/rooms/"+roomID+"/"+i+"s/"+PIDS[i+"ID"]
-    else:
-        URL = url+"/"+i+"s/"+PIDS[i+"ID"]
+    URL = url+"/"+i+"s/"+PIDS[i+"ID"]
 
 
     response = requests.request("PUT", URL,headers=headers, data=json.dumps(payload))

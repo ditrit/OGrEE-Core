@@ -7,8 +7,13 @@ res = True
 #CONSTANT
 expected = 404
 PIDS={  "tenantID":None, "siteID":None, "buildingID":None,
-        "roomID":None, "rackID":None, "deviceID":None, 
-        "room-templateID":None, "obj-templateID":None
+        "roomID":None,"acID":None,"panelID":None,
+ "wallID":None, "aisleID":None,"tileID":None,
+  "cabinetID":None, "groupID":None, "corridorID":None,
+  "room-sensorID":None,"rack-sensorID":None,
+  "device-sensorID":None,
+  "rackID":None, "deviceID":None, 
+    "room-templateID":None, "obj-templateID":None
      }
 
 #Function
@@ -51,7 +56,9 @@ else:
     url = args['url']
 
 
-entRange=entRange=["tenant","site","building","room",
+entRange=entRange=["tenant","site","building","room","ac",
+  "panel", "wall", "aisle","tile","cabinet", "group", "corridor",
+  "room-sensor","rack-sensor","device-sensor",
           "rack","device","room-template","obj-template"]
 payload={}
 headers = {

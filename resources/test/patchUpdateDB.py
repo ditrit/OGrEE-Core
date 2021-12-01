@@ -20,10 +20,12 @@ PIDS={"tenantID":None, "siteID":None, "buildingID":None,
         "roomID":None, "acID":None, "panelID":None,
         "wallID":None, "aisleID":None,"tileID":None, 
         "cabinetID":None, "groupID":None, "corridorID":None,
+        "room-sensorID":None,"rack-sensorID":None,
+        "device-sensorID":None,
         "rackID":None, "deviceID":None,
         "room-templateID": None, "obj-templateID": None}
         
-url = "http://localhost:3001/api"
+url = "http://localhost:27020/api"
 headers = {
   'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJVc2VySWQiOjY2NDA0NjEyNzM0MjQxOTk2OX0.cB1VkYQLlXCatzMiEWGFfJKKx9h8Vsr2vdlylNMe7hs',
   'Content-Type': 'application/json'
@@ -88,6 +90,9 @@ payloadTable = {
     "room":{"name": "PatchedRoom","category": "999","description": [    "999"],"domain": "999","attributes": {    "posXY": "999",    "patch":"customValue"}, "patch":"customValue"},
     "rack":{"name": "Abandoned-Rack","category": "rack","description": [    "99",    "999",    "9999"],"domain": "Abandoned Rack","attributes": {"posXY": "999","posXYUnit": "tile","size": "99","sizeUnit": "cm","height": "999","heightUnit": "U","template": "","orientation": "front","vendor": "999","type": "999","model": "999","serial": "999"},"someAttr":"customValue"},
     "device":{"name": "Abandoned-Device","category": "999","description": [    "Rack A01",    "The original one",    "-3/-5\\nA0-Z9"],"domain": "99","attributes": {    "posXY": "99",    "posXYUnit": "tile",    "size": "99",    "sizeUnit": "cm",    "height": "99",    "heightUnit": "U",    "template": "",    "orientation": "front",    "vendor": "99",    "type": "99",    "model": "99",    "serial": "99",    "someATTR":"customValue"},"another":"one"},
+    "device-sensor":{"name": "Corridor808","temperature": "30C"},
+    "rack-sensor":{"name": "Corridor808","temperature": "30C"},
+    "room-sensor":{"name": "Corridor808","temperature": "30C"},
     "room-template":{"slug"          : "HOTTESTDNB","orientation"   : "+N+W","another":"ONE"},
     "obj-template":{"slug"        : "RACK2000","description" : "Rack Template 2000","category"    : "rack","sizeWDHmm"   : [],"fbxModel"    : "1","attributes"  : {  "type" : "somevale",  "another":"one"},"colors"      : [],"components"  : [],"slots"       : []}
     }
@@ -101,13 +106,7 @@ roomID = PIDS["roomID"]
 for i in payloadTable:
     payload = payloadTable[i]
 
-    if (i == "ac" or i == "wall"
-        or i == "panel" or i == "aisle" 
-        or i == "tile" or i == "cabinet" 
-        or i == "group" or i == "corridor"):
-            URL = url+"/rooms/"+roomID+"/"+i+"s/"+PIDS[i+"ID"]
-    else:
-        URL = url+"/"+i+"s/"+PIDS[i+"ID"]
+    URL = url+"/"+i+"s/"+PIDS[i+"ID"]
 
 
     response = requests.request("PATCH", URL,headers=headers, data=json.dumps(payload))

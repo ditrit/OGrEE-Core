@@ -10,6 +10,8 @@ PIDS={"tenantID":None, "siteID":None, "buildingID":None,
         "wallID":None, "aisleID":None,"tileID":None, 
         "cabinetID":None, "groupID":None, "corridorID":None,
         "rackID":None, "deviceID":None,
+        "room-sensorID":None,"rack-sensorID":None,
+        "device-sensorID":None,
         "room-templateID": None, "obj-templateID": None}
         
 url = "http://localhost:27020/api"
@@ -168,6 +170,7 @@ payload={
         "posXYUnit": "m",
         "posZ": "0",
         "posZUnit": "m",
+        "floorUnit":"f",
         "template": "demo.R1",
         "orientation": "+N+W",
         "size": "{\"x\":22.799999237060548,\"y\":19.799999237060548}",
@@ -213,7 +216,7 @@ ID = response.json()['data']['id']
 j1=response.json()['data']
 acID=ID
 
-response = requests.request("GET", url+"/rooms/"+roomID+"/acs/"+ID, headers=headers, data={})
+response = requests.request("GET", url+"/acs/"+ID, headers=headers, data={})
 verifyGet(response.status_code, "AC")
 j2=response.json()['data']
 verifyOutput(j1, j2)
@@ -243,7 +246,7 @@ ID = response.json()['data']['id']
 j1=response.json()['data']
 panelID=ID
 
-response = requests.request("GET", url+"/rooms/"+roomID+"/panels/"+ID, headers=headers, data={})
+response = requests.request("GET", url+"/panels/"+ID, headers=headers, data={})
 verifyGet(response.status_code, "Panel")
 j2=response.json()['data']
 verifyOutput(j1, j2)
@@ -273,7 +276,7 @@ ID = response.json()['data']['id']
 j1=response.json()['data']
 wallID=ID
 
-response = requests.request("GET", url+"/rooms/"+roomID+"/walls/"+ID, headers=headers, data={})
+response = requests.request("GET", url+"/walls/"+ID, headers=headers, data={})
 verifyGet(response.status_code, "Wall")
 j2=response.json()['data']
 verifyOutput(j1, j2)
@@ -297,7 +300,7 @@ ID = response.json()['data']['id']
 j1=response.json()['data']
 aisleID=ID
 
-response = requests.request("GET", url+"/rooms/"+roomID+"/aisles/"+ID, headers=headers, data={})
+response = requests.request("GET", url+"/aisles/"+ID, headers=headers, data={})
 verifyGet(response.status_code, "Aisle")
 j2=response.json()['data']
 verifyOutput(j1, j2)
@@ -323,7 +326,7 @@ ID = response.json()['data']['id']
 j1=response.json()['data']
 tileID=ID
 
-response = requests.request("GET", url+"/rooms/"+roomID+"/tiles/"+ID, headers=headers, data={})
+response = requests.request("GET", url+"/tiles/"+ID, headers=headers, data={})
 verifyGet(response.status_code, "Tile")
 j2=response.json()['data']
 verifyOutput(j1, j2)
@@ -346,7 +349,7 @@ ID = response.json()['data']['id']
 j1=response.json()['data']
 cabinetID=ID
 
-response = requests.request("GET", url+"/rooms/"+roomID+"/cabinets/"+ID, headers=headers, data={})
+response = requests.request("GET", url+"/cabinets/"+ID, headers=headers, data={})
 verifyGet(response.status_code, "Cabinet")
 j2=response.json()['data']
 verifyOutput(j1, j2)
@@ -370,7 +373,7 @@ ID = response.json()['data']['id']
 j1=response.json()['data']
 groupID=ID
 
-response = requests.request("GET", url+"/rooms/"+roomID+"/groups/"+ID, headers=headers, data={})
+response = requests.request("GET", url+"/groups/"+ID, headers=headers, data={})
 verifyGet(response.status_code, "Group")
 j2=response.json()['data']
 verifyOutput(j1, j2)
@@ -393,8 +396,31 @@ ID = response.json()['data']['id']
 j1=response.json()['data']
 corridorID=ID
 
-response = requests.request("GET", url+"/rooms/"+roomID+"/corridors/"+ID, headers=headers, data={})
+response = requests.request("GET", url+"/corridors/"+ID, headers=headers, data={})
 verifyGet(response.status_code, "Corridor")
+j2=response.json()['data']
+verifyOutput(j1, j2)
+response.close()
+print()
+print()
+
+
+#ROOM-SENSOR CREATE & GET
+payload={
+    "name": "RoomSensorLight",
+    "parentId" : None,
+    "category": "SENSOR-R"
+}
+payload['parentId'] = roomID
+response = requests.request("POST", url+"/room-sensors",
+              headers=headers, data=json.dumps(payload))
+verifyCreate(response.status_code, "Room-sensor")
+ID = response.json()['data']['id']
+j1=response.json()['data']
+roomsensorID=ID
+
+response = requests.request("GET", url+"/room-sensors/"+ID, headers=headers, data={})
+verifyGet(response.status_code, "Room-sensor")
 j2=response.json()['data']
 verifyOutput(j1, j2)
 response.close()
@@ -448,6 +474,31 @@ print()
 
 
 
+
+#RACK-SENSOR CREATE & GET
+payload={
+    "name": "SensorA",
+    "parentId" : None,
+    "category": "SENSOR-A"
+}
+payload['parentId'] = rackID
+response = requests.request("POST", url+"/rack-sensors",
+              headers=headers, data=json.dumps(payload))
+verifyCreate(response.status_code, "Rack-sensor")
+ID = response.json()['data']['id']
+j1=response.json()['data']
+racksensorID=ID
+
+response = requests.request("GET", url+"/rack-sensors/"+ID, headers=headers, data={})
+verifyGet(response.status_code, "Rack-sensor")
+j2=response.json()['data']
+verifyOutput(j1, j2)
+response.close()
+print()
+print()
+
+
+
 #DEVICE CREATE & GET
 payload={
     "name": "DeviceA",
@@ -486,6 +537,29 @@ deviceID=ID
 
 response = requests.request("GET", url+"/devices/"+ID, headers=headers, data={})
 verifyGet(response.status_code, "Device")
+j2=response.json()['data']
+verifyOutput(j1, j2)
+response.close()
+print()
+print()
+
+
+#DEVICE-SENSOR CREATE & GET
+payload={
+    "name": "DeviceSensorA",
+    "parentId" : None,
+    "category": "SENSOR-D"
+}
+payload['parentId'] = deviceID
+response = requests.request("POST", url+"/device-sensors",
+              headers=headers, data=json.dumps(payload))
+verifyCreate(response.status_code, "Device-sensor")
+ID = response.json()['data']['id']
+j1=response.json()['data']
+devicesensorID=ID
+
+response = requests.request("GET", url+"/device-sensors/"+ID, headers=headers, data={})
+verifyGet(response.status_code, "Device-sensor")
 j2=response.json()['data']
 verifyOutput(j1, j2)
 response.close()
@@ -572,6 +646,9 @@ PIDS['tileID'] = tileID
 PIDS['cabinetID'] = cabinetID
 PIDS['groupID'] = groupID
 PIDS['corridorID'] = corridorID
+PIDS['room-sensorID'] = roomsensorID
+PIDS['rack-sensorID'] = racksensorID
+PIDS['device-sensorID'] = devicesensorID
 
 PIDS['rackID'] = rackID
 PIDS['deviceID'] = deviceID

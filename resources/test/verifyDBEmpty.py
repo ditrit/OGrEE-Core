@@ -13,8 +13,11 @@ def checkResponse(code, entity):
         res = False
         print(entity+" Empty: Fail")
 
-entRange=["tenants","sites","buildings","rooms","racks","devices",
-            "room-templates","obj-templates"]
+entRange=["tenants","sites","buildings","rooms","acs","panels",
+  "racks","devices", "panels", "walls", "aisles","tiles",
+  "cabinets", "groups", "corridors","room-sensors","rack-sensors",
+  "device-sensors","room-templates","obj-templates"]
+
 payload={}
 headers = {
   'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJVc2VySWQiOjY2NDA0NjEyNzM0MjQxOTk2OX0.cB1VkYQLlXCatzMiEWGFfJKKx9h8Vsr2vdlylNMe7hs'
