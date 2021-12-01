@@ -20,7 +20,7 @@ var dmatch mux.MatcherFunc = func(request *http.Request, match *mux.RouteMatch) 
 	//https://stackoverflow.com/questions/21664489/
 	//golang-mux-routing-wildcard-custom-func-match
 	println("Checking MATCH")
-	return regexp.MustCompile(`^(\/api\/(tenants|sites|buildings|rooms|acs|panels|walls|cabinets|aisles|tiles|groups|corridors|racks|devices|racksensors|devicesensors|(room|obj)-templates)\?.*)$`).
+	return regexp.MustCompile(`^(\/api\/(tenants|sites|buildings|rooms|acs|panels|walls|cabinets|aisles|tiles|groups|corridors|racks|devices|rack-sensors|device-sensors|(room|obj)-templates|(rack|device)-groups)\?.*)$`).
 		MatchString(request.URL.String())
 }
 

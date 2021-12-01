@@ -33,6 +33,8 @@ const (
 	DEVICESENSOR
 	ROOMTMPL
 	OBJTMPL
+	RACKGROUP
+	DEVICEGROUP
 )
 
 //Function will recursively iterate through nested obj
@@ -383,6 +385,10 @@ func ValidateEntity(entity int, t map[string]interface{}) (map[string]interface{
 				return u.Message(false,
 					"Tiles should be on payload"), false
 			}
+		}
+	case RACKGROUP, DEVICEGROUP:
+		if t["name"] == "" {
+			return u.Message(false, "Name should be on payload"), false
 		}
 	}
 

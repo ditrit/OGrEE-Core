@@ -33,6 +33,8 @@ const (
 	DEVICESENSOR
 	ROOMTMPL
 	OBJTMPL
+	RACKGROUP
+	DEVICEGROUP
 )
 
 func Connect() (context.Context, context.CancelFunc) {
@@ -133,6 +135,10 @@ func EntityToString(entity int) string {
 		return "device_sensor"
 	case ROOMSENSOR:
 		return "room_sensor"
+	case RACKGROUP:
+		return "rack_group"
+	case DEVICEGROUP:
+		return "device_group"
 	default:
 		return "INVALID"
 	}
@@ -178,6 +184,10 @@ func EntityStrToInt(entity string) int {
 		return DEVICESENSOR
 	case "roomsensor", "room_sensor":
 		return ROOMSENSOR
+	case "rack_group":
+		return RACKGROUP
+	case "device_group":
+		return DEVICEGROUP
 	default:
 		return -1
 	}
@@ -193,7 +203,7 @@ func GetParentOfEntityByInt(entity int) int {
 		return DEVICE
 	case ROOMSENSOR:
 		return ROOM
-	case ROOMTMPL, OBJTMPL:
+	case ROOMTMPL, OBJTMPL, RACKGROUP, DEVICEGROUP:
 		return -1
 	default:
 		return entity - 1
