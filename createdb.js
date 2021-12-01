@@ -13,6 +13,9 @@ db.createCollection('device');
 db.createCollection('room_template');
 db.createCollection('obj_template');
 
+//Group Collections
+db.createCollection('group');
+
 
 //Nonhierarchal objects
 db.createCollection('ac');
@@ -21,7 +24,6 @@ db.createCollection('wall');
 db.createCollection('aisle');
 db.createCollection('tile');
 db.createCollection('cabinet');
-db.createCollection('group');
 db.createCollection('corridor');
 
 
@@ -55,10 +57,12 @@ db.wall.createIndex({parentId:1, name:1}, { unique: true });
 db.aisle.createIndex({parentId:1, name:1}, { unique: true });
 db.tile.createIndex({parentId:1, name:1}, { unique: true });
 db.cabinet.createIndex({parentId:1, name:1}, { unique: true });
-db.group.createIndex({parentId:1, name:1}, { unique: true });
 db.corridor.createIndex({parentId:1, name:1}, { unique: true });
 
 //Enforce unique children sensors
 db.room_sensor.createIndex({parentId:1, name:1}, { unique: true });
 db.rack_sensor.createIndex({parentId:1, name:1}, { unique: true });
 db.device_sensor.createIndex({parentId:1, name:1}, { unique: true });
+
+//Enforce unique Group names 
+db.group.createIndex({name:1}, { unique: true });

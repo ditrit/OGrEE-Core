@@ -359,29 +359,6 @@ print()
 
 
 
-#GROUP CREATE & GET
-payload={
-    "name": "GroupA",
-    "parentId" : None,
-    "contents":  []
-}
-payload['parentId'] = roomID
-response = requests.request("POST", url+"/groups",
-              headers=headers, data=json.dumps(payload))
-verifyCreate(response.status_code, "Group")
-ID = response.json()['data']['id']
-j1=response.json()['data']
-groupID=ID
-
-response = requests.request("GET", url+"/groups/"+ID, headers=headers, data={})
-verifyGet(response.status_code, "Group")
-j2=response.json()['data']
-verifyOutput(j1, j2)
-response.close()
-print()
-print()
-
-
 #CORRIDOR CREATE & GET
 payload={
     "name": "CorridorA",
@@ -626,6 +603,29 @@ objTemplateID=ID
 
 response = requests.request("GET", url+"/obj-templates/"+ID, headers=headers, data={})
 verifyGet(response.status_code, "Obj-Template")
+j2=response.json()['data']
+verifyOutput(j1, j2)
+response.close()
+print()
+print()
+
+
+
+#GROUP CREATE & GET
+payload={
+    "name": "GroupA",
+    "type" : "rack",
+    "contents":  []
+}
+response = requests.request("POST", url+"/groups",
+              headers=headers, data=json.dumps(payload))
+verifyCreate(response.status_code, "Group")
+ID = response.json()['data']['id']
+j1=response.json()['data']
+groupID=ID
+
+response = requests.request("GET", url+"/groups/"+ID, headers=headers, data={})
+verifyGet(response.status_code, "Group")
 j2=response.json()['data']
 verifyOutput(j1, j2)
 response.close()

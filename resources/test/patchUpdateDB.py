@@ -85,7 +85,7 @@ payloadTable = {
     "aisle":{"name"        : "AISLE-X","locationXYZ"   : "82,99","orientation" : "+S+E","someATTR":"customValue"},
     "tile":{"location" : "82,99","name"     : "Tile-Black","label"    : "Kino","texture"  : "Smooth","color"    : "FFFFFF","someATTR": "customValue"},
     "cabinet":{"name": "TAKEUSDOWN","customAttr":"customValue"},
-    "group":{"name": "Group909","racks":  ["SomeRackHere"]},
+    "group":{"name": "Group909","racks":  ["SomeRackHere"], "another":"ONE"},
     "corridor":{"name": "Corridor808","temperature": "30C"},
     "room":{"name": "PatchedRoom","category": "999","description": [    "999"],"domain": "999","attributes": {    "posXY": "999",    "patch":"customValue"}, "patch":"customValue"},
     "rack":{"name": "Abandoned-Rack","category": "rack","description": [    "99",    "999",    "9999"],"domain": "Abandoned Rack","attributes": {"posXY": "999","posXYUnit": "tile","size": "99","sizeUnit": "cm","height": "999","heightUnit": "U","template": "","orientation": "front","vendor": "999","type": "999","model": "999","serial": "999"},"someAttr":"customValue"},

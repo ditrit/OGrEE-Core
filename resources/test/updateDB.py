@@ -83,7 +83,7 @@ payloadTable = {
     "aisle":{"name"        : "AISLE-X","parentId":PIDS["roomID"],"locationY"   : "82,99","orientation" : "+S+E"},
     "tile":{"location" : "82,99", "parentId":PIDS["roomID"], "name"     : "Tile-Black","label"    : "Kino","texture"  : "Smooth","color"    : "FFFFFF"},
     "cabinet":{"name": "TAKEUSDOWN", "parentId":PIDS["roomID"]},
-    "group":{"name": "Group909","parentId" : PIDS["roomID"],"racks":  []},
+    "group":{"name": "Group909","racks":  [], "another":"customAttr"},
     "corridor":{"name": "Corridor909","parentId" : PIDS["roomID"],"temperature": "cold"},
     "room":{"name": "Abandoned Room","id": None,"parentId": PIDS["buildingID"],"category": "999","description": ["999"],"domain": "999","attributes": {    "posXY": "999",    "posXYUnit": "m",    "posZ": "999",    "posZUnit": "m",    "template": "999",    "orientation": "-N-W",    "size": "999",    "sizeUnit": "m",    "height": "999",    "heightUnit": "m"}},
     "rack":{"name": "Abandoned Rack","id": None,"parentId": PIDS["roomID"],"category": "rack","description": ["99","999","9999"],"domain": "Abandoned Rack","attributes": {    "posXY": "999",    "posXYUnit": "tile",    "size": "99",    "sizeUnit": "cm",    "height": "999",    "heightUnit": "U",    "template": "",    "orientation": "front",    "vendor": "999",    "type": "999",    "model": "999",    "serial": "999"}},

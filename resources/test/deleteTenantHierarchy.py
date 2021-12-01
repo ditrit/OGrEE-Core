@@ -32,9 +32,16 @@ def writeEnv():
         for i in x:
             PIDS[i] = x[i]
 
-def delObj(uri):
+def delObjHelper(uri):
     return requests.request("DELETE", uri, 
                               headers=headers, data=payload)
+
+def delObj(uri, obj):
+    response = delObjHelper(uri)
+    if response.status_code == 204:
+        print(obj+" successfully deleted")
+    else:
+        print("Failed to delete "+obj)
 
 
 #Setup Arg and ENV
@@ -67,27 +74,10 @@ headers = {
 
 
 #START
-response = delObj(url+"/tenants/"+tid)
-if response.status_code == 204:
-    print("Tenant successfully deleted")
-else:
-    print("Failed to delete Tenant")
-
-
-response = delObj(url+"/room-templates/"+PIDS["room-templateID"])
-if response.status_code == 204:
-    print("Room Template successfully deleted")
-else:
-    print("Failed to delete Room Template")
-    print(PIDS["room-templateID"])
-
-
-response = delObj(url+"/obj-templates/"+PIDS["obj-templateID"])
-if response.status_code == 204:
-    print("Obj Template successfully deleted")
-else:
-    print("Failed to delete Obj Template")
-    print(PIDS["obj-templateID"])
+delObj(url+"/tenants/"+tid, "Tenant")
+delObj(url+"/room-templates/"+PIDS["room-templateID"], "Room-Template")
+delObj(url+"/obj-templates/"+PIDS["obj-templateID"], "Obj-Template")
+delObj(url+"/groups/"+PIDS["groupID"], "Group")
 
 
 

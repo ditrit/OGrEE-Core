@@ -26,15 +26,14 @@ const (
 	CABINET
 	AISLE
 	TILE
-	GROUP
+
 	CORIDOR
 	ROOMSENSOR
 	RACKSENSOR
 	DEVICESENSOR
 	ROOMTMPL
 	OBJTMPL
-	RACKGROUP
-	DEVICEGROUP
+	GROUP
 )
 
 //Function will recursively iterate through nested obj
@@ -91,7 +90,7 @@ func ValidateEntity(entity int, t map[string]interface{}) (map[string]interface{
 	switch entity {
 	case TENANT, SITE, BLDG, ROOM, RACK, DEVICE, AC,
 		PWRPNL, WALL, CABINET, AISLE,
-		TILE, GROUP, CORIDOR, RACKSENSOR, DEVICESENSOR:
+		TILE, CORIDOR, RACKSENSOR, DEVICESENSOR:
 		if t["name"] == "" {
 			return u.Message(false, "Name should be on payload"), false
 		}
@@ -386,10 +385,17 @@ func ValidateEntity(entity int, t map[string]interface{}) (map[string]interface{
 					"Tiles should be on payload"), false
 			}
 		}
-	case RACKGROUP, DEVICEGROUP:
-		if t["name"] == "" {
+	case GROUP:
+		if t["name"] == "" || t["name"] == nil {
 			return u.Message(false, "Name should be on payload"), false
 		}
+
+		switch t["type"] {
+		case "rack", "device":
+		default:
+			return u.Message(false, "Group type (rack or device) should be specified"), false
+		}
+
 	}
 
 	//Successfully validated the Object
