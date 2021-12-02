@@ -582,6 +582,20 @@ func UpdateEntity(ent string, id primitive.ObjectID, t *map[string]interface{}, 
 		}
 	} else {
 
+		//Ensure that the ParentID is preserved
+		//only for non template objects and tenants
+		switch {
+		case ent != "tenant" && ent != "room-template" && ent != "obj-template" &&
+			((*t)["parentId"] == nil || (*t)["parentId"] == ""):
+			return u.Message(false,
+				"failure: ParentID must be on payload"), "Need ParentID"
+
+		case ent != "tenant" && ent != "room-template" && ent != "obj-template" &&
+			len((*t)["parentId"].(string)) != 24:
+			return u.Message(false,
+				"failure: ParentID must be valid"), "Invalid ParentID"
+		}
+
 		e = GetDB().Collection(ent).FindOneAndReplace(ctx,
 			bson.M{"_id": id}, *t,
 			&options.FindOneAndReplaceOptions{ReturnDocument: &retDoc})
