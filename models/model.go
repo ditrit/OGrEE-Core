@@ -925,7 +925,7 @@ func GetEntityUsingTenantAsAncestor(ent, id string, ancestry []map[string]string
 	return x, ""
 }
 
-func GetEntitiesOfAncestor(id interface{}, ent int, entStr string) ([]map[string]interface{}, string) {
+func GetEntitiesOfAncestor(id interface{}, ent int, entStr, wantedEnt string) ([]map[string]interface{}, string) {
 	var ans []map[string]interface{}
 	var t map[string]interface{}
 	var e, e1 string
@@ -949,8 +949,13 @@ func GetEntitiesOfAncestor(id interface{}, ent int, entStr string) ([]map[string
 	if e1 != "" {
 		return nil, e1
 	}
+
+	if wantedEnt == "" {
+		wantedEnt = u.EntityToString(ent + 2)
+	}
+
 	for i := range sub {
-		x, _ := GetEntitiesOfParent(u.EntityToString(ent+2), sub[i]["id"].(primitive.ObjectID).Hex())
+		x, _ := GetEntitiesOfParent(wantedEnt, sub[i]["id"].(primitive.ObjectID).Hex())
 		ans = append(ans, x...)
 	}
 	return ans, ""

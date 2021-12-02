@@ -74,10 +74,19 @@ func main() {
 	router.HandleFunc("/api/sites/{id:[a-zA-Z0-9]{24}}/rooms",
 		controllers.GetEntitiesOfAncestor).Methods("GET")
 
+	router.HandleFunc("/api/buildings/{id:[a-zA-Z0-9]{24}}/{sub:acs|corridors|cabinets|tiles|aisles|panels|walls|room-sensors}",
+		controllers.GetEntitiesOfAncestor).Methods("GET")
+
 	router.HandleFunc("/api/buildings/{id:[a-zA-Z0-9]{24}}/racks",
 		controllers.GetEntitiesOfAncestor).Methods("GET")
 
 	router.HandleFunc("/api/rooms/{id:[a-zA-Z0-9]{24}}/devices",
+		controllers.GetEntitiesOfAncestor).Methods("GET")
+
+	router.HandleFunc("/api/rooms/{id:[a-zA-Z0-9]{24}}/rack-sensors",
+		controllers.GetEntitiesOfAncestor).Methods("GET")
+
+	router.HandleFunc("/api/racks/{id:[a-zA-Z0-9]{24}}/device-sensors",
 		controllers.GetEntitiesOfAncestor).Methods("GET")
 
 	// GET BY QUERY

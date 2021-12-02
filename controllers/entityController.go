@@ -929,10 +929,22 @@ var GetEntitiesOfAncestor = func(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	println("ENUM:", enum)
-	println("ENT:", entStr)
+	lastSlashIdx := strings.LastIndex(r.URL.Path, "/")
+	indicator := r.URL.Path[lastSlashIdx+1:]
+	switch indicator {
+	case "acs", "walls", "panels", "corridors", "cabinets",
+		"aisles", "tiles", "room-sensors",
+		"rack-sensors", "device-sensors":
+		//If templates, format them
+		if idx := strings.Index(indicator, "-"); idx != -1 {
+			indicator = indicator[:idx] + "_" + indicator[idx+1:]
+		}
+		indicator = indicator[:len(indicator)-1]
+	default:
+		indicator = ""
+	}
 
-	data, e1 := models.GetEntitiesOfAncestor(id, enum, entStr)
+	data, e1 := models.GetEntitiesOfAncestor(id, enum, entStr, indicator)
 	if data == nil {
 		resp = u.Message(false, "Error while getting "+entStr+"s: "+e1)
 		u.ErrLog("Error while getting children of "+entStr,
