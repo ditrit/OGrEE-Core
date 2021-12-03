@@ -64,6 +64,8 @@ pipeline {
 
                 
                     sh 'sudo ./resources/test/scenario1.py'
+                    sh 'sudo ./resources/test/scenario2.py'
+                    sh 'sudo ./resources/test/scenario3.py'
                 
                 
 
