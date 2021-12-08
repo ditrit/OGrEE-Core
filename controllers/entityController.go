@@ -1091,7 +1091,7 @@ var GetEntityHierarchy = func(w http.ResponseWriter, r *http.Request) {
 		}
 		data, e1 = models.RetrieveDeviceHierarch(oID, 0, end)
 	} else {
-		data, e1 = models.GetEntityHierarchy(entity, oID, entNum, limit+1)
+		data, e1 = models.GetEntityHierarchy(entity, oID, entNum, limit)
 	}
 
 	if data == nil {
@@ -1174,7 +1174,7 @@ var GetTenantHierarchy = func(w http.ResponseWriter, r *http.Request) {
 	println("Indicator: ", indicator)
 	println("The limit is: ", limit)
 
-	data, e1 := models.GetTenantHierarchy(entity, id, TENANT, limit+1)
+	data, e1 := models.GetTenantHierarchy(entity, id, TENANT, limit)
 
 	if data == nil {
 		resp = u.Message(false, "Error while getting :"+entity+","+e1)
