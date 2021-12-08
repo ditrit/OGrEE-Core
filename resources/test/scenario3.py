@@ -44,4 +44,4 @@ else:
 
 
 #Success
-sys.exit(1)
+sys.exit()

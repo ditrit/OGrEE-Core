@@ -662,4 +662,4 @@ if res != True:
     sys.exit(-1)
 
 #else success
-sys.exit(1)
+sys.exit()

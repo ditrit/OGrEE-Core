@@ -444,7 +444,6 @@ for i in PIDS:
   response.close()
   print()
   print()
-  #sys.exit(0)
 
 
   #OBJECT SEARCH 
