@@ -1,27 +1,46 @@
 #!/usr/bin/env python3
-import os, sys
+import os, sys,subprocess
 
+#Exit Flag
+res = True
 
 #Check Return Values
-def checkTestResults(resArr):
-    for i in resArr:
-        if i == -1:
-            sys.exit(-1)
+def checkRes(val, out, name):
+    if val == -1:
+        print("Failure!")
+        print("Test Name: ", name)
+        print(out)
+        res = False
+
 
 
 #Empty, populate, update then delete all
 #which should test the cascade
 #relationship enforced by the API
-r1 = os.system("./resources/test/verifyDBEmpty.py")
-r2 = os.system("./resources/test/populateMongo.py")
-r3 = os.system("./resources/test/updateMongo.py")
-r4 = os.system("./resources/test/deleteTenantHierarchy.py")
-r5 = os.system("./resources/test/verifyDBEmpty.py")
-checkTestResults([r1,r2,r3,r4, r5])
+r1,txt1 = subprocess.getstatusoutput("./verifyDBEmpty.py")
+checkRes(r1, txt1, "verifyDBEmpty")
 
-print("******************************************************")
-print("SCENARIO-3 CASE-1: 	 SUCCESS ")
-print("******************************************************")
+r2,txt2 = subprocess.getstatusoutput("./populateMongo.py")
+checkRes(r2, txt2, "populateMongo")
+
+r3,txt3 = subprocess.getstatusoutput("./updateMongo.py")
+checkRes(r3, txt3, "updateMongo")
+
+r4,txt4 = subprocess.getstatusoutput("./deleteTenantHierarchy.py")
+checkRes(r4, txt4, "deleteTenantHierarchy")
+
+r5,txt5 = subprocess.getstatusoutput("./verifyDBEmpty.py")
+checkRes(r5, txt5, "verifyDBEmpty")
+
+
+if res == True:
+    print("******************************************************")
+    print("SCENARIO-3 CASE-1: 	 SUCCESS ")
+    print("******************************************************")
+else:
+    print("******************************************************")
+    print("SCENARIO-3 CASE-1: 	 FAILURE ")
+    print("******************************************************")
 
 
 #Success

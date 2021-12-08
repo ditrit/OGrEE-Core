@@ -197,7 +197,7 @@ print()
 
 #AC CREATE & GET
 payload={
-    "name": "TCL 2021",
+    "name": "TCL2021",
     "id": None,
     "parentId": None,
     "category": "ac",
@@ -227,7 +227,7 @@ print()
 
 #POWERPANEL CREATE & GET
 payload={
-    "name": "Panel A",
+    "name": "PanelA",
     "id": None,
     "parentId": None,
     "category": "powerpanel",
