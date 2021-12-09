@@ -334,7 +334,7 @@ def handleRangedHierarchy(URLs, obj, ID):
     OG = finalURL
 
     limitNum = limit - sToI(obj.upper()) +1 
-    finalURL = url+"/"+objs+"/"+ID+"/all?limit="+str(limitNum)
+    finalURL = url+"/"+objs+"/"+ID+"/all?limit="+str(limitNum - 1)
     print("OG:",OG)
     print("Limit:",finalURL)
     
