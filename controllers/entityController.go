@@ -1046,7 +1046,34 @@ var GetEntityHierarchy = func(w http.ResponseWriter, r *http.Request) {
 	arr := strings.SplitAfter(r.URL.RawQuery, "limit=")
 	if len(arr) == 2 { //limit={number} was provided
 		end, _ = strconv.Atoi(arr[1])
-		limit = u.EntityStrToInt(entity) + end - 1
+		limit = u.EntityStrToInt(entity) + end
+
+		// HACK SECTION FOR FRONT END -- START //
+
+		if end == 0 {
+
+			objID, _ := primitive.ObjectIDFromHex(id)
+			data, e1 := models.GetEntity(objID, entity)
+
+			if e1 != "" {
+				resp = u.Message(false, "Error while getting :"+entity+","+e1)
+				u.ErrLog("Error while getting "+entity, "GET "+entity, e1, r)
+
+				switch e1 {
+				case "record not found":
+					w.WriteHeader(http.StatusNotFound)
+				default:
+				}
+			} else {
+				resp = u.Message(true, "success")
+			}
+
+			resp["data"] = data
+			u.Respond(w, resp)
+			return
+		}
+
+		// HACK SECTION FOR FRONT END -- DONE //
 
 	} else {
 
@@ -1071,6 +1098,7 @@ var GetEntityHierarchy = func(w http.ResponseWriter, r *http.Request) {
 	oID, _ := getObjID(id)
 
 	entNum := u.EntityStrToInt(entity)
+	println("EntNum:", entNum)
 
 	//Prevents Mongo from creating a new unidentified collection
 	if entNum < 0 {
@@ -1152,7 +1180,34 @@ var GetTenantHierarchy = func(w http.ResponseWriter, r *http.Request) {
 	arr := strings.SplitAfter(r.URL.RawQuery, "limit=")
 	if len(arr) == 2 { //limit={number} was provided
 		end, _ = strconv.Atoi(arr[1])
-		limit = u.EntityStrToInt(entity) + end - 1
+		limit = u.EntityStrToInt(entity) + end
+
+		// HACK SECTION FOR FRONT END -- START //
+
+		if end == 0 {
+
+			//objID, _ := primitive.ObjectIDFromHex(id)
+			data, e1 := models.GetEntityByName(id, "tenant")
+
+			if e1 != "" {
+				resp = u.Message(false, "Error while getting :"+entity+","+e1)
+				u.ErrLog("Error while getting "+entity, "GET "+entity, e1, r)
+
+				switch e1 {
+				case "record not found":
+					w.WriteHeader(http.StatusNotFound)
+				default:
+				}
+			} else {
+				resp = u.Message(true, "success")
+			}
+
+			resp["data"] = data
+			u.Respond(w, resp)
+			return
+		}
+
+		// HACK SECTION FOR FRONT END -- DONE //
 
 	} else {
 
