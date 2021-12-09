@@ -427,11 +427,11 @@ func CreateEntity(entity int, t map[string]interface{}) (map[string]interface{},
 	return resp, ""
 }
 
-func GetEntity(entityID primitive.ObjectID, ent string) (map[string]interface{}, string) {
+func GetEntity(req bson.M, ent string) (map[string]interface{}, string) {
 	t := map[string]interface{}{}
 
 	ctx, cancel := u.Connect()
-	e := GetDB().Collection(ent).FindOne(ctx, bson.M{"_id": entityID}).Decode(&t)
+	e := GetDB().Collection(ent).FindOne(ctx, req).Decode(&t)
 	if e != nil {
 		return nil, e.Error()
 	}
@@ -441,40 +441,10 @@ func GetEntity(entityID primitive.ObjectID, ent string) (map[string]interface{},
 	return t, ""
 }
 
-//Only useful for tenant since tenants are unique in the DB
-func GetEntityByName(name, ent string) (map[string]interface{}, string) {
-	t := map[string]interface{}{}
-
-	ctx, cancel := u.Connect()
-	e := GetDB().Collection(ent).FindOne(ctx, bson.M{"name": name}).Decode(&t)
-	if e != nil {
-		return nil, e.Error()
-	}
-	defer cancel()
-	//Remove _id
-	t = fixID(t)
-	return t, ""
-}
-
-//Only useful for tenant since tenants are unique in the DB
-func GetEntityBySlug(name, ent string) (map[string]interface{}, string) {
-	t := map[string]interface{}{}
-
-	ctx, cancel := u.Connect()
-	e := GetDB().Collection(ent).FindOne(ctx, bson.M{"slug": name}).Decode(&t)
-	if e != nil {
-		return nil, e.Error()
-	}
-	defer cancel()
-	//Remove _id
-	t = fixID(t)
-	return t, ""
-}
-
-func GetAllEntities(ent string) ([]map[string]interface{}, string) {
+func GetManyEntities(ent string, req bson.M) ([]map[string]interface{}, string) {
 	data := make([]map[string]interface{}, 0)
 	ctx, cancel := u.Connect()
-	c, err := GetDB().Collection(ent).Find(ctx, bson.D{{}})
+	c, err := GetDB().Collection(ent).Find(ctx, req)
 	if err != nil {
 		fmt.Println(err)
 		return nil, err.Error()
@@ -567,7 +537,7 @@ func deleteHelper(t map[string]interface{}, ent int) (map[string]interface{}, st
 	return nil, ""
 }
 
-func UpdateEntity(ent string, id primitive.ObjectID, t *map[string]interface{}, isPatch bool) (map[string]interface{}, string) {
+func UpdateEntity(ent string, req bson.M, t *map[string]interface{}, isPatch bool) (map[string]interface{}, string) {
 	var e *mongo.SingleResult
 	updatedDoc := bson.M{}
 	retDoc := options.ReturnDocument(options.After)
@@ -575,7 +545,7 @@ func UpdateEntity(ent string, id primitive.ObjectID, t *map[string]interface{}, 
 	ctx, cancel := u.Connect()
 	if isPatch == true {
 		e = GetDB().Collection(ent).FindOneAndUpdate(ctx,
-			bson.M{"_id": id}, bson.M{"$set": *t},
+			req, bson.M{"$set": *t},
 			&options.FindOneAndUpdateOptions{ReturnDocument: &retDoc})
 		if e.Err() != nil {
 			return u.Message(false, "failure: "+e.Err().Error()), e.Err().Error()
@@ -585,21 +555,27 @@ func UpdateEntity(ent string, id primitive.ObjectID, t *map[string]interface{}, 
 		//Ensure that the ParentID is preserved
 		//only for non template objects, tenants, and groups
 		switch {
+		case ent == "room_template" || ent == "obj_template":
+			//Preserve the slug if not
+			//provided
+			if _, ok := (*t)["slug"]; !ok {
+				(*t)["slug"] = req["slug"]
+			}
 		case ent != "group" && ent != "tenant" &&
-			ent != "room-template" && ent != "obj-template" &&
+			ent != "room_template" && ent != "obj_template" &&
 			((*t)["parentId"] == nil || (*t)["parentId"] == ""):
 			return u.Message(false,
 				"failure: ParentID must be on payload"), "Need ParentID"
 
 		case ent != "group" && ent != "tenant" &&
-			ent != "room-template" && ent != "obj-template" &&
+			ent != "room_template" && ent != "obj_template" &&
 			len((*t)["parentId"].(string)) != 24:
 			return u.Message(false,
 				"failure: ParentID must be valid"), "Invalid ParentID"
 		}
 
 		e = GetDB().Collection(ent).FindOneAndReplace(ctx,
-			bson.M{"_id": id}, *t,
+			req, *t,
 			&options.FindOneAndReplaceOptions{ReturnDocument: &retDoc})
 
 		if e.Err() != nil {
@@ -616,31 +592,6 @@ func UpdateEntity(ent string, id primitive.ObjectID, t *map[string]interface{}, 
 	resp := u.Message(true, "success")
 	resp["data"] = updatedDoc
 	return resp, ""
-}
-
-func GetEntityByQuery(ent string, query bson.M) ([]map[string]interface{}, string) {
-	results := make([]map[string]interface{}, 0)
-	ctx, cancel := u.Connect()
-	c, err := GetDB().Collection(ent).Find(ctx, query)
-	if err != nil {
-		fmt.Println(err)
-		return nil, err.Error()
-	}
-	defer cancel()
-
-	for c.Next(ctx) {
-		x := map[string]interface{}{}
-		e := c.Decode(x)
-		if e != nil {
-			fmt.Println(err)
-			return nil, err.Error()
-		}
-		//Remove _id
-		x = fixID(x)
-		results = append(results, x)
-	}
-
-	return results, ""
 }
 
 //Gets children of an entity
@@ -683,7 +634,7 @@ func GetEntityHierarchy(entity string, ID primitive.ObjectID, entnum, end int) (
 	if entnum != end {
 
 		//Get the top entity
-		top, e := GetEntity(ID, entity)
+		top, e := GetEntity(bson.M{"_id": ID}, entity)
 		if e != "" {
 			return nil, e
 		}
@@ -752,22 +703,8 @@ func GetEntityHierarchy(entity string, ID primitive.ObjectID, entnum, end int) (
 	return nil, ""
 }
 
-func GetEntityByNameAndParentID(ent, id, name string) (map[string]interface{}, string) {
-	t := map[string]interface{}{}
-
-	ctx, cancel := u.Connect()
-	e := GetDB().Collection(ent).FindOne(ctx, bson.M{"name": name, "parentId": id}).Decode(&t)
-	if e != nil {
-		return nil, e.Error()
-	}
-	defer cancel()
-	//Remove _id
-	t = fixID(t)
-	return t, ""
-}
-
 func GetEntitiesUsingAncestorNames(ent string, id primitive.ObjectID, ancestry []map[string]string) ([]map[string]interface{}, string) {
-	top, e := GetEntity(id, ent)
+	top, e := GetEntity(bson.M{"_id": id}, ent)
 	if e != "" {
 		return nil, e
 	}
@@ -793,7 +730,7 @@ func GetEntitiesUsingAncestorNames(ent string, id primitive.ObjectID, ancestry [
 				return GetEntitiesOfParent(k, pid)
 			}
 
-			x, e1 = GetEntityByNameAndParentID(k, pid, v)
+			x, e1 = GetEntity(bson.M{"parentId": pid, "name": v}, k)
 			if e1 != "" {
 				println("Failing here")
 				return nil, ""
@@ -806,7 +743,7 @@ func GetEntitiesUsingAncestorNames(ent string, id primitive.ObjectID, ancestry [
 }
 
 func GetEntityUsingAncestorNames(ent string, id primitive.ObjectID, ancestry []map[string]string) (map[string]interface{}, string) {
-	top, e := GetEntity(id, ent)
+	top, e := GetEntity(bson.M{"_id": id}, ent)
 	if e != "" {
 		return nil, e
 	}
@@ -823,7 +760,7 @@ func GetEntityUsingAncestorNames(ent string, id primitive.ObjectID, ancestry []m
 
 			println("KEY:", k, " VAL:", v)
 
-			x, e1 = GetEntityByNameAndParentID(k, pid, v)
+			x, e1 = GetEntity(bson.M{"parentId": pid, "name": v}, k)
 			if e1 != "" {
 				println("Failing here")
 				return nil, ""
@@ -839,7 +776,7 @@ func GetEntityUsingAncestorNames(ent string, id primitive.ObjectID, ancestry []m
 
 func GetTenantHierarchy(entity, name string, entnum, end int) (map[string]interface{}, string) {
 
-	t, e := GetEntityByName(name, "tenant")
+	t, e := GetEntity(bson.M{"name": name}, "tenant")
 	if e != "" {
 		fmt.Println(e)
 		return nil, e
@@ -878,7 +815,7 @@ func GetTenantHierarchy(entity, name string, entnum, end int) (map[string]interf
 }
 
 func GetEntitiesUsingTenantAsAncestor(ent, id string, ancestry []map[string]string) ([]map[string]interface{}, string) {
-	top, e := GetEntityByName(id, ent)
+	top, e := GetEntity(bson.M{"name": id}, ent)
 	if e != "" {
 		return nil, e
 	}
@@ -901,7 +838,7 @@ func GetEntitiesUsingTenantAsAncestor(ent, id string, ancestry []map[string]stri
 				return GetEntitiesOfParent(k, pid)
 			}
 
-			x, e1 = GetEntityByNameAndParentID(k, pid, v)
+			x, e1 = GetEntity(bson.M{"parentId": pid, "name": v}, k)
 			if e1 != "" {
 				println("Failing here")
 				println("E1: ", e1)
@@ -915,7 +852,7 @@ func GetEntitiesUsingTenantAsAncestor(ent, id string, ancestry []map[string]stri
 }
 
 func GetEntityUsingTenantAsAncestor(ent, id string, ancestry []map[string]string) (map[string]interface{}, string) {
-	top, e := GetEntityByName(id, ent)
+	top, e := GetEntity(bson.M{"name": id}, ent)
 	if e != "" {
 		return nil, e
 	}
@@ -929,7 +866,7 @@ func GetEntityUsingTenantAsAncestor(ent, id string, ancestry []map[string]string
 
 			println("KEY:", k, " VAL:", v)
 
-			x, e1 = GetEntityByNameAndParentID(k, pid, v)
+			x, e1 = GetEntity(bson.M{"parentId": pid, "name": v}, k)
 			if e1 != "" {
 				println("Failing here")
 				return nil, ""
@@ -947,14 +884,14 @@ func GetEntitiesOfAncestor(id interface{}, ent int, entStr, wantedEnt string) ([
 	var e, e1 string
 	if ent == TENANT {
 
-		t, e = GetEntityByName(id.(string), "tenant")
+		t, e = GetEntity(bson.M{"name": id}, "tenant")
 		if e != "" {
 			return nil, e
 		}
 
 	} else {
 		ID, _ := primitive.ObjectIDFromHex(id.(string))
-		t, e = GetEntity(ID, entStr)
+		t, e = GetEntity(bson.M{"_id": ID}, entStr)
 		if e != "" {
 			return nil, e
 		}
@@ -977,241 +914,6 @@ func GetEntitiesOfAncestor(id interface{}, ent int, entStr, wantedEnt string) ([
 	return ans, ""
 }
 
-//ent string, ID primitive.ObjectID, nestID string
-func GetNestedEntity(ID primitive.ObjectID, ent, nestID string) (map[string]interface{}, string) {
-	t := map[string]interface{}{}
-
-	ctx, cancel := u.Connect()
-	parent := u.EntityToString(u.GetParentOfEntityByInt(u.EntityStrToInt(ent)))
-	criteria := bson.M{"_id": ID, ent + "s.id": nestID}
-	e := GetDB().Collection(parent).FindOne(ctx, criteria).Decode(&t)
-	if e != nil {
-		return nil, e.Error()
-	}
-
-	//Because applying filters to the Mongo Request is a hassle
-	//for now
-	for _, entry := range t[ent+"s"].(primitive.A) {
-		if entry.(map[string]interface{})["id"] == nestID {
-			t = entry.(map[string]interface{})
-			break
-		}
-	}
-	defer cancel()
-	return t, ""
-}
-
-func CreateNestedEntity(entity int, eStr string, t map[string]interface{}) (map[string]interface{}, string) {
-	var check map[string]interface{}
-	if resp, ok := ValidateEntity(entity, t); !ok {
-		return resp, "validate"
-	}
-
-	ctx, cancel := u.Connect()
-
-	parent := u.EntityToString(u.GetParentOfEntityByInt(entity))
-	pid, _ := primitive.ObjectIDFromHex(t["parentId"].(string))
-
-	//CHECK FOR DUPLICATE SECTION
-	e1 := GetDB().Collection(parent).FindOne(ctx, bson.M{"_id": pid}).Decode(&check)
-	if e1 != nil {
-		return u.Message(false,
-				"Internal error while creating "+eStr+": "+e1.Error()),
-			e1.Error()
-	}
-
-	if v, ok := check[eStr+"s"].(primitive.A); ok {
-		for i := range v {
-			if elt, ok := v[i].(map[string]interface{}); ok {
-				if elt["name"].(string) == t["name"] { //DUPLICATE FOUND
-					return u.Message(false,
-							"Error: Cannot create duplicate object. Please use a different name"),
-						"duplicate"
-				}
-			}
-		}
-	}
-	//CHECK FOR DUPLICATE SECTION FINISH
-
-	_, e := GetDB().Collection(parent).UpdateOne(ctx, bson.M{"_id": pid}, bson.M{"$addToSet": bson.M{eStr + "s": t}})
-	if e != nil {
-		return u.Message(false,
-				"Internal error while creating "+eStr+": "+e.Error()),
-			e.Error()
-	}
-	defer cancel()
-
-	resp := u.Message(true, "success")
-	resp["data"] = t
-	return resp, ""
-}
-
-func GetAllNestedEntities(ID primitive.ObjectID, ent string) ([]map[string]interface{}, string) {
-	t := map[string]interface{}{}
-	ans := []map[string]interface{}{}
-	data := []interface{}{}
-
-	ctx, cancel := u.Connect()
-	parent := u.EntityToString(u.GetParentOfEntityByInt(u.EntityStrToInt(ent)))
-	e := GetDB().Collection(parent).FindOne(ctx, bson.M{"_id": ID}).Decode(&t)
-	if e != nil {
-		return nil, e.Error()
-	}
-
-	//Because applying filters to the Mongo Request is a hassle
-	//for now
-	if v, ok := t[ent+"s"].(primitive.A); ok {
-		data = v
-	}
-
-	for i := range data {
-		if x, ok := data[i].(map[string]interface{}); ok {
-			ans = append(ans, x)
-		}
-	}
-
-	println("LENANS: ", len(ans))
-	defer cancel()
-	return ans, ""
-}
-
-func DeleteNestedEntity(ent string, ID primitive.ObjectID, nestID string) (map[string]interface{}, string) {
-	t := map[string]interface{}{}
-	newSubEnts := []interface{}{}
-
-	ctx, cancel := u.Connect()
-	parent := u.EntityToString(u.GetParentOfEntityByInt(u.EntityStrToInt(ent)))
-	criteria := bson.M{"_id": ID, ent + "s.id": nestID}
-	e := GetDB().Collection(parent).FindOne(ctx, criteria).Decode(&t)
-	if e != nil {
-		return u.Message(false,
-			"There was an error in deleting the entity: "+e.Error()), "parent not found"
-	}
-	defer cancel()
-
-	if v, ok := t[ent+"s"].(primitive.A); ok {
-		for i := range v {
-			if v[i].(map[string]interface{})["id"] != nestID {
-				newSubEnts = append(newSubEnts, v[i])
-			}
-		}
-	}
-
-	t[ent+"s"] = newSubEnts
-
-	c1, cancel2 := u.Connect()
-	_, e1 := GetDB().Collection(parent).UpdateOne(c1, criteria, bson.M{"$set": t})
-	if e1 != nil {
-		return u.Message(false,
-			"There was an error in deleting the entity2: "+e.Error()), "unable update"
-	}
-	defer cancel2()
-
-	return t, ""
-}
-
-func UpdateNestedEntity(ent string, ID primitive.ObjectID,
-	nestID string, t map[string]interface{}, isPatch bool) (map[string]interface{}, string) {
-	foundParent := map[string]interface{}{}
-	updateDoc := map[string]interface{}{}
-	var idx int
-
-	//OG WAY///////////////////////////////////////
-	ctx, cancel := u.Connect()
-	parent := u.EntityToString(u.GetParentOfEntityByInt(u.EntityStrToInt(ent)))
-	criteria := bson.M{"_id": ID, ent + "s.id": nestID}
-	e := GetDB().Collection(parent).FindOne(ctx, criteria).Decode(&foundParent)
-	if e != nil {
-		return u.Message(false,
-			"There was an error in updating the entity: "+e.Error()), "parent not found"
-	}
-	defer cancel()
-	delete(t, "id")
-
-	//Once parent is found, search the nested array
-	//for matching NestID and change the attributes
-	if v, ok := foundParent[ent+"s"].(primitive.A); ok {
-		for i := range v {
-			if v[i].(map[string]interface{})["id"] == nestID {
-				old := v[i].(map[string]interface{})
-				idx = i
-
-				//Ensure the ID & PID are
-				//preserved
-				t["id"] = nestID
-				t["parentId"] = old["parentId"]
-
-				if isPatch == true {
-					for key := range t {
-						old[key] = t[key]
-					}
-				} else {
-					foundParent[ent+"s"].(primitive.A)[i] = t
-				}
-
-				updateDoc = old
-				break
-			}
-		}
-	}
-
-	retDoc := options.After
-
-	c1, cancel2 := u.Connect()
-	e1 := GetDB().Collection(parent).FindOneAndUpdate(c1,
-		criteria, bson.M{"$set": foundParent},
-		&options.FindOneAndUpdateOptions{ReturnDocument: &retDoc})
-	if e1.Err() != nil {
-		return u.Message(false,
-			"There was an error in deleting the entity2: "+e.Error()), "unable update"
-	}
-	defer cancel2()
-	e1.Decode(&updateDoc)
-
-	resp := u.Message(true, "success")
-	resp["data"] = updateDoc[ent+"s"].(primitive.A)[idx]
-	return resp, ""
-}
-
-func GetNestedEntityByQuery(parent, entity string, query bson.M) ([]map[string]interface{}, string) {
-	ans := make([]map[string]interface{}, 0)
-	parents, e := GetAllEntities(parent)
-	if e != "" {
-		return nil, e
-	}
-
-	//Now get all subentities from parents
-	for i := range parents {
-		pid := parents[i]["id"].(primitive.ObjectID)
-		nestedEnts, e1 := GetAllNestedEntities(pid, entity)
-		if e1 != "" {
-			return nil, e1
-		}
-
-		//Iterate over the nestedEntities to see if they match the query
-		for k := range nestedEnts {
-
-			nestedEntity := nestedEnts[k]
-
-			match := true
-			//Check if the ent matches
-			for q := range query {
-				if nestedEntity[q] != query[q] {
-					match = false
-					break
-				}
-			}
-
-			//The entity matches
-			if match == true {
-				ans = append(ans, nestedEntity)
-			}
-
-		}
-	}
-	return ans, ""
-}
-
 func DeleteEntityBySlug(entity, id string) (map[string]interface{}, string) {
 	//Finally delete the Entity
 	ctx, cancel := u.Connect()
@@ -1222,44 +924,6 @@ func DeleteEntityBySlug(entity, id string) (map[string]interface{}, string) {
 	defer cancel()
 
 	return u.Message(true, "success"), ""
-}
-
-func UpdateEntityBySlug(ent, id string, t *map[string]interface{},
-	isPatch bool) (map[string]interface{}, string) {
-	var e *mongo.SingleResult
-	updatedDoc := map[string]interface{}{}
-	retDoc := options.After
-
-	ctx, cancel := u.Connect()
-	if isPatch == true {
-		e = GetDB().Collection(ent).FindOneAndUpdate(ctx,
-			bson.M{"slug": id}, bson.M{"$set": *t},
-			&options.FindOneAndUpdateOptions{ReturnDocument: &retDoc})
-		if e.Err() != nil {
-			return u.Message(false, "failure: "+e.Err().Error()), e.Err().Error()
-		}
-	} else {
-		//Preserve the slug if not
-		//provided
-		if _, ok := (*t)["slug"]; !ok {
-			(*t)["slug"] = id
-		}
-		e = GetDB().Collection(ent).FindOneAndReplace(ctx,
-			bson.M{"slug": id}, *t,
-			&options.FindOneAndReplaceOptions{ReturnDocument: &retDoc})
-		if e.Err() != nil {
-			return u.Message(false, "failure: "+e.Err().Error()), e.Err().Error()
-		}
-	}
-
-	//Retrieve the result
-	e.Decode(&updatedDoc)
-	updatedDoc = fixID(updatedDoc)
-
-	defer cancel()
-	resp := u.Message(true, "success")
-	resp["data"] = updatedDoc
-	return resp, ""
 }
 
 //DEV FAMILY FUNCS
@@ -1294,7 +958,7 @@ func GetDevEntitiesOfParent(ent, id string) ([]map[string]interface{}, string) {
 func RetrieveDeviceHierarch(ID primitive.ObjectID, start, end int) (map[string]interface{}, string) {
 	if start < end {
 		//Get the top entity
-		top, e := GetEntity(ID, "device")
+		top, e := GetEntity(bson.M{"_id": ID}, "device")
 		if e != "" {
 			return nil, e
 		}

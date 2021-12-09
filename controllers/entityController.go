@@ -338,14 +338,14 @@ var GetEntity = func(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		data, e1 = models.GetEntity(x, s)
+		data, e1 = models.GetEntity(bson.M{"_id": x}, s)
 
 	} else if id, e = mux.Vars(r)["name"]; e == true { //GET By String
 
 		if idx := strings.Contains(s, "_"); idx == true { //GET By Slug
-			data, e1 = models.GetEntityBySlug(id, s)
+			data, e1 = models.GetEntity(bson.M{"slug": id}, s)
 		} else {
-			data, e1 = models.GetEntityByName(id, s) //GET By Name
+			data, e1 = models.GetEntity(bson.M{"name": id}, s) //GET By Name
 		}
 	}
 
@@ -423,7 +423,7 @@ var GetAllEntities = func(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	data, e = models.GetAllEntities(entStr)
+	data, e = models.GetManyEntities(entStr, bson.M{})
 
 	entUpper := strings.ToUpper(entStr) // and the trailing 's'
 	resp := u.Message(true, "success")
@@ -720,7 +720,7 @@ var UpdateEntity = func(w http.ResponseWriter, r *http.Request) {
 	case e2 == true: // UPDATE SLUG
 		println("updating slug")
 
-		v, e3 = models.UpdateEntityBySlug(entity, name, &updateData, isPatch)
+		v, e3 = models.UpdateEntity(entity, bson.M{"slug": name}, &updateData, isPatch)
 
 	case e == true: // UPDATE NORMAL
 		println("updating Normale")
@@ -735,7 +735,7 @@ var UpdateEntity = func(w http.ResponseWriter, r *http.Request) {
 		println("OBJID:", objID.Hex())
 		println("Entity;", entity)
 
-		v, e3 = models.UpdateEntity(entity, objID, &updateData, isPatch)
+		v, e3 = models.UpdateEntity(entity, bson.M{"_id": objID}, &updateData, isPatch)
 
 	default:
 		w.WriteHeader(http.StatusBadRequest)
@@ -834,7 +834,7 @@ var GetEntityByQuery = func(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	data, e = models.GetEntityByQuery(entStr, bsonMap)
+	data, e = models.GetManyEntities(entStr, bsonMap)
 
 	if len(data) == 0 {
 		resp = u.Message(false, "Error: "+e)
@@ -1034,7 +1034,7 @@ var GetEntityHierarchy = func(w http.ResponseWriter, r *http.Request) {
 
 	if entity == "tenant" {
 
-		_, e := models.GetEntityByName(entity, id)
+		_, e := models.GetEntity(bson.M{"name": id}, entity)
 		if e != "" {
 			resp = u.Message(false, "Error while getting :"+entity+","+e)
 			u.ErrLog("Error while getting "+entity, "GET "+entity, e, r)
@@ -1053,7 +1053,7 @@ var GetEntityHierarchy = func(w http.ResponseWriter, r *http.Request) {
 		if end == 0 {
 
 			objID, _ := primitive.ObjectIDFromHex(id)
-			data, e1 := models.GetEntity(objID, entity)
+			data, e1 := models.GetEntity(bson.M{"_id": objID}, entity)
 
 			if e1 != "" {
 				resp = u.Message(false, "Error while getting :"+entity+","+e1)
@@ -1187,7 +1187,7 @@ var GetTenantHierarchy = func(w http.ResponseWriter, r *http.Request) {
 		if end == 0 {
 
 			//objID, _ := primitive.ObjectIDFromHex(id)
-			data, e1 := models.GetEntityByName(id, "tenant")
+			data, e1 := models.GetEntity(bson.M{"name": id}, "tenant")
 
 			if e1 != "" {
 				resp = u.Message(false, "Error while getting :"+entity+","+e1)
