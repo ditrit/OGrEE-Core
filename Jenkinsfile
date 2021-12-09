@@ -85,7 +85,6 @@ pipeline {
         stage('Deploy') {
             steps {
                 echo 'Deploying....'
-                sh 'mv ./.env.bak ./.env'
                 sh 'docker rmi $(docker images --filter "dangling=true" \
                 -q --no-trunc) || true'
 

@@ -6,6 +6,7 @@ res = True
 
 #Check Return Values
 def checkRes(val, out, name):
+    global res
     if val == -1:
         print("Failure!")
         print("Test Name: ", name)
