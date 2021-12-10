@@ -2,7 +2,6 @@ package models
 
 import (
 	"context"
-	"crypto/rand"
 	"fmt"
 	u "p3/utils"
 
@@ -62,17 +61,6 @@ func parseDataForNonStdResult(ent string, eNum, end int, data map[string]interfa
 	}
 
 	return ans
-}
-
-func genID(length int) string {
-	chars := "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890-"
-	ll := len(chars)
-	b := make([]byte, length)
-	rand.Read(b) // generates len(b) random bytes
-	for i := 0; i < length; i++ {
-		b[i] = chars[int(b[i])%ll]
-	}
-	return string(b)
 }
 
 //Mongo returns '_id' instead of id
@@ -451,16 +439,10 @@ func GetManyEntities(ent string, req bson.M) ([]map[string]interface{}, string) 
 	}
 	defer cancel()
 
-	for c.Next(ctx) {
-		x := map[string]interface{}{}
-		e := c.Decode(x)
-		if e != nil {
-			fmt.Println(err)
-			return nil, err.Error()
-		}
-		//Remove _id
-		x = fixID(x)
-		data = append(data, x)
+	data, e1 := ExtractCursor(c, ctx)
+	if e1 != "" {
+		fmt.Println(e1)
+		return nil, e1
 	}
 
 	return data, ""
@@ -594,40 +576,6 @@ func UpdateEntity(ent string, req bson.M, t *map[string]interface{}, isPatch boo
 	return resp, ""
 }
 
-//Gets children of an entity
-//Example: /api/buildings/{id}/rooms
-//will return all rooms associated with
-//the BldgID
-//Be sure to pass the Child Entity and NOT Parent Entity
-func GetEntitiesOfParent(ent, id string) ([]map[string]interface{}, string) {
-	var c *mongo.Cursor
-	var err error
-	enfants := make([]map[string]interface{}, 0)
-	ctx, cancel := u.Connect()
-	c, err = GetDB().Collection(ent).Find(ctx, bson.M{"parentId": id})
-	if err != nil {
-		fmt.Println(err)
-		return nil, err.Error()
-	}
-	defer cancel()
-
-	for c.Next(ctx) {
-		s := map[string]interface{}{}
-		e := c.Decode(&s)
-		if e != nil {
-			fmt.Println(err)
-			return nil, err.Error()
-		}
-		//Remove _id
-		s = fixID(s)
-		enfants = append(enfants, s)
-	}
-
-	//println("The length of children is: ", len(enfants))
-
-	return enfants, ""
-}
-
 func GetEntityHierarchy(entity string, ID primitive.ObjectID, entnum, end int) (map[string]interface{}, string) {
 
 	//Check if at the end of the hierarchy
@@ -644,16 +592,16 @@ func GetEntityHierarchy(entity string, ID primitive.ObjectID, entnum, end int) (
 
 		//Retrieve associated nonhierarchal objects
 		if entity == "device" {
-			x, e := GetEntitiesOfParent("device_sensor",
-				top["id"].(primitive.ObjectID).Hex())
+			x, e := GetManyEntities("device_sensor",
+				bson.M{"parentId": top["id"].(primitive.ObjectID).Hex()})
 			if e == "" {
 				top["device_sensors"] = x
 			}
 		}
 
 		if entity == "rack" {
-			x, e := GetEntitiesOfParent("rack_sensor",
-				top["id"].(primitive.ObjectID).Hex())
+			x, e := GetManyEntities("rack_sensor",
+				bson.M{"parentId": top["id"].(primitive.ObjectID).Hex()})
 			if e == "" {
 				top["rack_sensors"] = x
 			}
@@ -663,7 +611,8 @@ func GetEntityHierarchy(entity string, ID primitive.ObjectID, entnum, end int) (
 			//ITER Through all nonhierarchal objs
 			for i := AC; i < RACKSENSOR; i++ {
 				ent := u.EntityToString(i)
-				x, e := GetEntitiesOfParent(ent, top["id"].(primitive.ObjectID).Hex())
+				x, e := GetManyEntities(ent,
+					bson.M{"parentId": top["id"].(primitive.ObjectID).Hex()})
 				if e == "" {
 					top[ent+"s"] = x
 				}
@@ -673,7 +622,7 @@ func GetEntityHierarchy(entity string, ID primitive.ObjectID, entnum, end int) (
 		subEnt := u.EntityToString(entnum + 1)
 
 		//Get immediate children
-		children, e1 := GetEntitiesOfParent(subEnt, ID.Hex())
+		children, e1 := GetManyEntities(subEnt, bson.M{"parentId": ID.Hex()})
 		if e1 != "" {
 			println("Are we here")
 			println("SUBENT: ", subEnt)
@@ -727,7 +676,7 @@ func GetEntitiesUsingAncestorNames(ent string, id primitive.ObjectID, ancestry [
 				/*if k == "device" {
 					return GetDeviceFByParentID(pid) nil, ""
 				}*/
-				return GetEntitiesOfParent(k, pid)
+				return GetManyEntities(k, bson.M{"parentId": pid})
 			}
 
 			x, e1 = GetEntity(bson.M{"parentId": pid, "name": v}, k)
@@ -789,7 +738,7 @@ func GetTenantHierarchy(entity, name string, entnum, end int) (map[string]interf
 	tid := t["id"].(primitive.ObjectID).Hex()
 
 	//Get immediate children
-	children, e1 := GetEntitiesOfParent(subEnt, tid)
+	children, e1 := GetManyEntities(subEnt, bson.M{"parentId": tid})
 	if e1 != "" {
 		println("Are we here")
 		println("SUBENT: ", subEnt)
@@ -835,7 +784,7 @@ func GetEntitiesUsingTenantAsAncestor(ent, id string, ancestry []map[string]stri
 
 			if v == "all" {
 				println("K:", k)
-				return GetEntitiesOfParent(k, pid)
+				return GetManyEntities(k, bson.M{"parentId": pid})
 			}
 
 			x, e1 = GetEntity(bson.M{"parentId": pid, "name": v}, k)
@@ -897,8 +846,8 @@ func GetEntitiesOfAncestor(id interface{}, ent int, entStr, wantedEnt string) ([
 		}
 	}
 
-	sub, e1 := GetEntitiesOfParent(u.EntityToString(ent+1),
-		t["id"].(primitive.ObjectID).Hex())
+	sub, e1 := GetManyEntities(u.EntityToString(ent+1),
+		bson.M{"parentId": t["id"].(primitive.ObjectID).Hex()})
 	if e1 != "" {
 		return nil, e1
 	}
@@ -908,7 +857,8 @@ func GetEntitiesOfAncestor(id interface{}, ent int, entStr, wantedEnt string) ([
 	}
 
 	for i := range sub {
-		x, _ := GetEntitiesOfParent(wantedEnt, sub[i]["id"].(primitive.ObjectID).Hex())
+		x, _ := GetManyEntities(wantedEnt,
+			bson.M{"parentId": sub[i]["id"].(primitive.ObjectID).Hex()})
 		ans = append(ans, x...)
 	}
 	return ans, ""
@@ -928,33 +878,6 @@ func DeleteEntityBySlug(entity, id string) (map[string]interface{}, string) {
 
 //DEV FAMILY FUNCS
 
-func GetDevEntitiesOfParent(ent, id string) ([]map[string]interface{}, string) {
-	var c *mongo.Cursor
-	var err error
-	enfants := make([]map[string]interface{}, 0)
-	ctx, cancel := u.Connect()
-	c, err = GetDB().Collection(ent).Find(ctx, bson.M{"parentId": id})
-	if err != nil {
-		fmt.Println(err)
-		return nil, err.Error()
-	}
-	defer cancel()
-
-	for c.Next(ctx) {
-		s := map[string]interface{}{}
-		e := c.Decode(&s)
-		if e != nil {
-			fmt.Println(err)
-			return nil, err.Error()
-		}
-		enfants = append(enfants, s)
-	}
-
-	//println("The length of children is: ", len(enfants))
-
-	return enfants, ""
-}
-
 func RetrieveDeviceHierarch(ID primitive.ObjectID, start, end int) (map[string]interface{}, string) {
 	if start < end {
 		//Get the top entity
@@ -969,22 +892,17 @@ func RetrieveDeviceHierarch(ID primitive.ObjectID, start, end int) (map[string]i
 			bson.M{"parentId": top["id"].(primitive.ObjectID).Hex()})
 		if err == nil {
 			data := []map[string]interface{}{}
-			for x.Next(ctx) {
-				v := map[string]interface{}{}
-				e := x.Decode(v)
-				if e != nil {
-					fmt.Println(err)
-					return nil, err.Error()
-				}
-				//Remove _id
-				v = fixID(v)
-				data = append(data, v)
+			data, e1 := ExtractCursor(x, ctx)
+			if e1 != "" {
+				fmt.Println(e1)
+				return nil, e1
 			}
+
 			top["device_sensors"] = data
 		}
 		defer cancel()
 
-		children, e1 := GetEntitiesOfParent("device", ID.Hex())
+		children, e1 := GetManyEntities("device", bson.M{"parentId": ID.Hex()})
 		if e1 != "" {
 			return top, ""
 		}
@@ -1053,6 +971,8 @@ func ExtractCursor(c *mongo.Cursor, ctx context.Context) ([]map[string]interface
 			fmt.Println(err)
 			return nil, err.Error()
 		}
+		//Remove _id
+		x = fixID(x)
 		ans = append(ans, x)
 	}
 	return ans, ""
