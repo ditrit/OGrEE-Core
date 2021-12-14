@@ -963,7 +963,7 @@ func deleteDeviceHelper(t map[string]interface{}) (map[string]interface{}, strin
 }
 
 func ExtractCursor(c *mongo.Cursor, ctx context.Context) ([]map[string]interface{}, string) {
-	var ans []map[string]interface{}
+	ans := []map[string]interface{}{}
 	for c.Next(ctx) {
 		x := map[string]interface{}{}
 		err := c.Decode(x)

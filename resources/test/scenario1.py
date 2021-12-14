@@ -7,7 +7,7 @@ res = True
 #Check Return Values
 def checkRes(val, out, name):
     global res
-    if val == -1:
+    if val == 255:
         print("Failure!")
         print("Test Name: ", name)
         print(out)

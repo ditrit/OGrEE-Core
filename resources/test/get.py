@@ -368,7 +368,7 @@ def getEntityUsingAncestry(url, obj):
       c = c.replace("-", "_")
     resp = getOneFromDBGeneric(c, {"_id":ObjectId(url[1])})
   
-
+  
   resp = fixID(resp)
   req = None
   while q < len(url):
@@ -391,7 +391,61 @@ def getEntityUsingAncestry(url, obj):
   
   return resp
 
+def apiCall(URL, entity, iterator, verifyingStr, ID, reqType, wantedEnt):
+  j2 = None
+  response = requests.request("GET", URL, headers=headers, data={})
+  verifyGet(response.status_code, verifyingStr)
 
+  if reqType == "single":
+    j2 = getFromDB(entity,PIDS[iterator])
+
+  if reqType == "all":
+    j2 = getManyFromDB(entity)
+    j2 = extractCursor(j2, entity)
+
+  if reqType == "hierarchy":
+    j2 = getEntityHierarchy(obj, sToI(obj.upper()), PIDS[i], 6)
+
+  if reqType == "mainGetException":
+    j2 = getEntitiesOfAncestor(sToI(entity.upper()), entity, ID, "")
+
+  if reqType == "1levelLower":
+    subEnt = iToS(sToI(entity.upper())+1).lower()
+    j2 = getManyFromDBGeneric(subEnt, {"parentId": PIDS[iterator]})
+    j2 = extractCursor(j2, subEnt)
+
+  if reqType == "1levelLower+":
+    if wantedEnt.find("-") != -1:
+      wantedEnt = wantedEnt.replace("-", "_")
+    
+    j2 = getManyFromDBGeneric(wantedEnt, {"parentId": PIDS[iterator]})
+    j2 = extractCursor(j2, wantedEnt)
+    
+  if reqType == "named&subEnt":
+    x = wantedEnt
+    val = getEntityUsingAncestry(x, entity)
+    #Fix if cursor
+    if type(val) != dict:
+      entityType = (x[len(x)-1])[:len((x[len(x)-1]))-1]
+      val = extractCursor(val, entityType)
+    
+    j2 = val
+
+  if reqType == "finalCases":
+    j2 = getEntitiesOfAncestor(sToI(entity.upper()), entity,ID, wantedEnt)
+    print()
+
+
+  if 'data' in response.json():
+    j1 = response.json()['data']
+  else:
+    print("ERROR! Data was not in the response for:", obj)
+    j1 = response.json()
+
+  verifyOutput(j1, j2)
+  response.close()
+  print()
+  print()
 
 
 
@@ -409,42 +463,11 @@ for i in PIDS:
   objs = i[:len(i)-2]+"s"
 
   #SINGLE OBJ GET WITH ID
-  response = requests.request("GET", url+"/"+objs+"/"+PIDS[i], headers=headers, data={})
-  verifyGet(response.status_code, i[0].upper()+i[1:len(i)-2])
-
-  j2 = getFromDB(obj,PIDS[i])
-
-  if 'data' in response.json():
-    j1 = response.json()['data']
-  else:
-    print("ERROR! Data was not in the response for:", obj)
-    j1 = response.json()
-  
-  verifyOutput(j1, j2)
-  response.close()
-  print()
-  print()
+  apiCall(url+"/"+objs+"/"+PIDS[i], obj, i,obj[0].upper()+obj[1:] , None, "single", None)
 
 
   #GET ALL OBJS
-  response = requests.request("GET", url+"/"+objs, headers=headers, data={})
-  verifyGet(response.status_code, i[0].upper()+i[1:len(i)-2]+"s")
-  j2 = getManyFromDB(obj)
-
-  if 'data' in response.json():
-    j1 = response.json()['data']
-  else:
-    print("ERROR! Data was not in the response for:", obj)
-    j1 = response.json()
-
-  #Fix response 
-  extractedJ2 = extractCursor(j2, obj)
-
-  verifyOutput(j1, extractedJ2)
-  response.close()
-  print()
-  print()
-
+  apiCall(url+"/"+objs, obj, i, objs, None, "all", None)
 
   #OBJECT SEARCH 
   #(only the main attrs. category, domain, name)
@@ -457,47 +480,19 @@ for i in PIDS:
     subObj = iToS(sToI(obj.upper())+2).lower()
     print("SubOBJ:", subObj)
     if obj == "tenant":
-      response = requests.request("GET", url+"/tenants/DEMO/"+subObj+"s", headers=headers, data={})
-      locID = "DEMO" # From other scripts, this is the name of tenant
+      apiCall(url+"/tenants/DEMO/"+subObj+"s", obj, i,
+       i[0].upper()+i[1:len(i)-2]+"\'s "+subObj +"s", "DEMO", "mainGetException", None)
     else:
-      finalURL=  url+"/"+objs+"/"+PIDS[i]+"/"+subObj+"s"
-      response = requests.request("GET",finalURL, headers=headers, data={})
-      locID = PIDS[i]
-    
-    verifyGet(response.status_code, i[0].upper()+i[1:len(i)-2]+"\'s "+subObj +"s")
-
-    j2 = getEntitiesOfAncestor(sToI(obj.upper()), obj, locID, "")
-
-    if 'data' in response.json():
-      j1 = response.json()['data']
-    else:
-      print("ERROR! Data was not in the response for:", obj)
-      j1 = response.json()
-
-    verifyOutput(j1, j2)
-    response.close()
-    print()
-    print()
+      apiCall(url+"/"+objs+"/"+PIDS[i]+"/"+subObj+"s", obj, i,
+       i[0].upper()+i[1:len(i)-2]+"\'s "+subObj +"s", PIDS[i], "mainGetException", None)
 
 
   #GET OBJ HIERARCHY
   if (obj == "tenant" or obj == "site" 
       or obj == "building" or obj == "room" or obj == "rack"):
-    response = requests.request("GET", url+"/"+objs+"/"+PIDS[i]+"/all", headers=headers, data={})
-    verifyGet(response.status_code, i[0].upper()+i[1:len(i)-2]+"'s Hierarchy")
-    j2 = getEntityHierarchy(obj, sToI(obj.upper()), PIDS[i], 6)
 
-    if 'data' in response.json():
-      j1 = response.json()['data']
-    else:
-      print("ERROR! Data was not in the response for:", obj)
-      j1 = response.json()
-
-
-    verifyOutput(j1, j2)
-    response.close()
-    print()
-    print()
+    apiCall(url+"/"+objs+"/"+PIDS[i]+"/all", obj, i,
+                 obj[0]+obj[1:]+"'s Hierarchy", None, "hierarchy", None)
 
 
   #RANGED HIERARCHY
@@ -546,24 +541,9 @@ for i in PIDS:
     else:
       finalURL = url+"/"+objs+"/"+PIDS[i]+"/"+subEnt+"s"
 
+    apiCall(finalURL, obj, i, 
+    obj[0].upper()+obj[1:]+"s"+" one level lower req", None, "1levelLower", None)
 
-    response = requests.request("GET", finalURL, headers=headers, data={})
-    verifyGet(response.status_code, i[0].upper()+i[1:len(i)-2]+"s"+" one level lower req")
-    j2 = getManyFromDBGeneric(subEnt, {"parentId": PIDS[i]})
-
-    if 'data' in response.json():
-      j1 = response.json()['data']
-    else:
-      print("ERROR! Data was not in the response for:", obj)
-      j1 = response.json()
-
-    #Fix response 
-    extractedJ2 = extractCursor(j2, subEnt)
-
-    verifyOutput(j1, extractedJ2)
-    response.close()
-    print()
-    print()
 
     if obj == "room":
       #All associated objs for room
@@ -574,27 +554,10 @@ for i in PIDS:
           subEnt = "room-sensor"
         
         finalURL = url+"/"+objs+"/"+PIDS[i]+"/"+subEnt+"s"
-        response = requests.request("GET", finalURL, headers=headers, data={})
-        verifyGet(response.status_code, i[0].upper()+i[1:len(i)-2]+"s"+" one level lower req: "+subEnt)
-        
-        if subEnt == "room-sensor":
-          subEnt = "room_sensor"
-
-        j2 = getManyFromDBGeneric(subEnt, {"parentId": PIDS[i]})
-
-        if 'data' in response.json():
-          j1 = response.json()['data']
-        else:
-          print("ERROR! Data was not in the response for:", obj)
-          j1 = response.json()
-
-        #Fix response 
-        extractedJ2 = extractCursor(j2, subEnt)
-
-        verifyOutput(j1, extractedJ2)
-        response.close()
-        print()
-        print()
+        print(finalURL)
+        apiCall(finalURL, obj, i,
+        objs[0].upper()+objs[1:]+" one level lower req: "+subEnt,
+        None,"1levelLower+", subEnt)
         idx += 1
 
     
@@ -602,49 +565,19 @@ for i in PIDS:
     subEnt = "rack-sensor"
         
     finalURL = url+"/"+objs+"/"+PIDS[i]+"/"+subEnt+"s"
-    response = requests.request("GET", finalURL, headers=headers, data={})
-    verifyGet(response.status_code, i[0].upper()+i[1:len(i)-2]+"s"+" one level lower req: "+subEnt)
-    
-
-    j2 = getManyFromDBGeneric("rack_sensor", {"parentId": PIDS[i]})
-
-    if 'data' in response.json():
-      j1 = response.json()['data']
-    else:
-      print("ERROR! Data was not in the response for:", obj)
-      j1 = response.json()
-
-    #Fix response 
-    extractedJ2 = extractCursor(j2, subEnt)
-
-    verifyOutput(j1, extractedJ2)
-    response.close()
-    print()
-    print()
+    apiCall(finalURL, obj, i,
+    objs[0].upper()+objs[1:]+" one level lower req: "+subEnt,
+    None, "1levelLower+", subEnt)
 
   if obj == "device":
     subEnt = "device-sensor"
-        
+
     finalURL = url+"/"+objs+"/"+PIDS[i]+"/"+subEnt+"s"
-    response = requests.request("GET", finalURL, headers=headers, data={})
-    verifyGet(response.status_code, i[0].upper()+i[1:len(i)-2]+"s"+" one level lower req: "+subEnt)
+    apiCall(finalURL, obj, i,
+    objs[0].upper()+objs[1:]+" one level lower req: "+subEnt,
+    None, "1levelLower+", subEnt)
 
-    j2 = getManyFromDBGeneric("device_sensor", {"parentId": PIDS[i]})
-
-    if 'data' in response.json():
-      j1 = response.json()['data']
-    else:
-      print("ERROR! Data was not in the response for:", obj)
-      j1 = response.json()
-
-    #Fix response 
-    extractedJ2 = extractCursor(j2, subEnt)
-
-    verifyOutput(j1, extractedJ2)
-    response.close()
-    print()
-    print()
-
+        
 
 
   #NAMED & SUBENTITY SECTION
@@ -706,36 +639,13 @@ for i in PIDS:
   
   if i in listDict:
     for q in listDict[i]:
-      x = q[5:].split("/")
-      val = getEntityUsingAncestry(x, obj)
-      #print(val)
 
       #GET OBJ HIERARCHY
-      response = requests.request("GET", url+"/"+q[5:], headers=headers, data={})
-      verifyGet(response.status_code, i[0].upper()+i[1:len(i)-2]+"'s Ancestry call")
-      print("FOR: "+url+"/"+q[5:])
+      x = q[5:].split("/")
+      apiCall(url+"/"+q[5:], obj, i,
+       objs[0].upper()+objs[1:]+"'s Ancestry call", None, "named&subEnt", x)
 
-      if 'data' in response.json():
-        j1 = response.json()['data']
-      else:
-        print("ERROR! Data was not in the response for:", obj)
-        print("URL:"+url+"/"+q[5:] )
-        j1 = response.json()
-
-      #Fix if cursor
-      if type(val) != dict:
-        entityType = (x[len(x)-1])[:len((x[len(x)-1]))-1]
-        val = extractCursor(val, entityType)
-
-
-      verifyOutput(j1, val)
-      response.close()
-      print()
-      print()
-      #sys.exit(0)
       
-
-
 
 
 #FINAL EXCEPTION CASES
@@ -756,79 +666,19 @@ for h in bldEList:
   eType = lastone[:len(lastone)-1]
   if eType.find("-") != -1:
     eType=eType.replace("-", "_")
-  someval= getEntitiesOfAncestor(sToI("BUILDING"), "building",PIDS["buildingID"], eType)
 
-  response = requests.request("GET", url+"/"+h[5:], headers=headers, data={})
-  b = verifyGet(response.status_code, "building call for room\'s "+eType)
-  if b != True:
-    print("Failure @URL: ")
-    print(url+"/"+h[5:])
+  apiCall(url+"/"+h[5:], "building", None,"building call for room\'s "+eType, PIDS["buildingID"], "finalCases", eType )
 
 
-  if 'data' in response.json():
-    j1 = response.json()['data']
-  else:
-    print("ERROR! Data was not in the response for:", "building")
-    print("URL:"+url+"/"+h[5:] )
-    j1 = response.json()
-
-
-
-  verifyOutput(j1, someval)
-  response.close()
-  print()
-  print()
-
-
+#Room Exception
 roomExceptionURL= "/api/rooms/"+PIDS["roomID"]+"/rack-sensors"
-someval= getEntitiesOfAncestor(sToI("ROOM"), "room",PIDS["roomID"], "rack_sensor")
-
-response = requests.request("GET", url+"/"+roomExceptionURL[5:], headers=headers, data={})
-b = verifyGet(response.status_code, "Room call for rack\'s sensors")
-if b != True:
-  print("Failure @URL: ")
-  print(url+"/"+roomExceptionURL[5:])
-
-
-  if 'data' in response.json():
-    j1 = response.json()['data']
-  else:
-    print("ERROR! Data was not in the response for:", "room")
-    print("URL:"+url+"/"+roomExceptionURL[5:] )
-    j1 = response.json()
+apiCall(url+"/"+roomExceptionURL[5:], "room", None,"Room call for rack\'s sensors",PIDS["roomID"], "finalCases", "rack_sensor" )
 
 
 
-  verifyOutput(j1, someval)
-  response.close()
-  print()
-  print()
-
-
-
+#Rack Exception
 rackExceptionURL = "/api/racks/"+PIDS["rackID"]+"/device-sensors"
-someval= getEntitiesOfAncestor(sToI("ROOM"), "room",PIDS["roomID"], "rack_sensor")
-
-response = requests.request("GET", url+"/"+rackExceptionURL[5:], headers=headers, data={})
-b = verifyGet(response.status_code, "Rack call for devices\'s sensors")
-if b != True:
-  print("Failure @URL: ")
-  print(url+"/"+rackExceptionURL[5:])
-
-
-  if 'data' in response.json():
-    j1 = response.json()['data']
-  else:
-    print("ERROR! Data was not in the response for:", "rack")
-    print("URL:"+url+"/"+rackExceptionURL[5:] )
-    j1 = response.json()
-
-
-
-  verifyOutput(j1, someval)
-  response.close()
-  print()
-  print()
+apiCall(url+"/"+rackExceptionURL[5:], "rack", None, "Rack call for devices\'s sensors", PIDS["rackID"], "finalCases", "device_sensor")
 
 
 

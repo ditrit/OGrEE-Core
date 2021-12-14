@@ -14,7 +14,7 @@ def checkRes(val, out, name, caseNum):
     global c1
     global c2
     global c3
-    if val == -1:
+    if val == 255:
         print("Failure!")
         print("Test Name: ", name)
         print(out)

@@ -1,14 +1,38 @@
 #!/usr/bin/env python3
 import requests, sys
+from pymongo import MongoClient
+from bson.objectid import ObjectId
+from pprint import pprint
+
 expected = 404
 
 url = "http://localhost:3001/api/"
 res = True
 
+
+#DB SETUP
+dbport=27017   
+client = MongoClient("localhost", dbport)     
+db = client.ogree
+
+#FUNCTIONS
+def extractCursor(c):
+  arr = [i for i in c]
+  return arr
+
 def checkResponse(code, entity):
     global res
     if code == expected:
-        print(entity+" Empty: Successful")
+        collec = entity[:len(entity)-1]
+        if collec.find("-") != -1:
+          collec = collec.replace("-", "_")
+        x = extractCursor(db[collec].find())
+
+        if len(x) == 0:
+          print(entity+" Empty: Successful")
+        else:
+          print("API contradicted the DB!")
+          res = False
     else:
         res = False
         print(entity+" Empty: Fail")
