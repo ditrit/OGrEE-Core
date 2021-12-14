@@ -20,7 +20,7 @@ db.createCollection('group');
 //Nonhierarchal objects
 db.createCollection('ac');
 db.createCollection('panel');
-db.createCollection('wall');
+db.createCollection('separator');
 db.createCollection('aisle');
 db.createCollection('tile');
 db.createCollection('cabinet');
@@ -53,7 +53,7 @@ db.obj_template.createIndex({slug:1}, { unique: true });
 //Unique children restriction for nonhierarchal objects and sensors
 db.ac.createIndex({parentId:1, name:1}, { unique: true });
 db.panel.createIndex({parentId:1, name:1}, { unique: true });
-db.wall.createIndex({parentId:1, name:1}, { unique: true });
+db.separator.createIndex({parentId:1, name:1}, { unique: true });
 db.aisle.createIndex({parentId:1, name:1}, { unique: true });
 db.tile.createIndex({parentId:1, name:1}, { unique: true });
 db.cabinet.createIndex({parentId:1, name:1}, { unique: true });

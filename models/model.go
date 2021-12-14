@@ -21,7 +21,7 @@ const (
 	DEVICE
 	AC
 	PWRPNL
-	WALL
+	SEPARATOR
 	CABINET
 	AISLE
 	TILE
@@ -77,7 +77,7 @@ func ValidateEntity(entity int, t map[string]interface{}) (map[string]interface{
 	var err error
 	switch entity {
 	case TENANT, SITE, BLDG, ROOM, RACK, DEVICE, AC,
-		PWRPNL, WALL, CABINET, AISLE,
+		PWRPNL, SEPARATOR, CABINET, AISLE,
 		TILE, CORIDOR, RACKSENSOR, DEVICESENSOR:
 		if t["name"] == "" {
 			return u.Message(false, "Name should be on payload"), false

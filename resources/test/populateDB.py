@@ -7,7 +7,7 @@ res = True
 #CONSTANTS
 PIDS={"tenantID":None, "siteID":None, "buildingID":None,
         "roomID":None, "acID":None, "panelID":None,
-        "wallID":None, "aisleID":None,"tileID":None, 
+        "separatorID":None, "aisleID":None,"tileID":None, 
         "cabinetID":None, "groupID":None, "corridorID":None,
         "rackID":None, "deviceID":None,
         "room-sensorID":None,"rack-sensorID":None,
@@ -255,29 +255,29 @@ print()
 print()
 
 
-#WALL CREATE & GET
+#separator CREATE & GET
 payload={
     "name": "Undercover",
     "id": None,
     "parentId": None,
-    "category": "wall",
+    "category": "separator",
     "description": [
         "2008"
     ],
-    "domain": "Wall DOMAIN",
+    "domain": "separator DOMAIN",
     "attributes": {
     }
 }
 payload['parentId'] = roomID
-response = requests.request("POST", url+"/walls",
+response = requests.request("POST", url+"/separators",
               headers=headers, data=json.dumps(payload))
-verifyCreate(response.status_code, "Wall")
+verifyCreate(response.status_code, "Separator")
 ID = response.json()['data']['id']
 j1=response.json()['data']
-wallID=ID
+separatorID=ID
 
-response = requests.request("GET", url+"/walls/"+ID, headers=headers, data={})
-verifyGet(response.status_code, "Wall")
+response = requests.request("GET", url+"/separators/"+ID, headers=headers, data={})
+verifyGet(response.status_code, "separator")
 j2=response.json()['data']
 verifyOutput(j1, j2)
 response.close()
@@ -640,7 +640,7 @@ PIDS['buildingID'] = buildingID
 PIDS['roomID'] = roomID
 PIDS['acID'] = acID
 PIDS['panelID'] = panelID
-PIDS['wallID'] = wallID
+PIDS['separatorID'] = separatorID
 PIDS['aisleID'] = aisleID
 PIDS['tileID'] = tileID
 PIDS['cabinetID'] = cabinetID

@@ -18,7 +18,7 @@ res = True
 #CONSTANTS
 PIDS={"tenantID":None, "siteID":None, "buildingID":None,
         "roomID":None, "acID":None, "panelID":None,
-        "wallID":None, "aisleID":None,"tileID":None, 
+        "separatorID":None, "aisleID":None,"tileID":None, 
         "cabinetID":None, "groupID":None, "corridorID":None,
         "rackID":None, "deviceID":None,
         "room-templateID": None, "obj-templateID": None}
@@ -79,7 +79,7 @@ payloadTable = {
     "building":{"name": "Abandoned-Building","id": None,"parentId": PIDS["siteID"],"category": "999","description": ["Wassup yo","Guess whos back"],"domain": "999","attributes": {    "posXY": "999",    "posXYUnit": "m",    "posZ": "999",    "posZUnit": "m",    "size": "999",    "sizeUnit": "m",    "height": "0",    "heightUnit": "m",    "nbFloors": "99"}},
     "ac":{"name": "AquaSky01","id": "12353","parentId": PIDS["roomID"],"category": "ac","description": [    "SPEED"],"domain": "AC DOMAIN","attributes": {    "new": "IDX"}},
     "panel":{"name": "Power_Panel_99","id": None,"parentId": PIDS["roomID"],"category": "panel","description": [    "GRENOBLE DERELICT"],"domain": "PANEL DOMAIN","attributes": {    "new": "IDX"}},
-    "wall":{"name": "EXTREME-WALL","id": None,"parentId": PIDS["roomID"],"category": "wall","description": [    "GRENOBLE DERELICT"],"domain": "WALLDOMAIN","attributes": {    "new": "99"}},
+    "separator":{"name": "EXTREME-separator","id": None,"parentId": PIDS["roomID"],"category": "separator","description": [    "GRENOBLE DERELICT"],"domain": "separatorDOMAIN","attributes": {    "new": "99"}},
     "aisle":{"name"        : "AISLE-X","parentId":PIDS["roomID"],"locationY"   : "82,99","orientation" : "+S+E"},
     "tile":{"location" : "82,99", "parentId":PIDS["roomID"], "name"     : "Tile-Black","label"    : "Kino","texture"  : "Smooth","color"    : "FFFFFF"},
     "cabinet":{"name": "TAKEUSDOWN", "parentId":PIDS["roomID"]},

@@ -8,7 +8,7 @@ res = True
 expected = 404
 PIDS={  "tenantID":None, "siteID":None, "buildingID":None,
         "roomID":None,"acID":None,"panelID":None,
- "wallID":None, "aisleID":None,"tileID":None,
+ "separatorID":None, "aisleID":None,"tileID":None,
   "cabinetID":None, "groupID":None, "corridorID":None,
   "room-sensorID":None,"rack-sensorID":None,
   "device-sensorID":None,
@@ -58,13 +58,13 @@ tid = PIDS['tenantID']
 args = vars(parser.parse_args())
 if ('url' not in args or args['url'] == None):
     print('API URL not specified... using default URL')
-    url = "http://localhost:27020/api"
+    url = "http://localhost:3001/api"
 else:
     url = args['url']
 
 
 entRange=entRange=["tenant","site","building","room","ac",
-  "panel", "wall", "aisle","tile","cabinet", "group", "corridor",
+  "panel", "separator", "aisle","tile","cabinet", "group", "corridor",
   "room-sensor","rack-sensor","device-sensor",
           "rack","device","room-template","obj-template"]
 payload={}

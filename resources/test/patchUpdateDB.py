@@ -18,7 +18,7 @@ res = True
 #CONSTANTS
 PIDS={"tenantID":None, "siteID":None, "buildingID":None,
         "roomID":None, "acID":None, "panelID":None,
-        "wallID":None, "aisleID":None,"tileID":None, 
+        "separatorID":None, "aisleID":None,"tileID":None, 
         "cabinetID":None, "groupID":None, "corridorID":None,
         "room-sensorID":None,"rack-sensorID":None,
         "device-sensorID":None,
@@ -81,7 +81,7 @@ payloadTable = {
     "building":{"name": "Abandoned-Building","description": [    "Wassup yo",    "Guess whos back"],"domain": "999","attributes": {    "size":None}},
     "ac":{"name": "AquaSky01","category": "ac","description": [    "SPEED"],"domain": "AC DOMAIN","attributes": {    "new": "IDX"}},
     "panel":{"name": "Power_Panel_99","category": "SOLARpanel","description": [    "GRENOBLE DERELICT"],"domain": "PANEL DOMAIN","attributes": {    "new": "IDX"}},
-    "wall":{"name": "EXTREME-WALL","attributes":{    "Ijust":"WalkedAway",    "newAttr":"no"},"another": "ONE"},
+    "separator":{"name": "EXTREME-SEP","attributes":{    "Ijust":"WalkedAway",    "newAttr":"no"},"another": "ONE"},
     "aisle":{"name"        : "AISLE-X","locationXYZ"   : "82,99","orientation" : "+S+E","someATTR":"customValue"},
     "tile":{"location" : "82,99","name"     : "Tile-Black","label"    : "Kino","texture"  : "Smooth","color"    : "FFFFFF","someATTR": "customValue"},
     "cabinet":{"name": "TAKEUSDOWN","customAttr":"customValue"},

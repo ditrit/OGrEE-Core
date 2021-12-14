@@ -16,7 +16,7 @@ db = client.ogree
 #CONSTANTS
 PIDS={"tenantID":None, "siteID":None, "buildingID":None,
         "roomID":None, "acID":None, "panelID":None,
-        "wallID":None, "aisleID":None,"tileID":None, 
+        "separatorID":None, "aisleID":None,"tileID":None, 
         "cabinetID":None, "groupID":None, "corridorID":None,
         "rackID":None, "deviceID":None,
         "room-sensorID":None,"rack-sensorID":None,
@@ -40,7 +40,7 @@ payloadTable = {
     "device":{"name": "DeviceA","parentId": None,"category": "device","description": [    "Rack A01",    "The original one",    "-3/-5\\nA0-Z9"],"domain": "Device DOMAIN","attributes": {    "posXY": "{\"x\":10.0,\"y\":0.0}",    "posXYUnit": "tile",    "posZ": "{\"x\":10.0,\"y\":0.0}",    "posZUnit": "tile",    "size": "{\"x\":60.0,\"y\":120.0}",    "sizeUnit": "cm",    "height": "42",    "heightUnit": "U",    "template": "Some template",    "orientation": "front",    "vendor": "someVendor",    "type": "someType",    "model": "someModel",    "serial": "someSerial"}},
     "ac":{"name": "TCL2021","id": None,"parentId": None,"category": "ac","description": [    "TCL"],"domain": "AC DOMAIN","attributes": {}},
     "panel":{"name": "PanelA","id": None,"parentId": None,"category": "powerpanel","description": [    "YINGLI"],"domain": "Panel DOMAIN","attributes": {}},
-    "wall":{"name": "Undercover","id": None,"parentId": None,"category": "wall","description": [    "2008"],"domain": "Wall DOMAIN","attributes": {}},
+    "separator":{"name": "Undercover","id": None,"parentId": None,"category": "separator","description": [    "2008"],"domain": "separator DOMAIN","attributes": {}},
 
     "aisle":{"name"        : "AisleA","locationY"   : "101,101","orientation" : "+N+E","parentId" : None},
 
@@ -107,7 +107,7 @@ ID = None
 req = None
 for i in payloadTable:
     payload = payloadTable[i]
-    if (i == "ac" or i == "panel" or i == "wall" or 
+    if (i == "ac" or i == "panel" or i == "separator" or 
         i == "corridor" or i == "tile" or i == "aisle" or 
         i == "cabinet" or i == "room-sensor" or 
         i == "group"):

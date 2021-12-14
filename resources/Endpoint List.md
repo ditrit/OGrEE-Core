@@ -13,7 +13,7 @@ Perform an HTTP POST operation with the appropriate JSON
 /api/buildings
 /api/rooms
 /api/acs
-/api/walls
+/api/separators
 /api/panels
 /api/aisles
 /api/tiles
@@ -42,7 +42,7 @@ Perform an HTTP DELETE operation without JSON body
 /api/rooms/{id}
 /api/acs/{id}
 /api/panels/{id}
-/api/walls/{id}
+/api/separators/{id}
 /api/aisles/{id}
 /api/tiles/{id}
 /api/cabinets/{id}
@@ -68,7 +68,7 @@ Perform an HTTP PUT operation with desired JSON body
 /api/rooms/{id}
 /api/acs/{id}
 /api/panels/{id}
-/api/walls/{id}
+/api/separators/{id}
 /api/aisles/{id}
 /api/tiles/{id}
 /api/cabinets/{id}
@@ -93,7 +93,7 @@ Perform an HTTP PUT operation with desired JSON body
 /api/rooms/{id}
 /api/acs/{id}
 /api/panels/{id}
-/api/walls/{id}
+/api/separators/{id}
 /api/aisles/{id}
 /api/tiles/{id}
 /api/cabinets/{id}
@@ -134,7 +134,7 @@ This URL is for development purposes only
 /api/device-sensors
 /api/acs
 /api/panels
-/api/walls
+/api/separators
 /api/aisles
 /api/tiles
 /api/cabinets
@@ -160,7 +160,7 @@ Template_name is the 'slug'
 /api/device-sensors/{id}
 /api/acs/{id}
 /api/panels/{id}
-/api/walls/{id}
+/api/separators/{id}
 /api/aisles/{id}
 /api/tiles/{id}
 /api/cabinets/{id}
@@ -175,7 +175,7 @@ Example: /devices?name=myValue?color=silver
 will return silver devices with name 'myValue'
 ```
 /api/acs?
-/api/walls?
+/api/separators?
 /api/panels?
 /api/tenants?
 /api/sites?
@@ -190,18 +190,9 @@ will return silver devices with name 'myValue'
 /api/corridors?
 /api/room-templates?
 /api/obj-templates?
-/api/groups?
 /api/rack-sensors?
 /api/room-sensors?
 /api/device-sensors?
-/api/acs?
-/api/panels?
-/api/walls?
-/api/aisles?
-/api/tiles?
-/api/cabinets?
-/api/groups?
-/api/corridors?
 ```
 
 
@@ -300,8 +291,8 @@ Returns an object if name given or all the objects immediately under the given U
 /api/rooms/{id}/acs
 /api/rooms/{id}/panels/{panel_name}
 /api/rooms/{id}/panels
-/api/rooms/{id}/walls/{wall_name}
-/api/rooms/{id}/walls
+/api/rooms/{id}/separators/{separator_name}
+/api/rooms/{id}/separators
 /api/rooms/{id}/aisles/{aisle_name}
 /api/rooms/{id}/aisles
 /api/rooms/{id}/tiles/{tile_name}
