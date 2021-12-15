@@ -440,7 +440,7 @@ func CreateEntity(entity int, t map[string]interface{}) (map[string]interface{},
 	t["id"] = res.InsertedID
 	//t = fixID(t)
 
-	resp := u.Message(true, "success")
+	resp := u.Message(true, "successfully created "+entStr)
 	resp["data"] = t
 	return resp, ""
 }
@@ -601,7 +601,7 @@ func UpdateEntity(ent string, req bson.M, t *map[string]interface{}, isPatch boo
 	updatedDoc = fixID(updatedDoc)
 
 	defer cancel()
-	resp := u.Message(true, "success")
+	resp := u.Message(true, "successfully updated "+ent)
 	resp["data"] = updatedDoc
 	return resp, ""
 }

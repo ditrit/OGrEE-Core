@@ -43,10 +43,10 @@
         ],
         "responses": {
           "200": {
-            "description": "Found"
+            "description": "Found. A response body will be returned with a meaningful message."
           },
           "404": {
-            "description": "Nothing Found"
+            "description": "Nothing Found. An error message will be returned."
           }
         }
       }
@@ -116,10 +116,10 @@
         ],
         "responses": {
           "200": {
-            "description": "Found"
+            "description": "Found. A response body will be returned with a meaningful message."
           },
           "404": {
-            "description": "Nothing Found"
+            "description": "Nothing Found. An error message will be returned."
           }
         }
       }
@@ -155,13 +155,13 @@
         ],
         "responses": {
           "200": {
-            "description": "Found"
+            "description": "Found. A response body will be returned with a meaningful message."
           },
           "400": {
-            "description": "Bad request"
+            "description": "Bad request. An error message will be returned."
           },
           "404": {
-            "description": "Not Found"
+            "description": "Not Found. An error message will be returned."
           }
         }
       },
@@ -228,13 +228,13 @@
         ],
         "responses": {
           "200": {
-            "description": "Updated"
+            "description": "Updated. A response body will be returned with a meaningful message."
           },
           "400": {
-            "description": "Bad request"
+            "description": "Bad request. An error message will be returned."
           },
           "404": {
-            "description": "Not Found"
+            "description": "Not Found. An error message will be returned."
           }
         }
       },
@@ -267,10 +267,10 @@
         ],
         "responses": {
           "204": {
-            "description": "Successful"
+            "description": "Successfully deleted object. No response body will be returned"
           },
           "404": {
-            "description": "Not found"
+            "description": "Not found. An error message will be returned"
           }
         }
       },
@@ -337,13 +337,13 @@
         ],
         "responses": {
           "200": {
-            "description": "Updated"
+            "description": "Updated. A response body will be returned with a meaningful message."
           },
           "400": {
-            "description": "Bad request"
+            "description": "Bad request. An error message will be returned."
           },
           "404": {
-            "description": "Not Found"
+            "description": "Not Found. An error message will be returned."
           }
         }
       }
@@ -387,10 +387,10 @@
         ],
         "responses": {
           "200": {
-            "description": "Found"
+            "description": "Found. A response body will be returned with a meaningful message."
           },
           "404": {
-            "description": "Not Found"
+            "description": "Not Found. An error message will be returned."
           }
         }
       }
@@ -433,10 +433,10 @@
         ],
         "responses": {
           "200": {
-            "description": "Found"
+            "description": "Found. A response body will be returned with a meaningful message."
           },
           "404": {
-            "description": "Nothing Found"
+            "description": "Nothing Found. An error message will be returned."
           }
         }
       }
@@ -489,10 +489,10 @@
         ],
         "responses": {
           "204": {
-            "description": "Found"
+            "description": "Found. A response body will be returned with a meaningful message."
           },
           "404": {
-            "description": "Not found"
+            "description": "Not found. An error message will be returned."
           }
         }
       }
@@ -565,10 +565,10 @@
         ],
         "responses": {
           "201": {
-            "description": "Created"
+            "description": "Created. A response body will be returned with a meaningful message."
           },
           "400": {
-            "description": "Bad request"
+            "description": "Bad request. A response body with an error message will be returned."
           }
         }
       }
@@ -612,10 +612,10 @@
         ],
         "responses": {
           "200": {
-            "description": "Found"
+            "description": "Found. A response body will be returned with a meaningful message."
           },
           "404": {
-            "description": "Nothing Found"
+            "description": "Nothing Found. An error message will be returned."
           }
         }
       }

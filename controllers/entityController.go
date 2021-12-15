@@ -194,9 +194,11 @@ func Flatten(prefix string, src map[string]interface{}, dest map[string]interfac
 //   type: json
 // responses:
 //     '201':
-//         description: Created
+//         description: 'Created. A response body will be returned with
+//         a meaningful message.'
 //     '400':
-//         description: Bad request
+//         description: 'Bad request. A response body with an error
+//         message will be returned.'
 
 var CreateEntity = func(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("******************************************************")
@@ -292,11 +294,12 @@ var CreateEntity = func(w http.ResponseWriter, r *http.Request) {
 //   default: 999
 // responses:
 //     '200':
-//         description: Found
+//         description: 'Found. A response body will be returned with
+//         a meaningful message.'
 //     '400':
-//         description: Bad request
+//         description: Bad request. An error message will be returned.
 //     '404':
-//         description: Not Found
+//         description: Not Found. An error message will be returned.
 var GetEntity = func(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("******************************************************")
 	fmt.Println("FUNCTION CALL: 	 GetEntity ")
@@ -365,7 +368,7 @@ var GetEntity = func(w http.ResponseWriter, r *http.Request) {
 		}
 
 	} else {
-		resp = u.Message(true, "success")
+		resp = u.Message(true, "successfully got "+s)
 	}
 
 	resp["data"] = data
@@ -390,9 +393,10 @@ var GetEntity = func(w http.ResponseWriter, r *http.Request) {
 //   default: "sites"
 // responses:
 //     '200':
-//         description: Found
+//         description: 'Found. A response body will be returned with
+//         a meaningful message.'
 //     '404':
-//         description: Nothing Found
+//         description: Nothing Found. An error message will be returned.
 var GetAllEntities = func(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("******************************************************")
 	fmt.Println("FUNCTION CALL: 	 GetAllEntities ")
@@ -438,7 +442,7 @@ var GetAllEntities = func(w http.ResponseWriter, r *http.Request) {
 		}
 
 	} else {
-		resp = u.Message(true, "success")
+		resp = u.Message(true, "successfully got all "+entStr+"s")
 	}
 
 	resp["data"] = map[string]interface{}{"objects": data}
@@ -469,9 +473,10 @@ var GetAllEntities = func(w http.ResponseWriter, r *http.Request) {
 //   default: 999
 // responses:
 //     '204':
-//        description: Successful
+//        description: 'Successfully deleted object.
+//        No response body will be returned'
 //     '404':
-//        description: Not found
+//        description: Not found. An error message will be returned
 var DeleteEntity = func(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("******************************************************")
 	fmt.Println("FUNCTION CALL: 	 DeleteEntity ")
@@ -589,11 +594,12 @@ var DeleteEntity = func(w http.ResponseWriter, r *http.Request) {
 //   type: json
 // responses:
 //     '200':
-//         description: Updated
+//         description: 'Updated. A response body will be returned with
+//         a meaningful message.'
 //     '400':
-//         description: Bad request
+//         description: Bad request. An error message will be returned.
 //     '404':
-//         description: Not Found
+//         description: Not Found. An error message will be returned.
 
 // swagger:operation PUT /api/{objs}/{id} objects UpdateObject
 // Changes Object data in the system.
@@ -653,11 +659,12 @@ var DeleteEntity = func(w http.ResponseWriter, r *http.Request) {
 //   type: json
 // responses:
 //     '200':
-//         description: Updated
+//         description: 'Updated. A response body will be returned with
+//         a meaningful message.'
 //     '400':
-//         description: Bad request
+//         description: Bad request. An error message will be returned.
 //     '404':
-//         description: Not Found
+//         description: Not Found. An error message will be returned.
 
 var UpdateEntity = func(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("******************************************************")
@@ -739,7 +746,7 @@ var UpdateEntity = func(w http.ResponseWriter, r *http.Request) {
 	}
 
 	switch e3 {
-	case "validate":
+	case "validate", "Invalid ParentID", "Need ParentID":
 		w.WriteHeader(http.StatusBadRequest)
 		u.ErrLog("Error while updating "+entity, "UPDATE "+strings.ToUpper(entity), e3, r)
 	case "internal":
@@ -797,9 +804,10 @@ var UpdateEntity = func(w http.ResponseWriter, r *http.Request) {
 //   type: json
 // responses:
 //     '204':
-//        description: Found
+//        description: 'Found. A response body will be returned with
+//         a meaningful message.'
 //     '404':
-//        description: Not found
+//        description: Not found. An error message will be returned.
 var GetEntityByQuery = func(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("******************************************************")
 	fmt.Println("FUNCTION CALL: 	 GetEntityByQuery ")
@@ -846,7 +854,7 @@ var GetEntityByQuery = func(w http.ResponseWriter, r *http.Request) {
 		}
 
 	} else {
-		resp = u.Message(true, "success")
+		resp = u.Message(true, "successfully got query for "+entStr+"s")
 	}
 
 	resp["data"] = map[string]interface{}{"objects": data}
@@ -884,9 +892,10 @@ var GetEntityByQuery = func(w http.ResponseWriter, r *http.Request) {
 //   default: buildings
 // responses:
 //     '200':
-//         description: Found
+//         description: 'Found. A response body will be returned with
+//         a meaningful message.'
 //     '404':
-//         description: Nothing Found
+//         description: Nothing Found. An error message will be returned.
 var GetEntitiesOfAncestor = func(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("******************************************************")
 	fmt.Println("FUNCTION CALL: 	 GetEntitiesOfAncestor ")
@@ -946,7 +955,8 @@ var GetEntitiesOfAncestor = func(w http.ResponseWriter, r *http.Request) {
 		}
 
 	} else {
-		resp = u.Message(true, "success")
+		resp = u.Message(true,
+			"successfully got "+r.URL.Path[lastSlashIdx+1:]+" of "+entStr)
 	}
 
 	resp["data"] = map[string]interface{}{"objects": data}
@@ -986,9 +996,10 @@ var GetEntitiesOfAncestor = func(w http.ResponseWriter, r *http.Request) {
 //   default: 1
 // responses:
 //     '200':
-//         description: Found
+//         description: 'Found. A response body will be returned with
+//         a meaningful message.'
 //     '404':
-//         description: Nothing Found
+//         description: Nothing Found. An error message will be returned.
 var GetEntityHierarchy = func(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("******************************************************")
 	fmt.Println("FUNCTION CALL: 	 GetEntityHierarchy ")
@@ -1054,7 +1065,7 @@ var GetEntityHierarchy = func(w http.ResponseWriter, r *http.Request) {
 				default:
 				}
 			} else {
-				resp = u.Message(true, "success")
+				resp = u.Message(true, "successfully got "+entity)
 			}
 
 			resp["data"] = data
@@ -1122,7 +1133,20 @@ var GetEntityHierarchy = func(w http.ResponseWriter, r *http.Request) {
 		}
 
 	} else {
-		resp = u.Message(true, "success")
+		object := ""
+		message := ""
+		if indicator == "" {
+			object = u.EntityToString(limit)
+			message = "successfully got " + entity + "'s hierarchy to " + object
+		} else {
+			if indicator == "all" {
+				message = "successfully got " + entity + "'s complete hierarchy"
+			} else {
+				message = "successfully got " + entity + "'s hierarchy to " + indicator
+			}
+
+		}
+		resp = u.Message(true, message)
 	}
 
 	resp["data"] = data
@@ -1144,9 +1168,10 @@ var GetEntityHierarchy = func(w http.ResponseWriter, r *http.Request) {
 //   default: 999
 // responses:
 //     '200':
-//         description: Found
+//         description: 'Found. A response body will be returned with
+//         a meaningful message.'
 //     '404':
-//         description: Nothing Found
+//         description: Nothing Found. An error message will be returned.
 var GetTenantHierarchy = func(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("******************************************************")
 	fmt.Println("FUNCTION CALL: 	 GetTenantHierarchy ")
@@ -1188,7 +1213,7 @@ var GetTenantHierarchy = func(w http.ResponseWriter, r *http.Request) {
 				default:
 				}
 			} else {
-				resp = u.Message(true, "success")
+				resp = u.Message(true, "successfully got tenant")
 			}
 
 			resp["data"] = data
@@ -1231,7 +1256,20 @@ var GetTenantHierarchy = func(w http.ResponseWriter, r *http.Request) {
 		}
 
 	} else {
-		resp = u.Message(true, "success")
+		object := ""
+		message := ""
+		if indicator == "" {
+			object = u.EntityToString(limit)
+			message = "successfully got " + entity + "'s hierarchy to " + object
+		} else {
+			if indicator == "all" {
+				message = "successfully got " + entity + "'s complete hierarchy"
+			} else {
+				message = "successfully got " + entity + "'s hierarchy to " + indicator
+			}
+
+		}
+		resp = u.Message(true, message)
 	}
 
 	resp["data"] = data
@@ -1270,9 +1308,10 @@ var GetTenantHierarchy = func(w http.ResponseWriter, r *http.Request) {
 //   default: "/buildings/BuildingB/RoomA"
 // responses:
 //     '200':
-//         description: Found
+//         description: 'Found. A response body will be returned with
+//         a meaningful message.'
 //     '404':
-//         description: Not Found
+//         description: Not Found. An error message will be returned.
 var GetEntitiesUsingNamesOfParents = func(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("******************************************************")
 	fmt.Println("FUNCTION CALL: 	 GetEntitiesUsingNamesOfParents ")
@@ -1354,7 +1393,7 @@ var GetEntitiesUsingNamesOfParents = func(w http.ResponseWriter, r *http.Request
 			}
 
 		} else {
-			resp = u.Message(true, "success")
+			resp = u.Message(true, "successfully got "+arr[len(arr)-1]+" of "+entity)
 		}
 
 		resp["data"] = map[string]interface{}{"objects": data}
@@ -1381,7 +1420,9 @@ var GetEntitiesUsingNamesOfParents = func(w http.ResponseWriter, r *http.Request
 			}
 
 		} else {
-			resp = u.Message(true, "success")
+			upperEnt := arr[len(arr)-2]
+			upperEnt = upperEnt[:len(upperEnt)-1]
+			resp = u.Message(true, "successfully got "+upperEnt+" with name: "+arr[len(arr)-1]+" of "+entity)
 		}
 
 		resp["data"] = data
