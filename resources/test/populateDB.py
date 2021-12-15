@@ -386,17 +386,18 @@ print()
 payload={
     "name": "RoomSensorLight",
     "parentId" : None,
-    "category": "SENSOR-R"
+    "category": "SENSOR-R",
+    "type":"room"
 }
 payload['parentId'] = roomID
-response = requests.request("POST", url+"/room-sensors",
+response = requests.request("POST", url+"/sensors",
               headers=headers, data=json.dumps(payload))
 verifyCreate(response.status_code, "Room-sensor")
 ID = response.json()['data']['id']
 j1=response.json()['data']
 roomsensorID=ID
 
-response = requests.request("GET", url+"/room-sensors/"+ID, headers=headers, data={})
+response = requests.request("GET", url+"/sensors/"+ID, headers=headers, data={})
 verifyGet(response.status_code, "Room-sensor")
 j2=response.json()['data']
 verifyOutput(j1, j2)
@@ -456,17 +457,18 @@ print()
 payload={
     "name": "SensorA",
     "parentId" : None,
-    "category": "SENSOR-A"
+    "category": "SENSOR-A",
+    "type": "rack"
 }
 payload['parentId'] = rackID
-response = requests.request("POST", url+"/rack-sensors",
+response = requests.request("POST", url+"/sensors",
               headers=headers, data=json.dumps(payload))
 verifyCreate(response.status_code, "Rack-sensor")
 ID = response.json()['data']['id']
 j1=response.json()['data']
 racksensorID=ID
 
-response = requests.request("GET", url+"/rack-sensors/"+ID, headers=headers, data={})
+response = requests.request("GET", url+"/sensors/"+ID, headers=headers, data={})
 verifyGet(response.status_code, "Rack-sensor")
 j2=response.json()['data']
 verifyOutput(j1, j2)
@@ -525,17 +527,18 @@ print()
 payload={
     "name": "DeviceSensorA",
     "parentId" : None,
-    "category": "SENSOR-D"
+    "category": "SENSOR-D",
+    "type":"device"
 }
 payload['parentId'] = deviceID
-response = requests.request("POST", url+"/device-sensors",
+response = requests.request("POST", url+"/sensors",
               headers=headers, data=json.dumps(payload))
 verifyCreate(response.status_code, "Device-sensor")
 ID = response.json()['data']['id']
 j1=response.json()['data']
 devicesensorID=ID
 
-response = requests.request("GET", url+"/device-sensors/"+ID, headers=headers, data={})
+response = requests.request("GET", url+"/sensors/"+ID, headers=headers, data={})
 verifyGet(response.status_code, "Device-sensor")
 j2=response.json()['data']
 verifyOutput(j1, j2)

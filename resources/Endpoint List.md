@@ -20,9 +20,7 @@ Perform an HTTP POST operation with the appropriate JSON
 /api/cabinets
 /api/groups
 /api/corridors
-/api/room-sensors
-/api/rack-sensors
-/api/device-sensors
+/api/sensors
 /api/racks
 /api/devices
 /api/room-templates
@@ -48,9 +46,7 @@ Perform an HTTP DELETE operation without JSON body
 /api/cabinets/{id}
 /api/groups/{id}
 /api/corridors/{id}
-/api/room-sensors/{id}
-/api/rack-sensors/{id}
-/api/device-sensors/{id}
+/api/sensors/{id}
 /api/racks/{id}
 /api/devices/{id}
 /api/room-templates/{template_name}
@@ -74,9 +70,7 @@ Perform an HTTP PUT operation with desired JSON body
 /api/cabinets/{id}
 /api/groups/{id}
 /api/corridors/{id}
-/api/room-sensors/{id}
-/api/rack-sensors/{id}
-/api/device-sensors/{id}
+/api/sensors/{id}
 /api/racks/{id}
 /api/devices/{id}
 /api/room-templates/{template_name}
@@ -99,9 +93,7 @@ Perform an HTTP PUT operation with desired JSON body
 /api/cabinets/{id}
 /api/groups/{id}
 /api/corridors/{id}
-/api/room-sensors/{id}
-/api/rack-sensors/{id}
-/api/device-sensors/{id}
+/api/sensors/{id}
 /api/racks/{id}
 /api/devices/{id}
 /api/room-templates/{template_name}
@@ -129,9 +121,7 @@ This URL is for development purposes only
 /api/room-templates
 /api/obj-templates
 /api/groups
-/api/rack-sensors
-/api/room-sensors
-/api/device-sensors
+/api/sensors
 /api/acs
 /api/panels
 /api/separators
@@ -155,9 +145,7 @@ Template_name is the 'slug'
 /api/room-templates/{template_name}
 /api/obj-templates/{template_name}
 /api/groups/{id}
-/api/rack-sensors/{id}
-/api/room-sensors/{id}
-/api/device-sensors/{id}
+/api/sensors/{id}
 /api/acs/{id}
 /api/panels/{id}
 /api/separators/{id}
@@ -190,9 +178,7 @@ will return silver devices with name 'myValue'
 /api/corridors?
 /api/room-templates?
 /api/obj-templates?
-/api/rack-sensors?
-/api/room-sensors?
-/api/device-sensors?
+/api/sensors?
 ```
 
 
@@ -302,15 +288,17 @@ Returns an object if name given or all the objects immediately under the given U
 /api/rooms/{id}/corridors/{corridor_name}
 /api/rooms/{id}/corridors
 
+/api/rooms/{id}/sensors/{room-sensor_name}
+/api/rooms/{id}/sensors
 
-/api/racks/{id}/rack-sensors/{rack-sensor_name}
-/api/racks/{id}/rack-sensors
+/api/racks/{id}/sensors/{rack-sensor_name}
+/api/racks/{id}/sensors
 
 /api/racks/{id}/devices/{device_name}
 /api/racks/{id}/devices
 
-/api/devices/{id}/device-sensors/{device-sensor_name}
-/api/devices/{id}/device-sensors
+/api/devices/{id}/sensors/{sensor_name}
+/api/devices/{id}/sensors
 ```
 
 ### Get object's hierarchy (non standard)

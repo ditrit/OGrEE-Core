@@ -27,9 +27,7 @@ const (
 	AISLE
 	TILE
 	CORIDOR
-	ROOMSENSOR
-	RACKSENSOR
-	DEVICESENSOR
+	SENSOR
 	ROOMTMPL
 	OBJTMPL
 	GROUP
@@ -127,12 +125,8 @@ func EntityToString(entity int) string {
 		return "group"
 	case CORIDOR:
 		return "corridor"
-	case RACKSENSOR:
-		return "rack_sensor"
-	case DEVICESENSOR:
-		return "device_sensor"
-	case ROOMSENSOR:
-		return "room_sensor"
+	case SENSOR:
+		return "sensor"
 	default:
 		return "INVALID"
 	}
@@ -172,12 +166,8 @@ func EntityStrToInt(entity string) int {
 		return GROUP
 	case "corridor":
 		return CORIDOR
-	case "racksensor", "rack_sensor":
-		return RACKSENSOR
-	case "devicesensor", "device_sensor":
-		return DEVICESENSOR
-	case "roomsensor", "room_sensor":
-		return ROOMSENSOR
+	case "sensor":
+		return SENSOR
 	default:
 		return -1
 	}
@@ -187,12 +177,8 @@ func GetParentOfEntityByInt(entity int) int {
 	switch entity {
 	case AC, PWRPNL, SEPARATOR, CABINET, TILE, AISLE, CORIDOR:
 		return ROOM
-	case RACKSENSOR:
-		return RACK
-	case DEVICESENSOR:
-		return DEVICE
-	case ROOMSENSOR:
-		return ROOM
+	case SENSOR:
+		return -2
 	case ROOMTMPL, OBJTMPL, GROUP:
 		return -1
 	default:

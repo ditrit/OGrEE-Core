@@ -20,7 +20,7 @@ var dmatch mux.MatcherFunc = func(request *http.Request, match *mux.RouteMatch) 
 	//https://stackoverflow.com/questions/21664489/
 	//golang-mux-routing-wildcard-custom-func-match
 	println("Checking MATCH")
-	return regexp.MustCompile(`^(\/api\/(tenants|sites|buildings|rooms|acs|panels|separators|cabinets|aisles|tiles|groups|corridors|racks|devices|rack-sensors|device-sensors|(room|obj)-templates)\?.*)$`).
+	return regexp.MustCompile(`^(\/api\/(tenants|sites|buildings|rooms|acs|panels|separators|cabinets|aisles|tiles|groups|corridors|racks|devices|sensors|(room|obj)-templates)\?.*)$`).
 		MatchString(request.URL.String())
 }
 
@@ -74,7 +74,7 @@ func main() {
 	router.HandleFunc("/api/sites/{id:[a-zA-Z0-9]{24}}/rooms",
 		controllers.GetEntitiesOfAncestor).Methods("GET")
 
-	router.HandleFunc("/api/buildings/{id:[a-zA-Z0-9]{24}}/{sub:acs|corridors|cabinets|tiles|aisles|panels|separators|room-sensors}",
+	router.HandleFunc("/api/buildings/{id:[a-zA-Z0-9]{24}}/{sub:acs|corridors|cabinets|tiles|aisles|panels|separators|sensors}",
 		controllers.GetEntitiesOfAncestor).Methods("GET")
 
 	router.HandleFunc("/api/buildings/{id:[a-zA-Z0-9]{24}}/racks",
@@ -83,11 +83,11 @@ func main() {
 	router.HandleFunc("/api/rooms/{id:[a-zA-Z0-9]{24}}/devices",
 		controllers.GetEntitiesOfAncestor).Methods("GET")
 
-	router.HandleFunc("/api/rooms/{id:[a-zA-Z0-9]{24}}/rack-sensors",
+	/*router.HandleFunc("/api/rooms/{id:[a-zA-Z0-9]{24}}/sensors",
 		controllers.GetEntitiesOfAncestor).Methods("GET")
 
-	router.HandleFunc("/api/racks/{id:[a-zA-Z0-9]{24}}/device-sensors",
-		controllers.GetEntitiesOfAncestor).Methods("GET")
+	router.HandleFunc("/api/racks/{id:[a-zA-Z0-9]{24}}/sensors",
+		controllers.GetEntitiesOfAncestor).Methods("GET")*/
 
 	// GET BY QUERY
 	router.NewRoute().PathPrefix("/api/{entity:[a-z]+}").MatcherFunc(dmatch).

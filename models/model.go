@@ -27,9 +27,7 @@ const (
 	TILE
 
 	CORIDOR
-	ROOMSENSOR
-	RACKSENSOR
-	DEVICESENSOR
+	SENSOR
 	ROOMTMPL
 	OBJTMPL
 	GROUP
@@ -78,7 +76,7 @@ func ValidateEntity(entity int, t map[string]interface{}) (map[string]interface{
 	switch entity {
 	case TENANT, SITE, BLDG, ROOM, RACK, DEVICE, AC,
 		PWRPNL, SEPARATOR, CABINET, AISLE,
-		TILE, CORIDOR, RACKSENSOR, DEVICESENSOR:
+		TILE, CORIDOR, SENSOR:
 		if t["name"] == "" {
 			return u.Message(false, "Name should be on payload"), false
 		}
@@ -108,7 +106,7 @@ func ValidateEntity(entity int, t map[string]interface{}) (map[string]interface{
 			}
 			defer cancel()
 
-		} else if entity > TENANT && entity <= DEVICESENSOR {
+		} else if entity > TENANT && entity <= SENSOR {
 			_, ok := t["parentId"].(string)
 			if !ok {
 				return u.Message(false, "ParentID is not valid"), false
@@ -117,20 +115,52 @@ func ValidateEntity(entity int, t map[string]interface{}) (map[string]interface{
 			if err != nil {
 				return u.Message(false, "ParentID is not valid"), false
 			}
-			parent := u.EntityToString(u.GetParentOfEntityByInt(entity))
+			parentInt := u.GetParentOfEntityByInt(entity)
+			if parentInt == -2 { //Sensor
+				parentSet := []string{"room", "rack", "device"}
+				found := false
 
-			ctx, cancel := u.Connect()
-			if GetDB().Collection(parent).
-				FindOne(ctx, bson.M{"_id": objID}).Err() != nil {
-				println("ENTITY VALUE: ", entity)
-				println("We got Parent: ", parent, " with ID:", t["parentId"].(string))
-				return u.Message(false, "ParentID should correspond to Existing ID"), false
+				//First check if sensor type is present
+				if t["type"] == nil || t["type"] == "" {
+					return u.Message(false, "Sensor type must be on payload"), false
+				}
 
+				for i := range parentSet {
+					ctx, cancel := u.Connect()
+					if GetDB().Collection(parentSet[i]).
+						FindOne(ctx, bson.M{"_id": objID}).Err() == nil {
+						found = true
+						//Ensure sensor type and parent entity
+						//are consistent
+						if t["type"] != parentSet[i] {
+							return u.Message(false, "Sensor type must match parent entity"), false
+						}
+
+						i = len(parentSet)
+
+					}
+					defer cancel()
+				}
+				if found == false {
+					return u.Message(false, "Sensor ParentID should correspond to Existing ID"), false
+				}
+			} else {
+				parent := u.EntityToString(parentInt)
+
+				ctx, cancel := u.Connect()
+				if GetDB().Collection(parent).
+					FindOne(ctx, bson.M{"_id": objID}).Err() != nil {
+					println("ENTITY VALUE: ", entity)
+					println("We got Parent: ", parent, " with ID:", t["parentId"].(string))
+					return u.Message(false, "ParentID should correspond to Existing ID"), false
+
+				}
+				defer cancel()
 			}
-			defer cancel()
+
 		}
 
-		if entity < CABINET || entity > DEVICESENSOR {
+		if entity < CABINET || entity > SENSOR {
 			if _, ok := t["attributes"]; !ok {
 				return u.Message(false, "Attributes should be on the payload"), false
 			} else {
@@ -487,7 +517,7 @@ func deleteHelper(t map[string]interface{}, ent int) (map[string]interface{}, st
 
 		if ent == RACK {
 			ctx, cancel := u.Connect()
-			GetDB().Collection("rack_sensor").DeleteMany(ctx,
+			GetDB().Collection("sensor").DeleteMany(ctx,
 				bson.M{"parentId": t["id"].(primitive.ObjectID).Hex()})
 			defer cancel()
 		}
@@ -496,7 +526,7 @@ func deleteHelper(t map[string]interface{}, ent int) (map[string]interface{}, st
 		if ent == ROOM {
 			//ITER Through all nonhierarchal objs
 			ctx, cancel := u.Connect()
-			for i := AC; i < RACKSENSOR; i++ {
+			for i := AC; i < SENSOR+1; i++ {
 				ent := u.EntityToString(i)
 				GetDB().Collection(ent).DeleteMany(ctx, bson.M{"parentId": t["id"].(primitive.ObjectID).Hex()})
 			}
@@ -591,25 +621,17 @@ func GetEntityHierarchy(entity string, ID primitive.ObjectID, entnum, end int) (
 		top = fixID(top)
 
 		//Retrieve associated nonhierarchal objects
-		if entity == "device" {
-			x, e := GetManyEntities("device_sensor",
+		if entity == "device" || entity == "rack" || entity == "room" {
+			x, e := GetManyEntities("sensor",
 				bson.M{"parentId": top["id"].(primitive.ObjectID).Hex()})
 			if e == "" {
-				top["device_sensors"] = x
-			}
-		}
-
-		if entity == "rack" {
-			x, e := GetManyEntities("rack_sensor",
-				bson.M{"parentId": top["id"].(primitive.ObjectID).Hex()})
-			if e == "" {
-				top["rack_sensors"] = x
+				top[entity+"_sensors"] = x
 			}
 		}
 
 		if entity == "room" {
 			//ITER Through all nonhierarchal objs
-			for i := AC; i < RACKSENSOR; i++ {
+			for i := AC; i < SENSOR; i++ {
 				ent := u.EntityToString(i)
 				x, e := GetManyEntities(ent,
 					bson.M{"parentId": top["id"].(primitive.ObjectID).Hex()})
@@ -888,7 +910,7 @@ func RetrieveDeviceHierarch(ID primitive.ObjectID, start, end int) (map[string]i
 
 		//Retrieve sensors
 		ctx, cancel := u.Connect()
-		x, err := GetDB().Collection("device_sensor").Find(ctx,
+		x, err := GetDB().Collection("sensor").Find(ctx,
 			bson.M{"parentId": top["id"].(primitive.ObjectID).Hex()})
 		if err == nil {
 			data := []map[string]interface{}{}
@@ -949,7 +971,7 @@ func deleteDeviceHelper(t map[string]interface{}) (map[string]interface{}, strin
 
 		ctx, cancel := u.Connect()
 		//Delete relevant non hierarchal objects
-		GetDB().Collection("device_sensor").DeleteMany(ctx,
+		GetDB().Collection("sensor").DeleteMany(ctx,
 			bson.M{"parentId": t["id"].(primitive.ObjectID).Hex()})
 
 		c, _ := GetDB().Collection("device").DeleteOne(ctx, bson.M{"_id": t["id"].(primitive.ObjectID)})

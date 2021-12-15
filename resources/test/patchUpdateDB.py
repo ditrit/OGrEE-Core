@@ -104,9 +104,13 @@ ID = None
 roomID = PIDS["roomID"]
 #ITERATE
 for i in payloadTable:
+    URL = None
     payload = payloadTable[i]
 
-    URL = url+"/"+i+"s/"+PIDS[i+"ID"]
+    if i.find("-sensor") != -1:
+      URL = url+"/sensors/"+PIDS[i+"ID"]
+    else:
+      URL = url+"/"+i+"s/"+PIDS[i+"ID"]
 
 
     response = requests.request("PATCH", URL,headers=headers, data=json.dumps(payload))

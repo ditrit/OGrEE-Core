@@ -18,12 +18,18 @@ def checkRes(val, out, name):
 #which should test the cascade
 #relationship enforced by the API
 r1, txt1 = subprocess.getstatusoutput("./resources/test/verifyDBEmpty.py")
+checkRes(r1, txt1,"verifyDBEmpty")
+
 r2, txt2 = subprocess.getstatusoutput("./resources/test/populateDB.py")
+checkRes(r2, txt2, "populateDB")
+
 r3, txt3 = subprocess.getstatusoutput("./resources/test/deleteTenantHierarchy.py")
+checkRes(r3, txt3, "deleteTenantHierarchy")
+
 r4, txt4 = subprocess.getstatusoutput("./resources/test/verifyDBEmpty.py")
+checkRes(r4, txt4, "verifyDBEmpty")
 
-
-q = [(r1, txt1,"verifyDBEmpty"),
+'''q = [(r1, txt1,"verifyDBEmpty"),
     (r2, txt2, "populateDB"),
     (r3, txt3, "deleteTenantHierarchy"),
     (r4, txt4, "verifyDBEmpty")
@@ -32,7 +38,7 @@ q = [(r1, txt1,"verifyDBEmpty"),
 
 #Check Return Values
 for i in q:
-    checkRes(i[0], i[1], i[2])
+    checkRes(i[0], i[1], i[2])'''
 
 
 #Print Result

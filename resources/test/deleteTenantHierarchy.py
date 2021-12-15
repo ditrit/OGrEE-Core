@@ -82,9 +82,17 @@ delObj(url+"/groups/"+PIDS["groupID"], "Group")
 
 
 for i in entRange:
+  URL = None
   ID = PIDS[i+"ID"]
-  print("Now testing: ", url+"/"+i+"s"+"/"+ID)
-  response = requests.request("GET", url+"/"+i+"s"+"/"+ID, headers=headers, data=payload)
+
+  #Sensors have a different URL
+  if i.find("-sensor") != -1:
+      URL = url+"/sensors/"+ID
+  else:
+      URL = url+"/"+i+"s"+"/"+ID
+
+  print("Now testing: ", URL)
+  response = requests.request("GET", URL, headers=headers, data=payload)
   checkResponse(response.status_code, i)
 
   #print(response.text)

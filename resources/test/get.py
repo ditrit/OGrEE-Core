@@ -29,7 +29,7 @@ PIDS={"tenantID":None, "siteID":None, "buildingID":None,
         
 
 #URL & HEADERS    
-url = "http://localhost:3001/api"
+url = "http://localhost:27020/api"
 headers = {
   'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJVc2VySWQiOjY2NDA0NjEyNzM0MjQxOTk2OX0.cB1VkYQLlXCatzMiEWGFfJKKx9h8Vsr2vdlylNMe7hs',
   'Content-Type': 'application/json'
@@ -51,12 +51,10 @@ class Entity(Enum):
   TILE = 11 
 
   CORRIDOR = 12
-  ROOMSENSOR = 13 
-  RACKSENSOR = 14
-  DEVICESENSOR = 15
-  ROOMTMPL = 16
-  OBJTMPL = 17
-  GROUP = 18
+  SENSOR = 13
+  ROOMTMPL = 14
+  OBJTMPL = 15
+  GROUP = 16
 
 
 
@@ -214,25 +212,27 @@ def getEntityHierarchy(entity, entLoc, ID, end):
 		
 
     if entity == "rack":
-      x = getManyFromDBGeneric("rack_sensor", {"parentId":t["id"]})
+      x = getManyFromDBGeneric("sensor", {"parentId":t["id"]})
       if x != None:
-        x = extractCursor(x, "rack_sensor")
+        x = extractCursor(x, "sensor")
         t["rack_sensors"] = x['objects']
 
 
     if entity == "room":
       #ITER Through all nonhierarchal objs
       i = sToI("AC")
-      while i < sToI("RACKSENSOR"):
+      while i < sToI("SENSOR")+1:
         ent = iToS(i).lower()
-        if ent == "roomsensor":
-            ent = "room_sensor"
+        #if ent == "roomsensor":
+        #    ent = "room_sensor"
         x = getManyFromDBGeneric(ent, {"parentId":t["id"]})
         if x != None:
           x = extractCursor(x, ent)
           
-            
-          t[ent+"s"] = x['objects']
+          if ent == "sensor":
+            t["room_sensors"] = x['objects']
+          else:
+            t[ent+"s"] = x['objects']
 
         i += 1
     	
@@ -270,9 +270,9 @@ def getDeviceHierarchy(top):
     return top
 
   #GET DEVICE SENSORS
-  x = getManyFromDBGeneric("device_sensor", {"parentId":top["id"]})
+  x = getManyFromDBGeneric("sensor", {"parentId":top["id"]})
   if x != None:
-    x = extractCursor(x, "device_sensor")
+    x = extractCursor(x, "sensor")
     top["device_sensors"] = x['objects']
 
 
@@ -418,6 +418,9 @@ def apiCall(URL, entity, iterator, verifyingStr, ID, reqType, wantedEnt):
     if wantedEnt.find("-") != -1:
       wantedEnt = wantedEnt.replace("-", "_")
     
+    print("WantedENT:", wantedEnt)
+    print("PID:", PIDS[iterator])
+    print("ITER:", iterator)
     j2 = getManyFromDBGeneric(wantedEnt, {"parentId": PIDS[iterator]})
     j2 = extractCursor(j2, wantedEnt)
     
@@ -456,11 +459,16 @@ writeEnv()
 
 #ITERATE 
 for i in PIDS:
+  obj = None
+  objs = None
   print("yo")
 
-
-  obj = i[:len(i)-2]
-  objs = i[:len(i)-2]+"s"
+  if i.find("-sensor") != -1:
+    obj = "sensor"
+    objs = "sensors"
+  else:
+    obj = i[:len(i)-2]
+    objs = i[:len(i)-2]+"s"
 
   #SINGLE OBJ GET WITH ID
   apiCall(url+"/"+objs+"/"+PIDS[i], obj, i,obj[0].upper()+obj[1:] , None, "single", None)
@@ -548,10 +556,10 @@ for i in PIDS:
     if obj == "room":
       #All associated objs for room
       idx = 6 #AC
-      while idx < 14: #Loop until Rack Sensor
+      while idx < sToI("SENSOR")+1: #Loop until Rack Sensor
         subEnt = iToS(idx).lower()
-        if subEnt == "roomsensor":
-          subEnt = "room-sensor"
+        #if subEnt == "roomsensor":
+        #  subEnt = "room-sensor"
         
         finalURL = url+"/"+objs+"/"+PIDS[i]+"/"+subEnt+"s"
         print(finalURL)
@@ -562,17 +570,19 @@ for i in PIDS:
 
     
   if obj == "rack":
-    subEnt = "rack-sensor"
+    subEnt = "sensor"
         
     finalURL = url+"/"+objs+"/"+PIDS[i]+"/"+subEnt+"s"
+    print("JUSTb41LevelLower+", finalURL)
     apiCall(finalURL, obj, i,
     objs[0].upper()+objs[1:]+" one level lower req: "+subEnt,
     None, "1levelLower+", subEnt)
 
   if obj == "device":
-    subEnt = "device-sensor"
+    subEnt = "sensor"
 
     finalURL = url+"/"+objs+"/"+PIDS[i]+"/"+subEnt+"s"
+    print("JUSTb41LevelLower+", finalURL)
     apiCall(finalURL, obj, i,
     objs[0].upper()+objs[1:]+" one level lower req: "+subEnt,
     None, "1levelLower+", subEnt)
@@ -622,15 +632,15 @@ for i in PIDS:
   "/api/rooms/"+PIDS["roomID"]+"/tiles/TileA",
   "/api/rooms/"+PIDS["roomID"]+"/cabinets/CabinetA",
   "/api/rooms/"+PIDS["roomID"]+"/corridors/CorridorA",
-  "/api/rooms/"+PIDS["roomID"]+"/room-sensors/RoomSensorLight"
+  "/api/rooms/"+PIDS["roomID"]+"/sensors/RoomSensorLight"
   ]
 
   rackList = [
-    "/api/racks/"+PIDS["rackID"]+"/rack-sensors/SensorA",
+    "/api/racks/"+PIDS["rackID"]+"/sensors/SensorA",
     "/api/racks/"+PIDS["rackID"]+"/devices/DeviceA"
   ]
 
-  deviceList = ["/api/devices/"+PIDS["deviceID"]+"/device-sensors/DeviceSensorA"]
+  deviceList = ["/api/devices/"+PIDS["deviceID"]+"/sensors/DeviceSensorA"]
 
   listDict = {"tenantID":tenantList, "siteID":siteList,
               "buildingID":bldgList, "roomID":roomList,
@@ -657,7 +667,7 @@ bldEList = [
   "/api/buildings/"+PIDS["buildingID"]+"/aisles",
   "/api/buildings/"+PIDS["buildingID"]+"/panels",
   "/api/buildings/"+PIDS["buildingID"]+"/separators",
-  "/api/buildings/"+PIDS["buildingID"]+"/room-sensors"
+  "/api/buildings/"+PIDS["buildingID"]+"/sensors"
 ]
 
 for h in bldEList:
@@ -671,14 +681,14 @@ for h in bldEList:
 
 
 #Room Exception
-roomExceptionURL= "/api/rooms/"+PIDS["roomID"]+"/rack-sensors"
-apiCall(url+"/"+roomExceptionURL[5:], "room", None,"Room call for rack\'s sensors",PIDS["roomID"], "finalCases", "rack_sensor" )
+#roomExceptionURL= "/api/rooms/"+PIDS["roomID"]+"/sensors"
+#apiCall(url+"/"+roomExceptionURL[5:], "room", None,"Room call for rack\'s sensors",PIDS["roomID"], "finalCases", "sensor" )
 
 
 
 #Rack Exception
-rackExceptionURL = "/api/racks/"+PIDS["rackID"]+"/device-sensors"
-apiCall(url+"/"+rackExceptionURL[5:], "rack", None, "Rack call for devices\'s sensors", PIDS["rackID"], "finalCases", "device_sensor")
+#rackExceptionURL = "/api/racks/"+PIDS["rackID"]+"/sensors"
+#apiCall(url+"/"+rackExceptionURL[5:], "rack", None, "Rack call for devices\'s sensors", PIDS["rackID"], "finalCases", "sensor")
 
 
 

@@ -120,9 +120,9 @@ payloadTable = {
     "room":{"name": "Abandoned Room","id": None,"parentId": PIDS["buildingID"],"category": "999","description": ["999"],"domain": "999","attributes": {    "posXY": "999",    "posXYUnit": "m",    "posZ": "999",    "posZUnit": "m",    "template": "999",    "orientation": "-N-W",    "size": "999",    "sizeUnit": "m",    "height": "999",    "heightUnit": "m"}},
     "rack":{"name": "Abandoned Rack","id": None,"parentId": PIDS["roomID"],"category": "rack","description": ["99","999","9999"],"domain": "Abandoned Rack","attributes": {    "posXY": "999",    "posXYUnit": "tile",    "size": "99",    "sizeUnit": "cm",    "height": "999",    "heightUnit": "U",    "template": "",    "orientation": "front",    "vendor": "999",    "type": "999",    "model": "999",    "serial": "999"}},
     "device":{"name": "Abandoned Device","id": None,"parentId": PIDS["rackID"],"category": "999","description": ["Rack A01","The original one","-3/-5\\nA0-Z9"],"domain": "99","attributes": {"posXY": "99","posXYUnit": "tile","size": "99","sizeUnit": "cm","height": "99","heightUnit": "U","template": "","orientation": "front","vendor": "99","type": "99","model": "99","serial": "99"}},
-    "room-sensor":{"name": "Corridor909","parentId" : PIDS["roomID"],"temperature": "cold"},
-    "rack-sensor":{"name": "Corridor909","parentId" : PIDS["rackID"],"temperature": "cold"},
-    "device-sensor":{"name": "Corridor909","parentId" : PIDS["deviceID"],"temperature": "cold"},
+    "room-sensor":{"name": "Corridor909","parentId" : PIDS["roomID"],"temperature": "cold", "type":"room"},
+    "rack-sensor":{"name": "Corridor909","parentId" : PIDS["rackID"],"temperature": "cold", "type":"rack"},
+    "device-sensor":{"name": "Corridor909","parentId" : PIDS["deviceID"],"temperature": "cold", "type":"device"},
     "room-template":{"slug"          : "HOTTESTDNB","orientation"   : "+N+W","sizeWDHm"      : [],"technicalArea" : [],"reservedArea"  : [],"separators"    : [],"colors"        : [],"tiles"         : [],"aisles"        : []},
     "obj-template":{"slug"        : "RACK2000","description" : "Rack Template 2000","category"    : "rack","sizeWDHmm"   : [],"fbxModel"    : "1","attributes"  : {  "type" : ""},"colors"      : [],"components"  : [],"slots"       : []}
     }
@@ -134,9 +134,14 @@ ID = None
 roomID = PIDS["roomID"]
 #ITERATE
 for i in payloadTable:
+    URL = None
     payload = payloadTable[i]
 
-    URL = url+"/"+i+"s/"+PIDS[i+"ID"]
+
+    if (i.find("-sensor") != -1):
+        URL = url+"/sensors/"+PIDS[i+"ID"]
+    else:
+        URL = url+"/"+i+"s/"+PIDS[i+"ID"]
 
 
     response = requests.request(httpOP, URL,headers=headers, data=json.dumps(payload))
@@ -164,7 +169,10 @@ for i in payloadTable:
 
     x = i.find("-")
     if x != -1:
-        i = i[:x]+"_"+i[x+1:]
+        if i.find("-sensor") != -1:
+            i = "sensor"
+        else:
+            i = i[:x]+"_"+i[x+1:]
 
 
     item = db[i].find_one(req)

@@ -80,9 +80,14 @@ writeEnv()
 
 #ITER
 for idx in reversed(PIDS.items()):
-    URL = url+"/"+idx[0][:len(idx[0])-2]+"s/"+PIDS[idx[0]]
-    response = requests.request("DELETE",URL,headers=headers, data={})
-    verifyDelete(response.status_code, idx[0][:len(idx[0])-2], PIDS[idx[0]] )
+  if (idx[0].find("-sensorID" ) != -1): 
+      #Sensors require different URL
+      URL = url+"/sensors/"+PIDS[idx[0]]
+  else:
+      URL = url+"/"+idx[0][:len(idx[0])-2]+"s/"+PIDS[idx[0]]
+
+  response = requests.request("DELETE",URL,headers=headers, data={})
+  verifyDelete(response.status_code, idx[0][:len(idx[0])-2], PIDS[idx[0]] )
 
 
 

@@ -153,8 +153,7 @@ func Flatten(prefix string, src map[string]interface{}, dest map[string]interfac
 //   description: 'Indicates the Object. Only values of "tenants", "sites",
 //   "buildings", "rooms", "racks", "devices", "acs", "panels",
 //   "separators","aisles", "tiles", "cabinets", "groups", "corridors",
-//   "room-templates", "obj-templates", "room-sensors",
-//   "rack-sensors","device-sensors" are acceptable'
+//   "room-templates", "obj-templates", "sensors" are acceptable'
 //   required: true
 //   type: string
 //   default: "sites"
@@ -280,8 +279,7 @@ var CreateEntity = func(w http.ResponseWriter, r *http.Request) {
 //   description: 'Indicates the location. Only values of "tenants", "sites",
 //   "buildings", "rooms", "racks", "devices", "room-templates",
 //   "obj-templates", "rooms", "separators", "acs", "panels", "aisles",
-//   "tiles", "cabinets", "groups", "corridors","room-sensors",
-//   "rack-sensors", and "device-sensors" are acceptable'
+//   "tiles", "cabinets", "groups", "corridors","sensors" are acceptable'
 //   required: true
 //   type: string
 //   default: "sites"
@@ -315,7 +313,7 @@ var GetEntity = func(w http.ResponseWriter, r *http.Request) {
 	s, _ := mux.Vars(r)["entity"]
 	s = s[:len(s)-1]
 
-	//If sensors or templates, format them
+	//If templates, format them
 	if idx := strings.Index(s, "-"); idx != -1 {
 		s = s[:idx] + "_" + s[idx+1:]
 	}
@@ -386,8 +384,7 @@ var GetEntity = func(w http.ResponseWriter, r *http.Request) {
 //   description: 'Indicates the location. Only values of "tenants", "sites",
 //   "buildings", "rooms", "racks", "devices", "room-templates",
 //   "obj-templates", "rooms", "separators", "acs", "panels", "aisles",
-//   "tiles", "cabinets", "groups", "corridors", "room-sensors",
-//   "rack-sensors", and "device-sensors" are acceptable'
+//   "tiles", "cabinets", "groups", "corridors", "sensors" are acceptable'
 //   required: true
 //   type: string
 //   default: "sites"
@@ -460,8 +457,7 @@ var GetAllEntities = func(w http.ResponseWriter, r *http.Request) {
 //   description: 'Indicates the location. Only values of "tenants", "sites",
 //   "buildings", "rooms", "racks", "devices", "room-templates",
 //   "obj-templates", "rooms", "separators", "acs", "panels", "aisles",
-//   "tiles", "cabinets", "groups", "corridors","room-sensors",
-//   "rack-sensors", and "device-sensors" are acceptable'
+//   "tiles", "cabinets", "groups", "corridors","sensors" are acceptable'
 //   required: true
 //   type: string
 //   default: "sites"
@@ -488,7 +484,7 @@ var DeleteEntity = func(w http.ResponseWriter, r *http.Request) {
 	entity, _ := mux.Vars(r)["entity"]
 	entity = entity[:len(entity)-1]
 
-	//If sensors or templates, format them
+	//If templates, format them
 	if idx := strings.Index(entity, "-"); idx != -1 {
 		entity = entity[:idx] + "_" + entity[idx+1:]
 	}
@@ -552,8 +548,7 @@ var DeleteEntity = func(w http.ResponseWriter, r *http.Request) {
 //   description: 'Indicates the location. Only values of "tenants", "sites",
 //   "buildings", "rooms", "racks", "devices", "room-templates",
 //   "obj-templates", "rooms", "separators", "acs", "panels", "aisles",
-//   "tiles", "cabinets", "groups", "corridors", "room-sensors",
-//   "rack-sensors", and "device-sensors" are acceptable'
+//   "tiles", "cabinets", "groups", "corridors", "sensors" are acceptable'
 //   required: true
 //   type: string
 //   default: "sites"
@@ -617,8 +612,7 @@ var DeleteEntity = func(w http.ResponseWriter, r *http.Request) {
 //   description: 'Indicates the location. Only values of "tenants", "sites",
 //   "buildings", "rooms", "racks", "devices", "room-templates",
 //   "obj-templates", "rooms", "separators", "acs", "panels", "aisles",
-//   "tiles", "cabinets", "groups", "corridors","room-sensors",
-//   "rack-sensors", and "device-sensors" are acceptable'
+//   "tiles", "cabinets", "groups", "corridors","sensors" are acceptable'
 //   required: true
 //   type: string
 //   default: "sites"
@@ -695,7 +689,7 @@ var UpdateEntity = func(w http.ResponseWriter, r *http.Request) {
 	entity, _ = mux.Vars(r)["entity"]
 	entity = entity[:len(entity)-1]
 
-	//If sensors or templates, format them
+	//If templates, format them
 	if idx := strings.Index(entity, "-"); idx != -1 {
 		entity = entity[:idx] + "_" + entity[idx+1:]
 	}
@@ -774,7 +768,7 @@ var UpdateEntity = func(w http.ResponseWriter, r *http.Request) {
 //   description: 'Indicates the object. Only values of "tenants", "sites",
 //   "buildings", "rooms", "racks", "devices", "room-templates",
 //   "obj-templates", "separators","acs","panels", "aisles", "tiles",
-//   "cabinets", "groups", "corridors", "racksensors", and "devicesensors"
+//   "cabinets", "groups", "corridors", and "sensors"
 //   are acceptable'
 //   required: true
 //   type: string
@@ -933,12 +927,7 @@ var GetEntitiesOfAncestor = func(w http.ResponseWriter, r *http.Request) {
 	indicator := r.URL.Path[lastSlashIdx+1:]
 	switch indicator {
 	case "acs", "separators", "panels", "corridors", "cabinets",
-		"aisles", "tiles", "room-sensors",
-		"rack-sensors", "device-sensors":
-		//If templates, format them
-		if idx := strings.Index(indicator, "-"); idx != -1 {
-			indicator = indicator[:idx] + "_" + indicator[idx+1:]
-		}
+		"aisles", "tiles", "sensors":
 		indicator = indicator[:len(indicator)-1]
 	default:
 		indicator = ""
@@ -1273,9 +1262,9 @@ var GetTenantHierarchy = func(w http.ResponseWriter, r *http.Request) {
 //   in: path
 //   description: 'Hierarchal path to desired object(s).
 //   For rooms it can additionally have "acs","panels","separators",
-//   "aisles","tiles","corridors", "room-sensors" and "cabinets".
-//   For devices it can have "device-sensors"
-//   For racks it can have "rack-sensors"'
+//   "aisles","tiles","corridors", "sensors" and "cabinets".
+//   For devices it can have "sensors"
+//   For racks it can have "sensors"'
 //   required: true
 //   type: string
 //   default: "/buildings/BuildingB/RoomA"

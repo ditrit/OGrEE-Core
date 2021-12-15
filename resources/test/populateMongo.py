@@ -49,9 +49,9 @@ payloadTable = {
     "group":{"name": "GroupA","type" : "rack","contents":  []},
     "corridor":{"name": "CorridorA","parentId" : None,"temperature": "warm"},
     
-    "room-sensor":{"name": "RoomSensorLight","parentId" : None,"category": "SENSOR-R"},
-    "rack-sensor":{"name": "SensorA","parentId" : None,"category": "SENSOR-A"},
-    "device-sensor":{"name": "DeviceSensorA","parentId" : None,"category": "SENSOR-D"},
+    "room-sensor":{"name": "RoomSensorLight","parentId" : None,"category": "SENSOR-R", "type":"room"},
+    "rack-sensor":{"name": "SensorA","parentId" : None,"category": "SENSOR-A", "type":"rack"},
+    "device-sensor":{"name": "DeviceSensorA","parentId" : None,"category": "SENSOR-D", "type":"device"},
 
     "room-template":{"slug"          : "RT1","orientation"   : "+N+E","sizeWDHm"      : ["width","depth","height"],"technicalArea" : ["width","depth","height"],"reservedArea"  : ["width","depth","height"],"separators"    : [],"colors"        : [],"tiles"         : [],"aisles"        : []},
     "obj-template":{"slug"        : "RACK1T","description" : "Rack Template 1","category"    : "rack","sizeWDHmm"   : ["width","depth","height"],"fbxModel"    : "1","attributes"  : {  "type" : ""},"colors"      : [],"components"  : [],"slots"       : []}
@@ -106,6 +106,7 @@ def writeEnv():
 ID = None
 req = None
 for i in payloadTable:
+    URL = None
     payload = payloadTable[i]
     if (i == "ac" or i == "panel" or i == "separator" or 
         i == "corridor" or i == "tile" or i == "aisle" or 
@@ -125,8 +126,10 @@ for i in payloadTable:
     else:
         payload["parentId"] = ID
 
-
-    URL = url+"/"+i+"s"
+    if i.find("-sensor") != -1:
+        URL = url+"/sensors"
+    else:
+        URL = url+"/"+i+"s"
 
 
     response = requests.request("POST", URL,headers=headers, data=json.dumps(payload))
@@ -154,9 +157,10 @@ for i in payloadTable:
     #in DB
     x = i.find("-")
     if x != -1:
-        #i = i[:x]+"_"+i[x+1:]
-        #print("NOW WE GOT: ", i)
-        item = db[i[:x]+"_"+i[x+1:]].find_one(req)
+        if i.find("-sensor") != -1:
+            item = db["sensor"].find_one(req)
+        else:
+            item = db[i[:x]+"_"+i[x+1:]].find_one(req)
     else:
         item = db[i].find_one(req)
 

@@ -108,7 +108,7 @@
           {
             "type": "string",
             "default": "sites",
-            "description": "Indicates the location. Only values of \"tenants\", \"sites\", \"buildings\", \"rooms\", \"racks\", \"devices\", \"room-templates\", \"obj-templates\", \"rooms\", \"walls\", \"acs\", \"panels\", \"aisles\", \"tiles\", \"cabinets\", \"groups\", \"corridors\", \"room-sensors\", \"rack-sensors\", and \"device-sensors\" are acceptable",
+            "description": "Indicates the location. Only values of \"tenants\", \"sites\", \"buildings\", \"rooms\", \"racks\", \"devices\", \"room-templates\", \"obj-templates\", \"rooms\", \"separators\", \"acs\", \"panels\", \"aisles\", \"tiles\", \"cabinets\", \"groups\", \"corridors\", \"sensors\" are acceptable",
             "name": "objs",
             "in": "query",
             "required": true
@@ -139,7 +139,7 @@
           {
             "type": "string",
             "default": "sites",
-            "description": "Indicates the location. Only values of \"tenants\", \"sites\", \"buildings\", \"rooms\", \"racks\", \"devices\", \"room-templates\", \"obj-templates\", \"rooms\", \"walls\", \"acs\", \"panels\", \"aisles\", \"tiles\", \"cabinets\", \"groups\", \"corridors\",\"room-sensors\", \"rack-sensors\", and \"device-sensors\" are acceptable",
+            "description": "Indicates the location. Only values of \"tenants\", \"sites\", \"buildings\", \"rooms\", \"racks\", \"devices\", \"room-templates\", \"obj-templates\", \"rooms\", \"separators\", \"acs\", \"panels\", \"aisles\", \"tiles\", \"cabinets\", \"groups\", \"corridors\",\"sensors\" are acceptable",
             "name": "objs",
             "in": "query",
             "required": true
@@ -179,7 +179,7 @@
           {
             "type": "string",
             "default": "sites",
-            "description": "Indicates the location. Only values of \"tenants\", \"sites\", \"buildings\", \"rooms\", \"racks\", \"devices\", \"room-templates\", \"obj-templates\", \"rooms\", \"walls\", \"acs\", \"panels\", \"aisles\", \"tiles\", \"cabinets\", \"groups\", \"corridors\",\"room-sensors\", \"rack-sensors\", and \"device-sensors\" are acceptable",
+            "description": "Indicates the location. Only values of \"tenants\", \"sites\", \"buildings\", \"rooms\", \"racks\", \"devices\", \"room-templates\", \"obj-templates\", \"rooms\", \"separators\", \"acs\", \"panels\", \"aisles\", \"tiles\", \"cabinets\", \"groups\", \"corridors\",\"sensors\" are acceptable",
             "name": "objs",
             "in": "query",
             "required": true
@@ -251,7 +251,7 @@
           {
             "type": "string",
             "default": "sites",
-            "description": "Indicates the location. Only values of \"tenants\", \"sites\", \"buildings\", \"rooms\", \"racks\", \"devices\", \"room-templates\", \"obj-templates\", \"rooms\", \"walls\", \"acs\", \"panels\", \"aisles\", \"tiles\", \"cabinets\", \"groups\", \"corridors\",\"room-sensors\", \"rack-sensors\", and \"device-sensors\" are acceptable",
+            "description": "Indicates the location. Only values of \"tenants\", \"sites\", \"buildings\", \"rooms\", \"racks\", \"devices\", \"room-templates\", \"obj-templates\", \"rooms\", \"separators\", \"acs\", \"panels\", \"aisles\", \"tiles\", \"cabinets\", \"groups\", \"corridors\",\"sensors\" are acceptable",
             "name": "objs",
             "in": "query",
             "required": true
@@ -288,7 +288,7 @@
           {
             "type": "string",
             "default": "sites",
-            "description": "Indicates the location. Only values of \"tenants\", \"sites\", \"buildings\", \"rooms\", \"racks\", \"devices\", \"room-templates\", \"obj-templates\", \"rooms\", \"walls\", \"acs\", \"panels\", \"aisles\", \"tiles\", \"cabinets\", \"groups\", \"corridors\", \"room-sensors\", \"rack-sensors\", and \"device-sensors\" are acceptable",
+            "description": "Indicates the location. Only values of \"tenants\", \"sites\", \"buildings\", \"rooms\", \"racks\", \"devices\", \"room-templates\", \"obj-templates\", \"rooms\", \"separators\", \"acs\", \"panels\", \"aisles\", \"tiles\", \"cabinets\", \"groups\", \"corridors\", \"sensors\" are acceptable",
             "name": "objs",
             "in": "query",
             "required": true
@@ -379,7 +379,7 @@
           {
             "type": "string",
             "default": "/buildings/BuildingB/RoomA",
-            "description": "Hierarchal path to desired object(s). For rooms it can additionally have \"acs\",\"panels\",\"walls\", \"aisles\",\"tiles\",\"corridors\", \"room-sensors\" and \"cabinets\". For devices it can have \"device-sensors\" For racks it can have \"rack-sensors\"",
+            "description": "Hierarchal path to desired object(s). For rooms it can additionally have \"acs\",\"panels\",\"separators\", \"aisles\",\"tiles\",\"corridors\", \"sensors\" and \"cabinets\". For devices it can have \"sensors\" For racks it can have \"sensors\"",
             "name": "*",
             "in": "path",
             "required": true
@@ -397,7 +397,7 @@
     },
     "/api/{objs}/{id}/all": {
       "get": {
-        "description": "Returns JSON body with all subobjects under the Object.\nNote that objects returned will also included relevant objects.\n(ie Room will contain acs, walls etc. Racks and devices will contain sensors)",
+        "description": "Returns JSON body with all subobjects under the Object.\nNote that objects returned will also included relevant objects.\n(ie Room will contain acs, separators etc. Racks and devices will contain sensors)",
         "produces": [
           "application/json"
         ],
@@ -455,7 +455,7 @@
           {
             "type": "string",
             "default": "sites",
-            "description": "Indicates the object. Only values of \"tenants\", \"sites\", \"buildings\", \"rooms\", \"racks\", \"devices\", \"room-templates\", \"obj-templates\", \"walls\",\"acs\",\"panels\", \"aisles\", \"tiles\", \"cabinets\", \"groups\", \"corridors\", \"racksensors\", and \"devicesensors\" are acceptable",
+            "description": "Indicates the object. Only values of \"tenants\", \"sites\", \"buildings\", \"rooms\", \"racks\", \"devices\", \"room-templates\", \"obj-templates\", \"separators\",\"acs\",\"panels\", \"aisles\", \"tiles\", \"cabinets\", \"groups\", \"corridors\", and \"sensors\" are acceptable",
             "name": "objs",
             "in": "query",
             "required": true
@@ -511,7 +511,7 @@
           {
             "type": "string",
             "default": "sites",
-            "description": "Indicates the Object. Only values of \"tenants\", \"sites\", \"buildings\", \"rooms\", \"racks\", \"devices\", \"acs\", \"panels\", \"walls\",\"aisles\", \"tiles\", \"cabinets\", \"groups\", \"corridors\", \"room-templates\", \"obj-templates\", \"room-sensors\", \"rack-sensors\",\"device-sensors\" are acceptable",
+            "description": "Indicates the Object. Only values of \"tenants\", \"sites\", \"buildings\", \"rooms\", \"racks\", \"devices\", \"acs\", \"panels\", \"separators\",\"aisles\", \"tiles\", \"cabinets\", \"groups\", \"corridors\", \"room-templates\", \"obj-templates\", \"sensors\" are acceptable",
             "name": "objs",
             "in": "query",
             "required": true

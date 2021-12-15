@@ -48,7 +48,13 @@ headers = {
 }
 
 for i in entRange:
-    response = requests.request("GET", url+i, headers=headers, data=payload)
+    URL = None
+    if i.find("-sensors") != -1:
+      URL = url+"sensors"
+    else:
+      URL = url+i
+
+    response = requests.request("GET", URL, headers=headers, data=payload)
     checkResponse(response.status_code, i)
 
 

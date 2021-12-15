@@ -28,9 +28,7 @@ db.createCollection('corridor');
 
 
 //Sensors
-db.createCollection('room_sensor');
-db.createCollection('rack_sensor');
-db.createCollection('device_sensor');
+db.createCollection('sensor');
 
 
 //Enfore unique Tenant Names
@@ -60,9 +58,7 @@ db.cabinet.createIndex({parentId:1, name:1}, { unique: true });
 db.corridor.createIndex({parentId:1, name:1}, { unique: true });
 
 //Enforce unique children sensors
-db.room_sensor.createIndex({parentId:1, name:1}, { unique: true });
-db.rack_sensor.createIndex({parentId:1, name:1}, { unique: true });
-db.device_sensor.createIndex({parentId:1, name:1}, { unique: true });
+db.sensor.createIndex({parentId:1, type:1, name:1}, { unique: true });
 
 //Enforce unique Group names 
 db.group.createIndex({name:1}, { unique: true });
