@@ -1,5 +1,7 @@
 //localhost = 127.0.0.1
-var db = connect('localhost:27017/ogree')
+//
+var m = new Mongo()
+var db = m.getDB("ogree")
 
 db.createCollection('account');
 db.createCollection('tenant');

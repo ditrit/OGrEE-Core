@@ -144,7 +144,7 @@ func main() {
 	//Get port from .env file, no port was specified
 	//So this should return an empty string when
 	//tested locally
-	port := os.Getenv("PORT")
+	port := os.Getenv("api_port")
 	if port == "" {
 		port = "3001" //localhost
 	}

@@ -39,10 +39,12 @@ func (account *Account) Validate() (map[string]interface{}, bool) {
 	temp := &Account{}
 
 	//Error checking and duplicate emails
-	err := GetDB().Collection("accounts").FindOne(GetCtx(), bson.M{"email": account.Email}).Decode(&temp) //.Where("email = ?", account.Email).First(temp).Error
+	ctx, cancel := u.Connect()
+	err := GetDB().Collection("accounts").FindOne(ctx, bson.M{"email": account.Email}).Decode(&temp) //.Where("email = ?", account.Email).First(temp).Error
 	if err != nil && err != mongo.ErrNoDocuments {
 		return u.Message(false, "Connection error. Please retry"), false
 	}
+	defer cancel()
 	return u.Message(false, "Requirement passed"), true
 }
 
@@ -57,11 +59,13 @@ func (account *Account) Create() map[string]interface{} {
 
 	account.Password = string(hashedPassword)
 
-	GetDB().Collection("accounts").InsertOne(GetCtx(), account)
+	ctx, cancel := u.Connect()
+	GetDB().Collection("accounts").InsertOne(ctx, account)
 
 	if account.ID <= 0 {
 		return u.Message(false, "Failed to create account, connection error.")
 	}
+	defer cancel()
 
 	//Create new JWT token for the newly created account
 	tk := &Token{UserId: account.ID}
@@ -80,7 +84,8 @@ func (account *Account) Create() map[string]interface{} {
 func Login(email, password string) (map[string]interface{}, string) {
 	account := &Account{}
 
-	err := GetDB().Collection("accounts").FindOne(GetCtx(), bson.M{"email": email}).Decode(account)
+	ctx, cancel := u.Connect()
+	err := GetDB().Collection("accounts").FindOne(ctx, bson.M{"email": email}).Decode(account)
 	//err := GetDB().Table("account").Where("email = ?", email).First(account).Error
 	if err != nil {
 		if err == mongo.ErrNoDocuments {
@@ -89,6 +94,7 @@ func Login(email, password string) (map[string]interface{}, string) {
 		return u.Message(false, "Connection error. Please try again later"),
 			"internal"
 	}
+	defer cancel()
 
 	//Should investigate if the password is sent in
 	//cleartext over the wire
@@ -113,13 +119,15 @@ func Login(email, password string) (map[string]interface{}, string) {
 	return resp, ""
 }
 
-func GetUser(u int) *Account {
+func GetUser(user int) *Account {
 
 	acc := &Account{}
-	GetDB().Collection("accounts").FindOne(GetCtx(), bson.M{"_id": u}).Decode(acc)
+	ctx, cancel := u.Connect()
+	GetDB().Collection("accounts").FindOne(ctx, bson.M{"_id": user}).Decode(acc)
 	if acc.Email == "" {
 		return nil
 	}
+	defer cancel()
 
 	acc.Password = ""
 	return acc

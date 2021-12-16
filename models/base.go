@@ -16,9 +16,7 @@ import (
 )
 
 //Database
-//var db *gorm.DB
 var db *mongo.Database
-var c *context.Context
 
 func init() {
 
@@ -28,9 +26,6 @@ func init() {
 		fmt.Print(e)
 	}
 
-	//username := os.Getenv("db_user")
-	//password := os.Getenv("db_pass")
-	//dbName := os.Getenv("db_name")
 	dbHost := os.Getenv("db_host")
 	dbPort := os.Getenv("db_port")
 
@@ -51,7 +46,6 @@ func init() {
 		println("Error while connecting")
 	}
 	//defer client.Disconnect(ctx)
-	c = &ctx
 	db = client.Database("ogree")
 	if db == nil {
 		println("Error while connecting")
@@ -68,8 +62,4 @@ func init() {
 
 func GetDB() *mongo.Database {
 	return db
-}
-
-func GetCtx() context.Context {
-	return *(c)
 }

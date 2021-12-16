@@ -92,6 +92,7 @@ pipeline {
                 sh 'docker build -t testingalpine:dockerfile .'
                 sh 'docker stop lapd || true'
                 sh 'fuser -k 27020/tcp || true'
+                sh 'sudo fuser -k 3001/tcp'
                 sh 'docker stop rotten_apple || true'
                 //sh 'rm ./env'
                 //sh 'mv ./.env.bak ./.env'
