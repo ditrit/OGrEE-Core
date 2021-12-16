@@ -421,7 +421,7 @@ func ValidateEntity(entity int, t map[string]interface{}) (map[string]interface{
 }
 
 func CreateEntity(entity int, t map[string]interface{}) (map[string]interface{}, string) {
-
+	message := ""
 	if resp, ok := ValidateEntity(entity, t); !ok {
 		return resp, "validate"
 	}
@@ -440,7 +440,16 @@ func CreateEntity(entity int, t map[string]interface{}) (map[string]interface{},
 	t["id"] = res.InsertedID
 	//t = fixID(t)
 
-	resp := u.Message(true, "successfully created "+entStr)
+	switch entity {
+	case ROOMTMPL:
+		message = "successfully created room_template"
+	case OBJTMPL:
+		message = "successfully created obj_template"
+	default:
+		message = "successfully created object"
+	}
+
+	resp := u.Message(true, message)
 	resp["data"] = t
 	return resp, ""
 }
@@ -600,8 +609,19 @@ func UpdateEntity(ent string, req bson.M, t *map[string]interface{}, isPatch boo
 	e.Decode(&updatedDoc)
 	updatedDoc = fixID(updatedDoc)
 
+	//Response Message
+	message := ""
+	switch u.EntityStrToInt(ent) {
+	case ROOMTMPL:
+		message = "successfully updated room_template"
+	case OBJTMPL:
+		message = "successfully updated obj_template"
+	default:
+		message = "successfully updated object"
+	}
+
 	defer cancel()
-	resp := u.Message(true, "successfully updated "+ent)
+	resp := u.Message(true, message)
 	resp["data"] = updatedDoc
 	return resp, ""
 }

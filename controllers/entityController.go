@@ -10,6 +10,7 @@ import (
 	u "p3/utils"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/gorilla/mux"
 	"go.mongodb.org/mongo-driver/bson"
@@ -142,6 +143,12 @@ func Flatten(prefix string, src map[string]interface{}, dest map[string]interfac
 	}
 }
 
+func DispRequestMetaData(r *http.Request) {
+	fmt.Println("URL:", r.URL.String())
+	fmt.Println("IP-ADDR: ", r.RemoteAddr)
+	fmt.Println(time.Now().Format("2006-Jan-02 Monday 03:04:05 PM MST -07:00"))
+}
+
 // swagger:operation POST /api/{obj} objects CreateObject
 // Creates an object in the system.
 // ---
@@ -204,6 +211,7 @@ var CreateEntity = func(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("******************************************************")
 	fmt.Println("FUNCTION CALL: 	 CreateEntity ")
 	fmt.Println("******************************************************")
+	DispRequestMetaData(r)
 	var e string
 	var resp map[string]interface{}
 	entity := map[string]interface{}{}
@@ -304,6 +312,7 @@ var GetEntity = func(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("******************************************************")
 	fmt.Println("FUNCTION CALL: 	 GetEntity ")
 	fmt.Println("******************************************************")
+	DispRequestMetaData(r)
 	var data map[string]interface{}
 	var id, e1 string
 	var x primitive.ObjectID
@@ -368,7 +377,17 @@ var GetEntity = func(w http.ResponseWriter, r *http.Request) {
 		}
 
 	} else {
-		resp = u.Message(true, "successfully got "+s)
+
+		message := ""
+		switch u.EntityStrToInt(s) {
+		case ROOMTMPL:
+			message = "successfully got room_template"
+		case OBJTMPL:
+			message = "successfully got obj_template"
+		default:
+			message = "successfully got object"
+		}
+		resp = u.Message(true, message)
 	}
 
 	resp["data"] = data
@@ -401,6 +420,7 @@ var GetAllEntities = func(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("******************************************************")
 	fmt.Println("FUNCTION CALL: 	 GetAllEntities ")
 	fmt.Println("******************************************************")
+	DispRequestMetaData(r)
 	var data []map[string]interface{}
 	var e, entStr string
 
@@ -442,7 +462,16 @@ var GetAllEntities = func(w http.ResponseWriter, r *http.Request) {
 		}
 
 	} else {
-		resp = u.Message(true, "successfully got all "+entStr+"s")
+		message := ""
+		switch u.EntityStrToInt(entStr) {
+		case ROOMTMPL:
+			message = "successfully got all room_templates"
+		case OBJTMPL:
+			message = "successfully got all obj_templates"
+		default:
+			message = "successfully got all objects "
+		}
+		resp = u.Message(true, message)
 	}
 
 	resp["data"] = map[string]interface{}{"objects": data}
@@ -481,6 +510,7 @@ var DeleteEntity = func(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("******************************************************")
 	fmt.Println("FUNCTION CALL: 	 DeleteEntity ")
 	fmt.Println("******************************************************")
+	DispRequestMetaData(r)
 	var v map[string]interface{}
 	id, e := mux.Vars(r)["id"]
 	name, e2 := mux.Vars(r)["name"]
@@ -670,6 +700,7 @@ var UpdateEntity = func(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("******************************************************")
 	fmt.Println("FUNCTION CALL: 	 UpdateEntity ")
 	fmt.Println("******************************************************")
+	DispRequestMetaData(r)
 	var v map[string]interface{}
 	var e3 string
 	var entity string
@@ -812,6 +843,7 @@ var GetEntityByQuery = func(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("******************************************************")
 	fmt.Println("FUNCTION CALL: 	 GetEntityByQuery ")
 	fmt.Println("******************************************************")
+	DispRequestMetaData(r)
 	var data []map[string]interface{}
 	var resp map[string]interface{}
 	var bsonMap bson.M
@@ -854,7 +886,16 @@ var GetEntityByQuery = func(w http.ResponseWriter, r *http.Request) {
 		}
 
 	} else {
-		resp = u.Message(true, "successfully got query for "+entStr+"s")
+		message := ""
+		switch u.EntityStrToInt(entStr) {
+		case ROOMTMPL:
+			message = "successfully got query for room_template"
+		case OBJTMPL:
+			message = "successfully got query for obj_template"
+		default:
+			message = "successfully got query for object"
+		}
+		resp = u.Message(true, message)
 	}
 
 	resp["data"] = map[string]interface{}{"objects": data}
@@ -900,6 +941,7 @@ var GetEntitiesOfAncestor = func(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("******************************************************")
 	fmt.Println("FUNCTION CALL: 	 GetEntitiesOfAncestor ")
 	fmt.Println("******************************************************")
+	DispRequestMetaData(r)
 	var id string
 	var e bool
 	//Extract string between /api and /{id}
@@ -956,7 +998,7 @@ var GetEntitiesOfAncestor = func(w http.ResponseWriter, r *http.Request) {
 
 	} else {
 		resp = u.Message(true,
-			"successfully got "+r.URL.Path[lastSlashIdx+1:]+" of "+entStr)
+			"successfully got object")
 	}
 
 	resp["data"] = map[string]interface{}{"objects": data}
@@ -1004,6 +1046,7 @@ var GetEntityHierarchy = func(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("******************************************************")
 	fmt.Println("FUNCTION CALL: 	 GetEntityHierarchy ")
 	fmt.Println("******************************************************")
+	DispRequestMetaData(r)
 	//Extract string between /api and /{id}
 	idx := strings.Index(r.URL.Path[5:], "/") + 4
 	entity := r.URL.Path[5:idx]
@@ -1065,7 +1108,7 @@ var GetEntityHierarchy = func(w http.ResponseWriter, r *http.Request) {
 				default:
 				}
 			} else {
-				resp = u.Message(true, "successfully got "+entity)
+				resp = u.Message(true, "successfully got object")
 			}
 
 			resp["data"] = data
@@ -1133,20 +1176,21 @@ var GetEntityHierarchy = func(w http.ResponseWriter, r *http.Request) {
 		}
 
 	} else {
-		object := ""
-		message := ""
-		if indicator == "" {
-			object = u.EntityToString(limit)
-			message = "successfully got " + entity + "'s hierarchy to " + object
-		} else {
-			if indicator == "all" {
-				message = "successfully got " + entity + "'s complete hierarchy"
-			} else {
-				message = "successfully got " + entity + "'s hierarchy to " + indicator
-			}
+		//object := ""
+		//message := ""
+		//if indicator == "" {
+		//	object = u.EntityToString(limit)
+		//	message = "successfully got " + entity + "'s hierarchy to " + object
+		//} else {
+		//	if indicator == "all" {
+		//		message = "successfully got " + entity + "'s complete hierarchy"
+		//	} else {
+		//		message = "successfully got " + entity + "'s hierarchy to " + indicator
+		//	}
 
-		}
-		resp = u.Message(true, message)
+		//}
+
+		resp = u.Message(true, "successfully got object")
 	}
 
 	resp["data"] = data
@@ -1176,6 +1220,7 @@ var GetTenantHierarchy = func(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("******************************************************")
 	fmt.Println("FUNCTION CALL: 	 GetTenantHierarchy ")
 	fmt.Println("******************************************************")
+	DispRequestMetaData(r)
 	entity := "tenant"
 	resp := u.Message(true, "success")
 	var indicator string
@@ -1213,7 +1258,7 @@ var GetTenantHierarchy = func(w http.ResponseWriter, r *http.Request) {
 				default:
 				}
 			} else {
-				resp = u.Message(true, "successfully got tenant")
+				resp = u.Message(true, "successfully got object")
 			}
 
 			resp["data"] = data
@@ -1256,20 +1301,20 @@ var GetTenantHierarchy = func(w http.ResponseWriter, r *http.Request) {
 		}
 
 	} else {
-		object := ""
-		message := ""
-		if indicator == "" {
-			object = u.EntityToString(limit)
-			message = "successfully got " + entity + "'s hierarchy to " + object
-		} else {
-			if indicator == "all" {
-				message = "successfully got " + entity + "'s complete hierarchy"
-			} else {
-				message = "successfully got " + entity + "'s hierarchy to " + indicator
-			}
+		//object := ""
+		//message := ""
+		//if indicator == "" {
+		//	object = u.EntityToString(limit)
+		//	message = "successfully got " + entity + "'s hierarchy to " + object
+		//} else {
+		//	if indicator == "all" {
+		//		message = "successfully got " + entity + "'s complete hierarchy"
+		//	} else {
+		//		message = "successfully got " + entity + "'s hierarchy to " + indicator
+		//	}
 
-		}
-		resp = u.Message(true, message)
+		//}
+		resp = u.Message(true, "successfully got object")
 	}
 
 	resp["data"] = data
@@ -1316,6 +1361,7 @@ var GetEntitiesUsingNamesOfParents = func(w http.ResponseWriter, r *http.Request
 	fmt.Println("******************************************************")
 	fmt.Println("FUNCTION CALL: 	 GetEntitiesUsingNamesOfParents ")
 	fmt.Println("******************************************************")
+	DispRequestMetaData(r)
 	//Extract string between /api and /{id}
 	idx := strings.Index(r.URL.Path[5:], "/") + 4
 	entity := r.URL.Path[5:idx]
@@ -1393,7 +1439,7 @@ var GetEntitiesUsingNamesOfParents = func(w http.ResponseWriter, r *http.Request
 			}
 
 		} else {
-			resp = u.Message(true, "successfully got "+arr[len(arr)-1]+" of "+entity)
+			resp = u.Message(true, "successfully got object")
 		}
 
 		resp["data"] = map[string]interface{}{"objects": data}
@@ -1422,7 +1468,7 @@ var GetEntitiesUsingNamesOfParents = func(w http.ResponseWriter, r *http.Request
 		} else {
 			upperEnt := arr[len(arr)-2]
 			upperEnt = upperEnt[:len(upperEnt)-1]
-			resp = u.Message(true, "successfully got "+upperEnt+" with name: "+arr[len(arr)-1]+" of "+entity)
+			resp = u.Message(true, "successfully got object")
 		}
 
 		resp["data"] = data
@@ -1435,6 +1481,7 @@ var GetEntityHierarchyNonStd = func(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("******************************************************")
 	fmt.Println("FUNCTION CALL: 	 GetEntityHierarchyNonStd ")
 	fmt.Println("******************************************************")
+	DispRequestMetaData(r)
 	var e, e1 bool
 	var err string
 	//Extract string between /api and /{id}
