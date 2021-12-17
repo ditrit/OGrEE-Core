@@ -70,6 +70,187 @@ func fixID(data map[string]interface{}) map[string]interface{} {
 	return data
 }
 
+func validateParent(ent string, entNum int, t map[string]interface{}) (map[string]interface{}, bool) {
+
+	//Check ParentID is valid
+	if t["parentId"] == nil {
+		return u.Message(false, "ParentID is not valid"), false
+	}
+
+	objID, err := primitive.ObjectIDFromHex(t["parentId"].(string))
+	if err != nil {
+		return u.Message(false, "ParentID is not valid"), false
+	}
+
+	switch entNum {
+	case DEVICE:
+		x, _ := GetEntity(bson.M{"_id": objID}, "rack")
+		y, _ := GetEntity(bson.M{"_id": objID}, "device")
+		if x == nil && y == nil {
+			return u.Message(false,
+				"ParentID should be correspond to Existing ID"), false
+		}
+	case SENSOR:
+		x, _ := GetEntity(bson.M{"_id": objID}, "rack")
+		y, _ := GetEntity(bson.M{"_id": objID}, "device")
+		z, _ := GetEntity(bson.M{"_id": objID}, "room")
+		if x == nil && y == nil && z == nil {
+			return u.Message(false,
+				"ParentID should be correspond to Existing ID"), false
+		}
+	default:
+		parentInt := u.GetParentOfEntityByInt(entNum)
+		parent := u.EntityToString(parentInt)
+
+		ctx, cancel := u.Connect()
+		if GetDB().Collection(parent).
+			FindOne(ctx, bson.M{"_id": objID}).Err() != nil {
+			println("ENTITY VALUE: ", ent)
+			println("We got Parent: ", parent, " with ID:", t["parentId"].(string))
+			return u.Message(false,
+				"ParentID should correspond to Existing ID"), false
+
+		}
+		defer cancel()
+	}
+	return nil, true
+}
+
+func ValidatePatch(ent int, t map[string]interface{}) (map[string]interface{}, bool) {
+
+	for k := range t {
+		switch k {
+		case "name", "category", "domain":
+			//Only for Entities until SENSOR
+			//And OBJTMPL
+			if ent < ROOMTMPL || ent == OBJTMPL {
+				if v, _ := t[k]; v == nil {
+					return u.Message(false,
+						"Field: "+k+" cannot nullified!"), false
+				}
+			}
+
+		case "parentId":
+			if ent < ROOMTMPL {
+				x, ok := validateParent(u.EntityToString(ent), ent, t)
+				if !ok {
+					return x, ok
+				}
+			}
+
+		case "attributes.color": // TENANT
+			if ent == TENANT {
+				if v, _ := t[k]; v == nil {
+					return u.Message(false,
+						"Field: "+k+" cannot nullified!"), false
+				}
+			}
+
+		case "attributes.orientation": //SITE, ROOM, RACK, DEVICE
+			if ent >= SITE && ent <= DEVICE {
+				if v, _ := t[k]; v == nil {
+					return u.Message(false,
+						"Field: "+k+" cannot nullified!"), false
+				}
+			}
+
+		case "attributes.usableColor",
+			"attributes.reservedColor",
+			"attributes.technicalColor": //SITE
+			if ent == SITE {
+				if v, _ := t[k]; v == nil {
+					return u.Message(false,
+						"Field: "+k+" cannot nullified!"), false
+				}
+			}
+
+		case "attributes.posXY", "attributes.posXYUnit": // BLDG, ROOM, RACK
+			if ent >= BLDG && ent <= RACK {
+				if v, _ := t[k]; v == nil {
+					return u.Message(false,
+						"Field: "+k+" cannot nullified!"), false
+				}
+			}
+
+		case "attributes": //TENANT ... SENSOR, OBJTMPL
+			if (ent >= TENANT && ent < ROOMTMPL) || ent == OBJTMPL {
+				if v, _ := t[k]; v == nil {
+					return u.Message(false,
+						"Field: "+k+" cannot nullified!"), false
+				}
+			}
+
+		case "attributes.size", "attributes.sizeUnit",
+			"attributes.height", "attributes.heightUnit":
+			//BLDG ... DEVICE
+			if ent >= BLDG && ent <= DEVICE {
+				if v, _ := t[k]; v == nil {
+					return u.Message(false,
+						"Field: "+k+" cannot nullified!"), false
+				}
+			}
+
+		case "attributes.floorUnit": //ROOM
+			if ent == ROOM {
+				if v, _ := t[k]; v == nil {
+					return u.Message(false,
+						"Field: "+k+" cannot nullified!"), false
+				}
+			}
+
+		case "slug", "colors": //TEMPLATES
+			if ent == OBJTMPL || ent == ROOMTMPL {
+				if v, _ := t[k]; v == nil {
+					return u.Message(false,
+						"Field: "+k+" cannot nullified!"), false
+				}
+			}
+
+		case "orientation", "sizeWDHm", "reservedArea",
+			"technicalArea", "separators", "tiles": //ROOMTMPL
+			if ent == ROOMTMPL {
+				if v, _ := t[k]; v == nil {
+					return u.Message(false,
+						"Field: "+k+" cannot nullified!"), false
+				}
+			}
+
+		case "description", "slots",
+			"sizeWDHmm", "fbxModel": //OBJTMPL
+			if ent == OBJTMPL {
+				if v, _ := t[k]; v == nil {
+					return u.Message(false,
+						"Field: "+k+" cannot nullified!"), false
+				}
+			}
+
+		case "type":
+			if ent == GROUP || ent == SENSOR {
+				if v, _ := t[k]; v == nil {
+					return u.Message(false,
+						"Field: "+k+" cannot nullified!"), false
+				}
+
+				if ent == SENSOR && t[k] != "rack" &&
+					t[k] != "device" && t[k] != "room" {
+					return u.Message(false,
+						"Incorrect values given for: "+k+"!"+
+							"Please provide rack or device or room"), false
+				}
+
+				if ent == GROUP && t[k] != "device" && t[k] != "rack" {
+					return u.Message(false,
+						"Incorrect values given for: "+k+"!"+
+							"Please provide rack or device"), false
+				}
+			}
+
+		}
+	}
+	return nil, true
+
+}
+
 func ValidateEntity(entity int, t map[string]interface{}) (map[string]interface{}, bool) {
 	var objID primitive.ObjectID
 	var err error
@@ -565,6 +746,10 @@ func UpdateEntity(ent string, req bson.M, t *map[string]interface{}, isPatch boo
 
 	ctx, cancel := u.Connect()
 	if isPatch == true {
+		msg, ok := ValidatePatch(u.EntityStrToInt(ent), *t)
+		if !ok {
+			return msg, "invalid"
+		}
 		e = GetDB().Collection(ent).FindOneAndUpdate(ctx,
 			req, bson.M{"$set": *t},
 			&options.FindOneAndUpdateOptions{ReturnDocument: &retDoc})
@@ -573,26 +758,10 @@ func UpdateEntity(ent string, req bson.M, t *map[string]interface{}, isPatch boo
 		}
 	} else {
 
-		//Ensure that the ParentID is preserved
-		//only for non template objects, tenants, and groups
-		switch {
-		case ent == "room_template" || ent == "obj_template":
-			//Preserve the slug if not
-			//provided
-			if _, ok := (*t)["slug"]; !ok {
-				(*t)["slug"] = req["slug"]
-			}
-		case ent != "group" && ent != "tenant" &&
-			ent != "room_template" && ent != "obj_template" &&
-			((*t)["parentId"] == nil || (*t)["parentId"] == ""):
-			return u.Message(false,
-				"failure: ParentID must be on payload"), "Need ParentID"
-
-		case ent != "group" && ent != "tenant" &&
-			ent != "room_template" && ent != "obj_template" &&
-			len((*t)["parentId"].(string)) != 24:
-			return u.Message(false,
-				"failure: ParentID must be valid"), "Invalid ParentID"
+		//Ensure that the update will be valid
+		msg, ok := ValidateEntity(u.EntityStrToInt(ent), *t)
+		if !ok {
+			return msg, "invalid"
 		}
 
 		e = GetDB().Collection(ent).FindOneAndReplace(ctx,
