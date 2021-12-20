@@ -16,10 +16,16 @@ const (
 	ROOM
 	RACK
 	DEVICE
-	SUBDEV
-	SUBDEV1
-	WALL
-	CORRIDOR
+	AC
+	PWRPNL
+	SEPARATOR
+	CABINET
+	AISLE
+	TILE
+	CORIDOR
+	SENSOR
+	ROOMTMPL
+	OBJTMPL
 	GROUP
 )
 
@@ -63,13 +69,63 @@ func InitState(debugLvl int) {
 		State.TreeHierarchy.Nodes.PushBack(x[i])
 	}
 
-	for i := 1; i < DEVICE; i++ {
-		//time.Sleep(2 * time.Second)
+	for i := 1; i < SENSOR+1; i++ {
 		x := GetChildren(i)
 		for k := range x {
 			SearchAndInsert(&State.TreeHierarchy, x[k], i, "")
 		}
 	}
+
+	// SETUP LOGICAL HIERARCHY START
+	// TODO: PUT THIS SECTION IN A LOOP
+	logique := &Node{}
+	logique.ID = "0"
+	logique.Name = "Logical"
+	logique.Path = "/"
+	State.TreeHierarchy.Nodes.PushBack(logique)
+
+	oTemplate := &Node{}
+	oTemplate.ID = "1"
+	oTemplate.PID = "0"
+	oTemplate.Entity = OBJTMPL
+	oTemplate.Name = "ObjectTemplates"
+	oTemplate.Path = "/Logical"
+	SearchAndInsert(&State.TreeHierarchy, oTemplate, 0, "/Logical")
+	q := GetChildren(OBJTMPL)
+	for k := range q {
+		q[k].PID = "1"
+		SearchAndInsert(&State.TreeHierarchy, q[k],
+			1, "/Logical/ObjectTemplates")
+	}
+
+	rTemplate := &Node{}
+	rTemplate.ID = "2"
+	rTemplate.PID = "0"
+	rTemplate.Entity = ROOMTMPL
+	rTemplate.Name = "RoomTemplates"
+	rTemplate.Path = "/Logical"
+	SearchAndInsert(&State.TreeHierarchy, rTemplate, 0, "/Logical")
+	q = GetChildren(ROOMTMPL)
+	for k := range q {
+		q[k].PID = "2"
+		SearchAndInsert(&State.TreeHierarchy, q[k],
+			1, "/Logical/RoomTemplates")
+	}
+
+	group := &Node{}
+	group.ID = "3"
+	group.PID = "0"
+	group.Entity = GROUP
+	group.Name = "Groups"
+	group.Path = "/Logical"
+	SearchAndInsert(&State.TreeHierarchy, group, 0, "/Logical")
+	q = GetChildren(GROUP)
+	for k := range q {
+		q[k].PID = "3"
+		SearchAndInsert(&State.TreeHierarchy, q[k],
+			1, "/Logical/Groups")
+	}
+	//SETUP LOGICAL HIERARCHY END
 }
 
 func GetChildren(curr int) []*Node {
@@ -78,13 +134,13 @@ func GetChildren(curr int) []*Node {
 	//Stream Error occurs
 	for {
 		resp, e := models.Send("GET",
-			"https://ogree.chibois.net/api/"+EntityToString(curr)+"s",
+			"http://localhost:3001/api/"+EntityToString(curr)+"s",
 			GetKey(), nil)
 		if e != nil {
 			println("Error while getting children!")
 			Exit()
 		}
-		//println("REQ:", "https://ogree.chibois.net/api/"+EntityToString(curr)+"s")
+		//println("REQ:", "http://localhost:3001/api/"+EntityToString(curr)+"s")
 
 		x := makeNodeArrFromResp(resp, curr)
 		if x != nil {
@@ -148,7 +204,17 @@ func makeNodeArrFromResp(resp *http.Response, entity int) []*Node {
 		node := &Node{}
 		node.Path = ""
 		node.Entity = entity
-		node.Name = (string((objs[i].(map[string]interface{}))["name"].(string)))
+		if v, ok := (objs[i].(map[string]interface{}))["name"]; ok {
+			node.Name = v.(string)
+		} else if v, ok := (objs[i].(map[string]interface{}))["slug"]; ok {
+			node.Name = v.(string)
+		} else {
+			ErrorLogger.Println("Object obtained does not have name or slug!" +
+				"Now Exiting")
+			println("Object obtained does not have name or slug!" +
+				"Now Exiting")
+		}
+		//node.Name = (string((objs[i].(map[string]interface{}))["name"].(string)))
 		node.ID, _ = (objs[i].(map[string]interface{}))["id"].(string)
 		num, ok := objs[i].(map[string]interface{})["parentId"].(string)
 		if !ok {
@@ -418,10 +484,30 @@ func EntityToString(entity int) string {
 		return "rack"
 	case DEVICE:
 		return "device"
-	case SUBDEV:
-		return "subdevice"
+	case AC:
+		return "ac"
+	case PWRPNL:
+		return "panel"
+	case SEPARATOR:
+		return "separator"
+	case ROOMTMPL:
+		return "room_template"
+	case OBJTMPL:
+		return "obj_template"
+	case CABINET:
+		return "cabinet"
+	case AISLE:
+		return "aisle"
+	case TILE:
+		return "tile"
+	case GROUP:
+		return "group"
+	case CORIDOR:
+		return "corridor"
+	case SENSOR:
+		return "sensor"
 	default:
-		return "subdevice1"
+		return "INVALID"
 	}
 }
 
@@ -439,10 +525,30 @@ func EntityStrToInt(entity string) int {
 		return RACK
 	case "device":
 		return DEVICE
-	case "subdevice":
-		return SUBDEV
+	case "ac":
+		return AC
+	case "panel":
+		return PWRPNL
+	case "separator":
+		return SEPARATOR
+	case "room_template":
+		return ROOMTMPL
+	case "obj_template":
+		return OBJTMPL
+	case "cabinet":
+		return CABINET
+	case "aisle":
+		return AISLE
+	case "tile":
+		return TILE
+	case "group":
+		return GROUP
+	case "corridor":
+		return CORIDOR
+	case "sensor":
+		return SENSOR
 	default:
-		return SUBDEV1
+		return -1
 	}
 }
 

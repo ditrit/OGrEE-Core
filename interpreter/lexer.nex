@@ -42,7 +42,7 @@
 /rk/ { printToks("TOK_OCRACK");return TOK_OCRACK}
 /dv/ { printToks("TOK_OCDEV");return TOK_OCDEV}
 /gr/ { printToks("TOK_OCGROUP");return TOK_OCGROUP}
-/wa/ { printToks("TOK_OCWALL");return TOK_OCWALL}
+/sp/ { printToks("TOK_OCWALL");return TOK_OCWALL}
 /co/ { printToks("TOK_OCCORIDOR");return TOK_OCCORIDOR}
 /selection/ { printToks("TOK_SELECT"); return TOK_SELECT}
 /cmds/ { printToks("TOK_CMDS"); return TOK_CMDS}
@@ -61,7 +61,7 @@
 /device/ { printToks("TOK_DEVICE");lval.s = yylex.Text();return TOK_DEVICE}
 /group/ { printToks("TOK_GROUP");lval.s = yylex.Text();return TOK_GROUP}
 /corridor/ { printToks("TOK_CORIDOR");lval.s = yylex.Text();return TOK_CORIDOR}
-/wall/ { printToks("TOK_WALL");lval.s = yylex.Text();return TOK_WALL}
+/separator/ { printToks("TOK_WALL");lval.s = yylex.Text();return TOK_WALL}
 
 /[0-9]+/ { printToks("TOK_NUM");lval.n = atoi(yylex.Text()); return TOK_NUM}
 /lsten/ { printToks("TOK_LSTEN"); return TOK_LSTEN}

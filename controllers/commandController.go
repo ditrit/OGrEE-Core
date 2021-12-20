@@ -821,6 +821,7 @@ func GetOCLIAtrributes(path *Stack, ent int, data map[string]interface{}, term *
 				ErrorLogger.Println("Error reading attribute: ", e)
 				return
 			}
+			x = strings.TrimSpace(x)
 			a, v := getAttrAndVal(x)
 			switch a {
 			case "id", "name", "category", "parentID",
@@ -872,6 +873,7 @@ func GetOCLIAtrributes(path *Stack, ent int, data map[string]interface{}, term *
 	case ROOM:
 		for data["domain"] == nil || data["category"] == nil ||
 			data["parentId"] == nil ||
+			data["attributes"].(map[string]interface{})["floorUnit"] == nil ||
 			data["attributes"].(map[string]interface{})["orientation"] == nil ||
 			data["attributes"].(map[string]interface{})["posXYUnit"] == nil ||
 			data["attributes"].(map[string]interface{})["posZ"] == nil ||
@@ -964,7 +966,7 @@ func GetOCLIAtrributes(path *Stack, ent int, data map[string]interface{}, term *
 		}
 		PostObj(ent, "device", data)
 
-	case WALL, CORRIDOR, GROUP:
+	case SEPARATOR, CORIDOR, GROUP:
 		//name, category, domain, pid
 		data["attributes"] = map[string]interface{}{}
 		for data["name"] == nil || data["domain"] == nil || data["category"] == nil ||
@@ -991,9 +993,9 @@ func GetOCLIAtrributes(path *Stack, ent int, data map[string]interface{}, term *
 			}
 		}
 
-		if ent == WALL {
-			PostObj(ent, "wall", data)
-		} else if ent == CORRIDOR {
+		if ent == SEPARATOR {
+			PostObj(ent, "separator", data)
+		} else if ent == CORIDOR {
 			PostObj(ent, "corridor", data)
 		} else {
 			PostObj(ent, "group", data)
