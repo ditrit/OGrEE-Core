@@ -241,7 +241,7 @@ func UpdateObj(path string, data map[string]interface{}) map[string]interface{} 
 		URL := "https://ogree.chibois.net/api/" +
 			EntityToString((*nd).Entity) + "s/" + (*nd).ID
 
-		resp, e := models.Send("PUT", URL, GetKey(), data)
+		resp, e := models.Send("PATCH", URL, GetKey(), data)
 		//println("Response Code: ", resp.Status)
 		if e != nil {
 			println("There was an error!")
