@@ -120,6 +120,9 @@ func genNodeFromCommonRes(x node) node {
 %token <s> TOK_WORD TOK_TENANT TOK_SITE TOK_BLDG TOK_ROOM
 %token <s> TOK_RACK TOK_DEVICE
 %token <s> TOK_CORIDOR TOK_GROUP TOK_WALL
+%token <s> TOK_AC TOK_CABINET TOK_PANEL TOK_AISLE
+%token <s> TOK_TILE TOK_SENSOR
+%token <s> TOK_ROOM_TMPL TOK_OBJ_TMPL
 %token <s> TOK_PLUS TOK_OCDEL TOK_BOOL
 %token
        TOK_CREATE TOK_GET TOK_UPDATE TOK_DELETE TOK_SEARCH
@@ -331,6 +334,13 @@ E:     TOK_TENANT
        | TOK_ROOM 
        | TOK_RACK 
        | TOK_DEVICE 
+       | TOK_AC
+       | TOK_PANEL
+       | TOK_CABINET
+       | TOK_AISLE
+       | TOK_TILE
+       | TOK_SENSOR
+       | TOK_CORIDOR
 ;
 
 

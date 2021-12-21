@@ -395,7 +395,8 @@ func UpdateTree(root **Node, curr *Node) bool {
 	}
 
 	//Add only when the PID matches Parent's ID
-	if (*root).ID == curr.PID && curr.Entity == (*root).Entity+1 {
+	//And the parent is indeed the correct Entity
+	if (*root).ID == curr.PID && GetParentOfEntity(curr.Entity) == (*root).Entity {
 		(*root).Nodes.PushBack(curr)
 		return true
 	}
@@ -549,6 +550,47 @@ func EntityStrToInt(entity string) int {
 		return SENSOR
 	default:
 		return -1
+	}
+}
+
+func GetParentOfEntity(ent int) int {
+	switch ent {
+	case TENANT:
+		return -1
+	case SITE:
+		return ent - 1
+	case BLDG:
+		return ent - 1
+	case ROOM:
+		return ent - 1
+	case RACK:
+		return ent - 1
+	case DEVICE:
+		return ent - 1
+	case AC:
+		return ROOM
+	case PWRPNL:
+		return ROOM
+	case SEPARATOR:
+		return ROOM
+	case ROOMTMPL:
+		return -1
+	case OBJTMPL:
+		return -1
+	case CABINET:
+		return ROOM
+	case AISLE:
+		return ROOM
+	case TILE:
+		return ROOM
+	case GROUP:
+		return -1
+	case CORIDOR:
+		return ROOM
+	case SENSOR:
+		return -2
+	default:
+		return -3
 	}
 }
 

@@ -62,6 +62,14 @@
 /group/ { printToks("TOK_GROUP");lval.s = yylex.Text();return TOK_GROUP}
 /corridor/ { printToks("TOK_CORIDOR");lval.s = yylex.Text();return TOK_CORIDOR}
 /separator/ { printToks("TOK_WALL");lval.s = yylex.Text();return TOK_WALL}
+/ac/ { printToks("TOK_AC");lval.s = yylex.Text();return TOK_AC}
+/panel/ { printToks("TOK_PANEL");lval.s = yylex.Text();return TOK_PANEL}
+/tile/ { printToks("TOK_TILE");lval.s = yylex.Text();return TOK_TILE}
+/aisle/ { printToks("TOK_AISLE");lval.s = yylex.Text();return TOK_AISLE}
+/cabinet/ { printToks("TOK_CABINET");lval.s = yylex.Text();return TOK_CABINET}
+/sensor/ { printToks("TOK_SENSOR");lval.s = yylex.Text();return TOK_SENSOR}
+/room_template/ { printToks("TOK_ROOM_TMPL");lval.s = yylex.Text();return TOK_ROOM_TMPL}
+/obj_template/ { printToks("TOK_OBJ_TMPL");lval.s = yylex.Text();return TOK_OBJ_TMPL}
 
 /[0-9]+/ { printToks("TOK_NUM");lval.n = atoi(yylex.Text()); return TOK_NUM}
 /lsten/ { printToks("TOK_LSTEN"); return TOK_LSTEN}

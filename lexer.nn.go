@@ -3824,6 +3824,1214 @@ var dfas = []dfa{
 		},
 	}, []int{ /* Start-of-input transitions */ -1, -1, -1, -1, -1, -1, -1, -1, -1, -1}, []int{ /* End-of-input transitions */ -1, -1, -1, -1, -1, -1, -1, -1, -1, -1}, nil},
 
+	// ac
+	{[]bool{false, false, true}, []func(rune) int{ // Transitions
+		func(r rune) int {
+			switch r {
+			case 97:
+				return 1
+			case 99:
+				return -1
+			}
+			return -1
+		},
+		func(r rune) int {
+			switch r {
+			case 97:
+				return -1
+			case 99:
+				return 2
+			}
+			return -1
+		},
+		func(r rune) int {
+			switch r {
+			case 97:
+				return -1
+			case 99:
+				return -1
+			}
+			return -1
+		},
+	}, []int{ /* Start-of-input transitions */ -1, -1, -1}, []int{ /* End-of-input transitions */ -1, -1, -1}, nil},
+
+	// panel
+	{[]bool{false, false, false, false, false, true}, []func(rune) int{ // Transitions
+		func(r rune) int {
+			switch r {
+			case 97:
+				return -1
+			case 101:
+				return -1
+			case 108:
+				return -1
+			case 110:
+				return -1
+			case 112:
+				return 1
+			}
+			return -1
+		},
+		func(r rune) int {
+			switch r {
+			case 97:
+				return 2
+			case 101:
+				return -1
+			case 108:
+				return -1
+			case 110:
+				return -1
+			case 112:
+				return -1
+			}
+			return -1
+		},
+		func(r rune) int {
+			switch r {
+			case 97:
+				return -1
+			case 101:
+				return -1
+			case 108:
+				return -1
+			case 110:
+				return 3
+			case 112:
+				return -1
+			}
+			return -1
+		},
+		func(r rune) int {
+			switch r {
+			case 97:
+				return -1
+			case 101:
+				return 4
+			case 108:
+				return -1
+			case 110:
+				return -1
+			case 112:
+				return -1
+			}
+			return -1
+		},
+		func(r rune) int {
+			switch r {
+			case 97:
+				return -1
+			case 101:
+				return -1
+			case 108:
+				return 5
+			case 110:
+				return -1
+			case 112:
+				return -1
+			}
+			return -1
+		},
+		func(r rune) int {
+			switch r {
+			case 97:
+				return -1
+			case 101:
+				return -1
+			case 108:
+				return -1
+			case 110:
+				return -1
+			case 112:
+				return -1
+			}
+			return -1
+		},
+	}, []int{ /* Start-of-input transitions */ -1, -1, -1, -1, -1, -1}, []int{ /* End-of-input transitions */ -1, -1, -1, -1, -1, -1}, nil},
+
+	// tile
+	{[]bool{false, false, false, false, true}, []func(rune) int{ // Transitions
+		func(r rune) int {
+			switch r {
+			case 101:
+				return -1
+			case 105:
+				return -1
+			case 108:
+				return -1
+			case 116:
+				return 1
+			}
+			return -1
+		},
+		func(r rune) int {
+			switch r {
+			case 101:
+				return -1
+			case 105:
+				return 2
+			case 108:
+				return -1
+			case 116:
+				return -1
+			}
+			return -1
+		},
+		func(r rune) int {
+			switch r {
+			case 101:
+				return -1
+			case 105:
+				return -1
+			case 108:
+				return 3
+			case 116:
+				return -1
+			}
+			return -1
+		},
+		func(r rune) int {
+			switch r {
+			case 101:
+				return 4
+			case 105:
+				return -1
+			case 108:
+				return -1
+			case 116:
+				return -1
+			}
+			return -1
+		},
+		func(r rune) int {
+			switch r {
+			case 101:
+				return -1
+			case 105:
+				return -1
+			case 108:
+				return -1
+			case 116:
+				return -1
+			}
+			return -1
+		},
+	}, []int{ /* Start-of-input transitions */ -1, -1, -1, -1, -1}, []int{ /* End-of-input transitions */ -1, -1, -1, -1, -1}, nil},
+
+	// aisle
+	{[]bool{false, false, false, false, false, true}, []func(rune) int{ // Transitions
+		func(r rune) int {
+			switch r {
+			case 97:
+				return 1
+			case 101:
+				return -1
+			case 105:
+				return -1
+			case 108:
+				return -1
+			case 115:
+				return -1
+			}
+			return -1
+		},
+		func(r rune) int {
+			switch r {
+			case 97:
+				return -1
+			case 101:
+				return -1
+			case 105:
+				return 2
+			case 108:
+				return -1
+			case 115:
+				return -1
+			}
+			return -1
+		},
+		func(r rune) int {
+			switch r {
+			case 97:
+				return -1
+			case 101:
+				return -1
+			case 105:
+				return -1
+			case 108:
+				return -1
+			case 115:
+				return 3
+			}
+			return -1
+		},
+		func(r rune) int {
+			switch r {
+			case 97:
+				return -1
+			case 101:
+				return -1
+			case 105:
+				return -1
+			case 108:
+				return 4
+			case 115:
+				return -1
+			}
+			return -1
+		},
+		func(r rune) int {
+			switch r {
+			case 97:
+				return -1
+			case 101:
+				return 5
+			case 105:
+				return -1
+			case 108:
+				return -1
+			case 115:
+				return -1
+			}
+			return -1
+		},
+		func(r rune) int {
+			switch r {
+			case 97:
+				return -1
+			case 101:
+				return -1
+			case 105:
+				return -1
+			case 108:
+				return -1
+			case 115:
+				return -1
+			}
+			return -1
+		},
+	}, []int{ /* Start-of-input transitions */ -1, -1, -1, -1, -1, -1}, []int{ /* End-of-input transitions */ -1, -1, -1, -1, -1, -1}, nil},
+
+	// cabinet
+	{[]bool{false, false, false, false, false, false, false, true}, []func(rune) int{ // Transitions
+		func(r rune) int {
+			switch r {
+			case 97:
+				return -1
+			case 98:
+				return -1
+			case 99:
+				return 1
+			case 101:
+				return -1
+			case 105:
+				return -1
+			case 110:
+				return -1
+			case 116:
+				return -1
+			}
+			return -1
+		},
+		func(r rune) int {
+			switch r {
+			case 97:
+				return 2
+			case 98:
+				return -1
+			case 99:
+				return -1
+			case 101:
+				return -1
+			case 105:
+				return -1
+			case 110:
+				return -1
+			case 116:
+				return -1
+			}
+			return -1
+		},
+		func(r rune) int {
+			switch r {
+			case 97:
+				return -1
+			case 98:
+				return 3
+			case 99:
+				return -1
+			case 101:
+				return -1
+			case 105:
+				return -1
+			case 110:
+				return -1
+			case 116:
+				return -1
+			}
+			return -1
+		},
+		func(r rune) int {
+			switch r {
+			case 97:
+				return -1
+			case 98:
+				return -1
+			case 99:
+				return -1
+			case 101:
+				return -1
+			case 105:
+				return 4
+			case 110:
+				return -1
+			case 116:
+				return -1
+			}
+			return -1
+		},
+		func(r rune) int {
+			switch r {
+			case 97:
+				return -1
+			case 98:
+				return -1
+			case 99:
+				return -1
+			case 101:
+				return -1
+			case 105:
+				return -1
+			case 110:
+				return 5
+			case 116:
+				return -1
+			}
+			return -1
+		},
+		func(r rune) int {
+			switch r {
+			case 97:
+				return -1
+			case 98:
+				return -1
+			case 99:
+				return -1
+			case 101:
+				return 6
+			case 105:
+				return -1
+			case 110:
+				return -1
+			case 116:
+				return -1
+			}
+			return -1
+		},
+		func(r rune) int {
+			switch r {
+			case 97:
+				return -1
+			case 98:
+				return -1
+			case 99:
+				return -1
+			case 101:
+				return -1
+			case 105:
+				return -1
+			case 110:
+				return -1
+			case 116:
+				return 7
+			}
+			return -1
+		},
+		func(r rune) int {
+			switch r {
+			case 97:
+				return -1
+			case 98:
+				return -1
+			case 99:
+				return -1
+			case 101:
+				return -1
+			case 105:
+				return -1
+			case 110:
+				return -1
+			case 116:
+				return -1
+			}
+			return -1
+		},
+	}, []int{ /* Start-of-input transitions */ -1, -1, -1, -1, -1, -1, -1, -1}, []int{ /* End-of-input transitions */ -1, -1, -1, -1, -1, -1, -1, -1}, nil},
+
+	// sensor
+	{[]bool{false, false, false, false, false, false, true}, []func(rune) int{ // Transitions
+		func(r rune) int {
+			switch r {
+			case 101:
+				return -1
+			case 110:
+				return -1
+			case 111:
+				return -1
+			case 114:
+				return -1
+			case 115:
+				return 1
+			}
+			return -1
+		},
+		func(r rune) int {
+			switch r {
+			case 101:
+				return 2
+			case 110:
+				return -1
+			case 111:
+				return -1
+			case 114:
+				return -1
+			case 115:
+				return -1
+			}
+			return -1
+		},
+		func(r rune) int {
+			switch r {
+			case 101:
+				return -1
+			case 110:
+				return 3
+			case 111:
+				return -1
+			case 114:
+				return -1
+			case 115:
+				return -1
+			}
+			return -1
+		},
+		func(r rune) int {
+			switch r {
+			case 101:
+				return -1
+			case 110:
+				return -1
+			case 111:
+				return -1
+			case 114:
+				return -1
+			case 115:
+				return 4
+			}
+			return -1
+		},
+		func(r rune) int {
+			switch r {
+			case 101:
+				return -1
+			case 110:
+				return -1
+			case 111:
+				return 5
+			case 114:
+				return -1
+			case 115:
+				return -1
+			}
+			return -1
+		},
+		func(r rune) int {
+			switch r {
+			case 101:
+				return -1
+			case 110:
+				return -1
+			case 111:
+				return -1
+			case 114:
+				return 6
+			case 115:
+				return -1
+			}
+			return -1
+		},
+		func(r rune) int {
+			switch r {
+			case 101:
+				return -1
+			case 110:
+				return -1
+			case 111:
+				return -1
+			case 114:
+				return -1
+			case 115:
+				return -1
+			}
+			return -1
+		},
+	}, []int{ /* Start-of-input transitions */ -1, -1, -1, -1, -1, -1, -1}, []int{ /* End-of-input transitions */ -1, -1, -1, -1, -1, -1, -1}, nil},
+
+	// room_template
+	{[]bool{false, false, false, false, false, false, false, false, false, false, false, false, false, true}, []func(rune) int{ // Transitions
+		func(r rune) int {
+			switch r {
+			case 95:
+				return -1
+			case 97:
+				return -1
+			case 101:
+				return -1
+			case 108:
+				return -1
+			case 109:
+				return -1
+			case 111:
+				return -1
+			case 112:
+				return -1
+			case 114:
+				return 1
+			case 116:
+				return -1
+			}
+			return -1
+		},
+		func(r rune) int {
+			switch r {
+			case 95:
+				return -1
+			case 97:
+				return -1
+			case 101:
+				return -1
+			case 108:
+				return -1
+			case 109:
+				return -1
+			case 111:
+				return 2
+			case 112:
+				return -1
+			case 114:
+				return -1
+			case 116:
+				return -1
+			}
+			return -1
+		},
+		func(r rune) int {
+			switch r {
+			case 95:
+				return -1
+			case 97:
+				return -1
+			case 101:
+				return -1
+			case 108:
+				return -1
+			case 109:
+				return -1
+			case 111:
+				return 3
+			case 112:
+				return -1
+			case 114:
+				return -1
+			case 116:
+				return -1
+			}
+			return -1
+		},
+		func(r rune) int {
+			switch r {
+			case 95:
+				return -1
+			case 97:
+				return -1
+			case 101:
+				return -1
+			case 108:
+				return -1
+			case 109:
+				return 4
+			case 111:
+				return -1
+			case 112:
+				return -1
+			case 114:
+				return -1
+			case 116:
+				return -1
+			}
+			return -1
+		},
+		func(r rune) int {
+			switch r {
+			case 95:
+				return 5
+			case 97:
+				return -1
+			case 101:
+				return -1
+			case 108:
+				return -1
+			case 109:
+				return -1
+			case 111:
+				return -1
+			case 112:
+				return -1
+			case 114:
+				return -1
+			case 116:
+				return -1
+			}
+			return -1
+		},
+		func(r rune) int {
+			switch r {
+			case 95:
+				return -1
+			case 97:
+				return -1
+			case 101:
+				return -1
+			case 108:
+				return -1
+			case 109:
+				return -1
+			case 111:
+				return -1
+			case 112:
+				return -1
+			case 114:
+				return -1
+			case 116:
+				return 6
+			}
+			return -1
+		},
+		func(r rune) int {
+			switch r {
+			case 95:
+				return -1
+			case 97:
+				return -1
+			case 101:
+				return 7
+			case 108:
+				return -1
+			case 109:
+				return -1
+			case 111:
+				return -1
+			case 112:
+				return -1
+			case 114:
+				return -1
+			case 116:
+				return -1
+			}
+			return -1
+		},
+		func(r rune) int {
+			switch r {
+			case 95:
+				return -1
+			case 97:
+				return -1
+			case 101:
+				return -1
+			case 108:
+				return -1
+			case 109:
+				return 8
+			case 111:
+				return -1
+			case 112:
+				return -1
+			case 114:
+				return -1
+			case 116:
+				return -1
+			}
+			return -1
+		},
+		func(r rune) int {
+			switch r {
+			case 95:
+				return -1
+			case 97:
+				return -1
+			case 101:
+				return -1
+			case 108:
+				return -1
+			case 109:
+				return -1
+			case 111:
+				return -1
+			case 112:
+				return 9
+			case 114:
+				return -1
+			case 116:
+				return -1
+			}
+			return -1
+		},
+		func(r rune) int {
+			switch r {
+			case 95:
+				return -1
+			case 97:
+				return -1
+			case 101:
+				return -1
+			case 108:
+				return 10
+			case 109:
+				return -1
+			case 111:
+				return -1
+			case 112:
+				return -1
+			case 114:
+				return -1
+			case 116:
+				return -1
+			}
+			return -1
+		},
+		func(r rune) int {
+			switch r {
+			case 95:
+				return -1
+			case 97:
+				return 11
+			case 101:
+				return -1
+			case 108:
+				return -1
+			case 109:
+				return -1
+			case 111:
+				return -1
+			case 112:
+				return -1
+			case 114:
+				return -1
+			case 116:
+				return -1
+			}
+			return -1
+		},
+		func(r rune) int {
+			switch r {
+			case 95:
+				return -1
+			case 97:
+				return -1
+			case 101:
+				return -1
+			case 108:
+				return -1
+			case 109:
+				return -1
+			case 111:
+				return -1
+			case 112:
+				return -1
+			case 114:
+				return -1
+			case 116:
+				return 12
+			}
+			return -1
+		},
+		func(r rune) int {
+			switch r {
+			case 95:
+				return -1
+			case 97:
+				return -1
+			case 101:
+				return 13
+			case 108:
+				return -1
+			case 109:
+				return -1
+			case 111:
+				return -1
+			case 112:
+				return -1
+			case 114:
+				return -1
+			case 116:
+				return -1
+			}
+			return -1
+		},
+		func(r rune) int {
+			switch r {
+			case 95:
+				return -1
+			case 97:
+				return -1
+			case 101:
+				return -1
+			case 108:
+				return -1
+			case 109:
+				return -1
+			case 111:
+				return -1
+			case 112:
+				return -1
+			case 114:
+				return -1
+			case 116:
+				return -1
+			}
+			return -1
+		},
+	}, []int{ /* Start-of-input transitions */ -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1}, []int{ /* End-of-input transitions */ -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1}, nil},
+
+	// obj_template
+	{[]bool{false, false, false, false, false, false, false, false, false, false, false, false, true}, []func(rune) int{ // Transitions
+		func(r rune) int {
+			switch r {
+			case 95:
+				return -1
+			case 97:
+				return -1
+			case 98:
+				return -1
+			case 101:
+				return -1
+			case 106:
+				return -1
+			case 108:
+				return -1
+			case 109:
+				return -1
+			case 111:
+				return 1
+			case 112:
+				return -1
+			case 116:
+				return -1
+			}
+			return -1
+		},
+		func(r rune) int {
+			switch r {
+			case 95:
+				return -1
+			case 97:
+				return -1
+			case 98:
+				return 2
+			case 101:
+				return -1
+			case 106:
+				return -1
+			case 108:
+				return -1
+			case 109:
+				return -1
+			case 111:
+				return -1
+			case 112:
+				return -1
+			case 116:
+				return -1
+			}
+			return -1
+		},
+		func(r rune) int {
+			switch r {
+			case 95:
+				return -1
+			case 97:
+				return -1
+			case 98:
+				return -1
+			case 101:
+				return -1
+			case 106:
+				return 3
+			case 108:
+				return -1
+			case 109:
+				return -1
+			case 111:
+				return -1
+			case 112:
+				return -1
+			case 116:
+				return -1
+			}
+			return -1
+		},
+		func(r rune) int {
+			switch r {
+			case 95:
+				return 4
+			case 97:
+				return -1
+			case 98:
+				return -1
+			case 101:
+				return -1
+			case 106:
+				return -1
+			case 108:
+				return -1
+			case 109:
+				return -1
+			case 111:
+				return -1
+			case 112:
+				return -1
+			case 116:
+				return -1
+			}
+			return -1
+		},
+		func(r rune) int {
+			switch r {
+			case 95:
+				return -1
+			case 97:
+				return -1
+			case 98:
+				return -1
+			case 101:
+				return -1
+			case 106:
+				return -1
+			case 108:
+				return -1
+			case 109:
+				return -1
+			case 111:
+				return -1
+			case 112:
+				return -1
+			case 116:
+				return 5
+			}
+			return -1
+		},
+		func(r rune) int {
+			switch r {
+			case 95:
+				return -1
+			case 97:
+				return -1
+			case 98:
+				return -1
+			case 101:
+				return 6
+			case 106:
+				return -1
+			case 108:
+				return -1
+			case 109:
+				return -1
+			case 111:
+				return -1
+			case 112:
+				return -1
+			case 116:
+				return -1
+			}
+			return -1
+		},
+		func(r rune) int {
+			switch r {
+			case 95:
+				return -1
+			case 97:
+				return -1
+			case 98:
+				return -1
+			case 101:
+				return -1
+			case 106:
+				return -1
+			case 108:
+				return -1
+			case 109:
+				return 7
+			case 111:
+				return -1
+			case 112:
+				return -1
+			case 116:
+				return -1
+			}
+			return -1
+		},
+		func(r rune) int {
+			switch r {
+			case 95:
+				return -1
+			case 97:
+				return -1
+			case 98:
+				return -1
+			case 101:
+				return -1
+			case 106:
+				return -1
+			case 108:
+				return -1
+			case 109:
+				return -1
+			case 111:
+				return -1
+			case 112:
+				return 8
+			case 116:
+				return -1
+			}
+			return -1
+		},
+		func(r rune) int {
+			switch r {
+			case 95:
+				return -1
+			case 97:
+				return -1
+			case 98:
+				return -1
+			case 101:
+				return -1
+			case 106:
+				return -1
+			case 108:
+				return 9
+			case 109:
+				return -1
+			case 111:
+				return -1
+			case 112:
+				return -1
+			case 116:
+				return -1
+			}
+			return -1
+		},
+		func(r rune) int {
+			switch r {
+			case 95:
+				return -1
+			case 97:
+				return 10
+			case 98:
+				return -1
+			case 101:
+				return -1
+			case 106:
+				return -1
+			case 108:
+				return -1
+			case 109:
+				return -1
+			case 111:
+				return -1
+			case 112:
+				return -1
+			case 116:
+				return -1
+			}
+			return -1
+		},
+		func(r rune) int {
+			switch r {
+			case 95:
+				return -1
+			case 97:
+				return -1
+			case 98:
+				return -1
+			case 101:
+				return -1
+			case 106:
+				return -1
+			case 108:
+				return -1
+			case 109:
+				return -1
+			case 111:
+				return -1
+			case 112:
+				return -1
+			case 116:
+				return 11
+			}
+			return -1
+		},
+		func(r rune) int {
+			switch r {
+			case 95:
+				return -1
+			case 97:
+				return -1
+			case 98:
+				return -1
+			case 101:
+				return 12
+			case 106:
+				return -1
+			case 108:
+				return -1
+			case 109:
+				return -1
+			case 111:
+				return -1
+			case 112:
+				return -1
+			case 116:
+				return -1
+			}
+			return -1
+		},
+		func(r rune) int {
+			switch r {
+			case 95:
+				return -1
+			case 97:
+				return -1
+			case 98:
+				return -1
+			case 101:
+				return -1
+			case 106:
+				return -1
+			case 108:
+				return -1
+			case 109:
+				return -1
+			case 111:
+				return -1
+			case 112:
+				return -1
+			case 116:
+				return -1
+			}
+			return -1
+		},
+	}, []int{ /* Start-of-input transitions */ -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1}, []int{ /* End-of-input transitions */ -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1}, nil},
+
 	// [0-9]+
 	{[]bool{false, true}, []func(rune) int{ // Transitions
 		func(r rune) int {
@@ -5532,106 +6740,154 @@ OUTER0:
 			}
 		case 62:
 			{
+				printToks("TOK_AC")
+				lval.s = yylex.Text()
+				return TOK_AC
+			}
+		case 63:
+			{
+				printToks("TOK_PANEL")
+				lval.s = yylex.Text()
+				return TOK_PANEL
+			}
+		case 64:
+			{
+				printToks("TOK_TILE")
+				lval.s = yylex.Text()
+				return TOK_TILE
+			}
+		case 65:
+			{
+				printToks("TOK_AISLE")
+				lval.s = yylex.Text()
+				return TOK_AISLE
+			}
+		case 66:
+			{
+				printToks("TOK_CABINET")
+				lval.s = yylex.Text()
+				return TOK_CABINET
+			}
+		case 67:
+			{
+				printToks("TOK_SENSOR")
+				lval.s = yylex.Text()
+				return TOK_SENSOR
+			}
+		case 68:
+			{
+				printToks("TOK_ROOM_TMPL")
+				lval.s = yylex.Text()
+				return TOK_ROOM_TMPL
+			}
+		case 69:
+			{
+				printToks("TOK_OBJ_TMPL")
+				lval.s = yylex.Text()
+				return TOK_OBJ_TMPL
+			}
+		case 70:
+			{
 				printToks("TOK_NUM")
 				lval.n = atoi(yylex.Text())
 				return TOK_NUM
 			}
-		case 63:
+		case 71:
 			{
 				printToks("TOK_LSTEN")
 				return TOK_LSTEN
 			}
-		case 64:
+		case 72:
 			{
 				printToks("TOK_LSSITE")
 				return TOK_LSSITE
 			}
-		case 65:
+		case 73:
 			{
 				printToks("TOK_LSBLDG")
 				return TOK_LSBLDG
 			}
-		case 66:
+		case 74:
 			{
 				printToks("TOK_LSROOM")
 				return TOK_LSROOM
 			}
-		case 67:
+		case 75:
 			{
 				printToks("TOK_LSRACK")
 				return TOK_LSRACK
 			}
-		case 68:
+		case 76:
 			{
 				printToks("TOK_LSDEV")
 				return TOK_LSDEV
 			}
-		case 69:
+		case 77:
 			{
 				printToks("TOK_TREE")
 				return TOK_TREE
 			}
-		case 70:
+		case 78:
 			{
 				printToks("TOK_LSOG")
 				return TOK_LSOG
 			}
-		case 71:
+		case 79:
 			{
 				printToks("TOK_CD")
 				return TOK_CD
 			}
-		case 72:
+		case 80:
 			{
 				printToks("TOK_PWD")
 				return TOK_PWD
 			}
-		case 73:
+		case 81:
 			{
 				printToks("TOK_CLR")
 				return TOK_CLR
 			}
-		case 74:
+		case 82:
 			{
 				printToks("TOK_GREP")
 				return TOK_GREP
 			}
-		case 75:
+		case 83:
 			{
 				printToks("TOK_LS")
 				return TOK_LS
 			}
-		case 76:
+		case 84:
 			{
 				printToks("TOK_EXIT")
 				return TOK_EXIT
 			}
-		case 77:
+		case 85:
 			{
 				printToks("TOK_LEN")
 				return TOK_LEN
 			}
-		case 78:
+		case 86:
 			{
 				printToks("TOK_CMDFLAG")
 				return TOK_CMDFLAG
 			}
-		case 79:
+		case 87:
 			{
 				printToks("TOK_EQUAL")
 				return TOK_EQUAL
 			}
-		case 80:
+		case 88:
 			{
 				printToks("TOK_SLASH")
 				return TOK_SLASH
 			}
-		case 81:
+		case 89:
 			{
 				printToks("TOK_DOC")
 				return TOK_DOC
 			}
-		case 82:
+		case 90:
 			{
 				printToks("TOK_WORD")
 				lval.s = yylex.Text()
