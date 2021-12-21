@@ -777,7 +777,7 @@ var UpdateEntity = func(w http.ResponseWriter, r *http.Request) {
 	}
 
 	switch e3 {
-	case "validate", "Invalid ParentID", "Need ParentID":
+	case "validate", "Invalid ParentID", "Need ParentID", "invalid":
 		w.WriteHeader(http.StatusBadRequest)
 		u.ErrLog("Error while updating "+entity, "UPDATE "+strings.ToUpper(entity), e3, r)
 	case "internal":
