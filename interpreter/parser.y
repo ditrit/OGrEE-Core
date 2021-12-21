@@ -48,22 +48,57 @@ func retMapInf(x string, y interface{}) map[string]interface{} {
        }
 }
 
-func resMap(x *string) map[string]interface{} {
+func resMap(x *string, ent string) map[string]interface{} {
        resarr := strings.Split(*x, "=")
        res := make(map[string]interface{})
        attrs := make(map[string]string)
 
 	for i := 0; i+1 < len(resarr); {
               if i+1 < len(resarr) {
-                     switch resarr[i] {
-                            case "id", "name", "category", "parentID", 
-                            "description", "domain", "parentid", "parentId":
-                                   res[resarr[i]] = resarr[i+1]
-                            
+                     switch ent {
+                            case "sensor", "group":
+                            switch resarr[i] {
+                                   case "id", "name", "category", "parentID", 
+                                   "description", "domain", "type",
+                                   "parentid", "parentId":
+                                          res[resarr[i]] = resarr[i+1]
+
+                                   default:
+                                   attrs[resarr[i]] = resarr[i+1]
+                            }
+                            case "room_template":
+                                   switch resarr[i] {
+                                   case "id", "slug", "orientation", "separators", 
+                                   "tiles", "colors", "aisles", "sizeWDHm",
+                                   "technicalArea", "reservedArea":
+                                          res[resarr[i]] = resarr[i+1]
+
+                                   default:
+                                   attrs[resarr[i]] = resarr[i+1]
+                            }
+                            case "obj_template":
+                            switch resarr[i] {
+                                   case "id", "slug", "description", "category", 
+                                   "slots", "colors", "components", "sizeWDHmm",
+                                   "fbxModel":
+                                          res[resarr[i]] = resarr[i+1]
+
+                                   default:
+                                   attrs[resarr[i]] = resarr[i+1]
+                            }
+
                             default:
-                            attrs[resarr[i]] = resarr[i+1]
+                                   switch resarr[i] {
+                                   case "id", "name", "category", "parentID", 
+                                   "description", "domain", "parentid", "parentId":
+                                          res[resarr[i]] = resarr[i+1]
+
+                                   default:
+                                   attrs[resarr[i]] = resarr[i+1]
+                            }
+			
                      }
-			i += 2
+                     i += 2
 		}
 	}
        res["attributes"] = attrs
@@ -73,6 +108,17 @@ func resMap(x *string) map[string]interface{} {
 func replaceOCLICurrPath(x string) string {
        return strings.Replace(x, "_", cmd.State.CurrPath, 1)
 }
+
+func auxGetNode(path string) string {
+       stk := cmd.StrToStack(path)
+       nd := cmd.FindNodeInTree(&cmd.State.TreeHierarchy, stk)
+       if nd != nil {
+              return cmd.EntityToString((*nd).Entity)
+       } else {
+              println("Error while finding object in path")
+       }
+       return ""
+} 
 
 //Gets node from Tree Hierarchy using a map[string]interface
 func getNodeFromMapInf(x map[string]interface{}) *cmd.Node {
@@ -315,14 +361,14 @@ K: NT_CREATE     {if cmd.State.DebugLvl >= 3 {println("@State start");}}
        | NT_DEL 
 ;
 
-NT_CREATE: TOK_CREATE E P F {cmd.Disp(resMap(&$4)); $$=&commonNode{COMMON, cmd.PostObj, "PostObj", []interface{}{cmd.EntityStrToInt($2),$2, resMap(&$4)}}}
+NT_CREATE: TOK_CREATE E P F {cmd.Disp(resMap(&$4, $2)); $$=&commonNode{COMMON, cmd.PostObj, "PostObj", []interface{}{cmd.EntityStrToInt($2),$2, resMap(&$4, $2)}}}
 ;
 
 NT_GET: TOK_GET P {$$=&commonNode{COMMON, cmd.GetObject, "GetObject", []interface{}{$2}}}
-       | TOK_GET E F {/*cmd.Disp(resMap(&$4)); */$$=&commonNode{COMMON, cmd.SearchObjects, "SearchObjects", []interface{}{$2, resMap(&$3)}} }
+       | TOK_GET E F {/*cmd.Disp(resMap(&$4)); */$$=&commonNode{COMMON, cmd.SearchObjects, "SearchObjects", []interface{}{$2, resMap(&$3, $2)}} }
 ;
 
-NT_UPDATE: TOK_UPDATE P F {$$=&commonNode{COMMON, cmd.UpdateObj, "UpdateObj", []interface{}{$2, resMap(&$3)}}}
+NT_UPDATE: TOK_UPDATE P F {$$=&commonNode{COMMON, cmd.UpdateObj, "UpdateObj", []interface{}{$2, resMap(&$3, auxGetNode($2))}}}
 ;
 
 NT_DEL: TOK_DELETE P {if cmd.State.DebugLvl >= 3 {println("@State NT_DEL");}; $$=&commonNode{COMMON, cmd.DeleteObj, "DeleteObj", []interface{}{$2}}}
@@ -341,6 +387,9 @@ E:     TOK_TENANT
        | TOK_TILE
        | TOK_SENSOR
        | TOK_CORIDOR
+       | TOK_GROUP
+       | TOK_OBJ_TMPL
+       | TOK_ROOM_TMPL
 ;
 
 
@@ -355,6 +404,8 @@ WORDORNUM: TOK_WORD {$$=$1; dCatchPtr = $1; dCatchNodePtr=&strNode{STR, $1}}
 
 F:     TOK_WORD TOK_EQUAL WORDORNUM F {$$=string($1+"="+$3+"="+$4); if cmd.State.DebugLvl >= 3 {println("So we got: ", $$);}}
        | TOK_WORD TOK_EQUAL WORDORNUM {$$=$1+"="+$3}
+       | TOK_WORD TOK_EQUAL E {$$=$1+"="+$3}
+       | TOK_WORD TOK_EQUAL E F {$$=string($1+"="+$3+"="+$4); if cmd.State.DebugLvl >= 3 {println("So we got: ", $$);}}
 ;
 
 
@@ -457,7 +508,7 @@ OCCR:   TOK_OCTENANT TOK_COL P TOK_ATTRSPEC WORDORNUM {$$=&commonNode{COMMON, cm
 OCDEL:  TOK_OCDEL P {$$=&commonNode{COMMON, cmd.DeleteObj, "DeleteObj", []interface{}{replaceOCLICurrPath($2)}}}
 ;
 
-OCUPDATE:  P TOK_COL TOK_WORD TOK_EQUAL WORDORNUM {val := $3+"="+$5; $$=&commonNode{COMMON, cmd.UpdateObj, "UpdateObj", []interface{}{replaceOCLICurrPath($1), resMap(&val)}};if cmd.State.DebugLvl >= 3 {println("Attribute Acquired");}}
+OCUPDATE:  P TOK_COL TOK_WORD TOK_EQUAL WORDORNUM {val := $3+"="+$5; $$=&commonNode{COMMON, cmd.UpdateObj, "UpdateObj", []interface{}{replaceOCLICurrPath($1), resMap(&val, auxGetNode(replaceOCLICurrPath($1)))}};if cmd.State.DebugLvl >= 3 {println("Attribute Acquired");}}
 ;
 
 OCGET: TOK_EQUAL P {$$=&commonNode{COMMON, cmd.GetObject, "GetObject", []interface{}{replaceOCLICurrPath($2)}}}
@@ -509,7 +560,7 @@ OCDOT:      TOK_DOT TOK_VAR TOK_COL TOK_WORD TOK_EQUAL WORDORNUM {$$=&assignNode
 ;
 
 OCSEL:      TOK_SELECT {$$=&commonNode{COMMON, cmd.ShowClipBoard, "select", nil};}
-            |TOK_SELECT TOK_DOT TOK_WORD TOK_EQUAL TOK_WORD {x := $3+"="+$5; $$=&commonNode{COMMON, cmd.UpdateSelection, "UpdateSelect", []interface{}{resMap(&x)}};}
+            |TOK_SELECT TOK_DOT TOK_WORD TOK_EQUAL TOK_WORD {x := $3+"="+$5; $$=&commonNode{COMMON, cmd.UpdateSelection, "UpdateSelect", []interface{}{resMap(&x, "other")}};}
 ;
 
 STRARG: WORDORNUM STRARG {if $2 != "" {$$=$1+" "+$2} else {$$=$1};}

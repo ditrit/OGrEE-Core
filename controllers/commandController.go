@@ -47,22 +47,36 @@ func PostObj(ent int, entity string, data map[string]interface{}) map[string]int
 	json.Unmarshal(bodyBytes, &respMap)
 	println(string(respMap["message"].(string)) /*bodyBytes*/)
 	if resp.StatusCode == http.StatusCreated && respMap["status"].(bool) == true {
-		var ok bool
+
 		//Insert object into tree
 		node := &Node{}
-		node.ID, _ = respMap["data"].(map[string]interface{})["id"].(string)
-		node.Name = respMap["data"].(map[string]interface{})["name"].(string)
-		//_, ok := respMap["data"].(map[string]interface{})["parentId"].(float64)
-		node.PID, ok = respMap["data"].(map[string]interface{})["parentId"].(string)
-		if !ok && ent == TENANT {
+
+		if ent == TENANT {
+			node.ID, _ = respMap["data"].(map[string]interface{})["id"].(string)
+			node.Name = respMap["data"].(map[string]interface{})["name"].(string)
 			node.PID = ""
-		}
-		/*if ok {
-			node.PID = int(respMap["data"].(map[string]interface{})["parentId"].(float64))
+
+		} else if ent == OBJTMPL {
+			node.PID = "1"
+			node.ID = respMap["data"].(map[string]interface{})["slug"].(string)
+			node.Name = node.ID
+
+		} else if ent == ROOMTMPL {
+			node.ID = respMap["data"].(map[string]interface{})["slug"].(string)
+			node.Name = node.ID
+			node.PID = "2"
+
+		} else if ent == GROUP {
+			node.Name = respMap["data"].(map[string]interface{})["name"].(string)
+			node.ID = node.Name
+			node.PID = "3"
 		} else {
-			node.PID, _ = strconv.Atoi(respMap["data"].(map[string]interface{})["parentId"].(string))
-		}*/
+			node.ID, _ = respMap["data"].(map[string]interface{})["id"].(string)
+			node.Name = respMap["data"].(map[string]interface{})["name"].(string)
+			node.PID = respMap["data"].(map[string]interface{})["parentId"].(string)
+		}
 		node.Entity = ent
+
 		switch ent {
 		case TENANT:
 			State.TreeHierarchy.Nodes.PushBack(node)

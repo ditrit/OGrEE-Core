@@ -87,7 +87,7 @@ func InitState(debugLvl int) {
 	oTemplate := &Node{}
 	oTemplate.ID = "1"
 	oTemplate.PID = "0"
-	oTemplate.Entity = OBJTMPL
+	oTemplate.Entity = -1
 	oTemplate.Name = "ObjectTemplates"
 	oTemplate.Path = "/Logical"
 	SearchAndInsert(&State.TreeHierarchy, oTemplate, 0, "/Logical")
@@ -101,7 +101,7 @@ func InitState(debugLvl int) {
 	rTemplate := &Node{}
 	rTemplate.ID = "2"
 	rTemplate.PID = "0"
-	rTemplate.Entity = ROOMTMPL
+	rTemplate.Entity = -1
 	rTemplate.Name = "RoomTemplates"
 	rTemplate.Path = "/Logical"
 	SearchAndInsert(&State.TreeHierarchy, rTemplate, 0, "/Logical")
@@ -115,7 +115,7 @@ func InitState(debugLvl int) {
 	group := &Node{}
 	group.ID = "3"
 	group.PID = "0"
-	group.Entity = GROUP
+	group.Entity = -1
 	group.Name = "Groups"
 	group.Path = "/Logical"
 	SearchAndInsert(&State.TreeHierarchy, group, 0, "/Logical")
@@ -395,8 +395,9 @@ func UpdateTree(root **Node, curr *Node) bool {
 	}
 
 	//Add only when the PID matches Parent's ID
-	//And the parent is indeed the correct Entity
-	if (*root).ID == curr.PID && GetParentOfEntity(curr.Entity) == (*root).Entity {
+	//And (possibly if) the parent is indeed the correct Entity
+	/*&& GetParentOfEntity(curr.Entity) == (*root).Entity*/
+	if (*root).ID == curr.PID {
 		(*root).Nodes.PushBack(curr)
 		return true
 	}
