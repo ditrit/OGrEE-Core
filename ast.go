@@ -64,9 +64,15 @@ func (c *commonNode) execute() interface{} {
 			f(c.args[0].(string))
 		}
 
-	case "CD", "Print", "Load":
+	case "CD", "Load":
 		if f, ok := c.fun.(func(string) string); ok {
 			v := f(c.args[0].(string))
+			return &strNode{STR, v}
+		}
+
+	case "Print":
+		if f, ok := c.fun.(func(...interface{}) string); ok {
+			v := f(c.args)
 			return &strNode{STR, v}
 		}
 

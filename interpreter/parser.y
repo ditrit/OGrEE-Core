@@ -400,6 +400,33 @@ WORDORNUM: TOK_WORD {$$=$1; dCatchPtr = $1; dCatchNodePtr=&strNode{STR, $1}}
            |TOK_OCDEL TOK_WORD TOK_OCDEL TOK_WORD {$$=$1+$2+$3+$4; dCatchPtr = $1+$2+$3+$4; dCatchNodePtr=&strNode{STR, $1+$2+$3+$4}}
            |TOK_OCDEL TOK_WORD TOK_PLUS TOK_WORD {$$=$1+$2+$3+$4; dCatchPtr = $1+$2+$3+$4; dCatchNodePtr=&strNode{STR, $1+$2+$3+$4}}
            |TOK_BOOL {var x bool;if $1=="false"{x = false}else{x=true};dCatchPtr = x; dCatchNodePtr=&boolNode{BOOL, x}}
+           |TOK_DEREF TOK_WORD 
+           {
+                  /*Probably code to reference SymbolTable and return data*/
+                  idx := dynamicMap[$2];
+                  item := dynamicSymbolTable[idx];
+                  switch item.(type) {
+                         case bool:
+                            dCatchNodePtr=&boolNode{BOOL, item.(bool)}
+                            if item.(bool) == false {$$ = "false"} else { $$ = "true"}
+                         case string:
+                            dCatchNodePtr=&strNode{STR, item.(string)}
+                            $$ = item.(string)
+                         case int:
+                            dCatchNodePtr=&numNode{NUM, item.(int)}
+                            $$ = strconv.Itoa(item.(int))
+                         case *commonNode:
+                            dCatchNodePtr=item
+                            args := ""
+                            for i := range item.(*commonNode).args {
+                                   args += item.(*commonNode).args[i].(string)
+                            }
+                            $$ = item.(*commonNode).val +" "+ args
+                          default:
+                            println("Unable to deref your variable ")
+                            $$ = ""
+                  }
+           }
            ;
 
 F:     TOK_WORD TOK_EQUAL WORDORNUM F {$$=string($1+"="+$3+"="+$4); if cmd.State.DebugLvl >= 3 {println("So we got: ", $$);}}
