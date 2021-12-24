@@ -472,6 +472,24 @@ func GetNodes(root **Node, entity int) []*Node {
 	return ans
 }
 
+func FindNodeByIDP(root **Node, ID, PID string) *Node {
+	if root != nil {
+
+		if (*root).PID == PID && (*root).ID == ID {
+			return (*root)
+		}
+
+		for i := (**root).Nodes.Front(); i != nil; i = i.Next() {
+			nd := (*Node)((i.Value.(*Node)))
+			if ans := FindNodeByIDP(&nd, ID, PID); ans != nil {
+				return ans
+			}
+		}
+	}
+
+	return nil
+}
+
 func EntityToString(entity int) string {
 	switch entity {
 	case TENANT:

@@ -624,6 +624,8 @@ func (a *assignNode) execute() interface{} {
 			switch locIdx.(type) {
 			case string:
 				mp[locIdx.(string)] = v //Assign val into map[str]inf{} (node) type
+				//Some kind of update needs to be done
+
 			case int:
 				if locIdx.(int) > 0 {
 					if cmd.State.DebugLvl >= 3 {
@@ -633,6 +635,14 @@ func (a *assignNode) execute() interface{} {
 				}
 				//println("I think I should do nothing here")
 				dynamicSymbolTable[idx] = v
+			case nil:
+				//Potential place for update
+				//attribute @ a.arg.offset.val
+				//new value @ a.val
+				//the Node is mp
+				nd := getNodeFromMapInf(mp)
+				attr := a.arg.(*symbolReferenceNode).offset.(*symbolReferenceNode).val.(string)
+				cmd.UpdateObj(nd.Path, retMapInf(attr, v))
 			}
 
 		} else {
@@ -813,6 +823,7 @@ func (f *funcNode) execute() interface{} {
 	return nil
 }
 
+//Helper Functions
 func UnsetUtil(x, name string) {
 	switch x {
 	case "-f":
@@ -844,4 +855,12 @@ func checkTypeAreNumeric(x, y interface{}) bool {
 		yOK = false
 	}
 	return xOK == yOK
+}
+
+//Gets node from Tree Hierarchy using a map[string]interface
+func getNodeFromMapInf(x map[string]interface{}) *cmd.Node {
+	pid, _ := x["parentId"].(string)
+	id, _ := x["id"].(string)
+
+	return cmd.FindNodeByIDP(&cmd.State.TreeHierarchy, id, pid)
 }

@@ -120,22 +120,6 @@ func auxGetNode(path string) string {
        return ""
 } 
 
-//Gets node from Tree Hierarchy using a map[string]interface
-func getNodeFromMapInf(x map[string]interface{}) *cmd.Node {
-       ent := x["category"]
-       pid,_ := x["parentId"].(string)
-       id,_ := x["id"].(string)
-
-       entNum := cmd.EntityStrToInt(ent.(string))
-       nodes := cmd.GetNodes(&cmd.State.TreeHierarchy, entNum)
-       for i := range nodes {
-              if nodes[i].PID == pid && nodes[i].ID == id {
-                     return nodes[i]
-              }
-       }
-       return nil
-}
-
 func genNodeFromCommonRes(x node) node {
        val := x.execute()
        switch val.(type) {
@@ -563,25 +547,10 @@ OCDOT:      TOK_DOT TOK_VAR TOK_COL TOK_WORD TOK_EQUAL WORDORNUM {$$=&assignNode
             |TOK_DOT TOK_TEMPLATE TOK_COL P {$$=&commonNode{COMMON, cmd.LoadFile, "Load", []interface{}{$4}}}
             |TOK_DOT TOK_VAR TOK_COL TOK_WORD TOK_EQUAL Q {$$=&assignNode{ASSIGN, $4, $6}}
             |TOK_DOT TOK_VAR TOK_COL TOK_WORD TOK_EQUAL K {$$=&assignNode{ASSIGN, $4, $6}}
-            |TOK_DOT TOK_VAR TOK_COL TOK_WORD TOK_EQUAL OCLISYNTX {$$=&assignNode{ASSIGN, $4, $6}}
+            //|TOK_DOT TOK_VAR TOK_COL TOK_WORD TOK_EQUAL OCLISYNTX {$$=&assignNode{ASSIGN, $4, $6}}
             |TOK_DEREF TOK_WORD {$$=&symbolReferenceNode{REFERENCE, $2, &numNode{NUM,0}, nil}}
-            |TOK_DEREF TOK_WORD TOK_LBLOCK TOK_WORD TOK_RBLOCK TOK_EQUAL EXPR 
-            {
-            y:=&symbolReferenceNode{REFERENCE, $2, &strNode{STR, $4}, nil}; 
-            x:=&assignNode{ASSIGN, y, $7};
-            mp:=&symbolReferenceNode{REFERENCE, $2, &numNode{NUM, -1},nil}; 
-            
-              z:=&commonNode{COMMON, cmd.UpdateObj, "UpdateObj", []interface{}{mp, $4, $7, true}}
-              $$=&ast{ASSIGN, []node{x, z}}
               
-            }
-              
-            
-            
-            
-            //|TOK_DEREF TOK_WORD TOK_LBLOCK TOK_WORD TOK_RBLOCK {$$=&symbolReferenceNode{REFERENCE, $2, &strNode{STR, $4}, nil}}
-            //|TOK_DEREF TOK_WORD TOK_LBLOCK TOK_NUM TOK_RBLOCK {$$=&symbolReferenceNode{REFERENCE, $2, &numNode{NUM,$4}, nil}}
-            //|TOK_DEREF TOK_WORD TOK_LBLOCK TOK_NUM TOK_RBLOCK TOK_EQUAL EXPR {v:=&symbolReferenceNode{REFERENCE, $2, &numNode{NUM,$4}, nil}; $$=&assignNode{ASSIGN, v, $7} }
+
             |TOK_DEREF TOK_WORD TOK_LBLOCK EXPR TOK_RBLOCK {$$=&symbolReferenceNode{REFERENCE, $2, $4, nil}}
             |TOK_DEREF TOK_WORD TOK_LBLOCK EXPR TOK_RBLOCK TOK_EQUAL EXPR {v:=&symbolReferenceNode{REFERENCE, $2, $4, nil}; $$=&assignNode{ASSIGN, v, $7} }
             |TOK_DEREF TOK_WORD TOK_LBLOCK TOK_NUM TOK_RBLOCK TOK_LBLOCK TOK_WORD TOK_RBLOCK {$$=&symbolReferenceNode{REFERENCE, $2, &numNode{NUM,$4}, &strNode{STR, $7}}}
@@ -620,8 +589,6 @@ NODEACC: TOK_WORD {$$=[]interface{}{&strNode{STR, $1}};dCatchNodePtr=&strNode{ST
            |TOK_BOOL {var x bool; if $1 == "true"{x = true} else {x = false} ;$$=[]interface{}{&boolNode{BOOL, x}}; dCatchNodePtr=&boolNode{BOOL, x}}
            |TOK_DEREF TOK_WORD {dCatchNodePtr=&symbolReferenceNode{REFERENCE, $2, &numNode{NUM,0}, nil}; $$=[]interface{}{dCatchNodePtr}}
            |TOK_DEREF TOK_WORD TOK_LBLOCK EXPR TOK_RBLOCK {dCatchNodePtr=&symbolReferenceNode{REFERENCE, $2, $4, nil}; $$=[]interface{}{dCatchNodePtr}}
-           //|TOK_DEREF TOK_WORD TOK_LBLOCK TOK_NUM TOK_RBLOCK {dCatchNodePtr=&symbolReferenceNode{REFERENCE, $2, &numNode{NUM, $4}, nil}; $$=[]interface{}{dCatchNodePtr}}
-           //|TOK_DEREF TOK_WORD TOK_LBLOCK TOK_DEREF TOK_WORD TOK_RBLOCK {dCatchNodePtr=&symbolReferenceNode{REFERENCE, $2, &symbolReferenceNode{REFERENCE, $5, &numNode{NUM, 0}, nil}, nil}; $$=[]interface{}{dCatchNodePtr}}
            ;
 
 //Child devices of rack for group 
