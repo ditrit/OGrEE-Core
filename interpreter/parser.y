@@ -579,9 +579,11 @@ OCDOT:      TOK_DOT TOK_VAR TOK_COL TOK_WORD TOK_EQUAL WORDORNUM {$$=&assignNode
             
             
             
-            |TOK_DEREF TOK_WORD TOK_LBLOCK TOK_WORD TOK_RBLOCK {$$=&symbolReferenceNode{REFERENCE, $2, &strNode{STR, $4}, nil}}
-            |TOK_DEREF TOK_WORD TOK_LBLOCK TOK_NUM TOK_RBLOCK {$$=&symbolReferenceNode{REFERENCE, $2, &numNode{NUM,$4}, nil}}
-            |TOK_DEREF TOK_WORD TOK_LBLOCK TOK_NUM TOK_RBLOCK TOK_EQUAL EXPR {v:=&symbolReferenceNode{REFERENCE, $2, &numNode{NUM,$4}, nil}; $$=&assignNode{ASSIGN, v, $7} }
+            //|TOK_DEREF TOK_WORD TOK_LBLOCK TOK_WORD TOK_RBLOCK {$$=&symbolReferenceNode{REFERENCE, $2, &strNode{STR, $4}, nil}}
+            //|TOK_DEREF TOK_WORD TOK_LBLOCK TOK_NUM TOK_RBLOCK {$$=&symbolReferenceNode{REFERENCE, $2, &numNode{NUM,$4}, nil}}
+            //|TOK_DEREF TOK_WORD TOK_LBLOCK TOK_NUM TOK_RBLOCK TOK_EQUAL EXPR {v:=&symbolReferenceNode{REFERENCE, $2, &numNode{NUM,$4}, nil}; $$=&assignNode{ASSIGN, v, $7} }
+            |TOK_DEREF TOK_WORD TOK_LBLOCK EXPR TOK_RBLOCK {$$=&symbolReferenceNode{REFERENCE, $2, $4, nil}}
+            |TOK_DEREF TOK_WORD TOK_LBLOCK EXPR TOK_RBLOCK TOK_EQUAL EXPR {v:=&symbolReferenceNode{REFERENCE, $2, $4, nil}; $$=&assignNode{ASSIGN, v, $7} }
             |TOK_DEREF TOK_WORD TOK_LBLOCK TOK_NUM TOK_RBLOCK TOK_LBLOCK TOK_WORD TOK_RBLOCK {$$=&symbolReferenceNode{REFERENCE, $2, &numNode{NUM,$4}, &strNode{STR, $7}}}
             |TOK_DEREF TOK_WORD TOK_EQUAL EXPR {n:=&symbolReferenceNode{REFERENCE, $2, &numNode{NUM,0}, nil};$$=&assignNode{ASSIGN,n,$4 }}
 ;
@@ -617,8 +619,9 @@ NODEACC: TOK_WORD {$$=[]interface{}{&strNode{STR, $1}};dCatchNodePtr=&strNode{ST
            |TOK_OCDEL TOK_WORD TOK_PLUS TOK_WORD {$$=[]interface{}{strNode{STR, $1+$2+$3+$4}};dCatchNodePtr=&strNode{STR, $1+$2+$3+$4}}
            |TOK_BOOL {var x bool; if $1 == "true"{x = true} else {x = false} ;$$=[]interface{}{&boolNode{BOOL, x}}; dCatchNodePtr=&boolNode{BOOL, x}}
            |TOK_DEREF TOK_WORD {dCatchNodePtr=&symbolReferenceNode{REFERENCE, $2, &numNode{NUM,0}, nil}; $$=[]interface{}{dCatchNodePtr}}
-           |TOK_DEREF TOK_WORD TOK_LBLOCK TOK_NUM TOK_RBLOCK {dCatchNodePtr=&symbolReferenceNode{REFERENCE, $2, &numNode{NUM, $4}, nil}; $$=[]interface{}{dCatchNodePtr}}
-           |TOK_DEREF TOK_WORD TOK_LBLOCK TOK_DEREF TOK_WORD TOK_RBLOCK {dCatchNodePtr=&symbolReferenceNode{REFERENCE, $2, &symbolReferenceNode{REFERENCE, $5, &numNode{NUM, 0}, nil}, nil}; $$=[]interface{}{dCatchNodePtr}}
+           |TOK_DEREF TOK_WORD TOK_LBLOCK EXPR TOK_RBLOCK {dCatchNodePtr=&symbolReferenceNode{REFERENCE, $2, $4, nil}; $$=[]interface{}{dCatchNodePtr}}
+           //|TOK_DEREF TOK_WORD TOK_LBLOCK TOK_NUM TOK_RBLOCK {dCatchNodePtr=&symbolReferenceNode{REFERENCE, $2, &numNode{NUM, $4}, nil}; $$=[]interface{}{dCatchNodePtr}}
+           //|TOK_DEREF TOK_WORD TOK_LBLOCK TOK_DEREF TOK_WORD TOK_RBLOCK {dCatchNodePtr=&symbolReferenceNode{REFERENCE, $2, &symbolReferenceNode{REFERENCE, $5, &numNode{NUM, 0}, nil}, nil}; $$=[]interface{}{dCatchNodePtr}}
            ;
 
 //Child devices of rack for group 
