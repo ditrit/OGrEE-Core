@@ -189,7 +189,7 @@ func genNodeFromCommonRes(x node) node {
        TOK_OCGROUP TOK_OCWALL TOK_OCCORIDOR
        
 %type <s> F E P P1 WORDORNUM STRARG CDORFG
-%type <arr> WNARG 
+%type <arr> WNARG NODEGETTER NODEACC
 %type <sarr> GETOBJS
 %type <elifArr> EIF
 %type <node> OCSEL OCLISYNTX OCDEL OCGET NT_CREATE NT_GET NT_DEL 
@@ -466,7 +466,7 @@ Q:     TOK_CD P {/*cmd.CD($2);*/ $$=&commonNode{COMMON, cmd.CD, "CD", []interfac
 
 BASH:  TOK_CLR {$$=&commonNode{COMMON, nil, "CLR", nil}}
        | TOK_GREP {$$=&commonNode{COMMON, nil, "Grep", nil}}
-       | TOK_PRNT TOK_QUOT STRARG TOK_QUOT{$$=&commonNode{COMMON, cmd.Print, "Print", []interface{}{$3}}}
+       | TOK_PRNT TOK_QUOT NODEGETTER TOK_QUOT{$$=&commonNode{COMMON, cmd.Print, "Print", $3}}
        | TOK_LSOG {$$=&commonNode{COMMON, cmd.LSOG, "LSOG", nil}}
        | TOK_PWD {$$=&commonNode{COMMON, cmd.PWD, "PWD", nil}}
        | TOK_EXIT {$$=&commonNode{COMMON, cmd.Exit, "Exit", nil}}
@@ -601,7 +601,25 @@ WNARG: WORDORNUM WNARG {x:=[]interface{}{$1}; $$=append(x, $2...)}
 
 FUNC: TOK_WORD TOK_LPAREN TOK_RPAREN TOK_LBRAC st2 TOK_RBRAC {$$=nil;funcTable[$1]=&funcNode{FUNC, $5}}
        |TOK_WORD {x:=funcTable[$1]; if _,ok:=x.(node); ok {$$=x.(node)}else{$$=nil};}
+       ;
 
+//Special nonterminal for print
+NODEGETTER: NODEACC NODEGETTER {if len($2) != 0 {$$=append($1, $2...)} else {$$=$1};}
+       | {$$=nil}
+       ;
+
+
+NODEACC: TOK_WORD {$$=[]interface{}{&strNode{STR, $1}};dCatchNodePtr=&strNode{STR, $1}}
+           |TOK_NUM {$$=[]interface{}{&numNode{NUM, $1}};dCatchNodePtr=&numNode{NUM, $1}}
+           |TOK_PLUS TOK_WORD TOK_PLUS TOK_WORD {$$=[]interface{}{strNode{STR, $1+$2+$3+$4}};dCatchNodePtr=&strNode{STR, $1+$2+$3+$4}}
+           |TOK_PLUS TOK_WORD TOK_OCDEL TOK_WORD {$$=[]interface{}{strNode{STR, $1+$2+$3+$4}};dCatchNodePtr=&strNode{STR, $1+$2+$3+$4}}
+           |TOK_OCDEL TOK_WORD TOK_OCDEL TOK_WORD {$$=[]interface{}{strNode{STR, $1+$2+$3+$4}};dCatchNodePtr=&strNode{STR, $1+$2+$3+$4}}
+           |TOK_OCDEL TOK_WORD TOK_PLUS TOK_WORD {$$=[]interface{}{strNode{STR, $1+$2+$3+$4}};dCatchNodePtr=&strNode{STR, $1+$2+$3+$4}}
+           |TOK_BOOL {var x bool; if $1 == "true"{x = true} else {x = false} ;$$=[]interface{}{&boolNode{BOOL, x}}; dCatchNodePtr=&boolNode{BOOL, x}}
+           |TOK_DEREF TOK_WORD {dCatchNodePtr=&symbolReferenceNode{REFERENCE, $2, &numNode{NUM,0}, nil}; $$=[]interface{}{dCatchNodePtr}}
+           |TOK_DEREF TOK_WORD TOK_LBLOCK TOK_NUM TOK_RBLOCK {dCatchNodePtr=&symbolReferenceNode{REFERENCE, $2, &numNode{NUM, $4}, nil}; $$=[]interface{}{dCatchNodePtr}}
+           |TOK_DEREF TOK_WORD TOK_LBLOCK TOK_DEREF TOK_WORD TOK_RBLOCK {dCatchNodePtr=&symbolReferenceNode{REFERENCE, $2, &symbolReferenceNode{REFERENCE, $5, &numNode{NUM, 0}, nil}, nil}; $$=[]interface{}{dCatchNodePtr}}
+           ;
 
 //Child devices of rack for group 
 //Since the OCLI syntax defines no limit

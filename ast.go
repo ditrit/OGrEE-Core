@@ -72,7 +72,11 @@ func (c *commonNode) execute() interface{} {
 
 	case "Print":
 		if f, ok := c.fun.(func(...interface{}) string); ok {
-			v := f(c.args)
+			res := []interface{}{}
+			for i := range c.args {
+				res = append(res, c.args[i].(node).execute())
+			}
+			v := f(res)
 			return &strNode{STR, v}
 		}
 
@@ -610,8 +614,11 @@ func (a *assignNode) execute() interface{} {
 			v = a.val.(node)
 		}
 
-		if arr, e := dynamicSymbolTable[idx].([]map[int]interface{}); e == true {
-			arr[idx][0] = v
+		if _, e := dynamicSymbolTable[idx].([]map[int]interface{}); e == true {
+			//Modifying contents are user's desired Array
+			arrayIdx := a.arg.(*symbolReferenceNode).offset.(node).execute().(int)
+			dynamicSymbolTable[idx].([]map[int]interface{})[arrayIdx][0] = a.val
+
 		} else if mp, e := dynamicSymbolTable[idx].(map[string]interface{}); e == true {
 			locIdx := a.arg.(*symbolReferenceNode).offset.(node).execute()
 			switch locIdx.(type) {
