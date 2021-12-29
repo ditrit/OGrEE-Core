@@ -258,15 +258,15 @@ func ValidateEntity(entity int, t map[string]interface{}) (map[string]interface{
 	case TENANT, SITE, BLDG, ROOM, RACK, DEVICE, AC,
 		PWRPNL, SEPARATOR, CABINET, AISLE,
 		TILE, CORIDOR, SENSOR:
-		if t["name"] == nil {
+		if t["name"] == nil || t["name"] == "" {
 			return u.Message(false, "Name should be on payload"), false
 		}
 
-		if t["category"] == nil {
+		/*if t["category"] == nil || t["category"] == "" {
 			return u.Message(false, "Category should be on the payload"), false
-		}
+		}*/
 
-		if t["domain"] == nil {
+		if t["domain"] == nil || t["domain"] == "" {
 			return u.Message(false, "Domain should be on the payload"), false
 		}
 
@@ -528,10 +528,10 @@ func ValidateEntity(entity int, t map[string]interface{}) (map[string]interface{
 					"Description should be on payload"), false
 			}
 
-			if _, ok := t["category"]; !ok {
+			/*if _, ok := t["category"]; !ok {
 				return u.Message(false,
 					"Category should be on payload"), false
-			}
+			}*/
 
 			if _, ok := t["sizeWDHmm"]; !ok {
 				return u.Message(false,

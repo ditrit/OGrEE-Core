@@ -254,6 +254,13 @@ var CreateEntity = func(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	//Hard Code the 'category'
+	//for all objects that are
+	//not obj_template
+	if i != OBJTMPL {
+		entity["category"] = entStr
+	}
+
 	resp, e = models.CreateEntity(i, entity)
 
 	switch e {
