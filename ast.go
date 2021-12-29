@@ -642,6 +642,7 @@ func (a *assignNode) execute() interface{} {
 				//the Node is mp
 				nd := getNodeFromMapInf(mp)
 				attr := a.arg.(*symbolReferenceNode).offset.(*symbolReferenceNode).val.(string)
+
 				cmd.UpdateObj(nd.Path, retMapInf(attr, v))
 			}
 
@@ -861,6 +862,29 @@ func checkTypeAreNumeric(x, y interface{}) bool {
 func getNodeFromMapInf(x map[string]interface{}) *cmd.Node {
 	pid, _ := x["parentId"].(string)
 	id, _ := x["id"].(string)
+
+	//There is no stable hard code way
+	//to check if obj is Group or
+	//Obj/Room Template
+	if pid == "" {
+		roomTmplOk := cmd.FindNodeByIDP(&cmd.State.TreeHierarchy, id, "2")
+		if roomTmplOk != nil {
+			return roomTmplOk
+		}
+
+		objTmplOk := cmd.FindNodeByIDP(&cmd.State.TreeHierarchy, id, "1")
+		if objTmplOk != nil {
+			return objTmplOk
+		}
+
+		groupOk := cmd.FindNodeByIDP(&cmd.State.TreeHierarchy, id, "3")
+		if groupOk != nil {
+			return groupOk
+		}
+
+		//Not found!
+		return nil
+	}
 
 	return cmd.FindNodeByIDP(&cmd.State.TreeHierarchy, id, pid)
 }

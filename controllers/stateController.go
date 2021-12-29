@@ -94,8 +94,7 @@ func InitState(debugLvl int) {
 	q := GetChildren(OBJTMPL)
 	for k := range q {
 		q[k].PID = "1"
-		SearchAndInsert(&State.TreeHierarchy, q[k],
-			1, "/Logical/ObjectTemplates")
+		SearchAndInsert(&State.TreeHierarchy, q[k], 1, "")
 	}
 
 	rTemplate := &Node{}
@@ -108,8 +107,7 @@ func InitState(debugLvl int) {
 	q = GetChildren(ROOMTMPL)
 	for k := range q {
 		q[k].PID = "2"
-		SearchAndInsert(&State.TreeHierarchy, q[k],
-			1, "/Logical/RoomTemplates")
+		SearchAndInsert(&State.TreeHierarchy, q[k], 1, "")
 	}
 
 	group := &Node{}
@@ -122,8 +120,7 @@ func InitState(debugLvl int) {
 	q = GetChildren(GROUP)
 	for k := range q {
 		q[k].PID = "3"
-		SearchAndInsert(&State.TreeHierarchy, q[k],
-			1, "/Logical/Groups")
+		SearchAndInsert(&State.TreeHierarchy, q[k], 1, "")
 	}
 	//SETUP LOGICAL HIERARCHY END
 }
