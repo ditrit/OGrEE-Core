@@ -137,6 +137,37 @@ func genNodeFromCommonRes(x node) node {
 	return nil
 }
 
+func resolveReference(ref string) string {
+	/*Probably code to reference SymbolTable and return data*/
+	idx := dynamicMap[ref]
+	item := dynamicSymbolTable[idx]
+	switch item.(type) {
+	case bool:
+		dCatchNodePtr = &boolNode{BOOL, item.(bool)}
+		if item.(bool) == false {
+			return "false"
+		} else {
+			return "true"
+		}
+	case string:
+		dCatchNodePtr = &strNode{STR, item.(string)}
+		return item.(string)
+	case int:
+		dCatchNodePtr = &numNode{NUM, item.(int)}
+		return strconv.Itoa(item.(int))
+	case *commonNode:
+		dCatchNodePtr = item
+		args := ""
+		for i := range item.(*commonNode).args {
+			args += item.(*commonNode).args[i].(string)
+		}
+		return item.(*commonNode).val + " " + args
+	default:
+		println("Unable to deref your variable ")
+		return ""
+	}
+}
+
 type yySymType struct {
 	yys     int
 	n       int
@@ -1964,34 +1995,31 @@ cmd.WarningLogger.Println("Unknown Command")			/*yylex.Error(msg)*/
 		}
 	case 83:
 		{
+			yyVAL.s = resolveReference(yyS[yypt-0].s)
 			/*Probably code to reference SymbolTable and return data*/
-			idx := dynamicMap[yyS[yypt-0].s]
-			item := dynamicSymbolTable[idx]
-			switch item.(type) {
-			case bool:
-				dCatchNodePtr = &boolNode{BOOL, item.(bool)}
-				if item.(bool) == false {
-					yyVAL.s = "false"
-				} else {
-					yyVAL.s = "true"
-				}
-			case string:
-				dCatchNodePtr = &strNode{STR, item.(string)}
-				yyVAL.s = item.(string)
-			case int:
-				dCatchNodePtr = &numNode{NUM, item.(int)}
-				yyVAL.s = strconv.Itoa(item.(int))
-			case *commonNode:
-				dCatchNodePtr = item
-				args := ""
-				for i := range item.(*commonNode).args {
-					args += item.(*commonNode).args[i].(string)
-				}
-				yyVAL.s = item.(*commonNode).val + " " + args
-			default:
-				println("Unable to deref your variable ")
-				yyVAL.s = ""
-			}
+			/*idx := dynamicMap[$2];
+			  item := dynamicSymbolTable[idx];
+			  switch item.(type) {
+			         case bool:
+			            dCatchNodePtr=&boolNode{BOOL, item.(bool)}
+			            if item.(bool) == false {$$ = "false"} else { $$ = "true"}
+			         case string:
+			            dCatchNodePtr=&strNode{STR, item.(string)}
+			            $$ = item.(string)
+			         case int:
+			            dCatchNodePtr=&numNode{NUM, item.(int)}
+			            $$ = strconv.Itoa(item.(int))
+			         case *commonNode:
+			            dCatchNodePtr=item
+			            args := ""
+			            for i := range item.(*commonNode).args {
+			                   args += item.(*commonNode).args[i].(string)
+			            }
+			            $$ = item.(*commonNode).val +" "+ args
+			          default:
+			            println("Unable to deref your variable ")
+			            $$ = ""
+			  }*/
 		}
 	case 84:
 		{
@@ -2045,7 +2073,7 @@ cmd.WarningLogger.Println("Unknown Command")			/*yylex.Error(msg)*/
 		}
 	case 96:
 		{
-			yyVAL.s = ""
+			yyVAL.s = resolveReference(yyS[yypt-0].s)
 		}
 	case 97:
 		{

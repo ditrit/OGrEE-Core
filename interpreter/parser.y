@@ -132,6 +132,33 @@ func genNodeFromCommonRes(x node) node {
        }
        return nil
 } 
+
+func resolveReference(ref string) string {
+       /*Probably code to reference SymbolTable and return data*/
+       idx := dynamicMap[ref];
+       item := dynamicSymbolTable[idx];
+       switch item.(type) {
+              case bool:
+                 dCatchNodePtr=&boolNode{BOOL, item.(bool)}
+                 if item.(bool) == false {return "false"} else { return "true"}
+              case string:
+                 dCatchNodePtr=&strNode{STR, item.(string)}
+                 return item.(string)
+              case int:
+                 dCatchNodePtr=&numNode{NUM, item.(int)}
+                 return strconv.Itoa(item.(int))
+              case *commonNode:
+                     dCatchNodePtr=item
+                     args := ""
+                     for i := range item.(*commonNode).args {
+                            args += item.(*commonNode).args[i].(string)
+                     }
+                     return item.(*commonNode).val +" "+ args
+              default:
+                     println("Unable to deref your variable ")
+                     return ""
+                  }
+}
 %}
 
 %union {
@@ -386,8 +413,9 @@ WORDORNUM: TOK_WORD {$$=$1; dCatchPtr = $1; dCatchNodePtr=&strNode{STR, $1}}
            |TOK_BOOL {var x bool;if $1=="false"{x = false}else{x=true};dCatchPtr = x; dCatchNodePtr=&boolNode{BOOL, x}}
            |TOK_DEREF TOK_WORD 
            {
+                  $$=resolveReference($2)
                   /*Probably code to reference SymbolTable and return data*/
-                  idx := dynamicMap[$2];
+                  /*idx := dynamicMap[$2];
                   item := dynamicSymbolTable[idx];
                   switch item.(type) {
                          case bool:
@@ -409,7 +437,7 @@ WORDORNUM: TOK_WORD {$$=$1; dCatchPtr = $1; dCatchNodePtr=&strNode{STR, $1}}
                           default:
                             println("Unable to deref your variable ")
                             $$ = ""
-                  }
+                  }*/
            }
            ;
 
@@ -430,7 +458,7 @@ P1:    TOK_WORD TOK_SLASH P1 {$$=$1+"/"+$3}
        | TOK_WORD TOK_DOT TOK_WORD {$$=$1+"."+$3}
        | TOK_DOT TOK_DOT {$$=".."}
        | TOK_OCDEL {$$="-"}
-       | TOK_DEREF TOK_WORD {$$=""}
+       | TOK_DEREF TOK_WORD {$$= resolveReference($2)}
        | {$$=""}
 ;
 

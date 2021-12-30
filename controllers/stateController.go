@@ -123,6 +123,13 @@ func InitState(debugLvl int) {
 		SearchAndInsert(&State.TreeHierarchy, q[k], 1, "")
 	}
 	//SETUP LOGICAL HIERARCHY END
+
+	//SETUP DOMAIN/ENTERPRISE
+	enterprise := &Node{}
+	enterprise.ID = "0"
+	enterprise.Name = "Enterprise"
+	enterprise.Path = "/"
+	State.TreeHierarchy.Nodes.PushBack(enterprise)
 }
 
 func GetChildren(curr int) []*Node {

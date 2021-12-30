@@ -45,8 +45,10 @@ func PostObj(ent int, entity string, data map[string]interface{}) map[string]int
 	}
 
 	json.Unmarshal(bodyBytes, &respMap)
-	println(string(respMap["message"].(string)) /*bodyBytes*/)
+
 	if resp.StatusCode == http.StatusCreated && respMap["status"].(bool) == true {
+		//Print success message
+		println(string(respMap["message"].(string)))
 
 		//Insert object into tree
 		node := &Node{}
@@ -85,6 +87,7 @@ func PostObj(ent int, entity string, data map[string]interface{}) map[string]int
 		}
 		return respMap["data"].(map[string]interface{})
 	}
+	println("Error:", string(respMap["message"].(string)))
 	return nil
 }
 
@@ -1057,8 +1060,6 @@ func Print(a ...interface{}) string {
 	//the string
 	println(ans[1 : len(ans)-2])
 	return ans
-	//fmt.Println(x)
-	//return x
 }
 
 //Silenced functions
