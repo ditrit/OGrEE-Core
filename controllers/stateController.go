@@ -62,12 +62,18 @@ func InitState(debugLvl int) {
 	State.TreeHierarchy = &(Node{})
 	(*(State.TreeHierarchy)).Entity = -1
 	State.TreeHierarchy.PID = ""
-	State.CurrPath = "/"
+	State.CurrPath = "/Physical"
+	phys := &Node{}
+	phys.Name = "Physical"
+	phys.PID = ""
+	phys.ID = "-2"
 	x := GetChildren(0)
 	for i := range x {
-		x[i].Path = "/" + x[i].Name
-		State.TreeHierarchy.Nodes.PushBack(x[i])
+		x[i].Path = "/Physical/" + x[i].Name
+		phys.Nodes.PushBack(x[i])
+		//State.TreeHierarchy.Nodes.PushBack(x[i])
 	}
+	State.TreeHierarchy.Nodes.PushBack(phys)
 
 	for i := 1; i < SENSOR+1; i++ {
 		x := GetChildren(i)
