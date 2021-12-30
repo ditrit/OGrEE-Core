@@ -603,13 +603,18 @@ func (a *assignNode) execute() interface{} {
 	if a.val != nil {
 		var v interface{}
 		if _, ok := a.val.(*commonNode); !ok {
-			v = a.val.(node).execute() //Obtain val, execute block to get value
-			// if it is not a common node
-			/*if id == "_internalRes" {
-				println("You need to check v here")
-				q := a.val.(array).getLength()
-				v = v.([]string)[q-1]
-			}*/
+			if _, ok := a.val.(node); !ok {
+				v = a.val
+			} else {
+				v = a.val.(node).execute() //Obtain val, execute block to get value
+				// if it is not a common node
+				/*if id == "_internalRes" {
+					println("You need to check v here")
+					q := a.val.(array).getLength()
+					v = v.([]string)[q-1]
+				}*/
+			}
+
 		} else {
 			v = a.val.(node)
 		}
