@@ -79,6 +79,14 @@
 /lsroom/ { printToks("TOK_LSROOM"); return TOK_LSROOM}
 /lsrack/ { printToks("TOK_LSRACK"); return TOK_LSRACK}
 /lsdev/ { printToks("TOK_LSDEV"); return TOK_LSDEV}
+/lsaisle/ { printToks("TOK_LSAISLE"); return TOK_LSAISLE}
+/lstile/ { printToks("TOK_LSTILE"); return TOK_LSTILE}
+/lscabinet/ { printToks("TOK_LSCAB"); return TOK_LSCAB}
+/lssensor/ { printToks("TOK_LSSENSOR"); return TOK_LSSENSOR}
+/lsac/ { printToks("TOK_LSAC"); return TOK_LSAC}
+/lspanel/ { printToks("TOK_LSPANEL"); return TOK_LSPANEL}
+/lsseparator/ { printToks("TOK_LSWALL"); return TOK_LSWALL}
+/lscorridor/ { printToks("TOK_LSCORRIDOR"); return TOK_LSCORRIDOR}
 /tree/ {printToks("TOK_TREE"); return TOK_TREE}
 /lsog/ {printToks("TOK_LSOG"); return TOK_LSOG}
 /cd/ {printToks("TOK_CD");return TOK_CD}
