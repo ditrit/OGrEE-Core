@@ -196,6 +196,7 @@ func resolveReference(ref string) string {
        TOK_ELSE TOK_LBLOCK TOK_RBLOCK
        TOK_LPAREN TOK_RPAREN TOK_OR TOK_AND TOK_IN TOK_PRNT TOK_QUOT
        TOK_NOT TOK_DIV TOK_MULT TOK_GREATER TOK_LESS TOK_THEN TOK_FI TOK_DONE
+       TOK_MOD
        TOK_UNSET TOK_ELIF TOK_DO TOK_LEN
        TOK_OCGROUP TOK_OCWALL TOK_OCCORIDOR
        
@@ -347,6 +348,7 @@ nex: nex TOK_PLUS term {$$=&arithNode{ARITHMETIC, "+", $1, $3}}
 
 term: term TOK_MULT unary {$$=&arithNode{ARITHMETIC, "*", $1, $3}}
        |term TOK_DIV unary {$$=&arithNode{ARITHMETIC, "/", $1, $3}}
+       |term TOK_MOD unary {$$=&arithNode{ARITHMETIC, "%", $1, $3}}
        |unary {$$=$1}
        ;
 
@@ -443,6 +445,7 @@ WORDORNUM: TOK_WORD {$$=$1; dCatchPtr = $1; dCatchNodePtr=&strNode{STR, $1}}
 
 F:     TOK_WORD TOK_EQUAL WORDORNUM F {$$=string($1+"="+$3+"="+$4); if cmd.State.DebugLvl >= 3 {println("So we got: ", $$);}}
        | TOK_WORD TOK_EQUAL WORDORNUM {$$=$1+"="+$3}
+       | TOK_WORD TOK_EQUAL TOK_QUOT STRARG TOK_QUOT {$$=$1+"="+$4}
        | TOK_WORD TOK_EQUAL E {$$=$1+"="+$3}
        | TOK_WORD TOK_EQUAL E F {$$=string($1+"="+$3+"="+$4); if cmd.State.DebugLvl >= 3 {println("So we got: ", $$);}}
 ;

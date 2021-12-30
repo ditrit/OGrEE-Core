@@ -18,6 +18,7 @@
 /&&/ { printToks("TOK_AND"); return TOK_AND}
 /\!/ { printToks("TOK_NOT"); return TOK_NOT}
 /\*/ { printToks("TOK_MULT"); return TOK_MULT}
+/%/  {printToks("TOK_MOD"); return TOK_MOD}
 />/ { printToks("TOK_GREATER"); return TOK_GREATER}
 /</ { printToks("TOK_LESS"); return TOK_LESS}
 /false|true/ { printToks("TOK_BOOL");lval.s = yylex.Text(); return TOK_BOOL}

@@ -346,6 +346,14 @@ func (a *arithNode) execute() interface{} {
 			}
 			return nil
 
+		case "%":
+			lv, lok := (a.left.(node).execute()).(int)
+			rv, rok := (a.right.(node).execute()).(int)
+			if lok && rok {
+				return lv % rv
+			}
+			return nil
+
 		case "/":
 			lv, lok := (a.left.(node).execute()).(int)
 			rv, rok := (a.right.(node).execute()).(int)
