@@ -123,7 +123,7 @@ for var in $(command) do {commands;} done
 Iterating through array variables is not possible using the range loop.
 ```
 .var:array=(1 2 3 4)
-for k in len(array); {commands;} done
+for k in len(array); {$array[$k]=999;commands;} done
 ```
 
 
@@ -155,9 +155,29 @@ Updating Objects
 ------------
 Objects can be updated in 2 ways
 ```
-update [PATH(optional)] attribute=myNewValue
+update [PATH(optional)] : attribute=myNewValue
 PATH:attribute=myNewValue
 ```
+
+Other Operations
+------------
+Print
+```
+print "some string"
+```
+Variable values can be printed
+```
+print "$x" 
+```
+Create Object
+```
+create tenant / : name=myTenant domain=myTenant color=FF
+```
+Delete Object
+```
+delete path/to/object
+```
+
 
 Debugging
 ------------
