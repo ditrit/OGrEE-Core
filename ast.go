@@ -121,9 +121,9 @@ func (c *commonNode) execute() interface{} {
 				//c.args[2] = someValue (usually a string)
 				mp := c.args[0]
 				nd := getNodeFromMapInf(mp.(node).execute().(map[string]interface{}))
+				updateArgs := map[string]interface{}{c.args[1].(string): c.args[2].(node).execute()}
 
-				v = f(nd.Path,
-					retMapInf(c.args[1].(string), c.args[2].(node).execute()))
+				v = f(nd.Path, updateArgs)
 			} else {
 				v = f(c.args[0].(string), c.args[1].(map[string]interface{}))
 			}
@@ -655,8 +655,8 @@ func (a *assignNode) execute() interface{} {
 				//the Node is mp
 				nd := getNodeFromMapInf(mp)
 				attr := a.arg.(*symbolReferenceNode).offset.(*symbolReferenceNode).val.(string)
-
-				cmd.UpdateObj(nd.Path, retMapInf(attr, v))
+				updateArg := map[string]interface{}{attr: v}
+				cmd.UpdateObj(nd.Path, updateArg)
 			}
 
 		} else {

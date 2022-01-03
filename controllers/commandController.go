@@ -232,6 +232,32 @@ func GetObject(path string) map[string]interface{} {
 	return nil
 }
 
+//This is an auxillary function
+//for writing proper JSONs
+func GenUpdateJSON(m *map[string]interface{}, key string, value interface{}) (map[string]interface{}, bool) {
+
+	//Base Cae
+	if _, ok := (*m)[key]; ok {
+		(*m)[key] = value
+		println("TARGET ACQUIRED")
+		println(*m)
+		return *m, true
+	}
+
+	for i := range *m {
+		//We have a nested map
+		if sub, ok := (*m)[i].(map[string]interface{}); ok {
+			modifiedJ, ret := GenUpdateJSON(&sub, key, value)
+			(*m)[i] = modifiedJ
+			if ret == true {
+				return *m, ret
+			}
+		}
+	}
+
+	return nil, false
+}
+
 func UpdateObj(path string, data map[string]interface{}) map[string]interface{} {
 	println("OK. Attempting to update...")
 	if data != nil {
@@ -258,7 +284,39 @@ func UpdateObj(path string, data map[string]interface{}) map[string]interface{} 
 		URL := "https://ogree.chibois.net/api/" +
 			EntityToString((*nd).Entity) + "s/" + (*nd).ID
 
-		resp, e := models.Send("PATCH", URL, GetKey(), data)
+		//Make the proper Update JSON
+		ogData := map[string]interface{}{}
+		respGet, e := models.Send("GET", URL, GetKey(), nil)
+		defer respGet.Body.Close()
+		bod, e := ioutil.ReadAll(respGet.Body)
+		if e != nil {
+			println("Error while reading response!")
+			ErrorLogger.Println("Error while trying to read server response: ", e)
+			return nil
+		}
+		json.Unmarshal(bod, &ogData)
+		ogData = ogData["data"].(map[string]interface{})
+		attrs := map[string]interface{}{}
+
+		for i := range data {
+			println("KEY:", i)
+			nv, _ := GenUpdateJSON(&ogData, i, data[i])
+
+			if nv == nil {
+				//The key was not found so let's insert it
+				//in attributes
+				attrs[i] = data[i]
+			} else {
+				ogData = nv
+			}
+
+		}
+		if len(attrs) > 0 {
+			ogData["attributes"] = attrs
+		}
+		Disp(ogData)
+
+		resp, e := models.Send("PATCH", URL, GetKey(), ogData)
 		//println("Response Code: ", resp.Status)
 		if e != nil {
 			println("There was an error!")
