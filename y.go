@@ -38,20 +38,6 @@ func retNodeArray(input []interface{}) []map[int]interface{} {
 	return res
 }
 
-//This func helps to build the correct map[str]interface{}
-//based on the input string x
-/*func retMapInf(x string, y interface{}) map[string]interface{} {
-       switch x {
-              case "id", "name", "category", "parentID",
-              "description", "domain", "parentid", "parentId":
-                     return map[string]interface{}{x:y}
-
-              default:
-              return map[string]interface{}{
-                     "attributes":map[string]interface{}{x:y}}
-       }
-}*/
-
 func resMap(x *string, ent string, isUpdate bool) map[string]interface{} {
 	resarr := strings.Split(*x, "=")
 	res := make(map[string]interface{})
@@ -127,19 +113,6 @@ func auxGetNode(path string) string {
 		println("Error while finding object in path")
 	}
 	return ""
-}
-
-func genNodeFromCommonRes(x node) node {
-	val := x.execute()
-	switch val.(type) {
-	case string:
-		return &strNode{STR, val.(string)}
-
-	case []map[string]interface{}:
-		return &jsonObjArrNode{JSONND,
-			len(val.([]map[string]interface{})), val.([]map[string]interface{})}
-	}
-	return nil
 }
 
 func resolveReference(ref string) string {

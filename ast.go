@@ -94,8 +94,8 @@ func (c *commonNode) execute() interface{} {
 		}
 
 	case "GetObject":
-		if f, ok := c.fun.(func(string) map[string]interface{}); ok {
-			v := f(c.args[0].(string))
+		if f, ok := c.fun.(func(string, bool) map[string]interface{}); ok {
+			v := f(c.args[0].(string), false)
 			return &jsonObjNode{COMMON, v}
 		}
 

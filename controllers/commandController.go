@@ -17,23 +17,20 @@ func PWD() string {
 	return State.CurrPath
 }
 
+//Utility function that
+//displays contents of maps
 func Disp(x map[string]interface{}) {
-	/*for i, k := range x {
-		println("We got: ", i, " and ", k)
-	}*/
 
 	jx, _ := json.Marshal(x)
 
 	println("JSON: ", string(jx))
 }
 
-func PostObj(ent int, entity string, data map[string]interface{}) map[string]interface{} {
-	var respMap map[string]interface{}
-	resp, e := models.Send("POST",
-		"https://ogree.chibois.net/api/"+entity+"s", GetKey(), data)
+func ParseResponse(resp *http.Response, e error, purpose string) map[string]interface{} {
+	ans := map[string]interface{}{}
 
 	if e != nil {
-		WarningLogger.Println("Error while sending POST to server: ", e)
+		WarningLogger.Println("Error while sending "+purpose+" to server: ", e)
 		println("There was an error!")
 	}
 	defer resp.Body.Close()
@@ -41,10 +38,22 @@ func PostObj(ent int, entity string, data map[string]interface{}) map[string]int
 	if err != nil {
 		println("Error: " + err.Error() + " Now Exiting")
 		ErrorLogger.Println("Error while trying to read server response: ", err)
+		if purpose == "POST" || purpose == "Search" {
 		os.Exit(-1)
 	}
+		return nil
+	}
 
-	json.Unmarshal(bodyBytes, &respMap)
+	json.Unmarshal(bodyBytes, &ans)
+	return ans
+}
+
+func PostObj(ent int, entity string, data map[string]interface{}) map[string]interface{} {
+	var respMap map[string]interface{}
+	resp, e := models.Send("POST",
+		"http://localhost:3001/api/"+entity+"s", GetKey(), data)
+
+	respMap = ParseResponse(resp, e, "POST")
 
 	if resp.StatusCode == http.StatusCreated && respMap["status"].(bool) == true {
 		//Print success message
@@ -152,20 +161,8 @@ func SearchObjects(entity string, data map[string]interface{}) []map[string]inte
 	InfoLogger.Println("Search query URL:", URL)
 
 	resp, e := models.Send("GET", URL, GetKey(), nil)
-	//println("Response Code: ", resp.Status)
-	if e != nil {
-		WarningLogger.Println("Error while sending GET to server", e)
-		println("There was an error!")
-	}
-	defer resp.Body.Close()
-	bodyBytes, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		println("Error: " + err.Error() + " Now Exiting")
-		ErrorLogger.Println("Error while trying to read server response: ", err)
-		os.Exit(-1)
-	}
-	//println(string(bodyBytes))
-	json.Unmarshal(bodyBytes, &jsonResp)
+	jsonResp = ParseResponse(resp, e, "Search")
+
 	if resp.StatusCode == http.StatusOK {
 		obj := jsonResp["data"].(map[string]interface{})["objects"].([]interface{})
 		objects := []map[string]interface{}{}
@@ -208,19 +205,8 @@ func GetObject(path string) map[string]interface{} {
 
 	URL += EntityToString((*nd).Entity) + "s/" + (*nd).ID
 	resp, e := models.Send("GET", URL, GetKey(), nil)
-	if e != nil {
-		println("Error while obtaining Object details!")
-		WarningLogger.Println("Error while sending GET to server", e)
-		return nil
-	}
-	defer resp.Body.Close()
-	bodyBytes, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		println("Error while reading response!")
-		ErrorLogger.Println("Error while trying to read server response: ", err)
-		return nil
-	}
-	json.Unmarshal(bodyBytes, &data)
+	data = ParseResponse(resp, e, "GET")
+
 	if resp.StatusCode == http.StatusOK {
 		if data["data"] != nil {
 			obj := data["data"].(map[string]interface{})
@@ -285,14 +271,8 @@ func UpdateObj(path string, data map[string]interface{}) map[string]interface{} 
 		//Make the proper Update JSON
 		ogData := map[string]interface{}{}
 		respGet, e := models.Send("GET", URL, GetKey(), nil)
-		defer respGet.Body.Close()
-		bod, e := ioutil.ReadAll(respGet.Body)
-		if e != nil {
-			println("Error while reading response!")
-			ErrorLogger.Println("Error while trying to read server response: ", e)
-			return nil
-		}
-		json.Unmarshal(bod, &ogData)
+		ogData = ParseResponse(respGet, e, "GET")
+
 		ogData = ogData["data"].(map[string]interface{})
 		attrs := map[string]interface{}{}
 
@@ -311,7 +291,6 @@ func UpdateObj(path string, data map[string]interface{}) map[string]interface{} 
 		if len(attrs) > 0 {
 			ogData["attributes"] = attrs
 		}
-		Disp(ogData)
 
 		resp, e := models.Send("PATCH", URL, GetKey(), ogData)
 		//println("Response Code: ", resp.Status)
@@ -346,7 +325,7 @@ func LS(x string) []map[string]interface{} {
 		path := State.CurrPath
 		res := DispAtLevel(&State.TreeHierarchy, *StrToStack(State.CurrPath))
 		for i := range res {
-			ans = append(ans, silencedGetObj(path+"/"+res[i]))
+			ans = append(ans, GetObject(path+"/"+res[i], true))
 		}
 		return ans
 	} else if string(x[0]) == "/" {
@@ -354,7 +333,7 @@ func LS(x string) []map[string]interface{} {
 		path := x
 		res := DispAtLevel(&State.TreeHierarchy, *StrToStack(x))
 		for i := range res {
-			ans = append(ans, silencedGetObj(path+"/"+res[i]))
+			ans = append(ans, GetObject(path+"/"+res[i], true))
 		}
 		return ans
 	} else {
@@ -362,7 +341,7 @@ func LS(x string) []map[string]interface{} {
 		ans := []map[string]interface{}{}
 		path := State.CurrPath + "/" + x
 		for i := range res {
-			ans = append(ans, silencedGetObj(path+"/"+res[i]))
+			ans = append(ans, GetObject(path+"/"+res[i], true))
 		}
 		return ans
 	}
@@ -417,7 +396,7 @@ func LSOBJECT(x string, entity int) []map[string]interface{} {
 	//Slow but necessary part
 	ans := []map[string]interface{}{}
 	for i := range objs {
-		ans = append(ans, silencedGetObj(objs[i].Path))
+		ans = append(ans, GetObject(objs[i].Path, true))
 	}
 
 	return ans
@@ -1115,51 +1094,4 @@ func Print(a ...interface{}) string {
 	//the string
 	println(ans[1 : len(ans)-2])
 	return ans
-}
-
-//Silenced functions
-//These are useful for command output assignments etc
-//otherwise the terminal would be polluted by debug statements
-func silencedGetObj(path string) map[string]interface{} {
-	URL := "https://ogree.chibois.net/api/"
-	nd := new(*Node)
-	var data map[string]interface{}
-
-	switch path {
-	case "":
-		nd = FindNodeInTree(&State.TreeHierarchy, StrToStack(State.CurrPath))
-	default:
-		if path[0] != '/' && len(State.CurrPath) > 1 {
-			nd = FindNodeInTree(&State.TreeHierarchy,
-				StrToStack(State.CurrPath+"/"+path))
-		} else {
-			nd = FindNodeInTree(&State.TreeHierarchy, StrToStack(path))
-		}
-	}
-
-	if nd == nil {
-		println("Error finding Object from given path!")
-		WarningLogger.Println("Object to Get not found")
-		return nil
-	}
-
-	URL += EntityToString((*nd).Entity) + "s/" + (*nd).ID
-	resp, e := models.Send("GET", URL, GetKey(), nil)
-	if e != nil {
-		println("Error while obtaining Object details!")
-		WarningLogger.Println("Error while sending GET to server", e)
-		return nil
-	}
-	defer resp.Body.Close()
-	bodyBytes, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		println("Error while reading response!")
-		ErrorLogger.Println("Error while trying to read server response: ", err)
-		return nil
-	}
-	json.Unmarshal(bodyBytes, &data)
-	if resp.StatusCode == http.StatusOK {
-		return data["data"].(map[string]interface{})
-	}
-	return nil
 }
