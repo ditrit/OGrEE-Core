@@ -103,7 +103,10 @@ func resMap(x *string, ent string, isUpdate bool) map[string]interface{} {
 		}
 		i += 2
 	}
-	res["attributes"] = attrs
+       if len(attrs) > 0 {
+              res["attributes"] = attrs
+       }
+	
 
 	return res
 }
@@ -574,8 +577,9 @@ OCUPDATE:  P TOK_COL TOK_WORD TOK_EQUAL EXPR {val := map[string]interface{}{$3:(
 OCGET: TOK_EQUAL P {$$=&commonNode{COMMON, cmd.GetObject, "GetObject", []interface{}{replaceOCLICurrPath($2)}}}
 ;
 
-GETOBJS:      TOK_WORD TOK_COMMA GETOBJS {x := make([]string,0); x = append(x, cmd.State.CurrPath+"/"+$1); x = append(x, $3...); $$=x}
-              | TOK_WORD {$$=[]string{cmd.State.CurrPath+"/"+$1}}
+GETOBJS:      P TOK_COMMA GETOBJS {x := make([]string,0); x = append(x, $1); x = append(x, $3...); $$=x}
+              |P {$$=[]string{$1}}
+              //| TOK_WORD {$$=[]string{cmd.State.CurrPath+"/"+$1}}
               ;
 
 OCCHOOSE: TOK_EQUAL TOK_LBRAC GETOBJS TOK_RBRAC {$$=&commonNode{COMMON, cmd.SetClipBoard, "setCB", []interface{}{&$3}}; println("Selection made!")}
@@ -608,7 +612,7 @@ OCDOT:      //TOK_DOT TOK_VAR TOK_COL TOK_WORD TOK_EQUAL WORDORNUM {$$=&assignNo
 ;
 
 OCSEL:      TOK_SELECT {$$=&commonNode{COMMON, cmd.ShowClipBoard, "select", nil};}
-            |TOK_SELECT TOK_DOT TOK_WORD TOK_EQUAL TOK_WORD {x := $3+"="+$5; $$=&commonNode{COMMON, cmd.UpdateSelection, "UpdateSelect", []interface{}{resMap(&x, "other", true)}};}
+            |TOK_SELECT TOK_DOT TOK_WORD TOK_EQUAL EXPR {/*x := $3+"="+$5;*/ val:=($5).(node).execute(); println("Our val:", val); x:=map[string]interface{}{$3:val}; $$=&commonNode{COMMON, cmd.UpdateSelection, "UpdateSelect", []interface{}{x}};}
 ;
 
 STRARG: WORDORNUM STRARG {if $2 != "" {$$=$1+" "+$2} else {$$=$1};}

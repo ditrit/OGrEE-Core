@@ -239,8 +239,6 @@ func GenUpdateJSON(m *map[string]interface{}, key string, value interface{}) (ma
 	//Base Cae
 	if _, ok := (*m)[key]; ok {
 		(*m)[key] = value
-		println("TARGET ACQUIRED")
-		println(*m)
 		return *m, true
 	}
 
@@ -299,7 +297,6 @@ func UpdateObj(path string, data map[string]interface{}) map[string]interface{} 
 		attrs := map[string]interface{}{}
 
 		for i := range data {
-			println("KEY:", i)
 			nv, _ := GenUpdateJSON(&ogData, i, data[i])
 
 			if nv == nil {
