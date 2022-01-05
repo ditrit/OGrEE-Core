@@ -149,6 +149,17 @@ func resolveReference(ref string) string {
 	}
 }
 
+func formActualPath(x string) string {
+	if x == "" || x == "." {
+		return cmd.State.CurrPath
+	} else if string(x[0]) == "/" {
+		return x
+
+	} else {
+		return cmd.State.CurrPath + "/" + x
+	}
+}
+
 type yySymType struct {
 	yys     int
 	n       int
@@ -2695,13 +2706,13 @@ cmd.WarningLogger.Println("Unknown Command")			/*yylex.Error(msg)*/
 	case 184:
 		{
 			x := make([]string, 0)
-			x = append(x, yyS[yypt-2].s)
+			x = append(x, formActualPath(yyS[yypt-2].s))
 			x = append(x, yyS[yypt-0].sarr...)
 			yyVAL.sarr = x
 		}
 	case 185:
 		{
-			yyVAL.sarr = []string{yyS[yypt-0].s}
+			yyVAL.sarr = []string{formActualPath(yyS[yypt-0].s)}
 		}
 	case 186:
 		{

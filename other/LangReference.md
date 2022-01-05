@@ -31,6 +31,7 @@ json
 bool
 array
 ```
+NOTE: Strings must be surrounded by quotes " "
 
 ### Arrays
 Arrays are declared as:
@@ -41,7 +42,8 @@ Index into arrays:
 ```
 $array[1]
 ```
-$array is equivalent to $array[0]
+$array is equivalent to $array[0]   
+Arrays can not immediately have their lengths changed. And can only be changed by reassigning the variable
 
 ### Modifying Nodes
 Nodes cannot be created manually and are obtained as a result of a command.
@@ -153,11 +155,22 @@ $a
 
 Updating Objects
 ------------
+Unless referring to an actual dir for executing scripts, representing current dir by using a '.' is not possible, instead leave the path empty. 
 Objects can be updated in 2 ways
 ```
 update [PATH(optional)] : attribute=myNewValue
 PATH:attribute=myNewValue
 ```
+It is possible to update multiple objects via OCLI Syntax. The objects to be edited must be first 'selected' as follows. The paths to each objects must be separated by a comma.
+```
+={Path/to/object, path/to/another/object, path/to/another/object2}
+```
+Finally execute
+```
+selection.myAttribute = someValue
+```
+If the attribute does not exist, it will be inserted automatically under attributes dictionary. Any string values MUST be surrounded by quotes (" "). Please note that object checking will only occur on the update command.
+
 
 Other Operations
 ------------
@@ -171,11 +184,12 @@ print "$x"
 ```
 Create Object
 ```
-create tenant / : name=myTenant domain=myTenant color=FF
+create tenant /Physical/ : name=myTenant domain=myTenant color=FF
 ```
 Delete Object
 ```
 delete path/to/object
+- path/to/object
 ```
 
 

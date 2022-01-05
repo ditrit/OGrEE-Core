@@ -141,6 +141,17 @@ func resolveReference(ref string) string {
                      return ""
                   }
 }
+
+func formActualPath(x string) string {
+       if x == "" || x == "." {
+		return cmd.State.CurrPath
+	} else if string(x[0]) == "/" {
+		return x
+
+	} else {
+		return cmd.State.CurrPath + "/" + x
+	}
+}
 %}
 
 %union {
@@ -551,8 +562,8 @@ OCUPDATE:  P TOK_COL TOK_WORD TOK_EQUAL EXPR {val := map[string]interface{}{$3:(
 OCGET: TOK_EQUAL P {$$=&commonNode{COMMON, cmd.GetObject, "GetObject", []interface{}{replaceOCLICurrPath($2)}}}
 ;
 
-GETOBJS:      P TOK_COMMA GETOBJS {x := make([]string,0); x = append(x, $1); x = append(x, $3...); $$=x}
-              |P {$$=[]string{$1}}
+GETOBJS:      P TOK_COMMA GETOBJS {x := make([]string,0); x = append(x, formActualPath($1)); x = append(x, $3...); $$=x}
+              |P {$$=[]string{formActualPath($1)}}
               //| TOK_WORD {$$=[]string{cmd.State.CurrPath+"/"+$1}}
               ;
 
