@@ -211,7 +211,10 @@ func GetObject(path string) map[string]interface{} {
 		if data["data"] != nil {
 			obj := data["data"].(map[string]interface{})
 
+			if !silenced {
 			displayObject(obj)
+		}
+
 		}
 		return data["data"].(map[string]interface{})
 	}

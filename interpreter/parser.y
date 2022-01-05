@@ -165,7 +165,7 @@ func resolveReference(ref string) string {
 %token <s> TOK_PLUS TOK_OCDEL TOK_BOOL
 %token
        TOK_CREATE TOK_GET TOK_UPDATE TOK_DELETE TOK_SEARCH
-       TOK_BASHTYPE TOK_EQUAL TOK_CMDFLAG TOK_SLASH 
+       TOK_EQUAL TOK_CMDFLAG TOK_SLASH 
        TOK_EXIT TOK_DOC TOK_CD TOK_PWD
        TOK_CLR TOK_GREP TOK_LS TOK_TREE
        TOK_LSOG TOK_LSTEN TOK_LSSITE TOK_LSBLDG TOK_LSAISLE
@@ -183,8 +183,9 @@ func resolveReference(ref string) string {
        TOK_MOD
        TOK_UNSET TOK_ELIF TOK_DO TOK_LEN
        TOK_OCGROUP TOK_OCWALL TOK_OCCORIDOR
+       TOK_APOST
        
-%type <s> F E P P1 WORDORNUM STRARG CDORFG
+%type <s> F E P P1 WORDORNUM STRARG CDORFG ANYTOKEN
 %type <arr> WNARG NODEGETTER NODEACC
 %type <sarr> GETOBJS
 %type <elifArr> EIF
@@ -589,6 +590,7 @@ OCSEL:      TOK_SELECT {$$=&commonNode{COMMON, cmd.ShowClipBoard, "select", nil}
 ;
 
 STRARG: WORDORNUM STRARG {if $2 != "" {$$=$1+" "+$2} else {$$=$1};}
+       | ANYTOKEN STRARG {if $2 != "" {$$=$1+" "+$2} else {$$=$1};}
        | {$$=""}
 ;
 
@@ -625,4 +627,103 @@ NODEACC: TOK_WORD {$$=[]interface{}{&strNode{STR, $1}};dCatchNodePtr=&strNode{ST
 CDORFG: TOK_ATTRSPEC WORDORNUM CDORFG {x:=$2; $$=x+","+$3}
        | {$$=""}
        ;
+
+//This is meant for the String Nonterminals
+//Accept any token and return a string
+ANYTOKEN: TOK_TENANT {$$=$1}
+          |TOK_SITE {$$=$1}
+          |TOK_BLDG {$$=$1}
+          |TOK_ROOM {$$=$1}
+          |TOK_RACK {$$=$1}
+          |TOK_DEVICE {$$=$1}
+          |TOK_CORIDOR {$$=$1}
+          |TOK_GROUP {$$=$1}
+          |TOK_WALL {$$=$1}
+          |TOK_AC {$$=$1}
+          |TOK_CABINET {$$=$1}
+          |TOK_PANEL {$$=$1}
+          |TOK_AISLE {$$=$1}
+          |TOK_TILE {$$=$1}
+          |TOK_SENSOR {$$=$1}
+          |TOK_ROOM_TMPL {$$=$1}
+          |TOK_OBJ_TMPL {$$=$1}
+          |TOK_PLUS {$$=$1}
+          |TOK_OCDEL {$$=$1}
+          |TOK_CREATE {$$="create"}
+          |TOK_GET {$$="get"}
+          |TOK_UPDATE {$$="update"}
+          |TOK_DELETE {$$="delete"}
+          |TOK_SEARCH {$$="search"}
+          |TOK_EQUAL {$$="="}
+          |TOK_CMDFLAG {$$="-l"}
+          |TOK_SLASH {$$="/"}
+          |TOK_EXIT {$$="exit"}
+          |TOK_DOC {$$="man"}
+          |TOK_CD {$$="cd"}
+          |TOK_PWD {$$="pwd"}
+          |TOK_CLR {$$="clear"}
+          |TOK_GREP {$$="grep"}
+          |TOK_LS {$$="ls"}
+          |TOK_TREE {$$="tree"}
+          |TOK_LSOG {$$="lsog"}
+          |TOK_LSTEN {$$="lsten"}
+          |TOK_LSSITE {$$="lssite"}
+          |TOK_LSBLDG {$$="lsbldg"}
+          |TOK_LSTILE {$$="lstile"}
+          |TOK_LSCAB {$$="lscab"}
+          |TOK_LSSENSOR {$$="lssensor"}
+          |TOK_LSAC {$$="lsac"}
+          |TOK_LSAISLE {$$="lsaisle"}
+          |TOK_LSPANEL {$$="lspanel"}
+          |TOK_LSWALL {$$="lsseparator"}
+          |TOK_LSROOM {$$="lsroom"}
+          |TOK_LSCORRIDOR {$$="lscorridor"}
+          |TOK_LSRACK {$$="lsrack"}
+          |TOK_LSDEV {$$="lsdev"}
+          |TOK_OCBLDG {$$="bd"}
+          |TOK_OCDEV {$$="dv"}
+          |TOK_OCRACK {$$="rk"}
+          |TOK_OCROOM {$$="ro"}
+          |TOK_ATTRSPEC {$$="@"}
+          |TOK_OCSITE {$$="si"}
+          |TOK_OCTENANT {$$="tn"}
+          |TOK_COL {$$=":"}
+          |TOK_SELECT {$$="selection"}
+          |TOK_LBRAC {$$="{"}
+          |TOK_RBRAC {$$="}"}
+          |TOK_COMMA {$$=","}
+          |TOK_DOT {$$="."}
+          |TOK_CMDS {$$="cmds"}
+          |TOK_TEMPLATE {$$="template"}
+          |TOK_VAR {$$="var"}
+          |TOK_APOST {$$="'"}
+          |TOK_SEMICOL {$$=";"}
+          |TOK_IF {$$="if"}
+          |TOK_FOR {$$="for"}
+          |TOK_WHILE {$$="while"}
+          |TOK_ELSE  {$$="else"}
+          |TOK_LBLOCK {$$="["}
+          |TOK_RBLOCK {$$="]"}
+          |TOK_LPAREN {$$="("}
+          |TOK_RPAREN {$$=")"}
+          |TOK_OR {$$="||"}
+          |TOK_AND {$$="&&"}
+          |TOK_IN {$$="in"}
+          |TOK_PRNT {$$="print"}
+          |TOK_NOT {$$="!"}
+          |TOK_MULT {$$="*"}
+          |TOK_GREATER {$$=">"}
+          |TOK_LESS {$$="<"}
+          |TOK_THEN {$$="then"}
+          |TOK_FI {$$="fi"}
+          |TOK_DONE {$$="done"}
+          |TOK_MOD {$$="%"}
+          |TOK_UNSET {$$="unset"}
+          |TOK_ELIF {$$="elif"}
+          |TOK_DO  {$$="do"}
+          |TOK_LEN {$$="len"}
+          |TOK_OCGROUP {$$="gr"}
+          |TOK_OCWALL {$$=""}
+          |TOK_OCCORIDOR {$$="co"}
+          ;
 %%
