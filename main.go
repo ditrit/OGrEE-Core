@@ -143,6 +143,7 @@ func main() {
 			readline.PcItem("gt", false),
 			readline.PcItem("update", false),
 			readline.PcItem(".template", false),
+			readline.PcItem(".var", false),
 			readline.PcItem("unset", false),
 			readline.PcItem("=", false),
 			readline.PcItem("-", false),

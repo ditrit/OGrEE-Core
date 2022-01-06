@@ -287,7 +287,7 @@ func UpdateObj(path string, data map[string]interface{}, deleteAndPut bool) map[
 		attrs := map[string]interface{}{}
 
 		for i := range data {
-			nv, _ := GenUpdateJSON(&ogData, i, data[i])
+			nv, _ := GenUpdateJSON(&ogData, i, data[i], deleteAndPut)
 
 			if nv == nil {
 				//The key was not found so let's insert it
@@ -486,278 +486,44 @@ func CD(x string) string {
 }
 
 func Help(entry string) {
+	var path string
 	switch entry {
-	case "ls":
-		fmt.Println(`Usage: `, entry, "[PATH] (optional)")
-		fmt.Println(`Displays objects in a given directory`)
-	case "pwd":
-		fmt.Println(`Usage: `, entry)
-		fmt.Println(`Prints the full filename of the current working directory.`)
-	case "print":
-		fmt.Println(`Usage: `, entry, "\"[STRING]\"")
-		fmt.Println(`Prints string to output`)
-	case "cd":
-		fmt.Println(`Usage: `, entry, "[PATH] (optional)")
-		fmt.Println(`Changes current directory`)
-	case "tree":
-		fmt.Println(`Usage: `, entry, "[PATH] (optional) DEPTH (optional)")
-		fmt.Println(`Recursively display hierarchy with depth indentation`)
-		fmt.Println(`If no options specified then tree executes with`)
-		fmt.Println(`current path and depth of 0`)
-	case "create":
-		fmt.Println(`Usage: `, entry, "ENTITY [PATH](optional)  [ATTRIBUTES]")
-		fmt.Println(`Creates an object in a given directory`)
-		printAttributeOptions()
+	case "ls", "pwd", "print", "cd", "tree", "create", "gt",
+		"update", "delete", "lsog", "grep", "for", "while", "if",
+		"cmds", "var", "unset", "select":
+		path = "./other/man/" + entry + ".md"
+
 	case "+":
-		fmt.Println(`Usage: `, entry, "[OCLIENTITY]:[PATH]@[OCLIOPTIONS]")
-		fmt.Println(`Shorthand syntax for creating objects`)
-		fmt.Println()
-		fmt.Println(`Each entity type has a specific OCLIOPTIONS`)
-		fmt.Println(`When properly executed, the user will be prompted`)
-		fmt.Println(`to enter the attributes of the object in question.`)
-		fmt.Println(`Once the sufficient necessary options have been`)
-		fmt.Println(`entered. The object will be created.`)
-		fmt.Println(`The required attributes for each object is found: `)
-		fmt.Println(`https://github.com/ditrit/OGREE-3D/wiki/How-it-works#ogreeobject-class`)
-		fmt.Println()
-		fmt.Println(`USAGES`)
-		fmt.Println()
-		fmt.Println(`+tn:PATH/TENANT_NAME@TENANT_NAME@COLOR`)
-		fmt.Println(`+tenant:PATH/TENANT_NAME@TENANT_NAME@COLOR`)
-		fmt.Println(`User must specify the path, TENANT_NAME and COLOR`)
-		fmt.Println()
-		fmt.Println()
-		fmt.Println(`+si:PATH/SITE_NAME@ORIENTATION`)
-		fmt.Println(`+site:PATH/SITE_NAME@ORIENTATION`)
-		fmt.Println(`User must specify the path, SITE_NAME and ORIENTATION`)
-		fmt.Println()
-		fmt.Println()
-		fmt.Println(`+bd:PATH/BLDG_NAME@POSITION@SIZE`)
-		fmt.Println(`+building:PATH/BLDG_NAME@POSITION@SIZE`)
-		fmt.Println(`User must specify the path, BLDG_NAME, POSITION and SIZE`)
-		fmt.Println()
-		fmt.Println()
-		fmt.Println(`+ro:PATH/ROOM_NAME@POSITION@SIZE`)
-		fmt.Println(`+room:PATH/ROOM_NAME@POSITION@SIZE`)
-		fmt.Println(`User must specify the path, ROOM_NAME, POSITION and SIZE`)
-		fmt.Println()
-		fmt.Println()
-		fmt.Println(`+rk:PATH/RACK_NAME@POSITION@SIZE`)
-		fmt.Println(`+rack:PATH/RACK_NAME@POSITION@SIZE`)
-		fmt.Println(`User must specify the path, RACK_NAME, POSITION and SIZE`)
-		fmt.Println()
-		fmt.Println()
-		fmt.Println(`+dv:PATH/DEVICE_NAME@SLOT@SIZEUNIT`)
-		fmt.Println(`+device:PATH/DEVICE_NAME@SLOT@SIZEUNIT`)
-		fmt.Println(`User must specify the path, DEVICE_NAME, SLOT and SIZEUNIT`)
-		fmt.Println()
-		fmt.Println()
-		fmt.Println(`+co:PATH/ROOM_NAME@CORRIDOR_NAME@LEFT_RACK@RIGHT_RACK@TEMPERATURE`)
-		fmt.Println(`+corridor:PATH/ROOM_NAME@CORRIDOR_NAME@LEFT_RACK@RIGHT_RACK@TEMPERATURE`)
-		fmt.Println(`User must specify the path, ROOM_NAME, CORRIDOR_NAME, LEFT_RACK, RIGHT_RACK and TEMPERATURE`)
-		fmt.Println()
-		fmt.Println()
-		fmt.Println(`+gr:PATH/ROOM_NAME@RACK0@...@RACKN`)
-		fmt.Println(`+group:PATH/ROOM_NAME@RACK0@...@RACKN`)
-		fmt.Println(`User must specify the path, ROOM_NAME, and all RACKs`)
-		fmt.Println()
-		fmt.Println()
-		fmt.Println(`+wa:PATH/ROOM_NAME@WALL_NAME@POSITION1@POSITION2`)
-		fmt.Println(`+wall:PATH/ROOM_NAME@WALL_NAME@POSITION1@POSITION2`)
-		fmt.Println(`User must specify the path, ROOM_NAME, WALL_NAME POSITION 1 and 2`)
-		//printAttributeOptions()
-	case "gt":
-		fmt.Println(`Usage: `, entry, "ENTITY (optional) [PATH](optional)  [ATTRIBUTES](optional)")
-		fmt.Println(`Obtains object(s) details. 
-	If ENTITY is specified then it will enter a 'search mode' 
-	and at least 1 ATTRIBUTE must be specified. Otherwise an 
-	object's details will be retrieved`)
-		printAttributeOptions()
+		path = "./other/man/plus.md"
 
 	case "=":
-		fmt.Println(`Usage: `, entry, "[PATH](optional)")
-		fmt.Println(`Obtains object(s) details. 
-	If PATH is not specified then the current working 
-	directory will be used`)
+		path = "./other/man/equal.md"
 
-	case "update":
-		fmt.Println(`Usage: `, entry, "[PATH](optional)  [ATTRIBUTES]")
-		fmt.Println(`Modify an object by specifying new attribute values`)
-		fmt.Println(`If a path is not specified then the current directory`)
-		fmt.Println(`path will be used`)
-		printAttributeOptions()
-	case "delete":
-		fmt.Println(`Usage: `, entry, "[PATH]")
-		fmt.Println(`Delete an object`)
 	case "-":
-		fmt.Println(`Usage: `, entry)
-		fmt.Println(`Delete an object at current path`)
-	case "lsog":
-		fmt.Println(`Usage: `, entry)
-		fmt.Println(`Displays system information`)
-	case "grep":
-		fmt.Println("NOT YET IMPLEMENTED")
+		path = "./other/man/minus.md"
 
-	case "for":
-		fmt.Println("Usage: for ((init; condition; increment)); commands; done")
-		fmt.Println("OR: for var in {INTEGER..INTEGER}; commands; done")
-		fmt.Println("OR: for var in expression; commands; done")
-		fmt.Println("\nFor  is  a  looping command, the interpreter will execute init once.")
-		fmt.Println("Then it evaluates condition as a bool expression. It will execute the commands and increment")
-		fmt.Println("Then it loops again until the condition evaluates to false")
-		fmt.Println("In the 2nd for loop type. A variable is created")
-		fmt.Println("which will iterate between the provided range.")
-		fmt.Println("This will repeatedly execute commands until the iterator reaches end of range")
-		fmt.Println("\nIn the 3rd type, an internal iterator is created and will")
-		fmt.Println("iterate the range of the variable or expression given.")
-		fmt.Println("For now the return value of a for loop is NULL.")
-		fmt.Println("\nEXAMPLE\n")
-		fmt.Println("\n\tIterate 5 times and print current directory")
-		fmt.Println("\tfor ((x=0; x < 5; $x=$x+1)); pwd done")
-		fmt.Println("\n\tIterate 8 times execute tree and print current directory")
-		fmt.Println("\tfor x in {2..10}; pwd; tree done")
-		fmt.Println("\n\tIterate 5 times and print current directory")
-		fmt.Println("\tfor x in 5; pwd; done")
-		fmt.Println("\n\tIterate 3 times and print current directory")
-		fmt.Println("\t.var:p=3; for x in $p; pwd; done")
-		fmt.Println("\n\tIterate in array and print current directory")
-		fmt.Println("\tfor x in len(array); pwd; done")
-		fmt.Println("\n\tIterate in LS and print current directory")
-		fmt.Println("\tfor x in $ls; pwd; done")
-
-	case "while":
-		fmt.Println("Usage: while (test) body done")
-		fmt.Println("Execute command(s) repeatedly as long as a condition is met")
-		fmt.Println("\nThe  while command evaluates test as a boolean.")
-		fmt.Println("If it is true  value  then body  is  executed.")
-		fmt.Println("Once body has been executed then test is evaluated again,")
-		fmt.Println("and the process repeats until eventually test evaluates to a false boolean value.")
-		fmt.Println("The while command for now returns NULL.")
-		fmt.Println("\nEXAMPLE\n")
-		fmt.Println("\t.var:x=0")
-		fmt.Println("\twhile ($x < 5) pwd; $x=$x+1; done ")
-	case "if":
-		fmt.Println(`Usage: if [expr1] then body1 elif [expr2] then body2 elif ... else bodyN fi`)
-		fmt.Println()
-		fmt.Println()
-		fmt.Println("The  if command evaluates expr1 as an expression.")
-		fmt.Println("The value of the expression must be a boolean.")
-		fmt.Println("If it is true then body1 is executed. Otherwise expr2 is")
-		fmt.Println("evaluated as an expression and if it is true then body2 is executed, and so on.")
-		fmt.Println("If no expression evaluates to true then bodyN is executed.")
-		fmt.Println("The Else argument is optional.")
-		fmt.Println("There may be any number of elif clauses,")
-		fmt.Println("including zero.  BodyN may also be omitted as long as else is omitted too.")
-		fmt.Println("The  return  value for now is NULL.")
-		fmt.Println("\nEXAMPLE\n")
-		fmt.Println("\tif [5 < 6] then ls fi")
-		fmt.Println("\tif [5 < 6] then ls else tree fi")
-		fmt.Println("\tif [5 == 6] then ls elif [5 == 4 ] then tree else pwd fi")
-	case "cmds":
-		fmt.Println("Usage: .cmds: [PATH]")
-		fmt.Println("Loads script file and executes OGREE commands in file")
-		fmt.Println("NOTE: Complete path must be provided")
-	case "var":
-		fmt.Println("Usage: .var:myVarName=[x]")
-		fmt.Println("Declares and assigns a variable named myVarName")
-		fmt.Println("to have value x")
-		fmt.Println("NOTE: This is the only way to declare variables")
-
-	case "unset":
-		fmt.Println("Usage: ", entry, "[VAR/FUNC NAME]", "[OPTIONS]")
-		fmt.Println("Deletes function or variable")
-		fmt.Println()
-		fmt.Println("OPTIONS")
-		fmt.Println()
-		fmt.Println("-v\t\tDeletes variable")
-		fmt.Println("-f\t\tDeletes function")
 	case ".template":
-		fmt.Println(`Usage: `, entry, ": [PATH]")
-		fmt.Println(`Loads a template from provided path`)
-		fmt.Println()
-		fmt.Println("The function of this is not yet decided")
+		path = "./other/man/template.md"
+
 	case ".cmds":
-		fmt.Println(`Usage: `, entry, ": [PATH]")
-		fmt.Println(`Loads and executes a script in PATH`)
+		path = "./other/man/cmd.md"
+
 	case ".var":
-		fmt.Println(`Usage: `, entry, ":[VAR_NAME] = [VALUE]")
-		fmt.Println(`Assigns a value to a variable`)
-		fmt.Println()
-		fmt.Println(`Variable names are solely alphanumeric characters`)
-		fmt.Println(`With the first character being a letter`)
-		fmt.Println(`Assignable values are bool, int, string, array, function, node, json`)
-		fmt.Println(`Variables are dynamically reassignable using the same syntax`)
-	case "select":
-		fmt.Println("Usage: selection")
-		fmt.Println("Displays selected objects in clipboard")
-		fmt.Println("Select objects by: ={obj1 obj2 ...}")
+		path = "./other/man/var.md"
+
 	case "lsobj", "lsten", "lssite", "lsbldg", "lsroom", "lsrack",
 		"lsdev":
-		fmt.Println("Usage: ", entry, "[PATH]")
-		fmt.Println("Recursively displays specified object type from given path")
+		path = "./other/man/lsobj.md"
+
 	default:
-		fmt.Printf(`A Shell interface to the API and your datacenter visualisation solution`)
-		fmt.Println()
-		fmt.Printf(`Meta+B means press Esc and n separately.  
-		Users can change that in terminal simulator(i.e. iTerm2) to Alt+B  
-		Notice: Meta+B is equals with Alt+B in windows.
+		path = "./other/man/default.md"
+	}
 		
-		* Shortcut in normal mode
-		
-		| Shortcut           | Comment                           |
-		| ------------------ | --------------------------------- |
-		| Ctrl+A         | Beginning of line                 |
-		| Ctrl+B / ←   	 | Backward one character            |
-		| Meta+B         | Backward one word                 |
-		| Ctrl+C         | Send io.EOF                       |
-		| Ctrl+D         | Delete one character              |
-		| Meta+D         | Delete one word                   |
-		| Ctrl+E         | End of line                       |
-		| Ctrl+F / →   	 | Forward one character             |
-		| Meta+F         | Forward one word                  |
-		| Ctrl+G         | Cancel                            |
-		| Ctrl+H         | Delete previous character         |
-		| Ctrl+I / Tab 	 | Command line completion           |
-		| Ctrl+J         | Line feed                         |
-		| Ctrl+K         | Cut text to the end of line       |
-		| Ctrl+L         | Clear screen                      |
-		| Ctrl+M         | Same as Enter key                 |
-		| Ctrl+N / ↓   	 | Next line (in history)            |
-		| Ctrl+P / ↑   	 | Prev line (in history)            |
-		| Ctrl+R         | Search backwards in history       |
-		| Ctrl+S         | Search forwards in history        |
-		| Ctrl+T         | Transpose characters              |
-		| Meta+T         | Transpose words (TODO)            |
-		| Ctrl+U         | Cut text to the beginning of line |
-		| Ctrl+W         | Cut previous word                 |
-		| Backspace      | Delete previous character         |
-		| Meta+Backspace | Cut previous word                 |
-		| Enter          | Line feed                         |
-		
-		
-		* Shortcut in Search Mode (Ctrl+S or Ctrl+r to enter this mode)
-		
-		| Shortcut                | Comment                                 |
-		| ----------------------- | --------------------------------------- |
-		| Ctrl+S              | Search forwards in history              |
-		| Ctrl+R              | Search backwards in history             |
-		| Ctrl+C / Ctrl+G 	  | Exit Search Mode and revert the history |
-		| Backspace           | Delete previous character               |
-		| Other               | Exit Search Mode                        |
-		
-		* Shortcut in Complete Select Mode (double Tab to enter this mode)
-		
-		| Shortcut                | Comment                                  |
-		| ----------------------- | ---------------------------------------- |
-		| Ctrl+F              | Move Forward                             |
-		| Ctrl+B              | Move Backward                            |
-		| Ctrl+N              | Move to next line                        |
-		| Ctrl+P              | Move to previous line                    |
-		| Ctrl+A              | Move to the first candicate in current line |
-		| Ctrl+E              | Move to the last candicate in current line |
-		| Tab / Enter         | Use the word on cursor to complete       |
-		| Ctrl+C / Ctrl+G 	  | Exit Complete Select Mode                |
-		| Other               | Exit Complete Select Mode                |`)
+	text, e := ioutil.ReadFile(path)
+	if e != nil {
+		println("Error yo")
+	} else {
+		println(string(text))
 	}
 
 }
@@ -1082,7 +848,7 @@ func ShowClipBoard() []string {
 func UpdateSelection(data map[string]interface{}) {
 	if State.ClipBoard != nil {
 		for _, k := range *State.ClipBoard {
-			UpdateObj(k, data)
+			UpdateObj(k, data, false)
 		}
 	}
 
