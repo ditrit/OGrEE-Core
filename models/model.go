@@ -302,9 +302,9 @@ func ValidateEntity(entity int, t map[string]interface{}) (map[string]interface{
 				found := false
 
 				//First check if sensor type is present
-				if t["type"] == nil || t["type"] == "" {
+				/*if t["type"] == nil || t["type"] == "" {
 					return u.Message(false, "Sensor type must be on payload"), false
-				}
+				}*/
 
 				for i := range parentSet {
 					ctx, cancel := u.Connect()
@@ -808,13 +808,16 @@ func GetEntityHierarchy(entity string, ID primitive.ObjectID, entnum, end int) (
 
 		//Remove _id
 		top = fixID(top)
+		top["children"] = []map[string]interface{}{}
 
 		//Retrieve associated nonhierarchal objects
 		if entity == "device" || entity == "rack" || entity == "room" {
 			x, e := GetManyEntities("sensor",
 				bson.M{"parentId": top["id"].(primitive.ObjectID).Hex()})
 			if e == "" {
-				top[entity+"_sensors"] = x
+				//top[entity+"_sensors"] = x
+
+				top["children"] = append(top["children"].([]map[string]interface{}), x...)
 			}
 		}
 
@@ -824,8 +827,9 @@ func GetEntityHierarchy(entity string, ID primitive.ObjectID, entnum, end int) (
 				ent := u.EntityToString(i)
 				x, e := GetManyEntities(ent,
 					bson.M{"parentId": top["id"].(primitive.ObjectID).Hex()})
-				if e == "" {
-					top[ent+"s"] = x
+				if e == "" && i != AISLE && i != TILE {
+					//top[ent+"s"] = x
+					top["children"] = append(top["children"].([]map[string]interface{}), x...)
 				}
 			}
 		}
@@ -841,8 +845,6 @@ func GetEntityHierarchy(entity string, ID primitive.ObjectID, entnum, end int) (
 			return nil, e1
 		}
 
-		top["children"] = children
-
 		//Get the rest of hierarchy for children
 		for i := range children {
 			var x map[string]interface{}
@@ -857,6 +859,8 @@ func GetEntityHierarchy(entity string, ID primitive.ObjectID, entnum, end int) (
 				children[i] = x
 			}
 		}
+
+		top["children"] = append(top["children"].([]map[string]interface{}), children...)
 
 		return top, ""
 	}
