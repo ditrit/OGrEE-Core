@@ -107,7 +107,7 @@ func (c *commonNode) execute() interface{} {
 
 	case "UpdateObj":
 		var v map[string]interface{}
-		if f, ok := c.fun.(func(string, map[string]interface{}) map[string]interface{}); ok {
+		if f, ok := c.fun.(func(string, map[string]interface{}, bool) map[string]interface{}); ok {
 			//Old code was removed since
 			//it broke the OCLI syntax easy update
 			x := len(c.args)
@@ -123,9 +123,9 @@ func (c *commonNode) execute() interface{} {
 				nd := getNodeFromMapInf(mp.(node).execute().(map[string]interface{}))
 				updateArgs := map[string]interface{}{c.args[1].(string): c.args[2].(node).execute()}
 
-				v = f(nd.Path, updateArgs)
+				v = f(nd.Path, updateArgs, false)
 			} else {
-				v = f(c.args[0].(string), c.args[1].(map[string]interface{}))
+				v = f(c.args[0].(string), c.args[1].(map[string]interface{}), false)
 			}
 			return &jsonObjNode{COMMON, v}
 		}
@@ -170,8 +170,16 @@ func (c *commonNode) execute() interface{} {
 		}
 
 	case "Unset":
-		if f, ok := c.fun.(func(string, string)); ok {
-			f(c.args[0].(string), c.args[1].(string))
+		if f, ok := c.fun.(func(string, string, interface{}, interface{})); ok {
+			if len(c.args) > 2 {
+				//Means we are deleting an attribute
+				//of an object
+				/*idx := c.args[2].(node).execute()
+				println("IDX WAS:", idx)
+				return*/
+			}
+			f(c.args[0].(string), c.args[1].(string),
+				c.args[2].(node), c.args[3])
 		}
 
 	case "GetOCAttr":
@@ -656,7 +664,7 @@ func (a *assignNode) execute() interface{} {
 				nd := getNodeFromMapInf(mp)
 				attr := a.arg.(*symbolReferenceNode).offset.(*symbolReferenceNode).val.(string)
 				updateArg := map[string]interface{}{attr: v}
-				cmd.UpdateObj(nd.Path, updateArg)
+				cmd.UpdateObj(nd.Path, updateArg, false)
 			}
 
 		} else {
@@ -838,13 +846,28 @@ func (f *funcNode) execute() interface{} {
 }
 
 //Helper Functions
-func UnsetUtil(x, name string) {
+func UnsetUtil(x, name string, ref, value interface{}) {
 	switch x {
 	case "-f":
 		funcTable[name] = nil
 	case "-v":
 		v := dynamicMap[name]
 		dynamicSymbolTable[v] = nil
+	default:
+		//This section is for deleting an attribute
+		myArg := ""
+		identifier := ref.(*symbolReferenceNode)
+		idx := dynamicMap[identifier.val.(string)] //Get the idx
+		mp := dynamicSymbolTable[idx].(map[string]interface{})
+		nd := getNodeFromMapInf(mp)
+
+		myArg = ref.(*symbolReferenceNode).offset.(node).execute().(string)
+		if v, ok := dynamicMap[myArg]; ok {
+			myArg = dynamicSymbolTable[v].(string)
+		}
+
+		cmd.UpdateObj(nd.Path, map[string]interface{}{myArg: nil}, true)
+
 	}
 }
 

@@ -171,6 +171,11 @@ selection.myAttribute = someValue
 ```
 If the attribute does not exist, it will be inserted automatically under attributes dictionary. Any string values MUST be surrounded by quotes (" "). Please note that object checking will only occur on the update command.
 
+It is possible to delete an attribute of an object. First a variable must be assigned to an object, then unset can be called. Note: The attribute to be deleted must be surround by quotes (" ") or referred to as a string variable.
+```
+.var:x=$(gt)
+unset $x["myAttribute"]
+```
 
 Other Operations
 ------------

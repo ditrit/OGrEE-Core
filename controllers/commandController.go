@@ -223,18 +223,23 @@ func GetObject(path string) map[string]interface{} {
 
 //This is an auxillary function
 //for writing proper JSONs
-func GenUpdateJSON(m *map[string]interface{}, key string, value interface{}) (map[string]interface{}, bool) {
+func GenUpdateJSON(m *map[string]interface{}, key string, value interface{}, del bool) (map[string]interface{}, bool) {
 
 	//Base Cae
 	if _, ok := (*m)[key]; ok {
+		if del == true { //make a delete
+			delete((*m), key)
+		} else {
 		(*m)[key] = value
+		}
+
 		return *m, true
 	}
 
 	for i := range *m {
 		//We have a nested map
 		if sub, ok := (*m)[i].(map[string]interface{}); ok {
-			modifiedJ, ret := GenUpdateJSON(&sub, key, value)
+			modifiedJ, ret := GenUpdateJSON(&sub, key, value, del)
 			(*m)[i] = modifiedJ
 			if ret == true {
 				return *m, ret
@@ -245,8 +250,10 @@ func GenUpdateJSON(m *map[string]interface{}, key string, value interface{}) (ma
 	return nil, false
 }
 
-func UpdateObj(path string, data map[string]interface{}) map[string]interface{} {
+func UpdateObj(path string, data map[string]interface{}, deleteAndPut bool) map[string]interface{} {
 	println("OK. Attempting to update...")
+	var resp *http.Response
+
 	if data != nil {
 		var respJson map[string]string
 		nd := new(*Node)
@@ -295,7 +302,12 @@ func UpdateObj(path string, data map[string]interface{}) map[string]interface{} 
 			ogData["attributes"] = attrs
 		}
 
-		resp, e := models.Send("PATCH", URL, GetKey(), ogData)
+		if deleteAndPut == true {
+			resp, e = models.Send("PUT", URL, GetKey(), ogData)
+		} else {
+			resp, e = models.Send("PATCH", URL, GetKey(), ogData)
+		}
+
 		//println("Response Code: ", resp.Status)
 		if e != nil {
 			println("There was an error!")

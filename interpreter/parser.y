@@ -481,7 +481,13 @@ Q:     TOK_CD P {/*cmd.CD($2);*/ $$=&commonNode{COMMON, cmd.CD, "CD", []interfac
 
        | TOK_TREE P {$$=&commonNode{COMMON, cmd.Tree, "Tree", []interface{}{$2, 0}}}
        | TOK_TREE P TOK_NUM {$$=&commonNode{COMMON, cmd.Tree, "Tree", []interface{}{$2, $3}}}
-       | TOK_UNSET TOK_OCDEL TOK_WORD TOK_WORD {$$=&commonNode{COMMON,UnsetUtil, "Unset",[]interface{}{$2+$3, $4} }}
+       | TOK_UNSET TOK_OCDEL TOK_WORD TOK_WORD {$$=&commonNode{COMMON,UnsetUtil, "Unset",[]interface{}{$2+$3, $4, nil, nil} }}
+       | TOK_UNSET TOK_DEREF TOK_WORD TOK_LBLOCK EXPR TOK_RBLOCK {
+              v:=&symbolReferenceNode{REFERENCE, $3, $5, nil}; 
+              //$$=&assignNode{ASSIGN, v, "deleteValue"}
+              $$=&commonNode{COMMON, UnsetUtil, "Unset", []interface{}{"","" ,v, nil}}
+              
+              }
        | BASH     {$$=$1}
 ;
 
