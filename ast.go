@@ -647,6 +647,12 @@ func (a *assignNode) execute() interface{} {
 				mp[locIdx.(string)] = v //Assign val into map[str]inf{} (node) type
 				//Some kind of update needs to be done
 
+				//Update if the map was a node
+				if nd := getNodeFromMapInf(mp); nd != nil {
+					data := map[string]interface{}{locIdx.(string): v}
+					cmd.UpdateObj(nd.Path, data, false)
+				}
+
 			case int:
 				if locIdx.(int) > 0 {
 					if cmd.State.DebugLvl >= 3 {
