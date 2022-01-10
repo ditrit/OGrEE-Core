@@ -28,9 +28,9 @@ const (
 
 	CORIDOR
 	SENSOR
+	GROUP
 	ROOMTMPL
 	OBJTMPL
-	GROUP
 )
 
 //Function will recursively iterate through nested obj
@@ -90,10 +90,10 @@ func validateParent(ent string, entNum int, t map[string]interface{}) (map[strin
 			return u.Message(false,
 				"ParentID should be correspond to Existing ID"), false
 		}
-	case SENSOR:
+	case SENSOR, GROUP:
 		x, _ := GetEntity(bson.M{"_id": objID}, "rack")
-		y, _ := GetEntity(bson.M{"_id": objID}, "device")
-		z, _ := GetEntity(bson.M{"_id": objID}, "room")
+		y, _ := GetEntity(bson.M{"_id": objID}, "room")
+		z, _ := GetEntity(bson.M{"_id": objID}, "building")
 		if x == nil && y == nil && z == nil {
 			return u.Message(false,
 				"ParentID should be correspond to Existing ID"), false
@@ -123,7 +123,7 @@ func ValidatePatch(ent int, t map[string]interface{}) (map[string]interface{}, b
 		case "name", "category", "domain":
 			//Only for Entities until SENSOR
 			//And OBJTMPL
-			if ent < ROOMTMPL || ent == OBJTMPL {
+			if ent < GROUP || ent == OBJTMPL {
 				if v, _ := t[k]; v == nil {
 					return u.Message(false,
 						"Field: "+k+" cannot nullified!"), false
@@ -131,7 +131,7 @@ func ValidatePatch(ent int, t map[string]interface{}) (map[string]interface{}, b
 			}
 
 		case "parentId":
-			if ent < ROOMTMPL {
+			if ent < ROOMTMPL && ent > TENANT {
 				x, ok := validateParent(u.EntityToString(ent), ent, t)
 				if !ok {
 					return x, ok
@@ -225,23 +225,17 @@ func ValidatePatch(ent int, t map[string]interface{}) (map[string]interface{}, b
 			}
 
 		case "type":
-			if ent == GROUP || ent == SENSOR {
+			if ent == SENSOR {
 				if v, _ := t[k]; v == nil {
 					return u.Message(false,
 						"Field: "+k+" cannot nullified!"), false
 				}
 
-				if ent == SENSOR && t[k] != "rack" &&
+				if t[k] != "rack" &&
 					t[k] != "device" && t[k] != "room" {
 					return u.Message(false,
 						"Incorrect values given for: "+k+"!"+
 							"Please provide rack or device or room"), false
-				}
-
-				if ent == GROUP && t[k] != "device" && t[k] != "rack" {
-					return u.Message(false,
-						"Incorrect values given for: "+k+"!"+
-							"Please provide rack or device"), false
 				}
 			}
 
@@ -589,10 +583,8 @@ func ValidateEntity(entity int, t map[string]interface{}) (map[string]interface{
 			return u.Message(false, "Name should be on payload"), false
 		}
 
-		switch t["type"] {
-		case "rack", "device":
-		default:
-			return u.Message(false, "Group type (rack or device) should be specified"), false
+		if r, ok := validateParent("group", entity, t); !ok {
+			return r, ok
 		}
 
 	}
@@ -709,6 +701,9 @@ func deleteHelper(t map[string]interface{}, ent int) (map[string]interface{}, st
 			ctx, cancel := u.Connect()
 			GetDB().Collection("sensor").DeleteMany(ctx,
 				bson.M{"parentId": t["id"].(primitive.ObjectID).Hex()})
+
+			GetDB().Collection("group").DeleteMany(ctx,
+				bson.M{"parentId": t["id"].(primitive.ObjectID).Hex()})
 			defer cancel()
 		}
 
@@ -716,7 +711,7 @@ func deleteHelper(t map[string]interface{}, ent int) (map[string]interface{}, st
 		if ent == ROOM {
 			//ITER Through all nonhierarchal objs
 			ctx, cancel := u.Connect()
-			for i := AC; i < SENSOR+1; i++ {
+			for i := AC; i < GROUP+1; i++ {
 				ent := u.EntityToString(i)
 				GetDB().Collection(ent).DeleteMany(ctx, bson.M{"parentId": t["id"].(primitive.ObjectID).Hex()})
 			}
@@ -819,17 +814,27 @@ func GetEntityHierarchy(entity string, ID primitive.ObjectID, entnum, end int) (
 
 				top["children"] = append(top["children"].([]map[string]interface{}), x...)
 			}
+
+			if entity == "rack" || entity == "room" {
+				y, e1 := GetManyEntities("group",
+					bson.M{"parentId": top["id"].(primitive.ObjectID).Hex()})
+				if e1 == "" {
+					top["children"] = append(top["children"].([]map[string]interface{}), y...)
+				}
+			}
 		}
 
 		if entity == "room" {
 			//ITER Through all nonhierarchal objs
-			for i := AC; i < SENSOR; i++ {
+			for i := AC; i < GROUP+1; i++ {
 				ent := u.EntityToString(i)
-				x, e := GetManyEntities(ent,
-					bson.M{"parentId": top["id"].(primitive.ObjectID).Hex()})
-				if e == "" && i != AISLE && i != TILE {
-					//top[ent+"s"] = x
-					top["children"] = append(top["children"].([]map[string]interface{}), x...)
+				if ent != "sensor" {
+					x, e := GetManyEntities(ent,
+						bson.M{"parentId": top["id"].(primitive.ObjectID).Hex()})
+					if e == "" && i != AISLE && i != TILE {
+						//top[ent+"s"] = x
+						top["children"] = append(top["children"].([]map[string]interface{}), x...)
+					}
 				}
 			}
 		}
@@ -1100,6 +1105,7 @@ func RetrieveDeviceHierarch(ID primitive.ObjectID, start, end int) (map[string]i
 		if e != "" {
 			return nil, e
 		}
+		top["children"] = []map[string]interface{}{}
 
 		//Retrieve sensors
 		ctx, cancel := u.Connect()
@@ -1113,7 +1119,19 @@ func RetrieveDeviceHierarch(ID primitive.ObjectID, start, end int) (map[string]i
 				return nil, e1
 			}
 
-			top["device_sensors"] = data
+			top["children"] = append(top["children"].([]map[string]interface{}), data...)
+		}
+		y, err1 := GetDB().Collection("group").Find(ctx,
+			bson.M{"parentId": top["id"].(primitive.ObjectID).Hex()})
+		if err1 == nil {
+			data := []map[string]interface{}{}
+			data, e1 := ExtractCursor(y, ctx)
+			if e1 != "" {
+				fmt.Println(e1)
+				return nil, e1
+			}
+
+			top["children"] = append(top["children"].([]map[string]interface{}), data...)
 		}
 		defer cancel()
 
@@ -1127,7 +1145,7 @@ func RetrieveDeviceHierarch(ID primitive.ObjectID, start, end int) (map[string]i
 				children[i]["id"].(primitive.ObjectID), start+1, end)
 		}
 
-		top["children"] = children
+		top["children"] = append(top["children"].([]map[string]interface{}), children...)
 
 		return top, ""
 	}
@@ -1165,6 +1183,9 @@ func deleteDeviceHelper(t map[string]interface{}) (map[string]interface{}, strin
 		ctx, cancel := u.Connect()
 		//Delete relevant non hierarchal objects
 		GetDB().Collection("sensor").DeleteMany(ctx,
+			bson.M{"parentId": t["id"].(primitive.ObjectID).Hex()})
+
+		GetDB().Collection("group").DeleteMany(ctx,
 			bson.M{"parentId": t["id"].(primitive.ObjectID).Hex()})
 
 		c, _ := GetDB().Collection("device").DeleteOne(ctx, bson.M{"_id": t["id"].(primitive.ObjectID)})

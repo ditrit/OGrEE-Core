@@ -28,9 +28,9 @@ const (
 	TILE
 	CORIDOR
 	SENSOR
+	GROUP
 	ROOMTMPL
 	OBJTMPL
-	GROUP
 )
 
 func Connect() (context.Context, context.CancelFunc) {

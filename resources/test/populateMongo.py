@@ -42,16 +42,16 @@ payloadTable = {
     "panel":{"name": "PanelA","id": None,"parentId": None,"category": "powerpanel","description": [    "YINGLI"],"domain": "Panel DOMAIN","attributes": {}},
     "separator":{"name": "Undercover","id": None,"parentId": None,"category": "separator","description": [    "2008"],"domain": "separator DOMAIN","attributes": {}},
 
-    "aisle":{"name"        : "AisleA","locationY"   : "101,101","orientation" : "+N+E","parentId" : None},
+    "aisle":{"name"        : "AisleA","locationY"   : "101,101","orientation" : "+N+E","parentId" : None, "domain":"DEMO"},
 
-    "tile":{"location" : "101,101","name"     : "TileA","label"    : "TileA","texture"  : "Smooth","color"    : "FAA","parentId" : None},
-    "cabinet":{  "name": "CabinetA","parentId" : None},
-    "group":{"name": "GroupA","type" : "rack","contents":  []},
-    "corridor":{"name": "CorridorA","parentId" : None,"temperature": "warm"},
+    "tile":{"location" : "101,101","name"     : "TileA","label"    : "TileA","texture"  : "Smooth","color"    : "FAA","parentId" : None,"domain":"DEMO"},
+    "cabinet":{  "name": "CabinetA","parentId" : None,"domain":"DEMO"},
+    "group":{"name": "GroupA","type" : "rack","contents":  [],"category":"group", "domain":"DEMO", "parentId":None},
+    "corridor":{"name": "CorridorA","parentId" : None,"temperature": "warm","category":"corridor", "domain":"DEMO"},
     
-    "room-sensor":{"name": "RoomSensorLight","parentId" : None,"category": "SENSOR-R", "type":"room"},
-    "rack-sensor":{"name": "SensorA","parentId" : None,"category": "SENSOR-A", "type":"rack"},
-    "device-sensor":{"name": "DeviceSensorA","parentId" : None,"category": "SENSOR-D", "type":"device"},
+    "room-sensor":{"name": "RoomSensorLight","parentId" : None,"category": "SENSOR-R", "type":"room", "domain":"DEMO"},
+    "rack-sensor":{"name": "SensorA","parentId" : None,"category": "SENSOR-A", "type":"rack", "domain":"DEMO"},
+    "device-sensor":{"name": "DeviceSensorA","parentId" : None,"category": "SENSOR-D", "type":"device", "domain":"DEMO"},
 
     "room-template":{"slug"          : "RT1","orientation"   : "+N+E","sizeWDHm"      : ["width","depth","height"],"technicalArea" : ["width","depth","height"],"reservedArea"  : ["width","depth","height"],"separators"    : [],"colors"        : [],"tiles"         : [],"aisles"        : []},
     "obj-template":{"slug"        : "RACK1T","description" : "Rack Template 1","category"    : "rack","sizeWDHmm"   : ["width","depth","height"],"fbxModel"    : "1","attributes"  : {  "type" : ""},"colors"      : [],"components"  : [],"slots"       : []}

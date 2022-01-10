@@ -23,7 +23,7 @@ PIDS={"tenantID":None, "siteID":None, "buildingID":None,
         "rackID":None, "deviceID":None,
         "room-templateID": None, "obj-templateID": None}
         
-url = "http://localhost:27020/api"
+url = "http://localhost:3001/api"
 headers = {
   'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJVc2VySWQiOjY2NDA0NjEyNzM0MjQxOTk2OX0.cB1VkYQLlXCatzMiEWGFfJKKx9h8Vsr2vdlylNMe7hs',
   'Content-Type': 'application/json'
@@ -80,17 +80,17 @@ payloadTable = {
     "ac":{"name": "AquaSky01","id": "12353","parentId": PIDS["roomID"],"category": "ac","description": [    "SPEED"],"domain": "AC DOMAIN","attributes": {    "new": "IDX"}},
     "panel":{"name": "Power_Panel_99","id": None,"parentId": PIDS["roomID"],"category": "panel","description": [    "GRENOBLE DERELICT"],"domain": "PANEL DOMAIN","attributes": {    "new": "IDX"}},
     "separator":{"name": "EXTREME-separator","id": None,"parentId": PIDS["roomID"],"category": "separator","description": [    "GRENOBLE DERELICT"],"domain": "separatorDOMAIN","attributes": {    "new": "99"}},
-    "aisle":{"name"        : "AISLE-X","parentId":PIDS["roomID"],"locationY"   : "82,99","orientation" : "+S+E"},
-    "tile":{"location" : "82,99", "parentId":PIDS["roomID"], "name"     : "Tile-Black","label"    : "Kino","texture"  : "Smooth","color"    : "FFFFFF"},
-    "cabinet":{"name": "TAKEUSDOWN", "parentId":PIDS["roomID"]},
-    "group":{"name": "Group909","parentId" : PIDS["roomID"],"racks":  [], "another":"customAttr"},
-    "corridor":{"name": "Corridor909","parentId" : PIDS["roomID"],"temperature": "cold"},
-    "room":{"name": "Abandoned Room","id": None,"parentId": PIDS["buildingID"],"category": "999","description": ["999"],"domain": "999","attributes": {    "posXY": "999",    "posXYUnit": "m",    "posZ": "999",    "posZUnit": "m",    "template": "999",    "orientation": "-N-W",    "size": "999",    "sizeUnit": "m",    "height": "999",    "heightUnit": "m"}},
+    "aisle":{"name"        : "AISLE-X","parentId":PIDS["roomID"],"locationY"   : "82,99","domain":"DEMO","orientation" : "+S+E"},
+    "tile":{"location" : "82,99", "parentId":PIDS["roomID"], "name"     : "Tile-Black","label"    : "Kino","domain":"DEMO","texture"  : "Smooth","color"    : "FFFFFF"},
+    "cabinet":{"name": "TAKEUSDOWN", "parentId":PIDS["roomID"],"domain":"DEMO"},
+    "group":{"name": "Group909","parentId" : PIDS["roomID"],"racks":  [], "another":"customAttr","domain":"DEMO"},
+    "corridor":{"name": "Corridor909","parentId" : PIDS["roomID"],"temperature": "cold", "domain":"DEMO"},
+    "room":{"name": "Abandoned Room","id": None,"parentId": PIDS["buildingID"],"category": "999","description": ["999"],"domain": "999","attributes": {    "posXY": "999",    "posXYUnit": "m",    "posZ": "999",    "posZUnit": "m",    "template": "999",    "orientation": "-N-W",    "size": "999",    "sizeUnit": "m",    "height": "999",    "heightUnit": "m", "floorUnit":"f"}},
     "rack":{"name": "Abandoned Rack","id": None,"parentId": PIDS["roomID"],"category": "rack","description": ["99","999","9999"],"domain": "Abandoned Rack","attributes": {    "posXY": "999",    "posXYUnit": "tile",    "size": "99",    "sizeUnit": "cm",    "height": "999",    "heightUnit": "U",    "template": "",    "orientation": "front",    "vendor": "999",    "type": "999",    "model": "999",    "serial": "999"}},
     "device":{"name": "Abandoned Device","id": None,"parentId": PIDS["rackID"],"category": "999","description": ["Rack A01","The original one","-3/-5\\nA0-Z9"],"domain": "99","attributes": {"posXY": "99","posXYUnit": "tile","size": "99","sizeUnit": "cm","height": "99","heightUnit": "U","template": "","orientation": "front","vendor": "99","type": "99","model": "99","serial": "99"}},
-    "room-sensor":{"name": "Corridor909","parentId" : PIDS["roomID"],"temperature": "cold", "type":"room"},
-    "rack-sensor":{"name": "Corridor909","parentId" : PIDS["rackID"],"temperature": "cold", "type":"rack"},
-    "device-sensor":{"name": "Corridor909","parentId" : PIDS["deviceID"],"temperature": "cold", "type":"device"},
+    "room-sensor":{"name": "Corridor909","parentId" : PIDS["roomID"],"temperature": "cold", "type":"room", "domain":"DEMO"},
+    "rack-sensor":{"name": "Corridor909","parentId" : PIDS["rackID"],"temperature": "cold", "type":"rack", "domain":"DEMO"},
+    "device-sensor":{"name": "Corridor909","parentId" : PIDS["deviceID"],"temperature": "cold", "type":"device", "domain":"DEMO"},
     "room-template":{"slug"          : "HOTTESTDNB","orientation"   : "+N+W","sizeWDHm"      : [],"technicalArea" : [],"reservedArea"  : [],"separators"    : [],"colors"        : [],"tiles"         : [],"aisles"        : []},
     "obj-template":{"slug"        : "RACK2000","description" : "Rack Template 2000","category"    : "rack","sizeWDHmm"   : [],"fbxModel"    : "1","attributes"  : {  "type" : ""},"colors"      : [],"components"  : [],"slots"       : []}
     }

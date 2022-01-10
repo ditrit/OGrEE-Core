@@ -29,7 +29,7 @@ PIDS={"tenantID":None, "siteID":None, "buildingID":None,
         
 
 #URL & HEADERS    
-url = "http://localhost:27020/api"
+url = "http://localhost:3001/api"
 headers = {
   'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJVc2VySWQiOjY2NDA0NjEyNzM0MjQxOTk2OX0.cB1VkYQLlXCatzMiEWGFfJKKx9h8Vsr2vdlylNMe7hs',
   'Content-Type': 'application/json'
@@ -52,9 +52,10 @@ class Entity(Enum):
 
   CORRIDOR = 12
   SENSOR = 13
-  ROOMTMPL = 14
-  OBJTMPL = 15
-  GROUP = 16
+  GROUP = 14
+  ROOMTMPL = 15
+  OBJTMPL = 16
+  
 
 
 
@@ -74,9 +75,11 @@ def verifyOutput(j1, j2):
         res = False
         print("JSON Match: Fail")
         print("J1")
-        print(sorted(j1.items()))
+        #print(sorted(j1.items()))
+        print(json.dumps(j1, indent=4, sort_keys=True))
         print("J2")
-        print(sorted(j2.items()))
+        #print(sorted(j2.items()))
+        print(json.dumps(j2, indent=4, sort_keys=True))
 
 def verifyGet(code,entity):
   global res
@@ -217,11 +220,16 @@ def getEntityHierarchy(entity, entLoc, ID, end):
         x = extractCursor(x, "sensor")
         t["rack_sensors"] = x['objects']
 
+      x = getManyFromDBGeneric("group", {"parentId":t["id"]})
+      if x != None:
+        x = extractCursor(x, "group")
+        t["groups"] = x['objects']
+
 
     if entity == "room":
       #ITER Through all nonhierarchal objs
       i = sToI("AC")
-      while i < sToI("SENSOR")+1:
+      while i < sToI("GROUP")+1:
         ent = iToS(i).lower()
         #if ent == "roomsensor":
         #    ent = "room_sensor"
@@ -393,6 +401,7 @@ def getEntityUsingAncestry(url, obj):
 
 def apiCall(URL, entity, iterator, verifyingStr, ID, reqType, wantedEnt):
   j2 = None
+  print("OUR URL:", URL)
   response = requests.request("GET", URL, headers=headers, data={})
   verifyGet(response.status_code, verifyingStr)
 
@@ -494,7 +503,7 @@ for i in PIDS:
       apiCall(url+"/"+objs+"/"+PIDS[i]+"/"+subObj+"s", obj, i,
        i[0].upper()+i[1:len(i)-2]+"\'s "+subObj +"s", PIDS[i], "mainGetException", None)
 
-
+  
   #GET OBJ HIERARCHY
   if (obj == "tenant" or obj == "site" 
       or obj == "building" or obj == "room" or obj == "rack"):
@@ -502,7 +511,7 @@ for i in PIDS:
     apiCall(url+"/"+objs+"/"+PIDS[i]+"/all", obj, i,
                  obj[0]+obj[1:]+"'s Hierarchy", None, "hierarchy", None)
 
-
+  
   #RANGED HIERARCHY
   if obj == "tenant":
     tenantRangedURLs = [
@@ -514,7 +523,7 @@ for i in PIDS:
 
     handleRangedHierarchy(tenantRangedURLs, obj, PIDS[i])
   
-  
+
   if obj == "site":
     siteRangedURLs = ["all/buildings/rooms",
                       "all/buildings/rooms/racks",
@@ -552,7 +561,7 @@ for i in PIDS:
     apiCall(finalURL, obj, i, 
     obj[0].upper()+obj[1:]+"s"+" one level lower req", None, "1levelLower", None)
 
-
+    
     if obj == "room":
       #All associated objs for room
       idx = 6 #AC
@@ -589,7 +598,7 @@ for i in PIDS:
 
         
 
-
+  
   #NAMED & SUBENTITY SECTION
   tenantList = [
   "/api/tenants/DEMO/sites/ALPHA/buildings/B/rooms/R1/racks/A01/devices/DeviceA",

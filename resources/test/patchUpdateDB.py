@@ -25,7 +25,7 @@ PIDS={"tenantID":None, "siteID":None, "buildingID":None,
         "rackID":None, "deviceID":None,
         "room-templateID": None, "obj-templateID": None}
         
-url = "http://localhost:27020/api"
+url = "http://localhost:3001/api"
 headers = {
   'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJVc2VySWQiOjY2NDA0NjEyNzM0MjQxOTk2OX0.cB1VkYQLlXCatzMiEWGFfJKKx9h8Vsr2vdlylNMe7hs',
   'Content-Type': 'application/json'
@@ -78,7 +78,7 @@ writeEnv()
 payloadTable = {
     "tenant":{"attributes": {  "another":"one"},"someUsefulAttr":"customValue"},
     "site":{"name": "SiteA999","domain": "DERELICT","attributes": {    "orientation": "NW",    "another":"one"},"someUsefulAttr":"customValue"},
-    "building":{"name": "Abandoned-Building","description": [    "Wassup yo",    "Guess whos back"],"domain": "999","attributes": {    "size":None}},
+    "building":{"name": "Abandoned-Building","description": [    "Wassup yo",    "Guess whos back"],"domain": "999","attributes": {    "size":"88"}},
     "ac":{"name": "AquaSky01","category": "ac","description": [    "SPEED"],"domain": "AC DOMAIN","attributes": {    "new": "IDX"}},
     "panel":{"name": "Power_Panel_99","category": "SOLARpanel","description": [    "GRENOBLE DERELICT"],"domain": "PANEL DOMAIN","attributes": {    "new": "IDX"}},
     "separator":{"name": "EXTREME-SEP","attributes":{    "Ijust":"WalkedAway",    "newAttr":"no"},"another": "ONE"},

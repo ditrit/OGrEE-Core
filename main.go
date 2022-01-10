@@ -74,7 +74,7 @@ func main() {
 	router.HandleFunc("/api/sites/{id:[a-zA-Z0-9]{24}}/rooms",
 		controllers.GetEntitiesOfAncestor).Methods("GET")
 
-	router.HandleFunc("/api/buildings/{id:[a-zA-Z0-9]{24}}/{sub:acs|corridors|cabinets|tiles|aisles|panels|separators|sensors}",
+	router.HandleFunc("/api/buildings/{id:[a-zA-Z0-9]{24}}/{sub:acs|corridors|cabinets|tiles|aisles|panels|separators|sensors|groups}",
 		controllers.GetEntitiesOfAncestor).Methods("GET")
 
 	router.HandleFunc("/api/buildings/{id:[a-zA-Z0-9]{24}}/racks",

@@ -14,7 +14,7 @@ PIDS={"tenantID":None, "siteID":None, "buildingID":None,
         "device-sensorID":None,
         "room-templateID": None, "obj-templateID": None}
         
-url = "http://localhost:27020/api"
+url = "http://localhost:3001/api"
 headers = {
   'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJVc2VySWQiOjY2NDA0NjEyNzM0MjQxOTk2OX0.cB1VkYQLlXCatzMiEWGFfJKKx9h8Vsr2vdlylNMe7hs',
   'Content-Type': 'application/json'
@@ -290,6 +290,8 @@ payload={
   "name"        : "AisleA",
   "locationY"   : "101,101",
   "orientation" : "+N+E",
+  "category": "aisle",
+  "domain":"DEMO",
   "parentId" : None
 }
 payload['parentId'] = roomID
@@ -316,6 +318,8 @@ payload={
   "label"    : "TileA",
   "texture"  : "Smooth",
   "color"    : "FAA",
+  "domain":"DEMO",
+  "category":"tile",
   "parentId" : None
 }
 payload['parentId'] = roomID
@@ -339,6 +343,8 @@ print()
 #CABINET CREATE & GET
 payload={
     "name": "CabinetA",
+    "domain": "DEMO",
+    "category": "cabinet",
   "parentId" : None
 }
 payload['parentId'] = roomID
@@ -363,6 +369,8 @@ print()
 payload={
     "name": "CorridorA",
     "parentId" : None,
+    "domain": "DEMO",
+    "category": "corridor",
     "temperature": "warm"
 }
 payload['parentId'] = roomID
@@ -387,6 +395,7 @@ payload={
     "name": "RoomSensorLight",
     "parentId" : None,
     "category": "SENSOR-R",
+    "domain": "DEMO",
     "type":"room"
 }
 payload['parentId'] = roomID
@@ -458,6 +467,7 @@ payload={
     "name": "SensorA",
     "parentId" : None,
     "category": "SENSOR-A",
+    "domain": "DEMO",
     "type": "rack"
 }
 payload['parentId'] = rackID
@@ -528,6 +538,7 @@ payload={
     "name": "DeviceSensorA",
     "parentId" : None,
     "category": "SENSOR-D",
+    "domain":"DEMO",
     "type":"device"
 }
 payload['parentId'] = deviceID
@@ -618,8 +629,10 @@ print()
 payload={
     "name": "GroupA",
     "type" : "rack",
+    "parentId": None,
     "contents":  []
 }
+payload['parentId'] = roomID
 response = requests.request("POST", url+"/groups",
               headers=headers, data=json.dumps(payload))
 verifyCreate(response.status_code, "Group")
