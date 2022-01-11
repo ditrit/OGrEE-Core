@@ -25,14 +25,14 @@ const (
 	RACK
 	DEVICE
 	AC
-	PWRPNL
-	SEPARATOR
-	CABINET
 	AISLE
-	TILE
+	CABINET
 	CORIDOR
-	SENSOR
 	GROUP
+	PWRPNL
+	SENSOR
+	SEPARATOR
+	TILE
 	ROOMTMPL
 	OBJTMPL
 )
@@ -452,7 +452,7 @@ var GetAllEntities = func(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	data, e = models.GetManyEntities(entStr, bson.M{})
+	data, e = models.GetManyEntities(entStr, bson.M{}, nil)
 
 	entUpper := strings.ToUpper(entStr) // and the trailing 's'
 	resp := u.Message(true, "success")
@@ -876,7 +876,7 @@ var GetEntityByQuery = func(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	data, e = models.GetManyEntities(entStr, bsonMap)
+	data, e = models.GetManyEntities(entStr, bsonMap, nil)
 
 	if len(data) == 0 {
 		resp = u.Message(false, "Error: "+e)
