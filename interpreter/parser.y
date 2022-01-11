@@ -17,7 +17,27 @@ var root node
 func retNodeArray(input []interface{}) []map[int]interface{}{
        res := []map[int]interface{}{}
        for idx := range input {
-              if input[idx].(string) == "false" {
+              switch input[idx].(type) {
+                     case string:
+                     if input[idx].(string) == "false" {
+                            x := map[int]interface{}{0: &boolNode{BOOL, false}}
+                            res = append(res, x)
+                     }
+                     if input[idx].(string) == "true" {
+                            x := map[int]interface{}{0: &boolNode{BOOL, true}}
+                            res = append(res, x)
+                     } else {
+                            x := map[int]interface{}{0: &strNode{STR, input[idx].(string)}}
+                            res = append(res, x)
+                     }
+                     case int:
+                     x := map[int]interface{}{0: &numNode{NUM, input[idx].(int)}}
+                     res = append(res, x)
+
+                     default: //Most likely a node
+                     res = append(res, map[int]interface{}{0:input[idx]})
+              }
+              /*if input[idx].(string) == "false" {
                      x := map[int]interface{}{0: &boolNode{BOOL, false}}
                      res = append(res, x)
               } else if input[idx].(string) == "true" {
@@ -29,7 +49,7 @@ func retNodeArray(input []interface{}) []map[int]interface{}{
               } else {
                      x := map[int]interface{}{0: &strNode{STR, input[idx].(string)}}
                      res = append(res, x)
-              }
+              }*/
        }
        return res
 }
@@ -355,10 +375,18 @@ unary: TOK_NOT unary {$$=&boolOpNode{BOOLOP, "!", $2}}
 
 factor: TOK_LPAREN EXPR TOK_RPAREN {$$=$2}
        |TOK_NUM {$$=&numNode{NUM, $1}}
-       //|TOK_DEREF TOK_WORD TOK_LBLOCK TOK_WORD TOK_RBLOCK {$$=&symbolReferenceNode{REFERENCE, $2, &strNode{STR,$4}, nil}}
        |TOK_DEREF TOK_WORD {$$=&symbolReferenceNode{REFERENCE, $2, &numNode{NUM,0}, nil}}
        |TOK_DEREF TOK_WORD TOK_LBLOCK EXPR TOK_RBLOCK {$$=&symbolReferenceNode{REFERENCE, $2, $4, nil}}
-       |TOK_LEN TOK_LPAREN TOK_WORD TOK_RPAREN {x:=&symbolReferenceNode{REFERENCE, $3, &numNode{NUM, -1}, nil};$$=&numNode{NUM, x.execute().(int)}}
+       |TOK_LEN TOK_LPAREN TOK_WORD TOK_RPAREN {x:=&symbolReferenceNode{REFERENCE, $3, &numNode{NUM, -1}, nil};
+                                                 switch x.execute().(type) {
+                                                        case int:
+                                                        $$=&numNode{NUM, x.execute().(int)}
+                                                        default: //Error, the array length is not an int
+                                                        println("Error! Single element arrays are not supported")
+                                                        $$=&numNode{NUM, -1}
+
+                                                 }
+                                                }
        |TOK_WORD {$$=&symbolReferenceNode{REFERENCE, $1,&numNode{NUM,0}, nil}}
        |TOK_QUOT STRARG TOK_QUOT {$$=&strNode{STR, $2}}
        |TOK_BOOL {var x bool;if $1=="false"{x = false}else{x=true};$$=&boolNode{BOOL, x}}
@@ -611,9 +639,11 @@ STRARG: WORDORNUM STRARG {if $2 != "" {$$=$1+" "+$2} else {$$=$1};}
        | {$$=""}
 ;
 
-WNARG: WORDORNUM WNARG {x:=[]interface{}{$1}; $$=append(x, $2...)}
-       |TOK_QUOT WORDORNUM TOK_QUOT WNARG {x:=[]interface{}{$2}; $$=append(x, $4...)}
-       | {$$=nil}
+WNARG: factor TOK_COMMA WNARG {x:=[]interface{}{$1}; $$=append(x, $3...)}
+       |factor  {x:=[]interface{}{$1}; $$=x}
+       //|TOK_QUOT WORDORNUM TOK_QUOT TOK_COMMA WNARG {x:=[]interface{}{$2}; $$=append(x, $5...)}
+       //|TOK_QUOT WORDORNUM TOK_QUOT  {x:=[]interface{}{$2}; $$=x}
+       //| {$$=nil}
        ;
 
 FUNC: TOK_WORD TOK_LPAREN TOK_RPAREN TOK_LBRAC st2 TOK_RBRAC {$$=nil;funcTable[$1]=&funcNode{FUNC, $5}}

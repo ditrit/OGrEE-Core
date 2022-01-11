@@ -36,14 +36,15 @@ NOTE: Strings must be surrounded by quotes " "
 ### Arrays
 Arrays are declared as:
 ```
-.var:array=(x y z)
+.var:array=(x, y, z)
 ```
 Index into arrays:
 ```
 $array[1]
 ```
 $array is equivalent to $array[0]   
-Arrays can not immediately have their lengths changed. And can only be changed by reassigning the variable
+Arrays can not immediately have their lengths changed. And can only be changed by reassigning the variable.   
+Single element arrays are not supported. If a single element array is assigned it will be treated as a variable of the data's respective type
 
 ### Modifying Nodes
 Nodes cannot be created manually and are obtained as a result of a command.
