@@ -65,7 +65,7 @@ func PostObj(ent int, entity string, data map[string]interface{}) map[string]int
 		if ent == TENANT {
 			node.ID, _ = respMap["data"].(map[string]interface{})["id"].(string)
 			node.Name = respMap["data"].(map[string]interface{})["name"].(string)
-			node.PID = ""
+			node.PID = "-2"
 
 		} else if ent == OBJTMPL {
 			node.PID = "1"
@@ -88,12 +88,12 @@ func PostObj(ent int, entity string, data map[string]interface{}) map[string]int
 		}
 		node.Entity = ent
 
-		switch ent {
-		case TENANT:
-			State.TreeHierarchy.Nodes.PushBack(node)
-		default:
+		//switch ent {
+		//case TENANT:
+		//State.TreeHierarchy.Nodes.PushBack(node)
+		//default:
 			UpdateTree(&State.TreeHierarchy, node)
-		}
+		//}
 		return respMap["data"].(map[string]interface{})
 	}
 	println("Error:", string(respMap["message"].(string)))
@@ -334,6 +334,61 @@ func UpdateObj(path string, data map[string]interface{}, deleteAndPut bool) map[
 	return data
 }
 
+func EasyUpdate(path, op string, data map[string]interface{}) map[string]interface{} {
+	println("OK. Attempting to update...")
+	var resp *http.Response
+	var respJson map[string]interface{}
+	var e error
+	nd := new(*Node)
+
+	switch path {
+	case "":
+		nd = FindNodeInTree(&State.TreeHierarchy, StrToStack(State.CurrPath))
+	default:
+		if path[0] != '/' && len(State.CurrPath) > 1 {
+			nd = FindNodeInTree(&State.TreeHierarchy,
+				StrToStack(State.CurrPath+"/"+path))
+		} else {
+			nd = FindNodeInTree(&State.TreeHierarchy, StrToStack(path))
+		}
+	}
+
+	if nd == nil {
+		println("Error finding Object from given path!")
+		WarningLogger.Println("Object to Update not found")
+		return nil
+	}
+
+	URL := "http://localhost:3001/api/" +
+		EntityToString((*nd).Entity) + "s/" + (*nd).ID
+
+	if data != nil {
+		resp, e = models.Send(op, URL, GetKey(), data)
+
+		if e != nil {
+			println("There was an error!")
+			WarningLogger.Println("Error while sending UPDATE (via easy syntax) to server", e)
+		}
+		defer resp.Body.Close()
+		bodyBytes, err := ioutil.ReadAll(resp.Body)
+		if err != nil {
+			println("Error while reading response: " + err.Error())
+			ErrorLogger.Println("Error while trying to read server response: ", err)
+			return nil
+		}
+		json.Unmarshal(bodyBytes, &respJson)
+		println(respJson["message"])
+		if resp.StatusCode == http.StatusOK && data["name"] != nil {
+			//Need to update name of Obj in tree
+			(*nd).Name = string(data["name"].(string))
+			(*nd).Path = (*nd).Path[:strings.LastIndex((*nd).Path, "/")+1] + (*nd).Name
+		}
+	} else {
+		println("Error! Please enter desired parameters of Object to be updated")
+	}
+	return data
+}
+
 func LS(x string) []map[string]interface{} {
 	if x == "" || x == "." {
 		ans := []map[string]interface{}{}
@@ -506,7 +561,7 @@ func Help(entry string) {
 		path = "./other/man/template.md"
 
 	case ".cmds":
-		path = "./other/man/cmd.md"
+		path = "./other/man/cmds.md"
 
 	case ".var":
 		path = "./other/man/var.md"
@@ -521,7 +576,7 @@ func Help(entry string) {
 		
 	text, e := ioutil.ReadFile(path)
 	if e != nil {
-		println("Error yo")
+		println("Manual Page not found!")
 	} else {
 		println(string(text))
 	}
@@ -604,43 +659,33 @@ func getAttrAndVal(x string) (string, string) {
 	return a, v
 }
 
+//Helps to create the Object (thru OCLI syntax)
 func GetOCLIAtrributes(path *Stack, ent int, data map[string]interface{}, term *readline.Instance) {
 	//data["name"] = string(path.Peek().(string))
 	//data["attributes"] = map[string]interface{}{}
+
+	//If the path uses dots instead of slashes
+	if strings.Contains(path.Peek().(string), ".") == true {
+		x := path.Peek().(string)
+		x = strings.ReplaceAll(x, ".", "/")
+		println("New path:", x)
+		path = StrToStack(x)
+	}
+
 	data["name"] = string(path.PeekLast().(string))
 	println("NAME:", string(data["name"].(string)))
+	data["category"] = EntityToString(ent)
 	switch ent {
 	case TENANT:
-		for data["domain"] == nil || data["category"] == nil {
-			println("Enter attribute")
-			x, e := term.Readline()
-			if e != nil {
-				println("Error reading attribute: ", e)
-				ErrorLogger.Println("Error reading attribute: ", e)
-				return
-			}
-			a, v := getAttrAndVal(x)
-			switch a {
-			case "id", "name", "category", "parentID",
-				"description", "domain", "parentid", "parentId":
-				data[a] = v
 
-			default:
-				//data["attributes"].(map[string]interface{})[a] = v
-				if _, ok := data["attributes"].(map[string]interface{}); ok {
-					data["attributes"].(map[string]interface{})[a] = v
-				} else {
-					data["attributes"].(map[string]string)[a] = v
-				}
-			}
-			//println("Checking for domain:", data["domain"].(string))
-		}
-		//println("Color:", data["attributes"].(map[string]string)["color"])
+		data["domain"] = data["name"]
+		data["parentId"] = nil
+		data["color"] = "FFFFFFFF" //Dummy value
 		PostObj(ent, "tenant", data)
 
 	case SITE:
 		//loop until user gives all neccessary attributes
-		for data["domain"] == nil || data["category"] == nil ||
+		/*for data["domain"] == nil ||
 			data["parentId"] == nil ||
 			data["attributes"].(map[string]interface{})["orientation"] == nil ||
 			data["attributes"].(map[string]interface{})["usableColor"] == nil ||
@@ -667,10 +712,30 @@ func GetOCLIAtrributes(path *Stack, ent int, data map[string]interface{}, term *
 					data["attributes"].(map[string]string)[a] = v
 				}
 			}
+		}*/
+
+		println("Top:", path.Peek().(string))
+		println("LastL:", path.PeekLast().(string))
+		nd := FindNodeInTree(&State.TreeHierarchy, path)
+		if nd == nil {
+			if nd == nil {
+				println("Error! The parent was not found in path")
+				return
+			}
 		}
+
+		//Default values
+		data["attributes"].(map[string]interface{})["usableColor"] = "DBEDF2"
+		data["attributes"].(map[string]interface{})["reservedColor"] = "F2F2F2"
+		data["attributes"].(map[string]interface{})["technicalColor"] = "EBF2DE"
+		data["parentId"] = (*nd).ID
+
+		println("Top:", path.Peek().(string))
+		println("Last:", path.Peek().(string))
+		return
 		PostObj(ent, "site", data)
 	case BLDG:
-		for data["domain"] == nil || data["category"] == nil ||
+		for data["domain"] == nil ||
 			data["parentId"] == nil ||
 			data["attributes"].(map[string]interface{})["posXY"] == nil ||
 			data["attributes"].(map[string]interface{})["posXYUnit"] == nil ||
@@ -703,7 +768,7 @@ func GetOCLIAtrributes(path *Stack, ent int, data map[string]interface{}, term *
 		}
 		PostObj(ent, "building", data)
 	case ROOM:
-		for data["domain"] == nil || data["category"] == nil ||
+		for data["domain"] == nil ||
 			data["parentId"] == nil ||
 			data["attributes"].(map[string]interface{})["floorUnit"] == nil ||
 			data["attributes"].(map[string]interface{})["orientation"] == nil ||
@@ -736,7 +801,7 @@ func GetOCLIAtrributes(path *Stack, ent int, data map[string]interface{}, term *
 		}
 		PostObj(ent, "room", data)
 	case RACK:
-		for data["domain"] == nil || data["category"] == nil ||
+		for data["domain"] == nil ||
 			data["parentId"] == nil ||
 			data["attributes"].(map[string]interface{})["orientation"] == nil ||
 			data["attributes"].(map[string]interface{})["posXYUnit"] == nil ||
@@ -768,7 +833,7 @@ func GetOCLIAtrributes(path *Stack, ent int, data map[string]interface{}, term *
 		}
 		PostObj(ent, "rack", data)
 	case DEVICE:
-		for data["domain"] == nil || data["category"] == nil ||
+		for data["domain"] == nil ||
 			data["parentId"] == nil ||
 			data["attributes"].(map[string]interface{})["orientation"] == nil ||
 			data["attributes"].(map[string]interface{})["size"] == nil ||
@@ -801,7 +866,7 @@ func GetOCLIAtrributes(path *Stack, ent int, data map[string]interface{}, term *
 	case SEPARATOR, CORIDOR, GROUP:
 		//name, category, domain, pid
 		data["attributes"] = map[string]interface{}{}
-		for data["name"] == nil || data["domain"] == nil || data["category"] == nil ||
+		for data["name"] == nil || data["domain"] == nil ||
 			data["parentId"] == nil {
 			println("Enter attribute")
 			x, e := term.Readline()

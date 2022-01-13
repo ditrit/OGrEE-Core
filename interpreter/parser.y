@@ -118,7 +118,7 @@ func resMap(x *string, ent string, isUpdate bool) map[string]interface{} {
 }
 
 func replaceOCLICurrPath(x string) string {
-       return strings.Replace(x, "_", cmd.State.CurrPath, 1)
+       return strings.Replace(x, "_/", cmd.State.CurrPath+"/", 1)
 }
 
 func auxGetNode(path string) string {
@@ -214,7 +214,7 @@ func formActualPath(x string) string {
        TOK_MOD
        TOK_UNSET TOK_ELIF TOK_DO TOK_LEN
        TOK_OCGROUP TOK_OCWALL TOK_OCCORIDOR
-       TOK_APOST
+       TOK_APOST TOK_USE_JSON TOK_PARTIAL
        
 %type <s> F E P P1 WORDORNUM STRARG CDORFG ANYTOKEN
 %type <arr> WNARG NODEGETTER NODEACC
@@ -399,6 +399,7 @@ K: NT_CREATE     {if cmd.State.DebugLvl >= 3 {println("@State start");}}
 ;
 
 NT_CREATE: TOK_CREATE E P TOK_COL F {cmd.Disp(resMap(&$5, $2, false)); $$=&commonNode{COMMON, cmd.PostObj, "PostObj", []interface{}{cmd.EntityStrToInt($2),$2, resMap(&$5, $2, false)}}}
+           |TOK_CREATE E TOK_USE_JSON TOK_COL P {$$=&commonNode{COMMON, cmd.PostObj, "EasyPost", []interface{}{cmd.EntityStrToInt($2),$2, $5}}}
 ;
 
 NT_GET: TOK_GET P {$$=&commonNode{COMMON, cmd.GetObject, "GetObject", []interface{}{$2}}}
@@ -406,6 +407,8 @@ NT_GET: TOK_GET P {$$=&commonNode{COMMON, cmd.GetObject, "GetObject", []interfac
 ;
 
 NT_UPDATE: TOK_UPDATE P TOK_COL F {$$=&commonNode{COMMON, cmd.UpdateObj, "UpdateObj", []interface{}{$2, resMap(&$4, auxGetNode($2), true)}}}
+           |TOK_UPDATE P TOK_COL TOK_USE_JSON TOK_COL P {$$=&commonNode{COMMON, cmd.EasyUpdate, "EasyUpdate", []interface{}{$2, $6, false}}}
+           |TOK_UPDATE P TOK_COL TOK_USE_JSON TOK_PARTIAL TOK_COL P {$$=&commonNode{COMMON, cmd.EasyUpdate, "EasyUpdate", []interface{}{$2, $7, true}}}
 ;
 
 NT_DEL: TOK_DELETE P {if cmd.State.DebugLvl >= 3 {println("@State NT_DEL");}; $$=&commonNode{COMMON, cmd.DeleteObj, "DeleteObj", []interface{}{$2}}}
@@ -422,6 +425,7 @@ E:     TOK_TENANT
        | TOK_CABINET
        | TOK_AISLE
        | TOK_TILE
+       | TOK_WALL
        | TOK_SENSOR
        | TOK_CORIDOR
        | TOK_GROUP
@@ -586,6 +590,35 @@ OCCR:   TOK_OCTENANT TOK_COL P TOK_ATTRSPEC WORDORNUM {$$=&commonNode{COMMON, cm
         |TOK_GROUP TOK_COL P TOK_ATTRSPEC WORDORNUM CDORFG { x:=map[string]interface{}{"name":$5,"racks":$6}; $$=&commonNode{COMMON, cmd.GetOCLIAtrributes, "GetOCAttr", []interface{}{cmd.StrToStack(replaceOCLICurrPath($3)),cmd.GROUP,x,rlPtr}} }
         |TOK_OCWALL TOK_COL P TOK_ATTRSPEC WORDORNUM TOK_ATTRSPEC WORDORNUM TOK_ATTRSPEC WORDORNUM {$$=&commonNode{COMMON, cmd.GetOCLIAtrributes, "GetOCAttr", []interface{}{cmd.StrToStack(replaceOCLICurrPath($3)), cmd.SEPARATOR, map[string]interface{}{"name":$5, "pos1":$7,"pos2":$9},rlPtr}}}
         |TOK_WALL TOK_COL P TOK_ATTRSPEC WORDORNUM TOK_ATTRSPEC WORDORNUM TOK_ATTRSPEC WORDORNUM {$$=&commonNode{COMMON, cmd.GetOCLIAtrributes, "GetOCAttr", []interface{}{cmd.StrToStack(replaceOCLICurrPath($3)), cmd.SEPARATOR, map[string]interface{}{"name":$5, "pos1":$7,"pos2":$9},rlPtr}}}
+       
+       //EasyPost syntax
+        |TOK_TENANT TOK_COL TOK_USE_JSON TOK_COL P {$$=&commonNode{COMMON, cmd.PostObj, "EasyPost", []interface{}{cmd.EntityStrToInt($1),$1, $5}}}
+        |TOK_OCTENANT TOK_COL TOK_USE_JSON TOK_COL P {$$=&commonNode{COMMON, cmd.PostObj, "EasyPost", []interface{}{cmd.EntityStrToInt("tenant"),"tenant", $5}}}
+        |TOK_SITE TOK_COL TOK_USE_JSON TOK_COL P {$$=&commonNode{COMMON, cmd.PostObj, "EasyPost", []interface{}{cmd.EntityStrToInt($1),$1, $5}}}
+        |TOK_OCSITE TOK_COL TOK_USE_JSON TOK_COL P {$$=&commonNode{COMMON, cmd.PostObj, "EasyPost", []interface{}{cmd.EntityStrToInt("site"),"site", $5}}}
+        |TOK_BLDG TOK_COL TOK_USE_JSON TOK_COL P {$$=&commonNode{COMMON, cmd.PostObj, "EasyPost", []interface{}{cmd.EntityStrToInt($1),$1, $5}}}
+        |TOK_OCBLDG TOK_COL TOK_USE_JSON TOK_COL P {$$=&commonNode{COMMON, cmd.PostObj, "EasyPost", []interface{}{cmd.EntityStrToInt("building"),"building", $5}}}
+        |TOK_ROOM TOK_COL TOK_USE_JSON TOK_COL P {$$=&commonNode{COMMON, cmd.PostObj, "EasyPost", []interface{}{cmd.EntityStrToInt($1),$1, $5}}}
+        |TOK_OCROOM TOK_COL TOK_USE_JSON TOK_COL P {$$=&commonNode{COMMON, cmd.PostObj, "EasyPost", []interface{}{cmd.EntityStrToInt("room"),"room", $5}}}
+        |TOK_RACK TOK_COL TOK_USE_JSON TOK_COL P {$$=&commonNode{COMMON, cmd.PostObj, "EasyPost", []interface{}{cmd.EntityStrToInt($1),$1, $5}}}
+        |TOK_OCRACK TOK_COL TOK_USE_JSON TOK_COL P {$$=&commonNode{COMMON, cmd.PostObj, "EasyPost", []interface{}{cmd.EntityStrToInt("rack"),"rack", $5}}}
+        |TOK_DEVICE TOK_COL TOK_USE_JSON TOK_COL P {$$=&commonNode{COMMON, cmd.PostObj, "EasyPost", []interface{}{cmd.EntityStrToInt($1),$1, $5}}}
+        |TOK_OCDEV TOK_COL TOK_USE_JSON TOK_COL P {$$=&commonNode{COMMON, cmd.PostObj, "EasyPost", []interface{}{cmd.EntityStrToInt("device"),"device", $5}}}
+        |TOK_OCCORIDOR  TOK_COL TOK_USE_JSON TOK_COL P {$$=&commonNode{COMMON, cmd.PostObj, "EasyPost", []interface{}{cmd.EntityStrToInt("corridor"),"corridor", $5}}}
+        |TOK_CORIDOR TOK_COL TOK_USE_JSON TOK_COL P {$$=&commonNode{COMMON, cmd.PostObj, "EasyPost", []interface{}{cmd.EntityStrToInt($1),$1, $5}}}
+        |TOK_OCGROUP TOK_COL TOK_USE_JSON TOK_COL P {$$=&commonNode{COMMON, cmd.PostObj, "EasyPost", []interface{}{cmd.EntityStrToInt("group"),"group", $5}}}
+        |TOK_GROUP TOK_COL TOK_USE_JSON TOK_COL P {$$=&commonNode{COMMON, cmd.PostObj, "EasyPost", []interface{}{cmd.EntityStrToInt($1),$1, $5}}}
+        |TOK_OCWALL TOK_COL TOK_USE_JSON TOK_COL P {$$=&commonNode{COMMON, cmd.PostObj, "EasyPost", []interface{}{cmd.EntityStrToInt("separator"),"separator", $5}}}
+        
+        |TOK_WALL TOK_COL TOK_USE_JSON TOK_COL P {$$=&commonNode{COMMON, cmd.PostObj, "EasyPost", []interface{}{cmd.EntityStrToInt($1),$1, $5}}}
+        | TOK_AC TOK_COL TOK_USE_JSON TOK_COL P {$$=&commonNode{COMMON, cmd.PostObj, "EasyPost", []interface{}{cmd.EntityStrToInt($1),$1, $5}}}
+        | TOK_PANEL TOK_COL TOK_USE_JSON TOK_COL P {$$=&commonNode{COMMON, cmd.PostObj, "EasyPost", []interface{}{cmd.EntityStrToInt($1),$1, $5}}}
+        | TOK_CABINET TOK_COL TOK_USE_JSON TOK_COL P {$$=&commonNode{COMMON, cmd.PostObj, "EasyPost", []interface{}{cmd.EntityStrToInt($1),$1, $5}}}
+        | TOK_AISLE TOK_COL TOK_USE_JSON TOK_COL P {$$=&commonNode{COMMON, cmd.PostObj, "EasyPost", []interface{}{cmd.EntityStrToInt($1),$1, $5}}}
+        | TOK_TILE TOK_COL TOK_USE_JSON TOK_COL P {$$=&commonNode{COMMON, cmd.PostObj, "EasyPost", []interface{}{cmd.EntityStrToInt($1),$1, $5}}}
+        | TOK_SENSOR TOK_COL TOK_USE_JSON TOK_COL P {$$=&commonNode{COMMON, cmd.PostObj, "EasyPost", []interface{}{cmd.EntityStrToInt($1),$1, $5}}}
+        | TOK_OBJ_TMPL TOK_COL TOK_USE_JSON TOK_COL P {$$=&commonNode{COMMON, cmd.PostObj, "EasyPost", []interface{}{cmd.EntityStrToInt($1),$1, $5}}}
+        | TOK_ROOM_TMPL TOK_COL TOK_USE_JSON TOK_COL P {$$=&commonNode{COMMON, cmd.PostObj, "EasyPost", []interface{}{cmd.EntityStrToInt($1),$1, $5}}}
        ; 
 OCDEL:  TOK_OCDEL P {$$=&commonNode{COMMON, cmd.DeleteObj, "DeleteObj", []interface{}{replaceOCLICurrPath($2)}}}
 ;

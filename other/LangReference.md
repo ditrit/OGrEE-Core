@@ -178,6 +178,20 @@ It is possible to delete an attribute of an object. First a variable must be ass
 unset $x["myAttribute"]
 ```
 
+Easy Create & Update Syntax
+------------
+You can create and update objects much faster by specifying the object via a json file. The JSON file is a raw description of the object (nothing related to Ogree CLI shall be described) and follows the standard that is described on the wiki.   
+```
+create tenant useJn:path/to/your/json/file
++tn:useJn:path/to/your/json/file
+```   
+For updating the keyword partial is used to indicate if you want to perform a partial update. A full PUT operation will be performed otherwise   
+```
+update path/to/object : usJn partial : path/to/json/file
+update path/to/object : usJn : path/to/json/file
+```
+
+
 Other Operations
 ------------
 Print

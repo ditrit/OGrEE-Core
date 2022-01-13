@@ -3,6 +3,8 @@ package main
 import (
 	cmd "cli/controllers"
 	"cli/readline"
+	"encoding/json"
+	"io/ioutil"
 	"reflect"
 )
 
@@ -56,6 +58,20 @@ func (c *commonNode) execute() interface{} {
 		if f, ok := c.fun.(func(int, string, map[string]interface{}) map[string]interface{}); ok {
 			v := f(c.args[0].(int),
 				c.args[1].(string), c.args[2].(map[string]interface{}))
+			return &jsonObjNode{JSONND, v}
+		}
+
+	case "EasyPost":
+		if f, ok := c.fun.(func(int, string, map[string]interface{}) map[string]interface{}); ok {
+			var data map[string]interface{}
+			x, e := ioutil.ReadFile(c.args[2].(string))
+			if e != nil {
+				println("Error while opening file! " + e.Error())
+				return nil
+			}
+			json.Unmarshal(x, &data)
+			v := f(c.args[0].(int), c.args[1].(string), data)
+
 			return &jsonObjNode{JSONND, v}
 		}
 
@@ -128,6 +144,31 @@ func (c *commonNode) execute() interface{} {
 				v = f(c.args[0].(string), c.args[1].(map[string]interface{}), false)
 			}
 			return &jsonObjNode{COMMON, v}
+		}
+
+	case "EasyUpdate":
+		if f, ok := c.fun.(func(string, string, map[string]interface{}) map[string]interface{}); ok {
+			var data map[string]interface{}
+			var op string
+			//0 -> path to node
+			//1 -> path to json
+			//2 -> put or patch
+			x, e := ioutil.ReadFile(c.args[1].(string))
+			if e != nil {
+				println("Error while opening file! " + e.Error())
+				return nil
+			}
+			json.Unmarshal(x, &data)
+
+			if c.args[2].(bool) == true {
+				op = "PATCH"
+			} else {
+				op = "PUT"
+			}
+
+			v := f(c.args[0].(string), op, data)
+
+			return &jsonObjNode{JSONND, v}
 		}
 	case "LSOBJ":
 		if f, ok := c.fun.(func(string, int) []map[string]interface{}); ok {
