@@ -107,7 +107,12 @@ func CheckKeyIsValid(key string) bool {
 	resp, e := client.Do(req)
 	if e != nil || resp.StatusCode != 200 {
 		//readline.Line(e.Error())
+		if resp != nil {
 		readline.Line("Status code" + strconv.Itoa(resp.StatusCode))
+		} else {
+			println("Unable to connect to API")
+		}
+
 		return false
 	}
 	return true

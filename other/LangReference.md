@@ -125,7 +125,7 @@ for var in $(command) do {commands;} done
 ### Special Case
 Iterating through array variables is not possible using the range loop.
 ```
-.var:array=(1 2 3 4)
+.var:array=(1, 2, 3, 4)
 for k in len(array); {$array[$k]=999;commands;} done
 ```
 

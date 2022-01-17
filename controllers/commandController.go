@@ -675,44 +675,17 @@ func GetOCLIAtrributes(path *Stack, ent int, data map[string]interface{}, term *
 	data["name"] = string(path.PeekLast().(string))
 	println("NAME:", string(data["name"].(string)))
 	data["category"] = EntityToString(ent)
+	attr := map[string]interface{}{}
 	switch ent {
 	case TENANT:
 
 		data["domain"] = data["name"]
 		data["parentId"] = nil
-		data["color"] = "FFFFFFFF" //Dummy value
+		attr["color"] = "FFFFFFFF" //Dummy value
+		data["attributes"] = attr
 		PostObj(ent, "tenant", data)
 
 	case SITE:
-		//loop until user gives all neccessary attributes
-		/*for data["domain"] == nil ||
-			data["parentId"] == nil ||
-			data["attributes"].(map[string]interface{})["orientation"] == nil ||
-			data["attributes"].(map[string]interface{})["usableColor"] == nil ||
-			data["attributes"].(map[string]interface{})["reservedColor"] == nil ||
-			data["attributes"].(map[string]interface{})["technicalColor"] == nil {
-			println("Enter attribute yo")
-			x, e := term.Readline()
-			if e != nil {
-				println("Error reading attribute: ", e)
-				ErrorLogger.Println("Error reading attribute: ", e)
-				return
-			}
-			x = strings.TrimSpace(x)
-			a, v := getAttrAndVal(x)
-			switch a {
-			case "id", "name", "category", "parentID",
-				"description", "domain", "parentid", "parentId":
-				data[a] = v
-
-			default:
-				if _, ok := data["attributes"].(map[string]interface{}); ok {
-					data["attributes"].(map[string]interface{})[a] = v
-				} else {
-					data["attributes"].(map[string]string)[a] = v
-				}
-			}
-		}*/
 
 		println("Top:", path.Peek().(string))
 		println("LastL:", path.PeekLast().(string))
@@ -728,6 +701,7 @@ func GetOCLIAtrributes(path *Stack, ent int, data map[string]interface{}, term *
 		data["attributes"].(map[string]interface{})["usableColor"] = "DBEDF2"
 		data["attributes"].(map[string]interface{})["reservedColor"] = "F2F2F2"
 		data["attributes"].(map[string]interface{})["technicalColor"] = "EBF2DE"
+		data["domain"] = strings.Split(((*nd).Path), "/")[2]
 		data["parentId"] = (*nd).ID
 
 		println("Top:", path.Peek().(string))
@@ -735,138 +709,89 @@ func GetOCLIAtrributes(path *Stack, ent int, data map[string]interface{}, term *
 		return
 		PostObj(ent, "site", data)
 	case BLDG:
-		for data["domain"] == nil ||
-			data["parentId"] == nil ||
-			data["attributes"].(map[string]interface{})["posXY"] == nil ||
-			data["attributes"].(map[string]interface{})["posXYUnit"] == nil ||
-			data["attributes"].(map[string]interface{})["posZ"] == nil ||
-			data["attributes"].(map[string]interface{})["posZUnit"] == nil ||
-			data["attributes"].(map[string]interface{})["size"] == nil ||
-			data["attributes"].(map[string]interface{})["sizeUnit"] == nil ||
-			data["attributes"].(map[string]interface{})["height"] == nil ||
-			data["attributes"].(map[string]interface{})["heightUnit"] == nil {
-			println("Enter attribute")
-			x, e := term.Readline()
-			if e != nil {
-				println("Error reading attribute: ", e)
-				ErrorLogger.Println("Error reading attribute: ", e)
+
+		nd := FindNodeInTree(&State.TreeHierarchy, path)
+		if nd == nil {
+			if nd == nil {
+				println("Error! The parent was not found in path")
 				return
 			}
-			a, v := getAttrAndVal(x)
-			switch a {
-			case "id", "name", "category", "parentID",
-				"description", "domain", "parentid", "parentId":
-				data[a] = v
-
-			default:
-				if _, ok := data["attributes"].(map[string]interface{}); ok {
-					data["attributes"].(map[string]interface{})[a] = v
-				} else {
-					data["attributes"].(map[string]string)[a] = v
 				}
-			}
-		}
+
+		attr["posXYUnit"] = "m"
+		attr["sizeUnit"] = "m"
+		attr["heightUnit"] = "m"
+		attr["height"] = 0 //Should be set from parser by default
+		data["parentId"] = (*nd).ID
+		data["attributes"] = attr
+		data["domain"] = strings.Split(((*nd).Path), "/")[2]
+
 		PostObj(ent, "building", data)
 	case ROOM:
-		for data["domain"] == nil ||
-			data["parentId"] == nil ||
-			data["attributes"].(map[string]interface{})["floorUnit"] == nil ||
-			data["attributes"].(map[string]interface{})["orientation"] == nil ||
-			data["attributes"].(map[string]interface{})["posXYUnit"] == nil ||
-			data["attributes"].(map[string]interface{})["posZ"] == nil ||
-			data["attributes"].(map[string]interface{})["posZUnit"] == nil ||
-			data["attributes"].(map[string]interface{})["sizeUnit"] == nil ||
-			data["attributes"].(map[string]interface{})["height"] == nil ||
-			data["attributes"].(map[string]interface{})["heightUnit"] == nil {
-			println("Enter attribute")
-			x, e := term.Readline()
-			if e != nil {
-				println("Error reading attribute: ", e)
-				ErrorLogger.Println("Error reading attribute: ", e)
+
+		nd := FindNodeInTree(&State.TreeHierarchy, path)
+		if nd == nil {
+			if nd == nil {
+				println("Error! The parent was not found in path")
 				return
 			}
-			a, v := getAttrAndVal(x)
-			switch a {
-			case "id", "name", "category", "parentID",
-				"description", "domain", "parentid", "parentId":
-				data[a] = v
-
-			default:
-				if _, ok := data["attributes"].(map[string]interface{}); ok {
-					data["attributes"].(map[string]interface{})[a] = v
-				} else {
-					data["attributes"].(map[string]string)[a] = v
 				}
-			}
-		}
+
+		attr["floorUnit"] = "t"
+		attr["orientation"] = "+N+E"
+		attr["posXYUnit"] = "m"
+		attr["sizeUnit"] = "m"
+		attr["height"] = 0
+		attr["heightUnit"] = "m"
+		data["parentId"] = (*nd).ID
+		data["domain"] = strings.Split(((*nd).Path), "/")[2]
+		data["attributes"] = attr
+
 		PostObj(ent, "room", data)
 	case RACK:
-		for data["domain"] == nil ||
-			data["parentId"] == nil ||
-			data["attributes"].(map[string]interface{})["orientation"] == nil ||
-			data["attributes"].(map[string]interface{})["posXYUnit"] == nil ||
-			data["attributes"].(map[string]interface{})["posZ"] == nil ||
-			data["attributes"].(map[string]interface{})["posZUnit"] == nil ||
-			data["attributes"].(map[string]interface{})["sizeUnit"] == nil ||
-			data["attributes"].(map[string]interface{})["height"] == nil ||
-			data["attributes"].(map[string]interface{})["heightUnit"] == nil {
-			println("Enter attribute")
-			x, e := term.Readline()
-			if e != nil {
-				println("Error reading attribute: ", e)
-				ErrorLogger.Println("Error reading attribute: ", e)
+
+		nd := FindNodeInTree(&State.TreeHierarchy, path)
+		if nd == nil {
+			if nd == nil {
+				println("Error! The parent was not found in path")
 				return
 			}
-			a, v := getAttrAndVal(x)
-			switch a {
-			case "id", "name", "category", "parentID",
-				"description", "domain", "parentid", "parentId":
-				data[a] = v
-
-			default:
-				if _, ok := data["attributes"].(map[string]interface{}); ok {
-					data["attributes"].(map[string]interface{})[a] = v
-				} else {
-					data["attributes"].(map[string]string)[a] = v
 				}
-			}
-		}
+
+		attr["sizeUnit"] = "m"
+		attr["height"] = 0
+		attr["heightUnit"] = "m"
+		attr["posXYUnit"] = "t"
+		attr["orientation"] = "front"
+		data["parentId"] = (*nd).ID
+		data["domain"] = strings.Split(((*nd).Path), "/")[2]
+		data["attributes"] = attr
+
 		PostObj(ent, "rack", data)
 	case DEVICE:
-		for data["domain"] == nil ||
-			data["parentId"] == nil ||
-			data["attributes"].(map[string]interface{})["orientation"] == nil ||
-			data["attributes"].(map[string]interface{})["size"] == nil ||
-			data["attributes"].(map[string]interface{})["sizeUnit"] == nil ||
-			data["attributes"].(map[string]interface{})["height"] == nil ||
-			data["attributes"].(map[string]interface{})["heightUnit"] == nil {
-			println("Enter attribute")
-			x, e := term.Readline()
-			if e != nil {
-				println("Error reading attribute: ", e)
-				ErrorLogger.Println("Error reading attribute: ", e)
+
+		nd := FindNodeInTree(&State.TreeHierarchy, path)
+		if nd == nil {
+			if nd == nil {
+				println("Error! The parent was not found in path")
 				return
 			}
-			a, v := getAttrAndVal(x)
-			switch a {
-			case "id", "name", "category", "parentID",
-				"description", "domain", "parentid", "parentId":
-				data[a] = v
-
-			default:
-				if _, ok := data["attributes"].(map[string]interface{}); ok {
-					data["attributes"].(map[string]interface{})[a] = v
-				} else {
-					data["attributes"].(map[string]string)[a] = v
 				}
-			}
-		}
+
+		attr["orientation"] = "front"
+		attr["size"] = 0
+		attr["height"] = 0
+		attr["heightUnit"] = "mm"
+
+		data["domain"] = strings.Split(((*nd).Path), "/")[2]
+		data["parentId"] = (*nd).ID
+
 		PostObj(ent, "device", data)
 
 	case SEPARATOR, CORIDOR, GROUP:
 		//name, category, domain, pid
 		data["attributes"] = map[string]interface{}{}
-		for data["name"] == nil || data["domain"] == nil ||
+		/*for data["name"] == nil || data["domain"] == nil ||
 			data["parentId"] == nil {
 			println("Enter attribute")
 			x, e := term.Readline()
@@ -888,7 +813,7 @@ func GetOCLIAtrributes(path *Stack, ent int, data map[string]interface{}, term *
 					data["attributes"].(map[string]string)[a] = v
 				}
 			}
-		}
+		}*/
 
 		if ent == SEPARATOR {
 			PostObj(ent, "separator", data)
