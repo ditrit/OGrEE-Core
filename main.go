@@ -18,12 +18,15 @@ import (
 var rlPtr *readline.Instance
 
 func InterpretLine(str *string) {
+	SpaceCount.locs = make(map[int]int, 2)
 	lex := NewLexer(strings.NewReader(*str))
 	yyParse(lex)
 	if root != nil {
 		root.execute()
 		root = nil
 	}
+
+	//SpaceCount.reset()
 
 	//println("\nReturn Code: ", e)
 	return

@@ -3114,7 +3114,7 @@ cmd.WarningLogger.Println("Unknown Command")			/*yylex.Error(msg)*/
 	case 239:
 		{
 			if yyS[yypt-0].s != "" {
-				yyVAL.s = yyS[yypt-1].s + " " + yyS[yypt-0].s
+				yyVAL.s = yyS[yypt-1].s + GetEspaces((&SpaceCount).read().(int)) + yyS[yypt-0].s
 			} else {
 				yyVAL.s = yyS[yypt-1].s
 			}
@@ -3122,7 +3122,7 @@ cmd.WarningLogger.Println("Unknown Command")			/*yylex.Error(msg)*/
 	case 240:
 		{
 			if yyS[yypt-0].s != "" {
-				yyVAL.s = yyS[yypt-1].s + " " + yyS[yypt-0].s
+				yyVAL.s = yyS[yypt-1].s + GetEspaces((&SpaceCount).read().(int)) + yyS[yypt-0].s
 			} else {
 				yyVAL.s = yyS[yypt-1].s
 			}
