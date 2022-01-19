@@ -511,6 +511,8 @@ BASH:  TOK_CLR {$$=&commonNode{COMMON, nil, "CLR", nil}}
        | TOK_DOC TOK_PWD {$$=&commonNode{COMMON, cmd.Help, "Help", []interface{}{"pwd"}}}
        | TOK_DOC TOK_PRNT {$$=&commonNode{COMMON, cmd.Help, "Help", []interface{}{"print"}}}
        | TOK_DOC TOK_CD {$$=&commonNode{COMMON, cmd.Help, "Help", []interface{}{"cd"}}}
+       | TOK_DOC TOK_CAM {$$=&commonNode{COMMON, cmd.Help, "Help", []interface{}{"camera"}}}
+       | TOK_DOC TOK_UI {$$=&commonNode{COMMON, cmd.Help, "Help", []interface{}{"ui"}}}
        | TOK_DOC TOK_CREATE {$$=&commonNode{COMMON, cmd.Help, "Help", []interface{}{"create"}}}
        | TOK_DOC TOK_GET {$$=&commonNode{COMMON, cmd.Help, "Help", []interface{}{"gt"}}}
        | TOK_DOC TOK_UPDATE {$$=&commonNode{COMMON, cmd.Help, "Help", []interface{}{"update"}}}
@@ -645,11 +647,11 @@ OCSEL:      TOK_SELECT {$$=&commonNode{COMMON, cmd.ShowClipBoard, "select", nil}
             |TOK_SELECT TOK_DOT TOK_WORD TOK_EQUAL EXPR {/*x := $3+"="+$5;*/ val:=($5).(node).execute(); println("Our val:", val); x:=map[string]interface{}{$3:val}; $$=&commonNode{COMMON, cmd.UpdateSelection, "UpdateSelect", []interface{}{x}};}
 ;
 
-HANDLEUI: TOK_UI TOK_DOT TOK_WORD TOK_EQUAL TOK_LBLOCK EXPR TOK_RBLOCK {$$=&commonNode{COMMON, cmd.HandleUI, "HandleUnity", []interface{}{"ui", $3, $6}}}
+HANDLEUI: TOK_UI TOK_DOT TOK_WORD TOK_EQUAL TOK_LBLOCK EXPR TOK_RBLOCK {$$=&commonNode{COMMON, cmd.HandleUI, "HandleUnity", []interface{}{"ui", $3, ($6).(node).execute()}}}
           |TOK_CAM TOK_DOT TOK_WORD TOK_EQUAL EXPR {$$=&commonNode{COMMON, cmd.HandleUI, "HandleUnity", []interface{}{"camera",$3, ($5).(node).execute()}}}
           |TOK_CAM TOK_DOT TOK_WORD TOK_EQUAL TOK_LBLOCK 
             TOK_NUM TOK_COMMA TOK_NUM TOK_COMMA TOK_NUM TOK_RBLOCK TOK_ATTRSPEC 
-            TOK_LBLOCK TOK_NUM TOK_COMMA TOK_NUM TOK_RBLOCK {$$=&commonNode{COMMON, cmd.HandleUI, "HandleUnity", []interface{}{"camera",[]int{$6, $8, $10}, []int{$14, $16}}}}
+            TOK_LBLOCK TOK_NUM TOK_COMMA TOK_NUM TOK_RBLOCK {$$=&commonNode{COMMON, cmd.HandleUI, "HandleUnity", []interface{}{"camera", $3, []int{$6, $8, $10}, []int{$14, $16}}}}
           ;
 
 //STRARG: TOK_STR STRARG {if $2 != "" {$$=$1+$2} else {$$=$1};}

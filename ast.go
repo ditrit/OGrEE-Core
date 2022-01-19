@@ -234,13 +234,29 @@ func (c *commonNode) execute() interface{} {
 	case "HandleUnity":
 		if f, ok := c.fun.(func(map[string]interface{})); ok {
 			data := map[string]interface{}{}
-			data["type"] = c.args[0]
-			switch c.args[1].(type) {
+			data["command"] = c.args[1]
+			switch c.args[2].(type) {
 			case []int:
-				data["position"] = c.args[1]
-				data["rotation"] = c.args[2]
+				pos := map[string]interface{}{"x": c.args[2].([]int)[0],
+					"y": c.args[2].([]int)[1], "z": c.args[2].([]int)[2],
+				}
+
+				rot := map[string]interface{}{"x": c.args[3].([]int)[0],
+					"y": c.args[3].([]int)[1],
+				}
+
+				data["position"] = pos
+				data["rotation"] = rot
+
 			default:
-				data[c.args[1].(string)] = c.args[2]
+				if c.args[1].(string) == "wait" {
+					data["position"] = nil
+					data["rotation"] = map[string]interface{}{"x": 999,
+						"y": c.args[2]}
+
+				} else {
+					data["data"] = c.args[2]
+				}
 
 			}
 			f(data)

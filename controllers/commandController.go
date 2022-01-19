@@ -545,7 +545,7 @@ func Help(entry string) {
 	switch entry {
 	case "ls", "pwd", "print", "cd", "tree", "create", "gt",
 		"update", "delete", "lsog", "grep", "for", "while", "if",
-		"cmds", "var", "unset", "select":
+		"cmds", "var", "unset", "select", "camera", "ui":
 		path = "./other/man/" + entry + ".md"
 
 	case "+":
@@ -827,6 +827,17 @@ func GetOCLIAtrributes(path *Stack, ent int, data map[string]interface{}, term *
 
 func HandleUI(data map[string]interface{}) {
 	Disp(data)
+	r, e := models.ContactUnity("POST", "http://localhost:5500", data)
+	if e != nil {
+		WarningLogger.Println("Error! ", e.Error())
+		println("Error! ", e.Error())
+		return
+	}
+
+	if r.StatusCode == http.StatusOK {
+		println("Success")
+	}
+
 }
 
 func ShowClipBoard() []string {
