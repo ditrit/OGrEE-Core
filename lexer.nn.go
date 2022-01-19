@@ -2,7 +2,6 @@ package main
 
 import (
 	cmd "cli/controllers"
-	"os"
 	"strconv"
 )
 import (
@@ -7868,6 +7867,86 @@ var dfas = []dfa{
 		},
 	}, []int{ /* Start-of-input transitions */ -1, -1, -1, -1}, []int{ /* End-of-input transitions */ -1, -1, -1, -1}, nil},
 
+	// \"[^$\[\],\)\(]+\"
+	{[]bool{false, false, false, true}, []func(rune) int{ // Transitions
+		func(r rune) int {
+			switch r {
+			case 34:
+				return 1
+			case 36:
+				return -1
+			case 40:
+				return -1
+			case 41:
+				return -1
+			case 44:
+				return -1
+			case 91:
+				return -1
+			case 93:
+				return -1
+			}
+			return -1
+		},
+		func(r rune) int {
+			switch r {
+			case 34:
+				return 2
+			case 36:
+				return -1
+			case 40:
+				return -1
+			case 41:
+				return -1
+			case 44:
+				return -1
+			case 91:
+				return -1
+			case 93:
+				return -1
+			}
+			return 2
+		},
+		func(r rune) int {
+			switch r {
+			case 34:
+				return 3
+			case 36:
+				return -1
+			case 40:
+				return -1
+			case 41:
+				return -1
+			case 44:
+				return -1
+			case 91:
+				return -1
+			case 93:
+				return -1
+			}
+			return 2
+		},
+		func(r rune) int {
+			switch r {
+			case 34:
+				return 3
+			case 36:
+				return -1
+			case 40:
+				return -1
+			case 41:
+				return -1
+			case 44:
+				return -1
+			case 91:
+				return -1
+			case 93:
+				return -1
+			}
+			return 2
+		},
+	}, []int{ /* Start-of-input transitions */ -1, -1, -1, -1}, []int{ /* End-of-input transitions */ -1, -1, -1, -1}, nil},
+
 	// [A-Za-z0-9_]+
 	{[]bool{false, true}, []func(rune) int{ // Transitions
 		func(r rune) int {
@@ -7967,638 +8046,541 @@ OUTER0:
 		switch yylex.next(0) {
 		case 0:
 			{ /* Skip blanks and tabs. */
-				SpaceCount.mark() /*println("ESPACE@LEX:", (&SpaceCount).count) */
 			}
 		case 1:
 			{
-				SpaceCount.shift()
 				printToks("TOK_CREATE")
 				return TOK_CREATE
 			}
 		case 2:
 			{
-				SpaceCount.shift()
 				printToks("TOK_GET")
 				return TOK_GET
 			}
 		case 3:
 			{
-				SpaceCount.shift()
 				printToks("TOK_UPDATE")
 				return TOK_UPDATE
 			}
 		case 4:
 			{
-				SpaceCount.shift()
 				printToks("TOK_DELETE")
 				return TOK_DELETE
 			}
 		case 5:
 			{
-				SpaceCount.shift()
 				printToks("TOK_SEARCH")
 				return TOK_SEARCH
 			}
 		case 6:
 			{
-				SpaceCount.shift()
 				printToks("TOK_PLUS")
 				lval.s = yylex.Text()
 				return TOK_PLUS
 			}
 		case 7:
 			{
-				SpaceCount.shift()
 				printToks("TOK_OCDEL")
 				lval.s = yylex.Text()
 				return TOK_OCDEL
 			}
 		case 8:
 			{
-				SpaceCount.shift()
 				printToks("TOK_COL")
 				return TOK_COL
 			}
 		case 9:
 			{
-				SpaceCount.shift()
 				printToks("TOK_ATTRSPEC")
 				return TOK_ATTRSPEC
 			}
 		case 10:
 			{
-				SpaceCount.shift()
 				printToks("TOK_DEREF")
 				return TOK_DEREF
 			}
 		case 11:
 			{
-				SpaceCount.shift()
 				printToks("TOK_APOST")
 				return TOK_APOST
 			}
 		case 12:
 			{
-				SpaceCount.shift()
 				printToks("TOK_SEMICOL")
 				return TOK_SEMICOL
 			}
 		case 13:
 			{
-				SpaceCount.shift()
 				printToks("TOK_LBLOCK")
 				return TOK_LBLOCK
 			}
 		case 14:
 			{
-				SpaceCount.shift()
 				printToks("TOK_RBLOCK")
 				return TOK_RBLOCK
 			}
 		case 15:
 			{
-				SpaceCount.shift()
 				printToks("TOK_LPAREN")
 				return TOK_LPAREN
 			}
 		case 16:
 			{
-				SpaceCount.shift()
 				printToks("TOK_RPAREN")
 				return TOK_RPAREN
 			}
 		case 17:
 			{
-				SpaceCount.shift()
 				printToks("TOK_OR")
 				return TOK_OR
 			}
 		case 18:
 			{
-				SpaceCount.shift()
 				printToks("TOK_AND")
 				return TOK_AND
 			}
 		case 19:
 			{
-				SpaceCount.shift()
 				printToks("TOK_NOT")
 				return TOK_NOT
 			}
 		case 20:
 			{
-				SpaceCount.shift()
 				printToks("TOK_MULT")
 				return TOK_MULT
 			}
 		case 21:
 			{
-				SpaceCount.shift()
 				printToks("TOK_MOD")
 				return TOK_MOD
 			}
 		case 22:
 			{
-				SpaceCount.shift()
 				printToks("TOK_GREATER")
 				return TOK_GREATER
 			}
 		case 23:
 			{
-				SpaceCount.shift()
 				printToks("TOK_LESS")
 				return TOK_LESS
 			}
 		case 24:
 			{
-				SpaceCount.shift()
 				printToks("TOK_BOOL")
 				lval.s = yylex.Text()
 				return TOK_BOOL
 			}
 		case 25:
 			{
-				SpaceCount.shift()
 				printToks("TOK_IF")
 				return TOK_IF
 			}
 		case 26:
 			{
-				SpaceCount.shift()
 				printToks("TOK_FOR")
 				return TOK_FOR
 			}
 		case 27:
 			{
-				SpaceCount.shift()
 				printToks("TOK_IN")
 				return TOK_IN
 			}
 		case 28:
 			{
-				SpaceCount.shift()
 				printToks("TOK_WHILE")
 				return TOK_WHILE
 			}
 		case 29:
 			{
-				SpaceCount.shift()
 				printToks("TOK_ELSE")
 				return TOK_ELSE
 			}
 		case 30:
 			{
-				SpaceCount.shift()
 				printToks("TOK_THEN")
 				return TOK_THEN
 			}
 		case 31:
 			{
-				SpaceCount.shift()
 				printToks("TOK_FI")
 				return TOK_FI
 			}
 		case 32:
 			{
-				SpaceCount.shift()
 				printToks("TOK_ELIF")
 				return TOK_ELIF
 			}
 		case 33:
 			{
-				SpaceCount.shift()
 				printToks("TOK_DONE")
 				return TOK_DONE
 			}
 		case 34:
 			{
-				SpaceCount.shift()
 				printToks("TOK_DO")
 				return TOK_DO
 			}
 		case 35:
 			{
-				SpaceCount.shift()
 				printToks("TOK_PRNT")
 				return TOK_PRNT
 			}
 		case 36:
 			{
-				SpaceCount.shift()
 				printToks("TOK_UNSET")
 				return TOK_UNSET
 			}
 		case 37:
 			{
-				SpaceCount.shift()
 				printToks("TOK_QUOT")
 				return TOK_QUOT
 			}
 		case 38:
 			{
-				SpaceCount.shift()
 				printToks("TOK_OCTENANT")
 				return TOK_OCTENANT
 			}
 		case 39:
 			{
-				SpaceCount.shift()
 				printToks("TOK_OCSITE")
 				return TOK_OCSITE
 			}
 		case 40:
 			{
-				SpaceCount.shift()
 				printToks("TOK_OCBLDG")
 				return TOK_OCBLDG
 			}
 		case 41:
 			{
-				SpaceCount.shift()
 				printToks("TOK_OCROOM")
 				return TOK_OCROOM
 			}
 		case 42:
 			{
-				SpaceCount.shift()
 				printToks("TOK_OCRACK")
 				return TOK_OCRACK
 			}
 		case 43:
 			{
-				SpaceCount.shift()
 				printToks("TOK_OCDEV")
 				return TOK_OCDEV
 			}
 		case 44:
 			{
-				SpaceCount.shift()
 				printToks("TOK_OCGROUP")
 				return TOK_OCGROUP
 			}
 		case 45:
 			{
-				SpaceCount.shift()
 				printToks("TOK_OCWALL")
 				return TOK_OCWALL
 			}
 		case 46:
 			{
-				SpaceCount.shift()
 				printToks("TOK_OCCORIDOR")
 				return TOK_OCCORIDOR
 			}
 		case 47:
 			{
-				SpaceCount.shift()
 				printToks("TOK_SELECT")
 				return TOK_SELECT
 			}
 		case 48:
 			{
-				SpaceCount.shift()
 				printToks("TOK_CMDS")
 				return TOK_CMDS
 			}
 		case 49:
 			{
-				SpaceCount.shift()
 				printToks("TOK_TEMPLATE")
 				return TOK_TEMPLATE
 			}
 		case 50:
 			{
-				SpaceCount.shift()
 				printToks("TOK_VAR")
 				return TOK_VAR
 			}
 		case 51:
 			{
-				SpaceCount.shift()
 				printToks("TOK_LBRAC")
 				return TOK_LBRAC
 			}
 		case 52:
 			{
-				SpaceCount.shift()
 				printToks("TOK_RBRAC")
 				return TOK_RBRAC
 			}
 		case 53:
 			{
-				SpaceCount.shift()
 				printToks("TOK_COMMA")
 				return TOK_COMMA
 			}
 		case 54:
 			{
-				SpaceCount.shift()
 				printToks("TOK_DOT")
 				return TOK_DOT
 			}
 		case 55:
 			{
-				SpaceCount.shift()
 				printToks("TOK_USE_JSON")
 				return TOK_USE_JSON
 			}
 		case 56:
 			{
-				SpaceCount.shift()
 				printToks("TOK_PARTIAL")
 				return TOK_PARTIAL
 			}
 		case 57:
 			{
-				SpaceCount.shift()
 				printToks("TOK_TENANT")
 				lval.s = yylex.Text()
 				return TOK_TENANT
 			}
 		case 58:
 			{
-				SpaceCount.shift()
 				printToks("TOK_SITE")
 				lval.s = yylex.Text()
 				return TOK_SITE
 			}
 		case 59:
 			{
-				SpaceCount.shift()
 				printToks("TOK_BLDG")
 				lval.s = yylex.Text()
 				return TOK_BLDG
 			}
 		case 60:
 			{
-				SpaceCount.shift()
 				printToks("TOK_ROOM")
 				lval.s = yylex.Text()
 				return TOK_ROOM
 			}
 		case 61:
 			{
-				SpaceCount.shift()
 				printToks("TOK_RACK")
 				lval.s = yylex.Text()
 				return TOK_RACK
 			}
 		case 62:
 			{
-				SpaceCount.shift()
 				printToks("TOK_DEVICE")
 				lval.s = yylex.Text()
 				return TOK_DEVICE
 			}
 		case 63:
 			{
-				SpaceCount.shift()
 				printToks("TOK_GROUP")
 				lval.s = yylex.Text()
 				return TOK_GROUP
 			}
 		case 64:
 			{
-				SpaceCount.shift()
 				printToks("TOK_CORIDOR")
 				lval.s = yylex.Text()
 				return TOK_CORIDOR
 			}
 		case 65:
 			{
-				SpaceCount.shift()
 				printToks("TOK_WALL")
 				lval.s = yylex.Text()
 				return TOK_WALL
 			}
 		case 66:
 			{
-				SpaceCount.shift()
 				printToks("TOK_AC")
 				lval.s = yylex.Text()
 				return TOK_AC
 			}
 		case 67:
 			{
-				SpaceCount.shift()
 				printToks("TOK_PANEL")
 				lval.s = yylex.Text()
 				return TOK_PANEL
 			}
 		case 68:
 			{
-				SpaceCount.shift()
 				printToks("TOK_TILE")
 				lval.s = yylex.Text()
 				return TOK_TILE
 			}
 		case 69:
 			{
-				SpaceCount.shift()
 				printToks("TOK_AISLE")
 				lval.s = yylex.Text()
 				return TOK_AISLE
 			}
 		case 70:
 			{
-				SpaceCount.shift()
 				printToks("TOK_CABINET")
 				lval.s = yylex.Text()
 				return TOK_CABINET
 			}
 		case 71:
 			{
-				SpaceCount.shift()
 				printToks("TOK_SENSOR")
 				lval.s = yylex.Text()
 				return TOK_SENSOR
 			}
 		case 72:
 			{
-				SpaceCount.shift()
 				printToks("TOK_ROOM_TMPL")
 				lval.s = yylex.Text()
 				return TOK_ROOM_TMPL
 			}
 		case 73:
 			{
-				SpaceCount.shift()
 				printToks("TOK_OBJ_TMPL")
 				lval.s = yylex.Text()
 				return TOK_OBJ_TMPL
 			}
 		case 74:
 			{
-				SpaceCount.shift()
 				printToks("TOK_NUM")
 				lval.n = atoi(yylex.Text())
 				return TOK_NUM
 			}
 		case 75:
 			{
-				SpaceCount.shift()
 				printToks("TOK_LSTEN")
 				return TOK_LSTEN
 			}
 		case 76:
 			{
-				SpaceCount.shift()
 				printToks("TOK_LSSITE")
 				return TOK_LSSITE
 			}
 		case 77:
 			{
-				SpaceCount.shift()
 				printToks("TOK_LSBLDG")
 				return TOK_LSBLDG
 			}
 		case 78:
 			{
-				SpaceCount.shift()
 				printToks("TOK_LSROOM")
 				return TOK_LSROOM
 			}
 		case 79:
 			{
-				SpaceCount.shift()
 				printToks("TOK_LSRACK")
 				return TOK_LSRACK
 			}
 		case 80:
 			{
-				SpaceCount.shift()
 				printToks("TOK_LSDEV")
 				return TOK_LSDEV
 			}
 		case 81:
 			{
-				SpaceCount.shift()
 				printToks("TOK_LSAISLE")
 				return TOK_LSAISLE
 			}
 		case 82:
 			{
-				SpaceCount.shift()
 				printToks("TOK_LSTILE")
 				return TOK_LSTILE
 			}
 		case 83:
 			{
-				SpaceCount.shift()
 				printToks("TOK_LSCAB")
 				return TOK_LSCAB
 			}
 		case 84:
 			{
-				SpaceCount.shift()
 				printToks("TOK_LSSENSOR")
 				return TOK_LSSENSOR
 			}
 		case 85:
 			{
-				SpaceCount.shift()
 				printToks("TOK_LSAC")
 				return TOK_LSAC
 			}
 		case 86:
 			{
-				SpaceCount.shift()
 				printToks("TOK_LSPANEL")
 				return TOK_LSPANEL
 			}
 		case 87:
 			{
-				SpaceCount.shift()
 				printToks("TOK_LSWALL")
 				return TOK_LSWALL
 			}
 		case 88:
 			{
-				SpaceCount.shift()
 				printToks("TOK_LSCORRIDOR")
 				return TOK_LSCORRIDOR
 			}
 		case 89:
 			{
-				SpaceCount.shift()
 				printToks("TOK_TREE")
 				return TOK_TREE
 			}
 		case 90:
 			{
-				SpaceCount.shift()
 				printToks("TOK_LSOG")
 				return TOK_LSOG
 			}
 		case 91:
 			{
-				SpaceCount.shift()
 				printToks("TOK_CD")
 				return TOK_CD
 			}
 		case 92:
 			{
-				SpaceCount.shift()
 				printToks("TOK_PWD")
 				return TOK_PWD
 			}
 		case 93:
 			{
-				SpaceCount.shift()
 				printToks("TOK_CLR")
 				return TOK_CLR
 			}
 		case 94:
 			{
-				SpaceCount.shift()
 				printToks("TOK_GREP")
 				return TOK_GREP
 			}
 		case 95:
 			{
-				SpaceCount.shift()
 				printToks("TOK_LS")
 				return TOK_LS
 			}
 		case 96:
 			{
-				SpaceCount.shift()
 				printToks("TOK_EXIT")
 				return TOK_EXIT
 			}
 		case 97:
 			{
-				SpaceCount.shift()
 				printToks("TOK_LEN")
 				return TOK_LEN
 			}
 		case 98:
 			{
-				SpaceCount.shift()
 				printToks("TOK_CMDFLAG")
 				return TOK_CMDFLAG
 			}
 		case 99:
 			{
-				SpaceCount.shift()
 				printToks("TOK_EQUAL")
 				return TOK_EQUAL
 			}
 		case 100:
 			{
-				SpaceCount.shift()
 				printToks("TOK_SLASH")
 				return TOK_SLASH
 			}
 		case 101:
 			{
-				SpaceCount.shift()
 				printToks("TOK_DOC")
 				return TOK_DOC
 			}
 		case 102:
 			{
-				SpaceCount.shift()
+				printToks("TOK_STR")
+				lval.s = yylex.Text()
+				return TOK_STR
+			}
+		case 103:
+			{
 				printToks("TOK_WORD")
 				lval.s = yylex.Text()
 				printCapturedWord(lval.s)
@@ -8615,55 +8597,6 @@ OUTER0:
 }
 
 type TOKType int
-
-//ESPACE BLOCK
-//The espace block is code meant to help the parser
-//to correctly capture the number of spaces for strings.
-//It doesn't make sense for Lex or Parser to manage grammars
-// using Space tokens
-//And it didn't make sense to use a second parser (unneccessary)
-type espaceCount struct {
-	count        int
-	detected     bool
-	locs         map[int]int //Records number of times space counts appeared
-	counter      int         //Used for the parser to retrieve space count @ a loc
-	writeCounter int         //Used by Lex to mark space counts at each loc
-}
-
-var SpaceCount espaceCount
-
-//Starts a new space count
-//@ next idx of e.locs
-func (e *espaceCount) shift() interface{} {
-	//e.count = 0
-	if e.detected == true {
-		e.writeCounter += 1
-	}
-
-	return nil
-}
-
-func (e *espaceCount) mark() interface{} {
-	//e.count += 1
-	e.detected = true
-	e.locs[e.writeCounter] += 1
-	return nil
-}
-
-func (e *espaceCount) read() interface{} {
-	e.counter += 1
-	return e.locs[e.counter-1]
-}
-
-func GetEspaces(count int) string {
-	if count > 0 {
-		return " " + GetEspaces(count-1)
-	} else {
-		return ""
-	}
-}
-
-//END OF ESPACE BLOCK
 
 func atoi(x string) int {
 	v, e := strconv.Atoi(x)
@@ -8684,15 +8617,4 @@ func printCapturedWord(x string) {
 	if cmd.State.DebugLvl >= 2 {
 		println("LVAL: ", x)
 	}
-}
-
-func lexBegin() {
-	//NN_FUN(NewLexer(os.Stdin))
-	//yyParse(NewLexer(os.Stdin))
-
-	//loc := map[int]int{0:0, 1:0}
-	SpaceCount.locs = make(map[int]int, 256)
-	lex := NewLexer(strings.NewReader(os.Args[1]))
-	e := yyParse(lex)
-	println("Return Code: ", e)
 }

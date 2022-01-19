@@ -1,165 +1,118 @@
-/[ \t]/  { /* Skip blanks and tabs. */ SpaceCount.mark();/*println("ESPACE@LEX:", (&SpaceCount).count) */}
-/create/ {SpaceCount.shift(); printToks("TOK_CREATE");return TOK_CREATE}
-/gt/ { SpaceCount.shift(); printToks("TOK_GET"); return TOK_GET}
-/update/ {SpaceCount.shift(); printToks("TOK_UPDATE"); return TOK_UPDATE}
-/delete/ {SpaceCount.shift(); printToks("TOK_DELETE"); return TOK_DELETE}
-/search/ {SpaceCount.shift(); printToks("TOK_SEARCH"); return TOK_SEARCH}
-/\+/ {SpaceCount.shift(); printToks("TOK_PLUS");lval.s = yylex.Text(); return TOK_PLUS}
-/-/ { SpaceCount.shift(); printToks("TOK_OCDEL");lval.s = yylex.Text(); return TOK_OCDEL}
-/:/ { SpaceCount.shift(); printToks("TOK_COL"); return TOK_COL}
-/@/ { SpaceCount.shift(); printToks("TOK_ATTRSPEC"); return TOK_ATTRSPEC}
-/\$/ {SpaceCount.shift(); printToks("TOK_DEREF"); return TOK_DEREF}
-/'/ {SpaceCount.shift(); printToks("TOK_APOST"); return TOK_APOST}
-/;/ {SpaceCount.shift(); printToks("TOK_SEMICOL"); return TOK_SEMICOL}
-/\[/ { SpaceCount.shift(); printToks("TOK_LBLOCK"); return TOK_LBLOCK}
-/\]/ { SpaceCount.shift(); printToks("TOK_RBLOCK"); return TOK_RBLOCK}
-/\(/ { SpaceCount.shift(); printToks("TOK_LPAREN"); return TOK_LPAREN}
-/\)/ { SpaceCount.shift(); printToks("TOK_RPAREN"); return TOK_RPAREN}
-/||/ { SpaceCount.shift(); printToks("TOK_OR"); return TOK_OR}
-/&&/ { SpaceCount.shift(); printToks("TOK_AND"); return TOK_AND}
-/\!/ { SpaceCount.shift(); printToks("TOK_NOT"); return TOK_NOT}
-/\*/ { SpaceCount.shift(); printToks("TOK_MULT"); return TOK_MULT}
-/%/  {SpaceCount.shift(); printToks("TOK_MOD"); return TOK_MOD}
-/>/ { SpaceCount.shift(); printToks("TOK_GREATER"); return TOK_GREATER}
-/</ { SpaceCount.shift(); printToks("TOK_LESS"); return TOK_LESS}
-/false|true/ { SpaceCount.shift(); printToks("TOK_BOOL");lval.s = yylex.Text(); return TOK_BOOL}
-/if/ { SpaceCount.shift(); printToks("TOK_IF"); return TOK_IF}
-/for/ { SpaceCount.shift(); printToks("TOK_FOR"); return TOK_FOR}
-/in/ { SpaceCount.shift(); printToks("TOK_IN"); return TOK_IN}
-/while/ { SpaceCount.shift(); printToks("TOK_WHILE"); return TOK_WHILE}
-/else/ { SpaceCount.shift(); printToks("TOK_ELSE"); return TOK_ELSE}
-/then/ { SpaceCount.shift(); printToks("TOK_THEN"); return TOK_THEN}
-/fi/ { SpaceCount.shift(); printToks("TOK_FI"); return TOK_FI}
-/elif/ { SpaceCount.shift(); printToks("TOK_ELIF"); return TOK_ELIF}
-/done/ { SpaceCount.shift(); printToks("TOK_DONE"); return TOK_DONE}
-/do/ { SpaceCount.shift(); printToks("TOK_DO"); return TOK_DO}
-/print/ { SpaceCount.shift(); printToks("TOK_PRNT"); return TOK_PRNT}
-/unset/ { SpaceCount.shift(); printToks("TOK_UNSET"); return TOK_UNSET}
-/\"/ { SpaceCount.shift(); printToks("TOK_QUOT"); return TOK_QUOT}
+/[ \t]/  { /* Skip blanks and tabs. */ }
+/create/ { printToks("TOK_CREATE");return TOK_CREATE}
+/gt/ {  printToks("TOK_GET"); return TOK_GET}
+/update/ { printToks("TOK_UPDATE"); return TOK_UPDATE}
+/delete/ { printToks("TOK_DELETE"); return TOK_DELETE}
+/search/ { printToks("TOK_SEARCH"); return TOK_SEARCH}
+/\+/ { printToks("TOK_PLUS");lval.s = yylex.Text(); return TOK_PLUS}
+/-/ {  printToks("TOK_OCDEL");lval.s = yylex.Text(); return TOK_OCDEL}
+/:/ {  printToks("TOK_COL"); return TOK_COL}
+/@/ {  printToks("TOK_ATTRSPEC"); return TOK_ATTRSPEC}
+/\$/ { printToks("TOK_DEREF"); return TOK_DEREF}
+/'/ { printToks("TOK_APOST"); return TOK_APOST}
+/;/ { printToks("TOK_SEMICOL"); return TOK_SEMICOL}
+/\[/ {  printToks("TOK_LBLOCK"); return TOK_LBLOCK}
+/\]/ {  printToks("TOK_RBLOCK"); return TOK_RBLOCK}
+/\(/ {  printToks("TOK_LPAREN"); return TOK_LPAREN}
+/\)/ {  printToks("TOK_RPAREN"); return TOK_RPAREN}
+/||/ {  printToks("TOK_OR"); return TOK_OR}
+/&&/ {  printToks("TOK_AND"); return TOK_AND}
+/\!/ {  printToks("TOK_NOT"); return TOK_NOT}
+/\*/ {  printToks("TOK_MULT"); return TOK_MULT}
+/%/  { printToks("TOK_MOD"); return TOK_MOD}
+/>/ {  printToks("TOK_GREATER"); return TOK_GREATER}
+/</ {  printToks("TOK_LESS"); return TOK_LESS}
+/false|true/ {  printToks("TOK_BOOL");lval.s = yylex.Text(); return TOK_BOOL}
+/if/ {  printToks("TOK_IF"); return TOK_IF}
+/for/ {  printToks("TOK_FOR"); return TOK_FOR}
+/in/ {  printToks("TOK_IN"); return TOK_IN}
+/while/ {  printToks("TOK_WHILE"); return TOK_WHILE}
+/else/ {  printToks("TOK_ELSE"); return TOK_ELSE}
+/then/ {  printToks("TOK_THEN"); return TOK_THEN}
+/fi/ {  printToks("TOK_FI"); return TOK_FI}
+/elif/ {  printToks("TOK_ELIF"); return TOK_ELIF}
+/done/ {  printToks("TOK_DONE"); return TOK_DONE}
+/do/ {  printToks("TOK_DO"); return TOK_DO}
+/print/ {  printToks("TOK_PRNT"); return TOK_PRNT}
+/unset/ {  printToks("TOK_UNSET"); return TOK_UNSET}
+/\"/ {  printToks("TOK_QUOT"); return TOK_QUOT}
 
-/tn/ { SpaceCount.shift(); printToks("TOK_OCTENANT");return TOK_OCTENANT}
-/si/ { SpaceCount.shift(); printToks("TOK_OCSITE");return TOK_OCSITE}
-/bd/ { SpaceCount.shift(); printToks("TOK_OCBLDG");return TOK_OCBLDG}
-/ro/ { SpaceCount.shift(); printToks("TOK_OCROOM");return TOK_OCROOM}
-/rk/ { SpaceCount.shift(); printToks("TOK_OCRACK");return TOK_OCRACK}
-/dv/ { SpaceCount.shift(); printToks("TOK_OCDEV");return TOK_OCDEV}
-/gr/ { SpaceCount.shift(); printToks("TOK_OCGROUP");return TOK_OCGROUP}
-/sp/ { SpaceCount.shift(); printToks("TOK_OCWALL");return TOK_OCWALL}
-/co/ { SpaceCount.shift(); printToks("TOK_OCCORIDOR");return TOK_OCCORIDOR}
-/selection/ { SpaceCount.shift(); printToks("TOK_SELECT"); return TOK_SELECT}
-/cmds/ { SpaceCount.shift(); printToks("TOK_CMDS"); return TOK_CMDS}
-/template/ { SpaceCount.shift(); printToks("TOK_TEMPLATE"); return TOK_TEMPLATE}
-/var/ { SpaceCount.shift(); printToks("TOK_VAR");return TOK_VAR}
-/{/ { SpaceCount.shift(); printToks("TOK_LBRAC");return TOK_LBRAC}
-/}/ { SpaceCount.shift(); printToks("TOK_RBRAC");return TOK_RBRAC}
-/,/ { SpaceCount.shift(); printToks("TOK_COMMA"); return TOK_COMMA}
-/\./ { SpaceCount.shift(); printToks("TOK_DOT"); return TOK_DOT}
-/usJn/ { SpaceCount.shift(); printToks("TOK_USE_JSON"); return TOK_USE_JSON}
-/partial/ { SpaceCount.shift(); printToks("TOK_PARTIAL"); return TOK_PARTIAL}
+/tn/ {  printToks("TOK_OCTENANT");return TOK_OCTENANT}
+/si/ {  printToks("TOK_OCSITE");return TOK_OCSITE}
+/bd/ {  printToks("TOK_OCBLDG");return TOK_OCBLDG}
+/ro/ {  printToks("TOK_OCROOM");return TOK_OCROOM}
+/rk/ {  printToks("TOK_OCRACK");return TOK_OCRACK}
+/dv/ {  printToks("TOK_OCDEV");return TOK_OCDEV}
+/gr/ {  printToks("TOK_OCGROUP");return TOK_OCGROUP}
+/sp/ {  printToks("TOK_OCWALL");return TOK_OCWALL}
+/co/ {  printToks("TOK_OCCORIDOR");return TOK_OCCORIDOR}
+/selection/ {  printToks("TOK_SELECT"); return TOK_SELECT}
+/cmds/ {  printToks("TOK_CMDS"); return TOK_CMDS}
+/template/ {  printToks("TOK_TEMPLATE"); return TOK_TEMPLATE}
+/var/ {  printToks("TOK_VAR");return TOK_VAR}
+/{/ {  printToks("TOK_LBRAC");return TOK_LBRAC}
+/}/ {  printToks("TOK_RBRAC");return TOK_RBRAC}
+/,/ {  printToks("TOK_COMMA"); return TOK_COMMA}
+/\./ {  printToks("TOK_DOT"); return TOK_DOT}
+/usJn/ {  printToks("TOK_USE_JSON"); return TOK_USE_JSON}
+/partial/ {  printToks("TOK_PARTIAL"); return TOK_PARTIAL}
 
-/tenant/ { SpaceCount.shift(); printToks("TOK_TENANT");lval.s = yylex.Text();return TOK_TENANT}
-/site/ { SpaceCount.shift(); printToks("TOK_SITE");lval.s = yylex.Text();return TOK_SITE}
-/bldg|building/ { SpaceCount.shift(); printToks("TOK_BLDG");lval.s = yylex.Text();return TOK_BLDG}
-/room/ { SpaceCount.shift(); printToks("TOK_ROOM");lval.s = yylex.Text();return TOK_ROOM}
-/rack/ { SpaceCount.shift(); printToks("TOK_RACK");lval.s = yylex.Text();return TOK_RACK}
-/device/ { SpaceCount.shift(); printToks("TOK_DEVICE");lval.s = yylex.Text();return TOK_DEVICE}
-/group/ { SpaceCount.shift(); printToks("TOK_GROUP");lval.s = yylex.Text();return TOK_GROUP}
-/corridor/ { SpaceCount.shift(); printToks("TOK_CORIDOR");lval.s = yylex.Text();return TOK_CORIDOR}
-/separator/ { SpaceCount.shift(); printToks("TOK_WALL");lval.s = yylex.Text();return TOK_WALL}
-/ac/ { SpaceCount.shift(); printToks("TOK_AC");lval.s = yylex.Text();return TOK_AC}
-/panel/ { SpaceCount.shift(); printToks("TOK_PANEL");lval.s = yylex.Text();return TOK_PANEL}
-/tile/ { SpaceCount.shift(); printToks("TOK_TILE");lval.s = yylex.Text();return TOK_TILE}
-/aisle/ { SpaceCount.shift(); printToks("TOK_AISLE");lval.s = yylex.Text();return TOK_AISLE}
-/cabinet/ { SpaceCount.shift(); printToks("TOK_CABINET");lval.s = yylex.Text();return TOK_CABINET}
-/sensor/ { SpaceCount.shift(); printToks("TOK_SENSOR");lval.s = yylex.Text();return TOK_SENSOR}
-/room_template/ { SpaceCount.shift(); printToks("TOK_ROOM_TMPL");lval.s = yylex.Text();return TOK_ROOM_TMPL}
-/obj_template/ { SpaceCount.shift(); printToks("TOK_OBJ_TMPL");lval.s = yylex.Text();return TOK_OBJ_TMPL}
+/tenant/ {  printToks("TOK_TENANT");lval.s = yylex.Text();return TOK_TENANT}
+/site/ {  printToks("TOK_SITE");lval.s = yylex.Text();return TOK_SITE}
+/bldg|building/ {  printToks("TOK_BLDG");lval.s = yylex.Text();return TOK_BLDG}
+/room/ {  printToks("TOK_ROOM");lval.s = yylex.Text();return TOK_ROOM}
+/rack/ {  printToks("TOK_RACK");lval.s = yylex.Text();return TOK_RACK}
+/device/ {  printToks("TOK_DEVICE");lval.s = yylex.Text();return TOK_DEVICE}
+/group/ {  printToks("TOK_GROUP");lval.s = yylex.Text();return TOK_GROUP}
+/corridor/ {  printToks("TOK_CORIDOR");lval.s = yylex.Text();return TOK_CORIDOR}
+/separator/ {  printToks("TOK_WALL");lval.s = yylex.Text();return TOK_WALL}
+/ac/ {  printToks("TOK_AC");lval.s = yylex.Text();return TOK_AC}
+/panel/ {  printToks("TOK_PANEL");lval.s = yylex.Text();return TOK_PANEL}
+/tile/ {  printToks("TOK_TILE");lval.s = yylex.Text();return TOK_TILE}
+/aisle/ {  printToks("TOK_AISLE");lval.s = yylex.Text();return TOK_AISLE}
+/cabinet/ {  printToks("TOK_CABINET");lval.s = yylex.Text();return TOK_CABINET}
+/sensor/ {  printToks("TOK_SENSOR");lval.s = yylex.Text();return TOK_SENSOR}
+/room_template/ {  printToks("TOK_ROOM_TMPL");lval.s = yylex.Text();return TOK_ROOM_TMPL}
+/obj_template/ {  printToks("TOK_OBJ_TMPL");lval.s = yylex.Text();return TOK_OBJ_TMPL}
 
-/[0-9]+/ { SpaceCount.shift(); printToks("TOK_NUM");lval.n = atoi(yylex.Text()); return TOK_NUM}
-/lsten/ { SpaceCount.shift(); printToks("TOK_LSTEN"); return TOK_LSTEN}
-/lssite/ { SpaceCount.shift(); printToks("TOK_LSSITE"); return TOK_LSSITE}
-/lsbldg/ { SpaceCount.shift(); printToks("TOK_LSBLDG"); return TOK_LSBLDG}
-/lsroom/ { SpaceCount.shift(); printToks("TOK_LSROOM"); return TOK_LSROOM}
-/lsrack/ { SpaceCount.shift(); printToks("TOK_LSRACK"); return TOK_LSRACK}
-/lsdev/ { SpaceCount.shift(); printToks("TOK_LSDEV"); return TOK_LSDEV}
-/lsaisle/ { SpaceCount.shift(); printToks("TOK_LSAISLE"); return TOK_LSAISLE}
-/lstile/ { SpaceCount.shift(); printToks("TOK_LSTILE"); return TOK_LSTILE}
-/lscabinet/ { SpaceCount.shift(); printToks("TOK_LSCAB"); return TOK_LSCAB}
-/lssensor/ { SpaceCount.shift(); printToks("TOK_LSSENSOR"); return TOK_LSSENSOR}
-/lsac/ { SpaceCount.shift(); printToks("TOK_LSAC"); return TOK_LSAC}
-/lspanel/ { SpaceCount.shift(); printToks("TOK_LSPANEL"); return TOK_LSPANEL}
-/lsseparator/ { SpaceCount.shift(); printToks("TOK_LSWALL"); return TOK_LSWALL}
-/lscorridor/ { SpaceCount.shift(); printToks("TOK_LSCORRIDOR"); return TOK_LSCORRIDOR}
-/tree/ {SpaceCount.shift(); printToks("TOK_TREE"); return TOK_TREE}
-/lsog/ {SpaceCount.shift(); printToks("TOK_LSOG"); return TOK_LSOG}
-/cd/ {SpaceCount.shift(); printToks("TOK_CD");return TOK_CD}
-/pwd/ {SpaceCount.shift(); printToks("TOK_PWD");return TOK_PWD}
-/clear/ {SpaceCount.shift(); printToks("TOK_CLR");return TOK_CLR}
-/grep/ {SpaceCount.shift(); printToks("TOK_GREP");return TOK_GREP}
-/ls/ {SpaceCount.shift(); printToks("TOK_LS");return TOK_LS}
-/exit/ {SpaceCount.shift(); printToks("TOK_EXIT"); return TOK_EXIT}
-/len/ {SpaceCount.shift(); printToks("TOK_LEN"); return TOK_LEN}
-/-l/ {SpaceCount.shift(); printToks("TOK_CMDFLAG");return TOK_CMDFLAG}
-/[=]/ {SpaceCount.shift(); printToks("TOK_EQUAL");return TOK_EQUAL}
-/\// {SpaceCount.shift(); printToks("TOK_SLASH"); return TOK_SLASH}
-/man/ {SpaceCount.shift(); printToks("TOK_DOC"); return TOK_DOC}
-/[A-Za-z0-9_]+/ {SpaceCount.shift(); printToks("TOK_WORD"); lval.s = yylex.Text(); printCapturedWord(lval.s); return TOK_WORD}
+/[0-9]+/ {  printToks("TOK_NUM");lval.n = atoi(yylex.Text()); return TOK_NUM}
+/lsten/ {  printToks("TOK_LSTEN"); return TOK_LSTEN}
+/lssite/ {  printToks("TOK_LSSITE"); return TOK_LSSITE}
+/lsbldg/ {  printToks("TOK_LSBLDG"); return TOK_LSBLDG}
+/lsroom/ {  printToks("TOK_LSROOM"); return TOK_LSROOM}
+/lsrack/ {  printToks("TOK_LSRACK"); return TOK_LSRACK}
+/lsdev/ {  printToks("TOK_LSDEV"); return TOK_LSDEV}
+/lsaisle/ {  printToks("TOK_LSAISLE"); return TOK_LSAISLE}
+/lstile/ {  printToks("TOK_LSTILE"); return TOK_LSTILE}
+/lscabinet/ {  printToks("TOK_LSCAB"); return TOK_LSCAB}
+/lssensor/ {  printToks("TOK_LSSENSOR"); return TOK_LSSENSOR}
+/lsac/ {  printToks("TOK_LSAC"); return TOK_LSAC}
+/lspanel/ {  printToks("TOK_LSPANEL"); return TOK_LSPANEL}
+/lsseparator/ {  printToks("TOK_LSWALL"); return TOK_LSWALL}
+/lscorridor/ {  printToks("TOK_LSCORRIDOR"); return TOK_LSCORRIDOR}
+/tree/ { printToks("TOK_TREE"); return TOK_TREE}
+/lsog/ { printToks("TOK_LSOG"); return TOK_LSOG}
+/cd/ { printToks("TOK_CD");return TOK_CD}
+/pwd/ { printToks("TOK_PWD");return TOK_PWD}
+/clear/ { printToks("TOK_CLR");return TOK_CLR}
+/grep/ { printToks("TOK_GREP");return TOK_GREP}
+/ls/ { printToks("TOK_LS");return TOK_LS}
+/exit/ { printToks("TOK_EXIT"); return TOK_EXIT}
+/len/ { printToks("TOK_LEN"); return TOK_LEN}
+/-l/ { printToks("TOK_CMDFLAG");return TOK_CMDFLAG}
+/[=]/ { printToks("TOK_EQUAL");return TOK_EQUAL}
+/\// { printToks("TOK_SLASH"); return TOK_SLASH}
+/man/ { printToks("TOK_DOC"); return TOK_DOC}
+/\"[^$\[\],\)\(]+\"/ {printToks("TOK_STR"); lval.s = yylex.Text(); return TOK_STR}
+/[A-Za-z0-9_]+/ { printToks("TOK_WORD"); lval.s = yylex.Text(); printCapturedWord(lval.s); return TOK_WORD}
 //
 package main
 import (
-	"os"
 	"strconv"
 	cmd "cli/controllers"
 )
 type TOKType int
 
-//ESPACE BLOCK
-//The espace block is code meant to help the parser 
-//to correctly capture the number of spaces for strings.
-//It doesn't make sense for Lex or Parser to manage grammars 
-// using Space tokens
-//And it didn't make sense to use a second parser (unneccessary)
-type espaceCount struct {
-	count int
-	detected bool
-	locs map[int]int //Records number of times space counts appeared 
-	counter int	 	//Used for the parser to retrieve space count @ a loc
-	writeCounter int	//Used by Lex to mark space counts at each loc 
-}
-
-var SpaceCount espaceCount
-
-//Starts a new space count
-//@ next idx of e.locs
-func (e *espaceCount) shift() interface{} {
-	//e.count = 0
-	if e.detected == true {
-		e.writeCounter += 1
-	}
-	
-	return nil
-}
-
-func (e *espaceCount) mark() interface{} {
-	//e.count += 1
-	e.detected = true
-	e.locs[e.writeCounter] += 1
-	return nil
-}
-
-func (e *espaceCount) read() interface{} {
-	e.counter += 1
-	return e.locs[e.counter - 1]
-}
-
-func GetEspaces(count int) string {
-	if count > 0 {
-		return " "+GetEspaces(count - 1)
-	} else {
-		return ""
-	}
-}
-//END OF ESPACE BLOCK
 
 func atoi(x string) int {
 	v, e := strconv.Atoi(x)
@@ -180,15 +133,4 @@ func printCapturedWord(x string) {
 	if cmd.State.DebugLvl >= 2 {
 		println("LVAL: ", x)
 	}
-}
-
-func lexBegin() {
-  //NN_FUN(NewLexer(os.Stdin))
-  //yyParse(NewLexer(os.Stdin))
-
-	//loc := map[int]int{0:0, 1:0}
-	SpaceCount.locs = make(map[int]int, 256)
-  	lex := NewLexer(strings.NewReader(os.Args[1]))
-	e := yyParse(lex)
-	println("Return Code: ", e)
 }

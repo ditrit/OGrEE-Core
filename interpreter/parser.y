@@ -186,9 +186,9 @@ func formActualPath(x string) string {
   mapArr []map[int]interface{}
 }
 
-%token <n> TOK_NUM
+%token <n> TOK_NUM 
 %token <s> TOK_WORD TOK_TENANT TOK_SITE TOK_BLDG TOK_ROOM
-%token <s> TOK_RACK TOK_DEVICE
+%token <s> TOK_RACK TOK_DEVICE TOK_STR
 %token <s> TOK_CORIDOR TOK_GROUP TOK_WALL
 %token <s> TOK_AC TOK_CABINET TOK_PANEL TOK_AISLE
 %token <s> TOK_TILE TOK_SENSOR
@@ -216,7 +216,7 @@ func formActualPath(x string) string {
        TOK_OCGROUP TOK_OCWALL TOK_OCCORIDOR
        TOK_APOST TOK_USE_JSON TOK_PARTIAL
        
-%type <s> F E P P1 WORDORNUM STRARG CDORFG ANYTOKEN
+%type <s> F E P P1 WORDORNUM /*STRARG*/ CDORFG /*ANYTOKEN*/
 %type <arr> WNARG NODEGETTER NODEACC
 %type <sarr> GETOBJS
 %type <elifArr> EIF
@@ -388,7 +388,7 @@ factor: TOK_LPAREN EXPR TOK_RPAREN {$$=$2}
                                                  }
                                                 }
        |TOK_WORD {$$=&symbolReferenceNode{REFERENCE, $1,&numNode{NUM,0}, nil}}
-       |TOK_QUOT STRARG TOK_QUOT {$$=&strNode{STR, $2}}
+       |TOK_STR {$$=&strNode{STR, $1}}
        |TOK_BOOL {var x bool;if $1=="false"{x = false}else{x=true};$$=&boolNode{BOOL, x}}
        ;
 
@@ -473,8 +473,8 @@ WORDORNUM: TOK_WORD {$$=$1; dCatchPtr = $1; dCatchNodePtr=&strNode{STR, $1}}
 
 F:     TOK_WORD TOK_EQUAL WORDORNUM F {$$=string($1+"="+$3+"="+$4); if cmd.State.DebugLvl >= 3 {println("So we got: ", $$);}}
        | TOK_WORD TOK_EQUAL WORDORNUM {$$=$1+"="+$3}
-       | TOK_WORD TOK_EQUAL TOK_QUOT STRARG TOK_QUOT F{$$=$1+"="+$4+"="+$6}
-       | TOK_WORD TOK_EQUAL TOK_QUOT STRARG TOK_QUOT {$$=$1+"="+$4}
+       | TOK_WORD TOK_EQUAL TOK_STR F{$$=$1+"="+$3+"="+$4}
+       | TOK_WORD TOK_EQUAL TOK_STR {$$=$1+"="+$3}
        | TOK_WORD TOK_EQUAL E {$$=$1+"="+$3}
        | TOK_WORD TOK_EQUAL E F {$$=string($1+"="+$3+"="+$4); if cmd.State.DebugLvl >= 3 {println("So we got: ", $$);}}
 ;
@@ -667,10 +667,10 @@ OCSEL:      TOK_SELECT {$$=&commonNode{COMMON, cmd.ShowClipBoard, "select", nil}
             |TOK_SELECT TOK_DOT TOK_WORD TOK_EQUAL EXPR {/*x := $3+"="+$5;*/ val:=($5).(node).execute(); println("Our val:", val); x:=map[string]interface{}{$3:val}; $$=&commonNode{COMMON, cmd.UpdateSelection, "UpdateSelect", []interface{}{x}};}
 ;
 
-STRARG: WORDORNUM STRARG {if $2 != "" {$$=$1+GetEspaces((&SpaceCount).read().(int))+$2} else {$$=$1};}
-       | ANYTOKEN STRARG {if $2 != "" {$$=$1+GetEspaces((&SpaceCount).read().(int))+$2} else {$$=$1};}
-       | {$$=""}
-;
+//STRARG: TOK_STR STRARG {if $2 != "" {$$=$1+$2} else {$$=$1};}
+       //| ANYTOKEN STRARG {if $2 != "" {$$=$1+" "+$2} else {$$=$1};}
+       //| {$$=""}
+//;
 
 WNARG: factor TOK_COMMA WNARG {x:=[]interface{}{$1}; $$=append(x, $3...)}
        |factor  {x:=[]interface{}{$1}; $$=x}
@@ -710,7 +710,7 @@ CDORFG: TOK_ATTRSPEC WORDORNUM CDORFG {x:=$2; $$=x+","+$3}
 
 //This is meant for the String Nonterminals
 //Accept any token and return a string
-ANYTOKEN: TOK_TENANT {$$=$1}
+/*ANYTOKEN: TOK_TENANT {$$=$1}
           |TOK_SITE {$$=$1}
           |TOK_BLDG {$$=$1}
           |TOK_ROOM {$$=$1}
@@ -805,5 +805,5 @@ ANYTOKEN: TOK_TENANT {$$=$1}
           |TOK_OCGROUP {$$="gr"}
           |TOK_OCWALL {$$=""}
           |TOK_OCCORIDOR {$$="co"}
-          ;
+          ;*/
 %%
