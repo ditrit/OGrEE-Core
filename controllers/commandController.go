@@ -825,6 +825,10 @@ func GetOCLIAtrributes(path *Stack, ent int, data map[string]interface{}, term *
 	}
 }
 
+func HandleUI(data map[string]interface{}) {
+	Disp(data)
+}
+
 func ShowClipBoard() []string {
 	if State.ClipBoard != nil {
 		for _, k := range *State.ClipBoard {

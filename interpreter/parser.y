@@ -215,6 +215,7 @@ func formActualPath(x string) string {
        TOK_UNSET TOK_ELIF TOK_DO TOK_LEN
        TOK_OCGROUP TOK_OCWALL TOK_OCCORIDOR
        TOK_APOST TOK_USE_JSON TOK_PARTIAL
+       TOK_CAM TOK_UI
        
 %type <s> F E P P1 WORDORNUM /*STRARG*/ CDORFG /*ANYTOKEN*/
 %type <arr> WNARG NODEGETTER NODEACC
@@ -224,7 +225,7 @@ func formActualPath(x string) string {
 %type <node> NT_UPDATE K Q BASH OCUPDATE OCCHOOSE OCCR OCDOT
 %type <node> EXPR REL OPEN_STMT CTRL nex factor unary EQAL term
 %type <node> stmnt JOIN
-%type <node> st2 FUNC 
+%type <node> st2 FUNC HANDLEUI
 %left TOK_MULT TOK_OCDEL TOK_DIV TOK_PLUS
 %right TOK_EQUAL
 
@@ -444,30 +445,6 @@ WORDORNUM: TOK_WORD {$$=$1; dCatchPtr = $1; dCatchNodePtr=&strNode{STR, $1}}
            |TOK_DEREF TOK_WORD 
            {
                   $$=resolveReference($2)
-                  /*Probably code to reference SymbolTable and return data*/
-                  /*idx := dynamicMap[$2];
-                  item := dynamicSymbolTable[idx];
-                  switch item.(type) {
-                         case bool:
-                            dCatchNodePtr=&boolNode{BOOL, item.(bool)}
-                            if item.(bool) == false {$$ = "false"} else { $$ = "true"}
-                         case string:
-                            dCatchNodePtr=&strNode{STR, item.(string)}
-                            $$ = item.(string)
-                         case int:
-                            dCatchNodePtr=&numNode{NUM, item.(int)}
-                            $$ = strconv.Itoa(item.(int))
-                         case *commonNode:
-                            dCatchNodePtr=item
-                            args := ""
-                            for i := range item.(*commonNode).args {
-                                   args += item.(*commonNode).args[i].(string)
-                            }
-                            $$ = item.(*commonNode).val +" "+ args
-                          default:
-                            println("Unable to deref your variable ")
-                            $$ = ""
-                  }*/
            }
            ;
 
@@ -569,6 +546,7 @@ OCLISYNTX:  TOK_PLUS OCCR {$$=$2}
             |OCCHOOSE {$$=$1}
             |OCDOT {$$=$1}
             |OCSEL {$$=$1;}
+            |HANDLEUI {$$=$1}
             ;
 
 
@@ -666,6 +644,13 @@ OCDOT:      //TOK_DOT TOK_VAR TOK_COL TOK_WORD TOK_EQUAL WORDORNUM {$$=&assignNo
 OCSEL:      TOK_SELECT {$$=&commonNode{COMMON, cmd.ShowClipBoard, "select", nil};}
             |TOK_SELECT TOK_DOT TOK_WORD TOK_EQUAL EXPR {/*x := $3+"="+$5;*/ val:=($5).(node).execute(); println("Our val:", val); x:=map[string]interface{}{$3:val}; $$=&commonNode{COMMON, cmd.UpdateSelection, "UpdateSelect", []interface{}{x}};}
 ;
+
+HANDLEUI: TOK_UI TOK_DOT TOK_WORD TOK_EQUAL TOK_LBLOCK EXPR TOK_RBLOCK {$$=&commonNode{COMMON, cmd.HandleUI, "HandleUnity", []interface{}{"ui", $3, $6}}}
+          |TOK_CAM TOK_DOT TOK_WORD TOK_EQUAL EXPR {$$=&commonNode{COMMON, cmd.HandleUI, "HandleUnity", []interface{}{"camera",$3, ($5).(node).execute()}}}
+          |TOK_CAM TOK_DOT TOK_WORD TOK_EQUAL TOK_LBLOCK 
+            TOK_NUM TOK_COMMA TOK_NUM TOK_COMMA TOK_NUM TOK_RBLOCK TOK_ATTRSPEC 
+            TOK_LBLOCK TOK_NUM TOK_COMMA TOK_NUM TOK_RBLOCK {$$=&commonNode{COMMON, cmd.HandleUI, "HandleUnity", []interface{}{"camera",[]int{$6, $8, $10}, []int{$14, $16}}}}
+          ;
 
 //STRARG: TOK_STR STRARG {if $2 != "" {$$=$1+$2} else {$$=$1};}
        //| ANYTOKEN STRARG {if $2 != "" {$$=$1+" "+$2} else {$$=$1};}

@@ -56,6 +56,8 @@
 /\./ {  printToks("TOK_DOT"); return TOK_DOT}
 /usJn/ {  printToks("TOK_USE_JSON"); return TOK_USE_JSON}
 /partial/ {  printToks("TOK_PARTIAL"); return TOK_PARTIAL}
+/ui/ { printToks("TOK_UI"); return TOK_UI}
+/camera/ { printToks("TOK_CAM"); return TOK_CAM}
 
 /tenant/ {  printToks("TOK_TENANT");lval.s = yylex.Text();return TOK_TENANT}
 /site/ {  printToks("TOK_SITE");lval.s = yylex.Text();return TOK_SITE}

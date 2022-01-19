@@ -231,7 +231,22 @@ func (c *commonNode) execute() interface{} {
 				c.args[2].(map[string]interface{}),
 				c.args[3].(*readline.Instance))
 		}
+	case "HandleUnity":
+		if f, ok := c.fun.(func(map[string]interface{})); ok {
+			data := map[string]interface{}{}
+			data["type"] = c.args[0]
+			switch c.args[1].(type) {
+			case []int:
+				data["position"] = c.args[1]
+				data["rotation"] = c.args[2]
+			default:
+				data[c.args[1].(string)] = c.args[2]
+
+			}
+			f(data)
+		}
 	}
+
 	return nil
 }
 
