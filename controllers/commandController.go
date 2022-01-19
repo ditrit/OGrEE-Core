@@ -51,7 +51,7 @@ func ParseResponse(resp *http.Response, e error, purpose string) map[string]inte
 func PostObj(ent int, entity string, data map[string]interface{}) map[string]interface{} {
 	var respMap map[string]interface{}
 	resp, e := models.Send("POST",
-		"http://localhost:3001/api/"+entity+"s", GetKey(), data)
+		State.APIURL+"/api/"+entity+"s", GetKey(), data)
 
 	respMap = ParseResponse(resp, e, "POST")
 
@@ -101,7 +101,7 @@ func PostObj(ent int, entity string, data map[string]interface{}) map[string]int
 }
 
 func DeleteObj(path string) bool {
-	URL := "https://ogree.chibois.net/api/"
+	URL := State.APIURL + "/api/"
 	nd := new(*Node)
 
 	switch path {
@@ -145,7 +145,7 @@ func DeleteObj(path string) bool {
 //Search for objects
 func SearchObjects(entity string, data map[string]interface{}) []map[string]interface{} {
 	var jsonResp map[string]interface{}
-	URL := "https://ogree.chibois.net/api/" + entity + "s?"
+	URL := State.APIURL + "/api/" + entity + "s?"
 
 	for i, k := range data {
 		if i == "attributes" {
@@ -180,8 +180,11 @@ func SearchObjects(entity string, data map[string]interface{}) []map[string]inte
 	return nil
 }
 
-func GetObject(path string) map[string]interface{} {
-	URL := "https://ogree.chibois.net/api/"
+//Silenced bool
+//Useful for LS since
+//otherwise the terminal would be polluted by debug statements
+func GetObject(path string, silenced bool) map[string]interface{} {
+	URL := State.APIURL + "/api/"
 	nd := new(*Node)
 	var data map[string]interface{}
 
@@ -275,7 +278,7 @@ func UpdateObj(path string, data map[string]interface{}, deleteAndPut bool) map[
 			return nil
 		}
 
-		URL := "https://ogree.chibois.net/api/" +
+		URL := State.APIURL + "/api/" +
 			EntityToString((*nd).Entity) + "s/" + (*nd).ID
 
 		//Make the proper Update JSON
@@ -359,7 +362,7 @@ func EasyUpdate(path, op string, data map[string]interface{}) map[string]interfa
 		return nil
 	}
 
-	URL := "http://localhost:3001/api/" +
+	URL := State.APIURL + "/api/" +
 		EntityToString((*nd).Entity) + "s/" + (*nd).ID
 
 	if data != nil {
@@ -420,7 +423,8 @@ func LS(x string) []map[string]interface{} {
 
 func LSOG() {
 	fmt.Println("USER EMAIL:", GetEmail())
-	fmt.Println("API URL:", "https://ogree.chibois.net/api/")
+	fmt.Println("API URL:", State.APIURL+"/api/")
+	fmt.Println("UNITY URL:", State.UnityClientURL)
 	fmt.Println("BUILD DATE:", BuildTime)
 	fmt.Println("BUILD TREE:", BuildTree)
 	fmt.Println("BUILD HASH:", BuildHash)
@@ -827,7 +831,7 @@ func GetOCLIAtrributes(path *Stack, ent int, data map[string]interface{}, term *
 
 func HandleUI(data map[string]interface{}) {
 	Disp(data)
-	r, e := models.ContactUnity("POST", "http://localhost:5500", data)
+	r, e := models.ContactUnity("POST", State.UnityClientURL, data)
 	if e != nil {
 		WarningLogger.Println("Error! ", e.Error())
 		println("Error! ", e.Error())

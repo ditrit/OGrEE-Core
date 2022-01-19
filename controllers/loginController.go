@@ -68,7 +68,7 @@ func CreateCredentials() (string, string) {
 		"password": pass})
 
 	req, _ := http.NewRequest("POST",
-		"https://ogree.chibois.net/api/user",
+		State.APIURL+"/api/user",
 		bytes.NewBuffer(buf))
 
 	resp, e := client.Do(req)
@@ -100,7 +100,7 @@ func CheckKeyIsValid(key string) bool {
 	client := &http.Client{}
 
 	req, _ := http.NewRequest("GET",
-		"https://ogree.chibois.net/api/token/valid", nil)
+		State.APIURL+"/api/token/valid", nil)
 
 	req.Header.Set("Authorization", "Bearer "+key)
 
@@ -108,7 +108,7 @@ func CheckKeyIsValid(key string) bool {
 	if e != nil || resp.StatusCode != 200 {
 		//readline.Line(e.Error())
 		if resp != nil {
-		readline.Line("Status code" + strconv.Itoa(resp.StatusCode))
+			readline.Line("Status code" + strconv.Itoa(resp.StatusCode))
 		} else {
 			println("Unable to connect to API")
 		}

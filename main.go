@@ -101,6 +101,7 @@ func main() {
 
 	flag.Parse()
 
+	c.GetURLs() //Set the URLs
 	c.InitLogs()
 	user, _ := c.Login()
 

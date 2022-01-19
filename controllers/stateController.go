@@ -1,9 +1,11 @@
 package controllers
 
 import (
+	"bufio"
 	"cli/models"
 	"container/list"
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"os"
 	"strings"
@@ -36,13 +38,15 @@ var GitCommitDate string
 var State ShellState
 
 type ShellState struct {
-	CurrPath      string
-	PrevPath      string
-	ClipBoard     *[]string
-	TreeHierarchy *Node
-	ScriptCalled  bool
-	ScriptPath    string
-	DebugLvl      int
+	CurrPath       string
+	PrevPath       string
+	ClipBoard      *[]string
+	TreeHierarchy  *Node
+	ScriptCalled   bool
+	ScriptPath     string
+	UnityClientURL string
+	APIURL         string
+	DebugLvl       int
 }
 
 type Node struct {
@@ -63,6 +67,12 @@ func InitState(debugLvl int) {
 	(*(State.TreeHierarchy)).Entity = -1
 	State.TreeHierarchy.PID = ""
 	State.CurrPath = "/Physical"
+	_, e := models.ContactUnity("GET", State.UnityClientURL, nil)
+	if e != nil {
+		WarningLogger.Println("Note: Unity Client Unreachable")
+		fmt.Println("Note: Unity Client Unreachable")
+	}
+
 	phys := &Node{}
 	phys.Name = "Physical"
 	phys.PID = ""
@@ -144,7 +154,7 @@ func GetChildren(curr int) []*Node {
 	//Stream Error occurs
 	for {
 		resp, e := models.Send("GET",
-			"http://localhost:3001/api/"+EntityToString(curr)+"s",
+			State.APIURL+"/api/"+EntityToString(curr)+"s",
 			GetKey(), nil)
 		if e != nil {
 			println("Error while getting children!")
@@ -175,6 +185,48 @@ func SearchAndInsert(root **Node, node *Node, dt int, path string) {
 		}
 	}
 	return
+}
+
+//Automatically assign Unity and API URLs
+func GetURLs() {
+	file, err := os.Open("./.resources/.env")
+	if err != nil {
+		fmt.Println(err)
+		fmt.Println("Falling back to default URLs")
+		InfoLogger.Println("Falling back to default URLs")
+		State.UnityClientURL = "http://localhost:5500"
+		State.APIURL = "http://localhost:3001"
+	}
+	defer file.Close()
+
+	scanner := bufio.NewScanner(file)
+	scanner.Split(bufio.ScanWords) // use scanwords
+	for scanner.Scan() {
+		if strings.HasPrefix(scanner.Text(), "unityURL=") {
+			State.UnityClientURL = scanner.Text()[9:]
+		}
+
+		if strings.HasPrefix(scanner.Text(), "apiURL=") {
+			State.APIURL = scanner.Text()[7:]
+		}
+	}
+
+	if State.APIURL == "" {
+		fmt.Println("Falling back to default API URL:" +
+			"http://localhost:3001")
+		InfoLogger.Println("Falling back to default API URL:" +
+			"http://localhost:3001")
+		State.APIURL = "http://localhost:3001"
+	}
+
+	if State.UnityClientURL == "" {
+		fmt.Println("Falling back to default Unity URL:" +
+			"http://localhost:5500")
+		InfoLogger.Println("Falling back to default Unity URL:" +
+			"http://localhost:5500")
+		State.APIURL = "http://localhost:5500"
+	}
+
 }
 
 //Function is an abstraction of a normal exit
