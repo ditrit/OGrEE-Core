@@ -23,11 +23,11 @@ const (
 	ROW
 	CABINET
 	CORIDOR
-	GROUP
 	PWRPNL
 	SENSOR
 	SEPARATOR
 	TILE
+	GROUP
 	ROOMTMPL
 	OBJTMPL
 )
@@ -120,9 +120,9 @@ func ValidatePatch(ent int, t map[string]interface{}) (map[string]interface{}, b
 	for k := range t {
 		switch k {
 		case "name", "category", "domain":
-			//Only for Entities until TILE
+			//Only for Entities until GROUP
 			//And OBJTMPL
-			if ent < TILE+1 || ent == OBJTMPL {
+			if ent < GROUP+1 || ent == OBJTMPL {
 				if v, _ := t[k]; v == nil {
 					return u.Message(false,
 						"Field: "+k+" cannot nullified!"), false
@@ -712,7 +712,7 @@ func deleteHelper(t map[string]interface{}, ent int) (map[string]interface{}, st
 		if ent == ROOM {
 			//ITER Through all nonhierarchal objs
 			ctx, cancel := u.Connect()
-			for i := AC; i < TILE+1; i++ {
+			for i := AC; i < GROUP+1; i++ {
 				ent := u.EntityToString(i)
 				GetDB().Collection(ent).DeleteMany(ctx, bson.M{"parentId": t["id"].(primitive.ObjectID).Hex()})
 			}
@@ -815,29 +815,6 @@ func GetEntityHierarchy(entity string, ID primitive.ObjectID, entnum, end int) (
 
 				top["children"] = append(top["children"].([]map[string]interface{}), x...)
 			}
-
-			if entity == "rack" {
-				y, e1 := GetManyEntities("group",
-					bson.M{"parentId": top["id"].(primitive.ObjectID).Hex()}, nil)
-				if e1 == "" {
-					top["children"] = append(top["children"].([]map[string]interface{}), y...)
-				}
-			}
-		}
-
-		if entity == "room" {
-			//ITER Through all nonhierarchal objs
-			for i := AC; i < TILE+1; i++ {
-				ent := u.EntityToString(i)
-				//if ent != "sensor" {
-				x, e := GetManyEntities(ent,
-					bson.M{"parentId": top["id"].(primitive.ObjectID).Hex()}, nil)
-				if e == "" {
-					//top[ent+"s"] = x
-					top["children"] = append(top["children"].([]map[string]interface{}), x...)
-				}
-				//}
-			}
 		}
 
 		subEnt := u.EntityToString(entnum + 1)
@@ -867,6 +844,29 @@ func GetEntityHierarchy(entity string, ID primitive.ObjectID, entnum, end int) (
 		}
 
 		top["children"] = append(top["children"].([]map[string]interface{}), children...)
+
+		if entity == "room" {
+			//ITER Through all nonhierarchal objs
+			for i := AC; i < GROUP+1; i++ {
+				ent := u.EntityToString(i)
+				//if ent != "sensor" {
+				x, e := GetManyEntities(ent,
+					bson.M{"parentId": top["id"].(primitive.ObjectID).Hex()}, nil)
+				if e == "" {
+					//top[ent+"s"] = x
+					top["children"] = append(top["children"].([]map[string]interface{}), x...)
+				}
+				//}
+			}
+		}
+
+		if entity == "rack" {
+			y, e1 := GetManyEntities("group",
+				bson.M{"parentId": top["id"].(primitive.ObjectID).Hex()}, nil)
+			if e1 == "" {
+				top["children"] = append(top["children"].([]map[string]interface{}), y...)
+			}
+		}
 
 		return top, ""
 	}
