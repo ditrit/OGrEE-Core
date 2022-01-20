@@ -8650,7 +8650,7 @@ OUTER0:
 		case 104:
 			{
 				printToks("TOK_STR")
-				lval.s = yylex.Text()
+				lval.s = yylex.Text()[1 : len(yylex.Text())-1]
 				return TOK_STR
 			}
 		case 105:
