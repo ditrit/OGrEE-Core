@@ -870,6 +870,30 @@ func LoadFile(path string) string {
 	//scanner := bufio.NewScanner(file)
 }
 
+func LoadTemplate(data map[string]interface{}) {
+	if cat, ok := data["category"]; !ok {
+		ErrorLogger.Println("Received Invalid Template!")
+		fmt.Println("Error! Invalid Template")
+	} else {
+		if category, ok := cat.(string); !ok {
+			ErrorLogger.Println("Category not a string Template!")
+			fmt.Println("Error! Category must be string in Template." +
+				"Please indicate object type as pers OGrEE docs")
+
+		} else if EntityStrToInt(category) < 0 { //Category is not an entity
+			ErrorLogger.Println("Invalid Category in Template!")
+			fmt.Println("Error! Invalid Category in Template." +
+				"Please indicate object type as pers OGrEE docs")
+
+		} else { //We have a valid category, so let's add it
+			State.TemplateList = append(State.TemplateList, data)
+
+		}
+
+	}
+
+}
+
 func SetClipBoard(x *[]string) []string {
 	State.ClipBoard = x
 	return *State.ClipBoard

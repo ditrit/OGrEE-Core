@@ -47,6 +47,7 @@ type ShellState struct {
 	UnityClientURL string
 	APIURL         string
 	DebugLvl       int
+	TemplateList   []map[string]interface{}
 }
 
 type Node struct {
@@ -65,6 +66,7 @@ func InitState(debugLvl int) {
 	State.ClipBoard = nil
 	State.TreeHierarchy = &(Node{})
 	(*(State.TreeHierarchy)).Entity = -1
+	State.TemplateList = []map[string]interface{}{}
 	State.TreeHierarchy.PID = ""
 	State.CurrPath = "/Physical"
 	_, e := models.ContactUnity("GET", State.UnityClientURL, nil)

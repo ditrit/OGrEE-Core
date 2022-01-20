@@ -64,12 +64,17 @@ func (c *commonNode) execute() interface{} {
 	case "EasyPost":
 		if f, ok := c.fun.(func(int, string, map[string]interface{}) map[string]interface{}); ok {
 			var data map[string]interface{}
-			x, e := ioutil.ReadFile(c.args[2].(string))
+			/*x, e := ioutil.ReadFile(c.args[2].(string))
 			if e != nil {
 				println("Error while opening file! " + e.Error())
 				return nil
 			}
-			json.Unmarshal(x, &data)
+			json.Unmarshal(x, &data)*/
+			data = fileToJSON(c.args[2].(string))
+			if data == nil {
+				return nil
+			}
+
 			v := f(c.args[0].(int), c.args[1].(string), data)
 
 			return &jsonObjNode{JSONND, v}
@@ -81,9 +86,20 @@ func (c *commonNode) execute() interface{} {
 		}
 
 	case "CD", "Load":
+		//Script Load
 		if f, ok := c.fun.(func(string) string); ok {
 			v := f(c.args[0].(string))
 			return &strNode{STR, v}
+		} 
+
+		//Template Load
+		if f, ok := c.fun(func(map[string]interface{}) string)); ok {
+			data := fileToJSON(c.args[0].(string))
+			if data == nil {
+				return nil
+			}
+			f(data)
+			return &strNode{STR, c.args[0].(string)}
 		}
 
 	case "Print":
@@ -153,12 +169,16 @@ func (c *commonNode) execute() interface{} {
 			//0 -> path to node
 			//1 -> path to json
 			//2 -> put or patch
-			x, e := ioutil.ReadFile(c.args[1].(string))
+			/*x, e := ioutil.ReadFile(c.args[1].(string))
 			if e != nil {
 				println("Error while opening file! " + e.Error())
 				return nil
 			}
-			json.Unmarshal(x, &data)
+			json.Unmarshal(x, &data)*/
+			data = fileToJSON(c.args[1].(string))
+			if data == nil {
+				return nil
+			}
 
 			if c.args[2].(bool) == true {
 				op = "PATCH"
@@ -1001,4 +1021,17 @@ func getNodeFromMapInf(x map[string]interface{}) *cmd.Node {
 	}
 
 	return cmd.FindNodeByIDP(&cmd.State.TreeHierarchy, id, pid)
+}
+
+//Open a file and return the JSON in the file
+//Used by EasyPost, EasyUpdate and Load Template
+func fileToJSON(path string) map[string]interface{} {
+	data := map[string]interface{}{}
+	x, e := ioutil.ReadFile(path)
+	if e != nil {
+		println("Error while opening file! " + e.Error())
+		return nil
+	}
+	json.Unmarshal(x, &data)
+	return data
 }
