@@ -63,4 +63,4 @@ db.corridor.createIndex({parentId:1, name:1}, { unique: true });
 db.sensor.createIndex({parentId:1, type:1, name:1}, { unique: true });
 
 //Enforce unique Group names 
-db.group.createIndex({name:1}, { unique: true });
+db.group.createIndex({parentId:1, name:1}, { unique: true });

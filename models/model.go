@@ -125,7 +125,7 @@ func ValidatePatch(ent int, t map[string]interface{}) (map[string]interface{}, b
 			if ent < GROUP+1 || ent == OBJTMPL {
 				if v, _ := t[k]; v == nil {
 					return u.Message(false,
-						"Field: "+k+" cannot nullified!"), false
+						"Field: "+k+" cannot be nullified!"), false
 				}
 			}
 
