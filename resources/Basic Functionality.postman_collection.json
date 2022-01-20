@@ -50,7 +50,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n  \"name\": \"DEMO\",\n  \"id\": null,\n  \"parentId\": null,\n  \"category\": \"tenant\",\n  \"description\": [],\n  \"domain\": \"DEMO\",\n  \"attributes\": {\n    \"color\": \"FFFFFF\",\n    \"mainContact\": \"Ced\",\n    \"mainPhone\": \"0612345678\",\n    \"mainEmail\": \"ced@ogree3D.com\"\n  }\n}",
+							"raw": "{\n  \"name\": \"DEMO\",\n  \"parentId\": null,\n  \"category\": \"tenant\",\n  \"description\": [],\n  \"domain\": \"DEMO\",\n  \"attributes\": {\n    \"color\": \"FFFFFF\",\n    \"mainContact\": \"Ced\",\n    \"mainPhone\": \"0612345678\",\n    \"mainEmail\": \"ced@ogree3D.com\"\n  }\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -244,7 +244,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"name\": \"ALPHA\",\n    \"id\": null,\n    \"parentId\": \"{{TenantID}}\",\n    \"category\": \"site\",\n    \"description\": [\n        \"This is a demo...\"\n    ],\n    \"domain\": \"DEMO\",\n    \"attributes\": {\n        \"orientation\": \"NW\",\n        \"usableColor\": \"5BDCFF\",\n        \"reservedColor\": \"AAAAAA\",\n        \"technicalColor\": \"D0FF78\",\n        \"address\": \"1 rue bidule\",\n        \"zipcode\": \"42000\",\n        \"city\": \"Truc\",\n        \"country\": \"FRANCE\",\n        \"gps\": \"[1,2,0]\"\n    }\n}",
+							"raw": "{\n    \"name\": \"ALPHA\",\n    \"parentId\": \"{{TenantID}}\",\n    \"category\": \"site\",\n    \"description\": [\n        \"This is a demo...\"\n    ],\n    \"domain\": \"DEMO\",\n    \"attributes\": {\n        \"orientation\": \"NW\",\n        \"usableColor\": \"5BDCFF\",\n        \"reservedColor\": \"AAAAAA\",\n        \"technicalColor\": \"D0FF78\",\n        \"address\": \"1 rue bidule\",\n        \"zipcode\": \"42000\",\n        \"city\": \"Truc\",\n        \"country\": \"FRANCE\",\n        \"gps\": \"[1,2,0]\"\n    }\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -990,7 +990,7 @@
 					"response": []
 				},
 				{
-					"name": "Create Aisle",
+					"name": "Create Row",
 					"event": [
 						{
 							"listen": "test",
@@ -1002,7 +1002,7 @@
 									"//console.log(\"Here is what we got: \", data[\"tenant\"][\"id\"])",
 									"",
 									"var ID = data[\"data\"][\"id\"]",
-									"pm.environment.set(\"AisleID\", ID)"
+									"pm.environment.set(\"RowID\", ID)"
 								],
 								"type": "text/javascript"
 							}
@@ -1019,7 +1019,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n  \"name\"        : \"AisleA\",\n  \"locationY\"   : \"101,101\",\n  \"orientation\" : \"+N+E\",\n  \"parentId\" : \"{{RoomID}}\"\n}",
+							"raw": "{\n  \"name\"        : \"RowA\",\n  \"locationY\"   : \"101,101\",\n  \"category\": \"row\",\n  \"domain\": \"DEMO\",\n  \"orientation\" : \"+N+E\",\n  \"parentId\" : \"{{RoomID}}\",\n  \"attributes\":{}\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -1027,20 +1027,20 @@
 							}
 						},
 						"url": {
-							"raw": "{{URL}}/api/aisles",
+							"raw": "{{URL}}/api/rows",
 							"host": [
 								"{{URL}}"
 							],
 							"path": [
 								"api",
-								"aisles"
+								"rows"
 							]
 						}
 					},
 					"response": []
 				},
 				{
-					"name": "Verify Create Aisle",
+					"name": "Verify Create Row",
 					"event": [
 						{
 							"listen": "test",
@@ -1075,14 +1075,14 @@
 							}
 						},
 						"url": {
-							"raw": "{{URL}}/api/aisles/{{AisleID}}",
+							"raw": "{{URL}}/api/rows/{{RowID}}",
 							"host": [
 								"{{URL}}"
 							],
 							"path": [
 								"api",
-								"aisles",
-								"{{AisleID}}"
+								"rows",
+								"{{RowID}}"
 							]
 						}
 					},
@@ -1118,7 +1118,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n  \"location\" : \"101,101\",\n  \"name\"     : \"TileA\",\n  \"label\"    : \"TileA\",\n  \"texture\"  : \"Smooth\",\n  \"color\"    : \"FAA\",\n  \"parentId\" : \"{{RoomID}}\"\n}",
+							"raw": "{\n  \"location\" : \"101,101\",\n  \"name\"     : \"TileA\",\n  \"label\"    : \"TileA\",\n  \"texture\"  : \"Smooth\",\n  \"domain\": \"DEMO\",\n  \"category\":\"tile\",\n  \"color\"    : \"FAA\",\n  \"parentId\" : \"{{RoomID}}\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -1217,7 +1217,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"name\": \"CabinetA\",\n  \"parentId\" : \"{{RoomID}}\"\n}",
+							"raw": "{\n    \"name\": \"CabinetA\",\n    \"domain\": \"DEMO\",\n    \"category\": \"cabinet\",\n  \"parentId\" : \"{{RoomID}}\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -1316,7 +1316,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"name\": \"CorridorA\",\n    \"parentId\" : \"{{RoomID}}\",\n    \"temperature\": \"warm\"\n}",
+							"raw": "{\n    \"name\": \"CorridorA\",\n    \"parentId\" : \"{{RoomID}}\",\n    \"domain\": \"DEMO\",\n    \"category\": \"corridor\",\n    \"temperature\": \"warm\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -1650,7 +1650,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"name\": \"GroupA\",\n    \"type\" : \"rack\",\n    \"contents\":  []\n}",
+							"raw": "{\n    \"name\": \"GroupA\",\n    \"type\" : \"rack\",\n    \"parentId\":\"{{RackID}}\",\n    \"contents\":  []\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -2103,7 +2103,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"name\": \"DeviceSensorA\",\n    \"parentId\" : \"{{DeviceID}}\",\n    \"category\": \"SENSOR-D\",\n    \"type\":\"device\"\n}",
+							"raw": "{\n    \"name\": \"DeviceSensorA\",\n    \"parentId\" : \"{{DeviceID}}\",\n    \"category\": \"SENSOR-D\",\n    \"domain\": \"DEMO\",\n\n    \"type\":\"device\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -2221,7 +2221,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"name\": \"SensorA\",\n    \"parentId\" : \"{{RackID}}\",\n    \"category\": \"SENSOR-A\",\n    \"type\":\"rack\"\n}",
+							"raw": "{\n    \"name\": \"SensorA\",\n    \"parentId\" : \"{{RackID}}\",\n    \"category\": \"SENSOR-A\",\n    \"domain\": \"DEMO\",\n    \"type\":\"rack\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -2339,7 +2339,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"name\": \"RoomSensorLight\",\n    \"parentId\" : \"{{RoomID}}\",\n    \"category\": \"SENSOR-R\",\n    \"type\":\"room\"\n}",
+							"raw": "{\n    \"name\": \"RoomSensorLight\",\n    \"parentId\" : \"{{RoomID}}\",\n    \"category\": \"SENSOR-R\",\n    \"domain\": \"DEMO\",\n    \"type\":\"room\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -5356,6 +5356,42 @@
 					"response": []
 				},
 				{
+					"name": "Verify Delete Group",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"tests[\"Successful GET Request\"] = responseCode.code === 404;"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{AuthToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{URL}}/api/groups/{{GroupID}}",
+							"host": [
+								"{{URL}}"
+							],
+							"path": [
+								"api",
+								"groups",
+								"{{GroupID}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
 					"name": "Verify Delete Device",
 					"event": [
 						{
@@ -5494,78 +5530,6 @@
 								"api",
 								"room-templates",
 								"{{RoomTemplateID}}"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Delete Group",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"tests[\"Successful DELETE Request\"] = responseCode.code === 204;"
-								],
-								"type": "text/javascript"
-							}
-						}
-					],
-					"request": {
-						"method": "DELETE",
-						"header": [
-							{
-								"key": "Authorization",
-								"value": "Bearer {{AuthToken}}",
-								"type": "text"
-							}
-						],
-						"url": {
-							"raw": "{{URL}}/api/groups/{{GroupID}}",
-							"host": [
-								"{{URL}}"
-							],
-							"path": [
-								"api",
-								"groups",
-								"{{GroupID}}"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Verify Delete Group",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"tests[\"Successful GET Request\"] = responseCode.code === 404;"
-								],
-								"type": "text/javascript"
-							}
-						}
-					],
-					"request": {
-						"method": "GET",
-						"header": [
-							{
-								"key": "Authorization",
-								"value": "Bearer {{AuthToken}}",
-								"type": "text"
-							}
-						],
-						"url": {
-							"raw": "{{URL}}/api/groups/{{GroupID}}",
-							"host": [
-								"{{URL}}"
-							],
-							"path": [
-								"api",
-								"groups",
-								"{{GroupID}}"
 							]
 						}
 					},

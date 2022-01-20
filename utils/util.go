@@ -21,7 +21,7 @@ const (
 	RACK
 	DEVICE
 	AC
-	AISLE
+	ROW
 	CABINET
 	CORIDOR
 	GROUP
@@ -117,8 +117,8 @@ func EntityToString(entity int) string {
 		return "obj_template"
 	case CABINET:
 		return "cabinet"
-	case AISLE:
-		return "aisle"
+	case ROW:
+		return "row"
 	case TILE:
 		return "tile"
 	case GROUP:
@@ -158,8 +158,8 @@ func EntityStrToInt(entity string) int {
 		return OBJTMPL
 	case "cabinet":
 		return CABINET
-	case "aisle":
-		return AISLE
+	case "row":
+		return ROW
 	case "tile":
 		return TILE
 	case "group":
@@ -175,7 +175,7 @@ func EntityStrToInt(entity string) int {
 
 func GetParentOfEntityByInt(entity int) int {
 	switch entity {
-	case AC, PWRPNL, SEPARATOR, CABINET, TILE, AISLE, CORIDOR:
+	case AC, PWRPNL, SEPARATOR, CABINET, TILE, ROW, CORIDOR:
 		return ROOM
 	case SENSOR:
 		return -2

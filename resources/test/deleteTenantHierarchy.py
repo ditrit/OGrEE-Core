@@ -8,7 +8,7 @@ res = True
 expected = 404
 PIDS={  "tenantID":None, "siteID":None, "buildingID":None,
         "roomID":None,"acID":None,"panelID":None,
- "separatorID":None, "aisleID":None,"tileID":None,
+ "separatorID":None, "rowID":None,"tileID":None,
   "cabinetID":None, "groupID":None, "corridorID":None,
   "room-sensorID":None,"rack-sensorID":None,
   "device-sensorID":None,
@@ -64,7 +64,7 @@ else:
 
 
 entRange=entRange=["tenant","site","building","room","ac",
-  "panel", "separator", "aisle","tile","cabinet", "group", "corridor",
+  "panel", "separator", "row","tile","cabinet", "group", "corridor",
   "room-sensor","rack-sensor","device-sensor",
           "rack","device","room-template","obj-template"]
 payload={}

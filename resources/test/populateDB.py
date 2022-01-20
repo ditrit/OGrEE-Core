@@ -7,7 +7,7 @@ res = True
 #CONSTANTS
 PIDS={"tenantID":None, "siteID":None, "buildingID":None,
         "roomID":None, "acID":None, "panelID":None,
-        "separatorID":None, "aisleID":None,"tileID":None, 
+        "separatorID":None, "rowID":None,"tileID":None, 
         "cabinetID":None, "groupID":None, "corridorID":None,
         "rackID":None, "deviceID":None,
         "room-sensorID":None,"rack-sensorID":None,
@@ -285,25 +285,25 @@ print()
 print()
 
 
-#AISLE CREATE & GET
+#ROW CREATE & GET
 payload={
-  "name"        : "AisleA",
+  "name"        : "RowA",
   "locationY"   : "101,101",
   "orientation" : "+N+E",
-  "category": "aisle",
+  "category": "row",
   "domain":"DEMO",
   "parentId" : None
 }
 payload['parentId'] = roomID
-response = requests.request("POST", url+"/aisles",
+response = requests.request("POST", url+"/rows",
               headers=headers, data=json.dumps(payload))
-verifyCreate(response.status_code, "Aisle")
+verifyCreate(response.status_code, "Row")
 ID = response.json()['data']['id']
 j1=response.json()['data']
-aisleID=ID
+rowID=ID
 
-response = requests.request("GET", url+"/aisles/"+ID, headers=headers, data={})
-verifyGet(response.status_code, "Aisle")
+response = requests.request("GET", url+"/rows/"+ID, headers=headers, data={})
+verifyGet(response.status_code, "Row")
 j2=response.json()['data']
 verifyOutput(j1, j2)
 response.close()
@@ -571,7 +571,7 @@ payload={
   ],
   "tiles"         : [
   ],
-  "aisles"        : [
+  "rows"        : [
   ]
 }
 response = requests.request("POST", url+"/room-templates",
@@ -657,7 +657,7 @@ PIDS['roomID'] = roomID
 PIDS['acID'] = acID
 PIDS['panelID'] = panelID
 PIDS['separatorID'] = separatorID
-PIDS['aisleID'] = aisleID
+PIDS['rowID'] = rowID
 PIDS['tileID'] = tileID
 PIDS['cabinetID'] = cabinetID
 PIDS['groupID'] = groupID

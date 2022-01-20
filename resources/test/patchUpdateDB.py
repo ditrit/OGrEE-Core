@@ -18,7 +18,7 @@ res = True
 #CONSTANTS
 PIDS={"tenantID":None, "siteID":None, "buildingID":None,
         "roomID":None, "acID":None, "panelID":None,
-        "separatorID":None, "aisleID":None,"tileID":None, 
+        "separatorID":None, "rowID":None,"tileID":None, 
         "cabinetID":None, "groupID":None, "corridorID":None,
         "room-sensorID":None,"rack-sensorID":None,
         "device-sensorID":None,
@@ -82,7 +82,7 @@ payloadTable = {
     "ac":{"name": "AquaSky01","category": "ac","description": [    "SPEED"],"domain": "AC DOMAIN","attributes": {    "new": "IDX"}},
     "panel":{"name": "Power_Panel_99","category": "SOLARpanel","description": [    "GRENOBLE DERELICT"],"domain": "PANEL DOMAIN","attributes": {    "new": "IDX"}},
     "separator":{"name": "EXTREME-SEP","attributes":{    "Ijust":"WalkedAway",    "newAttr":"no"},"another": "ONE"},
-    "aisle":{"name"        : "AISLE-X","locationXYZ"   : "82,99","orientation" : "+S+E","someATTR":"customValue"},
+    "row":{"name"        : "ROW-X","locationXYZ"   : "82,99","orientation" : "+S+E","someATTR":"customValue"},
     "tile":{"location" : "82,99","name"     : "Tile-Black","label"    : "Kino","texture"  : "Smooth","color"    : "FFFFFF","someATTR": "customValue"},
     "cabinet":{"name": "TAKEUSDOWN","customAttr":"customValue"},
     "group":{"name": "Group909","racks":  ["SomeRackHere"], "another":"ONE"},

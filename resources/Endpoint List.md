@@ -15,7 +15,7 @@ Perform an HTTP POST operation with the appropriate JSON
 /api/acs
 /api/separators
 /api/panels
-/api/aisles
+/api/rows
 /api/tiles
 /api/cabinets
 /api/groups
@@ -41,7 +41,7 @@ Perform an HTTP DELETE operation without JSON body
 /api/acs/{id}
 /api/panels/{id}
 /api/separators/{id}
-/api/aisles/{id}
+/api/rows/{id}
 /api/tiles/{id}
 /api/cabinets/{id}
 /api/groups/{id}
@@ -65,7 +65,7 @@ Perform an HTTP PUT operation with desired JSON body
 /api/acs/{id}
 /api/panels/{id}
 /api/separators/{id}
-/api/aisles/{id}
+/api/rows/{id}
 /api/tiles/{id}
 /api/cabinets/{id}
 /api/groups/{id}
@@ -88,7 +88,7 @@ Perform an HTTP PUT operation with desired JSON body
 /api/acs/{id}
 /api/panels/{id}
 /api/separators/{id}
-/api/aisles/{id}
+/api/rows/{id}
 /api/tiles/{id}
 /api/cabinets/{id}
 /api/groups/{id}
@@ -125,7 +125,7 @@ This URL is for development purposes only
 /api/acs
 /api/panels
 /api/separators
-/api/aisles
+/api/rows
 /api/tiles
 /api/cabinets
 /api/groups
@@ -149,7 +149,7 @@ Template_name is the 'slug'
 /api/acs/{id}
 /api/panels/{id}
 /api/separators/{id}
-/api/aisles/{id}
+/api/rows/{id}
 /api/tiles/{id}
 /api/cabinets/{id}
 /api/groups/{id}
@@ -171,7 +171,7 @@ will return silver devices with name 'myValue'
 /api/rooms?
 /api/racks?
 /api/devices?
-/api/aisles?
+/api/rows?
 /api/tiles?
 /api/cabinets?
 /api/groups?
@@ -279,8 +279,8 @@ Returns an object if name given or all the objects immediately under the given U
 /api/rooms/{id}/panels
 /api/rooms/{id}/separators/{separator_name}
 /api/rooms/{id}/separators
-/api/rooms/{id}/aisles/{aisle_name}
-/api/rooms/{id}/aisles
+/api/rooms/{id}/rows/{row_name}
+/api/rooms/{id}/rows
 /api/rooms/{id}/tiles/{tile_name}
 /api/rooms/{id}/tiles
 /api/rooms/{id}/cabinets/{cabinet_name}

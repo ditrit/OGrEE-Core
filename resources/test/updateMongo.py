@@ -41,7 +41,7 @@ db = client.ogree
 #CONSTANTS
 PIDS={"tenantID":None, "siteID":None, "buildingID":None,
         "roomID":None, "acID":None, "panelID":None,
-        "separatorID":None, "aisleID":None,"tileID":None, 
+        "separatorID":None, "rowID":None,"tileID":None, 
         "cabinetID":None, "groupID":None, "corridorID":None,
         "rackID":None, "deviceID":None,
         "room-templateID": None, "obj-templateID": None}
@@ -112,7 +112,7 @@ payloadTable = {
     "ac":{"name": "AquaSky01","id": "12353","parentId": PIDS["roomID"],"category": "ac","description": [    "SPEED"],"domain": "AC DOMAIN","attributes": {    "new": "IDX"}},
     "panel":{"name": "Power_Panel_99","id": None,"parentId": PIDS["roomID"],"category": "panel","description": [    "GRENOBLE DERELICT"],"domain": "PANEL DOMAIN","attributes": {    "new": "IDX"}},
     "separator":{"name": "EXTREME-SEP","id": None,"parentId": PIDS["roomID"],"category": "wall","description": [    "GRENOBLE DERELICT"],"domain": "SEPDOMAIN","attributes": {    "new": "99"}},
-    "aisle":{"name"        : "AISLE-X","parentId":PIDS["roomID"],"locationY"   : "82,99","orientation" : "+S+E", "domain":"DEMO"},
+    "row":{"name"        : "ROW-X","parentId":PIDS["roomID"],"locationY"   : "82,99","orientation" : "+S+E", "domain":"DEMO"},
     "tile":{"location" : "82,99", "parentId":PIDS["roomID"], "name"     : "Tile-Black","label"    : "Kino","texture"  : "Smooth","color"    : "FFFFFF", "domain":"DEMO"},
     "cabinet":{"name": "TAKEUSDOWN", "parentId":PIDS["roomID"], "domain":"DEMO"},
     "group":{"name": "Group909","parentId" : PIDS["roomID"],"racks":  [], "another":"customAttr"},
@@ -123,7 +123,7 @@ payloadTable = {
     "room-sensor":{"name": "Corridor909","parentId" : PIDS["roomID"],"temperature": "cold", "type":"room", "domain":"DEMO"},
     "rack-sensor":{"name": "Corridor909","parentId" : PIDS["rackID"],"temperature": "cold", "type":"rack", "domain":"DEMO"},
     "device-sensor":{"name": "Corridor909","parentId" : PIDS["deviceID"],"temperature": "cold", "type":"device", "domain":"DEMO"},
-    "room-template":{"slug"          : "HOTTESTDNB","orientation"   : "+N+W","sizeWDHm"      : [],"technicalArea" : [],"reservedArea"  : [],"separators"    : [],"colors"        : [],"tiles"         : [],"aisles"        : []},
+    "room-template":{"slug"          : "HOTTESTDNB","orientation"   : "+N+W","sizeWDHm"      : [],"technicalArea" : [],"reservedArea"  : [],"separators"    : [],"colors"        : [],"tiles"         : [],"rows"        : []},
     "obj-template":{"slug"        : "RACK2000","description" : "Rack Template 2000","category"    : "rack","sizeWDHmm"   : [],"fbxModel"    : "1","attributes"  : {  "type" : ""},"colors"      : [],"components"  : [],"slots"       : []}
     }
 

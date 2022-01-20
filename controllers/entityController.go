@@ -25,7 +25,7 @@ const (
 	RACK
 	DEVICE
 	AC
-	AISLE
+	ROW
 	CABINET
 	CORIDOR
 	GROUP
@@ -160,7 +160,7 @@ func DispRequestMetaData(r *http.Request) {
 //   in: query
 //   description: 'Indicates the Object. Only values of "tenants", "sites",
 //   "buildings", "rooms", "racks", "devices", "acs", "panels",
-//   "separators","aisles", "tiles", "cabinets", "groups", "corridors",
+//   "separators","rows", "tiles", "cabinets", "groups", "corridors",
 //   "room-templates", "obj-templates", "sensors" are acceptable'
 //   required: true
 //   type: string
@@ -296,7 +296,7 @@ var CreateEntity = func(w http.ResponseWriter, r *http.Request) {
 //   in: query
 //   description: 'Indicates the location. Only values of "tenants", "sites",
 //   "buildings", "rooms", "racks", "devices", "room-templates",
-//   "obj-templates", "rooms", "separators", "acs", "panels", "aisles",
+//   "obj-templates", "rooms", "separators", "acs", "panels", "rows",
 //   "tiles", "cabinets", "groups", "corridors","sensors" are acceptable'
 //   required: true
 //   type: string
@@ -413,7 +413,7 @@ var GetEntity = func(w http.ResponseWriter, r *http.Request) {
 //   in: query
 //   description: 'Indicates the location. Only values of "tenants", "sites",
 //   "buildings", "rooms", "racks", "devices", "room-templates",
-//   "obj-templates", "rooms", "separators", "acs", "panels", "aisles",
+//   "obj-templates", "rooms", "separators", "acs", "panels", "rows",
 //   "tiles", "cabinets", "groups", "corridors", "sensors" are acceptable'
 //   required: true
 //   type: string
@@ -497,7 +497,7 @@ var GetAllEntities = func(w http.ResponseWriter, r *http.Request) {
 //   in: query
 //   description: 'Indicates the location. Only values of "tenants", "sites",
 //   "buildings", "rooms", "racks", "devices", "room-templates",
-//   "obj-templates", "rooms", "separators", "acs", "panels", "aisles",
+//   "obj-templates", "rooms", "separators", "acs", "panels", "rows",
 //   "tiles", "cabinets", "groups", "corridors","sensors" are acceptable'
 //   required: true
 //   type: string
@@ -590,7 +590,7 @@ var DeleteEntity = func(w http.ResponseWriter, r *http.Request) {
 //   in: query
 //   description: 'Indicates the location. Only values of "tenants", "sites",
 //   "buildings", "rooms", "racks", "devices", "room-templates",
-//   "obj-templates", "rooms", "separators", "acs", "panels", "aisles",
+//   "obj-templates", "rooms", "separators", "acs", "panels", "rows",
 //   "tiles", "cabinets", "groups", "corridors", "sensors" are acceptable'
 //   required: true
 //   type: string
@@ -655,7 +655,7 @@ var DeleteEntity = func(w http.ResponseWriter, r *http.Request) {
 //   in: query
 //   description: 'Indicates the location. Only values of "tenants", "sites",
 //   "buildings", "rooms", "racks", "devices", "room-templates",
-//   "obj-templates", "rooms", "separators", "acs", "panels", "aisles",
+//   "obj-templates", "rooms", "separators", "acs", "panels", "rows",
 //   "tiles", "cabinets", "groups", "corridors","sensors" are acceptable'
 //   required: true
 //   type: string
@@ -813,7 +813,7 @@ var UpdateEntity = func(w http.ResponseWriter, r *http.Request) {
 //   in: query
 //   description: 'Indicates the object. Only values of "tenants", "sites",
 //   "buildings", "rooms", "racks", "devices", "room-templates",
-//   "obj-templates", "separators","acs","panels", "aisles", "tiles",
+//   "obj-templates", "separators","acs","panels", "rows", "tiles",
 //   "cabinets", "groups", "corridors", and "sensors"
 //   are acceptable'
 //   required: true
@@ -986,7 +986,7 @@ var GetEntitiesOfAncestor = func(w http.ResponseWriter, r *http.Request) {
 	indicator := r.URL.Path[lastSlashIdx+1:]
 	switch indicator {
 	case "acs", "separators", "panels", "corridors", "cabinets",
-		"aisles", "tiles", "sensors":
+		"rows", "tiles", "sensors":
 		indicator = indicator[:len(indicator)-1]
 	default:
 		indicator = ""
@@ -1353,7 +1353,7 @@ var GetTenantHierarchy = func(w http.ResponseWriter, r *http.Request) {
 //   in: path
 //   description: 'Hierarchal path to desired object(s).
 //   For rooms it can additionally have "acs","panels","separators",
-//   "aisles","tiles","corridors", "sensors" and "cabinets".
+//   "rows","tiles","corridors", "sensors" and "cabinets".
 //   For devices it can have "sensors"
 //   For racks it can have "sensors"'
 //   required: true

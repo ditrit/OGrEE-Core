@@ -16,7 +16,7 @@ db = client.ogree
 #CONSTANTS
 PIDS={"tenantID":None, "siteID":None, "buildingID":None,
         "roomID":None, "acID":None, "panelID":None,
-        "separatorID":None, "aisleID":None,"tileID":None, 
+        "separatorID":None, "rowID":None,"tileID":None, 
         "cabinetID":None, "groupID":None, "corridorID":None,
         "rackID":None, "deviceID":None,
         "room-sensorID":None,"rack-sensorID":None,
@@ -42,7 +42,7 @@ payloadTable = {
     "panel":{"name": "PanelA","id": None,"parentId": None,"category": "powerpanel","description": [    "YINGLI"],"domain": "Panel DOMAIN","attributes": {}},
     "separator":{"name": "Undercover","id": None,"parentId": None,"category": "separator","description": [    "2008"],"domain": "separator DOMAIN","attributes": {}},
 
-    "aisle":{"name"        : "AisleA","locationY"   : "101,101","orientation" : "+N+E","parentId" : None, "domain":"DEMO"},
+    "row":{"name"        : "RowA","locationY"   : "101,101","orientation" : "+N+E","parentId" : None, "domain":"DEMO"},
 
     "tile":{"location" : "101,101","name"     : "TileA","label"    : "TileA","texture"  : "Smooth","color"    : "FAA","parentId" : None,"domain":"DEMO"},
     "cabinet":{  "name": "CabinetA","parentId" : None,"domain":"DEMO"},
@@ -53,7 +53,7 @@ payloadTable = {
     "rack-sensor":{"name": "SensorA","parentId" : None,"category": "SENSOR-A", "type":"rack", "domain":"DEMO"},
     "device-sensor":{"name": "DeviceSensorA","parentId" : None,"category": "SENSOR-D", "type":"device", "domain":"DEMO"},
 
-    "room-template":{"slug"          : "RT1","orientation"   : "+N+E","sizeWDHm"      : ["width","depth","height"],"technicalArea" : ["width","depth","height"],"reservedArea"  : ["width","depth","height"],"separators"    : [],"colors"        : [],"tiles"         : [],"aisles"        : []},
+    "room-template":{"slug"          : "RT1","orientation"   : "+N+E","sizeWDHm"      : ["width","depth","height"],"technicalArea" : ["width","depth","height"],"reservedArea"  : ["width","depth","height"],"separators"    : [],"colors"        : [],"tiles"         : [],"rows"        : []},
     "obj-template":{"slug"        : "RACK1T","description" : "Rack Template 1","category"    : "rack","sizeWDHmm"   : ["width","depth","height"],"fbxModel"    : "1","attributes"  : {  "type" : ""},"colors"      : [],"components"  : [],"slots"       : []}
 
 }
@@ -109,7 +109,7 @@ for i in payloadTable:
     URL = None
     payload = payloadTable[i]
     if (i == "ac" or i == "panel" or i == "separator" or 
-        i == "corridor" or i == "tile" or i == "aisle" or 
+        i == "corridor" or i == "tile" or i == "row" or 
         i == "cabinet" or i == "room-sensor" or 
         i == "group"):
         payload["parentId"] = PIDS["roomID"]
