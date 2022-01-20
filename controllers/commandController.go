@@ -17,15 +17,6 @@ func PWD() string {
 	return State.CurrPath
 }
 
-//Utility function that
-//displays contents of maps
-func Disp(x map[string]interface{}) {
-
-	jx, _ := json.Marshal(x)
-
-	println("JSON: ", string(jx))
-}
-
 func ParseResponse(resp *http.Response, e error, purpose string) map[string]interface{} {
 	ans := map[string]interface{}{}
 
@@ -39,8 +30,8 @@ func ParseResponse(resp *http.Response, e error, purpose string) map[string]inte
 		println("Error: " + err.Error() + " Now Exiting")
 		ErrorLogger.Println("Error while trying to read server response: ", err)
 		if purpose == "POST" || purpose == "Search" {
-		os.Exit(-1)
-	}
+			os.Exit(-1)
+		}
 		return nil
 	}
 
@@ -92,8 +83,12 @@ func PostObj(ent int, entity string, data map[string]interface{}) map[string]int
 		//case TENANT:
 		//State.TreeHierarchy.Nodes.PushBack(node)
 		//default:
-			UpdateTree(&State.TreeHierarchy, node)
+		UpdateTree(&State.TreeHierarchy, node)
 		//}
+
+		InformUnity("POST", "PostObj",
+			map[string]interface{}{"type": "create", "data": respMap["data"]})
+
 		return respMap["data"].(map[string]interface{})
 	}
 	println("Error:", string(respMap["message"].(string)))
@@ -138,6 +133,9 @@ func DeleteObj(path string) bool {
 		WarningLogger.Println("Error while deleting object in tree")
 		//json.Unmarshal()
 	}
+
+	InformUnity("POST", "DeleteObj",
+		map[string]interface{}{"type": "delete", "data": (*nd).ID})
 
 	return true
 }
@@ -215,8 +213,8 @@ func GetObject(path string, silenced bool) map[string]interface{} {
 			obj := data["data"].(map[string]interface{})
 
 			if !silenced {
-			displayObject(obj)
-		}
+				displayObject(obj)
+			}
 
 		}
 		return data["data"].(map[string]interface{})
@@ -233,7 +231,7 @@ func GenUpdateJSON(m *map[string]interface{}, key string, value interface{}, del
 		if del == true { //make a delete
 			delete((*m), key)
 		} else {
-		(*m)[key] = value
+			(*m)[key] = value
 		}
 
 		return *m, true
@@ -330,6 +328,10 @@ func UpdateObj(path string, data map[string]interface{}, deleteAndPut bool) map[
 			(*nd).Name = string(data["name"].(string))
 			(*nd).Path = (*nd).Path[:strings.LastIndex((*nd).Path, "/")+1] + (*nd).Name
 		}
+
+		InformUnity("POST", "UpdateObj",
+			map[string]interface{}{"type": "modify", "data": data["data"]})
+
 		//println(string(bodyBytes))
 	} else {
 		println("Error! Please enter desired parameters of Object to be updated")
@@ -386,6 +388,10 @@ func EasyUpdate(path, op string, data map[string]interface{}) map[string]interfa
 			(*nd).Name = string(data["name"].(string))
 			(*nd).Path = (*nd).Path[:strings.LastIndex((*nd).Path, "/")+1] + (*nd).Name
 		}
+
+		InformUnity("POST", "EasyUpdate",
+			map[string]interface{}{"type": "modify", "data": data["data"]})
+
 	} else {
 		println("Error! Please enter desired parameters of Object to be updated")
 	}
@@ -577,7 +583,7 @@ func Help(entry string) {
 	default:
 		path = "./other/man/default.md"
 	}
-		
+
 	text, e := ioutil.ReadFile(path)
 	if e != nil {
 		println("Manual Page not found!")
@@ -720,7 +726,7 @@ func GetOCLIAtrributes(path *Stack, ent int, data map[string]interface{}, term *
 				println("Error! The parent was not found in path")
 				return
 			}
-				}
+		}
 
 		attr["posXYUnit"] = "m"
 		attr["sizeUnit"] = "m"
@@ -739,7 +745,7 @@ func GetOCLIAtrributes(path *Stack, ent int, data map[string]interface{}, term *
 				println("Error! The parent was not found in path")
 				return
 			}
-				}
+		}
 
 		attr["floorUnit"] = "t"
 		attr["orientation"] = "+N+E"
@@ -760,7 +766,7 @@ func GetOCLIAtrributes(path *Stack, ent int, data map[string]interface{}, term *
 				println("Error! The parent was not found in path")
 				return
 			}
-				}
+		}
 
 		attr["sizeUnit"] = "m"
 		attr["height"] = 0
@@ -780,7 +786,7 @@ func GetOCLIAtrributes(path *Stack, ent int, data map[string]interface{}, term *
 				println("Error! The parent was not found in path")
 				return
 			}
-				}
+		}
 
 		attr["orientation"] = "front"
 		attr["size"] = 0
@@ -831,17 +837,7 @@ func GetOCLIAtrributes(path *Stack, ent int, data map[string]interface{}, term *
 
 func HandleUI(data map[string]interface{}) {
 	Disp(data)
-	r, e := models.ContactUnity("POST", State.UnityClientURL, data)
-	if e != nil {
-		WarningLogger.Println("Error! ", e.Error())
-		println("Error! ", e.Error())
-		return
-	}
-
-	if r.StatusCode == http.StatusOK {
-		println("Success")
-	}
-
+	InformUnity("POST", "HandleUI", data)
 }
 
 func ShowClipBoard() []string {
@@ -888,6 +884,10 @@ func LoadTemplate(data map[string]interface{}) {
 		} else { //We have a valid category, so let's add it
 			State.TemplateList = append(State.TemplateList, data)
 
+			//Inform Unity Client
+			InformUnity("POST", "load template",
+				map[string]interface{}{"type": "load template", "data": data})
+
 		}
 
 	}
@@ -896,6 +896,16 @@ func LoadTemplate(data map[string]interface{}) {
 
 func SetClipBoard(x *[]string) []string {
 	State.ClipBoard = x
+	data := map[string]interface{}{}
+	//Verify nodes
+	for _, val := range *x {
+		path := StrToStack(val)
+		nd := FindNodeInTree(&State.TreeHierarchy, path)
+		if nd != nil {
+			data = map[string]interface{}{"type": "select", "data": (*nd).ID}
+			InformUnity("POST", "SetClipBoard", data)
+		}
+	}
 	return *State.ClipBoard
 }
 
@@ -908,4 +918,26 @@ func Print(a ...interface{}) string {
 	//the string
 	println(ans[1 : len(ans)-2])
 	return ans
+}
+
+//Utility function that
+//displays contents of maps
+func Disp(x map[string]interface{}) {
+
+	jx, _ := json.Marshal(x)
+
+	println("JSON: ", string(jx))
+}
+
+//Utility Function to message Unity Client
+func InformUnity(method, caller string, data map[string]interface{}) {
+	r, e := models.ContactUnity(method, State.UnityClientURL, data)
+	if e != nil {
+		WarningLogger.Println("Unable to contact Unity Client @" + caller)
+		fmt.Println("Error while updating Unity: ", e.Error())
+	} else {
+		if r.StatusCode == http.StatusOK {
+			fmt.Println("Successfully updated Unity")
+		}
+	}
 }

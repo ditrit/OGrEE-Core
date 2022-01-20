@@ -90,10 +90,10 @@ func (c *commonNode) execute() interface{} {
 		if f, ok := c.fun.(func(string) string); ok {
 			v := f(c.args[0].(string))
 			return &strNode{STR, v}
-		} 
+		}
 
 		//Template Load
-		if f, ok := c.fun(func(map[string]interface{}) string)); ok {
+		if f, ok := c.fun.(func(map[string]interface{}) string); ok {
 			data := fileToJSON(c.args[0].(string))
 			if data == nil {
 				return nil

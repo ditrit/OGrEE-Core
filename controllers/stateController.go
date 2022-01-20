@@ -73,6 +73,8 @@ func InitState(debugLvl int) {
 	if e != nil {
 		WarningLogger.Println("Note: Unity Client Unreachable")
 		fmt.Println("Note: Unity Client Unreachable")
+	} else {
+		fmt.Println("Unity Client is Reachable!")
 	}
 
 	phys := &Node{}

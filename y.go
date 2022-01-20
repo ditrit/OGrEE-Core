@@ -2877,11 +2877,11 @@ cmd.WarningLogger.Println("Unknown Command")			/*yylex.Error(msg)*/
 		}
 	case 231:
 		{
-			yyVAL.node = &commonNode{COMMON, cmd.LoadFile, "Load", []interface{}{yyS[yypt-0].s}}
+			yyVAL.node = &commonNode{COMMON, cmd.LoadFile, "Load", []interface{}{yyS[yypt-0].s, "cmd"}}
 		}
 	case 232:
 		{
-			yyVAL.node = &commonNode{COMMON, cmd.LoadFile, "Load", []interface{}{yyS[yypt-0].s}}
+			yyVAL.node = &commonNode{COMMON, cmd.LoadTemplate, "Load", []interface{}{yyS[yypt-0].s, "template"}}
 		}
 	case 233:
 		{
