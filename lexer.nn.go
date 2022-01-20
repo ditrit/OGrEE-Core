@@ -4402,99 +4402,53 @@ var dfas = []dfa{
 		},
 	}, []int{ /* Start-of-input transitions */ -1, -1, -1, -1, -1}, []int{ /* End-of-input transitions */ -1, -1, -1, -1, -1}, nil},
 
-	// aisle
-	{[]bool{false, false, false, false, false, true}, []func(rune) int{ // Transitions
+	// row
+	{[]bool{false, false, false, true}, []func(rune) int{ // Transitions
 		func(r rune) int {
 			switch r {
-			case 97:
+			case 111:
+				return -1
+			case 114:
 				return 1
-			case 101:
-				return -1
-			case 105:
-				return -1
-			case 108:
-				return -1
-			case 115:
+			case 119:
 				return -1
 			}
 			return -1
 		},
 		func(r rune) int {
 			switch r {
-			case 97:
-				return -1
-			case 101:
-				return -1
-			case 105:
+			case 111:
 				return 2
-			case 108:
+			case 114:
 				return -1
-			case 115:
+			case 119:
 				return -1
 			}
 			return -1
 		},
 		func(r rune) int {
 			switch r {
-			case 97:
+			case 111:
 				return -1
-			case 101:
+			case 114:
 				return -1
-			case 105:
-				return -1
-			case 108:
-				return -1
-			case 115:
+			case 119:
 				return 3
 			}
 			return -1
 		},
 		func(r rune) int {
 			switch r {
-			case 97:
+			case 111:
 				return -1
-			case 101:
+			case 114:
 				return -1
-			case 105:
-				return -1
-			case 108:
-				return 4
-			case 115:
+			case 119:
 				return -1
 			}
 			return -1
 		},
-		func(r rune) int {
-			switch r {
-			case 97:
-				return -1
-			case 101:
-				return 5
-			case 105:
-				return -1
-			case 108:
-				return -1
-			case 115:
-				return -1
-			}
-			return -1
-		},
-		func(r rune) int {
-			switch r {
-			case 97:
-				return -1
-			case 101:
-				return -1
-			case 105:
-				return -1
-			case 108:
-				return -1
-			case 115:
-				return -1
-			}
-			return -1
-		},
-	}, []int{ /* Start-of-input transitions */ -1, -1, -1, -1, -1, -1}, []int{ /* End-of-input transitions */ -1, -1, -1, -1, -1, -1}, nil},
+	}, []int{ /* Start-of-input transitions */ -1, -1, -1, -1}, []int{ /* End-of-input transitions */ -1, -1, -1, -1}, nil},
 
 	// cabinet
 	{[]bool{false, false, false, false, false, false, false, true}, []func(rune) int{ // Transitions
@@ -6072,129 +6026,99 @@ var dfas = []dfa{
 		},
 	}, []int{ /* Start-of-input transitions */ -1, -1, -1, -1, -1, -1}, []int{ /* End-of-input transitions */ -1, -1, -1, -1, -1, -1}, nil},
 
-	// lsaisle
-	{[]bool{false, false, false, false, false, false, false, true}, []func(rune) int{ // Transitions
+	// lsrow
+	{[]bool{false, false, false, false, false, true}, []func(rune) int{ // Transitions
 		func(r rune) int {
 			switch r {
-			case 97:
-				return -1
-			case 101:
-				return -1
-			case 105:
-				return -1
 			case 108:
 				return 1
+			case 111:
+				return -1
+			case 114:
+				return -1
 			case 115:
+				return -1
+			case 119:
 				return -1
 			}
 			return -1
 		},
 		func(r rune) int {
 			switch r {
-			case 97:
-				return -1
-			case 101:
-				return -1
-			case 105:
-				return -1
 			case 108:
+				return -1
+			case 111:
+				return -1
+			case 114:
 				return -1
 			case 115:
 				return 2
+			case 119:
+				return -1
 			}
 			return -1
 		},
 		func(r rune) int {
 			switch r {
-			case 97:
+			case 108:
+				return -1
+			case 111:
+				return -1
+			case 114:
 				return 3
-			case 101:
-				return -1
-			case 105:
-				return -1
-			case 108:
-				return -1
 			case 115:
+				return -1
+			case 119:
 				return -1
 			}
 			return -1
 		},
 		func(r rune) int {
 			switch r {
-			case 97:
+			case 108:
 				return -1
-			case 101:
-				return -1
-			case 105:
+			case 111:
 				return 4
-			case 108:
+			case 114:
 				return -1
 			case 115:
+				return -1
+			case 119:
 				return -1
 			}
 			return -1
 		},
 		func(r rune) int {
 			switch r {
-			case 97:
-				return -1
-			case 101:
-				return -1
-			case 105:
-				return -1
 			case 108:
 				return -1
+			case 111:
+				return -1
+			case 114:
+				return -1
 			case 115:
+				return -1
+			case 119:
 				return 5
 			}
 			return -1
 		},
 		func(r rune) int {
 			switch r {
-			case 97:
-				return -1
-			case 101:
-				return -1
-			case 105:
-				return -1
 			case 108:
-				return 6
+				return -1
+			case 111:
+				return -1
+			case 114:
+				return -1
 			case 115:
+				return -1
+			case 119:
 				return -1
 			}
 			return -1
 		},
-		func(r rune) int {
-			switch r {
-			case 97:
-				return -1
-			case 101:
-				return 7
-			case 105:
-				return -1
-			case 108:
-				return -1
-			case 115:
-				return -1
-			}
-			return -1
-		},
-		func(r rune) int {
-			switch r {
-			case 97:
-				return -1
-			case 101:
-				return -1
-			case 105:
-				return -1
-			case 108:
-				return -1
-			case 115:
-				return -1
-			}
-			return -1
-		},
-	}, []int{ /* Start-of-input transitions */ -1, -1, -1, -1, -1, -1, -1, -1}, []int{ /* End-of-input transitions */ -1, -1, -1, -1, -1, -1, -1, -1}, nil},
+	}, []int{ /* Start-of-input transitions */ -1, -1, -1, -1, -1, -1}, []int{ /* End-of-input transitions */ -1, -1, -1, -1, -1, -1}, nil},
 
 	// lstile
 	{[]bool{false, false, false, false, false, false, true}, []func(rune) int{ // Transitions
@@ -8554,9 +8478,9 @@ OUTER0:
 			}
 		case 71:
 			{
-				printToks("TOK_AISLE")
+				printToks("TOK_ROW")
 				lval.s = yylex.Text()
-				return TOK_AISLE
+				return TOK_ROW
 			}
 		case 72:
 			{
@@ -8620,8 +8544,8 @@ OUTER0:
 			}
 		case 83:
 			{
-				printToks("TOK_LSAISLE")
-				return TOK_LSAISLE
+				printToks("TOK_LSROW")
+				return TOK_LSROW
 			}
 		case 84:
 			{

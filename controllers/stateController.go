@@ -22,7 +22,7 @@ const (
 	PWRPNL
 	SEPARATOR
 	CABINET
-	AISLE
+	ROW
 	TILE
 	CORIDOR
 	SENSOR
@@ -582,8 +582,8 @@ func EntityToString(entity int) string {
 		return "obj_template"
 	case CABINET:
 		return "cabinet"
-	case AISLE:
-		return "aisle"
+	case ROW:
+		return "row"
 	case TILE:
 		return "tile"
 	case GROUP:
@@ -623,8 +623,8 @@ func EntityStrToInt(entity string) int {
 		return OBJTMPL
 	case "cabinet":
 		return CABINET
-	case "aisle":
-		return AISLE
+	case "row":
+		return ROW
 	case "tile":
 		return TILE
 	case "group":
@@ -664,7 +664,7 @@ func GetParentOfEntity(ent int) int {
 		return -1
 	case CABINET:
 		return ROOM
-	case AISLE:
+	case ROW:
 		return ROOM
 	case TILE:
 		return ROOM

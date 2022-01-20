@@ -71,7 +71,7 @@
 /ac/ {  printToks("TOK_AC");lval.s = yylex.Text();return TOK_AC}
 /panel/ {  printToks("TOK_PANEL");lval.s = yylex.Text();return TOK_PANEL}
 /tile/ {  printToks("TOK_TILE");lval.s = yylex.Text();return TOK_TILE}
-/aisle/ {  printToks("TOK_AISLE");lval.s = yylex.Text();return TOK_AISLE}
+/row/ {  printToks("TOK_ROW");lval.s = yylex.Text();return TOK_ROW}
 /cabinet/ {  printToks("TOK_CABINET");lval.s = yylex.Text();return TOK_CABINET}
 /sensor/ {  printToks("TOK_SENSOR");lval.s = yylex.Text();return TOK_SENSOR}
 /room_template/ {  printToks("TOK_ROOM_TMPL");lval.s = yylex.Text();return TOK_ROOM_TMPL}
@@ -84,7 +84,7 @@
 /lsroom/ {  printToks("TOK_LSROOM"); return TOK_LSROOM}
 /lsrack/ {  printToks("TOK_LSRACK"); return TOK_LSRACK}
 /lsdev/ {  printToks("TOK_LSDEV"); return TOK_LSDEV}
-/lsaisle/ {  printToks("TOK_LSAISLE"); return TOK_LSAISLE}
+/lsrow/ {  printToks("TOK_LSROW"); return TOK_LSROW}
 /lstile/ {  printToks("TOK_LSTILE"); return TOK_LSTILE}
 /lscabinet/ {  printToks("TOK_LSCAB"); return TOK_LSCAB}
 /lssensor/ {  printToks("TOK_LSSENSOR"); return TOK_LSSENSOR}

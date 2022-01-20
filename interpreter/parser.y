@@ -77,7 +77,7 @@ func resMap(x *string, ent string, isUpdate bool) map[string]interface{} {
 			case "room_template":
 				switch resarr[i] {
 				case "id", "slug", "orientation", "separators",
-					"tiles", "colors", "aisles", "sizeWDHm",
+					"tiles", "colors", "rows", "sizeWDHm",
 					"technicalArea", "reservedArea":
 					res[resarr[i]] = resarr[i+1]
 
@@ -190,7 +190,7 @@ func formActualPath(x string) string {
 %token <s> TOK_WORD TOK_TENANT TOK_SITE TOK_BLDG TOK_ROOM
 %token <s> TOK_RACK TOK_DEVICE TOK_STR
 %token <s> TOK_CORIDOR TOK_GROUP TOK_WALL
-%token <s> TOK_AC TOK_CABINET TOK_PANEL TOK_AISLE
+%token <s> TOK_AC TOK_CABINET TOK_PANEL TOK_ROW
 %token <s> TOK_TILE TOK_SENSOR
 %token <s> TOK_ROOM_TMPL TOK_OBJ_TMPL
 %token <s> TOK_PLUS TOK_OCDEL TOK_BOOL
@@ -199,7 +199,7 @@ func formActualPath(x string) string {
        TOK_EQUAL TOK_CMDFLAG TOK_SLASH 
        TOK_EXIT TOK_DOC TOK_CD TOK_PWD
        TOK_CLR TOK_GREP TOK_LS TOK_TREE
-       TOK_LSOG TOK_LSTEN TOK_LSSITE TOK_LSBLDG TOK_LSAISLE
+       TOK_LSOG TOK_LSTEN TOK_LSSITE TOK_LSBLDG TOK_LSROW
        TOK_LSTILE TOK_LSCAB TOK_LSSENSOR TOK_LSAC TOK_LSPANEL
        TOK_LSWALL TOK_LSCORRIDOR
        TOK_LSROOM TOK_LSRACK TOK_LSDEV
@@ -424,7 +424,7 @@ E:     TOK_TENANT
        | TOK_AC
        | TOK_PANEL
        | TOK_CABINET
-       | TOK_AISLE
+       | TOK_ROW
        | TOK_TILE
        | TOK_WALL
        | TOK_SENSOR
@@ -479,7 +479,7 @@ Q:     TOK_CD P {/*cmd.CD($2);*/ $$=&commonNode{COMMON, cmd.CD, "CD", []interfac
        | TOK_LSROOM P { $$=&commonNode{COMMON, cmd.LSOBJECT, "LSOBJ", []interface{}{$2, 3}}}
        | TOK_LSRACK P { $$=&commonNode{COMMON, cmd.LSOBJECT, "LSOBJ", []interface{}{$2, 4}}}
        | TOK_LSDEV P {$$=&commonNode{COMMON, cmd.LSOBJECT, "LSOBJ", []interface{}{$2, 5}}}
-       | TOK_LSAISLE P {$$=&commonNode{COMMON, cmd.LSOBJECT, "LSOBJ", []interface{}{$2, 10}}}
+       | TOK_LSROW P {$$=&commonNode{COMMON, cmd.LSOBJECT, "LSOBJ", []interface{}{$2, 10}}}
        | TOK_LSTILE P {$$=&commonNode{COMMON, cmd.LSOBJECT, "LSOBJ", []interface{}{$2, 11}}}
        | TOK_LSAC P {$$=&commonNode{COMMON, cmd.LSOBJECT, "LSOBJ", []interface{}{$2, 6}}}
        | TOK_LSPANEL P {$$=&commonNode{COMMON, cmd.LSOBJECT, "LSOBJ", []interface{}{$2, 7}}}
@@ -594,7 +594,7 @@ OCCR:   TOK_OCTENANT TOK_COL P TOK_ATTRSPEC WORDORNUM {$$=&commonNode{COMMON, cm
         | TOK_AC TOK_COL TOK_USE_JSON TOK_COL P {$$=&commonNode{COMMON, cmd.PostObj, "EasyPost", []interface{}{cmd.EntityStrToInt($1),$1, $5}}}
         | TOK_PANEL TOK_COL TOK_USE_JSON TOK_COL P {$$=&commonNode{COMMON, cmd.PostObj, "EasyPost", []interface{}{cmd.EntityStrToInt($1),$1, $5}}}
         | TOK_CABINET TOK_COL TOK_USE_JSON TOK_COL P {$$=&commonNode{COMMON, cmd.PostObj, "EasyPost", []interface{}{cmd.EntityStrToInt($1),$1, $5}}}
-        | TOK_AISLE TOK_COL TOK_USE_JSON TOK_COL P {$$=&commonNode{COMMON, cmd.PostObj, "EasyPost", []interface{}{cmd.EntityStrToInt($1),$1, $5}}}
+        | TOK_ROW TOK_COL TOK_USE_JSON TOK_COL P {$$=&commonNode{COMMON, cmd.PostObj, "EasyPost", []interface{}{cmd.EntityStrToInt($1),$1, $5}}}
         | TOK_TILE TOK_COL TOK_USE_JSON TOK_COL P {$$=&commonNode{COMMON, cmd.PostObj, "EasyPost", []interface{}{cmd.EntityStrToInt($1),$1, $5}}}
         | TOK_SENSOR TOK_COL TOK_USE_JSON TOK_COL P {$$=&commonNode{COMMON, cmd.PostObj, "EasyPost", []interface{}{cmd.EntityStrToInt($1),$1, $5}}}
         | TOK_OBJ_TMPL TOK_COL TOK_USE_JSON TOK_COL P {$$=&commonNode{COMMON, cmd.PostObj, "EasyPost", []interface{}{cmd.EntityStrToInt($1),$1, $5}}}
@@ -709,7 +709,7 @@ CDORFG: TOK_ATTRSPEC WORDORNUM CDORFG {x:=$2; $$=x+","+$3}
           |TOK_AC {$$=$1}
           |TOK_CABINET {$$=$1}
           |TOK_PANEL {$$=$1}
-          |TOK_AISLE {$$=$1}
+          |TOK_ROW {$$=$1}
           |TOK_TILE {$$=$1}
           |TOK_SENSOR {$$=$1}
           |TOK_ROOM_TMPL {$$=$1}
@@ -740,7 +740,7 @@ CDORFG: TOK_ATTRSPEC WORDORNUM CDORFG {x:=$2; $$=x+","+$3}
           |TOK_LSCAB {$$="lscab"}
           |TOK_LSSENSOR {$$="lssensor"}
           |TOK_LSAC {$$="lsac"}
-          |TOK_LSAISLE {$$="lsaisle"}
+          |TOK_LSROW {$$="lsrow"}
           |TOK_LSPANEL {$$="lspanel"}
           |TOK_LSWALL {$$="lsseparator"}
           |TOK_LSROOM {$$="lsroom"}
