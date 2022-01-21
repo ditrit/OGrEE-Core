@@ -103,7 +103,7 @@ func (c *commonNode) execute() interface{} {
 		}
 
 	case "Print":
-		if f, ok := c.fun.(func(...interface{}) string); ok {
+		if f, ok := c.fun.(func([]interface{}) string); ok {
 			res := []interface{}{}
 			for i := range c.args {
 				res = append(res, c.args[i].(node).execute())
@@ -416,19 +416,27 @@ func (a *arithNode) execute() interface{} {
 	if v, ok := a.op.(string); ok {
 		switch v {
 		case "+":
-			lv, lok := (a.left.(node).execute()).(int)
+			lv := (a.left.(node).execute())
 			if cmd.State.DebugLvl >= 3 {
 				println("Left:", lv)
 			}
-			rv, rok := (a.right.(node).execute()).(int)
+			rv := (a.right.(node).execute())
 			if cmd.State.DebugLvl >= 3 {
 				println("Right: ", rv)
 			}
-			if lok && rok {
-				//println("Adding", lv, rv)
-				return lv + rv
+
+			if checkTypesAreSame(lv, rv) == true {
+				switch lv.(type) {
+				case int:
+					return lv.(int) + rv.(int)
+				case float64:
+					return lv.(float64) + rv.(float64)
+				case float32:
+					return lv.(float64) + rv.(float64)
+				case string:
+					return lv.(string) + rv.(string)
+				}
 			}
-			return nil
 
 		case "-":
 			lv, lok := (a.left.(node).execute()).(int)
@@ -989,6 +997,7 @@ func checkTypeAreNumeric(x, y interface{}) bool {
 	default:
 		yOK = false
 	}
+
 	return xOK == yOK
 }
 

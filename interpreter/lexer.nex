@@ -105,7 +105,7 @@
 /[=]/ { printToks("TOK_EQUAL");return TOK_EQUAL}
 /\// { printToks("TOK_SLASH"); return TOK_SLASH}
 /man/ { printToks("TOK_DOC"); return TOK_DOC}
-/\"[^$\[\],\)\(]+\"/ {printToks("TOK_STR"); lval.s = yylex.Text()[1:len(yylex.Text())-1]; return TOK_STR}
+/"[^"]+"/ {printToks("TOK_STR"); lval.s = yylex.Text()[1:len(yylex.Text())-1]; return TOK_STR}
 /[A-Za-z0-9_]+/ { printToks("TOK_WORD"); lval.s = yylex.Text(); printCapturedWord(lval.s); return TOK_WORD}
 //
 package main

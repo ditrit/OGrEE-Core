@@ -909,14 +909,14 @@ func SetClipBoard(x *[]string) []string {
 	return *State.ClipBoard
 }
 
-func Print(a ...interface{}) string {
+func Print(a []interface{}) string {
 	ans := ""
+
 	for i := range a {
-		ans += fmt.Sprintf("%v ", a[i])
+		ans += fmt.Sprintf("%v", a[i])
 	}
-	//need to strip the [ ] surrounding
-	//the string
-	println(ans[1 : len(ans)-2])
+	fmt.Println(ans)
+
 	return ans
 }
 

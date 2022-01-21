@@ -388,7 +388,7 @@ factor: TOK_LPAREN EXPR TOK_RPAREN {$$=$2}
 
                                                  }
                                                 }
-       |TOK_WORD {$$=&symbolReferenceNode{REFERENCE, $1,&numNode{NUM,0}, nil}}
+       //|TOK_WORD {$$=&symbolReferenceNode{REFERENCE, $1,&numNode{NUM,0}, nil}}
        |TOK_STR {$$=&strNode{STR, $1}}
        |TOK_BOOL {var x bool;if $1=="false"{x = false}else{x=true};$$=&boolNode{BOOL, x}}
        ;
@@ -502,7 +502,7 @@ Q:     TOK_CD P {/*cmd.CD($2);*/ $$=&commonNode{COMMON, cmd.CD, "CD", []interfac
 
 BASH:  TOK_CLR {$$=&commonNode{COMMON, nil, "CLR", nil}}
        | TOK_GREP {$$=&commonNode{COMMON, nil, "Grep", nil}}
-       | TOK_PRNT TOK_QUOT NODEGETTER TOK_QUOT{$$=&commonNode{COMMON, cmd.Print, "Print", $3}}
+       | TOK_PRNT NODEGETTER {$$=&commonNode{COMMON, cmd.Print, "Print", $2}}
        | TOK_LSOG {$$=&commonNode{COMMON, cmd.LSOG, "LSOG", nil}}
        | TOK_PWD {$$=&commonNode{COMMON, cmd.PWD, "PWD", nil}}
        | TOK_EXIT {$$=&commonNode{COMMON, cmd.Exit, "Exit", nil}}
@@ -654,16 +654,9 @@ HANDLEUI: TOK_UI TOK_DOT TOK_WORD TOK_EQUAL TOK_LBLOCK EXPR TOK_RBLOCK {$$=&comm
             TOK_LBLOCK TOK_NUM TOK_COMMA TOK_NUM TOK_RBLOCK {$$=&commonNode{COMMON, cmd.HandleUI, "HandleUnity", []interface{}{"camera", $3, []int{$6, $8, $10}, []int{$14, $16}}}}
           ;
 
-//STRARG: TOK_STR STRARG {if $2 != "" {$$=$1+$2} else {$$=$1};}
-       //| ANYTOKEN STRARG {if $2 != "" {$$=$1+" "+$2} else {$$=$1};}
-       //| {$$=""}
-//;
-
-WNARG: factor TOK_COMMA WNARG {x:=[]interface{}{$1}; $$=append(x, $3...)}
-       |factor  {x:=[]interface{}{$1}; $$=x}
-       //|TOK_QUOT WORDORNUM TOK_QUOT TOK_COMMA WNARG {x:=[]interface{}{$2}; $$=append(x, $5...)}
-       //|TOK_QUOT WORDORNUM TOK_QUOT  {x:=[]interface{}{$2}; $$=x}
-       //| {$$=nil}
+//For making array types
+WNARG: EXPR TOK_COMMA WNARG {x:=[]interface{}{$1}; $$=append(x, $3...)}
+       |EXPR  {x:=[]interface{}{$1}; $$=x}
        ;
 
 FUNC: TOK_WORD TOK_LPAREN TOK_RPAREN TOK_LBRAC st2 TOK_RBRAC {$$=nil;funcTable[$1]=&funcNode{FUNC, $5}}
@@ -671,20 +664,13 @@ FUNC: TOK_WORD TOK_LPAREN TOK_RPAREN TOK_LBRAC st2 TOK_RBRAC {$$=nil;funcTable[$
        ;
 
 //Special nonterminal for print
-NODEGETTER: NODEACC NODEGETTER {if len($2) != 0 {$$=append($1, $2...)} else {$$=$1};}
+NODEGETTER: NODEACC TOK_PLUS NODEGETTER {if len($3) != 0 {$$=append($1, $3...)} else {$$=$1};}
+       |NODEACC {$$=$1}
        | {$$=nil}
        ;
 
 
-NODEACC: TOK_WORD {$$=[]interface{}{&strNode{STR, $1}};dCatchNodePtr=&strNode{STR, $1}}
-           |TOK_NUM {$$=[]interface{}{&numNode{NUM, $1}};dCatchNodePtr=&numNode{NUM, $1}}
-           |TOK_PLUS TOK_WORD TOK_PLUS TOK_WORD {$$=[]interface{}{strNode{STR, $1+$2+$3+$4}};dCatchNodePtr=&strNode{STR, $1+$2+$3+$4}}
-           |TOK_PLUS TOK_WORD TOK_OCDEL TOK_WORD {$$=[]interface{}{strNode{STR, $1+$2+$3+$4}};dCatchNodePtr=&strNode{STR, $1+$2+$3+$4}}
-           |TOK_OCDEL TOK_WORD TOK_OCDEL TOK_WORD {$$=[]interface{}{strNode{STR, $1+$2+$3+$4}};dCatchNodePtr=&strNode{STR, $1+$2+$3+$4}}
-           |TOK_OCDEL TOK_WORD TOK_PLUS TOK_WORD {$$=[]interface{}{strNode{STR, $1+$2+$3+$4}};dCatchNodePtr=&strNode{STR, $1+$2+$3+$4}}
-           |TOK_BOOL {var x bool; if $1 == "true"{x = true} else {x = false} ;$$=[]interface{}{&boolNode{BOOL, x}}; dCatchNodePtr=&boolNode{BOOL, x}}
-           |TOK_DEREF TOK_WORD {dCatchNodePtr=&symbolReferenceNode{REFERENCE, $2, &numNode{NUM,0}, nil}; $$=[]interface{}{dCatchNodePtr}}
-           |TOK_DEREF TOK_WORD TOK_LBLOCK EXPR TOK_RBLOCK {dCatchNodePtr=&symbolReferenceNode{REFERENCE, $2, $4, nil}; $$=[]interface{}{dCatchNodePtr}}
+NODEACC:  factor {$$=[]interface{}{$1}}
            ;
 
 //Child devices of rack for group 
@@ -694,103 +680,3 @@ NODEACC: TOK_WORD {$$=[]interface{}{&strNode{STR, $1}};dCatchNodePtr=&strNode{ST
 CDORFG: TOK_ATTRSPEC WORDORNUM CDORFG {x:=$2; $$=x+","+$3}
        | {$$=""}
        ;
-
-//This is meant for the String Nonterminals
-//Accept any token and return a string
-/*ANYTOKEN: TOK_TENANT {$$=$1}
-          |TOK_SITE {$$=$1}
-          |TOK_BLDG {$$=$1}
-          |TOK_ROOM {$$=$1}
-          |TOK_RACK {$$=$1}
-          |TOK_DEVICE {$$=$1}
-          |TOK_CORIDOR {$$=$1}
-          |TOK_GROUP {$$=$1}
-          |TOK_WALL {$$=$1}
-          |TOK_AC {$$=$1}
-          |TOK_CABINET {$$=$1}
-          |TOK_PANEL {$$=$1}
-          |TOK_ROW {$$=$1}
-          |TOK_TILE {$$=$1}
-          |TOK_SENSOR {$$=$1}
-          |TOK_ROOM_TMPL {$$=$1}
-          |TOK_OBJ_TMPL {$$=$1}
-          |TOK_PLUS {$$=$1}
-          |TOK_OCDEL {$$=$1}
-          |TOK_CREATE {$$="create"}
-          |TOK_GET {$$="get"}
-          |TOK_UPDATE {$$="update"}
-          |TOK_DELETE {$$="delete"}
-          |TOK_SEARCH {$$="search"}
-          |TOK_EQUAL {$$="="}
-          |TOK_CMDFLAG {$$="-l"}
-          |TOK_SLASH {$$="/"}
-          |TOK_EXIT {$$="exit"}
-          |TOK_DOC {$$="man"}
-          |TOK_CD {$$="cd"}
-          |TOK_PWD {$$="pwd"}
-          |TOK_CLR {$$="clear"}
-          |TOK_GREP {$$="grep"}
-          |TOK_LS {$$="ls"}
-          |TOK_TREE {$$="tree"}
-          |TOK_LSOG {$$="lsog"}
-          |TOK_LSTEN {$$="lsten"}
-          |TOK_LSSITE {$$="lssite"}
-          |TOK_LSBLDG {$$="lsbldg"}
-          |TOK_LSTILE {$$="lstile"}
-          |TOK_LSCAB {$$="lscab"}
-          |TOK_LSSENSOR {$$="lssensor"}
-          |TOK_LSAC {$$="lsac"}
-          |TOK_LSROW {$$="lsrow"}
-          |TOK_LSPANEL {$$="lspanel"}
-          |TOK_LSWALL {$$="lsseparator"}
-          |TOK_LSROOM {$$="lsroom"}
-          |TOK_LSCORRIDOR {$$="lscorridor"}
-          |TOK_LSRACK {$$="lsrack"}
-          |TOK_LSDEV {$$="lsdev"}
-          |TOK_OCBLDG {$$="bd"}
-          |TOK_OCDEV {$$="dv"}
-          |TOK_OCRACK {$$="rk"}
-          |TOK_OCROOM {$$="ro"}
-          |TOK_ATTRSPEC {$$="@"}
-          |TOK_OCSITE {$$="si"}
-          |TOK_OCTENANT {$$="tn"}
-          |TOK_COL {$$=":"}
-          |TOK_SELECT {$$="selection"}
-          |TOK_LBRAC {$$="{"}
-          |TOK_RBRAC {$$="}"}
-          |TOK_COMMA {$$=","}
-          |TOK_DOT {$$="."}
-          |TOK_CMDS {$$="cmds"}
-          |TOK_TEMPLATE {$$="template"}
-          |TOK_VAR {$$="var"}
-          |TOK_APOST {$$="'"}
-          |TOK_SEMICOL {$$=";"}
-          |TOK_IF {$$="if"}
-          |TOK_FOR {$$="for"}
-          |TOK_WHILE {$$="while"}
-          |TOK_ELSE  {$$="else"}
-          |TOK_LBLOCK {$$="["}
-          |TOK_RBLOCK {$$="]"}
-          |TOK_LPAREN {$$="("}
-          |TOK_RPAREN {$$=")"}
-          |TOK_OR {$$="||"}
-          |TOK_AND {$$="&&"}
-          |TOK_IN {$$="in"}
-          |TOK_PRNT {$$="print"}
-          |TOK_NOT {$$="!"}
-          |TOK_MULT {$$="*"}
-          |TOK_GREATER {$$=">"}
-          |TOK_LESS {$$="<"}
-          |TOK_THEN {$$="then"}
-          |TOK_FI {$$="fi"}
-          |TOK_DONE {$$="done"}
-          |TOK_MOD {$$="%"}
-          |TOK_UNSET {$$="unset"}
-          |TOK_ELIF {$$="elif"}
-          |TOK_DO  {$$="do"}
-          |TOK_LEN {$$="len"}
-          |TOK_OCGROUP {$$="gr"}
-          |TOK_OCWALL {$$=""}
-          |TOK_OCCORIDOR {$$="co"}
-          ;*/
-%%
