@@ -75,7 +75,7 @@ func loadFile() {
 	for scanner.Scan() {
 		x := scanner.Text()
 		if len(x) > 0 {
-			if commentIdx := strings.Index(x, "#"); commentIdx != -1 { //Comment found
+			if commentIdx := strings.Index(x, "//"); commentIdx != -1 { //Comment found
 				fullcom += x[:commentIdx]
 			} else if string(x[len(x)-1]) == "\\" {
 				fullcom += x
@@ -86,6 +86,9 @@ func loadFile() {
 				keepScanning = false
 				fullcom = ""
 			} else {
+				if strings.ContainsAny(x, ".") == true {
+					x = strings.ReplaceAll(x, ".", "/")
+				}
 				InterpretLine(&x)
 			}
 		}

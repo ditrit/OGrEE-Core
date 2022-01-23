@@ -255,6 +255,11 @@ func UpdateObj(path string, data map[string]interface{}, deleteAndPut bool) map[
 	println("OK. Attempting to update...")
 	var resp *http.Response
 
+	//If the path uses dots instead of slashes
+	if strings.Contains(path, ".") == true {
+		path = strings.ReplaceAll(path, ".", "/")
+	}
+
 	if data != nil {
 		var respJson map[string]string
 		nd := new(*Node)
@@ -682,6 +687,11 @@ func GetOCLIAtrributes(path *Stack, ent int, data map[string]interface{}, term *
 		path = StrToStack(x)
 	}
 
+	if ent > TENANT {
+		path.Push("Physical")
+		path.ReversePop()
+	}
+
 	data["name"] = string(path.PeekLast().(string))
 	println("NAME:", string(data["name"].(string)))
 	data["category"] = EntityToString(ent)
@@ -711,12 +721,12 @@ func GetOCLIAtrributes(path *Stack, ent int, data map[string]interface{}, term *
 		data["attributes"].(map[string]interface{})["usableColor"] = "DBEDF2"
 		data["attributes"].(map[string]interface{})["reservedColor"] = "F2F2F2"
 		data["attributes"].(map[string]interface{})["technicalColor"] = "EBF2DE"
-		data["domain"] = strings.Split(((*nd).Path), "/")[2]
+		data["domain"] = (*nd).Name
 		data["parentId"] = (*nd).ID
 
-		println("Top:", path.Peek().(string))
-		println("Last:", path.Peek().(string))
-		return
+		//println("Top:", path.Peek().(string))
+		//println("Last:", path.Peek().(string))
+		//return
 		PostObj(ent, "site", data)
 	case BLDG:
 
@@ -940,4 +950,6 @@ func InformUnity(method, caller string, data map[string]interface{}) {
 			fmt.Println("Successfully updated Unity")
 		}
 	}
+	println()
+	println()
 }
