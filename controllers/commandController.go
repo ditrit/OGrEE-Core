@@ -946,15 +946,17 @@ func Disp(x map[string]interface{}) {
 
 //Utility Function to message Unity Client
 func InformUnity(method, caller string, data map[string]interface{}) {
-	r, e := models.ContactUnity(method, State.UnityClientURL, data)
-	if e != nil {
-		WarningLogger.Println("Unable to contact Unity Client @" + caller)
-		fmt.Println("Error while updating Unity: ", e.Error())
-	} else {
-		if r.StatusCode == http.StatusOK {
+	//If unity is available message it
+	//otherwise do nothing
+	if State.UnityClientAvail == true {
+		e := models.ContactUnity(method, State.UnityClientURL, data)
+		if e != nil {
+			WarningLogger.Println("Unable to contact Unity Client @" + caller)
+			fmt.Println("Error while updating Unity: ", e.Error())
+		} else {
 			fmt.Println("Successfully updated Unity")
 		}
+		println()
+		println()
 	}
-	println()
-	println()
 }

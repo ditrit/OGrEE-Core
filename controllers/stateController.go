@@ -38,17 +38,18 @@ var GitCommitDate string
 var State ShellState
 
 type ShellState struct {
-	CurrPath       string
-	PrevPath       string
-	ClipBoard      *[]string
-	TreeHierarchy  *Node
-	ScriptCalled   bool
-	ScriptPath     string
-	UnityClientURL string
-	APIURL         string
-	DebugLvl       int
-	LineNumber     int //Used exectuting scripts
-	TemplateList   []map[string]interface{}
+	CurrPath         string
+	PrevPath         string
+	ClipBoard        *[]string
+	TreeHierarchy    *Node
+	ScriptCalled     bool
+	ScriptPath       string
+	UnityClientURL   string
+	APIURL           string
+	UnityClientAvail bool //For deciding to message unity or not
+	DebugLvl         int
+	LineNumber       int //Used exectuting scripts
+	TemplateList     []map[string]interface{}
 }
 
 type Node struct {
@@ -71,12 +72,14 @@ func InitState(debugLvl int) {
 	State.TreeHierarchy.PID = ""
 	State.CurrPath = "/Physical"
 	State.LineNumber = 0
-	_, e := models.ContactUnity("GET", State.UnityClientURL, nil)
+	e := models.ContactUnity("GET", State.UnityClientURL, nil)
 	if e != nil {
 		WarningLogger.Println("Note: Unity Client Unreachable")
 		fmt.Println("Note: Unity Client Unreachable")
+		State.UnityClientAvail = false
 	} else {
 		fmt.Println("Unity Client is Reachable!")
+		State.UnityClientAvail = true
 	}
 
 	phys := &Node{}
