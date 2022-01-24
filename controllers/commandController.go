@@ -650,6 +650,11 @@ func tree(base string, prefix string, depth int) {
 }
 
 func Tree(x string, depth int) {
+	if depth < 0 {
+		WarningLogger.Println("Tree command cannot accept negative value")
+		println("Error: Tree command cannot accept negative value")
+		return
+	}
 	if x == "" || x == "." {
 		println(State.CurrPath)
 		tree(State.CurrPath, "", depth)

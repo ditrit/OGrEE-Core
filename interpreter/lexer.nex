@@ -5,7 +5,13 @@
 /delete/ { printToks("TOK_DELETE"); return TOK_DELETE}
 /search/ { printToks("TOK_SEARCH"); return TOK_SEARCH}
 /\+/ { printToks("TOK_PLUS");lval.s = yylex.Text(); return TOK_PLUS}
-/-/ {  printToks("TOK_OCDEL");lval.s = yylex.Text(); return TOK_OCDEL}
+
+/-/ < {}
+	/-[0-9]+/ {  printToks("TOK_NUM");lval.n = atoi(yylex.Text()); return TOK_NUM}
+	/-[0-9]+\.[0-9]+/ { printToks("TOK_FLOAT");lval.f, _ = strconv.ParseFloat((yylex.Text()), 64); return TOK_FLOAT }
+	/-/ {  printToks("TOK_OCDEL");lval.s = yylex.Text(); return TOK_OCDEL}
+>  {}
+
 /:/ {  printToks("TOK_COL"); return TOK_COL}
 /@/ {  printToks("TOK_ATTRSPEC"); return TOK_ATTRSPEC}
 /\$/ { printToks("TOK_DEREF"); return TOK_DEREF}
@@ -77,8 +83,8 @@
 /room_template/ {  printToks("TOK_ROOM_TMPL");lval.s = yylex.Text();return TOK_ROOM_TMPL}
 /obj_template/ {  printToks("TOK_OBJ_TMPL");lval.s = yylex.Text();return TOK_OBJ_TMPL}
 
-/[0-9]+/ {  printToks("TOK_NUM");lval.n = atoi(yylex.Text()); return TOK_NUM}
-/[0-9]+\.[0-9]+/ { printToks("TOK_FLOAT");lval.f, _ = strconv.ParseFloat((yylex.Text()), 64); return TOK_FLOAT }
+/([0-9]+)/ {  printToks("TOK_NUM");lval.n = atoi(yylex.Text()); return TOK_NUM}
+/([0-9]+\.[0-9]+)/ { printToks("TOK_FLOAT");lval.f, _ = strconv.ParseFloat((yylex.Text()), 64); return TOK_FLOAT }
 /lsten/ {  printToks("TOK_LSTEN"); return TOK_LSTEN}
 /lssite/ {  printToks("TOK_LSSITE"); return TOK_LSSITE}
 /lsbldg/ {  printToks("TOK_LSBLDG"); return TOK_LSBLDG}
@@ -102,7 +108,6 @@
 /ls/ { printToks("TOK_LS");return TOK_LS}
 /exit/ { printToks("TOK_EXIT"); return TOK_EXIT}
 /len/ { printToks("TOK_LEN"); return TOK_LEN}
-/-l/ { printToks("TOK_CMDFLAG");return TOK_CMDFLAG}
 /[=]/ { printToks("TOK_EQUAL");return TOK_EQUAL}
 /\// { printToks("TOK_SLASH"); return TOK_SLASH}
 /man/ { printToks("TOK_DOC"); return TOK_DOC}
