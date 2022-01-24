@@ -17,6 +17,7 @@ var varCtr = 1 //Started at 1 because unset could cause var data loss
 const (
 	COMMON = iota
 	NUM
+	FLOAT
 	BOOL
 	STR
 	BOOLOP
@@ -353,6 +354,15 @@ func (n *numNode) execute() interface{} {
 	return n.val
 }
 
+type floatNode struct {
+	nodeType int
+	val      float64
+}
+
+func (f *floatNode) execute() interface{} {
+	return f.val
+}
+
 type strNode struct {
 	nodeType int
 	val      string
@@ -412,17 +422,17 @@ type arithNode struct {
 
 func (a *arithNode) execute() interface{} {
 	if v, ok := a.op.(string); ok {
+		lv := (a.left.(node).execute())
+		if cmd.State.DebugLvl >= 3 {
+			println("Left:", lv)
+		}
+		rv := (a.right.(node).execute())
+		if cmd.State.DebugLvl >= 3 {
+			println("Right: ", rv)
+		}
+
 		switch v {
 		case "+":
-			lv := (a.left.(node).execute())
-			if cmd.State.DebugLvl >= 3 {
-				println("Left:", lv)
-			}
-			rv := (a.right.(node).execute())
-			if cmd.State.DebugLvl >= 3 {
-				println("Right: ", rv)
-			}
-
 			if checkTypesAreSame(lv, rv) == true {
 				switch lv.(type) {
 				case int:
@@ -434,39 +444,85 @@ func (a *arithNode) execute() interface{} {
 				case string:
 					return lv.(string) + rv.(string)
 				}
+			} else if checkTypeAreNumeric(lv, rv) == true {
+				if _, ok := lv.(float64); ok {
+					return lv.(float64) + float64(rv.(int))
+				} else {
+					return rv.(float64) + float64(lv.(int))
+				}
 			}
 
 		case "-":
-			lv, lok := (a.left.(node).execute()).(int)
-			rv, rok := (a.right.(node).execute()).(int)
-			if lok && rok {
-				return lv - rv
+			if checkTypesAreSame(lv, rv) == true {
+				switch lv.(type) {
+				case int:
+					return lv.(int) - rv.(int)
+				case float64:
+					return lv.(float64) - rv.(float64)
+				case float32:
+					return lv.(float64) - rv.(float64)
+				}
+			} else if checkTypeAreNumeric(lv, rv) == true {
+				if _, ok := lv.(float64); ok {
+					return lv.(float64) - float64(rv.(int))
+				} else {
+					return rv.(float64) - float64(lv.(int))
+				}
 			}
-			return nil
 
 		case "*":
-			lv, lok := (a.left.(node).execute()).(int)
-			rv, rok := (a.right.(node).execute()).(int)
-			if lok && rok {
-				return lv * rv
+			if checkTypesAreSame(lv, rv) == true {
+				switch lv.(type) {
+				case int:
+					return lv.(int) * rv.(int)
+				case float64:
+					return lv.(float64) * rv.(float64)
+				case float32:
+					return lv.(float64) * rv.(float64)
+				}
+			} else if checkTypeAreNumeric(lv, rv) == true {
+				if _, ok := lv.(float64); ok {
+					return lv.(float64) * float64(rv.(int))
+				} else {
+					return rv.(float64) * float64(lv.(int))
+				}
 			}
-			return nil
 
 		case "%":
-			lv, lok := (a.left.(node).execute()).(int)
-			rv, rok := (a.right.(node).execute()).(int)
-			if lok && rok {
-				return lv % rv
+			if checkTypesAreSame(lv, rv) == true {
+				switch lv.(type) {
+				case int:
+					return lv.(int) % rv.(int)
+				case float64:
+					return int(lv.(float64)) % int(rv.(float64))
+				case float32:
+					return int(lv.(float32)) % int(rv.(float32))
+				}
+			} else if checkTypeAreNumeric(lv, rv) == true {
+				if _, ok := lv.(float64); ok {
+					return int(lv.(float64)) % rv.(int)
+				} else {
+					return int(rv.(float64)) % lv.(int)
+				}
 			}
-			return nil
 
 		case "/":
-			lv, lok := (a.left.(node).execute()).(int)
-			rv, rok := (a.right.(node).execute()).(int)
-			if lok && rok {
-				return lv / rv
+			if checkTypesAreSame(lv, rv) == true {
+				switch lv.(type) {
+				case int:
+					return lv.(int) / rv.(int)
+				case float64:
+					return lv.(float64) / rv.(float64)
+				case float32:
+					return lv.(float64) / rv.(float64)
+				}
+			} else if checkTypeAreNumeric(lv, rv) == true {
+				if _, ok := lv.(float64); ok {
+					return lv.(float64) / float64(rv.(int))
+				} else {
+					return rv.(float64) / float64(lv.(int))
+				}
 			}
-			return nil
 		}
 	}
 	return nil
@@ -595,7 +651,7 @@ func (s *symbolReferenceNode) execute() interface{} {
 						println("So You want the value: ", x)
 					}
 				case float64, float32:
-					x := dCatchPtr.(float64)
+					x := val.(float64)
 					if cmd.State.DebugLvl >= 3 {
 						println("So You want the value: ", x)
 					}

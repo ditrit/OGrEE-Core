@@ -78,6 +78,7 @@
 /obj_template/ {  printToks("TOK_OBJ_TMPL");lval.s = yylex.Text();return TOK_OBJ_TMPL}
 
 /[0-9]+/ {  printToks("TOK_NUM");lval.n = atoi(yylex.Text()); return TOK_NUM}
+/[0-9]+\.[0-9]+/ { printToks("TOK_FLOAT");lval.f, _ = strconv.ParseFloat((yylex.Text()), 64); return TOK_FLOAT }
 /lsten/ {  printToks("TOK_LSTEN"); return TOK_LSTEN}
 /lssite/ {  printToks("TOK_LSSITE"); return TOK_LSSITE}
 /lsbldg/ {  printToks("TOK_LSBLDG"); return TOK_LSBLDG}
