@@ -47,6 +47,7 @@ type ShellState struct {
 	UnityClientURL string
 	APIURL         string
 	DebugLvl       int
+	LineNumber     int //Used exectuting scripts
 	TemplateList   []map[string]interface{}
 }
 
@@ -69,6 +70,7 @@ func InitState(debugLvl int) {
 	State.TemplateList = []map[string]interface{}{}
 	State.TreeHierarchy.PID = ""
 	State.CurrPath = "/Physical"
+	State.LineNumber = 0
 	_, e := models.ContactUnity("GET", State.UnityClientURL, nil)
 	if e != nil {
 		WarningLogger.Println("Note: Unity Client Unreachable")
@@ -150,6 +152,14 @@ func InitState(debugLvl int) {
 	enterprise.Name = "Enterprise"
 	enterprise.Path = "/"
 	State.TreeHierarchy.Nodes.PushBack(enterprise)
+}
+
+func GetLineNumber() int {
+	return State.LineNumber
+}
+
+func GetScriptPath() string {
+	return State.ScriptPath
 }
 
 func GetChildren(curr int) []*Node {

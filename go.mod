@@ -1,9 +1,10 @@
 module cli
 
-go 1.16
+go 1.17
 
 require (
-	github.com/chzyer/logex v1.1.10 // indirect
 	github.com/chzyer/test v0.0.0-20210722231415-061457976a23
-	golang.org/x/sys v0.0.0-20190624142023-c5567b49c5d0
+	golang.org/x/sys v0.0.0-20220114195835-da31bd327af9
 )
+
+require github.com/chzyer/logex v1.2.0 // indirect

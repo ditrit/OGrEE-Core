@@ -2,7 +2,6 @@ package controllers
 
 import (
 	"cli/models"
-	"cli/readline"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -92,6 +91,7 @@ func PostObj(ent int, entity string, data map[string]interface{}) map[string]int
 		return respMap["data"].(map[string]interface{})
 	}
 	println("Error:", string(respMap["message"].(string)))
+	println()
 	return nil
 }
 
@@ -675,7 +675,7 @@ func getAttrAndVal(x string) (string, string) {
 }
 
 //Helps to create the Object (thru OCLI syntax)
-func GetOCLIAtrributes(path *Stack, ent int, data map[string]interface{}, term *readline.Instance) {
+func GetOCLIAtrributes(path *Stack, ent int, data map[string]interface{}) {
 	//data["name"] = string(path.Peek().(string))
 	//data["attributes"] = map[string]interface{}{}
 

@@ -2,7 +2,6 @@ package main
 
 import (
 	cmd "cli/controllers"
-	"cli/readline"
 	"encoding/json"
 	"io/ioutil"
 	"reflect"
@@ -245,11 +244,10 @@ func (c *commonNode) execute() interface{} {
 
 	case "GetOCAttr":
 		if f, ok := c.fun.(func(*cmd.Stack, int,
-			map[string]interface{}, *readline.Instance)); ok {
+			map[string]interface{})); ok {
 			f(c.args[0].(*cmd.Stack),
 				c.args[1].(int),
-				c.args[2].(map[string]interface{}),
-				c.args[3].(*readline.Instance))
+				c.args[2].(map[string]interface{}))
 		}
 	case "HandleUnity":
 		if f, ok := c.fun.(func(map[string]interface{})); ok {
