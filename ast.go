@@ -246,6 +246,16 @@ func (c *commonNode) execute() interface{} {
 	case "GetOCAttr":
 		if f, ok := c.fun.(func(*cmd.Stack, int,
 			map[string]interface{})); ok {
+
+			//Since the attributes is a map of nodes
+			//execute and receive the values
+			attributes := c.args[2].(map[string]interface{})
+			for k := range attributes {
+				if n, ok := attributes[k].(node); ok {
+					attributes[k] = n.execute()
+				}
+			}
+
 			f(c.args[0].(*cmd.Stack),
 				c.args[1].(int),
 				c.args[2].(map[string]interface{}))
@@ -254,20 +264,24 @@ func (c *commonNode) execute() interface{} {
 		if f, ok := c.fun.(func(map[string]interface{})); ok {
 			data := map[string]interface{}{}
 			data["command"] = c.args[1]
-			switch c.args[2].(type) {
-			case []int:
-				pos := map[string]interface{}{"x": c.args[2].([]int)[0],
-					"y": c.args[2].([]int)[1], "z": c.args[2].([]int)[2],
+			if len(c.args) == 4 {
+
+				firstArr := c.args[2].([]interface{})
+				secondArr := c.args[3].([]interface{})
+
+				pos := map[string]interface{}{"x": firstArr[0].(node).execute(),
+					"y": firstArr[1].(node).execute(), "z": firstArr[2].(node).execute(),
 				}
 
-				rot := map[string]interface{}{"x": c.args[3].([]int)[0],
-					"y": c.args[3].([]int)[1],
+				rot := map[string]interface{}{"x": secondArr[0].(node).execute(),
+					"y": secondArr[1].(node).execute(),
 				}
 
 				data["position"] = pos
 				data["rotation"] = rot
 
-			default:
+			} else {
+
 				if c.args[1].(string) == "wait" {
 					data["position"] = nil
 					data["rotation"] = map[string]interface{}{"x": 999,
