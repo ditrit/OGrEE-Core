@@ -83,6 +83,30 @@ pipeline {
             }
         }
 
+        //Generate binaries for other systems
+        //and copy files 
+        stage('Application Builds') {
+            steps {
+                //Linux Native
+                sh 'go build -o OGrEE_API_Linux_x64 main.go'
+                sh 'mv OGrEE_API_Linux_x64 /home/ziad/bin/api'
+
+                //Windows x64
+                sh 'GOOS=windows GOARCH=amd64 go build -o OGrEE_API_Win_x64 main.go'
+                sh 'mv OGrEE_API_Win_x64 /home/ziad/bin/api'
+
+                //OSX x64
+                sh 'GOOS=darwin GOARCH=amd64 go build -o OGrEE_API_OSX_x64 main.go'
+                sh 'mv OGrEE_API_OSX_x64 /home/ziad/bin/api'
+
+                //OSX arm64
+                sh 'GOOS=darwin GOARCH=arm64 go build -o OGrEE_API_OSX_arm64 main.go'
+                sh 'mv OGrEE_API_OSX_arm64 /home/ziad/bin/api'
+
+                sh 'cp ./createdb.js /home/ziad/mongoDir'
+            }
+        }
+
         stage('Deploy') {
             steps {
                 echo 'Deploying....'
