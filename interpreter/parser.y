@@ -502,6 +502,7 @@ Q:     TOK_CD P {/*cmd.CD($2);*/ $$=&commonNode{COMMON, cmd.CD, "CD", []interfac
               
               }
        | BASH     {$$=$1}
+       |TOK_WORD TOK_EQUAL EXPR {$$=&commonNode{COMMON, cmd.SetEnv, "SetEnv", []interface{}{$1, $3}}}
 ;
 
 BASH:  TOK_CLR {$$=&commonNode{COMMON, nil, "CLR", nil}}

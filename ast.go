@@ -243,6 +243,13 @@ func (c *commonNode) execute() interface{} {
 				c.args[2].(node), c.args[3])
 		}
 
+	case "SetEnv":
+		if f, ok := c.fun.(func(string, interface{})); ok {
+			arg := c.args[0].(string)
+			val := c.args[1].(node).execute()
+			f(arg, val)
+		}
+
 	case "GetOCAttr":
 		if f, ok := c.fun.(func(*cmd.Stack, int,
 			map[string]interface{})); ok {

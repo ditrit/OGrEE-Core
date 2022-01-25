@@ -850,6 +850,7 @@ func GetOCLIAtrributes(path *Stack, ent int, data map[string]interface{}) {
 	}
 }
 
+//Used for Unity Client commands
 func HandleUI(data map[string]interface{}) {
 	Disp(data)
 	InformUnity("POST", "HandleUI", data)
@@ -933,6 +934,21 @@ func Print(a []interface{}) string {
 	fmt.Println(ans)
 
 	return ans
+}
+
+func SetEnv(arg string, val interface{}) {
+	switch arg {
+	case "Unity":
+		if _, ok := val.(bool); !ok {
+			msg := "Can only assign bool values for Unity Env Var"
+			WarningLogger.Println(msg)
+		} else {
+			State.UnityClientAvail = val.(bool)
+		}
+
+	default:
+
+	}
 }
 
 //Utility function that
