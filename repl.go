@@ -139,8 +139,8 @@ func TrimToSlash(x string) string {
 //Init the Shell
 func Start(verboseLevel int) {
 
-	c.GetURLs() //Set the URLs
 	c.InitLogs()
+	c.GetURLs() //Set the URLs
 	user, _ := c.Login()
 
 	rl, err := readline.NewEx(&readline.Config{
