@@ -100,25 +100,26 @@ func listEntities(path string) func(string) []string {
 
 func listLocal(path string) func(string) []string {
 	return func(line string) []string {
-		cmdLength := len(".cmds:")
 
-		q := strings.Index(line, ":")
-		if q > 0 {
-			path = strings.TrimSpace(line[cmdLength:])
+		//Algorithm to strip the string from both ends
+		//to extract the file path
+		q := strings.Index(line, ":") + 1
+		if q < 0 {
+			path = "./"
+		} else {
+			path = strings.TrimSpace(TrimToSlash(line[q:]))
+			if len(line) > 4 {
+				if strings.TrimSpace(line[q:]) != "/" {
+					path = "./" + path
+				}
+			}
 
 			if path == "" {
 				path = "./"
 			}
 
-		} else {
-			path = "./"
 		}
-
-		//If line[len(".cmds:"):] has only spaces
-		//then use path
-		//otherwise use line[len(".cmds:"):]
-
-		println("PATH:", path)
+		//End of Algorithm
 
 		names := make([]string, 0)
 		files, _ := ioutil.ReadDir(path)
@@ -283,8 +284,11 @@ func getPrefixCompleter() *readline.PrefixCompleter {
 		readline.PcItem("update", false),
 		readline.PcItem("delete", false),
 		readline.PcItem("selection", false),
-		readline.PcItem(".cmds:", false),
-		readline.PcItem(".template:", false),
+		readline.PcItem(".cmds:", true,
+			readline.PcItemDynamic(listLocal(""), false)),
+
+		readline.PcItem(".template:", true,
+			readline.PcItemDynamic(listLocal(""), false)),
 		readline.PcItem(".var:", false),
 		readline.PcItem("tree", false),
 		readline.PcItem("lsten", false),
