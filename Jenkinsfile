@@ -100,10 +100,10 @@ pipeline {
                 sh 'mv OGrEE_API_OSX_x64 /home/ziad/bin/api'
 
                 //OSX arm64
-                sh 'GOOS=darwin GOARCH=arm64 go build -o OGrEE_API_OSX_arm64 main.go'
-                sh 'mv OGrEE_API_OSX_arm64 /home/ziad/bin/api'
+                //sh 'GOOS=darwin GOARCH=arm64 go build -o OGrEE_API_OSX_arm64 main.go'
+                //sh 'mv OGrEE_API_OSX_arm64 /home/ziad/bin/api'
 
-                sh 'cp ./createdb.js /home/ziad/mongoDir'
+                //sh 'cp ./createdb.js /home/ziad/mongoDir'
             }
         }
 
