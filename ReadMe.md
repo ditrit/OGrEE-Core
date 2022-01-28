@@ -103,7 +103,7 @@ Jenkins
 
 ### External URL
 ```
-api.chibois.net
+ci.ogree.ditrit.io
 ```
 
 This is easier but less portable 
