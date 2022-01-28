@@ -15,7 +15,6 @@
 /:/ {  printToks("TOK_COL"); return TOK_COL}
 /@/ {  printToks("TOK_ATTRSPEC"); return TOK_ATTRSPEC}
 /\$/ { printToks("TOK_DEREF"); return TOK_DEREF}
-/'/ { printToks("TOK_APOST"); return TOK_APOST}
 /;/ { printToks("TOK_SEMICOL"); return TOK_SEMICOL}
 /\[/ {  printToks("TOK_LBLOCK"); return TOK_LBLOCK}
 /\]/ {  printToks("TOK_RBLOCK"); return TOK_RBLOCK}

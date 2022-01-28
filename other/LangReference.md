@@ -1,7 +1,23 @@
 Introduction
 ------------
-The OGREE Language Reference. The scripting language is modelled to behave like bash but has some differences.
+The OGREE Language Reference. The OGREE Shell command interpreter interfaces with the API and optionally a Unity viewer. The command interpreter provides a command line interface for data centre management.   
 
+The scripting language is modelled to behave like bash but has many differences. It has syntax similar to ruby/python and bash. Filename globbing (wildcard matching), piping, here documents are not supported. Brace expansion has very limited support. 
+
+
+Environment 
+------------
+At any point in time the 'Unity' environment variable may be set to either false or true. This variable indicates to the shell whether or not to inform the Unity viewer of any updates
+```
+Unity = true
+```
+This environment variable is automatically set upon startup and it's value depends upon whether or not the shell was able to establish contact with the Unity viewer. The user would be notified of this.   
+
+This environment variable is the only variable available at this time. 
+
+Comments 
+------------
+Comments use the double slash characters '//' . They continue until the end of the line, this is the only way to input comments and there is no way to indicate multi-line comments. 
 
 Variables 
 ------------
@@ -26,12 +42,24 @@ Variables
  ```
  string
 int 
+float  
 node
 json
 bool
 array
 ```
-NOTE: Strings must be surrounded by quotes " "
+
+
+### Strings
+Strings are exclusively surrounded by double quotes "", and anything may be placed in them. Single quotes '' are not used and thus are not part of the language. Escape sequences are not yet supported by the language.
+Strings can be concatenated:   
+```
+"my string" + "another string"
+```   
+Variables in a string will not be dereferenced. To dereference a variable in a string you must concatenate:   
+```
+"this a custom string" + $x 
+```
 
 ### Arrays
 Arrays are declared as:
@@ -43,8 +71,13 @@ Index into arrays:
 $array[1]
 ```
 $array is equivalent to $array[0]   
+Arrays are not restricted to holding values of a single data type:   
+```
+.var:array=("this is a string", 808.9, false, "another string")
+```
+
 Arrays can not immediately have their lengths changed. And can only be changed by reassigning the variable.   
-Single element arrays are not supported. If a single element array is assigned it will be treated as a variable of the data's respective type
+Single element arrays are not supported. If a single element array is assigned it will be treated as a variable of the data's respective type   
 
 ### Modifying Nodes
 Nodes cannot be created manually and are obtained as a result of a command.
@@ -143,7 +176,7 @@ Scripts
 ------------
 Scripts can be loaded. The commands follow the OGREE language specification, with the exception of multi line commands such as functions and loops. Multi Line commands must have a '\\' before each newline. The last line shall not have the '\\'. The file extension does not matter, for now the only way to invoke a script is to launch the OGREE shell and:
 ```
-.cmds:[PATH/TO/YOUR/FILE]
+.cmds:"PATH/TO/YOUR/FILE"
 ```
 
 
@@ -191,6 +224,15 @@ update path/to/object : usJn partial : path/to/json/file
 update path/to/object : usJn : path/to/json/file
 ```
 
+Arithmetic 
+------------
+*,/,%,- operators are supported. In the event that one of the arguments is a float and the other being an int, the int will be 'promoted' to the float type. There is no way to cast a float to an int or vice versa. 
+
+
+I/O Redirection
+------------
+As of now, I/O Redirection is not supported yet but will be supported in the future. 
+
 
 Other Operations
 ------------
@@ -200,7 +242,7 @@ print "some string"
 ```
 Variable values can be printed
 ```
-print "$x" 
+print $x
 ```
 Create Object
 ```
@@ -211,6 +253,12 @@ Delete Object
 delete path/to/object
 - path/to/object
 ```
+
+Misc.
+------------
+The shell history is stored in a file in the folder  ``` .resources/.history``` of the present Shell executable directory.    
+   
+The user credentials, API URL, Unity URL info are stored in the file  ``` .resources/.env``` of the present Shell executable directory. You can change the URLs to point to anywhere etc.
 
 
 Debugging
