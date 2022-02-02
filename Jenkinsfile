@@ -117,12 +117,12 @@ pipeline {
                 sh 'docker stop lapd || true'
                 sh 'fuser -k 27020/tcp || true'
                 sh 'sudo fuser -k 3001/tcp'
-                sh 'docker stop rotten_apple || true'
+                sh 'docker stop ogree_api || true'
                 //sh 'rm ./env'
                 //sh 'mv ./.env.bak ./.env'
                 
-                sh 'docker run -d --rm --network=host --name=rotten_apple testingalpine:dockerfile /home/main'
-                sh 'docker logs rotten_apple'
+                sh 'docker run -d --rm --network=host --name=ogree_api testingalpine:dockerfile /home/main'
+                sh 'docker logs ogree_api'
                
             }
         }
