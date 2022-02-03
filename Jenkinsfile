@@ -45,6 +45,7 @@ pipeline {
         //and copy files 
         stage('Application Builds') {
             steps {
+                sh 'docker build -t cli:latest .'
                 echo 'done'
 
                 //Linux Native

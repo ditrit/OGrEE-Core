@@ -1,13 +1,12 @@
 # '$$' refers to shell variable not make variable
 # https://ftp.gnu.org/old-gnu/Manuals/make-3.79.1/html_chapter/make_6.html
-BASH=/bin/bash
-GOPATH=$$(go env | grep "GOPATH=" | grep -oE '\/[^"]*')
+GOPATH=$(shell go env GOPATH)
 GOYACC=$(GOPATH)/bin/goyacc
 NEX=$(GOPATH)/bin/nex
-DATE=$$(date +%Y.%m.%d//%T)
-GITHASH=$$(git rev-parse HEAD)
-GITBRANCH=$$(git branch --show-current)
-GITHASHDATE=$$(git show -s --format=%ci HEAD | sed 's/ /\//g')
+DATE=$(shell date +%Y.%m.%d//%T)
+GITHASH=$(shell git rev-parse HEAD)
+GITBRANCH=$(shell git branch --show-current)
+GITHASHDATE=$(shell git show -s --format=%ci HEAD | sed 's/ /\//g')
 
 
 main: interpreter main.go ast.go lexer.nn.go y.go repl.go

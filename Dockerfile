@@ -2,7 +2,7 @@
 # Dockerfile for the CLI
 #
 #LABEL author="Ziad Khalaf"
-FROM alpine:latest
+FROM python:alpine3.15
 USER root
 RUN apk add --no-cache git make musl-dev go bash
 
@@ -15,7 +15,8 @@ RUN mkdir -p ${GOPATH}/src ${GOPATH}/bin
 WORKDIR /home
 
 ADD . /home/
-COPY ./.resources/ /home/.resources/
+COPY /home/ziad/other/og_cli/OGrEE-CLI/.resources/.env /home/.resources/
+#COPY ./.resources/ /home/.resources/
 # COPY ./.env /home/
 # RUN cd p3 && go mod init p3
 
@@ -33,4 +34,4 @@ RUN make
 #CMD ["make"]
 
 #RUN cd /home && go build main.go 
-CMD [/home/main]
+CMD /home/main
