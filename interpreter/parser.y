@@ -392,6 +392,7 @@ factor: TOK_LPAREN EXPR TOK_RPAREN {$$=$2}
                                                  }
                                                 }
        //|TOK_WORD {$$=&symbolReferenceNode{REFERENCE, $1,&numNode{NUM,0}, nil}}
+       |TOK_WORD {$$=&strNode{STR, $1}; dCatchPtr = $1; dCatchNodePtr=&strNode{STR, $1}}
        |TOK_STR {$$=&strNode{STR, $1}}
        |TOK_BOOL {var x bool;if $1=="false"{x = false}else{x=true};$$=&boolNode{BOOL, x}}
        ;
