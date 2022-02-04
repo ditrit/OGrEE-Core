@@ -39,7 +39,7 @@ func init() {
 		dbUri = fmt.Sprintf("mongodb://%s:%s/?readPreference=primary&ssl=false",
 			dbHost, dbPort)
 	} else {
-		dbUri = fmt.Sprintf("mongodb://%s:%s@%s:%s/?readPreference=primary&https=true",
+		dbUri = fmt.Sprintf("mongodb://%s:%s@%s:%s/?readPreference=primary",
 			user, pass, dbHost, dbPort)
 	}
 
