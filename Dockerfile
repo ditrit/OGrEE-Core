@@ -15,7 +15,7 @@ RUN mkdir -p ${GOPATH}/src ${GOPATH}/bin
 WORKDIR /home
 
 ADD . /home/
-COPY /home/ziad/other/og_cli/OGrEE-CLI/.resources/.env /home/.resources/
+COPY /home/ziad/buildCLI/credentials/.env /home/.resources/
 #COPY ./.resources/ /home/.resources/
 # COPY ./.env /home/
 # RUN cd p3 && go mod init p3
