@@ -116,12 +116,14 @@ pipeline {
                 sh 'docker build -t testingalpine:dockerfile .'
                 sh 'docker stop lapd || true'
                 sh 'fuser -k 27020/tcp || true'
-                sh 'sudo fuser -k 3001/tcp'
+                sh 'sudo fuser -k 3001/tcp || true'
                 sh 'docker stop ogree_api || true'
+                sh 'docker rm ogree_api || true'
                 //sh 'rm ./env'
                 //sh 'mv ./.env.bak ./.env'
                 
-                sh 'docker run -d --rm --network=host --name=ogree_api testingalpine:dockerfile /home/main'
+                //sh 'docker run -d --rm --network=host --name=ogree_api testingalpine:dockerfile /home/main'
+                sh 'docker-compose -f /home/ziad/api/v4/OGREE-APIv3/docker-compose.yml up -d'
                 sh 'docker logs ogree_api'
                
             }
