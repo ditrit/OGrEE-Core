@@ -706,8 +706,6 @@ func GetOCLIAtrributes(path *Stack, ent int, data map[string]interface{}) {
 
 		data["domain"] = data["name"]
 		data["parentId"] = nil
-		attr["color"] = "FFFFFFFF" //Dummy value
-		data["attributes"] = attr
 		PostObj(ent, "tenant", data)
 
 	case SITE:

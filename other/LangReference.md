@@ -40,7 +40,7 @@ Variables
 
  ### Variable types
  ```
- string
+string
 int 
 float  
 node
@@ -224,6 +224,105 @@ update path/to/object : usJn partial : path/to/json/file
 update path/to/object : usJn : path/to/json/file
 ```
 
+### OCLI Syntax
+There is additional syntax for fast object creation:
+#### Create a Tenant
+```
++tenant:path/to/tenantName@[color]
++tn:path/to/tenantName@[color]
+```
+
+
+#### Create a Site
+```
++site:path/to/siteName@[name]@[orientation]  
++si:path/to/siteName@[name]@[orientation]
+```
+Placeholder values are assigned to the object upon creation so as to satisfy the object requirements:
+- usableColor = "DBEDF2"
+- reservedColor = "F2F2F2"
+- technicalColor = "EBF2DE"
+- domain = Tenant's Name
+
+#### Create a Building
+[pos] is a Vector2 [x,y] (m,m)
+[size] is a Vector3 [width,length,height] (m,m,m)
+```
++building:path/to/bldgName@[pos]@[size]  
++bd:path/to/bldgName@[pos]@[size]
+```
+Placeholder values are assigned to the object upon creation so as to satisfy the object requirements:
+- posXYUnit = "m"
+- sizeUnit = "m"
+- heightUnit = "m"
+- height = 0
+- domain = Tenant's Name 
+
+#### Create a Room
+[pos] is a Vector2 [x,y] (m,m)
+[size] is a Vector3 [width,length,height] (m,m,m) [template] is the name of the room template
+[orientation] is more precise than the building's one: you have to specify the direction of the rows/columns: [+/-X][+/-Y]. eg: +E+N or -W+S
+[floorUnit] is optional: by default set to "t" (tiles), can also be m (meters) or f (feet)
+```
++room:path/to/roomName@[pos]@[size]@[orientation]@[floorUnit]  
++room:path/to/roomName@[pos]@[template]
++ro:path/to/roomName@[pos]@[size]@[orientation]@[floorUnit]  
++ro:path/to/roomName@[pos]@[template]
++room:path/to/roomName@[pos]
++ro:path/to/roomName@[pos]
+```
+Placeholder values are assigned to the object upon creation so as to satisfy the object requirements:
+- floorUnit = "t"
+- orientation = "+N+E"
+- posXYUnit = "m"
+- sizeUnit = "m"
+- height = 0
+- heightUnit = "m"
+- domain = Tenant's Name 
+
+#### Create a Rack
+```
++rack:path/to/roomName@[pos]@[size]   
++rack:path/to/roomName@[pos]@[template]   
++rk:path/to/roomName@[pos]@[size]   
++rk:path/to/roomName@[pos]@[template]   
+```
+Placeholder values are assigned to the object upon creation so as to satisfy the object requirements:
+- sizeUnit = "m"
+- height = 0
+- heightUnit = "m"
+- posXYUnit = "t"
+- orientation = "front"
+- domain = Tenant's Name
+
+#### Create a Device
+```
++device:path/to/deviceName@[slot]@[sizeUnit]@[side]
++dv:path/to/deviceName@[slot]@[sizeUnit]
+```
+Placeholder values are assigned to the object upon creation so as to satisfy the object requirements:
+- orientation = "front"
+- size = 0
+- height = 0
+- heightUnit = "mm"
+- domain = Tenant's Name
+
+#### Create a Corridor
+```
++corridor:path/to/corridorName@r1@r2@[temperature]
++co:path/to/corridorName@r1@r2@[temperature]
+```
+
+#### Create a Group
+Group must be child of a room or a rack
+If the group is a child of a room, it can contain racks and corridors.
+If the group is a child of a rack, it can contain devices. c1,c2,...,cN are the short names (eg. A01 instead of tn.si.bd.ro.A01)
+
+```
++group:[name]@{c1,c2,...,cN}
++gr:[name]@{c1,c2,...,cN}
+```
+
 Arithmetic 
 ------------
 *,/,%,- operators are supported. In the event that one of the arguments is a float and the other being an int, the int will be 'promoted' to the float type. There is no way to cast a float to an int or vice versa. 
@@ -253,6 +352,57 @@ Delete Object
 delete path/to/object
 - path/to/object
 ```
+
+Unity Commands
+------------
+Commands that manipulate the Unity UI are now possible   
+
+#### Delay commands
+You can put delay before each command: up to 2 seconds.
+```
+ui.delay=[time]
+```
+#### Enable/Disable wireframe mode
+```
+ui.wireframe=[true|false]
+```
+
+#### Display infos panel
+```
+ui.infos=[true|false]
+```
+
+#### Highlight object
+This is a "toggle" command: use it to turn on/off the highlighting of an object.
+If given object is hidden in its parent, the parent will be highlighted.   
+```
+ui.highlight=[name]
+ui.hl=[name]
+```
+
+#### Move camera
+Move the camera to the given point.   
+[position] is a Vector3: the new position of the camera   
+[rotation] is a Vector2: the rotation of the camera   
+```
+camera.move=[position]@[rotation]
+```
+
+#### Translate camera
+Move the camera to the given destination. You can stack several destinations, the camera will move to each point in the given order.   
+[position] is a Vector3: the position of the camera's destination   
+[rotation] is a Vector2: the rotation of the camera's destination   
+```
+camera.translate=[position]@[rotation]
+```
+
+#### Wait between two translations
+You can define a delay between two camera translations.   
+[time] is the time to wait in seconds   
+```
+camera.wait=[time]
+```
+
 
 Misc.
 ------------
