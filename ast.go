@@ -487,7 +487,7 @@ func (a *arithNode) execute() interface{} {
 				if _, ok := lv.(float64); ok {
 					return lv.(float64) - float64(rv.(int))
 				} else {
-					return rv.(float64) - float64(lv.(int))
+					return float64(lv.(int)) - rv.(float64)
 				}
 			}
 
@@ -505,7 +505,7 @@ func (a *arithNode) execute() interface{} {
 				if _, ok := lv.(float64); ok {
 					return lv.(float64) * float64(rv.(int))
 				} else {
-					return rv.(float64) * float64(lv.(int))
+					return float64(lv.(int)) * rv.(float64)
 				}
 			}
 
@@ -523,7 +523,7 @@ func (a *arithNode) execute() interface{} {
 				if _, ok := lv.(float64); ok {
 					return int(lv.(float64)) % rv.(int)
 				} else {
-					return int(rv.(float64)) % lv.(int)
+					return lv.(int) % int(rv.(float64))
 				}
 			}
 
@@ -541,7 +541,7 @@ func (a *arithNode) execute() interface{} {
 				if _, ok := lv.(float64); ok {
 					return lv.(float64) / float64(rv.(int))
 				} else {
-					return rv.(float64) / float64(lv.(int))
+					return float64(lv.(int)) / rv.(float64)
 				}
 			}
 		}
