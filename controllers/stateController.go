@@ -49,7 +49,7 @@ type ShellState struct {
 	UnityClientAvail bool //For deciding to message unity or not
 	DebugLvl         int
 	LineNumber       int //Used exectuting scripts
-	TemplateList     []map[string]interface{}
+	TemplateTable    map[string]map[string]interface{}
 }
 
 type Node struct {
@@ -68,7 +68,7 @@ func InitState(debugLvl int) {
 	State.ClipBoard = nil
 	State.TreeHierarchy = &(Node{})
 	(*(State.TreeHierarchy)).Entity = -1
-	State.TemplateList = []map[string]interface{}{}
+	State.TemplateTable = map[string]map[string]interface{}{}
 	State.TreeHierarchy.PID = ""
 	State.CurrPath = "/Physical"
 	State.LineNumber = 0

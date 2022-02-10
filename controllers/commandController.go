@@ -8,6 +8,8 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"path/filepath"
+	"strconv"
 	"strings"
 )
 
@@ -681,8 +683,9 @@ func getAttrAndVal(x string) (string, string) {
 
 //Helps to create the Object (thru OCLI syntax)
 func GetOCLIAtrributes(path *Stack, ent int, data map[string]interface{}) {
-	//data["name"] = string(path.Peek().(string))
-	//data["attributes"] = map[string]interface{}{}
+	attr := map[string]interface{}{}
+	tmpl := map[string]interface{}{}
+	var nd **Node
 
 	//If the path uses dots instead of slashes
 	if strings.Contains(path.Peek().(string), ".") == true {
@@ -697,10 +700,21 @@ func GetOCLIAtrributes(path *Stack, ent int, data map[string]interface{}) {
 		path.ReversePop()
 	}
 
+	//Retrieve Parent
+	if ent != TENANT && ent != GROUP {
+		nd = FindNodeInTree(&State.TreeHierarchy, path)
+		if nd == nil {
+			if nd == nil {
+				println("Error! The parent was not found in path")
+				return
+			}
+		}
+	}
+
 	data["name"] = string(path.PeekLast().(string))
 	println("NAME:", string(data["name"].(string)))
 	data["category"] = EntityToString(ent)
-	attr := map[string]interface{}{}
+
 	switch ent {
 	case TENANT:
 
@@ -709,16 +723,6 @@ func GetOCLIAtrributes(path *Stack, ent int, data map[string]interface{}) {
 		PostObj(ent, "tenant", data)
 
 	case SITE:
-
-		println("Top:", path.Peek().(string))
-		println("LastL:", path.PeekLast().(string))
-		nd := FindNodeInTree(&State.TreeHierarchy, path)
-		if nd == nil {
-			if nd == nil {
-				println("Error! The parent was not found in path")
-				return
-			}
-		}
 
 		//Default values
 		data["attributes"].(map[string]interface{})["usableColor"] = "DBEDF2"
@@ -733,12 +737,21 @@ func GetOCLIAtrributes(path *Stack, ent int, data map[string]interface{}) {
 		PostObj(ent, "site", data)
 	case BLDG:
 
-		nd := FindNodeInTree(&State.TreeHierarchy, path)
-		if nd == nil {
-			if nd == nil {
-				println("Error! The parent was not found in path")
-				return
+		attr = data["attributes"].(map[string]interface{})
+
+		//User provided x,y,z coordinates which must be
+		//formatted into a string (as per client specifications)
+		if arr, ok := attr["size"].(map[string]interface{}); ok {
+			res := ""
+			for k, v := range arr {
+				switch v.(type) {
+				case int:
+					res += k + ":" + strconv.Itoa(v.(int)) + ","
+				case float64:
+					res += k + strconv.FormatFloat(v.(float64), 'E', -1, 64) + ","
+				}
 			}
+			attr["size"] = res[:len(res)-1]
 		}
 
 		attr["posXYUnit"] = "m"
@@ -746,26 +759,28 @@ func GetOCLIAtrributes(path *Stack, ent int, data map[string]interface{}) {
 		attr["heightUnit"] = "m"
 		attr["height"] = 0 //Should be set from parser by default
 		data["parentId"] = (*nd).ID
-		data["attributes"] = attr
 		data["domain"] = strings.Split(((*nd).Path), "/")[2]
 
 		PostObj(ent, "building", data)
 	case ROOM:
 
-		nd := FindNodeInTree(&State.TreeHierarchy, path)
-		if nd == nil {
-			if nd == nil {
-				println("Error! The parent was not found in path")
-				return
-			}
+		attr = data["attributes"].(map[string]interface{})
+
+		baseAttrs := map[string]interface{}{
+			"orientation": "+N+E", "floorUnit": "t",
+			"posXYUnit": "m", "sizeUnit": "m",
+			"height":     0,
+			"heightUnit": "m"}
+
+		MergeMaps(attr, baseAttrs, false)
+
+		//If user provided templates, get the JSON
+		//and parse into attributes
+		if q, ok := attr["template"]; ok {
+			tmpl = State.TemplateTable[q.(string)]
+			MergeMaps(attr, tmpl, true)
 		}
 
-		attr["floorUnit"] = "t"
-		attr["orientation"] = "+N+E"
-		attr["posXYUnit"] = "m"
-		attr["sizeUnit"] = "m"
-		attr["height"] = 0
-		attr["heightUnit"] = "m"
 		data["parentId"] = (*nd).ID
 		data["domain"] = strings.Split(((*nd).Path), "/")[2]
 		data["attributes"] = attr
@@ -773,19 +788,25 @@ func GetOCLIAtrributes(path *Stack, ent int, data map[string]interface{}) {
 		PostObj(ent, "room", data)
 	case RACK:
 
-		nd := FindNodeInTree(&State.TreeHierarchy, path)
-		if nd == nil {
-			if nd == nil {
-				println("Error! The parent was not found in path")
-				return
-			}
+		attr = data["attributes"].(map[string]interface{})
+
+		baseAttrs := map[string]interface{}{
+			"sizeUnit":    "m",
+			"height":      0,
+			"heightUnit":  "m",
+			"posXYUnit":   "t",
+			"orientation": "front",
 		}
 
-		attr["sizeUnit"] = "m"
-		attr["height"] = 0
-		attr["heightUnit"] = "m"
-		attr["posXYUnit"] = "t"
-		attr["orientation"] = "front"
+		MergeMaps(attr, baseAttrs, false)
+
+		//If user provided templates, get the JSON
+		//and parse into templates
+		if q, ok := attr["template"]; ok {
+			tmpl = State.TemplateTable[q.(string)]
+			MergeMaps(attr, tmpl, true)
+		}
+
 		data["parentId"] = (*nd).ID
 		data["domain"] = strings.Split(((*nd).Path), "/")[2]
 		data["attributes"] = attr
@@ -793,18 +814,23 @@ func GetOCLIAtrributes(path *Stack, ent int, data map[string]interface{}) {
 		PostObj(ent, "rack", data)
 	case DEVICE:
 
-		nd := FindNodeInTree(&State.TreeHierarchy, path)
-		if nd == nil {
-			if nd == nil {
-				println("Error! The parent was not found in path")
-				return
-			}
+		attr = data["attributes"].(map[string]interface{})
+
+		baseAttrs := map[string]interface{}{
+			"orientation": "front",
+			"size":        0,
+			"height":      0,
+			"heightUnit":  "mm",
 		}
 
-		attr["orientation"] = "front"
-		attr["size"] = 0
-		attr["height"] = 0
-		attr["heightUnit"] = "mm"
+		MergeMaps(attr, baseAttrs, false)
+
+		//If user provided templates, get the JSON
+		//and parse into templates
+		if q, ok := attr["template"]; ok {
+			tmpl = State.TemplateTable[q.(string)]
+			MergeMaps(attr, tmpl, true)
+		}
 
 		data["domain"] = strings.Split(((*nd).Path), "/")[2]
 		data["parentId"] = (*nd).ID
@@ -813,30 +839,12 @@ func GetOCLIAtrributes(path *Stack, ent int, data map[string]interface{}) {
 
 	case SEPARATOR, CORIDOR, GROUP:
 		//name, category, domain, pid
-		data["attributes"] = map[string]interface{}{}
-		/*for data["name"] == nil || data["domain"] == nil ||
-			data["parentId"] == nil {
-			println("Enter attribute")
-			x, e := term.Readline()
-			if e != nil {
-				println("Error reading attribute: ", e)
-				ErrorLogger.Println("Error reading attribute: ", e)
-				return
-			}
-			a, v := getAttrAndVal(x)
-			switch a {
-			case "id", "name", "category", "parentID",
-				"description", "domain", "parentid", "parentId":
-				data[a] = v
 
-			default:
-				if _, ok := data["attributes"].(map[string]interface{}); ok {
-					data["attributes"].(map[string]interface{})[a] = v
-				} else {
-					data["attributes"].(map[string]string)[a] = v
-				}
-			}
-		}*/
+		if ent != GROUP {
+			data["domain"] = strings.Split(((*nd).Path), "/")[2]
+			data["parentId"] = (*nd).ID
+		}
+		data["attributes"] = map[string]interface{}{}
 
 		if ent == SEPARATOR {
 			PostObj(ent, "separator", data)
@@ -880,7 +888,7 @@ func LoadFile(path string) string {
 	//scanner := bufio.NewScanner(file)
 }
 
-func LoadTemplate(data map[string]interface{}) {
+func LoadTemplate(data map[string]interface{}, filePath string) {
 	if cat, ok := data["category"]; !ok {
 		ErrorLogger.Println("Received Invalid Template!")
 		fmt.Println("Error! Invalid Template")
@@ -888,15 +896,23 @@ func LoadTemplate(data map[string]interface{}) {
 		if category, ok := cat.(string); !ok {
 			ErrorLogger.Println("Category not a string Template!")
 			fmt.Println("Error! Category must be string in Template." +
-				"Please indicate object type as pers OGrEE docs")
+				"Please indicate object type as per OGrEE docs")
 
 		} else if EntityStrToInt(category) < 0 { //Category is not an entity
 			ErrorLogger.Println("Invalid Category in Template!")
 			fmt.Println("Error! Invalid Category in Template." +
-				"Please indicate object type as pers OGrEE docs")
+				"Please indicate object type as per OGrEE docs")
 
 		} else { //We have a valid category, so let's add it
-			State.TemplateList = append(State.TemplateList, data)
+			//Retrieve Name from path and store it
+			//The code assumes that the file does not
+			//begin with a '.'
+			fileName := filepath.Base(filePath)
+			if idx := strings.Index(fileName, "."); idx > 0 {
+				fileName = fileName[:idx]
+			}
+
+			State.TemplateTable[fileName] = data
 
 			//Inform Unity Client
 			InformUnity("POST", "load template",
@@ -972,5 +988,21 @@ func InformUnity(method, caller string, data map[string]interface{}) {
 		}
 		println()
 		println()
+	}
+}
+
+func MergeMaps(x, y map[string]interface{}, overwrite bool) {
+	for i := range y {
+		//Conflict case
+		if _, ok := x[i]; ok {
+			if overwrite == true {
+				WarningLogger.Println("Conflict while merging maps")
+				println("Conflict while merging data, resorting to overwriting!")
+				x[i] = y[i]
+			}
+		} else {
+			x[i] = y[i]
+		}
+
 	}
 }
