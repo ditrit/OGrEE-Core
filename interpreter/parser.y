@@ -205,8 +205,7 @@ func formActualPath(x string) string {
        TOK_LSTILE TOK_LSCAB TOK_LSSENSOR TOK_LSAC TOK_LSPANEL
        TOK_LSWALL TOK_LSCORRIDOR
        TOK_LSROOM TOK_LSRACK TOK_LSDEV
-       TOK_OCBLDG TOK_OCDEV
-       TOK_OCRACK TOK_OCROOM TOK_ATTRSPEC TOK_OCSITE TOK_OCTENANT
+       TOK_ATTRSPEC
        TOK_COL TOK_SELECT TOK_LBRAC TOK_RBRAC
        TOK_COMMA TOK_DOT TOK_CMDS TOK_TEMPLATE TOK_VAR TOK_DEREF
        TOK_SEMICOL TOK_IF TOK_FOR TOK_WHILE
@@ -215,7 +214,6 @@ func formActualPath(x string) string {
        TOK_NOT TOK_MULT TOK_GREATER TOK_LESS TOK_THEN TOK_FI TOK_DONE
        TOK_MOD
        TOK_UNSET TOK_ELIF TOK_DO TOK_LEN
-       TOK_OCGROUP TOK_OCWALL TOK_OCCORIDOR
        TOK_USE_JSON TOK_PARTIAL
        TOK_CAM TOK_UI
        
@@ -558,80 +556,36 @@ OCLISYNTX:  TOK_PLUS OCCR {$$=$2}
             ;
 
 
-OCCR:   TOK_OCTENANT TOK_COL P TOK_ATTRSPEC EXPR {$$=&commonNode{COMMON, cmd.GetOCLIAtrributes, "GetOCAttr", []interface{}{cmd.StrToStack(replaceOCLICurrPath($3)),cmd.TENANT,map[string]interface{}{"attributes":map[string]interface{}{"color":$5}} }}}
-        |TOK_TENANT TOK_COL P TOK_ATTRSPEC EXPR {$$=&commonNode{COMMON, cmd.GetOCLIAtrributes, "GetOCAttr", []interface{}{cmd.StrToStack(replaceOCLICurrPath($3)),cmd.TENANT,map[string]interface{}{"attributes":map[string]interface{}{"color":$5}} }}}
-        |TOK_OCSITE TOK_COL P TOK_ATTRSPEC EXPR {$$=&commonNode{COMMON, cmd.GetOCLIAtrributes, "GetOCAttr", []interface{}{cmd.StrToStack(replaceOCLICurrPath($3)),cmd.SITE,map[string]interface{}{"attributes":map[string]interface{}{"orientation":$5}} }}}
+OCCR:   
+        TOK_TENANT TOK_COL P TOK_ATTRSPEC EXPR {$$=&commonNode{COMMON, cmd.GetOCLIAtrributes, "GetOCAttr", []interface{}{cmd.StrToStack(replaceOCLICurrPath($3)),cmd.TENANT,map[string]interface{}{"attributes":map[string]interface{}{"color":$5}} }}}
         |TOK_SITE TOK_COL P TOK_ATTRSPEC EXPR {$$=&commonNode{COMMON, cmd.GetOCLIAtrributes, "GetOCAttr", []interface{}{cmd.StrToStack(replaceOCLICurrPath($3)),cmd.SITE,map[string]interface{}{"attributes":map[string]interface{}{"orientation":$5}} }}}
         
-        |TOK_OCBLDG TOK_COL P TOK_ATTRSPEC EXPR TOK_ATTRSPEC EXPR {$$=&commonNode{COMMON, cmd.GetOCLIAtrributes, "GetOCAttr", []interface{}{cmd.StrToStack(replaceOCLICurrPath($3)),cmd.BLDG,map[string]interface{}{"attributes":map[string]interface{}{"posXY":$5, "size":$7}} }}}
         |TOK_BLDG TOK_COL P TOK_ATTRSPEC EXPR TOK_ATTRSPEC EXPR {$$=&commonNode{COMMON, cmd.GetOCLIAtrributes, "GetOCAttr", []interface{}{cmd.StrToStack(replaceOCLICurrPath($3)),cmd.BLDG,map[string]interface{}{"attributes":map[string]interface{}{"posXY":$5, "size":$7}} }}}
-        |TOK_OCBLDG TOK_COL P TOK_ATTRSPEC EXPR TOK_ATTRSPEC TOK_LBLOCK EXPR TOK_COMMA EXPR TOK_COMMA EXPR TOK_RBLOCK {$$=&commonNode{COMMON, cmd.GetOCLIAtrributes, "GetOCAttr", []interface{}{cmd.StrToStack(replaceOCLICurrPath($3)),cmd.BLDG,map[string]interface{}{"attributes":map[string]interface{}{"posXY":$5, "size":map[string]interface{}{"x":($8).execute(),"y":($10).execute(),"z":($12).execute()}}} }}}
         |TOK_BLDG TOK_COL P TOK_ATTRSPEC EXPR TOK_ATTRSPEC   TOK_LBLOCK EXPR TOK_COMMA EXPR TOK_COMMA EXPR TOK_RBLOCK {$$=&commonNode{COMMON, cmd.GetOCLIAtrributes, "GetOCAttr", []interface{}{cmd.StrToStack(replaceOCLICurrPath($3)),cmd.BLDG,map[string]interface{}{"attributes":map[string]interface{}{"posXY":$5, "size":map[string]interface{}{"x":($8).execute(),"y":($10).execute(),"z":($12).execute()}}} }}}
         
 
-        |TOK_OCROOM TOK_COL P TOK_ATTRSPEC EXPR TOK_ATTRSPEC EXPR TOK_ATTRSPEC EXPR TOK_ATTRSPEC EXPR{$$=&commonNode{COMMON, cmd.GetOCLIAtrributes, "GetOCAttr", []interface{}{cmd.StrToStack(replaceOCLICurrPath($3)),cmd.ROOM,map[string]interface{}{"attributes":map[string]interface{}{"posXY":$5, "size":$7, "orientation":$9, "floorUnit":$11}} }}}
         |TOK_ROOM TOK_COL P TOK_ATTRSPEC EXPR TOK_ATTRSPEC EXPR TOK_ATTRSPEC EXPR TOK_ATTRSPEC EXPR{$$=&commonNode{COMMON, cmd.GetOCLIAtrributes, "GetOCAttr", []interface{}{cmd.StrToStack(replaceOCLICurrPath($3)),cmd.ROOM,map[string]interface{}{"attributes":map[string]interface{}{"posXY":$5, "size":$7, "orientation":$9, "floorUnit":$11}} }}}
-        
-        |TOK_OCROOM TOK_COL P TOK_ATTRSPEC EXPR TOK_ATTRSPEC EXPR TOK_ATTRSPEC EXPR {$$=&commonNode{COMMON, cmd.GetOCLIAtrributes, "GetOCAttr", []interface{}{cmd.StrToStack(replaceOCLICurrPath($3)),cmd.ROOM,map[string]interface{}{"attributes":map[string]interface{}{"posXY":$5, "size":$7, "orientation":$9}} }}}
         |TOK_ROOM TOK_COL P TOK_ATTRSPEC EXPR TOK_ATTRSPEC EXPR TOK_ATTRSPEC EXPR {$$=&commonNode{COMMON, cmd.GetOCLIAtrributes, "GetOCAttr", []interface{}{cmd.StrToStack(replaceOCLICurrPath($3)),cmd.ROOM,map[string]interface{}{"attributes":map[string]interface{}{"posXY":$5, "size":$7, "orientation":$9}} }}}
-
-        |TOK_OCROOM TOK_COL P TOK_ATTRSPEC EXPR TOK_ATTRSPEC EXPR {$$=&commonNode{COMMON, cmd.GetOCLIAtrributes, "GetOCAttr", []interface{}{cmd.StrToStack(replaceOCLICurrPath($3)),cmd.ROOM,map[string]interface{}{"attributes":map[string]interface{}{"posXY":$5, "template":$7}} }}}
         |TOK_ROOM TOK_COL P TOK_ATTRSPEC EXPR TOK_ATTRSPEC EXPR {$$=&commonNode{COMMON, cmd.GetOCLIAtrributes, "GetOCAttr", []interface{}{cmd.StrToStack(replaceOCLICurrPath($3)),cmd.ROOM,map[string]interface{}{"attributes":map[string]interface{}{"posXY":$5, "template":$7}} }}}
-
-        |TOK_OCROOM TOK_COL P TOK_ATTRSPEC EXPR {$$=&commonNode{COMMON, cmd.GetOCLIAtrributes, "GetOCAttr", []interface{}{cmd.StrToStack(replaceOCLICurrPath($3)),cmd.ROOM,map[string]interface{}{"attributes":map[string]interface{}{"posXY":$5}} }}}
         |TOK_ROOM TOK_COL P TOK_ATTRSPEC EXPR {$$=&commonNode{COMMON, cmd.GetOCLIAtrributes, "GetOCAttr", []interface{}{cmd.StrToStack(replaceOCLICurrPath($3)),cmd.ROOM,map[string]interface{}{"attributes":map[string]interface{}{"posXY":$5}} }}}
 
         
-        |TOK_OCRACK TOK_COL P TOK_ATTRSPEC EXPR TOK_ATTRSPEC EXPR TOK_ATTRSPEC EXPR{$$=&commonNode{COMMON, cmd.GetOCLIAtrributes, "GetOCAttr", []interface{}{cmd.StrToStack(replaceOCLICurrPath($3)),cmd.RACK,map[string]interface{}{"attributes":map[string]interface{}{"posXY":$5, "size":$7, "orientation":$9}} }}}
         |TOK_RACK TOK_COL P TOK_ATTRSPEC EXPR TOK_ATTRSPEC EXPR TOK_ATTRSPEC EXPR{$$=&commonNode{COMMON, cmd.GetOCLIAtrributes, "GetOCAttr", []interface{}{cmd.StrToStack(replaceOCLICurrPath($3)),cmd.RACK,map[string]interface{}{"attributes":map[string]interface{}{"posXY":$5, "size":$7, "orientation":$9}} }}}
-        |TOK_OCRACK TOK_COL P TOK_ATTRSPEC EXPR TOK_ATTRSPEC EXPR {$$=&commonNode{COMMON, cmd.GetOCLIAtrributes, "GetOCAttr", []interface{}{cmd.StrToStack(replaceOCLICurrPath($3)),cmd.RACK,map[string]interface{}{"attributes":map[string]interface{}{"posXY":$5, "size":$7}} }}}
         |TOK_RACK TOK_COL P TOK_ATTRSPEC EXPR TOK_ATTRSPEC EXPR {$$=&commonNode{COMMON, cmd.GetOCLIAtrributes, "GetOCAttr", []interface{}{cmd.StrToStack(replaceOCLICurrPath($3)),cmd.RACK,map[string]interface{}{"attributes":map[string]interface{}{"posXY":$5, "size":$7}} }}}
-        |TOK_OCRACK TOK_COL P TOK_ATTRSPEC EXPR {$$=&commonNode{COMMON, cmd.GetOCLIAtrributes, "GetOCAttr", []interface{}{cmd.StrToStack(replaceOCLICurrPath($3)),cmd.RACK,map[string]interface{}{"attributes":map[string]interface{}{"template":$5}} }}}
         |TOK_RACK TOK_COL P TOK_ATTRSPEC EXPR {$$=&commonNode{COMMON, cmd.GetOCLIAtrributes, "GetOCAttr", []interface{}{cmd.StrToStack(replaceOCLICurrPath($3)),cmd.RACK,map[string]interface{}{"attributes":map[string]interface{}{"template":$5}} }}}
         
         
-        |TOK_OCDEV TOK_COL P TOK_ATTRSPEC EXPR TOK_ATTRSPEC EXPR TOK_ATTRSPEC EXPR {$$=&commonNode{COMMON, cmd.GetOCLIAtrributes, "GetOCAttr", []interface{}{cmd.StrToStack(replaceOCLICurrPath($3)),cmd.DEVICE,map[string]interface{}{"attributes":map[string]interface{}{"slot":$5, "sizeUnit":$7, "side":$9}} }}}
         |TOK_DEVICE TOK_COL P TOK_ATTRSPEC EXPR TOK_ATTRSPEC EXPR TOK_ATTRSPEC EXPR {$$=&commonNode{COMMON, cmd.GetOCLIAtrributes, "GetOCAttr", []interface{}{cmd.StrToStack(replaceOCLICurrPath($3)),cmd.DEVICE,map[string]interface{}{"attributes":map[string]interface{}{"slot":$5, "sizeUnit":$7, "side":$9}} }}}
-        |TOK_OCDEV TOK_COL P TOK_ATTRSPEC EXPR  TOK_ATTRSPEC EXPR {$$=&commonNode{COMMON, cmd.GetOCLIAtrributes, "GetOCAttr", []interface{}{cmd.StrToStack(replaceOCLICurrPath($3)),cmd.DEVICE,map[string]interface{}{"attributes":map[string]interface{}{"posU":$5, "sizeUnit":$7}} }}}
         |TOK_DEVICE TOK_COL P TOK_ATTRSPEC EXPR TOK_ATTRSPEC EXPR {$$=&commonNode{COMMON, cmd.GetOCLIAtrributes, "GetOCAttr", []interface{}{cmd.StrToStack(replaceOCLICurrPath($3)),cmd.DEVICE,map[string]interface{}{"attributes":map[string]interface{}{"posU":$5, "sizeUnit":$7}} }}}
-        |TOK_OCDEV TOK_COL P TOK_ATTRSPEC EXPR  {$$=&commonNode{COMMON, cmd.GetOCLIAtrributes, "GetOCAttr", []interface{}{cmd.StrToStack(replaceOCLICurrPath($3)),cmd.DEVICE,map[string]interface{}{"attributes":map[string]interface{}{"template":$5}} }}}
         |TOK_DEVICE TOK_COL P TOK_ATTRSPEC EXPR {$$=&commonNode{COMMON, cmd.GetOCLIAtrributes, "GetOCAttr", []interface{}{cmd.StrToStack(replaceOCLICurrPath($3)),cmd.DEVICE,map[string]interface{}{"attributes":map[string]interface{}{"template":$5}} }}}
 
-        |TOK_OCCORIDOR TOK_COL P TOK_ATTRSPEC EXPR TOK_ATTRSPEC EXPR TOK_ATTRSPEC EXPR TOK_ATTRSPEC EXPR {$$=&commonNode{COMMON, cmd.GetOCLIAtrributes, "GetOCAttr", []interface{}{cmd.StrToStack(replaceOCLICurrPath($3)),cmd.CORIDOR, map[string]interface{}{"name":$5, "leftRack":$7, "rightRack":$9, "temperature":$11}}}}
         |TOK_CORIDOR TOK_COL P TOK_ATTRSPEC EXPR TOK_ATTRSPEC EXPR TOK_ATTRSPEC EXPR TOK_ATTRSPEC EXPR {$$=&commonNode{COMMON, cmd.GetOCLIAtrributes, "GetOCAttr", []interface{}{cmd.StrToStack(replaceOCLICurrPath($3)),cmd.CORIDOR, map[string]interface{}{"name":$5, "leftRack":$7, "rightRack":$9, "temperature":$11}}}}
-        |TOK_OCGROUP TOK_COL P TOK_ATTRSPEC EXPR CDORFG { x:=map[string]interface{}{"name":$5,"racks":$6}; $$=&commonNode{COMMON, cmd.GetOCLIAtrributes, "GetOCAttr", []interface{}{cmd.StrToStack(replaceOCLICurrPath($3)),cmd.GROUP,x}} }
         |TOK_GROUP TOK_COL P TOK_ATTRSPEC EXPR CDORFG { x:=map[string]interface{}{"name":$5,"racks":$6}; $$=&commonNode{COMMON, cmd.GetOCLIAtrributes, "GetOCAttr", []interface{}{cmd.StrToStack(replaceOCLICurrPath($3)),cmd.GROUP,x}} }
-        |TOK_OCWALL TOK_COL P TOK_ATTRSPEC EXPR TOK_ATTRSPEC EXPR {$$=&commonNode{COMMON, cmd.GetOCLIAtrributes, "GetOCAttr", []interface{}{cmd.StrToStack(replaceOCLICurrPath($3)), cmd.SEPARATOR, map[string]interface{}{"pos1":$5,"pos2":$7}}}}
         |TOK_WALL TOK_COL P TOK_ATTRSPEC EXPR TOK_ATTRSPEC EXPR {$$=&commonNode{COMMON, cmd.GetOCLIAtrributes, "GetOCAttr", []interface{}{cmd.StrToStack(replaceOCLICurrPath($3)), cmd.SEPARATOR, map[string]interface{}{"pos1":$5,"pos2":$7}}}}
        
        //EasyPost syntax
-        |TOK_TENANT TOK_COL TOK_USE_JSON TOK_COL P {$$=&commonNode{COMMON, cmd.PostObj, "EasyPost", []interface{}{cmd.EntityStrToInt($1),$1, $5}}}
-        |TOK_OCTENANT TOK_COL TOK_USE_JSON TOK_COL P {$$=&commonNode{COMMON, cmd.PostObj, "EasyPost", []interface{}{cmd.EntityStrToInt("tenant"),"tenant", $5}}}
-        |TOK_SITE TOK_COL TOK_USE_JSON TOK_COL P {$$=&commonNode{COMMON, cmd.PostObj, "EasyPost", []interface{}{cmd.EntityStrToInt($1),$1, $5}}}
-        |TOK_OCSITE TOK_COL TOK_USE_JSON TOK_COL P {$$=&commonNode{COMMON, cmd.PostObj, "EasyPost", []interface{}{cmd.EntityStrToInt("site"),"site", $5}}}
-        |TOK_BLDG TOK_COL TOK_USE_JSON TOK_COL P {$$=&commonNode{COMMON, cmd.PostObj, "EasyPost", []interface{}{cmd.EntityStrToInt($1),$1, $5}}}
-        |TOK_OCBLDG TOK_COL TOK_USE_JSON TOK_COL P {$$=&commonNode{COMMON, cmd.PostObj, "EasyPost", []interface{}{cmd.EntityStrToInt("building"),"building", $5}}}
-        |TOK_ROOM TOK_COL TOK_USE_JSON TOK_COL P {$$=&commonNode{COMMON, cmd.PostObj, "EasyPost", []interface{}{cmd.EntityStrToInt($1),$1, $5}}}
-        |TOK_OCROOM TOK_COL TOK_USE_JSON TOK_COL P {$$=&commonNode{COMMON, cmd.PostObj, "EasyPost", []interface{}{cmd.EntityStrToInt("room"),"room", $5}}}
-        |TOK_RACK TOK_COL TOK_USE_JSON TOK_COL P {$$=&commonNode{COMMON, cmd.PostObj, "EasyPost", []interface{}{cmd.EntityStrToInt($1),$1, $5}}}
-        |TOK_OCRACK TOK_COL TOK_USE_JSON TOK_COL P {$$=&commonNode{COMMON, cmd.PostObj, "EasyPost", []interface{}{cmd.EntityStrToInt("rack"),"rack", $5}}}
-        |TOK_DEVICE TOK_COL TOK_USE_JSON TOK_COL P {$$=&commonNode{COMMON, cmd.PostObj, "EasyPost", []interface{}{cmd.EntityStrToInt($1),$1, $5}}}
-        |TOK_OCDEV TOK_COL TOK_USE_JSON TOK_COL P {$$=&commonNode{COMMON, cmd.PostObj, "EasyPost", []interface{}{cmd.EntityStrToInt("device"),"device", $5}}}
-        |TOK_OCCORIDOR  TOK_COL TOK_USE_JSON TOK_COL P {$$=&commonNode{COMMON, cmd.PostObj, "EasyPost", []interface{}{cmd.EntityStrToInt("corridor"),"corridor", $5}}}
-        |TOK_CORIDOR TOK_COL TOK_USE_JSON TOK_COL P {$$=&commonNode{COMMON, cmd.PostObj, "EasyPost", []interface{}{cmd.EntityStrToInt($1),$1, $5}}}
-        |TOK_OCGROUP TOK_COL TOK_USE_JSON TOK_COL P {$$=&commonNode{COMMON, cmd.PostObj, "EasyPost", []interface{}{cmd.EntityStrToInt("group"),"group", $5}}}
-        |TOK_GROUP TOK_COL TOK_USE_JSON TOK_COL P {$$=&commonNode{COMMON, cmd.PostObj, "EasyPost", []interface{}{cmd.EntityStrToInt($1),$1, $5}}}
-        |TOK_OCWALL TOK_COL TOK_USE_JSON TOK_COL P {$$=&commonNode{COMMON, cmd.PostObj, "EasyPost", []interface{}{cmd.EntityStrToInt("separator"),"separator", $5}}}
-        
-        |TOK_WALL TOK_COL TOK_USE_JSON TOK_COL P {$$=&commonNode{COMMON, cmd.PostObj, "EasyPost", []interface{}{cmd.EntityStrToInt($1),$1, $5}}}
-        | TOK_AC TOK_COL TOK_USE_JSON TOK_COL P {$$=&commonNode{COMMON, cmd.PostObj, "EasyPost", []interface{}{cmd.EntityStrToInt($1),$1, $5}}}
-        | TOK_PANEL TOK_COL TOK_USE_JSON TOK_COL P {$$=&commonNode{COMMON, cmd.PostObj, "EasyPost", []interface{}{cmd.EntityStrToInt($1),$1, $5}}}
-        | TOK_CABINET TOK_COL TOK_USE_JSON TOK_COL P {$$=&commonNode{COMMON, cmd.PostObj, "EasyPost", []interface{}{cmd.EntityStrToInt($1),$1, $5}}}
-        | TOK_ROW TOK_COL TOK_USE_JSON TOK_COL P {$$=&commonNode{COMMON, cmd.PostObj, "EasyPost", []interface{}{cmd.EntityStrToInt($1),$1, $5}}}
-        | TOK_TILE TOK_COL TOK_USE_JSON TOK_COL P {$$=&commonNode{COMMON, cmd.PostObj, "EasyPost", []interface{}{cmd.EntityStrToInt($1),$1, $5}}}
-        | TOK_SENSOR TOK_COL TOK_USE_JSON TOK_COL P {$$=&commonNode{COMMON, cmd.PostObj, "EasyPost", []interface{}{cmd.EntityStrToInt($1),$1, $5}}}
-        | TOK_OBJ_TMPL TOK_COL TOK_USE_JSON TOK_COL P {$$=&commonNode{COMMON, cmd.PostObj, "EasyPost", []interface{}{cmd.EntityStrToInt($1),$1, $5}}}
-        | TOK_ROOM_TMPL TOK_COL TOK_USE_JSON TOK_COL P {$$=&commonNode{COMMON, cmd.PostObj, "EasyPost", []interface{}{cmd.EntityStrToInt($1),$1, $5}}}
+        |E TOK_USE_JSON P {$$=&commonNode{COMMON, cmd.PostObj, "EasyPost", []interface{}{cmd.EntityStrToInt($1),$1, $3}}}
+
        ; 
 OCDEL:  TOK_OCDEL P {$$=&commonNode{COMMON, cmd.DeleteObj, "DeleteObj", []interface{}{replaceOCLICurrPath($2)}}}
 ;

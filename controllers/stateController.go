@@ -589,39 +589,39 @@ func EntityToString(entity int) string {
 
 func EntityStrToInt(entity string) int {
 	switch entity {
-	case "tenant":
+	case "tenant", "tn":
 		return TENANT
-	case "site":
+	case "site", "si":
 		return SITE
-	case "building", "bldg":
+	case "building", "bldg", "bd":
 		return BLDG
-	case "room":
+	case "room", "ro":
 		return ROOM
-	case "rack":
+	case "rack", "rk":
 		return RACK
-	case "device":
+	case "device", "dv":
 		return DEVICE
 	case "ac":
 		return AC
-	case "panel":
+	case "panel", "pn":
 		return PWRPNL
-	case "separator":
+	case "separator", "sp":
 		return SEPARATOR
 	case "room_template":
 		return ROOMTMPL
 	case "obj_template":
 		return OBJTMPL
-	case "cabinet":
+	case "cabinet", "cb":
 		return CABINET
 	case "row":
 		return ROW
-	case "tile":
+	case "tile", "tl":
 		return TILE
-	case "group":
+	case "group", "gr":
 		return GROUP
-	case "corridor":
+	case "corridor", "co":
 		return CORIDOR
-	case "sensor":
+	case "sensor", "sr":
 		return SENSOR
 	default:
 		return -1

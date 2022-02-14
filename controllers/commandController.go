@@ -908,6 +908,13 @@ func LoadTemplate(data map[string]interface{}, filePath string) {
 			//The code assumes that the file does not
 			//begin with a '.'
 			fileName := filepath.Base(filePath)
+
+			if fileName == "/" {
+				WarningLogger.Println("Template not found")
+				fmt.Println("Error! Template not found")
+				return
+			}
+
 			if idx := strings.Index(fileName, "."); idx > 0 {
 				fileName = fileName[:idx]
 			}

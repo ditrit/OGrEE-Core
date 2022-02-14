@@ -39,15 +39,6 @@
 /unset/ {  printToks("TOK_UNSET"); return TOK_UNSET}
 /\"/ {  printToks("TOK_QUOT"); return TOK_QUOT}
 
-/tn/ {  printToks("TOK_OCTENANT");return TOK_OCTENANT}
-/si/ {  printToks("TOK_OCSITE");return TOK_OCSITE}
-/bd/ {  printToks("TOK_OCBLDG");return TOK_OCBLDG}
-/ro/ {  printToks("TOK_OCROOM");return TOK_OCROOM}
-/rk/ {  printToks("TOK_OCRACK");return TOK_OCRACK}
-/dv/ {  printToks("TOK_OCDEV");return TOK_OCDEV}
-/gr/ {  printToks("TOK_OCGROUP");return TOK_OCGROUP}
-/sp/ {  printToks("TOK_OCWALL");return TOK_OCWALL}
-/co/ {  printToks("TOK_OCCORIDOR");return TOK_OCCORIDOR}
 /selection/ {  printToks("TOK_SELECT"); return TOK_SELECT}
 /cmds/ {  printToks("TOK_CMDS"); return TOK_CMDS}
 /template/ {  printToks("TOK_TEMPLATE"); return TOK_TEMPLATE}
@@ -61,21 +52,21 @@
 /ui/ { printToks("TOK_UI"); return TOK_UI}
 /camera/ { printToks("TOK_CAM"); return TOK_CAM}
 
-/tenant/ {  printToks("TOK_TENANT");lval.s = yylex.Text();return TOK_TENANT}
-/site/ {  printToks("TOK_SITE");lval.s = yylex.Text();return TOK_SITE}
-/bldg|building/ {  printToks("TOK_BLDG");lval.s = yylex.Text();return TOK_BLDG}
-/room/ {  printToks("TOK_ROOM");lval.s = yylex.Text();return TOK_ROOM}
-/rack/ {  printToks("TOK_RACK");lval.s = yylex.Text();return TOK_RACK}
-/device/ {  printToks("TOK_DEVICE");lval.s = yylex.Text();return TOK_DEVICE}
-/group/ {  printToks("TOK_GROUP");lval.s = yylex.Text();return TOK_GROUP}
-/corridor/ {  printToks("TOK_CORIDOR");lval.s = yylex.Text();return TOK_CORIDOR}
-/separator/ {  printToks("TOK_WALL");lval.s = yylex.Text();return TOK_WALL}
+/tenant|tn/ {  printToks("TOK_TENANT");lval.s = yylex.Text();return TOK_TENANT}
+/site|si/ {  printToks("TOK_SITE");lval.s = yylex.Text();return TOK_SITE}
+/bldg|building|bd/ {  printToks("TOK_BLDG");lval.s = yylex.Text();return TOK_BLDG}
+/room|ro/ {  printToks("TOK_ROOM");lval.s = yylex.Text();return TOK_ROOM}
+/rack|rk/ {  printToks("TOK_RACK");lval.s = yylex.Text();return TOK_RACK}
+/device|dv/ {  printToks("TOK_DEVICE");lval.s = yylex.Text();return TOK_DEVICE}
+/group|dv/ {  printToks("TOK_GROUP");lval.s = yylex.Text();return TOK_GROUP}
+/corridor|co/ {  printToks("TOK_CORIDOR");lval.s = yylex.Text();return TOK_CORIDOR}
+/separator|sp/ {  printToks("TOK_WALL");lval.s = yylex.Text();return TOK_WALL}
 /ac/ {  printToks("TOK_AC");lval.s = yylex.Text();return TOK_AC}
-/panel/ {  printToks("TOK_PANEL");lval.s = yylex.Text();return TOK_PANEL}
-/tile/ {  printToks("TOK_TILE");lval.s = yylex.Text();return TOK_TILE}
+/panel|pn/ {  printToks("TOK_PANEL");lval.s = yylex.Text();return TOK_PANEL}
+/tile|tl/ {  printToks("TOK_TILE");lval.s = yylex.Text();return TOK_TILE}
 /row/ {  printToks("TOK_ROW");lval.s = yylex.Text();return TOK_ROW}
-/cabinet/ {  printToks("TOK_CABINET");lval.s = yylex.Text();return TOK_CABINET}
-/sensor/ {  printToks("TOK_SENSOR");lval.s = yylex.Text();return TOK_SENSOR}
+/cabinet|cb/ {  printToks("TOK_CABINET");lval.s = yylex.Text();return TOK_CABINET}
+/sensor|sr/ {  printToks("TOK_SENSOR");lval.s = yylex.Text();return TOK_SENSOR}
 /room_template/ {  printToks("TOK_ROOM_TMPL");lval.s = yylex.Text();return TOK_ROOM_TMPL}
 /obj_template/ {  printToks("TOK_OBJ_TMPL");lval.s = yylex.Text();return TOK_OBJ_TMPL}
 
