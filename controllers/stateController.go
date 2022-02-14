@@ -468,29 +468,6 @@ func CheckPath(root **Node, x, pstk *Stack) (bool, string, **Node) {
 
 }
 
-func UpdateTree(root **Node, curr *Node) bool {
-	if root == nil {
-		return false
-	}
-
-	//Add only when the PID matches Parent's ID
-	//And (possibly if) the parent is indeed the correct Entity
-	/*&& GetParentOfEntity(curr.Entity) == (*root).Entity*/
-	if (*root).ID == curr.PID {
-		(*root).Nodes.PushBack(curr)
-		return true
-	}
-
-	for i := (*root).Nodes.Front(); i != nil; i = i.Next() {
-		nxt := (i.Value).(*Node)
-		x := UpdateTree(&nxt, curr)
-		if x != false {
-			return true
-		}
-	}
-	return false
-}
-
 //Return extra bool so that the Parent can delete
 //leaf and keep track without stack
 func DeleteNodeInTree(root **Node, ID string, ent int) (bool, bool) {

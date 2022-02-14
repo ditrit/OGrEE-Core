@@ -257,11 +257,7 @@ func (c *commonNode) execute() interface{} {
 			//Since the attributes is a map of nodes
 			//execute and receive the values
 			attributes := c.args[2].(map[string]interface{})
-			for k := range attributes {
-				if n, ok := attributes[k].(node); ok {
-					attributes[k] = n.execute()
-				}
-			}
+			attributes = evalMapNodes(attributes)
 
 			f(c.args[0].(*cmd.Stack),
 				c.args[1].(int),
@@ -1118,4 +1114,22 @@ func fileToJSON(path string) map[string]interface{} {
 	}
 	json.Unmarshal(x, &data)
 	return data
+}
+
+//Executes nodes in the map and reassigns the keys
+//to resulting values
+func evalMapNodes(x map[string]interface{}) map[string]interface{} {
+	for i := range x {
+
+		if n, ok := x[i].(node); ok {
+			x[i] = n.(node).execute()
+		}
+
+		//Recursively resolve values of map
+		if sub, ok := x[i].(map[string]interface{}); ok {
+			x[i] = evalMapNodes(sub)
+		}
+
+	}
+	return x
 }

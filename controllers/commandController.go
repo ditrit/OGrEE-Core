@@ -84,8 +84,8 @@ func PostObj(ent int, entity string, data map[string]interface{}) map[string]int
 		//case TENANT:
 		//State.TreeHierarchy.Nodes.PushBack(node)
 		//default:
-		UpdateTree(&State.TreeHierarchy, node)
-		//}
+		//UpdateTree(&State.TreeHierarchy, node)
+		SearchAndInsert(&State.TreeHierarchy, node, ent, "")
 
 		InformUnity("POST", "PostObj",
 			map[string]interface{}{"type": "create", "data": respMap["data"]})
@@ -700,6 +700,10 @@ func GetOCLIAtrributes(path *Stack, ent int, data map[string]interface{}) {
 		path.ReversePop()
 	}
 
+	data["name"] = string(path.PeekLast().(string))
+	println("NAME:", string(data["name"].(string)))
+	data["category"] = EntityToString(ent)
+
 	//Retrieve Parent
 	if ent != TENANT && ent != GROUP {
 		nd = FindNodeInTree(&State.TreeHierarchy, path)
@@ -710,10 +714,6 @@ func GetOCLIAtrributes(path *Stack, ent int, data map[string]interface{}) {
 			}
 		}
 	}
-
-	data["name"] = string(path.PeekLast().(string))
-	println("NAME:", string(data["name"].(string)))
-	data["category"] = EntityToString(ent)
 
 	switch ent {
 	case TENANT:
