@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"io/ioutil"
 	"reflect"
+	"strconv"
 )
 
 var dynamicMap = make(map[string]int)
@@ -467,7 +468,27 @@ func (a *arithNode) execute() interface{} {
 				} else {
 					return rv.(float64) + float64(lv.(int))
 				}
+			} else { //we have string and numeric type
+				//this code occurs when assigning and not
+				//when using + while printing
+
+				switch lv.(type) {
+				case int:
+					return strconv.Itoa(lv.(int)) + rv.(string)
+				case float64:
+					return strconv.FormatFloat(lv.(float64), 'f', -1, 64) + rv.(string)
+				}
+
+				switch rv.(type) {
+				case int:
+					return lv.(string) + strconv.Itoa(rv.(int))
+				case float64:
+					return lv.(string) + strconv.FormatFloat(rv.(float64), 'f', -1, 64)
+				}
 			}
+			//Otherwise the types are incompatible so return nil
+			//TODO:see if team would want to have bool support
+			return nil
 
 		case "-":
 			if checkTypesAreSame(lv, rv) == true {
