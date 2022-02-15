@@ -687,14 +687,6 @@ func GetOCLIAtrributes(path *Stack, ent int, data map[string]interface{}) {
 	tmpl := map[string]interface{}{}
 	var nd **Node
 
-	//If the path uses dots instead of slashes
-	if strings.Contains(path.Peek().(string), ".") == true {
-		x := path.Peek().(string)
-		x = strings.ReplaceAll(x, ".", "/")
-		println("New path:", x)
-		path = StrToStack(x)
-	}
-
 	if ent > TENANT {
 		path.Push("Physical")
 		path.ReversePop()

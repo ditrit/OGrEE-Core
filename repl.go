@@ -3,6 +3,7 @@ package main
 import (
 	"bufio"
 	c "cli/controllers"
+	p "cli/preprocessor"
 	"cli/readline"
 	"io/ioutil"
 	"os"
@@ -30,6 +31,7 @@ func InterpretLine(str *string) {
 }
 
 func loadFile() {
+	c.State.ScriptPath = p.ProcessFile(c.State.ScriptPath)
 	file, err := os.Open(c.State.ScriptPath)
 	if err != nil {
 		println("Error:", err.Error())
@@ -55,11 +57,7 @@ func loadFile() {
 				keepScanning = false
 				fullcom = ""
 			} else {
-				if strings.ContainsAny(x, ".") == true {
-					x = strings.ReplaceAll(x, ".", "/")
-				}
 				InterpretLine(&x)
-
 			}
 		}
 		c.State.LineNumber++ //Increment
