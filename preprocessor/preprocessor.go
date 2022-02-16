@@ -29,6 +29,7 @@ func ProcessFile(path string) string {
 	editr := regexp.MustCompile(`^    ([A-Za-z0-9_]+(\.))+[A-Za-z0-9_]+=`)
 	editr2 := regexp.MustCompile(`^([A-Za-z0-9_]+(\.))+[A-Za-z0-9_]+=`)
 	selr := regexp.MustCompile(`^=([A-Za-z0-9_]+(\.))+`)
+	delr := regexp.MustCompile(`^-([A-Za-z0-9_]+(\.))+`)
 
 	for scanner.Scan() {
 		x := scanner.Text()
@@ -37,6 +38,7 @@ func ProcessFile(path string) string {
 		editrMatch := editr.FindString(x)
 		editr2Match := editr2.FindString(x)
 		selrMatch := selr.FindString(x)
+		delrMatch := delr.FindString(x)
 
 		if ocMatch != "" {
 			modifiedSubStr := strings.ReplaceAll(ocMatch, ".", "/")
@@ -68,6 +70,13 @@ func ProcessFile(path string) string {
 		if selrMatch != "" {
 			modifiedSubStr := strings.ReplaceAll(selrMatch, ".", "/")
 			x = strings.Replace(x, selrMatch, modifiedSubStr, 1)
+			lines = append(lines, x)
+			continue
+		}
+
+		if delrMatch != "" {
+			modifiedSubStr := strings.ReplaceAll(delrMatch, ".", "/")
+			x = strings.Replace(x, delrMatch, modifiedSubStr, 1)
 			lines = append(lines, x)
 			continue
 		}

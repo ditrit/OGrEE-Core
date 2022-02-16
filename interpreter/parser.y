@@ -466,11 +466,16 @@ P:     P1
 
 P1:    TOK_WORD TOK_SLASH P1 {$$=$1+"/"+$3}
        | TOK_WORD {$$=$1}
+       | TOK_STR {$$=$1}
+       | TOK_STR TOK_PLUS TOK_SLASH P1 {$$=$1+"/"+$4}
        | TOK_DOT TOK_DOT TOK_SLASH P1 {$$="../"+$4}
        | TOK_WORD TOK_DOT TOK_WORD {$$=$1+"."+$3}
        | TOK_DOT TOK_DOT {$$=".."}
        | TOK_OCDEL {$$="-"}
        | TOK_DEREF TOK_WORD {$$= resolveReference($2)}
+       | TOK_DEREF TOK_WORD TOK_PLUS TOK_SLASH P1  {$$=resolveReference($2)+"/"+$5}
+       | TOK_DEREF TOK_WORD TOK_PLUS TOK_STR {$$=resolveReference($2)+"/"+$3}
+       | TOK_DEREF TOK_WORD TOK_PLUS TOK_STR TOK_PLUS TOK_SLASH P1 {$$=resolveReference($2)+"/"+$3+$7}
        | {$$=""}
 ;
 
