@@ -161,6 +161,18 @@ func Start(verboseLevel int) {
 	println("Caching data... please wait")
 	c.InitState(verboseLevel)
 
+	args := len(os.Args)
+
+	if args > 1 { //Args were provided
+
+		for i := 1; i < args; i++ {
+			c.State.ScriptCalled = true
+			c.State.ScriptPath = os.Args[i]
+			loadFile()
+		}
+		os.Exit(0)
+	}
+
 	Repl(rl, user)
 
 }
