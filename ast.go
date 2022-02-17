@@ -94,12 +94,12 @@ func (c *commonNode) execute() interface{} {
 		}
 
 		//Template Load
-		if f, ok := c.fun.(func(map[string]interface{}) string); ok {
+		if f, ok := c.fun.(func(map[string]interface{}, string)); ok {
 			data := fileToJSON(c.args[0].(string))
 			if data == nil {
 				return nil
 			}
-			f(data)
+			f(data, c.args[0].(string))
 			return &strNode{STR, c.args[0].(string)}
 		}
 
