@@ -30,9 +30,10 @@ func InterpretLine(str *string) {
 	return
 }
 
-func loadFile() {
-	c.State.ScriptPath = p.ProcessFile(c.State.ScriptPath)
-	file, err := os.Open(c.State.ScriptPath)
+func loadFile(path string) {
+	originalPath := path
+	newBackup := p.ProcessFile(path)
+	file, err := os.Open(newBackup)
 	if err != nil {
 		println("Error:", err.Error())
 		c.WarningLogger.Println("Error:", err)
@@ -60,6 +61,12 @@ func loadFile() {
 				InterpretLine(&x)
 			}
 		}
+
+		if originalPath != c.State.ScriptPath { //Nested Execution
+			loadFile(c.State.ScriptPath)
+			c.State.ScriptPath = originalPath
+		}
+
 		c.State.LineNumber++ //Increment
 	}
 
@@ -168,7 +175,7 @@ func Start(verboseLevel int) {
 		for i := 1; i < args; i++ {
 			c.State.ScriptCalled = true
 			c.State.ScriptPath = os.Args[i]
-			loadFile()
+			loadFile(os.Args[i])
 		}
 		os.Exit(0)
 	}
@@ -183,7 +190,7 @@ func Repl(rl *readline.Instance, user string) {
 		if c.State.ScriptCalled == true {
 			//Load the path and
 			//call interpret line
-			loadFile()
+			loadFile(c.State.ScriptPath)
 			c.State.ScriptCalled = false
 		} else {
 			line, err := rl.Readline()
