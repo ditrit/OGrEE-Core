@@ -257,11 +257,6 @@ func UpdateObj(path string, data map[string]interface{}, deleteAndPut bool) map[
 	println("OK. Attempting to update...")
 	var resp *http.Response
 
-	//If the path uses dots instead of slashes
-	if strings.Contains(path, ".") == true {
-		path = strings.ReplaceAll(path, ".", "/")
-	}
-
 	if data != nil {
 		var respJson map[string]string
 		nd := new(*Node)
@@ -964,7 +959,8 @@ func SetEnv(arg string, val interface{}) {
 	}
 }
 
-//Utility function that
+//Utility functions
+
 //displays contents of maps
 func Disp(x map[string]interface{}) {
 
@@ -973,7 +969,7 @@ func Disp(x map[string]interface{}) {
 	println("JSON: ", string(jx))
 }
 
-//Utility Function to message Unity Client
+//Messages Unity Client
 func InformUnity(method, caller string, data map[string]interface{}) {
 	//If unity is available message it
 	//otherwise do nothing
@@ -1004,4 +1000,117 @@ func MergeMaps(x, y map[string]interface{}, overwrite bool) {
 		}
 
 	}
+}
+
+//Take 'user' abstraction path and
+//convert to online URL for API
+func OnlinePathResolve(path []string) []string {
+	//We have to make an array since there can be
+	//multiple possible paths for paths past room
+	paths := []string{}
+	basePath := State.APIURL + "/api"
+	roomChildren := []string{"/acs", "/panels", "/cabinets",
+		"/separators", "/rows", "/groups",
+		"/corridors", "/tiles", "/sensors"}
+
+	for i := range path {
+		if i < 5 {
+			basePath += "/" + EntityToString(i) + "s/" + path[i]
+		}
+	}
+
+	if len(path) < 5 {
+		return []string{basePath}
+	}
+
+	if len(path) == 5 { //We have to make assumptions
+		for idx := range roomChildren {
+			paths = append(paths, basePath+"/"+roomChildren[idx]+"/"+path[4])
+		}
+		return paths
+	}
+
+	basePath += "/rooms/" + path[4]
+	if len(path) == 6 { //We have to make assumptions
+		path = append(paths, basePath+"/sensors/"+path[5])
+		path = append(paths, basePath+"/racks/"+path[5])
+		path = append(paths, basePath+"/groups/"+path[5])
+		return paths
+	}
+
+	basePath += "/racks/" + path[5]
+	if len(path) >= 7 { //We have to make assumptions
+		path = append(paths, basePath+"/sensors/"+path[len(path)-1])
+		path = append(paths, basePath+"/devices/"+path[len(path)-1])
+		return paths
+	}
+
+	return path
+}
+
+//Auxillary function for FetchNodesAtLevel
+//Take 'user' abstraction path and
+//convert to online URL for API
+func OnlineLevelResolver(path []string) []string {
+	//We have to make an array since there can be
+	//multiple possible paths for paths past room
+	paths := []string{}
+	basePath := State.APIURL + "/api"
+	roomChildren := []string{"/acs", "/panels", "/cabinets",
+		"/separators", "/rows", "/groups",
+		"/corridors", "/tiles", "/sensors"}
+
+	for i := range path {
+		if i < 5 {
+			basePath += "/" + EntityToString(i) + "s/" + path[i]
+		}
+	}
+
+	if len(path) < 4 {
+		x := strings.Split(basePath, "/")
+		if len(x)%2 == 0 {
+			//Grab 2nd last entity type and get its subentity
+			tmp := x[len(x)-2]
+			secondLastEnt := tmp[:len(tmp)-1]
+
+			subEnt := EntityToString(EntityStrToInt(secondLastEnt) + 1)
+			basePath = basePath + "/" + subEnt + "s"
+		}
+		return []string{basePath}
+	}
+
+	if len(path) == 4 { //Possible paths for children of room
+		for idx := range roomChildren {
+			paths = append(paths, basePath+roomChildren[idx])
+		}
+		paths = append(paths, basePath+"/racks")
+		return paths
+	}
+
+	if len(path) == 5 {
+		return []string{basePath + "/sensors",
+			basePath + "/groups",
+			basePath + "/devices"}
+	}
+
+	basePath += "/devices"
+
+	if len(path) == 6 { //Possible paths for children of racks
+		paths = append(paths, basePath+"/"+path[5]+"/sensors")
+		paths = append(paths, basePath+"/"+path[5]+"/groups")
+		paths = append(paths, basePath+"/"+path[5]+"/devices")
+		return paths
+	}
+
+	basePath += "/" + path[5]
+	if len(path) >= 7 { //Possible paths for recursive device family
+		for i := 6; i < len(path); i++ {
+			basePath = basePath + "/devices/" + path[i]
+		}
+		paths = append(paths, basePath+"/devices")
+		paths = append(paths, basePath+"/sensors")
+
+	}
+
+	return paths
 }

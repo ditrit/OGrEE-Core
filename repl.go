@@ -97,8 +97,10 @@ func listEntities(path string) func(string) []string {
 			}*/
 		}
 
-		items := c.DispAtLevelTAB(&c.State.TreeHierarchy,
-			*c.StrToStack(path))
+		//items := c.DispAtLevelTAB(&c.State.TreeHierarchy,
+		//	*c.StrToStack(path))
+		items := c.FetchNodesAtLevel(path)
+		//println("len items:", len(items))
 		return items
 	}
 }

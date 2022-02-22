@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+	"path/filepath"
 	"strings"
 )
 
@@ -94,13 +95,6 @@ func InitState(debugLvl int) {
 	}
 	State.TreeHierarchy.Nodes.PushBack(phys)
 
-	for i := 1; i < SENSOR+1; i++ {
-		x := GetChildren(i)
-		for k := range x {
-			SearchAndInsert(&State.TreeHierarchy, x[k], i, "")
-		}
-	}
-
 	// SETUP LOGICAL HIERARCHY START
 	// TODO: PUT THIS SECTION IN A LOOP
 	logique := &Node{}
@@ -116,11 +110,6 @@ func InitState(debugLvl int) {
 	oTemplate.Name = "ObjectTemplates"
 	oTemplate.Path = "/Logical"
 	SearchAndInsert(&State.TreeHierarchy, oTemplate, 0, "/Logical")
-	q := GetChildren(OBJTMPL)
-	for k := range q {
-		q[k].PID = "1"
-		SearchAndInsert(&State.TreeHierarchy, q[k], 1, "")
-	}
 
 	rTemplate := &Node{}
 	rTemplate.ID = "2"
@@ -129,11 +118,6 @@ func InitState(debugLvl int) {
 	rTemplate.Name = "RoomTemplates"
 	rTemplate.Path = "/Logical"
 	SearchAndInsert(&State.TreeHierarchy, rTemplate, 0, "/Logical")
-	q = GetChildren(ROOMTMPL)
-	for k := range q {
-		q[k].PID = "2"
-		SearchAndInsert(&State.TreeHierarchy, q[k], 1, "")
-	}
 
 	group := &Node{}
 	group.ID = "3"
@@ -142,11 +126,7 @@ func InitState(debugLvl int) {
 	group.Name = "Groups"
 	group.Path = "/Logical"
 	SearchAndInsert(&State.TreeHierarchy, group, 0, "/Logical")
-	q = GetChildren(GROUP)
-	for k := range q {
-		q[k].PID = "3"
-		SearchAndInsert(&State.TreeHierarchy, q[k], 1, "")
-	}
+
 	//SETUP LOGICAL HIERARCHY END
 
 	//SETUP DOMAIN/ENTERPRISE
@@ -401,6 +381,55 @@ func DispAtLevelTAB(root **Node, x Stack) []string {
 		return items
 	}
 	return nil
+}
+
+//Replaces DispAtLevel since we are no longer
+//storing objects in a tree
+func FetchNodesAtLevel(path string) []string {
+	names := []string{}
+
+	paths := strings.Split(filepath.Clean(path), "/")
+
+	if len(paths) < 3 { // /Physical or / or /Logical
+		//println("Should be here")
+		//println("LEN:", len(paths))
+		return NodesAtLevel(&State.TreeHierarchy, *StrToStack(path))
+	}
+
+	// 2: since first idx is useless
+	// and 2nd is just /Physical or /Logical etc
+	urls := OnlineLevelResolver(paths[2:])
+
+	for i := range urls {
+		//println("URL to send:", urls[i])
+		r, e := models.Send("GET", urls[i], GetKey(), nil)
+		if e != nil {
+			println(e.Error())
+			return nil
+		}
+		//println(r.StatusCode)
+
+		if r.StatusCode == http.StatusOK { //Retrieved nodes
+			parsedResp := ParseResponse(r, e, "get request")
+			if parsedResp == nil {
+				return nil
+			}
+
+			if parsedResp["data"] != nil {
+				data := parsedResp["data"].(map[string]interface{})["objects"].([]interface{})
+
+				for i := range data {
+					names = append(names, data[i].(map[string]interface{})["name"].(string))
+					//println(data[i].(map[string]interface{})["name"].(string))
+				}
+
+				//println("ID:" + obj["id"].(string))
+				//Disp(data)
+
+			}
+		}
+	}
+	return names
 }
 
 func DispStk(x Stack) {
