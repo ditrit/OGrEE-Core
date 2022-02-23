@@ -407,7 +407,6 @@ func FetchNodesAtLevel(path string) []string {
 			println(e.Error())
 			return nil
 		}
-		//println(r.StatusCode)
 
 		if r.StatusCode == http.StatusOK { //Retrieved nodes
 			parsedResp := ParseResponse(r, e, "get request")
@@ -416,15 +415,22 @@ func FetchNodesAtLevel(path string) []string {
 			}
 
 			if parsedResp["data"] != nil {
-				data := parsedResp["data"].(map[string]interface{})["objects"].([]interface{})
 
-				for i := range data {
-					names = append(names, data[i].(map[string]interface{})["name"].(string))
-					//println(data[i].(map[string]interface{})["name"].(string))
+				if objs, ok := parsedResp["data"].(map[string]interface{})["objects"]; ok {
+					data := objs.([]interface{})
+
+					for i := range data {
+						//If we have templates, check for slug
+						if _, ok := data[i].(map[string]interface{})["slug"]; ok {
+							names = append(names, data[i].(map[string]interface{})["slug"].(string))
+						} else {
+							names = append(names, data[i].(map[string]interface{})["name"].(string))
+						}
+
+						//println(data[i].(map[string]interface{})["name"].(string))
+					}
+
 				}
-
-				//println("ID:" + obj["id"].(string))
-				//Disp(data)
 
 			}
 		}
@@ -495,6 +501,36 @@ func CheckPath(root **Node, x, pstk *Stack) (bool, string, **Node) {
 	pstk.Push(*root)
 	return CheckPath(&nd, x, pstk)
 
+}
+
+//If the path refers to local tree the
+//func will still verify it with local tree
+func CheckPathOnline(path string) (bool, string) {
+
+	pathSplit := strings.Split(filepath.Clean(path), "/")
+
+	if len(pathSplit) < 3 { // /Physical or / or /Logical
+		//println("Should be here")
+		//println("LEN:", len(paths))
+		nd := FindNodeInTree(&State.TreeHierarchy, StrToStack(path))
+		if nd == nil {
+			return false, ""
+		}
+
+		return true, path
+	}
+
+	paths := OnlinePathResolve(pathSplit[2:])
+	for i := range paths {
+		r, e := models.Send("GET", paths[i], GetKey(), nil)
+		if e != nil {
+			return false, ""
+		}
+		if r.StatusCode == http.StatusOK {
+			return true, paths[i]
+		}
+	}
+	return false, ""
 }
 
 //Return extra bool so that the Parent can delete

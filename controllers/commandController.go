@@ -482,15 +482,8 @@ func LSOBJECT(x string, entity int) []map[string]interface{} {
 
 func CD(x string) string {
 	if x == ".." {
-		lastIdx := strings.LastIndexByte(State.CurrPath, '/')
-		if lastIdx != -1 {
-			if lastIdx == 0 {
-				lastIdx += 1
-			}
-			State.PrevPath = State.CurrPath
-			State.CurrPath =
-				State.CurrPath[0:lastIdx]
-		}
+		State.PrevPath = State.CurrPath
+		State.CurrPath = filepath.Dir(State.CurrPath)
 
 	} else if x == "" {
 		State.PrevPath = State.CurrPath
@@ -507,9 +500,11 @@ func CD(x string) string {
 		var pth string
 
 		if string(x[0]) != "/" {
-			exist, pth, _ = CheckPath(&State.TreeHierarchy, StrToStack(State.CurrPath+"/"+x), New())
+			pth = filepath.Clean(State.CurrPath + "/" + x)
+			exist, _ = CheckPathOnline(pth)
 		} else {
-			exist, pth, _ = CheckPath(&State.TreeHierarchy, StrToStack(x), New())
+			pth = filepath.Clean(x)
+			exist, _ = CheckPathOnline(pth)
 		}
 		if exist == true {
 			if State.DebugLvl >= 1 {
@@ -523,8 +518,8 @@ func CD(x string) string {
 		}
 	} else {
 		if len(State.CurrPath) != 1 {
-			if exist, _, _ := CheckPath(&State.TreeHierarchy,
-				StrToStack(State.CurrPath+"/"+x), New()); exist == true {
+
+			if exist, _ := CheckPathOnline(State.CurrPath + "/" + x); exist == true {
 				State.PrevPath = State.CurrPath
 				State.CurrPath += "/" + x
 			} else {
@@ -533,8 +528,8 @@ func CD(x string) string {
 			}
 
 		} else {
-			if exist, _, _ := CheckPath(&State.TreeHierarchy,
-				StrToStack(State.CurrPath+x), New()); exist == true {
+
+			if exist, _ := CheckPathOnline(State.CurrPath + x); exist == true {
 				State.PrevPath = State.CurrPath
 				State.CurrPath += x
 			} else {
@@ -1009,39 +1004,70 @@ func OnlinePathResolve(path []string) []string {
 		"/separators", "/rows", "/groups",
 		"/corridors", "/tiles", "/sensors"}
 
+	//Check if path is templates or groups type
+	if path[0] == "ObjectTemplates" {
+		basePath += "/obj-templates"
+		if len(path) > 1 { // Check for name
+			basePath += "/" + path[1]
+		}
+
+		return []string{basePath}
+	}
+
+	if path[0] == "RoomTemplates" {
+		basePath += "/room-templates"
+		if len(path) > 1 {
+			basePath += "/" + path[1]
+		}
+		return []string{basePath}
+	}
+
+	if path[0] == "Groups" {
+		basePath += "/groups"
+		if len(path) > 1 {
+			basePath += "/" + path[1]
+		}
+		return []string{basePath}
+	} //END OF template group type check
+
 	for i := range path {
-		if i < 5 {
+		if i < 4 {
 			basePath += "/" + EntityToString(i) + "s/" + path[i]
 		}
 	}
 
-	if len(path) < 5 {
+	if len(path) <= 4 {
 		return []string{basePath}
 	}
 
-	if len(path) == 5 { //We have to make assumptions
+	if len(path) == 5 { //Possible paths for children of room
 		for idx := range roomChildren {
-			paths = append(paths, basePath+"/"+roomChildren[idx]+"/"+path[4])
+			paths = append(paths, basePath+roomChildren[idx]+"/"+path[4])
 		}
+		paths = append(paths, basePath+"/racks/"+path[4])
 		return paths
 	}
 
-	basePath += "/rooms/" + path[4]
-	if len(path) == 6 { //We have to make assumptions
-		path = append(paths, basePath+"/sensors/"+path[5])
-		path = append(paths, basePath+"/racks/"+path[5])
-		path = append(paths, basePath+"/groups/"+path[5])
+	basePath += "/racks/" + path[4]
+
+	if len(path) == 6 { //Possible paths for children of racks
+		paths = append(paths, basePath+"/devices/"+path[5])
+		paths = append(paths, basePath+"/sensors/"+path[5])
+		paths = append(paths, basePath+"/groups/"+path[5])
 		return paths
 	}
 
-	basePath += "/racks/" + path[5]
-	if len(path) >= 7 { //We have to make assumptions
-		path = append(paths, basePath+"/sensors/"+path[len(path)-1])
-		path = append(paths, basePath+"/devices/"+path[len(path)-1])
-		return paths
+	basePath += "/devices/" + path[5]
+	if len(path) >= 7 { //Possible paths for recursive device family
+		for i := 6; i < len(path)-1; i++ {
+			basePath = basePath + "/devices/" + path[i]
+		}
+		paths = append(paths, basePath+"/devices/"+path[len(path)-1])
+		paths = append(paths, basePath+"/sensors/"+path[len(path)-1])
+
 	}
 
-	return path
+	return paths
 }
 
 //Auxillary function for FetchNodesAtLevel
@@ -1055,6 +1081,32 @@ func OnlineLevelResolver(path []string) []string {
 	roomChildren := []string{"/acs", "/panels", "/cabinets",
 		"/separators", "/rows", "/groups",
 		"/corridors", "/tiles", "/sensors"}
+
+	//Check if path is templates or groups type
+	if path[0] == "ObjectTemplates" {
+		basePath += "/obj-templates"
+		if len(path) > 1 { // Check for name
+			basePath += "/" + path[1]
+		}
+
+		return []string{basePath}
+	}
+
+	if path[0] == "RoomTemplates" {
+		basePath += "/room-templates"
+		if len(path) > 1 {
+			basePath += "/" + path[1]
+		}
+		return []string{basePath}
+	}
+
+	if path[0] == "Groups" {
+		basePath += "/groups"
+		if len(path) > 1 {
+			basePath += "/" + path[1]
+		}
+		return []string{basePath}
+	} //END OF template group type check
 
 	for i := range path {
 		if i < 5 {
