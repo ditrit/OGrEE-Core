@@ -401,31 +401,27 @@ func EasyUpdate(path, op string, data map[string]interface{}) map[string]interfa
 }
 
 func LS(x string) []map[string]interface{} {
+	ans := []map[string]interface{}{}
+	var path string
 	if x == "" || x == "." {
-		ans := []map[string]interface{}{}
-		path := State.CurrPath
-		res := DispAtLevel(&State.TreeHierarchy, *StrToStack(State.CurrPath))
-		for i := range res {
-			ans = append(ans, GetObject(path+"/"+res[i], true))
-		}
-		return ans
+		path = State.CurrPath
+
 	} else if string(x[0]) == "/" {
-		ans := []map[string]interface{}{}
-		path := x
-		res := DispAtLevel(&State.TreeHierarchy, *StrToStack(x))
-		for i := range res {
-			ans = append(ans, GetObject(path+"/"+res[i], true))
-		}
-		return ans
+		path = x
+
 	} else {
-		res := DispAtLevel(&State.TreeHierarchy, *StrToStack(State.CurrPath + "/" + x))
-		ans := []map[string]interface{}{}
-		path := State.CurrPath + "/" + x
-		for i := range res {
-			ans = append(ans, GetObject(path+"/"+res[i], true))
-		}
-		return ans
+		path = State.CurrPath + "/" + x
 	}
+
+	res := FetchNodesAtLevel(path)
+
+	for i := range res {
+		println(res[i])
+	}
+	//Return an empty result for now
+	//Getting a complete array is a single line
+	//change in FetchNodes
+	return ans
 
 }
 
