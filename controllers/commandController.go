@@ -184,43 +184,53 @@ func SearchObjects(entity string, data map[string]interface{}) []map[string]inte
 //Useful for LS since
 //otherwise the terminal would be polluted by debug statements
 func GetObject(path string, silenced bool) map[string]interface{} {
-	URL := State.APIURL + "/api/"
-	nd := new(*Node)
 	var data map[string]interface{}
+	var pathSplit []string
 
 	switch path {
 	case "":
-		nd = FindNodeInTree(&State.TreeHierarchy, StrToStack(State.CurrPath))
+		pathSplit = strings.Split(State.CurrPath, "/")
+		pathSplit = pathSplit[2:]
 	default:
 		if path[0] != '/' && len(State.CurrPath) > 1 {
-			nd = FindNodeInTree(&State.TreeHierarchy,
-				StrToStack(State.CurrPath+"/"+path))
+			pathSplit = strings.Split(filepath.Clean(State.CurrPath+"/"+path), "/")
+			pathSplit = pathSplit[2:]
+
 		} else {
-			nd = FindNodeInTree(&State.TreeHierarchy, StrToStack(path))
-		}
-	}
-
-	if nd == nil {
-		println("Error finding Object from given path!")
-		WarningLogger.Println("Object to Get not found")
-		return nil
-	}
-
-	URL += EntityToString((*nd).Entity) + "s/" + (*nd).ID
-	resp, e := models.Send("GET", URL, GetKey(), nil)
-	data = ParseResponse(resp, e, "GET")
-
-	if resp.StatusCode == http.StatusOK {
-		if data["data"] != nil {
-			obj := data["data"].(map[string]interface{})
-
-			if !silenced {
-				displayObject(obj)
+			pathSplit = strings.Split(filepath.Clean(path), "/")
+			if strings.TrimSpace(pathSplit[0]) == "Physical" ||
+				strings.TrimSpace(pathSplit[0]) == "Logical" ||
+				strings.TrimSpace(pathSplit[0]) == "Enterprise" {
+				pathSplit = pathSplit[1:]
+			} else {
+				pathSplit = pathSplit[2:]
 			}
-
 		}
-		return data["data"].(map[string]interface{})
 	}
+	paths := OnlinePathResolve(pathSplit)
+
+	for i := range paths {
+		resp, e := models.Send("GET", paths[i], GetKey(), nil)
+		data = ParseResponse(resp, e, "GET")
+
+		if resp.StatusCode == http.StatusOK {
+			if data["data"] != nil {
+				obj := data["data"].(map[string]interface{})
+
+				if !silenced {
+					displayObject(obj)
+				}
+
+			}
+			return data["data"].(map[string]interface{})
+		}
+	}
+
+	//Object wasn't found
+	println("Error finding Object from given path!")
+	WarningLogger.Println("Object to Get not found")
+	println(path)
+
 	return nil
 }
 
