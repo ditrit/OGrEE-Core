@@ -71,28 +71,19 @@ func PostObj(ent int, entity string, data map[string]interface{}) map[string]int
 }
 
 func DeleteObj(path string) bool {
-	URL := State.APIURL + "/api/"
-	nd := new(*Node)
-
-	switch path {
-	case "":
-		nd = FindNodeInTree(&State.TreeHierarchy, StrToStack(State.CurrPath))
-	default:
-		if path[0] != '/' && len(State.CurrPath) > 1 {
-			nd = FindNodeInTree(&State.TreeHierarchy,
-				StrToStack(State.CurrPath+"/"+path))
-		} else {
-			nd = FindNodeInTree(&State.TreeHierarchy, StrToStack(path))
-		}
-	}
-
-	if nd == nil {
-		println("Error finding Object from given path!")
-		WarningLogger.Println("Object to DELETE was not found")
+	//We have to get object first since
+	//there is a potential for multiple paths
+	//we don't want to delete the wrong object
+	objJSON, GETURL := GetObject(path, true)
+	if objJSON == nil {
+		println("Error while deleting Object!")
+		WarningLogger.Println("Error while deleting Object!")
 		return false
 	}
+	entities := filepath.Base(filepath.Dir(GETURL))
+	URL := State.APIURL + "/api/" + entities + "/" + objJSON["id"].(string)
+	println(URL)
 
-	URL += EntityToString((*nd).Entity) + "s/" + (*nd).ID
 	resp, e := models.Send("DELETE", URL, GetKey(), nil)
 	if e != nil {
 		println("Error while deleting Object!")
@@ -101,16 +92,15 @@ func DeleteObj(path string) bool {
 	}
 	defer resp.Body.Close()
 	if resp.StatusCode == http.StatusNoContent {
-		DeleteNodeInTree(&State.TreeHierarchy, (*nd).ID, (*nd).Entity)
 		println("Success")
 	} else {
-		println("Error while deleting object in cache!")
-		WarningLogger.Println("Error while deleting object in tree")
-		//json.Unmarshal()
+		println("Error while deleting Object!")
+		WarningLogger.Println("Error while deleting Object!", e)
+		return false
 	}
 
 	InformUnity("POST", "DeleteObj",
-		map[string]interface{}{"type": "delete", "data": (*nd).ID})
+		map[string]interface{}{"type": "delete", "data": objJSON["id"].(string)})
 
 	return true
 }
@@ -156,7 +146,7 @@ func SearchObjects(entity string, data map[string]interface{}) []map[string]inte
 //Silenced bool
 //Useful for LS since
 //otherwise the terminal would be polluted by debug statements
-func GetObject(path string, silenced bool) map[string]interface{} {
+func GetObject(path string, silenced bool) (map[string]interface{}, string) {
 	var data map[string]interface{}
 
 	pathSplit := PreProPath(path)
@@ -175,7 +165,8 @@ func GetObject(path string, silenced bool) map[string]interface{} {
 				}
 
 			}
-			return data["data"].(map[string]interface{})
+
+			return data["data"].(map[string]interface{}), paths[i]
 		}
 	}
 
@@ -184,7 +175,7 @@ func GetObject(path string, silenced bool) map[string]interface{} {
 	WarningLogger.Println("Object to Get not found")
 	println(path)
 
-	return nil
+	return nil, ""
 }
 
 //This is an auxillary function
@@ -436,9 +427,9 @@ func LSOBJECT(x string, entity int) []map[string]interface{} {
 
 	//Slow but necessary part
 	ans := []map[string]interface{}{}
-	for i := range objs {
+	/*for i := range objs {
 		ans = append(ans, GetObject(objs[i].Path, true))
-	}
+	}*/
 
 	return ans
 }
@@ -993,6 +984,10 @@ func OnlinePathResolve(path []string) []string {
 	roomChildren := []string{"/acs", "/panels", "/cabinets",
 		"/separators", "/rows", "/groups",
 		"/corridors", "/tiles", "/sensors"}
+
+	if len(path) == 0 {
+		return nil
+	}
 
 	//Check if path is templates or groups type
 	if path[0] == "ObjectTemplates" {
