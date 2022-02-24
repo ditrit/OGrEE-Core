@@ -51,41 +51,14 @@ func PostObj(ent int, entity string, data map[string]interface{}) map[string]int
 		//Print success message
 		println(string(respMap["message"].(string)))
 
-		//Insert object into tree
+		//Insert tenant into tree
 		node := &Node{}
-
 		if ent == TENANT {
 			node.ID, _ = respMap["data"].(map[string]interface{})["id"].(string)
 			node.Name = respMap["data"].(map[string]interface{})["name"].(string)
 			node.PID = "-2"
-
-		} else if ent == OBJTMPL {
-			node.PID = "1"
-			node.ID = respMap["data"].(map[string]interface{})["slug"].(string)
-			node.Name = node.ID
-
-		} else if ent == ROOMTMPL {
-			node.ID = respMap["data"].(map[string]interface{})["slug"].(string)
-			node.Name = node.ID
-			node.PID = "2"
-
-		} else if ent == GROUP {
-			node.Name = respMap["data"].(map[string]interface{})["name"].(string)
-			node.ID = node.Name
-			node.PID = "3"
-		} else {
-			node.ID, _ = respMap["data"].(map[string]interface{})["id"].(string)
-			node.Name = respMap["data"].(map[string]interface{})["name"].(string)
-			node.PID = respMap["data"].(map[string]interface{})["parentId"].(string)
+			SearchAndInsert(&State.TreeHierarchy, node, ent, "")
 		}
-		node.Entity = ent
-
-		//switch ent {
-		//case TENANT:
-		//State.TreeHierarchy.Nodes.PushBack(node)
-		//default:
-		//UpdateTree(&State.TreeHierarchy, node)
-		SearchAndInsert(&State.TreeHierarchy, node, ent, "")
 
 		InformUnity("POST", "PostObj",
 			map[string]interface{}{"type": "create", "data": respMap["data"]})
@@ -185,28 +158,8 @@ func SearchObjects(entity string, data map[string]interface{}) []map[string]inte
 //otherwise the terminal would be polluted by debug statements
 func GetObject(path string, silenced bool) map[string]interface{} {
 	var data map[string]interface{}
-	var pathSplit []string
 
-	switch path {
-	case "":
-		pathSplit = strings.Split(State.CurrPath, "/")
-		pathSplit = pathSplit[2:]
-	default:
-		if path[0] != '/' && len(State.CurrPath) > 1 {
-			pathSplit = strings.Split(filepath.Clean(State.CurrPath+"/"+path), "/")
-			pathSplit = pathSplit[2:]
-
-		} else {
-			pathSplit = strings.Split(filepath.Clean(path), "/")
-			if strings.TrimSpace(pathSplit[0]) == "Physical" ||
-				strings.TrimSpace(pathSplit[0]) == "Logical" ||
-				strings.TrimSpace(pathSplit[0]) == "Enterprise" {
-				pathSplit = pathSplit[1:]
-			} else {
-				pathSplit = pathSplit[2:]
-			}
-		}
-	}
+	pathSplit := PreProPath(path)
 	paths := OnlinePathResolve(pathSplit)
 
 	for i := range paths {
@@ -622,7 +575,7 @@ func printAttributeOptions() {
 }
 
 func tree(base string, prefix string, depth int) {
-	names := NodesAtLevel(&State.TreeHierarchy, *StrToStack(base))
+	names := FetchNodesAtLevel(base)
 
 	for index, name := range names {
 		/*if name[0] == '.' {
@@ -1001,6 +954,33 @@ func MergeMaps(x, y map[string]interface{}, overwrite bool) {
 		}
 
 	}
+}
+
+//Auxillary function that preprocesses
+//strings to be used for Path Resolver funcs
+func PreProPath(path string) []string {
+	var pathSplit []string
+	switch path {
+	case "":
+		pathSplit = strings.Split(State.CurrPath, "/")
+		pathSplit = pathSplit[2:]
+	default:
+		if path[0] != '/' && len(State.CurrPath) > 1 {
+			pathSplit = strings.Split(filepath.Clean(State.CurrPath+"/"+path), "/")
+			pathSplit = pathSplit[2:]
+
+		} else {
+			pathSplit = strings.Split(filepath.Clean(path), "/")
+			if strings.TrimSpace(pathSplit[0]) == "Physical" ||
+				strings.TrimSpace(pathSplit[0]) == "Logical" ||
+				strings.TrimSpace(pathSplit[0]) == "Enterprise" {
+				pathSplit = pathSplit[1:]
+			} else {
+				pathSplit = pathSplit[2:]
+			}
+		}
+	}
+	return pathSplit
 }
 
 //Take 'user' abstraction path and
