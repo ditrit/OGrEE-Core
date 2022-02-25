@@ -164,30 +164,18 @@ func (c *commonNode) execute() interface{} {
 		}
 
 	case "EasyUpdate":
-		if f, ok := c.fun.(func(string, string, map[string]interface{}) map[string]interface{}); ok {
+		if f, ok := c.fun.(func(string, map[string]interface{}, bool) map[string]interface{}); ok {
 			var data map[string]interface{}
-			var op string
+			//var op string
 			//0 -> path to node
 			//1 -> path to json
 			//2 -> put or patch
-			/*x, e := ioutil.ReadFile(c.args[1].(string))
-			if e != nil {
-				println("Error while opening file! " + e.Error())
-				return nil
-			}
-			json.Unmarshal(x, &data)*/
 			data = fileToJSON(c.args[1].(string))
 			if data == nil {
 				return nil
 			}
 
-			if c.args[2].(bool) == true {
-				op = "PATCH"
-			} else {
-				op = "PUT"
-			}
-
-			v := f(c.args[0].(string), op, data)
+			v := f(c.args[0].(string), data, c.args[2].(bool))
 
 			return &jsonObjNode{JSONND, v}
 		}
@@ -252,7 +240,7 @@ func (c *commonNode) execute() interface{} {
 		}
 
 	case "GetOCAttr":
-		if f, ok := c.fun.(func(*cmd.Stack, int,
+		if f, ok := c.fun.(func(string, int,
 			map[string]interface{})); ok {
 
 			//Since the attributes is a map of nodes
@@ -260,7 +248,7 @@ func (c *commonNode) execute() interface{} {
 			attributes := c.args[2].(map[string]interface{})
 			attributes = evalMapNodes(attributes)
 
-			f(c.args[0].(*cmd.Stack),
+			f(c.args[0].(string),
 				c.args[1].(int),
 				c.args[2].(map[string]interface{}))
 		}

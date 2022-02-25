@@ -124,17 +124,6 @@ func replaceOCLICurrPath(x string) string {
 	return strings.Replace(x, "_/", cmd.State.CurrPath+"/", 1)
 }
 
-func auxGetNode(path string) string {
-	stk := cmd.StrToStack(path)
-	nd := cmd.FindNodeInTree(&cmd.State.TreeHierarchy, stk)
-	if nd != nil {
-		return cmd.EntityToString((*nd).Entity)
-	} else {
-		println("Error while finding object in path")
-	}
-	return ""
-}
-
 func resolveReference(ref string) string {
 	/*Probably code to reference SymbolTable and return data*/
 	idx := dynamicMap[ref]
@@ -2001,15 +1990,15 @@ yynewstate:
 		}
 	case 60:
 		{
-			yyVAL.node = &commonNode{COMMON, cmd.UpdateObj, "UpdateObj", []interface{}{yyS[yypt-2].s, resMap(&yyS[yypt-0].s, auxGetNode(yyS[yypt-2].s), true)}}
+			yyVAL.node = &commonNode{COMMON, cmd.UpdateObj, "UpdateObj", []interface{}{yyS[yypt-2].s, resMap(&yyS[yypt-0].s, yyS[yypt-2].s, true)}}
 		}
 	case 61:
 		{
-			yyVAL.node = &commonNode{COMMON, cmd.EasyUpdate, "EasyUpdate", []interface{}{yyS[yypt-4].s, yyS[yypt-0].s, false}}
+			yyVAL.node = &commonNode{COMMON, cmd.UpdateObj, "EasyUpdate", []interface{}{yyS[yypt-4].s, yyS[yypt-0].s, true}}
 		}
 	case 62:
 		{
-			yyVAL.node = &commonNode{COMMON, cmd.EasyUpdate, "EasyUpdate", []interface{}{yyS[yypt-5].s, yyS[yypt-0].s, true}}
+			yyVAL.node = &commonNode{COMMON, cmd.UpdateObj, "EasyUpdate", []interface{}{yyS[yypt-5].s, yyS[yypt-0].s, false}}
 		}
 	case 63:
 		{
@@ -2440,72 +2429,72 @@ yynewstate:
 		}
 	case 179:
 		{
-			yyVAL.node = &commonNode{COMMON, cmd.GetOCLIAtrributes, "GetOCAttr", []interface{}{cmd.StrToStack(replaceOCLICurrPath(yyS[yypt-2].s)), cmd.TENANT, map[string]interface{}{"attributes": map[string]interface{}{"color": yyS[yypt-0].node}}}}
+			yyVAL.node = &commonNode{COMMON, cmd.GetOCLIAtrributes, "GetOCAttr", []interface{}{(replaceOCLICurrPath(yyS[yypt-2].s)), cmd.TENANT, map[string]interface{}{"attributes": map[string]interface{}{"color": yyS[yypt-0].node}}}}
 		}
 	case 180:
 		{
-			yyVAL.node = &commonNode{COMMON, cmd.GetOCLIAtrributes, "GetOCAttr", []interface{}{cmd.StrToStack(replaceOCLICurrPath(yyS[yypt-2].s)), cmd.SITE, map[string]interface{}{"attributes": map[string]interface{}{"orientation": yyS[yypt-0].node}}}}
+			yyVAL.node = &commonNode{COMMON, cmd.GetOCLIAtrributes, "GetOCAttr", []interface{}{(replaceOCLICurrPath(yyS[yypt-2].s)), cmd.SITE, map[string]interface{}{"attributes": map[string]interface{}{"orientation": yyS[yypt-0].node}}}}
 		}
 	case 181:
 		{
-			yyVAL.node = &commonNode{COMMON, cmd.GetOCLIAtrributes, "GetOCAttr", []interface{}{cmd.StrToStack(replaceOCLICurrPath(yyS[yypt-4].s)), cmd.BLDG, map[string]interface{}{"attributes": map[string]interface{}{"posXY": yyS[yypt-2].node, "size": yyS[yypt-0].node}}}}
+			yyVAL.node = &commonNode{COMMON, cmd.GetOCLIAtrributes, "GetOCAttr", []interface{}{(replaceOCLICurrPath(yyS[yypt-4].s)), cmd.BLDG, map[string]interface{}{"attributes": map[string]interface{}{"posXY": yyS[yypt-2].node, "size": yyS[yypt-0].node}}}}
 		}
 	case 182:
 		{
-			yyVAL.node = &commonNode{COMMON, cmd.GetOCLIAtrributes, "GetOCAttr", []interface{}{cmd.StrToStack(replaceOCLICurrPath(yyS[yypt-10].s)), cmd.BLDG, map[string]interface{}{"attributes": map[string]interface{}{"posXY": yyS[yypt-8].node, "size": map[string]interface{}{"x": (yyS[yypt-5].node).execute(), "y": (yyS[yypt-3].node).execute(), "z": (yyS[yypt-1].node).execute()}}}}}
+			yyVAL.node = &commonNode{COMMON, cmd.GetOCLIAtrributes, "GetOCAttr", []interface{}{(replaceOCLICurrPath(yyS[yypt-10].s)), cmd.BLDG, map[string]interface{}{"attributes": map[string]interface{}{"posXY": yyS[yypt-8].node, "size": map[string]interface{}{"x": (yyS[yypt-5].node).execute(), "y": (yyS[yypt-3].node).execute(), "z": (yyS[yypt-1].node).execute()}}}}}
 		}
 	case 183:
 		{
-			yyVAL.node = &commonNode{COMMON, cmd.GetOCLIAtrributes, "GetOCAttr", []interface{}{cmd.StrToStack(replaceOCLICurrPath(yyS[yypt-8].s)), cmd.ROOM, map[string]interface{}{"attributes": map[string]interface{}{"posXY": yyS[yypt-6].node, "size": yyS[yypt-4].node, "orientation": yyS[yypt-2].node, "floorUnit": yyS[yypt-0].node}}}}
+			yyVAL.node = &commonNode{COMMON, cmd.GetOCLIAtrributes, "GetOCAttr", []interface{}{(replaceOCLICurrPath(yyS[yypt-8].s)), cmd.ROOM, map[string]interface{}{"attributes": map[string]interface{}{"posXY": yyS[yypt-6].node, "size": yyS[yypt-4].node, "orientation": yyS[yypt-2].node, "floorUnit": yyS[yypt-0].node}}}}
 		}
 	case 184:
 		{
-			yyVAL.node = &commonNode{COMMON, cmd.GetOCLIAtrributes, "GetOCAttr", []interface{}{cmd.StrToStack(replaceOCLICurrPath(yyS[yypt-6].s)), cmd.ROOM, map[string]interface{}{"attributes": map[string]interface{}{"posXY": yyS[yypt-4].node, "size": yyS[yypt-2].node, "orientation": yyS[yypt-0].node}}}}
+			yyVAL.node = &commonNode{COMMON, cmd.GetOCLIAtrributes, "GetOCAttr", []interface{}{(replaceOCLICurrPath(yyS[yypt-6].s)), cmd.ROOM, map[string]interface{}{"attributes": map[string]interface{}{"posXY": yyS[yypt-4].node, "size": yyS[yypt-2].node, "orientation": yyS[yypt-0].node}}}}
 		}
 	case 185:
 		{
-			yyVAL.node = &commonNode{COMMON, cmd.GetOCLIAtrributes, "GetOCAttr", []interface{}{cmd.StrToStack(replaceOCLICurrPath(yyS[yypt-4].s)), cmd.ROOM, map[string]interface{}{"attributes": map[string]interface{}{"posXY": yyS[yypt-2].node, "template": yyS[yypt-0].node}}}}
+			yyVAL.node = &commonNode{COMMON, cmd.GetOCLIAtrributes, "GetOCAttr", []interface{}{(replaceOCLICurrPath(yyS[yypt-4].s)), cmd.ROOM, map[string]interface{}{"attributes": map[string]interface{}{"posXY": yyS[yypt-2].node, "template": yyS[yypt-0].node}}}}
 		}
 	case 186:
 		{
-			yyVAL.node = &commonNode{COMMON, cmd.GetOCLIAtrributes, "GetOCAttr", []interface{}{cmd.StrToStack(replaceOCLICurrPath(yyS[yypt-2].s)), cmd.ROOM, map[string]interface{}{"attributes": map[string]interface{}{"posXY": yyS[yypt-0].node}}}}
+			yyVAL.node = &commonNode{COMMON, cmd.GetOCLIAtrributes, "GetOCAttr", []interface{}{(replaceOCLICurrPath(yyS[yypt-2].s)), cmd.ROOM, map[string]interface{}{"attributes": map[string]interface{}{"posXY": yyS[yypt-0].node}}}}
 		}
 	case 187:
 		{
-			yyVAL.node = &commonNode{COMMON, cmd.GetOCLIAtrributes, "GetOCAttr", []interface{}{cmd.StrToStack(replaceOCLICurrPath(yyS[yypt-6].s)), cmd.RACK, map[string]interface{}{"attributes": map[string]interface{}{"posXY": yyS[yypt-4].node, "size": yyS[yypt-2].node, "orientation": yyS[yypt-0].node}}}}
+			yyVAL.node = &commonNode{COMMON, cmd.GetOCLIAtrributes, "GetOCAttr", []interface{}{(replaceOCLICurrPath(yyS[yypt-6].s)), cmd.RACK, map[string]interface{}{"attributes": map[string]interface{}{"posXY": yyS[yypt-4].node, "size": yyS[yypt-2].node, "orientation": yyS[yypt-0].node}}}}
 		}
 	case 188:
 		{
-			yyVAL.node = &commonNode{COMMON, cmd.GetOCLIAtrributes, "GetOCAttr", []interface{}{cmd.StrToStack(replaceOCLICurrPath(yyS[yypt-4].s)), cmd.RACK, map[string]interface{}{"attributes": map[string]interface{}{"posXY": yyS[yypt-2].node, "size": yyS[yypt-0].node}}}}
+			yyVAL.node = &commonNode{COMMON, cmd.GetOCLIAtrributes, "GetOCAttr", []interface{}{(replaceOCLICurrPath(yyS[yypt-4].s)), cmd.RACK, map[string]interface{}{"attributes": map[string]interface{}{"posXY": yyS[yypt-2].node, "size": yyS[yypt-0].node}}}}
 		}
 	case 189:
 		{
-			yyVAL.node = &commonNode{COMMON, cmd.GetOCLIAtrributes, "GetOCAttr", []interface{}{cmd.StrToStack(replaceOCLICurrPath(yyS[yypt-2].s)), cmd.RACK, map[string]interface{}{"attributes": map[string]interface{}{"template": yyS[yypt-0].node}}}}
+			yyVAL.node = &commonNode{COMMON, cmd.GetOCLIAtrributes, "GetOCAttr", []interface{}{(replaceOCLICurrPath(yyS[yypt-2].s)), cmd.RACK, map[string]interface{}{"attributes": map[string]interface{}{"template": yyS[yypt-0].node}}}}
 		}
 	case 190:
 		{
-			yyVAL.node = &commonNode{COMMON, cmd.GetOCLIAtrributes, "GetOCAttr", []interface{}{cmd.StrToStack(replaceOCLICurrPath(yyS[yypt-6].s)), cmd.DEVICE, map[string]interface{}{"attributes": map[string]interface{}{"slot": yyS[yypt-4].node, "sizeUnit": yyS[yypt-2].node, "side": yyS[yypt-0].node}}}}
+			yyVAL.node = &commonNode{COMMON, cmd.GetOCLIAtrributes, "GetOCAttr", []interface{}{(replaceOCLICurrPath(yyS[yypt-6].s)), cmd.DEVICE, map[string]interface{}{"attributes": map[string]interface{}{"slot": yyS[yypt-4].node, "sizeUnit": yyS[yypt-2].node, "side": yyS[yypt-0].node}}}}
 		}
 	case 191:
 		{
-			yyVAL.node = &commonNode{COMMON, cmd.GetOCLIAtrributes, "GetOCAttr", []interface{}{cmd.StrToStack(replaceOCLICurrPath(yyS[yypt-4].s)), cmd.DEVICE, map[string]interface{}{"attributes": map[string]interface{}{"posU": yyS[yypt-2].node, "sizeUnit": yyS[yypt-0].node}}}}
+			yyVAL.node = &commonNode{COMMON, cmd.GetOCLIAtrributes, "GetOCAttr", []interface{}{(replaceOCLICurrPath(yyS[yypt-4].s)), cmd.DEVICE, map[string]interface{}{"attributes": map[string]interface{}{"posU": yyS[yypt-2].node, "sizeUnit": yyS[yypt-0].node}}}}
 		}
 	case 192:
 		{
-			yyVAL.node = &commonNode{COMMON, cmd.GetOCLIAtrributes, "GetOCAttr", []interface{}{cmd.StrToStack(replaceOCLICurrPath(yyS[yypt-2].s)), cmd.DEVICE, map[string]interface{}{"attributes": map[string]interface{}{"template": yyS[yypt-0].node}}}}
+			yyVAL.node = &commonNode{COMMON, cmd.GetOCLIAtrributes, "GetOCAttr", []interface{}{(replaceOCLICurrPath(yyS[yypt-2].s)), cmd.DEVICE, map[string]interface{}{"attributes": map[string]interface{}{"template": yyS[yypt-0].node}}}}
 		}
 	case 193:
 		{
-			yyVAL.node = &commonNode{COMMON, cmd.GetOCLIAtrributes, "GetOCAttr", []interface{}{cmd.StrToStack(replaceOCLICurrPath(yyS[yypt-8].s)), cmd.CORIDOR, map[string]interface{}{"name": yyS[yypt-6].node, "leftRack": yyS[yypt-4].node, "rightRack": yyS[yypt-2].node, "temperature": yyS[yypt-0].node}}}
+			yyVAL.node = &commonNode{COMMON, cmd.GetOCLIAtrributes, "GetOCAttr", []interface{}{(replaceOCLICurrPath(yyS[yypt-8].s)), cmd.CORIDOR, map[string]interface{}{"name": yyS[yypt-6].node, "leftRack": yyS[yypt-4].node, "rightRack": yyS[yypt-2].node, "temperature": yyS[yypt-0].node}}}
 		}
 	case 194:
 		{
 			x := map[string]interface{}{"name": yyS[yypt-1].node, "racks": yyS[yypt-0].s}
-			yyVAL.node = &commonNode{COMMON, cmd.GetOCLIAtrributes, "GetOCAttr", []interface{}{cmd.StrToStack(replaceOCLICurrPath(yyS[yypt-3].s)), cmd.GROUP, x}}
+			yyVAL.node = &commonNode{COMMON, cmd.GetOCLIAtrributes, "GetOCAttr", []interface{}{(replaceOCLICurrPath(yyS[yypt-3].s)), cmd.GROUP, x}}
 		}
 	case 195:
 		{
-			yyVAL.node = &commonNode{COMMON, cmd.GetOCLIAtrributes, "GetOCAttr", []interface{}{cmd.StrToStack(replaceOCLICurrPath(yyS[yypt-4].s)), cmd.SEPARATOR, map[string]interface{}{"pos1": yyS[yypt-2].node, "pos2": yyS[yypt-0].node}}}
+			yyVAL.node = &commonNode{COMMON, cmd.GetOCLIAtrributes, "GetOCAttr", []interface{}{(replaceOCLICurrPath(yyS[yypt-4].s)), cmd.SEPARATOR, map[string]interface{}{"pos1": yyS[yypt-2].node, "pos2": yyS[yypt-0].node}}}
 		}
 	case 196:
 		{

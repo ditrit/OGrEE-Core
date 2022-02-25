@@ -82,7 +82,6 @@ func DeleteObj(path string) bool {
 	}
 	entities := filepath.Base(filepath.Dir(GETURL))
 	URL := State.APIURL + "/api/" + entities + "/" + objJSON["id"].(string)
-	println(URL)
 
 	resp, e := models.Send("DELETE", URL, GetKey(), nil)
 	if e != nil {
@@ -93,6 +92,10 @@ func DeleteObj(path string) bool {
 	defer resp.Body.Close()
 	if resp.StatusCode == http.StatusNoContent {
 		println("Success")
+		//Delete Tenant nodes for now
+		if entities[:len(entities)-2] == "tenant" {
+			DeleteNodeInTree(&State.TreeHierarchy, objJSON["id"].(string), TENANT)
+		}
 	} else {
 		println("Error while deleting Object!")
 		WarningLogger.Println("Error while deleting Object!", e)
@@ -212,28 +215,18 @@ func UpdateObj(path string, data map[string]interface{}, deleteAndPut bool) map[
 	var resp *http.Response
 
 	if data != nil {
-		var respJson map[string]string
-		nd := new(*Node)
-		switch path {
-		case "":
-			nd = FindNodeInTree(&State.TreeHierarchy, StrToStack(State.CurrPath))
-		default:
-			if path[0] != '/' && len(State.CurrPath) > 1 {
-				nd = FindNodeInTree(&State.TreeHierarchy,
-					StrToStack(State.CurrPath+"/"+path))
-			} else {
-				nd = FindNodeInTree(&State.TreeHierarchy, StrToStack(path))
-			}
-		}
-
-		if nd == nil {
-			println("Error finding Object from given path!")
-			WarningLogger.Println("Object to Update not found")
+		var respJson map[string]interface{}
+		//We have to get object first since
+		//there is a potential for multiple paths
+		//we don't want to update the wrong object
+		objJSON, GETURL := GetObject(path, true)
+		if objJSON == nil {
+			println("Error while deleting Object!")
+			WarningLogger.Println("Error while deleting Object!")
 			return nil
 		}
-
-		URL := State.APIURL + "/api/" +
-			EntityToString((*nd).Entity) + "s/" + (*nd).ID
+		entities := filepath.Base(filepath.Dir(GETURL))
+		URL := State.APIURL + "/api/" + entities + "/" + objJSON["id"].(string)
 
 		//Make the proper Update JSON
 		ogData := map[string]interface{}{}
@@ -265,88 +258,21 @@ func UpdateObj(path string, data map[string]interface{}, deleteAndPut bool) map[
 			resp, e = models.Send("PATCH", URL, GetKey(), ogData)
 		}
 
-		//println("Response Code: ", resp.Status)
-		if e != nil {
-			println("There was an error!")
-			WarningLogger.Println("Error while sending UPDATE to server", e)
-		}
-		defer resp.Body.Close()
-		bodyBytes, err := ioutil.ReadAll(resp.Body)
-		if err != nil {
-			println("Error while reading response: " + err.Error())
-			ErrorLogger.Println("Error while trying to read server response: ", err)
-			return nil
-		}
-		json.Unmarshal(bodyBytes, &respJson)
-		println(respJson["message"])
-		if resp.StatusCode == http.StatusOK && data["name"] != nil {
-			//Need to update name of Obj in tree
-			(*nd).Name = string(data["name"].(string))
-			(*nd).Path = (*nd).Path[:strings.LastIndex((*nd).Path, "/")+1] + (*nd).Name
+		respJson = ParseResponse(resp, e, "UPDATE")
+		if respJson != nil {
+			println("Success")
+
+			InformUnity("POST", "UpdateObj",
+				map[string]interface{}{"type": "modify", "data": data["data"]})
 		}
 
-		InformUnity("POST", "UpdateObj",
-			map[string]interface{}{"type": "modify", "data": data["data"]})
-
-		//println(string(bodyBytes))
-	} else {
-		println("Error! Please enter desired parameters of Object to be updated")
-	}
-	return data
-}
-
-func EasyUpdate(path, op string, data map[string]interface{}) map[string]interface{} {
-	println("OK. Attempting to update...")
-	var resp *http.Response
-	var respJson map[string]interface{}
-	var e error
-	nd := new(*Node)
-
-	switch path {
-	case "":
-		nd = FindNodeInTree(&State.TreeHierarchy, StrToStack(State.CurrPath))
-	default:
-		if path[0] != '/' && len(State.CurrPath) > 1 {
-			nd = FindNodeInTree(&State.TreeHierarchy,
-				StrToStack(State.CurrPath+"/"+path))
-		} else {
-			nd = FindNodeInTree(&State.TreeHierarchy, StrToStack(path))
-		}
-	}
-
-	if nd == nil {
-		println("Error finding Object from given path!")
-		WarningLogger.Println("Object to Update not found")
-		return nil
-	}
-
-	URL := State.APIURL + "/api/" +
-		EntityToString((*nd).Entity) + "s/" + (*nd).ID
-
-	if data != nil {
-		resp, e = models.Send(op, URL, GetKey(), data)
-
-		if e != nil {
-			println("There was an error!")
-			WarningLogger.Println("Error while sending UPDATE (via easy syntax) to server", e)
-		}
-		defer resp.Body.Close()
-		bodyBytes, err := ioutil.ReadAll(resp.Body)
-		if err != nil {
-			println("Error while reading response: " + err.Error())
-			ErrorLogger.Println("Error while trying to read server response: ", err)
-			return nil
-		}
-		json.Unmarshal(bodyBytes, &respJson)
-		println(respJson["message"])
-		if resp.StatusCode == http.StatusOK && data["name"] != nil {
-			//Need to update name of Obj in tree
-			(*nd).Name = string(data["name"].(string))
-			(*nd).Path = (*nd).Path[:strings.LastIndex((*nd).Path, "/")+1] + (*nd).Name
+		//For now update tenants
+		if entities == "tenants" && data["name"] != nil && data["name"] != "" {
+			nd := FindNodeInTree(&State.TreeHierarchy, StrToStack(path))
+			(*nd).Name = data["name"].(string)
 		}
 
-		InformUnity("POST", "EasyUpdate",
-			map[string]interface{}{"type": "modify", "data": data["data"]})
+		data = respJson
 
 	} else {
 		println("Error! Please enter desired parameters of Object to be updated")
@@ -622,29 +548,39 @@ func getAttrAndVal(x string) (string, string) {
 }
 
 //Helps to create the Object (thru OCLI syntax)
-func GetOCLIAtrributes(path *Stack, ent int, data map[string]interface{}) {
+func GetOCLIAtrributes(path string, ent int, data map[string]interface{}) {
 	attr := map[string]interface{}{}
 	tmpl := map[string]interface{}{}
-	var nd **Node
+	var parent map[string]interface{}
+	var domain string
+	var parentURL string
 
+	ogPath := path
 	if ent > TENANT {
-		path.Push("Physical")
-		path.ReversePop()
+		path = "/Physical/" + filepath.Dir(path)
 	}
 
-	data["name"] = string(path.PeekLast().(string))
-	println("NAME:", string(data["name"].(string)))
+	data["name"] = filepath.Base(ogPath)
 	data["category"] = EntityToString(ent)
 
 	//Retrieve Parent
 	if ent != TENANT && ent != GROUP {
-		nd = FindNodeInTree(&State.TreeHierarchy, path)
-		if nd == nil {
-			if nd == nil {
-				println("Error! The parent was not found in path")
-				return
-			}
+		parent, parentURL = GetObject(path, true)
+		if parent == nil {
+			println("Error! The parent was not found in path")
+			return
 		}
+
+		//Retrieve parent name for domain
+		tmp := strings.Split(parentURL, State.APIURL+"/api/tenants/")
+
+		domIDX := strings.Index(tmp[1], "/")
+		if domIDX == -1 {
+			domain = tmp[1]
+		} else {
+			domain = tmp[1][:domIDX]
+		}
+
 	}
 
 	switch ent {
@@ -660,12 +596,9 @@ func GetOCLIAtrributes(path *Stack, ent int, data map[string]interface{}) {
 		data["attributes"].(map[string]interface{})["usableColor"] = "DBEDF2"
 		data["attributes"].(map[string]interface{})["reservedColor"] = "F2F2F2"
 		data["attributes"].(map[string]interface{})["technicalColor"] = "EBF2DE"
-		data["domain"] = (*nd).Name
-		data["parentId"] = (*nd).ID
+		data["domain"] = domain
+		data["parentId"] = parent["id"]
 
-		//println("Top:", path.Peek().(string))
-		//println("Last:", path.Peek().(string))
-		//return
 		PostObj(ent, "site", data)
 	case BLDG:
 
@@ -690,8 +623,8 @@ func GetOCLIAtrributes(path *Stack, ent int, data map[string]interface{}) {
 		attr["sizeUnit"] = "m"
 		attr["heightUnit"] = "m"
 		attr["height"] = 0 //Should be set from parser by default
-		data["parentId"] = (*nd).ID
-		data["domain"] = strings.Split(((*nd).Path), "/")[2]
+		data["parentId"] = parent["id"]
+		data["domain"] = domain
 
 		PostObj(ent, "building", data)
 	case ROOM:
@@ -713,8 +646,8 @@ func GetOCLIAtrributes(path *Stack, ent int, data map[string]interface{}) {
 			MergeMaps(attr, tmpl, true)
 		}
 
-		data["parentId"] = (*nd).ID
-		data["domain"] = strings.Split(((*nd).Path), "/")[2]
+		data["parentId"] = parent["id"]
+		data["domain"] = domain
 		data["attributes"] = attr
 
 		PostObj(ent, "room", data)
@@ -739,8 +672,8 @@ func GetOCLIAtrributes(path *Stack, ent int, data map[string]interface{}) {
 			MergeMaps(attr, tmpl, true)
 		}
 
-		data["parentId"] = (*nd).ID
-		data["domain"] = strings.Split(((*nd).Path), "/")[2]
+		data["parentId"] = parent["id"]
+		data["domain"] = domain
 		data["attributes"] = attr
 
 		PostObj(ent, "rack", data)
@@ -764,8 +697,8 @@ func GetOCLIAtrributes(path *Stack, ent int, data map[string]interface{}) {
 			MergeMaps(attr, tmpl, true)
 		}
 
-		data["domain"] = strings.Split(((*nd).Path), "/")[2]
-		data["parentId"] = (*nd).ID
+		data["domain"] = domain
+		data["parentId"] = parent["id"]
 
 		PostObj(ent, "device", data)
 
@@ -773,8 +706,8 @@ func GetOCLIAtrributes(path *Stack, ent int, data map[string]interface{}) {
 		//name, category, domain, pid
 
 		if ent != GROUP {
-			data["domain"] = strings.Split(((*nd).Path), "/")[2]
-			data["parentId"] = (*nd).ID
+			data["domain"] = domain
+			data["parentId"] = parent["id"]
 		}
 		data["attributes"] = map[string]interface{}{}
 
@@ -866,12 +799,13 @@ func LoadTemplate(data map[string]interface{}, filePath string) {
 func SetClipBoard(x *[]string) []string {
 	State.ClipBoard = x
 	data := map[string]interface{}{}
-	//Verify nodes
+	//Verify paths
 	for _, val := range *x {
-		path := StrToStack(val)
-		nd := FindNodeInTree(&State.TreeHierarchy, path)
-		if nd != nil {
-			data = map[string]interface{}{"type": "select", "data": (*nd).ID}
+		//path := StrToStack(val)
+		//nd := FindNodeInTree(&State.TreeHierarchy, path)
+		obj, _ := GetObject(val, true)
+		if obj != nil {
+			data = map[string]interface{}{"type": "select", "data": obj["id"]}
 			InformUnity("POST", "SetClipBoard", data)
 		}
 	}

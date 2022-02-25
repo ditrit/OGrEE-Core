@@ -28,6 +28,7 @@ func ProcessFile(path string) string {
 	ocr := regexp.MustCompile(`^\+[a-z]+:([A-Za-z0-9_]+(\.|@|=))+`)
 	editr := regexp.MustCompile(`^    ([A-Za-z0-9_]+(\.))+[A-Za-z0-9_]+=`)
 	editr2 := regexp.MustCompile(`^([A-Za-z0-9_]+(\.))+[A-Za-z0-9_]+=`)
+	editr3 := regexp.MustCompile(`^    ([A-Za-z0-9_]+(\.))+[A-Za-z0-9_]+:[A-Za-z0-9_]+=`)
 	selr := regexp.MustCompile(`^=([A-Za-z0-9_]+(\.))+`)
 	delr := regexp.MustCompile(`^-([A-Za-z0-9_]+(\.))+`)
 
@@ -37,6 +38,7 @@ func ProcessFile(path string) string {
 		ocMatch := ocr.FindString(x)
 		editrMatch := editr.FindString(x)
 		editr2Match := editr2.FindString(x)
+		editr3Match := editr3.FindString(x)
 		selrMatch := selr.FindString(x)
 		delrMatch := delr.FindString(x)
 
@@ -62,6 +64,17 @@ func ProcessFile(path string) string {
 				modifiedSubStr := strings.Replace(editr2Match, ".", "/", count-1)
 				modifiedSubStr = strings.Replace(modifiedSubStr, ".", ":", 1)
 				x = strings.Replace(x, editr2Match, modifiedSubStr, 1)
+				lines = append(lines, x)
+				continue
+			}
+		}
+
+		if editr3Match != "" {
+			if !strings.Contains(editr3Match, "ui") && !strings.Contains(editr3Match, "camera") {
+				count := strings.Count(editr3Match, ".")
+				modifiedSubStr := strings.Replace(editr3Match, ".", "/", count)
+				//modifiedSubStr = strings.Replace(modifiedSubStr, ".", ":", 1)
+				x = strings.Replace(x, editr3Match, modifiedSubStr, 1)
 				lines = append(lines, x)
 				continue
 			}
