@@ -123,7 +123,7 @@ pipeline {
                 //sh 'mv ./.env.bak ./.env'
                 
                 //sh 'docker run -d --rm --network=host --name=ogree_api testingalpine:dockerfile /home/main'
-                sh 'docker-compose -f /home/ziad/api/v4/OGREE-APIv3/docker-compose.yml up -d'
+                sh 'docker-compose -f /home/ziad/api/v4/OGREE-APIv3/docker-compose.yml start ogree_api'
                 sh 'docker logs ogree_api'
                
             }
