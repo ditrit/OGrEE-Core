@@ -318,45 +318,188 @@ func LSOG() {
 }
 
 func LSOBJECT(x string, entity int) []map[string]interface{} {
-	objs := []*Node{}
-	if x == "" || x == "." {
-		ok, _, r := CheckPath(&State.TreeHierarchy,
-			StrToStack(State.CurrPath), New())
-		if !ok {
-			println("Path not valid!")
-			WarningLogger.Println("Path not found: ", x)
-			return nil
-		}
-		objs = GetNodes(r, entity)
-	} else if string(x[0]) == "/" {
-		ok, _, r := CheckPath(&State.TreeHierarchy, StrToStack(x), New())
-		if !ok {
-			println("Path not valid!")
-			WarningLogger.Println("Path not found: ", x)
-			return nil
-		}
-		objs = GetNodes(r, entity)
+	obj, path := GetObject(x, true)
+	if obj == nil {
+		println("Error finding Object from given path!")
+		WarningLogger.Println("Object to Get not found")
+		return nil
+	}
+
+	entityDir, _ := filepath.Split(path)
+	entities := filepath.Base(entityDir)
+	objEnt := entities[:len(entities)-1]
+	obi := EntityStrToInt(objEnt)
+	if obi == -1 { //Something went wrong
+		println("Error finding Object from given path!")
+		WarningLogger.Println("Object to Get not found")
+		return nil
+	}
+
+	//YouareAt -> obi
+	//want 	   -> entity
+
+	if (entity >= AC && entity <= CORIDOR) && !(obi <= BLDG) {
+		return nil
+	}
+
+	if entity < AC && obi > entity {
+		return nil
+	}
+
+	//println(entities)
+	var idToSend string
+	if obi == TENANT {
+		idToSend = obj["name"].(string)
 	} else {
-		ok, _, r := CheckPath(&State.TreeHierarchy,
-			StrToStack(State.CurrPath+"/"+x), New())
-		if !ok {
-			println("Path not valid!")
-			WarningLogger.Println("Path not found: ", x)
+		idToSend = obj["id"].(string)
+	}
+	//println(entities)
+	//println(obi)
+	//println("WANT:", EntityToString(entity))
+	res := lsobjHelper(State.APIURL, idToSend, obi, entity)
+	for i := range res {
+		println("DEBUGSTMT")
+		if res[i] != nil && res[i]["name"] != nil {
+			println(res[i]["name"].(string))
+		}
+
+	}
+	return res
+	//return nil
+}
+
+func lsobjHelper(api, objID string, curr, entity int) []map[string]interface{} {
+	if entity-curr >= 2 {
+		var ext, URL string
+		println("DEBUG-should be here")
+		ext = EntityToString(curr) + "s/" + objID + "/" + EntityToString(curr+2) + "s"
+		URL = State.APIURL + "/api/" + ext
+		println("DEBUG-URL:", URL)
+
+		//EDGE CASE, if user is at a BLDG and requests object of room
+		if curr == BLDG && (entity >= AC && entity <= CORIDOR) {
+			ext = EntityToString(curr) + "s/" + objID + "/" + EntityToString(entity) + "s"
+			r, e := models.Send("GET", State.APIURL+"/api/"+ext, GetKey(), nil)
+			tmp := ParseResponse(r, e, "getting objects")
+			if tmp == nil {
+				return nil
+			}
+
+			tmpObjs := tmp["data"].(map[string]interface{})["objects"].([]interface{})
+			res := infArrToMapStrinfArr(tmpObjs)
+			return res
+		}
+		//END OF EDGE CASE BLOCK
+
+		r, e := models.Send("GET", URL, GetKey(), nil)
+		resp := ParseResponse(r, e, "getting objects")
+		if resp == nil {
+			println("return nil1")
 			return nil
 		}
-		objs = GetNodes(r, entity)
-	}
 
-	for i := range objs {
-		println(i, ":", objs[i].Name)
-	}
+		//objs -> resp["data"]["objects"]
+		if data, ok := resp["data"].(map[string]interface{}); ok {
+			if objs, ok1 := data["objects"].([]interface{}); ok1 {
+				x := []map[string]interface{}{}
 
-	//Slow but necessary part
+				if entity >= AC && entity <= CORIDOR {
+
+					for q := range objs {
+						id := objs[q].(map[string]interface{})["id"].(string)
+						ext2 := "/api/" + EntityToString(curr+2) + "s/" + id + "/" + EntityToString(entity) + "s"
+
+						tmp, e := models.Send("GET", State.APIURL+ext2, GetKey(), nil)
+						tmp2 := ParseResponse(tmp, e, "get objects")
+						if x != nil {
+							tmpObjects := tmp2["data"].(map[string]interface{})["objects"].([]interface{})
+
+							//convert []interface{} to []map[string]interface{}
+							x = append(x, infArrToMapStrinfArr(tmpObjects)...)
+						}
+					}
+
+				} else {
+					for i := range objs {
+						rest := lsobjHelper(api, objs[i].(map[string]interface{})["id"].(string), curr+2, entity)
+						if rest != nil && len(rest) > 0 {
+							x = append(x, rest...)
+						}
+
+					}
+				}
+
+				println("returning x")
+				println(len(x))
+				return x
+			} else {
+				println("return nil3")
+				return nil
+			}
+
+		} else {
+			println("return nil2")
+			return nil
+		}
+
+	} else if entity-curr >= 1 {
+		println("DEBUG-must be here")
+		ext := EntityToString(curr) + "s/" + objID + "/" + EntityToString(curr+1) + "s"
+		URL := State.APIURL + "/api/" + ext
+		r, e := models.Send("GET", URL, GetKey(), nil)
+		println("DEBUG-URL SENT:", URL)
+		resp := ParseResponse(r, e, "getting objects")
+		if resp == nil {
+			println("return nil")
+			return nil
+		}
+		//objs := resp["data"]["objects"]
+		if data, ok := resp["data"].(map[string]interface{}); ok {
+			if objs, ok1 := data["objects"].([]interface{}); ok1 {
+				ans := []map[string]interface{}{}
+				//For associated objects of room
+				if entity >= AC && entity <= CORIDOR {
+					for i := range objs {
+						ext2 := "/api/" + EntityToString(curr) + "s/" +
+							objs[i].(map[string]interface{})["id"].(string) +
+							"/" + EntityToString(entity) + "s"
+
+						tmp, e := models.Send("GET", State.APIURL+ext2, GetKey(), nil)
+						x := ParseResponse(tmp, e, "get objects")
+						if x != nil {
+							ans = append(ans, x)
+						}
+					}
+				} else {
+					/*for idx := range objs {
+						ans = append(ans, objs[idx].(map[string]interface{}))
+					}*/
+					ans = infArrToMapStrinfArr(objs)
+				}
+
+				return ans
+
+			} else {
+				return nil
+			}
+
+		} else {
+			return nil
+		}
+	} else if entity-curr == 0 { //Base Case
+		resp, e := models.Send("GET", State.APIURL+"/api/"+EntityToString(curr)+"s/"+objID, GetKey(), nil)
+		x := ParseResponse(resp, e, "get object")
+		return []map[string]interface{}{x["data"].(map[string]interface{})}
+	}
+	return nil
+
+}
+
+func infArrToMapStrinfArr(x []interface{}) []map[string]interface{} {
 	ans := []map[string]interface{}{}
-	/*for i := range objs {
-		ans = append(ans, GetObject(objs[i].Path, true))
-	}*/
-
+	for i := range x {
+		ans = append(ans, x[i].(map[string]interface{}))
+	}
 	return ans
 }
 
