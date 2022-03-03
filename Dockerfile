@@ -27,6 +27,7 @@ RUN go get -u go.mongodb.org/mongo-driver
 RUN go get -u github.com/dgrijalva/jwt-go
 RUN go get -u github.com/joho/godotenv
 RUN go get -u golang.org/x/crypto/bcrypt
+RUN go get go.mongodb.org/mongo-driver/x/mongo/driver@v1.8.4
 RUN apk add --no-cache python3 py3-pip
 RUN apk add --no-cache -X http://dl-cdn.alpinelinux.org/alpine/edge/community py3-pip
 

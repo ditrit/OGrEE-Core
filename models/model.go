@@ -345,7 +345,7 @@ func ValidateEntity(entity int, t map[string]interface{}) (map[string]interface{
 				} else {
 					switch entity {
 					case TENANT:
-						if _, ok := v["color"]; !ok {
+						if _, ok := v["color"]; !ok || v["color"] == "" {
 							return u.Message(false,
 								"Color Attribute must be specified on the payload"), false
 						}
