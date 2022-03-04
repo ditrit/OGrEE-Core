@@ -32,6 +32,7 @@ func init() {
 	dbPort := os.Getenv("db_port")
 	user := os.Getenv("db_user")
 	pass := os.Getenv("db_pass")
+	dbName := os.Getenv("db")
 
 	if user == "" || pass == "" {
 		println("USER:", user)
@@ -57,7 +58,12 @@ func init() {
 		println("Error while connecting")
 	}
 	//defer client.Disconnect(ctx)
-	db = client.Database("ogree")
+	if dbName != "" {
+		db = client.Database(dbName)
+	} else {
+		db = client.Database("ogree")
+	}
+
 	if db == nil {
 		println("Error while connecting")
 	} else {
