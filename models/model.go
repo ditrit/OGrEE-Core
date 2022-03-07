@@ -831,10 +831,14 @@ func GetEntityHierarchy(entity string, ID primitive.ObjectID, entnum, end int) (
 		//Get the rest of hierarchy for children
 		for i := range children {
 			var x map[string]interface{}
-			subIdx := u.EntityToString(entnum + 1)
 			subID := (children[i]["id"].(primitive.ObjectID))
-			x, _ =
-				GetEntityHierarchy(subIdx, subID, entnum+1, end)
+
+			if entnum+1 == DEVICE {
+				x, _ = RetrieveDeviceHierarch(subID, entnum, end)
+			} else {
+				x, _ =
+					GetEntityHierarchy(subEnt, subID, entnum+1, end)
+			}
 
 			//So that output JSON will not have
 			// "children": [null]
