@@ -391,7 +391,7 @@ K: NT_CREATE     {if cmd.State.DebugLvl >= 3 {println("@State start");}}
        | NT_DEL 
 ;
 
-NT_CREATE: TOK_CREATE E P TOK_COL F {cmd.Disp(resMap(&$5, $2, false)); $$=&commonNode{COMMON, cmd.PostObj, "PostObj", []interface{}{cmd.EntityStrToInt($2),$2, resMap(&$5, $2, false)}}}
+NT_CREATE: TOK_CREATE E P TOK_COL F {/*cmd.Disp(resMap(&$5, $2, false));*/ $$=&commonNode{COMMON, cmd.PostObj, "PostObj", []interface{}{cmd.EntityStrToInt($2),$2, resMap(&$5, $2, false)}}}
            |TOK_CREATE E TOK_USE_JSON TOK_COL P {$$=&commonNode{COMMON, cmd.PostObj, "EasyPost", []interface{}{cmd.EntityStrToInt($2),$2, $5}}}
 ;
 

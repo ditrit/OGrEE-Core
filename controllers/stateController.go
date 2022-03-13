@@ -81,6 +81,10 @@ func InitState(debugLvl int) {
 	} else {
 		fmt.Println("Unity Client is Reachable!")
 		State.UnityClientAvail = true
+
+		//Send login notification
+		data := map[string]interface{}{"api_url": State.APIURL, "api_token": GetKey()}
+		InformUnity("POST", "login notification", data)
 	}
 
 	phys := &Node{}

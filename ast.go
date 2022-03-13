@@ -1014,6 +1014,10 @@ func (a *ast) execute() interface{} {
 			a.statements[i].execute()
 		}
 
+		if a.statements[i] == nil {
+			println("OGREE: Unrecognised command!")
+		}
+
 	}
 
 	return nil

@@ -358,7 +358,6 @@ func LSOBJECT(x string, entity int) []map[string]interface{} {
 	//println("WANT:", EntityToString(entity))
 	res := lsobjHelper(State.APIURL, idToSend, obi, entity)
 	for i := range res {
-		println("DEBUGSTMT")
 		if res[i] != nil && res[i]["name"] != nil {
 			println(res[i]["name"].(string))
 		}
@@ -825,7 +824,7 @@ func GetOCLIAtrributes(path string, ent int, data map[string]interface{}) {
 
 		data["parentId"] = parent["id"]
 		data["domain"] = domain
-		data["attributes"] = attr
+		data["attributes"] = attr["attributes"]
 
 		PostObj(ent, "room", data)
 	case RACK:
@@ -851,7 +850,7 @@ func GetOCLIAtrributes(path string, ent int, data map[string]interface{}) {
 
 		data["parentId"] = parent["id"]
 		data["domain"] = domain
-		data["attributes"] = attr
+		data["attributes"] = attr["attributes"]
 
 		PostObj(ent, "rack", data)
 	case DEVICE:
@@ -876,6 +875,7 @@ func GetOCLIAtrributes(path string, ent int, data map[string]interface{}) {
 
 		data["domain"] = domain
 		data["parentId"] = parent["id"]
+		data["attributes"] = attr["attributes"]
 
 		PostObj(ent, "device", data)
 

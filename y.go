@@ -1972,8 +1972,7 @@ yynewstate:
 			}
 		}
 	case 56:
-		{
-			cmd.Disp(resMap(&yyS[yypt-0].s, yyS[yypt-3].s, false))
+		{ /*cmd.Disp(resMap(&$5, $2, false));*/
 			yyVAL.node = &commonNode{COMMON, cmd.PostObj, "PostObj", []interface{}{cmd.EntityStrToInt(yyS[yypt-3].s), yyS[yypt-3].s, resMap(&yyS[yypt-0].s, yyS[yypt-3].s, false)}}
 		}
 	case 57:
