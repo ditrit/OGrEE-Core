@@ -607,6 +607,9 @@ func Help(entry string) {
 		"cmds", "var", "unset", "select", "camera", "ui":
 		path = "./other/man/" + entry + ".md"
 
+	case ">":
+		path = "./other/man/focus.md"
+
 	case "+":
 		path = "./other/man/plus.md"
 
@@ -902,6 +905,22 @@ func GetOCLIAtrributes(path string, ent int, data map[string]interface{}) {
 func HandleUI(data map[string]interface{}) {
 	Disp(data)
 	InformUnity("POST", "HandleUI", data)
+}
+
+func FocusUI(path string) {
+	var id string
+	if path != "" {
+		obj, e := GetObject(path, true)
+		if e != "" {
+			println(e)
+		}
+		id = obj["id"].(string)
+	} else {
+		id = ""
+	}
+
+	data := map[string]interface{}{"type": "focus", "data": id}
+	InformUnity("POST", "FocusUI", data)
 }
 
 func ShowClipBoard() []string {

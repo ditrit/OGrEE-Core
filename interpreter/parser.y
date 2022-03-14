@@ -537,6 +537,7 @@ BASH:  TOK_CLR {$$=&commonNode{COMMON, nil, "CLR", nil}}
        | TOK_DOC TOK_DOT TOK_VAR {$$=&commonNode{COMMON, cmd.Help, "Help", []interface{}{".var"}}}
        | TOK_DOC TOK_PLUS {$$=&commonNode{COMMON, cmd.Help, "Help", []interface{}{"+"}}}
        | TOK_DOC TOK_EQUAL {$$=&commonNode{COMMON, cmd.Help, "Help", []interface{}{"="}}}
+       | TOK_DOC TOK_GREATER {$$=&commonNode{COMMON, cmd.Help, "Help", []interface{}{">"}}}
 
 ;
 
@@ -634,6 +635,7 @@ HANDLEUI: TOK_UI TOK_DOT TOK_WORD TOK_EQUAL TOK_LBLOCK EXPR TOK_RBLOCK {$$=&comm
           |TOK_CAM TOK_DOT TOK_WORD TOK_EQUAL TOK_LBLOCK 
             EXPR TOK_COMMA EXPR TOK_COMMA EXPR TOK_RBLOCK TOK_ATTRSPEC 
             TOK_LBLOCK EXPR TOK_COMMA EXPR TOK_RBLOCK {$$=&commonNode{COMMON, cmd.HandleUI, "HandleUnity", []interface{}{"camera", $3, []interface{}{$6, $8, $10}, []interface{}{$14, $16}}}}
+          |TOK_GREATER P {$$=&commonNode{COMMON, cmd.FocusUI, "Focus", []interface{}{$2}}}
           ;
 
 //For making array types

@@ -26,7 +26,7 @@ func ContactUnity(method, URL string, data map[string]interface{}) error {
 	dataJSON, _ := json.Marshal(data)
 
 	// Connect to a server
-	println(URL)
+	//println(URL)
 	conn, e := net.Dial("tcp", URL)
 	if e != nil {
 		return e

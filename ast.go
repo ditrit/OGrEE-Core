@@ -252,6 +252,11 @@ func (c *commonNode) execute() interface{} {
 				c.args[1].(int),
 				c.args[2].(map[string]interface{}))
 		}
+	case "Focus": //Another handle unity type of command
+		if f, ok := c.fun.(func(string)); ok {
+			f(c.args[0].(string))
+		}
+
 	case "HandleUnity":
 		if f, ok := c.fun.(func(map[string]interface{})); ok {
 			data := map[string]interface{}{}
