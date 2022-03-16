@@ -388,7 +388,7 @@ func DispAtLevelTAB(root **Node, x Stack) []string {
 }
 
 //Replaces DispAtLevel since we are no longer
-//storing objects in a tree
+//storing objects in a tree and returns string arr
 func FetchNodesAtLevel(path string) []string {
 	names := []string{}
 
@@ -440,6 +440,57 @@ func FetchNodesAtLevel(path string) []string {
 		}
 	}
 	return names
+}
+
+//Same as FetchNodesAtLevel but returns the JSONs
+//in map[string]inf{} format
+func FetchJsonNodesAtLevel(path string) []map[string]interface{} {
+	objects := []map[string]interface{}{}
+
+	paths := strings.Split(filepath.Clean(path), "/")
+
+	if len(paths) < 3 { // /Physical or / or /Logical
+		//println("Should be here")
+		//println("LEN:", len(paths))
+		return nil
+	}
+
+	// 2: since first idx is useless
+	// and 2nd is just /Physical or /Logical etc
+	urls := OnlineLevelResolver(paths[2:])
+
+	for i := range urls {
+		//println("URL to send:", urls[i])
+		r, e := models.Send("GET", urls[i], GetKey(), nil)
+		if e != nil {
+			println(e.Error())
+			return nil
+		}
+
+		if r.StatusCode == http.StatusOK { //Retrieved nodes
+			parsedResp := ParseResponse(r, e, "get request")
+			if parsedResp == nil {
+				return nil
+			}
+
+			if parsedResp["data"] != nil {
+
+				if objs, ok := parsedResp["data"].(map[string]interface{})["objects"]; ok {
+					data := objs.([]interface{})
+
+					for i := range data {
+						//If we have templates, check for slug
+						if object, ok := data[i].(map[string]interface{}); ok {
+							objects = append(objects, object)
+						}
+					}
+
+				}
+
+			}
+		}
+	}
+	return objects
 }
 
 func DispStk(x Stack) {

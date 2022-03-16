@@ -239,6 +239,13 @@ func (c *commonNode) execute() interface{} {
 			f(arg, val)
 		}
 
+	case "Hierarchy":
+		if f, ok := c.fun.(func(x string, depth int) []map[string]interface{}); ok {
+			path := c.args[0].(string)
+			depth := c.args[1].(int)
+			f(path, depth)
+		}
+
 	case "GetOCAttr":
 		if f, ok := c.fun.(func(string, int,
 			map[string]interface{})); ok {

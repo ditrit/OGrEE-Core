@@ -4,6 +4,7 @@
 /update/ { printToks("TOK_UPDATE"); return TOK_UPDATE}
 /delete/ { printToks("TOK_DELETE"); return TOK_DELETE}
 /search/ { printToks("TOK_SEARCH"); return TOK_SEARCH}
+/hc/ { printToks("TOK_HIERARCH"); return TOK_HIERARCH}
 /\+/ { printToks("TOK_PLUS");lval.s = yylex.Text(); return TOK_PLUS}
 
 /-/ {  printToks("TOK_OCDEL");lval.s = yylex.Text(); return TOK_OCDEL}
@@ -58,7 +59,7 @@
 /room|ro/ {  printToks("TOK_ROOM");lval.s = yylex.Text();return TOK_ROOM}
 /rack|rk/ {  printToks("TOK_RACK");lval.s = yylex.Text();return TOK_RACK}
 /device|dv/ {  printToks("TOK_DEVICE");lval.s = yylex.Text();return TOK_DEVICE}
-/group|dv/ {  printToks("TOK_GROUP");lval.s = yylex.Text();return TOK_GROUP}
+/group|gp/ {  printToks("TOK_GROUP");lval.s = yylex.Text();return TOK_GROUP}
 /corridor|co/ {  printToks("TOK_CORIDOR");lval.s = yylex.Text();return TOK_CORIDOR}
 /separator|sp/ {  printToks("TOK_WALL");lval.s = yylex.Text();return TOK_WALL}
 /ac/ {  printToks("TOK_AC");lval.s = yylex.Text();return TOK_AC}

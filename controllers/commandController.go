@@ -380,7 +380,7 @@ func lsobjHelper(api, objID string, curr, entity int) []map[string]interface{} {
 			return nil
 		}
 
-		tmpObjs := LoadArrFromResp(tmp)
+		tmpObjs := LoadArrFromResp(tmp, "objects")
 		if tmp == nil {
 			return nil
 		}
@@ -417,7 +417,7 @@ func lsobjHelper(api, objID string, curr, entity int) []map[string]interface{} {
 		}
 
 		//objs -> resp["data"]["objects"]
-		objs := LoadArrFromResp(resp)
+		objs := LoadArrFromResp(resp, "objects")
 		if objs != nil {
 			x := []map[string]interface{}{}
 
@@ -466,7 +466,7 @@ func lsobjHelper(api, objID string, curr, entity int) []map[string]interface{} {
 			return nil
 		}
 		//objs := resp["data"]["objects"]
-		objs := LoadArrFromResp(resp)
+		objs := LoadArrFromResp(resp, "objects")
 		if objs != nil {
 			ans := []map[string]interface{}{}
 			//For associated objects of room
@@ -493,7 +493,7 @@ func lsobjHelper(api, objID string, curr, entity int) []map[string]interface{} {
 						r1, e1 := models.Send("GET", subURL, GetKey(), nil)
 						tmp1 := ParseResponse(r1, e1, "getting objects")
 
-						tmp2 := LoadArrFromResp(tmp1)
+						tmp2 := LoadArrFromResp(tmp1, "objects")
 						if tmp2 != nil {
 							//Swap ans and objs to keep order
 							ans = append(ans, infArrToMapStrinfArr(tmp2)...)
@@ -528,6 +528,8 @@ func lsobjHelper(api, objID string, curr, entity int) []map[string]interface{} {
 	return nil
 }
 
+//Convert []interface{} array to
+//[]map[string]interface{} array
 func infArrToMapStrinfArr(x []interface{}) []map[string]interface{} {
 	ans := []map[string]interface{}{}
 	for i := range x {
@@ -604,7 +606,7 @@ func Help(entry string) {
 	switch entry {
 	case "ls", "pwd", "print", "cd", "tree", "create", "gt",
 		"update", "delete", "lsog", "grep", "for", "while", "if",
-		"cmds", "var", "unset", "select", "camera", "ui":
+		"cmds", "var", "unset", "select", "camera", "ui", "hc":
 		path = "./other/man/" + entry + ".md"
 
 	case ">":
@@ -712,6 +714,57 @@ func Tree(x string, depth int) {
 		println(State.CurrPath + "/" + x)
 		tree(State.CurrPath+"/"+x, "", depth)
 	}
+}
+
+func GetHierarchy(x string, depth int) []map[string]interface{} {
+	//Variable declarations
+	var URL, ext, depthStr string
+	var ans []map[string]interface{}
+
+	//Get object first
+	obj, e := GetObject(x, true)
+	if obj == nil {
+		println("Error: ", e)
+		return nil
+	}
+
+	//Then obtain hierarchy
+	id := obj["id"].(string)
+	if ent, ok := obj["category"]; ok {
+		if entity, ok := ent.(string); ok {
+			//Make URL
+			depthStr = strconv.Itoa(depth)
+			ext = "/api/" + entity + "s/" + id + "/all?limit=" + depthStr
+			URL = State.APIURL + ext
+
+			r, e := models.Send("GET", URL, GetKey(), nil)
+			if e != nil {
+				println("Error: " + e.Error())
+				ErrorLogger.Println("Error: " + e.Error())
+				return nil
+			}
+
+			data := ParseResponse(r, nil, "get hierarchy")
+			if data == nil {
+				WarningLogger.Println("Hierarchy call response was nil")
+				println("No data")
+				return nil
+			}
+
+			objs := LoadArrFromResp(data, "children")
+			if objs == nil {
+				WarningLogger.Println("No objects found in hierarchy call")
+				println("No objects found in hierarchy call")
+				return nil
+			}
+
+			ans = infArrToMapStrinfArr(objs)
+
+		}
+
+	}
+	DispMapArr(ans)
+	return ans
 }
 
 //When creating via OCLI syntax
@@ -1036,6 +1089,17 @@ func SetEnv(arg string, val interface{}) {
 
 //Utility functions
 
+//Display contents of []map[string]inf array
+func DispMapArr(x []map[string]interface{}) {
+	for idx := range x {
+		println()
+		println()
+		println("OBJECT: ", idx)
+		displayObject(x[idx])
+		println()
+	}
+}
+
 //displays contents of maps
 func Disp(x map[string]interface{}) {
 
@@ -1044,9 +1108,9 @@ func Disp(x map[string]interface{}) {
 	println("JSON: ", string(jx))
 }
 
-func LoadArrFromResp(resp map[string]interface{}) []interface{} {
+func LoadArrFromResp(resp map[string]interface{}, idx string) []interface{} {
 	if data, ok := resp["data"].(map[string]interface{}); ok {
-		if objs, ok1 := data["objects"].([]interface{}); ok1 {
+		if objs, ok1 := data[idx].([]interface{}); ok1 {
 			return objs
 		}
 	}

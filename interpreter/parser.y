@@ -205,9 +205,9 @@ func formActualPath(x string) string {
        TOK_MOD
        TOK_UNSET TOK_ELIF TOK_DO TOK_LEN
        TOK_USE_JSON TOK_PARTIAL
-       TOK_CAM TOK_UI
+       TOK_CAM TOK_UI TOK_HIERARCH
        
-%type <s> F E P P1 WORDORNUM /*STRARG*/ CDORFG /*ANYTOKEN*/
+%type <s> F E P P1 WORDORNUM CDORFG 
 %type <arr> WNARG NODEGETTER NODEACC
 %type <sarr> GETOBJS
 %type <elifArr> EIF
@@ -488,6 +488,8 @@ Q:     TOK_CD P {/*cmd.CD($2);*/ $$=&commonNode{COMMON, cmd.CD, "CD", []interfac
 
        | TOK_TREE P {$$=&commonNode{COMMON, cmd.Tree, "Tree", []interface{}{$2, 0}}}
        | TOK_TREE P TOK_NUM {$$=&commonNode{COMMON, cmd.Tree, "Tree", []interface{}{$2, $3}}}
+       | TOK_HIERARCH P {$$=&commonNode{COMMON, cmd.GetHierarchy, "Hierarchy", []interface{}{$2, 1}}}
+       | TOK_HIERARCH P TOK_NUM {$$=&commonNode{COMMON, cmd.GetHierarchy, "Hierarchy", []interface{}{$2, $3}}}
        | TOK_UNSET TOK_OCDEL TOK_WORD TOK_WORD {$$=&commonNode{COMMON,UnsetUtil, "Unset",[]interface{}{$2+$3, $4, nil, nil} }}
        | TOK_UNSET TOK_DEREF TOK_WORD TOK_LBLOCK EXPR TOK_RBLOCK {
               v:=&symbolReferenceNode{REFERENCE, $3, $5, nil}; 
@@ -516,6 +518,7 @@ BASH:  TOK_CLR {$$=&commonNode{COMMON, nil, "CLR", nil}}
        | TOK_DOC TOK_GET {$$=&commonNode{COMMON, cmd.Help, "Help", []interface{}{"gt"}}}
        | TOK_DOC TOK_UPDATE {$$=&commonNode{COMMON, cmd.Help, "Help", []interface{}{"update"}}}
        | TOK_DOC TOK_DELETE {$$=&commonNode{COMMON, cmd.Help, "Help", []interface{}{"delete"}}}
+       | TOK_DOC TOK_HIERARCH {$$=&commonNode{COMMON, cmd.Help, "Help", []interface{}{"hc"}}}
        | TOK_DOC TOK_WORD {$$=&commonNode{COMMON, cmd.Help, "Help", []interface{}{$2}}}
        | TOK_DOC TOK_TREE {$$=&commonNode{COMMON, cmd.Help, "Help", []interface{}{"tree"}}}
        | TOK_DOC TOK_IF {$$=&commonNode{COMMON, cmd.Help, "Help", []interface{}{"if"}}}
