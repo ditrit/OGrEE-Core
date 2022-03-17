@@ -145,7 +145,7 @@ func (c *commonNode) execute() interface{} {
 
 	case "UpdateObj":
 		var v map[string]interface{}
-		if f, ok := c.fun.(func(string, map[string]interface{}, bool) map[string]interface{}); ok {
+		if f, ok := c.fun.(func(string, string, string, map[string]interface{}, bool) map[string]interface{}); ok {
 			//Old code was removed since
 			//it broke the OCLI syntax easy update
 			x := len(c.args)
@@ -161,9 +161,9 @@ func (c *commonNode) execute() interface{} {
 				nd := getNodeFromMapInf(mp.(node).execute().(map[string]interface{}))
 				updateArgs := map[string]interface{}{c.args[1].(string): c.args[2].(node).execute()}
 
-				v = f(nd.Path, updateArgs, false)
+				v = f(nd.Path, "", "", updateArgs, false)
 			} else {
-				v = f(c.args[0].(string), c.args[1].(map[string]interface{}), false)
+				v = f(c.args[0].(string), "", "", c.args[1].(map[string]interface{}), false)
 			}
 			return &jsonObjNode{COMMON, v}
 		}
@@ -847,7 +847,8 @@ func (a *assignNode) execute() interface{} {
 				//Update if the map was a node
 				if nd := getNodeFromMapInf(mp); nd != nil {
 					data := map[string]interface{}{locIdx.(string): v}
-					cmd.UpdateObj(nd.Path, data, false)
+					//BUG POINT
+					cmd.UpdateObj(nd.Path, "", "", data, false)
 				}
 
 			case int:
@@ -867,7 +868,8 @@ func (a *assignNode) execute() interface{} {
 				nd := getNodeFromMapInf(mp)
 				attr := a.arg.(*symbolReferenceNode).offset.(*symbolReferenceNode).val.(string)
 				updateArg := map[string]interface{}{attr: v}
-				cmd.UpdateObj(nd.Path, updateArg, false)
+				//BUG POINT!
+				cmd.UpdateObj(nd.Path, "", "", updateArg, false)
 			}
 
 		} else {
@@ -1065,15 +1067,29 @@ func UnsetUtil(x, name string, ref, value interface{}) {
 		myArg := ""
 		identifier := ref.(*symbolReferenceNode)
 		idx := dynamicMap[identifier.val.(string)] //Get the idx
+		if idx < 0 {
+			cmd.WarningLogger.Println("Object to update not found")
+			println("Object to update not found")
+			return
+		}
+
+		if _, ok := dynamicSymbolTable[idx]; !ok {
+			msg := "Object not found in dynamicS-Table while deleting attr"
+			cmd.ErrorLogger.Println(msg)
+			println("Requested Object to update not found")
+			return
+		}
 		mp := dynamicSymbolTable[idx].(map[string]interface{})
-		nd := getNodeFromMapInf(mp)
+
+		//nd := getNodeFromMapInf(mp)
 
 		myArg = ref.(*symbolReferenceNode).offset.(node).execute().(string)
 		if v, ok := dynamicMap[myArg]; ok {
 			myArg = dynamicSymbolTable[v].(string)
 		}
 
-		cmd.UpdateObj(nd.Path, map[string]interface{}{myArg: nil}, true)
+		cmd.UpdateObj("", mp["id"].(string), mp["category"].(string), map[string]interface{}{myArg: nil}, true)
+		//cmd.QuickPut(mp["id"].(string), mp["category"].(string), map[string]interface{}{myArg: nil})
 
 	}
 }

@@ -226,24 +226,35 @@ func GenUpdateJSON(m *map[string]interface{}, key string, value interface{}, del
 	return nil, false
 }
 
-func UpdateObj(path string, data map[string]interface{}, deleteAndPut bool) map[string]interface{} {
+//You can either update obj by path or by ID and entity string type
+//The deleteAndPut bool is for deleting an attribute
+func UpdateObj(path, id, ent string, data map[string]interface{}, deleteAndPut bool) map[string]interface{} {
 
 	println("OK. Attempting to update...")
 	var resp *http.Response
 
 	if data != nil {
 		var respJson map[string]interface{}
-		//We have to get object first since
-		//there is a potential for multiple paths
-		//we don't want to update the wrong object
-		objJSON, GETURL := GetObject(path, true)
-		if objJSON == nil {
-			println("Error while deleting Object!")
-			WarningLogger.Println("Error while deleting Object!")
-			return nil
+		var URL string
+		var entities string
+
+		if path != "" {
+
+			//We have to get object first since
+			//there is a potential for multiple paths
+			//we don't want to update the wrong object
+			objJSON, GETURL := GetObject(path, true)
+			if objJSON == nil {
+				println("Error while deleting Object!")
+				WarningLogger.Println("Error while deleting Object!")
+				return nil
+			}
+			entities = filepath.Base(filepath.Dir(GETURL))
+			URL = State.APIURL + "/api/" + entities + "/" + objJSON["id"].(string)
+		} else {
+			entities = ent + "s"
+			URL = State.APIURL + "/api/" + entities + "/" + id
 		}
-		entities := filepath.Base(filepath.Dir(GETURL))
-		URL := State.APIURL + "/api/" + entities + "/" + objJSON["id"].(string)
 
 		//Make the proper Update JSON
 		ogData := map[string]interface{}{}
@@ -281,7 +292,8 @@ func UpdateObj(path string, data map[string]interface{}, deleteAndPut bool) map[
 
 			//Determine if Unity requires the message as
 			//Interact or Modify
-			var message, interactData map[string]interface{}
+			message := map[string]interface{}{}
+			interactData := map[string]interface{}{}
 			var key string
 
 			if entities == "rooms" && (data["tilesName"] != nil || data["tilesColor"] != nil) {
@@ -1058,7 +1070,7 @@ func ShowClipBoard() []string {
 func UpdateSelection(data map[string]interface{}) {
 	if State.ClipBoard != nil {
 		for _, k := range *State.ClipBoard {
-			UpdateObj(k, data, false)
+			UpdateObj(k, "", "", data, false)
 		}
 	}
 
