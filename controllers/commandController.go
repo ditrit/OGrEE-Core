@@ -227,6 +227,7 @@ func GenUpdateJSON(m *map[string]interface{}, key string, value interface{}, del
 }
 
 func UpdateObj(path string, data map[string]interface{}, deleteAndPut bool) map[string]interface{} {
+
 	println("OK. Attempting to update...")
 	var resp *http.Response
 
@@ -278,8 +279,60 @@ func UpdateObj(path string, data map[string]interface{}, deleteAndPut bool) map[
 		if respJson != nil {
 			println("Success")
 
-			InformUnity("POST", "UpdateObj",
-				map[string]interface{}{"type": "modify", "data": data["data"]})
+			//Determine if Unity requires the message as
+			//Interact or Modify
+			var message, interactData map[string]interface{}
+			var key string
+
+			if entities == "rooms" && (data["tilesName"] != nil || data["tilesColor"] != nil) {
+				println("Room modifier detected")
+				Disp(data)
+				message["type"] = "interact"
+
+				//Get the interactive key
+				key = determineStrKey(data, []string{"tilesName", "tilesColor"})
+
+				interactData["id"] = ogData["id"]
+				interactData["param"] = key
+				interactData["value"] = data[key]
+				message["data"] = interactData
+
+			} else if entities == "racks" && data["U"] != nil {
+				message["type"] = "interact"
+				interactData["id"] = ogData["id"]
+				interactData["param"] = "U"
+				interactData["value"] = data["U"]
+				message["data"] = interactData
+
+			} else if (entities == "devices" || entities == "racks") &&
+				(data["alpha"] != nil || data["slots"] != nil ||
+					data["localCS"] != nil) {
+				message["type"] = "interact"
+
+				//Get interactive key
+				key = determineStrKey(data, []string{"alpha", "U", "slots", "localCS"})
+
+				interactData["id"] = ogData["id"]
+				interactData["param"] = key
+				interactData["value"] = data[key]
+
+				message["data"] = interactData
+
+			} else if entities == "groups" && data["content"] != nil {
+				message["type"] = "interact"
+				interactData["id"] = ogData["id"]
+				interactData["param"] = "content"
+				interactData["value"] = data["content"]
+
+				message["data"] = interactData
+
+			} else {
+				message["type"] = "modify"
+				message["data"] = data["data"]
+			}
+
+			InformUnity("POST", "UpdateObj", message)
+
 		}
 
 		//For now update tenants
@@ -1104,6 +1157,14 @@ func SetEnv(arg string, val interface{}) {
 }
 
 //Utility functions
+func determineStrKey(x map[string]interface{}, possible []string) string {
+	for idx := range possible {
+		if _, ok := x[possible[idx]]; ok {
+			return possible[idx]
+		}
+	}
+	return "" //The code should not reach this point!
+}
 
 //Display contents of []map[string]inf array
 func DispMapArr(x []map[string]interface{}) {
