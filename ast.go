@@ -126,6 +126,11 @@ func (c *commonNode) execute() interface{} {
 			return &boolNode{BOOL, v}
 		}
 
+	case "DeleteSelection":
+		if f, ok := c.fun.(func() bool); ok {
+			return f() //returns bool
+		}
+
 	case "GetObject":
 		if f, ok := c.fun.(func(string, bool) (map[string]interface{}, string)); ok {
 			v, _ := f(c.args[0].(string), false)

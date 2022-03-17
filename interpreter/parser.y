@@ -587,6 +587,7 @@ OCCR:
 
        ; 
 OCDEL:  TOK_OCDEL P {$$=&commonNode{COMMON, cmd.DeleteObj, "DeleteObj", []interface{}{replaceOCLICurrPath($2)}}}
+        |TOK_OCDEL TOK_SELECT {$$=&commonNode{COMMON, cmd.DeleteSelection, "DeleteSelection", nil }}
 ;
 
 OCUPDATE:  P TOK_COL TOK_WORD TOK_EQUAL EXPR {val := map[string]interface{}{$3:($5).(node).execute()}; $$=&commonNode{COMMON, cmd.UpdateObj, "UpdateObj", []interface{}{replaceOCLICurrPath($1), val}};if cmd.State.DebugLvl >= 3 {println("Attribute Acquired");}}
@@ -630,7 +631,7 @@ OCDOT:      //TOK_DOT TOK_VAR TOK_COL TOK_WORD TOK_EQUAL WORDORNUM {$$=&assignNo
 ;
 
 OCSEL:      TOK_SELECT {$$=&commonNode{COMMON, cmd.ShowClipBoard, "select", nil};}
-            |TOK_SELECT TOK_DOT TOK_WORD TOK_EQUAL EXPR {/*x := $3+"="+$5;*/ val:=($5).(node).execute(); println("Our val:", val); x:=map[string]interface{}{$3:val}; $$=&commonNode{COMMON, cmd.UpdateSelection, "UpdateSelect", []interface{}{x}};}
+            |TOK_SELECT TOK_DOT TOK_WORD TOK_EQUAL EXPR {/*x := $3+"="+$5;*/ val:=($5).(node).execute(); x:=map[string]interface{}{$3:val}; $$=&commonNode{COMMON, cmd.UpdateSelection, "UpdateSelect", []interface{}{x}};}
 ;
 
 HANDLEUI: TOK_UI TOK_DOT TOK_WORD TOK_EQUAL TOK_LBLOCK EXPR TOK_RBLOCK {$$=&commonNode{COMMON, cmd.HandleUI, "HandleUnity", []interface{}{"ui", $3, ($6).(node).execute()}}}

@@ -372,6 +372,8 @@ func getPrefixCompleter() *readline.PrefixCompleter {
 			readline.PcItem("subdevice", false),
 			readline.PcItem("subdevice1", false),
 		),*/
+		readline.PcItem("-", false,
+			readline.PcItem("selection", false)),
 		readline.PcItem("=", true,
 			readline.PcItemDynamic(listEntities(""), false)),
 	)

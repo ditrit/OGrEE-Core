@@ -108,6 +108,22 @@ func DeleteObj(path string) bool {
 	return true
 }
 
+func DeleteSelection() bool {
+	res := true
+	for i := range *State.ClipBoard {
+		println("Going to delete object: ", (*(State.ClipBoard))[i])
+		if DeleteObj((*(State.ClipBoard))[i]) != true {
+			WarningLogger.Println("Couldn't delete obj in selection: ",
+				(*(State.ClipBoard))[i])
+			println("Couldn't delete obj in selection: ",
+				(*(State.ClipBoard))[i])
+			res = false
+		}
+		println()
+	}
+	return res
+}
+
 //Search for objects
 func SearchObjects(entity string, data map[string]interface{}) []map[string]interface{} {
 	var jsonResp map[string]interface{}
