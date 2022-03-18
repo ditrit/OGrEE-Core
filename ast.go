@@ -150,6 +150,7 @@ func (c *commonNode) execute() interface{} {
 			//it broke the OCLI syntax easy update
 			x := len(c.args)
 			if _, ok := c.args[x-1].(bool); ok {
+				var objMap map[string]interface{}
 				//Weird edge case
 				//to solve issue with:
 				// for i in $(ls) do $i[attr]="string"
@@ -158,10 +159,15 @@ func (c *commonNode) execute() interface{} {
 				//c.args[1] = attributeString, (used as an index)
 				//c.args[2] = someValue (usually a string)
 				mp := c.args[0]
-				nd := getNodeFromMapInf(mp.(node).execute().(map[string]interface{}))
-				updateArgs := map[string]interface{}{c.args[1].(string): c.args[2].(node).execute()}
+				objMap = mp.(node).execute().(map[string]interface{})
 
-				v = f(nd.Path, "", "", updateArgs, false)
+				if checkIfObjectNode(objMap) == true {
+					updateArgs := map[string]interface{}{c.args[1].(string): c.args[2].(node).execute()}
+					id := objMap["id"].(string)
+					entity := objMap["category"].(string)
+					v = f("", id, entity, updateArgs, false)
+				}
+
 			} else {
 				v = f(c.args[0].(string), "", "", c.args[1].(map[string]interface{}), false)
 			}
@@ -841,14 +847,14 @@ func (a *assignNode) execute() interface{} {
 			locIdx := a.arg.(*symbolReferenceNode).offset.(node).execute()
 			switch locIdx.(type) {
 			case string:
-				mp[locIdx.(string)] = v //Assign val into map[str]inf{} (node) type
-				//Some kind of update needs to be done
+				//Check if map is an object
+				if checkIfObjectNode(mp) == true {
+					//No one should be updating templates at this time
+					id := mp["id"].(string)
+					cat := mp["category"].(string)
+					cmd.UpdateObj("", id, cat,
+						map[string]interface{}{locIdx.(string): v}, false)
 
-				//Update if the map was a node
-				if nd := getNodeFromMapInf(mp); nd != nil {
-					data := map[string]interface{}{locIdx.(string): v}
-					//BUG POINT
-					cmd.UpdateObj(nd.Path, "", "", data, false)
 				}
 
 			case int:
@@ -858,18 +864,21 @@ func (a *assignNode) execute() interface{} {
 					}
 
 				}
-				//println("I think I should do nothing here")
+
 				dynamicSymbolTable[idx] = v
 			case nil:
 				//Potential place for update
 				//attribute @ a.arg.offset.val
 				//new value @ a.val
-				//the Node is mp
-				nd := getNodeFromMapInf(mp)
-				attr := a.arg.(*symbolReferenceNode).offset.(*symbolReferenceNode).val.(string)
-				updateArg := map[string]interface{}{attr: v}
-				//BUG POINT!
-				cmd.UpdateObj(nd.Path, "", "", updateArg, false)
+
+				if checkIfObjectNode(mp) {
+					id := mp["id"].(string)
+					category := mp["category"].(string)
+					attr := a.arg.(*symbolReferenceNode).offset.(*symbolReferenceNode).val.(string)
+					updateArg := map[string]interface{}{attr: v}
+					cmd.UpdateObj("", id, category, updateArg, false)
+				}
+
 			}
 
 		} else {
@@ -1074,14 +1083,12 @@ func UnsetUtil(x, name string, ref, value interface{}) {
 		}
 
 		if _, ok := dynamicSymbolTable[idx]; !ok {
-			msg := "Object not found in dynamicS-Table while deleting attr"
+			msg := "Object not found in dynamicSymbolTable while deleting attr"
 			cmd.ErrorLogger.Println(msg)
 			println("Requested Object to update not found")
 			return
 		}
 		mp := dynamicSymbolTable[idx].(map[string]interface{})
-
-		//nd := getNodeFromMapInf(mp)
 
 		myArg = ref.(*symbolReferenceNode).offset.(node).execute().(string)
 		if v, ok := dynamicMap[myArg]; ok {
@@ -1089,7 +1096,6 @@ func UnsetUtil(x, name string, ref, value interface{}) {
 		}
 
 		cmd.UpdateObj("", mp["id"].(string), mp["category"].(string), map[string]interface{}{myArg: nil}, true)
-		//cmd.QuickPut(mp["id"].(string), mp["category"].(string), map[string]interface{}{myArg: nil})
 
 	}
 }
@@ -1118,35 +1124,26 @@ func checkTypeAreNumeric(x, y interface{}) bool {
 	return xOK == yOK
 }
 
-//Gets node from Tree Hierarchy using a map[string]interface
-func getNodeFromMapInf(x map[string]interface{}) *cmd.Node {
-	pid, _ := x["parentId"].(string)
-	id, _ := x["id"].(string)
+//Checks the map and sees if it is an object type
+func checkIfObjectNode(x map[string]interface{}) bool {
+	if idInf, ok := x["id"]; ok {
+		if id, ok := idInf.(string); ok {
+			if len(id) == 24 {
+				if catInf, ok := x["category"]; ok {
+					if _, ok := catInf.(string); ok {
+						return true
+					}
+				}
 
-	//There is no stable hard code way
-	//to check if obj is Group or
-	//Obj/Room Template
-	if pid == "" {
-		roomTmplOk := cmd.FindNodeByIDP(&cmd.State.TreeHierarchy, id, "2")
-		if roomTmplOk != nil {
-			return roomTmplOk
+				if slugInf, ok := x["slug"]; ok {
+					if _, ok := slugInf.(string); ok {
+						return true
+					}
+				}
+			}
 		}
-
-		objTmplOk := cmd.FindNodeByIDP(&cmd.State.TreeHierarchy, id, "1")
-		if objTmplOk != nil {
-			return objTmplOk
-		}
-
-		groupOk := cmd.FindNodeByIDP(&cmd.State.TreeHierarchy, id, "3")
-		if groupOk != nil {
-			return groupOk
-		}
-
-		//Not found!
-		return nil
 	}
-
-	return cmd.FindNodeByIDP(&cmd.State.TreeHierarchy, id, pid)
+	return false
 }
 
 //Open a file and return the JSON in the file
