@@ -143,6 +143,39 @@ func (c *commonNode) execute() interface{} {
 			return &jsonObjArrNode{COMMON, len(v), v}
 		}
 
+	case "RecursiveUpdateObj":
+		if f, ok := c.fun.(func(string, string, string, map[string]interface{})); ok {
+			//Old code was removed since
+			//it broke the OCLI syntax easy update
+			x := len(c.args)
+			if _, ok := c.args[x-1].(bool); ok {
+				var objMap map[string]interface{}
+				//Weird edge case
+				//to solve issue with:
+				// for i in $(ls) do $i[attr]="string"
+
+				//c.args[0] = referenceToNode
+				//c.args[1] = attributeString, (used as an index)
+				//c.args[2] = someValue (usually a string)
+				mp := c.args[0]
+				objMap = mp.(node).execute().(map[string]interface{})
+
+				if checkIfObjectNode(objMap) == true {
+					updateArgs := map[string]interface{}{c.args[1].(string): c.args[2].(node).execute()}
+					id := objMap["id"].(string)
+					entity := objMap["category"].(string)
+					f("", id, entity, updateArgs)
+				}
+
+			} else {
+				if c.args[2].(string) == "recursive" {
+					f(c.args[0].(string), "", "", c.args[1].(map[string]interface{}))
+				}
+
+			}
+			//return &jsonObjNode{COMMON, v}
+		}
+
 	case "UpdateObj":
 		var v map[string]interface{}
 		if f, ok := c.fun.(func(string, string, string, map[string]interface{}, bool) map[string]interface{}); ok {

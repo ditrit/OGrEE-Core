@@ -226,6 +226,69 @@ func GenUpdateJSON(m *map[string]interface{}, key string, value interface{}, del
 	return nil, false
 }
 
+//This function recursively applies an update to an object and
+//the rest of its subentities
+//Thus being the only function thus far to call another exported
+//function in this file
+func RecursivePatch(path, id, ent string, data map[string]interface{}) {
+	var entities string
+	var URL string
+	println("OK. Attempting to update...")
+	//var resp *http.Response
+
+	if data != nil {
+		if path != "" {
+
+			//We have to get object first since
+			//there is a potential for multiple paths
+			//we don't want to update the wrong object
+			objJSON, GETURL := GetObject(path, true)
+			if objJSON == nil {
+				println("Error while deleting Object!")
+				WarningLogger.Println("Error while deleting Object!")
+				return
+			}
+			entities = filepath.Base(filepath.Dir(GETURL))
+			URL = State.APIURL + "/api/" + entities + "/" + objJSON["id"].(string) + "/all"
+		} else {
+			entities = ent + "s"
+			URL = State.APIURL + "/api/" + entities + "/" + id + "/all"
+		}
+		//GET Object
+		resp, e := models.Send("GET", URL, GetKey(), nil)
+		r := ParseResponse(resp, e, "recursive update")
+		if e != nil {
+			return
+		}
+		recursivePatchAux(r["data"].(map[string]interface{}), data)
+		println("Success")
+		return
+
+	}
+	println("Error! Please enter desired parameters of Object to be updated")
+
+}
+
+func recursivePatchAux(res, data map[string]interface{}) {
+	id := res["id"].(string)
+	ent := res["category"].(string)
+	UpdateObj("", id, ent, data, false)
+
+	if childrenJson, ok := res["children"]; ok {
+		if enfants, ok := childrenJson.([]interface{}); ok {
+			for i := range enfants {
+				if child, ok := enfants[i].(map[string]interface{}); ok {
+					//id := child["id"].(string)
+					//ent := child["entity"].(string)
+					//UpdateObj("", id, ent,data, false)
+					recursivePatchAux(child, data)
+				}
+			}
+		}
+	}
+
+}
+
 //You can either update obj by path or by ID and entity string type
 //The deleteAndPut bool is for deleting an attribute
 func UpdateObj(path, id, ent string, data map[string]interface{}, deleteAndPut bool) map[string]interface{} {
@@ -245,8 +308,8 @@ func UpdateObj(path, id, ent string, data map[string]interface{}, deleteAndPut b
 			//we don't want to update the wrong object
 			objJSON, GETURL := GetObject(path, true)
 			if objJSON == nil {
-				println("Error while deleting Object!")
-				WarningLogger.Println("Error while deleting Object!")
+				println("Error while getting Object!")
+				WarningLogger.Println("Error while getting Object!")
 				return nil
 			}
 			entities = filepath.Base(filepath.Dir(GETURL))

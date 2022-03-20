@@ -400,6 +400,7 @@ NT_GET: TOK_GET P {$$=&commonNode{COMMON, cmd.GetObject, "GetObject", []interfac
 ;
 
 NT_UPDATE: TOK_UPDATE P TOK_COL F {$$=&commonNode{COMMON, cmd.UpdateObj, "UpdateObj", []interface{}{$2, resMap(&$4, $2, true)}}}
+           |TOK_UPDATE P TOK_COL F TOK_ATTRSPEC TOK_WORD {$$=&commonNode{COMMON, cmd.RecursivePatch, "RecursiveUpdateObj", []interface{}{$2, resMap(&$4, $2, true), $6}}}
            |TOK_UPDATE P TOK_COL TOK_USE_JSON TOK_COL P {$$=&commonNode{COMMON, cmd.UpdateObj, "EasyUpdate", []interface{}{$2, $6, true}}}
            |TOK_UPDATE P TOK_COL TOK_USE_JSON TOK_PARTIAL TOK_COL P {$$=&commonNode{COMMON, cmd.UpdateObj, "EasyUpdate", []interface{}{$2, $7, false}}}
 ;
@@ -591,6 +592,7 @@ OCDEL:  TOK_OCDEL P {$$=&commonNode{COMMON, cmd.DeleteObj, "DeleteObj", []interf
 ;
 
 OCUPDATE:  P TOK_COL TOK_WORD TOK_EQUAL EXPR {val := map[string]interface{}{$3:($5).(node).execute()}; $$=&commonNode{COMMON, cmd.UpdateObj, "UpdateObj", []interface{}{replaceOCLICurrPath($1), val}};if cmd.State.DebugLvl >= 3 {println("Attribute Acquired");}}
+           |P TOK_COL TOK_WORD TOK_EQUAL EXPR TOK_ATTRSPEC TOK_WORD {val := map[string]interface{}{$3:($5).(node).execute()}; $$=&commonNode{COMMON, cmd.RecursivePatch, "RecursiveUpdateObj", []interface{}{replaceOCLICurrPath($1), val, $7}};if cmd.State.DebugLvl >= 3 {println("Attribute Acquired");}}
 ;
 
 OCGET: TOK_EQUAL P {$$=&commonNode{COMMON, cmd.GetObject, "GetObject", []interface{}{replaceOCLICurrPath($2)}}}
