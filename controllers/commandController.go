@@ -362,7 +362,6 @@ func UpdateObj(path, id, ent string, data map[string]interface{}, deleteAndPut b
 }
 
 func LS(x string) []map[string]interface{} {
-	ans := []map[string]interface{}{}
 	var path string
 	if x == "" || x == "." {
 		path = State.CurrPath
@@ -374,15 +373,17 @@ func LS(x string) []map[string]interface{} {
 		path = State.CurrPath + "/" + x
 	}
 
-	res := FetchNodesAtLevel(path)
+	res := FetchJsonNodesAtLevel(path)
 
+	//Display objects by slug or name
 	for i := range res {
-		println(res[i])
+		if _, ok := res[i]["slug"].(string); ok {
+			println(res[i]["slug"].(string))
+		} else {
+			println(res[i]["name"].(string))
+		}
 	}
-	//Return an empty result for now
-	//Getting a complete array is a single line
-	//change in FetchNodes
-	return ans
+	return res
 
 }
 

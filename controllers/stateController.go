@@ -452,7 +452,8 @@ func FetchJsonNodesAtLevel(path string) []map[string]interface{} {
 	if len(paths) < 3 { // /Physical or / or /Logical
 		//println("Should be here")
 		//println("LEN:", len(paths))
-		return nil
+		x := NodesAtLevel(&State.TreeHierarchy, *StrToStack(path))
+		return strArrToMapStrInfArr(x)
 	}
 
 	// 2: since first idx is useless
@@ -812,4 +813,13 @@ func NodesAtLevel(root **Node, x Stack) []string {
 		return items
 	}
 	return nil
+}
+
+//Utility function used by FetchJsonNodes
+func strArrToMapStrInfArr(x []string) []map[string]interface{} {
+	ans := []map[string]interface{}{}
+	for i := range x {
+		ans = append(ans, map[string]interface{}{"name": x[i]})
+	}
+	return ans
 }
