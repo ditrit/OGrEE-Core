@@ -205,7 +205,7 @@ func formActualPath(x string) string {
        TOK_MOD
        TOK_UNSET TOK_ELIF TOK_DO TOK_LEN
        TOK_USE_JSON TOK_PARTIAL
-       TOK_CAM TOK_UI TOK_HIERARCH
+       TOK_CAM TOK_UI TOK_HIERARCH TOK_DRAW
        
 %type <s> F E P P1 WORDORNUM CDORFG 
 %type <arr> WNARG NODEGETTER NODEACC
@@ -499,6 +499,7 @@ Q:     TOK_CD P {/*cmd.CD($2);*/ $$=&commonNode{COMMON, cmd.CD, "CD", []interfac
               
               }
        | BASH     {$$=$1}
+       | TOK_DRAW TOK_LPAREN P TOK_RPAREN {$$=&commonNode{COMMON, cmd.IsDrawable, "IsDrawable", []interface{}{$3}}}
        |TOK_WORD TOK_EQUAL EXPR {$$=&commonNode{COMMON, cmd.SetEnv, "SetEnv", []interface{}{$1, $3}}}
 ;
 
@@ -542,7 +543,7 @@ BASH:  TOK_CLR {$$=&commonNode{COMMON, nil, "CLR", nil}}
        | TOK_DOC TOK_PLUS {$$=&commonNode{COMMON, cmd.Help, "Help", []interface{}{"+"}}}
        | TOK_DOC TOK_EQUAL {$$=&commonNode{COMMON, cmd.Help, "Help", []interface{}{"="}}}
        | TOK_DOC TOK_GREATER {$$=&commonNode{COMMON, cmd.Help, "Help", []interface{}{">"}}}
-
+       | TOK_DOC TOK_DRAW {$$=&commonNode{COMMON, cmd.Help,"Help", []interface{}{"drawable"} }}
 ;
 
 OCLISYNTX:  TOK_PLUS OCCR {$$=$2}

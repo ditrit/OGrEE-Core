@@ -131,6 +131,15 @@ func (c *commonNode) execute() interface{} {
 			return f() //returns bool
 		}
 
+	case "IsDrawable":
+		if f, ok := c.fun.(func(string) bool); ok {
+			if arg, ok := c.args[0].(string); ok {
+				t := f(arg)
+				return t
+			}
+			//Error if reached here
+		}
+
 	case "GetObject":
 		if f, ok := c.fun.(func(string, bool) (map[string]interface{}, string)); ok {
 			v, _ := f(c.args[0].(string), false)

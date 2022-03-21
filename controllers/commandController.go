@@ -760,7 +760,7 @@ func Help(entry string) {
 	switch entry {
 	case "ls", "pwd", "print", "cd", "tree", "create", "gt",
 		"update", "delete", "lsog", "grep", "for", "while", "if",
-		"cmds", "var", "unset", "select", "camera", "ui", "hc":
+		"cmds", "var", "unset", "select", "camera", "ui", "hc", "drawable":
 		path = "./other/man/" + entry + ".md"
 
 	case ">":
@@ -1128,6 +1128,40 @@ func FocusUI(path string) {
 
 	data := map[string]interface{}{"type": "focus", "data": id}
 	InformUnity("POST", "FocusUI", data)
+}
+
+func IsDrawable(path string) bool {
+	//Fix path
+	if path == "" || path == "." {
+		path = (State.CurrPath)
+	} else if string(path[0]) == "/" {
+		//Do nothing
+	} else {
+		path = (State.CurrPath + "/" + path)
+	}
+
+	//Get Object first
+	obj, _ := GetObject(path, true)
+	if obj == nil {
+		WarningLogger.Println("Error: object was not found")
+		return false
+	}
+
+	//Check entity by looking @ category
+	//Return if it is drawable in Unity
+	if catInf, ok := obj["category"]; ok {
+		if category, ok := catInf.(string); ok {
+			switch category {
+			case "tenant", "site", "building", "room",
+				"rack", "device", "corridor", "group", "sensor":
+				println("true")
+				return true
+
+			}
+		}
+	}
+	println("false")
+	return false
 }
 
 func ShowClipBoard() []string {

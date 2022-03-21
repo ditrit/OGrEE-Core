@@ -84,7 +84,8 @@ func InitState(debugLvl int) {
 
 		//Send login notification
 		data := map[string]interface{}{"api_url": State.APIURL, "api_token": GetKey()}
-		InformUnity("POST", "login notification", data)
+		req := map[string]interface{}{"type": "login", "data": data}
+		InformUnity("POST", "login notification", req)
 	}
 
 	phys := &Node{}
