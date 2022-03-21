@@ -173,13 +173,15 @@ func Start(verboseLevel int) {
 	args := len(os.Args)
 
 	if args > 1 { //Args were provided
-
-		for i := 1; i < args; i++ {
-			c.State.ScriptCalled = true
-			c.State.ScriptPath = os.Args[i]
-			loadFile(os.Args[i])
+		if args == 2 && strings.Contains(os.Args[1], ".ocli") {
+			for i := 1; i < args; i++ {
+				c.State.ScriptCalled = true
+				c.State.ScriptPath = os.Args[i]
+				loadFile(os.Args[i])
+			}
+			os.Exit(0)
 		}
-		os.Exit(0)
+
 	}
 
 	Repl(rl, user)
