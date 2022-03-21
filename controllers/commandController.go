@@ -60,8 +60,11 @@ func PostObj(ent int, entity string, data map[string]interface{}) map[string]int
 			SearchAndInsert(&State.TreeHierarchy, node, ent, "")
 		}
 
-		InformUnity("POST", "PostObj",
-			map[string]interface{}{"type": "create", "data": respMap["data"]})
+		//If ent is in State.ObjsForUnity then notify Unity
+		if IsInObjForUnity(entity) == true {
+			InformUnity("POST", "PostObj",
+				map[string]interface{}{"type": "create", "data": respMap["data"]})
+		}
 
 		return respMap["data"].(map[string]interface{})
 	}
@@ -102,8 +105,11 @@ func DeleteObj(path string) bool {
 		return false
 	}
 
-	InformUnity("POST", "DeleteObj",
-		map[string]interface{}{"type": "delete", "data": objJSON["id"].(string)})
+	entity := entities[:len(entities)-1]
+	if IsInObjForUnity(entity) == true {
+		InformUnity("POST", "DeleteObj",
+			map[string]interface{}{"type": "delete", "data": objJSON["id"].(string)})
+	}
 
 	return true
 }
@@ -406,7 +412,10 @@ func UpdateObj(path, id, ent string, data map[string]interface{}, deleteAndPut b
 				message["data"] = data["data"]
 			}
 
-			InformUnity("POST", "UpdateObj", message)
+			entStr := entities[:len(entities)-1]
+			if IsInObjForUnity(entStr) == true {
+				InformUnity("POST", "UpdateObj", message)
+			}
 
 		}
 
@@ -1181,8 +1190,10 @@ func LoadTemplate(data map[string]interface{}, filePath string) {
 			State.TemplateTable[fileName] = data
 
 			//Inform Unity Client
-			InformUnity("POST", "load template",
-				map[string]interface{}{"type": "load template", "data": data})
+			if IsInObjForUnity(category) == true {
+				InformUnity("POST", "load template",
+					map[string]interface{}{"type": "load template", "data": data})
+			}
 
 		}
 

@@ -47,7 +47,8 @@ type ShellState struct {
 	ScriptPath       string
 	UnityClientURL   string
 	APIURL           string
-	UnityClientAvail bool //For deciding to message unity or not
+	UnityClientAvail bool  //For deciding to message unity or not
+	ObjsForUnity     []int //Deciding what objects should be sent to unity
 	DebugLvl         int
 	LineNumber       int //Used exectuting scripts
 	TemplateTable    map[string]map[string]interface{}
@@ -62,8 +63,7 @@ type Node struct {
 	Nodes  list.List
 }
 
-//Populate hierarchy into B Tree like
-//structure
+//Intialise the ShellState
 func InitState(debugLvl int) {
 	State.DebugLvl = debugLvl
 	State.ClipBoard = nil
@@ -139,6 +139,77 @@ func InitState(debugLvl int) {
 	enterprise.Name = "Enterprise"
 	enterprise.Path = "/"
 	State.TreeHierarchy.Nodes.PushBack(enterprise)
+
+	//Set which objects Unity will be notified about
+	SetObjsForUnity()
+}
+
+//Helper for InitState will
+//insert objs
+func SetObjsForUnity() {
+	allDetected := false
+	file, err := os.Open("./.resources/.env")
+	if err != nil {
+		fmt.Println(err)
+	}
+	defer file.Close()
+
+	scanner := bufio.NewScanner(file)
+	scanner.Split(bufio.ScanWords) // use scanwords
+	for scanner.Scan() {
+		if strings.HasPrefix(scanner.Text(), "updates=") {
+			//ObjStr is equal to everything after 'updates='
+			objStr := strings.SplitAfter(scanner.Text(), "updates=")[1]
+			arr := strings.Split(objStr, ",")
+
+			for i := range arr {
+				arr[i] = strings.ToLower(arr[i])
+
+				if val := EntityStrToInt(arr[i]); val != -1 {
+					State.ObjsForUnity = append(State.ObjsForUnity, val)
+
+				} else if arr[i] == "all" {
+					//Exit the loop and use default code @ end of function
+					allDetected = true
+					i = len(arr)
+				}
+			}
+
+		} else {
+			WarningLogger.Println("Update key not found, going to use defaults")
+		}
+	}
+
+	if err := scanner.Err(); err != nil {
+		ErrorLogger.Println(err)
+		fmt.Println(err)
+	}
+
+	//Use default values
+	//Set the array to all and exit
+	//GROUP is the greatest value int enum type
+	//So we use that for the cond guard
+	if allDetected || len(State.ObjsForUnity) == 0 {
+		res := []int{}
+		for idx := 0; idx < GROUP; idx++ {
+			res = append(res, idx)
+		}
+		State.ObjsForUnity = res
+	}
+
+}
+
+func IsInObjForUnity(x string) bool {
+	entInt := EntityStrToInt(x)
+	if entInt != -1 {
+
+		for idx := range State.ObjsForUnity {
+			if State.ObjsForUnity[idx] == entInt {
+				return true
+			}
+		}
+	}
+	return false
 }
 
 func GetLineNumber() int {
