@@ -867,13 +867,20 @@ func (a *assignNode) execute() interface{} {
 			if _, ok := a.val.(node); !ok {
 				v = a.val
 			} else {
-				v = a.val.(node).execute() //Obtain val, execute block to get value
-				// if it is not a common node
-				/*if id == "_internalRes" {
-					println("You need to check v here")
-					q := a.val.(array).getLength()
-					v = v.([]string)[q-1]
-				}*/
+				if fn, ok := a.val.(*funcNode); ok {
+					println("we got func node")
+					funcTable[a.arg.(string)] = fn
+
+				} else {
+					v = a.val.(node).execute() //Obtain val, execute block to get value
+					// if it is not a common node
+					/*if id == "_internalRes" {
+						println("You need to check v here")
+						q := a.val.(array).getLength()
+						v = v.([]string)[q-1]
+					}*/
+				}
+
 			}
 
 		} else {

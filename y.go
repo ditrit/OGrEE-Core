@@ -2724,8 +2724,8 @@ yynewstate:
 		}
 	case 239:
 		{
-			yyVAL.node = nil
-			funcTable[yyS[yypt-5].s] = &funcNode{FUNC, yyS[yypt-1].node}
+			x := &funcNode{FUNC, yyS[yypt-1].node}
+			yyVAL.node = &assignNode{ASSIGN, yyS[yypt-5].s, x}
 		}
 	case 240:
 		{

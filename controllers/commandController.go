@@ -948,6 +948,7 @@ func GetOCLIAtrributes(path string, ent int, data map[string]interface{}) {
 
 	data["name"] = filepath.Base(ogPath)
 	data["category"] = EntityToString(ent)
+	data["description"] = []interface{}{}
 
 	//Retrieve Parent
 	if ent != TENANT && ent != GROUP {

@@ -650,7 +650,7 @@ WNARG: EXPR TOK_COMMA WNARG {x:=[]interface{}{$1}; $$=append(x, $3...)}
        |EXPR  {x:=[]interface{}{$1}; $$=x}
        ;
 
-FUNC: TOK_WORD TOK_LPAREN TOK_RPAREN TOK_LBRAC st2 TOK_RBRAC {$$=nil;funcTable[$1]=&funcNode{FUNC, $5}}
+FUNC: TOK_WORD TOK_LPAREN TOK_RPAREN TOK_LBRAC st2 TOK_RBRAC {x:=&funcNode{FUNC, $5}; $$=&assignNode{ASSIGN, $1, x};}
        |TOK_WORD {x:=funcTable[$1]; if _,ok:=x.(node); ok {$$=x.(node)}else{$$=nil};}
        ;
 

@@ -73,19 +73,19 @@ func InitState(debugLvl int) {
 	State.TreeHierarchy.PID = ""
 	State.CurrPath = "/Physical"
 	State.LineNumber = 0
-	e := models.ContactUnity("GET", State.UnityClientURL, nil)
+
+	//Send login notification
+	data := map[string]interface{}{"api_url": State.APIURL, "api_token": GetKey()}
+	req := map[string]interface{}{"type": "login", "data": data}
+	e := models.ContactUnity("POST", State.UnityClientURL, req)
 	if e != nil {
 		WarningLogger.Println("Note: Unity Client Unreachable")
-		fmt.Println("Note: Unity Client Unreachable")
+		fmt.Println("Note: Unity Client Unreachable ")
 		State.UnityClientAvail = false
 	} else {
 		fmt.Println("Unity Client is Reachable!")
 		State.UnityClientAvail = true
 
-		//Send login notification
-		data := map[string]interface{}{"api_url": State.APIURL, "api_token": GetKey()}
-		req := map[string]interface{}{"type": "login", "data": data}
-		InformUnity("POST", "login notification", req)
 	}
 
 	phys := &Node{}
