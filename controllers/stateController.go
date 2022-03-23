@@ -92,12 +92,6 @@ func InitState(debugLvl int) {
 	phys.Name = "Physical"
 	phys.PID = ""
 	phys.ID = "-2"
-	x := GetChildren(0)
-	for i := range x {
-		x[i].Path = "/Physical/" + x[i].Name
-		phys.Nodes.PushBack(x[i])
-		//State.TreeHierarchy.Nodes.PushBack(x[i])
-	}
 	State.TreeHierarchy.Nodes.PushBack(phys)
 
 	// SETUP LOGICAL HIERARCHY START
@@ -463,18 +457,24 @@ func DispAtLevelTAB(root **Node, x Stack) []string {
 //storing objects in a tree and returns string arr
 func FetchNodesAtLevel(path string) []string {
 	names := []string{}
+	urls := []string{}
 
 	paths := strings.Split(filepath.Clean(path), "/")
 
-	if len(paths) < 3 { // /Physical or / or /Logical
-		//println("Should be here")
-		//println("LEN:", len(paths))
-		return NodesAtLevel(&State.TreeHierarchy, *StrToStack(path))
-	}
+	if len(paths) == 2 && paths[1] == "Physical" {
+		urls = []string{State.APIURL + "/api/tenants"}
+	} else {
+		if len(paths) < 3 { // /Physical or / or /Logical
+			//println("Should be here")
+			//println("LEN:", len(paths))
+			//println("YO DEBUG", path)
+			return NodesAtLevel(&State.TreeHierarchy, *StrToStack(path))
+		}
 
-	// 2: since first idx is useless
-	// and 2nd is just /Physical or /Logical etc
-	urls := OnlineLevelResolver(paths[2:])
+		// 2: since first idx is useless
+		// and 2nd is just /Physical or /Logical etc
+		urls = OnlineLevelResolver(paths[2:])
+	}
 
 	for i := range urls {
 		//println("URL to send:", urls[i])
@@ -518,19 +518,25 @@ func FetchNodesAtLevel(path string) []string {
 //in map[string]inf{} format
 func FetchJsonNodesAtLevel(path string) []map[string]interface{} {
 	objects := []map[string]interface{}{}
+	urls := []string{}
 
 	paths := strings.Split(filepath.Clean(path), "/")
 
-	if len(paths) < 3 { // /Physical or / or /Logical
-		//println("Should be here")
-		//println("LEN:", len(paths))
-		x := NodesAtLevel(&State.TreeHierarchy, *StrToStack(path))
-		return strArrToMapStrInfArr(x)
-	}
+	if len(paths) == 2 && paths[1] == "Physical" {
+		urls = []string{State.APIURL + "/api/tenants"}
+	} else {
+		if len(paths) < 3 { // /Physical or / or /Logical
+			//println("DEBUG Should be here")
+			//println("DEBUG LEN:", len(paths))
+			//println("DEBUG: ", path)
+			x := NodesAtLevel(&State.TreeHierarchy, *StrToStack(path))
+			return strArrToMapStrInfArr(x)
+		}
 
-	// 2: since first idx is useless
-	// and 2nd is just /Physical or /Logical etc
-	urls := OnlineLevelResolver(paths[2:])
+		// 2: since first idx is useless
+		// and 2nd is just /Physical or /Logical etc
+		urls = OnlineLevelResolver(paths[2:])
+	}
 
 	for i := range urls {
 		//println("URL to send:", urls[i])

@@ -51,15 +51,6 @@ func PostObj(ent int, entity string, data map[string]interface{}) map[string]int
 		//Print success message
 		println(string(respMap["message"].(string)))
 
-		//Insert tenant into tree
-		node := &Node{}
-		if ent == TENANT {
-			node.ID, _ = respMap["data"].(map[string]interface{})["id"].(string)
-			node.Name = respMap["data"].(map[string]interface{})["name"].(string)
-			node.PID = "-2"
-			SearchAndInsert(&State.TreeHierarchy, node, ent, "")
-		}
-
 		//If ent is in State.ObjsForUnity then notify Unity
 		if IsInObjForUnity(entity) == true {
 			InformUnity("POST", "PostObj",
@@ -95,10 +86,6 @@ func DeleteObj(path string) bool {
 	defer resp.Body.Close()
 	if resp.StatusCode == http.StatusNoContent {
 		println("Success")
-		//Delete Tenant nodes for now
-		if entities[:len(entities)-2] == "tenant" {
-			DeleteNodeInTree(&State.TreeHierarchy, objJSON["id"].(string), TENANT)
-		}
 	} else {
 		println("Error while deleting Object!")
 		WarningLogger.Println("Error while deleting Object!", e)
@@ -417,12 +404,6 @@ func UpdateObj(path, id, ent string, data map[string]interface{}, deleteAndPut b
 				InformUnity("POST", "UpdateObj", message)
 			}
 
-		}
-
-		//For now update tenants
-		if entities == "tenants" && data["name"] != nil && data["name"] != "" {
-			nd := FindNodeInTree(&State.TreeHierarchy, StrToStack(path))
-			(*nd).Name = data["name"].(string)
 		}
 
 		data = respJson

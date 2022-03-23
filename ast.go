@@ -868,7 +868,6 @@ func (a *assignNode) execute() interface{} {
 				v = a.val
 			} else {
 				if fn, ok := a.val.(*funcNode); ok {
-					println("we got func node")
 					funcTable[a.arg.(string)] = fn
 
 				} else {
