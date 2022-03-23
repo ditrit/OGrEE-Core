@@ -706,8 +706,26 @@ func CD(x string) string {
 			State.PrevPath = State.CurrPath
 			State.CurrPath = pth
 		} else {
-			println("Path does not exist")
-			WarningLogger.Println("Path: ", x, " does not exist")
+
+			//Need to check that the path points to tree
+			//before declaring it to be nonexistant
+			if string(x[0]) != "/" {
+				pth = State.CurrPath + "/" + x
+			} else {
+				pth = x
+			}
+			pth = filepath.Clean(pth)
+			if FindNodeInTree(&State.TreeHierarchy, StrToStack(pth)) != nil {
+				State.PrevPath = State.CurrPath
+				State.CurrPath = pth
+				//println(("DEBUG not in tree either"))
+				//println("DEBUG ", x)
+				//println()
+			} else {
+				println("Path does not exist")
+				WarningLogger.Println("Path: ", x, " does not exist")
+			}
+
 		}
 	} else {
 		if len(State.CurrPath) != 1 {
