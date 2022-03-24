@@ -416,7 +416,7 @@ func ValidateEntity(entity int, t map[string]interface{}) (map[string]interface{
 						}
 
 						switch v["orientation"] {
-						case "-E-N", "-E+N", "+E-N", "+E+N":
+						case "-E-N", "-E+N", "+E-N", "+E+N", "+N+E":
 						case "-N-W", "-N+W", "+N-W", "+N+W":
 						case "-W-S", "-W+S", "+W-S", "+W+S":
 						case "-S-E", "-S+E", "+S-E", "+S+E":
@@ -667,10 +667,10 @@ func DeleteEntity(entity string, id primitive.ObjectID) (map[string]interface{},
 	eNum := u.EntityStrToInt(entity)
 	if eNum > DEVICE && eNum < ROOMTMPL {
 		//Delete the non hierarchal objects
-		t, e = GetEntityHierarchy(entity, id, eNum, eNum+1)
+		t, e = GetEntityHierarchy(id, entity, eNum, eNum+1)
 
 	} else {
-		t, e = GetEntityHierarchy(entity, id, eNum, AC)
+		t, e = GetEntityHierarchy(id, entity, eNum, AC)
 	}
 
 	if e != "" {
@@ -791,87 +791,61 @@ func UpdateEntity(ent string, req bson.M, t *map[string]interface{}, isPatch boo
 	return resp, ""
 }
 
-func GetEntityHierarchy(entity string, ID primitive.ObjectID, entnum, end int) (map[string]interface{}, string) {
-
-	//Check if at the end of the hierarchy
-	if entnum != end {
-
-		//Get the top entity
-		top, e := GetEntity(bson.M{"_id": ID}, entity)
-		if e != "" {
+func GetEntityHierarchy(ID primitive.ObjectID, ent string, start, end int) (map[string]interface{}, string) {
+	var childEnt string
+	if start < end {
+		top, e := GetEntity(bson.M{"_id": ID}, ent)
+		if top == nil {
 			return nil, e
 		}
-
-		//Remove _id
 		top = fixID(top)
-		top["children"] = []map[string]interface{}{}
 
-		//Retrieve associated nonhierarchal objects
-		if entity == "device" || entity == "rack" {
-			x, e := GetManyEntities("sensor",
-				bson.M{"parentId": top["id"].(primitive.ObjectID).Hex()}, nil)
-			if e == "" {
-				//top[entity+"_sensors"] = x
+		children := []map[string]interface{}{}
+		pid := ID.Hex()
+		//Get sensors & groups
+		if ent == "rack" || ent == "device" {
+			//Get sensors
+			sensors, _ := GetManyEntities("sensor", bson.M{"parentId": pid}, nil)
 
-				top["children"] = append(top["children"].([]map[string]interface{}), x...)
+			//Get groups
+			groups, _ := GetManyEntities("group", bson.M{"parentId": pid}, nil)
+
+			if sensors != nil {
+				children = append(children, sensors...)
+			}
+			if groups != nil {
+				children = append(children, groups...)
 			}
 		}
 
-		subEnt := u.EntityToString(entnum + 1)
-
-		//Get immediate children
-		children, e1 := GetManyEntities(subEnt, bson.M{"parentId": ID.Hex()}, nil)
-		if e1 != "" {
-			println("Are we here")
-			println("SUBENT: ", subEnt)
-			println("PID: ", ID.Hex())
-			return nil, e1
-		}
-
-		//Get the rest of hierarchy for children
-		for i := range children {
-			var x map[string]interface{}
-			subID := (children[i]["id"].(primitive.ObjectID))
-
-			if entnum+1 == DEVICE {
-				x, _ = RetrieveDeviceHierarch(subID, entnum, end)
-			} else {
-				x, _ =
-					GetEntityHierarchy(subEnt, subID, entnum+1, end)
-			}
-
-			//So that output JSON will not have
-			// "children": [null]
-			if x != nil {
-				children[i] = x
-			}
-		}
-
-		top["children"] = append(top["children"].([]map[string]interface{}), children...)
-
-		if entity == "room" {
-			//ITER Through all nonhierarchal objs
+		if ent == "room" {
 			for i := AC; i < GROUP+1; i++ {
-				ent := u.EntityToString(i)
-				//if ent != "sensor" {
-				x, e := GetManyEntities(ent,
-					bson.M{"parentId": top["id"].(primitive.ObjectID).Hex()}, nil)
-				if e == "" {
-					//top[ent+"s"] = x
-					top["children"] = append(top["children"].([]map[string]interface{}), x...)
+				roomEnts, _ := GetManyEntities(u.EntityToString(i), bson.M{"parentId": pid}, nil)
+				if roomEnts != nil {
+					children = append(children, roomEnts...)
 				}
-				//}
 			}
 		}
 
-		if entity == "rack" {
-			y, e1 := GetManyEntities("group",
-				bson.M{"parentId": top["id"].(primitive.ObjectID).Hex()}, nil)
-			if e1 == "" {
-				top["children"] = append(top["children"].([]map[string]interface{}), y...)
+		if ent == "device" {
+			childEnt = "device"
+		} else {
+			childEnt = u.EntityToString(start + 1)
+		}
+
+		subEnts, _ := GetManyEntities(childEnt, bson.M{"parentId": pid}, nil)
+
+		for idx := range subEnts {
+			tmp, _ := GetEntityHierarchy(subEnts[idx]["id"].(primitive.ObjectID), childEnt, start+1, end)
+			if tmp != nil {
+				subEnts[idx] = tmp
 			}
 		}
 
+		if subEnts != nil {
+			children = append(children, subEnts...)
+			top["children"] = children
+		}
 		return top, ""
 	}
 	return nil, ""
@@ -978,7 +952,7 @@ func GetTenantHierarchy(entity, name string, entnum, end int) (map[string]interf
 		subIdx := u.EntityToString(entnum + 1)
 		subID := (children[i]["id"].(primitive.ObjectID))
 		x, _ =
-			GetEntityHierarchy(subIdx, subID, entnum+1, end)
+			GetEntityHierarchy(subID, subIdx, entnum+1, end)
 		if x != nil {
 			children[i] = x
 		}
@@ -1103,64 +1077,10 @@ func DeleteEntityBySlug(entity, id string) (map[string]interface{}, string) {
 
 //DEV FAMILY FUNCS
 
-func RetrieveDeviceHierarch(ID primitive.ObjectID, start, end int) (map[string]interface{}, string) {
-	if start < end {
-		//Get the top entity
-		top, e := GetEntity(bson.M{"_id": ID}, "device")
-		if e != "" {
-			return nil, e
-		}
-		top["children"] = []map[string]interface{}{}
-
-		//Retrieve sensors
-		ctx, cancel := u.Connect()
-		x, err := GetDB().Collection("sensor").Find(ctx,
-			bson.M{"parentId": top["id"].(primitive.ObjectID).Hex()})
-		if err == nil {
-			data := []map[string]interface{}{}
-			data, e1 := ExtractCursor(x, ctx)
-			if e1 != "" {
-				fmt.Println(e1)
-				return nil, e1
-			}
-
-			top["children"] = append(top["children"].([]map[string]interface{}), data...)
-		}
-		y, err1 := GetDB().Collection("group").Find(ctx,
-			bson.M{"parentId": top["id"].(primitive.ObjectID).Hex()})
-		if err1 == nil {
-			data := []map[string]interface{}{}
-			data, e1 := ExtractCursor(y, ctx)
-			if e1 != "" {
-				fmt.Println(e1)
-				return nil, e1
-			}
-
-			top["children"] = append(top["children"].([]map[string]interface{}), data...)
-		}
-		defer cancel()
-
-		children, e1 := GetManyEntities("device", bson.M{"parentId": ID.Hex()}, nil)
-		if e1 != "" {
-			return top, ""
-		}
-
-		for i := range children {
-			children[i], _ = RetrieveDeviceHierarch(
-				children[i]["id"].(primitive.ObjectID), start+1, end)
-		}
-
-		top["children"] = append(top["children"].([]map[string]interface{}), children...)
-
-		return top, ""
-	}
-	return nil, ""
-}
-
 func DeleteDeviceF(entityID primitive.ObjectID) (map[string]interface{}, string) {
 	//var deviceType string
 
-	t, e := RetrieveDeviceHierarch(entityID, 0, 999)
+	t, e := GetEntityHierarchy(entityID, "device", 0, 999)
 	if e != "" {
 		return u.Message(false,
 			"There was an error in deleting the entity"), "not found"

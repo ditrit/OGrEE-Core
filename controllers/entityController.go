@@ -1132,8 +1132,8 @@ var GetEntityHierarchy = func(w http.ResponseWriter, r *http.Request) {
 		indicator = r.URL.Path[lastSlashIdx+1:]
 		switch indicator {
 		case "all":
-			//set to AC1
-			limit = AC
+			//arbitrarily set value to 999 instead of AC
+			limit = 999
 		case "nonstd":
 			//special case
 		default:
@@ -1168,9 +1168,11 @@ var GetEntityHierarchy = func(w http.ResponseWriter, r *http.Request) {
 			end, _ = strconv.Atoi(arr[1])
 			end += 1
 		}
-		data, e1 = models.RetrieveDeviceHierarch(oID, 0, end)
+		//data, e1 = models.RetrieveDeviceHierarch(oID, 0, end)
+		data, e1 = models.GetEntityHierarchy(oID, entity, entNum, limit)
 	} else {
-		data, e1 = models.GetEntityHierarchy(entity, oID, entNum, limit)
+		//data, e1 = models.GetEntityHierarchy(entity, oID, entNum, limit)
+		data, e1 = models.GetEntityHierarchy(oID, entity, entNum, limit)
 	}
 
 	if data == nil {
@@ -1520,7 +1522,7 @@ var GetEntityHierarchyNonStd = func(w http.ResponseWriter, r *http.Request) {
 		}
 	} else {
 		oID, _ := getObjID(id)
-		data, err = models.GetEntityHierarchy(entity, oID, entNum, AC)
+		data, err = models.GetEntityHierarchy(oID, entity, entNum, AC)
 	}
 
 	if data == nil {
