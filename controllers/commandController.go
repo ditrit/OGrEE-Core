@@ -149,6 +149,12 @@ func SearchObjects(entity string, data map[string]interface{}) []map[string]inte
 			objects = append(objects, obj[idx].(map[string]interface{}))
 			println()
 		}
+
+		if IsInObjForUnity(entity) {
+			resp := map[string]interface{}{"type": "search", "data": objects}
+			InformUnity("POST", "Search", resp)
+		}
+
 		return objects
 
 	}
@@ -294,7 +300,11 @@ func UpdateObj(path, id, ent string, data map[string]interface{}, deleteAndPut b
 		var URL string
 		var entities string
 
-		if path != "" {
+		if path != "" || path == "" && ent == "" {
+
+			if path == "" { //This means we should use curr path
+				path = State.CurrPath
+			}
 
 			//We have to get object first since
 			//there is a potential for multiple paths
