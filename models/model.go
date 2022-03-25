@@ -90,10 +90,11 @@ func validateParent(ent string, entNum int, t map[string]interface{}) (map[strin
 				"ParentID should be correspond to Existing ID"), false
 		}
 	case SENSOR, GROUP:
+		w, _ := GetEntity(bson.M{"_id": objID}, "device")
 		x, _ := GetEntity(bson.M{"_id": objID}, "rack")
 		y, _ := GetEntity(bson.M{"_id": objID}, "room")
 		z, _ := GetEntity(bson.M{"_id": objID}, "building")
-		if x == nil && y == nil && z == nil {
+		if w == nil && x == nil && y == nil && z == nil {
 			return u.Message(false,
 				"ParentID should be correspond to Existing ID"), false
 		}
