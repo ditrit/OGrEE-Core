@@ -992,12 +992,12 @@ func GetOCLIAtrributes(path string, ent int, data map[string]interface{}) {
 		data["attributes"].(map[string]interface{})["usableColor"] = "DBEDF2"
 		data["attributes"].(map[string]interface{})["reservedColor"] = "F2F2F2"
 		data["attributes"].(map[string]interface{})["technicalColor"] = "EBF2DE"
+		data["attributes"].(map[string]interface{})["template"] = nil
 		data["domain"] = domain
 		data["parentId"] = parent["id"]
 
 		PostObj(ent, "site", data)
 	case BLDG:
-
 		attr = data["attributes"].(map[string]interface{})
 
 		//User provided x,y,z coordinates which must be
@@ -1013,12 +1013,19 @@ func GetOCLIAtrributes(path string, ent int, data map[string]interface{}) {
 				}
 			}
 			attr["size"] = res[:len(res)-1]
+
+		} else if _, ok := attr["size"].(string); ok {
+			attr["size"] = serialiseAttr(attr, "size")
+		}
+
+		if _, ok := attr["posXY"].(string); ok {
+			attr["posXY"] = serialiseAttr(attr, "posXY")
 		}
 
 		attr["posXYUnit"] = "m"
 		attr["sizeUnit"] = "m"
 		attr["heightUnit"] = "m"
-		attr["height"] = 0 //Should be set from parser by default
+		//attr["height"] = 0 //Should be set from parser by default
 		data["parentId"] = parent["id"]
 		data["domain"] = domain
 
@@ -1040,12 +1047,22 @@ func GetOCLIAtrributes(path string, ent int, data map[string]interface{}) {
 		if q, ok := attr["template"]; ok {
 			tmpl = State.TemplateTable[q.(string)]
 			MergeMaps(attr, tmpl, true)
+		} else {
+			attr["template"] = nil
+		}
+
+		//Serialise size and posXY if given
+		if _, ok := attr["size"].(string); ok {
+			attr["size"] = serialiseAttr(attr, "size")
+		}
+
+		if _, ok := attr["posXY"].(string); ok {
+			attr["posXY"] = serialiseAttr(attr, "posXY")
 		}
 
 		data["parentId"] = parent["id"]
 		data["domain"] = domain
-		data["attributes"] = attr["attributes"]
-
+		data["attributes"] = attr
 		PostObj(ent, "room", data)
 	case RACK:
 
@@ -1066,11 +1083,22 @@ func GetOCLIAtrributes(path string, ent int, data map[string]interface{}) {
 		if q, ok := attr["template"]; ok {
 			tmpl = State.TemplateTable[q.(string)]
 			MergeMaps(attr, tmpl, true)
+		} else {
+			attr["template"] = nil
+		}
+
+		//Serialise size and posXY if given
+		if _, ok := attr["size"].(string); ok {
+			attr["size"] = serialiseAttr(attr, "size")
+		}
+
+		if _, ok := attr["posXY"].(string); ok {
+			attr["posXY"] = serialiseAttr(attr, "posXY")
 		}
 
 		data["parentId"] = parent["id"]
 		data["domain"] = domain
-		data["attributes"] = attr["attributes"]
+		data["attributes"] = attr
 
 		PostObj(ent, "rack", data)
 	case DEVICE:
@@ -1091,12 +1119,13 @@ func GetOCLIAtrributes(path string, ent int, data map[string]interface{}) {
 		if q, ok := attr["template"]; ok {
 			tmpl = State.TemplateTable[q.(string)]
 			MergeMaps(attr, tmpl, true)
+		} else {
+			attr["template"] = nil
 		}
 
 		data["domain"] = domain
 		data["parentId"] = parent["id"]
-		data["attributes"] = attr["attributes"]
-
+		data["attributes"] = attr
 		PostObj(ent, "device", data)
 
 	case SEPARATOR, CORIDOR, GROUP:
@@ -1106,9 +1135,11 @@ func GetOCLIAtrributes(path string, ent int, data map[string]interface{}) {
 			data["domain"] = domain
 			data["parentId"] = parent["id"]
 		}
-		data["attributes"] = map[string]interface{}{}
+		attr := map[string]interface{}{}
 
 		if ent == SEPARATOR {
+			//serialiseAttr(attr)
+			data["attributes"] = attr
 			PostObj(ent, "separator", data)
 		} else if ent == CORIDOR {
 			PostObj(ent, "corridor", data)
@@ -1116,6 +1147,44 @@ func GetOCLIAtrributes(path string, ent int, data map[string]interface{}) {
 			PostObj(ent, "group", data)
 		}
 	}
+}
+
+//Serialising size & posXY is inefficient but
+//the team wants it for now
+//"size":"[25,29.4,0]" -> "size": "{\"x\":25,\"y\":29.4,\"z\":0}"
+func serialiseAttr(attr map[string]interface{}, want string) string {
+	var newSize string
+	if size, ok := attr[want].(string); ok {
+		left := strings.Index(size, "[")
+		right := strings.Index(size, "]")
+		coords := []string{"x", "y", "z"}
+
+		if left != -1 && right != -1 {
+			var length int
+			subStr := size[left+1 : right]
+			nums := strings.Split(subStr, ",")
+
+			if len(nums) == 3 && want == "size" {
+				length = 2
+			} else {
+				length = len(nums)
+			}
+
+			for idx := 0; idx < length; idx++ {
+				newSize += "\"" + coords[idx] + "\":" + nums[idx]
+
+				if idx < length-1 {
+					newSize += ","
+				}
+			}
+			newSize = "{" + newSize + "}"
+
+			if len(nums) == 3 && want == "size" {
+				attr["height"] = nums[2]
+			}
+		}
+	}
+	return newSize
 }
 
 //Used for Unity Client commands
@@ -1238,6 +1307,8 @@ func LoadTemplate(data map[string]interface{}, filePath string) {
 				InformUnity("POST", "load template",
 					map[string]interface{}{"type": "load template", "data": data})
 			}
+
+			println("Template loaded")
 
 		}
 
