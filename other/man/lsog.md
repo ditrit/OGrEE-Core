@@ -1,2 +1,6 @@
-Usage:  lsog   
-Displays system information
+USAGE:  lsog   
+Displays system information    
+
+EXAMPLE   
+
+    lsog

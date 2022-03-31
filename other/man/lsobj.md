@@ -15,4 +15,11 @@ cabinet
 corridor   
 panel   
 separator   
-sensor   
+sensor       
+
+EXAMPLE   
+
+    lsten   
+    lsten ../../Physical/TenantB
+    lscabinet
+    lspanel

@@ -1,4 +1,4 @@
-Usage: + [OCLIENTITY]:[PATH]@[OCLIOPTIONS]   
+USAGE: + [OCLIENTITY]:[PATH]@[OCLIOPTIONS]   
 Shorthand syntax for creating objects   
 
 Each entity type has a specific OCLIOPTIONS   

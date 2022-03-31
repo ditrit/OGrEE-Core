@@ -1,4 +1,4 @@
-Usage: hc [PATH] (optional) [NUM] (optional)   
+USAGE: hc [PATH] (optional) [NUM] (optional)   
 Displays object's hierarchy in JSON format.   
 
 The PATH parameter specifies path to object. If PATH is not provided then the current path will be used.   

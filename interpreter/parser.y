@@ -503,12 +503,13 @@ Q:     TOK_CD P {/*cmd.CD($2);*/ $$=&commonNode{COMMON, cmd.CD, "CD", []interfac
        |TOK_WORD TOK_EQUAL EXPR {$$=&commonNode{COMMON, cmd.SetEnv, "SetEnv", []interface{}{$1, $3}}}
 ;
 
-BASH:  TOK_CLR {$$=&commonNode{COMMON, nil, "CLR", nil}}
+BASH:  TOK_CLR {$$=&commonNode{COMMON, cmd.Clear, "CLR", nil}}
        | TOK_GREP {$$=&commonNode{COMMON, nil, "Grep", nil}}
        | TOK_PRNT NODEGETTER {$$=&commonNode{COMMON, cmd.Print, "Print", $2}}
        | TOK_LSOG {$$=&commonNode{COMMON, cmd.LSOG, "LSOG", nil}}
        | TOK_PWD {$$=&commonNode{COMMON, cmd.PWD, "PWD", nil}}
        | TOK_EXIT {$$=&commonNode{COMMON, cmd.Exit, "Exit", nil}}
+       | TOK_DOC TOK_CLR {$$=&commonNode{COMMON, cmd.Help, "Help", []interface{}{"clear"}}}
        | TOK_DOC {$$=&commonNode{COMMON, cmd.Help, "Help", []interface{}{""}}}
        | TOK_DOC TOK_LS {$$=&commonNode{COMMON, cmd.Help, "Help", []interface{}{"ls"}}}
        | TOK_DOC TOK_PWD {$$=&commonNode{COMMON, cmd.Help, "Help", []interface{}{"pwd"}}}

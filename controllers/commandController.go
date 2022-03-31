@@ -450,6 +450,10 @@ func LS(x string) []map[string]interface{} {
 
 }
 
+func Clear() {
+	fmt.Printf("\033[H")
+}
+
 func LSOG() {
 	fmt.Println("USER EMAIL:", GetEmail())
 	fmt.Println("API URL:", State.APIURL+"/api/")
@@ -767,7 +771,7 @@ func CD(x string) string {
 func Help(entry string) {
 	var path string
 	switch entry {
-	case "ls", "pwd", "print", "cd", "tree", "create", "gt",
+	case "ls", "pwd", "print", "cd", "tree", "create", "gt", "clear",
 		"update", "delete", "lsog", "grep", "for", "while", "if",
 		"cmds", "var", "unset", "select", "camera", "ui", "hc", "drawable":
 		path = "./other/man/" + entry + ".md"
@@ -867,6 +871,11 @@ func Tree(x string, depth int) {
 		println("Error: Tree command cannot accept negative value")
 		return
 	}
+	objJSON, _ := GetObject(x, true)
+	if objJSON == nil {
+		return
+	}
+
 	if x == "" || x == "." {
 		println(State.CurrPath)
 		tree(State.CurrPath, "", depth)

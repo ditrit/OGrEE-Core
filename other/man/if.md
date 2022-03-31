@@ -1,4 +1,4 @@
-Usage: if [expr1] then body1 elif [expr2] then body2 elif ... else bodyN fi
+USAGE: if [expr1] then body1 elif [expr2] then body2 elif ... else bodyN fi
 
 
 The  if command evaluates expr1 as an expression.

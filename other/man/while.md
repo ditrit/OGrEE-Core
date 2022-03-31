@@ -1,4 +1,4 @@
-Usage: while (test) body done   
+USAGE: while (test) body done   
 Execute command(s) repeatedly as long as a condition is met   
 
 The  while command evaluates test as a boolean.   
