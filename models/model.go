@@ -361,18 +361,6 @@ func ValidateEntity(entity int, t map[string]interface{}) (map[string]interface{
 							return u.Message(false, "Orientation is invalid!"), false
 						}
 
-						if v["usableColor"] == "" || v["usableColor"] == nil {
-							return u.Message(false, "Usable Color should be on the payload"), false
-						}
-
-						if v["reservedColor"] == "" || v["reservedColor"] == nil {
-							return u.Message(false, "Reserved Color should be on the payload"), false
-						}
-
-						if v["technicalColor"] == "" || v["technicalColor"] == nil {
-							return u.Message(false, "Technical Color should be on the payload"), false
-						}
-
 					case BLDG:
 						if v["posXY"] == "" || v["posXY"] == nil {
 							return u.Message(false, "XY coordinates should be on payload"), false
