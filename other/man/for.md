@@ -15,14 +15,14 @@ For now the return value of a for loop is NULL.
 EXAMPLE   
 
 
-    for ((x=0; x < 5; $x=$x+1)); pwd done    
+    for ((x=0; $x < 5; $x=$x+1)); pwd done    
 
     for x in {2..10}; pwd; tree done   
 
     for x in 5; pwd; done   
 
-    .var:p=3; for x in $p; pwd; done   
+    .var:p=3; for x in $p; pwd; print $x done   
 
-    for x in len(array); pwd; done   
+    for x in len(array); pwd done   
 
-    for x in $ls; pwd; done
+    for x in $(ls) do pwd done
