@@ -99,6 +99,9 @@ pipeline {
                 sh 'GOOS=darwin GOARCH=amd64 go build -o OGrEE_API_OSX_x64 main.go'
                 sh 'mv OGrEE_API_OSX_x64 /home/ziad/bin/api'
 
+                //Upload builds to Nextcloud
+                sh '/home/ziad/buildServices/updateAPI.py'
+
                 //OSX arm64
                 //sh 'GOOS=darwin GOARCH=arm64 go build -o OGrEE_API_OSX_arm64 main.go'
                 //sh 'mv OGrEE_API_OSX_arm64 /home/ziad/bin/api'
