@@ -23,9 +23,9 @@ pipeline {
             steps {
                 echo 'Building..'
                 //sh 'rm makefile'
-                //sh 'cp  /home/ziad/buildCLI/makefile .'
+                //sh 'cp  /home/ziad/buildServices/makefile .'
                 //sh 'make'
-                sh '/home/ziad/buildCLI/updateCLI.py'
+                sh '/home/ziad/buildServices/updateCLI.py'
 
                 //Code block for Jenkins building on Chibois
 

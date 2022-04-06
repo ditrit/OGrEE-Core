@@ -499,7 +499,8 @@ Q:     TOK_CD P {/*cmd.CD($2);*/ $$=&commonNode{COMMON, cmd.CD, "CD", []interfac
               
               }
        | BASH     {$$=$1}
-       | TOK_DRAW TOK_LPAREN P TOK_RPAREN {$$=&commonNode{COMMON, cmd.IsDrawable, "IsDrawable", []interface{}{$3}}}
+       | TOK_DRAW TOK_LPAREN P TOK_RPAREN {$$=&commonNode{COMMON, cmd.IsEntityDrawable, "IsEntityDrawable", []interface{}{$3}}}
+       | TOK_DRAW TOK_LPAREN P TOK_COMMA factor TOK_RPAREN {$$=&commonNode{COMMON, cmd.IsAttrDrawable, "IsAttrDrawable", []interface{}{$3, $5}}}
        |TOK_WORD TOK_EQUAL EXPR {$$=&commonNode{COMMON, cmd.SetEnv, "SetEnv", []interface{}{$1, $3}}}
 ;
 

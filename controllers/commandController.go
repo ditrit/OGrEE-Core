@@ -53,7 +53,8 @@ func PostObj(ent int, entity string, data map[string]interface{}) map[string]int
 
 		//If ent is in State.ObjsForUnity then notify Unity
 		if IsInObjForUnity(entity) == true {
-			InformUnity("POST", "PostObj",
+			entInt := EntityStrToInt(entity)
+			InformUnity("POST", "PostObj", entInt,
 				map[string]interface{}{"type": "create", "data": respMap["data"]})
 		}
 
@@ -94,7 +95,7 @@ func DeleteObj(path string) bool {
 
 	entity := entities[:len(entities)-1]
 	if IsInObjForUnity(entity) == true {
-		InformUnity("POST", "DeleteObj",
+		InformUnity("POST", "DeleteObj", -1,
 			map[string]interface{}{"type": "delete", "data": objJSON["id"].(string)})
 	}
 
@@ -152,7 +153,7 @@ func SearchObjects(entity string, data map[string]interface{}) []map[string]inte
 
 		if IsInObjForUnity(entity) {
 			resp := map[string]interface{}{"type": "search", "data": objects}
-			InformUnity("POST", "Search", resp)
+			InformUnity("POST", "Search", -1, resp)
 		}
 
 		return objects
@@ -411,7 +412,8 @@ func UpdateObj(path, id, ent string, data map[string]interface{}, deleteAndPut b
 
 			entStr := entities[:len(entities)-1]
 			if IsInObjForUnity(entStr) == true {
-				InformUnity("POST", "UpdateObj", message)
+				entInt := EntityStrToInt(entStr)
+				InformUnity("POST", "UpdateObj", entInt, message)
 			}
 
 		}
@@ -1199,7 +1201,7 @@ func serialiseAttr(attr map[string]interface{}, want string) string {
 //Used for Unity Client commands
 func HandleUI(data map[string]interface{}) {
 	Disp(data)
-	InformUnity("POST", "HandleUI", data)
+	InformUnity("POST", "HandleUI", -1, data)
 }
 
 func FocusUI(path string) {
@@ -1215,10 +1217,11 @@ func FocusUI(path string) {
 	}
 
 	data := map[string]interface{}{"type": "focus", "data": id}
-	InformUnity("POST", "FocusUI", data)
+	InformUnity("POST", "FocusUI", -1, data)
 }
 
-func IsDrawable(path string) bool {
+func IsEntityDrawable(path string) bool {
+	ans := false
 	//Fix path
 	if path == "" || path == "." {
 		path = (State.CurrPath)
@@ -1239,17 +1242,143 @@ func IsDrawable(path string) bool {
 	//Return if it is drawable in Unity
 	if catInf, ok := obj["category"]; ok {
 		if category, ok := catInf.(string); ok {
-			switch category {
-			case "tenant", "site", "building", "room",
-				"rack", "device", "corridor", "group", "sensor":
-				println("true")
-				return true
-
-			}
+			ans = IsDrawableEntity(category) //State Controller call
+			println(ans)
+			return ans
 		}
 	}
 	println("false")
 	return false
+}
+
+func IsAttrDrawable(path, attr string, object map[string]interface{}, silence bool) bool {
+	ans := false
+	var category string
+	var templateJson map[string]interface{}
+	if object == nil {
+		//Fix path
+		if path == "" || path == "." {
+			path = (State.CurrPath)
+		} else if string(path[0]) == "/" {
+			//Do nothing
+		} else {
+			path = (State.CurrPath + "/" + path)
+		}
+
+		//Get Object first
+		obj, err := GetObject(path, true)
+		if obj == nil {
+			WarningLogger.Println(err)
+			if silence != true {
+				println(err)
+			}
+
+			return false
+		}
+
+		//Ensure that we can get the category
+		//from object
+		if catInf, ok := obj["category"]; ok {
+			if cat, ok := catInf.(string); !ok {
+				ErrorLogger.Println("Object does not have category")
+				if silence != true {
+					println("Error: Object does not have category")
+				}
+
+				return false
+			} else if EntityStrToInt(cat) == -1 {
+				ErrorLogger.Println("Object has invalid category")
+				if silence != true {
+					println("Error: Object does has invalid category")
+				}
+
+				return false
+			}
+		} else {
+			ErrorLogger.Println("Object does not have category")
+			if silence != true {
+				println("Error: Object does not have category")
+			}
+
+			return false
+		}
+		//Check is Done
+		category = obj["category"].(string)
+	} else {
+		if catInf, ok := object["category"]; ok {
+			if cat, ok := catInf.(string); !ok {
+				ErrorLogger.Println("Object does not have category")
+				if silence != true {
+					println("Error: Object does not have category")
+				}
+
+				return false
+			} else if EntityStrToInt(cat) == -1 {
+				ErrorLogger.Println("Object has invalid category")
+				if silence != true {
+					println("Error: Object does has invalid category")
+				}
+
+				return false
+			}
+		} else {
+			ErrorLogger.Println("Object does not have category")
+			if silence != true {
+				println("Error: Object does not have category")
+			}
+
+			return false
+		}
+		category = object["category"].(string)
+	}
+
+	templateJson = State.DrawableJsons[category]
+
+	//Return true here by default
+	if templateJson == nil {
+		if silence != true {
+			println(true)
+		}
+
+		return true
+	}
+	switch attr {
+	case "id", "name", "category", "parentID",
+		"description", "domain", "parentid", "parentId":
+		if val, ok := templateJson[attr]; ok {
+			if _, ok := val.(bool); ok {
+				ans = val.(bool)
+				if silence != true {
+					println(ans)
+				}
+
+				return ans
+			}
+		}
+		ans = false
+
+	default:
+		//ans = templateJson["attributes"].(map[string]interface{})[attr].(bool)
+		if tmp, ok := templateJson["attributes"]; ok {
+			if attributes, ok := tmp.(map[string]interface{}); ok {
+				if val, ok := attributes[attr]; ok {
+					if _, ok := val.(bool); ok {
+						ans = val.(bool)
+						if silence != true {
+							println(ans)
+						}
+						return ans
+					}
+				}
+			}
+		}
+		ans = false
+	}
+
+	if silence != true {
+		println(ans)
+	}
+	return ans
 }
 
 func ShowClipBoard() []string {
@@ -1313,7 +1442,7 @@ func LoadTemplate(data map[string]interface{}, filePath string) {
 
 			//Inform Unity Client
 			if IsInObjForUnity(category) == true {
-				InformUnity("POST", "load template",
+				InformUnity("POST", "load template", -1,
 					map[string]interface{}{"type": "load template", "data": data})
 			}
 
@@ -1335,7 +1464,7 @@ func SetClipBoard(x *[]string) []string {
 		obj, _ := GetObject(val, true)
 		if obj != nil {
 			data = map[string]interface{}{"type": "select", "data": obj["id"]}
-			InformUnity("POST", "SetClipBoard", data)
+			InformUnity("POST", "SetClipBoard", -1, data)
 		}
 	}
 	return *State.ClipBoard
@@ -1358,12 +1487,24 @@ func SetEnv(arg string, val interface{}) {
 		if _, ok := val.(bool); !ok {
 			msg := "Can only assign bool values for Unity Env Var"
 			WarningLogger.Println(msg)
+			println(msg)
 		} else {
 			State.UnityClientAvail = val.(bool)
+			println("Unity Environment variable set")
+		}
+
+	case "Filter":
+		if _, ok := val.(bool); !ok {
+			msg := "Can only assign bool values for Filter Env Var"
+			WarningLogger.Println(msg)
+			println(msg)
+		} else {
+			State.FilterDisplay = val.(bool)
+			println("Filter Display Environment variable set")
 		}
 
 	default:
-
+		println(arg + " is not an environment variable")
 	}
 }
 
@@ -1375,6 +1516,39 @@ func determineStrKey(x map[string]interface{}, possible []string) string {
 		}
 	}
 	return "" //The code should not reach this point!
+}
+
+//This func is used for when the user wants to filter certain
+//attributes from being sent/displayed to Unity viewer client
+func GenerateFilteredJson(x map[string]interface{}) map[string]interface{} {
+	ans := map[string]interface{}{}
+	attrs := map[string]interface{}{}
+	if catInf, ok := x["category"]; ok {
+		if cat, ok := catInf.(string); ok {
+			if EntityStrToInt(cat) != -1 {
+
+				//Start the filtration
+				for i := range x {
+					if i == "attributes" {
+						for idx := range x[i].(map[string]interface{}) {
+							if IsAttrDrawable("", idx, x, true) == true {
+								attrs[idx] = x[i].(map[string]interface{})[idx]
+							}
+						}
+					} else {
+						if IsAttrDrawable("", i, x, true) == true {
+							ans[i] = x[i]
+						}
+					}
+				}
+				if len(attrs) > 0 {
+					ans["attributes"] = attrs
+				}
+				return ans
+			}
+		}
+	}
+	return x //Nothing will be filtered
 }
 
 //Display contents of []map[string]inf array
@@ -1406,10 +1580,13 @@ func LoadArrFromResp(resp map[string]interface{}, idx string) []interface{} {
 }
 
 //Messages Unity Client
-func InformUnity(method, caller string, data map[string]interface{}) {
+func InformUnity(method, caller string, entity int, data map[string]interface{}) {
 	//If unity is available message it
 	//otherwise do nothing
 	if State.UnityClientAvail == true {
+		if entity > -1 && entity < SENSOR+1 {
+			data = GenerateFilteredJson(data)
+		}
 		e := models.ContactUnity(method, State.UnityClientURL, data)
 		if e != nil {
 			WarningLogger.Println("Unable to contact Unity Client @" + caller)

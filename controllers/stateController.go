@@ -6,6 +6,7 @@ import (
 	"container/list"
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -48,7 +49,10 @@ type ShellState struct {
 	UnityClientURL   string
 	APIURL           string
 	UnityClientAvail bool  //For deciding to message unity or not
+	FilterDisplay    bool  //Set whether or not to send attributes to unity
 	ObjsForUnity     []int //Deciding what objects should be sent to unity
+	DrawableObjs     []int //Indicate which objs drawable in unity
+	DrawableJsons    map[string]map[string]interface{}
 	DebugLvl         int
 	LineNumber       int //Used exectuting scripts
 	TemplateTable    map[string]map[string]interface{}
@@ -85,8 +89,9 @@ func InitState(debugLvl int) {
 	} else {
 		fmt.Println("Unity Client is Reachable!")
 		State.UnityClientAvail = true
-
 	}
+	//Set the filter attributes setting
+	State.FilterDisplay = false
 
 	phys := &Node{}
 	phys.Name = "Physical"
@@ -136,12 +141,21 @@ func InitState(debugLvl int) {
 	State.TreeHierarchy.Nodes.PushBack(enterprise)
 
 	//Set which objects Unity will be notified about
-	SetObjsForUnity()
+	State.ObjsForUnity = SetObjsForUnity("updates")
+	State.DrawableObjs = SetObjsForUnity("drawable")
+	State.DrawableJsons = make(map[string]map[string]interface{}, 16)
+
+	for i := TENANT; i < GROUP+1; i++ {
+		ent := EntityToString(i)
+		State.DrawableJsons[ent] = SetDrawableTemplate(ent)
+	}
 }
 
 //Helper for InitState will
 //insert objs
-func SetObjsForUnity() {
+func SetObjsForUnity(x string) []int {
+	res := []int{}
+	key := x + "="
 	allDetected := false
 	file, err := os.Open("./.resources/.env")
 	if err != nil {
@@ -152,16 +166,16 @@ func SetObjsForUnity() {
 	scanner := bufio.NewScanner(file)
 	scanner.Split(bufio.ScanWords) // use scanwords
 	for scanner.Scan() {
-		if strings.HasPrefix(scanner.Text(), "updates=") {
+		if strings.HasPrefix(scanner.Text(), key) {
 			//ObjStr is equal to everything after 'updates='
-			objStr := strings.SplitAfter(scanner.Text(), "updates=")[1]
+			objStr := strings.SplitAfter(scanner.Text(), key)[1]
 			arr := strings.Split(objStr, ",")
 
 			for i := range arr {
 				arr[i] = strings.ToLower(arr[i])
 
 				if val := EntityStrToInt(arr[i]); val != -1 {
-					State.ObjsForUnity = append(State.ObjsForUnity, val)
+					res = append(res, val)
 
 				} else if arr[i] == "all" {
 					//Exit the loop and use default code @ end of function
@@ -170,8 +184,6 @@ func SetObjsForUnity() {
 				}
 			}
 
-		} else {
-			WarningLogger.Println("Update key not found, going to use defaults")
 		}
 	}
 
@@ -184,14 +196,50 @@ func SetObjsForUnity() {
 	//Set the array to all and exit
 	//GROUP is the greatest value int enum type
 	//So we use that for the cond guard
-	if allDetected || len(State.ObjsForUnity) == 0 {
-		res := []int{}
+	if allDetected || len(res) == 0 {
+		if len(res) == 0 && !allDetected {
+			WarningLogger.Println(x + " key not found, going to use defaults")
+			println(x + " key not found, going to use defaults")
+		}
 		for idx := 0; idx < GROUP; idx++ {
 			res = append(res, idx)
 		}
-		State.ObjsForUnity = res
+	}
+	return res
+}
+
+func SetDrawableTemplate(entity string) map[string]interface{} {
+	file, err := os.Open("./.resources/.env")
+	if err != nil {
+		fmt.Println(err)
+	}
+	defer file.Close()
+
+	scanner := bufio.NewScanner(file)
+	scanner.Split(bufio.ScanWords) // use scanwords
+
+	for scanner.Scan() {
+		if strings.HasPrefix(scanner.Text(), entity) {
+			objStr := strings.Split(scanner.Text(), entity+"DrawableJson=")[1]
+			objStr = strings.Trim(objStr, "'\"")
+
+			//Now retrieve file
+			ans := map[string]interface{}{}
+			f, e := ioutil.ReadFile(objStr)
+			if e != nil {
+				WarningLogger.Println("Specified template for" + entity + "not found")
+				if State.DebugLvl > 2 {
+					println("Specified template for " + entity +
+						" not found, resorting to defaults")
+				}
+				return nil
+			}
+			json.Unmarshal(f, &ans)
+			return ans
+		}
 	}
 
+	return nil
 }
 
 func IsInObjForUnity(x string) bool {
@@ -202,6 +250,17 @@ func IsInObjForUnity(x string) bool {
 			if State.ObjsForUnity[idx] == entInt {
 				return true
 			}
+		}
+	}
+	return false
+}
+
+func IsDrawableEntity(x string) bool {
+	entInt := EntityStrToInt(x)
+
+	for idx := range State.DrawableObjs {
+		if State.DrawableObjs[idx] == entInt {
+			return true
 		}
 	}
 	return false
@@ -426,7 +485,6 @@ func DispAtLevel(root **Node, x Stack) []string {
 		}
 		return items
 	}
-	return nil
 }
 
 func DispAtLevelTAB(root **Node, x Stack) []string {

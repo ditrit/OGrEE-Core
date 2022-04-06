@@ -131,13 +131,28 @@ func (c *commonNode) execute() interface{} {
 			return f() //returns bool
 		}
 
-	case "IsDrawable":
+	case "IsEntityDrawable":
 		if f, ok := c.fun.(func(string) bool); ok {
 			if arg, ok := c.args[0].(string); ok {
 				t := f(arg)
 				return t
 			}
 			//Error if reached here
+		}
+
+	case "IsAttrDrawable":
+		if f, ok := c.fun.(func(string, string, map[string]interface{}, bool) bool); ok {
+			objInf := c.args[0]
+			attrInf := c.args[1].(node).execute()
+			if _, ok := objInf.(string); !ok {
+				println("Object operand is invalid")
+				return nil
+			}
+			if _, ok := attrInf.(string); !ok {
+				println("Attribute operand is invalid")
+				return nil
+			}
+			return f(objInf.(string), attrInf.(string), nil, false)
 		}
 
 	case "GetObject":
