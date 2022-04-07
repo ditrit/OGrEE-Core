@@ -956,7 +956,6 @@ func getAttrAndVal(x string) (string, string) {
 //Helps to create the Object (thru OCLI syntax)
 func GetOCLIAtrributes(path string, ent int, data map[string]interface{}) {
 	attr := map[string]interface{}{}
-	tmpl := map[string]interface{}{}
 	var parent map[string]interface{}
 	var domain string
 	var parentURL string
@@ -1003,7 +1002,7 @@ func GetOCLIAtrributes(path string, ent int, data map[string]interface{}) {
 		data["attributes"].(map[string]interface{})["usableColor"] = nil
 		data["attributes"].(map[string]interface{})["reservedColor"] = nil
 		data["attributes"].(map[string]interface{})["technicalColor"] = nil
-		data["attributes"].(map[string]interface{})["template"] = nil
+		data["attributes"].(map[string]interface{})["template"] = ""
 		data["domain"] = domain
 		data["parentId"] = parent["id"]
 
@@ -1048,7 +1047,7 @@ func GetOCLIAtrributes(path string, ent int, data map[string]interface{}) {
 		baseAttrs := map[string]interface{}{
 			"orientation": "+N+E", "floorUnit": "t",
 			"posXYUnit": "m", "sizeUnit": "m",
-			"height":     0,
+			"height":     5,
 			"heightUnit": "m"}
 
 		MergeMaps(attr, baseAttrs, false)
@@ -1056,10 +1055,28 @@ func GetOCLIAtrributes(path string, ent int, data map[string]interface{}) {
 		//If user provided templates, get the JSON
 		//and parse into attributes
 		if q, ok := attr["template"]; ok {
-			tmpl = State.TemplateTable[q.(string)]
-			MergeMaps(attr, tmpl, true)
+			if qS, ok := q.(string); ok {
+				if tmpl, ok := State.TemplateTable[qS]; ok {
+					MergeMaps(attr, tmpl, true)
+
+				} else {
+					attr["template"] = ""
+					WarningLogger.Println("Invoked template not found")
+					println("Warning: template was not found.",
+						"it will not be used")
+
+				}
+
+			} else {
+				attr["template"] = ""
+				println("Warning: template must be a string that",
+					" refers to an existing imported template.",
+					q, " will not be used")
+				WarningLogger.Println("Invalid data type used to invoke template")
+			}
+
 		} else {
-			attr["template"] = nil
+			attr["template"] = ""
 		}
 
 		//Serialise size and posXY if given
@@ -1080,9 +1097,9 @@ func GetOCLIAtrributes(path string, ent int, data map[string]interface{}) {
 		attr = data["attributes"].(map[string]interface{})
 
 		baseAttrs := map[string]interface{}{
-			"sizeUnit":    "m",
-			"height":      0,
-			"heightUnit":  "m",
+			"sizeUnit":    "cm",
+			"height":      5,
+			"heightUnit":  "U",
 			"posXYUnit":   "t",
 			"orientation": "front",
 		}
@@ -1092,10 +1109,27 @@ func GetOCLIAtrributes(path string, ent int, data map[string]interface{}) {
 		//If user provided templates, get the JSON
 		//and parse into templates
 		if q, ok := attr["template"]; ok {
-			tmpl = State.TemplateTable[q.(string)]
-			MergeMaps(attr, tmpl, true)
+			if qS, ok := q.(string); ok {
+				if tmpl, ok := State.TemplateTable[qS]; ok {
+					MergeMaps(attr, tmpl, true)
+
+				} else {
+					attr["template"] = ""
+					WarningLogger.Println("Invoked template not found")
+					println("Warning: template was not found.",
+						"it will not be used")
+				}
+
+			} else {
+				attr["template"] = ""
+				println("Warning: template must be a string that",
+					" refers to an existing imported template.",
+					q, " will not be used")
+				WarningLogger.Println("Invalid data type used to invoke template")
+			}
+
 		} else {
-			attr["template"] = nil
+			attr["template"] = ""
 		}
 
 		//Serialise size and posXY if given
@@ -1116,10 +1150,44 @@ func GetOCLIAtrributes(path string, ent int, data map[string]interface{}) {
 
 		attr = data["attributes"].(map[string]interface{})
 
+		//Special routine to perform on device
+		//based on if the parent has a "slot" attribute
+
+		//First check if attr has only posU & sizeU
+		//reject if true
+		if len(attr) == 2 {
+			if _, ok := attr["sizeU"]; ok {
+				if _, ok := attr["slot"]; ok {
+					WarningLogger.Println("Invalid device syntax encountered")
+					println("Invalid syntax: If you have provided",
+						" a template, it was not found")
+					return
+				}
+			}
+		}
+		if parAttrsInf, ok := parent["attributes"]; ok {
+			if parAttrs, ok := parAttrsInf.(map[string]interface{}); ok {
+				if _, ok := parAttrs["slot"]; ok {
+					if v, ok := attr["posU/slot"]; ok {
+						delete(attr, "posU/slot")
+						attr["posU"] = v
+					}
+				}
+			}
+		}
+
+		//If slot not found
+		if x, ok := attr["posU/slot"]; ok {
+			delete(attr, "posU/slot")
+			attr["slot"] = x
+		}
+		//End of device special routine
+
 		baseAttrs := map[string]interface{}{
 			"orientation": "front",
-			"size":        0,
-			"height":      0,
+			"size":        5,
+			"sizeUnit":    "cm",
+			"height":      5,
 			"heightUnit":  "mm",
 		}
 
@@ -1128,15 +1196,34 @@ func GetOCLIAtrributes(path string, ent int, data map[string]interface{}) {
 		//If user provided templates, get the JSON
 		//and parse into templates
 		if q, ok := attr["template"]; ok {
-			tmpl = State.TemplateTable[q.(string)]
-			MergeMaps(attr, tmpl, true)
+			if qS, ok := q.(string); ok {
+				if tmpl, ok := State.TemplateTable[qS]; ok {
+					MergeMaps(attr, tmpl, true)
+
+				} else {
+					attr["template"] = ""
+					WarningLogger.Println("Invoked template not found")
+					println("Warning: template was not found.",
+						"it will not be used")
+
+				}
+
+			} else {
+				attr["template"] = ""
+				println("Warning: template must be a string that",
+					" refers to an existing imported template.",
+					q, " will not be used")
+				WarningLogger.Println("Invalid data type used to invoke template")
+			}
+
 		} else {
-			attr["template"] = nil
+			attr["template"] = ""
 		}
 
 		data["domain"] = domain
 		data["parentId"] = parent["id"]
 		data["attributes"] = attr
+		Disp(data)
 		PostObj(ent, "device", data)
 
 	case SEPARATOR, CORIDOR, GROUP:
