@@ -248,6 +248,13 @@ func ValidatePatch(ent int, t map[string]interface{}) (map[string]interface{}, b
 func ValidateEntity(entity int, t map[string]interface{}) (map[string]interface{}, bool) {
 	var objID primitive.ObjectID
 	var err error
+	//parentObj := nil
+	/*
+		TODO:
+		Need to capture device if it is a parent
+		and check that the device parent has a slot
+		attribute
+	*/
 	switch entity {
 	case TENANT, SITE, BLDG, ROOM, RACK, DEVICE, AC,
 		PWRPNL, SEPARATOR, CABINET, ROW,
@@ -490,6 +497,16 @@ func ValidateEntity(entity int, t map[string]interface{}) (map[string]interface{
 
 						if v["heightUnit"] == "" || v["heightUnit"] == nil {
 							return u.Message(false, "Device Height unit should be on the payload"), false
+						}
+
+						if side, ok := v["side"]; ok {
+							switch side {
+							case "front", "rear", "frontflipped", "rearflipped":
+							default:
+								msg := "The 'Side' value (if given) must be one of" +
+									"the given values: front, rear, frontflipped, rearflipped"
+								return u.Message(false, msg), false
+							}
 						}
 
 					}
