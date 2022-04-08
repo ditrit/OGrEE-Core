@@ -1,8 +1,10 @@
 package main
 
 import (
+	"bytes"
 	cmd "cli/controllers"
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"reflect"
 	"strconv"
@@ -39,6 +41,7 @@ const (
 
 type node interface {
 	execute() interface{}
+	getType() int
 }
 
 type array interface {
@@ -194,6 +197,7 @@ func (c *commonNode) execute() interface{} {
 			} else {
 				if c.args[2].(string) == "recursive" {
 					f(c.args[0].(string), "", "", c.args[1].(map[string]interface{}))
+
 				}
 
 			}
@@ -226,6 +230,11 @@ func (c *commonNode) execute() interface{} {
 				}
 
 			} else {
+				if rawArr, ok := c.args[1].(map[string]interface{}); ok {
+					if areas, ok := rawArr["areas"].(map[string]interface{}); ok {
+						c.args[1] = parseAreas(areas)
+					}
+				}
 				v = f(c.args[0].(string), "", "", c.args[1].(map[string]interface{}), false)
 			}
 			return &jsonObjNode{COMMON, v}
@@ -371,6 +380,10 @@ func (c *commonNode) execute() interface{} {
 	return nil
 }
 
+func (c *commonNode) getType() int {
+	return c.nodeType
+}
+
 type arrNode struct {
 	nodeType int
 	len      int
@@ -385,6 +398,10 @@ func (a *arrNode) getLength() int {
 	return a.len
 }
 
+func (a *arrNode) getType() int {
+	return a.nodeType
+}
+
 type objNdNode struct {
 	nodeType int
 	val      *cmd.Node
@@ -392,6 +409,10 @@ type objNdNode struct {
 
 func (n *objNdNode) execute() interface{} {
 	return n.val
+}
+
+func (n *objNdNode) getType() int {
+	return n.nodeType
 }
 
 type objNdArrNode struct {
@@ -408,6 +429,10 @@ func (o *objNdArrNode) getLength() int {
 	return o.len
 }
 
+func (o *objNdArrNode) getType() int {
+	return o.nodeType
+}
+
 type jsonObjNode struct {
 	nodeType int
 	val      map[string]interface{}
@@ -415,6 +440,10 @@ type jsonObjNode struct {
 
 func (j *jsonObjNode) execute() interface{} {
 	return j.val
+}
+
+func (j *jsonObjNode) getType() int {
+	return j.nodeType
 }
 
 type jsonObjArrNode struct {
@@ -431,6 +460,10 @@ func (j *jsonObjArrNode) getLength() int {
 	return j.len
 }
 
+func (j *jsonObjArrNode) getType() int {
+	return j.nodeType
+}
+
 type numNode struct {
 	nodeType int
 	val      int
@@ -438,6 +471,10 @@ type numNode struct {
 
 func (n *numNode) execute() interface{} {
 	return n.val
+}
+
+func (n *numNode) getType() int {
+	return n.nodeType
 }
 
 type floatNode struct {
@@ -449,6 +486,10 @@ func (f *floatNode) execute() interface{} {
 	return f.val
 }
 
+func (f *floatNode) getType() int {
+	return f.nodeType
+}
+
 type strNode struct {
 	nodeType int
 	val      string
@@ -456,6 +497,10 @@ type strNode struct {
 
 func (s *strNode) execute() interface{} {
 	return s.val
+}
+
+func (s *strNode) getType() int {
+	return s.nodeType
 }
 
 type strArrNode struct {
@@ -472,6 +517,10 @@ func (s *strArrNode) getLength() int {
 	return s.len
 }
 
+func (s *strArrNode) getType() int {
+	return s.nodeType
+}
+
 type boolNode struct {
 	nodeType int
 	val      bool
@@ -479,6 +528,10 @@ type boolNode struct {
 
 func (b *boolNode) execute() interface{} {
 	return b.val
+}
+
+func (b *boolNode) getType() int {
+	return b.nodeType
 }
 
 type boolOpNode struct {
@@ -499,11 +552,19 @@ func (b *boolOpNode) execute() interface{} {
 	return nil
 }
 
+func (b *boolOpNode) getType() int {
+	return b.nodeType
+}
+
 type arithNode struct {
 	nodeType int
 	op       interface{}
 	left     interface{}
 	right    interface{}
+}
+
+func (a *arithNode) getType() int {
+	return a.nodeType
 }
 
 func (a *arithNode) execute() interface{} {
@@ -641,6 +702,10 @@ type comparatorNode struct {
 	right    interface{}
 }
 
+func (c *comparatorNode) getType() int {
+	return c.nodeType
+}
+
 func (c *comparatorNode) execute() interface{} {
 	if op, ok := c.op.(string); ok {
 		switch op {
@@ -732,6 +797,10 @@ type symbolReferenceNode struct {
 	val      interface{}
 	offset   interface{} //Used to index into arrays and node types
 	key      interface{} //Used to index in []map[string] types
+}
+
+func (s *symbolReferenceNode) getType() int {
+	return s.nodeType
 }
 
 func (s *symbolReferenceNode) execute() interface{} {
@@ -863,6 +932,10 @@ type assignNode struct {
 	val      interface{}
 }
 
+func (a *assignNode) getType() int {
+	return a.nodeType
+}
+
 func (a *assignNode) execute() interface{} {
 	var idx int
 	var id string
@@ -976,6 +1049,10 @@ type ifNode struct {
 	elif       interface{}
 }
 
+func (i *ifNode) getType() int {
+	return i.nodeType
+}
+
 func (i *ifNode) execute() interface{} {
 	if c, ok := i.condition.(node).execute().(bool); ok {
 		if c == true {
@@ -1006,6 +1083,10 @@ type elifNode struct {
 	taken    interface{}
 }
 
+func (e *elifNode) getType() int {
+	return e.nodeType
+}
+
 func (e *elifNode) execute() interface{} {
 	if e.cond.(node).execute().(bool) == true {
 		e.taken.(node).execute()
@@ -1022,6 +1103,10 @@ type forNode struct {
 	body        interface{}
 }
 
+func (f *forNode) getType() int {
+	return f.nodeType
+}
+
 func (f *forNode) execute() interface{} {
 	f.init.(node).execute()
 	for ; f.condition.(node).execute().(bool); f.incrementor.(node).execute() {
@@ -1035,6 +1120,10 @@ type rangeNode struct {
 	init      interface{}
 	container interface{}
 	body      interface{}
+}
+
+func (r *rangeNode) getType() int {
+	return r.nodeType
 }
 
 func (r *rangeNode) execute() interface{} {
@@ -1080,6 +1169,10 @@ type whileNode struct {
 	body      interface{}
 }
 
+func (w *whileNode) getType() int {
+	return w.nodeType
+}
+
 func (w *whileNode) execute() interface{} {
 	if condNode, ok := w.condition.(node); ok {
 		if _, cok := condNode.execute().(bool); cok {
@@ -1097,6 +1190,10 @@ func (w *whileNode) execute() interface{} {
 type ast struct {
 	nodeType   int
 	statements []node
+}
+
+func (a *ast) getType() int {
+	return a.nodeType
 }
 
 func (a *ast) execute() interface{} {
@@ -1117,6 +1214,10 @@ func (a *ast) execute() interface{} {
 type funcNode struct {
 	nodeType int
 	block    interface{}
+}
+
+func (f *funcNode) getType() int {
+	return f.nodeType
 }
 
 func (f *funcNode) execute() interface{} {
@@ -1228,7 +1329,22 @@ func evalMapNodes(x map[string]interface{}) map[string]interface{} {
 	for i := range x {
 
 		if n, ok := x[i].(node); ok {
-			x[i] = n.(node).execute()
+			tmpVal := n.(node).execute()
+
+			//If the value is a raw array []map[int]interface{}
+			//we have to cast it to []interface{}
+			//this code is mainly used for when user specified
+			//an array type
+			if rawArr, ok := tmpVal.([]map[int]interface{}); ok {
+				val := []interface{}{}
+				for idx := range rawArr {
+					val = append(val, rawArr[idx][0].(node).execute())
+				}
+				x[i] = val
+			} else {
+				x[i] = tmpVal
+			}
+
 		}
 
 		//Recursively resolve values of map
@@ -1236,6 +1352,42 @@ func evalMapNodes(x map[string]interface{}) map[string]interface{} {
 			x[i] = evalMapNodes(sub)
 		}
 
+	}
+	return x
+}
+
+//Hack function for the [room]:areas=[r1,r2,r3,r4]@[t1,t2,t3,t4]
+//command
+func parseAreas(x map[string]interface{}) map[string]interface{} {
+	var reservedStr string
+	var techStr string
+	if reserved, ok := x["reserved"].([]map[int]interface{}); ok {
+		if tech, ok := x["technical"].([]map[int]interface{}); ok {
+			if len(reserved) == 4 && len(tech) == 4 {
+				r4 := bytes.NewBufferString("")
+				fmt.Fprintf(r4, "%v", reserved[3][0].(node).execute())
+				r3 := bytes.NewBufferString("")
+				fmt.Fprintf(r3, "%v", reserved[2][0].(node).execute())
+				r2 := bytes.NewBufferString("")
+				fmt.Fprintf(r2, "%v", reserved[1][0].(node).execute())
+				r1 := bytes.NewBufferString("")
+				fmt.Fprintf(r1, "%v", reserved[0][0].(node).execute())
+
+				t4 := bytes.NewBufferString("")
+				fmt.Fprintf(t4, "%v", tech[3][0].(node).execute())
+				t3 := bytes.NewBufferString("")
+				fmt.Fprintf(t3, "%v", tech[2][0].(node).execute())
+				t2 := bytes.NewBufferString("")
+				fmt.Fprintf(t2, "%v", tech[1][0].(node).execute())
+				t1 := bytes.NewBufferString("")
+				fmt.Fprintf(t1, "%v", tech[0][0].(node).execute())
+
+				reservedStr = "{\"left\":" + r4.String() + ",\"right\":" + r3.String() + ",\"top\":" + r1.String() + ",\"bottom\":" + r2.String() + "}"
+				techStr = "{\"left\":" + t4.String() + ",\"right\":" + t3.String() + ",\"top\":" + t1.String() + ",\"bottom\":" + t2.String() + "}"
+				x["reserved"] = reservedStr
+				x["technical"] = techStr
+			}
+		}
 	}
 	return x
 }

@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"bytes"
 	"cli/models"
 	"encoding/json"
 	"fmt"
@@ -1135,10 +1136,14 @@ func GetOCLIAtrributes(path string, ent int, data map[string]interface{}) {
 		//Serialise size and posXY if given
 		if _, ok := attr["size"].(string); ok {
 			attr["size"] = serialiseAttr(attr, "size")
+		} else {
+			attr["size"] = serialiseAttr2(attr, "size")
 		}
 
 		if _, ok := attr["posXY"].(string); ok {
 			attr["posXY"] = serialiseAttr(attr, "posXY")
+		} else {
+			attr["posXY"] = serialiseAttr2(attr, "posXY")
 		}
 
 		data["parentId"] = parent["id"]
@@ -1245,44 +1250,6 @@ func GetOCLIAtrributes(path string, ent int, data map[string]interface{}) {
 			PostObj(ent, "group", data)
 		}
 	}
-}
-
-//Serialising size & posXY is inefficient but
-//the team wants it for now
-//"size":"[25,29.4,0]" -> "size": "{\"x\":25,\"y\":29.4,\"z\":0}"
-func serialiseAttr(attr map[string]interface{}, want string) string {
-	var newSize string
-	if size, ok := attr[want].(string); ok {
-		left := strings.Index(size, "[")
-		right := strings.Index(size, "]")
-		coords := []string{"x", "y", "z"}
-
-		if left != -1 && right != -1 {
-			var length int
-			subStr := size[left+1 : right]
-			nums := strings.Split(subStr, ",")
-
-			if len(nums) == 3 && want == "size" {
-				length = 2
-			} else {
-				length = len(nums)
-			}
-
-			for idx := 0; idx < length; idx++ {
-				newSize += "\"" + coords[idx] + "\":" + nums[idx]
-
-				if idx < length-1 {
-					newSize += ","
-				}
-			}
-			newSize = "{" + newSize + "}"
-
-			if len(nums) == 3 && want == "size" {
-				attr["height"] = nums[2]
-			}
-		}
-	}
-	return newSize
 }
 
 //Used for Unity Client commands
@@ -1603,6 +1570,77 @@ func determineStrKey(x map[string]interface{}, possible []string) string {
 		}
 	}
 	return "" //The code should not reach this point!
+}
+
+//Serialising size & posXY is inefficient but
+//the team wants it for now
+//"size":"[25,29.4,0]" -> "size": "{\"x\":25,\"y\":29.4,\"z\":0}"
+func serialiseAttr(attr map[string]interface{}, want string) string {
+	var newSize string
+	if size, ok := attr[want].(string); ok {
+		left := strings.Index(size, "[")
+		right := strings.Index(size, "]")
+		coords := []string{"x", "y", "z"}
+
+		if left != -1 && right != -1 {
+			var length int
+			subStr := size[left+1 : right]
+			nums := strings.Split(subStr, ",")
+
+			if len(nums) == 3 && want == "size" {
+				length = 2
+			} else {
+				length = len(nums)
+			}
+
+			for idx := 0; idx < length; idx++ {
+				newSize += "\"" + coords[idx] + "\":" + nums[idx]
+
+				if idx < length-1 {
+					newSize += ","
+				}
+			}
+			newSize = "{" + newSize + "}"
+
+			if len(nums) == 3 && want == "size" {
+				attr["height"] = nums[2]
+			}
+		}
+	}
+	return newSize
+}
+
+//Same utility func as above but we have an arbitrary array
+//and want to cast it to -> "size": "{\"x\":25,\"y\":29.4,\"z\":0}"
+func serialiseAttr2(attr map[string]interface{}, want string) string {
+	var newSize string
+	if items, ok := attr[want].([]interface{}); ok {
+		coords := []string{"x", "y", "z"}
+		var length int
+
+		if len(items) == 3 && want == "size" {
+			length = 2
+		} else {
+			length = len(items)
+		}
+
+		for idx := 0; idx < length; idx++ {
+			r := bytes.NewBufferString("")
+			fmt.Fprintf(r, "%v ", items[idx])
+			//itemStr :=
+			newSize += "\"" + coords[idx] + "\":" + r.String()
+
+			if idx < length-1 {
+				newSize += ","
+			}
+		}
+		newSize = "{" + newSize + "}"
+
+		if len(items) == 3 && want == "size" {
+			attr["height"] = items[2]
+		}
+	}
+	return newSize
 }
 
 //This func is used for when the user wants to filter certain

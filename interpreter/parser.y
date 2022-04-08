@@ -396,6 +396,7 @@ factor: TOK_LPAREN EXPR TOK_RPAREN {$$=$2}
        |TOK_WORD {$$=&strNode{STR, $1}; dCatchPtr = $1; dCatchNodePtr=&strNode{STR, $1}}
        |TOK_STR {$$=&strNode{STR, $1}}
        |TOK_BOOL {var x bool;if $1=="false"{x = false}else{x=true};$$=&boolNode{BOOL, x}}
+       |TOK_LBLOCK WNARG TOK_RBLOCK {x:=retNodeArray($2);$$=&arrNode{ARRAY, len(x), x}}
        ;
 
 K: NT_CREATE     {if cmd.State.DebugLvl >= 3 {println("@State start");}}
@@ -610,7 +611,8 @@ OCDEL:  TOK_OCDEL P {$$=&commonNode{COMMON, cmd.DeleteObj, "DeleteObj", []interf
 ;
 
 OCUPDATE:  P TOK_COL TOK_WORD TOK_EQUAL EXPR {val := map[string]interface{}{$3:($5).(node).execute()}; $$=&commonNode{COMMON, cmd.UpdateObj, "UpdateObj", []interface{}{replaceOCLICurrPath($1), val}};if cmd.State.DebugLvl >= 3 {println("Attribute Acquired");}}
-           |P TOK_COL TOK_WORD TOK_EQUAL EXPR TOK_ATTRSPEC TOK_WORD {val := map[string]interface{}{$3:($5).(node).execute()}; $$=&commonNode{COMMON, cmd.RecursivePatch, "RecursiveUpdateObj", []interface{}{replaceOCLICurrPath($1), val, $7}};if cmd.State.DebugLvl >= 3 {println("Attribute Acquired");}}
+           |P TOK_COL TOK_WORD TOK_EQUAL EXPR TOK_ATTRSPEC EXPR {if ($7).(node).getType() == ARRAY {val := map[string]interface{}{$3 : map[string]interface{}{"reserved":($5).(node).execute(), "technical":($7).(node).execute()}}; $$=&commonNode{COMMON, cmd.UpdateObj, "UpdateObj", []interface{}{replaceOCLICurrPath($1), val}}} else {val := map[string]interface{}{$3:($5).(node).execute()}; $$=&commonNode{COMMON, cmd.RecursivePatch, "RecursiveUpdateObj", []interface{}{replaceOCLICurrPath($1), val, $7}};if cmd.State.DebugLvl >= 3 {println("Attribute Acquired");}}}
+           //|P TOK_COL TOK_WORD TOK_EQUAL EXPR TOK_ATTRSPEC EXPR {}
 ;
 
 OCGET: TOK_EQUAL P {$$=&commonNode{COMMON, cmd.GetObject, "GetObject", []interface{}{replaceOCLICurrPath($2)}}}
@@ -626,8 +628,8 @@ OCCHOOSE: TOK_EQUAL TOK_LBRAC GETOBJS TOK_RBRAC {$$=&commonNode{COMMON, cmd.SetC
 
 OCDOT:      //TOK_DOT TOK_VAR TOK_COL TOK_WORD TOK_EQUAL WORDORNUM {$$=&assignNode{ASSIGN, $4, dCatchNodePtr}}
             //|TOK_DOT TOK_VAR TOK_COL TOK_WORD TOK_EQUAL TOK_QUOT STRARG TOK_QUOT{$$=&assignNode{ASSIGN, $4, &strNode{STR, $7}}}
-            TOK_DOT TOK_VAR TOK_COL TOK_WORD TOK_EQUAL TOK_LPAREN WNARG TOK_RPAREN {$$=&assignNode{ASSIGN, $4, &arrNode{ARRAY, len($7),retNodeArray($7)}}}
-            |TOK_DOT TOK_VAR TOK_COL TOK_WORD TOK_EQUAL TOK_DEREF TOK_LPAREN K TOK_RPAREN {$$=&assignNode{ASSIGN, $4, ($8).(node).execute()}}
+            //TOK_DOT TOK_VAR TOK_COL TOK_WORD TOK_EQUAL TOK_LPAREN WNARG TOK_RPAREN {$$=&assignNode{ASSIGN, $4, &arrNode{ARRAY, len($7),retNodeArray($7)}}}
+            TOK_DOT TOK_VAR TOK_COL TOK_WORD TOK_EQUAL TOK_DEREF TOK_LPAREN K TOK_RPAREN {$$=&assignNode{ASSIGN, $4, ($8).(node).execute()}}
             |TOK_DOT TOK_VAR TOK_COL TOK_WORD TOK_EQUAL TOK_DEREF TOK_LPAREN Q  TOK_RPAREN {$$=&assignNode{ASSIGN, $4, ($8).(node).execute()}}
             |TOK_DOT TOK_VAR TOK_COL TOK_WORD TOK_EQUAL TOK_DEREF TOK_LPAREN TOK_PLUS OCCR  TOK_RPAREN {$$=&assignNode{ASSIGN, $4, ($9).(node).execute()}}
             |TOK_DOT TOK_VAR TOK_COL TOK_WORD TOK_EQUAL TOK_DEREF TOK_LPAREN OCDEL  TOK_RPAREN {$$=&assignNode{ASSIGN, $4, ($8).(node).execute()}}
