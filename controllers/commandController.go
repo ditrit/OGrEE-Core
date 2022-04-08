@@ -408,7 +408,7 @@ func UpdateObj(path, id, ent string, data map[string]interface{}, deleteAndPut b
 
 			} else {
 				message["type"] = "modify"
-				message["data"] = data["data"]
+				message["data"] = respJson["data"]
 			}
 
 			entStr := entities[:len(entities)-1]
