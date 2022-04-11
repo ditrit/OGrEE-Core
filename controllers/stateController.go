@@ -55,7 +55,6 @@ type ShellState struct {
 	DrawableJsons    map[string]map[string]interface{}
 	DebugLvl         int
 	LineNumber       int //Used exectuting scripts
-	TemplateTable    map[string]map[string]interface{}
 }
 
 type Node struct {
@@ -73,7 +72,6 @@ func InitState(debugLvl int) {
 	State.ClipBoard = nil
 	State.TreeHierarchy = &(Node{})
 	(*(State.TreeHierarchy)).Entity = -1
-	State.TemplateTable = map[string]map[string]interface{}{}
 	State.TreeHierarchy.PID = ""
 	State.CurrPath = "/Physical"
 	State.LineNumber = 0

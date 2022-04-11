@@ -1060,15 +1060,13 @@ func GetOCLIAtrributes(path string, ent int, data map[string]interface{}) {
 		//and parse into attributes
 		if q, ok := attr["template"]; ok {
 			if qS, ok := q.(string); ok {
-				if tmpl, ok := State.TemplateTable[qS]; ok {
+				if tmpl := fetchTemplate(qS, ROOM); tmpl != nil {
 					MergeMaps(attr, tmpl, true)
-
 				} else {
 					attr["template"] = ""
-					WarningLogger.Println("Invoked template not found")
 					println("Warning: template was not found.",
 						"it will not be used")
-
+					WarningLogger.Println("Invalid data type or incorrect name used to invoke template")
 				}
 
 			} else {
@@ -1114,14 +1112,13 @@ func GetOCLIAtrributes(path string, ent int, data map[string]interface{}) {
 		//and parse into templates
 		if q, ok := attr["template"]; ok {
 			if qS, ok := q.(string); ok {
-				if tmpl, ok := State.TemplateTable[qS]; ok {
+				if tmpl := fetchTemplate(qS, ROOM); tmpl != nil {
 					MergeMaps(attr, tmpl, true)
-
 				} else {
 					attr["template"] = ""
-					WarningLogger.Println("Invoked template not found")
 					println("Warning: template was not found.",
 						"it will not be used")
+					WarningLogger.Println("Invalid data type or incorrect name used to invoke template")
 				}
 
 			} else {
@@ -1205,15 +1202,13 @@ func GetOCLIAtrributes(path string, ent int, data map[string]interface{}) {
 		//and parse into templates
 		if q, ok := attr["template"]; ok {
 			if qS, ok := q.(string); ok {
-				if tmpl, ok := State.TemplateTable[qS]; ok {
+				if tmpl := fetchTemplate(qS, ROOM); tmpl != nil {
 					MergeMaps(attr, tmpl, true)
-
 				} else {
 					attr["template"] = ""
-					WarningLogger.Println("Invoked template not found")
 					println("Warning: template was not found.",
 						"it will not be used")
-
+					WarningLogger.Println("Invalid data type or incorrect name used to invoke template")
 				}
 
 			} else {
@@ -1465,50 +1460,26 @@ func LoadFile(path string) string {
 }
 
 func LoadTemplate(data map[string]interface{}, filePath string) {
-	if cat, ok := data["category"]; !ok {
-		ErrorLogger.Println("Received Invalid Template!")
-		fmt.Println("Error! Invalid Template")
+	var URL string
+	if _, ok := data["category"]; !ok {
+		//Room template
+		URL = State.APIURL + "/api/room_templates"
 	} else {
-		if category, ok := cat.(string); !ok {
-			ErrorLogger.Println("Category not a string Template!")
-			fmt.Println("Error! Category must be string in Template." +
-				"Please indicate object type as per OGrEE docs")
-
-		} else if EntityStrToInt(category) < 0 { //Category is not an entity
-			ErrorLogger.Println("Invalid Category in Template!")
-			fmt.Println("Error! Invalid Category in Template." +
-				"Please indicate object type as per OGrEE docs")
-
-		} else { //We have a valid category, so let's add it
-			//Retrieve Name from path and store it
-			//The code assumes that the file does not
-			//begin with a '.'
-			fileName := filepath.Base(filePath)
-
-			if fileName == "/" {
-				WarningLogger.Println("Template not found")
-				fmt.Println("Error! Template not found")
-				return
-			}
-
-			if idx := strings.Index(fileName, "."); idx > 0 {
-				fileName = fileName[:idx]
-			}
-
-			State.TemplateTable[fileName] = data
-
-			//Inform Unity Client
-			if IsInObjForUnity(category) == true {
-				InformUnity("POST", "load template", -1,
-					map[string]interface{}{"type": "load template", "data": data})
-			}
-
-			println("Template loaded")
-
-		}
-
+		//Obj template
+		URL = State.APIURL + "/api/obj_templates"
 	}
 
+	r, e := models.Send("POST", URL, GetKey(), data)
+	if e != nil {
+		ErrorLogger.Println(e.Error())
+		println("Error: ", e.Error())
+	}
+
+	if r.StatusCode == http.StatusCreated {
+		println("Template Loaded")
+	} else {
+		println("Error template wasn't loaded")
+	}
 }
 
 func SetClipBoard(x *[]string) []string {
@@ -1942,4 +1913,27 @@ func OnlineLevelResolver(path []string) []string {
 	}
 
 	return paths
+}
+
+//Helper function for GetOCLIAttr which retrieves
+//template from server if available, this func mainly helps
+//to keep code organised
+func fetchTemplate(name string, objType int) map[string]interface{} {
+	var URL string
+	if objType == ROOMTMPL {
+		URL = State.APIURL + "/api/room_templates/" + name
+	} else {
+		URL = State.APIURL + "/api/obj_templates/" + name
+	}
+	r, e := models.Send("GET", URL, GetKey(), nil)
+	res := ParseResponse(r, e, "fetch template")
+	if res != nil {
+		if tmplInf, ok := res["data"]; ok {
+			if tmpl, ok := tmplInf.(map[string]interface{}); ok {
+				return tmpl
+			}
+		}
+	}
+
+	return nil
 }
