@@ -1000,10 +1000,6 @@ func GetOCLIAtrributes(path string, ent int, data map[string]interface{}) {
 	case SITE:
 
 		//Default values
-		data["attributes"].(map[string]interface{})["usableColor"] = nil
-		data["attributes"].(map[string]interface{})["reservedColor"] = nil
-		data["attributes"].(map[string]interface{})["technicalColor"] = nil
-		data["attributes"].(map[string]interface{})["template"] = ""
 		data["domain"] = domain
 		data["parentId"] = parent["id"]
 
