@@ -692,6 +692,7 @@ func (a *arithNode) execute() interface{} {
 			}
 		}
 	}
+	cmd.WarningLogger.Println("Invalid arithmetic operation attempted")
 	return nil
 }
 
@@ -977,7 +978,17 @@ func (a *assignNode) execute() interface{} {
 		if _, e := dynamicSymbolTable[idx].([]map[int]interface{}); e == true {
 			//Modifying contents are user's desired Array
 			arrayIdx := a.arg.(*symbolReferenceNode).offset.(node).execute().(int)
-			dynamicSymbolTable[idx].([]map[int]interface{})[arrayIdx][0] = a.val
+
+			//Bug fix for: $x[0] = $x[0] + 5
+			if arithNdInf, ok := a.val.(node); ok {
+				if arithNdInf.getType() == ARITHMETIC {
+					dynamicSymbolTable[idx].([]map[int]interface{})[arrayIdx][0] = resolveArithNode(v)
+				} else {
+					dynamicSymbolTable[idx].([]map[int]interface{})[arrayIdx][0] = a.val
+				}
+			} else {
+				dynamicSymbolTable[idx].([]map[int]interface{})[arrayIdx][0] = a.val
+			}
 
 		} else if mp, e := dynamicSymbolTable[idx].(map[string]interface{}); e == true {
 			locIdx := a.arg.(*symbolReferenceNode).offset.(node).execute()
@@ -1285,7 +1296,22 @@ func checkTypeAreNumeric(x, y interface{}) bool {
 		yOK = false
 	}
 
-	return xOK == yOK
+	return xOK && yOK
+}
+
+//Generate nodes from the result of arithmetic node execution.
+//This helps to maintain the definition of the array
+//type in that all of its elements are nodes
+func resolveArithNode(x interface{}) node {
+	switch x.(type) {
+	case int:
+		return &numNode{NUM, x.(int)}
+	case float64:
+		return &floatNode{FLOAT, x.(float64)}
+	case string:
+		return &strNode{STR, x.(string)}
+	}
+	return nil
 }
 
 //Checks the map and sees if it is an object type

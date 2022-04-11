@@ -2673,7 +2673,12 @@ yynewstate:
 		}
 	case 220:
 		{
-			yyVAL.node = &assignNode{ASSIGN, yyS[yypt-2].s, (yyS[yypt-0].node).(node).execute()}
+			val := (yyS[yypt-0].node).(node).execute()
+			if (yyS[yypt-0].node).(node).getType() == ARITHMETIC && val == nil {
+				yyVAL.node = nil
+			} else {
+				yyVAL.node = &assignNode{ASSIGN, yyS[yypt-2].s, val}
+			}
 		}
 	case 221:
 		{

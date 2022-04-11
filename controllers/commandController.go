@@ -1023,7 +1023,10 @@ func GetOCLIAtrributes(path string, ent int, data map[string]interface{}) {
 					res += k + strconv.FormatFloat(v.(float64), 'E', -1, 64) + ","
 				}
 			}
-			attr["size"] = res[:len(res)-1]
+
+			if len(res) > 0 {
+				attr["size"] = res[:len(res)-1]
+			}
 
 		} else if _, ok := attr["size"].(string); ok {
 			attr["size"] = serialiseAttr(attr, "size")
