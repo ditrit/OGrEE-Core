@@ -2,7 +2,7 @@
 # Dockerfile for the CLI
 #
 #LABEL author="Ziad Khalaf"
-FROM python:alpine3.15
+FROM python:alpine3.15 AS builder
 USER root
 RUN apk add --no-cache git make musl-dev go bash
 
@@ -29,9 +29,9 @@ RUN go get -u github.com/blynn/nex
 RUN make
 
 
-#WORKDIR $GOPATH
-
-#CMD ["make"]
-
-#RUN cd /home && go build main.go 
+#Final output image
+FROM alpine:latest
+WORKDIR /home
+ADD . /home/
+COPY --from=builder /home/main /home/
 CMD /home/main
