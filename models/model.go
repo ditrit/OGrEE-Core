@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	u "p3/utils"
+	"time"
 
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
@@ -606,6 +607,10 @@ func CreateEntity(entity int, t map[string]interface{}) (map[string]interface{},
 		return resp, "validate"
 	}
 
+	//Set timestamp
+	t["createdDate"] = primitive.NewDateTimeFromTime(time.Now())
+	t["lastUpdated"] = t["createdDate"]
+
 	ctx, cancel := u.Connect()
 	entStr := u.EntityToString(entity)
 	res, e := GetDB().Collection(entStr).InsertOne(ctx, t)
@@ -745,6 +750,16 @@ func UpdateEntity(ent string, req bson.M, t *map[string]interface{}, isPatch boo
 	var e *mongo.SingleResult
 	updatedDoc := bson.M{}
 	retDoc := options.ReturnDocument(options.After)
+
+	//Update timestamp requires first obj retrieval
+	//there isn't anyway for mongoDB to make a field
+	//immutable in a document
+	oldObj, e1 := GetEntity(req, ent)
+	if e1 != "" {
+		return u.Message(false, "Error: "+e1), e1
+	}
+	(*t)["lastUpdated"] = primitive.NewDateTimeFromTime(time.Now())
+	(*t)["createdDate"] = oldObj["createdDate"]
 
 	ctx, cancel := u.Connect()
 	if isPatch == true {
