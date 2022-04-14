@@ -1007,29 +1007,17 @@ func GetOCLIAtrributes(path string, ent int, data map[string]interface{}) {
 	case BLDG:
 		attr = data["attributes"].(map[string]interface{})
 
-		//User provided x,y,z coordinates which must be
-		//formatted into a string (as per client specifications)
-		if arr, ok := attr["size"].(map[string]interface{}); ok {
-			res := ""
-			for k, v := range arr {
-				switch v.(type) {
-				case int:
-					res += k + ":" + strconv.Itoa(v.(int)) + ","
-				case float64:
-					res += k + strconv.FormatFloat(v.(float64), 'E', -1, 64) + ","
-				}
-			}
-
-			if len(res) > 0 {
-				attr["size"] = res[:len(res)-1]
-			}
-
-		} else if _, ok := attr["size"].(string); ok {
+		//Serialise size and posXY if given
+		if _, ok := attr["size"].(string); ok {
 			attr["size"] = serialiseAttr(attr, "size")
+		} else {
+			attr["size"] = serialiseAttr2(attr, "size")
 		}
 
 		if _, ok := attr["posXY"].(string); ok {
 			attr["posXY"] = serialiseAttr(attr, "posXY")
+		} else {
+			attr["posXY"] = serialiseAttr2(attr, "posXY")
 		}
 
 		attr["posXYUnit"] = "m"
@@ -1171,7 +1159,7 @@ func GetOCLIAtrributes(path string, ent int, data map[string]interface{}) {
 				if _, ok := parAttrs["slot"]; ok {
 					if v, ok := attr["posU/slot"]; ok {
 						delete(attr, "posU/slot")
-						attr["posU"] = v
+						attr["slot"] = v
 					}
 				}
 			}
@@ -1180,7 +1168,7 @@ func GetOCLIAtrributes(path string, ent int, data map[string]interface{}) {
 		//If slot not found
 		if x, ok := attr["posU/slot"]; ok {
 			delete(attr, "posU/slot")
-			attr["slot"] = x
+			attr["posU"] = x
 		}
 		//End of device special routine
 
