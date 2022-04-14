@@ -124,6 +124,11 @@ func viewJson(r *http.Request) {
 	}
 }
 
+func Disp(x map[string]interface{}) {
+	jx, _ := json.Marshal(x)
+	println("JSON: ", string(jx))
+}
+
 //'Flattens' the map[string]interface{}
 //for PATCH requests
 func Flatten(prefix string, src map[string]interface{}, dest map[string]interface{}) {

@@ -18,7 +18,7 @@ pipeline {
                 sh 'docker rmi $(docker images --filter "dangling=true" \
                 -q --no-trunc) || true'
 
-                sh 'docker build -t testingalpine:dockerfile .'
+                sh 'DOCKER_BUILDKIT=1 docker build -t testingalpine:dockerfile .'
                 //sh 'docker run testingalpine:dockerfile sh -c \
                 //"cd p3 && go test -v ./..."'
 
@@ -141,7 +141,7 @@ pipeline {
                 sh 'docker rmi $(docker images --filter "dangling=true" \
                 -q --no-trunc) || true'
 
-                sh 'docker build -t testingalpine:dockerfile .'
+                sh 'DOCKER_BUILDKIT=1 docker build -t testingalpine:dockerfile .'
                 sh 'docker stop lapd || true'
                 sh 'fuser -k 27020/tcp || true'
                 sh 'sudo fuser -k 3001/tcp || true'
