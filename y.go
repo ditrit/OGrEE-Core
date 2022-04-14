@@ -2196,11 +2196,11 @@ yynewstate:
 		}
 	case 110:
 		{
-			yyVAL.s = resolveReference(yyS[yypt-2].s) + "/" + yyS[yypt-1].s
+			yyVAL.s = resolveReference(yyS[yypt-2].s) + yyS[yypt-0].s
 		}
 	case 111:
 		{
-			yyVAL.s = resolveReference(yyS[yypt-5].s) + "/" + yyS[yypt-4].s + yyS[yypt-0].s
+			yyVAL.s = resolveReference(yyS[yypt-5].s) + yyS[yypt-3].s + "/" + yyS[yypt-0].s
 		}
 	case 112:
 		{

@@ -1035,7 +1035,7 @@ func GetOCLIAtrributes(path string, ent int, data map[string]interface{}) {
 		baseAttrs := map[string]interface{}{
 			"orientation": "+N+E", "floorUnit": "t",
 			"posXYUnit": "m", "sizeUnit": "m",
-			"height":     5,
+			"height":     "5",
 			"heightUnit": "m"}
 
 		MergeMaps(attr, baseAttrs, false)
@@ -1068,10 +1068,14 @@ func GetOCLIAtrributes(path string, ent int, data map[string]interface{}) {
 		//Serialise size and posXY if given
 		if _, ok := attr["size"].(string); ok {
 			attr["size"] = serialiseAttr(attr, "size")
+		} else {
+			attr["size"] = serialiseAttr2(attr, "size")
 		}
 
 		if _, ok := attr["posXY"].(string); ok {
 			attr["posXY"] = serialiseAttr(attr, "posXY")
+		} else {
+			attr["posXY"] = serialiseAttr2(attr, "posXY")
 		}
 
 		data["parentId"] = parent["id"]
@@ -1084,7 +1088,7 @@ func GetOCLIAtrributes(path string, ent int, data map[string]interface{}) {
 
 		baseAttrs := map[string]interface{}{
 			"sizeUnit":    "cm",
-			"height":      5,
+			"height":      "5",
 			"heightUnit":  "U",
 			"posXYUnit":   "t",
 			"orientation": "front",
@@ -1143,9 +1147,16 @@ func GetOCLIAtrributes(path string, ent int, data map[string]interface{}) {
 		//based on if the parent has a "slot" attribute
 
 		//First check if attr has only posU & sizeU
-		//reject if true
+		//reject if true while also converting sizeU to string if numeric
 		if len(attr) == 2 {
-			if _, ok := attr["sizeU"]; ok {
+			if sizeU, ok := attr["sizeU"]; ok {
+				//Convert block
+				if _, ok := sizeU.(int); ok {
+					attr["sizeU"] = strconv.Itoa(sizeU.(int))
+				} else if _, ok := sizeU.(float64); ok {
+					attr["sizeU"] = strconv.FormatFloat(sizeU.(float64), 'G', -1, 64)
+				}
+				//End of convert block
 				if _, ok := attr["slot"]; ok {
 					WarningLogger.Println("Invalid device syntax encountered")
 					println("Invalid syntax: If you have provided",
@@ -1168,15 +1179,22 @@ func GetOCLIAtrributes(path string, ent int, data map[string]interface{}) {
 		//If slot not found
 		if x, ok := attr["posU/slot"]; ok {
 			delete(attr, "posU/slot")
+			//Convert posU to string if numeric
+			if _, ok := x.(int); ok {
+				x = strconv.Itoa(x.(int))
+			} else if _, ok := x.(float64); ok {
+				x = strconv.FormatFloat(x.(float64), 'G', -1, 64)
+			}
 			attr["posU"] = x
+			attr["slot"] = ""
 		}
 		//End of device special routine
 
 		baseAttrs := map[string]interface{}{
 			"orientation": "front",
-			"size":        5,
+			"size":        "5",
 			"sizeUnit":    "cm",
-			"height":      5,
+			"height":      "5",
 			"heightUnit":  "mm",
 		}
 
@@ -1210,7 +1228,6 @@ func GetOCLIAtrributes(path string, ent int, data map[string]interface{}) {
 		data["domain"] = domain
 		data["parentId"] = parent["id"]
 		data["attributes"] = attr
-		Disp(data)
 		PostObj(ent, "device", data)
 
 	case SEPARATOR, CORIDOR, GROUP:
@@ -1595,6 +1612,11 @@ func serialiseAttr2(attr map[string]interface{}, want string) string {
 		newSize = "{" + newSize + "}"
 
 		if len(items) == 3 && want == "size" {
+			if _, ok := items[2].(int); ok {
+				items[2] = strconv.Itoa(items[2].(int))
+			} else if _, ok := items[2].(float64); ok {
+				items[2] = strconv.FormatFloat(items[2].(float64), 'G', -1, 64)
+			}
 			attr["height"] = items[2]
 		}
 	}

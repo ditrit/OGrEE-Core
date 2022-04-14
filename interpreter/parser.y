@@ -480,8 +480,8 @@ P1:    TOK_WORD TOK_SLASH P1 {$$=$1+"/"+$3}
        | TOK_OCDEL {$$="-"}
        | TOK_DEREF TOK_WORD {$$= resolveReference($2)}
        | TOK_DEREF TOK_WORD TOK_PLUS TOK_SLASH P1  {$$=resolveReference($2)+"/"+$5}
-       | TOK_DEREF TOK_WORD TOK_PLUS TOK_STR {$$=resolveReference($2)+"/"+$3}
-       | TOK_DEREF TOK_WORD TOK_PLUS TOK_STR TOK_PLUS TOK_SLASH P1 {$$=resolveReference($2)+"/"+$3+$7}
+       | TOK_DEREF TOK_WORD TOK_PLUS TOK_STR {$$=resolveReference($2)+$4}
+       | TOK_DEREF TOK_WORD TOK_PLUS TOK_STR TOK_PLUS TOK_SLASH P1 {$$=resolveReference($2)+$4+"/"+$7}
        | {$$=""}
 ;
 
