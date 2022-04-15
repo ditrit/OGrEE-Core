@@ -1171,10 +1171,11 @@ func GetOCLIAtrributes(path string, ent int, data map[string]interface{}) {
 				//And Set height
 				if _, ok := sizeU.(int); ok {
 					attr["sizeU"] = strconv.Itoa(sizeU.(int))
-					attr["height"] = float64(sizeU.(int)) * 44.5
+					attr["height"] = strconv.FormatFloat(
+						(float64(sizeU.(int)) * 44.5), 'G', -1, 64)
 				} else if _, ok := sizeU.(float64); ok {
 					attr["sizeU"] = strconv.FormatFloat(sizeU.(float64), 'G', -1, 64)
-					attr["height"] = sizeU.(float64) * 44.5
+					attr["height"] = strconv.FormatFloat(sizeU.(float64)*44.5, 'G', -1, 64)
 				}
 				//End of convert block
 				if _, ok := attr["slot"]; ok {
