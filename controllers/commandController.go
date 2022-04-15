@@ -1151,10 +1151,13 @@ func GetOCLIAtrributes(path string, ent int, data map[string]interface{}) {
 		if len(attr) == 2 {
 			if sizeU, ok := attr["sizeU"]; ok {
 				//Convert block
+				//And Set height
 				if _, ok := sizeU.(int); ok {
 					attr["sizeU"] = strconv.Itoa(sizeU.(int))
+					attr["height"] = float64(sizeU.(int)) * 44.5
 				} else if _, ok := sizeU.(float64); ok {
 					attr["sizeU"] = strconv.FormatFloat(sizeU.(float64), 'G', -1, 64)
+					attr["height"] = sizeU.(float64) * 44.5
 				}
 				//End of convert block
 				if _, ok := attr["slot"]; ok {
@@ -1165,7 +1168,7 @@ func GetOCLIAtrributes(path string, ent int, data map[string]interface{}) {
 				}
 			}
 		}
-		if parAttrsInf, ok := parent["attributes"]; ok {
+		/*if parAttrsInf, ok := parent["attributes"]; ok {
 			if parAttrs, ok := parAttrsInf.(map[string]interface{}); ok {
 				if _, ok := parAttrs["slot"]; ok {
 					if v, ok := attr["posU/slot"]; ok {
@@ -1174,26 +1177,104 @@ func GetOCLIAtrributes(path string, ent int, data map[string]interface{}) {
 					}
 				}
 			}
-		}
+		}*/
 
 		//If slot not found
 		if x, ok := attr["posU/slot"]; ok {
 			delete(attr, "posU/slot")
 			//Convert posU to string if numeric
-			if _, ok := x.(int); ok {
-				x = strconv.Itoa(x.(int))
-			} else if _, ok := x.(float64); ok {
+			if _, ok := x.(float64); ok {
 				x = strconv.FormatFloat(x.(float64), 'G', -1, 64)
+				attr["posU"] = x
+				attr["slot"] = ""
+			} else {
+				if _, ok := x.(int); ok {
+					x = strconv.Itoa(x.(int))
+				}
+				attr["slot"] = x
 			}
-			attr["posU"] = x
-			attr["slot"] = ""
+
 		}
+
+		if parAttr, ok := parent["attributes"].(map[string]interface{}); ok {
+			if rackSizeInf, ok := parAttr["size"]; ok {
+				values := map[string]interface{}{}
+				/*if rackSize, ok := rackSizeInf.(float64); ok {
+					println("DEBUG FLOAT size")
+					attr["height"] = rackSize / 10
+				} else if rackSize, ok := rackSizeInf.(int); ok {
+					println("DEBUG INT size")
+					attr["height"] = rackSize / 10
+				} else if rackSizeComplex, ok := rackSizeInf.(string); ok {
+					println("DEBUG got here", rackSizeComplex)
+					xIdx := strings.Index(rackSizeComplex, "\"x\":")
+					xEnd := strings.Index(rackSizeComplex, ",")
+					yIdx := strings.Index(rackSizeComplex, "\"y\":")
+					yEnd := strings.Index(rackSizeComplex, "}")
+					if xIdx > 0 && yIdx > 0 && xEnd > 0 && yEnd > 0 {
+						println("DEBUG Glory")
+						xStr := rackSizeComplex[xIdx+4 : xEnd]
+						yStr := rackSizeComplex[yIdx+4 : yEnd]
+						if x, ok := strconv.Atoi(xStr); ok == nil {
+							attr["sizeX"] = x / 10
+							xStr = strconv.Itoa(x / 10)
+						}
+						if x, ok := strconv.ParseFloat(xStr, 64); ok == nil {
+							attr["sizeX"] = x / 10.0
+							xStr = strconv.FormatFloat(x/10.0, 'G', -1, 64)
+						}
+
+						if y, ok := strconv.Atoi(yStr); ok == nil {
+							attr["sizeY"] = y / 10
+							yStr = strconv.Itoa(y / 10)
+						}
+						if y, ok := strconv.ParseFloat(yStr, 64); ok == nil {
+							attr["sizeY"] = y / 10.0
+							yStr = strconv.FormatFloat(y/10.0, 'G', -1, 64)
+						}
+						println("DEBUG results")
+
+						if _, ok := attr["sizeX"]; ok {
+							if _, ok := attr["sizeY"]; ok {
+								//"{\"x\":60.0,\"y\":120.0}"
+								attr["size"] = "{\"x:\"" + xStr + ",\"y\":" + yStr + "}"
+							}
+						}
+					}
+				}*/
+				if rackSizeComplex, ok := rackSizeInf.(string); ok {
+					q := json.NewDecoder(strings.NewReader(rackSizeComplex))
+					q.Decode(&values)
+					if determineStrKey(values, []string{"x"}) == "x" &&
+						determineStrKey(values, []string{"y"}) == "y" {
+						if _, ok := values["x"].(int); ok {
+							values["x"] = values["x"].(int) / 10
+
+						} else if _, ok := values["x"].(float64); ok {
+							values["x"] = values["x"].(float64) / 10.0
+						}
+
+						if _, ok := values["y"].(int); ok {
+							values["y"] = values["y"].(int) / 10
+
+						} else if _, ok := values["y"].(float64); ok {
+							values["y"] = values["y"].(float64) / 10.0
+						}
+						newValues, _ := json.Marshal(values)
+						attr["size"] = string(newValues)
+
+					}
+				}
+
+			}
+		}
+
 		//End of device special routine
 
 		baseAttrs := map[string]interface{}{
 			"orientation": "front",
-			"size":        "5",
-			"sizeUnit":    "cm",
+			"size":        "{\"x\":5,\"y\":5}",
+			"sizeUnit":    "mm",
 			"height":      "5",
 			"heightUnit":  "mm",
 		}
