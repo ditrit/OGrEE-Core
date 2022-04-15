@@ -89,6 +89,7 @@
 /lscorridor/ {  printToks("TOK_LSCORRIDOR"); return TOK_LSCORRIDOR}
 /tree/ { printToks("TOK_TREE"); return TOK_TREE}
 /lsog/ { printToks("TOK_LSOG"); return TOK_LSOG}
+/env/ { printToks("TOK_ENV"); return TOK_ENV}
 /cd/ { printToks("TOK_CD");return TOK_CD}
 /pwd/ { printToks("TOK_PWD");return TOK_PWD}
 /clear/ { printToks("TOK_CLR");return TOK_CLR}

@@ -219,7 +219,7 @@ func checkIfTemplate(x interface{}) bool {
        TOK_MOD
        TOK_UNSET TOK_ELIF TOK_DO TOK_LEN
        TOK_USE_JSON TOK_PARTIAL
-       TOK_CAM TOK_UI TOK_HIERARCH TOK_DRAW
+       TOK_CAM TOK_UI TOK_HIERARCH TOK_DRAW TOK_ENV
        
 %type <s> F E P P1 WORDORNUM CDORFG 
 %type <arr> WNARG NODEGETTER NODEACC
@@ -523,6 +523,7 @@ BASH:  TOK_CLR {$$=&commonNode{COMMON, cmd.Clear, "CLR", nil}}
        | TOK_GREP {$$=&commonNode{COMMON, nil, "Grep", nil}}
        | TOK_PRNT NODEGETTER {$$=&commonNode{COMMON, cmd.Print, "Print", $2}}
        | TOK_LSOG {$$=&commonNode{COMMON, cmd.LSOG, "LSOG", nil}}
+       | TOK_ENV {$$=&commonNode{COMMON, cmd.Env, "Env", nil}}
        | TOK_PWD {$$=&commonNode{COMMON, cmd.PWD, "PWD", nil}}
        | TOK_EXIT {$$=&commonNode{COMMON, cmd.Exit, "Exit", nil}}
        | TOK_DOC TOK_CLR {$$=&commonNode{COMMON, cmd.Help, "Help", []interface{}{"clear"}}}
@@ -547,6 +548,7 @@ BASH:  TOK_CLR {$$=&commonNode{COMMON, cmd.Clear, "CLR", nil}}
        | TOK_DOC TOK_SELECT {$$=&commonNode{COMMON, cmd.Help, "Help", []interface{}{"select"}}}
        | TOK_DOC TOK_CMDS {$$=&commonNode{COMMON, cmd.Help, "Help", []interface{}{"cmds"}}}
        | TOK_DOC TOK_LSOG {$$=&commonNode{COMMON, cmd.Help, "Help", []interface{}{"lsog"}}}
+       | TOK_DOC TOK_ENV {$$=&commonNode{COMMON, cmd.Help, "Help", []interface{}{"env"}}}
        | TOK_DOC TOK_LSTEN {$$=&commonNode{COMMON, cmd.Help, "Help", []interface{}{"lsten"}}}
        | TOK_DOC TOK_LSSITE {$$=&commonNode{COMMON, cmd.Help, "Help", []interface{}{"lssite"}}} 
        | TOK_DOC TOK_LSBLDG {$$=&commonNode{COMMON, cmd.Help, "Help", []interface{}{"lsbldg"}}}

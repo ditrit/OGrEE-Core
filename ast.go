@@ -268,7 +268,7 @@ func (c *commonNode) execute() interface{} {
 			f(c.args[0].(string), c.args[1].(int))
 		}
 
-	case "LSOG", "Exit", "CLR":
+	case "LSOG", "Exit", "CLR", "Env":
 		if f, ok := c.fun.(func()); ok {
 			f()
 		}

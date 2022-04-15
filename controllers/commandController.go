@@ -469,6 +469,23 @@ func LSOG() {
 	fmt.Println("HISTORY FILE PATH:", ".resources/.history")
 }
 
+//Displays environment variable values
+//to user
+func Env() {
+	fmt.Println("Unity: ", State.UnityClientAvail)
+	fmt.Println("Filter: ", State.FilterDisplay)
+	fmt.Println()
+	fmt.Println("Objects Unity shall be informed of upon update:")
+	for _, k := range State.ObjsForUnity {
+		fmt.Println(EntityToString(k))
+	}
+	fmt.Println()
+	fmt.Println("Objects Unity shall draw:")
+	for _, k := range State.DrawableObjs {
+		fmt.Println(EntityToString(k))
+	}
+}
+
 func LSOBJECT(x string, entity int) []map[string]interface{} {
 	obj, path := GetObject(x, true)
 	if obj == nil {
@@ -775,7 +792,7 @@ func Help(entry string) {
 	var path string
 	switch entry {
 	case "ls", "pwd", "print", "cd", "tree", "create", "gt", "clear",
-		"update", "delete", "lsog", "grep", "for", "while", "if",
+		"update", "delete", "lsog", "grep", "for", "while", "if", "env",
 		"cmds", "var", "unset", "select", "camera", "ui", "hc", "drawable":
 		path = "./other/man/" + entry + ".md"
 
@@ -1187,10 +1204,11 @@ func GetOCLIAtrributes(path string, ent int, data map[string]interface{}) {
 				x = strconv.FormatFloat(x.(float64), 'G', -1, 64)
 				attr["posU"] = x
 				attr["slot"] = ""
+			} else if _, ok := x.(int); ok {
+				x = strconv.Itoa(x.(int))
+				attr["posU"] = x
+				attr["slot"] = ""
 			} else {
-				if _, ok := x.(int); ok {
-					x = strconv.Itoa(x.(int))
-				}
 				attr["slot"] = x
 			}
 

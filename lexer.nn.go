@@ -7382,6 +7382,54 @@ var dfas = []dfa{
 		},
 	}, []int{ /* Start-of-input transitions */ -1, -1, -1, -1, -1}, []int{ /* End-of-input transitions */ -1, -1, -1, -1, -1}, nil},
 
+	// env
+	{[]bool{false, false, false, true}, []func(rune) int{ // Transitions
+		func(r rune) int {
+			switch r {
+			case 101:
+				return 1
+			case 110:
+				return -1
+			case 118:
+				return -1
+			}
+			return -1
+		},
+		func(r rune) int {
+			switch r {
+			case 101:
+				return -1
+			case 110:
+				return 2
+			case 118:
+				return -1
+			}
+			return -1
+		},
+		func(r rune) int {
+			switch r {
+			case 101:
+				return -1
+			case 110:
+				return -1
+			case 118:
+				return 3
+			}
+			return -1
+		},
+		func(r rune) int {
+			switch r {
+			case 101:
+				return -1
+			case 110:
+				return -1
+			case 118:
+				return -1
+			}
+			return -1
+		},
+	}, []int{ /* Start-of-input transitions */ -1, -1, -1, -1}, []int{ /* End-of-input transitions */ -1, -1, -1, -1}, nil},
+
 	// cd
 	{[]bool{false, false, true}, []func(rune) int{ // Transitions
 		func(r rune) int {
@@ -8628,66 +8676,71 @@ OUTER0:
 			}
 		case 85:
 			{
+				printToks("TOK_ENV")
+				return TOK_ENV
+			}
+		case 86:
+			{
 				printToks("TOK_CD")
 				return TOK_CD
 			}
-		case 86:
+		case 87:
 			{
 				printToks("TOK_PWD")
 				return TOK_PWD
 			}
-		case 87:
+		case 88:
 			{
 				printToks("TOK_CLR")
 				return TOK_CLR
 			}
-		case 88:
+		case 89:
 			{
 				printToks("TOK_GREP")
 				return TOK_GREP
 			}
-		case 89:
+		case 90:
 			{
 				printToks("TOK_LS")
 				return TOK_LS
 			}
-		case 90:
+		case 91:
 			{
 				printToks("TOK_EXIT")
 				return TOK_EXIT
 			}
-		case 91:
+		case 92:
 			{
 				printToks("TOK_LEN")
 				return TOK_LEN
 			}
-		case 92:
+		case 93:
 			{
 				printToks("TOK_EQUAL")
 				return TOK_EQUAL
 			}
-		case 93:
+		case 94:
 			{
 				printToks("TOK_SLASH")
 				return TOK_SLASH
 			}
-		case 94:
+		case 95:
 			{
 				printToks("TOK_DOC")
 				return TOK_DOC
 			}
-		case 95:
+		case 96:
 			{
 				printToks("TOK_DRAW")
 				return TOK_DRAW
 			}
-		case 96:
+		case 97:
 			{
 				printToks("TOK_STR")
 				lval.s = yylex.Text()[1 : len(yylex.Text())-1]
 				return TOK_STR
 			}
-		case 97:
+		case 98:
 			{
 				printToks("TOK_WORD")
 				lval.s = yylex.Text()
