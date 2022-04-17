@@ -89,18 +89,18 @@ pipeline {
             steps {
                 //Linux Native
                 sh 'go build -o OGrEE_API_Linux_x64 main.go'
-                sh 'mv OGrEE_API_Linux_x64 /home/ziad/bin/api'
+                sh 'mv OGrEE_API_Linux_x64 /OGrEE/bin/api'
 
                 //Windows x64
                 sh 'GOOS=windows GOARCH=amd64 go build -o OGrEE_API_Win_x64 main.go'
-                sh 'mv OGrEE_API_Win_x64 /home/ziad/bin/api'
+                sh 'mv OGrEE_API_Win_x64 /OGrEE/bin/api'
 
                 //OSX x64
                 sh 'GOOS=darwin GOARCH=amd64 go build -o OGrEE_API_OSX_x64 main.go'
-                sh 'mv OGrEE_API_OSX_x64 /home/ziad/bin/api'
+                sh 'mv OGrEE_API_OSX_x64 /OGrEE/bin/api'
 
                 //Upload builds to Nextcloud
-                sh '/home/ziad/buildServices/updateAPI.py'
+                sh '/OGrEE/buildService/updateAPI.py'
 
                 //OSX arm64
                 //sh 'GOOS=darwin GOARCH=arm64 go build -o OGrEE_API_OSX_arm64 main.go'
@@ -114,22 +114,22 @@ pipeline {
             steps {
                 echo 'Deploying Development containers....'
                 //Make backups of the DBs before stopping them
-                sh '(docker exec cDB sh -c \'exec mongodump -d ogree --archive\' > /home/ziad/other/externalDBs/cDB/collection.archive) || true'
-                sh '(docker exec hDB sh -c \'exec mongodump -d ogree --archive\' > /home/ziad/other/externalDBs/hDB/collection.archive) || true'
-                sh '(docker exec zDB sh -c \'exec mongodump -d ogree --archive\' > /home/ziad/other/externalDBs/zDB/collection.archive) || true'
-                sh '(docker exec tDB sh -c \'exec mongodump -d ogree --archive\' > /home/ziad/other/externalDBs/tDB/collection.archive) || true'
-                sh '(docker exec vDB sh -c \'exec mongodump -d ogree --archive\' > /home/ziad/other/externalDBs/vDB/collection.archive) || true'
+                sh '(docker exec cDB sh -c \'exec mongodump -d ogree --archive\' > /ogree-development/backup/cicdTriggered/cDB/collection.archive) || true'
+                sh '(docker exec hDB sh -c \'exec mongodump -d ogree --archive\' > /ogree-development/backup/cicdTriggered/hDB/collection.archive) || true'
+                sh '(docker exec zDB sh -c \'exec mongodump -d ogree --archive\' > /ogree-development/backup/cicdTriggered/zDB/collection.archive) || true'
+                sh '(docker exec tDB sh -c \'exec mongodump -d ogree --archive\' > /ogree-development/backup/cicdTriggered/tDB/collection.archive) || true'
+                sh '(docker exec vDB sh -c \'exec mongodump -d ogree --archive\' > /ogree-development/backup/cicdTriggered/vDB/collection.archive) || true'
 
                 //Restart services
-                sh 'docker-compose -f /home/ziad/other/externalDBs/docker-compose.yml down || true'
-                sh 'docker-compose -f /home/ziad/other/externalDBs/docker-compose.yml up -d'
+                sh 'docker-compose -f /ogree-development/docker-compose.yml down || true'
+                sh 'docker-compose -f /ogree-development/docker-compose.yml up -d'
 
                 //Restore backups
-                sh '(docker exec -i cDB sh -c \'exec mongorestore --archive\' < /home/ziad/other/externalDBs/cDB/collection.archive) || true'
-                sh '(docker exec -i hDB sh -c \'exec mongorestore --archive\' < /home/ziad/other/externalDBs/hDB/collection.archive) || true'
-                sh '(docker exec -i zDB sh -c \'exec mongorestore --archive\' < /home/ziad/other/externalDBs/zDB/collection.archive) || true'
-                sh '(docker exec -i tDB sh -c \'exec mongorestore --archive\' < /home/ziad/other/externalDBs/tDB/collection.archive) || true'
-                sh '(docker exec -i vDB sh -c \'exec mongorestore --archive\' < /home/ziad/other/externalDBs/vDB/collection.archive) || true'
+                sh '(docker exec -i cDB sh -c \'exec mongorestore --archive\' < /ogree-development/backup/cicdTriggered/cDB/collection.archive) || true'
+                sh '(docker exec -i hDB sh -c \'exec mongorestore --archive\' < /ogree-development/backup/cicdTriggered/hDB/collection.archive) || true'
+                sh '(docker exec -i zDB sh -c \'exec mongorestore --archive\' < /ogree-development/backup/cicdTriggered/zDB/collection.archive) || true'
+                sh '(docker exec -i tDB sh -c \'exec mongorestore --archive\' < /ogree-development/backup/cicdTriggered/tDB/collection.archive) || true'
+                sh '(docker exec -i vDB sh -c \'exec mongorestore --archive\' < /ogree-development/backup/cicdTriggered/vDB/collection.archive) || true'
 
                
             }
@@ -159,7 +159,7 @@ pipeline {
                 sh 'docker container prune -f' 
                 
                 //sh 'docker run -d --rm --network=host --name=ogree_api testingalpine:dockerfile /home/main'
-                sh 'docker-compose -f /home/ziad/api/v4/OGREE-APIv3/docker-compose.yml up -d --no-recreate'
+                sh 'docker-compose -f /OGrEE/docker-compose.yml up -d --no-recreate'
                 sh 'docker logs ogree_api'
                
             }
