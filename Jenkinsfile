@@ -5,26 +5,6 @@ pipeline {
             steps {
                 echo 'Building..'
                 sh 'go build main.go'
-                sh 'mv ./.env ./.env.bak'
-                sh 'cp ./resources/test/.env .'
-
-            }
-        }
-
-        stage('Docker Test') {
-            //This stage is useless
-            steps {
-                echo 'Building Docker Image & Testing..'
-                sh 'docker rmi $(docker images --filter "dangling=true" \
-                -q --no-trunc) || true'
-
-                sh 'DOCKER_BUILDKIT=1 docker build -t testingalpine:dockerfile .'
-                //sh 'docker run testingalpine:dockerfile sh -c \
-                //"cd p3 && go test -v ./..."'
-
-                /*docker run --mount type=bind,source="$(pwd)"/resources/,
-                target=/home -it postman/newman:alpine run 
-                '/home/Basic Functionality.postman_collection.json'*/
             }
         }
 
@@ -44,6 +24,27 @@ pipeline {
             }
         }
 
+        stage('SonarQube analysis') {
+            environment {
+              SCANNER_HOME = tool 'SonarQube-scanner'
+            }
+            steps {
+            withSonarQubeEnv(credentialsId: 'jenkins-pipeline', installationName: 'sonarqube-netbox') {
+                 sh '''$SCANNER_HOME/bin/sonar-scanner \
+                 -Dsonar.projectKey=ogree-api \
+                 -Dsonar.projectName=ogree-api '''
+               }
+             }
+        }
+
+        stage('SQuality Gate') {
+                steps {
+                  timeout(time: 2, unit: 'MINUTES') {
+                  waitForQualityGate abortPipeline: true
+                  }
+             }
+        }
+
         stage('Functional Test') {
             steps {
                 catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE'){
@@ -53,6 +54,8 @@ pipeline {
                 
                 sh 'docker run --rm --network=roachnet -p 27018:27017 --name lapd -d -v /home/ziad/testMDB:/docker-entrypoint-initdb.d/ mongo'
                 sh 'sleep 1'
+                sh 'mv ./.env ./.env.bak'
+                sh 'cp ./resources/test/.env .'
                 sh 'sudo ./main &'
                 //script {
                 //    
