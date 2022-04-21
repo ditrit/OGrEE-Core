@@ -676,7 +676,7 @@ func DeleteEntity(entity string, id primitive.ObjectID) (map[string]interface{},
 	var t map[string]interface{}
 	var e string
 	eNum := u.EntityStrToInt(entity)
-	if eNum > DEVICE && eNum < ROOMTMPL {
+	if eNum > DEVICE {
 		//Delete the non hierarchal objects
 		t, e = GetEntityHierarchy(id, entity, eNum, eNum+1)
 
