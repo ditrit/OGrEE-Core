@@ -347,15 +347,21 @@ func (c *commonNode) execute() interface{} {
 			data["command"] = c.args[1]
 			if len(c.args) == 4 {
 
-				firstArr := c.args[2].([]interface{})
-				secondArr := c.args[3].([]interface{})
+				firstArr := c.args[2].([]map[int]interface{})
+				secondArr := c.args[3].([]map[int]interface{})
 
-				pos := map[string]interface{}{"x": firstArr[0].(node).execute(),
-					"y": firstArr[1].(node).execute(), "z": firstArr[2].(node).execute(),
+				if len(firstArr) != 3 || len(secondArr) != 2 {
+					println("OGREE: Error, command args are invalid")
+					print("Please provide a vector3 and a vector2")
+					return nil
 				}
 
-				rot := map[string]interface{}{"x": secondArr[0].(node).execute(),
-					"y": secondArr[1].(node).execute(),
+				pos := map[string]interface{}{"x": firstArr[0][0].(node).execute(),
+					"y": firstArr[1][0].(node).execute(), "z": firstArr[2][0].(node).execute(),
+				}
+
+				rot := map[string]interface{}{"x": secondArr[0][0].(node).execute(),
+					"y": secondArr[1][0].(node).execute(),
 				}
 
 				data["position"] = pos
@@ -363,17 +369,26 @@ func (c *commonNode) execute() interface{} {
 
 			} else {
 
-				if c.args[1].(string) == "wait" {
+				if c.args[1].(string) == "wait" && c.args[0].(string) == "camera" {
 					data["position"] = nil
 					data["rotation"] = map[string]interface{}{"x": 999,
-						"y": c.args[2]}
+						"y": c.args[2].([]map[int]interface{})[0][0].(node).execute()}
 
 				} else {
-					data["data"] = c.args[2]
+					if _, ok := c.args[2].([]map[int]interface{}); ok {
+						data["data"] = c.args[2].([]map[int]interface{})[0][0].(node).execute()
+					} else {
+						data["data"] = c.args[2]
+					}
+
 				}
 
 			}
-			f(data)
+			fullJson := map[string]interface{}{
+				"type": c.args[0].(string),
+				"data": data,
+			}
+			f(fullJson)
 		}
 	}
 

@@ -1353,6 +1353,35 @@ func GetOCLIAtrributes(path string, ent int, data map[string]interface{}) {
 
 //Used for Unity Client commands
 func HandleUI(data map[string]interface{}) {
+	//Extra code for the highlight command
+	//since client wants an object ID instead of the name/path
+	if data["type"].(string) == "ui" &&
+		(data["data"].(map[string]interface{})["command"] == "highlight" ||
+			data["data"].(map[string]interface{})["command"] == "hl") {
+
+		//check if the object to highlight was provided as a string
+		if objArg, ok := data["data"].(map[string]interface{})["data"].(string); ok {
+
+			if objArg == "" || objArg == "." {
+				objArg = State.CurrPath
+			} else if string(objArg[0]) == "/" {
+				//do nothing
+			} else {
+				objArg = State.CurrPath + "/" + objArg
+			}
+
+			obj, _ := GetObject(objArg, true)
+			if obj != nil {
+				data["data"].(map[string]interface{})["data"] = obj["id"]
+			} else {
+				println("Please provide a valid path")
+				return
+			}
+		} else if data["data"].(map[string]interface{})["data"] == nil {
+			println("OGREE: Error Invalid parameter provided for highlighting")
+			return
+		}
+	}
 	Disp(data)
 	InformUnity("POST", "HandleUI", -1, data)
 }
