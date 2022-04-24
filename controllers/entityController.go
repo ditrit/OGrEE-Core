@@ -218,6 +218,10 @@ var CreateEntity = func(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("FUNCTION CALL: 	 CreateEntity ")
 	fmt.Println("******************************************************")
 	DispRequestMetaData(r)
+	user := r.Context().Value("user").(map[string]interface{})
+	db := user["db"].(string)
+	fmt.Println("Client: ", db)
+
 	var e string
 	var resp map[string]interface{}
 	entity := map[string]interface{}{}
@@ -267,7 +271,8 @@ var CreateEntity = func(w http.ResponseWriter, r *http.Request) {
 		entity["category"] = entStr
 	}
 
-	resp, e = models.CreateEntity(i, entity)
+	//resp, e = models.CreateEntity(i, entity)
+	resp, e = models.CreateEntity(i, entity, db)
 
 	switch e {
 	case "validate", "duplicate":
@@ -326,6 +331,10 @@ var GetEntity = func(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("FUNCTION CALL: 	 GetEntity ")
 	fmt.Println("******************************************************")
 	DispRequestMetaData(r)
+	user := r.Context().Value("user").(map[string]interface{})
+	db := user["db"].(string)
+	fmt.Println("Client: ", db)
+
 	var data map[string]interface{}
 	var id, e1 string
 	var x primitive.ObjectID
@@ -361,14 +370,15 @@ var GetEntity = func(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		data, e1 = models.GetEntity(bson.M{"_id": x}, s)
+		//data, e1 = models.GetEntity(bson.M{"_id": x}, s)
+		data, e1 = models.GetEntity(bson.M{"_id": x}, s, db)
 
 	} else if id, e = mux.Vars(r)["name"]; e == true { //GET By String
 
 		if idx := strings.Contains(s, "_"); idx == true { //GET By Slug
-			data, e1 = models.GetEntity(bson.M{"slug": id}, s)
+			data, e1 = models.GetEntity(bson.M{"slug": id}, s, db)
 		} else {
-			data, e1 = models.GetEntity(bson.M{"name": id}, s) //GET By Name
+			data, e1 = models.GetEntity(bson.M{"name": id}, s, db) //GET By Name
 		}
 	}
 
@@ -434,6 +444,9 @@ var GetAllEntities = func(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("FUNCTION CALL: 	 GetAllEntities ")
 	fmt.Println("******************************************************")
 	DispRequestMetaData(r)
+	user := r.Context().Value("user").(map[string]interface{})
+	db := user["db"].(string)
+	fmt.Println("Client: ", db)
 	var data []map[string]interface{}
 	var e, entStr string
 
@@ -457,7 +470,7 @@ var GetAllEntities = func(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	data, e = models.GetManyEntities(entStr, bson.M{}, nil)
+	data, e = models.GetManyEntities(entStr, bson.M{}, nil, db)
 
 	entUpper := strings.ToUpper(entStr) // and the trailing 's'
 	resp := u.Message(true, "success")
@@ -524,6 +537,9 @@ var DeleteEntity = func(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("FUNCTION CALL: 	 DeleteEntity ")
 	fmt.Println("******************************************************")
 	DispRequestMetaData(r)
+	user := r.Context().Value("user").(map[string]interface{})
+	db := user["db"].(string)
+
 	var v map[string]interface{}
 	id, e := mux.Vars(r)["id"]
 	name, e2 := mux.Vars(r)["name"]
@@ -548,7 +564,7 @@ var DeleteEntity = func(w http.ResponseWriter, r *http.Request) {
 	switch {
 	case e2 == true && e == false: // DELETE SLUG
 
-		v, _ = models.DeleteEntityBySlug(entity, name)
+		v, _ = models.DeleteEntityBySlug(entity, name, db)
 
 	case e == true && e2 == false: // DELETE NORMAL
 		objID, err := primitive.ObjectIDFromHex(id)
@@ -559,9 +575,9 @@ var DeleteEntity = func(w http.ResponseWriter, r *http.Request) {
 		}
 
 		if entity == "device" {
-			v, _ = models.DeleteDeviceF(objID)
+			v, _ = models.DeleteDeviceF(objID, db)
 		} else {
-			v, _ = models.DeleteEntity(entity, objID)
+			v, _ = models.DeleteEntity(entity, objID, db)
 		}
 
 	default:
@@ -714,6 +730,9 @@ var UpdateEntity = func(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("FUNCTION CALL: 	 UpdateEntity ")
 	fmt.Println("******************************************************")
 	DispRequestMetaData(r)
+	user := r.Context().Value("user").(map[string]interface{})
+	db := user["db"].(string)
+	fmt.Println("Client: ", db)
 	var v map[string]interface{}
 	var e3 string
 	var entity string
@@ -765,7 +784,7 @@ var UpdateEntity = func(w http.ResponseWriter, r *http.Request) {
 	case e2 == true: // UPDATE SLUG
 		println("updating slug")
 
-		v, e3 = models.UpdateEntity(entity, bson.M{"slug": name}, &updateData, isPatch)
+		v, e3 = models.UpdateEntity(entity, bson.M{"slug": name}, &updateData, isPatch, db)
 
 	case e == true: // UPDATE NORMAL
 		println("updating Normale")
@@ -780,7 +799,7 @@ var UpdateEntity = func(w http.ResponseWriter, r *http.Request) {
 		println("OBJID:", objID.Hex())
 		println("Entity;", entity)
 
-		v, e3 = models.UpdateEntity(entity, bson.M{"_id": objID}, &updateData, isPatch)
+		v, e3 = models.UpdateEntity(entity, bson.M{"_id": objID}, &updateData, isPatch, db)
 
 	default:
 		w.WriteHeader(http.StatusBadRequest)
@@ -857,6 +876,9 @@ var GetEntityByQuery = func(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("FUNCTION CALL: 	 GetEntityByQuery ")
 	fmt.Println("******************************************************")
 	DispRequestMetaData(r)
+	user := r.Context().Value("user").(map[string]interface{})
+	db := user["db"].(string)
+	fmt.Println("Client: ", db)
 	var data []map[string]interface{}
 	var resp map[string]interface{}
 	var bsonMap bson.M
@@ -881,7 +903,7 @@ var GetEntityByQuery = func(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	data, e = models.GetManyEntities(entStr, bsonMap, nil)
+	data, e = models.GetManyEntities(entStr, bsonMap, nil, db)
 
 	if len(data) == 0 {
 		resp = u.Message(false, "Error: "+e)
@@ -955,6 +977,9 @@ var GetEntitiesOfAncestor = func(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("FUNCTION CALL: 	 GetEntitiesOfAncestor ")
 	fmt.Println("******************************************************")
 	DispRequestMetaData(r)
+	user := r.Context().Value("user").(map[string]interface{})
+	db := user["db"].(string)
+	fmt.Println("Client: ", db)
 	var id string
 	var e bool
 	//Extract string between /api and /{id}
@@ -997,7 +1022,7 @@ var GetEntitiesOfAncestor = func(w http.ResponseWriter, r *http.Request) {
 		indicator = ""
 	}
 
-	data, e1 := models.GetEntitiesOfAncestor(id, enum, entStr, indicator)
+	data, e1 := models.GetEntitiesOfAncestor(id, enum, entStr, indicator, db)
 	if data == nil {
 		resp = u.Message(false, "Error while getting "+entStr+"s: "+e1)
 		u.ErrLog("Error while getting children of "+entStr,
@@ -1060,6 +1085,9 @@ var GetEntityHierarchy = func(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("FUNCTION CALL: 	 GetEntityHierarchy ")
 	fmt.Println("******************************************************")
 	DispRequestMetaData(r)
+	user := r.Context().Value("user").(map[string]interface{})
+	db := user["db"].(string)
+	fmt.Println("Client: ", db)
 	//Extract string between /api and /{id}
 	idx := strings.Index(r.URL.Path[5:], "/") + 4
 	entity := r.URL.Path[5:idx]
@@ -1090,7 +1118,7 @@ var GetEntityHierarchy = func(w http.ResponseWriter, r *http.Request) {
 
 	if entity == "tenant" {
 
-		_, e := models.GetEntity(bson.M{"name": id}, entity)
+		_, e := models.GetEntity(bson.M{"name": id}, entity, db)
 		if e != "" {
 			resp = u.Message(false, "Error while getting :"+entity+","+e)
 			u.ErrLog("Error while getting "+entity, "GET "+entity, e, r)
@@ -1109,7 +1137,7 @@ var GetEntityHierarchy = func(w http.ResponseWriter, r *http.Request) {
 		if end == 0 {
 
 			objID, _ := primitive.ObjectIDFromHex(id)
-			data, e1 := models.GetEntity(bson.M{"_id": objID}, entity)
+			data, e1 := models.GetEntity(bson.M{"_id": objID}, entity, db)
 
 			if e1 != "" {
 				resp = u.Message(false, "Error while getting :"+entity+","+e1)
@@ -1174,10 +1202,10 @@ var GetEntityHierarchy = func(w http.ResponseWriter, r *http.Request) {
 			end += 1
 		}
 		//data, e1 = models.RetrieveDeviceHierarch(oID, 0, end)
-		data, e1 = models.GetEntityHierarchy(oID, entity, entNum, limit)
+		data, e1 = models.GetEntityHierarchy(oID, entity, entNum, limit, db)
 	} else {
 		//data, e1 = models.GetEntityHierarchy(entity, oID, entNum, limit)
-		data, e1 = models.GetEntityHierarchy(oID, entity, entNum, limit)
+		data, e1 = models.GetEntityHierarchy(oID, entity, entNum, limit, db)
 	}
 
 	if data == nil {
@@ -1236,6 +1264,10 @@ var GetTenantHierarchy = func(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("FUNCTION CALL: 	 GetTenantHierarchy ")
 	fmt.Println("******************************************************")
 	DispRequestMetaData(r)
+	user := r.Context().Value("user").(map[string]interface{})
+	db := user["db"].(string)
+	fmt.Println("Client: ", db)
+
 	entity := "tenant"
 	resp := u.Message(true, "success")
 	var indicator string
@@ -1261,7 +1293,7 @@ var GetTenantHierarchy = func(w http.ResponseWriter, r *http.Request) {
 		if end == 0 {
 
 			//objID, _ := primitive.ObjectIDFromHex(id)
-			data, e1 := models.GetEntity(bson.M{"name": id}, "tenant")
+			data, e1 := models.GetEntity(bson.M{"name": id}, "tenant", db)
 
 			if e1 != "" {
 				resp = u.Message(false, "Error while getting :"+entity+","+e1)
@@ -1303,7 +1335,7 @@ var GetTenantHierarchy = func(w http.ResponseWriter, r *http.Request) {
 	println("Indicator: ", indicator)
 	println("The limit is: ", limit)
 
-	data, e1 := models.GetTenantHierarchy(entity, id, TENANT, limit)
+	data, e1 := models.GetTenantHierarchy(entity, id, TENANT, limit, db)
 
 	if data == nil {
 		resp = u.Message(false, "Error while getting :"+entity+","+e1)
@@ -1377,6 +1409,9 @@ var GetEntitiesUsingNamesOfParents = func(w http.ResponseWriter, r *http.Request
 	fmt.Println("FUNCTION CALL: 	 GetEntitiesUsingNamesOfParents ")
 	fmt.Println("******************************************************")
 	DispRequestMetaData(r)
+	user := r.Context().Value("user").(map[string]interface{})
+	db := user["db"].(string)
+	fmt.Println("Client: ", db)
 	//Extract string between /api and /{id}
 	idx := strings.Index(r.URL.Path[5:], "/") + 4
 	entity := r.URL.Path[5:idx]
@@ -1436,10 +1471,10 @@ var GetEntitiesUsingNamesOfParents = func(w http.ResponseWriter, r *http.Request
 		var e3 string
 		if e1 == true {
 			println("we are getting entities here")
-			data, e3 = models.GetEntitiesUsingTenantAsAncestor(entity, tname, ancestry)
+			data, e3 = models.GetEntitiesUsingTenantAsAncestor(entity, tname, ancestry, db)
 
 		} else {
-			data, e3 = models.GetEntitiesUsingAncestorNames(entity, oID, ancestry)
+			data, e3 = models.GetEntitiesUsingAncestorNames(entity, oID, ancestry, db)
 		}
 
 		if data == nil || len(data) == 0 {
@@ -1463,9 +1498,9 @@ var GetEntitiesUsingNamesOfParents = func(w http.ResponseWriter, r *http.Request
 		var data map[string]interface{}
 		var e3 string
 		if e1 == true {
-			data, e3 = models.GetEntityUsingTenantAsAncestor(entity, tname, ancestry)
+			data, e3 = models.GetEntityUsingTenantAsAncestor(entity, tname, ancestry, db)
 		} else {
-			data, e3 = models.GetEntityUsingAncestorNames(entity, oID, ancestry)
+			data, e3 = models.GetEntityUsingAncestorNames(entity, oID, ancestry, db)
 		}
 
 		//data, e := models.GetEntityUsingAncestorNames(entity, oID, ancestry)
@@ -1497,6 +1532,9 @@ var GetEntityHierarchyNonStd = func(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("FUNCTION CALL: 	 GetEntityHierarchyNonStd ")
 	fmt.Println("******************************************************")
 	DispRequestMetaData(r)
+	user := r.Context().Value("user").(map[string]interface{})
+	db := user["db"].(string)
+	fmt.Println("Client: ", db)
 	var e, e1 bool
 	var err string
 	//Extract string between /api and /{id}
@@ -1521,13 +1559,13 @@ var GetEntityHierarchyNonStd = func(w http.ResponseWriter, r *http.Request) {
 	if entity == "tenant" {
 		println("Getting TENANT HEIRARCHY")
 		println("With ID: ", id)
-		data, err = models.GetTenantHierarchy(entity, id, entNum, AC)
+		data, err = models.GetTenantHierarchy(entity, id, entNum, AC, db)
 		if err != "" {
 			println("We have ERR")
 		}
 	} else {
 		oID, _ := getObjID(id)
-		data, err = models.GetEntityHierarchy(oID, entity, entNum, AC)
+		data, err = models.GetEntityHierarchy(oID, entity, entNum, AC, db)
 	}
 
 	if data == nil {

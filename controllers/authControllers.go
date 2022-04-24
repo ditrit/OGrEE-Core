@@ -28,6 +28,12 @@ import (
 //   required: true
 //   format: password
 //   default: "secret"
+// - name: customer
+//   in: json
+//   description: Name of the the customer
+//   required: true
+//   format: string
+//   default: "ORNESS"
 // responses:
 //     '200':
 //         description: Authenticated
@@ -57,7 +63,7 @@ var Authenticate = func(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	resp, e := models.Login(account.Email, account.Password)
+	resp, e := models.Login(account.Email, account.Password, account.Database)
 	if resp["status"] == false {
 		if e == "invalid" {
 			w.WriteHeader(http.StatusUnauthorized)

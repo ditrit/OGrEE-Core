@@ -27,7 +27,7 @@ var JwtAuthentication = func(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 
 		//Endpoints that don't require auth
-		notAuth := []string{"/api/user", "/api/user/login"}
+		notAuth := []string{"/api", "/api/login"}
 		requestPath := r.URL.Path //current request path
 
 		//check if request needs auth
@@ -89,10 +89,23 @@ var JwtAuthentication = func(next http.Handler) http.Handler {
 			return
 		}
 
+		//Check if the customer exists
+		if exists, _ := models.CheckIfDBExists(tk.Customer); !exists {
+			println("Customer doesn't exist:", tk.Customer)
+			response = u.Message(false,
+				"Error customer: "+tk.Customer+" does not exist on this server"+
+					". Please contact customer service")
+			w.WriteHeader(http.StatusForbidden)
+			w.Header().Add("Content-Type", "application/json")
+			u.Respond(w, response)
+			return
+		}
+
 		//Success
 		//set the caller to the user retrieved from the parsed token
 		fmt.Sprintf("User %", tk.UserId) //Useful for monitoring
-		ctx := context.WithValue(r.Context(), "user", tk.UserId)
+		userData := map[string]interface{}{"userID": tk.UserId, "db": tk.Customer}
+		ctx := context.WithValue(r.Context(), "user", userData)
 		r = r.WithContext(ctx)
 		next.ServeHTTP(w, r) //proceed in the middleware chain!
 	})

@@ -1,7 +1,23 @@
+/////
+// NOTE - WARNING
+// This code is mirrored in the API found in models.base.go:CreateTenantDB
+// If you modify this script be sure to make the same changes in said
+// function!
+//////
+
 //localhost = 127.0.0.1
-//
+
+
+//Check if dbName was passed as argument
+//Otherwise use "ogree"
+try {
+  dbName;
+} catch(e) {
+  dbName = "ogree"
+}
+
 var m = new Mongo()
-var db = m.getDB("ogree")
+var db = m.getDB(dbName)
 
 db.createCollection('account');
 db.createCollection('tenant');
