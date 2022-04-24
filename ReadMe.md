@@ -129,7 +129,7 @@ admin
 ``` 
 Jenkins password: 
 ```
-578c964c35e9457a991293f54b0f34a2
+9f4e634c5d174af9b2f35f30abe2a0d5
 ```
 
 Encountered a permission denied error while trying to build a docker container in the pipeline which was solved by using these commands:
