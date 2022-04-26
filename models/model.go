@@ -361,7 +361,7 @@ func ValidateEntity(entity int, t map[string]interface{}) (map[string]interface{
 
 					case SITE:
 						switch v["orientation"] {
-						case "EN", "NW", "WS", "SE":
+						case "EN", "NW", "WS", "SE", "NE", "SW":
 						case "", nil:
 							return u.Message(false, "Orientation should be on the payload"), false
 
