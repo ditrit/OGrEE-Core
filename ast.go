@@ -84,7 +84,7 @@ func (c *commonNode) execute() interface{} {
 			return &jsonObjNode{JSONND, v}
 		}
 
-	case "Help":
+	case "Help", "Focus":
 		if f, ok := c.fun.(func(string)); ok {
 			f(c.args[0].(string))
 		}
@@ -336,10 +336,6 @@ func (c *commonNode) execute() interface{} {
 				c.args[1].(int),
 				c.args[2].(map[string]interface{}))
 		}
-	case "Focus": //Another handle unity type of command
-		if f, ok := c.fun.(func(string)); ok {
-			f(c.args[0].(string))
-		}
 
 	case "HandleUnity":
 		if f, ok := c.fun.(func(map[string]interface{})); ok {
@@ -371,8 +367,14 @@ func (c *commonNode) execute() interface{} {
 
 				if c.args[1].(string) == "wait" && c.args[0].(string) == "camera" {
 					data["position"] = nil
-					data["rotation"] = map[string]interface{}{"x": 999,
-						"y": c.args[2].([]map[int]interface{})[0][0].(node).execute()}
+
+					if y, ok := c.args[2].([]map[int]interface{}); ok {
+						data["rotation"] = map[string]interface{}{"x": 999,
+							"y": y[0][0].(node).execute()}
+					} else {
+						data["rotation"] = map[string]interface{}{"x": 999,
+							"y": c.args[2]}
+					}
 
 				} else {
 					if _, ok := c.args[2].([]map[int]interface{}); ok {

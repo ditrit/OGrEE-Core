@@ -507,7 +507,7 @@ func LSOBJECT(x string, entity int) []map[string]interface{} {
 	//YouareAt -> obi
 	//want 	   -> entity
 
-	if (entity >= AC && entity <= CORIDOR) && !(obi <= BLDG) {
+	if (entity >= AC && entity <= CORIDOR) && obi > BLDG {
 		return nil
 	}
 

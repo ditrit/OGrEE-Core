@@ -656,9 +656,9 @@ OCSEL:      TOK_SELECT {$$=&commonNode{COMMON, cmd.ShowClipBoard, "select", nil}
             |TOK_SELECT TOK_DOT TOK_WORD TOK_EQUAL EXPR {/*x := $3+"="+$5;*/ val:=($5).(node).execute(); x:=map[string]interface{}{$3:val}; $$=&commonNode{COMMON, cmd.UpdateSelection, "UpdateSelect", []interface{}{x}};}
 ;
 
-HANDLEUI: TOK_UI TOK_DOT TOK_WORD TOK_EQUAL TOK_LBLOCK EXPR TOK_RBLOCK {$$=&commonNode{COMMON, cmd.HandleUI, "HandleUnity", []interface{}{"ui", $3, ($6).(node).execute()}}}
-          |TOK_CAM TOK_DOT TOK_WORD TOK_EQUAL EXPR TOK_ATTRSPEC EXPR {if ($5).(node).getType() != ARRAY || ($7).(node).getType() != ARRAY {println("OGREE: Unrecognised command!"); $$=nil}; $$=&commonNode{COMMON, cmd.HandleUI, "HandleUnity", []interface{}{"camera", $3, ($5).(node).execute(), ($7).(node).execute()}}}
-          |TOK_CAM TOK_DOT TOK_WORD TOK_EQUAL EXPR {if ($5).(node).getType() != ARRAY {println("OGREE: Unrecognised command!"); $$=nil};$$=&commonNode{COMMON, cmd.HandleUI, "HandleUnity", []interface{}{"camera", $3, ($5).(node).execute()}}}
+HANDLEUI: TOK_UI TOK_DOT TOK_WORD TOK_EQUAL EXPR {$$=&commonNode{COMMON, cmd.HandleUI, "HandleUnity", []interface{}{"ui", $3, ($5).(node).execute()}}}
+          |TOK_CAM TOK_DOT TOK_WORD TOK_EQUAL EXPR TOK_ATTRSPEC EXPR {if ($5).(node).getType() != ARRAY || ($7).(node).getType() != ARRAY {$$=nil;} else {$$=&commonNode{COMMON, cmd.HandleUI, "HandleUnity", []interface{}{"camera", $3, ($5).(node).execute(), ($7).(node).execute()}}}}
+          |TOK_CAM TOK_DOT TOK_WORD TOK_EQUAL EXPR {if ($5).(node).getType() != ARRAY && $3 != "wait" {$$=nil;} else  {$$=&commonNode{COMMON, cmd.HandleUI, "HandleUnity", []interface{}{"camera", $3, ($5).(node).execute()}}}}
           |TOK_GREATER P {$$=&commonNode{COMMON, cmd.FocusUI, "Focus", []interface{}{$2}}}
           ;
 
