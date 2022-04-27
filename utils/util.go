@@ -42,8 +42,11 @@ func Message(status bool, message string) map[string]interface{} {
 }
 
 func Respond(w http.ResponseWriter, data map[string]interface{}) {
+	if err := json.NewEncoder(w).Encode(data); err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
 	w.Header().Add("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(data)
 }
 
 func ErrLog(message, funcname, details string, r *http.Request) {

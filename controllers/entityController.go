@@ -321,6 +321,20 @@ var CreateEntity = func(w http.ResponseWriter, r *http.Request) {
 //         description: Bad request. An error message will be returned.
 //     '404':
 //         description: Not Found. An error message will be returned.
+
+// swagger:operation OPTIONS /api/{objs}/{id} objects ObjectOptions
+// Displays possible operations for the resource in response header.
+// ---
+// produces:
+// - application/json
+// responses:
+//     '200':
+//         description: 'Found. A response header will be returned with
+//         possible operations.'
+//     '400':
+//         description: Bad request. An error message will be returned.
+//     '404':
+//         description: Not Found. An error message will be returned.
 var GetEntity = func(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("******************************************************")
 	fmt.Println("FUNCTION CALL: 	 GetEntity ")
@@ -403,8 +417,14 @@ var GetEntity = func(w http.ResponseWriter, r *http.Request) {
 		resp = u.Message(true, message)
 	}
 
-	resp["data"] = data
-	u.Respond(w, resp)
+	if r.Method == "OPTIONS" && data != nil {
+		w.Header().Add("Content-Type", "application/json")
+		w.Header().Add("Allow", "GET, DELETE, OPTIONS, PATCH, PUT")
+	} else {
+		resp["data"] = data
+		u.Respond(w, resp)
+	}
+
 }
 
 // swagger:operation GET /api/{objs} objects GetAllObjects
@@ -950,6 +970,18 @@ var GetEntityByQuery = func(w http.ResponseWriter, r *http.Request) {
 //         a meaningful message.'
 //     '404':
 //         description: Nothing Found. An error message will be returned.
+
+// swagger:operation OPTIONS /api/{obj}/{id}/{subent} objects GetFromObjectOptions
+// Displays possible operations for the resource in response header.
+// ---
+// produces:
+// - application/json
+// responses:
+//     '200':
+//         description: 'Found. A response body will be returned with
+//         a meaningful message.'
+//     '404':
+//         description: Nothing Found.
 var GetEntitiesOfAncestor = func(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("******************************************************")
 	fmt.Println("FUNCTION CALL: 	 GetEntitiesOfAncestor ")
@@ -1014,9 +1046,13 @@ var GetEntitiesOfAncestor = func(w http.ResponseWriter, r *http.Request) {
 			"successfully got object")
 	}
 
-	resp["data"] = map[string]interface{}{"objects": data}
-
-	u.Respond(w, resp)
+	if r.Method == "OPTIONS" {
+		w.Header().Add("Content-Type", "application/json")
+		w.Header().Add("Allow", "GET, OPTIONS")
+	} else {
+		resp["data"] = map[string]interface{}{"objects": data}
+		u.Respond(w, resp)
+	}
 }
 
 // swagger:operation GET /api/{objs}/{id}/all objects GetFromObject
@@ -1055,6 +1091,18 @@ var GetEntitiesOfAncestor = func(w http.ResponseWriter, r *http.Request) {
 //         a meaningful message.'
 //     '404':
 //         description: Nothing Found. An error message will be returned.
+
+// swagger:operation OPTIONS /api/{objs}/{id}/all objects GetFromObjectOptions
+// Displays possible operations for the resource in response header.
+// ---
+// produces:
+// - application/json
+// responses:
+//     '200':
+//         description: 'Found. A response header will be returned with
+//         possible operations.'
+//     '404':
+//         description: Nothing Found.
 var GetEntityHierarchy = func(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("******************************************************")
 	fmt.Println("FUNCTION CALL: 	 GetEntityHierarchy ")
@@ -1208,8 +1256,13 @@ var GetEntityHierarchy = func(w http.ResponseWriter, r *http.Request) {
 		resp = u.Message(true, "successfully got object")
 	}
 
-	resp["data"] = data
-	u.Respond(w, resp)
+	if r.Method == "OPTIONS" {
+		w.Header().Add("Content-Type", "application/json")
+		w.Header().Add("Allow", "GET, OPTIONS")
+	} else {
+		resp["data"] = data
+		u.Respond(w, resp)
+	}
 }
 
 // swagger:operation GET /api/tenants/{name}/all objects GetFromObject
@@ -1231,6 +1284,18 @@ var GetEntityHierarchy = func(w http.ResponseWriter, r *http.Request) {
 //         a meaningful message.'
 //     '404':
 //         description: Nothing Found. An error message will be returned.
+
+// swagger:operation OPTIONS /api/tenants/{name}/all objects GetFromObjectOptions
+// Displays possible operations for the resource in response header.
+// ---
+// produces:
+// - application/json
+// responses:
+//     '200':
+//         description: 'Found. A response header will be returned with
+//         possible operation.'
+//     '404':
+//         description: Nothing Found.
 var GetTenantHierarchy = func(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("******************************************************")
 	fmt.Println("FUNCTION CALL: 	 GetTenantHierarchy ")
@@ -1332,8 +1397,13 @@ var GetTenantHierarchy = func(w http.ResponseWriter, r *http.Request) {
 		resp = u.Message(true, "successfully got object")
 	}
 
-	resp["data"] = data
-	u.Respond(w, resp)
+	if r.Method == "OPTIONS" {
+		w.Header().Add("Content-Type", "application/json")
+		w.Header().Add("Allow", "GET, OPTIONS")
+	} else {
+		resp["data"] = data
+		u.Respond(w, resp)
+	}
 }
 
 // swagger:operation GET /api/{objs}/{id}/* objects GetFromObect
@@ -1372,6 +1442,18 @@ var GetTenantHierarchy = func(w http.ResponseWriter, r *http.Request) {
 //         a meaningful message.'
 //     '404':
 //         description: Not Found. An error message will be returned.
+
+// swagger:operation OPTIONS /api/{objs}/{id}/* objects GetFromObectOptions
+// Displays possible operations for the resource in response header.
+// ---
+// produces:
+// - application/json
+// responses:
+//     '200':
+//         description: 'Found. A response header will be returned with
+//         possible operations.'
+//     '404':
+//         description: Not Found.
 var GetEntitiesUsingNamesOfParents = func(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("******************************************************")
 	fmt.Println("FUNCTION CALL: 	 GetEntitiesUsingNamesOfParents ")
@@ -1486,9 +1568,40 @@ var GetEntitiesUsingNamesOfParents = func(w http.ResponseWriter, r *http.Request
 			resp = u.Message(true, "successfully got object")
 		}
 
-		resp["data"] = data
-		u.Respond(w, resp)
+		if r.Method == "OPTIONS" {
+			w.Header().Add("Content-Type", "application/json")
+			w.Header().Add("Allow", "GET, OPTIONS")
+		} else {
+			resp["data"] = data
+			u.Respond(w, resp)
+		}
 	}
+
+}
+
+// swagger:operation OPTIONS /api/{objs}/* objects ObjectOptions
+// Displays possible operations for the resource in response header.
+// ---
+// produces:
+// - application/json
+// responses:
+//     '200':
+//         description: 'Request is valid.'
+//     '404':
+//         description: Not Found. An error message will be returned.
+var BaseOption = func(w http.ResponseWriter, r *http.Request) {
+	fmt.Println("******************************************************")
+	fmt.Println("FUNCTION CALL: 	 BaseOption ")
+	fmt.Println("******************************************************")
+	DispRequestMetaData(r)
+	entity, e1 := mux.Vars(r)["entity"]
+	entity = entity[:len(entity)-1]
+	if e1 == false || u.EntityStrToInt(entity) == -1 {
+		w.WriteHeader(http.StatusNotFound)
+		return
+	}
+	w.Header().Add("Content-Type", "application/json")
+	w.Header().Add("Allow", "GET, DELETE, OPTIONS, PATCH, POST, PUT")
 
 }
 
