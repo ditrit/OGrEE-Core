@@ -839,15 +839,6 @@ func GetEntityHierarchy(ID primitive.ObjectID, ent string, start, end int) (map[
 			}
 		}
 
-		if ent == "room" {
-			for i := AC; i < GROUP+1; i++ {
-				roomEnts, _ := GetManyEntities(u.EntityToString(i), bson.M{"parentId": pid}, nil)
-				if roomEnts != nil {
-					children = append(children, roomEnts...)
-				}
-			}
-		}
-
 		if ent == "device" {
 			childEnt = "device"
 		} else {
@@ -865,8 +856,35 @@ func GetEntityHierarchy(ID primitive.ObjectID, ent string, start, end int) (map[
 
 		if subEnts != nil {
 			children = append(children, subEnts...)
+		}
+
+		if ent == "room" {
+			for i := AC; i < CABINET+1; i++ {
+				roomEnts, _ := GetManyEntities(u.EntityToString(i), bson.M{"parentId": pid}, nil)
+				if roomEnts != nil {
+					children = append(children, roomEnts...)
+				}
+			}
+			for i := PWRPNL; i < TILE+1; i++ {
+				roomEnts, _ := GetManyEntities(u.EntityToString(i), bson.M{"parentId": pid}, nil)
+				if roomEnts != nil {
+					children = append(children, roomEnts...)
+				}
+			}
+			roomEnts, _ := GetManyEntities(u.EntityToString(CORIDOR), bson.M{"parentId": pid}, nil)
+			if roomEnts != nil {
+				children = append(children, roomEnts...)
+			}
+			roomEnts, _ = GetManyEntities(u.EntityToString(GROUP), bson.M{"parentId": pid}, nil)
+			if roomEnts != nil {
+				children = append(children, roomEnts...)
+			}
+		}
+
+		if children != nil && len(children) > 0 {
 			top["children"] = children
 		}
+
 		return top, ""
 	}
 	return nil, ""
