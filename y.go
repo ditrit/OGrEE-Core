@@ -175,7 +175,7 @@ func formActualPath(x string) string {
 //https://github.com/ditrit/OGrEE-3D/wiki/CLI-langage#Create-a-Device
 func checkIfTemplate(x interface{}) bool {
 	if s, ok := x.(string); ok {
-		if m, _ := cmd.GetObject("Logical/ObjectTemplates/"+s, true); m != nil {
+		if m, _ := cmd.GetObject("/Logical/ObjectTemplates/"+s, true); m != nil {
 			return true
 		}
 	}
@@ -2570,11 +2570,7 @@ yynewstate:
 			}
 			attr["posXY"] = yyS[yypt-4].node
 			attr["orientation"] = yyS[yypt-0].node
-
-			yyVAL.node = &commonNode{COMMON,
-				cmd.GetOCLIAtrributes, "GetOCAttr",
-				[]interface{}{(replaceOCLICurrPath(yyS[yypt-6].s)),
-					cmd.RACK, map[string]interface{}{"attributes": attr}}}
+			yyVAL.node = &commonNode{COMMON, cmd.GetOCLIAtrributes, "GetOCAttr", []interface{}{(replaceOCLICurrPath(yyS[yypt-6].s)), cmd.RACK, map[string]interface{}{"attributes": attr}}}
 		}
 	case 199:
 		{

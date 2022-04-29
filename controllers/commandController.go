@@ -1118,7 +1118,49 @@ func GetOCLIAtrributes(path string, ent int, data map[string]interface{}) {
 		if q, ok := attr["template"]; ok {
 			if qS, ok := q.(string); ok {
 				if tmpl := fetchTemplate(qS, ROOM); tmpl != nil {
-					MergeMaps(attr, tmpl, true)
+					//MergeMaps(attr, tmpl, true)
+					if sizeInf, ok := tmpl["sizeWDHmm"].([]interface{}); ok && len(sizeInf) == 3 {
+						attrSerialiser := func(someVal interface{}, idx string) string {
+							if x, ok := someVal.(int); ok {
+								return strconv.Itoa(x / 10)
+							} else if x, ok := someVal.(float64); ok {
+								return strconv.FormatFloat(x/10.0, 'G', -1, 64)
+							} else {
+								msg := "Warning: Invalid " + idx +
+									" value detected in size." +
+									" Resorting to default"
+								println(msg)
+								return "5"
+							}
+						}
+
+						var xS, yS, zS string
+						xS = attrSerialiser(sizeInf[0], "x")
+						yS = attrSerialiser(sizeInf[1], "y")
+						zS = attrSerialiser(sizeInf[2], "height")
+
+						attr["size"] = "{\"x\":" + xS + ", \"y\":" + yS + "}"
+						attr["sizeUnit"] = "cm"
+						attr["height"] = zS
+						attr["heightUnit"] = "cm"
+						CopyAttr(data, tmpl, "description")
+
+						//fbxModel section
+						if check := CopyAttr(attr, tmpl, "fbxModel"); !check {
+							attr["fbxModel"] = ""
+						}
+
+						//Merge attributes if available
+						if tmplAttrsInf, ok := tmpl["attributes"]; ok {
+							if tmplAttrs, ok := tmplAttrsInf.(map[string]interface{}); ok {
+								MergeMaps(attr, tmplAttrs, false)
+							}
+						}
+					} else {
+						println("Warning, invalid size value in template.",
+							"Default values will be assigned")
+
+					}
 				} else {
 					attr["template"] = ""
 					println("Warning: template was not found.",
@@ -1136,20 +1178,22 @@ func GetOCLIAtrributes(path string, ent int, data map[string]interface{}) {
 
 		} else {
 			attr["template"] = ""
+			//Serialise size and posXY if given
+			if _, ok := attr["size"].(string); ok {
+				attr["size"] = serialiseAttr(attr, "size")
+			} else {
+				attr["size"] = serialiseAttr2(attr, "size")
+			}
+
+			if _, ok := attr["posXY"].(string); ok {
+				attr["posXY"] = serialiseAttr(attr, "posXY")
+			} else {
+				attr["posXY"] = serialiseAttr2(attr, "posXY")
+			}
 		}
 
-		//Serialise size and posXY if given
-		if _, ok := attr["size"].(string); ok {
-			attr["size"] = serialiseAttr(attr, "size")
-		} else {
-			attr["size"] = serialiseAttr2(attr, "size")
-		}
-
-		if _, ok := attr["posXY"].(string); ok {
-			attr["posXY"] = serialiseAttr(attr, "posXY")
-		} else {
-			attr["posXY"] = serialiseAttr2(attr, "posXY")
-		}
+		println("DEBUG json")
+		Disp(attr)
 
 		data["parentId"] = parent["id"]
 		data["domain"] = domain
@@ -1218,49 +1262,7 @@ func GetOCLIAtrributes(path string, ent int, data map[string]interface{}) {
 		if parAttr, ok := parent["attributes"].(map[string]interface{}); ok {
 			if rackSizeInf, ok := parAttr["size"]; ok {
 				values := map[string]interface{}{}
-				/*if rackSize, ok := rackSizeInf.(float64); ok {
-					println("DEBUG FLOAT size")
-					attr["height"] = rackSize / 10
-				} else if rackSize, ok := rackSizeInf.(int); ok {
-					println("DEBUG INT size")
-					attr["height"] = rackSize / 10
-				} else if rackSizeComplex, ok := rackSizeInf.(string); ok {
-					println("DEBUG got here", rackSizeComplex)
-					xIdx := strings.Index(rackSizeComplex, "\"x\":")
-					xEnd := strings.Index(rackSizeComplex, ",")
-					yIdx := strings.Index(rackSizeComplex, "\"y\":")
-					yEnd := strings.Index(rackSizeComplex, "}")
-					if xIdx > 0 && yIdx > 0 && xEnd > 0 && yEnd > 0 {
-						println("DEBUG Glory")
-						xStr := rackSizeComplex[xIdx+4 : xEnd]
-						yStr := rackSizeComplex[yIdx+4 : yEnd]
-						if x, ok := strconv.Atoi(xStr); ok == nil {
-							attr["sizeX"] = x / 10
-							xStr = strconv.Itoa(x / 10)
-						}
-						if x, ok := strconv.ParseFloat(xStr, 64); ok == nil {
-							attr["sizeX"] = x / 10.0
-							xStr = strconv.FormatFloat(x/10.0, 'G', -1, 64)
-						}
 
-						if y, ok := strconv.Atoi(yStr); ok == nil {
-							attr["sizeY"] = y / 10
-							yStr = strconv.Itoa(y / 10)
-						}
-						if y, ok := strconv.ParseFloat(yStr, 64); ok == nil {
-							attr["sizeY"] = y / 10.0
-							yStr = strconv.FormatFloat(y/10.0, 'G', -1, 64)
-						}
-						println("DEBUG results")
-
-						if _, ok := attr["sizeX"]; ok {
-							if _, ok := attr["sizeY"]; ok {
-								//"{\"x\":60.0,\"y\":120.0}"
-								attr["size"] = "{\"x:\"" + xStr + ",\"y\":" + yStr + "}"
-							}
-						}
-					}
-				}*/
 				if rackSizeComplex, ok := rackSizeInf.(string); ok {
 					q := json.NewDecoder(strings.NewReader(rackSizeComplex))
 					q.Decode(&values)
@@ -2048,6 +2050,22 @@ func OnlineLevelResolver(path []string) []string {
 	}
 
 	return paths
+}
+
+//Helper func that safely deletes a string key in a map
+func DeleteAttr(x map[string]interface{}, key string) {
+	if _, ok := x[key]; ok {
+		delete(x, key)
+	}
+}
+
+//Helper func that safely copies a value in a map
+func CopyAttr(dest, source map[string]interface{}, key string) bool {
+	if _, ok := source[key]; ok {
+		dest[key] = source[key]
+		return true
+	}
+	return false
 }
 
 //Helper function for GetOCLIAttr which retrieves
