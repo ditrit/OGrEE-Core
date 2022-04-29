@@ -1143,7 +1143,17 @@ func GetOCLIAtrributes(path string, ent int, data map[string]interface{}) {
 						attr["sizeUnit"] = "cm"
 						attr["height"] = zS
 						attr["heightUnit"] = "cm"
-						CopyAttr(data, tmpl, "description")
+
+						//Copy Description
+						if _, ok := tmpl["description"]; ok {
+							if descTable, ok := tmpl["description"].([]interface{}); ok {
+								data["description"] = descTable
+							} else {
+								data["description"] = []interface{}{tmpl["description"]}
+							}
+						} else {
+							data["description"] = []string{}
+						}
 
 						//fbxModel section
 						if check := CopyAttr(attr, tmpl, "fbxModel"); !check {
