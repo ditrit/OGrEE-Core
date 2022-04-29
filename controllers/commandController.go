@@ -1184,16 +1184,14 @@ func GetOCLIAtrributes(path string, ent int, data map[string]interface{}) {
 			} else {
 				attr["size"] = serialiseAttr2(attr, "size")
 			}
-
-			if _, ok := attr["posXY"].(string); ok {
-				attr["posXY"] = serialiseAttr(attr, "posXY")
-			} else {
-				attr["posXY"] = serialiseAttr2(attr, "posXY")
-			}
 		}
 
-		println("DEBUG json")
-		Disp(attr)
+		//Serialise posXY if given
+		if _, ok := attr["posXY"].(string); ok {
+			attr["posXY"] = serialiseAttr(attr, "posXY")
+		} else {
+			attr["posXY"] = serialiseAttr2(attr, "posXY")
+		}
 
 		data["parentId"] = parent["id"]
 		data["domain"] = domain
