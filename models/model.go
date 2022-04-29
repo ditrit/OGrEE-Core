@@ -361,7 +361,7 @@ func ValidateEntity(entity int, t map[string]interface{}, db string) (map[string
 
 					case SITE:
 						switch v["orientation"] {
-						case "EN", "NW", "WS", "SE":
+						case "EN", "NW", "WS", "SE", "NE", "SW":
 						case "", nil:
 							return u.Message(false, "Orientation should be on the payload"), false
 
@@ -865,8 +865,35 @@ func GetEntityHierarchy(ID primitive.ObjectID, ent string, start, end int, db st
 
 		if subEnts != nil {
 			children = append(children, subEnts...)
+		}
+
+		if ent == "room" {
+			for i := AC; i < CABINET+1; i++ {
+				roomEnts, _ := GetManyEntities(u.EntityToString(i), bson.M{"parentId": pid}, nil, db)
+				if roomEnts != nil {
+					children = append(children, roomEnts...)
+				}
+			}
+			for i := PWRPNL; i < TILE+1; i++ {
+				roomEnts, _ := GetManyEntities(u.EntityToString(i), bson.M{"parentId": pid}, nil, db)
+				if roomEnts != nil {
+					children = append(children, roomEnts...)
+				}
+			}
+			roomEnts, _ := GetManyEntities(u.EntityToString(CORIDOR), bson.M{"parentId": pid}, nil, db)
+			if roomEnts != nil {
+				children = append(children, roomEnts...)
+			}
+			roomEnts, _ = GetManyEntities(u.EntityToString(GROUP), bson.M{"parentId": pid}, nil, db)
+			if roomEnts != nil {
+				children = append(children, roomEnts...)
+			}
+		}
+
+		if children != nil && len(children) > 0 {
 			top["children"] = children
 		}
+
 		return top, ""
 	}
 	return nil, ""

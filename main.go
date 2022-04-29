@@ -50,38 +50,38 @@ func main() {
 	router := mux.NewRouter()
 
 	router.HandleFunc("/api",
-		controllers.CreateAccount).Methods("POST")
+		controllers.CreateAccount).Methods("POST", "OPTIONS")
 
 	router.HandleFunc("/api/login",
-		controllers.Authenticate).Methods("POST")
+		controllers.Authenticate).Methods("POST", "OPTIONS")
 
 	router.HandleFunc("/api/token/valid",
-		controllers.Verify).Methods("GET")
+		controllers.Verify).Methods("GET", "OPTIONS")
 
 	// ------ GET ------ //
 	//GET ENTITY HIERARCHY
 	//This matches ranged Tenant Hierarchy
 	router.NewRoute().PathPrefix("/api/tenants/{tenant_name}/all").
-		MatcherFunc(tmatch).HandlerFunc(controllers.GetTenantHierarchy)
+		MatcherFunc(tmatch).HandlerFunc(controllers.GetTenantHierarchy).Methods("GET", "OPTIONS")
 
 	router.NewRoute().PathPrefix("/api/{entity}/{id:[a-zA-Z0-9]{24}}/all").
-		MatcherFunc(hmatch).HandlerFunc(controllers.GetEntityHierarchy)
+		MatcherFunc(hmatch).HandlerFunc(controllers.GetEntityHierarchy).Methods("GET", "OPTIONS")
 
 	//GET EXCEPTIONS
 	router.HandleFunc("/api/tenants/{tenant_name}/buildings",
-		controllers.GetEntitiesOfAncestor).Methods("GET")
+		controllers.GetEntitiesOfAncestor).Methods("GET", "OPTIONS")
 
 	router.HandleFunc("/api/sites/{id:[a-zA-Z0-9]{24}}/rooms",
-		controllers.GetEntitiesOfAncestor).Methods("GET")
+		controllers.GetEntitiesOfAncestor).Methods("GET", "OPTIONS")
 
 	router.HandleFunc("/api/buildings/{id:[a-zA-Z0-9]{24}}/{sub:acs|corridors|cabinets|tiles|rows|panels|separators|sensors|groups}",
-		controllers.GetEntitiesOfAncestor).Methods("GET")
+		controllers.GetEntitiesOfAncestor).Methods("GET", "OPTIONS")
 
 	router.HandleFunc("/api/buildings/{id:[a-zA-Z0-9]{24}}/racks",
-		controllers.GetEntitiesOfAncestor).Methods("GET")
+		controllers.GetEntitiesOfAncestor).Methods("GET", "OPTIONS")
 
 	router.HandleFunc("/api/rooms/{id:[a-zA-Z0-9]{24}}/devices",
-		controllers.GetEntitiesOfAncestor).Methods("GET")
+		controllers.GetEntitiesOfAncestor).Methods("GET", "OPTIONS")
 
 	/*router.HandleFunc("/api/rooms/{id:[a-zA-Z0-9]{24}}/sensors",
 		controllers.GetEntitiesOfAncestor).Methods("GET")
@@ -95,17 +95,17 @@ func main() {
 
 	//GET ENTITY
 	router.HandleFunc("/api/{entity}/{id:[a-zA-Z0-9]{24}}",
-		controllers.GetEntity).Methods("GET")
+		controllers.GetEntity).Methods("GET", "OPTIONS")
 
 	router.HandleFunc("/api/{entity}/{name}",
-		controllers.GetEntity).Methods("GET")
+		controllers.GetEntity).Methods("GET", "OPTIONS")
 
 	//GET BY NAME OF PARENT
 	router.NewRoute().PathPrefix("/api/tenants/{tenant_name}").
-		MatcherFunc(tmatch).HandlerFunc(controllers.GetEntitiesUsingNamesOfParents).Methods("GET")
+		MatcherFunc(tmatch).HandlerFunc(controllers.GetEntitiesUsingNamesOfParents).Methods("GET", "OPTIONS")
 
 	router.NewRoute().PathPrefix("/api/{entity}/{id:[a-zA-Z0-9]{24}}").
-		MatcherFunc(pmatch).HandlerFunc(controllers.GetEntitiesUsingNamesOfParents).Methods("GET")
+		MatcherFunc(pmatch).HandlerFunc(controllers.GetEntitiesUsingNamesOfParents).Methods("GET", "OPTIONS")
 
 	// GET ALL ENTITY
 
@@ -137,9 +137,19 @@ func main() {
 	router.HandleFunc("/api/{entity}/{name}",
 		controllers.UpdateEntity).Methods("PUT", "PATCH")
 
+	//OPTIONS BLOCK
+	router.HandleFunc("/api/{entity}",
+		controllers.BaseOption).Methods("OPTIONS")
+
 	//Attach JWT auth middleware
 	//router.Use(app.Log)
 	router.Use(app.JwtAuthentication)
+
+	//TODO:
+	//Use the URL below to help make the router functions more
+	//flexible and thus implement the http OPTIONS method
+	//cleanly
+	//https://medium.com/@matryer/writing-middleware-in-golang-and-how-go-makes-it-so-much-fun-4375c1246e81
 
 	//Get port from .env file, no port was specified
 	//So this should return an empty string when
