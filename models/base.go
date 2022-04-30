@@ -150,6 +150,9 @@ func CreateTenantDB(name string) {
 	//Sensors
 	newDB.CreateCollection(ctx, "sensor")
 
+	//Stray Objects
+	newDB.CreateCollection(ctx, "stray_device")
+
 	//Create Index variables
 	d := bsonx.Doc{{Key: "parentId", Value: bsonx.Int32(1)},
 		{Key: "name", Value: bsonx.Int32(1)}}
@@ -185,4 +188,6 @@ func CreateTenantDB(name string) {
 	newDB.Collection("corridor").Indexes().CreateOne(ctx, genericIdx)
 
 	newDB.Collection("group").Indexes().CreateOne(ctx, genericIdx)
+
+	newDB.Collection("stray_device").Indexes().CreateOne(ctx, genericIdx)
 }
