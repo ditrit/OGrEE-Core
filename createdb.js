@@ -27,10 +27,10 @@ db.createCollection('row');
 db.createCollection('tile');
 db.createCollection('cabinet');
 db.createCollection('corridor');
-
-
-//Sensors
 db.createCollection('sensor');
+
+//Stray Objects
+db.createCollection('stray_device');
 
 
 //Enfore unique Tenant Names
@@ -64,3 +64,6 @@ db.sensor.createIndex({parentId:1, type:1, name:1}, { unique: true });
 
 //Enforce unique Group names 
 db.group.createIndex({parentId:1, name:1}, { unique: true });
+
+//Enforce unique stray objects
+db.stray_device.createIndex({parentId:1, name:1}, { unique: true });
