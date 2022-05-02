@@ -31,6 +31,7 @@ const (
 	GROUP
 	ROOMTMPL
 	OBJTMPL
+	STRAYDEV
 )
 
 //Function will recursively iterate through nested obj
@@ -118,7 +119,6 @@ func validateParent(ent string, entNum int, t map[string]interface{}) (map[strin
 }
 
 func ValidatePatch(ent int, t map[string]interface{}) (map[string]interface{}, bool) {
-
 	for k := range t {
 		switch k {
 		case "name", "category", "domain":
@@ -134,6 +134,14 @@ func ValidatePatch(ent int, t map[string]interface{}) (map[string]interface{}, b
 		case "parentId":
 			if ent < ROOMTMPL && ent > TENANT {
 				x, ok := validateParent(u.EntityToString(ent), ent, t)
+				if !ok {
+					return x, ok
+				}
+			}
+			//STRAYDEV's schema is very loose
+			//thus we can safely invoke validateEntity
+			if ent == STRAYDEV {
+				x, ok := ValidateEntity(ent, t)
 				if !ok {
 					return x, ok
 				}
@@ -595,6 +603,25 @@ func ValidateEntity(entity int, t map[string]interface{}) (map[string]interface{
 			return r, ok
 		}
 
+	case STRAYDEV:
+		//Check for parent if PID provided
+		if t["parentId"] != nil && t["parentId"] != "" {
+			if pid, ok := t["parentId"].(string); ok {
+				ID, _ := primitive.ObjectIDFromHex(pid)
+
+				ctx, cancel := u.Connect()
+				if GetDB().Collection("stray_device").FindOne(ctx,
+					bson.M{"_id": ID}).Err() != nil {
+					return u.Message(false,
+						"ParentID should be an Existing ID or null"), false
+				}
+				defer cancel()
+			} else {
+				return u.Message(false,
+					"ParentID should be an Existing ID or null"), false
+			}
+
+		}
 	}
 
 	//Successfully validated the Object
@@ -679,7 +706,6 @@ func DeleteEntity(entity string, id primitive.ObjectID) (map[string]interface{},
 	if eNum > DEVICE {
 		//Delete the non hierarchal objects
 		t, e = GetEntityHierarchy(id, entity, eNum, eNum+1)
-
 	} else {
 		t, e = GetEntityHierarchy(id, entity, eNum, AC)
 	}
@@ -698,7 +724,12 @@ func deleteHelper(t map[string]interface{}, ent int) (map[string]interface{}, st
 		if v, ok := t["children"]; ok {
 			if x, ok := v.([]map[string]interface{}); ok {
 				for i := range x {
-					deleteHelper(x[i], ent+1)
+					if ent == STRAYDEV {
+						deleteHelper(x[i], ent)
+					} else {
+						deleteHelper(x[i], ent+1)
+					}
+
 				}
 			} else {
 				println("JSON not formatted as expected")
@@ -735,6 +766,7 @@ func deleteHelper(t map[string]interface{}, ent int) (map[string]interface{}, st
 		} else {
 			ctx, cancel := u.Connect()
 			entity := u.EntityToString(ent)
+			println(entity)
 			c, _ := GetDB().Collection(entity).DeleteOne(ctx, bson.M{"_id": t["id"].(primitive.ObjectID)})
 			if c.DeletedCount == 0 {
 				return u.Message(false, "There was an error in deleting the entity"), "not found"
@@ -752,7 +784,7 @@ func UpdateEntity(ent string, req bson.M, t *map[string]interface{}, isPatch boo
 	retDoc := options.ReturnDocument(options.After)
 
 	//Update timestamp requires first obj retrieval
-	//there isn't anyway for mongoDB to make a field
+	//there isn't any way for mongoDB to make a field
 	//immutable in a document
 	oldObj, e1 := GetEntity(req, ent)
 	if e1 != "" {
@@ -763,6 +795,7 @@ func UpdateEntity(ent string, req bson.M, t *map[string]interface{}, isPatch boo
 
 	ctx, cancel := u.Connect()
 	if isPatch == true {
+
 		msg, ok := ValidatePatch(u.EntityStrToInt(ent), *t)
 		if !ok {
 			return msg, "invalid"
@@ -841,6 +874,8 @@ func GetEntityHierarchy(ID primitive.ObjectID, ent string, start, end int) (map[
 
 		if ent == "device" {
 			childEnt = "device"
+		} else if ent == "stray_device" {
+			childEnt = ent
 		} else {
 			childEnt = u.EntityToString(start + 1)
 		}

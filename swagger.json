@@ -173,6 +173,13 @@
         ],
         "summary": "Displays possible operations for the resource in response header.",
         "operationId": "GetFromObjectOptions",
+        "parameters": [
+          {
+            "description": "Name of tenant.",
+            "name": "name",
+            "in": "query"
+          }
+        ],
         "responses": {
           "200": {
             "description": "Found. A response header will be returned with possible operation."
@@ -236,7 +243,7 @@
           {
             "type": "string",
             "default": "sites",
-            "description": "Indicates the location. Only values of \"tenants\", \"sites\", \"buildings\", \"rooms\", \"racks\", \"devices\", \"room-templates\", \"obj-templates\", \"rooms\", \"separators\", \"acs\", \"panels\", \"rows\", \"tiles\", \"cabinets\", \"groups\", \"corridors\", \"sensors\" are acceptable",
+            "description": "Indicates the location. Only values of \"tenants\", \"sites\", \"buildings\", \"rooms\", \"racks\", \"devices\", \"room-templates\", \"obj-templates\", \"rooms\", \"separators\", \"acs\", \"panels\", \"rows\", \"tiles\", \"cabinets\", \"groups\", \"corridors\", \"sensors\", \"stray-devices\" are acceptable",
             "name": "objs",
             "in": "query",
             "required": true
@@ -262,6 +269,13 @@
         ],
         "summary": "Displays possible operations for the resource in response header.",
         "operationId": "ObjectOptions",
+        "parameters": [
+          {
+            "description": "Only values of \"tenants\", \"sites\", \"buildings\", \"rooms\", \"racks\", \"devices\", \"room-templates\", \"obj-templates\", \"rooms\", \"separators\", \"acs\", \"panels\", \"rows\", \"tiles\", \"cabinets\", \"groups\", \"corridors\",\"sensors\",\"stray-devices\" are acceptable",
+            "name": "objs",
+            "in": "query"
+          }
+        ],
         "responses": {
           "200": {
             "description": "Request is valid."
@@ -287,7 +301,7 @@
           {
             "type": "string",
             "default": "sites",
-            "description": "Indicates the location. Only values of \"tenants\", \"sites\", \"buildings\", \"rooms\", \"racks\", \"devices\", \"room-templates\", \"obj-templates\", \"rooms\", \"separators\", \"acs\", \"panels\", \"rows\", \"tiles\", \"cabinets\", \"groups\", \"corridors\",\"sensors\" are acceptable",
+            "description": "Indicates the location. Only values of \"tenants\", \"sites\", \"buildings\", \"rooms\", \"racks\", \"devices\", \"room-templates\", \"obj-templates\", \"rooms\", \"separators\", \"acs\", \"panels\", \"rows\", \"tiles\", \"cabinets\", \"groups\", \"corridors\",\"sensors\",\"stray-devices\" are acceptable",
             "name": "objs",
             "in": "query",
             "required": true
@@ -327,7 +341,7 @@
           {
             "type": "string",
             "default": "sites",
-            "description": "Indicates the location. Only values of \"tenants\", \"sites\", \"buildings\", \"rooms\", \"racks\", \"devices\", \"room-templates\", \"obj-templates\", \"rooms\", \"separators\", \"acs\", \"panels\", \"rows\", \"tiles\", \"cabinets\", \"groups\", \"corridors\",\"sensors\" are acceptable",
+            "description": "Indicates the location. Only values of \"tenants\", \"sites\", \"buildings\", \"rooms\", \"racks\", \"devices\", \"room-templates\", \"obj-templates\", \"rooms\", \"separators\", \"acs\", \"panels\", \"rows\", \"tiles\", \"cabinets\", \"groups\", \"corridors\",\"sensors\", \"stray-devices\" are acceptable",
             "name": "objs",
             "in": "query",
             "required": true
@@ -399,7 +413,7 @@
           {
             "type": "string",
             "default": "sites",
-            "description": "Indicates the location. Only values of \"tenants\", \"sites\", \"buildings\", \"rooms\", \"racks\", \"devices\", \"room-templates\", \"obj-templates\", \"rooms\", \"separators\", \"acs\", \"panels\", \"rows\", \"tiles\", \"cabinets\", \"groups\", \"corridors\",\"sensors\" are acceptable",
+            "description": "Indicates the location. Only values of \"tenants\", \"sites\", \"buildings\", \"rooms\", \"racks\", \"devices\", \"room-templates\", \"obj-templates\", \"rooms\", \"separators\", \"acs\", \"panels\", \"rows\", \"tiles\", \"cabinets\", \"groups\", \"corridors\",\"sensors\", \"stray-devices\" are acceptable",
             "name": "objs",
             "in": "query",
             "required": true
@@ -431,6 +445,18 @@
         ],
         "summary": "Displays possible operations for the resource in response header.",
         "operationId": "ObjectOptions",
+        "parameters": [
+          {
+            "description": "Only values of \"tenants\", \"sites\", \"buildings\", \"rooms\", \"racks\", \"devices\", \"room-templates\", \"obj-templates\", \"rooms\", \"separators\", \"acs\", \"panels\", \"rows\", \"tiles\", \"cabinets\", \"groups\", \"corridors\",\"sensors\",\"stray-devices\" are acceptable",
+            "name": "objs",
+            "in": "query"
+          },
+          {
+            "description": "ID of the object",
+            "name": "id",
+            "in": "query"
+          }
+        ],
         "responses": {
           "200": {
             "description": "Found. A response header will be returned with possible operations."
@@ -457,7 +483,7 @@
           {
             "type": "string",
             "default": "sites",
-            "description": "Indicates the location. Only values of \"tenants\", \"sites\", \"buildings\", \"rooms\", \"racks\", \"devices\", \"room-templates\", \"obj-templates\", \"rooms\", \"separators\", \"acs\", \"panels\", \"rows\", \"tiles\", \"cabinets\", \"groups\", \"corridors\", \"sensors\" are acceptable",
+            "description": "Indicates the location. Only values of \"tenants\", \"sites\", \"buildings\", \"rooms\", \"racks\", \"devices\", \"room-templates\", \"obj-templates\", \"rooms\", \"separators\", \"acs\", \"panels\", \"rows\", \"tiles\", \"cabinets\", \"groups\", \"corridors\", \"sensors\", \"stray-devices\" are acceptable",
             "name": "objs",
             "in": "query",
             "required": true
@@ -532,7 +558,7 @@
           {
             "type": "string",
             "default": "sites",
-            "description": "Indicates the object. Only values of \"tenants\", \"sites\", \"buildings\", \"rooms\", \"racks\", \"devices\" are acceptable",
+            "description": "Indicates the object. Only values of \"tenants\", \"sites\", \"buildings\", \"rooms\", \"racks\", \"devices\", \"stray-devices\" are acceptable",
             "name": "objs",
             "in": "query",
             "required": true
@@ -571,7 +597,27 @@
           "objects"
         ],
         "summary": "Displays possible operations for the resource in response header.",
-        "operationId": "GetFromObectOptions",
+        "operationId": "GetFromObjectOptions",
+        "parameters": [
+          {
+            "description": "Only values of \"tenants\", \"sites\", \"buildings\", \"rooms\", \"racks\", \"devices\", and \"stray-devices\" are acceptable",
+            "name": "objs",
+            "in": "query"
+          },
+          {
+            "description": "ID of the object.",
+            "name": "id",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "default": "/buildings/BuildingB/RoomA",
+            "description": "Hierarchal path to desired object(s). For rooms it can additionally have \"acs\",\"panels\",\"separators\", \"rows\",\"tiles\",\"corridors\", \"sensors\" and \"cabinets\". For devices it can have \"sensors\" For racks it can have \"sensors\"",
+            "name": "*",
+            "in": "path",
+            "required": true
+          }
+        ],
         "responses": {
           "200": {
             "description": "Found. A response header will be returned with possible operations."
@@ -597,7 +643,7 @@
           {
             "type": "string",
             "default": "sites",
-            "description": "Indicates the object. Only values of \"tenants\", \"sites\", \"buildings\", \"rooms\", \"racks\", \"devices\" are acceptable",
+            "description": "Indicates the object. Only values of \"tenants\", \"sites\", \"buildings\", \"rooms\", \"racks\", \"devices\", \"stray-devices\" are acceptable",
             "name": "objs",
             "in": "query",
             "required": true
@@ -636,6 +682,18 @@
         ],
         "summary": "Displays possible operations for the resource in response header.",
         "operationId": "GetFromObjectOptions",
+        "parameters": [
+          {
+            "description": "Only values of \"tenants\", \"sites\", \"buildings\", \"rooms\", \"racks\", \"devices\", and \"stray-devices\" are acceptable",
+            "name": "objs",
+            "in": "query"
+          },
+          {
+            "description": "ID of the object.",
+            "name": "id",
+            "in": "query"
+          }
+        ],
         "responses": {
           "200": {
             "description": "Found. A response header will be returned with possible operations."
@@ -660,7 +718,7 @@
           {
             "type": "string",
             "default": "sites",
-            "description": "Indicates the object. Only values of \"tenants\", \"sites\", \"buildings\", \"rooms\", \"racks\", \"devices\", \"room-templates\", \"obj-templates\", \"separators\",\"acs\",\"panels\", \"rows\", \"tiles\", \"cabinets\", \"groups\", \"corridors\", and \"sensors\" are acceptable",
+            "description": "Indicates the object. Only values of \"tenants\", \"sites\", \"buildings\", \"rooms\", \"racks\", \"devices\", \"room-templates\", \"obj-templates\", \"separators\",\"acs\",\"panels\", \"rows\", \"tiles\", \"cabinets\", \"groups\", \"corridors\", and \"sensors\", \"stray-devices\" are acceptable",
             "name": "objs",
             "in": "query",
             "required": true
@@ -716,7 +774,7 @@
           {
             "type": "string",
             "default": "sites",
-            "description": "Indicates the Object. Only values of \"tenants\", \"sites\", \"buildings\", \"rooms\", \"racks\", \"devices\", \"acs\", \"panels\", \"separators\",\"rows\", \"tiles\", \"cabinets\", \"groups\", \"corridors\", \"room-templates\", \"obj-templates\", \"sensors\" are acceptable",
+            "description": "Indicates the Object. Only values of \"tenants\", \"sites\", \"buildings\", \"rooms\", \"racks\", \"devices\", \"acs\", \"panels\", \"separators\",\"rows\", \"tiles\", \"cabinets\", \"groups\", \"corridors\", \"room-templates\", \"obj-templates\", \"sensors\", \"stray-devices\" are acceptable",
             "name": "objs",
             "in": "query",
             "required": true
@@ -833,6 +891,23 @@
         ],
         "summary": "Displays possible operations for the resource in response header.",
         "operationId": "GetFromObjectOptions",
+        "parameters": [
+          {
+            "description": "Only values of \"tenants\", \"sites\", \"buildings\", \"rooms\", \"racks\", \"devices\", and \"stray-devices\" are acceptable",
+            "name": "objs",
+            "in": "query"
+          },
+          {
+            "description": "ID of the object.",
+            "name": "id",
+            "in": "query"
+          },
+          {
+            "description": "This refers to the sub object under the objs parameter. Please refer to the OGREE wiki to better understand what objects can be considered as sub objects.",
+            "name": "subent",
+            "in": "query"
+          }
+        ],
         "responses": {
           "200": {
             "description": "Found. A response body will be returned with a meaningful message."

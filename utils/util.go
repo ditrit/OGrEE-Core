@@ -31,6 +31,7 @@ const (
 	GROUP
 	ROOMTMPL
 	OBJTMPL
+	STRAYDEV
 )
 
 func Connect() (context.Context, context.CancelFunc) {
@@ -42,10 +43,7 @@ func Message(status bool, message string) map[string]interface{} {
 }
 
 func Respond(w http.ResponseWriter, data map[string]interface{}) {
-	if err := json.NewEncoder(w).Encode(data); err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		return
-	}
+	json.NewEncoder(w).Encode(data)
 	w.Header().Add("Content-Type", "application/json")
 }
 
@@ -114,6 +112,8 @@ func EntityToString(entity int) string {
 		return "panel"
 	case SEPARATOR:
 		return "separator"
+	case STRAYDEV:
+		return "stray_device"
 	case ROOMTMPL:
 		return "room_template"
 	case OBJTMPL:
@@ -155,6 +155,8 @@ func EntityStrToInt(entity string) int {
 		return PWRPNL
 	case "separator":
 		return SEPARATOR
+	case "stray_device":
+		return STRAYDEV
 	case "room_template":
 		return ROOMTMPL
 	case "obj_template":
@@ -182,7 +184,7 @@ func GetParentOfEntityByInt(entity int) int {
 		return ROOM
 	case SENSOR:
 		return -2
-	case ROOMTMPL, OBJTMPL, GROUP:
+	case ROOMTMPL, OBJTMPL, GROUP, STRAYDEV:
 		return -1
 	default:
 		return entity - 1
