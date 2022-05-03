@@ -41,7 +41,6 @@ func init() {
 	if user == "" || pass == "" {
 		println("USER:", user)
 		println("PASS:", pass)
-		println("DEBUG NOW DEBUGGING NOW")
 		dbUri = fmt.Sprintf("mongodb://%s:%s/?readPreference=primary&ssl=false",
 			dbHost, dbPort)
 	} else {
