@@ -13,7 +13,7 @@
 try {
   dbName;
 } catch(e) {
-  dbName = "ogree"
+  dbName = "develop"
 }
 
 var m = new Mongo()
@@ -83,3 +83,8 @@ db.group.createIndex({parentId:1, name:1}, { unique: true });
 
 //Enforce unique stray objects
 db.stray_device.createIndex({parentId:1, name:1}, { unique: true });
+
+
+//Update customer record table
+var odb = m.getDB("ogree")
+odb.customer.insertOne({"name": dbName});

@@ -76,7 +76,7 @@ fi
 
 if [  -z "$name" ];
 then
-    name="ogree"
+    name="develop"
 fi
 
 echo "Path : $path";
@@ -92,6 +92,9 @@ rm -rf "$log"
 rm -rf "$path"/*
 mkdir "$path"
 mongod --dbpath "$path" --port $port --logpath "$log" --fork
+
+#Initialise the customer record DB
+mongo "$host:"$port init.js
 
 #The command below will execute the mongo script
 mongo "$host:"$port"/"$name createdb.js --eval 'var dbName = "'$name'"'

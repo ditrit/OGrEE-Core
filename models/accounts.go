@@ -71,6 +71,17 @@ func (account *Account) Create() map[string]interface{} {
 	//If the customer/db doesn't exist let's create one
 	if exists, _ := CheckIfDBExists(account.Database); !exists {
 		CreateTenantDB(account.Database)
+
+		customer := map[string]interface{}{"name": account.Database}
+
+		//Update customer record
+		ctx, cancel := u.Connect()
+		_, e := GetDBByName("ogree").Collection("customer").InsertOne(ctx, customer)
+		if e != nil {
+			return u.Message(false,
+				"Internal error while updating customer record: "+e.Error())
+		}
+		defer cancel()
 	}
 
 	ctx, cancel := u.Connect()
