@@ -123,7 +123,7 @@ func CreateTenantDB(name string) {
 	//we can move the schema validation to the DB
 	//options.CreateCollectionOptions{}
 	newDB.CreateCollection(ctx, "account", nil)
-	newDB.CreateCollection(ctx, "tenant", nil)
+	//newDB.CreateCollection(ctx, "tenant", nil)
 	newDB.CreateCollection(ctx, "site", nil)
 	newDB.CreateCollection(ctx, "building", nil)
 	newDB.CreateCollection(ctx, "room", nil)
@@ -160,13 +160,13 @@ func CreateTenantDB(name string) {
 		{Key: "name", Value: bsonx.Int32(1)},
 		{Key: "type", Value: bsonx.Int32(1)}}
 
-	tenantIdx := mongo.IndexModel{Keys: bson.M{"name": 1}, Options: options.Index().SetUnique(true)}
+	//tenantIdx := mongo.IndexModel{Keys: bson.M{"name": 1}, Options: options.Index().SetUnique(true)}
 	genericIdx := mongo.IndexModel{Keys: d, Options: options.Index().SetUnique(true)}
 	templateIdx := mongo.IndexModel{Keys: bson.M{"slug": 1}, Options: options.Index().SetUnique(true)}
 	sensorIdx := mongo.IndexModel{Keys: sd, Options: options.Index().SetUnique(true)}
 
 	//Setup Indexes
-	newDB.Collection("tenant").Indexes().CreateOne(ctx, tenantIdx)
+	//newDB.Collection("tenant").Indexes().CreateOne(ctx, tenantIdx)
 	newDB.Collection("site").Indexes().CreateOne(ctx, genericIdx)
 	newDB.Collection("building").Indexes().CreateOne(ctx, genericIdx)
 	newDB.Collection("room").Indexes().CreateOne(ctx, genericIdx)

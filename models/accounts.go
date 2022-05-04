@@ -56,7 +56,7 @@ func (account *Account) Create() map[string]interface{} {
 
 	if account.Database == "" || account.Database == "admin" ||
 		account.Database == "config" || account.Database == "local" {
-		account.Database = "ogree"
+		account.Database = "develop"
 	}
 
 	if resp, ok := account.Validate(); !ok {

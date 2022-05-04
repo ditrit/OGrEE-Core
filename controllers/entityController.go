@@ -143,7 +143,7 @@ func DispRequestMetaData(r *http.Request) {
 // parameters:
 // - name: objs
 //   in: query
-//   description: 'Indicates the Object. Only values of "tenants", "sites",
+//   description: 'Indicates the Object. Only values of "sites",
 //   "buildings", "rooms", "racks", "devices", "acs", "panels",
 //   "separators","rows", "tiles", "cabinets", "groups", "corridors",
 //   "room-templates", "obj-templates", "sensors", "stray-devices"
@@ -170,7 +170,7 @@ func DispRequestMetaData(r *http.Request) {
 //   default: 999
 // - name: ParentID
 //   description: 'All objects are linked to a
-//   parent with the exception of Tenant since it has no parent'
+//   parent with the exception of Site since it has no parent'
 //   required: true
 //   type: int
 //   default: 999
@@ -278,14 +278,14 @@ var CreateEntity = func(w http.ResponseWriter, r *http.Request) {
 // swagger:operation GET /api/{objs}/{id} objects GetObject
 // Gets an Object from the system.
 // The ID must be provided in the URL parameter
-// The name can be used instead of ID if the obj is tenant
+// The name can be used instead of ID if the obj is site
 // ---
 // produces:
 // - application/json
 // parameters:
 // - name: objs
 //   in: query
-//   description: 'Indicates the location. Only values of "tenants", "sites",
+//   description: 'Indicates the location. Only values of "sites",
 //   "buildings", "rooms", "racks", "devices", "room-templates",
 //   "obj-templates", "rooms", "separators", "acs", "panels", "rows",
 //   "tiles", "cabinets", "groups", "corridors","sensors","stray-devices"
@@ -295,7 +295,7 @@ var CreateEntity = func(w http.ResponseWriter, r *http.Request) {
 //   default: "sites"
 // - name: ID
 //   in: path
-//   description: 'ID of desired object or Name of Tenant.
+//   description: 'ID of desired object or Name of Site.
 //   For templates the slug is the ID'
 //   required: true
 //   type: int
@@ -317,7 +317,7 @@ var CreateEntity = func(w http.ResponseWriter, r *http.Request) {
 // parameters:
 // - name: objs
 //   in: query
-//   description: 'Only values of "tenants", "sites",
+//   description: 'Only values of "sites",
 //   "buildings", "rooms", "racks", "devices", "room-templates",
 //   "obj-templates", "rooms", "separators", "acs", "panels", "rows",
 //   "tiles", "cabinets", "groups", "corridors","sensors","stray-devices"
@@ -439,7 +439,7 @@ var GetEntity = func(w http.ResponseWriter, r *http.Request) {
 // parameters:
 // - name: objs
 //   in: query
-//   description: 'Indicates the location. Only values of "tenants", "sites",
+//   description: 'Indicates the location. Only values of "sites",
 //   "buildings", "rooms", "racks", "devices", "room-templates",
 //   "obj-templates", "rooms", "separators", "acs", "panels", "rows",
 //   "tiles", "cabinets", "groups", "corridors", "sensors", "stray-devices"
@@ -527,7 +527,7 @@ var GetAllEntities = func(w http.ResponseWriter, r *http.Request) {
 // parameters:
 // - name: objs
 //   in: query
-//   description: 'Indicates the location. Only values of "tenants", "sites",
+//   description: 'Indicates the location. Only values of "sites",
 //   "buildings", "rooms", "racks", "devices", "room-templates",
 //   "obj-templates", "rooms", "separators", "acs", "panels", "rows",
 //   "tiles", "cabinets", "groups", "corridors","sensors", "stray-devices"
@@ -624,7 +624,7 @@ var DeleteEntity = func(w http.ResponseWriter, r *http.Request) {
 // parameters:
 // - name: objs
 //   in: query
-//   description: 'Indicates the location. Only values of "tenants", "sites",
+//   description: 'Indicates the location. Only values of "sites",
 //   "buildings", "rooms", "racks", "devices", "room-templates",
 //   "obj-templates", "rooms", "separators", "acs", "panels", "rows",
 //   "tiles", "cabinets", "groups", "corridors", "sensors", "stray-devices"
@@ -690,7 +690,7 @@ var DeleteEntity = func(w http.ResponseWriter, r *http.Request) {
 // parameters:
 // - name: objs
 //   in: query
-//   description: 'Indicates the location. Only values of "tenants", "sites",
+//   description: 'Indicates the location. Only values of "sites",
 //   "buildings", "rooms", "racks", "devices", "room-templates",
 //   "obj-templates", "rooms", "separators", "acs", "panels", "rows",
 //   "tiles", "cabinets", "groups", "corridors","sensors", "stray-devices"
@@ -852,7 +852,7 @@ var UpdateEntity = func(w http.ResponseWriter, r *http.Request) {
 // parameters:
 // - name: objs
 //   in: query
-//   description: 'Indicates the object. Only values of "tenants", "sites",
+//   description: 'Indicates the object. Only values of "sites",
 //   "buildings", "rooms", "racks", "devices", "room-templates",
 //   "obj-templates", "separators","acs","panels", "rows", "tiles",
 //   "cabinets", "groups", "corridors", and "sensors", "stray-devices"
@@ -862,18 +862,18 @@ var UpdateEntity = func(w http.ResponseWriter, r *http.Request) {
 //   default: "sites"
 // - name: Name
 //   in: query
-//   description: Name of tenant
+//   description: Name of Site
 //   required: false
 //   type: string
 //   default: "INFINITI"
 // - name: Category
 //   in: query
-//   description: Category of Tenant (ex. Consumer Electronics, Medical)
+//   description: Category of Site (ex. Consumer Electronics, Medical)
 //   required: false
 //   type: string
 //   default: "Auto"
 // - name: Domain
-//   description: 'Domain of the Tenant'
+//   description: 'Domain of the Site'
 //   required: false
 //   type: string
 //   default: "High End Auto"
@@ -957,8 +957,8 @@ var GetEntityByQuery = func(w http.ResponseWriter, r *http.Request) {
 
 // swagger:operation GET /api/{obj}/{id}/{subent} objects GetFromObject
 // Obtain all objects 2 levels lower in the system.
-// For Example: /api/tenants/{id}/buildings
-// Will return all buildings of a tenant
+// For Example: /api/sites/{id}/buildings
+// Will return all buildings of a site
 // Returns JSON body with all subobjects under the Object
 // ---
 // produces:
@@ -966,11 +966,11 @@ var GetEntityByQuery = func(w http.ResponseWriter, r *http.Request) {
 // parameters:
 // - name: obj
 //   in: query
-//   description: 'Indicates the object. Only values of "tenants", "sites",
+//   description: 'Indicates the object. Only values of "sites",
 //   "buildings", "rooms" are acceptable'
 //   required: true
 //   type: string
-//   default: "tenants"
+//   default: "sites"
 // - name: ID
 //   in: query
 //   description: ID of object
@@ -998,7 +998,7 @@ var GetEntityByQuery = func(w http.ResponseWriter, r *http.Request) {
 // parameters:
 // - name: objs
 //   in: query
-//   description: 'Only values of "tenants", "sites",
+//   description: 'Only values of "sites",
 //   "buildings", "rooms", "racks", "devices", and "stray-devices"
 //    are acceptable'
 // - name: id
@@ -1043,8 +1043,8 @@ var GetEntitiesOfAncestor = func(w http.ResponseWriter, r *http.Request) {
 
 	resp := u.Message(true, "success")
 
-	if enum == u.TENANT {
-		id, e = mux.Vars(r)["tenant_name"]
+	if enum == u.SITE {
+		id, e = mux.Vars(r)["site_name"]
 	} else {
 		id, e = mux.Vars(r)["id"]
 	}
@@ -1102,7 +1102,7 @@ var GetEntitiesOfAncestor = func(w http.ResponseWriter, r *http.Request) {
 // parameters:
 // - name: objs
 //   in: query
-//   description: 'Indicates the object. Only values of "tenants", "sites",
+//   description: 'Indicates the object. Only values of "sites",
 //   "buildings", "rooms", "racks", "devices", "stray-devices" are acceptable'
 //   required: true
 //   type: string
@@ -1136,7 +1136,7 @@ var GetEntitiesOfAncestor = func(w http.ResponseWriter, r *http.Request) {
 // parameters:
 // - name: objs
 //   in: query
-//   description: 'Only values of "tenants", "sites",
+//   description: 'Only values of "sites",
 //   "buildings", "rooms", "racks", "devices", and "stray-devices"
 //    are acceptable'
 // - name: id
@@ -1175,21 +1175,21 @@ var GetEntityHierarchy = func(w http.ResponseWriter, r *http.Request) {
 	id, e := mux.Vars(r)["id"]
 	if e == false {
 
-		if entity != "tenant" {
+		if entity != "site" {
 			u.Respond(w, u.Message(false, "Error while parsing path parameters"))
 			u.ErrLog("Error while parsing path parameters", "GET ENTITYHIERARCHY", "", r)
 			return
 		}
-		id, e = mux.Vars(r)["tenant_name"]
+		id, e = mux.Vars(r)["site_name"]
 
 		if e == false {
-			u.Respond(w, u.Message(false, "Error while parsing tenant name"))
+			u.Respond(w, u.Message(false, "Error while parsing site name"))
 			u.ErrLog("Error while parsing path parameters", "GET ENTITYHIERARCHY", "", r)
 			return
 		}
 	}
 
-	if entity == "tenant" {
+	if entity == "site" {
 
 		_, e := models.GetEntity(bson.M{"name": id}, entity, db)
 		if e != "" {
@@ -1318,16 +1318,16 @@ var GetEntityHierarchy = func(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// swagger:operation GET /api/tenants/{name}/all objects GetFromObject
-// Obtain all objects related to Tenant in the system.
-// Returns JSON body with all subobjects under the Tenant
+// swagger:operation GET /api/sites/{name}/all objects GetFromObject
+// Obtain all objects related to Site in the system.
+// Returns JSON body with all subobjects under the Site
 // ---
 // produces:
 // - application/json
 // parameters:
 // - name: name
 //   in: query
-//   description: Name of Tenant
+//   description: Name of Site
 //   required: true
 //   type: int
 //   default: 999
@@ -1338,7 +1338,7 @@ var GetEntityHierarchy = func(w http.ResponseWriter, r *http.Request) {
 //     '404':
 //         description: Nothing Found. An error message will be returned.
 
-// swagger:operation OPTIONS /api/tenants/{name}/all objects GetFromObjectOptions
+// swagger:operation OPTIONS /api/sites/{name}/all objects GetFromObjectOptions
 // Displays possible operations for the resource in response header.
 // ---
 // produces:
@@ -1346,33 +1346,33 @@ var GetEntityHierarchy = func(w http.ResponseWriter, r *http.Request) {
 // parameters:
 // - name: name
 //   in: query
-//   description: 'Name of tenant.'
+//   description: 'Name of site.'
 // responses:
 //     '200':
 //         description: 'Found. A response header will be returned with
 //         possible operation.'
 //     '404':
 //         description: Nothing Found.
-var GetTenantHierarchy = func(w http.ResponseWriter, r *http.Request) {
+var GetSiteHierarchy = func(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("******************************************************")
-	fmt.Println("FUNCTION CALL: 	 GetTenantHierarchy ")
+	fmt.Println("FUNCTION CALL: 	 GetSiteHierarchy ")
 	fmt.Println("******************************************************")
 	DispRequestMetaData(r)
 	user := r.Context().Value("user").(map[string]interface{})
 	db := user["db"].(string)
 	fmt.Println("Client: ", db)
 
-	entity := "tenant"
+	entity := "site"
 	resp := u.Message(true, "success")
 	var indicator string
 	var limit int
 	var lastSlashIdx int
 	var end int
 
-	id, e := mux.Vars(r)["tenant_name"]
+	id, e := mux.Vars(r)["site_name"]
 	if e == false {
-		u.Respond(w, u.Message(false, "Error while parsing tenant name"))
-		u.ErrLog("Error while parsing path parameters", "GET TENANTHIERARCHY", "", r)
+		u.Respond(w, u.Message(false, "Error while parsing site name"))
+		u.ErrLog("Error while parsing path parameters", "GET SITEHIERARCHY", "", r)
 		return
 	}
 
@@ -1387,7 +1387,7 @@ var GetTenantHierarchy = func(w http.ResponseWriter, r *http.Request) {
 		if end == 0 {
 
 			//objID, _ := primitive.ObjectIDFromHex(id)
-			data, e1 := models.GetEntity(bson.M{"name": id}, "tenant", db)
+			data, e1 := models.GetEntity(bson.M{"name": id}, "site", db)
 
 			if e1 != "" {
 				resp = u.Message(false, "Error while getting :"+entity+","+e1)
@@ -1429,7 +1429,7 @@ var GetTenantHierarchy = func(w http.ResponseWriter, r *http.Request) {
 	println("Indicator: ", indicator)
 	println("The limit is: ", limit)
 
-	data, e1 := models.GetTenantHierarchy(entity, id, u.TENANT, limit, db)
+	data, e1 := models.GetSiteHierarchy(entity, id, u.SITE, limit, db)
 
 	if data == nil {
 		resp = u.Message(false, "Error while getting :"+entity+","+e1)
@@ -1476,7 +1476,7 @@ var GetTenantHierarchy = func(w http.ResponseWriter, r *http.Request) {
 // parameters:
 // - name: objs
 //   in: query
-//   description: 'Indicates the object. Only values of "tenants", "sites",
+//   description: 'Indicates the object. Only values of "sites",
 //   "buildings", "rooms", "racks", "devices", "stray-devices" are acceptable'
 //   required: true
 //   type: string
@@ -1512,7 +1512,7 @@ var GetTenantHierarchy = func(w http.ResponseWriter, r *http.Request) {
 // parameters:
 // - name: objs
 //   in: query
-//   description: 'Only values of "tenants", "sites",
+//   description: 'Only values of "sites",
 //   "buildings", "rooms", "racks", "devices", and "stray-devices"
 //    are acceptable'
 // - name: id
@@ -1553,7 +1553,7 @@ var GetEntitiesUsingNamesOfParents = func(w http.ResponseWriter, r *http.Request
 	}
 
 	id, e := mux.Vars(r)["id"]
-	tname, e1 := mux.Vars(r)["tenant_name"]
+	tname, e1 := mux.Vars(r)["site_name"]
 	if e == false && e1 == false {
 		u.Respond(w, u.Message(false, "Error while parsing path parameters"))
 		u.ErrLog("Error while parsing path parameters", "GET ENTITIESUSINGANCESTORNAMES", "", r)
@@ -1606,7 +1606,7 @@ var GetEntitiesUsingNamesOfParents = func(w http.ResponseWriter, r *http.Request
 		var e3 string
 		if e1 == true {
 			println("we are getting entities here")
-			data, e3 = models.GetEntitiesUsingTenantAsAncestor(entity, tname, ancestry, db)
+			data, e3 = models.GetEntitiesUsingSiteAsAncestor(entity, tname, ancestry, db)
 
 		} else {
 			data, e3 = models.GetEntitiesUsingAncestorNames(entity, oID, ancestry, db)
@@ -1638,7 +1638,7 @@ var GetEntitiesUsingNamesOfParents = func(w http.ResponseWriter, r *http.Request
 		var data map[string]interface{}
 		var e3 string
 		if e1 == true {
-			data, e3 = models.GetEntityUsingTenantAsAncestor(entity, tname, ancestry, db)
+			data, e3 = models.GetEntityUsingSiteAsAncestor(entity, tname, ancestry, db)
 		} else {
 			data, e3 = models.GetEntityUsingAncestorNames(entity, oID, ancestry, db)
 		}
@@ -1680,7 +1680,7 @@ var GetEntitiesUsingNamesOfParents = func(w http.ResponseWriter, r *http.Request
 // parameters:
 // - name: objs
 //   in: query
-//   description: 'Only values of "tenants", "sites",
+//   description: 'Only values of "sites",
 //   "buildings", "rooms", "racks", "devices", "room-templates",
 //   "obj-templates", "rooms", "separators", "acs", "panels", "rows",
 //   "tiles", "cabinets", "groups", "corridors","sensors","stray-devices"
@@ -1726,7 +1726,7 @@ var GetEntityHierarchyNonStd = func(w http.ResponseWriter, r *http.Request) {
 	//result := map[string][]map[string]interface{}{}
 
 	if e == false {
-		if id, e1 = mux.Vars(r)["tenant_name"]; e1 == false {
+		if id, e1 = mux.Vars(r)["site_name"]; e1 == false {
 			u.Respond(w, u.Message(false, "Error while parsing Tpath parameters"))
 			u.ErrLog("Error while parsing path parameters", "GETHIERARCHYNONSTD", "", r)
 			return
@@ -1735,10 +1735,10 @@ var GetEntityHierarchyNonStd = func(w http.ResponseWriter, r *http.Request) {
 
 	entNum := u.EntityStrToInt(entity)
 
-	if entity == "tenant" {
-		println("Getting TENANT HEIRARCHY")
+	if entity == "site" {
+		println("Getting SITE HEIRARCHY")
 		println("With ID: ", id)
-		data, err = models.GetTenantHierarchy(entity, id, entNum, u.AC, db)
+		data, err = models.GetSiteHierarchy(entity, id, entNum, u.AC, db)
 		if err != "" {
 			println("We have ERR")
 		}

@@ -14,8 +14,7 @@ import (
 )
 
 const (
-	TENANT = iota
-	SITE
+	SITE = iota
 	BLDG
 	ROOM
 	RACK
@@ -133,7 +132,7 @@ func ValidatePatch(ent int, t map[string]interface{}, db string) (map[string]int
 			}
 
 		case "parentId":
-			if ent < ROOMTMPL && ent > TENANT {
+			if ent < ROOMTMPL && ent > SITE {
 				x, ok := validateParent(u.EntityToString(ent), ent, t, db)
 				if !ok {
 					return x, ok
@@ -145,14 +144,6 @@ func ValidatePatch(ent int, t map[string]interface{}, db string) (map[string]int
 				x, ok := ValidateEntity(ent, t, db)
 				if !ok {
 					return x, ok
-				}
-			}
-
-		case "attributes.color": // TENANT
-			if ent == TENANT {
-				if v, _ := t[k]; v == nil {
-					return u.Message(false,
-						"Field: "+k+" cannot nullified!"), false
 				}
 			}
 
@@ -183,7 +174,7 @@ func ValidatePatch(ent int, t map[string]interface{}, db string) (map[string]int
 			}
 
 		case "attributes": //TENANT ... SENSOR, OBJTMPL
-			if (ent >= TENANT && ent < ROOMTMPL) || ent == OBJTMPL {
+			if (ent >= SITE && ent < ROOMTMPL) || ent == OBJTMPL {
 				if v, _ := t[k]; v == nil {
 					return u.Message(false,
 						"Field: "+k+" cannot nullified!"), false
@@ -266,7 +257,7 @@ func ValidateEntity(entity int, t map[string]interface{}, db string) (map[string
 		attribute
 	*/
 	switch entity {
-	case TENANT, SITE, BLDG, ROOM, RACK, DEVICE, AC,
+	case SITE, BLDG, ROOM, RACK, DEVICE, AC,
 		PWRPNL, SEPARATOR, CABINET, ROW,
 		TILE, CORIDOR, SENSOR:
 		if t["name"] == nil || t["name"] == "" {
@@ -298,7 +289,7 @@ func ValidateEntity(entity int, t map[string]interface{}, db string) (map[string
 			}
 			defer cancel()
 
-		} else if entity > TENANT && entity <= SENSOR {
+		} else if entity > SITE && entity <= SENSOR {
 			_, ok := t["parentId"].(string)
 			if !ok {
 				return u.Message(false, "ParentID is not valid"), false
@@ -362,11 +353,6 @@ func ValidateEntity(entity int, t map[string]interface{}, db string) (map[string
 					return u.Message(false, "Attributes should be on the payload"), false
 				} else {
 					switch entity {
-					case TENANT:
-						if _, ok := v["color"]; !ok || v["color"] == "" {
-							return u.Message(false,
-								"Color Attribute must be specified on the payload"), false
-						}
 
 					case SITE:
 						switch v["orientation"] {
@@ -872,14 +858,14 @@ func GetEntityHierarchy(ID primitive.ObjectID, ent string, start, end int, db st
 			}
 		}
 
-		if ent == "room" {
+		/*if ent == "room" {
 			for i := AC; i < GROUP+1; i++ {
 				roomEnts, _ := GetManyEntities(u.EntityToString(i), bson.M{"parentId": pid}, nil, db)
 				if roomEnts != nil {
 					children = append(children, roomEnts...)
 				}
 			}
-		}
+		}*/
 
 		if ent == "device" {
 			childEnt = "device"
@@ -1005,9 +991,9 @@ func GetEntityUsingAncestorNames(ent string, id primitive.ObjectID, ancestry []m
 	return x, ""
 }
 
-func GetTenantHierarchy(entity, name string, entnum, end int, db string) (map[string]interface{}, string) {
+func GetSiteHierarchy(entity, name string, entnum, end int, db string) (map[string]interface{}, string) {
 
-	t, e := GetEntity(bson.M{"name": name}, "tenant", db)
+	t, e := GetEntity(bson.M{"name": name}, "site", db)
 	if e != "" {
 		fmt.Println(e)
 		return nil, e
@@ -1045,7 +1031,7 @@ func GetTenantHierarchy(entity, name string, entnum, end int, db string) (map[st
 
 }
 
-func GetEntitiesUsingTenantAsAncestor(ent, id string, ancestry []map[string]string, db string) ([]map[string]interface{}, string) {
+func GetEntitiesUsingSiteAsAncestor(ent, id string, ancestry []map[string]string, db string) ([]map[string]interface{}, string) {
 	top, e := GetEntity(bson.M{"name": id}, ent, db)
 	if e != "" {
 		return nil, e
@@ -1082,7 +1068,7 @@ func GetEntitiesUsingTenantAsAncestor(ent, id string, ancestry []map[string]stri
 	return nil, ""
 }
 
-func GetEntityUsingTenantAsAncestor(ent, id string, ancestry []map[string]string, db string) (map[string]interface{}, string) {
+func GetEntityUsingSiteAsAncestor(ent, id string, ancestry []map[string]string, db string) (map[string]interface{}, string) {
 	top, e := GetEntity(bson.M{"name": id}, ent, db)
 	if e != "" {
 		return nil, e
@@ -1113,9 +1099,9 @@ func GetEntitiesOfAncestor(id interface{}, ent int, entStr, wantedEnt, db string
 	var ans []map[string]interface{}
 	var t map[string]interface{}
 	var e, e1 string
-	if ent == TENANT {
+	if ent == SITE {
 
-		t, e = GetEntity(bson.M{"name": id}, "tenant", db)
+		t, e = GetEntity(bson.M{"name": id}, "site", db)
 		if e != "" {
 			return nil, e
 		}
