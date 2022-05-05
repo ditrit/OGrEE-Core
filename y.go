@@ -2579,7 +2579,7 @@ yynewstate:
 	case 200:
 		{
 			attr := map[string]interface{}{"posU/slot": yyS[yypt-2].node}
-			res := checkIfTemplate(yyS[yypt-0].node)
+			res := checkIfTemplate((yyS[yypt-0].node).execute())
 			if res == false {
 				attr["sizeU"] = yyS[yypt-0].node
 			} else {

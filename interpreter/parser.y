@@ -594,7 +594,7 @@ OCCR:
         
         
         |TOK_DEVICE TOK_COL P TOK_ATTRSPEC EXPR TOK_ATTRSPEC EXPR TOK_ATTRSPEC EXPR {$$=&commonNode{COMMON, cmd.GetOCLIAtrributes, "GetOCAttr", []interface{}{(replaceOCLICurrPath($3)),cmd.DEVICE,map[string]interface{}{"attributes":map[string]interface{}{"slot":$5, "template":$7, "orientation":$9}} }}}
-        |TOK_DEVICE TOK_COL P TOK_ATTRSPEC EXPR TOK_ATTRSPEC EXPR {attr := map[string]interface{}{"posU/slot":$5}; res := checkIfTemplate($7); if res == false {attr["sizeU"] = $7} else {attr["template"]=$7}; $$=&commonNode{COMMON, cmd.GetOCLIAtrributes, "GetOCAttr", []interface{}{(replaceOCLICurrPath($3)),cmd.DEVICE,map[string]interface{}{"attributes":attr} }}}
+        |TOK_DEVICE TOK_COL P TOK_ATTRSPEC EXPR TOK_ATTRSPEC EXPR {attr := map[string]interface{}{"posU/slot":$5}; res := checkIfTemplate(($7).execute()); if res == false {attr["sizeU"] = $7} else {attr["template"]=$7}; $$=&commonNode{COMMON, cmd.GetOCLIAtrributes, "GetOCAttr", []interface{}{(replaceOCLICurrPath($3)),cmd.DEVICE,map[string]interface{}{"attributes":attr} }}}
 
 
 

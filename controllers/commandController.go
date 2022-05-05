@@ -1115,86 +1115,7 @@ func GetOCLIAtrributes(path string, ent int, data map[string]interface{}) {
 
 		//If user provided templates, get the JSON
 		//and parse into templates
-		if q, ok := attr["template"]; ok {
-			if qS, ok := q.(string); ok {
-				if tmpl := fetchTemplate(qS, ROOM); tmpl != nil {
-					//MergeMaps(attr, tmpl, true)
-					if sizeInf, ok := tmpl["sizeWDHmm"].([]interface{}); ok && len(sizeInf) == 3 {
-						attrSerialiser := func(someVal interface{}, idx string) string {
-							if x, ok := someVal.(int); ok {
-								return strconv.Itoa(x / 10)
-							} else if x, ok := someVal.(float64); ok {
-								return strconv.FormatFloat(x/10.0, 'G', -1, 64)
-							} else {
-								msg := "Warning: Invalid " + idx +
-									" value detected in size." +
-									" Resorting to default"
-								println(msg)
-								return "5"
-							}
-						}
-
-						var xS, yS, zS string
-						xS = attrSerialiser(sizeInf[0], "x")
-						yS = attrSerialiser(sizeInf[1], "y")
-						zS = attrSerialiser(sizeInf[2], "height")
-
-						attr["size"] = "{\"x\":" + xS + ", \"y\":" + yS + "}"
-						attr["sizeUnit"] = "cm"
-						attr["height"] = zS
-						attr["heightUnit"] = "cm"
-
-						//Copy Description
-						if _, ok := tmpl["description"]; ok {
-							if descTable, ok := tmpl["description"].([]interface{}); ok {
-								data["description"] = descTable
-							} else {
-								data["description"] = []interface{}{tmpl["description"]}
-							}
-						} else {
-							data["description"] = []string{}
-						}
-
-						//fbxModel section
-						if check := CopyAttr(attr, tmpl, "fbxModel"); !check {
-							attr["fbxModel"] = ""
-						}
-
-						//Merge attributes if available
-						if tmplAttrsInf, ok := tmpl["attributes"]; ok {
-							if tmplAttrs, ok := tmplAttrsInf.(map[string]interface{}); ok {
-								MergeMaps(attr, tmplAttrs, false)
-							}
-						}
-					} else {
-						println("Warning, invalid size value in template.",
-							"Default values will be assigned")
-
-					}
-				} else {
-					attr["template"] = ""
-					println("Warning: template was not found.",
-						"it will not be used")
-					WarningLogger.Println("Invalid data type or incorrect name used to invoke template")
-				}
-
-			} else {
-				attr["template"] = ""
-				println("Warning: template must be a string that",
-					" refers to an existing imported template.",
-					q, " will not be used")
-				WarningLogger.Println("Invalid data type used to invoke template")
-			}
-
-		} else {
-			attr["template"] = ""
-			//Serialise size and posXY if given
-			if _, ok := attr["size"].(string); ok {
-				attr["size"] = serialiseAttr(attr, "size")
-			} else {
-				attr["size"] = serialiseAttr2(attr, "size")
-			}
-		}
+		GetOCLIAtrributesTemplateHelper(attr, data, ent)
 
 		//Serialise posXY if given
 		if _, ok := attr["posXY"].(string); ok {
@@ -1264,37 +1185,42 @@ func GetOCLIAtrributes(path string, ent int, data map[string]interface{}) {
 			} else {
 				attr["slot"] = x
 			}
-
 		}
 
-		if parAttr, ok := parent["attributes"].(map[string]interface{}); ok {
-			if rackSizeInf, ok := parAttr["size"]; ok {
-				values := map[string]interface{}{}
+		//If user provided templates, get the JSON
+		//and parse into templates
+		if _, ok := attr["template"]; ok {
+			GetOCLIAtrributesTemplateHelper(attr, data, DEVICE)
+		} else {
+			if parAttr, ok := parent["attributes"].(map[string]interface{}); ok {
+				if rackSizeInf, ok := parAttr["size"]; ok {
+					values := map[string]interface{}{}
 
-				if rackSizeComplex, ok := rackSizeInf.(string); ok {
-					q := json.NewDecoder(strings.NewReader(rackSizeComplex))
-					q.Decode(&values)
-					if determineStrKey(values, []string{"x"}) == "x" &&
-						determineStrKey(values, []string{"y"}) == "y" {
-						if _, ok := values["x"].(int); ok {
-							values["x"] = values["x"].(int) / 10
+					if rackSizeComplex, ok := rackSizeInf.(string); ok {
+						q := json.NewDecoder(strings.NewReader(rackSizeComplex))
+						q.Decode(&values)
+						if determineStrKey(values, []string{"x"}) == "x" &&
+							determineStrKey(values, []string{"y"}) == "y" {
+							if _, ok := values["x"].(int); ok {
+								values["x"] = values["x"].(int) / 10
 
-						} else if _, ok := values["x"].(float64); ok {
-							values["x"] = values["x"].(float64) / 10.0
+							} else if _, ok := values["x"].(float64); ok {
+								values["x"] = values["x"].(float64) / 10.0
+							}
+
+							if _, ok := values["y"].(int); ok {
+								values["y"] = values["y"].(int) / 10
+
+							} else if _, ok := values["y"].(float64); ok {
+								values["y"] = values["y"].(float64) / 10.0
+							}
+							newValues, _ := json.Marshal(values)
+							attr["size"] = string(newValues)
+
 						}
-
-						if _, ok := values["y"].(int); ok {
-							values["y"] = values["y"].(int) / 10
-
-						} else if _, ok := values["y"].(float64); ok {
-							values["y"] = values["y"].(float64) / 10.0
-						}
-						newValues, _ := json.Marshal(values)
-						attr["size"] = string(newValues)
-
 					}
-				}
 
+				}
 			}
 		}
 
@@ -1309,31 +1235,6 @@ func GetOCLIAtrributes(path string, ent int, data map[string]interface{}) {
 		}
 
 		MergeMaps(attr, baseAttrs, false)
-
-		//If user provided templates, get the JSON
-		//and parse into templates
-		if q, ok := attr["template"]; ok {
-			if qS, ok := q.(string); ok {
-				if tmpl := fetchTemplate(qS, ROOM); tmpl != nil {
-					MergeMaps(attr, tmpl, true)
-				} else {
-					attr["template"] = ""
-					println("Warning: template was not found.",
-						"it will not be used")
-					WarningLogger.Println("Invalid data type or incorrect name used to invoke template")
-				}
-
-			} else {
-				attr["template"] = ""
-				println("Warning: template must be a string that",
-					" refers to an existing imported template.",
-					q, " will not be used")
-				WarningLogger.Println("Invalid data type used to invoke template")
-			}
-
-		} else {
-			attr["template"] = ""
-		}
 
 		data["domain"] = domain
 		data["parentId"] = parent["id"]
@@ -1357,6 +1258,131 @@ func GetOCLIAtrributes(path string, ent int, data map[string]interface{}) {
 			PostObj(ent, "corridor", data)
 		} else {
 			PostObj(ent, "group", data)
+		}
+	}
+}
+
+//If user provided templates, get the JSON
+//and parse into templates
+func GetOCLIAtrributesTemplateHelper(attr, data map[string]interface{}, ent int) {
+	//Inner func declaration used for importing
+	//data from templates
+	attrSerialiser := func(someVal interface{}, idx string, ent int) string {
+		if x, ok := someVal.(int); ok {
+			if ent == DEVICE {
+				return strconv.Itoa(x)
+			}
+			return strconv.Itoa(x / 10)
+		} else if x, ok := someVal.(float64); ok {
+			if ent == DEVICE {
+				return strconv.FormatFloat(x, 'G', -1, 64)
+			}
+			return strconv.FormatFloat(x/10.0, 'G', -1, 64)
+		} else {
+			msg := "Warning: Invalid " + idx +
+				" value detected in size." +
+				" Resorting to default"
+			println(msg)
+			return "5"
+		}
+	}
+
+	if q, ok := attr["template"]; ok {
+		if qS, ok := q.(string); ok {
+			if tmpl := fetchTemplate(qS, ROOM); tmpl != nil {
+				//MergeMaps(attr, tmpl, true)
+				if sizeInf, ok := tmpl["sizeWDHmm"].([]interface{}); ok && len(sizeInf) == 3 {
+
+					var xS, yS, zS string
+					xS = attrSerialiser(sizeInf[0], "x", ent)
+					yS = attrSerialiser(sizeInf[1], "y", ent)
+					zS = attrSerialiser(sizeInf[2], "height", ent)
+
+					attr["size"] = "{\"x\":" + xS + ", \"y\":" + yS + "}"
+					attr["height"] = zS
+
+					if ent == DEVICE {
+						attr["sizeUnit"] = "mm"
+						attr["heightUnit"] = "mm"
+						if tmpx, ok := tmpl["attributes"]; ok {
+							if x, ok := tmpx.(map[string]interface{}); ok {
+								if tmp, ok := x["type"]; ok {
+									if t, ok := tmp.(string); ok {
+										if t == "chassis" || t == "server" {
+											res := 0
+											if val, ok := sizeInf[2].(float64); ok {
+												res = int((val / 1000) / 0.04445)
+											} else if val, ok := sizeInf[2].(int); ok {
+												res = int((float64(val) / 1000) / 0.04445)
+											} else {
+												//Resort to default value
+												msg := "Warning, invalid value provided for" +
+													" sizeU. Defaulting to 5"
+												println(msg)
+												res = int((5 / 1000) / 0.04445)
+											}
+											attr["sizeU"] = strconv.Itoa(res)
+
+										}
+									}
+								}
+							}
+						}
+
+					} else {
+						attr["sizeUnit"] = "cm"
+						attr["heightUnit"] = "cm"
+					}
+
+					//Copy Description
+					if _, ok := tmpl["description"]; ok {
+						if descTable, ok := tmpl["description"].([]interface{}); ok {
+							data["description"] = descTable
+						} else {
+							data["description"] = []interface{}{tmpl["description"]}
+						}
+					} else {
+						data["description"] = []string{}
+					}
+
+					//fbxModel section
+					if check := CopyAttr(attr, tmpl, "fbxModel"); !check {
+						attr["fbxModel"] = ""
+					}
+
+					//Merge attributes if available
+					if tmplAttrsInf, ok := tmpl["attributes"]; ok {
+						if tmplAttrs, ok := tmplAttrsInf.(map[string]interface{}); ok {
+							MergeMaps(attr, tmplAttrs, false)
+						}
+					}
+				} else {
+					println("Warning, invalid size value in template.",
+						"Default values will be assigned")
+
+				}
+			} else {
+				attr["template"] = ""
+				println("Warning: template was not found.",
+					"it will not be used")
+				WarningLogger.Println("Invalid data type or incorrect name used to invoke template")
+			}
+
+		} else {
+			attr["template"] = ""
+			println("Warning: template must be a string that",
+				" refers to an existing imported template.",
+				q, " will not be used")
+			WarningLogger.Println("Invalid data type used to invoke template")
+		}
+
+	} else {
+		attr["template"] = ""
+		//Serialise size and posXY if given
+		if _, ok := attr["size"].(string); ok {
+			attr["size"] = serialiseAttr(attr, "size")
+		} else {
+			attr["size"] = serialiseAttr2(attr, "size")
 		}
 	}
 }
