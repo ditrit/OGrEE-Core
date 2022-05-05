@@ -143,7 +143,7 @@ func DispRequestMetaData(r *http.Request) {
 // parameters:
 // - name: objs
 //   in: query
-//   description: 'Indicates the Object. Only values of "sites",
+//   description: 'Indicates the Object. Only values of "sites","domains",
 //   "buildings", "rooms", "racks", "devices", "acs", "panels",
 //   "separators","rows", "tiles", "cabinets", "groups", "corridors",
 //   "room-templates", "obj-templates", "sensors", "stray-devices"
@@ -285,7 +285,7 @@ var CreateEntity = func(w http.ResponseWriter, r *http.Request) {
 // parameters:
 // - name: objs
 //   in: query
-//   description: 'Indicates the location. Only values of "sites",
+//   description: 'Indicates the location. Only values of "sites","domains",
 //   "buildings", "rooms", "racks", "devices", "room-templates",
 //   "obj-templates", "rooms", "separators", "acs", "panels", "rows",
 //   "tiles", "cabinets", "groups", "corridors","sensors","stray-devices"
@@ -317,7 +317,7 @@ var CreateEntity = func(w http.ResponseWriter, r *http.Request) {
 // parameters:
 // - name: objs
 //   in: query
-//   description: 'Only values of "sites",
+//   description: 'Only values of "sites","domains",
 //   "buildings", "rooms", "racks", "devices", "room-templates",
 //   "obj-templates", "rooms", "separators", "acs", "panels", "rows",
 //   "tiles", "cabinets", "groups", "corridors","sensors","stray-devices"
@@ -439,7 +439,7 @@ var GetEntity = func(w http.ResponseWriter, r *http.Request) {
 // parameters:
 // - name: objs
 //   in: query
-//   description: 'Indicates the location. Only values of "sites",
+//   description: 'Indicates the location. Only values of "sites","domains",
 //   "buildings", "rooms", "racks", "devices", "room-templates",
 //   "obj-templates", "rooms", "separators", "acs", "panels", "rows",
 //   "tiles", "cabinets", "groups", "corridors", "sensors", "stray-devices"
@@ -527,7 +527,7 @@ var GetAllEntities = func(w http.ResponseWriter, r *http.Request) {
 // parameters:
 // - name: objs
 //   in: query
-//   description: 'Indicates the location. Only values of "sites",
+//   description: 'Indicates the location. Only values of "sites","domains",
 //   "buildings", "rooms", "racks", "devices", "room-templates",
 //   "obj-templates", "rooms", "separators", "acs", "panels", "rows",
 //   "tiles", "cabinets", "groups", "corridors","sensors", "stray-devices"
@@ -624,7 +624,7 @@ var DeleteEntity = func(w http.ResponseWriter, r *http.Request) {
 // parameters:
 // - name: objs
 //   in: query
-//   description: 'Indicates the location. Only values of "sites",
+//   description: 'Indicates the location. Only values of "sites","domains",
 //   "buildings", "rooms", "racks", "devices", "room-templates",
 //   "obj-templates", "rooms", "separators", "acs", "panels", "rows",
 //   "tiles", "cabinets", "groups", "corridors", "sensors", "stray-devices"
@@ -690,7 +690,7 @@ var DeleteEntity = func(w http.ResponseWriter, r *http.Request) {
 // parameters:
 // - name: objs
 //   in: query
-//   description: 'Indicates the location. Only values of "sites",
+//   description: 'Indicates the location. Only values of "sites", "domains",
 //   "buildings", "rooms", "racks", "devices", "room-templates",
 //   "obj-templates", "rooms", "separators", "acs", "panels", "rows",
 //   "tiles", "cabinets", "groups", "corridors","sensors", "stray-devices"
@@ -852,7 +852,7 @@ var UpdateEntity = func(w http.ResponseWriter, r *http.Request) {
 // parameters:
 // - name: objs
 //   in: query
-//   description: 'Indicates the object. Only values of "sites",
+//   description: 'Indicates the object. Only values of "domains", "sites",
 //   "buildings", "rooms", "racks", "devices", "room-templates",
 //   "obj-templates", "separators","acs","panels", "rows", "tiles",
 //   "cabinets", "groups", "corridors", and "sensors", "stray-devices"
@@ -920,6 +920,8 @@ var GetEntityByQuery = func(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	println("DEBUG entstr", entStr)
+	Disp(bsonMap)
 	data, e = models.GetManyEntities(entStr, bsonMap, nil, db)
 
 	if len(data) == 0 {
@@ -998,7 +1000,7 @@ var GetEntityByQuery = func(w http.ResponseWriter, r *http.Request) {
 // parameters:
 // - name: objs
 //   in: query
-//   description: 'Only values of "sites",
+//   description: 'Only values of "sites", "domains",
 //   "buildings", "rooms", "racks", "devices", and "stray-devices"
 //    are acceptable'
 // - name: id
@@ -1094,7 +1096,7 @@ var GetEntitiesOfAncestor = func(w http.ResponseWriter, r *http.Request) {
 // swagger:operation GET /api/{objs}/{id}/all objects GetFromObject
 // Obtain all objects related to specified object in the system.
 // Returns JSON body with all subobjects under the Object.
-// Note that objects returned will also included relevant objects.
+// Note that objects returned will also include relevant objects.
 // (ie Room will contain acs, separators etc. Racks and devices will contain sensors)
 // ---
 // produces:
@@ -1102,7 +1104,7 @@ var GetEntitiesOfAncestor = func(w http.ResponseWriter, r *http.Request) {
 // parameters:
 // - name: objs
 //   in: query
-//   description: 'Indicates the object. Only values of "sites",
+//   description: 'Indicates the object. Only values of "sites", "domains"
 //   "buildings", "rooms", "racks", "devices", "stray-devices" are acceptable'
 //   required: true
 //   type: string
@@ -1136,7 +1138,7 @@ var GetEntitiesOfAncestor = func(w http.ResponseWriter, r *http.Request) {
 // parameters:
 // - name: objs
 //   in: query
-//   description: 'Only values of "sites",
+//   description: 'Only values of "sites", "domains",
 //   "buildings", "rooms", "racks", "devices", and "stray-devices"
 //    are acceptable'
 // - name: id
@@ -1476,7 +1478,7 @@ var GetSiteHierarchy = func(w http.ResponseWriter, r *http.Request) {
 // parameters:
 // - name: objs
 //   in: query
-//   description: 'Indicates the object. Only values of "sites",
+//   description: 'Indicates the object. Only values of "sites", "domains",
 //   "buildings", "rooms", "racks", "devices", "stray-devices" are acceptable'
 //   required: true
 //   type: string
@@ -1512,7 +1514,7 @@ var GetSiteHierarchy = func(w http.ResponseWriter, r *http.Request) {
 // parameters:
 // - name: objs
 //   in: query
-//   description: 'Only values of "sites",
+//   description: 'Only values of "sites", "domains",
 //   "buildings", "rooms", "racks", "devices", and "stray-devices"
 //    are acceptable'
 // - name: id
@@ -1680,7 +1682,7 @@ var GetEntitiesUsingNamesOfParents = func(w http.ResponseWriter, r *http.Request
 // parameters:
 // - name: objs
 //   in: query
-//   description: 'Only values of "sites",
+//   description: 'Only values of "sites", "domains",
 //   "buildings", "rooms", "racks", "devices", "room-templates",
 //   "obj-templates", "rooms", "separators", "acs", "panels", "rows",
 //   "tiles", "cabinets", "groups", "corridors","sensors","stray-devices"

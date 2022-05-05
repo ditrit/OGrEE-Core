@@ -31,6 +31,7 @@ const (
 	ROOMTMPL
 	OBJTMPL
 	STRAYDEV
+	DOMAIN
 )
 
 func Connect() (context.Context, context.CancelFunc) {
@@ -68,7 +69,7 @@ func ParamsParse(link *url.URL, objType int) map[string]interface{} {
 	//Building Attribute query varies based on
 	//object type
 	for key, _ := range q {
-		if objType < ROOMTMPL { //Non template objects
+		if objType != ROOMTMPL && objType != OBJTMPL { //Non template objects
 			switch key {
 			case "id", "name", "category", "parentID",
 				"description", "domain", "parentid", "parentId":
@@ -109,6 +110,8 @@ func EntityToString(entity int) string {
 		return "panel"
 	case SEPARATOR:
 		return "separator"
+	case DOMAIN:
+		return "domain"
 	case STRAYDEV:
 		return "stray_device"
 	case ROOMTMPL:
@@ -150,6 +153,8 @@ func EntityStrToInt(entity string) int {
 		return PWRPNL
 	case "separator":
 		return SEPARATOR
+	case "domain":
+		return DOMAIN
 	case "stray_device":
 		return STRAYDEV
 	case "room_template":

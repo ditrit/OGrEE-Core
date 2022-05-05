@@ -123,7 +123,7 @@ func CreateTenantDB(name string) {
 	//we can move the schema validation to the DB
 	//options.CreateCollectionOptions{}
 	newDB.CreateCollection(ctx, "account", nil)
-	//newDB.CreateCollection(ctx, "tenant", nil)
+	newDB.CreateCollection(ctx, "domain", nil)
 	newDB.CreateCollection(ctx, "site", nil)
 	newDB.CreateCollection(ctx, "building", nil)
 	newDB.CreateCollection(ctx, "room", nil)
@@ -166,7 +166,7 @@ func CreateTenantDB(name string) {
 	sensorIdx := mongo.IndexModel{Keys: sd, Options: options.Index().SetUnique(true)}
 
 	//Setup Indexes
-	//newDB.Collection("tenant").Indexes().CreateOne(ctx, tenantIdx)
+	newDB.Collection("domain").Indexes().CreateOne(ctx, genericIdx)
 	newDB.Collection("site").Indexes().CreateOne(ctx, genericIdx)
 	newDB.Collection("building").Indexes().CreateOne(ctx, genericIdx)
 	newDB.Collection("room").Indexes().CreateOne(ctx, genericIdx)

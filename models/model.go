@@ -31,6 +31,7 @@ const (
 	ROOMTMPL
 	OBJTMPL
 	STRAYDEV
+	DOMAIN
 )
 
 //Function will recursively iterate through nested obj
@@ -138,9 +139,9 @@ func ValidatePatch(ent int, t map[string]interface{}, db string) (map[string]int
 					return x, ok
 				}
 			}
-			//STRAYDEV's schema is very loose
+			//STRAYDEV and DOMAIN schemas are very loose
 			//thus we can safely invoke validateEntity
-			if ent == STRAYDEV {
+			if ent == STRAYDEV || ent == DOMAIN {
 				x, ok := ValidateEntity(ent, t, db)
 				if !ok {
 					return x, ok
@@ -590,19 +591,20 @@ func ValidateEntity(entity int, t map[string]interface{}, db string) (map[string
 			return r, ok
 		}
 
-	case STRAYDEV:
+	case STRAYDEV, DOMAIN:
 		//Check for parent if PID provided
 		if t["parentId"] != nil && t["parentId"] != "" {
 			if pid, ok := t["parentId"].(string); ok {
 				ID, _ := primitive.ObjectIDFromHex(pid)
 
 				ctx, cancel := u.Connect()
-				if GetDB().Collection("stray_device").FindOne(ctx,
+				if GetDBByName(db).Collection(u.EntityToString(entity)).FindOne(ctx,
 					bson.M{"_id": ID}).Err() != nil {
 					return u.Message(false,
 						"ParentID should be an Existing ID or null"), false
 				}
 				defer cancel()
+
 			} else {
 				return u.Message(false,
 					"ParentID should be an Existing ID or null"), false
@@ -712,7 +714,7 @@ func deleteHelper(t map[string]interface{}, ent int, db string) (map[string]inte
 		if v, ok := t["children"]; ok {
 			if x, ok := v.([]map[string]interface{}); ok {
 				for i := range x {
-					if ent == STRAYDEV {
+					if ent == STRAYDEV || ent == DOMAIN {
 						deleteHelper(x[i], ent, db)
 					} else {
 						deleteHelper(x[i], ent+1, db)
@@ -869,7 +871,7 @@ func GetEntityHierarchy(ID primitive.ObjectID, ent string, start, end int, db st
 
 		if ent == "device" {
 			childEnt = "device"
-		} else if ent == "stray_device" {
+		} else if ent == "stray_device" || ent == "domain" {
 			childEnt = ent
 		} else {
 			childEnt = u.EntityToString(start + 1)

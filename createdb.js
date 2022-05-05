@@ -20,7 +20,7 @@ var m = new Mongo()
 var db = m.getDB(dbName)
 
 db.createCollection('account');
-//db.createCollection('tenant');
+db.createCollection('domain');
 db.createCollection('site');
 db.createCollection('building');
 db.createCollection('room');
@@ -50,7 +50,7 @@ db.createCollection('stray_device');
 
 
 //Enfore unique Tenant Names
-//db.tenant.createIndex( {"name":1}, { unique: true } );
+db.domain.createIndex( {parentId:1, name:1}, { unique: true } );
 
 //Enforce unique children
 db.site.createIndex({name:1}, { unique: true });

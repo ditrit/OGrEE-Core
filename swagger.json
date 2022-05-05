@@ -251,7 +251,7 @@
           {
             "type": "string",
             "default": "sites",
-            "description": "Indicates the location. Only values of \"sites\", \"buildings\", \"rooms\", \"racks\", \"devices\", \"room-templates\", \"obj-templates\", \"rooms\", \"separators\", \"acs\", \"panels\", \"rows\", \"tiles\", \"cabinets\", \"groups\", \"corridors\", \"sensors\", \"stray-devices\" are acceptable",
+            "description": "Indicates the location. Only values of \"sites\",\"domains\", \"buildings\", \"rooms\", \"racks\", \"devices\", \"room-templates\", \"obj-templates\", \"rooms\", \"separators\", \"acs\", \"panels\", \"rows\", \"tiles\", \"cabinets\", \"groups\", \"corridors\", \"sensors\", \"stray-devices\" are acceptable",
             "name": "objs",
             "in": "query",
             "required": true
@@ -279,7 +279,7 @@
         "operationId": "ObjectOptions",
         "parameters": [
           {
-            "description": "Only values of \"sites\", \"buildings\", \"rooms\", \"racks\", \"devices\", \"room-templates\", \"obj-templates\", \"rooms\", \"separators\", \"acs\", \"panels\", \"rows\", \"tiles\", \"cabinets\", \"groups\", \"corridors\",\"sensors\",\"stray-devices\" are acceptable",
+            "description": "Only values of \"sites\", \"domains\", \"buildings\", \"rooms\", \"racks\", \"devices\", \"room-templates\", \"obj-templates\", \"rooms\", \"separators\", \"acs\", \"panels\", \"rows\", \"tiles\", \"cabinets\", \"groups\", \"corridors\",\"sensors\",\"stray-devices\" are acceptable",
             "name": "objs",
             "in": "query"
           }
@@ -309,7 +309,7 @@
           {
             "type": "string",
             "default": "sites",
-            "description": "Indicates the location. Only values of \"sites\", \"buildings\", \"rooms\", \"racks\", \"devices\", \"room-templates\", \"obj-templates\", \"rooms\", \"separators\", \"acs\", \"panels\", \"rows\", \"tiles\", \"cabinets\", \"groups\", \"corridors\",\"sensors\",\"stray-devices\" are acceptable",
+            "description": "Indicates the location. Only values of \"sites\",\"domains\", \"buildings\", \"rooms\", \"racks\", \"devices\", \"room-templates\", \"obj-templates\", \"rooms\", \"separators\", \"acs\", \"panels\", \"rows\", \"tiles\", \"cabinets\", \"groups\", \"corridors\",\"sensors\",\"stray-devices\" are acceptable",
             "name": "objs",
             "in": "query",
             "required": true
@@ -349,7 +349,7 @@
           {
             "type": "string",
             "default": "sites",
-            "description": "Indicates the location. Only values of \"sites\", \"buildings\", \"rooms\", \"racks\", \"devices\", \"room-templates\", \"obj-templates\", \"rooms\", \"separators\", \"acs\", \"panels\", \"rows\", \"tiles\", \"cabinets\", \"groups\", \"corridors\",\"sensors\", \"stray-devices\" are acceptable",
+            "description": "Indicates the location. Only values of \"sites\", \"domains\", \"buildings\", \"rooms\", \"racks\", \"devices\", \"room-templates\", \"obj-templates\", \"rooms\", \"separators\", \"acs\", \"panels\", \"rows\", \"tiles\", \"cabinets\", \"groups\", \"corridors\",\"sensors\", \"stray-devices\" are acceptable",
             "name": "objs",
             "in": "query",
             "required": true
@@ -421,7 +421,7 @@
           {
             "type": "string",
             "default": "sites",
-            "description": "Indicates the location. Only values of \"sites\", \"buildings\", \"rooms\", \"racks\", \"devices\", \"room-templates\", \"obj-templates\", \"rooms\", \"separators\", \"acs\", \"panels\", \"rows\", \"tiles\", \"cabinets\", \"groups\", \"corridors\",\"sensors\", \"stray-devices\" are acceptable",
+            "description": "Indicates the location. Only values of \"sites\",\"domains\", \"buildings\", \"rooms\", \"racks\", \"devices\", \"room-templates\", \"obj-templates\", \"rooms\", \"separators\", \"acs\", \"panels\", \"rows\", \"tiles\", \"cabinets\", \"groups\", \"corridors\",\"sensors\", \"stray-devices\" are acceptable",
             "name": "objs",
             "in": "query",
             "required": true
@@ -455,7 +455,7 @@
         "operationId": "ObjectOptions",
         "parameters": [
           {
-            "description": "Only values of \"sites\", \"buildings\", \"rooms\", \"racks\", \"devices\", \"room-templates\", \"obj-templates\", \"rooms\", \"separators\", \"acs\", \"panels\", \"rows\", \"tiles\", \"cabinets\", \"groups\", \"corridors\",\"sensors\",\"stray-devices\" are acceptable",
+            "description": "Only values of \"sites\",\"domains\", \"buildings\", \"rooms\", \"racks\", \"devices\", \"room-templates\", \"obj-templates\", \"rooms\", \"separators\", \"acs\", \"panels\", \"rows\", \"tiles\", \"cabinets\", \"groups\", \"corridors\",\"sensors\",\"stray-devices\" are acceptable",
             "name": "objs",
             "in": "query"
           },
@@ -491,7 +491,7 @@
           {
             "type": "string",
             "default": "sites",
-            "description": "Indicates the location. Only values of \"sites\", \"buildings\", \"rooms\", \"racks\", \"devices\", \"room-templates\", \"obj-templates\", \"rooms\", \"separators\", \"acs\", \"panels\", \"rows\", \"tiles\", \"cabinets\", \"groups\", \"corridors\", \"sensors\", \"stray-devices\" are acceptable",
+            "description": "Indicates the location. Only values of \"sites\",\"domains\", \"buildings\", \"rooms\", \"racks\", \"devices\", \"room-templates\", \"obj-templates\", \"rooms\", \"separators\", \"acs\", \"panels\", \"rows\", \"tiles\", \"cabinets\", \"groups\", \"corridors\", \"sensors\", \"stray-devices\" are acceptable",
             "name": "objs",
             "in": "query",
             "required": true
@@ -566,7 +566,7 @@
           {
             "type": "string",
             "default": "sites",
-            "description": "Indicates the object. Only values of \"sites\", \"buildings\", \"rooms\", \"racks\", \"devices\", \"stray-devices\" are acceptable",
+            "description": "Indicates the object. Only values of \"sites\", \"domains\", \"buildings\", \"rooms\", \"racks\", \"devices\", \"stray-devices\" are acceptable",
             "name": "objs",
             "in": "query",
             "required": true
@@ -608,7 +608,7 @@
         "operationId": "GetFromObjectOptions",
         "parameters": [
           {
-            "description": "Only values of \"sites\", \"buildings\", \"rooms\", \"racks\", \"devices\", and \"stray-devices\" are acceptable",
+            "description": "Only values of \"sites\", \"domains\", \"buildings\", \"rooms\", \"racks\", \"devices\", and \"stray-devices\" are acceptable",
             "name": "objs",
             "in": "query"
           },
@@ -638,7 +638,7 @@
     },
     "/api/{objs}/{id}/all": {
       "get": {
-        "description": "Returns JSON body with all subobjects under the Object.\nNote that objects returned will also included relevant objects.\n(ie Room will contain acs, separators etc. Racks and devices will contain sensors)",
+        "description": "Returns JSON body with all subobjects under the Object.\nNote that objects returned will also include relevant objects.\n(ie Room will contain acs, separators etc. Racks and devices will contain sensors)",
         "produces": [
           "application/json"
         ],
@@ -651,7 +651,7 @@
           {
             "type": "string",
             "default": "sites",
-            "description": "Indicates the object. Only values of \"sites\", \"buildings\", \"rooms\", \"racks\", \"devices\", \"stray-devices\" are acceptable",
+            "description": "Indicates the object. Only values of \"sites\", \"domains\" \"buildings\", \"rooms\", \"racks\", \"devices\", \"stray-devices\" are acceptable",
             "name": "objs",
             "in": "query",
             "required": true
@@ -692,7 +692,7 @@
         "operationId": "GetFromObjectOptions",
         "parameters": [
           {
-            "description": "Only values of \"sites\", \"buildings\", \"rooms\", \"racks\", \"devices\", and \"stray-devices\" are acceptable",
+            "description": "Only values of \"sites\", \"domains\", \"buildings\", \"rooms\", \"racks\", \"devices\", and \"stray-devices\" are acceptable",
             "name": "objs",
             "in": "query"
           },
@@ -726,7 +726,7 @@
           {
             "type": "string",
             "default": "sites",
-            "description": "Indicates the object. Only values of \"sites\", \"buildings\", \"rooms\", \"racks\", \"devices\", \"room-templates\", \"obj-templates\", \"separators\",\"acs\",\"panels\", \"rows\", \"tiles\", \"cabinets\", \"groups\", \"corridors\", and \"sensors\", \"stray-devices\" are acceptable",
+            "description": "Indicates the object. Only values of \"domains\", \"sites\", \"buildings\", \"rooms\", \"racks\", \"devices\", \"room-templates\", \"obj-templates\", \"separators\",\"acs\",\"panels\", \"rows\", \"tiles\", \"cabinets\", \"groups\", \"corridors\", and \"sensors\", \"stray-devices\" are acceptable",
             "name": "objs",
             "in": "query",
             "required": true
@@ -782,7 +782,7 @@
           {
             "type": "string",
             "default": "sites",
-            "description": "Indicates the Object. Only values of \"sites\", \"buildings\", \"rooms\", \"racks\", \"devices\", \"acs\", \"panels\", \"separators\",\"rows\", \"tiles\", \"cabinets\", \"groups\", \"corridors\", \"room-templates\", \"obj-templates\", \"sensors\", \"stray-devices\" are acceptable",
+            "description": "Indicates the Object. Only values of \"sites\",\"domains\", \"buildings\", \"rooms\", \"racks\", \"devices\", \"acs\", \"panels\", \"separators\",\"rows\", \"tiles\", \"cabinets\", \"groups\", \"corridors\", \"room-templates\", \"obj-templates\", \"sensors\", \"stray-devices\" are acceptable",
             "name": "objs",
             "in": "query",
             "required": true
@@ -901,7 +901,7 @@
         "operationId": "GetFromObjectOptions",
         "parameters": [
           {
-            "description": "Only values of \"sites\", \"buildings\", \"rooms\", \"racks\", \"devices\", and \"stray-devices\" are acceptable",
+            "description": "Only values of \"sites\", \"domains\", \"buildings\", \"rooms\", \"racks\", \"devices\", and \"stray-devices\" are acceptable",
             "name": "objs",
             "in": "query"
           },
