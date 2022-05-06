@@ -90,7 +90,7 @@ var JwtAuthentication = func(next http.Handler) http.Handler {
 		}
 
 		//Check if the customer exists
-		if exists, _ := models.CheckIfDBExists(tk.Customer); !exists {
+		if exists, _ := models.CheckIfDBExists("ogree" + tk.Customer); !exists {
 			println("Customer doesn't exist:", tk.Customer)
 			response = u.Message(false,
 				"Error customer: "+tk.Customer+" does not exist on this server"+
@@ -104,7 +104,7 @@ var JwtAuthentication = func(next http.Handler) http.Handler {
 		//Success
 		//set the caller to the user retrieved from the parsed token
 		fmt.Sprintf("User %", tk.UserId) //Useful for monitoring
-		userData := map[string]interface{}{"userID": tk.UserId, "db": tk.Customer}
+		userData := map[string]interface{}{"userID": tk.UserId, "db": "ogree" + tk.Customer}
 		ctx := context.WithValue(r.Context(), "user", userData)
 		r = r.WithContext(ctx)
 		next.ServeHTTP(w, r) //proceed in the middleware chain!

@@ -9,11 +9,11 @@
 
 
 //Check if dbName was passed as argument
-//Otherwise use "ogree"
+//Otherwise use "ogreeDevelop"
 try {
   dbName;
 } catch(e) {
-  dbName = "develop"
+  dbName = "ogreeDevelop"
 }
 
 var m = new Mongo()

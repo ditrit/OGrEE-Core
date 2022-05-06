@@ -43,7 +43,7 @@ func (account *Account) Validate() (map[string]interface{}, bool) {
 	//Error checking and duplicate emails
 	ctx, cancel := u.Connect()
 	//err := GetDB().Collection("accounts").FindOne(ctx, bson.M{"email": account.Email}).Decode(&temp) //.Where("email = ?", account.Email).First(temp).Error
-	err := GetDBByName(account.Database).Collection("account").FindOne(ctx, bson.M{"email": account.Email}).Decode(&temp)
+	err := GetDBByName("ogree"+account.Database).Collection("account").FindOne(ctx, bson.M{"email": account.Email}).Decode(&temp)
 	if err != nil && err != mongo.ErrNoDocuments {
 		println("Error while creating account:", err.Error())
 		return u.Message(false, "Connection error. Please retry"), false
@@ -56,7 +56,7 @@ func (account *Account) Create() map[string]interface{} {
 
 	if account.Database == "" || account.Database == "admin" ||
 		account.Database == "config" || account.Database == "local" {
-		account.Database = "develop"
+		account.Database = "ogreeDevelop"
 	}
 
 	if resp, ok := account.Validate(); !ok {
@@ -69,8 +69,8 @@ func (account *Account) Create() map[string]interface{} {
 	account.Password = string(hashedPassword)
 
 	//If the customer/db doesn't exist let's create one
-	if exists, _ := CheckIfDBExists(account.Database); !exists {
-		CreateTenantDB(account.Database)
+	if exists, _ := CheckIfDBExists("ogree" + account.Database); !exists {
+		CreateTenantDB("ogree" + account.Database)
 
 		customer := map[string]interface{}{"name": account.Database}
 
@@ -85,7 +85,7 @@ func (account *Account) Create() map[string]interface{} {
 	}
 
 	ctx, cancel := u.Connect()
-	GetDBByName(account.Database).Collection("account").InsertOne(ctx, account)
+	GetDBByName("ogree"+account.Database).Collection("account").InsertOne(ctx, account)
 	defer cancel()
 
 	//Create new JWT token for the newly created account

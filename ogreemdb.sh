@@ -76,7 +76,7 @@ fi
 
 if [  -z "$name" ];
 then
-    name="develop"
+    name="ogreeDevelop"
 fi
 
 echo "Path : $path";
