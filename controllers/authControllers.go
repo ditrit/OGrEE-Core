@@ -62,8 +62,15 @@ var CreateAccount = func(w http.ResponseWriter, r *http.Request) {
 			u.Respond(w, u.Message(false, "Invalid request"))
 			return
 		}
-		resp := account.Create()
-		w.WriteHeader(http.StatusCreated)
+		resp, e := account.Create()
+		switch e {
+		case "internal":
+			w.WriteHeader(http.StatusInternalServerError)
+		case "clientError":
+			w.WriteHeader(http.StatusBadRequest)
+		default:
+			w.WriteHeader(http.StatusCreated)
+		}
 		u.Respond(w, resp)
 	}
 }
@@ -127,6 +134,8 @@ var Authenticate = func(w http.ResponseWriter, r *http.Request) {
 				w.WriteHeader(http.StatusUnauthorized)
 			} else if e == "internal" {
 				w.WriteHeader(http.StatusInternalServerError)
+			} else if e == "clientError" {
+				w.WriteHeader(http.StatusBadRequest)
 			}
 		}
 		u.Respond(w, resp)

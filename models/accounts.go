@@ -44,14 +44,18 @@ func (account *Account) Validate() (map[string]interface{}, bool) {
 	if err != nil && err != mongo.ErrNoDocuments {
 		return u.Message(false, "Connection error. Please retry"), false
 	}
+	//User already exists
+	if err == nil {
+		return u.Message(false, "Error: User already exists"), false
+	}
 	defer cancel()
 	return u.Message(false, "Requirement passed"), true
 }
 
-func (account *Account) Create() map[string]interface{} {
+func (account *Account) Create() (map[string]interface{}, string) {
 
 	if resp, ok := account.Validate(); !ok {
-		return resp
+		return resp, ""
 	}
 
 	hashedPassword, _ := bcrypt.GenerateFromPassword(
@@ -62,7 +66,7 @@ func (account *Account) Create() map[string]interface{} {
 	ctx, cancel := u.Connect()
 	_, e := GetDB().Collection("account").InsertOne(ctx, account)
 	if e != nil {
-		return u.Message(false, "Connection error please retry again later")
+		return u.Message(false, "Connection error please retry again later"), "internal"
 	}
 
 	defer cancel()
@@ -78,7 +82,7 @@ func (account *Account) Create() map[string]interface{} {
 
 	response := u.Message(true, "Account has been created")
 	response["account"] = account
-	return response
+	return response, ""
 }
 
 func Login(email, password string) (map[string]interface{}, string) {
