@@ -13,13 +13,13 @@ import (
 
 //JWT Claims struct
 type Token struct {
-	UserId uint
+	UserId int
 	jwt.StandardClaims
 }
 
 //a struct for rep user account
 type Account struct {
-	ID       uint
+	ID       int    `json: "_id"`
 	Email    string `json: "email"`
 	Password string `json: "password"`
 	Token    string `json:"token";sql:"-"`
@@ -40,7 +40,7 @@ func (account *Account) Validate() (map[string]interface{}, bool) {
 
 	//Error checking and duplicate emails
 	ctx, cancel := u.Connect()
-	err := GetDB().Collection("accounts").FindOne(ctx, bson.M{"email": account.Email}).Decode(&temp) //.Where("email = ?", account.Email).First(temp).Error
+	err := GetDB().Collection("account").FindOne(ctx, bson.M{"email": account.Email}).Decode(&temp) //.Where("email = ?", account.Email).First(temp).Error
 	if err != nil && err != mongo.ErrNoDocuments {
 		return u.Message(false, "Connection error. Please retry"), false
 	}
@@ -60,11 +60,11 @@ func (account *Account) Create() map[string]interface{} {
 	account.Password = string(hashedPassword)
 
 	ctx, cancel := u.Connect()
-	GetDB().Collection("accounts").InsertOne(ctx, account)
-
-	if account.ID <= 0 {
-		return u.Message(false, "Failed to create account, connection error.")
+	_, e := GetDB().Collection("account").InsertOne(ctx, account)
+	if e != nil {
+		return u.Message(false, "Connection error please retry again later")
 	}
+
 	defer cancel()
 
 	//Create new JWT token for the newly created account
@@ -85,7 +85,7 @@ func Login(email, password string) (map[string]interface{}, string) {
 	account := &Account{}
 
 	ctx, cancel := u.Connect()
-	err := GetDB().Collection("accounts").FindOne(ctx, bson.M{"email": email}).Decode(account)
+	err := GetDB().Collection("account").FindOne(ctx, bson.M{"email": email}).Decode(account)
 	//err := GetDB().Table("account").Where("email = ?", email).First(account).Error
 	if err != nil {
 		if err == mongo.ErrNoDocuments {
@@ -123,7 +123,7 @@ func GetUser(user int) *Account {
 
 	acc := &Account{}
 	ctx, cancel := u.Connect()
-	GetDB().Collection("accounts").FindOne(ctx, bson.M{"_id": user}).Decode(acc)
+	GetDB().Collection("account").FindOne(ctx, bson.M{"_id": user}).Decode(acc)
 	if acc.Email == "" {
 		return nil
 	}
