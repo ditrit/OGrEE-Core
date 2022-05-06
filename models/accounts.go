@@ -52,7 +52,7 @@ func (account *Account) Validate() (map[string]interface{}, bool) {
 	return u.Message(false, "Requirement passed"), true
 }
 
-func (account *Account) Create() map[string]interface{} {
+func (account *Account) Create() (map[string]interface{}, string) {
 
 	if account.Database == "" || account.Database == "admin" ||
 		account.Database == "config" || account.Database == "local" {
@@ -60,7 +60,7 @@ func (account *Account) Create() map[string]interface{} {
 	}
 
 	if resp, ok := account.Validate(); !ok {
-		return resp
+		return resp, ""
 	}
 
 	hashedPassword, _ := bcrypt.GenerateFromPassword(
@@ -79,13 +79,19 @@ func (account *Account) Create() map[string]interface{} {
 		_, e := GetDBByName("ogree").Collection("customer").InsertOne(ctx, customer)
 		if e != nil {
 			return u.Message(false,
-				"Internal error while updating customer record: "+e.Error())
+				"Internal error while updating customer record: "+e.Error()), "internal"
 		}
 		defer cancel()
 	}
 
 	ctx, cancel := u.Connect()
-	GetDBByName("ogree"+account.Database).Collection("account").InsertOne(ctx, account)
+	search := GetDBByName("ogree"+account.Database).Collection("account").FindOne(ctx, bson.M{"email": account.Email})
+	if search.Err() != nil {
+		GetDBByName("ogree"+account.Database).Collection("account").InsertOne(ctx, account)
+	} else {
+		return u.Message(false,
+			"Error: User already exists:"), "clientError"
+	}
 	defer cancel()
 
 	//Create new JWT token for the newly created account
@@ -99,14 +105,18 @@ func (account *Account) Create() map[string]interface{} {
 
 	response := u.Message(true, "Account has been created")
 	response["account"] = account
-	return response
+	return response, ""
 }
 
 func Login(email, password, db string) (map[string]interface{}, string) {
 	account := &Account{}
 
+	if db == "" {
+		return u.Message(false, "Error, please provide customer name in your request"), "clientError"
+	}
+
 	ctx, cancel := u.Connect()
-	err := GetDBByName(db).Collection("account").FindOne(ctx, bson.M{"email": email}).Decode(account)
+	err := GetDBByName("ogree"+db).Collection("account").FindOne(ctx, bson.M{"email": email}).Decode(account)
 	//err := GetDB().Collection("accounts").FindOne(ctx, bson.M{"email": email}).Decode(account)
 	//err := GetDB().Table("account").Where("email = ?", email).First(account).Error
 	if err != nil {
