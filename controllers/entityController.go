@@ -296,7 +296,7 @@ var CreateEntity = func(w http.ResponseWriter, r *http.Request) {
 // - name: ID
 //   in: path
 //   description: 'ID of desired object or Name of Site.
-//   For templates the slug is the ID'
+//   For templates the slug is the ID. For stray-devices the name is the ID'
 //   required: true
 //   type: int
 //   default: 999
@@ -324,7 +324,8 @@ var CreateEntity = func(w http.ResponseWriter, r *http.Request) {
 //    are acceptable'
 // - name: id
 //   in: query
-//   description: 'ID of the object'
+//   description: 'ID of the object or name of Site.
+//   For templates the slug is the ID. For stray-devices the name is the ID'
 // responses:
 //     '200':
 //         description: 'Found. A response header will be returned with
@@ -382,7 +383,8 @@ var GetEntity = func(w http.ResponseWriter, r *http.Request) {
 
 	} else if id, e = mux.Vars(r)["name"]; e == true { //GET By String
 
-		if idx := strings.Contains(s, "_"); idx == true { //GET By Slug
+		if idx := strings.Contains(s, "_"); idx == true &&
+			s != "stray_device" { //GET By Slug
 			data, e1 = models.GetEntity(bson.M{"slug": id}, s, db)
 		} else {
 			data, e1 = models.GetEntity(bson.M{"name": id}, s, db) //GET By Name
@@ -537,7 +539,8 @@ var GetAllEntities = func(w http.ResponseWriter, r *http.Request) {
 //   default: "sites"
 // - name: ID
 //   in: path
-//   description: ID of desired object. For templates the slug is the ID
+//   description: 'ID of the object or name of Site.
+//   For templates the slug is the ID. For stray-devices the name is the ID'
 //   required: true
 //   type: int
 //   default: 999
@@ -577,9 +580,13 @@ var DeleteEntity = func(w http.ResponseWriter, r *http.Request) {
 	}
 
 	switch {
-	case e2 == true && e == false: // DELETE SLUG
+	case e2 == true && e == false: // DELETE SLUG or stray-device name
 
-		v, _ = models.DeleteEntityBySlug(entity, name, db)
+		if entity == "stray_device" {
+			v, _ = models.DeleteEntityManual(entity, bson.M{"name": name}, db)
+		} else {
+			v, _ = models.DeleteEntityManual(entity, bson.M{"slug": name}, db)
+		}
 
 	case e == true && e2 == false: // DELETE NORMAL
 		objID, err := primitive.ObjectIDFromHex(id)
@@ -634,8 +641,8 @@ var DeleteEntity = func(w http.ResponseWriter, r *http.Request) {
 //   default: "sites"
 // - name: ID
 //   in: path
-//   description: 'ID of desired Object. If modifying templates, the "slug"
-//   should be used instead of ID'
+//   description: 'ID of the object or name of Site.
+//   For templates the slug is the ID. For stray-devices the name is the ID'
 //   required: true
 //   type: int
 //   default: 999
@@ -700,8 +707,8 @@ var DeleteEntity = func(w http.ResponseWriter, r *http.Request) {
 //   default: "sites"
 // - name: ID
 //   in: path
-//   description: 'ID of desired Object. If modifying templates, the "slug"
-//   should be used instead of ID'
+//   description: 'ID of the object or name of Site.
+//   For templates the slug is the ID. For stray-devices the name is the ID'
 //   required: true
 //   type: int
 //   default: 999
@@ -799,9 +806,14 @@ var UpdateEntity = func(w http.ResponseWriter, r *http.Request) {
 
 	switch {
 	case e2 == true: // UPDATE SLUG
-		println("updating slug")
+		var req bson.M
+		if entity == "stray_device" {
+			req = bson.M{"name": name}
+		} else {
+			req = bson.M{"slug": name}
+		}
 
-		v, e3 = models.UpdateEntity(entity, bson.M{"slug": name}, &updateData, isPatch, db)
+		v, e3 = models.UpdateEntity(entity, req, &updateData, isPatch, db)
 
 	case e == true: // UPDATE NORMAL
 		println("updating Normale")
@@ -1005,7 +1017,8 @@ var GetEntityByQuery = func(w http.ResponseWriter, r *http.Request) {
 //    are acceptable'
 // - name: id
 //   in: query
-//   description: 'ID of the object.'
+//   description: 'ID of the object. For stray-devices and Sites the name
+//   can be used as the ID.'
 // - name: subent
 //   in: query
 //   description: 'This refers to the sub object under the objs parameter.
@@ -1111,7 +1124,8 @@ var GetEntitiesOfAncestor = func(w http.ResponseWriter, r *http.Request) {
 //   default: "sites"
 // - name: ID
 //   in: query
-//   description: ID of object
+//   description: 'ID of object. For Sites and stray-devices the name
+//   can be used as the ID'
 //   required: true
 //   type: int
 //   default: 999
@@ -1143,7 +1157,8 @@ var GetEntitiesOfAncestor = func(w http.ResponseWriter, r *http.Request) {
 //    are acceptable'
 // - name: id
 //   in: query
-//   description: 'ID of the object.'
+//   description: 'ID of the object.For Sites and stray-devices the name
+//   can be used as the ID'
 // responses:
 //     '200':
 //         description: 'Found. A response header will be returned with
@@ -1320,9 +1335,9 @@ var GetEntityHierarchy = func(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// swagger:operation GET /api/sites/{name}/all objects GetFromObject
-// Obtain all objects related to Site in the system.
-// Returns JSON body with all subobjects under the Site
+// swagger:operation GET /api/{entity}/{name}/all objects GetFromObject
+// Obtain all objects related to Site or stray-device in the system using name.
+// Returns JSON body with all subobjects
 // ---
 // produces:
 // - application/json
@@ -1340,7 +1355,7 @@ var GetEntityHierarchy = func(w http.ResponseWriter, r *http.Request) {
 //     '404':
 //         description: Nothing Found. An error message will be returned.
 
-// swagger:operation OPTIONS /api/sites/{name}/all objects GetFromObjectOptions
+// swagger:operation OPTIONS /api/{entity}/{name}/all objects GetFromObjectOptions
 // Displays possible operations for the resource in response header.
 // ---
 // produces:
@@ -1355,9 +1370,9 @@ var GetEntityHierarchy = func(w http.ResponseWriter, r *http.Request) {
 //         possible operation.'
 //     '404':
 //         description: Nothing Found.
-var GetSiteHierarchy = func(w http.ResponseWriter, r *http.Request) {
+var GetHierarchyByName = func(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("******************************************************")
-	fmt.Println("FUNCTION CALL: 	 GetSiteHierarchy ")
+	fmt.Println("FUNCTION CALL: 	 GetHierarchyByName ")
 	fmt.Println("******************************************************")
 	DispRequestMetaData(r)
 	user := r.Context().Value("user").(map[string]interface{})
@@ -1371,10 +1386,30 @@ var GetSiteHierarchy = func(w http.ResponseWriter, r *http.Request) {
 	var lastSlashIdx int
 	var end int
 
-	id, e := mux.Vars(r)["site_name"]
+	id, e := mux.Vars(r)["name"]
 	if e == false {
-		u.Respond(w, u.Message(false, "Error while parsing site name"))
-		u.ErrLog("Error while parsing path parameters", "GET SITEHIERARCHY", "", r)
+		u.Respond(w, u.Message(false, "Error while parsing name"))
+		u.ErrLog("Error while parsing path parameters", "GetHierarchyByName", "", r)
+		return
+	}
+
+	entity, e2 := mux.Vars(r)["entity"]
+	if e2 == false {
+		u.Respond(w, u.Message(false, "Error while parsing entity"))
+		u.ErrLog("Error while parsing path parameters", "GetHierarchyByName", "", r)
+		return
+	}
+
+	entity = entity[:len(entity)-1]
+
+	//If template or stray convert '-' -> '_'
+	if idx := strings.Index(entity, "-"); idx != -1 {
+		entity = entity[:idx] + "_" + entity[idx+1:]
+	}
+
+	if entity != "site" && entity != "stray_device" {
+		u.Respond(w, u.Message(false, "Error invalid entity provided"))
+		u.ErrLog("Invalid entity found while parsing path parameters", "GetHierarchyByName", "", r)
 		return
 	}
 
@@ -1431,7 +1466,9 @@ var GetSiteHierarchy = func(w http.ResponseWriter, r *http.Request) {
 	println("Indicator: ", indicator)
 	println("The limit is: ", limit)
 
-	data, e1 := models.GetSiteHierarchy(entity, id, u.SITE, limit, db)
+	entInt := u.EntityStrToInt(entity)
+
+	data, e1 := models.GetHierarchyByName(entity, id, entInt, limit, db)
 
 	if data == nil {
 		resp = u.Message(false, "Error while getting :"+entity+","+e1)
@@ -1485,7 +1522,8 @@ var GetSiteHierarchy = func(w http.ResponseWriter, r *http.Request) {
 //   default: "sites"
 // - name: ID
 //   in: path
-//   description: ID of desired object
+//   description: 'ID of desired object. For Sites and stray-devices the name
+//   can be used as the ID'
 //   required: true
 //   type: string
 //   default: "INFINITI"
@@ -1519,7 +1557,8 @@ var GetSiteHierarchy = func(w http.ResponseWriter, r *http.Request) {
 //    are acceptable'
 // - name: id
 //   in: query
-//   description: 'ID of the object.'
+//   description: 'ID of the object.For Sites and stray-devices the name
+//   can be used as the ID'
 // - name: '*'
 //   in: path
 //   description: 'Hierarchal path to desired object(s).
@@ -1584,6 +1623,12 @@ var GetEntitiesUsingNamesOfParents = func(w http.ResponseWriter, r *http.Request
 
 		if i%2 == 0 { //The keys (entities) are at the even indexes
 			if i+1 >= len(arr) {
+				//Small front end hack since client wants stray-device URLs
+				//to be like: URL/stray-devices/ID/devices
+				if key == "device" && entity == "stray_device" {
+					key = "stray_device"
+				}
+
 				ancestry = append(ancestry,
 					map[string]string{key: "all"})
 			} else {
@@ -1595,6 +1640,13 @@ var GetEntitiesUsingNamesOfParents = func(w http.ResponseWriter, r *http.Request
 					u.ErrLog("Cannot get invalid object", "GET "+key, "", r)
 					return
 				}
+
+				//Small front end hack since client wants stray-device URLs
+				//to be like: URL/stray-devices/ID/devices/ID/devices
+				if key == "device" && entity == "stray_device" {
+					key = "stray_device"
+				}
+
 				ancestry = append(ancestry,
 					map[string]string{key: arr[i+1]})
 			}
@@ -1729,7 +1781,7 @@ var GetEntityHierarchyNonStd = func(w http.ResponseWriter, r *http.Request) {
 
 	if e == false {
 		if id, e1 = mux.Vars(r)["site_name"]; e1 == false {
-			u.Respond(w, u.Message(false, "Error while parsing Tpath parameters"))
+			u.Respond(w, u.Message(false, "Error while parsing path parameters"))
 			u.ErrLog("Error while parsing path parameters", "GETHIERARCHYNONSTD", "", r)
 			return
 		}
@@ -1740,7 +1792,7 @@ var GetEntityHierarchyNonStd = func(w http.ResponseWriter, r *http.Request) {
 	if entity == "site" {
 		println("Getting SITE HEIRARCHY")
 		println("With ID: ", id)
-		data, err = models.GetSiteHierarchy(entity, id, entNum, u.AC, db)
+		data, err = models.GetHierarchyByName(entity, id, entNum, u.AC, db)
 		if err != "" {
 			println("We have ERR")
 		}

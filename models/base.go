@@ -160,7 +160,7 @@ func CreateTenantDB(name string) {
 		{Key: "name", Value: bsonx.Int32(1)},
 		{Key: "type", Value: bsonx.Int32(1)}}
 
-	//tenantIdx := mongo.IndexModel{Keys: bson.M{"name": 1}, Options: options.Index().SetUnique(true)}
+	nameIdx := mongo.IndexModel{Keys: bson.M{"name": 1}, Options: options.Index().SetUnique(true)}
 	genericIdx := mongo.IndexModel{Keys: d, Options: options.Index().SetUnique(true)}
 	templateIdx := mongo.IndexModel{Keys: bson.M{"slug": 1}, Options: options.Index().SetUnique(true)}
 	sensorIdx := mongo.IndexModel{Keys: sd, Options: options.Index().SetUnique(true)}
@@ -188,5 +188,5 @@ func CreateTenantDB(name string) {
 
 	newDB.Collection("group").Indexes().CreateOne(ctx, genericIdx)
 
-	newDB.Collection("stray_device").Indexes().CreateOne(ctx, genericIdx)
+	newDB.Collection("stray_device").Indexes().CreateOne(ctx, nameIdx)
 }
