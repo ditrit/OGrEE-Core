@@ -622,6 +622,10 @@ func ValidateEntity(entity int, t map[string]interface{}) (map[string]interface{
 			}
 
 		}
+
+		if t["name"] == nil || t["name"] == "" {
+			return u.Message(false, "Please provide a valid name"), false
+		}
 	}
 
 	//Successfully validated the Object
@@ -697,6 +701,18 @@ func GetManyEntities(ent string, req bson.M, opts *options.FindOptions) ([]map[s
 	}
 
 	return data, ""
+}
+
+func DeleteEntityManual(entity string, req bson.M) (map[string]interface{}, string) {
+	//Finally delete the Entity
+	ctx, cancel := u.Connect()
+	c, _ := GetDB().Collection(entity).DeleteOne(ctx, req)
+	if c.DeletedCount == 0 {
+		return u.Message(false, "There was an error in deleting the entity"), "not found"
+	}
+	defer cancel()
+
+	return u.Message(true, "success"), ""
 }
 
 func DeleteEntity(entity string, id primitive.ObjectID) (map[string]interface{}, string) {
@@ -996,9 +1012,9 @@ func GetEntityUsingAncestorNames(ent string, id primitive.ObjectID, ancestry []m
 	return x, ""
 }
 
-func GetTenantHierarchy(entity, name string, entnum, end int) (map[string]interface{}, string) {
+func GetHierarchyByName(entity, name string, entnum, end int) (map[string]interface{}, string) {
 
-	t, e := GetEntity(bson.M{"name": name}, "tenant")
+	t, e := GetEntity(bson.M{"name": name}, entity)
 	if e != "" {
 		fmt.Println(e)
 		return nil, e
@@ -1007,7 +1023,13 @@ func GetTenantHierarchy(entity, name string, entnum, end int) (map[string]interf
 	//Remove _id
 	t = fixID(t)
 
-	subEnt := u.EntityToString(entnum + 1)
+	var subEnt string
+	if entnum == STRAYDEV {
+		subEnt = "stray_device"
+	} else {
+		subEnt = u.EntityToString(entnum + 1)
+	}
+
 	tid := t["id"].(primitive.ObjectID).Hex()
 
 	//Get immediate children
@@ -1135,18 +1157,6 @@ func GetEntitiesOfAncestor(id interface{}, ent int, entStr, wantedEnt string) ([
 		ans = append(ans, x...)
 	}
 	return ans, ""
-}
-
-func DeleteEntityBySlug(entity, id string) (map[string]interface{}, string) {
-	//Finally delete the Entity
-	ctx, cancel := u.Connect()
-	c, _ := GetDB().Collection(entity).DeleteOne(ctx, bson.M{"slug": id})
-	if c.DeletedCount == 0 {
-		return u.Message(false, "There was an error in deleting the entity"), "not found"
-	}
-	defer cancel()
-
-	return u.Message(true, "success"), ""
 }
 
 //DEV FAMILY FUNCS

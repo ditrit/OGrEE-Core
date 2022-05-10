@@ -41,7 +41,7 @@ var pmatch mux.MatcherFunc = func(request *http.Request, match *mux.RouteMatch) 
 //For Obtaining Tenant hierarchy
 var tmatch mux.MatcherFunc = func(request *http.Request, match *mux.RouteMatch) bool {
 	println("CHECKING T-MATCH")
-	return regexp.MustCompile(`^(\/api\/(tenants)(\/[a-zA-Z]+)(\/.*)+)$`).
+	return regexp.MustCompile(`^(\/api\/(tenants|stray-devices)(\/[a-zA-Z]+)(\/.*)+)$`).
 		MatchString(request.URL.String())
 }
 
@@ -61,11 +61,11 @@ func main() {
 	// ------ GET ------ //
 	//GET ENTITY HIERARCHY
 	//This matches ranged Tenant Hierarchy
-	router.NewRoute().PathPrefix("/api/tenants/{tenant_name}/all").
-		MatcherFunc(tmatch).HandlerFunc(controllers.GetTenantHierarchy).Methods("GET", "OPTIONS")
-
 	router.NewRoute().PathPrefix("/api/{entity}/{id:[a-zA-Z0-9]{24}}/all").
 		MatcherFunc(hmatch).HandlerFunc(controllers.GetEntityHierarchy).Methods("GET", "OPTIONS")
+
+	router.NewRoute().PathPrefix("/api/{entity}/{name}/all").
+		MatcherFunc(tmatch).HandlerFunc(controllers.GetHierarchyByName).Methods("GET", "OPTIONS")
 
 	//GET EXCEPTIONS
 	router.HandleFunc("/api/tenants/{tenant_name}/buildings",
