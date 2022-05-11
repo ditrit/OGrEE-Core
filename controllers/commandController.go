@@ -1140,6 +1140,13 @@ func GetOCLIAtrributes(path string, ent int, data map[string]interface{}) {
 		//reject if true while also converting sizeU to string if numeric
 		if len(attr) == 2 {
 			if sizeU, ok := attr["sizeU"]; ok {
+				sizeUValid := checkNumeric(attr["sizeU"])
+
+				if _, ok := attr["template"]; !ok || sizeUValid == false {
+					println("Please provide an existing template or valid SizeU value")
+					return
+				}
+
 				//Convert block
 				//And Set height
 				if _, ok := sizeU.(int); ok {
@@ -2123,4 +2130,16 @@ func fetchTemplate(name string, objType int) map[string]interface{} {
 	}
 
 	return nil
+}
+
+//Helper func is used to check if sizeU is numeric
+//this is necessary since the OCLI command for creating a device
+//needs to distinguish if the parameter is a valid sizeU or template
+func checkNumeric(x interface{}) bool {
+	switch x.(type) {
+	case int, float64, float32:
+		return true
+	default:
+		return false
+	}
 }
