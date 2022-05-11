@@ -52,6 +52,7 @@
 /partial/ {  printToks("TOK_PARTIAL"); return TOK_PARTIAL}
 /ui/ { printToks("TOK_UI"); return TOK_UI}
 /camera/ { printToks("TOK_CAM"); return TOK_CAM}
+/orphan/ { printToks("TOK_ORPH"); return TOK_ORPH}
 
 /tenant|tn/ {  printToks("TOK_TENANT");lval.s = yylex.Text();return TOK_TENANT}
 /site|si/ {  printToks("TOK_SITE");lval.s = yylex.Text();return TOK_SITE}

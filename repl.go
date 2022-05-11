@@ -279,7 +279,8 @@ func getPrefixCompleter() *readline.PrefixCompleter {
 			readline.PcItem("dv:", false),
 			readline.PcItem("gp:", false),
 			readline.PcItem("co:", false),
-			readline.PcItem("sp:", false)),
+			readline.PcItem("sp:", false),
+			readline.PcItem("orphan:device:", false)),
 
 		readline.PcItem("create", false,
 			readline.PcItem("tenant", false),

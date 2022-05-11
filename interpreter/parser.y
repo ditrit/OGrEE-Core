@@ -219,7 +219,7 @@ func checkIfTemplate(x interface{}) bool {
        TOK_MOD
        TOK_UNSET TOK_ELIF TOK_DO TOK_LEN
        TOK_USE_JSON TOK_PARTIAL
-       TOK_CAM TOK_UI TOK_HIERARCH TOK_DRAW TOK_ENV
+       TOK_CAM TOK_UI TOK_HIERARCH TOK_DRAW TOK_ENV TOK_ORPH
        
 %type <s> F E P P1 WORDORNUM CDORFG NTORIENTATION
 %type <arr> WNARG NODEGETTER NODEACC
@@ -601,7 +601,9 @@ OCCR:
         |TOK_CORIDOR TOK_COL P TOK_ATTRSPEC EXPR TOK_ATTRSPEC EXPR TOK_ATTRSPEC EXPR TOK_ATTRSPEC EXPR {$$=&commonNode{COMMON, cmd.GetOCLIAtrributes, "GetOCAttr", []interface{}{(replaceOCLICurrPath($3)),cmd.CORIDOR, map[string]interface{}{"name":$5, "leftRack":$7, "rightRack":$9, "temperature":$11}}}}
         |TOK_GROUP TOK_COL P TOK_ATTRSPEC EXPR CDORFG { x:=map[string]interface{}{"name":$5,"racks":$6}; $$=&commonNode{COMMON, cmd.GetOCLIAtrributes, "GetOCAttr", []interface{}{(replaceOCLICurrPath($3)),cmd.GROUP,x}} }
         |TOK_WALL TOK_COL P TOK_ATTRSPEC EXPR TOK_ATTRSPEC EXPR {$$=&commonNode{COMMON, cmd.GetOCLIAtrributes, "GetOCAttr", []interface{}{(replaceOCLICurrPath($3)), cmd.SEPARATOR, map[string]interface{}{"pos1":$5,"pos2":$7}}}}
-       
+        
+        |TOK_ORPH TOK_COL TOK_DEVICE TOK_COL P TOK_ATTRSPEC EXPR {$$=&commonNode{COMMON, cmd.GetOCLIAtrributes, "GetOCAttr", []interface{}{replaceOCLICurrPath($5),cmd.STRAY_DEV,map[string]interface{}{"attributes":map[string]interface{}{"template":$7} } }}}
+
        //EasyPost syntax
         |E TOK_USE_JSON P {$$=&commonNode{COMMON, cmd.PostObj, "EasyPost", []interface{}{cmd.EntityStrToInt($1),$1, $3}}}
 

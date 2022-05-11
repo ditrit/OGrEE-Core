@@ -31,6 +31,7 @@ const (
 	ROOMTMPL
 	OBJTMPL
 	GROUP
+	STRAY_DEV
 )
 
 var BuildTime string
@@ -96,6 +97,13 @@ func InitState(debugLvl int) {
 	phys.PID = ""
 	phys.ID = "-2"
 	State.TreeHierarchy.Nodes.PushBack(phys)
+
+	stray := &Node{}
+	stray.Name = "Stray"
+	stray.PID = "-2"
+	stray.ID = "-3"
+	stray.Path = "/Physical/"
+	SearchAndInsert(&State.TreeHierarchy, stray, -2, "/Physical")
 
 	// SETUP LOGICAL HIERARCHY START
 	// TODO: PUT THIS SECTION IN A LOOP
@@ -519,6 +527,7 @@ func FetchNodesAtLevel(path string) []string {
 
 	if len(paths) == 2 && paths[1] == "Physical" {
 		urls = []string{State.APIURL + "/api/tenants"}
+		names = append(names, "Stray")
 	} else {
 		if len(paths) < 3 { // /Physical or / or /Logical
 			//println("Should be here")
@@ -580,6 +589,10 @@ func FetchJsonNodesAtLevel(path string) []map[string]interface{} {
 
 	if len(paths) == 2 && paths[1] == "Physical" {
 		urls = []string{State.APIURL + "/api/tenants"}
+		objects = append(objects, map[string]interface{}{"name": "Stray"})
+
+	} else if paths[1] == "Physical" && paths[1] == "Stray" {
+		urls = []string{State.APIURL + "/api/stray_devices"}
 	} else {
 		if len(paths) < 3 { // /Physical or / or /Logical
 			//println("DEBUG Should be here")
@@ -821,6 +834,8 @@ func EntityToString(entity int) string {
 		return "panel"
 	case SEPARATOR:
 		return "separator"
+	case STRAY_DEV:
+		return "stray_device"
 	case ROOMTMPL:
 		return "room_template"
 	case OBJTMPL:
@@ -862,6 +877,8 @@ func EntityStrToInt(entity string) int {
 		return PWRPNL
 	case "separator", "sp":
 		return SEPARATOR
+	case "stray_device":
+		return STRAY_DEV
 	case "room_template":
 		return ROOMTMPL
 	case "obj_template":

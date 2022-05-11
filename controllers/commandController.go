@@ -441,7 +441,8 @@ func LS(x string) []map[string]interface{} {
 
 	res := FetchJsonNodesAtLevel(path)
 
-	//Display objects by slug or name
+	//Display the objects by otherwise by name
+	//or slug for templates
 	for i := range res {
 		if _, ok := res[i]["slug"].(string); ok {
 			println(res[i]["slug"].(string))
@@ -740,7 +741,6 @@ func CD(x string) string {
 			State.PrevPath = State.CurrPath
 			State.CurrPath = pth
 		} else {
-
 			//Need to check that the path points to tree
 			//before declaring it to be nonexistant
 			if string(x[0]) != "/" {
@@ -979,16 +979,26 @@ func GetOCLIAtrributes(path string, ent int, data map[string]interface{}) {
 	var parentURL string
 
 	ogPath := path
-	if ent > TENANT {
+	//The only place where the STRAY_DEV path is
+	//properly fixed
+	if ent == STRAY_DEV {
+		path = "/Physical/Stray/Devices/" + filepath.Dir(path)
+	} else if ent > TENANT {
 		path = "/Physical/" + filepath.Dir(path)
 	}
 
-	data["name"] = filepath.Base(ogPath)
+	name := filepath.Base(ogPath)
+	if name == "." || name == "" {
+		println("Error please provide a valid name for this object")
+		return
+	}
+
+	data["name"] = name
 	data["category"] = EntityToString(ent)
 	data["description"] = []interface{}{}
 
 	//Retrieve Parent
-	if ent != TENANT && ent != GROUP {
+	if ent != TENANT && ent != GROUP && ent != STRAY_DEV {
 		parent, parentURL = GetObject(path, true)
 		if parent == nil {
 			println("Error! The parent was not found in path")
@@ -1166,16 +1176,6 @@ func GetOCLIAtrributes(path string, ent int, data map[string]interface{}) {
 				}
 			}
 		}
-		/*if parAttrsInf, ok := parent["attributes"]; ok {
-			if parAttrs, ok := parAttrsInf.(map[string]interface{}); ok {
-				if _, ok := parAttrs["slot"]; ok {
-					if v, ok := attr["posU/slot"]; ok {
-						delete(attr, "posU/slot")
-						attr["slot"] = v
-					}
-				}
-			}
-		}*/
 
 		//If slot not found
 		if x, ok := attr["posU/slot"]; ok {
@@ -1266,6 +1266,13 @@ func GetOCLIAtrributes(path string, ent int, data map[string]interface{}) {
 		} else {
 			PostObj(ent, "group", data)
 		}
+
+	case STRAY_DEV:
+		attr = data["attributes"].(map[string]interface{})
+		if _, ok := attr["template"]; ok {
+			GetOCLIAtrributesTemplateHelper(attr, data, DEVICE)
+		}
+		PostObj(ent, "stray-device", data)
 	}
 }
 
@@ -1935,6 +1942,18 @@ func OnlinePathResolve(path []string) []string {
 	}
 
 	//Check if path is templates or groups type
+	if path[0] == "Stray" {
+		basePath += "/stray-devices"
+		if len(path) > 1 { // Check for name
+			basePath += "/" + path[1]
+			for i := 2; i < len(path); i++ {
+				basePath += "/devices/" + path[i]
+			}
+		}
+
+		return []string{basePath}
+	}
+
 	if path[0] == "ObjectTemplates" {
 		basePath += "/obj-templates"
 		if len(path) > 1 { // Check for name
@@ -2012,7 +2031,19 @@ func OnlineLevelResolver(path []string) []string {
 		"/separators", "/rows", "/groups",
 		"/corridors", "/tiles", "/sensors"}
 
-	//Check if path is templates or groups type
+	//Check if path is templates or groups type or stray device
+	if path[0] == "Stray" {
+		basePath += "/stray-devices"
+		if len(path) > 1 { // Check for name
+			basePath += "/" + path[1] + "/devices"
+			for i := 2; i < len(path); i++ {
+				basePath += "/" + path[i] + "/devices"
+			}
+
+		}
+		return []string{basePath}
+	}
+
 	if path[0] == "ObjectTemplates" {
 		basePath += "/obj-templates"
 		if len(path) > 1 { // Check for name
