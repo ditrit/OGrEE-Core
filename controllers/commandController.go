@@ -1152,7 +1152,7 @@ func GetOCLIAtrributes(path string, ent int, data map[string]interface{}) {
 			if sizeU, ok := attr["sizeU"]; ok {
 				sizeUValid := checkNumeric(attr["sizeU"])
 
-				if _, ok := attr["template"]; !ok || sizeUValid == false {
+				if _, ok := attr["template"]; !ok && sizeUValid == false {
 					println("Please provide an existing template or valid SizeU value")
 					return
 				}
@@ -1199,6 +1199,7 @@ func GetOCLIAtrributes(path string, ent int, data map[string]interface{}) {
 		if _, ok := attr["template"]; ok {
 			GetOCLIAtrributesTemplateHelper(attr, data, DEVICE)
 		} else {
+			attr["template"] = ""
 			if parAttr, ok := parent["attributes"].(map[string]interface{}); ok {
 				if rackSizeInf, ok := parAttr["size"]; ok {
 					values := map[string]interface{}{}
@@ -1271,6 +1272,8 @@ func GetOCLIAtrributes(path string, ent int, data map[string]interface{}) {
 		attr = data["attributes"].(map[string]interface{})
 		if _, ok := attr["template"]; ok {
 			GetOCLIAtrributesTemplateHelper(attr, data, DEVICE)
+		} else {
+			attr["template"] = ""
 		}
 		PostObj(ent, "stray-device", data)
 	}
