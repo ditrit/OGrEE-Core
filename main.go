@@ -98,7 +98,7 @@ func main() {
 		controllers.GetEntity).Methods("GET", "OPTIONS")
 
 	//GET BY NAME OF PARENT
-	router.NewRoute().PathPrefix("/api/sites/{site_name}").
+	router.NewRoute().PathPrefix("/api/{entity}/{site_name}").
 		MatcherFunc(tmatch).HandlerFunc(controllers.GetEntitiesUsingNamesOfParents).Methods("GET", "OPTIONS")
 
 	router.NewRoute().PathPrefix("/api/{entity}/{id:[a-zA-Z0-9]{24}}").
