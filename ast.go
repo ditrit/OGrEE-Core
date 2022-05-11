@@ -366,7 +366,7 @@ func (c *commonNode) execute() interface{} {
 			} else {
 
 				if c.args[1].(string) == "wait" && c.args[0].(string) == "camera" {
-					data["position"] = "{\"x\":0, \"y\":0, \"z\":0}"
+					data["position"] = map[string]float64{"x": 0, "y": 0, "z": 0}
 
 					if y, ok := c.args[2].([]map[int]interface{}); ok {
 						data["rotation"] = map[string]interface{}{"x": 999,
