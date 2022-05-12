@@ -1723,6 +1723,129 @@ var BaseOption = func(w http.ResponseWriter, r *http.Request) {
 
 }
 
+// swagger:operation POST /api/validate/{obj} objects ValidateObject
+// Checks the received data and verifies if the object can be created in the system.
+// ---
+// produces:
+// - application/json
+// parameters:
+// - name: objs
+//   in: query
+//   description: 'Indicates the Object. Only values of "tenants", "sites",
+//   "buildings", "rooms", "racks", "devices", "acs", "panels",
+//   "separators","rows", "tiles", "cabinets", "groups", "corridors",
+//   "room-templates", "obj-templates", "sensors", "stray-devices"
+//    are acceptable'
+//   required: true
+//   type: string
+//   default: "sites"
+// - name: Name
+//   in: query
+//   description: Name of object
+//   required: true
+//   type: string
+//   default: "Object A"
+// - name: Category
+//   in: query
+//   description: Category of Object (ex. Consumer Electronics, Medical)
+//   required: true
+//   type: string
+//   default: "Research"
+// - name: Domain
+//   description: 'Domain of Object'
+//   required: true
+//   type: string
+//   default: 999
+// - name: ParentID
+//   description: 'All objects are linked to a
+//   parent with the exception of Tenant since it has no parent'
+//   required: true
+//   type: int
+//   default: 999
+// - name: Description
+//   in: query
+//   description: Description of Object
+//   required: false
+//   type: string[]
+//   default: ["Some abandoned object in Grenoble"]
+// - name: Attributes
+//   in: query
+//   description: 'Any other object attributes can be added.
+//   They are required depending on the obj type.'
+//   required: true
+//   type: json
+// responses:
+//     '200':
+//         description: 'Createable. A response body will be returned with
+//         a meaningful message.'
+//     '400':
+//         description: 'Bad request. A response body with an error
+//         message will be returned.'
+//     '404':
+//         description: Not Found. An error message will be returned.
+
+// swagger:operation OPTIONS /api/validate/{obj} objects ValidateObjectOptions
+// Displays possible operations for the resource in response header.
+// ---
+// produces:
+// - application/json
+// parameters:
+// - name: obj
+//   in: query
+//   description: 'Only values of "tenants", "sites",
+//   "buildings", "rooms", "racks", "devices", "room-templates",
+//   "obj-templates", "rooms", "separators", "acs", "panels", "rows",
+//   "tiles", "cabinets", "groups", "corridors","sensors","stray-devices"
+//    are acceptable'
+// responses:
+//     '200':
+//         description: 'Request is valid.'
+//     '404':
+//         description: Not Found. An error message will be returned.
+var ValidateEntity = func(w http.ResponseWriter, r *http.Request) {
+	fmt.Println("******************************************************")
+	fmt.Println("FUNCTION CALL: 	 ValidateEntity ")
+	fmt.Println("******************************************************")
+	DispRequestMetaData(r)
+	var obj map[string]interface{}
+	entity, e1 := mux.Vars(r)["entity"]
+	entity = entity[:len(entity)-1]
+
+	//If templates or stray-devices, format them
+	if idx := strings.Index(entity, "-"); idx != -1 {
+		//entStr[idx] = '_'
+		entity = entity[:idx] + "_" + entity[idx+1:]
+	}
+	entInt := u.EntityStrToInt(entity)
+
+	if e1 == false || entInt == -1 {
+		w.WriteHeader(http.StatusNotFound)
+		return
+	}
+
+	if r.Method == "OPTIONS" {
+		w.Header().Add("Content-Type", "application/json")
+		w.Header().Add("Allow", "POST, OPTIONS")
+		return
+	}
+
+	err := json.NewDecoder(r.Body).Decode(&obj)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		u.Respond(w, u.Message(false, "Error while decoding request body"))
+		u.ErrLog("Error while decoding request body", "VALIDATE "+entity, "", r)
+		return
+	}
+
+	ans, status := models.ValidateEntity(entInt, obj)
+	if status == true {
+		u.Respond(w, map[string]interface{}{"status": true, "message": "This object can be created"})
+		return
+	}
+	w.WriteHeader(http.StatusBadRequest)
+	u.Respond(w, ans)
+}
+
 var GetEntityHierarchyNonStd = func(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("******************************************************")
 	fmt.Println("FUNCTION CALL: 	 GetEntityHierarchyNonStd ")
