@@ -591,8 +591,6 @@ func FetchJsonNodesAtLevel(path string) []map[string]interface{} {
 		urls = []string{State.APIURL + "/api/tenants"}
 		objects = append(objects, map[string]interface{}{"name": "Stray"})
 
-	} else if paths[1] == "Physical" && paths[1] == "Stray" {
-		urls = []string{State.APIURL + "/api/stray_devices"}
 	} else {
 		if len(paths) < 3 { // /Physical or / or /Logical
 			//println("DEBUG Should be here")
