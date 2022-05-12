@@ -283,23 +283,18 @@ func GetScriptPath() string {
 
 func GetChildren(curr int) []*Node {
 
-	//Loop because sometimes a
-	//Stream Error occurs
-	for {
-		resp, e := models.Send("GET",
-			State.APIURL+"/api/"+EntityToString(curr)+"s",
-			GetKey(), nil)
-		if e != nil {
-			println("Error while getting children!")
-			Exit()
-		}
-		//println("REQ:", "http://localhost:3001/api/"+EntityToString(curr)+"s")
-
-		x := makeNodeArrFromResp(resp, curr)
-		if x != nil {
-			return x
-		}
+	resp, e := models.Send("GET",
+		State.APIURL+"/api/"+EntityToString(curr)+"s",
+		GetKey(), nil)
+	if e != nil {
+		println("Error while getting children!")
+		Exit()
 	}
+	//println("REQ:", "http://localhost:3001/api/"+EntityToString(curr)+"s")
+
+	x := makeNodeArrFromResp(resp, curr)
+	return x
+
 }
 
 func SearchAndInsert(root **Node, node *Node, dt int, path string) {
