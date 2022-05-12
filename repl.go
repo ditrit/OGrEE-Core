@@ -151,8 +151,11 @@ func Start(verboseLevel int) {
 	c.GetURLs() //Set the URLs
 	user, _ := c.Login()
 
+	println("Caching data... please wait")
+	c.InitState(verboseLevel)
+
 	rl, err := readline.NewEx(&readline.Config{
-		Prompt:          "\u001b[32m\u001b[1m" + user + "@" + "OGrEE3D:$> " + "\u001b[0m",
+		Prompt:          "\u001b[32m\u001b[1m" + user + "@" + "OGrEE3D:" + "\u001b[37;1m" + c.State.CurrPath + "$> " + "\u001b[0m",
 		HistoryFile:     ".resources/.history",
 		AutoComplete:    getPrefixCompleter(),
 		InterruptPrompt: "^C",
@@ -164,11 +167,7 @@ func Start(verboseLevel int) {
 	if err != nil {
 		panic(err)
 	}
-
 	defer rl.Close()
-
-	println("Caching data... please wait")
-	c.InitState(verboseLevel)
 
 	args := len(os.Args)
 

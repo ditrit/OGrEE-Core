@@ -75,6 +75,7 @@ func InitState(debugLvl int) {
 	(*(State.TreeHierarchy)).Entity = -1
 	State.TreeHierarchy.PID = ""
 	State.CurrPath = "/Physical"
+	State.PrevPath = "/Physical"
 	State.LineNumber = 0
 
 	//Send login notification
