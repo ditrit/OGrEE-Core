@@ -142,16 +142,158 @@
         }
       }
     },
-    "/api/sites/{name}/all": {
+    "/api/token/valid": {
       "get": {
-        "description": "Returns JSON body with all subobjects under the Site",
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "auth"
+        ],
+        "summary": "A custom client specified URL for verifying if their key is valid.",
+        "operationId": "VerifyToken",
+        "responses": {
+          "200": {
+            "description": "Authenticated"
+          },
+          "400": {
+            "description": "Bad request"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      },
+      "options": {
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "auth"
+        ],
+        "summary": "Displays possible operations for the resource in response header.",
+        "operationId": "VerifyToken",
+        "responses": {
+          "200": {
+            "description": "Returns header with possible operations"
+          }
+        }
+      }
+    },
+    "/api/validate/{obj}": {
+      "post": {
         "produces": [
           "application/json"
         ],
         "tags": [
           "objects"
         ],
-        "summary": "Obtain all objects related to Site in the system.",
+        "summary": "Checks the received data and verifies if the object can be created in the system.",
+        "operationId": "ValidateObject",
+        "parameters": [
+          {
+            "type": "string",
+            "default": "sites",
+            "description": "Indicates the Object. Only values of \"tenants\", \"sites\", \"buildings\", \"rooms\", \"racks\", \"devices\", \"acs\", \"panels\", \"separators\",\"rows\", \"tiles\", \"cabinets\", \"groups\", \"corridors\", \"room-templates\", \"obj-templates\", \"sensors\", \"stray-devices\" are acceptable",
+            "name": "objs",
+            "in": "query",
+            "required": true
+          },
+          {
+            "type": "string",
+            "default": "Object A",
+            "description": "Name of object",
+            "name": "Name",
+            "in": "query",
+            "required": true
+          },
+          {
+            "type": "string",
+            "default": "Research",
+            "description": "Category of Object (ex. Consumer Electronics, Medical)",
+            "name": "Category",
+            "in": "query",
+            "required": true
+          },
+          {
+            "type": "string",
+            "default": 999,
+            "description": "Domain of Object",
+            "name": "Domain",
+            "required": true
+          },
+          {
+            "type": "int",
+            "default": 999,
+            "description": "All objects are linked to a parent with the exception of Tenant since it has no parent",
+            "name": "ParentID",
+            "required": true
+          },
+          {
+            "type": "string[]",
+            "default": [
+              "Some abandoned object in Grenoble"
+            ],
+            "description": "Description of Object",
+            "name": "Description",
+            "in": "query"
+          },
+          {
+            "type": "json",
+            "description": "Any other object attributes can be added. They are required depending on the obj type.",
+            "name": "Attributes",
+            "in": "query",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Createable. A response body will be returned with a meaningful message."
+          },
+          "400": {
+            "description": "Bad request. A response body with an error message will be returned."
+          },
+          "404": {
+            "description": "Not Found. An error message will be returned."
+          }
+        }
+      },
+      "options": {
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "objects"
+        ],
+        "summary": "Displays possible operations for the resource in response header.",
+        "operationId": "ValidateObjectOptions",
+        "parameters": [
+          {
+            "description": "Only values of \"tenants\", \"sites\", \"buildings\", \"rooms\", \"racks\", \"devices\", \"room-templates\", \"obj-templates\", \"rooms\", \"separators\", \"acs\", \"panels\", \"rows\", \"tiles\", \"cabinets\", \"groups\", \"corridors\",\"sensors\",\"stray-devices\" are acceptable",
+            "name": "obj",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Request is valid."
+          },
+          "404": {
+            "description": "Not Found. An error message will be returned."
+          }
+        }
+      }
+    },
+    "/api/{entity}/{name}/all": {
+      "get": {
+        "description": "Returns JSON body with all subobjects",
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "objects"
+        ],
+        "summary": "Obtain all objects related to Site or stray-device in the system using name.",
         "operationId": "GetFromObject",
         "parameters": [
           {
@@ -194,44 +336,6 @@
           },
           "404": {
             "description": "Nothing Found."
-          }
-        }
-      }
-    },
-    "/api/token/valid": {
-      "get": {
-        "produces": [
-          "application/json"
-        ],
-        "tags": [
-          "auth"
-        ],
-        "summary": "A custom client specified URL for verifying if their key is valid.",
-        "operationId": "VerifyToken",
-        "responses": {
-          "200": {
-            "description": "Authenticated"
-          },
-          "400": {
-            "description": "Bad request"
-          },
-          "500": {
-            "description": "Internal server error"
-          }
-        }
-      },
-      "options": {
-        "produces": [
-          "application/json"
-        ],
-        "tags": [
-          "auth"
-        ],
-        "summary": "Displays possible operations for the resource in response header.",
-        "operationId": "VerifyToken",
-        "responses": {
-          "200": {
-            "description": "Returns header with possible operations"
           }
         }
       }
@@ -317,7 +421,7 @@
           {
             "type": "int",
             "default": 999,
-            "description": "ID of desired object or Name of Site. For templates the slug is the ID",
+            "description": "ID of desired object or Name of Site. For templates the slug is the ID. For stray-devices the name is the ID",
             "name": "ID",
             "in": "path",
             "required": true
@@ -357,7 +461,7 @@
           {
             "type": "int",
             "default": 999,
-            "description": "ID of desired Object. If modifying templates, the \"slug\" should be used instead of ID",
+            "description": "ID of the object or name of Site. For templates the slug is the ID. For stray-devices the name is the ID",
             "name": "ID",
             "in": "path",
             "required": true
@@ -429,7 +533,7 @@
           {
             "type": "int",
             "default": 999,
-            "description": "ID of desired object. For templates the slug is the ID",
+            "description": "ID of the object or name of Site. For templates the slug is the ID. For stray-devices the name is the ID",
             "name": "ID",
             "in": "path",
             "required": true
@@ -460,7 +564,7 @@
             "in": "query"
           },
           {
-            "description": "ID of the object",
+            "description": "ID of the object or name of Site. For templates the slug is the ID. For stray-devices the name is the ID",
             "name": "id",
             "in": "query"
           }
@@ -499,7 +603,7 @@
           {
             "type": "int",
             "default": 999,
-            "description": "ID of desired Object. If modifying templates, the \"slug\" should be used instead of ID",
+            "description": "ID of the object or name of Site. For templates the slug is the ID. For stray-devices the name is the ID",
             "name": "ID",
             "in": "path",
             "required": true
@@ -574,7 +678,7 @@
           {
             "type": "string",
             "default": "INFINITI",
-            "description": "ID of desired object",
+            "description": "ID of desired object. For Sites and stray-devices the name can be used as the ID",
             "name": "ID",
             "in": "path",
             "required": true
@@ -613,7 +717,7 @@
             "in": "query"
           },
           {
-            "description": "ID of the object.",
+            "description": "ID of the object.For Sites and stray-devices the name can be used as the ID",
             "name": "id",
             "in": "query"
           },
@@ -659,7 +763,7 @@
           {
             "type": "int",
             "default": 999,
-            "description": "ID of object",
+            "description": "ID of object. For Sites and stray-devices the name can be used as the ID",
             "name": "ID",
             "in": "query",
             "required": true
@@ -697,7 +801,7 @@
             "in": "query"
           },
           {
-            "description": "ID of the object.",
+            "description": "ID of the object.For Sites and stray-devices the name can be used as the ID",
             "name": "id",
             "in": "query"
           }
@@ -906,7 +1010,7 @@
             "in": "query"
           },
           {
-            "description": "ID of the object.",
+            "description": "ID of the object. For stray-devices and Sites the name can be used as the ID.",
             "name": "id",
             "in": "query"
           },

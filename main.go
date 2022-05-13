@@ -138,6 +138,9 @@ func main() {
 	router.HandleFunc("/api/{entity}",
 		controllers.BaseOption).Methods("OPTIONS")
 
+	//VALIDATION
+	router.HandleFunc("/api/validate/{entity}", controllers.ValidateEntity).Methods("POST", "OPTIONS")
+
 	//Attach JWT auth middleware
 	//router.Use(app.Log)
 	router.Use(app.JwtAuthentication)
