@@ -240,6 +240,8 @@ func getPrefixCompleter() *readline.PrefixCompleter {
 			readline.PcItem(".cmds", false),
 			readline.PcItem("lsog", false),
 			readline.PcItem("env", false),
+			readline.PcItem("link", false),
+			readline.PcItem("unlink", false),
 			readline.PcItem("lsten", false),
 			readline.PcItem("lssite", false),
 			readline.PcItem("lsbldg", false),
@@ -378,6 +380,8 @@ func getPrefixCompleter() *readline.PrefixCompleter {
 			readline.PcItem("subdevice", false),
 			readline.PcItem("subdevice1", false),
 		),*/
+		readline.PcItem("link:", false),
+		readline.PcItem("unlink:", false),
 		readline.PcItem("-", false,
 			readline.PcItem("selection", false)),
 		readline.PcItem("=", true,

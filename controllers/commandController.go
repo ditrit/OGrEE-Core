@@ -66,6 +66,25 @@ func PostObj(ent int, entity string, data map[string]interface{}) map[string]int
 	return nil
 }
 
+//Calls API's Validation
+func ValidateObj(data map[string]interface{}, ent string, silence bool) bool {
+	var respMap map[string]interface{}
+	resp, e := models.Send("POST",
+		State.APIURL+"/api/validate/"+ent+"s", GetKey(), data)
+
+	respMap = ParseResponse(resp, e, "POST")
+
+	if resp.StatusCode == http.StatusOK && respMap["status"].(bool) == true {
+		//Print success message
+		println(string(respMap["message"].(string)))
+
+		return true
+	}
+	println("Error:", string(respMap["message"].(string)))
+	println()
+	return false
+}
+
 func DeleteObj(path string) bool {
 	//We have to get object first since
 	//there is a potential for multiple paths
@@ -793,7 +812,8 @@ func Help(entry string) {
 	switch entry {
 	case "ls", "pwd", "print", "cd", "tree", "create", "gt", "clear",
 		"update", "delete", "lsog", "grep", "for", "while", "if", "env",
-		"cmds", "var", "unset", "select", "camera", "ui", "hc", "drawable":
+		"cmds", "var", "unset", "select", "camera", "ui", "hc", "drawable",
+		"link", "unlink":
 		path = "./other/man/" + entry + ".md"
 
 	case ">":
@@ -1453,6 +1473,124 @@ func FocusUI(path string) {
 
 	data := map[string]interface{}{"type": "focus", "data": id}
 	InformUnity("POST", "FocusUI", -1, data)
+}
+
+/*func LinkObject(paths []interface{}) {
+	var destination string
+	if len(paths) == 2 {
+		destination = paths[1].(string)
+	} else {
+		destination = paths[0].(string)
+	}
+}*/
+
+//paths should only have a length of 1 or 2
+func UnlinkObject(paths []interface{}) {
+	//paths[0] ===> device to unlink
+	//paths[1] ===> new location in stray-dev (can be optionally empty)
+	dev := map[string]interface{}{}
+	h := []map[string]interface{}{}
+
+	//first we need to check that the path corresponds to a device
+	//we also need to ignore groups
+	//arbitrarily set depth to 50 since it doesn't make sense
+	//for a device to have a deeper hierarchy paths[0].(string)
+	dev, _ = GetObject(paths[0].(string), true)
+	if dev == nil {
+		ErrorLogger.Println("User attempted to unlink non-existing object")
+		println("Error: This object does not exist ")
+		return
+	}
+
+	//Exit if device not found
+	if _, ok := dev["category"]; !ok {
+		ErrorLogger.Println("User attempted to unlink non-device object")
+		println("Error: This object is not a device. You can only unlink devices ")
+		return
+	}
+
+	if catInf, _ := dev["category"].(string); catInf != "device" {
+		ErrorLogger.Println("User attempted to unlink non-device object")
+		println("Error: This object is not a device. You can only unlink devices ")
+		return
+	}
+
+	h = GetHierarchy(paths[0].(string), 50)
+
+	//Dive POST
+	var parent map[string]interface{}
+
+	if len(paths) > 1 {
+		if parentObjPath, _ := paths[1].(string); parentObjPath != "" {
+			parent, _ = GetObject(parentObjPath, true)
+			if parent != nil {
+				dev["parentId"] = parent["id"]
+			}
+		}
+	}
+
+	if parent == nil {
+		DeleteAttr(dev, "parentId")
+	}
+
+	newDev := PostObj(STRAY_DEV, "stray-device", dev)
+	var newPID interface{}
+	newPID = newDev["id"]
+
+	//Recursive anonymous func declaration to
+	//reconstruct exact device hierarchy under the stray-devices
+	var fn func(x []map[string]interface{}, pid interface{})
+	fn = func(x []map[string]interface{}, pid interface{}) {
+		if x != nil {
+			for i := range x {
+				x[i]["parentId"] = pid
+				childrenInfArr := x[i]["children"]
+				delete(x[i], "children")
+
+				newObj := PostObj(STRAY_DEV, "stray-device", x[i])
+
+				if childrenInfArr != nil {
+					newpid := newObj["id"]
+					children := infArrToMapStrinfArr(childrenInfArr.([]interface{}))
+					fn(children, newpid)
+				}
+			}
+		}
+	}
+
+	//Validate the devices before inserting into stray-devices
+	var validFn func(x []map[string]interface{}) (bool, map[string]interface{})
+	validFn = func(x []map[string]interface{}) (bool, map[string]interface{}) {
+		if x != nil {
+			for i := range x {
+				x[i]["parentId"] = nil
+
+				res := ValidateObj(x[i], "stray-device", true)
+				if res == false {
+					return false, x[i]
+				}
+
+				childrenInfArr := x[i]["children"]
+				if childrenInfArr != nil {
+					children := infArrToMapStrinfArr(childrenInfArr.([]interface{}))
+					validFn(children)
+				}
+			}
+		}
+		return true, nil
+	}
+
+	if ok, obj := validFn(h); !ok {
+		println("Object with name: ", obj["name"], " could not be added")
+		println("Unable to unlink")
+		return
+	}
+
+	fn(h, newPID)
+
+	//Delete device and we are done
+	DeleteObj(paths[0].(string))
+
 }
 
 func IsEntityDrawable(path string) bool {

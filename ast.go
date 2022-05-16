@@ -392,6 +392,14 @@ func (c *commonNode) execute() interface{} {
 			}
 			f(fullJson)
 		}
+
+	case "LinkObject":
+		println("DEBUG TODO")
+
+	case "UnlinkObject":
+		if f, ok := c.fun.(func([]interface{})); ok {
+			f(c.args)
+		}
 	}
 
 	return nil

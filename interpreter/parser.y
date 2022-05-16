@@ -218,7 +218,7 @@ func checkIfTemplate(x interface{}) bool {
        TOK_NOT TOK_MULT TOK_GREATER TOK_LESS TOK_THEN TOK_FI TOK_DONE
        TOK_MOD
        TOK_UNSET TOK_ELIF TOK_DO TOK_LEN
-       TOK_USE_JSON TOK_PARTIAL
+       TOK_USE_JSON TOK_PARTIAL TOK_LINK TOK_UNLINK
        TOK_CAM TOK_UI TOK_HIERARCH TOK_DRAW TOK_ENV TOK_ORPH
        
 %type <s> F E P P1 WORDORNUM CDORFG NTORIENTATION
@@ -229,7 +229,7 @@ func checkIfTemplate(x interface{}) bool {
 %type <node> NT_UPDATE K Q BASH OCUPDATE OCCHOOSE OCCR OCDOT
 %type <node> EXPR REL OPEN_STMT CTRL nex factor unary EQAL term
 %type <node> stmnt JOIN
-%type <node> st2 FUNC HANDLEUI
+%type <node> st2 FUNC HANDLEUI HANDLELINKS
 %left TOK_MULT TOK_OCDEL TOK_SLASH TOK_PLUS 
 %right TOK_EQUAL
 
@@ -526,6 +526,8 @@ BASH:  TOK_CLR {$$=&commonNode{COMMON, cmd.Clear, "CLR", nil}}
        | TOK_ENV {$$=&commonNode{COMMON, cmd.Env, "Env", nil}}
        | TOK_PWD {$$=&commonNode{COMMON, cmd.PWD, "PWD", nil}}
        | TOK_EXIT {$$=&commonNode{COMMON, cmd.Exit, "Exit", nil}}
+       | TOK_DOC TOK_LINK {$$=&commonNode{COMMON, cmd.Help, "Help", []interface{}{"link"}}}
+       | TOK_DOC TOK_UNLINK {$$=&commonNode{COMMON, cmd.Help, "Help", []interface{}{"unlink"}}}
        | TOK_DOC TOK_CLR {$$=&commonNode{COMMON, cmd.Help, "Help", []interface{}{"clear"}}}
        | TOK_DOC {$$=&commonNode{COMMON, cmd.Help, "Help", []interface{}{""}}}
        | TOK_DOC TOK_LS {$$=&commonNode{COMMON, cmd.Help, "Help", []interface{}{"ls"}}}
@@ -573,6 +575,7 @@ OCLISYNTX:  TOK_PLUS OCCR {$$=$2}
             |OCDOT {$$=$1}
             |OCSEL {$$=$1;}
             |HANDLEUI {$$=$1}
+            |HANDLELINKS {$$=$1}
             ;
 
 
@@ -664,6 +667,11 @@ HANDLEUI: TOK_UI TOK_DOT TOK_WORD TOK_EQUAL EXPR {$$=&commonNode{COMMON, cmd.Han
           |TOK_GREATER P {$$=&commonNode{COMMON, cmd.FocusUI, "Focus", []interface{}{$2}}}
           ;
 
+HANDLELINKS:  TOK_LINK TOK_COL P TOK_ATTRSPEC P {$$=&commonNode{COMMON, cmd.LinkObject, "LinkObject", []interface{}{}}}
+              |TOK_LINK TOK_COL P TOK_ATTRSPEC P TOK_ATTRSPEC EXPR {$$=&commonNode{COMMON, cmd.LinkObject, "LinkObject", []interface{}{}}}
+              |TOK_UNLINK TOK_COL P {$$=&commonNode{COMMON, cmd.UnlinkObject, "UnlinkObject", []interface{}{$3}}}
+              |TOK_UNLINK TOK_COL P TOK_ATTRSPEC P {$$=&commonNode{COMMON, cmd.UnlinkObject, "UnlinkObject", []interface{}{$3,$5}}}
+            ;
 //For making array types
 WNARG: EXPR TOK_COMMA WNARG {x:=[]interface{}{$1}; $$=append(x, $3...)}
        |EXPR  {x:=[]interface{}{$1}; $$=x}
