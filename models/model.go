@@ -626,6 +626,18 @@ func ValidateEntity(entity int, t map[string]interface{}) (map[string]interface{
 		if t["name"] == nil || t["name"] == "" {
 			return u.Message(false, "Please provide a valid name"), false
 		}
+
+		//Need to check for uniqueness before inserting
+		//this is helpful for the validation endpoints
+		ctx, cancel := u.Connect()
+
+		if c, _ := GetDB().Collection("stray_device").CountDocuments(ctx,
+			bson.M{"name": t["name"]}); c != 0 {
+			msg := "Error a device with the name provided already exists." +
+				"Please provide a unique name"
+			return u.Message(false, msg), false
+		}
+		defer cancel()
 	}
 
 	//Successfully validated the Object
