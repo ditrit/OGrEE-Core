@@ -248,6 +248,11 @@ var CreateEntity = func(w http.ResponseWriter, r *http.Request) {
 		entity["category"] = entStr
 	}
 
+	//Clean the data of 'id' attribute if present
+	if _, ok := entity["id"]; ok {
+		delete(entity, "id")
+	}
+
 	resp, e = models.CreateEntity(i, entity)
 
 	switch e {
@@ -1419,7 +1424,12 @@ var GetHierarchyByName = func(w http.ResponseWriter, r *http.Request) {
 		switch indicator {
 		case "all":
 			//set to AC1
-			limit = u.AC
+			if entity == "tenant" {
+				limit = u.AC
+			} else { //set limit for stray_device
+				limit = 99
+			}
+
 		case "nonstd":
 			//special case
 		default:

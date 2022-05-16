@@ -721,7 +721,7 @@ func DeleteEntity(entity string, id primitive.ObjectID) (map[string]interface{},
 	eNum := u.EntityStrToInt(entity)
 	if eNum > DEVICE {
 		//Delete the non hierarchal objects
-		t, e = GetEntityHierarchy(id, entity, eNum, eNum+1)
+		t, e = GetEntityHierarchy(id, entity, eNum, eNum+eNum)
 	} else {
 		t, e = GetEntityHierarchy(id, entity, eNum, AC)
 	}
@@ -1045,7 +1045,12 @@ func GetHierarchyByName(entity, name string, entnum, end int) (map[string]interf
 	//Get the rest of hierarchy for children
 	for i := range children {
 		var x map[string]interface{}
-		subIdx := u.EntityToString(entnum + 1)
+		var subIdx string
+		if subEnt == "stray_device" { //only set entnum+1 for tenants
+			subIdx = subEnt
+		} else {
+			subIdx = u.EntityToString(entnum + 1)
+		}
 		subID := (children[i]["id"].(primitive.ObjectID))
 		x, _ =
 			GetEntityHierarchy(subID, subIdx, entnum+1, end)
