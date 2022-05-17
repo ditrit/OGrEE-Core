@@ -706,15 +706,12 @@ func CheckPathOnline(path string) (bool, string) {
 
 	pathSplit := strings.Split(filepath.Clean(path), "/")
 
-	if len(pathSplit) < 3 { // /Physical or / or /Logical
-		//println("Should be here")
-		//println("LEN:", len(paths))
-		nd := FindNodeInTree(&State.TreeHierarchy, StrToStack(path))
-		if nd == nil {
-			return false, ""
+	//Check if path refers to object in local State Tree
+	if len(pathSplit) <= 3 {
+		nd := FindNodeInTree(&State.TreeHierarchy, StrToStack(path), true)
+		if nd != nil {
+			return true, path
 		}
-
-		return true, path
 	}
 
 	paths := OnlinePathResolve(pathSplit[2:])
@@ -753,7 +750,7 @@ func DeleteNodeInTree(root **Node, ID string, ent int) (bool, bool) {
 	return false, false
 }
 
-func FindNodeInTree(root **Node, path *Stack) **Node {
+func FindNodeInTree(root **Node, path *Stack, silenced bool) **Node {
 	if root == nil {
 		return nil
 	}
@@ -762,12 +759,15 @@ func FindNodeInTree(root **Node, path *Stack) **Node {
 		name := path.Peek()
 		node := getNextInPath(name.(string), *root)
 		if node == nil {
-			println("Name doesn't exist! ", string(name.(string)))
+			if !silenced {
+				println("Name doesn't exist! ", string(name.(string)))
+			}
+
 			WarningLogger.Println("Name doesn't exist! ", string(name.(string)))
 			return nil
 		}
 		path.Pop()
-		return FindNodeInTree(&node, path)
+		return FindNodeInTree(&node, path, silenced)
 	} else {
 		return root
 	}

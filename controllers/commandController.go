@@ -768,7 +768,7 @@ func CD(x string) string {
 				pth = x
 			}
 			pth = filepath.Clean(pth)
-			if FindNodeInTree(&State.TreeHierarchy, StrToStack(pth)) != nil {
+			if FindNodeInTree(&State.TreeHierarchy, StrToStack(pth), true) != nil {
 				State.PrevPath = State.CurrPath
 				State.CurrPath = pth
 				//println(("DEBUG not in tree either"))
@@ -782,7 +782,6 @@ func CD(x string) string {
 		}
 	} else {
 		if len(State.CurrPath) != 1 {
-
 			if exist, _ := CheckPathOnline(State.CurrPath + "/" + x); exist == true {
 				State.PrevPath = State.CurrPath
 				State.CurrPath += "/" + x
@@ -1475,14 +1474,15 @@ func FocusUI(path string) {
 	InformUnity("POST", "FocusUI", -1, data)
 }
 
-/*func LinkObject(paths []interface{}) {
+func LinkObject(paths []interface{}) {
 	var destination string
 	if len(paths) == 2 {
 		destination = paths[1].(string)
 	} else {
 		destination = paths[0].(string)
 	}
-}*/
+	println(destination)
+}
 
 //paths should only have a length of 1 or 2
 func UnlinkObject(paths []interface{}) {
