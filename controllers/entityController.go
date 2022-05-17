@@ -572,7 +572,19 @@ var DeleteEntity = func(w http.ResponseWriter, r *http.Request) {
 	case e2 == true && e == false: // DELETE SLUG or stray-device name
 
 		if entity == "stray_device" {
-			v, _ = models.DeleteEntityManual(entity, bson.M{"name": name})
+			sd, _ := models.GetEntity(bson.M{"name": name}, entity)
+			if sd == nil {
+				w.WriteHeader(http.StatusNotFound)
+				u.Respond(w, u.Message(false, "Error object not found"))
+				return
+			}
+			if _, ok := sd["id"].(primitive.ObjectID); !ok {
+				w.WriteHeader(http.StatusInternalServerError)
+				u.Respond(w, u.Message(false,
+					"Server was not able to process your request"))
+				return
+			}
+			v, _ = models.DeleteEntity(entity, sd["id"].(primitive.ObjectID))
 		} else {
 			v, _ = models.DeleteEntityManual(entity, bson.M{"slug": name})
 		}
