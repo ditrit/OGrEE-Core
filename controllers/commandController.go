@@ -948,6 +948,7 @@ func GetHierarchy(x string, depth int) []map[string]interface{} {
 			ext = "/api/" + entity + "s/" + id + "/all?limit=" + depthStr
 			URL = State.APIURL + ext
 
+			println("DEBUG URL: ", URL)
 			r, e := models.Send("GET", URL, GetKey(), nil)
 			if e != nil {
 				println("Error: " + e.Error())
@@ -1475,13 +1476,169 @@ func FocusUI(path string) {
 }
 
 func LinkObject(paths []interface{}) {
-	var destination string
-	if len(paths) == 2 {
-		destination = paths[1].(string)
-	} else {
-		destination = paths[0].(string)
+	//var destination string
+	//println(destination)
+	//println("SO WE ARE ALL HERE")
+	var h []map[string]interface{}
+	if len(paths) == 3 {
+		println(paths[2].(string))
 	}
-	println(destination)
+
+	//Stray-device retrieval and validation
+	sdev, _ := GetObject(paths[0].(string), true)
+	//println("DEBUG OUR PATH 1st:", spath)
+	if sdev == nil {
+		println("Object doesn't exist")
+		return
+	}
+	if _, ok := sdev["category"]; !ok {
+		println("Error: Invalid object. Only stray-devices can be linked")
+		return
+	}
+	if cat, _ := sdev["category"]; cat != "stray-device" {
+		println("Error: Invalid object. Only stray-devices can be linked")
+		return
+	}
+
+	//Retrieve the stray-device hierarchy
+	//println("DEBUG OUR PATH:", paths[0].(string))
+	h = GetHierarchy(paths[0].(string), 50)
+	//print("DEBUG H PATH", paths[0].(string))
+	//DispMapArr(h)
+	//Disp(sdev)
+
+	//Parent retrieval and validation block
+	parent, _ := GetObject(paths[1].(string), true)
+	if parent == nil {
+		println("Destination is not valid")
+		return
+	}
+	if _, ok := parent["category"]; !ok {
+		println("Error: Invalid destination object")
+		println("Please use a rack or a device as a link target")
+		return
+	}
+	if cat, _ := parent["category"].(string); cat != "device" && cat != "rack" {
+		println("Error: Invalid destination object")
+		println("Please use a rack or a device as a link target")
+		return
+	}
+
+	//Need to make sure that origin and destination are
+	//not the same!
+	if parent["id"] == sdev["id"] && parent["name"] == sdev["name"] {
+		println("Error you must provide a unique stray-device" +
+			" and a unique destination for it")
+	}
+
+	//Ensure that the stray device can be imported as device
+	//First set the parentId of stray device to point to parent ID
+	//Then dive, set the parentID (Which PID is not exactly important
+	//we just need to point to a valid PID.)
+	//and invoke API validation endpoint
+	sdev["parentId"] = parent["id"]
+	if len(paths) == 3 {
+		//sdev[]
+		if attrInf, ok := sdev["attributes"]; ok {
+			//attr["slot"] = paths[2]
+			if attr, ok := attrInf.(map[string]interface{}); ok {
+				attr["slot"] = paths[2]
+			} else {
+				sdev["attributes"] = map[string]interface{}{"slot": paths[2]}
+			}
+		} else {
+			sdev["attributes"] = map[string]interface{}{"slot": paths[2]}
+		}
+	}
+
+	sdev = PostObj(DEVICE, "device", sdev)
+	if sdev == nil {
+		println("Aborting link operation")
+		return
+	}
+
+	valid, x := validFn(h, "device", parent["id"])
+	if !valid {
+		println("The following stray-device does not satisfy "+
+			"device validation requirements: ", x["name"].(string))
+		println("Aborting link operation")
+		DeleteObj(paths[1].(string) + "/" + sdev["name"].(string))
+		return
+	}
+
+	var localfn func(x []map[string]interface{}, pid interface{})
+	localfn = func(x []map[string]interface{}, pid interface{}) {
+		if x != nil {
+			for i := range x {
+				var entInt int
+				var ent string
+				x[i]["parentId"] = pid
+				childrenInfArr := x[i]["children"]
+				delete(x[i], "children")
+
+				if x[i]["category"].(string) == "sensor" {
+					ent = "sensor"
+					entInt = SENSOR
+				} else {
+					entInt = DEVICE
+					ent = "device"
+				}
+
+				newObj := PostObj(entInt, ent, x[i])
+
+				if childrenInfArr != nil {
+					newpid := newObj["id"]
+					children := infArrToMapStrinfArr(childrenInfArr.([]interface{}))
+					localfn(children, newpid)
+				}
+			}
+		}
+	}
+
+	//Create the device and Reconstruct it's hierarchy
+	localfn(h, sdev["id"])
+
+	//Delete the stray-device
+	DeleteObj(paths[0].(string))
+}
+
+//This function validates a hierarchy to be imported into another category
+func validFn(x []map[string]interface{}, entity string, pid interface{}) (bool, map[string]interface{}) {
+	if x != nil {
+		for i := range x {
+			x[i]["parentId"] = pid
+
+			res := ValidateObj(x[i], entity, true)
+			if res == false {
+				return false, x[i]
+			}
+
+			childrenInfArr := x[i]["children"]
+			if childrenInfArr != nil {
+				children := infArrToMapStrinfArr(childrenInfArr.([]interface{}))
+				validFn(children, entity, pid)
+			}
+		}
+	}
+	return true, nil
+}
+
+func fn(x []map[string]interface{}, pid interface{}, entity string, ent int) {
+	if x != nil {
+		for i := range x {
+			x[i]["parentId"] = pid
+			childrenInfArr := x[i]["children"]
+			delete(x[i], "children")
+
+			newObj := PostObj(ent, entity, x[i])
+
+			if childrenInfArr != nil {
+				newpid := newObj["id"]
+				children := infArrToMapStrinfArr(childrenInfArr.([]interface{}))
+				fn(children, newpid, entity, ent)
+			}
+		}
+	}
 }
 
 //paths should only have a length of 1 or 2
@@ -1539,7 +1696,7 @@ func UnlinkObject(paths []interface{}) {
 
 	//Recursive anonymous func declaration to
 	//reconstruct exact device hierarchy under the stray-devices
-	var fn func(x []map[string]interface{}, pid interface{})
+	/*var fn func(x []map[string]interface{}, pid interface{})
 	fn = func(x []map[string]interface{}, pid interface{}) {
 		if x != nil {
 			for i := range x {
@@ -1556,10 +1713,10 @@ func UnlinkObject(paths []interface{}) {
 				}
 			}
 		}
-	}
+	}*/
 
 	//Validate the devices before inserting into stray-devices
-	var validFn func(x []map[string]interface{}) (bool, map[string]interface{})
+	/*var validFn func(x []map[string]interface{}) (bool, map[string]interface{})
 	validFn = func(x []map[string]interface{}) (bool, map[string]interface{}) {
 		if x != nil {
 			for i := range x {
@@ -1578,19 +1735,26 @@ func UnlinkObject(paths []interface{}) {
 			}
 		}
 		return true, nil
-	}
+	}*/
 
-	if ok, obj := validFn(h); !ok {
+	/*if ok, obj := validFn(h); !ok {
 		println("Object with name: ", obj["name"], " could not be added")
 		println("Unable to unlink")
 		return
 	}
 
-	fn(h, newPID)
+	fn(h, newPID)*/
+
+	if ok, obj := validFn(h, "stray-device", nil); !ok {
+		println("Object with name: ", obj["name"], " could not be added")
+		println("Unable to unlink")
+		return
+	}
+
+	fn(h, newPID, "stray-device", STRAY_DEV)
 
 	//Delete device and we are done
 	DeleteObj(paths[0].(string))
-
 }
 
 func IsEntityDrawable(path string) bool {

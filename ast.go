@@ -394,7 +394,12 @@ func (c *commonNode) execute() interface{} {
 		}
 
 	case "LinkObject":
-		println("DEBUG TODO")
+		if f, ok := c.fun.(func([]interface{})); ok {
+			if len(c.args) == 3 {
+				c.args[2] = c.args[2].(node).execute()
+			}
+			f(c.args)
+		}
 
 	case "UnlinkObject":
 		if f, ok := c.fun.(func([]interface{})); ok {

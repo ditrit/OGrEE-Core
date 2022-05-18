@@ -667,8 +667,8 @@ HANDLEUI: TOK_UI TOK_DOT TOK_WORD TOK_EQUAL EXPR {$$=&commonNode{COMMON, cmd.Han
           |TOK_GREATER P {$$=&commonNode{COMMON, cmd.FocusUI, "Focus", []interface{}{$2}}}
           ;
 
-HANDLELINKS:  TOK_LINK TOK_COL P TOK_ATTRSPEC P {$$=&commonNode{COMMON, cmd.LinkObject, "LinkObject", []interface{}{}}}
-              |TOK_LINK TOK_COL P TOK_ATTRSPEC P TOK_ATTRSPEC EXPR {$$=&commonNode{COMMON, cmd.LinkObject, "LinkObject", []interface{}{}}}
+HANDLELINKS:  TOK_LINK TOK_COL P TOK_ATTRSPEC P {$$=&commonNode{COMMON, cmd.LinkObject, "LinkObject", []interface{}{$3, $5}}}
+              |TOK_LINK TOK_COL P TOK_ATTRSPEC P TOK_ATTRSPEC EXPR {$$=&commonNode{COMMON, cmd.LinkObject, "LinkObject", []interface{}{$3, $5, $7}}}
               |TOK_UNLINK TOK_COL P {$$=&commonNode{COMMON, cmd.UnlinkObject, "UnlinkObject", []interface{}{$3}}}
               |TOK_UNLINK TOK_COL P TOK_ATTRSPEC P {$$=&commonNode{COMMON, cmd.UnlinkObject, "UnlinkObject", []interface{}{$3,$5}}}
             ;

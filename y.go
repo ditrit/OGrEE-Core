@@ -2830,11 +2830,11 @@ yynewstate:
 		}
 	case 241:
 		{
-			yyVAL.node = &commonNode{COMMON, cmd.LinkObject, "LinkObject", []interface{}{}}
+			yyVAL.node = &commonNode{COMMON, cmd.LinkObject, "LinkObject", []interface{}{yyS[yypt-2].s, yyS[yypt-0].s}}
 		}
 	case 242:
 		{
-			yyVAL.node = &commonNode{COMMON, cmd.LinkObject, "LinkObject", []interface{}{}}
+			yyVAL.node = &commonNode{COMMON, cmd.LinkObject, "LinkObject", []interface{}{yyS[yypt-4].s, yyS[yypt-2].s, yyS[yypt-0].node}}
 		}
 	case 243:
 		{

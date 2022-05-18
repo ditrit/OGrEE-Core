@@ -1,4 +1,4 @@
-USAGE: link: [PATH/TO/STRAY-DEVICE] @ [PATH/TO/DEVICE-OR-RACK] @ Slot (Optional)    
+USAGE: link: [PATH/TO/STRAY-DEVICE] @ [PATH/TO/RACK/OR/DEVICE] @ Slot (Optional)    
 Moves a stray-device to a parent in the OGREE hierarchy.    
 		
 NOTE   
