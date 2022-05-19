@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	u "p3/utils"
+	"strings"
 	"time"
 
 	"go.mongodb.org/mongo-driver/mongo"
@@ -693,6 +694,11 @@ func GetEntity(req bson.M, ent string) (map[string]interface{}, string) {
 	defer cancel()
 	//Remove _id
 	t = fixID(t)
+
+	//If entity has '_' remove it
+	if strings.Contains(ent, "_") {
+		FixUnderScore(t)
+	}
 	return t, ""
 }
 
@@ -710,6 +716,13 @@ func GetManyEntities(ent string, req bson.M, opts *options.FindOptions) ([]map[s
 	if e1 != "" {
 		fmt.Println(e1)
 		return nil, e1
+	}
+
+	//Remove underscore If the entity has '_'
+	if strings.Contains(ent, "_") == true {
+		for i := range data {
+			FixUnderScore(data[i])
+		}
 	}
 
 	return data, ""
@@ -1238,4 +1251,13 @@ func ExtractCursor(c *mongo.Cursor, ctx context.Context) ([]map[string]interface
 		ans = append(ans, x)
 	}
 	return ans, ""
+}
+
+//Removes underscore in object category if present
+func FixUnderScore(x map[string]interface{}) {
+	if catInf, ok := x["category"]; ok {
+		if cat, _ := catInf.(string); strings.Contains(cat, "_") == true {
+			x["category"] = strings.Replace(cat, "_", "-", 1)
+		}
+	}
 }
