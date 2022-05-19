@@ -812,7 +812,7 @@ func Help(entry string) {
 	case "ls", "pwd", "print", "cd", "tree", "create", "gt", "clear",
 		"update", "delete", "lsog", "grep", "for", "while", "if", "env",
 		"cmds", "var", "unset", "select", "camera", "ui", "hc", "drawable",
-		"link", "unlink":
+		"link", "unlink", "draw":
 		path = "./other/man/" + entry + ".md"
 
 	case ">":
@@ -927,7 +927,7 @@ func Tree(x string, depth int) {
 	}
 }
 
-func GetHierarchy(x string, depth int) []map[string]interface{} {
+func GetHierarchy(x string, depth int, silence bool) []map[string]interface{} {
 	//Variable declarations
 	var URL, ext, depthStr string
 	var ans []map[string]interface{}
@@ -948,7 +948,6 @@ func GetHierarchy(x string, depth int) []map[string]interface{} {
 			ext = "/api/" + entity + "s/" + id + "/all?limit=" + depthStr
 			URL = State.APIURL + ext
 
-			println("DEBUG URL: ", URL)
 			r, e := models.Send("GET", URL, GetKey(), nil)
 			if e != nil {
 				println("Error: " + e.Error())
@@ -975,7 +974,10 @@ func GetHierarchy(x string, depth int) []map[string]interface{} {
 		}
 
 	}
-	DispMapArr(ans)
+	if silence == false {
+		DispMapArr(ans)
+	}
+
 	return ans
 }
 
@@ -1502,7 +1504,7 @@ func LinkObject(paths []interface{}) {
 
 	//Retrieve the stray-device hierarchy
 	//println("DEBUG OUR PATH:", paths[0].(string))
-	h = GetHierarchy(paths[0].(string), 50)
+	h = GetHierarchy(paths[0].(string), 50, true)
 	//print("DEBUG H PATH", paths[0].(string))
 	//DispMapArr(h)
 	//Disp(sdev)
@@ -1672,7 +1674,7 @@ func UnlinkObject(paths []interface{}) {
 		return
 	}
 
-	h = GetHierarchy(paths[0].(string), 50)
+	h = GetHierarchy(paths[0].(string), 50, true)
 
 	//Dive POST
 	var parent map[string]interface{}
@@ -1755,6 +1757,21 @@ func UnlinkObject(paths []interface{}) {
 
 	//Delete device and we are done
 	DeleteObj(paths[0].(string))
+}
+
+//Unity UI will draw already existing objects
+//by retrieving the hierarchy
+func Draw(x string, depth int) {
+	if depth == 0 {
+		println("Warning depth of 0 will return nothing.")
+		println("It is recommended to use a value greater than 0")
+		return
+	}
+	res := GetHierarchy(x, depth, true)
+	data := map[string]interface{}{"type": "create", "data": res}
+
+	//0 to include the JSON filtration
+	InformUnity("POST", "Draw", 0, data)
 }
 
 func IsEntityDrawable(path string) bool {

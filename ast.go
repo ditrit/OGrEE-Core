@@ -263,7 +263,7 @@ func (c *commonNode) execute() interface{} {
 			return &jsonObjArrNode{JSONND, len(v), v}
 		}
 
-	case "Tree":
+	case "Tree", "Draw":
 		if f, ok := c.fun.(func(string, int)); ok {
 			f(c.args[0].(string), c.args[1].(int))
 		}
@@ -317,10 +317,10 @@ func (c *commonNode) execute() interface{} {
 		}
 
 	case "Hierarchy":
-		if f, ok := c.fun.(func(x string, depth int) []map[string]interface{}); ok {
+		if f, ok := c.fun.(func(string, int, bool) []map[string]interface{}); ok {
 			path := c.args[0].(string)
 			depth := c.args[1].(int)
-			f(path, depth)
+			f(path, depth, false)
 		}
 
 	case "GetOCAttr":

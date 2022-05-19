@@ -219,7 +219,8 @@ func checkIfTemplate(x interface{}) bool {
        TOK_MOD
        TOK_UNSET TOK_ELIF TOK_DO TOK_LEN
        TOK_USE_JSON TOK_PARTIAL TOK_LINK TOK_UNLINK
-       TOK_CAM TOK_UI TOK_HIERARCH TOK_DRAW TOK_ENV TOK_ORPH
+       TOK_CAM TOK_UI TOK_HIERARCH TOK_DRAWABLE TOK_ENV TOK_ORPH
+       TOK_DRAW
        
 %type <s> F E P P1 WORDORNUM CDORFG NTORIENTATION
 %type <arr> WNARG NODEGETTER NODEACC
@@ -504,6 +505,8 @@ Q:     TOK_CD P {/*cmd.CD($2);*/ $$=&commonNode{COMMON, cmd.CD, "CD", []interfac
 
        | TOK_TREE P {$$=&commonNode{COMMON, cmd.Tree, "Tree", []interface{}{$2, 0}}}
        | TOK_TREE P TOK_NUM {$$=&commonNode{COMMON, cmd.Tree, "Tree", []interface{}{$2, $3}}}
+       | TOK_DRAW P {$$=&commonNode{COMMON, cmd.Draw, "Draw", []interface{}{$2, 0}}}
+       | TOK_DRAW P TOK_NUM {$$=&commonNode{COMMON, cmd.Draw, "Draw", []interface{}{$2, $3}}}
        | TOK_HIERARCH P {$$=&commonNode{COMMON, cmd.GetHierarchy, "Hierarchy", []interface{}{$2, 1}}}
        | TOK_HIERARCH P TOK_NUM {$$=&commonNode{COMMON, cmd.GetHierarchy, "Hierarchy", []interface{}{$2, $3}}}
        | TOK_UNSET TOK_OCDEL TOK_WORD TOK_WORD {$$=&commonNode{COMMON,UnsetUtil, "Unset",[]interface{}{$2+$3, $4, nil, nil} }}
@@ -514,8 +517,8 @@ Q:     TOK_CD P {/*cmd.CD($2);*/ $$=&commonNode{COMMON, cmd.CD, "CD", []interfac
               
               }
        | BASH     {$$=$1}
-       | TOK_DRAW TOK_LPAREN P TOK_RPAREN {$$=&commonNode{COMMON, cmd.IsEntityDrawable, "IsEntityDrawable", []interface{}{$3}}}
-       | TOK_DRAW TOK_LPAREN P TOK_COMMA factor TOK_RPAREN {$$=&commonNode{COMMON, cmd.IsAttrDrawable, "IsAttrDrawable", []interface{}{$3, $5}}}
+       | TOK_DRAWABLE TOK_LPAREN P TOK_RPAREN {$$=&commonNode{COMMON, cmd.IsEntityDrawable, "IsEntityDrawable", []interface{}{$3}}}
+       | TOK_DRAWABLE TOK_LPAREN P TOK_COMMA factor TOK_RPAREN {$$=&commonNode{COMMON, cmd.IsAttrDrawable, "IsAttrDrawable", []interface{}{$3, $5}}}
        |TOK_WORD TOK_EQUAL EXPR {$$=&commonNode{COMMON, cmd.SetEnv, "SetEnv", []interface{}{$1, $3}}}
 ;
 
@@ -543,6 +546,7 @@ BASH:  TOK_CLR {$$=&commonNode{COMMON, cmd.Clear, "CLR", nil}}
        | TOK_DOC TOK_HIERARCH {$$=&commonNode{COMMON, cmd.Help, "Help", []interface{}{"hc"}}}
        | TOK_DOC TOK_WORD {$$=&commonNode{COMMON, cmd.Help, "Help", []interface{}{$2}}}
        | TOK_DOC TOK_TREE {$$=&commonNode{COMMON, cmd.Help, "Help", []interface{}{"tree"}}}
+       | TOK_DOC TOK_DRAW {$$=&commonNode{COMMON, cmd.Help, "Help", []interface{}{"draw"}}}
        | TOK_DOC TOK_IF {$$=&commonNode{COMMON, cmd.Help, "Help", []interface{}{"if"}}}
        | TOK_DOC TOK_WHILE {$$=&commonNode{COMMON, cmd.Help, "Help", []interface{}{"while"}}}
        | TOK_DOC TOK_FOR {$$=&commonNode{COMMON, cmd.Help, "Help", []interface{}{"for"}}}
@@ -564,7 +568,7 @@ BASH:  TOK_CLR {$$=&commonNode{COMMON, cmd.Clear, "CLR", nil}}
        | TOK_DOC TOK_PLUS {$$=&commonNode{COMMON, cmd.Help, "Help", []interface{}{"+"}}}
        | TOK_DOC TOK_EQUAL {$$=&commonNode{COMMON, cmd.Help, "Help", []interface{}{"="}}}
        | TOK_DOC TOK_GREATER {$$=&commonNode{COMMON, cmd.Help, "Help", []interface{}{">"}}}
-       | TOK_DOC TOK_DRAW {$$=&commonNode{COMMON, cmd.Help,"Help", []interface{}{"drawable"} }}
+       | TOK_DOC TOK_DRAWABLE {$$=&commonNode{COMMON, cmd.Help,"Help", []interface{}{"drawable"} }}
 ;
 
 OCLISYNTX:  TOK_PLUS OCCR {$$=$2}

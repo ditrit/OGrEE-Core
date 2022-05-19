@@ -8380,6 +8380,75 @@ var dfas = []dfa{
 		},
 	}, []int{ /* Start-of-input transitions */ -1, -1, -1, -1, -1, -1, -1, -1, -1}, []int{ /* End-of-input transitions */ -1, -1, -1, -1, -1, -1, -1, -1, -1}, nil},
 
+	// draw
+	{[]bool{false, false, false, false, true}, []func(rune) int{ // Transitions
+		func(r rune) int {
+			switch r {
+			case 97:
+				return -1
+			case 100:
+				return 1
+			case 114:
+				return -1
+			case 119:
+				return -1
+			}
+			return -1
+		},
+		func(r rune) int {
+			switch r {
+			case 97:
+				return -1
+			case 100:
+				return -1
+			case 114:
+				return 2
+			case 119:
+				return -1
+			}
+			return -1
+		},
+		func(r rune) int {
+			switch r {
+			case 97:
+				return 3
+			case 100:
+				return -1
+			case 114:
+				return -1
+			case 119:
+				return -1
+			}
+			return -1
+		},
+		func(r rune) int {
+			switch r {
+			case 97:
+				return -1
+			case 100:
+				return -1
+			case 114:
+				return -1
+			case 119:
+				return 4
+			}
+			return -1
+		},
+		func(r rune) int {
+			switch r {
+			case 97:
+				return -1
+			case 100:
+				return -1
+			case 114:
+				return -1
+			case 119:
+				return -1
+			}
+			return -1
+		},
+	}, []int{ /* Start-of-input transitions */ -1, -1, -1, -1, -1}, []int{ /* End-of-input transitions */ -1, -1, -1, -1, -1}, nil},
+
 	// "[^"]+"
 	{[]bool{false, false, false, true}, []func(rune) int{ // Transitions
 		func(r rune) int {
@@ -9048,15 +9117,20 @@ OUTER0:
 		case 99:
 			{
 				printToks("TOK_DRAW")
-				return TOK_DRAW
+				return TOK_DRAWABLE
 			}
 		case 100:
+			{
+				printToks("TOK_DRAW")
+				return TOK_DRAW
+			}
+		case 101:
 			{
 				printToks("TOK_STR")
 				lval.s = yylex.Text()[1 : len(yylex.Text())-1]
 				return TOK_STR
 			}
-		case 101:
+		case 102:
 			{
 				printToks("TOK_WORD")
 				lval.s = yylex.Text()
