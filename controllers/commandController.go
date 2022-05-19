@@ -1963,7 +1963,8 @@ func LoadFile(path string) string {
 
 func LoadTemplate(data map[string]interface{}, filePath string) {
 	var URL string
-	if _, ok := data["category"]; !ok {
+
+	if cat, _ := data["category"]; cat == "room" {
 		//Room template
 		URL = State.APIURL + "/api/room_templates"
 	} else {
