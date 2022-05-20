@@ -1090,36 +1090,8 @@ func GetOCLIAtrributes(path string, ent int, data map[string]interface{}) {
 		MergeMaps(attr, baseAttrs, false)
 
 		//If user provided templates, get the JSON
-		//and parse into attributes
-		if q, ok := attr["template"]; ok {
-			if qS, ok := q.(string); ok {
-				if tmpl := fetchTemplate(qS, ROOM); tmpl != nil {
-					MergeMaps(attr, tmpl, true)
-				} else {
-					attr["template"] = ""
-					println("Warning: template was not found.",
-						"it will not be used")
-					WarningLogger.Println("Invalid data type or incorrect name used to invoke template")
-				}
-
-			} else {
-				attr["template"] = ""
-				println("Warning: template must be a string that",
-					" refers to an existing imported template.",
-					q, " will not be used")
-				WarningLogger.Println("Invalid data type used to invoke template")
-			}
-
-		} else {
-			attr["template"] = ""
-		}
-
-		//Serialise size and posXY if given
-		if _, ok := attr["size"].(string); ok {
-			attr["size"] = serialiseAttr(attr, "size")
-		} else {
-			attr["size"] = serialiseAttr2(attr, "size")
-		}
+		//and parse into templates
+		GetOCLIAtrributesTemplateHelper(attr, data, ent)
 
 		if _, ok := attr["posXY"].(string); ok {
 			attr["posXY"] = serialiseAttr(attr, "posXY")
@@ -1308,12 +1280,12 @@ func GetOCLIAtrributesTemplateHelper(attr, data map[string]interface{}, ent int)
 	//data from templates
 	attrSerialiser := func(someVal interface{}, idx string, ent int) string {
 		if x, ok := someVal.(int); ok {
-			if ent == DEVICE {
+			if ent == DEVICE || ent == ROOM {
 				return strconv.Itoa(x)
 			}
 			return strconv.Itoa(x / 10)
 		} else if x, ok := someVal.(float64); ok {
-			if ent == DEVICE {
+			if ent == DEVICE || ent == ROOM {
 				return strconv.FormatFloat(x, 'G', -1, 64)
 			}
 			return strconv.FormatFloat(x/10.0, 'G', -1, 64)
@@ -1328,10 +1300,19 @@ func GetOCLIAtrributesTemplateHelper(attr, data map[string]interface{}, ent int)
 
 	if q, ok := attr["template"]; ok {
 		if qS, ok := q.(string); ok {
-			if tmpl := fetchTemplate(qS, ROOM); tmpl != nil {
-				//MergeMaps(attr, tmpl, true)
-				if sizeInf, ok := tmpl["sizeWDHmm"].([]interface{}); ok && len(sizeInf) == 3 {
+			//Determine the type of template
+			tInt := 0
+			if ent == ROOM {
+				tInt = ROOMTMPL
+			} else {
+				tInt = OBJTMPL
+			} //End of determine block
 
+			if tmpl := fetchTemplate(qS, tInt); tmpl != nil {
+				//MergeMaps(attr, tmpl, true)
+				key := determineStrKey(tmpl, []string{"sizeWDHmm", "sizeWDHm"})
+
+				if sizeInf, ok := tmpl[key].([]interface{}); ok && len(sizeInf) == 3 {
 					var xS, yS, zS string
 					xS = attrSerialiser(sizeInf[0], "x", ent)
 					yS = attrSerialiser(sizeInf[1], "y", ent)
@@ -1368,6 +1349,56 @@ func GetOCLIAtrributesTemplateHelper(attr, data map[string]interface{}, ent int)
 							}
 						}
 
+					} else if ent == ROOM {
+						attr["sizeUnit"] = "m"
+						attr["heightUnit"] = "m"
+
+						//Copy additional Room specific attributes
+						var tmp []byte
+						CopyAttr(attr, tmpl, "technicalArea")
+						if _, ok := attr["technicalArea"]; ok {
+							tmp, _ := json.Marshal(attr["technicalArea"])
+							attr["technical"] = string(tmp)
+							delete(attr, "technicalArea")
+						}
+
+						CopyAttr(attr, tmpl, "reservedArea")
+						if _, ok := attr["reservedArea"]; ok {
+							tmp, _ = json.Marshal(attr["reservedArea"])
+							attr["reserved"] = string(tmp)
+							delete(attr, "reservedArea")
+						}
+
+						CopyAttr(attr, tmpl, "separators")
+						if _, ok := attr["separators"]; ok {
+							tmp, _ = json.Marshal(attr["separators"])
+							attr["separators"] = string(tmp)
+						}
+
+						CopyAttr(attr, tmpl, "tiles")
+						if _, ok := attr["tiles"]; ok {
+							tmp, _ = json.Marshal(attr["tiles"])
+							attr["tiles"] = string(tmp)
+						}
+
+						CopyAttr(attr, tmpl, "rows")
+						if _, ok := attr["rows"]; ok {
+							tmp, _ = json.Marshal(attr["rows"])
+							attr["rows"] = string(tmp)
+						}
+
+						CopyAttr(attr, tmpl, "aisles")
+						if _, ok := attr["aisles"]; ok {
+							tmp, _ = json.Marshal(attr["aisles"])
+							attr["aisles"] = string(tmp)
+						}
+
+						CopyAttr(attr, tmpl, "colors")
+						if _, ok := attr["colors"]; ok {
+							tmp, _ = json.Marshal(attr["colors"])
+							attr["colors"] = string(tmp)
+						}
+
 					} else {
 						attr["sizeUnit"] = "cm"
 						attr["heightUnit"] = "cm"
@@ -1388,6 +1419,9 @@ func GetOCLIAtrributesTemplateHelper(attr, data map[string]interface{}, ent int)
 					if check := CopyAttr(attr, tmpl, "fbxModel"); !check {
 						attr["fbxModel"] = ""
 					}
+
+					//Copy orientation if available
+					CopyAttr(attr, tmpl, "orientation")
 
 					//Merge attributes if available
 					if tmplAttrsInf, ok := tmpl["attributes"]; ok {
