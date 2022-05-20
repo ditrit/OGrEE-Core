@@ -772,10 +772,6 @@ func deleteHelper(t map[string]interface{}, ent int) (map[string]interface{}, st
 					}
 
 				}
-			} else {
-				println("JSON not formatted as expected")
-				return u.Message(false,
-					"There was an error in deleting the entity"), "not found"
 			}
 		}
 
@@ -1212,10 +1208,6 @@ func deleteDeviceHelper(t map[string]interface{}) (map[string]interface{}, strin
 				for i := range x {
 					deleteDeviceHelper(x[i])
 				}
-			} else {
-				println("JSON not formatted as expected")
-				return u.Message(false,
-					"There was an error in deleting the entity"), "not found"
 			}
 		}
 
