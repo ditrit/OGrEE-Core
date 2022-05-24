@@ -122,6 +122,7 @@ pipeline {
                 sh '(docker exec zDB sh -c \'exec mongodump -d ogree --archive\' > /ogree-development/backup/cicdTriggered/zDB/collection.archive) || true'
                 sh '(docker exec tDB sh -c \'exec mongodump -d ogree --archive\' > /ogree-development/backup/cicdTriggered/tDB/collection.archive) || true'
                 sh '(docker exec vDB sh -c \'exec mongodump -d ogree --archive\' > /ogree-development/backup/cicdTriggered/vDB/collection.archive) || true'
+                sh '(docker exec fDB sh -c \'exec mongodump -d ogree --archive\' > /ogree-development/backup/cicdTriggered/fDB/collection.archive) || true'
 
                 //Restart services
                 sh 'docker-compose -f /ogree-development/docker-compose.yml down || true'
@@ -133,6 +134,7 @@ pipeline {
                 sh '(docker exec -i zDB sh -c \'exec mongorestore --archive\' < /ogree-development/backup/cicdTriggered/zDB/collection.archive) || true'
                 sh '(docker exec -i tDB sh -c \'exec mongorestore --archive\' < /ogree-development/backup/cicdTriggered/tDB/collection.archive) || true'
                 sh '(docker exec -i vDB sh -c \'exec mongorestore --archive\' < /ogree-development/backup/cicdTriggered/vDB/collection.archive) || true'
+                sh '(docker exec -i fDB sh -c \'exec mongorestore --archive\' < /ogree-development/backup/cicdTriggered/fDB/collection.archive) || true'
 
                
             }
