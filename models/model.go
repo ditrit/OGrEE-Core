@@ -798,6 +798,14 @@ func deleteHelper(t map[string]interface{}, ent int) (map[string]interface{}, st
 			defer cancel()
 		}
 
+		//Delete hierarchy under stray-device
+		if ent == STRAYDEV {
+			ctx, cancel := u.Connect()
+			entity := u.EntityToString(u.STRAYSENSOR)
+			GetDB().Collection(entity).DeleteMany(ctx, bson.M{"parentId": t["id"].(primitive.ObjectID).Hex()})
+			defer cancel()
+		}
+
 		if ent == DEVICE {
 			DeleteDeviceF(t["id"].(primitive.ObjectID))
 		} else {
@@ -885,6 +893,9 @@ func UpdateEntity(ent string, req bson.M, t *map[string]interface{}, isPatch boo
 func GetEntityHierarchy(ID primitive.ObjectID, ent string, start, end int) (map[string]interface{}, string) {
 	var childEnt string
 	if start < end {
+		if ent == "stray_sensor" {
+			println("DEBUG SENSOR IN H CALL")
+		}
 		top, e := GetEntity(bson.M{"_id": ID}, ent)
 		if top == nil {
 			return nil, e
@@ -909,9 +920,7 @@ func GetEntityHierarchy(ID primitive.ObjectID, ent string, start, end int) (map[
 			}
 		}
 
-		if ent == "device" {
-			childEnt = "device"
-		} else if ent == "stray_device" {
+		if ent == "device" || ent == "stray_device" {
 			childEnt = ent
 		} else {
 			childEnt = u.EntityToString(start + 1)
@@ -950,6 +959,13 @@ func GetEntityHierarchy(ID primitive.ObjectID, ent string, start, end int) (map[
 			roomEnts, _ = GetManyEntities(u.EntityToString(GROUP), bson.M{"parentId": pid}, nil)
 			if roomEnts != nil {
 				children = append(children, roomEnts...)
+			}
+		}
+
+		if ent == "stray_device" {
+			sSensors, _ := GetManyEntities("stray_sensor", bson.M{"parentId": pid}, nil)
+			if sSensors != nil {
+				children = append(children, sSensors...)
 			}
 		}
 

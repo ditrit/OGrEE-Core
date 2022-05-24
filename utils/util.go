@@ -32,6 +32,7 @@ const (
 	ROOMTMPL
 	OBJTMPL
 	STRAYDEV
+	STRAYSENSOR
 )
 
 func Connect() (context.Context, context.CancelFunc) {
@@ -114,6 +115,8 @@ func EntityToString(entity int) string {
 		return "separator"
 	case STRAYDEV:
 		return "stray_device"
+	case STRAYSENSOR:
+		return "stray_sensor"
 	case ROOMTMPL:
 		return "room_template"
 	case OBJTMPL:
@@ -157,6 +160,8 @@ func EntityStrToInt(entity string) int {
 		return SEPARATOR
 	case "stray_device":
 		return STRAYDEV
+	case "stray_sensor":
+		return STRAYSENSOR
 	case "room_template":
 		return ROOMTMPL
 	case "obj_template":
