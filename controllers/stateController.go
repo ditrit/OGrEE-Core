@@ -104,7 +104,8 @@ func InitState(debugLvl int) {
 	stray.PID = "-2"
 	stray.ID = "-3"
 	stray.Path = "/Physical/"
-	SearchAndInsert(&State.TreeHierarchy, stray, -2, "/Physical")
+	SearchAndInsert(&State.TreeHierarchy, stray, "/Physical")
+
 
 	// SETUP LOGICAL HIERARCHY START
 	// TODO: PUT THIS SECTION IN A LOOP
@@ -120,7 +121,7 @@ func InitState(debugLvl int) {
 	oTemplate.Entity = -1
 	oTemplate.Name = "ObjectTemplates"
 	oTemplate.Path = "/Logical"
-	SearchAndInsert(&State.TreeHierarchy, oTemplate, 0, "/Logical")
+	SearchAndInsert(&State.TreeHierarchy, oTemplate, "/Logical")
 
 	rTemplate := &Node{}
 	rTemplate.ID = "2"
@@ -128,7 +129,7 @@ func InitState(debugLvl int) {
 	rTemplate.Entity = -1
 	rTemplate.Name = "RoomTemplates"
 	rTemplate.Path = "/Logical"
-	SearchAndInsert(&State.TreeHierarchy, rTemplate, 0, "/Logical")
+	SearchAndInsert(&State.TreeHierarchy, rTemplate, "/Logical")
 
 	group := &Node{}
 	group.ID = "3"
@@ -136,7 +137,7 @@ func InitState(debugLvl int) {
 	group.Entity = -1
 	group.Name = "Groups"
 	group.Path = "/Logical"
-	SearchAndInsert(&State.TreeHierarchy, group, 0, "/Logical")
+	SearchAndInsert(&State.TreeHierarchy, group, "/Logical")
 
 	//SETUP LOGICAL HIERARCHY END
 
@@ -297,7 +298,7 @@ func GetChildren(curr int) []*Node {
 
 }
 
-func SearchAndInsert(root **Node, node *Node, dt int, path string) {
+func SearchAndInsert(root **Node, node *Node, path string) {
 	if root != nil {
 		for i := (*root).Nodes.Front(); i != nil; i = i.Next() {
 			if node.PID == (i.Value).(*Node).ID {
@@ -309,10 +310,9 @@ func SearchAndInsert(root **Node, node *Node, dt int, path string) {
 				return
 			}
 			x := (i.Value).(*Node)
-			SearchAndInsert(&x, node, dt+1, path+"/"+x.Name)
+			SearchAndInsert(&x, node, path+"/"+x.Name)
 		}
 	}
-	return
 }
 
 //Automatically assign Unity and API URLs
