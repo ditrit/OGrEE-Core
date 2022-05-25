@@ -106,6 +106,19 @@ func InitState(debugLvl int) {
 	stray.Path = "/Physical/"
 	SearchAndInsert(&State.TreeHierarchy, stray, "/Physical")
 
+	strayDev := &Node{}
+	strayDev.Name = "Device"
+	strayDev.PID = "-3"
+	strayDev.ID = "-4"
+	strayDev.Path = "/Physical/Stray"
+	SearchAndInsert(&State.TreeHierarchy, strayDev, "/Physical/Stray")
+
+	straySens := &Node{}
+	straySens.Name = "Sensor"
+	straySens.PID = "-3"
+	straySens.ID = "-5"
+	straySens.Path = "/Physical/Stray"
+	SearchAndInsert(&State.TreeHierarchy, straySens, "/Physical/Stray")
 
 	// SETUP LOGICAL HIERARCHY START
 	// TODO: PUT THIS SECTION IN A LOOP
@@ -525,6 +538,10 @@ func FetchNodesAtLevel(path string) []string {
 		urls = []string{State.APIURL + "/api/tenants"}
 		names = append(names, "Stray")
 	} else {
+		if len(paths) == 3 && paths[2] == "Stray" {
+			names = append(names, []string{"Device", "Sensor"}...)
+		}
+
 		if len(paths) < 3 { // /Physical or / or /Logical
 			//println("Should be here")
 			//println("LEN:", len(paths))
@@ -584,21 +601,39 @@ func FetchJsonNodesAtLevel(path string) []map[string]interface{} {
 	paths := strings.Split(filepath.Clean(path), "/")
 
 	if len(paths) == 2 && paths[1] == "Physical" {
+		x := NodesAtLevel(&State.TreeHierarchy, *StrToStack(path))
+		objects = append(objects, strArrToMapStrInfArr(x)...)
 		urls = []string{State.APIURL + "/api/tenants"}
-		objects = append(objects, map[string]interface{}{"name": "Stray"})
 
 	} else {
-		if len(paths) < 3 { // /Physical or / or /Logical
-			//println("DEBUG Should be here")
-			//println("DEBUG LEN:", len(paths))
-			//println("DEBUG: ", path)
+		if len(paths) == 3 && paths[2] == "Stray" || len(paths) < 3 {
 			x := NodesAtLevel(&State.TreeHierarchy, *StrToStack(path))
 			return strArrToMapStrInfArr(x)
 		}
 
-		// 2: since first idx is useless
-		// and 2nd is just /Physical or /Logical etc
-		urls = OnlineLevelResolver(paths[2:])
+		if len(paths) == 4 && paths[2] == "Stray" {
+			//println("DEBUG this section for the new nodes")
+			//println("DEBUG path2: ", paths[3])
+			if paths[3] == "Device" {
+				urls = []string{State.APIURL + "/api/stray-devices"}
+			}
+			if paths[3] == "Sensor" {
+				urls = []string{State.APIURL + "/api/stray-sensors"}
+			}
+		} else {
+			//if len(paths) < 3 { // /Physical or / or /Logical
+			//println("DEBUG Should be here")
+			//println("DEBUG LEN:", len(paths))
+			//println("DEBUG: ", path)
+			//	x := NodesAtLevel(&State.TreeHierarchy, *StrToStack(path))
+			//	return strArrToMapStrInfArr(x)
+			//}
+
+			// 2: since first idx is useless
+			// and 2nd is just /Physical or /Logical etc
+			urls = OnlineLevelResolver(paths[2:])
+		}
+
 	}
 
 	for i := range urls {
@@ -715,6 +750,7 @@ func CheckPathOnline(path string) (bool, string) {
 	}
 
 	paths := OnlinePathResolve(pathSplit[2:])
+
 	for i := range paths {
 		r, e := models.Send("GET", paths[i], GetKey(), nil)
 		if e != nil {

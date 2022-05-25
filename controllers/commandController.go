@@ -2300,15 +2300,28 @@ func OnlinePathResolve(path []string) []string {
 
 	//Check if path is templates or groups type
 	if path[0] == "Stray" {
-		basePath += "/stray-devices"
-		if len(path) > 1 { // Check for name
-			basePath += "/" + path[1]
-			for i := 2; i < len(path); i++ {
+
+		if len(path) > 1 && path[1] == "Device" {
+			basePath += "/stray-devices"
+		} else if len(path) > 1 && path[1] == "Sensor" {
+			basePath += "/stray-sensors"
+		}
+		sensorPath := basePath
+
+		if len(path) > 2 { // Check for name
+
+			basePath += "/" + path[2]
+			sensorPath += "/" + path[2]
+			for i := 3; i < len(path); i++ {
 				basePath += "/devices/" + path[i]
+				sensorPath += "/stray-sensors/" + path[i]
 			}
 		}
 
-		return []string{basePath}
+		if basePath == sensorPath {
+			return []string{basePath}
+		}
+		return []string{basePath, sensorPath}
 	}
 
 	if path[0] == "ObjectTemplates" {
@@ -2390,15 +2403,27 @@ func OnlineLevelResolver(path []string) []string {
 
 	//Check if path is templates or groups type or stray device
 	if path[0] == "Stray" {
-		basePath += "/stray-devices"
-		if len(path) > 1 { // Check for name
-			basePath += "/" + path[1] + "/devices"
-			for i := 2; i < len(path); i++ {
+		if len(path) > 1 && path[1] == "Device" {
+			basePath += "/stray-devices"
+		} else if len(path) > 1 && path[1] == "Sensor" {
+			basePath += "/stray-sensors"
+		}
+		sensorPath := basePath
+
+		if len(path) > 2 { // Check for name
+			basePath += "/" + path[2] + "/devices"
+			sensorPath += "/" + path[2] + "/stray-sensors"
+			for i := 3; i < len(path); i++ {
 				basePath += "/" + path[i] + "/devices"
+				sensorPath += "/" + path[i] + "/stray-sensors"
 			}
 
 		}
-		return []string{basePath}
+
+		if basePath == sensorPath {
+			return []string{basePath}
+		}
+		return []string{basePath, sensorPath}
 	}
 
 	if path[0] == "ObjectTemplates" {
