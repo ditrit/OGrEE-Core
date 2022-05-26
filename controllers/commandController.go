@@ -1516,9 +1516,9 @@ func LinkObject(paths []interface{}) {
 	//println(destination)
 	//println("SO WE ARE ALL HERE")
 	var h []map[string]interface{}
-	if len(paths) == 3 {
+	/*if len(paths) == 3 {
 		println(paths[2].(string))
-	}
+	}*/
 
 	//Stray-device retrieval and validation
 	sdev, _ := GetObject(paths[0].(string), true)
@@ -1644,7 +1644,22 @@ func validFn(x []map[string]interface{}, entity string, pid interface{}) (bool, 
 		for i := range x {
 			x[i]["parentId"] = pid
 
-			res := ValidateObj(x[i], entity, true)
+			var ent string
+			/*if catInf, _ := x[i]["category"]; catInf != entity {
+				ent = catInf.(string)
+			} else {
+				ent = entity
+			}*/
+			catInf := x[i]["category"]
+			if catInf == "device" {
+				ent = "stray-device"
+			} else if catInf == "sensor" {
+				ent = "stray-sensor"
+			} else {
+				ent = entity
+			}
+
+			res := ValidateObj(x[i], ent, true)
 			if res == false {
 				return false, x[i]
 			}
@@ -1727,6 +1742,11 @@ func UnlinkObject(paths []interface{}) {
 	}
 
 	newDev := PostObj(STRAY_DEV, "stray-device", dev)
+	if newDev == nil {
+		WarningLogger.Println("Unable to unlink target: ", paths[0].(string))
+		println("Error: Unable to unlink target: ", paths[0].(string))
+		return
+	}
 	var newPID interface{}
 	newPID = newDev["id"]
 
@@ -1782,8 +1802,11 @@ func UnlinkObject(paths []interface{}) {
 	fn(h, newPID)*/
 
 	if ok, obj := validFn(h, "stray-device", nil); !ok {
-		println("Object with name: ", obj["name"], " could not be added")
+		println("Object with name: ", obj["name"].(string), " could not be added")
 		println("Unable to unlink")
+
+		//Would also have to delete the parent object in this case
+		DeleteObj("/Physical/Stray/Device/" + dev["name"].(string))
 		return
 	}
 
@@ -1793,16 +1816,27 @@ func UnlinkObject(paths []interface{}) {
 	DeleteObj(paths[0].(string))
 }
 
+//we also need to ignore groups
+//arbitrarily set depth to 50 since it doesn't make sense
+//for a device to have a deeper hierarchy paths[0].(string)
+
 //Unity UI will draw already existing objects
 //by retrieving the hierarchy
 func Draw(x string, depth int) {
 	if depth == 0 {
-		println("Warning depth of 0 will return nothing.")
-		println("It is recommended to use a value greater than 0")
+		res, _ := GetObject(x, true)
+		data := map[string]interface{}{"type": "create", "data": res}
+		println("DEBUG view JSON before UNITY")
+		Disp(data)
+		InformUnity("POST", "Draw", 0, data)
 		return
 	}
+
 	res := GetHierarchy(x, depth, true)
 	data := map[string]interface{}{"type": "create", "data": res}
+
+	println("DEBUG view JSON before UNITY")
+	Disp(data)
 
 	//0 to include the JSON filtration
 	InformUnity("POST", "Draw", 0, data)
