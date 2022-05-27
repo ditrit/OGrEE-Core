@@ -1357,17 +1357,19 @@ func GetOCLIAtrributesTemplateHelper(attr, data map[string]interface{}, ent int)
 						var tmp []byte
 						CopyAttr(attr, tmpl, "technicalArea")
 						if _, ok := attr["technicalArea"]; ok {
-							tmp, _ := json.Marshal(attr["technicalArea"])
-							attr["technical"] = string(tmp)
+							//tmp, _ := json.Marshal(attr["technicalArea"])
+							attr["technical"] = attr["technicalArea"]
 							delete(attr, "technicalArea")
 						}
 
 						CopyAttr(attr, tmpl, "reservedArea")
 						if _, ok := attr["reservedArea"]; ok {
-							tmp, _ = json.Marshal(attr["reservedArea"])
-							attr["reserved"] = string(tmp)
+							//tmp, _ = json.Marshal(attr["reservedArea"])
+							attr["reserved"] = attr["reservedArea"]
 							delete(attr, "reservedArea")
 						}
+
+						parseReservedTech(attr)
 
 						CopyAttr(attr, tmpl, "separators")
 						if _, ok := attr["separators"]; ok {
@@ -2582,4 +2584,41 @@ func checkNumeric(x interface{}) bool {
 	default:
 		return false
 	}
+}
+
+//Hack function for the reserved and technical areas
+//which copies that room areas function in ast.go
+//[room]:areas=[r1,r2,r3,r4]@[t1,t2,t3,t4]
+func parseReservedTech(x map[string]interface{}) map[string]interface{} {
+	var reservedStr string
+	var techStr string
+	if reserved, ok := x["reserved"].([]interface{}); ok {
+		if tech, ok := x["technical"].([]interface{}); ok {
+			if len(reserved) == 4 && len(tech) == 4 {
+				r4 := bytes.NewBufferString("")
+				fmt.Fprintf(r4, "%v", reserved[3].(float64))
+				r3 := bytes.NewBufferString("")
+				fmt.Fprintf(r3, "%v", reserved[2].(float64))
+				r2 := bytes.NewBufferString("")
+				fmt.Fprintf(r2, "%v", reserved[1].(float64))
+				r1 := bytes.NewBufferString("")
+				fmt.Fprintf(r1, "%v", reserved[0].(float64))
+
+				t4 := bytes.NewBufferString("")
+				fmt.Fprintf(t4, "%v", tech[3].(float64))
+				t3 := bytes.NewBufferString("")
+				fmt.Fprintf(t3, "%v", tech[2].(float64))
+				t2 := bytes.NewBufferString("")
+				fmt.Fprintf(t2, "%v", tech[1].(float64))
+				t1 := bytes.NewBufferString("")
+				fmt.Fprintf(t1, "%v", tech[0].(float64))
+
+				reservedStr = "{\"left\":" + r4.String() + ",\"right\":" + r3.String() + ",\"top\":" + r1.String() + ",\"bottom\":" + r2.String() + "}"
+				techStr = "{\"left\":" + t4.String() + ",\"right\":" + t3.String() + ",\"top\":" + t1.String() + ",\"bottom\":" + t2.String() + "}"
+				x["reserved"] = reservedStr
+				x["technical"] = techStr
+			}
+		}
+	}
+	return x
 }
