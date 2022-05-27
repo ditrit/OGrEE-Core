@@ -32,6 +32,7 @@ const (
 	OBJTMPL
 	GROUP
 	STRAY_DEV
+	STRAYSENSOR
 )
 
 var BuildTime string
@@ -1003,4 +1004,40 @@ func strArrToMapStrInfArr(x []string) []map[string]interface{} {
 		ans = append(ans, map[string]interface{}{"name": x[i]})
 	}
 	return ans
+}
+
+//Provides a mapping for stray
+//and normal objects
+func MapStrayString(x string) string {
+	if x == "device" {
+		return "stray-device"
+	}
+	if x == "sensor" {
+		return "stray-sensor"
+	}
+
+	if x == "stray-device" {
+		return "device"
+	}
+	if x == "stray-sensor" {
+		return "sensor"
+	}
+	return "INVALID-MAP"
+}
+
+func MapStrayInt(x int) int {
+	if x == DEVICE {
+		return STRAY_DEV
+	}
+	if x == SENSOR {
+		return STRAYSENSOR
+	}
+
+	if x == STRAY_DEV {
+		return DEVICE
+	}
+	if x == STRAYSENSOR {
+		return SENSOR
+	}
+	return -1
 }

@@ -1512,13 +1512,8 @@ func FocusUI(path string) {
 }
 
 func LinkObject(paths []interface{}) {
-	//var destination string
-	//println(destination)
-	//println("SO WE ARE ALL HERE")
+
 	var h []map[string]interface{}
-	/*if len(paths) == 3 {
-		println(paths[2].(string))
-	}*/
 
 	//Stray-device retrieval and validation
 	sdev, _ := GetObject(paths[0].(string), true)
@@ -1537,11 +1532,7 @@ func LinkObject(paths []interface{}) {
 	}
 
 	//Retrieve the stray-device hierarchy
-	//println("DEBUG OUR PATH:", paths[0].(string))
 	h = GetHierarchy(paths[0].(string), 50, true)
-	//print("DEBUG H PATH", paths[0].(string))
-	//DispMapArr(h)
-	//Disp(sdev)
 
 	//Parent retrieval and validation block
 	parent, _ := GetObject(paths[1].(string), true)
@@ -1593,10 +1584,49 @@ func LinkObject(paths []interface{}) {
 		return
 	}
 
-	valid, x := validFn(h, "device", parent["id"])
+	var localValid func(x []map[string]interface{}, entity string, pid interface{}) (bool, map[string]interface{})
+	localValid = func(x []map[string]interface{}, entity string, pid interface{}) (bool, map[string]interface{}) {
+		if x != nil {
+			for i := range x {
+				x[i]["parentId"] = pid
+
+				var ent string
+				catInf := x[i]["category"]
+				if catInf == "device" {
+					ent = "stray-device"
+				} else if catInf == "sensor" {
+					ent = "stray-sensor"
+				} else if catInf == "stray-device" {
+					ent = "device"
+				} else if catInf == "stray-sensor" {
+					ent = "sensor"
+					//x[i]["cate"]
+				} else {
+					ent = entity
+				}
+
+				res := ValidateObj(x[i], ent, true)
+				if res == false {
+					return false, x[i]
+				}
+
+				childrenInfArr := x[i]["children"]
+				if childrenInfArr != nil {
+					children := infArrToMapStrinfArr(childrenInfArr.([]interface{}))
+					localValid(children, entity, pid)
+				}
+			}
+		}
+		return true, nil
+	}
+
+	//valid, x := validFn(h, "device", parent["id"])
+	valid, x := localValid(h, "device", sdev["id"])
 	if !valid {
-		println("The following stray-device does not satisfy "+
-			"device validation requirements: ", x["name"].(string))
+		desiredObj := MapStrayString(x["category"].(string))
+		println("In the target's hierarchy the following "+
+			x["category"].(string)+" does not satisfy "+
+			desiredObj+" validation requirements: ", x["name"].(string))
 		println("Aborting link operation")
 		DeleteObj(paths[1].(string) + "/" + sdev["name"].(string))
 		return
@@ -1612,7 +1642,7 @@ func LinkObject(paths []interface{}) {
 				childrenInfArr := x[i]["children"]
 				delete(x[i], "children")
 
-				if x[i]["category"].(string) == "sensor" {
+				if x[i]["category"].(string) == "stray-sensor" {
 					ent = "sensor"
 					entInt = SENSOR
 				} else {
@@ -1623,7 +1653,13 @@ func LinkObject(paths []interface{}) {
 				newObj := PostObj(entInt, ent, x[i])
 
 				if childrenInfArr != nil {
-					newpid := newObj["id"]
+					var newpid interface{}
+					if entInt == DEVICE {
+						newpid = newObj["id"]
+					} else {
+						newpid = pid
+					}
+
 					children := infArrToMapStrinfArr(childrenInfArr.([]interface{}))
 					localfn(children, newpid)
 				}
@@ -1655,6 +1691,10 @@ func validFn(x []map[string]interface{}, entity string, pid interface{}) (bool, 
 				ent = "stray-device"
 			} else if catInf == "sensor" {
 				ent = "stray-sensor"
+			} else if catInf == "stray-device" {
+				ent = "device"
+			} else if catInf == "stray-sensor" {
+				ent = "sensor"
 			} else {
 				ent = entity
 			}
@@ -1681,7 +1721,17 @@ func fn(x []map[string]interface{}, pid interface{}, entity string, ent int) {
 			childrenInfArr := x[i]["children"]
 			delete(x[i], "children")
 
-			newObj := PostObj(ent, entity, x[i])
+			var entStr string
+			catInf := x[i]["category"]
+			if catInf == "device" {
+				entStr = "stray-device"
+			} else if catInf == "sensor" {
+				entStr = "stray-sensor"
+			} else {
+				entStr = entity
+			}
+
+			newObj := PostObj(ent, entStr, x[i])
 
 			if childrenInfArr != nil {
 				newpid := newObj["id"]
@@ -1750,57 +1800,6 @@ func UnlinkObject(paths []interface{}) {
 	var newPID interface{}
 	newPID = newDev["id"]
 
-	//Recursive anonymous func declaration to
-	//reconstruct exact device hierarchy under the stray-devices
-	/*var fn func(x []map[string]interface{}, pid interface{})
-	fn = func(x []map[string]interface{}, pid interface{}) {
-		if x != nil {
-			for i := range x {
-				x[i]["parentId"] = pid
-				childrenInfArr := x[i]["children"]
-				delete(x[i], "children")
-
-				newObj := PostObj(STRAY_DEV, "stray-device", x[i])
-
-				if childrenInfArr != nil {
-					newpid := newObj["id"]
-					children := infArrToMapStrinfArr(childrenInfArr.([]interface{}))
-					fn(children, newpid)
-				}
-			}
-		}
-	}*/
-
-	//Validate the devices before inserting into stray-devices
-	/*var validFn func(x []map[string]interface{}) (bool, map[string]interface{})
-	validFn = func(x []map[string]interface{}) (bool, map[string]interface{}) {
-		if x != nil {
-			for i := range x {
-				x[i]["parentId"] = nil
-
-				res := ValidateObj(x[i], "stray-device", true)
-				if res == false {
-					return false, x[i]
-				}
-
-				childrenInfArr := x[i]["children"]
-				if childrenInfArr != nil {
-					children := infArrToMapStrinfArr(childrenInfArr.([]interface{}))
-					validFn(children)
-				}
-			}
-		}
-		return true, nil
-	}*/
-
-	/*if ok, obj := validFn(h); !ok {
-		println("Object with name: ", obj["name"], " could not be added")
-		println("Unable to unlink")
-		return
-	}
-
-	fn(h, newPID)*/
-
 	if ok, obj := validFn(h, "stray-device", nil); !ok {
 		println("Object with name: ", obj["name"].(string), " could not be added")
 		println("Unable to unlink")
@@ -1815,10 +1814,6 @@ func UnlinkObject(paths []interface{}) {
 	//Delete device and we are done
 	DeleteObj(paths[0].(string))
 }
-
-//we also need to ignore groups
-//arbitrarily set depth to 50 since it doesn't make sense
-//for a device to have a deeper hierarchy paths[0].(string)
 
 //Unity UI will draw already existing objects
 //by retrieving the hierarchy
@@ -2334,28 +2329,30 @@ func OnlinePathResolve(path []string) []string {
 
 	//Check if path is templates or groups type
 	if path[0] == "Stray" {
-
+		var objs string
 		if len(path) > 1 && path[1] == "Device" {
 			basePath += "/stray-devices"
+			objs = "/devices/"
 		} else if len(path) > 1 && path[1] == "Sensor" {
 			basePath += "/stray-sensors"
+			objs = "/stray-sensors/"
 		}
-		sensorPath := basePath
+		//sensorPath := basePath
 
 		if len(path) > 2 { // Check for name
 
 			basePath += "/" + path[2]
-			sensorPath += "/" + path[2]
+			//sensorPath += "/" + path[2]
 			for i := 3; i < len(path); i++ {
-				basePath += "/devices/" + path[i]
-				sensorPath += "/stray-sensors/" + path[i]
+				basePath += objs + path[i]
+				//sensorPath += "/stray-sensors/" + path[i]
 			}
 		}
 
-		if basePath == sensorPath {
-			return []string{basePath}
-		}
-		return []string{basePath, sensorPath}
+		//if basePath == sensorPath {
+		return []string{basePath}
+		//}
+		//return []string{basePath, sensorPath}
 	}
 
 	if path[0] == "ObjectTemplates" {
@@ -2437,27 +2434,23 @@ func OnlineLevelResolver(path []string) []string {
 
 	//Check if path is templates or groups type or stray device
 	if path[0] == "Stray" {
+		var objs string
 		if len(path) > 1 && path[1] == "Device" {
 			basePath += "/stray-devices"
+			objs = "/devices"
 		} else if len(path) > 1 && path[1] == "Sensor" {
 			basePath += "/stray-sensors"
+			objs = "/stray-sensors"
 		}
-		sensorPath := basePath
 
 		if len(path) > 2 { // Check for name
-			basePath += "/" + path[2] + "/devices"
-			sensorPath += "/" + path[2] + "/stray-sensors"
+			basePath += "/" + path[2] + objs
 			for i := 3; i < len(path); i++ {
-				basePath += "/" + path[i] + "/devices"
-				sensorPath += "/" + path[i] + "/stray-sensors"
+				basePath += "/" + path[i] + objs
 			}
 
 		}
-
-		if basePath == sensorPath {
-			return []string{basePath}
-		}
-		return []string{basePath, sensorPath}
+		return []string{basePath}
 	}
 
 	if path[0] == "ObjectTemplates" {
