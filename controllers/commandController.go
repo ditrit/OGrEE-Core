@@ -1830,7 +1830,11 @@ func Draw(x string, depth int) {
 	}
 
 	res := GetHierarchy(x, depth, true)
-	data := map[string]interface{}{"type": "create", "data": res}
+	if res == nil {
+		ErrorLogger.Println("User attempted to draw non drawable object")
+		return
+	}
+	data := map[string]interface{}{"type": "create", "data": res[0]}
 
 	println("DEBUG view JSON before UNITY")
 	Disp(data)
