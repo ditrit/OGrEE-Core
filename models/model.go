@@ -33,6 +33,7 @@ const (
 	ROOMTMPL
 	OBJTMPL
 	STRAYDEV
+	STRAYSENSOR
 )
 
 //Function will recursively iterate through nested obj
@@ -604,7 +605,7 @@ func ValidateEntity(entity int, t map[string]interface{}) (map[string]interface{
 			return r, ok
 		}
 
-	case STRAYDEV:
+	case STRAYDEV, STRAYSENSOR:
 		//Check for parent if PID provided
 		if t["parentId"] != nil && t["parentId"] != "" {
 			if pid, ok := t["parentId"].(string); ok {
@@ -631,14 +632,16 @@ func ValidateEntity(entity int, t map[string]interface{}) (map[string]interface{
 		//Need to check for uniqueness before inserting
 		//this is helpful for the validation endpoints
 		ctx, cancel := u.Connect()
+		entStr := u.EntityToString(entity)
 
-		if c, _ := GetDB().Collection("stray_device").CountDocuments(ctx,
+		if c, _ := GetDB().Collection(entStr).CountDocuments(ctx,
 			bson.M{"name": t["name"]}); c != 0 {
-			msg := "Error a device with the name provided already exists." +
+			msg := "Error a " + entStr + " with the name provided already exists." +
 				"Please provide a unique name"
 			return u.Message(false, msg), false
 		}
 		defer cancel()
+
 	}
 
 	//Successfully validated the Object

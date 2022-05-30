@@ -70,7 +70,7 @@ func ParamsParse(link *url.URL, objType int) map[string]interface{} {
 	//Building Attribute query varies based on
 	//object type
 	for key, _ := range q {
-		if objType < ROOMTMPL { //Non template objects
+		if objType != ROOMTMPL && objType != OBJTMPL { //Non template objects
 			switch key {
 			case "id", "name", "category", "parentID",
 				"description", "domain", "parentid", "parentId":

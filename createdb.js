@@ -68,4 +68,4 @@ db.group.createIndex({parentId:1, name:1}, { unique: true });
 
 //Enforce unique stray objects
 db.stray_device.createIndex({parentId:1,name:1}, { unique: true });
-db.stray_sensor.createIndex({parentId:1,name:1}, { unique: true });
+db.stray_sensor.createIndex({name:1}, { unique: true });
