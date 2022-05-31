@@ -312,9 +312,6 @@ func UpdateEntity(ent string, req bson.M, t *map[string]interface{}, isPatch boo
 func GetEntityHierarchy(ID primitive.ObjectID, ent string, start, end int) (map[string]interface{}, string) {
 	var childEnt string
 	if start < end {
-		if ent == "stray_sensor" {
-			println("DEBUG SENSOR IN H CALL")
-		}
 		top, e := GetEntity(bson.M{"_id": ID}, ent)
 		if top == nil {
 			return nil, e

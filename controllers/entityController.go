@@ -379,7 +379,7 @@ var GetEntity = func(w http.ResponseWriter, r *http.Request) {
 	} else if id, e = mux.Vars(r)["name"]; e == true { //GET By String
 
 		if idx := strings.Contains(s, "_"); idx == true &&
-			s != "stray_device" { //GET By Slug
+			s != "stray_device" && s != "stray_sensor" { //GET By Slug
 			data, e1 = models.GetEntity(bson.M{"slug": id}, s)
 		} else {
 			data, e1 = models.GetEntity(bson.M{"name": id}, s) //GET By Name
@@ -570,8 +570,7 @@ var DeleteEntity = func(w http.ResponseWriter, r *http.Request) {
 
 	switch {
 	case e2 == true && e == false: // DELETE SLUG or stray-device name
-
-		if entity == "stray_device" {
+		if entity == "stray_device" || entity == "stray_sensor" {
 			sd, _ := models.GetEntity(bson.M{"name": name}, entity)
 			if sd == nil {
 				w.WriteHeader(http.StatusNotFound)
@@ -805,7 +804,7 @@ var UpdateEntity = func(w http.ResponseWriter, r *http.Request) {
 	switch {
 	case e2 == true: // UPDATE SLUG
 		var req bson.M
-		if entity == "stray_device" {
+		if entity == "stray_device" || entity == "stray_sensor" {
 			req = bson.M{"name": name}
 		} else {
 			req = bson.M{"slug": name}
