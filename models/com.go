@@ -3,7 +3,6 @@ package models
 import (
 	"bytes"
 	"encoding/json"
-	"fmt"
 	"net"
 	"net/http"
 	"time"
@@ -37,6 +36,14 @@ func Send(method, URL, key string, data map[string]interface{}) (*http.Response,
 
 }
 
+//displays contents of maps
+func Disp(x map[string]interface{}) {
+
+	jx, _ := json.Marshal(x)
+
+	println("JSON: ", string(jx))
+}
+
 //Function communicates with Unity
 func ContactUnity(method, URL string, data map[string]interface{}) error {
 	dataJSON, _ := json.Marshal(data)
@@ -56,12 +63,14 @@ func ContactUnity(method, URL string, data map[string]interface{}) error {
 		defer conn.Close()
 
 		time.Sleep(time.Duration(1) * time.Second)
-		reply := make([]byte, 1024)
+		reply := make([]byte, len(dataJSON)*2)
 		_, err := conn.Read(reply)
 		if err != nil {
 			return err
 		}
-		fmt.Printf("received from server: [%s]\n", string(reply))
+		//reply, _ := ioutil.ReadAll(conn)
+		//fmt.Printf("received from server: [%s]\n", string(reply))
+		println("Received from server:", string(reply))
 		return nil
 	}
 
