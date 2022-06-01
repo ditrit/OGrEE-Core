@@ -169,6 +169,9 @@ func Start(verboseLevel int) {
 	}
 	defer rl.Close()
 
+	//Allow the ShellState to hold a ptr to readline
+	c.SetStateReadline(rl)
+
 	args := len(os.Args)
 
 	if args > 1 { //Args were provided
@@ -181,6 +184,12 @@ func Start(verboseLevel int) {
 			os.Exit(0)
 		}
 
+	}
+
+	//If Unity Client is present we have to Trigger
+	//the listen routine
+	if c.State.UnityClientAvail == true {
+		c.TriggerListen(rl)
 	}
 
 	Repl(rl, user)

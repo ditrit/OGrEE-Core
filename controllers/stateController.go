@@ -3,6 +3,7 @@ package controllers
 import (
 	"bufio"
 	"cli/models"
+	"cli/readline"
 	"container/list"
 	"encoding/json"
 	"fmt"
@@ -57,6 +58,7 @@ type ShellState struct {
 	DrawableJsons    map[string]map[string]interface{}
 	DebugLvl         int
 	LineNumber       int //Used exectuting scripts
+	Terminal         **readline.Instance
 }
 
 type Node struct {
@@ -171,6 +173,17 @@ func InitState(debugLvl int) {
 		ent := EntityToString(i)
 		State.DrawableJsons[ent] = SetDrawableTemplate(ent)
 	}
+}
+
+//It is useful to have the state to hold
+//a pointer to our readline terminal
+func SetStateReadline(rl *readline.Instance) {
+	State.Terminal = &rl
+}
+
+//Startup the go routine for listening
+func TriggerListen(rl *readline.Instance) {
+	go models.ListenForUnity(rl)
 }
 
 //Helper for InitState will

@@ -2090,6 +2090,9 @@ func SetEnv(arg string, val interface{}) {
 			println(msg)
 		} else {
 			State.UnityClientAvail = val.(bool)
+			if val.(bool) == true {
+				TriggerListen(*State.Terminal)
+			}
 			println("Unity Environment variable set")
 		}
 
