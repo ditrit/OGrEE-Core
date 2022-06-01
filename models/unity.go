@@ -16,7 +16,7 @@ func getListenerPort() string {
 		scanner := bufio.NewScanner(file)
 		scanner.Split(bufio.ScanWords) // use scanwords
 		for scanner.Scan() {
-			if strings.HasPrefix(scanner.Text(), "unityURL=") {
+			if strings.HasPrefix(scanner.Text(), "listenPORT=") {
 				return scanner.Text()[11:]
 			}
 		}
@@ -32,7 +32,8 @@ func getListenerPort() string {
 //and prints these messages to the Readline terminal
 //This is meant for Unity interactivity
 func ListenForUnity(rl *readline.Instance) error {
-	ln, err := net.Listen("tcp", "localhost:"+getListenerPort())
+	addr := "localhost:" + getListenerPort()
+	ln, err := net.Listen("tcp", addr)
 	if err != nil {
 		println("LISTEN ERROR: ", err.Error())
 		return nil
