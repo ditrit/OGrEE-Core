@@ -1,6 +1,7 @@
 package models
 
 import (
+	"bufio"
 	"bytes"
 	"encoding/json"
 	"net"
@@ -63,8 +64,7 @@ func ContactUnity(method, URL string, data map[string]interface{}) error {
 		defer conn.Close()
 
 		time.Sleep(time.Duration(1) * time.Second)
-		reply := make([]byte, len(dataJSON)*2)
-		_, err := conn.Read(reply)
+		reply, err := bufio.NewReader(conn).ReadString('\t')
 		if err != nil {
 			return err
 		}
