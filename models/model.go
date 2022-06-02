@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	u "p3/utils"
+	"strings"
 	"time"
 
 	"go.mongodb.org/mongo-driver/mongo"
@@ -32,6 +33,7 @@ const (
 	OBJTMPL
 	STRAYDEV
 	DOMAIN
+	STRAYSENSOR
 )
 
 //Function will recursively iterate through nested obj
@@ -60,565 +62,6 @@ func parseDataForNonStdResult(ent string, eNum, end int, data map[string]interfa
 	}
 
 	return ans
-}
-
-//Mongo returns '_id' instead of id
-func fixID(data map[string]interface{}) map[string]interface{} {
-	if v, ok := data["_id"]; ok {
-		data["id"] = v
-		delete(data, "_id")
-	}
-	return data
-}
-
-func validateParent(ent string, entNum int, t map[string]interface{}, db string) (map[string]interface{}, bool) {
-
-	//Check ParentID is valid
-	if t["parentId"] == nil {
-		return u.Message(false, "ParentID is not valid"), false
-	}
-
-	objID, err := primitive.ObjectIDFromHex(t["parentId"].(string))
-	if err != nil {
-		return u.Message(false, "ParentID is not valid"), false
-	}
-
-	switch entNum {
-	case DEVICE:
-		x, _ := GetEntity(bson.M{"_id": objID}, "rack", db)
-		y, _ := GetEntity(bson.M{"_id": objID}, "device", db)
-		if x == nil && y == nil {
-			return u.Message(false,
-				"ParentID should be correspond to Existing ID"), false
-		}
-	case SENSOR, GROUP:
-		w, _ := GetEntity(bson.M{"_id": objID}, "device", db)
-		x, _ := GetEntity(bson.M{"_id": objID}, "rack", db)
-		y, _ := GetEntity(bson.M{"_id": objID}, "room", db)
-		z, _ := GetEntity(bson.M{"_id": objID}, "building", db)
-		if w == nil && x == nil && y == nil && z == nil {
-			return u.Message(false,
-				"ParentID should be correspond to Existing ID"), false
-		}
-	default:
-		parentInt := u.GetParentOfEntityByInt(entNum)
-		parent := u.EntityToString(parentInt)
-
-		ctx, cancel := u.Connect()
-		if GetDBByName(db).Collection(parent).
-			FindOne(ctx, bson.M{"_id": objID}).Err() != nil {
-			println("ENTITY VALUE: ", ent)
-			println("We got Parent: ", parent, " with ID:", t["parentId"].(string))
-			return u.Message(false,
-				"ParentID should correspond to Existing ID"), false
-
-		}
-		defer cancel()
-	}
-	return nil, true
-}
-
-func ValidatePatch(ent int, t map[string]interface{}, db string) (map[string]interface{}, bool) {
-
-	for k := range t {
-		switch k {
-		case "name", "category", "domain":
-			//Only for Entities until GROUP
-			//And OBJTMPL
-			if ent < GROUP+1 || ent == OBJTMPL {
-				if v, _ := t[k]; v == nil {
-					return u.Message(false,
-						"Field: "+k+" cannot be nullified!"), false
-				}
-			}
-
-		case "parentId":
-			if ent < ROOMTMPL && ent > SITE {
-				x, ok := validateParent(u.EntityToString(ent), ent, t, db)
-				if !ok {
-					return x, ok
-				}
-			}
-			//STRAYDEV and DOMAIN schemas are very loose
-			//thus we can safely invoke validateEntity
-			if ent == STRAYDEV || ent == DOMAIN {
-				x, ok := ValidateEntity(ent, t, db)
-				if !ok {
-					return x, ok
-				}
-			}
-
-		case "attributes.orientation": //SITE, ROOM, RACK, DEVICE
-			if ent >= SITE && ent <= DEVICE {
-				if v, _ := t[k]; v == nil {
-					return u.Message(false,
-						"Field: "+k+" cannot nullified!"), false
-				}
-			}
-
-		case "attributes.usableColor",
-			"attributes.reservedColor",
-			"attributes.technicalColor": //SITE
-			if ent == SITE {
-				if v, _ := t[k]; v == nil {
-					return u.Message(false,
-						"Field: "+k+" cannot nullified!"), false
-				}
-			}
-
-		case "attributes.posXY", "attributes.posXYUnit": // BLDG, ROOM, RACK
-			if ent >= BLDG && ent <= RACK {
-				if v, _ := t[k]; v == nil {
-					return u.Message(false,
-						"Field: "+k+" cannot nullified!"), false
-				}
-			}
-
-		case "attributes": //TENANT ... SENSOR, OBJTMPL
-			if (ent >= SITE && ent < ROOMTMPL) || ent == OBJTMPL {
-				if v, _ := t[k]; v == nil {
-					return u.Message(false,
-						"Field: "+k+" cannot nullified!"), false
-				}
-			}
-
-		case "attributes.size", "attributes.sizeUnit",
-			"attributes.height", "attributes.heightUnit":
-			//BLDG ... DEVICE
-			if ent >= BLDG && ent <= DEVICE {
-				if v, _ := t[k]; v == nil {
-					return u.Message(false,
-						"Field: "+k+" cannot nullified!"), false
-				}
-			}
-
-		case "attributes.floorUnit": //ROOM
-			if ent == ROOM {
-				if v, _ := t[k]; v == nil {
-					return u.Message(false,
-						"Field: "+k+" cannot nullified!"), false
-				}
-			}
-
-		case "slug", "colors": //TEMPLATES
-			if ent == OBJTMPL || ent == ROOMTMPL {
-				if v, _ := t[k]; v == nil {
-					return u.Message(false,
-						"Field: "+k+" cannot nullified!"), false
-				}
-			}
-
-		case "orientation", "sizeWDHm", "reservedArea",
-			"technicalArea", "separators", "tiles": //ROOMTMPL
-			if ent == ROOMTMPL {
-				if v, _ := t[k]; v == nil {
-					return u.Message(false,
-						"Field: "+k+" cannot nullified!"), false
-				}
-			}
-
-		case "description", "slots",
-			"sizeWDHmm", "fbxModel": //OBJTMPL
-			if ent == OBJTMPL {
-				if v, _ := t[k]; v == nil {
-					return u.Message(false,
-						"Field: "+k+" cannot nullified!"), false
-				}
-			}
-
-			/*case "type":
-			if ent == SENSOR {
-				if v, _ := t[k]; v == nil {
-					return u.Message(false,
-						"Field: "+k+" cannot nullified!"), false
-				}
-
-				if t[k] != "rack" &&
-					t[k] != "device" && t[k] != "room" {
-					return u.Message(false,
-						"Incorrect values given for: "+k+"!"+
-							"Please provide rack or device or room"), false
-				}
-			}*/
-
-		}
-	}
-	return nil, true
-
-}
-
-func ValidateEntity(entity int, t map[string]interface{}, db string) (map[string]interface{}, bool) {
-	var objID primitive.ObjectID
-	var err error
-	//parentObj := nil
-	/*
-		TODO:
-		Need to capture device if it is a parent
-		and check that the device parent has a slot
-		attribute
-	*/
-	switch entity {
-	case SITE, BLDG, ROOM, RACK, DEVICE, AC,
-		PWRPNL, SEPARATOR, CABINET, ROW,
-		TILE, CORIDOR, SENSOR:
-		if t["name"] == nil || t["name"] == "" {
-			return u.Message(false, "Name should be on payload"), false
-		}
-
-		/*if t["category"] == nil || t["category"] == "" {
-			return u.Message(false, "Category should be on the payload"), false
-		}*/
-
-		if t["domain"] == nil || t["domain"] == "" {
-			return u.Message(false, "Domain should be on the payload"), false
-		}
-
-		//Check if Parent ID is valid
-		//Tenants do not have Parents
-		if entity == DEVICE {
-			objID, err = primitive.ObjectIDFromHex(t["parentId"].(string))
-			if err != nil {
-				return u.Message(false, "ParentID is not valid"), false
-			}
-
-			ctx, cancel := u.Connect()
-			if GetDBByName(db).Collection("rack").FindOne(ctx,
-				bson.M{"_id": objID}).Err() != nil &&
-				GetDBByName(db).Collection("device").FindOne(ctx,
-					bson.M{"_id": objID}).Err() != nil {
-				return u.Message(false, "ParentID should be correspond to Existing ID"), false
-			}
-			defer cancel()
-
-		} else if entity > SITE && entity <= SENSOR {
-			_, ok := t["parentId"].(string)
-			if !ok {
-				return u.Message(false, "ParentID is not valid"), false
-			}
-			objID, err = primitive.ObjectIDFromHex(t["parentId"].(string))
-			if err != nil {
-				return u.Message(false, "ParentID is not valid"), false
-			}
-			parentInt := u.GetParentOfEntityByInt(entity)
-			if parentInt == -2 { //Sensor
-				parentSet := []string{"room", "rack", "device"}
-				found := false
-
-				//First check if sensor type is present
-				/*if t["type"] == nil || t["type"] == "" {
-					return u.Message(false, "Sensor type must be on payload"), false
-				}*/
-
-				for i := range parentSet {
-					ctx, cancel := u.Connect()
-					if GetDBByName(db).Collection(parentSet[i]).
-						FindOne(ctx, bson.M{"_id": objID}).Err() == nil {
-						found = true
-						//Ensure sensor type and parent entity
-						//are consistent
-						if t["type"] != parentSet[i] {
-							return u.Message(false, "Sensor type must match parent entity"), false
-						}
-
-						i = len(parentSet)
-
-					}
-					defer cancel()
-				}
-				if found == false {
-					return u.Message(false, "Sensor ParentID should correspond to Existing ID"), false
-				}
-			} else {
-				parent := u.EntityToString(parentInt)
-
-				ctx, cancel := u.Connect()
-				if GetDBByName(db).Collection(parent).
-					FindOne(ctx, bson.M{"_id": objID}).Err() != nil {
-					println("ENTITY VALUE: ", entity)
-					println("We got Parent: ", parent, " with ID:", t["parentId"].(string))
-					return u.Message(false, "ParentID should correspond to Existing ID"), false
-
-				}
-				defer cancel()
-			}
-
-		}
-
-		if entity < AC || entity == PWRPNL ||
-			entity == SEPARATOR || entity == GROUP ||
-			entity == ROOMTMPL || entity == OBJTMPL {
-			if _, ok := t["attributes"]; !ok {
-				return u.Message(false, "Attributes should be on the payload"), false
-			} else {
-				if v, ok := t["attributes"].(map[string]interface{}); !ok {
-					return u.Message(false, "Attributes should be on the payload"), false
-				} else {
-					switch entity {
-
-					case SITE:
-						switch v["orientation"] {
-						case "EN", "NW", "WS", "SE", "NE", "SW":
-						case "", nil:
-							return u.Message(false, "Orientation should be on the payload"), false
-
-						default:
-							return u.Message(false, "Orientation is invalid!"), false
-						}
-
-					case BLDG:
-						if v["posXY"] == "" || v["posXY"] == nil {
-							return u.Message(false, "XY coordinates should be on payload"), false
-						}
-
-						if v["posXYUnit"] == "" || v["posXYUnit"] == nil {
-							return u.Message(false, "PositionXYUnit should be on the payload"), false
-						}
-
-						if v["size"] == "" || v["size"] == nil {
-							return u.Message(false, "Invalid building size on the payload"), false
-						}
-
-						if v["sizeUnit"] == "" || v["sizeUnit"] == nil {
-							return u.Message(false, "Building size unit should be on the payload"), false
-						}
-
-						if v["height"] == "" || v["height"] == nil {
-							return u.Message(false, "Invalid Height on payload"), false
-						}
-
-						if v["heightUnit"] == "" || v["heightUnit"] == nil {
-							return u.Message(false, "Building Height unit should be on the payload"), false
-						}
-
-					case ROOM:
-						if v["posXY"] == "" || v["posXY"] == nil {
-							return u.Message(false, "XY coordinates should be on payload"), false
-						}
-
-						if v["posXYUnit"] == "" || v["posXYUnit"] == nil {
-							return u.Message(false, "PositionXYUnit should be on the payload"), false
-						}
-
-						switch v["floorUnit"] {
-						case "f", "m", "t":
-						case "", nil:
-							return u.Message(false, "floorUnit should be on the payload"), false
-						default:
-							return u.Message(false, "floorUnit is invalid!"), false
-
-						}
-
-						switch v["orientation"] {
-						case "-E-N", "-E+N", "+E-N", "+E+N", "+N+E":
-						case "-N-W", "-N+W", "+N-W", "+N+W":
-						case "-W-S", "-W+S", "+W-S", "+W+S":
-						case "-S-E", "-S+E", "+S-E", "+S+E":
-						case "", nil:
-							return u.Message(false, "Orientation should be on the payload"), false
-
-						default:
-							return u.Message(false, "Orientation is invalid!"), false
-						}
-
-						if v["size"] == "" || v["size"] == nil {
-							return u.Message(false, "Invalid size on the payload"), false
-						}
-
-						if v["sizeUnit"] == "" || v["sizeUnit"] == nil {
-							return u.Message(false, "Room size unit should be on the payload"), false
-						}
-
-						if v["height"] == "" || v["height"] == nil {
-							return u.Message(false, "Invalid Height on payload"), false
-						}
-
-						if v["heightUnit"] == "" || v["heightUnit"] == nil {
-							return u.Message(false, "Room Height unit should be on the payload"), false
-						}
-
-					case RACK:
-						if v["posXY"] == "" || v["posXY"] == nil {
-							return u.Message(false, "XY coordinates should be on payload"), false
-						}
-
-						if v["posXYUnit"] == "" || v["posXYUnit"] == nil {
-							return u.Message(false, "PositionXYUnit should be on the payload"), false
-						}
-
-						switch v["orientation"] {
-						case "front", "rear", "left", "right":
-						case "", nil:
-							return u.Message(false, "Orientation should be on the payload"), false
-
-						default:
-							return u.Message(false, "Orientation is invalid!"), false
-						}
-
-						if v["size"] == "" || v["size"] == nil {
-							return u.Message(false, "Invalid size on the payload"), false
-						}
-
-						if v["sizeUnit"] == "" || v["sizeUnit"] == nil {
-							return u.Message(false, "Rack size unit should be on the payload"), false
-						}
-
-						if v["height"] == "" || v["height"] == nil {
-							return u.Message(false, "Invalid Height on payload"), false
-						}
-
-						if v["heightUnit"] == "" || v["heightUnit"] == nil {
-							return u.Message(false, "Rack Height unit should be on the payload"), false
-						}
-
-					case DEVICE:
-						switch v["orientation"] {
-						case "front", "rear", "frontflipped", "rearflipped":
-						case "", nil:
-							return u.Message(false, "Orientation should be on the payload"), false
-
-						default:
-							return u.Message(false, "Orientation is invalid!"), false
-						}
-
-						if v["size"] == "" || v["size"] == nil {
-							return u.Message(false, "Invalid size on the payload"), false
-						}
-
-						if v["sizeUnit"] == "" || v["sizeUnit"] == nil {
-							return u.Message(false, "Device size unit should be on the payload"), false
-						}
-
-						if v["height"] == "" || v["height"] == nil {
-							return u.Message(false, "Invalid Height on payload"), false
-						}
-
-						if v["heightUnit"] == "" || v["heightUnit"] == nil {
-							return u.Message(false, "Device Height unit should be on the payload"), false
-						}
-
-						if side, ok := v["side"]; ok {
-							switch side {
-							case "front", "rear", "frontflipped", "rearflipped":
-							default:
-								msg := "The 'Side' value (if given) must be one of" +
-									"the given values: front, rear, frontflipped, rearflipped"
-								return u.Message(false, msg), false
-							}
-						}
-
-					}
-				}
-			}
-		}
-	case ROOMTMPL, OBJTMPL:
-		if t["slug"] == "" || t["slug"] == nil {
-			return u.Message(false, "Slug should be on payload"), false
-		}
-
-		if _, ok := t["colors"]; !ok {
-			return u.Message(false,
-				"Colors should be on payload"), false
-		}
-
-		if entity == OBJTMPL {
-			if _, ok := t["description"]; !ok {
-				return u.Message(false,
-					"Description should be on payload"), false
-			}
-
-			/*if _, ok := t["category"]; !ok {
-				return u.Message(false,
-					"Category should be on payload"), false
-			}*/
-
-			if _, ok := t["sizeWDHmm"]; !ok {
-				return u.Message(false,
-					"Size,Width,Depth (mm) Array should be on payload"), false
-			}
-
-			if _, ok := t["fbxModel"]; !ok {
-				return u.Message(false,
-					"fbxModel should be on payload"), false
-			}
-
-			if _, ok := t["attributes"]; !ok {
-				return u.Message(false,
-					"Attributes should be on payload"), false
-			}
-
-			if _, ok := t["slots"]; !ok {
-				return u.Message(false,
-					"fbxModel should be on payload"), false
-			}
-
-		} else { //ROOMTMPL
-			if _, ok := t["orientation"]; !ok {
-				return u.Message(false,
-					"Orientation should be on payload"), false
-			}
-
-			if _, ok := t["sizeWDHm"]; !ok {
-				return u.Message(false,
-					"Size,Width,Depth Array should be on payload"), false
-			}
-
-			if _, ok := t["technicalArea"]; !ok {
-				return u.Message(false,
-					"TechnicalArea should be on payload"), false
-			}
-
-			if _, ok := t["reservedArea"]; !ok {
-				return u.Message(false,
-					"ReservedArea should be on payload"), false
-			}
-
-			if _, ok := t["separators"]; !ok {
-				return u.Message(false,
-					"Separators should be on payload"), false
-			}
-
-			if _, ok := t["tiles"]; !ok {
-				return u.Message(false,
-					"Tiles should be on payload"), false
-			}
-		}
-	case GROUP:
-		if t["name"] == "" || t["name"] == nil {
-			return u.Message(false, "Name should be on payload"), false
-		}
-
-		if r, ok := validateParent("group", entity, t, db); !ok {
-			return r, ok
-		}
-
-	case STRAYDEV, DOMAIN:
-		//Check for parent if PID provided
-		if t["parentId"] != nil && t["parentId"] != "" {
-			if pid, ok := t["parentId"].(string); ok {
-				ID, _ := primitive.ObjectIDFromHex(pid)
-
-				ctx, cancel := u.Connect()
-				if GetDBByName(db).Collection(u.EntityToString(entity)).FindOne(ctx,
-					bson.M{"_id": ID}).Err() != nil {
-					return u.Message(false,
-						"ParentID should be an Existing ID or null"), false
-				}
-				defer cancel()
-
-			} else {
-				return u.Message(false,
-					"ParentID should be an Existing ID or null"), false
-			}
-
-		}
-
-		if t["name"] == nil || t["name"] == "" {
-			return u.Message(false, "Please provide a valid name"), false
-		}
-	}
-
-	//Successfully validated the Object
-	return u.Message(true, "success"), true
 }
 
 func CreateEntity(entity int, t map[string]interface{}, db string) (map[string]interface{}, string) {
@@ -670,6 +113,11 @@ func GetEntity(req bson.M, ent, db string) (map[string]interface{}, string) {
 	defer cancel()
 	//Remove _id
 	t = fixID(t)
+
+	//If entity has '_' remove it
+	if strings.Contains(ent, "_") {
+		FixUnderScore(t)
+	}
 	return t, ""
 }
 
@@ -687,6 +135,13 @@ func GetManyEntities(ent string, req bson.M, opts *options.FindOptions, db strin
 	if e1 != "" {
 		fmt.Println(e1)
 		return nil, e1
+	}
+
+	//Remove underscore If the entity has '_'
+	if strings.Contains(ent, "_") == true {
+		for i := range data {
+			FixUnderScore(data[i])
+		}
 	}
 
 	return data, ""
@@ -710,8 +165,7 @@ func DeleteEntity(entity string, id primitive.ObjectID, db string) (map[string]i
 	eNum := u.EntityStrToInt(entity)
 	if eNum > DEVICE {
 		//Delete the non hierarchal objects
-		t, e = GetEntityHierarchy(id, entity, eNum, eNum+1, db)
-
+		t, e = GetEntityHierarchy(id, entity, eNum, eNum+eNum, db)
 	} else {
 		t, e = GetEntityHierarchy(id, entity, eNum, AC, db)
 	}
@@ -737,10 +191,6 @@ func deleteHelper(t map[string]interface{}, ent int, db string) (map[string]inte
 					}
 
 				}
-			} else {
-				println("JSON not formatted as expected")
-				return u.Message(false,
-					"There was an error in deleting the entity"), "not found"
 			}
 		}
 
@@ -764,6 +214,14 @@ func deleteHelper(t map[string]interface{}, ent int, db string) (map[string]inte
 				ent := u.EntityToString(i)
 				GetDBByName(db).Collection(ent).DeleteMany(ctx, bson.M{"parentId": t["id"].(primitive.ObjectID).Hex()})
 			}
+			defer cancel()
+		}
+
+		//Delete hierarchy under stray-device
+		if ent == STRAYDEV {
+			ctx, cancel := u.Connect()
+			entity := u.EntityToString(u.STRAYSENSOR)
+			GetDB().Collection(entity).DeleteMany(ctx, bson.M{"parentId": t["id"].(primitive.ObjectID).Hex()})
 			defer cancel()
 		}
 
@@ -876,18 +334,7 @@ func GetEntityHierarchy(ID primitive.ObjectID, ent string, start, end int, db st
 			}
 		}
 
-		/*if ent == "room" {
-			for i := AC; i < GROUP+1; i++ {
-				roomEnts, _ := GetManyEntities(u.EntityToString(i), bson.M{"parentId": pid}, nil, db)
-				if roomEnts != nil {
-					children = append(children, roomEnts...)
-				}
-			}
-		}*/
-
-		if ent == "device" {
-			childEnt = "device"
-		} else if ent == "stray_device" || ent == "domain" {
+		if ent == "device" || ent == "stray_device" || ent == "domain" {
 			childEnt = ent
 		} else {
 			childEnt = u.EntityToString(start + 1)
@@ -926,6 +373,13 @@ func GetEntityHierarchy(ID primitive.ObjectID, ent string, start, end int, db st
 			roomEnts, _ = GetManyEntities(u.EntityToString(GROUP), bson.M{"parentId": pid}, nil, db)
 			if roomEnts != nil {
 				children = append(children, roomEnts...)
+			}
+		}
+
+		if ent == "stray_device" {
+			sSensors, _ := GetManyEntities("stray_sensor", bson.M{"parentId": pid}, nil, db)
+			if sSensors != nil {
+				children = append(children, sSensors...)
 			}
 		}
 
@@ -1042,7 +496,12 @@ func GetHierarchyByName(entity, name string, entnum, end int, db string) (map[st
 	//Get the rest of hierarchy for children
 	for i := range children {
 		var x map[string]interface{}
-		subIdx := u.EntityToString(entnum + 1)
+		var subIdx string
+		if subEnt == "stray_device" { //only set entnum+1 for tenants
+			subIdx = subEnt
+		} else {
+			subIdx = u.EntityToString(entnum + 1)
+		}
 		subID := (children[i]["id"].(primitive.ObjectID))
 		x, _ =
 			GetEntityHierarchy(subID, subIdx, entnum+1, end, db)
@@ -1179,10 +638,6 @@ func deleteDeviceHelper(t map[string]interface{}, db string) (map[string]interfa
 				for i := range x {
 					deleteDeviceHelper(x[i], db)
 				}
-			} else {
-				println("JSON not formatted as expected")
-				return u.Message(false,
-					"There was an error in deleting the entity"), "not found"
 			}
 		}
 

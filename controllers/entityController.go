@@ -252,7 +252,11 @@ var CreateEntity = func(w http.ResponseWriter, r *http.Request) {
 		entity["category"] = entStr
 	}
 
-	//resp, e = models.CreateEntity(i, entity)
+	//Clean the data of 'id' attribute if present
+	if _, ok := entity["id"]; ok {
+		delete(entity, "id")
+	}
+
 	resp, e = models.CreateEntity(i, entity, db)
 
 	switch e {
@@ -289,7 +293,7 @@ var CreateEntity = func(w http.ResponseWriter, r *http.Request) {
 //   "buildings", "rooms", "racks", "devices", "room-templates",
 //   "obj-templates", "rooms", "separators", "acs", "panels", "rows",
 //   "tiles", "cabinets", "groups", "corridors","sensors","stray-devices"
-//    are acceptable'
+//   "stray-sensors" are acceptable'
 //   required: true
 //   type: string
 //   default: "sites"
@@ -320,8 +324,8 @@ var CreateEntity = func(w http.ResponseWriter, r *http.Request) {
 //   description: 'Only values of "sites","domains",
 //   "buildings", "rooms", "racks", "devices", "room-templates",
 //   "obj-templates", "rooms", "separators", "acs", "panels", "rows",
-//   "tiles", "cabinets", "groups", "corridors","sensors","stray-devices"
-//    are acceptable'
+//   "tiles", "cabinets", "groups", "corridors","sensors","stray-devices",
+//   "stray-sensors" are acceptable'
 // - name: id
 //   in: query
 //   description: 'ID of the object or name of Site.
@@ -384,7 +388,7 @@ var GetEntity = func(w http.ResponseWriter, r *http.Request) {
 	} else if id, e = mux.Vars(r)["name"]; e == true { //GET By String
 
 		if idx := strings.Contains(s, "_"); idx == true &&
-			s != "stray_device" { //GET By Slug
+			s != "stray_device" && s != "stray_sensor" { //GET By Slug
 			data, e1 = models.GetEntity(bson.M{"slug": id}, s, db)
 		} else {
 			data, e1 = models.GetEntity(bson.M{"name": id}, s, db) //GET By Name
@@ -445,7 +449,7 @@ var GetEntity = func(w http.ResponseWriter, r *http.Request) {
 //   "buildings", "rooms", "racks", "devices", "room-templates",
 //   "obj-templates", "rooms", "separators", "acs", "panels", "rows",
 //   "tiles", "cabinets", "groups", "corridors", "sensors", "stray-devices"
-//    are acceptable'
+//   "stray-sensors" are acceptable'
 //   required: true
 //   type: string
 //   default: "sites"
@@ -533,7 +537,7 @@ var GetAllEntities = func(w http.ResponseWriter, r *http.Request) {
 //   "buildings", "rooms", "racks", "devices", "room-templates",
 //   "obj-templates", "rooms", "separators", "acs", "panels", "rows",
 //   "tiles", "cabinets", "groups", "corridors","sensors", "stray-devices"
-//    are acceptable'
+//   "stray-sensors" are acceptable'
 //   required: true
 //   type: string
 //   default: "sites"
@@ -581,9 +585,20 @@ var DeleteEntity = func(w http.ResponseWriter, r *http.Request) {
 
 	switch {
 	case e2 == true && e == false: // DELETE SLUG or stray-device name
-
-		if entity == "stray_device" {
-			v, _ = models.DeleteEntityManual(entity, bson.M{"name": name}, db)
+		if entity == "stray_device" || entity == "stray_sensor" {
+			sd, _ := models.GetEntity(bson.M{"name": name}, entity, db)
+			if sd == nil {
+				w.WriteHeader(http.StatusNotFound)
+				u.Respond(w, u.Message(false, "Error object not found"))
+				return
+			}
+			if _, ok := sd["id"].(primitive.ObjectID); !ok {
+				w.WriteHeader(http.StatusInternalServerError)
+				u.Respond(w, u.Message(false,
+					"Server was not able to process your request"))
+				return
+			}
+			v, _ = models.DeleteEntity(entity, sd["id"].(primitive.ObjectID), db)
 		} else {
 			v, _ = models.DeleteEntityManual(entity, bson.M{"slug": name}, db)
 		}
@@ -635,7 +650,7 @@ var DeleteEntity = func(w http.ResponseWriter, r *http.Request) {
 //   "buildings", "rooms", "racks", "devices", "room-templates",
 //   "obj-templates", "rooms", "separators", "acs", "panels", "rows",
 //   "tiles", "cabinets", "groups", "corridors", "sensors", "stray-devices"
-//    are acceptable'
+//   "stray-sensors" are acceptable'
 //   required: true
 //   type: string
 //   default: "sites"
@@ -701,7 +716,7 @@ var DeleteEntity = func(w http.ResponseWriter, r *http.Request) {
 //   "buildings", "rooms", "racks", "devices", "room-templates",
 //   "obj-templates", "rooms", "separators", "acs", "panels", "rows",
 //   "tiles", "cabinets", "groups", "corridors","sensors", "stray-devices"
-//    are acceptable'
+//   "stray-sensors" are acceptable'
 //   required: true
 //   type: string
 //   default: "sites"
@@ -807,7 +822,7 @@ var UpdateEntity = func(w http.ResponseWriter, r *http.Request) {
 	switch {
 	case e2 == true: // UPDATE SLUG
 		var req bson.M
-		if entity == "stray_device" {
+		if entity == "stray_device" || entity == "stray_sensor" {
 			req = bson.M{"name": name}
 		} else {
 			req = bson.M{"slug": name}
@@ -868,7 +883,7 @@ var UpdateEntity = func(w http.ResponseWriter, r *http.Request) {
 //   "buildings", "rooms", "racks", "devices", "room-templates",
 //   "obj-templates", "separators","acs","panels", "rows", "tiles",
 //   "cabinets", "groups", "corridors", and "sensors", "stray-devices"
-//   are acceptable'
+//   "stray-sensors" are acceptable'
 //   required: true
 //   type: string
 //   default: "sites"
@@ -1453,7 +1468,12 @@ var GetHierarchyByName = func(w http.ResponseWriter, r *http.Request) {
 		switch indicator {
 		case "all":
 			//set to AC1
-			limit = u.AC
+			if entity == "site" {
+				limit = u.AC
+			} else { //set limit for stray_device
+				limit = 99
+			}
+
 		case "nonstd":
 			//special case
 		default:
@@ -1862,8 +1882,8 @@ var ValidateEntity = func(w http.ResponseWriter, r *http.Request) {
 //   description: 'Only values of "sites", "domains",
 //   "buildings", "rooms", "racks", "devices", "room-templates",
 //   "obj-templates", "rooms", "separators", "acs", "panels", "rows",
-//   "tiles", "cabinets", "groups", "corridors","sensors","stray-devices"
-//    are acceptable'
+//   "tiles", "cabinets", "groups", "corridors","sensors","stray-devices",
+//    "stray-sensors" are acceptable'
 // responses:
 //     '200':
 //         description: 'Request is valid.'

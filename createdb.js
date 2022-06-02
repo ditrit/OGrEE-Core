@@ -47,6 +47,7 @@ db.createCollection('sensor');
 
 //Stray Objects
 db.createCollection('stray_device');
+db.createCollection('stray_sensor');
 
 
 //Enfore unique Tenant Names
@@ -82,10 +83,10 @@ db.sensor.createIndex({parentId:1, type:1, name:1}, { unique: true });
 db.group.createIndex({parentId:1, name:1}, { unique: true });
 
 //Enforce unique stray objects
-db.stray_device.createIndex({name:1}, { unique: true });
+db.stray_device.createIndex({parentId:1,name:1}, { unique: true });
+db.stray_sensor.createIndex({name:1}, { unique: true });
 
 
 //Update customer record table
 var odb = m.getDB("ogree")
 odb.customer.insertOne({"name": dbName});
-

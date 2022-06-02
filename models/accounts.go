@@ -48,6 +48,10 @@ func (account *Account) Validate() (map[string]interface{}, bool) {
 		println("Error while creating account:", err.Error())
 		return u.Message(false, "Connection error. Please retry"), false
 	}
+	//User already exists
+	if err == nil {
+		return u.Message(false, "Error: User already exists"), false
+	}
 	defer cancel()
 	return u.Message(false, "Requirement passed"), true
 }
@@ -92,6 +96,7 @@ func (account *Account) Create() (map[string]interface{}, string) {
 		return u.Message(false,
 			"Error: User already exists:"), "clientError"
 	}
+
 	defer cancel()
 
 	//Create new JWT token for the newly created account
