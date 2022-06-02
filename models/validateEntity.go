@@ -46,7 +46,7 @@ func validateParent(ent string, entNum int, t map[string]interface{}, db string)
 				ID, _ := primitive.ObjectIDFromHex(pid)
 
 				ctx, cancel := u.Connect()
-				if GetDB().Collection("stray_device").FindOne(ctx,
+				if GetDBByName(db).Collection("stray_device").FindOne(ctx,
 					bson.M{"_id": ID}).Err() != nil {
 					return u.Message(false,
 						"ParentID should be an Existing ID or null"), false
@@ -63,7 +63,7 @@ func validateParent(ent string, entNum int, t map[string]interface{}, db string)
 		parent := u.EntityToString(parentInt)
 
 		ctx, cancel := u.Connect()
-		if GetDB().Collection(parent).
+		if GetDBByName(db).Collection(parent).
 			FindOne(ctx, bson.M{"_id": objID}).Err() != nil {
 			println("ENTITY VALUE: ", ent)
 			println("We got Parent: ", parent, " with ID:", t["parentId"].(string))
@@ -490,7 +490,7 @@ func ValidateEntity(entity int, t map[string]interface{}, db string) (map[string
 		ctx, cancel := u.Connect()
 		entStr := u.EntityToString(entity)
 
-		if c, _ := GetDB().Collection(entStr).CountDocuments(ctx,
+		if c, _ := GetDBByName(db).Collection(entStr).CountDocuments(ctx,
 			bson.M{"name": t["name"]}); c != 0 {
 			msg := "Error a " + entStr + " with the name provided already exists." +
 				"Please provide a unique name"

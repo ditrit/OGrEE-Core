@@ -221,7 +221,7 @@ func deleteHelper(t map[string]interface{}, ent int, db string) (map[string]inte
 		if ent == STRAYDEV {
 			ctx, cancel := u.Connect()
 			entity := u.EntityToString(u.STRAYSENSOR)
-			GetDB().Collection(entity).DeleteMany(ctx, bson.M{"parentId": t["id"].(primitive.ObjectID).Hex()})
+			GetDBByName(db).Collection(entity).DeleteMany(ctx, bson.M{"parentId": t["id"].(primitive.ObjectID).Hex()})
 			defer cancel()
 		}
 
