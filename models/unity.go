@@ -3,13 +3,12 @@ package models
 import (
 	"bufio"
 	"cli/readline"
-	"fmt"
 	"net"
 	"os"
 	"strings"
 )
 
-func getListenerPort() string {
+func getListenerPort(rl *readline.Instance) string {
 	file, err := os.Open("./.resources/.env")
 	defer file.Close()
 	if err == nil {
@@ -22,7 +21,7 @@ func getListenerPort() string {
 		}
 	}
 
-	fmt.Println("Falling back to default Listening Port")
+	rl.Write([]byte("Falling back to default Listening Port\n"))
 	//InfoLogger.Println("Falling back to Listening Port")
 	return "5501"
 }
@@ -32,7 +31,7 @@ func getListenerPort() string {
 //and prints these messages to the Readline terminal
 //This is meant for Unity interactivity
 func ListenForUnity(rl *readline.Instance) error {
-	addr := "localhost:" + getListenerPort()
+	addr := "localhost:" + getListenerPort(rl)
 	ln, err := net.Listen("tcp", addr)
 	if err != nil {
 		println("LISTEN ERROR: ", err.Error())
