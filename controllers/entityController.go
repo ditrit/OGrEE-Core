@@ -147,7 +147,7 @@ func DispRequestMetaData(r *http.Request) {
 //   "buildings", "rooms", "racks", "devices", "acs", "panels",
 //   "separators","rows", "tiles", "cabinets", "groups", "corridors",
 //   "room-templates", "obj-templates", "sensors", "stray-devices"
-//    are acceptable'
+//   "stray-sensors" are acceptable'
 //   required: true
 //   type: string
 //   default: "sites"
@@ -1757,7 +1757,7 @@ var GetEntitiesUsingNamesOfParents = func(w http.ResponseWriter, r *http.Request
 //   description: 'Indicates the Object. Only values of "tenants", "sites",
 //   "buildings", "rooms", "racks", "devices", "acs", "panels",
 //   "separators","rows", "tiles", "cabinets", "groups", "corridors",
-//   "room-templates", "obj-templates", "sensors", "stray-devices"
+//   "room-templates", "obj-templates", "sensors", "stray-devices", "stray-sensors"
 //    are acceptable'
 //   required: true
 //   type: string
@@ -1818,8 +1818,8 @@ var GetEntitiesUsingNamesOfParents = func(w http.ResponseWriter, r *http.Request
 //   description: 'Only values of "tenants", "sites",
 //   "buildings", "rooms", "racks", "devices", "room-templates",
 //   "obj-templates", "rooms", "separators", "acs", "panels", "rows",
-//   "tiles", "cabinets", "groups", "corridors","sensors","stray-devices"
-//    are acceptable'
+//   "tiles", "cabinets", "groups", "corridors","sensors","stray-devices",
+//   "stray-sensors" are acceptable'
 // responses:
 //     '200':
 //         description: 'Request is valid.'

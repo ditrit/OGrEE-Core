@@ -194,7 +194,7 @@
           {
             "type": "string",
             "default": "sites",
-            "description": "Indicates the Object. Only values of \"tenants\", \"sites\", \"buildings\", \"rooms\", \"racks\", \"devices\", \"acs\", \"panels\", \"separators\",\"rows\", \"tiles\", \"cabinets\", \"groups\", \"corridors\", \"room-templates\", \"obj-templates\", \"sensors\", \"stray-devices\" are acceptable",
+            "description": "Indicates the Object. Only values of \"tenants\", \"sites\", \"buildings\", \"rooms\", \"racks\", \"devices\", \"acs\", \"panels\", \"separators\",\"rows\", \"tiles\", \"cabinets\", \"groups\", \"corridors\", \"room-templates\", \"obj-templates\", \"sensors\", \"stray-devices\", \"stray-sensors\" are acceptable",
             "name": "objs",
             "in": "query",
             "required": true
@@ -269,7 +269,7 @@
         "operationId": "ValidateObjectOptions",
         "parameters": [
           {
-            "description": "Only values of \"tenants\", \"sites\", \"buildings\", \"rooms\", \"racks\", \"devices\", \"room-templates\", \"obj-templates\", \"rooms\", \"separators\", \"acs\", \"panels\", \"rows\", \"tiles\", \"cabinets\", \"groups\", \"corridors\",\"sensors\",\"stray-devices\" are acceptable",
+            "description": "Only values of \"tenants\", \"sites\", \"buildings\", \"rooms\", \"racks\", \"devices\", \"room-templates\", \"obj-templates\", \"rooms\", \"separators\", \"acs\", \"panels\", \"rows\", \"tiles\", \"cabinets\", \"groups\", \"corridors\",\"sensors\",\"stray-devices\", \"stray-sensors\" are acceptable",
             "name": "obj",
             "in": "query"
           }
@@ -886,7 +886,7 @@
           {
             "type": "string",
             "default": "sites",
-            "description": "Indicates the Object. Only values of \"sites\",\"domains\", \"buildings\", \"rooms\", \"racks\", \"devices\", \"acs\", \"panels\", \"separators\",\"rows\", \"tiles\", \"cabinets\", \"groups\", \"corridors\", \"room-templates\", \"obj-templates\", \"sensors\", \"stray-devices\" are acceptable",
+            "description": "Indicates the Object. Only values of \"sites\",\"domains\", \"buildings\", \"rooms\", \"racks\", \"devices\", \"acs\", \"panels\", \"separators\",\"rows\", \"tiles\", \"cabinets\", \"groups\", \"corridors\", \"room-templates\", \"obj-templates\", \"sensors\", \"stray-devices\" \"stray-sensors\" are acceptable",
             "name": "objs",
             "in": "query",
             "required": true
