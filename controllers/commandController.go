@@ -98,6 +98,10 @@ func DeleteObj(path string) bool {
 	entities := filepath.Base(filepath.Dir(GETURL))
 	URL := State.APIURL + "/api/" + entities + "/" + objJSON["id"].(string)
 
+	//Get curr object path to check if it is equivalent
+	//to user received path
+	_, currPathURL := GetObject(State.CurrPath, true)
+
 	resp, e := models.Send("DELETE", URL, GetKey(), nil)
 	if e != nil {
 		println("Error while deleting Object!")
@@ -117,6 +121,11 @@ func DeleteObj(path string) bool {
 	if IsInObjForUnity(entity) == true {
 		InformUnity("POST", "DeleteObj", -1,
 			map[string]interface{}{"type": "delete", "data": objJSON["id"].(string)})
+	}
+
+	//Check if deleted object is current path
+	if currPathURL == GETURL {
+		CD("..")
 	}
 
 	return true
