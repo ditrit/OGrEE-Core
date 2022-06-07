@@ -95,6 +95,13 @@ func DeleteObj(path string) bool {
 		WarningLogger.Println("Error while deleting Object!")
 		return false
 	}
+
+	//Make sure we are deleting an object and not
+	//an aggregate call result
+	if objJSON["id"] == nil {
+		println("Error: Cannot delete object")
+		return false
+	}
 	entities := filepath.Base(filepath.Dir(GETURL))
 	URL := State.APIURL + "/api/" + entities + "/" + objJSON["id"].(string)
 
