@@ -332,10 +332,6 @@ func ValidateEntity(entity int, t map[string]interface{}, db string) (map[string
 							return u.Message(false, "XY coordinates should be on payload"), false
 						}
 
-						if v["posXYUnit"] == "" || v["posXYUnit"] == nil {
-							return u.Message(false, "PositionXYUnit should be on the payload"), false
-						}
-
 						switch v["orientation"] {
 						case "front", "rear", "left", "right":
 						case "", nil:

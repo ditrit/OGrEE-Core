@@ -74,6 +74,9 @@ func CreateEntity(entity int, t map[string]interface{}, db string) (map[string]i
 	t["createdDate"] = primitive.NewDateTimeFromTime(time.Now())
 	t["lastUpdated"] = t["createdDate"]
 
+	//Last modifications before insert
+	FixAttributesBeforeInsert(entity, t, db)
+
 	ctx, cancel := u.Connect()
 	entStr := u.EntityToString(entity)
 	res, e := GetDBByName(db).Collection(entStr).InsertOne(ctx, t)
