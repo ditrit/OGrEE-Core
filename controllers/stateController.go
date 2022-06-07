@@ -109,6 +109,13 @@ func InitState(debugLvl int) {
 	stray.Path = "/Physical/"
 	SearchAndInsert(&State.TreeHierarchy, stray, "/Physical")
 
+	domain := &Node{}
+	domain.Name = "Domain"
+	domain.PID = "-2"
+	domain.ID = "-6"
+	domain.Path = "/Physical/"
+	SearchAndInsert(&State.TreeHierarchy, domain, "/Physical")
+
 	strayDev := &Node{}
 	strayDev.Name = "Device"
 	strayDev.PID = "-3"
@@ -550,7 +557,7 @@ func FetchNodesAtLevel(path string) []string {
 
 	if len(paths) == 2 && paths[1] == "Physical" {
 		urls = []string{State.APIURL + "/api/tenants"}
-		names = append(names, "Stray")
+		names = append(names, []string{"Stray", "Domain"}...)
 	} else {
 		if len(paths) == 3 && paths[2] == "Stray" {
 			names = append(names, []string{"Device", "Sensor"}...)
@@ -625,6 +632,13 @@ func FetchJsonNodesAtLevel(path string) []map[string]interface{} {
 			return strArrToMapStrInfArr(x)
 		}
 
+		if len(paths) == 3 && paths[2] == "Domain" {
+			//println("DEBUG this section for the new nodes")
+			//println("DEBUG path2: ", paths[3])
+			urls = []string{State.APIURL + "/api/domains"}
+
+		}
+
 		if len(paths) == 4 && paths[2] == "Stray" {
 			//println("DEBUG this section for the new nodes")
 			//println("DEBUG path2: ", paths[3])
@@ -634,6 +648,7 @@ func FetchJsonNodesAtLevel(path string) []map[string]interface{} {
 			if paths[3] == "Sensor" {
 				urls = []string{State.APIURL + "/api/stray-sensors"}
 			}
+
 		} else {
 			//if len(paths) < 3 { // /Physical or / or /Logical
 			//println("DEBUG Should be here")

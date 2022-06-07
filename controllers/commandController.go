@@ -2380,6 +2380,27 @@ func OnlinePathResolve(path []string) []string {
 		//return []string{basePath, sensorPath}
 	}
 
+	if path[0] == "Domain" {
+		var objs string
+		if len(path) > 1 {
+			basePath += "/domains"
+			objs = "/domains/"
+		}
+		//sensorPath := basePath
+
+		if len(path) > 2 { // Check for name
+
+			basePath += "/" + path[2]
+			//sensorPath += "/" + path[2]
+			for i := 3; i < len(path); i++ {
+				basePath += objs + path[i]
+			}
+		}
+
+		//if basePath == sensorPath {
+		return []string{basePath}
+	}
+
 	if path[0] == "ObjectTemplates" {
 		basePath += "/obj-templates"
 		if len(path) > 1 { // Check for name
@@ -2475,6 +2496,24 @@ func OnlineLevelResolver(path []string) []string {
 			}
 
 		}
+		return []string{basePath}
+	}
+
+	if path[0] == "Domain" {
+		basePath += "/domains"
+		objs := "/domains"
+		if len(path) > 1 { // Check for name
+			basePath += "/" + path[1] + objs
+
+		}
+
+		if len(path) > 2 {
+			basePath += "/" + path[2] + objs
+			for i := 2; i < len(path); i++ {
+				basePath += "/" + path[i] + objs
+			}
+		}
+
 		return []string{basePath}
 	}
 
