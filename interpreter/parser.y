@@ -610,8 +610,9 @@ OCCR:
         |TOK_WALL TOK_COL P TOK_ATTRSPEC EXPR TOK_ATTRSPEC EXPR {$$=&commonNode{COMMON, cmd.GetOCLIAtrributes, "GetOCAttr", []interface{}{(replaceOCLICurrPath($3)), cmd.SEPARATOR, map[string]interface{}{"pos1":$5,"pos2":$7}}}}
         
         |TOK_ORPH TOK_COL TOK_DEVICE TOK_COL P TOK_ATTRSPEC EXPR {$$=&commonNode{COMMON, cmd.GetOCLIAtrributes, "GetOCAttr", []interface{}{replaceOCLICurrPath($5),cmd.STRAY_DEV,map[string]interface{}{"attributes":map[string]interface{}{"template":$7} } }}}
+        |TOK_ORPH TOK_COL TOK_SENSOR TOK_COL P TOK_ATTRSPEC EXPR {$$=&commonNode{COMMON, cmd.GetOCLIAtrributes, "GetOCAttr", []interface{}{replaceOCLICurrPath($5),cmd.STRAYSENSOR,map[string]interface{}{"attributes":map[string]interface{}{"template":$7} } }}}
 
-       //EasyPost syntax
+       //EasyPost syntax STRAYSENSOR
         |E TOK_USE_JSON P {$$=&commonNode{COMMON, cmd.PostObj, "EasyPost", []interface{}{cmd.EntityStrToInt($1),$1, $3}}}
 
        ; 

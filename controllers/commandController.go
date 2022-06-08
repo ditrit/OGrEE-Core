@@ -1278,6 +1278,17 @@ func GetOCLIAtrributes(path string, ent int, data map[string]interface{}) {
 			PostObj(ent, "group", data)
 		}
 
+	case STRAYSENSOR:
+		attr = data["attributes"].(map[string]interface{})
+		if _, ok := attr["template"]; ok {
+			//GetOCLIAtrributesTemplateHelper(attr, data, DEVICE)
+			tmpl := fetchTemplate(attr["template"].(string), STRAYSENSOR)
+			MergeMaps(attr, tmpl, true)
+		} else {
+			attr["template"] = ""
+		}
+		PostObj(ent, "stray-sensor", data)
+
 	case STRAY_DEV:
 		attr = data["attributes"].(map[string]interface{})
 		if _, ok := attr["template"]; ok {
