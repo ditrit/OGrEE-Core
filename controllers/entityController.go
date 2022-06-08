@@ -1422,7 +1422,7 @@ var GetHierarchyByName = func(w http.ResponseWriter, r *http.Request) {
 		entity = entity[:idx] + "_" + entity[idx+1:]
 	}
 
-	if entity != "site" && entity != "stray_device" {
+	if entity != "site" && entity != "stray_device" && entity != "domain" {
 		u.Respond(w, u.Message(false, "Error invalid entity provided"))
 		u.ErrLog("Invalid entity found while parsing path parameters", "GetHierarchyByName", "", r)
 		return

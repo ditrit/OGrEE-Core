@@ -41,7 +41,7 @@ var pmatch mux.MatcherFunc = func(request *http.Request, match *mux.RouteMatch) 
 //For Obtaining Site hierarchy
 var tmatch mux.MatcherFunc = func(request *http.Request, match *mux.RouteMatch) bool {
 	println("CHECKING T-MATCH")
-	return regexp.MustCompile(`^(\/api\/(sites|stray-devices)(\/[a-zA-Z]+)(\/.*)+)$`).
+	return regexp.MustCompile(`^(\/api\/(sites|stray-devices|domains)(\/[A-Za-z0-9_]+)(\/.*)+)$`).
 		MatchString(request.URL.String())
 }
 

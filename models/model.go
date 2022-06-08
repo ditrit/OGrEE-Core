@@ -478,8 +478,8 @@ func GetHierarchyByName(entity, name string, entnum, end int, db string) (map[st
 	t = fixID(t)
 
 	var subEnt string
-	if entnum == STRAYDEV {
-		subEnt = "stray_device"
+	if entnum == STRAYDEV || entnum == DOMAIN {
+		subEnt = entity
 	} else {
 		subEnt = u.EntityToString(entnum + 1)
 	}
@@ -500,7 +500,7 @@ func GetHierarchyByName(entity, name string, entnum, end int, db string) (map[st
 	for i := range children {
 		var x map[string]interface{}
 		var subIdx string
-		if subEnt == "stray_device" { //only set entnum+1 for tenants
+		if subEnt == "stray_device" || subEnt == "domain" { //only set entnum+1 for tenants
 			subIdx = subEnt
 		} else {
 			subIdx = u.EntityToString(entnum + 1)
