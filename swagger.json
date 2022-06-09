@@ -10,7 +10,7 @@
   ],
   "swagger": "2.0",
   "info": {
-    "description": "Testing Swagger spec. It's still in progress\n\nThe API may return incorrect response codes and have bugs.",
+    "description": "Testing Swagger spec. It's still in progress\n\nThe API may return incorrect response codes and have bugs.\n\nFor a list of endpoints please consult: https://nextcloud.ditrit.io/index.php/apps/files/?dir=/Ogree/1_Core/1_API/Endpoint_List\u0026openfile=20692",
     "title": "Golang OGREE API",
     "contact": {
       "name": "Ziad Khalaf",
