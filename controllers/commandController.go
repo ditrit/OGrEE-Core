@@ -2394,21 +2394,17 @@ func OnlinePathResolve(path []string) []string {
 	if path[0] == "Domain" {
 		var objs string
 		if len(path) > 1 {
-			basePath += "/domains"
+			basePath += "/domains/" + path[1]
 			objs = "/domains/"
 		}
-		//sensorPath := basePath
 
 		if len(path) > 2 { // Check for name
 
-			basePath += "/" + path[2]
-			//sensorPath += "/" + path[2]
+			basePath += objs + path[2]
 			for i := 3; i < len(path); i++ {
 				basePath += objs + path[i]
 			}
 		}
-
-		//if basePath == sensorPath {
 		return []string{basePath}
 	}
 
@@ -2519,7 +2515,7 @@ func OnlineLevelResolver(path []string) []string {
 		}
 
 		if len(path) > 2 {
-			basePath += "/" + path[2] + objs
+			//basePath += "/" + path[2] + objs
 			for i := 2; i < len(path); i++ {
 				basePath += "/" + path[i] + objs
 			}

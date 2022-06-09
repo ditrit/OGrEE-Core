@@ -109,13 +109,6 @@ func InitState(debugLvl int) {
 	stray.Path = "/Physical/"
 	SearchAndInsert(&State.TreeHierarchy, stray, "/Physical")
 
-	domain := &Node{}
-	domain.Name = "Domain"
-	domain.PID = "-2"
-	domain.ID = "-6"
-	domain.Path = "/Physical/"
-	SearchAndInsert(&State.TreeHierarchy, domain, "/Physical")
-
 	strayDev := &Node{}
 	strayDev.Name = "Device"
 	strayDev.PID = "-3"
@@ -165,11 +158,25 @@ func InitState(debugLvl int) {
 	//SETUP LOGICAL HIERARCHY END
 
 	//SETUP DOMAIN/ENTERPRISE
+	organisation := &Node{}
+	organisation.ID = "5"
+	organisation.Name = "Organisation"
+	organisation.Path = "/"
+	State.TreeHierarchy.Nodes.PushBack(organisation)
+
+	domain := &Node{}
+	domain.Name = "Domain"
+	domain.PID = "5"
+	domain.ID = "-6"
+	domain.Path = "/Organisation"
+	SearchAndInsert(&State.TreeHierarchy, domain, "/Organisation")
+
 	enterprise := &Node{}
 	enterprise.ID = "0"
+	enterprise.PID = "5"
 	enterprise.Name = "Enterprise"
-	enterprise.Path = "/"
-	State.TreeHierarchy.Nodes.PushBack(enterprise)
+	enterprise.Path = "/Organisation"
+	SearchAndInsert(&State.TreeHierarchy, enterprise, "/Organisation")
 
 	//Set which objects Unity will be notified about
 	State.ObjsForUnity = SetObjsForUnity("updates")
@@ -557,10 +564,10 @@ func FetchNodesAtLevel(path string) []string {
 
 	if len(paths) == 2 && paths[1] == "Physical" {
 		urls = []string{State.APIURL + "/api/tenants"}
-		names = append(names, []string{"Stray", "Domain"}...)
+		names = NodesAtLevel(&State.TreeHierarchy, *StrToStack(path))
 	} else {
 		if len(paths) == 3 && paths[2] == "Stray" {
-			names = append(names, []string{"Device", "Sensor"}...)
+			names = NodesAtLevel(&State.TreeHierarchy, *StrToStack(path))
 		}
 
 		if len(paths) < 3 { // /Physical or / or /Logical
