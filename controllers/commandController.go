@@ -9,7 +9,7 @@ import (
 	"log"
 	"net/http"
 	"os"
-	"path/filepath"
+	"path"
 	"strconv"
 	"strings"
 )
@@ -85,11 +85,11 @@ func ValidateObj(data map[string]interface{}, ent string, silence bool) bool {
 	return false
 }
 
-func DeleteObj(path string) bool {
+func DeleteObj(Path string) bool {
 	//We have to get object first since
 	//there is a potential for multiple paths
 	//we don't want to delete the wrong object
-	objJSON, GETURL := GetObject(path, true)
+	objJSON, GETURL := GetObject(Path, true)
 	if objJSON == nil {
 		println("Error while deleting Object!")
 		WarningLogger.Println("Error while deleting Object!")
@@ -102,7 +102,7 @@ func DeleteObj(path string) bool {
 		println("Error: Cannot delete object")
 		return false
 	}
-	entities := filepath.Base(filepath.Dir(GETURL))
+	entities := path.Base(path.Dir(GETURL))
 	URL := State.APIURL + "/api/" + entities + "/" + objJSON["id"].(string)
 
 	//Get curr object path to check if it is equivalent
@@ -266,25 +266,25 @@ func GenUpdateJSON(m *map[string]interface{}, key string, value interface{}, del
 //the rest of its subentities
 //Thus being the only function thus far to call another exported
 //function in this file
-func RecursivePatch(path, id, ent string, data map[string]interface{}) {
+func RecursivePatch(Path, id, ent string, data map[string]interface{}) {
 	var entities string
 	var URL string
 	println("OK. Attempting to update...")
 	//var resp *http.Response
 
 	if data != nil {
-		if path != "" {
+		if Path != "" {
 
 			//We have to get object first since
 			//there is a potential for multiple paths
 			//we don't want to update the wrong object
-			objJSON, GETURL := GetObject(path, true)
+			objJSON, GETURL := GetObject(Path, true)
 			if objJSON == nil {
 				println("Error while deleting Object!")
 				WarningLogger.Println("Error while deleting Object!")
 				return
 			}
-			entities = filepath.Base(filepath.Dir(GETURL))
+			entities = path.Base(path.Dir(GETURL))
 			URL = State.APIURL + "/api/" + entities + "/" + objJSON["id"].(string) + "/all"
 		} else {
 			entities = ent + "s"
@@ -327,7 +327,7 @@ func recursivePatchAux(res, data map[string]interface{}) {
 
 //You can either update obj by path or by ID and entity string type
 //The deleteAndPut bool is for deleting an attribute
-func UpdateObj(path, id, ent string, data map[string]interface{}, deleteAndPut bool) map[string]interface{} {
+func UpdateObj(Path, id, ent string, data map[string]interface{}, deleteAndPut bool) map[string]interface{} {
 
 	println("OK. Attempting to update...")
 	var resp *http.Response
@@ -337,22 +337,22 @@ func UpdateObj(path, id, ent string, data map[string]interface{}, deleteAndPut b
 		var URL string
 		var entities string
 
-		if path != "" || path == "" && ent == "" {
+		if Path != "" || Path == "" && ent == "" {
 
-			if path == "" { //This means we should use curr path
-				path = State.CurrPath
+			if Path == "" { //This means we should use curr path
+				Path = State.CurrPath
 			}
 
 			//We have to get object first since
 			//there is a potential for multiple paths
 			//we don't want to update the wrong object
-			objJSON, GETURL := GetObject(path, true)
+			objJSON, GETURL := GetObject(Path, true)
 			if objJSON == nil {
 				println("Error while getting Object!")
 				WarningLogger.Println("Error while getting Object!")
 				return nil
 			}
-			entities = filepath.Base(filepath.Dir(GETURL))
+			entities = path.Base(path.Dir(GETURL))
 			URL = State.APIURL + "/api/" + entities + "/" + objJSON["id"].(string)
 		} else {
 			entities = ent + "s"
@@ -523,15 +523,15 @@ func Env() {
 }
 
 func LSOBJECT(x string, entity int) []map[string]interface{} {
-	obj, path := GetObject(x, true)
+	obj, Path := GetObject(x, true)
 	if obj == nil {
 		println("Error finding Object from given path!")
 		WarningLogger.Println("Object to Get not found")
 		return nil
 	}
 
-	entityDir, _ := filepath.Split(path)
-	entities := filepath.Base(entityDir)
+	entityDir, _ := path.Split(Path)
+	entities := path.Base(entityDir)
 	objEnt := entities[:len(entities)-1]
 	obi := EntityStrToInt(objEnt)
 	if obi == -1 { //Something went wrong
@@ -746,7 +746,7 @@ func infArrToMapStrinfArr(x []interface{}) []map[string]interface{} {
 func CD(x string) string {
 	if x == ".." {
 		State.PrevPath = State.CurrPath
-		State.CurrPath = filepath.Dir(State.CurrPath)
+		State.CurrPath = path.Dir(State.CurrPath)
 
 	} else if x == "" {
 		State.PrevPath = State.CurrPath
@@ -763,10 +763,10 @@ func CD(x string) string {
 		var pth string
 
 		if string(x[0]) != "/" {
-			pth = filepath.Clean(State.CurrPath + "/" + x)
+			pth = path.Clean(State.CurrPath + "/" + x)
 			exist, _ = CheckPathOnline(pth)
 		} else {
-			pth = filepath.Clean(x)
+			pth = path.Clean(x)
 			exist, _ = CheckPathOnline(pth)
 		}
 		if exist == true {
@@ -783,7 +783,7 @@ func CD(x string) string {
 			} else {
 				pth = x
 			}
-			pth = filepath.Clean(pth)
+			pth = path.Clean(pth)
 			if FindNodeInTree(&State.TreeHierarchy, StrToStack(pth), true) != nil {
 				State.PrevPath = State.CurrPath
 				State.CurrPath = pth
@@ -1010,22 +1010,22 @@ func getAttrAndVal(x string) (string, string) {
 }
 
 //Helps to create the Object (thru OCLI syntax)
-func GetOCLIAtrributes(path string, ent int, data map[string]interface{}) {
+func GetOCLIAtrributes(Path string, ent int, data map[string]interface{}) {
 	attr := map[string]interface{}{}
 	var parent map[string]interface{}
 	var domain string
 	var parentURL string
 
-	ogPath := path
+	ogPath := Path
 	//The only place where the STRAY_DEV path is
 	//properly fixed
 	if ent == STRAY_DEV {
-		path = "/Physical/Stray/Devices/" + filepath.Dir(path)
+		Path = "/Physical/Stray/Devices/" + path.Dir(Path)
 	} else if ent > TENANT {
-		path = "/Physical/" + filepath.Dir(path)
+		Path = "/Physical/" + path.Dir(Path)
 	}
 
-	name := filepath.Base(ogPath)
+	name := path.Base(ogPath)
 	if name == "." || name == "" {
 		println("Error please provide a valid name for this object")
 		return
@@ -1037,7 +1037,7 @@ func GetOCLIAtrributes(path string, ent int, data map[string]interface{}) {
 
 	//Retrieve Parent
 	if ent != TENANT && ent != GROUP && ent != STRAY_DEV {
-		parent, parentURL = GetObject(path, true)
+		parent, parentURL = GetObject(Path, true)
 		if parent == nil {
 			println("Error! The parent was not found in path")
 			return
@@ -2323,19 +2323,19 @@ func MergeMaps(x, y map[string]interface{}, overwrite bool) {
 
 //Auxillary function that preprocesses
 //strings to be used for Path Resolver funcs
-func PreProPath(path string) []string {
+func PreProPath(Path string) []string {
 	var pathSplit []string
-	switch path {
+	switch Path {
 	case "":
 		pathSplit = strings.Split(State.CurrPath, "/")
 		pathSplit = pathSplit[2:]
 	default:
-		if path[0] != '/' && len(State.CurrPath) > 1 {
-			pathSplit = strings.Split(filepath.Clean(State.CurrPath+"/"+path), "/")
+		if Path[0] != '/' && len(State.CurrPath) > 1 {
+			pathSplit = strings.Split(path.Clean(State.CurrPath+"/"+Path), "/")
 			pathSplit = pathSplit[2:]
 
 		} else {
-			pathSplit = strings.Split(filepath.Clean(path), "/")
+			pathSplit = strings.Split(path.Clean(Path), "/")
 			if strings.TrimSpace(pathSplit[0]) == "Physical" ||
 				strings.TrimSpace(pathSplit[0]) == "Logical" ||
 				strings.TrimSpace(pathSplit[0]) == "Enterprise" {

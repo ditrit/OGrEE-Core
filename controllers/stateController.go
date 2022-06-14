@@ -10,7 +10,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"os"
-	"path/filepath"
+	"path"
 	"strings"
 )
 
@@ -556,25 +556,25 @@ func DispAtLevelTAB(root **Node, x Stack) []string {
 
 //Replaces DispAtLevel since we are no longer
 //storing objects in a tree and returns string arr
-func FetchNodesAtLevel(path string) []string {
+func FetchNodesAtLevel(Path string) []string {
 	names := []string{}
 	urls := []string{}
 
-	paths := strings.Split(filepath.Clean(path), "/")
+	paths := strings.Split(path.Clean(Path), "/")
 
 	if len(paths) == 2 && paths[1] == "Physical" {
 		urls = []string{State.APIURL + "/api/tenants"}
-		names = NodesAtLevel(&State.TreeHierarchy, *StrToStack(path))
+		names = NodesAtLevel(&State.TreeHierarchy, *StrToStack(Path))
 	} else {
 		if len(paths) == 3 && paths[2] == "Stray" {
-			names = NodesAtLevel(&State.TreeHierarchy, *StrToStack(path))
+			names = NodesAtLevel(&State.TreeHierarchy, *StrToStack(Path))
 		}
 
 		if len(paths) < 3 { // /Physical or / or /Logical
 			//println("Should be here")
 			//println("LEN:", len(paths))
 			//println("YO DEBUG", path)
-			return NodesAtLevel(&State.TreeHierarchy, *StrToStack(path))
+			return NodesAtLevel(&State.TreeHierarchy, *StrToStack(Path))
 		}
 
 		// 2: since first idx is useless
@@ -622,20 +622,20 @@ func FetchNodesAtLevel(path string) []string {
 
 //Same as FetchNodesAtLevel but returns the JSONs
 //in map[string]inf{} format
-func FetchJsonNodesAtLevel(path string) []map[string]interface{} {
+func FetchJsonNodesAtLevel(Path string) []map[string]interface{} {
 	objects := []map[string]interface{}{}
 	urls := []string{}
 
-	paths := strings.Split(filepath.Clean(path), "/")
+	paths := strings.Split(path.Clean(Path), "/")
 
 	if len(paths) == 2 && paths[1] == "Physical" {
-		x := NodesAtLevel(&State.TreeHierarchy, *StrToStack(path))
+		x := NodesAtLevel(&State.TreeHierarchy, *StrToStack(Path))
 		objects = append(objects, strArrToMapStrInfArr(x)...)
 		urls = []string{State.APIURL + "/api/tenants"}
 
 	} else {
 		if len(paths) == 3 && paths[2] == "Stray" || len(paths) < 3 {
-			x := NodesAtLevel(&State.TreeHierarchy, *StrToStack(path))
+			x := NodesAtLevel(&State.TreeHierarchy, *StrToStack(Path))
 			return strArrToMapStrInfArr(x)
 		}
 
@@ -773,15 +773,15 @@ func CheckPath(root **Node, x, pstk *Stack) (bool, string, **Node) {
 
 //If the path refers to local tree the
 //func will still verify it with local tree
-func CheckPathOnline(path string) (bool, string) {
+func CheckPathOnline(Path string) (bool, string) {
 
-	pathSplit := strings.Split(filepath.Clean(path), "/")
+	pathSplit := strings.Split(path.Clean(Path), "/")
 
 	//Check if path refers to object in local State Tree
 	if len(pathSplit) <= 3 {
-		nd := FindNodeInTree(&State.TreeHierarchy, StrToStack(path), true)
+		nd := FindNodeInTree(&State.TreeHierarchy, StrToStack(Path), true)
 		if nd != nil {
-			return true, path
+			return true, Path
 		}
 	}
 
