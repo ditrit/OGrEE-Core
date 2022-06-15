@@ -3,6 +3,7 @@ package main
 import (
 	"bufio"
 	c "cli/controllers"
+	l "cli/logger"
 	p "cli/preprocessor"
 	"cli/readline"
 	"io/ioutil"
@@ -36,7 +37,7 @@ func loadFile(path string) {
 	file, err := os.Open(newBackup)
 	if err != nil {
 		println("Error:", err.Error())
-		c.WarningLogger.Println("Error:", err)
+		l.WarningLogger.Println("Error:", err)
 	}
 	defer file.Close()
 	fullcom := ""
@@ -147,7 +148,7 @@ func TrimToSlash(x string) string {
 //Init the Shell
 func Start(verboseLevel int) {
 
-	c.InitLogs()
+	l.InitLogs()
 	c.GetURLs() //Set the URLs
 	user, _ := c.Login()
 

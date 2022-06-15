@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"bytes"
+	l "cli/logger"
 	"cli/models"
 	"encoding/json"
 	"fmt"
@@ -23,14 +24,14 @@ func ParseResponse(resp *http.Response, e error, purpose string) map[string]inte
 	ans := map[string]interface{}{}
 
 	if e != nil {
-		WarningLogger.Println("Error while sending "+purpose+" to server: ", e)
+		l.WarningLogger.Println("Error while sending "+purpose+" to server: ", e)
 		println("There was an error!")
 	}
 	defer resp.Body.Close()
 	bodyBytes, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		println("Error: " + err.Error() + " Now Exiting")
-		ErrorLogger.Println("Error while trying to read server response: ", err)
+		l.ErrorLogger.Println("Error while trying to read server response: ", err)
 		if purpose == "POST" || purpose == "Search" {
 			os.Exit(-1)
 		}
@@ -92,7 +93,7 @@ func DeleteObj(Path string) bool {
 	objJSON, GETURL := GetObject(Path, true)
 	if objJSON == nil {
 		println("Error while deleting Object!")
-		WarningLogger.Println("Error while deleting Object!")
+		l.WarningLogger.Println("Error while deleting Object!")
 		return false
 	}
 
@@ -112,7 +113,7 @@ func DeleteObj(Path string) bool {
 	resp, e := models.Send("DELETE", URL, GetKey(), nil)
 	if e != nil {
 		println("Error while deleting Object!")
-		WarningLogger.Println("Error while deleting Object!", e)
+		l.WarningLogger.Println("Error while deleting Object!", e)
 		return false
 	}
 	defer resp.Body.Close()
@@ -120,7 +121,7 @@ func DeleteObj(Path string) bool {
 		println("Success")
 	} else {
 		println("Error while deleting Object!")
-		WarningLogger.Println("Error while deleting Object!", e)
+		l.WarningLogger.Println("Error while deleting Object!", e)
 		return false
 	}
 
@@ -143,7 +144,7 @@ func DeleteSelection() bool {
 	for i := range *State.ClipBoard {
 		println("Going to delete object: ", (*(State.ClipBoard))[i])
 		if DeleteObj((*(State.ClipBoard))[i]) != true {
-			WarningLogger.Println("Couldn't delete obj in selection: ",
+			l.WarningLogger.Println("Couldn't delete obj in selection: ",
 				(*(State.ClipBoard))[i])
 			println("Couldn't delete obj in selection: ",
 				(*(State.ClipBoard))[i])
@@ -170,7 +171,7 @@ func SearchObjects(entity string, data map[string]interface{}) []map[string]inte
 	}
 
 	//println("Here is URL: ", URL)
-	InfoLogger.Println("Search query URL:", URL)
+	l.InfoLogger.Println("Search query URL:", URL)
 
 	resp, e := models.Send("GET", URL, GetKey(), nil)
 	jsonResp = ParseResponse(resp, e, "Search")
@@ -227,7 +228,7 @@ func GetObject(path string, silenced bool) (map[string]interface{}, string) {
 
 	//Object wasn't found
 	println("Error finding Object from given path!")
-	WarningLogger.Println("Object to Get not found")
+	l.WarningLogger.Println("Object to Get not found")
 	println(path)
 
 	return nil, ""
@@ -281,7 +282,7 @@ func RecursivePatch(Path, id, ent string, data map[string]interface{}) {
 			objJSON, GETURL := GetObject(Path, true)
 			if objJSON == nil {
 				println("Error while deleting Object!")
-				WarningLogger.Println("Error while deleting Object!")
+				l.WarningLogger.Println("Error while deleting Object!")
 				return
 			}
 			entities = path.Base(path.Dir(GETURL))
@@ -349,7 +350,7 @@ func UpdateObj(Path, id, ent string, data map[string]interface{}, deleteAndPut b
 			objJSON, GETURL := GetObject(Path, true)
 			if objJSON == nil {
 				println("Error while getting Object!")
-				WarningLogger.Println("Error while getting Object!")
+				l.WarningLogger.Println("Error while getting Object!")
 				return nil
 			}
 			entities = path.Base(path.Dir(GETURL))
@@ -526,7 +527,7 @@ func LSOBJECT(x string, entity int) []map[string]interface{} {
 	obj, Path := GetObject(x, true)
 	if obj == nil {
 		println("Error finding Object from given path!")
-		WarningLogger.Println("Object to Get not found")
+		l.WarningLogger.Println("Object to Get not found")
 		return nil
 	}
 
@@ -536,7 +537,7 @@ func LSOBJECT(x string, entity int) []map[string]interface{} {
 	obi := EntityStrToInt(objEnt)
 	if obi == -1 { //Something went wrong
 		println("Error finding Object from given path!")
-		WarningLogger.Println("Object to Get not found")
+		l.WarningLogger.Println("Object to Get not found")
 		return nil
 	}
 
@@ -792,7 +793,7 @@ func CD(x string) string {
 				//println()
 			} else {
 				println("Path does not exist")
-				WarningLogger.Println("Path: ", x, " does not exist")
+				l.WarningLogger.Println("Path: ", x, " does not exist")
 			}
 
 		}
@@ -803,7 +804,7 @@ func CD(x string) string {
 				State.CurrPath += "/" + x
 			} else {
 				println("OGREE: ", x, " : No such object")
-				WarningLogger.Println("No such object: ", x)
+				l.WarningLogger.Println("No such object: ", x)
 			}
 
 		} else {
@@ -813,7 +814,7 @@ func CD(x string) string {
 				State.CurrPath += x
 			} else {
 				println("OGREE: ", x, " : No such object")
-				WarningLogger.Println("No such object: ", x)
+				l.WarningLogger.Println("No such object: ", x)
 			}
 
 		}
@@ -922,7 +923,7 @@ func tree(base string, prefix string, depth int) {
 
 func Tree(x string, depth int) {
 	if depth < 0 {
-		WarningLogger.Println("Tree command cannot accept negative value")
+		l.WarningLogger.Println("Tree command cannot accept negative value")
 		println("Error: Tree command cannot accept negative value")
 		return
 	}
@@ -967,20 +968,20 @@ func GetHierarchy(x string, depth int, silence bool) []map[string]interface{} {
 			r, e := models.Send("GET", URL, GetKey(), nil)
 			if e != nil {
 				println("Error: " + e.Error())
-				ErrorLogger.Println("Error: " + e.Error())
+				l.ErrorLogger.Println("Error: " + e.Error())
 				return nil
 			}
 
 			data := ParseResponse(r, nil, "get hierarchy")
 			if data == nil {
-				WarningLogger.Println("Hierarchy call response was nil")
+				l.WarningLogger.Println("Hierarchy call response was nil")
 				println("No data")
 				return nil
 			}
 
 			objs := LoadArrFromResp(data, "children")
 			if objs == nil {
-				WarningLogger.Println("No objects found in hierarchy call")
+				l.WarningLogger.Println("No objects found in hierarchy call")
 				println("No objects found in hierarchy call")
 				return nil
 			}
@@ -1179,7 +1180,7 @@ func GetOCLIAtrributes(Path string, ent int, data map[string]interface{}) {
 				}
 				//End of convert block
 				if _, ok := attr["slot"]; ok {
-					WarningLogger.Println("Invalid device syntax encountered")
+					l.WarningLogger.Println("Invalid device syntax encountered")
 					println("Invalid syntax: If you have provided",
 						" a template, it was not found")
 					return
@@ -1467,7 +1468,7 @@ func GetOCLIAtrributesTemplateHelper(attr, data map[string]interface{}, ent int)
 				attr["template"] = ""
 				println("Warning: template was not found.",
 					"it will not be used")
-				WarningLogger.Println("Invalid data type or incorrect name used to invoke template")
+				l.WarningLogger.Println("Invalid data type or incorrect name used to invoke template")
 			}
 
 		} else {
@@ -1475,7 +1476,7 @@ func GetOCLIAtrributesTemplateHelper(attr, data map[string]interface{}, ent int)
 			println("Warning: template must be a string that",
 				" refers to an existing imported template.",
 				q, " will not be used")
-			WarningLogger.Println("Invalid data type used to invoke template")
+			l.WarningLogger.Println("Invalid data type used to invoke template")
 		}
 
 	} else {
@@ -1784,20 +1785,20 @@ func UnlinkObject(paths []interface{}) {
 	//for a device to have a deeper hierarchy paths[0].(string)
 	dev, _ = GetObject(paths[0].(string), true)
 	if dev == nil {
-		ErrorLogger.Println("User attempted to unlink non-existing object")
+		l.ErrorLogger.Println("User attempted to unlink non-existing object")
 		println("Error: This object does not exist ")
 		return
 	}
 
 	//Exit if device not found
 	if _, ok := dev["category"]; !ok {
-		ErrorLogger.Println("User attempted to unlink non-device object")
+		l.ErrorLogger.Println("User attempted to unlink non-device object")
 		println("Error: This object is not a device. You can only unlink devices ")
 		return
 	}
 
 	if catInf, _ := dev["category"].(string); catInf != "device" {
-		ErrorLogger.Println("User attempted to unlink non-device object")
+		l.ErrorLogger.Println("User attempted to unlink non-device object")
 		println("Error: This object is not a device. You can only unlink devices ")
 		return
 	}
@@ -1822,7 +1823,7 @@ func UnlinkObject(paths []interface{}) {
 
 	newDev := PostObj(STRAY_DEV, "stray-device", dev)
 	if newDev == nil {
-		WarningLogger.Println("Unable to unlink target: ", paths[0].(string))
+		l.WarningLogger.Println("Unable to unlink target: ", paths[0].(string))
 		println("Error: Unable to unlink target: ", paths[0].(string))
 		return
 	}
@@ -1850,21 +1851,16 @@ func Draw(x string, depth int) {
 	if depth == 0 {
 		res, _ := GetObject(x, true)
 		data := map[string]interface{}{"type": "create", "data": res}
-		println("DEBUG view JSON before UNITY")
-		Disp(data)
 		InformUnity("POST", "Draw", 0, data)
 		return
 	}
 
 	res := GetHierarchy(x, depth, true)
 	if res == nil {
-		ErrorLogger.Println("User attempted to draw non drawable object")
+		l.ErrorLogger.Println("User attempted to draw non drawable object")
 		return
 	}
 	data := map[string]interface{}{"type": "create", "data": res[0]}
-
-	println("DEBUG view JSON before UNITY")
-	Disp(data)
 
 	//0 to include the JSON filtration
 	InformUnity("POST", "Draw", 0, data)
@@ -1884,7 +1880,7 @@ func IsEntityDrawable(path string) bool {
 	//Get Object first
 	obj, _ := GetObject(path, true)
 	if obj == nil {
-		WarningLogger.Println("Error: object was not found")
+		l.WarningLogger.Println("Error: object was not found")
 		return false
 	}
 
@@ -1918,7 +1914,7 @@ func IsAttrDrawable(path, attr string, object map[string]interface{}, silence bo
 		//Get Object first
 		obj, err := GetObject(path, true)
 		if obj == nil {
-			WarningLogger.Println(err)
+			l.WarningLogger.Println(err)
 			if silence != true {
 				println(err)
 			}
@@ -1930,14 +1926,14 @@ func IsAttrDrawable(path, attr string, object map[string]interface{}, silence bo
 		//from object
 		if catInf, ok := obj["category"]; ok {
 			if cat, ok := catInf.(string); !ok {
-				ErrorLogger.Println("Object does not have category")
+				l.ErrorLogger.Println("Object does not have category")
 				if silence != true {
 					println("Error: Object does not have category")
 				}
 
 				return false
 			} else if EntityStrToInt(cat) == -1 {
-				ErrorLogger.Println("Object has invalid category")
+				l.ErrorLogger.Println("Object has invalid category")
 				if silence != true {
 					println("Error: Object does has invalid category")
 				}
@@ -1945,7 +1941,7 @@ func IsAttrDrawable(path, attr string, object map[string]interface{}, silence bo
 				return false
 			}
 		} else {
-			ErrorLogger.Println("Object does not have category")
+			l.ErrorLogger.Println("Object does not have category")
 			if silence != true {
 				println("Error: Object does not have category")
 			}
@@ -1957,14 +1953,14 @@ func IsAttrDrawable(path, attr string, object map[string]interface{}, silence bo
 	} else {
 		if catInf, ok := object["category"]; ok {
 			if cat, ok := catInf.(string); !ok {
-				ErrorLogger.Println("Object does not have category")
+				l.ErrorLogger.Println("Object does not have category")
 				if silence != true {
 					println("Error: Object does not have category")
 				}
 
 				return false
 			} else if EntityStrToInt(cat) == -1 {
-				ErrorLogger.Println("Object has invalid category")
+				l.ErrorLogger.Println("Object has invalid category")
 				if silence != true {
 					println("Error: Object does has invalid category")
 				}
@@ -1972,7 +1968,7 @@ func IsAttrDrawable(path, attr string, object map[string]interface{}, silence bo
 				return false
 			}
 		} else {
-			ErrorLogger.Println("Object does not have category")
+			l.ErrorLogger.Println("Object does not have category")
 			if silence != true {
 				println("Error: Object does not have category")
 			}
@@ -2070,7 +2066,7 @@ func LoadTemplate(data map[string]interface{}, filePath string) {
 
 	r, e := models.Send("POST", URL, GetKey(), data)
 	if e != nil {
-		ErrorLogger.Println(e.Error())
+		l.ErrorLogger.Println(e.Error())
 		println("Error: ", e.Error())
 	}
 
@@ -2113,7 +2109,7 @@ func SetEnv(arg string, val interface{}) {
 	case "Unity":
 		if _, ok := val.(bool); !ok {
 			msg := "Can only assign bool values for Unity Env Var"
-			WarningLogger.Println(msg)
+			l.WarningLogger.Println(msg)
 			println(msg)
 		} else {
 			State.UnityClientAvail = val.(bool)
@@ -2126,7 +2122,7 @@ func SetEnv(arg string, val interface{}) {
 	case "Filter":
 		if _, ok := val.(bool); !ok {
 			msg := "Can only assign bool values for Filter Env Var"
-			WarningLogger.Println(msg)
+			l.WarningLogger.Println(msg)
 			println(msg)
 		} else {
 			State.FilterDisplay = val.(bool)
@@ -2295,7 +2291,7 @@ func InformUnity(method, caller string, entity int, data map[string]interface{})
 		}
 		e := models.ContactUnity(method, State.UnityClientURL, data)
 		if e != nil {
-			WarningLogger.Println("Unable to contact Unity Client @" + caller)
+			l.WarningLogger.Println("Unable to contact Unity Client @" + caller)
 			fmt.Println("Error while updating Unity: ", e.Error())
 		} else {
 			fmt.Println("Successfully updated Unity")
@@ -2310,7 +2306,7 @@ func MergeMaps(x, y map[string]interface{}, overwrite bool) {
 		//Conflict case
 		if _, ok := x[i]; ok {
 			if overwrite == true {
-				WarningLogger.Println("Conflict while merging maps")
+				l.WarningLogger.Println("Conflict while merging maps")
 				println("Conflict while merging data, resorting to overwriting!")
 				x[i] = y[i]
 			}

@@ -7,7 +7,7 @@ package preprocessor
 
 import (
 	"bufio"
-	c "cli/controllers"
+	l "cli/logger"
 	"os"
 	"path/filepath"
 	"regexp"
@@ -18,7 +18,7 @@ func ProcessFile(path string) string {
 	file, err := os.Open(path)
 	if err != nil {
 		println("Error:", err.Error())
-		c.ErrorLogger.Println("Error:", err)
+		l.ErrorLogger.Println("Error:", err)
 		return ""
 	}
 	defer file.Close()
@@ -110,7 +110,7 @@ func ProcessFile(path string) string {
 	f, e := os.Create(fileName)
 	if e != nil {
 		println("Error:", err.Error())
-		c.ErrorLogger.Println("Error:", err)
+		l.ErrorLogger.Println("Error:", err)
 		return ""
 	}
 

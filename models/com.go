@@ -6,7 +6,6 @@ import (
 	"io/ioutil"
 	"net"
 	"net/http"
-	"time"
 )
 
 //Function helps with API Requests
@@ -49,8 +48,14 @@ func Disp(x map[string]interface{}) {
 func ContactUnity(method, URL string, data map[string]interface{}) error {
 	dataJSON, _ := json.Marshal(data)
 
+	//DEBUG BLOCK
+	dataJSON = append(dataJSON, '\n')
+
 	// Connect to a server
 	//println(URL)
+	println("DEBUG OUTGOING JSON")
+	Disp(data)
+
 	conn, e := net.Dial("tcp", URL)
 	if e != nil {
 		return e
@@ -63,16 +68,21 @@ func ContactUnity(method, URL string, data map[string]interface{}) error {
 		}
 		defer conn.Close()
 
-		time.Sleep(time.Duration(1) * time.Second)
+		//time.Sleep(time.Duration(1) * time.Second)
 		//reply, err := bufio.NewReader(conn).ReadString('\t')
 		reply, _ := ioutil.ReadAll(conn)
+
 		//if err != nil {
 		//	return err
 		//}
 		//reply, _ := ioutil.ReadAll(conn)
 		//fmt.Printf("received from server: [%s]\n", string(reply))
 		println("Response received:", string(reply))
-		return nil
+		println("DEBUG LEN OF REPONSE:", len(reply))
+		if len(reply) != 0 {
+			return nil
+		}
+
 	}
 
 }

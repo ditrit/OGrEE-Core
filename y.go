@@ -6,6 +6,7 @@ import __yyfmt__ "fmt"
 
 import (
 	cmd "cli/controllers"
+	l "cli/logger"
 	"strconv"
 	"strings"
 )
@@ -1739,7 +1740,7 @@ yynewstate:
 				println("File:",cmd.GetScriptPath() )
 				println("Line Number:", cmd.GetLineNumber())
 			}
-			cmd.WarningLogger.Println("Unknown Command")			/*yylex.Error(msg)*/
+			l.WarningLogger.Println("Unknown Command")			/*yylex.Error(msg)*/
 			Nerrs++
 			fallthrough
 

@@ -11,6 +11,7 @@ import (
 	"strconv"
 	"strings"
 
+	l "cli/logger"
 	"cli/readline"
 )
 
@@ -74,14 +75,14 @@ func CreateCredentials() (string, string) {
 	resp, e := client.Do(req)
 	if e != nil || resp.StatusCode != http.StatusCreated {
 		println("Error while creating credentials on server! Now exiting")
-		ErrorLogger.Println("Error while creating credentials on server! Now exiting")
+		l.ErrorLogger.Println("Error while creating credentials on server! Now exiting")
 		os.Exit(-1)
 	}
 	defer resp.Body.Close()
 	bodyBytes, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		readline.Line("Error: " + err.Error() + " Now Exiting")
-		ErrorLogger.Println("Error while trying to read server response: ", err)
+		l.ErrorLogger.Println("Error while trying to read server response: ", err)
 		os.Exit(-1)
 	}
 	json.Unmarshal(bodyBytes, &tp)
@@ -92,7 +93,7 @@ func CreateCredentials() (string, string) {
 		[]byte("user="+user+"\n"+"apikey="+key),
 		0666)
 
-	InfoLogger.Println("Credentials created")
+	l.InfoLogger.Println("Credentials created")
 	return user, key
 }
 
@@ -122,7 +123,7 @@ func Login() (string, string) {
 	var user, key string
 	file, err := os.Open("./.resources/.env")
 	if err != nil {
-		InfoLogger.Println("Key not found, going generate..")
+		l.InfoLogger.Println("Key not found, going generate..")
 		user, key = CreateCredentials()
 	} else {
 		scanner := bufio.NewScanner(file)
@@ -139,12 +140,12 @@ func Login() (string, string) {
 
 		if err := scanner.Err(); err != nil {
 			fmt.Println(err)
-			ErrorLogger.Println(err)
+			l.ErrorLogger.Println(err)
 		}
 
 		if !CheckKeyIsValid(key) {
 			println("Error while checking key. Now exiting")
-			ErrorLogger.Println("Error while checking key. Now exiting")
+			l.ErrorLogger.Println("Error while checking key. Now exiting")
 			os.Exit(-1)
 		}
 	}
@@ -154,6 +155,6 @@ func Login() (string, string) {
 	//println(CheckKeyIsValid(key))
 
 	user = (strings.Split(user, "@"))[0]
-	InfoLogger.Println("Successfully Logged In")
+	l.InfoLogger.Println("Successfully Logged In")
 	return user, key
 }

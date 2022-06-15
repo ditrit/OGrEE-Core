@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"bufio"
+	l "cli/logger"
 	"cli/models"
 	"cli/readline"
 	"container/list"
@@ -86,7 +87,7 @@ func InitState(debugLvl int) {
 	req := map[string]interface{}{"type": "login", "data": data}
 	e := models.ContactUnity("POST", State.UnityClientURL, req)
 	if e != nil {
-		WarningLogger.Println("Note: Unity Client Unreachable")
+		l.WarningLogger.Println("Note: Unity Client Unreachable")
 		fmt.Println("Note: Unity Client Unreachable ")
 		State.UnityClientAvail = false
 	} else {
@@ -237,7 +238,7 @@ func SetObjsForUnity(x string) []int {
 	}
 
 	if err := scanner.Err(); err != nil {
-		ErrorLogger.Println(err)
+		l.ErrorLogger.Println(err)
 		fmt.Println(err)
 	}
 
@@ -247,7 +248,7 @@ func SetObjsForUnity(x string) []int {
 	//So we use that for the cond guard
 	if allDetected || len(res) == 0 {
 		if len(res) == 0 && !allDetected {
-			WarningLogger.Println(x + " key not found, going to use defaults")
+			l.WarningLogger.Println(x + " key not found, going to use defaults")
 			println(x + " key not found, going to use defaults")
 		}
 		for idx := 0; idx < GROUP; idx++ {
@@ -276,7 +277,7 @@ func SetDrawableTemplate(entity string) map[string]interface{} {
 			ans := map[string]interface{}{}
 			f, e := ioutil.ReadFile(objStr)
 			if e != nil {
-				WarningLogger.Println("Specified template for" + entity + "not found")
+				l.WarningLogger.Println("Specified template for" + entity + "not found")
 				if State.DebugLvl > 2 {
 					println("Specified template for " + entity +
 						" not found, resorting to defaults")
@@ -362,7 +363,7 @@ func GetURLs() {
 	if err != nil {
 		fmt.Println(err)
 		fmt.Println("Falling back to default URLs")
-		InfoLogger.Println("Falling back to default URLs")
+		l.InfoLogger.Println("Falling back to default URLs")
 		State.UnityClientURL = "http://localhost:5500"
 		State.APIURL = "http://localhost:3001"
 	}
@@ -383,7 +384,7 @@ func GetURLs() {
 	if State.APIURL == "" {
 		fmt.Println("Falling back to default API URL:" +
 			"http://localhost:3001")
-		InfoLogger.Println("Falling back to default API URL:" +
+		l.InfoLogger.Println("Falling back to default API URL:" +
 			"http://localhost:3001")
 		State.APIURL = "http://localhost:3001"
 	}
@@ -391,7 +392,7 @@ func GetURLs() {
 	if State.UnityClientURL == "" {
 		fmt.Println("Falling back to default Unity URL:" +
 			"http://localhost:5500")
-		InfoLogger.Println("Falling back to default Unity URL:" +
+		l.InfoLogger.Println("Falling back to default Unity URL:" +
 			"http://localhost:5500")
 		State.APIURL = "http://localhost:5500"
 	}
@@ -440,7 +441,7 @@ func makeNodeArrFromResp(resp *http.Response, entity int) []*Node {
 		} else if v, ok := (objs[i].(map[string]interface{}))["slug"]; ok {
 			node.Name = v.(string)
 		} else {
-			ErrorLogger.Println("Object obtained does not have name or slug!" +
+			l.ErrorLogger.Println("Object obtained does not have name or slug!" +
 				"Now Exiting")
 			println("Object obtained does not have name or slug!" +
 				"Now Exiting")
@@ -510,7 +511,7 @@ func DispAtLevel(root **Node, x Stack) []string {
 		node := getNextInPath(name.(string), *root)
 		if node == nil {
 			println("Name doesn't exist! ", string(name.(string)))
-			WarningLogger.Println("Node name: ", string(name.(string)), "doesn't exist!")
+			l.WarningLogger.Println("Node name: ", string(name.(string)), "doesn't exist!")
 			return nil
 		}
 		x.Pop()
@@ -835,7 +836,7 @@ func FindNodeInTree(root **Node, path *Stack, silenced bool) **Node {
 				println("Name doesn't exist! ", string(name.(string)))
 			}
 
-			WarningLogger.Println("Name doesn't exist! ", string(name.(string)))
+			l.WarningLogger.Println("Name doesn't exist! ", string(name.(string)))
 			return nil
 		}
 		path.Pop()
@@ -1013,7 +1014,7 @@ func NodesAtLevel(root **Node, x Stack) []string {
 		node := getNextInPath(name.(string), *root)
 		if node == nil {
 			println("Name doesn't exist! ", string(name.(string)))
-			WarningLogger.Println("Node name: ", string(name.(string)), "doesn't exist!")
+			l.WarningLogger.Println("Node name: ", string(name.(string)), "doesn't exist!")
 			return nil
 		}
 		x.Pop()

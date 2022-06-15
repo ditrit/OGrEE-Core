@@ -2,6 +2,7 @@
 package main
 import (
 cmd "cli/controllers"
+l "cli/logger"
 "strings"
 "strconv"
 )
