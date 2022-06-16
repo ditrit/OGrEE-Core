@@ -11,3 +11,4 @@ parser.tab.c
 BisonExmple.txt
 delme.sh
 y.output
+*.txt

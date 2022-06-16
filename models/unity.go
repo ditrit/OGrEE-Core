@@ -33,7 +33,7 @@ func getListenerPort(rl *readline.Instance) string {
 //and prints these messages to the Readline terminal
 //This is meant for Unity interactivity
 func ListenForUnity(rl *readline.Instance) error {
-	addr := "localhost:" + getListenerPort(rl)
+	addr := "0.0.0.0:" + getListenerPort(rl)
 	ln, err := net.Listen("tcp", addr)
 	if err != nil {
 		println("LISTEN ERROR: ", err.Error())
