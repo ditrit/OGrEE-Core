@@ -97,7 +97,6 @@ mongod --dbpath "$path" --port $port --logpath "$log" --fork
 mongo "$host:"$port bootup.js
 
 #The command below will execute the mongo script
-#--authenticationDatabase "admin" -u "admin" -p "adminpassword"
 mongo "$host:"$port"/"$name createdb.js --eval 'var dbName = "'$name'"'
 echo "PASSED BOOTUP"
 

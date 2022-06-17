@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"log"
 	"os"
-	u "p3/utils"
 	"time"
 
 	"github.com/joho/godotenv"
@@ -15,7 +14,6 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"go.mongodb.org/mongo-driver/mongo/readpref"
-	"go.mongodb.org/mongo-driver/x/bsonx"
 )
 
 //Database
@@ -110,84 +108,4 @@ func CheckIfDBExists(name string) (bool, error) {
 
 	return false, e
 
-}
-
-//This function shall execute the same
-//commands as createdb.js found in the
-//root dir of this API
-func CreateTenantDB(name string) {
-	ctx, cancel := u.Connect()
-	newDB := GetDB().Client().Database(name, nil)
-	defer cancel()
-	//TODO
-	//we can move the schema validation to the DB
-	//options.CreateCollectionOptions{}
-	newDB.CreateCollection(ctx, "account", nil)
-	newDB.CreateCollection(ctx, "domain", nil)
-	newDB.CreateCollection(ctx, "site", nil)
-	newDB.CreateCollection(ctx, "building", nil)
-	newDB.CreateCollection(ctx, "room", nil)
-	newDB.CreateCollection(ctx, "rack", nil)
-	newDB.CreateCollection(ctx, "device", nil)
-
-	//Template Collections
-	newDB.CreateCollection(ctx, "room_template")
-	newDB.CreateCollection(ctx, "obj_template")
-
-	//Group Collections
-	newDB.CreateCollection(ctx, "group")
-
-	//Nonhierarchal objects
-	newDB.CreateCollection(ctx, "ac")
-	newDB.CreateCollection(ctx, "panel")
-	newDB.CreateCollection(ctx, "separator")
-	newDB.CreateCollection(ctx, "row")
-	newDB.CreateCollection(ctx, "tile")
-	newDB.CreateCollection(ctx, "cabinet")
-	newDB.CreateCollection(ctx, "corridor")
-
-	//Sensors
-	newDB.CreateCollection(ctx, "sensor")
-
-	//Stray Objects
-	newDB.CreateCollection(ctx, "stray_device")
-	newDB.CreateCollection(ctx, "stray_sensor")
-
-	//Create Index variables
-	d := bsonx.Doc{{Key: "parentId", Value: bsonx.Int32(1)},
-		{Key: "name", Value: bsonx.Int32(1)}}
-
-	sd := bsonx.Doc{{Key: "parentId", Value: bsonx.Int32(1)},
-		{Key: "name", Value: bsonx.Int32(1)},
-		{Key: "type", Value: bsonx.Int32(1)}}
-
-	genericIdx := mongo.IndexModel{Keys: d, Options: options.Index().SetUnique(true)}
-	templateIdx := mongo.IndexModel{Keys: bson.M{"slug": 1}, Options: options.Index().SetUnique(true)}
-	sensorIdx := mongo.IndexModel{Keys: sd, Options: options.Index().SetUnique(true)}
-
-	//Setup Indexes
-	newDB.Collection("domain").Indexes().CreateOne(ctx, genericIdx)
-	newDB.Collection("site").Indexes().CreateOne(ctx, genericIdx)
-	newDB.Collection("building").Indexes().CreateOne(ctx, genericIdx)
-	newDB.Collection("room").Indexes().CreateOne(ctx, genericIdx)
-	newDB.Collection("rack").Indexes().CreateOne(ctx, genericIdx)
-	newDB.Collection("device").Indexes().CreateOne(ctx, genericIdx)
-
-	newDB.Collection("room_template").Indexes().CreateOne(ctx, templateIdx)
-	newDB.Collection("obj_template").Indexes().CreateOne(ctx, templateIdx)
-
-	newDB.Collection("sensor").Indexes().CreateOne(ctx, sensorIdx)
-
-	newDB.Collection("ac").Indexes().CreateOne(ctx, genericIdx)
-	newDB.Collection("panel").Indexes().CreateOne(ctx, genericIdx)
-	newDB.Collection("separator").Indexes().CreateOne(ctx, genericIdx)
-	newDB.Collection("row").Indexes().CreateOne(ctx, genericIdx)
-	newDB.Collection("tile").Indexes().CreateOne(ctx, genericIdx)
-	newDB.Collection("cabinet").Indexes().CreateOne(ctx, genericIdx)
-	newDB.Collection("corridor").Indexes().CreateOne(ctx, genericIdx)
-
-	newDB.Collection("group").Indexes().CreateOne(ctx, genericIdx)
-
-	newDB.Collection("stray_device").Indexes().CreateOne(ctx, genericIdx)
-	newDB.Collection("stray_device").Indexes().CreateOne(ctx, genericIdx)
 }

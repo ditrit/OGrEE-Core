@@ -1,8 +1,7 @@
 /////
-// NOTE - WARNING
-// This code is mirrored in the API found in models.base.go:CreateTenantDB
-// If you modify this script be sure to make the same changes in said
-// function!
+// Create a new Database
+// Only invoked by an administrative process, when a new customer
+// subscribes
 //////
 
 

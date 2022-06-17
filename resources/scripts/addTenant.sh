@@ -47,5 +47,9 @@ fi
 echo "Port : $port";
 echo "Name : $name";
 
+#Create the secured Database
+mongo "localhost:"$port createdb.js --eval 'var dbName = "ogree'$name'"'
 
-mongo "localhost:"$port createdb.js --eval 'var dbName = "'$name'"'
+
+#Create an API user for the new customer
+mongo "localhost:"$port createUser.js --eval 'var dbName = "ogree'$name'"'
