@@ -91,11 +91,15 @@ fuser -k $port/tcp
 rm -rf "$log"
 rm -rf "$path"/*
 mkdir "$path"
-mongod --dbpath "$path" --port $port --logpath "$log" --fork
+mongod --dbpath "$path" --port $port --logpath "$log" --fork --auth
 
 #Initialise the customer record DB
+#"myTester:xyz123@"
+echo "HI WE ALL HERE"
 mongo "$host:"$port bootup.js
+echo "HEY WE PASSED THE BOOTUP"
 
 #The command below will execute the mongo script
-mongo "$host:"$port"/"$name createdb.js --eval 'var dbName = "'$name'"'
+#--authenticationDatabase 'admin' -u 'myTester' -p 'xyz123'
+mongo --username "myTester" --password "xyz123" "$host:"$port"/admin" createdb.js --eval 'var dbName = "'$name'"' 
 echo "done"

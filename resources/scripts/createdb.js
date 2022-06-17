@@ -5,7 +5,11 @@
 // function!
 //////
 
-//localhost = 127.0.0.1
+
+//Authenticate first
+var m = new Mongo()
+var authDB = m.getDB("test")
+authDB.auth('admin','adminpassword');
 
 
 //Check if dbName was passed as argument
@@ -15,9 +19,15 @@ try {
 } catch(e) {
   dbName = "ogreeDevelop"
 }
-
-var m = new Mongo()
+//var m = new Mongo()
 var db = m.getDB(dbName)
+
+
+
+//Update customer record table
+var odb = m.getDB("ogree")
+odb.customer.insertOne({"name": dbName});
+
 
 db.createCollection('account');
 db.createCollection('domain');
@@ -86,7 +96,3 @@ db.group.createIndex({parentId:1, name:1}, { unique: true });
 db.stray_device.createIndex({parentId:1,name:1}, { unique: true });
 db.stray_sensor.createIndex({name:1}, { unique: true });
 
-
-//Update customer record table
-var odb = m.getDB("ogree")
-odb.customer.insertOne({"name": dbName});
