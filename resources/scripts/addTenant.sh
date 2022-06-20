@@ -52,4 +52,14 @@ mongo "localhost:"$port createdb.js --eval 'var dbName = "ogree'$name'"'
 
 
 #Create an API user for the new customer
-mongo "localhost:"$port createUser.js --eval 'var dbName = "ogree'$name'"'
+echo 
+echo "Please type a new a password for the customer: "
+read PASS
+mongo "localhost:"$port createUser.js --eval 'let dbName = "ogree'$name'", pass = "'$PASS'";'
+
+
+#Success so print credentials one last time
+echo "Great, be sure to save these credentials in your API env file" 
+echo "since they will not be saved anywhere else! "
+echo "db_user='$name'"
+echo "db_pass='$PASS'"

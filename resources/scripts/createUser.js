@@ -14,6 +14,13 @@ try {
 }
 var db = m.getDB(dbName)
 
-db.createUser({ user: dbName+"Admin", pwd: "adminpassword",
+try {
+  pass;
+} catch(e) {
+  pass = "somethingElse" //code should not reach here
+}
+//passwordPrompt()
+
+db.createUser({ user: dbName+"Admin", pwd: pass,
                 roles: [{role: "readWrite", db: dbName}]
                 })

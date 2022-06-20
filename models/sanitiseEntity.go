@@ -26,11 +26,11 @@ func FixUnderScore(x map[string]interface{}) {
 }
 
 //Perform any neccessary adjustments to objects before insertion into DB
-func FixAttributesBeforeInsert(entity int, data map[string]interface{}, db string) {
+func FixAttributesBeforeInsert(entity int, data map[string]interface{}) {
 	if entity == RACK {
 		pid, _ := primitive.ObjectIDFromHex(data["parentId"].(string))
 		req := bson.M{"_id": pid}
-		parent, _ := GetEntity(req, "room", db)
+		parent, _ := GetEntity(req, "room")
 		parentUnit := parent["attributes"].(map[string]interface{})["posXYUnit"]
 		data["attributes"].(map[string]interface{})["posXYUnit"] = parentUnit
 	}

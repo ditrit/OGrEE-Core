@@ -134,7 +134,7 @@ var Authenticate = func(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		resp, e := models.Login(account.Email, account.Password, account.Database)
+		resp, e := models.Login(account.Email, account.Password)
 		if resp["status"] == false {
 			if e == "invalid" {
 				w.WriteHeader(http.StatusUnauthorized)

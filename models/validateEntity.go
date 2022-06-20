@@ -7,7 +7,7 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
-func validateParent(ent string, entNum int, t map[string]interface{}, db string) (map[string]interface{}, bool) {
+func validateParent(ent string, entNum int, t map[string]interface{}) (map[string]interface{}, bool) {
 
 	if entNum == SITE {
 		return nil, true
@@ -25,17 +25,17 @@ func validateParent(ent string, entNum int, t map[string]interface{}, db string)
 
 	switch entNum {
 	case DEVICE:
-		x, _ := GetEntity(bson.M{"_id": objID}, "rack", db)
-		y, _ := GetEntity(bson.M{"_id": objID}, "device", db)
+		x, _ := GetEntity(bson.M{"_id": objID}, "rack")
+		y, _ := GetEntity(bson.M{"_id": objID}, "device")
 		if x == nil && y == nil {
 			return u.Message(false,
 				"ParentID should be correspond to Existing ID"), false
 		}
 	case SENSOR, GROUP:
-		w, _ := GetEntity(bson.M{"_id": objID}, "device", db)
-		x, _ := GetEntity(bson.M{"_id": objID}, "rack", db)
-		y, _ := GetEntity(bson.M{"_id": objID}, "room", db)
-		z, _ := GetEntity(bson.M{"_id": objID}, "building", db)
+		w, _ := GetEntity(bson.M{"_id": objID}, "device")
+		x, _ := GetEntity(bson.M{"_id": objID}, "rack")
+		y, _ := GetEntity(bson.M{"_id": objID}, "room")
+		z, _ := GetEntity(bson.M{"_id": objID}, "building")
 		if w == nil && x == nil && y == nil && z == nil {
 			return u.Message(false,
 				"ParentID should be correspond to Existing ID"), false
@@ -46,7 +46,7 @@ func validateParent(ent string, entNum int, t map[string]interface{}, db string)
 				ID, _ := primitive.ObjectIDFromHex(pid)
 
 				ctx, cancel := u.Connect()
-				if GetDBByName(db).Collection("stray_device").FindOne(ctx,
+				if GetDB().Collection("stray_device").FindOne(ctx,
 					bson.M{"_id": ID}).Err() != nil {
 					return u.Message(false,
 						"ParentID should be an Existing ID or null"), false
@@ -63,7 +63,7 @@ func validateParent(ent string, entNum int, t map[string]interface{}, db string)
 		parent := u.EntityToString(parentInt)
 
 		ctx, cancel := u.Connect()
-		if GetDBByName(db).Collection(parent).
+		if GetDB().Collection(parent).
 			FindOne(ctx, bson.M{"_id": objID}).Err() != nil {
 			println("ENTITY VALUE: ", ent)
 			println("We got Parent: ", parent, " with ID:", t["parentId"].(string))
@@ -76,7 +76,7 @@ func validateParent(ent string, entNum int, t map[string]interface{}, db string)
 	return nil, true
 }
 
-func ValidatePatch(ent int, t map[string]interface{}, db string) (map[string]interface{}, bool) {
+func ValidatePatch(ent int, t map[string]interface{}) (map[string]interface{}, bool) {
 	for k := range t {
 		switch k {
 		case "name", "category", "domain":
@@ -91,7 +91,7 @@ func ValidatePatch(ent int, t map[string]interface{}, db string) (map[string]int
 
 		case "parentId":
 			if ent < ROOMTMPL && ent > SITE {
-				x, ok := validateParent(u.EntityToString(ent), ent, t, db)
+				x, ok := validateParent(u.EntityToString(ent), ent, t)
 				if !ok {
 					return x, ok
 				}
@@ -99,7 +99,7 @@ func ValidatePatch(ent int, t map[string]interface{}, db string) (map[string]int
 			//STRAYDEV's schema is very loose
 			//thus we can safely invoke validateEntity
 			if ent == STRAYDEV {
-				x, ok := ValidateEntity(ent, t, db)
+				x, ok := ValidateEntity(ent, t)
 				if !ok {
 					return x, ok
 				}
@@ -204,7 +204,7 @@ func ValidatePatch(ent int, t map[string]interface{}, db string) (map[string]int
 
 }
 
-func ValidateEntity(entity int, t map[string]interface{}, db string) (map[string]interface{}, bool) {
+func ValidateEntity(entity int, t map[string]interface{}) (map[string]interface{}, bool) {
 
 	//parentObj := nil
 	/*
@@ -230,7 +230,7 @@ func ValidateEntity(entity int, t map[string]interface{}, db string) (map[string
 		}
 
 		//Check if Parent ID is valid
-		r, ok := validateParent(u.EntityToString(entity), entity, t, db)
+		r, ok := validateParent(u.EntityToString(entity), entity, t)
 		if !ok {
 			return r, ok
 		}
@@ -486,7 +486,7 @@ func ValidateEntity(entity int, t map[string]interface{}, db string) (map[string
 		ctx, cancel := u.Connect()
 		entStr := u.EntityToString(entity)
 
-		if c, _ := GetDBByName(db).Collection(entStr).CountDocuments(ctx,
+		if c, _ := GetDB().Collection(entStr).CountDocuments(ctx,
 			bson.M{"name": t["name"]}); c != 0 {
 			msg := "Error a " + entStr + " with the name provided already exists." +
 				"Please provide a unique name"
