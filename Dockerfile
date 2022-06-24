@@ -22,10 +22,11 @@ ADD . /home/
 
 
 # Install Dependencies
+RUN go install modernc.org/goyacc@latest
+RUN go install github.com/blynn/nex@latest
 RUN go get -u github.com/chzyer/test
 RUN go get -u golang.org/x/sys
-RUN go get -u golang.org/x/tools/cmd/goyacc
-RUN go get -u github.com/blynn/nex
+
 RUN make
 
 
