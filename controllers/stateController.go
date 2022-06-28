@@ -1,16 +1,13 @@
 package controllers
 
 import (
-	"bufio"
 	l "cli/logger"
 	"cli/models"
 	"cli/readline"
 	"container/list"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"net/http"
-	"os"
 	"path"
 	"strings"
 )
@@ -52,6 +49,7 @@ type ShellState struct {
 	ScriptPath       string
 	UnityClientURL   string
 	APIURL           string
+	APIKEY           string
 	UnityClientAvail bool  //For deciding to message unity or not
 	FilterDisplay    bool  //Set whether or not to send attributes to unity
 	ObjsForUnity     []int //Deciding what objects should be sent to unity
@@ -87,7 +85,7 @@ func InitState(debugLvl int) {
 	req := map[string]interface{}{"type": "login", "data": data}
 	e := models.ContactUnity("POST", State.UnityClientURL, req)
 	if e != nil {
-		l.WarningLogger.Println("Note: Unity Client Unreachable")
+		l.GetWarningLogger().Println("Note: Unity Client Unreachable")
 		fmt.Println("Note: Unity Client Unreachable ")
 		State.UnityClientAvail = false
 	} else {
@@ -196,102 +194,6 @@ func SetStateReadline(rl *readline.Instance) {
 	State.Terminal = &rl
 }
 
-//Startup the go routine for listening
-func TriggerListen(rl *readline.Instance) {
-	go models.ListenForUnity(rl)
-}
-
-//Helper for InitState will
-//insert objs
-func SetObjsForUnity(x string) []int {
-	res := []int{}
-	key := x + "="
-	allDetected := false
-	file, err := os.Open("./.resources/.env")
-	if err != nil {
-		fmt.Println(err)
-	}
-	defer file.Close()
-
-	scanner := bufio.NewScanner(file)
-	scanner.Split(bufio.ScanWords) // use scanwords
-	for scanner.Scan() {
-		if strings.HasPrefix(scanner.Text(), key) {
-			//ObjStr is equal to everything after 'updates='
-			objStr := strings.SplitAfter(scanner.Text(), key)[1]
-			arr := strings.Split(objStr, ",")
-
-			for i := range arr {
-				arr[i] = strings.ToLower(arr[i])
-
-				if val := EntityStrToInt(arr[i]); val != -1 {
-					res = append(res, val)
-
-				} else if arr[i] == "all" {
-					//Exit the loop and use default code @ end of function
-					allDetected = true
-					i = len(arr)
-				}
-			}
-
-		}
-	}
-
-	if err := scanner.Err(); err != nil {
-		l.ErrorLogger.Println(err)
-		fmt.Println(err)
-	}
-
-	//Use default values
-	//Set the array to all and exit
-	//GROUP is the greatest value int enum type
-	//So we use that for the cond guard
-	if allDetected || len(res) == 0 {
-		if len(res) == 0 && !allDetected {
-			l.WarningLogger.Println(x + " key not found, going to use defaults")
-			println(x + " key not found, going to use defaults")
-		}
-		for idx := 0; idx < GROUP; idx++ {
-			res = append(res, idx)
-		}
-	}
-	return res
-}
-
-func SetDrawableTemplate(entity string) map[string]interface{} {
-	file, err := os.Open("./.resources/.env")
-	if err != nil {
-		fmt.Println(err)
-	}
-	defer file.Close()
-
-	scanner := bufio.NewScanner(file)
-	scanner.Split(bufio.ScanWords) // use scanwords
-
-	for scanner.Scan() {
-		if strings.HasPrefix(scanner.Text(), entity) {
-			objStr := strings.Split(scanner.Text(), entity+"DrawableJson=")[1]
-			objStr = strings.Trim(objStr, "'\"")
-
-			//Now retrieve file
-			ans := map[string]interface{}{}
-			f, e := ioutil.ReadFile(objStr)
-			if e != nil {
-				l.WarningLogger.Println("Specified template for" + entity + "not found")
-				if State.DebugLvl > 2 {
-					println("Specified template for " + entity +
-						" not found, resorting to defaults")
-				}
-				return nil
-			}
-			json.Unmarshal(f, &ans)
-			return ans
-		}
-	}
-
-	return nil
-}
-
 func IsInObjForUnity(x string) bool {
 	entInt := EntityStrToInt(x)
 	if entInt != -1 {
@@ -324,22 +226,6 @@ func GetScriptPath() string {
 	return State.ScriptPath
 }
 
-func GetChildren(curr int) []*Node {
-
-	resp, e := models.Send("GET",
-		State.APIURL+"/api/"+EntityToString(curr)+"s",
-		GetKey(), nil)
-	if e != nil {
-		println("Error while getting children!")
-		Exit()
-	}
-	//println("REQ:", "http://localhost:3001/api/"+EntityToString(curr)+"s")
-
-	x := makeNodeArrFromResp(resp, curr)
-	return x
-
-}
-
 func SearchAndInsert(root **Node, node *Node, path string) {
 	if root != nil {
 		for i := (*root).Nodes.Front(); i != nil; i = i.Next() {
@@ -355,55 +241,6 @@ func SearchAndInsert(root **Node, node *Node, path string) {
 			SearchAndInsert(&x, node, path+"/"+x.Name)
 		}
 	}
-}
-
-//Automatically assign Unity and API URLs
-func GetURLs() {
-	file, err := os.Open("./.resources/.env")
-	if err != nil {
-		fmt.Println(err)
-		fmt.Println("Falling back to default URLs")
-		l.InfoLogger.Println("Falling back to default URLs")
-		State.UnityClientURL = "http://localhost:5500"
-		State.APIURL = "http://localhost:3001"
-	}
-	defer file.Close()
-
-	scanner := bufio.NewScanner(file)
-	scanner.Split(bufio.ScanWords) // use scanwords
-	for scanner.Scan() {
-		if strings.HasPrefix(scanner.Text(), "unityURL=") {
-			State.UnityClientURL = scanner.Text()[9:]
-		}
-
-		if strings.HasPrefix(scanner.Text(), "apiURL=") {
-			State.APIURL = scanner.Text()[7:]
-		}
-	}
-
-	if State.APIURL == "" {
-		fmt.Println("Falling back to default API URL:" +
-			"http://localhost:3001")
-		l.InfoLogger.Println("Falling back to default API URL:" +
-			"http://localhost:3001")
-		State.APIURL = "http://localhost:3001"
-	}
-
-	if State.UnityClientURL == "" {
-		fmt.Println("Falling back to default Unity URL:" +
-			"http://localhost:5500")
-		l.InfoLogger.Println("Falling back to default Unity URL:" +
-			"http://localhost:5500")
-		State.APIURL = "http://localhost:5500"
-	}
-
-}
-
-//Function is an abstraction of a normal exit
-func Exit() {
-	//writeHistoryOnExit(&State.sessionBuffer)
-	//runtime.Goexit()
-	os.Exit(0)
 }
 
 func makeNodeArrFromResp(resp *http.Response, entity int) []*Node {
@@ -441,7 +278,7 @@ func makeNodeArrFromResp(resp *http.Response, entity int) []*Node {
 		} else if v, ok := (objs[i].(map[string]interface{}))["slug"]; ok {
 			node.Name = v.(string)
 		} else {
-			l.ErrorLogger.Println("Object obtained does not have name or slug!" +
+			l.GetErrorLogger().Println("Object obtained does not have name or slug!" +
 				"Now Exiting")
 			println("Object obtained does not have name or slug!" +
 				"Now Exiting")
@@ -464,6 +301,7 @@ func makeNodeArrFromResp(resp *http.Response, entity int) []*Node {
 	return arr
 }
 
+//Function for debugging purposes
 func View(root *Node, dt int) {
 	if dt != 7 || root != nil {
 		arr := (*root).Nodes
@@ -477,80 +315,11 @@ func View(root *Node, dt int) {
 	}
 }
 
-func StrToStack(x string) *Stack {
-	stk := Stack{}
-	numPrev := 0
-	sarr := strings.Split(x, "/")
-	for i := len(sarr) - 1; i >= 0; i-- {
-		if sarr[i] == ".." {
-			numPrev += 1
-		} else if sarr[i] != "" {
-			if numPrev == 0 {
-				stk.Push(sarr[i])
-			} else {
-				numPrev--
-			}
-		}
-
-	}
-	return &stk
-}
-
 func getNextInPath(name string, root *Node) *Node {
 	for i := root.Nodes.Front(); i != nil; i = i.Next() {
 		if (i.Value.(*Node)).Name == name {
 			return (i.Value.(*Node))
 		}
-	}
-	return nil
-}
-
-func DispAtLevel(root **Node, x Stack) []string {
-	if x.Len() > 0 {
-		name := x.Peek()
-		node := getNextInPath(name.(string), *root)
-		if node == nil {
-			println("Name doesn't exist! ", string(name.(string)))
-			l.WarningLogger.Println("Node name: ", string(name.(string)), "doesn't exist!")
-			return nil
-		}
-		x.Pop()
-		return DispAtLevel(&node, x)
-	} else {
-		var items = make([]string, 0)
-		var nm string
-		if State.DebugLvl >= 2 {
-			println("This is what we got:")
-		}
-		for i := (*root).Nodes.Front(); i != nil; i = i.Next() {
-			nm = string(i.Value.(*Node).Name)
-			println(nm)
-			items = append(items, nm)
-		}
-		return items
-	}
-}
-
-func DispAtLevelTAB(root **Node, x Stack) []string {
-	if x.Len() > 0 {
-		name := x.Peek()
-		node := getNextInPath(name.(string), *root)
-		if node == nil {
-			//println("Name doesn't exist! ", string(name.(string)))
-			return nil
-		}
-		x.Pop()
-		return DispAtLevelTAB(&node, x)
-	} else {
-		var items = make([]string, 0)
-		var nm string
-		//println("This is what we got:")
-		for i := (*root).Nodes.Front(); i != nil; i = i.Next() {
-			nm = string(i.Value.(*Node).Name)
-			//println(nm)
-			items = append(items, nm)
-		}
-		return items
 	}
 	return nil
 }
@@ -707,71 +476,6 @@ func FetchJsonNodesAtLevel(Path string) []map[string]interface{} {
 	return objects
 }
 
-func DispStk(x Stack) {
-	for i := x.Pop(); i != nil; i = x.Pop() {
-		println((i.(*Node)).Name)
-	}
-}
-
-func GetPathStrAtPtr(root, curr **Node, path string) (bool, string) {
-	if root == nil || *root == nil {
-		return false, ""
-	}
-
-	if *root == *curr {
-		if path == "" {
-			path = "/"
-		}
-		return true, path
-	}
-
-	for i := (**root).Nodes.Front(); i != nil; i = i.Next() {
-		nd := (*Node)((i.Value.(*Node)))
-		exist, path := GetPathStrAtPtr(&nd,
-			curr, path+"/"+i.Value.(*Node).Name)
-		if exist == true {
-			return exist, path
-		}
-	}
-	return false, path
-}
-
-func CheckPath(root **Node, x, pstk *Stack) (bool, string, **Node) {
-	if x.Len() == 0 {
-		_, path := GetPathStrAtPtr(&State.TreeHierarchy, root, "")
-		//println(path)
-		return true, path, root
-	}
-
-	p := x.Pop()
-
-	//At Root
-	if pstk.Len() == 0 && string(p.(string)) == ".." {
-		//Pop until p != ".."
-		for ; p != nil && string(p.(string)) == ".."; p = x.Pop() {
-		}
-		if p == nil {
-			_, path := GetPathStrAtPtr(&State.TreeHierarchy, root, "/")
-			//println(path)
-			return true, path, root
-		}
-
-		//Somewhere in tree
-	} else if pstk.Len() > 0 && string(p.(string)) == ".." {
-		prevNode := (pstk.Pop()).(*Node)
-		return CheckPath(&prevNode, x, pstk)
-	}
-
-	nd := getNextInPath(string(p.(string)), *root)
-	if nd == nil {
-		return false, "", nil
-	}
-
-	pstk.Push(*root)
-	return CheckPath(&nd, x, pstk)
-
-}
-
 //If the path refers to local tree the
 //func will still verify it with local tree
 func CheckPathOnline(Path string) (bool, string) {
@@ -836,7 +540,7 @@ func FindNodeInTree(root **Node, path *Stack, silenced bool) **Node {
 				println("Name doesn't exist! ", string(name.(string)))
 			}
 
-			l.WarningLogger.Println("Name doesn't exist! ", string(name.(string)))
+			l.GetWarningLogger().Println("Name doesn't exist! ", string(name.(string)))
 			return nil
 		}
 		path.Pop()
@@ -844,41 +548,6 @@ func FindNodeInTree(root **Node, path *Stack, silenced bool) **Node {
 	} else {
 		return root
 	}
-}
-
-func GetNodes(root **Node, entity int) []*Node {
-	if root == nil {
-		return nil
-	}
-
-	if (*root).Entity == entity {
-		return []*Node{(*root)}
-	}
-
-	ans := []*Node{}
-	for i := (*root).Nodes.Front(); i != nil; i = i.Next() {
-		nd := i.Value.(*Node)
-		ans = append(ans, GetNodes(&nd, entity)...)
-	}
-	return ans
-}
-
-func FindNodeByIDP(root **Node, ID, PID string) *Node {
-	if root != nil {
-
-		if (*root).PID == PID && (*root).ID == ID {
-			return (*root)
-		}
-
-		for i := (**root).Nodes.Front(); i != nil; i = i.Next() {
-			nd := (*Node)((i.Value.(*Node)))
-			if ans := FindNodeByIDP(&nd, ID, PID); ans != nil {
-				return ans
-			}
-		}
-	}
-
-	return nil
 }
 
 func EntityToString(entity int) string {
@@ -1014,7 +683,7 @@ func NodesAtLevel(root **Node, x Stack) []string {
 		node := getNextInPath(name.(string), *root)
 		if node == nil {
 			println("Name doesn't exist! ", string(name.(string)))
-			l.WarningLogger.Println("Node name: ", string(name.(string)), "doesn't exist!")
+			l.GetWarningLogger().Println("Node name: ", string(name.(string)), "doesn't exist!")
 			return nil
 		}
 		x.Pop()

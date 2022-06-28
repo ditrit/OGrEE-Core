@@ -12,7 +12,7 @@ import (
 )
 
 var root node
-var _ = l.InfoLogger //Suppresses annoying Dockerfile build error
+var _ = l.GetInfoLogger() //Suppresses annoying Dockerfile build error
 
 //Since the CFG will only execute rules
 //when production is fully met.
@@ -1741,7 +1741,7 @@ yynewstate:
 				println("File:",cmd.GetScriptPath() )
 				println("Line Number:", cmd.GetLineNumber())
 			}
-			l.WarningLogger.Println("Unknown Command")			/*yylex.Error(msg)*/
+			l.GetWarningLogger().Println("Unknown Command")			/*yylex.Error(msg)*/
 			Nerrs++
 			fallthrough
 

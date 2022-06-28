@@ -1,5 +1,7 @@
 package controllers
 
+import "strings"
+
 type (
 	Stack struct {
 		top    *node
@@ -88,4 +90,29 @@ func (this *Stack) Push(value interface{}) {
 	}
 	this.top = n
 	this.length++
+}
+
+func DispStk(x Stack) {
+	for i := x.Pop(); i != nil; i = x.Pop() {
+		println((i.(*Node)).Name)
+	}
+}
+
+func StrToStack(x string) *Stack {
+	stk := Stack{}
+	numPrev := 0
+	sarr := strings.Split(x, "/")
+	for i := len(sarr) - 1; i >= 0; i-- {
+		if sarr[i] == ".." {
+			numPrev += 1
+		} else if sarr[i] != "" {
+			if numPrev == 0 {
+				stk.Push(sarr[i])
+			} else {
+				numPrev--
+			}
+		}
+
+	}
+	return &stk
 }

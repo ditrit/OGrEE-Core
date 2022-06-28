@@ -723,7 +723,7 @@ func (a *arithNode) execute() interface{} {
 			}
 		}
 	}
-	l.WarningLogger.Println("Invalid arithmetic operation attempted")
+	l.GetWarningLogger().Println("Invalid arithmetic operation attempted")
 	return nil
 }
 
@@ -872,7 +872,7 @@ func (s *symbolReferenceNode) execute() interface{} {
 						println("Index out of range error!")
 						println("Array Length Of: ", len(x))
 						println("But desired index at: ", i)
-						l.WarningLogger.Println("Index out of range error!")
+						l.GetWarningLogger().Println("Index out of range error!")
 						return nil
 					}
 					//A bad implementation to implement len
@@ -909,7 +909,7 @@ func (s *symbolReferenceNode) execute() interface{} {
 							println("Array Length Of: ",
 								len(val.([]map[string]interface{})))
 							println("But desired index at: ", o)
-							l.WarningLogger.Println("Index out of range error!")
+							l.GetWarningLogger().Println("Index out of range error!")
 							return nil
 						}
 						x := val.([]map[string]interface{})[o]
@@ -1283,14 +1283,14 @@ func UnsetUtil(x, name string, ref, value interface{}) {
 		identifier := ref.(*symbolReferenceNode)
 		idx := dynamicMap[identifier.val.(string)] //Get the idx
 		if idx < 0 {
-			l.WarningLogger.Println("Object to update not found")
+			l.GetWarningLogger().Println("Object to update not found")
 			println("Object to update not found")
 			return
 		}
 
 		if _, ok := dynamicSymbolTable[idx]; !ok {
 			msg := "Object not found in dynamicSymbolTable while deleting attr"
-			l.ErrorLogger.Println(msg)
+			l.GetErrorLogger().Println(msg)
 			println("Requested Object to update not found")
 			return
 		}

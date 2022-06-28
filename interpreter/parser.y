@@ -8,7 +8,7 @@ l "cli/logger"
 )
 
 var root node 
-var _ = l.InfoLogger //Suppresses annoying Dockerfile build error
+var _ = l.GetInfoLogger() //Suppresses annoying Dockerfile build error
 
 //Since the CFG will only execute rules
 //when production is fully met.

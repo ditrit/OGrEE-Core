@@ -3,6 +3,8 @@ package utils
 //Builds json messages and
 //returns json response
 
+//Also holds other commonly used utility functions
+
 import (
 	"encoding/json"
 	"log"
@@ -61,9 +63,4 @@ func ParamsParse(link *url.URL) []byte {
 		json.Unmarshal(query, &(mydata.Attributes))
 	*/
 	//return values
-}
-
-func JoinQueryGen(entity string) string {
-	return "JOIN " + entity +
-		"_attributes ON " + entity + "_attributes.id = " + entity + ".id"
 }

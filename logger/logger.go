@@ -6,12 +6,12 @@ import (
 )
 
 var (
-	WarningLogger         *log.Logger
-	InfoLogger            *log.Logger
-	ErrorLogger           *log.Logger
-	ListenerInfoLogger    *log.Logger
-	ListenerWarningLogger *log.Logger
-	ListenerErrorLogger   *log.Logger
+	warningLogger         *log.Logger
+	infoLogger            *log.Logger
+	errorLogger           *log.Logger
+	listenerInfoLogger    *log.Logger
+	listenerWarningLogger *log.Logger
+	listenerErrorLogger   *log.Logger
 )
 
 func InitLogs() {
@@ -25,12 +25,35 @@ func InitLogs() {
 		log.Fatal(err2)
 	}
 
-	InfoLogger = log.New(file, "INFO: ", log.Ldate|log.Ltime|log.Lshortfile)
-	WarningLogger = log.New(file, "WARNING: ", log.Ldate|log.Ltime|log.Lshortfile)
-	ErrorLogger = log.New(file, "ERROR: ", log.Ldate|log.Ltime|log.Lshortfile)
+	infoLogger = log.New(file, "INFO: ", log.Ldate|log.Ltime|log.Lshortfile)
+	warningLogger = log.New(file, "WARNING: ", log.Ldate|log.Ltime|log.Lshortfile)
+	errorLogger = log.New(file, "ERROR: ", log.Ldate|log.Ltime|log.Lshortfile)
 
-	ListenerInfoLogger = log.New(f2, "INFO: ", log.Ldate|log.Ltime|log.Lshortfile)
-	ListenerWarningLogger = log.New(f2, "WARNING: ", log.Ldate|log.Ltime|log.Lshortfile)
-	ListenerErrorLogger = log.New(f2, "ERROR: ", log.Ldate|log.Ltime|log.Lshortfile)
-	//InfoLogger.
+	listenerInfoLogger = log.New(f2, "INFO: ", log.Ldate|log.Ltime|log.Lshortfile)
+	listenerWarningLogger = log.New(f2, "WARNING: ", log.Ldate|log.Ltime|log.Lshortfile)
+	listenerErrorLogger = log.New(f2, "ERROR: ", log.Ldate|log.Ltime|log.Lshortfile)
+}
+
+func GetWarningLogger() *log.Logger {
+	return warningLogger
+}
+
+func GetListenWarningLogger() *log.Logger {
+	return listenerWarningLogger
+}
+
+func GetInfoLogger() *log.Logger {
+	return infoLogger
+}
+
+func GetListenInfoLogger() *log.Logger {
+	return listenerInfoLogger
+}
+
+func GetErrorLogger() *log.Logger {
+	return errorLogger
+}
+
+func GetListenErrorLogger() *log.Logger {
+	return listenerErrorLogger
 }

@@ -37,7 +37,7 @@ func loadFile(path string) {
 	file, err := os.Open(newBackup)
 	if err != nil {
 		println("Error:", err.Error())
-		l.WarningLogger.Println("Error:", err)
+		l.GetWarningLogger().Println("Error:", err)
 	}
 	defer file.Close()
 	fullcom := ""
@@ -150,6 +150,7 @@ func Start(verboseLevel int) {
 
 	l.InitLogs()
 	c.GetURLs() //Set the URLs
+	c.InitKey() //Set the API Key
 	user, _ := c.Login()
 
 	println("Caching data... please wait")

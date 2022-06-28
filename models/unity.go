@@ -23,7 +23,7 @@ func getListenerPort(rl *readline.Instance) string {
 	}
 
 	rl.Write([]byte("Falling back to default Listening Port\n"))
-	l.ListenerInfoLogger.Println("Falling back to default Listening Port")
+	l.GetListenInfoLogger().Println("Falling back to default Listening Port")
 	//InfoLogger.Println("Falling back to Listening Port")
 	return "5501"
 }
@@ -37,10 +37,10 @@ func ListenForUnity(rl *readline.Instance) error {
 	ln, err := net.Listen("tcp", addr)
 	if err != nil {
 		println("LISTEN ERROR: ", err.Error())
-		l.ListenerErrorLogger.Println(err.Error())
+		l.GetListenErrorLogger().Println(err.Error())
 		return nil
 	}
-	l.ListenerInfoLogger.Println("Listening server started")
+	l.GetListenInfoLogger().Println("Listening server started")
 
 	for {
 		cn, err := ln.Accept()
@@ -55,11 +55,11 @@ func ListenForUnity(rl *readline.Instance) error {
 				rl.Write(msg)
 
 			} else {
-				l.ListenerErrorLogger.Println(err1.Error())
+				l.GetListenErrorLogger().Println(err1.Error())
 			}
 
 		} else {
-			l.ListenerErrorLogger.Println(err.Error())
+			l.GetListenErrorLogger().Println(err.Error())
 		}
 		cn.Close()
 	}
