@@ -87,6 +87,7 @@ func InitState(debugLvl int) {
 	if e != nil {
 		l.GetWarningLogger().Println("Note: Unity Client Unreachable")
 		fmt.Println("Note: Unity Client Unreachable ")
+		fmt.Println("URL: ", State.UnityClientURL)
 		State.UnityClientAvail = false
 	} else {
 		fmt.Println("Unity Client is Reachable!")

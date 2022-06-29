@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"net"
 	"net/http"
+	"time"
 )
 
 //Function helps with API Requests
@@ -56,7 +57,7 @@ func ContactUnity(method, URL string, data map[string]interface{}) error {
 	println("DEBUG OUTGOING JSON")
 	Disp(data)
 
-	conn, e := net.Dial("tcp", URL)
+	conn, e := net.DialTimeout("tcp", URL, time.Microsecond*20)
 	if e != nil {
 		return e
 	}
