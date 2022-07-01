@@ -5,6 +5,7 @@ interpreter/*.go
 interpreter/y
 .resources/
 main
+main*
 log.txt
 __debug_bin
 parser.tab.c
