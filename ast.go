@@ -150,10 +150,12 @@ func (c *commonNode) execute() interface{} {
 			attrInf := c.args[1].(node).execute()
 			if _, ok := objInf.(string); !ok {
 				println("Object operand is invalid")
+				l.GetInfoLogger().Println("Object operand is invalid")
 				return nil
 			}
 			if _, ok := attrInf.(string); !ok {
 				println("Attribute operand is invalid")
+				l.GetInfoLogger().Println("Attribute operand is invalid")
 				return nil
 			}
 			return f(objInf.(string), attrInf.(string), nil, false)
@@ -1246,6 +1248,7 @@ func (a *ast) execute() interface{} {
 
 		if a.statements[i] == nil {
 			println("OGREE: Unrecognised command!")
+			l.GetWarningLogger().Println("Unrecognised Command")
 		}
 
 	}

@@ -41,13 +41,10 @@ func InitKey() string {
 
 	if err := scanner.Err(); err != nil {
 		fmt.Println(err)
+		l.GetErrorLogger().Println(err.Error())
 	}
 	State.APIKEY = ""
 	return ""
-}
-
-func GetKey() string {
-	return State.APIKEY
 }
 
 func GetEmail() string {
@@ -67,6 +64,7 @@ func GetEmail() string {
 
 	if err := scanner.Err(); err != nil {
 		fmt.Println(err)
+		l.GetErrorLogger().Println(err.Error())
 	}
 	return ""
 }
@@ -189,7 +187,7 @@ func SetDrawableTemplate(entity string) map[string]interface{} {
 			ans := map[string]interface{}{}
 			f, e := ioutil.ReadFile(objStr)
 			if e != nil {
-				l.GetWarningLogger().Println("Specified template for" + entity + "not found")
+				l.GetWarningLogger().Println("Specified template for " + entity + " not found")
 				if State.DebugLvl > 2 {
 					println("Specified template for " + entity +
 						" not found, resorting to defaults")
@@ -258,7 +256,8 @@ func CheckKeyIsValid(key string) bool {
 		if resp != nil {
 			readline.Line("Status code" + strconv.Itoa(resp.StatusCode))
 		} else {
-			println("Unable to connect to API")
+			l.GetErrorLogger().Println("Unable to connect to API: ", State.APIURL)
+			println("Unable to connect to API: ", State.APIURL)
 		}
 
 		return false
@@ -270,7 +269,7 @@ func Login() (string, string) {
 	var user, key string
 	file, err := os.Open("./.resources/.env")
 	if err != nil {
-		l.GetInfoLogger().Println("Key not found, going generate..")
+		l.GetInfoLogger().Println("Key not found, going to generate..")
 		user, key = CreateCredentials()
 	} else {
 		scanner := bufio.NewScanner(file)

@@ -1035,6 +1035,7 @@ func GetOCLIAtrributes(Path string, ent int, data map[string]interface{}) {
 
 	name := path.Base(ogPath)
 	if name == "." || name == "" {
+		l.GetWarningLogger().Println("Invalid path name provided for OCLI object creation")
 		println("Error please provide a valid name for this object")
 		return
 	}
@@ -1171,6 +1172,7 @@ func GetOCLIAtrributes(Path string, ent int, data map[string]interface{}) {
 				sizeUValid := checkNumeric(attr["sizeU"])
 
 				if _, ok := attr["template"]; !ok && sizeUValid == false {
+					l.GetWarningLogger().Println("Invalid parameter provided for device ")
 					println("Please provide an existing template or valid SizeU value")
 					return
 				}
@@ -1524,6 +1526,7 @@ func HandleUI(data map[string]interface{}) {
 				return
 			}
 		} else if data["data"].(map[string]interface{})["data"] == nil {
+			l.GetWarningLogger().Println("Invalid parameter provided for highlighting")
 			println("OGREE: Error Invalid parameter provided for highlighting")
 			return
 		}
@@ -1560,10 +1563,12 @@ func LinkObject(paths []interface{}) {
 		return
 	}
 	if _, ok := sdev["category"]; !ok {
+		l.GetWarningLogger().Println("Attempted to link non stray-device ")
 		println("Error: Invalid object. Only stray-devices can be linked")
 		return
 	}
 	if cat, _ := sdev["category"]; cat != "stray-device" {
+		l.GetWarningLogger().Println("Attempted to link non stray-device ")
 		println("Error: Invalid object. Only stray-devices can be linked")
 		return
 	}
@@ -1578,11 +1583,13 @@ func LinkObject(paths []interface{}) {
 		return
 	}
 	if _, ok := parent["category"]; !ok {
+		l.GetWarningLogger().Println("Attempted to link with invalid target")
 		println("Error: Invalid destination object")
 		println("Please use a rack or a device as a link target")
 		return
 	}
 	if cat, _ := parent["category"].(string); cat != "device" && cat != "rack" {
+		l.GetWarningLogger().Println("Attempted to link with invalid target")
 		println("Error: Invalid destination object")
 		println("Please use a rack or a device as a link target")
 		return
@@ -1591,6 +1598,7 @@ func LinkObject(paths []interface{}) {
 	//Need to make sure that origin and destination are
 	//not the same!
 	if parent["id"] == sdev["id"] && parent["name"] == sdev["name"] {
+		l.GetWarningLogger().Println("Attempted to object to itself")
 		println("Error you must provide a unique stray-device" +
 			" and a unique destination for it")
 	}
@@ -1666,6 +1674,7 @@ func LinkObject(paths []interface{}) {
 			desiredObj+" validation requirements: ", x["name"].(string))
 		println("Aborting link operation")
 		DeleteObj(paths[1].(string) + "/" + sdev["name"].(string))
+		l.GetWarningLogger().Println("Link failure")
 		return
 	}
 
@@ -2080,6 +2089,7 @@ func LoadTemplate(data map[string]interface{}, filePath string) {
 	if r.StatusCode == http.StatusCreated {
 		println("Template Loaded")
 	} else {
+		l.GetWarningLogger().Println("Couldn't load template, Status Code: ", r.StatusCode)
 		println("Error template wasn't loaded")
 	}
 }

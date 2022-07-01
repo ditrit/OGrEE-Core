@@ -85,9 +85,8 @@ func InitState(debugLvl int) {
 	req := map[string]interface{}{"type": "login", "data": data}
 	e := models.ContactUnity("POST", State.UnityClientURL, req)
 	if e != nil {
-		l.GetWarningLogger().Println("Note: Unity Client Unreachable")
-		fmt.Println("Note: Unity Client Unreachable ")
-		fmt.Println("URL: ", State.UnityClientURL)
+		l.GetWarningLogger().Println("Note: Unity Client (" + State.UnityClientURL + ") Unreachable")
+		fmt.Println("Note: Unity Client (" + State.UnityClientURL + ") Unreachable ")
 		State.UnityClientAvail = false
 	} else {
 		fmt.Println("Unity Client is Reachable!")
@@ -225,6 +224,10 @@ func GetLineNumber() int {
 
 func GetScriptPath() string {
 	return State.ScriptPath
+}
+
+func GetKey() string {
+	return State.APIKEY
 }
 
 func SearchAndInsert(root **Node, node *Node, path string) {
