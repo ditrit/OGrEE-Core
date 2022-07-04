@@ -86,7 +86,8 @@ func listEntities(path string) func(string) []string {
 		} else {
 			path = TrimToSlash(line[3:])
 			if len(line) > 4 {
-				if strings.TrimSpace(line[2:])[:2] == ".." || strings.TrimSpace(line[2:])[:1] != "/" {
+				trimmed := strings.TrimSpace(line[2:])
+				if len(trimmed) > 2 && trimmed[2:] == ".." || len(trimmed) > 0 && trimmed != "/" {
 					path = c.State.CurrPath + "/" + path
 				}
 			}
@@ -98,10 +99,7 @@ func listEntities(path string) func(string) []string {
 			}*/
 		}
 
-		//items := c.DispAtLevelTAB(&c.State.TreeHierarchy,
-		//	*c.StrToStack(path))
 		items := c.FetchNodesAtLevel(path)
-		//println("len items:", len(items))
 		return items
 	}
 }
