@@ -18,6 +18,131 @@ import (
 	"cli/readline"
 )
 
+//Intialise the ShellState
+func InitState(debugLvl int) {
+	State.DebugLvl = debugLvl
+	State.ClipBoard = nil
+	State.TreeHierarchy = &(Node{})
+	(*(State.TreeHierarchy)).Entity = -1
+	State.TreeHierarchy.PID = ""
+	State.CurrPath = "/Physical"
+	State.PrevPath = "/Physical"
+	State.LineNumber = 0
+
+	//Send login notification
+	data := map[string]interface{}{"api_url": State.APIURL, "api_token": GetKey()}
+	req := map[string]interface{}{"type": "login", "data": data}
+	e := models.ContactUnity("POST", State.UnityClientURL, req)
+	if e != nil {
+		l.GetWarningLogger().Println("Note: Unity Client (" + State.UnityClientURL + ") Unreachable")
+		fmt.Println("Note: Unity Client (" + State.UnityClientURL + ") Unreachable ")
+		State.UnityClientAvail = false
+	} else {
+		fmt.Println("Unity Client is Reachable!")
+		State.UnityClientAvail = true
+	}
+	//Set the filter attributes setting
+	State.FilterDisplay = false
+
+	phys := &Node{}
+	phys.Name = "Physical"
+	phys.PID = ""
+	phys.ID = "-2"
+	State.TreeHierarchy.Nodes.PushBack(phys)
+
+	stray := &Node{}
+	stray.Name = "Stray"
+	stray.PID = "-2"
+	stray.ID = "-3"
+	stray.Path = "/Physical/"
+	SearchAndInsert(&State.TreeHierarchy, stray, "/Physical")
+
+	strayDev := &Node{}
+	strayDev.Name = "Device"
+	strayDev.PID = "-3"
+	strayDev.ID = "-4"
+	strayDev.Path = "/Physical/Stray"
+	SearchAndInsert(&State.TreeHierarchy, strayDev, "/Physical/Stray")
+
+	straySens := &Node{}
+	straySens.Name = "Sensor"
+	straySens.PID = "-3"
+	straySens.ID = "-5"
+	straySens.Path = "/Physical/Stray"
+	SearchAndInsert(&State.TreeHierarchy, straySens, "/Physical/Stray")
+
+	// SETUP LOGICAL HIERARCHY START
+	// TODO: PUT THIS SECTION IN A LOOP
+	logique := &Node{}
+	logique.ID = "0"
+	logique.Name = "Logical"
+	logique.Path = "/"
+	State.TreeHierarchy.Nodes.PushBack(logique)
+
+	oTemplate := &Node{}
+	oTemplate.ID = "1"
+	oTemplate.PID = "0"
+	oTemplate.Entity = -1
+	oTemplate.Name = "ObjectTemplates"
+	oTemplate.Path = "/Logical"
+	SearchAndInsert(&State.TreeHierarchy, oTemplate, "/Logical")
+
+	rTemplate := &Node{}
+	rTemplate.ID = "2"
+	rTemplate.PID = "0"
+	rTemplate.Entity = -1
+	rTemplate.Name = "RoomTemplates"
+	rTemplate.Path = "/Logical"
+	SearchAndInsert(&State.TreeHierarchy, rTemplate, "/Logical")
+
+	group := &Node{}
+	group.ID = "3"
+	group.PID = "0"
+	group.Entity = -1
+	group.Name = "Groups"
+	group.Path = "/Logical"
+	SearchAndInsert(&State.TreeHierarchy, group, "/Logical")
+
+	//SETUP LOGICAL HIERARCHY END
+
+	//SETUP DOMAIN/ENTERPRISE
+	organisation := &Node{}
+	organisation.ID = "5"
+	organisation.Name = "Organisation"
+	organisation.Path = "/"
+	State.TreeHierarchy.Nodes.PushBack(organisation)
+
+	domain := &Node{}
+	domain.Name = "Domain"
+	domain.PID = "5"
+	domain.ID = "-6"
+	domain.Path = "/Organisation"
+	SearchAndInsert(&State.TreeHierarchy, domain, "/Organisation")
+
+	enterprise := &Node{}
+	enterprise.ID = "0"
+	enterprise.PID = "5"
+	enterprise.Name = "Enterprise"
+	enterprise.Path = "/Organisation"
+	SearchAndInsert(&State.TreeHierarchy, enterprise, "/Organisation")
+
+	//Set which objects Unity will be notified about
+	State.ObjsForUnity = SetObjsForUnity("updates")
+	State.DrawableObjs = SetObjsForUnity("drawable")
+	State.DrawableJsons = make(map[string]map[string]interface{}, 16)
+
+	for i := TENANT; i < GROUP+1; i++ {
+		ent := EntityToString(i)
+		State.DrawableJsons[ent] = SetDrawableTemplate(ent)
+	}
+}
+
+//It is useful to have the state to hold
+//a pointer to our readline terminal
+func SetStateReadline(rl *readline.Instance) {
+	State.Terminal = &rl
+}
+
 //Startup the go routine for listening
 func TriggerListen(rl *readline.Instance) {
 	go models.ListenForUnity(rl)

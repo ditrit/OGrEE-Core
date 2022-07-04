@@ -185,7 +185,8 @@ func (o *opCompleter) HandleCompleteSelect(r rune) bool {
 		//	outString = append(outString[:len(outString)-1], '/')
 		//	o.op.buf.WriteRunes(outString)
 		//} else {
-		o.op.buf.WriteRunes(o.op.candidate[o.op.candidateChoise])
+		target := o.op.candidate[o.op.candidateChoise]
+		o.op.buf.WriteRunes(target[:len(target)-1])
 		//}
 
 		o.ExitCompleteMode(false)
