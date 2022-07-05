@@ -1,3 +1,4 @@
+//go:build darwin || dragonfly || freebsd || (linux && !appengine) || netbsd || openbsd || solaris
 // +build darwin dragonfly freebsd linux,!appengine netbsd openbsd solaris
 
 package readline
@@ -42,6 +43,12 @@ func GetScreenWidth() int {
 		w = getWidth(syscall.Stderr)
 	}
 	return w
+}
+
+// Ask the terminal for the current cursor position. The terminal will then
+// write the position back to us via terminal stdin asynchronously.
+func SendCursorPosition(t *Terminal) {
+	t.Write([]byte("\033[6n"))
 }
 
 // ClearScreen clears the console screen

@@ -6,9 +6,11 @@ import (
 	"container/list"
 	"fmt"
 	"os"
+	"os/signal"
 	"strconv"
 	"strings"
 	"sync"
+	"syscall"
 	"time"
 	"unicode"
 )
@@ -41,6 +43,7 @@ const (
 	CharCtrlY     = 25
 	CharCtrlZ     = 26
 	CharEsc       = 27
+	CharO         = 79
 	CharEscapeEx  = 91
 	CharBackspace = 127
 )
@@ -121,6 +124,27 @@ func escapeExKey(key *escapeKeyPair) rune {
 	return r
 }
 
+// translate EscOX SS3 codes for up/down/etc.
+func escapeSS3Key(key *escapeKeyPair) rune {
+	var r rune
+	switch key.typ {
+	case 'D':
+		r = CharBackward
+	case 'C':
+		r = CharForward
+	case 'A':
+		r = CharPrev
+	case 'B':
+		r = CharNext
+	case 'H':
+		r = CharLineStart
+	case 'F':
+		r = CharLineEnd
+	default:
+	}
+	return r
+}
+
 type escapeKeyPair struct {
 	attr string
 	typ  rune
@@ -188,21 +212,29 @@ func escapeKey(r rune, reader *bufio.Reader) rune {
 	return r
 }
 
-func SplitByLine(start, screenWidth int, rs []rune) []string {
-	var ret []string
-	buf := bytes.NewBuffer(nil)
-	currentWidth := start
-	for _, r := range rs {
+// split prompt + runes into lines by screenwidth starting from an offset.
+// the prompt should be filtered before passing to only its display runes.
+// if you know the width of the next character, pass it in as it is used
+// to decide if we generate an extra empty rune array to show next is new
+// line.
+func SplitByLine(prompt, rs []rune, offset, screenWidth, nextWidth int) [][]rune {
+	ret := make([][]rune, 0)
+	prs := append(prompt, rs...)
+	si := 0
+	currentWidth := offset
+	for i, r := range prs {
 		w := runes.Width(r)
-		currentWidth += w
-		buf.WriteRune(r)
-		if currentWidth >= screenWidth {
-			ret = append(ret, buf.String())
-			buf.Reset()
+		if currentWidth+w > screenWidth {
+			ret = append(ret, prs[si:i])
+			si = i
 			currentWidth = 0
 		}
+		currentWidth += w
 	}
-	ret = append(ret, buf.String())
+	ret = append(ret, prs[si:len(prs)])
+	if currentWidth+nextWidth > screenWidth {
+		ret = append(ret, []rune{})
+	}
 	return ret
 }
 
@@ -274,4 +306,14 @@ func Debug(o ...interface{}) {
 	f, _ := os.OpenFile("debug.tmp", os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
 	fmt.Fprintln(f, o...)
 	f.Close()
+}
+
+func CaptureExitSignal(f func()) {
+	cSignal := make(chan os.Signal, 1)
+	signal.Notify(cSignal, os.Interrupt, syscall.SIGTERM)
+	go func() {
+		for range cSignal {
+			f()
+		}
+	}()
 }

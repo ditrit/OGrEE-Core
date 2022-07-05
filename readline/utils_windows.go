@@ -1,8 +1,10 @@
+//go:build windows
 // +build windows
 
 package readline
 
 import (
+	"fmt"
 	"io"
 	"syscall"
 )
@@ -25,6 +27,16 @@ func GetScreenWidth() int {
 		return -1
 	}
 	return int(info.dwSize.x)
+}
+
+// Send the Current cursor position to t.sizeChan.
+func SendCursorPosition(t *Terminal) {
+	info, err := GetConsoleScreenBufferInfo()
+	if err != nil || info == nil {
+		t.sizeChan <- "-1;-1"
+	} else {
+		t.sizeChan <- fmt.Sprintf("%d;%d", info.dwCursorPosition.y, info.dwCursorPosition.x)
+	}
 }
 
 // ClearScreen clears the console screen
