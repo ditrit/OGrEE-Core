@@ -8,6 +8,7 @@ import (
 	"cli/readline"
 	"io/ioutil"
 	"os"
+	"path/filepath"
 	"strings"
 )
 
@@ -20,15 +21,53 @@ import (
 //https://stackoverflow.com/
 // questions/33025599/move-the-cursor-in-a-c-program
 
-func InterpretLine(str *string) {
+func InterpretLine(str *string) bool {
 	lex := NewLexer(strings.NewReader(*str))
-	yyParse(lex)
+	result := yyParse(lex)
 	if root != nil {
 		root.execute()
 		root = nil
 	}
 
-	return
+	if result != 0 {
+		return false
+	}
+	return true
+}
+
+func validateFile(comBuf *[]map[string]int, file string) bool {
+	invalidCommands := []string{}
+	for i := range *comBuf {
+		for k := range (*comBuf)[i] {
+			lex := NewLexer(strings.NewReader(k))
+			if yyAnalyse(lex) != 0 {
+				invalidCommands = append(invalidCommands,
+					" LINE#: "+k)
+			}
+		}
+	}
+
+	if len(invalidCommands) > 0 {
+		println("Syntax errors were found in the file: ", file)
+		println("The following commands were invalid")
+		for i := range invalidCommands {
+			println(invalidCommands[i])
+		}
+		return false
+	}
+	return true
+}
+
+func executeFile(comBuf *[]map[string]int, file string) {
+	for i := range *comBuf {
+		for st := range (*comBuf)[i] {
+			c.State.LineNumber = (*comBuf)[i][st]
+			if InterpretLine(&st) == false {
+				//println("Command: ", st)
+				return
+			}
+		}
+	}
 }
 
 func loadFile(path string) {
@@ -44,6 +83,7 @@ func loadFile(path string) {
 	keepScanning := false
 	scanner := bufio.NewScanner(file)
 	c.State.LineNumber = 1 //Indicate Line Number
+	commandBuffer := []map[string]int{}
 
 	for scanner.Scan() {
 		x := scanner.Text()
@@ -55,11 +95,15 @@ func loadFile(path string) {
 				keepScanning = true
 			} else if keepScanning == true {
 				fullcom += x
-				InterpretLine(&fullcom)
+				//InterpretLine(&fullcom)
+				commandBuffer = append(commandBuffer,
+					map[string]int{fullcom: c.State.LineNumber})
 				keepScanning = false
 				fullcom = ""
 			} else {
-				InterpretLine(&x)
+				//InterpretLine(&x)
+				commandBuffer = append(commandBuffer,
+					map[string]int{x: c.State.LineNumber})
 			}
 		}
 
@@ -71,6 +115,16 @@ func loadFile(path string) {
 		c.State.LineNumber++ //Increment
 	}
 
+	//Validate the commandbuffer
+	fName := filepath.Base(path)
+	if validateFile(&commandBuffer, fName) == true {
+		executeFile(&commandBuffer, fName)
+	}
+
+	ResetStateScriptData()
+}
+
+func ResetStateScriptData() {
 	//Reset
 	c.State.LineNumber = 0
 	c.State.ScriptCalled = false

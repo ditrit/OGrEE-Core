@@ -7,6 +7,7 @@ import __yyfmt__ "fmt"
 import (
 	cmd "cli/controllers"
 	l "cli/logger"
+	"path/filepath"
 	"strconv"
 	"strings"
 )
@@ -1736,10 +1737,11 @@ yynewstate:
 			if msg == "" {
 				msg = "syntax error"
 			}
-			println("OGREE: Unrecognised command!")
+			println()
+println("OGREE: Unrecognised command!")
 			if cmd.State.ScriptCalled == true {
-				println("File:",cmd.GetScriptPath() )
-				println("Line Number:", cmd.GetLineNumber())
+				println("File:",filepath.Base(cmd.GetScriptPath()) )
+				println("Line:", cmd.GetLineNumber())
 			}
 			l.GetWarningLogger().Println("Unknown Command")			/*yylex.Error(msg)*/
 			Nerrs++
@@ -2952,6 +2954,1611 @@ yynewstate:
 		}
 	case 262:
 		{
+			yyVAL.s = yyS[yypt-3].s + yyS[yypt-2].s + yyS[yypt-1].s + yyS[yypt-0].s
+			dCatchPtr = yyS[yypt-3].s + yyS[yypt-2].s + yyS[yypt-1].s + yyS[yypt-0].s
+			dCatchNodePtr = &strNode{STR, yyS[yypt-3].s + yyS[yypt-2].s + yyS[yypt-1].s + yyS[yypt-0].s}
+		}
+
+	}
+
+	if yyEx != nil && yyEx.Reduced(r, exState, &yyVAL) {
+		return -1
+	}
+	goto yystack /* stack new state and value */
+}
+
+
+func yyAnalyse(yylex yyLexer) int {
+	const yyError = 145
+
+	yyEx, _ := yylex.(yyLexerEx)
+	var yyn int
+	var yylval yySymType
+	var yyVAL yySymType
+	yyS := make([]yySymType, 200)
+
+	Nerrs := 0   /* number of errors */
+	Errflag := 0 /* error recovery flag */
+	yyerrok := func() {
+		if yyDebug >= 2 {
+			__yyfmt__.Printf("yyerrok()\n")
+		}
+		Errflag = 0
+	}
+	_ = yyerrok
+	yystate := 0
+	yychar := -1
+	var yyxchar int
+	var yyshift int
+	yyp := -1
+	goto yystack
+
+ret0:
+	return 0
+
+ret1:
+	return 1
+
+yystack:
+	/* put a state and value onto the stack */
+	yyp++
+	if yyp >= len(yyS) {
+		nyys := make([]yySymType, len(yyS)*2)
+		copy(nyys, yyS)
+		yyS = nyys
+	}
+	yyS[yyp] = yyVAL
+	yyS[yyp].yys = yystate
+
+yynewstate:
+	if yychar < 0 {
+		yylval.yys = yystate
+		yychar = yylex1(yylex, &yylval)
+		var ok bool
+		if yyxchar, ok = yyXLAT[yychar]; !ok {
+			yyxchar = len(yySymNames) // > tab width
+		}
+	}
+	if yyDebug >= 4 {
+		var a []int
+		for _, v := range yyS[:yyp+1] {
+			a = append(a, v.yys)
+		}
+		__yyfmt__.Printf("state stack %v\n", a)
+	}
+	row := yyParseTab[yystate]
+	yyn = 0
+	if yyxchar < len(row) {
+		if yyn = int(row[yyxchar]); yyn != 0 {
+			yyn += yyTabOfs
+		}
+	}
+	switch {
+	case yyn > 0: // shift
+		yychar = -1
+		yyVAL = yylval
+		yystate = yyn
+		yyshift = yyn
+		if yyDebug >= 2 {
+			__yyfmt__.Printf("shift, and goto state %d\n", yystate)
+		}
+		if Errflag > 0 {
+			Errflag--
+		}
+		goto yystack
+	case yyn < 0: // reduce
+	case yystate == 1: // accept
+		if yyDebug >= 2 {
+			__yyfmt__.Println("accept")
+		}
+		goto ret0
+	}
+
+	if yyn == 0 {
+		/* error ... attempt to resume parsing */
+		switch Errflag {
+		case 0: /* brand new error */
+			if yyDebug >= 1 {
+				__yyfmt__.Printf("no action for %s in state %d\n", yySymName(yychar), yystate)
+			}
+			msg, ok := yyXErrors[yyXError{yystate, yyxchar}]
+			if !ok {
+				msg, ok = yyXErrors[yyXError{yystate, -1}]
+			}
+			if !ok && yyshift != 0 {
+				msg, ok = yyXErrors[yyXError{yyshift, yyxchar}]
+			}
+			if !ok {
+				msg, ok = yyXErrors[yyXError{yyshift, -1}]
+			}
+			if yychar > 0 {
+				ls := yyTokenLiteralStrings[yychar]
+				if ls == "" {
+					ls = yySymName(yychar)
+				}
+				if ls != "" {
+					switch {
+					case msg == "":
+						msg = __yyfmt__.Sprintf("unexpected %s", ls)
+					default:
+						msg = __yyfmt__.Sprintf("unexpected %s, %s", ls, msg)
+					}
+				}
+			}
+			if msg == "" {
+				msg = "syntax error"
+			}
+			println()
+println("OGREE: Unrecognised command!")
+			if cmd.State.ScriptCalled == true {
+				println("File:",filepath.Base(cmd.GetScriptPath()) )
+				println("Line:", cmd.GetLineNumber())
+			}
+			l.GetWarningLogger().Println("Unknown Command")			/*yylex.Error(msg)*/
+			Nerrs++
+			fallthrough
+
+		case 1, 2: /* incompletely recovered error ... try again */
+			Errflag = 3
+
+			/* find a state where "error" is a legal shift action */
+			for yyp >= 0 {
+				row := yyParseTab[yyS[yyp].yys]
+				if yyError < len(row) {
+					yyn = int(row[yyError]) + yyTabOfs
+					if yyn > 0 { // hit
+						if yyDebug >= 2 {
+							__yyfmt__.Printf("error recovery found error shift in state %d\n", yyS[yyp].yys)
+						}
+						yystate = yyn /* simulate a shift of "error" */
+						goto yystack
+					}
+				}
+
+				/* the current p has no shift on "error", pop stack */
+				if yyDebug >= 2 {
+					__yyfmt__.Printf("error recovery pops state %d\n", yyS[yyp].yys)
+				}
+				yyp--
+			}
+			/* there is no state on the stack with an error shift ... abort */
+			if yyDebug >= 2 {
+				__yyfmt__.Printf("error recovery failed\n")
+			}
+			goto ret1
+
+		case 3: /* no shift yet; clobber input char */
+			if yyDebug >= 2 {
+				__yyfmt__.Printf("error recovery discards %s\n", yySymName(yychar))
+			}
+			if yychar == yyEofCode {
+				goto ret1
+			}
+
+			yychar = -1
+			goto yynewstate /* try again in the same state */
+		}
+	}
+
+	r := -yyn
+	x0 := yyReductions[r]
+	x, n := x0.xsym, x0.components
+	yypt := yyp
+	_ = yypt // guard against "declared and not used"
+
+	yyp -= n
+	if yyp+1 >= len(yyS) {
+		nyys := make([]yySymType, len(yyS)*2)
+		copy(nyys, yyS)
+		yyS = nyys
+	}
+	yyVAL = yyS[yyp+1]
+
+	/* consult goto table to find next state */
+	exState := yystate
+	yystate = int(yyParseTab[yyS[yyp].yys][x]) + yyTabOfs
+	/* reduction by production r */
+	if yyDebug >= 2 {
+		__yyfmt__.Printf("reduce using rule %v (%s), and goto state %d\n", r, yySymNames[x], yystate)
+	}
+
+	switch r {
+	case 1:
+		{
+			root = yyS[yypt-0].node
+		}
+	case 2:
+		{
+			return 0
+			yyVAL.node = &ast{BLOCK, []node{yyS[yypt-0].node}}
+		}
+	case 3:
+		{
+			return 0
+			yyVAL.node = &ast{BLOCK, []node{yyS[yypt-2].node, yyS[yypt-0].node}}
+		}
+	case 4:
+		{
+			return 0
+			yyVAL.node = &ast{IF, []node{yyS[yypt-0].node}}
+		}
+	case 5:
+		{
+			return 0
+			yyVAL.node = yyS[yypt-0].node
+		}
+	case 6:
+		{
+			return 0
+			yyVAL.node = yyS[yypt-0].node
+		}
+	case 7:
+		{
+			return 0
+			yyVAL.node = yyS[yypt-0].node
+		}
+	case 8:
+		{
+			return 0
+			yyVAL.node = yyS[yypt-0].node
+		}
+	case 9:
+		{
+			return 0
+			yyVAL.node = nil
+		}
+	case 10:
+		{
+			return 0
+			yyVAL.node = yyS[yypt-0].node
+		}
+	case 11:
+		{
+			return 0
+			yyVAL.node = &ifNode{IF, yyS[yypt-4].node, yyS[yypt-1].node, nil, nil}
+		}
+	case 12:
+		{
+			return 0
+			yyVAL.node = &ifNode{IF, yyS[yypt-7].node, yyS[yypt-4].node, yyS[yypt-1].node, yyS[yypt-3].elifArr}
+		}
+	case 13:
+		{
+			return 0
+			yyVAL.node = &whileNode{WHILE, yyS[yypt-3].node, yyS[yypt-1].node}
+		}
+	case 14:
+		{
+			initnd := &assignNode{ASSIGN, yyS[yypt-11].s, dCatchNodePtr}
+			return 0
+			yyVAL.node = &forNode{FOR, initnd, yyS[yypt-7].node, yyS[yypt-5].node, yyS[yypt-1].node}
+		}
+	case 15:
+		{
+			var incr *arithNode
+			var incrAssign *assignNode
+			n1 := &numNode{NUM, 0}
+
+			initd := &assignNode{ASSIGN, yyS[yypt-5].s, n1}
+			iter := &symbolReferenceNode{REFERENCE, yyS[yypt-5].s, &numNode{NUM, 0}, nil}
+			cmp := &comparatorNode{COMPARATOR, "<", iter, yyS[yypt-3].node}
+			incr = &arithNode{ARITHMETIC, "+", iter, &numNode{NUM, 1}}
+			incrAssign = &assignNode{ASSIGN, iter, incr}
+			return 0
+			yyVAL.node = &forNode{FOR, initd, cmp, incrAssign, yyS[yypt-1].node}
+
+		}
+	case 16:
+		{
+			n1 := &numNode{NUM, yyS[yypt-7].n}
+			n2 := &numNode{NUM, yyS[yypt-4].n}
+			initnd := &assignNode{ASSIGN, yyS[yypt-10].s, n1}
+			var cond *comparatorNode
+			var incr *arithNode
+			var iter *symbolReferenceNode
+			var incrAssign *assignNode
+
+			iter = &symbolReferenceNode{NUM, yyS[yypt-10].s, &numNode{NUM, 0}, nil}
+
+			if yyS[yypt-7].n < yyS[yypt-4].n {
+				cond = &comparatorNode{COMPARATOR, "<", iter, n2}
+				incr = &arithNode{ARITHMETIC, "+", iter, &numNode{NUM, 1}}
+				incrAssign = &assignNode{ASSIGN, iter, incr} //Maybe redundant
+			} else if yyS[yypt-7].n == yyS[yypt-4].n {
+
+			} else { //$5 > 8
+				cond = &comparatorNode{COMPARATOR, ">", iter, n2}
+				incr = &arithNode{ARITHMETIC, "-", iter, &numNode{NUM, 1}}
+				incrAssign = &assignNode{ASSIGN, iter, incr}
+			}
+			return 0
+			yyVAL.node = &forNode{FOR, initnd, cond, incrAssign, yyS[yypt-1].node}
+		}
+	case 17:
+		{
+			arrNd := yyS[yypt-4].node
+			arrRes := arrNd.execute()
+			qRes := &assignNode{ASSIGN, "_internalRes", arrRes}
+			varIter := &assignNode{ASSIGN, yyS[yypt-8].s,
+				&symbolReferenceNode{REFERENCE, "_internalRes", &numNode{NUM, 0}, nil}}
+			init := &ast{ASSIGN, []node{qRes, varIter}}
+
+			offset := &symbolReferenceNode{REFERENCE, "_internalIdx", &numNode{NUM, 0}, nil}
+			varIterAssign := &assignNode{ASSIGN,
+				&symbolReferenceNode{REFERENCE, yyS[yypt-8].s, &numNode{NUM, 0}, nil},
+				&symbolReferenceNode{REFERENCE, "_internalRes",
+					offset, nil}}
+
+			incr := &ast{ASSIGN, []node{varIterAssign}}
+			body := &ast{BLOCK, []node{incr, yyS[yypt-1].node}}
+			return 0
+			yyVAL.node = &rangeNode{FOR, init, arrRes, body}
+		}
+	case 18:
+		{
+			arrNd := yyS[yypt-4].node
+			//This NonTerminal is broken, it is kept
+			//here to show that eventuall the feature
+			//must be added
+			arrRes := arrNd.execute()
+			qRes := &assignNode{ASSIGN, "_internalRes", arrRes}
+			varIter := &assignNode{ASSIGN, yyS[yypt-8].s,
+				&symbolReferenceNode{REFERENCE, "_internalRes", &numNode{NUM, 0}, nil}}
+			init := &ast{ASSIGN, []node{qRes, varIter}}
+
+			offset := &symbolReferenceNode{REFERENCE, "_internalIdx", &numNode{NUM, 0}, nil}
+			varIterAssign := &assignNode{ASSIGN,
+				&symbolReferenceNode{REFERENCE, yyS[yypt-8].s, &numNode{NUM, 0}, nil},
+				&symbolReferenceNode{REFERENCE, "_internalRes",
+					offset, nil}}
+
+			incr := &ast{ASSIGN, []node{varIterAssign}}
+			body := &ast{BLOCK, []node{incr, yyS[yypt-1].node}}
+			return 0
+			yyVAL.node = &rangeNode{FOR, init, arrRes, body}
+		}
+	case 19:
+		{
+			x := elifNode{IF, yyS[yypt-4].node, yyS[yypt-1].node}
+			f := []elifNode{x}
+			f = append(f, yyS[yypt-0].elifArr...)
+			return 0
+			yyVAL.elifArr = f
+		}
+	case 20:
+		{
+			return 0
+			yyVAL.elifArr = nil
+		}
+	case 24:
+		{
+			return 0
+			yyVAL.node = yyS[yypt-0].node
+		}
+	case 25:
+		{
+			return 0
+			yyVAL.node = &comparatorNode{COMPARATOR, "==", yyS[yypt-3].node, yyS[yypt-0].node}
+		}
+	case 26:
+		{
+			return 0
+			yyVAL.node = &comparatorNode{COMPARATOR, "!=", yyS[yypt-3].node, yyS[yypt-0].node}
+		}
+	case 27:
+		{
+			return 0
+			yyVAL.node = yyS[yypt-0].node
+		}
+	case 28:
+		{
+			return 0
+			yyVAL.node = &comparatorNode{COMPARATOR, "<", yyS[yypt-2].node, yyS[yypt-0].node}
+		}
+	case 29:
+		{
+			return 0
+			yyVAL.node = &comparatorNode{COMPARATOR, "<=", yyS[yypt-3].node, yyS[yypt-0].node}
+		}
+	case 30:
+		{
+			return 0
+			yyVAL.node = &comparatorNode{COMPARATOR, ">=", yyS[yypt-3].node, yyS[yypt-0].node}
+		}
+	case 31:
+		{
+			return 0
+			yyVAL.node = &comparatorNode{COMPARATOR, ">", yyS[yypt-2].node, yyS[yypt-0].node}
+		}
+	case 32:
+		{
+			return 0
+			yyVAL.node = yyS[yypt-0].node
+		}
+	case 33:
+		{
+			return 0
+			yyVAL.node = &arithNode{ARITHMETIC, "+", yyS[yypt-2].node, yyS[yypt-0].node}
+		}
+	case 34:
+		{
+			return 0
+			yyVAL.node = &arithNode{ARITHMETIC, "-", yyS[yypt-2].node, yyS[yypt-0].node}
+		}
+	case 35:
+		{
+			return 0
+			yyVAL.node = yyS[yypt-0].node
+		}
+	case 36:
+		{
+			return 0
+			yyVAL.node = &arithNode{ARITHMETIC, "*", yyS[yypt-2].node, yyS[yypt-0].node}
+		}
+	case 37:
+		{
+			x := determineWhichNodeForSlash(yyS[yypt-2].node, yyS[yypt-0].node)
+			return 0
+			yyVAL.node = x
+		}
+	case 38:
+		{
+			return 0
+			yyVAL.node = &arithNode{ARITHMETIC, "%", yyS[yypt-2].node, yyS[yypt-0].node}
+		}
+	case 39:
+		{
+			return 0
+			yyVAL.node = yyS[yypt-0].node
+		}
+	case 40:
+		{
+			return 0
+			yyVAL.node = &boolOpNode{BOOLOP, "!", yyS[yypt-0].node}
+		}
+	case 41:
+		{
+			left := &numNode{NUM, 0}
+			return 0
+			yyVAL.node = &arithNode{ARITHMETIC, "-", left, yyS[yypt-0].node}
+		}
+	case 42:
+		{
+			return 0
+			yyVAL.node = yyS[yypt-0].node
+		}
+	case 43:
+		{
+			return 0
+			yyVAL.node = yyS[yypt-1].node
+		}
+	case 44:
+		{
+			return 0
+			yyVAL.node = &numNode{NUM, yyS[yypt-0].n}
+		}
+	case 45:
+		{
+			return 0
+			yyVAL.node = &floatNode{FLOAT, yyS[yypt-0].f}
+		}
+	case 46:
+		{
+			return 0
+			yyVAL.node = &symbolReferenceNode{REFERENCE, yyS[yypt-0].s, &numNode{NUM, 0}, nil}
+		}
+	case 47:
+		{
+			return 0
+			yyVAL.node = &symbolReferenceNode{REFERENCE, yyS[yypt-3].s, yyS[yypt-1].node, nil}
+		}
+	case 48:
+		{
+			x := &symbolReferenceNode{REFERENCE, yyS[yypt-1].s, &numNode{NUM, -1}, nil}
+			switch x.execute().(type) {
+			case int:
+				return 0
+			yyVAL.node = &numNode{NUM, x.execute().(int)}
+			default: //Error, the array length is not an int
+				println("Error! Single element arrays are not supported")
+				return 0
+			yyVAL.node = &numNode{NUM, -1}
+
+			}
+		}
+	case 49:
+		{
+			return 0
+			yyVAL.node = &strNode{STR, yyS[yypt-0].s}
+			dCatchPtr = yyS[yypt-0].s
+			dCatchNodePtr = &strNode{STR, yyS[yypt-0].s}
+		}
+	case 50:
+		{
+			return 0
+			yyVAL.node = &strNode{STR, yyS[yypt-0].s}
+		}
+	case 51:
+		{
+			var x bool
+			if yyS[yypt-0].s == "false" {
+				x = false
+			} else {
+				x = true
+			}
+			return 0
+			yyVAL.node = &boolNode{BOOL, x}
+		}
+	case 52:
+		{
+			x := retNodeArray(yyS[yypt-1].arr)
+			return 0
+			yyVAL.node = &arrNode{ARRAY, len(x), x}
+		}
+	case 53:
+		{
+			if cmd.State.DebugLvl >= 3 {
+				println("@State start")
+			}
+		}
+	case 57:
+		{ /*cmd.Disp(resMap(&$5, $2, false));*/
+			return 0
+			yyVAL.node = &commonNode{COMMON, cmd.PostObj, "PostObj", []interface{}{cmd.EntityStrToInt(yyS[yypt-3].s), yyS[yypt-3].s, resMap(&yyS[yypt-0].s, yyS[yypt-3].s, false)}}
+		}
+	case 58:
+		{
+			return 0
+			yyVAL.node = &commonNode{COMMON, cmd.PostObj, "EasyPost", []interface{}{cmd.EntityStrToInt(yyS[yypt-3].s), yyS[yypt-3].s, yyS[yypt-0].s}}
+		}
+	case 59:
+		{
+			return 0
+			yyVAL.node = &commonNode{COMMON, cmd.GetObject, "GetObject", []interface{}{yyS[yypt-0].s}}
+		}
+	case 60:
+		{ /*cmd.Disp(resMap(&$4)); */
+			return 0
+			yyVAL.node = &commonNode{COMMON, cmd.SearchObjects, "SearchObjects", []interface{}{yyS[yypt-1].s, resMap(&yyS[yypt-0].s, yyS[yypt-1].s, false)}}
+		}
+	case 61:
+		{
+			return 0
+			yyVAL.node = &commonNode{COMMON, cmd.UpdateObj, "UpdateObj", []interface{}{yyS[yypt-2].s, resMap(&yyS[yypt-0].s, yyS[yypt-2].s, true)}}
+		}
+	case 62:
+		{
+			return 0
+			yyVAL.node = &commonNode{COMMON, cmd.RecursivePatch, "RecursiveUpdateObj", []interface{}{yyS[yypt-4].s, resMap(&yyS[yypt-2].s, yyS[yypt-4].s, true), yyS[yypt-0].s}}
+		}
+	case 63:
+		{
+			return 0
+			yyVAL.node = &commonNode{COMMON, cmd.UpdateObj, "EasyUpdate", []interface{}{yyS[yypt-4].s, yyS[yypt-0].s, true}}
+		}
+	case 64:
+		{
+			return 0
+			yyVAL.node = &commonNode{COMMON, cmd.UpdateObj, "EasyUpdate", []interface{}{yyS[yypt-5].s, yyS[yypt-0].s, false}}
+		}
+	case 65:
+		{
+			if cmd.State.DebugLvl >= 3 {
+				println("@State NT_DEL")
+			}
+			return 0
+			yyVAL.node = &commonNode{COMMON, cmd.DeleteObj, "DeleteObj", []interface{}{yyS[yypt-0].s}}
+		}
+	case 83:
+		{
+			return 0
+			yyVAL.s = yyS[yypt-0].s
+			dCatchPtr = yyS[yypt-0].s
+			dCatchNodePtr = &strNode{STR, yyS[yypt-0].s}
+		}
+	case 84:
+		{
+			x := strconv.Itoa(yyS[yypt-0].n)
+			return 0
+			yyVAL.s = x
+			dCatchPtr = yyS[yypt-0].n
+			dCatchNodePtr = &numNode{NUM, yyS[yypt-0].n}
+		}
+	case 85:
+		{
+			x := strconv.FormatFloat(yyS[yypt-0].f, 'E', -1, 64)
+			return 0
+			yyVAL.s = x
+			dCatchPtr = yyS[yypt-0].f
+			dCatchNodePtr = &floatNode{FLOAT, yyS[yypt-0].f}
+		}
+	case 86:
+		{
+			return 0
+			yyVAL.s = yyS[yypt-3].s + yyS[yypt-2].s + yyS[yypt-1].s + yyS[yypt-0].s
+			dCatchPtr = yyS[yypt-3].s + yyS[yypt-2].s + yyS[yypt-1].s + yyS[yypt-0].s
+			dCatchNodePtr = &strNode{STR, yyS[yypt-3].s + yyS[yypt-2].s + yyS[yypt-1].s + yyS[yypt-0].s}
+		}
+	case 87:
+		{
+			return 0
+			yyVAL.s = yyS[yypt-3].s + yyS[yypt-2].s + yyS[yypt-1].s + yyS[yypt-0].s
+			dCatchPtr = yyS[yypt-3].s + yyS[yypt-2].s + yyS[yypt-1].s + yyS[yypt-0].s
+			dCatchNodePtr = &strNode{STR, yyS[yypt-3].s + yyS[yypt-2].s + yyS[yypt-1].s + yyS[yypt-0].s}
+		}
+	case 88:
+		{
+			return 0
+			yyVAL.s = yyS[yypt-3].s + yyS[yypt-2].s + yyS[yypt-1].s + yyS[yypt-0].s
+			dCatchPtr = yyS[yypt-3].s + yyS[yypt-2].s + yyS[yypt-1].s + yyS[yypt-0].s
+			dCatchNodePtr = &strNode{STR, yyS[yypt-3].s + yyS[yypt-2].s + yyS[yypt-1].s + yyS[yypt-0].s}
+		}
+	case 89:
+		{
+			return 0
+			yyVAL.s = yyS[yypt-3].s + yyS[yypt-2].s + yyS[yypt-1].s + yyS[yypt-0].s
+			dCatchPtr = yyS[yypt-3].s + yyS[yypt-2].s + yyS[yypt-1].s + yyS[yypt-0].s
+			dCatchNodePtr = &strNode{STR, yyS[yypt-3].s + yyS[yypt-2].s + yyS[yypt-1].s + yyS[yypt-0].s}
+		}
+	case 90:
+		{
+			var x bool
+			if yyS[yypt-0].s == "false" {
+				x = false
+			} else {
+				x = true
+			}
+			dCatchPtr = x
+			dCatchNodePtr = &boolNode{BOOL, x}
+		}
+	case 91:
+		{
+			return 0
+			yyVAL.s = resolveReference(yyS[yypt-0].s)
+		}
+	case 92:
+		{
+			return 0
+			yyVAL.s = string(yyS[yypt-3].s + "=" + yyS[yypt-1].s + "=" + yyS[yypt-0].s)
+			if cmd.State.DebugLvl >= 3 {
+				println("So we got: ", yyVAL.s)
+			}
+		}
+	case 93:
+		{
+			return 0
+			yyVAL.s = yyS[yypt-2].s + "=" + yyS[yypt-0].s
+		}
+	case 94:
+		{
+			return 0
+			yyVAL.s = yyS[yypt-3].s + "=" + yyS[yypt-1].s + "=" + yyS[yypt-0].s
+		}
+	case 95:
+		{
+			return 0
+			yyVAL.s = yyS[yypt-2].s + "=" + yyS[yypt-0].s
+		}
+	case 96:
+		{
+			return 0
+			yyVAL.s = yyS[yypt-2].s + "=" + yyS[yypt-0].s
+		}
+	case 97:
+		{
+			return 0
+			yyVAL.s = string(yyS[yypt-3].s + "=" + yyS[yypt-1].s + "=" + yyS[yypt-0].s)
+			if cmd.State.DebugLvl >= 3 {
+				println("So we got: ", yyVAL.s)
+			}
+		}
+	case 99:
+		{
+			return 0
+			yyVAL.s = "/" + yyS[yypt-0].s
+		}
+	case 100:
+		{
+			return 0
+			yyVAL.s = yyS[yypt-2].s + "/" + yyS[yypt-0].s
+		}
+	case 101:
+		{
+			return 0
+			yyVAL.s = yyS[yypt-0].s
+		}
+	case 102:
+		{
+			return 0
+			yyVAL.s = yyS[yypt-0].s
+		}
+	case 103:
+		{
+			return 0
+			yyVAL.s = yyS[yypt-3].s + "/" + yyS[yypt-0].s
+		}
+	case 104:
+		{
+			return 0
+			yyVAL.s = "../" + yyS[yypt-0].s
+		}
+	case 105:
+		{
+			return 0
+			yyVAL.s = yyS[yypt-2].s + "." + yyS[yypt-0].s
+		}
+	case 106:
+		{
+			return 0
+			yyVAL.s = ".."
+		}
+	case 107:
+		{
+			return 0
+			yyVAL.s = "-"
+		}
+	case 108:
+		{
+			return 0
+			yyVAL.s = resolveReference(yyS[yypt-0].s)
+		}
+	case 109:
+		{
+			return 0
+			yyVAL.s = resolveReference(yyS[yypt-3].s) + "/" + yyS[yypt-0].s
+		}
+	case 110:
+		{
+			return 0
+			yyVAL.s = resolveReference(yyS[yypt-2].s) + yyS[yypt-0].s
+		}
+	case 111:
+		{
+			return 0
+			yyVAL.s = resolveReference(yyS[yypt-5].s) + yyS[yypt-3].s + "/" + yyS[yypt-0].s
+		}
+	case 112:
+		{
+			return 0
+			yyVAL.s = ""
+		}
+	case 113:
+		{ /*cmd.CD($2);*/
+			return 0
+			yyVAL.node = &commonNode{COMMON, cmd.CD, "CD", []interface{}{yyS[yypt-0].s}}
+		}
+	case 114:
+		{ /*cmd.LS($2)*/
+			return 0
+			yyVAL.node = &commonNode{COMMON, cmd.LS, "LS", []interface{}{yyS[yypt-0].s}}
+		}
+	case 115:
+		{
+			return 0
+			yyVAL.node = &commonNode{COMMON, cmd.LSOBJECT, "LSOBJ", []interface{}{yyS[yypt-0].s, 0}}
+		}
+	case 116:
+		{
+			return 0
+			yyVAL.node = &commonNode{COMMON, cmd.LSOBJECT, "LSOBJ", []interface{}{yyS[yypt-0].s, 1}}
+		}
+	case 117:
+		{
+			return 0
+			yyVAL.node = &commonNode{COMMON, cmd.LSOBJECT, "LSOBJ", []interface{}{yyS[yypt-0].s, 2}}
+		}
+	case 118:
+		{
+			return 0
+			yyVAL.node = &commonNode{COMMON, cmd.LSOBJECT, "LSOBJ", []interface{}{yyS[yypt-0].s, 3}}
+		}
+	case 119:
+		{
+			return 0
+			yyVAL.node = &commonNode{COMMON, cmd.LSOBJECT, "LSOBJ", []interface{}{yyS[yypt-0].s, 4}}
+		}
+	case 120:
+		{
+			return 0
+			yyVAL.node = &commonNode{COMMON, cmd.LSOBJECT, "LSOBJ", []interface{}{yyS[yypt-0].s, 5}}
+		}
+	case 121:
+		{
+			return 0
+			yyVAL.node = &commonNode{COMMON, cmd.LSOBJECT, "LSOBJ", []interface{}{yyS[yypt-0].s, 10}}
+		}
+	case 122:
+		{
+			return 0
+			yyVAL.node = &commonNode{COMMON, cmd.LSOBJECT, "LSOBJ", []interface{}{yyS[yypt-0].s, 11}}
+		}
+	case 123:
+		{
+			return 0
+			yyVAL.node = &commonNode{COMMON, cmd.LSOBJECT, "LSOBJ", []interface{}{yyS[yypt-0].s, 6}}
+		}
+	case 124:
+		{
+			return 0
+			yyVAL.node = &commonNode{COMMON, cmd.LSOBJECT, "LSOBJ", []interface{}{yyS[yypt-0].s, 7}}
+		}
+	case 125:
+		{
+			return 0
+			yyVAL.node = &commonNode{COMMON, cmd.LSOBJECT, "LSOBJ", []interface{}{yyS[yypt-0].s, 8}}
+		}
+	case 126:
+		{
+			return 0
+			yyVAL.node = &commonNode{COMMON, cmd.LSOBJECT, "LSOBJ", []interface{}{yyS[yypt-0].s, 9}}
+		}
+	case 127:
+		{
+			return 0
+			yyVAL.node = &commonNode{COMMON, cmd.LSOBJECT, "LSOBJ", []interface{}{yyS[yypt-0].s, 12}}
+		}
+	case 128:
+		{
+			return 0
+			yyVAL.node = &commonNode{COMMON, cmd.LSOBJECT, "LSOBJ", []interface{}{yyS[yypt-0].s, 13}}
+		}
+	case 129:
+		{
+			return 0
+			yyVAL.node = &commonNode{COMMON, cmd.Tree, "Tree", []interface{}{yyS[yypt-0].s, 0}}
+		}
+	case 130:
+		{
+			return 0
+			yyVAL.node = &commonNode{COMMON, cmd.Tree, "Tree", []interface{}{yyS[yypt-1].s, yyS[yypt-0].n}}
+		}
+	case 131:
+		{
+			return 0
+			yyVAL.node = &commonNode{COMMON, cmd.Draw, "Draw", []interface{}{yyS[yypt-0].s, 0}}
+		}
+	case 132:
+		{
+			return 0
+			yyVAL.node = &commonNode{COMMON, cmd.Draw, "Draw", []interface{}{yyS[yypt-1].s, yyS[yypt-0].n}}
+		}
+	case 133:
+		{
+			return 0
+			yyVAL.node = &commonNode{COMMON, cmd.GetHierarchy, "Hierarchy", []interface{}{yyS[yypt-0].s, 1}}
+		}
+	case 134:
+		{
+			return 0
+			yyVAL.node = &commonNode{COMMON, cmd.GetHierarchy, "Hierarchy", []interface{}{yyS[yypt-1].s, yyS[yypt-0].n}}
+		}
+	case 135:
+		{
+			return 0
+			yyVAL.node = &commonNode{COMMON, UnsetUtil, "Unset", []interface{}{yyS[yypt-2].s + yyS[yypt-1].s, yyS[yypt-0].s, nil, nil}}
+		}
+	case 136:
+		{
+			v := &symbolReferenceNode{REFERENCE, yyS[yypt-3].s, yyS[yypt-1].node, nil}
+			//$$=&assignNode{ASSIGN, v, "deleteValue"}
+			return 0
+			yyVAL.node = &commonNode{COMMON, UnsetUtil, "Unset", []interface{}{"", "", v, nil}}
+
+		}
+	case 137:
+		{
+			return 0
+			yyVAL.node = yyS[yypt-0].node
+		}
+	case 138:
+		{
+			return 0
+			yyVAL.node = &commonNode{COMMON, cmd.IsEntityDrawable, "IsEntityDrawable", []interface{}{yyS[yypt-1].s}}
+		}
+	case 139:
+		{
+			return 0
+			yyVAL.node = &commonNode{COMMON, cmd.IsAttrDrawable, "IsAttrDrawable", []interface{}{yyS[yypt-3].s, yyS[yypt-1].node}}
+		}
+	case 140:
+		{
+			return 0
+			yyVAL.node = &commonNode{COMMON, cmd.SetEnv, "SetEnv", []interface{}{yyS[yypt-2].s, yyS[yypt-0].node}}
+		}
+	case 141:
+		{
+			return 0
+			yyVAL.node = &commonNode{COMMON, cmd.Clear, "CLR", nil}
+		}
+	case 142:
+		{
+			return 0
+			yyVAL.node = &commonNode{COMMON, nil, "Grep", nil}
+		}
+	case 143:
+		{
+			return 0
+			yyVAL.node = &commonNode{COMMON, cmd.Print, "Print", yyS[yypt-0].arr}
+		}
+	case 144:
+		{
+			return 0
+			yyVAL.node = &commonNode{COMMON, cmd.LSOG, "LSOG", nil}
+		}
+	case 145:
+		{
+			return 0
+			yyVAL.node = &commonNode{COMMON, cmd.Env, "Env", nil}
+		}
+	case 146:
+		{
+			return 0
+			yyVAL.node = &commonNode{COMMON, cmd.PWD, "PWD", nil}
+		}
+	case 147:
+		{
+			return 0
+			yyVAL.node = &commonNode{COMMON, cmd.Exit, "Exit", nil}
+		}
+	case 148:
+		{
+			return 0
+			yyVAL.node = &commonNode{COMMON, cmd.Help, "Help", []interface{}{"link"}}
+		}
+	case 149:
+		{
+			return 0
+			yyVAL.node = &commonNode{COMMON, cmd.Help, "Help", []interface{}{"unlink"}}
+		}
+	case 150:
+		{
+			return 0
+			yyVAL.node = &commonNode{COMMON, cmd.Help, "Help", []interface{}{"clear"}}
+		}
+	case 151:
+		{
+			return 0
+			yyVAL.node = &commonNode{COMMON, cmd.Help, "Help", []interface{}{""}}
+		}
+	case 152:
+		{
+			return 0
+			yyVAL.node = &commonNode{COMMON, cmd.Help, "Help", []interface{}{"ls"}}
+		}
+	case 153:
+		{
+			return 0
+			yyVAL.node = &commonNode{COMMON, cmd.Help, "Help", []interface{}{"pwd"}}
+		}
+	case 154:
+		{
+			return 0
+			yyVAL.node = &commonNode{COMMON, cmd.Help, "Help", []interface{}{"print"}}
+		}
+	case 155:
+		{
+			return 0
+			yyVAL.node = &commonNode{COMMON, cmd.Help, "Help", []interface{}{"cd"}}
+		}
+	case 156:
+		{
+			return 0
+			yyVAL.node = &commonNode{COMMON, cmd.Help, "Help", []interface{}{"camera"}}
+		}
+	case 157:
+		{
+			return 0
+			yyVAL.node = &commonNode{COMMON, cmd.Help, "Help", []interface{}{"ui"}}
+		}
+	case 158:
+		{
+			return 0
+			yyVAL.node = &commonNode{COMMON, cmd.Help, "Help", []interface{}{"create"}}
+		}
+	case 159:
+		{
+			return 0
+			yyVAL.node = &commonNode{COMMON, cmd.Help, "Help", []interface{}{"gt"}}
+		}
+	case 160:
+		{
+			return 0
+			yyVAL.node = &commonNode{COMMON, cmd.Help, "Help", []interface{}{"update"}}
+		}
+	case 161:
+		{
+			return 0
+			yyVAL.node = &commonNode{COMMON, cmd.Help, "Help", []interface{}{"delete"}}
+		}
+	case 162:
+		{
+			return 0
+			yyVAL.node = &commonNode{COMMON, cmd.Help, "Help", []interface{}{"hc"}}
+		}
+	case 163:
+		{
+			return 0
+			yyVAL.node = &commonNode{COMMON, cmd.Help, "Help", []interface{}{yyS[yypt-0].s}}
+		}
+	case 164:
+		{
+			return 0
+			yyVAL.node = &commonNode{COMMON, cmd.Help, "Help", []interface{}{"tree"}}
+		}
+	case 165:
+		{
+			return 0
+			yyVAL.node = &commonNode{COMMON, cmd.Help, "Help", []interface{}{"draw"}}
+		}
+	case 166:
+		{
+			return 0
+			yyVAL.node = &commonNode{COMMON, cmd.Help, "Help", []interface{}{"if"}}
+		}
+	case 167:
+		{
+			return 0
+			yyVAL.node = &commonNode{COMMON, cmd.Help, "Help", []interface{}{"while"}}
+		}
+	case 168:
+		{
+			return 0
+			yyVAL.node = &commonNode{COMMON, cmd.Help, "Help", []interface{}{"for"}}
+		}
+	case 169:
+		{
+			return 0
+			yyVAL.node = &commonNode{COMMON, cmd.Help, "Help", []interface{}{"unset"}}
+		}
+	case 170:
+		{
+			return 0
+			yyVAL.node = &commonNode{COMMON, cmd.Help, "Help", []interface{}{"select"}}
+		}
+	case 171:
+		{
+			return 0
+			yyVAL.node = &commonNode{COMMON, cmd.Help, "Help", []interface{}{"cmds"}}
+		}
+	case 172:
+		{
+			return 0
+			yyVAL.node = &commonNode{COMMON, cmd.Help, "Help", []interface{}{"lsog"}}
+		}
+	case 173:
+		{
+			return 0
+			yyVAL.node = &commonNode{COMMON, cmd.Help, "Help", []interface{}{"env"}}
+		}
+	case 174:
+		{
+			return 0
+			yyVAL.node = &commonNode{COMMON, cmd.Help, "Help", []interface{}{"lsten"}}
+		}
+	case 175:
+		{
+			return 0
+			yyVAL.node = &commonNode{COMMON, cmd.Help, "Help", []interface{}{"lssite"}}
+		}
+	case 176:
+		{
+			return 0
+			yyVAL.node = &commonNode{COMMON, cmd.Help, "Help", []interface{}{"lsbldg"}}
+		}
+	case 177:
+		{
+			return 0
+			yyVAL.node = &commonNode{COMMON, cmd.Help, "Help", []interface{}{"lsroom"}}
+		}
+	case 178:
+		{
+			return 0
+			yyVAL.node = &commonNode{COMMON, cmd.Help, "Help", []interface{}{"lsrack"}}
+		}
+	case 179:
+		{
+			return 0
+			yyVAL.node = &commonNode{COMMON, cmd.Help, "Help", []interface{}{"lsdev"}}
+		}
+	case 180:
+		{
+			return 0
+			yyVAL.node = &commonNode{COMMON, cmd.Help, "Help", []interface{}{"-"}}
+		}
+	case 181:
+		{
+			return 0
+			yyVAL.node = &commonNode{COMMON, cmd.Help, "Help", []interface{}{".template"}}
+		}
+	case 182:
+		{
+			return 0
+			yyVAL.node = &commonNode{COMMON, cmd.Help, "Help", []interface{}{".cmds"}}
+		}
+	case 183:
+		{
+			return 0
+			yyVAL.node = &commonNode{COMMON, cmd.Help, "Help", []interface{}{".var"}}
+		}
+	case 184:
+		{
+			return 0
+			yyVAL.node = &commonNode{COMMON, cmd.Help, "Help", []interface{}{"var"}}
+		}
+	case 185:
+		{
+			return 0
+			yyVAL.node = &commonNode{COMMON, cmd.Help, "Help", []interface{}{"+"}}
+		}
+	case 186:
+		{
+			return 0
+			yyVAL.node = &commonNode{COMMON, cmd.Help, "Help", []interface{}{"="}}
+		}
+	case 187:
+		{
+			return 0
+			yyVAL.node = &commonNode{COMMON, cmd.Help, "Help", []interface{}{">"}}
+		}
+	case 188:
+		{
+			return 0
+			yyVAL.node = &commonNode{COMMON, cmd.Help, "Help", []interface{}{"drawable"}}
+		}
+	case 189:
+		{
+			return 0
+			yyVAL.node = yyS[yypt-0].node
+		}
+	case 190:
+		{
+			return 0
+			yyVAL.node = yyS[yypt-0].node
+		}
+	case 191:
+		{
+			return 0
+			yyVAL.node = yyS[yypt-0].node
+		}
+	case 192:
+		{
+			return 0
+			yyVAL.node = yyS[yypt-0].node
+		}
+	case 193:
+		{
+			return 0
+			yyVAL.node = yyS[yypt-0].node
+		}
+	case 194:
+		{
+			return 0
+			yyVAL.node = yyS[yypt-0].node
+		}
+	case 195:
+		{
+			return 0
+			yyVAL.node = yyS[yypt-0].node
+		}
+	case 196:
+		{
+			return 0
+			yyVAL.node = yyS[yypt-0].node
+		}
+	case 197:
+		{
+			return 0
+			yyVAL.node = yyS[yypt-0].node
+		}
+	case 198:
+		{
+			return 0
+			yyVAL.node = &commonNode{COMMON, cmd.GetOCLIAtrributes, "GetOCAttr", []interface{}{(replaceOCLICurrPath(yyS[yypt-2].s)), cmd.TENANT, map[string]interface{}{"attributes": map[string]interface{}{"color": yyS[yypt-0].node}}}}
+		}
+	case 199:
+		{
+			return 0
+			yyVAL.node = &commonNode{COMMON, cmd.GetOCLIAtrributes, "GetOCAttr", []interface{}{(replaceOCLICurrPath(yyS[yypt-2].s)), cmd.SITE, map[string]interface{}{"attributes": map[string]interface{}{"orientation": yyS[yypt-0].node}}}}
+		}
+	case 200:
+		{
+			return 0
+			yyVAL.node = &commonNode{COMMON, cmd.GetOCLIAtrributes, "GetOCAttr", []interface{}{(replaceOCLICurrPath(yyS[yypt-4].s)), cmd.BLDG, map[string]interface{}{"attributes": map[string]interface{}{"posXY": yyS[yypt-2].node, "size": yyS[yypt-0].node}}}}
+		}
+	case 201:
+		{
+			return 0
+			yyVAL.node = &commonNode{COMMON, cmd.GetOCLIAtrributes, "GetOCAttr", []interface{}{(replaceOCLICurrPath(yyS[yypt-8].s)), cmd.ROOM, map[string]interface{}{"attributes": map[string]interface{}{"posXY": yyS[yypt-6].node, "size": yyS[yypt-4].node, "orientation": yyS[yypt-2].node, "floorUnit": yyS[yypt-0].node}}}}
+		}
+	case 202:
+		{
+			return 0
+			yyVAL.node = &commonNode{COMMON, cmd.GetOCLIAtrributes, "GetOCAttr", []interface{}{(replaceOCLICurrPath(yyS[yypt-6].s)), cmd.ROOM, map[string]interface{}{"attributes": map[string]interface{}{"posXY": yyS[yypt-4].node, "size": yyS[yypt-2].node, "orientation": yyS[yypt-0].node}}}}
+		}
+	case 203:
+		{
+			return 0
+			yyVAL.node = &commonNode{COMMON, cmd.GetOCLIAtrributes, "GetOCAttr", []interface{}{(replaceOCLICurrPath(yyS[yypt-6].s)), cmd.ROOM, map[string]interface{}{"attributes": map[string]interface{}{"posXY": yyS[yypt-4].node, "size": yyS[yypt-2].node, "orientation": yyS[yypt-0].s}}}}
+		}
+	case 204:
+		{
+			return 0
+			yyVAL.node = &commonNode{COMMON, cmd.GetOCLIAtrributes, "GetOCAttr", []interface{}{(replaceOCLICurrPath(yyS[yypt-4].s)), cmd.ROOM, map[string]interface{}{"attributes": map[string]interface{}{"posXY": yyS[yypt-2].node, "template": yyS[yypt-0].node}}}}
+		}
+	case 205:
+		{
+			attr := map[string]interface{}{}
+			if checkIfTemplate((yyS[yypt-2].node).execute()) == false {
+				attr["size"] = yyS[yypt-2].node
+			} else {
+				attr["template"] = yyS[yypt-2].node
+			}
+			attr["posXY"] = yyS[yypt-4].node
+			attr["orientation"] = yyS[yypt-0].node
+			return 0
+			yyVAL.node = &commonNode{COMMON, cmd.GetOCLIAtrributes, "GetOCAttr", []interface{}{(replaceOCLICurrPath(yyS[yypt-6].s)), cmd.RACK, map[string]interface{}{"attributes": attr}}}
+		}
+	case 206:
+		{
+			return 0
+			yyVAL.node = &commonNode{COMMON, cmd.GetOCLIAtrributes, "GetOCAttr", []interface{}{(replaceOCLICurrPath(yyS[yypt-6].s)), cmd.DEVICE, map[string]interface{}{"attributes": map[string]interface{}{"slot": yyS[yypt-4].node, "template": yyS[yypt-2].node, "orientation": yyS[yypt-0].node}}}}
+		}
+	case 207:
+		{
+			attr := map[string]interface{}{"posU/slot": yyS[yypt-2].node}
+			res := checkIfTemplate((yyS[yypt-0].node).execute())
+			if res == false {
+				attr["sizeU"] = yyS[yypt-0].node
+			} else {
+				attr["template"] = yyS[yypt-0].node
+			}
+			return 0
+			yyVAL.node = &commonNode{COMMON, cmd.GetOCLIAtrributes, "GetOCAttr", []interface{}{(replaceOCLICurrPath(yyS[yypt-4].s)), cmd.DEVICE, map[string]interface{}{"attributes": attr}}}
+		}
+	case 208:
+		{
+			return 0
+			yyVAL.node = &commonNode{COMMON, cmd.GetOCLIAtrributes, "GetOCAttr", []interface{}{(replaceOCLICurrPath(yyS[yypt-8].s)), cmd.CORIDOR, map[string]interface{}{"name": yyS[yypt-6].node, "leftRack": yyS[yypt-4].node, "rightRack": yyS[yypt-2].node, "temperature": yyS[yypt-0].node}}}
+		}
+	case 209:
+		{
+			x := map[string]interface{}{"name": yyS[yypt-1].node, "racks": yyS[yypt-0].s}
+			return 0
+			yyVAL.node = &commonNode{COMMON, cmd.GetOCLIAtrributes, "GetOCAttr", []interface{}{(replaceOCLICurrPath(yyS[yypt-3].s)), cmd.GROUP, x}}
+		}
+	case 210:
+		{
+			return 0
+			yyVAL.node = &commonNode{COMMON, cmd.GetOCLIAtrributes, "GetOCAttr", []interface{}{(replaceOCLICurrPath(yyS[yypt-4].s)), cmd.SEPARATOR, map[string]interface{}{"pos1": yyS[yypt-2].node, "pos2": yyS[yypt-0].node}}}
+		}
+	case 211:
+		{
+			return 0
+			yyVAL.node = &commonNode{COMMON, cmd.GetOCLIAtrributes, "GetOCAttr", []interface{}{replaceOCLICurrPath(yyS[yypt-2].s), cmd.STRAY_DEV, map[string]interface{}{"attributes": map[string]interface{}{"template": yyS[yypt-0].node}}}}
+		}
+	case 212:
+		{
+			return 0
+			yyVAL.node = &commonNode{COMMON, cmd.GetOCLIAtrributes, "GetOCAttr", []interface{}{replaceOCLICurrPath(yyS[yypt-2].s), cmd.STRAYSENSOR, map[string]interface{}{"attributes": map[string]interface{}{"template": yyS[yypt-0].node}}}}
+		}
+	case 213:
+		{
+			return 0
+			yyVAL.node = &commonNode{COMMON, cmd.PostObj, "EasyPost", []interface{}{cmd.EntityStrToInt(yyS[yypt-2].s), yyS[yypt-2].s, yyS[yypt-0].s}}
+		}
+	case 214:
+		{
+			return 0
+			yyVAL.node = &commonNode{COMMON, cmd.DeleteObj, "DeleteObj", []interface{}{replaceOCLICurrPath(yyS[yypt-0].s)}}
+		}
+	case 215:
+		{
+			return 0
+			yyVAL.node = &commonNode{COMMON, cmd.DeleteSelection, "DeleteSelection", nil}
+		}
+	case 216:
+		{
+			val := map[string]interface{}{yyS[yypt-2].s: (yyS[yypt-0].node).(node).execute()}
+			return 0
+			yyVAL.node = &commonNode{COMMON, cmd.UpdateObj, "UpdateObj", []interface{}{replaceOCLICurrPath(yyS[yypt-4].s), val}}
+			if cmd.State.DebugLvl >= 3 {
+				println("Attribute Acquired")
+			}
+		}
+	case 217:
+		{
+			if (yyS[yypt-0].node).(node).getType() == ARRAY {
+				val := map[string]interface{}{yyS[yypt-4].s: map[string]interface{}{"reserved": (yyS[yypt-2].node).(node).execute(), "technical": (yyS[yypt-0].node).(node).execute()}}
+				return 0
+			yyVAL.node = &commonNode{COMMON, cmd.UpdateObj, "UpdateObj", []interface{}{replaceOCLICurrPath(yyS[yypt-6].s), val}}
+			} else {
+				val := map[string]interface{}{yyS[yypt-4].s: (yyS[yypt-2].node).(node).execute()}
+				return 0
+			yyVAL.node = &commonNode{COMMON, cmd.RecursivePatch, "RecursiveUpdateObj", []interface{}{replaceOCLICurrPath(yyS[yypt-6].s), val, yyS[yypt-0].node}}
+				if cmd.State.DebugLvl >= 3 {
+					println("Attribute Acquired")
+				}
+			}
+		}
+	case 218:
+		{
+			return 0
+			yyVAL.node = &commonNode{COMMON, cmd.GetObject, "GetObject", []interface{}{replaceOCLICurrPath(yyS[yypt-0].s)}}
+		}
+	case 219:
+		{
+			x := make([]string, 0)
+			x = append(x, formActualPath(yyS[yypt-2].s))
+			x = append(x, yyS[yypt-0].sarr...)
+			return 0
+			yyVAL.sarr = x
+		}
+	case 220:
+		{
+			return 0
+			yyVAL.sarr = []string{formActualPath(yyS[yypt-0].s)}
+		}
+	case 221:
+		{
+			return 0
+			yyVAL.node = &commonNode{COMMON, cmd.SetClipBoard, "setCB", []interface{}{&yyS[yypt-1].sarr}}
+			println("Selection made!")
+		}
+	case 222:
+		{
+			return 0
+			yyVAL.node = &assignNode{ASSIGN, yyS[yypt-5].s, (yyS[yypt-1].node).(node).execute()}
+		}
+	case 223:
+		{
+			return 0
+			yyVAL.node = &assignNode{ASSIGN, yyS[yypt-5].s, (yyS[yypt-1].node).(node).execute()}
+		}
+	case 224:
+		{
+			return 0
+			yyVAL.node = &assignNode{ASSIGN, yyS[yypt-6].s, (yyS[yypt-1].node).(node).execute()}
+		}
+	case 225:
+		{
+			return 0
+			yyVAL.node = &assignNode{ASSIGN, yyS[yypt-5].s, (yyS[yypt-1].node).(node).execute()}
+		}
+	case 226:
+		{
+			return 0
+			yyVAL.node = &assignNode{ASSIGN, yyS[yypt-5].s, (yyS[yypt-1].node).(node).execute()}
+		}
+	case 227:
+		{
+			return 0
+			yyVAL.node = &assignNode{ASSIGN, yyS[yypt-5].s, (yyS[yypt-1].node).(node).execute()}
+		}
+	case 228:
+		{
+			return 0
+			yyVAL.node = &assignNode{ASSIGN, yyS[yypt-5].s, (yyS[yypt-1].node).(node).execute()}
+		}
+	case 229:
+		{
+			return 0
+			yyVAL.node = &assignNode{ASSIGN, yyS[yypt-5].s, (yyS[yypt-1].node).(node).execute()}
+		}
+	case 230:
+		{
+			val := &strNode{STR, yyS[yypt-0].s}
+			return 0
+			yyVAL.node = &assignNode{ASSIGN, yyS[yypt-2].s, val}
+		}
+	case 231:
+		{
+			val := (yyS[yypt-0].node).(node).execute()
+			if (yyS[yypt-0].node).(node).getType() == ARITHMETIC && val == nil {
+				return 0
+			yyVAL.node = nil
+			} else {
+				return 0
+			yyVAL.node = &assignNode{ASSIGN, yyS[yypt-2].s, val}
+			}
+		}
+	case 232:
+		{
+			return 0
+			yyVAL.node = &commonNode{COMMON, cmd.LoadFile, "Load", []interface{}{yyS[yypt-0].s, "cmd"}}
+		}
+	case 233:
+		{
+			return 0
+			yyVAL.node = &commonNode{COMMON, cmd.LoadTemplate, "Load", []interface{}{yyS[yypt-0].s, "template"}}
+		}
+	case 234:
+		{
+			return 0
+			yyVAL.node = &assignNode{ASSIGN, yyS[yypt-4].s, yyS[yypt-1].node}
+		}
+	case 235:
+		{
+			return 0
+			yyVAL.node = &assignNode{ASSIGN, yyS[yypt-4].s, yyS[yypt-1].node}
+		}
+	case 236:
+		{
+			return 0
+			yyVAL.node = &symbolReferenceNode{REFERENCE, yyS[yypt-0].s, &numNode{NUM, 0}, nil}
+		}
+	case 237:
+		{
+			return 0
+			yyVAL.node = &symbolReferenceNode{REFERENCE, yyS[yypt-3].s, yyS[yypt-1].node, nil}
+		}
+	case 238:
+		{
+			v := &symbolReferenceNode{REFERENCE, yyS[yypt-5].s, yyS[yypt-3].node, nil}
+			return 0
+			yyVAL.node = &assignNode{ASSIGN, v, yyS[yypt-0].node}
+		}
+	case 239:
+		{
+			return 0
+			yyVAL.node = &symbolReferenceNode{REFERENCE, yyS[yypt-6].s /*&numNode{NUM,$4}*/, yyS[yypt-4].node /*&strNode{STR, $7}*/, yyS[yypt-1].node}
+		}
+	case 240:
+		{
+			n := &symbolReferenceNode{REFERENCE, yyS[yypt-2].s, &numNode{NUM, 0}, nil}
+			return 0
+			yyVAL.node = &assignNode{ASSIGN, n, yyS[yypt-0].node}
+		}
+	case 241:
+		{
+			return 0
+			yyVAL.node = &commonNode{COMMON, cmd.ShowClipBoard, "select", nil}
+		}
+	case 242:
+		{ /*x := $3+"="+$5;*/
+			val := (yyS[yypt-0].node).(node).execute()
+			x := map[string]interface{}{yyS[yypt-2].s: val}
+			return 0
+			yyVAL.node = &commonNode{COMMON, cmd.UpdateSelection, "UpdateSelect", []interface{}{x}}
+		}
+	case 243:
+		{
+			return 0
+			yyVAL.node = &commonNode{COMMON, cmd.HandleUI, "HandleUnity", []interface{}{"ui", yyS[yypt-2].s, (yyS[yypt-0].node).(node).execute()}}
+		}
+	case 244:
+		{
+			if (yyS[yypt-2].node).(node).getType() != ARRAY || (yyS[yypt-0].node).(node).getType() != ARRAY {
+				return 0
+			yyVAL.node = nil
+			} else {
+				return 0
+			yyVAL.node = &commonNode{COMMON, cmd.HandleUI, "HandleUnity", []interface{}{"camera", yyS[yypt-4].s, (yyS[yypt-2].node).(node).execute(), (yyS[yypt-0].node).(node).execute()}}
+			}
+		}
+	case 245:
+		{
+			if (yyS[yypt-0].node).(node).getType() != ARRAY && yyS[yypt-2].s != "wait" {
+				return 0
+			yyVAL.node = nil
+			} else {
+				return 0
+			yyVAL.node = &commonNode{COMMON, cmd.HandleUI, "HandleUnity", []interface{}{"camera", yyS[yypt-2].s, (yyS[yypt-0].node).(node).execute()}}
+			}
+		}
+	case 246:
+		{
+			return 0
+			yyVAL.node = &commonNode{COMMON, cmd.FocusUI, "Focus", []interface{}{yyS[yypt-0].s}}
+		}
+	case 247:
+		{
+			return 0
+			yyVAL.node = &commonNode{COMMON, cmd.LinkObject, "LinkObject", []interface{}{yyS[yypt-2].s, yyS[yypt-0].s}}
+		}
+	case 248:
+		{
+			return 0
+			yyVAL.node = &commonNode{COMMON, cmd.LinkObject, "LinkObject", []interface{}{yyS[yypt-4].s, yyS[yypt-2].s, yyS[yypt-0].node}}
+		}
+	case 249:
+		{
+			return 0
+			yyVAL.node = &commonNode{COMMON, cmd.UnlinkObject, "UnlinkObject", []interface{}{yyS[yypt-0].s}}
+		}
+	case 250:
+		{
+			return 0
+			yyVAL.node = &commonNode{COMMON, cmd.UnlinkObject, "UnlinkObject", []interface{}{yyS[yypt-2].s, yyS[yypt-0].s}}
+		}
+	case 251:
+		{
+			x := []interface{}{yyS[yypt-2].node}
+			return 0
+			yyVAL.arr = append(x, yyS[yypt-0].arr...)
+		}
+	case 252:
+		{
+			x := []interface{}{yyS[yypt-0].node}
+			return 0
+			yyVAL.arr = x
+		}
+	case 253:
+		{
+			x := &funcNode{FUNC, yyS[yypt-1].node}
+			return 0
+			yyVAL.node = &assignNode{ASSIGN, yyS[yypt-5].s, x}
+		}
+	case 254:
+		{
+			x := funcTable[yyS[yypt-0].s]
+			if _, ok := x.(node); ok {
+				return 0
+			yyVAL.node = x.(node)
+			} else {
+				return 0
+			yyVAL.node = nil
+			}
+		}
+	case 255:
+		{
+			if len(yyS[yypt-0].arr) != 0 {
+				return 0
+			yyVAL.arr = append(yyS[yypt-2].arr, yyS[yypt-0].arr...)
+			} else {
+				return 0
+			yyVAL.arr = yyS[yypt-2].arr
+			}
+		}
+	case 256:
+		{
+			return 0
+			yyVAL.arr = yyS[yypt-0].arr
+		}
+	case 257:
+		{
+			return 0
+			yyVAL.arr = nil
+		}
+	case 258:
+		{
+			return 0
+			yyVAL.arr = []interface{}{yyS[yypt-0].node}
+		}
+	case 259:
+		{
+			x := yyS[yypt-1].s
+			return 0
+			yyVAL.s = x + "," + yyS[yypt-0].s
+		}
+	case 260:
+		{
+			return 0
+			yyVAL.s = ""
+		}
+	case 261:
+		{
+			return 0
+			yyVAL.s = yyS[yypt-3].s + yyS[yypt-2].s + yyS[yypt-1].s + yyS[yypt-0].s
+			dCatchPtr = yyS[yypt-3].s + yyS[yypt-2].s + yyS[yypt-1].s + yyS[yypt-0].s
+			dCatchNodePtr = &strNode{STR, yyS[yypt-3].s + yyS[yypt-2].s + yyS[yypt-1].s + yyS[yypt-0].s}
+		}
+	case 262:
+		{
+			return 0
+			yyVAL.s = yyS[yypt-3].s + yyS[yypt-2].s + yyS[yypt-1].s + yyS[yypt-0].s
+			dCatchPtr = yyS[yypt-3].s + yyS[yypt-2].s + yyS[yypt-1].s + yyS[yypt-0].s
+			dCatchNodePtr = &strNode{STR, yyS[yypt-3].s + yyS[yypt-2].s + yyS[yypt-1].s + yyS[yypt-0].s}
+		}
+	case 263:
+		{
+			return 0
+			yyVAL.s = yyS[yypt-3].s + yyS[yypt-2].s + yyS[yypt-1].s + yyS[yypt-0].s
+			dCatchPtr = yyS[yypt-3].s + yyS[yypt-2].s + yyS[yypt-1].s + yyS[yypt-0].s
+			dCatchNodePtr = &strNode{STR, yyS[yypt-3].s + yyS[yypt-2].s + yyS[yypt-1].s + yyS[yypt-0].s}
+		}
+	case 264:
+		{
+			return 0
 			yyVAL.s = yyS[yypt-3].s + yyS[yypt-2].s + yyS[yypt-1].s + yyS[yypt-0].s
 			dCatchPtr = yyS[yypt-3].s + yyS[yypt-2].s + yyS[yypt-1].s + yyS[yypt-0].s
 			dCatchNodePtr = &strNode{STR, yyS[yypt-3].s + yyS[yypt-2].s + yyS[yypt-1].s + yyS[yypt-0].s}

@@ -1247,8 +1247,11 @@ func (a *ast) execute() interface{} {
 		}
 
 		if a.statements[i] == nil {
-			println("OGREE: Unrecognised command!")
+			fmt.Printf("\nOGREE: Unrecognised command!\n")
 			l.GetWarningLogger().Println("Unrecognised Command")
+			if cmd.State.ScriptCalled == true {
+				println("Line: ", cmd.State.LineNumber)
+			}
 		}
 
 	}
