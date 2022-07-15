@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"path"
 	"strings"
+	"time"
 )
 
 const (
@@ -58,6 +59,7 @@ type ShellState struct {
 	DebugLvl         int
 	LineNumber       int //Used exectuting scripts
 	Terminal         **readline.Instance
+	Timeout          time.Duration
 }
 
 type Node struct {

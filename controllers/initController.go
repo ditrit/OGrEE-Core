@@ -12,6 +12,7 @@ import (
 	"os"
 	"strconv"
 	"strings"
+	"time"
 
 	l "cli/logger"
 	"cli/models"
@@ -32,7 +33,7 @@ func InitState(debugLvl int) {
 	//Send login notification
 	data := map[string]interface{}{"api_url": State.APIURL, "api_token": GetKey()}
 	req := map[string]interface{}{"type": "login", "data": data}
-	e := models.ContactUnity("POST", State.UnityClientURL, req)
+	e := models.ContactUnity("POST", State.UnityClientURL, req, State.Timeout)
 	if e != nil {
 		l.GetWarningLogger().Println("Note: Unity Client (" + State.UnityClientURL + ") Unreachable")
 		fmt.Println("Note: Unity Client (" + State.UnityClientURL + ") Unreachable ")
@@ -148,6 +149,68 @@ func SetStateReadline(rl *readline.Instance) {
 //Startup the go routine for listening
 func TriggerListen(rl *readline.Instance) {
 	go models.ListenForUnity(rl)
+}
+
+func InitTimeout() {
+	file, err := os.Open("./.resources/.env")
+	if err != nil {
+		fmt.Println(err)
+	}
+	defer file.Close()
+
+	scanner := bufio.NewScanner(file)
+	scanner.Split(bufio.ScanWords) // use scanwords
+	for scanner.Scan() {
+		if strings.HasPrefix(scanner.Text(), "unityDeadline=") {
+			if len(scanner.Text()[14:]) > 14 {
+				timeArr := strings.Split(scanner.Text()[14:], " ")
+				if len(timeArr) > 1 {
+					timeDurationStr := timeArr[0]
+					durationType := timeArr[1]
+
+					timeLen, err := strconv.Atoi(timeDurationStr)
+					if err != nil {
+						l.GetWarningLogger().Println("Invalid value given for time duration. Resorting to default of 10")
+						println("Invalid value given for time duration in env file. Resorting to default of 10")
+						timeLen = 10
+					}
+					switch durationType {
+					case "ns":
+						State.Timeout = time.Nanosecond * time.Duration(timeLen)
+					case "us":
+						State.Timeout = time.Microsecond * time.Duration(timeLen)
+					case "ms":
+						State.Timeout = time.Millisecond * time.Duration(timeLen)
+					case "s":
+						State.Timeout = time.Second * time.Duration(timeLen)
+					default:
+						l.GetWarningLogger().Println("Invalid duration unit found. Resorting to default of ms")
+						println("Invalid duration unit found in env file. Resorting to default of ms")
+						State.Timeout = time.Millisecond * time.Duration(timeLen)
+					}
+				} else { // Error Case
+					l.GetWarningLogger().Println("Invalid format given for unity deadline. Resorting to default time duration of 10 ms")
+					println("Warning: Invalid duration unit found in env file. Resorting to default of ms")
+					State.Timeout = time.Millisecond * time.Duration(10)
+				}
+
+			} else { //Error Case
+				l.GetWarningLogger().Println("Unity deadline not found. Resorting to default time duration of 10 ms")
+				println("Warning: Unity deadline not found in env file. Resorting to default of 10 ms")
+				State.Timeout = time.Millisecond * time.Duration(10)
+			}
+			return
+		}
+	}
+
+	if err := scanner.Err(); err != nil {
+		fmt.Println(err)
+		l.GetErrorLogger().Println(err.Error())
+	}
+	l.GetWarningLogger().Println("Unity deadline not found. Resorting to default time duration of 10 ms")
+	println("Warning: Unity deadline not found in env file. Resorting to default of 10 ms")
+	State.Timeout = time.Millisecond * time.Duration(10)
+	return
 }
 
 func InitKey() string {
