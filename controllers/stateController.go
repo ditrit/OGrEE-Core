@@ -51,6 +51,7 @@ type ShellState struct {
 	APIKEY           string
 	UnityClientAvail bool  //For deciding to message unity or not
 	FilterDisplay    bool  //Set whether or not to send attributes to unity
+	Analyser         bool  //Use static analysis before executing scripts
 	ObjsForUnity     []int //Deciding what objects should be sent to unity
 	DrawableObjs     []int //Indicate which objs drawable in unity
 	DrawableJsons    map[string]map[string]interface{}

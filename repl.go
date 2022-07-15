@@ -117,7 +117,11 @@ func loadFile(path string) {
 
 	//Validate the commandbuffer
 	fName := filepath.Base(path)
-	if validateFile(&commandBuffer, fName) == true {
+	if c.State.Analyser == true {
+		if validateFile(&commandBuffer, fName) == true {
+			executeFile(&commandBuffer, fName)
+		}
+	} else {
 		executeFile(&commandBuffer, fName)
 	}
 

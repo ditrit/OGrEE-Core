@@ -43,6 +43,8 @@ func InitState(debugLvl int) {
 	}
 	//Set the filter attributes setting
 	State.FilterDisplay = false
+	//Set the Analyser setting to ON for now
+	State.Analyser = true
 
 	phys := &Node{}
 	phys.Name = "Physical"

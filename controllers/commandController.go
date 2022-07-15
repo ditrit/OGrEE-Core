@@ -2146,6 +2146,16 @@ func SetEnv(arg string, val interface{}) {
 			println("Filter Display Environment variable set")
 		}
 
+	case "Analyser":
+		if _, ok := val.(bool); !ok {
+			msg := "Can only assign bool values for SAnalyser Env Var"
+			l.GetWarningLogger().Println(msg)
+			println(msg)
+		} else {
+			State.Analyser = val.(bool)
+			println("Static Analyser Environment variable set")
+		}
+
 	default:
 		println(arg + " is not an environment variable")
 	}
