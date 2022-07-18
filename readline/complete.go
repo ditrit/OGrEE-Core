@@ -124,6 +124,7 @@ func (o *opCompleter) OnComplete() bool {
 		//println("CLASSIC HAVENT PLAYED IT YET")
 		//This block executes when there are no matches
 		o.ExitCompleteMode(false)
+		o.op.Refresh()
 		return true
 	}
 
