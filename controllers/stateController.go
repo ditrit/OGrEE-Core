@@ -364,7 +364,10 @@ func CheckPathOnline(Path string) (bool, string) {
 	pathSplit := strings.Split(path.Clean(Path), "/")
 
 	//Check if path refers to object in local State Tree
-	if len(pathSplit) <= 3 {
+	//There is an edge case for Stray object paths ending
+	//with Device or Sensor
+	pathLen := len(pathSplit)
+	if pathLen <= 3 || pathSplit[pathLen-1] == "Device" || pathSplit[pathLen-1] == "Sensor" {
 		nd := FindNodeInTree(&State.TreeHierarchy, StrToStack(Path), true)
 		if nd != nil {
 			return true, Path
