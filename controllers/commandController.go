@@ -10,7 +10,9 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"os/exec"
 	"path"
+	"runtime"
 	"strconv"
 	"strings"
 )
@@ -491,7 +493,15 @@ func LS(x string) []map[string]interface{} {
 }
 
 func Clear() {
-	fmt.Printf("\033[H")
+
+	switch runtime.GOOS {
+	case "windows":
+		cmd := exec.Command("cmd", "/c", "cls")
+		cmd.Stdout = os.Stdout
+		cmd.Run()
+	default:
+		fmt.Printf("\033[H")
+	}
 }
 
 func LSOG() {
