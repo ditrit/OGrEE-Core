@@ -162,6 +162,9 @@ pipeline {
 
                 //Leftover containers from Dockerfile building
                 sh 'docker container prune -f' 
+
+                //Clear builder cache
+                sh 'docker builder prune'
                 
                 //sh 'docker run -d --rm --network=host --name=ogree_api testingalpine:dockerfile /home/main'
                 sh 'docker-compose -f /OGrEE/docker-compose.yml up -d --no-recreate'
