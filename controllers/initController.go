@@ -19,8 +19,27 @@ import (
 	"cli/readline"
 )
 
+//Intialises env map with .env file
+func LoadEnvFile(env map[string]interface{}) {
+	file, err := os.Open("./.resources/.env")
+	defer file.Close()
+	if err == nil {
+		scanner := bufio.NewScanner(file)
+		scanner.Split(bufio.ScanWords) // use scanwords
+		for scanner.Scan() {
+
+			key, val, _ := strings.Cut(scanner.Text(), "=")
+			env[key] = val
+		}
+	} else {
+		fmt.Println(err.Error())
+		l.GetErrorLogger().Println("Error at initialisation:" +
+			err.Error())
+	}
+}
+
 //Intialise the ShellState
-func InitState(flags map[string]interface{}) {
+func InitState(flags, env map[string]interface{}) {
 	State.DebugLvl = flags["v"].(int)
 	State.ClipBoard = nil
 	State.TreeHierarchy = &(Node{})
@@ -130,13 +149,13 @@ func InitState(flags map[string]interface{}) {
 	SearchAndInsert(&State.TreeHierarchy, enterprise, "/Organisation")
 
 	//Set which objects Unity will be notified about
-	State.ObjsForUnity = SetObjsForUnity("updates")
-	State.DrawableObjs = SetObjsForUnity("drawable")
+	State.ObjsForUnity = SetObjsForUnity("updates", env)
+	State.DrawableObjs = SetObjsForUnity("drawable", env)
 	State.DrawableJsons = make(map[string]map[string]interface{}, 16)
 
 	for i := TENANT; i < GROUP+1; i++ {
 		ent := EntityToString(i)
-		State.DrawableJsons[ent] = SetDrawableTemplate(ent)
+		State.DrawableJsons[ent] = SetDrawableTemplate(ent, env)
 	}
 }
 
@@ -151,7 +170,7 @@ func TriggerListen(rl *readline.Instance, addr string) {
 	go models.ListenForUnity(rl, addr)
 }
 
-func SetListener(flags map[string]interface{}) {
+func SetListener(flags, env map[string]interface{}) {
 	if flags["listen_port"] != nil && flags["listen_port"] != "" {
 		portInt := flags["listen_port"].(int)
 		port := strconv.Itoa(portInt)
@@ -159,115 +178,62 @@ func SetListener(flags map[string]interface{}) {
 		return
 	}
 
-	file, err := os.Open("./.resources/.env")
-	defer file.Close()
-	if err == nil {
-		scanner := bufio.NewScanner(file)
-		scanner.Split(bufio.ScanWords) // use scanwords
-		for scanner.Scan() {
-			if strings.HasPrefix(scanner.Text(), "listenPORT=") {
-				State.ListenAddr = scanner.Text()[11:]
-				return
-			}
-		}
+	if env["listenPORT"] != nil {
+		State.ListenAddr = "0.0.0.0:" + env["listenPORT"].(string)
+		return
 	}
 
 	println("Falling back to default Listening Port")
 	l.GetListenInfoLogger().Println("Falling back to default Listening Port")
-	//InfoLogger.Println("Falling back to Listening Port")
 	State.ListenAddr = "0.0.0.0:5501"
 }
 
-func InitTimeout() {
-	file, err := os.Open("./.resources/.env")
-	if err != nil {
-		fmt.Println(err)
-	}
-	defer file.Close()
-
-	scanner := bufio.NewScanner(file)
-	scanner.Split(bufio.ScanWords) // use scanwords
-	for scanner.Scan() {
-		if strings.HasPrefix(scanner.Text(), "unityDeadline=") {
-			if len(scanner.Text()[14:]) > 14 {
-				timeArr := strings.Split(scanner.Text()[14:], " ")
-				if len(timeArr) > 1 {
-					timeDurationStr := timeArr[0]
-					durationType := timeArr[1]
-
-					timeLen, err := strconv.Atoi(timeDurationStr)
-					if err != nil {
-						l.GetWarningLogger().Println("Invalid value given for time duration. Resorting to default of 10")
-						println("Invalid value given for time duration in env file. Resorting to default of 10")
-						timeLen = 10
-					}
-					switch durationType {
-					case "ns":
-						State.Timeout = time.Nanosecond * time.Duration(timeLen)
-					case "us":
-						State.Timeout = time.Microsecond * time.Duration(timeLen)
-					case "ms":
-						State.Timeout = time.Millisecond * time.Duration(timeLen)
-					case "s":
-						State.Timeout = time.Second * time.Duration(timeLen)
-					default:
-						l.GetWarningLogger().Println("Invalid duration unit found. Resorting to default of ms")
-						println("Invalid duration unit found in env file. Resorting to default of ms")
-						State.Timeout = time.Millisecond * time.Duration(timeLen)
-					}
-				} else { // Error Case
-					l.GetWarningLogger().Println("Invalid format given for unity deadline. Resorting to default time duration of 10 ms")
-					println("Warning: Invalid duration unit found in env file. Resorting to default of ms")
-					State.Timeout = time.Millisecond * time.Duration(10)
-				}
-
-			} else { //Error Case
-				l.GetWarningLogger().Println("Unity deadline not found. Resorting to default time duration of 10 ms")
-				println("Warning: Unity deadline not found in env file. Resorting to default of 10 ms")
-				State.Timeout = time.Millisecond * time.Duration(10)
-			}
-			return
+func InitTimeout(env map[string]interface{}) {
+	if env["unityDeadline"] != nil && env["unityDeadline"] != "" {
+		var timeLen int
+		var durationType string
+		duration := env["unityDeadline"].(string)
+		fmt.Sscanf(duration, "%d%s", &timeLen, &durationType)
+		switch durationType {
+		case "ns":
+			State.Timeout = time.Nanosecond * time.Duration(timeLen)
+		case "us":
+			State.Timeout = time.Microsecond * time.Duration(timeLen)
+		case "ms":
+			State.Timeout = time.Millisecond * time.Duration(timeLen)
+		case "s":
+			State.Timeout = time.Second * time.Duration(timeLen)
+		default:
+			l.GetWarningLogger().Println("Invalid duration unit found. Resorting to default of ms")
+			println("Invalid duration unit found in env file. Resorting to default of ms")
+			State.Timeout = time.Millisecond * time.Duration(timeLen)
 		}
+		return
 	}
 
-	if err := scanner.Err(); err != nil {
-		fmt.Println(err)
-		l.GetErrorLogger().Println(err.Error())
-	}
 	l.GetWarningLogger().Println("Unity deadline not found. Resorting to default time duration of 10 ms")
 	println("Warning: Unity deadline not found in env file. Resorting to default of 10 ms")
 	State.Timeout = time.Millisecond * time.Duration(10)
 	return
 }
 
-func InitKey(flags map[string]interface{}) string {
+func InitKey(flags, env map[string]interface{}) string {
 	if flags["api_key"] != nil && flags["api_key"] != "" {
 		State.APIKEY = flags["api_key"].(string)
 		return State.APIKEY
-
-	} else {
-		file, err := os.Open("./.resources/.env")
-		if err != nil {
-			fmt.Println(err)
-		}
-		defer file.Close()
-
-		scanner := bufio.NewScanner(file)
-		scanner.Split(bufio.ScanWords) // use scanwords
-		for scanner.Scan() {
-			if strings.HasPrefix(scanner.Text(), "apikey=") {
-				State.APIKEY = scanner.Text()[7:]
-				return scanner.Text()[7:]
-			}
-		}
-
-		if err := scanner.Err(); err != nil {
-			fmt.Println(err)
-			l.GetErrorLogger().Println(err.Error())
-		}
-		State.APIKEY = ""
-		return ""
 	}
+
+	if env["apikey"] != nil {
+		State.APIKEY = env["apikey"].(string)
+		return State.APIKEY
+	}
+
+	fmt.Println("Error: No API Key Found")
+	l.GetErrorLogger().Println(
+		"No API Key provided in env file nor as argument")
+	State.APIKEY = ""
+	return ""
+
 }
 
 func GetEmail() string {
@@ -293,7 +259,7 @@ func GetEmail() string {
 }
 
 //Automatically assign Unity and API URLs
-func GetURLs(flags map[string]interface{}) {
+func GetURLs(flags, env map[string]interface{}) {
 	if flags["api_url"] != nil && flags["api_url"] != "" {
 		State.APIURL = flags["api_url"].(string)
 	}
@@ -301,29 +267,15 @@ func GetURLs(flags map[string]interface{}) {
 		State.UnityClientURL = flags["unity_url"].(string)
 	}
 
-	file, err := os.Open("./.resources/.env")
-	if err != nil {
-		fmt.Println(err)
-		fmt.Println("Falling back to default URLs")
-		l.GetInfoLogger().Println("Falling back to default URLs")
-		State.UnityClientURL = "http://localhost:5500"
-		State.APIURL = "http://localhost:3001"
-	}
-	defer file.Close()
-
-	scanner := bufio.NewScanner(file)
-	scanner.Split(bufio.ScanWords) // use scanwords
-	for scanner.Scan() {
-		if State.UnityClientURL == "" {
-			if strings.HasPrefix(scanner.Text(), "unityURL=") {
-				State.UnityClientURL = scanner.Text()[9:]
-			}
+	if State.UnityClientURL == "" {
+		if env["unityURL"] != nil {
+			State.UnityClientURL = env["unityURL"].(string)
 		}
+	}
 
-		if State.APIURL == "" {
-			if strings.HasPrefix(scanner.Text(), "apiURL=") {
-				State.APIURL = scanner.Text()[7:]
-			}
+	if State.APIURL == "" {
+		if env["apiURL"] != nil {
+			State.APIURL = env["apiURL"].(string)
 		}
 	}
 
@@ -347,43 +299,27 @@ func GetURLs(flags map[string]interface{}) {
 
 //Helper for InitState will
 //insert objs
-func SetObjsForUnity(x string) []int {
+func SetObjsForUnity(x string, env map[string]interface{}) []int {
 	res := []int{}
-	key := x + "="
 	allDetected := false
-	file, err := os.Open("./.resources/.env")
-	if err != nil {
-		fmt.Println(err)
-	}
-	defer file.Close()
 
-	scanner := bufio.NewScanner(file)
-	scanner.Split(bufio.ScanWords) // use scanwords
-	for scanner.Scan() {
-		if strings.HasPrefix(scanner.Text(), key) {
-			//ObjStr is equal to everything after 'updates='
-			objStr := strings.SplitAfter(scanner.Text(), key)[1]
-			arr := strings.Split(objStr, ",")
+	if env[x] != nil && env[x] != "" {
+		//ObjStr is equal to everything after 'updates='
+		objStr := env[x].(string)
+		arr := strings.Split(objStr, ",")
 
-			for i := range arr {
-				arr[i] = strings.ToLower(arr[i])
+		for i := range arr {
+			arr[i] = strings.ToLower(arr[i])
 
-				if val := EntityStrToInt(arr[i]); val != -1 {
-					res = append(res, val)
+			if val := EntityStrToInt(arr[i]); val != -1 {
+				res = append(res, val)
 
-				} else if arr[i] == "all" {
-					//Exit the loop and use default code @ end of function
-					allDetected = true
-					i = len(arr)
-				}
+			} else if arr[i] == "all" {
+				//Exit the loop and use default code @ end of function
+				allDetected = true
+				i = len(arr)
 			}
-
 		}
-	}
-
-	if err := scanner.Err(); err != nil {
-		l.GetErrorLogger().Println(err)
-		fmt.Println(err)
 	}
 
 	//Use default values
@@ -402,37 +338,26 @@ func SetObjsForUnity(x string) []int {
 	return res
 }
 
-func SetDrawableTemplate(entity string) map[string]interface{} {
-	file, err := os.Open("./.resources/.env")
-	if err != nil {
-		fmt.Println(err)
-	}
-	defer file.Close()
-
-	scanner := bufio.NewScanner(file)
-	scanner.Split(bufio.ScanWords) // use scanwords
-
-	for scanner.Scan() {
-		if strings.HasPrefix(scanner.Text(), entity) {
-			objStr := strings.Split(scanner.Text(), entity+"DrawableJson=")[1]
-			objStr = strings.Trim(objStr, "'\"")
-
-			//Now retrieve file
-			ans := map[string]interface{}{}
-			f, e := ioutil.ReadFile(objStr)
-			if e != nil {
-				l.GetWarningLogger().Println("Specified template for " + entity + " not found")
-				if State.DebugLvl > 2 {
-					println("Specified template for " + entity +
-						" not found, resorting to defaults")
-				}
-				return nil
-			}
+func SetDrawableTemplate(entity string, env map[string]interface{}) map[string]interface{} {
+	var objStr string
+	templateKey := entity + "DrawableJson"
+	if env[templateKey] != nil && env[templateKey] != "" {
+		objStr = strings.Trim(objStr, "'\"")
+		//Now retrieve file
+		ans := map[string]interface{}{}
+		f, e := ioutil.ReadFile(objStr)
+		if e == nil {
 			json.Unmarshal(f, &ans)
 			return ans
 		}
+
 	}
 
+	l.GetWarningLogger().Println("Specified template for " + entity + " not found")
+	if State.DebugLvl > 2 {
+		println("Specified template for " + entity +
+			" not found, resorting to defaults")
+	}
 	return nil
 }
 
@@ -499,37 +424,23 @@ func CheckKeyIsValid(key string) bool {
 	return true
 }
 
-func Login() (string, string) {
+func Login(env map[string]interface{}) (string, string) {
 	var user, key string
-	file, err := os.Open("./.resources/.env")
-	if err != nil {
+
+	if env["user"] == nil || env["apikey"] == nil ||
+		env["user"] == "" || env["apikey"] == "" {
 		l.GetInfoLogger().Println("Key not found, going to generate..")
 		user, key = CreateCredentials()
 	} else {
-		scanner := bufio.NewScanner(file)
-		scanner.Split(bufio.ScanWords) // use scanwords
-		for scanner.Scan() {
-			if strings.HasPrefix(scanner.Text(), "apikey=") {
-				key = scanner.Text()[7:]
-			}
-
-			if strings.HasPrefix(scanner.Text(), "user=") {
-				user = scanner.Text()[5:]
-			}
-		}
-
-		if err := scanner.Err(); err != nil {
-			fmt.Println(err)
-			l.GetErrorLogger().Println(err)
-		}
-
-		if !CheckKeyIsValid(key) {
-			println("Error while checking key. Now exiting")
-			l.GetErrorLogger().Println("Error while checking key. Now exiting")
-			os.Exit(-1)
-		}
+		user = env["user"].(string)
+		key = env["apikey"].(string)
 	}
-	defer file.Close()
+
+	if !CheckKeyIsValid(key) {
+		println("Error while checking key. Now exiting")
+		l.GetErrorLogger().Println("Error while checking key. Now exiting")
+		os.Exit(-1)
+	}
 
 	//println("Checking credentials...")
 	//println(CheckKeyIsValid(key))

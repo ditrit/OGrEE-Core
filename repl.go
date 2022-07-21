@@ -204,14 +204,17 @@ func TrimToSlash(x string) string {
 //Init the Shell
 func Start(flags map[string]interface{}) {
 
+	env := map[string]interface{}{}
+	c.LoadEnvFile(env)
+
 	l.InitLogs()
-	c.InitTimeout()  //Set the Unity Timeout
-	c.GetURLs(flags) //Set the URLs
-	c.InitKey(flags) //Set the API Key
-	user, _ := c.Login()
+	c.InitTimeout(env)    //Set the Unity Timeout
+	c.GetURLs(flags, env) //Set the URLs
+	c.InitKey(flags, env) //Set the API Key
+	user, _ := c.Login(env)
 
 	println("Caching data... please wait")
-	c.InitState(flags)
+	c.InitState(flags, env)
 
 	rl, err := readline.NewEx(&readline.Config{
 		Prompt:          "\u001b[32m\u001b[1m" + user + "@" + "OGrEE3D:" + "\u001b[37;1m" + c.State.CurrPath + "$> " + "\u001b[0m",
@@ -248,7 +251,7 @@ func Start(flags map[string]interface{}) {
 	//If Unity Client is present we have to Trigger
 	//the listen routine
 	if c.State.UnityClientAvail == true {
-		c.SetListener(flags)
+		c.SetListener(flags, env)
 		c.TriggerListen(rl, c.State.ListenAddr)
 	}
 
