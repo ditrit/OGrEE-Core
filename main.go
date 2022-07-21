@@ -5,11 +5,9 @@ import (
 )
 
 func main() {
-	var verboseLevel int
-	var unityURL string
-	var APIURL string
-	var listenPORT int
-	var APIKEY string
+	var verboseLevel, listenPORT int
+	var unityURL, APIURL, APIKEY, path string
+
 	flags := map[string]interface{}{}
 
 	flag.IntVar(&verboseLevel, "v", 0,
@@ -24,6 +22,9 @@ func main() {
 
 	flag.StringVar(&APIKEY, "api_key", "", "Indicate the key of the API")
 
+	flag.StringVar(&path, "env_path", "./.resources/.env",
+		"Indicate the location of the Shell's env file")
+
 	flag.Parse()
 
 	flags["v"] = verboseLevel
@@ -35,6 +36,7 @@ func main() {
 	flags["api_key"] = APIKEY
 
 	flags["listen_port"] = listenPORT
+	flags["path"] = path
 
 	//Pass control to repl.go
 	Start(flags)

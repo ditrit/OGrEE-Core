@@ -20,8 +20,8 @@ import (
 )
 
 //Intialises env map with .env file
-func LoadEnvFile(env map[string]interface{}) {
-	file, err := os.Open("./.resources/.env")
+func LoadEnvFile(env map[string]interface{}, path string) {
+	file, err := os.Open(path)
 	defer file.Close()
 	if err == nil {
 		scanner := bufio.NewScanner(file)

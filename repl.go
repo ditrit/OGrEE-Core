@@ -205,9 +205,9 @@ func TrimToSlash(x string) string {
 func Start(flags map[string]interface{}) {
 
 	env := map[string]interface{}{}
-	c.LoadEnvFile(env)
 
 	l.InitLogs()
+	c.LoadEnvFile(env, flags["path"].(string))
 	c.InitTimeout(env)    //Set the Unity Timeout
 	c.GetURLs(flags, env) //Set the URLs
 	c.InitKey(flags, env) //Set the API Key
