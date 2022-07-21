@@ -202,16 +202,16 @@ func TrimToSlash(x string) string {
 //End of Functions for autocompleter
 
 //Init the Shell
-func Start(verboseLevel int) {
+func Start(flags map[string]interface{}) {
 
 	l.InitLogs()
-	c.InitTimeout() //Set the Unity Timeout
-	c.GetURLs()     //Set the URLs
-	c.InitKey()     //Set the API Key
+	c.InitTimeout()  //Set the Unity Timeout
+	c.GetURLs(flags) //Set the URLs
+	c.InitKey(flags) //Set the API Key
 	user, _ := c.Login()
 
 	println("Caching data... please wait")
-	c.InitState(verboseLevel)
+	c.InitState(flags)
 
 	rl, err := readline.NewEx(&readline.Config{
 		Prompt:          "\u001b[32m\u001b[1m" + user + "@" + "OGrEE3D:" + "\u001b[37;1m" + c.State.CurrPath + "$> " + "\u001b[0m",
@@ -248,7 +248,8 @@ func Start(verboseLevel int) {
 	//If Unity Client is present we have to Trigger
 	//the listen routine
 	if c.State.UnityClientAvail == true {
-		c.TriggerListen(rl)
+		c.SetListener(flags)
+		c.TriggerListen(rl, c.State.ListenAddr)
 	}
 
 	Repl(rl, user)

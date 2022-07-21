@@ -20,8 +20,8 @@ import (
 )
 
 //Intialise the ShellState
-func InitState(debugLvl int) {
-	State.DebugLvl = debugLvl
+func InitState(flags map[string]interface{}) {
+	State.DebugLvl = flags["v"].(int)
 	State.ClipBoard = nil
 	State.TreeHierarchy = &(Node{})
 	(*(State.TreeHierarchy)).Entity = -1
@@ -147,8 +147,35 @@ func SetStateReadline(rl *readline.Instance) {
 }
 
 //Startup the go routine for listening
-func TriggerListen(rl *readline.Instance) {
-	go models.ListenForUnity(rl)
+func TriggerListen(rl *readline.Instance, addr string) {
+	go models.ListenForUnity(rl, addr)
+}
+
+func SetListener(flags map[string]interface{}) {
+	if flags["listen_port"] != nil && flags["listen_port"] != "" {
+		portInt := flags["listen_port"].(int)
+		port := strconv.Itoa(portInt)
+		State.ListenAddr = "0.0.0.0:" + port
+		return
+	}
+
+	file, err := os.Open("./.resources/.env")
+	defer file.Close()
+	if err == nil {
+		scanner := bufio.NewScanner(file)
+		scanner.Split(bufio.ScanWords) // use scanwords
+		for scanner.Scan() {
+			if strings.HasPrefix(scanner.Text(), "listenPORT=") {
+				State.ListenAddr = scanner.Text()[11:]
+				return
+			}
+		}
+	}
+
+	println("Falling back to default Listening Port")
+	l.GetListenInfoLogger().Println("Falling back to default Listening Port")
+	//InfoLogger.Println("Falling back to Listening Port")
+	State.ListenAddr = "0.0.0.0:5501"
 }
 
 func InitTimeout() {
@@ -213,28 +240,34 @@ func InitTimeout() {
 	return
 }
 
-func InitKey() string {
-	file, err := os.Open("./.resources/.env")
-	if err != nil {
-		fmt.Println(err)
-	}
-	defer file.Close()
+func InitKey(flags map[string]interface{}) string {
+	if flags["api_key"] != nil && flags["api_key"] != "" {
+		State.APIKEY = flags["api_key"].(string)
+		return State.APIKEY
 
-	scanner := bufio.NewScanner(file)
-	scanner.Split(bufio.ScanWords) // use scanwords
-	for scanner.Scan() {
-		if strings.HasPrefix(scanner.Text(), "apikey=") {
-			State.APIKEY = scanner.Text()[7:]
-			return scanner.Text()[7:]
+	} else {
+		file, err := os.Open("./.resources/.env")
+		if err != nil {
+			fmt.Println(err)
 		}
-	}
+		defer file.Close()
 
-	if err := scanner.Err(); err != nil {
-		fmt.Println(err)
-		l.GetErrorLogger().Println(err.Error())
+		scanner := bufio.NewScanner(file)
+		scanner.Split(bufio.ScanWords) // use scanwords
+		for scanner.Scan() {
+			if strings.HasPrefix(scanner.Text(), "apikey=") {
+				State.APIKEY = scanner.Text()[7:]
+				return scanner.Text()[7:]
+			}
+		}
+
+		if err := scanner.Err(); err != nil {
+			fmt.Println(err)
+			l.GetErrorLogger().Println(err.Error())
+		}
+		State.APIKEY = ""
+		return ""
 	}
-	State.APIKEY = ""
-	return ""
 }
 
 func GetEmail() string {
@@ -260,7 +293,14 @@ func GetEmail() string {
 }
 
 //Automatically assign Unity and API URLs
-func GetURLs() {
+func GetURLs(flags map[string]interface{}) {
+	if flags["api_url"] != nil && flags["api_url"] != "" {
+		State.APIURL = flags["api_url"].(string)
+	}
+	if flags["unity_url"] != nil && flags["unity_url"] != "" {
+		State.UnityClientURL = flags["unity_url"].(string)
+	}
+
 	file, err := os.Open("./.resources/.env")
 	if err != nil {
 		fmt.Println(err)
@@ -274,12 +314,16 @@ func GetURLs() {
 	scanner := bufio.NewScanner(file)
 	scanner.Split(bufio.ScanWords) // use scanwords
 	for scanner.Scan() {
-		if strings.HasPrefix(scanner.Text(), "unityURL=") {
-			State.UnityClientURL = scanner.Text()[9:]
+		if State.UnityClientURL == "" {
+			if strings.HasPrefix(scanner.Text(), "unityURL=") {
+				State.UnityClientURL = scanner.Text()[9:]
+			}
 		}
 
-		if strings.HasPrefix(scanner.Text(), "apiURL=") {
-			State.APIURL = scanner.Text()[7:]
+		if State.APIURL == "" {
+			if strings.HasPrefix(scanner.Text(), "apiURL=") {
+				State.APIURL = scanner.Text()[7:]
+			}
 		}
 	}
 
