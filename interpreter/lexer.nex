@@ -43,7 +43,7 @@
 /selection/ {  printToks("TOK_SELECT"); return TOK_SELECT}
 /cmds/ {  printToks("TOK_CMDS"); return TOK_CMDS}
 /template/ {  printToks("TOK_TEMPLATE"); return TOK_TEMPLATE}
-/var/ {  printToks("TOK_VAR");return TOK_VAR}
+/.var/ {  printToks("TOK_VAR");return TOK_VAR}
 /{/ {  printToks("TOK_LBRAC");return TOK_LBRAC}
 /}/ {  printToks("TOK_RBRAC");return TOK_RBRAC}
 /,/ {  printToks("TOK_COMMA"); return TOK_COMMA}

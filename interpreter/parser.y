@@ -231,7 +231,7 @@ func checkIfTemplate(x interface{}) bool {
 %type <elifArr> EIF
 %type <node> OCSEL OCLISYNTX OCDEL OCGET NT_CREATE NT_GET NT_DEL 
 %type <node> NT_UPDATE K Q BASH OCUPDATE OCCHOOSE OCCR OCDOT
-%type <node> EXPR REL OPEN_STMT CTRL nex factor unary EQAL term
+%type <node> EXPR REL CTRL nex factor unary EQAL term
 %type <node> stmnt JOIN
 %type <node> st2 FUNC HANDLEUI HANDLELINKS
 %left TOK_MULT TOK_OCDEL TOK_SLASH TOK_PLUS 
@@ -247,8 +247,6 @@ st2: stmnt {$$=&ast{BLOCK,[]node{$1} }}
        |CTRL {$$=&ast{IF,[]node{$1}}}
 ;
 
-
-
 stmnt: K {$$=$1}
        |Q {$$=$1}
        |OCLISYNTX {$$=$1}
@@ -256,10 +254,7 @@ stmnt: K {$$=$1}
        |{$$=nil}
 ;
 
-CTRL: OPEN_STMT {$$=$1}
-       ;
-
-OPEN_STMT:    TOK_IF TOK_LBLOCK EXPR TOK_RBLOCK TOK_THEN st2 TOK_FI {$$=&ifNode{IF, $3, $6, nil, nil}}
+CTRL:    TOK_IF TOK_LBLOCK EXPR TOK_RBLOCK TOK_THEN st2 TOK_FI {$$=&ifNode{IF, $3, $6, nil, nil}}
               |TOK_IF TOK_LBLOCK EXPR TOK_RBLOCK TOK_THEN st2 EIF TOK_ELSE st2 TOK_FI {$$=&ifNode{IF, $3, $6, $9, $7}}
               |TOK_WHILE TOK_LPAREN EXPR TOK_RPAREN st2 TOK_DONE {$$=&whileNode{WHILE, $3, $5}}
               |TOK_FOR TOK_LPAREN TOK_LPAREN TOK_WORD TOK_EQUAL WORDORNUM TOK_SEMICOL EXPR TOK_SEMICOL stmnt TOK_RPAREN TOK_RPAREN TOK_SEMICOL st2 TOK_DONE 
@@ -567,7 +562,7 @@ BASH:  TOK_CLR {$$=&commonNode{COMMON, cmd.Clear, "CLR", nil}}
        | TOK_DOC TOK_OCDEL {$$=&commonNode{COMMON, cmd.Help, "Help", []interface{}{"-"}}}
        | TOK_DOC TOK_DOT TOK_TEMPLATE {$$=&commonNode{COMMON, cmd.Help, "Help", []interface{}{".template"}}}
        | TOK_DOC TOK_DOT TOK_CMDS {$$=&commonNode{COMMON, cmd.Help, "Help", []interface{}{".cmds"}}}
-       | TOK_DOC TOK_DOT TOK_VAR {$$=&commonNode{COMMON, cmd.Help, "Help", []interface{}{".var"}}}
+       | TOK_DOC TOK_VAR {$$=&commonNode{COMMON, cmd.Help, "Help", []interface{}{".var"}}}
        | TOK_DOC TOK_PLUS {$$=&commonNode{COMMON, cmd.Help, "Help", []interface{}{"+"}}}
        | TOK_DOC TOK_EQUAL {$$=&commonNode{COMMON, cmd.Help, "Help", []interface{}{"="}}}
        | TOK_DOC TOK_GREATER {$$=&commonNode{COMMON, cmd.Help, "Help", []interface{}{">"}}}
@@ -639,23 +634,23 @@ GETOBJS:      P TOK_COMMA GETOBJS {x := make([]string,0); x = append(x, formActu
 OCCHOOSE: TOK_EQUAL TOK_LBRAC GETOBJS TOK_RBRAC {$$=&commonNode{COMMON, cmd.SetClipBoard, "setCB", []interface{}{&$3}}; println("Selection made!")}
 ;
 
-OCDOT:      //TOK_DOT TOK_VAR TOK_COL TOK_WORD TOK_EQUAL WORDORNUM {$$=&assignNode{ASSIGN, $4, dCatchNodePtr}}
-            //|TOK_DOT TOK_VAR TOK_COL TOK_WORD TOK_EQUAL TOK_QUOT STRARG TOK_QUOT{$$=&assignNode{ASSIGN, $4, &strNode{STR, $7}}}
-            //TOK_DOT TOK_VAR TOK_COL TOK_WORD TOK_EQUAL TOK_LPAREN WNARG TOK_RPAREN {$$=&assignNode{ASSIGN, $4, &arrNode{ARRAY, len($7),retNodeArray($7)}}}
-            TOK_DOT TOK_VAR TOK_COL TOK_WORD TOK_EQUAL TOK_DEREF TOK_LPAREN K TOK_RPAREN {$$=&assignNode{ASSIGN, $4, ($8).(node).execute()}}
-            |TOK_DOT TOK_VAR TOK_COL TOK_WORD TOK_EQUAL TOK_DEREF TOK_LPAREN Q  TOK_RPAREN {$$=&assignNode{ASSIGN, $4, ($8).(node).execute()}}
-            |TOK_DOT TOK_VAR TOK_COL TOK_WORD TOK_EQUAL TOK_DEREF TOK_LPAREN TOK_PLUS OCCR  TOK_RPAREN {$$=&assignNode{ASSIGN, $4, ($9).(node).execute()}}
-            |TOK_DOT TOK_VAR TOK_COL TOK_WORD TOK_EQUAL TOK_DEREF TOK_LPAREN OCDEL  TOK_RPAREN {$$=&assignNode{ASSIGN, $4, ($8).(node).execute()}}
-            |TOK_DOT TOK_VAR TOK_COL TOK_WORD TOK_EQUAL TOK_DEREF TOK_LPAREN OCUPDATE  TOK_RPAREN {$$=&assignNode{ASSIGN, $4, ($8).(node).execute()}}
-            |TOK_DOT TOK_VAR TOK_COL TOK_WORD TOK_EQUAL TOK_DEREF TOK_LPAREN OCGET  TOK_RPAREN {$$=&assignNode{ASSIGN, $4, ($8).(node).execute()}}
-            |TOK_DOT TOK_VAR TOK_COL TOK_WORD TOK_EQUAL TOK_DEREF TOK_LPAREN OCCHOOSE  TOK_RPAREN {$$=&assignNode{ASSIGN, $4, ($8).(node).execute()}}
-            |TOK_DOT TOK_VAR TOK_COL TOK_WORD TOK_EQUAL TOK_DEREF TOK_LPAREN OCSEL  TOK_RPAREN {$$=&assignNode{ASSIGN, $4, ($8).(node).execute()}}
-            |TOK_DOT TOK_VAR TOK_COL TOK_WORD TOK_EQUAL EXPR {val := ($6).(node).execute(); if ($6).(node).getType() == ARITHMETIC && val == nil {$$=nil} else {$$=&assignNode{ASSIGN, $4, val}}}
+OCDOT:      //TOK_VAR TOK_COL TOK_WORD TOK_EQUAL WORDORNUM {$$=&assignNode{ASSIGN, $3, dCatchNodePtr}}
+            //|TOK_VAR TOK_COL TOK_WORD TOK_EQUAL TOK_QUOT STRARG TOK_QUOT{$$=&assignNode{ASSIGN, $3, &strNode{STR, $6}}}
+            //TOK_VAR TOK_COL TOK_WORD TOK_EQUAL TOK_LPAREN WNARG TOK_RPAREN {$$=&assignNode{ASSIGN, $3, &arrNode{ARRAY, len($6),retNodeArray($6)}}}
+            TOK_VAR TOK_COL TOK_WORD TOK_EQUAL TOK_DEREF TOK_LPAREN K TOK_RPAREN {$$=&assignNode{ASSIGN, $3, ($7).(node).execute()}}
+            |TOK_VAR TOK_COL TOK_WORD TOK_EQUAL TOK_DEREF TOK_LPAREN Q  TOK_RPAREN {$$=&assignNode{ASSIGN, $3, ($7).(node).execute()}}
+            |TOK_VAR TOK_COL TOK_WORD TOK_EQUAL TOK_DEREF TOK_LPAREN TOK_PLUS OCCR  TOK_RPAREN {$$=&assignNode{ASSIGN, $3, ($8).(node).execute()}}
+            |TOK_VAR TOK_COL TOK_WORD TOK_EQUAL TOK_DEREF TOK_LPAREN OCDEL  TOK_RPAREN {$$=&assignNode{ASSIGN, $3, ($7).(node).execute()}}
+            |TOK_VAR TOK_COL TOK_WORD TOK_EQUAL TOK_DEREF TOK_LPAREN OCUPDATE  TOK_RPAREN {$$=&assignNode{ASSIGN, $3, ($7).(node).execute()}}
+            |TOK_VAR TOK_COL TOK_WORD TOK_EQUAL TOK_DEREF TOK_LPAREN OCGET  TOK_RPAREN {$$=&assignNode{ASSIGN, $3, ($7).(node).execute()}}
+            |TOK_VAR TOK_COL TOK_WORD TOK_EQUAL TOK_DEREF TOK_LPAREN OCCHOOSE  TOK_RPAREN {$$=&assignNode{ASSIGN, $3, ($7).(node).execute()}}
+            |TOK_VAR TOK_COL TOK_WORD TOK_EQUAL TOK_DEREF TOK_LPAREN OCSEL  TOK_RPAREN {$$=&assignNode{ASSIGN, $3, ($7).(node).execute()}}
+            |TOK_VAR TOK_COL TOK_WORD TOK_EQUAL EXPR {val := ($5).(node).execute(); if ($5).(node).getType() == ARITHMETIC && val == nil {$$=nil} else {$$=&assignNode{ASSIGN, $3, val}}}
             |TOK_DOT TOK_CMDS TOK_COL P {$$=&commonNode{COMMON, cmd.LoadFile, "Load", []interface{}{$4, "cmd"}};}
             |TOK_DOT TOK_TEMPLATE TOK_COL P {$$=&commonNode{COMMON, cmd.LoadTemplate, "Load", []interface{}{$4, "template"}}}
-            |TOK_DOT TOK_VAR TOK_COL TOK_WORD TOK_EQUAL Q {$$=&assignNode{ASSIGN, $4, $6}}
-            |TOK_DOT TOK_VAR TOK_COL TOK_WORD TOK_EQUAL K {$$=&assignNode{ASSIGN, $4, $6}}
-            //|TOK_DOT TOK_VAR TOK_COL TOK_WORD TOK_EQUAL OCLISYNTX {$$=&assignNode{ASSIGN, $4, $6}}
+            |TOK_VAR TOK_COL TOK_WORD TOK_EQUAL Q {$$=&assignNode{ASSIGN, $3, $5}}
+            |TOK_VAR TOK_COL TOK_WORD TOK_EQUAL K {$$=&assignNode{ASSIGN, $3, $5}}
+            //|TOK_VAR TOK_COL TOK_WORD TOK_EQUAL OCLISYNTX {$$=&assignNode{ASSIGN, $3, $5}}
             |TOK_DEREF TOK_WORD {$$=&symbolReferenceNode{REFERENCE, $2, &numNode{NUM,0}, nil}}
               
 
