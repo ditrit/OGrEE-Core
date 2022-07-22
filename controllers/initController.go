@@ -28,7 +28,9 @@ func LoadEnvFile(env map[string]interface{}, path string) {
 		scanner.Split(bufio.ScanWords) // use scanwords
 		for scanner.Scan() {
 
-			key, val, _ := strings.Cut(scanner.Text(), "=")
+			splitArr := strings.SplitN(scanner.Text(), "=", 2)
+			key := splitArr[0]
+			val := splitArr[1]
 			env[key] = val
 		}
 	} else {

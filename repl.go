@@ -207,7 +207,7 @@ func Start(flags map[string]interface{}) {
 	env := map[string]interface{}{}
 
 	l.InitLogs()
-	c.LoadEnvFile(env, flags["path"].(string))
+	c.LoadEnvFile(env, flags["env_path"].(string))
 	c.InitTimeout(env)    //Set the Unity Timeout
 	c.GetURLs(flags, env) //Set the URLs
 	c.InitKey(flags, env) //Set the API Key
@@ -218,7 +218,7 @@ func Start(flags map[string]interface{}) {
 
 	rl, err := readline.NewEx(&readline.Config{
 		Prompt:          "\u001b[32m\u001b[1m" + user + "@" + "OGrEE3D:" + "\u001b[37;1m" + c.State.CurrPath + "$> " + "\u001b[0m",
-		HistoryFile:     ".resources/.history",
+		HistoryFile:     flags["history_path"].(string),
 		AutoComplete:    getPrefixCompleter(),
 		InterruptPrompt: "^C",
 		//EOFPrompt:       "exit",
