@@ -225,7 +225,7 @@ func checkIfTemplate(x interface{}) bool {
        TOK_CAM TOK_UI TOK_HIERARCH TOK_DRAWABLE TOK_ENV TOK_ORPH
        TOK_DRAW
        
-%type <s> F E P P1 WORDORNUM CDORFG NTORIENTATION
+%type <s> F OBJ_TYPE P P1 WORDORNUM CDORFG NTORIENTATION
 %type <arr> WNARG NODEGETTER NODEACC
 %type <sarr> GETOBJS
 %type <elifArr> EIF
@@ -405,12 +405,12 @@ K: NT_CREATE     {if cmd.State.DebugLvl >= 3 {println("@State start");}}
        | NT_DEL 
 ;
 
-NT_CREATE: TOK_CREATE E P TOK_COL F {/*cmd.Disp(resMap(&$5, $2, false));*/ $$=&commonNode{COMMON, cmd.PostObj, "PostObj", []interface{}{cmd.EntityStrToInt($2),$2, resMap(&$5, $2, false)}}}
-           |TOK_CREATE E TOK_USE_JSON TOK_COL P {$$=&commonNode{COMMON, cmd.PostObj, "EasyPost", []interface{}{cmd.EntityStrToInt($2),$2, $5}}}
+NT_CREATE: TOK_CREATE OBJ_TYPE P TOK_COL F {/*cmd.Disp(resMap(&$5, $2, false));*/ $$=&commonNode{COMMON, cmd.PostObj, "PostObj", []interface{}{cmd.EntityStrToInt($2),$2, resMap(&$5, $2, false)}}}
+           |TOK_CREATE OBJ_TYPE TOK_USE_JSON TOK_COL P {$$=&commonNode{COMMON, cmd.PostObj, "EasyPost", []interface{}{cmd.EntityStrToInt($2),$2, $5}}}
 ;
 
 NT_GET: TOK_GET P {$$=&commonNode{COMMON, cmd.GetObject, "GetObject", []interface{}{$2}}}
-       | TOK_GET E F {/*cmd.Disp(resMap(&$4)); */$$=&commonNode{COMMON, cmd.SearchObjects, "SearchObjects", []interface{}{$2, resMap(&$3, $2, false)}} }
+       | TOK_GET OBJ_TYPE F {/*cmd.Disp(resMap(&$4)); */$$=&commonNode{COMMON, cmd.SearchObjects, "SearchObjects", []interface{}{$2, resMap(&$3, $2, false)}} }
 ;
 
 NT_UPDATE: TOK_UPDATE P TOK_COL F {$$=&commonNode{COMMON, cmd.UpdateObj, "UpdateObj", []interface{}{$2, resMap(&$4, $2, true)}}}
@@ -422,7 +422,7 @@ NT_UPDATE: TOK_UPDATE P TOK_COL F {$$=&commonNode{COMMON, cmd.UpdateObj, "Update
 NT_DEL: TOK_DELETE P {if cmd.State.DebugLvl >= 3 {println("@State NT_DEL");}; $$=&commonNode{COMMON, cmd.DeleteObj, "DeleteObj", []interface{}{$2}}}
 ;
 
-E:     TOK_TENANT 
+OBJ_TYPE: TOK_TENANT 
        | TOK_SITE 
        | TOK_BLDG 
        | TOK_ROOM 
@@ -460,8 +460,8 @@ F:     TOK_WORD TOK_EQUAL WORDORNUM F {$$=string($1+"="+$3+"="+$4); if cmd.State
        | TOK_WORD TOK_EQUAL WORDORNUM {$$=$1+"="+$3}
        | TOK_WORD TOK_EQUAL TOK_STR F{$$=$1+"="+$3+"="+$4}
        | TOK_WORD TOK_EQUAL TOK_STR {$$=$1+"="+$3}
-       | TOK_WORD TOK_EQUAL E {$$=$1+"="+$3}
-       | TOK_WORD TOK_EQUAL E F {$$=string($1+"="+$3+"="+$4); if cmd.State.DebugLvl >= 3 {println("So we got: ", $$);}}
+       | TOK_WORD TOK_EQUAL OBJ_TYPE {$$=$1+"="+$3}
+       | TOK_WORD TOK_EQUAL OBJ_TYPE F {$$=string($1+"="+$3+"="+$4); if cmd.State.DebugLvl >= 3 {println("So we got: ", $$);}}
 ;
 
 
@@ -611,7 +611,7 @@ OCCR:
         |TOK_ORPH TOK_COL TOK_SENSOR TOK_COL P TOK_ATTRSPEC EXPR {$$=&commonNode{COMMON, cmd.GetOCLIAtrributes, "GetOCAttr", []interface{}{replaceOCLICurrPath($5),cmd.STRAYSENSOR,map[string]interface{}{"attributes":map[string]interface{}{"template":$7} } }}}
 
        //EasyPost syntax STRAYSENSOR
-        |E TOK_USE_JSON P {$$=&commonNode{COMMON, cmd.PostObj, "EasyPost", []interface{}{cmd.EntityStrToInt($1),$1, $3}}}
+        |OBJ_TYPE TOK_USE_JSON P {$$=&commonNode{COMMON, cmd.PostObj, "EasyPost", []interface{}{cmd.EntityStrToInt($1),$1, $3}}}
 
        ; 
 OCDEL:  TOK_OCDEL P {$$=&commonNode{COMMON, cmd.DeleteObj, "DeleteObj", []interface{}{replaceOCLICurrPath($2)}}}
