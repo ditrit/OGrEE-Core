@@ -13,3 +13,5 @@ BisonExmple.txt
 delme.sh
 y.output
 *.txt
+.history
+.env

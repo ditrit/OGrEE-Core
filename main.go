@@ -22,7 +22,7 @@ func main() {
 
 	flag.StringVar(&APIKEY, "api_key", "", "Indicate the key of the API")
 
-	flag.StringVar(&envPath, "env_path", "./.resources/.env",
+	flag.StringVar(&envPath, "env_path", "./.env",
 		"Indicate the location of the Shell's env file")
 
 	flag.StringVar(&histPath, "history_path", "./.history",

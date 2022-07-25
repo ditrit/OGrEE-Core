@@ -1,6 +1,25 @@
+// Readline is a pure go implementation for GNU-Readline kind library.
+//
+// example:
+// 	rl, err := readline.New("> ")
+// 	if err != nil {
+// 		panic(err)
+// 	}
+// 	defer rl.Close()
+//
+// 	for {
+// 		line, err := rl.Readline()
+// 		if err != nil { // io.EOF
+// 			break
+// 		}
+// 		println(line)
+// 	}
+//
 package readline
 
-import "io"
+import (
+	"io"
+)
 
 type Instance struct {
 	Config    *Config
@@ -36,6 +55,8 @@ type Config struct {
 	EOFPrompt       string
 
 	FuncGetWidth func() int
+	// Function that returns width, height of the terminal or -1,-1 if unknown
+	FuncGetSize func() (width int, height int)
 
 	Stdin       io.ReadCloser
 	StdinWriter io.Writer
@@ -111,6 +132,9 @@ func (c *Config) Init() error {
 	if c.FuncGetWidth == nil {
 		c.FuncGetWidth = GetScreenWidth
 	}
+	if c.FuncGetSize == nil {
+		c.FuncGetSize = GetScreenSize
+	}
 	if c.FuncIsTerminal == nil {
 		c.FuncIsTerminal = DefaultIsTerminal
 	}
@@ -122,7 +146,7 @@ func (c *Config) Init() error {
 		c.FuncExitRaw = rm.Exit
 	}
 	if c.FuncOnWidthChanged == nil {
-		c.FuncOnWidthChanged = DefaultOnWidthChanged
+		c.FuncOnWidthChanged = DefaultOnSizeChanged
 	}
 
 	return nil
@@ -258,14 +282,24 @@ func (i *Instance) ReadSlice() ([]byte, error) {
 }
 
 // we must make sure that call Close() before process exit.
+// if there has a pending reading operation, that reading will be interrupted.
+// so you can capture the signal and call Instance.Close(), it's thread-safe.
 func (i *Instance) Close() error {
+	i.Config.Stdin.Close()
+	i.Operation.Close()
 	if err := i.Terminal.Close(); err != nil {
 		return err
 	}
-	i.Config.Stdin.Close()
-	i.Operation.Close()
 	return nil
 }
+
+// call CaptureExitSignal when you want readline exit gracefully.
+func (i *Instance) CaptureExitSignal() {
+	CaptureExitSignal(func() {
+		i.Close()
+	})
+}
+
 func (i *Instance) Clean() {
 	i.Operation.Clean()
 }

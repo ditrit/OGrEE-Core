@@ -45,6 +45,24 @@ func GetScreenWidth() int {
 	return w
 }
 
+// getWidthHeight of the terminal using given file descriptor
+func getWidthHeight(stdoutFd int) (width int, height int) {
+	width, height, err := GetSize(stdoutFd)
+	if err != nil {
+		return -1, -1
+	}
+	return
+}
+
+// GetScreenSize returns the width/height of the terminal or -1,-1 or error
+func GetScreenSize() (width int, height int) {
+	width, height = getWidthHeight(syscall.Stdout)
+	if width < 0 {
+		width, height = getWidthHeight(syscall.Stderr)
+	}
+	return
+}
+
 // Ask the terminal for the current cursor position. The terminal will then
 // write the position back to us via terminal stdin asynchronously.
 func SendCursorPosition(t *Terminal) {
@@ -67,13 +85,17 @@ func GetStdin() int {
 // -----------------------------------------------------------------------------
 
 var (
-	widthChange         sync.Once
-	widthChangeCallback func()
+	sizeChange         sync.Once
+	sizeChangeCallback func()
 )
 
 func DefaultOnWidthChanged(f func()) {
-	widthChangeCallback = f
-	widthChange.Do(func() {
+	DefaultOnSizeChanged(f)
+}
+
+func DefaultOnSizeChanged(f func()) {
+	sizeChangeCallback = f
+	sizeChange.Do(func() {
 		ch := make(chan os.Signal, 1)
 		signal.Notify(ch, syscall.SIGWINCH)
 
@@ -83,7 +105,7 @@ func DefaultOnWidthChanged(f func()) {
 				if !ok {
 					break
 				}
-				widthChangeCallback()
+				sizeChangeCallback()
 			}
 		}()
 	})
