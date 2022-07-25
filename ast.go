@@ -415,8 +415,8 @@ type getOCAttrNode struct {
 func (n *getOCAttrNode) execute() interface{} {
 	//Since the attributes is a map of nodes
 	//execute and receive the values
-	evalMapNodes(n.attributes)
-	cmd.GetOCLIAtrributes(n.path, n.ent, n.attributes)
+	attributes := evalMapNodes(n.attributes)
+	cmd.GetOCLIAtrributes(n.path, n.ent, attributes)
 	return nil
 }
 
@@ -497,12 +497,6 @@ type unlinkObjectNode struct {
 func (n *unlinkObjectNode) execute() interface{} {
 	cmd.UnlinkObject(n.paths)
 	return nil
-}
-
-type commonNode struct {
-	fun  interface{}
-	val  string
-	args []interface{}
 }
 
 type arrNode struct {
@@ -968,7 +962,7 @@ func (s *symbolReferenceNode) execute() interface{} {
 				case []string:
 					val = val.([]string)[s.offset.(node).execute().(int)]
 
-				case (*commonNode):
+				case (*node):
 					val = val.(node).execute()
 				}
 				return val
@@ -998,7 +992,7 @@ func (a *assignNode) execute() interface{} {
 
 	if a.val != nil {
 		var v interface{}
-		if _, ok := a.val.(*commonNode); !ok {
+		if _, ok := a.val.(*node); !ok {
 			if _, ok := a.val.(node); !ok {
 				v = a.val
 			} else {
