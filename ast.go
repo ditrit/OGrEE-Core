@@ -18,31 +18,8 @@ var dCatchPtr interface{}
 var dCatchNodePtr interface{}
 var varCtr = 1 //Started at 1 because unset could cause var data loss
 
-const (
-	COMMON = iota
-	NUM
-	FLOAT
-	BOOL
-	STR
-	BOOLOP
-	ARITHMETIC
-	COMPARATOR
-	REFERENCE
-	IF
-	FOR
-	WHILE
-	ASSIGN
-	BLOCK
-	FUNC
-	ELIF
-	ARRAY
-	OBJND
-	JSONND
-)
-
 type node interface {
 	execute() interface{}
-	getType() int
 }
 
 type array interface {
@@ -50,377 +27,487 @@ type array interface {
 	getLength() int
 }
 
-type commonNode struct {
-	nodeType int
-	fun      interface{}
-	val      string
-	args     []interface{}
+type postObjNode struct {
+	entity string
+	data   map[string]interface{}
 }
 
-func (c *commonNode) execute() interface{} {
-	switch c.val {
-	case "PostObj":
-		if f, ok := c.fun.(func(int, string, map[string]interface{}) map[string]interface{}); ok {
-			v := f(c.args[0].(int),
-				c.args[1].(string), c.args[2].(map[string]interface{}))
-			return &jsonObjNode{JSONND, v}
-		}
+func (n *postObjNode) execute() interface{} {
+	v := cmd.PostObj(cmd.EntityStrToInt(n.entity), n.entity, n.data)
+	return &jsonObjNode{v}
+}
 
-	case "EasyPost":
-		if f, ok := c.fun.(func(int, string, map[string]interface{}) map[string]interface{}); ok {
-			var data map[string]interface{}
-			/*x, e := ioutil.ReadFile(c.args[2].(string))
-			if e != nil {
-				println("Error while opening file! " + e.Error())
-				return nil
-			}
-			json.Unmarshal(x, &data)*/
-			data = fileToJSON(c.args[2].(string))
-			if data == nil {
-				return nil
-			}
+type easyPostNode struct {
+	entity string
+	path   string
+}
 
-			v := f(c.args[0].(int), c.args[1].(string), data)
-
-			return &jsonObjNode{JSONND, v}
-		}
-
-	case "Help", "Focus":
-		if f, ok := c.fun.(func(string)); ok {
-			f(c.args[0].(string))
-		}
-
-	case "CD", "Load":
-		//Script Load
-		if f, ok := c.fun.(func(string) string); ok {
-			v := f(c.args[0].(string))
-			return &strNode{STR, v}
-		}
-
-		//Template Load
-		if f, ok := c.fun.(func(map[string]interface{}, string)); ok {
-			data := fileToJSON(c.args[0].(string))
-			if data == nil {
-				return nil
-			}
-			f(data, c.args[0].(string))
-			return &strNode{STR, c.args[0].(string)}
-		}
-
-	case "Print":
-		if f, ok := c.fun.(func([]interface{}) string); ok {
-			res := []interface{}{}
-			for i := range c.args {
-				res = append(res, c.args[i].(node).execute())
-			}
-			v := f(res)
-			return &strNode{STR, v}
-		}
-
-	case "LS":
-		if f, ok := c.fun.(func(string) []map[string]interface{}); ok {
-			v := f(c.args[0].(string))
-			return &jsonObjArrNode{JSONND, len(v), v}
-
-		}
-
-	case "DeleteObj":
-		if f, ok := c.fun.(func(string) bool); ok {
-			v := f(c.args[0].(string))
-			return &boolNode{BOOL, v}
-		}
-
-	case "DeleteSelection":
-		if f, ok := c.fun.(func() bool); ok {
-			return f() //returns bool
-		}
-
-	case "IsEntityDrawable":
-		if f, ok := c.fun.(func(string) bool); ok {
-			if arg, ok := c.args[0].(string); ok {
-				t := f(arg)
-				return t
-			}
-			//Error if reached here
-		}
-
-	case "IsAttrDrawable":
-		if f, ok := c.fun.(func(string, string, map[string]interface{}, bool) bool); ok {
-			objInf := c.args[0]
-			attrInf := c.args[1].(node).execute()
-			if _, ok := objInf.(string); !ok {
-				println("Object operand is invalid")
-				l.GetInfoLogger().Println("Object operand is invalid")
-				return nil
-			}
-			if _, ok := attrInf.(string); !ok {
-				println("Attribute operand is invalid")
-				l.GetInfoLogger().Println("Attribute operand is invalid")
-				return nil
-			}
-			return f(objInf.(string), attrInf.(string), nil, false)
-		}
-
-	case "GetObject":
-		if f, ok := c.fun.(func(string, bool) (map[string]interface{}, string)); ok {
-			v, _ := f(c.args[0].(string), false)
-			return &jsonObjNode{COMMON, v}
-		}
-
-	case "SearchObjects":
-		if f, ok := c.fun.(func(string, map[string]interface{}) []map[string]interface{}); ok {
-			v := f(c.args[0].(string), c.args[1].(map[string]interface{}))
-			return &jsonObjArrNode{COMMON, len(v), v}
-		}
-
-	case "RecursiveUpdateObj":
-		if f, ok := c.fun.(func(string, string, string, map[string]interface{})); ok {
-			//Old code was removed since
-			//it broke the OCLI syntax easy update
-			x := len(c.args)
-			if _, ok := c.args[x-1].(bool); ok {
-				var objMap map[string]interface{}
-				//Weird edge case
-				//to solve issue with:
-				// for i in $(ls) do $i[attr]="string"
-
-				//c.args[0] = referenceToNode
-				//c.args[1] = attributeString, (used as an index)
-				//c.args[2] = someValue (usually a string)
-				mp := c.args[0]
-				objMap = mp.(node).execute().(map[string]interface{})
-
-				if checkIfObjectNode(objMap) == true {
-					updateArgs := map[string]interface{}{c.args[1].(string): c.args[2].(node).execute()}
-					id := objMap["id"].(string)
-					entity := objMap["category"].(string)
-					f("", id, entity, updateArgs)
-				}
-
-			} else {
-				if c.args[2].(string) == "recursive" {
-					f(c.args[0].(string), "", "", c.args[1].(map[string]interface{}))
-
-				}
-
-			}
-			//return &jsonObjNode{COMMON, v}
-		}
-
-	case "UpdateObj":
-		var v map[string]interface{}
-		if f, ok := c.fun.(func(string, string, string, map[string]interface{}, bool) map[string]interface{}); ok {
-			//Old code was removed since
-			//it broke the OCLI syntax easy update
-			x := len(c.args)
-			if _, ok := c.args[x-1].(bool); ok {
-				var objMap map[string]interface{}
-				//Weird edge case
-				//to solve issue with:
-				// for i in $(ls) do $i[attr]="string"
-
-				//c.args[0] = referenceToNode
-				//c.args[1] = attributeString, (used as an index)
-				//c.args[2] = someValue (usually a string)
-				mp := c.args[0]
-				objMap = mp.(node).execute().(map[string]interface{})
-
-				if checkIfObjectNode(objMap) == true {
-					updateArgs := map[string]interface{}{c.args[1].(string): c.args[2].(node).execute()}
-					id := objMap["id"].(string)
-					entity := objMap["category"].(string)
-					v = f("", id, entity, updateArgs, false)
-				}
-
-			} else {
-				if rawArr, ok := c.args[1].(map[string]interface{}); ok {
-					if areas, ok := rawArr["areas"].(map[string]interface{}); ok {
-						c.args[1] = parseAreas(areas)
-					}
-				}
-				v = f(c.args[0].(string), "", "", c.args[1].(map[string]interface{}), false)
-			}
-			return &jsonObjNode{COMMON, v}
-		}
-
-	case "EasyUpdate":
-		if f, ok := c.fun.(func(string, map[string]interface{}, bool) map[string]interface{}); ok {
-			var data map[string]interface{}
-			//var op string
-			//0 -> path to node
-			//1 -> path to json
-			//2 -> put or patch
-			data = fileToJSON(c.args[1].(string))
-			if data == nil {
-				return nil
-			}
-
-			v := f(c.args[0].(string), data, c.args[2].(bool))
-
-			return &jsonObjNode{JSONND, v}
-		}
-	case "LSOBJ":
-		if f, ok := c.fun.(func(string, int) []map[string]interface{}); ok {
-			v := f(c.args[0].(string), c.args[1].(int))
-			//return &objNdArrNode{COMMON, len(v), v}
-			return &jsonObjArrNode{JSONND, len(v), v}
-		}
-
-	case "Tree", "Draw":
-		if f, ok := c.fun.(func(string, int)); ok {
-			f(c.args[0].(string), c.args[1].(int))
-		}
-
-	case "LSOG", "Exit", "CLR", "Env":
-		if f, ok := c.fun.(func()); ok {
-			f()
-		}
-
-	case "select":
-		if f, ok := c.fun.(func() []string); ok {
-			v := f()
-			return &strArrNode{COMMON, len(v), v}
-		}
-
-	case "PWD":
-		if f, ok := c.fun.(func() string); ok {
-			v := f()
-			return &strNode{STR, v}
-		}
-
-	case "setCB":
-		if f, ok := c.fun.(func(*[]string) []string); ok {
-			v := f(c.args[0].(*[]string))
-			return &strArrNode{COMMON, len(v), v}
-		}
-
-	case "UpdateSelect":
-		if f, ok := c.fun.(func(map[string]interface{})); ok {
-			f(c.args[0].(map[string]interface{}))
-		}
-
-	case "Unset":
-		if f, ok := c.fun.(func(string, string, interface{}, interface{})); ok {
-			if len(c.args) > 2 {
-				//Means we are deleting an attribute
-				//of an object
-				/*idx := c.args[2].(node).execute()
-				println("IDX WAS:", idx)
-				return*/
-			}
-			f(c.args[0].(string), c.args[1].(string),
-				c.args[2].(node), c.args[3])
-		}
-
-	case "SetEnv":
-		if f, ok := c.fun.(func(string, interface{})); ok {
-			arg := c.args[0].(string)
-			val := c.args[1].(node).execute()
-			f(arg, val)
-		}
-
-	case "Hierarchy":
-		if f, ok := c.fun.(func(string, int, bool) []map[string]interface{}); ok {
-			path := c.args[0].(string)
-			depth := c.args[1].(int)
-			f(path, depth, false)
-		}
-
-	case "GetOCAttr":
-		if f, ok := c.fun.(func(string, int,
-			map[string]interface{})); ok {
-
-			//Since the attributes is a map of nodes
-			//execute and receive the values
-			attributes := c.args[2].(map[string]interface{})
-			attributes = evalMapNodes(attributes)
-
-			f(c.args[0].(string),
-				c.args[1].(int),
-				c.args[2].(map[string]interface{}))
-		}
-
-	case "HandleUnity":
-		if f, ok := c.fun.(func(map[string]interface{})); ok {
-			data := map[string]interface{}{}
-			data["command"] = c.args[1]
-			if len(c.args) == 4 {
-
-				firstArr := c.args[2].([]map[int]interface{})
-				secondArr := c.args[3].([]map[int]interface{})
-
-				if len(firstArr) != 3 || len(secondArr) != 2 {
-					println("OGREE: Error, command args are invalid")
-					print("Please provide a vector3 and a vector2")
-					return nil
-				}
-
-				pos := map[string]interface{}{"x": firstArr[0][0].(node).execute(),
-					"y": firstArr[1][0].(node).execute(), "z": firstArr[2][0].(node).execute(),
-				}
-
-				rot := map[string]interface{}{"x": secondArr[0][0].(node).execute(),
-					"y": secondArr[1][0].(node).execute(),
-				}
-
-				data["position"] = pos
-				data["rotation"] = rot
-
-			} else {
-
-				if c.args[1].(string) == "wait" && c.args[0].(string) == "camera" {
-					data["position"] = map[string]float64{"x": 0, "y": 0, "z": 0}
-
-					if y, ok := c.args[2].([]map[int]interface{}); ok {
-						data["rotation"] = map[string]interface{}{"x": 999,
-							"y": y[0][0].(node).execute()}
-					} else {
-						data["rotation"] = map[string]interface{}{"x": 999,
-							"y": c.args[2]}
-					}
-
-				} else {
-					if _, ok := c.args[2].([]map[int]interface{}); ok {
-						data["data"] = c.args[2].([]map[int]interface{})[0][0].(node).execute()
-					} else {
-						data["data"] = c.args[2]
-					}
-
-				}
-
-			}
-			fullJson := map[string]interface{}{
-				"type": c.args[0].(string),
-				"data": data,
-			}
-			f(fullJson)
-		}
-
-	case "LinkObject":
-		if f, ok := c.fun.(func([]interface{})); ok {
-			if len(c.args) == 3 {
-				c.args[2] = c.args[2].(node).execute()
-			}
-			f(c.args)
-		}
-
-	case "UnlinkObject":
-		if f, ok := c.fun.(func([]interface{})); ok {
-			f(c.args)
-		}
+func (n *easyPostNode) execute() interface{} {
+	var data map[string]interface{}
+	/*x, e := ioutil.ReadFile(n.path)
+	if e != nil {
+		println("Error while opening file! " + e.Error())
+		return nil
 	}
+	json.Unmarshal(x, &data)*/
+	data = fileToJSON(n.path)
+	if data == nil {
+		return nil
+	}
+	v := cmd.PostObj(cmd.EntityStrToInt(n.entity), n.entity, data)
+	return &jsonObjNode{v}
+}
 
+type helpNode struct {
+	entry string
+}
+
+func (n *helpNode) execute() interface{} {
+	cmd.Help(n.entry)
 	return nil
 }
 
-func (c *commonNode) getType() int {
-	return c.nodeType
+type focusNode struct {
+	path string
+}
+
+func (n *focusNode) execute() interface{} {
+	cmd.FocusUI(n.path)
+	return nil
+}
+
+type cdNode struct {
+	path string
+}
+
+func (n *cdNode) execute() interface{} {
+	v := cmd.CD(n.path)
+	return &strNode{v}
+}
+
+type lsNode struct {
+	path string
+}
+
+func (n *lsNode) execute() interface{} {
+	v := cmd.LS(n.path)
+	return &jsonObjArrNode{len(v), v}
+}
+
+type loadNode struct {
+	path string
+}
+
+func (n *loadNode) execute() interface{} {
+	v := cmd.LoadFile(n.path)
+	return &strNode{v}
+}
+
+type loadTemplateNode struct {
+	path string
+}
+
+func (n *loadTemplateNode) execute() interface{} {
+	data := fileToJSON(n.path)
+	if data == nil {
+		return nil
+	}
+	cmd.LoadTemplate(data, n.path)
+	return &strNode{n.path}
+}
+
+type printNode struct {
+	args []interface{}
+}
+
+func (n *printNode) execute() interface{} {
+	res := []interface{}{}
+	for i := range n.args {
+		res = append(res, n.args[i].(node).execute())
+	}
+	v := cmd.Print(res)
+	return &strNode{v}
+}
+
+type deleteObjNode struct {
+	path string
+}
+
+func (n *deleteObjNode) execute() interface{} {
+	v := cmd.DeleteObj(n.path)
+	return &boolNode{v}
+}
+
+type deleteSelectionNode struct{}
+
+func (n *deleteSelectionNode) execute() interface{} {
+	return cmd.DeleteSelection()
+}
+
+type isEntityDrawableNode struct {
+	path string
+}
+
+func (n *isEntityDrawableNode) execute() interface{} {
+	return cmd.IsEntityDrawable(n.path)
+}
+
+type isAttrDrawableNode struct {
+	objInf string
+	factor node
+}
+
+func (n *isAttrDrawableNode) execute() interface{} {
+	attrInf := n.factor.execute()
+	if _, ok := attrInf.(string); !ok {
+		println("Attribute operand is invalid")
+		l.GetInfoLogger().Println("Attribute operand is invalid")
+		return nil
+	}
+	return cmd.IsAttrDrawable(n.objInf, attrInf.(string), nil, false)
+}
+
+type getObjectNode struct {
+	path string
+}
+
+func (n *getObjectNode) execute() interface{} {
+	v, _ := cmd.GetObject(n.path, false)
+	return &jsonObjNode{v}
+}
+
+type searchObjectsNode struct {
+	objType string
+	resMap  map[string]interface{}
+}
+
+func (n *searchObjectsNode) execute() interface{} {
+	v := cmd.SearchObjects(n.objType, n.resMap)
+	return &jsonObjArrNode{len(v), v}
+}
+
+type recursiveUpdateObjNode struct {
+	arg0 interface{}
+	arg1 interface{}
+	arg2 interface{}
+}
+
+func (n *recursiveUpdateObjNode) execute() interface{} {
+	//Old code was removed since
+	//it broke the OCLI syntax easy update
+	if _, ok := n.arg2.(bool); ok {
+		var objMap map[string]interface{}
+		//Weird edge case
+		//to solve issue with:
+		// for i in $(ls) do $i[attr]="string"
+
+		//n.arg0 = referenceToNode
+		//n.arg1 = attributeString, (used as an index)
+		//n.arg2 = someValue (usually a string)
+		objMap = n.arg0.(node).execute().(map[string]interface{})
+		if checkIfObjectNode(objMap) == true {
+			updateArgs := map[string]interface{}{n.arg1.(string): n.arg2.(node).execute()}
+			id := objMap["id"].(string)
+			entity := objMap["category"].(string)
+			cmd.RecursivePatch("", id, entity, updateArgs)
+		}
+
+	} else {
+		if n.arg2.(string) == "recursive" {
+			cmd.RecursivePatch(n.arg0.(string), "", "", n.arg1.(map[string]interface{}))
+		}
+	}
+	return nil
+	//return &jsonObjNode{v}
+}
+
+type updateObjNode struct {
+	args []interface{}
+}
+
+func (n *updateObjNode) execute() interface{} {
+	var v map[string]interface{}
+	//Old code was removed since
+	//it broke the OCLI syntax easy update
+	x := len(n.args)
+	if _, ok := n.args[x-1].(bool); ok {
+		var objMap map[string]interface{}
+		//Weird edge case
+		//to solve issue with:
+		// for i in $(ls) do $i[attr]="string"
+
+		//n.args[0] = referenceToNode
+		//n.args[1] = attributeString, (used as an index)
+		//n.args[2] = someValue (usually a string)
+		mp := n.args[0]
+		objMap = mp.(node).execute().(map[string]interface{})
+
+		if checkIfObjectNode(objMap) == true {
+			updateArgs := map[string]interface{}{n.args[1].(string): n.args[2].(node).execute()}
+			id := objMap["id"].(string)
+			entity := objMap["category"].(string)
+			v = cmd.UpdateObj("", id, entity, updateArgs, false)
+		}
+
+	} else {
+		if rawArr, ok := n.args[1].(map[string]interface{}); ok {
+			if areas, ok := rawArr["areas"].(map[string]interface{}); ok {
+				n.args[1] = parseAreas(areas)
+			}
+		}
+		v = cmd.UpdateObj(n.args[0].(string), "", "", n.args[1].(map[string]interface{}), false)
+	}
+	return &jsonObjNode{v}
+}
+
+type easyUpdateNode struct {
+	nodePath     string
+	jsonPath     string
+	deleteAndPut bool
+}
+
+func (n *easyUpdateNode) execute() interface{} {
+	var data map[string]interface{}
+	data = fileToJSON(n.jsonPath)
+	if data == nil {
+		return nil
+	}
+	v := cmd.UpdateObj(n.nodePath, "", "", data, n.deleteAndPut)
+	return &jsonObjNode{v}
+}
+
+type lsObjNode struct {
+	path   string
+	entity int
+}
+
+func (n *lsObjNode) execute() interface{} {
+	v := cmd.LSOBJECT(n.path, n.entity)
+	//return &objNdArrNode{len(v), v}
+	return &jsonObjArrNode{len(v), v}
+}
+
+type treeNode struct {
+	path  string
+	depth int
+}
+
+func (n *treeNode) execute() interface{} {
+	cmd.Tree(n.path, n.depth)
+	return nil
+}
+
+type drawNode struct {
+	path  string
+	depth int
+}
+
+func (n *drawNode) execute() interface{} {
+	cmd.Draw(n.path, n.depth)
+	return nil
+}
+
+type lsogNode struct{}
+
+func (n *lsogNode) execute() interface{} {
+	cmd.LSOG()
+	return nil
+}
+
+type exitNode struct{}
+
+func (n *exitNode) execute() interface{} {
+	cmd.Exit()
+	return nil
+}
+
+type clrNode struct{}
+
+func (n *clrNode) execute() interface{} {
+	cmd.Clear()
+	return nil
+}
+
+type envNode struct{}
+
+func (n *envNode) execute() interface{} {
+	cmd.Env()
+	return nil
+}
+
+type selectNode struct{}
+
+func (n *selectNode) execute() interface{} {
+	v := cmd.ShowClipBoard()
+	return &strArrNode{len(v), v}
+}
+
+type pwdNode struct{}
+
+func (n *pwdNode) execute() interface{} {
+	v := cmd.PWD()
+	return &strNode{v}
+}
+
+type grepNode struct{}
+
+func (n *grepNode) execute() interface{} {
+	return nil
+}
+
+type setCBNode struct {
+	cb *[]string
+}
+
+func (n *setCBNode) execute() interface{} {
+	v := cmd.SetClipBoard(n.cb)
+	return &strArrNode{len(v), v}
+}
+
+type updateSelectNode struct {
+	data map[string]interface{}
+}
+
+func (n *updateSelectNode) execute() interface{} {
+	cmd.UpdateSelection(n.data)
+	return nil
+}
+
+type unsetNode struct {
+	x     string
+	name  string
+	ref   interface{}
+	value interface{}
+}
+
+func (n *unsetNode) execute() interface{} {
+	UnsetUtil(n.x, n.name, n.ref, n.value)
+	return nil
+}
+
+type setEnvNode struct {
+	arg  string
+	expr node
+}
+
+func (n *setEnvNode) execute() interface{} {
+	val := n.expr.execute()
+	cmd.SetEnv(n.arg, val)
+	return nil
+}
+
+type hierarchyNode struct {
+	path  string
+	depth int
+}
+
+func (n *hierarchyNode) execute() interface{} {
+	cmd.GetHierarchy(n.path, n.depth, false)
+	return nil
+}
+
+type getOCAttrNode struct {
+	path       string
+	ent        int
+	attributes map[string]interface{}
+}
+
+func (n *getOCAttrNode) execute() interface{} {
+	//Since the attributes is a map of nodes
+	//execute and receive the values
+	evalMapNodes(n.attributes)
+	cmd.GetOCLIAtrributes(n.path, n.ent, n.attributes)
+	return nil
+}
+
+type handleUnityNode struct {
+	args []interface{}
+}
+
+func (n *handleUnityNode) execute() interface{} {
+	data := map[string]interface{}{}
+	data["command"] = n.args[1].(string)
+	if len(n.args) == 4 {
+
+		firstArr := n.args[2].([]map[int]interface{})
+		secondArr := n.args[3].([]map[int]interface{})
+
+		if len(firstArr) != 3 || len(secondArr) != 2 {
+			println("OGREE: Error, command args are invalid")
+			print("Please provide a vector3 and a vector2")
+			return nil
+		}
+
+		pos := map[string]interface{}{"x": firstArr[0][0].(node).execute(),
+			"y": firstArr[1][0].(node).execute(), "z": firstArr[2][0].(node).execute(),
+		}
+
+		rot := map[string]interface{}{"x": secondArr[0][0].(node).execute(),
+			"y": secondArr[1][0].(node).execute(),
+		}
+
+		data["position"] = pos
+		data["rotation"] = rot
+
+	} else {
+		if n.args[1].(string) == "wait" && n.args[0].(string) == "camera" {
+			data["position"] = map[string]float64{"x": 0, "y": 0, "z": 0}
+
+			if y, ok := n.args[2].([]map[int]interface{}); ok {
+				data["rotation"] = map[string]interface{}{"x": 999,
+					"y": y[0][0].(node).execute()}
+			} else {
+				data["rotation"] = map[string]interface{}{"x": 999,
+					"y": n.args[2]}
+			}
+
+		} else {
+			if _, ok := n.args[2].([]map[int]interface{}); ok {
+				data["data"] = n.args[2].([]map[int]interface{})[0][0].(node).execute()
+			} else {
+				data["data"] = n.args[2]
+			}
+
+		}
+	}
+	fullJson := map[string]interface{}{
+		"type": n.args[0].(string),
+		"data": data,
+	}
+	cmd.HandleUI(fullJson)
+	return nil
+}
+
+type linkObjectNode struct {
+	paths []interface{}
+}
+
+func (n *linkObjectNode) execute() interface{} {
+	if len(n.paths) == 3 {
+		n.paths[2] = n.paths[2].(node).execute()
+	}
+	cmd.LinkObject(n.paths)
+	return nil
+}
+
+type unlinkObjectNode struct {
+	paths []interface{}
+}
+
+func (n *unlinkObjectNode) execute() interface{} {
+	cmd.UnlinkObject(n.paths)
+	return nil
+}
+
+type commonNode struct {
+	fun  interface{}
+	val  string
+	args []interface{}
 }
 
 type arrNode struct {
-	nodeType int
-	len      int
-	val      []map[int]interface{}
+	len int
+	val []map[int]interface{}
 }
 
 func (a *arrNode) execute() interface{} {
@@ -431,27 +518,17 @@ func (a *arrNode) getLength() int {
 	return a.len
 }
 
-func (a *arrNode) getType() int {
-	return a.nodeType
-}
-
 type objNdNode struct {
-	nodeType int
-	val      *cmd.Node
+	val *cmd.Node
 }
 
 func (n *objNdNode) execute() interface{} {
 	return n.val
 }
 
-func (n *objNdNode) getType() int {
-	return n.nodeType
-}
-
 type objNdArrNode struct {
-	nodeType int
-	len      int
-	val      []*cmd.Node
+	len int
+	val []*cmd.Node
 }
 
 func (o *objNdArrNode) execute() interface{} {
@@ -462,27 +539,17 @@ func (o *objNdArrNode) getLength() int {
 	return o.len
 }
 
-func (o *objNdArrNode) getType() int {
-	return o.nodeType
-}
-
 type jsonObjNode struct {
-	nodeType int
-	val      map[string]interface{}
+	val map[string]interface{}
 }
 
 func (j *jsonObjNode) execute() interface{} {
 	return j.val
 }
 
-func (j *jsonObjNode) getType() int {
-	return j.nodeType
-}
-
 type jsonObjArrNode struct {
-	nodeType int
-	len      int
-	val      []map[string]interface{}
+	len int
+	val []map[string]interface{}
 }
 
 func (j *jsonObjArrNode) execute() interface{} {
@@ -493,53 +560,33 @@ func (j *jsonObjArrNode) getLength() int {
 	return j.len
 }
 
-func (j *jsonObjArrNode) getType() int {
-	return j.nodeType
-}
-
 type numNode struct {
-	nodeType int
-	val      int
+	val int
 }
 
 func (n *numNode) execute() interface{} {
 	return n.val
 }
 
-func (n *numNode) getType() int {
-	return n.nodeType
-}
-
 type floatNode struct {
-	nodeType int
-	val      float64
+	val float64
 }
 
 func (f *floatNode) execute() interface{} {
 	return f.val
 }
 
-func (f *floatNode) getType() int {
-	return f.nodeType
-}
-
 type strNode struct {
-	nodeType int
-	val      string
+	val string
 }
 
 func (s *strNode) execute() interface{} {
 	return s.val
 }
 
-func (s *strNode) getType() int {
-	return s.nodeType
-}
-
 type strArrNode struct {
-	nodeType int
-	len      int
-	val      []string
+	len int
+	val []string
 }
 
 func (s *strArrNode) execute() interface{} {
@@ -550,27 +597,17 @@ func (s *strArrNode) getLength() int {
 	return s.len
 }
 
-func (s *strArrNode) getType() int {
-	return s.nodeType
-}
-
 type boolNode struct {
-	nodeType int
-	val      bool
+	val bool
 }
 
 func (b *boolNode) execute() interface{} {
 	return b.val
 }
 
-func (b *boolNode) getType() int {
-	return b.nodeType
-}
-
 type boolOpNode struct {
-	nodeType int
-	op       string
-	operand  interface{}
+	op      string
+	operand interface{}
 }
 
 func (b *boolOpNode) execute() interface{} {
@@ -585,19 +622,10 @@ func (b *boolOpNode) execute() interface{} {
 	return nil
 }
 
-func (b *boolOpNode) getType() int {
-	return b.nodeType
-}
-
 type arithNode struct {
-	nodeType int
-	op       interface{}
-	left     interface{}
-	right    interface{}
-}
-
-func (a *arithNode) getType() int {
-	return a.nodeType
+	op    interface{}
+	left  interface{}
+	right interface{}
 }
 
 func (a *arithNode) execute() interface{} {
@@ -730,14 +758,9 @@ func (a *arithNode) execute() interface{} {
 }
 
 type comparatorNode struct {
-	nodeType int
-	op       interface{}
-	left     interface{}
-	right    interface{}
-}
-
-func (c *comparatorNode) getType() int {
-	return c.nodeType
+	op    interface{}
+	left  interface{}
+	right interface{}
 }
 
 func (c *comparatorNode) execute() interface{} {
@@ -827,14 +850,9 @@ func (c *comparatorNode) execute() interface{} {
 }
 
 type symbolReferenceNode struct {
-	nodeType int
-	val      interface{}
-	offset   interface{} //Used to index into arrays and node types
-	key      interface{} //Used to index in []map[string] types
-}
-
-func (s *symbolReferenceNode) getType() int {
-	return s.nodeType
+	val    interface{}
+	offset interface{} //Used to index into arrays and node types
+	key    interface{} //Used to index in []map[string] types
 }
 
 func (s *symbolReferenceNode) execute() interface{} {
@@ -961,13 +979,8 @@ func (s *symbolReferenceNode) execute() interface{} {
 }
 
 type assignNode struct {
-	nodeType int
-	arg      interface{}
-	val      interface{}
-}
-
-func (a *assignNode) getType() int {
-	return a.nodeType
+	arg interface{}
+	val interface{}
 }
 
 func (a *assignNode) execute() interface{} {
@@ -1014,7 +1027,7 @@ func (a *assignNode) execute() interface{} {
 
 			//Bug fix for: $x[0] = $x[0] + 5
 			if arithNdInf, ok := a.val.(node); ok {
-				if arithNdInf.getType() == ARITHMETIC {
+				if _, ok := arithNdInf.(*arithNode); ok {
 					dynamicSymbolTable[idx].([]map[int]interface{})[arrayIdx][0] = resolveArithNode(v)
 				} else {
 					dynamicSymbolTable[idx].([]map[int]interface{})[arrayIdx][0] = a.val
@@ -1086,15 +1099,10 @@ func (a *assignNode) execute() interface{} {
 }
 
 type ifNode struct {
-	nodeType   int
 	condition  interface{}
 	ifBranch   interface{}
 	elseBranch interface{}
 	elif       interface{}
-}
-
-func (i *ifNode) getType() int {
-	return i.nodeType
 }
 
 func (i *ifNode) execute() interface{} {
@@ -1122,13 +1130,8 @@ func (i *ifNode) execute() interface{} {
 }
 
 type elifNode struct {
-	nodeType int
-	cond     interface{}
-	taken    interface{}
-}
-
-func (e *elifNode) getType() int {
-	return e.nodeType
+	cond  interface{}
+	taken interface{}
 }
 
 func (e *elifNode) execute() interface{} {
@@ -1140,15 +1143,10 @@ func (e *elifNode) execute() interface{} {
 }
 
 type forNode struct {
-	nodeType    int
 	init        interface{}
 	condition   interface{}
 	incrementor interface{}
 	body        interface{}
-}
-
-func (f *forNode) getType() int {
-	return f.nodeType
 }
 
 func (f *forNode) execute() interface{} {
@@ -1160,14 +1158,9 @@ func (f *forNode) execute() interface{} {
 }
 
 type rangeNode struct {
-	nodeType  int
 	init      interface{}
 	container interface{}
 	body      interface{}
-}
-
-func (r *rangeNode) getType() int {
-	return r.nodeType
 }
 
 func (r *rangeNode) execute() interface{} {
@@ -1207,14 +1200,9 @@ func (r *rangeNode) execute() interface{} {
 }
 
 type whileNode struct {
-	nodeType int
 	//val       interface{}
 	condition interface{}
 	body      interface{}
-}
-
-func (w *whileNode) getType() int {
-	return w.nodeType
 }
 
 func (w *whileNode) execute() interface{} {
@@ -1232,12 +1220,7 @@ func (w *whileNode) execute() interface{} {
 }
 
 type ast struct {
-	nodeType   int
 	statements []node
-}
-
-func (a *ast) getType() int {
-	return a.nodeType
 }
 
 func (a *ast) execute() interface{} {
@@ -1260,12 +1243,7 @@ func (a *ast) execute() interface{} {
 }
 
 type funcNode struct {
-	nodeType int
-	block    interface{}
-}
-
-func (f *funcNode) getType() int {
-	return f.nodeType
+	block interface{}
 }
 
 func (f *funcNode) execute() interface{} {
@@ -1342,11 +1320,11 @@ func checkTypeAreNumeric(x, y interface{}) bool {
 func resolveArithNode(x interface{}) node {
 	switch x.(type) {
 	case int:
-		return &numNode{NUM, x.(int)}
+		return &numNode{x.(int)}
 	case float64:
-		return &floatNode{FLOAT, x.(float64)}
+		return &floatNode{x.(float64)}
 	case string:
-		return &strNode{STR, x.(string)}
+		return &strNode{x.(string)}
 	}
 	return nil
 }
