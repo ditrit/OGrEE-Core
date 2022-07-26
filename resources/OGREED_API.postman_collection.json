@@ -1,6 +1,6 @@
 {
 	"info": {
-		"_postman_id": "485c439a-27ce-40a6-9c10-ec3b8d414804",
+		"_postman_id": "65912eb7-f5cb-4c7f-a4f3-c3cbb68468c5",
 		"name": "OGREE Basic Script (MDB)",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
@@ -9,7 +9,7 @@
 			"name": "Login",
 			"item": [
 				{
-					"name": "localhost:8000/api/user",
+					"name": "localhost:8000/api",
 					"event": [
 						{
 							"listen": "test",
@@ -45,7 +45,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"email\": \"iamlegend@gmail.com\",\n    \"password\": \"secret\"\n}",
+							"raw": "{\n    \"email\": \"iamlegend@gmail.com\",\n    \"password\": \"secret\",\n    \"customer\": \"Mitsubishi\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -53,20 +53,19 @@
 							}
 						},
 						"url": {
-							"raw": "{{URL}}/api/user",
+							"raw": "{{URL}}/api",
 							"host": [
 								"{{URL}}"
 							],
 							"path": [
-								"api",
-								"user"
+								"api"
 							]
 						}
 					},
 					"response": []
 				},
 				{
-					"name": "localhost:8000/api/user/login",
+					"name": "localhost:8000/api/login",
 					"event": [
 						{
 							"listen": "test",
@@ -6363,6 +6362,603 @@
 			]
 		},
 		{
+			"name": "Stray Device",
+			"item": [
+				{
+					"name": "Get Stray Device",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{AuthToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{URL}}/api/stray-devices/{{StrayDeviceID}}",
+							"host": [
+								"{{URL}}"
+							],
+							"path": [
+								"api",
+								"stray-devices",
+								"{{StrayDeviceID}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Stray Device Hierarchy",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{AuthToken}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"limit\": \"1\"\n}"
+						},
+						"url": {
+							"raw": "{{URL}}/api/stray-devices/{{StrayDeviceID}}/all",
+							"host": [
+								"{{URL}}"
+							],
+							"path": [
+								"api",
+								"stray-devices",
+								"{{StrayDeviceID}}",
+								"all"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Stray Devices",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{AuthToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{URL}}/api/stray-devices",
+							"host": [
+								"{{URL}}"
+							],
+							"path": [
+								"api",
+								"stray-devices"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get By Query",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"/*tests[\"Successful GET\"] = responseCode.code === 200;",
+									"",
+									"var data = JSON.parse(responseBody)",
+									"//console.log(\"Here is what we got: \", data[\"tenant\"][\"id\"])",
+									"",
+									"var ID = data[\"tenant\"][\"name\"]*/",
+									"",
+									"//tests[\"Successful PUT Request\"] = ID == "
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{AuthToken}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{URL}}/api/stray-devices?name=trash",
+							"host": [
+								"{{URL}}"
+							],
+							"path": [
+								"api",
+								"stray-devices"
+							],
+							"query": [
+								{
+									"key": "name",
+									"value": "trash"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create Stray Device",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"tests[\"Successful POST Request\"] = responseCode.code === 201;",
+									"",
+									"var data = JSON.parse(responseBody)",
+									"//console.log(\"Here is what we got: \", data[\"tenant\"][\"id\"])",
+									"",
+									"var ID = data[\"data\"][\"id\"]",
+									"pm.environment.set(\"StrayDeviceID\", ID)"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{AuthToken}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"SaintPepsi\",\n    \"id\": null,\n    \"parentId\": null,\n    \"category\": \"device\",\n    \"description\": [\n        \"-3/-5\\\\nA0-Z9\"\n    ],\n    \"domain\": \"Device DOMAIN\",\n    \"attributes\": {\n        \"posXY\": \"{\\\"x\\\":10.0,\\\"y\\\":0.0}\",\n        \"posXYUnit\": \"tile\",\n        \"posZ\": \"{\\\"x\\\":10.0,\\\"y\\\":0.0}\",\n        \"posZUnit\": \"tile\",\n        \"size\": \"{\\\"x\\\":60.0,\\\"y\\\":120.0}\",\n        \"sizeUnit\": \"cm\",\n        \"height\": \"42\",\n        \"heightUnit\": \"U\",\n        \"heightU\": \"U\",\n        \"template\": \"Some template\",\n        \"orientation\": \"front\",\n        \"vendor\": \"someVendor\",\n        \"type\": \"someType\",\n        \"model\": \"someModel\",\n        \"serial\": \"someSerial\"\n    }\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{URL}}/api/stray-devices",
+							"host": [
+								"{{URL}}"
+							],
+							"path": [
+								"api",
+								"stray-devices"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Stray Device",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{AuthToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{URL}}/api/stray-devices/{{StrayDeviceID}}",
+							"host": [
+								"{{URL}}"
+							],
+							"path": [
+								"api",
+								"stray-devices",
+								"{{StrayDeviceID}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Stray Device",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{AuthToken}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Abandoned-StrayDevice\",\n    \"id\": null,\n    \"category\": \"999\",\n    \"description\": [\n        \"Rack A01\",\n        \"The original one\",\n        \"-3/-5\\\\nA0-Z9\"\n    ],\n    \"domain\": \"99\",\n    \"attributes\": {\n        \"posXY\": \"99\",\n        \"posXYUnit\": \"tile\",\n        \"size\": \"99\",\n        \"sizeUnit\": \"cm\",\n        \"height\": \"99\",\n        \"heightUnit\": \"U\",\n        \"template\": \"\",\n        \"orientation\": \"front\",\n        \"vendor\": \"99\",\n        \"type\": \"99\",\n        \"model\": \"99\",\n        \"serial\": \"99\"\n    }\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{URL}}/api/stray-devices/{{StrayDeviceID}}",
+							"host": [
+								"{{URL}}"
+							],
+							"path": [
+								"api",
+								"stray-devices",
+								"{{StrayDeviceID}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Patch Stray Device",
+					"request": {
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{AuthToken}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Abandoned-Device\",\n    \"category\": \"999\",\n    \"parentId\":\"trash\",\n    \"description\": [\n        \"Rack A01\",\n        \"The original one\",\n        \"-3/-5\\\\nA0-Z9\"\n    ],\n    \"domain\": \"99\",\n    \"attributes\": {\n        \"posXY\": \"99\",\n        \"posXYUnit\": \"tile\",\n        \"size\": \"99\",\n        \"sizeUnit\": \"cm\",\n        \"height\": \"99\",\n        \"heightUnit\": \"U\",\n        \"template\": \"\",\n        \"orientation\": \"front\",\n        \"vendor\": \"99\",\n        \"type\": \"99\",\n        \"model\": \"99\",\n        \"serial\": \"99\",\n        \"someATTR\":\"customValue\"\n    },\n    \"another\":\"one\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{URL}}/api/stray-devices/{{StrayDeviceID}}",
+							"host": [
+								"{{URL}}"
+							],
+							"path": [
+								"api",
+								"stray-devices",
+								"{{StrayDeviceID}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create Stray Device Copy",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"tests[\"Successful POST Request\"] = responseCode.code === 201;",
+									"",
+									"var data = JSON.parse(responseBody)",
+									"//console.log(\"Here is what we got: \", data[\"tenant\"][\"id\"])",
+									"",
+									"var ID = data[\"data\"][\"id\"]",
+									"pm.environment.set(\"DeviceID\", ID)"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{AuthToken}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"DeviceA\",\n    \"id\": null,\n    \"parentId\": \"{{RackID}}\",\n    \"category\": \"device\",\n    \"description\": [\n        \"Rack A01\",\n        \"The original one\",\n        \"-3/-5\\\\nA0-Z9\"\n    ],\n    \"domain\": \"Device DOMAIN\",\n    \"attributes\": {\n        \"posXY\": \"{\\\"x\\\":10.0,\\\"y\\\":0.0}\",\n        \"posXYUnit\": \"tile\",\n        \"posZ\": \"{\\\"x\\\":10.0,\\\"y\\\":0.0}\",\n        \"posZUnit\": \"tile\",\n        \"size\": \"{\\\"x\\\":60.0,\\\"y\\\":120.0}\",\n        \"sizeUnit\": \"cm\",\n        \"height\": \"42\",\n        \"heightUnit\": \"U\",\n        \"heightU\": \"U\",\n        \"template\": \"Some template\",\n        \"orientation\": \"front\",\n        \"vendor\": \"someVendor\",\n        \"type\": \"someType\",\n        \"model\": \"someModel\",\n        \"serial\": \"someSerial\"\n    }\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{URL}}/api/devices",
+							"host": [
+								"{{URL}}"
+							],
+							"path": [
+								"api",
+								"devices"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Stray Sensor",
+			"item": [
+				{
+					"name": "Get Stray Sensor",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{AuthToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{URL}}/api/stray-sensors/{{StraySensorID}}",
+							"host": [
+								"{{URL}}"
+							],
+							"path": [
+								"api",
+								"stray-sensors",
+								"{{StraySensorID}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Stray Sensors",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{AuthToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{URL}}/api/stray-sensors",
+							"host": [
+								"{{URL}}"
+							],
+							"path": [
+								"api",
+								"stray-sensors"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get By Query",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"/*tests[\"Successful GET\"] = responseCode.code === 200;",
+									"",
+									"var data = JSON.parse(responseBody)",
+									"//console.log(\"Here is what we got: \", data[\"tenant\"][\"id\"])",
+									"",
+									"var ID = data[\"tenant\"][\"name\"]*/",
+									"",
+									"//tests[\"Successful PUT Request\"] = ID == "
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{AuthToken}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{URL}}/api/stray-sensors?name=trash",
+							"host": [
+								"{{URL}}"
+							],
+							"path": [
+								"api",
+								"stray-sensors"
+							],
+							"query": [
+								{
+									"key": "name",
+									"value": "trash"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create Stray Sensor",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"tests[\"Successful POST Request\"] = responseCode.code === 201;",
+									"",
+									"var data = JSON.parse(responseBody)",
+									"//console.log(\"Here is what we got: \", data[\"tenant\"][\"id\"])",
+									"",
+									"var ID = data[\"data\"][\"id\"]",
+									"pm.environment.set(\"StraySensorID\", ID)"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{AuthToken}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"StrayDeviceSensorA\",\n    \"parentId\" : \"\",\n    \"category\": \"SENSOR-D\",\n    \"type\": \"device\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{URL}}/api/stray-sensors",
+							"host": [
+								"{{URL}}"
+							],
+							"path": [
+								"api",
+								"stray-sensors"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Stray Sensor",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{AuthToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{URL}}/api/stray-sensors/{{StraySensorID}}",
+							"host": [
+								"{{URL}}"
+							],
+							"path": [
+								"api",
+								"stray-sensors",
+								"{{StraySensorID}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Stray Sensor",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{AuthToken}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Abandoned-StrayDevice\",\n    \"id\": null,\n    \"category\": \"999\",\n    \"description\": [\n        \"Rack A01\",\n        \"The original one\",\n        \"-3/-5\\\\nA0-Z9\"\n    ],\n    \"domain\": \"99\",\n    \"attributes\": {\n        \"posXY\": \"99\",\n        \"posXYUnit\": \"tile\",\n        \"size\": \"99\",\n        \"sizeUnit\": \"cm\",\n        \"height\": \"99\",\n        \"heightUnit\": \"U\",\n        \"template\": \"\",\n        \"orientation\": \"front\",\n        \"vendor\": \"99\",\n        \"type\": \"99\",\n        \"model\": \"99\",\n        \"serial\": \"99\"\n    }\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{URL}}/api/stray-sensors/{{StraySensorID}}",
+							"host": [
+								"{{URL}}"
+							],
+							"path": [
+								"api",
+								"stray-sensors",
+								"{{StraySensorID}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Patch Stray Sensor",
+					"request": {
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{AuthToken}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Abandoned-Device\",\n    \"category\": \"999\",\n    \"parentId\":\"trash\",\n    \"description\": [\n        \"Rack A01\",\n        \"The original one\",\n        \"-3/-5\\\\nA0-Z9\"\n    ],\n    \"domain\": \"99\",\n    \"attributes\": {\n        \"posXY\": \"99\",\n        \"posXYUnit\": \"tile\",\n        \"size\": \"99\",\n        \"sizeUnit\": \"cm\",\n        \"height\": \"99\",\n        \"heightUnit\": \"U\",\n        \"template\": \"\",\n        \"orientation\": \"front\",\n        \"vendor\": \"99\",\n        \"type\": \"99\",\n        \"model\": \"99\",\n        \"serial\": \"99\",\n        \"someATTR\":\"customValue\"\n    },\n    \"another\":\"one\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{URL}}/api/stray-sensor/{{StraySensorID}}",
+							"host": [
+								"{{URL}}"
+							],
+							"path": [
+								"api",
+								"stray-sensor",
+								"{{StraySensorID}}"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
 			"name": "Subdevice",
 			"item": [
 				{
@@ -6634,6 +7230,285 @@
 								"api",
 								"devices",
 								"{{SubdeviceID}}"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Domain",
+			"item": [
+				{
+					"name": "Get Domain",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{AuthToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{URL}}/api/domains/{{DomainID}}",
+							"host": [
+								"{{URL}}"
+							],
+							"path": [
+								"api",
+								"domains",
+								"{{DomainID}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "GetHierarchy",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{AuthToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{URL}}/api/domains/{{DomainID}}/all",
+							"host": [
+								"{{URL}}"
+							],
+							"path": [
+								"api",
+								"domains",
+								"{{DomainID}}",
+								"all"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get All Domains",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{AuthToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{URL}}/api/domains",
+							"host": [
+								"{{URL}}"
+							],
+							"path": [
+								"api",
+								"domains"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get By Name",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{AuthToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{URL}}/api/subdevices?name=",
+							"host": [
+								"{{URL}}"
+							],
+							"path": [
+								"api",
+								"subdevices"
+							],
+							"query": [
+								{
+									"key": "name",
+									"value": ""
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get By Query",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"/*tests[\"Successful GET\"] = responseCode.code === 200;",
+									"",
+									"var data = JSON.parse(responseBody)",
+									"//console.log(\"Here is what we got: \", data[\"tenant\"][\"id\"])",
+									"",
+									"var ID = data[\"tenant\"][\"name\"]*/",
+									"",
+									"//tests[\"Successful PUT Request\"] = ID == "
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{AuthToken}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{URL}}/api/domains?name=",
+							"host": [
+								"{{URL}}"
+							],
+							"path": [
+								"api",
+								"domains"
+							],
+							"query": [
+								{
+									"key": "name",
+									"value": ""
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create Domain",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"tests[\"Successful POST Request\"] = responseCode.code === 201;",
+									"",
+									"var data = JSON.parse(responseBody)",
+									"//console.log(\"Here is what we got: \", data[\"tenant\"][\"id\"])",
+									"",
+									"var ID = data[\"data\"][\"id\"]",
+									"pm.environment.set(\"DomainID\", ID)"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{AuthToken}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"DOMAIN-F\",\n    \"category\": \"domain\",\n    \"description\": [\n        \"Micro Dept\"\n    ],\n    \"domain\": \"DEMO\",\n    \"attributes\": {\n        \"color\": \"FFFF\"\n    }\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{URL}}/api/domains",
+							"host": [
+								"{{URL}}"
+							],
+							"path": [
+								"api",
+								"domains"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Domain",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{AuthToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{URL}}/api/domains/{{DomainID}}",
+							"host": [
+								"{{URL}}"
+							],
+							"path": [
+								"api",
+								"domains",
+								"{{DomainID}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Domain",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{AuthToken}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"AbandonedSubDevice\",\n    \"id\": null,\n    \"parentId\": \"{{DeviceID}}\",\n    \"description\": [\n        \"Rack A01\",\n        \"The original one\",\n        \"-3/-5\\\\nA0-Z9\"\n    ],\n    \"domain\": \"99\",\n    \"attributes\": {\n        \"posXY\": \"99\",\n        \"posXYUnit\": \"tile\",\n        \"size\": \"99\",\n        \"sizeUnit\": \"cm\",\n        \"height\": \"99\",\n        \"heightUnit\": \"U\",\n        \"template\": \"\",\n        \"orientation\": \"front\",\n        \"vendor\": \"99\",\n        \"type\": \"99\",\n        \"model\": \"99\",\n        \"serial\": \"99\"\n    }\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{URL}}/api/domains/{{DomainID}}",
+							"host": [
+								"{{URL}}"
+							],
+							"path": [
+								"api",
+								"domains",
+								"{{DomainID}}"
 							]
 						}
 					},
@@ -7828,240 +8703,6 @@
 			]
 		},
 		{
-			"name": "Tiles",
-			"item": [
-				{
-					"name": "Get By Query",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"/*tests[\"Successful GET\"] = responseCode.code === 200;",
-									"",
-									"var data = JSON.parse(responseBody)",
-									"//console.log(\"Here is what we got: \", data[\"tenant\"][\"id\"])",
-									"",
-									"var ID = data[\"tenant\"][\"name\"]*/",
-									"",
-									"//tests[\"Successful PUT Request\"] = ID == "
-								],
-								"type": "text/javascript"
-							}
-						}
-					],
-					"protocolProfileBehavior": {
-						"disableBodyPruning": true
-					},
-					"request": {
-						"method": "GET",
-						"header": [
-							{
-								"key": "Authorization",
-								"value": "Bearer {{AuthToken}}",
-								"type": "text"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{URL}}/api/rooms/tiles?category=wall",
-							"host": [
-								"{{URL}}"
-							],
-							"path": [
-								"api",
-								"rooms",
-								"tiles"
-							],
-							"query": [
-								{
-									"key": "category",
-									"value": "wall"
-								}
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Create Tile",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"tests[\"Successful POST Request\"] = responseCode.code === 201;",
-									"",
-									"var data = JSON.parse(responseBody)",
-									"//console.log(\"Here is what we got: \", data[\"tenant\"][\"id\"])",
-									"",
-									"var ID = data[\"data\"][\"id\"]",
-									"pm.environment.set(\"TileID\", ID)"
-								],
-								"type": "text/javascript"
-							}
-						}
-					],
-					"request": {
-						"method": "POST",
-						"header": [
-							{
-								"key": "Authorization",
-								"value": "Bearer {{AuthToken}}",
-								"type": "text"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n  \"location\" : \"101,101\",\n  \"name\"     : \"TileA\",\n  \"label\"    : \"TileA\",\n  \"texture\"  : \"Smooth\",\n  \"color\"    : \"FAA\",\n  \"parentId\" : \"{{RoomID}}\"\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{URL}}/api/tiles",
-							"host": [
-								"{{URL}}"
-							],
-							"path": [
-								"api",
-								"tiles"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Delete Tile",
-					"request": {
-						"method": "DELETE",
-						"header": [
-							{
-								"key": "Authorization",
-								"value": "Bearer {{AuthToken}}",
-								"type": "text"
-							}
-						],
-						"url": {
-							"raw": "{{URL}}/api/tiles/{{TileID}}",
-							"host": [
-								"{{URL}}"
-							],
-							"path": [
-								"api",
-								"tiles",
-								"{{TileID}}"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Get Tile",
-					"request": {
-						"method": "GET",
-						"header": [
-							{
-								"key": "Authorization",
-								"value": "Bearer {{AuthToken}}",
-								"type": "text"
-							}
-						],
-						"url": {
-							"raw": "{{URL}}/api/tiles/{{TileID}}",
-							"host": [
-								"{{URL}}"
-							],
-							"path": [
-								"api",
-								"tiles",
-								"{{TileID}}"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Patch Tile",
-					"request": {
-						"method": "PATCH",
-						"header": [
-							{
-								"key": "Authorization",
-								"value": "Bearer {{AuthToken}}",
-								"type": "text"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n  \"location\" : \"82,99\",\n  \"name\"     : \"Tile-Black\",\n  \"label\"    : \"Kino\",\n  \"texture\"  : \"Smooth\",\n  \"color\"    : \"FFFFFF\",\n  \"someATTR\": \"customValue\"\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{URL}}/api/tiles/{{TileID}}",
-							"host": [
-								"{{URL}}"
-							],
-							"path": [
-								"api",
-								"tiles",
-								"{{TileID}}"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Update Tile",
-					"request": {
-						"method": "PUT",
-						"header": [
-							{
-								"key": "Authorization",
-								"value": "Bearer {{AuthToken}}",
-								"type": "text"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n  \"location\" : \"82,99\",\n  \"name\"     : \"Tile-Black\",\n  \"label\"    : \"Kino\",\n  \"texture\"  : \"Smooth\",\n  \"color\"    : \"FFFFFF\"\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{URL}}/api/tiles/{{TileID}}",
-							"host": [
-								"{{URL}}"
-							],
-							"path": [
-								"api",
-								"tiles",
-								"{{TileID}}"
-							]
-						}
-					},
-					"response": []
-				}
-			]
-		},
-		{
 			"name": "Cabinets",
 			"item": [
 				{
@@ -8311,6 +8952,240 @@
 							"path": [
 								"api",
 								"cabinets"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Tiles",
+			"item": [
+				{
+					"name": "Get By Query",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"/*tests[\"Successful GET\"] = responseCode.code === 200;",
+									"",
+									"var data = JSON.parse(responseBody)",
+									"//console.log(\"Here is what we got: \", data[\"tenant\"][\"id\"])",
+									"",
+									"var ID = data[\"tenant\"][\"name\"]*/",
+									"",
+									"//tests[\"Successful PUT Request\"] = ID == "
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{AuthToken}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{URL}}/api/rooms/tiles?category=wall",
+							"host": [
+								"{{URL}}"
+							],
+							"path": [
+								"api",
+								"rooms",
+								"tiles"
+							],
+							"query": [
+								{
+									"key": "category",
+									"value": "wall"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create Tile",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"tests[\"Successful POST Request\"] = responseCode.code === 201;",
+									"",
+									"var data = JSON.parse(responseBody)",
+									"//console.log(\"Here is what we got: \", data[\"tenant\"][\"id\"])",
+									"",
+									"var ID = data[\"data\"][\"id\"]",
+									"pm.environment.set(\"TileID\", ID)"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{AuthToken}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"location\" : \"101,101\",\n  \"name\"     : \"TileA\",\n  \"label\"    : \"TileA\",\n  \"texture\"  : \"Smooth\",\n  \"color\"    : \"FAA\",\n  \"parentId\" : \"{{RoomID}}\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{URL}}/api/tiles",
+							"host": [
+								"{{URL}}"
+							],
+							"path": [
+								"api",
+								"tiles"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Tile",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{AuthToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{URL}}/api/tiles/{{TileID}}",
+							"host": [
+								"{{URL}}"
+							],
+							"path": [
+								"api",
+								"tiles",
+								"{{TileID}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Tile",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{AuthToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{URL}}/api/tiles/{{TileID}}",
+							"host": [
+								"{{URL}}"
+							],
+							"path": [
+								"api",
+								"tiles",
+								"{{TileID}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Patch Tile",
+					"request": {
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{AuthToken}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"location\" : \"82,99\",\n  \"name\"     : \"Tile-Black\",\n  \"label\"    : \"Kino\",\n  \"texture\"  : \"Smooth\",\n  \"color\"    : \"FFFFFF\",\n  \"someATTR\": \"customValue\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{URL}}/api/tiles/{{TileID}}",
+							"host": [
+								"{{URL}}"
+							],
+							"path": [
+								"api",
+								"tiles",
+								"{{TileID}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Tile",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{AuthToken}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"location\" : \"82,99\",\n  \"name\"     : \"Tile-Black\",\n  \"label\"    : \"Kino\",\n  \"texture\"  : \"Smooth\",\n  \"color\"    : \"FFFFFF\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{URL}}/api/tiles/{{TileID}}",
+							"host": [
+								"{{URL}}"
+							],
+							"path": [
+								"api",
+								"tiles",
+								"{{TileID}}"
 							]
 						}
 					},
@@ -8612,7 +9487,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"name\": \"CorridorA\",\n    \"parentId\" : \"{{RoomID}}\",\n    \"temperature\": \"warm\"\n}",
+							"raw": "{\n    \"name\": \"CorridorZ\",\n    \"parentId\" : \"{{RoomID}}\",\n    \"domain\":\"DEMO\",\n    \"temperature\": \"warm\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -10457,6 +11332,12 @@
 					"response": []
 				}
 			]
+		}
+	],
+	"variable": [
+		{
+			"key": "StraySensorID",
+			"value": "StraySensorD"
 		}
 	]
 }
