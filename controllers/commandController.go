@@ -514,6 +514,7 @@ func LSOG() {
 	fmt.Println("COMMIT DATE: ", GitCommitDate)
 	fmt.Println("LOG PATH:", "./log.txt")
 	fmt.Println("HISTORY FILE PATH:", ".resources/.history")
+	fmt.Println("DEBUG LEVEL: ", State.DebugLvl)
 }
 
 //Displays environment variable values
