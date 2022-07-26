@@ -217,7 +217,7 @@ func checkIfTemplate(x interface{}) bool {
        TOK_UNSET TOK_ELIF TOK_DO TOK_LEN
        TOK_USE_JSON TOK_PARTIAL TOK_LINK TOK_UNLINK
        TOK_CAM TOK_UI TOK_HIERARCH TOK_DRAWABLE TOK_ENV TOK_ORPH
-       TOK_DRAW
+       TOK_DRAW TOK_SETENV
        
 %type <n> LSOBJ_COMMAND
 %type <s> F OBJ_TYPE P P1 WORDORNUM CDORFG NTORIENTATION COMMAND
@@ -394,7 +394,7 @@ factor: TOK_LPAREN EXPR TOK_RPAREN {$$=$2}
        |TOK_LBLOCK WNARG TOK_RBLOCK {x:=retNodeArray($2);$$=&arrNode{len(x), x}}
        ;
 
-K: NT_CREATE     {if cmd.State.DebugLvl >= 3 {println("@State start");}}
+K: NT_CREATE     
        | NT_GET
        | NT_UPDATE 
        | NT_DEL 
@@ -448,17 +448,18 @@ P:     P1
 ;
 
 P1:    TOK_WORD TOK_SLASH P1 {$$=$1+"/"+$3}
+       | TOK_WORD TOK_DOT P1 {$$=$1+"."+$3}
        | TOK_WORD {$$=$1}
        | TOK_STR {$$=$1}
        | TOK_STR TOK_PLUS TOK_SLASH P1 {$$=$1+"/"+$4}
        | TOK_DOT TOK_DOT TOK_SLASH P1 {$$="../"+$4}
-       | TOK_WORD TOK_DOT TOK_WORD {$$=$1+"."+$3}
        | TOK_DOT TOK_DOT {$$=".."}
        | TOK_OCDEL {$$="-"}
        | TOK_DEREF TOK_WORD {$$= resolveReference($2)}
        | TOK_DEREF TOK_WORD TOK_PLUS TOK_SLASH P1  {$$=resolveReference($2)+"/"+$5}
        | TOK_DEREF TOK_WORD TOK_PLUS TOK_STR {$$=resolveReference($2)+$4}
        | TOK_DEREF TOK_WORD TOK_PLUS TOK_STR TOK_PLUS TOK_SLASH P1 {$$=resolveReference($2)+$4+"/"+$7}
+       | TOK_DEREF TOK_LBRAC TOK_WORD TOK_RBRAC P {$$=resolveReference($3)+$5}
        | {$$=""}
 ;
 
@@ -486,7 +487,7 @@ Q:      TOK_CD P {$$=&cdNode{$2}}
        | BASH     {$$=$1}
        | TOK_DRAWABLE TOK_LPAREN P TOK_RPAREN {$$=&isEntityDrawableNode{$3}}
        | TOK_DRAWABLE TOK_LPAREN P TOK_COMMA factor TOK_RPAREN {$$=&isAttrDrawableNode{$3, $5}}
-       |TOK_WORD TOK_EQUAL EXPR {$$=&setEnvNode{$1, $3}}
+       | TOK_SETENV TOK_WORD TOK_EQUAL EXPR {$$=&setEnvNode{$2, $4}}
 ;
 
 COMMAND: TOK_LINK{$$="link"} | TOK_UNLINK{$$="unlink"} | TOK_CLR{$$="clear"} | TOK_LS{$$="ls"} 
@@ -666,6 +667,7 @@ OCDOT:      //TOK_VAR TOK_COL TOK_WORD TOK_EQUAL WORDORNUM {$$=&assignNode{$3, d
             |TOK_DOT TOK_TEMPLATE TOK_COL P {$$=&loadTemplateNode{$4}}
             |TOK_VAR TOK_COL TOK_WORD TOK_EQUAL Q {$$=&assignNode{$3, $5}}
             |TOK_VAR TOK_COL TOK_WORD TOK_EQUAL K {$$=&assignNode{$3, $5}}
+            //|TOK_VAR TOK_COL TOK_WORD TOK_EQUAL P {$$=&assignNode{$3, $5}}
             //|TOK_VAR TOK_COL TOK_WORD TOK_EQUAL OCLISYNTX {$$=&assignNode{$3, $5}}
             |TOK_DEREF TOK_WORD {$$=&symbolReferenceNode{$2, &numNode{0}, nil}}
               
