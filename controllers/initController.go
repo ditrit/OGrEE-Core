@@ -54,10 +54,13 @@ func InitState(flags, env map[string]interface{}) {
 	//Send login notification
 	data := map[string]interface{}{"api_url": State.APIURL, "api_token": GetKey()}
 	req := map[string]interface{}{"type": "login", "data": data}
-	e := models.ContactUnity("POST", State.UnityClientURL, req, State.Timeout)
+	e := models.ContactUnity("POST", State.UnityClientURL, req, State.Timeout, State.DebugLvl)
 	if e != nil {
-		l.GetWarningLogger().Println("Note: Unity Client (" + State.UnityClientURL + ") Unreachable")
-		fmt.Println("Note: Unity Client (" + State.UnityClientURL + ") Unreachable ")
+		if State.DebugLvl > 1 {
+			l.GetWarningLogger().Println("Note: Unity Client (" + State.UnityClientURL + ") Unreachable")
+			fmt.Println("Note: Unity Client (" + State.UnityClientURL + ") Unreachable ")
+		}
+
 		State.UnityClientAvail = false
 	} else {
 		fmt.Println("Unity Client is Reachable!")
@@ -213,8 +216,11 @@ func InitTimeout(env map[string]interface{}) {
 		return
 	}
 
-	l.GetWarningLogger().Println("Unity deadline not found. Resorting to default time duration of 10 ms")
-	println("Warning: Unity deadline not found in env file. Resorting to default of 10 ms")
+	if State.DebugLvl > 1 {
+		l.GetWarningLogger().Println("Unity deadline not found. Resorting to default time duration of 10 ms")
+		println("Warning: Unity deadline not found in env file. Resorting to default of 10 ms")
+	}
+
 	State.Timeout = time.Millisecond * time.Duration(10)
 	return
 }

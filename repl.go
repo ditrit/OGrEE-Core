@@ -213,7 +213,6 @@ func Start(flags map[string]interface{}) {
 	c.InitKey(flags, env) //Set the API Key
 	user, _ := c.Login(env)
 
-	println("Caching data... please wait")
 	c.InitState(flags, env)
 
 	rl, err := readline.NewEx(&readline.Config{

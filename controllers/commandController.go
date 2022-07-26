@@ -2327,7 +2327,7 @@ func InformUnity(method, caller string, entity int, data map[string]interface{})
 		if entity > -1 && entity < SENSOR+1 {
 			data = GenerateFilteredJson(data)
 		}
-		e := models.ContactUnity(method, State.UnityClientURL, data, State.Timeout)
+		e := models.ContactUnity(method, State.UnityClientURL, data, State.Timeout, State.DebugLvl)
 		if e != nil {
 			l.GetWarningLogger().Println("Unable to contact Unity Client @" + caller)
 			fmt.Println("Error while updating Unity: ", e.Error())

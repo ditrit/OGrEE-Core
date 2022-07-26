@@ -46,7 +46,7 @@ func Disp(x map[string]interface{}) {
 }
 
 //Function communicates with Unity
-func ContactUnity(method, URL string, data map[string]interface{}, dur time.Duration) error {
+func ContactUnity(method, URL string, data map[string]interface{}, dur time.Duration, debug int) error {
 	dataJSON, _ := json.Marshal(data)
 
 	//DEBUG BLOCK
@@ -54,8 +54,10 @@ func ContactUnity(method, URL string, data map[string]interface{}, dur time.Dura
 
 	// Connect to a server
 	//println(URL)
-	println("DEBUG OUTGOING JSON")
-	Disp(data)
+	if debug > 1 { //Debug levels range: 0->3
+		println("DEBUG OUTGOING JSON")
+		Disp(data)
+	}
 
 	conn, e := net.DialTimeout("tcp", URL, dur)
 	if e != nil {
