@@ -9,5 +9,5 @@ EXAMPLE
     draw   
     draw 2  
     draw DEMO_RACK/DeviceA 2
-    draw /Physical/TenantA
+    draw /Physical/SiteA
     draw $x

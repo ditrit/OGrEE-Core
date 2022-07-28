@@ -565,7 +565,7 @@ func LSOBJECT(x string, entity int) []map[string]interface{} {
 
 	//println(entities)
 	var idToSend string
-	if obi == TENANT {
+	if obi == SITE {
 		idToSend = obj["name"].(string)
 	} else {
 		idToSend = obj["id"].(string)
@@ -1040,7 +1040,7 @@ func GetOCLIAtrributes(Path string, ent int, data map[string]interface{}) {
 	//properly fixed
 	if ent == STRAY_DEV {
 		Path = "/Physical/Stray/Devices/" + path.Dir(Path)
-	} else if ent > TENANT {
+	} else if ent > SITE {
 		Path = "/Physical/" + path.Dir(Path)
 	}
 
@@ -1056,7 +1056,7 @@ func GetOCLIAtrributes(Path string, ent int, data map[string]interface{}) {
 	data["description"] = []interface{}{}
 
 	//Retrieve Parent
-	if ent != TENANT && ent != GROUP && ent != STRAY_DEV {
+	if ent != SITE && ent != GROUP && ent != STRAY_DEV {
 		parent, parentURL = GetObject(Path, true)
 		if parent == nil {
 			println("Error! The parent was not found in path")
@@ -1064,7 +1064,7 @@ func GetOCLIAtrributes(Path string, ent int, data map[string]interface{}) {
 		}
 
 		//Retrieve parent name for domain
-		tmp := strings.Split(parentURL, State.APIURL+"/api/tenants/")
+		tmp := strings.Split(parentURL, State.APIURL+"/api/sites/")
 
 		domIDX := strings.Index(tmp[1], "/")
 		if domIDX == -1 {
@@ -1076,17 +1076,11 @@ func GetOCLIAtrributes(Path string, ent int, data map[string]interface{}) {
 	}
 
 	switch ent {
-	case TENANT:
-
-		data["domain"] = data["name"]
-		data["parentId"] = nil
-		PostObj(ent, "tenant", data)
-
 	case SITE:
 
 		//Default values
-		data["domain"] = domain
-		data["parentId"] = parent["id"]
+		data["domain"] = data["name"]
+		data["parentId"] = nil
 
 		PostObj(ent, "site", data)
 	case BLDG:
@@ -2468,35 +2462,35 @@ func OnlinePathResolve(path []string) []string {
 	} //END OF template group type check
 
 	for i := range path {
-		if i < 4 {
+		if i < 3 {
 			basePath += "/" + EntityToString(i) + "s/" + path[i]
 		}
 	}
 
-	if len(path) <= 4 {
+	if len(path) <= 3 {
 		return []string{basePath}
 	}
 
-	if len(path) == 5 { //Possible paths for children of room
+	if len(path) == 4 { //Possible paths for children of room
 		for idx := range roomChildren {
-			paths = append(paths, basePath+roomChildren[idx]+"/"+path[4])
+			paths = append(paths, basePath+roomChildren[idx]+"/"+path[3])
 		}
-		paths = append(paths, basePath+"/racks/"+path[4])
+		paths = append(paths, basePath+"/racks/"+path[3])
 		return paths
 	}
 
-	basePath += "/racks/" + path[4]
+	basePath += "/racks/" + path[3]
 
-	if len(path) == 6 { //Possible paths for children of racks
-		paths = append(paths, basePath+"/devices/"+path[5])
-		paths = append(paths, basePath+"/sensors/"+path[5])
-		paths = append(paths, basePath+"/groups/"+path[5])
+	if len(path) == 5 { //Possible paths for children of racks
+		paths = append(paths, basePath+"/devices/"+path[4])
+		paths = append(paths, basePath+"/sensors/"+path[4])
+		paths = append(paths, basePath+"/groups/"+path[4])
 		return paths
 	}
 
-	basePath += "/devices/" + path[5]
-	if len(path) >= 7 { //Possible paths for recursive device family
-		for i := 6; i < len(path)-1; i++ {
+	basePath += "/devices/" + path[4]
+	if len(path) >= 6 { //Possible paths for recursive device family
+		for i := 5; i < len(path)-1; i++ {
 			basePath = basePath + "/devices/" + path[i]
 		}
 		paths = append(paths, basePath+"/devices/"+path[len(path)-1])
@@ -2518,6 +2512,9 @@ func OnlineLevelResolver(path []string) []string {
 	roomChildren := []string{"/acs", "/panels", "/cabinets",
 		"/separators", "/rows", "/groups",
 		"/corridors", "/tiles", "/sensors"}
+
+	//println("DEBUG OLR should be called")
+	//println("Len path:", len(path))
 
 	//Check if path is templates or groups type or stray device
 	if path[0] == "Stray" {
@@ -2588,8 +2585,9 @@ func OnlineLevelResolver(path []string) []string {
 			basePath += "/" + EntityToString(i) + "s/" + path[i]
 		}
 	}
+	//println("DEBUG basePath:", basePath)
 
-	if len(path) < 4 {
+	if len(path) < 3 {
 		x := strings.Split(basePath, "/")
 		if len(x)%2 == 0 {
 			//Grab 2nd last entity type and get its subentity
@@ -2602,15 +2600,16 @@ func OnlineLevelResolver(path []string) []string {
 		return []string{basePath}
 	}
 
-	if len(path) == 4 { //Possible paths for children of room
+	if len(path) == 3 { //Possible paths for children of room
 		for idx := range roomChildren {
 			paths = append(paths, basePath+roomChildren[idx])
 		}
 		paths = append(paths, basePath+"/racks")
+		//println("DEBUG should place all these paths")
 		return paths
 	}
 
-	if len(path) == 5 {
+	if len(path) == 4 {
 		return []string{basePath + "/sensors",
 			basePath + "/groups",
 			basePath + "/devices"}
@@ -2618,16 +2617,16 @@ func OnlineLevelResolver(path []string) []string {
 
 	basePath += "/devices"
 
-	if len(path) == 6 { //Possible paths for children of racks
-		paths = append(paths, basePath+"/"+path[5]+"/sensors")
-		paths = append(paths, basePath+"/"+path[5]+"/groups")
-		paths = append(paths, basePath+"/"+path[5]+"/devices")
+	if len(path) == 5 { //Possible paths for children of racks
+		paths = append(paths, basePath+"/"+path[4]+"/sensors")
+		paths = append(paths, basePath+"/"+path[4]+"/groups")
+		paths = append(paths, basePath+"/"+path[4]+"/devices")
 		return paths
 	}
 
 	basePath += "/" + path[5]
-	if len(path) >= 7 { //Possible paths for recursive device family
-		for i := 6; i < len(path); i++ {
+	if len(path) >= 6 { //Possible paths for recursive device family
+		for i := 5; i < len(path); i++ {
 			basePath = basePath + "/devices/" + path[i]
 		}
 		paths = append(paths, basePath+"/devices")

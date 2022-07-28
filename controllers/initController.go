@@ -158,7 +158,7 @@ func InitState(flags, env map[string]interface{}) {
 	State.DrawableObjs = SetObjsForUnity("drawable", env)
 	State.DrawableJsons = make(map[string]map[string]interface{}, 16)
 
-	for i := TENANT; i < GROUP+1; i++ {
+	for i := SITE; i < GROUP+1; i++ {
 		ent := EntityToString(i)
 		State.DrawableJsons[ent] = SetDrawableTemplate(ent, env)
 	}

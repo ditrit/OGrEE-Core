@@ -13,8 +13,7 @@ import (
 )
 
 const (
-	TENANT = iota
-	SITE
+	SITE = iota
 	BLDG
 	ROOM
 	RACK
@@ -215,8 +214,8 @@ func FetchNodesAtLevel(Path string) []string {
 	paths := strings.Split(path.Clean(Path), "/")
 
 	if len(paths) == 2 && paths[1] == "Physical" {
-		urls = []string{State.APIURL + "/api/tenants"}
 		names = NodesAtLevel(&State.TreeHierarchy, *StrToStack(Path))
+		urls = []string{State.APIURL + "/api/sites"}
 	} else {
 		if len(paths) == 3 && paths[2] == "Stray" {
 			names = NodesAtLevel(&State.TreeHierarchy, *StrToStack(Path))
@@ -283,8 +282,7 @@ func FetchJsonNodesAtLevel(Path string) []map[string]interface{} {
 	if len(paths) == 2 && paths[1] == "Physical" {
 		x := NodesAtLevel(&State.TreeHierarchy, *StrToStack(Path))
 		objects = append(objects, strArrToMapStrInfArr(x)...)
-		urls = []string{State.APIURL + "/api/tenants"}
-
+		urls = []string{State.APIURL + "/api/sites"}
 	} else {
 		if len(paths) == 3 && paths[2] == "Stray" || len(paths) < 3 {
 			x := NodesAtLevel(&State.TreeHierarchy, *StrToStack(Path))
@@ -292,8 +290,6 @@ func FetchJsonNodesAtLevel(Path string) []map[string]interface{} {
 		}
 
 		if len(paths) == 3 && paths[2] == "Domain" {
-			//println("DEBUG this section for the new nodes")
-			//println("DEBUG path2: ", paths[3])
 			urls = []string{State.APIURL + "/api/domains"}
 
 		}
@@ -374,7 +370,6 @@ func CheckPathOnline(Path string) (bool, string) {
 			return true, Path
 		}
 	}
-
 	paths := OnlinePathResolve(pathSplit[2:])
 
 	for i := range paths {
@@ -437,8 +432,6 @@ func FindNodeInTree(root **Node, path *Stack, silenced bool) **Node {
 
 func EntityToString(entity int) string {
 	switch entity {
-	case TENANT:
-		return "tenant"
 	case SITE:
 		return "site"
 	case BLDG:
@@ -480,8 +473,6 @@ func EntityToString(entity int) string {
 
 func EntityStrToInt(entity string) int {
 	switch entity {
-	case "tenant", "tn":
-		return TENANT
 	case "site", "si":
 		return SITE
 	case "building", "bldg", "bd":
@@ -523,10 +514,8 @@ func EntityStrToInt(entity string) int {
 
 func GetParentOfEntity(ent int) int {
 	switch ent {
-	case TENANT:
-		return -1
 	case SITE:
-		return ent - 1
+		return -1
 	case BLDG:
 		return ent - 1
 	case ROOM:

@@ -345,7 +345,6 @@ func getPrefixCompleter() *readline.PrefixCompleter {
 			readline.PcItem(">", false),
 			readline.PcItem("delete", false)),
 		readline.PcItem("+", false,
-			readline.PcItem("tn:", false),
 			readline.PcItem("si:", false),
 			readline.PcItem("bd:", false),
 			readline.PcItem("ro:", false),
@@ -357,7 +356,6 @@ func getPrefixCompleter() *readline.PrefixCompleter {
 			readline.PcItem("orphan:device:", false)),
 
 		readline.PcItem("create", false,
-			readline.PcItem("tenant", false),
 			readline.PcItem("site", false),
 			readline.PcItem("building", false),
 			readline.PcItem("room", false),
@@ -376,7 +374,6 @@ func getPrefixCompleter() *readline.PrefixCompleter {
 		),
 
 		readline.PcItem("gt", true,
-			readline.PcItem("tenant", false),
 			readline.PcItem("site", false),
 			readline.PcItem("building", false),
 			readline.PcItem("room", false),

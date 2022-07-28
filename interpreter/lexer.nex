@@ -56,7 +56,6 @@
 /link/ { printToks("TOK_LINK"); return TOK_LINK}
 /unlink/ { printToks("TOK_UNLINK"); return TOK_UNLINK}
 
-/tenant|tn/ {  printToks("TOK_TENANT");lval.s = yylex.Text();return TOK_TENANT}
 /site|si/ {  printToks("TOK_SITE");lval.s = yylex.Text();return TOK_SITE}
 /bldg|building|bd/ {  printToks("TOK_BLDG");lval.s = yylex.Text();return TOK_BLDG}
 /room|ro/ {  printToks("TOK_ROOM");lval.s = yylex.Text();return TOK_ROOM}

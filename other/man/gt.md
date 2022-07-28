@@ -9,8 +9,8 @@ The object specifies which object type. The ATTRIBUTES form the search parameter
 EXAMPLE   
 
     gt 
-    gt /Physical/TenantA
+    gt /Physical/siteA
     gt ../rack01/device-ibm3
 
-    gt tenant color=FFFF name=DEMO
+    gt site orientation=NE name=DEMO
     gt device name=ibm

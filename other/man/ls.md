@@ -6,5 +6,5 @@ EXAMPLE
 
     ls   
     ls DEMO_RACK/DeviceA
-    ls /Physical/TenantA
+    ls /Physical/SiteA
     ls $x

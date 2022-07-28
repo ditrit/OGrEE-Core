@@ -9,4 +9,4 @@ The entity's respective base attributes must be included
 
 EXAMPLE   
 
-    create tenant :name=DEMO domain=anotherName color=FFFF
+    create site :name=DEMO orientation=NW

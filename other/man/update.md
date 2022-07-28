@@ -7,5 +7,5 @@ path will be used
 
 EXAMPLE   
 
-    update ../../TenantA color=FFFF
+    update ../../SiteA orientation=NW
     update rackA name=rackB domain=anotherDomain myattr=$x

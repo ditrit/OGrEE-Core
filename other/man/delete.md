@@ -5,4 +5,4 @@ Delete an object.
 EXAMPLE   
 
     delete path/to/object
-    delete ../TenantA    
+    delete ../SiteA    

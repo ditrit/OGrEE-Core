@@ -80,8 +80,11 @@ func ContactUnity(method, URL string, data map[string]interface{}, dur time.Dura
 		//}
 		//reply, _ := ioutil.ReadAll(conn)
 		//fmt.Printf("received from server: [%s]\n", string(reply))
-		println("Response received:", string(reply))
-		println("DEBUG LEN OF REPONSE:", len(reply))
+		if debug > 1 {
+			println("Response received:", string(reply))
+			println("DEBUG LEN OF REPONSE:", len(reply))
+		}
+
 		if len(reply) != 0 {
 			return nil
 		}

@@ -196,7 +196,7 @@ func checkIfTemplate(x interface{}) bool {
 
 %token <n> TOK_NUM 
 %token <f> TOK_FLOAT
-%token <s> TOK_WORD TOK_TENANT TOK_SITE TOK_BLDG TOK_ROOM
+%token <s> TOK_WORD TOK_SITE TOK_BLDG TOK_ROOM
 %token <s> TOK_RACK TOK_DEVICE TOK_STR
 %token <s> TOK_CORIDOR TOK_GROUP TOK_WALL
 %token <s> TOK_AC TOK_CABINET TOK_PANEL TOK_ROW
@@ -427,8 +427,7 @@ NT_UPDATE: TOK_UPDATE P TOK_COL F {$$=&commonNode{COMMON, cmd.UpdateObj, "Update
 NT_DEL: TOK_DELETE P {if cmd.State.DebugLvl >= 3 {println("@State NT_DEL");}; $$=&commonNode{COMMON, cmd.DeleteObj, "DeleteObj", []interface{}{$2}}}
 ;
 
-E:     TOK_TENANT 
-       | TOK_SITE 
+E:      TOK_SITE 
        | TOK_BLDG 
        | TOK_ROOM 
        | TOK_RACK 
@@ -587,8 +586,7 @@ OCLISYNTX:  TOK_PLUS OCCR {$$=$2}
 
 
 OCCR:   
-        TOK_TENANT TOK_COL P TOK_ATTRSPEC EXPR {$$=&commonNode{COMMON, cmd.GetOCLIAtrributes, "GetOCAttr", []interface{}{(replaceOCLICurrPath($3)),cmd.TENANT,map[string]interface{}{"attributes":map[string]interface{}{"color":$5}} }}}
-        |TOK_SITE TOK_COL P TOK_ATTRSPEC EXPR {$$=&commonNode{COMMON, cmd.GetOCLIAtrributes, "GetOCAttr", []interface{}{(replaceOCLICurrPath($3)),cmd.SITE,map[string]interface{}{"attributes":map[string]interface{}{"orientation":$5}} }}}
+        TOK_SITE TOK_COL P TOK_ATTRSPEC EXPR {$$=&commonNode{COMMON, cmd.GetOCLIAtrributes, "GetOCAttr", []interface{}{(replaceOCLICurrPath($3)),cmd.SITE,map[string]interface{}{"attributes":map[string]interface{}{"orientation":$5}} }}}
         
         |TOK_BLDG TOK_COL P TOK_ATTRSPEC EXPR TOK_ATTRSPEC EXPR {$$=&commonNode{COMMON, cmd.GetOCLIAtrributes, "GetOCAttr", []interface{}{(replaceOCLICurrPath($3)),cmd.BLDG,map[string]interface{}{"attributes":map[string]interface{}{"posXY":$5, "size":$7}} }}}
         
