@@ -8,3 +8,5 @@ mongod.log
 mdb/*
 *.txt
 resources/debug.log
+resources/scripts/mdb/*
+resources/scripts/mongod*

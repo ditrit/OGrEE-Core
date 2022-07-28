@@ -1,6 +1,11 @@
 package models
 
-import "strings"
+import (
+	"strings"
+
+	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
+)
 
 //Mongo returns '_id' instead of id
 func fixID(data map[string]interface{}) map[string]interface{} {
@@ -17,5 +22,16 @@ func FixUnderScore(x map[string]interface{}) {
 		if cat, _ := catInf.(string); strings.Contains(cat, "_") == true {
 			x["category"] = strings.Replace(cat, "_", "-", 1)
 		}
+	}
+}
+
+//Perform any neccessary adjustments to objects before insertion into DB
+func FixAttributesBeforeInsert(entity int, data map[string]interface{}) {
+	if entity == RACK {
+		pid, _ := primitive.ObjectIDFromHex(data["parentId"].(string))
+		req := bson.M{"_id": pid}
+		parent, _ := GetEntity(req, "room")
+		parentUnit := parent["attributes"].(map[string]interface{})["posXYUnit"]
+		data["attributes"].(map[string]interface{})["posXYUnit"] = parentUnit
 	}
 }

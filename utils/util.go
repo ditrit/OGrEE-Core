@@ -14,8 +14,7 @@ import (
 )
 
 const (
-	TENANT = iota
-	SITE
+	SITE = iota
 	BLDG
 	ROOM
 	RACK
@@ -32,6 +31,7 @@ const (
 	ROOMTMPL
 	OBJTMPL
 	STRAYDEV
+	DOMAIN
 	STRAYSENSOR
 )
 
@@ -95,8 +95,6 @@ func ParamsParse(link *url.URL, objType int) map[string]interface{} {
 
 func EntityToString(entity int) string {
 	switch entity {
-	case TENANT:
-		return "tenant"
 	case SITE:
 		return "site"
 	case BLDG:
@@ -113,6 +111,8 @@ func EntityToString(entity int) string {
 		return "panel"
 	case SEPARATOR:
 		return "separator"
+	case DOMAIN:
+		return "domain"
 	case STRAYDEV:
 		return "stray_device"
 	case STRAYSENSOR:
@@ -140,8 +140,6 @@ func EntityToString(entity int) string {
 
 func EntityStrToInt(entity string) int {
 	switch entity {
-	case "tenant":
-		return TENANT
 	case "site":
 		return SITE
 	case "building", "bldg":
@@ -158,6 +156,8 @@ func EntityStrToInt(entity string) int {
 		return PWRPNL
 	case "separator":
 		return SEPARATOR
+	case "domain":
+		return DOMAIN
 	case "stray_device":
 		return STRAYDEV
 	case "stray_sensor":

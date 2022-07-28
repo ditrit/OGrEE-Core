@@ -1,10 +1,35 @@
-//localhost = 127.0.0.1
-//
+/////
+// Create a new Database
+// Only invoked by an administrative process, when a new customer
+// subscribes
+//////
+
+
+//Authenticate first
 var m = new Mongo()
-var db = m.getDB("ogree")
+var authDB = m.getDB("test")
+authDB.auth('admin','adminpassword');
+
+
+//Check if dbName was passed as argument
+//Otherwise use "ogreeDevelop"
+try {
+  dbName;
+} catch(e) {
+  dbName = "ogreeDevelop"
+}
+//var m = new Mongo()
+var db = m.getDB(dbName)
+
+
+
+//Update customer record table
+var odb = m.getDB("ogree")
+odb.customer.insertOne({"name": dbName});
+
 
 db.createCollection('account');
-db.createCollection('tenant');
+db.createCollection('domain');
 db.createCollection('site');
 db.createCollection('building');
 db.createCollection('room');
@@ -35,10 +60,10 @@ db.createCollection('stray_sensor');
 
 
 //Enfore unique Tenant Names
-db.tenant.createIndex( {"name":1}, { unique: true } );
+db.domain.createIndex( {parentId:1, name:1}, { unique: true } );
 
 //Enforce unique children
-db.site.createIndex({parentId:1, name:1}, { unique: true });
+db.site.createIndex({name:1}, { unique: true });
 db.building.createIndex({parentId:1, name:1}, { unique: true });
 db.room.createIndex({parentId:1, name:1}, { unique: true });
 db.rack.createIndex({parentId:1, name:1}, { unique: true });
@@ -69,3 +94,4 @@ db.group.createIndex({parentId:1, name:1}, { unique: true });
 //Enforce unique stray objects
 db.stray_device.createIndex({parentId:1,name:1}, { unique: true });
 db.stray_sensor.createIndex({name:1}, { unique: true });
+

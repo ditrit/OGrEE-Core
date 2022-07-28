@@ -15,8 +15,7 @@ import (
 )
 
 const (
-	TENANT = iota
-	SITE
+	SITE = iota
 	BLDG
 	ROOM
 	RACK
@@ -33,6 +32,7 @@ const (
 	ROOMTMPL
 	OBJTMPL
 	STRAYDEV
+	DOMAIN
 	STRAYSENSOR
 )
 
@@ -73,6 +73,9 @@ func CreateEntity(entity int, t map[string]interface{}) (map[string]interface{},
 	//Set timestamp
 	t["createdDate"] = primitive.NewDateTimeFromTime(time.Now())
 	t["lastUpdated"] = t["createdDate"]
+
+	//Last modifications before insert
+	FixAttributesBeforeInsert(entity, t)
 
 	ctx, cancel := u.Connect()
 	entStr := u.EntityToString(entity)
@@ -184,7 +187,7 @@ func deleteHelper(t map[string]interface{}, ent int) (map[string]interface{}, st
 		if v, ok := t["children"]; ok {
 			if x, ok := v.([]map[string]interface{}); ok {
 				for i := range x {
-					if ent == STRAYDEV {
+					if ent == STRAYDEV || ent == DOMAIN {
 						deleteHelper(x[i], ent)
 					} else {
 						deleteHelper(x[i], ent+1)
@@ -230,7 +233,6 @@ func deleteHelper(t map[string]interface{}, ent int) (map[string]interface{}, st
 		} else {
 			ctx, cancel := u.Connect()
 			entity := u.EntityToString(ent)
-			println(entity)
 			c, _ := GetDB().Collection(entity).DeleteOne(ctx, bson.M{"_id": t["id"].(primitive.ObjectID)})
 			if c.DeletedCount == 0 {
 				return u.Message(false, "There was an error in deleting the entity"), "not found"
@@ -259,7 +261,6 @@ func UpdateEntity(ent string, req bson.M, t *map[string]interface{}, isPatch boo
 
 	ctx, cancel := u.Connect()
 	if isPatch == true {
-
 		msg, ok := ValidatePatch(u.EntityStrToInt(ent), *t)
 		if !ok {
 			return msg, "invalid"
@@ -336,7 +337,7 @@ func GetEntityHierarchy(ID primitive.ObjectID, ent string, start, end int) (map[
 			}
 		}
 
-		if ent == "device" || ent == "stray_device" {
+		if ent == "device" || ent == "stray_device" || ent == "domain" {
 			childEnt = ent
 		} else {
 			childEnt = u.EntityToString(start + 1)
@@ -477,8 +478,8 @@ func GetHierarchyByName(entity, name string, entnum, end int) (map[string]interf
 	t = fixID(t)
 
 	var subEnt string
-	if entnum == STRAYDEV {
-		subEnt = "stray_device"
+	if entnum == STRAYDEV || entnum == DOMAIN {
+		subEnt = entity
 	} else {
 		subEnt = u.EntityToString(entnum + 1)
 	}
@@ -499,7 +500,7 @@ func GetHierarchyByName(entity, name string, entnum, end int) (map[string]interf
 	for i := range children {
 		var x map[string]interface{}
 		var subIdx string
-		if subEnt == "stray_device" { //only set entnum+1 for tenants
+		if subEnt == "stray_device" || subEnt == "domain" { //only set entnum+1 for tenants
 			subIdx = subEnt
 		} else {
 			subIdx = u.EntityToString(entnum + 1)
@@ -516,7 +517,7 @@ func GetHierarchyByName(entity, name string, entnum, end int) (map[string]interf
 
 }
 
-func GetEntitiesUsingTenantAsAncestor(ent, id string, ancestry []map[string]string) ([]map[string]interface{}, string) {
+func GetEntitiesUsingSiteAsAncestor(ent, id string, ancestry []map[string]string) ([]map[string]interface{}, string) {
 	top, e := GetEntity(bson.M{"name": id}, ent)
 	if e != "" {
 		return nil, e
@@ -553,7 +554,7 @@ func GetEntitiesUsingTenantAsAncestor(ent, id string, ancestry []map[string]stri
 	return nil, ""
 }
 
-func GetEntityUsingTenantAsAncestor(ent, id string, ancestry []map[string]string) (map[string]interface{}, string) {
+func GetEntityUsingSiteAsAncestor(ent, id string, ancestry []map[string]string) (map[string]interface{}, string) {
 	top, e := GetEntity(bson.M{"name": id}, ent)
 	if e != "" {
 		return nil, e
@@ -584,9 +585,9 @@ func GetEntitiesOfAncestor(id interface{}, ent int, entStr, wantedEnt string) ([
 	var ans []map[string]interface{}
 	var t map[string]interface{}
 	var e, e1 string
-	if ent == TENANT {
+	if ent == SITE {
 
-		t, e = GetEntity(bson.M{"name": id}, "tenant")
+		t, e = GetEntity(bson.M{"name": id}, "site")
 		if e != "" {
 			return nil, e
 		}
