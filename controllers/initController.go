@@ -183,8 +183,8 @@ func SetListener(flags, env map[string]interface{}) {
 		return
 	}
 
-	if env["listenPORT"] != nil {
-		State.ListenAddr = "0.0.0.0:" + env["listenPORT"].(string)
+	if env["listenPort"] != nil {
+		State.ListenAddr = "0.0.0.0:" + env["listenPort"].(string)
 		return
 	}
 
@@ -194,10 +194,10 @@ func SetListener(flags, env map[string]interface{}) {
 }
 
 func InitTimeout(env map[string]interface{}) {
-	if env["unityDeadline"] != nil && env["unityDeadline"] != "" {
+	if env["unityTimeout"] != nil && env["unityTimeout"] != "" {
 		var timeLen int
 		var durationType string
-		duration := env["unityDeadline"].(string)
+		duration := env["unityTimeout"].(string)
 		fmt.Sscanf(duration, "%d%s", &timeLen, &durationType)
 		switch durationType {
 		case "ns":
@@ -231,8 +231,8 @@ func InitKey(flags, env map[string]interface{}) string {
 		return State.APIKEY
 	}
 
-	if env["apikey"] != nil {
-		State.APIKEY = env["apikey"].(string)
+	if env["apiKey"] != nil {
+		State.APIKEY = env["apiKey"].(string)
 		return State.APIKEY
 	}
 
@@ -402,7 +402,7 @@ func CreateCredentials() (string, string) {
 
 	os.Mkdir(".resources", 0755)
 	os.WriteFile("./.resources/.env",
-		[]byte("user="+user+"\n"+"apikey="+key),
+		[]byte("user="+user+"\n"+"apiKey="+key),
 		0666)
 
 	l.GetInfoLogger().Println("Credentials created")
@@ -435,13 +435,13 @@ func CheckKeyIsValid(key string) bool {
 func Login(env map[string]interface{}) (string, string) {
 	var user, key string
 
-	if env["user"] == nil || env["apikey"] == nil ||
-		env["user"] == "" || env["apikey"] == "" {
+	if env["user"] == nil || env["apiKey"] == nil ||
+		env["user"] == "" || env["apiKey"] == "" {
 		l.GetInfoLogger().Println("Key not found, going to generate..")
 		user, key = CreateCredentials()
 	} else {
 		user = env["user"].(string)
-		key = env["apikey"].(string)
+		key = env["apiKey"].(string)
 	}
 
 	if !CheckKeyIsValid(key) {
