@@ -146,7 +146,7 @@ func DispRequestMetaData(r *http.Request) {
 //   description: 'Indicates the Object. Only values of "sites","domains",
 //   "buildings", "rooms", "racks", "devices", "acs", "panels",
 //   "separators","rows", "tiles", "cabinets", "groups", "corridors",
-//   "room-templates", "obj-templates", "sensors", "stray-devices"
+//   "room-templates", "obj-templates", "sensors", "stray-devices",
 //   "stray-sensors" are acceptable'
 //   required: true
 //   type: string
@@ -458,9 +458,6 @@ var GetAllEntities = func(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("FUNCTION CALL: 	 GetAllEntities ")
 	fmt.Println("******************************************************")
 	DispRequestMetaData(r)
-	user := r.Context().Value("user").(map[string]interface{})
-	db := user["db"].(string)
-	fmt.Println("Client: ", db)
 	var data []map[string]interface{}
 	var e, entStr string
 

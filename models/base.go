@@ -34,7 +34,7 @@ func init() {
 	dbPort := os.Getenv("db_port")
 	user := os.Getenv("db_user")
 	pass := os.Getenv("db_pass")
-	dbName := os.Getenv("db")
+	dbName := "ogree" + os.Getenv("db")
 
 	if user == "" || pass == "" {
 		println("USER:", user)
@@ -42,7 +42,7 @@ func init() {
 		dbUri = fmt.Sprintf("mongodb://%s:%s/?readPreference=primary&ssl=false",
 			dbHost, dbPort)
 	} else {
-		dbUri = fmt.Sprintf("mongodb://ogree%sAdmin:%s@%s:%s/ogree%s?readPreference=primary",
+		dbUri = fmt.Sprintf("mongodb://ogree%sAdmin:%s@%s:%s/%s?readPreference=primary",
 			user, pass, dbHost, dbPort, dbName)
 	}
 
