@@ -133,9 +133,9 @@ stmnt:   TOK_GET PATH {$$=&getObjectNode{}}
 
 PATH: EXPR {$$=&pathConvert{$1}};
 
-EXPR:    //TOK_DEREF TOK_WORD TOK_LBLOCK EXPR TOK_RBLOCK {$$=&arrayReferenceNode{$2, $4}}
-         TOK_DEREF TOK_LPAREN TOK_LPAREN BOOLEXPR TOK_RPAREN TOK_RPAREN {$$=$4}
+EXPR:    TOK_DEREF TOK_WORD TOK_LBLOCK EXPR TOK_RBLOCK {$$=&arrayReferenceNode{$2, $4}}
        | TOK_DEREF TOK_LPAREN TOK_LPAREN ARITHEXPR TOK_RPAREN TOK_RPAREN {$$=$4}
+       | TOK_DEREF TOK_LPAREN TOK_LPAREN BOOLEXPR TOK_RPAREN TOK_RPAREN {$$=$4}
        | TOK_INT {$$=&intLeaf{$1}}
        | TOK_FLOAT {$$=&floatLeaf{$1}}
        | TOK_TRUE {$$=&boolLeaf{true}}
@@ -150,7 +150,6 @@ CONCAT:  CONCAT_TERM {$$=$1}
 
 CONCAT_TERM: TOK_DEREF TOK_WORD {$$=&symbolReferenceNode{$2}}
        | TOK_DEREF TOK_LBRAC TOK_WORD TOK_RBRAC {$$=&symbolReferenceNode{$3}}
-       | TOK_SLASH {$$=&strLeaf{"/"}}
        | TOK_WORD {$$=&strLeaf{$1}}
        | TOK_STR {$$=&strLeaf{$1}}
 ;
@@ -166,7 +165,7 @@ BOOLEXPR: EXPR TOK_OR EXPR {$$=&logicalNode{"||", $1, $3}}
        | TOK_NOT EXPR {$$=&negateNode{$2}}
        | TOK_TRUE {$$=&boolLeaf{true}}
        | TOK_FALSE {$$=&boolLeaf{false}}
-;
+; 
 
 ARITHEXPR: EXPR TOK_PLUS EXPR {$$=&arithNode{"+", $1, $3}}
        | EXPR TOK_MINUS EXPR {$$=&arithNode{"-", $1, $3}}
