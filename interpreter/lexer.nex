@@ -1,14 +1,9 @@
 /[ \t]/  { /* Skip blanks and tabs. */ }
-/create/ { printToks("TOK_CREATE");return TOK_CREATE}
-/gt/ {  printToks("TOK_GET"); return TOK_GET}
-/update/ { printToks("TOK_UPDATE"); return TOK_UPDATE}
-/delete/ { printToks("TOK_DELETE"); return TOK_DELETE}
+/get/ {  printToks("TOK_GET"); return TOK_GET}
 /search/ { printToks("TOK_SEARCH"); return TOK_SEARCH}
 /hc/ { printToks("TOK_HIERARCH"); return TOK_HIERARCH}
 /\+/ { printToks("TOK_PLUS");lval.s = yylex.Text(); return TOK_PLUS}
-
-/-/ {  printToks("TOK_OCDEL");lval.s = yylex.Text(); return TOK_OCDEL}
-
+/-/ {  printToks("TOK_MINUS");lval.s = yylex.Text(); return TOK_MINUS}
 
 /:/ {  printToks("TOK_COL"); return TOK_COL}
 /@/ {  printToks("TOK_ATTRSPEC"); return TOK_ATTRSPEC}
@@ -20,12 +15,16 @@
 /\)/ {  printToks("TOK_RPAREN"); return TOK_RPAREN}
 /\|\|/ {  printToks("TOK_OR"); return TOK_OR}
 /&&/ {  printToks("TOK_AND"); return TOK_AND}
+/\!=/ {  printToks("TOK_NOT_EQUAL"); return TOK_NOT_EQUAL}
 /\!/ {  printToks("TOK_NOT"); return TOK_NOT}
 /\*/ {  printToks("TOK_MULT"); return TOK_MULT}
 /%/  { printToks("TOK_MOD"); return TOK_MOD}
+/>=/ {  printToks("TOK_GREATER_EQUAL"); return TOK_GREATER_EQUAL}
+/<=/ {  printToks("TOK_LESS_EQUAL"); return TOK_LESS_EQUAL}
 />/ {  printToks("TOK_GREATER"); return TOK_GREATER}
 /</ {  printToks("TOK_LESS"); return TOK_LESS}
-/false|true/ {  printToks("TOK_BOOL");lval.s = yylex.Text(); return TOK_BOOL}
+/true/ {  printToks("TOK_TRUE"); return TOK_TRUE}
+/false/ {  printToks("TOK_FALSE"); return TOK_FALSE}
 /if/ {  printToks("TOK_IF"); return TOK_IF}
 /for/ {  printToks("TOK_FOR"); return TOK_FOR}
 /in/ {  printToks("TOK_IN"); return TOK_IN}
@@ -41,14 +40,13 @@
 /\"/ {  printToks("TOK_QUOT"); return TOK_QUOT}
 
 /selection/ {  printToks("TOK_SELECT"); return TOK_SELECT}
-/cmds/ {  printToks("TOK_CMDS"); return TOK_CMDS}
-/template/ {  printToks("TOK_TEMPLATE"); return TOK_TEMPLATE}
+/.cmds/ {  printToks("TOK_CMDS"); return TOK_CMDS}
+/.template/ {  printToks("TOK_TEMPLATE"); return TOK_TEMPLATE}
 /.var/ {  printToks("TOK_VAR");return TOK_VAR}
 /.env/ {  printToks("TOK_SETENV");return TOK_SETENV}
 /{/ {  printToks("TOK_LBRAC");return TOK_LBRAC}
 /}/ {  printToks("TOK_RBRAC");return TOK_RBRAC}
 /,/ {  printToks("TOK_COMMA"); return TOK_COMMA}
-/\./ {  printToks("TOK_DOT"); return TOK_DOT}
 /usJn/ {  printToks("TOK_USE_JSON"); return TOK_USE_JSON}
 /partial/ {  printToks("TOK_PARTIAL"); return TOK_PARTIAL}
 /ui/ { printToks("TOK_UI"); return TOK_UI}
@@ -75,7 +73,7 @@
 /room_template/ {  printToks("TOK_ROOM_TMPL");lval.s = yylex.Text();return TOK_ROOM_TMPL}
 /obj_template/ {  printToks("TOK_OBJ_TMPL");lval.s = yylex.Text();return TOK_OBJ_TMPL}
 
-/([0-9]+)/ {  printToks("TOK_NUM");lval.n = atoi(yylex.Text()); return TOK_NUM}
+/([0-9]+)/ {  printToks("TOK_INT");lval.n = atoi(yylex.Text()); return TOK_INT}
 /[0-9]+\.[0-9]+/ { printToks("TOK_FLOAT");lval.f, _ = strconv.ParseFloat((yylex.Text()), 64); return TOK_FLOAT }
 /lsten/ {  printToks("TOK_LSTEN"); return TOK_LSTEN}
 /lssite/ {  printToks("TOK_LSSITE"); return TOK_LSSITE}
@@ -101,13 +99,15 @@
 /ls/ { printToks("TOK_LS");return TOK_LS}
 /exit/ { printToks("TOK_EXIT"); return TOK_EXIT}
 /len/ { printToks("TOK_LEN"); return TOK_LEN}
+/[^=!]([=!]=)[^=]/ { printToks("TOK_DOUBLE_EQUAL");return TOK_DOUBLE_EQUAL}
 /[=]/ { printToks("TOK_EQUAL");return TOK_EQUAL}
 /\// { printToks("TOK_SLASH"); return TOK_SLASH}
 /man/ { printToks("TOK_DOC"); return TOK_DOC}
 /drawable/ { printToks("TOK_DRAW"); return TOK_DRAWABLE}
 /draw/ { printToks("TOK_DRAW"); return TOK_DRAW}
-/"[^"]+"/ {printToks("TOK_STR"); lval.s = yylex.Text()[1:len(yylex.Text())-1]; return TOK_STR}
-/[A-Za-z0-9_][A-Za-z0-9_\-]*/ { printToks("TOK_WORD"); lval.s = yylex.Text(); printCapturedWord(lval.s); return TOK_WORD}
+/"[^"]*"/ {printToks("TOK_STR"); lval.s = yylex.Text()[1:len(yylex.Text())-1]; return TOK_STR}
+/[\+\-]?[NSEW][\+\-]?[NSEW]/ {printToks("TOK_ORIENTATION"); lval.s = yylex.Text(); printCapturedWord(lval.s); return TOK_ORIENTATION}
+/[\.A-Za-z0-9_][\.A-Za-z0-9_\-]*/ { printToks("TOK_WORD"); lval.s = yylex.Text(); printCapturedWord(lval.s); return TOK_WORD}
 //
 package main
 import (
@@ -115,7 +115,6 @@ import (
 	cmd "cli/controllers"
 )
 type TOKType int
-
 
 func atoi(x string) int {
 	v, e := strconv.Atoi(x)

@@ -13,7 +13,7 @@ main: interpreter main.go ast.go lexer.nn.go y.go repl.go
 	go build \-ldflags="-X  cli/controllers.BuildHash=$(GITHASH) \
 	-X cli/controllers.BuildTree=$(GITBRANCH) \
 	-X cli/controllers.BuildTime=$(DATE) \
-	-X cli/controllers.GitCommitDate=$(GITHASHDATE)" main.go ast.go lexer.nn.go y.go repl.go
+	-X cli/controllers.GitCommitDate=$(GITHASHDATE)" main.go ast.go lexer.nn.go y.go repl.go aststr.go astnum.go astbool.go astutil.go
 	
 
 interpreter: parser lexer buildTimeScript

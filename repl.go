@@ -6,6 +6,7 @@ import (
 	l "cli/logger"
 	p "cli/preprocessor"
 	"cli/readline"
+	"fmt"
 	"io/ioutil"
 	"os"
 	"path/filepath"
@@ -24,13 +25,15 @@ import (
 func InterpretLine(str *string) bool {
 	lex := NewLexer(strings.NewReader(*str))
 	result := yyParse(lex)
-	if root != nil {
-		root.execute()
-		root = nil
-	}
-
 	if result != 0 {
 		return false
+	}
+	if root != nil {
+		_, err := root.execute()
+		if err != nil {
+			fmt.Println(err.Error())
+			//return false
+		}
 	}
 	return true
 }

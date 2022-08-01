@@ -1,5 +1,5 @@
-USAGE: gt [PATH](optional) 
-OR gt [OBJECT] [ATTRIBUTES]
+USAGE: get [PATH](optional) 
+OR get [OBJECT] [ATTRIBUTES]
 Retrieves object information from API and displays it's information in JSON format. The alternative syntax performs a search for objects and returns information of the results in JSON format.    
 
 NOTE
@@ -8,9 +8,9 @@ The object specifies which object type. The ATTRIBUTES form the search parameter
 
 EXAMPLE   
 
-    gt 
-    gt /Physical/TenantA
-    gt ../rack01/device-ibm3
+    get 
+    get /Physical/TenantA
+    get ../rack01/device-ibm3
 
-    gt tenant color=FFFF name=DEMO
-    gt device name=ibm
+    get tenant color=FFFF name=DEMO
+    get device name=ibm

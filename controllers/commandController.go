@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"bufio"
 	"bytes"
 	l "cli/logger"
 	"cli/models"
@@ -39,12 +40,11 @@ func ParseResponse(resp *http.Response, e error, purpose string) map[string]inte
 		}
 		return nil
 	}
-
 	json.Unmarshal(bodyBytes, &ans)
 	return ans
 }
 
-func PostObj(ent int, entity string, data map[string]interface{}) map[string]interface{} {
+func PostObj(ent int, entity string, data map[string]interface{}) (map[string]interface{}, error) {
 	var respMap map[string]interface{}
 	resp, e := models.Send("POST",
 		State.APIURL+"/api/"+entity+"s", GetKey(), data)
@@ -62,11 +62,9 @@ func PostObj(ent int, entity string, data map[string]interface{}) map[string]int
 				map[string]interface{}{"type": "create", "data": respMap["data"]})
 		}
 
-		return respMap["data"].(map[string]interface{})
+		return respMap["data"].(map[string]interface{}), nil
 	}
-	println("Error:", string(respMap["message"].(string)))
-	println()
-	return nil
+	return nil, fmt.Errorf("Error: %s", string(respMap["message"].(string)))
 }
 
 //Calls API's Validation
@@ -212,6 +210,10 @@ func GetObject(path string, silenced bool) (map[string]interface{}, string) {
 
 	for i := range paths {
 		resp, e := models.Send("GET", paths[i], GetKey(), nil)
+		if e != nil {
+			println(paths[i])
+			println(e.Error())
+		}
 		data = ParseResponse(resp, e, "GET")
 
 		if resp.StatusCode == http.StatusOK {
@@ -221,17 +223,14 @@ func GetObject(path string, silenced bool) (map[string]interface{}, string) {
 				if !silenced {
 					displayObject(obj)
 				}
-
 			}
-
 			return data["data"].(map[string]interface{}), paths[i]
 		}
 	}
 
 	//Object wasn't found
-	println("Error finding Object from given path!")
+	println("Error finding Object from given path : ", path)
 	l.GetWarningLogger().Println("Object to Get not found")
-	println(path)
 
 	return nil, ""
 }
@@ -331,7 +330,6 @@ func recursivePatchAux(res, data map[string]interface{}) {
 //You can either update obj by path or by ID and entity string type
 //The deleteAndPut bool is for deleting an attribute
 func UpdateObj(Path, id, ent string, data map[string]interface{}, deleteAndPut bool) map[string]interface{} {
-
 	println("OK. Attempting to update...")
 	var resp *http.Response
 
@@ -758,7 +756,6 @@ func CD(x string) string {
 	if x == ".." {
 		State.PrevPath = State.CurrPath
 		State.CurrPath = path.Dir(State.CurrPath)
-
 	} else if x == "" {
 		State.PrevPath = State.CurrPath
 		State.CurrPath = "/"
@@ -816,7 +813,6 @@ func CD(x string) string {
 				println("OGREE: ", x, " : No such object")
 				l.GetWarningLogger().Println("No such object: ", x)
 			}
-
 		} else {
 
 			if exist, _ := CheckPathOnline(State.CurrPath + x); exist == true {
@@ -826,9 +822,7 @@ func CD(x string) string {
 				println("OGREE: ", x, " : No such object")
 				l.GetWarningLogger().Println("No such object: ", x)
 			}
-
 		}
-
 	}
 	return State.CurrPath
 }
@@ -1028,7 +1022,7 @@ func getAttrAndVal(x string) (string, string) {
 }
 
 //Helps to create the Object (thru OCLI syntax)
-func GetOCLIAtrributes(Path string, ent int, data map[string]interface{}) {
+func GetOCLIAtrributes(Path string, ent int, data map[string]interface{}) error {
 	attr := map[string]interface{}{}
 	var parent map[string]interface{}
 	var domain string
@@ -1046,8 +1040,7 @@ func GetOCLIAtrributes(Path string, ent int, data map[string]interface{}) {
 	name := path.Base(ogPath)
 	if name == "." || name == "" {
 		l.GetWarningLogger().Println("Invalid path name provided for OCLI object creation")
-		println("Error please provide a valid name for this object")
-		return
+		return fmt.Errorf("Invalid path name provided for OCLI object creation")
 	}
 
 	data["name"] = name
@@ -1058,8 +1051,7 @@ func GetOCLIAtrributes(Path string, ent int, data map[string]interface{}) {
 	if ent != TENANT && ent != GROUP && ent != STRAY_DEV {
 		parent, parentURL = GetObject(Path, true)
 		if parent == nil {
-			println("Error! The parent was not found in path")
-			return
+			return fmt.Errorf("Error! The parent was not found in path")
 		}
 
 		//Retrieve parent name for domain
@@ -1074,20 +1066,19 @@ func GetOCLIAtrributes(Path string, ent int, data map[string]interface{}) {
 
 	}
 
+	var err error
 	switch ent {
 	case TENANT:
 
 		data["domain"] = data["name"]
 		data["parentId"] = nil
-		PostObj(ent, "tenant", data)
-
+		_, err = PostObj(ent, "tenant", data)
 	case SITE:
-
 		//Default values
 		data["domain"] = domain
 		data["parentId"] = parent["id"]
 
-		PostObj(ent, "site", data)
+		_, err = PostObj(ent, "site", data)
 	case BLDG:
 		attr = data["attributes"].(map[string]interface{})
 
@@ -1111,7 +1102,7 @@ func GetOCLIAtrributes(Path string, ent int, data map[string]interface{}) {
 		data["parentId"] = parent["id"]
 		data["domain"] = domain
 
-		PostObj(ent, "building", data)
+		_, err = PostObj(ent, "building", data)
 	case ROOM:
 
 		attr = data["attributes"].(map[string]interface{})
@@ -1137,9 +1128,8 @@ func GetOCLIAtrributes(Path string, ent int, data map[string]interface{}) {
 		data["parentId"] = parent["id"]
 		data["domain"] = domain
 		data["attributes"] = attr
-		PostObj(ent, "room", data)
+		_, err = PostObj(ent, "room", data)
 	case RACK:
-
 		attr = data["attributes"].(map[string]interface{})
 
 		baseAttrs := map[string]interface{}{
@@ -1167,9 +1157,8 @@ func GetOCLIAtrributes(Path string, ent int, data map[string]interface{}) {
 		data["domain"] = domain
 		data["attributes"] = attr
 
-		PostObj(ent, "rack", data)
+		_, err = PostObj(ent, "rack", data)
 	case DEVICE:
-
 		attr = data["attributes"].(map[string]interface{})
 
 		//Special routine to perform on device
@@ -1183,8 +1172,7 @@ func GetOCLIAtrributes(Path string, ent int, data map[string]interface{}) {
 
 				if _, ok := attr["template"]; !ok && sizeUValid == false {
 					l.GetWarningLogger().Println("Invalid parameter provided for device ")
-					println("Please provide an existing template or valid SizeU value")
-					return
+					return fmt.Errorf("Invalid parameter provided for device")
 				}
 
 				//Convert block
@@ -1200,9 +1188,7 @@ func GetOCLIAtrributes(Path string, ent int, data map[string]interface{}) {
 				//End of convert block
 				if _, ok := attr["slot"]; ok {
 					l.GetWarningLogger().Println("Invalid device syntax encountered")
-					println("Invalid syntax: If you have provided",
-						" a template, it was not found")
-					return
+					return fmt.Errorf("Invalid device syntax: If you have provided a template, it was not found")
 				}
 			}
 		}
@@ -1277,7 +1263,7 @@ func GetOCLIAtrributes(Path string, ent int, data map[string]interface{}) {
 		data["domain"] = domain
 		data["parentId"] = parent["id"]
 		data["attributes"] = attr
-		PostObj(ent, "device", data)
+		_, err = PostObj(ent, "device", data)
 
 	case SEPARATOR, CORIDOR, GROUP:
 		//name, category, domain, pid
@@ -1291,11 +1277,11 @@ func GetOCLIAtrributes(Path string, ent int, data map[string]interface{}) {
 		if ent == SEPARATOR {
 			//serialiseAttr(attr)
 			data["attributes"] = attr
-			PostObj(ent, "separator", data)
+			_, err = PostObj(ent, "separator", data)
 		} else if ent == CORIDOR {
-			PostObj(ent, "corridor", data)
+			_, err = PostObj(ent, "corridor", data)
 		} else {
-			PostObj(ent, "group", data)
+			_, err = PostObj(ent, "group", data)
 		}
 
 	case STRAYSENSOR:
@@ -1307,7 +1293,7 @@ func GetOCLIAtrributes(Path string, ent int, data map[string]interface{}) {
 		} else {
 			attr["template"] = ""
 		}
-		PostObj(ent, "stray-sensor", data)
+		_, err = PostObj(ent, "stray-sensor", data)
 
 	case STRAY_DEV:
 		attr = data["attributes"].(map[string]interface{})
@@ -1316,8 +1302,12 @@ func GetOCLIAtrributes(Path string, ent int, data map[string]interface{}) {
 		} else {
 			attr["template"] = ""
 		}
-		PostObj(ent, "stray-device", data)
+		_, err = PostObj(ent, "stray-device", data)
 	}
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 //If user provided templates, get the JSON
@@ -1633,7 +1623,7 @@ func LinkObject(paths []interface{}) {
 		}
 	}
 
-	sdev = PostObj(DEVICE, "device", sdev)
+	sdev, _ = PostObj(DEVICE, "device", sdev)
 	if sdev == nil {
 		println("Aborting link operation")
 		return
@@ -1706,7 +1696,7 @@ func LinkObject(paths []interface{}) {
 					ent = "device"
 				}
 
-				newObj := PostObj(entInt, ent, x[i])
+				newObj, _ := PostObj(entInt, ent, x[i])
 
 				if childrenInfArr != nil {
 					var newpid interface{}
@@ -1787,7 +1777,7 @@ func fn(x []map[string]interface{}, pid interface{}, entity string, ent int) {
 				entStr = entity
 			}
 
-			newObj := PostObj(ent, entStr, x[i])
+			newObj, _ := PostObj(ent, entStr, x[i])
 
 			if childrenInfArr != nil {
 				newpid := newObj["id"]
@@ -1847,7 +1837,7 @@ func UnlinkObject(paths []interface{}) {
 		DeleteAttr(dev, "parentId")
 	}
 
-	newDev := PostObj(STRAY_DEV, "stray-device", dev)
+	newDev, _ := PostObj(STRAY_DEV, "stray-device", dev)
 	if newDev == nil {
 		l.GetWarningLogger().Println("Unable to unlink target: ", paths[0].(string))
 		println("Error: Unable to unlink target: ", paths[0].(string))
@@ -2072,11 +2062,24 @@ func UpdateSelection(data map[string]interface{}) {
 
 }
 
-func LoadFile(path string) string {
-	State.ScriptCalled = true
-	State.ScriptPath = path
-	return path
-	//scanner := bufio.NewScanner(file)
+func LoadFile(path string, interpret_func func(*string) bool) error {
+	readFile, err := os.Open(path)
+	if err != nil {
+		fmt.Println(err)
+	}
+	fileScanner := bufio.NewScanner(readFile)
+	fileScanner.Split(bufio.ScanLines)
+	for fileScanner.Scan() {
+		s := fileScanner.Text()
+		if len(s) >= 2 && (s[0] != '/' || s[1] != '/') {
+			fmt.Println(s)
+			if !interpret_func(&s) {
+				break
+			}
+		}
+	}
+	readFile.Close()
+	return nil
 }
 
 func LoadTemplate(data map[string]interface{}, filePath string) {
@@ -2361,6 +2364,7 @@ func PreProPath(Path string) []string {
 	switch Path {
 	case "":
 		pathSplit = strings.Split(State.CurrPath, "/")
+		println(pathSplit)
 		pathSplit = pathSplit[2:]
 	default:
 		if Path[0] != '/' && len(State.CurrPath) > 1 {
