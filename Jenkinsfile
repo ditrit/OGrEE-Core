@@ -29,10 +29,10 @@ pipeline {
               SCANNER_HOME = tool 'SonarQube-scanner'
             }
             steps {
-            withSonarQubeEnv(credentialsId: 'jenkins-pipeline', installationName: 'sonarqube-netbox') {
+            withSonarQubeEnv(credentialsId: 'OGREE-API', installationName: 'sonarqube-netbox') {
                  sh '''$SCANNER_HOME/bin/sonar-scanner \
-                 -Dsonar.projectKey=ogree-api \
-                 -Dsonar.projectName=ogree-api '''
+                 -Dsonar.projectKey=OGREE-API \
+                 -Dsonar.projectName=OGREE-API '''
                }
              }
         }
