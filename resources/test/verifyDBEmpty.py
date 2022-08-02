@@ -38,7 +38,7 @@ def checkResponse(code, entity):
         print(entity+" Empty: Fail")
 
 entRange=["tenants","sites","buildings","rooms","acs","panels",
-  "racks","devices", "panels", "separators", "rows","tiles",
+  "racks","devices", "panels",
   "cabinets", "groups", "corridors","room-sensors","rack-sensors",
   "device-sensors","room-templates","obj-templates"]
 

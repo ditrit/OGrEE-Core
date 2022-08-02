@@ -22,13 +22,10 @@ const (
 	RACK
 	DEVICE
 	AC
-	ROW
 	CABINET
 	CORIDOR
 	PWRPNL
 	SENSOR
-	SEPARATOR
-	TILE
 	GROUP
 	ROOMTMPL
 	OBJTMPL
@@ -362,7 +359,7 @@ func GetEntityHierarchy(ID primitive.ObjectID, ent string, start, end int) (map[
 					children = append(children, roomEnts...)
 				}
 			}
-			for i := PWRPNL; i < TILE+1; i++ {
+			for i := PWRPNL; i < SENSOR+1; i++ {
 				roomEnts, _ := GetManyEntities(u.EntityToString(i), bson.M{"parentId": pid}, nil)
 				if roomEnts != nil {
 					children = append(children, roomEnts...)

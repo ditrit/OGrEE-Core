@@ -21,13 +21,10 @@ const (
 	RACK
 	DEVICE
 	AC
-	ROW
 	CABINET
 	CORIDOR
 	PWRPNL
 	SENSOR
-	SEPARATOR
-	TILE
 	GROUP
 	ROOMTMPL
 	OBJTMPL
@@ -111,8 +108,6 @@ func EntityToString(entity int) string {
 		return "ac"
 	case PWRPNL:
 		return "panel"
-	case SEPARATOR:
-		return "separator"
 	case STRAYDEV:
 		return "stray_device"
 	case STRAYSENSOR:
@@ -123,10 +118,6 @@ func EntityToString(entity int) string {
 		return "obj_template"
 	case CABINET:
 		return "cabinet"
-	case ROW:
-		return "row"
-	case TILE:
-		return "tile"
 	case GROUP:
 		return "group"
 	case CORIDOR:
@@ -156,8 +147,6 @@ func EntityStrToInt(entity string) int {
 		return AC
 	case "panel":
 		return PWRPNL
-	case "separator":
-		return SEPARATOR
 	case "stray_device":
 		return STRAYDEV
 	case "stray_sensor":
@@ -168,10 +157,6 @@ func EntityStrToInt(entity string) int {
 		return OBJTMPL
 	case "cabinet":
 		return CABINET
-	case "row":
-		return ROW
-	case "tile":
-		return TILE
 	case "group":
 		return GROUP
 	case "corridor":
@@ -185,7 +170,7 @@ func EntityStrToInt(entity string) int {
 
 func GetParentOfEntityByInt(entity int) int {
 	switch entity {
-	case AC, PWRPNL, SEPARATOR, CABINET, TILE, ROW, CORIDOR:
+	case AC, PWRPNL, CABINET, CORIDOR:
 		return ROOM
 	case SENSOR:
 		return -2
