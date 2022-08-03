@@ -500,7 +500,16 @@ func Clear() {
 		cmd.Stdout = os.Stdout
 		cmd.Run()
 	default:
-		fmt.Printf("\033[H")
+		clear := exec.Command("clear")
+		clear.Stdout = os.Stdout
+		clear.Run()
+
+		//o.buf.SetOffset("1;1")
+		//o.Refresh()
+
+		//fmt.Fprint((*State.Terminal).Config.Stdout, "\033[H")
+		//fmt.Printf("\033[H")
+		//(*State.Terminal).Operation.Refresh()
 	}
 }
 
@@ -1280,20 +1289,15 @@ func GetOCLIAtrributes(Path string, ent int, data map[string]interface{}) {
 		data["attributes"] = attr
 		PostObj(ent, "device", data)
 
-	case SEPARATOR, CORIDOR, GROUP:
+	case CORIDOR, GROUP:
 		//name, category, domain, pid
 
 		if ent != GROUP {
 			data["domain"] = domain
 			data["parentId"] = parent["id"]
 		}
-		attr := map[string]interface{}{}
 
-		if ent == SEPARATOR {
-			//serialiseAttr(attr)
-			data["attributes"] = attr
-			PostObj(ent, "separator", data)
-		} else if ent == CORIDOR {
+		if ent == CORIDOR {
 			PostObj(ent, "corridor", data)
 		} else {
 			PostObj(ent, "group", data)
@@ -2390,8 +2394,7 @@ func OnlinePathResolve(path []string) []string {
 	paths := []string{}
 	basePath := State.APIURL + "/api"
 	roomChildren := []string{"/acs", "/panels", "/cabinets",
-		"/separators", "/rows", "/groups",
-		"/corridors", "/tiles", "/sensors"}
+		"/groups", "/corridors", "/sensors"}
 
 	if len(path) == 0 {
 		return nil
@@ -2516,8 +2519,7 @@ func OnlineLevelResolver(path []string) []string {
 	paths := []string{}
 	basePath := State.APIURL + "/api"
 	roomChildren := []string{"/acs", "/panels", "/cabinets",
-		"/separators", "/rows", "/groups",
-		"/corridors", "/tiles", "/sensors"}
+		"/groups", "/corridors", "/sensors"}
 
 	//Check if path is templates or groups type or stray device
 	if path[0] == "Stray" {

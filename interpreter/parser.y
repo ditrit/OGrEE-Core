@@ -198,9 +198,9 @@ func checkIfTemplate(x interface{}) bool {
 %token <f> TOK_FLOAT
 %token <s> TOK_WORD TOK_TENANT TOK_SITE TOK_BLDG TOK_ROOM
 %token <s> TOK_RACK TOK_DEVICE TOK_STR
-%token <s> TOK_CORIDOR TOK_GROUP TOK_WALL
-%token <s> TOK_AC TOK_CABINET TOK_PANEL TOK_ROW
-%token <s> TOK_TILE TOK_SENSOR
+%token <s> TOK_CORIDOR TOK_GROUP 
+%token <s> TOK_AC TOK_CABINET TOK_PANEL
+%token <s> TOK_SENSOR
 %token <s> TOK_ROOM_TMPL TOK_OBJ_TMPL
 %token <s> TOK_PLUS TOK_OCDEL TOK_BOOL
 %token
@@ -208,9 +208,9 @@ func checkIfTemplate(x interface{}) bool {
        TOK_EQUAL TOK_CMDFLAG TOK_SLASH 
        TOK_EXIT TOK_DOC TOK_CD TOK_PWD
        TOK_CLR TOK_GREP TOK_LS TOK_TREE
-       TOK_LSOG TOK_LSTEN TOK_LSSITE TOK_LSBLDG TOK_LSROW
-       TOK_LSTILE TOK_LSCAB TOK_LSSENSOR TOK_LSAC TOK_LSPANEL
-       TOK_LSWALL TOK_LSCORRIDOR
+       TOK_LSOG TOK_LSTEN TOK_LSSITE TOK_LSBLDG
+       TOK_LSCAB TOK_LSSENSOR TOK_LSAC TOK_LSPANEL
+       TOK_LSCORRIDOR
        TOK_LSROOM TOK_LSRACK TOK_LSDEV
        TOK_ATTRSPEC
        TOK_COL TOK_SELECT TOK_LBRAC TOK_RBRAC
@@ -436,9 +436,6 @@ E:     TOK_TENANT
        | TOK_AC
        | TOK_PANEL
        | TOK_CABINET
-       | TOK_ROW
-       | TOK_TILE
-       | TOK_WALL
        | TOK_SENSOR
        | TOK_CORIDOR
        | TOK_GROUP
@@ -497,14 +494,11 @@ Q:     TOK_CD P {/*cmd.CD($2);*/ $$=&commonNode{COMMON, cmd.CD, "CD", []interfac
        | TOK_LSROOM P { $$=&commonNode{COMMON, cmd.LSOBJECT, "LSOBJ", []interface{}{$2, 3}}}
        | TOK_LSRACK P { $$=&commonNode{COMMON, cmd.LSOBJECT, "LSOBJ", []interface{}{$2, 4}}}
        | TOK_LSDEV P {$$=&commonNode{COMMON, cmd.LSOBJECT, "LSOBJ", []interface{}{$2, 5}}}
-       | TOK_LSROW P {$$=&commonNode{COMMON, cmd.LSOBJECT, "LSOBJ", []interface{}{$2, 10}}}
-       | TOK_LSTILE P {$$=&commonNode{COMMON, cmd.LSOBJECT, "LSOBJ", []interface{}{$2, 11}}}
        | TOK_LSAC P {$$=&commonNode{COMMON, cmd.LSOBJECT, "LSOBJ", []interface{}{$2, 6}}}
        | TOK_LSPANEL P {$$=&commonNode{COMMON, cmd.LSOBJECT, "LSOBJ", []interface{}{$2, 7}}}
-       | TOK_LSWALL P {$$=&commonNode{COMMON, cmd.LSOBJECT, "LSOBJ", []interface{}{$2, 8}}}
-       | TOK_LSCAB P {$$=&commonNode{COMMON, cmd.LSOBJECT, "LSOBJ", []interface{}{$2, 9}}}
-       | TOK_LSCORRIDOR P {$$=&commonNode{COMMON, cmd.LSOBJECT, "LSOBJ", []interface{}{$2, 12}}}
-       | TOK_LSSENSOR P {$$=&commonNode{COMMON, cmd.LSOBJECT, "LSOBJ", []interface{}{$2, 13}}}
+       | TOK_LSCAB P {$$=&commonNode{COMMON, cmd.LSOBJECT, "LSOBJ", []interface{}{$2, 8}}}
+       | TOK_LSCORRIDOR P {$$=&commonNode{COMMON, cmd.LSOBJECT, "LSOBJ", []interface{}{$2, 9}}}
+       | TOK_LSSENSOR P {$$=&commonNode{COMMON, cmd.LSOBJECT, "LSOBJ", []interface{}{$2, 10}}}
 
        | TOK_TREE P {$$=&commonNode{COMMON, cmd.Tree, "Tree", []interface{}{$2, 0}}}
        | TOK_TREE P TOK_NUM {$$=&commonNode{COMMON, cmd.Tree, "Tree", []interface{}{$2, $3}}}
@@ -610,7 +604,6 @@ OCCR:
 
         |TOK_CORIDOR TOK_COL P TOK_ATTRSPEC EXPR TOK_ATTRSPEC EXPR TOK_ATTRSPEC EXPR TOK_ATTRSPEC EXPR {$$=&commonNode{COMMON, cmd.GetOCLIAtrributes, "GetOCAttr", []interface{}{(replaceOCLICurrPath($3)),cmd.CORIDOR, map[string]interface{}{"name":$5, "leftRack":$7, "rightRack":$9, "temperature":$11}}}}
         |TOK_GROUP TOK_COL P TOK_ATTRSPEC EXPR CDORFG { x:=map[string]interface{}{"name":$5,"racks":$6}; $$=&commonNode{COMMON, cmd.GetOCLIAtrributes, "GetOCAttr", []interface{}{(replaceOCLICurrPath($3)),cmd.GROUP,x}} }
-        |TOK_WALL TOK_COL P TOK_ATTRSPEC EXPR TOK_ATTRSPEC EXPR {$$=&commonNode{COMMON, cmd.GetOCLIAtrributes, "GetOCAttr", []interface{}{(replaceOCLICurrPath($3)), cmd.SEPARATOR, map[string]interface{}{"pos1":$5,"pos2":$7}}}}
         
         |TOK_ORPH TOK_COL TOK_DEVICE TOK_COL P TOK_ATTRSPEC EXPR {$$=&commonNode{COMMON, cmd.GetOCLIAtrributes, "GetOCAttr", []interface{}{replaceOCLICurrPath($5),cmd.STRAY_DEV,map[string]interface{}{"attributes":map[string]interface{}{"template":$7} } }}}
         |TOK_ORPH TOK_COL TOK_SENSOR TOK_COL P TOK_ATTRSPEC EXPR {$$=&commonNode{COMMON, cmd.GetOCLIAtrributes, "GetOCAttr", []interface{}{replaceOCLICurrPath($5),cmd.STRAYSENSOR,map[string]interface{}{"attributes":map[string]interface{}{"template":$7} } }}}
