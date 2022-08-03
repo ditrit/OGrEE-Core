@@ -63,11 +63,8 @@
 /device|dv/ {  printToks("TOK_DEVICE");lval.s = yylex.Text();return TOK_DEVICE}
 /group|gp/ {  printToks("TOK_GROUP");lval.s = yylex.Text();return TOK_GROUP}
 /corridor|co/ {  printToks("TOK_CORIDOR");lval.s = yylex.Text();return TOK_CORIDOR}
-/separator|sp/ {  printToks("TOK_WALL");lval.s = yylex.Text();return TOK_WALL}
 /ac/ {  printToks("TOK_AC");lval.s = yylex.Text();return TOK_AC}
 /panel|pn/ {  printToks("TOK_PANEL");lval.s = yylex.Text();return TOK_PANEL}
-/tile|tl/ {  printToks("TOK_TILE");lval.s = yylex.Text();return TOK_TILE}
-/row/ {  printToks("TOK_ROW");lval.s = yylex.Text();return TOK_ROW}
 /cabinet|cb/ {  printToks("TOK_CABINET");lval.s = yylex.Text();return TOK_CABINET}
 /sensor|sr/ {  printToks("TOK_SENSOR");lval.s = yylex.Text();return TOK_SENSOR}
 /room_template/ {  printToks("TOK_ROOM_TMPL");lval.s = yylex.Text();return TOK_ROOM_TMPL}
@@ -75,19 +72,15 @@
 
 /([0-9]+)/ {  printToks("TOK_NUM");lval.n = atoi(yylex.Text()); return TOK_NUM}
 /[0-9]+\.[0-9]+/ { printToks("TOK_FLOAT");lval.f, _ = strconv.ParseFloat((yylex.Text()), 64); return TOK_FLOAT }
-/lsten/ {  printToks("TOK_LSTEN"); return TOK_LSTEN}
 /lssite/ {  printToks("TOK_LSSITE"); return TOK_LSSITE}
 /lsbldg/ {  printToks("TOK_LSBLDG"); return TOK_LSBLDG}
 /lsroom/ {  printToks("TOK_LSROOM"); return TOK_LSROOM}
 /lsrack/ {  printToks("TOK_LSRACK"); return TOK_LSRACK}
 /lsdev/ {  printToks("TOK_LSDEV"); return TOK_LSDEV}
-/lsrow/ {  printToks("TOK_LSROW"); return TOK_LSROW}
-/lstile/ {  printToks("TOK_LSTILE"); return TOK_LSTILE}
 /lscabinet/ {  printToks("TOK_LSCAB"); return TOK_LSCAB}
 /lssensor/ {  printToks("TOK_LSSENSOR"); return TOK_LSSENSOR}
 /lsac/ {  printToks("TOK_LSAC"); return TOK_LSAC}
 /lspanel/ {  printToks("TOK_LSPANEL"); return TOK_LSPANEL}
-/lsseparator/ {  printToks("TOK_LSWALL"); return TOK_LSWALL}
 /lscorridor/ {  printToks("TOK_LSCORRIDOR"); return TOK_LSCORRIDOR}
 /tree/ { printToks("TOK_TREE"); return TOK_TREE}
 /lsog/ { printToks("TOK_LSOG"); return TOK_LSOG}

@@ -69,7 +69,3 @@ User must specify the path, ROOM_NAME, CORRIDOR_NAME, LEFT_RACK, RIGHT_RACK and 
 +group:PATH/ROOM_NAME@RACK0@...@RACKN   
 User must specify the path, ROOM_NAME, and all RACKs   
 
-
-+wa:PATH/ROOM_NAME@WALL_NAME@POSITION1@POSITION2   
-+wall:PATH/ROOM_NAME@WALL_NAME@POSITION1@POSITION2   
-User must specify the path, ROOM_NAME, WALL_NAME POSITION 1 and 2   

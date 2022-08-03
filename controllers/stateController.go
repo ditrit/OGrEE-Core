@@ -20,10 +20,7 @@ const (
 	DEVICE
 	AC
 	PWRPNL
-	SEPARATOR
 	CABINET
-	ROW
-	TILE
 	CORIDOR
 	SENSOR
 	ROOMTMPL
@@ -142,12 +139,9 @@ func makeNodeArrFromResp(resp *http.Response, entity int) []*Node {
 	//println("STATUS:", jsonResp["status"].(bool))
 
 	objs, ok := ((jsonResp["data"]).(map[string]interface{})["objects"]).([]interface{})
-	sd1obj, ok1 := ((jsonResp["data"]).(map[string]interface{})["subdevices1"]).([]interface{})
-	if !ok && !ok1 {
+	if !ok {
 		println("Nothing found!")
 		return nil
-	} else if ok1 && !ok {
-		objs = sd1obj
 	}
 	//println("LEN-OBJS:", len(objs))
 	for i, _ := range objs {
@@ -446,8 +440,6 @@ func EntityToString(entity int) string {
 		return "ac"
 	case PWRPNL:
 		return "panel"
-	case SEPARATOR:
-		return "separator"
 	case STRAY_DEV:
 		return "stray_device"
 	case ROOMTMPL:
@@ -456,10 +448,6 @@ func EntityToString(entity int) string {
 		return "obj_template"
 	case CABINET:
 		return "cabinet"
-	case ROW:
-		return "row"
-	case TILE:
-		return "tile"
 	case GROUP:
 		return "group"
 	case CORIDOR:
@@ -487,8 +475,6 @@ func EntityStrToInt(entity string) int {
 		return AC
 	case "panel", "pn":
 		return PWRPNL
-	case "separator", "sp":
-		return SEPARATOR
 	case "stray_device":
 		return STRAY_DEV
 	case "room_template":
@@ -497,10 +483,6 @@ func EntityStrToInt(entity string) int {
 		return OBJTMPL
 	case "cabinet", "cb":
 		return CABINET
-	case "row":
-		return ROW
-	case "tile", "tl":
-		return TILE
 	case "group", "gr":
 		return GROUP
 	case "corridor", "co":
@@ -528,17 +510,11 @@ func GetParentOfEntity(ent int) int {
 		return ROOM
 	case PWRPNL:
 		return ROOM
-	case SEPARATOR:
-		return ROOM
 	case ROOMTMPL:
 		return -1
 	case OBJTMPL:
 		return -1
 	case CABINET:
-		return ROOM
-	case ROW:
-		return ROOM
-	case TILE:
 		return ROOM
 	case GROUP:
 		return -1
