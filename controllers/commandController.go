@@ -500,16 +500,7 @@ func Clear() {
 		cmd.Stdout = os.Stdout
 		cmd.Run()
 	default:
-		clear := exec.Command("clear")
-		clear.Stdout = os.Stdout
-		clear.Run()
-
-		//o.buf.SetOffset("1;1")
-		//o.Refresh()
-
-		//fmt.Fprint((*State.Terminal).Config.Stdout, "\033[H")
-		//fmt.Printf("\033[H")
-		//(*State.Terminal).Operation.Refresh()
+		fmt.Printf("\033[2J\033[H")
 	}
 }
 
