@@ -777,7 +777,7 @@ func CD(x string) string {
 			pth = path.Clean(x)
 			exist, _ = CheckPathOnline(pth)
 		}
-		if exist == true {
+		if exist {
 			if State.DebugLvl >= 1 {
 				println("THE PATH: ", pth)
 			}
@@ -1023,24 +1023,17 @@ func getAttrAndVal(x string) (string, string) {
 
 //Helps to create the Object (thru OCLI syntax)
 func GetOCLIAtrributes(Path string, ent int, data map[string]interface{}) error {
-	attr := map[string]interface{}{}
+	var attr map[string]interface{}
 	var parent map[string]interface{}
 	var domain string
 	var parentURL string
 
 	ogPath := Path
-	//The only place where the STRAY_DEV path is
-	//properly fixed
-	if ent == STRAY_DEV {
-		Path = "/Physical/Stray/Devices/" + path.Dir(Path)
-	} else if ent > TENANT {
-		Path = "/Physical/" + path.Dir(Path)
-	}
-
+	Path = path.Dir(Path)
 	name := path.Base(ogPath)
 	if name == "." || name == "" {
 		l.GetWarningLogger().Println("Invalid path name provided for OCLI object creation")
-		return fmt.Errorf("Invalid path name provided for OCLI object creation")
+		return fmt.Errorf("invalid path name provided for OCLI object creation")
 	}
 
 	data["name"] = name
@@ -1051,7 +1044,7 @@ func GetOCLIAtrributes(Path string, ent int, data map[string]interface{}) error 
 	if ent != TENANT && ent != GROUP && ent != STRAY_DEV {
 		parent, parentURL = GetObject(Path, true)
 		if parent == nil {
-			return fmt.Errorf("Error! The parent was not found in path")
+			return fmt.Errorf("error! The parent was not found in path")
 		}
 
 		//Retrieve parent name for domain
@@ -1065,11 +1058,9 @@ func GetOCLIAtrributes(Path string, ent int, data map[string]interface{}) error 
 		}
 
 	}
-
 	var err error
 	switch ent {
 	case TENANT:
-
 		data["domain"] = data["name"]
 		data["parentId"] = nil
 		_, err = PostObj(ent, "tenant", data)
@@ -2074,7 +2065,7 @@ func LoadFile(path string, interpret_func func(*string) bool) error {
 		if len(s) >= 2 && (s[0] != '/' || s[1] != '/') {
 			fmt.Println(s)
 			if !interpret_func(&s) {
-				break
+				return fmt.Errorf("script interrupted by an error")
 			}
 		}
 	}
@@ -2107,11 +2098,11 @@ func LoadTemplate(data map[string]interface{}, filePath string) {
 	}
 }
 
-func SetClipBoard(x *[]string) []string {
-	State.ClipBoard = x
-	data := map[string]interface{}{}
+func SetClipBoard(x []string) []string {
+	State.ClipBoard = &x
+	var data map[string]interface{}
 	//Verify paths
-	for _, val := range *x {
+	for _, val := range x {
 		//path := StrToStack(val)
 		//nd := FindNodeInTree(&State.TreeHierarchy, path)
 		obj, _ := GetObject(val, true)
@@ -2361,16 +2352,15 @@ func MergeMaps(x, y map[string]interface{}, overwrite bool) {
 //strings to be used for Path Resolver funcs
 func PreProPath(Path string) []string {
 	var pathSplit []string
+
 	switch Path {
 	case "":
 		pathSplit = strings.Split(State.CurrPath, "/")
-		println(pathSplit)
 		pathSplit = pathSplit[2:]
 	default:
 		if Path[0] != '/' && len(State.CurrPath) > 1 {
 			pathSplit = strings.Split(path.Clean(State.CurrPath+"/"+Path), "/")
 			pathSplit = pathSplit[2:]
-
 		} else {
 			pathSplit = strings.Split(path.Clean(Path), "/")
 			if strings.TrimSpace(pathSplit[0]) == "Physical" ||

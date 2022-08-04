@@ -60,8 +60,8 @@ var _ = l.GetInfoLogger() //Suppresses annoying Dockerfile build error
        
 %type <n> LSOBJ_COMMAND
 %type <s> OBJ_TYPE COMMAND
-%type <nodeArr> WNARG
-%type <node> OCCR PATH EXPR CONCAT CONCAT_TERM ARITHEXPR stmnt DEREF st2
+%type <nodeArr> WNARG GETOBJS
+%type <node> OCCR PATH PHYSICAL_PATH STRAY_DEV_PATH EXPR CONCAT CONCAT_TERM ARITHEXPR stmnt DEREF st2
 %type <boolNode> BOOLEXPR
 %type <mapVoid> EQUAL_LIST
 
@@ -84,12 +84,12 @@ st2:    {$$=nil}
        |stmnt TOK_SEMICOL st2 {$$=&ast{[]node{$1, $3}}}
 ;
 
-stmnt:   TOK_GET PATH {$$=&getObjectNode{}}
+stmnt:   TOK_GET PATH {$$=&getObjectNode{$2}}
        | TOK_GET OBJ_TYPE EQUAL_LIST {$$=&searchObjectsNode{$2, $3}}
-       | TOK_EQUAL PATH {$$=&getObjectNode{$2}}
-       //| TOK_EQUAL TOK_LBRAC GETOBJS TOK_RBRAC {$$=&setCBNode{&$3}; println("Selection made!")}
-       | PATH TOK_COL EQUAL_LIST {$$=&updateObjNode{$1, $3}}
-       | PATH TOK_COL TOK_WORD TOK_EQUAL EXPR TOK_ATTRSPEC EXPR {$$=&specialUpdateNode{$1, $3, $5, $7}}
+       | TOK_EQUAL PHYSICAL_PATH {$$=&getObjectNode{$2}}
+       | TOK_EQUAL TOK_LBRAC GETOBJS TOK_RBRAC {$$=&selectChildrenNode{$3}; println("Selection made!")}
+       | PHYSICAL_PATH TOK_COL EQUAL_LIST {$$=&updateObjNode{$1, $3}}
+       | PHYSICAL_PATH TOK_COL TOK_WORD TOK_EQUAL EXPR TOK_ATTRSPEC EXPR {$$=&specialUpdateNode{$1, $3, $5, $7}}
        | TOK_CD PATH {$$=&cdNode{$2}}
        | TOK_LS PATH {$$=&lsNode{$2}}
        | TOK_LS {$$=&lsNode{&strLeaf{""}}}
@@ -112,10 +112,10 @@ stmnt:   TOK_GET PATH {$$=&getObjectNode{}}
        | TOK_SELECT {$$=&selectNode{}}
 
        // LINKING
-       | TOK_LINK TOK_COL PATH TOK_ATTRSPEC EXPR {$$=&linkObjectNode{[]interface{}{$3, $5}}}
-       | TOK_LINK TOK_COL PATH TOK_ATTRSPEC EXPR TOK_ATTRSPEC EXPR {$$=&linkObjectNode{[]interface{}{$3, $5, $7}}}
-       | TOK_UNLINK TOK_COL PATH {$$=&unlinkObjectNode{[]interface{}{$3}}}
-       | TOK_UNLINK TOK_COL PATH TOK_ATTRSPEC EXPR {$$=&unlinkObjectNode{[]interface{}{$3,$5}}}
+       | TOK_LINK TOK_COL PHYSICAL_PATH TOK_ATTRSPEC EXPR {$$=&linkObjectNode{[]interface{}{$3, $5}}}
+       | TOK_LINK TOK_COL PHYSICAL_PATH TOK_ATTRSPEC EXPR TOK_ATTRSPEC EXPR {$$=&linkObjectNode{[]interface{}{$3, $5, $7}}}
+       | TOK_UNLINK TOK_COL PHYSICAL_PATH {$$=&unlinkObjectNode{[]interface{}{$3}}}
+       | TOK_UNLINK TOK_COL PHYSICAL_PATH TOK_ATTRSPEC EXPR {$$=&unlinkObjectNode{[]interface{}{$3,$5}}}
        | TOK_LEN TOK_LPAREN TOK_WORD TOK_RPAREN {$$=&lenNode{$3}}
 
        // BASH
@@ -131,7 +131,9 @@ stmnt:   TOK_GET PATH {$$=&getObjectNode{}}
        | TOK_DOC TOK_WORD {$$=&helpNode{$2}}          
 ;
 
-PATH: EXPR {$$=&pathConvert{$1}};
+PHYSICAL_PATH: EXPR {$$=&pathNode{$1, PHYSICAL}};
+STRAY_DEV_PATH: EXPR {$$=&pathNode{$1, STRAY_DEV}};
+PATH: EXPR {$$=&pathNode{$1, STD}};
 
 EXPR:    TOK_DEREF TOK_WORD TOK_LBLOCK EXPR TOK_RBLOCK {$$=&arrayReferenceNode{$2, $4}}
        | TOK_DEREF TOK_LPAREN TOK_LPAREN ARITHEXPR TOK_RPAREN TOK_RPAREN {$$=$4}
@@ -192,6 +194,10 @@ WNARG: EXPR TOK_COMMA WNARG {x:=[]node{$1}; $$=append(x, $3...)}
        |EXPR  {x:=[]node{$1}; $$=x}
 ; 
 
+GETOBJS: PATH TOK_COMMA GETOBJS {x:=[]node{$1}; $$=append(x, $3...)}
+       | PATH {x:=[]node{$1}; $$=x}
+;
+
 OBJ_TYPE: TOK_TENANT | TOK_SITE | TOK_BLDG | TOK_ROOM | TOK_RACK | TOK_DEVICE | TOK_AC | TOK_PANEL |TOK_CABINET | TOK_ROW 
        | TOK_TILE | TOK_WALL | TOK_SENSOR | TOK_CORIDOR | TOK_GROUP | TOK_OBJ_TMPL | TOK_ROOM_TMPL
 ;
@@ -214,19 +220,19 @@ COMMAND: TOK_LINK{$$="link"} | TOK_UNLINK{$$="unlink"} | TOK_CLR{$$="clear"} | T
 ;
 
 OCCR:   
-        TOK_TENANT TOK_COL PATH TOK_ATTRSPEC EXPR {
+        TOK_TENANT TOK_COL PHYSICAL_PATH TOK_ATTRSPEC EXPR {
               attributes := map[string]interface{}{"attributes":map[string]interface{}{"color":$5}}
               $$=&getOCAttrNode{$3, cmd.TENANT, attributes}
         }
-        |TOK_SITE TOK_COL PATH TOK_ATTRSPEC TOK_ORIENTATION {
+        |TOK_SITE TOK_COL PHYSICAL_PATH TOK_ATTRSPEC TOK_ORIENTATION {
               attributes := map[string]interface{}{"attributes":map[string]interface{}{"orientation":$5}}
               $$=&getOCAttrNode{$3, cmd.SITE, attributes}
         } 
-        |TOK_BLDG TOK_COL PATH TOK_ATTRSPEC EXPR TOK_ATTRSPEC EXPR {
+        |TOK_BLDG TOK_COL PHYSICAL_PATH TOK_ATTRSPEC EXPR TOK_ATTRSPEC EXPR {
               attributes := map[string]interface{}{"attributes":map[string]interface{}{"posXY":$5, "size":$7}}
               $$=&getOCAttrNode{$3, cmd.BLDG, attributes}
         }
-        |TOK_ROOM TOK_COL PATH TOK_ATTRSPEC EXPR TOK_ATTRSPEC EXPR TOK_ATTRSPEC TOK_ORIENTATION TOK_ATTRSPEC EXPR{
+        |TOK_ROOM TOK_COL PHYSICAL_PATH TOK_ATTRSPEC EXPR TOK_ATTRSPEC EXPR TOK_ATTRSPEC TOK_ORIENTATION TOK_ATTRSPEC EXPR{
               attributes := map[string]interface{}{"attributes":map[string]interface{}{"posXY":$5, "size":$7, "orientation":$9, "floorUnit":$11}}
               $$=&getOCAttrNode{$3, cmd.ROOM, attributes}
         }
@@ -234,21 +240,21 @@ OCCR:
               attributes := map[string]interface{}{"attributes":map[string]interface{}{"posXY":$5, "size":$7, "orientation":$9}}
               $$=&getOCAttrNode{$3, cmd.ROOM, attributes}
         } */
-        |TOK_ROOM TOK_COL PATH TOK_ATTRSPEC EXPR TOK_ATTRSPEC EXPR TOK_ATTRSPEC TOK_ORIENTATION {
+        |TOK_ROOM TOK_COL PHYSICAL_PATH TOK_ATTRSPEC EXPR TOK_ATTRSPEC EXPR TOK_ATTRSPEC TOK_ORIENTATION {
               attributes := map[string]interface{}{"attributes":map[string]interface{}{"posXY":$5, "size":$7, "orientation":$9}}
               $$=&getOCAttrNode{$3, cmd.ROOM, attributes}
         }
-        |TOK_ROOM TOK_COL PATH TOK_ATTRSPEC EXPR TOK_ATTRSPEC EXPR {
+        |TOK_ROOM TOK_COL PHYSICAL_PATH TOK_ATTRSPEC EXPR TOK_ATTRSPEC EXPR {
               attributes := map[string]interface{}{"attributes":map[string]interface{}{"posXY":$5, "template":$7}}
               $$=&getOCAttrNode{$3, cmd.ROOM, attributes}
         }
-        |TOK_RACK TOK_COL PATH TOK_ATTRSPEC EXPR TOK_ATTRSPEC EXPR TOK_ATTRSPEC EXPR {$$=&createRackNode{$3, [3]node{$5, $7, $9}}}
-        |TOK_DEVICE TOK_COL PATH TOK_ATTRSPEC EXPR TOK_ATTRSPEC EXPR TOK_ATTRSPEC TOK_ORIENTATION {
+        |TOK_RACK TOK_COL PHYSICAL_PATH TOK_ATTRSPEC EXPR TOK_ATTRSPEC EXPR TOK_ATTRSPEC EXPR {$$=&createRackNode{$3, [3]node{$5, $7, $9}}}
+        |TOK_DEVICE TOK_COL PHYSICAL_PATH TOK_ATTRSPEC EXPR TOK_ATTRSPEC EXPR TOK_ATTRSPEC TOK_ORIENTATION {
               attributes := map[string]interface{}{"attributes":map[string]interface{}{"slot":$5, "template":$7, "orientation":$9}}
               $$=&getOCAttrNode{$3, cmd.DEVICE, attributes}
         }
-        |TOK_DEVICE TOK_COL PATH TOK_ATTRSPEC EXPR TOK_ATTRSPEC EXPR {$$=&createDeviceNode{$3, [2]node{$5, $7}}}
-        |TOK_CORIDOR TOK_COL PATH TOK_ATTRSPEC EXPR TOK_ATTRSPEC EXPR TOK_ATTRSPEC EXPR TOK_ATTRSPEC EXPR {
+        |TOK_DEVICE TOK_COL PHYSICAL_PATH TOK_ATTRSPEC EXPR TOK_ATTRSPEC EXPR {$$=&createDeviceNode{$3, [2]node{$5, $7}}}
+        |TOK_CORIDOR TOK_COL PHYSICAL_PATH TOK_ATTRSPEC EXPR TOK_ATTRSPEC EXPR TOK_ATTRSPEC EXPR TOK_ATTRSPEC EXPR {
               attributes := map[string]interface{}{"name":$5, "leftRack":$7, "rightRack":$9, "temperature":$11}
               $$=&getOCAttrNode{$3, cmd.CORIDOR, attributes}
         }
@@ -256,15 +262,15 @@ OCCR:
               attributes:=map[string]interface{}{"name":$5,"racks":$6}; 
               $$=&getOCAttrNode{$3, cmd.GROUP, attributes}
         } */
-        |TOK_WALL TOK_COL PATH TOK_ATTRSPEC EXPR TOK_ATTRSPEC EXPR {
+        |TOK_WALL TOK_COL PHYSICAL_PATH TOK_ATTRSPEC EXPR TOK_ATTRSPEC EXPR {
               attributes := map[string]interface{}{"pos1":$5,"pos2":$7}
               $$=&getOCAttrNode{$3, cmd.SEPARATOR, attributes}
         }
-        |TOK_ORPH PATH TOK_DEVICE TOK_COL EXPR TOK_ATTRSPEC EXPR {
+        |TOK_ORPH PHYSICAL_PATH TOK_DEVICE TOK_COL EXPR TOK_ATTRSPEC EXPR {
               attributes := map[string]interface{}{"attributes":map[string]interface{}{"template":$7}}
               $$=&getOCAttrNode{$5, cmd.STRAY_DEV, attributes}
         }
-        |TOK_ORPH PATH TOK_SENSOR TOK_COL EXPR TOK_ATTRSPEC EXPR {
+        |TOK_ORPH PHYSICAL_PATH TOK_SENSOR TOK_COL EXPR TOK_ATTRSPEC EXPR {
               attributes := map[string]interface{}{"attributes":map[string]interface{}{"template":$7} }
               $$=&getOCAttrNode{$5, cmd.STRAYSENSOR, attributes}
         }
@@ -272,10 +278,6 @@ OCCR:
        |OBJ_TYPE TOK_USE_JSON EXPR {$$=&easyPostNode{$1, $3}}
 ; 
 
-/* GETOBJS:      P TOK_COMMA GETOBJS {x := make([]string,0); x = append(x, formActualPath($1)); x = append(x, $3...); $$=x}
-              |P {$$=[]string{formActualPath($1)}}
-              //| TOK_WORD {$$=[]string{cmd.State.CurrPath+"/"+$1}}
-              ; */
 
 /* HANDLEUI: TOK_UI TOK_DOT TOK_WORD TOK_EQUAL EXPR {$$=&handleUnityNode{[]interface{}{"ui", $3, ($5).(node).execute()}}}
           |TOK_CAM TOK_DOT TOK_WORD TOK_EQUAL EXPR TOK_ATTRSPEC EXPR {

@@ -73,7 +73,7 @@
 /room_template/ {  printToks("TOK_ROOM_TMPL");lval.s = yylex.Text();return TOK_ROOM_TMPL}
 /obj_template/ {  printToks("TOK_OBJ_TMPL");lval.s = yylex.Text();return TOK_OBJ_TMPL}
 
-/([0-9]+)/ {  printToks("TOK_INT");lval.n = atoi(yylex.Text()); return TOK_INT}
+/([0-9][0-9 ]*)/ {  printToks("TOK_INT");lval.n = atoi(yylex.Text()); return TOK_INT}
 /[0-9]+\.[0-9]+/ { printToks("TOK_FLOAT");lval.f, _ = strconv.ParseFloat((yylex.Text()), 64); return TOK_FLOAT }
 /lsten/ {  printToks("TOK_LSTEN"); return TOK_LSTEN}
 /lssite/ {  printToks("TOK_LSSITE"); return TOK_LSSITE}
@@ -117,9 +117,9 @@ import (
 type TOKType int
 
 func atoi(x string) int {
-	v, e := strconv.Atoi(x)
+	v, e := strconv.Atoi(strings.ReplaceAll(x, " ", ""))
 	if e != nil {
-		println("STRCONV ERROR!")
+		println("STRCONV ERROR! " + x)
 		return 0
 	}
 	return v

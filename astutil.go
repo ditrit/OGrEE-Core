@@ -57,17 +57,6 @@ func fileToJSON(path string) map[string]interface{} {
 	return data
 }
 
-func formActualPath(x string) string {
-	if x == "" || x == "." {
-		return cmd.State.CurrPath
-	} else if string(x[0]) == "/" {
-		return x
-
-	} else {
-		return cmd.State.CurrPath + "/" + x
-	}
-}
-
 func evalMapNodes(x map[string]interface{}) (map[string]interface{}, error) {
 	result := make(map[string]interface{})
 	for i := range x {

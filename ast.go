@@ -523,12 +523,25 @@ func (n *grepNode) execute() (interface{}, error) {
 	return nil, nil
 }
 
-type setCBNode struct {
-	cb *[]string
+type selectChildrenNode struct {
+	paths []node
 }
 
-func (n *setCBNode) execute() (interface{}, error) {
-	v := cmd.SetClipBoard(n.cb)
+func (n *selectChildrenNode) execute() (interface{}, error) {
+	var paths []string
+	for i := range n.paths {
+		v, err := n.paths[i].execute()
+		if err != nil {
+			return nil, err
+		}
+		path, ok := v.(string)
+		if !ok {
+			return nil, fmt.Errorf("")
+		}
+		paths = append(paths, path)
+	}
+	v := cmd.SetClipBoard(paths)
+	//cmd.CD()
 	return v, nil
 }
 
