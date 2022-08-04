@@ -233,18 +233,14 @@ func Start(flags map[string]interface{}) {
 	//Allow the ShellState to hold a ptr to readline
 	c.SetStateReadline(rl)
 
-	args := len(os.Args)
-
-	if args > 1 { //Args were provided
-		if args == 2 && strings.Contains(os.Args[1], ".ocli") {
-			for i := 1; i < args; i++ {
-				c.State.ScriptCalled = true
-				c.State.ScriptPath = os.Args[i]
-				loadFile(os.Args[i])
-			}
+	//Execute Script if provided as arg and exit
+	if flags["script"] != "" {
+		if strings.Contains(flags["script"].(string), ".ocli") {
+			c.State.ScriptCalled = true
+			c.State.ScriptPath = flags["script"].(string)
+			loadFile(flags["script"].(string))
 			os.Exit(0)
 		}
-
 	}
 
 	//If Unity Client is present we have to Trigger

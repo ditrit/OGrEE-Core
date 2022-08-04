@@ -522,6 +522,7 @@ func LSOG() {
 func Env() {
 	fmt.Println("Unity: ", State.UnityClientAvail)
 	fmt.Println("Filter: ", State.FilterDisplay)
+	fmt.Println("Analyser: ", State.Analyser)
 	fmt.Println()
 	fmt.Println("Objects Unity shall be informed of upon update:")
 	for _, k := range State.ObjsForUnity {

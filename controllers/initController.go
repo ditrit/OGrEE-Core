@@ -68,8 +68,9 @@ func InitState(flags, env map[string]interface{}) {
 	}
 	//Set the filter attributes setting
 	State.FilterDisplay = false
+
 	//Set the Analyser setting to ON for now
-	State.Analyser = true
+	State.Analyser, _ = strconv.ParseBool(flags["analyser"].(string))
 
 	phys := &Node{}
 	phys.Name = "Physical"
