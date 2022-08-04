@@ -72,10 +72,13 @@ func executeFile(comBuf *[]map[string]int, file string) {
 
 func loadFile(path string) {
 	originalPath := path
-	newBackup := p.ProcessFile(path)
+	newBackup := p.ProcessFile(path, c.State.DebugLvl)
 	file, err := os.Open(newBackup)
 	if err != nil {
-		println("Error:", err.Error())
+		if c.State.DebugLvl > 0 {
+			println("Error:", err.Error())
+		}
+
 		l.GetWarningLogger().Println("Error:", err)
 	}
 	defer file.Close()
@@ -207,6 +210,7 @@ func Start(flags map[string]interface{}) {
 	env := map[string]interface{}{}
 
 	l.InitLogs()
+	c.InitDebugLevel(flags) //Set the Debug level
 	c.LoadEnvFile(env, flags["env_path"].(string))
 	c.InitTimeout(env)    //Set the Unity Timeout
 	c.GetURLs(flags, env) //Set the URLs
@@ -233,18 +237,14 @@ func Start(flags map[string]interface{}) {
 	//Allow the ShellState to hold a ptr to readline
 	c.SetStateReadline(rl)
 
-	args := len(os.Args)
-
-	if args > 1 { //Args were provided
-		if args == 2 && strings.Contains(os.Args[1], ".ocli") {
-			for i := 1; i < args; i++ {
-				c.State.ScriptCalled = true
-				c.State.ScriptPath = os.Args[i]
-				loadFile(os.Args[i])
-			}
+	//Execute Script if provided as arg and exit
+	if flags["script"] != "" {
+		if strings.Contains(flags["script"].(string), ".ocli") {
+			c.State.ScriptCalled = true
+			c.State.ScriptPath = flags["script"].(string)
+			loadFile(flags["script"].(string))
 			os.Exit(0)
 		}
-
 	}
 
 	//If Unity Client is present we have to Trigger

@@ -8210,13 +8210,13 @@ func atoi(x string) int {
 }
 
 func printToks(tok string) {
-	if cmd.State.DebugLvl >= 2 {
+	if cmd.State.DebugLvl >= 3 {
 		println("We got ", tok)
 	}
 }
 
 func printCapturedWord(x string) {
-	if cmd.State.DebugLvl >= 2 {
+	if cmd.State.DebugLvl >= 3 {
 		println("LVAL: ", x)
 	}
 }

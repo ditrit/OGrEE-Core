@@ -156,7 +156,10 @@ func resolveReference(ref string) string {
 		}
 		return item.(*commonNode).val + " " + args
 	default:
-		println("Unable to deref your variable ")
+		if cmd.State.DebugLvl > 0 {
+			println("Unable to deref your variable ")
+		}
+
 		return ""
 	}
 }
@@ -1683,9 +1686,11 @@ yynewstate:
 			}
 			println()
 println("OGREE: Unrecognised command!")
-			if cmd.State.ScriptCalled == true {
-				println("File:",filepath.Base(cmd.GetScriptPath()) )
-				println("Line:", cmd.GetLineNumber())
+			if cmd.State.DebugLvl > 0 {
+				if cmd.State.ScriptCalled == true {
+					println("File:",filepath.Base(cmd.GetScriptPath()) )
+					println("Line:", cmd.GetLineNumber())
+				}
 			}
 			l.GetWarningLogger().Println("Unknown Command")			/*yylex.Error(msg)*/
 			Nerrs++
@@ -2008,7 +2013,10 @@ println("OGREE: Unrecognised command!")
 			case int:
 				yyVAL.node = &numNode{NUM, x.execute().(int)}
 			default: //Error, the array length is not an int
-				println("Error! Single element arrays are not supported")
+				if cmd.State.DebugLvl > 0 {
+					println("Error! Single element arrays are not supported")
+				}
+
 				yyVAL.node = &numNode{NUM, -1}
 
 			}
@@ -2674,7 +2682,9 @@ println("OGREE: Unrecognised command!")
 	case 211:
 		{
 			yyVAL.node = &commonNode{COMMON, cmd.SetClipBoard, "setCB", []interface{}{&yyS[yypt-1].sarr}}
-			println("Selection made!")
+			if cmd.State.DebugLvl >= 3 {
+				println("Selection made!")
+			}
 		}
 	case 212:
 		{
@@ -3014,9 +3024,11 @@ yynewstate:
 			}
 			println()
 println("OGREE: Unrecognised command!")
-			if cmd.State.ScriptCalled == true {
-				println("File:",filepath.Base(cmd.GetScriptPath()) )
-				println("Line:", cmd.GetLineNumber())
+			if cmd.State.DebugLvl > 0 {
+				if cmd.State.ScriptCalled == true {
+					println("File:",filepath.Base(cmd.GetScriptPath()) )
+					println("Line:", cmd.GetLineNumber())
+				}
 			}
 			l.GetWarningLogger().Println("Unknown Command")			/*yylex.Error(msg)*/
 			Nerrs++
@@ -3383,7 +3395,10 @@ println("OGREE: Unrecognised command!")
 				return 0
 			yyVAL.node = &numNode{NUM, x.execute().(int)}
 			default: //Error, the array length is not an int
-				println("Error! Single element arrays are not supported")
+				if cmd.State.DebugLvl > 0 {
+					println("Error! Single element arrays are not supported")
+				}
+
 				return 0
 			yyVAL.node = &numNode{NUM, -1}
 
@@ -4195,7 +4210,9 @@ println("OGREE: Unrecognised command!")
 		{
 			return 0
 			yyVAL.node = &commonNode{COMMON, cmd.SetClipBoard, "setCB", []interface{}{&yyS[yypt-1].sarr}}
-			println("Selection made!")
+			if cmd.State.DebugLvl >= 3 {
+				println("Selection made!")
+			}
 		}
 	case 212:
 		{

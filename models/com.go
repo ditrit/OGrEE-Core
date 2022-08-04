@@ -54,7 +54,7 @@ func ContactUnity(method, URL string, data map[string]interface{}, dur time.Dura
 
 	// Connect to a server
 	//println(URL)
-	if debug > 1 { //Debug levels range: 0->3
+	if debug >= 3 { //Debug levels range: 0->3
 		println("DEBUG OUTGOING JSON")
 		Disp(data)
 	}
@@ -80,7 +80,7 @@ func ContactUnity(method, URL string, data map[string]interface{}, dur time.Dura
 		//}
 		//reply, _ := ioutil.ReadAll(conn)
 		//fmt.Printf("received from server: [%s]\n", string(reply))
-		if debug > 1 {
+		if debug >= 3 {
 			println("Response received:", string(reply))
 			println("DEBUG LEN OF REPONSE:", len(reply))
 		}

@@ -150,7 +150,10 @@ func resolveReference(ref string) string {
                      }
                      return item.(*commonNode).val +" "+ args
               default:
-                     println("Unable to deref your variable ")
+                     if cmd.State.DebugLvl > 0 {
+                            println("Unable to deref your variable ")
+                     }
+                     
                      return ""
                   }
 }
@@ -392,7 +395,10 @@ factor: TOK_LPAREN EXPR TOK_RPAREN {$$=$2}
                                                         case int:
                                                         $$=&numNode{NUM, x.execute().(int)}
                                                         default: //Error, the array length is not an int
-                                                        println("Error! Single element arrays are not supported")
+                                                        if cmd.State.DebugLvl > 0 {
+                                                               println("Error! Single element arrays are not supported")
+                                                        }
+                                                        
                                                         $$=&numNode{NUM, -1}
 
                                                  }
@@ -625,7 +631,7 @@ GETOBJS:      P TOK_COMMA GETOBJS {x := make([]string,0); x = append(x, formActu
               //| TOK_WORD {$$=[]string{cmd.State.CurrPath+"/"+$1}}
               ;
 
-OCCHOOSE: TOK_EQUAL TOK_LBRAC GETOBJS TOK_RBRAC {$$=&commonNode{COMMON, cmd.SetClipBoard, "setCB", []interface{}{&$3}}; println("Selection made!")}
+OCCHOOSE: TOK_EQUAL TOK_LBRAC GETOBJS TOK_RBRAC {$$=&commonNode{COMMON, cmd.SetClipBoard, "setCB", []interface{}{&$3}}; if cmd.State.DebugLvl >= 3 {println("Selection made!")}}
 ;
 
 OCDOT:      //TOK_DOT TOK_VAR TOK_COL TOK_WORD TOK_EQUAL WORDORNUM {$$=&assignNode{ASSIGN, $4, dCatchNodePtr}}

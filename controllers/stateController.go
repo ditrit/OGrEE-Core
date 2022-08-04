@@ -153,8 +153,11 @@ func makeNodeArrFromResp(resp *http.Response, entity int) []*Node {
 		} else if v, ok := (objs[i].(map[string]interface{}))["slug"]; ok {
 			node.Name = v.(string)
 		} else {
-			l.GetErrorLogger().Println("Object obtained does not have name or slug!" +
-				"Now Exiting")
+			if State.DebugLvl > 0 {
+				l.GetErrorLogger().Println("Object obtained does not have name or slug!" +
+					"Now Exiting")
+			}
+
 			println("Object obtained does not have name or slug!" +
 				"Now Exiting")
 		}
@@ -411,7 +414,10 @@ func FindNodeInTree(root **Node, path *Stack, silenced bool) **Node {
 		node := getNextInPath(name.(string), *root)
 		if node == nil {
 			if !silenced {
-				println("Name doesn't exist! ", string(name.(string)))
+				if State.DebugLvl > 0 {
+					println("Name doesn't exist! ", string(name.(string)))
+				}
+
 			}
 
 			l.GetWarningLogger().Println("Name doesn't exist! ", string(name.(string)))
@@ -532,7 +538,10 @@ func NodesAtLevel(root **Node, x Stack) []string {
 		name := x.Peek()
 		node := getNextInPath(name.(string), *root)
 		if node == nil {
-			println("Name doesn't exist! ", string(name.(string)))
+			if State.DebugLvl > 0 {
+				println("Name doesn't exist! ", string(name.(string)))
+			}
+
 			l.GetWarningLogger().Println("Node name: ", string(name.(string)), "doesn't exist!")
 			return nil
 		}
