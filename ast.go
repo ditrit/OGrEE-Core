@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	c "cli/controllers"
 	cmd "cli/controllers"
 	l "cli/logger"
 	"encoding/json"
@@ -871,9 +872,12 @@ func (s *symbolReferenceNode) execute() interface{} {
 					}
 					i := s.offset.(node).execute().(int)
 					if i >= len(x) {
-						println("Index out of range error!")
-						println("Array Length Of: ", len(x))
-						println("But desired index at: ", i)
+						if cmd.State.DebugLvl > 0 {
+							println("Index out of range error!")
+							println("Array Length Of: ", len(x))
+							println("But desired index at: ", i)
+						}
+
 						l.GetWarningLogger().Println("Index out of range error!")
 						return nil
 					}
@@ -907,10 +911,13 @@ func (s *symbolReferenceNode) execute() interface{} {
 				case []map[string]interface{}:
 					if o, ok := s.offset.(node).execute().(int); ok {
 						if o >= len(val.([]map[string]interface{})) {
-							println("Index out of range error!")
-							println("Array Length Of: ",
-								len(val.([]map[string]interface{})))
-							println("But desired index at: ", o)
+							if cmd.State.DebugLvl > 0 {
+								println("Index out of range error!")
+								println("Array Length Of: ",
+									len(val.([]map[string]interface{})))
+								println("But desired index at: ", o)
+							}
+
 							l.GetWarningLogger().Println("Index out of range error!")
 							return nil
 						}
@@ -1247,7 +1254,10 @@ func (a *ast) execute() interface{} {
 		}
 
 		if a.statements[i] == nil {
-			fmt.Printf("\nOGREE: Unrecognised command!\n")
+			if cmd.State.DebugLvl > 0 {
+				fmt.Printf("\nOGREE: Unrecognised command!\n")
+			}
+
 			l.GetWarningLogger().Println("Unrecognised Command")
 			if cmd.State.ScriptCalled == true {
 				println("Line: ", cmd.State.LineNumber)
@@ -1290,14 +1300,20 @@ func UnsetUtil(x, name string, ref, value interface{}) {
 		idx := dynamicMap[identifier.val.(string)] //Get the idx
 		if idx < 0 {
 			l.GetWarningLogger().Println("Object to update not found")
-			println("Object to update not found")
+			if c.State.DebugLvl > 0 {
+				println("Object to update not found")
+			}
+
 			return
 		}
 
 		if _, ok := dynamicSymbolTable[idx]; !ok {
+			if cmd.State.DebugLvl > 1 {
+				println("Requested Object to update not found")
+			}
 			msg := "Object not found in dynamicSymbolTable while deleting attr"
 			l.GetErrorLogger().Println(msg)
-			println("Requested Object to update not found")
+
 			return
 		}
 		mp := dynamicSymbolTable[idx].(map[string]interface{})

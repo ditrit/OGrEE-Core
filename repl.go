@@ -72,10 +72,13 @@ func executeFile(comBuf *[]map[string]int, file string) {
 
 func loadFile(path string) {
 	originalPath := path
-	newBackup := p.ProcessFile(path)
+	newBackup := p.ProcessFile(path, c.State.DebugLvl)
 	file, err := os.Open(newBackup)
 	if err != nil {
-		println("Error:", err.Error())
+		if c.State.DebugLvl > 0 {
+			println("Error:", err.Error())
+		}
+
 		l.GetWarningLogger().Println("Error:", err)
 	}
 	defer file.Close()
@@ -207,6 +210,7 @@ func Start(flags map[string]interface{}) {
 	env := map[string]interface{}{}
 
 	l.InitLogs()
+	c.InitDebugLevel(flags) //Set the Debug level
 	c.LoadEnvFile(env, flags["env_path"].(string))
 	c.InitTimeout(env)    //Set the Unity Timeout
 	c.GetURLs(flags, env) //Set the URLs

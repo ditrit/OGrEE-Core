@@ -27,12 +27,18 @@ func ParseResponse(resp *http.Response, e error, purpose string) map[string]inte
 
 	if e != nil {
 		l.GetWarningLogger().Println("Error while sending "+purpose+" to server: ", e)
-		println("There was an error!")
+		if State.DebugLvl > 0 {
+			println("There was an error!")
+		}
+
 	}
 	defer resp.Body.Close()
 	bodyBytes, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		println("Error: " + err.Error() + " Now Exiting")
+		if State.DebugLvl > 0 {
+			println("Error: " + err.Error() + " Now Exiting")
+		}
+
 		l.GetErrorLogger().Println("Error while trying to read server response: ", err)
 		if purpose == "POST" || purpose == "Search" {
 			os.Exit(-1)
@@ -94,7 +100,10 @@ func DeleteObj(Path string) bool {
 	//we don't want to delete the wrong object
 	objJSON, GETURL := GetObject(Path, true)
 	if objJSON == nil {
-		println("Error while deleting Object!")
+		if State.DebugLvl > 0 {
+			println("Error while deleting Object!")
+		}
+
 		l.GetWarningLogger().Println("Error while deleting Object!")
 		return false
 	}
@@ -114,7 +123,10 @@ func DeleteObj(Path string) bool {
 
 	resp, e := models.Send("DELETE", URL, GetKey(), nil)
 	if e != nil {
-		println("Error while deleting Object!")
+		if State.DebugLvl > 0 {
+			println("Error while deleting Object!")
+		}
+
 		l.GetWarningLogger().Println("Error while deleting Object!", e)
 		return false
 	}
@@ -122,7 +134,10 @@ func DeleteObj(Path string) bool {
 	if resp.StatusCode == http.StatusNoContent {
 		println("Success")
 	} else {
-		println("Error while deleting Object!")
+		if State.DebugLvl > 0 {
+			println("Error while deleting Object!")
+		}
+
 		l.GetWarningLogger().Println("Error while deleting Object!", e)
 		return false
 	}
@@ -148,8 +163,11 @@ func DeleteSelection() bool {
 		if DeleteObj((*(State.ClipBoard))[i]) != true {
 			l.GetWarningLogger().Println("Couldn't delete obj in selection: ",
 				(*(State.ClipBoard))[i])
-			println("Couldn't delete obj in selection: ",
-				(*(State.ClipBoard))[i])
+			if State.DebugLvl > 0 {
+				println("Couldn't delete obj in selection: ",
+					(*(State.ClipBoard))[i])
+			}
+
 			res = false
 		}
 		println()
@@ -229,7 +247,10 @@ func GetObject(path string, silenced bool) (map[string]interface{}, string) {
 	}
 
 	//Object wasn't found
-	println("Error finding Object from given path!")
+	if State.DebugLvl > 0 {
+		println("Error finding Object from given path!")
+	}
+
 	l.GetWarningLogger().Println("Object to Get not found")
 	println(path)
 
@@ -283,7 +304,10 @@ func RecursivePatch(Path, id, ent string, data map[string]interface{}) {
 			//we don't want to update the wrong object
 			objJSON, GETURL := GetObject(Path, true)
 			if objJSON == nil {
-				println("Error while deleting Object!")
+				if State.DebugLvl > 0 {
+					println("Error while deleting Object!")
+				}
+
 				l.GetWarningLogger().Println("Error while deleting Object!")
 				return
 			}
@@ -351,7 +375,10 @@ func UpdateObj(Path, id, ent string, data map[string]interface{}, deleteAndPut b
 			//we don't want to update the wrong object
 			objJSON, GETURL := GetObject(Path, true)
 			if objJSON == nil {
-				println("Error while getting Object!")
+				if State.DebugLvl > 0 {
+					println("Error while getting Object!")
+				}
+
 				l.GetWarningLogger().Println("Error while getting Object!")
 				return nil
 			}
@@ -538,7 +565,10 @@ func Env() {
 func LSOBJECT(x string, entity int) []map[string]interface{} {
 	obj, Path := GetObject(x, true)
 	if obj == nil {
-		println("Error finding Object from given path!")
+		if State.DebugLvl > 0 {
+			println("Error finding Object from given path!")
+		}
+
 		l.GetWarningLogger().Println("Object to Get not found")
 		return nil
 	}
@@ -548,7 +578,10 @@ func LSOBJECT(x string, entity int) []map[string]interface{} {
 	objEnt := entities[:len(entities)-1]
 	obi := EntityStrToInt(objEnt)
 	if obi == -1 { //Something went wrong
-		println("Error finding Object from given path!")
+		if State.DebugLvl > 0 {
+			println("Error finding Object from given path!")
+		}
+
 		l.GetWarningLogger().Println("Object to Get not found")
 		return nil
 	}
@@ -804,7 +837,10 @@ func CD(x string) string {
 				//println("DEBUG ", x)
 				//println()
 			} else {
-				println("Path does not exist")
+				if State.DebugLvl > 0 {
+					println("Path does not exist")
+				}
+
 				l.GetWarningLogger().Println("Path: ", x, " does not exist")
 			}
 
@@ -815,7 +851,10 @@ func CD(x string) string {
 				State.PrevPath = State.CurrPath
 				State.CurrPath += "/" + x
 			} else {
-				println("OGREE: ", x, " : No such object")
+				if State.DebugLvl > 0 {
+					println("OGREE: ", x, " : No such object")
+				}
+
 				l.GetWarningLogger().Println("No such object: ", x)
 			}
 
@@ -825,7 +864,10 @@ func CD(x string) string {
 				State.PrevPath = State.CurrPath
 				State.CurrPath += x
 			} else {
-				println("OGREE: ", x, " : No such object")
+				if State.DebugLvl > 0 {
+					println("OGREE: ", x, " : No such object")
+				}
+
 				l.GetWarningLogger().Println("No such object: ", x)
 			}
 
@@ -943,7 +985,10 @@ func Exit() {
 func Tree(x string, depth int) {
 	if depth < 0 {
 		l.GetWarningLogger().Println("Tree command cannot accept negative value")
-		println("Error: Tree command cannot accept negative value")
+		if State.DebugLvl > 0 {
+			println("Error: Tree command cannot accept negative value")
+		}
+
 		return
 	}
 	objJSON, _ := GetObject(x, true)
@@ -986,7 +1031,10 @@ func GetHierarchy(x string, depth int, silence bool) []map[string]interface{} {
 
 			r, e := models.Send("GET", URL, GetKey(), nil)
 			if e != nil {
-				println("Error: " + e.Error())
+				if State.DebugLvl > 0 {
+					println("Error: " + e.Error())
+				}
+
 				l.GetErrorLogger().Println("Error: " + e.Error())
 				return nil
 			}
@@ -994,14 +1042,20 @@ func GetHierarchy(x string, depth int, silence bool) []map[string]interface{} {
 			data := ParseResponse(r, nil, "get hierarchy")
 			if data == nil {
 				l.GetWarningLogger().Println("Hierarchy call response was nil")
-				println("No data")
+				if State.DebugLvl > 0 {
+					println("No data")
+				}
+
 				return nil
 			}
 
 			objs := LoadArrFromResp(data, "children")
 			if objs == nil {
 				l.GetWarningLogger().Println("No objects found in hierarchy call")
-				println("No objects found in hierarchy call")
+				if State.DebugLvl > 0 {
+					println("No objects found in hierarchy call")
+				}
+
 				return nil
 			}
 
@@ -1048,7 +1102,10 @@ func GetOCLIAtrributes(Path string, ent int, data map[string]interface{}) {
 	name := path.Base(ogPath)
 	if name == "." || name == "" {
 		l.GetWarningLogger().Println("Invalid path name provided for OCLI object creation")
-		println("Error please provide a valid name for this object")
+		if State.DebugLvl > 0 {
+			println("Error please provide a valid name for this object")
+		}
+
 		return
 	}
 
@@ -1185,7 +1242,10 @@ func GetOCLIAtrributes(Path string, ent int, data map[string]interface{}) {
 
 				if _, ok := attr["template"]; !ok && sizeUValid == false {
 					l.GetWarningLogger().Println("Invalid parameter provided for device ")
-					println("Please provide an existing template or valid SizeU value")
+					if State.DebugLvl > 0 {
+						println("Please provide an existing template or valid SizeU value")
+					}
+
 					return
 				}
 
@@ -1202,8 +1262,11 @@ func GetOCLIAtrributes(Path string, ent int, data map[string]interface{}) {
 				//End of convert block
 				if _, ok := attr["slot"]; ok {
 					l.GetWarningLogger().Println("Invalid device syntax encountered")
-					println("Invalid syntax: If you have provided",
-						" a template, it was not found")
+					if State.DebugLvl > 0 {
+						println("Invalid syntax: If you have provided",
+							" a template, it was not found")
+					}
+
 					return
 				}
 			}
@@ -1476,22 +1539,30 @@ func GetOCLIAtrributesTemplateHelper(attr, data map[string]interface{}, ent int)
 						}
 					}
 				} else {
-					println("Warning, invalid size value in template.",
-						"Default values will be assigned")
+					if State.DebugLvl > 1 {
+						println("Warning, invalid size value in template.",
+							"Default values will be assigned")
+					}
 
 				}
 			} else {
 				attr["template"] = ""
-				println("Warning: template was not found.",
-					"it will not be used")
+				if State.DebugLvl > 1 {
+					println("Warning: template was not found.",
+						"it will not be used")
+				}
+
 				l.GetWarningLogger().Println("Invalid data type or incorrect name used to invoke template")
 			}
 
 		} else {
 			attr["template"] = ""
-			println("Warning: template must be a string that",
-				" refers to an existing imported template.",
-				q, " will not be used")
+			if State.DebugLvl > 1 {
+				println("Warning: template must be a string that",
+					" refers to an existing imported template.",
+					q, " will not be used")
+			}
+
 			l.GetWarningLogger().Println("Invalid data type used to invoke template")
 		}
 
@@ -1534,7 +1605,10 @@ func HandleUI(data map[string]interface{}) {
 			}
 		} else if data["data"].(map[string]interface{})["data"] == nil {
 			l.GetWarningLogger().Println("Invalid parameter provided for highlighting")
-			println("OGREE: Error Invalid parameter provided for highlighting")
+			if State.DebugLvl > 0 {
+				println("OGREE: Error Invalid parameter provided for highlighting")
+			}
+
 			return
 		}
 	}
@@ -1566,17 +1640,26 @@ func LinkObject(paths []interface{}) {
 	sdev, _ := GetObject(paths[0].(string), true)
 	//println("DEBUG OUR PATH 1st:", spath)
 	if sdev == nil {
-		println("Object doesn't exist")
+		if State.DebugLvl > 0 {
+			println("Object doesn't exist")
+		}
+
 		return
 	}
 	if _, ok := sdev["category"]; !ok {
 		l.GetWarningLogger().Println("Attempted to link non stray-device ")
-		println("Error: Invalid object. Only stray-devices can be linked")
+		if State.DebugLvl > 0 {
+			println("Error: Invalid object. Only stray-devices can be linked")
+		}
+
 		return
 	}
 	if cat, _ := sdev["category"]; cat != "stray-device" {
 		l.GetWarningLogger().Println("Attempted to link non stray-device ")
-		println("Error: Invalid object. Only stray-devices can be linked")
+		if State.DebugLvl > 0 {
+			println("Error: Invalid object. Only stray-devices can be linked")
+		}
+
 		return
 	}
 
@@ -1586,19 +1669,28 @@ func LinkObject(paths []interface{}) {
 	//Parent retrieval and validation block
 	parent, _ := GetObject(paths[1].(string), true)
 	if parent == nil {
-		println("Destination is not valid")
+		if State.DebugLvl > 0 {
+			println("Destination is not valid")
+		}
+
 		return
 	}
 	if _, ok := parent["category"]; !ok {
 		l.GetWarningLogger().Println("Attempted to link with invalid target")
-		println("Error: Invalid destination object")
-		println("Please use a rack or a device as a link target")
+		if State.DebugLvl > 0 {
+			println("Error: Invalid destination object")
+			println("Please use a rack or a device as a link target")
+
+		}
 		return
 	}
 	if cat, _ := parent["category"].(string); cat != "device" && cat != "rack" {
 		l.GetWarningLogger().Println("Attempted to link with invalid target")
-		println("Error: Invalid destination object")
-		println("Please use a rack or a device as a link target")
+		if State.DebugLvl > 0 {
+			println("Error: Invalid destination object")
+			println("Please use a rack or a device as a link target")
+
+		}
 		return
 	}
 
@@ -1606,8 +1698,11 @@ func LinkObject(paths []interface{}) {
 	//not the same!
 	if parent["id"] == sdev["id"] && parent["name"] == sdev["name"] {
 		l.GetWarningLogger().Println("Attempted to object to itself")
-		println("Error you must provide a unique stray-device" +
-			" and a unique destination for it")
+		if State.DebugLvl > 0 {
+			println("Error you must provide a unique stray-device" +
+				" and a unique destination for it")
+		}
+
 	}
 
 	//Ensure that the stray device can be imported as device
@@ -1676,10 +1771,13 @@ func LinkObject(paths []interface{}) {
 	valid, x := localValid(h, "device", sdev["id"])
 	if !valid {
 		desiredObj := MapStrayString(x["category"].(string))
-		println("In the target's hierarchy the following "+
-			x["category"].(string)+" does not satisfy "+
-			desiredObj+" validation requirements: ", x["name"].(string))
-		println("Aborting link operation")
+		if State.DebugLvl > 0 {
+			println("In the target's hierarchy the following "+
+				x["category"].(string)+" does not satisfy "+
+				desiredObj+" validation requirements: ", x["name"].(string))
+			println("Aborting link operation")
+		}
+
 		DeleteObj(paths[1].(string) + "/" + sdev["name"].(string))
 		l.GetWarningLogger().Println("Link failure")
 		return
@@ -1808,21 +1906,30 @@ func UnlinkObject(paths []interface{}) {
 	//for a device to have a deeper hierarchy paths[0].(string)
 	dev, _ = GetObject(paths[0].(string), true)
 	if dev == nil {
+		if State.DebugLvl > 0 {
+			println("Error: This object does not exist ")
+		}
 		l.GetErrorLogger().Println("User attempted to unlink non-existing object")
-		println("Error: This object does not exist ")
+
 		return
 	}
 
 	//Exit if device not found
 	if _, ok := dev["category"]; !ok {
+		if State.DebugLvl > 0 {
+			println("Error: This object is not a device. You can only unlink devices ")
+		}
 		l.GetErrorLogger().Println("User attempted to unlink non-device object")
-		println("Error: This object is not a device. You can only unlink devices ")
+
 		return
 	}
 
 	if catInf, _ := dev["category"].(string); catInf != "device" {
+		if State.DebugLvl > 0 {
+			println("Error: This object is not a device. You can only unlink devices ")
+		}
 		l.GetErrorLogger().Println("User attempted to unlink non-device object")
-		println("Error: This object is not a device. You can only unlink devices ")
+
 		return
 	}
 
@@ -1847,7 +1954,10 @@ func UnlinkObject(paths []interface{}) {
 	newDev := PostObj(STRAY_DEV, "stray-device", dev)
 	if newDev == nil {
 		l.GetWarningLogger().Println("Unable to unlink target: ", paths[0].(string))
-		println("Error: Unable to unlink target: ", paths[0].(string))
+		if State.DebugLvl > 0 {
+			println("Error: Unable to unlink target: ", paths[0].(string))
+		}
+
 		return
 	}
 	var newPID interface{}
@@ -1880,6 +1990,9 @@ func Draw(x string, depth int) {
 
 	res := GetHierarchy(x, depth, true)
 	if res == nil {
+		if State.DebugLvl > 0 {
+			println("Error: Attempted to draw non drawable object")
+		}
 		l.GetErrorLogger().Println("User attempted to draw non drawable object")
 		return
 	}
@@ -1939,7 +2052,10 @@ func IsAttrDrawable(path, attr string, object map[string]interface{}, silence bo
 		if obj == nil {
 			l.GetWarningLogger().Println(err)
 			if silence != true {
-				println(err)
+				if State.DebugLvl > 0 {
+					println(err)
+				}
+
 			}
 
 			return false
@@ -1951,14 +2067,20 @@ func IsAttrDrawable(path, attr string, object map[string]interface{}, silence bo
 			if cat, ok := catInf.(string); !ok {
 				l.GetErrorLogger().Println("Object does not have category")
 				if silence != true {
-					println("Error: Object does not have category")
+					if State.DebugLvl > 0 {
+						println("Error: Object does not have category")
+					}
+
 				}
 
 				return false
 			} else if EntityStrToInt(cat) == -1 {
 				l.GetErrorLogger().Println("Object has invalid category")
 				if silence != true {
-					println("Error: Object does has invalid category")
+					if State.DebugLvl > 0 {
+						println("Error: Object has invalid category")
+					}
+
 				}
 
 				return false
@@ -1966,7 +2088,10 @@ func IsAttrDrawable(path, attr string, object map[string]interface{}, silence bo
 		} else {
 			l.GetErrorLogger().Println("Object does not have category")
 			if silence != true {
-				println("Error: Object does not have category")
+				if State.DebugLvl > 0 {
+					println("Error: Object does not have category")
+				}
+
 			}
 
 			return false
@@ -1978,14 +2103,20 @@ func IsAttrDrawable(path, attr string, object map[string]interface{}, silence bo
 			if cat, ok := catInf.(string); !ok {
 				l.GetErrorLogger().Println("Object does not have category")
 				if silence != true {
-					println("Error: Object does not have category")
+					if State.DebugLvl > 0 {
+						println("Error: Object does not have category")
+					}
+
 				}
 
 				return false
 			} else if EntityStrToInt(cat) == -1 {
 				l.GetErrorLogger().Println("Object has invalid category")
 				if silence != true {
-					println("Error: Object does has invalid category")
+					if State.DebugLvl > 0 {
+						println("Error: Object has invalid category")
+					}
+
 				}
 
 				return false
@@ -1993,7 +2124,10 @@ func IsAttrDrawable(path, attr string, object map[string]interface{}, silence bo
 		} else {
 			l.GetErrorLogger().Println("Object does not have category")
 			if silence != true {
-				println("Error: Object does not have category")
+				if State.DebugLvl > 0 {
+					println("Error: Object does not have category")
+				}
+
 			}
 
 			return false
@@ -2090,14 +2224,20 @@ func LoadTemplate(data map[string]interface{}, filePath string) {
 	r, e := models.Send("POST", URL, GetKey(), data)
 	if e != nil {
 		l.GetErrorLogger().Println(e.Error())
-		println("Error: ", e.Error())
+		if State.DebugLvl > 0 {
+			println("Error: ", e.Error())
+		}
+
 	}
 
 	if r.StatusCode == http.StatusCreated {
 		println("Template Loaded")
 	} else {
 		l.GetWarningLogger().Println("Couldn't load template, Status Code: ", r.StatusCode)
-		println("Error template wasn't loaded")
+		if State.DebugLvl > 0 {
+			println("Error template wasn't loaded")
+		}
+
 	}
 }
 
@@ -2134,7 +2274,10 @@ func SetEnv(arg string, val interface{}) {
 		if _, ok := val.(bool); !ok {
 			msg := "Can only assign bool values for Unity Env Var"
 			l.GetWarningLogger().Println(msg)
-			println(msg)
+			if State.DebugLvl > 0 {
+				println(msg)
+			}
+
 		} else {
 			State.UnityClientAvail = val.(bool)
 			if val.(bool) == true {
@@ -2147,7 +2290,10 @@ func SetEnv(arg string, val interface{}) {
 		if _, ok := val.(bool); !ok {
 			msg := "Can only assign bool values for Filter Env Var"
 			l.GetWarningLogger().Println(msg)
-			println(msg)
+			if State.DebugLvl > 0 {
+				println(msg)
+			}
+
 		} else {
 			State.FilterDisplay = val.(bool)
 			println("Filter Display Environment variable set")
@@ -2157,7 +2303,10 @@ func SetEnv(arg string, val interface{}) {
 		if _, ok := val.(bool); !ok {
 			msg := "Can only assign bool values for SAnalyser Env Var"
 			l.GetWarningLogger().Println(msg)
-			println(msg)
+			if State.DebugLvl > 0 {
+				println(msg)
+			}
+
 		} else {
 			State.Analyser = val.(bool)
 			println("Static Analyser Environment variable set")
@@ -2326,7 +2475,10 @@ func InformUnity(method, caller string, entity int, data map[string]interface{})
 		e := models.ContactUnity(method, State.UnityClientURL, data, State.Timeout, State.DebugLvl)
 		if e != nil {
 			l.GetWarningLogger().Println("Unable to contact Unity Client @" + caller)
-			fmt.Println("Error while updating Unity: ", e.Error())
+			if State.DebugLvl > 1 {
+				fmt.Println("Error while updating Unity: ", e.Error())
+			}
+
 		} else {
 			fmt.Println("Successfully updated Unity")
 		}
@@ -2341,7 +2493,10 @@ func MergeMaps(x, y map[string]interface{}, overwrite bool) {
 		if _, ok := x[i]; ok {
 			if overwrite == true {
 				l.GetWarningLogger().Println("Conflict while merging maps")
-				println("Conflict while merging data, resorting to overwriting!")
+				if State.DebugLvl > 1 {
+					println("Conflict while merging data, resorting to overwriting!")
+				}
+
 				x[i] = y[i]
 			}
 		} else {

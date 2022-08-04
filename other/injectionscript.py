@@ -11,7 +11,7 @@ with open(os.getcwd()+"/y.go", "r") as f:
 #Inject error message in yyParse() func    
 x = m.find("yylex.Error(msg)")
 
-goCode='\t\t\tif cmd.State.ScriptCalled == true {\n\t\t\t\tprintln("File:",filepath.Base(cmd.GetScriptPath()) )\n\t\t\t\tprintln("Line:", cmd.GetLineNumber())\n\t\t\t}'
+goCode='\t\t\tif cmd.State.DebugLvl > 0 {\n\t\t\t\tif cmd.State.ScriptCalled == true {\n\t\t\t\t\tprintln("File:",filepath.Base(cmd.GetScriptPath()) )\n\t\t\t\t\tprintln("Line:", cmd.GetLineNumber())\n\t\t\t\t}\n\t\t\t}'
 
 m=m.replace("yylex.Error(msg)", 
     "println()\nprintln(\"OGREE: Unrecognised command!\")\n"+goCode+"\n\t\t\tl.GetWarningLogger().Println(\"Unknown Command\")\t\t\t/*yylex.Error(msg)*/")

@@ -34,15 +34,21 @@ func LoadEnvFile(env map[string]interface{}, path string) {
 			env[key] = val
 		}
 	} else {
-		fmt.Println(err.Error())
+		if State.DebugLvl > 0 {
+			fmt.Println(err.Error())
+		}
 		l.GetErrorLogger().Println("Error at initialisation:" +
 			err.Error())
 	}
 }
 
+func InitDebugLevel(flags map[string]interface{}) {
+	State.DebugLvl = flags["v"].(int)
+}
+
 //Intialise the ShellState
 func InitState(flags, env map[string]interface{}) {
-	State.DebugLvl = flags["v"].(int)
+
 	State.ClipBoard = nil
 	State.TreeHierarchy = &(Node{})
 	(*(State.TreeHierarchy)).Entity = -1
@@ -56,8 +62,9 @@ func InitState(flags, env map[string]interface{}) {
 	req := map[string]interface{}{"type": "login", "data": data}
 	e := models.ContactUnity("POST", State.UnityClientURL, req, State.Timeout, State.DebugLvl)
 	if e != nil {
+		l.GetWarningLogger().Println("Note: Unity Client (" + State.UnityClientURL + ") Unreachable")
+
 		if State.DebugLvl > 1 {
-			l.GetWarningLogger().Println("Note: Unity Client (" + State.UnityClientURL + ") Unreachable")
 			fmt.Println("Note: Unity Client (" + State.UnityClientURL + ") Unreachable ")
 		}
 
@@ -211,7 +218,10 @@ func InitTimeout(env map[string]interface{}) {
 			State.Timeout = time.Second * time.Duration(timeLen)
 		default:
 			l.GetWarningLogger().Println("Invalid duration unit found. Resorting to default of ms")
-			println("Invalid duration unit found in env file. Resorting to default of ms")
+			if State.DebugLvl > 1 {
+				println("Invalid duration unit found in env file. Resorting to default of ms")
+			}
+
 			State.Timeout = time.Millisecond * time.Duration(timeLen)
 		}
 		return
@@ -238,8 +248,11 @@ func InitKey(flags, env map[string]interface{}) string {
 	}
 
 	fmt.Println("Error: No API Key Found")
-	l.GetErrorLogger().Println(
-		"No API Key provided in env file nor as argument")
+	if State.DebugLvl > 0 {
+		l.GetErrorLogger().Println(
+			"No API Key provided in env file nor as argument")
+	}
+
 	State.APIKEY = ""
 	return ""
 
@@ -261,7 +274,10 @@ func GetEmail() string {
 	}
 
 	if err := scanner.Err(); err != nil {
-		fmt.Println(err)
+		if State.DebugLvl > 0 {
+			fmt.Println(err)
+		}
+
 		l.GetErrorLogger().Println(err.Error())
 	}
 	return ""
@@ -338,7 +354,10 @@ func SetObjsForUnity(x string, env map[string]interface{}) []int {
 	if allDetected || len(res) == 0 {
 		if len(res) == 0 && !allDetected {
 			l.GetWarningLogger().Println(x + " key not found, going to use defaults")
-			println(x + " key not found, going to use defaults")
+			if State.DebugLvl > 1 {
+				println(x + " key not found, going to use defaults")
+			}
+
 		}
 		for idx := 0; idx < GROUP; idx++ {
 			res = append(res, idx)
@@ -363,7 +382,7 @@ func SetDrawableTemplate(entity string, env map[string]interface{}) map[string]i
 	}
 
 	l.GetWarningLogger().Println("Specified template for " + entity + " not found")
-	if State.DebugLvl > 2 {
+	if State.DebugLvl > 1 {
 		println("Specified template for " + entity +
 			" not found, resorting to defaults")
 	}
@@ -387,14 +406,20 @@ func CreateCredentials() (string, string) {
 
 	resp, e := client.Do(req)
 	if e != nil || resp.StatusCode != http.StatusCreated {
-		println("Error while creating credentials on server! Now exiting")
+		if State.DebugLvl > 0 {
+			println("Error while creating credentials on server! Now exiting")
+		}
+
 		l.GetErrorLogger().Println("Error while creating credentials on server! Now exiting")
 		os.Exit(-1)
 	}
 	defer resp.Body.Close()
 	bodyBytes, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		readline.Line("Error: " + err.Error() + " Now Exiting")
+		if State.DebugLvl > 0 {
+			readline.Line("Error: " + err.Error() + " Now Exiting")
+		}
+
 		l.GetErrorLogger().Println("Error while trying to read server response: ", err)
 		os.Exit(-1)
 	}
@@ -425,7 +450,10 @@ func CheckKeyIsValid(key string) bool {
 			readline.Line("Status code" + strconv.Itoa(resp.StatusCode))
 		} else {
 			l.GetErrorLogger().Println("Unable to connect to API: ", State.APIURL)
-			println("Unable to connect to API: ", State.APIURL)
+			if State.DebugLvl > 0 {
+				println("Unable to connect to API: ", State.APIURL)
+			}
+
 		}
 
 		return false
@@ -446,7 +474,10 @@ func Login(env map[string]interface{}) (string, string) {
 	}
 
 	if !CheckKeyIsValid(key) {
-		println("Error while checking key. Now exiting")
+		if State.DebugLvl > 0 {
+			println("Error while checking key. Now exiting")
+		}
+
 		l.GetErrorLogger().Println("Error while checking key. Now exiting")
 		os.Exit(-1)
 	}
