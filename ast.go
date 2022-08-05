@@ -191,7 +191,7 @@ func (n *loadTemplateNode) execute() (interface{}, error) {
 	}
 	data := fileToJSON(path)
 	if data == nil {
-		return nil, fmt.Errorf("Cannot read json file.")
+		return nil, fmt.Errorf("Cannot read json file : %s", path)
 	}
 	cmd.LoadTemplate(data, path)
 	return path, nil
@@ -282,6 +282,27 @@ func (n *getObjectNode) execute() (interface{}, error) {
 	if v == nil {
 		return nil, fmt.Errorf("Cannot find object at path ", path)
 	}
+	return v, nil
+}
+
+type selectObjectNode struct {
+	path node
+}
+
+func (n *selectObjectNode) execute() (interface{}, error) {
+	val, err := n.path.execute()
+	if err != nil {
+		return nil, err
+	}
+	path, ok := val.(string)
+	if !ok {
+		return nil, fmt.Errorf("Object path should be a string")
+	}
+	v, _ := cmd.GetObject(path, false)
+	if v == nil {
+		return nil, fmt.Errorf("Cannot find object at path ", path)
+	}
+	cmd.CD(path)
 	return v, nil
 }
 
@@ -692,6 +713,40 @@ func (n *createDeviceNode) execute() (interface{}, error) {
 	}
 	attributes := map[string]interface{}{"attributes": attr}
 	cmd.GetOCLIAtrributes(path, cmd.DEVICE, attributes)
+	return nil, nil
+}
+
+type createGroupNode struct {
+	path  node
+	paths []node
+}
+
+func (n *createGroupNode) execute() (interface{}, error) {
+	val, err := n.path.execute()
+	if err != nil {
+		return nil, err
+	}
+	path, ok := val.(string)
+	if !ok {
+		return nil, fmt.Errorf("Path should be a string")
+	}
+	var paths []string
+	for i := range n.paths {
+		v, err := n.paths[i].execute()
+		if err != nil {
+			return nil, err
+		}
+		path, ok := v.(string)
+		if !ok {
+			return nil, fmt.Errorf("")
+		}
+		paths = append(paths, path)
+	}
+	attributes := map[string]interface{}{"racks": paths}
+	err = cmd.GetOCLIAtrributes(path, cmd.GROUP, attributes)
+	if err != nil {
+		return nil, err
+	}
 	return nil, nil
 }
 

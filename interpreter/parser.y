@@ -4,6 +4,7 @@ import (
 cmd "cli/controllers"
 "path/filepath"
 l "cli/logger"
+"strconv"
 )
 
 var root node 
@@ -86,7 +87,7 @@ st2:    {$$=nil}
 
 stmnt:   TOK_GET PATH {$$=&getObjectNode{$2}}
        | TOK_GET OBJ_TYPE EQUAL_LIST {$$=&searchObjectsNode{$2, $3}}
-       | TOK_EQUAL PHYSICAL_PATH {$$=&getObjectNode{$2}}
+       | TOK_EQUAL PHYSICAL_PATH {$$=&selectObjectNode{$2}}
        | TOK_EQUAL TOK_LBRAC GETOBJS TOK_RBRAC {$$=&selectChildrenNode{$3}; println("Selection made!")}
        | PHYSICAL_PATH TOK_COL EQUAL_LIST {$$=&updateObjNode{$1, $3}}
        | PHYSICAL_PATH TOK_COL TOK_WORD TOK_EQUAL EXPR TOK_ATTRSPEC EXPR {$$=&specialUpdateNode{$1, $3, $5, $7}}
@@ -138,8 +139,10 @@ PATH: EXPR {$$=&pathNode{$1, STD}};
 EXPR:    TOK_DEREF TOK_WORD TOK_LBLOCK EXPR TOK_RBLOCK {$$=&arrayReferenceNode{$2, $4}}
        | TOK_DEREF TOK_LPAREN TOK_LPAREN ARITHEXPR TOK_RPAREN TOK_RPAREN {$$=$4}
        | TOK_DEREF TOK_LPAREN TOK_LPAREN BOOLEXPR TOK_RPAREN TOK_RPAREN {$$=$4}
-       | TOK_INT {$$=&intLeaf{$1}}
+       //| TOK_INT {$$=&intLeaf{$1}}
        | TOK_FLOAT {$$=&floatLeaf{$1}}
+       | TOK_MINUS TOK_INT {$$=&intLeaf{-$2}}
+       | TOK_MINUS TOK_FLOAT {$$=&floatLeaf{-$2}}
        | TOK_TRUE {$$=&boolLeaf{true}}
        | TOK_FALSE {$$=&boolLeaf{false}}
        | CONCAT {$$=$1}
@@ -154,6 +157,8 @@ CONCAT_TERM: TOK_DEREF TOK_WORD {$$=&symbolReferenceNode{$2}}
        | TOK_DEREF TOK_LBRAC TOK_WORD TOK_RBRAC {$$=&symbolReferenceNode{$3}}
        | TOK_WORD {$$=&strLeaf{$1}}
        | TOK_STR {$$=&strLeaf{$1}}
+       | TOK_SLASH {$$=&strLeaf{"/"}}
+       | TOK_INT {$$=&strLeaf{strconv.Itoa($1)}}
 ;
 
 BOOLEXPR: EXPR TOK_OR EXPR {$$=&logicalNode{"||", $1, $3}}
@@ -207,7 +212,7 @@ LSOBJ_COMMAND: TOK_LSTEN {$$=0} | TOK_LSSITE {$$=1} | TOK_LSBLDG {$$=2} | TOK_LS
        | TOK_LSWALL {$$=8} | TOK_LSCAB {$$=9} | TOK_LSCORRIDOR {$$=12} | TOK_LSSENSOR{$$=13}
 ;
 
-COMMAND: TOK_LINK{$$="link"} | TOK_UNLINK{$$="unlink"} | TOK_CLR{$$="clear"} | TOK_LS{$$="ls"} 
+COMMAND: TOK_LINK{$$="link"} | TOK_UNLINK{$$="unlink"} | TOK_CLR{$$="clear"} | TOK_LS{$$="ls"}
        | TOK_PWD{$$="pwd"} | TOK_PRNT{$$="print"} | TOK_CD{$$="cd"} | TOK_CAM{$$="camera"} 
        | TOK_UI{$$="ui"} | TOK_GET{$$="get"}
        | TOK_HIERARCH{$$="hc"} | TOK_TREE{$$="tree"} | TOK_DRAW{$$="draw"} 
@@ -254,14 +259,15 @@ OCCR:
               $$=&getOCAttrNode{$3, cmd.DEVICE, attributes}
         }
         |TOK_DEVICE TOK_COL PHYSICAL_PATH TOK_ATTRSPEC EXPR TOK_ATTRSPEC EXPR {$$=&createDeviceNode{$3, [2]node{$5, $7}}}
-        |TOK_CORIDOR TOK_COL PHYSICAL_PATH TOK_ATTRSPEC EXPR TOK_ATTRSPEC EXPR TOK_ATTRSPEC EXPR TOK_ATTRSPEC EXPR {
-              attributes := map[string]interface{}{"name":$5, "leftRack":$7, "rightRack":$9, "temperature":$11}
+        |TOK_CORIDOR TOK_COL PHYSICAL_PATH TOK_ATTRSPEC TOK_LBRAC EXPR TOK_COMMA EXPR TOK_RBRAC TOK_ATTRSPEC EXPR {
+              attributes := map[string]interface{}{"leftRack":$6, "rightRack":$8, "temperature":$11}
               $$=&getOCAttrNode{$3, cmd.CORIDOR, attributes}
         }
-        /* |TOK_GROUP TOK_COL EXPR TOK_ATTRSPEC EXPR CDORFG { 
-              attributes:=map[string]interface{}{"name":$5,"racks":$6}; 
-              $$=&getOCAttrNode{$3, cmd.GROUP, attributes}
-        } */
+        |TOK_CORIDOR TOK_COL PHYSICAL_PATH TOK_ATTRSPEC TOK_LBRAC EXPR TOK_COMMA EXPR TOK_COMMA TOK_RBRAC TOK_ATTRSPEC EXPR {
+              attributes := map[string]interface{}{"leftRack":$6, "rightRack":$8, "temperature":$12}
+              $$=&getOCAttrNode{$3, cmd.CORIDOR, attributes}
+        }
+        |TOK_GROUP TOK_COL EXPR TOK_ATTRSPEC TOK_LBRAC GETOBJS TOK_RBRAC {$$=&createGroupNode{$3, $6}}
         |TOK_WALL TOK_COL PHYSICAL_PATH TOK_ATTRSPEC EXPR TOK_ATTRSPEC EXPR {
               attributes := map[string]interface{}{"pos1":$5,"pos2":$7}
               $$=&getOCAttrNode{$3, cmd.SEPARATOR, attributes}
@@ -271,7 +277,7 @@ OCCR:
               $$=&getOCAttrNode{$5, cmd.STRAY_DEV, attributes}
         }
         |TOK_ORPH PHYSICAL_PATH TOK_SENSOR TOK_COL EXPR TOK_ATTRSPEC EXPR {
-              attributes := map[string]interface{}{"attributes":map[string]interface{}{"template":$7} }
+              attributes := map[string]interface{}{"attributes":map[string]interface{}{"template":$7}}
               $$=&getOCAttrNode{$5, cmd.STRAYSENSOR, attributes}
         }
        //EasyPost syntax STRAYSENSOR

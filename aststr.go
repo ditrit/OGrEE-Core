@@ -3,6 +3,7 @@ package main
 import (
 	cmd "cli/controllers"
 	"fmt"
+	"path"
 	"strings"
 )
 
@@ -35,19 +36,22 @@ func (n pathNode) getStr() (string, error) {
 	if err != nil {
 		return "", err
 	}
-	path, ok := val.(string)
+	p, ok := val.(string)
 	if !ok {
 		return "", fmt.Errorf("Path should be a string")
 	}
-	if path == "." || path == ".." {
-		return path, nil
+	if p == "." || p == ".." {
+		return p, nil
+	}
+	if p == "_" {
+		return cmd.State.CurrPath, nil
 	}
 	// ignore starting dot
-	if path[0] == '.' {
-		path = path[1:]
+	if p[0] == '.' {
+		p = p[1:]
 	}
 	// split between /, then between dots
-	words := strings.Split(path, "/")
+	words := strings.Split(p, "/")
 	words = append(words[:len(words)-1], strings.Split(words[len(words)-1], ".")...)
 	// if it starts with a /
 	if words[0] == "" {
@@ -63,7 +67,7 @@ func (n pathNode) getStr() (string, error) {
 		}
 	}
 	r := "/" + strings.Join(words, "/")
-	return r, nil
+	return path.Clean(r), nil
 }
 
 func (n pathNode) execute() (interface{}, error) {
