@@ -816,7 +816,7 @@ func CD(x string) string {
 			exist, _ = CheckPathOnline(pth)
 		}
 		if exist == true {
-			if State.DebugLvl >= 1 {
+			if State.DebugLvl >= 3 {
 				println("THE PATH: ", pth)
 			}
 			State.PrevPath = State.CurrPath
