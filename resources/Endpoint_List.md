@@ -13,10 +13,7 @@ Perform an HTTP POST operation with the appropriate JSON
 /api/buildings
 /api/rooms
 /api/acs
-/api/separators
 /api/panels
-/api/rows
-/api/tiles
 /api/cabinets
 /api/groups
 /api/corridors
@@ -25,6 +22,8 @@ Perform an HTTP POST operation with the appropriate JSON
 /api/devices
 /api/room-templates
 /api/obj-templates
+/api/stray-sensors
+/api/stray-devices
 ```
 
 
@@ -40,9 +39,6 @@ Perform an HTTP DELETE operation without JSON body
 /api/rooms/{id}
 /api/acs/{id}
 /api/panels/{id}
-/api/separators/{id}
-/api/rows/{id}
-/api/tiles/{id}
 /api/cabinets/{id}
 /api/groups/{id}
 /api/corridors/{id}
@@ -51,6 +47,8 @@ Perform an HTTP DELETE operation without JSON body
 /api/devices/{id}
 /api/room-templates/{template_name}
 /api/obj-templates/{template_name}
+/api/stray-sensors/{id}
+/api/stray-devices/{id}
 ```
 
 
@@ -64,9 +62,6 @@ Perform an HTTP PUT operation with desired JSON body
 /api/rooms/{id}
 /api/acs/{id}
 /api/panels/{id}
-/api/separators/{id}
-/api/rows/{id}
-/api/tiles/{id}
 /api/cabinets/{id}
 /api/groups/{id}
 /api/corridors/{id}
@@ -75,6 +70,8 @@ Perform an HTTP PUT operation with desired JSON body
 /api/devices/{id}
 /api/room-templates/{template_name}
 /api/obj-templates/{template_name}
+/api/stray-sensors/{id}
+/api/stray-devices/{id}
 ```
 
 PATCH / Update
@@ -87,9 +84,6 @@ Perform an HTTP PUT operation with desired JSON body
 /api/rooms/{id}
 /api/acs/{id}
 /api/panels/{id}
-/api/separators/{id}
-/api/rows/{id}
-/api/tiles/{id}
 /api/cabinets/{id}
 /api/groups/{id}
 /api/corridors/{id}
@@ -98,6 +92,30 @@ Perform an HTTP PUT operation with desired JSON body
 /api/devices/{id}
 /api/room-templates/{template_name}
 /api/obj-templates/{template_name}
+/api/stray-sensors/{id}
+/api/stray-devices/{id}
+```
+
+OPTIONS
+-------------
+Perform an HTTP OPTIONS operation without JSON body
+```
+/api/tenants/{id}
+/api/sites/{id}
+/api/buildings/{id}
+/api/rooms/{id}
+/api/acs/{id}
+/api/panels/{id}
+/api/cabinets/{id}
+/api/groups/{id}
+/api/corridors/{id}
+/api/sensors/{id}
+/api/racks/{id}
+/api/devices/{id}
+/api/room-templates/{template_name}
+/api/obj-templates/{template_name}
+/api/stray-sensors/{id}
+/api/stray-devices/{id}
 ```
 
 GET / Get
@@ -124,12 +142,11 @@ This URL is for development purposes only
 /api/sensors
 /api/acs
 /api/panels
-/api/separators
-/api/rows
-/api/tiles
 /api/cabinets
 /api/groups
 /api/corridors
+/api/stray-sensors
+/api/stray-devices
 ```
 
 ### Get by ID (non hierarchal)
@@ -148,12 +165,11 @@ Template_name is the 'slug'
 /api/sensors/{id}
 /api/acs/{id}
 /api/panels/{id}
-/api/separators/{id}
-/api/rows/{id}
-/api/tiles/{id}
 /api/cabinets/{id}
 /api/groups/{id}
 /api/corridors/{id}
+/api/stray-sensors/{id}
+/api/stray-devices/{id}
 ```
 
 ### Search Objects
@@ -163,7 +179,6 @@ Example: /devices?name=myValue?color=silver
 will return silver devices with name 'myValue'
 ```
 /api/acs?
-/api/separators?
 /api/panels?
 /api/tenants?
 /api/sites?
@@ -171,14 +186,14 @@ will return silver devices with name 'myValue'
 /api/rooms?
 /api/racks?
 /api/devices?
-/api/rows?
-/api/tiles?
 /api/cabinets?
 /api/groups?
 /api/corridors?
 /api/room-templates?
 /api/obj-templates?
 /api/sensors?
+/api/stray-sensors?
+/api/stray-devices?
 ```
 
 
@@ -200,6 +215,7 @@ in a nested JSON fashion
 /api/rooms/{id}/all
 /api/racks/{id}/all
 /api/devices/{id}/all
+/api/stray-devices/{id}/all
 ```
 
 ### Get object's ranged hierarchy 
@@ -219,6 +235,7 @@ URL given.
 /api/buildings/{id}/all/rooms/racks
 
 /api/rooms/{id}/all/racks/devices
+/api/stray-devices/{id}/all/devices
 ```
 
 ### Get an Object's ranged hierarchy (using limit parameter)
@@ -231,6 +248,7 @@ in a nested JSON fashion
 /api/rooms/{id}/all?limit={#}
 /api/racks/{id}/all?limit={#}
 /api/devices/{id}/all?limit={#}
+/api/stray-devices/{id}/all?limit={#}
 ```
 
 ### Get objects through the hierarchy
@@ -277,12 +295,6 @@ Returns an object if name given or all the objects immediately under the given U
 /api/rooms/{id}/acs
 /api/rooms/{id}/panels/{panel_name}
 /api/rooms/{id}/panels
-/api/rooms/{id}/separators/{separator_name}
-/api/rooms/{id}/separators
-/api/rooms/{id}/rows/{row_name}
-/api/rooms/{id}/rows
-/api/rooms/{id}/tiles/{tile_name}
-/api/rooms/{id}/tiles
 /api/rooms/{id}/cabinets/{cabinet_name}
 /api/rooms/{id}/cabinets
 /api/rooms/{id}/corridors/{corridor_name}

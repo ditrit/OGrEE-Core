@@ -20,7 +20,6 @@ db = client.ogree
 #CONSTANTS
 PIDS={"tenantID":None, "siteID":None, "buildingID":None,
         "roomID":None, "acID":None, "panelID":None,
-        "separatorID":None, "rowID":None,"tileID":None, 
         "cabinetID":None, "groupID":None, "corridorID":None,
         "rackID":None, "deviceID":None,
         "room-sensorID":None,"rack-sensorID":None,
@@ -45,16 +44,13 @@ class Entity(Enum):
   DEVICE = 5
   AC = 6
   PANEL = 7
-  SEPARATOR = 8
-  CABINET = 9
-  ROW = 10
-  TILE = 11 
+  CABINET = 8
 
-  CORRIDOR = 12
-  SENSOR = 13
-  GROUP = 14
-  ROOMTMPL = 15
-  OBJTMPL = 16
+  CORRIDOR = 9
+  SENSOR = 10
+  GROUP = 11
+  ROOMTMPL = 12
+  OBJTMPL = 13
   
 
 
@@ -636,9 +632,6 @@ for i in PIDS:
   "/api/rooms/"+PIDS["roomID"]+"/racks/A01",
   "/api/rooms/"+PIDS["roomID"]+"/acs/TCL2021",
   "/api/rooms/"+PIDS["roomID"]+"/panels/PanelA",
-  "/api/rooms/"+PIDS["roomID"]+"/separators/Undercover",
-  "/api/rooms/"+PIDS["roomID"]+"/rows/RowA",
-  "/api/rooms/"+PIDS["roomID"]+"/tiles/TileA",
   "/api/rooms/"+PIDS["roomID"]+"/cabinets/CabinetA",
   "/api/rooms/"+PIDS["roomID"]+"/corridors/CorridorA",
   "/api/rooms/"+PIDS["roomID"]+"/sensors/RoomSensorLight"
@@ -672,10 +665,7 @@ bldEList = [
   "/api/buildings/"+PIDS["buildingID"]+"/acs",
   "/api/buildings/"+PIDS["buildingID"]+"/corridors",
   "/api/buildings/"+PIDS["buildingID"]+"/cabinets",
-  "/api/buildings/"+PIDS["buildingID"]+"/tiles",
-  "/api/buildings/"+PIDS["buildingID"]+"/rows",
   "/api/buildings/"+PIDS["buildingID"]+"/panels",
-  "/api/buildings/"+PIDS["buildingID"]+"/separators",
   "/api/buildings/"+PIDS["buildingID"]+"/sensors"
 ]
 

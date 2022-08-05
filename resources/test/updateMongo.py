@@ -41,7 +41,6 @@ db = client.ogree
 #CONSTANTS
 PIDS={"tenantID":None, "siteID":None, "buildingID":None,
         "roomID":None, "acID":None, "panelID":None,
-        "separatorID":None, "rowID":None,"tileID":None, 
         "cabinetID":None, "groupID":None, "corridorID":None,
         "rackID":None, "deviceID":None,
         "room-templateID": None, "obj-templateID": None}
@@ -111,9 +110,6 @@ payloadTable = {
     "building":{"name": "Abandoned-Building","id": None,"parentId": PIDS["siteID"],"category": "999","description": ["Wassup yo","Guess whos back"],"domain": "999","attributes": {    "posXY": "999",    "posXYUnit": "m",    "posZ": "999",    "posZUnit": "m",    "size": "999",    "sizeUnit": "m",    "height": "0",    "heightUnit": "m",    "nbFloors": "99"}},
     "ac":{"name": "AquaSky01","id": "12353","parentId": PIDS["roomID"],"category": "ac","description": [    "SPEED"],"domain": "AC DOMAIN","attributes": {    "new": "IDX"}},
     "panel":{"name": "Power_Panel_99","id": None,"parentId": PIDS["roomID"],"category": "panel","description": [    "GRENOBLE DERELICT"],"domain": "PANEL DOMAIN","attributes": {    "new": "IDX"}},
-    "separator":{"name": "EXTREME-SEP","id": None,"parentId": PIDS["roomID"],"category": "wall","description": [    "GRENOBLE DERELICT"],"domain": "SEPDOMAIN","attributes": {    "new": "99"}},
-    "row":{"name"        : "ROW-X","parentId":PIDS["roomID"],"locationY"   : "82,99","orientation" : "+S+E", "domain":"DEMO"},
-    "tile":{"location" : "82,99", "parentId":PIDS["roomID"], "name"     : "Tile-Black","label"    : "Kino","texture"  : "Smooth","color"    : "FFFFFF", "domain":"DEMO"},
     "cabinet":{"name": "TAKEUSDOWN", "parentId":PIDS["roomID"], "domain":"DEMO"},
     "group":{"name": "Group909","parentId" : PIDS["roomID"],"racks":  [], "another":"customAttr"},
     "corridor":{"name": "Corridor909","parentId" : PIDS["roomID"],"temperature": "cold", "domain":"DEMO"},

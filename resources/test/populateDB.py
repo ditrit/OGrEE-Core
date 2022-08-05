@@ -7,7 +7,6 @@ res = True
 #CONSTANTS
 PIDS={"tenantID":None, "siteID":None, "buildingID":None,
         "roomID":None, "acID":None, "panelID":None,
-        "separatorID":None, "rowID":None,"tileID":None, 
         "cabinetID":None, "groupID":None, "corridorID":None,
         "rackID":None, "deviceID":None,
         "room-sensorID":None,"rack-sensorID":None,
@@ -253,91 +252,6 @@ verifyOutput(j1, j2)
 response.close()
 print()
 print()
-
-
-#separator CREATE & GET
-payload={
-    "name": "Undercover",
-    "id": None,
-    "parentId": None,
-    "category": "separator",
-    "description": [
-        "2008"
-    ],
-    "domain": "separator DOMAIN",
-    "attributes": {
-    }
-}
-payload['parentId'] = roomID
-response = requests.request("POST", url+"/separators",
-              headers=headers, data=json.dumps(payload))
-verifyCreate(response.status_code, "Separator")
-ID = response.json()['data']['id']
-j1=response.json()['data']
-separatorID=ID
-
-response = requests.request("GET", url+"/separators/"+ID, headers=headers, data={})
-verifyGet(response.status_code, "separator")
-j2=response.json()['data']
-verifyOutput(j1, j2)
-response.close()
-print()
-print()
-
-
-#ROW CREATE & GET
-payload={
-  "name"        : "RowA",
-  "locationY"   : "101,101",
-  "orientation" : "+N+E",
-  "category": "row",
-  "domain":"DEMO",
-  "parentId" : None
-}
-payload['parentId'] = roomID
-response = requests.request("POST", url+"/rows",
-              headers=headers, data=json.dumps(payload))
-verifyCreate(response.status_code, "Row")
-ID = response.json()['data']['id']
-j1=response.json()['data']
-rowID=ID
-
-response = requests.request("GET", url+"/rows/"+ID, headers=headers, data={})
-verifyGet(response.status_code, "Row")
-j2=response.json()['data']
-verifyOutput(j1, j2)
-response.close()
-print()
-print()
-
-
-#TILE CREATE & GET
-payload={
-  "location" : "101,101",
-  "name"     : "TileA",
-  "label"    : "TileA",
-  "texture"  : "Smooth",
-  "color"    : "FAA",
-  "domain":"DEMO",
-  "category":"tile",
-  "parentId" : None
-}
-payload['parentId'] = roomID
-response = requests.request("POST", url+"/tiles",
-              headers=headers, data=json.dumps(payload))
-verifyCreate(response.status_code, "Tile")
-ID = response.json()['data']['id']
-j1=response.json()['data']
-tileID=ID
-
-response = requests.request("GET", url+"/tiles/"+ID, headers=headers, data={})
-verifyGet(response.status_code, "Tile")
-j2=response.json()['data']
-verifyOutput(j1, j2)
-response.close()
-print()
-print()
-
 
 
 #CABINET CREATE & GET
@@ -656,9 +570,6 @@ PIDS['buildingID'] = buildingID
 PIDS['roomID'] = roomID
 PIDS['acID'] = acID
 PIDS['panelID'] = panelID
-PIDS['separatorID'] = separatorID
-PIDS['rowID'] = rowID
-PIDS['tileID'] = tileID
 PIDS['cabinetID'] = cabinetID
 PIDS['groupID'] = groupID
 PIDS['corridorID'] = corridorID

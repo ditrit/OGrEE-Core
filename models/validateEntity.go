@@ -215,8 +215,7 @@ func ValidateEntity(entity int, t map[string]interface{}) (map[string]interface{
 	*/
 	switch entity {
 	case SITE, BLDG, ROOM, RACK, DEVICE, AC,
-		PWRPNL, SEPARATOR, CABINET, ROW,
-		TILE, CORIDOR, SENSOR:
+		PWRPNL, CABINET, CORIDOR, SENSOR:
 		if t["name"] == nil || t["name"] == "" {
 			return u.Message(false, "Name should be on payload"), false
 		}
@@ -236,8 +235,8 @@ func ValidateEntity(entity int, t map[string]interface{}) (map[string]interface{
 		}
 
 		if entity < AC || entity == PWRPNL ||
-			entity == SEPARATOR || entity == GROUP ||
-			entity == ROOMTMPL || entity == OBJTMPL {
+			entity == GROUP || entity == ROOMTMPL ||
+			entity == OBJTMPL {
 			if _, ok := t["attributes"]; !ok {
 				return u.Message(false, "Attributes should be on the payload"), false
 			} else {

@@ -145,7 +145,7 @@ func DispRequestMetaData(r *http.Request) {
 //   in: query
 //   description: 'Indicates the Object. Only values of "sites","domains",
 //   "buildings", "rooms", "racks", "devices", "acs", "panels",
-//   "separators","rows", "tiles", "cabinets", "groups", "corridors",
+//   "cabinets", "groups", "corridors",
 //   "room-templates", "obj-templates", "sensors", "stray-devices",
 //   "stray-sensors" are acceptable'
 //   required: true
@@ -288,9 +288,8 @@ var CreateEntity = func(w http.ResponseWriter, r *http.Request) {
 //   in: query
 //   description: 'Indicates the location. Only values of "sites","domains",
 //   "buildings", "rooms", "racks", "devices", "room-templates",
-//   "obj-templates", "rooms", "separators", "acs", "panels", "rows",
-//   "tiles", "cabinets", "groups", "corridors","sensors","stray-devices"
-//   "stray-sensors" are acceptable'
+//   "obj-templates", "acs", "panels","cabinets", "groups",
+//   "corridors","sensors","stray-devices", "stray-sensors" are acceptable'
 //   required: true
 //   type: string
 //   default: "sites"
@@ -320,9 +319,8 @@ var CreateEntity = func(w http.ResponseWriter, r *http.Request) {
 //   in: query
 //   description: 'Only values of "sites","domains",
 //   "buildings", "rooms", "racks", "devices", "room-templates",
-//   "obj-templates", "rooms", "separators", "acs", "panels", "rows",
-//   "tiles", "cabinets", "groups", "corridors","sensors","stray-devices",
-//   "stray-sensors" are acceptable'
+//   "obj-templates", "acs", "panels","cabinets", "groups",
+//   "corridors","sensors","stray-devices","stray-sensors", are acceptable'
 // - name: id
 //   in: query
 //   description: 'ID of the object or name of Site.
@@ -441,9 +439,8 @@ var GetEntity = func(w http.ResponseWriter, r *http.Request) {
 //   in: query
 //   description: 'Indicates the location. Only values of "sites","domains",
 //   "buildings", "rooms", "racks", "devices", "room-templates",
-//   "obj-templates", "rooms", "separators", "acs", "panels", "rows",
-//   "tiles", "cabinets", "groups", "corridors", "sensors", "stray-devices"
-//   "stray-sensors" are acceptable'
+//   "obj-templates","acs", "panels", "cabinets", "groups",
+//   "corridors", "sensors", "stray-devices", "stray-sensors" are acceptable'
 //   required: true
 //   type: string
 //   default: "sites"
@@ -526,8 +523,8 @@ var GetAllEntities = func(w http.ResponseWriter, r *http.Request) {
 //   in: query
 //   description: 'Indicates the location. Only values of "sites","domains",
 //   "buildings", "rooms", "racks", "devices", "room-templates",
-//   "obj-templates", "rooms", "separators", "acs", "panels", "rows",
-//   "tiles", "cabinets", "groups", "corridors","sensors", "stray-devices"
+//   "obj-templates","acs", "panels",
+//   "cabinets", "groups", "corridors","sensors", "stray-devices"
 //   "stray-sensors" are acceptable'
 //   required: true
 //   type: string
@@ -637,9 +634,8 @@ var DeleteEntity = func(w http.ResponseWriter, r *http.Request) {
 //   in: query
 //   description: 'Indicates the location. Only values of "sites","domains",
 //   "buildings", "rooms", "racks", "devices", "room-templates",
-//   "obj-templates", "rooms", "separators", "acs", "panels", "rows",
-//   "tiles", "cabinets", "groups", "corridors", "sensors", "stray-devices"
-//   "stray-sensors" are acceptable'
+//   "obj-templates", "rooms", "acs", "panels", "cabinets", "groups",
+//   "corridors", "sensors", "stray-devices", "stray-sensors" are acceptable'
 //   required: true
 //   type: string
 //   default: "sites"
@@ -703,9 +699,8 @@ var DeleteEntity = func(w http.ResponseWriter, r *http.Request) {
 //   in: query
 //   description: 'Indicates the location. Only values of "sites", "domains",
 //   "buildings", "rooms", "racks", "devices", "room-templates",
-//   "obj-templates", "rooms", "separators", "acs", "panels", "rows",
-//   "tiles", "cabinets", "groups", "corridors","sensors", "stray-devices"
-//   "stray-sensors" are acceptable'
+//   "obj-templates", "rooms","acs", "panels", "cabinets", "groups",
+//   "corridors","sensors", "stray-devices", "stray-sensors" are acceptable'
 //   required: true
 //   type: string
 //   default: "sites"
@@ -867,9 +862,8 @@ var UpdateEntity = func(w http.ResponseWriter, r *http.Request) {
 //   in: query
 //   description: 'Indicates the object. Only values of "domains", "sites",
 //   "buildings", "rooms", "racks", "devices", "room-templates",
-//   "obj-templates", "separators","acs","panels", "rows", "tiles",
-//   "cabinets", "groups", "corridors", and "sensors", "stray-devices"
-//   "stray-sensors" are acceptable'
+//   "obj-templates","acs","panels", "groups", "corridors",
+//   "sensors", "stray-devices" and "stray-sensors" are acceptable'
 //   required: true
 //   type: string
 //   default: "sites"
@@ -1068,8 +1062,7 @@ var GetEntitiesOfAncestor = func(w http.ResponseWriter, r *http.Request) {
 	lastSlashIdx := strings.LastIndex(r.URL.Path, "/")
 	indicator := r.URL.Path[lastSlashIdx+1:]
 	switch indicator {
-	case "acs", "separators", "panels", "corridors", "cabinets",
-		"rows", "tiles", "sensors":
+	case "acs", "panels", "corridors", "cabinets", "sensors":
 		indicator = indicator[:len(indicator)-1]
 	default:
 		indicator = ""
@@ -1104,8 +1097,8 @@ var GetEntitiesOfAncestor = func(w http.ResponseWriter, r *http.Request) {
 // swagger:operation GET /api/{objs}/{id}/all objects GetFromObject
 // Obtain all objects related to specified object in the system.
 // Returns JSON body with all subobjects under the Object.
-// Note that objects returned will also include relevant objects.
-// (ie Room will contain acs, separators etc. Racks and devices will contain sensors)
+// Note that objects returned will also included relevant objects.
+// (ie Room will contain acs, panels etc. Racks and devices will contain sensors)
 // ---
 // produces:
 // - application/json
@@ -1524,8 +1517,8 @@ var GetHierarchyByName = func(w http.ResponseWriter, r *http.Request) {
 // - name: '*'
 //   in: path
 //   description: 'Hierarchal path to desired object(s).
-//   For rooms it can additionally have "acs","panels","separators",
-//   "rows","tiles","corridors", "sensors" and "cabinets".
+//   For rooms it can additionally have "acs","panels",
+//   "corridors", "sensors" and "cabinets".
 //   For devices it can have "sensors"
 //   For racks it can have "sensors"'
 //   required: true
@@ -1556,8 +1549,8 @@ var GetHierarchyByName = func(w http.ResponseWriter, r *http.Request) {
 // - name: '*'
 //   in: path
 //   description: 'Hierarchal path to desired object(s).
-//   For rooms it can additionally have "acs","panels","separators",
-//   "rows","tiles","corridors", "sensors" and "cabinets".
+//   For rooms it can additionally have "acs","panels",
+//   "corridors", "sensors" and "cabinets".
 //   For devices it can have "sensors"
 //   For racks it can have "sensors"'
 //   required: true
@@ -1725,11 +1718,11 @@ var GetEntitiesUsingNamesOfParents = func(w http.ResponseWriter, r *http.Request
 // parameters:
 // - name: objs
 //   in: query
-//   description: 'Indicates the Object. Only values of "tenants", "sites",
+//   description: 'Indicates the Object. Only values of "domains", "sites",
 //   "buildings", "rooms", "racks", "devices", "acs", "panels",
-//   "separators","rows", "tiles", "cabinets", "groups", "corridors",
-//   "room-templates", "obj-templates", "sensors", "stray-devices", "stray-sensors"
-//    are acceptable'
+//   "cabinets", "groups", "corridors",
+//   "room-templates", "obj-templates", "sensors", "stray-devices"
+//   "stray-sensors" are acceptable'
 //   required: true
 //   type: string
 //   default: "sites"
@@ -1786,10 +1779,10 @@ var GetEntitiesUsingNamesOfParents = func(w http.ResponseWriter, r *http.Request
 // parameters:
 // - name: obj
 //   in: query
-//   description: 'Only values of "tenants", "sites",
+//   description: 'Only values of "domains", "sites",
 //   "buildings", "rooms", "racks", "devices", "room-templates",
-//   "obj-templates", "rooms", "separators", "acs", "panels", "rows",
-//   "tiles", "cabinets", "groups", "corridors","sensors","stray-devices",
+//   "obj-templates", "rooms", "acs", "panels",
+//   "cabinets", "groups", "corridors","sensors","stray-devices"
 //   "stray-sensors" are acceptable'
 // responses:
 //     '200':
