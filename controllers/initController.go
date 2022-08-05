@@ -173,7 +173,7 @@ func TriggerListen(rl *readline.Instance, addr string) {
 }
 
 func SetListener(flags, env map[string]interface{}) {
-	if flags["listen_port"] != nil && flags["listen_port"] != "" {
+	if flags["listen_port"] != nil && flags["listen_port"] != 0 {
 		portInt := flags["listen_port"].(int)
 		port := strconv.Itoa(portInt)
 		State.ListenAddr = "0.0.0.0:" + port
