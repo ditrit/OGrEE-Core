@@ -619,7 +619,9 @@ func LSOBJECT(x string, entity int) []map[string]interface{} {
 	//return nil
 }
 
-func LSU(x string) {
+//This function display devices in a sorted order according
+//to the attribute specified
+func LSATTR(x, attr string) {
 	var path string
 	if x == "" || x == "." {
 		path = State.CurrPath
@@ -657,15 +659,36 @@ func LSU(x string) {
 	devInf := reqParsed["data"].(map[string]interface{})["objects"].([]interface{})
 	devices := infArrToMapStrinfArr(devInf)
 
-	sortedDevices := SortableMArr{devices}
-	sort.Sort(sortedDevices)
+	var sortedDevices sortable
+
+	switch attr {
+	case "heightu":
+		sortedDevices = SortableMArr{devices}
+		sort.Sort(sortedDevices.(SortableMArr))
+	case "slot":
+		sortedDevices = SortableSlot{devices}
+		sort.Sort(sortedDevices.(SortableSlot))
+	}
 
 	//Print the objects received
-	if len(sortedDevices.data) > 0 {
+	if len(sortedDevices.getData()) > 0 {
 		println("Devices")
 		println()
-		for i := range sortedDevices.data {
-			println(sortedDevices.data[i]["name"].(string))
+		for i := range sortedDevices.getData() {
+			name := sortedDevices.getData()[i]["name"].(string)
+			if attr == "slot" {
+				var slot string
+				if sortedDevices.getData()[i]["slot"] == nil {
+					slot = "NULL"
+				} else {
+					slot = sortedDevices.getData()[i]["slot"].(string)
+				}
+				println("Slot:"+slot, "  Name: ", name)
+
+			} else {
+				println(name)
+			}
+
 		}
 	}
 
@@ -936,7 +959,7 @@ func Help(entry string) {
 	case "ls", "lsu", "pwd", "print", "cd", "tree", "create", "gt", "clear",
 		"update", "delete", "lsog", "grep", "for", "while", "if", "env",
 		"cmds", "var", "unset", "select", "camera", "ui", "hc", "drawable",
-		"link", "unlink", "draw":
+		"link", "unlink", "draw", "lsslot":
 		path = "./other/man/" + entry + ".md"
 
 	case ">":
@@ -2847,13 +2870,18 @@ func (d Deals) Less(i, j int) bool { return d[i].Id < d[j].Id }
 func (d Deals) Swap(i, j int)      { d[i], d[j] = d[j], d[i] }
 */
 
+type sortable interface {
+	getData() []map[string]interface{}
+}
+
 //Helper Struct for sorting
 type SortableMArr struct {
 	data []map[string]interface{}
 }
 
-func (s SortableMArr) Len() int      { return len(s.data) }
-func (s SortableMArr) Swap(i, j int) { s.data[i], s.data[j] = s.data[j], s.data[i] }
+func (s SortableMArr) getData() []map[string]interface{} { return s.data }
+func (s SortableMArr) Len() int                          { return len(s.data) }
+func (s SortableMArr) Swap(i, j int)                     { s.data[i], s.data[j] = s.data[j], s.data[i] }
 func (s SortableMArr) Less(i, j int) bool {
 	lKey := determineStrKey(s.data[i]["attributes"].(map[string]interface{}), []string{"heightU"})
 	rKey := determineStrKey(s.data[j]["attributes"].(map[string]interface{}), []string{"heightU"})
@@ -2885,6 +2913,47 @@ func (s SortableMArr) Less(i, j int) bool {
 	}
 
 	return lH.(string) < rH.(string)
+
+}
+
+type SortableSlot struct {
+	data []map[string]interface{}
+}
+
+func (s SortableSlot) getData() []map[string]interface{} { return s.data }
+func (s SortableSlot) Len() int                          { return len(s.data) }
+func (s SortableSlot) Swap(i, j int)                     { s.data[i], s.data[j] = s.data[j], s.data[i] }
+func (s SortableSlot) Less(i, j int) bool {
+	lKey := determineStrKey(s.data[i]["attributes"].(map[string]interface{}), []string{"slot"})
+	rKey := determineStrKey(s.data[j]["attributes"].(map[string]interface{}), []string{"slot"})
+
+	//We want the non existing heightU objs at the end of the array
+	if lKey == "" && rKey != "" {
+		return false
+	}
+
+	if rKey == "" && lKey != "" {
+		return true
+	}
+
+	lS := s.data[i]["attributes"].(map[string]interface{})["slot"]
+	rS := s.data[j]["attributes"].(map[string]interface{})["slot"]
+
+	//We must ensure that they are strings, non strings will be
+	//placed at the end of the array
+	var lOK, rOK bool
+	_, lOK = lS.(string)
+	_, rOK = rS.(string)
+
+	if !lOK && rOK {
+		return false
+	}
+
+	if lOK && !rOK {
+		return true
+	}
+
+	return lS.(string) < rS.(string)
 
 }
 
