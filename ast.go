@@ -272,7 +272,7 @@ func (c *commonNode) execute() interface{} {
 			return &jsonObjArrNode{JSONND, len(v), v}
 		}
 
-	case "Tree", "Draw":
+	case "Tree", "Draw", "GetU":
 		if f, ok := c.fun.(func(string, int)); ok {
 			f(c.args[0].(string), c.args[1].(int))
 		}

@@ -1,6 +1,7 @@
 /[ \t]/  { /* Skip blanks and tabs. */ }
 /create/ { printToks("TOK_CREATE");return TOK_CREATE}
 /gt/ {  printToks("TOK_GET"); return TOK_GET}
+/getu/ {  printToks("TOK_GETU"); return TOK_GETU}
 /update/ { printToks("TOK_UPDATE"); return TOK_UPDATE}
 /delete/ { printToks("TOK_DELETE"); return TOK_DELETE}
 /search/ { printToks("TOK_SEARCH"); return TOK_SEARCH}

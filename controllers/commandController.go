@@ -619,6 +619,55 @@ func LSOBJECT(x string, entity int) []map[string]interface{} {
 	//return nil
 }
 
+func GetU(x string, u int) {
+	var path string
+	if x == "" || x == "." {
+		path = State.CurrPath
+
+	} else if string(x[0]) == "/" {
+		path = x
+
+	} else {
+		path = State.CurrPath + "/" + x
+	}
+
+	//Let's do a quick GET and check for rack because otherwise we
+	//may have to get (costly) many devices and then
+	//test if the result is a device array
+	obj, url := GetObject(path, true)
+	if obj == nil {
+		return
+	}
+
+	if cat, ok := obj["category"]; !ok || cat != "rack" {
+		if State.DebugLvl > 0 {
+			println("Error command may only be performed on rack objects!")
+		}
+
+		l.GetWarningLogger().Println("Object to Get not found")
+		return
+	}
+
+	//GET the devices and process the response
+	req, code := models.Send("GET", url+"/devices", GetKey(), nil)
+	reqParsed := ParseResponse(req, code, "get devices request")
+	if reqParsed == nil {
+		return
+	}
+	devInf := reqParsed["data"].(map[string]interface{})["objects"].([]interface{})
+	devices := infArrToMapStrinfArr(devInf)
+
+	for i := range devices {
+		if attr, ok := devices[i]["attributes"].(map[string]interface{}); ok {
+			uStr := strconv.Itoa(u)
+			if attr["height"] == uStr {
+				displayObject(devices[i])
+				return //What if the user placed multiple devices at same height?
+			}
+		}
+	}
+}
+
 //This function display devices in a sorted order according
 //to the attribute specified
 func LSATTR(x, attr string) {
@@ -959,7 +1008,7 @@ func Help(entry string) {
 	case "ls", "lsu", "pwd", "print", "cd", "tree", "create", "gt", "clear",
 		"update", "delete", "lsog", "grep", "for", "while", "if", "env",
 		"cmds", "var", "unset", "select", "camera", "ui", "hc", "drawable",
-		"link", "unlink", "draw", "lsslot":
+		"link", "unlink", "draw", "lsslot", "getu":
 		path = "./other/man/" + entry + ".md"
 
 	case ">":

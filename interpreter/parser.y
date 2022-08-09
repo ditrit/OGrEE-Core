@@ -213,7 +213,7 @@ func checkIfTemplate(x interface{}) bool {
        TOK_CLR TOK_GREP TOK_LS TOK_TREE
        TOK_LSOG TOK_LSTEN TOK_LSSITE TOK_LSBLDG
        TOK_LSCAB TOK_LSSENSOR TOK_LSAC TOK_LSPANEL
-       TOK_LSCORRIDOR TOK_LSU TOK_LSSLOT
+       TOK_LSCORRIDOR TOK_LSU TOK_LSSLOT TOK_GETU
        TOK_LSROOM TOK_LSRACK TOK_LSDEV
        TOK_ATTRSPEC
        TOK_COL TOK_SELECT TOK_LBRAC TOK_RBRAC
@@ -510,6 +510,8 @@ Q:     TOK_CD P {/*cmd.CD($2);*/ $$=&commonNode{COMMON, cmd.CD, "CD", []interfac
 
        | TOK_TREE P {$$=&commonNode{COMMON, cmd.Tree, "Tree", []interface{}{$2, 0}}}
        | TOK_TREE P TOK_NUM {$$=&commonNode{COMMON, cmd.Tree, "Tree", []interface{}{$2, $3}}}
+       | TOK_GETU P {$$=&commonNode{COMMON, cmd.GetU, "GetU", []interface{}{$2, 0}}}
+       | TOK_GETU P TOK_NUM {$$=&commonNode{COMMON, cmd.GetU, "GetU", []interface{}{$2, $3}}}
        | TOK_DRAW P {$$=&commonNode{COMMON, cmd.Draw, "Draw", []interface{}{$2, 0}}}
        | TOK_DRAW P TOK_NUM {$$=&commonNode{COMMON, cmd.Draw, "Draw", []interface{}{$2, $3}}}
        | TOK_HIERARCH P {$$=&commonNode{COMMON, cmd.GetHierarchy, "Hierarchy", []interface{}{$2, 1}}}
@@ -568,6 +570,7 @@ BASH:  TOK_CLR {$$=&commonNode{COMMON, cmd.Clear, "CLR", nil}}
        | TOK_DOC TOK_LSDEV {$$=&commonNode{COMMON, cmd.Help, "Help", []interface{}{"lsdev"}}}
        | TOK_DOC TOK_LSU {$$=&commonNode{COMMON, cmd.Help, "Help", []interface{}{"lsu"}}}
        | TOK_DOC TOK_LSSLOT {$$=&commonNode{COMMON, cmd.Help, "Help", []interface{}{"lsslot"}}}
+       | TOK_DOC TOK_GETU {$$=&commonNode{COMMON, cmd.Help, "Help", []interface{}{"getu"}}}
        | TOK_DOC TOK_OCDEL {$$=&commonNode{COMMON, cmd.Help, "Help", []interface{}{"-"}}}
        | TOK_DOC TOK_DOT TOK_TEMPLATE {$$=&commonNode{COMMON, cmd.Help, "Help", []interface{}{".template"}}}
        | TOK_DOC TOK_DOT TOK_CMDS {$$=&commonNode{COMMON, cmd.Help, "Help", []interface{}{".cmds"}}}
