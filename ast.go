@@ -86,7 +86,7 @@ func (c *commonNode) execute() interface{} {
 			return &jsonObjNode{JSONND, v}
 		}
 
-	case "Help", "Focus":
+	case "Help", "Focus", "LSU":
 		if f, ok := c.fun.(func(string)); ok {
 			f(c.args[0].(string))
 		}
