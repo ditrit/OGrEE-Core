@@ -2078,10 +2078,10 @@ func LoadTemplate(data map[string]interface{}, filePath string) {
 
 	if cat, _ := data["category"]; cat == "room" {
 		//Room template
-		URL = State.APIURL + "/api/room_templates"
+		URL = State.APIURL + "/api/room-templates"
 	} else {
 		//Obj template
-		URL = State.APIURL + "/api/obj_templates"
+		URL = State.APIURL + "/api/obj-templates"
 	}
 
 	r, e := models.Send("POST", URL, GetKey(), data)
