@@ -249,7 +249,7 @@ func ValidateEntity(entity int, t map[string]interface{}) (map[string]interface{
 				return u.Message(false, "Attributes should be on the payload"), false
 			} else {
 				if v, ok := t["attributes"].(map[string]interface{}); !ok {
-					return u.Message(false, "Attributes should be on the payload"), false
+					return u.Message(false, "Attributes should be a JSON Dictionary"), false
 				} else {
 					switch entity {
 					case TENANT:
