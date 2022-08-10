@@ -394,7 +394,7 @@ func (n *updateObjNode) execute() (interface{}, error) {
 			return nil, err
 		}
 	}
-	return cmd.UpdateObj(path, "", "", attributes, false), nil
+	return cmd.UpdateObj(path, "", "", attributes, false)
 }
 
 type specialUpdateNode struct {
@@ -423,7 +423,7 @@ func (n *specialUpdateNode) execute() (interface{}, error) {
 	}
 	if n.variable == "areas" {
 		attributes := map[string]interface{}{"areas": map[string]interface{}{"reserved": first, "technical": second}}
-		return cmd.UpdateObj(path, "", "", attributes, false), nil
+		return cmd.UpdateObj(path, "", "", attributes, false)
 	} else {
 		return nil, fmt.Errorf("Invalid special update")
 	}
@@ -441,8 +441,7 @@ func (n *easyUpdateNode) execute() (interface{}, error) {
 	if data == nil {
 		return nil, fmt.Errorf("Cannot open json file")
 	}
-	v := cmd.UpdateObj(n.nodePath, "", "", data, n.deleteAndPut)
-	return v, nil
+	return cmd.UpdateObj(n.nodePath, "", "", data, n.deleteAndPut)
 }
 
 type lsObjNode struct {
@@ -561,7 +560,10 @@ func (n *selectChildrenNode) execute() (interface{}, error) {
 		}
 		paths = append(paths, path)
 	}
-	v := cmd.SetClipBoard(paths)
+	v, err := cmd.SetClipBoard(paths)
+	if err != nil {
+		return nil, err
+	}
 	println("Selection made!")
 	//cmd.CD()
 	return v, nil
@@ -681,7 +683,10 @@ func (n *createRackNode) execute() (interface{}, error) {
 	attr["posXY"] = vals[0]
 	attr["orientation"] = vals[2]
 	attributes := map[string]interface{}{"attributes": attr}
-	cmd.GetOCLIAtrributes(path, cmd.RACK, attributes)
+	err = cmd.GetOCLIAtrributes(path, cmd.RACK, attributes)
+	if err != nil {
+		return nil, err
+	}
 	return nil, nil
 }
 
@@ -718,7 +723,10 @@ func (n *createDeviceNode) execute() (interface{}, error) {
 		attr["orientation"] = vals[2]
 	}
 	attributes := map[string]interface{}{"attributes": attr}
-	cmd.GetOCLIAtrributes(path, cmd.DEVICE, attributes)
+	err = cmd.GetOCLIAtrributes(path, cmd.DEVICE, attributes)
+	if err != nil {
+		return nil, err
+	}
 	return nil, nil
 }
 

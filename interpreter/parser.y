@@ -230,7 +230,7 @@ OCCR:
               $$=&getOCAttrNode{$3, cmd.TENANT, attributes}
         }
         |TOK_SITE TOK_COL PHYSICAL_PATH TOK_ATTRSPEC TOK_ORIENTATION {
-              attributes := map[string]interface{}{"attributes":map[string]interface{}{"orientation":$5}}
+              attributes := map[string]interface{}{"attributes":map[string]interface{}{"orientation":&strLeaf{$5}}}
               $$=&getOCAttrNode{$3, cmd.SITE, attributes}
         } 
         |TOK_BLDG TOK_COL PHYSICAL_PATH TOK_ATTRSPEC EXPR TOK_ATTRSPEC EXPR {
@@ -238,11 +238,11 @@ OCCR:
               $$=&getOCAttrNode{$3, cmd.BLDG, attributes}
         }
         |TOK_ROOM TOK_COL PHYSICAL_PATH TOK_ATTRSPEC EXPR TOK_ATTRSPEC EXPR TOK_ATTRSPEC TOK_ORIENTATION TOK_ATTRSPEC EXPR{
-              attributes := map[string]interface{}{"attributes":map[string]interface{}{"posXY":$5, "size":$7, "orientation":$9, "floorUnit":$11}}
+              attributes := map[string]interface{}{"attributes":map[string]interface{}{"posXY":$5, "size":$7, "orientation":&strLeaf{$9}, "floorUnit":$11}}
               $$=&getOCAttrNode{$3, cmd.ROOM, attributes}
         }
         |TOK_ROOM TOK_COL PHYSICAL_PATH TOK_ATTRSPEC EXPR TOK_ATTRSPEC EXPR TOK_ATTRSPEC TOK_ORIENTATION {
-              attributes := map[string]interface{}{"attributes":map[string]interface{}{"posXY":$5, "size":$7, "orientation":$9}}
+              attributes := map[string]interface{}{"attributes":map[string]interface{}{"posXY":$5, "size":$7, "orientation":&strLeaf{$9}}}
               $$=&getOCAttrNode{$3, cmd.ROOM, attributes}
         }
         |TOK_ROOM TOK_COL PHYSICAL_PATH TOK_ATTRSPEC EXPR TOK_ATTRSPEC EXPR {

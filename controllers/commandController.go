@@ -268,7 +268,7 @@ func GenUpdateJSON(m *map[string]interface{}, key string, value interface{}, del
 //the rest of its subentities
 //Thus being the only function thus far to call another exported
 //function in this file
-func RecursivePatch(Path, id, ent string, data map[string]interface{}) {
+func RecursivePatch(Path, id, ent string, data map[string]interface{}) error {
 	var entities string
 	var URL string
 	println("OK. Attempting to update...")
@@ -282,9 +282,8 @@ func RecursivePatch(Path, id, ent string, data map[string]interface{}) {
 			//we don't want to update the wrong object
 			objJSON, GETURL := GetObject(Path, true)
 			if objJSON == nil {
-				println("Error while deleting Object!")
 				l.GetWarningLogger().Println("Error while deleting Object!")
-				return
+				return fmt.Errorf("error while deleting Object")
 			}
 			entities = path.Base(path.Dir(GETURL))
 			URL = State.APIURL + "/api/" + entities + "/" + objJSON["id"].(string) + "/all"
@@ -296,15 +295,13 @@ func RecursivePatch(Path, id, ent string, data map[string]interface{}) {
 		resp, e := models.Send("GET", URL, GetKey(), nil)
 		r := ParseResponse(resp, e, "recursive update")
 		if e != nil {
-			return
+			return nil
 		}
 		recursivePatchAux(r["data"].(map[string]interface{}), data)
 		println("Success")
-		return
-
+		return nil
 	}
-	println("Error! Please enter desired parameters of Object to be updated")
-
+	return fmt.Errorf("error! Please enter desired parameters of Object to be updated")
 }
 
 func recursivePatchAux(res, data map[string]interface{}) {
@@ -329,7 +326,7 @@ func recursivePatchAux(res, data map[string]interface{}) {
 
 //You can either update obj by path or by ID and entity string type
 //The deleteAndPut bool is for deleting an attribute
-func UpdateObj(Path, id, ent string, data map[string]interface{}, deleteAndPut bool) map[string]interface{} {
+func UpdateObj(Path, id, ent string, data map[string]interface{}, deleteAndPut bool) (map[string]interface{}, error) {
 	println("OK. Attempting to update...")
 	var resp *http.Response
 
@@ -349,9 +346,8 @@ func UpdateObj(Path, id, ent string, data map[string]interface{}, deleteAndPut b
 			//we don't want to update the wrong object
 			objJSON, GETURL := GetObject(Path, true)
 			if objJSON == nil {
-				println("Error while getting Object!")
 				l.GetWarningLogger().Println("Error while getting Object!")
-				return nil
+				return nil, fmt.Errorf("error while getting Object")
 			}
 			entities = path.Base(path.Dir(GETURL))
 			URL = State.APIURL + "/api/" + entities + "/" + objJSON["id"].(string)
@@ -460,7 +456,7 @@ func UpdateObj(Path, id, ent string, data map[string]interface{}, deleteAndPut b
 	} else {
 		println("Error! Please enter desired parameters of Object to be updated")
 	}
-	return data
+	return data, nil
 }
 
 func LS(x string) []map[string]interface{} {
@@ -2044,13 +2040,16 @@ func ShowClipBoard() []string {
 	return nil
 }
 
-func UpdateSelection(data map[string]interface{}) {
+func UpdateSelection(data map[string]interface{}) error {
 	if State.ClipBoard != nil {
 		for _, k := range *State.ClipBoard {
-			UpdateObj(k, "", "", data, false)
+			_, err := UpdateObj(k, "", "", data, false)
+			if err != nil {
+				return err
+			}
 		}
 	}
-
+	return nil
 }
 
 func LoadFile(path string, interpret_func func(*string) bool) error {
@@ -2098,7 +2097,7 @@ func LoadTemplate(data map[string]interface{}, filePath string) {
 	}
 }
 
-func SetClipBoard(x []string) []string {
+func SetClipBoard(x []string) ([]string, error) {
 	State.ClipBoard = &x
 	var data map[string]interface{}
 	//Verify paths
@@ -2109,9 +2108,11 @@ func SetClipBoard(x []string) []string {
 		if obj != nil {
 			data = map[string]interface{}{"type": "select", "data": obj["id"]}
 			InformUnity("POST", "SetClipBoard", -1, data)
+		} else {
+			return nil, fmt.Errorf("cannot set clipboard")
 		}
 	}
-	return *State.ClipBoard
+	return *State.ClipBoard, nil
 }
 
 func Print(a []interface{}) string {
