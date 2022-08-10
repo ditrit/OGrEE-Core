@@ -1,6 +1,8 @@
 /[ \t]/  { /* Skip blanks and tabs. */ }
 /create/ { printToks("TOK_CREATE");return TOK_CREATE}
 /gt/ {  printToks("TOK_GET"); return TOK_GET}
+/getu/ {  printToks("TOK_GETU"); return TOK_GETU}
+/getslot/ {  printToks("TOK_GETSLOT"); return TOK_GETSLOT}
 /update/ { printToks("TOK_UPDATE"); return TOK_UPDATE}
 /delete/ { printToks("TOK_DELETE"); return TOK_DELETE}
 /search/ { printToks("TOK_SEARCH"); return TOK_SEARCH}
@@ -82,6 +84,8 @@
 /lsac/ {  printToks("TOK_LSAC"); return TOK_LSAC}
 /lspanel/ {  printToks("TOK_LSPANEL"); return TOK_LSPANEL}
 /lscorridor/ {  printToks("TOK_LSCORRIDOR"); return TOK_LSCORRIDOR}
+/lsu/ {  printToks("TOK_LSU"); return TOK_LSU}
+/lsslot/ {  printToks("TOK_LSSLOT"); return TOK_LSSLOT}
 /tree/ { printToks("TOK_TREE"); return TOK_TREE}
 /lsog/ { printToks("TOK_LSOG"); return TOK_LSOG}
 /env/ { printToks("TOK_ENV"); return TOK_ENV}

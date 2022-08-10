@@ -13,6 +13,7 @@ import (
 	"os/exec"
 	"path"
 	"runtime"
+	"sort"
 	"strconv"
 	"strings"
 )
@@ -618,6 +619,142 @@ func LSOBJECT(x string, entity int) []map[string]interface{} {
 	//return nil
 }
 
+func GetByAttr(x string, u interface{}) {
+	var path string
+	if x == "" || x == "." {
+		path = State.CurrPath
+
+	} else if string(x[0]) == "/" {
+		path = x
+
+	} else {
+		path = State.CurrPath + "/" + x
+	}
+
+	//Let's do a quick GET and check for rack because otherwise we
+	//may have to get (costly) many devices and then
+	//test if the result is a device array
+	obj, url := GetObject(path, true)
+	if obj == nil {
+		return
+	}
+
+	if cat, ok := obj["category"]; !ok || cat != "rack" {
+		if State.DebugLvl > 0 {
+			println("Error command may only be performed on rack objects!")
+		}
+
+		l.GetWarningLogger().Println("Object to Get not found")
+		return
+	}
+
+	//GET the devices and process the response
+	req, code := models.Send("GET", url+"/devices", GetKey(), nil)
+	reqParsed := ParseResponse(req, code, "get devices request")
+	if reqParsed == nil {
+		return
+	}
+	devInf := reqParsed["data"].(map[string]interface{})["objects"].([]interface{})
+	devices := infArrToMapStrinfArr(devInf)
+
+	switch u.(type) {
+	case int:
+		for i := range devices {
+			if attr, ok := devices[i]["attributes"].(map[string]interface{}); ok {
+				uStr := strconv.Itoa(u.(int))
+				if attr["height"] == uStr {
+					displayObject(devices[i])
+					return //What if the user placed multiple devices at same height?
+				}
+			}
+		}
+	default: //String
+		for i := range devices {
+			if attr, ok := devices[i]["attributes"].(map[string]interface{}); ok {
+				if attr["slot"] == u.(string) {
+					displayObject(devices[i])
+					return //What if the user placed multiple devices at same slot?
+				}
+			}
+		}
+	}
+}
+
+//This function display devices in a sorted order according
+//to the attribute specified
+func LSATTR(x, attr string) {
+	var path string
+	if x == "" || x == "." {
+		path = State.CurrPath
+
+	} else if string(x[0]) == "/" {
+		path = x
+
+	} else {
+		path = State.CurrPath + "/" + x
+	}
+
+	//Let's do a quick GET and check for rack because otherwise we
+	//may have to get (costly) many devices and then
+	//test if the result is a device array
+	obj, url := GetObject(path, true)
+	if obj == nil {
+		return
+	}
+
+	if cat, ok := obj["category"]; !ok || cat != "rack" {
+		if State.DebugLvl > 0 {
+			println("Error command may only be performed on rack objects!")
+		}
+
+		l.GetWarningLogger().Println("Object to Get not found")
+		return
+	}
+
+	//GET the devices and process the response
+	req, code := models.Send("GET", url+"/devices", GetKey(), nil)
+	reqParsed := ParseResponse(req, code, "get devices request")
+	if reqParsed == nil {
+		return
+	}
+	devInf := reqParsed["data"].(map[string]interface{})["objects"].([]interface{})
+	devices := infArrToMapStrinfArr(devInf)
+
+	var sortedDevices sortable
+
+	switch attr {
+	case "heightu":
+		sortedDevices = SortableMArr{devices}
+		sort.Sort(sortedDevices.(SortableMArr))
+	case "slot":
+		sortedDevices = SortableSlot{devices}
+		sort.Sort(sortedDevices.(SortableSlot))
+	}
+
+	//Print the objects received
+	if len(sortedDevices.getData()) > 0 {
+		println("Devices")
+		println()
+		for i := range sortedDevices.getData() {
+			name := sortedDevices.getData()[i]["name"].(string)
+			if attr == "slot" {
+				var slot string
+				if sortedDevices.getData()[i]["slot"] == nil {
+					slot = "NULL"
+				} else {
+					slot = sortedDevices.getData()[i]["slot"].(string)
+				}
+				println("Slot:"+slot, "  Name: ", name)
+
+			} else {
+				println(name)
+			}
+
+		}
+	}
+
+}
+
 //NOTE: LSDEV is recursive while LSSENSOR is not
 //Code could be more tidy
 func lsobjHelper(api, objID string, curr, entity int) []map[string]interface{} {
@@ -816,7 +953,7 @@ func CD(x string) string {
 			exist, _ = CheckPathOnline(pth)
 		}
 		if exist == true {
-			if State.DebugLvl >= 1 {
+			if State.DebugLvl >= 3 {
 				println("THE PATH: ", pth)
 			}
 			State.PrevPath = State.CurrPath
@@ -880,10 +1017,10 @@ func CD(x string) string {
 func Help(entry string) {
 	var path string
 	switch entry {
-	case "ls", "pwd", "print", "cd", "tree", "create", "gt", "clear",
+	case "ls", "lsu", "pwd", "print", "cd", "tree", "create", "gt", "clear",
 		"update", "delete", "lsog", "grep", "for", "while", "if", "env",
 		"cmds", "var", "unset", "select", "camera", "ui", "hc", "drawable",
-		"link", "unlink", "draw":
+		"link", "unlink", "draw", "lsslot", "getu", "getslot":
 		path = "./other/man/" + entry + ".md"
 
 	case ">":
@@ -2784,6 +2921,100 @@ func OnlineLevelResolver(path []string) []string {
 	}
 
 	return paths
+}
+
+/*
+// Ensure it satisfies sort.Interface
+func (d Deals) Len() int           { return len(d) }
+func (d Deals) Less(i, j int) bool { return d[i].Id < d[j].Id }
+func (d Deals) Swap(i, j int)      { d[i], d[j] = d[j], d[i] }
+*/
+
+type sortable interface {
+	getData() []map[string]interface{}
+}
+
+//Helper Struct for sorting
+type SortableMArr struct {
+	data []map[string]interface{}
+}
+
+func (s SortableMArr) getData() []map[string]interface{} { return s.data }
+func (s SortableMArr) Len() int                          { return len(s.data) }
+func (s SortableMArr) Swap(i, j int)                     { s.data[i], s.data[j] = s.data[j], s.data[i] }
+func (s SortableMArr) Less(i, j int) bool {
+	lKey := determineStrKey(s.data[i]["attributes"].(map[string]interface{}), []string{"heightU"})
+	rKey := determineStrKey(s.data[j]["attributes"].(map[string]interface{}), []string{"heightU"})
+
+	//We want the non existing heightU objs at the end of the array
+	if lKey == "" && rKey != "" {
+		return false
+	}
+
+	if rKey == "" && lKey != "" {
+		return true
+	}
+
+	lH := s.data[i]["attributes"].(map[string]interface{})["heightU"]
+	rH := s.data[j]["attributes"].(map[string]interface{})["heightU"]
+
+	//We must ensure that they are strings, non strings will be
+	//placed at the end of the array
+	var lOK, rOK bool
+	_, lOK = lH.(string)
+	_, rOK = rH.(string)
+
+	if !lOK && rOK {
+		return false
+	}
+
+	if lOK && !rOK {
+		return true
+	}
+
+	return lH.(string) < rH.(string)
+
+}
+
+type SortableSlot struct {
+	data []map[string]interface{}
+}
+
+func (s SortableSlot) getData() []map[string]interface{} { return s.data }
+func (s SortableSlot) Len() int                          { return len(s.data) }
+func (s SortableSlot) Swap(i, j int)                     { s.data[i], s.data[j] = s.data[j], s.data[i] }
+func (s SortableSlot) Less(i, j int) bool {
+	lKey := determineStrKey(s.data[i]["attributes"].(map[string]interface{}), []string{"slot"})
+	rKey := determineStrKey(s.data[j]["attributes"].(map[string]interface{}), []string{"slot"})
+
+	//We want the non existing heightU objs at the end of the array
+	if lKey == "" && rKey != "" {
+		return false
+	}
+
+	if rKey == "" && lKey != "" {
+		return true
+	}
+
+	lS := s.data[i]["attributes"].(map[string]interface{})["slot"]
+	rS := s.data[j]["attributes"].(map[string]interface{})["slot"]
+
+	//We must ensure that they are strings, non strings will be
+	//placed at the end of the array
+	var lOK, rOK bool
+	_, lOK = lS.(string)
+	_, rOK = rS.(string)
+
+	if !lOK && rOK {
+		return false
+	}
+
+	if lOK && !rOK {
+		return true
+	}
+
+	return lS.(string) < rS.(string)
+
 }
 
 //Helper func that safely deletes a string key in a map

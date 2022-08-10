@@ -86,6 +86,11 @@ func (c *commonNode) execute() interface{} {
 			return &jsonObjNode{JSONND, v}
 		}
 
+	case "LSATTR":
+		if f, ok := c.fun.(func(string, string)); ok {
+			f(c.args[0].(string), c.args[1].(string))
+		}
+
 	case "Help", "Focus":
 		if f, ok := c.fun.(func(string)); ok {
 			f(c.args[0].(string))
@@ -265,6 +270,11 @@ func (c *commonNode) execute() interface{} {
 			v := f(c.args[0].(string), c.args[1].(int))
 			//return &objNdArrNode{COMMON, len(v), v}
 			return &jsonObjArrNode{JSONND, len(v), v}
+		}
+
+	case "GetU":
+		if f, ok := c.fun.(func(string, interface{})); ok {
+			f(c.args[0].(string), c.args[1])
 		}
 
 	case "Tree", "Draw":
