@@ -34,7 +34,7 @@ var _ = l.GetInfoLogger() //Suppresses annoying Dockerfile build error
 %token <s> TOK_AC TOK_CABINET TOK_PANEL TOK_ROW
 %token <s> TOK_TILE TOK_SENSOR
 %token <s> TOK_ROOM_TMPL TOK_OBJ_TMPL
-%token <s> TOK_PLUS TOK_MINUS TOK_BOOL TOK_ORIENTATION
+%token <s> TOK_PLUS TOK_MINUS TOK_ORIENTATION
 %token
        TOK_CREATE TOK_GET TOK_UPDATE TOK_DELETE TOK_SEARCH
        TOK_EQUAL TOK_DOUBLE_EQUAL TOK_CMDFLAG TOK_SLASH TOK_DOUBLE_DOT
@@ -64,7 +64,7 @@ var _ = l.GetInfoLogger() //Suppresses annoying Dockerfile build error
 %type <nodeArr> WNARG GETOBJS
 %type <node> OCCR PATH PHYSICAL_PATH STRAY_DEV_PATH EXPR CONCAT CONCAT_TERM ARITHEXPR stmnt DEREF st2
 %type <boolNode> BOOLEXPR
-%type <mapVoid> EQUAL_LIST
+//%type <mapVoid> EQUAL_LIST
 
 %right TOK_EQUAL TOK_GET TOK_CD TOK_LS TOK_TREE TOK_DRAW TOK_HIERARCH TOK_UNSET TOK_DRAWABLE TOK_SETENV TOK_VAR TOK_CMDS TOK_TEMPLATE TOK_SELECT TOK_LINK TOK_UNLINK TOK_LEN TOK_PRNT TOK_DOC
 %left TOK_OR
@@ -86,10 +86,10 @@ st2:    {$$=nil}
 ;
 
 stmnt:   TOK_GET PATH {$$=&getObjectNode{$2}}
-       | TOK_GET OBJ_TYPE EQUAL_LIST {$$=&searchObjectsNode{$2, $3}}
+       //| TOK_GET OBJ_TYPE EQUAL_LIST {$$=&searchObjectsNode{$2, $3}}
        | TOK_EQUAL PHYSICAL_PATH {$$=&selectObjectNode{$2}}
-       | TOK_EQUAL TOK_LBRAC GETOBJS TOK_RBRAC {$$=&selectChildrenNode{$3}; println("Selection made!")}
-       | PHYSICAL_PATH TOK_COL EQUAL_LIST {$$=&updateObjNode{$1, $3}}
+       | TOK_EQUAL TOK_LBRAC GETOBJS TOK_RBRAC {$$=&selectChildrenNode{$3}}
+       | PHYSICAL_PATH TOK_COL TOK_WORD TOK_EQUAL EXPR {$$=&updateObjNode{$1, map[string]interface{}{$3:$5}}}
        | PHYSICAL_PATH TOK_COL TOK_WORD TOK_EQUAL EXPR TOK_ATTRSPEC EXPR {$$=&specialUpdateNode{$1, $3, $5, $7}}
        | TOK_CD PATH {$$=&cdNode{$2}}
        | TOK_LS PATH {$$=&lsNode{$2}}
@@ -190,9 +190,9 @@ DEREF: TOK_DEREF TOK_LBRAC TOK_WORD TOK_RBRAC {$$=&symbolReferenceNode{$3}}
        | TOK_DEREF TOK_LBRAC TOK_WORD TOK_LBLOCK EXPR TOK_RBLOCK TOK_RBRAC {$$=&arrayReferenceNode{$3, $5}}
 ;
 
-EQUAL_LIST: TOK_WORD TOK_EQUAL EXPR EQUAL_LIST {m := $4; m[$1]=$3; $$=m}
+/* EQUAL_LIST: TOK_WORD TOK_EQUAL EXPR EQUAL_LIST {m := $4; m[$1]=$3; $$=m}
        | TOK_WORD TOK_EQUAL EXPR {m := make(map[string]interface{}); m[$1]=$3; $$=m}
-;
+; */
 
 //For making array types
 WNARG: EXPR TOK_COMMA WNARG {x:=[]node{$1}; $$=append(x, $3...)}
@@ -241,10 +241,6 @@ OCCR:
               attributes := map[string]interface{}{"attributes":map[string]interface{}{"posXY":$5, "size":$7, "orientation":$9, "floorUnit":$11}}
               $$=&getOCAttrNode{$3, cmd.ROOM, attributes}
         }
-        /* |TOK_ROOM TOK_COL EXPR TOK_ATTRSPEC EXPR TOK_ATTRSPEC EXPR TOK_ATTRSPEC TOK_ORIENTATION {
-              attributes := map[string]interface{}{"attributes":map[string]interface{}{"posXY":$5, "size":$7, "orientation":$9}}
-              $$=&getOCAttrNode{$3, cmd.ROOM, attributes}
-        } */
         |TOK_ROOM TOK_COL PHYSICAL_PATH TOK_ATTRSPEC EXPR TOK_ATTRSPEC EXPR TOK_ATTRSPEC TOK_ORIENTATION {
               attributes := map[string]interface{}{"attributes":map[string]interface{}{"posXY":$5, "size":$7, "orientation":$9}}
               $$=&getOCAttrNode{$3, cmd.ROOM, attributes}
@@ -254,11 +250,8 @@ OCCR:
               $$=&getOCAttrNode{$3, cmd.ROOM, attributes}
         }
         |TOK_RACK TOK_COL PHYSICAL_PATH TOK_ATTRSPEC EXPR TOK_ATTRSPEC EXPR TOK_ATTRSPEC EXPR {$$=&createRackNode{$3, [3]node{$5, $7, $9}}}
-        |TOK_DEVICE TOK_COL PHYSICAL_PATH TOK_ATTRSPEC EXPR TOK_ATTRSPEC EXPR TOK_ATTRSPEC TOK_ORIENTATION {
-              attributes := map[string]interface{}{"attributes":map[string]interface{}{"slot":$5, "template":$7, "orientation":$9}}
-              $$=&getOCAttrNode{$3, cmd.DEVICE, attributes}
-        }
-        |TOK_DEVICE TOK_COL PHYSICAL_PATH TOK_ATTRSPEC EXPR TOK_ATTRSPEC EXPR {$$=&createDeviceNode{$3, [2]node{$5, $7}}}
+        |TOK_DEVICE TOK_COL PHYSICAL_PATH TOK_ATTRSPEC EXPR TOK_ATTRSPEC EXPR {$$=&createDeviceNode{$3, [3]node{$5, $7, nil}}}
+        |TOK_DEVICE TOK_COL PHYSICAL_PATH TOK_ATTRSPEC EXPR TOK_ATTRSPEC EXPR TOK_ATTRSPEC EXPR {$$=&createDeviceNode{$3, [3]node{$5, $7, $9}}}
         |TOK_CORIDOR TOK_COL PHYSICAL_PATH TOK_ATTRSPEC TOK_LBRAC EXPR TOK_COMMA EXPR TOK_RBRAC TOK_ATTRSPEC EXPR {
               attributes := map[string]interface{}{"leftRack":$6, "rightRack":$8, "temperature":$11}
               $$=&getOCAttrNode{$3, cmd.CORIDOR, attributes}
@@ -308,6 +301,6 @@ OCCR:
 //Since the OCLI syntax defines no limit
 //for the number of devices 
 //a NonTerminal state is neccessary
-/* CDORFG: TOK_ATTRSPEC WORDORNUM CDORFG {x:=$2; $$=x+","+$3}
+/* CDORFG: TOK_ATTRSPEC TOK_WORDORNUM CDORFG {x:=$2; $$=x+","+$3}
        | {$$=""}
        ; */

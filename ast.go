@@ -562,6 +562,7 @@ func (n *selectChildrenNode) execute() (interface{}, error) {
 		paths = append(paths, path)
 	}
 	v := cmd.SetClipBoard(paths)
+	println("Selection made!")
 	//cmd.CD()
 	return v, nil
 }
@@ -686,7 +687,7 @@ func (n *createRackNode) execute() (interface{}, error) {
 
 type createDeviceNode struct {
 	path  node
-	attrs [2]node
+	attrs [3]node
 }
 
 func (n *createDeviceNode) execute() (interface{}, error) {
@@ -698,11 +699,13 @@ func (n *createDeviceNode) execute() (interface{}, error) {
 	if !ok {
 		return nil, fmt.Errorf("Path should be a string")
 	}
-	var vals [2]interface{}
-	for i := 0; i < 2; i++ {
-		vals[i], err = n.attrs[i].execute()
-		if err != nil {
-			return nil, err
+	var vals [3]interface{}
+	for i := 0; i < 3; i++ {
+		if n.attrs[i] != nil {
+			vals[i], err = n.attrs[i].execute()
+			if err != nil {
+				return nil, err
+			}
 		}
 	}
 	attr := map[string]interface{}{"posU/slot": vals[0]}
@@ -710,6 +713,9 @@ func (n *createDeviceNode) execute() (interface{}, error) {
 		attr["sizeU"] = vals[1]
 	} else {
 		attr["template"] = vals[1]
+	}
+	if n.attrs[2] != nil {
+		attr["orientation"] = vals[2]
 	}
 	attributes := map[string]interface{}{"attributes": attr}
 	cmd.GetOCLIAtrributes(path, cmd.DEVICE, attributes)
