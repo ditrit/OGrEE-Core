@@ -416,6 +416,146 @@ var dfas = []dfa{
 		},
 	}, []int{ /* Start-of-input transitions */ -1, -1, -1, -1, -1}, []int{ /* End-of-input transitions */ -1, -1, -1, -1, -1}, nil},
 
+	// getslot
+	{[]bool{false, false, false, false, false, false, false, true}, []func(rune) int{ // Transitions
+		func(r rune) int {
+			switch r {
+			case 101:
+				return -1
+			case 103:
+				return 1
+			case 108:
+				return -1
+			case 111:
+				return -1
+			case 115:
+				return -1
+			case 116:
+				return -1
+			}
+			return -1
+		},
+		func(r rune) int {
+			switch r {
+			case 101:
+				return 2
+			case 103:
+				return -1
+			case 108:
+				return -1
+			case 111:
+				return -1
+			case 115:
+				return -1
+			case 116:
+				return -1
+			}
+			return -1
+		},
+		func(r rune) int {
+			switch r {
+			case 101:
+				return -1
+			case 103:
+				return -1
+			case 108:
+				return -1
+			case 111:
+				return -1
+			case 115:
+				return -1
+			case 116:
+				return 3
+			}
+			return -1
+		},
+		func(r rune) int {
+			switch r {
+			case 101:
+				return -1
+			case 103:
+				return -1
+			case 108:
+				return -1
+			case 111:
+				return -1
+			case 115:
+				return 4
+			case 116:
+				return -1
+			}
+			return -1
+		},
+		func(r rune) int {
+			switch r {
+			case 101:
+				return -1
+			case 103:
+				return -1
+			case 108:
+				return 5
+			case 111:
+				return -1
+			case 115:
+				return -1
+			case 116:
+				return -1
+			}
+			return -1
+		},
+		func(r rune) int {
+			switch r {
+			case 101:
+				return -1
+			case 103:
+				return -1
+			case 108:
+				return -1
+			case 111:
+				return 6
+			case 115:
+				return -1
+			case 116:
+				return -1
+			}
+			return -1
+		},
+		func(r rune) int {
+			switch r {
+			case 101:
+				return -1
+			case 103:
+				return -1
+			case 108:
+				return -1
+			case 111:
+				return -1
+			case 115:
+				return -1
+			case 116:
+				return 7
+			}
+			return -1
+		},
+		func(r rune) int {
+			switch r {
+			case 101:
+				return -1
+			case 103:
+				return -1
+			case 108:
+				return -1
+			case 111:
+				return -1
+			case 115:
+				return -1
+			case 116:
+				return -1
+			}
+			return -1
+		},
+	}, []int{ /* Start-of-input transitions */ -1, -1, -1, -1, -1, -1, -1, -1}, []int{ /* End-of-input transitions */ -1, -1, -1, -1, -1, -1, -1, -1}, nil},
+
 	// update
 	{[]bool{false, false, false, false, false, false, true}, []func(rune) int{ // Transitions
 		func(r rune) int {
@@ -8029,500 +8169,505 @@ OUTER0:
 			}
 		case 4:
 			{
+				printToks("TOK_GETSLOT")
+				return TOK_GETSLOT
+			}
+		case 5:
+			{
 				printToks("TOK_UPDATE")
 				return TOK_UPDATE
 			}
-		case 5:
+		case 6:
 			{
 				printToks("TOK_DELETE")
 				return TOK_DELETE
 			}
-		case 6:
+		case 7:
 			{
 				printToks("TOK_SEARCH")
 				return TOK_SEARCH
 			}
-		case 7:
+		case 8:
 			{
 				printToks("TOK_HIERARCH")
 				return TOK_HIERARCH
 			}
-		case 8:
+		case 9:
 			{
 				printToks("TOK_PLUS")
 				lval.s = yylex.Text()
 				return TOK_PLUS
 			}
-		case 9:
+		case 10:
 			{
 				printToks("TOK_OCDEL")
 				lval.s = yylex.Text()
 				return TOK_OCDEL
 			}
-		case 10:
+		case 11:
 			{
 				printToks("TOK_COL")
 				return TOK_COL
 			}
-		case 11:
+		case 12:
 			{
 				printToks("TOK_ATTRSPEC")
 				return TOK_ATTRSPEC
 			}
-		case 12:
+		case 13:
 			{
 				printToks("TOK_DEREF")
 				return TOK_DEREF
 			}
-		case 13:
+		case 14:
 			{
 				printToks("TOK_SEMICOL")
 				return TOK_SEMICOL
 			}
-		case 14:
+		case 15:
 			{
 				printToks("TOK_LBLOCK")
 				return TOK_LBLOCK
 			}
-		case 15:
+		case 16:
 			{
 				printToks("TOK_RBLOCK")
 				return TOK_RBLOCK
 			}
-		case 16:
+		case 17:
 			{
 				printToks("TOK_LPAREN")
 				return TOK_LPAREN
 			}
-		case 17:
+		case 18:
 			{
 				printToks("TOK_RPAREN")
 				return TOK_RPAREN
 			}
-		case 18:
+		case 19:
 			{
 				printToks("TOK_OR")
 				return TOK_OR
 			}
-		case 19:
+		case 20:
 			{
 				printToks("TOK_AND")
 				return TOK_AND
 			}
-		case 20:
+		case 21:
 			{
 				printToks("TOK_NOT")
 				return TOK_NOT
 			}
-		case 21:
+		case 22:
 			{
 				printToks("TOK_MULT")
 				return TOK_MULT
 			}
-		case 22:
+		case 23:
 			{
 				printToks("TOK_MOD")
 				return TOK_MOD
 			}
-		case 23:
+		case 24:
 			{
 				printToks("TOK_GREATER")
 				return TOK_GREATER
 			}
-		case 24:
+		case 25:
 			{
 				printToks("TOK_LESS")
 				return TOK_LESS
 			}
-		case 25:
+		case 26:
 			{
 				printToks("TOK_BOOL")
 				lval.s = yylex.Text()
 				return TOK_BOOL
 			}
-		case 26:
+		case 27:
 			{
 				printToks("TOK_IF")
 				return TOK_IF
 			}
-		case 27:
+		case 28:
 			{
 				printToks("TOK_FOR")
 				return TOK_FOR
 			}
-		case 28:
+		case 29:
 			{
 				printToks("TOK_IN")
 				return TOK_IN
 			}
-		case 29:
+		case 30:
 			{
 				printToks("TOK_WHILE")
 				return TOK_WHILE
 			}
-		case 30:
+		case 31:
 			{
 				printToks("TOK_ELSE")
 				return TOK_ELSE
 			}
-		case 31:
+		case 32:
 			{
 				printToks("TOK_THEN")
 				return TOK_THEN
 			}
-		case 32:
+		case 33:
 			{
 				printToks("TOK_FI")
 				return TOK_FI
 			}
-		case 33:
+		case 34:
 			{
 				printToks("TOK_ELIF")
 				return TOK_ELIF
 			}
-		case 34:
+		case 35:
 			{
 				printToks("TOK_DONE")
 				return TOK_DONE
 			}
-		case 35:
+		case 36:
 			{
 				printToks("TOK_DO")
 				return TOK_DO
 			}
-		case 36:
+		case 37:
 			{
 				printToks("TOK_PRNT")
 				return TOK_PRNT
 			}
-		case 37:
+		case 38:
 			{
 				printToks("TOK_UNSET")
 				return TOK_UNSET
 			}
-		case 38:
+		case 39:
 			{
 				printToks("TOK_QUOT")
 				return TOK_QUOT
 			}
-		case 39:
+		case 40:
 			{
 				printToks("TOK_SELECT")
 				return TOK_SELECT
 			}
-		case 40:
+		case 41:
 			{
 				printToks("TOK_CMDS")
 				return TOK_CMDS
 			}
-		case 41:
+		case 42:
 			{
 				printToks("TOK_TEMPLATE")
 				return TOK_TEMPLATE
 			}
-		case 42:
+		case 43:
 			{
 				printToks("TOK_VAR")
 				return TOK_VAR
 			}
-		case 43:
+		case 44:
 			{
 				printToks("TOK_LBRAC")
 				return TOK_LBRAC
 			}
-		case 44:
+		case 45:
 			{
 				printToks("TOK_RBRAC")
 				return TOK_RBRAC
 			}
-		case 45:
+		case 46:
 			{
 				printToks("TOK_COMMA")
 				return TOK_COMMA
 			}
-		case 46:
+		case 47:
 			{
 				printToks("TOK_DOT")
 				return TOK_DOT
 			}
-		case 47:
+		case 48:
 			{
 				printToks("TOK_USE_JSON")
 				return TOK_USE_JSON
 			}
-		case 48:
+		case 49:
 			{
 				printToks("TOK_PARTIAL")
 				return TOK_PARTIAL
 			}
-		case 49:
+		case 50:
 			{
 				printToks("TOK_UI")
 				return TOK_UI
 			}
-		case 50:
+		case 51:
 			{
 				printToks("TOK_CAM")
 				return TOK_CAM
 			}
-		case 51:
+		case 52:
 			{
 				printToks("TOK_ORPH")
 				return TOK_ORPH
 			}
-		case 52:
+		case 53:
 			{
 				printToks("TOK_LINK")
 				return TOK_LINK
 			}
-		case 53:
+		case 54:
 			{
 				printToks("TOK_UNLINK")
 				return TOK_UNLINK
 			}
-		case 54:
+		case 55:
 			{
 				printToks("TOK_TENANT")
 				lval.s = yylex.Text()
 				return TOK_TENANT
 			}
-		case 55:
+		case 56:
 			{
 				printToks("TOK_SITE")
 				lval.s = yylex.Text()
 				return TOK_SITE
 			}
-		case 56:
+		case 57:
 			{
 				printToks("TOK_BLDG")
 				lval.s = yylex.Text()
 				return TOK_BLDG
 			}
-		case 57:
+		case 58:
 			{
 				printToks("TOK_ROOM")
 				lval.s = yylex.Text()
 				return TOK_ROOM
 			}
-		case 58:
+		case 59:
 			{
 				printToks("TOK_RACK")
 				lval.s = yylex.Text()
 				return TOK_RACK
 			}
-		case 59:
+		case 60:
 			{
 				printToks("TOK_DEVICE")
 				lval.s = yylex.Text()
 				return TOK_DEVICE
 			}
-		case 60:
+		case 61:
 			{
 				printToks("TOK_GROUP")
 				lval.s = yylex.Text()
 				return TOK_GROUP
 			}
-		case 61:
+		case 62:
 			{
 				printToks("TOK_CORIDOR")
 				lval.s = yylex.Text()
 				return TOK_CORIDOR
 			}
-		case 62:
+		case 63:
 			{
 				printToks("TOK_AC")
 				lval.s = yylex.Text()
 				return TOK_AC
 			}
-		case 63:
+		case 64:
 			{
 				printToks("TOK_PANEL")
 				lval.s = yylex.Text()
 				return TOK_PANEL
 			}
-		case 64:
+		case 65:
 			{
 				printToks("TOK_CABINET")
 				lval.s = yylex.Text()
 				return TOK_CABINET
 			}
-		case 65:
+		case 66:
 			{
 				printToks("TOK_SENSOR")
 				lval.s = yylex.Text()
 				return TOK_SENSOR
 			}
-		case 66:
+		case 67:
 			{
 				printToks("TOK_ROOM_TMPL")
 				lval.s = yylex.Text()
 				return TOK_ROOM_TMPL
 			}
-		case 67:
+		case 68:
 			{
 				printToks("TOK_OBJ_TMPL")
 				lval.s = yylex.Text()
 				return TOK_OBJ_TMPL
 			}
-		case 68:
+		case 69:
 			{
 				printToks("TOK_NUM")
 				lval.n = atoi(yylex.Text())
 				return TOK_NUM
 			}
-		case 69:
+		case 70:
 			{
 				printToks("TOK_FLOAT")
 				lval.f, _ = strconv.ParseFloat((yylex.Text()), 64)
 				return TOK_FLOAT
 			}
-		case 70:
+		case 71:
 			{
 				printToks("TOK_LSTEN")
 				return TOK_LSTEN
 			}
-		case 71:
+		case 72:
 			{
 				printToks("TOK_LSSITE")
 				return TOK_LSSITE
 			}
-		case 72:
+		case 73:
 			{
 				printToks("TOK_LSBLDG")
 				return TOK_LSBLDG
 			}
-		case 73:
+		case 74:
 			{
 				printToks("TOK_LSROOM")
 				return TOK_LSROOM
 			}
-		case 74:
+		case 75:
 			{
 				printToks("TOK_LSRACK")
 				return TOK_LSRACK
 			}
-		case 75:
+		case 76:
 			{
 				printToks("TOK_LSDEV")
 				return TOK_LSDEV
 			}
-		case 76:
+		case 77:
 			{
 				printToks("TOK_LSCAB")
 				return TOK_LSCAB
 			}
-		case 77:
+		case 78:
 			{
 				printToks("TOK_LSSENSOR")
 				return TOK_LSSENSOR
 			}
-		case 78:
+		case 79:
 			{
 				printToks("TOK_LSAC")
 				return TOK_LSAC
 			}
-		case 79:
+		case 80:
 			{
 				printToks("TOK_LSPANEL")
 				return TOK_LSPANEL
 			}
-		case 80:
+		case 81:
 			{
 				printToks("TOK_LSCORRIDOR")
 				return TOK_LSCORRIDOR
 			}
-		case 81:
+		case 82:
 			{
 				printToks("TOK_LSU")
 				return TOK_LSU
 			}
-		case 82:
+		case 83:
 			{
 				printToks("TOK_LSSLOT")
 				return TOK_LSSLOT
 			}
-		case 83:
+		case 84:
 			{
 				printToks("TOK_TREE")
 				return TOK_TREE
 			}
-		case 84:
+		case 85:
 			{
 				printToks("TOK_LSOG")
 				return TOK_LSOG
 			}
-		case 85:
+		case 86:
 			{
 				printToks("TOK_ENV")
 				return TOK_ENV
 			}
-		case 86:
+		case 87:
 			{
 				printToks("TOK_CD")
 				return TOK_CD
 			}
-		case 87:
+		case 88:
 			{
 				printToks("TOK_PWD")
 				return TOK_PWD
 			}
-		case 88:
+		case 89:
 			{
 				printToks("TOK_CLR")
 				return TOK_CLR
 			}
-		case 89:
+		case 90:
 			{
 				printToks("TOK_GREP")
 				return TOK_GREP
 			}
-		case 90:
+		case 91:
 			{
 				printToks("TOK_LS")
 				return TOK_LS
 			}
-		case 91:
+		case 92:
 			{
 				printToks("TOK_EXIT")
 				return TOK_EXIT
 			}
-		case 92:
+		case 93:
 			{
 				printToks("TOK_LEN")
 				return TOK_LEN
 			}
-		case 93:
+		case 94:
 			{
 				printToks("TOK_EQUAL")
 				return TOK_EQUAL
 			}
-		case 94:
+		case 95:
 			{
 				printToks("TOK_SLASH")
 				return TOK_SLASH
 			}
-		case 95:
+		case 96:
 			{
 				printToks("TOK_DOC")
 				return TOK_DOC
 			}
-		case 96:
+		case 97:
 			{
 				printToks("TOK_DRAW")
 				return TOK_DRAWABLE
 			}
-		case 97:
+		case 98:
 			{
 				printToks("TOK_DRAW")
 				return TOK_DRAW
 			}
-		case 98:
+		case 99:
 			{
 				printToks("TOK_STR")
 				lval.s = yylex.Text()[1 : len(yylex.Text())-1]
 				return TOK_STR
 			}
-		case 99:
+		case 100:
 			{
 				printToks("TOK_WORD")
 				lval.s = yylex.Text()

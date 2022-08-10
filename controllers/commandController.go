@@ -619,7 +619,7 @@ func LSOBJECT(x string, entity int) []map[string]interface{} {
 	//return nil
 }
 
-func GetU(x string, u int) {
+func GetByAttr(x string, u interface{}) {
 	var path string
 	if x == "" || x == "." {
 		path = State.CurrPath
@@ -657,12 +657,24 @@ func GetU(x string, u int) {
 	devInf := reqParsed["data"].(map[string]interface{})["objects"].([]interface{})
 	devices := infArrToMapStrinfArr(devInf)
 
-	for i := range devices {
-		if attr, ok := devices[i]["attributes"].(map[string]interface{}); ok {
-			uStr := strconv.Itoa(u)
-			if attr["height"] == uStr {
-				displayObject(devices[i])
-				return //What if the user placed multiple devices at same height?
+	switch u.(type) {
+	case int:
+		for i := range devices {
+			if attr, ok := devices[i]["attributes"].(map[string]interface{}); ok {
+				uStr := strconv.Itoa(u.(int))
+				if attr["height"] == uStr {
+					displayObject(devices[i])
+					return //What if the user placed multiple devices at same height?
+				}
+			}
+		}
+	default: //String
+		for i := range devices {
+			if attr, ok := devices[i]["attributes"].(map[string]interface{}); ok {
+				if attr["slot"] == u.(string) {
+					displayObject(devices[i])
+					return //What if the user placed multiple devices at same slot?
+				}
 			}
 		}
 	}
@@ -1008,7 +1020,7 @@ func Help(entry string) {
 	case "ls", "lsu", "pwd", "print", "cd", "tree", "create", "gt", "clear",
 		"update", "delete", "lsog", "grep", "for", "while", "if", "env",
 		"cmds", "var", "unset", "select", "camera", "ui", "hc", "drawable",
-		"link", "unlink", "draw", "lsslot", "getu":
+		"link", "unlink", "draw", "lsslot", "getu", "getslot":
 		path = "./other/man/" + entry + ".md"
 
 	case ">":
