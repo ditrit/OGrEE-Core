@@ -142,12 +142,19 @@ func ResetStateScriptData() {
 func listEntities(path string) func(string) []string {
 	return func(line string) []string {
 
-		if strings.TrimSpace(line[2:]) == "" {
+		//Instead let's trim to the first instance of whitespace
+		//use this index instead of using '2'
+		idx := strings.Index(line, " ")
+		if idx == -1 {
+			return nil
+		}
+		if line[idx:] == "" {
 			path = c.State.CurrPath
+			//println("DEBUG path is current")
 		} else {
-			path = TrimToSlash(line[3:])
-			if len(line) > 4 {
-				trimmed := strings.TrimSpace(line[2:])
+			path = TrimToSlash(line[idx+1:])
+			if len(line) > idx+2 {
+				trimmed := line[idx:]
 				if len(trimmed) > 2 && trimmed[2:] == ".." || len(trimmed) > 0 && trimmed != "/" {
 					path = c.State.CurrPath + "/" + path
 				}
@@ -155,13 +162,32 @@ func listEntities(path string) func(string) []string {
 
 			if path == "" {
 				path = c.State.CurrPath
-			} /*else if path == "/" {
-				path = "/"
-			}*/
+			}
 		}
 
 		items := c.FetchNodesAtLevel(path)
 		return items
+
+		//if strings.TrimSpace(line[2:]) == "" {
+		//	path = c.State.CurrPath
+		//} else {
+		//	path = TrimToSlash(line[3:]) //use idx+1 instead of '3'
+		//	if len(line) > 4 {
+		//		trimmed := strings.TrimSpace(line[2:])
+		//		if len(trimmed) > 2 && trimmed[2:] == ".." || len(trimmed) > 0 && trimmed != "/" {
+		//			path = c.State.CurrPath + "/" + path
+		//		}
+		//	}
+		//
+		//	if path == "" {
+		//		path = c.State.CurrPath
+		//	} /*else if path == "/" {
+		//		path = "/"
+		//	}*/
+		//}
+		//
+		//items := c.FetchNodesAtLevel(path)
+		//return items
 	}
 }
 
@@ -380,7 +406,9 @@ func getPrefixCompleter() *readline.PrefixCompleter {
 			readline.PcItem("rack", false),
 			readline.PcItem("device", false),
 			readline.PcItemDynamic(listEntities(""), false)),
-		readline.PcItem("getu", false),
+		readline.PcItem("getu", false,
+			readline.PcItemDynamic(listEntities(""), false)),
+
 		readline.PcItem("getslot", false),
 		readline.PcItem("update", false),
 		readline.PcItem("delete", false),
@@ -391,7 +419,8 @@ func getPrefixCompleter() *readline.PrefixCompleter {
 		readline.PcItem(".template:", true,
 			readline.PcItemDynamic(listLocal(""), false)),
 		readline.PcItem(".var:", false),
-		readline.PcItem("tree", false),
+		readline.PcItem("tree", false,
+			readline.PcItemDynamic(listEntities(""), false)),
 		readline.PcItem("lsten", false),
 		readline.PcItem("lssite", false),
 		readline.PcItem("lsbldg", false),
@@ -405,7 +434,7 @@ func getPrefixCompleter() *readline.PrefixCompleter {
 		readline.PcItem("lssensor", false),
 		readline.PcItem("lsog", false),
 		readline.PcItem("lsslot", false),
-		readline.PcItem("lsu", true,
+		readline.PcItem("lsu", false,
 			readline.PcItemDynamic(listEntities(""), false)),
 		readline.PcItem("print", false),
 		readline.PcItem("unset", false,
