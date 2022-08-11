@@ -158,20 +158,22 @@ func DeleteObj(Path string) bool {
 }
 
 func DeleteSelection() bool {
-	res := true
-	for i := range *State.ClipBoard {
-		println("Going to delete object: ", (*(State.ClipBoard))[i])
-		if DeleteObj((*(State.ClipBoard))[i]) != true {
-			l.GetWarningLogger().Println("Couldn't delete obj in selection: ",
-				(*(State.ClipBoard))[i])
-			if State.DebugLvl > 0 {
-				println("Couldn't delete obj in selection: ",
+	res := false
+	if State.ClipBoard != nil {
+		for i := range *State.ClipBoard {
+			println("Going to delete object: ", (*(State.ClipBoard))[i])
+			if res = DeleteObj((*(State.ClipBoard))[i]); res != true {
+				l.GetWarningLogger().Println("Couldn't delete obj in selection: ",
 					(*(State.ClipBoard))[i])
-			}
+				if State.DebugLvl > 0 {
+					println("Couldn't delete obj in selection: ",
+						(*(State.ClipBoard))[i])
+				}
 
-			res = false
+			}
+			println()
 		}
-		println()
+
 	}
 	return res
 }
