@@ -96,6 +96,13 @@ func ValidateObj(data map[string]interface{}, ent string, silence bool) bool {
 }
 
 func DeleteObj(Path string) bool {
+	if Path == "" || Path == "." {
+		Path = State.CurrPath
+
+	} else if string(Path[0]) != "/" {
+		Path = State.CurrPath + "/" + Path
+	}
+
 	//We have to get object first since
 	//there is a potential for multiple paths
 	//we don't want to delete the wrong object
@@ -138,7 +145,6 @@ func DeleteObj(Path string) bool {
 		if State.DebugLvl > 0 {
 			println("Error while deleting Object!")
 		}
-
 		l.GetWarningLogger().Println("Error while deleting Object!", e)
 		return false
 	}
@@ -250,12 +256,12 @@ func GetObject(path string, silenced bool) (map[string]interface{}, string) {
 	}
 
 	//Object wasn't found
-	if State.DebugLvl > 0 {
+	if State.DebugLvl > 0 && !silenced {
 		println("Error finding Object from given path!")
+		println(path)
 	}
 
 	l.GetWarningLogger().Println("Object to Get not found")
-	println(path)
 
 	return nil, ""
 }
