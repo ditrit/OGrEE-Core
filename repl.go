@@ -224,6 +224,28 @@ func listLocal(path string) func(string) []string {
 	}
 }
 
+func listUserVars(path string) func(string) []string {
+	return func(line string) []string {
+		ans := []string{}
+		varMap := GetDynamicMap()
+		for i := range varMap {
+			ans = append(ans, i)
+		}
+		return ans
+	}
+}
+
+func listUserFuncs(path string) func(string) []string {
+	return func(line string) []string {
+		ans := []string{}
+		funcMap := GetFuncTable()
+		for i := range funcMap {
+			ans = append(ans, i)
+		}
+		return ans
+	}
+}
+
 func TrimToSlash(x string) string {
 	idx := strings.LastIndex(x, "/")
 	return x[:idx+1]
@@ -455,8 +477,10 @@ func getPrefixCompleter() *readline.PrefixCompleter {
 			readline.PcItemDynamic(listEntities(""), false)),
 		readline.PcItem("print", false),
 		readline.PcItem("unset", false,
-			readline.PcItem("-v", false),
-			readline.PcItem("-f", false)),
+			readline.PcItem("-v", false,
+				readline.PcItemDynamic(listUserVars(""), false)),
+			readline.PcItem("-f", false,
+				readline.PcItemDynamic(listUserFuncs(""), false))),
 		readline.PcItem("while", false,
 			readline.PcItem("done", false),
 		),

@@ -2385,7 +2385,7 @@ println("OGREE: Unrecognised command!")
 		}
 	case 134:
 		{
-			yyVAL.node = &commonNode{COMMON, UnsetUtil, "Unset", []interface{}{yyS[yypt-2].s + yyS[yypt-1].s, yyS[yypt-0].s, nil, nil}}
+			yyVAL.node = &commonNode{COMMON, UnsetUtil, "Unset", []interface{}{yyS[yypt-2].s + yyS[yypt-1].s, yyS[yypt-0].s}}
 		}
 	case 135:
 		{
@@ -3874,7 +3874,7 @@ println("OGREE: Unrecognised command!")
 	case 134:
 		{
 			return 0
-			yyVAL.node = &commonNode{COMMON, UnsetUtil, "Unset", []interface{}{yyS[yypt-2].s + yyS[yypt-1].s, yyS[yypt-0].s, nil, nil}}
+			yyVAL.node = &commonNode{COMMON, UnsetUtil, "Unset", []interface{}{yyS[yypt-2].s + yyS[yypt-1].s, yyS[yypt-0].s}}
 		}
 	case 135:
 		{

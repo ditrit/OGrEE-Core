@@ -517,7 +517,7 @@ Q:     TOK_CD P {/*cmd.CD($2);*/ $$=&commonNode{COMMON, cmd.CD, "CD", []interfac
        | TOK_DRAW P TOK_NUM {$$=&commonNode{COMMON, cmd.Draw, "Draw", []interface{}{$2, $3}}}
        | TOK_HIERARCH P {$$=&commonNode{COMMON, cmd.GetHierarchy, "Hierarchy", []interface{}{$2, 1}}}
        | TOK_HIERARCH P TOK_NUM {$$=&commonNode{COMMON, cmd.GetHierarchy, "Hierarchy", []interface{}{$2, $3}}}
-       | TOK_UNSET TOK_OCDEL TOK_WORD TOK_WORD {$$=&commonNode{COMMON,UnsetUtil, "Unset",[]interface{}{$2+$3, $4, nil, nil} }}
+       | TOK_UNSET TOK_OCDEL TOK_WORD TOK_WORD {$$=&commonNode{COMMON,UnsetUtil, "Unset",[]interface{}{$2+$3, $4} }}
        | TOK_UNSET TOK_DEREF TOK_WORD TOK_LBLOCK EXPR TOK_RBLOCK {
               v:=&symbolReferenceNode{REFERENCE, $3, $5, nil}; 
               //$$=&assignNode{ASSIGN, v, "deleteValue"}
