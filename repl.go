@@ -224,12 +224,17 @@ func listLocal(path string) func(string) []string {
 	}
 }
 
-func listUserVars(path string) func(string) []string {
+func listUserVars(path string, appendDeref bool) func(string) []string {
 	return func(line string) []string {
 		ans := []string{}
 		varMap := GetDynamicMap()
 		for i := range varMap {
-			ans = append(ans, i)
+			if appendDeref {
+				ans = append(ans, "$"+i)
+			} else {
+				ans = append(ans, i)
+			}
+
 		}
 		return ans
 	}
@@ -475,10 +480,11 @@ func getPrefixCompleter() *readline.PrefixCompleter {
 			readline.PcItemDynamic(listEntities(""), false)),
 		readline.PcItem("lsu", true,
 			readline.PcItemDynamic(listEntities(""), false)),
-		readline.PcItem("print", false),
+		readline.PcItem("print", false,
+			readline.PcItemDynamic(listUserVars("", true), false)),
 		readline.PcItem("unset", false,
 			readline.PcItem("-v", false,
-				readline.PcItemDynamic(listUserVars(""), false)),
+				readline.PcItemDynamic(listUserVars("", false), false)),
 			readline.PcItem("-f", false,
 				readline.PcItemDynamic(listUserFuncs(""), false))),
 		readline.PcItem("while", false,
