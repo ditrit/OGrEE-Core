@@ -1037,7 +1037,7 @@ func GetOCLIAtrributes(Path string, ent int, data map[string]interface{}) error 
 	data["description"] = []interface{}{}
 
 	//Retrieve Parent
-	if ent != TENANT && ent != GROUP && ent != STRAY_DEV {
+	if ent != TENANT && ent != STRAY_DEV {
 		parent, parentURL = GetObject(Path, true)
 		if parent == nil {
 			return fmt.Errorf("error! The parent was not found in path")
@@ -1255,10 +1255,9 @@ func GetOCLIAtrributes(Path string, ent int, data map[string]interface{}) error 
 	case SEPARATOR, CORIDOR, GROUP:
 		//name, category, domain, pid
 
-		if ent != GROUP {
-			data["domain"] = domain
-			data["parentId"] = parent["id"]
-		}
+		data["domain"] = domain
+		data["parentId"] = parent["id"]
+
 		attr := map[string]interface{}{}
 
 		if ent == SEPARATOR {

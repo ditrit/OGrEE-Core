@@ -260,7 +260,7 @@ OCCR:
               attributes := map[string]interface{}{"leftRack":$6, "rightRack":$8, "temperature":$12}
               $$=&getOCAttrNode{$3, cmd.CORIDOR, attributes}
         }
-        |TOK_GROUP TOK_COL EXPR TOK_ATTRSPEC TOK_LBRAC GETOBJS TOK_RBRAC {$$=&createGroupNode{$3, $6}}
+        |TOK_GROUP TOK_COL PHYSICAL_PATH TOK_ATTRSPEC TOK_LBRAC GETOBJS TOK_RBRAC {$$=&createGroupNode{$3, $6}}
         |TOK_WALL TOK_COL PHYSICAL_PATH TOK_ATTRSPEC EXPR TOK_ATTRSPEC EXPR {
               attributes := map[string]interface{}{"pos1":$5,"pos2":$7}
               $$=&getOCAttrNode{$3, cmd.SEPARATOR, attributes}
