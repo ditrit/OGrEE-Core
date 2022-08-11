@@ -23,10 +23,14 @@ func main() {
 	flags := map[string]interface{}{}
 
 	flag.StringVar(&v, "v", "ERROR",
-		"Indicates level of debugging messages. 0 being the least, 4 is max")
+		"Indicates level of debugging messages."+
+			"The levels are of in ascending order:"+
+			"{NONE,ERROR,WARNING,INFO,DEBUG}.")
 
 	flag.StringVar(&verboseLevel, "verbose", "ERROR",
-		"Indicates level of debugging messages. 0 being the least, 4 is max")
+		"Indicates level of debugging messages."+
+			"The levels are of in ascending order:"+
+			"{NONE,ERROR,WARNING,INFO,DEBUG}.")
 
 	flag.StringVar(&unityURL, "unity_url", "", "Unity URL")
 	flag.StringVar(&u, "u", "", "Unity URL")
