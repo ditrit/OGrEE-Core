@@ -9,11 +9,12 @@ GITBRANCH=$(shell git branch --show-current)
 GITHASHDATE=$(shell git show -s --format=%ci HEAD | sed 's/ /\//g')
 
 
-main: interpreter main.go ast.go lexer.nn.go y.go repl.go
+main: interpreter main.go ast.go lexer.nn.go y.go repl.go completer.go
 	go build \-ldflags="-X  cli/controllers.BuildHash=$(GITHASH) \
 	-X cli/controllers.BuildTree=$(GITBRANCH) \
 	-X cli/controllers.BuildTime=$(DATE) \
-	-X cli/controllers.GitCommitDate=$(GITHASHDATE)" main.go ast.go lexer.nn.go y.go repl.go
+	-X cli/controllers.GitCommitDate=$(GITHASHDATE)" \
+	main.go ast.go lexer.nn.go y.go repl.go completer.go
 	
 
 interpreter: parser lexer buildTimeScript
