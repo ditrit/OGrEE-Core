@@ -4,7 +4,6 @@ import (
 cmd "cli/controllers"
 "path/filepath"
 l "cli/logger"
-"strconv"
 )
 
 var root node 
@@ -139,7 +138,7 @@ PATH: EXPR {$$=&pathNode{$1, STD}};
 EXPR:    TOK_DEREF TOK_WORD TOK_LBLOCK EXPR TOK_RBLOCK {$$=&arrayReferenceNode{$2, $4}}
        | TOK_DEREF TOK_LPAREN TOK_LPAREN ARITHEXPR TOK_RPAREN TOK_RPAREN {$$=$4}
        | TOK_DEREF TOK_LPAREN TOK_LPAREN BOOLEXPR TOK_RPAREN TOK_RPAREN {$$=$4}
-       //| TOK_INT {$$=&intLeaf{$1}}
+       | TOK_INT {$$=&intLeaf{$1}}
        | TOK_FLOAT {$$=&floatLeaf{$1}}
        | TOK_MINUS TOK_INT {$$=&intLeaf{-$2}}
        | TOK_MINUS TOK_FLOAT {$$=&floatLeaf{-$2}}
@@ -158,7 +157,6 @@ CONCAT_TERM: TOK_DEREF TOK_WORD {$$=&symbolReferenceNode{$2}}
        | TOK_WORD {$$=&strLeaf{$1}}
        | TOK_STR {$$=&strLeaf{$1}}
        | TOK_SLASH {$$=&strLeaf{"/"}}
-       | TOK_INT {$$=&strLeaf{strconv.Itoa($1)}}
 ;
 
 BOOLEXPR: EXPR TOK_OR EXPR {$$=&logicalNode{"||", $1, $3}}
