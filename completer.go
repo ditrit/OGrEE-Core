@@ -87,21 +87,25 @@ func UnLinkObjCompleter(path string) func(string) []string {
 		}
 
 		fn := ListEntities("")
-		if !partTwo {
+		//if !partTwo {
 
-			entities := fn(splitted[1])
+		entities := fn(splitted[1])
+		if !partTwo {
 			entities = append(entities, " @ ")
-			return entities
-		} else {
+		}
+
+		return entities
+		/*} else {
 			splitPartTwo := strings.SplitAfter(splitted[1], "@")
 			if len(splitPartTwo) < 1 {
 				println("DEBUG RETURNING NIL")
 				return nil
 			}
 			//println("DEBUG PART2")
+			//println("DEBUG: Path to check", splitPartTwo[1])
 			entities := fn(splitPartTwo[1])
 			return entities
-		}
+		}*/
 
 	}
 }
@@ -337,7 +341,8 @@ func GetPrefixCompleter() *readline.PrefixCompleter {
 
 		readline.PcItem("link:", true,
 			readline.PcItemDynamic(UnLinkObjCompleter(""), false)),
-		readline.PcItem("unlink:", false),
+		readline.PcItem("unlink:", true,
+			readline.PcItemDynamic(UnLinkObjCompleter(""), false)),
 		readline.PcItem("-", true,
 			readline.PcItem("selection", false),
 			readline.PcItemDynamic(ListEntities(""), false),
