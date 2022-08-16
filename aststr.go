@@ -44,7 +44,7 @@ func (n pathNode) getStr() (string, error) {
 		return p, nil
 	}
 	if p == "_" {
-		return cmd.State.CurrPath, nil
+		return "_", nil
 	}
 	// ignore starting dot
 	if p[0] == '.' {

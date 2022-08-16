@@ -303,6 +303,7 @@ func (n *selectObjectNode) execute() (interface{}, error) {
 		return nil, fmt.Errorf("Cannot find object at path ", path)
 	}
 	cmd.CD(path)
+	cmd.SetClipBoard([]string{path})
 	return v, nil
 }
 
@@ -393,6 +394,9 @@ func (n *updateObjNode) execute() (interface{}, error) {
 		if err != nil {
 			return nil, err
 		}
+	}
+	if path == "_" {
+		return nil, cmd.UpdateSelection(attributes)
 	}
 	return cmd.UpdateObj(path, "", "", attributes, false)
 }
@@ -565,7 +569,6 @@ func (n *selectChildrenNode) execute() (interface{}, error) {
 		return nil, err
 	}
 	println("Selection made!")
-	//cmd.CD()
 	return v, nil
 }
 
