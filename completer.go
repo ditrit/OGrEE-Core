@@ -137,6 +137,24 @@ func ListUserFuncs(path string) func(string) []string {
 	}
 }
 
+func ListForCreate(path string) func(string) []string {
+	return func(line string) []string {
+		//We want to trim until first whitespace
+		split := strings.Index(line, " ")
+		fn := ListEntities("")
+		ans := fn(line[split+1:])
+		return ans
+
+	}
+}
+
+func AttrCompleter(path string) func(string) []string {
+	return func(line string) []string {
+
+		return []string{" :name=", " :desc="}
+	}
+}
+
 func TrimToSlash(x string) string {
 	idx := strings.LastIndex(x, "/")
 	return x[:idx+1]
@@ -223,17 +241,39 @@ func GetPrefixCompleter() *readline.PrefixCompleter {
 			readline.PcItem("orphan:device:", false)),
 
 		readline.PcItem("create", false,
-			readline.PcItem("tenant", false),
-			readline.PcItem("site", false),
-			readline.PcItem("building", false),
-			readline.PcItem("room", false),
-			readline.PcItem("rack", false),
-			readline.PcItem("device", false),
-			readline.PcItem("corridor", false),
-			readline.PcItem("group", false),
-			readline.PcItem("panel", false),
-			readline.PcItem("cabinet", false),
-			readline.PcItem("sensor", false),
+			readline.PcItem("tenant", true,
+				readline.PcItemDynamic(ListForCreate(""), true),
+				readline.PcItemDynamic(AttrCompleter(""), false)),
+			readline.PcItem("site", true,
+				readline.PcItemDynamic(ListForCreate(""), true),
+				readline.PcItemDynamic(AttrCompleter(""), false)),
+			readline.PcItem("building", true,
+				readline.PcItemDynamic(ListForCreate(""), true),
+				readline.PcItemDynamic(AttrCompleter(""), false)),
+			readline.PcItem("room", true,
+				readline.PcItemDynamic(ListForCreate(""), true),
+				readline.PcItemDynamic(AttrCompleter(""), false)),
+			readline.PcItem("rack", true,
+				readline.PcItemDynamic(ListForCreate(""), true),
+				readline.PcItemDynamic(AttrCompleter(""), false)),
+			readline.PcItem("device", true,
+				readline.PcItemDynamic(ListForCreate(""), true),
+				readline.PcItemDynamic(AttrCompleter(""), false)),
+			readline.PcItem("corridor", true,
+				readline.PcItemDynamic(ListForCreate(""), true),
+				readline.PcItemDynamic(AttrCompleter(""), false)),
+			readline.PcItem("group", true,
+				readline.PcItemDynamic(ListForCreate(""), true),
+				readline.PcItemDynamic(AttrCompleter(""), false)),
+			readline.PcItem("panel", true,
+				readline.PcItemDynamic(ListForCreate(""), true),
+				readline.PcItemDynamic(AttrCompleter(""), false)),
+			readline.PcItem("cabinet", true,
+				readline.PcItemDynamic(ListForCreate(""), true),
+				readline.PcItemDynamic(AttrCompleter(""), false)),
+			readline.PcItem("sensor", true,
+				readline.PcItemDynamic(ListForCreate(""), true),
+				readline.PcItemDynamic(AttrCompleter(""), false)),
 			readline.PcItem("obj_template", false),
 			readline.PcItem("room_template", false),
 		),
