@@ -1,5 +1,7 @@
 /[ \t]/  { /* Skip blanks and tabs. */ }
 /get/ {  printToks("TOK_GET"); return TOK_GET}
+/getu/ {  printToks("TOK_GETU"); return TOK_GETU}
+/getslot/ {  printToks("TOK_GETSLOT"); return TOK_GETSLOT}
 /search/ { printToks("TOK_SEARCH"); return TOK_SEARCH}
 /hc/ { printToks("TOK_HIERARCH"); return TOK_HIERARCH}
 /\+/ { printToks("TOK_PLUS");lval.s = yylex.Text(); return TOK_PLUS}
@@ -63,11 +65,8 @@
 /device|dv/ {  printToks("TOK_DEVICE");lval.s = yylex.Text();return TOK_DEVICE}
 /group|gp/ {  printToks("TOK_GROUP");lval.s = yylex.Text();return TOK_GROUP}
 /corridor|co/ {  printToks("TOK_CORIDOR");lval.s = yylex.Text();return TOK_CORIDOR}
-/separator|sp/ {  printToks("TOK_WALL");lval.s = yylex.Text();return TOK_WALL}
 /ac/ {  printToks("TOK_AC");lval.s = yylex.Text();return TOK_AC}
 /panel|pn/ {  printToks("TOK_PANEL");lval.s = yylex.Text();return TOK_PANEL}
-/tile|tl/ {  printToks("TOK_TILE");lval.s = yylex.Text();return TOK_TILE}
-/row/ {  printToks("TOK_ROW");lval.s = yylex.Text();return TOK_ROW}
 /cabinet|cb/ {  printToks("TOK_CABINET");lval.s = yylex.Text();return TOK_CABINET}
 /sensor|sr/ {  printToks("TOK_SENSOR");lval.s = yylex.Text();return TOK_SENSOR}
 /room_template/ {  printToks("TOK_ROOM_TMPL");lval.s = yylex.Text();return TOK_ROOM_TMPL}
@@ -81,14 +80,13 @@
 /lsroom/ {  printToks("TOK_LSROOM"); return TOK_LSROOM}
 /lsrack/ {  printToks("TOK_LSRACK"); return TOK_LSRACK}
 /lsdev/ {  printToks("TOK_LSDEV"); return TOK_LSDEV}
-/lsrow/ {  printToks("TOK_LSROW"); return TOK_LSROW}
-/lstile/ {  printToks("TOK_LSTILE"); return TOK_LSTILE}
 /lscabinet/ {  printToks("TOK_LSCAB"); return TOK_LSCAB}
 /lssensor/ {  printToks("TOK_LSSENSOR"); return TOK_LSSENSOR}
 /lsac/ {  printToks("TOK_LSAC"); return TOK_LSAC}
 /lspanel/ {  printToks("TOK_LSPANEL"); return TOK_LSPANEL}
-/lsseparator/ {  printToks("TOK_LSWALL"); return TOK_LSWALL}
 /lscorridor/ {  printToks("TOK_LSCORRIDOR"); return TOK_LSCORRIDOR}
+/lsu/ {  printToks("TOK_LSU"); return TOK_LSU}
+/lsslot/ {  printToks("TOK_LSSLOT"); return TOK_LSSLOT}
 /tree/ { printToks("TOK_TREE"); return TOK_TREE}
 /lsog/ { printToks("TOK_LSOG"); return TOK_LSOG}
 /env/ { printToks("TOK_ENV"); return TOK_ENV}
@@ -126,13 +124,13 @@ func atoi(x string) int {
 }
 
 func printToks(tok string) {
-	if cmd.State.DebugLvl >= 2 {
+	if cmd.State.DebugLvl >= 3 {
 		println("We got ", tok)
 	}
 }
 
 func printCapturedWord(x string) {
-	if cmd.State.DebugLvl >= 2 {
+	if cmd.State.DebugLvl >= 3 {
 		println("LVAL: ", x)
 	}
 }

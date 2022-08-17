@@ -80,10 +80,13 @@ func executeFile(comBuf *[]map[string]int, file string) {
 
 func loadFile(path string) {
 	originalPath := path
-	newBackup := p.ProcessFile(path)
+	newBackup := p.ProcessFile(path, c.State.DebugLvl)
 	file, err := os.Open(newBackup)
 	if err != nil {
-		println("Error:", err.Error())
+		if c.State.DebugLvl > 0 {
+			println("Error:", err.Error())
+		}
+
 		l.GetWarningLogger().Println("Error:", err)
 	}
 	defer file.Close()
@@ -215,13 +218,13 @@ func Start(flags map[string]interface{}) {
 	env := map[string]interface{}{}
 
 	l.InitLogs()
+	c.InitDebugLevel(flags) //Set the Debug level
 	c.LoadEnvFile(env, flags["env_path"].(string))
 	c.InitTimeout(env)    //Set the Unity Timeout
 	c.GetURLs(flags, env) //Set the URLs
 	c.InitKey(flags, env) //Set the API Key
 	user, _ := c.Login(env)
 
-	println("Caching data... please wait")
 	c.InitState(flags, env)
 
 	rl, err := readline.NewEx(&readline.Config{
@@ -242,18 +245,14 @@ func Start(flags map[string]interface{}) {
 	//Allow the ShellState to hold a ptr to readline
 	c.SetStateReadline(rl)
 
-	args := len(os.Args)
-
-	if args > 1 { //Args were provided
-		if args == 2 && strings.Contains(os.Args[1], ".ocli") {
-			for i := 1; i < args; i++ {
-				c.State.ScriptCalled = true
-				c.State.ScriptPath = os.Args[i]
-				loadFile(os.Args[i])
-			}
+	//Execute Script if provided as arg and exit
+	if flags["script"] != "" {
+		if strings.Contains(flags["script"].(string), ".ocli") {
+			c.State.ScriptCalled = true
+			c.State.ScriptPath = flags["script"].(string)
+			loadFile(flags["script"].(string))
 			os.Exit(0)
 		}
-
 	}
 
 	//If Unity Client is present we have to Trigger
@@ -329,16 +328,17 @@ func getPrefixCompleter() *readline.PrefixCompleter {
 			readline.PcItem("lsroom", false),
 			readline.PcItem("lsrack", false),
 			readline.PcItem("lsdev", false),
-			readline.PcItem("lsrow", false),
-			readline.PcItem("lstile", false),
 			readline.PcItem("lscabinet", false),
 			readline.PcItem("lscorridor", false),
 			readline.PcItem("lsac", false),
 			readline.PcItem("lspanel", false),
-			readline.PcItem("lsseparator", false),
 			readline.PcItem("lssensor", false),
+			readline.PcItem("lsslot", false),
+			readline.PcItem("lsu", false),
 			readline.PcItem("create", false),
 			readline.PcItem("gt", false),
+			readline.PcItem("getu", false),
+			readline.PcItem("getslot", false),
 			readline.PcItem("update", false),
 			readline.PcItem("hc", false),
 			readline.PcItem("drawable", false),
@@ -362,7 +362,6 @@ func getPrefixCompleter() *readline.PrefixCompleter {
 			readline.PcItem("dv:", false),
 			readline.PcItem("gp:", false),
 			readline.PcItem("co:", false),
-			readline.PcItem("sp:", false),
 			readline.PcItem("orphan:device:", false)),
 
 		readline.PcItem("create", false,
@@ -372,11 +371,8 @@ func getPrefixCompleter() *readline.PrefixCompleter {
 			readline.PcItem("room", false),
 			readline.PcItem("rack", false),
 			readline.PcItem("device", false),
-			readline.PcItem("separator", false),
 			readline.PcItem("corridor", false),
 			readline.PcItem("group", false),
-			readline.PcItem("row", false),
-			readline.PcItem("tile", false),
 			readline.PcItem("panel", false),
 			readline.PcItem("cabinet", false),
 			readline.PcItem("sensor", false),
@@ -392,6 +388,8 @@ func getPrefixCompleter() *readline.PrefixCompleter {
 			readline.PcItem("rack", false),
 			readline.PcItem("device", false),
 			readline.PcItemDynamic(listEntities(""), false)),
+		readline.PcItem("getu", false),
+		readline.PcItem("getslot", false),
 		readline.PcItem("update", false),
 		readline.PcItem("delete", false),
 		readline.PcItem("selection", false),
@@ -408,15 +406,15 @@ func getPrefixCompleter() *readline.PrefixCompleter {
 		readline.PcItem("lsroom", false),
 		readline.PcItem("lsrack", false),
 		readline.PcItem("lsdev", false),
-		readline.PcItem("lsrow", false),
-		readline.PcItem("lstile", false),
 		readline.PcItem("lscabinet", false),
 		readline.PcItem("lscorridor", false),
 		readline.PcItem("lsac", false),
 		readline.PcItem("lspanel", false),
-		readline.PcItem("lsseparator", false),
 		readline.PcItem("lssensor", false),
 		readline.PcItem("lsog", false),
+		readline.PcItem("lsslot", false),
+		readline.PcItem("lsu", true,
+			readline.PcItemDynamic(listEntities(""), false)),
 		readline.PcItem("print", false),
 		readline.PcItem("unset", false,
 			readline.PcItem("-v", false),

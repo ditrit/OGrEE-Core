@@ -9,12 +9,9 @@ room
 rack   
 dev   
 ac   
-aisle   
-tile   
 cabinet   
 corridor   
 panel   
-separator   
 sensor       
 
 EXAMPLE   

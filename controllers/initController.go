@@ -34,15 +34,21 @@ func LoadEnvFile(env map[string]interface{}, path string) {
 			env[key] = val
 		}
 	} else {
-		fmt.Println(err.Error())
+		if State.DebugLvl > 0 {
+			fmt.Println(err.Error())
+		}
 		l.GetErrorLogger().Println("Error at initialisation:" +
 			err.Error())
 	}
 }
 
+func InitDebugLevel(flags map[string]interface{}) {
+	State.DebugLvl = flags["v"].(int)
+}
+
 //Intialise the ShellState
 func InitState(flags, env map[string]interface{}) {
-	State.DebugLvl = flags["v"].(int)
+
 	State.ClipBoard = nil
 	State.TreeHierarchy = &(Node{})
 	(*(State.TreeHierarchy)).Entity = -1
@@ -54,10 +60,14 @@ func InitState(flags, env map[string]interface{}) {
 	//Send login notification
 	data := map[string]interface{}{"api_url": State.APIURL, "api_token": GetKey()}
 	req := map[string]interface{}{"type": "login", "data": data}
-	e := models.ContactUnity("POST", State.UnityClientURL, req, State.Timeout)
+	e := models.ContactUnity("POST", State.UnityClientURL, req, State.Timeout, State.DebugLvl)
 	if e != nil {
 		l.GetWarningLogger().Println("Note: Unity Client (" + State.UnityClientURL + ") Unreachable")
-		fmt.Println("Note: Unity Client (" + State.UnityClientURL + ") Unreachable ")
+
+		if State.DebugLvl > 1 {
+			fmt.Println("Note: Unity Client (" + State.UnityClientURL + ") Unreachable ")
+		}
+
 		State.UnityClientAvail = false
 	} else {
 		fmt.Println("Unity Client is Reachable!")
@@ -65,8 +75,9 @@ func InitState(flags, env map[string]interface{}) {
 	}
 	//Set the filter attributes setting
 	State.FilterDisplay = false
+
 	//Set the Analyser setting to ON for now
-	State.Analyser = true
+	State.Analyser, _ = strconv.ParseBool(flags["analyser"].(string))
 
 	phys := &Node{}
 	phys.Name = "Physical"
@@ -180,8 +191,8 @@ func SetListener(flags, env map[string]interface{}) {
 		return
 	}
 
-	if env["listenPORT"] != nil {
-		State.ListenAddr = "0.0.0.0:" + env["listenPORT"].(string)
+	if env["listenPort"] != nil {
+		State.ListenAddr = "0.0.0.0:" + env["listenPort"].(string)
 		return
 	}
 
@@ -191,10 +202,10 @@ func SetListener(flags, env map[string]interface{}) {
 }
 
 func InitTimeout(env map[string]interface{}) {
-	if env["unityDeadline"] != nil && env["unityDeadline"] != "" {
+	if env["unityTimeout"] != nil && env["unityTimeout"] != "" {
 		var timeLen int
 		var durationType string
-		duration := env["unityDeadline"].(string)
+		duration := env["unityTimeout"].(string)
 		fmt.Sscanf(duration, "%d%s", &timeLen, &durationType)
 		switch durationType {
 		case "ns":
@@ -207,14 +218,20 @@ func InitTimeout(env map[string]interface{}) {
 			State.Timeout = time.Second * time.Duration(timeLen)
 		default:
 			l.GetWarningLogger().Println("Invalid duration unit found. Resorting to default of ms")
-			println("Invalid duration unit found in env file. Resorting to default of ms")
+			if State.DebugLvl > 1 {
+				println("Invalid duration unit found in env file. Resorting to default of ms")
+			}
+
 			State.Timeout = time.Millisecond * time.Duration(timeLen)
 		}
 		return
 	}
 
-	l.GetWarningLogger().Println("Unity deadline not found. Resorting to default time duration of 10 ms")
-	println("Warning: Unity deadline not found in env file. Resorting to default of 10 ms")
+	if State.DebugLvl > 1 {
+		l.GetWarningLogger().Println("Unity deadline not found. Resorting to default time duration of 10 ms")
+		println("Warning: Unity deadline not found in env file. Resorting to default of 10 ms")
+	}
+
 	State.Timeout = time.Millisecond * time.Duration(10)
 	return
 }
@@ -225,14 +242,17 @@ func InitKey(flags, env map[string]interface{}) string {
 		return State.APIKEY
 	}
 
-	if env["apikey"] != nil {
-		State.APIKEY = env["apikey"].(string)
+	if env["apiKey"] != nil {
+		State.APIKEY = env["apiKey"].(string)
 		return State.APIKEY
 	}
 
 	fmt.Println("Error: No API Key Found")
-	l.GetErrorLogger().Println(
-		"No API Key provided in env file nor as argument")
+	if State.DebugLvl > 0 {
+		l.GetErrorLogger().Println(
+			"No API Key provided in env file nor as argument")
+	}
+
 	State.APIKEY = ""
 	return ""
 
@@ -254,7 +274,10 @@ func GetEmail() string {
 	}
 
 	if err := scanner.Err(); err != nil {
-		fmt.Println(err)
+		if State.DebugLvl > 0 {
+			fmt.Println(err)
+		}
+
 		l.GetErrorLogger().Println(err.Error())
 	}
 	return ""
@@ -331,7 +354,10 @@ func SetObjsForUnity(x string, env map[string]interface{}) []int {
 	if allDetected || len(res) == 0 {
 		if len(res) == 0 && !allDetected {
 			l.GetWarningLogger().Println(x + " key not found, going to use defaults")
-			println(x + " key not found, going to use defaults")
+			if State.DebugLvl > 1 {
+				println(x + " key not found, going to use defaults")
+			}
+
 		}
 		for idx := 0; idx < GROUP; idx++ {
 			res = append(res, idx)
@@ -356,7 +382,7 @@ func SetDrawableTemplate(entity string, env map[string]interface{}) map[string]i
 	}
 
 	l.GetWarningLogger().Println("Specified template for " + entity + " not found")
-	if State.DebugLvl > 2 {
+	if State.DebugLvl > 1 {
 		println("Specified template for " + entity +
 			" not found, resorting to defaults")
 	}
@@ -380,14 +406,20 @@ func CreateCredentials() (string, string) {
 
 	resp, e := client.Do(req)
 	if e != nil || resp.StatusCode != http.StatusCreated {
-		println("Error while creating credentials on server! Now exiting")
+		if State.DebugLvl > 0 {
+			println("Error while creating credentials on server! Now exiting")
+		}
+
 		l.GetErrorLogger().Println("Error while creating credentials on server! Now exiting")
 		os.Exit(-1)
 	}
 	defer resp.Body.Close()
 	bodyBytes, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		readline.Line("Error: " + err.Error() + " Now Exiting")
+		if State.DebugLvl > 0 {
+			readline.Line("Error: " + err.Error() + " Now Exiting")
+		}
+
 		l.GetErrorLogger().Println("Error while trying to read server response: ", err)
 		os.Exit(-1)
 	}
@@ -396,7 +428,7 @@ func CreateCredentials() (string, string) {
 
 	os.Mkdir(".resources", 0755)
 	os.WriteFile("./.resources/.env",
-		[]byte("user="+user+"\n"+"apikey="+key),
+		[]byte("user="+user+"\n"+"apiKey="+key),
 		0666)
 
 	l.GetInfoLogger().Println("Credentials created")
@@ -418,7 +450,10 @@ func CheckKeyIsValid(key string) bool {
 			readline.Line("Status code" + strconv.Itoa(resp.StatusCode))
 		} else {
 			l.GetErrorLogger().Println("Unable to connect to API: ", State.APIURL)
-			println("Unable to connect to API: ", State.APIURL)
+			if State.DebugLvl > 0 {
+				println("Unable to connect to API: ", State.APIURL)
+			}
+
 		}
 
 		return false
@@ -429,17 +464,20 @@ func CheckKeyIsValid(key string) bool {
 func Login(env map[string]interface{}) (string, string) {
 	var user, key string
 
-	if env["user"] == nil || env["apikey"] == nil ||
-		env["user"] == "" || env["apikey"] == "" {
+	if env["user"] == nil || env["apiKey"] == nil ||
+		env["user"] == "" || env["apiKey"] == "" {
 		l.GetInfoLogger().Println("Key not found, going to generate..")
 		user, key = CreateCredentials()
 	} else {
 		user = env["user"].(string)
-		key = env["apikey"].(string)
+		key = env["apiKey"].(string)
 	}
 
 	if !CheckKeyIsValid(key) {
-		println("Error while checking key. Now exiting")
+		if State.DebugLvl > 0 {
+			println("Error while checking key. Now exiting")
+		}
+
 		l.GetErrorLogger().Println("Error while checking key. Now exiting")
 		os.Exit(-1)
 	}

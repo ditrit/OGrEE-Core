@@ -29,9 +29,9 @@ var _ = l.GetInfoLogger() //Suppresses annoying Dockerfile build error
 %token <f> TOK_FLOAT
 %token <s> TOK_WORD TOK_TENANT TOK_SITE TOK_BLDG TOK_ROOM
 %token <s> TOK_RACK TOK_DEVICE TOK_STR
-%token <s> TOK_CORIDOR TOK_GROUP TOK_WALL
-%token <s> TOK_AC TOK_CABINET TOK_PANEL TOK_ROW
-%token <s> TOK_TILE TOK_SENSOR
+%token <s> TOK_CORIDOR TOK_GROUP 
+%token <s> TOK_AC TOK_CABINET TOK_PANEL
+%token <s> TOK_SENSOR
 %token <s> TOK_ROOM_TMPL TOK_OBJ_TMPL
 %token <s> TOK_PLUS TOK_MINUS TOK_ORIENTATION
 %token
@@ -39,11 +39,11 @@ var _ = l.GetInfoLogger() //Suppresses annoying Dockerfile build error
        TOK_EQUAL TOK_DOUBLE_EQUAL TOK_CMDFLAG TOK_SLASH TOK_DOUBLE_DOT
        TOK_EXIT TOK_DOC TOK_CD TOK_PWD
        TOK_CLR TOK_GREP TOK_LS TOK_TREE
-       TOK_LSOG TOK_LSTEN TOK_LSSITE TOK_LSBLDG TOK_LSROW
-       TOK_LSTILE TOK_LSCAB TOK_LSSENSOR TOK_LSAC TOK_LSPANEL
-       TOK_LSWALL TOK_LSCORRIDOR
+       TOK_LSOG TOK_LSTEN TOK_LSSITE TOK_LSBLDG
+       TOK_LSCAB TOK_LSSENSOR TOK_LSAC TOK_LSPANEL
+       TOK_LSCORRIDOR TOK_LSU TOK_LSSLOT TOK_GETU
        TOK_LSROOM TOK_LSRACK TOK_LSDEV
-       TOK_ATTRSPEC
+       TOK_ATTRSPEC TOK_GETSLOT
        TOK_COL TOK_SELECT TOK_LBRAC TOK_RBRAC
        TOK_COMMA TOK_CMDS TOK_TEMPLATE TOK_VAR TOK_DEREF
        TOK_SEMICOL TOK_IF TOK_FOR TOK_WHILE
@@ -201,13 +201,13 @@ GETOBJS: PATH TOK_COMMA GETOBJS {x:=[]node{$1}; $$=append(x, $3...)}
        | PATH {x:=[]node{$1}; $$=x}
 ;
 
-OBJ_TYPE: TOK_TENANT | TOK_SITE | TOK_BLDG | TOK_ROOM | TOK_RACK | TOK_DEVICE | TOK_AC | TOK_PANEL |TOK_CABINET | TOK_ROW 
-       | TOK_TILE | TOK_WALL | TOK_SENSOR | TOK_CORIDOR | TOK_GROUP | TOK_OBJ_TMPL | TOK_ROOM_TMPL
+OBJ_TYPE: TOK_TENANT | TOK_SITE | TOK_BLDG | TOK_ROOM | TOK_RACK | TOK_DEVICE | TOK_AC | TOK_PANEL |TOK_CABINET 
+       | TOK_SENSOR | TOK_CORIDOR | TOK_GROUP | TOK_OBJ_TMPL | TOK_ROOM_TMPL
 ;
 
 LSOBJ_COMMAND: TOK_LSTEN {$$=0} | TOK_LSSITE {$$=1} | TOK_LSBLDG {$$=2} | TOK_LSROOM {$$=3} | TOK_LSRACK {$$=4}
-       | TOK_LSDEV {$$=5} | TOK_LSROW {$$=10} | TOK_LSTILE {$$=11} | TOK_LSAC {$$=6} | TOK_LSPANEL {$$=7}
-       | TOK_LSWALL {$$=8} | TOK_LSCAB {$$=9} | TOK_LSCORRIDOR {$$=12} | TOK_LSSENSOR{$$=13}
+       | TOK_LSDEV {$$=5} | TOK_LSAC {$$=6} | TOK_LSPANEL {$$=7}
+       | TOK_LSCAB {$$=9} | TOK_LSCORRIDOR {$$=12} | TOK_LSSENSOR{$$=13}
 ;
 
 COMMAND: TOK_LINK{$$="link"} | TOK_UNLINK{$$="unlink"} | TOK_CLR{$$="clear"} | TOK_LS{$$="ls"}
@@ -259,10 +259,6 @@ OCCR:
               $$=&getOCAttrNode{$3, cmd.CORIDOR, attributes}
         }
         |TOK_GROUP TOK_COL PHYSICAL_PATH TOK_ATTRSPEC TOK_LBRAC GETOBJS TOK_RBRAC {$$=&createGroupNode{$3, $6}}
-        |TOK_WALL TOK_COL PHYSICAL_PATH TOK_ATTRSPEC EXPR TOK_ATTRSPEC EXPR {
-              attributes := map[string]interface{}{"pos1":$5,"pos2":$7}
-              $$=&getOCAttrNode{$3, cmd.SEPARATOR, attributes}
-        }
         |TOK_ORPH PHYSICAL_PATH TOK_DEVICE TOK_COL EXPR TOK_ATTRSPEC EXPR {
               attributes := map[string]interface{}{"attributes":map[string]interface{}{"template":$7}}
               $$=&getOCAttrNode{$5, cmd.STRAY_DEV, attributes}

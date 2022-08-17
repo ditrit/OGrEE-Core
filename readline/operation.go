@@ -67,23 +67,23 @@ func (w *wrapWriter) Write(b []byte) (int, error) {
 }
 
 func NewOperation(t *Terminal, cfg *Config) *Operation {
-	width := cfg.FuncGetWidth()
+	width, height := cfg.FuncGetSize()
 	op := &Operation{
 		t:       t,
-		buf:     NewRuneBuffer(t, cfg.Prompt, cfg, width),
+		buf:     NewRuneBuffer(t, cfg.Prompt, cfg, width, height),
 		outchan: make(chan []rune),
 		errchan: make(chan error, 1),
 	}
 	op.w = op.buf.w
 	op.SetConfig(cfg)
 	op.opVim = newVimMode(op)
-	op.opCompleter = newOpCompleter(op.buf.w, op, width)
+	op.opCompleter = newOpCompleter(op.buf.w, op, width, height)
 	op.opPassword = newOpPassword(op)
 	op.cfg.FuncOnWidthChanged(func() {
-		newWidth := cfg.FuncGetWidth()
-		op.opCompleter.OnWidthChange(newWidth)
-		op.opSearch.OnWidthChange(newWidth)
-		op.buf.OnWidthChange(newWidth)
+		newWidth, newHeight := cfg.FuncGetSize()
+		op.opCompleter.OnSizeChange(newWidth, newHeight)
+		op.opSearch.OnSizeChange(newWidth, newHeight)
+		op.buf.OnSizeChange(newWidth, newHeight)
 	})
 	go op.ioloop()
 	return op
@@ -105,9 +105,7 @@ func (o *Operation) GetConfig() *Config {
 }
 
 func (o *Operation) ioloop() {
-	//println("IOLOOP TRIGGERED")
 	for {
-		//println("IOLOOP TRIGGERED")
 		keepInSearchMode := false
 		keepInCompleteMode := false
 		r := o.t.ReadRune()
@@ -136,7 +134,18 @@ func (o *Operation) ioloop() {
 		}
 		isUpdateHistory := true
 
-		//This enters only when TAB is pressed the 3rd TIME
+		//problematic block START
+		if o.IsInPagerMode() {
+			keepInCompleteMode = o.HandlePagerMode(r)
+			if r == CharEnter || r == CharCtrlJ || r == CharInterrupt {
+				o.t.KickRead()
+			}
+			if !keepInCompleteMode {
+				o.buf.Refresh(nil)
+			}
+			continue
+		}
+		//problematic block END
 		if o.IsInCompleteSelectMode() {
 			keepInCompleteMode = o.HandleCompleteSelect(r)
 			if keepInCompleteMode {
@@ -146,9 +155,6 @@ func (o *Operation) ioloop() {
 			o.buf.Refresh(nil)
 			switch r {
 			case CharEnter, CharCtrlJ:
-				//println("ENTER WAS PRESSED")
-				//history gets updated for the current string when
-				//an option is selected from the tab completion select menu
 				o.history.Update(o.buf.Runes(), false)
 				fallthrough
 			case CharInterrupt:
@@ -177,22 +183,19 @@ func (o *Operation) ioloop() {
 				o.buf.Refresh(nil)
 			}
 		case CharTab:
-			//println("ANY TIME TAB IS PRESSED WE COME HERE")
-			//println("TAB PRESSED")
-			/*This is the part where you get moved
-			"Because you didnt set up an AutoCompleter*/
 			if o.GetConfig().AutoComplete == nil {
 				o.t.Bell()
 				break
 			}
 			if o.OnComplete() {
-				//println("I GUESS IT WAS TRUE THO")
-				keepInCompleteMode = true
+				if o.IsInCompleteMode() { //problematic
+					keepInCompleteMode = true
+					continue // redraw is done, loop //problematic
+				} //problematic
 			} else {
 				o.t.Bell()
-				break
 			}
-
+			o.buf.Refresh(nil)
 		case CharBckSearch:
 			if !o.SearchMode(S_DIR_BCK) {
 				o.t.Bell()
@@ -234,9 +237,12 @@ func (o *Operation) ioloop() {
 				break
 			}
 			o.buf.Backspace()
-			if o.IsInCompleteMode() {
-				o.OnComplete()
-			}
+			//Problematic because this block was commented
+			/*
+				if o.IsInCompleteMode() {
+					o.OnComplete()
+				}
+			*/
 		case CharCtrlZ:
 			o.buf.Clean()
 			o.t.SleepToResume()
@@ -253,6 +259,10 @@ func (o *Operation) ioloop() {
 			if o.IsSearchMode() {
 				o.ExitSearchMode(false)
 			}
+			if o.IsInCompleteMode() { //problematic START
+				o.ExitCompleteMode(true)
+				o.buf.Refresh(nil)
+			} //problematic END
 			o.buf.MoveToLineEnd()
 			var data []rune
 			if !o.GetConfig().UniqueEditLine {
@@ -339,11 +349,14 @@ func (o *Operation) ioloop() {
 				keepInSearchMode = true
 				break
 			}
-			//println("WRITING RUNE")
 			o.buf.WriteRune(r)
 			if o.IsInCompleteMode() {
 				o.OnComplete()
-				keepInCompleteMode = true
+				if o.IsInCompleteMode() { //problematic
+					keepInCompleteMode = true
+				} else { //problematic
+					o.buf.Refresh(nil) //problematic
+				} //problematic
 			}
 		}
 
@@ -364,15 +377,11 @@ func (o *Operation) ioloop() {
 				o.ExitCompleteMode(false)
 				o.Refresh()
 			} else {
-				//This is probably the last thing before
-				//control goes back to start of loop
-				//This only executes when there are results from autocomplete
 				o.buf.Refresh(nil)
 				o.CompleteRefresh()
 			}
 		}
 		if isUpdateHistory && !o.IsSearchMode() {
-			//The current line's history is always refreshed
 			// it will cause null history
 			o.history.Update(o.buf.Runes(), false)
 		}
@@ -409,39 +418,7 @@ func (o *Operation) Runes() ([]rune, error) {
 	o.buf.getAndSetOffset(o.t)
 	o.buf.Print() // print prompt & buffer contents
 	o.t.KickRead()
-	select {
-	case r := <-o.outchan:
-		return r, nil
-	case err := <-o.errchan:
-		if e, ok := err.(*InterruptError); ok {
-			return e.Line, ErrInterrupt
-		}
-		return nil, err
-	}
-}
 
-func (o *Operation) MyString() (string, error) {
-	r, e := o.MyRunes()
-	return string(r), e
-}
-
-func (o *Operation) MyCatch() (string, error) {
-	buf := o.buf
-	rs := buf.Runes()
-	return string(rs), nil
-}
-
-func (o *Operation) MyRunes() ([]rune, error) {
-	o.t.EnterRawMode()
-	defer o.t.ExitRawMode()
-
-	listener := o.GetConfig().Listener
-	if listener != nil {
-		listener.OnChange(nil, 0, 0)
-	}
-
-	o.buf.Refresh(nil) // print prompt
-	o.t.KickRead()
 	select {
 	case r := <-o.outchan:
 		return r, nil
@@ -489,6 +466,10 @@ func (o *Operation) Slice() ([]byte, error) {
 }
 
 func (o *Operation) Close() {
+	select {
+	case o.errchan <- io.EOF:
+	default:
+	}
 	o.history.Close()
 }
 
@@ -518,12 +499,12 @@ func (op *Operation) SetConfig(cfg *Config) (*Config, error) {
 	op.SetPrompt(cfg.Prompt)
 	op.SetMaskRune(cfg.MaskRune)
 	op.buf.SetConfig(cfg)
-	width := op.cfg.FuncGetWidth()
+	width, height := op.cfg.FuncGetSize()
 
 	if cfg.opHistory == nil {
 		op.SetHistoryPath(cfg.HistoryFile)
 		cfg.opHistory = op.history
-		cfg.opSearch = newOpSearch(op.buf.w, op.buf, op.history, cfg, width)
+		cfg.opSearch = newOpSearch(op.buf.w, op.buf, op.history, cfg, width, height)
 	}
 	op.history = cfg.opHistory
 
@@ -532,7 +513,7 @@ func (op *Operation) SetConfig(cfg *Config) (*Config, error) {
 	op.history.Init()
 
 	if op.cfg.AutoComplete != nil {
-		op.opCompleter = newOpCompleter(op.buf.w, op, width)
+		op.opCompleter = newOpCompleter(op.buf.w, op, width, height)
 	}
 
 	op.opSearch = cfg.opSearch

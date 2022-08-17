@@ -14,10 +14,13 @@ import (
 	"strings"
 )
 
-func ProcessFile(path string) string {
+func ProcessFile(path string, DebugLvl int) string {
 	file, err := os.Open(path)
 	if err != nil {
-		println("Error:", err.Error())
+		if DebugLvl > 0 {
+			println("Error:", err.Error())
+		}
+
 		l.GetErrorLogger().Println("Error:", err)
 		return ""
 	}
@@ -109,7 +112,9 @@ func ProcessFile(path string) string {
 	fileName := prefix + filepath.Base(path) + ".new"
 	f, e := os.Create(fileName)
 	if e != nil {
-		println("Error:", err.Error())
+		if DebugLvl > 1 {
+			println("Error:", err.Error())
+		}
 		l.GetWarningLogger().Println("Error:", err)
 		return ""
 	}
