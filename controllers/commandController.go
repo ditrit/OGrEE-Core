@@ -31,7 +31,7 @@ func ParseResponse(resp *http.Response, e error, purpose string) map[string]inte
 		if State.DebugLvl > 0 {
 			println("There was an error!")
 		}
-
+		return nil
 	}
 	defer resp.Body.Close()
 	bodyBytes, err := ioutil.ReadAll(resp.Body)
@@ -240,6 +240,10 @@ func GetObject(path string, silenced bool) (map[string]interface{}, string) {
 	for i := range paths {
 		resp, e := models.Send("GET", paths[i], GetKey(), nil)
 		data = ParseResponse(resp, e, "GET")
+
+		if resp == nil {
+			return nil, ""
+		}
 
 		if resp.StatusCode == http.StatusOK {
 			if data["data"] != nil {
@@ -1164,7 +1168,10 @@ func GetHierarchy(x string, depth int, silence bool) []map[string]interface{} {
 	//Get object first
 	obj, e := GetObject(x, true)
 	if obj == nil {
-		println("Error: ", e)
+		if e != "" {
+			println("Error: ", e)
+		}
+
 		return nil
 	}
 
