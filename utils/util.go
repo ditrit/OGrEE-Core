@@ -106,6 +106,8 @@ func EntityToString(entity int) string {
 		return "ac"
 	case PWRPNL:
 		return "panel"
+	case DOMAIN:
+		return "domain"
 	case STRAYDEV:
 		return "stray_device"
 	case STRAYSENSOR:
@@ -143,6 +145,8 @@ func EntityStrToInt(entity string) int {
 		return AC
 	case "panel":
 		return PWRPNL
+	case "domain":
+		return DOMAIN
 	case "stray_device":
 		return STRAYDEV
 	case "stray_sensor":
