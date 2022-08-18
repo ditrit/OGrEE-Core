@@ -94,6 +94,11 @@ stmnt:   TOK_GET PATH {$$=&getObjectNode{$2}}
        | TOK_LS PATH {$$=&lsNode{$2}}
        | TOK_LS {$$=&lsNode{&strLeaf{""}}}
        | LSOBJ_COMMAND PATH {$$=&lsObjNode{$2, $1}}
+       | TOK_LSU PATH {$$=&lsAttrNode{$2, "heightu"}}
+       | TOK_LSSLOT PATH {$$=&lsAttrNode{$2, "slot"}}
+       | TOK_GETU PATH {$$=&getUNode{$2, 0}}
+       | TOK_GETU PATH TOK_INT {$$=&getUNode{$2, $3}}
+       | TOK_GETSLOT PATH TOK_COMMA EXPR {$$=&getUNode{$2, $4}}
        | TOK_TREE PATH TOK_INT {$$=&treeNode{$2, $3}}
        | TOK_TREE PATH {$$=&treeNode{$2, 0}}
        | TOK_DRAW PATH {$$=&drawNode{$2, 0}}
@@ -207,7 +212,7 @@ OBJ_TYPE: TOK_TENANT | TOK_SITE | TOK_BLDG | TOK_ROOM | TOK_RACK | TOK_DEVICE | 
 
 LSOBJ_COMMAND: TOK_LSTEN {$$=0} | TOK_LSSITE {$$=1} | TOK_LSBLDG {$$=2} | TOK_LSROOM {$$=3} | TOK_LSRACK {$$=4}
        | TOK_LSDEV {$$=5} | TOK_LSAC {$$=6} | TOK_LSPANEL {$$=7}
-       | TOK_LSCAB {$$=9} | TOK_LSCORRIDOR {$$=12} | TOK_LSSENSOR{$$=13}
+       | TOK_LSCAB {$$=8} | TOK_LSCORRIDOR {$$=9} | TOK_LSSENSOR{$$=10}
 ;
 
 COMMAND: TOK_LINK{$$="link"} | TOK_UNLINK{$$="unlink"} | TOK_CLR{$$="clear"} | TOK_LS{$$="ls"}
@@ -219,7 +224,7 @@ COMMAND: TOK_LINK{$$="link"} | TOK_UNLINK{$$="unlink"} | TOK_CLR{$$="clear"} | T
        | TOK_LSTEN{$$="lsten"} | TOK_LSSITE{$$="lssite"} | TOK_LSBLDG{$$="lsbldg"} | TOK_LSROOM{$$="lsroom"} 
        | TOK_LSRACK{$$="lsrack"} | TOK_LSDEV{$$="lsdev"} | TOK_MINUS{$$="-"} | TOK_TEMPLATE{$$=".template"}
        | TOK_CMDS{$$=".cmds"} | TOK_VAR{$$=".var"} | TOK_PLUS{$$="+"} | TOK_EQUAL{$$="="} 
-       | TOK_GREATER{$$=">"} | TOK_DRAWABLE{$$="drawable"}
+       | TOK_GREATER{$$=">"} | TOK_DRAWABLE{$$="drawable"} | TOK_LSU{$$="lsu"} | TOK_LSSLOT{$$="lsslot"} | TOK_GETU{$$="getu"} | TOK_GETSLOT{$$="getslot"}
 ;
 
 OCCR:   

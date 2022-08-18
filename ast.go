@@ -156,6 +156,42 @@ func (n *lsNode) execute() (interface{}, error) {
 	return cmd.LS(path), nil
 }
 
+type lsAttrNode struct {
+	path node
+	attr string
+}
+
+func (n *lsAttrNode) execute() (interface{}, error) {
+	val, err := n.path.execute()
+	if err != nil {
+		return nil, err
+	}
+	path, ok := val.(string)
+	if !ok {
+		return nil, fmt.Errorf("Path should be a string")
+	}
+	cmd.LSATTR(path, n.attr)
+	return nil, nil
+}
+
+type getUNode struct {
+	path node
+	u    interface{}
+}
+
+func (n *getUNode) execute() (interface{}, error) {
+	val, err := n.path.execute()
+	if err != nil {
+		return nil, err
+	}
+	path, ok := val.(string)
+	if !ok {
+		return nil, fmt.Errorf("Path should be a string")
+	}
+	cmd.GetByAttr(path, n.u)
+	return nil, nil
+}
+
 type loadNode struct {
 	path node
 }
