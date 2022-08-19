@@ -261,7 +261,7 @@ func GetObject(path string, silenced bool) (map[string]interface{}, string) {
 		println(path)
 	}
 
-	l.GetWarningLogger().Println("Object to Get not found")
+	l.GetWarningLogger().Println("Object to Get not found :", path)
 
 	return nil, ""
 }
@@ -538,7 +538,7 @@ func LSOG() {
 	fmt.Println("BUILD HASH:", BuildHash)
 	fmt.Println("COMMIT DATE: ", GitCommitDate)
 	fmt.Println("LOG PATH:", "./log.txt")
-	fmt.Println("HISTORY FILE PATH:", ".resources/.history")
+	fmt.Println("HISTORY FILE PATH:", "./.history")
 	fmt.Println("DEBUG LEVEL: ", State.DebugLvl)
 }
 
@@ -2355,7 +2355,7 @@ func LoadTemplate(data map[string]interface{}, filePath string) {
 	if r.StatusCode == http.StatusCreated {
 		println("Template Loaded")
 	} else {
-		l.GetWarningLogger().Println("Couldn't load template, Status Code: ", r.StatusCode)
+		l.GetWarningLogger().Println("Couldn't load template, Status Code :", r.StatusCode, " filePath :", filePath)
 		if State.DebugLvl > 0 {
 			println("Error template wasn't loaded")
 		}

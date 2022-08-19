@@ -406,9 +406,9 @@ camera.wait=[time]
 
 Misc.
 ------------
-The shell history is stored in a file in the folder  ``` .resources/.history``` of the present Shell executable directory.    
+The shell history is stored in a file in the folder  ```.history``` of the present Shell executable directory.    
    
-The user credentials, API URL, Unity URL info are stored in the file  ``` .resources/.env``` of the present Shell executable directory. You can change the URLs to point to anywhere etc.
+The user credentials, API URL, Unity URL info are stored in the file  ```.env``` of the present Shell executable directory. You can change the URLs to point to anywhere etc.
 
 
 Debugging

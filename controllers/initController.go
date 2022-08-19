@@ -27,7 +27,6 @@ func LoadEnvFile(env map[string]interface{}, path string) {
 		scanner := bufio.NewScanner(file)
 		scanner.Split(bufio.ScanWords) // use scanwords
 		for scanner.Scan() {
-
 			splitArr := strings.SplitN(scanner.Text(), "=", 2)
 			key := splitArr[0]
 			val := splitArr[1]
@@ -259,7 +258,7 @@ func InitKey(flags, env map[string]interface{}) string {
 }
 
 func GetEmail() string {
-	file, err := os.Open("./.resources/.env")
+	file, err := os.Open("./.env")
 	if err != nil {
 		fmt.Println(err)
 	}
@@ -426,8 +425,7 @@ func CreateCredentials() (string, string) {
 	json.Unmarshal(bodyBytes, &tp)
 	key = (tp["account"].(map[string]interface{}))["token"].(string)
 
-	os.Mkdir(".resources", 0755)
-	os.WriteFile("./.resources/.env",
+	os.WriteFile("./.env",
 		[]byte("user="+user+"\n"+"apiKey="+key),
 		0666)
 
