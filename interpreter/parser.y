@@ -116,6 +116,8 @@ stmnt:   TOK_GET PATH {$$=&getObjectNode{$2}}
        | TOK_CMDS TOK_COL EXPR {$$=&loadNode{$3}}
        | TOK_TEMPLATE TOK_COL EXPR {$$=&loadTemplateNode{$3}}
        | TOK_SELECT {$$=&selectNode{}}
+       | TOK_DRAWABLE TOK_LPAREN PATH TOK_RPAREN {$$=&isEntityDrawableNode{$3}}
+       | TOK_DRAWABLE TOK_LPAREN PATH TOK_COMMA EXPR TOK_RPAREN {$$=&isAttrDrawableNode{$3, $5}}
 
        // LINKING
        | TOK_LINK TOK_COL PHYSICAL_PATH TOK_ATTRSPEC EXPR {$$=&linkObjectNode{[]interface{}{$3, $5}}}
