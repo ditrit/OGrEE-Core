@@ -45,7 +45,7 @@ var _ = l.GetInfoLogger() //Suppresses annoying Dockerfile build error
        TOK_LSROOM TOK_LSRACK TOK_LSDEV
        TOK_ATTRSPEC TOK_GETSLOT
        TOK_COL TOK_SELECT TOK_LBRAC TOK_RBRAC
-       TOK_COMMA TOK_CMDS TOK_TEMPLATE TOK_VAR TOK_DEREF
+       TOK_COMMA TOK_DOT_DOT TOK_CMDS TOK_TEMPLATE TOK_VAR TOK_DEREF
        TOK_SEMICOL TOK_IF TOK_FOR TOK_WHILE
        TOK_ELSE TOK_LBLOCK TOK_RBLOCK
        TOK_LPAREN TOK_RPAREN TOK_OR TOK_AND TOK_IN TOK_PRNT TOK_QUOT
@@ -61,7 +61,7 @@ var _ = l.GetInfoLogger() //Suppresses annoying Dockerfile build error
 %type <n> LSOBJ_COMMAND
 %type <s> OBJ_TYPE COMMAND
 %type <nodeArr> WNARG GETOBJS
-%type <node> OCCR PATH PHYSICAL_PATH STRAY_DEV_PATH EXPR CONCAT CONCAT_TERM ARITHEXPR stmnt DEREF st2
+%type <node> OCCR PATH PHYSICAL_PATH STRAY_DEV_PATH EXPR CONCAT CONCAT_TERM ARITHEXPR stmnt DEREF st2 IF
 %type <boolNode> BOOLEXPR
 //%type <mapVoid> EQUAL_LIST
 
@@ -91,6 +91,7 @@ stmnt:   TOK_GET PATH {$$=&getObjectNode{$2}}
        | PHYSICAL_PATH TOK_COL TOK_WORD TOK_EQUAL EXPR {$$=&updateObjNode{$1, map[string]interface{}{$3:$5}}}
        | PHYSICAL_PATH TOK_COL TOK_WORD TOK_EQUAL EXPR TOK_ATTRSPEC EXPR {$$=&specialUpdateNode{$1, $3, $5, $7}}
        | TOK_CD PATH {$$=&cdNode{$2}}
+       | TOK_CD TOK_DOT_DOT {$$=&cdNode{&strLeaf{".."}}}
        | TOK_LS PATH {$$=&lsNode{$2}}
        | TOK_LS {$$=&lsNode{&strLeaf{""}}}
        | LSOBJ_COMMAND PATH {$$=&lsObjNode{$2, $1}}
@@ -133,7 +134,23 @@ stmnt:   TOK_GET PATH {$$=&getObjectNode{$2}}
        | TOK_EXIT {$$=&exitNode{}}
        | TOK_DOC COMMAND {$$=&helpNode{$2}}
        | TOK_DOC {$$=&helpNode{""}}
-       | TOK_DOC TOK_WORD {$$=&helpNode{$2}}          
+       | TOK_DOC TOK_WORD {$$=&helpNode{$2}}
+
+       // LOOPS
+       | TOK_WHILE TOK_LPAREN EXPR TOK_RPAREN st2 TOK_DONE {$$=&whileNode{$3, $5}}
+       | TOK_FOR TOK_LPAREN TOK_LPAREN TOK_WORD TOK_EQUAL EXPR TOK_SEMICOL EXPR TOK_SEMICOL st2 TOK_RPAREN TOK_RPAREN TOK_SEMICOL st2 TOK_DONE {
+              $$=&forNode{&assignNode{$4, $6},$8,$10,$14}
+       }
+       | TOK_FOR TOK_WORD TOK_IN EXPR TOK_SEMICOL st2 TOK_DONE {$$=&forArrayNode{$2, $4, $6}}
+       | TOK_FOR TOK_WORD TOK_IN TOK_LBRAC TOK_INT TOK_DOT_DOT TOK_INT TOK_RBRAC TOK_SEMICOL st2 TOK_DONE {$$=&forRangeNode{$2, $5, $7, $10}}
+
+       // IF
+       | TOK_IF IF {$$=$2}
+       | TOK_IF TOK_LBLOCK EXPR TOK_RBLOCK TOK_THEN st2 TOK_ELIF IF {$$=&ifNode{$3, $6, $8}}
+;
+
+IF: TOK_LBLOCK EXPR TOK_RBLOCK TOK_THEN st2 TOK_FI {$$=&ifNode{$2, $5, nil}}
+       | TOK_LBLOCK EXPR TOK_RBLOCK TOK_THEN st2 TOK_ELSE st2 TOK_FI {$$=&ifNode{$2, $5, $7}}
 ;
 
 PHYSICAL_PATH: EXPR {$$=&pathNode{$1, PHYSICAL}};

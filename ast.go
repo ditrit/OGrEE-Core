@@ -14,6 +14,14 @@ type node interface {
 	execute() (interface{}, error)
 }
 
+type valueNode struct {
+	val interface{}
+}
+
+func (n *valueNode) execute() (interface{}, error) {
+	return n.val, nil
+}
+
 type ast struct {
 	statements []node
 }
