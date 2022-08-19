@@ -36,6 +36,35 @@ func (a *ast) execute() (interface{}, error) {
 	return nil, nil
 }
 
+type funcDefNode struct {
+	name string
+	body node
+}
+
+func (n *funcDefNode) execute() (interface{}, error) {
+	dynamicSymbolTable[n.name] = n.body
+	if cmd.State.DebugLvl >= 3 {
+		println("New function ", n.name)
+	}
+	return nil, nil
+}
+
+type funcCallNode struct {
+	name string
+}
+
+func (n *funcCallNode) execute() (interface{}, error) {
+	val, ok := dynamicSymbolTable[n.name]
+	if !ok {
+		return nil, fmt.Errorf("undefined function ", n.name)
+	}
+	body, ok := val.(node)
+	if !ok {
+		return nil, fmt.Errorf("varialbe %s does not contain a function", n.name)
+	}
+	return body.execute()
+}
+
 type arrNode struct {
 	nodes []node
 }

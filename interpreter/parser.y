@@ -136,6 +136,10 @@ stmnt:   TOK_GET PATH {$$=&getObjectNode{$2}}
        | TOK_DOC {$$=&helpNode{""}}
        | TOK_DOC TOK_WORD {$$=&helpNode{$2}}
 
+       // FUNCTIONS
+       | TOK_WORD TOK_LPAREN TOK_RPAREN TOK_LBRAC st2 TOK_RBRAC {$$=&funcDefNode{$1, $5}}
+       | TOK_WORD {$$=&funcCallNode{$1}}
+
        // LOOPS
        | TOK_WHILE TOK_LPAREN EXPR TOK_RPAREN st2 TOK_DONE {$$=&whileNode{$3, $5}}
        | TOK_FOR TOK_LPAREN TOK_LPAREN TOK_WORD TOK_EQUAL EXPR TOK_SEMICOL EXPR TOK_SEMICOL st2 TOK_RPAREN TOK_RPAREN TOK_SEMICOL st2 TOK_DONE {
