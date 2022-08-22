@@ -32,7 +32,7 @@ func ParseResponse(resp *http.Response, e error, purpose string) map[string]inte
 		if State.DebugLvl > 0 {
 			println("There was an error!")
 		}
-
+		return nil
 	}
 	defer resp.Body.Close()
 	bodyBytes, err := ioutil.ReadAll(resp.Body)
@@ -242,6 +242,10 @@ func GetObject(path string, silenced bool) (map[string]interface{}, string) {
 			println(e.Error())
 		}
 		data = ParseResponse(resp, e, "GET")
+
+		if resp == nil {
+			return nil, ""
+		}
 
 		if resp.StatusCode == http.StatusOK {
 			if data["data"] != nil {
@@ -587,7 +591,7 @@ func LSOBJECT(x string, entity int) []map[string]interface{} {
 	//YouareAt -> obi
 	//want 	   -> entity
 
-	if (entity >= AC && entity <= CORIDOR) && obi > BLDG {
+	if (entity >= AC && entity <= CORIDOR) && obi > ROOM {
 		return nil
 	}
 
@@ -780,7 +784,7 @@ func lsobjHelper(api, objID string, curr, entity int) []map[string]interface{} {
 		//println("DEBUG-URL:", URL)
 
 		//EDGE CASE, if user is at a BLDG and requests object of room
-		if curr == BLDG && (entity >= AC && entity <= CORIDOR) {
+		if (curr == BLDG || curr == ROOM) && (entity >= AC && entity <= CORIDOR) {
 			ext = EntityToString(curr) + "s/" + objID + "/" + EntityToString(entity) + "s"
 			r, e := models.Send("GET", State.APIURL+"/api/"+ext, GetKey(), nil)
 			tmp := ParseResponse(r, e, "getting objects")
@@ -834,8 +838,11 @@ func lsobjHelper(api, objID string, curr, entity int) []map[string]interface{} {
 				}
 			}
 
-			println("returning x")
-			println(len(x))
+			if State.DebugLvl >= 3 {
+				println("returning x")
+				println(len(x))
+			}
+
 			return x
 		}
 
@@ -1146,7 +1153,10 @@ func GetHierarchy(x string, depth int, silence bool) []map[string]interface{} {
 	//Get object first
 	obj, e := GetObject(x, true)
 	if obj == nil {
-		println("Error: ", e)
+		if e != "" {
+			println("Error: ", e)
+		}
+
 		return nil
 	}
 
