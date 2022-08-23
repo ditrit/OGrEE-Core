@@ -14,15 +14,20 @@ import (
 //JWT Claims struct
 type Token struct {
 	UserId uint
+	Domain string
+	Role   string
 	jwt.StandardClaims
 }
 
 //a struct for rep user account
 type Account struct {
-	ID       uint   ``
-	Email    string `json: "email"`
-	Password string `json: "password"`
-	Token    string `json:"token";sql:"-"`
+	ID        uint   ``
+	AdminAuth string `json:"adminPassword"`
+	Email     string `json: "email"`
+	Password  string `json: "password"`
+	Domain    string `json: "domain"`
+	Role      string `json: "role"`
+	Token     string `json:"token";sql:"-"`
 }
 
 //Validate incoming user
@@ -57,7 +62,15 @@ func (account *Account) Validate() (map[string]interface{}, bool) {
 func (account *Account) Create() (map[string]interface{}, string) {
 
 	if resp, ok := account.Validate(); !ok {
-		return resp, ""
+		return resp, "validate"
+	}
+
+	//Check if user supplied admin password for account creation
+	//only admins (issuer or super roles) can create accounts
+	if os.Getenv("signing_password") != account.AdminAuth {
+		return u.Message(false,
+			"Invalid credentials for creating an account."+
+				"Please note only admins can create accounts"), "unauthorised"
 	}
 
 	hashedPassword, _ := bcrypt.GenerateFromPassword(
@@ -77,7 +90,7 @@ func (account *Account) Create() (map[string]interface{}, string) {
 	defer cancel()
 
 	//Create new JWT token for the newly created account
-	tk := &Token{UserId: account.ID}
+	tk := &Token{UserId: account.ID, Domain: account.Domain, Role: account.Role}
 	token := jwt.NewWithClaims(jwt.GetSigningMethod("HS256"), tk)
 	tokenString, _ := token.SignedString([]byte(os.Getenv("token_password")))
 

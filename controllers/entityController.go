@@ -207,10 +207,37 @@ var CreateEntity = func(w http.ResponseWriter, r *http.Request) {
 
 	//strip the '/api' in URL
 	entStr, e1 := mux.Vars(r)["entity"]
-	if e1 == false {
+	userData := r.Context().Value("user")
+
+	if !e1 || userData == nil {
 		w.WriteHeader(http.StatusBadRequest)
 		u.Respond(w, u.Message(false, "Error while parsing path params"))
 		u.ErrLog("Error while parsing path params", "CREATE "+entStr, "", r)
+		return
+	}
+
+	domainInf := userData.(map[string]interface{})["domain"]
+	roleInf := userData.(map[string]interface{})["role"]
+
+	if domainInf == nil || roleInf == nil {
+		w.WriteHeader(http.StatusBadRequest)
+		u.Respond(w, u.Message(false, "User's Key is not valid please"+
+			" check with your administrator"))
+		u.ErrLog("User's key does not have domain/role", "CREATE "+entStr, "", r)
+		return
+	}
+
+	domain := domainInf.(string)
+	role := roleInf.(string)
+
+	println("DEBUG role:", role)
+	println("DEBUG domain:", domain)
+
+	if role == "" {
+		w.WriteHeader(http.StatusBadRequest)
+		u.Respond(w, u.Message(false, "User's Key is not valid please"+
+			" check with your administrator"))
+		u.ErrLog("User's key does not have assigned role", "CREATE "+entStr, "", r)
 		return
 	}
 
@@ -240,6 +267,36 @@ var CreateEntity = func(w http.ResponseWriter, r *http.Request) {
 		u.Respond(w, u.Message(false, "Invalid object in URL:"+entStr+" Please provide a valid object"))
 		u.ErrLog("Cannot create invalid object", "CREATE "+entStr, "", r)
 		return
+	}
+
+	if i == u.DOMAIN {
+		if !models.EnsureUserIsSuper(role) {
+			w.WriteHeader(http.StatusMethodNotAllowed)
+			u.Respond(w, u.Message(false, "This "+role+
+				" does not have sufficient permissions to create"+
+				" this object under this domain. Please refer "+
+				" to an administrator or manager for more assistance"))
+			u.ErrLog("Unauthorised Domain create made",
+				"CREATE "+entStr, "", r)
+			return
+		}
+	} else {
+		//Ensure user has permission for this object
+		ok, reason := models.EnsureObjectPermission(entity, domain, role)
+		if !ok {
+			w.WriteHeader(http.StatusMethodNotAllowed)
+			if reason == "" {
+
+				u.Respond(w, u.Message(false, "This "+role+
+					" does not have sufficient permissions to create"+
+					" this object under this domain "))
+
+			} else {
+				u.Respond(w, u.Message(false, reason))
+			}
+			u.ErrLog("Unauthorised Access made", "CREATE "+entStr, "", r)
+			return
+		}
 	}
 
 	//Hard Code the 'category'

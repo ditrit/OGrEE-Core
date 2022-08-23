@@ -65,6 +65,7 @@ var CreateAccount = func(w http.ResponseWriter, r *http.Request) {
 		account := &models.Account{}
 		err := json.NewDecoder(r.Body).Decode(account)
 		if err != nil {
+			w.WriteHeader(http.StatusBadRequest)
 			u.Respond(w, u.Message(false, "Invalid request"))
 			return
 		}
@@ -72,8 +73,10 @@ var CreateAccount = func(w http.ResponseWriter, r *http.Request) {
 		switch e {
 		case "internal":
 			w.WriteHeader(http.StatusInternalServerError)
-		case "clientError":
+		case "clientError", "validate":
 			w.WriteHeader(http.StatusBadRequest)
+		case "unauthorised":
+			w.WriteHeader(http.StatusForbidden)
 		default:
 			w.WriteHeader(http.StatusCreated)
 		}
