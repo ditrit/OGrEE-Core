@@ -36,10 +36,12 @@ import (
 //   format: string
 //   default: "ORNESS"
 // responses:
-//     '200':
-//         description: Authenticated
+//     '201':
+//         description: Authenticated and new account created
 //     '400':
 //         description: Bad request
+//     '403':
+//         description: User not authorised to create an account
 //     '500':
 //         description: Internal server error
 
