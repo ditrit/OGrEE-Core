@@ -632,6 +632,15 @@ var DeleteEntity = func(w http.ResponseWriter, r *http.Request) {
 	id, e := mux.Vars(r)["id"]
 	name, e2 := mux.Vars(r)["name"]
 
+	userData := r.Context().Value("user")
+	domain := userData.(map[string]interface{})["domain"].(string)
+	role := userData.(map[string]interface{})["role"].(string)
+	uid := userData.(map[string]interface{})["userID"].(uint)
+
+	println("UserID:", uid)
+	println("Domain:", domain)
+	println("Role:", role)
+
 	//Get entity from URL and strip trailing 's'
 	entity, _ := mux.Vars(r)["entity"]
 	entity = entity[:len(entity)-1]
@@ -652,7 +661,9 @@ var DeleteEntity = func(w http.ResponseWriter, r *http.Request) {
 	switch {
 	case e2 == true && e == false: // DELETE SLUG or stray-device name
 		if entity == "stray_device" || entity == "stray_sensor" {
-			sd, _ := models.GetEntity(bson.M{"name": name}, entity)
+			req := bson.M{"name": name}
+			models.RequestGen(req, role, domain)
+			sd, _ := models.GetEntity(req, entity)
 			if sd == nil {
 				w.WriteHeader(http.StatusNotFound)
 				u.Respond(w, u.Message(false, "Error object not found"))
@@ -837,6 +848,15 @@ var UpdateEntity = func(w http.ResponseWriter, r *http.Request) {
 	var e3 string
 	var entity string
 
+	userData := r.Context().Value("user")
+	domain := userData.(map[string]interface{})["domain"].(string)
+	role := userData.(map[string]interface{})["role"].(string)
+	uid := userData.(map[string]interface{})["userID"].(uint)
+
+	println("UserID:", uid)
+	println("Domain:", domain)
+	println("Role:", role)
+
 	updateData := map[string]interface{}{}
 	id, e := mux.Vars(r)["id"]
 	name, e2 := mux.Vars(r)["name"]
@@ -889,6 +909,7 @@ var UpdateEntity = func(w http.ResponseWriter, r *http.Request) {
 			req = bson.M{"slug": name}
 		}
 
+		models.RequestGen(req, role, domain)
 		v, e3 = models.UpdateEntity(entity, req, &updateData, isPatch)
 
 	case e == true: // UPDATE NORMAL
@@ -904,7 +925,9 @@ var UpdateEntity = func(w http.ResponseWriter, r *http.Request) {
 		println("OBJID:", objID.Hex())
 		println("Entity;", entity)
 
-		v, e3 = models.UpdateEntity(entity, bson.M{"_id": objID}, &updateData, isPatch)
+		req := bson.M{"_id": objID}
+		models.RequestGen(req, role, domain)
+		v, e3 = models.UpdateEntity(entity, req, &updateData, isPatch)
 
 	default:
 		w.WriteHeader(http.StatusBadRequest)
