@@ -675,7 +675,10 @@ var DeleteEntity = func(w http.ResponseWriter, r *http.Request) {
 					"Server was not able to process your request"))
 				return
 			}
-			v, _ = models.DeleteEntity(entity, sd["id"].(primitive.ObjectID))
+			//We have to delete name
+			delete(req, "name")
+
+			v, _ = models.DeleteEntity(entity, sd["id"].(primitive.ObjectID), req)
 		} else {
 			v, _ = models.DeleteEntityManual(entity, bson.M{"slug": name})
 		}
@@ -688,10 +691,14 @@ var DeleteEntity = func(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
+		rnd := bson.M{}
+		models.RequestGen(rnd, role, domain)
+
 		if entity == "device" {
-			v, _ = models.DeleteDeviceF(objID)
+			v, _ = models.DeleteDeviceF(objID, rnd)
 		} else {
-			v, _ = models.DeleteEntity(entity, objID)
+
+			v, _ = models.DeleteEntity(entity, objID, rnd)
 		}
 
 	default:
@@ -1391,10 +1398,10 @@ var GetEntityHierarchy = func(w http.ResponseWriter, r *http.Request) {
 			end += 1
 		}
 		//data, e1 = models.RetrieveDeviceHierarch(oID, 0, end)
-		data, e1 = models.GetEntityHierarchy(oID, entity, entNum, limit)
+		//data, e1 = models.GetEntityHierarchy(oID, entity, entNum, limit)
 	} else {
 		//data, e1 = models.GetEntityHierarchy(entity, oID, entNum, limit)
-		data, e1 = models.GetEntityHierarchy(oID, entity, entNum, limit)
+		//data, e1 = models.GetEntityHierarchy(oID, entity, entNum, limit)
 	}
 
 	if data == nil {
@@ -1569,7 +1576,7 @@ var GetHierarchyByName = func(w http.ResponseWriter, r *http.Request) {
 
 	entInt := u.EntityStrToInt(entity)
 
-	data, e1 := models.GetHierarchyByName(entity, id, entInt, limit)
+	data, e1 := models.GetHierarchyByName(entity, id, nil, entInt, limit)
 
 	if data == nil {
 		resp = u.Message(false, "Error while getting :"+entity+","+e1)
@@ -2010,13 +2017,13 @@ var GetEntityHierarchyNonStd = func(w http.ResponseWriter, r *http.Request) {
 	if entity == "site" {
 		println("Getting SITE HEIRARCHY")
 		println("With ID: ", id)
-		data, err = models.GetHierarchyByName(entity, id, entNum, u.AC)
+		//data, err = models.GetHierarchyByName(entity, id, entNum, u.AC)
 		if err != "" {
 			println("We have ERR")
 		}
 	} else {
-		oID, _ := getObjID(id)
-		data, err = models.GetEntityHierarchy(oID, entity, entNum, u.AC)
+		//oID, _ := getObjID(id)
+		//data, err = models.GetEntityHierarchy(oID, entity, entNum, u.AC)
 	}
 
 	if data == nil {

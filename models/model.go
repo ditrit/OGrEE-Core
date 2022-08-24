@@ -159,15 +159,15 @@ func DeleteEntityManual(entity string, req bson.M) (map[string]interface{}, stri
 	return u.Message(true, "success"), ""
 }
 
-func DeleteEntity(entity string, id primitive.ObjectID) (map[string]interface{}, string) {
+func DeleteEntity(entity string, id primitive.ObjectID, rnd map[string]interface{}) (map[string]interface{}, string) {
 	var t map[string]interface{}
 	var e string
 	eNum := u.EntityStrToInt(entity)
 	if eNum > DEVICE {
 		//Delete the non hierarchal objects
-		t, e = GetEntityHierarchy(id, entity, eNum, eNum+eNum)
+		t, e = GetEntityHierarchy(id, rnd, entity, eNum, eNum+eNum)
 	} else {
-		t, e = GetEntityHierarchy(id, entity, eNum, AC)
+		t, e = GetEntityHierarchy(id, rnd, entity, eNum, AC)
 	}
 
 	if e != "" {
@@ -226,7 +226,7 @@ func deleteHelper(t map[string]interface{}, ent int) (map[string]interface{}, st
 		}
 
 		if ent == DEVICE {
-			DeleteDeviceF(t["id"].(primitive.ObjectID))
+			DeleteDeviceF(t["id"].(primitive.ObjectID), nil)
 		} else {
 			ctx, cancel := u.Connect()
 			entity := u.EntityToString(ent)
@@ -307,10 +307,19 @@ func UpdateEntity(ent string, req bson.M, t *map[string]interface{}, isPatch boo
 	return resp, ""
 }
 
-func GetEntityHierarchy(ID primitive.ObjectID, ent string, start, end int) (map[string]interface{}, string) {
+func GetEntityHierarchy(ID primitive.ObjectID, req bson.M, ent string, start, end int) (map[string]interface{}, string) {
 	var childEnt string
 	if start < end {
-		top, e := GetEntity(bson.M{"_id": ID}, ent)
+		//We want to filter using RBAC requirements and the ID
+		//The RBAC requirements are included in req
+		newReq := req
+		if req == nil {
+			newReq = bson.M{"_id": ID}
+		} else {
+			newReq["_id"] = ID
+		}
+
+		top, e := GetEntity(newReq, ent)
 		if top == nil {
 			return nil, e
 		}
@@ -343,7 +352,7 @@ func GetEntityHierarchy(ID primitive.ObjectID, ent string, start, end int) (map[
 		subEnts, _ := GetManyEntities(childEnt, bson.M{"parentId": pid}, nil)
 
 		for idx := range subEnts {
-			tmp, _ := GetEntityHierarchy(subEnts[idx]["id"].(primitive.ObjectID), childEnt, start+1, end)
+			tmp, _ := GetEntityHierarchy(subEnts[idx]["id"].(primitive.ObjectID), req, childEnt, start+1, end)
 			if tmp != nil {
 				subEnts[idx] = tmp
 			}
@@ -463,7 +472,7 @@ func GetEntityUsingAncestorNames(ent string, id primitive.ObjectID, ancestry []m
 	return x, ""
 }
 
-func GetHierarchyByName(entity, name string, entnum, end int) (map[string]interface{}, string) {
+func GetHierarchyByName(entity, name string, req bson.M, entnum, end int) (map[string]interface{}, string) {
 
 	t, e := GetEntity(bson.M{"name": name}, entity)
 	if e != "" {
@@ -504,7 +513,7 @@ func GetHierarchyByName(entity, name string, entnum, end int) (map[string]interf
 		}
 		subID := (children[i]["id"].(primitive.ObjectID))
 		x, _ =
-			GetEntityHierarchy(subID, subIdx, entnum+1, end)
+			GetEntityHierarchy(subID, req, subIdx, entnum+1, end)
 		if x != nil {
 			children[i] = x
 		}
@@ -617,10 +626,10 @@ func GetEntitiesOfAncestor(id interface{}, ent int, entStr, wantedEnt string) ([
 
 //DEV FAMILY FUNCS
 
-func DeleteDeviceF(entityID primitive.ObjectID) (map[string]interface{}, string) {
+func DeleteDeviceF(entityID primitive.ObjectID, req bson.M) (map[string]interface{}, string) {
 	//var deviceType string
 
-	t, e := GetEntityHierarchy(entityID, "device", 0, 999)
+	t, e := GetEntityHierarchy(entityID, req, "device", 0, 999)
 	if e != "" {
 		return u.Message(false,
 			"There was an error in deleting the entity"), "not found"
