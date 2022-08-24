@@ -216,22 +216,21 @@ var CreateEntity = func(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	domainInf := userData.(map[string]interface{})["domain"]
-	roleInf := userData.(map[string]interface{})["role"]
+	domain := userData.(map[string]interface{})["domain"].(string)
+	role := userData.(map[string]interface{})["role"].(string)
+	uid := userData.(map[string]interface{})["userID"].(uint)
 
-	if domainInf == nil || roleInf == nil {
+	/*if domainInf == nil || roleInf == nil {
 		w.WriteHeader(http.StatusBadRequest)
 		u.Respond(w, u.Message(false, "User's Key is not valid please"+
 			" check with your administrator"))
 		u.ErrLog("User's key does not have domain/role", "CREATE "+entStr, "", r)
 		return
-	}
+	}*/
 
-	domain := domainInf.(string)
-	role := roleInf.(string)
-
-	println("DEBUG role:", role)
-	println("DEBUG domain:", domain)
+	println("UserID:", uid)
+	println("Role:", role)
+	println("Domain:", domain)
 
 	if role == "" {
 		w.WriteHeader(http.StatusBadRequest)
@@ -404,6 +403,15 @@ var GetEntity = func(w http.ResponseWriter, r *http.Request) {
 
 	resp := u.Message(true, "success")
 
+	userData := r.Context().Value("user")
+	domain := userData.(map[string]interface{})["domain"].(string)
+	role := userData.(map[string]interface{})["role"].(string)
+	uid := userData.(map[string]interface{})["userID"].(uint)
+
+	println("UserID:", uid)
+	println("Domain:", domain)
+	println("Role:", role)
+
 	//Get entity type and strip trailing 's'
 	s, _ := mux.Vars(r)["entity"]
 	s = s[:len(s)-1]
@@ -432,15 +440,21 @@ var GetEntity = func(w http.ResponseWriter, r *http.Request) {
 		}
 
 		//data, e1 = models.GetEntity(bson.M{"_id": x}, s)
-		data, e1 = models.GetEntity(bson.M{"_id": x}, s)
+		req := bson.M{"_id": x}
+		models.RequestGen(req, role, domain)
+		data, e1 = models.GetEntity(req, s)
 
 	} else if id, e = mux.Vars(r)["name"]; e == true { //GET By String
 
 		if idx := strings.Contains(s, "_"); idx == true &&
 			s != "stray_device" && s != "stray_sensor" { //GET By Slug
-			data, e1 = models.GetEntity(bson.M{"slug": id}, s)
+			req := bson.M{"slug": id}
+			models.RequestGen(req, role, domain)
+			data, e1 = models.GetEntity(req, s)
 		} else {
-			data, e1 = models.GetEntity(bson.M{"name": id}, s) //GET By Name
+			req := bson.M{"name": id}
+			models.RequestGen(req, role, domain)
+			data, e1 = models.GetEntity(req, s) //GET By Name
 		}
 	}
 
