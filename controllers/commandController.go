@@ -1693,41 +1693,46 @@ func GetOCLIAtrributesTemplateHelper(attr, data map[string]interface{}, ent int)
 	}
 }
 
-//Used for Unity Client commands
-func HandleUI(data map[string]interface{}) {
-	//Extra code for the highlight command
-	//since client wants an object ID instead of the name/path
-	if data["type"].(string) == "ui" &&
-		(data["data"].(map[string]interface{})["command"] == "highlight" ||
-			data["data"].(map[string]interface{})["command"] == "hl") {
+func UIDelay(time float64) {
+	subdata := map[string]interface{}{"command": "delay", "data": time}
+	data := map[string]interface{}{"type": "ui", "data": subdata}
+	Disp(data)
+	InformUnity("POST", "HandleUI", -1, data)
+}
 
-		//check if the object to highlight was provided as a string
-		if objArg, ok := data["data"].(map[string]interface{})["data"].(string); ok {
+func UIToggle(feature string, enable bool) {
+	subdata := map[string]interface{}{"command": feature, "data": enable}
+	data := map[string]interface{}{"type": "ui", "data": subdata}
+	Disp(data)
+	InformUnity("POST", "HandleUI", -1, data)
+}
 
-			if objArg == "" || objArg == "." {
-				objArg = State.CurrPath
-			} else if string(objArg[0]) == "/" {
-				//do nothing
-			} else {
-				objArg = State.CurrPath + "/" + objArg
-			}
-
-			obj, _ := GetObject(objArg, true)
-			if obj != nil {
-				data["data"].(map[string]interface{})["data"] = obj["id"]
-			} else {
-				println("Please provide a valid path")
-				return
-			}
-		} else if data["data"].(map[string]interface{})["data"] == nil {
-			l.GetWarningLogger().Println("Invalid parameter provided for highlighting")
-			if State.DebugLvl > 0 {
-				println("OGREE: Error Invalid parameter provided for highlighting")
-			}
-
-			return
-		}
+func UIHighlight(objArg string) error {
+	obj, _ := GetObject(objArg, true)
+	if obj == nil {
+		return fmt.Errorf("please provide a valid path")
 	}
+	subdata := map[string]interface{}{"command": "highlight", "data": obj["id"]}
+	data := map[string]interface{}{"type": "ui", "data": subdata}
+	Disp(data)
+	InformUnity("POST", "HandleUI", -1, data)
+	return nil
+}
+
+func CameraMove(command string, position []float64, rotation []float64) {
+	subdata := map[string]interface{}{"command": command}
+	subdata["position"] = map[string]interface{}{"x": position[0], "y": position[1], "z": position[2]}
+	subdata["rotation"] = map[string]interface{}{"x": rotation[0], "y": rotation[1]}
+	data := map[string]interface{}{"type": "camera", "data": subdata}
+	Disp(data)
+	InformUnity("POST", "HandleUI", -1, data)
+}
+
+func CameraWait(time float64) {
+	subdata := map[string]interface{}{"command": "wait"}
+	subdata["position"] = map[string]interface{}{"x": 0, "y": 0, "z": 0}
+	subdata["rotation"] = map[string]interface{}{"x": 999, "y": time}
+	data := map[string]interface{}{"type": "camera", "data": subdata}
 	Disp(data)
 	InformUnity("POST", "HandleUI", -1, data)
 }

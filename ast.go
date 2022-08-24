@@ -76,7 +76,11 @@ func (n *arrNode) execute() (interface{}, error) {
 		if err != nil {
 			return nil, err
 		}
-		r = append(r, v)
+		val, err := getFloat(v)
+		if err != nil {
+			return nil, fmt.Errorf("Array should contain floats")
+		}
+		r = append(r, val)
 	}
 	return r, nil
 }
@@ -848,79 +852,98 @@ func (n *createGroupNode) execute() (interface{}, error) {
 	return nil, nil
 }
 
-type handleUnityNode struct {
-	args []interface{}
+type uiDelayNode struct {
+	time node
 }
 
-func (n *handleUnityNode) execute() (interface{}, error) {
-	data := map[string]interface{}{}
-	data["command"] = n.args[1].(string)
-	if len(n.args) == 4 {
-		firstArr := n.args[2].([]map[int]interface{})
-		secondArr := n.args[3].([]map[int]interface{})
-
-		if len(firstArr) != 3 || len(secondArr) != 2 {
-			println("OGREE: Error, command args are invalid")
-			print("Please provide a vector3 and a vector2")
-			return nil, fmt.Errorf("OGREE: Error, command args are invalid\nPlease provide a vector3 and a vector2")
-		}
-		xVal, err := firstArr[0][0].(node).execute()
-		if err != nil {
-			return nil, err
-		}
-		yVal, err := firstArr[1][0].(node).execute()
-		if err != nil {
-			return nil, err
-		}
-		zVal, err := firstArr[2][0].(node).execute()
-		if err != nil {
-			return nil, err
-		}
-		pos := map[string]interface{}{"x": xVal, "y": yVal, "z": zVal}
-		rotX, err := secondArr[0][0].(node).execute()
-		if err != nil {
-			return nil, err
-		}
-		rotY, err := secondArr[1][0].(node).execute()
-		if err != nil {
-			return nil, err
-		}
-		rot := map[string]interface{}{"x": rotX, "y": rotY}
-
-		data["position"] = pos
-		data["rotation"] = rot
-
-	} else {
-		if n.args[1].(string) == "wait" && n.args[0].(string) == "camera" {
-			data["position"] = map[string]float64{"x": 0, "y": 0, "z": 0}
-
-			if y, ok := n.args[2].([]map[int]interface{}); ok {
-				yRot, err := y[0][0].(node).execute()
-				if err != nil {
-					return nil, err
-				}
-				data["rotation"] = map[string]interface{}{"x": 999, "y": yRot}
-			} else {
-				data["rotation"] = map[string]interface{}{"x": 999, "y": n.args[2]}
-			}
-
-		} else {
-			if arrArg, ok := n.args[2].([]map[int]interface{}); ok {
-				dataVal, err := arrArg[0][0].(node).execute()
-				if err != nil {
-					return nil, err
-				}
-				data["data"] = dataVal
-			} else {
-				data["data"] = n.args[2]
-			}
-		}
+func (n *uiDelayNode) execute() (interface{}, error) {
+	val, err := n.time.execute()
+	if err != nil {
+		return nil, err
 	}
-	fullJson := map[string]interface{}{
-		"type": n.args[0].(string),
-		"data": data,
+	time, ok := val.(float64)
+	if !ok {
+		return nil, fmt.Errorf("delay should be a float")
 	}
-	cmd.HandleUI(fullJson)
+	cmd.UIDelay(time)
+	return nil, nil
+}
+
+type uiToggleNode struct {
+	feature string
+	enable  node
+}
+
+func (n *uiToggleNode) execute() (interface{}, error) {
+	val, err := n.enable.execute()
+	if err != nil {
+		return nil, err
+	}
+	enable, ok := val.(bool)
+	if !ok {
+		return nil, fmt.Errorf("feature %s expects a boolean", n.feature)
+	}
+	cmd.UIToggle(n.feature, enable)
+	return nil, nil
+}
+
+type uiHighlightNode struct {
+	path node
+}
+
+func (n *uiHighlightNode) execute() (interface{}, error) {
+	val, err := n.path.execute()
+	if err != nil {
+		return nil, err
+	}
+	path, ok := val.(string)
+	if !ok {
+		return nil, fmt.Errorf("Path should be a string")
+	}
+	return nil, cmd.UIHighlight(path)
+}
+
+type cameraMoveNode struct {
+	command  string
+	position node
+	rotation node
+}
+
+func (n *cameraMoveNode) execute() (interface{}, error) {
+	posVal, err := n.position.execute()
+	if err != nil {
+		return nil, err
+	}
+	position, ok := posVal.([]float64)
+	if !ok {
+		return nil, fmt.Errorf("OGREE: Error, command args are invalid\nPlease provide a vector3 and a vector2")
+	}
+	rotVal, err := n.rotation.execute()
+	if err != nil {
+		return nil, err
+	}
+	rotation, ok := rotVal.([]float64)
+	if !ok {
+		return nil, fmt.Errorf("OGREE: Error, command args are invalid\nPlease provide a vector3 and a vector2")
+	}
+	cmd.CameraMove(n.command, position, rotation)
+	return nil, nil
+}
+
+type cameraWaitNode struct {
+	time node
+}
+
+func (n *cameraWaitNode) execute() (interface{}, error) {
+	val, err := n.time.execute()
+	if err != nil {
+		return nil, err
+	}
+	time, ok := val.(float64)
+	if !ok {
+		return nil, fmt.Errorf("delay should be a float")
+	}
+	cmd.CameraWait(time)
 	return nil, nil
 }
 
@@ -989,7 +1012,6 @@ func (n *arrayReferenceNode) execute() (interface{}, error) {
 	if !ok {
 		return nil, fmt.Errorf("Index should be an integer.")
 	}
-
 	if i < 0 || i >= len(arr) {
 		l.GetWarningLogger().Println("Index out of range error!")
 		return nil, fmt.Errorf("Index out of range error!\n Array Length Of: ",
