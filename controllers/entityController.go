@@ -1008,6 +1008,15 @@ var GetEntityByQuery = func(w http.ResponseWriter, r *http.Request) {
 	var bsonMap bson.M
 	var e, entStr string
 
+	userData := r.Context().Value("user")
+	domain := userData.(map[string]interface{})["domain"].(string)
+	role := userData.(map[string]interface{})["role"].(string)
+	uid := userData.(map[string]interface{})["userID"].(uint)
+
+	println("UserID:", uid)
+	println("Domain:", domain)
+	println("Role:", role)
+
 	entStr = r.URL.Path[5 : len(r.URL.Path)-1]
 
 	//If templates, format them
@@ -1029,6 +1038,8 @@ var GetEntityByQuery = func(w http.ResponseWriter, r *http.Request) {
 
 	println("DEBUG entstr", entStr)
 	Disp(bsonMap)
+	req := bsonMap
+	models.RequestGen(req, role, domain)
 	data, e = models.GetManyEntities(entStr, bsonMap, nil)
 
 	if len(data) == 0 {
