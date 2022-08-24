@@ -529,7 +529,14 @@ var GetAllEntities = func(w http.ResponseWriter, r *http.Request) {
 	var data []map[string]interface{}
 	var e, entStr string
 
-	//Main hierarchy objects
+	userData := r.Context().Value("user")
+	domain := userData.(map[string]interface{})["domain"].(string)
+	role := userData.(map[string]interface{})["role"].(string)
+	uid := userData.(map[string]interface{})["userID"].(uint)
+
+	println("UserID:", uid)
+	println("Domain:", domain)
+	println("Role:", role)
 
 	//entStr = arr[2][:len(arr[2])-1]
 	entStr, _ = mux.Vars(r)["entity"]
@@ -549,7 +556,9 @@ var GetAllEntities = func(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	data, e = models.GetManyEntities(entStr, bson.M{}, nil)
+	req := bson.M{}
+	models.RequestGen(req, role, domain)
+	data, e = models.GetManyEntities(entStr, req, nil)
 
 	entUpper := strings.ToUpper(entStr) // and the trailing 's'
 	resp := u.Message(true, "success")
