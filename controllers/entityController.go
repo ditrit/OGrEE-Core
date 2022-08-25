@@ -1158,6 +1158,15 @@ var GetEntitiesOfAncestor = func(w http.ResponseWriter, r *http.Request) {
 	enum := u.EntityStrToInt(entStr)
 	//childBase := u.EntityToString(enum + 1)
 
+	userData := r.Context().Value("user")
+	domain := userData.(map[string]interface{})["domain"].(string)
+	role := userData.(map[string]interface{})["role"].(string)
+	uid := userData.(map[string]interface{})["userID"].(uint)
+
+	println("UserID:", uid)
+	println("Domain:", domain)
+	println("Role:", role)
+
 	//Prevents Mongo from creating a new unidentified collection
 	if enum < 0 {
 		w.WriteHeader(http.StatusNotFound)
@@ -1189,7 +1198,10 @@ var GetEntitiesOfAncestor = func(w http.ResponseWriter, r *http.Request) {
 		indicator = ""
 	}
 
-	data, e1 := models.GetEntitiesOfAncestor(id, enum, entStr, indicator)
+	req := bson.M{}
+	models.RequestGen(req, role, domain)
+
+	data, e1 := models.GetEntitiesOfAncestor(id, req, enum, entStr, indicator)
 	if data == nil {
 		resp = u.Message(false, "Error while getting "+entStr+"s: "+e1)
 		u.ErrLog("Error while getting children of "+entStr,

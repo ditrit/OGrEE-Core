@@ -589,20 +589,35 @@ func GetEntityUsingSiteAsAncestor(ent, id string, ancestry []map[string]string) 
 	return x, ""
 }
 
-func GetEntitiesOfAncestor(id interface{}, ent int, entStr, wantedEnt string) ([]map[string]interface{}, string) {
+func GetEntitiesOfAncestor(id interface{}, req bson.M, ent int, entStr, wantedEnt string) ([]map[string]interface{}, string) {
 	var ans []map[string]interface{}
 	var t map[string]interface{}
 	var e, e1 string
+	newReq := req
 	if ent == SITE {
 
-		t, e = GetEntity(bson.M{"name": id}, "site")
+		if newReq == nil {
+			newReq = bson.M{"name": id}
+		} else {
+			newReq["name"] = id
+		}
+
+		t, e = GetEntity(newReq, "site")
 		if e != "" {
 			return nil, e
 		}
 
 	} else {
 		ID, _ := primitive.ObjectIDFromHex(id.(string))
-		t, e = GetEntity(bson.M{"_id": ID}, entStr)
+
+		//Apply the RBAC filter
+		if newReq == nil {
+			newReq = bson.M{"_id": ID}
+		} else {
+			newReq["_id"] = ID
+		}
+
+		t, e = GetEntity(newReq, entStr)
 		if e != "" {
 			return nil, e
 		}
