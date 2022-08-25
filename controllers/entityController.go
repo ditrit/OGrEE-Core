@@ -1738,6 +1738,15 @@ var GetEntitiesUsingNamesOfParents = func(w http.ResponseWriter, r *http.Request
 		entity = entity[:idx] + "_" + entity[idx+1:]
 	}
 
+	userData := r.Context().Value("user")
+	domain := userData.(map[string]interface{})["domain"].(string)
+	role := userData.(map[string]interface{})["role"].(string)
+	uid := userData.(map[string]interface{})["userID"].(uint)
+
+	println("UserID:", uid)
+	println("Domain:", domain)
+	println("Role:", role)
+
 	id, e := mux.Vars(r)["id"]
 	tname, e1 := mux.Vars(r)["site_name"]
 	if e == false && e1 == false {
@@ -1803,12 +1812,14 @@ var GetEntitiesUsingNamesOfParents = func(w http.ResponseWriter, r *http.Request
 	if len(arr)%2 != 0 { //This means we are getting entities
 		var data []map[string]interface{}
 		var e3 string
+		req := bson.M{}
+		models.RequestGen(req, role, domain)
 		if e1 == true {
 			println("we are getting entities here")
-			data, e3 = models.GetEntitiesUsingSiteAsAncestor(entity, tname, ancestry)
+			data, e3 = models.GetEntitiesUsingSiteAsAncestor(entity, tname, req, ancestry)
 
 		} else {
-			data, e3 = models.GetEntitiesUsingAncestorNames(entity, oID, ancestry)
+			data, e3 = models.GetEntitiesUsingAncestorNames(entity, oID, req, ancestry)
 		}
 
 		if data == nil || len(data) == 0 {
@@ -1836,10 +1847,12 @@ var GetEntitiesUsingNamesOfParents = func(w http.ResponseWriter, r *http.Request
 	} else { //We are only retrieving an entity
 		var data map[string]interface{}
 		var e3 string
+		req := bson.M{}
+		models.RequestGen(req, role, domain)
 		if e1 == true {
-			data, e3 = models.GetEntityUsingSiteAsAncestor(entity, tname, ancestry)
+			data, e3 = models.GetEntityUsingSiteAsAncestor(entity, tname, req, ancestry)
 		} else {
-			data, e3 = models.GetEntityUsingAncestorNames(entity, oID, ancestry)
+			data, e3 = models.GetEntityUsingAncestorNames(entity, oID, req, ancestry)
 		}
 
 		//data, e := models.GetEntityUsingAncestorNames(entity, oID, ancestry)

@@ -401,8 +401,15 @@ func GetEntityHierarchy(ID primitive.ObjectID, req bson.M, ent string, start, en
 	return nil, ""
 }
 
-func GetEntitiesUsingAncestorNames(ent string, id primitive.ObjectID, ancestry []map[string]string) ([]map[string]interface{}, string) {
-	top, e := GetEntity(bson.M{"_id": id}, ent)
+func GetEntitiesUsingAncestorNames(ent string, id primitive.ObjectID, req map[string]interface{}, ancestry []map[string]string) ([]map[string]interface{}, string) {
+
+	newReq := req
+	if newReq == nil {
+		newReq = bson.M{"_id": id}
+	} else {
+		newReq["_id"] = id
+	}
+	top, e := GetEntity(newReq, ent)
 	if e != "" {
 		return nil, e
 	}
@@ -440,8 +447,15 @@ func GetEntitiesUsingAncestorNames(ent string, id primitive.ObjectID, ancestry [
 	return nil, ""
 }
 
-func GetEntityUsingAncestorNames(ent string, id primitive.ObjectID, ancestry []map[string]string) (map[string]interface{}, string) {
-	top, e := GetEntity(bson.M{"_id": id}, ent)
+func GetEntityUsingAncestorNames(ent string, id primitive.ObjectID, req map[string]interface{}, ancestry []map[string]string) (map[string]interface{}, string) {
+
+	newReq := req
+	if newReq == nil {
+		newReq = bson.M{"_id": id}
+	} else {
+		newReq["_id"] = id
+	}
+	top, e := GetEntity(newReq, ent)
 	if e != "" {
 		return nil, e
 	}
@@ -525,8 +539,15 @@ func GetHierarchyByName(entity, name string, req bson.M, entnum, end int) (map[s
 
 }
 
-func GetEntitiesUsingSiteAsAncestor(ent, id string, ancestry []map[string]string) ([]map[string]interface{}, string) {
-	top, e := GetEntity(bson.M{"name": id}, ent)
+func GetEntitiesUsingSiteAsAncestor(ent, id string, req map[string]interface{}, ancestry []map[string]string) ([]map[string]interface{}, string) {
+
+	newReq := req
+	if newReq == nil {
+		newReq = bson.M{"name": id}
+	} else {
+		newReq["name"] = id
+	}
+	top, e := GetEntity(newReq, ent)
 	if e != "" {
 		return nil, e
 	}
@@ -562,8 +583,15 @@ func GetEntitiesUsingSiteAsAncestor(ent, id string, ancestry []map[string]string
 	return nil, ""
 }
 
-func GetEntityUsingSiteAsAncestor(ent, id string, ancestry []map[string]string) (map[string]interface{}, string) {
-	top, e := GetEntity(bson.M{"name": id}, ent)
+func GetEntityUsingSiteAsAncestor(ent, id string, req map[string]interface{}, ancestry []map[string]string) (map[string]interface{}, string) {
+
+	newReq := req
+	if newReq == nil {
+		newReq = bson.M{"name": id}
+	} else {
+		newReq["name"] = id
+	}
+	top, e := GetEntity(newReq, ent)
 	if e != "" {
 		return nil, e
 	}
