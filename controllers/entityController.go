@@ -1290,6 +1290,15 @@ var GetEntityHierarchy = func(w http.ResponseWriter, r *http.Request) {
 	var e1 string
 	var indicator string
 
+	userData := r.Context().Value("user")
+	domain := userData.(map[string]interface{})["domain"].(string)
+	role := userData.(map[string]interface{})["role"].(string)
+	uid := userData.(map[string]interface{})["userID"].(uint)
+
+	println("UserID:", uid)
+	println("Domain:", domain)
+	println("Role:", role)
+
 	//If template or stray convert '-' -> '_'
 	if idx := strings.Index(entity, "-"); idx != -1 {
 		entity = entity[:idx] + "_" + entity[idx+1:]
@@ -1312,9 +1321,15 @@ var GetEntityHierarchy = func(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
+	req := bson.M{}
+	models.RequestGen(req, role, domain)
+
 	if entity == "site" {
 
-		_, e := models.GetEntity(bson.M{"name": id}, entity)
+		//TODO
+		newReq := req
+		newReq["name"] = id
+		_, e := models.GetEntity(newReq, entity)
 		if e != "" {
 			resp = u.Message(false, "Error while getting :"+entity+","+e)
 			u.ErrLog("Error while getting "+entity, "GET "+entity, e, r)
@@ -1333,7 +1348,9 @@ var GetEntityHierarchy = func(w http.ResponseWriter, r *http.Request) {
 		if end == 0 {
 
 			objID, _ := primitive.ObjectIDFromHex(id)
-			data, e1 := models.GetEntity(bson.M{"_id": objID}, entity)
+			newReq := req
+			newReq["_id"] = objID
+			data, e1 := models.GetEntity(newReq, entity)
 
 			if e1 != "" {
 				resp = u.Message(false, "Error while getting :"+entity+","+e1)
@@ -1397,11 +1414,9 @@ var GetEntityHierarchy = func(w http.ResponseWriter, r *http.Request) {
 			end, _ = strconv.Atoi(arr[1])
 			end += 1
 		}
-		//data, e1 = models.RetrieveDeviceHierarch(oID, 0, end)
-		//data, e1 = models.GetEntityHierarchy(oID, entity, entNum, limit)
+		data, e1 = models.GetEntityHierarchy(oID, req, entity, entNum, limit)
 	} else {
-		//data, e1 = models.GetEntityHierarchy(entity, oID, entNum, limit)
-		//data, e1 = models.GetEntityHierarchy(oID, entity, entNum, limit)
+		data, e1 = models.GetEntityHierarchy(oID, req, entity, entNum, limit)
 	}
 
 	if data == nil {
@@ -1412,6 +1427,7 @@ var GetEntityHierarchy = func(w http.ResponseWriter, r *http.Request) {
 		case "record not found":
 			w.WriteHeader(http.StatusNotFound)
 		default:
+			w.WriteHeader(http.StatusNotFound)
 		}
 
 	} else {
