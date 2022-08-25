@@ -474,7 +474,9 @@ func GetEntityUsingAncestorNames(ent string, id primitive.ObjectID, ancestry []m
 
 func GetHierarchyByName(entity, name string, req bson.M, entnum, end int) (map[string]interface{}, string) {
 
-	t, e := GetEntity(bson.M{"name": name}, entity)
+	newReq := req
+	newReq["name"] = name
+	t, e := GetEntity(newReq, entity)
 	if e != "" {
 		fmt.Println(e)
 		return nil, e

@@ -1489,6 +1489,15 @@ var GetHierarchyByName = func(w http.ResponseWriter, r *http.Request) {
 	var lastSlashIdx int
 	var end int
 
+	userData := r.Context().Value("user")
+	domain := userData.(map[string]interface{})["domain"].(string)
+	role := userData.(map[string]interface{})["role"].(string)
+	uid := userData.(map[string]interface{})["userID"].(uint)
+
+	println("UserID:", uid)
+	println("Domain:", domain)
+	println("Role:", role)
+
 	id, e := mux.Vars(r)["name"]
 	if e == false {
 		u.Respond(w, u.Message(false, "Error while parsing name"))
@@ -1576,7 +1585,9 @@ var GetHierarchyByName = func(w http.ResponseWriter, r *http.Request) {
 
 	entInt := u.EntityStrToInt(entity)
 
-	data, e1 := models.GetHierarchyByName(entity, id, nil, entInt, limit)
+	req := bson.M{}
+	models.RequestGen(req, role, domain)
+	data, e1 := models.GetHierarchyByName(entity, id, req, entInt, limit)
 
 	if data == nil {
 		resp = u.Message(false, "Error while getting :"+entity+","+e1)
@@ -1586,6 +1597,7 @@ var GetHierarchyByName = func(w http.ResponseWriter, r *http.Request) {
 		case "record not found":
 			w.WriteHeader(http.StatusNotFound)
 		default:
+			w.WriteHeader(http.StatusNotFound)
 		}
 
 	} else {
