@@ -1972,6 +1972,15 @@ var ValidateEntity = func(w http.ResponseWriter, r *http.Request) {
 	entity, e1 := mux.Vars(r)["entity"]
 	entity = entity[:len(entity)-1]
 
+	userData := r.Context().Value("user")
+	domain := userData.(map[string]interface{})["domain"].(string)
+	role := userData.(map[string]interface{})["role"].(string)
+	uid := userData.(map[string]interface{})["userID"].(uint)
+
+	println("User:", uid)
+	println("Role:", role)
+	println("Domain:", domain)
+
 	//If templates or stray-devices, format them
 	if idx := strings.Index(entity, "-"); idx != -1 {
 		//entStr[idx] = '_'
@@ -1996,6 +2005,37 @@ var ValidateEntity = func(w http.ResponseWriter, r *http.Request) {
 		u.Respond(w, u.Message(false, "Error while decoding request body"))
 		u.ErrLog("Error while decoding request body", "VALIDATE "+entity, "", r)
 		return
+	}
+
+	if entInt == u.DOMAIN {
+		if !models.EnsureUserIsSuper(role) {
+			w.WriteHeader(http.StatusMethodNotAllowed)
+			u.Respond(w, u.Message(false, "This "+role+
+				" does not have sufficient permissions to create"+
+				" this object under this domain. Please refer "+
+				" to an administrator or manager for more assistance"))
+			u.ErrLog("Cannot validate object creation due to limited user privilege",
+				"Validate CREATE "+entity, "", r)
+			return
+		}
+	} else {
+		//Ensure user has permission for this object
+		ok, reason := models.EnsureObjectPermission(obj, domain, role)
+		if !ok {
+			w.WriteHeader(http.StatusMethodNotAllowed)
+			if reason == "" {
+
+				u.Respond(w, u.Message(false, "This "+role+
+					" does not have sufficient permissions to create"+
+					" this object under this domain "))
+
+			} else {
+				u.Respond(w, u.Message(false, reason))
+			}
+			u.ErrLog("Cannot validate object creation due to limited user privilege",
+				"Validate CREATE "+entity, "", r)
+			return
+		}
 	}
 
 	ans, status := models.ValidateEntity(entInt, obj)
