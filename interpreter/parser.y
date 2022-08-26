@@ -92,7 +92,6 @@ stmnt:   TOK_GET PATH {$$=&getObjectNode{$2}}
        | PHYSICAL_PATH TOK_COL TOK_WORD TOK_EQUAL EXPR_NOQUOTE {$$=&updateObjNode{$1, map[string]interface{}{$3:$5}}}
        | PHYSICAL_PATH TOK_COL TOK_WORD TOK_EQUAL ARRAY TOK_ATTRSPEC ARRAY {$$=&specialUpdateNode{$1, $3, $5, $7}}
        | TOK_CD PATH {$$=&cdNode{$2}}
-       | TOK_CD TOK_DOT_DOT {$$=&cdNode{&strLeaf{".."}}}
        | TOK_LS PATH {$$=&lsNode{$2}}
        | TOK_LS {$$=&lsNode{&strLeaf{""}}}
        | LSOBJ_COMMAND PATH {$$=&lsObjNode{$2, $1}}
@@ -191,6 +190,7 @@ CONCAT_TERM:  TOK_DEREF TOK_LBRAC TOK_WORD TOK_RBRAC {$$=&symbolReferenceNode{$3
        | TOK_WORD {$$=&strLeaf{$1}}
        | TOK_STR {$$=&strLeaf{$1}}
        | TOK_SLASH {$$=&strLeaf{"/"}}
+       | TOK_DOT_DOT {$$=&strLeaf{".."}}
 ;
 
 EXPR: TOK_INT {$$=&floatLeaf{float64($1)}}

@@ -40,33 +40,38 @@ func (n pathNode) getStr() (string, error) {
 	if !ok {
 		return "", fmt.Errorf("Path should be a string")
 	}
-	if p == "." || p == ".." {
-		return p, nil
-	}
 	if p == "_" {
 		return "_", nil
 	}
-	// ignore starting dot
-	if p[0] == '.' {
-		p = p[1:]
-	}
-	// split between /, then between dots
-	words := strings.Split(p, "/")
-	words = append(words[:len(words)-1], strings.Split(words[len(words)-1], ".")...)
-	// if it starts with a /
-	if words[0] == "" {
-		words = words[1:]
-	} else {
+	var output_words []string
+	if p[0] != '/' {
 		switch n.mode {
 		case STD:
-			words = append(strings.Split(cmd.State.CurrPath, "/")[1:], words...)
+			output_words = append(strings.Split(cmd.State.CurrPath, "/")[1:], output_words...)
 		case PHYSICAL:
-			words = append([]string{"Physical"}, words...)
+			output_words = append([]string{"Physical"}, output_words...)
 		case STRAY_DEV:
-			words = append([]string{"Physical", "Stray", "Devices"}, words...)
+			output_words = append([]string{"Physical", "Stray", "Devices"}, output_words...)
 		}
 	}
-	r := "/" + strings.Join(words, "/")
+	// split between /, then between dots
+	input_words := strings.Split(p, "/")
+	if input_words[len(input_words)-1] != ".." && input_words[len(input_words)-1] != "." {
+		input_words = append(input_words[:len(input_words)-1], strings.Split(input_words[len(input_words)-1], ".")...)
+	}
+
+	for _, word := range input_words {
+		if word == "." {
+			continue
+		} else if word == ".." {
+			if len(output_words) > 0 {
+				output_words = output_words[:len(output_words)-1]
+			}
+		} else {
+			output_words = append(output_words, word)
+		}
+	}
+	r := "/" + strings.Join(output_words, "/")
 	return path.Clean(r), nil
 }
 
