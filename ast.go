@@ -470,16 +470,6 @@ func (n *updateObjNode) execute() (interface{}, error) {
 	if err != nil {
 		return nil, err
 	}
-	if ar, ok := attributes["areas"]; ok {
-		areas, ok := ar.(map[string]interface{})
-		if !ok {
-			return nil, fmt.Errorf("areas should be a map")
-		}
-		attributes, err = parseAreas(areas)
-		if err != nil {
-			return nil, err
-		}
-	}
 	if path == "_" {
 		return nil, cmd.UpdateSelection(attributes)
 	}
@@ -511,7 +501,9 @@ func (n *specialUpdateNode) execute() (interface{}, error) {
 		return nil, err
 	}
 	if n.variable == "areas" {
-		attributes := map[string]interface{}{"areas": map[string]interface{}{"reserved": first, "technical": second}}
+		areas := map[string]interface{}{"reserved": first, "technical": second}
+		areas, _ = parseAreas(areas)
+		attributes := map[string]interface{}{"areas": areas}
 		return cmd.UpdateObj(path, "", "", attributes, false)
 	} else {
 		return nil, fmt.Errorf("Invalid special update")
@@ -1065,35 +1057,26 @@ func checkIfObjectNode(x map[string]interface{}) bool {
 
 //Hack function for the [room]:areas=[r1,r2,r3,r4]@[t1,t2,t3,t4]
 //command
-func parseAreas(x map[string]interface{}) (map[string]interface{}, error) {
+func parseAreas(areas map[string]interface{}) (map[string]interface{}, error) {
 	var reservedStr string
 	var techStr string
-	if reserved, ok := x["reserved"].([]map[int]interface{}); ok {
-		if tech, ok := x["technical"].([]map[int]interface{}); ok {
+	if reserved, ok := areas["reserved"].([]interface{}); ok {
+		if tech, ok := areas["technical"].([]interface{}); ok {
 			if len(reserved) == 4 && len(tech) == 4 {
 				var r [4]*bytes.Buffer
 				var t [4]*bytes.Buffer
 				for i := 3; i >= 0; i-- {
 					r[i] = bytes.NewBufferString("")
-					rval, err := reserved[i][0].(node).execute()
-					if err != nil {
-						return nil, err
-					}
-					fmt.Fprintf(r[i], "%v", rval)
-
+					fmt.Fprintf(r[i], "%v", reserved[i])
 					t[i] = bytes.NewBufferString("")
-					tval, err := tech[i][0].(node).execute()
-					if err != nil {
-						return nil, err
-					}
-					fmt.Fprintf(t[i], "%v", tval)
+					fmt.Fprintf(t[i], "%v", tech[i])
 				}
 				reservedStr = "{\"left\":" + r[3].String() + ",\"right\":" + r[2].String() + ",\"top\":" + r[0].String() + ",\"bottom\":" + r[1].String() + "}"
 				techStr = "{\"left\":" + t[3].String() + ",\"right\":" + t[2].String() + ",\"top\":" + t[0].String() + ",\"bottom\":" + t[1].String() + "}"
-				x["reserved"] = reservedStr
-				x["technical"] = techStr
+				areas["reserved"] = reservedStr
+				areas["technical"] = techStr
 			}
 		}
 	}
-	return x, nil
+	return areas, nil
 }
