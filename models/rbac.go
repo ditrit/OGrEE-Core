@@ -1,6 +1,10 @@
 package models
 
-import "go.mongodb.org/mongo-driver/bson"
+import (
+	u "p3/utils"
+
+	"go.mongodb.org/mongo-driver/bson"
+)
 
 func CheckDomainExists(domain string) bool {
 	x, e := GetEntity(bson.M{"name": domain}, "domain")
@@ -14,7 +18,7 @@ func CheckDomainExists(domain string) bool {
 //the hierarchy of the Domain
 func GetUserDomainSpace(domain string) []string {
 	ans := []string{domain}
-	raw, e := GetHierarchyByName("domain", domain, nil, 0, 99)
+	raw, e := GetHierarchyByName("domain", domain, nil, u.DOMAIN, 99)
 	if e != "" {
 		return nil
 	}
@@ -36,7 +40,7 @@ func RequestGen(x map[string]interface{}, role, domain string) {
 	case "manager":
 		RBACTable := GetUserDomainSpace(domain)
 		if RBACTable == nil {
-			x["domain"] = map[string]interface{}{"$in": domain}
+			x["domain"] = map[string]interface{}{"domain": domain}
 		} else {
 			x["domain"] = map[string]interface{}{"$in": RBACTable[:]}
 		}
@@ -60,6 +64,10 @@ func EnsureObjectPermission(obj map[string]interface{}, domain, role string) (bo
 		return obj["domain"] == domain, ""
 	case "manager":
 		domains := GetUserDomainSpace(domain)
+		/*println("DEBUG view Domain Space")
+		for q := range domains {
+			println(domains[q])
+		}*/
 		for i := range domains {
 			if obj["domain"] == domains[i] {
 				return true, ""

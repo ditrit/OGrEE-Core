@@ -489,7 +489,12 @@ func GetEntityUsingAncestorNames(ent string, id primitive.ObjectID, req map[stri
 func GetHierarchyByName(entity, name string, req bson.M, entnum, end int) (map[string]interface{}, string) {
 
 	newReq := req
-	newReq["name"] = name
+	if newReq == nil {
+		newReq = bson.M{"name": name}
+	} else {
+		newReq["name"] = name
+	}
+
 	t, e := GetEntity(newReq, entity)
 	if e != "" {
 		fmt.Println(e)
@@ -528,8 +533,9 @@ func GetHierarchyByName(entity, name string, req bson.M, entnum, end int) (map[s
 			subIdx = u.EntityToString(entnum + 1)
 		}
 		subID := (children[i]["id"].(primitive.ObjectID))
+		subReq := bson.M{"name": children[i]["name"].(string)}
 		x, _ =
-			GetEntityHierarchy(subID, req, subIdx, entnum+1, end)
+			GetEntityHierarchy(subID, subReq, subIdx, entnum+1, end)
 		if x != nil {
 			children[i] = x
 		}
