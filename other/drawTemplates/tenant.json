@@ -1,0 +1,11 @@
+{
+    "name": true,
+    "parentId": null,
+    "category": true,
+    "description": false,
+    "domain": true,
+    "color": true,
+    "mainContact": false,
+    "mainPhone": false,
+    "mainEmail": false
+  }

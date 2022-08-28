@@ -1,117 +1,110 @@
 package main
 
-//Since readline hasn't been updated since 2018
-//it may be worth switching to peterh/liner
-//https://stackoverflow.com/
-// questions/33025599/move-the-cursor-in-a-c-program
 import (
-	"bytes"
-	"encoding/json"
-	"io/ioutil"
-	"net/http"
-	"os"
-	"strconv"
-	"strings"
-
-	"github.com/chzyer/readline"
-	"github.com/joho/godotenv"
+	"flag"
 )
 
-type ShellState struct {
-	currPath string
-}
-
-var State ShellState
-
-func BeginInterpreter(str *string) {
-	lex := NewLexer(strings.NewReader(*str))
-	e := yyParse(lex)
-	println("\nReturn Code: ", e)
-	return
-}
-
-func createCredentials() (string, string) {
-	var tp map[string]interface{}
-	var key string
-	client := &http.Client{}
-
-	user, _ := readline.Line("Please Enter desired user email: ")
-	pass, _ := readline.Password("Please Enter desired password: ")
-
-	buf, _ := json.Marshal(map[string]interface{}{"email": user,
-		"password": pass})
-
-	req, _ := http.NewRequest("POST",
-		"https://ogree.chibois.net/api/user",
-		bytes.NewBuffer(buf))
-
-	resp, e := client.Do(req)
-	if e != nil || resp.StatusCode != http.StatusCreated {
-		readline.
-			Line("Error while creating credentials on server! Now exiting")
-		os.Exit(-1)
+//Assign value to flags[key] with preference to 'x'
+func SetArgFlags(x, y, defaultValue interface{}, key string, flags map[string]interface{}) {
+	if x != defaultValue {
+		flags[key] = x
+	} else if y != defaultValue {
+		flags[key] = y
+	} else {
+		flags[key] = defaultValue
 	}
-	defer resp.Body.Close()
-	bodyBytes, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		readline.Line("Error: " + err.Error() + " Now Exiting")
-		os.Exit(-1)
-	}
-	json.Unmarshal(bodyBytes, &tp)
-	key = (tp["account"].(map[string]interface{}))["token"].(string)
-
-	os.WriteFile("./.resources/.env",
-		[]byte("user="+user+"\n"+"apikey="+key),
-		0666)
-
-	return user, key
-}
-
-func checkKeyIsValid(key string) bool {
-	client := &http.Client{}
-
-	req, _ := http.NewRequest("GET",
-		"https://ogree.chibois.net/api/token/valid", nil)
-
-	req.Header.Set("Authorization", "Bearer "+key)
-
-	resp, e := client.Do(req)
-	if e != nil || resp.StatusCode != 200 {
-		readline.Line(e.Error())
-		readline.Line("Status code" + strconv.Itoa(resp.StatusCode))
-		return false
-	}
-	return true
 }
 
 func main() {
-	var user, key string
+	var listenPORT, l int
+	var verboseLevel, v, unityURL, u, APIURL, a, APIKEY, k,
+		envPath, e, histPath, h, analyse, s, file, f string
 
-	e := godotenv.Load(".resources/.env")
-	if e != nil {
-		user, key = createCredentials()
+	flags := map[string]interface{}{}
+
+	flag.StringVar(&v, "v", "ERROR",
+		"Indicates level of debugging messages."+
+			"The levels are of in ascending order:"+
+			"{NONE,ERROR,WARNING,INFO,DEBUG}.")
+
+	flag.StringVar(&verboseLevel, "verbose", "ERROR",
+		"Indicates level of debugging messages."+
+			"The levels are of in ascending order:"+
+			"{NONE,ERROR,WARNING,INFO,DEBUG}.")
+
+	flag.StringVar(&unityURL, "unity_url", "", "Unity URL")
+	flag.StringVar(&u, "u", "", "Unity URL")
+
+	flag.StringVar(&APIURL, "api_url", "", "API URL")
+	flag.StringVar(&a, "a", "", "API URL")
+
+	flag.IntVar(&listenPORT, "listen_port", 0,
+		"Indicates which port to communicate to Unity")
+	flag.IntVar(&l, "l", 0,
+		"Indicates which port to communicate to Unity")
+
+	flag.StringVar(&APIKEY, "api_key", "", "Indicate the key of the API")
+	flag.StringVar(&k, "k", "", "Indicate the key of the API")
+
+	flag.StringVar(&envPath, "env_path", "./.env",
+		"Indicate the location of the Shell's env file")
+	flag.StringVar(&e, "e", "./.env",
+		"Indicate the location of the Shell's env file")
+
+	flag.StringVar(&histPath, "history_path", "./.history",
+		"Indicate the location of the Shell's history file")
+	flag.StringVar(&h, "h", "./.history",
+		"Indicate the location of the Shell's history file")
+
+	flag.StringVar(&analyse, "analyser", "true", "Dictate if the Shell shall"+
+		" use the Static Analyser before script execution")
+	flag.StringVar(&s, "s", "true", "Dictate if the Shell shall"+
+		" use the Static Analyser before script execution")
+
+	flag.StringVar(&file, "file", "", "Launch the shell as an interpreter "+
+		" by only executing an OCLI script file")
+	flag.StringVar(&f, "f", "", "Launch the shell as an interpreter "+
+		" by only executing an OCLI script file")
+
+	flag.Parse()
+
+	if v == "ERROR" {
+		flags["v"] = 1
 	} else {
-		user = os.Getenv("user")
-		key = os.Getenv("apikey")
-		if !checkKeyIsValid(key) {
-			readline.Line("Error while checking key. Now exiting")
-			os.Exit(-1)
+		switch v {
+		case "NONE":
+			flags["v"] = 0
+		case "WARNING":
+			flags["v"] = 2
+		case "INFO":
+			flags["v"] = 3
+		case "DEBUG":
+			flags["v"] = 4
+		default:
+			switch verboseLevel {
+			case "NONE":
+				flags["v"] = 0
+			case "WARNING":
+				flags["v"] = 2
+			case "INFO":
+				flags["v"] = 3
+			case "DEBUG":
+				flags["v"] = 4
+			default:
+				flags["v"] = 1
+			}
 		}
 	}
 
-	user = (strings.Split(user, "@"))[0]
-	rl, err := readline.New(user + "@" + "OGRE3D:$> ")
-	if err != nil {
-		panic(err)
-	}
-	defer rl.Close()
+	SetArgFlags(u, unityURL, "", "unity_url", flags)
+	SetArgFlags(a, APIURL, "", "api_url", flags)
+	SetArgFlags(k, APIKEY, "", "api_key", flags)
+	SetArgFlags(l, listenPORT, 0, "listen_port", flags)
+	SetArgFlags(e, envPath, "./.env", "env_path", flags)
+	SetArgFlags(h, histPath, "./.history", "history_path", flags)
+	SetArgFlags(s, analyse, "true", "analyser", flags)
+	SetArgFlags(f, file, "", "script", flags)
 
-	for {
-		line, err := rl.Readline()
-		if err != nil { // io.EOF
-			break
-		}
-		BeginInterpreter(&line)
-	}
-
+	//Pass control to repl.go
+	Start(flags)
 }
