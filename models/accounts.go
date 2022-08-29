@@ -59,15 +59,21 @@ func (account *Account) Validate() (map[string]interface{}, bool) {
 	return u.Message(false, "Requirement passed"), true
 }
 
-func (account *Account) Create() (map[string]interface{}, string) {
+func (account *Account) Create(role, domain string) (map[string]interface{}, string) {
 
 	if resp, ok := account.Validate(); !ok {
 		return resp, "validate"
 	}
 
-	//Check if user supplied admin password for account creation
+	//Check if user is allowed to do account creation
 	//only admins (issuer or super roles) can create accounts
-	if os.Getenv("signing_password") != account.AdminAuth {
+	//managers can create user roles in their domain
+	//or if the the request included the adminPassword
+	if !(role == "manager" && account.Role == "user" &&
+		(domain == account.Domain)) &&
+		!(role == "super") &&
+		(os.Getenv("signing_password") != account.AdminAuth) {
+
 		return u.Message(false,
 			"Invalid credentials for creating an account."+
 				"Please note only admins can create accounts"), "unauthorised"

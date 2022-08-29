@@ -98,3 +98,41 @@ var JwtAuthentication = func(next http.Handler) http.Handler {
 		next.ServeHTTP(w, r) //proceed in the middleware chain!
 	})
 }
+
+func ParseToken(w http.ResponseWriter, r *http.Request) map[string]interface{} {
+	//Grab the token from the header
+	tokenHeader := r.Header.Get("Authorization")
+
+	//Token is missing return 403
+	if tokenHeader == "" {
+		return nil
+	}
+
+	//Token format `Bearer {token-body}`
+	splitted := strings.Split(tokenHeader, " ")
+	if len(splitted) != 2 {
+		return nil
+	}
+
+	//Grab the token body
+	tokenPart := splitted[1]
+	tk := &models.Token{}
+
+	token, err := jwt.ParseWithClaims(tokenPart, tk, func(token *jwt.Token) (interface{}, error) {
+		return []byte(os.Getenv("token_password")), nil
+	})
+
+	//Malformed token
+	if err != nil {
+		return nil
+	}
+
+	//Token is invalid
+	if !token.Valid {
+		return nil
+	}
+
+	//Success
+	return map[string]interface{}{
+		"userID": tk.UserId, "domain": tk.Domain, "role": tk.Role}
+}

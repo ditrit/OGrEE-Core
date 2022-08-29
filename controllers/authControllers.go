@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"p3/app"
 	"p3/models"
 	u "p3/utils"
 )
@@ -59,6 +60,8 @@ var CreateAccount = func(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("FUNCTION CALL: 	 CreateAccount ")
 	fmt.Println("******************************************************")
 	DispRequestMetaData(r)
+	var role string
+	var domain string
 
 	if r.Method == "OPTIONS" {
 		w.Header().Add("Content-Type", "application/json")
@@ -71,7 +74,21 @@ var CreateAccount = func(w http.ResponseWriter, r *http.Request) {
 			u.Respond(w, u.Message(false, "Invalid request"))
 			return
 		}
-		resp, e := account.Create()
+
+		//Extra block here because accounts can be created using
+		//an adminPassword or via managers or super users
+		if userData := app.ParseToken(w, r); userData != nil {
+			role = userData["role"].(string)
+			domain = userData["domain"].(string)
+		} else {
+			role = ""
+			domain = ""
+		}
+
+		println("Domain:", domain)
+		println("Role:", role)
+
+		resp, e := account.Create(role, domain)
 		switch e {
 		case "internal":
 			w.WriteHeader(http.StatusInternalServerError)
