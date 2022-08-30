@@ -7,6 +7,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"net/http"
 	"os"
@@ -435,7 +436,8 @@ func CreateCredentials() (string, string) {
 	return user, key
 }
 
-func CheckKeyIsValid(key string) bool {
+//Returns OK and message if necessary
+func CheckKeyIsValid(key string) (bool, string) {
 	client := &http.Client{}
 
 	req, _ := http.NewRequest("GET",
@@ -445,20 +447,27 @@ func CheckKeyIsValid(key string) bool {
 
 	resp, e := client.Do(req)
 	if e != nil || resp.StatusCode != 200 {
-		//readline.Line(e.Error())
+		var msg string
 		if resp != nil {
-			readline.Line("Status code" + strconv.Itoa(resp.StatusCode))
+			println("Status code" + strconv.Itoa(resp.StatusCode))
+
+			//Get Message
+			x, _ := io.ReadAll(resp.Body)
+			tmp := map[string]interface{}{}
+			json.Unmarshal(x, &tmp)
+			msg = tmp["message"].(string)
+
 		} else {
 			l.GetErrorLogger().Println("Unable to connect to API: ", State.APIURL)
 			if State.DebugLvl > 0 {
 				println("Unable to connect to API: ", State.APIURL)
 			}
-
+			msg = "Please check your connection and try again"
 		}
 
-		return false
+		return false, msg
 	}
-	return true
+	return true, ""
 }
 
 func Login(env map[string]interface{}) (string, string) {
@@ -473,9 +482,10 @@ func Login(env map[string]interface{}) (string, string) {
 		key = env["apiKey"].(string)
 	}
 
-	if !CheckKeyIsValid(key) {
+	if ok, msg := CheckKeyIsValid(key); !ok {
 		if State.DebugLvl > 0 {
 			println("Error while checking key. Now exiting")
+			println(msg)
 		}
 
 		l.GetErrorLogger().Println("Error while checking key. Now exiting")
