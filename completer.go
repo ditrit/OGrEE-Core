@@ -192,6 +192,19 @@ func TrimToSlash(x string) string {
 	return x[:idx+1]
 }
 
+func DrawCompleter(path string) func(string) []string {
+	return func(line string) []string {
+		//Trim everything until the "("
+
+		fn := ListEntities("")
+		ans := fn(line)
+		if !strings.Contains(line, ")") {
+			ans = append(ans, ")")
+		}
+		return ans
+	}
+}
+
 //End of Functions for autocompleter
 
 //Helper function that returns the prefix completer
@@ -207,8 +220,7 @@ func GetPrefixCompleter() *readline.PrefixCompleter {
 		readline.PcItem("env", false),
 		readline.PcItem("grep", false),
 		readline.PcItem("drawable(", true,
-			readline.PcItemDynamic(ListEntities(""), false),
-			readline.PcItem(")", false)),
+			readline.PcItemDynamic(DrawCompleter(""), false)),
 		readline.PcItem("draw", true,
 			readline.PcItemDynamic(ListEntities(""), false)),
 		readline.PcItem("ls", true,
