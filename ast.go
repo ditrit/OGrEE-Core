@@ -318,9 +318,12 @@ func (c *commonNode) execute() interface{} {
 				/*idx := c.args[2].(node).execute()
 				println("IDX WAS:", idx)
 				return*/
+				f(c.args[0].(string), c.args[1].(string),
+					c.args[2].(node), c.args[3])
+			} else {
+				f(c.args[0].(string), c.args[1].(string), nil, nil)
 			}
-			f(c.args[0].(string), c.args[1].(string),
-				c.args[2].(node), c.args[3])
+
 		}
 
 	case "SetEnv":
@@ -1299,10 +1302,13 @@ func (f *funcNode) execute() interface{} {
 func UnsetUtil(x, name string, ref, value interface{}) {
 	switch x {
 	case "-f":
-		funcTable[name] = nil
+		//funcTable[name] = nil
+		delete(funcTable, name)
 	case "-v":
 		v := dynamicMap[name]
-		dynamicSymbolTable[v] = nil
+		//dynamicSymbolTable[v] = nil
+		delete(dynamicMap, name)
+		delete(dynamicSymbolTable, v)
 	default:
 		//This section is for deleting an attribute
 		myArg := ""
@@ -1336,6 +1342,18 @@ func UnsetUtil(x, name string, ref, value interface{}) {
 		cmd.UpdateObj("", mp["id"].(string), mp["category"].(string), map[string]interface{}{myArg: nil}, true)
 
 	}
+}
+
+func GetFuncTable() map[string]interface{} {
+	return funcTable
+}
+
+func GetDynamicMap() map[string]int {
+	return dynamicMap
+}
+
+func GetDynamicSymbolTable() map[int]interface{} {
+	return dynamicSymbolTable
 }
 
 func checkTypesAreSame(x, y interface{}) bool {

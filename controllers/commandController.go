@@ -849,8 +849,7 @@ func lsobjHelper(api, objID string, curr, entity int) []map[string]interface{} {
 				}
 			}
 
-			if State.DebugLvl >= 3 {
-				println("returning x")
+			if State.DebugLvl > 3 {
 				println(len(x))
 			}
 
