@@ -6,7 +6,6 @@ import (
 	l "cli/logger"
 	p "cli/preprocessor"
 	"cli/readline"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strings"
@@ -189,7 +188,8 @@ func listLocal(path string) func(string) []string {
 		//End of Algorithm
 
 		names := make([]string, 0)
-		files, _ := ioutil.ReadDir(path)
+		files, _ := os.ReadDir(path)
+		//files, _ := ioutil.ReadDir(path)
 		for _, f := range files {
 			names = append(names, f.Name())
 		}

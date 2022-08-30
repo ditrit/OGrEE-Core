@@ -6,7 +6,7 @@ import (
 	"cli/models"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"log"
 	"net/http"
 	"os"
@@ -34,7 +34,7 @@ func ParseResponse(resp *http.Response, e error, purpose string) map[string]inte
 		return nil
 	}
 	defer resp.Body.Close()
-	bodyBytes, err := ioutil.ReadAll(resp.Body)
+	bodyBytes, err := io.ReadAll(resp.Body)
 	if err != nil {
 		if State.DebugLvl > 0 {
 			println("Error: " + err.Error() + " Now Exiting")
@@ -1067,7 +1067,7 @@ func Help(entry string) {
 		path = "./other/man/default.md"
 	}
 
-	text, e := ioutil.ReadFile(path)
+	text, e := os.ReadFile(path)
 	if e != nil {
 		println("Manual Page not found!")
 	} else {

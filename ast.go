@@ -7,7 +7,7 @@ import (
 	l "cli/logger"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"os"
 	"reflect"
 	"strconv"
 )
@@ -1403,7 +1403,7 @@ func checkIfObjectNode(x map[string]interface{}) bool {
 //Used by EasyPost, EasyUpdate and Load Template
 func fileToJSON(path string) map[string]interface{} {
 	data := map[string]interface{}{}
-	x, e := ioutil.ReadFile(path)
+	x, e := os.ReadFile(path)
 	if e != nil {
 		println("Error while opening file! " + e.Error())
 		return nil
