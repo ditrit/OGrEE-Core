@@ -502,8 +502,7 @@ func (n *specialUpdateNode) execute() (interface{}, error) {
 	}
 	if n.variable == "areas" {
 		areas := map[string]interface{}{"reserved": first, "technical": second}
-		areas, _ = parseAreas(areas)
-		attributes := map[string]interface{}{"areas": areas}
+		attributes, _ := parseAreas(areas)
 		return cmd.UpdateObj(path, "", "", attributes, false)
 	} else {
 		return nil, fmt.Errorf("Invalid special update")
