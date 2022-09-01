@@ -1126,24 +1126,14 @@ func Tree(x string, depth int) {
 		if State.DebugLvl > 0 {
 			println("Error: Tree command cannot accept negative value")
 		}
-
 		return
 	}
 	objJSON, _ := GetObject(x, true)
 	if objJSON == nil {
 		return
 	}
-
-	if x == "" || x == "." {
-		println(State.CurrPath)
-		tree(State.CurrPath, "", depth)
-	} else if string(x[0]) == "/" {
-		println(x)
-		tree(x, "", depth)
-	} else {
-		println(State.CurrPath + "/" + x)
-		tree(State.CurrPath+"/"+x, "", depth)
-	}
+	println(x)
+	tree(x, "", depth)
 }
 
 func GetHierarchy(x string, depth int, silence bool) []map[string]interface{} {
@@ -1157,7 +1147,6 @@ func GetHierarchy(x string, depth int, silence bool) []map[string]interface{} {
 		if e != "" {
 			println("Error: ", e)
 		}
-
 		return nil
 	}
 
@@ -2103,14 +2092,19 @@ func UnlinkObject(paths []interface{}) {
 //Unity UI will draw already existing objects
 //by retrieving the hierarchy
 func Draw(x string, depth int) {
-	if depth == 0 {
-		res, _ := GetObject(x, true)
+	res, _ := GetObject(x, true)
+	if depth < 0 {
+		l.GetWarningLogger().Println("Draw command cannot accept negative value")
+		if State.DebugLvl > 0 {
+			println("Error: Draw command cannot accept negative value")
+		}
+		return
+	} else if depth == 0 {
 		data := map[string]interface{}{"type": "create", "data": res}
 		InformUnity("POST", "Draw", 0, data)
 		return
 	}
-
-	res := GetHierarchy(x, depth, true)
+	res["children"] = GetHierarchy(x, depth, true)
 	if res == nil {
 		if State.DebugLvl > 0 {
 			println("Error: Attempted to draw non drawable object")
@@ -2118,8 +2112,7 @@ func Draw(x string, depth int) {
 		l.GetErrorLogger().Println("User attempted to draw non drawable object")
 		return
 	}
-	data := map[string]interface{}{"type": "create", "data": res[0]}
-
+	data := map[string]interface{}{"type": "create", "data": res}
 	//0 to include the JSON filtration
 	InformUnity("POST", "Draw", 0, data)
 }
@@ -2618,12 +2611,9 @@ func InformUnity(method, caller string, entity int, data map[string]interface{})
 			if State.DebugLvl > 1 {
 				fmt.Println("Error while updating Unity: ", e.Error())
 			}
-
 		} else {
 			fmt.Println("Successfully updated Unity")
 		}
-		println()
-		println()
 	}
 }
 

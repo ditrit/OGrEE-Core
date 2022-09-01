@@ -54,7 +54,7 @@ func ContactUnity(method, URL string, data map[string]interface{}, dur time.Dura
 
 	// Connect to a server
 	//println(URL)
-	if debug >= 3 { //Debug levels range: 0->3
+	if debug >= 4 {
 		println("DEBUG OUTGOING JSON")
 		Disp(data)
 	}
