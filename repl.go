@@ -228,7 +228,8 @@ func Start(flags map[string]interface{}) {
 	c.InitState(flags, env)
 
 	rl, err := readline.NewEx(&readline.Config{
-		Prompt:          "\u001b[32m\u001b[1m" + user + "@" + "OGrEE3D:" + "\u001b[37;1m" + c.State.CurrPath + "$> " + "\u001b[0m",
+		Prompt: "\u001b[1m\u001b[32m" + user + "@" + "OGrEE3D:" +
+			"\u001b[37;1m" + c.State.CurrPath + "\u001b[1m\u001b[32m$>\u001b[0m ",
 		HistoryFile:     flags["history_path"].(string),
 		AutoComplete:    getPrefixCompleter(),
 		InterruptPrompt: "^C",
