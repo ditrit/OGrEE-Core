@@ -739,11 +739,12 @@ func LSATTR(x, attr string) {
 		for i := range sortedDevices.getData() {
 			name := sortedDevices.getData()[i]["name"].(string)
 			if attr == "slot" {
+				attributes := sortedDevices.getData()[i]["attributes"].(map[string]interface{})
 				var slot string
-				if sortedDevices.getData()[i]["slot"] == nil {
+				if attributes["slot"] == nil {
 					slot = "NULL"
 				} else {
-					slot = sortedDevices.getData()[i]["slot"].(string)
+					slot = attributes["slot"].(string)
 				}
 				println("Slot:"+slot, "  Name: ", name)
 
