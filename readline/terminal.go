@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"fmt"
 	"io"
+	"runtime"
 	"strings"
 	"sync"
 	"sync/atomic"
@@ -186,7 +187,9 @@ func (t *Terminal) ioloop() {
 				t.outchan <- r
 				break
 			}
-			isEscape = true
+			if runtime.GOOS != "windows" {
+				isEscape = true
+			}
 		case CharInterrupt, CharEnter, CharCtrlJ, CharDelete:
 			expectNextChar = false
 			fallthrough
