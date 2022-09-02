@@ -3,7 +3,6 @@ package main
 import (
 	"bytes"
 	cmd "cli/controllers"
-	l "cli/logger"
 	"fmt"
 )
 
@@ -343,8 +342,6 @@ func (n *isAttrDrawableNode) execute() (interface{}, error) {
 		return nil, err
 	}
 	if _, ok := attrInf.(string); !ok {
-		println("Attribute operand is invalid")
-		l.GetInfoLogger().Println("Attribute operand is invalid")
 		return nil, fmt.Errorf("Attribute operand is invalid")
 	}
 	return cmd.IsAttrDrawable(path, attrInf.(string), nil, false), nil
@@ -1004,7 +1001,6 @@ func (n *arrayReferenceNode) execute() (interface{}, error) {
 		return nil, fmt.Errorf("Index should be an integer.")
 	}
 	if i < 0 || i >= len(arr) {
-		l.GetWarningLogger().Println("Index out of range error!")
 		return nil, fmt.Errorf("Index out of range error!\n Array Length Of: ",
 			len(arr), "\nBut desired index at: ", i)
 	}

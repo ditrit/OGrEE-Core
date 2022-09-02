@@ -31,10 +31,12 @@ func InterpretLine(str *string) bool {
 		_, err := root.execute()
 		if err != nil {
 			if strings.Contains(err.Error(), "duplicate") {
+				l.GetWarningLogger().Println(err.Error())
 				fmt.Println(err.Error())
 				return true
 			} else {
-				fmt.Println(err.Error())
+				l.GetErrorLogger().Println(err.Error())
+				fmt.Println("Error : " + err.Error())
 				return false
 			}
 		}
