@@ -7,7 +7,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"os"
 	"strconv"
@@ -372,7 +372,7 @@ func SetDrawableTemplate(entity string, env map[string]interface{}) map[string]i
 		objStr = strings.Trim(objStr, "'\"")
 		//Now retrieve file
 		ans := map[string]interface{}{}
-		f, e := ioutil.ReadFile(objStr)
+		f, e := os.ReadFile(objStr)
 		if e == nil {
 			json.Unmarshal(f, &ans)
 			return ans
@@ -413,7 +413,7 @@ func CreateCredentials() (string, string) {
 		os.Exit(-1)
 	}
 	defer resp.Body.Close()
-	bodyBytes, err := ioutil.ReadAll(resp.Body)
+	bodyBytes, err := io.ReadAll(resp.Body)
 	if err != nil {
 		if State.DebugLvl > 0 {
 			readline.Line("Error: " + err.Error() + " Now Exiting")

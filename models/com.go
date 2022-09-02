@@ -3,7 +3,7 @@ package models
 import (
 	"bytes"
 	"encoding/json"
-	"io/ioutil"
+	"io"
 	"net"
 	"net/http"
 	"time"
@@ -73,7 +73,7 @@ func ContactUnity(method, URL string, data map[string]interface{}, dur time.Dura
 
 		//time.Sleep(time.Duration(1) * time.Second)
 		//reply, err := bufio.NewReader(conn).ReadString('\t')
-		reply, _ := ioutil.ReadAll(conn)
+		reply, _ := io.ReadAll(conn)
 
 		//if err != nil {
 		//	return err
