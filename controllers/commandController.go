@@ -747,19 +747,33 @@ func LSATTR(x, attr string) {
 	if len(sortedDevices.getData()) > 0 {
 		println("Devices")
 		println()
-		for i := range sortedDevices.getData() {
-			name := sortedDevices.getData()[i]["name"].(string)
+		for _, dev := range sortedDevices.getData() {
+			name := dev["name"].(string)
 			if attr == "slot" {
 				var slot string
-				if sortedDevices.getData()[i]["slot"] == nil {
+				if dev["slot"] == nil {
 					slot = "NULL"
 				} else {
-					slot = sortedDevices.getData()[i]["slot"].(string)
+					slot = dev["slot"].(string)
 				}
 				println("Slot:"+slot, "  Name: ", name)
 
 			} else {
-				println(name)
+				heightU := dev["attributes"].(map[string]interface{})["heightU"]
+				switch heightU.(type) {
+				case string:
+					println("HeightU:", heightU.(string), "Name:", name)
+				case int:
+					println("HeightU:", heightU.(int), "Name:", name)
+				case float64, float32:
+					println("HeightU:", heightU.(float64), "Name:", name)
+				default:
+					l.GetWarningLogger().Println(
+						"Unable to recognise the data " +
+							"type of heightU attribute for LSU")
+					println("HeightU:", heightU, "Name:", name)
+				}
+
 			}
 
 		}
