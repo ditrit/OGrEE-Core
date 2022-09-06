@@ -9,6 +9,14 @@ import (
 var dynamicSymbolTable = make(map[string]interface{})
 var funcTable = make(map[string]interface{})
 
+func GetFuncTable() map[string]interface{} {
+	return funcTable
+}
+
+func GetDynamicSymbolTable() map[string]interface{} {
+	return dynamicSymbolTable
+}
+
 type node interface {
 	execute() (interface{}, error)
 }

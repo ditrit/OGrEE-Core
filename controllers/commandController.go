@@ -736,20 +736,33 @@ func LSATTR(x, attr string) {
 	if len(sortedDevices.getData()) > 0 {
 		println("Devices")
 		println()
-		for i := range sortedDevices.getData() {
-			name := sortedDevices.getData()[i]["name"].(string)
+		for _, dev := range sortedDevices.getData() {
+			name := dev["name"].(string)
 			if attr == "slot" {
-				attributes := sortedDevices.getData()[i]["attributes"].(map[string]interface{})
 				var slot string
-				if attributes["slot"] == nil {
+				if dev["slot"] == nil {
 					slot = "NULL"
 				} else {
-					slot = attributes["slot"].(string)
+					slot = dev["slot"].(string)
 				}
 				println("Slot:"+slot, "  Name: ", name)
 
 			} else {
-				println(name)
+				heightU := dev["attributes"].(map[string]interface{})["heightU"]
+				switch heightU.(type) {
+				case string:
+					println("HeightU:", heightU.(string), "Name:", name)
+				case int:
+					println("HeightU:", heightU.(int), "Name:", name)
+				case float64, float32:
+					println("HeightU:", heightU.(float64), "Name:", name)
+				default:
+					l.GetWarningLogger().Println(
+						"Unable to recognise the data " +
+							"type of heightU attribute for LSU")
+					println("HeightU:", heightU, "Name:", name)
+				}
+
 			}
 
 		}
@@ -839,8 +852,7 @@ func lsobjHelper(api, objID string, curr, entity int) []map[string]interface{} {
 				}
 			}
 
-			if State.DebugLvl >= 3 {
-				println("returning x")
+			if State.DebugLvl > 3 {
 				println(len(x))
 			}
 
@@ -3005,6 +3017,10 @@ func (s SortableSlot) Less(i, j int) bool {
 
 	if lOK && !rOK {
 		return true
+	}
+
+	if !lOK && !rOK {
+		return false
 	}
 
 	return lS.(string) < rS.(string)
