@@ -3045,6 +3045,10 @@ func (s SortableSlot) Less(i, j int) bool {
 		return true
 	}
 
+	if !lOK && !rOK {
+		return false
+	}
+
 	return lS.(string) < rS.(string)
 
 }
