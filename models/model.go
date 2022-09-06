@@ -144,6 +144,59 @@ func GetManyEntities(ent string, req bson.M, opts *options.FindOptions) ([]map[s
 	return data, ""
 }
 
+func GetEntityCount(entity int) int64 {
+	ent := u.EntityToString(entity)
+	ctx, cancel := u.Connect()
+	ans, e := GetDB().Collection(ent).CountDocuments(ctx, bson.M{}, nil)
+	if e != nil {
+		println(e.Error())
+		return -1
+	}
+	defer cancel()
+	return ans
+}
+
+func CommandRunner(cmd interface{}) *mongo.SingleResult {
+	ctx, cancel := u.Connect()
+	result := GetDB().RunCommand(ctx, cmd, nil)
+	defer cancel()
+	return result
+}
+
+func GetStats() map[string]interface{} {
+	ans := map[string]interface{}{}
+	t := map[string]interface{}{}
+	t2 := map[string]interface{}{}
+
+	for i := 0; i <= u.STRAYSENSOR; i++ {
+		num := GetEntityCount(i)
+		if num == -1 {
+			num = 0
+		}
+
+		ans["Number of "+u.EntityToString(i)+"s:"] = num
+	}
+
+	cmd := bson.D{{"dbStats", 1}, {"scale", 1024}}
+	cmd2 := bson.D{{"serverStatus", 1}} //This cmd gives too much info
+	//logicalSessionRecordCache,lastSessionsCollectionJobTimestamp
+
+	if e := CommandRunner(cmd).Decode(&t); e != nil {
+		println(e.Error())
+		return nil
+	}
+	if e := CommandRunner(cmd2).Decode(&t2); e != nil {
+		println(e.Error())
+		return nil
+	}
+
+	ans["Number of Hierarchal Objects"] = t["collections"]
+	ans["Last Job Timestamp"] =
+		t2["logicalSessionRecordCache"].(map[string]interface{})["lastTransactionReaperJobTimestamp"]
+
+	return ans
+}
+
 func DeleteEntityManual(entity string, req bson.M) (map[string]interface{}, string) {
 	//Finally delete the Entity
 	ctx, cancel := u.Connect()

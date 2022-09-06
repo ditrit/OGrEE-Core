@@ -134,6 +134,26 @@
         }
       }
     },
+    "/api/stats": {
+      "get": {
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "objects"
+        ],
+        "summary": "Displays DB statistics.",
+        "operationId": "GetStats",
+        "responses": {
+          "200": {
+            "description": "Request is valid."
+          },
+          "504": {
+            "description": "Server error."
+          }
+        }
+      }
+    },
     "/api/token/valid": {
       "get": {
         "produces": [

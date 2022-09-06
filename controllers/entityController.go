@@ -1737,6 +1737,32 @@ var BaseOption = func(w http.ResponseWriter, r *http.Request) {
 
 }
 
+// swagger:operation GET /api/stats objects GetStats
+// Displays DB statistics.
+// ---
+// produces:
+// - application/json
+// responses:
+//     '200':
+//         description: 'Request is valid.'
+//     '504':
+//         description: Server error.
+var GetStats = func(w http.ResponseWriter, r *http.Request) {
+	fmt.Println("******************************************************")
+	fmt.Println("FUNCTION CALL: 	 GetStats ")
+	fmt.Println("******************************************************")
+	DispRequestMetaData(r)
+	if r.Method == "OPTIONS" {
+		w.Header().Add("Allow", "GET, HEAD, OPTIONS")
+		//w.WriteHeader(http.StatusOK)
+	} else {
+		r := models.GetStats()
+		u.Respond(w, r)
+	}
+	//w.Header().Add("Content-Type", "application/json")
+
+}
+
 // swagger:operation POST /api/validate/{obj} objects ValidateObject
 // Checks the received data and verifies if the object can be created in the system.
 // ---
