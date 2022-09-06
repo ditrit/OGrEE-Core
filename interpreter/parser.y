@@ -95,6 +95,7 @@ stmnt:   TOK_GET PATH {$$=&getObjectNode{$2}}
        | TOK_LS PATH {$$=&lsNode{$2}}
        | TOK_LS {$$=&lsNode{&strLeaf{""}}}
        | LSOBJ_COMMAND PATH {$$=&lsObjNode{$2, $1}}
+       | LSOBJ_COMMAND {$$=&lsObjNode{&strLeaf{"."}, $1}}
        | TOK_LSU PATH {$$=&lsAttrNode{$2, "heightu"}}
        | TOK_LSU {$$=&lsAttrNode{&pathNode{&strLeaf{"."}, STD}, "heightu"}}
        | TOK_LSSLOT PATH {$$=&lsAttrNode{$2, "slot"}}
@@ -104,11 +105,15 @@ stmnt:   TOK_GET PATH {$$=&getObjectNode{$2}}
        | TOK_GETSLOT PATH TOK_COMMA EXPR_NOQUOTE {$$=&getUNode{$2, $4}}
        | TOK_TREE PATH TOK_INT {$$=&treeNode{$2, $3}}
        | TOK_TREE PATH {$$=&treeNode{$2, 0}}
+       | TOK_TREE {$$=&treeNode{&strLeaf{"."}, 0}}
        | TOK_DRAW PATH {$$=&drawNode{$2, 0}}
        | TOK_DRAW PATH TOK_INT {$$=&drawNode{$2, $3}}
+       | TOK_DRAW {$$=&drawNode{&strLeaf{"."}, 0}}
+       | TOK_HIERARCH {$$=&hierarchyNode{&strLeaf{"."}, 1}}
        | TOK_HIERARCH PATH {$$=&hierarchyNode{$2, 1}}
        | TOK_HIERARCH PATH TOK_INT {$$=&hierarchyNode{$2, $3}}
        | TOK_UNSET TOK_MINUS TOK_WORD TOK_WORD {$$=&unsetVarNode{$2+$3, $4}}
+       | TOK_DRAWABLE {$$=&isEntityDrawableNode{&strLeaf{"."}}}
        | TOK_DRAWABLE PATH {$$=&isEntityDrawableNode{$2}}
        | TOK_SETENV TOK_WORD TOK_EQUAL EXPR_NOQUOTE {$$=&setEnvNode{$2, $4}}
        | TOK_PLUS OCCR {$$=$2}
@@ -120,13 +125,13 @@ stmnt:   TOK_GET PATH {$$=&getObjectNode{$2}}
        | TOK_SELECT {$$=&selectNode{}}
        | TOK_DRAWABLE TOK_LPAREN PATH TOK_RPAREN {$$=&isEntityDrawableNode{$3}}
        | TOK_DRAWABLE TOK_LPAREN PATH TOK_COMMA EXPR_NOQUOTE TOK_RPAREN {$$=&isAttrDrawableNode{$3, $5}}
+       | TOK_LEN TOK_LPAREN TOK_WORD TOK_RPAREN {$$=&lenNode{$3}}
 
        // LINKING
        | TOK_LINK TOK_COL PHYSICAL_PATH TOK_ATTRSPEC EXPR_NOQUOTE {$$=&linkObjectNode{[]interface{}{$3, $5}}}
        | TOK_LINK TOK_COL PHYSICAL_PATH TOK_ATTRSPEC EXPR_NOQUOTE TOK_ATTRSPEC EXPR_NOQUOTE {$$=&linkObjectNode{[]interface{}{$3, $5, $7}}}
        | TOK_UNLINK TOK_COL PHYSICAL_PATH {$$=&unlinkObjectNode{[]interface{}{$3}}}
        | TOK_UNLINK TOK_COL PHYSICAL_PATH TOK_ATTRSPEC EXPR_NOQUOTE {$$=&unlinkObjectNode{[]interface{}{$3,$5}}}
-       | TOK_LEN TOK_LPAREN TOK_WORD TOK_RPAREN {$$=&lenNode{$3}}
 
        // BASH
        | TOK_CLR {$$=&clrNode{}}
