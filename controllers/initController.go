@@ -61,12 +61,11 @@ func InitState(flags, env map[string]interface{}) {
 	req := map[string]interface{}{"type": "login", "data": data}
 	e := models.ContactUnity("POST", State.UnityClientURL, req, State.Timeout, State.DebugLvl)
 	if e != nil {
-		l.GetWarningLogger().Println("Note: Unity Client (" + State.UnityClientURL + ") Unreachable")
-
+		msg := "Note: Unity Client (" + State.UnityClientURL + ") Unreachable\n" + e.Error()
+		l.GetWarningLogger().Println(msg)
 		if State.DebugLvl > 1 {
-			fmt.Println("Note: Unity Client (" + State.UnityClientURL + ") Unreachable ")
+			fmt.Println(msg)
 		}
-
 		State.UnityClientAvail = false
 	} else {
 		fmt.Println("Unity Client is Reachable!")
