@@ -88,6 +88,7 @@
 /lscorridor/ {  printToks("TOK_LSCORRIDOR"); return TOK_LSCORRIDOR}
 /lsu/ {  printToks("TOK_LSU"); return TOK_LSU}
 /lsslot/ {  printToks("TOK_LSSLOT"); return TOK_LSSLOT}
+/lsenterprise/ {  printToks("TOK_LSENTERPRISE"); return TOK_LSENTERPRISE}
 /tree/ { printToks("TOK_TREE"); return TOK_TREE}
 /lsog/ { printToks("TOK_LSOG"); return TOK_LSOG}
 /env/ { printToks("TOK_ENV"); return TOK_ENV}

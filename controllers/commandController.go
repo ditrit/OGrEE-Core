@@ -557,6 +557,15 @@ func LSOG() {
 	fmt.Println("DEBUG LEVEL: ", State.DebugLvl)
 }
 
+func LSEnterprise() {
+	r, e := models.Send("GET", State.APIURL+"/api/stats",
+		GetKey(), nil)
+	resp := ParseResponse(r, e, "lsenterprise")
+	if resp != nil {
+		displayObject(resp)
+	}
+}
+
 //Displays environment variable values
 //to user
 func Env() {
@@ -1048,7 +1057,8 @@ func Help(entry string) {
 	case "ls", "lsu", "pwd", "print", "cd", "tree", "create", "gt", "clear",
 		"update", "delete", "lsog", "grep", "for", "while", "if", "env",
 		"cmds", "var", "unset", "select", "camera", "ui", "hc", "drawable",
-		"link", "unlink", "draw", "lsslot", "getu", "getslot":
+		"link", "unlink", "draw", "lsslot", "getu", "getslot",
+		"lsenterprise":
 		path = "./other/man/" + entry + ".md"
 
 	case ">":
