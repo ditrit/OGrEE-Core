@@ -30,5 +30,5 @@ buildTimeScript:
 	other/injectionscript.py
 
 clean:
-	rm main y.go lexer.nn.go y.output
+	rm main y.go lexer.nn.go y.output parser.tab.c
 

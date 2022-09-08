@@ -15,3 +15,5 @@ y.output
 *.txt
 .history
 .env
+y.go
+lexer.nn.go
