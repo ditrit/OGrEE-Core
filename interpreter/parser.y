@@ -42,7 +42,7 @@ var _ = l.GetInfoLogger() //Suppresses annoying Dockerfile build error
        TOK_LSOG TOK_LSTEN TOK_LSSITE TOK_LSBLDG
        TOK_LSCAB TOK_LSSENSOR TOK_LSAC TOK_LSPANEL
        TOK_LSCORRIDOR TOK_LSU TOK_LSSLOT TOK_GETU
-       TOK_LSROOM TOK_LSRACK TOK_LSDEV
+       TOK_LSROOM TOK_LSRACK TOK_LSDEV TOK_LSENTERPRISE
        TOK_ATTRSPEC TOK_GETSLOT
        TOK_COL TOK_SELECT TOK_LBRAC TOK_RBRAC
        TOK_COMMA TOK_DOT_DOT TOK_CMDS TOK_TEMPLATE TOK_VAR TOK_DEREF
@@ -139,6 +139,7 @@ stmnt:   TOK_GET PATH {$$=&getObjectNode{$2}}
        | TOK_GREP {$$=&grepNode{}}
        | TOK_PRNT EXPR_NOQUOTE {$$=&printNode{$2}}
        | TOK_LSOG {$$=&lsogNode{}}
+       | TOK_LSENTERPRISE {$$=&lsenterpriseNode{}}
        | TOK_ENV {$$=&envNode{}}
        | TOK_PWD {$$=&pwdNode{}}
        | TOK_EXIT {$$=&exitNode{}}
@@ -256,7 +257,7 @@ UI_TOGGLE: TOK_UI_DEBUG{$$="debug"} | TOK_UI_INFOS{$$="infos"} | TOK_UI_WIREFRAM
 
 COMMAND: TOK_LINK{$$="link"} | TOK_UNLINK{$$="unlink"} | TOK_CLR{$$="clear"} | TOK_LS{$$="ls"}
        | TOK_PWD{$$="pwd"} | TOK_PRNT{$$="print"} | TOK_CD{$$="cd"} | TOK_CAM{$$="camera"} 
-       | TOK_UI{$$="ui"} | TOK_GET{$$="get"}
+       | TOK_UI{$$="ui"} | TOK_GET{$$="get"} | TOK_LSENTERPRISE{$$="lsenterprise"}
        | TOK_HIERARCH{$$="hc"} | TOK_TREE{$$="tree"} | TOK_DRAW{$$="draw"} 
        | TOK_IF{$$="if"} | TOK_WHILE{$$="while"} | TOK_FOR{$$="for"} | TOK_UNSET{$$="unset"}
        | TOK_SELECT{$$="select"} | TOK_LSOG{$$="lsog"} | TOK_ENV{$$="env"} 

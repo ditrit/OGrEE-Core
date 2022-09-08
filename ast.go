@@ -67,7 +67,7 @@ func (n *funcCallNode) execute() (interface{}, error) {
 	}
 	body, ok := val.(node)
 	if !ok {
-		return nil, fmt.Errorf("varialbe %s does not contain a function", n.name)
+		return nil, fmt.Errorf("variable %s does not contain a function", n.name)
 	}
 	return body.execute()
 }
@@ -586,6 +586,13 @@ type lsogNode struct{}
 
 func (n *lsogNode) execute() (interface{}, error) {
 	cmd.LSOG()
+	return nil, nil
+}
+
+type lsenterpriseNode struct{}
+
+func (n *lsenterpriseNode) execute() (interface{}, error) {
+	cmd.LSEnterprise()
 	return nil, nil
 }
 
