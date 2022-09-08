@@ -282,9 +282,19 @@ func (c *commonNode) execute() interface{} {
 			f(c.args[0].(string), c.args[1].(int))
 		}
 
-	case "LSOG", "Exit", "CLR", "Env", "LSEnterprise":
+	case "LSOG", "Exit", "CLR", "LSEnterprise":
 		if f, ok := c.fun.(func()); ok {
 			f()
+		}
+
+	case "Env":
+		if f, ok := c.fun.(func(map[string]interface{},
+			map[string]interface{})); ok {
+			x := map[string]interface{}{}
+			for i := range dynamicMap {
+				x[i] = dynamicSymbolTable[dynamicMap[i]]
+			}
+			f(x, GetFuncTable())
 		}
 
 	case "select":
