@@ -556,8 +556,8 @@ func LSEnterprise() {
 }
 
 //Displays environment variable values
-//to user
-func Env() {
+//and user defined variables and funcs
+func Env(userVars, userFuncs map[string]interface{}) {
 	fmt.Println("Unity: ", State.UnityClientAvail)
 	fmt.Println("Filter: ", State.FilterDisplay)
 	fmt.Println("Analyser: ", State.Analyser)
@@ -570,6 +570,21 @@ func Env() {
 	fmt.Println("Objects Unity shall draw:")
 	for _, k := range State.DrawableObjs {
 		fmt.Println(EntityToString(k))
+	}
+
+	fmt.Println()
+	fmt.Println("Currently defined user variables:")
+	for name, k := range userVars {
+		if k != nil {
+			fmt.Println("Name:", name, "  Value: ", k)
+		}
+
+	}
+
+	fmt.Println()
+	fmt.Println("Currently defined user functions:")
+	for name, _ := range userFuncs {
+		fmt.Println("Name:", name)
 	}
 }
 

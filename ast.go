@@ -613,7 +613,7 @@ func (n *clrNode) execute() (interface{}, error) {
 type envNode struct{}
 
 func (n *envNode) execute() (interface{}, error) {
-	cmd.Env()
+	cmd.Env(dynamicSymbolTable, funcTable)
 	return nil, nil
 }
 
