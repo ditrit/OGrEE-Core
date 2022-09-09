@@ -189,16 +189,9 @@ func Start(flags map[string]interface{}) {
 			os.Exit(0)
 		}
 	}
-
-	//If Unity Client is present we have to Trigger
-	//the listen routine
-	if c.State.UnityClientAvail == true {
-		c.SetListener(flags, env)
-		c.TriggerListen(rl, c.State.ListenAddr)
-	}
+	c.InitUnityCom(rl, c.State.UnityClientURL)
 
 	Repl(rl, user)
-
 }
 
 //The loop of the program
