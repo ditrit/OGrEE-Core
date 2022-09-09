@@ -59,32 +59,32 @@ func main() {
 		controllers.Authenticate).Methods("POST", "OPTIONS")
 
 	router.HandleFunc("/api/token/valid",
-		controllers.Verify).Methods("GET", "OPTIONS")
+		controllers.Verify).Methods("GET", "OPTIONS", "HEAD")
 
 	// ------ GET ------ //
 	//GET ENTITY HIERARCHY
 	//This matches ranged Tenant Hierarchy
 	router.NewRoute().PathPrefix("/api/{entity}/{id:[a-zA-Z0-9]{24}}/all").
-		MatcherFunc(hmatch).HandlerFunc(controllers.GetEntityHierarchy).Methods("GET", "OPTIONS")
+		MatcherFunc(hmatch).HandlerFunc(controllers.GetEntityHierarchy).Methods("GET", "HEAD", "OPTIONS")
 
 	router.NewRoute().PathPrefix("/api/{entity}/{name}/all").
-		MatcherFunc(tmatch).HandlerFunc(controllers.GetHierarchyByName).Methods("GET", "OPTIONS")
+		MatcherFunc(tmatch).HandlerFunc(controllers.GetHierarchyByName).Methods("GET", "HEAD", "OPTIONS")
 
 	//GET EXCEPTIONS
 	router.HandleFunc("/api/tenants/{tenant_name}/buildings",
-		controllers.GetEntitiesOfAncestor).Methods("GET", "OPTIONS")
+		controllers.GetEntitiesOfAncestor).Methods("GET", "HEAD", "OPTIONS")
 
 	router.HandleFunc("/api/sites/{id:[a-zA-Z0-9]{24}}/rooms",
-		controllers.GetEntitiesOfAncestor).Methods("GET", "OPTIONS")
+		controllers.GetEntitiesOfAncestor).Methods("GET", "HEAD", "OPTIONS")
 
 	router.HandleFunc("/api/buildings/{id:[a-zA-Z0-9]{24}}/{sub:acs|corridors|cabinets|panels|sensors|groups}",
-		controllers.GetEntitiesOfAncestor).Methods("GET", "OPTIONS")
+		controllers.GetEntitiesOfAncestor).Methods("GET", "HEAD", "OPTIONS")
 
 	router.HandleFunc("/api/buildings/{id:[a-zA-Z0-9]{24}}/racks",
-		controllers.GetEntitiesOfAncestor).Methods("GET", "OPTIONS")
+		controllers.GetEntitiesOfAncestor).Methods("GET", "HEAD", "OPTIONS")
 
 	router.HandleFunc("/api/rooms/{id:[a-zA-Z0-9]{24}}/devices",
-		controllers.GetEntitiesOfAncestor).Methods("GET", "OPTIONS")
+		controllers.GetEntitiesOfAncestor).Methods("GET", "HEAD", "OPTIONS")
 
 	/*router.HandleFunc("/api/rooms/{id:[a-zA-Z0-9]{24}}/sensors",
 		controllers.GetEntitiesOfAncestor).Methods("GET")
@@ -94,26 +94,26 @@ func main() {
 
 	// GET BY QUERY
 	router.NewRoute().PathPrefix("/api/{entity:[a-z]+}").MatcherFunc(dmatch).
-		HandlerFunc(controllers.GetEntityByQuery).Methods("GET")
+		HandlerFunc(controllers.GetEntityByQuery).Methods("HEAD", "GET")
 
 	//GET ENTITY
 	router.HandleFunc("/api/{entity}/{id:[a-zA-Z0-9]{24}}",
-		controllers.GetEntity).Methods("GET", "OPTIONS")
+		controllers.GetEntity).Methods("GET", "HEAD", "OPTIONS")
 
 	router.HandleFunc("/api/{entity}/{name}",
-		controllers.GetEntity).Methods("GET", "OPTIONS")
+		controllers.GetEntity).Methods("GET", "HEAD", "OPTIONS")
 
 	//GET BY NAME OF PARENT
 	router.NewRoute().PathPrefix("/api/{entity}/{tenant_name}").
-		MatcherFunc(tmatch).HandlerFunc(controllers.GetEntitiesUsingNamesOfParents).Methods("GET", "OPTIONS")
+		MatcherFunc(tmatch).HandlerFunc(controllers.GetEntitiesUsingNamesOfParents).Methods("GET", "HEAD", "OPTIONS")
 
 	router.NewRoute().PathPrefix("/api/{entity}/{id:[a-zA-Z0-9]{24}}").
-		MatcherFunc(pmatch).HandlerFunc(controllers.GetEntitiesUsingNamesOfParents).Methods("GET", "OPTIONS")
+		MatcherFunc(pmatch).HandlerFunc(controllers.GetEntitiesUsingNamesOfParents).Methods("GET", "HEAD", "OPTIONS")
 
 	// GET ALL ENTITY
 
 	router.HandleFunc("/api/{entity}",
-		controllers.GetAllEntities).Methods("GET")
+		controllers.GetAllEntities).Methods("HEAD", "GET")
 
 	//GET ALL NONSTD
 	router.HandleFunc("/api/tenants/{tenant_name}/all/nonstd",
