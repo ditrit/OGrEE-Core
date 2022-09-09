@@ -63,7 +63,8 @@ var _ = l.GetInfoLogger() //Suppresses annoying Dockerfile build error
 %type <n> LSOBJ_COMMAND
 %type <s> OBJ_TYPE COMMAND UI_TOGGLE
 %type <nodeArr> WNARG GETOBJS
-%type <node> OCCR PATH PHYSICAL_PATH STRAY_DEV_PATH EXPR CONCAT CONCAT_TERM stmnt st2 IF EXPR_NOQUOTE ARRAY ORIENTATION
+%type <node> OCCR PATH PHYSICAL_PATH STRAY_DEV_PATH EXPR CONCAT CONCAT_TERM stmnt st2 IF 
+       EXPR_NOQUOTE ARRAY ORIENTATION EXPR_NOQUOTE_NOCOL CONCAT_NOCOL CONCAT_TERM_NOCOL EXPR_NOQUOTE_COMMON
 //%type <mapVoid> EQUAL_LIST
 
 %right UNARY
@@ -177,29 +178,46 @@ IF: TOK_LBLOCK EXPR TOK_RBLOCK TOK_THEN st2 TOK_FI {$$=&ifNode{$2, $5, nil}}
        | TOK_LBLOCK EXPR TOK_RBLOCK TOK_THEN st2 TOK_ELSE st2 TOK_FI {$$=&ifNode{$2, $5, $7}}
 ;
 
-PHYSICAL_PATH: EXPR_NOQUOTE {$$=&pathNode{$1, PHYSICAL}};
+PHYSICAL_PATH: EXPR_NOQUOTE_NOCOL {$$=&pathNode{$1, PHYSICAL}};
 STRAY_DEV_PATH: EXPR_NOQUOTE {$$=&pathNode{$1, STRAY_DEV}};
 PATH: EXPR_NOQUOTE {$$=&pathNode{$1, STD}};
 
+EXPR_NOQUOTE_NOCOL: TOK_DEREF TOK_LPAREN TOK_LPAREN EXPR TOK_RPAREN TOK_RPAREN {$$=$4}
+       | CONCAT_NOCOL {$$=$1}
+       | EXPR_NOQUOTE_COMMON {$$=$1}
+;
+
 EXPR_NOQUOTE: TOK_DEREF TOK_LPAREN TOK_LPAREN EXPR TOK_RPAREN TOK_RPAREN {$$=$4}
        | CONCAT {$$=$1}
-       | TOK_INT {$$=&floatLeaf{float64($1)}}
+       | EXPR_NOQUOTE_COMMON {$$=$1}
+;
+
+EXPR_NOQUOTE_COMMON: TOK_INT {$$=&floatLeaf{float64($1)}}
        | TOK_FLOAT {$$=&floatLeaf{$1}}
        | TOK_TRUE {$$=&boolLeaf{true}}
        | TOK_FALSE {$$=&boolLeaf{false}}
        | ARRAY {$$=$1}
-       | TOK_MINUS EXPR_NOQUOTE {$$=&arithNode{"-", &floatLeaf{0}, $2}}
+       | TOK_MINUS EXPR_NOQUOTE_COMMON {$$=&arithNode{"-", &floatLeaf{0}, $2}}
 ;
+
+CONCAT_NOCOL:  CONCAT_TERM_NOCOL {$$=$1}
+       | CONCAT_TERM_NOCOL CONCAT_NOCOL {$$=&concatNode{[]node{$1, $2}}}
+;
+
 CONCAT:  CONCAT_TERM {$$=$1}
        | CONCAT_TERM CONCAT {$$=&concatNode{[]node{$1, $2}}}
 ;
 
-CONCAT_TERM:  TOK_DEREF TOK_LBRAC TOK_WORD TOK_RBRAC {$$=&symbolReferenceNode{$3}}
+CONCAT_TERM_NOCOL:  TOK_DEREF TOK_LBRAC TOK_WORD TOK_RBRAC {$$=&symbolReferenceNode{$3}}
        | TOK_DEREF TOK_WORD {$$=&symbolReferenceNode{$2}}
        | TOK_WORD {$$=&strLeaf{$1}}
        | TOK_STR {$$=&strLeaf{$1}}
        | TOK_SLASH {$$=&strLeaf{"/"}}
        | TOK_DOT_DOT {$$=&strLeaf{".."}}
+;
+
+CONCAT_TERM:  CONCAT_TERM_NOCOL {$$=$1}
+       | TOK_COL {$$=&strLeaf{":"}}
 ;
 
 EXPR: TOK_INT {$$=&floatLeaf{float64($1)}}
