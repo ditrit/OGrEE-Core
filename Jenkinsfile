@@ -2,7 +2,7 @@ pipeline {
     agent any
 
     stages {
-        stage('SonarQube analysis') {
+        /*stage('SonarQube analysis') {
             environment {
               SCANNER_HOME = tool 'SonarQube-scanner'
             }
@@ -21,7 +21,7 @@ pipeline {
                   waitForQualityGate abortPipeline: true
                   }
              }
-        }
+        }*/
 
         stage('Build') {
             steps {
