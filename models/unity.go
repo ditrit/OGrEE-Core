@@ -50,7 +50,7 @@ func ReceiveLoop(rl *readline.Instance, addr string, shellConnected *bool) {
 	connected = false
 	*shellConnected = false
 	conn.Close()
-	println("Disconnected from server")
+	println("Disconnected from Unity")
 }
 
 //Function to communicate with Unity
