@@ -65,7 +65,7 @@ func PostObj(ent int, entity string, data map[string]interface{}) (map[string]in
 		//If ent is in State.ObjsForUnity then notify Unity
 		if IsInObjForUnity(entity) == true {
 			entInt := EntityStrToInt(entity)
-			InformUnity("POST", "PostObj", entInt,
+			InformUnity("PostObj", entInt,
 				map[string]interface{}{"type": "create", "data": respMap["data"]})
 		}
 
@@ -149,7 +149,7 @@ func DeleteObj(Path string) bool {
 
 	entity := entities[:len(entities)-1]
 	if IsInObjForUnity(entity) == true {
-		InformUnity("POST", "DeleteObj", -1,
+		InformUnity("DeleteObj", -1,
 			map[string]interface{}{"type": "delete", "data": objJSON["id"].(string)})
 	}
 
@@ -217,7 +217,7 @@ func SearchObjects(entity string, data map[string]interface{}) []map[string]inte
 
 		if IsInObjForUnity(entity) {
 			resp := map[string]interface{}{"type": "search", "data": objects}
-			InformUnity("POST", "Search", -1, resp)
+			InformUnity("Search", -1, resp)
 		}
 
 		return objects
@@ -481,7 +481,7 @@ func UpdateObj(Path, id, ent string, data map[string]interface{}, deleteAndPut b
 			entStr := entities[:len(entities)-1]
 			if IsInObjForUnity(entStr) == true {
 				entInt := EntityStrToInt(entStr)
-				InformUnity("POST", "UpdateObj", entInt, message)
+				InformUnity("UpdateObj", entInt, message)
 			}
 
 		}
@@ -1724,14 +1724,14 @@ func UIDelay(time float64) {
 	subdata := map[string]interface{}{"command": "delay", "data": time}
 	data := map[string]interface{}{"type": "ui", "data": subdata}
 	Disp(data)
-	InformUnity("POST", "HandleUI", -1, data)
+	InformUnity("HandleUI", -1, data)
 }
 
 func UIToggle(feature string, enable bool) {
 	subdata := map[string]interface{}{"command": feature, "data": enable}
 	data := map[string]interface{}{"type": "ui", "data": subdata}
 	Disp(data)
-	InformUnity("POST", "HandleUI", -1, data)
+	InformUnity("HandleUI", -1, data)
 }
 
 func UIHighlight(objArg string) error {
@@ -1742,7 +1742,7 @@ func UIHighlight(objArg string) error {
 	subdata := map[string]interface{}{"command": "highlight", "data": obj["id"]}
 	data := map[string]interface{}{"type": "ui", "data": subdata}
 	Disp(data)
-	InformUnity("POST", "HandleUI", -1, data)
+	InformUnity("HandleUI", -1, data)
 	return nil
 }
 
@@ -1752,7 +1752,7 @@ func CameraMove(command string, position []float64, rotation []float64) {
 	subdata["rotation"] = map[string]interface{}{"x": rotation[0], "y": rotation[1]}
 	data := map[string]interface{}{"type": "camera", "data": subdata}
 	Disp(data)
-	InformUnity("POST", "HandleUI", -1, data)
+	InformUnity("HandleUI", -1, data)
 }
 
 func CameraWait(time float64) {
@@ -1761,7 +1761,7 @@ func CameraWait(time float64) {
 	subdata["rotation"] = map[string]interface{}{"x": 999, "y": time}
 	data := map[string]interface{}{"type": "camera", "data": subdata}
 	Disp(data)
-	InformUnity("POST", "HandleUI", -1, data)
+	InformUnity("HandleUI", -1, data)
 }
 
 func FocusUI(path string) {
@@ -1777,7 +1777,7 @@ func FocusUI(path string) {
 	}
 
 	data := map[string]interface{}{"type": "focus", "data": id}
-	InformUnity("POST", "FocusUI", -1, data)
+	InformUnity("FocusUI", -1, data)
 }
 
 func LinkObject(paths []interface{}) {
@@ -2138,7 +2138,7 @@ func Draw(x string, depth int) {
 		return
 	} else if depth == 0 {
 		data := map[string]interface{}{"type": "create", "data": res}
-		InformUnity("POST", "Draw", 0, data)
+		InformUnity("Draw", 0, data)
 		return
 	}
 	res["children"] = GetHierarchy(x, depth, true)
@@ -2151,7 +2151,7 @@ func Draw(x string, depth int) {
 	}
 	data := map[string]interface{}{"type": "create", "data": res}
 	//0 to include the JSON filtration
-	InformUnity("POST", "Draw", 0, data)
+	InformUnity("Draw", 0, data)
 }
 
 func IsEntityDrawable(path string) bool {
@@ -2419,7 +2419,7 @@ func SetClipBoard(x []string) ([]string, error) {
 		obj, _ := GetObject(val, true)
 		if obj != nil {
 			data = map[string]interface{}{"type": "select", "data": obj["id"]}
-			InformUnity("POST", "SetClipBoard", -1, data)
+			InformUnity("SetClipBoard", -1, data)
 		} else {
 			return nil, fmt.Errorf("cannot set clipboard")
 		}
@@ -2440,22 +2440,6 @@ func Print(a []interface{}) string {
 
 func SetEnv(arg string, val interface{}) {
 	switch arg {
-	case "Unity":
-		if _, ok := val.(bool); !ok {
-			msg := "Can only assign bool values for Unity Env Var"
-			l.GetWarningLogger().Println(msg)
-			if State.DebugLvl > 0 {
-				println(msg)
-			}
-
-		} else {
-			State.UnityClientAvail = val.(bool)
-			if val.(bool) == true {
-				TriggerListen(*State.Terminal, State.ListenAddr)
-			}
-			println("Unity Environment variable set")
-		}
-
 	case "Filter":
 		if _, ok := val.(bool); !ok {
 			msg := "Can only assign bool values for Filter Env Var"
@@ -2635,21 +2619,19 @@ func LoadArrFromResp(resp map[string]interface{}, idx string) []interface{} {
 }
 
 //Messages Unity Client
-func InformUnity(method, caller string, entity int, data map[string]interface{}) {
+func InformUnity(caller string, entity int, data map[string]interface{}) {
 	//If unity is available message it
 	//otherwise do nothing
-	if State.UnityClientAvail == true {
+	if State.UnityClientAvail {
 		if entity > -1 && entity < SENSOR+1 {
 			data = GenerateFilteredJson(data)
 		}
-		e := models.ContactUnity(method, State.UnityClientURL, data, State.Timeout, State.DebugLvl)
+		e := models.ContactUnity(data, State.DebugLvl)
 		if e != nil {
 			l.GetWarningLogger().Println("Unable to contact Unity Client @" + caller)
 			if State.DebugLvl > 1 {
 				fmt.Println("Error while updating Unity: ", e.Error())
 			}
-		} else {
-			fmt.Println("Successfully updated Unity")
 		}
 	}
 }
@@ -2658,7 +2640,7 @@ func MergeMaps(x, y map[string]interface{}, overwrite bool) {
 	for i := range y {
 		//Conflict case
 		if _, ok := x[i]; ok {
-			if overwrite == true {
+			if overwrite {
 				l.GetWarningLogger().Println("Conflict while merging maps")
 				if State.DebugLvl > 1 {
 					println("Conflict while merging data, resorting to overwriting!")

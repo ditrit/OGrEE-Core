@@ -56,21 +56,8 @@ func InitState(flags, env map[string]interface{}) {
 	State.PrevPath = "/Physical"
 	State.LineNumber = 0
 
-	//Send login notification
-	data := map[string]interface{}{"api_url": State.APIURL, "api_token": GetKey()}
-	req := map[string]interface{}{"type": "login", "data": data}
-	e := models.ContactUnity("POST", State.UnityClientURL, req, State.Timeout, State.DebugLvl)
-	if e != nil {
-		msg := "Note: Unity Client (" + State.UnityClientURL + ") Unreachable\n" + e.Error()
-		l.GetWarningLogger().Println(msg)
-		if State.DebugLvl > 1 {
-			fmt.Println(msg)
-		}
-		State.UnityClientAvail = false
-	} else {
-		fmt.Println("Unity Client is Reachable!")
-		State.UnityClientAvail = true
-	}
+	State.UnityClientAvail = false
+
 	//Set the filter attributes setting
 	State.FilterDisplay = false
 
@@ -177,26 +164,23 @@ func SetStateReadline(rl *readline.Instance) {
 }
 
 //Startup the go routine for listening
-func TriggerListen(rl *readline.Instance, addr string) {
-	go models.ListenForUnity(rl, addr)
-}
-
-func SetListener(flags, env map[string]interface{}) {
-	if flags["listen_port"] != nil && flags["listen_port"] != 0 {
-		portInt := flags["listen_port"].(int)
-		port := strconv.Itoa(portInt)
-		State.ListenAddr = "0.0.0.0:" + port
+func InitUnityCom(rl *readline.Instance, addr string) {
+	errConnect := models.ConnectToUnity(addr, State.Timeout)
+	if errConnect != nil {
+		println(errConnect.Error())
 		return
 	}
+	State.UnityClientAvail = true
 
-	if env["listenPort"] != nil {
-		State.ListenAddr = "0.0.0.0:" + env["listenPort"].(string)
+	data := map[string]interface{}{"api_url": State.APIURL, "api_token": GetKey()}
+	req := map[string]interface{}{"type": "login", "data": data}
+	errLogin := models.ContactUnity(req, State.DebugLvl)
+	if errLogin != nil {
+		println(errLogin.Error())
 		return
 	}
-
-	println("Falling back to default Listening Port")
-	l.GetListenInfoLogger().Println("Falling back to default Listening Port")
-	State.ListenAddr = "0.0.0.0:5501"
+	fmt.Println("Unity Client is Reachable!")
+	go models.ReceiveLoop(rl, addr, &State.UnityClientAvail)
 }
 
 func InitTimeout(env map[string]interface{}) {
