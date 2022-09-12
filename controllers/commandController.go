@@ -1181,10 +1181,6 @@ func Tree(x string, depth int) {
 
 		return
 	}
-	objJSON, _ := GetObject(x, true)
-	if objJSON == nil {
-		return
-	}
 
 	if x == "" || x == "." {
 		println(State.CurrPath)
