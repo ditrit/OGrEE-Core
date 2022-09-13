@@ -12,6 +12,7 @@ import (
 	"os"
 	"os/exec"
 	"path"
+	"path/filepath"
 	"runtime"
 	"sort"
 	"strconv"
@@ -1182,16 +1183,24 @@ func Tree(x string, depth int) {
 		return
 	}
 
+	var path string
+
 	if x == "" || x == "." {
 		println(State.CurrPath)
-		tree(State.CurrPath, "", depth)
+		path = State.CurrPath
+		//tree(State.CurrPath, "", depth)
 	} else if string(x[0]) == "/" {
 		println(x)
-		tree(x, "", depth)
+		path = x
+		//tree(x, "", depth)
 	} else {
 		println(State.CurrPath + "/" + x)
-		tree(State.CurrPath+"/"+x, "", depth)
+		path = State.CurrPath + "/" + x
+		//tree(State.CurrPath+"/"+x, "", depth)
 	}
+	//println("DEBUG OUR PATH:", path)
+	OnlineLevelResolver2(path)
+	tree(path, "", depth)
 }
 
 func GetHierarchy(x string, depth int, silence bool) []map[string]interface{} {
@@ -2974,6 +2983,29 @@ func OnlineLevelResolver(path []string) []string {
 	}
 
 	return paths
+}
+
+//Auxillary function to effectively replace
+//OnlineLevelResolver since sending many
+//API requests is a lot less efficient
+
+//For now we will make it work with 'Tree' command
+func OnlineLevelResolver2(path string) []string {
+	path = filepath.Clean(path)
+	println("DEBUG OUR PATH:", path)
+	arr := strings.Split(path, "/")
+
+	if len(arr) >= 1 {
+		if arr[1] == "Logical" {
+			println("DEBUG Logical detected")
+		} else if arr[1] == "Organisation" {
+			println("DEBUG Organisation detected")
+		} else {
+
+		}
+	}
+
+	return nil
 }
 
 /*

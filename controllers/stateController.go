@@ -211,6 +211,10 @@ func FetchNodesAtLevel(Path string) []string {
 
 	paths := strings.Split(path.Clean(Path), "/")
 
+	/*if len(paths) == 1 || len(paths) == 0 {
+		println("DEBUG only / encountered")
+	}*/
+
 	if len(paths) == 2 && paths[1] == "Physical" {
 		urls = []string{State.APIURL + "/api/tenants"}
 		names = NodesAtLevel(&State.TreeHierarchy, *StrToStack(Path))
@@ -232,7 +236,7 @@ func FetchNodesAtLevel(Path string) []string {
 	}
 
 	for i := range urls {
-		//println("URL to send:", urls[i])
+		//println("DEBUG URL to send:", urls[i])
 		r, e := models.Send("GET", urls[i], GetKey(), nil)
 		if e != nil {
 			println(e.Error())
