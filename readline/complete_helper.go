@@ -230,7 +230,17 @@ func doDynamicInternal(p PrefixCompleterInterface, line []rune, pos int, origLin
 		if ok && childDynamic.IsDynamic() {
 			childNames = childDynamic.GetDynamicNames(origLine)
 			line = []rune(MyTrimPrecedingSlash(string(line)))
-			//fs = childDynamic.ReturnFileSysMode()
+
+			//Debug code
+			if len(line) >= 1 {
+				if line[0] == '/' {
+					if len(line) == 1 {
+						line = []rune{}
+					} else {
+						line = line[2:]
+					}
+				}
+			}
 		} else {
 			childNames[0] = child.GetName()
 			//fs = p.ReturnFileSysMode()
@@ -249,6 +259,7 @@ func doDynamicInternal(p PrefixCompleterInterface, line []rune, pos int, origLin
 					goNext = true
 				}
 			} else {
+
 				if runes.HasPrefix(childName, line) {
 					newLine = append(newLine, childName[len(line):])
 					offset = len(line)
