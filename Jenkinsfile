@@ -52,7 +52,7 @@ pipeline {
                 sh 'docker stop lapd || true'
                 //sh 'cd ./resources/test && docker build -t apitester:dockerfile .'
                 
-                sh 'docker run --rm --network=roachnet -p 27018:27017 --name lapd -d -v /home/ziad/testMDB:/docker-entrypoint-initdb.d/ mongo'
+                sh 'docker run --rm --network=roachnet -p 27018:27017 --name lapd -d -v /home/ziad/project/testMDB:/docker-entrypoint-initdb.d/ mongo'
                 sh 'sleep 1'
                 sh 'mv ./.env ./.env.bak'
                 sh 'cp ./resources/test/.env .'
