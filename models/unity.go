@@ -58,7 +58,10 @@ func ContactUnity(data map[string]interface{}, debug int) error {
 	if !connected {
 		return fmt.Errorf("not connected to Unity")
 	}
-	dataJSON, _ := json.Marshal(data)
+	dataJSON, err := json.Marshal(data)
+	if err != nil {
+		return fmt.Errorf("error marshalling data : %s", err.Error())
+	}
 	if debug >= 4 {
 		println("DEBUG OUTGOING JSON")
 		Disp(data)

@@ -272,31 +272,26 @@ func GetObject(path string, silenced bool) (map[string]interface{}, string) {
 
 //This is an auxillary function
 //for writing proper JSONs
-func GenUpdateJSON(m *map[string]interface{}, key string, value interface{}, del bool) (map[string]interface{}, bool) {
-
+func GenUpdateJSON(m map[string]interface{}, key string, value interface{}, del bool) bool {
 	//Base Cae
-	if _, ok := (*m)[key]; ok {
+	if _, ok := m[key]; ok {
 		if del == true { //make a delete
-			delete((*m), key)
+			delete(m, key)
 		} else {
-			(*m)[key] = value
+			m[key] = value
 		}
-
-		return *m, true
+		return true
 	}
-
-	for i := range *m {
+	for i := range m {
 		//We have a nested map
-		if sub, ok := (*m)[i].(map[string]interface{}); ok {
-			modifiedJ, ret := GenUpdateJSON(&sub, key, value, del)
-			(*m)[i] = modifiedJ
-			if ret == true {
-				return *m, ret
+		if sub, ok := m[i].(map[string]interface{}); ok {
+			ret := GenUpdateJSON(sub, key, value, del)
+			if ret {
+				return true
 			}
 		}
 	}
-
-	return nil, false
+	return false
 }
 
 //This function recursively applies an update to an object and
@@ -311,7 +306,6 @@ func RecursivePatch(Path, id, ent string, data map[string]interface{}) error {
 
 	if data != nil {
 		if Path != "" {
-
 			//We have to get object first since
 			//there is a potential for multiple paths
 			//we don't want to update the wrong object
@@ -392,30 +386,25 @@ func UpdateObj(Path, id, ent string, data map[string]interface{}, deleteAndPut b
 		}
 
 		//Make the proper Update JSON
-		ogData := map[string]interface{}{}
 		respGet, e := models.Send("GET", URL, GetKey(), nil)
-		ogData = ParseResponse(respGet, e, "GET")
+		ogData := ParseResponse(respGet, e, "GET")
 
 		ogData = ogData["data"].(map[string]interface{})
 		attrs := map[string]interface{}{}
 
 		for i := range data {
-			nv, _ := GenUpdateJSON(&ogData, i, data[i], deleteAndPut)
-
-			if nv == nil {
+			found := GenUpdateJSON(ogData, i, data[i], deleteAndPut)
+			if !found {
 				//The key was not found so let's insert it
 				//in attributes
 				attrs[i] = data[i]
-			} else {
-				ogData = nv
 			}
-
 		}
 		if len(attrs) > 0 {
 			ogData["attributes"] = attrs
 		}
 
-		if deleteAndPut == true {
+		if deleteAndPut {
 			resp, e = models.Send("PUT", URL, GetKey(), ogData)
 		} else {
 			resp, e = models.Send("PATCH", URL, GetKey(), ogData)
@@ -2128,30 +2117,29 @@ func UnlinkObject(paths []interface{}) {
 
 //Unity UI will draw already existing objects
 //by retrieving the hierarchy
-func Draw(x string, depth int) {
-	res, _ := GetObject(x, true)
+func Draw(x string, depth int) error {
+	obj, _ := GetObject(x, true)
+	if obj == nil {
+		return fmt.Errorf("object not found")
+	}
 	if depth < 0 {
-		l.GetWarningLogger().Println("Draw command cannot accept negative value")
-		if State.DebugLvl > 0 {
-			println("Error: Draw command cannot accept negative value")
-		}
-		return
+		return fmt.Errorf("draw command cannot accept negative value")
 	} else if depth == 0 {
-		data := map[string]interface{}{"type": "create", "data": res}
-		InformUnity("Draw", 0, data)
-		return
-	}
-	res["children"] = GetHierarchy(x, depth, true)
-	if res == nil {
-		if State.DebugLvl > 0 {
-			println("Error: Attempted to draw non drawable object")
+		data := map[string]interface{}{"type": "create", "data": obj}
+		unityErr := InformUnity("Draw", 0, data)
+		if unityErr != nil {
+			return unityErr
 		}
-		l.GetErrorLogger().Println("User attempted to draw non drawable object")
-		return
+	} else {
+		children := GetHierarchy(x, depth, true)
+		if children != nil {
+			obj["children"] = children
+		}
+		data := map[string]interface{}{"type": "create", "data": obj}
+		//0 to include the JSON filtration
+		InformUnity("Draw", 0, data)
 	}
-	data := map[string]interface{}{"type": "create", "data": res}
-	//0 to include the JSON filtration
-	InformUnity("Draw", 0, data)
+	return nil
 }
 
 func IsEntityDrawable(path string) bool {
@@ -2419,7 +2407,10 @@ func SetClipBoard(x []string) ([]string, error) {
 		obj, _ := GetObject(val, true)
 		if obj != nil {
 			data = map[string]interface{}{"type": "select", "data": obj["id"]}
-			InformUnity("SetClipBoard", -1, data)
+			err := InformUnity("SetClipBoard", -1, data)
+			if err != nil {
+				return nil, fmt.Errorf("cannot set clipboard : %s", err.Error())
+			}
 		} else {
 			return nil, fmt.Errorf("cannot set clipboard")
 		}
@@ -2619,7 +2610,7 @@ func LoadArrFromResp(resp map[string]interface{}, idx string) []interface{} {
 }
 
 //Messages Unity Client
-func InformUnity(caller string, entity int, data map[string]interface{}) {
+func InformUnity(caller string, entity int, data map[string]interface{}) error {
 	//If unity is available message it
 	//otherwise do nothing
 	if State.UnityClientAvail {
@@ -2632,8 +2623,10 @@ func InformUnity(caller string, entity int, data map[string]interface{}) {
 			if State.DebugLvl > 1 {
 				fmt.Println("Error while updating Unity: ", e.Error())
 			}
+			return fmt.Errorf("error while contacting unity : %s", e.Error())
 		}
 	}
+	return nil
 }
 
 func MergeMaps(x, y map[string]interface{}, overwrite bool) {

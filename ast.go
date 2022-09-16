@@ -509,6 +509,20 @@ func (n *specialUpdateNode) execute() (interface{}, error) {
 		areas := map[string]interface{}{"reserved": first, "technical": second}
 		attributes, _ := parseAreas(areas)
 		return cmd.UpdateObj(path, "", "", attributes, false)
+	} else if n.variable == "separator" {
+		obj, _ := cmd.GetObject(path, true)
+		if obj == nil {
+			return nil, fmt.Errorf("cannot find object")
+		}
+		attr := obj["attributes"].(map[string]interface{})
+		var sepArray []interface{}
+		separators, ok := attr["separators"]
+		if ok {
+			sepArray = separators.([]interface{})
+		}
+		sepArray = append(sepArray, map[string]interface{}{"startPosXYm": first, "endPosXYm": second})
+		attr["separators"] = sepArray
+		return cmd.UpdateObj(path, "", "", attr, false)
 	} else {
 		return nil, fmt.Errorf("Invalid special update")
 	}
@@ -578,8 +592,7 @@ func (n *drawNode) execute() (interface{}, error) {
 	if !ok {
 		return nil, fmt.Errorf("Path should be a string")
 	}
-	cmd.Draw(path, n.depth)
-	return nil, nil
+	return nil, cmd.Draw(path, n.depth)
 }
 
 type lsogNode struct{}
