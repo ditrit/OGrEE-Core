@@ -64,7 +64,7 @@ func ContactUnity(data map[string]interface{}, debug int) error {
 	}
 	if debug >= 4 {
 		println("DEBUG OUTGOING JSON")
-		Disp(data)
+		println("JSON: ", string(dataJSON))
 	}
 	sizeBytesBuff := new(bytes.Buffer)
 	sizeConvErr := binary.Write(sizeBytesBuff, binary.LittleEndian, int32(len(dataJSON)))

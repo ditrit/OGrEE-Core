@@ -31,13 +31,4 @@ func Send(method, URL, key string, data map[string]interface{}) (*http.Response,
 			return r, e
 		}
 	}
-
-}
-
-//displays contents of maps
-func Disp(x map[string]interface{}) {
-
-	jx, _ := json.Marshal(x)
-
-	println("JSON: ", string(jx))
 }
