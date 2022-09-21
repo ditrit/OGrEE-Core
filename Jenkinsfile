@@ -4,7 +4,7 @@ pipeline {
         stage('Build') {
             steps {
                 echo 'Building..'
-                sh 'go build main.go'
+                sh 'make'
             }
         }
 
@@ -91,15 +91,15 @@ pipeline {
         stage('Application Builds') {
             steps {
                 //Linux Native
-                sh 'go build -o OGrEE_API_Linux_x64 main.go'
+                sh 'make linux'
                 sh 'mv OGrEE_API_Linux_x64 /OGrEE/bin/api'
 
                 //Windows x64
-                sh 'GOOS=windows GOARCH=amd64 go build -o OGrEE_API_Win_x64 main.go'
+                sh 'make windows'
                 sh 'mv OGrEE_API_Win_x64 /OGrEE/bin/api'
 
                 //OSX x64
-                sh 'GOOS=darwin GOARCH=amd64 go build -o OGrEE_API_OSX_x64 main.go'
+                sh 'make mac'
                 sh 'mv OGrEE_API_OSX_x64 /OGrEE/bin/api'
 
                 //Upload builds to Nextcloud

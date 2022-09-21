@@ -61,6 +61,9 @@ func main() {
 	router.HandleFunc("/api/token/valid",
 		controllers.Verify).Methods("GET", "OPTIONS", "HEAD")
 
+	router.HandleFunc("/api/version",
+		controllers.Version).Methods("GET", "OPTIONS", "HEAD")
+
 	// ------ GET ------ //
 	//GET ENTITY HIERARCHY
 	//This matches ranged Tenant Hierarchy

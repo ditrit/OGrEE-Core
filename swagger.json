@@ -296,6 +296,38 @@
         }
       }
     },
+    "/api/version": {
+      "get": {
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "versioning"
+        ],
+        "summary": "Gets the API version.",
+        "operationId": "GetAPIVersion",
+        "responses": {
+          "200": {
+            "description": "OK. A response body will be returned with version details."
+          }
+        }
+      },
+      "options": {
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "versioning"
+        ],
+        "summary": "Displays possible operations for version.",
+        "operationId": "VersionOptions",
+        "responses": {
+          "200": {
+            "description": "Returns the possible request methods."
+          }
+        }
+      }
+    },
     "/api/{entity}/{name}/all": {
       "get": {
         "description": "Returns JSON body with all subobjects under the Tenant",

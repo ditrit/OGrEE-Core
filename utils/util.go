@@ -13,6 +13,11 @@ import (
 	"time"
 )
 
+var BuildHash string
+var BuildTree string
+var BuildTime string
+var GitCommitDate string
+
 const (
 	TENANT = iota
 	SITE
@@ -31,6 +36,22 @@ const (
 	STRAYDEV
 	STRAYSENSOR
 )
+
+func GetBuildDate() string {
+	return BuildTime
+}
+
+func GetCommitDate() string {
+	return GitCommitDate
+}
+
+func GetBuildHash() string {
+	return BuildHash
+}
+
+func GetBuildTree() string {
+	return BuildTree
+}
 
 func Connect() (context.Context, context.CancelFunc) {
 	return context.WithTimeout(context.Background(), 30*time.Second)

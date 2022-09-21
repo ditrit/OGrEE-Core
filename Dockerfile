@@ -34,7 +34,7 @@ RUN go get go.mongodb.org/mongo-driver/x/mongo/driver/topology@latest
 RUN apk add --no-cache python3 py3-pip
 RUN apk add --no-cache -X http://dl-cdn.alpinelinux.org/alpine/edge/community py3-pip
 
-RUN cd /home && go build main.go 
+RUN cd /home && make
 
 
 FROM alpine:latest

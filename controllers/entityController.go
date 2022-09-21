@@ -1886,6 +1886,42 @@ var ValidateEntity = func(w http.ResponseWriter, r *http.Request) {
 	u.Respond(w, ans)
 }
 
+// swagger:operation GET /api/version versioning GetAPIVersion
+// Gets the API version.
+// ---
+// produces:
+// - application/json
+// responses:
+//     '200':
+//         description: 'OK. A response body will be returned with
+//         version details.'
+
+// swagger:operation OPTIONS /api/version versioning VersionOptions
+// Displays possible operations for version.
+// ---
+// produces:
+// - application/json
+// responses:
+//     '200':
+//         description: 'Returns the possible request methods.'
+var Version = func(w http.ResponseWriter, r *http.Request) {
+	data := map[string]interface{}{}
+	if r.Method == "OPTIONS" {
+		w.Header().Add("Content-Type", "application/json")
+		w.Header().Add("Allow", "GET, OPTIONS, HEAD")
+		return
+	} else {
+		data["status"] = true
+		data["data"] = map[string]interface{}{
+			"BuildDate":  u.GetBuildDate(),
+			"BuildHash":  u.GetBuildHash(),
+			"CommitDate": u.GetCommitDate(),
+			"BuildTree":  u.GetBuildTree(),
+		}
+	}
+	u.Respond(w, data)
+}
+
 var GetEntityHierarchyNonStd = func(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("******************************************************")
 	fmt.Println("FUNCTION CALL: 	 GetEntityHierarchyNonStd ")
