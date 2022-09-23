@@ -6,6 +6,7 @@ import (
 	"cli/readline"
 	"container/list"
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"path"
 	"strings"
@@ -439,6 +440,8 @@ func FindNodeInTree(root **Node, path *Stack, silenced bool) **Node {
 	}
 }
 
+func GetNodesLocallyAndOnline(root **Node, path *Stack, depth int) {}
+
 func EntityToString(entity int) string {
 	switch entity {
 	case TENANT:
@@ -619,4 +622,135 @@ func MapStrayInt(x int) int {
 		return SENSOR
 	}
 	return -1
+}
+
+func GetLevelLen(root **Node) int {
+	if root == nil || *root == nil {
+		return 0
+	}
+	return (*root).Nodes.Len()
+}
+
+//New Tree funcs here
+func StrayWalk(root **Node, depth int) {
+
+}
+
+func RootWalk(root **Node, depth int) {
+	org := FindNodeInTree(root, StrToStack("/Organisation"), true)
+	fmt.Println("├──" + "Organisation")
+	OrganisationWalk(org, "│   ", depth)
+
+	logical := FindNodeInTree(root, StrToStack("/Logical"), true)
+	fmt.Println("└──" + "Logical")
+	LogicalWalk(logical, "    ", depth)
+}
+
+func LogicalWalk(root **Node, prefix string, depth int) {
+	if depth == 0 {
+		return
+	}
+
+	if (*root).Nodes.Len() == 0 {
+		switch (*root).Name {
+		case "ObjectTemplates":
+			//Get All Obj Templates and print them
+			r, e := models.Send("GET",
+				State.APIURL+"/api/obj-templates", GetKey(), nil)
+			resp := ParseResponse(r, e, "fetching objects")
+			RemoteGetAllWalk(resp["data"].(map[string]interface{}), prefix)
+		case "RoomTemplates":
+			//Get All Room Templates and print them
+			r, e := models.Send("GET",
+				State.APIURL+"/api/room-templates", GetKey(), nil)
+			resp := ParseResponse(r, e, "fetching objects")
+			RemoteGetAllWalk(resp["data"].(map[string]interface{}), prefix)
+		case "Groups":
+			//Get All Groups and print them
+			r, e := models.Send("GET",
+				State.APIURL+"/api/groups", GetKey(), nil)
+			resp := ParseResponse(r, e, "fetching objects")
+			RemoteGetAllWalk(resp["data"].(map[string]interface{}), prefix)
+		default: //Error case, execution should not reach here
+
+		}
+		return
+	}
+
+	for i := (*root).Nodes.Front(); i != nil; i = i.Next() {
+		if i.Next() == nil {
+			fmt.Println(prefix+"└──", (i.Value.(*Node).Name))
+			value := i.Value.(*Node)
+			LogicalWalk(&(value), prefix+"    ", depth-1)
+
+		} else {
+			fmt.Println(prefix+("├──"), (i.Value.(*Node).Name))
+			value := i.Value.(*Node)
+			LogicalWalk(&(value), prefix+"│   ", depth-1)
+
+		}
+	}
+}
+
+func OrganisationWalk(root **Node, prefix string, depth int) []string {
+	if depth == 0 {
+		return nil //or return (*root).Name!
+	}
+
+	for i := (*root).Nodes.Front(); i != nil; i = i.Next() {
+		if i.Next() == nil {
+			fmt.Println(prefix+"└──", (i.Value.(*Node).Name))
+			value := i.Value.(*Node)
+			OrganisationWalk(&(value), prefix+"    ", depth-1)
+
+		} else {
+			fmt.Println(prefix+("├──"), (i.Value.(*Node).Name))
+			value := i.Value.(*Node)
+			OrganisationWalk(&(value), prefix+"│   ", depth-1)
+
+		}
+	}
+	return nil
+}
+
+func PhysicalWalk(root **Node, depth int) {
+
+}
+
+func RemoteGetAllWalk(root map[string]interface{}, prefix string) {
+	var arr []interface{}
+	var length int
+	if root == nil {
+		return
+	}
+
+	if _, ok := root["objects"]; !ok {
+		return
+	}
+
+	if _, ok := root["objects"].([]interface{}); !ok {
+		return
+	}
+	arr = root["objects"].([]interface{})
+	length = len(arr)
+
+	for i, m := range arr {
+		var subname string
+		if n, ok := m.(map[string]interface{})["name"].(string); ok {
+			subname = n
+		} else {
+			subname = m.(map[string]interface{})["slug"].(string)
+		}
+
+		if i == length-1 {
+			fmt.Println(prefix+"└──", subname)
+
+		} else {
+			fmt.Println(prefix+("├──"), subname)
+		}
+	}
+}
+
+func RemoteHierarchyWalk(root map[string]interface{}) {
+
 }

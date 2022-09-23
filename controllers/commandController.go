@@ -1188,19 +1188,56 @@ func Tree(x string, depth int) {
 	if x == "" || x == "." {
 		println(State.CurrPath)
 		path = State.CurrPath
-		//tree(State.CurrPath, "", depth)
 	} else if string(x[0]) == "/" {
 		println(x)
 		path = x
-		//tree(x, "", depth)
 	} else {
 		println(State.CurrPath + "/" + x)
 		path = State.CurrPath + "/" + x
-		//tree(State.CurrPath+"/"+x, "", depth)
 	}
 	//println("DEBUG OUR PATH:", path)
-	OnlineLevelResolver2(path)
-	tree(path, "", depth)
+	//OnlineLevelResolver2(path)
+	//tree(path, "", depth)
+	path = filepath.Clean(path)
+	tree2(path, depth)
+}
+
+func tree2(path string, depth int) {
+	arr := strings.Split(path, "/")
+	depth += 1 //This fixes a 1 off difference
+
+	if path == "/" {
+		//RootWalk
+		//if checking "/" doesn't work as intended then
+		//test for arr[0] == "" && arr[1] == "" instead
+		RootWalk(&State.TreeHierarchy, depth)
+		return
+	}
+
+	switch arr[1] {
+	case "Physical":
+		println("DEBUG PhysicalWalk")
+		//Get the Physical Node!
+		//physical := FindNodeInTree(&State.TreeHierarchy,
+		//	StrToStack("/Physical"), true)
+
+	case "Logical":
+		//Get the Logical Node!
+		logical := FindNodeInTree(&State.TreeHierarchy,
+			StrToStack("/Logical"), true)
+		LogicalWalk(logical, "", depth)
+
+	case "Organisation":
+		//Get the Organisation Node!
+		org := FindNodeInTree(&State.TreeHierarchy,
+			StrToStack("/Organisation"), true)
+
+		OrganisationWalk(org, "", depth)
+	default: //Error! This should never occur
+		println("DEBUG ERROR!")
+		println("DEBUG LEN:", len(arr))
+	}
+
 }
 
 func GetHierarchy(x string, depth int, silence bool) []map[string]interface{} {
@@ -2994,6 +3031,7 @@ func OnlineLevelResolver2(path string) []string {
 	path = filepath.Clean(path)
 	println("DEBUG OUR PATH:", path)
 	arr := strings.Split(path, "/")
+	println("DEBUG ARR Length:", len(arr))
 
 	if len(arr) >= 1 {
 		if arr[1] == "Logical" {
