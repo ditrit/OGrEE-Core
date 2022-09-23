@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"net/http"
 	"path"
+	"strconv"
 	"strings"
 	"time"
 )
@@ -632,8 +633,48 @@ func GetLevelLen(root **Node) int {
 }
 
 //New Tree funcs here
-func StrayWalk(root **Node, depth int) {
+func StrayWalk(root **Node, prefix string, depth int) {
+	if depth == 0 {
+		return //or (*root).Name
+	}
 
+	if (*root).Nodes.Len() == 0 && depth > 0 {
+		switch (*root).Name {
+		case "Device":
+			//Get Stray Devices and print them
+			r, e := models.Send("GET",
+				State.APIURL+"/api/stray-devices", GetKey(), nil)
+			resp := ParseResponse(r, e, "fetch objects")
+			if resp != nil {
+				RemoteGetAllWalk(resp["data"].(map[string]interface{}), prefix)
+			}
+		case "Sensor":
+			//Get Stray Sensors and print them
+			r, e := models.Send("GET",
+				State.APIURL+"/api/stray-sensors", GetKey(), nil)
+			resp := ParseResponse(r, e, "fetch objects")
+			if resp != nil {
+				RemoteGetAllWalk(resp["data"].(map[string]interface{}), prefix)
+			}
+		default: //Error, execution should not reach here
+
+		}
+		return
+	}
+
+	for i := (*root).Nodes.Front(); i != nil; i = i.Next() {
+		node := i.Value.(*Node)
+		fmt.Println(prefix + node.Name)
+		StrayWalk(&node, prefix, depth-1)
+
+		if i.Next() == nil {
+			fmt.Println(prefix+"└──", node.Name)
+			LogicalWalk(&node, prefix+"    ", depth-1)
+		} else {
+			fmt.Println(prefix+("├──"), node.Name)
+			LogicalWalk(&node, prefix+"│   ", depth-1)
+		}
+	}
 }
 
 func RootWalk(root **Node, depth int) {
@@ -642,8 +683,12 @@ func RootWalk(root **Node, depth int) {
 	OrganisationWalk(org, "│   ", depth)
 
 	logical := FindNodeInTree(root, StrToStack("/Logical"), true)
-	fmt.Println("└──" + "Logical")
-	LogicalWalk(logical, "    ", depth)
+	fmt.Println("├──" + "Logical")
+	LogicalWalk(logical, "|   ", depth)
+
+	phys := FindNodeInTree(root, StrToStack("/Physical"), true)
+	fmt.Println("└──" + "Physical")
+	LogicalWalk(phys, "    ", depth)
 }
 
 func LogicalWalk(root **Node, prefix string, depth int) {
@@ -713,8 +758,140 @@ func OrganisationWalk(root **Node, prefix string, depth int) []string {
 	return nil
 }
 
-func PhysicalWalk(root **Node, depth int) {
+func PhysicalWalk(root **Node, prefix, path string, depth int) {
+	arr := strings.Split(path, "/")
+	if len(arr) == 3 {
+		if arr[2] == "Stray" {
+			fmt.Println(prefix + "├──Device")
+			if depth > 1 {
+				//Get and Print Stray Devices
+				r, e := models.Send("GET",
+					State.APIURL+"/api/stray-devices", GetKey(), nil)
+				resp := ParseResponse(r, e, "fetch objects")
+				if resp != nil {
+					RemoteGetAllWalk(resp["data"].(map[string]interface{}),
+						prefix+"|   ")
+				}
 
+				//Get and Print Stray Sensors
+				fmt.Println(prefix + "└──Sensor")
+				r1, e1 := models.Send("GET",
+					State.APIURL+"/api/stray-sensors", GetKey(), nil)
+				resp1 := ParseResponse(r1, e1, "fetch objects")
+
+				if resp1 != nil {
+					RemoteGetAllWalk(resp1["data"].(map[string]interface{}),
+						prefix+"    ")
+				}
+			} else { //Extra else block for correct printing
+				fmt.Println(prefix + "└──Sensor")
+			}
+
+		} else { //Interacting with Tenants
+			//Check Depth
+			if depth > 1 { //Get Obj Hierarchy ???
+				urls := OnlinePathResolve([]string{path})
+				if len(urls) > 1 { //DEBUG THIS SECTION
+					println("DEBUG URL LIST:")
+					for i := range urls {
+						println(urls[i])
+					}
+				}
+				depthStr := strconv.Itoa(depth + 1)
+				URL := urls[0] + "/all?limit=" + depthStr
+				r, e := models.Send("GET", URL, GetKey(), nil)
+				resp := ParseResponse(r, e, "get object hierarchy")
+				if resp != nil {
+					RemoteHierarchyWalk(resp["data"].(map[string]interface{}), prefix, depth)
+				}
+
+			} else { //Simple GET All Tenants and Print
+				r, e := models.Send("GET",
+					State.APIURL+"/api/tenants", GetKey(), nil)
+				resp := ParseResponse(r, e, "fetch objects")
+				if resp != nil {
+					RemoteGetAllWalk(resp["data"].(map[string]interface{}),
+						prefix)
+				}
+			}
+
+		}
+	}
+	if len(arr) == 2 { //Means path== "/Physical"
+		fmt.Println(prefix + "Stray")
+
+		//Get and Print Tenants Block
+		r, e := models.Send("GET",
+			State.APIURL+"/api/tenants", GetKey(), nil)
+		resp := ParseResponse(r, e, "fetch objects")
+		if resp != nil {
+			RemoteGetAllWalk(resp["data"].(map[string]interface{}),
+				prefix)
+		}
+
+		if depth > 0 {
+			tenants := resp["data"].(map[string]interface{})["objects"].([]interface{})
+			for _, tInf := range tenants {
+				tenant := tInf.(map[string]interface{})
+				ID := tenant["id"].(string)
+				depthStr := strconv.Itoa(depth)
+
+				//Get Hierarchy for each tenant and walk
+				r, e := models.Send("GET",
+					State.APIURL+"/api/tenants/"+ID+"/all?limit="+depthStr, GetKey(), nil)
+				resp := ParseResponse(r, e, "fetch objects")
+				if resp != nil {
+					RemoteHierarchyWalk(resp["data"].(map[string]interface{}),
+						prefix, depth)
+				}
+
+				//Walk Stray Directory
+				strayNode := FindNodeInTree(&State.TreeHierarchy,
+					StrToStack("/Physical/Stray"), true)
+				StrayWalk(strayNode, prefix, depth)
+
+			}
+		}
+	}
+	if len(arr) > 3 { //Could still be Stray not sure yet
+		if arr[2] == "Stray" {
+			strayNode := FindNodeInTree(&State.TreeHierarchy,
+				StrToStack("/Physical/Stray"), true)
+			StrayWalk(strayNode, prefix, depth)
+		} else {
+			//Check depth
+			if depth > 1 {
+				//Need to convert path to URL then append /all?limit=depthStr
+				urls := OnlinePathResolve([]string{path})
+				if len(urls) > 1 { //DEBUG THIS SECTION
+					println("DEBUG URL LIST:")
+					for i := range urls {
+						println(urls[i])
+					}
+				}
+
+				//Get Object hierarchy and walk
+				depthStr := strconv.Itoa(depth + 1)
+				r, e := models.Send("GET",
+					urls[0]+"/all?limit="+depthStr, GetKey(), nil)
+				resp := ParseResponse(r, e, "fetch objects")
+				if resp != nil {
+					RemoteHierarchyWalk(resp["data"].(map[string]interface{}),
+						prefix, depth+1)
+				}
+			} else {
+
+				//Get and Print Tenants Block
+				r, e := models.Send("GET",
+					State.APIURL+"/api/tenants", GetKey(), nil)
+				resp := ParseResponse(r, e, "fetch objects")
+				if resp != nil {
+					RemoteGetAllWalk(resp["data"].(map[string]interface{}),
+						prefix)
+				}
+			}
+		}
+	}
 }
 
 func RemoteGetAllWalk(root map[string]interface{}, prefix string) {
@@ -751,6 +928,30 @@ func RemoteGetAllWalk(root map[string]interface{}, prefix string) {
 	}
 }
 
-func RemoteHierarchyWalk(root map[string]interface{}) {
+func RemoteHierarchyWalk(root map[string]interface{}, prefix string, depth int) {
+	if depth == 0 || root == nil {
+		return
+	}
 
+	name := root["name"].(string)
+	println(prefix + name)
+
+	//or cast to []interface{}
+	arr := root["children"].([]map[string]interface{})
+
+	//or cast to []interface{}
+	length := len(arr)
+
+	//or cast to []interface{}
+	for i, m := range arr {
+		subname := m["name"].(string)
+
+		if i == length-1 {
+			fmt.Println(prefix+"└──", subname)
+			RemoteHierarchyWalk(m, prefix+"    ", depth-1)
+		} else {
+			fmt.Println(prefix+("├──"), subname)
+			RemoteHierarchyWalk(m, prefix+"│   ", depth-1)
+		}
+	}
 }

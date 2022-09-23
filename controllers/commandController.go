@@ -1204,7 +1204,7 @@ func Tree(x string, depth int) {
 
 func tree2(path string, depth int) {
 	arr := strings.Split(path, "/")
-	depth += 1 //This fixes a 1 off difference
+	//depth += 1 //This fixes a 1 off difference
 
 	if path == "/" {
 		//RootWalk
@@ -1218,9 +1218,9 @@ func tree2(path string, depth int) {
 	case "Physical":
 		println("DEBUG PhysicalWalk")
 		//Get the Physical Node!
-		//physical := FindNodeInTree(&State.TreeHierarchy,
-		//	StrToStack("/Physical"), true)
-
+		physical := FindNodeInTree(&State.TreeHierarchy,
+			StrToStack("/Physical"), true)
+		PhysicalWalk(physical, "", path, depth)
 	case "Logical":
 		//Get the Logical Node!
 		logical := FindNodeInTree(&State.TreeHierarchy,
