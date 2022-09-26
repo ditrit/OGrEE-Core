@@ -9,6 +9,22 @@ GITBRANCH=$(shell git branch --show-current)
 GITHASHDATE=$(shell git show -s --format=%ci HEAD | sed 's/ /\//g')
 
 
+mac: interpreter main.go ast.go lexer.nn.go y.go repl.go aststr.go astnum.go astbool.go astflow.go astutil.go completer.go
+	GOOS=darwin go build \-ldflags="-X  cli/controllers.BuildHash=$(GITHASH) \
+	-X cli/controllers.BuildTree=$(GITBRANCH) \
+	-X cli/controllers.BuildTime=$(DATE) \
+	-X cli/controllers.GitCommitDate=$(GITHASHDATE)" \
+	main.go ast.go lexer.nn.go y.go repl.go aststr.go astnum.go astbool.go astflow.go astutil.go completer.go
+	
+
+win: interpreter main.go ast.go lexer.nn.go y.go repl.go aststr.go astnum.go astbool.go astflow.go astutil.go completer.go
+	GOOS=windows go build \-ldflags="-X  cli/controllers.BuildHash=$(GITHASH) \
+	-X cli/controllers.BuildTree=$(GITBRANCH) \
+	-X cli/controllers.BuildTime=$(DATE) \
+	-X cli/controllers.GitCommitDate=$(GITHASHDATE)" \
+	main.go ast.go lexer.nn.go y.go repl.go aststr.go astnum.go astbool.go astflow.go astutil.go completer.go
+	
+	
 main: interpreter main.go ast.go lexer.nn.go y.go repl.go aststr.go astnum.go astbool.go astflow.go astutil.go completer.go
 	go build \-ldflags="-X  cli/controllers.BuildHash=$(GITHASH) \
 	-X cli/controllers.BuildTree=$(GITBRANCH) \
