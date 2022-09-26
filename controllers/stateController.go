@@ -792,31 +792,61 @@ func PhysicalWalk(root **Node, prefix, path string, depth int) {
 
 		} else { //Interacting with Tenants
 			//Check Depth
-			if depth > 1 { //Get Obj Hierarchy ???
-				urls := OnlinePathResolve([]string{path})
-				if len(urls) > 1 { //DEBUG THIS SECTION
-					println("DEBUG URL LIST:")
-					for i := range urls {
-						println(urls[i])
-					}
-				}
-				depthStr := strconv.Itoa(depth + 1)
-				URL := urls[0] + "/all?limit=" + depthStr
-				r, e := models.Send("GET", URL, GetKey(), nil)
-				resp := ParseResponse(r, e, "get object hierarchy")
-				if resp != nil {
-					RemoteHierarchyWalk(resp["data"].(map[string]interface{}), prefix, depth)
-				}
+			//if depth > 1 { //Get Obj Hierarchy ???
+			depthStr := strconv.Itoa(depth + 1)
 
-			} else { //Simple GET All Tenants and Print
+			//Need to convert path to URL then append /all?limit=depthStr
+			_, urls := CheckPathOnline(path)
+			r, e := models.Send("GET", urls, GetKey(), nil)
+			//TODO:
+			//WE need to get the Object in order for us to create
+			//the correct GET /all URL
+			//we get the object category and ID in the JSON response
+
+			parsed := ParseResponse(r, e, "get object")
+			if parsed != nil {
+
+				obj := parsed["data"].(map[string]interface{})
+				cat := obj["category"].(string)
+				ID := obj["id"].(string)
+				URL := State.APIURL + "/api/" +
+					cat + "s/" + ID + "/all?limit=" + depthStr
+				r1, e1 := models.Send("GET", URL, GetKey(), nil)
+				parsedRoot := ParseResponse(r1, e1, "get object hierarchy")
+				if parsedRoot != nil {
+					if _, ok := parsedRoot["data"]; ok {
+						RemoteHierarchyWalk(
+							parsedRoot["data"].(map[string]interface{}),
+							prefix, depth+1)
+					}
+
+				}
+			}
+			/*urls := OnlinePathResolve([]string{path})
+			if len(urls) > 1 { //DEBUG THIS SECTION
+				println("DEBUG URL LIST:")
+				for i := range urls {
+					println(urls[i])
+				}
+			}
+			depthStr := strconv.Itoa(depth + 1)
+			URL := urls[0] + "/all?limit=" + depthStr
+			r, e := models.Send("GET", URL, GetKey(), nil)
+			resp := ParseResponse(r, e, "get object hierarchy")
+			if resp != nil {
+				Disp(resp)
+				RemoteHierarchyWalk(resp["data"].(map[string]interface{}), prefix, depth)
+			}*/
+
+			/*} else { //Simple GET All Sites and Print
 				r, e := models.Send("GET",
-					State.APIURL+"/api/tenants", GetKey(), nil)
+					State.APIURL+"/api/sites", GetKey(), nil)
 				resp := ParseResponse(r, e, "fetch objects")
 				if resp != nil {
 					RemoteGetAllWalk(resp["data"].(map[string]interface{}),
 						prefix)
 				}
-			}
+			}*/
 
 		}
 	}
