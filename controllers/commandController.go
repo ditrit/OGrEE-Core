@@ -1210,7 +1210,7 @@ func tree2(path string, depth int) {
 		//RootWalk
 		//if checking "/" doesn't work as intended then
 		//test for arr[0] == "" && arr[1] == "" instead
-		RootWalk(&State.TreeHierarchy, depth)
+		RootWalk(&State.TreeHierarchy, path, depth)
 		return
 	}
 
