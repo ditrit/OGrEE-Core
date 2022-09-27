@@ -798,10 +798,6 @@ func PhysicalWalk(root **Node, prefix, path string, depth int) {
 			//Need to convert path to URL then append /all?limit=depthStr
 			_, urls := CheckPathOnline(path)
 			r, e := models.Send("GET", urls, GetKey(), nil)
-			//TODO:
-			//WE need to get the Object in order for us to create
-			//the correct GET /all URL
-			//we get the object category and ID in the JSON response
 
 			parsed := ParseResponse(r, e, "get object")
 			if parsed != nil {
@@ -851,47 +847,111 @@ func PhysicalWalk(root **Node, prefix, path string, depth int) {
 		}
 	}
 	if len(arr) == 2 { //Means path== "/Physical"
+		//TODO:
+		//WE NEED TO REWRITE THIS SECTION BECAUSE IT IS BROKEN
+
 		//println("DEBUG POTENTIAL ERROR CASE")
 		var resp map[string]interface{}
-
 		println("DEBUG CHECK ARR[1]:", arr[1], " AND THE DEPTH:", depth)
+		if arr[1] == "Physical" { //Means path== "/Physical"
+			println("DEBUG WE HAVE EXPECTED PATH")
 
-		if arr[1] != "" {
 			fmt.Println(prefix + "├──" + "Stray")
 			//Get and Print Tenants Block
 			r, e := models.Send("GET",
 				State.APIURL+"/api/tenants", GetKey(), nil)
 			resp = ParseResponse(r, e, "fetch objects")
 			if resp != nil {
-				RemoteGetAllWalk(resp["data"].(map[string]interface{}),
-					prefix)
-			}
-		}
-
-		if depth > 0 {
-			tenants := resp["data"].(map[string]interface{})["objects"].([]interface{})
-			for _, tInf := range tenants {
-				tenant := tInf.(map[string]interface{})
-				ID := tenant["id"].(string)
-				depthStr := strconv.Itoa(depth)
-
-				//Get Hierarchy for each tenant and walk
-				r, e := models.Send("GET",
-					State.APIURL+"/api/tenants/"+ID+"/all?limit="+depthStr, GetKey(), nil)
-				resp := ParseResponse(r, e, "fetch objects")
-				if resp != nil {
-					RemoteHierarchyWalk(resp["data"].(map[string]interface{}),
-						prefix, depth)
+				if _, ok := resp["data"]; ok {
+					RemoteGetAllWalk(resp["data"].(map[string]interface{}),
+						prefix)
 				}
 
+			}
+
+			if depth > 0 {
+				if _, ok := resp["data"]; ok {
+					tenants := resp["data"].(map[string]interface{})["objects"].([]interface{})
+					for _, tInf := range tenants {
+						tenant := tInf.(map[string]interface{})
+						ID := tenant["id"].(string)
+						depthStr := strconv.Itoa(depth)
+
+						//Get Hierarchy for each tenant and walk
+						r, e := models.Send("GET",
+							State.APIURL+"/api/tenants/"+ID+"/all?limit="+depthStr, GetKey(), nil)
+						resp := ParseResponse(r, e, "fetch objects")
+						if resp != nil {
+							RemoteHierarchyWalk(resp["data"].(map[string]interface{}),
+								prefix, depth)
+						}
+
+						//Walk Stray Directory
+						strayNode := FindNodeInTree(&State.TreeHierarchy,
+							StrToStack("/Physical/Stray"), true)
+						StrayWalk(strayNode, prefix, depth)
+
+					}
+				}
+
+			}
+		} else {
+			//Means path == "/"
+			println("DEBUG BEFORE CRASH @ROO0T")
+
+			if depth > 0 {
+
+				//fmt.Println(prefix + "├──" + "Stray")
 				//Walk Stray Directory
+				//"    "
+				fmt.Println(prefix + "├──" + "Stray")
 				strayNode := FindNodeInTree(&State.TreeHierarchy,
 					StrToStack("/Physical/Stray"), true)
-				StrayWalk(strayNode, prefix, depth)
+				StrayWalk(strayNode, prefix+"│   ", depth-1)
+				//Get and Print Tenants Block
+				r, e := models.Send("GET",
+					State.APIURL+"/api/tenants", GetKey(), nil)
+				resp = ParseResponse(r, e, "fetch objects")
+				if resp != nil {
+					if _, ok := resp["data"]; ok {
+						RemoteGetAllWalk(resp["data"].(map[string]interface{}),
+							prefix)
+					}
+
+				}
+
+				//If hierarchy happens to have be greater than 1
+				if depth > 1 {
+					if _, ok := resp["data"]; ok {
+						tenants := resp["data"].(map[string]interface{})["objects"].([]interface{})
+						for _, tInf := range tenants {
+							tenant := tInf.(map[string]interface{})
+							ID := tenant["id"].(string)
+							depthStr := strconv.Itoa(depth)
+
+							//Get Hierarchy for each tenant and walk
+							r, e := models.Send("GET",
+								State.APIURL+"/api/tenants/"+ID+"/all?limit="+depthStr, GetKey(), nil)
+							resp := ParseResponse(r, e, "fetch objects")
+							if resp != nil {
+								RemoteHierarchyWalk(resp["data"].(map[string]interface{}),
+									prefix+"│   ", depth)
+							}
+
+							//Walk Stray Directory
+							strayNode := FindNodeInTree(&State.TreeHierarchy,
+								StrToStack("/Physical/Stray"), true)
+							StrayWalk(strayNode, prefix+"    ", depth-1)
+
+						}
+					}
+				}
 
 			}
 		}
+
 	}
+
 	if len(arr) > 3 { //Could still be Stray not sure yet
 		if arr[2] == "Stray" {
 			strayNode := FindNodeInTree(&State.TreeHierarchy,
