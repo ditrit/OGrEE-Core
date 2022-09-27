@@ -249,6 +249,30 @@ EXPR: TOK_INT {$$=&floatLeaf{float64($1)}}
        | TOK_MINUS EXPR {$$=&arithNode{"-", &floatLeaf{0}, $2}} %prec UNARY
 ; 
 
+// parser.y
+// 
+// EXPR_NUM: TOK_INT
+//        | TOK_FLOAT
+//        | TOK_INT TOK_SLASH TOK_INT
+//        | TOK_INT TOK_MULT TOK_INT
+//        
+// VECTOR_TWO:   TOK_LBLOCK EXPR_NUM TOK_COMMA EXPR_NUM TOK_RBLOCK
+// VECTOR_THREE: TOK_LBLOCK EXPR_NUM TOK_COMMA EXPR_NUM TOK_COMMA EXPR_NUM TOK_RBLOCK
+// VECTOR_FOUR:  TOK_LBLOCK EXPR_NUM TOK_COMMA EXPR_NUM TOK_COMMA EXPR_NUM TOK_COMMA EXPR_NUM TOK_RBLOCK
+// 
+// TOK_ROOM TOK_COL PHYSICAL_PATH TOK_ATTRSPEC VECTOR_TWO TOK_ATTRSPEC VECTOR_THREE TOK_ATTRSPEC ORIENTATION TOK_ATTRSPEC EXPR_NOQUOTE // with units
+// TOK_ROOM TOK_COL PHYSICAL_PATH TOK_ATTRSPEC VECTOR_TWO TOK_ATTRSPEC VECTOR_THREE TOK_ATTRSPEC ORIENTATION // standard 
+// TOK_ROOM TOK_COL PHYSICAL_PATH TOK_ATTRSPEC VECTOR_TWO TOK_ATTRSPEC EXPR_NOQUOTE  // template
+//         
+// lexer.nex
+//
+// /[\+\-]?[NSEW][\+\-]?[NSEW]/ {printToks("TOK_ORIENTATION"); lval.s = yylex.Text(); printCapturedWord(lval.s); return TOK_ORIENTATION}
+//
+// + and - are mandatory, so no need ?
+//
+// /[\+\-][NSEW][\+\-][NSEW]/ {printToks("TOK_ORIENTATION"); lval.s = yylex.Text(); printCapturedWord(lval.s); return TOK_ORIENTATION}
+
+
 /* EQUAL_LIST: TOK_WORD TOK_EQUAL EXPR EQUAL_LIST {m := $4; m[$1]=$3; $$=m}
        | TOK_WORD TOK_EQUAL EXPR {m := make(map[string]interface{}); m[$1]=$3; $$=m}
 ; */
