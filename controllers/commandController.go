@@ -1140,32 +1140,6 @@ func printAttributeOptions() {
 	}
 }
 
-func tree(base string, prefix string, depth int) {
-	names := FetchNodesAtLevel(base)
-
-	for index, name := range names {
-		/*if name[0] == '.' {
-			continue
-		}*/
-		//subpath := path.Join(base, name)
-		subpath := base + "/" + name
-		//counter.index(subpath)
-
-		if index == len(names)-1 {
-			fmt.Println(prefix+"└──", (name))
-			if depth != 0 {
-				tree(subpath, prefix+"    ", depth-1)
-			}
-
-		} else {
-			fmt.Println(prefix+("├──"), (name))
-			if depth != 0 {
-				tree(subpath, prefix+("│   "), depth-1)
-			}
-		}
-	}
-}
-
 //Function is an abstraction of a normal exit
 func Exit() {
 	//writeHistoryOnExit(&State.sessionBuffer)
@@ -1195,16 +1169,13 @@ func Tree(x string, depth int) {
 		println(State.CurrPath + "/" + x)
 		path = State.CurrPath + "/" + x
 	}
-	//println("DEBUG OUR PATH:", path)
-	//OnlineLevelResolver2(path)
-	//tree(path, "", depth)
+
 	path = filepath.Clean(path)
-	tree2(path, depth)
+	tree(path, depth)
 }
 
-func tree2(path string, depth int) {
+func tree(path string, depth int) {
 	arr := strings.Split(path, "/")
-	//depth += 1 //This fixes a 1 off difference
 
 	if path == "/" {
 		//RootWalk
@@ -1216,21 +1187,30 @@ func tree2(path string, depth int) {
 
 	switch arr[1] {
 	case "Physical":
-		println("DEBUG PhysicalWalk")
 		//Get the Physical Node!
 		physical := FindNodeInTree(&State.TreeHierarchy,
 			StrToStack("/Physical"), true)
 		PhysicalWalk(physical, "", path, depth)
 	case "Logical":
+
+		if len(arr) >= 4 { //This is the threshold
+			return
+		}
+
 		//Get the Logical Node!
-		logical := FindNodeInTree(&State.TreeHierarchy,
-			StrToStack("/Logical"), true)
-		LogicalWalk(logical, "", depth)
+		logi := FindNearestNodeInTree(&State.TreeHierarchy,
+			StrToStack(path), true)
+		LogicalWalk(logi, "", depth)
 
 	case "Organisation":
+
+		if len(arr) >= 4 { //This is the threshold
+			return
+		}
+
 		//Get the Organisation Node!
-		org := FindNodeInTree(&State.TreeHierarchy,
-			StrToStack("/Organisation"), true)
+		org := FindNearestNodeInTree(&State.TreeHierarchy,
+			StrToStack(path), true)
 
 		OrganisationWalk(org, "", depth)
 	default: //Error! This should never occur
