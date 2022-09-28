@@ -42,6 +42,8 @@ type ShellState struct {
 	PrevPath         string
 	ClipBoard        *[]string
 	TreeHierarchy    *Node
+	EnvFilePath      string //Holds file path of '.env'
+	HistoryFilePath  string //Holds file path of '.history'
 	ScriptCalled     bool
 	ScriptPath       string
 	UnityClientURL   string

@@ -152,6 +152,8 @@ func Start(flags map[string]interface{}) {
 	env := map[string]interface{}{}
 
 	l.InitLogs()
+	c.InitEnvFilePath(flags)
+	c.InitHistoryFilePath(flags)
 	c.InitDebugLevel(flags) //Set the Debug level
 	c.LoadEnvFile(env, flags["env_path"].(string))
 	c.InitTimeout(env)    //Set the Unity Timeout
@@ -164,7 +166,7 @@ func Start(flags map[string]interface{}) {
 	rl, err := readline.NewEx(&readline.Config{
 		Prompt: "\u001b[1m\u001b[32m" + user + "@" + "OGrEE3D:" +
 			"\u001b[37;1m" + c.State.CurrPath + "\u001b[1m\u001b[32m$>\u001b[0m ",
-		HistoryFile:     flags["history_path"].(string),
+		HistoryFile:     c.State.HistoryFilePath,
 		AutoComplete:    GetPrefixCompleter(),
 		InterruptPrompt: "^C",
 		//EOFPrompt:       "exit",

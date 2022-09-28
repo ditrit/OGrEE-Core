@@ -38,7 +38,17 @@ func LoadEnvFile(env map[string]interface{}, path string) {
 		}
 		l.GetErrorLogger().Println("Error at initialisation:" +
 			err.Error())
+		println("Unable to load env file! Now exiting")
+		os.Exit(-1)
 	}
+}
+
+func InitEnvFilePath(flags map[string]interface{}) {
+	State.EnvFilePath = flags["env_path"].(string)
+}
+
+func InitHistoryFilePath(flags map[string]interface{}) {
+	State.HistoryFilePath = flags["history_path"].(string)
 }
 
 func InitDebugLevel(flags map[string]interface{}) {

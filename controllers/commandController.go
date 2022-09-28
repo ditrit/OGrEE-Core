@@ -523,6 +523,7 @@ func Clear() {
 }
 
 func LSOG() {
+
 	fmt.Println("USER EMAIL:", GetEmail())
 	fmt.Println("API URL:", State.APIURL+"/api/")
 	fmt.Println("UNITY URL:", State.UnityClientURL)
@@ -530,8 +531,9 @@ func LSOG() {
 	fmt.Println("BUILD TREE:", BuildTree)
 	fmt.Println("BUILD HASH:", BuildHash)
 	fmt.Println("COMMIT DATE: ", GitCommitDate)
+	fmt.Println("ENV FILE PATH: ", State.EnvFilePath)
 	fmt.Println("LOG PATH:", "./log.txt")
-	fmt.Println("HISTORY FILE PATH:", "./.history")
+	fmt.Println("HISTORY FILE PATH:", State.HistoryFilePath)
 	fmt.Println("DEBUG LEVEL: ", State.DebugLvl)
 }
 
