@@ -1300,10 +1300,36 @@ func GetOCLIAtrributes(Path string, ent int, data map[string]interface{}) error 
 			attr["size"] = serialiseAttr2(attr, "size")
 		}
 
+		if attr["size"] == "" {
+			if State.DebugLvl > 0 {
+				l.GetErrorLogger().Println(
+					"User gave invalid size value for creating room")
+				println("Error: Invalid size attribute provided." +
+					" It must be an array/list/vector with 3 elements." +
+					" Please refer to the wiki or manual reference" +
+					" for more details on how to create objects " +
+					"using this syntax")
+			}
+			return nil
+		}
+
 		if _, ok := attr["posXY"].(string); ok {
 			attr["posXY"] = serialiseAttr(attr, "posXY")
 		} else {
 			attr["posXY"] = serialiseAttr2(attr, "posXY")
+		}
+
+		if attr["posXY"] == "" {
+			if State.DebugLvl > 0 {
+				l.GetErrorLogger().Println(
+					"User gave invalid posXY value for creating room")
+				println("Error: Invalid posXY attribute provided." +
+					" It must be an array/list/vector with 2 elements." +
+					" Please refer to the wiki or manual reference" +
+					" for more details on how to create objects " +
+					"using this syntax")
+			}
+			return nil
 		}
 
 		attr["posXYUnit"] = "m"
@@ -1315,7 +1341,6 @@ func GetOCLIAtrributes(Path string, ent int, data map[string]interface{}) error 
 
 		_, err = PostObj(ent, "building", data)
 	case ROOM:
-
 		attr = data["attributes"].(map[string]interface{})
 
 		baseAttrs := map[string]interface{}{
@@ -1328,7 +1353,21 @@ func GetOCLIAtrributes(Path string, ent int, data map[string]interface{}) error 
 
 		//If user provided templates, get the JSON
 		//and parse into templates
+		//NOTE this function also assigns value for "size" attribute
 		GetOCLIAtrributesTemplateHelper(attr, data, ent)
+
+		if attr["size"] == "" {
+			if State.DebugLvl > 0 {
+				l.GetErrorLogger().Println(
+					"User gave invalid size value for creating room")
+				println("Error: Invalid size attribute provided." +
+					" It must be an array/list/vector with 3 elements." +
+					" Please refer to the wiki or manual reference" +
+					" for more details on how to create objects " +
+					"using this syntax")
+			}
+			return nil
+		}
 
 		if _, ok := attr["posXY"].(string); ok {
 			attr["posXY"] = serialiseAttr(attr, "posXY")
@@ -1336,9 +1375,24 @@ func GetOCLIAtrributes(Path string, ent int, data map[string]interface{}) error 
 			attr["posXY"] = serialiseAttr2(attr, "posXY")
 		}
 
+		if attr["posXY"] == "" {
+			if State.DebugLvl > 0 {
+				l.GetErrorLogger().Println(
+					"User gave invalid posXY value for creating room")
+				println("Error: Invalid posXY attribute provided." +
+					" It must be an array/list/vector with 2 elements." +
+					" Please refer to the wiki or manual reference" +
+					" for more details on how to create objects " +
+					"using this syntax")
+			}
+			return nil
+		}
+
 		data["parentId"] = parent["id"]
 		data["domain"] = domain
 		data["attributes"] = attr
+		println("DEBUG VIEW THE JSON")
+		Disp(data)
 		_, err = PostObj(ent, "room", data)
 	case RACK:
 		attr = data["attributes"].(map[string]interface{})
@@ -1357,11 +1411,37 @@ func GetOCLIAtrributes(Path string, ent int, data map[string]interface{}) error 
 		//and parse into templates
 		GetOCLIAtrributesTemplateHelper(attr, data, ent)
 
+		if attr["size"] == "" {
+			if State.DebugLvl > 0 {
+				l.GetErrorLogger().Println(
+					"User gave invalid size value for creating room")
+				println("Error: Invalid size attribute provided." +
+					" It must be an array/list/vector with 3 elements." +
+					" Please refer to the wiki or manual reference" +
+					" for more details on how to create objects " +
+					"using this syntax")
+			}
+			return nil
+		}
+
 		//Serialise posXY if given
 		if _, ok := attr["posXY"].(string); ok {
 			attr["posXY"] = serialiseAttr(attr, "posXY")
 		} else {
 			attr["posXY"] = serialiseAttr2(attr, "posXY")
+		}
+
+		if attr["posXY"] == "" {
+			if State.DebugLvl > 0 {
+				l.GetErrorLogger().Println(
+					"User gave invalid posXY value for creating room")
+				println("Error: Invalid posXY attribute provided." +
+					" It must be an array/list/vector with 2 elements." +
+					" Please refer to the wiki or manual reference" +
+					" for more details on how to create objects " +
+					"using this syntax")
+			}
+			return nil
 		}
 
 		data["parentId"] = parent["id"]
@@ -2487,7 +2567,11 @@ func serialiseAttr(attr map[string]interface{}, want string) string {
 		if left != -1 && right != -1 {
 			var length int
 			subStr := size[left+1 : right]
-			nums := strings.Split(subStr, ",")
+			nums := stringSplitter(subStr, ",", want)
+			if nums == nil { //Error!
+				return ""
+			}
+			//nums := strings.Split(subStr, ",")
 
 			if len(nums) == 3 && want == "size" {
 				length = 2
@@ -2520,6 +2604,10 @@ func serialiseAttr2(attr map[string]interface{}, want string) string {
 		coords := []string{"x", "y", "z"}
 		var length int
 
+		if isValid := arrayVerifier(&items, want); !isValid {
+			return ""
+		}
+
 		if len(items) == 3 && want == "size" {
 			length = 2
 		} else {
@@ -2548,6 +2636,37 @@ func serialiseAttr2(attr map[string]interface{}, want string) string {
 		}
 	}
 	return newSize
+}
+
+//Auxillary function for serialiseAttr2
+//to help ensure that the arbitrary arrays
+//([]interface{}) are valid before they get serialised
+func arrayVerifier(x *[]interface{}, attribute string) bool {
+	switch attribute {
+	case "size":
+		return len(*x) == 3
+	case "posXY":
+		return len(*x) == 2
+	}
+	return false
+}
+
+//Auxillary function for serialiseAttr
+//to help verify the posXY and size attributes
+//have correct lengths before they get serialised
+func stringSplitter(want, separator, attribute string) []string {
+	arr := strings.Split(want, separator)
+	switch attribute {
+	case "posXY":
+		if len(arr) != 2 {
+			return nil
+		}
+	case "size":
+		if len(arr) != 3 {
+			return nil
+		}
+	}
+	return arr
 }
 
 //This func is used for when the user wants to filter certain
