@@ -58,6 +58,7 @@ var _ = l.GetInfoLogger() //Suppresses annoying Dockerfile build error
        TOK_HIERARCH TOK_DRAWABLE TOK_ENV TOK_ORPH
        TOK_DRAW TOK_SETENV TOK_TRUE TOK_FALSE
        TOK_CAM_MOVE TOK_CAM_WAIT TOK_CAM_TRANSLATE TOK_CAM
+       TOK_DOT
        TOK_UI_DELAY TOK_UI_WIREFRAME TOK_UI_INFOS TOK_UI_DEBUG TOK_UI_HIGHLIGHT TOK_UI TOK_END
        
 %type <n> LSOBJ_COMMAND
@@ -214,6 +215,7 @@ CONCAT_TERM_NOCOL:  TOK_DEREF TOK_LBRAC TOK_WORD TOK_RBRAC {$$=&symbolReferenceN
        | TOK_STR {$$=&strLeaf{$1}}
        | TOK_SLASH {$$=&strLeaf{"/"}}
        | TOK_DOT_DOT {$$=&strLeaf{".."}}
+       | TOK_DOT {$$=&strLeaf{"."}}
 ;
 
 CONCAT_TERM:  CONCAT_TERM_NOCOL {$$=$1}

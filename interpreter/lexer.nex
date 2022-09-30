@@ -50,6 +50,7 @@
 /}/ {  printToks("TOK_RBRAC");return TOK_RBRAC}
 /,/ {  printToks("TOK_COMMA"); return TOK_COMMA}
 /\.\./ {  printToks("TOK_DOT_DOT"); return TOK_DOT_DOT}
+/\./ {printToks("TOK_DOT"); return TOK_DOT}
 /usJn/ {  printToks("TOK_USE_JSON"); return TOK_USE_JSON}
 /partial/ {  printToks("TOK_PARTIAL"); return TOK_PARTIAL}
 /ui.delay/ { printToks("TOK_UI_DELAY"); return TOK_UI_DELAY}
