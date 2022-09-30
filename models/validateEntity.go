@@ -439,7 +439,7 @@ func ValidateEntity(entity int, t map[string]interface{}) (map[string]interface{
 					"Size,Width,Depth (mm) Array should be on payload"), false
 			}
 
-			if _, ok := t["fbxModel"]; !ok {
+			if t["fbxModel"] == nil {
 				return u.Message(false,
 					"fbxModel should be on payload"), false
 			}
@@ -451,7 +451,7 @@ func ValidateEntity(entity int, t map[string]interface{}) (map[string]interface{
 
 			if _, ok := t["slots"]; !ok {
 				return u.Message(false,
-					"fbxModel should be on payload"), false
+					"slots should be on payload"), false
 			}
 
 		} else { //ROOMTMPL
