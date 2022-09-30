@@ -2472,8 +2472,15 @@ func LoadTemplate(data map[string]interface{}, filePath string) {
 		println("Template Loaded")
 	} else {
 		l.GetWarningLogger().Println("Couldn't load template, Status Code :", r.StatusCode, " filePath :", filePath)
+		parsedResp := ParseResponse(r, e, "sending template")
 		if State.DebugLvl > 0 {
 			println("Error template wasn't loaded")
+			if mInf, ok := parsedResp["message"]; ok {
+				if msg, ok := mInf.(string); ok {
+					println(msg)
+				}
+			}
+
 		}
 
 	}
