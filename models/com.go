@@ -11,7 +11,7 @@ func Send(method, URL, key string, data map[string]interface{}) (*http.Response,
 	error) {
 	//Loop because sometimes a
 	//Stream Error occurs
-	//thus give max 200 attempts before returning error
+	//thus give max 400 attempts before returning error
 	sender := func(method, URL, key string, data map[string]interface{}) (*http.Response, error) {
 		client := &http.Client{}
 		dataJSON, _ := json.Marshal(data)
@@ -27,7 +27,7 @@ func Send(method, URL, key string, data map[string]interface{}) (*http.Response,
 			return r, e
 		}
 
-		if i == 200 {
+		if i == 400 {
 			return r, e
 		}
 	}
