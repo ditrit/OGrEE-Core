@@ -94,6 +94,7 @@ stmnt:   TOK_GET PATH {$$=&getObjectNode{$2}}
        | PHYSICAL_PATH TOK_COL TOK_WORD TOK_EQUAL EXPR_NOQUOTE {$$=&updateObjNode{$1, map[string]interface{}{$3:$5}}}
        | PHYSICAL_PATH TOK_COL TOK_WORD TOK_EQUAL ARRAY TOK_ATTRSPEC ARRAY {$$=&specialUpdateNode{$1, $3, $5, $7}}
        | TOK_CD PATH {$$=&cdNode{$2}}
+       | TOK_CD {$$=&cdNode{strLeaf{"/"}}}
        | TOK_LS PATH {$$=&lsNode{$2}}
        | TOK_LS {$$=&lsNode{&pathNode{&strLeaf{"."}, STD}}}
        | LSOBJ_COMMAND PATH {$$=&lsObjNode{$2, $1}}
