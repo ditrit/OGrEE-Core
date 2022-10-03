@@ -11,7 +11,7 @@ import (
 
 func ListEntities(path string) func(string) []string {
 	return func(line string) []string {
-
+		var trimmed string
 		//Instead let's trim to the first instance of whitespace
 		idx := strings.Index(line, " ")
 		if idx == -1 {
@@ -20,11 +20,10 @@ func ListEntities(path string) func(string) []string {
 		idx += 1
 		if line[idx:] == "" {
 			path = c.State.CurrPath
-			//println("DEBUG path is current")
 		} else {
 			path = TrimToSlash(line[idx:])
+			trimmed = line[idx:]
 			if len(line) > idx+1 {
-				trimmed := line[idx:]
 				if len(trimmed) > 2 && trimmed[2:] == ".." || len(trimmed) > 0 && trimmed != "/" {
 					path = c.State.CurrPath + "/" + path
 				}
@@ -32,6 +31,16 @@ func ListEntities(path string) func(string) []string {
 
 			if path == "" {
 				path = c.State.CurrPath
+			}
+
+			//Helps to make autocompletion at the root
+			if trimmed[0] == '/' {
+				if strings.Count(trimmed, "/") > 1 {
+					path = TrimToSlash(trimmed)
+
+				} else {
+					path = "/"
+				}
 			}
 		}
 
