@@ -1,5 +1,5 @@
 USAGE:  lsog   
-Displays system information    
+Displays system and API information    
 
 EXAMPLE   
 

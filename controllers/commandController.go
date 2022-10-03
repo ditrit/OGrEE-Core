@@ -525,6 +525,14 @@ func Clear() {
 
 func LSOG() {
 
+	//Need to add GET /api/version call data here
+	r, e := models.Send("GET", State.APIURL+"/api/version", GetKey(), nil)
+	parsedResp := ParseResponse(r, e, "get API information request")
+
+	fmt.Println("********************************************")
+	fmt.Println("OGREE Shell Information")
+	fmt.Println("********************************************")
+
 	fmt.Println("USER EMAIL:", GetEmail())
 	fmt.Println("API URL:", State.APIURL+"/api/")
 	fmt.Println("UNITY URL:", State.UnityClientURL)
@@ -536,6 +544,30 @@ func LSOG() {
 	fmt.Println("LOG PATH:", "./log.txt")
 	fmt.Println("HISTORY FILE PATH:", State.HistoryFilePath)
 	fmt.Println("DEBUG LEVEL: ", State.DebugLvl)
+
+	if parsedResp != nil {
+		if apiInfo, ok := parsedResp["data"].(map[string]interface{}); ok {
+			fmt.Println("********************************************")
+			fmt.Println("API Information")
+			fmt.Println("********************************************")
+			fmt.Println("BUILD DATE:", apiInfo["BuildDate"].(string))
+			fmt.Println("BUILD TREE:", apiInfo["BuildTree"].(string))
+			fmt.Println("BUILD HASH:", apiInfo["BuildHash"].(string))
+			fmt.Println("COMMIT DATE: ", apiInfo["CommitDate"].(string))
+
+		} else if State.DebugLvl > 1 {
+			msg := "Received invalid response from API on GET /api/version"
+			l.GetWarningLogger().Println(msg)
+			fmt.Println("NOTE: " + msg)
+		}
+
+	} else {
+		if State.DebugLvl > 1 {
+			msg := "Received nil response from API on GET /api/version"
+			l.GetWarningLogger().Println(msg)
+			fmt.Println("NOTE: " + msg)
+		}
+	}
 }
 
 func LSEnterprise() {
