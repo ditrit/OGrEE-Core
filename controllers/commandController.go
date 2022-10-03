@@ -13,6 +13,7 @@ import (
 	"os"
 	"os/exec"
 	"path"
+	"path/filepath"
 	"runtime"
 	"sort"
 	"strconv"
@@ -1115,32 +1116,6 @@ func printAttributeOptions() {
 	}
 }
 
-func tree(base string, prefix string, depth int) {
-	names := FetchNodesAtLevel(base)
-
-	for index, name := range names {
-		/*if name[0] == '.' {
-			continue
-		}*/
-		//subpath := path.Join(base, name)
-		subpath := base + "/" + name
-		//counter.index(subpath)
-
-		if index == len(names)-1 {
-			fmt.Println(prefix+"└──", (name))
-			if depth != 0 {
-				tree(subpath, prefix+"    ", depth-1)
-			}
-
-		} else {
-			fmt.Println(prefix+("├──"), (name))
-			if depth != 0 {
-				tree(subpath, prefix+("│   "), depth-1)
-			}
-		}
-	}
-}
-
 //Function is an abstraction of a normal exit
 func Exit() {
 	//writeHistoryOnExit(&State.sessionBuffer)
@@ -1156,12 +1131,68 @@ func Tree(x string, depth int) {
 		}
 		return
 	}
-	objJSON, _ := GetObject(x, true)
-	if objJSON == nil {
+
+	var path string
+
+	if x == "" || x == "." {
+		println(State.CurrPath)
+		path = State.CurrPath
+	} else if string(x[0]) == "/" {
+		println(x)
+		path = x
+	} else {
+		println(State.CurrPath + "/" + x)
+		path = State.CurrPath + "/" + x
+	}
+
+	path = filepath.Clean(path)
+	tree(path, depth)
+}
+
+func tree(path string, depth int) {
+	arr := strings.Split(path, "/")
+
+	if path == "/" {
+		//RootWalk
+		//if checking "/" doesn't work as intended then
+		//test for arr[0] == "" && arr[1] == "" instead
+		RootWalk(&State.TreeHierarchy, path, depth)
 		return
 	}
-	println(x)
-	tree(x, "", depth)
+
+	switch arr[1] {
+	case "Physical":
+		//Get the Physical Node!
+		physical := FindNodeInTree(&State.TreeHierarchy,
+			StrToStack("/Physical"), true)
+		PhysicalWalk(physical, "", path, depth)
+	case "Logical":
+
+		if len(arr) >= 4 { //This is the threshold
+			return
+		}
+
+		//Get the Logical Node!
+		logi := FindNearestNodeInTree(&State.TreeHierarchy,
+			StrToStack(path), true)
+		LogicalWalk(logi, "", depth)
+
+	case "Organisation":
+
+		if len(arr) >= 4 { //This is the threshold
+			return
+		}
+
+		//Get the Organisation Node!
+		org := FindNearestNodeInTree(&State.TreeHierarchy,
+			StrToStack(path), true)
+
+		OrganisationWalk(org, "", depth)
+	default: //Error! This should never occur
+		println("DEBUG ERROR!")
+		println("DEBUG LEN:", len(arr))
+	}
+
 }
 
 func GetHierarchy(x string, depth int, silence bool) []map[string]interface{} {
@@ -3055,6 +3086,30 @@ func OnlineLevelResolver(path []string) []string {
 	}
 
 	return paths
+}
+
+//Auxillary function to effectively replace
+//OnlineLevelResolver since sending many
+//API requests is a lot less efficient
+
+//For now we will make it work with 'Tree' command
+func OnlineLevelResolver2(path string) []string {
+	path = filepath.Clean(path)
+	println("DEBUG OUR PATH:", path)
+	arr := strings.Split(path, "/")
+	println("DEBUG ARR Length:", len(arr))
+
+	if len(arr) >= 1 {
+		if arr[1] == "Logical" {
+			println("DEBUG Logical detected")
+		} else if arr[1] == "Organisation" {
+			println("DEBUG Organisation detected")
+		} else {
+
+		}
+	}
+
+	return nil
 }
 
 /*
