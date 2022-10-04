@@ -1006,7 +1006,7 @@ func RemoteHierarchyWalk(root map[string]interface{}, prefix string, depth int) 
 	if depth == 0 || root == nil {
 		return
 	}
-	if _, ok := root["children"]; !ok {
+	if infants, ok := root["children"]; !ok || infants == nil {
 		return
 	}
 
