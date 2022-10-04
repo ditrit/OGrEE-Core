@@ -95,6 +95,7 @@ stmnt:   TOK_GET PATH {$$=&getObjectNode{$2}}
        | PHYSICAL_PATH TOK_COL TOK_WORD TOK_EQUAL ARRAY TOK_ATTRSPEC ARRAY {$$=&specialUpdateNode{$1, $3, $5, $7}}
        | TOK_CD PATH {$$=&cdNode{$2}}
        | TOK_CD {$$=&cdNode{strLeaf{"/"}}}
+       | TOK_CD TOK_MINUS {$$=&cdNode{strLeaf{"-"}}}
        | TOK_LS PATH {$$=&lsNode{$2}}
        | TOK_LS {$$=&lsNode{&pathNode{&strLeaf{"."}, STD}}}
        | LSOBJ_COMMAND PATH {$$=&lsObjNode{$2, $1}}
@@ -300,6 +301,7 @@ LSOBJ_COMMAND: TOK_LSTEN {$$=0} | TOK_LSSITE {$$=1} | TOK_LSBLDG {$$=2} | TOK_LS
 
 UI_TOGGLE: TOK_UI_DEBUG{$$="debug"} | TOK_UI_INFOS{$$="infos"} | TOK_UI_WIREFRAME{$$="wireframe"};
 
+//DOCUMENTATION (ie: man pwd)
 COMMAND: TOK_LINK{$$="link"} | TOK_UNLINK{$$="unlink"} | TOK_CLR{$$="clear"} | TOK_LS{$$="ls"}
        | TOK_PWD{$$="pwd"} | TOK_PRNT{$$="print"} | TOK_CD{$$="cd"} | TOK_CAM{$$="camera"} 
        | TOK_UI{$$="ui"} | TOK_GET{$$="get"} | TOK_LSENTERPRISE{$$="lsenterprise"}
