@@ -1002,9 +1002,8 @@ func CD(x string) string {
 		//Do nothing
 	} else if x == "-" {
 		//Change to previous path
-		tmp := State.CurrPath
-		State.CurrPath = State.PrevPath
-		State.PrevPath = tmp
+		State.CurrPath, State.PrevPath = State.PrevPath, State.CurrPath
+
 	} else if strings.Count(x, "/") >= 1 {
 		exist := false
 		var pth string
