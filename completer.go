@@ -266,7 +266,7 @@ func GetPrefixCompleter() *readline.PrefixCompleter {
 			readline.PcItem("lsenterprise", false),
 			readline.PcItem("lsu", false),
 			readline.PcItem("create", false),
-			readline.PcItem("gt", false),
+			readline.PcItem("get", false),
 			readline.PcItem("getu", false),
 			readline.PcItem("getslot", false),
 			readline.PcItem("update", false),
@@ -343,7 +343,7 @@ func GetPrefixCompleter() *readline.PrefixCompleter {
 			readline.PcItem("room_template", false),
 		),
 
-		readline.PcItem("gt", true,
+		readline.PcItem("get", true,
 			readline.PcItem("tenant", false),
 			readline.PcItem("site", false),
 			readline.PcItem("building", false),

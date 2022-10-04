@@ -1078,7 +1078,7 @@ func CD(x string) string {
 func Help(entry string) {
 	var path string
 	switch entry {
-	case "ls", "lsu", "pwd", "print", "cd", "tree", "create", "gt", "clear",
+	case "ls", "lsu", "pwd", "print", "cd", "tree", "create", "get", "clear",
 		"update", "delete", "lsog", "grep", "for", "while", "if", "env",
 		"cmds", "var", "unset", "select", "camera", "ui", "hc", "drawable",
 		"link", "unlink", "draw", "lsslot", "getu", "getslot",
