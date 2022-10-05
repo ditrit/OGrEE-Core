@@ -253,10 +253,7 @@ func (n *loadNode) execute() (interface{}, error) {
 	if !ok {
 		return nil, fmt.Errorf("Path should be a string")
 	}
-	err = cmd.LoadFile(path, InterpretLine)
-	if err != nil {
-		return nil, err
-	}
+	cmd.LoadFile(path)
 	return nil, nil
 }
 

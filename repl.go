@@ -10,14 +10,11 @@ package main
 // questions/33025599/move-the-cursor-in-a-c-program
 
 import (
-	"bufio"
 	c "cli/controllers"
 	l "cli/logger"
-	p "cli/preprocessor"
 	"cli/readline"
 	"fmt"
 	"os"
-	"path/filepath"
 	"strings"
 )
 
@@ -42,108 +39,6 @@ func InterpretLine(str *string) bool {
 		}
 	}
 	return true
-}
-
-func validateFile(comBuf *[]map[string]int, file string) bool {
-	invalidCommands := []string{}
-	for i := range *comBuf {
-		for k := range (*comBuf)[i] {
-			lex := NewLexer(strings.NewReader(k))
-			if yyAnalyse(lex) != 0 {
-				invalidCommands = append(invalidCommands,
-					" LINE#: "+k)
-			}
-		}
-	}
-
-	if len(invalidCommands) > 0 {
-		println("Syntax errors were found in the file: ", file)
-		println("The following commands were invalid")
-		for i := range invalidCommands {
-			println(invalidCommands[i])
-		}
-		return false
-	}
-	return true
-}
-
-func executeFile(comBuf *[]map[string]int, file string) {
-	for i := range *comBuf {
-		for st := range (*comBuf)[i] {
-			c.State.LineNumber = (*comBuf)[i][st]
-			if InterpretLine(&st) == false {
-				//println("Command: ", st)
-				return
-			}
-		}
-	}
-}
-
-func loadFile(path string) {
-	originalPath := path
-	newBackup := p.ProcessFile(path, c.State.DebugLvl)
-	file, err := os.Open(newBackup)
-	if err != nil {
-		if c.State.DebugLvl > 0 {
-			println("Error:", err.Error())
-		}
-
-		l.GetWarningLogger().Println("Error:", err)
-	}
-	defer file.Close()
-	fullcom := ""
-	keepScanning := false
-	scanner := bufio.NewScanner(file)
-	c.State.LineNumber = 1 //Indicate Line Number
-	commandBuffer := []map[string]int{}
-
-	for scanner.Scan() {
-		x := scanner.Text()
-		if len(x) > 0 {
-			if commentIdx := strings.Index(x, "//"); commentIdx != -1 { //Comment found
-				fullcom += x[:commentIdx]
-			} else if string(x[len(x)-1]) == "\\" {
-				fullcom += x
-				keepScanning = true
-			} else if keepScanning == true {
-				fullcom += x
-				//InterpretLine(&fullcom)
-				commandBuffer = append(commandBuffer,
-					map[string]int{fullcom: c.State.LineNumber})
-				keepScanning = false
-				fullcom = ""
-			} else {
-				//InterpretLine(&x)
-				commandBuffer = append(commandBuffer,
-					map[string]int{x: c.State.LineNumber})
-			}
-		}
-
-		if originalPath != c.State.ScriptPath { //Nested Execution
-			loadFile(c.State.ScriptPath)
-			c.State.ScriptPath = originalPath
-		}
-
-		c.State.LineNumber++ //Increment
-	}
-
-	//Validate the commandbuffer
-	fName := filepath.Base(path)
-	if c.State.Analyser == true {
-		if validateFile(&commandBuffer, fName) == true {
-			executeFile(&commandBuffer, fName)
-		}
-	} else {
-		executeFile(&commandBuffer, fName)
-	}
-
-	ResetStateScriptData()
-}
-
-func ResetStateScriptData() {
-	//Reset
-	c.State.LineNumber = 0
-	c.State.ScriptCalled = false
 }
 
 //Init the Shell
@@ -185,9 +80,10 @@ func Start(flags map[string]interface{}) {
 	//Execute Script if provided as arg and exit
 	if flags["script"] != "" {
 		if strings.Contains(flags["script"].(string), ".ocli") {
+			script := flags["script"].(string)
 			c.State.ScriptCalled = true
-			c.State.ScriptPath = flags["script"].(string)
-			loadFile(flags["script"].(string))
+			c.State.ScriptPath = script
+			LoadFile(script)
 			os.Exit(0)
 		}
 	}
@@ -202,7 +98,7 @@ func Repl(rl *readline.Instance, user string) {
 		if c.State.ScriptCalled == true {
 			//Load the path and
 			//call interpret line
-			loadFile(c.State.ScriptPath)
+			LoadFile(c.State.ScriptPath)
 			c.State.ScriptCalled = false
 		} else {
 			line, err := rl.Readline()
