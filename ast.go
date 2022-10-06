@@ -513,6 +513,39 @@ func (n *specialUpdateNode) execute() (interface{}, error) {
 		}
 		return cmd.UpdateObj(path, "", "", attributes, false)
 	} else if n.variable == "separator" {
+
+		startLen := len(first.([]interface{}))
+		endLen := len(second.([]interface{}))
+
+		errorResponder := func(attr string, multi bool) (interface{}, error) {
+			var errorMsg string
+			if multi {
+				errorMsg = "Invalid " + attr + " attributes provided." +
+					" They must be arrays/lists/vectors with 2 elements."
+			} else {
+				errorMsg = "Invalid " + attr + " attribute provided." +
+					" It must be an array/list/vector with 2 elements."
+			}
+
+			segment := " Please refer to the wiki or manual reference" +
+				" for more details on how to create objects " +
+				"using this syntax"
+
+			return nil, fmt.Errorf(errorMsg + segment)
+		}
+
+		if startLen != 2 && endLen == 2 {
+			return errorResponder("starting position", false)
+		}
+
+		if endLen != 2 && startLen == 2 {
+			return errorResponder("ending position", false)
+		}
+
+		if startLen != 2 && endLen != 2 {
+			return errorResponder("starting and ending position", true)
+		}
+
 		obj, _ := cmd.GetObject(path, true)
 		if obj == nil {
 			return nil, fmt.Errorf("cannot find object")
