@@ -74,7 +74,7 @@
 /room|ro/ {  printToks("TOK_ROOM");lval.s = yylex.Text();return TOK_ROOM}
 /rack|rk/ {  printToks("TOK_RACK");lval.s = yylex.Text();return TOK_RACK}
 /device|dv/ {  printToks("TOK_DEVICE");lval.s = yylex.Text();return TOK_DEVICE}
-/group|gp/ {  printToks("TOK_GROUP");lval.s = yylex.Text();return TOK_GROUP}
+/group|gr/ {  printToks("TOK_GROUP");lval.s = yylex.Text();return TOK_GROUP}
 /corridor|co/ {  printToks("TOK_CORIDOR");lval.s = yylex.Text();return TOK_CORIDOR}
 /ac/ {  printToks("TOK_AC");lval.s = yylex.Text();return TOK_AC}
 /panel|pn/ {  printToks("TOK_PANEL");lval.s = yylex.Text();return TOK_PANEL}
