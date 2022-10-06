@@ -1618,17 +1618,13 @@ func GetOCLIAtrributes(Path string, ent int, data map[string]interface{}) error 
 		data["attributes"] = attr
 		_, err = PostObj(ent, "device", data)
 
-	case CORIDOR, GROUP:
+	case CORIDOR:
 		//name, category, domain, pid
 
 		data["domain"] = domain
 		data["parentId"] = parent["id"]
 
-		if ent == CORIDOR {
-			PostObj(ent, "corridor", data)
-		} else {
-			_, err = PostObj(ent, "group", data)
-		}
+		PostObj(ent, "corridor", data)
 
 	case STRAYSENSOR:
 		attr = data["attributes"].(map[string]interface{})
