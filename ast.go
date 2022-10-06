@@ -4,6 +4,7 @@ import (
 	"bytes"
 	cmd "cli/controllers"
 	"fmt"
+	"path/filepath"
 )
 
 var dynamicSymbolTable = make(map[string]interface{})
@@ -848,20 +849,23 @@ func (n *createGroupNode) execute() (interface{}, error) {
 	if !ok {
 		return nil, fmt.Errorf("Path should be a string")
 	}
-	var paths []string
+	var objs []string
+	data := map[string]interface{}{}
 	for i := range n.paths {
 		v, err := n.paths[i].execute()
 		if err != nil {
 			return nil, err
 		}
-		path, ok := v.(string)
+		obj, ok := v.(string)
 		if !ok {
 			return nil, fmt.Errorf("")
 		}
-		paths = append(paths, path)
+		obj = filepath.Base(obj)
+		objs = append(objs, obj)
 	}
-	attributes := map[string]interface{}{"racks": paths}
-	err = cmd.GetOCLIAtrributes(path, cmd.GROUP, attributes)
+
+	data["attributes"] = map[string]interface{}{"content": objs}
+	err = cmd.GetOCLIAtrributes(path, cmd.GROUP, data)
 	if err != nil {
 		return nil, err
 	}
