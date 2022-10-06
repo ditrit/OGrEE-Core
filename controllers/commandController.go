@@ -13,7 +13,6 @@ import (
 	"os"
 	"os/exec"
 	"path"
-	"path/filepath"
 	"runtime"
 	"sort"
 	"strconv"
@@ -1163,21 +1162,21 @@ func Tree(x string, depth int) {
 		return
 	}
 
-	var path string
+	var Path string
 
 	if x == "" || x == "." {
 		println(State.CurrPath)
-		path = State.CurrPath
+		Path = State.CurrPath
 	} else if string(x[0]) == "/" {
 		println(x)
-		path = x
+		Path = x
 	} else {
 		println(State.CurrPath + "/" + x)
-		path = State.CurrPath + "/" + x
+		Path = State.CurrPath + "/" + x
 	}
 
-	path = filepath.Clean(path)
-	tree(path, depth)
+	Path = path.Clean(Path)
+	tree(Path, depth)
 }
 
 func tree(path string, depth int) {
@@ -3117,30 +3116,6 @@ func OnlineLevelResolver(path []string) []string {
 	}
 
 	return paths
-}
-
-//Auxillary function to effectively replace
-//OnlineLevelResolver since sending many
-//API requests is a lot less efficient
-
-//For now we will make it work with 'Tree' command
-func OnlineLevelResolver2(path string) []string {
-	path = filepath.Clean(path)
-	println("DEBUG OUR PATH:", path)
-	arr := strings.Split(path, "/")
-	println("DEBUG ARR Length:", len(arr))
-
-	if len(arr) >= 1 {
-		if arr[1] == "Logical" {
-			println("DEBUG Logical detected")
-		} else if arr[1] == "Organisation" {
-			println("DEBUG Organisation detected")
-		} else {
-
-		}
-	}
-
-	return nil
 }
 
 /*
