@@ -4,6 +4,7 @@ import (
 	"bytes"
 	cmd "cli/controllers"
 	"fmt"
+	"strings"
 )
 
 var dynamicSymbolTable = make(map[string]interface{})
@@ -697,6 +698,34 @@ func (n *unsetVarNode) execute() (interface{}, error) {
 		return nil, fmt.Errorf("unset option needed (-v or -f)")
 	}
 	return nil, nil
+}
+
+type unsetAttrNode struct {
+	path node
+}
+
+func (n *unsetAttrNode) execute() (interface{}, error) {
+	val, err := n.path.execute()
+	if err != nil {
+		return nil, err
+	}
+	path, ok := val.(string)
+	if !ok {
+		return nil, fmt.Errorf("Path should be a string")
+	}
+	arr := strings.Split(path, ":")
+	if len(arr) != 2 {
+		msg := "You must specify the attribute to delete with a colon!\n" +
+			"(ie. $> unset path/to/object:attributex). \n" +
+			"Please refer to the language reference help for more details" +
+			"\n($> man unset)"
+		return nil, fmt.Errorf(msg)
+	}
+	path = arr[0]
+	data := map[string]interface{}{arr[1]: nil}
+
+	return cmd.UpdateObj(path, "", "", data, true)
+
 }
 
 type setEnvNode struct {
