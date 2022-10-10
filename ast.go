@@ -3,6 +3,7 @@ package main
 import (
 	"bytes"
 	cmd "cli/controllers"
+	"encoding/json"
 	"fmt"
 )
 
@@ -554,13 +555,28 @@ func (n *specialUpdateNode) execute() (interface{}, error) {
 		var sepArray []interface{}
 		separators, ok := attr["separators"]
 		if ok {
-			sepArray = separators.([]interface{})
+			if _, ok := separators.([]interface{}); ok {
+				sepArray = separators.([]interface{})
+				sepArray = append(sepArray, map[string]interface{}{
+					"startPosXYm": first, "endPosXYm": second})
+
+				sepArrStr, _ := json.Marshal(&sepArray)
+				attr["separators"] = string(sepArrStr)
+			} else { //It is string
+				sepStr := separators.(string)
+				size := len(sepStr)
+
+				nextSep := map[string]interface{}{
+					"startPosXYm": first, "endPosXYm": second}
+
+				nextSepStr, _ := json.Marshal(nextSep)
+				sepStr = sepStr[:size-2] + "," + string(nextSepStr) + "]"
+				attr["separators"] = sepStr
+			}
 		}
-		sepArray = append(sepArray, map[string]interface{}{"startPosXYm": first, "endPosXYm": second})
-		attr["separators"] = sepArray
 		return cmd.UpdateObj(path, "", "", attr, false)
 	} else {
-		return nil, fmt.Errorf("Invalid special update")
+		return nil, fmt.Errorf("Invalid attribute specified for room update")
 	}
 }
 
