@@ -2,6 +2,7 @@ package models
 
 import (
 	u "p3/utils"
+	"strings"
 
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -237,6 +238,7 @@ func ValidateEntity(entity int, t map[string]interface{}) (map[string]interface{
 		}
 
 		//Check if Parent ID is valid
+		//modifies the parentId -> objID(parentID) if valid
 		r, ok := validateParent(u.EntityToString(entity), entity, t)
 		if !ok {
 			return r, ok
@@ -244,7 +246,7 @@ func ValidateEntity(entity int, t map[string]interface{}) (map[string]interface{
 
 		if entity < AC || entity == PWRPNL ||
 			entity == GROUP || entity == ROOMTMPL ||
-			entity == OBJTMPL {
+			entity == OBJTMPL || entity == CORIDOR {
 			if _, ok := t["attributes"]; !ok {
 				return u.Message(false, "Attributes should be on the payload"), false
 			} else {
@@ -409,6 +411,70 @@ func ValidateEntity(entity int, t map[string]interface{}) (map[string]interface{
 							}
 						}
 
+					case CORIDOR:
+						//Ensure the temperature and 2 racks are valid
+						if !IsString(v["temperature"]) {
+							msg := "The temperature must be on the " +
+								"payload and can only be a string value 'cold' or 'warm'"
+							return u.Message(false, msg), false
+						}
+						if !StringIsAmongValues(v["temperature"].(string), []string{"warm", "cold"}) {
+							msg := "The temperature must be on the " +
+								"payload and can only be 'cold' or 'warm'"
+							return u.Message(false, msg), false
+						}
+
+						if !IsString(v["content"]) {
+							msg := "The racks must be on the payload and have the key:" +
+								"'content' "
+							return u.Message(false, msg), false
+						}
+
+						racks := strings.Split(v["content"].(string), ",")
+						if len(racks) != 2 {
+							msg := "2 racks separated by a comma must be on the payload"
+							return u.Message(false, msg), false
+						}
+
+						//Fetch the 2 racks and ensure they exist
+						ctx, cancel := u.Connect()
+						filter := bson.M{"_id": t["parentId"], "name": racks[0]}
+						orReq := bson.A{bson.D{{"name", racks[0]}}, bson.D{{"name", racks[1]}}}
+						ans := bson.D{}
+
+						filter = bson.M{"parentId": t["parentId"], "$or": orReq}
+						res, e := GetDB().Collection("rack").Find(ctx, filter)
+						defer cancel()
+						if e != nil {
+							msg := "The racks you specified were not found." +
+								" Please verify your input and try again"
+							println(e.Error())
+							return u.Message(false, msg), false
+						}
+
+						//No need to remove '_id' so we can skip calling
+						//ExtractCursor auxillary func
+						res.All(ctx, &ans)
+
+						if len(ans) != 2 {
+							//Request possibly mentioned same racks
+							//thus giving length of 1
+							if !(len(ans) == 1 && racks[0] == racks[1]) {
+								msg := "Unable to get the racks. Please check your inventory and try again"
+								println("LENGTH OF RACK CHECK:", len(ans))
+								println("CORRIDOR PARENTID: ", t["parentId"].(string))
+								return u.Message(false, msg), false
+							}
+
+						}
+
+						//Set the color manually based on temp. as specified by client
+						if v["temperature"] == "warm" {
+							v["color"] = "990000"
+						} else if v["temperature"] == "cold" {
+							v["color"] = "000099"
+						}
+
 					}
 				}
 			}
@@ -514,4 +580,21 @@ func ValidateEntity(entity int, t map[string]interface{}) (map[string]interface{
 
 	//Successfully validated the Object
 	return u.Message(true, "success"), true
+}
+
+//Auxillary Functions
+func StringIsAmongValues(x string, values []string) bool {
+	for i := range values {
+		if x == values[i] {
+			return true
+		}
+	}
+	return false
+}
+
+func IsString(x interface{}) bool {
+	if _, ok := x.(string); ok {
+		return true
+	}
+	return false
 }
