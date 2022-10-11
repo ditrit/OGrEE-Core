@@ -887,7 +887,7 @@ func (n *createCorridor) execute() (interface{}, error) {
 		return nil, err2
 	}
 
-	rightRack, err3 := AssertString(&n.leftRack, "Path for right rack")
+	rightRack, err3 := AssertString(&n.rightRack, "Path for right rack")
 	if err3 != nil {
 		return nil, err3
 	}
