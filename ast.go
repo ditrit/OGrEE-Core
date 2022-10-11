@@ -73,6 +73,7 @@ func (n *funcCallNode) execute() (interface{}, error) {
 	return body.execute()
 }
 
+//At this time arrays are all []floats
 type arrNode struct {
 	nodes []node
 }
@@ -959,17 +960,17 @@ func (n *cameraMoveNode) execute() (interface{}, error) {
 	if err != nil {
 		return nil, err
 	}
-	position, ok := posVal.([]float64)
-	if !ok {
-		return nil, fmt.Errorf("OGREE: Error, command args are invalid\nPlease provide a vector3 and a vector2")
+	position, ok := posVal.([]interface{})
+	if !ok || len(position) != 3 {
+		return nil, fmt.Errorf("Position (first argument) is invalid\nPlease provide a vector3")
 	}
 	rotVal, err := n.rotation.execute()
 	if err != nil {
 		return nil, err
 	}
-	rotation, ok := rotVal.([]float64)
-	if !ok {
-		return nil, fmt.Errorf("OGREE: Error, command args are invalid\nPlease provide a vector3 and a vector2")
+	rotation, ok := rotVal.([]interface{})
+	if !ok || len(rotation) != 2 {
+		return nil, fmt.Errorf("Rotation (second argument) is invalid\nPlease provide a vector2")
 	}
 	cmd.CameraMove(n.command, position, rotation)
 	return nil, nil
