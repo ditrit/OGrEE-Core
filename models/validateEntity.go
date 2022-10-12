@@ -24,23 +24,52 @@ func validateParent(ent string, entNum int, t map[string]interface{}) (map[strin
 		return u.Message(false, "ParentID is not valid"), false
 	}
 
+	parent := map[string]interface{}{"parent": ""}
 	switch entNum {
 	case DEVICE:
 		x, _ := GetEntity(bson.M{"_id": objID}, "rack")
-		y, _ := GetEntity(bson.M{"_id": objID}, "device")
-		if x == nil && y == nil {
-			return u.Message(false,
-				"ParentID should be correspond to Existing ID"), false
+		if x != nil {
+			parent["parent"] = "rack"
+			return parent, true
 		}
+
+		y, _ := GetEntity(bson.M{"_id": objID}, "device")
+		if y != nil {
+			parent["parent"] = "device"
+			return parent, true
+		}
+
+		return u.Message(false,
+			"ParentID should be correspond to Existing ID"), false
+
 	case SENSOR, GROUP:
 		w, _ := GetEntity(bson.M{"_id": objID}, "device")
-		x, _ := GetEntity(bson.M{"_id": objID}, "rack")
-		y, _ := GetEntity(bson.M{"_id": objID}, "room")
-		z, _ := GetEntity(bson.M{"_id": objID}, "building")
-		if w == nil && x == nil && y == nil && z == nil {
-			return u.Message(false,
-				"ParentID should be correspond to Existing ID"), false
+		if w != nil {
+			parent["parent"] = "device"
+			return parent, true
 		}
+
+		x, _ := GetEntity(bson.M{"_id": objID}, "rack")
+		if x != nil {
+			parent["parent"] = "rack"
+			return parent, true
+		}
+
+		y, _ := GetEntity(bson.M{"_id": objID}, "room")
+		if y != nil {
+			parent["parent"] = "room"
+			return parent, true
+		}
+
+		z, _ := GetEntity(bson.M{"_id": objID}, "building")
+		if z != nil {
+			parent["parent"] = "building"
+			return parent, true
+		}
+
+		return u.Message(false,
+			"ParentID should be correspond to Existing ID"), false
+
 	case STRAYDEV, STRAYSENSOR:
 		if t["parentId"] != nil && t["parentId"] != "" {
 			if pid, ok := t["parentId"].(string); ok {
@@ -224,7 +253,7 @@ func ValidateEntity(entity int, t map[string]interface{}) (map[string]interface{
 	*/
 	switch entity {
 	case TENANT, SITE, BLDG, ROOM, RACK, DEVICE, AC,
-		PWRPNL, CABINET, CORIDOR, SENSOR:
+		PWRPNL, CABINET, CORIDOR, SENSOR, GROUP:
 		if t["name"] == nil || t["name"] == "" {
 			return u.Message(false, "Name should be on payload"), false
 		}
@@ -238,7 +267,8 @@ func ValidateEntity(entity int, t map[string]interface{}) (map[string]interface{
 		}
 
 		//Check if Parent ID is valid
-		//modifies the parentId -> objID(parentID) if valid
+		//returns a map[string]interface{} to hold parent entity
+		//if parent found
 		r, ok := validateParent(u.EntityToString(entity), entity, t)
 		if !ok {
 			return r, ok
@@ -475,6 +505,68 @@ func ValidateEntity(entity int, t map[string]interface{}) (map[string]interface{
 							v["color"] = "000099"
 						}
 
+					case GROUP:
+						if !IsString(v["content"]) {
+							msg := "The objects to be grouped must be on the payload," +
+								" separated by a comma and have the key:" +
+								"'content' "
+							return u.Message(false, msg), false
+						}
+
+						objects := strings.Split(v["content"].(string), ",")
+						if len(objects) <= 1 {
+							if objects[0] == "" {
+								msg := "objects separated by a comma must be" +
+									" on the payload"
+								return u.Message(false, msg), false
+							}
+
+						}
+
+						//Ensure objects are all unique
+						if _, ok := EnsureUnique(objects); !ok {
+							msg := "The group cannot have duplicate objects"
+							return u.Message(false, msg), false
+						}
+
+						//Ensure objects all exist
+						orReq := bson.A{}
+						for i := range objects {
+							orReq = append(orReq, bson.D{{"name", objects[i]}})
+						}
+						filter := bson.M{"parentId": t["parentId"], "$or": orReq}
+
+						//If parent is rack, retrieve devices
+						if r["parent"].(string) == "rack" {
+							ans, ok := GetManyEntities("device", filter, nil)
+							if ok != "" {
+								return u.Message(false, ok), false
+							}
+							if len(ans) != len(objects) {
+								msg := "Unable to verify objects in specified group" +
+									" please check and try again"
+								return u.Message(false, msg), false
+							}
+
+						} else if r["parent"].(string) == "room" {
+
+							//If parent is room, retrieve corridors and racks
+							corridors, e1 := GetManyEntities("corridor", filter, nil)
+							if e1 != "" {
+								return u.Message(false, e1), false
+							}
+
+							racks, e2 := GetManyEntities("rack", filter, nil)
+							if e2 != "" {
+								return u.Message(false, e1), false
+							}
+							if len(racks)+len(corridors) != len(objects) {
+								msg := "Some object(s) could be not be found. " +
+									"Please check and try again"
+								return u.Message(false, msg), false
+							}
+						}
+
 					}
 				}
 			}
@@ -551,10 +643,6 @@ func ValidateEntity(entity int, t map[string]interface{}) (map[string]interface{
 					"Tiles should be on payload"), false
 			}
 		}
-	case GROUP:
-		if t["name"] == "" || t["name"] == nil {
-			return u.Message(false, "Name should be on payload"), false
-		}
 
 	case STRAYDEV, STRAYSENSOR:
 		//Check for parent if PID provided
@@ -583,6 +671,17 @@ func ValidateEntity(entity int, t map[string]interface{}) (map[string]interface{
 }
 
 //Auxillary Functions
+func EnsureUnique(x []string) (string, bool) {
+	dict := map[string]int{}
+	for _, item := range x {
+		dict[item]++
+		if dict[item] > 1 {
+			return item, false
+		}
+	}
+	return "", true
+}
+
 func StringIsAmongValues(x string, values []string) bool {
 	for i := range values {
 		if x == values[i] {
