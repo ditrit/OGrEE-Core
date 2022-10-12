@@ -5,8 +5,6 @@ package main
 import (
 	"bufio"
 	c "cli/controllers"
-	l "cli/logger"
-	p "cli/preprocessor"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -51,19 +49,13 @@ func ExecuteFile(comBuf *[]map[string]int, file string) {
 
 func LoadFile(path string) {
 	originalPath := path
-	newBackup := p.ProcessFile(path, c.State.DebugLvl)
-	file, err := os.Open(newBackup)
+	file, err := os.Open(originalPath)
 	if err != nil {
 		if c.State.DebugLvl > 0 {
 			println("Error:", err.Error())
 		}
-
-		l.GetWarningLogger().Println("Error:", err)
-		return
 	}
-	defer file.Close()
-	fullcom := ""
-	keepScanning := false
+
 	scanner := bufio.NewScanner(file)
 	c.State.LineNumber = 1 //Indicate Line Number
 	commandBuffer := []map[string]int{}
@@ -71,32 +63,14 @@ func LoadFile(path string) {
 	for scanner.Scan() {
 		x := scanner.Text()
 		if len(x) > 0 {
-			if commentIdx := strings.Index(strings.TrimSpace(x), "//"); commentIdx != -1 { //Comment found
-				if commentIdx != 0 { //Ignore the entire line if == 0
-					commandBuffer = append(commandBuffer,
-						map[string]int{x[:commentIdx]: c.State.LineNumber})
-				}
-			} else if string(x[len(x)-1]) == "\\" {
-				fullcom += x
-				keepScanning = true
-			} else if keepScanning == true {
-				fullcom += x
-				//InterpretLine(&fullcom)
-				commandBuffer = append(commandBuffer,
-					map[string]int{fullcom: c.State.LineNumber})
-				keepScanning = false
-				fullcom = ""
-			} else {
-				//InterpretLine(&x)
-				commandBuffer = append(commandBuffer,
-					map[string]int{x: c.State.LineNumber})
-			}
+			commandBuffer = append(commandBuffer,
+				map[string]int{x: c.State.LineNumber})
 		}
 
-		if originalPath != c.State.ScriptPath { //Nested Execution
-			LoadFile(c.State.ScriptPath)
-			c.State.ScriptPath = originalPath
-		}
+		//if originalPath != c.State.ScriptPath { //Nested Execution
+		//	LoadFile(c.State.ScriptPath)
+		//	c.State.ScriptPath = originalPath
+		//}
 
 		c.State.LineNumber++ //Increment
 	}
