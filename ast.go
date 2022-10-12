@@ -553,27 +553,31 @@ func (n *specialUpdateNode) execute() (interface{}, error) {
 		}
 		attr := obj["attributes"].(map[string]interface{})
 		var sepArray []interface{}
-		separators, ok := attr["separators"]
-		if ok {
-			if _, ok := separators.([]interface{}); ok {
-				sepArray = separators.([]interface{})
-				sepArray = append(sepArray, map[string]interface{}{
-					"startPosXYm": first, "endPosXYm": second})
+		separators, _ := attr["separators"]
+		if IsInfArr(separators) {
+			sepArray = separators.([]interface{})
+			sepArray = append(sepArray, map[string]interface{}{
+				"startPosXYm": first, "endPosXYm": second})
 
-				sepArrStr, _ := json.Marshal(&sepArray)
-				attr["separators"] = string(sepArrStr)
-			} else { //It is string
-				sepStr := separators.(string)
+			sepArrStr, _ := json.Marshal(&sepArray)
+			attr["separators"] = string(sepArrStr)
+		} else {
+			var sepStr string
+			nextSep := map[string]interface{}{
+				"startPosXYm": first, "endPosXYm": second}
+
+			nextSepStr, _ := json.Marshal(nextSep)
+			if IsString(separators) {
+				sepStr = separators.(string)
 				size := len(sepStr)
-
-				nextSep := map[string]interface{}{
-					"startPosXYm": first, "endPosXYm": second}
-
-				nextSepStr, _ := json.Marshal(nextSep)
-				sepStr = sepStr[:size-2] + "," + string(nextSepStr) + "]"
-				attr["separators"] = sepStr
+				sepStr = sepStr[:size-1] + "," + string(nextSepStr) + "]"
+			} else {
+				sepStr = "[" + string(nextSepStr) + "]"
 			}
+
+			attr["separators"] = sepStr
 		}
+
 		return cmd.UpdateObj(path, "", "", attr, false)
 	} else {
 		return nil, fmt.Errorf("Invalid attribute specified for room update")
