@@ -45,7 +45,6 @@
 /.cmds/ {  printToks("TOK_CMDS"); return TOK_CMDS}
 /.template/ {  printToks("TOK_TEMPLATE"); return TOK_TEMPLATE}
 /.var/ {  printToks("TOK_VAR");return TOK_VAR}
-/.env/ {  printToks("TOK_SETENV");return TOK_SETENV}
 /{/ {  printToks("TOK_LBRAC");return TOK_LBRAC}
 /}/ {  printToks("TOK_RBRAC");return TOK_RBRAC}
 /,/ {  printToks("TOK_COMMA"); return TOK_COMMA}

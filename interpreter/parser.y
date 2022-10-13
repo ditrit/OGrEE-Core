@@ -122,7 +122,7 @@ stmnt:   TOK_GET PATH {$$=&getObjectNode{$2}}
        
        | TOK_DRAWABLE {$$=&isEntityDrawableNode{&pathNode{&strLeaf{"."}, STD}}}
        | TOK_DRAWABLE PATH {$$=&isEntityDrawableNode{$2}}
-       | TOK_SETENV TOK_WORD TOK_EQUAL EXPR_NOQUOTE {$$=&setEnvNode{$2, $4}}
+       | TOK_ENV TOK_WORD TOK_EQUAL EXPR_NOQUOTE {$$=&setEnvNode{$2, $4}}
        | TOK_PLUS OCCR {$$=$2}
        | TOK_MINUS PATH {$$=&deleteObjNode{$2}}
        | TOK_MINUS TOK_SELECT {$$=&deleteSelectionNode{}}     

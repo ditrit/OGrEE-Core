@@ -2583,17 +2583,22 @@ func Print(a []interface{}) string {
 
 func SetEnv(arg string, val interface{}) {
 	switch arg {
-	case "Filter":
+	case "Filter", "Unity":
 		if _, ok := val.(bool); !ok {
-			msg := "Can only assign bool values for Filter Env Var"
+			msg := "Can only assign bool values for " + arg + " Env Var"
 			l.GetWarningLogger().Println(msg)
 			if State.DebugLvl > 0 {
 				println(msg)
 			}
 
 		} else {
-			State.FilterDisplay = val.(bool)
-			println("Filter Display Environment variable set")
+			if arg == "Unity" {
+				State.UnityClientAvail = val.(bool)
+			} else if arg == "Filter" {
+				State.FilterDisplay = val.(bool)
+			}
+
+			println(arg + " Display Environment variable set")
 		}
 
 	case "Analyser":
