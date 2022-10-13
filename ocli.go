@@ -43,6 +43,11 @@ func ExecuteFile(comBuf *[]map[string]int, file string) {
 				//println("Command: ", st)
 				return
 			}
+
+			if file != c.State.ScriptPath { //Nested Execution
+				LoadFile(c.State.ScriptPath)
+				c.State.ScriptPath = file
+			}
 		}
 	}
 }
@@ -67,11 +72,6 @@ func LoadFile(path string) {
 				map[string]int{x: c.State.LineNumber})
 		}
 
-		//if originalPath != c.State.ScriptPath { //Nested Execution
-		//	LoadFile(c.State.ScriptPath)
-		//	c.State.ScriptPath = originalPath
-		//}
-
 		c.State.LineNumber++ //Increment
 	}
 
@@ -79,7 +79,8 @@ func LoadFile(path string) {
 	fName := filepath.Base(path)
 	if c.State.Analyser == true {
 		if ValidateFile(&commandBuffer, fName) == true {
-			ExecuteFile(&commandBuffer, fName)
+			c.State.ScriptCalled = false
+			ExecuteFile(&commandBuffer, path)
 		}
 	} else {
 		ExecuteFile(&commandBuffer, fName)
