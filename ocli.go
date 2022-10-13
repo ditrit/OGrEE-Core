@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"strconv"
 	"strings"
 )
 
@@ -18,7 +19,7 @@ func ValidateFile(comBuf *[]map[string]int, file string) bool {
 			lex := NewLexer(strings.NewReader(k))
 			if yyAnalyse(lex) != 0 {
 				invalidCommands = append(invalidCommands,
-					" LINE#: "+k)
+					" LINE#: "+strconv.Itoa((*comBuf)[i][k])+"\t"+"COMMAND:"+k)
 			}
 		}
 	}
@@ -50,6 +51,7 @@ func ExecuteFile(comBuf *[]map[string]int, file string) {
 			}
 		}
 	}
+
 }
 
 func LoadFile(path string) {
@@ -59,6 +61,7 @@ func LoadFile(path string) {
 		if c.State.DebugLvl > 0 {
 			println("Error:", err.Error())
 		}
+		return
 	}
 
 	scanner := bufio.NewScanner(file)
@@ -83,7 +86,7 @@ func LoadFile(path string) {
 			ExecuteFile(&commandBuffer, path)
 		}
 	} else {
-		ExecuteFile(&commandBuffer, fName)
+		ExecuteFile(&commandBuffer, path)
 	}
 
 	ResetStateScriptData()
