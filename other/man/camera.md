@@ -1,4 +1,4 @@
-USAGE:  camera . [UnityATTRIBUTE]=[VALUE]   
+USAGE:  camera.[UnityATTRIBUTE]=[VALUE]   
 
 Sends a command to the Unity Client to adjust the camera by 'UnityATTRIBUTE' according to 'VALUE'   
 

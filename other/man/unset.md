@@ -1,9 +1,9 @@
-USAGE:  unset [VAR/FUNC NAME] [OPTIONS]   
-Deletes function or variable   
+USAGE:  unset [VAR/FUNC NAME] [OPTIONS]    
+Deletes function or variable or attribute of an object   
 
-There is also an alternative usage for deleting an attribute of an object:   
+There is an alternative usage for deleting an attribute of an object:   
 ```
-unset ($[VAR NAME][ATTRIBUTE])
+unset [PATH/TO/OBJECT]:[ATTRIBUTE]
 ```   
 Note that the attribute must be in quotes!
 OPTIONS
@@ -15,4 +15,5 @@ EXAMPLE
 
     unset -v myVariable
     unset -f myFunc
+    unset path/to/room:attribute1
     

@@ -1076,7 +1076,7 @@ func CD(x string) string {
 func Help(entry string) {
 	var path string
 	switch entry {
-	case "ls", "lsu", "pwd", "print", "cd", "tree", "create", "gt", "clear",
+	case "ls", "lsu", "pwd", "print", "cd", "tree", "create", "get", "clear",
 		"update", "delete", "lsog", "grep", "for", "while", "if", "env",
 		"cmds", "var", "unset", "select", "camera", "ui", "hc", "drawable",
 		"link", "unlink", "draw", "lsslot", "getu", "getslot",
@@ -1878,7 +1878,7 @@ func UIHighlight(objArg string) error {
 	return nil
 }
 
-func CameraMove(command string, position []float64, rotation []float64) {
+func CameraMove(command string, position []interface{}, rotation []interface{}) {
 	subdata := map[string]interface{}{"command": command}
 	subdata["position"] = map[string]interface{}{"x": position[0], "y": position[1], "z": position[2]}
 	subdata["rotation"] = map[string]interface{}{"x": rotation[0], "y": rotation[1]}
@@ -2581,17 +2581,22 @@ func Print(a []interface{}) string {
 
 func SetEnv(arg string, val interface{}) {
 	switch arg {
-	case "Filter":
+	case "Filter", "Unity":
 		if _, ok := val.(bool); !ok {
-			msg := "Can only assign bool values for Filter Env Var"
+			msg := "Can only assign bool values for " + arg + " Env Var"
 			l.GetWarningLogger().Println(msg)
 			if State.DebugLvl > 0 {
 				println(msg)
 			}
 
 		} else {
-			State.FilterDisplay = val.(bool)
-			println("Filter Display Environment variable set")
+			if arg == "Unity" {
+				State.UnityClientAvail = val.(bool)
+			} else if arg == "Filter" {
+				State.FilterDisplay = val.(bool)
+			}
+
+			println(arg + " Display Environment variable set")
 		}
 
 	case "Analyser":

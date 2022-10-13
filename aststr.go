@@ -43,6 +43,9 @@ func (n pathNode) getStr() (string, error) {
 	if p == "_" {
 		return "_", nil
 	}
+	if p == "." {
+		return cmd.State.CurrPath, nil
+	}
 	var output_words []string
 	if p[0] != '/' {
 		switch n.mode {

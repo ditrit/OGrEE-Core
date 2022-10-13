@@ -4,6 +4,7 @@ import (
 	"bytes"
 	cmd "cli/controllers"
 	"fmt"
+	"strings"
 )
 
 var dynamicSymbolTable = make(map[string]interface{})
@@ -72,6 +73,7 @@ func (n *funcCallNode) execute() (interface{}, error) {
 	return body.execute()
 }
 
+//At this time arrays are all []floats
 type arrNode struct {
 	nodes []node
 }
@@ -699,6 +701,34 @@ func (n *unsetVarNode) execute() (interface{}, error) {
 	return nil, nil
 }
 
+type unsetAttrNode struct {
+	path node
+}
+
+func (n *unsetAttrNode) execute() (interface{}, error) {
+	val, err := n.path.execute()
+	if err != nil {
+		return nil, err
+	}
+	path, ok := val.(string)
+	if !ok {
+		return nil, fmt.Errorf("Path should be a string")
+	}
+	arr := strings.Split(path, ":")
+	if len(arr) != 2 {
+		msg := "You must specify the attribute to delete with a colon!\n" +
+			"(ie. $> unset path/to/object:attributex). \n" +
+			"Please refer to the language reference help for more details" +
+			"\n($> man unset)"
+		return nil, fmt.Errorf(msg)
+	}
+	path = arr[0]
+	data := map[string]interface{}{arr[1]: nil}
+
+	return cmd.UpdateObj(path, "", "", data, true)
+
+}
+
 type setEnvNode struct {
 	arg  string
 	expr node
@@ -930,17 +960,17 @@ func (n *cameraMoveNode) execute() (interface{}, error) {
 	if err != nil {
 		return nil, err
 	}
-	position, ok := posVal.([]float64)
-	if !ok {
-		return nil, fmt.Errorf("OGREE: Error, command args are invalid\nPlease provide a vector3 and a vector2")
+	position, ok := posVal.([]interface{})
+	if !ok || len(position) != 3 {
+		return nil, fmt.Errorf("Position (first argument) is invalid\nPlease provide a vector3")
 	}
 	rotVal, err := n.rotation.execute()
 	if err != nil {
 		return nil, err
 	}
-	rotation, ok := rotVal.([]float64)
-	if !ok {
-		return nil, fmt.Errorf("OGREE: Error, command args are invalid\nPlease provide a vector3 and a vector2")
+	rotation, ok := rotVal.([]interface{})
+	if !ok || len(rotation) != 2 {
+		return nil, fmt.Errorf("Rotation (second argument) is invalid\nPlease provide a vector2")
 	}
 	cmd.CameraMove(n.command, position, rotation)
 	return nil, nil
