@@ -4,6 +4,7 @@ import (
 	"bytes"
 	cmd "cli/controllers"
 	"fmt"
+	"path/filepath"
 	"strings"
 )
 
@@ -892,6 +893,53 @@ func (n *createGroupNode) execute() (interface{}, error) {
 	}
 	attributes := map[string]interface{}{"racks": paths}
 	err = cmd.GetOCLIAtrributes(path, cmd.GROUP, attributes)
+	if err != nil {
+		return nil, err
+	}
+	return nil, nil
+}
+
+type createCorridor struct {
+	path      node
+	leftRack  node
+	rightRack node
+	temp      node
+}
+
+func (n *createCorridor) execute() (interface{}, error) {
+	path, err := AssertString(&n.path, "Path for corridor")
+	if err != nil {
+		return nil, err
+	}
+
+	leftRack, err2 := AssertString(&n.leftRack, "Path for left rack")
+	if err2 != nil {
+		return nil, err2
+	}
+
+	rightRack, err3 := AssertString(&n.rightRack, "Path for right rack")
+	if err3 != nil {
+		return nil, err3
+	}
+
+	temp, err4 := AssertString(&n.temp, "Temperature")
+	if err4 != nil {
+		return nil, err4
+	}
+	tempIsValid := AssertInStringValues(temp, []string{"warm", "cold"})
+	if !tempIsValid {
+		return nil,
+			fmt.Errorf("Temperature should be either 'warm' or 'cold'")
+	}
+	leftRack = filepath.Base(leftRack)
+	rightRack = filepath.Base(rightRack)
+
+	attributes := map[string]interface{}{
+		"content": leftRack + "," + rightRack, "temperature": temp}
+
+	data := map[string]interface{}{"attributes": attributes}
+
+	err = cmd.GetOCLIAtrributes(path, cmd.CORIDOR, data)
 	if err != nil {
 		return nil, err
 	}

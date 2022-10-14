@@ -347,8 +347,7 @@ OCCR:
         |TOK_DEVICE TOK_COL PHYSICAL_PATH TOK_ATTRSPEC EXPR_NOQUOTE TOK_ATTRSPEC EXPR_NOQUOTE {$$=&createDeviceNode{$3, [3]node{$5, $7, nil}}}
         |TOK_DEVICE TOK_COL PHYSICAL_PATH TOK_ATTRSPEC EXPR_NOQUOTE TOK_ATTRSPEC EXPR_NOQUOTE TOK_ATTRSPEC EXPR_NOQUOTE {$$=&createDeviceNode{$3, [3]node{$5, $7, $9}}}
         |TOK_CORIDOR TOK_COL PHYSICAL_PATH TOK_ATTRSPEC TOK_LBRAC EXPR_NOQUOTE TOK_COMMA EXPR_NOQUOTE TOK_RBRAC TOK_ATTRSPEC EXPR_NOQUOTE {
-              attributes := map[string]interface{}{"leftRack":$6, "rightRack":$8, "temperature":$11}
-              $$=&getOCAttrNode{$3, cmd.CORIDOR, attributes}
+              $$=&createCorridor{$3,$6,$8,$11}
         }
         |TOK_GROUP TOK_COL PHYSICAL_PATH TOK_ATTRSPEC TOK_LBRAC GETOBJS TOK_RBRAC {$$=&createGroupNode{$3, $6}}
         |TOK_ORPH PHYSICAL_PATH TOK_DEVICE TOK_COL EXPR_NOQUOTE TOK_ATTRSPEC EXPR {

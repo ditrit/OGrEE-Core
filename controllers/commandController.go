@@ -1617,16 +1617,57 @@ func GetOCLIAtrributes(Path string, ent int, data map[string]interface{}) error 
 		data["attributes"] = attr
 		_, err = PostObj(ent, "device", data)
 
-	case CORIDOR, GROUP:
+	case CORIDOR:
 		//name, category, domain, pid
+		attr = data["attributes"].(map[string]interface{})
+
+		//Client demands that the group color be
+		//the same as Tenant/Domain thus we have
+		//to retrieve it
+		arr := strings.Split(Path, "/")
+		if len(arr) >= 2 {
+			for i := range arr {
+				if arr[i] == "Physical" {
+					tenantName := arr[i+1]
+
+					//GET Tenant/Domain
+					r, e := models.Send("GET",
+						State.APIURL+"/api/tenants/"+tenantName, GetKey(), nil)
+					parsed := ParseResponse(r, e, "get color")
+					if parsed == nil {
+						msg := "Unable to retrieve color from server"
+						return fmt.Errorf(msg)
+					}
+
+					if tenantData, ok := parsed["data"]; ok {
+						if tenant, ok := tenantData.(map[string]interface{}); ok {
+							if attrInf, ok := tenant["attributes"]; ok {
+								if a, ok := attrInf.(map[string]interface{}); ok {
+									if colorInf, ok := a["color"]; ok {
+										if color, ok := colorInf.(string); ok {
+
+											attr["color"] = color
+										}
+									}
+								}
+							}
+						}
+					}
+
+				}
+			}
+		}
+
+		if attr["color"] == nil {
+			return fmt.Errorf("Couldn't get respective color from server")
+		}
 
 		data["domain"] = domain
 		data["parentId"] = parent["id"]
 
-		if ent == CORIDOR {
-			PostObj(ent, "corridor", data)
-		} else {
-			_, err = PostObj(ent, "group", data)
+		_, err := PostObj(ent, "corridor", data)
+		if err != nil {
+			return err
 		}
 
 	case STRAYSENSOR:
