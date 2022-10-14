@@ -405,6 +405,20 @@ func ValidateEntity(entity int, t map[string]interface{}) (map[string]interface{
 							return u.Message(false, "Rack Height unit should be on the payload"), false
 						}
 
+						//Ensure the name is also unique among corridors
+						req := bson.M{"name": t["name"].(string)}
+						nameCheck, _ := GetManyEntities("corridor", req, nil)
+						if nameCheck != nil {
+							if len(nameCheck) != 0 {
+								msg := "Rack name name must be unique among corridors and racks"
+								if nameCheck != nil {
+									println(nameCheck[0]["name"].(string))
+								}
+								return u.Message(false, msg), false
+							}
+
+						}
+
 					case DEVICE:
 						switch v["orientation"] {
 						case "front", "rear", "frontflipped", "rearflipped":
@@ -464,6 +478,17 @@ func ValidateEntity(entity int, t map[string]interface{}) (map[string]interface{
 						if len(racks) != 2 {
 							msg := "2 racks separated by a comma must be on the payload"
 							return u.Message(false, msg), false
+						}
+
+						//Ensure the name is also unique among racks
+						req := bson.M{"name": t["name"].(string)}
+						nameCheck, _ := GetManyEntities("rack", req, nil)
+						if nameCheck != nil {
+							if len(nameCheck) != 0 {
+								msg := "Corridor name name must be unique among corridors and racks"
+								return u.Message(false, msg), false
+							}
+
 						}
 
 						//Fetch the 2 racks and ensure they exist
