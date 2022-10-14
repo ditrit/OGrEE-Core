@@ -126,7 +126,8 @@ stmnt:   TOK_GET PATH {$$=&getObjectNode{$2}}
        | TOK_PLUS OCCR {$$=$2}
        | TOK_MINUS PATH {$$=&deleteObjNode{$2}}
        | TOK_MINUS TOK_SELECT {$$=&deleteSelectionNode{}}     
-       | TOK_VAR TOK_COL TOK_WORD TOK_EQUAL EXPR_NOQUOTE {$$=&assignNode{$3, $5}}
+       | TOK_VAR TOK_COL TOK_WORD TOK_EQUAL EXPR {$$=&assignNode{$3, $5}}
+       
        | TOK_CMDS TOK_COL EXPR_NOQUOTE {$$=&loadNode{$3}}
        | TOK_TEMPLATE TOK_COL EXPR_NOQUOTE {$$=&loadTemplateNode{$3}}
        | TOK_SELECT {$$=&selectNode{}}
@@ -183,9 +184,9 @@ IF: TOK_LBLOCK EXPR TOK_RBLOCK TOK_THEN st2 TOK_FI {$$=&ifNode{$2, $5, nil}}
        | TOK_LBLOCK EXPR TOK_RBLOCK TOK_THEN st2 TOK_ELSE st2 TOK_FI {$$=&ifNode{$2, $5, $7}}
 ;
 
-PHYSICAL_PATH: EXPR_NOQUOTE_NOCOL {$$=&pathNode{$1, PHYSICAL}};
-STRAY_DEV_PATH: EXPR_NOQUOTE {$$=&pathNode{$1, STRAY_DEV}};
-PATH: EXPR_NOQUOTE {$$=&pathNode{$1, STD}};
+PHYSICAL_PATH: EXPR_NOQUOTE_NOCOL {$$=&pathNode{$1, PHYSICAL}}
+STRAY_DEV_PATH: EXPR_NOQUOTE {$$=&pathNode{$1, STRAY_DEV}}
+PATH: EXPR_NOQUOTE {$$=&pathNode{$1, STD}}
 
 EXPR_NOQUOTE_NOCOL: TOK_DEREF TOK_LPAREN TOK_LPAREN EXPR TOK_RPAREN TOK_RPAREN {$$=$4}
        | CONCAT_NOCOL {$$=$1}
@@ -301,7 +302,7 @@ LSOBJ_COMMAND: TOK_LSTEN {$$=0} | TOK_LSSITE {$$=1} | TOK_LSBLDG {$$=2} | TOK_LS
        | TOK_LSCAB {$$=8} | TOK_LSCORRIDOR {$$=9} | TOK_LSSENSOR{$$=10}
 ;
 
-UI_TOGGLE: TOK_UI_DEBUG{$$="debug"} | TOK_UI_INFOS{$$="infos"} | TOK_UI_WIREFRAME{$$="wireframe"};
+UI_TOGGLE: TOK_UI_DEBUG{$$="debug"} | TOK_UI_INFOS{$$="infos"} | TOK_UI_WIREFRAME{$$="wireframe"}
 
 //DOCUMENTATION (ie: man pwd)
 COMMAND: TOK_LINK{$$="link"} | TOK_UNLINK{$$="unlink"} | TOK_CLR{$$="clear"} | TOK_LS{$$="ls"}
@@ -316,7 +317,7 @@ COMMAND: TOK_LINK{$$="link"} | TOK_UNLINK{$$="unlink"} | TOK_CLR{$$="clear"} | T
        | TOK_GREATER{$$=">"} | TOK_DRAWABLE{$$="drawable"} | TOK_LSU{$$="lsu"} | TOK_LSSLOT{$$="lsslot"} | TOK_GETU{$$="getu"} | TOK_GETSLOT{$$="getslot"}
 ;
 
-ORIENTATION: TOK_ORIENTATION {$$=&strLeaf{$1}};
+ORIENTATION: TOK_ORIENTATION {$$=&strLeaf{$1}}
 
 OCCR:   
         TOK_TENANT TOK_COL PHYSICAL_PATH TOK_ATTRSPEC EXPR_NOQUOTE {
