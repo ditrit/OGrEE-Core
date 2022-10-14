@@ -879,34 +879,37 @@ func (n *createGroupNode) execute() (interface{}, error) {
 	if !ok {
 		return nil, fmt.Errorf("Path should be a string")
 	}
-	var paths []string
+	var objs []string
+	data := map[string]interface{}{}
 	for i := range n.paths {
 		v, err := n.paths[i].execute()
 		if err != nil {
 			return nil, err
 		}
-		path, ok := v.(string)
+		obj, ok := v.(string)
 		if !ok {
 			return nil, fmt.Errorf("")
 		}
-		paths = append(paths, path)
+		obj = filepath.Base(obj)
+		objs = append(objs, obj)
 	}
-	attributes := map[string]interface{}{"racks": paths}
-	err = cmd.GetOCLIAtrributes(path, cmd.GROUP, attributes)
+
+	data["attributes"] = map[string]interface{}{"content": objs}
+	err = cmd.GetOCLIAtrributes(path, cmd.GROUP, data)
 	if err != nil {
 		return nil, err
 	}
 	return nil, nil
 }
 
-type createCorridor struct {
+type createCorridorNode struct {
 	path      node
 	leftRack  node
 	rightRack node
 	temp      node
 }
 
-func (n *createCorridor) execute() (interface{}, error) {
+func (n *createCorridorNode) execute() (interface{}, error) {
 	path, err := AssertString(&n.path, "Path for corridor")
 	if err != nil {
 		return nil, err

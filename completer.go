@@ -296,7 +296,7 @@ func GetPrefixCompleter() *readline.PrefixCompleter {
 				readline.PcItemDynamic(TenantSiteOCLICompleter(""), true)),
 			readline.PcItem("dv:", true,
 				readline.PcItemDynamic(TenantSiteOCLICompleter(""), true)),
-			readline.PcItem("gp:", true,
+			readline.PcItem("gr:", true,
 				readline.PcItemDynamic(TenantSiteOCLICompleter(""), true)),
 			readline.PcItem("co:", true,
 				readline.PcItemDynamic(TenantSiteOCLICompleter(""), true)),

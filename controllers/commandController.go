@@ -1617,6 +1617,17 @@ func GetOCLIAtrributes(Path string, ent int, data map[string]interface{}) error 
 		data["attributes"] = attr
 		_, err = PostObj(ent, "device", data)
 
+	case GROUP:
+		//name, category, domain, pid
+		data["domain"] = domain
+		data["parentId"] = parent["id"]
+		attr := data["attributes"].(map[string]interface{})
+
+		groups := strings.Join(attr["content"].([]string), ",")
+		attr["content"] = groups
+
+		_, err = PostObj(ent, "group", data)
+
 	case CORIDOR:
 		//name, category, domain, pid
 		attr = data["attributes"].(map[string]interface{})
