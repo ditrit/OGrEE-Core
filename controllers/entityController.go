@@ -762,7 +762,7 @@ var UpdateEntity = func(w http.ResponseWriter, r *http.Request) {
 	}
 	println(r.Method)
 
-	//viewJson(r)
+	viewJson(r)
 
 	err := json.NewDecoder(r.Body).Decode(&updateData)
 	if err != nil {
