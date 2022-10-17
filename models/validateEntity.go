@@ -258,9 +258,9 @@ func ValidateEntity(entity int, t map[string]interface{}) (map[string]interface{
 			return u.Message(false, "Name should be on payload"), false
 		}
 
-		/*if t["category"] == nil || t["category"] == "" {
+		if t["category"] == nil || t["category"] == "" {
 			return u.Message(false, "Category should be on the payload"), false
-		}*/
+		}
 
 		if t["domain"] == nil || t["domain"] == "" {
 			return u.Message(false, "Domain should be on the payload"), false

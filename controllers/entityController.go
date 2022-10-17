@@ -762,13 +762,14 @@ var UpdateEntity = func(w http.ResponseWriter, r *http.Request) {
 	}
 	println(r.Method)
 
-	viewJson(r)
+	//viewJson(r)
 
 	err := json.NewDecoder(r.Body).Decode(&updateData)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		u.Respond(w, u.Message(false, "Error while decoding request body"))
 		u.ErrLog("Error while decoding request body", "UPDATE ENTITY", "", r)
+		return
 	}
 
 	//Get entity from URL and strip trailing 's'

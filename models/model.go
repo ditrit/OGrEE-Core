@@ -323,7 +323,7 @@ func UpdateEntity(ent string, req bson.M, t *map[string]interface{}, isPatch boo
 	} else {
 
 		//Ensure that the update will be valid
-		println("DEBUG NOT A PATCH")
+		println("NOT A PATCH")
 		msg, ok := ValidateEntity(u.EntityStrToInt(ent), *t)
 		if !ok {
 			return msg, "invalid"
