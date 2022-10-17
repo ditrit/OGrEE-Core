@@ -1,7 +1,6 @@
 package controllers
 
 import (
-	"bufio"
 	"bytes"
 	l "cli/logger"
 	"cli/models"
@@ -13,6 +12,7 @@ import (
 	"os"
 	"os/exec"
 	"path"
+	"path/filepath"
 	"runtime"
 	"sort"
 	"strconv"
@@ -2541,24 +2541,15 @@ func UpdateSelection(data map[string]interface{}) error {
 	return nil
 }
 
-func LoadFile(path string, interpret_func func(*string) bool) error {
-	readFile, err := os.Open(path)
-	if err != nil {
-		fmt.Println(err)
-	}
-	fileScanner := bufio.NewScanner(readFile)
-	fileScanner.Split(bufio.ScanLines)
-	for fileScanner.Scan() {
-		s := fileScanner.Text()
-		if len(s) >= 2 && (s[0] != '/' || s[1] != '/') {
-			fmt.Println(s)
-			if !interpret_func(&s) {
-				return fmt.Errorf("script interrupted by an error")
-			}
-		}
-	}
-	readFile.Close()
-	return nil
+func LoadFile(path string) {
+	//By setting the 'ScriptCalled' variable
+	//the REPL will recognise this and invoke the
+	//LoadFile() Function in ocli.go
+
+	//Alternative to this would be to pass the LoadFile()
+	//function as an argument here
+	State.ScriptCalled = true
+	State.ScriptPath, _ = filepath.Abs(filepath.Clean(path))
 }
 
 func LoadTemplate(data map[string]interface{}, filePath string) {
