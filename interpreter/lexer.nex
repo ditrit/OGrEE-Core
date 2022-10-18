@@ -1,5 +1,5 @@
 /[ \t]/  { /* Skip blanks and tabs. */ }
-/\/\// {/*Comment so let's skip it*/ yylex.stack = yylex.stack[:len(yylex.stack)-1];yylex.Stop()}
+/\/\// {/*Comment so stop lexer*/ return -1}
 /get/ {  printToks("TOK_GET"); return TOK_GET}
 /getu/ {  printToks("TOK_GETU"); return TOK_GETU}
 /getslot/ {  printToks("TOK_GETSLOT"); return TOK_GETSLOT}
