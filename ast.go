@@ -463,20 +463,30 @@ type updateObjNode struct {
 }
 
 func (n *updateObjNode) execute() (interface{}, error) {
-	pathVal, err := n.path.execute()
+	path, err := AssertString(&n.path, "Object path")
+
+	//pathVal, err := n.path.execute()
 	if err != nil {
 		return nil, err
 	}
-	path, ok := pathVal.(string)
-	if !ok {
-		return nil, fmt.Errorf("Object path should be a string")
-	}
+	//path, ok := pathVal.(string)
+	//if !ok {
+	//	return nil, fmt.Errorf("Object path should be a string")
+	//}
 	attributes, err := evalMapNodes(n.attributes)
 	if err != nil {
 		return nil, err
 	}
 	if path == "_" {
 		return nil, cmd.UpdateSelection(attributes)
+	}
+
+	//Check if the syntax refers to update or an interact command
+	//
+	for i := range attributes {
+		if i == "label" || i == "labelFont" {
+			return nil, cmd.InteractObject(path, i, attributes[i])
+		}
 	}
 	return cmd.UpdateObj(path, "", "", attributes, false)
 }

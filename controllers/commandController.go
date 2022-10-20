@@ -2846,6 +2846,23 @@ func LoadArrFromResp(resp map[string]interface{}, idx string) []interface{} {
 	return nil
 }
 
+func InteractObject(path string, keyword string, val interface{}) error {
+	//First retrieve the object
+	obj, e := GetObject(path, true)
+	if e == "" {
+		msg := "Object not found please check the path" +
+			" you provided and try again"
+		return fmt.Errorf(msg)
+	}
+
+	data := map[string]interface{}{"id": obj["id"],
+		"param": keyword, "value": val}
+	ans := map[string]interface{}{"type": "interact", "data": data}
+
+	//-1 since its not neccessary to check for filtering
+	return InformUnity("Interact", -1, ans)
+}
+
 //Messages Unity Client
 func InformUnity(caller string, entity int, data map[string]interface{}) error {
 	//If unity is available message it
