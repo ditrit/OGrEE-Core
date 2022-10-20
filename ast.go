@@ -1144,6 +1144,27 @@ func (a *assignNode) execute() (interface{}, error) {
 	return nil, fmt.Errorf("Invalid type to assign variable ", a.variable)
 }
 
+type assignComposedNode struct {
+	variable string
+	val      node
+}
+
+func (a *assignComposedNode) execute() (interface{}, error) {
+	val, err := a.val.execute()
+	if err != nil {
+		return nil, err
+	}
+	switch v := val.(type) {
+	case bool, int, float64, string, []interface{}, map[string]interface{}:
+		dynamicSymbolTable[a.variable] = v
+		if cmd.State.DebugLvl >= 3 {
+			println("You want to assign", a.variable, "with value of", v)
+		}
+		return nil, nil
+	}
+	return nil, fmt.Errorf("Invalid type to assign variable ", a.variable)
+}
+
 //Checks the map and sees if it is an object type
 func checkIfObjectNode(x map[string]interface{}) bool {
 	if idInf, ok := x["id"]; ok {

@@ -2846,6 +2846,7 @@ func LoadArrFromResp(resp map[string]interface{}, idx string) []interface{} {
 	return nil
 }
 
+//Function called by update node for interact commands (ie label, labelFont)
 func InteractObject(path string, keyword string, val interface{}) error {
 	//First retrieve the object
 	obj, e := GetObject(path, true)
@@ -2853,6 +2854,20 @@ func InteractObject(path string, keyword string, val interface{}) error {
 		msg := "Object not found please check the path" +
 			" you provided and try again"
 		return fmt.Errorf(msg)
+	}
+
+	if value, ok := val.(string); ok {
+		//this means to retrieve value from object
+		if value[0] == '#' {
+			if len(value) > 1 {
+				val = obj["attributes"].(map[string]interface{})[value[1:]]
+			} else {
+				msg := "Cannot use this attribute. " +
+					"Please specify a valid attribute for the label"
+				return fmt.Errorf(msg)
+			}
+
+		}
 	}
 
 	data := map[string]interface{}{"id": obj["id"],
@@ -2871,6 +2886,8 @@ func InformUnity(caller string, entity int, data map[string]interface{}) error {
 		if entity > -1 && entity < SENSOR+1 {
 			data = GenerateFilteredJson(data)
 		}
+		println("DEBUG VIEW THE JSON")
+		Disp(data)
 		e := models.ContactUnity(data, State.DebugLvl)
 		if e != nil {
 			l.GetWarningLogger().Println("Unable to contact Unity Client @" + caller)
