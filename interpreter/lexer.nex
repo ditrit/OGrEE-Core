@@ -10,6 +10,7 @@
 
 /:/ {  printToks("TOK_COL"); return TOK_COL}
 /@/ {  printToks("TOK_ATTRSPEC"); return TOK_ATTRSPEC}
+/#/ { printToks("TOK_SHARP"); return TOK_SHARP }
 /\$/ { printToks("TOK_DEREF"); return TOK_DEREF}
 /;/ { printToks("TOK_SEMICOL"); return TOK_SEMICOL}
 /\[/ {  printToks("TOK_LBLOCK"); return TOK_LBLOCK}

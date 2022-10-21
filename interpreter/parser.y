@@ -58,7 +58,7 @@ var _ = l.GetInfoLogger() //Suppresses annoying Dockerfile build error
        TOK_HIERARCH TOK_DRAWABLE TOK_ENV TOK_ORPH
        TOK_DRAW TOK_SETENV TOK_TRUE TOK_FALSE
        TOK_CAM_MOVE TOK_CAM_WAIT TOK_CAM_TRANSLATE TOK_CAM
-       TOK_DOT
+       TOK_DOT TOK_SHARP
        TOK_UI_DELAY TOK_UI_WIREFRAME TOK_UI_INFOS TOK_UI_DEBUG TOK_UI_HIGHLIGHT TOK_UI TOK_END
        
 %type <n> LSOBJ_COMMAND
@@ -91,7 +91,8 @@ stmnt:   TOK_GET PATH {$$=&getObjectNode{$2}}
        //| TOK_GET OBJ_TYPE EQUAL_LIST {$$=&searchObjectsNode{$2, $3}}
        | TOK_EQUAL PHYSICAL_PATH {$$=&selectObjectNode{$2}}
        | TOK_EQUAL TOK_LBRAC GETOBJS TOK_RBRAC {$$=&selectChildrenNode{$3}}
-       | PHYSICAL_PATH TOK_COL TOK_WORD TOK_EQUAL EXPR_NOQUOTE {$$=&updateObjNode{$1, map[string]interface{}{$3:$5}}}
+       | PHYSICAL_PATH TOK_COL TOK_WORD TOK_EQUAL EXPR_NOQUOTE {$$=&updateObjNode{$1, map[string]interface{}{$3:$5},false}}
+       | PHYSICAL_PATH TOK_COL TOK_WORD TOK_EQUAL TOK_SHARP EXPR_NOQUOTE {$$=&updateObjNode{$1, map[string]interface{}{$3:$6},true}}
        | PHYSICAL_PATH TOK_COL TOK_WORD TOK_EQUAL ARRAY TOK_ATTRSPEC ARRAY {$$=&specialUpdateNode{$1, $3, $5, $7}}
        | TOK_CD PATH {$$=&cdNode{$2}}
        | TOK_CD {$$=&cdNode{strLeaf{"/"}}}

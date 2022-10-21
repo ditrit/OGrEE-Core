@@ -2847,7 +2847,7 @@ func LoadArrFromResp(resp map[string]interface{}, idx string) []interface{} {
 }
 
 //Function called by update node for interact commands (ie label, labelFont)
-func InteractObject(path string, keyword string, val interface{}) error {
+func InteractObject(path string, keyword string, val interface{}, fromAttr bool) error {
 	//First retrieve the object
 	obj, e := GetObject(path, true)
 	if e == "" {
@@ -2866,23 +2866,30 @@ func InteractObject(path string, keyword string, val interface{}) error {
 			strings.Index(val.(string), "color@") != 0 {
 			msg := "The font can only be bold or italic" +
 				" or be in the form of color@[colorValue]." +
-				"\n`\nFor more information please refer to: " +
+				"\n\nFor more information please refer to: " +
 				"\nhttps://github.com/ditrit/OGrEE-3D/wiki/CLI-langage#interact-with-objects"
 			return fmt.Errorf(msg)
 		}
-	}
-
-	if value, ok := val.(string); ok {
+	} else if fromAttr == true {
+		//Check if the val refers to an attribute field in the object
 		//this means to retrieve value from object
-		if value[0] == '#' {
+		if value, ok := val.(string); ok {
+
 			if len(value) > 1 {
-				val = obj["attributes"].(map[string]interface{})[value[1:]]
+				innerMap := obj["attributes"].(map[string]interface{})
+				if _, ok = innerMap[value]; !ok {
+					msg := "The specified attribute does not exist" +
+						" in the object. \nPlease view the object" +
+						" (ie. $> get) and try again"
+					return fmt.Errorf(msg)
+				}
 			} else {
 				msg := "Cannot use this attribute. " +
 					"Please specify a valid attribute for the label"
 				return fmt.Errorf(msg)
 			}
-
+		} else {
+			return fmt.Errorf("The font value must be a string")
 		}
 	}
 

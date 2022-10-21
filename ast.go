@@ -460,6 +460,7 @@ func (n *recursiveUpdateObjNode) execute() (interface{}, error) {
 type updateObjNode struct {
 	path       node
 	attributes map[string]interface{}
+	hasSharp   bool
 }
 
 func (n *updateObjNode) execute() (interface{}, error) {
@@ -485,7 +486,7 @@ func (n *updateObjNode) execute() (interface{}, error) {
 	//
 	for i := range attributes {
 		if i == "label" || i == "labelFont" {
-			return nil, cmd.InteractObject(path, i, attributes[i])
+			return nil, cmd.InteractObject(path, i, attributes[i], n.hasSharp)
 		}
 	}
 	return cmd.UpdateObj(path, "", "", attributes, false)
