@@ -358,6 +358,8 @@ func recursivePatchAux(res, data map[string]interface{}) {
 func UpdateObj(Path, id, ent string, data map[string]interface{}, deleteAndPut bool) (map[string]interface{}, error) {
 	println("OK. Attempting to update...")
 	var resp *http.Response
+	var objJSON map[string]interface{}
+	var GETURL string
 
 	if data != nil {
 		var respJson map[string]interface{}
@@ -365,7 +367,6 @@ func UpdateObj(Path, id, ent string, data map[string]interface{}, deleteAndPut b
 		var entities string
 
 		if Path != "" || Path == "" && ent == "" {
-
 			if Path == "" { //This means we should use curr path
 				Path = State.CurrPath
 			}
@@ -373,13 +374,70 @@ func UpdateObj(Path, id, ent string, data map[string]interface{}, deleteAndPut b
 			//We have to get object first since
 			//there is a potential for multiple paths
 			//we don't want to update the wrong object
-			objJSON, GETURL := GetObject(Path, true)
+			objJSON, GETURL = GetObject(Path, true)
 			if objJSON == nil {
 				l.GetWarningLogger().Println("Error while getting Object!")
 				return nil, fmt.Errorf("error while getting Object")
 			}
 			entities = path.Base(path.Dir(GETURL))
 			URL = State.APIURL + "/api/" + entities + "/" + objJSON["id"].(string)
+
+			//Check if the description keyword was specified
+			//if it is we need to do extra processing
+
+			println("DEBUG DISP DATA")
+			Disp(data)
+			for i := range data {
+
+				if strings.Contains(i, "description") {
+					//Modify the JSON itself and send the object
+					//JSON instead
+					println("DEBUG SHOULD ENTER HERE")
+
+					//Get description as an array from JSON
+					descInf := objJSON["description"]
+					if desc, ok := descInf.([]interface{}); ok {
+						println("DEBUG it is InfArr")
+
+						if i == "description" {
+							desc[0] = data[i]
+							data = map[string]interface{}{"description": desc}
+						} else {
+							//Split description and number off of 'i'
+							//key := i[:10]
+							numStr := i[11:]
+							println("DEBUG numStr:", numStr)
+
+							num, e := strconv.Atoi(numStr)
+							if e != nil {
+								return nil, e
+							}
+
+							if num > len(desc) {
+								desc[len(desc)-1] = data[i]
+							} else {
+								desc[num] = data[i]
+							}
+
+							//We must send a PUT since this will modify the JSON
+							println("DEBUG REACHED HER")
+							i = "description"
+							//data = objJSON
+							data = map[string]interface{}{"description": desc}
+							println("DEBUG VIEW THE UPDATE JSON")
+							Disp(data)
+							//deleteAndPut = true
+
+						}
+
+					} else {
+						//objJSON["description"] = []interface{}{data[i]}
+						data = map[string]interface{}{"description": desc}
+					}
+
+				}
+			}
+
 		} else {
 			entities = ent + "s"
 			URL = State.APIURL + "/api/" + entities + "/" + id
