@@ -3,6 +3,7 @@ package main
 import (
 	"bytes"
 	cmd "cli/controllers"
+	"encoding/json"
 	"fmt"
 	"path/filepath"
 	"strings"
@@ -507,24 +508,79 @@ func (n *specialUpdateNode) execute() (interface{}, error) {
 	}
 	if n.variable == "areas" {
 		areas := map[string]interface{}{"reserved": first, "technical": second}
-		attributes, _ := parseAreas(areas)
+		attributes, e := parseAreas(areas)
+		if e != nil {
+			return nil, e
+		}
 		return cmd.UpdateObj(path, "", "", attributes, false)
 	} else if n.variable == "separator" {
+
+		startLen := len(first.([]interface{}))
+		endLen := len(second.([]interface{}))
+
+		errorResponder := func(attr string, multi bool) (interface{}, error) {
+			var errorMsg string
+			if multi {
+				errorMsg = "Invalid " + attr + " attributes provided." +
+					" They must be arrays/lists/vectors with 2 elements."
+			} else {
+				errorMsg = "Invalid " + attr + " attribute provided." +
+					" It must be an array/list/vector with 2 elements."
+			}
+
+			segment := " Please refer to the wiki or manual reference" +
+				" for more details on how to create objects " +
+				"using this syntax"
+
+			return nil, fmt.Errorf(errorMsg + segment)
+		}
+
+		if startLen != 2 && endLen == 2 {
+			return errorResponder("starting position", false)
+		}
+
+		if endLen != 2 && startLen == 2 {
+			return errorResponder("ending position", false)
+		}
+
+		if startLen != 2 && endLen != 2 {
+			return errorResponder("starting and ending position", true)
+		}
+
 		obj, _ := cmd.GetObject(path, true)
 		if obj == nil {
 			return nil, fmt.Errorf("cannot find object")
 		}
 		attr := obj["attributes"].(map[string]interface{})
 		var sepArray []interface{}
-		separators, ok := attr["separators"]
-		if ok {
+		separators, _ := attr["separators"]
+		if IsInfArr(separators) {
 			sepArray = separators.([]interface{})
+			sepArray = append(sepArray, map[string]interface{}{
+				"startPosXYm": first, "endPosXYm": second})
+
+			sepArrStr, _ := json.Marshal(&sepArray)
+			attr["separators"] = string(sepArrStr)
+		} else {
+			var sepStr string
+			nextSep := map[string]interface{}{
+				"startPosXYm": first, "endPosXYm": second}
+
+			nextSepStr, _ := json.Marshal(nextSep)
+			if IsString(separators) {
+				sepStr = separators.(string)
+				size := len(sepStr)
+				sepStr = sepStr[:size-1] + "," + string(nextSepStr) + "]"
+			} else {
+				sepStr = "[" + string(nextSepStr) + "]"
+			}
+
+			attr["separators"] = sepStr
 		}
-		sepArray = append(sepArray, map[string]interface{}{"startPosXYm": first, "endPosXYm": second})
-		attr["separators"] = sepArray
+
 		return cmd.UpdateObj(path, "", "", attr, false)
 	} else {
-		return nil, fmt.Errorf("Invalid special update")
+		return nil, fmt.Errorf("Invalid attribute specified for room update")
 	}
 }
 
@@ -1161,6 +1217,16 @@ func checkIfObjectNode(x map[string]interface{}) bool {
 func parseAreas(areas map[string]interface{}) (map[string]interface{}, error) {
 	var reservedStr string
 	var techStr string
+
+	errorResponder := func(attr string) (map[string]interface{}, error) {
+		errorMsg := "Invalid " + attr + " attribute provided." +
+			" It must be an array/list/vector with 4 elements." +
+			" Please refer to the wiki or manual reference" +
+			" for more details on how to create objects " +
+			"using this syntax"
+		return nil, fmt.Errorf(errorMsg)
+	}
+
 	if reserved, ok := areas["reserved"].([]interface{}); ok {
 		if tech, ok := areas["technical"].([]interface{}); ok {
 			if len(reserved) == 4 && len(tech) == 4 {
@@ -1176,8 +1242,20 @@ func parseAreas(areas map[string]interface{}) (map[string]interface{}, error) {
 				techStr = "{\"left\":" + t[3].String() + ",\"right\":" + t[2].String() + ",\"top\":" + t[0].String() + ",\"bottom\":" + t[1].String() + "}"
 				areas["reserved"] = reservedStr
 				areas["technical"] = techStr
+			} else {
+				if len(reserved) != 4 && len(tech) == 4 {
+					return errorResponder("reserved")
+				} else if len(tech) != 4 && len(reserved) == 4 {
+					return errorResponder("technical")
+				} else { //Both invalid
+					return errorResponder("reserved and technical")
+				}
 			}
+		} else {
+			return errorResponder("technical")
 		}
+	} else {
+		return errorResponder("reserved")
 	}
 	return areas, nil
 }
