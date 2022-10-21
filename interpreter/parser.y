@@ -125,8 +125,12 @@ stmnt:   TOK_GET PATH {$$=&getObjectNode{$2}}
        | TOK_ENV TOK_WORD TOK_EQUAL EXPR_NOQUOTE {$$=&setEnvNode{$2, $4}}
        | TOK_PLUS OCCR {$$=$2}
        | TOK_MINUS PATH {$$=&deleteObjNode{$2}}
-       | TOK_MINUS TOK_SELECT {$$=&deleteSelectionNode{}}     
+       | TOK_MINUS TOK_SELECT {$$=&deleteSelectionNode{}}   
+
+       //ASSIGNMENT  
        | TOK_VAR TOK_COL TOK_WORD TOK_EQUAL EXPR {$$=&assignNode{$3, $5}}
+       | TOK_VAR TOK_COL TOK_WORD TOK_EQUAL TOK_DEREF TOK_LPAREN TOK_GET PATH TOK_RPAREN {$$=&assignNode{$3, &getObjectNode{$8}}}
+       
        
        | TOK_CMDS TOK_COL EXPR_NOQUOTE {$$=&loadNode{$3}}
        | TOK_TEMPLATE TOK_COL EXPR_NOQUOTE {$$=&loadTemplateNode{$3}}
@@ -235,6 +239,7 @@ EXPR: TOK_INT {$$=&floatLeaf{float64($1)}}
        | ARRAY {$$=$1}
        | TOK_DEREF TOK_LBRAC TOK_WORD TOK_RBRAC {$$=&symbolReferenceNode{$3}}
        | TOK_DEREF TOK_WORD {$$=&symbolReferenceNode{$2}}
+       | TOK_DEREF TOK_WORD TOK_LBLOCK EXPR TOK_RBLOCK {$$=&objReferenceNode{$2,$4}}
 
        | TOK_LPAREN EXPR TOK_RPAREN {$$=$2}
 

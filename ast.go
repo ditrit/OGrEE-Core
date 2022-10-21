@@ -1036,6 +1036,49 @@ func (s *symbolReferenceNode) execute() (interface{}, error) {
 	return val, nil
 }
 
+type objReferenceNode struct {
+	va    string
+	index node
+}
+
+func (o *objReferenceNode) execute() (interface{}, error) {
+	val, ok := dynamicSymbolTable[o.va]
+	if !ok {
+		return nil, fmt.Errorf("Undefined variable ", o.va)
+	}
+	if _, ok := val.(map[string]interface{}); !ok {
+		return nil, fmt.Errorf(o.va + " Is not an indexable object")
+	}
+	object := val.(map[string]interface{})
+
+	idx, e := o.index.execute()
+	if e != nil {
+		return nil, e
+	}
+	if _, ok := idx.(string); !ok {
+		return nil, fmt.Errorf("The index must resolve to a string")
+	}
+	index := idx.(string)
+
+	if mainAttr, ok := object[index]; ok {
+		return mainAttr, nil
+	} else {
+		if attrInf, ok := object["attributes"]; ok {
+			if attrDict, ok := attrInf.(map[string]interface{}); ok {
+				if _, ok := attrDict[index]; ok {
+					return attrDict[index], nil
+				}
+			}
+		}
+	}
+
+	msg := "This object " + o.va + " cannot be indexed with " + index +
+		". Please check the object you are referencing and try again"
+
+	return nil, fmt.Errorf(msg)
+
+}
+
 type arrayReferenceNode struct {
 	variable string
 	idx      node
