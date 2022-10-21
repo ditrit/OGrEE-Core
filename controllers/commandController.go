@@ -2875,21 +2875,21 @@ func InteractObject(path string, keyword string, val interface{}, fromAttr bool)
 		//this means to retrieve value from object
 		if value, ok := val.(string); ok {
 
-			if len(value) > 1 {
-				innerMap := obj["attributes"].(map[string]interface{})
-				if _, ok = innerMap[value]; !ok {
-					msg := "The specified attribute does not exist" +
-						" in the object. \nPlease view the object" +
-						" (ie. $> get) and try again"
-					return fmt.Errorf(msg)
-				}
+			innerMap := obj["attributes"].(map[string]interface{})
+
+			if _, ok := obj[value]; ok {
+				val = obj[value]
+			} else if _, ok := innerMap[value]; ok {
+				val = innerMap[value]
 			} else {
-				msg := "Cannot use this attribute. " +
-					"Please specify a valid attribute for the label"
+				msg := "The specified attribute does not exist" +
+					" in the object. \nPlease view the object" +
+					" (ie. $> get) and try again"
 				return fmt.Errorf(msg)
 			}
+
 		} else {
-			return fmt.Errorf("The font value must be a string")
+			return fmt.Errorf("The label value must be a string")
 		}
 	}
 
