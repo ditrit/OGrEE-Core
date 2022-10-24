@@ -809,15 +809,23 @@ func PhysicalWalk(root **Node, prefix, path string, depth int) {
 		var resp map[string]interface{}
 		if arr[1] == "Physical" { //Means path== "/Physical"
 
-			fmt.Println(prefix + "├──" + "Stray")
-			strayNode := FindNodeInTree(&State.TreeHierarchy,
-				StrToStack("/Physical/Stray"), true)
-			StrayWalk(strayNode, prefix+"│   ", depth)
-
+			//Need to check num tenants before passing the prefix
 			//Get and Print Tenants Block
+
 			r, e := models.Send("GET",
 				State.APIURL+"/api/tenants", GetKey(), nil)
 			resp = ParseResponse(r, e, "fetch objects")
+			strayNode := FindNodeInTree(&State.TreeHierarchy,
+				StrToStack("/Physical/Stray"), true)
+
+			if length, _ := GetRawObjectsLength(resp); length > 0 {
+				fmt.Println(prefix + "├──" + " Stray")
+				StrayWalk(strayNode, prefix+"│   ", depth)
+			} else {
+				fmt.Println(prefix + "└──" + " Stray")
+				StrayWalk(strayNode, prefix+"   ", depth)
+			}
+
 			if resp != nil {
 				if depth == 0 {
 					if _, ok := resp["data"]; ok {
@@ -868,15 +876,22 @@ func PhysicalWalk(root **Node, prefix, path string, depth int) {
 
 			if depth >= 0 {
 
-				fmt.Println(prefix + "├──" + "Stray")
 				strayNode := FindNodeInTree(&State.TreeHierarchy,
 					StrToStack("/Physical/Stray"), true)
-				StrayWalk(strayNode, prefix+"│   ", depth)
 
 				//Get and Print Tenants Block
 				r, e := models.Send("GET",
 					State.APIURL+"/api/tenants", GetKey(), nil)
 				resp = ParseResponse(r, e, "fetch objects")
+
+				//Need to check num tenants before passing the prefix
+				if length, _ := GetRawObjectsLength(resp); length > 0 {
+					fmt.Println(prefix + "├──" + " Stray")
+					StrayWalk(strayNode, prefix+"│   ", depth)
+				} else {
+					fmt.Println(prefix + "└──" + " Stray")
+					StrayWalk(strayNode, prefix+"   ", depth)
+				}
 				if resp != nil {
 					if depth == 0 {
 						if _, ok := resp["data"]; ok {
