@@ -905,37 +905,34 @@ func PhysicalWalk(root **Node, prefix, path string, depth int) {
 
 				//If hierarchy happens to be greater than 1
 				if depth > 0 && resp != nil {
-					if _, ok := resp["data"]; ok {
-						if tenants, ok := resp["data"].(map[string]interface{})["objects"].([]interface{}); ok {
-							size := len(tenants)
-							for idx, tInf := range tenants {
-								tenant := tInf.(map[string]interface{})
-								ID := tenant["id"].(string)
-								depthStr := strconv.Itoa(depth)
+					if tenants := GetRawObjects(resp); tenants != nil {
+						size := len(tenants)
+						for idx, tInf := range tenants {
+							tenant := tInf.(map[string]interface{})
+							ID := tenant["id"].(string)
+							depthStr := strconv.Itoa(depth)
 
-								//Get Hierarchy for each tenant and walk
-								r, e := models.Send("GET",
-									State.APIURL+"/api/tenants/"+ID+"/all?limit="+depthStr, GetKey(), nil)
-								resp := ParseResponse(r, e, "fetch objects")
+							//Get Hierarchy for each tenant and walk
+							r, e := models.Send("GET",
+								State.APIURL+"/api/tenants/"+ID+"/all?limit="+depthStr, GetKey(), nil)
+							resp := ParseResponse(r, e, "fetch objects")
 
-								var subPrefix string
-								var currPrefix string
-								if idx == size-1 {
-									subPrefix = prefix + "    "
-									currPrefix = prefix + "└──"
-								} else {
-									subPrefix = prefix + "│   "
-									currPrefix = prefix + "├──"
-								}
+							var subPrefix string
+							var currPrefix string
+							if idx == size-1 {
+								subPrefix = prefix + "    "
+								currPrefix = prefix + "└──"
+							} else {
+								subPrefix = prefix + "│   "
+								currPrefix = prefix + "├──"
+							}
 
-								fmt.Println(currPrefix + tenant["name"].(string))
-								if resp != nil {
-									RemoteHierarchyWalk(resp["data"].(map[string]interface{}),
-										subPrefix, depth)
-								}
+							fmt.Println(currPrefix + tenant["name"].(string))
+							if resp != nil {
+								RemoteHierarchyWalk(resp["data"].(map[string]interface{}),
+									subPrefix, depth)
 							}
 						}
-
 					}
 				}
 
