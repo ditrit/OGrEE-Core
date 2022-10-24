@@ -266,6 +266,14 @@ func ValidateEntity(entity int, t map[string]interface{}) (map[string]interface{
 			return u.Message(false, "Domain should be on the payload"), false
 		}
 
+		if t["description"] == nil || t["description"] == "" {
+			return u.Message(false, "Description should be on the payload"), false
+		}
+
+		if _, ok := t["description"].([]interface{}); !ok {
+			return u.Message(false, "Description should be an array type"), false
+		}
+
 		//Check if Parent ID is valid
 		//returns a map[string]interface{} to hold parent entity
 		//if parent found
@@ -610,6 +618,11 @@ func ValidateEntity(entity int, t map[string]interface{}) (map[string]interface{
 			if _, ok := t["description"]; !ok {
 				return u.Message(false,
 					"Description should be on payload"), false
+			}
+
+			if _, ok := t["description"].([]interface{}); !ok {
+				return u.Message(false,
+					"Description should an array type"), false
 			}
 
 			/*if _, ok := t["category"]; !ok {
