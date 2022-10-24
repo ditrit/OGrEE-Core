@@ -2882,10 +2882,40 @@ func InteractObject(path string, keyword string, val interface{}, fromAttr bool)
 			} else if _, ok := innerMap[value]; ok {
 				val = innerMap[value]
 			} else {
-				msg := "The specified attribute does not exist" +
-					" in the object. \nPlease view the object" +
-					" (ie. $> get) and try again"
-				return fmt.Errorf(msg)
+				if strings.Contains(value, "description") == true {
+					desc := obj["description"].([]interface{})
+					if len(value) > 11 { //descriptionX format
+						//split the number and description
+						numStr := strings.Split(value, "description")[1]
+						num, e := strconv.Atoi(numStr)
+						if e != nil {
+							return e
+						}
+
+						if num < 0 {
+							return fmt.Errorf("Description index must be positive")
+						}
+
+						if num >= len(desc) {
+							msg := "Description index is out of" +
+								" range. The length for this object is: " + numStr
+							return fmt.Errorf(msg)
+						}
+						val = desc[num]
+
+					} else if value == "description" {
+						val = desc[0]
+					} else {
+						val = innerMap[value]
+					}
+
+				} else {
+					msg := "The specified attribute does not exist" +
+						" in the object. \nPlease view the object" +
+						" (ie. $> get) and try again"
+					return fmt.Errorf(msg)
+				}
+
 			}
 
 		} else {
