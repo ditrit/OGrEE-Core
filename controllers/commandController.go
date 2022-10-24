@@ -385,54 +385,79 @@ func UpdateObj(Path, id, ent string, data map[string]interface{}, deleteAndPut b
 			//Check if the description keyword was specified
 			//if it is we need to do extra processing
 
-			println("DEBUG DISP DATA")
-			Disp(data)
+			//Local anonfunc for parsing descriptionX
+			//where X is a number
+			fn := func(description string) (int, error) {
+				//Split description and number off of 'i'
+				//key := i[:10]
+				numStr := description[11:]
+
+				num, e := strconv.Atoi(numStr)
+				if e != nil {
+					return -1, e
+				}
+
+				if num < 0 {
+					msg := "Index for description" +
+						" cannot be negative"
+					return -1, fmt.Errorf(msg)
+				}
+				return num, nil
+			}
+
 			for i := range data {
 
 				if strings.Contains(i, "description") {
 					//Modify the JSON itself and send the object
 					//JSON instead
-					println("DEBUG SHOULD ENTER HERE")
 
 					//Get description as an array from JSON
 					descInf := objJSON["description"]
 					if desc, ok := descInf.([]interface{}); ok {
-						println("DEBUG it is InfArr")
 
 						if i == "description" {
 							desc[0] = data[i]
 							data = map[string]interface{}{"description": desc}
 						} else {
-							//Split description and number off of 'i'
-							//key := i[:10]
-							numStr := i[11:]
-							println("DEBUG numStr:", numStr)
 
-							num, e := strconv.Atoi(numStr)
+							num, e := fn(i)
 							if e != nil {
 								return nil, e
 							}
 
-							if num > len(desc) {
-								desc[len(desc)-1] = data[i]
+							if num >= len(desc) {
+								//desc[len(desc)-1] = data[i]
+								desc = append(desc, data[i])
 							} else {
 								desc[num] = data[i]
 							}
 
 							//We must send a PUT since this will modify the JSON
-							println("DEBUG REACHED HER")
 							i = "description"
-							//data = objJSON
 							data = map[string]interface{}{"description": desc}
-							println("DEBUG VIEW THE UPDATE JSON")
-							Disp(data)
-							//deleteAndPut = true
 
 						}
 
-					} else {
+					} else if _, ok := descInf.(string); ok {
 						//objJSON["description"] = []interface{}{data[i]}
-						data = map[string]interface{}{"description": desc}
+						//data = map[string]interface{}{
+						//	"description": []interface{}{data[i]}}
+
+						num, e := fn(i)
+						if e != nil {
+							return nil, e
+						}
+
+						//Assume the string takes idx 0
+						if num > 0 {
+							objJSON["description"] = []interface{}{descInf, data[i]}
+
+						} else {
+							objJSON["description"] = []interface{}{data[i]}
+						}
+
+					} else { //Description is some invalid value
+						objJSON["description"] = []interface{}{data[i]}
 					}
 
 				}
@@ -444,10 +469,18 @@ func UpdateObj(Path, id, ent string, data map[string]interface{}, deleteAndPut b
 		}
 
 		//Make the proper Update JSON
-		respGet, e := models.Send("GET", URL, GetKey(), nil)
-		ogData := ParseResponse(respGet, e, "GET")
+		var e error
+		var ogData map[string]interface{}
+		if objJSON == nil {
+			r, e1 := models.Send("GET", URL, GetKey(), nil)
+			objJSON = ParseResponse(r, e1, "GET")
+			ogData = objJSON["data"].(map[string]interface{})
+		} else {
+			ogData = objJSON
+		}
+		//respGet, e := models.Send("GET", URL, GetKey(), nil)
+		//ogData := ParseResponse(respGet, e, "GET")
 
-		ogData = ogData["data"].(map[string]interface{})
 		attrs := map[string]interface{}{}
 
 		for i := range data {
