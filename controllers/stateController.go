@@ -641,7 +641,7 @@ func RootWalk(root **Node, path string, depth int) {
 
 	logical := FindNodeInTree(root, StrToStack("/Logical"), true)
 	fmt.Println("├──" + "Logical")
-	LogicalWalk(logical, "|   ", depth-1)
+	LogicalWalk(logical, "│   ", depth-1)
 
 	phys := FindNodeInTree(root, StrToStack("/Physical"), true)
 	fmt.Println("└──" + "Physical")
