@@ -358,6 +358,8 @@ func recursivePatchAux(res, data map[string]interface{}) {
 func UpdateObj(Path, id, ent string, data map[string]interface{}, deleteAndPut bool) (map[string]interface{}, error) {
 	println("OK. Attempting to update...")
 	var resp *http.Response
+	var objJSON map[string]interface{}
+	var GETURL string
 
 	if data != nil {
 		var respJson map[string]interface{}
@@ -365,7 +367,6 @@ func UpdateObj(Path, id, ent string, data map[string]interface{}, deleteAndPut b
 		var entities string
 
 		if Path != "" || Path == "" && ent == "" {
-
 			if Path == "" { //This means we should use curr path
 				Path = State.CurrPath
 			}
@@ -373,23 +374,121 @@ func UpdateObj(Path, id, ent string, data map[string]interface{}, deleteAndPut b
 			//We have to get object first since
 			//there is a potential for multiple paths
 			//we don't want to update the wrong object
-			objJSON, GETURL := GetObject(Path, true)
+			objJSON, GETURL = GetObject(Path, true)
 			if objJSON == nil {
 				l.GetWarningLogger().Println("Error while getting Object!")
 				return nil, fmt.Errorf("error while getting Object")
 			}
 			entities = path.Base(path.Dir(GETURL))
 			URL = State.APIURL + "/api/" + entities + "/" + objJSON["id"].(string)
+
+			//Check if the description keyword was specified
+			//if it is we need to do extra processing
+
+			//Local anonfunc for parsing descriptionX
+			//where X is a number
+			fn := func(description string) (int, error) {
+				//Split description and number off of 'i'
+				//key := i[:10]
+				numStr := description[11:]
+
+				num, e := strconv.Atoi(numStr)
+				if e != nil {
+					return -1, e
+				}
+
+				if num < 0 {
+					msg := "Index for description" +
+						" cannot be negative"
+					return -1, fmt.Errorf(msg)
+				}
+				return num, nil
+			}
+
+			for i := range data {
+
+				if strings.Contains(i, "description") {
+					//Modify the JSON itself and send the object
+					//JSON instead
+
+					//Get description as an array from JSON
+					descInf := objJSON["description"]
+					if desc, ok := descInf.([]interface{}); ok {
+
+						if i == "description" {
+							if len(desc) == 0 {
+								desc = []interface{}{data[i]}
+							} else {
+								desc[0] = data[i]
+							}
+
+							data = map[string]interface{}{"description": desc}
+						} else {
+
+							num, e := fn(i)
+							if e != nil {
+								return nil, e
+							}
+
+							if num >= len(desc) {
+								//desc[len(desc)-1] = data[i]
+								desc = append(desc, data[i])
+							} else {
+								desc[num] = data[i]
+							}
+
+							//We must send a PUT since this will modify the JSON
+							i = "description"
+							data = map[string]interface{}{"description": desc}
+
+						}
+
+					} else if _, ok := descInf.(string); ok {
+						var num int
+						var e error
+
+						if i == "description" {
+							num = 0
+						} else {
+							num, e = fn(i)
+							if e != nil {
+								return nil, e
+							}
+						}
+
+						//Assume the string takes idx 0
+						if num > 0 {
+							objJSON["description"] = []interface{}{descInf, data[i]}
+
+						} else {
+							objJSON["description"] = []interface{}{data[i]}
+						}
+
+					} else { //Description is some invalid value
+						objJSON["description"] = []interface{}{data[i]}
+					}
+
+				}
+			}
+
 		} else {
 			entities = ent + "s"
 			URL = State.APIURL + "/api/" + entities + "/" + id
 		}
 
 		//Make the proper Update JSON
-		respGet, e := models.Send("GET", URL, GetKey(), nil)
-		ogData := ParseResponse(respGet, e, "GET")
+		var e error
+		var ogData map[string]interface{}
+		if objJSON == nil {
+			r, e1 := models.Send("GET", URL, GetKey(), nil)
+			objJSON = ParseResponse(r, e1, "GET")
+			ogData = objJSON["data"].(map[string]interface{})
+		} else {
+			ogData = objJSON
+		}
+		//respGet, e := models.Send("GET", URL, GetKey(), nil)
+		//ogData := ParseResponse(respGet, e, "GET")
 
-		ogData = ogData["data"].(map[string]interface{})
 		attrs := map[string]interface{}{}
 
 		for i := range data {
