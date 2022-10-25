@@ -444,13 +444,16 @@ func UpdateObj(Path, id, ent string, data map[string]interface{}, deleteAndPut b
 						}
 
 					} else if _, ok := descInf.(string); ok {
-						//objJSON["description"] = []interface{}{data[i]}
-						//data = map[string]interface{}{
-						//	"description": []interface{}{data[i]}}
+						var num int
+						var e error
 
-						num, e := fn(i)
-						if e != nil {
-							return nil, e
+						if i == "description" {
+							num = 0
+						} else {
+							num, e = fn(i)
+							if e != nil {
+								return nil, e
+							}
 						}
 
 						//Assume the string takes idx 0
