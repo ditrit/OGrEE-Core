@@ -130,6 +130,7 @@ stmnt:   TOK_GET PATH {$$=&getObjectNode{$2}}
        //ASSIGNMENT  
        | TOK_VAR TOK_COL TOK_WORD TOK_EQUAL EXPR {$$=&assignNode{$3, $5}}
        | TOK_VAR TOK_COL TOK_WORD TOK_EQUAL TOK_DEREF TOK_LPAREN TOK_GET PATH TOK_RPAREN {$$=&assignNode{$3, &getObjectNode{$8}}}
+       | TOK_VAR TOK_COL TOK_WORD TOK_EQUAL TOK_DEREF TOK_LPAREN TOK_PWD TOK_RPAREN {$$=&assignNode{$3, &pwdNode{}}}
        
        
        | TOK_CMDS TOK_COL EXPR_NOQUOTE {$$=&loadNode{$3}}
