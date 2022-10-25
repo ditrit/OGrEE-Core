@@ -2878,7 +2878,25 @@ func InteractObject(path string, keyword string, val interface{}, fromAttr bool)
 			innerMap := obj["attributes"].(map[string]interface{})
 
 			if _, ok := obj[value]; ok {
-				val = obj[value]
+				if value == "description" {
+					//val = desc[0]
+					//for i := range desc {
+					//	val =
+					//}
+					desc := obj["description"].([]interface{})
+					val = ""
+					for i := 0; i < len(desc); i++ {
+						if i == 0 {
+							val = desc[i].(string)
+						} else {
+							val = val.(string) + "-" + desc[i].(string)
+						}
+
+					}
+				} else {
+					val = obj[value]
+				}
+
 			} else if _, ok := innerMap[value]; ok {
 				val = innerMap[value]
 			} else {
@@ -2898,13 +2916,12 @@ func InteractObject(path string, keyword string, val interface{}, fromAttr bool)
 
 						if num >= len(desc) {
 							msg := "Description index is out of" +
-								" range. The length for this object is: " + numStr
+								" range. The length for this object is: " +
+								strconv.Itoa(len(desc))
 							return fmt.Errorf(msg)
 						}
 						val = desc[num]
 
-					} else if value == "description" {
-						val = desc[0]
 					} else {
 						val = innerMap[value]
 					}
