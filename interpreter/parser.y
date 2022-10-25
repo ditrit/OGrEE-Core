@@ -58,7 +58,7 @@ var _ = l.GetInfoLogger() //Suppresses annoying Dockerfile build error
        TOK_HIERARCH TOK_DRAWABLE TOK_ENV TOK_ORPH
        TOK_DRAW TOK_SETENV TOK_TRUE TOK_FALSE
        TOK_CAM_MOVE TOK_CAM_WAIT TOK_CAM_TRANSLATE TOK_CAM
-       TOK_DOT
+       TOK_DOT TOK_SHARP
        TOK_UI_DELAY TOK_UI_WIREFRAME TOK_UI_INFOS TOK_UI_DEBUG TOK_UI_HIGHLIGHT TOK_UI TOK_END
        
 %type <n> LSOBJ_COMMAND
@@ -91,7 +91,8 @@ stmnt:   TOK_GET PATH {$$=&getObjectNode{$2}}
        //| TOK_GET OBJ_TYPE EQUAL_LIST {$$=&searchObjectsNode{$2, $3}}
        | TOK_EQUAL PHYSICAL_PATH {$$=&selectObjectNode{$2}}
        | TOK_EQUAL TOK_LBRAC GETOBJS TOK_RBRAC {$$=&selectChildrenNode{$3}}
-       | PHYSICAL_PATH TOK_COL TOK_WORD TOK_EQUAL EXPR_NOQUOTE {$$=&updateObjNode{$1, map[string]interface{}{$3:$5}}}
+       | PHYSICAL_PATH TOK_COL TOK_WORD TOK_EQUAL EXPR_NOQUOTE {$$=&updateObjNode{$1, map[string]interface{}{$3:$5},false}}
+       | PHYSICAL_PATH TOK_COL TOK_WORD TOK_EQUAL TOK_SHARP EXPR_NOQUOTE {$$=&updateObjNode{$1, map[string]interface{}{$3:$6},true}}
        | PHYSICAL_PATH TOK_COL TOK_WORD TOK_EQUAL ARRAY TOK_ATTRSPEC ARRAY {$$=&specialUpdateNode{$1, $3, $5, $7}}
        | TOK_CD PATH {$$=&cdNode{$2}}
        | TOK_CD {$$=&cdNode{strLeaf{"/"}}}
@@ -126,13 +127,17 @@ stmnt:   TOK_GET PATH {$$=&getObjectNode{$2}}
        | TOK_PLUS OCCR {$$=$2}
        | TOK_MINUS PATH {$$=&deleteObjNode{$2}}
        | TOK_MINUS TOK_SELECT {$$=&deleteSelectionNode{}}     
-       | TOK_VAR TOK_COL TOK_WORD TOK_EQUAL EXPR_NOQUOTE {$$=&assignNode{$3, $5}}
+       
        | TOK_CMDS TOK_COL EXPR_NOQUOTE {$$=&loadNode{$3}}
        | TOK_TEMPLATE TOK_COL EXPR_NOQUOTE {$$=&loadTemplateNode{$3}}
        | TOK_SELECT {$$=&selectNode{}}
        | TOK_DRAWABLE TOK_LPAREN PATH TOK_RPAREN {$$=&isEntityDrawableNode{$3}}
        | TOK_DRAWABLE TOK_LPAREN PATH TOK_COMMA EXPR_NOQUOTE TOK_RPAREN {$$=&isAttrDrawableNode{$3, $5}}
        | TOK_LEN TOK_LPAREN TOK_WORD TOK_RPAREN {$$=&lenNode{$3}}
+
+       //ASSIGNMENT
+       | TOK_VAR TOK_COL TOK_WORD TOK_EQUAL EXPR_NOQUOTE {$$=&assignNode{$3, $5}}
+       //| TOK_VAR TOK_COL TOK_WORD TOK_EQUAL TOK_GET PATH {$$=&assignNode{$3, &getObjectNode{$6}}}
 
        // LINKING
        | TOK_LINK TOK_COL PHYSICAL_PATH TOK_ATTRSPEC EXPR_NOQUOTE {$$=&linkObjectNode{[]interface{}{$3, $5}}}
@@ -171,6 +176,8 @@ stmnt:   TOK_GET PATH {$$=&getObjectNode{$2}}
        | TOK_FOR TOK_LPAREN TOK_LPAREN TOK_WORD TOK_EQUAL EXPR TOK_SEMICOL EXPR TOK_SEMICOL st2 TOK_RPAREN TOK_RPAREN TOK_SEMICOL st2 TOK_DONE {
               $$=&forNode{&assignNode{$4, $6},$8,$10,$14}
        }
+
+       //FOR
        | TOK_FOR TOK_WORD TOK_IN EXPR TOK_SEMICOL st2 TOK_DONE {$$=&forArrayNode{$2, $4, $6}}
        | TOK_FOR TOK_WORD TOK_IN TOK_LBRAC TOK_INT TOK_DOT_DOT TOK_INT TOK_RBRAC TOK_SEMICOL st2 TOK_DONE {$$=&forRangeNode{$2, $5, $7, $10}}
 
@@ -234,6 +241,7 @@ EXPR: TOK_INT {$$=&floatLeaf{float64($1)}}
        | ARRAY {$$=$1}
        | TOK_DEREF TOK_LBRAC TOK_WORD TOK_RBRAC {$$=&symbolReferenceNode{$3}}
        | TOK_DEREF TOK_WORD {$$=&symbolReferenceNode{$2}}
+       | TOK_DEREF TOK_WORD TOK_LBLOCK EXPR TOK_RBLOCK {$$=nil}
 
        | TOK_LPAREN EXPR TOK_RPAREN {$$=$2}
 

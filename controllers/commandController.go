@@ -2945,6 +2945,108 @@ func LoadArrFromResp(resp map[string]interface{}, idx string) []interface{} {
 	return nil
 }
 
+//Function called by update node for interact commands (ie label, labelFont)
+func InteractObject(path string, keyword string, val interface{}, fromAttr bool) error {
+	//First retrieve the object
+	obj, e := GetObject(path, true)
+	if e == "" {
+		msg := "Object not found please check the path" +
+			" you provided and try again"
+		return fmt.Errorf(msg)
+	}
+
+	//Verify labelFont has valid values
+	if keyword == "labelFont" {
+		if _, ok := val.(string); !ok {
+			return fmt.Errorf("The font value must be a string")
+		}
+
+		if val != "bold" && val != "italic" &&
+			strings.Index(val.(string), "color@") != 0 {
+			msg := "The font can only be bold or italic" +
+				" or be in the form of color@[colorValue]." +
+				"\n\nFor more information please refer to: " +
+				"\nhttps://github.com/ditrit/OGrEE-3D/wiki/CLI-langage#interact-with-objects"
+			return fmt.Errorf(msg)
+		}
+	} else if fromAttr == true {
+		//Check if the val refers to an attribute field in the object
+		//this means to retrieve value from object
+		if value, ok := val.(string); ok {
+
+			innerMap := obj["attributes"].(map[string]interface{})
+
+			if _, ok := obj[value]; ok {
+				if value == "description" {
+					//val = desc[0]
+					//for i := range desc {
+					//	val =
+					//}
+					desc := obj["description"].([]interface{})
+					val = ""
+					for i := 0; i < len(desc); i++ {
+						if i == 0 {
+							val = desc[i].(string)
+						} else {
+							val = val.(string) + "-" + desc[i].(string)
+						}
+
+					}
+				} else {
+					val = obj[value]
+				}
+
+			} else if _, ok := innerMap[value]; ok {
+				val = innerMap[value]
+			} else {
+				if strings.Contains(value, "description") == true {
+					desc := obj["description"].([]interface{})
+					if len(value) > 11 { //descriptionX format
+						//split the number and description
+						numStr := strings.Split(value, "description")[1]
+						num, e := strconv.Atoi(numStr)
+						if e != nil {
+							return e
+						}
+
+						if num < 0 {
+							return fmt.Errorf("Description index must be positive")
+						}
+
+						if num >= len(desc) {
+							msg := "Description index is out of" +
+								" range. The length for this object is: " +
+								strconv.Itoa(len(desc))
+							return fmt.Errorf(msg)
+						}
+						val = desc[num]
+
+					} else {
+						val = innerMap[value]
+					}
+
+				} else {
+					msg := "The specified attribute does not exist" +
+						" in the object. \nPlease view the object" +
+						" (ie. $> get) and try again"
+					return fmt.Errorf(msg)
+				}
+
+			}
+
+		} else {
+			return fmt.Errorf("The label value must be a string")
+		}
+	}
+
+	data := map[string]interface{}{"id": obj["id"],
+		"param": keyword, "value": val}
+	ans := map[string]interface{}{"type": "interact", "data": data}
+
+	//-1 since its not neccessary to check for filtering
+	return InformUnity("Interact", -1, ans)
+}
+
 //Messages Unity Client
 func InformUnity(caller string, entity int, data map[string]interface{}) error {
 	//If unity is available message it
@@ -2953,6 +3055,8 @@ func InformUnity(caller string, entity int, data map[string]interface{}) error {
 		if entity > -1 && entity < SENSOR+1 {
 			data = GenerateFilteredJson(data)
 		}
+		println("DEBUG VIEW THE JSON")
+		Disp(data)
 		e := models.ContactUnity(data, State.DebugLvl)
 		if e != nil {
 			l.GetWarningLogger().Println("Unable to contact Unity Client @" + caller)
