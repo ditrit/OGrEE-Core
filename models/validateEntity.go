@@ -267,7 +267,8 @@ func ValidateEntity(entity int, t map[string]interface{}) (map[string]interface{
 		}
 
 		if t["description"] == nil || t["description"] == "" {
-			return u.Message(false, "Description should be on the payload"), false
+			return u.Message(false,
+				"Description should be on the payload as an array"), false
 		}
 
 		if _, ok := t["description"].([]interface{}); !ok {
