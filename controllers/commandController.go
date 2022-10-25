@@ -416,7 +416,12 @@ func UpdateObj(Path, id, ent string, data map[string]interface{}, deleteAndPut b
 					if desc, ok := descInf.([]interface{}); ok {
 
 						if i == "description" {
-							desc[0] = data[i]
+							if len(desc) == 0 {
+								desc = []interface{}{data[i]}
+							} else {
+								desc[0] = data[i]
+							}
+
 							data = map[string]interface{}{"description": desc}
 						} else {
 
