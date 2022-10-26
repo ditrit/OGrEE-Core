@@ -89,7 +89,7 @@ st2:    {$$=nil}
 
 stmnt:   TOK_GET PATH {$$=&getObjectNode{$2}}
        //| TOK_GET OBJ_TYPE EQUAL_LIST {$$=&searchObjectsNode{$2, $3}}
-       | TOK_EQUAL PHYSICAL_PATH {$$=&selectObjectNode{$2}}
+       | TOK_EQUAL PATH {$$=&selectObjectNode{$2}}
        | TOK_EQUAL TOK_LBRAC GETOBJS TOK_RBRAC {$$=&selectChildrenNode{$3}}
        | PHYSICAL_PATH TOK_COL TOK_WORD TOK_EQUAL EXPR_NOQUOTE {$$=&updateObjNode{$1, map[string]interface{}{$3:$5},false}}
        | PHYSICAL_PATH TOK_COL TOK_WORD TOK_EQUAL TOK_SHARP EXPR_NOQUOTE {$$=&updateObjNode{$1, map[string]interface{}{$3:$6},true}}
