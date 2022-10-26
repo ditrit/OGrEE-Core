@@ -71,7 +71,7 @@ func PostObj(ent int, entity string, data map[string]interface{}) (map[string]in
 
 		return respMap["data"].(map[string]interface{}), nil
 	}
-	return nil, fmt.Errorf("Error: %s", string(respMap["message"].(string)))
+	return nil, fmt.Errorf(respMap["message"].(string))
 }
 
 //Calls API's Validation
@@ -1413,7 +1413,7 @@ func GetOCLIAtrributes(Path string, ent int, data map[string]interface{}) error 
 	name := path.Base(ogPath)
 	if name == "." || name == "" {
 		l.GetWarningLogger().Println("Invalid path name provided for OCLI object creation")
-		return fmt.Errorf("invalid path name provided for OCLI object creation")
+		return fmt.Errorf("Invalid path name provided for OCLI object creation")
 	}
 
 	data["name"] = name
@@ -1424,7 +1424,7 @@ func GetOCLIAtrributes(Path string, ent int, data map[string]interface{}) error 
 	if ent != TENANT && ent != STRAY_DEV {
 		parent, parentURL = GetObject(Path, true)
 		if parent == nil {
-			return fmt.Errorf("error! The parent was not found in path")
+			return fmt.Errorf("The parent was not found in path")
 		}
 
 		//Retrieve parent name for domain
@@ -1464,8 +1464,8 @@ func GetOCLIAtrributes(Path string, ent int, data map[string]interface{}) error 
 			if State.DebugLvl > 0 {
 				l.GetErrorLogger().Println(
 					"User gave invalid size value for creating room")
-				println("Error: Invalid size attribute provided." +
-					" It must be an array/list/vector with 3 elements." +
+				return fmt.Errorf("Invalid size attribute provided." +
+					" \nIt must be an array/list/vector with 3 elements." +
 					" Please refer to the wiki or manual reference" +
 					" for more details on how to create objects " +
 					"using this syntax")
@@ -1483,8 +1483,8 @@ func GetOCLIAtrributes(Path string, ent int, data map[string]interface{}) error 
 			if State.DebugLvl > 0 {
 				l.GetErrorLogger().Println(
 					"User gave invalid posXY value for creating room")
-				println("Error: Invalid posXY attribute provided." +
-					" It must be an array/list/vector with 2 elements." +
+				return fmt.Errorf("Invalid posXY attribute provided." +
+					" \nIt must be an array/list/vector with 2 elements." +
 					" Please refer to the wiki or manual reference" +
 					" for more details on how to create objects " +
 					"using this syntax")
@@ -1520,8 +1520,8 @@ func GetOCLIAtrributes(Path string, ent int, data map[string]interface{}) error 
 			if State.DebugLvl > 0 {
 				l.GetErrorLogger().Println(
 					"User gave invalid size value for creating room")
-				println("Error: Invalid size attribute provided." +
-					" It must be an array/list/vector with 3 elements." +
+				return fmt.Errorf("Invalid size attribute provided." +
+					" \nIt must be an array/list/vector with 3 elements." +
 					" Please refer to the wiki or manual reference" +
 					" for more details on how to create objects " +
 					"using this syntax")
@@ -1539,8 +1539,8 @@ func GetOCLIAtrributes(Path string, ent int, data map[string]interface{}) error 
 			if State.DebugLvl > 0 {
 				l.GetErrorLogger().Println(
 					"User gave invalid posXY value for creating room")
-				println("Error: Invalid posXY attribute provided." +
-					" It must be an array/list/vector with 2 elements." +
+				return fmt.Errorf("Invalid posXY attribute provided." +
+					" \nIt must be an array/list/vector with 2 elements." +
 					" Please refer to the wiki or manual reference" +
 					" for more details on how to create objects " +
 					"using this syntax")
@@ -1551,8 +1551,11 @@ func GetOCLIAtrributes(Path string, ent int, data map[string]interface{}) error 
 		data["parentId"] = parent["id"]
 		data["domain"] = domain
 		data["attributes"] = attr
-		println("DEBUG VIEW THE JSON")
-		Disp(data)
+		if State.DebugLvl >= 3 {
+			println("DEBUG VIEW THE JSON")
+			Disp(data)
+		}
+
 		_, err = PostObj(ent, "room", data)
 	case RACK:
 		attr = data["attributes"].(map[string]interface{})
@@ -1575,8 +1578,8 @@ func GetOCLIAtrributes(Path string, ent int, data map[string]interface{}) error 
 			if State.DebugLvl > 0 {
 				l.GetErrorLogger().Println(
 					"User gave invalid size value for creating room")
-				println("Error: Invalid size attribute provided." +
-					" It must be an array/list/vector with 3 elements." +
+				return fmt.Errorf("Invalid size attribute provided." +
+					" \nIt must be an array/list/vector with 3 elements." +
 					" Please refer to the wiki or manual reference" +
 					" for more details on how to create objects " +
 					"using this syntax")
@@ -1595,8 +1598,8 @@ func GetOCLIAtrributes(Path string, ent int, data map[string]interface{}) error 
 			if State.DebugLvl > 0 {
 				l.GetErrorLogger().Println(
 					"User gave invalid posXY value for creating room")
-				println("Error: Invalid posXY attribute provided." +
-					" It must be an array/list/vector with 2 elements." +
+				return fmt.Errorf("Invalid posXY attribute provided." +
+					" \nIt must be an array/list/vector with 2 elements." +
 					" Please refer to the wiki or manual reference" +
 					" for more details on how to create objects " +
 					"using this syntax")
