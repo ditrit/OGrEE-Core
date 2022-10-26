@@ -166,6 +166,7 @@ stmnt:   TOK_GET PATH {$$=&getObjectNode{$2}}
        | TOK_CAM_TRANSLATE TOK_EQUAL EXPR TOK_ATTRSPEC EXPR {$$=&cameraMoveNode{"translate", $3, $5}}
        | TOK_CAM_WAIT TOK_EQUAL EXPR {$$=&cameraWaitNode{$3}}
        | TOK_GREATER PATH {$$=&focusNode{$2}} 
+       | TOK_GREATER  {$$=&focusNode{&strLeaf{""}}} 
 
        // FUNCTIONS
        | TOK_WORD TOK_LPAREN TOK_RPAREN TOK_LBRAC st2 TOK_RBRAC {$$=&funcDefNode{$1, $5}}

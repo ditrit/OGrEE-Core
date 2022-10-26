@@ -2050,9 +2050,15 @@ func CameraWait(time float64) {
 func FocusUI(path string) {
 	var id string
 	if path != "" {
-		obj, e := GetObject(path, true)
-		if e != "" {
-			println(e)
+		obj, _ := GetObject(path, true)
+		if obj == nil {
+			if State.DebugLvl > 0 {
+				msg := "Unable to focus on this object. Please" +
+					" ensure that the object exists and" +
+					" is not a directory and try again"
+				println(msg)
+				return
+			}
 		}
 		id = obj["id"].(string)
 	} else {
