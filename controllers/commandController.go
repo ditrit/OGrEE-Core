@@ -2061,6 +2061,7 @@ func FocusUI(path string) {
 
 	data := map[string]interface{}{"type": "focus", "data": id}
 	InformUnity("FocusUI", -1, data)
+	CD(path)
 }
 
 func LinkObject(paths []interface{}) {
