@@ -52,7 +52,7 @@ type funcDefNode struct {
 }
 
 func (n *funcDefNode) execute() (interface{}, error) {
-	dynamicSymbolTable[n.name] = n.body
+	funcTable[n.name] = n.body
 	if cmd.State.DebugLvl >= 3 {
 		println("New function ", n.name)
 	}
@@ -64,7 +64,7 @@ type funcCallNode struct {
 }
 
 func (n *funcCallNode) execute() (interface{}, error) {
-	val, ok := dynamicSymbolTable[n.name]
+	val, ok := funcTable[n.name]
 	if !ok {
 		return nil, fmt.Errorf("undefined function ", n.name)
 	}
