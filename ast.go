@@ -381,6 +381,8 @@ type selectObjectNode struct {
 }
 
 func (n *selectObjectNode) execute() (interface{}, error) {
+	var v map[string]interface{}
+	var selection []string
 	val, err := n.path.execute()
 	if err != nil {
 		return nil, err
@@ -389,12 +391,19 @@ func (n *selectObjectNode) execute() (interface{}, error) {
 	if !ok {
 		return nil, fmt.Errorf("Object path should be a string")
 	}
-	v, _ := cmd.GetObject(path, false)
-	if v == nil {
-		return nil, fmt.Errorf("Cannot find object at path ", path)
+
+	if path != "" {
+		v, _ = cmd.GetObject(path, false)
+		if v == nil {
+			return nil, fmt.Errorf("Cannot find object at path ", path)
+		}
+		selection = []string{path}
+	} else {
+		v = nil
 	}
+
 	cmd.CD(path)
-	cmd.SetClipBoard([]string{path})
+	cmd.SetClipBoard(selection)
 	return v, nil
 }
 
