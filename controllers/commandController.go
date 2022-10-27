@@ -483,65 +483,78 @@ func UpdateObj(Path, id, ent string, data map[string]interface{}, deleteAndPut b
 
 		respJson = ParseResponse(resp, e, "UPDATE")
 		if respJson != nil {
-			println("Success")
+			if resp.StatusCode == 200 {
+				println("Success")
 
-			//Determine if Unity requires the message as
-			//Interact or Modify
-			message := map[string]interface{}{}
-			interactData := map[string]interface{}{}
-			var key string
+				//Determine if Unity requires the message as
+				//Interact or Modify
+				message := map[string]interface{}{}
+				interactData := map[string]interface{}{}
+				var key string
 
-			if entities == "rooms" && (data["tilesName"] != nil || data["tilesColor"] != nil) {
-				println("Room modifier detected")
-				Disp(data)
-				message["type"] = "interact"
+				if entities == "rooms" && (data["tilesName"] != nil || data["tilesColor"] != nil) {
+					println("Room modifier detected")
+					Disp(data)
+					message["type"] = "interact"
 
-				//Get the interactive key
-				key = determineStrKey(data, []string{"tilesName", "tilesColor"})
+					//Get the interactive key
+					key = determineStrKey(data, []string{"tilesName", "tilesColor"})
 
-				interactData["id"] = ogData["id"]
-				interactData["param"] = key
-				interactData["value"] = data[key]
-				message["data"] = interactData
+					interactData["id"] = ogData["id"]
+					interactData["param"] = key
+					interactData["value"] = data[key]
+					message["data"] = interactData
 
-			} else if entities == "racks" && data["U"] != nil {
-				message["type"] = "interact"
-				interactData["id"] = ogData["id"]
-				interactData["param"] = "U"
-				interactData["value"] = data["U"]
-				message["data"] = interactData
+				} else if entities == "racks" && data["U"] != nil {
+					message["type"] = "interact"
+					interactData["id"] = ogData["id"]
+					interactData["param"] = "U"
+					interactData["value"] = data["U"]
+					message["data"] = interactData
 
-			} else if (entities == "devices" || entities == "racks") &&
-				(data["alpha"] != nil || data["slots"] != nil ||
-					data["localCS"] != nil) {
-				message["type"] = "interact"
+				} else if (entities == "devices" || entities == "racks") &&
+					(data["alpha"] != nil || data["slots"] != nil ||
+						data["localCS"] != nil) {
+					message["type"] = "interact"
 
-				//Get interactive key
-				key = determineStrKey(data, []string{"alpha", "U", "slots", "localCS"})
+					//Get interactive key
+					key = determineStrKey(data, []string{"alpha", "U", "slots", "localCS"})
 
-				interactData["id"] = ogData["id"]
-				interactData["param"] = key
-				interactData["value"] = data[key]
+					interactData["id"] = ogData["id"]
+					interactData["param"] = key
+					interactData["value"] = data[key]
 
-				message["data"] = interactData
+					message["data"] = interactData
 
-			} else if entities == "groups" && data["content"] != nil {
-				message["type"] = "interact"
-				interactData["id"] = ogData["id"]
-				interactData["param"] = "content"
-				interactData["value"] = data["content"]
+				} else if entities == "groups" && data["content"] != nil {
+					message["type"] = "interact"
+					interactData["id"] = ogData["id"]
+					interactData["param"] = "content"
+					interactData["value"] = data["content"]
 
-				message["data"] = interactData
+					message["data"] = interactData
+
+				} else {
+					message["type"] = "modify"
+					message["data"] = respJson["data"]
+				}
+
+				entStr := entities[:len(entities)-1]
+				if IsInObjForUnity(entStr) == true {
+					entInt := EntityStrToInt(entStr)
+					InformUnity("UpdateObj", entInt, message)
+				}
 
 			} else {
-				message["type"] = "modify"
-				message["data"] = respJson["data"]
-			}
-
-			entStr := entities[:len(entities)-1]
-			if IsInObjForUnity(entStr) == true {
-				entInt := EntityStrToInt(entStr)
-				InformUnity("UpdateObj", entInt, message)
+				if mInf, ok := respJson["message"]; ok {
+					if m, ok := mInf.(string); ok {
+						return nil, fmt.Errorf(m)
+					}
+				}
+				msg := "Cannot update. Please ensure that your attributes " +
+					"are modifiable and try again. For more details see the " +
+					"OGREE wiki: https://github.com/ditrit/OGrEE-3D/wiki"
+				return nil, fmt.Errorf(msg)
 			}
 
 		}
