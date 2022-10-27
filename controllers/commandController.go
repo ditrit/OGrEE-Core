@@ -6,7 +6,6 @@ import (
 	"cli/models"
 	"encoding/json"
 	"fmt"
-	"io"
 	"log"
 	"net/http"
 	"os"
@@ -22,33 +21,6 @@ import (
 func PWD() string {
 	println(State.CurrPath)
 	return State.CurrPath
-}
-
-func ParseResponse(resp *http.Response, e error, purpose string) map[string]interface{} {
-	ans := map[string]interface{}{}
-
-	if e != nil {
-		l.GetWarningLogger().Println("Error while sending "+purpose+" to server: ", e)
-		if State.DebugLvl > 0 {
-			println("There was an error!")
-		}
-		return nil
-	}
-	defer resp.Body.Close()
-	bodyBytes, err := io.ReadAll(resp.Body)
-	if err != nil {
-		if State.DebugLvl > 0 {
-			println("Error: " + err.Error() + " Now Exiting")
-		}
-
-		l.GetErrorLogger().Println("Error while trying to read server response: ", err)
-		if purpose == "POST" || purpose == "Search" {
-			os.Exit(-1)
-		}
-		return nil
-	}
-	json.Unmarshal(bodyBytes, &ans)
-	return ans
 }
 
 func PostObj(ent int, entity string, data map[string]interface{}) (map[string]interface{}, error) {
