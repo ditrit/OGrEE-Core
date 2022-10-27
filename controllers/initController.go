@@ -351,7 +351,7 @@ func SetObjsForUnity(x string, env map[string]interface{}) []int {
 			}
 
 		}
-		for idx := 0; idx < GROUP; idx++ {
+		for idx := 0; idx < GROUP+1; idx++ {
 			res = append(res, idx)
 		}
 	}
