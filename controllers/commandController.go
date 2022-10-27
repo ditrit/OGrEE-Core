@@ -1550,9 +1550,13 @@ func GetOCLIAtrributes(Path string, ent int, data map[string]interface{}) error 
 			if State.DebugLvl > 0 {
 				l.GetErrorLogger().Println(
 					"User gave invalid size value for creating room")
-				return fmt.Errorf("Invalid size attribute provided." +
-					" \nIt must be an array/list/vector with 3 elements." +
-					" Please refer to the wiki or manual reference" +
+				return fmt.Errorf("Invalid size attribute/template provided." +
+					" \nThe size must be an array/list/vector with " +
+					"3 elements." + "\n\nIf you have provided a" +
+					" template, please check that you are referring to " +
+					"an existing template" +
+					"\n\nFor more information " +
+					"please refer to the wiki or manual reference" +
 					" for more details on how to create objects " +
 					"using this syntax")
 			}
