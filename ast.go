@@ -757,7 +757,7 @@ type unsetVarNode struct {
 func (n *unsetVarNode) execute() (interface{}, error) {
 	switch n.option {
 	case "-f":
-		funcTable[n.name] = nil
+		delete(funcTable, n.name)
 	case "-v":
 		dynamicSymbolTable[n.name] = nil
 	default:
