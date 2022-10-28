@@ -3,6 +3,7 @@ package main
 import (
 	c "cli/controllers"
 	"cli/readline"
+	"fmt"
 	"io/ioutil"
 	"strings"
 )
@@ -60,9 +61,13 @@ func ListLocal(path string) func(string) []string {
 		} else {
 			path = strings.TrimSpace(TrimToSlash(line[q:]))
 			if len(line) > 4 {
-				if strings.TrimSpace(line[q:]) != "/" {
-					path = "./" + path
+				check := strings.TrimSpace(line[q+1:])
+				if len(check) > 0 {
+					if string(check[0]) != "/" {
+						path = "./" + path
+					}
 				}
+
 			}
 
 			if path == "" {
@@ -73,7 +78,11 @@ func ListLocal(path string) func(string) []string {
 		//End of Algorithm
 
 		names := make([]string, 0)
-		files, _ := ioutil.ReadDir(path)
+		files, e := ioutil.ReadDir(path)
+		if e != nil {
+			fmt.Println("\n", e.Error())
+			return []string{}
+		}
 		for _, f := range files {
 			names = append(names, f.Name())
 		}
