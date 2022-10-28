@@ -128,6 +128,46 @@ func UnLinkObjCompleter(path string) func(string) []string {
 	}
 }
 
+func ListForUI(path string) func(string) []string {
+	return func(line string) []string {
+		var trimmed string
+		//Instead let's trim to the first instance of '='
+		idx := strings.Index(line, "= ")
+		if idx == -1 {
+			return nil
+		}
+		idx += 1
+		if line[idx:] == "" {
+			path = c.State.CurrPath
+		} else {
+			path = TrimToSlash(line[idx:])
+			trimmed = line[idx:]
+			if len(line) > idx+1 {
+				if len(trimmed) > 2 && trimmed[2:] == ".." || len(trimmed) > 0 && trimmed != "/" {
+					path = c.State.CurrPath + "/" + strings.TrimSpace(path)
+				}
+			}
+
+			if path == "" {
+				path = c.State.CurrPath
+			}
+
+			//Helps to make autocompletion at the root
+			if trimmed[0] == '/' {
+				if strings.Count(trimmed, "/") > 1 {
+					path = TrimToSlash(trimmed)
+
+				} else {
+					path = "/"
+				}
+			}
+		}
+
+		items := c.FetchNodesAtLevel(path)
+		return items
+	}
+}
+
 func ListUserVars(path string, appendDeref bool) func(string) []string {
 	return func(line string) []string {
 		ans := []string{}
@@ -441,15 +481,30 @@ func GetPrefixCompleter() *readline.PrefixCompleter {
 		readline.PcItem("camera.move", false),
 		readline.PcItem("camera.translate", false),
 		readline.PcItem("camera.wait", false),
-		readline.PcItem("ui", false,
-			readline.PcItem(".", false,
-				readline.PcItem("highlight", false),
-				readline.PcItem("hl", false),
-				readline.PcItem("debug", false),
-				readline.PcItem("infos", false),
-				readline.PcItem("wireframe", false),
-				readline.PcItem("delay", false)),
-		),
+
+		readline.PcItem("ui.highlight", false,
+			readline.PcItem("=", true,
+				readline.PcItemDynamic(ListForUI(""), false))),
+
+		readline.PcItem("ui.hl", false,
+			readline.PcItem("=", true,
+				readline.PcItemDynamic(ListForUI(""), false))),
+
+		readline.PcItem("ui.debug", false,
+			readline.PcItem("=", false,
+				readline.PcItem("true", false),
+				readline.PcItem("false", false))),
+
+		readline.PcItem("ui.infos", false,
+			readline.PcItem("=", false,
+				readline.PcItem("true", false),
+				readline.PcItem("false", false))),
+
+		readline.PcItem("ui.wireframe", false,
+			readline.PcItem(" = ", false)),
+		readline.PcItem("ui.delay", false,
+			readline.PcItem(" = ", false)),
+
 		readline.PcItem(">", true,
 			readline.PcItemDynamic(ListEntities(""), false)),
 		readline.PcItem("hc", true,

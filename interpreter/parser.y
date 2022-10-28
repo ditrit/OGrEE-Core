@@ -169,7 +169,7 @@ stmnt:   TOK_GET PATH {$$=&getObjectNode{$2}}
        // UNITY
        | TOK_UI_DELAY TOK_EQUAL EXPR {$$=&uiDelayNode{$3}}
        | UI_TOGGLE TOK_EQUAL EXPR {$$=&uiToggleNode{$1, $3}}
-       | TOK_UI_HIGHLIGHT TOK_EQUAL PHYSICAL_PATH {$$=&uiHighlightNode{$3}}
+       | TOK_UI_HIGHLIGHT TOK_EQUAL PATH {$$=&uiHighlightNode{$3}}
        | TOK_CAM_MOVE TOK_EQUAL EXPR TOK_ATTRSPEC EXPR {$$=&cameraMoveNode{"move", $3, $5}}
        | TOK_CAM_TRANSLATE TOK_EQUAL EXPR TOK_ATTRSPEC EXPR {$$=&cameraMoveNode{"translate", $3, $5}}
        | TOK_CAM_WAIT TOK_EQUAL EXPR {$$=&cameraWaitNode{$3}}
