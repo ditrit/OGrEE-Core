@@ -1,6 +1,7 @@
 package models
 
 import (
+	"encoding/hex"
 	u "p3/utils"
 	"strings"
 
@@ -296,7 +297,17 @@ func ValidateEntity(entity int, t map[string]interface{}) (map[string]interface{
 					case TENANT:
 						if _, ok := v["color"]; !ok || v["color"] == "" {
 							return u.Message(false,
-								"Color Attribute must be specified on the payload"), false
+								"Color Attribute must be specified on the payload and as a hex string"), false
+						}
+
+						if !IsString(v["color"]) {
+							return u.Message(false,
+								"Color Attribute must be a string (of a hex value)"), false
+						}
+
+						if !IsHexString(v["color"].(string)) {
+							return u.Message(false,
+								"Color Attribute must be a Hex value"), false
 						}
 
 					case SITE:
@@ -730,4 +741,9 @@ func IsString(x interface{}) bool {
 		return true
 	}
 	return false
+}
+
+func IsHexString(s string) bool {
+	_, err := hex.DecodeString(s)
+	return err == nil
 }
