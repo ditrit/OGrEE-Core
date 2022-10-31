@@ -31,7 +31,7 @@ var _ = l.GetInfoLogger() //Suppresses annoying Dockerfile build error
 %token <s> TOK_RACK TOK_DEVICE TOK_STR
 %token <s> TOK_CORIDOR TOK_GROUP 
 %token <s> TOK_AC TOK_CABINET TOK_PANEL
-%token <s> TOK_SENSOR
+%token <s> TOK_SENSOR TOK_HEX
 %token <s> TOK_ROOM_TMPL TOK_OBJ_TMPL
 %token <s> TOK_PLUS TOK_MINUS TOK_ORIENTATION
 %token
@@ -232,6 +232,7 @@ CONCAT:  CONCAT_TERM {$$=$1}
 CONCAT_TERM_NOCOL:  TOK_DEREF TOK_LBRAC TOK_WORD TOK_RBRAC {$$=&symbolReferenceNode{$3}}
        | TOK_DEREF TOK_WORD {$$=&symbolReferenceNode{$2}}
        | TOK_WORD {$$=&strLeaf{$1}}
+       | TOK_HEX {$$=&strLeaf{$1}}
        | TOK_STR {$$=&strLeaf{$1}}
        | TOK_SLASH {$$=&strLeaf{"/"}}
        | TOK_DOT_DOT {$$=&strLeaf{".."}}
