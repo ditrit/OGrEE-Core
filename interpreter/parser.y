@@ -92,9 +92,7 @@ stmnt:   TOK_GET PATH {$$=&getObjectNode{$2}}
        | TOK_EQUAL PATH {$$=&selectObjectNode{$2}}
        | TOK_EQUAL {$$=&selectObjectNode{&strLeaf{""}}}
        | TOK_EQUAL TOK_LBRAC GETOBJS TOK_RBRAC {$$=&selectChildrenNode{$3}}
-       | PHYSICAL_PATH TOK_COL TOK_WORD TOK_EQUAL EXPR_NOQUOTE {$$=&updateObjNode{$1, map[string]interface{}{$3:$5},false}}
-       | PHYSICAL_PATH TOK_COL TOK_WORD TOK_EQUAL TOK_SHARP EXPR_NOQUOTE {$$=&updateObjNode{$1, map[string]interface{}{$3:$6},true}}
-       | PHYSICAL_PATH TOK_COL TOK_WORD TOK_EQUAL ARRAY TOK_ATTRSPEC ARRAY {$$=&specialUpdateNode{$1, $3, $5, $7}}
+
        | TOK_CD PATH {$$=&cdNode{$2}}
        | TOK_CD {$$=&cdNode{strLeaf{"/"}}}
        | TOK_CD TOK_MINUS {$$=&cdNode{strLeaf{"-"}}}
@@ -128,6 +126,15 @@ stmnt:   TOK_GET PATH {$$=&getObjectNode{$2}}
        | TOK_PLUS OCCR {$$=$2}
        | TOK_MINUS PATH {$$=&deleteObjNode{$2}}
        | TOK_MINUS TOK_SELECT {$$=&deleteSelectionNode{}}   
+
+       //UPDATE
+       | PHYSICAL_PATH TOK_COL TOK_WORD TOK_EQUAL TOK_SHARP EXPR_NOQUOTE {$$=&updateObjNode{$1, map[string]interface{}{$3:$6},true}}
+       | PHYSICAL_PATH TOK_COL TOK_WORD TOK_EQUAL ARRAY TOK_ATTRSPEC ARRAY {$$=&specialUpdateNode{$1, $3, $5, $7}}
+       | PHYSICAL_PATH TOK_COL TOK_WORD TOK_EQUAL EXPR_NOQUOTE {
+              /*Hack Case: we need to change the mode of the Path Node*/;
+              ($1).(*pathNode).mode = STD;
+              $$=&updateObjNode{$1, map[string]interface{}{$3:$5},false}}
+
 
        //ASSIGNMENT  
        | TOK_VAR TOK_COL TOK_WORD TOK_EQUAL EXPR_NOQUOTE {$$=&assignNode{$3, $5}}
