@@ -31,7 +31,7 @@ var _ = l.GetInfoLogger() //Suppresses annoying Dockerfile build error
 %token <s> TOK_RACK TOK_DEVICE TOK_STR
 %token <s> TOK_CORIDOR TOK_GROUP 
 %token <s> TOK_AC TOK_CABINET TOK_PANEL
-%token <s> TOK_SENSOR
+%token <s> TOK_SENSOR TOK_HEX
 %token <s> TOK_ROOM_TMPL TOK_OBJ_TMPL
 %token <s> TOK_PLUS TOK_MINUS TOK_ORIENTATION
 %token
@@ -89,9 +89,7 @@ st2:    {$$=nil}
 
 stmnt:   TOK_GET PATH {$$=&getObjectNode{$2}}
        //| TOK_GET OBJ_TYPE EQUAL_LIST {$$=&searchObjectsNode{$2, $3}}
-       | TOK_EQUAL PATH {$$=&selectObjectNode{$2}}
-       | TOK_EQUAL {$$=&selectObjectNode{&strLeaf{""}}}
-       | TOK_EQUAL TOK_LBRAC GETOBJS TOK_RBRAC {$$=&selectChildrenNode{$3}}
+
 
        | TOK_CD PATH {$$=&cdNode{$2}}
        | TOK_CD {$$=&cdNode{strLeaf{"/"}}}
@@ -127,9 +125,14 @@ stmnt:   TOK_GET PATH {$$=&getObjectNode{$2}}
        | TOK_MINUS PATH {$$=&deleteObjNode{$2}}
        | TOK_MINUS TOK_SELECT {$$=&deleteSelectionNode{}}   
 
-       //UPDATE
+       //SELECTION COMMANDS
+       | TOK_EQUAL PATH {$$=&selectObjectNode{$2}}
+       | TOK_EQUAL {$$=&selectObjectNode{&strLeaf{""}}}
+       | TOK_EQUAL TOK_LBRAC GETOBJS TOK_RBRAC {$$=&selectChildrenNode{$3}}
+
+       //UPDATE / INTERACT
        | PHYSICAL_PATH TOK_COL TOK_WORD TOK_EQUAL TOK_SHARP EXPR_NOQUOTE {$$=&updateObjNode{$1, map[string]interface{}{$3:$6},true}}
-       | PHYSICAL_PATH TOK_COL TOK_WORD TOK_EQUAL ARRAY TOK_ATTRSPEC ARRAY {$$=&specialUpdateNode{$1, $3, $5, $7}}
+       | PHYSICAL_PATH TOK_COL TOK_WORD TOK_EQUAL EXPR_NOQUOTE TOK_ATTRSPEC EXPR_NOQUOTE {$$=&specialUpdateNode{$1, $3, $5, $7}}
        | PHYSICAL_PATH TOK_COL TOK_WORD TOK_EQUAL EXPR_NOQUOTE {
               /*Hack Case: we need to change the mode of the Path Node*/;
               ($1).(*pathNode).mode = STD;
@@ -239,6 +242,7 @@ CONCAT:  CONCAT_TERM {$$=$1}
 CONCAT_TERM_NOCOL:  TOK_DEREF TOK_LBRAC TOK_WORD TOK_RBRAC {$$=&symbolReferenceNode{$3}}
        | TOK_DEREF TOK_WORD {$$=&symbolReferenceNode{$2}}
        | TOK_WORD {$$=&strLeaf{$1}}
+       | TOK_HEX {$$=&strLeaf{$1}}
        | TOK_STR {$$=&strLeaf{$1}}
        | TOK_SLASH {$$=&strLeaf{"/"}}
        | TOK_DOT_DOT {$$=&strLeaf{".."}}
