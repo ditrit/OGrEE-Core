@@ -590,9 +590,35 @@ func (n *specialUpdateNode) execute() (interface{}, error) {
 		}
 
 		return cmd.UpdateObj(path, "", "", attr, false)
+
+	} else if n.variable == "labelFont" {
+		//This section will be expanded later on as
+		//the language grows
+		if !IsStringValue(first, "color") {
+			msg := "'color' attribute can only specified via this syntax"
+			return nil, fmt.Errorf(msg)
+		}
+
+		if !IsString(second) {
+			msg := "The parameter for color attribute must be a string of a hex number"
+			return nil, fmt.Errorf(msg)
+		}
+
+		if !IsHexString(second.(string)) {
+			msg := "The parameter for color attribute must be a hex number"
+			return nil, fmt.Errorf(msg)
+		}
+
+		//attr := map[string]interface{}{}
+
+		return nil,
+			cmd.InteractObject(path, "color", second, false)
 	} else {
 		return nil, fmt.Errorf("Invalid attribute specified for room update")
 	}
+	//Control should not reach here
+	//code added to suppress compiler error
+	return nil, fmt.Errorf("Invalid syntax")
 }
 
 type easyUpdateNode struct {
@@ -1229,27 +1255,6 @@ type assignNode struct {
 }
 
 func (a *assignNode) execute() (interface{}, error) {
-	val, err := a.val.execute()
-	if err != nil {
-		return nil, err
-	}
-	switch v := val.(type) {
-	case bool, int, float64, string, []interface{}, map[string]interface{}:
-		dynamicSymbolTable[a.variable] = v
-		if cmd.State.DebugLvl >= 3 {
-			println("You want to assign", a.variable, "with value of", v)
-		}
-		return nil, nil
-	}
-	return nil, fmt.Errorf("Invalid type to assign variable ", a.variable)
-}
-
-type assignComposedNode struct {
-	variable string
-	val      node
-}
-
-func (a *assignComposedNode) execute() (interface{}, error) {
 	val, err := a.val.execute()
 	if err != nil {
 		return nil, err
