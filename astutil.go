@@ -176,3 +176,8 @@ func IsHexString(s string) bool {
 	_, err := hex.DecodeString(s)
 	return err == nil
 }
+
+func IsBool(x interface{}) bool {
+	_, ok := x.(bool)
+	return ok
+}

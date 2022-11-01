@@ -461,7 +461,7 @@ func (n *recursiveUpdateObjNode) execute() (interface{}, error) {
 type updateObjNode struct {
 	path       node
 	attributes map[string]interface{}
-	hasSharp   bool
+	hasSharp   bool //Refers to indexing in 'description' array attributes
 }
 
 func (n *updateObjNode) execute() (interface{}, error) {
@@ -486,7 +486,13 @@ func (n *updateObjNode) execute() (interface{}, error) {
 	//Check if the syntax refers to update or an interact command
 	//
 	for i := range attributes {
-		if i == "label" || i == "labelFont" || i == "content" {
+		vals := []string{"label", "labelFont", "content",
+			"alpha", "tilesName", "tilesColor", "U", "slots", "localCS"}
+		if AssertInStringValues(i, vals) {
+			if i != "labelFont" && !IsBool(attributes[i]) {
+				msg := "Only boolean values can be used for interact commands"
+				return nil, fmt.Errorf(msg)
+			}
 			return nil, cmd.InteractObject(path, i, attributes[i], n.hasSharp)
 		}
 	}
