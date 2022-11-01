@@ -486,7 +486,7 @@ func (n *updateObjNode) execute() (interface{}, error) {
 	//Check if the syntax refers to update or an interact command
 	//
 	for i := range attributes {
-		if i == "label" || i == "labelFont" {
+		if i == "label" || i == "labelFont" || i == "content" {
 			return nil, cmd.InteractObject(path, i, attributes[i], n.hasSharp)
 		}
 	}
