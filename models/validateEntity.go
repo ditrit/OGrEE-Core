@@ -744,6 +744,11 @@ func IsString(x interface{}) bool {
 }
 
 func IsHexString(s string) bool {
+	//Eliminate 'odd length' errors
+	if len(s)%2 != 0 {
+		s = "0" + s
+	}
+
 	_, err := hex.DecodeString(s)
 	return err == nil
 }
