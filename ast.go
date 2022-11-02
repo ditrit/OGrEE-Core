@@ -897,6 +897,11 @@ func (n *getOCAttrNode) execute() (interface{}, error) {
 				colorStr = strconv.FormatFloat(color.(float64), 'f', -1, 64)
 			}
 
+			if len(colorStr) != 6 {
+				msg := "The color must be a hex value with a length of 6"
+				return nil, fmt.Errorf(msg)
+			}
+
 			if !IsHexString(colorStr) {
 				msg := "Please provide a valid hex value for the tenant color"
 				return nil, fmt.Errorf(msg)
