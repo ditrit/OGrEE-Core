@@ -195,24 +195,6 @@ func ListUserFuncs(path string) func(string) []string {
 	}
 }
 
-func ListForCreate(path string) func(string) []string {
-	return func(line string) []string {
-		//We want to trim until first whitespace
-		split := strings.Index(line, " ")
-		fn := ListEntities("")
-		ans := fn(line[split+1:])
-		return ans
-
-	}
-}
-
-func AttrCompleter(path string) func(string) []string {
-	return func(line string) []string {
-
-		return []string{" :name=", " :desc="}
-	}
-}
-
 func TenantSiteOCLICompleter(path string) func(string) []string {
 	return func(line string) []string {
 
@@ -326,11 +308,9 @@ func GetPrefixCompleter() *readline.PrefixCompleter {
 			readline.PcItem("lsslot", false),
 			readline.PcItem("lsenterprise", false),
 			readline.PcItem("lsu", false),
-			readline.PcItem("create", false),
 			readline.PcItem("get", false),
 			readline.PcItem("getu", false),
 			readline.PcItem("getslot", false),
-			readline.PcItem("update", false),
 			readline.PcItem("hc", false),
 			readline.PcItem("drawable", false),
 			readline.PcItem("draw", false),
@@ -342,8 +322,7 @@ func GetPrefixCompleter() *readline.PrefixCompleter {
 			readline.PcItem("=", false),
 			readline.PcItem("-", false),
 			readline.PcItem("+", false),
-			readline.PcItem(">", false),
-			readline.PcItem("delete", false)),
+			readline.PcItem(">", false)),
 		readline.PcItem("+", false,
 			readline.PcItem("tn:", true,
 				readline.PcItemDynamic(TenantSiteOCLICompleter(""), true)),
@@ -366,44 +345,6 @@ func GetPrefixCompleter() *readline.PrefixCompleter {
 			readline.PcItem("orphan:device:", true,
 				readline.PcItemDynamic(TenantSiteOCLICompleter(""), true))),
 
-		readline.PcItem("create", false,
-			readline.PcItem("tenant", true,
-				readline.PcItemDynamic(ListForCreate(""), true),
-				readline.PcItemDynamic(AttrCompleter(""), false)),
-			readline.PcItem("site", true,
-				readline.PcItemDynamic(ListForCreate(""), true),
-				readline.PcItemDynamic(AttrCompleter(""), false)),
-			readline.PcItem("building", true,
-				readline.PcItemDynamic(ListForCreate(""), true),
-				readline.PcItemDynamic(AttrCompleter(""), false)),
-			readline.PcItem("room", true,
-				readline.PcItemDynamic(ListForCreate(""), true),
-				readline.PcItemDynamic(AttrCompleter(""), false)),
-			readline.PcItem("rack", true,
-				readline.PcItemDynamic(ListForCreate(""), true),
-				readline.PcItemDynamic(AttrCompleter(""), false)),
-			readline.PcItem("device", true,
-				readline.PcItemDynamic(ListForCreate(""), true),
-				readline.PcItemDynamic(AttrCompleter(""), false)),
-			readline.PcItem("corridor", true,
-				readline.PcItemDynamic(ListForCreate(""), true),
-				readline.PcItemDynamic(AttrCompleter(""), false)),
-			readline.PcItem("group", true,
-				readline.PcItemDynamic(ListForCreate(""), true),
-				readline.PcItemDynamic(AttrCompleter(""), false)),
-			readline.PcItem("panel", true,
-				readline.PcItemDynamic(ListForCreate(""), true),
-				readline.PcItemDynamic(AttrCompleter(""), false)),
-			readline.PcItem("cabinet", true,
-				readline.PcItemDynamic(ListForCreate(""), true),
-				readline.PcItemDynamic(AttrCompleter(""), false)),
-			readline.PcItem("sensor", true,
-				readline.PcItemDynamic(ListForCreate(""), true),
-				readline.PcItemDynamic(AttrCompleter(""), false)),
-			readline.PcItem("obj_template", false),
-			readline.PcItem("room_template", false),
-		),
-
 		readline.PcItem("get", true,
 			readline.PcItem("tenant", false),
 			readline.PcItem("site", false),
@@ -416,10 +357,6 @@ func GetPrefixCompleter() *readline.PrefixCompleter {
 			readline.PcItemDynamic(ListEntities(""), false)),
 
 		readline.PcItem("getslot", true,
-			readline.PcItemDynamic(ListEntities(""), false)),
-		readline.PcItem("update", true,
-			readline.PcItemDynamic(ListEntities(""), false)),
-		readline.PcItem("delete", true,
 			readline.PcItemDynamic(ListEntities(""), false)),
 		readline.PcItem("selection", false),
 		readline.PcItem(".cmds:", true,
