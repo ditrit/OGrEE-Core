@@ -305,6 +305,11 @@ func ValidateEntity(entity int, t map[string]interface{}) (map[string]interface{
 								"Color Attribute must be a string (of a hex value)"), false
 						}
 
+						if len(v["color"].(string)) != 6 {
+							return u.Message(false,
+								"Color Attribute must have a length of 6"), false
+						}
+
 						if !IsHexString(v["color"].(string)) {
 							return u.Message(false,
 								"Color Attribute must be a Hex value"), false
