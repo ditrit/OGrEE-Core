@@ -102,10 +102,12 @@ stmnt:   TOK_GET PATH {$$=&getObjectNode{$2}}
        | TOK_LSU {$$=&lsAttrNode{&pathNode{&strLeaf{"."}, STD}, "heightu"}}
        | TOK_LSSLOT PATH {$$=&lsAttrNode{$2, "slot"}}
        | TOK_LSSLOT {$$=&lsAttrNode{&pathNode{&strLeaf{"."}, STD}, "slot"}}
-       | TOK_GETU {$$=&getUNode{&pathNode{&strLeaf{"."}, STD}, 0}}
-       | TOK_GETU PATH {$$=&getUNode{$2, 0}}
-       | TOK_GETU PATH TOK_INT {$$=&getUNode{$2, $3}}
+
+       | TOK_GETU {x:=&pathNode{&strLeaf{"."}, STD}; y:=&intLeaf{0};$$=&getUNode{x, y}}
+       | TOK_GETU PATH {$$=&getUNode{$2, &intLeaf{0}}}
+       | TOK_GETU PATH TOK_INT {$$=&getUNode{$2, &intLeaf{$3}}}
        | TOK_GETSLOT PATH TOK_COMMA EXPR_NOQUOTE {$$=&getUNode{$2, $4}}
+
        | TOK_TREE PATH TOK_INT {$$=&treeNode{$2, $3}}
        | TOK_TREE PATH {$$=&treeNode{$2, 0}}
        | TOK_TREE {$$=&treeNode{&pathNode{&strLeaf{"."}, STD}, 0}}

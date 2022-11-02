@@ -873,10 +873,11 @@ func LSATTR(x, attr string) {
 			name := dev["name"].(string)
 			if attr == "slot" {
 				var slot string
-				if dev["slot"] == nil {
+				devAttr := dev["attributes"].(map[string]interface{})
+				if devAttr["slot"] == nil {
 					slot = "NULL"
 				} else {
-					slot = dev["slot"].(string)
+					slot = devAttr["slot"].(string)
 				}
 				println("Slot:"+slot, "  Name: ", name)
 

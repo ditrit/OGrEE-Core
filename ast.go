@@ -228,7 +228,7 @@ func (n *lsAttrNode) execute() (interface{}, error) {
 
 type getUNode struct {
 	path node
-	u    interface{}
+	u    node
 }
 
 func (n *getUNode) execute() (interface{}, error) {
@@ -240,7 +240,11 @@ func (n *getUNode) execute() (interface{}, error) {
 	if !ok {
 		return nil, fmt.Errorf("Path should be a string")
 	}
-	cmd.GetByAttr(path, n.u)
+	u, e1 := n.u.execute()
+	if e1 != nil {
+		return nil, e1
+	}
+	cmd.GetByAttr(path, u)
 	return nil, nil
 }
 
