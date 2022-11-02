@@ -625,7 +625,7 @@ func (n *specialUpdateNode) execute() (interface{}, error) {
 		//attr := map[string]interface{}{}
 
 		return nil,
-			cmd.InteractObject(path, "color", second, false)
+			cmd.InteractObject(path, "labelFont", second, false)
 	} else {
 		return nil, fmt.Errorf("Invalid attribute specified for room update")
 	}
