@@ -1,4 +1,4 @@
-USAGE:  unset [VAR/FUNC NAME] [OPTIONS]    
+USAGE:  unset [OPTIONS] [VAR/FUNC NAME]     
 Deletes function or variable or attribute of an object   
 
 There is an alternative usage for deleting an attribute of an object:   

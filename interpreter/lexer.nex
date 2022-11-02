@@ -108,8 +108,7 @@
 /ls/ { printToks("TOK_LS");return TOK_LS}
 /exit/ { printToks("TOK_EXIT"); return TOK_EXIT}
 /len/ { printToks("TOK_LEN"); return TOK_LEN}
-/[^=!]([=!]=)[^=]/ { printToks("TOK_DOUBLE_EQUAL");return TOK_DOUBLE_EQUAL}
-/[=]/ { printToks("TOK_EQUAL");return TOK_EQUAL}
+/=/ { printToks("TOK_EQUAL");return TOK_EQUAL}
 /\// { printToks("TOK_SLASH"); return TOK_SLASH}
 /man/ { printToks("TOK_DOC"); return TOK_DOC}
 /drawable/ { printToks("TOK_DRAW"); return TOK_DRAWABLE}

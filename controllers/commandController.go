@@ -1159,6 +1159,7 @@ func CD(x string) string {
 
 func Help(entry string) {
 	var path string
+	entry = strings.TrimSpace(entry)
 	switch entry {
 	case "ls", "lsu", "pwd", "print", "cd", "tree", "create", "get", "clear",
 		"update", "delete", "lsog", "grep", "for", "while", "if", "env",

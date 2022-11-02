@@ -267,7 +267,7 @@ EXPR: TOK_INT {$$=&floatLeaf{float64($1)}}
 
        | EXPR TOK_OR EXPR {$$=&logicalNode{"||", $1, $3}}
        | EXPR TOK_AND EXPR {$$=&logicalNode{"&&", $1, $3}}
-       | EXPR TOK_DOUBLE_EQUAL EXPR {$$=&equalityNode{"==", $1, $3}}
+       | EXPR TOK_EQUAL TOK_EQUAL EXPR {$$=&equalityNode{"==", $1, $4}}
        | EXPR TOK_NOT_EQUAL EXPR {$$=&equalityNode{"!=", $1, $3}}
        | EXPR TOK_LESS EXPR {$$=&comparatorNode{"<", $1, $3}}
        | EXPR TOK_LESS_EQUAL EXPR {$$=&comparatorNode{"<=", $1, $3}}
@@ -314,7 +314,9 @@ COMMAND: TOK_LINK{$$="link"} | TOK_UNLINK{$$="unlink"} | TOK_CLR{$$="clear"} | T
        | TOK_LSTEN{$$="lsten"} | TOK_LSSITE{$$="lssite"} | TOK_LSBLDG{$$="lsbldg"} | TOK_LSROOM{$$="lsroom"} 
        | TOK_LSRACK{$$="lsrack"} | TOK_LSDEV{$$="lsdev"} | TOK_MINUS{$$="-"} | TOK_TEMPLATE{$$=".template"}
        | TOK_CMDS{$$=".cmds"} | TOK_VAR{$$=".var"} | TOK_PLUS{$$="+"} | TOK_EQUAL{$$="="} 
-       | TOK_GREATER{$$=">"} | TOK_DRAWABLE{$$="drawable"} | TOK_LSU{$$="lsu"} | TOK_LSSLOT{$$="lsslot"} | TOK_GETU{$$="getu"} | TOK_GETSLOT{$$="getslot"}
+       | TOK_GREATER{$$=">"} | TOK_DRAWABLE{$$="drawable"} | TOK_LSU{$$="lsu"} 
+       | TOK_LSSLOT{$$="lsslot"} | TOK_GETU{$$="getu"} | TOK_GETSLOT{$$="getslot"}
+       | TOK_GREP {$$="grep"}
 ;
 
 ORIENTATION: TOK_ORIENTATION {$$=&strLeaf{$1}}
