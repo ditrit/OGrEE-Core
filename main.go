@@ -12,7 +12,7 @@ import (
 	"github.com/gorilla/mux"
 )
 
-//Obtain by query
+// Obtain by query
 var dmatch mux.MatcherFunc = func(request *http.Request, match *mux.RouteMatch) bool {
 
 	//fmt.Println("The URL is: ", request.URL.String())
@@ -24,21 +24,21 @@ var dmatch mux.MatcherFunc = func(request *http.Request, match *mux.RouteMatch) 
 		MatchString(request.URL.String())
 }
 
-//Obtain object hierarchy
+// Obtain object hierarchy
 var hmatch mux.MatcherFunc = func(request *http.Request, match *mux.RouteMatch) bool {
 	println("CHECKING H-MATCH")
 	return regexp.MustCompile(`(^(\/api\/(tenants|sites|buildings|rooms|rooms|racks|devices|stray-devices)\/[a-zA-Z0-9]{24}\/all)(\/(tenants|sites|buildings|rooms|rooms|racks|devices|stray-(devices|sensors)))*$)|(^(\/api\/(tenants|sites|buildings|rooms|rooms|racks|devices|stray-devices)\/[a-zA-Z0-9]{24}\/all)(\?limit=[0-9]+)*$)`).
 		MatchString(request.URL.String())
 }
 
-//For Obtaining objects using parent
+// For Obtaining objects using parent
 var pmatch mux.MatcherFunc = func(request *http.Request, match *mux.RouteMatch) bool {
 	println("CHECKING P-MATCH")
 	return regexp.MustCompile(`^(\/api\/(tenants|sites|buildings|rooms|rooms|racks|devices|stray-devices)\/[a-zA-Z0-9]{24}(\/.*)+)$`).
 		MatchString(request.URL.String())
 }
 
-//For Obtaining Tenant hierarchy
+// For Obtaining Tenant hierarchy
 var tmatch mux.MatcherFunc = func(request *http.Request, match *mux.RouteMatch) bool {
 	println("CHECKING T-MATCH")
 	return regexp.MustCompile(`^(\/api\/(tenants|stray-devices)(\/[A-Za-z0-9_]+)(\/.*)+)$`).
@@ -46,7 +46,6 @@ var tmatch mux.MatcherFunc = func(request *http.Request, match *mux.RouteMatch) 
 }
 
 func main() {
-
 	router := mux.NewRouter()
 
 	router.HandleFunc("/api",

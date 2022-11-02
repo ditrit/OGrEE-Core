@@ -109,8 +109,9 @@ var CreateAccount = func(w http.ResponseWriter, r *http.Request) {
 // produces:
 // - application/json
 // responses:
-//     '200':
-//         description: Returns header with possible operations
+//
+//	'200':
+//	    description: Returns header with possible operations
 var Authenticate = func(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("******************************************************")
 	fmt.Println("FUNCTION CALL: 	 Authenticate ")
@@ -121,8 +122,8 @@ var Authenticate = func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Add("Content-Type", "application/json")
 		w.Header().Add("Allow", "POST, OPTIONS")
 	} else {
-		account := &models.Account{}
-		err := json.NewDecoder(r.Body).Decode(account)
+		var account models.Account
+		err := json.NewDecoder(r.Body).Decode(&account)
 		if err != nil {
 			u.Respond(w, u.Message(false, "Invalid request"))
 			return
@@ -161,8 +162,9 @@ var Authenticate = func(w http.ResponseWriter, r *http.Request) {
 // produces:
 // - application/json
 // responses:
-//     '200':
-//         description: Returns header with possible operations
+//
+//	'200':
+//	    description: Returns header with possible operations
 var Verify = func(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("******************************************************")
 	fmt.Println("FUNCTION CALL: 	 Verify ")
