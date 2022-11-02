@@ -620,7 +620,7 @@ func (n *specialUpdateNode) execute() (interface{}, error) {
 			msg := "Please provide a valid 6 length hex value for the color"
 			return nil, fmt.Errorf(msg)
 		}
-		second = c
+		second = "color@" + c
 
 		//attr := map[string]interface{}{}
 
