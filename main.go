@@ -4,14 +4,26 @@ import (
 	"flag"
 )
 
-//Assign value to flags[key] with preference to 'x'
-func SetArgFlags(x, y, defaultValue interface{}, key string, flags map[string]interface{}) {
+type Flags struct {
+	verbose    string
+	unityURL   string
+	APIURL     string
+	APIKEY     string
+	listenPort int
+	envPath    string
+	histPath   string
+	analyser   string
+	script     string
+}
+
+// Assign value to flag with preference to 'x'
+func NonDefault[T comparable](x, y, defaultValue T) T {
 	if x != defaultValue {
-		flags[key] = x
+		return x
 	} else if y != defaultValue {
-		flags[key] = y
+		return y
 	} else {
-		flags[key] = defaultValue
+		return defaultValue
 	}
 }
 
@@ -19,8 +31,6 @@ func main() {
 	var listenPORT, l int
 	var verboseLevel, v, unityURL, u, APIURL, a, APIKEY, k,
 		envPath, e, histPath, h, analyse, s, file, f string
-
-	flags := map[string]interface{}{}
 
 	flag.StringVar(&v, "v", "ERROR",
 		"Indicates level of debugging messages."+
@@ -68,43 +78,16 @@ func main() {
 
 	flag.Parse()
 
-	if v == "ERROR" {
-		flags["v"] = 1
-	} else {
-		switch v {
-		case "NONE":
-			flags["v"] = 0
-		case "WARNING":
-			flags["v"] = 2
-		case "INFO":
-			flags["v"] = 3
-		case "DEBUG":
-			flags["v"] = 4
-		default:
-			switch verboseLevel {
-			case "NONE":
-				flags["v"] = 0
-			case "WARNING":
-				flags["v"] = 2
-			case "INFO":
-				flags["v"] = 3
-			case "DEBUG":
-				flags["v"] = 4
-			default:
-				flags["v"] = 1
-			}
-		}
-	}
-
-	SetArgFlags(u, unityURL, "", "unity_url", flags)
-	SetArgFlags(a, APIURL, "", "api_url", flags)
-	SetArgFlags(k, APIKEY, "", "api_key", flags)
-	SetArgFlags(l, listenPORT, 0, "listen_port", flags)
-	SetArgFlags(e, envPath, "./.env", "env_path", flags)
-	SetArgFlags(h, histPath, "./.history", "history_path", flags)
-	SetArgFlags(s, analyse, "true", "analyser", flags)
-	SetArgFlags(f, file, "", "script", flags)
-
+	var flags Flags
+	flags.verbose = NonDefault(v, verboseLevel, "")
+	flags.unityURL = NonDefault(u, unityURL, "")
+	flags.APIURL = NonDefault(a, APIURL, "")
+	flags.APIKEY = NonDefault(k, APIKEY, "")
+	flags.listenPort = NonDefault(l, listenPORT, 0)
+	flags.envPath = NonDefault(e, envPath, "./.env")
+	flags.histPath = NonDefault(h, histPath, "./.history")
+	flags.analyser = NonDefault(s, analyse, "true")
+	flags.script = NonDefault(f, file, "")
 	//Pass control to repl.go
-	Start(flags)
+	Start(&flags)
 }
