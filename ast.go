@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"path/filepath"
+	"strconv"
 	"strings"
 )
 
@@ -877,6 +878,35 @@ func (n *getOCAttrNode) execute() (interface{}, error) {
 	attributes, err := evalMapNodes(n.attributes)
 	if err != nil {
 		return nil, err
+	}
+
+	if n.ent == cmd.TENANT {
+		//Check for valid hex
+		color := attributes["attributes"].(map[string]interface{})["color"]
+		if IsString(color) || IsInt(color) || IsFloat(color) {
+			var colorStr string
+			if IsString(color) {
+				colorStr = color.(string)
+			}
+
+			if IsInt(color) {
+				colorStr = strconv.Itoa(color.(int))
+			}
+
+			if IsFloat(color) {
+				colorStr = strconv.FormatFloat(color.(float64), 'f', -1, 64)
+			}
+
+			if !IsHexString(colorStr) {
+				msg := "Please provide a valid hex value for the tenant color"
+				return nil, fmt.Errorf(msg)
+			}
+			attributes["attributes"].(map[string]interface{})["color"] = colorStr
+
+		} else {
+			msg := "Please provide a valid hex value for the tenant color"
+			return nil, fmt.Errorf(msg)
+		}
 	}
 	err = cmd.GetOCLIAtrributes(path, n.ent, attributes)
 	if err != nil {

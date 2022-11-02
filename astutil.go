@@ -181,3 +181,14 @@ func IsBool(x interface{}) bool {
 	_, ok := x.(bool)
 	return ok
 }
+
+func IsInt(x interface{}) bool {
+	_, ok := x.(int)
+	return ok
+}
+
+func IsFloat(x interface{}) bool {
+	_, ok := x.(float64)
+	_, ok2 := x.(float32)
+	return ok || ok2
+}
