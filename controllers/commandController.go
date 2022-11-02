@@ -698,14 +698,34 @@ func Env(userVars, userFuncs map[string]interface{}) {
 }
 
 func LSOBJECT(x string, entity int) []map[string]interface{} {
-	obj, Path := GetObject(x, true)
-	if obj == nil {
-		if State.DebugLvl > 0 {
-			println("Error finding Object from given path!")
-		}
+	var obj map[string]interface{}
+	var Path string
 
-		l.GetWarningLogger().Println("Object to Get not found")
-		return nil
+	if entity == TENANT { //Edge case
+		if x == "/Physical" {
+			r, e := models.Send("GET",
+				State.APIURL+"/api/tenants", GetKey(), nil)
+			obj = ParseResponse(r, e, "Get Tenants")
+			arr := LoadArrFromResp(obj, "objects")
+			tenants := infArrToMapStrinfArr(arr)
+			for _, tenant := range tenants {
+				println(tenant["name"].(string))
+			}
+			return tenants
+		} else {
+			//Return nothing
+			return nil
+		}
+	} else {
+		obj, Path = GetObject(x, true)
+		if obj == nil {
+			if State.DebugLvl > 0 {
+				println("Error finding Object from given path!")
+			}
+
+			l.GetWarningLogger().Println("Object to Get not found")
+			return nil
+		}
 	}
 
 	entityDir, _ := path.Split(Path)
