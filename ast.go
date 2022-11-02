@@ -6,7 +6,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"path/filepath"
-	"strconv"
 	"strings"
 )
 
@@ -490,9 +489,18 @@ func (n *updateObjNode) execute() (interface{}, error) {
 		vals := []string{"label", "labelFont", "content",
 			"alpha", "tilesName", "tilesColor", "U", "slots", "localCS"}
 		if AssertInStringValues(i, vals) {
+			//labelFont should be 'bold' or 'italic' here in this node
 			if i != "labelFont" && !IsBool(attributes[i]) &&
 				attributes[i] != "true" && attributes[i] != "false" {
 				msg := "Only boolean values can be used for interact commands"
+				return nil, fmt.Errorf(msg)
+			}
+
+			if i == "labelFont" && attributes[i] != "bold" && attributes[i] != "italic" {
+				msg := "The font can only be bold or italic" +
+					" or be in the form of color@[colorValue]." +
+					"\n\nFor more information please refer to: " +
+					"\nhttps://github.com/ditrit/OGrEE-3D/wiki/CLI-langage#interact-with-objects"
 				return nil, fmt.Errorf(msg)
 			}
 			return nil, cmd.InteractObject(path, i, attributes[i], n.hasSharp)
@@ -607,15 +615,12 @@ func (n *specialUpdateNode) execute() (interface{}, error) {
 			return nil, fmt.Errorf(msg)
 		}
 
-		if !IsString(second) {
-			msg := "The parameter for color attribute must be a string of a hex number"
+		c, ok := AssertColor(second)
+		if ok == false {
+			msg := "Please provide a valid 6 length hex value for the color"
 			return nil, fmt.Errorf(msg)
 		}
-
-		if !IsHexString(second.(string)) {
-			msg := "The parameter for color attribute must be a hex number"
-			return nil, fmt.Errorf(msg)
-		}
+		second = c
 
 		//attr := map[string]interface{}{}
 
@@ -882,36 +887,13 @@ func (n *getOCAttrNode) execute() (interface{}, error) {
 
 	if n.ent == cmd.TENANT {
 		//Check for valid hex
-		color := attributes["attributes"].(map[string]interface{})["color"]
-		if IsString(color) || IsInt(color) || IsFloat(color) {
-			var colorStr string
-			if IsString(color) {
-				colorStr = color.(string)
-			}
-
-			if IsInt(color) {
-				colorStr = strconv.Itoa(color.(int))
-			}
-
-			if IsFloat(color) {
-				colorStr = strconv.FormatFloat(color.(float64), 'f', -1, 64)
-			}
-
-			if len(colorStr) != 6 {
-				msg := "The color must be a hex value with a length of 6"
-				return nil, fmt.Errorf(msg)
-			}
-
-			if !IsHexString(colorStr) {
-				msg := "Please provide a valid hex value for the tenant color"
-				return nil, fmt.Errorf(msg)
-			}
-			attributes["attributes"].(map[string]interface{})["color"] = colorStr
-
-		} else {
-			msg := "Please provide a valid hex value for the tenant color"
+		colorInf := attributes["attributes"].(map[string]interface{})["color"]
+		color, ok := AssertColor(colorInf)
+		if !ok {
+			msg := "Please provide a valid 6 length hex value for the color"
 			return nil, fmt.Errorf(msg)
 		}
+		attributes["attributes"].(map[string]interface{})["color"] = color
 	}
 	err = cmd.GetOCLIAtrributes(path, n.ent, attributes)
 	if err != nil {

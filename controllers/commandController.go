@@ -2966,20 +2966,7 @@ func InteractObject(path string, keyword string, val interface{}, fromAttr bool)
 	}
 
 	//Verify labelFont has valid values
-	if keyword == "labelFont" {
-		if _, ok := val.(string); !ok {
-			return fmt.Errorf("The font value must be a string")
-		}
-
-		if val != "bold" && val != "italic" &&
-			strings.Index(val.(string), "color@") != 0 {
-			msg := "The font can only be bold or italic" +
-				" or be in the form of color@[colorValue]." +
-				"\n\nFor more information please refer to: " +
-				"\nhttps://github.com/ditrit/OGrEE-3D/wiki/CLI-langage#interact-with-objects"
-			return fmt.Errorf(msg)
-		}
-	} else if fromAttr == true {
+	if fromAttr == true {
 		//Check if the val refers to an attribute field in the object
 		//this means to retrieve value from object
 		if value, ok := val.(string); ok {
