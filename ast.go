@@ -1163,12 +1163,12 @@ type linkObjectNode struct {
 }
 
 func (n *linkObjectNode) execute() (interface{}, error) {
-	if len(n.paths) == 3 {
-		newVal, err := n.paths[2].(node).execute()
+	for i := range n.paths {
+		val, err := n.paths[i].(node).execute()
 		if err != nil {
 			return nil, err
 		}
-		n.paths[2] = newVal
+		n.paths[i] = val
 	}
 	cmd.LinkObject(n.paths)
 	return nil, nil
@@ -1179,6 +1179,13 @@ type unlinkObjectNode struct {
 }
 
 func (n *unlinkObjectNode) execute() (interface{}, error) {
+	for i := range n.paths {
+		val, e := n.paths[i].(node).execute()
+		if e != nil {
+			return nil, e
+		}
+		n.paths[i] = val
+	}
 	cmd.UnlinkObject(n.paths)
 	return nil, nil
 }

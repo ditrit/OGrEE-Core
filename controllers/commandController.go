@@ -56,7 +56,9 @@ func ValidateObj(data map[string]interface{}, ent string, silence bool) bool {
 
 	if resp.StatusCode == http.StatusOK && respMap["status"].(bool) == true {
 		//Print success message
-		println(string(respMap["message"].(string)))
+		if silence == false {
+			println(string(respMap["message"].(string)))
+		}
 
 		return true
 	}
