@@ -90,12 +90,6 @@ st2:    {$$=nil}
 stmnt:   TOK_GET PATH {$$=&getObjectNode{$2}}
        //| TOK_GET OBJ_TYPE EQUAL_LIST {$$=&searchObjectsNode{$2, $3}}
 
-
-       | TOK_CD PATH {$$=&cdNode{$2}}
-       | TOK_CD {$$=&cdNode{strLeaf{"/"}}}
-       | TOK_CD TOK_MINUS {$$=&cdNode{strLeaf{"-"}}}
-       | TOK_LS PATH {$$=&lsNode{$2}}
-       | TOK_LS {$$=&lsNode{&pathNode{&strLeaf{"."}, STD}}}
        | LSOBJ_COMMAND PATH {$$=&lsObjNode{$2, $1}}
        | LSOBJ_COMMAND {$$=&lsObjNode{&pathNode{&strLeaf{"."}, STD}, $1}}
        | TOK_LSU PATH {$$=&lsAttrNode{$2, "heightu"}}
@@ -108,9 +102,6 @@ stmnt:   TOK_GET PATH {$$=&getObjectNode{$2}}
        | TOK_GETU PATH TOK_INT {$$=&getUNode{$2, &intLeaf{$3}}}
        | TOK_GETSLOT PATH TOK_COMMA EXPR_NOQUOTE {$$=&getUNode{$2, $4}}
 
-       | TOK_TREE PATH TOK_INT {$$=&treeNode{$2, $3}}
-       | TOK_TREE PATH {$$=&treeNode{$2, 0}}
-       | TOK_TREE {$$=&treeNode{&pathNode{&strLeaf{"."}, STD}, 0}}
        | TOK_DRAW PATH {$$=&drawNode{$2, 0}}
        | TOK_DRAW PATH TOK_INT {$$=&drawNode{$2, $3}}
        | TOK_DRAW {$$=&drawNode{&pathNode{&strLeaf{"."}, STD}, 0}}
@@ -127,12 +118,13 @@ stmnt:   TOK_GET PATH {$$=&getObjectNode{$2}}
        | TOK_MINUS PATH {$$=&deleteObjNode{$2}}
        | TOK_MINUS TOK_SELECT {$$=&deleteSelectionNode{}}   
 
-       //SELECTION COMMANDS
+
+       // SELECTION COMMANDS
        | TOK_EQUAL PATH {$$=&selectObjectNode{$2}}
        | TOK_EQUAL {$$=&selectObjectNode{&strLeaf{""}}}
        | TOK_EQUAL TOK_LBRAC GETOBJS TOK_RBRAC {$$=&selectChildrenNode{$3}}
 
-       //UPDATE / INTERACT
+       // UPDATE / INTERACT
        | PHYSICAL_PATH TOK_COL TOK_WORD TOK_EQUAL TOK_SHARP EXPR_NOQUOTE {$$=&updateObjNode{$1, map[string]interface{}{$3:$6},true}}
        | PHYSICAL_PATH TOK_COL TOK_WORD TOK_EQUAL EXPR_NOQUOTE TOK_ATTRSPEC EXPR_NOQUOTE {$$=&specialUpdateNode{$1, $3, $5, $7}}
        | PHYSICAL_PATH TOK_COL TOK_WORD TOK_EQUAL EXPR_NOQUOTE {
@@ -141,14 +133,12 @@ stmnt:   TOK_GET PATH {$$=&getObjectNode{$2}}
               $$=&updateObjNode{$1, map[string]interface{}{$3:$5},false}}
 
 
-       //ASSIGNMENT  
+
+       // ASSIGNMENT  
+       | TOK_DEREF TOK_WORD TOK_EQUAL EXPR {$$=&assignNode{$2, $4}}
        | TOK_VAR TOK_COL TOK_WORD TOK_EQUAL EXPR_NOQUOTE {$$=&assignNode{$3, $5}}
        | TOK_VAR TOK_COL TOK_WORD TOK_EQUAL TOK_DEREF TOK_LPAREN TOK_GET PATH TOK_RPAREN {$$=&assignNode{$3, &getObjectNode{$8}}}
        | TOK_VAR TOK_COL TOK_WORD TOK_EQUAL TOK_DEREF TOK_LPAREN TOK_PWD TOK_RPAREN {$$=&assignNode{$3, &pwdNode{}}}
-       
-       //ASSIGNMENT DEPRECATED
-       //| TOK_VAR TOK_COL TOK_WORD TOK_EQUAL EXPR {$$=&assignNode{$3, $5}}
-       //| TOK_VAR TOK_COL TOK_WORD TOK_EQUAL TOK_GET PATH {$$=&assignNode{$3, &getObjectNode{$6}}}
        
 
        | TOK_CMDS TOK_COL EXPR_NOQUOTE {$$=&loadNode{$3}}
@@ -177,6 +167,16 @@ stmnt:   TOK_GET PATH {$$=&getObjectNode{$2}}
        | TOK_DOC COMMAND {$$=&helpNode{$2}}
        | TOK_DOC {$$=&helpNode{""}}
        | TOK_DOC TOK_WORD {$$=&helpNode{$2}}
+       | TOK_CD PATH {$$=&cdNode{$2}}
+       | TOK_CD {$$=&cdNode{strLeaf{"/"}}}
+       | TOK_CD TOK_MINUS {$$=&cdNode{strLeaf{"-"}}}
+       | TOK_LS PATH {$$=&lsNode{$2}}
+       | TOK_LS {$$=&lsNode{&pathNode{&strLeaf{"."}, STD}}}
+       | TOK_TREE PATH TOK_INT {$$=&treeNode{$2, $3}}
+       | TOK_TREE PATH {$$=&treeNode{$2, 0}}
+       | TOK_TREE {$$=&treeNode{&pathNode{&strLeaf{"."}, STD}, 0}}
+
+
 
        // UNITY
        | TOK_UI_DELAY TOK_EQUAL EXPR {$$=&uiDelayNode{$3}}
@@ -194,13 +194,13 @@ stmnt:   TOK_GET PATH {$$=&getObjectNode{$2}}
 
        // LOOPS
        | TOK_WHILE TOK_LPAREN EXPR TOK_RPAREN st2 TOK_DONE {$$=&whileNode{$3, $5}}
+
+       // FOR
+       | TOK_FOR TOK_WORD TOK_IN EXPR TOK_SEMICOL st2 TOK_DONE {$$=&forArrayNode{$2, $4, $6}}
+       | TOK_FOR TOK_WORD TOK_IN TOK_LBRAC TOK_INT TOK_DOT_DOT TOK_INT TOK_RBRAC TOK_SEMICOL st2 TOK_DONE {$$=&forRangeNode{$2, $5, $7, $10}}
        | TOK_FOR TOK_LPAREN TOK_LPAREN TOK_WORD TOK_EQUAL EXPR TOK_SEMICOL EXPR TOK_SEMICOL st2 TOK_RPAREN TOK_RPAREN TOK_SEMICOL st2 TOK_DONE {
               $$=&forNode{&assignNode{$4, $6},$8,$10,$14}
        }
-
-       //FOR
-       | TOK_FOR TOK_WORD TOK_IN EXPR TOK_SEMICOL st2 TOK_DONE {$$=&forArrayNode{$2, $4, $6}}
-       | TOK_FOR TOK_WORD TOK_IN TOK_LBRAC TOK_INT TOK_DOT_DOT TOK_INT TOK_RBRAC TOK_SEMICOL st2 TOK_DONE {$$=&forRangeNode{$2, $5, $7, $10}}
 
        // IF
        | TOK_IF IF {$$=$2}
