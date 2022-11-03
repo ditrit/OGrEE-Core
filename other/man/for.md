@@ -11,7 +11,13 @@ This will repeatedly execute commands until the iterator reaches end of range
 In the 3rd type, an internal iterator is created and will
 iterate the range of the variable or expression given.
 For now the return value of a for loop is NULL.   
-   
+
+NOTE   
+
+    the syntax: for var in expression; commands; done
+    can only iterate through user made arrays at this time
+    
+
 EXAMPLE   
 
 
@@ -19,10 +25,4 @@ EXAMPLE
 
     for x in {2..10}; pwd; tree done   
 
-    for x in 5; pwd; done   
-
-    .var:p=3; for x in $p; pwd; print $x done   
-
-    for x in len(array); pwd done   
-
-    for x in $(ls) do pwd done
+    .var:arr = [5,99,2000]; for x in $arr; pwd; done   
