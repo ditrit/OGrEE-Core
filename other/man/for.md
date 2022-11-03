@@ -16,6 +16,8 @@ NOTE
 
     the syntax: for var in expression; commands; done
     can only iterate through user made arrays at this time
+
+    If you are using negative values in the loop of form (for x in {2..10}; pwd; tree done) please be sure to have spaces between the values and signs
     
 
 EXAMPLE   
