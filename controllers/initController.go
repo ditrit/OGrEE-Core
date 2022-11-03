@@ -432,18 +432,14 @@ func CheckKeyIsValid(key string) bool {
 	req.Header.Set("Authorization", "Bearer "+key)
 
 	resp, e := client.Do(req)
-	if e != nil || resp.StatusCode != 200 {
-		//readline.Line(e.Error())
-		if resp != nil {
-			readline.Line("Status code" + strconv.Itoa(resp.StatusCode))
-		} else {
-			l.GetErrorLogger().Println("Unable to connect to API: ", State.APIURL)
-			if State.DebugLvl > 0 {
-				println("Unable to connect to API: ", State.APIURL)
-			}
-
-		}
-
+	if e != nil {
+		l.GetErrorLogger().Println("Unable to connect to API: ", State.APIURL)
+		l.GetErrorLogger().Println(e.Error())
+		println("Unable to connect to API: ", State.APIURL)
+		println(e.Error())
+	}
+	if resp.StatusCode != 200 {
+		readline.Line("Status code" + strconv.Itoa(resp.StatusCode))
 		return false
 	}
 	return true
