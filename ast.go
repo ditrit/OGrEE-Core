@@ -609,7 +609,7 @@ func (n *specialUpdateNode) execute() (interface{}, error) {
 				"startPosXYm": first, "endPosXYm": second}
 
 			nextSepStr, _ := json.Marshal(nextSep)
-			if IsString(separators) && separators != "" {
+			if IsString(separators) && separators != "" && separators != "[]" {
 				sepStr = separators.(string)
 				size := len(sepStr)
 				sepStr = sepStr[:size-1] + "," + string(nextSepStr) + "]"
