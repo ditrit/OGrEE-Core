@@ -20,4 +20,5 @@ FROM alpine:latest
 USER root
 
 WORKDIR /home
+RUN mkdir /home/resources
 COPY --from=builder /home/main /home
