@@ -1,5 +1,5 @@
 Usage: ls[OBJ] [PATH]   
-Recursively displays specified object type from given path.
+Displays specified object type from given path.
 
 Where OBJ can be:   
 ten   
@@ -17,6 +17,6 @@ sensor
 EXAMPLE   
 
     lsten   
-    lsten ../../Physical/TenantB
+    lsten ../../Physical
     lscabinet
     lspanel
