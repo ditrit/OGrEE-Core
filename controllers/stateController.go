@@ -641,7 +641,7 @@ func RootWalk(root **Node, path string, depth int) {
 
 	logical := FindNodeInTree(root, StrToStack("/Logical"), true)
 	fmt.Println("├──" + "Logical")
-	LogicalWalk(logical, "|   ", depth-1)
+	LogicalWalk(logical, "│   ", depth-1)
 
 	phys := FindNodeInTree(root, StrToStack("/Physical"), true)
 	fmt.Println("└──" + "Physical")
@@ -809,15 +809,23 @@ func PhysicalWalk(root **Node, prefix, path string, depth int) {
 		var resp map[string]interface{}
 		if arr[1] == "Physical" { //Means path== "/Physical"
 
-			fmt.Println(prefix + "├──" + "Stray")
-			strayNode := FindNodeInTree(&State.TreeHierarchy,
-				StrToStack("/Physical/Stray"), true)
-			StrayWalk(strayNode, prefix+"│   ", depth)
-
+			//Need to check num tenants before passing the prefix
 			//Get and Print Tenants Block
+
 			r, e := models.Send("GET",
 				State.APIURL+"/api/tenants", GetKey(), nil)
 			resp = ParseResponse(r, e, "fetch objects")
+			strayNode := FindNodeInTree(&State.TreeHierarchy,
+				StrToStack("/Physical/Stray"), true)
+
+			if length, _ := GetRawObjectsLength(resp); length > 0 {
+				fmt.Println(prefix + "├──" + " Stray")
+				StrayWalk(strayNode, prefix+"│   ", depth)
+			} else {
+				fmt.Println(prefix + "└──" + " Stray")
+				StrayWalk(strayNode, prefix+"   ", depth)
+			}
+
 			if resp != nil {
 				if depth == 0 {
 					if _, ok := resp["data"]; ok {
@@ -868,15 +876,22 @@ func PhysicalWalk(root **Node, prefix, path string, depth int) {
 
 			if depth >= 0 {
 
-				fmt.Println(prefix + "├──" + "Stray")
 				strayNode := FindNodeInTree(&State.TreeHierarchy,
 					StrToStack("/Physical/Stray"), true)
-				StrayWalk(strayNode, prefix+"│   ", depth)
 
 				//Get and Print Tenants Block
 				r, e := models.Send("GET",
 					State.APIURL+"/api/tenants", GetKey(), nil)
 				resp = ParseResponse(r, e, "fetch objects")
+
+				//Need to check num tenants before passing the prefix
+				if length, _ := GetRawObjectsLength(resp); length > 0 {
+					fmt.Println(prefix + "├──" + " Stray")
+					StrayWalk(strayNode, prefix+"│   ", depth)
+				} else {
+					fmt.Println(prefix + "└──" + " Stray")
+					StrayWalk(strayNode, prefix+"   ", depth)
+				}
 				if resp != nil {
 					if depth == 0 {
 						if _, ok := resp["data"]; ok {
@@ -890,37 +905,34 @@ func PhysicalWalk(root **Node, prefix, path string, depth int) {
 
 				//If hierarchy happens to be greater than 1
 				if depth > 0 && resp != nil {
-					if _, ok := resp["data"]; ok {
-						if tenants, ok := resp["data"].(map[string]interface{})["objects"].([]interface{}); ok {
-							size := len(tenants)
-							for idx, tInf := range tenants {
-								tenant := tInf.(map[string]interface{})
-								ID := tenant["id"].(string)
-								depthStr := strconv.Itoa(depth)
+					if tenants := GetRawObjects(resp); tenants != nil {
+						size := len(tenants)
+						for idx, tInf := range tenants {
+							tenant := tInf.(map[string]interface{})
+							ID := tenant["id"].(string)
+							depthStr := strconv.Itoa(depth)
 
-								//Get Hierarchy for each tenant and walk
-								r, e := models.Send("GET",
-									State.APIURL+"/api/tenants/"+ID+"/all?limit="+depthStr, GetKey(), nil)
-								resp := ParseResponse(r, e, "fetch objects")
+							//Get Hierarchy for each tenant and walk
+							r, e := models.Send("GET",
+								State.APIURL+"/api/tenants/"+ID+"/all?limit="+depthStr, GetKey(), nil)
+							resp := ParseResponse(r, e, "fetch objects")
 
-								var subPrefix string
-								var currPrefix string
-								if idx == size-1 {
-									subPrefix = prefix + "    "
-									currPrefix = prefix + "└──"
-								} else {
-									subPrefix = prefix + "│   "
-									currPrefix = prefix + "├──"
-								}
+							var subPrefix string
+							var currPrefix string
+							if idx == size-1 {
+								subPrefix = prefix + "    "
+								currPrefix = prefix + "└──"
+							} else {
+								subPrefix = prefix + "│   "
+								currPrefix = prefix + "├──"
+							}
 
-								fmt.Println(currPrefix + tenant["name"].(string))
-								if resp != nil {
-									RemoteHierarchyWalk(resp["data"].(map[string]interface{}),
-										subPrefix, depth)
-								}
+							fmt.Println(currPrefix + tenant["name"].(string))
+							if resp != nil {
+								RemoteHierarchyWalk(resp["data"].(map[string]interface{}),
+									subPrefix, depth)
 							}
 						}
-
 					}
 				}
 

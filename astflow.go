@@ -125,13 +125,26 @@ func (n *forArrayNode) execute() (interface{}, error) {
 
 type forRangeNode struct {
 	variable string
-	start    int
-	end      int
+	start    node
+	end      node
 	body     node
 }
 
 func (n *forRangeNode) execute() (interface{}, error) {
-	for i := n.start; i <= n.end; i++ {
+	end, e := n.end.execute()
+	if e != nil {
+		return nil, e
+	}
+	start, e1 := n.start.execute()
+	if e1 != nil {
+		return nil, e1
+	}
+
+	if !checkTypeAreNumeric(start, end) {
+		return nil,
+			fmt.Errorf("Please provide a valid integer range to iterate")
+	}
+	for i := int(start.(float64)); i <= int(end.(float64)); i++ {
 		_, err := (&assignNode{n.variable, &intLeaf{i}}).execute()
 		if err != nil {
 			return nil, err

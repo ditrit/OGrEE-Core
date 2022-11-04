@@ -1,6 +1,9 @@
 package main
 
-import "fmt"
+import (
+	"fmt"
+	"strconv"
+)
 
 //This file contains code for semantic checking
 //(ensure correct data types, syntax etc)
@@ -76,4 +79,45 @@ func AssertInStringValues(x interface{}, potential []string) bool {
 		}
 	}
 	return false
+}
+
+func AssertColor(color interface{}) (string, bool) {
+	var colorStr string
+	if IsString(color) || IsInt(color) || IsFloat(color) {
+		if IsString(color) {
+			colorStr = color.(string)
+		}
+
+		if IsInt(color) {
+			colorStr = strconv.Itoa(color.(int))
+		}
+
+		if IsFloat(color) {
+			colorStr = strconv.FormatFloat(color.(float64), 'f', -1, 64)
+		}
+
+		if len(colorStr) != 6 {
+			return "", false
+		}
+
+		if !IsHexString(colorStr) {
+			return "", false
+		}
+
+	} else {
+		return "", false
+	}
+	return colorStr, true
+}
+
+func AssertInfArr(x *node, item string) ([]interface{}, error) {
+	valInf, err := (*x).execute()
+	if err != nil {
+		return nil, err
+	}
+	val, ok := valInf.([]interface{})
+	if !ok {
+		return nil, fmt.Errorf(item + " should be an array value")
+	}
+	return val, nil
 }

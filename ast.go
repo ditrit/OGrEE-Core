@@ -52,7 +52,7 @@ type funcDefNode struct {
 }
 
 func (n *funcDefNode) execute() (interface{}, error) {
-	dynamicSymbolTable[n.name] = n.body
+	funcTable[n.name] = n.body
 	if cmd.State.DebugLvl >= 3 {
 		println("New function ", n.name)
 	}
@@ -64,7 +64,7 @@ type funcCallNode struct {
 }
 
 func (n *funcCallNode) execute() (interface{}, error) {
-	val, ok := dynamicSymbolTable[n.name]
+	val, ok := funcTable[n.name]
 	if !ok {
 		return nil, fmt.Errorf("undefined function ", n.name)
 	}
@@ -228,7 +228,7 @@ func (n *lsAttrNode) execute() (interface{}, error) {
 
 type getUNode struct {
 	path node
-	u    interface{}
+	u    node
 }
 
 func (n *getUNode) execute() (interface{}, error) {
@@ -240,7 +240,11 @@ func (n *getUNode) execute() (interface{}, error) {
 	if !ok {
 		return nil, fmt.Errorf("Path should be a string")
 	}
-	cmd.GetByAttr(path, n.u)
+	u, e1 := n.u.execute()
+	if e1 != nil {
+		return nil, e1
+	}
+	cmd.GetByAttr(path, u)
 	return nil, nil
 }
 
@@ -381,6 +385,7 @@ type selectObjectNode struct {
 }
 
 func (n *selectObjectNode) execute() (interface{}, error) {
+	var selection []string
 	val, err := n.path.execute()
 	if err != nil {
 		return nil, err
@@ -389,13 +394,12 @@ func (n *selectObjectNode) execute() (interface{}, error) {
 	if !ok {
 		return nil, fmt.Errorf("Object path should be a string")
 	}
-	v, _ := cmd.GetObject(path, false)
-	if v == nil {
-		return nil, fmt.Errorf("Cannot find object at path ", path)
+	if path != "" {
+		selection = []string{path}
 	}
+
 	cmd.CD(path)
-	cmd.SetClipBoard([]string{path})
-	return v, nil
+	return cmd.SetClipBoard(selection)
 }
 
 type searchObjectsNode struct {
@@ -461,20 +465,15 @@ func (n *recursiveUpdateObjNode) execute() (interface{}, error) {
 type updateObjNode struct {
 	path       node
 	attributes map[string]interface{}
-	hasSharp   bool
+	hasSharp   bool //Refers to indexing in 'description' array attributes
 }
 
 func (n *updateObjNode) execute() (interface{}, error) {
 	path, err := AssertString(&n.path, "Object path")
-
-	//pathVal, err := n.path.execute()
 	if err != nil {
 		return nil, err
 	}
-	//path, ok := pathVal.(string)
-	//if !ok {
-	//	return nil, fmt.Errorf("Object path should be a string")
-	//}
+
 	attributes, err := evalMapNodes(n.attributes)
 	if err != nil {
 		return nil, err
@@ -486,7 +485,31 @@ func (n *updateObjNode) execute() (interface{}, error) {
 	//Check if the syntax refers to update or an interact command
 	//
 	for i := range attributes {
-		if i == "label" || i == "labelFont" {
+		vals := []string{"label", "labelFont", "content",
+			"alpha", "tilesName", "tilesColor", "U", "slots", "localCS"}
+
+		invalidVals := []string{"separator", "areas"}
+		if AssertInStringValues(i, invalidVals) {
+			msg := "This is invalid syntax you must specify" +
+				" 2 arrays separated by '@'"
+			return nil, fmt.Errorf(msg)
+		}
+
+		if AssertInStringValues(i, vals) {
+			//labelFont should be 'bold' or 'italic' here in this node
+			if i != "labelFont" && i != "label" && !IsBool(attributes[i]) &&
+				attributes[i] != "true" && attributes[i] != "false" {
+				msg := "Only boolean values can be used for interact commands"
+				return nil, fmt.Errorf(msg)
+			}
+
+			if i == "labelFont" && attributes[i] != "bold" && attributes[i] != "italic" {
+				msg := "The font can only be bold or italic" +
+					" or be in the form of color@[colorValue]." +
+					"\n\nFor more information please refer to: " +
+					"\nhttps://github.com/ditrit/OGrEE-3D/wiki/CLI-langage#interact-with-objects"
+				return nil, fmt.Errorf(msg)
+			}
 			return nil, cmd.InteractObject(path, i, attributes[i], n.hasSharp)
 		}
 	}
@@ -501,14 +524,11 @@ type specialUpdateNode struct {
 }
 
 func (n *specialUpdateNode) execute() (interface{}, error) {
-	pathVal, err := n.path.execute()
+	path, err := AssertString(&n.path, "Object path")
 	if err != nil {
 		return nil, err
 	}
-	path, ok := pathVal.(string)
-	if !ok {
-		return nil, fmt.Errorf("Object path should be a string")
-	}
+
 	first, err := n.first.execute()
 	if err != nil {
 		return nil, err
@@ -526,9 +546,6 @@ func (n *specialUpdateNode) execute() (interface{}, error) {
 		return cmd.UpdateObj(path, "", "", attributes, false)
 	} else if n.variable == "separator" {
 
-		startLen := len(first.([]interface{}))
-		endLen := len(second.([]interface{}))
-
 		errorResponder := func(attr string, multi bool) (interface{}, error) {
 			var errorMsg string
 			if multi {
@@ -545,6 +562,20 @@ func (n *specialUpdateNode) execute() (interface{}, error) {
 
 			return nil, fmt.Errorf(errorMsg + segment)
 		}
+
+		if !IsInfArr(first) {
+			if !IsInfArr(second) {
+				return errorResponder("Starting and ending", true)
+			}
+			return errorResponder("Starting", false)
+		}
+
+		if !IsInfArr(second) {
+			return errorResponder("Ending", false)
+		}
+
+		startLen := len(first.([]interface{}))
+		endLen := len(second.([]interface{}))
 
 		if startLen != 2 && endLen == 2 {
 			return errorResponder("starting position", false)
@@ -590,9 +621,32 @@ func (n *specialUpdateNode) execute() (interface{}, error) {
 		}
 
 		return cmd.UpdateObj(path, "", "", attr, false)
+
+	} else if n.variable == "labelFont" {
+		//This section will be expanded later on as
+		//the language grows
+		if !IsStringValue(first, "color") {
+			msg := "'color' attribute can only specified via this syntax"
+			return nil, fmt.Errorf(msg)
+		}
+
+		c, ok := AssertColor(second)
+		if ok == false {
+			msg := "Please provide a valid 6 length hex value for the color"
+			return nil, fmt.Errorf(msg)
+		}
+		second = "color@" + c
+
+		//attr := map[string]interface{}{}
+
+		return nil,
+			cmd.InteractObject(path, "labelFont", second, false)
 	} else {
 		return nil, fmt.Errorf("Invalid attribute specified for room update")
 	}
+	//Control should not reach here
+	//code added to suppress compiler error
+	return nil, fmt.Errorf("Invalid syntax")
 }
 
 type easyUpdateNode struct {
@@ -613,6 +667,7 @@ func (n *easyUpdateNode) execute() (interface{}, error) {
 type lsObjNode struct {
 	path   node
 	entity int
+	flag   node
 }
 
 func (n *lsObjNode) execute() (interface{}, error) {
@@ -624,7 +679,20 @@ func (n *lsObjNode) execute() (interface{}, error) {
 	if !ok {
 		return nil, fmt.Errorf("Path should be a string")
 	}
-	return cmd.LSOBJECT(path, n.entity), nil
+	flag, err := AssertString(&n.flag, "Flag")
+	if err != nil {
+		return nil, err
+	}
+
+	if flag == "r" {
+		return cmd.LSOBJECTRecursive(path, n.entity), nil
+	} else if flag == "" {
+		return cmd.LSOBJECT(path, n.entity), nil
+	} else {
+		msg := "Unrecognised flag. You can only use '-r'"
+		return nil, fmt.Errorf(msg)
+	}
+
 }
 
 type treeNode struct {
@@ -757,7 +825,7 @@ type unsetVarNode struct {
 func (n *unsetVarNode) execute() (interface{}, error) {
 	switch n.option {
 	case "-f":
-		funcTable[n.name] = nil
+		delete(funcTable, n.name)
 	case "-v":
 		dynamicSymbolTable[n.name] = nil
 	default:
@@ -844,6 +912,17 @@ func (n *getOCAttrNode) execute() (interface{}, error) {
 	attributes, err := evalMapNodes(n.attributes)
 	if err != nil {
 		return nil, err
+	}
+
+	if n.ent == cmd.TENANT {
+		//Check for valid hex
+		colorInf := attributes["attributes"].(map[string]interface{})["color"]
+		color, ok := AssertColor(colorInf)
+		if !ok {
+			msg := "Please provide a valid 6 length hex value for the color"
+			return nil, fmt.Errorf(msg)
+		}
+		attributes["attributes"].(map[string]interface{})["color"] = color
 	}
 	err = cmd.GetOCLIAtrributes(path, n.ent, attributes)
 	if err != nil {
@@ -1113,12 +1192,12 @@ type linkObjectNode struct {
 }
 
 func (n *linkObjectNode) execute() (interface{}, error) {
-	if len(n.paths) == 3 {
-		newVal, err := n.paths[2].(node).execute()
+	for i := range n.paths {
+		val, err := n.paths[i].(node).execute()
 		if err != nil {
 			return nil, err
 		}
-		n.paths[2] = newVal
+		n.paths[i] = val
 	}
 	cmd.LinkObject(n.paths)
 	return nil, nil
@@ -1129,6 +1208,13 @@ type unlinkObjectNode struct {
 }
 
 func (n *unlinkObjectNode) execute() (interface{}, error) {
+	for i := range n.paths {
+		val, e := n.paths[i].(node).execute()
+		if e != nil {
+			return nil, e
+		}
+		n.paths[i] = val
+	}
 	cmd.UnlinkObject(n.paths)
 	return nil, nil
 }
@@ -1149,6 +1235,49 @@ func (s *symbolReferenceNode) execute() (interface{}, error) {
 		}
 	}
 	return val, nil
+}
+
+type objReferenceNode struct {
+	va    string
+	index node
+}
+
+func (o *objReferenceNode) execute() (interface{}, error) {
+	val, ok := dynamicSymbolTable[o.va]
+	if !ok {
+		return nil, fmt.Errorf("Undefined variable ", o.va)
+	}
+	if _, ok := val.(map[string]interface{}); !ok {
+		return nil, fmt.Errorf(o.va + " Is not an indexable object")
+	}
+	object := val.(map[string]interface{})
+
+	idx, e := o.index.execute()
+	if e != nil {
+		return nil, e
+	}
+	if _, ok := idx.(string); !ok {
+		return nil, fmt.Errorf("The index must resolve to a string")
+	}
+	index := idx.(string)
+
+	if mainAttr, ok := object[index]; ok {
+		return mainAttr, nil
+	} else {
+		if attrInf, ok := object["attributes"]; ok {
+			if attrDict, ok := attrInf.(map[string]interface{}); ok {
+				if _, ok := attrDict[index]; ok {
+					return attrDict[index], nil
+				}
+			}
+		}
+	}
+
+	msg := "This object " + o.va + " cannot be indexed with " + index +
+		". Please check the object you are referencing and try again"
+
+	return nil, fmt.Errorf(msg)
+
 }
 
 type arrayReferenceNode struct {
@@ -1186,27 +1315,6 @@ type assignNode struct {
 }
 
 func (a *assignNode) execute() (interface{}, error) {
-	val, err := a.val.execute()
-	if err != nil {
-		return nil, err
-	}
-	switch v := val.(type) {
-	case bool, int, float64, string, []interface{}, map[string]interface{}:
-		dynamicSymbolTable[a.variable] = v
-		if cmd.State.DebugLvl >= 3 {
-			println("You want to assign", a.variable, "with value of", v)
-		}
-		return nil, nil
-	}
-	return nil, fmt.Errorf("Invalid type to assign variable ", a.variable)
-}
-
-type assignComposedNode struct {
-	variable string
-	val      node
-}
-
-func (a *assignComposedNode) execute() (interface{}, error) {
 	val, err := a.val.execute()
 	if err != nil {
 		return nil, err

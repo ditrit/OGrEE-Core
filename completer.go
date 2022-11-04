@@ -3,6 +3,7 @@ package main
 import (
 	c "cli/controllers"
 	"cli/readline"
+	"fmt"
 	"io/ioutil"
 	"strings"
 )
@@ -60,9 +61,13 @@ func ListLocal(path string) func(string) []string {
 		} else {
 			path = strings.TrimSpace(TrimToSlash(line[q:]))
 			if len(line) > 4 {
-				if strings.TrimSpace(line[q:]) != "/" {
-					path = "./" + path
+				check := strings.TrimSpace(line[q+1:])
+				if len(check) > 0 {
+					if string(check[0]) != "/" {
+						path = "./" + path
+					}
 				}
+
 			}
 
 			if path == "" {
@@ -73,7 +78,11 @@ func ListLocal(path string) func(string) []string {
 		//End of Algorithm
 
 		names := make([]string, 0)
-		files, _ := ioutil.ReadDir(path)
+		files, e := ioutil.ReadDir(path)
+		if e != nil {
+			fmt.Println("\n", e.Error())
+			return []string{}
+		}
 		for _, f := range files {
 			names = append(names, f.Name())
 		}
@@ -119,6 +128,46 @@ func UnLinkObjCompleter(path string) func(string) []string {
 	}
 }
 
+func ListForUI(path string) func(string) []string {
+	return func(line string) []string {
+		var trimmed string
+		//Instead let's trim to the first instance of '='
+		idx := strings.Index(line, "= ")
+		if idx == -1 {
+			return nil
+		}
+		idx += 1
+		if line[idx:] == "" {
+			path = c.State.CurrPath
+		} else {
+			path = TrimToSlash(line[idx:])
+			trimmed = line[idx:]
+			if len(line) > idx+1 {
+				if len(trimmed) > 2 && trimmed[2:] == ".." || len(trimmed) > 0 && trimmed != "/" {
+					path = c.State.CurrPath + "/" + strings.TrimSpace(path)
+				}
+			}
+
+			if path == "" {
+				path = c.State.CurrPath
+			}
+
+			//Helps to make autocompletion at the root
+			if trimmed[0] == '/' {
+				if strings.Count(trimmed, "/") > 1 {
+					path = TrimToSlash(trimmed)
+
+				} else {
+					path = "/"
+				}
+			}
+		}
+
+		items := c.FetchNodesAtLevel(path)
+		return items
+	}
+}
+
 func ListUserVars(path string, appendDeref bool) func(string) []string {
 	return func(line string) []string {
 		ans := []string{}
@@ -143,24 +192,6 @@ func ListUserFuncs(path string) func(string) []string {
 			ans = append(ans, i)
 		}
 		return ans
-	}
-}
-
-func ListForCreate(path string) func(string) []string {
-	return func(line string) []string {
-		//We want to trim until first whitespace
-		split := strings.Index(line, " ")
-		fn := ListEntities("")
-		ans := fn(line[split+1:])
-		return ans
-
-	}
-}
-
-func AttrCompleter(path string) func(string) []string {
-	return func(line string) []string {
-
-		return []string{" :name=", " :desc="}
 	}
 }
 
@@ -226,7 +257,19 @@ func GetPrefixCompleter() *readline.PrefixCompleter {
 		readline.PcItem("pwd", false),
 		readline.PcItem("clear", false),
 		readline.PcItem("exit", false),
-		readline.PcItem("env", false),
+		readline.PcItem("env", false,
+			readline.PcItem("Unity", false,
+				readline.PcItem("=", false,
+					readline.PcItem("true", false),
+					readline.PcItem("false", false))),
+			readline.PcItem("Filter", false,
+				readline.PcItem("=", false,
+					readline.PcItem("true", false),
+					readline.PcItem("false", false))),
+			readline.PcItem("Analyser", false,
+				readline.PcItem("=", false,
+					readline.PcItem("true", false),
+					readline.PcItem("false", false)))),
 		readline.PcItem("grep", false),
 		readline.PcItem("drawable(", true,
 			readline.PcItemDynamic(DrawCompleter(""), false)),
@@ -265,11 +308,9 @@ func GetPrefixCompleter() *readline.PrefixCompleter {
 			readline.PcItem("lsslot", false),
 			readline.PcItem("lsenterprise", false),
 			readline.PcItem("lsu", false),
-			readline.PcItem("create", false),
 			readline.PcItem("get", false),
 			readline.PcItem("getu", false),
 			readline.PcItem("getslot", false),
-			readline.PcItem("update", false),
 			readline.PcItem("hc", false),
 			readline.PcItem("drawable", false),
 			readline.PcItem("draw", false),
@@ -281,8 +322,7 @@ func GetPrefixCompleter() *readline.PrefixCompleter {
 			readline.PcItem("=", false),
 			readline.PcItem("-", false),
 			readline.PcItem("+", false),
-			readline.PcItem(">", false),
-			readline.PcItem("delete", false)),
+			readline.PcItem(">", false)),
 		readline.PcItem("+", false,
 			readline.PcItem("tn:", true,
 				readline.PcItemDynamic(TenantSiteOCLICompleter(""), true)),
@@ -305,44 +345,6 @@ func GetPrefixCompleter() *readline.PrefixCompleter {
 			readline.PcItem("orphan:device:", true,
 				readline.PcItemDynamic(TenantSiteOCLICompleter(""), true))),
 
-		readline.PcItem("create", false,
-			readline.PcItem("tenant", true,
-				readline.PcItemDynamic(ListForCreate(""), true),
-				readline.PcItemDynamic(AttrCompleter(""), false)),
-			readline.PcItem("site", true,
-				readline.PcItemDynamic(ListForCreate(""), true),
-				readline.PcItemDynamic(AttrCompleter(""), false)),
-			readline.PcItem("building", true,
-				readline.PcItemDynamic(ListForCreate(""), true),
-				readline.PcItemDynamic(AttrCompleter(""), false)),
-			readline.PcItem("room", true,
-				readline.PcItemDynamic(ListForCreate(""), true),
-				readline.PcItemDynamic(AttrCompleter(""), false)),
-			readline.PcItem("rack", true,
-				readline.PcItemDynamic(ListForCreate(""), true),
-				readline.PcItemDynamic(AttrCompleter(""), false)),
-			readline.PcItem("device", true,
-				readline.PcItemDynamic(ListForCreate(""), true),
-				readline.PcItemDynamic(AttrCompleter(""), false)),
-			readline.PcItem("corridor", true,
-				readline.PcItemDynamic(ListForCreate(""), true),
-				readline.PcItemDynamic(AttrCompleter(""), false)),
-			readline.PcItem("group", true,
-				readline.PcItemDynamic(ListForCreate(""), true),
-				readline.PcItemDynamic(AttrCompleter(""), false)),
-			readline.PcItem("panel", true,
-				readline.PcItemDynamic(ListForCreate(""), true),
-				readline.PcItemDynamic(AttrCompleter(""), false)),
-			readline.PcItem("cabinet", true,
-				readline.PcItemDynamic(ListForCreate(""), true),
-				readline.PcItemDynamic(AttrCompleter(""), false)),
-			readline.PcItem("sensor", true,
-				readline.PcItemDynamic(ListForCreate(""), true),
-				readline.PcItemDynamic(AttrCompleter(""), false)),
-			readline.PcItem("obj_template", false),
-			readline.PcItem("room_template", false),
-		),
-
 		readline.PcItem("get", true,
 			readline.PcItem("tenant", false),
 			readline.PcItem("site", false),
@@ -356,10 +358,6 @@ func GetPrefixCompleter() *readline.PrefixCompleter {
 
 		readline.PcItem("getslot", true,
 			readline.PcItemDynamic(ListEntities(""), false)),
-		readline.PcItem("update", true,
-			readline.PcItemDynamic(ListEntities(""), false)),
-		readline.PcItem("delete", true,
-			readline.PcItemDynamic(ListEntities(""), false)),
 		readline.PcItem("selection", false),
 		readline.PcItem(".cmds:", true,
 			readline.PcItemDynamic(ListLocal(""), false)),
@@ -370,26 +368,37 @@ func GetPrefixCompleter() *readline.PrefixCompleter {
 		readline.PcItem("tree", true,
 			readline.PcItemDynamic(ListEntities(""), false)),
 		readline.PcItem("lsten", true,
+			readline.PcItem("-r", false),
 			readline.PcItemDynamic(ListEntities(""), false)),
 		readline.PcItem("lssite", true,
+			readline.PcItem("-r", false),
 			readline.PcItemDynamic(ListEntities(""), false)),
 		readline.PcItem("lsbldg", true,
+			readline.PcItem("-r", false),
 			readline.PcItemDynamic(ListEntities(""), false)),
 		readline.PcItem("lsroom", true,
+			readline.PcItem("-r", false),
 			readline.PcItemDynamic(ListEntities(""), false)),
 		readline.PcItem("lsrack", true,
+			readline.PcItem("-r", false),
 			readline.PcItemDynamic(ListEntities(""), false)),
 		readline.PcItem("lsdev", true,
+			readline.PcItem("-r", false),
 			readline.PcItemDynamic(ListEntities(""), false)),
 		readline.PcItem("lscabinet", true,
+			readline.PcItem("-r", false),
 			readline.PcItemDynamic(ListEntities(""), false)),
 		readline.PcItem("lscorridor", true,
+			readline.PcItem("-r", false),
 			readline.PcItemDynamic(ListEntities(""), false)),
 		readline.PcItem("lsac", true,
+			readline.PcItem("-r", false),
 			readline.PcItemDynamic(ListEntities(""), false)),
 		readline.PcItem("lspanel", true,
+			readline.PcItem("-r", false),
 			readline.PcItemDynamic(ListEntities(""), false)),
 		readline.PcItem("lssensor", true,
+			readline.PcItem("-r", false),
 			readline.PcItemDynamic(ListEntities(""), false)),
 		readline.PcItem("lsog", false),
 		readline.PcItem("lsslot", true,
@@ -417,18 +426,36 @@ func GetPrefixCompleter() *readline.PrefixCompleter {
 			readline.PcItem("else", false),
 			readline.PcItem("fi", false),
 		),
-		readline.PcItem("camera.move", false),
-		readline.PcItem("camera.translate", false),
-		readline.PcItem("camera.wait", false),
-		readline.PcItem("ui", false,
-			readline.PcItem(".", false,
-				readline.PcItem("highlight", false),
-				readline.PcItem("hl", false),
-				readline.PcItem("debug", false),
-				readline.PcItem("infos", false),
-				readline.PcItem("wireframe", false),
-				readline.PcItem("delay", false)),
-		),
+		readline.PcItem("camera.move", false,
+			readline.PcItem("=", false)),
+		readline.PcItem("camera.translate", false,
+			readline.PcItem("=", false)),
+		readline.PcItem("camera.wait", false,
+			readline.PcItem("=", false)),
+
+		readline.PcItem("ui.highlight", false,
+			readline.PcItem("=", true,
+				readline.PcItemDynamic(ListForUI(""), false))),
+
+		readline.PcItem("ui.hl", false,
+			readline.PcItem("=", true,
+				readline.PcItemDynamic(ListForUI(""), false))),
+
+		readline.PcItem("ui.debug", false,
+			readline.PcItem("=", false,
+				readline.PcItem("true", false),
+				readline.PcItem("false", false))),
+
+		readline.PcItem("ui.infos", false,
+			readline.PcItem("=", false,
+				readline.PcItem("true", false),
+				readline.PcItem("false", false))),
+
+		readline.PcItem("ui.wireframe", false,
+			readline.PcItem(" = ", false)),
+		readline.PcItem("ui.delay", false,
+			readline.PcItem(" = ", false)),
+
 		readline.PcItem(">", true,
 			readline.PcItemDynamic(ListEntities(""), false)),
 		readline.PcItem("hc", true,

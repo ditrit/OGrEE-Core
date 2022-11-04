@@ -17,11 +17,10 @@ with open(os.getcwd()+"/y.go", "r") as f:
 # parse analysis
 yyParseIdx = m.find("func yyParse(yylex yyLexer) int {")
 yyAnalyse = str(m[yyParseIdx:])
-matcher = re.compile("(yyVAL\.\w+ = )")
-yyAnalyse = matcher.sub("return 0\n\t\t\t\\1", yyAnalyse)
+yyAnalyse = yyAnalyse.replace("root = yyS[yypt-0].node", "return 0")
 yyAnalyse = yyAnalyse.replace(
     "func yyParse(yylex yyLexer) int {", "\n\nfunc yyAnalyse(yylex yyLexer) int {")
-yyAnalyse = yyAnalyse.replace("yylex.Error(msg)"," /*yylex.Error(msg)*/")
+yyAnalyse = yyAnalyse.replace("yylex.Error(msg)"," /*This is an error so exit analysis!*/\n\t\t\treturn -1")
 #m += yyAnalyse
 
 # Inject error message in yyParse() func

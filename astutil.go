@@ -2,6 +2,7 @@ package main
 
 import (
 	cmd "cli/controllers"
+	"encoding/hex"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -160,4 +161,34 @@ func IsInfArr(x interface{}) bool {
 func IsString(x interface{}) bool {
 	_, ok := x.(string)
 	return ok
+}
+
+func IsStringValue(x interface{}, value string) bool {
+	return x == value
+}
+
+func IsHexString(s string) bool {
+	//Eliminate 'odd length' errors
+	if len(s)%2 != 0 {
+		s = "0" + s
+	}
+
+	_, err := hex.DecodeString(s)
+	return err == nil
+}
+
+func IsBool(x interface{}) bool {
+	_, ok := x.(bool)
+	return ok
+}
+
+func IsInt(x interface{}) bool {
+	_, ok := x.(int)
+	return ok
+}
+
+func IsFloat(x interface{}) bool {
+	_, ok := x.(float64)
+	_, ok2 := x.(float32)
+	return ok || ok2
 }

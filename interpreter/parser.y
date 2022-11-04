@@ -31,12 +31,12 @@ var _ = l.GetInfoLogger() //Suppresses annoying Dockerfile build error
 %token <s> TOK_RACK TOK_DEVICE TOK_STR
 %token <s> TOK_CORIDOR TOK_GROUP 
 %token <s> TOK_AC TOK_CABINET TOK_PANEL
-%token <s> TOK_SENSOR
+%token <s> TOK_SENSOR TOK_HEX
 %token <s> TOK_ROOM_TMPL TOK_OBJ_TMPL
 %token <s> TOK_PLUS TOK_MINUS TOK_ORIENTATION
 %token
-       TOK_CREATE TOK_GET TOK_UPDATE TOK_DELETE TOK_SEARCH
-       TOK_EQUAL TOK_DOUBLE_EQUAL TOK_CMDFLAG TOK_SLASH TOK_DOUBLE_DOT
+       TOK_GET 
+       TOK_EQUAL TOK_DOUBLE_EQUAL TOK_SLASH
        TOK_EXIT TOK_DOC TOK_CD TOK_PWD
        TOK_CLR TOK_GREP TOK_LS TOK_TREE
        TOK_LSOG TOK_LSTEN TOK_LSSITE TOK_LSBLDG
@@ -48,18 +48,18 @@ var _ = l.GetInfoLogger() //Suppresses annoying Dockerfile build error
        TOK_COMMA TOK_DOT_DOT TOK_CMDS TOK_TEMPLATE TOK_VAR TOK_DEREF
        TOK_SEMICOL TOK_IF TOK_FOR TOK_WHILE
        TOK_ELSE TOK_LBLOCK TOK_RBLOCK
-       TOK_LPAREN TOK_RPAREN TOK_OR TOK_AND TOK_IN TOK_PRNT TOK_QUOT
+       TOK_LPAREN TOK_RPAREN TOK_OR TOK_AND TOK_IN TOK_PRNT
        TOK_NOT TOK_NOT_EQUAL 
        TOK_MULT TOK_GREATER TOK_GREATER_EQUAL TOK_LESS TOK_LESS_EQUAL 
        TOK_THEN TOK_FI TOK_DONE
        TOK_MOD
        TOK_UNSET TOK_ELIF TOK_DO TOK_LEN
-       TOK_USE_JSON TOK_PARTIAL TOK_LINK TOK_UNLINK
+       TOK_USE_JSON TOK_LINK TOK_UNLINK
        TOK_HIERARCH TOK_DRAWABLE TOK_ENV TOK_ORPH
-       TOK_DRAW TOK_SETENV TOK_TRUE TOK_FALSE
+       TOK_DRAW TOK_TRUE TOK_FALSE
        TOK_CAM_MOVE TOK_CAM_WAIT TOK_CAM_TRANSLATE TOK_CAM
        TOK_DOT TOK_SHARP
-       TOK_UI_DELAY TOK_UI_WIREFRAME TOK_UI_INFOS TOK_UI_DEBUG TOK_UI_HIGHLIGHT TOK_UI TOK_END
+       TOK_UI_DELAY TOK_UI_WIREFRAME TOK_UI_INFOS TOK_UI_DEBUG TOK_UI_HIGHLIGHT TOK_UI
        
 %type <n> LSOBJ_COMMAND
 %type <s> OBJ_TYPE COMMAND UI_TOGGLE
@@ -69,7 +69,7 @@ var _ = l.GetInfoLogger() //Suppresses annoying Dockerfile build error
 //%type <mapVoid> EQUAL_LIST
 
 %right UNARY
-%right TOK_NOT TOK_EQUAL TOK_GET TOK_CD TOK_LS TOK_TREE TOK_DRAW TOK_HIERARCH TOK_UNSET TOK_DRAWABLE TOK_SETENV TOK_VAR TOK_CMDS TOK_TEMPLATE TOK_SELECT TOK_LINK TOK_UNLINK TOK_LEN TOK_PRNT TOK_DOC
+%right TOK_NOT TOK_EQUAL TOK_GET TOK_CD TOK_LS TOK_TREE TOK_DRAW TOK_HIERARCH TOK_UNSET TOK_DRAWABLE TOK_VAR TOK_CMDS TOK_TEMPLATE TOK_SELECT TOK_LINK TOK_UNLINK TOK_LEN TOK_PRNT TOK_DOC
 %left TOK_MULT TOK_SLASH TOK_MOD
 %left TOK_OR
 %left TOK_AND
@@ -89,29 +89,23 @@ st2:    {$$=nil}
 
 stmnt:   TOK_GET PATH {$$=&getObjectNode{$2}}
        //| TOK_GET OBJ_TYPE EQUAL_LIST {$$=&searchObjectsNode{$2, $3}}
-       | TOK_EQUAL PHYSICAL_PATH {$$=&selectObjectNode{$2}}
-       | TOK_EQUAL TOK_LBRAC GETOBJS TOK_RBRAC {$$=&selectChildrenNode{$3}}
-       | PHYSICAL_PATH TOK_COL TOK_WORD TOK_EQUAL EXPR_NOQUOTE {$$=&updateObjNode{$1, map[string]interface{}{$3:$5},false}}
-       | PHYSICAL_PATH TOK_COL TOK_WORD TOK_EQUAL TOK_SHARP EXPR_NOQUOTE {$$=&updateObjNode{$1, map[string]interface{}{$3:$6},true}}
-       | PHYSICAL_PATH TOK_COL TOK_WORD TOK_EQUAL ARRAY TOK_ATTRSPEC ARRAY {$$=&specialUpdateNode{$1, $3, $5, $7}}
-       | TOK_CD PATH {$$=&cdNode{$2}}
-       | TOK_CD {$$=&cdNode{strLeaf{"/"}}}
-       | TOK_CD TOK_MINUS {$$=&cdNode{strLeaf{"-"}}}
-       | TOK_LS PATH {$$=&lsNode{$2}}
-       | TOK_LS {$$=&lsNode{&pathNode{&strLeaf{"."}, STD}}}
-       | LSOBJ_COMMAND PATH {$$=&lsObjNode{$2, $1}}
-       | LSOBJ_COMMAND {$$=&lsObjNode{&pathNode{&strLeaf{"."}, STD}, $1}}
+
+       | LSOBJ_COMMAND PATH {$$=&lsObjNode{$2, $1, &strLeaf{""}}}
+       | LSOBJ_COMMAND {$$=&lsObjNode{&pathNode{&strLeaf{"."}, STD}, $1, &strLeaf{""}}}
+       | LSOBJ_COMMAND PATH TOK_MINUS TOK_WORD {$$=&lsObjNode{$2, $1, &strLeaf{$4}}}
+       | LSOBJ_COMMAND TOK_MINUS TOK_WORD {$$=&lsObjNode{&pathNode{&strLeaf{"."}, STD}, $1, &strLeaf{$3}}}
+       | LSOBJ_COMMAND TOK_MINUS TOK_WORD PATH  {$$=&lsObjNode{$4, $1, &strLeaf{$3}}}
+
        | TOK_LSU PATH {$$=&lsAttrNode{$2, "heightu"}}
        | TOK_LSU {$$=&lsAttrNode{&pathNode{&strLeaf{"."}, STD}, "heightu"}}
        | TOK_LSSLOT PATH {$$=&lsAttrNode{$2, "slot"}}
        | TOK_LSSLOT {$$=&lsAttrNode{&pathNode{&strLeaf{"."}, STD}, "slot"}}
-       | TOK_GETU {$$=&getUNode{&pathNode{&strLeaf{"."}, STD}, 0}}
-       | TOK_GETU PATH {$$=&getUNode{$2, 0}}
-       | TOK_GETU PATH TOK_INT {$$=&getUNode{$2, $3}}
+
+       | TOK_GETU {x:=&pathNode{&strLeaf{"."}, STD}; y:=&intLeaf{0};$$=&getUNode{x, y}}
+       | TOK_GETU PATH {$$=&getUNode{$2, &intLeaf{0}}}
+       | TOK_GETU PATH TOK_INT {$$=&getUNode{$2, &intLeaf{$3}}}
        | TOK_GETSLOT PATH TOK_COMMA EXPR_NOQUOTE {$$=&getUNode{$2, $4}}
-       | TOK_TREE PATH TOK_INT {$$=&treeNode{$2, $3}}
-       | TOK_TREE PATH {$$=&treeNode{$2, 0}}
-       | TOK_TREE {$$=&treeNode{&pathNode{&strLeaf{"."}, STD}, 0}}
+
        | TOK_DRAW PATH {$$=&drawNode{$2, 0}}
        | TOK_DRAW PATH TOK_INT {$$=&drawNode{$2, $3}}
        | TOK_DRAW {$$=&drawNode{&pathNode{&strLeaf{"."}, STD}, 0}}
@@ -126,8 +120,31 @@ stmnt:   TOK_GET PATH {$$=&getObjectNode{$2}}
        | TOK_ENV TOK_WORD TOK_EQUAL EXPR_NOQUOTE {$$=&setEnvNode{$2, $4}}
        | TOK_PLUS OCCR {$$=$2}
        | TOK_MINUS PATH {$$=&deleteObjNode{$2}}
-       | TOK_MINUS TOK_SELECT {$$=&deleteSelectionNode{}}     
+       | TOK_MINUS TOK_SELECT {$$=&deleteSelectionNode{}}   
+
+
+       // SELECTION COMMANDS
+       | TOK_EQUAL PATH {$$=&selectObjectNode{$2}}
+       | TOK_EQUAL {$$=&selectObjectNode{&strLeaf{""}}}
+       | TOK_EQUAL TOK_LBRAC GETOBJS TOK_RBRAC {$$=&selectChildrenNode{$3}}
+
+       // UPDATE / INTERACT
+       | PHYSICAL_PATH TOK_COL TOK_WORD TOK_EQUAL TOK_SHARP EXPR_NOQUOTE {$$=&updateObjNode{$1, map[string]interface{}{$3:$6},true}}
+       | PHYSICAL_PATH TOK_COL TOK_WORD TOK_EQUAL EXPR_NOQUOTE TOK_ATTRSPEC EXPR_NOQUOTE {$$=&specialUpdateNode{$1, $3, $5, $7}}
+       | PHYSICAL_PATH TOK_COL TOK_WORD TOK_EQUAL EXPR_NOQUOTE {
+              /*Hack Case: we need to change the mode of the Path Node*/;
+              ($1).(*pathNode).mode = STD;
+              $$=&updateObjNode{$1, map[string]interface{}{$3:$5},false}}
+
+
+
+       // ASSIGNMENT  
+       | TOK_DEREF TOK_WORD TOK_EQUAL EXPR {$$=&assignNode{$2, $4}}
+       | TOK_VAR TOK_COL TOK_WORD TOK_EQUAL EXPR_NOQUOTE {$$=&assignNode{$3, $5}}
+       | TOK_VAR TOK_COL TOK_WORD TOK_EQUAL TOK_DEREF TOK_LPAREN TOK_GET PATH TOK_RPAREN {$$=&assignNode{$3, &getObjectNode{$8}}}
+       | TOK_VAR TOK_COL TOK_WORD TOK_EQUAL TOK_DEREF TOK_LPAREN TOK_PWD TOK_RPAREN {$$=&assignNode{$3, &pwdNode{}}}
        
+
        | TOK_CMDS TOK_COL EXPR_NOQUOTE {$$=&loadNode{$3}}
        | TOK_TEMPLATE TOK_COL EXPR_NOQUOTE {$$=&loadTemplateNode{$3}}
        | TOK_SELECT {$$=&selectNode{}}
@@ -135,9 +152,6 @@ stmnt:   TOK_GET PATH {$$=&getObjectNode{$2}}
        | TOK_DRAWABLE TOK_LPAREN PATH TOK_COMMA EXPR_NOQUOTE TOK_RPAREN {$$=&isAttrDrawableNode{$3, $5}}
        | TOK_LEN TOK_LPAREN TOK_WORD TOK_RPAREN {$$=&lenNode{$3}}
 
-       //ASSIGNMENT
-       | TOK_VAR TOK_COL TOK_WORD TOK_EQUAL EXPR_NOQUOTE {$$=&assignNode{$3, $5}}
-       //| TOK_VAR TOK_COL TOK_WORD TOK_EQUAL TOK_GET PATH {$$=&assignNode{$3, &getObjectNode{$6}}}
 
        // LINKING
        | TOK_LINK TOK_COL PHYSICAL_PATH TOK_ATTRSPEC EXPR_NOQUOTE {$$=&linkObjectNode{[]interface{}{$3, $5}}}
@@ -157,15 +171,26 @@ stmnt:   TOK_GET PATH {$$=&getObjectNode{$2}}
        | TOK_DOC COMMAND {$$=&helpNode{$2}}
        | TOK_DOC {$$=&helpNode{""}}
        | TOK_DOC TOK_WORD {$$=&helpNode{$2}}
+       | TOK_CD PATH {$$=&cdNode{$2}}
+       | TOK_CD {$$=&cdNode{strLeaf{"/"}}}
+       | TOK_CD TOK_MINUS {$$=&cdNode{strLeaf{"-"}}}
+       | TOK_LS PATH {$$=&lsNode{$2}}
+       | TOK_LS {$$=&lsNode{&pathNode{&strLeaf{"."}, STD}}}
+       | TOK_TREE PATH TOK_INT {$$=&treeNode{$2, $3}}
+       | TOK_TREE PATH {$$=&treeNode{$2, 0}}
+       | TOK_TREE {$$=&treeNode{&pathNode{&strLeaf{"."}, STD}, 0}}
+
+
 
        // UNITY
        | TOK_UI_DELAY TOK_EQUAL EXPR {$$=&uiDelayNode{$3}}
        | UI_TOGGLE TOK_EQUAL EXPR {$$=&uiToggleNode{$1, $3}}
-       | TOK_UI_HIGHLIGHT TOK_EQUAL EXPR_NOQUOTE {$$=&uiHighlightNode{$3}}
+       | TOK_UI_HIGHLIGHT TOK_EQUAL PATH {$$=&uiHighlightNode{$3}}
        | TOK_CAM_MOVE TOK_EQUAL EXPR TOK_ATTRSPEC EXPR {$$=&cameraMoveNode{"move", $3, $5}}
        | TOK_CAM_TRANSLATE TOK_EQUAL EXPR TOK_ATTRSPEC EXPR {$$=&cameraMoveNode{"translate", $3, $5}}
        | TOK_CAM_WAIT TOK_EQUAL EXPR {$$=&cameraWaitNode{$3}}
        | TOK_GREATER PATH {$$=&focusNode{$2}} 
+       | TOK_GREATER  {$$=&focusNode{&strLeaf{""}}} 
 
        // FUNCTIONS
        | TOK_WORD TOK_LPAREN TOK_RPAREN TOK_LBRAC st2 TOK_RBRAC {$$=&funcDefNode{$1, $5}}
@@ -173,13 +198,13 @@ stmnt:   TOK_GET PATH {$$=&getObjectNode{$2}}
 
        // LOOPS
        | TOK_WHILE TOK_LPAREN EXPR TOK_RPAREN st2 TOK_DONE {$$=&whileNode{$3, $5}}
+
+       // FOR
+       | TOK_FOR TOK_WORD TOK_IN EXPR TOK_SEMICOL st2 TOK_DONE {$$=&forArrayNode{$2, $4, $6}}
+       | TOK_FOR TOK_WORD TOK_IN TOK_LBRAC EXPR TOK_DOT_DOT EXPR TOK_RBRAC TOK_SEMICOL st2 TOK_DONE {$$=&forRangeNode{$2, $5, $7, $10}}
        | TOK_FOR TOK_LPAREN TOK_LPAREN TOK_WORD TOK_EQUAL EXPR TOK_SEMICOL EXPR TOK_SEMICOL st2 TOK_RPAREN TOK_RPAREN TOK_SEMICOL st2 TOK_DONE {
               $$=&forNode{&assignNode{$4, $6},$8,$10,$14}
        }
-
-       //FOR
-       | TOK_FOR TOK_WORD TOK_IN EXPR TOK_SEMICOL st2 TOK_DONE {$$=&forArrayNode{$2, $4, $6}}
-       | TOK_FOR TOK_WORD TOK_IN TOK_LBRAC TOK_INT TOK_DOT_DOT TOK_INT TOK_RBRAC TOK_SEMICOL st2 TOK_DONE {$$=&forRangeNode{$2, $5, $7, $10}}
 
        // IF
        | TOK_IF IF {$$=$2}
@@ -190,9 +215,9 @@ IF: TOK_LBLOCK EXPR TOK_RBLOCK TOK_THEN st2 TOK_FI {$$=&ifNode{$2, $5, nil}}
        | TOK_LBLOCK EXPR TOK_RBLOCK TOK_THEN st2 TOK_ELSE st2 TOK_FI {$$=&ifNode{$2, $5, $7}}
 ;
 
-PHYSICAL_PATH: EXPR_NOQUOTE_NOCOL {$$=&pathNode{$1, PHYSICAL}};
-STRAY_DEV_PATH: EXPR_NOQUOTE {$$=&pathNode{$1, STRAY_DEV}};
-PATH: EXPR_NOQUOTE {$$=&pathNode{$1, STD}};
+PHYSICAL_PATH: EXPR_NOQUOTE_NOCOL {$$=&pathNode{$1, PHYSICAL}}
+STRAY_DEV_PATH: EXPR_NOQUOTE {$$=&pathNode{$1, STRAY_DEV}}
+PATH: EXPR_NOQUOTE {$$=&pathNode{$1, STD}}
 
 EXPR_NOQUOTE_NOCOL: TOK_DEREF TOK_LPAREN TOK_LPAREN EXPR TOK_RPAREN TOK_RPAREN {$$=$4}
        | CONCAT_NOCOL {$$=$1}
@@ -223,6 +248,7 @@ CONCAT:  CONCAT_TERM {$$=$1}
 CONCAT_TERM_NOCOL:  TOK_DEREF TOK_LBRAC TOK_WORD TOK_RBRAC {$$=&symbolReferenceNode{$3}}
        | TOK_DEREF TOK_WORD {$$=&symbolReferenceNode{$2}}
        | TOK_WORD {$$=&strLeaf{$1}}
+       | TOK_HEX {$$=&strLeaf{$1}}
        | TOK_STR {$$=&strLeaf{$1}}
        | TOK_SLASH {$$=&strLeaf{"/"}}
        | TOK_DOT_DOT {$$=&strLeaf{".."}}
@@ -241,13 +267,13 @@ EXPR: TOK_INT {$$=&floatLeaf{float64($1)}}
        | ARRAY {$$=$1}
        | TOK_DEREF TOK_LBRAC TOK_WORD TOK_RBRAC {$$=&symbolReferenceNode{$3}}
        | TOK_DEREF TOK_WORD {$$=&symbolReferenceNode{$2}}
-       | TOK_DEREF TOK_WORD TOK_LBLOCK EXPR TOK_RBLOCK {$$=nil}
+       | TOK_DEREF TOK_WORD TOK_LBLOCK EXPR TOK_RBLOCK {$$=&objReferenceNode{$2,$4}}
 
        | TOK_LPAREN EXPR TOK_RPAREN {$$=$2}
 
        | EXPR TOK_OR EXPR {$$=&logicalNode{"||", $1, $3}}
        | EXPR TOK_AND EXPR {$$=&logicalNode{"&&", $1, $3}}
-       | EXPR TOK_DOUBLE_EQUAL EXPR {$$=&equalityNode{"==", $1, $3}}
+       | EXPR TOK_EQUAL TOK_EQUAL EXPR {$$=&equalityNode{"==", $1, $4}}
        | EXPR TOK_NOT_EQUAL EXPR {$$=&equalityNode{"!=", $1, $3}}
        | EXPR TOK_LESS EXPR {$$=&comparatorNode{"<", $1, $3}}
        | EXPR TOK_LESS_EQUAL EXPR {$$=&comparatorNode{"<=", $1, $3}}
@@ -282,7 +308,7 @@ LSOBJ_COMMAND: TOK_LSTEN {$$=0} | TOK_LSSITE {$$=1} | TOK_LSBLDG {$$=2} | TOK_LS
        | TOK_LSCAB {$$=8} | TOK_LSCORRIDOR {$$=9} | TOK_LSSENSOR{$$=10}
 ;
 
-UI_TOGGLE: TOK_UI_DEBUG{$$="debug"} | TOK_UI_INFOS{$$="infos"} | TOK_UI_WIREFRAME{$$="wireframe"};
+UI_TOGGLE: TOK_UI_DEBUG{$$="debug"} | TOK_UI_INFOS{$$="infos"} | TOK_UI_WIREFRAME{$$="wireframe"}
 
 //DOCUMENTATION (ie: man pwd)
 COMMAND: TOK_LINK{$$="link"} | TOK_UNLINK{$$="unlink"} | TOK_CLR{$$="clear"} | TOK_LS{$$="ls"}
@@ -294,10 +320,12 @@ COMMAND: TOK_LINK{$$="link"} | TOK_UNLINK{$$="unlink"} | TOK_CLR{$$="clear"} | T
        | TOK_LSTEN{$$="lsten"} | TOK_LSSITE{$$="lssite"} | TOK_LSBLDG{$$="lsbldg"} | TOK_LSROOM{$$="lsroom"} 
        | TOK_LSRACK{$$="lsrack"} | TOK_LSDEV{$$="lsdev"} | TOK_MINUS{$$="-"} | TOK_TEMPLATE{$$=".template"}
        | TOK_CMDS{$$=".cmds"} | TOK_VAR{$$=".var"} | TOK_PLUS{$$="+"} | TOK_EQUAL{$$="="} 
-       | TOK_GREATER{$$=">"} | TOK_DRAWABLE{$$="drawable"} | TOK_LSU{$$="lsu"} | TOK_LSSLOT{$$="lsslot"} | TOK_GETU{$$="getu"} | TOK_GETSLOT{$$="getslot"}
+       | TOK_GREATER{$$=">"} | TOK_DRAWABLE{$$="drawable"} | TOK_LSU{$$="lsu"} 
+       | TOK_LSSLOT{$$="lsslot"} | TOK_GETU{$$="getu"} | TOK_GETSLOT{$$="getslot"}
+       | TOK_GREP {$$="grep"}
 ;
 
-ORIENTATION: TOK_ORIENTATION {$$=&strLeaf{$1}};
+ORIENTATION: TOK_ORIENTATION {$$=&strLeaf{$1}}
 
 OCCR:   
         TOK_TENANT TOK_COL PHYSICAL_PATH TOK_ATTRSPEC EXPR_NOQUOTE {
