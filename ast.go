@@ -75,7 +75,7 @@ func (n *funcCallNode) execute() (interface{}, error) {
 	return body.execute()
 }
 
-//At this time arrays are all []floats
+// At this time arrays are all []floats
 type arrNode struct {
 	nodes []node
 }
@@ -578,7 +578,7 @@ func (n *specialUpdateNode) execute() (interface{}, error) {
 				"startPosXYm": first, "endPosXYm": second}
 
 			nextSepStr, _ := json.Marshal(nextSep)
-			if IsString(separators) {
+			if IsString(separators) && separators != "" {
 				sepStr = separators.(string)
 				size := len(sepStr)
 				sepStr = sepStr[:size-1] + "," + string(nextSepStr) + "]"
@@ -1222,7 +1222,7 @@ func (a *assignComposedNode) execute() (interface{}, error) {
 	return nil, fmt.Errorf("Invalid type to assign variable ", a.variable)
 }
 
-//Checks the map and sees if it is an object type
+// Checks the map and sees if it is an object type
 func checkIfObjectNode(x map[string]interface{}) bool {
 	if idInf, ok := x["id"]; ok {
 		if id, ok := idInf.(string); ok {
@@ -1244,8 +1244,8 @@ func checkIfObjectNode(x map[string]interface{}) bool {
 	return false
 }
 
-//Hack function for the [room]:areas=[r1,r2,r3,r4]@[t1,t2,t3,t4]
-//command
+// Hack function for the [room]:areas=[r1,r2,r3,r4]@[t1,t2,t3,t4]
+// command
 func parseAreas(areas map[string]interface{}) (map[string]interface{}, error) {
 	var reservedStr string
 	var techStr string
