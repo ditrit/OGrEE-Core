@@ -494,7 +494,7 @@ func (n *updateObjNode) execute() (interface{}, error) {
 			"alpha", "tilesName", "tilesColor", "U", "slots", "localCS"}
 		if AssertInStringValues(i, vals) {
 			//labelFont should be 'bold' or 'italic' here in this node
-			if i != "labelFont" && !IsBool(attributes[i]) &&
+			if i != "labelFont" && i != "label" && !IsBool(attributes[i]) &&
 				attributes[i] != "true" && attributes[i] != "false" {
 				msg := "Only boolean values can be used for interact commands"
 				return nil, fmt.Errorf(msg)
