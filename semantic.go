@@ -109,3 +109,15 @@ func AssertColor(color interface{}) (string, bool) {
 	}
 	return colorStr, true
 }
+
+func AssertInfArr(x *node, item string) ([]interface{}, error) {
+	valInf, err := (*x).execute()
+	if err != nil {
+		return nil, err
+	}
+	val, ok := valInf.([]interface{})
+	if !ok {
+		return nil, fmt.Errorf(item + " should be an array value")
+	}
+	return val, nil
+}

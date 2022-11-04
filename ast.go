@@ -470,15 +470,10 @@ type updateObjNode struct {
 
 func (n *updateObjNode) execute() (interface{}, error) {
 	path, err := AssertString(&n.path, "Object path")
-
-	//pathVal, err := n.path.execute()
 	if err != nil {
 		return nil, err
 	}
-	//path, ok := pathVal.(string)
-	//if !ok {
-	//	return nil, fmt.Errorf("Object path should be a string")
-	//}
+
 	attributes, err := evalMapNodes(n.attributes)
 	if err != nil {
 		return nil, err
@@ -492,6 +487,14 @@ func (n *updateObjNode) execute() (interface{}, error) {
 	for i := range attributes {
 		vals := []string{"label", "labelFont", "content",
 			"alpha", "tilesName", "tilesColor", "U", "slots", "localCS"}
+
+		invalidVals := []string{"separator", "areas"}
+		if AssertInStringValues(i, invalidVals) {
+			msg := "This is invalid syntax you must specify" +
+				" 2 arrays separated by '@'"
+			return nil, fmt.Errorf(msg)
+		}
+
 		if AssertInStringValues(i, vals) {
 			//labelFont should be 'bold' or 'italic' here in this node
 			if i != "labelFont" && i != "label" && !IsBool(attributes[i]) &&
@@ -521,14 +524,11 @@ type specialUpdateNode struct {
 }
 
 func (n *specialUpdateNode) execute() (interface{}, error) {
-	pathVal, err := n.path.execute()
+	path, err := AssertString(&n.path, "Object path")
 	if err != nil {
 		return nil, err
 	}
-	path, ok := pathVal.(string)
-	if !ok {
-		return nil, fmt.Errorf("Object path should be a string")
-	}
+
 	first, err := n.first.execute()
 	if err != nil {
 		return nil, err
@@ -546,9 +546,6 @@ func (n *specialUpdateNode) execute() (interface{}, error) {
 		return cmd.UpdateObj(path, "", "", attributes, false)
 	} else if n.variable == "separator" {
 
-		startLen := len(first.([]interface{}))
-		endLen := len(second.([]interface{}))
-
 		errorResponder := func(attr string, multi bool) (interface{}, error) {
 			var errorMsg string
 			if multi {
@@ -565,6 +562,20 @@ func (n *specialUpdateNode) execute() (interface{}, error) {
 
 			return nil, fmt.Errorf(errorMsg + segment)
 		}
+
+		if !IsInfArr(first) {
+			if !IsInfArr(second) {
+				return errorResponder("Starting and ending", true)
+			}
+			return errorResponder("Starting", false)
+		}
+
+		if !IsInfArr(second) {
+			return errorResponder("Ending", false)
+		}
+
+		startLen := len(first.([]interface{}))
+		endLen := len(second.([]interface{}))
 
 		if startLen != 2 && endLen == 2 {
 			return errorResponder("starting position", false)
