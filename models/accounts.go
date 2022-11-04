@@ -11,21 +11,20 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-//JWT Claims struct
+// JWT Claims struct
 type Token struct {
-	UserId int
+	Email string `json:"email"`
 	jwt.StandardClaims
 }
 
-//a struct for rep user account
+// a struct for rep user account
 type Account struct {
-	ID       int    `json: "_id"`
-	Email    string `json: "email"`
-	Password string `json: "password"`
-	Token    string `json:"token";sql:"-"`
+	Email    string `json:"email"`
+	Password string `json:"password"`
+	Token    string `json:"token" sql:"-"`
 }
 
-//Validate incoming user
+// Validate incoming user
 func (account *Account) Validate() (map[string]interface{}, bool) {
 	if !strings.Contains(account.Email, "@") {
 		return u.Message(false, "Email address is required"), false
@@ -35,14 +34,11 @@ func (account *Account) Validate() (map[string]interface{}, bool) {
 		return u.Message(false, "Password is required"), false
 	}
 
-	//Email is unique
-	temp := &Account{}
-
 	//Error checking and duplicate emails
 	ctx, cancel := u.Connect()
-	err := GetDB().Collection("account").FindOne(ctx, bson.M{"email": account.Email}).Decode(&temp) //.Where("email = ?", account.Email).First(temp).Error
+	err := GetDB().Collection("account").FindOne(ctx, bson.M{"email": account.Email}).Err() //.Where("email = ?", account.Email).First(temp).Error
 	if err != nil && err != mongo.ErrNoDocuments {
-		return u.Message(false, "Connection error. Please retry"), false
+		return u.Message(false, "Connection error : "+err.Error()), false
 	}
 	//User already exists
 	if err == nil {
@@ -72,7 +68,7 @@ func (account *Account) Create() (map[string]interface{}, string) {
 	defer cancel()
 
 	//Create new JWT token for the newly created account
-	tk := &Token{UserId: account.ID}
+	tk := &Token{Email: account.Email}
 	token := jwt.NewWithClaims(jwt.GetSigningMethod("HS256"), tk)
 	tokenString, _ := token.SignedString([]byte(os.Getenv("token_password")))
 
@@ -113,7 +109,7 @@ func Login(email, password string) (map[string]interface{}, string) {
 	account.Password = ""
 
 	//Create JWT token
-	tk := &Token{UserId: account.ID}
+	tk := &Token{Email: account.Email}
 	token := jwt.NewWithClaims(jwt.GetSigningMethod("HS256"), tk)
 	tokenString, _ := token.SignedString([]byte(os.Getenv("token_password")))
 	account.Token = tokenString
