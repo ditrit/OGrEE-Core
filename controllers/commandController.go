@@ -74,7 +74,7 @@ func PostObj(ent int, entity string, data map[string]interface{}) (map[string]in
 	return nil, fmt.Errorf("Error: %s", string(respMap["message"].(string)))
 }
 
-//Calls API's Validation
+// Calls API's Validation
 func ValidateObj(data map[string]interface{}, ent string, silence bool) bool {
 	var respMap map[string]interface{}
 	resp, e := models.Send("POST",
@@ -182,7 +182,7 @@ func DeleteSelection() bool {
 	return res
 }
 
-//Search for objects
+// Search for objects
 func SearchObjects(entity string, data map[string]interface{}) []map[string]interface{} {
 	var jsonResp map[string]interface{}
 	URL := State.APIURL + "/api/" + entity + "s?"
@@ -226,9 +226,9 @@ func SearchObjects(entity string, data map[string]interface{}) []map[string]inte
 	return nil
 }
 
-//Silenced bool
-//Useful for LS since
-//otherwise the terminal would be polluted by debug statements
+// Silenced bool
+// Useful for LS since
+// otherwise the terminal would be polluted by debug statements
 func GetObject(path string, silenced bool) (map[string]interface{}, string) {
 	var data map[string]interface{}
 
@@ -270,8 +270,8 @@ func GetObject(path string, silenced bool) (map[string]interface{}, string) {
 	return nil, ""
 }
 
-//This is an auxillary function
-//for writing proper JSONs
+// This is an auxillary function
+// for writing proper JSONs
 func GenUpdateJSON(m map[string]interface{}, key string, value interface{}, del bool) bool {
 	//Base Cae
 	if _, ok := m[key]; ok {
@@ -294,10 +294,10 @@ func GenUpdateJSON(m map[string]interface{}, key string, value interface{}, del 
 	return false
 }
 
-//This function recursively applies an update to an object and
-//the rest of its subentities
-//Thus being the only function thus far to call another exported
-//function in this file
+// This function recursively applies an update to an object and
+// the rest of its subentities
+// Thus being the only function thus far to call another exported
+// function in this file
 func RecursivePatch(Path, id, ent string, data map[string]interface{}) error {
 	var entities string
 	var URL string
@@ -353,8 +353,8 @@ func recursivePatchAux(res, data map[string]interface{}) {
 
 }
 
-//You can either update obj by path or by ID and entity string type
-//The deleteAndPut bool is for deleting an attribute
+// You can either update obj by path or by ID and entity string type
+// The deleteAndPut bool is for deleting an attribute
 func UpdateObj(Path, id, ent string, data map[string]interface{}, deleteAndPut bool) (map[string]interface{}, error) {
 	println("OK. Attempting to update...")
 	var resp *http.Response
@@ -677,8 +677,8 @@ func LSEnterprise() {
 	}
 }
 
-//Displays environment variable values
-//and user defined variables and funcs
+// Displays environment variable values
+// and user defined variables and funcs
 func Env(userVars, userFuncs map[string]interface{}) {
 	fmt.Println("Unity: ", State.UnityClientAvail)
 	fmt.Println("Filter: ", State.FilterDisplay)
@@ -827,8 +827,8 @@ func GetByAttr(x string, u interface{}) {
 	}
 }
 
-//This function display devices in a sorted order according
-//to the attribute specified
+// This function display devices in a sorted order according
+// to the attribute specified
 func LSATTR(x, attr string) {
 	var path string
 	if x == "" || x == "." {
@@ -916,8 +916,8 @@ func LSATTR(x, attr string) {
 
 }
 
-//NOTE: LSDEV is recursive while LSSENSOR is not
-//Code could be more tidy
+// NOTE: LSDEV is recursive while LSSENSOR is not
+// Code could be more tidy
 func lsobjHelper(api, objID string, curr, entity int) []map[string]interface{} {
 	var ext, URL string
 	if entity == SENSOR && (curr == BLDG || curr == ROOM || curr == RACK || curr == DEVICE) {
@@ -1079,8 +1079,8 @@ func lsobjHelper(api, objID string, curr, entity int) []map[string]interface{} {
 	return nil
 }
 
-//Convert []interface{} array to
-//[]map[string]interface{} array
+// Convert []interface{} array to
+// []map[string]interface{} array
 func infArrToMapStrinfArr(x []interface{}) []map[string]interface{} {
 	ans := []map[string]interface{}{}
 	for i := range x {
@@ -1245,7 +1245,7 @@ func printAttributeOptions() {
 	}
 }
 
-//Function is an abstraction of a normal exit
+// Function is an abstraction of a normal exit
 func Exit() {
 	//writeHistoryOnExit(&State.sessionBuffer)
 	//runtime.Goexit()
@@ -1389,10 +1389,10 @@ func GetHierarchy(x string, depth int, silence bool) []map[string]interface{} {
 	return ans
 }
 
-//When creating via OCLI syntax
-//{entity}.attribute=someVal
-//Gets stripped and returns
-//attribute, someVal
+// When creating via OCLI syntax
+// {entity}.attribute=someVal
+// Gets stripped and returns
+// attribute, someVal
 func getAttrAndVal(x string) (string, string) {
 	arr := strings.Split(x, "=")
 
@@ -1401,7 +1401,7 @@ func getAttrAndVal(x string) (string, string) {
 	return a, v
 }
 
-//Helps to create the Object (thru OCLI syntax)
+// Helps to create the Object (thru OCLI syntax)
 func GetOCLIAtrributes(Path string, ent int, data map[string]interface{}) error {
 	var attr map[string]interface{}
 	var parent map[string]interface{}
@@ -1806,8 +1806,8 @@ func GetOCLIAtrributes(Path string, ent int, data map[string]interface{}) error 
 	return nil
 }
 
-//If user provided templates, get the JSON
-//and parse into templates
+// If user provided templates, get the JSON
+// and parse into templates
 func GetOCLIAtrributesTemplateHelper(attr, data map[string]interface{}, ent int) {
 	//Inner func declaration used for importing
 	//data from templates
@@ -2256,7 +2256,7 @@ func LinkObject(paths []interface{}) {
 	DeleteObj(paths[0].(string))
 }
 
-//This function validates a hierarchy to be imported into another category
+// This function validates a hierarchy to be imported into another category
 func validFn(x []map[string]interface{}, entity string, pid interface{}) (bool, map[string]interface{}) {
 	if x != nil {
 		for i := range x {
@@ -2324,7 +2324,7 @@ func fn(x []map[string]interface{}, pid interface{}, entity string, ent int) {
 	}
 }
 
-//paths should only have a length of 1 or 2
+// paths should only have a length of 1 or 2
 func UnlinkObject(paths []interface{}) {
 	//paths[0] ===> device to unlink
 	//paths[1] ===> new location in stray-dev (can be optionally empty)
@@ -2409,8 +2409,8 @@ func UnlinkObject(paths []interface{}) {
 	DeleteObj(paths[0].(string))
 }
 
-//Unity UI will draw already existing objects
-//by retrieving the hierarchy
+// Unity UI will draw already existing objects
+// by retrieving the hierarchy
 func Draw(x string, depth int) error {
 	obj, _ := GetObject(x, true)
 	if obj == nil {
@@ -2759,7 +2759,7 @@ func SetEnv(arg string, val interface{}) {
 	}
 }
 
-//Utility functions
+// Utility functions
 func determineStrKey(x map[string]interface{}, possible []string) string {
 	for idx := range possible {
 		if _, ok := x[possible[idx]]; ok {
@@ -2769,9 +2769,9 @@ func determineStrKey(x map[string]interface{}, possible []string) string {
 	return "" //The code should not reach this point!
 }
 
-//Serialising size & posXY is inefficient but
-//the team wants it for now
-//"size":"[25,29.4,0]" -> "size": "{\"x\":25,\"y\":29.4,\"z\":0}"
+// Serialising size & posXY is inefficient but
+// the team wants it for now
+// "size":"[25,29.4,0]" -> "size": "{\"x\":25,\"y\":29.4,\"z\":0}"
 func serialiseAttr(attr map[string]interface{}, want string) string {
 	var newSize string
 	if size, ok := attr[want].(string); ok {
@@ -2811,8 +2811,8 @@ func serialiseAttr(attr map[string]interface{}, want string) string {
 	return newSize
 }
 
-//Same utility func as above but we have an arbitrary array
-//and want to cast it to -> "size": "{\"x\":25,\"y\":29.4,\"z\":0}"
+// Same utility func as above but we have an arbitrary array
+// and want to cast it to -> "size": "{\"x\":25,\"y\":29.4,\"z\":0}"
 func serialiseAttr2(attr map[string]interface{}, want string) string {
 	var newSize string
 	if items, ok := attr[want].([]interface{}); ok {
@@ -2853,9 +2853,9 @@ func serialiseAttr2(attr map[string]interface{}, want string) string {
 	return newSize
 }
 
-//Auxillary function for serialiseAttr2
-//to help ensure that the arbitrary arrays
-//([]interface{}) are valid before they get serialised
+// Auxillary function for serialiseAttr2
+// to help ensure that the arbitrary arrays
+// ([]interface{}) are valid before they get serialised
 func arrayVerifier(x *[]interface{}, attribute string) bool {
 	switch attribute {
 	case "size":
@@ -2866,9 +2866,9 @@ func arrayVerifier(x *[]interface{}, attribute string) bool {
 	return false
 }
 
-//Auxillary function for serialiseAttr
-//to help verify the posXY and size attributes
-//have correct lengths before they get serialised
+// Auxillary function for serialiseAttr
+// to help verify the posXY and size attributes
+// have correct lengths before they get serialised
 func stringSplitter(want, separator, attribute string) []string {
 	arr := strings.Split(want, separator)
 	switch attribute {
@@ -2884,8 +2884,8 @@ func stringSplitter(want, separator, attribute string) []string {
 	return arr
 }
 
-//This func is used for when the user wants to filter certain
-//attributes from being sent/displayed to Unity viewer client
+// This func is used for when the user wants to filter certain
+// attributes from being sent/displayed to Unity viewer client
 func GenerateFilteredJson(x map[string]interface{}) map[string]interface{} {
 	ans := map[string]interface{}{}
 	attrs := map[string]interface{}{}
@@ -2917,7 +2917,7 @@ func GenerateFilteredJson(x map[string]interface{}) map[string]interface{} {
 	return x //Nothing will be filtered
 }
 
-//Display contents of []map[string]inf array
+// Display contents of []map[string]inf array
 func DispMapArr(x []map[string]interface{}) {
 	for idx := range x {
 		println()
@@ -2928,7 +2928,7 @@ func DispMapArr(x []map[string]interface{}) {
 	}
 }
 
-//displays contents of maps
+// displays contents of maps
 func Disp(x map[string]interface{}) {
 
 	jx, _ := json.Marshal(x)
@@ -2945,7 +2945,7 @@ func LoadArrFromResp(resp map[string]interface{}, idx string) []interface{} {
 	return nil
 }
 
-//Function called by update node for interact commands (ie label, labelFont)
+// Function called by update node for interact commands (ie label, labelFont)
 func InteractObject(path string, keyword string, val interface{}, fromAttr bool) error {
 	//First retrieve the object
 	obj, e := GetObject(path, true)
@@ -3047,7 +3047,7 @@ func InteractObject(path string, keyword string, val interface{}, fromAttr bool)
 	return InformUnity("Interact", -1, ans)
 }
 
-//Messages Unity Client
+// Messages Unity Client
 func InformUnity(caller string, entity int, data map[string]interface{}) error {
 	//If unity is available message it
 	//otherwise do nothing
@@ -3088,8 +3088,8 @@ func MergeMaps(x, y map[string]interface{}, overwrite bool) {
 	}
 }
 
-//Auxillary function that preprocesses
-//strings to be used for Path Resolver funcs
+// Auxillary function that preprocesses
+// strings to be used for Path Resolver funcs
 func PreProPath(Path string) []string {
 	var pathSplit []string
 
@@ -3115,8 +3115,8 @@ func PreProPath(Path string) []string {
 	return pathSplit
 }
 
-//Take 'user' abstraction path and
-//convert to online URL for API
+// Take 'user' abstraction path and
+// convert to online URL for API
 func OnlinePathResolve(path []string) []string {
 	//We have to make an array since there can be
 	//multiple possible paths for paths past room
@@ -3239,9 +3239,9 @@ func OnlinePathResolve(path []string) []string {
 	return paths
 }
 
-//Auxillary function for FetchNodesAtLevel
-//Take 'user' abstraction path and
-//convert to online URL for API
+// Auxillary function for FetchNodesAtLevel
+// Take 'user' abstraction path and
+// convert to online URL for API
 func OnlineLevelResolver(path []string) []string {
 	//We have to make an array since there can be
 	//multiple possible paths for paths past room
@@ -3380,7 +3380,7 @@ type sortable interface {
 	getData() []map[string]interface{}
 }
 
-//Helper Struct for sorting
+// Helper Struct for sorting
 type SortableMArr struct {
 	data []map[string]interface{}
 }
@@ -3467,14 +3467,14 @@ func (s SortableSlot) Less(i, j int) bool {
 
 }
 
-//Helper func that safely deletes a string key in a map
+// Helper func that safely deletes a string key in a map
 func DeleteAttr(x map[string]interface{}, key string) {
 	if _, ok := x[key]; ok {
 		delete(x, key)
 	}
 }
 
-//Helper func that safely copies a value in a map
+// Helper func that safely copies a value in a map
 func CopyAttr(dest, source map[string]interface{}, key string) bool {
 	if _, ok := source[key]; ok {
 		dest[key] = source[key]
@@ -3483,9 +3483,9 @@ func CopyAttr(dest, source map[string]interface{}, key string) bool {
 	return false
 }
 
-//Helper function for GetOCLIAttr which retrieves
-//template from server if available, this func mainly helps
-//to keep code organised
+// Helper function for GetOCLIAttr which retrieves
+// template from server if available, this func mainly helps
+// to keep code organised
 func fetchTemplate(name string, objType int) map[string]interface{} {
 	var URL string
 	if objType == ROOMTMPL {
@@ -3506,9 +3506,9 @@ func fetchTemplate(name string, objType int) map[string]interface{} {
 	return nil
 }
 
-//Helper func is used to check if sizeU is numeric
-//this is necessary since the OCLI command for creating a device
-//needs to distinguish if the parameter is a valid sizeU or template
+// Helper func is used to check if sizeU is numeric
+// this is necessary since the OCLI command for creating a device
+// needs to distinguish if the parameter is a valid sizeU or template
 func checkNumeric(x interface{}) bool {
 	switch x.(type) {
 	case int, float64, float32:
@@ -3518,9 +3518,9 @@ func checkNumeric(x interface{}) bool {
 	}
 }
 
-//Hack function for the reserved and technical areas
-//which copies that room areas function in ast.go
-//[room]:areas=[r1,r2,r3,r4]@[t1,t2,t3,t4]
+// Hack function for the reserved and technical areas
+// which copies that room areas function in ast.go
+// [room]:areas=[r1,r2,r3,r4]@[t1,t2,t3,t4]
 func parseReservedTech(x map[string]interface{}) map[string]interface{} {
 	var reservedStr string
 	var techStr string

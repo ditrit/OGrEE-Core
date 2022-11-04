@@ -6,7 +6,7 @@ import (
 	"net/http"
 )
 
-//Function helps with API Requests
+// Function helps with API Requests
 func Send(method, URL, key string, data map[string]interface{}) (*http.Response,
 	error) {
 	//Loop because sometimes a

@@ -5,6 +5,9 @@ package controllers
 import (
 	"bufio"
 	"bytes"
+	l "cli/logger"
+	"cli/models"
+	"cli/readline"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -14,49 +17,33 @@ import (
 	"strings"
 	"time"
 
-	l "cli/logger"
-	"cli/models"
-	"cli/readline"
+	"github.com/joho/godotenv"
 )
 
-//Intialises env map with .env file
-func LoadEnvFile(env map[string]interface{}, path string) {
-	file, err := os.Open(path)
-	defer file.Close()
-	if err == nil {
-		scanner := bufio.NewScanner(file)
-		scanner.Split(bufio.ScanWords) // use scanwords
-		for scanner.Scan() {
-			splitArr := strings.SplitN(scanner.Text(), "=", 2)
-			key := splitArr[0]
-			val := splitArr[1]
-			env[key] = val
-		}
-	} else {
-		if State.DebugLvl > 0 {
-			fmt.Println(err.Error())
-		}
-		l.GetErrorLogger().Println("Error at initialisation:" +
-			err.Error())
-		println("Unable to load env file! Now exiting")
-		os.Exit(-1)
+func InitEnvFilePath(envPath string) {
+	State.EnvFilePath = envPath
+}
+
+func InitHistoryFilePath(histPath string) {
+	State.HistoryFilePath = histPath
+}
+
+func InitDebugLevel(verbose string) {
+	var ok bool
+	State.DebugLvl, ok = map[string]int{
+		"NONE":    0,
+		"ERROR":   1,
+		"WARNING": 2,
+		"INFO":    3,
+		"DEBUG":   4,
+	}[verbose]
+	if !ok {
+		State.DebugLvl = 1
 	}
 }
 
-func InitEnvFilePath(flags map[string]interface{}) {
-	State.EnvFilePath = flags["env_path"].(string)
-}
-
-func InitHistoryFilePath(flags map[string]interface{}) {
-	State.HistoryFilePath = flags["history_path"].(string)
-}
-
-func InitDebugLevel(flags map[string]interface{}) {
-	State.DebugLvl = flags["v"].(int)
-}
-
-//Intialise the ShellState
-func InitState(flags, env map[string]interface{}) {
+// Intialise the ShellState
+func InitState(analyser string, env map[string]string) {
 
 	State.ClipBoard = nil
 	State.TreeHierarchy = &(Node{})
@@ -72,7 +59,7 @@ func InitState(flags, env map[string]interface{}) {
 	State.FilterDisplay = false
 
 	//Set the Analyser setting to ON for now
-	State.Analyser, _ = strconv.ParseBool(flags["analyser"].(string))
+	State.Analyser, _ = strconv.ParseBool(analyser)
 
 	phys := &Node{}
 	phys.Name = "Physical"
@@ -167,13 +154,13 @@ func InitState(flags, env map[string]interface{}) {
 	}
 }
 
-//It is useful to have the state to hold
-//a pointer to our readline terminal
+// It is useful to have the state to hold
+// a pointer to our readline terminal
 func SetStateReadline(rl *readline.Instance) {
 	State.Terminal = &rl
 }
 
-//Startup the go routine for listening
+// Startup the go routine for listening
 func InitUnityCom(rl *readline.Instance, addr string) {
 	errConnect := models.ConnectToUnity(addr, State.Timeout)
 	if errConnect != nil {
@@ -193,11 +180,10 @@ func InitUnityCom(rl *readline.Instance, addr string) {
 	go models.ReceiveLoop(rl, addr, &State.UnityClientAvail)
 }
 
-func InitTimeout(env map[string]interface{}) {
-	if env["unityTimeout"] != nil && env["unityTimeout"] != "" {
+func InitTimeout(env map[string]string) {
+	if duration, ok := env["unityTimeout"]; ok && duration != "" {
 		var timeLen int
 		var durationType string
-		duration := env["unityTimeout"].(string)
 		fmt.Sscanf(duration, "%d%s", &timeLen, &durationType)
 		switch durationType {
 		case "ns":
@@ -228,17 +214,16 @@ func InitTimeout(env map[string]interface{}) {
 	return
 }
 
-func InitKey(flags, env map[string]interface{}) string {
-	if flags["api_key"] != nil && flags["api_key"] != "" {
-		State.APIKEY = flags["api_key"].(string)
+func InitKey(apiKey string, env map[string]string) string {
+	if apiKey != "" {
+		State.APIKEY = apiKey
 		return State.APIKEY
 	}
-
-	if env["apiKey"] != nil {
-		State.APIKEY = env["apiKey"].(string)
+	envApiKey, ok := env["apiKey"]
+	if ok {
+		State.APIKEY = envApiKey
 		return State.APIKEY
 	}
-
 	fmt.Println("Error: No API Key Found")
 	if State.DebugLvl > 0 {
 		l.GetErrorLogger().Println(
@@ -247,7 +232,6 @@ func InitKey(flags, env map[string]interface{}) string {
 
 	State.APIKEY = ""
 	return ""
-
 }
 
 func GetEmail() string {
@@ -275,24 +259,25 @@ func GetEmail() string {
 	return ""
 }
 
-//Automatically assign Unity and API URLs
-func GetURLs(flags, env map[string]interface{}) {
-	if flags["api_url"] != nil && flags["api_url"] != "" {
-		State.APIURL = flags["api_url"].(string)
+// Automatically assign Unity and API URLs
+func GetURLs(apiURL string, unityURL string, env map[string]string) {
+	if apiURL != "" {
+		State.APIURL = apiURL
 	}
-	if flags["unity_url"] != nil && flags["unity_url"] != "" {
-		State.UnityClientURL = flags["unity_url"].(string)
+
+	if unityURL != "" {
+		State.UnityClientURL = unityURL
 	}
 
 	if State.UnityClientURL == "" {
-		if env["unityURL"] != nil {
-			State.UnityClientURL = env["unityURL"].(string)
+		if envUnityURL, ok := env["unityURL"]; ok {
+			State.UnityClientURL = envUnityURL
 		}
 	}
 
 	if State.APIURL == "" {
-		if env["apiURL"] != nil {
-			State.APIURL = env["apiURL"].(string)
+		if envApiURL, ok := env["apiURL"]; ok {
+			State.APIURL = envApiURL
 		}
 	}
 
@@ -311,18 +296,16 @@ func GetURLs(flags, env map[string]interface{}) {
 			"http://localhost:5500")
 		State.APIURL = "http://localhost:5500"
 	}
-
 }
 
-//Helper for InitState will
-//insert objs
-func SetObjsForUnity(x string, env map[string]interface{}) []int {
+// Helper for InitState will
+// insert objs
+func SetObjsForUnity(x string, env map[string]string) []int {
 	res := []int{}
 	allDetected := false
 
-	if env[x] != nil && env[x] != "" {
+	if objStr, ok := env[x]; ok && objStr != "" {
 		//ObjStr is equal to everything after 'updates='
-		objStr := env[x].(string)
 		arr := strings.Split(objStr, ",")
 
 		for i := range arr {
@@ -358,10 +341,9 @@ func SetObjsForUnity(x string, env map[string]interface{}) []int {
 	return res
 }
 
-func SetDrawableTemplate(entity string, env map[string]interface{}) map[string]interface{} {
-	var objStr string
+func SetDrawableTemplate(entity string, env map[string]string) map[string]interface{} {
 	templateKey := entity + "DrawableJson"
-	if env[templateKey] != nil && env[templateKey] != "" {
+	if objStr, ok := env[templateKey]; ok && objStr != "" {
 		objStr = strings.Trim(objStr, "'\"")
 		//Now retrieve file
 		ans := map[string]interface{}{}
@@ -370,9 +352,7 @@ func SetDrawableTemplate(entity string, env map[string]interface{}) map[string]i
 			json.Unmarshal(f, &ans)
 			return ans
 		}
-
 	}
-
 	l.GetWarningLogger().Println("Specified template for " + entity + " not found")
 	if State.DebugLvl > 1 {
 		println("Specified template for " + entity +
@@ -383,7 +363,6 @@ func SetDrawableTemplate(entity string, env map[string]interface{}) map[string]i
 
 func CreateCredentials() (string, string) {
 	var tp map[string]interface{}
-	var key string
 	client := &http.Client{}
 
 	user, _ := readline.Line("Please Enter desired user email: ")
@@ -393,7 +372,7 @@ func CreateCredentials() (string, string) {
 		"password": pass})
 
 	req, _ := http.NewRequest("POST",
-		State.APIURL+"/api/user",
+		State.APIURL+"/api",
 		bytes.NewBuffer(buf))
 
 	resp, e := client.Do(req)
@@ -416,52 +395,63 @@ func CreateCredentials() (string, string) {
 		os.Exit(-1)
 	}
 	json.Unmarshal(bodyBytes, &tp)
-	key = (tp["account"].(map[string]interface{}))["token"].(string)
 
-	os.WriteFile("./.env",
-		[]byte("user="+user+"\n"+"apiKey="+key),
-		0666)
+	if !tp["status"].(bool) {
+		errMessage := "Error while creating credentials : " + tp["message"].(string)
+		if State.DebugLvl > 0 {
+			println(errMessage)
+		}
+		l.GetErrorLogger().Println(errMessage)
+		os.Exit(-1)
+	}
+
+	token := (tp["account"].(map[string]interface{}))["token"].(string)
+
+	envMap, err := godotenv.Read(State.EnvFilePath)
+	if err != nil {
+		panic(err)
+	}
+	envMap["user"] = user
+	envMap["apiKey"] = token
+	godotenv.Write(envMap, State.EnvFilePath)
 
 	l.GetInfoLogger().Println("Credentials created")
-	return user, key
+	return user, token
 }
 
 func CheckKeyIsValid(key string) bool {
 	client := &http.Client{}
 
-	req, _ := http.NewRequest("GET",
+	req, err := http.NewRequest("GET",
 		State.APIURL+"/api/token/valid", nil)
+
+	if err != nil {
+		panic(err)
+	}
 
 	req.Header.Set("Authorization", "Bearer "+key)
 
 	resp, e := client.Do(req)
-	if e != nil || resp.StatusCode != 200 {
-		//readline.Line(e.Error())
-		if resp != nil {
-			readline.Line("Status code" + strconv.Itoa(resp.StatusCode))
-		} else {
-			l.GetErrorLogger().Println("Unable to connect to API: ", State.APIURL)
-			if State.DebugLvl > 0 {
-				println("Unable to connect to API: ", State.APIURL)
-			}
-
-		}
-
+	if e != nil {
+		l.GetErrorLogger().Println("Unable to connect to API: ", State.APIURL)
+		l.GetErrorLogger().Println(e.Error())
+		println("Unable to connect to API: ", State.APIURL)
+		println(e.Error())
+	}
+	if resp.StatusCode != 200 {
+		readline.Line("Status code" + strconv.Itoa(resp.StatusCode))
 		return false
 	}
 	return true
 }
 
-func Login(env map[string]interface{}) (string, string) {
-	var user, key string
+func Login(env map[string]string) (string, string) {
+	user, userOk := env["user"]
+	key, keyOk := env["apiKey"]
 
-	if env["user"] == nil || env["apiKey"] == nil ||
-		env["user"] == "" || env["apiKey"] == "" {
+	if !userOk || !keyOk || (userOk && user == "") || (keyOk && key == "") {
 		l.GetInfoLogger().Println("Key not found, going to generate..")
 		user, key = CreateCredentials()
-	} else {
-		user = env["user"].(string)
-		key = env["apiKey"].(string)
 	}
 
 	if !CheckKeyIsValid(key) {

@@ -16,6 +16,8 @@ import (
 	"fmt"
 	"os"
 	"strings"
+
+	"github.com/joho/godotenv"
 )
 
 func InterpretLine(str *string) bool {
@@ -41,22 +43,25 @@ func InterpretLine(str *string) bool {
 	return true
 }
 
-//Init the Shell
-func Start(flags map[string]interface{}) {
-
-	env := map[string]interface{}{}
-
+// Init the Shell
+func Start(flags *Flags) {
 	l.InitLogs()
-	c.InitEnvFilePath(flags)
-	c.InitHistoryFilePath(flags)
-	c.InitDebugLevel(flags) //Set the Debug level
-	c.LoadEnvFile(env, flags["env_path"].(string))
-	c.InitTimeout(env)    //Set the Unity Timeout
-	c.GetURLs(flags, env) //Set the URLs
-	c.InitKey(flags, env) //Set the API Key
+	c.InitEnvFilePath(flags.envPath)
+	c.InitHistoryFilePath(flags.histPath)
+	c.InitDebugLevel(flags.verbose) //Set the Debug level
+
+	env, envErr := godotenv.Read(flags.envPath)
+	if envErr != nil {
+		fmt.Println("Cannot read environment file", flags.envPath, ":", envErr.Error())
+		return
+	}
+
+	c.InitTimeout(env)                           //Set the Unity Timeout
+	c.GetURLs(flags.APIURL, flags.unityURL, env) //Set the URLs
+	c.InitKey(flags.APIKEY, env)                 //Set the API Key
 	user, _ := c.Login(env)
 
-	c.InitState(flags, env)
+	c.InitState(flags.analyser, env)
 
 	rl, err := readline.NewEx(&readline.Config{
 		Prompt: "\u001b[1m\u001b[32m" + user + "@" + "OGrEE3D:" +
@@ -78,9 +83,9 @@ func Start(flags map[string]interface{}) {
 	c.SetStateReadline(rl)
 
 	//Execute Script if provided as arg and exit
-	if flags["script"] != "" {
-		if strings.Contains(flags["script"].(string), ".ocli") {
-			script := flags["script"].(string)
+	if flags.script != "" {
+		if strings.Contains(flags.script, ".ocli") {
+			script := flags.script
 			c.State.ScriptCalled = true
 			c.State.ScriptPath = script
 			LoadFile(script)
@@ -92,7 +97,7 @@ func Start(flags map[string]interface{}) {
 	Repl(rl, user)
 }
 
-//The loop of the program
+// The loop of the program
 func Repl(rl *readline.Instance, user string) {
 	for {
 		if c.State.ScriptCalled == true {
