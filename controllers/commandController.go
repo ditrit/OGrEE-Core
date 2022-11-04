@@ -701,17 +701,9 @@ func LSOBJECT(x string, entity int) []map[string]interface{} {
 	var obj map[string]interface{}
 	var Path string
 
-	if entity == TENANT { //Edge case
+	if entity == TENANT { //Special for tenants case
 		if x == "/Physical" {
-			r, e := models.Send("GET",
-				State.APIURL+"/api/tenants", GetKey(), nil)
-			obj = ParseResponse(r, e, "Get Tenants")
-			arr := LoadArrFromResp(obj, "objects")
-			tenants := infArrToMapStrinfArr(arr)
-			for _, tenant := range tenants {
-				println(tenant["name"].(string))
-			}
-			return tenants
+			Path = State.APIURL + "/api"
 		} else {
 			//Return nothing
 			return nil
@@ -728,7 +720,6 @@ func LSOBJECT(x string, entity int) []map[string]interface{} {
 		}
 	}
 
-	data := map[string]interface{}{}
 	objects := []interface{}{}
 
 	//Retrieve the desired objects under the working path
@@ -740,20 +731,11 @@ func LSOBJECT(x string, entity int) []map[string]interface{} {
 	}
 
 	//Data verification and print block
-	if _, ok := parsed["data"]; ok {
-		if _, ok := parsed["data"].(map[string]interface{}); ok {
-			data = parsed["data"].(map[string]interface{})
-			if _, ok := data["objects"]; ok {
-				if _, ok := data["objects"].([]interface{}); ok {
-					objects = data["objects"].([]interface{})
-					for i := range objects {
-						if object, ok := objects[i].(map[string]interface{}); ok {
-							if object["name"] != nil {
-								println(object["name"].(string))
-							}
-						}
-					}
-				}
+	objects = GetRawObjects(parsed)
+	for i := range objects {
+		if object, ok := objects[i].(map[string]interface{}); ok {
+			if object["name"] != nil {
+				println(object["name"].(string))
 			}
 		}
 	}
@@ -910,16 +892,6 @@ func LSATTR(x, attr string) {
 		}
 	}
 
-}
-
-//Convert []interface{} array to
-//[]map[string]interface{} array
-func infArrToMapStrinfArr(x []interface{}) []map[string]interface{} {
-	ans := []map[string]interface{}{}
-	for i := range x {
-		ans = append(ans, x[i].(map[string]interface{}))
-	}
-	return ans
 }
 
 func CD(x string) string {
@@ -1227,6 +1199,7 @@ func GetHierarchy(x string, depth int, silence bool) []map[string]interface{} {
 //{entity}.attribute=someVal
 //Gets stripped and returns
 //attribute, someVal
+//TODO: Delete this func if stale
 func getAttrAndVal(x string) (string, string) {
 	arr := strings.Split(x, "=")
 
@@ -2794,15 +2767,6 @@ func Disp(x map[string]interface{}) {
 	println("JSON: ", string(jx))
 }
 
-func LoadArrFromResp(resp map[string]interface{}, idx string) []interface{} {
-	if data, ok := resp["data"].(map[string]interface{}); ok {
-		if objs, ok1 := data[idx].([]interface{}); ok1 {
-			return objs
-		}
-	}
-	return nil
-}
-
 //Function called by update node for interact commands (ie label, labelFont)
 func InteractObject(path string, keyword string, val interface{}, fromAttr bool) error {
 	//First retrieve the object
@@ -2910,6 +2874,244 @@ func InformUnity(caller string, entity int, data map[string]interface{}) error {
 			}
 			return fmt.Errorf("error while contacting unity : %s", e.Error())
 		}
+	}
+	return nil
+}
+
+func LSOBJECTRecursive(x string, entity int) []map[string]interface{} {
+	var obj map[string]interface{}
+	var Path string
+
+	if entity == TENANT { //Edge case
+		if x == "/Physical" {
+			r, e := models.Send("GET",
+				State.APIURL+"/api/tenants", GetKey(), nil)
+			obj = ParseResponse(r, e, "Get Tenants")
+			arr := LoadArrFromResp(obj, "objects")
+			tenants := infArrToMapStrinfArr(arr)
+			for _, tenant := range tenants {
+				println(tenant["name"].(string))
+			}
+			return tenants
+		} else {
+			//Return nothing
+			return nil
+		}
+	} else {
+		obj, Path = GetObject(x, true)
+		if obj == nil {
+			if State.DebugLvl > 0 {
+				println("Error finding Object from given path!")
+			}
+
+			l.GetWarningLogger().Println("Object to Get not found")
+			return nil
+		}
+	}
+
+	entityDir, _ := path.Split(Path)
+	entities := path.Base(entityDir)
+	objEnt := entities[:len(entities)-1]
+	obi := EntityStrToInt(objEnt)
+	if obi == -1 { //Something went wrong
+		if State.DebugLvl > 0 {
+			println("Error finding Object from given path!")
+		}
+
+		l.GetWarningLogger().Println("Object to Get not found")
+		return nil
+	}
+
+	//YouareAt -> obi
+	//want 	   -> entity
+
+	if (entity >= AC && entity <= CORIDOR) && obi > ROOM {
+		return nil
+	}
+
+	if entity < AC && obi > entity {
+		return nil
+	}
+
+	//println(entities)
+	var idToSend string
+	if obi == TENANT {
+		idToSend = obj["name"].(string)
+	} else {
+		idToSend = obj["id"].(string)
+	}
+	//println(entities)
+	//println(obi)
+	//println("WANT:", EntityToString(entity))
+	res := lsobjHelperRecursive(State.APIURL, idToSend, obi, entity)
+	for i := range res {
+		if res[i] != nil && res[i]["name"] != nil {
+			println(res[i]["name"].(string))
+		}
+
+	}
+	return res
+	//return nil
+}
+
+//NOTE: LSDEV is recursive while LSSENSOR is not
+//Code could be more tidy
+func lsobjHelperRecursive(api, objID string, curr, entity int) []map[string]interface{} {
+	var ext, URL string
+	if entity == SENSOR && (curr == BLDG || curr == ROOM || curr == RACK || curr == DEVICE) {
+		ext = EntityToString(curr) + "s/" + objID + "/" + EntityToString(entity) + "s"
+		URL = State.APIURL + "/api/" + ext
+		r, e := models.Send("GET", URL, GetKey(), nil)
+		tmp := ParseResponse(r, e, "getting objects")
+		if tmp == nil {
+			return nil
+		}
+
+		tmpObjs := LoadArrFromResp(tmp, "objects")
+		if tmp == nil {
+			return nil
+		}
+		res := infArrToMapStrinfArr(tmpObjs)
+		return res
+
+	} else if entity-curr >= 2 {
+
+		//println("DEBUG-should be here")
+		ext = EntityToString(curr) + "s/" + objID + "/" + EntityToString(curr+2) + "s"
+		URL = State.APIURL + "/api/" + ext
+		//println("DEBUG-URL:", URL)
+
+		//EDGE CASE, if user is at a BLDG and requests object of room
+		if (curr == BLDG || curr == ROOM) && (entity >= AC && entity <= CORIDOR) {
+			ext = EntityToString(curr) + "s/" + objID + "/" + EntityToString(entity) + "s"
+			r, e := models.Send("GET", State.APIURL+"/api/"+ext, GetKey(), nil)
+			tmp := ParseResponse(r, e, "getting objects")
+			if tmp == nil {
+				return nil
+			}
+
+			tmpObjs := GetRawObjects(tmp)
+			res := infArrToMapStrinfArr(tmpObjs)
+			return res
+		}
+		//END OF EDGE CASE BLOCK
+
+		r, e := models.Send("GET", URL, GetKey(), nil)
+		resp := ParseResponse(r, e, "getting objects")
+		if resp == nil {
+			println("return nil1")
+			return nil
+		}
+
+		//objs -> resp["data"]["objects"]
+		objs := LoadArrFromResp(resp, "objects")
+		if objs != nil {
+			x := []map[string]interface{}{}
+
+			if entity >= AC && entity <= CORIDOR {
+
+				for q := range objs {
+					id := objs[q].(map[string]interface{})["id"].(string)
+					ext2 := "/api/" + EntityToString(curr+2) + "s/" + id + "/" + EntityToString(entity) + "s"
+
+					tmp, e := models.Send("GET", State.APIURL+ext2, GetKey(), nil)
+					tmp2 := ParseResponse(tmp, e, "get objects")
+					if x != nil {
+						tmpObjects := GetRawObjects(tmp2)
+						//convert []interface{} to []map[string]interface{}
+						x = append(x, infArrToMapStrinfArr(tmpObjects)...)
+					}
+				}
+			} else {
+				if entity == DEVICE && curr == ROOM {
+					x = append(x, infArrToMapStrinfArr(objs)...)
+				}
+				for i := range objs {
+					rest := lsobjHelperRecursive(api, objs[i].(map[string]interface{})["id"].(string), curr+2, entity)
+					if rest != nil && len(rest) > 0 {
+						x = append(x, rest...)
+					}
+
+				}
+			}
+
+			if State.DebugLvl > 3 {
+				println(len(x))
+			}
+
+			return x
+		}
+
+	} else if entity-curr >= 1 {
+		//println("DEBUG-must be here")
+		ext := EntityToString(curr) + "s/" + objID + "/" + EntityToString(curr+1) + "s"
+		URL := State.APIURL + "/api/" + ext
+		r, e := models.Send("GET", URL, GetKey(), nil)
+		//println("DEBUG-URL SENT:", URL)
+		resp := ParseResponse(r, e, "getting objects")
+		if resp == nil {
+			println("return nil")
+			return nil
+		}
+		//objs := resp["data"]["objects"]
+		objs := LoadArrFromResp(resp, "objects")
+		if objs != nil {
+			ans := []map[string]interface{}{}
+			//For associated objects of room
+			if entity >= AC && entity <= CORIDOR {
+				for i := range objs {
+					ext2 := "/api/" + EntityToString(curr) + "s/" +
+						objs[i].(map[string]interface{})["id"].(string) +
+						"/" + EntityToString(entity) + "s"
+
+					tmp, e := models.Send("GET", State.APIURL+ext2, GetKey(), nil)
+					x := ParseResponse(tmp, e, "get objects")
+					if x != nil {
+						ans = append(ans, x)
+					}
+				}
+			} else {
+
+				ans = infArrToMapStrinfArr(objs)
+				if curr == RACK && entity == DEVICE {
+					for idx := range ans {
+						ext2 := "/api/" + EntityToString(entity) +
+							"s/" + ans[idx]["id"].(string) + "/" + EntityToString(entity) + "s"
+						subURL := State.APIURL + ext2
+						r1, e1 := models.Send("GET", subURL, GetKey(), nil)
+						tmp1 := ParseResponse(r1, e1, "getting objects")
+
+						tmp2 := LoadArrFromResp(tmp1, "objects")
+						if tmp2 != nil {
+							//Swap ans and objs to keep order
+							ans = append(ans, infArrToMapStrinfArr(tmp2)...)
+						}
+
+					}
+
+				}
+			}
+
+			return ans
+		}
+
+	} else if entity-curr == 0 { //Base Case
+
+		//For devices we have to make hierarchal call
+		if entity == DEVICE {
+			URL = State.APIURL + "/api/" + EntityToString(curr) + "s/" + objID + "/devices"
+		} else {
+			URL = State.APIURL + "/api/" + EntityToString(curr) + "s/" + objID
+		}
+
+		resp, e := models.Send("GET", URL, GetKey(), nil)
+		x := ParseResponse(resp, e, "get object")
+		if entity == DEVICE {
+			tmp := GetRawObjects(x)
+			objArr := infArrToMapStrinfArr(tmp)
+			return objArr
+		}
+		return []map[string]interface{}{x["data"].(map[string]interface{})}
 	}
 	return nil
 }

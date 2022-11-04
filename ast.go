@@ -656,6 +656,7 @@ func (n *easyUpdateNode) execute() (interface{}, error) {
 type lsObjNode struct {
 	path   node
 	entity int
+	flag   node
 }
 
 func (n *lsObjNode) execute() (interface{}, error) {
@@ -667,7 +668,20 @@ func (n *lsObjNode) execute() (interface{}, error) {
 	if !ok {
 		return nil, fmt.Errorf("Path should be a string")
 	}
-	return cmd.LSOBJECT(path, n.entity), nil
+	flag, err := AssertString(&n.flag, "Flag")
+	if err != nil {
+		return nil, err
+	}
+
+	if flag == "r" {
+		return cmd.LSOBJECTRecursive(path, n.entity), nil
+	} else if flag == "" {
+		return cmd.LSOBJECT(path, n.entity), nil
+	} else {
+		msg := "Unrecognised flag. You can only use '-r'"
+		return nil, fmt.Errorf(msg)
+	}
+
 }
 
 type treeNode struct {

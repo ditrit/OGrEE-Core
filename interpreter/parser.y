@@ -90,8 +90,12 @@ st2:    {$$=nil}
 stmnt:   TOK_GET PATH {$$=&getObjectNode{$2}}
        //| TOK_GET OBJ_TYPE EQUAL_LIST {$$=&searchObjectsNode{$2, $3}}
 
-       | LSOBJ_COMMAND PATH {$$=&lsObjNode{$2, $1}}
-       | LSOBJ_COMMAND {$$=&lsObjNode{&pathNode{&strLeaf{"."}, STD}, $1}}
+       | LSOBJ_COMMAND PATH {$$=&lsObjNode{$2, $1, &strLeaf{""}}}
+       | LSOBJ_COMMAND {$$=&lsObjNode{&pathNode{&strLeaf{"."}, STD}, $1, &strLeaf{""}}}
+       | LSOBJ_COMMAND PATH TOK_MINUS TOK_WORD {$$=&lsObjNode{$2, $1, &strLeaf{$4}}}
+       | LSOBJ_COMMAND TOK_MINUS TOK_WORD {$$=&lsObjNode{&pathNode{&strLeaf{"."}, STD}, $1, &strLeaf{$3}}}
+       | LSOBJ_COMMAND TOK_MINUS TOK_WORD PATH  {$$=&lsObjNode{$4, $1, &strLeaf{$3}}}
+
        | TOK_LSU PATH {$$=&lsAttrNode{$2, "heightu"}}
        | TOK_LSU {$$=&lsAttrNode{&pathNode{&strLeaf{"."}, STD}, "heightu"}}
        | TOK_LSSLOT PATH {$$=&lsAttrNode{$2, "slot"}}

@@ -1,7 +1,8 @@
 package controllers
 
-//Auxillary functions used to verify the API responses are valid according
-//to the specification and other response parsing functions
+//Auxillary functions for parsing and verifying
+//that the API responses are valid according
+//to the specification
 
 import (
 	l "cli/logger"
@@ -60,4 +61,23 @@ func GetRawObjects(x map[string]interface{}) []interface{} {
 		}
 	}
 	return nil
+}
+
+func LoadArrFromResp(resp map[string]interface{}, idx string) []interface{} {
+	if data, ok := resp["data"].(map[string]interface{}); ok {
+		if objs, ok1 := data[idx].([]interface{}); ok1 {
+			return objs
+		}
+	}
+	return nil
+}
+
+//Convert []interface{} array to
+//[]map[string]interface{} array
+func infArrToMapStrinfArr(x []interface{}) []map[string]interface{} {
+	ans := []map[string]interface{}{}
+	for i := range x {
+		ans = append(ans, x[i].(map[string]interface{}))
+	}
+	return ans
 }
