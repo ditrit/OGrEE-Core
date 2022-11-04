@@ -83,5 +83,5 @@ mkdir "$path"
 mongod --dbpath "$path" --port $port --logpath "$log" --fork
 
 #The command below will execute the mongo script
-mongosh "$host:"$port"/ogree" createdb.js
+mongosh "$host:"$port"/ogree" ./init_db/createdb.js
 echo "done"
