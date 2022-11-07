@@ -2515,26 +2515,27 @@ func SetClipBoard(x []string) ([]string, error) {
 	var data map[string]interface{}
 
 	if len(x) == 0 { //This means deselect
-		data = map[string]interface{}{"type": "select", "data": ""}
+		data = map[string]interface{}{"type": "select", "data": "[]"}
 		err := InformUnity("SetClipBoard", -1, data)
 		if err != nil {
 			return nil, fmt.Errorf("cannot reset clipboard : %s", err.Error())
 		}
 	} else {
 		//Verify paths
-		for _, val := range x {
-			//path := StrToStack(val)
-			//nd := FindNodeInTree(&State.TreeHierarchy, path)
+		arr := make([]string, len(x))
+		for idx, val := range x {
 			obj, _ := GetObject(val, true)
 			if obj != nil {
-				data = map[string]interface{}{"type": "select", "data": obj["id"]}
-				err := InformUnity("SetClipBoard", -1, data)
-				if err != nil {
-					return nil, fmt.Errorf("cannot set clipboard : %s", err.Error())
-				}
+				arr[idx] = obj["id"].(string)
 			} else {
 				return nil, fmt.Errorf("cannot set clipboard")
 			}
+		}
+		serialArr := "[\"" + strings.Join(arr, "\",\"") + "\"]"
+		data = map[string]interface{}{"type": "select", "data": serialArr}
+		err := InformUnity("SetClipBoard", -1, data)
+		if err != nil {
+			return nil, fmt.Errorf("cannot set clipboard : %s", err.Error())
 		}
 	}
 
