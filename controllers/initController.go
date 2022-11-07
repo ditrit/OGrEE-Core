@@ -437,6 +437,7 @@ func CheckKeyIsValid(key string) bool {
 		l.GetErrorLogger().Println(e.Error())
 		println("Unable to connect to API: ", State.APIURL)
 		println(e.Error())
+		return false
 	}
 	if resp.StatusCode != 200 {
 		readline.Line("Status code" + strconv.Itoa(resp.StatusCode))
