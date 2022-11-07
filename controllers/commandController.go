@@ -2531,7 +2531,7 @@ func SetClipBoard(x []string) ([]string, error) {
 				return nil, fmt.Errorf("cannot set clipboard")
 			}
 		}
-		serialArr := "[\"" + strings.Join(arr, ",\"") + "\"]"
+		serialArr := "[\"" + strings.Join(arr, "\",\"") + "\"]"
 		data = map[string]interface{}{"type": "select", "data": serialArr}
 		err := InformUnity("SetClipBoard", -1, data)
 		if err != nil {
