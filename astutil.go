@@ -85,9 +85,8 @@ func evalMapNodes(x map[string]interface{}) (map[string]interface{}, error) {
 //https://github.com/ditrit/OGrEE-3D/wiki/CLI-langage#Create-a-Device
 func checkIfTemplate(x interface{}) bool {
 	if s, ok := x.(string); ok {
-		if m, _ := cmd.GetObject("/Logical/ObjectTemplates/"+s, true); m != nil {
-			return true
-		}
+		_, exists := cmd.CheckObject("/Logical/ObjectTemplates/"+s, true)
+		return exists
 	}
 	return false
 }

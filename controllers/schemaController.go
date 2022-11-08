@@ -27,7 +27,7 @@ func ParseResponse(resp *http.Response, e error, purpose string) map[string]inte
 	bodyBytes, err := io.ReadAll(resp.Body)
 	if err != nil {
 		if State.DebugLvl > 0 {
-			println("Error: " + err.Error() + " Now Exiting")
+			println("Error: " + err.Error())
 		}
 
 		l.GetErrorLogger().Println("Error while trying to read server response: ", err)

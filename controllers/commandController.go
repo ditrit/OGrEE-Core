@@ -200,6 +200,27 @@ func SearchObjects(entity string, data map[string]interface{}) []map[string]inte
 	return nil
 }
 
+//Check if the object exists in API
+func CheckObject(path string, silenced bool) (string, bool) {
+	pathSplit := PreProPath(path)
+	paths := OnlinePathResolve(pathSplit)
+
+	for i := range paths {
+		resp, e := models.Send("OPTIONS", paths[i], GetKey(), nil)
+		if e != nil {
+			if !silenced {
+				println(paths[i])
+				println(e.Error())
+			}
+
+		}
+		if resp.StatusCode == http.StatusOK {
+			return paths[i], true
+		}
+	}
+	return "", false
+}
+
 // Silenced bool
 // Useful for LS since
 // otherwise the terminal would be polluted by debug statements
