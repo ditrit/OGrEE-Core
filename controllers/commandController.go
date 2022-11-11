@@ -868,49 +868,21 @@ func LSATTR(x, attr string) {
 	var sortedDevices sortable
 
 	switch attr {
-	case "heightu":
-		sortedDevices = SortableMArr{devices}
+	case "id", "name", "category", "parentID",
+		"description", "domain", "parentid", "parentId":
+		sortedDevices = SortableMArr{devices, attr, false}
+	default:
+		sortedDevices = SortableMArr{devices, attr, true}
+		println("DEBUG ATTR:", attr)
 		sort.Sort(sortedDevices.(SortableMArr))
-	case "slot":
-		sortedDevices = SortableSlot{devices}
-		sort.Sort(sortedDevices.(SortableSlot))
 	}
 
 	//Print the objects received
 	if len(sortedDevices.getData()) > 0 {
+		sort.Sort(sortedDevices.(SortableMArr))
 		println("Devices")
 		println()
-		for _, dev := range sortedDevices.getData() {
-			name := dev["name"].(string)
-			if attr == "slot" {
-				var slot string
-				devAttr := dev["attributes"].(map[string]interface{})
-				if devAttr["slot"] == nil {
-					slot = "NULL"
-				} else {
-					slot = devAttr["slot"].(string)
-				}
-				println("Slot:"+slot, "  Name: ", name)
-
-			} else {
-				heightU := dev["attributes"].(map[string]interface{})["heightU"]
-				switch heightU.(type) {
-				case string:
-					println("HeightU:", heightU.(string), "Name:", name)
-				case int:
-					println("HeightU:", heightU.(int), "Name:", name)
-				case float64, float32:
-					println("HeightU:", heightU.(float64), "Name:", name)
-				default:
-					l.GetWarningLogger().Println(
-						"Unable to recognise the data " +
-							"type of heightU attribute for LSU")
-					println("HeightU:", heightU, "Name:", name)
-				}
-
-			}
-
-		}
+		sortedDevices.Print()
 	}
 
 }
@@ -3261,21 +3233,39 @@ func (d Deals) Swap(i, j int)      { d[i], d[j] = d[j], d[i] }
 
 type sortable interface {
 	getData() []map[string]interface{}
+	Print()
 }
 
 // Helper Struct for sorting
 type SortableMArr struct {
-	data []map[string]interface{}
+	data     []map[string]interface{}
+	attr     string //Desired attr the user wants to use for sorting
+	isNested bool   //If the attr is in "attributes" map
 }
 
 func (s SortableMArr) getData() []map[string]interface{} { return s.data }
 func (s SortableMArr) Len() int                          { return len(s.data) }
 func (s SortableMArr) Swap(i, j int)                     { s.data[i], s.data[j] = s.data[j], s.data[i] }
 func (s SortableMArr) Less(i, j int) bool {
-	lKey := determineStrKey(s.data[i]["attributes"].(map[string]interface{}), []string{"heightU"})
-	rKey := determineStrKey(s.data[j]["attributes"].(map[string]interface{}), []string{"heightU"})
+	var lKey string
+	var rKey string
+	var lmap map[string]interface{}
+	var rmap map[string]interface{}
 
-	//We want the non existing heightU objs at the end of the array
+	//Check if the attribute is in the 'attributes' map
+	if s.isNested {
+		lKey = determineStrKey(s.data[i]["attributes"].(map[string]interface{}), []string{s.attr})
+		rKey = determineStrKey(s.data[j]["attributes"].(map[string]interface{}), []string{s.attr})
+		lmap = s.data[i]["attributes"].(map[string]interface{})
+		rmap = s.data[j]["attributes"].(map[string]interface{})
+	} else {
+		lKey = determineStrKey(s.data[i], []string{s.attr})
+		rKey = determineStrKey(s.data[j], []string{s.attr})
+		lmap = s.data[i]
+		rmap = s.data[j]
+	}
+
+	//We want the objs with non existing attribute at the end of the array
 	if lKey == "" && rKey != "" {
 		return false
 	}
@@ -3284,8 +3274,8 @@ func (s SortableMArr) Less(i, j int) bool {
 		return true
 	}
 
-	lH := s.data[i]["attributes"].(map[string]interface{})["heightU"]
-	rH := s.data[j]["attributes"].(map[string]interface{})["heightU"]
+	lH := lmap[s.attr]
+	rH := rmap[s.attr]
 
 	//We must ensure that they are strings, non strings will be
 	//placed at the end of the array
@@ -3293,60 +3283,39 @@ func (s SortableMArr) Less(i, j int) bool {
 	_, lOK = lH.(string)
 	_, rOK = rH.(string)
 
-	if !lOK && rOK {
+	if !lOK && rOK || lH == nil && rH != nil {
 		return false
 	}
 
-	if lOK && !rOK {
+	if lOK && !rOK || lH != nil && rH == nil {
 		return true
+	}
+
+	if lH == nil && rH == nil {
+		return false
 	}
 
 	return lH.(string) < rH.(string)
 
 }
 
-type SortableSlot struct {
-	data []map[string]interface{}
-}
-
-func (s SortableSlot) getData() []map[string]interface{} { return s.data }
-func (s SortableSlot) Len() int                          { return len(s.data) }
-func (s SortableSlot) Swap(i, j int)                     { s.data[i], s.data[j] = s.data[j], s.data[i] }
-func (s SortableSlot) Less(i, j int) bool {
-	lKey := determineStrKey(s.data[i]["attributes"].(map[string]interface{}), []string{"slot"})
-	rKey := determineStrKey(s.data[j]["attributes"].(map[string]interface{}), []string{"slot"})
-
-	//We want the non existing heightU objs at the end of the array
-	if lKey == "" && rKey != "" {
-		return false
+func (s SortableMArr) Print() {
+	objs := s.getData()
+	if s.isNested {
+		for i := range objs {
+			attr := objs[i]["attributes"].(map[string]interface{})[s.attr]
+			if attr == nil {
+				attr = "NULL"
+			}
+			println(s.attr, ":",
+				attr.(string),
+				"  Name: ", objs[i]["name"].(string))
+		}
+	} else {
+		for i := range objs {
+			println(s.attr, ":", objs[i][s.attr], "  Name: ", objs[i]["name"].(string))
+		}
 	}
-
-	if rKey == "" && lKey != "" {
-		return true
-	}
-
-	lS := s.data[i]["attributes"].(map[string]interface{})["slot"]
-	rS := s.data[j]["attributes"].(map[string]interface{})["slot"]
-
-	//We must ensure that they are strings, non strings will be
-	//placed at the end of the array
-	var lOK, rOK bool
-	_, lOK = lS.(string)
-	_, rOK = rS.(string)
-
-	if !lOK && rOK {
-		return false
-	}
-
-	if lOK && !rOK {
-		return true
-	}
-
-	if !lOK && !rOK {
-		return false
-	}
-
-	return lS.(string) < rS.(string)
 
 }
 

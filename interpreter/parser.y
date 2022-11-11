@@ -96,10 +96,12 @@ stmnt:   TOK_GET PATH {$$=&getObjectNode{$2}}
        | LSOBJ_COMMAND TOK_MINUS TOK_WORD {$$=&lsObjNode{&pathNode{&strLeaf{"."}, STD}, $1, &strLeaf{$3}}}
        | LSOBJ_COMMAND TOK_MINUS TOK_WORD PATH  {$$=&lsObjNode{$4, $1, &strLeaf{$3}}}
 
-       | TOK_LSU PATH {$$=&lsAttrNode{$2, "heightu"}}
-       | TOK_LSU {$$=&lsAttrNode{&pathNode{&strLeaf{"."}, STD}, "heightu"}}
+       | TOK_LSU PATH {$$=&lsAttrNode{$2, "heightU"}}
+       | TOK_LSU {$$=&lsAttrNode{&pathNode{&strLeaf{"."}, STD}, "heightU"}}
        | TOK_LSSLOT PATH {$$=&lsAttrNode{$2, "slot"}}
        | TOK_LSSLOT {$$=&lsAttrNode{&pathNode{&strLeaf{"."}, STD}, "slot"}}
+       | TOK_LS TOK_MINUS TOK_WORD TOK_WORD {$$=&lsAttrGenericNode{&pathNode{&strLeaf{"."}, STD}, $3,$4}}
+       | TOK_LS PATH TOK_MINUS TOK_WORD TOK_WORD {$$=&lsAttrGenericNode{$2, $3,$4}}
 
        | TOK_GETU {x:=&pathNode{&strLeaf{"."}, STD}; y:=&intLeaf{0};$$=&getUNode{x, y}}
        | TOK_GETU PATH {$$=&getUNode{$2, &intLeaf{0}}}

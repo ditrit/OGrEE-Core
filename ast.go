@@ -226,6 +226,26 @@ func (n *lsAttrNode) execute() (interface{}, error) {
 	return nil, nil
 }
 
+type lsAttrGenericNode struct {
+	path     node
+	argument string
+	attr     string
+}
+
+func (n *lsAttrGenericNode) execute() (interface{}, error) {
+	path, err := AssertString(&n.path, "Path")
+	if err != nil {
+		return nil, err
+	}
+
+	if n.argument != "f" {
+		return nil, fmt.Errorf("Argument can only be '-f'")
+	}
+
+	cmd.LSATTR(path, n.attr)
+	return nil, nil
+}
+
 type getUNode struct {
 	path node
 	u    node
