@@ -1216,19 +1216,6 @@ func GetHierarchy(x string, depth int, silence bool) []map[string]interface{} {
 	return ans
 }
 
-// When creating via OCLI syntax
-// {entity}.attribute=someVal
-// Gets stripped and returns
-// attribute, someVal
-// TODO: Delete this func if stale
-func getAttrAndVal(x string) (string, string) {
-	arr := strings.Split(x, "=")
-
-	a := strings.TrimSpace(arr[0])
-	v := strings.TrimSpace(arr[1])
-	return a, v
-}
-
 // Helps to create the Object (thru OCLI syntax)
 func GetOCLIAtrributes(Path string, ent int, data map[string]interface{}) error {
 	var attr map[string]interface{}
