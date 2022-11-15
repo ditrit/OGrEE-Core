@@ -199,7 +199,7 @@ func SearchObjects(entity string, data map[string]interface{}) []map[string]inte
 	return nil
 }
 
-//Check if the object exists in API
+// Check if the object exists in API
 func CheckObject(path string, silenced bool) (string, bool) {
 	pathSplit := PreProPath(path)
 	paths := OnlinePathResolve(pathSplit)
@@ -974,10 +974,10 @@ func Help(entry string) {
 	var path string
 	entry = strings.TrimSpace(entry)
 	switch entry {
-	case "ls", "lsu", "pwd", "print", "cd", "tree", "create", "get", "clear",
+	case "ls", "pwd", "print", "cd", "tree", "create", "get", "clear",
 		"update", "delete", "lsog", "grep", "for", "while", "if", "env",
 		"cmds", "var", "unset", "select", "camera", "ui", "hc", "drawable",
-		"link", "unlink", "draw", "lsslot", "getu", "getslot",
+		"link", "unlink", "draw", "getu", "getslot",
 		"lsenterprise":
 		path = "./other/man/" + entry + ".md"
 
@@ -1192,7 +1192,7 @@ func GetHierarchy(x string, depth int, silence bool) []map[string]interface{} {
 // {entity}.attribute=someVal
 // Gets stripped and returns
 // attribute, someVal
-//TODO: Delete this func if stale
+// TODO: Delete this func if stale
 func getAttrAndVal(x string) (string, string) {
 	arr := strings.Split(x, "=")
 
@@ -2594,7 +2594,7 @@ func determineStrKey(x map[string]interface{}, possible []string) string {
 	return "" //The code should not reach this point!
 }
 
-//Function called by update node for interact commands (ie label, labelFont)
+// Function called by update node for interact commands (ie label, labelFont)
 func InteractObject(path string, keyword string, val interface{}, fromAttr bool) error {
 	//First retrieve the object
 	obj, e := GetObject(path, true)
@@ -2781,8 +2781,8 @@ func LSOBJECTRecursive(x string, entity int) []map[string]interface{} {
 	//return nil
 }
 
-//NOTE: LSDEV is recursive while LSSENSOR is not
-//Code could be more tidy
+// NOTE: LSDEV is recursive while LSSENSOR is not
+// Code could be more tidy
 func lsobjHelperRecursive(api, objID string, curr, entity int) []map[string]interface{} {
 	var ext, URL string
 	if entity == SENSOR && (curr == BLDG || curr == ROOM || curr == RACK || curr == DEVICE) {

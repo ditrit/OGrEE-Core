@@ -41,7 +41,7 @@ var _ = l.GetInfoLogger() //Suppresses annoying Dockerfile build error
        TOK_CLR TOK_GREP TOK_LS TOK_TREE
        TOK_LSOG TOK_LSTEN TOK_LSSITE TOK_LSBLDG
        TOK_LSCAB TOK_LSSENSOR TOK_LSAC TOK_LSPANEL
-       TOK_LSCORRIDOR TOK_LSU TOK_LSSLOT TOK_GETU
+       TOK_LSCORRIDOR TOK_GETU
        TOK_LSROOM TOK_LSRACK TOK_LSDEV TOK_LSENTERPRISE
        TOK_ATTRSPEC TOK_GETSLOT
        TOK_COL TOK_SELECT TOK_LBRAC TOK_RBRAC
@@ -96,10 +96,6 @@ stmnt:   TOK_GET PATH {$$=&getObjectNode{$2}}
        | LSOBJ_COMMAND TOK_MINUS TOK_WORD {$$=&lsObjNode{&pathNode{&strLeaf{"."}, STD}, $1, &strLeaf{$3}}}
        | LSOBJ_COMMAND TOK_MINUS TOK_WORD PATH  {$$=&lsObjNode{$4, $1, &strLeaf{$3}}}
 
-       | TOK_LSU PATH {$$=&lsAttrNode{$2, "heightU"}}
-       | TOK_LSU {$$=&lsAttrNode{&pathNode{&strLeaf{"."}, STD}, "heightU"}}
-       | TOK_LSSLOT PATH {$$=&lsAttrNode{$2, "slot"}}
-       | TOK_LSSLOT {$$=&lsAttrNode{&pathNode{&strLeaf{"."}, STD}, "slot"}}
        | TOK_LS TOK_MINUS TOK_WORD TOK_WORD {$$=&lsAttrGenericNode{&pathNode{&strLeaf{"."}, STD}, $3,$4}}
        | TOK_LS PATH TOK_MINUS TOK_WORD TOK_WORD {$$=&lsAttrGenericNode{$2, $3,$4}}
 
@@ -322,8 +318,8 @@ COMMAND: TOK_LINK{$$="link"} | TOK_UNLINK{$$="unlink"} | TOK_CLR{$$="clear"} | T
        | TOK_LSTEN{$$="lsten"} | TOK_LSSITE{$$="lssite"} | TOK_LSBLDG{$$="lsbldg"} | TOK_LSROOM{$$="lsroom"} 
        | TOK_LSRACK{$$="lsrack"} | TOK_LSDEV{$$="lsdev"} | TOK_MINUS{$$="-"} | TOK_TEMPLATE{$$=".template"}
        | TOK_CMDS{$$=".cmds"} | TOK_VAR{$$=".var"} | TOK_PLUS{$$="+"} | TOK_EQUAL{$$="="} 
-       | TOK_GREATER{$$=">"} | TOK_DRAWABLE{$$="drawable"} | TOK_LSU{$$="lsu"} 
-       | TOK_LSSLOT{$$="lsslot"} | TOK_GETU{$$="getu"} | TOK_GETSLOT{$$="getslot"}
+       | TOK_GREATER{$$=">"} | TOK_DRAWABLE{$$="drawable"}
+       | TOK_GETU{$$="getu"} | TOK_GETSLOT{$$="getslot"}
        | TOK_GREP {$$="grep"}
 ;
 
