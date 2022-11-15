@@ -1188,18 +1188,34 @@ func (n *cameraWaitNode) execute() (interface{}, error) {
 }
 
 type linkObjectNode struct {
-	paths []interface{}
+	source      node
+	destination node
+	slot        node
 }
 
 func (n *linkObjectNode) execute() (interface{}, error) {
-	for i := range n.paths {
-		val, err := n.paths[i].(node).execute()
-		if err != nil {
-			return nil, err
-		}
-		n.paths[i] = val
+	var slot interface{}
+	source, err := AssertString(&n.source, "Source Object Path")
+	if err != nil {
+		return nil, err
 	}
-	cmd.LinkObject(n.paths)
+
+	dest, err1 := AssertString(&n.destination, "Destination Object Path")
+	if err1 != nil {
+		return nil, err1
+	}
+
+	if n.slot != nil {
+		s, e := n.slot.execute()
+		if e != nil {
+			return nil, e
+		}
+		slot = s
+	} else {
+		slot = nil
+	}
+
+	cmd.LinkObject(source, dest, slot)
 	return nil, nil
 }
 

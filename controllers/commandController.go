@@ -200,7 +200,7 @@ func SearchObjects(entity string, data map[string]interface{}) []map[string]inte
 	return nil
 }
 
-//Check if the object exists in API
+// Check if the object exists in API
 func CheckObject(path string, silenced bool) (string, bool) {
 	pathSplit := PreProPath(path)
 	paths := OnlinePathResolve(pathSplit)
@@ -1220,7 +1220,7 @@ func GetHierarchy(x string, depth int, silence bool) []map[string]interface{} {
 // {entity}.attribute=someVal
 // Gets stripped and returns
 // attribute, someVal
-//TODO: Delete this func if stale
+// TODO: Delete this func if stale
 func getAttrAndVal(x string) (string, string) {
 	arr := strings.Split(x, "=")
 
@@ -1905,13 +1905,12 @@ func FocusUI(path string) {
 	CD(path)
 }
 
-func LinkObject(paths []interface{}) {
+func LinkObject(source, destination string, destinationSlot interface{}) {
 
 	var h []map[string]interface{}
 
 	//Stray-device retrieval and validation
-	sdev, _ := GetObject(paths[0].(string), true)
-	//println("DEBUG OUR PATH 1st:", spath)
+	sdev, _ := GetObject(source, true)
 	if sdev == nil {
 		if State.DebugLvl > 0 {
 			println("Object doesn't exist")
@@ -1937,10 +1936,10 @@ func LinkObject(paths []interface{}) {
 	}
 
 	//Retrieve the stray-device hierarchy
-	h = GetHierarchy(paths[0].(string), 50, true)
+	h = GetHierarchy(source, 50, true)
 
 	//Parent retrieval and validation block
-	parent, _ := GetObject(paths[1].(string), true)
+	parent, _ := GetObject(destination, true)
 	if parent == nil {
 		if State.DebugLvl > 0 {
 			println("Destination is not valid")
@@ -1984,17 +1983,16 @@ func LinkObject(paths []interface{}) {
 	//we just need to point to a valid PID.)
 	//and invoke API validation endpoint
 	sdev["parentId"] = parent["id"]
-	if len(paths) == 3 {
-		//sdev[]
+	if destinationSlot != nil && destinationSlot != "" {
 		if attrInf, ok := sdev["attributes"]; ok {
-			//attr["slot"] = paths[2]
+			//attr["slot"] = destinationSlot
 			if attr, ok := attrInf.(map[string]interface{}); ok {
-				attr["slot"] = paths[2]
+				attr["slot"] = destinationSlot
 			} else {
-				sdev["attributes"] = map[string]interface{}{"slot": paths[2]}
+				sdev["attributes"] = map[string]interface{}{"slot": destinationSlot}
 			}
 		} else {
-			sdev["attributes"] = map[string]interface{}{"slot": paths[2]}
+			sdev["attributes"] = map[string]interface{}{"slot": destinationSlot}
 		}
 	}
 
@@ -2051,7 +2049,7 @@ func LinkObject(paths []interface{}) {
 			println("Aborting link operation")
 		}
 
-		DeleteObj(paths[1].(string) + "/" + sdev["name"].(string))
+		DeleteObj(destination + "/" + sdev["name"].(string))
 		l.GetWarningLogger().Println("Link failure")
 		return
 	}
@@ -2095,7 +2093,7 @@ func LinkObject(paths []interface{}) {
 	localfn(h, sdev["id"])
 
 	//Delete the stray-device
-	DeleteObj(paths[0].(string))
+	DeleteObj(source)
 }
 
 // This function validates a hierarchy to be imported into another category
@@ -2789,7 +2787,7 @@ func Disp(x map[string]interface{}) {
 	println("JSON: ", string(jx))
 }
 
-//Function called by update node for interact commands (ie label, labelFont)
+// Function called by update node for interact commands (ie label, labelFont)
 func InteractObject(path string, keyword string, val interface{}, fromAttr bool) error {
 	//First retrieve the object
 	obj, e := GetObject(path, true)
@@ -2976,8 +2974,8 @@ func LSOBJECTRecursive(x string, entity int) []map[string]interface{} {
 	//return nil
 }
 
-//NOTE: LSDEV is recursive while LSSENSOR is not
-//Code could be more tidy
+// NOTE: LSDEV is recursive while LSSENSOR is not
+// Code could be more tidy
 func lsobjHelperRecursive(api, objID string, curr, entity int) []map[string]interface{} {
 	var ext, URL string
 	if entity == SENSOR && (curr == BLDG || curr == ROOM || curr == RACK || curr == DEVICE) {
