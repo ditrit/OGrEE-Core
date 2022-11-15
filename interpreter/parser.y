@@ -156,8 +156,8 @@ stmnt:   TOK_GET PATH {$$=&getObjectNode{$2}}
        // LINKING
        | TOK_LINK TOK_COL PHYSICAL_PATH TOK_ATTRSPEC EXPR_NOQUOTE {$$=&linkObjectNode{$3, $5,nil}}
        | TOK_LINK TOK_COL PHYSICAL_PATH TOK_ATTRSPEC EXPR_NOQUOTE TOK_ATTRSPEC EXPR_NOQUOTE {$$=&linkObjectNode{$3, $5, $7}}
-       | TOK_UNLINK TOK_COL PHYSICAL_PATH {$$=&unlinkObjectNode{[]interface{}{$3}}}
-       | TOK_UNLINK TOK_COL PHYSICAL_PATH TOK_ATTRSPEC EXPR_NOQUOTE {$$=&unlinkObjectNode{[]interface{}{$3,$5}}}
+       | TOK_UNLINK TOK_COL PHYSICAL_PATH {$$=&unlinkObjectNode{$3,nil}}
+       | TOK_UNLINK TOK_COL PHYSICAL_PATH TOK_ATTRSPEC EXPR_NOQUOTE {$$=&unlinkObjectNode{$3,$5}}
 
        // BASH
        | TOK_CLR {$$=&clrNode{}}

@@ -2165,17 +2165,17 @@ func fn(x []map[string]interface{}, pid interface{}, entity string, ent int) {
 }
 
 // paths should only have a length of 1 or 2
-func UnlinkObject(paths []interface{}) {
-	//paths[0] ===> device to unlink
-	//paths[1] ===> new location in stray-dev (can be optionally empty)
+func UnlinkObject(source, destination string) {
+	//source ===> device to unlink
+	//destination ===> new location in stray-dev (can be optionally empty)
 	dev := map[string]interface{}{}
 	h := []map[string]interface{}{}
 
 	//first we need to check that the path corresponds to a device
 	//we also need to ignore groups
 	//arbitrarily set depth to 50 since it doesn't make sense
-	//for a device to have a deeper hierarchy paths[0].(string)
-	dev, _ = GetObject(paths[0].(string), true)
+	//for a device to have a deeper hierarchy
+	dev, _ = GetObject(source, true)
 	if dev == nil {
 		if State.DebugLvl > 0 {
 			println("Error: This object does not exist ")
@@ -2204,17 +2204,15 @@ func UnlinkObject(paths []interface{}) {
 		return
 	}
 
-	h = GetHierarchy(paths[0].(string), 50, true)
+	h = GetHierarchy(source, 50, true)
 
 	//Dive POST
 	var parent map[string]interface{}
 
-	if len(paths) > 1 {
-		if parentObjPath, _ := paths[1].(string); parentObjPath != "" {
-			parent, _ = GetObject(parentObjPath, true)
-			if parent != nil {
-				dev["parentId"] = parent["id"]
-			}
+	if destination != "" {
+		parent, _ = GetObject(destination, true)
+		if parent != nil {
+			dev["parentId"] = parent["id"]
 		}
 	}
 
@@ -2224,9 +2222,9 @@ func UnlinkObject(paths []interface{}) {
 
 	newDev, _ := PostObj(STRAY_DEV, "stray-device", dev)
 	if newDev == nil {
-		l.GetWarningLogger().Println("Unable to unlink target: ", paths[0].(string))
+		l.GetWarningLogger().Println("Unable to unlink target: ", source)
 		if State.DebugLvl > 0 {
-			println("Error: Unable to unlink target: ", paths[0].(string))
+			println("Error: Unable to unlink target: ", source)
 		}
 
 		return
@@ -2246,7 +2244,7 @@ func UnlinkObject(paths []interface{}) {
 	fn(h, newPID, "stray-device", STRAY_DEV)
 
 	//Delete device and we are done
-	DeleteObj(paths[0].(string))
+	DeleteObj(source)
 }
 
 // Unity UI will draw already existing objects

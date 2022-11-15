@@ -1220,18 +1220,25 @@ func (n *linkObjectNode) execute() (interface{}, error) {
 }
 
 type unlinkObjectNode struct {
-	paths []interface{}
+	source      node
+	destination node
 }
 
 func (n *unlinkObjectNode) execute() (interface{}, error) {
-	for i := range n.paths {
-		val, e := n.paths[i].(node).execute()
+	destination := ""
+	source, err := AssertString(&n.source, "Source Object Path")
+	if err != nil {
+		return nil, err
+	}
+
+	if n.destination != nil {
+		var e error
+		destination, e = AssertString(&n.destination, "Destination Object Path")
 		if e != nil {
 			return nil, e
 		}
-		n.paths[i] = val
 	}
-	cmd.UnlinkObject(n.paths)
+	cmd.UnlinkObject(source, destination)
 	return nil, nil
 }
 
