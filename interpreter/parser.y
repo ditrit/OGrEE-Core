@@ -97,7 +97,7 @@ stmnt:   TOK_GET PATH {$$=&getObjectNode{$2}}
        | LSOBJ_COMMAND TOK_MINUS TOK_WORD PATH  {$$=&lsObjNode{$4, $1, &strLeaf{$3}}}
 
        | TOK_LS TOK_MINUS TOK_WORD TOK_WORD {$$=&lsAttrGenericNode{&pathNode{&strLeaf{"."}, STD}, $3,$4}}
-       | TOK_LS PATH TOK_MINUS TOK_WORD TOK_WORD {$$=&lsAttrGenericNode{$2, $3,$4}}
+       | TOK_LS PATH TOK_MINUS TOK_WORD TOK_WORD {$$=&lsAttrGenericNode{$2, $4,$5}}
 
        | TOK_GETU {x:=&pathNode{&strLeaf{"."}, STD}; y:=&intLeaf{0};$$=&getUNode{x, y}}
        | TOK_GETU PATH {$$=&getUNode{$2, &intLeaf{0}}}
