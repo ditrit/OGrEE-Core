@@ -420,29 +420,22 @@ func CreateCredentials() (string, string) {
 }
 
 func CheckKeyIsValid(key string) bool {
-	client := &http.Client{}
-
-	req, err := http.NewRequest("GET",
-		State.APIURL+"/api/token/valid", nil)
-
+	resp, err := models.Send("GET", State.APIURL+"/api/token/valid", key, nil)
 	if err != nil {
-		panic(err)
-	}
-
-	req.Header.Set("Authorization", "Bearer "+key)
-
-	resp, e := client.Do(req)
-	if e != nil {
-		l.GetErrorLogger().Println("Unable to connect to API: ", State.APIURL)
-		l.GetErrorLogger().Println(e.Error())
-		println("Unable to connect to API: ", State.APIURL)
-		println(e.Error())
+		if State.DebugLvl > 0 {
+			l.GetErrorLogger().Println("Unable to connect to API: ", State.APIURL)
+			l.GetErrorLogger().Println(err.Error())
+			println(err.Error())
+		}
 		return false
 	}
+
 	if resp.StatusCode != 200 {
-		readline.Line("Status code" + strconv.Itoa(resp.StatusCode))
+		readline.Line("HTTP Response Status code" +
+			strconv.Itoa(resp.StatusCode))
 		return false
 	}
+
 	return true
 }
 
