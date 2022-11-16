@@ -825,17 +825,9 @@ type selectChildrenNode struct {
 }
 
 func (n *selectChildrenNode) execute() (interface{}, error) {
-	var paths []string
-	for i := range n.paths {
-		v, err := n.paths[i].execute()
-		if err != nil {
-			return nil, err
-		}
-		path, ok := v.(string)
-		if !ok {
-			return nil, fmt.Errorf("")
-		}
-		paths = append(paths, path)
+	paths, err := evalNodeArr[string](&n.paths, []string{})
+	if err != nil {
+		return nil, err
 	}
 	v, err := cmd.SetClipBoard(paths)
 	if err != nil {
