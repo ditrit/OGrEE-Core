@@ -45,8 +45,8 @@ func getFloat(unk interface{}) (float64, error) {
 	return fv.Float(), nil
 }
 
-//Open a file and return the JSON in the file
-//Used by EasyPost, EasyUpdate and Load Template
+// Open a file and return the JSON in the file
+// Used by EasyPost, EasyUpdate and Load Template
 func fileToJSON(path string) map[string]interface{} {
 	data := map[string]interface{}{}
 	x, e := ioutil.ReadFile(path)
@@ -79,10 +79,26 @@ func evalMapNodes(x map[string]interface{}) (map[string]interface{}, error) {
 	return result, nil
 }
 
-//This func is for distinguishing template from sizeU
-//in the OCLI syntax for creating devices
-//refer to:
-//https://github.com/ditrit/OGrEE-3D/wiki/CLI-langage#Create-a-Device
+// Generic function for evaluating []node and returning the desired array
+func evalNodeArr[elt comparable](arr *[]node, x []elt) ([]elt, error) {
+	for _, v := range *arr {
+		val, e := v.execute()
+		if e != nil {
+			return nil, e
+		}
+		if _, ok := val.(elt); !ok {
+			//do something here
+			return nil, fmt.Errorf("Error unexpected element")
+		}
+		x = append(x, val.(elt))
+	}
+	return x, nil
+}
+
+// This func is for distinguishing template from sizeU
+// in the OCLI syntax for creating devices
+// refer to:
+// https://github.com/ditrit/OGrEE-3D/wiki/CLI-langage#Create-a-Device
 func checkIfTemplate(x interface{}) bool {
 	if s, ok := x.(string); ok {
 		_, exists := cmd.CheckObject("/Logical/ObjectTemplates/"+s, true)

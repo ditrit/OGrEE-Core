@@ -12,7 +12,6 @@ import (
 	"path"
 	"path/filepath"
 	"runtime"
-	"sort"
 	"strconv"
 	"strings"
 )
@@ -718,7 +717,7 @@ func Env(userVars, userFuncs map[string]interface{}) {
 	}
 }
 
-func LSOBJECT(x string, entity int) []map[string]interface{} {
+func LSOBJECT(x string, entity int, silence bool) []interface{} {
 	var obj map[string]interface{}
 	var Path string
 
@@ -753,15 +752,17 @@ func LSOBJECT(x string, entity int) []map[string]interface{} {
 
 	//Data verification and print block
 	objects = GetRawObjects(parsed)
-	for i := range objects {
-		if object, ok := objects[i].(map[string]interface{}); ok {
-			if object["name"] != nil {
-				println(object["name"].(string))
+	if silence == false {
+		for i := range objects {
+			if object, ok := objects[i].(map[string]interface{}); ok {
+				if object["name"] != nil {
+					println(object["name"].(string))
+				}
 			}
 		}
 	}
 
-	return nil
+	return objects
 }
 
 func GetByAttr(x string, u interface{}) {
@@ -863,23 +864,12 @@ func LSATTR(x, attr string) {
 		return
 	}
 	devInf := reqParsed["data"].(map[string]interface{})["objects"].([]interface{})
-	devices := infArrToMapStrinfArr(devInf)
+	//devices := infArrToMapStrinfArr(devInf)
 
-	var sortedDevices sortable
-
-	switch attr {
-	case "id", "name", "category", "parentID",
-		"description", "domain", "parentid", "parentId":
-		sortedDevices = SortableMArr{devices, attr, false}
-	default:
-		sortedDevices = SortableMArr{devices, attr, true}
-		println("DEBUG ATTR:", attr)
-		sort.Sort(sortedDevices.(SortableMArr))
-	}
+	sortedDevices := SortObjects(&devInf, attr)
 
 	//Print the objects received
 	if len(sortedDevices.getData()) > 0 {
-		sort.Sort(sortedDevices.(SortableMArr))
 		println("Devices")
 		println()
 		sortedDevices.Print()
@@ -3222,101 +3212,6 @@ func OnlineLevelResolver(path []string) []string {
 	}
 
 	return paths
-}
-
-/*
-// Ensure it satisfies sort.Interface
-func (d Deals) Len() int           { return len(d) }
-func (d Deals) Less(i, j int) bool { return d[i].Id < d[j].Id }
-func (d Deals) Swap(i, j int)      { d[i], d[j] = d[j], d[i] }
-*/
-
-type sortable interface {
-	getData() []map[string]interface{}
-	Print()
-}
-
-// Helper Struct for sorting
-type SortableMArr struct {
-	data     []map[string]interface{}
-	attr     string //Desired attr the user wants to use for sorting
-	isNested bool   //If the attr is in "attributes" map
-}
-
-func (s SortableMArr) getData() []map[string]interface{} { return s.data }
-func (s SortableMArr) Len() int                          { return len(s.data) }
-func (s SortableMArr) Swap(i, j int)                     { s.data[i], s.data[j] = s.data[j], s.data[i] }
-func (s SortableMArr) Less(i, j int) bool {
-	var lKey string
-	var rKey string
-	var lmap map[string]interface{}
-	var rmap map[string]interface{}
-
-	//Check if the attribute is in the 'attributes' map
-	if s.isNested {
-		lKey = determineStrKey(s.data[i]["attributes"].(map[string]interface{}), []string{s.attr})
-		rKey = determineStrKey(s.data[j]["attributes"].(map[string]interface{}), []string{s.attr})
-		lmap = s.data[i]["attributes"].(map[string]interface{})
-		rmap = s.data[j]["attributes"].(map[string]interface{})
-	} else {
-		lKey = determineStrKey(s.data[i], []string{s.attr})
-		rKey = determineStrKey(s.data[j], []string{s.attr})
-		lmap = s.data[i]
-		rmap = s.data[j]
-	}
-
-	//We want the objs with non existing attribute at the end of the array
-	if lKey == "" && rKey != "" {
-		return false
-	}
-
-	if rKey == "" && lKey != "" {
-		return true
-	}
-
-	lH := lmap[s.attr]
-	rH := rmap[s.attr]
-
-	//We must ensure that they are strings, non strings will be
-	//placed at the end of the array
-	var lOK, rOK bool
-	_, lOK = lH.(string)
-	_, rOK = rH.(string)
-
-	if !lOK && rOK || lH == nil && rH != nil {
-		return false
-	}
-
-	if lOK && !rOK || lH != nil && rH == nil {
-		return true
-	}
-
-	if lH == nil && rH == nil {
-		return false
-	}
-
-	return lH.(string) < rH.(string)
-
-}
-
-func (s SortableMArr) Print() {
-	objs := s.getData()
-	if s.isNested {
-		for i := range objs {
-			attr := objs[i]["attributes"].(map[string]interface{})[s.attr]
-			if attr == nil {
-				attr = "NULL"
-			}
-			println(s.attr, ":",
-				attr.(string),
-				"  Name: ", objs[i]["name"].(string))
-		}
-	} else {
-		for i := range objs {
-			println(s.attr, ":", objs[i][s.attr], "  Name: ", objs[i]["name"].(string))
-		}
-	}
-
 }
 
 // Helper function for GetOCLIAttr which retrieves

@@ -239,7 +239,7 @@ func (n *lsAttrGenericNode) execute() (interface{}, error) {
 	}
 
 	if n.argument != "f" {
-		return nil, fmt.Errorf("Argument can only be '-f'")
+		return nil, fmt.Errorf("Argument can only be '-s'")
 	}
 
 	cmd.LSATTR(path, n.attr)
@@ -685,9 +685,10 @@ func (n *easyUpdateNode) execute() (interface{}, error) {
 }
 
 type lsObjNode struct {
-	path   node
-	entity int
-	flag   node
+	path     node
+	entity   int
+	flag     node
+	argument []node
 }
 
 func (n *lsObjNode) execute() (interface{}, error) {
@@ -706,8 +707,24 @@ func (n *lsObjNode) execute() (interface{}, error) {
 
 	if flag == "r" {
 		return cmd.LSOBJECTRecursive(path, n.entity), nil
+	} else if flag == "f" { //Display objects with specified arguments
+		//objs := cmd.LSOBJECT(path, n.entity, true)
+		return cmd.LSOBJECT(path, n.entity, true), nil
+
+	} else if flag == "s" { //Sort based on attr
+		attrs, err := evalNodeArr[string](&n.argument, []string{})
+		if err != nil {
+			return nil, err
+		}
+		objs := cmd.LSOBJECT(path, n.entity, true)
+		//There is only one elt in this case
+		sorted := cmd.SortObjects(&objs, attrs[0])
+		sorted.Print()
+		return objs, nil
+
 	} else if flag == "" {
-		return cmd.LSOBJECT(path, n.entity), nil
+		return cmd.LSOBJECT(path, n.entity, false), nil
+
 	} else {
 		msg := "Unrecognised flag. You can only use '-r'"
 		return nil, fmt.Errorf(msg)

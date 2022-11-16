@@ -63,7 +63,7 @@ var _ = l.GetInfoLogger() //Suppresses annoying Dockerfile build error
        
 %type <n> LSOBJ_COMMAND
 %type <s> OBJ_TYPE COMMAND UI_TOGGLE
-%type <nodeArr> WNARG GETOBJS
+%type <nodeArr> WNARG GETOBJS WORD_CONCAT
 %type <node> OCCR PATH PHYSICAL_PATH STRAY_DEV_PATH EXPR CONCAT CONCAT_TERM stmnt st2 IF 
        EXPR_NOQUOTE ARRAY ORIENTATION EXPR_NOQUOTE_NOCOL CONCAT_NOCOL CONCAT_TERM_NOCOL EXPR_NOQUOTE_COMMON
 //%type <mapVoid> EQUAL_LIST
@@ -90,12 +90,20 @@ st2:    {$$=nil}
 stmnt:   TOK_GET PATH {$$=&getObjectNode{$2}}
        //| TOK_GET OBJ_TYPE EQUAL_LIST {$$=&searchObjectsNode{$2, $3}}
 
-       | LSOBJ_COMMAND PATH {$$=&lsObjNode{$2, $1, &strLeaf{""}}}
-       | LSOBJ_COMMAND {$$=&lsObjNode{&pathNode{&strLeaf{"."}, STD}, $1, &strLeaf{""}}}
-       | LSOBJ_COMMAND PATH TOK_MINUS TOK_WORD {$$=&lsObjNode{$2, $1, &strLeaf{$4}}}
-       | LSOBJ_COMMAND TOK_MINUS TOK_WORD {$$=&lsObjNode{&pathNode{&strLeaf{"."}, STD}, $1, &strLeaf{$3}}}
-       | LSOBJ_COMMAND TOK_MINUS TOK_WORD PATH  {$$=&lsObjNode{$4, $1, &strLeaf{$3}}}
 
+       //SORT TYPE LSOBJ COMMANDS
+       | LSOBJ_COMMAND PATH TOK_MINUS TOK_WORD TOK_WORD {$$=&lsObjNode{$2, $1, &strLeaf{$4},[]node{&strLeaf{$5}}}}
+       | LSOBJ_COMMAND TOK_MINUS TOK_WORD TOK_WORD {$$=&lsObjNode{&pathNode{&strLeaf{"."}, STD}, $1, &strLeaf{$3},[]node{&strLeaf{$4}}}}
+       
+       //NORMAL LSOBJ COMMANDS
+       | LSOBJ_COMMAND PATH {$$=&lsObjNode{$2, $1, &strLeaf{""},nil}}
+       | LSOBJ_COMMAND {$$=&lsObjNode{&pathNode{&strLeaf{"."}, STD}, $1, &strLeaf{""},nil}}
+       
+       //RECURSIVE LSOBJ COMMANDS 
+       | LSOBJ_COMMAND PATH TOK_MINUS TOK_WORD {$$=&lsObjNode{$2, $1, &strLeaf{$4},nil}}
+       | LSOBJ_COMMAND TOK_MINUS TOK_WORD {$$=&lsObjNode{&pathNode{&strLeaf{"."}, STD}, $1, &strLeaf{$3},nil}}
+
+       //SORT TYPE LS COMMANDS
        | TOK_LS TOK_MINUS TOK_WORD TOK_WORD {$$=&lsAttrGenericNode{&pathNode{&strLeaf{"."}, STD}, $3,$4}}
        | TOK_LS PATH TOK_MINUS TOK_WORD TOK_WORD {$$=&lsAttrGenericNode{$2, $4,$5}}
 
@@ -292,6 +300,11 @@ ARRAY: TOK_LBLOCK WNARG TOK_RBLOCK {$$=&arrNode{$2}}
 WNARG: EXPR TOK_COMMA WNARG {x:=[]node{$1}; $$=append(x, $3...)}
        |EXPR  {x:=[]node{$1}; $$=x}
 ; 
+
+WORD_CONCAT: TOK_WORD TOK_COMMA WORD_CONCAT {$$=append([]node{&strLeaf{$1}}, $3...)}
+           | {$$=nil} 
+           | TOK_WORD {$$=[]node{&strLeaf{$1}}}
+
 
 GETOBJS: PATH TOK_COMMA GETOBJS {x:=[]node{$1}; $$=append(x, $3...)}
        | PATH {x:=[]node{$1}; $$=x}
