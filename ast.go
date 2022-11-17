@@ -238,7 +238,7 @@ func (n *lsAttrGenericNode) execute() (interface{}, error) {
 		return nil, err
 	}
 
-	if n.argument != "f" {
+	if n.argument != "s" {
 		return nil, fmt.Errorf("Argument can only be '-s'")
 	}
 
