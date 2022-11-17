@@ -2695,7 +2695,8 @@ func InformUnity(caller string, entity int, data map[string]interface{}) error {
 	return nil
 }
 
-func LSOBJECTRecursive(x string, entity int) []map[string]interface{} {
+// x is path
+func LSOBJECTRecursive(x string, entity int, silence bool) []interface{} {
 	var obj map[string]interface{}
 	var Path string
 
@@ -2705,11 +2706,15 @@ func LSOBJECTRecursive(x string, entity int) []map[string]interface{} {
 				State.APIURL+"/api/tenants", GetKey(), nil)
 			obj = ParseResponse(r, e, "Get Tenants")
 			arr := LoadArrFromResp(obj, "objects")
-			tenants := infArrToMapStrinfArr(arr)
-			for _, tenant := range tenants {
-				println(tenant["name"].(string))
+			if !silence {
+				for _, tenantInf := range arr {
+					if tenant, _ := LoadObjectFromInf(tenantInf); tenant != nil {
+						println(tenant["name"].(string))
+					}
+				}
 			}
-			return tenants
+
+			return arr
 		} else {
 			//Return nothing
 			return nil
@@ -2761,19 +2766,23 @@ func LSOBJECTRecursive(x string, entity int) []map[string]interface{} {
 	//println(obi)
 	//println("WANT:", EntityToString(entity))
 	res := lsobjHelperRecursive(State.APIURL, idToSend, obi, entity)
-	for i := range res {
-		if res[i] != nil && res[i]["name"] != nil {
-			println(res[i]["name"].(string))
+	if !silence {
+		for i := range res {
+			if item, ok := res[i].(map[string]interface{}); ok {
+				if item != nil && item["name"] != nil {
+					println(item["name"].(string))
+				}
+			}
 		}
-
 	}
+
 	return res
 	//return nil
 }
 
 // NOTE: LSDEV is recursive while LSSENSOR is not
 // Code could be more tidy
-func lsobjHelperRecursive(api, objID string, curr, entity int) []map[string]interface{} {
+func lsobjHelperRecursive(api, objID string, curr, entity int) []interface{} {
 	var ext, URL string
 	if entity == SENSOR && (curr == BLDG || curr == ROOM || curr == RACK || curr == DEVICE) {
 		ext = EntityToString(curr) + "s/" + objID + "/" + EntityToString(entity) + "s"
@@ -2788,8 +2797,8 @@ func lsobjHelperRecursive(api, objID string, curr, entity int) []map[string]inte
 		if tmp == nil {
 			return nil
 		}
-		res := infArrToMapStrinfArr(tmpObjs)
-		return res
+		//res := infArrToMapStrinfArr(tmpObjs)
+		return tmpObjs
 
 	} else if entity-curr >= 2 {
 
@@ -2807,9 +2816,8 @@ func lsobjHelperRecursive(api, objID string, curr, entity int) []map[string]inte
 				return nil
 			}
 
-			tmpObjs := GetRawObjects(tmp)
-			res := infArrToMapStrinfArr(tmpObjs)
-			return res
+			return GetRawObjects(tmp)
+
 		}
 		//END OF EDGE CASE BLOCK
 
@@ -2823,7 +2831,7 @@ func lsobjHelperRecursive(api, objID string, curr, entity int) []map[string]inte
 		//objs -> resp["data"]["objects"]
 		objs := LoadArrFromResp(resp, "objects")
 		if objs != nil {
-			x := []map[string]interface{}{}
+			x := []interface{}{}
 
 			if entity >= AC && entity <= CORIDOR {
 
@@ -2833,15 +2841,13 @@ func lsobjHelperRecursive(api, objID string, curr, entity int) []map[string]inte
 
 					tmp, e := models.Send("GET", State.APIURL+ext2, GetKey(), nil)
 					tmp2 := ParseResponse(tmp, e, "get objects")
-					if x != nil {
-						tmpObjects := GetRawObjects(tmp2)
-						//convert []interface{} to []map[string]interface{}
-						x = append(x, infArrToMapStrinfArr(tmpObjects)...)
+					if tmp2 != nil {
+						x = GetRawObjects(tmp2)
 					}
 				}
 			} else {
 				if entity == DEVICE && curr == ROOM {
-					x = append(x, infArrToMapStrinfArr(objs)...)
+					x = append(x, objs...)
 				}
 				for i := range objs {
 					rest := lsobjHelperRecursive(api, objs[i].(map[string]interface{})["id"].(string), curr+2, entity)
@@ -2873,7 +2879,7 @@ func lsobjHelperRecursive(api, objID string, curr, entity int) []map[string]inte
 		//objs := resp["data"]["objects"]
 		objs := LoadArrFromResp(resp, "objects")
 		if objs != nil {
-			ans := []map[string]interface{}{}
+			ans := []interface{}{}
 			//For associated objects of room
 			if entity >= AC && entity <= CORIDOR {
 				for i := range objs {
@@ -2889,11 +2895,14 @@ func lsobjHelperRecursive(api, objID string, curr, entity int) []map[string]inte
 				}
 			} else {
 
-				ans = infArrToMapStrinfArr(objs)
+				ans = objs
 				if curr == RACK && entity == DEVICE {
 					for idx := range ans {
 						ext2 := "/api/" + EntityToString(entity) +
-							"s/" + ans[idx]["id"].(string) + "/" + EntityToString(entity) + "s"
+							"s/" +
+							ans[idx].(map[string]interface{})["id"].(string) +
+							"/" + EntityToString(entity) + "s"
+
 						subURL := State.APIURL + ext2
 						r1, e1 := models.Send("GET", subURL, GetKey(), nil)
 						tmp1 := ParseResponse(r1, e1, "getting objects")
@@ -2901,7 +2910,7 @@ func lsobjHelperRecursive(api, objID string, curr, entity int) []map[string]inte
 						tmp2 := LoadArrFromResp(tmp1, "objects")
 						if tmp2 != nil {
 							//Swap ans and objs to keep order
-							ans = append(ans, infArrToMapStrinfArr(tmp2)...)
+							ans = append(ans, tmp2...)
 						}
 
 					}
@@ -2924,11 +2933,10 @@ func lsobjHelperRecursive(api, objID string, curr, entity int) []map[string]inte
 		resp, e := models.Send("GET", URL, GetKey(), nil)
 		x := ParseResponse(resp, e, "get object")
 		if entity == DEVICE {
-			tmp := GetRawObjects(x)
-			objArr := infArrToMapStrinfArr(tmp)
-			return objArr
+			return GetRawObjects(x)
+
 		}
-		return []map[string]interface{}{x["data"].(map[string]interface{})}
+		return []interface{}{x["data"]}
 	}
 	return nil
 }

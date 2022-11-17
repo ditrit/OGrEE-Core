@@ -14,14 +14,9 @@ var _ = l.GetInfoLogger() //Suppresses annoying Dockerfile build error
   n int
   s string
   f float64
-  sarr []string
   ast *ast
   node node
-  boolNode boolNode
-  numNode numNode
   nodeArr []node
-  arr []interface{}
-  mapArr []map[int]interface{}
   mapVoid map[string]interface{}
 }
 
@@ -64,6 +59,7 @@ var _ = l.GetInfoLogger() //Suppresses annoying Dockerfile build error
 %type <n> LSOBJ_COMMAND
 %type <s> OBJ_TYPE COMMAND UI_TOGGLE
 %type <nodeArr> WNARG GETOBJS WORD_CONCAT
+%type <mapVoid> ARGACC
 %type <node> OCCR PATH PHYSICAL_PATH STRAY_DEV_PATH EXPR CONCAT CONCAT_TERM stmnt st2 IF 
        EXPR_NOQUOTE ARRAY ORIENTATION EXPR_NOQUOTE_NOCOL CONCAT_NOCOL CONCAT_TERM_NOCOL EXPR_NOQUOTE_COMMON
 //%type <mapVoid> EQUAL_LIST
@@ -89,23 +85,18 @@ st2:    {$$=nil}
 
 stmnt:   TOK_GET PATH {$$=&getObjectNode{$2}}
        //| TOK_GET OBJ_TYPE EQUAL_LIST {$$=&searchObjectsNode{$2, $3}}
-
-
-       //SORT TYPE LSOBJ COMMANDS
-       | LSOBJ_COMMAND PATH TOK_MINUS TOK_WORD TOK_WORD {$$=&lsObjNode{$2, $1, &strLeaf{$4},[]node{&strLeaf{$5}}}}
-       | LSOBJ_COMMAND TOK_MINUS TOK_WORD TOK_WORD {$$=&lsObjNode{&pathNode{&strLeaf{"."}, STD}, $1, &strLeaf{$3},[]node{&strLeaf{$4}}}}
        
        //NORMAL LSOBJ COMMANDS
-       | LSOBJ_COMMAND PATH {$$=&lsObjNode{$2, $1, &strLeaf{""},nil}}
-       | LSOBJ_COMMAND {$$=&lsObjNode{&pathNode{&strLeaf{"."}, STD}, $1, &strLeaf{""},nil}}
+       | LSOBJ_COMMAND PATH {$$=&lsObjNode{$2, $1,nil}}
+       | LSOBJ_COMMAND {$$=&lsObjNode{&pathNode{&strLeaf{"."}, STD}, $1, nil}}
        
-       //RECURSIVE LSOBJ COMMANDS 
-       | LSOBJ_COMMAND PATH TOK_MINUS TOK_WORD {$$=&lsObjNode{$2, $1, &strLeaf{$4},nil}}
-       | LSOBJ_COMMAND TOK_MINUS TOK_WORD {$$=&lsObjNode{&pathNode{&strLeaf{"."}, STD}, $1, &strLeaf{$3},nil}}
+       //ARGUMENT LSOBJ COMMANDS 
+       | LSOBJ_COMMAND PATH ARGACC {$$=&lsObjNode{$2, $1, $3}}
+       | LSOBJ_COMMAND ARGACC {$$=&lsObjNode{&pathNode{&strLeaf{"."}, STD}, $1, $2}}
 
-       //SORT TYPE LS COMMANDS
-       | TOK_LS TOK_MINUS TOK_WORD TOK_WORD {$$=&lsAttrGenericNode{&pathNode{&strLeaf{"."}, STD}, $3,$4}}
-       | TOK_LS PATH TOK_MINUS TOK_WORD TOK_WORD {$$=&lsAttrGenericNode{$2, $4,$5}}
+       //ARGUMENT TYPE LS COMMANDS
+       | TOK_LS ARGACC {$$=&lsAttrGenericNode{&pathNode{&strLeaf{"."}, STD}, $2}}
+       | TOK_LS PATH ARGACC {$$=&lsAttrGenericNode{$2, $3}}
 
        | TOK_GETU {x:=&pathNode{&strLeaf{"."}, STD}; y:=&intLeaf{0};$$=&getUNode{x, y}}
        | TOK_GETU PATH {$$=&getUNode{$2, &intLeaf{0}}}
@@ -304,6 +295,14 @@ WNARG: EXPR TOK_COMMA WNARG {x:=[]node{$1}; $$=append(x, $3...)}
 WORD_CONCAT: TOK_WORD TOK_COMMA WORD_CONCAT {$$=append([]node{&strLeaf{$1}}, $3...)}
            | {$$=nil} 
            | TOK_WORD {$$=[]node{&strLeaf{$1}}}
+;
+//Argument Accumulator
+ARGACC: TOK_MINUS TOK_WORD {$$=map[string]interface{}{$2:nil}}
+       |TOK_MINUS TOK_WORD ARGACC {$3[$2]=nil;$$=$3}
+       |TOK_MINUS TOK_WORD TOK_WORD {$$=map[string]interface{}{$2:$3}}
+       |TOK_MINUS TOK_WORD TOK_WORD ARGACC {$4[$2]=$3;$$=$4}
+
+;
 
 
 GETOBJS: PATH TOK_COMMA GETOBJS {x:=[]node{$1}; $$=append(x, $3...)}

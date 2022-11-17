@@ -207,3 +207,12 @@ func IsFloat(x interface{}) bool {
 	_, ok2 := x.(float32)
 	return ok || ok2
 }
+
+func IsAmongValues(x interface{}, values *[]string) bool {
+	for i := range *values {
+		if x == (*values)[i] {
+			return true
+		}
+	}
+	return false
+}
