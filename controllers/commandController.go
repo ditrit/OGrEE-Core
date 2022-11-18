@@ -1018,6 +1018,7 @@ func displayObject(obj map[string]interface{}) {
 	}
 }
 
+// TODO Check if Stale function
 func printAttributeOptions() {
 	attrArr := []string{"address", "category", "city", "color",
 		"country", "description", "domain", "gps", "height",

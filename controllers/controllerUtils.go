@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"encoding/json"
+	"fmt"
 	"sort"
 )
 
@@ -22,6 +23,44 @@ func Disp(x map[string]interface{}) {
 	jx, _ := json.Marshal(x)
 
 	println("JSON: ", string(jx))
+}
+
+func DispWithAttrs(objs *[]interface{}, attrs *[]string) {
+	for _, objInf := range *objs {
+		if obj, ok := objInf.(map[string]interface{}); ok {
+			for _, a := range *attrs {
+				//Check if attr is in object
+				if ok, nested := AttrIsInObj(obj, a); ok {
+					if nested {
+						fmt.Print("\t"+a+":",
+							obj["attributes"].(map[string]interface{})[a])
+					} else {
+						fmt.Print("\t"+a+":", obj[a])
+					}
+				} else {
+					fmt.Print("\t" + a + ": NULL")
+				}
+			}
+			fmt.Printf("\tName:%s\n", obj["name"].(string))
+		}
+	}
+}
+
+// Returns true/false if exists and true/false if attr
+// is in "attributes" maps
+func AttrIsInObj(obj map[string]interface{}, attr string) (bool, bool) {
+	if _, ok := obj[attr]; ok {
+		return ok, false
+	}
+
+	if hasAttr, _ := AttrIsInObj(obj, "attributes"); hasAttr == true {
+		if objAttributes, ok := obj["attributes"].(map[string]interface{}); ok {
+			_, ok := objAttributes[attr]
+			return ok, true
+		}
+	}
+
+	return false, false
 }
 
 /*

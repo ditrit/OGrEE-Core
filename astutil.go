@@ -178,6 +178,11 @@ func IsString(x interface{}) bool {
 	return ok
 }
 
+func IsStringArr(x interface{}) bool {
+	_, ok := x.([]string)
+	return ok
+}
+
 func IsStringValue(x interface{}, value string) bool {
 	return x == value
 }

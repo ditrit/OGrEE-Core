@@ -709,17 +709,22 @@ func (n *lsObjNode) execute() (interface{}, error) {
 	}
 
 	args := n.argFlags
-
-	//TODO add case 3 (-f,-s,-r)
 	switch len(args) {
 	case 0:
 		return cmd.LSOBJECT(path, n.entity, false), nil
 	case 1:
 		//check for -r or -s
 		if _, ok := args["r"]; ok {
+			if args["r"] != nil {
+				return nil, fmt.Errorf("-r takes no arguments")
+			}
 			return cmd.LSOBJECTRecursive(path, n.entity, false), nil
 
 		} else if _, ok := args["s"]; ok {
+			if IsStringArr(args["s"]) {
+				msg := "Too many arguments supplied, -s only takes one"
+				return nil, fmt.Errorf(msg)
+			}
 			if !IsString(args["s"]) {
 				msg := "Please provide a string argument for '-s'"
 				return nil, fmt.Errorf(msg)
@@ -730,61 +735,81 @@ func (n *lsObjNode) execute() (interface{}, error) {
 			sorted.Print()
 			return objs, nil
 
+		} else if _, ok := args["f"]; ok {
+			var arr []string
+			if IsString(args["f"]) {
+				arr = []string{args["f"].(string)}
+			} else if IsStringArr(args["f"]) {
+				arr = args["f"].([]string)
+			} else {
+				msg := "Please provide a string(s) argument for '-f'"
+				return nil, fmt.Errorf(msg)
+			}
+
+			objs := cmd.LSOBJECT(path, n.entity, true)
+			cmd.DispWithAttrs(&objs, &arr)
+			return nil, nil
+
 		} else {
 			msg := "Unknown argument received. You can only use '-r' or '-s'"
 			return nil, fmt.Errorf(msg)
 		}
 	case 2:
-		//check for -r and -s
+		//check for -r and (-s  or -f)
 		for i := range args {
-			if !IsAmongValues(i, &[]string{"r", "s"}) {
-				msg := "Unknown argument received. You can only use '-r' or '-s'"
+			if !IsAmongValues(i, &[]string{"r", "s", "f"}) {
+				msg := "Unknown argument received." +
+					" You can only use '-r' or '-s' or '-f'"
 				return nil, fmt.Errorf(msg)
 			}
 		}
 
-		if !IsString(args["s"]) {
-			return nil,
-				fmt.Errorf("Argument -s may only accept strings ")
+		//Error check can't have -s and -f together
+		if _, ok := args["s"]; ok {
+			if _, ok := args["f"]; ok {
+				msg := "Invalid argument order received." +
+					" You can only use '-r' in combination with '-s' or '-f'"
+				return nil, fmt.Errorf(msg)
+			}
 		}
 
-		//Fetch the objs Recursively then sort
+		if args["r"] != nil {
+			return nil, fmt.Errorf("-r takes no arguments")
+		}
+
 		objs := cmd.LSOBJECTRecursive(path, n.entity, true)
-		sorted := cmd.SortObjects(&objs, args["s"].(string))
-		sorted.Print()
-		return sorted, nil
+
+		if _, ok := args["s"]; ok {
+			if IsString(args["s"]) {
+				sorted := cmd.SortObjects(&objs, args["s"].(string))
+				sorted.Print()
+				return objs, nil
+			} else {
+				msg := "Please provide a string argument for '-s'"
+				return nil, fmt.Errorf(msg)
+			}
+
+		}
+
+		//Else '-f'
+		var attrs []string
+		if IsString(args["f"]) {
+			attrs = []string{args["f"].(string)}
+		} else if IsStringArr(args["f"]) {
+			attrs = args["f"].([]string)
+		} else {
+			msg := "Please provide a string(s) argument for '-f'"
+			return nil, fmt.Errorf(msg)
+		}
+
+		cmd.DispWithAttrs(&objs, &attrs)
+		return objs, nil
 
 	default:
 		//Return err
 		msg := "Too many arguments. You can only use '-r' or '-s'"
 		return nil, fmt.Errorf(msg)
 	}
-
-	/*if flag == "r" {
-		return cmd.LSOBJECTRecursive(path, n.entity), nil
-	} else if flag == "f" { //Display objects with specified arguments
-		//objs := cmd.LSOBJECT(path, n.entity, true)
-		return cmd.LSOBJECT(path, n.entity, true), nil
-
-	} else if flag == "s" { //Sort based on attr
-		attrs, err := evalNodeArr[string](&n.argument, []string{})
-		if err != nil {
-			return nil, err
-		}
-		objs := cmd.LSOBJECT(path, n.entity, true)
-		//There is only one elt in this case
-		sorted := cmd.SortObjects(&objs, attrs[0])
-		sorted.Print()
-		return objs, nil
-
-	} else if flag == "" {
-		return cmd.LSOBJECT(path, n.entity, false), nil
-
-	} else {
-		msg := "Unrecognised flag. You can only use '-r'"
-		return nil, fmt.Errorf(msg)
-	}*/
-	return nil, nil
 
 }
 
