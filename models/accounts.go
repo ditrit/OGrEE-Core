@@ -3,7 +3,7 @@ package models
 import (
 	"os"
 	u "p3/utils"
-	"strings"
+	"regexp"
 
 	"github.com/dgrijalva/jwt-go"
 	"go.mongodb.org/mongo-driver/bson"
@@ -26,12 +26,15 @@ type Account struct {
 
 // Validate incoming user
 func (account *Account) Validate() (map[string]interface{}, bool) {
-	if !strings.Contains(account.Email, "@") {
-		return u.Message(false, "Email address is required"), false
+	valid := regexp.MustCompile("(\\w)+@(\\w)+\\.(\\w)+").MatchString(account.Email)
+
+	if !valid {
+		return u.Message(false, "A valid email address is required"), false
 	}
 
-	if len(account.Password) < 6 {
-		return u.Message(false, "Password is required"), false
+	if len(account.Password) < 7 {
+		return u.Message(false,
+			"Please provide a Password with a length greater than 6"), false
 	}
 
 	//Error checking and duplicate emails
