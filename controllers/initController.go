@@ -4,14 +4,11 @@ package controllers
 
 import (
 	"bufio"
-	"bytes"
 	l "cli/logger"
 	"cli/models"
 	"cli/readline"
 	"encoding/json"
 	"fmt"
-	"io"
-	"net/http"
 	"os"
 	"strconv"
 	"strings"
@@ -234,6 +231,7 @@ func InitKey(apiKey string, env map[string]string) string {
 	return ""
 }
 
+// Invoked on 'lsog' command
 func GetEmail() string {
 	file, err := os.Open("./.env")
 	if err != nil {
@@ -363,38 +361,17 @@ func SetDrawableTemplate(entity string, env map[string]string) map[string]interf
 
 func CreateCredentials() (string, string) {
 	var tp map[string]interface{}
-	client := &http.Client{}
 
 	user, _ := readline.Line("Please Enter desired user email: ")
 	pass, _ := readline.Password("Please Enter desired password: ")
+	data := map[string]interface{}{"email": user, "password": string(pass)}
 
-	buf, _ := json.Marshal(map[string]interface{}{"email": user,
-		"password": pass})
-
-	req, _ := http.NewRequest("POST",
-		State.APIURL+"/api",
-		bytes.NewBuffer(buf))
-
-	resp, e := client.Do(req)
-	if e != nil || resp.StatusCode != http.StatusCreated {
-		if State.DebugLvl > 0 {
-			println("Error while creating credentials on server! Now exiting")
-		}
-
-		l.GetErrorLogger().Println("Error while creating credentials on server! Now exiting")
+	resp, e := models.Send("POST", State.APIURL+"/api", "", data)
+	tp = ParseResponse(resp, e, "Create credentials")
+	if tp == nil {
+		println(e.Error())
 		os.Exit(-1)
 	}
-	defer resp.Body.Close()
-	bodyBytes, err := io.ReadAll(resp.Body)
-	if err != nil {
-		if State.DebugLvl > 0 {
-			readline.Line("Error: " + err.Error() + " Now Exiting")
-		}
-
-		l.GetErrorLogger().Println("Error while trying to read server response: ", err)
-		os.Exit(-1)
-	}
-	json.Unmarshal(bodyBytes, &tp)
 
 	if !tp["status"].(bool) {
 		errMessage := "Error while creating credentials : " + tp["message"].(string)
