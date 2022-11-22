@@ -713,7 +713,7 @@ func (n *lsObjNode) execute() (interface{}, error) {
 	case 0:
 		return cmd.LSOBJECT(path, n.entity, false), nil
 	case 1:
-		//check for -r or -s
+		//check for -r or -s or -f
 		if _, ok := args["r"]; ok {
 			if args["r"] != nil {
 				return nil, fmt.Errorf("-r takes no arguments")
@@ -756,6 +756,7 @@ func (n *lsObjNode) execute() (interface{}, error) {
 		}
 	case 2:
 		//check for -r and (-s  or -f)
+		var objs []interface{}
 		for i := range args {
 			if !IsAmongValues(i, &[]string{"r", "s", "f"}) {
 				msg := "Unknown argument received." +
@@ -764,26 +765,28 @@ func (n *lsObjNode) execute() (interface{}, error) {
 			}
 		}
 
-		//Error check can't have -s and -f together
-		if _, ok := args["s"]; ok {
-			if _, ok := args["f"]; ok {
-				msg := "Invalid argument order received." +
-					" You can only use '-r' in combination with '-s' or '-f'"
-				return nil, fmt.Errorf(msg)
-			}
-		}
-
 		if args["r"] != nil {
 			return nil, fmt.Errorf("-r takes no arguments")
 		}
 
-		objs := cmd.LSOBJECTRecursive(path, n.entity, true)
+		if _, ok := args["r"]; ok {
+			objs = cmd.LSOBJECTRecursive(path, n.entity, true)
+		} else {
+			objs = cmd.LSOBJECT(path, n.entity, true)
+		}
+
+		//path, n.entity, true
 
 		if _, ok := args["s"]; ok {
 			if IsString(args["s"]) {
 				sorted := cmd.SortObjects(&objs, args["s"].(string))
-				sorted.Print()
-				return objs, nil
+				if _, ok := args["r"]; ok && args["r"] == nil {
+					sorted.Print()
+					return objs, nil
+				} else {
+					objs = sorted.GetData()
+				}
+
 			} else {
 				msg := "Please provide a string argument for '-s'"
 				return nil, fmt.Errorf(msg)
@@ -800,6 +803,11 @@ func (n *lsObjNode) execute() (interface{}, error) {
 		} else {
 			msg := "Please provide a string(s) argument for '-f'"
 			return nil, fmt.Errorf(msg)
+		}
+
+		//We want to display the attribute used for sorting
+		if !IsAmongValues(args["s"], &attrs) && args["s"] != nil {
+			attrs = append([]string{args["s"].(string)}, attrs...)
 		}
 
 		cmd.DispWithAttrs(&objs, &attrs)
