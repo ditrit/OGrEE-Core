@@ -8,9 +8,9 @@ import (
 //This file contains code for semantic checking
 //(ensure correct data types, syntax etc)
 
-// The data type validator functions return empty
-// errors for now since the error is dependent
-// on the respective node in the AST (ast.go)
+//The data type validator functions return empty
+//errors for now since the error is dependent
+//on the respective node in the AST (ast.go)
 func AssertString(x *node, item string) (string, error) {
 	valInf, err := (*x).execute()
 	if err != nil {
@@ -71,7 +71,7 @@ func AssertBool(x *node, item string) (bool, error) {
 	return val, nil
 }
 
-// Check if x is a certain value
+//Check if x is a certain value
 func AssertInStringValues(x interface{}, potential []string) bool {
 	for i := range potential {
 		if x == potential[i] {
@@ -116,18 +116,6 @@ func AssertInfArr(x *node, item string) ([]interface{}, error) {
 		return nil, err
 	}
 	val, ok := valInf.([]interface{})
-	if !ok {
-		return nil, fmt.Errorf(item + " should be an array value")
-	}
-	return val, nil
-}
-
-func AssertStringArr(x *node, item string) ([]string, error) {
-	valInf, err := (*x).execute()
-	if err != nil {
-		return nil, err
-	}
-	val, ok := valInf.([]string)
 	if !ok {
 		return nil, fmt.Errorf(item + " should be an array value")
 	}

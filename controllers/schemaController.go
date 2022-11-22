@@ -40,7 +40,7 @@ func ParseResponse(resp *http.Response, e error, purpose string) map[string]inte
 	return ans
 }
 
-// Checks the map as x["data"].(map[string]interface{})["objects"]
+//Checks the map as x["data"].(map[string]interface{})["objects"]
 func GetRawObjectsLength(x map[string]interface{}) (int, error) {
 	if objs := GetRawObjects(x); objs != nil {
 		return len(objs), nil
@@ -72,13 +72,8 @@ func LoadArrFromResp(resp map[string]interface{}, idx string) []interface{} {
 	return nil
 }
 
-func LoadObjectFromInf(x interface{}) (map[string]interface{}, bool) {
-	object, ok := x.(map[string]interface{})
-	return object, ok
-}
-
-// Convert []interface{} array to
-// []map[string]interface{} array
+//Convert []interface{} array to
+//[]map[string]interface{} array
 func infArrToMapStrinfArr(x []interface{}) []map[string]interface{} {
 	ans := []map[string]interface{}{}
 	for i := range x {

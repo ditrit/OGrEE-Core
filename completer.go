@@ -247,9 +247,9 @@ func DrawCompleter(path string) func(string) []string {
 
 //End of Functions for autocompleter
 
-// Helper function that returns the prefix completer
-// It is placed in an additional GO file as a function to maintain readability
-// and organisation
+//Helper function that returns the prefix completer
+//It is placed in an additional GO file as a function to maintain readability
+//and organisation
 func GetPrefixCompleter() *readline.PrefixCompleter {
 	return readline.NewPrefixCompleter(false,
 		readline.PcItem("cd", true,
@@ -305,7 +305,9 @@ func GetPrefixCompleter() *readline.PrefixCompleter {
 			readline.PcItem("lsac", false),
 			readline.PcItem("lspanel", false),
 			readline.PcItem("lssensor", false),
+			readline.PcItem("lsslot", false),
 			readline.PcItem("lsenterprise", false),
+			readline.PcItem("lsu", false),
 			readline.PcItem("get", false),
 			readline.PcItem("getu", false),
 			readline.PcItem("getslot", false),
@@ -399,6 +401,10 @@ func GetPrefixCompleter() *readline.PrefixCompleter {
 			readline.PcItem("-r", false),
 			readline.PcItemDynamic(ListEntities(""), false)),
 		readline.PcItem("lsog", false),
+		readline.PcItem("lsslot", true,
+			readline.PcItemDynamic(ListEntities(""), false)),
+		readline.PcItem("lsu", true,
+			readline.PcItemDynamic(ListEntities(""), false)),
 		readline.PcItem("print", false,
 			readline.PcItemDynamic(ListUserVars("", true), false)),
 		readline.PcItem("lsenterprise", false),
