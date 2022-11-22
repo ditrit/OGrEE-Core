@@ -17,7 +17,6 @@ var _ = l.GetInfoLogger() //Suppresses annoying Dockerfile build error
   ast *ast
   node node
   nodeArr []node
-  stringArr []string
   mapVoid map[string]interface{}
 }
 
@@ -61,7 +60,6 @@ var _ = l.GetInfoLogger() //Suppresses annoying Dockerfile build error
 %type <s> OBJ_TYPE COMMAND UI_TOGGLE
 %type <nodeArr> WNARG GETOBJS WORD_CONCAT
 %type <mapVoid> ARGACC
-%type <stringArr> FARGACC
 %type <node> OCCR PATH PHYSICAL_PATH STRAY_DEV_PATH EXPR CONCAT CONCAT_TERM stmnt st2 IF 
        EXPR_NOQUOTE ARRAY ORIENTATION EXPR_NOQUOTE_NOCOL CONCAT_NOCOL CONCAT_TERM_NOCOL EXPR_NOQUOTE_COMMON
 //%type <mapVoid> EQUAL_LIST
@@ -301,20 +299,10 @@ WORD_CONCAT: TOK_WORD TOK_COMMA WORD_CONCAT {$$=append([]node{&strLeaf{$1}}, $3.
 //Argument Accumulator
 ARGACC: TOK_MINUS TOK_WORD {$$=map[string]interface{}{$2:nil}}
        |TOK_MINUS TOK_WORD ARGACC {$3[$2]=nil;$$=$3}
+       |TOK_MINUS TOK_WORD TOK_WORD {$$=map[string]interface{}{$2:$3}}
        |TOK_MINUS TOK_WORD TOK_WORD ARGACC {$4[$2]=$3;$$=$4}
-       |TOK_MINUS TOK_WORD TOK_WORD FARGACC {
-              if $4 == nil {
-                     $$=map[string]interface{}{$2:$3}
-              } else {
-                     $$=map[string]interface{}{$2: append([]string{$3},$4...)}
-              }
-       }
-
-;
-
-//Argument Accumulator for '-f'
-FARGACC: TOK_WORD FARGACC {$$=append([]string{$1}, $2...)}
-        | {$$=nil}
+       |TOK_MINUS TOK_WORD TOK_STR { $$=map[string]interface{}{$2:$3}}
+       |TOK_MINUS TOK_WORD TOK_STR ARGACC { $4[$2]=$3;$$=$4}
 ;
 
 

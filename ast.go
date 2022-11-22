@@ -736,15 +736,12 @@ func (n *lsObjNode) execute() (interface{}, error) {
 			return objs, nil
 
 		} else if _, ok := args["f"]; ok {
-			var arr []string
-			if IsString(args["f"]) {
-				arr = []string{args["f"].(string)}
-			} else if IsStringArr(args["f"]) {
-				arr = args["f"].([]string)
-			} else {
-				msg := "Please provide a string(s) argument for '-f'"
+			if !IsString(args["f"]) {
+				msg := "Please provide a quote enclosed" +
+					" string for '-f' with arguments separated by ':'"
 				return nil, fmt.Errorf(msg)
 			}
+			arr := strings.Split(args["f"].(string), ":")
 
 			objs := cmd.LSOBJECT(path, n.entity, true)
 			cmd.DispWithAttrs(&objs, &arr)
@@ -795,15 +792,12 @@ func (n *lsObjNode) execute() (interface{}, error) {
 		}
 
 		//Else '-f'
-		var attrs []string
-		if IsString(args["f"]) {
-			attrs = []string{args["f"].(string)}
-		} else if IsStringArr(args["f"]) {
-			attrs = args["f"].([]string)
-		} else {
-			msg := "Please provide a string(s) argument for '-f'"
+		if !IsString(args["f"]) {
+			msg := "Please provide a quote enclosed" +
+				" string for '-f' with arguments separated by ':'"
 			return nil, fmt.Errorf(msg)
 		}
+		attrs := strings.Split(args["f"].(string), ":")
 
 		//We want to display the attribute used for sorting
 		if !IsAmongValues(args["s"], &attrs) && args["s"] != nil {
@@ -832,15 +826,12 @@ func (n *lsObjNode) execute() (interface{}, error) {
 			return nil, fmt.Errorf(msg)
 		}
 
-		var attrs []string
-		if IsString(args["f"]) {
-			attrs = []string{args["f"].(string)}
-		} else if IsStringArr(args["f"]) {
-			attrs = args["f"].([]string)
-		} else {
-			msg := "Please provide a string(s) argument for '-f'"
+		if !IsString(args["f"]) {
+			msg := "Please provide a quote enclosed" +
+				" string for '-f' with arguments separated by ':'"
 			return nil, fmt.Errorf(msg)
 		}
+		attrs := strings.Split(args["f"].(string), ":")
 
 		objs := cmd.LSOBJECTRecursive(path, n.entity, true)
 
