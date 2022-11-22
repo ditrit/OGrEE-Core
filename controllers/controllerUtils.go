@@ -71,7 +71,7 @@ func (d Deals) Swap(i, j int)      { d[i], d[j] = d[j], d[i] }
 */
 
 type sortable interface {
-	getData() []interface{}
+	GetData() []interface{}
 	Print()
 }
 
@@ -82,7 +82,7 @@ type SortableMArr struct {
 	isNested bool   //If the attr is in "attributes" map
 }
 
-func (s SortableMArr) getData() []interface{} { return s.data }
+func (s SortableMArr) GetData() []interface{} { return s.data }
 func (s SortableMArr) Len() int               { return len(s.data) }
 func (s SortableMArr) Swap(i, j int)          { s.data[i], s.data[j] = s.data[j], s.data[i] }
 func (s SortableMArr) Less(i, j int) bool {
@@ -139,7 +139,7 @@ func (s SortableMArr) Less(i, j int) bool {
 }
 
 func (s SortableMArr) Print() {
-	objs := s.getData()
+	objs := s.GetData()
 	if s.isNested {
 		for i := range objs {
 			attr := objs[i].(map[string]interface{})["attributes"].(map[string]interface{})[s.attr]

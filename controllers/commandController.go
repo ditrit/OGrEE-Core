@@ -883,7 +883,7 @@ func LSATTR(x, attr string) {
 	sortedDevices := SortObjects(&devInf, attr)
 
 	//Print the objects received
-	if len(sortedDevices.getData()) > 0 {
+	if len(sortedDevices.GetData()) > 0 {
 		println("Devices")
 		println()
 		sortedDevices.Print()

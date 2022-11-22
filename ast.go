@@ -713,7 +713,7 @@ func (n *lsObjNode) execute() (interface{}, error) {
 	case 0:
 		return cmd.LSOBJECT(path, n.entity, false), nil
 	case 1:
-		//check for -r or -s
+		//check for -r or -s or -f
 		if _, ok := args["r"]; ok {
 			if args["r"] != nil {
 				return nil, fmt.Errorf("-r takes no arguments")
@@ -736,15 +736,12 @@ func (n *lsObjNode) execute() (interface{}, error) {
 			return objs, nil
 
 		} else if _, ok := args["f"]; ok {
-			var arr []string
-			if IsString(args["f"]) {
-				arr = []string{args["f"].(string)}
-			} else if IsStringArr(args["f"]) {
-				arr = args["f"].([]string)
-			} else {
-				msg := "Please provide a string(s) argument for '-f'"
+			if !IsString(args["f"]) {
+				msg := "Please provide a quote enclosed" +
+					" string for '-f' with arguments separated by ':'"
 				return nil, fmt.Errorf(msg)
 			}
+			arr := strings.Split(args["f"].(string), ":")
 
 			objs := cmd.LSOBJECT(path, n.entity, true)
 			cmd.DispWithAttrs(&objs, &arr)
@@ -756,6 +753,7 @@ func (n *lsObjNode) execute() (interface{}, error) {
 		}
 	case 2:
 		//check for -r and (-s  or -f)
+		var objs []interface{}
 		for i := range args {
 			if !IsAmongValues(i, &[]string{"r", "s", "f"}) {
 				msg := "Unknown argument received." +
@@ -764,26 +762,28 @@ func (n *lsObjNode) execute() (interface{}, error) {
 			}
 		}
 
-		//Error check can't have -s and -f together
-		if _, ok := args["s"]; ok {
-			if _, ok := args["f"]; ok {
-				msg := "Invalid argument order received." +
-					" You can only use '-r' in combination with '-s' or '-f'"
-				return nil, fmt.Errorf(msg)
-			}
-		}
-
 		if args["r"] != nil {
 			return nil, fmt.Errorf("-r takes no arguments")
 		}
 
-		objs := cmd.LSOBJECTRecursive(path, n.entity, true)
+		if _, ok := args["r"]; ok {
+			objs = cmd.LSOBJECTRecursive(path, n.entity, true)
+		} else {
+			objs = cmd.LSOBJECT(path, n.entity, true)
+		}
+
+		//path, n.entity, true
 
 		if _, ok := args["s"]; ok {
 			if IsString(args["s"]) {
 				sorted := cmd.SortObjects(&objs, args["s"].(string))
-				sorted.Print()
-				return objs, nil
+				if _, ok := args["r"]; ok && args["r"] == nil {
+					sorted.Print()
+					return objs, nil
+				} else {
+					objs = sorted.GetData()
+				}
+
 			} else {
 				msg := "Please provide a string argument for '-s'"
 				return nil, fmt.Errorf(msg)
@@ -792,17 +792,57 @@ func (n *lsObjNode) execute() (interface{}, error) {
 		}
 
 		//Else '-f'
-		var attrs []string
-		if IsString(args["f"]) {
-			attrs = []string{args["f"].(string)}
-		} else if IsStringArr(args["f"]) {
-			attrs = args["f"].([]string)
-		} else {
-			msg := "Please provide a string(s) argument for '-f'"
+		if !IsString(args["f"]) {
+			msg := "Please provide a quote enclosed" +
+				" string for '-f' with arguments separated by ':'"
 			return nil, fmt.Errorf(msg)
+		}
+		attrs := strings.Split(args["f"].(string), ":")
+
+		//We want to display the attribute used for sorting
+		if !IsAmongValues(args["s"], &attrs) && args["s"] != nil {
+			attrs = append([]string{args["s"].(string)}, attrs...)
 		}
 
 		cmd.DispWithAttrs(&objs, &attrs)
+		return objs, nil
+
+	case 3:
+		for i := range args {
+			if !IsAmongValues(i, &[]string{"r", "s", "f"}) {
+				msg := "Unknown argument received." +
+					" You can only use '-r' or '-s' or '-f'"
+				return nil, fmt.Errorf(msg)
+			}
+		}
+
+		//Verify then get,sort,display
+		if IsStringArr(args["s"]) {
+			msg := "Too many arguments supplied, -s only takes one"
+			return nil, fmt.Errorf(msg)
+		}
+		if !IsString(args["s"]) {
+			msg := "Please provide a string argument for '-s'"
+			return nil, fmt.Errorf(msg)
+		}
+
+		if !IsString(args["f"]) {
+			msg := "Please provide a quote enclosed" +
+				" string for '-f' with arguments separated by ':'"
+			return nil, fmt.Errorf(msg)
+		}
+		attrs := strings.Split(args["f"].(string), ":")
+
+		objs := cmd.LSOBJECTRecursive(path, n.entity, true)
+
+		sorted := cmd.SortObjects(&objs, args["s"].(string)).GetData()
+
+		//We want to display the attribute used for sorting
+		if !IsAmongValues(args["s"], &attrs) {
+			attrs = append([]string{args["s"].(string)}, attrs...)
+		}
+
+		cmd.DispWithAttrs(&sorted, &attrs)
 		return objs, nil
 
 	default:
