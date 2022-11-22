@@ -805,6 +805,47 @@ func (n *lsObjNode) execute() (interface{}, error) {
 		cmd.DispWithAttrs(&objs, &attrs)
 		return objs, nil
 
+	case 3:
+		for i := range args {
+			if !IsAmongValues(i, &[]string{"r", "s", "f"}) {
+				msg := "Unknown argument received." +
+					" You can only use '-r' or '-s' or '-f'"
+				return nil, fmt.Errorf(msg)
+			}
+		}
+
+		//Verify then get,sort,display
+		if IsStringArr(args["s"]) {
+			msg := "Too many arguments supplied, -s only takes one"
+			return nil, fmt.Errorf(msg)
+		}
+		if !IsString(args["s"]) {
+			msg := "Please provide a string argument for '-s'"
+			return nil, fmt.Errorf(msg)
+		}
+
+		var attrs []string
+		if IsString(args["f"]) {
+			attrs = []string{args["f"].(string)}
+		} else if IsStringArr(args["f"]) {
+			attrs = args["f"].([]string)
+		} else {
+			msg := "Please provide a string(s) argument for '-f'"
+			return nil, fmt.Errorf(msg)
+		}
+
+		objs := cmd.LSOBJECTRecursive(path, n.entity, true)
+
+		sorted := cmd.SortObjects(&objs, args["s"].(string)).GetData()
+
+		//We want to display the attribute used for sorting
+		if !IsAmongValues(args["s"], &attrs) {
+			attrs = append([]string{args["s"].(string)}, attrs...)
+		}
+
+		cmd.DispWithAttrs(&sorted, &attrs)
+		return objs, nil
+
 	default:
 		//Return err
 		msg := "Too many arguments. You can only use '-r' or '-s'"
