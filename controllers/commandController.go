@@ -1,7 +1,6 @@
 package controllers
 
 import (
-	"bytes"
 	l "cli/logger"
 	"cli/models"
 	"encoding/json"
@@ -13,7 +12,6 @@ import (
 	"path"
 	"path/filepath"
 	"runtime"
-	"sort"
 	"strconv"
 	"strings"
 )
@@ -291,13 +289,10 @@ func GenUpdateJSON(m map[string]interface{}, key string, value interface{}, del 
 
 // This function recursively applies an update to an object and
 // the rest of its subentities
-// Thus being the only function thus far to call another exported
-// function in this file
 func RecursivePatch(Path, id, ent string, data map[string]interface{}) error {
 	var entities string
 	var URL string
 	println("OK. Attempting to update...")
-	//var resp *http.Response
 
 	if data != nil {
 		if Path != "" {
@@ -501,6 +496,10 @@ func UpdateObj(Path, id, ent string, data map[string]interface{}, deleteAndPut b
 		attrs := map[string]interface{}{}
 
 		for i := range data {
+			// Since all data types must be sent as string
+			// stringify the data before sending
+			data[i] = Stringify(data[i])
+
 			found := GenUpdateJSON(ogData, i, data[i], deleteAndPut)
 			if !found {
 				//The key was not found so let's insert it
@@ -732,7 +731,7 @@ func Env(userVars, userFuncs map[string]interface{}) {
 	}
 }
 
-func LSOBJECT(x string, entity int) []map[string]interface{} {
+func LSOBJECT(x string, entity int, silence bool) []interface{} {
 	var obj map[string]interface{}
 	var Path string
 
@@ -767,15 +766,17 @@ func LSOBJECT(x string, entity int) []map[string]interface{} {
 
 	//Data verification and print block
 	objects = GetRawObjects(parsed)
-	for i := range objects {
-		if object, ok := objects[i].(map[string]interface{}); ok {
-			if object["name"] != nil {
-				println(object["name"].(string))
+	if silence == false {
+		for i := range objects {
+			if object, ok := objects[i].(map[string]interface{}); ok {
+				if object["name"] != nil {
+					println(object["name"].(string))
+				}
 			}
 		}
 	}
 
-	return nil
+	return objects
 }
 
 func GetByAttr(x string, u interface{}) {
@@ -877,54 +878,15 @@ func LSATTR(x, attr string) {
 		return
 	}
 	devInf := reqParsed["data"].(map[string]interface{})["objects"].([]interface{})
-	devices := infArrToMapStrinfArr(devInf)
+	//devices := infArrToMapStrinfArr(devInf)
 
-	var sortedDevices sortable
-
-	switch attr {
-	case "heightu":
-		sortedDevices = SortableMArr{devices}
-		sort.Sort(sortedDevices.(SortableMArr))
-	case "slot":
-		sortedDevices = SortableSlot{devices}
-		sort.Sort(sortedDevices.(SortableSlot))
-	}
+	sortedDevices := SortObjects(&devInf, attr)
 
 	//Print the objects received
 	if len(sortedDevices.getData()) > 0 {
 		println("Devices")
 		println()
-		for _, dev := range sortedDevices.getData() {
-			name := dev["name"].(string)
-			if attr == "slot" {
-				var slot string
-				devAttr := dev["attributes"].(map[string]interface{})
-				if devAttr["slot"] == nil {
-					slot = "NULL"
-				} else {
-					slot = devAttr["slot"].(string)
-				}
-				println("Slot:"+slot, "  Name: ", name)
-
-			} else {
-				heightU := dev["attributes"].(map[string]interface{})["heightU"]
-				switch heightU.(type) {
-				case string:
-					println("HeightU:", heightU.(string), "Name:", name)
-				case int:
-					println("HeightU:", heightU.(int), "Name:", name)
-				case float64, float32:
-					println("HeightU:", heightU.(float64), "Name:", name)
-				default:
-					l.GetWarningLogger().Println(
-						"Unable to recognise the data " +
-							"type of heightU attribute for LSU")
-					println("HeightU:", heightU, "Name:", name)
-				}
-
-			}
-
-		}
+		sortedDevices.Print()
 	}
 
 }
@@ -1016,10 +978,10 @@ func Help(entry string) {
 	var path string
 	entry = strings.TrimSpace(entry)
 	switch entry {
-	case "ls", "lsu", "pwd", "print", "cd", "tree", "create", "get", "clear",
+	case "ls", "pwd", "print", "cd", "tree", "create", "get", "clear",
 		"update", "delete", "lsog", "grep", "for", "while", "if", "env",
 		"cmds", "var", "unset", "select", "camera", "ui", "hc", "drawable",
-		"link", "unlink", "draw", "lsslot", "getu", "getslot",
+		"link", "unlink", "draw", "getu", "getslot",
 		"lsenterprise":
 		path = "./other/man/" + entry + ".md"
 
@@ -1070,6 +1032,7 @@ func displayObject(obj map[string]interface{}) {
 	}
 }
 
+// TODO Check if Stale function
 func printAttributeOptions() {
 	attrArr := []string{"address", "category", "city", "color",
 		"country", "description", "domain", "gps", "height",
@@ -2619,173 +2582,6 @@ func determineStrKey(x map[string]interface{}, possible []string) string {
 	return "" //The code should not reach this point!
 }
 
-// Serialising size & posXY is inefficient but
-// the team wants it for now
-// "size":"[25,29.4,0]" -> "size": "{\"x\":25,\"y\":29.4,\"z\":0}"
-func serialiseAttr(attr map[string]interface{}, want string) string {
-	var newSize string
-	if size, ok := attr[want].(string); ok {
-		left := strings.Index(size, "[")
-		right := strings.Index(size, "]")
-		coords := []string{"x", "y", "z"}
-
-		if left != -1 && right != -1 {
-			var length int
-			subStr := size[left+1 : right]
-			nums := stringSplitter(subStr, ",", want)
-			if nums == nil { //Error!
-				return ""
-			}
-			//nums := strings.Split(subStr, ",")
-
-			if len(nums) == 3 && want == "size" {
-				length = 2
-			} else {
-				length = len(nums)
-			}
-
-			for idx := 0; idx < length; idx++ {
-				newSize += "\"" + coords[idx] + "\":" + nums[idx]
-
-				if idx < length-1 {
-					newSize += ","
-				}
-			}
-			newSize = "{" + newSize + "}"
-
-			if len(nums) == 3 && want == "size" {
-				attr["height"] = nums[2]
-			}
-		}
-	}
-	return newSize
-}
-
-// Same utility func as above but we have an arbitrary array
-// and want to cast it to -> "size": "{\"x\":25,\"y\":29.4,\"z\":0}"
-func serialiseAttr2(attr map[string]interface{}, want string) string {
-	var newSize string
-	if items, ok := attr[want].([]interface{}); ok {
-		coords := []string{"x", "y", "z"}
-		var length int
-
-		if isValid := arrayVerifier(&items, want); !isValid {
-			return ""
-		}
-
-		if len(items) == 3 && want == "size" {
-			length = 2
-		} else {
-			length = len(items)
-		}
-
-		for idx := 0; idx < length; idx++ {
-			r := bytes.NewBufferString("")
-			fmt.Fprintf(r, "%v ", items[idx])
-			//itemStr :=
-			newSize += "\"" + coords[idx] + "\":" + r.String()
-
-			if idx < length-1 {
-				newSize += ","
-			}
-		}
-		newSize = "{" + newSize + "}"
-
-		if len(items) == 3 && want == "size" {
-			if _, ok := items[2].(int); ok {
-				items[2] = strconv.Itoa(items[2].(int))
-			} else if _, ok := items[2].(float64); ok {
-				items[2] = strconv.FormatFloat(items[2].(float64), 'G', -1, 64)
-			}
-			attr["height"] = items[2]
-		}
-	}
-	return newSize
-}
-
-// Auxillary function for serialiseAttr2
-// to help ensure that the arbitrary arrays
-// ([]interface{}) are valid before they get serialised
-func arrayVerifier(x *[]interface{}, attribute string) bool {
-	switch attribute {
-	case "size":
-		return len(*x) == 3
-	case "posXY":
-		return len(*x) == 2
-	}
-	return false
-}
-
-// Auxillary function for serialiseAttr
-// to help verify the posXY and size attributes
-// have correct lengths before they get serialised
-func stringSplitter(want, separator, attribute string) []string {
-	arr := strings.Split(want, separator)
-	switch attribute {
-	case "posXY":
-		if len(arr) != 2 {
-			return nil
-		}
-	case "size":
-		if len(arr) != 3 {
-			return nil
-		}
-	}
-	return arr
-}
-
-// This func is used for when the user wants to filter certain
-// attributes from being sent/displayed to Unity viewer client
-func GenerateFilteredJson(x map[string]interface{}) map[string]interface{} {
-	ans := map[string]interface{}{}
-	attrs := map[string]interface{}{}
-	if catInf, ok := x["category"]; ok {
-		if cat, ok := catInf.(string); ok {
-			if EntityStrToInt(cat) != -1 {
-
-				//Start the filtration
-				for i := range x {
-					if i == "attributes" {
-						for idx := range x[i].(map[string]interface{}) {
-							if IsAttrDrawable("", idx, x, true) == true {
-								attrs[idx] = x[i].(map[string]interface{})[idx]
-							}
-						}
-					} else {
-						if IsAttrDrawable("", i, x, true) == true {
-							ans[i] = x[i]
-						}
-					}
-				}
-				if len(attrs) > 0 {
-					ans["attributes"] = attrs
-				}
-				return ans
-			}
-		}
-	}
-	return x //Nothing will be filtered
-}
-
-// Display contents of []map[string]inf array
-func DispMapArr(x []map[string]interface{}) {
-	for idx := range x {
-		println()
-		println()
-		println("OBJECT: ", idx)
-		displayObject(x[idx])
-		println()
-	}
-}
-
-// displays contents of maps
-func Disp(x map[string]interface{}) {
-
-	jx, _ := json.Marshal(x)
-
-	println("JSON: ", string(jx))
-}
-
 // Function called by update node for interact commands (ie label, labelFont)
 func InteractObject(path string, keyword string, val interface{}, fromAttr bool) error {
 	//First retrieve the object
@@ -2897,7 +2693,8 @@ func InformUnity(caller string, entity int, data map[string]interface{}) error {
 	return nil
 }
 
-func LSOBJECTRecursive(x string, entity int) []map[string]interface{} {
+// x is path
+func LSOBJECTRecursive(x string, entity int, silence bool) []interface{} {
 	var obj map[string]interface{}
 	var Path string
 
@@ -2907,11 +2704,15 @@ func LSOBJECTRecursive(x string, entity int) []map[string]interface{} {
 				State.APIURL+"/api/tenants", GetKey(), nil)
 			obj = ParseResponse(r, e, "Get Tenants")
 			arr := LoadArrFromResp(obj, "objects")
-			tenants := infArrToMapStrinfArr(arr)
-			for _, tenant := range tenants {
-				println(tenant["name"].(string))
+			if !silence {
+				for _, tenantInf := range arr {
+					if tenant, _ := LoadObjectFromInf(tenantInf); tenant != nil {
+						println(tenant["name"].(string))
+					}
+				}
 			}
-			return tenants
+
+			return arr
 		} else {
 			//Return nothing
 			return nil
@@ -2963,19 +2764,23 @@ func LSOBJECTRecursive(x string, entity int) []map[string]interface{} {
 	//println(obi)
 	//println("WANT:", EntityToString(entity))
 	res := lsobjHelperRecursive(State.APIURL, idToSend, obi, entity)
-	for i := range res {
-		if res[i] != nil && res[i]["name"] != nil {
-			println(res[i]["name"].(string))
+	if !silence {
+		for i := range res {
+			if item, ok := res[i].(map[string]interface{}); ok {
+				if item != nil && item["name"] != nil {
+					println(item["name"].(string))
+				}
+			}
 		}
-
 	}
+
 	return res
 	//return nil
 }
 
 // NOTE: LSDEV is recursive while LSSENSOR is not
 // Code could be more tidy
-func lsobjHelperRecursive(api, objID string, curr, entity int) []map[string]interface{} {
+func lsobjHelperRecursive(api, objID string, curr, entity int) []interface{} {
 	var ext, URL string
 	if entity == SENSOR && (curr == BLDG || curr == ROOM || curr == RACK || curr == DEVICE) {
 		ext = EntityToString(curr) + "s/" + objID + "/" + EntityToString(entity) + "s"
@@ -2990,8 +2795,8 @@ func lsobjHelperRecursive(api, objID string, curr, entity int) []map[string]inte
 		if tmp == nil {
 			return nil
 		}
-		res := infArrToMapStrinfArr(tmpObjs)
-		return res
+		//res := infArrToMapStrinfArr(tmpObjs)
+		return tmpObjs
 
 	} else if entity-curr >= 2 {
 
@@ -3009,9 +2814,8 @@ func lsobjHelperRecursive(api, objID string, curr, entity int) []map[string]inte
 				return nil
 			}
 
-			tmpObjs := GetRawObjects(tmp)
-			res := infArrToMapStrinfArr(tmpObjs)
-			return res
+			return GetRawObjects(tmp)
+
 		}
 		//END OF EDGE CASE BLOCK
 
@@ -3025,7 +2829,7 @@ func lsobjHelperRecursive(api, objID string, curr, entity int) []map[string]inte
 		//objs -> resp["data"]["objects"]
 		objs := LoadArrFromResp(resp, "objects")
 		if objs != nil {
-			x := []map[string]interface{}{}
+			x := []interface{}{}
 
 			if entity >= AC && entity <= CORIDOR {
 
@@ -3035,15 +2839,13 @@ func lsobjHelperRecursive(api, objID string, curr, entity int) []map[string]inte
 
 					tmp, e := models.Send("GET", State.APIURL+ext2, GetKey(), nil)
 					tmp2 := ParseResponse(tmp, e, "get objects")
-					if x != nil {
-						tmpObjects := GetRawObjects(tmp2)
-						//convert []interface{} to []map[string]interface{}
-						x = append(x, infArrToMapStrinfArr(tmpObjects)...)
+					if tmp2 != nil {
+						x = GetRawObjects(tmp2)
 					}
 				}
 			} else {
 				if entity == DEVICE && curr == ROOM {
-					x = append(x, infArrToMapStrinfArr(objs)...)
+					x = append(x, objs...)
 				}
 				for i := range objs {
 					rest := lsobjHelperRecursive(api, objs[i].(map[string]interface{})["id"].(string), curr+2, entity)
@@ -3075,7 +2877,7 @@ func lsobjHelperRecursive(api, objID string, curr, entity int) []map[string]inte
 		//objs := resp["data"]["objects"]
 		objs := LoadArrFromResp(resp, "objects")
 		if objs != nil {
-			ans := []map[string]interface{}{}
+			ans := []interface{}{}
 			//For associated objects of room
 			if entity >= AC && entity <= CORIDOR {
 				for i := range objs {
@@ -3091,11 +2893,14 @@ func lsobjHelperRecursive(api, objID string, curr, entity int) []map[string]inte
 				}
 			} else {
 
-				ans = infArrToMapStrinfArr(objs)
+				ans = objs
 				if curr == RACK && entity == DEVICE {
 					for idx := range ans {
 						ext2 := "/api/" + EntityToString(entity) +
-							"s/" + ans[idx]["id"].(string) + "/" + EntityToString(entity) + "s"
+							"s/" +
+							ans[idx].(map[string]interface{})["id"].(string) +
+							"/" + EntityToString(entity) + "s"
+
 						subURL := State.APIURL + ext2
 						r1, e1 := models.Send("GET", subURL, GetKey(), nil)
 						tmp1 := ParseResponse(r1, e1, "getting objects")
@@ -3103,7 +2908,7 @@ func lsobjHelperRecursive(api, objID string, curr, entity int) []map[string]inte
 						tmp2 := LoadArrFromResp(tmp1, "objects")
 						if tmp2 != nil {
 							//Swap ans and objs to keep order
-							ans = append(ans, infArrToMapStrinfArr(tmp2)...)
+							ans = append(ans, tmp2...)
 						}
 
 					}
@@ -3126,32 +2931,12 @@ func lsobjHelperRecursive(api, objID string, curr, entity int) []map[string]inte
 		resp, e := models.Send("GET", URL, GetKey(), nil)
 		x := ParseResponse(resp, e, "get object")
 		if entity == DEVICE {
-			tmp := GetRawObjects(x)
-			objArr := infArrToMapStrinfArr(tmp)
-			return objArr
+			return GetRawObjects(x)
+
 		}
-		return []map[string]interface{}{x["data"].(map[string]interface{})}
+		return []interface{}{x["data"]}
 	}
 	return nil
-}
-
-func MergeMaps(x, y map[string]interface{}, overwrite bool) {
-	for i := range y {
-		//Conflict case
-		if _, ok := x[i]; ok {
-			if overwrite {
-				l.GetWarningLogger().Println("Conflict while merging maps")
-				if State.DebugLvl > 1 {
-					println("Conflict while merging data, resorting to overwriting!")
-				}
-
-				x[i] = y[i]
-			}
-		} else {
-			x[i] = y[i]
-		}
-
-	}
 }
 
 // Auxillary function that preprocesses
@@ -3435,120 +3220,6 @@ func OnlineLevelResolver(path []string) []string {
 	return paths
 }
 
-/*
-// Ensure it satisfies sort.Interface
-func (d Deals) Len() int           { return len(d) }
-func (d Deals) Less(i, j int) bool { return d[i].Id < d[j].Id }
-func (d Deals) Swap(i, j int)      { d[i], d[j] = d[j], d[i] }
-*/
-
-type sortable interface {
-	getData() []map[string]interface{}
-}
-
-// Helper Struct for sorting
-type SortableMArr struct {
-	data []map[string]interface{}
-}
-
-func (s SortableMArr) getData() []map[string]interface{} { return s.data }
-func (s SortableMArr) Len() int                          { return len(s.data) }
-func (s SortableMArr) Swap(i, j int)                     { s.data[i], s.data[j] = s.data[j], s.data[i] }
-func (s SortableMArr) Less(i, j int) bool {
-	lKey := determineStrKey(s.data[i]["attributes"].(map[string]interface{}), []string{"heightU"})
-	rKey := determineStrKey(s.data[j]["attributes"].(map[string]interface{}), []string{"heightU"})
-
-	//We want the non existing heightU objs at the end of the array
-	if lKey == "" && rKey != "" {
-		return false
-	}
-
-	if rKey == "" && lKey != "" {
-		return true
-	}
-
-	lH := s.data[i]["attributes"].(map[string]interface{})["heightU"]
-	rH := s.data[j]["attributes"].(map[string]interface{})["heightU"]
-
-	//We must ensure that they are strings, non strings will be
-	//placed at the end of the array
-	var lOK, rOK bool
-	_, lOK = lH.(string)
-	_, rOK = rH.(string)
-
-	if !lOK && rOK {
-		return false
-	}
-
-	if lOK && !rOK {
-		return true
-	}
-
-	return lH.(string) < rH.(string)
-
-}
-
-type SortableSlot struct {
-	data []map[string]interface{}
-}
-
-func (s SortableSlot) getData() []map[string]interface{} { return s.data }
-func (s SortableSlot) Len() int                          { return len(s.data) }
-func (s SortableSlot) Swap(i, j int)                     { s.data[i], s.data[j] = s.data[j], s.data[i] }
-func (s SortableSlot) Less(i, j int) bool {
-	lKey := determineStrKey(s.data[i]["attributes"].(map[string]interface{}), []string{"slot"})
-	rKey := determineStrKey(s.data[j]["attributes"].(map[string]interface{}), []string{"slot"})
-
-	//We want the non existing heightU objs at the end of the array
-	if lKey == "" && rKey != "" {
-		return false
-	}
-
-	if rKey == "" && lKey != "" {
-		return true
-	}
-
-	lS := s.data[i]["attributes"].(map[string]interface{})["slot"]
-	rS := s.data[j]["attributes"].(map[string]interface{})["slot"]
-
-	//We must ensure that they are strings, non strings will be
-	//placed at the end of the array
-	var lOK, rOK bool
-	_, lOK = lS.(string)
-	_, rOK = rS.(string)
-
-	if !lOK && rOK {
-		return false
-	}
-
-	if lOK && !rOK {
-		return true
-	}
-
-	if !lOK && !rOK {
-		return false
-	}
-
-	return lS.(string) < rS.(string)
-
-}
-
-// Helper func that safely deletes a string key in a map
-func DeleteAttr(x map[string]interface{}, key string) {
-	if _, ok := x[key]; ok {
-		delete(x, key)
-	}
-}
-
-// Helper func that safely copies a value in a map
-func CopyAttr(dest, source map[string]interface{}, key string) bool {
-	if _, ok := source[key]; ok {
-		dest[key] = source[key]
-		return true
-	}
-	return false
-}
-
 // Helper function for GetOCLIAttr which retrieves
 // template from server if available, this func mainly helps
 // to keep code organised
@@ -3570,53 +3241,4 @@ func fetchTemplate(name string, objType int) map[string]interface{} {
 	}
 
 	return nil
-}
-
-// Helper func is used to check if sizeU is numeric
-// this is necessary since the OCLI command for creating a device
-// needs to distinguish if the parameter is a valid sizeU or template
-func checkNumeric(x interface{}) bool {
-	switch x.(type) {
-	case int, float64, float32:
-		return true
-	default:
-		return false
-	}
-}
-
-// Hack function for the reserved and technical areas
-// which copies that room areas function in ast.go
-// [room]:areas=[r1,r2,r3,r4]@[t1,t2,t3,t4]
-func parseReservedTech(x map[string]interface{}) map[string]interface{} {
-	var reservedStr string
-	var techStr string
-	if reserved, ok := x["reserved"].([]interface{}); ok {
-		if tech, ok := x["technical"].([]interface{}); ok {
-			if len(reserved) == 4 && len(tech) == 4 {
-				r4 := bytes.NewBufferString("")
-				fmt.Fprintf(r4, "%v", reserved[3].(float64))
-				r3 := bytes.NewBufferString("")
-				fmt.Fprintf(r3, "%v", reserved[2].(float64))
-				r2 := bytes.NewBufferString("")
-				fmt.Fprintf(r2, "%v", reserved[1].(float64))
-				r1 := bytes.NewBufferString("")
-				fmt.Fprintf(r1, "%v", reserved[0].(float64))
-
-				t4 := bytes.NewBufferString("")
-				fmt.Fprintf(t4, "%v", tech[3].(float64))
-				t3 := bytes.NewBufferString("")
-				fmt.Fprintf(t3, "%v", tech[2].(float64))
-				t2 := bytes.NewBufferString("")
-				fmt.Fprintf(t2, "%v", tech[1].(float64))
-				t1 := bytes.NewBufferString("")
-				fmt.Fprintf(t1, "%v", tech[0].(float64))
-
-				reservedStr = "{\"left\":" + r4.String() + ",\"right\":" + r3.String() + ",\"top\":" + r1.String() + ",\"bottom\":" + r2.String() + "}"
-				techStr = "{\"left\":" + t4.String() + ",\"right\":" + t3.String() + ",\"top\":" + t1.String() + ",\"bottom\":" + t2.String() + "}"
-				x["reserved"] = reservedStr
-				x["technical"] = techStr
-			}
-		}
-	}
-	return x
 }
