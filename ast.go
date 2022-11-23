@@ -816,6 +816,10 @@ func (n *lsObjNode) execute() (interface{}, error) {
 			}
 		}
 
+		if args["r"] != nil {
+			return nil, fmt.Errorf("-r takes no arguments")
+		}
+
 		//Verify then get,sort,display
 		if IsStringArr(args["s"]) {
 			msg := "Too many arguments supplied, -s only takes one"
