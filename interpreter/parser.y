@@ -245,6 +245,7 @@ CONCAT:  CONCAT_TERM {$$=$1}
 CONCAT_TERM_NOCOL:  TOK_DEREF TOK_LBRAC TOK_WORD TOK_RBRAC {$$=&symbolReferenceNode{$3}}
        | TOK_DEREF TOK_WORD {$$=&symbolReferenceNode{$2}}
        | TOK_WORD {$$=&strLeaf{$1}}
+       | TOK_ORIENTATION {$$=&strLeaf{$1}}
        | TOK_HEX {$$=&strLeaf{$1}}
        | TOK_STR {$$=&strLeaf{$1}}
        | TOK_SLASH {$$=&strLeaf{"/"}}
