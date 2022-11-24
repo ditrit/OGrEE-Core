@@ -149,6 +149,9 @@ func InitState(analyser string, env map[string]string) {
 		ent := EntityToString(i)
 		State.DrawableJsons[ent] = SetDrawableTemplate(ent, env)
 	}
+
+	//Set Draw Threshold
+	SetDrawThreshold(env)
 }
 
 // It is useful to have the state to hold
@@ -296,8 +299,8 @@ func GetURLs(apiURL string, unityURL string, env map[string]string) {
 	}
 }
 
-// Helper for InitState will
-// insert objs
+// Helper for InitState will insert objs
+// and init DrawThreshold
 func SetObjsForUnity(x string, env map[string]string) []int {
 	res := []int{}
 	allDetected := false
@@ -337,6 +340,19 @@ func SetObjsForUnity(x string, env map[string]string) []int {
 		}
 	}
 	return res
+}
+
+func SetDrawThreshold(env map[string]string) {
+	//Set Draw Threshold
+	limit, e := strconv.Atoi(env["drawLimit"])
+	if e != nil || limit < 0 {
+		if State.DebugLvl > 0 {
+			println("Setting Draw Limit to default")
+		}
+		State.DrawThreshold = 50 //50 is default value
+	} else {
+		State.DrawThreshold = limit
+	}
 }
 
 func SetDrawableTemplate(entity string, env map[string]string) map[string]interface{} {

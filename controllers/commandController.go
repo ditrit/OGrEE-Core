@@ -2211,6 +2211,35 @@ func UnlinkObject(source, destination string) {
 	DeleteObj(source)
 }
 
+// TODO
+// Move object counting to API side
+func objectCounter(parent *map[string]interface{}) int {
+	count := 0
+	if (*parent) != nil {
+		count += 1
+		if _, ok := (*parent)["children"]; ok {
+			if arr, ok := (*parent)["children"].([]interface{}); ok {
+
+				for _, childInf := range arr {
+					if child, ok := childInf.(map[string]interface{}); ok {
+						count += objectCounter(&(child))
+					}
+				}
+			}
+
+			if arr, ok := (*parent)["children"].([]map[string]interface{}); ok {
+				for _, child := range arr {
+					count += objectCounter(&(child))
+
+				}
+
+			}
+		}
+	}
+
+	return count
+}
+
 // Unity UI will draw already existing objects
 // by retrieving the hierarchy
 func Draw(x string, depth int) error {
@@ -2220,20 +2249,38 @@ func Draw(x string, depth int) error {
 	}
 	if depth < 0 {
 		return fmt.Errorf("draw command cannot accept negative value")
-	} else if depth == 0 {
-		data := map[string]interface{}{"type": "create", "data": obj}
-		unityErr := InformUnity("Draw", 0, data)
-		if unityErr != nil {
-			return unityErr
-		}
 	} else {
-		children := GetHierarchy(x, depth, true)
-		if children != nil {
-			obj["children"] = children
+		if depth != 0 {
+			children := GetHierarchy(x, depth, true)
+			if children != nil {
+				obj["children"] = children
+			}
 		}
-		data := map[string]interface{}{"type": "create", "data": obj}
-		//0 to include the JSON filtration
-		InformUnity("Draw", 0, data)
+
+		count := objectCounter(&obj)
+		if State.UnityClientAvail {
+			okToGo := true
+			if count > State.DrawThreshold {
+				msg := "You are about to send " + strconv.Itoa(count) +
+					" objects to the Unity 3D client. " +
+					"Do you want to continue ? (y/n)\n"
+				(*State.Terminal).Write([]byte(msg))
+				(*State.Terminal).SetPrompt(">")
+				ans, _ := (*State.Terminal).Readline()
+				if ans != "y" && ans != "Y" {
+					okToGo = false
+				}
+			}
+			if okToGo {
+				data := map[string]interface{}{"type": "create", "data": obj}
+				//0 to include the JSON filtration
+				unityErr := InformUnity("Draw", 0, data)
+				if unityErr != nil {
+					return unityErr
+				}
+			}
+		}
+
 	}
 	return nil
 }
