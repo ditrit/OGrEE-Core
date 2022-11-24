@@ -38,9 +38,11 @@ type ast struct {
 
 func (a *ast) execute() (interface{}, error) {
 	for i, _ := range a.statements {
-		_, err := a.statements[i].execute()
-		if err != nil {
-			return nil, err
+		if a.statements[i] != nil {
+			_, err := a.statements[i].execute()
+			if err != nil {
+				return nil, err
+			}
 		}
 	}
 	return nil, nil

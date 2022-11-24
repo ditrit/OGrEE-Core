@@ -144,7 +144,7 @@ func (n *forRangeNode) execute() (interface{}, error) {
 		return nil,
 			fmt.Errorf("Please provide a valid integer range to iterate")
 	}
-	for i := int(start.(float64)); i <= int(end.(float64)); i++ {
+	for i := int(start.(float64)); i < int(end.(float64)); i++ {
 		_, err := (&assignNode{n.variable, &intLeaf{i}}).execute()
 		if err != nil {
 			return nil, err
