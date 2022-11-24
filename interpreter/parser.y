@@ -2,25 +2,12 @@
 package main
 import (
 cmd "cli/controllers"
-"path/filepath"
+"path/filepath"      //Used by the injected code for error reporting
 l "cli/logger"
 )
 
 var root node 
 var _ = l.GetInfoLogger() //Suppresses annoying Dockerfile build error
-
-func checkIfOrientation(x string) bool {
-        switch x {
-              case "EN", "NW", "WS", "SE", "NE", "SW",
-              "-E-N", "-E+N", "+E-N", "+E+N", "+N+E",
-		"-N-W", "-N+W", "+N-W", "+N+W",
-		"-W-S", "-W+S", "+W-S", "+W+S",
-		"-S-E", "-S+E", "+S-E", "+S+E":
-                     return true
-              default:
-                     return false 
-       }
-}
 %}
 
 %union {
@@ -354,15 +341,15 @@ COMMAND: TOK_LINK{$$="link"} | TOK_UNLINK{$$="unlink"} | TOK_CLR{$$="clear"} | T
 //is orientation type. A special token doesn't make 
 //sense here since the user cant create or delete 
 //objects that use the orientation as name
-ORIENTATION: TOK_WORD {if checkIfOrientation($1) {$$=&strLeaf{$1}} else {println("You must provide a valid orientation");return -1} }
-       | TOK_WORD TOK_MINUS TOK_WORD {x:=$1+$2+$3;if checkIfOrientation(x) {$$=&strLeaf{x}} else {println("You must provide a valid orientation");return -1} }
-       | TOK_WORD TOK_PLUS TOK_WORD {x:=$1+$2+$3;if checkIfOrientation(x) {$$=&strLeaf{x}} else {println("You must provide a valid orientation");return -1} }
-       | TOK_PLUS TOK_WORD {x:=$1+$2;if checkIfOrientation(x) {$$=&strLeaf{x}} else {println("You must provide a valid orientation");return -1} }
-       | TOK_MINUS TOK_WORD {x:=$1+$2;if checkIfOrientation(x) {$$=&strLeaf{x}} else {println("You must provide a valid orientation");return -1} }
-       | TOK_PLUS TOK_WORD TOK_MINUS TOK_WORD {x:=$1+$2+$3+$4;if checkIfOrientation(x) {$$=&strLeaf{x}} else {println("You must provide a valid orientation");return -1} }
-       | TOK_PLUS TOK_WORD TOK_PLUS TOK_WORD  {x:=$1+$2+$3+$4;if checkIfOrientation(x) {$$=&strLeaf{x}} else {println("You must provide a valid orientation");return -1} }
-       | TOK_MINUS TOK_WORD TOK_MINUS TOK_WORD {x:=$1+$2+$3+$4;if checkIfOrientation(x) {$$=&strLeaf{x}} else {println("You must provide a valid orientation");return -1} }
-       | TOK_MINUS TOK_WORD TOK_PLUS TOK_WORD {x:=$1+$2+$3+$4;if checkIfOrientation(x) {$$=&strLeaf{x}} else {println("You must provide a valid orientation");return -1} }
+ORIENTATION: TOK_WORD {$$=&strLeaf{$1} }
+       | TOK_WORD TOK_MINUS TOK_WORD {$$=&strLeaf{$1+$2+$3}}
+       | TOK_WORD TOK_PLUS TOK_WORD {$$=&strLeaf{$1+$2+$3}}
+       | TOK_PLUS TOK_WORD {$$=&strLeaf{$1+$2}}
+       | TOK_MINUS TOK_WORD {$$=&strLeaf{$1+$2}}
+       | TOK_PLUS TOK_WORD TOK_MINUS TOK_WORD {$$=&strLeaf{$1+$2+$3+$4}}
+       | TOK_PLUS TOK_WORD TOK_PLUS TOK_WORD  {$$=&strLeaf{$1+$2+$3+$4}}
+       | TOK_MINUS TOK_WORD TOK_MINUS TOK_WORD {$$=&strLeaf{$1+$2+$3+$4}}
+       | TOK_MINUS TOK_WORD TOK_PLUS TOK_WORD {$$=&strLeaf{$1+$2+$3+$4}}
 
 OCCR:   
         TOK_TENANT TOK_COL PHYSICAL_PATH TOK_ATTRSPEC EXPR_NOQUOTE {
