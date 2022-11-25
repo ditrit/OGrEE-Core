@@ -54,6 +54,7 @@ type ShellState struct {
 	FilterDisplay    bool  //Set whether or not to send attributes to unity
 	Analyser         bool  //Use static analysis before executing scripts
 	ObjsForUnity     []int //Deciding what objects should be sent to unity
+	DrawThreshold    int   //Number of objects to be sent at a time to unity
 	DrawableObjs     []int //Indicate which objs drawable in unity
 	DrawableJsons    map[string]map[string]interface{}
 	DebugLvl         int
@@ -124,7 +125,7 @@ func SearchAndInsert(root **Node, node *Node, path string) {
 	}
 }
 
-//Function for debugging purposes
+// Function for debugging purposes
 func View(root *Node, dt int) {
 	if dt != 7 || root != nil {
 		arr := (*root).Nodes
@@ -147,8 +148,8 @@ func getNextInPath(name string, root *Node) *Node {
 	return nil
 }
 
-//Replaces DispAtLevel since we are no longer
-//storing objects in a tree and returns string arr
+// Replaces DispAtLevel since we are no longer
+// storing objects in a tree and returns string arr
 func FetchNodesAtLevel(Path string) []string {
 	names := []string{}
 	urls := []string{}
@@ -217,8 +218,8 @@ func FetchNodesAtLevel(Path string) []string {
 	return names
 }
 
-//Same as FetchNodesAtLevel but returns the JSONs
-//in map[string]inf{} format
+// Same as FetchNodesAtLevel but returns the JSONs
+// in map[string]inf{} format
 func FetchJsonNodesAtLevel(Path string) []map[string]interface{} {
 	objects := []map[string]interface{}{}
 	urls := []string{}
@@ -303,8 +304,8 @@ func FetchJsonNodesAtLevel(Path string) []map[string]interface{} {
 	return objects
 }
 
-//If the path refers to local tree the
-//func will still verify it with local tree
+// If the path refers to local tree the
+// func will still verify it with local tree
 func CheckPathOnline(Path string) (bool, string) {
 
 	pathSplit := strings.Split(path.Clean(Path), "/")
@@ -334,8 +335,8 @@ func CheckPathOnline(Path string) (bool, string) {
 	return false, ""
 }
 
-//Return extra bool so that the Parent can delete
-//leaf and keep track without stack
+// Return extra bool so that the Parent can delete
+// leaf and keep track without stack
 func DeleteNodeInTree(root **Node, ID string, ent int) (bool, bool) {
 	if root == nil {
 		return false, false
@@ -383,10 +384,10 @@ func FindNodeInTree(root **Node, path *Stack, silenced bool) **Node {
 	}
 }
 
-//Same thing as FindNodeInTree but instead we return the root if the
-//desired node was not found
-//NOTE: This func still returns nil and so a small 'hack' was
-//implemented in the caller to avoid this
+// Same thing as FindNodeInTree but instead we return the root if the
+// desired node was not found
+// NOTE: This func still returns nil and so a small 'hack' was
+// implemented in the caller to avoid this
 func FindNearestNodeInTree(root **Node, path *Stack, silenced bool) **Node {
 	if root == nil {
 		return nil
@@ -546,7 +547,7 @@ func NodesAtLevel(root **Node, x Stack) []string {
 	return nil
 }
 
-//Utility function used by FetchJsonNodes
+// Utility function used by FetchJsonNodes
 func strArrToMapStrInfArr(x []string) []map[string]interface{} {
 	ans := []map[string]interface{}{}
 	for i := range x {
@@ -555,8 +556,8 @@ func strArrToMapStrInfArr(x []string) []map[string]interface{} {
 	return ans
 }
 
-//Provides a mapping for stray
-//and normal objects
+// Provides a mapping for stray
+// and normal objects
 func MapStrayString(x string) string {
 	if x == "device" {
 		return "stray-device"
@@ -591,7 +592,7 @@ func MapStrayInt(x int) int {
 	return -1
 }
 
-//New Tree funcs here
+// New Tree funcs here
 func StrayWalk(root **Node, prefix string, depth int) {
 
 	if depth > 0 {

@@ -878,8 +878,9 @@ func (n *treeNode) execute() (interface{}, error) {
 }
 
 type drawNode struct {
-	path  node
-	depth int
+	path     node
+	depth    int
+	argument map[string]interface{}
 }
 
 func (n *drawNode) execute() (interface{}, error) {
@@ -891,7 +892,19 @@ func (n *drawNode) execute() (interface{}, error) {
 	if !ok {
 		return nil, fmt.Errorf("Path should be a string")
 	}
-	return nil, cmd.Draw(path, n.depth)
+
+	if n.argument != nil {
+		if len(n.argument) > 1 {
+			msg := "Too many flags supplied, only -f acceptable"
+			return nil, fmt.Errorf(msg)
+		}
+		if n.argument["f"] == "n" || n.argument["f"] == "y" {
+			return nil, cmd.Draw(path, n.depth, n.argument["f"].(string))
+		}
+		msg := "Unrecognised argument, only -f and 'y' or 'n' are acceptable"
+		return nil, fmt.Errorf(msg)
+	}
+	return nil, cmd.Draw(path, n.depth, "")
 }
 
 type lsogNode struct{}
