@@ -2,7 +2,7 @@
 package main
 import (
 cmd "cli/controllers"
-"path/filepath"
+"path/filepath"      //Used by the injected code for error reporting
 l "cli/logger"
 )
 
@@ -245,6 +245,7 @@ CONCAT:  CONCAT_TERM {$$=$1}
 CONCAT_TERM_NOCOL:  TOK_DEREF TOK_LBRAC TOK_WORD TOK_RBRAC {$$=&symbolReferenceNode{$3}}
        | TOK_DEREF TOK_WORD {$$=&symbolReferenceNode{$2}}
        | TOK_WORD {$$=&strLeaf{$1}}
+       | TOK_ORIENTATION {$$=&strLeaf{$1}}
        | TOK_HEX {$$=&strLeaf{$1}}
        | TOK_STR {$$=&strLeaf{$1}}
        | TOK_SLASH {$$=&strLeaf{"/"}}
@@ -336,7 +337,19 @@ COMMAND: TOK_LINK{$$="link"} | TOK_UNLINK{$$="unlink"} | TOK_CLR{$$="clear"} | T
        | TOK_GREP {$$="grep"}
 ;
 
-ORIENTATION: TOK_ORIENTATION {$$=&strLeaf{$1}}
+//Special case here, need to check if word
+//is orientation type. A special token doesn't make 
+//sense here since the user cant create or delete 
+//objects that use the orientation as name
+ORIENTATION: TOK_WORD {$$=&strLeaf{$1} }
+       | TOK_WORD TOK_MINUS TOK_WORD {$$=&strLeaf{$1+$2+$3}}
+       | TOK_WORD TOK_PLUS TOK_WORD {$$=&strLeaf{$1+$2+$3}}
+       | TOK_PLUS TOK_WORD {$$=&strLeaf{$1+$2}}
+       | TOK_MINUS TOK_WORD {$$=&strLeaf{$1+$2}}
+       | TOK_PLUS TOK_WORD TOK_MINUS TOK_WORD {$$=&strLeaf{$1+$2+$3+$4}}
+       | TOK_PLUS TOK_WORD TOK_PLUS TOK_WORD  {$$=&strLeaf{$1+$2+$3+$4}}
+       | TOK_MINUS TOK_WORD TOK_MINUS TOK_WORD {$$=&strLeaf{$1+$2+$3+$4}}
+       | TOK_MINUS TOK_WORD TOK_PLUS TOK_WORD {$$=&strLeaf{$1+$2+$3+$4}}
 
 OCCR:   
         TOK_TENANT TOK_COL PHYSICAL_PATH TOK_ATTRSPEC EXPR_NOQUOTE {

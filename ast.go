@@ -1080,6 +1080,24 @@ func (n *getOCAttrNode) execute() (interface{}, error) {
 		}
 		attributes["attributes"].(map[string]interface{})["color"] = color
 	}
+	if n.ent == cmd.SITE {
+		//Check for valid orientation
+		orientation := attributes["attributes"].(map[string]interface{})["orientation"].(string)
+		if checkIfOrientation(orientation) == false {
+			msg := "You must provide a valid orientation"
+			return nil, fmt.Errorf(msg)
+		}
+	}
+	if n.ent == cmd.ROOM {
+		//Ensure orientation is valid if present
+		orientation := attributes["attributes"].(map[string]interface{})["orientation"]
+		if orientation != nil {
+			if checkIfOrientation(orientation.(string)) == false {
+				msg := "You must provide a valid orientation"
+				return nil, fmt.Errorf(msg)
+			}
+		}
+	}
 	err = cmd.GetOCLIAtrributes(path, n.ent, attributes)
 	if err != nil {
 		return nil, err

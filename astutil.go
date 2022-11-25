@@ -33,6 +33,19 @@ func checkTypeAreNumeric(x, y interface{}) bool {
 	return xOK && yOK
 }
 
+func checkIfOrientation(x string) bool {
+	switch x {
+	case "EN", "NW", "WS", "SE", "NE", "SW",
+		"-E-N", "-E+N", "+E-N", "+E+N", "+N+E",
+		"-N-W", "-N+W", "+N-W", "+N+W",
+		"-W-S", "-W+S", "+W-S", "+W+S",
+		"-S-E", "-S+E", "+S-E", "+S+E":
+		return true
+	default:
+		return false
+	}
+}
+
 var floatType = reflect.TypeOf(float64(0))
 
 func getFloat(unk interface{}) (float64, error) {

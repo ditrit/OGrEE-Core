@@ -112,7 +112,6 @@
 /drawable/ { printToks("TOK_DRAW"); return TOK_DRAWABLE}
 /draw/ { printToks("TOK_DRAW"); return TOK_DRAW}
 /"[^"]*"/ {printToks("TOK_STR"); lval.s = yylex.Text()[1:len(yylex.Text())-1]; return TOK_STR}
-/[\+\-]?[NSEW][\+\-]?[NSEW]/ {printToks("TOK_ORIENTATION"); lval.s = yylex.Text(); printCapturedWord(lval.s); return TOK_ORIENTATION}
 /[A-Za-z0-9_][A-Za-z0-9_\-]*/ { printToks("TOK_WORD"); lval.s = yylex.Text(); printCapturedWord(lval.s); return TOK_WORD}
 //
 package main
