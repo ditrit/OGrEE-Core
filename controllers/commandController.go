@@ -2241,8 +2241,10 @@ func objectCounter(parent *map[string]interface{}) int {
 }
 
 // Unity UI will draw already existing objects
-// by retrieving the hierarchy
-func Draw(x string, depth int) error {
+// by retrieving the hierarchy. 'force' bool is useful
+// for scripting where the user can 'force' input if
+// the num objects to draw surpasses threshold
+func Draw(x string, depth int, force string) error {
 	obj, _ := GetObject(x, true)
 	if obj == nil {
 		return fmt.Errorf("object not found")
@@ -2260,7 +2262,7 @@ func Draw(x string, depth int) error {
 		count := objectCounter(&obj)
 		if State.UnityClientAvail {
 			okToGo := true
-			if count > State.DrawThreshold {
+			if count > State.DrawThreshold && force == "" {
 				msg := "You are about to send " + strconv.Itoa(count) +
 					" objects to the Unity 3D client. " +
 					"Do you want to continue ? (y/n)\n"
@@ -2270,6 +2272,10 @@ func Draw(x string, depth int) error {
 				if ans != "y" && ans != "Y" {
 					okToGo = false
 				}
+			} else if force == "y" {
+				okToGo = true
+			} else if force == "n" && count > State.DrawThreshold {
+				okToGo = false
 			}
 			if okToGo {
 				data := map[string]interface{}{"type": "create", "data": obj}

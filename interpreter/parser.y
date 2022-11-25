@@ -103,9 +103,14 @@ stmnt:   TOK_GET PATH {$$=&getObjectNode{$2}}
        | TOK_GETU PATH TOK_INT {$$=&getUNode{$2, &intLeaf{$3}}}
        | TOK_GETSLOT PATH TOK_COMMA EXPR_NOQUOTE {$$=&getUNode{$2, $4}}
 
-       | TOK_DRAW PATH {$$=&drawNode{$2, 0}}
-       | TOK_DRAW PATH TOK_INT {$$=&drawNode{$2, $3}}
-       | TOK_DRAW {$$=&drawNode{&pathNode{&strLeaf{"."}, STD}, 0}}
+       | TOK_DRAW PATH {$$=&drawNode{$2, 0,nil}}
+       | TOK_DRAW PATH TOK_INT {$$=&drawNode{$2, $3,nil}}
+       | TOK_DRAW {$$=&drawNode{&pathNode{&strLeaf{"."}, STD}, 0,nil}}
+
+       | TOK_DRAW PATH ARGACC {$$=&drawNode{$2, 0,$3}}
+       | TOK_DRAW PATH TOK_INT ARGACC {$$=&drawNode{$2, $3,$4}}
+       | TOK_DRAW ARGACC {$$=&drawNode{&pathNode{&strLeaf{"."}, STD}, 0,$2}}
+       
        | TOK_HIERARCH {$$=&hierarchyNode{&pathNode{&strLeaf{"."}, STD}, 1}}
        | TOK_HIERARCH PATH {$$=&hierarchyNode{$2, 1}}
        | TOK_HIERARCH PATH TOK_INT {$$=&hierarchyNode{$2, $3}}
