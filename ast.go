@@ -518,8 +518,8 @@ func (n *updateObjNode) execute() (interface{}, error) {
 
 		invalidVals := []string{"separator", "areas"}
 		if AssertInStringValues(i, invalidVals) {
-			msg := "This is invalid syntax you must specify" +
-				" 2 arrays separated by '@'"
+			msg := "You must specify" +
+				" 2 arrays (and for separator commands, the type) separated by '@' "
 			return nil, fmt.Errorf(msg)
 		}
 
@@ -549,6 +549,7 @@ type specialUpdateNode struct {
 	variable string
 	first    node
 	second   node
+	sepType  string
 }
 
 func (n *specialUpdateNode) execute() (interface{}, error) {
@@ -566,6 +567,9 @@ func (n *specialUpdateNode) execute() (interface{}, error) {
 		return nil, err
 	}
 	if n.variable == "areas" {
+		if n.sepType != "" {
+			return nil, fmt.Errorf("Unrecognised argument. Only 2 arrays can be specified")
+		}
 		areas := map[string]interface{}{"reserved": first, "technical": second}
 		attributes, e := parseAreas(areas)
 		if e != nil {
@@ -589,6 +593,13 @@ func (n *specialUpdateNode) execute() (interface{}, error) {
 				"using this syntax"
 
 			return nil, fmt.Errorf(errorMsg + segment)
+		}
+
+		sepType := strings.ToLower(n.sepType)
+		if sepType != "wireframe" && sepType != "plain" {
+			msg := "Separator type must be specified " +
+				"and can only be 'wireframe' or 'plain'"
+			return nil, fmt.Errorf(msg)
 		}
 
 		if !IsInfArr(first) {
@@ -627,14 +638,14 @@ func (n *specialUpdateNode) execute() (interface{}, error) {
 		if IsInfArr(separators) {
 			sepArray = separators.([]interface{})
 			sepArray = append(sepArray, map[string]interface{}{
-				"startPosXYm": first, "endPosXYm": second})
+				"startPosXYm": first, "endPosXYm": second, "type": sepType})
 
 			sepArrStr, _ := json.Marshal(&sepArray)
 			attr["separators"] = string(sepArrStr)
 		} else {
 			var sepStr string
 			nextSep := map[string]interface{}{
-				"startPosXYm": first, "endPosXYm": second}
+				"startPosXYm": first, "endPosXYm": second, "type": sepType}
 
 			nextSepStr, _ := json.Marshal(nextSep)
 			if IsString(separators) && separators != "" && separators != "[]" {
