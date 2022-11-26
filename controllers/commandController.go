@@ -2755,8 +2755,11 @@ func InformUnity(caller string, entity int, data map[string]interface{}) error {
 		if entity > -1 && entity < SENSOR+1 {
 			data = GenerateFilteredJson(data)
 		}
-		println("DEBUG VIEW THE JSON")
-		Disp(data)
+		if State.DebugLvl > 3 {
+			println("DEBUG VIEW THE JSON")
+			Disp(data)
+		}
+
 		e := models.ContactUnity(data, State.DebugLvl)
 		if e != nil {
 			l.GetWarningLogger().Println("Unable to contact Unity Client @" + caller)
