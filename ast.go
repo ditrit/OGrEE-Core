@@ -918,6 +918,21 @@ func (n *drawNode) execute() (interface{}, error) {
 	return nil, cmd.Draw(path, n.depth, "")
 }
 
+type undrawNode struct {
+	path node
+}
+
+func (n *undrawNode) execute() (interface{}, error) {
+	if n.path == nil {
+		return nil, cmd.Undraw("")
+	}
+	path, e := AssertString(&(n.path), "Path")
+	if e != nil {
+		return nil, e
+	}
+	return nil, cmd.Undraw(path)
+}
+
 type lsogNode struct{}
 
 func (n *lsogNode) execute() (interface{}, error) {

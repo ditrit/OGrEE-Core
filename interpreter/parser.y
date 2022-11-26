@@ -51,7 +51,7 @@ var _ = l.GetInfoLogger() //Suppresses annoying Dockerfile build error
        TOK_UNSET TOK_ELIF TOK_DO TOK_LEN
        TOK_USE_JSON TOK_LINK TOK_UNLINK
        TOK_HIERARCH TOK_DRAWABLE TOK_ENV TOK_ORPH
-       TOK_DRAW TOK_TRUE TOK_FALSE
+       TOK_DRAW TOK_UNDRAW TOK_TRUE TOK_FALSE
        TOK_CAM_MOVE TOK_CAM_WAIT TOK_CAM_TRANSLATE TOK_CAM
        TOK_DOT TOK_SHARP
        TOK_UI_DELAY TOK_UI_WIREFRAME TOK_UI_INFOS TOK_UI_DEBUG TOK_UI_HIGHLIGHT TOK_UI
@@ -103,14 +103,16 @@ stmnt:   TOK_GET PATH {$$=&getObjectNode{$2}}
        | TOK_GETU PATH TOK_INT {$$=&getUNode{$2, &intLeaf{$3}}}
        | TOK_GETSLOT PATH TOK_COMMA EXPR_NOQUOTE {$$=&getUNode{$2, $4}}
 
-       | TOK_DRAW PATH {$$=&drawNode{$2, 0,nil}}
-       | TOK_DRAW PATH TOK_INT {$$=&drawNode{$2, $3,nil}}
-       | TOK_DRAW {$$=&drawNode{&pathNode{&strLeaf{"."}, STD}, 0,nil}}
-
        | TOK_DRAW PATH ARGACC {$$=&drawNode{$2, 0,$3}}
        | TOK_DRAW PATH TOK_INT ARGACC {$$=&drawNode{$2, $3,$4}}
        | TOK_DRAW ARGACC {$$=&drawNode{&pathNode{&strLeaf{"."}, STD}, 0,$2}}
        
+       | TOK_UNDRAW {$$=&undrawNode{nil}}
+       | TOK_UNDRAW PATH {$$=&undrawNode{$2}}
+
+       | TOK_DRAW PATH {$$=&drawNode{$2, 0,nil}}
+       | TOK_DRAW PATH TOK_INT {$$=&drawNode{$2, $3,nil}}
+       | TOK_DRAW {$$=&drawNode{&pathNode{&strLeaf{"."}, STD}, 0,nil}}
        | TOK_HIERARCH {$$=&hierarchyNode{&pathNode{&strLeaf{"."}, STD}, 1}}
        | TOK_HIERARCH PATH {$$=&hierarchyNode{$2, 1}}
        | TOK_HIERARCH PATH TOK_INT {$$=&hierarchyNode{$2, $3}}
@@ -340,7 +342,7 @@ COMMAND: TOK_LINK{$$="link"} | TOK_UNLINK{$$="unlink"} | TOK_CLR{$$="clear"} | T
        | TOK_CMDS{$$=".cmds"} | TOK_VAR{$$=".var"} | TOK_PLUS{$$="+"} | TOK_EQUAL{$$="="} 
        | TOK_GREATER{$$=">"} | TOK_DRAWABLE{$$="drawable"}
        | TOK_GETU{$$="getu"} | TOK_GETSLOT{$$="getslot"}
-       | TOK_GREP {$$="grep"}
+       | TOK_GREP {$$="grep"} | TOK_UNDRAW {$$="undraw"}
 ;
 
 //Special case here, need to check if word

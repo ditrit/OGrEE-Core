@@ -981,7 +981,7 @@ func Help(entry string) {
 	case "ls", "pwd", "print", "cd", "tree", "create", "get", "clear",
 		"update", "delete", "lsog", "grep", "for", "while", "if", "env",
 		"cmds", "var", "unset", "select", "camera", "ui", "hc", "drawable",
-		"link", "unlink", "draw", "getu", "getslot",
+		"link", "unlink", "draw", "getu", "getslot", "undraw",
 		"lsenterprise":
 		path = "./other/man/" + entry + ".md"
 
@@ -2288,6 +2288,29 @@ func Draw(x string, depth int, force string) error {
 		}
 
 	}
+	return nil
+}
+
+// Unity UI will draw already existing objects
+// by retrieving the hierarchy
+func Undraw(x string) error {
+	var id string
+	if x == "" {
+		id = ""
+	} else {
+		obj, _ := GetObject(x, true)
+		if obj == nil {
+			return fmt.Errorf("object not found")
+		}
+		id = obj["id"].(string)
+	}
+
+	data := map[string]interface{}{"type": "delete", "data": id}
+	unityErr := InformUnity("Undraw", 0, data)
+	if unityErr != nil {
+		return unityErr
+	}
+
 	return nil
 }
 
