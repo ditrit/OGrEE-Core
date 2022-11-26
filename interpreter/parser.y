@@ -132,7 +132,8 @@ stmnt:   TOK_GET PATH {$$=&getObjectNode{$2}}
 
        // UPDATE / INTERACT
        | PHYSICAL_PATH TOK_COL TOK_WORD TOK_EQUAL TOK_SHARP EXPR_NOQUOTE {$$=&updateObjNode{$1, map[string]interface{}{$3:$6},true}}
-       | PHYSICAL_PATH TOK_COL TOK_WORD TOK_EQUAL EXPR_NOQUOTE TOK_ATTRSPEC EXPR_NOQUOTE {$$=&specialUpdateNode{$1, $3, $5, $7}}
+       | PHYSICAL_PATH TOK_COL TOK_WORD TOK_EQUAL EXPR_NOQUOTE TOK_ATTRSPEC EXPR_NOQUOTE {$$=&specialUpdateNode{$1, $3, $5, $7,""}}
+       | PHYSICAL_PATH TOK_COL TOK_WORD TOK_EQUAL EXPR_NOQUOTE TOK_ATTRSPEC EXPR_NOQUOTE TOK_ATTRSPEC TOK_WORD {$$=&specialUpdateNode{$1, $3, $5, $7,$9}}
        | PHYSICAL_PATH TOK_COL TOK_WORD TOK_EQUAL EXPR_NOQUOTE {
               /*Hack Case: we need to change the mode of the Path Node*/;
               ($1).(*pathNode).mode = STD;
