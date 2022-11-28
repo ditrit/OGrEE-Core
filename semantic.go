@@ -90,10 +90,16 @@ func AssertColor(color interface{}) (string, bool) {
 
 		if IsInt(color) {
 			colorStr = strconv.Itoa(color.(int))
+			for len(colorStr) < 6 {
+				colorStr = "0" + colorStr
+			}
 		}
 
 		if IsFloat(color) {
 			colorStr = strconv.FormatFloat(color.(float64), 'f', -1, 64)
+			for len(colorStr) < 6 {
+				colorStr = "0" + colorStr
+			}
 		}
 
 		if len(colorStr) != 6 {
