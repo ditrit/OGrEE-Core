@@ -749,15 +749,33 @@ func (n *lsObjNode) execute() (interface{}, error) {
 			return objs, nil
 
 		} else if _, ok := args["f"]; ok {
-			if !IsString(args["f"]) {
-				msg := "Please provide a quote enclosed" +
-					" string for '-f' with arguments separated by ':'"
-				return nil, fmt.Errorf(msg)
+			if !IsString(args["f"]) && !IsMapStrInf(args["f"]) {
+				msg := "Please provide a quote enclosed string for '-f' with arguments separated by ':'. Or provide an argument with printf formatting (ie -f (\"%d\",arg1))"
+				return nil,
+					fmt.Errorf(msg)
 			}
-			arr := strings.Split(args["f"].(string), ":")
+			if IsString(args["f"]) {
+				arr := strings.Split(args["f"].(string), ":")
 
-			objs := cmd.LSOBJECT(path, n.entity, true)
-			cmd.DispWithAttrs(&objs, &arr)
+				objs := cmd.LSOBJECT(path, n.entity, true)
+				cmd.DispWithAttrs(&objs, &arr)
+			}
+
+			if IsMapStrInf(args["f"]) {
+				var format string
+				var arr []string
+
+				//There is only 1 key in the map
+				for i := range args["f"].(map[string]interface{}) {
+					format = i
+				}
+
+				arr = args["f"].(map[string]interface{})[format].([]string)
+				objs := cmd.LSOBJECT(path, n.entity, true)
+				cmd.DispfWithAttrs(format, &objs, &arr)
+
+			}
+
 			return nil, nil
 
 		} else {
@@ -785,8 +803,6 @@ func (n *lsObjNode) execute() (interface{}, error) {
 			objs = cmd.LSOBJECT(path, n.entity, true)
 		}
 
-		//path, n.entity, true
-
 		if _, ok := args["s"]; ok {
 			if IsString(args["s"]) {
 				sorted := cmd.SortObjects(&objs, args["s"].(string))
@@ -804,21 +820,33 @@ func (n *lsObjNode) execute() (interface{}, error) {
 
 		}
 
-		//Else '-f'
-		if !IsString(args["f"]) {
-			msg := "Please provide a quote enclosed" +
-				" string for '-f' with arguments separated by ':'"
-			return nil, fmt.Errorf(msg)
-		}
-		attrs := strings.Split(args["f"].(string), ":")
+		if IsString(args["f"]) {
+			attrs := strings.Split(args["f"].(string), ":")
 
-		//We want to display the attribute used for sorting
-		if !IsAmongValues(args["s"], &attrs) && args["s"] != nil {
-			attrs = append([]string{args["s"].(string)}, attrs...)
+			//We want to display the attribute used for sorting
+			if !IsAmongValues(args["s"], &attrs) && args["s"] != nil {
+				attrs = append([]string{args["s"].(string)}, attrs...)
+			}
+
+			cmd.DispWithAttrs(&objs, &attrs)
+			return objs, nil
 		}
 
-		cmd.DispWithAttrs(&objs, &attrs)
-		return objs, nil
+		if IsMapStrInf(args["f"]) {
+			var format string
+			var arr []string
+
+			//There is only 1 key in the map
+			for i := range args["f"].(map[string]interface{}) {
+				format = i
+			}
+
+			arr = args["f"].(map[string]interface{})[format].([]string)
+			cmd.DispfWithAttrs(format, &objs, &arr)
+			return objs, nil
+		}
+		msg := "Please provide a quote enclosed string for '-f' with arguments separated by ':'. Or with printf formatting and attributes"
+		return nil, fmt.Errorf(msg)
 
 	case 3:
 		for i := range args {
@@ -843,24 +871,41 @@ func (n *lsObjNode) execute() (interface{}, error) {
 			return nil, fmt.Errorf(msg)
 		}
 
-		if !IsString(args["f"]) {
-			msg := "Please provide a quote enclosed" +
-				" string for '-f' with arguments separated by ':'"
-			return nil, fmt.Errorf(msg)
+		if IsString(args["f"]) {
+			attrs := strings.Split(args["f"].(string), ":")
+
+			objs := cmd.LSOBJECTRecursive(path, n.entity, true)
+
+			sorted := cmd.SortObjects(&objs, args["s"].(string)).GetData()
+
+			//We want to display the attribute used for sorting
+			if !IsAmongValues(args["s"], &attrs) {
+				attrs = append([]string{args["s"].(string)}, attrs...)
+			}
+
+			cmd.DispWithAttrs(&sorted, &attrs)
+			return sorted, nil
 		}
-		attrs := strings.Split(args["f"].(string), ":")
 
-		objs := cmd.LSOBJECTRecursive(path, n.entity, true)
+		if IsMapStrInf(args["f"]) {
+			var format string
+			var arr []string
 
-		sorted := cmd.SortObjects(&objs, args["s"].(string)).GetData()
+			objs := cmd.LSOBJECTRecursive(path, n.entity, true)
+			sorted := cmd.SortObjects(&objs, args["s"].(string)).GetData()
 
-		//We want to display the attribute used for sorting
-		if !IsAmongValues(args["s"], &attrs) {
-			attrs = append([]string{args["s"].(string)}, attrs...)
+			//There is only 1 key in the map
+			for i := range args["f"].(map[string]interface{}) {
+				format = i
+			}
+
+			arr = args["f"].(map[string]interface{})[format].([]string)
+			cmd.DispfWithAttrs(format, &sorted, &arr)
+			return sorted, nil
 		}
 
-		cmd.DispWithAttrs(&sorted, &attrs)
-		return objs, nil
+		msg := "Please provide a quote enclosed string for '-f' with arguments separated by ':'. Or with printf formatting and attributes"
+		return nil, fmt.Errorf(msg)
 
 	default:
 		//Return err

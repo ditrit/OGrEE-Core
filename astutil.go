@@ -181,6 +181,11 @@ func resMap(x map[string]interface{}, ent string, isUpdate bool) (map[string]int
 	return res, nil
 }
 
+func IsMapStrInf(x interface{}) bool {
+	_, ok := x.(map[string]interface{})
+	return ok
+}
+
 func IsInfArr(x interface{}) bool {
 	_, ok := x.([]interface{})
 	return ok
