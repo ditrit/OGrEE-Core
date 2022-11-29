@@ -1169,6 +1169,13 @@ func GetHierarchy(x string, depth int, silence bool) []map[string]interface{} {
 	var URL, ext, depthStr string
 	var ans []map[string]interface{}
 
+	if FindNodeInTree(&State.TreeHierarchy, StrToStack(x), true) != nil {
+		if State.DebugLvl > 0 {
+			println("This function can only be invoked on an object")
+		}
+		return nil
+	}
+
 	//Get object first
 	obj, e := GetObject(x, true)
 	if obj == nil {
