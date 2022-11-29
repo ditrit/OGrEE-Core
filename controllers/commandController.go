@@ -3,6 +3,7 @@ package controllers
 import (
 	l "cli/logger"
 	"cli/models"
+	"encoding/hex"
 	"encoding/json"
 	"fmt"
 	"log"
@@ -472,6 +473,58 @@ func UpdateObj(Path, id, ent string, data map[string]interface{}, deleteAndPut b
 						}
 					}
 
+				}
+
+				if i == "usableColor" || i == "reservedColor" ||
+					i == "technicalColor" {
+					category := EntityStrToInt(objJSON["category"].(string))
+					if category == SITE {
+						//Same function as AssertColor in semantic.go
+						var colorStr string
+						switch data[i].(type) {
+						case string, int, float64, float32:
+							if _, ok := data[i].(string); ok {
+								colorStr = data[i].(string)
+							}
+
+							if _, ok := data[i].(int); ok {
+								colorStr = strconv.Itoa(data[i].(int))
+							}
+
+							if _, ok := data[i].(float32); ok {
+								colorStr = strconv.FormatFloat(data[i].(float64), 'f', -1, 64)
+							}
+
+							if _, ok := data[i].(float64); ok {
+								colorStr = strconv.FormatFloat(data[i].(float64), 'f', -1, 64)
+							}
+
+							for len(colorStr) < 6 {
+								colorStr = "0" + colorStr
+							}
+
+							if len(colorStr) != 6 {
+								msg := "Please provide a valid 6 length hex value for the color"
+								return nil, fmt.Errorf(msg)
+							}
+
+							//Eliminate 'odd length' errors
+							if len(colorStr)%2 != 0 {
+								colorStr = "0" + colorStr
+							}
+
+							_, err := hex.DecodeString(colorStr)
+							if err != nil {
+								msg := "Please provide a valid 6 length hex value for the color"
+								return nil, fmt.Errorf(msg)
+							}
+
+						default:
+							msg := "Please provide a valid 6 length hex value for the color"
+							return nil, fmt.Errorf(msg)
+						}
+						data[i] = colorStr
+					}
 				}
 			}
 
