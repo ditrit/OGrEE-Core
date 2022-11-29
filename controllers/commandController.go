@@ -1085,23 +1085,6 @@ func displayObject(obj map[string]interface{}) {
 	}
 }
 
-// TODO Check if Stale function
-func printAttributeOptions() {
-	attrArr := []string{"address", "category", "city", "color",
-		"country", "description", "domain", "gps", "height",
-		"heightUnit", "id", "mainContact", "mainEmail", "mainPhone",
-		"model", "name", "nbFloors", "orientation", "parentId", "posU",
-		"posXY", "posXYUnit", "posZ", "posZUnit", "reserved", "reservedColor",
-		"serial", "size", "sizeU", "sizeUnit", "slot", "technical",
-		"technicalColor", "template", "token", "type", "usableColor",
-		"vendor", "zipcode"}
-	fmt.Println("Attributes: ")
-	//fmt.Println("")
-	for i := range attrArr {
-		fmt.Println("", attrArr[i])
-	}
-}
-
 // Function is an abstraction of a normal exit
 func Exit() {
 	//writeHistoryOnExit(&State.sessionBuffer)
