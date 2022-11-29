@@ -111,6 +111,7 @@
 /man/ { printToks("TOK_DOC"); return TOK_DOC}
 /drawable/ { printToks("TOK_DRAW"); return TOK_DRAWABLE}
 /draw/ { printToks("TOK_DRAW"); return TOK_DRAW}
+/undraw/ { printToks("TOK_UNDRAW"); return TOK_UNDRAW}
 /"[^"]*"/ {printToks("TOK_STR"); lval.s = yylex.Text()[1:len(yylex.Text())-1]; return TOK_STR}
 /[A-Za-z0-9_][A-Za-z0-9_\-]*/ { printToks("TOK_WORD"); lval.s = yylex.Text(); printCapturedWord(lval.s); return TOK_WORD}
 //
