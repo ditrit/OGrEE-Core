@@ -81,7 +81,6 @@
 /room_template/ {  printToks("TOK_ROOM_TMPL");lval.s = yylex.Text();return TOK_ROOM_TMPL}
 /obj_template/ {  printToks("TOK_OBJ_TMPL");lval.s = yylex.Text();return TOK_OBJ_TMPL}
 
-/0[0-9A-Fa-f]+/ { printToks("TOK_HEX"); lval.s = yylex.Text(); printCapturedWord(lval.s); return TOK_HEX}
 /([0-9][0-9 ]*)/ {  printToks("TOK_INT");lval.n = atoi(yylex.Text()); return TOK_INT}
 /[0-9]+\.[0-9]+/ { printToks("TOK_FLOAT");lval.f, _ = strconv.ParseFloat((yylex.Text()), 64); return TOK_FLOAT }
 /lsten/ {  printToks("TOK_LSTEN"); return TOK_LSTEN}

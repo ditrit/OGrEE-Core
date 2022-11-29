@@ -96,6 +96,10 @@ func AssertColor(color interface{}) (string, bool) {
 			colorStr = strconv.FormatFloat(color.(float64), 'f', -1, 64)
 		}
 
+		for len(colorStr) < 6 {
+			colorStr = "0" + colorStr
+		}
+
 		if len(colorStr) != 6 {
 			return "", false
 		}

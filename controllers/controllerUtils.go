@@ -46,6 +46,39 @@ func DispWithAttrs(objs *[]interface{}, attrs *[]string) {
 	}
 }
 
+func DispfWithAttrs(formatx string, objs *[]interface{}, attrs *[]string) {
+	//Convert user input format to workable format
+	//input for Printf
+	var format string
+	formatx = `"` + formatx + `"`
+	_, e := fmt.Sscanf(formatx, "%q", &format)
+	if e != nil {
+		println(e.Error())
+		return
+	}
+
+	for _, objInf := range *objs {
+		if obj, ok := objInf.(map[string]interface{}); ok {
+			var argument []interface{}
+			//var printer string
+			for _, a := range *attrs {
+				//Check if attr is in object
+				if ok, nested := AttrIsInObj(obj, a); ok {
+					if nested {
+						argument = append(argument, obj["attributes"].(map[string]interface{})[a])
+					} else {
+						argument = append(argument, obj[a])
+					}
+				} else {
+					argument = append(argument, nil)
+				}
+			}
+			fmt.Printf(format, argument...)
+			fmt.Printf("\tName:%s\n", obj["name"].(string))
+		}
+	}
+}
+
 // Returns true/false if exists and true/false if attr
 // is in "attributes" maps
 func AttrIsInObj(obj map[string]interface{}, attr string) (bool, bool) {
