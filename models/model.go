@@ -33,8 +33,8 @@ const (
 	STRAYSENSOR
 )
 
-//Function will recursively iterate through nested obj
-//and accumulate whatever is found into category arrays
+// Function will recursively iterate through nested obj
+// and accumulate whatever is found into category arrays
 func parseDataForNonStdResult(ent string, eNum, end int, data map[string]interface{}) map[string][]map[string]interface{} {
 	var nxt string
 	ans := map[string][]map[string]interface{}{}
@@ -75,6 +75,11 @@ func CreateEntity(entity int, t map[string]interface{}) (map[string]interface{},
 	entStr := u.EntityToString(entity)
 	res, e := GetDB().Collection(entStr).InsertOne(ctx, t)
 	if e != nil {
+		if strings.Contains(e.Error(), "E11000") {
+			return u.Message(false,
+					"Error while creating "+entStr+": Duplicates not allowed"),
+				"duplicate"
+		}
 		return u.Message(false,
 				"Internal error while creating "+entStr+": "+e.Error()),
 			e.Error()
