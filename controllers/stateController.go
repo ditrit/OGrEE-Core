@@ -616,7 +616,8 @@ func StrayWalk(root **Node, prefix string, depth int) {
 					State.APIURL+"/api/stray-devices", GetKey(), nil)
 				resp := ParseResponse(r, e, "fetch objects")
 				if resp != nil {
-					RemoteGetAllWalk(resp["data"].(map[string]interface{}), prefix)
+					//RemoteGetAllWalk(resp["data"].(map[string]interface{}), prefix)
+					RemoteGetAllWalkFiltered(resp["data"].(map[string]interface{}), prefix)
 				}
 			case "Sensor":
 				//Get Stray Sensors and print them
@@ -701,6 +702,48 @@ func OrganisationWalk(root **Node, prefix string, depth int) {
 
 	if root != nil {
 		if depth >= 0 {
+			if (*root).Nodes.Len() == 0 {
+				switch (*root).Name {
+				case "Domain":
+					//Do the call, filter and perform remote
+					//hierarchy walk
+					//Get All Domains and print them
+					r, e := models.Send("GET",
+						State.APIURL+"/api/domains", GetKey(), nil)
+					resp := ParseResponse(r, e, "fetching objects")
+					if resp != nil {
+						if _, ok := resp["data"]; ok {
+							q := resp["data"].(map[string]interface{})
+							Filter(q, depth)
+							//println("DEBUG SHOULD BE HERE")
+							//println(len(q["objects"].([]interface{})))
+							length := len(q["objects"].([]interface{}))
+							for i, obj := range q["objects"].([]interface{}) {
+								m := obj.(map[string]interface{})
+								subname := m["name"].(string)
+
+								if i == length-1 {
+									fmt.Println(prefix+"└──", subname)
+									RemoteHierarchyWalk(m, prefix+"    ", depth-1)
+								} else {
+									fmt.Println(prefix+("├──"), subname)
+									RemoteHierarchyWalk(m, prefix+"│   ", depth-1)
+								}
+
+								//RemoteHierarchyWalk(obj.(map[string]interface{}),
+								//	prefix, depth+1)
+							}
+
+						}
+
+					}
+					//RemoteGetAllWalk(resp["data"].(map[string]interface{}), prefix)
+
+				case "Enterprise":
+					//Most likely same as Domain case
+				}
+			}
+
 			for i := (*root).Nodes.Front(); i != nil; i = i.Next() {
 				if i.Next() == nil {
 					fmt.Println(prefix+"└──", (i.Value.(*Node).Name))
@@ -981,6 +1024,80 @@ func PhysicalWalk(root **Node, prefix, path string, depth int) {
 	}
 }
 
+func Filter(root map[string]interface{}, depth int) {
+	var arr []interface{}
+	var replacement []interface{}
+	if root == nil {
+		return
+	}
+
+	if _, ok := root["objects"]; !ok {
+		return
+	}
+
+	if _, ok := root["objects"].([]interface{}); !ok {
+		return
+	}
+	arr = root["objects"].([]interface{})
+	//length = len(arr)
+
+	for _, m := range arr {
+		if object, ok := m.(map[string]interface{}); ok {
+			if object["parentId"] == nil {
+				//Change m -> result of hierarchal API call
+				ext := object["id"].(string) + "/all?limit=" + strconv.Itoa(depth)
+				URL := State.APIURL + "/api/domains/" + ext
+				r, _ := models.Send("GET", URL, GetKey(), nil)
+				parsed := ParseResponse(r, nil, "Fetch Domains")
+				m = parsed["data"].(map[string]interface{})
+				replacement = append(replacement, m)
+				//Disp(m.(map[string]interface{}))
+			}
+		}
+	}
+
+	root["objects"] = replacement
+}
+
+func RemoteGetAllWalkFiltered(root map[string]interface{}, prefix string) {
+	var arr []interface{}
+	var length int
+	if root == nil {
+		return
+	}
+
+	if _, ok := root["objects"]; !ok {
+		return
+	}
+
+	if _, ok := root["objects"].([]interface{}); !ok {
+		return
+	}
+	arr = root["objects"].([]interface{})
+	length = len(arr)
+
+	for i, m := range arr {
+		if m.(map[string]interface{})["parentId"] == nil {
+			var subname string
+			if n, ok := m.(map[string]interface{})["name"].(string); ok {
+				subname = n
+			} else {
+				subname = m.(map[string]interface{})["slug"].(string)
+			}
+
+			if i == length-1 {
+				fmt.Println(prefix+"└──", subname)
+
+			} else {
+				fmt.Println(prefix+("├──"), subname)
+			}
+		} else { //Do subcall at API
+
+		}
+
+	}
+}
+
 func RemoteGetAllWalk(root map[string]interface{}, prefix string) {
 	var arr []interface{}
 	var length int
@@ -1016,6 +1133,7 @@ func RemoteGetAllWalk(root map[string]interface{}, prefix string) {
 }
 
 func RemoteHierarchyWalk(root map[string]interface{}, prefix string, depth int) {
+
 	if depth == 0 || root == nil {
 		return
 	}
