@@ -86,3 +86,12 @@ func infArrToMapStrinfArr(x []interface{}) []map[string]interface{} {
 	}
 	return ans
 }
+
+// Utility function used by FetchJsonNodes
+func strArrToMapStrInfArr(x []string) []map[string]interface{} {
+	ans := []map[string]interface{}{}
+	for i := range x {
+		ans = append(ans, map[string]interface{}{"name": x[i]})
+	}
+	return ans
+}

@@ -7,6 +7,25 @@ import (
 	"fmt"
 )
 
+const (
+	TENANT = iota
+	SITE
+	BLDG
+	ROOM
+	RACK
+	DEVICE
+	AC
+	PWRPNL
+	CABINET
+	CORIDOR
+	SENSOR
+	ROOMTMPL
+	OBJTMPL
+	GROUP
+	STRAY_DEV
+	STRAYSENSOR
+)
+
 // Display contents of []map[string]inf array
 func DispMapArr(x []map[string]interface{}) {
 	for idx := range x {
@@ -131,4 +150,113 @@ func MapStrayInt(x int) int {
 		return SENSOR
 	}
 	return -1
+}
+
+func EntityToString(entity int) string {
+	switch entity {
+	case TENANT:
+		return "tenant"
+	case SITE:
+		return "site"
+	case BLDG:
+		return "building"
+	case ROOM:
+		return "room"
+	case RACK:
+		return "rack"
+	case DEVICE:
+		return "device"
+	case AC:
+		return "ac"
+	case PWRPNL:
+		return "panel"
+	case STRAY_DEV:
+		return "stray_device"
+	case ROOMTMPL:
+		return "room_template"
+	case OBJTMPL:
+		return "obj_template"
+	case CABINET:
+		return "cabinet"
+	case GROUP:
+		return "group"
+	case CORIDOR:
+		return "corridor"
+	case SENSOR:
+		return "sensor"
+	default:
+		return "INVALID"
+	}
+}
+
+func EntityStrToInt(entity string) int {
+	switch entity {
+	case "tenant", "tn":
+		return TENANT
+	case "site", "si":
+		return SITE
+	case "building", "bldg", "bd":
+		return BLDG
+	case "room", "ro":
+		return ROOM
+	case "rack", "rk":
+		return RACK
+	case "device", "dv":
+		return DEVICE
+	case "ac":
+		return AC
+	case "panel", "pn":
+		return PWRPNL
+	case "stray_device":
+		return STRAY_DEV
+	case "room_template":
+		return ROOMTMPL
+	case "obj_template":
+		return OBJTMPL
+	case "cabinet", "cb":
+		return CABINET
+	case "group", "gr":
+		return GROUP
+	case "corridor", "co":
+		return CORIDOR
+	case "sensor", "sr":
+		return SENSOR
+	default:
+		return -1
+	}
+}
+
+func GetParentOfEntity(ent int) int {
+	switch ent {
+	case TENANT:
+		return -1
+	case SITE:
+		return ent - 1
+	case BLDG:
+		return ent - 1
+	case ROOM:
+		return ent - 1
+	case RACK:
+		return ent - 1
+	case DEVICE:
+		return ent - 1
+	case AC:
+		return ROOM
+	case PWRPNL:
+		return ROOM
+	case ROOMTMPL:
+		return -1
+	case OBJTMPL:
+		return -1
+	case CABINET:
+		return ROOM
+	case GROUP:
+		return -1
+	case CORIDOR:
+		return ROOM
+	case SENSOR:
+		return -2
+	default:
+		return -3
+	}
 }
