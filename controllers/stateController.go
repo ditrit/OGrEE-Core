@@ -749,33 +749,7 @@ func PhysicalWalk(root **Node, prefix, path string, depth int) {
 			}
 
 		} else { //Interacting with Tenants
-			//Check Depth
-			//if depth > 1 { //Get Obj Hierarchy ???
-			depthStr := strconv.Itoa(depth + 1)
-
-			//Need to convert path to URL then append /all?limit=depthStr
-			_, urls := CheckPathOnline(path)
-			r, e := models.Send("GET", urls, GetKey(), nil)
-
-			parsed := ParseResponse(r, e, "get object")
-			if parsed != nil {
-
-				obj := parsed["data"].(map[string]interface{})
-				cat := obj["category"].(string)
-				ID := obj["id"].(string)
-				URL := State.APIURL + "/api/" +
-					cat + "s/" + ID + "/all?limit=" + depthStr
-				r1, e1 := models.Send("GET", URL, GetKey(), nil)
-				parsedRoot := ParseResponse(r1, e1, "get object hierarchy")
-				if parsedRoot != nil {
-					if _, ok := parsedRoot["data"]; ok {
-						RemoteHierarchyWalk(
-							parsedRoot["data"].(map[string]interface{}),
-							prefix, depth+1)
-					}
-
-				}
-			}
+			ObjectAndHierarchWalk(path, prefix, depth)
 
 		}
 	}
@@ -814,7 +788,7 @@ func PhysicalWalk(root **Node, prefix, path string, depth int) {
 
 			if depth > 0 {
 				if _, ok := resp["data"]; ok {
-					tenants := resp["data"].(map[string]interface{})["objects"].([]interface{})
+					tenants := GetRawObjects(resp)
 
 					size := len(tenants)
 					for idx, tInf := range tenants {
@@ -918,46 +892,16 @@ func PhysicalWalk(root **Node, prefix, path string, depth int) {
 
 	if len(arr) > 3 { //Could still be Stray not sure yet
 		if arr[2] == "Stray" && len(arr) <= 4 {
-			//println("DEBUG IS THIS EDGE CASE?")
-			//strayNode := FindNodeInTree(&State.TreeHierarchy,
-			//	StrToStack("/Physical/Stray"), true)
-			//StrayWalk(strayNode, prefix, depth+1)
-			//println("DEBUG LEN ARR:", len(arr))
 			StrayAndDomain("stray-devices", prefix, depth)
 		} else {
 			//Get Object hierarchy and walk
-			depthStr := strconv.Itoa(depth + 1)
-
-			//Need to convert path to URL then append /all?limit=depthStr
-			_, urls := CheckPathOnline(path)
-			r, e := models.Send("GET", urls, GetKey(), nil)
-			//WE need to get the Object in order for us to create
-			//the correct GET /all?limit=depthStr URL
-			//we get the object category and ID in the JSON response
-
-			parsed := ParseResponse(r, e, "get object")
-			if parsed != nil {
-
-				obj := parsed["data"].(map[string]interface{})
-				cat := obj["category"].(string)
-				ID := obj["id"].(string)
-				URL := State.APIURL + "/api/" +
-					cat + "s/" + ID + "/all?limit=" + depthStr
-				r1, e1 := models.Send("GET", URL, GetKey(), nil)
-				parsedRoot := ParseResponse(r1, e1, "get object hierarchy")
-				if parsedRoot != nil {
-					if _, ok := parsedRoot["data"]; ok {
-						RemoteHierarchyWalk(
-							parsedRoot["data"].(map[string]interface{}),
-							prefix, depth+1)
-					}
-
-				}
-			}
+			ObjectAndHierarchWalk(path, prefix, depth)
 		}
 	}
 }
 
+// Helper function for TreeWalk commands, this will filter out
+// objects that a have a ParentID
 func Filter(root map[string]interface{}, depth int, ent string) {
 	var arr []interface{}
 	var replacement []interface{}
@@ -993,6 +937,40 @@ func Filter(root map[string]interface{}, depth int, ent string) {
 	root["objects"] = replacement
 }
 
+func ObjectAndHierarchWalk(path, prefix string, depth int) {
+	depthStr := strconv.Itoa(depth + 1)
+
+	//Need to convert path to URL then append /all?limit=depthStr
+	_, urls := CheckPathOnline(path)
+	r, e := models.Send("GET", urls, GetKey(), nil)
+	//WE need to get the Object in order for us to create
+	//the correct GET /all?limit=depthStr URL
+	//we get the object category and ID in the JSON response
+
+	parsed := ParseResponse(r, e, "get object")
+	if parsed != nil {
+
+		obj := parsed["data"].(map[string]interface{})
+		cat := obj["category"].(string)
+		ID := obj["id"].(string)
+		URL := State.APIURL + "/api/" +
+			cat + "s/" + ID + "/all?limit=" + depthStr
+		r1, e1 := models.Send("GET", URL, GetKey(), nil)
+		parsedRoot := ParseResponse(r1, e1, "get object hierarchy")
+		if parsedRoot != nil {
+			if _, ok := parsedRoot["data"]; ok {
+				RemoteHierarchyWalk(
+					parsedRoot["data"].(map[string]interface{}),
+					prefix, depth+1)
+			}
+
+		}
+	}
+}
+
+// Gets all objects and filters out the objs with PID and adds
+// the respective hierarchies of each object and walks them
+// (meant for walking stray and domain objs)
 func StrayAndDomain(ent, prefix string, depth int) {
 	//Do the call, filter and perform remote
 	//hierarchy walk

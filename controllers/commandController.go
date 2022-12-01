@@ -1150,36 +1150,8 @@ func tree(path string, depth int) {
 
 		if len(arr) >= 4 { //This refers to a remote path
 			//Fetch the object and objects at level then walk
-			//println("DEBUG EDGE REACHED?")
 			//Get Object hierarchy and walk
-			depthStr := strconv.Itoa(depth + 1)
-
-			//Need to convert path to URL then append /all?limit=depthStr
-			_, urls := CheckPathOnline(path)
-			r, e := models.Send("GET", urls, GetKey(), nil)
-			//WE need to get the Object in order for us to create
-			//the correct GET /all?limit=depthStr URL
-			//we get the object category and ID in the JSON response
-
-			parsed := ParseResponse(r, e, "get object")
-			if parsed != nil {
-
-				obj := parsed["data"].(map[string]interface{})
-				cat := obj["category"].(string)
-				ID := obj["id"].(string)
-				URL := State.APIURL + "/api/" +
-					cat + "s/" + ID + "/all?limit=" + depthStr
-				r1, e1 := models.Send("GET", URL, GetKey(), nil)
-				parsedRoot := ParseResponse(r1, e1, "get object hierarchy")
-				if parsedRoot != nil {
-					if _, ok := parsedRoot["data"]; ok {
-						RemoteHierarchyWalk(
-							parsedRoot["data"].(map[string]interface{}),
-							"", depth+1)
-					}
-
-				}
-			}
+			ObjectAndHierarchWalk(path, "", depth)
 			return
 		}
 
