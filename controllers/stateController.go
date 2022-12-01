@@ -702,6 +702,7 @@ func OrganisationWalk(root **Node, prefix string, depth int) {
 					StrayAndDomain("domains", prefix, depth)
 				case "Enterprise":
 					//Most likely same as Domain case
+					//TODO Will have to update this section later on
 				}
 			}
 
