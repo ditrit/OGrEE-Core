@@ -1,3 +1,4 @@
+//go:build windows
 // +build windows
 
 package readline
@@ -81,6 +82,8 @@ next:
 			target = CharPrev
 		case VK_DOWN:
 			target = CharNext
+		case VK_DELETE:
+			target = CharDelete
 		}
 		if target != 0 {
 			return r.write(buf, target)

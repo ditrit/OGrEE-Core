@@ -49,7 +49,7 @@ const (
 )
 
 const (
-	MetaBackward rune = -iota - 1
+	MetaBackward rune = 0xE000 + iota //-iota - 1
 	MetaForward
 	MetaDelete
 	MetaBackspace
