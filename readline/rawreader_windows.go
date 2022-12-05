@@ -84,6 +84,9 @@ next:
 			target = CharNext
 		case VK_DELETE:
 			target = CharDelete
+			if r.altKey {
+				target = MetaDelete
+			}
 		}
 		if target != 0 {
 			return r.write(buf, target)
