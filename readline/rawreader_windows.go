@@ -74,10 +74,10 @@ next:
 			r.ctrlKey = true
 		case VK_MENU: //alt
 			r.altKey = true
-		case VK_LEFT:
-			target = CharBackward
-		case VK_RIGHT:
-			target = CharForward
+		case VK_LEFT: //VK_LEFT = Left Arrow + CTRL
+			target = MetaBackward
+		case VK_RIGHT: //VK_RIGHT = Right Arrow + CTRL
+			target = MetaForward
 		case VK_UP:
 			target = CharPrev
 		case VK_DOWN:
