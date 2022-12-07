@@ -70,7 +70,7 @@ func DispfWithAttrs(formatx string, objs *[]interface{}, attrs *[]string) {
 						argument = append(argument, obj[a])
 					}
 				} else {
-					argument = append(argument, nil)
+					argument = append(argument, "NULL")
 				}
 			}
 			fmt.Printf(format, argument...)
