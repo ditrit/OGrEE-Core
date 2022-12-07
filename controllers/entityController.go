@@ -1036,7 +1036,7 @@ var GetEntitiesOfAncestor = func(w http.ResponseWriter, r *http.Request) {
 	if enum < 0 {
 		w.WriteHeader(http.StatusNotFound)
 		u.Respond(w, u.Message(false, "Invalid object in URL:"+entStr+" Please provide a valid object"))
-		u.ErrLog("Cannot get invalid object", "CREATE CHILDRENOFPARENT"+entStr, "", r)
+		u.ErrLog("Cannot get invalid object", "GET CHILDRENOFPARENT"+entStr, "", r)
 		return
 	}
 
