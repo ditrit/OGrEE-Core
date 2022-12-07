@@ -28,6 +28,9 @@ func PostObj(ent int, entity string, data map[string]interface{}) (map[string]in
 		State.APIURL+"/api/"+entity+"s", GetKey(), data)
 
 	respMap = ParseResponse(resp, e, "POST")
+	if respMap == nil {
+		return nil, fmt.Errorf("Invalid Response received from API")
+	}
 
 	if resp.StatusCode == http.StatusCreated && respMap["status"].(bool) == true {
 		//Print success message
@@ -52,6 +55,12 @@ func ValidateObj(data map[string]interface{}, ent string, silence bool) bool {
 		State.APIURL+"/api/validate/"+ent+"s", GetKey(), data)
 
 	respMap = ParseResponse(resp, e, "POST")
+	if respMap == nil {
+		if State.DebugLvl > 1 {
+			println("Received invalid response from API")
+		}
+		return false
+	}
 
 	if resp.StatusCode == http.StatusOK && respMap["status"].(bool) == true {
 		//Print success message
@@ -175,6 +184,12 @@ func SearchObjects(entity string, data map[string]interface{}) []map[string]inte
 
 	resp, e := models.Send("GET", URL, GetKey(), nil)
 	jsonResp = ParseResponse(resp, e, "Search")
+	if jsonResp == nil {
+		if State.DebugLvl > 1 {
+			println("Received invalid response from API")
+		}
+		return nil
+	}
 
 	if resp.StatusCode == http.StatusOK {
 		obj := jsonResp["data"].(map[string]interface{})["objects"].([]interface{})
@@ -314,6 +329,9 @@ func RecursivePatch(Path, id, ent string, data map[string]interface{}) error {
 		//GET Object
 		resp, e := models.Send("GET", URL, GetKey(), nil)
 		r := ParseResponse(resp, e, "recursive update")
+		if r == nil {
+			return fmt.Errorf("Failure while getting root object")
+		}
 		if e != nil {
 			return nil
 		}
@@ -539,6 +557,9 @@ func UpdateObj(Path, id, ent string, data map[string]interface{}, deleteAndPut b
 		if objJSON == nil {
 			r, e1 := models.Send("GET", URL, GetKey(), nil)
 			objJSON = ParseResponse(r, e1, "GET")
+			if objJSON == nil {
+				return nil, fmt.Errorf("Couldn't get object for update")
+			}
 			ogData = objJSON["data"].(map[string]interface{})
 		} else {
 			ogData = objJSON
