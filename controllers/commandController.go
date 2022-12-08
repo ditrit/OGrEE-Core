@@ -1428,20 +1428,6 @@ func GetOCLIAtrributes(Path string, ent int, data map[string]interface{}) error 
 			return nil
 		}
 
-		if attr["orientation"] == "" {
-			if State.DebugLvl > 0 {
-				l.GetErrorLogger().Println(
-					"User gave invalid orientation value for creating rack")
-				return fmt.Errorf("Invalid orientation attribute/template provided." +
-					" \nThe orientation must be front|rear|left|right" +
-					"\n\nFor more information " +
-					"please refer to the wiki or manual reference" +
-					" for more details on how to create objects " +
-					"using this syntax")
-			}
-			return nil
-		}
-
 		//Serialise posXY if given
 		if _, ok := attr["posXY"].(string); ok {
 			attr["posXY"] = serialiseAttr(attr, "posXY")
