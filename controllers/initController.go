@@ -286,13 +286,12 @@ func GetURLs(apiURL string, unityURL string, env map[string]string) {
 	if State.APIURL == "" {
 		if envApiURL, ok := env["apiURL"]; ok {
 			// if present, remove the last / to avoid path issues in ls command
-			if last := len(envApiURL) - 1; last >= 0 && envApiURL[last] == '/' {
-				envApiURL = envApiURL[:last]
-			}
+			envApiURL = strings.TrimRight(envApiURL, "/")
+
 			// check if URL is valid
 			_, err := url.ParseRequestURI(envApiURL)
 			if err != nil {
-				println(".env apiURL not valid: " + err.Error())
+				println("apiURL is not valid! ")
 			} else {
 				State.APIURL = envApiURL
 			}
