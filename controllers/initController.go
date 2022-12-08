@@ -9,6 +9,7 @@ import (
 	"cli/readline"
 	"encoding/json"
 	"fmt"
+	"net/url"
 	"os"
 	"strconv"
 	"strings"
@@ -272,13 +273,29 @@ func GetURLs(apiURL string, unityURL string, env map[string]string) {
 
 	if State.UnityClientURL == "" {
 		if envUnityURL, ok := env["unityURL"]; ok {
-			State.UnityClientURL = envUnityURL
+			// check if URL is valid
+			_, err := url.ParseRequestURI(envUnityURL)
+			if err != nil {
+				println("envUnityURL not valid: " + err.Error())
+			} else {
+				State.UnityClientURL = envUnityURL
+			}
 		}
 	}
 
 	if State.APIURL == "" {
 		if envApiURL, ok := env["apiURL"]; ok {
-			State.APIURL = envApiURL
+			// if present, remove the last / to avoid path issues in ls command
+			if last := len(envApiURL) - 1; last >= 0 && envApiURL[last] == '/' {
+				envApiURL = envApiURL[:last]
+			}
+			// check if URL is valid
+			_, err := url.ParseRequestURI(envApiURL)
+			if err != nil {
+				println(".env apiURL not valid: " + err.Error())
+			} else {
+				State.APIURL = envApiURL
+			}
 		}
 	}
 
