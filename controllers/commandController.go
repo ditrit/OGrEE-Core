@@ -3312,7 +3312,6 @@ func OnlineLevelResolver(path []string) []string {
 			basePath += "/" + EntityToString(i) + "s/" + path[i]
 		}
 	}
-	//println("DEBUG basePath:", basePath)
 
 	if len(path) < 3 {
 		x := strings.Split(basePath, "/")
@@ -3342,16 +3341,13 @@ func OnlineLevelResolver(path []string) []string {
 			basePath + "/devices"}
 	}
 
-	basePath += "/devices"
-
 	if len(path) == 5 { //Possible paths for children of racks
-		paths = append(paths, basePath+"/"+path[4]+"/sensors")
-		paths = append(paths, basePath+"/"+path[4]+"/groups")
-		paths = append(paths, basePath+"/"+path[4]+"/devices")
+		paths = append(paths, basePath+"/sensors")
+		paths = append(paths, basePath+"/groups")
+		paths = append(paths, basePath+"/devices")
 		return paths
 	}
 
-	basePath += "/" + path[5]
 	if len(path) >= 6 { //Possible paths for recursive device family
 		for i := 5; i < len(path); i++ {
 			basePath = basePath + "/devices/" + path[i]
