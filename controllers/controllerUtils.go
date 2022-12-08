@@ -8,8 +8,7 @@ import (
 )
 
 const (
-	TENANT = iota
-	SITE
+	SITE = iota
 	BLDG
 	ROOM
 	RACK
@@ -154,8 +153,6 @@ func MapStrayInt(x int) int {
 
 func EntityToString(entity int) string {
 	switch entity {
-	case TENANT:
-		return "tenant"
 	case SITE:
 		return "site"
 	case BLDG:
@@ -191,8 +188,6 @@ func EntityToString(entity int) string {
 
 func EntityStrToInt(entity string) int {
 	switch entity {
-	case "tenant", "tn":
-		return TENANT
 	case "site", "si":
 		return SITE
 	case "building", "bldg", "bd":
@@ -228,8 +223,6 @@ func EntityStrToInt(entity string) int {
 
 func GetParentOfEntity(ent int) int {
 	switch ent {
-	case TENANT:
-		return -1
 	case SITE:
 		return ent - 1
 	case BLDG:

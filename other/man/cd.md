@@ -8,6 +8,6 @@ EXAMPLE
 
     cd   
     cd DEMO_RACK/DeviceA
-    cd /Physical/TenantA
+    cd /Physical/SiteA
     cd $x
     cd -

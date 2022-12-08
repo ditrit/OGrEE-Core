@@ -22,7 +22,7 @@ var _ = l.GetInfoLogger() //Suppresses annoying Dockerfile build error
 
 %token <n> TOK_INT
 %token <f> TOK_FLOAT
-%token <s> TOK_WORD TOK_TENANT TOK_SITE TOK_BLDG TOK_ROOM
+%token <s> TOK_WORD TOK_SITE TOK_BLDG TOK_ROOM
 %token <s> TOK_RACK TOK_DEVICE TOK_STR
 %token <s> TOK_CORIDOR TOK_GROUP 
 %token <s> TOK_AC TOK_CABINET TOK_PANEL
@@ -34,7 +34,7 @@ var _ = l.GetInfoLogger() //Suppresses annoying Dockerfile build error
        TOK_EQUAL TOK_DOUBLE_EQUAL TOK_SLASH
        TOK_EXIT TOK_DOC TOK_CD TOK_PWD
        TOK_CLR TOK_GREP TOK_LS TOK_TREE
-       TOK_LSOG TOK_LSTEN TOK_LSSITE TOK_LSBLDG
+       TOK_LSOG TOK_LSSITE TOK_LSBLDG
        TOK_LSCAB TOK_LSSENSOR TOK_LSAC TOK_LSPANEL
        TOK_LSCORRIDOR TOK_GETU
        TOK_LSROOM TOK_LSRACK TOK_LSDEV TOK_LSENTERPRISE
@@ -318,11 +318,11 @@ GETOBJS: PATH TOK_COMMA GETOBJS {x:=[]node{$1}; $$=append(x, $3...)}
        | PATH {x:=[]node{$1}; $$=x}
 ;
 
-OBJ_TYPE: TOK_TENANT | TOK_SITE | TOK_BLDG | TOK_ROOM | TOK_RACK | TOK_DEVICE | TOK_AC | TOK_PANEL |TOK_CABINET 
+OBJ_TYPE: TOK_SITE | TOK_BLDG | TOK_ROOM | TOK_RACK | TOK_DEVICE | TOK_AC | TOK_PANEL |TOK_CABINET 
        | TOK_SENSOR | TOK_CORIDOR | TOK_GROUP | TOK_OBJ_TMPL | TOK_ROOM_TMPL
 ;
 
-LSOBJ_COMMAND: TOK_LSTEN {$$=0} | TOK_LSSITE {$$=1} | TOK_LSBLDG {$$=2} | TOK_LSROOM {$$=3} | TOK_LSRACK {$$=4}
+LSOBJ_COMMAND: TOK_LSSITE {$$=1} | TOK_LSBLDG {$$=2} | TOK_LSROOM {$$=3} | TOK_LSRACK {$$=4}
        | TOK_LSDEV {$$=5} | TOK_LSAC {$$=6} | TOK_LSPANEL {$$=7}
        | TOK_LSCAB {$$=8} | TOK_LSCORRIDOR {$$=9} | TOK_LSSENSOR{$$=10}
 ;
@@ -336,7 +336,7 @@ COMMAND: TOK_LINK{$$="link"} | TOK_UNLINK{$$="unlink"} | TOK_CLR{$$="clear"} | T
        | TOK_HIERARCH{$$="hc"} | TOK_TREE{$$="tree"} | TOK_DRAW{$$="draw"} 
        | TOK_IF{$$="if"} | TOK_WHILE{$$="while"} | TOK_FOR{$$="for"} | TOK_UNSET{$$="unset"}
        | TOK_SELECT{$$="select"} | TOK_LSOG{$$="lsog"} | TOK_ENV{$$="env"} 
-       | TOK_LSTEN{$$="lsten"} | TOK_LSSITE{$$="lssite"} | TOK_LSBLDG{$$="lsbldg"} | TOK_LSROOM{$$="lsroom"} 
+       | TOK_LSSITE{$$="lssite"} | TOK_LSBLDG{$$="lsbldg"} | TOK_LSROOM{$$="lsroom"} 
        | TOK_LSRACK{$$="lsrack"} | TOK_LSDEV{$$="lsdev"} | TOK_MINUS{$$="-"} | TOK_TEMPLATE{$$=".template"}
        | TOK_CMDS{$$=".cmds"} | TOK_VAR{$$=".var"} | TOK_PLUS{$$="+"} | TOK_EQUAL{$$="="} 
        | TOK_GREATER{$$=">"} | TOK_DRAWABLE{$$="drawable"}
@@ -359,11 +359,7 @@ ORIENTATION: TOK_WORD {$$=&strLeaf{$1} }
        | TOK_MINUS TOK_WORD TOK_PLUS TOK_WORD {$$=&strLeaf{$1+$2+$3+$4}}
 
 OCCR:   
-        TOK_TENANT TOK_COL PHYSICAL_PATH TOK_ATTRSPEC EXPR_NOQUOTE {
-              attributes := map[string]interface{}{"attributes":map[string]interface{}{"color":$5}}
-              $$=&getOCAttrNode{$3, cmd.TENANT, attributes}
-        }
-        |TOK_SITE TOK_COL PHYSICAL_PATH TOK_ATTRSPEC ORIENTATION {
+        TOK_SITE TOK_COL PHYSICAL_PATH TOK_ATTRSPEC ORIENTATION {
               attributes := map[string]interface{}{"attributes":map[string]interface{}{"orientation":$5}}
               $$=&getOCAttrNode{$3, cmd.SITE, attributes}
         } 

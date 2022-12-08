@@ -9,12 +9,7 @@ entered. The object will be created.
 The required attributes for each object is found:    
 https://github.com/ditrit/OGREE-3D/wiki/How-it-works#ogreeobject-class   
 
-USAGES   
-
-+tn:PATH/TENANT_NAME@TENANT_NAME@COLOR   
-+tenant:PATH/TENANT_NAME@TENANT_NAME@COLOR   
-User must specify the path, TENANT_NAME and COLOR   
-
+USAGES     
 
 +si:PATH/SITE_NAME@ORIENTATION   
 +site:PATH/SITE_NAME@ORIENTATION   

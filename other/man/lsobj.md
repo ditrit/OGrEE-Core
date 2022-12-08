@@ -1,8 +1,7 @@
 Usage: ls[OBJ] [PATH] [FLAG](optional)   
 Displays specified object type from given path.
 
-Where OBJ can be:   
-ten   
+Where OBJ can be:      
 site   
 bldg   
 room   
@@ -23,8 +22,8 @@ NOTE
 
 EXAMPLE   
 
-    lsten   
-    lsten ../../Physical
-    lscabinet
-    lspanel
+    lssite .  
+    lssite ../../Physical/SiteB
+    lscabinet .
+    lspanel .
     lsac ../../DEMO -r 

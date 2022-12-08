@@ -1098,16 +1098,6 @@ func (n *getOCAttrNode) execute() (interface{}, error) {
 		return nil, err
 	}
 
-	if n.ent == cmd.TENANT {
-		//Check for valid hex
-		colorInf := attributes["attributes"].(map[string]interface{})["color"]
-		color, ok := AssertColor(colorInf)
-		if !ok {
-			msg := "Please provide a valid 6 length hex value for the color"
-			return nil, fmt.Errorf(msg)
-		}
-		attributes["attributes"].(map[string]interface{})["color"] = color
-	}
 	if n.ent == cmd.SITE {
 		//Check for valid orientation
 		orientation := attributes["attributes"].(map[string]interface{})["orientation"].(string)

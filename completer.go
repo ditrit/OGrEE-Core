@@ -195,7 +195,7 @@ func ListUserFuncs(path string) func(string) []string {
 	}
 }
 
-func TenantSiteOCLICompleter(path string) func(string) []string {
+func SiteOCLICompleter(path string) func(string) []string {
 	return func(line string) []string {
 
 		//Trim everything up to and including the ':'
@@ -218,7 +218,7 @@ func BldgOCLICompleter(path string) func(string) []string {
 	return func(line string) []string {
 
 		//Trim everything up to and including the ':'
-		fn := TenantSiteOCLICompleter("")
+		fn := SiteOCLICompleter("")
 		ans := fn(line)
 		if strings.Count(line, "@") == 1 {
 			ans = append(ans, " @ ")
@@ -294,7 +294,6 @@ func GetPrefixCompleter() *readline.PrefixCompleter {
 			readline.PcItem("env", false),
 			readline.PcItem("link", false),
 			readline.PcItem("unlink", false),
-			readline.PcItem("lsten", false),
 			readline.PcItem("lssite", false),
 			readline.PcItem("lsbldg", false),
 			readline.PcItem("lsroom", false),
@@ -324,28 +323,27 @@ func GetPrefixCompleter() *readline.PrefixCompleter {
 			readline.PcItem(">", false)),
 		readline.PcItem("+", false,
 			readline.PcItem("tn:", true,
-				readline.PcItemDynamic(TenantSiteOCLICompleter(""), true)),
+				readline.PcItemDynamic(SiteOCLICompleter(""), true)),
 			readline.PcItem("si:", true,
-				readline.PcItemDynamic(TenantSiteOCLICompleter(""), true)),
+				readline.PcItemDynamic(SiteOCLICompleter(""), true)),
 			readline.PcItem("bd:", true,
 				readline.PcItemDynamic(BldgOCLICompleter(""), true)),
 			readline.PcItem("ro:", true,
-				readline.PcItemDynamic(TenantSiteOCLICompleter(""), true)),
+				readline.PcItemDynamic(SiteOCLICompleter(""), true)),
 			readline.PcItem("rk:", true,
-				readline.PcItemDynamic(TenantSiteOCLICompleter(""), true)),
+				readline.PcItemDynamic(SiteOCLICompleter(""), true)),
 			readline.PcItem("dv:", true,
-				readline.PcItemDynamic(TenantSiteOCLICompleter(""), true)),
+				readline.PcItemDynamic(SiteOCLICompleter(""), true)),
 			readline.PcItem("gr:", true,
-				readline.PcItemDynamic(TenantSiteOCLICompleter(""), true)),
+				readline.PcItemDynamic(SiteOCLICompleter(""), true)),
 			readline.PcItem("co:", true,
-				readline.PcItemDynamic(TenantSiteOCLICompleter(""), true)),
+				readline.PcItemDynamic(SiteOCLICompleter(""), true)),
 			readline.PcItem("orphan:sensor:", true,
-				readline.PcItemDynamic(TenantSiteOCLICompleter(""), true)),
+				readline.PcItemDynamic(SiteOCLICompleter(""), true)),
 			readline.PcItem("orphan:device:", true,
-				readline.PcItemDynamic(TenantSiteOCLICompleter(""), true))),
+				readline.PcItemDynamic(SiteOCLICompleter(""), true))),
 
 		readline.PcItem("get", true,
-			readline.PcItem("tenant", false),
 			readline.PcItem("site", false),
 			readline.PcItem("building", false),
 			readline.PcItem("room", false),
@@ -365,9 +363,6 @@ func GetPrefixCompleter() *readline.PrefixCompleter {
 			readline.PcItemDynamic(ListLocal(""), false)),
 		readline.PcItem(".var:", false),
 		readline.PcItem("tree", true,
-			readline.PcItemDynamic(ListEntities(""), false)),
-		readline.PcItem("lsten", true,
-			readline.PcItem("-r", false),
 			readline.PcItemDynamic(ListEntities(""), false)),
 		readline.PcItem("lssite", true,
 			readline.PcItem("-r", false),
@@ -458,7 +453,6 @@ func GetPrefixCompleter() *readline.PrefixCompleter {
 		readline.PcItem("hc", true,
 			readline.PcItemDynamic(ListEntities(""), false)),
 		/*readline.PcItem("gt", false,
-			readline.PcItem("tenant", false),
 			readline.PcItem("site", false),
 			readline.PcItem("building", false),
 			readline.PcItem("room", false),

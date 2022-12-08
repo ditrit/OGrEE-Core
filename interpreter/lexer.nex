@@ -66,7 +66,6 @@
 /link/ { printToks("TOK_LINK"); return TOK_LINK}
 /unlink/ { printToks("TOK_UNLINK"); return TOK_UNLINK}
 
-/tenant|tn/ {  printToks("TOK_TENANT");lval.s = yylex.Text();return TOK_TENANT}
 /site|si/ {  printToks("TOK_SITE");lval.s = yylex.Text();return TOK_SITE}
 /bldg|building|bd/ {  printToks("TOK_BLDG");lval.s = yylex.Text();return TOK_BLDG}
 /room|ro/ {  printToks("TOK_ROOM");lval.s = yylex.Text();return TOK_ROOM}
@@ -83,7 +82,6 @@
 
 /([0-9][0-9 ]*)/ {  printToks("TOK_INT");lval.n = atoi(yylex.Text()); return TOK_INT}
 /[0-9]+\.[0-9]+/ { printToks("TOK_FLOAT");lval.f, _ = strconv.ParseFloat((yylex.Text()), 64); return TOK_FLOAT }
-/lsten/ {  printToks("TOK_LSTEN"); return TOK_LSTEN}
 /lssite/ {  printToks("TOK_LSSITE"); return TOK_LSSITE}
 /lsbldg/ {  printToks("TOK_LSBLDG"); return TOK_LSBLDG}
 /lsroom/ {  printToks("TOK_LSROOM"); return TOK_LSROOM}

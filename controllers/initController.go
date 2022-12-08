@@ -145,7 +145,7 @@ func InitState(analyser string, env map[string]string) {
 	State.DrawableObjs = SetObjsForUnity("drawable", env)
 	State.DrawableJsons = make(map[string]map[string]interface{}, 16)
 
-	for i := TENANT; i < GROUP+1; i++ {
+	for i := SITE; i < GROUP+1; i++ {
 		ent := EntityToString(i)
 		State.DrawableJsons[ent] = SetDrawableTemplate(ent, env)
 	}
@@ -441,7 +441,7 @@ func Login(env map[string]string) (string, string) {
 		user, key = CreateCredentials()
 	}
 
-	if !CheckKeyIsValid(key) {
+	if ok := CheckKeyIsValid(key); !ok {
 		if State.DebugLvl > 0 {
 			println("Error while checking key. Now exiting")
 		}

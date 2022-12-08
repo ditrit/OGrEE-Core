@@ -9,8 +9,8 @@ The object specifies which object type. The ATTRIBUTES form the search parameter
 EXAMPLE   
 
     get 
-    get /Physical/TenantA
+    get /Physical/SiteA
     get ../rack01/device-ibm3
 
-    get tenant color=FFFF name=DEMO
+    get site color=FFFF name=A
     get device name=ibm

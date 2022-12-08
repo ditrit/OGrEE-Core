@@ -809,7 +809,7 @@ func LSOBJECT(x string, entity int, silence bool) []interface{} {
 	var obj map[string]interface{}
 	var Path string
 
-	if entity == TENANT { //Special for tenants case
+	if entity == SITE { //Special for sites case
 		if x == "/Physical" {
 			Path = State.APIURL + "/api"
 		} else {
@@ -1280,14 +1280,14 @@ func GetOCLIAtrributes(Path string, ent int, data map[string]interface{}) error 
 	data["description"] = []interface{}{}
 
 	//Retrieve Parent
-	if ent != TENANT && ent != STRAY_DEV {
+	if ent != SITE && ent != GROUP && ent != STRAY_DEV {
 		parent, parentURL = GetObject(Path, true)
 		if parent == nil {
 			return fmt.Errorf("The parent was not found in path")
 		}
 
 		//Retrieve parent name for domain
-		tmp := strings.Split(parentURL, State.APIURL+"/api/tenants/")
+		tmp := strings.Split(parentURL, State.APIURL+"/api/sites/")
 
 		domIDX := strings.Index(tmp[1], "/")
 		if domIDX == -1 {
@@ -1299,14 +1299,10 @@ func GetOCLIAtrributes(Path string, ent int, data map[string]interface{}) error 
 	}
 	var err error
 	switch ent {
-	case TENANT:
-		data["domain"] = data["name"]
-		data["parentId"] = nil
-		_, err = PostObj(ent, "tenant", data)
 	case SITE:
 		//Default values
-		data["domain"] = domain
-		data["parentId"] = parent["id"]
+		data["domain"] = data["name"]
+		data["parentId"] = nil
 
 		_, err = PostObj(ent, "site", data)
 	case BLDG:
@@ -1598,26 +1594,26 @@ func GetOCLIAtrributes(Path string, ent int, data map[string]interface{}) error 
 		attr = data["attributes"].(map[string]interface{})
 
 		//Client demands that the group color be
-		//the same as Tenant/Domain thus we have
+		//the same as Site/Domain thus we have
 		//to retrieve it
 		arr := strings.Split(Path, "/")
 		if len(arr) >= 2 {
 			for i := range arr {
 				if arr[i] == "Physical" {
-					tenantName := arr[i+1]
+					siteName := arr[i+1]
 
-					//GET Tenant/Domain
+					//GET Site/Domain
 					r, e := models.Send("GET",
-						State.APIURL+"/api/tenants/"+tenantName, GetKey(), nil)
+						State.APIURL+"/api/sites/"+siteName, GetKey(), nil)
 					parsed := ParseResponse(r, e, "get color")
 					if parsed == nil {
 						msg := "Unable to retrieve color from server"
 						return fmt.Errorf(msg)
 					}
 
-					if tenantData, ok := parsed["data"]; ok {
-						if tenant, ok := tenantData.(map[string]interface{}); ok {
-							if attrInf, ok := tenant["attributes"]; ok {
+					if siteData, ok := parsed["data"]; ok {
+						if site, ok := siteData.(map[string]interface{}); ok {
+							if attrInf, ok := site["attributes"]; ok {
 								if a, ok := attrInf.(map[string]interface{}); ok {
 									if colorInf, ok := a["color"]; ok {
 										if color, ok := colorInf.(string); ok {
@@ -2841,16 +2837,16 @@ func LSOBJECTRecursive(x string, entity int, silence bool) []interface{} {
 	var obj map[string]interface{}
 	var Path string
 
-	if entity == TENANT { //Edge case
+	if entity == SITE { //Edge case
 		if x == "/Physical" {
 			r, e := models.Send("GET",
-				State.APIURL+"/api/tenants", GetKey(), nil)
-			obj = ParseResponse(r, e, "Get Tenants")
+				State.APIURL+"/api/sites", GetKey(), nil)
+			obj = ParseResponse(r, e, "Get Sites")
 			arr := LoadArrFromResp(obj, "objects")
 			if !silence {
-				for _, tenantInf := range arr {
-					if tenant, _ := LoadObjectFromInf(tenantInf); tenant != nil {
-						println(tenant["name"].(string))
+				for _, siteInf := range arr {
+					if site, _ := LoadObjectFromInf(siteInf); site != nil {
+						println(site["name"].(string))
 					}
 				}
 			}
@@ -2898,7 +2894,7 @@ func LSOBJECTRecursive(x string, entity int, silence bool) []interface{} {
 
 	//println(entities)
 	var idToSend string
-	if obi == TENANT {
+	if obi == SITE {
 		idToSend = obj["name"].(string)
 	} else {
 		idToSend = obj["id"].(string)
@@ -3194,35 +3190,35 @@ func OnlinePathResolve(path []string) []string {
 	} //END OF template group type check
 
 	for i := range path {
-		if i < 4 {
+		if i < 3 {
 			basePath += "/" + EntityToString(i) + "s/" + path[i]
 		}
 	}
 
-	if len(path) <= 4 {
+	if len(path) <= 3 {
 		return []string{basePath}
 	}
 
-	if len(path) == 5 { //Possible paths for children of room
+	if len(path) == 4 { //Possible paths for children of room
 		for idx := range roomChildren {
-			paths = append(paths, basePath+roomChildren[idx]+"/"+path[4])
+			paths = append(paths, basePath+roomChildren[idx]+"/"+path[3])
 		}
-		paths = append(paths, basePath+"/racks/"+path[4])
+		paths = append(paths, basePath+"/racks/"+path[3])
 		return paths
 	}
 
-	basePath += "/racks/" + path[4]
+	basePath += "/racks/" + path[3]
 
-	if len(path) == 6 { //Possible paths for children of racks
-		paths = append(paths, basePath+"/devices/"+path[5])
-		paths = append(paths, basePath+"/sensors/"+path[5])
-		paths = append(paths, basePath+"/groups/"+path[5])
+	if len(path) == 5 { //Possible paths for children of racks
+		paths = append(paths, basePath+"/devices/"+path[4])
+		paths = append(paths, basePath+"/sensors/"+path[4])
+		paths = append(paths, basePath+"/groups/"+path[4])
 		return paths
 	}
 
-	basePath += "/devices/" + path[5]
-	if len(path) >= 7 { //Possible paths for recursive device family
-		for i := 6; i < len(path)-1; i++ {
+	basePath += "/devices/" + path[4]
+	if len(path) >= 6 { //Possible paths for recursive device family
+		for i := 5; i < len(path)-1; i++ {
 			basePath = basePath + "/devices/" + path[i]
 		}
 		paths = append(paths, basePath+"/devices/"+path[len(path)-1])
@@ -3243,6 +3239,9 @@ func OnlineLevelResolver(path []string) []string {
 	basePath := State.APIURL + "/api"
 	roomChildren := []string{"/acs", "/panels", "/cabinets",
 		"/groups", "/corridors", "/sensors"}
+
+	//println("DEBUG OLR should be called")
+	//println("Len path:", len(path))
 
 	//Check if path is templates or groups type or stray device
 	if path[0] == "Stray" {
@@ -3313,8 +3312,9 @@ func OnlineLevelResolver(path []string) []string {
 			basePath += "/" + EntityToString(i) + "s/" + path[i]
 		}
 	}
+	//println("DEBUG basePath:", basePath)
 
-	if len(path) < 4 {
+	if len(path) < 3 {
 		x := strings.Split(basePath, "/")
 		if len(x)%2 == 0 {
 			//Grab 2nd last entity type and get its subentity
@@ -3327,15 +3327,16 @@ func OnlineLevelResolver(path []string) []string {
 		return []string{basePath}
 	}
 
-	if len(path) == 4 { //Possible paths for children of room
+	if len(path) == 3 { //Possible paths for children of room
 		for idx := range roomChildren {
 			paths = append(paths, basePath+roomChildren[idx])
 		}
 		paths = append(paths, basePath+"/racks")
+		//println("DEBUG should place all these paths")
 		return paths
 	}
 
-	if len(path) == 5 {
+	if len(path) == 4 {
 		return []string{basePath + "/sensors",
 			basePath + "/groups",
 			basePath + "/devices"}
@@ -3343,16 +3344,16 @@ func OnlineLevelResolver(path []string) []string {
 
 	basePath += "/devices"
 
-	if len(path) == 6 { //Possible paths for children of racks
-		paths = append(paths, basePath+"/"+path[5]+"/sensors")
-		paths = append(paths, basePath+"/"+path[5]+"/groups")
-		paths = append(paths, basePath+"/"+path[5]+"/devices")
+	if len(path) == 5 { //Possible paths for children of racks
+		paths = append(paths, basePath+"/"+path[4]+"/sensors")
+		paths = append(paths, basePath+"/"+path[4]+"/groups")
+		paths = append(paths, basePath+"/"+path[4]+"/devices")
 		return paths
 	}
 
 	basePath += "/" + path[5]
-	if len(path) >= 7 { //Possible paths for recursive device family
-		for i := 6; i < len(path); i++ {
+	if len(path) >= 6 { //Possible paths for recursive device family
+		for i := 5; i < len(path); i++ {
 			basePath = basePath + "/devices/" + path[i]
 		}
 		paths = append(paths, basePath+"/devices")
