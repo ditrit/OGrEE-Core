@@ -1352,6 +1352,8 @@ var GetEntityHierarchy = func(w http.ResponseWriter, r *http.Request) {
 	if entity == "site" {
 
 		//TODO
+		//This section appears to be broken =>RBAC
+		//is stil a WIP
 		newReq := req
 		newReq["name"] = id
 		_, e := models.GetEntity(newReq, entity)
