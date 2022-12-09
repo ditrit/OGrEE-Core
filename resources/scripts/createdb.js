@@ -57,7 +57,7 @@ db.createCollection('stray_sensor');
 
 
 //Enfore unique Tenant Names
-db.domain.createIndex( {parentId:1, name:1}, { unique: true } );
+db.domain.createIndex( {name:1}, { unique: true } );
 
 //Enforce unique children
 db.site.createIndex({name:1}, { unique: true });

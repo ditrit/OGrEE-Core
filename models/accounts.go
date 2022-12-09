@@ -13,15 +13,22 @@ import (
 
 // JWT Claims struct
 type Token struct {
-	Email string `json:"email"`
+	Email  string `json:"email"`
+	UserId uint
+	Domain string
+	Role   string
 	jwt.StandardClaims
 }
 
 // a struct for rep user account
 type Account struct {
-	Email    string `json:"email"`
-	Password string `json:"password"`
-	Token    string `json:"token" sql:"-"`
+	ID        uint   ``
+	AdminAuth string `json:"adminPassword"`
+	Email     string `json: "email"`
+	Password  string `json: "password"`
+	Domain    string `json: "domain"`
+	Role      string `json: "role"`
+	Token     string `json:"token";sql:"-"`
 }
 
 // Validate incoming user
@@ -53,10 +60,24 @@ func (account *Account) Validate() (map[string]interface{}, bool) {
 	return u.Message(false, "Requirement passed"), true
 }
 
-func (account *Account) Create() (map[string]interface{}, string) {
+func (account *Account) Create(role, domain string) (map[string]interface{}, string) {
 
 	if resp, ok := account.Validate(); !ok {
-		return resp, ""
+		return resp, "validate"
+	}
+
+	//Check if user is allowed to do account creation
+	//only admins (issuer or super roles) can create accounts
+	//managers can create user roles in their domain
+	//or if the the request included the adminPassword
+	if !(role == "manager" && account.Role == "user" &&
+		(domain == account.Domain)) &&
+		!(role == "super") &&
+		(os.Getenv("signing_password") != account.AdminAuth) {
+
+		return u.Message(false,
+			"Invalid credentials for creating an account."+
+				"Please note only admins can create accounts"), "unauthorised"
 	}
 
 	hashedPassword, _ := bcrypt.GenerateFromPassword(
@@ -76,7 +97,7 @@ func (account *Account) Create() (map[string]interface{}, string) {
 	defer cancel()
 
 	//Create new JWT token for the newly created account
-	tk := &Token{Email: account.Email}
+	tk := &Token{Email: account.Email, UserId: account.ID, Domain: account.Domain, Role: account.Role}
 	token := jwt.NewWithClaims(jwt.GetSigningMethod("HS256"), tk)
 	tokenString, _ := token.SignedString([]byte(os.Getenv("token_password")))
 

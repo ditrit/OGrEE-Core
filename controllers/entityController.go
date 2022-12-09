@@ -207,10 +207,36 @@ var CreateEntity = func(w http.ResponseWriter, r *http.Request) {
 
 	//strip the '/api' in URL
 	entStr, e1 := mux.Vars(r)["entity"]
-	if e1 == false {
+	userData := r.Context().Value("user")
+
+	if !e1 || userData == nil {
 		w.WriteHeader(http.StatusBadRequest)
 		u.Respond(w, u.Message(false, "Error while parsing path params"))
 		u.ErrLog("Error while parsing path params", "CREATE "+entStr, "", r)
+		return
+	}
+
+	domain := userData.(map[string]interface{})["domain"].(string)
+	role := userData.(map[string]interface{})["role"].(string)
+	uid := userData.(map[string]interface{})["userID"].(uint)
+
+	/*if domainInf == nil || roleInf == nil {
+		w.WriteHeader(http.StatusBadRequest)
+		u.Respond(w, u.Message(false, "User's Key is not valid please"+
+			" check with your administrator"))
+		u.ErrLog("User's key does not have domain/role", "CREATE "+entStr, "", r)
+		return
+	}*/
+
+	println("UserID:", uid)
+	println("Role:", role)
+	println("Domain:", domain)
+
+	if role == "" {
+		w.WriteHeader(http.StatusBadRequest)
+		u.Respond(w, u.Message(false, "User's Key is not valid please"+
+			" check with your administrator"))
+		u.ErrLog("User's key does not have assigned role", "CREATE "+entStr, "", r)
 		return
 	}
 
@@ -240,6 +266,36 @@ var CreateEntity = func(w http.ResponseWriter, r *http.Request) {
 		u.Respond(w, u.Message(false, "Invalid object in URL:"+entStr+" Please provide a valid object"))
 		u.ErrLog("Cannot create invalid object", "CREATE "+entStr, "", r)
 		return
+	}
+
+	if i == u.DOMAIN {
+		if !models.EnsureUserIsSuper(role) {
+			w.WriteHeader(http.StatusMethodNotAllowed)
+			u.Respond(w, u.Message(false, "This "+role+
+				" does not have sufficient permissions to create"+
+				" this object under this domain. Please refer "+
+				" to an administrator or manager for more assistance"))
+			u.ErrLog("Unauthorised Domain create made",
+				"CREATE "+entStr, "", r)
+			return
+		}
+	} else {
+		//Ensure user has permission for this object
+		ok, reason := models.EnsureObjectPermission(entity, domain, role)
+		if !ok {
+			w.WriteHeader(http.StatusMethodNotAllowed)
+			if reason == "" {
+
+				u.Respond(w, u.Message(false, "This "+role+
+					" does not have sufficient permissions to create"+
+					" this object under this domain "))
+
+			} else {
+				u.Respond(w, u.Message(false, reason))
+			}
+			u.ErrLog("Unauthorised Access made", "CREATE "+entStr, "", r)
+			return
+		}
 	}
 
 	//Hard Code the 'category'
@@ -349,6 +405,15 @@ var GetEntity = func(w http.ResponseWriter, r *http.Request) {
 
 	resp := u.Message(true, "success")
 
+	userData := r.Context().Value("user")
+	domain := userData.(map[string]interface{})["domain"].(string)
+	role := userData.(map[string]interface{})["role"].(string)
+	uid := userData.(map[string]interface{})["userID"].(uint)
+
+	println("UserID:", uid)
+	println("Domain:", domain)
+	println("Role:", role)
+
 	//Get entity type and strip trailing 's'
 	s, _ := mux.Vars(r)["entity"]
 	s = s[:len(s)-1]
@@ -377,15 +442,21 @@ var GetEntity = func(w http.ResponseWriter, r *http.Request) {
 		}
 
 		//data, e1 = models.GetEntity(bson.M{"_id": x}, s)
-		data, e1 = models.GetEntity(bson.M{"_id": x}, s)
+		req := bson.M{"_id": x}
+		models.RequestGen(req, role, domain)
+		data, e1 = models.GetEntity(req, s)
 
 	} else if id, e = mux.Vars(r)["name"]; e == true { //GET By String
 
 		if idx := strings.Contains(s, "_"); idx == true &&
 			s != "stray_device" && s != "stray_sensor" { //GET By Slug
-			data, e1 = models.GetEntity(bson.M{"slug": id}, s)
+			req := bson.M{"slug": id}
+			models.RequestGen(req, role, domain)
+			data, e1 = models.GetEntity(req, s)
 		} else {
-			data, e1 = models.GetEntity(bson.M{"name": id}, s) //GET By Name
+			req := bson.M{"name": id}
+			models.RequestGen(req, role, domain)
+			data, e1 = models.GetEntity(req, s) //GET By Name
 		}
 	}
 
@@ -462,7 +533,14 @@ var GetAllEntities = func(w http.ResponseWriter, r *http.Request) {
 	var data []map[string]interface{}
 	var e, entStr string
 
-	//Main hierarchy objects
+	userData := r.Context().Value("user")
+	domain := userData.(map[string]interface{})["domain"].(string)
+	role := userData.(map[string]interface{})["role"].(string)
+	uid := userData.(map[string]interface{})["userID"].(uint)
+
+	println("UserID:", uid)
+	println("Domain:", domain)
+	println("Role:", role)
 
 	//entStr = arr[2][:len(arr[2])-1]
 	entStr, _ = mux.Vars(r)["entity"]
@@ -482,7 +560,9 @@ var GetAllEntities = func(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	data, e = models.GetManyEntities(entStr, bson.M{}, nil)
+	req := bson.M{}
+	models.RequestGen(req, role, domain)
+	data, e = models.GetManyEntities(entStr, req, nil)
 
 	entUpper := strings.ToUpper(entStr) // and the trailing 's'
 	resp := u.Message(true, "success")
@@ -558,6 +638,15 @@ var DeleteEntity = func(w http.ResponseWriter, r *http.Request) {
 	id, e := mux.Vars(r)["id"]
 	name, e2 := mux.Vars(r)["name"]
 
+	userData := r.Context().Value("user")
+	domain := userData.(map[string]interface{})["domain"].(string)
+	role := userData.(map[string]interface{})["role"].(string)
+	uid := userData.(map[string]interface{})["userID"].(uint)
+
+	println("UserID:", uid)
+	println("Domain:", domain)
+	println("Role:", role)
+
 	//Get entity from URL and strip trailing 's'
 	entity, _ := mux.Vars(r)["entity"]
 	entity = entity[:len(entity)-1]
@@ -578,7 +667,9 @@ var DeleteEntity = func(w http.ResponseWriter, r *http.Request) {
 	switch {
 	case e2 == true && e == false: // DELETE SLUG or stray-device name
 		if entity == "stray_device" || entity == "stray_sensor" {
-			sd, _ := models.GetEntity(bson.M{"name": name}, entity)
+			req := bson.M{"name": name}
+			models.RequestGen(req, role, domain)
+			sd, _ := models.GetEntity(req, entity)
 			if sd == nil {
 				w.WriteHeader(http.StatusNotFound)
 				u.Respond(w, u.Message(false, "Error object not found"))
@@ -590,7 +681,10 @@ var DeleteEntity = func(w http.ResponseWriter, r *http.Request) {
 					"Server was not able to process your request"))
 				return
 			}
-			v, _ = models.DeleteEntity(entity, sd["id"].(primitive.ObjectID))
+			//We have to delete name
+			delete(req, "name")
+
+			v, _ = models.DeleteEntity(entity, sd["id"].(primitive.ObjectID), req)
 		} else {
 			v, _ = models.DeleteEntityManual(entity, bson.M{"slug": name})
 		}
@@ -603,10 +697,14 @@ var DeleteEntity = func(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
+		rnd := bson.M{}
+		models.RequestGen(rnd, role, domain)
+
 		if entity == "device" {
-			v, _ = models.DeleteDeviceF(objID)
+			v, _ = models.DeleteDeviceF(objID, rnd)
 		} else {
-			v, _ = models.DeleteEntity(entity, objID)
+
+			v, _ = models.DeleteEntity(entity, objID, rnd)
 		}
 
 	default:
@@ -763,6 +861,15 @@ var UpdateEntity = func(w http.ResponseWriter, r *http.Request) {
 	var e3 string
 	var entity string
 
+	userData := r.Context().Value("user")
+	domain := userData.(map[string]interface{})["domain"].(string)
+	role := userData.(map[string]interface{})["role"].(string)
+	uid := userData.(map[string]interface{})["userID"].(uint)
+
+	println("UserID:", uid)
+	println("Domain:", domain)
+	println("Role:", role)
+
 	updateData := map[string]interface{}{}
 	id, e := mux.Vars(r)["id"]
 	name, e2 := mux.Vars(r)["name"]
@@ -816,6 +923,7 @@ var UpdateEntity = func(w http.ResponseWriter, r *http.Request) {
 			req = bson.M{"slug": name}
 		}
 
+		models.RequestGen(req, role, domain)
 		v, e3 = models.UpdateEntity(entity, req, &updateData, isPatch)
 
 	case e == true: // UPDATE NORMAL
@@ -831,7 +939,9 @@ var UpdateEntity = func(w http.ResponseWriter, r *http.Request) {
 		println("OBJID:", objID.Hex())
 		println("Entity;", entity)
 
-		v, e3 = models.UpdateEntity(entity, bson.M{"_id": objID}, &updateData, isPatch)
+		req := bson.M{"_id": objID}
+		models.RequestGen(req, role, domain)
+		v, e3 = models.UpdateEntity(entity, req, &updateData, isPatch)
 
 	default:
 		w.WriteHeader(http.StatusBadRequest)
@@ -914,6 +1024,15 @@ var GetEntityByQuery = func(w http.ResponseWriter, r *http.Request) {
 	var bsonMap bson.M
 	var e, entStr string
 
+	userData := r.Context().Value("user")
+	domain := userData.(map[string]interface{})["domain"].(string)
+	role := userData.(map[string]interface{})["role"].(string)
+	uid := userData.(map[string]interface{})["userID"].(uint)
+
+	println("UserID:", uid)
+	println("Domain:", domain)
+	println("Role:", role)
+
 	entStr = r.URL.Path[5 : len(r.URL.Path)-1]
 
 	//If templates, format them
@@ -935,6 +1054,8 @@ var GetEntityByQuery = func(w http.ResponseWriter, r *http.Request) {
 
 	println("DEBUG entstr", entStr)
 	Disp(bsonMap)
+	req := bsonMap
+	models.RequestGen(req, role, domain)
 	data, e = models.GetManyEntities(entStr, bsonMap, nil)
 
 	if len(data) == 0 {
@@ -1048,6 +1169,15 @@ var GetEntitiesOfAncestor = func(w http.ResponseWriter, r *http.Request) {
 	enum := u.EntityStrToInt(entStr)
 	//childBase := u.EntityToString(enum + 1)
 
+	userData := r.Context().Value("user")
+	domain := userData.(map[string]interface{})["domain"].(string)
+	role := userData.(map[string]interface{})["role"].(string)
+	uid := userData.(map[string]interface{})["userID"].(uint)
+
+	println("UserID:", uid)
+	println("Domain:", domain)
+	println("Role:", role)
+
 	//Prevents Mongo from creating a new unidentified collection
 	if enum < 0 {
 		w.WriteHeader(http.StatusNotFound)
@@ -1079,7 +1209,10 @@ var GetEntitiesOfAncestor = func(w http.ResponseWriter, r *http.Request) {
 		indicator = ""
 	}
 
-	data, e1 := models.GetEntitiesOfAncestor(id, enum, entStr, indicator)
+	req := bson.M{}
+	models.RequestGen(req, role, domain)
+
+	data, e1 := models.GetEntitiesOfAncestor(id, req, enum, entStr, indicator)
 	if data == nil {
 		resp = u.Message(false, "Error while getting "+entStr+"s: "+e1)
 		u.ErrLog("Error while getting children of "+entStr,
@@ -1182,6 +1315,15 @@ var GetEntityHierarchy = func(w http.ResponseWriter, r *http.Request) {
 	var e1 string
 	var indicator string
 
+	userData := r.Context().Value("user")
+	domain := userData.(map[string]interface{})["domain"].(string)
+	role := userData.(map[string]interface{})["role"].(string)
+	uid := userData.(map[string]interface{})["userID"].(uint)
+
+	println("UserID:", uid)
+	println("Domain:", domain)
+	println("Role:", role)
+
 	//If template or stray convert '-' -> '_'
 	if idx := strings.Index(entity, "-"); idx != -1 {
 		entity = entity[:idx] + "_" + entity[idx+1:]
@@ -1204,9 +1346,15 @@ var GetEntityHierarchy = func(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
+	req := bson.M{}
+	models.RequestGen(req, role, domain)
+
 	if entity == "site" {
 
-		_, e := models.GetEntity(bson.M{"name": id}, entity)
+		//TODO
+		newReq := req
+		newReq["name"] = id
+		_, e := models.GetEntity(newReq, entity)
 		if e != "" {
 			resp = u.Message(false, "Error while getting :"+entity+","+e)
 			u.ErrLog("Error while getting "+entity, "GET "+entity, e, r)
@@ -1225,7 +1373,9 @@ var GetEntityHierarchy = func(w http.ResponseWriter, r *http.Request) {
 		if end == 0 {
 
 			objID, _ := primitive.ObjectIDFromHex(id)
-			data, e1 := models.GetEntity(bson.M{"_id": objID}, entity)
+			newReq := req
+			newReq["_id"] = objID
+			data, e1 := models.GetEntity(newReq, entity)
 
 			if e1 != "" {
 				resp = u.Message(false, "Error while getting :"+entity+","+e1)
@@ -1289,11 +1439,9 @@ var GetEntityHierarchy = func(w http.ResponseWriter, r *http.Request) {
 			end, _ = strconv.Atoi(arr[1])
 			end += 1
 		}
-		//data, e1 = models.RetrieveDeviceHierarch(oID, 0, end)
-		data, e1 = models.GetEntityHierarchy(oID, entity, entNum, limit)
+		data, e1 = models.GetEntityHierarchy(oID, req, entity, entNum, limit)
 	} else {
-		//data, e1 = models.GetEntityHierarchy(entity, oID, entNum, limit)
-		data, e1 = models.GetEntityHierarchy(oID, entity, entNum, limit)
+		data, e1 = models.GetEntityHierarchy(oID, req, entity, entNum, limit)
 	}
 
 	if data == nil {
@@ -1304,6 +1452,7 @@ var GetEntityHierarchy = func(w http.ResponseWriter, r *http.Request) {
 		case "record not found":
 			w.WriteHeader(http.StatusNotFound)
 		default:
+			w.WriteHeader(http.StatusNotFound)
 		}
 
 	} else {
@@ -1382,6 +1531,15 @@ var GetHierarchyByName = func(w http.ResponseWriter, r *http.Request) {
 	var limit int
 	var lastSlashIdx int
 	var end int
+
+	userData := r.Context().Value("user")
+	domain := userData.(map[string]interface{})["domain"].(string)
+	role := userData.(map[string]interface{})["role"].(string)
+	uid := userData.(map[string]interface{})["userID"].(uint)
+
+	println("UserID:", uid)
+	println("Domain:", domain)
+	println("Role:", role)
 
 	id, e := mux.Vars(r)["name"]
 	if e == false {
@@ -1470,7 +1628,9 @@ var GetHierarchyByName = func(w http.ResponseWriter, r *http.Request) {
 
 	entInt := u.EntityStrToInt(entity)
 
-	data, e1 := models.GetHierarchyByName(entity, id, entInt, limit)
+	req := bson.M{}
+	models.RequestGen(req, role, domain)
+	data, e1 := models.GetHierarchyByName(entity, id, req, entInt, limit)
 
 	if data == nil {
 		resp = u.Message(false, "Error while getting :"+entity+","+e1)
@@ -1480,6 +1640,7 @@ var GetHierarchyByName = func(w http.ResponseWriter, r *http.Request) {
 		case "record not found":
 			w.WriteHeader(http.StatusNotFound)
 		default:
+			w.WriteHeader(http.StatusNotFound)
 		}
 
 	} else {
@@ -1594,6 +1755,15 @@ var GetEntitiesUsingNamesOfParents = func(w http.ResponseWriter, r *http.Request
 		entity = entity[:idx] + "_" + entity[idx+1:]
 	}
 
+	userData := r.Context().Value("user")
+	domain := userData.(map[string]interface{})["domain"].(string)
+	role := userData.(map[string]interface{})["role"].(string)
+	uid := userData.(map[string]interface{})["userID"].(uint)
+
+	println("UserID:", uid)
+	println("Domain:", domain)
+	println("Role:", role)
+
 	id, e := mux.Vars(r)["id"]
 	tname, e1 := mux.Vars(r)["site_name"]
 	if e == false && e1 == false {
@@ -1659,12 +1829,14 @@ var GetEntitiesUsingNamesOfParents = func(w http.ResponseWriter, r *http.Request
 	if len(arr)%2 != 0 { //This means we are getting entities
 		var data []map[string]interface{}
 		var e3 string
+		req := bson.M{}
+		models.RequestGen(req, role, domain)
 		if e1 == true {
 			println("we are getting entities here")
-			data, e3 = models.GetEntitiesUsingSiteAsAncestor(entity, tname, ancestry)
+			data, e3 = models.GetEntitiesUsingSiteAsAncestor(entity, tname, req, ancestry)
 
 		} else {
-			data, e3 = models.GetEntitiesUsingAncestorNames(entity, oID, ancestry)
+			data, e3 = models.GetEntitiesUsingAncestorNames(entity, oID, req, ancestry)
 		}
 
 		if data == nil || len(data) == 0 {
@@ -1692,10 +1864,12 @@ var GetEntitiesUsingNamesOfParents = func(w http.ResponseWriter, r *http.Request
 	} else { //We are only retrieving an entity
 		var data map[string]interface{}
 		var e3 string
+		req := bson.M{}
+		models.RequestGen(req, role, domain)
 		if e1 == true {
-			data, e3 = models.GetEntityUsingSiteAsAncestor(entity, tname, ancestry)
+			data, e3 = models.GetEntityUsingSiteAsAncestor(entity, tname, req, ancestry)
 		} else {
-			data, e3 = models.GetEntityUsingAncestorNames(entity, oID, ancestry)
+			data, e3 = models.GetEntityUsingAncestorNames(entity, oID, req, ancestry)
 		}
 
 		//data, e := models.GetEntityUsingAncestorNames(entity, oID, ancestry)
@@ -1880,6 +2054,15 @@ var ValidateEntity = func(w http.ResponseWriter, r *http.Request) {
 	entity, e1 := mux.Vars(r)["entity"]
 	entity = entity[:len(entity)-1]
 
+	userData := r.Context().Value("user")
+	domain := userData.(map[string]interface{})["domain"].(string)
+	role := userData.(map[string]interface{})["role"].(string)
+	uid := userData.(map[string]interface{})["userID"].(uint)
+
+	println("User:", uid)
+	println("Role:", role)
+	println("Domain:", domain)
+
 	//If templates or stray-devices, format them
 	if idx := strings.Index(entity, "-"); idx != -1 {
 		//entStr[idx] = '_'
@@ -1904,6 +2087,37 @@ var ValidateEntity = func(w http.ResponseWriter, r *http.Request) {
 		u.Respond(w, u.Message(false, "Error while decoding request body"))
 		u.ErrLog("Error while decoding request body", "VALIDATE "+entity, "", r)
 		return
+	}
+
+	if entInt == u.DOMAIN {
+		if !models.EnsureUserIsSuper(role) {
+			w.WriteHeader(http.StatusMethodNotAllowed)
+			u.Respond(w, u.Message(false, "This "+role+
+				" does not have sufficient permissions to create"+
+				" this object under this domain. Please refer "+
+				" to an administrator or manager for more assistance"))
+			u.ErrLog("Cannot validate object creation due to limited user privilege",
+				"Validate CREATE "+entity, "", r)
+			return
+		}
+	} else {
+		//Ensure user has permission for this object
+		ok, reason := models.EnsureObjectPermission(obj, domain, role)
+		if !ok {
+			w.WriteHeader(http.StatusMethodNotAllowed)
+			if reason == "" {
+
+				u.Respond(w, u.Message(false, "This "+role+
+					" does not have sufficient permissions to create"+
+					" this object under this domain "))
+
+			} else {
+				u.Respond(w, u.Message(false, reason))
+			}
+			u.ErrLog("Cannot validate object creation due to limited user privilege",
+				"Validate CREATE "+entity, "", r)
+			return
+		}
 	}
 
 	ans, status := models.ValidateEntity(entInt, obj)
@@ -1981,13 +2195,13 @@ var GetEntityHierarchyNonStd = func(w http.ResponseWriter, r *http.Request) {
 	if entity == "site" {
 		println("Getting SITE HEIRARCHY")
 		println("With ID: ", id)
-		data, err = models.GetHierarchyByName(entity, id, entNum, u.AC)
+		//data, err = models.GetHierarchyByName(entity, id, entNum, u.AC)
 		if err != "" {
 			println("We have ERR")
 		}
 	} else {
-		oID, _ := getObjID(id)
-		data, err = models.GetEntityHierarchy(oID, entity, entNum, u.AC)
+		//oID, _ := getObjID(id)
+		//data, err = models.GetEntityHierarchy(oID, entity, entNum, u.AC)
 	}
 
 	if data == nil {
