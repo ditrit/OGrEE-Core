@@ -48,14 +48,14 @@ echo "Port : $port";
 echo "Name : $name";
 
 #Create the secured Database
-mongo "localhost:"$port createdb.js --eval 'var dbName = "ogree'$name'"'
+mongosh "localhost:"$port createdb.js --eval 'var dbName = "ogree'$name'"'
 
 
 #Create an API user for the new customer
 echo 
 echo "Please type a new a password for the customer: "
 read PASS
-mongo "localhost:"$port createUser.js --eval 'let dbName = "ogree'$name'", pass = "'$PASS'";'
+mongosh "localhost:"$port createUser.js --eval 'let dbName = "ogree'$name'", pass = "'$PASS'";'
 
 
 #Success so print credentials one last time
