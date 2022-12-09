@@ -4,7 +4,7 @@ pipeline {
         stage('Build') {
             steps {
                 echo 'Building..'
-                sh 'go build main.go'
+                sh 'make'
             }
         }
 
@@ -24,7 +24,7 @@ pipeline {
             }
         }
 
-        stage('SonarQube analysis') {
+        /*stage('SonarQube analysis') {
             environment {
               SCANNER_HOME = tool 'SonarQube-scanner'
             }
@@ -43,7 +43,7 @@ pipeline {
                   waitForQualityGate abortPipeline: true
                   }
              }
-        }
+        }*/
 
         stage('Functional Test') {
             steps {
@@ -52,7 +52,7 @@ pipeline {
                 sh 'docker stop lapd || true'
                 //sh 'cd ./resources/test && docker build -t apitester:dockerfile .'
                 
-                sh 'docker run --rm --network=roachnet -p 27018:27017 --name lapd -d -v /home/ziad/testMDB:/docker-entrypoint-initdb.d/ mongo'
+                sh 'docker run --rm --network=roachnet -p 27018:27017 --name lapd -d -v /home/ziad/project/testMDB:/docker-entrypoint-initdb.d/ mongo'
                 sh 'sleep 1'
                 sh 'mv ./.env ./.env.bak'
                 sh 'cp ./resources/test/.env .'
@@ -91,15 +91,15 @@ pipeline {
         stage('Application Builds') {
             steps {
                 //Linux Native
-                sh 'go build -o OGrEE_API_Linux_x64 main.go'
+                sh 'make linux'
                 sh 'mv OGrEE_API_Linux_x64 /OGrEE/bin/api'
 
                 //Windows x64
-                sh 'GOOS=windows GOARCH=amd64 go build -o OGrEE_API_Win_x64 main.go'
+                sh 'make windows'
                 sh 'mv OGrEE_API_Win_x64 /OGrEE/bin/api'
 
                 //OSX x64
-                sh 'GOOS=darwin GOARCH=amd64 go build -o OGrEE_API_OSX_x64 main.go'
+                sh 'make mac'
                 sh 'mv OGrEE_API_OSX_x64 /OGrEE/bin/api'
 
                 //Upload builds to Nextcloud

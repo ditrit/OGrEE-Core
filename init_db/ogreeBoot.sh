@@ -97,7 +97,7 @@ mongod --dbpath "$path" --port $port --logpath "$log" --fork
 mongosh "$host:"$port bootup.js
 
 #The command below will execute the mongo script
-mongosh "$host:"$port"/"$name createdb.js --eval 'var dbName = "'$name'"'
+mongosh "$host:"$port"/"$name ./createdb.js --eval 'var dbName = "'$name'"'
 echo "PASSED BOOTUP"
 
 sudo fuser -k $port/tcp

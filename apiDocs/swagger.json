@@ -142,6 +142,26 @@
         }
       }
     },
+    "/api/stats": {
+      "get": {
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "objects"
+        ],
+        "summary": "Displays DB statistics.",
+        "operationId": "GetStats",
+        "responses": {
+          "200": {
+            "description": "Request is valid."
+          },
+          "504": {
+            "description": "Server error."
+          }
+        }
+      }
+    },
     "/api/token/valid": {
       "get": {
         "produces": [
@@ -280,6 +300,38 @@
           },
           "404": {
             "description": "Not Found. An error message will be returned."
+          }
+        }
+      }
+    },
+    "/api/version": {
+      "get": {
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "versioning"
+        ],
+        "summary": "Gets the API version.",
+        "operationId": "GetAPIVersion",
+        "responses": {
+          "200": {
+            "description": "OK. A response body will be returned with version details."
+          }
+        }
+      },
+      "options": {
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "versioning"
+        ],
+        "summary": "Displays possible operations for version.",
+        "operationId": "VersionOptions",
+        "responses": {
+          "200": {
+            "description": "Returns the possible request methods."
           }
         }
       }

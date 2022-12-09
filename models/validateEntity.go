@@ -1,7 +1,9 @@
 package models
 
 import (
+	"encoding/hex"
 	u "p3/utils"
+	"strings"
 
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -23,23 +25,52 @@ func validateParent(ent string, entNum int, t map[string]interface{}) (map[strin
 		return u.Message(false, "ParentID is not valid"), false
 	}
 
+	parent := map[string]interface{}{"parent": ""}
 	switch entNum {
 	case DEVICE:
 		x, _ := GetEntity(bson.M{"_id": objID}, "rack")
-		y, _ := GetEntity(bson.M{"_id": objID}, "device")
-		if x == nil && y == nil {
-			return u.Message(false,
-				"ParentID should be correspond to Existing ID"), false
+		if x != nil {
+			parent["parent"] = "rack"
+			return parent, true
 		}
+
+		y, _ := GetEntity(bson.M{"_id": objID}, "device")
+		if y != nil {
+			parent["parent"] = "device"
+			return parent, true
+		}
+
+		return u.Message(false,
+			"ParentID should be correspond to Existing ID"), false
+
 	case SENSOR, GROUP:
 		w, _ := GetEntity(bson.M{"_id": objID}, "device")
-		x, _ := GetEntity(bson.M{"_id": objID}, "rack")
-		y, _ := GetEntity(bson.M{"_id": objID}, "room")
-		z, _ := GetEntity(bson.M{"_id": objID}, "building")
-		if w == nil && x == nil && y == nil && z == nil {
-			return u.Message(false,
-				"ParentID should be correspond to Existing ID"), false
+		if w != nil {
+			parent["parent"] = "device"
+			return parent, true
 		}
+
+		x, _ := GetEntity(bson.M{"_id": objID}, "rack")
+		if x != nil {
+			parent["parent"] = "rack"
+			return parent, true
+		}
+
+		y, _ := GetEntity(bson.M{"_id": objID}, "room")
+		if y != nil {
+			parent["parent"] = "room"
+			return parent, true
+		}
+
+		z, _ := GetEntity(bson.M{"_id": objID}, "building")
+		if z != nil {
+			parent["parent"] = "building"
+			return parent, true
+		}
+
+		return u.Message(false,
+			"ParentID should be correspond to Existing ID"), false
+
 	case STRAYDEV, STRAYSENSOR:
 		if t["parentId"] != nil && t["parentId"] != "" {
 			if pid, ok := t["parentId"].(string); ok {
@@ -220,15 +251,26 @@ func ValidateEntity(entity int, t map[string]interface{}) (map[string]interface{
 			return u.Message(false, "Name should be on payload"), false
 		}
 
-		/*if t["category"] == nil || t["category"] == "" {
+		if t["category"] == nil || t["category"] == "" {
 			return u.Message(false, "Category should be on the payload"), false
-		}*/
+		}
 
 		if t["domain"] == nil || t["domain"] == "" {
 			return u.Message(false, "Domain should be on the payload"), false
 		}
 
+		if t["description"] == nil || t["description"] == "" {
+			return u.Message(false,
+				"Description should be on the payload as an array"), false
+		}
+
+		if _, ok := t["description"].([]interface{}); !ok {
+			return u.Message(false, "Description should be an array type"), false
+		}
+
 		//Check if Parent ID is valid
+		//returns a map[string]interface{} to hold parent entity
+		//if parent found
 		r, ok := validateParent(u.EntityToString(entity), entity, t)
 		if !ok {
 			return r, ok
@@ -236,7 +278,7 @@ func ValidateEntity(entity int, t map[string]interface{}) (map[string]interface{
 
 		if entity < AC || entity == PWRPNL ||
 			entity == GROUP || entity == ROOMTMPL ||
-			entity == OBJTMPL {
+			entity == OBJTMPL || entity == CORIDOR {
 			if _, ok := t["attributes"]; !ok {
 				return u.Message(false, "Attributes should be on the payload"), false
 			} else {
@@ -356,6 +398,20 @@ func ValidateEntity(entity int, t map[string]interface{}) (map[string]interface{
 							return u.Message(false, "Rack Height unit should be on the payload"), false
 						}
 
+						//Ensure the name is also unique among corridors
+						req := bson.M{"name": t["name"].(string)}
+						nameCheck, _ := GetManyEntities("corridor", req, nil)
+						if nameCheck != nil {
+							if len(nameCheck) != 0 {
+								msg := "Rack name name must be unique among corridors and racks"
+								if nameCheck != nil {
+									println(nameCheck[0]["name"].(string))
+								}
+								return u.Message(false, msg), false
+							}
+
+						}
+
 					case DEVICE:
 						switch v["orientation"] {
 						case "front", "rear", "frontflipped", "rearflipped":
@@ -392,6 +448,143 @@ func ValidateEntity(entity int, t map[string]interface{}) (map[string]interface{
 							}
 						}
 
+					case CORIDOR:
+						//Ensure the temperature and 2 racks are valid
+						if !IsString(v["temperature"]) {
+							msg := "The temperature must be on the " +
+								"payload and can only be a string value 'cold' or 'warm'"
+							return u.Message(false, msg), false
+						}
+						if !StringIsAmongValues(v["temperature"].(string), []string{"warm", "cold"}) {
+							msg := "The temperature must be on the " +
+								"payload and can only be 'cold' or 'warm'"
+							return u.Message(false, msg), false
+						}
+
+						if !IsString(v["content"]) {
+							msg := "The racks must be on the payload and have the key:" +
+								"'content' "
+							return u.Message(false, msg), false
+						}
+
+						racks := strings.Split(v["content"].(string), ",")
+						if len(racks) != 2 {
+							msg := "2 racks separated by a comma must be on the payload"
+							return u.Message(false, msg), false
+						}
+
+						//Ensure the name is also unique among racks
+						req := bson.M{"name": t["name"].(string)}
+						nameCheck, _ := GetManyEntities("rack", req, nil)
+						if nameCheck != nil {
+							if len(nameCheck) != 0 {
+								msg := "Corridor name name must be unique among corridors and racks"
+								return u.Message(false, msg), false
+							}
+
+						}
+
+						//Fetch the 2 racks and ensure they exist
+						ctx, cancel := u.Connect()
+						filter := bson.M{"_id": t["parentId"], "name": racks[0]}
+						orReq := bson.A{bson.D{{"name", racks[0]}}, bson.D{{"name", racks[1]}}}
+						ans := bson.D{}
+
+						filter = bson.M{"parentId": t["parentId"], "$or": orReq}
+						res, e := GetDB().Collection("rack").Find(ctx, filter)
+						defer cancel()
+						if e != nil {
+							msg := "The racks you specified were not found." +
+								" Please verify your input and try again"
+							println(e.Error())
+							return u.Message(false, msg), false
+						}
+
+						//No need to remove '_id' so we can skip calling
+						//ExtractCursor auxillary func
+						res.All(ctx, &ans)
+
+						if len(ans) != 2 {
+							//Request possibly mentioned same racks
+							//thus giving length of 1
+							if !(len(ans) == 1 && racks[0] == racks[1]) {
+								msg := "Unable to get the racks. Please check your inventory and try again"
+								println("LENGTH OF RACK CHECK:", len(ans))
+								println("CORRIDOR PARENTID: ", t["parentId"].(string))
+								return u.Message(false, msg), false
+							}
+
+						}
+
+						//Set the color manually based on temp. as specified by client
+						if v["temperature"] == "warm" {
+							v["color"] = "990000"
+						} else if v["temperature"] == "cold" {
+							v["color"] = "000099"
+						}
+
+					case GROUP:
+						if !IsString(v["content"]) {
+							msg := "The objects to be grouped must be on the payload," +
+								" separated by a comma and have the key:" +
+								"'content' "
+							return u.Message(false, msg), false
+						}
+
+						objects := strings.Split(v["content"].(string), ",")
+						if len(objects) <= 1 {
+							if objects[0] == "" {
+								msg := "objects separated by a comma must be" +
+									" on the payload"
+								return u.Message(false, msg), false
+							}
+
+						}
+
+						//Ensure objects are all unique
+						if _, ok := EnsureUnique(objects); !ok {
+							msg := "The group cannot have duplicate objects"
+							return u.Message(false, msg), false
+						}
+
+						//Ensure objects all exist
+						orReq := bson.A{}
+						for i := range objects {
+							orReq = append(orReq, bson.D{{"name", objects[i]}})
+						}
+						filter := bson.M{"parentId": t["parentId"], "$or": orReq}
+
+						//If parent is rack, retrieve devices
+						if r["parent"].(string) == "rack" {
+							ans, ok := GetManyEntities("device", filter, nil)
+							if ok != "" {
+								return u.Message(false, ok), false
+							}
+							if len(ans) != len(objects) {
+								msg := "Unable to verify objects in specified group" +
+									" please check and try again"
+								return u.Message(false, msg), false
+							}
+
+						} else if r["parent"].(string) == "room" {
+
+							//If parent is room, retrieve corridors and racks
+							corridors, e1 := GetManyEntities("corridor", filter, nil)
+							if e1 != "" {
+								return u.Message(false, e1), false
+							}
+
+							racks, e2 := GetManyEntities("rack", filter, nil)
+							if e2 != "" {
+								return u.Message(false, e1), false
+							}
+							if len(racks)+len(corridors) != len(objects) {
+								msg := "Some object(s) could be not be found. " +
+									"Please check and try again"
+								return u.Message(false, msg), false
+							}
+						}
+
 					}
 				}
 			}
@@ -422,7 +615,7 @@ func ValidateEntity(entity int, t map[string]interface{}) (map[string]interface{
 					"Size,Width,Depth (mm) Array should be on payload"), false
 			}
 
-			if _, ok := t["fbxModel"]; !ok {
+			if t["fbxModel"] == nil {
 				return u.Message(false,
 					"fbxModel should be on payload"), false
 			}
@@ -434,7 +627,7 @@ func ValidateEntity(entity int, t map[string]interface{}) (map[string]interface{
 
 			if _, ok := t["slots"]; !ok {
 				return u.Message(false,
-					"fbxModel should be on payload"), false
+					"slots should be on payload"), false
 			}
 
 		} else { //ROOMTMPL
@@ -468,10 +661,6 @@ func ValidateEntity(entity int, t map[string]interface{}) (map[string]interface{
 					"Tiles should be on payload"), false
 			}
 		}
-	case GROUP:
-		if t["name"] == "" || t["name"] == nil {
-			return u.Message(false, "Name should be on payload"), false
-		}
 
 	case STRAYDEV, STRAYSENSOR:
 		//Check for parent if PID provided
@@ -497,4 +686,42 @@ func ValidateEntity(entity int, t map[string]interface{}) (map[string]interface{
 
 	//Successfully validated the Object
 	return u.Message(true, "success"), true
+}
+
+// Auxillary Functions
+func EnsureUnique(x []string) (string, bool) {
+	dict := map[string]int{}
+	for _, item := range x {
+		dict[item]++
+		if dict[item] > 1 {
+			return item, false
+		}
+	}
+	return "", true
+}
+
+func StringIsAmongValues(x string, values []string) bool {
+	for i := range values {
+		if x == values[i] {
+			return true
+		}
+	}
+	return false
+}
+
+func IsString(x interface{}) bool {
+	if _, ok := x.(string); ok {
+		return true
+	}
+	return false
+}
+
+func IsHexString(s string) bool {
+	//Eliminate 'odd length' errors
+	if len(s)%2 != 0 {
+		s = "0" + s
+	}
+
+	_, err := hex.DecodeString(s)
+	return err == nil
 }

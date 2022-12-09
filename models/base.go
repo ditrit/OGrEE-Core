@@ -16,7 +16,7 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/readpref"
 )
 
-//Database
+// Database
 var db *mongo.Database
 var globalClient *mongo.Client
 
@@ -36,9 +36,10 @@ func init() {
 	pass := os.Getenv("db_pass")
 	dbName := "ogree" + os.Getenv("db")
 
+	println("USER:", user)
+	println("PASS:", pass)
+
 	if user == "" || pass == "" {
-		println("USER:", user)
-		println("PASS:", pass)
 		dbUri = fmt.Sprintf("mongodb://%s:%s/?readPreference=primary&ssl=false",
 			dbHost, dbPort)
 	} else {
@@ -53,7 +54,7 @@ func init() {
 		log.Fatal(err)
 		println("Error while generating client")
 	}
-	ctx, _ := context.WithTimeout(context.Background(), 3*time.Second)
+	ctx, _ := context.WithTimeout(context.Background(), 10*time.Second)
 	err = client.Connect(ctx)
 	if err != nil {
 		log.Fatal(err)

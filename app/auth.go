@@ -6,7 +6,6 @@ import (
 	"strings"
 
 	"context"
-	"fmt"
 	"os"
 	"p3/models"
 
@@ -91,8 +90,10 @@ var JwtAuthentication = func(next http.Handler) http.Handler {
 
 		//Success
 		//set the caller to the user retrieved from the parsed token
-		fmt.Sprintf("User %", tk.UserId) //Useful for monitoring
-		userData := map[string]interface{}{"userID": tk.UserId}
+		//Useful for monitoring
+
+		//fmt.Sprintf("User %", tk.UserId)
+		userData := map[string]interface{}{"email": tk.Email}
 		ctx := context.WithValue(r.Context(), "user", userData)
 		r = r.WithContext(ctx)
 		next.ServeHTTP(w, r) //proceed in the middleware chain!

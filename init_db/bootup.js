@@ -8,6 +8,11 @@
 var m = new Mongo()
 var authDB = m.getDB("admin")
 
+//Create the Root user named Super
+db.createUser({ user: "super", pwd: "superpassword",
+                roles: [{role: "root", db: "admin"}]
+                })
+
 //Create the Admin user
 db.createUser({ user: "admin", pwd: "adminpassword",
                 roles: [{role: "userAdminAnyDatabase", db: "admin"},

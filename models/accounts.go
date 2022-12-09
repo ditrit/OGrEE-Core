@@ -3,7 +3,7 @@ package models
 import (
 	"os"
 	u "p3/utils"
-	"strings"
+	"regexp"
 
 	"github.com/dgrijalva/jwt-go"
 	"go.mongodb.org/mongo-driver/bson"
@@ -11,41 +11,40 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-//JWT Claims struct
+// JWT Claims struct
 type Token struct {
-	UserId uint
+	Email string `json:"email"`
 	jwt.StandardClaims
 }
 
-//a struct for rep user account
+// a struct for rep user account
 type Account struct {
-	ID       uint   ``
-	Email    string `json: "email"`
-	Password string `json: "password"`
-	Token    string `json:"token";sql:"-"`
+	Email    string `json:"email"`
+	Password string `json:"password"`
+	Token    string `json:"token" sql:"-"`
 }
 
-//Validate incoming user
+// Validate incoming user
 func (account *Account) Validate() (map[string]interface{}, bool) {
-	if !strings.Contains(account.Email, "@") {
-		return u.Message(false, "Email address is required"), false
+	valid := regexp.MustCompile("(\\w)+@(\\w)+\\.(\\w)+").MatchString(account.Email)
+
+	if !valid {
+		return u.Message(false, "A valid email address is required"), false
 	}
 
-	if len(account.Password) < 6 {
-		return u.Message(false, "Password is required"), false
+	if len(account.Password) < 7 {
+		return u.Message(false,
+			"Please provide a Password with a length greater than 6"), false
 	}
-
-	//Email is unique
-	temp := &Account{}
 
 	//Error checking and duplicate emails
 	ctx, cancel := u.Connect()
-	//err := GetDB().Collection("accounts").FindOne(ctx, bson.M{"email": account.Email}).Decode(&temp) //.Where("email = ?", account.Email).First(temp).Error
-	err := GetDB().Collection("account").FindOne(ctx, bson.M{"email": account.Email}).Decode(&temp)
+	err := GetDB().Collection("account").FindOne(ctx, bson.M{"email": account.Email}).Err()
 	if err != nil && err != mongo.ErrNoDocuments {
 		println("Error while creating account:", err.Error())
 		return u.Message(false, "Connection error. Please retry"), false
 	}
+
 	//User already exists
 	if err == nil {
 		return u.Message(false, "Error: User already exists"), false
@@ -77,7 +76,7 @@ func (account *Account) Create() (map[string]interface{}, string) {
 	defer cancel()
 
 	//Create new JWT token for the newly created account
-	tk := &Token{UserId: account.ID}
+	tk := &Token{Email: account.Email}
 	token := jwt.NewWithClaims(jwt.GetSigningMethod("HS256"), tk)
 	tokenString, _ := token.SignedString([]byte(os.Getenv("token_password")))
 
@@ -119,7 +118,7 @@ func Login(email, password string) (map[string]interface{}, string) {
 	account.Password = ""
 
 	//Create JWT token
-	tk := &Token{UserId: account.ID}
+	tk := &Token{Email: account.Email}
 	token := jwt.NewWithClaims(jwt.GetSigningMethod("HS256"), tk)
 	tokenString, _ := token.SignedString([]byte(os.Getenv("token_password")))
 	account.Token = tokenString
