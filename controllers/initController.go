@@ -273,13 +273,7 @@ func GetURLs(apiURL string, unityURL string, env map[string]string) {
 
 	if State.UnityClientURL == "" {
 		if envUnityURL, ok := env["unityURL"]; ok {
-			// check if URL is valid
-			_, err := url.ParseRequestURI(envUnityURL)
-			if err != nil {
-				println("envUnityURL not valid: " + err.Error())
-			} else {
-				State.UnityClientURL = envUnityURL
-			}
+			State.UnityClientURL = envUnityURL
 		}
 	}
 
