@@ -118,6 +118,13 @@ next:
 		}
 		return r.writeEsc(buf, char)
 	}
+
+	//Quick fix for CTRL+Backspace,
+	//the r.altkey and r.ctrlkey are not triggered for some reason
+	if char == 127 {
+		char = MetaBackspace
+	}
+
 	return r.write(buf, char)
 }
 
