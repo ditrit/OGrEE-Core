@@ -74,7 +74,7 @@ func DispfWithAttrs(formatx string, objs *[]interface{}, attrs *[]string) {
 				}
 			}
 			fmt.Printf(format, argument...)
-			fmt.Printf("\tName:%s\n", obj["name"].(string))
+			fmt.Printf("\n")
 		}
 	}
 }
