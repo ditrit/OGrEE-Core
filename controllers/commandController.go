@@ -1418,13 +1418,12 @@ func GetOCLIAtrributes(Path string, ent int, data map[string]interface{}) error 
 		_, err = PostObj(ent, "room", data)
 	case RACK:
 		attr = data["attributes"].(map[string]interface{})
+		var parentAttr map[string]interface{} = parent["attributes"].(map[string]interface{})
 
 		baseAttrs := map[string]interface{}{
-			"sizeUnit":    "cm",
-			"height":      "5",
-			"heightUnit":  "U",
-			"posXYUnit":   "t",
-			"orientation": "front",
+			"sizeUnit":   "cm",
+			"heightUnit": "U",
+			"posXYUnit":  parentAttr["floorUnit"],
 		}
 
 		MergeMaps(attr, baseAttrs, false)
@@ -1436,7 +1435,7 @@ func GetOCLIAtrributes(Path string, ent int, data map[string]interface{}) error 
 		if attr["size"] == "" {
 			if State.DebugLvl > 0 {
 				l.GetErrorLogger().Println(
-					"User gave invalid size value for creating room")
+					"User gave invalid size value for creating rack")
 				return fmt.Errorf("Invalid size attribute/template provided." +
 					" \nThe size must be an array/list/vector with " +
 					"3 elements." + "\n\nIf you have provided a" +
