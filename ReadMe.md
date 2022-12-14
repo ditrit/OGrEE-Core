@@ -10,8 +10,28 @@ This is an API interfacing with a MongoDB cluster for data centre management.
 
 Building
 ------------
-This is not yet tested on Windows and macOS   
-The ReadMe assumes that you already have GO installed and your Environment PATHS properly setup  
+  ### NOTE If Building On Windows
+  You can use ```wsl``` and invoke ```make win``` to generate a windows build, however, this isn't strictly necessary and can be built manually.
+
+  #### Build manually
+  Execute the following in a terminal at the root directory of this project:
+  ```
+  $GITHASH=(git rev-parse HEAD)
+  $GITHASHDATE=(git show -s --format=%ai)
+  $GITBRANCH=(git branch --show-current)
+  $DATE=Get-Date
+  go build -ldflags="-X  cli/controllers.BuildHash=$GITHASH -X cli/controllers.BuildTree=$GITBRANCH -X cli/controllers.BuildTime=$DATE -X cli/controllers.GitCommitDate=$GITHASHDATE" .\main.go
+  ```
+
+  #### Building via wsl
+
+  To install wsl please follow the [instructions here](https://learn.microsoft.com/en-us/windows/wsl/install)
+  
+  Launch wsl and navigate to the directory containing the API and continue to follow the instructions below. 
+
+  If you want to generate a windows binary you must execute ```make win```
+
+The ReadMe assumes that you already have the **latest version** of GO installed and your Environment PATHS properly setup  
 You must also get [MongoDB](https://docs.mongodb.com/manual/installation/)  
 For BSD systems, GO can be installed from the respective ports  
 For Linux, consult your respective Distribution docs  
@@ -19,12 +39,12 @@ For Linux, consult your respective Distribution docs
 [Otherwise you can follow instructions from the GO site](https://golang.org/doc/install)  
    
   Clone the API repository  
-  Execute go build main.go It should automatically retrieve the necessary libraries. If not then execute the command below to obtain the following packages
+  Execute ```make``` It should automatically retrieve the necessary libraries. If not then execute the command below to obtain the following packages
   ```
   go get github.com/dgrijalva/jwt-go github.com/fsnotify/fsnotify github.com/gorilla/mux go.mongodb.org/mongo-driver github.com/joho/godotenv gopkg.in/check.v1 github.com/crypto golang.org/x/sys golang.org/x/text gopkg.in/ini.v1  
   ```  
 
-   Execute go build main.go
+   Execute make
 
 
 Running
@@ -32,6 +52,9 @@ Running
 You can modify the port of the API in the .env file 
  - Execute the bash script start.sh
  - Execute ```go run main.go```
+
+To view an example of the ```.env``` file: https://ogree.ditrit.io/htmls/apiReference.html   
+
 
 Anatomy
 -------------
