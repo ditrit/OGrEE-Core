@@ -390,13 +390,13 @@ OCCR:
               $$=&createCorridorNode{$3,$6,$8,$11}
         }
         |TOK_GROUP TOK_COL PHYSICAL_PATH TOK_ATTRSPEC TOK_LBRAC GETOBJS TOK_RBRAC {$$=&createGroupNode{$3, $6}}
-        |TOK_ORPH PHYSICAL_PATH TOK_DEVICE TOK_COL EXPR_NOQUOTE TOK_ATTRSPEC EXPR {
-              attributes := map[string]interface{}{"attributes":map[string]interface{}{"template":$7}}
-              $$=&getOCAttrNode{$5, cmd.STRAY_DEV, attributes}
+        |TOK_ORPH TOK_DEVICE TOK_COL PHYSICAL_PATH TOK_ATTRSPEC EXPR_NOQUOTE {
+              attributes := map[string]interface{}{"attributes":map[string]interface{}{"template":$6}}
+              $$=&getOCAttrNode{$4, cmd.STRAY_DEV, attributes}
         }
-        |TOK_ORPH PHYSICAL_PATH TOK_SENSOR TOK_COL EXPR_NOQUOTE TOK_ATTRSPEC EXPR {
-              attributes := map[string]interface{}{"attributes":map[string]interface{}{"template":$7}}
-              $$=&getOCAttrNode{$5, cmd.STRAYSENSOR, attributes}
+        |TOK_ORPH TOK_SENSOR TOK_COL PHYSICAL_PATH TOK_ATTRSPEC EXPR_NOQUOTE {
+              attributes := map[string]interface{}{"attributes":map[string]interface{}{"template":$6}}
+              $$=&getOCAttrNode{$4, cmd.STRAYSENSOR, attributes}
         }
        //EasyPost syntax STRAYSENSOR
        |OBJ_TYPE TOK_USE_JSON PHYSICAL_PATH {$$=&easyPostNode{$1, $3}}

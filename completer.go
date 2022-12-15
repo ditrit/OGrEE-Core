@@ -339,9 +339,9 @@ func GetPrefixCompleter() *readline.PrefixCompleter {
 				readline.PcItemDynamic(TenantSiteOCLICompleter(""), true)),
 			readline.PcItem("co:", true,
 				readline.PcItemDynamic(TenantSiteOCLICompleter(""), true)),
-			readline.PcItem("orphan:sensor:", true,
+			readline.PcItem("orphan sensor:", true,
 				readline.PcItemDynamic(TenantSiteOCLICompleter(""), true)),
-			readline.PcItem("orphan:device:", true,
+			readline.PcItem("orphan device:", true,
 				readline.PcItemDynamic(TenantSiteOCLICompleter(""), true))),
 
 		readline.PcItem("get", true,

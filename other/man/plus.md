@@ -95,7 +95,7 @@ Where ORIENTATION is a string and can only be of the following values: {front,re
 +device:PATH/DEVICE_NAME@SLOT_OR_POSU@SIZEUNIT   
 User must specify the path, DEVICE_NAME, SLOT_OR_POSU and SIZEUNIT  
 
-Where SLOT_OR_POSU is the name of the slot in which you want to place the device or the position (posU, position in U) where you want you to place the device 
+Where SLOT_OR_POSU is the name of the slot in which you want to place the device or the position (posU, position in U) where you want to place the device 
 
 Where SIZEUNIT is the height (in U) in a rack and is a numerical value
 
@@ -104,7 +104,7 @@ Where SIZEUNIT is the height (in U) in a rack and is a numerical value
 +device:PATH/DEVICE_NAME@SLOT_OR_POSU@TEMPLATE   
 User must specify the path, DEVICE_NAME, SLOT_OR_POSU and TEMPLATE
 
-Where SLOT_OR_POSU is the name of the slot in which you want to place the device or the position (posU, position in U) where you want you to place the device 
+Where SLOT_OR_POSU is the name of the slot in which you want to place the device or the position (posU, position in U) where you want to place the device 
 
 Where TEMPLATE refers to the device template name (which must be already existing)
 
@@ -113,7 +113,7 @@ Where TEMPLATE refers to the device template name (which must be already existin
 +device:PATH/DEVICE_NAME@SLOT_OR_POSU@TEMPLATE@SIDE   
 User must specify the path, DEVICE_NAME, SLOT_OR_POSU and TEMPLATE and SIDE  
 
-Where SLOT_OR_POSU is the name of the slot in which you want to place the device or the position (posU, position in U) where you want you to place the device 
+Where SLOT_OR_POSU is the name of the slot in which you want to place the device or the position (posU, position in U) where you want to place the device 
 
 Where TEMPLATE refers to the device template name (which must be already existing)
 
@@ -140,6 +140,18 @@ Where RACK0 is the first rack (which must be already existing)
 Where ... is any number of racks (which must be already existing) that you would like to add with each separated by '@'
 
 Where RACKN is the last rack (which must be already existing) that you would like to add 
+
+
++ orphan sensor: NAME/OF/SENSOR @ TEMPLATE
+User must specify the path, and TEMPLATE  
+
+Where TEMPLATE refers to the sensor template name (which must be already existing)
+
+
++ orphan device: NAME/OF/DEVICE @ TEMPLATE
+User must specify the path, and TEMPLATE 
+
+Where TEMPLATE refers to the device template name (which must be already existing)
 
 
 EXAMPLES   
@@ -173,3 +185,7 @@ EXAMPLES
 +co:CED.BETA.A.R1.CorridorD@{A01,A09}@warm 
 
 +gr:CED.BETA.A.R1.GroupG@{A01,A02,A03,A04}
+
++ orphan sensor: StraySensorDEMO @ SensorTemplateA
+
++ orphan device: StrayDevDEMO @ DEVICE1T

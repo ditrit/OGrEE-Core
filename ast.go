@@ -450,6 +450,8 @@ func (n *searchObjectsNode) execute() (interface{}, error) {
 	return v, nil
 }
 
+// TODO: Need to restore recursive updates or to remove it
+// entirely
 type recursiveUpdateObjNode struct {
 	arg0 interface{}
 	arg1 interface{}
