@@ -68,7 +68,7 @@ type funcCallNode struct {
 func (n *funcCallNode) execute() (interface{}, error) {
 	val, ok := funcTable[n.name]
 	if !ok {
-		return nil, fmt.Errorf("undefined function ", n.name)
+		return nil, fmt.Errorf("undefined function %s", n.name)
 	}
 	body, ok := val.(node)
 	if !ok {
@@ -105,11 +105,11 @@ type lenNode struct {
 func (n *lenNode) execute() (interface{}, error) {
 	val, ok := dynamicSymbolTable[n.variable]
 	if !ok {
-		return nil, fmt.Errorf("Undefined variable ", n.variable)
+		return nil, fmt.Errorf("Undefined variable %s", n.variable)
 	}
 	arr, ok := val.([]interface{})
 	if !ok {
-		return nil, fmt.Errorf("Variable ", n.variable, " does not contain an array.")
+		return nil, fmt.Errorf("Variable %s does not contain an array.", n.variable)
 	}
 	return len(arr), nil
 }
@@ -405,7 +405,7 @@ func (n *getObjectNode) execute() (interface{}, error) {
 	}
 	v, _ := cmd.GetObject(path, false)
 	if v == nil {
-		return nil, fmt.Errorf("Cannot find object at path ", path)
+		return nil, fmt.Errorf("Cannot find object at path %s", path)
 	}
 	return v, nil
 }
@@ -1453,7 +1453,7 @@ type symbolReferenceNode struct {
 func (s *symbolReferenceNode) execute() (interface{}, error) {
 	val, ok := dynamicSymbolTable[s.va]
 	if !ok {
-		return nil, fmt.Errorf("Undefined variable ", s.va)
+		return nil, fmt.Errorf("Undefined variable %s", s.va)
 	}
 	switch v := val.(type) {
 	case string, int, bool, float64, float32, map[int]interface{}:
@@ -1472,7 +1472,7 @@ type objReferenceNode struct {
 func (o *objReferenceNode) execute() (interface{}, error) {
 	val, ok := dynamicSymbolTable[o.va]
 	if !ok {
-		return nil, fmt.Errorf("Undefined variable ", o.va)
+		return nil, fmt.Errorf("Undefined variable %s", o.va)
 	}
 	if _, ok := val.(map[string]interface{}); !ok {
 		return nil, fmt.Errorf(o.va + " Is not an indexable object")
@@ -1515,7 +1515,7 @@ type arrayReferenceNode struct {
 func (n *arrayReferenceNode) execute() (interface{}, error) {
 	v, ok := dynamicSymbolTable[n.variable]
 	if !ok {
-		return nil, fmt.Errorf("Undefined variable ", n.variable)
+		return nil, fmt.Errorf("Undefined variable %s", n.variable)
 	}
 	arr, ok := v.([]interface{})
 	if !ok {
@@ -1530,8 +1530,12 @@ func (n *arrayReferenceNode) execute() (interface{}, error) {
 		return nil, fmt.Errorf("Index should be an integer.")
 	}
 	if i < 0 || i >= len(arr) {
-		return nil, fmt.Errorf("Index out of range error!\n Array Length Of: ",
-			len(arr), "\nBut desired index at: ", i)
+		return nil, fmt.Errorf(
+			"Index out of range\n"+
+				"Array length : %d"+
+				"But desired index at : %d",
+			len(arr), i,
+		)
 	}
 	return arr[i], nil
 }
@@ -1554,7 +1558,7 @@ func (a *assignNode) execute() (interface{}, error) {
 		}
 		return nil, nil
 	}
-	return nil, fmt.Errorf("Invalid type to assign variable ", a.variable)
+	return nil, fmt.Errorf("Invalid type to assign variable %s", a.variable)
 }
 
 // Checks the map and sees if it is an object type
