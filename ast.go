@@ -990,7 +990,10 @@ func (n *selectChildrenNode) execute() (interface{}, error) {
 	if err != nil {
 		return nil, err
 	}
-	println("Selection made!")
+	if cmd.State.DebugLvl > cmd.NONE {
+		println("Selection made!")
+	}
+
 	return v, nil
 }
 

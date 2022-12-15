@@ -29,11 +29,11 @@ func InitHistoryFilePath(histPath string) {
 func InitDebugLevel(verbose string) {
 	var ok bool
 	State.DebugLvl, ok = map[string]int{
-		"NONE":    0,
-		"ERROR":   1,
-		"WARNING": 2,
-		"INFO":    3,
-		"DEBUG":   4,
+		"NONE":    NONE,
+		"ERROR":   ERROR,
+		"WARNING": WARNING,
+		"INFO":    INFO,
+		"DEBUG":   DEBUG,
 	}[verbose]
 	if !ok {
 		State.DebugLvl = 1

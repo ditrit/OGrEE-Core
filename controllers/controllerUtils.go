@@ -26,6 +26,15 @@ const (
 	STRAYSENSOR
 )
 
+// Debug Level Declaration
+const (
+	NONE = iota
+	ERROR
+	WARNING
+	INFO
+	DEBUG
+)
+
 // Display contents of []map[string]inf array
 func DispMapArr(x []map[string]interface{}) {
 	for idx := range x {

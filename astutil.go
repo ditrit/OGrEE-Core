@@ -64,7 +64,9 @@ func fileToJSON(path string) map[string]interface{} {
 	data := map[string]interface{}{}
 	x, e := ioutil.ReadFile(path)
 	if e != nil {
-		println("Error while opening file! " + e.Error())
+		if cmd.State.DebugLvl > cmd.NONE {
+			println("Error while opening file! " + e.Error())
+		}
 		return nil
 	}
 	json.Unmarshal(x, &data)
