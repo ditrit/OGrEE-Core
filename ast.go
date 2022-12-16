@@ -518,7 +518,7 @@ func (n *updateObjNode) execute() (interface{}, error) {
 
 		invalidVals := []string{"separator", "areas"}
 		if AssertInStringValues(i, invalidVals) {
-			msg := "You must specify" +
+			msg := "This is invalid syntax. You must specify" +
 				" 2 arrays (and for separator commands, the type) separated by '@' "
 			return nil, fmt.Errorf(msg)
 		}
