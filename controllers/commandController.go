@@ -1351,6 +1351,9 @@ func GetOCLIAtrributes(Path string, ent int, data map[string]interface{}) error 
 		_, err = PostObj(ent, "room", data)
 	case RACK:
 		attr = data["attributes"].(map[string]interface{})
+		//Save orientation because it gets overwritten by
+		//GetOCLIAtrributesTemplateHelper()
+		orientation := attr["orientation"]
 
 		baseAttrs := map[string]interface{}{
 			"sizeUnit":    "cm",
@@ -1365,6 +1368,10 @@ func GetOCLIAtrributes(Path string, ent int, data map[string]interface{}) error 
 		//If user provided templates, get the JSON
 		//and parse into templates
 		GetOCLIAtrributesTemplateHelper(attr, data, ent)
+
+		//Restore the orientation overwritten
+		//by the helper func
+		attr["orientation"] = orientation
 
 		if attr["size"] == "" {
 			if State.DebugLvl > 0 {
