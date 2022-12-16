@@ -31,7 +31,9 @@ func InterpretLine(str *string) bool {
 		if err != nil {
 			if strings.Contains(err.Error(), "duplicate") {
 				l.GetWarningLogger().Println(err.Error())
-				fmt.Println(err.Error())
+				if c.State.DebugLvl > c.NONE {
+					fmt.Println(err.Error())
+				}
 				return true
 			} else {
 				l.GetErrorLogger().Println(err.Error())

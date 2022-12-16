@@ -79,7 +79,7 @@ func main() {
 	flag.Parse()
 
 	var flags Flags
-	flags.verbose = NonDefault(v, verboseLevel, "")
+	flags.verbose = NonDefault(v, verboseLevel, "ERROR")
 	flags.unityURL = NonDefault(u, unityURL, "")
 	flags.APIURL = NonDefault(a, APIURL, "")
 	flags.APIKEY = NonDefault(k, APIKEY, "")

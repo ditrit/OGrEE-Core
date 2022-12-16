@@ -29,11 +29,11 @@ func InitHistoryFilePath(histPath string) {
 func InitDebugLevel(verbose string) {
 	var ok bool
 	State.DebugLvl, ok = map[string]int{
-		"NONE":    0,
-		"ERROR":   1,
-		"WARNING": 2,
-		"INFO":    3,
-		"DEBUG":   4,
+		"NONE":    NONE,
+		"ERROR":   ERROR,
+		"WARNING": WARNING,
+		"INFO":    INFO,
+		"DEBUG":   DEBUG,
 	}[verbose]
 	if !ok {
 		State.DebugLvl = 1
@@ -165,7 +165,9 @@ func SetStateReadline(rl *readline.Instance) {
 func InitUnityCom(rl *readline.Instance, addr string) {
 	errConnect := models.ConnectToUnity(addr, State.Timeout)
 	if errConnect != nil {
-		println(errConnect.Error())
+		if State.DebugLvl > ERROR {
+			println(errConnect.Error())
+		}
 		return
 	}
 	State.UnityClientAvail = true
