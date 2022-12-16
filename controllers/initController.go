@@ -165,7 +165,9 @@ func SetStateReadline(rl *readline.Instance) {
 func InitUnityCom(rl *readline.Instance, addr string) {
 	errConnect := models.ConnectToUnity(addr, State.Timeout)
 	if errConnect != nil {
-		println(errConnect.Error())
+		if State.DebugLvl > ERROR {
+			println(errConnect.Error())
+		}
 		return
 	}
 	State.UnityClientAvail = true
