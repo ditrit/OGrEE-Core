@@ -17,6 +17,7 @@ var _ = l.GetInfoLogger() //Suppresses annoying Dockerfile build error
   ast *ast
   node node
   nodeArr []node
+  sArr []string
   mapVoid map[string]interface{}
 }
 
@@ -59,7 +60,8 @@ var _ = l.GetInfoLogger() //Suppresses annoying Dockerfile build error
 %type <n> LSOBJ_COMMAND
 %type <s> OBJ_TYPE COMMAND UI_TOGGLE
 %type <nodeArr> WNARG GETOBJS WORD_CONCAT
-%type <mapVoid> ARGACC
+%type <mapVoid> ARGACC PRINTF
+%type <sArr> WNARG2
 %type <node> OCCR PATH PHYSICAL_PATH STRAY_DEV_PATH EXPR CONCAT CONCAT_TERM stmnt st2 IF 
        EXPR_NOQUOTE ARRAY ORIENTATION EXPR_NOQUOTE_NOCOL CONCAT_NOCOL CONCAT_TERM_NOCOL EXPR_NOQUOTE_COMMON
 //%type <mapVoid> EQUAL_LIST
@@ -309,9 +311,21 @@ WORD_CONCAT: TOK_WORD TOK_COMMA WORD_CONCAT {$$=append([]node{&strLeaf{$1}}, $3.
 ARGACC: TOK_MINUS TOK_WORD {$$=map[string]interface{}{$2:nil}}
        |TOK_MINUS TOK_WORD ARGACC {$3[$2]=nil;$$=$3}
        |TOK_MINUS TOK_WORD TOK_WORD {$$=map[string]interface{}{$2:$3}}
+       //PRINTF TYPE 
+       |TOK_MINUS TOK_WORD TOK_LPAREN PRINTF TOK_RPAREN {$$=map[string]interface{}{$2:$4}}
+       |TOK_MINUS TOK_WORD TOK_LPAREN PRINTF TOK_RPAREN ARGACC {$6[$2]=$4;$$=$6}
+       
        |TOK_MINUS TOK_WORD TOK_WORD ARGACC {$4[$2]=$3;$$=$4}
        |TOK_MINUS TOK_WORD TOK_STR { $$=map[string]interface{}{$2:$3}}
        |TOK_MINUS TOK_WORD TOK_STR ARGACC { $4[$2]=$3;$$=$4}
+;
+
+//For printf arguments
+WNARG2: TOK_WORD TOK_COMMA WNARG2 {$$=append([]string{$1},$3...)}
+       |TOK_WORD {$$=[]string{$1}}
+;
+
+PRINTF: TOK_STR TOK_COMMA WNARG2 {$$=map[string]interface{}{$1:$3}}
 ;
 
 
