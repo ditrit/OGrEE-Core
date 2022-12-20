@@ -3,6 +3,7 @@ package controllers
 import (
 	l "cli/logger"
 	"cli/models"
+	u "cli/utils"
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
@@ -572,9 +573,11 @@ func UpdateObj(Path, id, ent string, data map[string]interface{}, deleteAndPut b
 		attrs := map[string]interface{}{}
 
 		for i := range data {
-			// Since all data types must be sent as string
+			// Since all data of obj attributes must be string
 			// stringify the data before sending
-			data[i] = Stringify(data[i])
+			if u.IsNestedAttr(i, ent) {
+				data[i] = Stringify(data[i])
+			}
 
 			found := GenUpdateJSON(ogData, i, data[i], deleteAndPut)
 			if !found {
@@ -2763,12 +2766,10 @@ func InteractObject(path string, keyword string, val interface{}, fromAttr bool)
 
 			if _, ok := obj[value]; ok {
 				if value == "description" {
-					//val = desc[0]
-					//for i := range desc {
-					//	val =
-					//}
+
 					desc := obj["description"].([]interface{})
 					val = ""
+					//Combine entire the description array into a string
 					for i := 0; i < len(desc); i++ {
 						if i == 0 {
 							val = desc[i].(string)
@@ -2785,30 +2786,31 @@ func InteractObject(path string, keyword string, val interface{}, fromAttr bool)
 				val = innerMap[value]
 			} else {
 				if strings.Contains(value, "description") == true {
-					desc := obj["description"].([]interface{})
-					if len(value) > 11 { //descriptionX format
-						//split the number and description
-						numStr := strings.Split(value, "description")[1]
-						num, e := strconv.Atoi(numStr)
-						if e != nil {
-							return e
-						}
+					if desc, ok := obj["description"].([]interface{}); ok {
+						if len(value) > 11 { //descriptionX format
+							//split the number and description
+							numStr := strings.Split(value, "description")[1]
+							num, e := strconv.Atoi(numStr)
+							if e != nil {
+								return e
+							}
 
-						if num < 0 {
-							return fmt.Errorf("Description index must be positive")
-						}
+							if num < 0 {
+								return fmt.Errorf("Description index must be positive")
+							}
 
-						if num >= len(desc) {
-							msg := "Description index is out of" +
-								" range. The length for this object is: " +
-								strconv.Itoa(len(desc))
-							return fmt.Errorf(msg)
-						}
-						val = desc[num]
+							if num >= len(desc) {
+								msg := "Description index is out of" +
+									" range. The length for this object is: " +
+									strconv.Itoa(len(desc))
+								return fmt.Errorf(msg)
+							}
+							val = desc[num]
 
-					} else {
-						val = innerMap[value]
-					}
+						} else {
+							val = innerMap[value]
+						}
+					} //Otherwise the description is a string
 
 				} else {
 					msg := "The specified attribute does not exist" +

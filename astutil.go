@@ -137,7 +137,7 @@ func resMap(x map[string]interface{}, ent string, isUpdate bool) (map[string]int
 			continue
 		}
 
-		if u.IsAttr(key, ent) {
+		if u.IsNestedAttr(key, ent) {
 			attrs[key] = val
 		} else {
 			res[key] = val

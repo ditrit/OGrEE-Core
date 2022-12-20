@@ -48,7 +48,7 @@ func ParamsParse(link *url.URL) []byte {
 	//return values
 }
 
-func IsAttr(key, ent string) bool {
+func IsNestedAttr(key, ent string) bool {
 	switch ent {
 	case "sensor", "group":
 		switch key {
