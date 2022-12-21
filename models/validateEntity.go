@@ -11,7 +11,7 @@ import (
 
 func validateParent(ent string, entNum int, t map[string]interface{}) (map[string]interface{}, bool) {
 
-	if entNum == TENANT {
+	if entNum == SITE {
 		return nil, true
 	}
 
@@ -121,7 +121,7 @@ func ValidatePatch(ent int, t map[string]interface{}) (map[string]interface{}, b
 			}
 
 		case "parentId":
-			if ent < ROOMTMPL && ent > TENANT {
+			if ent < ROOMTMPL && ent > SITE {
 				x, ok := validateParent(u.EntityToString(ent), ent, t)
 				if !ok {
 					return x, ok
@@ -133,14 +133,6 @@ func ValidatePatch(ent int, t map[string]interface{}) (map[string]interface{}, b
 				x, ok := ValidateEntity(ent, t)
 				if !ok {
 					return x, ok
-				}
-			}
-
-		case "attributes.color": // TENANT
-			if ent == TENANT {
-				if v, _ := t[k]; v == nil {
-					return u.Message(false,
-						"Field: "+k+" cannot nullified!"), false
 				}
 			}
 
@@ -170,8 +162,8 @@ func ValidatePatch(ent int, t map[string]interface{}) (map[string]interface{}, b
 				}
 			}
 
-		case "attributes": //TENANT ... SENSOR, OBJTMPL
-			if (ent >= TENANT && ent < ROOMTMPL) || ent == OBJTMPL {
+		case "attributes": //SITE ... SENSOR, OBJTMPL
+			if (ent >= SITE && ent < ROOMTMPL) || ent == OBJTMPL {
 				if v, _ := t[k]; v == nil {
 					return u.Message(false,
 						"Field: "+k+" cannot nullified!"), false
@@ -253,8 +245,8 @@ func ValidateEntity(entity int, t map[string]interface{}) (map[string]interface{
 		attribute
 	*/
 	switch entity {
-	case TENANT, SITE, BLDG, ROOM, RACK, DEVICE, AC,
-		PWRPNL, CABINET, CORIDOR, SENSOR, GROUP:
+	case SITE, BLDG, ROOM, RACK, DEVICE, AC,
+		PWRPNL, CABINET, CORIDOR, SENSOR:
 		if t["name"] == nil || t["name"] == "" {
 			return u.Message(false, "Name should be on payload"), false
 		}
@@ -294,26 +286,6 @@ func ValidateEntity(entity int, t map[string]interface{}) (map[string]interface{
 					return u.Message(false, "Attributes should be a JSON Dictionary"), false
 				} else {
 					switch entity {
-					case TENANT:
-						if _, ok := v["color"]; !ok || v["color"] == "" {
-							return u.Message(false,
-								"Color Attribute must be specified on the payload and as a hex string"), false
-						}
-
-						if !IsString(v["color"]) {
-							return u.Message(false,
-								"Color Attribute must be a string (of a hex value)"), false
-						}
-
-						if len(v["color"].(string)) != 6 {
-							return u.Message(false,
-								"Color Attribute must have a length of 6"), false
-						}
-
-						if !IsHexString(v["color"].(string)) {
-							return u.Message(false,
-								"Color Attribute must be a Hex value"), false
-						}
 
 					case SITE:
 						switch v["orientation"] {
@@ -399,10 +371,6 @@ func ValidateEntity(entity int, t map[string]interface{}) (map[string]interface{
 					case RACK:
 						if v["posXY"] == "" || v["posXY"] == nil {
 							return u.Message(false, "XY coordinates should be on payload"), false
-						}
-
-						if v["posXYUnit"] == "" || v["posXYUnit"] == nil {
-							return u.Message(false, "PositionXYUnit should be on the payload"), false
 						}
 
 						switch v["orientation"] {
@@ -720,7 +688,7 @@ func ValidateEntity(entity int, t map[string]interface{}) (map[string]interface{
 	return u.Message(true, "success"), true
 }
 
-//Auxillary Functions
+// Auxillary Functions
 func EnsureUnique(x []string) (string, bool) {
 	dict := map[string]int{}
 	for _, item := range x {

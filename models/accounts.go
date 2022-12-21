@@ -13,15 +13,22 @@ import (
 
 // JWT Claims struct
 type Token struct {
-	Email string `json:"email"`
+	Email  string `json:"email"`
+	UserId uint
+	Domain string
+	Role   string
 	jwt.StandardClaims
 }
 
 // a struct for rep user account
 type Account struct {
-	Email    string `json:"email"`
-	Password string `json:"password"`
-	Token    string `json:"token" sql:"-"`
+	ID        uint   ``
+	AdminAuth string `json:"adminPassword"`
+	Email     string `json: "email"`
+	Password  string `json: "password"`
+	Domain    string `json: "domain"`
+	Role      string `json: "role"`
+	Token     string `json:"token";sql:"-"`
 }
 
 // Validate incoming user
@@ -39,10 +46,12 @@ func (account *Account) Validate() (map[string]interface{}, bool) {
 
 	//Error checking and duplicate emails
 	ctx, cancel := u.Connect()
-	err := GetDB().Collection("account").FindOne(ctx, bson.M{"email": account.Email}).Err() //.Where("email = ?", account.Email).First(temp).Error
+	err := GetDB().Collection("account").FindOne(ctx, bson.M{"email": account.Email}).Err()
 	if err != nil && err != mongo.ErrNoDocuments {
-		return u.Message(false, "Connection error : "+err.Error()), false
+		println("Error while creating account:", err.Error())
+		return u.Message(false, "Connection error. Please retry"), false
 	}
+
 	//User already exists
 	if err == nil {
 		return u.Message(false, "Error: User already exists"), false
@@ -51,10 +60,24 @@ func (account *Account) Validate() (map[string]interface{}, bool) {
 	return u.Message(false, "Requirement passed"), true
 }
 
-func (account *Account) Create() (map[string]interface{}, string) {
+func (account *Account) Create(role, domain string) (map[string]interface{}, string) {
 
 	if resp, ok := account.Validate(); !ok {
-		return resp, ""
+		return resp, "validate"
+	}
+
+	//Check if user is allowed to do account creation
+	//only admins (issuer or super roles) can create accounts
+	//managers can create user roles in their domain
+	//or if the the request included the adminPassword
+	if !(role == "manager" && account.Role == "user" &&
+		(domain == account.Domain)) &&
+		!(role == "super") &&
+		(os.Getenv("signing_password") != account.AdminAuth) {
+
+		return u.Message(false,
+			"Invalid credentials for creating an account."+
+				"Please note only admins can create accounts"), "unauthorised"
 	}
 
 	hashedPassword, _ := bcrypt.GenerateFromPassword(
@@ -63,15 +86,18 @@ func (account *Account) Create() (map[string]interface{}, string) {
 	account.Password = string(hashedPassword)
 
 	ctx, cancel := u.Connect()
-	_, e := GetDB().Collection("account").InsertOne(ctx, account)
-	if e != nil {
-		return u.Message(false, "Connection error please retry again later"), "internal"
+	search := GetDB().Collection("account").FindOne(ctx, bson.M{"email": account.Email})
+	if search.Err() != nil {
+		GetDB().Collection("account").InsertOne(ctx, account)
+	} else {
+		return u.Message(false,
+			"Error: User already exists:"), "clientError"
 	}
 
 	defer cancel()
 
 	//Create new JWT token for the newly created account
-	tk := &Token{Email: account.Email}
+	tk := &Token{Email: account.Email, UserId: account.ID, Domain: account.Domain, Role: account.Role}
 	token := jwt.NewWithClaims(jwt.GetSigningMethod("HS256"), tk)
 	tokenString, _ := token.SignedString([]byte(os.Getenv("token_password")))
 
@@ -89,6 +115,7 @@ func Login(email, password string) (map[string]interface{}, string) {
 
 	ctx, cancel := u.Connect()
 	err := GetDB().Collection("account").FindOne(ctx, bson.M{"email": email}).Decode(account)
+	//err := GetDB().Collection("accounts").FindOne(ctx, bson.M{"email": email}).Decode(account)
 	//err := GetDB().Table("account").Where("email = ?", email).First(account).Error
 	if err != nil {
 		if err == mongo.ErrNoDocuments {

@@ -10,7 +10,7 @@
   ],
   "swagger": "2.0",
   "info": {
-    "description": "Testing Swagger spec. It's still in progress\n\nThe API may return incorrect response codes and have bugs.",
+    "description": "Testing Swagger spec. It's still in progress\n\nThe API may return incorrect response codes and have bugs.\n\nFor a list of endpoints please consult: https://nextcloud.ditrit.io/index.php/apps/files/?dir=/Ogree/1_Core/1_API/Endpoint_List\u0026openfile=20692",
     "title": "Golang OGREE API",
     "contact": {
       "name": "Ziad Khalaf",
@@ -47,14 +47,25 @@
             "name": "password",
             "in": "json",
             "required": true
+          },
+          {
+            "format": "string",
+            "default": "ORNESS",
+            "description": "Name of the the customer",
+            "name": "customer",
+            "in": "json",
+            "required": true
           }
         ],
         "responses": {
-          "200": {
-            "description": "Authenticated"
+          "201": {
+            "description": "Authenticated and new account created"
           },
           "400": {
             "description": "Bad request"
+          },
+          "403": {
+            "description": "User not authorised to create an account"
           },
           "500": {
             "description": "Internal server error"
@@ -206,7 +217,7 @@
           {
             "type": "string",
             "default": "sites",
-            "description": "Indicates the Object. Only values of \"tenants\", \"sites\", \"buildings\", \"rooms\", \"racks\", \"devices\", \"acs\", \"panels\", \"cabinets\", \"groups\", \"corridors\", \"room-templates\", \"obj-templates\", \"sensors\", \"stray-devices\" \"stray-sensors\" are acceptable",
+            "description": "Indicates the Object. Only values of \"domains\", \"sites\", \"buildings\", \"rooms\", \"racks\", \"devices\", \"acs\", \"panels\", \"cabinets\", \"groups\", \"corridors\", \"room-templates\", \"obj-templates\", \"sensors\", \"stray-devices\" \"stray-sensors\" are acceptable",
             "name": "objs",
             "in": "query",
             "required": true
@@ -281,7 +292,7 @@
         "operationId": "ValidateObjectOptions",
         "parameters": [
           {
-            "description": "Only values of \"tenants\", \"sites\", \"buildings\", \"rooms\", \"racks\", \"devices\", \"room-templates\", \"obj-templates\", \"rooms\", \"acs\", \"panels\", \"cabinets\", \"groups\", \"corridors\",\"sensors\",\"stray-devices\" \"stray-sensors\" are acceptable",
+            "description": "Only values of \"domains\", \"sites\", \"buildings\", \"rooms\", \"racks\", \"devices\", \"room-templates\", \"obj-templates\", \"rooms\", \"acs\", \"panels\", \"cabinets\", \"groups\", \"corridors\",\"sensors\",\"stray-devices\" \"stray-sensors\" are acceptable",
             "name": "obj",
             "in": "query"
           }
@@ -330,20 +341,20 @@
     },
     "/api/{entity}/{name}/all": {
       "get": {
-        "description": "Returns JSON body with all subobjects under the Tenant",
+        "description": "Returns JSON body with all subobjects",
         "produces": [
           "application/json"
         ],
         "tags": [
           "objects"
         ],
-        "summary": "Obtain all objects related to Tenant or stray-device in the system using name.",
+        "summary": "Obtain all objects related to Site or stray-device in the system using name.",
         "operationId": "GetFromObject",
         "parameters": [
           {
             "type": "int",
             "default": 999,
-            "description": "Name of Tenant",
+            "description": "Name of Site",
             "name": "name",
             "in": "query",
             "required": true
@@ -369,7 +380,7 @@
         "operationId": "GetFromObjectOptions",
         "parameters": [
           {
-            "description": "Name of tenant.",
+            "description": "Name of site.",
             "name": "name",
             "in": "query"
           }
@@ -399,7 +410,7 @@
           {
             "type": "string",
             "default": "sites",
-            "description": "Indicates the location. Only values of \"tenants\", \"sites\", \"buildings\", \"rooms\", \"racks\", \"devices\", \"room-templates\", \"obj-templates\",\"acs\", \"panels\", \"cabinets\", \"groups\", \"corridors\", \"sensors\", \"stray-devices\", \"stray-sensors\" are acceptable",
+            "description": "Indicates the location. Only values of \"sites\",\"domains\", \"buildings\", \"rooms\", \"racks\", \"devices\", \"room-templates\", \"obj-templates\",\"acs\", \"panels\", \"cabinets\", \"groups\", \"corridors\", \"sensors\", \"stray-devices\", \"stray-sensors\" are acceptable",
             "name": "objs",
             "in": "query",
             "required": true
@@ -427,7 +438,7 @@
         "operationId": "ObjectOptions",
         "parameters": [
           {
-            "description": "Only values of \"tenants\", \"sites\", \"buildings\", \"rooms\", \"racks\", \"devices\", \"room-templates\", \"obj-templates\", \"rooms\", \"acs\", \"panels\", \"cabinets\", \"groups\", \"corridors\",\"sensors\",\"stray-devices\" \"stray-sensors\" are acceptable",
+            "description": "Only values of \"sites\", \"domains\", \"buildings\", \"rooms\", \"racks\", \"devices\", \"room-templates\", \"obj-templates\", \"rooms\", \"separators\", \"acs\", \"panels\", \"rows\", \"tiles\", \"cabinets\", \"groups\", \"corridors\",\"sensors\",\"stray-devices\", \"stray-sensors\" are acceptable",
             "name": "objs",
             "in": "query"
           }
@@ -444,7 +455,7 @@
     },
     "/api/{objs}/{id}": {
       "get": {
-        "description": "The ID must be provided in the URL parameter\nThe name can be used instead of ID if the obj is tenant",
+        "description": "The ID must be provided in the URL parameter\nThe name can be used instead of ID if the obj is site",
         "produces": [
           "application/json"
         ],
@@ -457,7 +468,7 @@
           {
             "type": "string",
             "default": "sites",
-            "description": "Indicates the location. Only values of \"tenants\", \"sites\", \"buildings\", \"rooms\", \"racks\", \"devices\", \"room-templates\", \"obj-templates\", \"acs\", \"panels\",\"cabinets\", \"groups\", \"corridors\",\"sensors\",\"stray-devices\", \"stray-sensors\" are acceptable",
+            "description": "Indicates the location. Only values of \"sites\",\"domains\", \"buildings\", \"rooms\", \"racks\", \"devices\", \"room-templates\", \"obj-templates\", \"acs\", \"panels\",\"cabinets\", \"groups\", \"corridors\",\"sensors\",\"stray-devices\", \"stray-sensors\" are acceptable",
             "name": "objs",
             "in": "query",
             "required": true
@@ -465,7 +476,7 @@
           {
             "type": "int",
             "default": 999,
-            "description": "ID of desired object or Name of Tenant. For templates the slug is the ID. For stray-devices the name is the ID",
+            "description": "ID of desired object or Name of Site. For templates the slug is the ID. For stray-devices the name is the ID",
             "name": "ID",
             "in": "path",
             "required": true
@@ -497,7 +508,7 @@
           {
             "type": "string",
             "default": "sites",
-            "description": "Indicates the location. Only values of \"tenants\", \"sites\", \"buildings\", \"rooms\", \"racks\", \"devices\", \"room-templates\", \"obj-templates\", \"rooms\",\"acs\", \"panels\", \"cabinets\", \"groups\", \"corridors\",\"sensors\", \"stray-devices\", \"stray-sensors\" are acceptable",
+            "description": "Indicates the location. Only values of \"sites\", \"domains\", \"buildings\", \"rooms\", \"racks\", \"devices\", \"room-templates\", \"obj-templates\", \"rooms\",\"acs\", \"panels\", \"cabinets\", \"groups\", \"corridors\",\"sensors\", \"stray-devices\", \"stray-sensors\" are acceptable",
             "name": "objs",
             "in": "query",
             "required": true
@@ -505,7 +516,7 @@
           {
             "type": "int",
             "default": 999,
-            "description": "ID of the object or name of Tenant. For templates the slug is the ID. For stray-devices the name is the ID",
+            "description": "ID of the object or name of Site. For templates the slug is the ID. For stray-devices the name is the ID",
             "name": "ID",
             "in": "path",
             "required": true
@@ -569,7 +580,7 @@
           {
             "type": "string",
             "default": "sites",
-            "description": "Indicates the location. Only values of \"tenants\", \"sites\", \"buildings\", \"rooms\", \"racks\", \"devices\", \"room-templates\", \"obj-templates\",\"acs\", \"panels\", \"cabinets\", \"groups\", \"corridors\",\"sensors\", \"stray-devices\" \"stray-sensors\" are acceptable",
+            "description": "Indicates the location. Only values of \"sites\",\"domains\", \"buildings\", \"rooms\", \"racks\", \"devices\", \"room-templates\", \"obj-templates\",\"acs\", \"panels\", \"cabinets\", \"groups\", \"corridors\",\"sensors\", \"stray-devices\" \"stray-sensors\" are acceptable",
             "name": "objs",
             "in": "query",
             "required": true
@@ -577,7 +588,7 @@
           {
             "type": "int",
             "default": 999,
-            "description": "ID of the object or name of Tenant. For templates the slug is the ID. For stray-devices the name is the ID",
+            "description": "ID of the object or name of Site. For templates the slug is the ID. For stray-devices the name is the ID",
             "name": "ID",
             "in": "path",
             "required": true
@@ -603,12 +614,12 @@
         "operationId": "ObjectOptions",
         "parameters": [
           {
-            "description": "Only values of \"tenants\", \"sites\", \"buildings\", \"rooms\", \"racks\", \"devices\", \"room-templates\", \"obj-templates\", \"acs\", \"panels\",\"cabinets\", \"groups\", \"corridors\",\"sensors\",\"stray-devices\",\"stray-sensors\", are acceptable",
+            "description": "Only values of \"sites\",\"domains\", \"buildings\", \"rooms\", \"racks\", \"devices\", \"room-templates\", \"obj-templates\", \"acs\", \"panels\",\"cabinets\", \"groups\", \"corridors\",\"sensors\",\"stray-devices\",\"stray-sensors\", are acceptable",
             "name": "objs",
             "in": "query"
           },
           {
-            "description": "ID of the object or name of Tenant. For templates the slug is the ID. For stray-devices the name is the ID",
+            "description": "ID of the object or name of Site. For templates the slug is the ID. For stray-devices the name is the ID",
             "name": "id",
             "in": "query"
           }
@@ -639,7 +650,7 @@
           {
             "type": "string",
             "default": "sites",
-            "description": "Indicates the location. Only values of \"tenants\", \"sites\", \"buildings\", \"rooms\", \"racks\", \"devices\", \"room-templates\", \"obj-templates\", \"rooms\", \"acs\", \"panels\", \"cabinets\", \"groups\", \"corridors\", \"sensors\", \"stray-devices\", \"stray-sensors\" are acceptable",
+            "description": "Indicates the location. Only values of \"sites\",\"domains\", \"buildings\", \"rooms\", \"racks\", \"devices\", \"room-templates\", \"obj-templates\", \"rooms\", \"acs\", \"panels\", \"cabinets\", \"groups\", \"corridors\", \"sensors\", \"stray-devices\", \"stray-sensors\" are acceptable",
             "name": "objs",
             "in": "query",
             "required": true
@@ -647,7 +658,7 @@
           {
             "type": "int",
             "default": 999,
-            "description": "ID of the object or name of Tenant. For templates the slug is the ID. For stray-devices the name is the ID",
+            "description": "ID of the object or name of Site. For templates the slug is the ID. For stray-devices the name is the ID",
             "name": "ID",
             "in": "path",
             "required": true
@@ -714,7 +725,7 @@
           {
             "type": "string",
             "default": "sites",
-            "description": "Indicates the object. Only values of \"tenants\", \"sites\", \"buildings\", \"rooms\", \"racks\", \"devices\", \"stray-devices\" are acceptable",
+            "description": "Indicates the object. Only values of \"sites\", \"domains\", \"buildings\", \"rooms\", \"racks\", \"devices\", \"stray-devices\" are acceptable",
             "name": "objs",
             "in": "query",
             "required": true
@@ -722,7 +733,7 @@
           {
             "type": "string",
             "default": "INFINITI",
-            "description": "ID of desired object. For tenants and stray-devices the name can be used as the ID",
+            "description": "ID of desired object. For Sites and stray-devices the name can be used as the ID",
             "name": "ID",
             "in": "path",
             "required": true
@@ -756,12 +767,12 @@
         "operationId": "GetFromObjectOptions",
         "parameters": [
           {
-            "description": "Only values of \"tenants\", \"sites\", \"buildings\", \"rooms\", \"racks\", \"devices\", and \"stray-devices\" are acceptable",
+            "description": "Only values of \"sites\", \"domains\", \"buildings\", \"rooms\", \"racks\", \"devices\", and \"stray-devices\" are acceptable",
             "name": "objs",
             "in": "query"
           },
           {
-            "description": "ID of the object.For tenants and stray-devices the name can be used as the ID",
+            "description": "ID of the object.For Sites and stray-devices the name can be used as the ID",
             "name": "id",
             "in": "query"
           },
@@ -799,7 +810,7 @@
           {
             "type": "string",
             "default": "sites",
-            "description": "Indicates the object. Only values of \"tenants\", \"sites\", \"buildings\", \"rooms\", \"racks\", \"devices\", \"stray-devices\" are acceptable",
+            "description": "Indicates the object. Only values of \"sites\", \"domains\" \"buildings\", \"rooms\", \"racks\", \"devices\", \"stray-devices\" are acceptable",
             "name": "objs",
             "in": "query",
             "required": true
@@ -807,7 +818,7 @@
           {
             "type": "int",
             "default": 999,
-            "description": "ID of object. For tenants and stray-devices the name can be used as the ID",
+            "description": "ID of object. For Sites and stray-devices the name can be used as the ID",
             "name": "ID",
             "in": "query",
             "required": true
@@ -840,12 +851,12 @@
         "operationId": "GetFromObjectOptions",
         "parameters": [
           {
-            "description": "Only values of \"tenants\", \"sites\", \"buildings\", \"rooms\", \"racks\", \"devices\", and \"stray-devices\" are acceptable",
+            "description": "Only values of \"sites\", \"domains\", \"buildings\", \"rooms\", \"racks\", \"devices\", and \"stray-devices\" are acceptable",
             "name": "objs",
             "in": "query"
           },
           {
-            "description": "ID of the object.For tenants and stray-devices the name can be used as the ID",
+            "description": "ID of the object.For Sites and stray-devices the name can be used as the ID",
             "name": "id",
             "in": "query"
           }
@@ -874,7 +885,7 @@
           {
             "type": "string",
             "default": "sites",
-            "description": "Indicates the object. Only values of \"tenants\", \"sites\", \"buildings\", \"rooms\", \"racks\", \"devices\", \"room-templates\", \"obj-templates\",\"acs\",\"panels\", \"groups\", \"corridors\", \"sensors\", \"stray-devices\" and \"stray-sensors\" are acceptable",
+            "description": "Indicates the object. Only values of \"domains\", \"sites\", \"buildings\", \"rooms\", \"racks\", \"devices\", \"room-templates\", \"obj-templates\",\"acs\",\"panels\", \"groups\", \"corridors\", \"sensors\", \"stray-devices\" and \"stray-sensors\" are acceptable",
             "name": "objs",
             "in": "query",
             "required": true
@@ -882,21 +893,21 @@
           {
             "type": "string",
             "default": "INFINITI",
-            "description": "Name of tenant",
+            "description": "Name of Site",
             "name": "Name",
             "in": "query"
           },
           {
             "type": "string",
             "default": "Auto",
-            "description": "Category of Tenant (ex. Consumer Electronics, Medical)",
+            "description": "Category of Site (ex. Consumer Electronics, Medical)",
             "name": "Category",
             "in": "query"
           },
           {
             "type": "string",
             "default": "High End Auto",
-            "description": "Domain of the Tenant",
+            "description": "Domain of the Site",
             "name": "Domain"
           },
           {
@@ -930,7 +941,7 @@
           {
             "type": "string",
             "default": "sites",
-            "description": "Indicates the Object. Only values of \"tenants\", \"sites\", \"buildings\", \"rooms\", \"racks\", \"devices\", \"acs\", \"panels\", \"cabinets\", \"groups\", \"corridors\", \"room-templates\", \"obj-templates\", \"sensors\", \"stray-devices\", \"stray-sensors\" are acceptable",
+            "description": "Indicates the Object. Only values of \"sites\",\"domains\", \"buildings\", \"rooms\", \"racks\", \"devices\", \"acs\", \"panels\", \"cabinets\", \"groups\", \"corridors\", \"room-templates\", \"obj-templates\", \"sensors\", \"stray-devices\", \"stray-sensors\" are acceptable",
             "name": "objs",
             "in": "query",
             "required": true
@@ -961,7 +972,7 @@
           {
             "type": "int",
             "default": 999,
-            "description": "All objects are linked to a parent with the exception of Tenant since it has no parent",
+            "description": "All objects are linked to a parent with the exception of Site since it has no parent",
             "name": "ParentID",
             "required": true
           },
@@ -994,7 +1005,7 @@
     },
     "/api/{obj}/{id}/{subent}": {
       "get": {
-        "description": "For Example: /api/tenants/{id}/buildings\nWill return all buildings of a tenant\nReturns JSON body with all subobjects under the Object",
+        "description": "For Example: /api/sites/{id}/buildings\nWill return all buildings of a site\nReturns JSON body with all subobjects under the Object",
         "produces": [
           "application/json"
         ],
@@ -1006,8 +1017,8 @@
         "parameters": [
           {
             "type": "string",
-            "default": "tenants",
-            "description": "Indicates the object. Only values of \"tenants\", \"sites\", \"buildings\", \"rooms\" are acceptable",
+            "default": "sites",
+            "description": "Indicates the object. Only values of \"sites\", \"buildings\", \"rooms\" are acceptable",
             "name": "obj",
             "in": "query",
             "required": true
@@ -1049,12 +1060,12 @@
         "operationId": "GetFromObjectOptions",
         "parameters": [
           {
-            "description": "Only values of \"tenants\", \"sites\", \"buildings\", \"rooms\", \"racks\", \"devices\", and \"stray-devices\" are acceptable",
+            "description": "Only values of \"sites\", \"domains\", \"buildings\", \"rooms\", \"racks\", \"devices\", and \"stray-devices\" are acceptable",
             "name": "objs",
             "in": "query"
           },
           {
-            "description": "ID of the object. For stray-devices and tenants the name can be used as the ID.",
+            "description": "ID of the object. For stray-devices and Sites the name can be used as the ID.",
             "name": "id",
             "in": "query"
           },

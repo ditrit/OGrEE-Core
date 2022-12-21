@@ -6,5 +6,9 @@ main
 ogreedb/
 mongod.log
 mdb/*
+init_db/mdb/*
+init_db/mongod*
 *.txt
 resources/debug.log
+resources/scripts/mdb/*
+resources/scripts/mongod*
