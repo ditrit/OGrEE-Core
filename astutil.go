@@ -2,6 +2,7 @@ package main
 
 import (
 	cmd "cli/controllers"
+	u "cli/utils"
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
@@ -135,46 +136,11 @@ func resMap(x map[string]interface{}, ent string, isUpdate bool) (map[string]int
 			res[key] = val
 			continue
 		}
-		switch ent {
-		case "sensor", "group":
-			switch key {
-			case "id", "name", "category", "parentID",
-				"description", "domain", "type",
-				"parentid", "parentId":
-				res[key] = val
 
-			default:
-				attrs[key] = val
-			}
-		case "room_template":
-			switch key {
-			case "id", "slug", "orientation", "separators",
-				"tiles", "colors", "rows", "sizeWDHm",
-				"technicalArea", "reservedArea":
-				res[key] = val
-
-			default:
-				attrs[key] = val
-			}
-		case "obj_template":
-			switch key {
-			case "id", "slug", "description", "category",
-				"slots", "colors", "components", "sizeWDHmm",
-				"fbxModel":
-				res[key] = val
-
-			default:
-				attrs[key] = val
-			}
-		default:
-			switch key {
-			case "id", "name", "category", "parentID",
-				"description", "domain", "parentid", "parentId":
-				res[key] = val
-
-			default:
-				attrs[key] = val
-			}
+		if u.IsNestedAttr(key, ent) {
+			attrs[key] = val
+		} else {
+			res[key] = val
 		}
 	}
 	if len(attrs) > 0 {
