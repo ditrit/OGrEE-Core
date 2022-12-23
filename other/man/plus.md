@@ -34,6 +34,17 @@ Where the POSITION (posXY attribute) must be a 2 element array/vector of coordin
 Where the SIZE (size attribute) must be a 3 element array/vector (ie [1,2,3])
 
 
++bd:PATH/BLDG_NAME@POSITION@SIZE@ORIENTATION   
++building:PATH/BLDG_NAME@POSITION@SIZE@ORIENTATION
+User must specify the path, BLDG_NAME, POSITION and SIZE   
+
+Where the POSITION (posXY attribute) must be a 2 element array/vector of coordinates (ie [1,2])   
+
+Where the SIZE (size attribute) must be a 3 element array/vector (ie [1,2,3])
+
+Where the ORIENTATION (orientation attribute) must be a cardinal string coordinate (ie +N+W) or a numerical value (ie 45)
+
+
 +ro:PATH/ROOM_NAME@POSITION@SIZE@ORIENTATION   
 +room:PATH/ROOM_NAME@POSITION@SIZE@ORIENTATION    
 User must specify the path, ROOM_NAME, POSITION and SIZE and ORIENTATION   
@@ -164,6 +175,8 @@ EXAMPLES
 
 +bd:CED.BETA.A@[0,0]@[25,29.4,3]
 +bldg:CED/BETA/A@[0,0]@[25,29.4,3]
++bd:CED.BETA.A@[0,0]@[25,29.4,3]@+N+W
++bldg:CED/BETA/A@[0,0]@[25,29.4,3]@98.1
 
 +room:CED/BETA/A/R1@[0,0]@DeviceTemplateA
 +ro:CED/BETA/A/R1@[0,0]@[22.8,19.8,2]@+N+W

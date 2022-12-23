@@ -1177,6 +1177,24 @@ func (n *getOCAttrNode) execute() (interface{}, error) {
 			return nil, fmt.Errorf(msg)
 		}
 	}
+	if n.ent == cmd.BLDG {
+		//If Orientation was given, check if it is valid
+		attr := attributes["attributes"]
+		if orientation, ok := attr.(map[string]interface{})["orientation"]; ok {
+
+			if IsString(orientation) {
+				if !checkIfOrientation(orientation.(string)) {
+					msg := "Invalid orientation! You must provide either cardinal coordinates or a float value"
+					return nil, fmt.Errorf(msg)
+				}
+			} else if !IsFloat(orientation) {
+				//Error Case
+				msg := "Please provide a valid orientation, either cardinal coordinates or a float value"
+				return nil, fmt.Errorf(msg)
+			}
+
+		}
+	}
 	if n.ent == cmd.ROOM {
 		//Ensure orientation is valid if present
 		orientation := attributes["attributes"].(map[string]interface{})["orientation"]

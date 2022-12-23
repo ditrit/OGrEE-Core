@@ -37,6 +37,7 @@ func checkIfOrientation(x string) bool {
 	switch x {
 	case "EN", "NW", "WS", "SE", "NE", "SW",
 		"-E-N", "-E+N", "+E-N", "+E+N", "+N+E",
+		"+N-E", "-N-E", "-N+E",
 		"-N-W", "-N+W", "+N-W", "+N+W",
 		"-W-S", "-W+S", "+W-S", "+W+S",
 		"-S-E", "-S+E", "+S-E", "+S+E":
@@ -73,6 +74,8 @@ func fileToJSON(path string) map[string]interface{} {
 	return data
 }
 
+// Iterates through x and executes the element if the
+// element is a node
 func evalMapNodes(x map[string]interface{}) (map[string]interface{}, error) {
 	result := make(map[string]interface{})
 	for i := range x {
