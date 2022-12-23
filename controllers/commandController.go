@@ -1947,6 +1947,18 @@ func FocusUI(path string) {
 				return
 			}
 		}
+		category := EntityStrToInt(obj["category"].(string))
+		if category == TENANT || category == SITE ||
+			category == BLDG || category == ROOM {
+			if State.DebugLvl > 0 {
+				msg := "You cannot focus on this object. Note you cannot" +
+					" focus on Tenants, Sites, Buildings and Rooms. " +
+					"For more information please refer to the help doc  (man >)"
+				println(msg)
+				return
+			}
+		}
+
 		id = obj["id"].(string)
 	} else {
 		id = ""
