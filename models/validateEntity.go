@@ -3,6 +3,7 @@ package models
 import (
 	"encoding/hex"
 	u "p3/utils"
+	"strconv"
 	"strings"
 
 	"go.mongodb.org/mongo-driver/bson"
@@ -316,12 +317,10 @@ func ValidateEntity(entity int, t map[string]interface{}) (map[string]interface{
 						}
 
 					case SITE:
-						switch v["orientation"] {
-						case "EN", "NW", "WS", "SE", "NE", "SW":
-						case "", nil:
-							return u.Message(false, "Orientation should be on the payload"), false
-
-						default:
+						if !IsOrientation(v["orientation"], entity) {
+							if v["orientation"] == nil || v["orientation"] == "" {
+								return u.Message(false, "Orientation should be on the payload"), false
+							}
 							return u.Message(false, "Orientation is invalid!"), false
 						}
 
@@ -368,15 +367,11 @@ func ValidateEntity(entity int, t map[string]interface{}) (map[string]interface{
 
 						}
 
-						switch v["orientation"] {
-						case "-E-N", "-E+N", "+E-N", "+E+N", "+N+E":
-						case "-N-W", "-N+W", "+N-W", "+N+W":
-						case "-W-S", "-W+S", "+W-S", "+W+S":
-						case "-S-E", "-S+E", "+S-E", "+S+E":
-						case "", nil:
-							return u.Message(false, "Orientation should be on the payload"), false
-
-						default:
+						//Check Orientation
+						if !IsNonStdOrientation(v["orientation"], entity) {
+							if v["orientation"] == nil || v["orientation"] == "" {
+								return u.Message(false, "Orientation should be on the payload"), false
+							}
 							return u.Message(false, "Orientation is invalid!"), false
 						}
 
@@ -405,12 +400,11 @@ func ValidateEntity(entity int, t map[string]interface{}) (map[string]interface{
 							return u.Message(false, "PositionXYUnit should be on the payload"), false
 						}
 
-						switch v["orientation"] {
-						case "front", "rear", "left", "right":
-						case "", nil:
-							return u.Message(false, "Orientation should be on the payload"), false
-
-						default:
+						//Check Orientation
+						if !IsOrientation(v["orientation"], entity) {
+							if v["orientation"] == nil || v["orientation"] == "" {
+								return u.Message(false, "Orientation should be on the payload"), false
+							}
 							return u.Message(false, "Orientation is invalid!"), false
 						}
 
@@ -445,12 +439,10 @@ func ValidateEntity(entity int, t map[string]interface{}) (map[string]interface{
 						}
 
 					case DEVICE:
-						switch v["orientation"] {
-						case "front", "rear", "frontflipped", "rearflipped":
-						case "", nil:
-							return u.Message(false, "Orientation should be on the payload"), false
-
-						default:
+						if !IsOrientation(v["orientation"], entity) {
+							if v["orientation"] == nil || v["orientation"] == "" {
+								return u.Message(false, "Orientation should be on the payload"), false
+							}
 							return u.Message(false, "Orientation is invalid!"), false
 						}
 
@@ -720,7 +712,7 @@ func ValidateEntity(entity int, t map[string]interface{}) (map[string]interface{
 	return u.Message(true, "success"), true
 }
 
-//Auxillary Functions
+// Auxillary Functions
 func EnsureUnique(x []string) (string, bool) {
 	dict := map[string]int{}
 	for _, item := range x {
@@ -756,4 +748,66 @@ func IsHexString(s string) bool {
 
 	_, err := hex.DecodeString(s)
 	return err == nil
+}
+
+func IsOrientation(x interface{}, ent int) bool {
+	if ent == SITE {
+		switch x {
+		case "EN", "NW", "WS", "SE", "NE", "SW":
+			return true
+
+		default:
+			return false
+		}
+	}
+	if ent == ROOM {
+		switch x {
+		case "EN", "NW", "WS", "SE", "NE", "SW",
+			"-E-N", "-E+N", "+E-N", "+E+N", "+N+E",
+			"+N-E", "-N-E", "-N+E",
+			"-N-W", "-N+W", "+N-W", "+N+W",
+			"-W-S", "-W+S", "+W-S", "+W+S",
+			"-S-E", "-S+E", "+S-E", "+S+E":
+			return true
+		default:
+			return false
+		}
+	}
+
+	if ent == RACK {
+		switch x {
+		case "front", "rear", "left", "right":
+			return true
+		default:
+			return false
+		}
+	}
+
+	if ent == DEVICE {
+		switch x {
+		case "front", "rear", "frontflipped", "rearflipped":
+		default:
+			return false
+		}
+
+	}
+	//Control should not reach here
+	return false
+}
+
+func IsNonStdOrientation(x interface{}, ent int) bool {
+	switch x.(type) {
+	case string:
+		if !IsOrientation(x, ent) {
+			//Check if it is a numerical string
+			_, intErr := strconv.Atoi(x.(string))
+			_, floatErr := strconv.ParseFloat(x.(string), 64)
+			return intErr == nil || floatErr == nil
+		}
+		return true
+	case float64, float32, int:
+		return true
+	default:
+		return false
+	}
 }
