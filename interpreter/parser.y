@@ -395,11 +395,11 @@ OCCR:
               attributes := map[string]interface{}{"attributes":map[string]interface{}{"posXY":$5, "size":$7, "orientation":$9}}
               $$=&getOCAttrNode{$3, cmd.BLDG, attributes}
         }
-        |TOK_ROOM TOK_COL PHYSICAL_PATH TOK_ATTRSPEC EXPR TOK_ATTRSPEC EXPR TOK_ATTRSPEC ORIENTATION TOK_ATTRSPEC EXPR_NOQUOTE{
+        |TOK_ROOM TOK_COL PHYSICAL_PATH TOK_ATTRSPEC EXPR TOK_ATTRSPEC EXPR TOK_ATTRSPEC NONSTD_ORIENTATION TOK_ATTRSPEC EXPR_NOQUOTE{
               attributes := map[string]interface{}{"attributes":map[string]interface{}{"posXY":$5, "size":$7, "orientation":$9, "floorUnit":$11}}
               $$=&getOCAttrNode{$3, cmd.ROOM, attributes}
         }
-        |TOK_ROOM TOK_COL PHYSICAL_PATH TOK_ATTRSPEC EXPR TOK_ATTRSPEC EXPR TOK_ATTRSPEC ORIENTATION {
+        |TOK_ROOM TOK_COL PHYSICAL_PATH TOK_ATTRSPEC EXPR TOK_ATTRSPEC EXPR TOK_ATTRSPEC NONSTD_ORIENTATION {
               attributes := map[string]interface{}{"attributes":map[string]interface{}{"posXY":$5, "size":$7, "orientation":$9}}
               $$=&getOCAttrNode{$3, cmd.ROOM, attributes}
         }

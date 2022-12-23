@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"path/filepath"
+	"strconv"
 	"strings"
 )
 
@@ -1177,7 +1178,7 @@ func (n *getOCAttrNode) execute() (interface{}, error) {
 			return nil, fmt.Errorf(msg)
 		}
 	}
-	if n.ent == cmd.BLDG {
+	if n.ent == cmd.BLDG || n.ent == cmd.ROOM {
 		//If Orientation was given, check if it is valid
 		attr := attributes["attributes"]
 		if orientation, ok := attr.(map[string]interface{})["orientation"]; ok {
@@ -1187,7 +1188,12 @@ func (n *getOCAttrNode) execute() (interface{}, error) {
 					msg := "Invalid orientation! You must provide either cardinal coordinates or a float value"
 					return nil, fmt.Errorf(msg)
 				}
-			} else if !IsFloat(orientation) {
+			} else if IsFloat(orientation) {
+				//Convert the attribute to string
+				attr.(map[string]interface{})["orientation"] =
+					strconv.FormatFloat(float64(orientation.(float64)), 'f', -1, 64)
+
+			} else {
 				//Error Case
 				msg := "Please provide a valid orientation, either cardinal coordinates or a float value"
 				return nil, fmt.Errorf(msg)
@@ -1195,16 +1201,7 @@ func (n *getOCAttrNode) execute() (interface{}, error) {
 
 		}
 	}
-	if n.ent == cmd.ROOM {
-		//Ensure orientation is valid if present
-		orientation := attributes["attributes"].(map[string]interface{})["orientation"]
-		if orientation != nil {
-			if checkIfOrientation(orientation.(string)) == false {
-				msg := "You must provide a valid orientation"
-				return nil, fmt.Errorf(msg)
-			}
-		}
-	}
+
 	err = cmd.GetOCLIAtrributes(path, n.ent, attributes)
 	if err != nil {
 		return nil, err
