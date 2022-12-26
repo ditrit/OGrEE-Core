@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"cli/logger"
 	l "cli/logger"
 	"cli/models"
 	u "cli/utils"
@@ -16,6 +17,8 @@ import (
 	"runtime"
 	"strconv"
 	"strings"
+
+	"golang.org/x/exp/slices"
 )
 
 func PWD() string {
@@ -680,6 +683,93 @@ func UpdateObj(Path, id, ent string, data map[string]interface{}, deleteAndPut b
 		println("Error! Please enter desired parameters of Object to be updated")
 	}
 	return data, nil
+}
+
+// Specific update for deleting elements in an array of an obj
+func UnsetInObj(Path, attr string, idx int) (map[string]interface{}, error) {
+
+	objJSON, _ := GetObject(Path, true)
+	if objJSON == nil {
+		l.GetWarningLogger().Println("Error while getting Object!")
+		return nil, fmt.Errorf("error while getting Object")
+	}
+
+	if u.IsNestedAttr(attr, objJSON["category"].(string)) {
+		if arrInf, ok := objJSON["attributes"].(map[string]interface{})[attr]; ok {
+			if arr, ok := arrInf.([]interface{}); ok {
+				if len(arr) == 0 {
+					if State.DebugLvl > ERROR {
+						println("Cannot delete anymore elements")
+					}
+					return nil, fmt.Errorf("Cannot delete anymore elements")
+				}
+				arr = slices.Delete(arr, idx, idx+1)
+				objJSON["attributes"].(map[string]interface{})[attr] = arr
+
+			} else {
+				if State.DebugLvl > ERROR {
+					println("Attribute is not an array")
+				}
+				return nil, fmt.Errorf("Attribute is not an array")
+			}
+		} else {
+			if State.DebugLvl > ERROR {
+				logger.GetErrorLogger().Println("Attribute :" + attr + " was not found")
+			}
+			return nil, fmt.Errorf("Attribute :" + attr + " was not found")
+		}
+	} else {
+		if arrInf, ok := objJSON[attr]; ok {
+			if arr, ok := arrInf.([]interface{}); ok {
+				if len(arr) == 0 {
+					if State.DebugLvl > ERROR {
+						println("Cannot delete anymore elements")
+					}
+					return nil, fmt.Errorf("Cannot delete anymore elements")
+				}
+				if idx >= len(arr) {
+					idx = len(arr) - 1
+				}
+				arr = slices.Delete(arr, idx, idx+1)
+				objJSON[attr] = arr
+
+			} else {
+				if State.DebugLvl > ERROR {
+					println("Attribute is not an array")
+				}
+				return nil, fmt.Errorf("Attribute is not an array")
+			}
+		} else {
+			if State.DebugLvl > ERROR {
+				logger.GetErrorLogger().Println("Attribute :" + attr + " was not found")
+			}
+			return nil, fmt.Errorf("Attribute :" + attr + " was not found")
+		}
+
+	}
+
+	entity := objJSON["category"].(string)
+	id := objJSON["id"].(string)
+	URL := State.APIURL + "/api/" + entity + "s/" + id
+
+	resp, e := models.Send("PUT", URL, GetKey(), objJSON)
+	respJson := ParseResponse(resp, e, "UPDATE")
+	if respJson != nil {
+		if resp.StatusCode == 200 {
+			println("Success")
+
+			message := map[string]interface{}{
+				"type": "modify", "data": respJson["data"]}
+
+			//Update and inform unity
+			if IsInObjForUnity(entity) == true {
+				entInt := EntityStrToInt(entity)
+				InformUnity("UpdateObj", entInt, message)
+			}
+		}
+	}
+
+	return nil, nil
 }
 
 func LS(x string) []map[string]interface{} {

@@ -1181,6 +1181,7 @@ func (n *unsetVarNode) execute() (interface{}, error) {
 
 type unsetAttrNode struct {
 	path node
+	arr  node
 }
 
 func (n *unsetAttrNode) execute() (interface{}, error) {
@@ -1202,6 +1203,27 @@ func (n *unsetAttrNode) execute() (interface{}, error) {
 	}
 	path = arr[0]
 	data := map[string]interface{}{arr[1]: nil}
+
+	//If the user wants to delete an element in an array
+	//(description, separator etc)
+	if n.arr != nil {
+		var idx int
+		x, _ := n.arr.execute()
+		if IsInfArr(x) && len(x.([]interface{})) == 1 {
+			if IsInt(x.([]interface{})[0]) {
+				idx = x.([]interface{})[0].(int)
+			} else if IsFloat(x.([]interface{})[0]) {
+				idx = int(x.([]interface{})[0].(float64))
+			} else {
+				return nil, fmt.Errorf("Invalid index, please provide an integer")
+			}
+
+		} else {
+			return nil, fmt.Errorf("Invalid index syntax, you must provide a single element")
+		}
+
+		return cmd.UnsetInObj(path, arr[1], idx)
+	}
 
 	return cmd.UpdateObj(path, "", "", data, true)
 

@@ -119,7 +119,8 @@ stmnt:   TOK_GET PATH {$$=&getObjectNode{$2}}
        | TOK_HIERARCH {$$=&hierarchyNode{&pathNode{&strLeaf{"."}, STD}, 1}}
        | TOK_HIERARCH PATH {$$=&hierarchyNode{$2, 1}}
        | TOK_HIERARCH PATH TOK_INT {$$=&hierarchyNode{$2, $3}}
-       | TOK_UNSET PATH  {$$=&unsetAttrNode{$2}}
+       | TOK_UNSET PATH  {$$=&unsetAttrNode{$2,nil}}
+       | TOK_UNSET PATH ARRAY  {$$=&unsetAttrNode{$2,$3}}
        | TOK_UNSET TOK_MINUS TOK_WORD TOK_WORD {$$=&unsetVarNode{$2+$3, $4}}
        
        | TOK_DRAWABLE {$$=&isEntityDrawableNode{&pathNode{&strLeaf{"."}, STD}}}
