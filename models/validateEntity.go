@@ -786,6 +786,7 @@ func IsOrientation(x interface{}, ent int) bool {
 	if ent == DEVICE {
 		switch x {
 		case "front", "rear", "frontflipped", "rearflipped":
+			return true
 		default:
 			return false
 		}
