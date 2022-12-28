@@ -119,7 +119,8 @@ stmnt:   TOK_GET PATH {$$=&getObjectNode{$2}}
        | TOK_HIERARCH {$$=&hierarchyNode{&pathNode{&strLeaf{"."}, STD}, 1}}
        | TOK_HIERARCH PATH {$$=&hierarchyNode{$2, 1}}
        | TOK_HIERARCH PATH TOK_INT {$$=&hierarchyNode{$2, $3}}
-       | TOK_UNSET PATH  {$$=&unsetAttrNode{$2}}
+       | TOK_UNSET PATH  {$$=&unsetAttrNode{$2,nil}}
+       | TOK_UNSET PATH ARRAY  {$$=&unsetAttrNode{$2,$3}}
        | TOK_UNSET TOK_MINUS TOK_WORD TOK_WORD {$$=&unsetVarNode{$2+$3, $4}}
        
        | TOK_DRAWABLE {$$=&isEntityDrawableNode{&pathNode{&strLeaf{"."}, STD}}}
@@ -137,8 +138,9 @@ stmnt:   TOK_GET PATH {$$=&getObjectNode{$2}}
 
        // UPDATE / INTERACT
        | PHYSICAL_PATH TOK_COL TOK_WORD TOK_EQUAL TOK_SHARP EXPR_NOQUOTE {$$=&updateObjNode{$1, map[string]interface{}{$3:$6},true}}
-       | PHYSICAL_PATH TOK_COL TOK_WORD TOK_EQUAL EXPR_NOQUOTE TOK_ATTRSPEC EXPR_NOQUOTE {$$=&specialUpdateNode{$1, $3, $5, $7,""}}
-       | PHYSICAL_PATH TOK_COL TOK_WORD TOK_EQUAL EXPR_NOQUOTE TOK_ATTRSPEC EXPR_NOQUOTE TOK_ATTRSPEC TOK_WORD {$$=&specialUpdateNode{$1, $3, $5, $7,$9}}
+       | PHYSICAL_PATH TOK_COL TOK_WORD TOK_EQUAL EXPR_NOQUOTE TOK_ATTRSPEC EXPR_NOQUOTE {$$=&specialUpdateNode{$1, $3, $5, $7,nil}}
+       | PHYSICAL_PATH TOK_COL TOK_WORD TOK_EQUAL EXPR_NOQUOTE TOK_ATTRSPEC EXPR_NOQUOTE TOK_ATTRSPEC TOK_WORD {$$=&specialUpdateNode{$1, $3, $5, $7,&strLeaf{$9}}}
+       | PHYSICAL_PATH TOK_COL TOK_WORD TOK_EQUAL EXPR_NOQUOTE TOK_ATTRSPEC EXPR_NOQUOTE TOK_ATTRSPEC EXPR {$$=&specialUpdateNode{$1, $3, $5, $7,$9}}
        | PHYSICAL_PATH TOK_COL TOK_WORD TOK_EQUAL EXPR_NOQUOTE {
               /*Hack Case: we need to change the mode of the Path Node*/;
               ($1).(*pathNode).mode = STD;

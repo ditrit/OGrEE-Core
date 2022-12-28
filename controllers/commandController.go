@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"cli/logger"
 	l "cli/logger"
 	"cli/models"
 	u "cli/utils"
@@ -16,6 +17,8 @@ import (
 	"runtime"
 	"strconv"
 	"strings"
+
+	"golang.org/x/exp/slices"
 )
 
 func PWD() string {
@@ -680,6 +683,94 @@ func UpdateObj(Path, id, ent string, data map[string]interface{}, deleteAndPut b
 		println("Error! Please enter desired parameters of Object to be updated")
 	}
 	return data, nil
+}
+
+// Specific update for deleting elements in an array of an obj
+func UnsetInObj(Path, attr string, idx int) (map[string]interface{}, error) {
+	var arr []interface{}
+
+	//Get the object
+	objJSON, _ := GetObject(Path, true)
+	if objJSON == nil {
+		l.GetWarningLogger().Println("Error while getting Object!")
+		return nil, fmt.Errorf("error while getting Object")
+	}
+
+	//Check if attribute exists in object
+	existing, nested := AttrIsInObj(objJSON, attr)
+	if !existing {
+		if State.DebugLvl > ERROR {
+			logger.GetErrorLogger().Println("Attribute :" + attr + " was not found")
+		}
+		return nil, fmt.Errorf("Attribute :" + attr + " was not found")
+	}
+
+	//Check if attribute is an array
+	if nested {
+		objAttributes := objJSON["attributes"].(map[string]interface{})
+		if _, ok := objAttributes[attr].([]interface{}); !ok {
+			if State.DebugLvl > ERROR {
+				println("Attribute is not an array")
+			}
+			return nil, fmt.Errorf("Attribute is not an array")
+
+		}
+		arr = objAttributes[attr].([]interface{})
+
+	} else {
+		if _, ok := objJSON[attr].([]interface{}); !ok {
+			if State.DebugLvl > ERROR {
+				logger.GetErrorLogger().Println("Attribute :" + attr + " was not found")
+			}
+			return nil, fmt.Errorf("Attribute :" + attr + " was not found")
+		}
+		arr = objJSON[attr].([]interface{})
+	}
+
+	//Ensure that we can delete elt in array
+	if len(arr) == 0 {
+		if State.DebugLvl > ERROR {
+			println("Cannot delete anymore elements")
+		}
+		return nil, fmt.Errorf("Cannot delete anymore elements")
+	}
+
+	//Perform delete
+	if idx >= len(arr) {
+		idx = len(arr) - 1
+	}
+	arr = slices.Delete(arr, idx, idx+1)
+
+	//Save back into obj
+	if nested {
+		objJSON["attributes"].(map[string]interface{})[attr] = arr
+	} else {
+		objJSON[attr] = arr
+	}
+
+	//Send to API and update Unity
+	entity := objJSON["category"].(string)
+	id := objJSON["id"].(string)
+	URL := State.APIURL + "/api/" + entity + "s/" + id
+
+	resp, e := models.Send("PUT", URL, GetKey(), objJSON)
+	respJson := ParseResponse(resp, e, "UPDATE")
+	if respJson != nil {
+		if resp.StatusCode == 200 {
+			println("Success")
+
+			message := map[string]interface{}{
+				"type": "modify", "data": respJson["data"]}
+
+			//Update and inform unity
+			if IsInObjForUnity(entity) == true {
+				entInt := EntityStrToInt(entity)
+				InformUnity("UpdateObj", entInt, message)
+			}
+		}
+	}
+
+	return nil, nil
 }
 
 func LS(x string) []map[string]interface{} {
