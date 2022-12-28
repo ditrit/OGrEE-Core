@@ -149,6 +149,25 @@ func resMap(x map[string]interface{}, ent string, isUpdate bool) (map[string]int
 	return res, nil
 }
 
+// errResponder helper func for specialUpdateNode
+// used for separator, pillar err msgs and parseAreas()
+func errorResponder(attr, numElts string, multi bool) error {
+	var errorMsg string
+	if multi {
+		errorMsg = "Invalid " + attr + " attributes provided." +
+			" They must be arrays/lists/vectors with " + numElts + " elements."
+	} else {
+		errorMsg = "Invalid " + attr + " attribute provided." +
+			" It must be an array/list/vector with " + numElts + " elements."
+	}
+
+	segment := " Please refer to the wiki or manual reference" +
+		" for more details on how to create objects " +
+		"using this syntax"
+
+	return fmt.Errorf(errorMsg + segment)
+}
+
 func IsMapStrInf(x interface{}) bool {
 	_, ok := x.(map[string]interface{})
 	return ok

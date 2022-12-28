@@ -571,36 +571,6 @@ func (n *specialUpdateNode) execute() (interface{}, error) {
 		return nil, err
 	}
 
-	//Local anonymous function used for separator and pillar err msgs
-	errorResponder := func(attr string, multi bool) (interface{}, error) {
-		var errorMsg string
-		if multi {
-			errorMsg = "Invalid " + attr + " attributes provided." +
-				" They must be arrays/lists/vectors with 2 elements."
-		} else {
-			errorMsg = "Invalid " + attr + " attribute provided." +
-				" It must be an array/list/vector with 2 elements."
-		}
-
-		segment := " Please refer to the wiki or manual reference" +
-			" for more details on how to create objects " +
-			"using this syntax"
-
-		return nil, fmt.Errorf(errorMsg + segment)
-	}
-
-	//Another anonymous function for separators and pillars
-	//Returns separator/pillarArr,object,error
-	fetchObjAttr := func(path, attribute string) (interface{}, map[string]interface{}, error) {
-		obj, _ := cmd.GetObject(path, true)
-		if obj == nil {
-			return nil, nil, fmt.Errorf("cannot find object")
-		}
-		attr := obj["attributes"].(map[string]interface{})
-		wantedArray, _ := attr[attribute]
-		return wantedArray, obj, nil
-	}
-
 	if n.variable == "areas" {
 		if n.extraArg != nil {
 			return nil, fmt.Errorf("Unrecognised argument. Only 2 arrays can be specified")
@@ -613,154 +583,18 @@ func (n *specialUpdateNode) execute() (interface{}, error) {
 		return cmd.UpdateObj(path, "", "", attributes, false)
 	} else if n.variable == "separator" {
 
-		extraArg, err := n.extraArg.execute()
-		if err != nil {
-			return nil, err
-		}
-
-		if !IsString(extraArg) {
-			return nil,
-				fmt.Errorf("Invalid separator type given, it can only be 'wireframe' or 'plain'")
-		}
-
-		sepType := strings.ToLower(extraArg.(string))
-		if sepType != "wireframe" && sepType != "plain" {
-			msg := "Separator type must be specified " +
-				"and can only be 'wireframe' or 'plain'"
-			return nil, fmt.Errorf(msg)
-		}
-
-		if !IsInfArr(first) {
-			if !IsInfArr(second) {
-				return errorResponder("Starting and ending", true)
-			}
-			return errorResponder("Starting", false)
-		}
-
-		if !IsInfArr(second) {
-			return errorResponder("Ending", false)
-		}
-
-		startLen := len(first.([]interface{}))
-		endLen := len(second.([]interface{}))
-
-		if startLen != 2 && endLen == 2 {
-			return errorResponder("starting position", false)
-		}
-
-		if endLen != 2 && startLen == 2 {
-			return errorResponder("ending position", false)
-		}
-
-		if startLen != 2 && endLen != 2 {
-			return errorResponder("starting and ending position", true)
-		}
-
-		/*obj, _ := cmd.GetObject(path, true)
-		if obj == nil {
-			return nil, fmt.Errorf("cannot find object")
-		}*/
-
-		separators, obj, e := fetchObjAttr(path, "separators")
-		var sepArray []interface{}
-		attr := obj["attributes"].(map[string]interface{})
+		attr, e := parseSeparators(path, first, second, &n.extraArg)
 		if e != nil {
 			return nil, e
-		}
-
-		if IsInfArr(separators) {
-			sepArray = separators.([]interface{})
-			sepArray = append(sepArray, map[string]interface{}{
-				"startPosXYm": first, "endPosXYm": second, "type": sepType})
-
-			sepArrStr, _ := json.Marshal(&sepArray)
-			attr["separators"] = string(sepArrStr)
-		} else {
-			var sepStr string
-			nextSep := map[string]interface{}{
-				"startPosXYm": first, "endPosXYm": second, "type": sepType}
-
-			nextSepStr, _ := json.Marshal(nextSep)
-			if IsString(separators) && separators != "" && separators != "[]" {
-				sepStr = separators.(string)
-				size := len(sepStr)
-				sepStr = sepStr[:size-1] + "," + string(nextSepStr) + "]"
-			} else {
-				sepStr = "[" + string(nextSepStr) + "]"
-			}
-
-			attr["separators"] = sepStr
 		}
 
 		return cmd.UpdateObj(path, "", "", attr, false)
 
 	} else if n.variable == "pillar" {
 
-		extraArg, err := n.extraArg.execute()
-		if err != nil {
-			return nil, err
-		}
-
-		if !IsFloat(extraArg) {
-			return nil,
-				fmt.Errorf("Invalid rotation type given, please provide a numerical value")
-		}
-
-		if !IsInfArr(first) {
-			if !IsInfArr(second) {
-				return errorResponder("centerXY and sizeXY", true)
-			}
-			return errorResponder("centerXY", false)
-		}
-
-		if !IsInfArr(second) {
-			return errorResponder("sizeXY", false)
-		}
-
-		centerXYLen := len(first.([]interface{}))
-		sizeXYLen := len(second.([]interface{}))
-
-		if centerXYLen != 2 && sizeXYLen == 2 {
-			return errorResponder("center position", false)
-		}
-
-		if sizeXYLen != 2 && centerXYLen == 2 {
-			return errorResponder("size position", false)
-		}
-
-		if centerXYLen != 2 && sizeXYLen != 2 {
-			return errorResponder("center and size position", true)
-		}
-
-		pillars, obj, e := fetchObjAttr(path, "pillars")
-		var pillarArray []interface{}
-		attr := obj["attributes"].(map[string]interface{})
+		attr, e := parsePillars(path, first, second, &n.extraArg)
 		if e != nil {
 			return nil, e
-		}
-
-		if IsInfArr(pillars) {
-			pillarArray = pillars.([]interface{})
-			pillarArray = append(pillarArray, map[string]interface{}{
-				"centerXY": first, "sizeXY": second, "rotation": extraArg.(float64)})
-
-			pillarArrStr, _ := json.Marshal(&pillarArray)
-			attr["pillars"] = string(pillarArrStr)
-		} else {
-			var pillStr string
-			nextPill := map[string]interface{}{
-				"centerXY": first, "sizeXY": second, "rotation": extraArg.(float64)}
-
-			nextPillStr, _ := json.Marshal(nextPill)
-			if IsString(pillars) && pillars != "" && pillars != "[]" {
-				pillStr = pillars.(string)
-				size := len(pillStr)
-				pillStr = pillStr[:size-1] + "," + string(nextPillStr) + "]"
-			} else {
-				pillStr = "[" + string(nextPillStr) + "]"
-			}
-
-			attr["pillars"] = pillStr
 		}
 
 		return cmd.UpdateObj(path, "", "", attr, false)
@@ -780,12 +614,14 @@ func (n *specialUpdateNode) execute() (interface{}, error) {
 		}
 		second = "color@" + c
 
-		//attr := map[string]interface{}{}
-
 		return nil,
 			cmd.InteractObject(path, "labelFont", second, false)
 	} else {
-		return nil, fmt.Errorf("Invalid attribute specified for room update")
+		msg := "Invalid attribute specified special updating." +
+			" Please refer to the language reference for more information:" +
+			"https://ogree.ditrit.io/htmls/programming.html"
+		return nil,
+			fmt.Errorf(msg)
 	}
 	//Control should not reach here
 	//code added to suppress compiler error
@@ -1770,15 +1606,6 @@ func parseAreas(areas map[string]interface{}) (map[string]interface{}, error) {
 	var reservedStr string
 	var techStr string
 
-	errorResponder := func(attr string) (map[string]interface{}, error) {
-		errorMsg := "Invalid " + attr + " attribute provided." +
-			" It must be an array/list/vector with 4 elements." +
-			" Please refer to the wiki or manual reference" +
-			" for more details on how to create objects " +
-			"using this syntax"
-		return nil, fmt.Errorf(errorMsg)
-	}
-
 	if reserved, ok := areas["reserved"].([]interface{}); ok {
 		if tech, ok := areas["technical"].([]interface{}); ok {
 			if len(reserved) == 4 && len(tech) == 4 {
@@ -1796,18 +1623,179 @@ func parseAreas(areas map[string]interface{}) (map[string]interface{}, error) {
 				areas["technical"] = techStr
 			} else {
 				if len(reserved) != 4 && len(tech) == 4 {
-					return errorResponder("reserved")
+					return nil, errorResponder("reserved", "4", false)
 				} else if len(tech) != 4 && len(reserved) == 4 {
-					return errorResponder("technical")
+					return nil, errorResponder("technical", "4", false)
 				} else { //Both invalid
-					return errorResponder("reserved and technical")
+					return nil, errorResponder("reserved and technical", "4", true)
 				}
 			}
 		} else {
-			return errorResponder("technical")
+			return nil, errorResponder("technical", "4", false)
 		}
 	} else {
-		return errorResponder("reserved")
+		return nil, errorResponder("reserved", "4", false)
 	}
 	return areas, nil
+}
+
+// Hack function for the [room]:separator=[x,y]@[x,y]@type
+func parseSeparators(path string, first, second interface{}, arg *node) (map[string]interface{}, error) {
+	extraArg, err := (*arg).execute()
+	if err != nil {
+		return nil, err
+	}
+
+	if !IsString(extraArg) {
+		return nil,
+			fmt.Errorf("Invalid separator type given, it can only be 'wireframe' or 'plain'")
+	}
+
+	sepType := strings.ToLower(extraArg.(string))
+	if sepType != "wireframe" && sepType != "plain" {
+		msg := "Separator type must be specified " +
+			"and can only be 'wireframe' or 'plain'"
+		return nil, fmt.Errorf(msg)
+	}
+
+	if !IsInfArr(first) {
+		if !IsInfArr(second) {
+			return nil, errorResponder("Starting and ending", "2", true)
+		}
+		return nil, errorResponder("Starting", "2", false)
+	}
+
+	if !IsInfArr(second) {
+		return nil, errorResponder("Ending", "2", false)
+	}
+
+	startLen := len(first.([]interface{}))
+	endLen := len(second.([]interface{}))
+
+	if startLen != 2 && endLen == 2 {
+		return nil, errorResponder("starting position", "2", false)
+	}
+
+	if endLen != 2 && startLen == 2 {
+		return nil, errorResponder("ending position", "2", false)
+	}
+
+	if startLen != 2 && endLen != 2 {
+		return nil, errorResponder("starting and ending position", "2", true)
+	}
+
+	separators, obj, e := fetchObjAttr(path, "separators")
+	var sepArray []interface{}
+	attr := obj["attributes"].(map[string]interface{})
+	if e != nil {
+		return nil, e
+	}
+
+	if IsInfArr(separators) {
+		sepArray = separators.([]interface{})
+		sepArray = append(sepArray, map[string]interface{}{
+			"startPosXYm": first, "endPosXYm": second, "type": sepType})
+
+		sepArrStr, _ := json.Marshal(&sepArray)
+		attr["separators"] = string(sepArrStr)
+	} else {
+		var sepStr string
+		nextSep := map[string]interface{}{
+			"startPosXYm": first, "endPosXYm": second, "type": sepType}
+
+		nextSepStr, _ := json.Marshal(nextSep)
+		if IsString(separators) && separators != "" && separators != "[]" {
+			sepStr = separators.(string)
+			size := len(sepStr)
+			sepStr = sepStr[:size-1] + "," + string(nextSepStr) + "]"
+		} else {
+			sepStr = "[" + string(nextSepStr) + "]"
+		}
+
+		attr["separators"] = sepStr
+	}
+	return attr, nil
+}
+
+// Hack function for the [room]:pillar=[x,y]@[x,y]@rotation
+func parsePillars(path string, first, second interface{}, arg *node) (map[string]interface{}, error) {
+	extraArg, err := (*arg).execute()
+	if err != nil {
+		return nil, err
+	}
+
+	if !IsFloat(extraArg) {
+		return nil,
+			fmt.Errorf("Invalid rotation type given, please provide a numerical value")
+	}
+
+	if !IsInfArr(first) {
+		if !IsInfArr(second) {
+			return nil, errorResponder("centerXY and sizeXY", "2", true)
+		}
+		return nil, errorResponder("centerXY", "2", false)
+	}
+
+	if !IsInfArr(second) {
+		return nil, errorResponder("sizeXY", "2", false)
+	}
+
+	centerXYLen := len(first.([]interface{}))
+	sizeXYLen := len(second.([]interface{}))
+
+	if centerXYLen != 2 && sizeXYLen == 2 {
+		return nil, errorResponder("center position", "2", false)
+	}
+
+	if sizeXYLen != 2 && centerXYLen == 2 {
+		return nil, errorResponder("size position", "2", false)
+	}
+
+	if centerXYLen != 2 && sizeXYLen != 2 {
+		return nil, errorResponder("center and size position", "2", true)
+	}
+
+	pillars, obj, e := fetchObjAttr(path, "pillars")
+	var pillarArray []interface{}
+	attr := obj["attributes"].(map[string]interface{})
+	if e != nil {
+		return nil, e
+	}
+
+	if IsInfArr(pillars) {
+		pillarArray = pillars.([]interface{})
+		pillarArray = append(pillarArray, map[string]interface{}{
+			"centerXY": first, "sizeXY": second, "rotation": extraArg.(float64)})
+
+		pillarArrStr, _ := json.Marshal(&pillarArray)
+		attr["pillars"] = string(pillarArrStr)
+	} else {
+		var pillStr string
+		nextPill := map[string]interface{}{
+			"centerXY": first, "sizeXY": second, "rotation": extraArg.(float64)}
+
+		nextPillStr, _ := json.Marshal(nextPill)
+		if IsString(pillars) && pillars != "" && pillars != "[]" {
+			pillStr = pillars.(string)
+			size := len(pillStr)
+			pillStr = pillStr[:size-1] + "," + string(nextPillStr) + "]"
+		} else {
+			pillStr = "[" + string(nextPillStr) + "]"
+		}
+
+		attr["pillars"] = pillStr
+	}
+	return attr, nil
+}
+
+// Another helper function for separators and pillars
+// Returns separator/pillarArr attribute,object,error
+func fetchObjAttr(path, attribute string) (interface{}, map[string]interface{}, error) {
+	obj, _ := cmd.GetObject(path, true)
+	if obj == nil {
+		return nil, nil, fmt.Errorf("cannot find object")
+	}
+	attr := obj["attributes"].(map[string]interface{})
+	wantedArray, _ := attr[attribute]
+	return wantedArray, obj, nil
 }

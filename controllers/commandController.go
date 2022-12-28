@@ -687,67 +687,68 @@ func UpdateObj(Path, id, ent string, data map[string]interface{}, deleteAndPut b
 
 // Specific update for deleting elements in an array of an obj
 func UnsetInObj(Path, attr string, idx int) (map[string]interface{}, error) {
+	var arr []interface{}
 
+	//Get the object
 	objJSON, _ := GetObject(Path, true)
 	if objJSON == nil {
 		l.GetWarningLogger().Println("Error while getting Object!")
 		return nil, fmt.Errorf("error while getting Object")
 	}
 
-	if u.IsNestedAttr(attr, objJSON["category"].(string)) {
-		if arrInf, ok := objJSON["attributes"].(map[string]interface{})[attr]; ok {
-			if arr, ok := arrInf.([]interface{}); ok {
-				if len(arr) == 0 {
-					if State.DebugLvl > ERROR {
-						println("Cannot delete anymore elements")
-					}
-					return nil, fmt.Errorf("Cannot delete anymore elements")
-				}
-				arr = slices.Delete(arr, idx, idx+1)
-				objJSON["attributes"].(map[string]interface{})[attr] = arr
-
-			} else {
-				if State.DebugLvl > ERROR {
-					println("Attribute is not an array")
-				}
-				return nil, fmt.Errorf("Attribute is not an array")
-			}
-		} else {
-			if State.DebugLvl > ERROR {
-				logger.GetErrorLogger().Println("Attribute :" + attr + " was not found")
-			}
-			return nil, fmt.Errorf("Attribute :" + attr + " was not found")
+	//Check if attribute exists in object
+	existing, nested := AttrIsInObj(objJSON, attr)
+	if !existing {
+		if State.DebugLvl > ERROR {
+			logger.GetErrorLogger().Println("Attribute :" + attr + " was not found")
 		}
-	} else {
-		if arrInf, ok := objJSON[attr]; ok {
-			if arr, ok := arrInf.([]interface{}); ok {
-				if len(arr) == 0 {
-					if State.DebugLvl > ERROR {
-						println("Cannot delete anymore elements")
-					}
-					return nil, fmt.Errorf("Cannot delete anymore elements")
-				}
-				if idx >= len(arr) {
-					idx = len(arr) - 1
-				}
-				arr = slices.Delete(arr, idx, idx+1)
-				objJSON[attr] = arr
-
-			} else {
-				if State.DebugLvl > ERROR {
-					println("Attribute is not an array")
-				}
-				return nil, fmt.Errorf("Attribute is not an array")
-			}
-		} else {
-			if State.DebugLvl > ERROR {
-				logger.GetErrorLogger().Println("Attribute :" + attr + " was not found")
-			}
-			return nil, fmt.Errorf("Attribute :" + attr + " was not found")
-		}
-
+		return nil, fmt.Errorf("Attribute :" + attr + " was not found")
 	}
 
+	//Check if attribute is an array
+	if nested {
+		objAttributes := objJSON["attributes"].(map[string]interface{})
+		if _, ok := objAttributes[attr].([]interface{}); !ok {
+			if State.DebugLvl > ERROR {
+				println("Attribute is not an array")
+			}
+			return nil, fmt.Errorf("Attribute is not an array")
+
+		}
+		arr = objAttributes[attr].([]interface{})
+
+	} else {
+		if _, ok := objJSON[attr].([]interface{}); !ok {
+			if State.DebugLvl > ERROR {
+				logger.GetErrorLogger().Println("Attribute :" + attr + " was not found")
+			}
+			return nil, fmt.Errorf("Attribute :" + attr + " was not found")
+		}
+		arr = objJSON[attr].([]interface{})
+	}
+
+	//Ensure that we can delete elt in array
+	if len(arr) == 0 {
+		if State.DebugLvl > ERROR {
+			println("Cannot delete anymore elements")
+		}
+		return nil, fmt.Errorf("Cannot delete anymore elements")
+	}
+
+	//Perform delete
+	if idx >= len(arr) {
+		idx = len(arr) - 1
+	}
+	arr = slices.Delete(arr, idx, idx+1)
+
+	//Save back into obj
+	if nested {
+		objJSON["attributes"].(map[string]interface{})[attr] = arr
+	} else {
+		objJSON[attr] = arr
+	}
+
+	//Send to API and update Unity
 	entity := objJSON["category"].(string)
 	id := objJSON["id"].(string)
 	URL := State.APIURL + "/api/" + entity + "s/" + id
