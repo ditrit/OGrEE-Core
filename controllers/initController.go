@@ -110,6 +110,14 @@ func InitState(analyser string, env map[string]string) {
 	rTemplate.Path = "/Logical"
 	SearchAndInsert(&State.TreeHierarchy, rTemplate, "/Logical")
 
+	bTemplate := &Node{}
+	bTemplate.ID = "3"
+	bTemplate.PID = "0"
+	bTemplate.Entity = -1
+	bTemplate.Name = "BldgTemplates"
+	bTemplate.Path = "/Logical"
+	SearchAndInsert(&State.TreeHierarchy, bTemplate, "/Logical")
+
 	group := &Node{}
 	group.ID = "3"
 	group.PID = "0"

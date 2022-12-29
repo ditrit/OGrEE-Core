@@ -2620,8 +2620,11 @@ func LoadTemplate(data map[string]interface{}, filePath string) {
 	if cat, _ := data["category"]; cat == "room" || data["description"] == nil {
 		//Room template
 		URL = State.APIURL + "/api/room-templates"
+	} else if cat == "bldg" || cat == "building" {
+		//Bldg template
+		URL = State.APIURL + "/api/bldg-templates"
 	} else {
-		//Obj template
+		// Obj template
 		URL = State.APIURL + "/api/obj-templates"
 	}
 
@@ -3206,6 +3209,14 @@ func OnlinePathResolve(path []string) []string {
 		return []string{basePath}
 	}
 
+	if path[0] == "BldgTemplates" {
+		basePath += "/bldg-templates"
+		if len(path) > 1 {
+			basePath += "/" + path[1]
+		}
+		return []string{basePath}
+	}
+
 	if path[0] == "Groups" {
 		basePath += "/groups"
 		if len(path) > 1 {
@@ -3315,6 +3326,14 @@ func OnlineLevelResolver(path []string) []string {
 
 	if path[0] == "RoomTemplates" {
 		basePath += "/room-templates"
+		if len(path) > 1 {
+			basePath += "/" + path[1]
+		}
+		return []string{basePath}
+	}
+
+	if path[0] == "BldgTemplates" {
+		basePath += "/bldg-templates"
 		if len(path) > 1 {
 			basePath += "/" + path[1]
 		}

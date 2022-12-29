@@ -21,6 +21,7 @@ const (
 	SENSOR
 	ROOMTMPL
 	OBJTMPL
+	BLDGTMPL
 	GROUP
 	STRAY_DEV
 	STRAYSENSOR
@@ -185,6 +186,8 @@ func EntityToString(entity int) string {
 		return "room_template"
 	case OBJTMPL:
 		return "obj_template"
+	case BLDGTMPL:
+		return "bldg_template"
 	case CABINET:
 		return "cabinet"
 	case GROUP:
@@ -222,6 +225,8 @@ func EntityStrToInt(entity string) int {
 		return ROOMTMPL
 	case "obj_template":
 		return OBJTMPL
+	case "bldg_template":
+		return BLDGTMPL
 	case "cabinet", "cb":
 		return CABINET
 	case "group", "gr":
@@ -254,6 +259,8 @@ func GetParentOfEntity(ent int) int {
 	case PWRPNL:
 		return ROOM
 	case ROOMTMPL:
+		return -1
+	case BLDGTMPL:
 		return -1
 	case OBJTMPL:
 		return -1
