@@ -33,6 +33,7 @@ const (
 	GROUP
 	ROOMTMPL
 	OBJTMPL
+	BLDGTMPL
 	STRAYDEV
 	STRAYSENSOR
 )
@@ -88,7 +89,8 @@ func ParamsParse(link *url.URL, objType int) map[string]interface{} {
 	//Building Attribute query varies based on
 	//object type
 	for key, _ := range q {
-		if objType != ROOMTMPL && objType != OBJTMPL { //Non template objects
+		if objType != ROOMTMPL && objType != OBJTMPL &&
+			objType != BLDGTMPL { //Non template objects
 			switch key {
 			case "id", "name", "category", "parentID",
 				"description", "domain", "parentid", "parentId":
@@ -137,6 +139,8 @@ func EntityToString(entity int) string {
 		return "room_template"
 	case OBJTMPL:
 		return "obj_template"
+	case BLDGTMPL:
+		return "bldg_template"
 	case CABINET:
 		return "cabinet"
 	case GROUP:
@@ -176,6 +180,8 @@ func EntityStrToInt(entity string) int {
 		return ROOMTMPL
 	case "obj_template":
 		return OBJTMPL
+	case "bldg_template":
+		return BLDGTMPL
 	case "cabinet":
 		return CABINET
 	case "group":
@@ -195,7 +201,7 @@ func GetParentOfEntityByInt(entity int) int {
 		return ROOM
 	case SENSOR:
 		return -2
-	case ROOMTMPL, OBJTMPL, GROUP, STRAYDEV:
+	case ROOMTMPL, OBJTMPL, BLDGTMPL, GROUP, STRAYDEV:
 		return -1
 	default:
 		return entity - 1

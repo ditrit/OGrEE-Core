@@ -12,7 +12,7 @@ import (
 
 func validateParent(ent string, entNum int, t map[string]interface{}) (map[string]interface{}, bool) {
 
-	if entNum == TENANT {
+	if entNum == u.TENANT {
 		return nil, true
 	}
 
@@ -28,7 +28,7 @@ func validateParent(ent string, entNum int, t map[string]interface{}) (map[strin
 
 	parent := map[string]interface{}{"parent": ""}
 	switch entNum {
-	case DEVICE:
+	case u.DEVICE:
 		x, _ := GetEntity(bson.M{"_id": objID}, "rack")
 		if x != nil {
 			parent["parent"] = "rack"
@@ -44,7 +44,7 @@ func validateParent(ent string, entNum int, t map[string]interface{}) (map[strin
 		return u.Message(false,
 			"ParentID should be correspond to Existing ID"), false
 
-	case SENSOR, GROUP:
+	case u.SENSOR, u.GROUP:
 		w, _ := GetEntity(bson.M{"_id": objID}, "device")
 		if w != nil {
 			parent["parent"] = "device"
@@ -72,7 +72,7 @@ func validateParent(ent string, entNum int, t map[string]interface{}) (map[strin
 		return u.Message(false,
 			"ParentID should be correspond to Existing ID"), false
 
-	case STRAYDEV, STRAYSENSOR:
+	case u.STRAYDEV, u.STRAYSENSOR:
 		if t["parentId"] != nil && t["parentId"] != "" {
 			if pid, ok := t["parentId"].(string); ok {
 				ID, _ := primitive.ObjectIDFromHex(pid)
@@ -112,9 +112,9 @@ func ValidatePatch(ent int, t map[string]interface{}) (map[string]interface{}, b
 	for k := range t {
 		switch k {
 		case "name", "category", "domain":
-			//Only for Entities until GROUP
-			//And OBJTMPL
-			if ent < GROUP+1 || ent == OBJTMPL {
+			//Only for Entities until u.GROUP
+			//And u.OBJTMPL
+			if ent < u.GROUP+1 || ent == u.OBJTMPL {
 				if v, _ := t[k]; v == nil {
 					return u.Message(false,
 						"Field: "+k+" cannot be nullified!"), false
@@ -122,31 +122,31 @@ func ValidatePatch(ent int, t map[string]interface{}) (map[string]interface{}, b
 			}
 
 		case "parentId":
-			if ent < ROOMTMPL && ent > TENANT {
+			if ent < u.ROOMTMPL && ent > u.TENANT {
 				x, ok := validateParent(u.EntityToString(ent), ent, t)
 				if !ok {
 					return x, ok
 				}
 			}
-			//STRAYDEV's schema is very loose
+			//u.STRAYDEV's schema is very loose
 			//thus we can safely invoke validateEntity
-			if ent == STRAYDEV {
+			if ent == u.STRAYDEV {
 				x, ok := ValidateEntity(ent, t)
 				if !ok {
 					return x, ok
 				}
 			}
 
-		case "attributes.color": // TENANT
-			if ent == TENANT {
+		case "attributes.color": // u.TENANT
+			if ent == u.TENANT {
 				if v, _ := t[k]; v == nil {
 					return u.Message(false,
 						"Field: "+k+" cannot nullified!"), false
 				}
 			}
 
-		case "attributes.orientation": //SITE, ROOM, RACK, DEVICE
-			if ent >= SITE && ent <= DEVICE {
+		case "attributes.orientation": //u.SITE, u.ROOM, u.RACK, u.DEVICE
+			if ent >= u.SITE && ent <= u.DEVICE {
 				if v, _ := t[k]; v == nil {
 					return u.Message(false,
 						"Field: "+k+" cannot nullified!"), false
@@ -155,24 +155,24 @@ func ValidatePatch(ent int, t map[string]interface{}) (map[string]interface{}, b
 
 		case "attributes.usableColor",
 			"attributes.reservedColor",
-			"attributes.technicalColor": //SITE
-			if ent == SITE {
+			"attributes.technicalColor": //u.SITE
+			if ent == u.SITE {
 				if v, _ := t[k]; v == nil {
 					return u.Message(false,
 						"Field: "+k+" cannot nullified!"), false
 				}
 			}
 
-		case "attributes.posXY", "attributes.posXYUnit": // BLDG, ROOM, RACK
-			if ent >= BLDG && ent <= RACK {
+		case "attributes.posXY", "attributes.posXYUnit": // u.BLDG, u.ROOM, u.RACK
+			if ent >= u.BLDG && ent <= u.RACK {
 				if v, _ := t[k]; v == nil {
 					return u.Message(false,
 						"Field: "+k+" cannot nullified!"), false
 				}
 			}
 
-		case "attributes": //TENANT ... SENSOR, OBJTMPL
-			if (ent >= TENANT && ent < ROOMTMPL) || ent == OBJTMPL {
+		case "attributes": //u.TENANT ... u.SENSOR, u.OBJTMPL
+			if (ent >= u.TENANT && ent < u.ROOMTMPL) || ent == u.OBJTMPL {
 				if v, _ := t[k]; v == nil {
 					return u.Message(false,
 						"Field: "+k+" cannot nullified!"), false
@@ -181,16 +181,16 @@ func ValidatePatch(ent int, t map[string]interface{}) (map[string]interface{}, b
 
 		case "attributes.size", "attributes.sizeUnit",
 			"attributes.height", "attributes.heightUnit":
-			//BLDG ... DEVICE
-			if ent >= BLDG && ent <= DEVICE {
+			//u.BLDG ... u.DEVICE
+			if ent >= u.BLDG && ent <= u.DEVICE {
 				if v, _ := t[k]; v == nil {
 					return u.Message(false,
 						"Field: "+k+" cannot nullified!"), false
 				}
 			}
 
-		case "attributes.floorUnit": //ROOM
-			if ent == ROOM {
+		case "attributes.floorUnit": //u.ROOM
+			if ent == u.ROOM {
 				if v, _ := t[k]; v == nil {
 					return u.Message(false,
 						"Field: "+k+" cannot nullified!"), false
@@ -198,7 +198,7 @@ func ValidatePatch(ent int, t map[string]interface{}) (map[string]interface{}, b
 			}
 
 		case "slug", "colors": //TEMPLATES
-			if ent == OBJTMPL || ent == ROOMTMPL {
+			if ent == u.OBJTMPL || ent == u.ROOMTMPL {
 				if v, _ := t[k]; v == nil {
 					return u.Message(false,
 						"Field: "+k+" cannot nullified!"), false
@@ -206,8 +206,8 @@ func ValidatePatch(ent int, t map[string]interface{}) (map[string]interface{}, b
 			}
 
 		case "orientation", "sizeWDHm", "reservedArea",
-			"technicalArea", "separators", "tiles": //ROOMTMPL
-			if ent == ROOMTMPL {
+			"technicalArea", "separators", "tiles": //u.ROOMTMPL
+			if ent == u.ROOMTMPL {
 				if v, _ := t[k]; v == nil {
 					return u.Message(false,
 						"Field: "+k+" cannot nullified!"), false
@@ -215,8 +215,8 @@ func ValidatePatch(ent int, t map[string]interface{}) (map[string]interface{}, b
 			}
 
 		case "description", "slots",
-			"sizeWDHmm", "fbxModel": //OBJTMPL
-			if ent == OBJTMPL {
+			"sizeWDHmm", "fbxModel": //u.OBJTMPL
+			if ent == u.OBJTMPL {
 				if v, _ := t[k]; v == nil {
 					return u.Message(false,
 						"Field: "+k+" cannot nullified!"), false
@@ -224,7 +224,7 @@ func ValidatePatch(ent int, t map[string]interface{}) (map[string]interface{}, b
 			}
 
 			/*case "type":
-			if ent == SENSOR {
+			if ent == u.SENSOR {
 				if v, _ := t[k]; v == nil {
 					return u.Message(false,
 						"Field: "+k+" cannot nullified!"), false
@@ -254,8 +254,8 @@ func ValidateEntity(entity int, t map[string]interface{}) (map[string]interface{
 		attribute
 	*/
 	switch entity {
-	case TENANT, SITE, BLDG, ROOM, RACK, DEVICE, AC,
-		PWRPNL, CABINET, CORIDOR, SENSOR, GROUP:
+	case u.TENANT, u.SITE, u.BLDG, u.ROOM, u.RACK, u.DEVICE, u.AC,
+		u.PWRPNL, u.CABINET, u.CORIDOR, u.SENSOR, u.GROUP:
 		if t["name"] == nil || t["name"] == "" {
 			return u.Message(false, "Name should be on payload"), false
 		}
@@ -285,9 +285,9 @@ func ValidateEntity(entity int, t map[string]interface{}) (map[string]interface{
 			return r, ok
 		}
 
-		if entity < AC || entity == PWRPNL ||
-			entity == GROUP || entity == ROOMTMPL ||
-			entity == OBJTMPL || entity == CORIDOR {
+		if entity < u.AC || entity == u.PWRPNL ||
+			entity == u.GROUP || entity == u.ROOMTMPL ||
+			entity == u.OBJTMPL || entity == u.CORIDOR {
 			if _, ok := t["attributes"]; !ok {
 				return u.Message(false, "Attributes should be on the payload"), false
 			} else {
@@ -295,7 +295,7 @@ func ValidateEntity(entity int, t map[string]interface{}) (map[string]interface{
 					return u.Message(false, "Attributes should be a JSON Dictionary"), false
 				} else {
 					switch entity {
-					case TENANT:
+					case u.TENANT:
 						if _, ok := v["color"]; !ok || v["color"] == "" {
 							return u.Message(false,
 								"Color Attribute must be specified on the payload and as a hex string"), false
@@ -316,7 +316,7 @@ func ValidateEntity(entity int, t map[string]interface{}) (map[string]interface{
 								"Color Attribute must be a Hex value"), false
 						}
 
-					case SITE:
+					case u.SITE:
 						if !IsOrientation(v["orientation"], entity) {
 							if v["orientation"] == nil || v["orientation"] == "" {
 								return u.Message(false, "Orientation should be on the payload"), false
@@ -324,7 +324,7 @@ func ValidateEntity(entity int, t map[string]interface{}) (map[string]interface{
 							return u.Message(false, "Orientation is invalid!"), false
 						}
 
-					case BLDG:
+					case u.BLDG:
 						if v["posXY"] == "" || v["posXY"] == nil {
 							return u.Message(false, "XY coordinates should be on payload"), false
 						}
@@ -349,7 +349,7 @@ func ValidateEntity(entity int, t map[string]interface{}) (map[string]interface{
 							return u.Message(false, "Building Height unit should be on the payload"), false
 						}
 
-					case ROOM:
+					case u.ROOM:
 						if v["posXY"] == "" || v["posXY"] == nil {
 							return u.Message(false, "XY coordinates should be on payload"), false
 						}
@@ -391,7 +391,7 @@ func ValidateEntity(entity int, t map[string]interface{}) (map[string]interface{
 							return u.Message(false, "Room Height unit should be on the payload"), false
 						}
 
-					case RACK:
+					case u.RACK:
 						if v["posXY"] == "" || v["posXY"] == nil {
 							return u.Message(false, "XY coordinates should be on payload"), false
 						}
@@ -438,7 +438,7 @@ func ValidateEntity(entity int, t map[string]interface{}) (map[string]interface{
 
 						}
 
-					case DEVICE:
+					case u.DEVICE:
 						if !IsOrientation(v["orientation"], entity) {
 							if v["orientation"] == nil || v["orientation"] == "" {
 								return u.Message(false, "Orientation should be on the payload"), false
@@ -472,7 +472,7 @@ func ValidateEntity(entity int, t map[string]interface{}) (map[string]interface{
 							}
 						}
 
-					case CORIDOR:
+					case u.CORIDOR:
 						//Ensure the temperature and 2 racks are valid
 						if !IsString(v["temperature"]) {
 							msg := "The temperature must be on the " +
@@ -533,7 +533,7 @@ func ValidateEntity(entity int, t map[string]interface{}) (map[string]interface{
 							//thus giving length of 1
 							if !(len(ans) == 1 && racks[0] == racks[1]) {
 								msg := "Unable to get the racks. Please check your inventory and try again"
-								println("LENGTH OF RACK CHECK:", len(ans))
+								println("LENGTH OF u.RACK CHECK:", len(ans))
 								println("CORRIDOR PARENTID: ", t["parentId"].(string))
 								return u.Message(false, msg), false
 							}
@@ -547,7 +547,7 @@ func ValidateEntity(entity int, t map[string]interface{}) (map[string]interface{
 							v["color"] = "000099"
 						}
 
-					case GROUP:
+					case u.GROUP:
 						if !IsString(v["content"]) {
 							msg := "The objects to be grouped must be on the payload," +
 								" separated by a comma and have the key:" +
@@ -613,7 +613,7 @@ func ValidateEntity(entity int, t map[string]interface{}) (map[string]interface{
 				}
 			}
 		}
-	case ROOMTMPL, OBJTMPL:
+	case u.ROOMTMPL, u.OBJTMPL:
 		if t["slug"] == "" || t["slug"] == nil {
 			return u.Message(false, "Slug should be on payload"), false
 		}
@@ -623,7 +623,7 @@ func ValidateEntity(entity int, t map[string]interface{}) (map[string]interface{
 				"Colors should be on payload"), false
 		}
 
-		if entity == OBJTMPL {
+		if entity == u.OBJTMPL {
 			if _, ok := t["description"]; !ok {
 				return u.Message(false,
 					"Description should be on payload"), false
@@ -654,7 +654,7 @@ func ValidateEntity(entity int, t map[string]interface{}) (map[string]interface{
 					"slots should be on payload"), false
 			}
 
-		} else { //ROOMTMPL
+		} else { //u.ROOMTMPL
 			if _, ok := t["orientation"]; !ok {
 				return u.Message(false,
 					"Orientation should be on payload"), false
@@ -686,7 +686,74 @@ func ValidateEntity(entity int, t map[string]interface{}) (map[string]interface{
 			}
 		}
 
-	case STRAYDEV, STRAYSENSOR:
+	case u.BLDGTMPL:
+		if t["slug"] == "" || t["slug"] == nil {
+			return u.Message(false, "Slug should be on payload"), false
+		}
+
+		if t["orientation"] == "" || t["orientation"] == nil {
+			return u.Message(false, "Orientation should be on payload"), false
+		}
+
+		if !IsOrientation(t["orientation"], u.BLDGTMPL) {
+			return u.Message(false, "Orientation is invalid!"), false
+		}
+
+		if !IsInfArr(t["sizeWDHm"]) {
+			return u.Message(false,
+				"Please provide the size as a 3 numerical element array"), false
+		}
+
+		if len(t["sizeWDHm"].([]interface{})) != 3 {
+			return u.Message(false,
+				"The size can only have 3 numerical elements"), false
+		}
+
+		for _, elt := range t["sizeWDHm"].([]interface{}) {
+			if !IsInt(elt) && !IsFloat(elt) {
+				return u.Message(false,
+					"An element in the size was not numerical!"), false
+			}
+		}
+
+		if !IsInfArr(t["sizeWDHm"]) {
+			return u.Message(false,
+				"Please provide the size as a 3 numerical element array"), false
+		}
+
+		if len(t["sizeWDHm"].([]interface{})) != 3 {
+			return u.Message(false,
+				"The size can only have 3 numerical elements"), false
+		}
+
+		if !IsInfArr(t["vertices"]) {
+			return u.Message(false,
+				"Please provide an array of 2 element (int) array(s) for the vertices"), false
+		}
+
+		for _, arr := range t["vertices"].([]interface{}) {
+			if !IsInfArr(arr) {
+				return u.Message(false,
+					"An element in the vertices array was not an array!"), false
+			}
+
+			if len(arr.([]interface{})) != 2 {
+				return u.Message(false,
+					"An element in the vertices array does not have length of 2"), false
+			}
+
+			for i, element := range arr.([]interface{}) {
+				if !IsFloat(element) {
+					return u.Message(false,
+						"All arrays in the vertices must have integers and be of length 2"), false
+				}
+				//Since ints are being interpreted as floats
+				//we can just truncate all floats for now as a compromise
+				arr.([]interface{})[i] = int(element.(float64))
+			}
+		}
+
+	case u.STRAYDEV, u.STRAYSENSOR:
 		//Check for parent if PID provided
 
 		if t["name"] == nil || t["name"] == "" {
@@ -740,6 +807,41 @@ func IsString(x interface{}) bool {
 	return false
 }
 
+func IsInt(x interface{}) bool {
+	if _, ok := x.(int); ok {
+		return true
+	}
+	return false
+}
+
+func IsFloat(x interface{}) bool {
+	if _, ok := x.(float64); ok {
+		return true
+	}
+	return false
+}
+
+func IsFloatArr(x interface{}) bool {
+	if _, ok := x.([]float64); ok {
+		return true
+	}
+	return false
+}
+
+func IsInfArr(x interface{}) bool {
+	if _, ok := x.([]interface{}); ok {
+		return true
+	}
+	return false
+}
+
+func IsIntArr(x interface{}) bool {
+	if _, ok := x.([]int); ok {
+		return true
+	}
+	return false
+}
+
 func IsHexString(s string) bool {
 	//Eliminate 'odd length' errors
 	if len(s)%2 != 0 {
@@ -751,7 +853,7 @@ func IsHexString(s string) bool {
 }
 
 func IsOrientation(x interface{}, ent int) bool {
-	if ent == SITE {
+	if ent == u.SITE {
 		switch x {
 		case "EN", "NW", "WS", "SE", "NE", "SW":
 			return true
@@ -760,7 +862,27 @@ func IsOrientation(x interface{}, ent int) bool {
 			return false
 		}
 	}
-	if ent == ROOM {
+
+	if ent == u.BLDGTMPL || ent == u.ROOMTMPL {
+		switch x {
+		case "EN", "NW", "WS", "SE", "NE", "SW",
+			"-E-N", "-E+N", "+E-N", "+E+N", "+N+E",
+			"+N-E", "-N-E", "-N+E",
+			"-N-W", "-N+W", "+N-W", "+N+W",
+			"-W-S", "-W+S", "+W-S", "+W+S",
+			"-S-E", "-S+E", "+S-E", "+S+E":
+			return true
+		default:
+			if !IsString(x) {
+				return false
+			}
+			_, e := strconv.Atoi(x.(string))
+			_, e1 := strconv.ParseFloat(x.(string), 64)
+			return e1 == nil || e == nil
+		}
+	}
+
+	if ent == u.ROOM {
 		switch x {
 		case "EN", "NW", "WS", "SE", "NE", "SW",
 			"-E-N", "-E+N", "+E-N", "+E+N", "+N+E",
@@ -774,7 +896,7 @@ func IsOrientation(x interface{}, ent int) bool {
 		}
 	}
 
-	if ent == RACK {
+	if ent == u.RACK {
 		switch x {
 		case "front", "rear", "left", "right":
 			return true
@@ -783,7 +905,7 @@ func IsOrientation(x interface{}, ent int) bool {
 		}
 	}
 
-	if ent == DEVICE {
+	if ent == u.DEVICE {
 		switch x {
 		case "front", "rear", "frontflipped", "rearflipped":
 			return true

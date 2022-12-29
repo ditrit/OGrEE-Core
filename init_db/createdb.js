@@ -14,6 +14,7 @@ db.createCollection('device');
 //Template Collections
 db.createCollection('room_template');
 db.createCollection('obj_template');
+db.createCollection('bldg_template');
 
 //Group Collections
 db.createCollection('group');
@@ -46,6 +47,7 @@ db.device.createIndex({parentId:1, name:1}, { unique: true });
 //Make slugs unique identifiers for templates
 db.room_template.createIndex({slug:1}, { unique: true });
 db.obj_template.createIndex({slug:1}, { unique: true });
+db.bldg_template.createIndex({slug:1}, { unique: true });
 
 
 //Unique children restriction for nonhierarchal objects and sensors

@@ -22,8 +22,10 @@ Perform an HTTP POST operation with the appropriate JSON
 /api/devices
 /api/room-templates
 /api/obj-templates
+/api/bldg-templates
 /api/stray-sensors
 /api/stray-devices
+/api/validate/{obj}
 ```
 
 
@@ -47,6 +49,7 @@ Perform an HTTP DELETE operation without JSON body
 /api/devices/{id}
 /api/room-templates/{template_name}
 /api/obj-templates/{template_name}
+/api/bldg-templates/{template_name}
 /api/stray-sensors/{id}
 /api/stray-devices/{id}
 ```
@@ -70,6 +73,7 @@ Perform an HTTP PUT operation with desired JSON body
 /api/devices/{id}
 /api/room-templates/{template_name}
 /api/obj-templates/{template_name}
+/api/bldg-templates/{template_name}
 /api/stray-sensors/{id}
 /api/stray-devices/{id}
 ```
@@ -92,6 +96,7 @@ Perform an HTTP PUT operation with desired JSON body
 /api/devices/{id}
 /api/room-templates/{template_name}
 /api/obj-templates/{template_name}
+/api/bldg-templates/{template_name}
 /api/stray-sensors/{id}
 /api/stray-devices/{id}
 ```
@@ -100,6 +105,12 @@ OPTIONS
 -------------
 Perform an HTTP OPTIONS operation without JSON body
 ```
+/api
+/api/login
+/api/version
+/api/stats
+/api/validate/{obj}
+/api/token/valid
 /api/tenants/{id}
 /api/sites/{id}
 /api/buildings/{id}
@@ -114,18 +125,28 @@ Perform an HTTP OPTIONS operation without JSON body
 /api/devices/{id}
 /api/room-templates/{template_name}
 /api/obj-templates/{template_name}
+/api/bldg-templates/{template_name}
 /api/stray-sensors/{id}
 /api/stray-devices/{id}
 ```
 
 GET / Get
 -------------
-Perform an HTTP PUT operation without JSON
 
 ### Quick Token Check
 This URL is for development purposes only
 ```
 /api/token/valid
+```
+
+### Get DB statistics 
+```
+/api/stats
+```
+
+### Get API Version information
+```
+/api/version
 ```
 
 ### Get All Objects
@@ -138,6 +159,7 @@ This URL is for development purposes only
 /api/devices
 /api/room-templates
 /api/obj-templates
+/api/bldg-templates
 /api/groups
 /api/sensors
 /api/acs
@@ -161,6 +183,7 @@ Template_name is the 'slug'
 /api/devices/{id}
 /api/room-templates/{template_name}
 /api/obj-templates/{template_name}
+/api/bldg-templates/{template_name}
 /api/groups/{id}
 /api/sensors/{id}
 /api/acs/{id}
@@ -191,6 +214,7 @@ will return silver devices with name 'myValue'
 /api/corridors?
 /api/room-templates?
 /api/obj-templates?
+/api/bldg-templates?
 /api/sensors?
 /api/stray-sensors?
 /api/stray-devices?

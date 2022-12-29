@@ -91,8 +91,8 @@ func parseDataForNonStdResult(ent string, eNum int, data map[string]interface{})
 	return ans
 }
 
-//This function is useful for debugging
-//purposes. It displays any JSON
+// This function is useful for debugging
+// purposes. It displays any JSON
 func viewJson(r *http.Request) {
 	var updateData map[string]interface{}
 	json.NewDecoder(r.Body).Decode(&updateData)
@@ -109,8 +109,8 @@ func Disp(x map[string]interface{}) {
 	println("JSON: ", string(jx))
 }
 
-//'Flattens' the map[string]interface{}
-//for PATCH requests
+// 'Flattens' the map[string]interface{}
+// for PATCH requests
 func Flatten(prefix string, src map[string]interface{}, dest map[string]interface{}) {
 	if len(prefix) > 0 {
 		prefix += "."
@@ -146,7 +146,7 @@ func DispRequestMetaData(r *http.Request) {
 //   description: 'Indicates the Object. Only values of "tenants", "sites",
 //   "buildings", "rooms", "racks", "devices", "acs", "panels",
 //   "cabinets", "groups", "corridors",
-//   "room-templates", "obj-templates", "sensors", "stray-devices",
+//   "room-templates", "obj-templates", "bldg-templates","sensors", "stray-devices",
 //   "stray-sensors" are acceptable'
 //   required: true
 //   type: string
@@ -287,7 +287,7 @@ var CreateEntity = func(w http.ResponseWriter, r *http.Request) {
 //   in: query
 //   description: 'Indicates the location. Only values of "tenants", "sites",
 //   "buildings", "rooms", "racks", "devices", "room-templates",
-//   "obj-templates", "acs", "panels","cabinets", "groups",
+//   "obj-templates", "bldg-templates","acs", "panels","cabinets", "groups",
 //   "corridors","sensors","stray-devices", "stray-sensors" are acceptable'
 //   required: true
 //   type: string
@@ -314,24 +314,26 @@ var CreateEntity = func(w http.ResponseWriter, r *http.Request) {
 // produces:
 // - application/json
 // parameters:
-// - name: objs
-//   in: query
-//   description: 'Only values of "tenants", "sites",
-//   "buildings", "rooms", "racks", "devices", "room-templates",
-//   "obj-templates", "acs", "panels","cabinets", "groups",
-//   "corridors","sensors","stray-devices","stray-sensors", are acceptable'
-// - name: id
-//   in: query
-//   description: 'ID of the object or name of Tenant.
-//   For templates the slug is the ID. For stray-devices the name is the ID'
+//   - name: objs
+//     in: query
+//     description: 'Only values of "tenants", "sites",
+//     "buildings", "rooms", "racks", "devices", "room-templates",
+//     "obj-templates", "bldg-templates","acs", "panels","cabinets", "groups",
+//     "corridors","sensors","stray-devices","stray-sensors", are acceptable'
+//   - name: id
+//     in: query
+//     description: 'ID of the object or name of Tenant.
+//     For templates the slug is the ID. For stray-devices the name is the ID'
+//
 // responses:
-//     '200':
-//         description: 'Found. A response header will be returned with
-//         possible operations.'
-//     '400':
-//         description: Bad request. An error message will be returned.
-//     '404':
-//         description: Not Found. An error message will be returned.
+//
+//	'200':
+//	    description: 'Found. A response header will be returned with
+//	    possible operations.'
+//	'400':
+//	    description: Bad request. An error message will be returned.
+//	'404':
+//	    description: Not Found. An error message will be returned.
 var GetEntity = func(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("******************************************************")
 	fmt.Println("FUNCTION CALL: 	 GetEntity ")
@@ -432,21 +434,23 @@ var GetEntity = func(w http.ResponseWriter, r *http.Request) {
 // produces:
 // - application/json
 // parameters:
-// - name: objs
-//   in: query
-//   description: 'Indicates the location. Only values of "tenants", "sites",
-//   "buildings", "rooms", "racks", "devices", "room-templates",
-//   "obj-templates","acs", "panels", "cabinets", "groups",
-//   "corridors", "sensors", "stray-devices", "stray-sensors" are acceptable'
-//   required: true
-//   type: string
-//   default: "sites"
+//   - name: objs
+//     in: query
+//     description: 'Indicates the location. Only values of "tenants", "sites",
+//     "buildings", "rooms", "racks", "devices", "room-templates",
+//     "obj-templates","acs", "panels", "cabinets", "groups",
+//     "corridors", "sensors", "stray-devices", "stray-sensors" are acceptable'
+//     required: true
+//     type: string
+//     default: "sites"
+//
 // responses:
-//     '200':
-//         description: 'Found. A response body will be returned with
-//         a meaningful message.'
-//     '404':
-//         description: Nothing Found. An error message will be returned.
+//
+//	'200':
+//	    description: 'Found. A response body will be returned with
+//	    a meaningful message.'
+//	'404':
+//	    description: Nothing Found. An error message will be returned.
 var GetAllEntities = func(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("******************************************************")
 	fmt.Println("FUNCTION CALL: 	 GetAllEntities ")
@@ -516,29 +520,31 @@ var GetAllEntities = func(w http.ResponseWriter, r *http.Request) {
 // produces:
 // - application/json
 // parameters:
-// - name: objs
-//   in: query
-//   description: 'Indicates the location. Only values of "tenants", "sites",
-//   "buildings", "rooms", "racks", "devices", "room-templates",
-//   "obj-templates","acs", "panels",
-//   "cabinets", "groups", "corridors","sensors", "stray-devices"
-//   "stray-sensors" are acceptable'
-//   required: true
-//   type: string
-//   default: "sites"
-// - name: ID
-//   in: path
-//   description: 'ID of the object or name of Tenant.
-//   For templates the slug is the ID. For stray-devices the name is the ID'
-//   required: true
-//   type: int
-//   default: 999
+//   - name: objs
+//     in: query
+//     description: 'Indicates the location. Only values of "tenants", "sites",
+//     "buildings", "rooms", "racks", "devices", "room-templates",
+//     "obj-templates","acs", "panels",
+//     "cabinets", "groups", "corridors","sensors", "stray-devices"
+//     "stray-sensors" are acceptable'
+//     required: true
+//     type: string
+//     default: "sites"
+//   - name: ID
+//     in: path
+//     description: 'ID of the object or name of Tenant.
+//     For templates the slug is the ID. For stray-devices the name is the ID'
+//     required: true
+//     type: int
+//     default: 999
+//
 // responses:
-//     '204':
-//        description: 'Successfully deleted object.
-//        No response body will be returned'
-//     '404':
-//        description: Not found. An error message will be returned
+//
+//	'204':
+//	   description: 'Successfully deleted object.
+//	   No response body will be returned'
+//	'404':
+//	   description: Not found. An error message will be returned
 var DeleteEntity = func(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("******************************************************")
 	fmt.Println("FUNCTION CALL: 	 DeleteEntity ")
@@ -630,7 +636,7 @@ var DeleteEntity = func(w http.ResponseWriter, r *http.Request) {
 //   in: query
 //   description: 'Indicates the location. Only values of "tenants", "sites",
 //   "buildings", "rooms", "racks", "devices", "room-templates",
-//   "obj-templates", "rooms", "acs", "panels", "cabinets", "groups",
+//   "obj-templates", "bldg-templates","rooms", "acs", "panels", "cabinets", "groups",
 //   "corridors", "sensors", "stray-devices", "stray-sensors" are acceptable'
 //   required: true
 //   type: string
@@ -695,7 +701,7 @@ var DeleteEntity = func(w http.ResponseWriter, r *http.Request) {
 //   in: query
 //   description: 'Indicates the location. Only values of "tenants", "sites",
 //   "buildings", "rooms", "racks", "devices", "room-templates",
-//   "obj-templates", "rooms","acs", "panels", "cabinets", "groups",
+//   "obj-templates", "bldg-templates","rooms","acs", "panels", "cabinets", "groups",
 //   "corridors","sensors", "stray-devices", "stray-sensors" are acceptable'
 //   required: true
 //   type: string
@@ -855,43 +861,45 @@ var UpdateEntity = func(w http.ResponseWriter, r *http.Request) {
 // produces:
 // - application/json
 // parameters:
-// - name: objs
-//   in: query
-//   description: 'Indicates the object. Only values of "tenants", "sites",
-//   "buildings", "rooms", "racks", "devices", "room-templates",
-//   "obj-templates","acs","panels", "groups", "corridors",
-//   "sensors", "stray-devices" and "stray-sensors" are acceptable'
-//   required: true
-//   type: string
-//   default: "sites"
-// - name: Name
-//   in: query
-//   description: Name of tenant
-//   required: false
-//   type: string
-//   default: "INFINITI"
-// - name: Category
-//   in: query
-//   description: Category of Tenant (ex. Consumer Electronics, Medical)
-//   required: false
-//   type: string
-//   default: "Auto"
-// - name: Domain
-//   description: 'Domain of the Tenant'
-//   required: false
-//   type: string
-//   default: "High End Auto"
-// - name: Attributes
-//   in: query
-//   description: Any other object attributes can be queried
-//   required: false
-//   type: json
+//   - name: objs
+//     in: query
+//     description: 'Indicates the object. Only values of "tenants", "sites",
+//     "buildings", "rooms", "racks", "devices", "room-templates",
+//     "obj-templates","acs","panels", "groups", "corridors",
+//     "sensors", "stray-devices" and "stray-sensors" are acceptable'
+//     required: true
+//     type: string
+//     default: "sites"
+//   - name: Name
+//     in: query
+//     description: Name of tenant
+//     required: false
+//     type: string
+//     default: "INFINITI"
+//   - name: Category
+//     in: query
+//     description: Category of Tenant (ex. Consumer Electronics, Medical)
+//     required: false
+//     type: string
+//     default: "Auto"
+//   - name: Domain
+//     description: 'Domain of the Tenant'
+//     required: false
+//     type: string
+//     default: "High End Auto"
+//   - name: Attributes
+//     in: query
+//     description: Any other object attributes can be queried
+//     required: false
+//     type: json
+//
 // responses:
-//     '204':
-//        description: 'Found. A response body will be returned with
-//         a meaningful message.'
-//     '404':
-//        description: Not found. An error message will be returned.
+//
+//	'204':
+//	   description: 'Found. A response body will be returned with
+//	    a meaningful message.'
+//	'404':
+//	   description: Not found. An error message will be returned.
 var GetEntityByQuery = func(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("******************************************************")
 	fmt.Println("FUNCTION CALL: 	 GetEntityByQuery ")
@@ -997,26 +1005,28 @@ var GetEntityByQuery = func(w http.ResponseWriter, r *http.Request) {
 // produces:
 // - application/json
 // parameters:
-// - name: objs
-//   in: query
-//   description: 'Only values of "tenants", "sites",
-//   "buildings", "rooms", "racks", "devices", and "stray-devices"
-//    are acceptable'
-// - name: id
-//   in: query
-//   description: 'ID of the object. For stray-devices and tenants the name
-//   can be used as the ID.'
-// - name: subent
-//   in: query
-//   description: 'This refers to the sub object under the objs parameter.
-//   Please refer to the OGREE wiki to better understand what objects
-//   can be considered as sub objects.'
+//   - name: objs
+//     in: query
+//     description: 'Only values of "tenants", "sites",
+//     "buildings", "rooms", "racks", "devices", and "stray-devices"
+//     are acceptable'
+//   - name: id
+//     in: query
+//     description: 'ID of the object. For stray-devices and tenants the name
+//     can be used as the ID.'
+//   - name: subent
+//     in: query
+//     description: 'This refers to the sub object under the objs parameter.
+//     Please refer to the OGREE wiki to better understand what objects
+//     can be considered as sub objects.'
+//
 // responses:
-//     '200':
-//         description: 'Found. A response body will be returned with
-//         a meaningful message.'
-//     '404':
-//         description: Nothing Found.
+//
+//	'200':
+//	    description: 'Found. A response body will be returned with
+//	    a meaningful message.'
+//	'404':
+//	    description: Nothing Found.
 var GetEntitiesOfAncestor = func(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("******************************************************")
 	fmt.Println("FUNCTION CALL: 	 GetEntitiesOfAncestor ")
@@ -1133,21 +1143,23 @@ var GetEntitiesOfAncestor = func(w http.ResponseWriter, r *http.Request) {
 // produces:
 // - application/json
 // parameters:
-// - name: objs
-//   in: query
-//   description: 'Only values of "tenants", "sites",
-//   "buildings", "rooms", "racks", "devices", and "stray-devices"
-//    are acceptable'
-// - name: id
-//   in: query
-//   description: 'ID of the object.For tenants and stray-devices the name
-//   can be used as the ID'
+//   - name: objs
+//     in: query
+//     description: 'Only values of "tenants", "sites",
+//     "buildings", "rooms", "racks", "devices", and "stray-devices"
+//     are acceptable'
+//   - name: id
+//     in: query
+//     description: 'ID of the object.For tenants and stray-devices the name
+//     can be used as the ID'
+//
 // responses:
-//     '200':
-//         description: 'Found. A response header will be returned with
-//         possible operations.'
-//     '404':
-//         description: Nothing Found.
+//
+//	'200':
+//	    description: 'Found. A response header will be returned with
+//	    possible operations.'
+//	'404':
+//	    description: Nothing Found.
 var GetEntityHierarchy = func(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("******************************************************")
 	fmt.Println("FUNCTION CALL: 	 GetEntityHierarchy ")
@@ -1341,15 +1353,17 @@ var GetEntityHierarchy = func(w http.ResponseWriter, r *http.Request) {
 // produces:
 // - application/json
 // parameters:
-// - name: name
-//   in: query
-//   description: 'Name of tenant.'
+//   - name: name
+//     in: query
+//     description: 'Name of tenant.'
+//
 // responses:
-//     '200':
-//         description: 'Found. A response header will be returned with
-//         possible operation.'
-//     '404':
-//         description: Nothing Found.
+//
+//	'200':
+//	    description: 'Found. A response header will be returned with
+//	    possible operation.'
+//	'404':
+//	    description: Nothing Found.
 var GetHierarchyByName = func(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("******************************************************")
 	fmt.Println("FUNCTION CALL: 	 GetHierarchyByName ")
@@ -1531,31 +1545,33 @@ var GetHierarchyByName = func(w http.ResponseWriter, r *http.Request) {
 // produces:
 // - application/json
 // parameters:
-// - name: objs
-//   in: query
-//   description: 'Only values of "tenants", "sites",
-//   "buildings", "rooms", "racks", "devices", and "stray-devices"
-//    are acceptable'
-// - name: id
-//   in: query
-//   description: 'ID of the object.For tenants and stray-devices the name
-//   can be used as the ID'
-// - name: '*'
-//   in: path
-//   description: 'Hierarchal path to desired object(s).
-//   For rooms it can additionally have "acs","panels",
-//   "corridors", "sensors" and "cabinets".
-//   For devices it can have "sensors"
-//   For racks it can have "sensors"'
-//   required: true
-//   type: string
-//   default: "/buildings/BuildingB/RoomA"
+//   - name: objs
+//     in: query
+//     description: 'Only values of "tenants", "sites",
+//     "buildings", "rooms", "racks", "devices", and "stray-devices"
+//     are acceptable'
+//   - name: id
+//     in: query
+//     description: 'ID of the object.For tenants and stray-devices the name
+//     can be used as the ID'
+//   - name: '*'
+//     in: path
+//     description: 'Hierarchal path to desired object(s).
+//     For rooms it can additionally have "acs","panels",
+//     "corridors", "sensors" and "cabinets".
+//     For devices it can have "sensors"
+//     For racks it can have "sensors"'
+//     required: true
+//     type: string
+//     default: "/buildings/BuildingB/RoomA"
+//
 // responses:
-//     '200':
-//         description: 'Found. A response header will be returned with
-//         possible operations.'
-//     '404':
-//         description: Not Found.
+//
+//	'200':
+//	    description: 'Found. A response header will be returned with
+//	    possible operations.'
+//	'404':
+//	    description: Not Found.
 var GetEntitiesUsingNamesOfParents = func(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("******************************************************")
 	fmt.Println("FUNCTION CALL: 	 GetEntitiesUsingNamesOfParents ")
@@ -1710,18 +1726,20 @@ var GetEntitiesUsingNamesOfParents = func(w http.ResponseWriter, r *http.Request
 // produces:
 // - application/json
 // parameters:
-// - name: objs
-//   in: query
-//   description: 'Only values of "tenants", "sites",
-//   "buildings", "rooms", "racks", "devices", "room-templates",
-//   "obj-templates", "rooms", "acs", "panels",
-//   "cabinets", "groups", "corridors","sensors","stray-devices"
-//   "stray-sensors" are acceptable'
+//   - name: objs
+//     in: query
+//     description: 'Only values of "tenants", "sites",
+//     "buildings", "rooms", "racks", "devices", "room-templates",
+//     "obj-templates", "bldg-templates","rooms", "acs", "panels",
+//     "cabinets", "groups", "corridors","sensors","stray-devices"
+//     "stray-sensors" are acceptable'
+//
 // responses:
-//     '200':
-//         description: 'Request is valid.'
-//     '404':
-//         description: Not Found. An error message will be returned.
+//
+//	'200':
+//	    description: 'Request is valid.'
+//	'404':
+//	    description: Not Found. An error message will be returned.
 var BaseOption = func(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("******************************************************")
 	fmt.Println("FUNCTION CALL: 	 BaseOption ")
@@ -1744,10 +1762,11 @@ var BaseOption = func(w http.ResponseWriter, r *http.Request) {
 // produces:
 // - application/json
 // responses:
-//     '200':
-//         description: 'Request is valid.'
-//     '504':
-//         description: Server error.
+//
+//	'200':
+//	    description: 'Request is valid.'
+//	'504':
+//	    description: Server error.
 var GetStats = func(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("******************************************************")
 	fmt.Println("FUNCTION CALL: 	 GetStats ")
@@ -1775,7 +1794,7 @@ var GetStats = func(w http.ResponseWriter, r *http.Request) {
 //   description: 'Indicates the Object. Only values of "tenants", "sites",
 //   "buildings", "rooms", "racks", "devices", "acs", "panels",
 //   "cabinets", "groups", "corridors",
-//   "room-templates", "obj-templates", "sensors", "stray-devices"
+//   "room-templates", "obj-templates", "bldg-templates","sensors", "stray-devices"
 //   "stray-sensors" are acceptable'
 //   required: true
 //   type: string
@@ -1831,18 +1850,20 @@ var GetStats = func(w http.ResponseWriter, r *http.Request) {
 // produces:
 // - application/json
 // parameters:
-// - name: obj
-//   in: query
-//   description: 'Only values of "tenants", "sites",
-//   "buildings", "rooms", "racks", "devices", "room-templates",
-//   "obj-templates", "rooms", "acs", "panels",
-//   "cabinets", "groups", "corridors","sensors","stray-devices"
-//   "stray-sensors" are acceptable'
+//   - name: obj
+//     in: query
+//     description: 'Only values of "tenants", "sites",
+//     "buildings", "rooms", "racks", "devices", "room-templates",
+//     "obj-templates", "bldg-templates","rooms", "acs", "panels",
+//     "cabinets", "groups", "corridors","sensors","stray-devices"
+//     "stray-sensors" are acceptable'
+//
 // responses:
-//     '200':
-//         description: 'Request is valid.'
-//     '404':
-//         description: Not Found. An error message will be returned.
+//
+//	'200':
+//	    description: 'Request is valid.'
+//	'404':
+//	    description: Not Found. An error message will be returned.
 var ValidateEntity = func(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("******************************************************")
 	fmt.Println("FUNCTION CALL: 	 ValidateEntity ")
@@ -1903,8 +1924,9 @@ var ValidateEntity = func(w http.ResponseWriter, r *http.Request) {
 // produces:
 // - application/json
 // responses:
-//     '200':
-//         description: 'Returns the possible request methods.'
+//
+//	'200':
+//	    description: 'Returns the possible request methods.'
 var Version = func(w http.ResponseWriter, r *http.Request) {
 	data := map[string]interface{}{}
 	if r.Method == "OPTIONS" {
