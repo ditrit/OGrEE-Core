@@ -391,6 +391,12 @@ OCCR:
               attributes := map[string]interface{}{"attributes":map[string]interface{}{"posXY":$5, "size":$7}}
               $$=&getOCAttrNode{$3, cmd.BLDG, attributes}
         }
+        |TOK_BLDG TOK_COL PHYSICAL_PATH TOK_ATTRSPEC EXPR TOK_ATTRSPEC TOK_WORD {
+              //size could be a template but intentionally left as is, since it is easier
+              //to distinguish in the AST 
+              attributes := map[string]interface{}{"attributes":map[string]interface{}{"posXY":$5, "size":&strLeaf{$7}}} 
+              $$=&getOCAttrNode{$3, cmd.BLDG, attributes}
+        }
         |TOK_BLDG TOK_COL PHYSICAL_PATH TOK_ATTRSPEC EXPR TOK_ATTRSPEC EXPR TOK_ATTRSPEC NONSTD_ORIENTATION {
               attributes := map[string]interface{}{"attributes":map[string]interface{}{"posXY":$5, "size":$7, "orientation":$9}}
               $$=&getOCAttrNode{$3, cmd.BLDG, attributes}

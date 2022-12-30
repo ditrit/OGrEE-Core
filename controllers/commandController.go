@@ -1314,17 +1314,23 @@ func GetOCLIAtrributes(Path string, ent int, data map[string]interface{}) error 
 	case BLDG:
 		attr = data["attributes"].(map[string]interface{})
 
-		//Serialise size and posXY if given
-		if _, ok := attr["size"].(string); ok {
-			attr["size"] = serialiseAttr(attr, "size")
+		//Check for template
+		if _, ok := attr["template"]; ok {
+			GetOCLIAtrributesTemplateHelper(attr, data, BLDG)
+
 		} else {
-			attr["size"] = serialiseAttr2(attr, "size")
+			//Serialise size and posXY manually instead
+			if _, ok := attr["size"].(string); ok {
+				attr["size"] = serialiseAttr(attr, "size")
+			} else {
+				attr["size"] = serialiseAttr2(attr, "size")
+			}
 		}
 
 		if attr["size"] == "" {
 			if State.DebugLvl > 0 {
 				l.GetErrorLogger().Println(
-					"User gave invalid size value for creating room")
+					"User gave invalid size value for creating building")
 				return fmt.Errorf("Invalid size attribute provided." +
 					" \nIt must be an array/list/vector with 3 elements." +
 					" Please refer to the wiki or manual reference" +
@@ -1343,7 +1349,7 @@ func GetOCLIAtrributes(Path string, ent int, data map[string]interface{}) error 
 		if attr["posXY"] == "" {
 			if State.DebugLvl > 0 {
 				l.GetErrorLogger().Println(
-					"User gave invalid posXY value for creating room")
+					"User gave invalid posXY value for creating building")
 				return fmt.Errorf("Invalid posXY attribute provided." +
 					" \nIt must be an array/list/vector with 2 elements." +
 					" Please refer to the wiki or manual reference" +
@@ -1468,7 +1474,7 @@ func GetOCLIAtrributes(Path string, ent int, data map[string]interface{}) error 
 		if attr["posXY"] == "" {
 			if State.DebugLvl > 0 {
 				l.GetErrorLogger().Println(
-					"User gave invalid posXY value for creating room")
+					"User gave invalid posXY value for creating rack")
 				return fmt.Errorf("Invalid posXY attribute provided." +
 					" \nIt must be an array/list/vector with 2 elements." +
 					" Please refer to the wiki or manual reference" +
@@ -1711,6 +1717,8 @@ func GetOCLIAtrributesTemplateHelper(attr, data map[string]interface{}, ent int)
 			tInt := 0
 			if ent == ROOM {
 				tInt = ROOMTMPL
+			} else if ent == BLDG {
+				tInt = BLDGTMPL
 			} else {
 				tInt = OBJTMPL
 			} //End of determine block
@@ -1808,6 +1816,9 @@ func GetOCLIAtrributesTemplateHelper(attr, data map[string]interface{}, ent int)
 							attr["colors"] = string(tmp)
 						}
 
+					} else if ent == BLDG {
+						attr["sizeUnit"] = "m"
+						attr["heightUnit"] = "m"
 					} else {
 						attr["sizeUnit"] = "cm"
 						attr["heightUnit"] = "cm"
@@ -3410,6 +3421,8 @@ func fetchTemplate(name string, objType int) map[string]interface{} {
 	var URL string
 	if objType == ROOMTMPL {
 		URL = State.APIURL + "/api/room_templates/" + name
+	} else if objType == BLDGTMPL {
+		URL = State.APIURL + "/api/bldg_templates/" + name
 	} else {
 		URL = State.APIURL + "/api/obj_templates/" + name
 	}

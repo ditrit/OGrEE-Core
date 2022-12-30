@@ -1199,7 +1199,18 @@ func (n *getOCAttrNode) execute() (interface{}, error) {
 				return nil, fmt.Errorf(msg)
 			}
 
+		} else { //Check if template was given
+			// Because if orientation was not specified then this means
+			// size or template could've been specified
+			sizeOrTmpl := attr.(map[string]interface{})["size"]
+			if checkIfTemplate(sizeOrTmpl, n.ent) {
+				//Have to use the template
+				delete(attr.(map[string]interface{}), "size")
+				attr.(map[string]interface{})["template"] = sizeOrTmpl.(string)
+			}
+
 		}
+
 	}
 
 	err = cmd.GetOCLIAtrributes(path, n.ent, attributes)
@@ -1231,7 +1242,7 @@ func (n *createRackNode) execute() (interface{}, error) {
 		}
 	}
 	attr := make(map[string]interface{})
-	if checkIfTemplate(vals[1]) == false {
+	if checkIfTemplate(vals[1], cmd.RACK) == false {
 		attr["size"] = vals[1]
 	} else {
 		attr["template"] = vals[1]
@@ -1270,7 +1281,7 @@ func (n *createDeviceNode) execute() (interface{}, error) {
 		}
 	}
 	attr := map[string]interface{}{"posU/slot": vals[0]}
-	if checkIfTemplate(vals[1]) == false {
+	if checkIfTemplate(vals[1], cmd.DEVICE) == false {
 		attr["sizeU"] = vals[1]
 	} else {
 		attr["template"] = vals[1]

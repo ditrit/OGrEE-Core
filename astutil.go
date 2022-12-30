@@ -114,12 +114,22 @@ func evalNodeArr[elt comparable](arr *[]node, x []elt) ([]elt, error) {
 }
 
 // This func is for distinguishing template from sizeU
-// in the OCLI syntax for creating devices
+// for creating devices,
+// distinguishing template from size when creating buildings,
 // refer to:
 // https://github.com/ditrit/OGrEE-3D/wiki/CLI-langage#Create-a-Device
-func checkIfTemplate(x interface{}) bool {
+func checkIfTemplate(x interface{}, ent int) bool {
+	var location string
 	if s, ok := x.(string); ok {
-		_, exists := cmd.CheckObject("/Logical/ObjectTemplates/"+s, true)
+		switch ent {
+		case cmd.BLDG:
+			location = "/Logical/BldgTemplates/" + s
+		case cmd.ROOM:
+			location = "/Logical/RoomTemplates/" + s
+		default:
+			location = "/Logical/ObjectTemplates/" + s
+		}
+		_, exists := cmd.CheckObject(location, true)
 		return exists
 	}
 	return false
