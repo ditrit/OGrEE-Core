@@ -1641,6 +1641,12 @@ func parseAreas(areas map[string]interface{}) (map[string]interface{}, error) {
 
 // Hack function for the [room]:separator=[x,y]@[x,y]@type
 func parseSeparators(path string, first, second interface{}, arg *node) (map[string]interface{}, error) {
+	if (*arg) == nil {
+		return nil, fmt.Errorf(
+			"Separator type must be specified. Either 'wireframe' or 'plain'",
+		)
+	}
+
 	extraArg, err := (*arg).execute()
 	if err != nil {
 		return nil, err
@@ -1648,13 +1654,13 @@ func parseSeparators(path string, first, second interface{}, arg *node) (map[str
 
 	if !IsString(extraArg) {
 		return nil,
-			fmt.Errorf("Invalid separator type given, it can only be 'wireframe' or 'plain'")
+			fmt.Errorf("Invalid separator argument given, it can only be 'wireframe' or 'plain'")
 	}
 
 	sepType := strings.ToLower(extraArg.(string))
 	if sepType != "wireframe" && sepType != "plain" {
-		msg := "Separator type must be specified " +
-			"and can only be 'wireframe' or 'plain'"
+		msg := "Invalid Separator type given. " +
+			"It can only be 'wireframe' or 'plain'"
 		return nil, fmt.Errorf(msg)
 	}
 
