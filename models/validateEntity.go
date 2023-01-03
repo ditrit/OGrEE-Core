@@ -497,42 +497,48 @@ func ValidateEntity(entity int, t map[string]interface{}) (map[string]interface{
 							return u.Message(false, msg), false
 						}
 
+						//Trim Spaces because they mess up
+						//the retrieval of objects from DB
+						racks[0] = strings.TrimSpace(racks[0])
+						racks[1] = strings.TrimSpace(racks[1])
+
 						//Ensure the name is also unique among racks
 						req := bson.M{"name": t["name"].(string)}
 						nameCheck, _ := GetManyEntities("rack", req, nil)
 						if nameCheck != nil {
 							if len(nameCheck) != 0 {
-								msg := "Corridor name name must be unique among corridors and racks"
+								msg := "Corridor name must be unique among corridors and racks"
 								return u.Message(false, msg), false
 							}
 
 						}
 
 						//Fetch the 2 racks and ensure they exist
-						ctx, cancel := u.Connect()
 						filter := bson.M{"_id": t["parentId"], "name": racks[0]}
 						orReq := bson.A{bson.D{{"name", racks[0]}}, bson.D{{"name", racks[1]}}}
-						ans := bson.D{}
 
 						filter = bson.M{"parentId": t["parentId"], "$or": orReq}
-						res, e := GetDB().Collection("rack").Find(ctx, filter)
-						defer cancel()
-						if e != nil {
+						ans, e := GetManyEntities("rack", filter, nil)
+						if e != "" {
 							msg := "The racks you specified were not found." +
 								" Please verify your input and try again"
-							println(e.Error())
+							println(e)
 							return u.Message(false, msg), false
 						}
-
-						//No need to remove '_id' so we can skip calling
-						//ExtractCursor auxillary func
-						res.All(ctx, &ans)
 
 						if len(ans) != 2 {
 							//Request possibly mentioned same racks
 							//thus giving length of 1
 							if !(len(ans) == 1 && racks[0] == racks[1]) {
-								msg := "Unable to get the racks. Please check your inventory and try again"
+
+								//Figure out the rack name that wasn't found
+								var notFound string
+								if racks[0] != ans[0]["name"].(string) {
+									notFound = racks[0]
+								} else {
+									notFound = racks[1]
+								}
+								msg := "Unable to get the rack: " + notFound + ". Please check your inventory and try again"
 								println("LENGTH OF u.RACK CHECK:", len(ans))
 								println("CORRIDOR PARENTID: ", t["parentId"].(string))
 								return u.Message(false, msg), false
