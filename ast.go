@@ -1659,7 +1659,7 @@ func parseSeparators(path string, first, second interface{}, arg *node) (map[str
 
 	sepType := strings.ToLower(extraArg.(string))
 	if sepType != "wireframe" && sepType != "plain" {
-		msg := "Invalid Separator type given. " +
+		msg := "Invalid separator type given. " +
 			"It can only be 'wireframe' or 'plain'"
 		return nil, fmt.Errorf(msg)
 	}
@@ -1725,6 +1725,12 @@ func parseSeparators(path string, first, second interface{}, arg *node) (map[str
 
 // Hack function for the [room]:pillar=[x,y]@[x,y]@rotation
 func parsePillars(path string, first, second interface{}, arg *node) (map[string]interface{}, error) {
+	if (*arg) == nil {
+		return nil, fmt.Errorf(
+			"Pillar rotation must be specified and be a numerical value",
+		)
+	}
+
 	extraArg, err := (*arg).execute()
 	if err != nil {
 		return nil, err
