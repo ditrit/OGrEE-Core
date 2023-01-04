@@ -689,6 +689,12 @@ func UpdateObj(Path, id, ent string, data map[string]interface{}, deleteAndPut b
 func UnsetInObj(Path, attr string, idx int) (map[string]interface{}, error) {
 	var arr []interface{}
 
+	//Check for valid idx
+	if idx < 0 {
+		return nil,
+			fmt.Errorf("Index out of bounds. Please provide an index greater than 0")
+	}
+
 	//Get the object
 	objJSON, _ := GetObject(Path, true)
 	if objJSON == nil {
