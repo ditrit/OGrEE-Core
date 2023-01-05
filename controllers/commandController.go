@@ -1884,6 +1884,12 @@ func GetOCLIAtrributesTemplateHelper(attr, data map[string]interface{}, ent int)
 							attr["separators"] = string(tmp)
 						}
 
+						CopyAttr(attr, tmpl, "pillars")
+						if _, ok := attr["pillars"]; ok {
+							tmp, _ = json.Marshal(attr["pillars"])
+							attr["pillars"] = string(tmp)
+						}
+
 						CopyAttr(attr, tmpl, "tiles")
 						if _, ok := attr["tiles"]; ok {
 							tmp, _ = json.Marshal(attr["tiles"])
@@ -1902,10 +1908,28 @@ func GetOCLIAtrributesTemplateHelper(attr, data map[string]interface{}, ent int)
 							attr["aisles"] = string(tmp)
 						}
 
+						CopyAttr(attr, tmpl, "vertices")
+						if _, ok := attr["vertices"]; ok {
+							tmp, _ = json.Marshal(attr["vertices"])
+							attr["vertices"] = string(tmp)
+						}
+
 						CopyAttr(attr, tmpl, "colors")
 						if _, ok := attr["colors"]; ok {
 							tmp, _ = json.Marshal(attr["colors"])
 							attr["colors"] = string(tmp)
+						}
+
+						CopyAttr(attr, tmpl, "tileAngle")
+						if _, ok := attr["tileAngle"]; ok {
+							if tileAngle, ok := attr["tileAngle"].(int); ok {
+								attr["tileAngle"] = strconv.Itoa(tileAngle)
+							}
+
+							if tileAngleF, ok := attr["tileAngle"].(float64); ok {
+								tileAngleStr := strconv.FormatFloat(tileAngleF, 'f', -1, 64)
+								attr["tileAngle"] = tileAngleStr
+							}
 						}
 
 					} else {
