@@ -145,8 +145,8 @@ func ValidatePatch(ent int, t map[string]interface{}) (map[string]interface{}, b
 				}
 			}
 
-		case "attributes.orientation": //u.SITE, u.ROOM, u.RACK, u.DEVICE
-			if ent >= u.SITE && ent <= u.DEVICE {
+		case "attributes.orientation": // u.ROOM, u.RACK, u.DEVICE
+			if ent > u.SITE && ent <= u.DEVICE {
 				if v, _ := t[k]; v == nil {
 					return u.Message(false,
 						"Field: "+k+" cannot nullified!"), false
@@ -314,14 +314,6 @@ func ValidateEntity(entity int, t map[string]interface{}) (map[string]interface{
 						if !IsHexString(v["color"].(string)) {
 							return u.Message(false,
 								"Color Attribute must be a Hex value"), false
-						}
-
-					case u.SITE:
-						if !IsOrientation(v["orientation"], entity) {
-							if v["orientation"] == nil || v["orientation"] == "" {
-								return u.Message(false, "Orientation should be on the payload"), false
-							}
-							return u.Message(false, "Orientation is invalid!"), false
 						}
 
 					case u.BLDG:
@@ -853,16 +845,6 @@ func IsHexString(s string) bool {
 }
 
 func IsOrientation(x interface{}, ent int) bool {
-	if ent == u.SITE {
-		switch x {
-		case "EN", "NW", "WS", "SE", "NE", "SW":
-			return true
-
-		default:
-			return false
-		}
-	}
-
 	if ent == u.BLDGTMPL || ent == u.ROOMTMPL {
 		switch x {
 		case "EN", "NW", "WS", "SE", "NE", "SW",
