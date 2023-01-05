@@ -387,18 +387,14 @@ OCCR:
               //Site gets {orientation:"EN"} auto hardcoded
               $$=&getOCAttrNode{$3, cmd.SITE, nil}
         } 
-        |TOK_BLDG TOK_COL PHYSICAL_PATH TOK_ATTRSPEC EXPR TOK_ATTRSPEC EXPR {
-              attributes := map[string]interface{}{"attributes":map[string]interface{}{"posXY":$5, "size":$7}}
+        |TOK_BLDG TOK_COL PHYSICAL_PATH TOK_ATTRSPEC EXPR TOK_ATTRSPEC EXPR TOK_ATTRSPEC EXPR {
+              attributes := map[string]interface{}{"attributes":map[string]interface{}{"posXY":$5, "size/rotation":$7, "rotation/template":$9}}
               $$=&getOCAttrNode{$3, cmd.BLDG, attributes}
         }
-        |TOK_BLDG TOK_COL PHYSICAL_PATH TOK_ATTRSPEC EXPR TOK_ATTRSPEC TOK_WORD {
-              //size could be a template but intentionally left as is, since it is easier
-              //to distinguish in the AST 
-              attributes := map[string]interface{}{"attributes":map[string]interface{}{"posXY":$5, "size":&strLeaf{$7}}} 
-              $$=&getOCAttrNode{$3, cmd.BLDG, attributes}
-        }
-        |TOK_BLDG TOK_COL PHYSICAL_PATH TOK_ATTRSPEC EXPR TOK_ATTRSPEC EXPR TOK_ATTRSPEC NONSTD_ORIENTATION {
-              attributes := map[string]interface{}{"attributes":map[string]interface{}{"posXY":$5, "size":$7, "orientation":$9}}
+        |TOK_BLDG TOK_COL PHYSICAL_PATH TOK_ATTRSPEC EXPR TOK_ATTRSPEC EXPR TOK_ATTRSPEC TOK_WORD {
+              //The TOK_WORD actually refers to "template" but kept as is for simplicity
+              //in the ast code
+              attributes := map[string]interface{}{"attributes":map[string]interface{}{"posXY":$5, "size/rotation":$7, "rotation/template":&strLeaf{$9}}}
               $$=&getOCAttrNode{$3, cmd.BLDG, attributes}
         }
         |TOK_ROOM TOK_COL PHYSICAL_PATH TOK_ATTRSPEC EXPR TOK_ATTRSPEC EXPR TOK_ATTRSPEC NONSTD_ORIENTATION TOK_ATTRSPEC EXPR_NOQUOTE{

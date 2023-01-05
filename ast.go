@@ -1175,7 +1175,45 @@ func (n *getOCAttrNode) execute() (interface{}, error) {
 		// 05/1/2023
 		attributes = map[string]interface{}{"attributes": map[string]interface{}{"orientation": "EN"}}
 	}
-	if n.ent == cmd.BLDG || n.ent == cmd.ROOM {
+	if n.ent == cmd.BLDG {
+		attr := attributes["attributes"].(map[string]interface{})
+		//Distinguish between size & rotation
+		if IsInfArr(attr["size/rotation"]) {
+			attr["size"] = attr["size/rotation"]
+
+		} else { //This means it is rotation
+			attr["rotation"] = attr["size/rotation"]
+		}
+		delete(attr, "size/rotation")
+
+		//Distinguish between rotation & template
+		if IsString(attr["rotation/template"]) {
+			attr["template"] = attr["rotation/template"]
+
+			//Check if the template exists
+			if !checkIfTemplate(attr["template"], cmd.BLDG) {
+				return nil, fmt.Errorf("Template \"" +
+					attr["template"].(string) + "\" does not exist. Please check and try again")
+			}
+
+		} else { //This means it is rotation
+			attr["rotation"] = attr["rotation/template"]
+		}
+		delete(attr, "rotation/template")
+
+		//Must check that we have either size or template
+		_, sizeExist := attr["size"]
+		_, templateExist := attr["template"]
+
+		if !sizeExist && !templateExist {
+			cmd.Disp(attributes)
+			return nil,
+				fmt.Errorf("Invalid parameters given for building. " +
+					"You should give position, size and rotation or position, rotation and template")
+		}
+
+	}
+	if n.ent == cmd.ROOM {
 		//If Orientation was given, check if it is valid
 		attr := attributes["attributes"]
 		if orientation, ok := attr.(map[string]interface{})["orientation"]; ok {
