@@ -383,9 +383,9 @@ OCCR:
               attributes := map[string]interface{}{"attributes":map[string]interface{}{"color":$5}}
               $$=&getOCAttrNode{$3, cmd.TENANT, attributes}
         }
-        |TOK_SITE TOK_COL PHYSICAL_PATH TOK_ATTRSPEC ORIENTATION {
-              attributes := map[string]interface{}{"attributes":map[string]interface{}{"orientation":$5}}
-              $$=&getOCAttrNode{$3, cmd.SITE, attributes}
+        |TOK_SITE TOK_COL PHYSICAL_PATH {
+              //Site gets {orientation:"EN"} auto hardcoded
+              $$=&getOCAttrNode{$3, cmd.SITE, nil}
         } 
         |TOK_BLDG TOK_COL PHYSICAL_PATH TOK_ATTRSPEC EXPR TOK_ATTRSPEC EXPR {
               attributes := map[string]interface{}{"attributes":map[string]interface{}{"posXY":$5, "size":$7}}

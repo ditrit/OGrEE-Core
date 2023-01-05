@@ -1171,12 +1171,9 @@ func (n *getOCAttrNode) execute() (interface{}, error) {
 		attributes["attributes"].(map[string]interface{})["color"] = color
 	}
 	if n.ent == cmd.SITE {
-		//Check for valid orientation
-		orientation := attributes["attributes"].(map[string]interface{})["orientation"].(string)
-		if checkIfOrientation(orientation) == false {
-			msg := "You must provide a valid orientation"
-			return nil, fmt.Errorf(msg)
-		}
+		// Hardcode the orientation according to spec as of
+		// 05/1/2023
+		attributes = map[string]interface{}{"attributes": map[string]interface{}{"orientation": "EN"}}
 	}
 	if n.ent == cmd.BLDG || n.ent == cmd.ROOM {
 		//If Orientation was given, check if it is valid

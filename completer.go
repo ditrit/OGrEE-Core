@@ -197,6 +197,22 @@ func ListUserFuncs(path string) func(string) []string {
 	}
 }
 
+func SiteOCLICompleter(path string) func(string) []string {
+	return func(line string) []string {
+
+		//Trim everything up to and including the ':'
+		idx := strings.Index(line, ":")
+		if idx == -1 {
+			return nil
+		}
+
+		fn := ListEntities("")
+		ans := fn(line[idx:])
+
+		return ans
+	}
+}
+
 func TenantSiteOCLICompleter(path string) func(string) []string {
 	return func(line string) []string {
 
@@ -328,7 +344,7 @@ func GetPrefixCompleter() *readline.PrefixCompleter {
 			readline.PcItem("tn:", true,
 				readline.PcItemDynamic(TenantSiteOCLICompleter(""), true)),
 			readline.PcItem("si:", true,
-				readline.PcItemDynamic(TenantSiteOCLICompleter(""), true)),
+				readline.PcItemDynamic(SiteOCLICompleter(""), true)),
 			readline.PcItem("bd:", true,
 				readline.PcItemDynamic(BldgOCLICompleter(""), true)),
 			readline.PcItem("ro:", true,

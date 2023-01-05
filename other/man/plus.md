@@ -18,11 +18,9 @@ A string or numerical Hex value maybe given here
 
 
 
-+si:PATH/SITE_NAME@ORIENTATION   
-+site:PATH/SITE_NAME@ORIENTATION   
-User must specify the path, SITE_NAME and ORIENTATION   
-
-Where ORIENTATION could be one of the following: {NE,NW,SE,SW}
++si:PATH/SITE_NAME   
++site:PATH/SITE_NAME   
+User must specify the path and SITE_NAME   
 
 
 +bd:PATH/BLDG_NAME@POSITION@SIZE   
@@ -180,8 +178,8 @@ EXAMPLES
 +tn:CED@ced666
 +tenant:MARCUS@42ff42
 
-+si:CED.BETA@NW
-+site:CED/BETA@NE
++si:CED.BETA
++site:CED/BETA
 
 +bd:CED.BETA.A@[0,0]@[25,29.4,3]
 +bldg:CED/BETA/A@[0,0]@[25,29.4,3]
