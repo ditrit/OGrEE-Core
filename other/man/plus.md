@@ -165,7 +165,7 @@ EXAMPLES
 +bd:CED.BETA.A@[0,0]@[25,29.4,3]
 +bldg:CED/BETA/A@[0,0]@[25,29.4,3]
 
-+room:CED/BETA/A/R1@[0,0]@DeviceTemplateA
++room:CED/BETA/A/R1@[0,0]@RoomTemplateA
 +ro:CED/BETA/A/R1@[0,0]@[22.8,19.8,2]@+N+W
 +ro:CED/BETA/A/R1@[0,0]@[22.8,19.8,2]@+N+W@t
 

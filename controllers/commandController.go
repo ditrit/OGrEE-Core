@@ -2740,10 +2740,18 @@ func LoadTemplate(data map[string]interface{}, filePath string) {
 	r, e := models.Send("POST", URL, GetKey(), data)
 	if e != nil {
 		l.GetErrorLogger().Println(e.Error())
-		if State.DebugLvl > 0 {
+		if State.DebugLvl > NONE {
 			println("Error: ", e.Error())
 		}
 
+	}
+
+	//Crashes here if API timeout
+	if r == nil {
+		if State.DebugLvl > NONE {
+			println("Unable to recieve response from API")
+		}
+		return
 	}
 
 	if r.StatusCode == http.StatusCreated {
