@@ -23,34 +23,25 @@ A string or numerical Hex value maybe given here
 User must specify the path and SITE_NAME   
 
 
-+bd:PATH/BLDG_NAME@POSITION@SIZE   
-+building:PATH/BLDG_NAME@POSITION@SIZE   
-User must specify the path, BLDG_NAME, POSITION and SIZE   
++bd:PATH/BLDG_NAME@POSITION@SIZE@ROTATION   
++building:PATH/BLDG_NAME@POSITION@SIZE@ROTATION 
+User must specify the path, BLDG_NAME, SIZE, ROTATION   
 
 Where the POSITION (posXY attribute) must be a 2 element array/vector of coordinates (ie [1,2])   
 
 Where the SIZE (size attribute) must be a 3 element array/vector (ie [1,2,3])
 
+Where the ROTATION (rotation attribute) must be a numerical value (ie 45)
 
-+bd:PATH/BLDG_NAME@POSITION@TEMPLATE   
-+building:PATH/BLDG_NAME@POSITION@TEMPLATE   
-User must specify the path, BLDG_NAME, POSITION and TEMPLATE
++bd:PATH/BLDG_NAME@POSITION@ROTATION@TEMPLATE
++building:PATH/BLDG_NAME@POSITION@ROTATION@TEMPLATE
+User must specify the path, BLDG_NAME, POSITION, ROTATION,TEMPLATE
 
-Where POSITION (posXY attribute) must be a 2 element array/vector of coordinates (ie [1,2]) 
+Where the POSITION (posXY attribute) must be a 2 element array/vector of coordinates (ie [1,2])   
+
+Where the ROTATION (rotation attribute) must be a numerical value (ie 45)
 
 Where TEMPLATE refers to the bldg template name (which must be already existing)
-
-
-
-+bd:PATH/BLDG_NAME@POSITION@SIZE@ORIENTATION   
-+building:PATH/BLDG_NAME@POSITION@SIZE@ORIENTATION
-User must specify the path, BLDG_NAME, POSITION and SIZE   
-
-Where the POSITION (posXY attribute) must be a 2 element array/vector of coordinates (ie [1,2])   
-
-Where the SIZE (size attribute) must be a 3 element array/vector (ie [1,2,3])
-
-Where the ORIENTATION (orientation attribute) must be a cardinal string coordinate (ie +N+W) or a numerical value (ie 45)
 
 
 +ro:PATH/ROOM_NAME@POSITION@SIZE@ORIENTATION   
@@ -181,11 +172,13 @@ EXAMPLES
 +si:CED.BETA
 +site:CED/BETA
 
-+bd:CED.BETA.A@[0,0]@[25,29.4,3]
-+bldg:CED/BETA/A@[0,0]@[25,29.4,3]
-+bd:CED.BETA.A@[0,0]@[25,29.4,3]@+N+W
-+bldg:CED/BETA/A@[0,0]@[25,29.4,3]@98.1
-+bd:CED.BETA.A@[0,0]@BuildingTemplateA
+
++bd:CED/BETA/A@[5,5,5]@[300,300]@49.1
++bd:CED/BETA/A@[5,5,5]@-27.89@BldgTemplateA
++building:CED/BETA/A@[5,5,5]@[300,300]@49.1
++building:CED/BETA/A@[5,5,5]@-27.89@BldgTemplateA
+
+
 
 +room:CED/BETA/A/R1@[0,0]@DeviceTemplateA
 +ro:CED/BETA/A/R1@[0,0]@[22.8,19.8,2]@+N+W
