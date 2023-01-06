@@ -341,6 +341,10 @@ func ValidateEntity(entity int, t map[string]interface{}) (map[string]interface{
 							return u.Message(false, "Building Height unit should be on the payload"), false
 						}
 
+						if v["rotation"] == "" || v["rotation"] == nil {
+							return u.Message(false, "Building Rotation should be on the payload"), false
+						}
+
 					case u.ROOM:
 						if v["posXY"] == "" || v["posXY"] == nil {
 							return u.Message(false, "XY coordinates should be on payload"), false
