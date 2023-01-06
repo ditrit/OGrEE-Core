@@ -655,9 +655,9 @@ func ValidateEntity(entity int, t map[string]interface{}) (map[string]interface{
 			}
 
 		} else { //u.ROOMTMPL
-			if _, ok := t["orientation"]; !ok {
+			if _, ok := t["axisOrientation"]; !ok {
 				return u.Message(false,
-					"Orientation should be on payload"), false
+					"Axis Orientation should be on payload"), false
 			}
 
 			if _, ok := t["sizeWDHm"]; !ok {
@@ -691,14 +691,6 @@ func ValidateEntity(entity int, t map[string]interface{}) (map[string]interface{
 			return u.Message(false, "Slug should be on payload"), false
 		}
 
-		if t["orientation"] == "" || t["orientation"] == nil {
-			return u.Message(false, "Orientation should be on payload"), false
-		}
-
-		if !IsOrientation(t["orientation"], u.BLDGTMPL) {
-			return u.Message(false, "Orientation is invalid!"), false
-		}
-
 		if !IsInfArr(t["sizeWDHm"]) {
 			return u.Message(false,
 				"Please provide the size as a 3 numerical element array"), false
@@ -714,16 +706,6 @@ func ValidateEntity(entity int, t map[string]interface{}) (map[string]interface{
 				return u.Message(false,
 					"An element in the size was not numerical!"), false
 			}
-		}
-
-		if !IsInfArr(t["sizeWDHm"]) {
-			return u.Message(false,
-				"Please provide the size as a 3 numerical element array"), false
-		}
-
-		if len(t["sizeWDHm"].([]interface{})) != 3 {
-			return u.Message(false,
-				"The size can only have 3 numerical elements"), false
 		}
 
 		if !IsInfArr(t["vertices"]) {
