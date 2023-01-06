@@ -6,7 +6,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"path/filepath"
-	"strconv"
 	"strings"
 )
 
@@ -1214,34 +1213,36 @@ func (n *getOCAttrNode) execute() (interface{}, error) {
 
 	}
 	if n.ent == cmd.ROOM {
-		//If Orientation was given, check if it is valid
-		attr := attributes["attributes"]
-		if orientation, ok := attr.(map[string]interface{})["orientation"]; ok {
+		//If axisOrientation was given, check if it is valid
+		attr := attributes["attributes"].(map[string]interface{})
 
-			if IsString(orientation) {
-				if !checkIfOrientation(orientation.(string)) {
-					msg := "Invalid orientation! You must provide either cardinal coordinates or a float value"
+		//Ensure that the rotation is valid
+		if !IsFloat(attr["rotation"]) {
+			return nil, fmt.Errorf("Please provide a numerical value for the rotation")
+		}
+
+		if axisOrientation, ok := attr["axisOrientation"]; ok {
+
+			if IsString(axisOrientation) {
+				if !checkIfOrientation(axisOrientation.(string)) {
+					msg := "Invalid axisOrientation! You must provide cardinal coordinates of the form -W+S"
 					return nil, fmt.Errorf(msg)
 				}
-			} else if IsFloat(orientation) {
-				//Convert the attribute to string
-				attr.(map[string]interface{})["orientation"] =
-					strconv.FormatFloat(float64(orientation.(float64)), 'f', -1, 64)
 
 			} else {
 				//Error Case
-				msg := "Please provide a valid orientation, either cardinal coordinates or a float value"
+				msg := "Please provide a valid axisOrientation (cardinal coordinates of the form -W+S)"
 				return nil, fmt.Errorf(msg)
 			}
 
-		} else { //Check if template was given
-			// Because if orientation was not specified then this means
-			// size or template could've been specified
-			sizeOrTmpl := attr.(map[string]interface{})["size"]
+		} else { //Check if template is valid
+			// Because if axisOrientation was not specified then this means
+			// template was specified
+			sizeOrTmpl := attr["size"]
 			if checkIfTemplate(sizeOrTmpl, n.ent) {
 				//Have to use the template
-				delete(attr.(map[string]interface{}), "size")
-				attr.(map[string]interface{})["template"] = sizeOrTmpl.(string)
+				delete(attr, "size")
+				attr["template"] = sizeOrTmpl.(string)
 			}
 
 		}

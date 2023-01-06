@@ -1371,7 +1371,7 @@ func GetOCLIAtrributes(Path string, ent int, data map[string]interface{}) error 
 		attr = data["attributes"].(map[string]interface{})
 
 		baseAttrs := map[string]interface{}{
-			"orientation": "+N+E", "floorUnit": "t",
+			"floorUnit": "t",
 			"posXYUnit": "m", "sizeUnit": "m",
 			"height":     "5",
 			"heightUnit": "m"}

@@ -35,7 +35,7 @@ func checkTypeAreNumeric(x, y interface{}) bool {
 
 func checkIfOrientation(x string) bool {
 	switch x {
-	case "EN", "NW", "WS", "SE", "NE", "SW",
+	case /*"EN", "NW", "WS", "SE", "NE", "SW",*/
 		"-E-N", "-E+N", "+E-N", "+E+N", "+N+E",
 		"+N-E", "-N-E", "-N+E",
 		"-N-W", "-N+W", "+N-W", "+N+W",
