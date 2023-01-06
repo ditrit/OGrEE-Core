@@ -363,12 +363,16 @@ func ValidateEntity(entity int, t map[string]interface{}) (map[string]interface{
 
 						}
 
-						//Check Orientation
-						if !IsNonStdOrientation(v["orientation"], entity) {
-							if v["orientation"] == nil || v["orientation"] == "" {
-								return u.Message(false, "Orientation should be on the payload"), false
+						//Check Orientation (axisOrientation)
+						if !IsNonStdOrientation(v["axisOrientation"], entity) {
+							if v["axisOrientation"] == nil || v["axisOrientation"] == "" {
+								return u.Message(false, "Axis Orientation should be on the payload"), false
 							}
-							return u.Message(false, "Orientation is invalid!"), false
+							return u.Message(false, "Axis Orientation is invalid!"), false
+						}
+
+						if v["rotation"] == "" || v["rotation"] == nil {
+							return u.Message(false, "Rotation should be on the payload"), false
 						}
 
 						if v["size"] == "" || v["size"] == nil {
