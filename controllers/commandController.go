@@ -1359,6 +1359,12 @@ func GetOCLIAtrributes(Path string, ent int, data map[string]interface{}) error 
 			return nil
 		}
 
+		//Check rotation
+		if _, ok := attr["rotation"].(float64); ok {
+			attr["rotation"] =
+				strconv.FormatFloat(attr["rotation"].(float64), 'f', -1, 64)
+		}
+
 		attr["posXYUnit"] = "m"
 		attr["sizeUnit"] = "m"
 		attr["heightUnit"] = "m"
@@ -1413,6 +1419,12 @@ func GetOCLIAtrributes(Path string, ent int, data map[string]interface{}) error 
 					"using this syntax")
 			}
 			return nil
+		}
+
+		//Check rotation
+		if _, ok := attr["rotation"].(float64); ok {
+			attr["rotation"] =
+				strconv.FormatFloat(attr["rotation"].(float64), 'f', -1, 64)
 		}
 
 		data["parentId"] = parent["id"]
