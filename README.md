@@ -4,17 +4,27 @@ This is a Shell interfacing with a RESTful API for data centre management.
 
 
 Building
-------------
-This is not yet tested on Windows and macOS   
+------------   
+
+  ### NOTE If Building On Windows
+  The current method to build is to use ```wsl``` and with this we can invoke ```make win``` to generate a windows build.
+
+  To install wsl please follow the [instructions here](https://learn.microsoft.com/en-us/windows/wsl/install)
+  
+  Launch wsl and navigate to the directory containing the CLI and continue to follow the instructions below. 
+
+  If you want to generate a windows binary you must execute ```make win```
+
+### Build Instructions
 The ReadMe assumes that you already have the latest version of GO installed and your GO Environment PATHS properly setup  
-You must also have python3 setup and installed 
+You must also have python3 installed and properly setup  
 For BSD systems, GO can be installed from the respective ports  
 For Linux, consult your respective Distribution docs  
 
 [Otherwise you can follow instructions from the GO site](https://golang.org/doc/install)  
 
    
-  Clone the API repository  
+  Clone the CLI repository  
   Execute make. It should automatically retrieve the necessary libraries. If not then execute the commands below 
   ```
   go get github.com/blynn/nex
@@ -24,13 +34,25 @@ For Linux, consult your respective Distribution docs
     make
 
 
+
+
 Running
 -------------
+You must first have a ```.env``` file to be included in the same directory as the executable. If not included the CLI will exit on startup with an error message about this file.   
+
+You can view an example ```.env``` file here: https://ogree.ditrit.io/htmls/clienv.html  
+
  - Execute ```./main```
+
+If this is the first running the Shell, you will be greeted with a sign up prompt to input a user email and password. 
+
+DO NOT SHARE YOUR ```.env``` file since it contains your credentials 
 
 Usage & Notes
 -------------
-Sometimes the shell can crash with a 'stream error'. This is assumed to be a problem with the API Backend since it occurs on startup, when the Shell queries a lot of data
+Please read the more comprehensive and updated how to use guide here: https://ogree.ditrit.io/htmls/programming.html   
+
+Sometimes the shell can crash with a 'stream error'. This is assumed to be a problem with the communication library, when the Shell queries a lot of data
  
  The following can be done in the shell:
  - cd       : Change directory
@@ -59,9 +81,9 @@ The View is the front end that manages the user input
 
 
    
-This design was chosen to follow the architecture of the API
+This design was chosen to follow the architecture of the CLI
    
-API Files
+CLI Files
 -------------
    
 ### Folder Structure   

@@ -9,6 +9,7 @@ import (
 	"cli/readline"
 	"encoding/json"
 	"fmt"
+	"net/url"
 	"os"
 	"strconv"
 	"strings"
@@ -28,11 +29,11 @@ func InitHistoryFilePath(histPath string) {
 func InitDebugLevel(verbose string) {
 	var ok bool
 	State.DebugLvl, ok = map[string]int{
-		"NONE":    0,
-		"ERROR":   1,
-		"WARNING": 2,
-		"INFO":    3,
-		"DEBUG":   4,
+		"NONE":    NONE,
+		"ERROR":   ERROR,
+		"WARNING": WARNING,
+		"INFO":    INFO,
+		"DEBUG":   DEBUG,
 	}[verbose]
 	if !ok {
 		State.DebugLvl = 1
@@ -164,7 +165,9 @@ func SetStateReadline(rl *readline.Instance) {
 func InitUnityCom(rl *readline.Instance, addr string) {
 	errConnect := models.ConnectToUnity(addr, State.Timeout)
 	if errConnect != nil {
-		println(errConnect.Error())
+		if State.DebugLvl > ERROR {
+			println(errConnect.Error())
+		}
 		return
 	}
 	State.UnityClientAvail = true
@@ -278,7 +281,16 @@ func GetURLs(apiURL string, unityURL string, env map[string]string) {
 
 	if State.APIURL == "" {
 		if envApiURL, ok := env["apiURL"]; ok {
-			State.APIURL = envApiURL
+			// if present, remove the last / to avoid path issues in ls command
+			envApiURL = strings.TrimRight(envApiURL, "/")
+
+			// check if URL is valid
+			_, err := url.ParseRequestURI(envApiURL)
+			if err != nil {
+				println("apiURL is not valid! ")
+			} else {
+				State.APIURL = envApiURL
+			}
 		}
 	}
 

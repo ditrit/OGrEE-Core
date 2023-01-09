@@ -28,7 +28,7 @@ parser: interpreter/parser.y controllers/commandController.go
 	$(GOYACC) "interpreter/parser.y" 
 
 lexer: interpreter/lexer.nex
-	$(NEX) "interpreter/lexer.nex"; mv interpreter/lexer.nn.go .
+	$(NEX) -o "./lexer.nn.go" "interpreter/lexer.nex"
 
 buildTimeScript:
 	$(info Injecting build time code...)

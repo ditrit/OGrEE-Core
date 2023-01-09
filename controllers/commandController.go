@@ -1,8 +1,10 @@
 package controllers
 
 import (
+	"cli/logger"
 	l "cli/logger"
 	"cli/models"
+	u "cli/utils"
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
@@ -15,6 +17,8 @@ import (
 	"runtime"
 	"strconv"
 	"strings"
+
+	"golang.org/x/exp/slices"
 )
 
 func PWD() string {
@@ -34,7 +38,9 @@ func PostObj(ent int, entity string, data map[string]interface{}) (map[string]in
 
 	if resp.StatusCode == http.StatusCreated && respMap["status"].(bool) == true {
 		//Print success message
-		println(string(respMap["message"].(string)))
+		if State.DebugLvl > NONE {
+			println(string(respMap["message"].(string)))
+		}
 
 		//If ent is in State.ObjsForUnity then notify Unity
 		if IsInObjForUnity(entity) == true {
@@ -570,9 +576,11 @@ func UpdateObj(Path, id, ent string, data map[string]interface{}, deleteAndPut b
 		attrs := map[string]interface{}{}
 
 		for i := range data {
-			// Since all data types must be sent as string
+			// Since all data of obj attributes must be string
 			// stringify the data before sending
-			data[i] = Stringify(data[i])
+			if u.IsNestedAttr(i, ent) {
+				data[i] = Stringify(data[i])
+			}
 
 			found := GenUpdateJSON(ogData, i, data[i], deleteAndPut)
 			if !found {
@@ -675,6 +683,100 @@ func UpdateObj(Path, id, ent string, data map[string]interface{}, deleteAndPut b
 		println("Error! Please enter desired parameters of Object to be updated")
 	}
 	return data, nil
+}
+
+// Specific update for deleting elements in an array of an obj
+func UnsetInObj(Path, attr string, idx int) (map[string]interface{}, error) {
+	var arr []interface{}
+
+	//Check for valid idx
+	if idx < 0 {
+		return nil,
+			fmt.Errorf("Index out of bounds. Please provide an index greater than 0")
+	}
+
+	//Get the object
+	objJSON, _ := GetObject(Path, true)
+	if objJSON == nil {
+		l.GetWarningLogger().Println("Error while getting Object!")
+		return nil, fmt.Errorf("error while getting Object")
+	}
+
+	//Check if attribute exists in object
+	existing, nested := AttrIsInObj(objJSON, attr)
+	if !existing {
+		if State.DebugLvl > ERROR {
+			logger.GetErrorLogger().Println("Attribute :" + attr + " was not found")
+		}
+		return nil, fmt.Errorf("Attribute :" + attr + " was not found")
+	}
+
+	//Check if attribute is an array
+	if nested {
+		objAttributes := objJSON["attributes"].(map[string]interface{})
+		if _, ok := objAttributes[attr].([]interface{}); !ok {
+			if State.DebugLvl > ERROR {
+				println("Attribute is not an array")
+			}
+			return nil, fmt.Errorf("Attribute is not an array")
+
+		}
+		arr = objAttributes[attr].([]interface{})
+
+	} else {
+		if _, ok := objJSON[attr].([]interface{}); !ok {
+			if State.DebugLvl > ERROR {
+				logger.GetErrorLogger().Println("Attribute :" + attr + " was not found")
+			}
+			return nil, fmt.Errorf("Attribute :" + attr + " was not found")
+		}
+		arr = objJSON[attr].([]interface{})
+	}
+
+	//Ensure that we can delete elt in array
+	if len(arr) == 0 {
+		if State.DebugLvl > ERROR {
+			println("Cannot delete anymore elements")
+		}
+		return nil, fmt.Errorf("Cannot delete anymore elements")
+	}
+
+	//Perform delete
+	if idx >= len(arr) {
+		idx = len(arr) - 1
+	}
+	arr = slices.Delete(arr, idx, idx+1)
+
+	//Save back into obj
+	if nested {
+		objJSON["attributes"].(map[string]interface{})[attr] = arr
+	} else {
+		objJSON[attr] = arr
+	}
+
+	//Send to API and update Unity
+	entity := objJSON["category"].(string)
+	id := objJSON["id"].(string)
+	URL := State.APIURL + "/api/" + entity + "s/" + id
+
+	resp, e := models.Send("PUT", URL, GetKey(), objJSON)
+	respJson := ParseResponse(resp, e, "UPDATE")
+	if respJson != nil {
+		if resp.StatusCode == 200 {
+			println("Success")
+
+			message := map[string]interface{}{
+				"type": "modify", "data": respJson["data"]}
+
+			//Update and inform unity
+			if IsInObjForUnity(entity) == true {
+				entInt := EntityStrToInt(entity)
+				InformUnity("UpdateObj", entInt, message)
+			}
+		}
+	}
+
+	return nil, nil
 }
 
 func LS(x string) []map[string]interface{} {
@@ -1280,7 +1382,7 @@ func GetOCLIAtrributes(Path string, ent int, data map[string]interface{}) error 
 	data["description"] = []interface{}{}
 
 	//Retrieve Parent
-	if ent != SITE && ent != GROUP && ent != STRAY_DEV {
+	if ent != SITE && ent != GROUP && ent != STRAY_DEV && ent != STRAYSENSOR {
 		parent, parentURL = GetObject(Path, true)
 		if parent == nil {
 			return fmt.Errorf("The parent was not found in path")
@@ -1414,13 +1516,15 @@ func GetOCLIAtrributes(Path string, ent int, data map[string]interface{}) error 
 		_, err = PostObj(ent, "room", data)
 	case RACK:
 		attr = data["attributes"].(map[string]interface{})
+		parentAttr := parent["attributes"].(map[string]interface{})
+		//Save orientation because it gets overwritten by
+		//GetOCLIAtrributesTemplateHelper()
+		orientation := attr["orientation"]
 
 		baseAttrs := map[string]interface{}{
-			"sizeUnit":    "cm",
-			"height":      "5",
-			"heightUnit":  "U",
-			"posXYUnit":   "t",
-			"orientation": "front",
+			"sizeUnit":   "cm",
+			"heightUnit": "U",
+			"posXYUnit":  parentAttr["floorUnit"],
 		}
 
 		MergeMaps(attr, baseAttrs, false)
@@ -1429,10 +1533,14 @@ func GetOCLIAtrributes(Path string, ent int, data map[string]interface{}) error 
 		//and parse into templates
 		GetOCLIAtrributesTemplateHelper(attr, data, ent)
 
+		//Restore the orientation overwritten
+		//by the helper func
+		attr["orientation"] = orientation
+
 		if attr["size"] == "" {
 			if State.DebugLvl > 0 {
 				l.GetErrorLogger().Println(
-					"User gave invalid size value for creating room")
+					"User gave invalid size value for creating rack")
 				return fmt.Errorf("Invalid size attribute/template provided." +
 					" \nThe size must be an array/list/vector with " +
 					"3 elements." + "\n\nIf you have provided a" +
@@ -1772,6 +1880,12 @@ func GetOCLIAtrributesTemplateHelper(attr, data map[string]interface{}, ent int)
 							attr["separators"] = string(tmp)
 						}
 
+						CopyAttr(attr, tmpl, "pillars")
+						if _, ok := attr["pillars"]; ok {
+							tmp, _ = json.Marshal(attr["pillars"])
+							attr["pillars"] = string(tmp)
+						}
+
 						CopyAttr(attr, tmpl, "tiles")
 						if _, ok := attr["tiles"]; ok {
 							tmp, _ = json.Marshal(attr["tiles"])
@@ -1790,10 +1904,28 @@ func GetOCLIAtrributesTemplateHelper(attr, data map[string]interface{}, ent int)
 							attr["aisles"] = string(tmp)
 						}
 
+						CopyAttr(attr, tmpl, "vertices")
+						if _, ok := attr["vertices"]; ok {
+							tmp, _ = json.Marshal(attr["vertices"])
+							attr["vertices"] = string(tmp)
+						}
+
 						CopyAttr(attr, tmpl, "colors")
 						if _, ok := attr["colors"]; ok {
 							tmp, _ = json.Marshal(attr["colors"])
 							attr["colors"] = string(tmp)
+						}
+
+						CopyAttr(attr, tmpl, "tileAngle")
+						if _, ok := attr["tileAngle"]; ok {
+							if tileAngle, ok := attr["tileAngle"].(int); ok {
+								attr["tileAngle"] = strconv.Itoa(tileAngle)
+							}
+
+							if tileAngleF, ok := attr["tileAngle"].(float64); ok {
+								tileAngleStr := strconv.FormatFloat(tileAngleF, 'f', -1, 64)
+								attr["tileAngle"] = tileAngleStr
+							}
 						}
 
 					} else {
@@ -1868,14 +2000,18 @@ func GetOCLIAtrributesTemplateHelper(attr, data map[string]interface{}, ent int)
 func UIDelay(time float64) {
 	subdata := map[string]interface{}{"command": "delay", "data": time}
 	data := map[string]interface{}{"type": "ui", "data": subdata}
-	Disp(data)
+	if State.DebugLvl > WARNING {
+		Disp(data)
+	}
 	InformUnity("HandleUI", -1, data)
 }
 
 func UIToggle(feature string, enable bool) {
 	subdata := map[string]interface{}{"command": feature, "data": enable}
 	data := map[string]interface{}{"type": "ui", "data": subdata}
-	Disp(data)
+	if State.DebugLvl > WARNING {
+		Disp(data)
+	}
 	InformUnity("HandleUI", -1, data)
 }
 
@@ -1886,7 +2022,9 @@ func UIHighlight(objArg string) error {
 	}
 	subdata := map[string]interface{}{"command": "highlight", "data": obj["id"]}
 	data := map[string]interface{}{"type": "ui", "data": subdata}
-	Disp(data)
+	if State.DebugLvl > WARNING {
+		Disp(data)
+	}
 	InformUnity("HandleUI", -1, data)
 	return nil
 }
@@ -1896,7 +2034,9 @@ func CameraMove(command string, position []interface{}, rotation []interface{}) 
 	subdata["position"] = map[string]interface{}{"x": position[0], "y": position[1], "z": position[2]}
 	subdata["rotation"] = map[string]interface{}{"x": rotation[0], "y": rotation[1]}
 	data := map[string]interface{}{"type": "camera", "data": subdata}
-	Disp(data)
+	if State.DebugLvl > WARNING {
+		Disp(data)
+	}
 	InformUnity("HandleUI", -1, data)
 }
 
@@ -1905,7 +2045,9 @@ func CameraWait(time float64) {
 	subdata["position"] = map[string]interface{}{"x": 0, "y": 0, "z": 0}
 	subdata["rotation"] = map[string]interface{}{"x": 999, "y": time}
 	data := map[string]interface{}{"type": "camera", "data": subdata}
-	Disp(data)
+	if State.DebugLvl > WARNING {
+		Disp(data)
+	}
 	InformUnity("HandleUI", -1, data)
 }
 
@@ -1922,6 +2064,18 @@ func FocusUI(path string) {
 				return
 			}
 		}
+		category := EntityStrToInt(obj["category"].(string))
+		if category == SITE || category == BLDG ||
+			category == ROOM {
+			if State.DebugLvl > 0 {
+				msg := "You cannot focus on this object. Note you cannot" +
+					" focus on Tenants, Sites, Buildings and Rooms. " +
+					"For more information please refer to the help doc  (man >)"
+				println(msg)
+				return
+			}
+		}
+
 		id = obj["id"].(string)
 	} else {
 		id = ""
@@ -2606,10 +2760,18 @@ func LoadTemplate(data map[string]interface{}, filePath string) {
 	r, e := models.Send("POST", URL, GetKey(), data)
 	if e != nil {
 		l.GetErrorLogger().Println(e.Error())
-		if State.DebugLvl > 0 {
+		if State.DebugLvl > NONE {
 			println("Error: ", e.Error())
 		}
 
+	}
+
+	//Crashes here if API timeout
+	if r == nil {
+		if State.DebugLvl > NONE {
+			println("Unable to recieve response from API")
+		}
+		return
 	}
 
 	if r.StatusCode == http.StatusCreated {
@@ -2741,12 +2903,10 @@ func InteractObject(path string, keyword string, val interface{}, fromAttr bool)
 
 			if _, ok := obj[value]; ok {
 				if value == "description" {
-					//val = desc[0]
-					//for i := range desc {
-					//	val =
-					//}
+
 					desc := obj["description"].([]interface{})
 					val = ""
+					//Combine entire the description array into a string
 					for i := 0; i < len(desc); i++ {
 						if i == 0 {
 							val = desc[i].(string)
@@ -2763,30 +2923,31 @@ func InteractObject(path string, keyword string, val interface{}, fromAttr bool)
 				val = innerMap[value]
 			} else {
 				if strings.Contains(value, "description") == true {
-					desc := obj["description"].([]interface{})
-					if len(value) > 11 { //descriptionX format
-						//split the number and description
-						numStr := strings.Split(value, "description")[1]
-						num, e := strconv.Atoi(numStr)
-						if e != nil {
-							return e
-						}
+					if desc, ok := obj["description"].([]interface{}); ok {
+						if len(value) > 11 { //descriptionX format
+							//split the number and description
+							numStr := strings.Split(value, "description")[1]
+							num, e := strconv.Atoi(numStr)
+							if e != nil {
+								return e
+							}
 
-						if num < 0 {
-							return fmt.Errorf("Description index must be positive")
-						}
+							if num < 0 {
+								return fmt.Errorf("Description index must be positive")
+							}
 
-						if num >= len(desc) {
-							msg := "Description index is out of" +
-								" range. The length for this object is: " +
-								strconv.Itoa(len(desc))
-							return fmt.Errorf(msg)
-						}
-						val = desc[num]
+							if num >= len(desc) {
+								msg := "Description index is out of" +
+									" range. The length for this object is: " +
+									strconv.Itoa(len(desc))
+								return fmt.Errorf(msg)
+							}
+							val = desc[num]
 
-					} else {
-						val = innerMap[value]
-					}
+						} else {
+							val = innerMap[value]
+						}
+					} //Otherwise the description is a string
 
 				} else {
 					msg := "The specified attribute does not exist" +
@@ -2818,8 +2979,11 @@ func InformUnity(caller string, entity int, data map[string]interface{}) error {
 		if entity > -1 && entity < SENSOR+1 {
 			data = GenerateFilteredJson(data)
 		}
-		println("DEBUG VIEW THE JSON")
-		Disp(data)
+		if State.DebugLvl > INFO {
+			println("DEBUG VIEW THE JSON")
+			Disp(data)
+		}
+
 		e := models.ContactUnity(data, State.DebugLvl)
 		if e != nil {
 			l.GetWarningLogger().Println("Unable to contact Unity Client @" + caller)

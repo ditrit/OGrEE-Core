@@ -80,7 +80,9 @@ func ListLocal(path string) func(string) []string {
 		names := make([]string, 0)
 		files, e := ioutil.ReadDir(path)
 		if e != nil {
-			fmt.Println("\n", e.Error())
+			if c.State.DebugLvl > c.NONE {
+				fmt.Println("\n", e.Error())
+			}
 			return []string{}
 		}
 		for _, f := range files {
@@ -338,9 +340,9 @@ func GetPrefixCompleter() *readline.PrefixCompleter {
 				readline.PcItemDynamic(SiteOCLICompleter(""), true)),
 			readline.PcItem("co:", true,
 				readline.PcItemDynamic(SiteOCLICompleter(""), true)),
-			readline.PcItem("orphan:sensor:", true,
+			readline.PcItem("orphan sensor:", true,
 				readline.PcItemDynamic(SiteOCLICompleter(""), true)),
-			readline.PcItem("orphan:device:", true,
+			readline.PcItem("orphan device:", true,
 				readline.PcItemDynamic(SiteOCLICompleter(""), true))),
 
 		readline.PcItem("get", true,

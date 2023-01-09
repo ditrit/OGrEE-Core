@@ -25,6 +25,15 @@ const (
 	STRAYSENSOR
 )
 
+// Debug Level Declaration
+const (
+	NONE = iota
+	ERROR
+	WARNING
+	INFO
+	DEBUG
+)
+
 // Display contents of []map[string]inf array
 func DispMapArr(x []map[string]interface{}) {
 	for idx := range x {
@@ -89,11 +98,11 @@ func DispfWithAttrs(formatx string, objs *[]interface{}, attrs *[]string) {
 						argument = append(argument, obj[a])
 					}
 				} else {
-					argument = append(argument, nil)
+					argument = append(argument, "NULL")
 				}
 			}
 			fmt.Printf(format, argument...)
-			fmt.Printf("\tName:%s\n", obj["name"].(string))
+			fmt.Printf("\n")
 		}
 	}
 }

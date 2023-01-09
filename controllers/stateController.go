@@ -250,7 +250,9 @@ func FetchJsonNodesAtLevel(Path string) []map[string]interface{} {
 		//println("URL to send:", urls[i])
 		r, e := models.Send("GET", urls[i], GetKey(), nil)
 		if e != nil {
-			println(e.Error())
+			if State.DebugLvl > NONE {
+				println(e.Error())
+			}
 			return nil
 		}
 

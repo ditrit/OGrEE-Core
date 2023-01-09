@@ -31,7 +31,9 @@ func InterpretLine(str *string) bool {
 		if err != nil {
 			if strings.Contains(err.Error(), "duplicate") {
 				l.GetWarningLogger().Println(err.Error())
-				fmt.Println(err.Error())
+				if c.State.DebugLvl > c.NONE {
+					fmt.Println(err.Error())
+				}
 				return true
 			} else {
 				l.GetErrorLogger().Println(err.Error())
@@ -53,6 +55,9 @@ func Start(flags *Flags) {
 	env, envErr := godotenv.Read(flags.envPath)
 	if envErr != nil {
 		fmt.Println("Cannot read environment file", flags.envPath, ":", envErr.Error())
+		fmt.Println("Please ensure that you have a properly formatted environment file saved as '.env' in the same directory here with the shell")
+		fmt.Println("\n\nFor more details please refer to: https://ogree.ditrit.io/htmls/programming.html")
+		fmt.Println("View an environment file example here: https://ogree.ditrit.io/htmls/clienv.html")
 		return
 	}
 

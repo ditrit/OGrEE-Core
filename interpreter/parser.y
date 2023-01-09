@@ -17,6 +17,7 @@ var _ = l.GetInfoLogger() //Suppresses annoying Dockerfile build error
   ast *ast
   node node
   nodeArr []node
+  sArr []string
   mapVoid map[string]interface{}
 }
 
@@ -59,7 +60,8 @@ var _ = l.GetInfoLogger() //Suppresses annoying Dockerfile build error
 %type <n> LSOBJ_COMMAND
 %type <s> OBJ_TYPE COMMAND UI_TOGGLE
 %type <nodeArr> WNARG GETOBJS WORD_CONCAT
-%type <mapVoid> ARGACC
+%type <mapVoid> ARGACC PRINTF
+%type <sArr> WNARG2
 %type <node> OCCR PATH PHYSICAL_PATH STRAY_DEV_PATH EXPR CONCAT CONCAT_TERM stmnt st2 IF 
        EXPR_NOQUOTE ARRAY ORIENTATION EXPR_NOQUOTE_NOCOL CONCAT_NOCOL CONCAT_TERM_NOCOL EXPR_NOQUOTE_COMMON
 //%type <mapVoid> EQUAL_LIST
@@ -117,7 +119,8 @@ stmnt:   TOK_GET PATH {$$=&getObjectNode{$2}}
        | TOK_HIERARCH {$$=&hierarchyNode{&pathNode{&strLeaf{"."}, STD}, 1}}
        | TOK_HIERARCH PATH {$$=&hierarchyNode{$2, 1}}
        | TOK_HIERARCH PATH TOK_INT {$$=&hierarchyNode{$2, $3}}
-       | TOK_UNSET PATH  {$$=&unsetAttrNode{$2}}
+       | TOK_UNSET PATH  {$$=&unsetAttrNode{$2,nil}}
+       | TOK_UNSET PATH ARRAY  {$$=&unsetAttrNode{$2,$3}}
        | TOK_UNSET TOK_MINUS TOK_WORD TOK_WORD {$$=&unsetVarNode{$2+$3, $4}}
        
        | TOK_DRAWABLE {$$=&isEntityDrawableNode{&pathNode{&strLeaf{"."}, STD}}}
@@ -135,7 +138,9 @@ stmnt:   TOK_GET PATH {$$=&getObjectNode{$2}}
 
        // UPDATE / INTERACT
        | PHYSICAL_PATH TOK_COL TOK_WORD TOK_EQUAL TOK_SHARP EXPR_NOQUOTE {$$=&updateObjNode{$1, map[string]interface{}{$3:$6},true}}
-       | PHYSICAL_PATH TOK_COL TOK_WORD TOK_EQUAL EXPR_NOQUOTE TOK_ATTRSPEC EXPR_NOQUOTE {$$=&specialUpdateNode{$1, $3, $5, $7}}
+       | PHYSICAL_PATH TOK_COL TOK_WORD TOK_EQUAL EXPR_NOQUOTE TOK_ATTRSPEC EXPR_NOQUOTE {$$=&specialUpdateNode{$1, $3, $5, $7,nil}}
+       | PHYSICAL_PATH TOK_COL TOK_WORD TOK_EQUAL EXPR_NOQUOTE TOK_ATTRSPEC EXPR_NOQUOTE TOK_ATTRSPEC TOK_WORD {$$=&specialUpdateNode{$1, $3, $5, $7,&strLeaf{$9}}}
+       | PHYSICAL_PATH TOK_COL TOK_WORD TOK_EQUAL EXPR_NOQUOTE TOK_ATTRSPEC EXPR_NOQUOTE TOK_ATTRSPEC EXPR {$$=&specialUpdateNode{$1, $3, $5, $7,$9}}
        | PHYSICAL_PATH TOK_COL TOK_WORD TOK_EQUAL EXPR_NOQUOTE {
               /*Hack Case: we need to change the mode of the Path Node*/;
               ($1).(*pathNode).mode = STD;
@@ -308,9 +313,21 @@ WORD_CONCAT: TOK_WORD TOK_COMMA WORD_CONCAT {$$=append([]node{&strLeaf{$1}}, $3.
 ARGACC: TOK_MINUS TOK_WORD {$$=map[string]interface{}{$2:nil}}
        |TOK_MINUS TOK_WORD ARGACC {$3[$2]=nil;$$=$3}
        |TOK_MINUS TOK_WORD TOK_WORD {$$=map[string]interface{}{$2:$3}}
+       //PRINTF TYPE 
+       |TOK_MINUS TOK_WORD TOK_LPAREN PRINTF TOK_RPAREN {$$=map[string]interface{}{$2:$4}}
+       |TOK_MINUS TOK_WORD TOK_LPAREN PRINTF TOK_RPAREN ARGACC {$6[$2]=$4;$$=$6}
+       
        |TOK_MINUS TOK_WORD TOK_WORD ARGACC {$4[$2]=$3;$$=$4}
        |TOK_MINUS TOK_WORD TOK_STR { $$=map[string]interface{}{$2:$3}}
        |TOK_MINUS TOK_WORD TOK_STR ARGACC { $4[$2]=$3;$$=$4}
+;
+
+//For printf arguments
+WNARG2: TOK_WORD TOK_COMMA WNARG2 {$$=append([]string{$1},$3...)}
+       |TOK_WORD {$$=[]string{$1}}
+;
+
+PRINTF: TOK_STR TOK_COMMA WNARG2 {$$=map[string]interface{}{$1:$3}}
 ;
 
 
@@ -386,13 +403,13 @@ OCCR:
               $$=&createCorridorNode{$3,$6,$8,$11}
         }
         |TOK_GROUP TOK_COL PHYSICAL_PATH TOK_ATTRSPEC TOK_LBRAC GETOBJS TOK_RBRAC {$$=&createGroupNode{$3, $6}}
-        |TOK_ORPH PHYSICAL_PATH TOK_DEVICE TOK_COL EXPR_NOQUOTE TOK_ATTRSPEC EXPR {
-              attributes := map[string]interface{}{"attributes":map[string]interface{}{"template":$7}}
-              $$=&getOCAttrNode{$5, cmd.STRAY_DEV, attributes}
+        |TOK_ORPH TOK_DEVICE TOK_COL PHYSICAL_PATH TOK_ATTRSPEC EXPR_NOQUOTE {
+              attributes := map[string]interface{}{"attributes":map[string]interface{}{"template":$6}}
+              $$=&getOCAttrNode{$4, cmd.STRAY_DEV, attributes}
         }
-        |TOK_ORPH PHYSICAL_PATH TOK_SENSOR TOK_COL EXPR_NOQUOTE TOK_ATTRSPEC EXPR {
-              attributes := map[string]interface{}{"attributes":map[string]interface{}{"template":$7}}
-              $$=&getOCAttrNode{$5, cmd.STRAYSENSOR, attributes}
+        |TOK_ORPH TOK_SENSOR TOK_COL PHYSICAL_PATH TOK_ATTRSPEC EXPR_NOQUOTE {
+              attributes := map[string]interface{}{"attributes":map[string]interface{}{"template":$6}}
+              $$=&getOCAttrNode{$4, cmd.STRAYSENSOR, attributes}
         }
        //EasyPost syntax STRAYSENSOR
        |OBJ_TYPE TOK_USE_JSON PHYSICAL_PATH {$$=&easyPostNode{$1, $3}}

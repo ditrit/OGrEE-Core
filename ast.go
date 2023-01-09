@@ -68,7 +68,7 @@ type funcCallNode struct {
 func (n *funcCallNode) execute() (interface{}, error) {
 	val, ok := funcTable[n.name]
 	if !ok {
-		return nil, fmt.Errorf("undefined function ", n.name)
+		return nil, fmt.Errorf("undefined function %s", n.name)
 	}
 	body, ok := val.(node)
 	if !ok {
@@ -105,11 +105,11 @@ type lenNode struct {
 func (n *lenNode) execute() (interface{}, error) {
 	val, ok := dynamicSymbolTable[n.variable]
 	if !ok {
-		return nil, fmt.Errorf("Undefined variable ", n.variable)
+		return nil, fmt.Errorf("Undefined variable %s", n.variable)
 	}
 	arr, ok := val.([]interface{})
 	if !ok {
-		return nil, fmt.Errorf("Variable ", n.variable, " does not contain an array.")
+		return nil, fmt.Errorf("Variable %s does not contain an array.", n.variable)
 	}
 	return len(arr), nil
 }
@@ -405,7 +405,7 @@ func (n *getObjectNode) execute() (interface{}, error) {
 	}
 	v, _ := cmd.GetObject(path, false)
 	if v == nil {
-		return nil, fmt.Errorf("Cannot find object at path ", path)
+		return nil, fmt.Errorf("Cannot find object at path %s", path)
 	}
 	return v, nil
 }
@@ -450,6 +450,8 @@ func (n *searchObjectsNode) execute() (interface{}, error) {
 	return v, nil
 }
 
+// TODO: Need to restore recursive updates or to remove it
+// entirely
 type recursiveUpdateObjNode struct {
 	arg0 interface{}
 	arg1 interface{}
@@ -520,8 +522,8 @@ func (n *updateObjNode) execute() (interface{}, error) {
 
 		invalidVals := []string{"separator", "areas"}
 		if AssertInStringValues(i, invalidVals) {
-			msg := "This is invalid syntax you must specify" +
-				" 2 arrays separated by '@'"
+			msg := "This is invalid syntax. You must specify" +
+				" 2 arrays (and for separator commands, the type) separated by '@' "
 			return nil, fmt.Errorf(msg)
 		}
 
@@ -551,6 +553,7 @@ type specialUpdateNode struct {
 	variable string
 	first    node
 	second   node
+	extraArg node //Could be sepType or Rotation
 }
 
 func (n *specialUpdateNode) execute() (interface{}, error) {
@@ -567,7 +570,11 @@ func (n *specialUpdateNode) execute() (interface{}, error) {
 	if err != nil {
 		return nil, err
 	}
+
 	if n.variable == "areas" {
+		if n.extraArg != nil {
+			return nil, fmt.Errorf("Unrecognised argument. Only 2 arrays can be specified")
+		}
 		areas := map[string]interface{}{"reserved": first, "technical": second}
 		attributes, e := parseAreas(areas)
 		if e != nil {
@@ -576,78 +583,18 @@ func (n *specialUpdateNode) execute() (interface{}, error) {
 		return cmd.UpdateObj(path, "", "", attributes, false)
 	} else if n.variable == "separator" {
 
-		errorResponder := func(attr string, multi bool) (interface{}, error) {
-			var errorMsg string
-			if multi {
-				errorMsg = "Invalid " + attr + " attributes provided." +
-					" They must be arrays/lists/vectors with 2 elements."
-			} else {
-				errorMsg = "Invalid " + attr + " attribute provided." +
-					" It must be an array/list/vector with 2 elements."
-			}
-
-			segment := " Please refer to the wiki or manual reference" +
-				" for more details on how to create objects " +
-				"using this syntax"
-
-			return nil, fmt.Errorf(errorMsg + segment)
+		attr, e := parseSeparators(path, first, second, &n.extraArg)
+		if e != nil {
+			return nil, e
 		}
 
-		if !IsInfArr(first) {
-			if !IsInfArr(second) {
-				return errorResponder("Starting and ending", true)
-			}
-			return errorResponder("Starting", false)
-		}
+		return cmd.UpdateObj(path, "", "", attr, false)
 
-		if !IsInfArr(second) {
-			return errorResponder("Ending", false)
-		}
+	} else if n.variable == "pillar" {
 
-		startLen := len(first.([]interface{}))
-		endLen := len(second.([]interface{}))
-
-		if startLen != 2 && endLen == 2 {
-			return errorResponder("starting position", false)
-		}
-
-		if endLen != 2 && startLen == 2 {
-			return errorResponder("ending position", false)
-		}
-
-		if startLen != 2 && endLen != 2 {
-			return errorResponder("starting and ending position", true)
-		}
-
-		obj, _ := cmd.GetObject(path, true)
-		if obj == nil {
-			return nil, fmt.Errorf("cannot find object")
-		}
-		attr := obj["attributes"].(map[string]interface{})
-		var sepArray []interface{}
-		separators, _ := attr["separators"]
-		if IsInfArr(separators) {
-			sepArray = separators.([]interface{})
-			sepArray = append(sepArray, map[string]interface{}{
-				"startPosXYm": first, "endPosXYm": second})
-
-			sepArrStr, _ := json.Marshal(&sepArray)
-			attr["separators"] = string(sepArrStr)
-		} else {
-			var sepStr string
-			nextSep := map[string]interface{}{
-				"startPosXYm": first, "endPosXYm": second}
-
-			nextSepStr, _ := json.Marshal(nextSep)
-			if IsString(separators) && separators != "" && separators != "[]" {
-				sepStr = separators.(string)
-				size := len(sepStr)
-				sepStr = sepStr[:size-1] + "," + string(nextSepStr) + "]"
-			} else {
-				sepStr = "[" + string(nextSepStr) + "]"
-			}
-
-			attr["separators"] = sepStr
+		attr, e := parsePillars(path, first, second, &n.extraArg)
+		if e != nil {
+			return nil, e
 		}
 
 		return cmd.UpdateObj(path, "", "", attr, false)
@@ -667,12 +614,14 @@ func (n *specialUpdateNode) execute() (interface{}, error) {
 		}
 		second = "color@" + c
 
-		//attr := map[string]interface{}{}
-
 		return nil,
 			cmd.InteractObject(path, "labelFont", second, false)
 	} else {
-		return nil, fmt.Errorf("Invalid attribute specified for room update")
+		msg := "Invalid attribute specified special updating." +
+			" Please refer to the language reference for more information:" +
+			"https://ogree.ditrit.io/htmls/programming.html"
+		return nil,
+			fmt.Errorf(msg)
 	}
 	//Control should not reach here
 	//code added to suppress compiler error
@@ -738,15 +687,33 @@ func (n *lsObjNode) execute() (interface{}, error) {
 			return objs, nil
 
 		} else if _, ok := args["f"]; ok {
-			if !IsString(args["f"]) {
-				msg := "Please provide a quote enclosed" +
-					" string for '-f' with arguments separated by ':'"
-				return nil, fmt.Errorf(msg)
+			if !IsString(args["f"]) && !IsMapStrInf(args["f"]) {
+				msg := "Please provide a quote enclosed string for '-f' with arguments separated by ':'. Or provide an argument with printf formatting (ie -f (\"%d\",arg1))"
+				return nil,
+					fmt.Errorf(msg)
 			}
-			arr := strings.Split(args["f"].(string), ":")
+			if IsString(args["f"]) {
+				arr := strings.Split(args["f"].(string), ":")
 
-			objs := cmd.LSOBJECT(path, n.entity, true)
-			cmd.DispWithAttrs(&objs, &arr)
+				objs := cmd.LSOBJECT(path, n.entity, true)
+				cmd.DispWithAttrs(&objs, &arr)
+			}
+
+			if IsMapStrInf(args["f"]) {
+				var format string
+				var arr []string
+
+				//There is only 1 key in the map
+				for i := range args["f"].(map[string]interface{}) {
+					format = i
+				}
+
+				arr = args["f"].(map[string]interface{})[format].([]string)
+				objs := cmd.LSOBJECT(path, n.entity, true)
+				cmd.DispfWithAttrs(format, &objs, &arr)
+
+			}
+
 			return nil, nil
 
 		} else {
@@ -774,8 +741,6 @@ func (n *lsObjNode) execute() (interface{}, error) {
 			objs = cmd.LSOBJECT(path, n.entity, true)
 		}
 
-		//path, n.entity, true
-
 		if _, ok := args["s"]; ok {
 			if IsString(args["s"]) {
 				sorted := cmd.SortObjects(&objs, args["s"].(string))
@@ -793,21 +758,33 @@ func (n *lsObjNode) execute() (interface{}, error) {
 
 		}
 
-		//Else '-f'
-		if !IsString(args["f"]) {
-			msg := "Please provide a quote enclosed" +
-				" string for '-f' with arguments separated by ':'"
-			return nil, fmt.Errorf(msg)
-		}
-		attrs := strings.Split(args["f"].(string), ":")
+		if IsString(args["f"]) {
+			attrs := strings.Split(args["f"].(string), ":")
 
-		//We want to display the attribute used for sorting
-		if !IsAmongValues(args["s"], &attrs) && args["s"] != nil {
-			attrs = append([]string{args["s"].(string)}, attrs...)
+			//We want to display the attribute used for sorting
+			if !IsAmongValues(args["s"], &attrs) && args["s"] != nil {
+				attrs = append([]string{args["s"].(string)}, attrs...)
+			}
+
+			cmd.DispWithAttrs(&objs, &attrs)
+			return objs, nil
 		}
 
-		cmd.DispWithAttrs(&objs, &attrs)
-		return objs, nil
+		if IsMapStrInf(args["f"]) {
+			var format string
+			var arr []string
+
+			//There is only 1 key in the map
+			for i := range args["f"].(map[string]interface{}) {
+				format = i
+			}
+
+			arr = args["f"].(map[string]interface{})[format].([]string)
+			cmd.DispfWithAttrs(format, &objs, &arr)
+			return objs, nil
+		}
+		msg := "Please provide a quote enclosed string for '-f' with arguments separated by ':'. Or with printf formatting and attributes"
+		return nil, fmt.Errorf(msg)
 
 	case 3:
 		for i := range args {
@@ -832,24 +809,41 @@ func (n *lsObjNode) execute() (interface{}, error) {
 			return nil, fmt.Errorf(msg)
 		}
 
-		if !IsString(args["f"]) {
-			msg := "Please provide a quote enclosed" +
-				" string for '-f' with arguments separated by ':'"
-			return nil, fmt.Errorf(msg)
+		if IsString(args["f"]) {
+			attrs := strings.Split(args["f"].(string), ":")
+
+			objs := cmd.LSOBJECTRecursive(path, n.entity, true)
+
+			sorted := cmd.SortObjects(&objs, args["s"].(string)).GetData()
+
+			//We want to display the attribute used for sorting
+			if !IsAmongValues(args["s"], &attrs) {
+				attrs = append([]string{args["s"].(string)}, attrs...)
+			}
+
+			cmd.DispWithAttrs(&sorted, &attrs)
+			return sorted, nil
 		}
-		attrs := strings.Split(args["f"].(string), ":")
 
-		objs := cmd.LSOBJECTRecursive(path, n.entity, true)
+		if IsMapStrInf(args["f"]) {
+			var format string
+			var arr []string
 
-		sorted := cmd.SortObjects(&objs, args["s"].(string)).GetData()
+			objs := cmd.LSOBJECTRecursive(path, n.entity, true)
+			sorted := cmd.SortObjects(&objs, args["s"].(string)).GetData()
 
-		//We want to display the attribute used for sorting
-		if !IsAmongValues(args["s"], &attrs) {
-			attrs = append([]string{args["s"].(string)}, attrs...)
+			//There is only 1 key in the map
+			for i := range args["f"].(map[string]interface{}) {
+				format = i
+			}
+
+			arr = args["f"].(map[string]interface{})[format].([]string)
+			cmd.DispfWithAttrs(format, &sorted, &arr)
+			return sorted, nil
 		}
 
-		cmd.DispWithAttrs(&sorted, &attrs)
-		return objs, nil
+		msg := "Please provide a quote enclosed string for '-f' with arguments separated by ':'. Or with printf formatting and attributes"
+		return nil, fmt.Errorf(msg)
 
 	default:
 		//Return err
@@ -988,7 +982,10 @@ func (n *selectChildrenNode) execute() (interface{}, error) {
 	if err != nil {
 		return nil, err
 	}
-	println("Selection made!")
+	if cmd.State.DebugLvl > cmd.NONE {
+		println("Selection made!")
+	}
+
 	return v, nil
 }
 
@@ -1020,6 +1017,7 @@ func (n *unsetVarNode) execute() (interface{}, error) {
 
 type unsetAttrNode struct {
 	path node
+	arr  node
 }
 
 func (n *unsetAttrNode) execute() (interface{}, error) {
@@ -1041,6 +1039,27 @@ func (n *unsetAttrNode) execute() (interface{}, error) {
 	}
 	path = arr[0]
 	data := map[string]interface{}{arr[1]: nil}
+
+	//If the user wants to delete an element in an array
+	//(description, separator etc)
+	if n.arr != nil {
+		var idx int
+		x, _ := n.arr.execute()
+		if IsInfArr(x) && len(x.([]interface{})) == 1 {
+			if IsInt(x.([]interface{})[0]) {
+				idx = x.([]interface{})[0].(int)
+			} else if IsFloat(x.([]interface{})[0]) {
+				idx = int(x.([]interface{})[0].(float64))
+			} else {
+				return nil, fmt.Errorf("Invalid index, please provide an integer")
+			}
+
+		} else {
+			return nil, fmt.Errorf("Invalid index syntax, you must provide a single element")
+		}
+
+		return cmd.UnsetInObj(path, arr[1], idx)
+	}
 
 	return cmd.UpdateObj(path, "", "", data, true)
 
@@ -1441,7 +1460,7 @@ type symbolReferenceNode struct {
 func (s *symbolReferenceNode) execute() (interface{}, error) {
 	val, ok := dynamicSymbolTable[s.va]
 	if !ok {
-		return nil, fmt.Errorf("Undefined variable ", s.va)
+		return nil, fmt.Errorf("Undefined variable %s", s.va)
 	}
 	switch v := val.(type) {
 	case string, int, bool, float64, float32, map[int]interface{}:
@@ -1460,7 +1479,7 @@ type objReferenceNode struct {
 func (o *objReferenceNode) execute() (interface{}, error) {
 	val, ok := dynamicSymbolTable[o.va]
 	if !ok {
-		return nil, fmt.Errorf("Undefined variable ", o.va)
+		return nil, fmt.Errorf("Undefined variable %s", o.va)
 	}
 	if _, ok := val.(map[string]interface{}); !ok {
 		return nil, fmt.Errorf(o.va + " Is not an indexable object")
@@ -1503,7 +1522,7 @@ type arrayReferenceNode struct {
 func (n *arrayReferenceNode) execute() (interface{}, error) {
 	v, ok := dynamicSymbolTable[n.variable]
 	if !ok {
-		return nil, fmt.Errorf("Undefined variable ", n.variable)
+		return nil, fmt.Errorf("Undefined variable %s", n.variable)
 	}
 	arr, ok := v.([]interface{})
 	if !ok {
@@ -1518,8 +1537,12 @@ func (n *arrayReferenceNode) execute() (interface{}, error) {
 		return nil, fmt.Errorf("Index should be an integer.")
 	}
 	if i < 0 || i >= len(arr) {
-		return nil, fmt.Errorf("Index out of range error!\n Array Length Of: ",
-			len(arr), "\nBut desired index at: ", i)
+		return nil, fmt.Errorf(
+			"Index out of range\n"+
+				"Array length : %d"+
+				"But desired index at : %d",
+			len(arr), i,
+		)
 	}
 	return arr[i], nil
 }
@@ -1542,7 +1565,7 @@ func (a *assignNode) execute() (interface{}, error) {
 		}
 		return nil, nil
 	}
-	return nil, fmt.Errorf("Invalid type to assign variable ", a.variable)
+	return nil, fmt.Errorf("Invalid type to assign variable %s", a.variable)
 }
 
 // Checks the map and sees if it is an object type
@@ -1573,15 +1596,6 @@ func parseAreas(areas map[string]interface{}) (map[string]interface{}, error) {
 	var reservedStr string
 	var techStr string
 
-	errorResponder := func(attr string) (map[string]interface{}, error) {
-		errorMsg := "Invalid " + attr + " attribute provided." +
-			" It must be an array/list/vector with 4 elements." +
-			" Please refer to the wiki or manual reference" +
-			" for more details on how to create objects " +
-			"using this syntax"
-		return nil, fmt.Errorf(errorMsg)
-	}
-
 	if reserved, ok := areas["reserved"].([]interface{}); ok {
 		if tech, ok := areas["technical"].([]interface{}); ok {
 			if len(reserved) == 4 && len(tech) == 4 {
@@ -1599,18 +1613,191 @@ func parseAreas(areas map[string]interface{}) (map[string]interface{}, error) {
 				areas["technical"] = techStr
 			} else {
 				if len(reserved) != 4 && len(tech) == 4 {
-					return errorResponder("reserved")
+					return nil, errorResponder("reserved", "4", false)
 				} else if len(tech) != 4 && len(reserved) == 4 {
-					return errorResponder("technical")
+					return nil, errorResponder("technical", "4", false)
 				} else { //Both invalid
-					return errorResponder("reserved and technical")
+					return nil, errorResponder("reserved and technical", "4", true)
 				}
 			}
 		} else {
-			return errorResponder("technical")
+			return nil, errorResponder("technical", "4", false)
 		}
 	} else {
-		return errorResponder("reserved")
+		return nil, errorResponder("reserved", "4", false)
 	}
 	return areas, nil
+}
+
+// Hack function for the [room]:separator=[x,y]@[x,y]@type
+func parseSeparators(path string, first, second interface{}, arg *node) (map[string]interface{}, error) {
+	if (*arg) == nil {
+		return nil, fmt.Errorf(
+			"Separator type must be specified. Either 'wireframe' or 'plain'",
+		)
+	}
+
+	extraArg, err := (*arg).execute()
+	if err != nil {
+		return nil, err
+	}
+
+	if !IsString(extraArg) {
+		return nil,
+			fmt.Errorf("Invalid separator argument given, it can only be 'wireframe' or 'plain'")
+	}
+
+	sepType := strings.ToLower(extraArg.(string))
+	if sepType != "wireframe" && sepType != "plain" {
+		msg := "Invalid separator type given. " +
+			"It can only be 'wireframe' or 'plain'"
+		return nil, fmt.Errorf(msg)
+	}
+
+	if !IsInfArr(first) {
+		if !IsInfArr(second) {
+			return nil, errorResponder("Starting and ending", "2", true)
+		}
+		return nil, errorResponder("Starting", "2", false)
+	}
+
+	if !IsInfArr(second) {
+		return nil, errorResponder("Ending", "2", false)
+	}
+
+	startLen := len(first.([]interface{}))
+	endLen := len(second.([]interface{}))
+
+	if startLen != 2 && endLen == 2 {
+		return nil, errorResponder("starting position", "2", false)
+	}
+
+	if endLen != 2 && startLen == 2 {
+		return nil, errorResponder("ending position", "2", false)
+	}
+
+	if startLen != 2 && endLen != 2 {
+		return nil, errorResponder("starting and ending position", "2", true)
+	}
+
+	separators, obj, e := fetchObjAttr(path, "separators")
+	var sepArray []interface{}
+	attr := obj["attributes"].(map[string]interface{})
+	if e != nil {
+		return nil, e
+	}
+
+	if IsInfArr(separators) {
+		sepArray = separators.([]interface{})
+		sepArray = append(sepArray, map[string]interface{}{
+			"startPosXYm": first, "endPosXYm": second, "type": sepType})
+
+		sepArrStr, _ := json.Marshal(&sepArray)
+		attr["separators"] = string(sepArrStr)
+	} else {
+		var sepStr string
+		nextSep := map[string]interface{}{
+			"startPosXYm": first, "endPosXYm": second, "type": sepType}
+
+		nextSepStr, _ := json.Marshal(nextSep)
+		if IsString(separators) && separators != "" && separators != "[]" {
+			sepStr = separators.(string)
+			size := len(sepStr)
+			sepStr = sepStr[:size-1] + "," + string(nextSepStr) + "]"
+		} else {
+			sepStr = "[" + string(nextSepStr) + "]"
+		}
+
+		attr["separators"] = sepStr
+	}
+	return attr, nil
+}
+
+// Hack function for the [room]:pillar=[x,y]@[x,y]@rotation
+func parsePillars(path string, first, second interface{}, arg *node) (map[string]interface{}, error) {
+	if (*arg) == nil {
+		return nil, fmt.Errorf(
+			"Pillar rotation must be specified and be a numerical value",
+		)
+	}
+
+	extraArg, err := (*arg).execute()
+	if err != nil {
+		return nil, err
+	}
+
+	if !IsFloat(extraArg) {
+		return nil,
+			fmt.Errorf("Invalid rotation type given, please provide a numerical value")
+	}
+
+	if !IsInfArr(first) {
+		if !IsInfArr(second) {
+			return nil, errorResponder("centerXY and sizeXY", "2", true)
+		}
+		return nil, errorResponder("centerXY", "2", false)
+	}
+
+	if !IsInfArr(second) {
+		return nil, errorResponder("sizeXY", "2", false)
+	}
+
+	centerXYLen := len(first.([]interface{}))
+	sizeXYLen := len(second.([]interface{}))
+
+	if centerXYLen != 2 && sizeXYLen == 2 {
+		return nil, errorResponder("center position", "2", false)
+	}
+
+	if sizeXYLen != 2 && centerXYLen == 2 {
+		return nil, errorResponder("size position", "2", false)
+	}
+
+	if centerXYLen != 2 && sizeXYLen != 2 {
+		return nil, errorResponder("center and size position", "2", true)
+	}
+
+	pillars, obj, e := fetchObjAttr(path, "pillars")
+	var pillarArray []interface{}
+	attr := obj["attributes"].(map[string]interface{})
+	if e != nil {
+		return nil, e
+	}
+
+	if IsInfArr(pillars) {
+		pillarArray = pillars.([]interface{})
+		pillarArray = append(pillarArray, map[string]interface{}{
+			"centerXY": first, "sizeXY": second, "rotation": extraArg.(float64)})
+
+		pillarArrStr, _ := json.Marshal(&pillarArray)
+		attr["pillars"] = string(pillarArrStr)
+	} else {
+		var pillStr string
+		nextPill := map[string]interface{}{
+			"centerXY": first, "sizeXY": second, "rotation": extraArg.(float64)}
+
+		nextPillStr, _ := json.Marshal(nextPill)
+		if IsString(pillars) && pillars != "" && pillars != "[]" {
+			pillStr = pillars.(string)
+			size := len(pillStr)
+			pillStr = pillStr[:size-1] + "," + string(nextPillStr) + "]"
+		} else {
+			pillStr = "[" + string(nextPillStr) + "]"
+		}
+
+		attr["pillars"] = pillStr
+	}
+	return attr, nil
+}
+
+// Another helper function for separators and pillars
+// Returns separator/pillarArr attribute,object,error
+func fetchObjAttr(path, attribute string) (interface{}, map[string]interface{}, error) {
+	obj, _ := cmd.GetObject(path, true)
+	if obj == nil {
+		return nil, nil, fmt.Errorf("cannot find object")
+	}
+	attr := obj["attributes"].(map[string]interface{})
+	wantedArray, _ := attr[attribute]
+	return wantedArray, obj, nil
 }

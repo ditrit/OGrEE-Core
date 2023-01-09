@@ -47,3 +47,47 @@ func ParamsParse(link *url.URL) []byte {
 	*/
 	//return values
 }
+
+func IsNestedAttr(key, ent string) bool {
+	switch ent {
+	case "sensor", "group":
+		switch key {
+		case "id", "name", "category", "parentID",
+			"description", "domain", "type",
+			"parentid", "parentId":
+			return false
+
+		default:
+			return true
+		}
+	case "room_template":
+		switch key {
+		case "id", "slug", "orientation", "separators",
+			"tiles", "colors", "rows", "sizeWDHm",
+			"technicalArea", "reservedArea":
+			return false
+
+		default:
+			return true
+		}
+	case "obj_template":
+		switch key {
+		case "id", "slug", "description", "category",
+			"slots", "colors", "components", "sizeWDHmm",
+			"fbxModel":
+			return false
+
+		default:
+			return true
+		}
+	default:
+		switch key {
+		case "id", "name", "category", "parentID",
+			"description", "domain", "parentid", "parentId":
+			return false
+
+		default:
+			return true
+		}
+	}
+}

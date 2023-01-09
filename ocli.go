@@ -25,11 +25,14 @@ func ValidateFile(comBuf *[]map[string]int, file string) bool {
 	}
 
 	if len(invalidCommands) > 0 {
-		println("Syntax errors were found in the file: ", file)
-		println("The following commands were invalid")
-		for i := range invalidCommands {
-			println(invalidCommands[i])
+		if c.State.DebugLvl > c.NONE {
+			println("Syntax errors were found in the file: ", file)
+			println("The following commands were invalid")
+			for i := range invalidCommands {
+				println(invalidCommands[i])
+			}
 		}
+
 		return false
 	}
 	return true
@@ -58,7 +61,7 @@ func LoadFile(path string) {
 	originalPath := path
 	file, err := os.Open(originalPath)
 	if err != nil {
-		if c.State.DebugLvl > 0 {
+		if c.State.DebugLvl > c.NONE {
 			println("Error:", err.Error())
 		}
 		return

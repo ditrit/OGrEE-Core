@@ -31,7 +31,7 @@ func (t *TabCompleter) DoDynamicFS([]rune, int) ([][]rune, int, bool) {
 }
 
 func (t *TabCompleter) ReturnFileSysMode() bool {
-	println("HITTING THE TAB COMPLETER")
+	//println("HITTING THE TAB COMPLETER")
 	return false
 }
 

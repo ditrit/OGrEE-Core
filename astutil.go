@@ -2,6 +2,7 @@ package main
 
 import (
 	cmd "cli/controllers"
+	u "cli/utils"
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
@@ -64,7 +65,9 @@ func fileToJSON(path string) map[string]interface{} {
 	data := map[string]interface{}{}
 	x, e := ioutil.ReadFile(path)
 	if e != nil {
-		println("Error while opening file! " + e.Error())
+		if cmd.State.DebugLvl > cmd.NONE {
+			println("Error while opening file! " + e.Error())
+		}
 		return nil
 	}
 	json.Unmarshal(x, &data)
@@ -133,52 +136,41 @@ func resMap(x map[string]interface{}, ent string, isUpdate bool) (map[string]int
 			res[key] = val
 			continue
 		}
-		switch ent {
-		case "sensor", "group":
-			switch key {
-			case "id", "name", "category", "parentID",
-				"description", "domain", "type",
-				"parentid", "parentId":
-				res[key] = val
 
-			default:
-				attrs[key] = val
-			}
-		case "room_template":
-			switch key {
-			case "id", "slug", "orientation", "separators",
-				"tiles", "colors", "rows", "sizeWDHm",
-				"technicalArea", "reservedArea":
-				res[key] = val
-
-			default:
-				attrs[key] = val
-			}
-		case "obj_template":
-			switch key {
-			case "id", "slug", "description", "category",
-				"slots", "colors", "components", "sizeWDHmm",
-				"fbxModel":
-				res[key] = val
-
-			default:
-				attrs[key] = val
-			}
-		default:
-			switch key {
-			case "id", "name", "category", "parentID",
-				"description", "domain", "parentid", "parentId":
-				res[key] = val
-
-			default:
-				attrs[key] = val
-			}
+		if u.IsNestedAttr(key, ent) {
+			attrs[key] = val
+		} else {
+			res[key] = val
 		}
 	}
 	if len(attrs) > 0 {
 		res["attributes"] = attrs
 	}
 	return res, nil
+}
+
+// errResponder helper func for specialUpdateNode
+// used for separator, pillar err msgs and parseAreas()
+func errorResponder(attr, numElts string, multi bool) error {
+	var errorMsg string
+	if multi {
+		errorMsg = "Invalid " + attr + " attributes provided." +
+			" They must be arrays/lists/vectors with " + numElts + " elements."
+	} else {
+		errorMsg = "Invalid " + attr + " attribute provided." +
+			" It must be an array/list/vector with " + numElts + " elements."
+	}
+
+	segment := " Please refer to the wiki or manual reference" +
+		" for more details on how to create objects " +
+		"using this syntax"
+
+	return fmt.Errorf(errorMsg + segment)
+}
+
+func IsMapStrInf(x interface{}) bool {
+	_, ok := x.(map[string]interface{})
+	return ok
 }
 
 func IsInfArr(x interface{}) bool {

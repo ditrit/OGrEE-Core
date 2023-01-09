@@ -2,7 +2,7 @@ A Shell interface to the API and your datacenter visualisation solution
 		
 		Meta+B means press Esc and n separately.  
 		Users can change that in terminal simulator(i.e. iTerm2) to Alt+B  
-		Notice: Meta+B is equals with Alt+B in windows.   
+		Notice: Meta+B means Alt+B in windows.   
 				
 		* Shortcut in normal mode   
 				
@@ -10,18 +10,21 @@ A Shell interface to the API and your datacenter visualisation solution
 		| ------------------ | --------------------------------- |
 		| Ctrl+A         | Beginning of line                 |
 		| Ctrl+B / ←   	 | Backward one character            |
-		| Meta+B         | Backward one word                 |
+        | Ctrl+Backspace | Delete one word                   |
+		| Ctrl+← / Meta+←| Backward one word                 |
 		| Ctrl+C         | Send io.EOF                       |
-		| Ctrl+D         | Delete one character              |
-		| Meta+D         | Delete one word                   |
-		| Ctrl+E         | End of line                       |
-		| Ctrl+F / →   	 | Forward one character             |
-		| Meta+F         | Forward one word                  |
+		| Ctrl+D         | Terminate (if buffer empty)              |
+        | Ctrl+E         | End of line                       |
+		| Ctrl+F    	 | Forward one character             |
+		| Ctrl+→ / Meta+→| Forward one word                  |
 		| Ctrl+G         | Cancel                            |
 		| Ctrl+H         | Delete previous character         |
 		| Ctrl+I / Tab 	 | Command line completion           |
 		| Ctrl+J         | Line feed                         |
-		| Ctrl+K         | Cut text to the end of line       |
+		
+		
+		
+		| Ctrl+K         | Deletes text to the end of line       |
 		| Ctrl+L         | Clear screen                      |
 		| Ctrl+M         | Same as Enter key                 |
 		| Ctrl+N / ↓   	 | Next line (in history)            |
@@ -30,10 +33,10 @@ A Shell interface to the API and your datacenter visualisation solution
 		| Ctrl+S         | Search forwards in history        |
 		| Ctrl+T         | Transpose characters              |
 		| Meta+T         | Transpose words (TODO)            |
-		| Ctrl+U         | Cut text to the beginning of line |
-		| Ctrl+W         | Cut previous word                 |
+		| Ctrl+U         | Deletes text to the beginning of line |
+		| Ctrl+W         | Deletes previous word                 |
 		| Backspace      | Delete previous character         |
-		| Meta+Backspace | Cut previous word                 |
+		| Alt+Backspace  | Delete previous word                 |
 		| Enter          | Line feed                         |
 		
 		
@@ -51,12 +54,13 @@ A Shell interface to the API and your datacenter visualisation solution
 		
 		| Shortcut                | Comment                                  |
 		| ----------------------- | ---------------------------------------- |
-		| Ctrl+F              | Move Forward                             |
+		| Ctrl+F / Tab        | Move Forward                             |
 		| Ctrl+B              | Move Backward                            |
 		| Ctrl+N              | Move to next line                        |
 		| Ctrl+P              | Move to previous line                    |
-		| Ctrl+A              | Move to the first candicate in current line |
-		| Ctrl+E              | Move to the last candicate in current line |
-		| Tab / Enter         | Use the word on cursor to complete       |
+		| Ctrl+A              | Move to the first candidate in current line |
+		| Ctrl+E              | Move to the last candidate in current line |
+		| Enter               | Use the word on cursor to complete       |
+        | Ctrl+M / Ctrl+J     | Use the word on cursor to complete       |
 		| Ctrl+C / Ctrl+G 	  | Exit Complete Select Mode                |
-		| Other               | Exit Complete Select Mode                |  
+		| Other               | Exit Complete Select Mode                |
