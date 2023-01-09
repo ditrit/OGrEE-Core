@@ -146,7 +146,7 @@ func DispRequestMetaData(r *http.Request) {
 //   description: 'Indicates the Object. Only values of "sites","domains",
 //   "buildings", "rooms", "racks", "devices", "acs", "panels",
 //   "cabinets", "groups", "corridors",
-//   "room-templates", "obj-templates", "sensors", "stray-devices",
+//   "room-templates", "obj-templates", "bldg-templates","sensors", "stray-devices",
 //   "stray-sensors" are acceptable'
 //   required: true
 //   type: string
@@ -288,7 +288,7 @@ var CreateEntity = func(w http.ResponseWriter, r *http.Request) {
 //   in: query
 //   description: 'Indicates the location. Only values of "sites","domains",
 //   "buildings", "rooms", "racks", "devices", "room-templates",
-//   "obj-templates", "acs", "panels","cabinets", "groups",
+//   "obj-templates", "bldg-templates","acs", "panels","cabinets", "groups",
 //   "corridors","sensors","stray-devices", "stray-sensors" are acceptable'
 //   required: true
 //   type: string
@@ -319,7 +319,7 @@ var CreateEntity = func(w http.ResponseWriter, r *http.Request) {
 //     in: query
 //     description: 'Only values of "sites","domains",
 //     "buildings", "rooms", "racks", "devices", "room-templates",
-//     "obj-templates", "acs", "panels","cabinets", "groups",
+//     "obj-templates","bldg-templates", "acs", "panels","cabinets", "groups",
 //     "corridors","sensors","stray-devices","stray-sensors", are acceptable'
 //   - name: id
 //     in: query
@@ -441,7 +441,7 @@ var GetEntity = func(w http.ResponseWriter, r *http.Request) {
 //     in: query
 //     description: 'Indicates the location. Only values of "sites","domains",
 //     "buildings", "rooms", "racks", "devices", "room-templates",
-//     "obj-templates","acs", "panels", "cabinets", "groups",
+//     "obj-templates","bldg-templates","acs", "panels", "cabinets", "groups",
 //     "corridors", "sensors", "stray-devices", "stray-sensors" are acceptable'
 //     required: true
 //     type: string
@@ -527,7 +527,7 @@ var GetAllEntities = func(w http.ResponseWriter, r *http.Request) {
 //     in: query
 //     description: 'Indicates the location. Only values of "sites","domains",
 //     "buildings", "rooms", "racks", "devices", "room-templates",
-//     "obj-templates","acs", "panels",
+//     "obj-templates","bldg-templates","acs", "panels",
 //     "cabinets", "groups", "corridors","sensors", "stray-devices"
 //     "stray-sensors" are acceptable'
 //     required: true
@@ -640,7 +640,7 @@ var DeleteEntity = func(w http.ResponseWriter, r *http.Request) {
 //   in: query
 //   description: 'Indicates the location. Only values of "sites","domains",
 //   "buildings", "rooms", "racks", "devices", "room-templates",
-//   "obj-templates", "rooms", "acs", "panels", "cabinets", "groups",
+//   "obj-templates", "bldg-templates","rooms", "acs", "panels", "cabinets", "groups",
 //   "corridors", "sensors", "stray-devices", "stray-sensors" are acceptable'
 //   required: true
 //   type: string
@@ -705,7 +705,7 @@ var DeleteEntity = func(w http.ResponseWriter, r *http.Request) {
 //   in: query
 //   description: 'Indicates the location. Only values of "sites", "domains",
 //   "buildings", "rooms", "racks", "devices", "room-templates",
-//   "obj-templates", "rooms","acs", "panels", "cabinets", "groups",
+//   "obj-templates", "bldg-templates","rooms","acs", "panels", "cabinets", "groups",
 //   "corridors","sensors", "stray-devices", "stray-sensors" are acceptable'
 //   required: true
 //   type: string
@@ -869,7 +869,7 @@ var UpdateEntity = func(w http.ResponseWriter, r *http.Request) {
 //     in: query
 //     description: 'Indicates the object. Only values of "domains", "sites",
 //     "buildings", "rooms", "racks", "devices", "room-templates",
-//     "obj-templates","acs","panels", "groups", "corridors",
+//     "obj-templates","bldg-templates","acs","panels", "groups", "corridors",
 //     "sensors", "stray-devices" and "stray-sensors" are acceptable'
 //     required: true
 //     type: string
@@ -1737,7 +1737,7 @@ var GetEntitiesUsingNamesOfParents = func(w http.ResponseWriter, r *http.Request
 //     in: query
 //     description: 'Only values of "sites",
 //     "buildings", "rooms", "racks", "devices", "room-templates",
-//     "obj-templates", "rooms", "acs", "panels",
+//     "obj-templates","bldg-templates", "rooms", "acs", "panels",
 //     "cabinets", "groups", "corridors","sensors","stray-devices"
 //     "stray-sensors" are acceptable'
 //
@@ -1801,7 +1801,7 @@ var GetStats = func(w http.ResponseWriter, r *http.Request) {
 //   description: 'Indicates the Object. Only values of "domains", "sites",
 //   "buildings", "rooms", "racks", "devices", "acs", "panels",
 //   "cabinets", "groups", "corridors",
-//   "room-templates", "obj-templates", "sensors", "stray-devices"
+//   "room-templates", "obj-templates", "bldg-templates","sensors", "stray-devices"
 //   "stray-sensors" are acceptable'
 //   required: true
 //   type: string
@@ -1861,7 +1861,7 @@ var GetStats = func(w http.ResponseWriter, r *http.Request) {
 //     in: query
 //     description: 'Only values of "domains", "sites",
 //     "buildings", "rooms", "racks", "devices", "room-templates",
-//     "obj-templates", "rooms", "acs", "panels",
+//     "obj-templates","bldg-templates", "rooms", "acs", "panels",
 //     "cabinets", "groups", "corridors","sensors","stray-devices"
 //     "stray-sensors" are acceptable'
 //
