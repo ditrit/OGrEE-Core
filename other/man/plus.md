@@ -166,9 +166,9 @@ EXAMPLES
 +site:CED/BETA
 
 
-+bd:CED/BETA/A@[5,5,5]@[300,300]@49.1
++bd:CED/BETA/A@[5,5]@[300,300,300]@49.1
 +bd:CED/BETA/A@[5,5,5]@-27.89@BldgTemplateA
-+building:CED/BETA/A@[5,5,5]@[300,300]@49.1
++building:CED/BETA/A@[5,5]@[300,300,300]@49.1
 +building:CED/BETA/A@[5,5,5]@-27.89@BldgTemplateA
 
 
