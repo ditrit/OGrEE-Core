@@ -36,6 +36,7 @@ func InitDebugLevel(verbose string) {
 		"DEBUG":   DEBUG,
 	}[verbose]
 	if !ok {
+		println("Invalid Logging Mode detected. Resorting to default: ERROR")
 		State.DebugLvl = 1
 	}
 }
