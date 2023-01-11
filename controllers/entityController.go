@@ -381,8 +381,19 @@ var GetEntity = func(w http.ResponseWriter, r *http.Request) {
 		if idx := strings.Contains(s, "_"); idx == true &&
 			s != "stray_device" && s != "stray_sensor" { //GET By Slug
 			data, e1 = models.GetEntity(bson.M{"slug": id}, s)
-		} else {
+
+		} else if s == "stray_device" || s == "stray_sensor" || s == "tenant" {
 			data, e1 = models.GetEntity(bson.M{"name": id}, s) //GET By Name
+
+		} else {
+			//Invalid entity and ID/name/slug combination
+			msg := "Bad path parameter received. Names and Slugs are available for tenants, templates and stray objects only. Otherwise please provide a valid ID"
+			resp = u.Message(false, msg)
+			w.WriteHeader(http.StatusBadRequest)
+			resp["data"] = nil
+			u.Respond(w, resp)
+			return
+
 		}
 	}
 
@@ -399,6 +410,8 @@ var GetEntity = func(w http.ResponseWriter, r *http.Request) {
 		switch e1 {
 		case "record not found":
 			w.WriteHeader(http.StatusNotFound)
+		case "invalid request":
+			w.WriteHeader(http.StatusBadRequest)
 		default:
 			w.WriteHeader(http.StatusNotFound) //For now
 		}
@@ -1295,9 +1308,10 @@ var GetEntityHierarchy = func(w http.ResponseWriter, r *http.Request) {
 		u.ErrLog("Error while getting "+entity, "GET "+entity, e1, r)
 
 		switch e1 {
-		case "record not found":
+		case "mongo: no documents in result", "record not found":
 			w.WriteHeader(http.StatusNotFound)
 		default:
+			w.WriteHeader(http.StatusNotFound)
 		}
 
 	} else {

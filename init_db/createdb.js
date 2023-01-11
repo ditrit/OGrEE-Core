@@ -32,7 +32,7 @@ db.createCollection('stray_device');
 db.createCollection('stray_sensor');
 
 
-//Enfore unique Tenant Names
+//Enforce unique Tenant Names
 db.tenant.createIndex( {"name":1}, { unique: true } );
 
 //Enforce unique children
