@@ -1355,7 +1355,7 @@ var GetEntityHierarchy = func(w http.ResponseWriter, r *http.Request) {
 		//This section appears to be broken =>RBAC
 		//is stil a WIP
 		newReq := req
-		newReq["name"] = id
+		newReq["_id"] = id
 		_, e := models.GetEntity(newReq, entity)
 		if e != "" {
 			resp = u.Message(false, "Error while getting :"+entity+","+e)
