@@ -631,6 +631,7 @@ var DeleteEntity = func(w http.ResponseWriter, r *http.Request) {
 
 	if v["status"] == false {
 		w.WriteHeader(http.StatusNotFound)
+		v["message"] = "No Records Found!"
 		u.ErrLog("Error while deleting entity", "DELETE ENTITY", "Not Found", r)
 	} else {
 		w.WriteHeader(http.StatusNoContent)
