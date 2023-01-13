@@ -410,6 +410,11 @@ var GetEntity = func(w http.ResponseWriter, r *http.Request) {
 		switch e1 {
 		case "record not found":
 			w.WriteHeader(http.StatusNotFound)
+
+		case "mongo: no documents in result":
+			resp = u.Message(false, "Error while getting :"+s+", No Objects Found!")
+			w.WriteHeader(http.StatusNotFound)
+
 		case "invalid request":
 			w.WriteHeader(http.StatusBadRequest)
 		default:
@@ -1095,6 +1100,11 @@ var GetEntitiesOfAncestor = func(w http.ResponseWriter, r *http.Request) {
 		switch e1 {
 		case "record not found":
 			w.WriteHeader(http.StatusNotFound)
+
+		case "mongo: no documents in result":
+			resp = u.Message(false, "Error while getting :"+entStr+", No Objects Found!")
+			w.WriteHeader(http.StatusNotFound)
+
 		default:
 		}
 
@@ -1241,6 +1251,11 @@ var GetEntityHierarchy = func(w http.ResponseWriter, r *http.Request) {
 				switch e1 {
 				case "record not found":
 					w.WriteHeader(http.StatusNotFound)
+
+				case "mongo: no documents in result":
+					resp = u.Message(false, "Error while getting :"+entity+", No Objects Found!")
+					w.WriteHeader(http.StatusNotFound)
+
 				default:
 				}
 			} else {
@@ -1309,6 +1324,7 @@ var GetEntityHierarchy = func(w http.ResponseWriter, r *http.Request) {
 
 		switch e1 {
 		case "mongo: no documents in result", "record not found":
+			resp = u.Message(false, "Error while getting :"+entity+", No Objects Found!")
 			w.WriteHeader(http.StatusNotFound)
 		default:
 			w.WriteHeader(http.StatusNotFound)
@@ -1486,7 +1502,13 @@ var GetHierarchyByName = func(w http.ResponseWriter, r *http.Request) {
 		switch e1 {
 		case "record not found":
 			w.WriteHeader(http.StatusNotFound)
+
+		case "mongo: no documents in result":
+			resp = u.Message(false, "Error while getting :"+entity+", No objects found!")
+			w.WriteHeader(http.StatusNotFound)
+
 		default:
+			println("DEBUG check e1:", e1)
 		}
 
 	} else {
@@ -1681,6 +1703,11 @@ var GetEntitiesUsingNamesOfParents = func(w http.ResponseWriter, r *http.Request
 			switch e3 {
 			case "record not found":
 				w.WriteHeader(http.StatusNotFound)
+
+			case "mongo: no documents in result":
+				resp = u.Message(false, "Error while getting :"+entity+", No Objects Found!")
+				w.WriteHeader(http.StatusNotFound)
+
 			default:
 				w.WriteHeader(http.StatusNotFound)
 			}
@@ -1713,6 +1740,11 @@ var GetEntitiesUsingNamesOfParents = func(w http.ResponseWriter, r *http.Request
 			switch e3 {
 			case "record not found":
 				w.WriteHeader(http.StatusNotFound)
+
+			case "mongo: no documents in result":
+				resp = u.Message(false, "Error while getting :"+entity+", No Objects Found!")
+				w.WriteHeader(http.StatusNotFound)
+
 			default:
 				w.WriteHeader(http.StatusNotFound)
 			}
