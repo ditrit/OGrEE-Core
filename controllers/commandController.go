@@ -1559,18 +1559,18 @@ func GetOCLIAtrributes(Path string, ent int, data map[string]interface{}) error 
 		}
 
 		//Serialise posXY if given
-		if _, ok := attr["posXY"].(string); ok {
-			attr["posXY"] = serialiseAttr(attr, "posXY")
+		if _, ok := attr["posXYZ"].(string); ok {
+			attr["posXYZ"] = serialiseAttr(attr, "posXYZ")
 		} else {
-			attr["posXY"] = serialiseAttr2(attr, "posXY")
+			attr["posXYZ"] = serialiseAttr2(attr, "posXYZ")
 		}
 
-		if attr["posXY"] == "" {
+		if attr["posXYZ"] == "" {
 			if State.DebugLvl > 0 {
 				l.GetErrorLogger().Println(
-					"User gave invalid posXY value for creating room")
-				return fmt.Errorf("Invalid posXY attribute provided." +
-					" \nIt must be an array/list/vector with 2 elements." +
+					"User gave invalid posXYZ value for creating room")
+				return fmt.Errorf("Invalid posXYZ attribute provided." +
+					" \nIt must be an array/list/vector with 2 or 3 elements." +
 					" Please refer to the wiki or manual reference" +
 					" for more details on how to create objects " +
 					"using this syntax")

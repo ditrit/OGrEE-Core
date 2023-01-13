@@ -1179,7 +1179,7 @@ func (n *createRackNode) execute() (interface{}, error) {
 	} else {
 		attr["template"] = vals[1]
 	}
-	attr["posXY"] = vals[0]
+	attr["posXYZ"] = vals[0]
 	attr["orientation"] = vals[2]
 	attributes := map[string]interface{}{"attributes": attr}
 	err = cmd.GetOCLIAtrributes(path, cmd.RACK, attributes)
