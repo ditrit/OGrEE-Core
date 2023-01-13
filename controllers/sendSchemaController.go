@@ -110,6 +110,8 @@ func arrayVerifier(x *[]interface{}, attribute string) bool {
 	switch attribute {
 	case "size":
 		return len(*x) == 3
+	case "posXY":
+		return len(*x) == 2
 	case "posXYZ":
 		return len(*x) == 2 || len(*x) == 3
 	}
@@ -124,6 +126,10 @@ func stringSplitter(want, separator, attribute string) []string {
 	switch attribute {
 	case "posXYZ":
 		if len(arr) != 2 && len(arr) != 3 {
+			return nil
+		}
+	case "posXY":
+		if len(arr) != 2 {
 			return nil
 		}
 	case "size":
