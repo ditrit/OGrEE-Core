@@ -1705,6 +1705,10 @@ var GetEntitiesUsingNamesOfParents = func(w http.ResponseWriter, r *http.Request
 			case "record not found":
 				w.WriteHeader(http.StatusNotFound)
 
+			case "":
+				resp = u.Message(false, "No object(s) found in this path")
+				w.WriteHeader(http.StatusNotFound)
+
 			case "mongo: no documents in result":
 				resp = u.Message(false, "Error while getting :"+entity+", No Objects Found!")
 				w.WriteHeader(http.StatusNotFound)
@@ -1740,6 +1744,11 @@ var GetEntitiesUsingNamesOfParents = func(w http.ResponseWriter, r *http.Request
 
 			switch e3 {
 			case "record not found":
+				w.WriteHeader(http.StatusNotFound)
+
+			case "":
+				//The specific object wasnt found
+				resp = u.Message(false, arr[len(arr)-1]+" wasn't found in this path!")
 				w.WriteHeader(http.StatusNotFound)
 
 			case "mongo: no documents in result":
