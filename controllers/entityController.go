@@ -977,6 +977,40 @@ var GetEntityByQuery = func(w http.ResponseWriter, r *http.Request) {
 	u.Respond(w, resp)
 }
 
+// swagger:operation GET /api/tempUnit/{id} tempUnit GetTempUnit
+// Gets the temperatureUnit attribute of the parent site of given object.
+// ---
+// produces:
+// - application/json
+// parameters:
+//   - name: id
+//     in: query
+//     description: 'ID of any object.'
+// responses:
+//  '200':
+//     description: 'Found. A response body will be returned with
+//     a meaningful message.'
+//  '404':
+//     description: 'Nothing Found. An error message will be returned.'
+
+var GetTempUnit = func(w http.ResponseWriter, r *http.Request) {
+	fmt.Println("******************************************************")
+	fmt.Println("FUNCTION CALL: 	 GetTempUnit ")
+	fmt.Println("******************************************************")
+	var resp map[string]interface{}
+
+	data, err := models.GetSiteParentTempUnit(mux.Vars(r)["id"])
+	if err != "" {
+		w.WriteHeader(http.StatusNotFound)
+		resp = u.Message(false, "Error: "+err)
+	} else {
+		resp = u.Message(true, "successfully got temperatureUnit from object's parent site")
+		resp["data"] = map[string]interface{}{"temperatureUnit": data}
+	}
+
+	u.Respond(w, resp)
+}
+
 // swagger:operation GET /api/{obj}/{id}/{subent} objects GetFromObject
 // Obtain all objects 2 levels lower in the system.
 // For Example: /api/tenants/{id}/buildings

@@ -132,6 +132,59 @@ func GetManyEntities(ent string, req bson.M, opts *options.FindOptions) ([]map[s
 	return data, ""
 }
 
+func GetSiteParentTempUnit(id string) (string, string) {
+	data := map[string]interface{}{}
+
+	// Get all collections names
+	ctx, cancel := u.Connect()
+	db := GetDB()
+	collNames, err := db.ListCollectionNames(ctx, bson.D{})
+	fmt.Println(collNames)
+	if err != nil {
+		fmt.Println(err.Error())
+		return "", err.Error()
+	}
+
+	// Search all collections for given object and its parents until site found
+	searchId := id
+out:
+	for {
+		objID, _ := primitive.ObjectIDFromHex(searchId)
+		searchId = ""
+		for _, collName := range collNames {
+			err := db.Collection(collName).FindOne(ctx, bson.M{"_id": objID}).Decode(&data)
+			if err == nil {
+				if data["category"].(string) == "site" {
+					// found site, break all loops
+					break out
+				} else {
+					if data["parentId"] == nil {
+						// got to tenant or object without parentId
+						return "", "Could not find parent site for given object"
+					} else {
+						// current object is not a site, search its parent next
+						searchId = data["parentId"].(string)
+						break
+					}
+				}
+			}
+		}
+		if searchId == "" {
+			// id not found in any collection
+			return "", "Could not find parent site for given object"
+		}
+
+	}
+
+	defer cancel()
+
+	if tempUnit := data["attributes"].(map[string]interface{})["temperatureUnit"]; tempUnit == nil {
+		return "", "Parent site has no temperatureUnit in attributes"
+	} else {
+		return tempUnit.(string), ""
+	}
+}
+
 func GetEntityCount(entity int) int64 {
 	ent := u.EntityToString(entity)
 	ctx, cancel := u.Connect()
