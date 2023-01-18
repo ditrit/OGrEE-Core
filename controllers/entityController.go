@@ -977,7 +977,7 @@ var GetEntityByQuery = func(w http.ResponseWriter, r *http.Request) {
 	u.Respond(w, resp)
 }
 
-// swagger:operation GET /api/tempUnit/{id} tempUnit GetTempUnit
+// swagger:operation GET /api/tempunits/{id} tempunits GetTempUnit
 // Gets the temperatureUnit attribute of the parent site of given object.
 // ---
 // produces:
@@ -986,12 +986,30 @@ var GetEntityByQuery = func(w http.ResponseWriter, r *http.Request) {
 //   - name: id
 //     in: query
 //     description: 'ID of any object.'
+//     required: true
 // responses:
 //  '200':
 //     description: 'Found. A response body will be returned with
 //     a meaningful message.'
 //  '404':
 //     description: 'Nothing Found. An error message will be returned.'
+
+// swagger:operation OPTIONS /api/tempunits/{id} tempunits GetTempUnit
+// Gets the possible operations of the parent site tempunit of given object.
+// ---
+// produces:
+// - application/json
+// parameters:
+//   - name: id
+//     in: query
+//     description: 'ID of any object.'
+//     required: true
+// responses:
+//	'200':
+//	   description: 'Found. A response body will be returned with
+//	   a meaningful message.'
+//	'404':
+//	   description: 'Nothing Found. An error message will be returned.'
 
 var GetTempUnit = func(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("******************************************************")
@@ -1004,8 +1022,13 @@ var GetTempUnit = func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusNotFound)
 		resp = u.Message(false, "Error: "+err)
 	} else {
-		resp = u.Message(true, "successfully got temperatureUnit from object's parent site")
-		resp["data"] = map[string]interface{}{"temperatureUnit": data}
+		if r.Method == "OPTIONS" {
+			w.Header().Add("Content-Type", "application/json")
+			w.Header().Add("Allow", "GET, OPTIONS, HEAD")
+		} else {
+			resp = u.Message(true, "successfully got temperatureUnit from object's parent site")
+			resp["data"] = map[string]interface{}{"temperatureUnit": data}
+		}
 	}
 
 	u.Respond(w, resp)
