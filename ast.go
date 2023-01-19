@@ -1215,6 +1215,14 @@ func (n *createDeviceNode) execute() (interface{}, error) {
 	attr := map[string]interface{}{"posU/slot": vals[0]}
 	if checkIfTemplate(vals[1]) == false {
 		attr["sizeU"] = vals[1]
+
+		//In this case according to spec, sizeU should
+		//not be given with the orientation
+		//n.attrs[2] refers to the orientation
+		if n.attrs[2] != nil {
+			msg := "sizeU cannot be specified with the orientation. If you have given a template, ensure that it exists and try again. For more information please visit: https://ogree.ditrit.io/htmls/programming.html"
+			return nil, fmt.Errorf(msg)
+		}
 	} else {
 		attr["template"] = vals[1]
 	}

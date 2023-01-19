@@ -1587,32 +1587,32 @@ func GetOCLIAtrributes(Path string, ent int, data map[string]interface{}) error 
 
 		//First check if attr has only posU & sizeU
 		//reject if true while also converting sizeU to string if numeric
-		if len(attr) == 2 {
-			if sizeU, ok := attr["sizeU"]; ok {
-				sizeUValid := checkNumeric(attr["sizeU"])
+		//if len(attr) == 2 {
+		if sizeU, ok := attr["sizeU"]; ok {
+			sizeUValid := checkNumeric(attr["sizeU"])
 
-				if _, ok := attr["template"]; !ok && sizeUValid == false {
-					l.GetWarningLogger().Println("Invalid parameter provided for device ")
-					return fmt.Errorf("Invalid parameter provided for device")
-				}
+			if _, ok := attr["template"]; !ok && sizeUValid == false {
+				l.GetWarningLogger().Println("Invalid parameter provided for device ")
+				return fmt.Errorf("Invalid parameter provided for device")
+			}
 
-				//Convert block
-				//And Set height
-				if _, ok := sizeU.(int); ok {
-					attr["sizeU"] = strconv.Itoa(sizeU.(int))
-					attr["height"] = strconv.FormatFloat(
-						(float64(sizeU.(int)) * 44.5), 'G', -1, 64)
-				} else if _, ok := sizeU.(float64); ok {
-					attr["sizeU"] = strconv.FormatFloat(sizeU.(float64), 'G', -1, 64)
-					attr["height"] = strconv.FormatFloat(sizeU.(float64)*44.5, 'G', -1, 64)
-				}
-				//End of convert block
-				if _, ok := attr["slot"]; ok {
-					l.GetWarningLogger().Println("Invalid device syntax encountered")
-					return fmt.Errorf("Invalid device syntax: If you have provided a template, it was not found")
-				}
+			//Convert block
+			//And Set height
+			if _, ok := sizeU.(int); ok {
+				attr["sizeU"] = strconv.Itoa(sizeU.(int))
+				attr["height"] = strconv.FormatFloat(
+					(float64(sizeU.(int)) * 44.5), 'G', -1, 64)
+			} else if _, ok := sizeU.(float64); ok {
+				attr["sizeU"] = strconv.FormatFloat(sizeU.(float64), 'G', -1, 64)
+				attr["height"] = strconv.FormatFloat(sizeU.(float64)*44.5, 'G', -1, 64)
+			}
+			//End of convert block
+			if _, ok := attr["slot"]; ok {
+				l.GetWarningLogger().Println("Invalid device syntax encountered")
+				return fmt.Errorf("Invalid device syntax: If you have provided a template, it was not found")
 			}
 		}
+		//}
 
 		//If slot not found
 		if x, ok := attr["posU/slot"]; ok {
