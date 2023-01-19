@@ -36,6 +36,7 @@ func InitDebugLevel(verbose string) {
 		"DEBUG":   DEBUG,
 	}[verbose]
 	if !ok {
+		println("Invalid Logging Mode detected. Resorting to default: ERROR")
 		State.DebugLvl = 1
 	}
 }
@@ -436,8 +437,17 @@ func CheckKeyIsValid(key string) bool {
 	}
 
 	if resp.StatusCode != 200 {
-		readline.Line("HTTP Response Status code" +
+		readline.Line("HTTP Response Status code: " +
 			strconv.Itoa(resp.StatusCode))
+		if State.DebugLvl > NONE {
+			x := ParseResponse(resp, err, " Read API Response message")
+			if x != nil {
+				println(x["message"].(string))
+			} else {
+				println("Was not able to read API Response message")
+			}
+		}
+
 		return false
 	}
 

@@ -1404,13 +1404,12 @@ func GetOCLIAtrributes(Path string, ent int, data map[string]interface{}) error 
 	case TENANT:
 		data["domain"] = data["name"]
 		data["parentId"] = nil
-		_, err = PostObj(ent, "tenant", data)
+
 	case SITE:
 		//Default values
 		data["domain"] = domain
 		data["parentId"] = parent["id"]
 
-		_, err = PostObj(ent, "site", data)
 	case BLDG:
 		attr = data["attributes"].(map[string]interface{})
 
@@ -1460,7 +1459,6 @@ func GetOCLIAtrributes(Path string, ent int, data map[string]interface{}) error 
 		data["parentId"] = parent["id"]
 		data["domain"] = domain
 
-		_, err = PostObj(ent, "building", data)
 	case ROOM:
 		attr = data["attributes"].(map[string]interface{})
 
@@ -1517,7 +1515,6 @@ func GetOCLIAtrributes(Path string, ent int, data map[string]interface{}) error 
 			Disp(data)
 		}
 
-		_, err = PostObj(ent, "room", data)
 	case RACK:
 		attr = data["attributes"].(map[string]interface{})
 		parentAttr := parent["attributes"].(map[string]interface{})
@@ -1582,7 +1579,6 @@ func GetOCLIAtrributes(Path string, ent int, data map[string]interface{}) error 
 		data["domain"] = domain
 		data["attributes"] = attr
 
-		_, err = PostObj(ent, "rack", data)
 	case DEVICE:
 		attr = data["attributes"].(map[string]interface{})
 
@@ -1688,7 +1684,6 @@ func GetOCLIAtrributes(Path string, ent int, data map[string]interface{}) error 
 		data["domain"] = domain
 		data["parentId"] = parent["id"]
 		data["attributes"] = attr
-		_, err = PostObj(ent, "device", data)
 
 	case GROUP:
 		//name, category, domain, pid
@@ -1698,8 +1693,6 @@ func GetOCLIAtrributes(Path string, ent int, data map[string]interface{}) error 
 
 		groups := strings.Join(attr["content"].([]string), ",")
 		attr["content"] = groups
-
-		_, err = PostObj(ent, "group", data)
 
 	case CORIDOR:
 		//name, category, domain, pid
@@ -1749,11 +1742,6 @@ func GetOCLIAtrributes(Path string, ent int, data map[string]interface{}) error 
 		data["domain"] = domain
 		data["parentId"] = parent["id"]
 
-		_, err := PostObj(ent, "corridor", data)
-		if err != nil {
-			return err
-		}
-
 	case STRAYSENSOR:
 		attr = data["attributes"].(map[string]interface{})
 		if _, ok := attr["template"]; ok {
@@ -1763,7 +1751,6 @@ func GetOCLIAtrributes(Path string, ent int, data map[string]interface{}) error 
 		} else {
 			attr["template"] = ""
 		}
-		_, err = PostObj(ent, "stray-sensor", data)
 
 	case STRAY_DEV:
 		attr = data["attributes"].(map[string]interface{})
@@ -1772,8 +1759,26 @@ func GetOCLIAtrributes(Path string, ent int, data map[string]interface{}) error 
 		} else {
 			attr["template"] = ""
 		}
-		_, err = PostObj(ent, "stray-device", data)
+
+	default:
+		//Execution should not reach here!
+		return fmt.Errorf("Invalid Object Specified!")
 	}
+
+	//Stringify the attributes if not already
+	if _, ok := data["attributes"]; ok {
+		if attributes, ok := data["attributes"].(map[string]interface{}); ok {
+			for i := range attributes {
+				attributes[i] = Stringify(attributes[i])
+			}
+		}
+	}
+
+	//Because we already stored the string conversion in category
+	//we can do the conversion for templates here
+	data["category"] = strings.Replace(data["category"].(string), "_", "-", 1)
+
+	_, err = PostObj(ent, data["category"].(string), data)
 	if err != nil {
 		return err
 	}
