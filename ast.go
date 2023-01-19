@@ -1200,6 +1200,13 @@ func (n *getOCAttrNode) execute() (interface{}, error) {
 		}
 		delete(attr, "rotation/template")
 
+		//Ensure that the rotation is valid
+		if _, ok := attr["rotation"]; ok {
+			if !IsFloat(attr["rotation"]) {
+				return nil, fmt.Errorf("Please provide a numerical value for the rotation")
+			}
+		}
+
 		//Must check that we have either size or template
 		_, sizeExist := attr["size"]
 		_, templateExist := attr["template"]
