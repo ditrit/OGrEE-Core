@@ -236,8 +236,8 @@ var CreateEntity = func(w http.ResponseWriter, r *http.Request) {
 	//Prevents Mongo from creating a new unidentified collection
 	if i < 0 {
 		w.WriteHeader(http.StatusBadRequest)
-		u.Respond(w, u.Message(false, "Invalid object in URL:"+entStr+" Please provide a valid object"))
-		u.ErrLog("Cannot create invalid object", "CREATE "+entStr, "", r)
+		u.Respond(w, u.Message(false, "Invalid entity in URL: '"+mux.Vars(r)["entity"]+"' Please provide a valid object"))
+		u.ErrLog("Cannot create invalid object", "CREATE "+mux.Vars(r)["entity"], "", r)
 		return
 	}
 
@@ -369,8 +369,8 @@ var GetEntity = func(w http.ResponseWriter, r *http.Request) {
 		//Prevents API from creating a new unidentified collection
 		if i := u.EntityStrToInt(s); i < 0 {
 			w.WriteHeader(http.StatusNotFound)
-			u.Respond(w, u.Message(false, "Invalid object in URL:"+s+" Please provide a valid object"))
-			u.ErrLog("Cannot get invalid object", "GET "+s, "", r)
+			u.Respond(w, u.Message(false, "Invalid object in URL: '"+mux.Vars(r)["entity"]+"' Please provide a valid object"))
+			u.ErrLog("Cannot get invalid object", "GET "+mux.Vars(r)["entity"], "", r)
 			return
 		}
 
@@ -492,8 +492,8 @@ var GetAllEntities = func(w http.ResponseWriter, r *http.Request) {
 	//Prevents Mongo from creating a new unidentified collection
 	if i := u.EntityStrToInt(entStr); i < 0 {
 		w.WriteHeader(http.StatusNotFound)
-		u.Respond(w, u.Message(false, "Invalid object in URL:"+entStr+" Please provide a valid object"))
-		u.ErrLog("Cannot get invalid object", "GET "+entStr, "", r)
+		u.Respond(w, u.Message(false, "Invalid object in URL: '"+mux.Vars(r)["entity"]+"' Please provide a valid object"))
+		u.ErrLog("Cannot get invalid object", "GET "+mux.Vars(r)["entity"], "", r)
 		return
 	}
 
@@ -584,8 +584,8 @@ var DeleteEntity = func(w http.ResponseWriter, r *http.Request) {
 	//Prevents Mongo from creating a new unidentified collection
 	if u.EntityStrToInt(entity) < 0 {
 		w.WriteHeader(http.StatusNotFound)
-		u.Respond(w, u.Message(false, "Invalid object in URL:"+entity+" Please provide a valid object"))
-		u.ErrLog("Cannot delete invalid object", "DELETE "+entity, "", r)
+		u.Respond(w, u.Message(false, "Invalid object in URL: '"+mux.Vars(r)["entity"]+"' Please provide a valid object"))
+		u.ErrLog("Cannot delete invalid object", "DELETE "+mux.Vars(r)["entity"], "", r)
 		return
 	}
 
@@ -809,8 +809,8 @@ var UpdateEntity = func(w http.ResponseWriter, r *http.Request) {
 	//Prevents Mongo from creating a new unidentified collection
 	if u.EntityStrToInt(entity) < 0 {
 		w.WriteHeader(http.StatusNotFound)
-		u.Respond(w, u.Message(false, "Invalid object in URL:"+entity+" Please provide a valid object"))
-		u.ErrLog("Cannot update invalid object", "UPDATE "+entity, "", r)
+		u.Respond(w, u.Message(false, "Invalid object in URL: '"+mux.Vars(r)["entity"]+"' Please provide a valid object"))
+		u.ErrLog("Cannot update invalid object", "UPDATE "+mux.Vars(r)["entity"], "", r)
 		return
 	}
 
@@ -943,7 +943,7 @@ var GetEntityByQuery = func(w http.ResponseWriter, r *http.Request) {
 	//Prevents Mongo from creating a new unidentified collection
 	if u.EntityStrToInt(entStr) < 0 {
 		w.WriteHeader(http.StatusNotFound)
-		u.Respond(w, u.Message(false, "Invalid object in URL:"+entStr+" Please provide a valid object"))
+		u.Respond(w, u.Message(false, "Invalid object in URL: '"+entStr+"' Please provide a valid object"))
 		u.ErrLog("Cannot get invalid object", "GET ENTITYQUERY"+entStr, "", r)
 		return
 	}
@@ -1064,7 +1064,7 @@ var GetEntitiesOfAncestor = func(w http.ResponseWriter, r *http.Request) {
 	//Prevents Mongo from creating a new unidentified collection
 	if enum < 0 {
 		w.WriteHeader(http.StatusNotFound)
-		u.Respond(w, u.Message(false, "Invalid object in URL:"+entStr+" Please provide a valid object"))
+		u.Respond(w, u.Message(false, "Invalid object in URL: '"+entStr+"' Please provide a valid object"))
 		u.ErrLog("Cannot get invalid object", "GET CHILDRENOFPARENT"+entStr, "", r)
 		return
 	}
