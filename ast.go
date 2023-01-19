@@ -1169,11 +1169,6 @@ func (n *getOCAttrNode) execute() (interface{}, error) {
 		}
 		attributes["attributes"].(map[string]interface{})["color"] = color
 	}
-	if n.ent == cmd.SITE {
-		// Hardcode the orientation according to spec as of
-		// 05/1/2023
-		attributes = map[string]interface{}{"attributes": map[string]interface{}{"orientation": "EN"}}
-	}
 	if n.ent == cmd.BLDG {
 		attr := attributes["attributes"].(map[string]interface{})
 		//Distinguish between size & rotation

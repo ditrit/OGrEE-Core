@@ -1309,6 +1309,7 @@ func GetOCLIAtrributes(Path string, ent int, data map[string]interface{}) error 
 		//Default values
 		data["domain"] = domain
 		data["parentId"] = parent["id"]
+		data["attributes"] = map[string]interface{}{}
 
 		_, err = PostObj(ent, "site", data)
 	case BLDG:

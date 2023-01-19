@@ -384,7 +384,6 @@ OCCR:
               $$=&getOCAttrNode{$3, cmd.TENANT, attributes}
         }
         |TOK_SITE TOK_COL PHYSICAL_PATH {
-              //Site gets {orientation:"EN"} auto hardcoded
               $$=&getOCAttrNode{$3, cmd.SITE, nil}
         } 
         |TOK_BLDG TOK_COL PHYSICAL_PATH TOK_ATTRSPEC EXPR TOK_ATTRSPEC EXPR TOK_ATTRSPEC WORD_OR_EXPR {
