@@ -139,8 +139,6 @@ func GetSiteParentTempUnit(id string) (string, string) {
 	ctx, cancel := u.Connect()
 	db := GetDB()
 	collNames, err := db.ListCollectionNames(ctx, bson.D{})
-	fmt.Println("List of collections found: ")
-	fmt.Println(collNames)
 	if err != nil {
 		fmt.Println(err.Error())
 		return "", err.Error()
