@@ -397,6 +397,10 @@ OCCR:
               attributes := map[string]interface{}{"attributes":map[string]interface{}{"posXY":$5, "size":$7, "rotation":$9,"axisOrientation":$11, "floorUnit":$13}}
               $$=&getOCAttrNode{$3, cmd.ROOM, attributes}
         }
+        |TOK_ROOM TOK_COL PHYSICAL_PATH TOK_ATTRSPEC EXPR TOK_ATTRSPEC EXPR TOK_ATTRSPEC EXPR TOK_ATTRSPEC ORIENTATION {
+              attributes := map[string]interface{}{"attributes":map[string]interface{}{"posXY":$5, "size":$7, "rotation":$9,"axisOrientation":$11 }}
+              $$=&getOCAttrNode{$3, cmd.ROOM, attributes}
+        }
         |TOK_ROOM TOK_COL PHYSICAL_PATH TOK_ATTRSPEC EXPR TOK_ATTRSPEC EXPR TOK_ATTRSPEC WORD_OR_EXPR {
               attributes := map[string]interface{}{"attributes":map[string]interface{}{"posXY":$5, "rotation":$7, "template":$9}}
               $$=&getOCAttrNode{$3, cmd.ROOM, attributes}
