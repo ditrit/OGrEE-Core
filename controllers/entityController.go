@@ -452,7 +452,6 @@ var GetEntity = func(w http.ResponseWriter, r *http.Request) {
 //     "corridors", "sensors", "stray-devices", "stray-sensors" are acceptable'
 //     required: true
 //     type: string
-//     default: "sites"
 //
 // responses:
 //
@@ -539,14 +538,12 @@ var GetAllEntities = func(w http.ResponseWriter, r *http.Request) {
 //     "stray-sensors" are acceptable'
 //     required: true
 //     type: string
-//     default: "sites"
 //   - name: ID
 //     in: path
 //     description: 'ID of the object or name of Tenant.
 //     For templates the slug is the ID. For stray-devices the name is the ID'
 //     required: true
 //     type: int
-//     default: 999
 //
 // responses:
 //
@@ -868,24 +865,20 @@ var UpdateEntity = func(w http.ResponseWriter, r *http.Request) {
 //     "sensors", "stray-devices" and "stray-sensors" are acceptable'
 //     required: true
 //     type: string
-//     default: "sites"
 //   - name: Name
 //     in: query
 //     description: Name of tenant
 //     required: false
 //     type: string
-//     default: "INFINITI"
 //   - name: Category
 //     in: query
 //     description: Category of Tenant (ex. Consumer Electronics, Medical)
 //     required: false
 //     type: string
-//     default: "Auto"
 //   - name: Domain
 //     description: 'Domain of the Tenant'
 //     required: false
 //     type: string
-//     default: "High End Auto"
 //   - name: Attributes
 //     in: query
 //     description: Any other object attributes can be queried
@@ -1627,7 +1620,6 @@ var GetHierarchyByName = func(w http.ResponseWriter, r *http.Request) {
 //     For racks it can have "sensors"'
 //     required: true
 //     type: string
-//     default: "/buildings/BuildingB/RoomA"
 //
 // responses:
 //

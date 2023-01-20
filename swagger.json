@@ -129,18 +129,6 @@
         "operationId": "CreateOptions"
       }
     },
-    "/api/stats": {
-      "get": {
-        "produces": [
-          "application/json"
-        ],
-        "tags": [
-          "objects"
-        ],
-        "summary": "Displays DB statistics.",
-        "operationId": "GetStats"
-      }
-    },
     "/api/tempunits/{id}": {
       "get": {
         "produces": [
@@ -233,7 +221,6 @@
         "parameters": [
           {
             "type": "string",
-            "default": "sites",
             "description": "Indicates the Object. Only values of \"tenants\", \"sites\", \"buildings\", \"rooms\", \"racks\", \"devices\", \"acs\", \"panels\", \"cabinets\", \"groups\", \"corridors\", \"room-templates\", \"obj-templates\", \"bldg-templates\",\"sensors\", \"stray-devices\" \"stray-sensors\" are acceptable",
             "name": "objs",
             "in": "query",
@@ -241,7 +228,6 @@
           },
           {
             "type": "string",
-            "default": "Object A",
             "description": "Name of object",
             "name": "Name",
             "in": "query",
@@ -249,7 +235,6 @@
           },
           {
             "type": "string",
-            "default": "Research",
             "description": "Category of Object (ex. Consumer Electronics, Medical)",
             "name": "Category",
             "in": "query",
@@ -257,23 +242,18 @@
           },
           {
             "type": "string",
-            "default": 999,
             "description": "Domain of Object",
             "name": "Domain",
             "required": true
           },
           {
             "type": "int",
-            "default": 999,
             "description": "All objects are linked to a parent with the exception of Tenant since it has no parent",
             "name": "ParentID",
             "required": true
           },
           {
             "type": "string[]",
-            "default": [
-              "Some abandoned object in Grenoble"
-            ],
             "description": "Description of Object",
             "name": "Description",
             "in": "query"
@@ -357,7 +337,6 @@
         "parameters": [
           {
             "type": "int",
-            "default": 999,
             "description": "Name of Tenant",
             "name": "name",
             "in": "query",
@@ -405,7 +384,6 @@
         "parameters": [
           {
             "type": "string",
-            "default": "sites",
             "description": "Indicates the location. Only values of \"tenants\", \"sites\", \"buildings\", \"rooms\", \"racks\", \"devices\", \"room-templates\", \"obj-templates\",\"acs\", \"panels\", \"cabinets\", \"groups\", \"corridors\", \"sensors\", \"stray-devices\", \"stray-sensors\" are acceptable",
             "name": "objs",
             "in": "query",
@@ -447,7 +425,6 @@
         "parameters": [
           {
             "type": "string",
-            "default": "sites",
             "description": "Indicates the location. Only values of \"tenants\", \"sites\", \"buildings\", \"rooms\", \"racks\", \"devices\", \"room-templates\", \"obj-templates\", \"bldg-templates\",\"acs\", \"panels\",\"cabinets\", \"groups\", \"corridors\",\"sensors\",\"stray-devices\", \"stray-sensors\" are acceptable",
             "name": "objs",
             "in": "query",
@@ -455,7 +432,6 @@
           },
           {
             "type": "int",
-            "default": 999,
             "description": "ID of desired object or Name of Tenant. For templates the slug is the ID. For stray-devices the name is the ID",
             "name": "ID",
             "in": "path",
@@ -487,7 +463,6 @@
         "parameters": [
           {
             "type": "string",
-            "default": "sites",
             "description": "Indicates the location. Only values of \"tenants\", \"sites\", \"buildings\", \"rooms\", \"racks\", \"devices\", \"room-templates\", \"obj-templates\", \"bldg-templates\",\"rooms\",\"acs\", \"panels\", \"cabinets\", \"groups\", \"corridors\",\"sensors\", \"stray-devices\", \"stray-sensors\" are acceptable",
             "name": "objs",
             "in": "query",
@@ -495,7 +470,6 @@
           },
           {
             "type": "int",
-            "default": 999,
             "description": "ID of the object or name of Tenant. For templates the slug is the ID. For stray-devices the name is the ID",
             "name": "ID",
             "in": "path",
@@ -503,28 +477,24 @@
           },
           {
             "type": "string",
-            "default": "INFINITI",
             "description": "Name of Object",
             "name": "Name",
             "in": "query"
           },
           {
             "type": "string",
-            "default": "Auto",
             "description": "Category of Object (ex. Consumer Electronics, Medical)",
             "name": "Category",
             "in": "query"
           },
           {
             "type": "string[]",
-            "default": "High End Worldwide automotive company",
             "description": "Description of Object",
             "name": "Description",
             "in": "query"
           },
           {
             "type": "string",
-            "default": "High End Auto",
             "description": "Domain of the Object",
             "name": "Domain"
           },
@@ -559,7 +529,6 @@
         "parameters": [
           {
             "type": "string",
-            "default": "sites",
             "description": "Indicates the location. Only values of \"tenants\", \"sites\", \"buildings\", \"rooms\", \"racks\", \"devices\", \"room-templates\", \"obj-templates\",\"acs\", \"panels\", \"cabinets\", \"groups\", \"corridors\",\"sensors\", \"stray-devices\" \"stray-sensors\" are acceptable",
             "name": "objs",
             "in": "query",
@@ -567,7 +536,6 @@
           },
           {
             "type": "int",
-            "default": 999,
             "description": "ID of the object or name of Tenant. For templates the slug is the ID. For stray-devices the name is the ID",
             "name": "ID",
             "in": "path",
@@ -610,7 +578,6 @@
         "parameters": [
           {
             "type": "string",
-            "default": "sites",
             "description": "Indicates the location. Only values of \"tenants\", \"sites\", \"buildings\", \"rooms\", \"racks\", \"devices\", \"room-templates\", \"obj-templates\", \"bldg-templates\",\"rooms\", \"acs\", \"panels\", \"cabinets\", \"groups\", \"corridors\", \"sensors\", \"stray-devices\", \"stray-sensors\" are acceptable",
             "name": "objs",
             "in": "query",
@@ -618,7 +585,6 @@
           },
           {
             "type": "int",
-            "default": 999,
             "description": "ID of the object or name of Tenant. For templates the slug is the ID. For stray-devices the name is the ID",
             "name": "ID",
             "in": "path",
@@ -626,28 +592,24 @@
           },
           {
             "type": "string",
-            "default": "INFINITI",
             "description": "Name of Object",
             "name": "Name",
             "in": "query"
           },
           {
             "type": "string",
-            "default": "Auto",
             "description": "Category of Object (ex. Consumer Electronics, Medical)",
             "name": "Category",
             "in": "query"
           },
           {
             "type": "string[]",
-            "default": "High End Worldwide automotive company",
             "description": "Description of Object",
             "name": "Description",
             "in": "query"
           },
           {
             "type": "string",
-            "default": "High End Auto",
             "description": "Domain of the Object",
             "name": "Domain"
           },
@@ -685,7 +647,6 @@
         "parameters": [
           {
             "type": "string",
-            "default": "sites",
             "description": "Indicates the object. Only values of \"tenants\", \"sites\", \"buildings\", \"rooms\", \"racks\", \"devices\", \"stray-devices\" are acceptable",
             "name": "objs",
             "in": "query",
@@ -693,7 +654,6 @@
           },
           {
             "type": "string",
-            "default": "INFINITI",
             "description": "ID of desired object. For tenants and stray-devices the name can be used as the ID",
             "name": "ID",
             "in": "path",
@@ -701,7 +661,6 @@
           },
           {
             "type": "string",
-            "default": "/buildings/BuildingB/RoomA",
             "description": "Hierarchal path to desired object(s). For rooms it can additionally have \"acs\",\"panels\", \"corridors\", \"sensors\" and \"cabinets\". For devices it can have \"sensors\" For racks it can have \"sensors\"",
             "name": "*",
             "in": "path",
@@ -739,7 +698,6 @@
           },
           {
             "type": "string",
-            "default": "/buildings/BuildingB/RoomA",
             "description": "Hierarchal path to desired object(s). For rooms it can additionally have \"acs\",\"panels\", \"corridors\", \"sensors\" and \"cabinets\". For devices it can have \"sensors\" For racks it can have \"sensors\"",
             "name": "*",
             "in": "path",
@@ -762,7 +720,6 @@
         "parameters": [
           {
             "type": "string",
-            "default": "sites",
             "description": "Indicates the object. Only values of \"tenants\", \"sites\", \"buildings\", \"rooms\", \"racks\", \"devices\", \"stray-devices\" are acceptable",
             "name": "objs",
             "in": "query",
@@ -770,7 +727,6 @@
           },
           {
             "type": "int",
-            "default": 999,
             "description": "ID of object. For tenants and stray-devices the name can be used as the ID",
             "name": "ID",
             "in": "query",
@@ -778,7 +734,6 @@
           },
           {
             "type": "string",
-            "default": 1,
             "description": "Limits the level of hierarchy for retrieval. if not specified for devices then the default value is maximum. Example: /api/devices/{id}/all?limit=2",
             "name": "limit",
             "in": "query"
@@ -829,7 +784,6 @@
         "parameters": [
           {
             "type": "string",
-            "default": "sites",
             "description": "Indicates the object. Only values of \"tenants\", \"sites\", \"buildings\", \"rooms\", \"racks\", \"devices\", \"room-templates\", \"obj-templates\",\"acs\",\"panels\", \"groups\", \"corridors\", \"sensors\", \"stray-devices\" and \"stray-sensors\" are acceptable",
             "name": "objs",
             "in": "query",
@@ -837,21 +791,18 @@
           },
           {
             "type": "string",
-            "default": "INFINITI",
             "description": "Name of tenant",
             "name": "Name",
             "in": "query"
           },
           {
             "type": "string",
-            "default": "Auto",
             "description": "Category of Tenant (ex. Consumer Electronics, Medical)",
             "name": "Category",
             "in": "query"
           },
           {
             "type": "string",
-            "default": "High End Auto",
             "description": "Domain of the Tenant",
             "name": "Domain"
           },
@@ -877,7 +828,6 @@
         "parameters": [
           {
             "type": "string",
-            "default": "sites",
             "description": "Indicates the Object. Only values of \"tenants\", \"sites\", \"buildings\", \"rooms\", \"racks\", \"devices\", \"acs\", \"panels\", \"cabinets\", \"groups\", \"corridors\", \"room-templates\", \"obj-templates\", \"bldg-templates\",\"sensors\", \"stray-devices\", \"stray-sensors\" are acceptable",
             "name": "objs",
             "in": "query",
@@ -885,7 +835,6 @@
           },
           {
             "type": "string",
-            "default": "Object A",
             "description": "Name of object",
             "name": "Name",
             "in": "query",
@@ -893,7 +842,6 @@
           },
           {
             "type": "string",
-            "default": "Research",
             "description": "Category of Object (ex. Consumer Electronics, Medical)",
             "name": "Category",
             "in": "query",
@@ -901,23 +849,18 @@
           },
           {
             "type": "string",
-            "default": 999,
             "description": "Domain of Object",
             "name": "Domain",
             "required": true
           },
           {
             "type": "int",
-            "default": 999,
             "description": "All objects are linked to a parent with the exception of Tenant since it has no parent",
             "name": "ParentID",
             "required": true
           },
           {
             "type": "string[]",
-            "default": [
-              "Some abandoned object in Grenoble"
-            ],
             "description": "Description of Object",
             "name": "Description",
             "in": "query"
@@ -954,7 +897,6 @@
         "parameters": [
           {
             "type": "string",
-            "default": "tenants",
             "description": "Indicates the object. Only values of \"tenants\", \"sites\", \"buildings\", \"rooms\" are acceptable",
             "name": "obj",
             "in": "query",
@@ -962,7 +904,6 @@
           },
           {
             "type": "int",
-            "default": 999,
             "description": "ID of object",
             "name": "ID",
             "in": "query",
@@ -970,7 +911,6 @@
           },
           {
             "type": "string",
-            "default": "buildings",
             "description": "Objects which 2 are levels lower in the hierarchy.",
             "name": "subent",
             "in": "query",
