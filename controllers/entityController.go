@@ -312,20 +312,20 @@ var CreateEntity = func(w http.ResponseWriter, r *http.Request) {
 //     "buildings", "rooms", "racks", "devices", "room-templates",
 //     "obj-templates", "bldg-templates","acs", "panels","cabinets", "groups",
 //     "corridors","sensors","stray-devices","stray-sensors", are acceptable'
+//     type: string
 //   - name: id
 //     in: query
 //     description: 'ID of the object or name of Tenant.
 //     For templates the slug is the ID. For stray-devices the name is the ID'
-//
+//     type: string
 // responses:
-//
-//	'200':
-//	    description: 'Found. A response header will be returned with
-//	    possible operations.'
-//	'400':
-//	    description: Bad request. An error message will be returned.
-//	'404':
-//	    description: Not Found. An error message will be returned.
+//		'200':
+//	    	description: 'Found. A response header will be returned with
+//	    	possible operations.'
+//		'400':
+//	    	description: Bad request. An error message will be returned.
+//		'404':
+//			description: Not Found. An error message will be returned.
 var GetEntity = func(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("******************************************************")
 	fmt.Println("FUNCTION CALL: 	 GetEntity ")
@@ -452,14 +452,12 @@ var GetEntity = func(w http.ResponseWriter, r *http.Request) {
 //     "corridors", "sensors", "stray-devices", "stray-sensors" are acceptable'
 //     required: true
 //     type: string
-//
 // responses:
-//
-//	'200':
-//	    description: 'Found. A response body will be returned with
-//	    a meaningful message.'
-//	'404':
-//	    description: Nothing Found. An error message will be returned.
+//		'200':
+//	    	description: 'Found. A response body will be returned with
+//	    	a meaningful message.'
+//		'404':
+//	    	description: Nothing Found. An error message will be returned.
 var GetAllEntities = func(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("******************************************************")
 	fmt.Println("FUNCTION CALL: 	 GetAllEntities ")
@@ -533,25 +531,22 @@ var GetAllEntities = func(w http.ResponseWriter, r *http.Request) {
 //     in: query
 //     description: 'Indicates the location. Only values of "tenants", "sites",
 //     "buildings", "rooms", "racks", "devices", "room-templates",
-//     "obj-templates","acs", "panels",
-//     "cabinets", "groups", "corridors","sensors", "stray-devices"
-//     "stray-sensors" are acceptable'
+//     "obj-templates", "bldg-templates","rooms","acs", "panels", "cabinets", "groups",
+//     "corridors","sensors", "stray-devices", "stray-sensors" are acceptable'
 //     required: true
 //     type: string
-//   - name: ID
+//   - name: id
 //     in: path
 //     description: 'ID of the object or name of Tenant.
 //     For templates the slug is the ID. For stray-devices the name is the ID'
 //     required: true
 //     type: int
-//
 // responses:
-//
-//	'204':
-//	   description: 'Successfully deleted object.
-//	   No response body will be returned'
-//	'404':
-//	   description: Not found. An error message will be returned
+//		'200':
+//	    	description: 'Updated. A response body will be returned with
+//	    	a meaningful message.'
+//		'404':
+//	    	description: Not Found. An error message will be returned.
 var DeleteEntity = func(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("******************************************************")
 	fmt.Println("FUNCTION CALL: 	 DeleteEntity ")
@@ -848,7 +843,7 @@ var UpdateEntity = func(w http.ResponseWriter, r *http.Request) {
 	u.Respond(w, v)
 }
 
-// swagger:operation GET /api/{objs}? objects GetObject
+// swagger:operation GET /api/{objs}? objects GetObjectByQuery
 // Gets an Object using any attribute (with the exception of description)
 // via query in the system
 // The attributes are in the form {attr}=xyz&{attr1}=abc
@@ -884,14 +879,12 @@ var UpdateEntity = func(w http.ResponseWriter, r *http.Request) {
 //     description: Any other object attributes can be queried
 //     required: false
 //     type: json
-//
 // responses:
-//
-//	'204':
-//	   description: 'Found. A response body will be returned with
-//	    a meaningful message.'
-//	'404':
-//	   description: Not found. An error message will be returned.
+//	    '204':
+//	         description: 'Found. A response body will be returned with
+//		         a meaningful message.'
+//	    '404':
+//		        description: Not found. An error message will be returned.
 var GetEntityByQuery = func(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("******************************************************")
 	fmt.Println("FUNCTION CALL: 	 GetEntityByQuery ")
@@ -956,7 +949,7 @@ var GetEntityByQuery = func(w http.ResponseWriter, r *http.Request) {
 	u.Respond(w, resp)
 }
 
-// swagger:operation GET /api/tempunits/{id} tempunits GetTempUnit
+// swagger:operation GET /api/tempunits/id tempunits GetTempUnit
 // Gets the temperatureUnit attribute of the parent site of given object.
 // ---
 // produces:
@@ -966,14 +959,15 @@ var GetEntityByQuery = func(w http.ResponseWriter, r *http.Request) {
 //     in: query
 //     description: 'ID of any object.'
 //     required: true
+//     type: string
 // responses:
-//  '200':
-//     description: 'Found. A response body will be returned with
-//     a meaningful message.'
-//  '404':
-//     description: 'Nothing Found. An error message will be returned.'
+//  	'200':
+//     		description: 'Found. A response body will be returned with
+//     		a meaningful message.'
+//  	'404':
+//     		description: 'Nothing Found. An error message will be returned.'
 
-// swagger:operation OPTIONS /api/tempunits/{id} tempunits GetTempUnit
+// swagger:operation OPTIONS /api/tempunits/id tempunits GetTempUnitOptions
 // Gets the possible operations of the parent site tempunit of given object.
 // ---
 // produces:
@@ -983,12 +977,13 @@ var GetEntityByQuery = func(w http.ResponseWriter, r *http.Request) {
 //     in: query
 //     description: 'ID of any object.'
 //     required: true
+//     type: string
 // responses:
-//	'200':
-//	   description: 'Found. A response body will be returned with
-//	   a meaningful message.'
-//	'404':
-//	   description: 'Nothing Found. An error message will be returned.'
+//		'200':
+//	   		description: 'Found. A response body will be returned with
+//	   		a meaningful message.'
+//		'404':
+//	   		description: 'Nothing Found. An error message will be returned.'
 
 var GetTempUnit = func(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("******************************************************")
@@ -1013,7 +1008,7 @@ var GetTempUnit = func(w http.ResponseWriter, r *http.Request) {
 	u.Respond(w, resp)
 }
 
-// swagger:operation GET /api/{obj}/{id}/{subent} objects GetFromObject
+// swagger:operation GET /api/{obj}/{id}/subent objects GetFromObject
 // Obtain all objects 2 levels lower in the system.
 // For Example: /api/tenants/{id}/buildings
 // Will return all buildings of a tenant
@@ -1045,23 +1040,23 @@ var GetTempUnit = func(w http.ResponseWriter, r *http.Request) {
 //     '404':
 //         description: Nothing Found. An error message will be returned.
 
-// swagger:operation OPTIONS /api/{obj}/{id}/{subent} objects GetFromObjectOptions
+// swagger:operation OPTIONS /api/{obj}/{id}/subent objects GetFromObjectOptions
 // Displays possible operations for the resource in response header.
 // ---
 // produces:
 // - application/json
 // parameters:
-//   - name: objs
-//     in: query
+//   - name: 'objs'
+//     in: 'query'
 //     description: 'Only values of "tenants", "sites",
 //     "buildings", "rooms", "racks", "devices", and "stray-devices"
 //     are acceptable'
 //   - name: id
-//     in: query
+//     in: 'query'
 //     description: 'ID of the object. For stray-devices and tenants the name
 //     can be used as the ID.'
 //   - name: subent
-//     in: query
+//     in: 'query'
 //     description: 'This refers to the sub object under the objs parameter.
 //     Please refer to the OGREE wiki to better understand what objects
 //     can be considered as sub objects.'
@@ -1069,10 +1064,9 @@ var GetTempUnit = func(w http.ResponseWriter, r *http.Request) {
 // responses:
 //
 //	'200':
-//	    description: 'Found. A response body will be returned with
-//	    a meaningful message.'
+//	    description: 'OK'
 //	'404':
-//	    description: Nothing Found.
+//	    description: 'Nothing Found.'
 var GetEntitiesOfAncestor = func(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("******************************************************")
 	fmt.Println("FUNCTION CALL: 	 GetEntitiesOfAncestor ")
@@ -1795,7 +1789,7 @@ var GetEntitiesUsingNamesOfParents = func(w http.ResponseWriter, r *http.Request
 
 }
 
-// swagger:operation OPTIONS /api/{objs}/* objects ObjectOptions
+// swagger:operation OPTIONS /api/{objs}/* objects ObjectPathOptions
 // Displays possible operations for the resource in response header.
 // ---
 // produces:
@@ -1808,13 +1802,12 @@ var GetEntitiesUsingNamesOfParents = func(w http.ResponseWriter, r *http.Request
 //     "obj-templates", "bldg-templates","rooms", "acs", "panels",
 //     "cabinets", "groups", "corridors","sensors","stray-devices"
 //     "stray-sensors" are acceptable'
-//
+//     type: string
 // responses:
-//
-//	'200':
-//	    description: 'Request is valid.'
-//	'404':
-//	    description: Not Found. An error message will be returned.
+//		'200':
+//			description: 'Request is valid.'
+//		'404':
+//	    	description: Not Found. An error message will be returned.
 var BaseOption = func(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("******************************************************")
 	fmt.Println("FUNCTION CALL: 	 BaseOption ")
@@ -1837,11 +1830,10 @@ var BaseOption = func(w http.ResponseWriter, r *http.Request) {
 // produces:
 // - application/json
 // responses:
-//
-//	'200':
-//	    description: 'Request is valid.'
-//	'504':
-//	    description: Server error.
+//		'200':
+//	    	description: 'OK'
+//		'504':
+//	    	description: Server error. An error message will be returned.
 var GetStats = func(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("******************************************************")
 	fmt.Println("FUNCTION CALL: 	 GetStats ")
@@ -1926,13 +1918,12 @@ var GetStats = func(w http.ResponseWriter, r *http.Request) {
 //     "obj-templates", "bldg-templates","rooms", "acs", "panels",
 //     "cabinets", "groups", "corridors","sensors","stray-devices"
 //     "stray-sensors" are acceptable'
-//
+//     type: string
 // responses:
-//
-//	'200':
-//	    description: 'Request is valid.'
-//	'404':
-//	    description: Not Found. An error message will be returned.
+//		'200':
+//	    	description: 'Request is valid.'
+//		'404':
+//	    	description: Not Found. An error message will be returned.
 var ValidateEntity = func(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("******************************************************")
 	fmt.Println("FUNCTION CALL: 	 ValidateEntity ")

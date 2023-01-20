@@ -8,7 +8,7 @@ import (
 	u "p3/utils"
 )
 
-// swagger:operation POST /api auth Create
+// swagger:operation POST /api auth CreateAccount
 // Generate credentials for a user.
 // Create an account with Email credentials, it returns
 // a JWT key to use with the API. The
@@ -28,7 +28,7 @@ import (
 //   description: Your password
 //   required: true
 //   format: password
-//   default: "secret"
+//   type: string
 // responses:
 //     '200':
 //         description: Authenticated
@@ -37,7 +37,7 @@ import (
 //     '500':
 //         description: Internal server error
 
-// swagger:operation OPTIONS /api auth CreateOptions
+// swagger:operation OPTIONS /api auth CreateAccountOptions
 // Displays possible operations for the resource in response header.
 // ---
 // produces:
@@ -103,7 +103,7 @@ var CreateAccount = func(w http.ResponseWriter, r *http.Request) {
 //     '500':
 //         description: Internal server error
 
-// swagger:operation OPTIONS /api/login auth CreateOptions
+// swagger:operation OPTIONS /api/login auth AuthenticateOptions
 // Displays possible operations for the resource in response header.
 // ---
 // produces:
@@ -156,15 +156,14 @@ var Authenticate = func(w http.ResponseWriter, r *http.Request) {
 //     '500':
 //         description: Internal server error
 
-// swagger:operation OPTIONS /api/token/valid auth VerifyToken
+// swagger:operation OPTIONS /api/token/valid auth VerifyTokenOptions
 // Displays possible operations for the resource in response header.
 // ---
 // produces:
 // - application/json
 // responses:
-//
-//	'200':
-//	    description: Returns header with possible operations
+//		'200':
+//	    	description: Returns header with possible operations
 var Verify = func(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("******************************************************")
 	fmt.Println("FUNCTION CALL: 	 Verify ")

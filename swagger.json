@@ -30,7 +30,7 @@
           "auth"
         ],
         "summary": "Generate credentials for a user.",
-        "operationId": "Create",
+        "operationId": "CreateAccount",
         "parameters": [
           {
             "type": "string",
@@ -41,8 +41,8 @@
             "required": true
           },
           {
+            "type": "string",
             "format": "password",
-            "default": "secret",
             "description": "Your password",
             "name": "password",
             "in": "json",
@@ -69,7 +69,7 @@
           "auth"
         ],
         "summary": "Displays possible operations for the resource in response header.",
-        "operationId": "CreateOptions",
+        "operationId": "CreateAccountOptions",
         "responses": {
           "200": {
             "description": "Returns header with possible operations"
@@ -126,10 +126,30 @@
           "auth"
         ],
         "summary": "Displays possible operations for the resource in response header.",
-        "operationId": "CreateOptions"
+        "operationId": "AuthenticateOptions"
       }
     },
-    "/api/tempunits/{id}": {
+    "/api/stats": {
+      "get": {
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "objects"
+        ],
+        "summary": "Displays DB statistics.",
+        "operationId": "GetStats",
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "504": {
+            "description": "Server error. An error message will be returned."
+          }
+        }
+      }
+    },
+    "/api/tempunits/id": {
       "get": {
         "produces": [
           "application/json"
@@ -141,6 +161,7 @@
         "operationId": "GetTempUnit",
         "parameters": [
           {
+            "type": "string",
             "description": "ID of any object.",
             "name": "id",
             "in": "query",
@@ -164,15 +185,24 @@
           "tempunits"
         ],
         "summary": "Gets the possible operations of the parent site tempunit of given object.",
-        "operationId": "GetTempUnit",
+        "operationId": "GetTempUnitOptions",
         "parameters": [
           {
+            "type": "string",
             "description": "ID of any object.",
             "name": "id",
             "in": "query",
             "required": true
           }
-        ]
+        ],
+        "responses": {
+          "200": {
+            "description": "Found. A response body will be returned with a meaningful message."
+          },
+          "404": {
+            "description": "Nothing Found. An error message will be returned."
+          }
+        }
       }
     },
     "/api/token/valid": {
@@ -205,7 +235,12 @@
           "auth"
         ],
         "summary": "Displays possible operations for the resource in response header.",
-        "operationId": "VerifyToken"
+        "operationId": "VerifyTokenOptions",
+        "responses": {
+          "200": {
+            "description": "Returns header with possible operations"
+          }
+        }
       }
     },
     "/api/validate/{obj}": {
@@ -289,11 +324,20 @@
         "operationId": "ValidateObjectOptions",
         "parameters": [
           {
+            "type": "string",
             "description": "Only values of \"tenants\", \"sites\", \"buildings\", \"rooms\", \"racks\", \"devices\", \"room-templates\", \"obj-templates\", \"bldg-templates\",\"rooms\", \"acs\", \"panels\", \"cabinets\", \"groups\", \"corridors\",\"sensors\",\"stray-devices\" \"stray-sensors\" are acceptable",
             "name": "obj",
             "in": "query"
           }
-        ]
+        ],
+        "responses": {
+          "200": {
+            "description": "Request is valid."
+          },
+          "404": {
+            "description": "Not Found. An error message will be returned."
+          }
+        }
       }
     },
     "/api/version": {
@@ -389,7 +433,15 @@
             "in": "query",
             "required": true
           }
-        ]
+        ],
+        "responses": {
+          "200": {
+            "description": "Found. A response body will be returned with a meaningful message."
+          },
+          "404": {
+            "description": "Nothing Found. An error message will be returned."
+          }
+        }
       }
     },
     "/api/{objs}/*": {
@@ -401,14 +453,23 @@
           "objects"
         ],
         "summary": "Displays possible operations for the resource in response header.",
-        "operationId": "ObjectOptions",
+        "operationId": "ObjectPathOptions",
         "parameters": [
           {
+            "type": "string",
             "description": "Only values of \"tenants\", \"sites\", \"buildings\", \"rooms\", \"racks\", \"devices\", \"room-templates\", \"obj-templates\", \"bldg-templates\",\"rooms\", \"acs\", \"panels\", \"cabinets\", \"groups\", \"corridors\",\"sensors\",\"stray-devices\" \"stray-sensors\" are acceptable",
             "name": "objs",
             "in": "query"
           }
-        ]
+        ],
+        "responses": {
+          "200": {
+            "description": "Request is valid."
+          },
+          "404": {
+            "description": "Not Found. An error message will be returned."
+          }
+        }
       }
     },
     "/api/{objs}/{id}": {
@@ -529,7 +590,7 @@
         "parameters": [
           {
             "type": "string",
-            "description": "Indicates the location. Only values of \"tenants\", \"sites\", \"buildings\", \"rooms\", \"racks\", \"devices\", \"room-templates\", \"obj-templates\",\"acs\", \"panels\", \"cabinets\", \"groups\", \"corridors\",\"sensors\", \"stray-devices\" \"stray-sensors\" are acceptable",
+            "description": "Indicates the location. Only values of \"tenants\", \"sites\", \"buildings\", \"rooms\", \"racks\", \"devices\", \"room-templates\", \"obj-templates\", \"bldg-templates\",\"rooms\",\"acs\", \"panels\", \"cabinets\", \"groups\", \"corridors\",\"sensors\", \"stray-devices\", \"stray-sensors\" are acceptable",
             "name": "objs",
             "in": "query",
             "required": true
@@ -537,11 +598,19 @@
           {
             "type": "int",
             "description": "ID of the object or name of Tenant. For templates the slug is the ID. For stray-devices the name is the ID",
-            "name": "ID",
+            "name": "id",
             "in": "path",
             "required": true
           }
-        ]
+        ],
+        "responses": {
+          "200": {
+            "description": "Updated. A response body will be returned with a meaningful message."
+          },
+          "404": {
+            "description": "Not Found. An error message will be returned."
+          }
+        }
       },
       "options": {
         "produces": [
@@ -554,16 +623,29 @@
         "operationId": "ObjectOptions",
         "parameters": [
           {
+            "type": "string",
             "description": "Only values of \"tenants\", \"sites\", \"buildings\", \"rooms\", \"racks\", \"devices\", \"room-templates\", \"obj-templates\", \"bldg-templates\",\"acs\", \"panels\",\"cabinets\", \"groups\", \"corridors\",\"sensors\",\"stray-devices\",\"stray-sensors\", are acceptable",
             "name": "objs",
             "in": "query"
           },
           {
+            "type": "string",
             "description": "ID of the object or name of Tenant. For templates the slug is the ID. For stray-devices the name is the ID",
             "name": "id",
             "in": "query"
           }
-        ]
+        ],
+        "responses": {
+          "200": {
+            "description": "Found. A response header will be returned with possible operations."
+          },
+          "400": {
+            "description": "Bad request. An error message will be returned."
+          },
+          "404": {
+            "description": "Not Found. An error message will be returned."
+          }
+        }
       },
       "patch": {
         "description": "This is the preferred method for modifying data in the system.\nIf you want to do a full data replace, please use PUT instead.\nIf the operation succeeds, the data result will be returned.\nIf no new or any information is provided\nan OK will still be returned",
@@ -780,7 +862,7 @@
         "tags": [
           "objects"
         ],
-        "operationId": "GetObject",
+        "operationId": "GetObjectByQuery",
         "parameters": [
           {
             "type": "string",
@@ -812,7 +894,15 @@
             "name": "Attributes",
             "in": "query"
           }
-        ]
+        ],
+        "responses": {
+          "204": {
+            "description": "Found. A response body will be returned with a meaningful message."
+          },
+          "404": {
+            "description": "Not found. An error message will be returned."
+          }
+        }
       }
     },
     "/api/{obj}": {
@@ -883,7 +973,7 @@
         }
       }
     },
-    "/api/{obj}/{id}/{subent}": {
+    "/api/{obj}/{id}/subent": {
       "get": {
         "description": "For Example: /api/tenants/{id}/buildings\nWill return all buildings of a tenant\nReturns JSON body with all subobjects under the Object",
         "produces": [
