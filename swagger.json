@@ -126,7 +126,12 @@
           "auth"
         ],
         "summary": "Displays possible operations for the resource in response header.",
-        "operationId": "AuthenticateOptions"
+        "operationId": "AuthenticateOptions",
+        "responses": {
+          "200": {
+            "description": "Returns header with possible operations"
+          }
+        }
       }
     },
     "/api/stats": {
@@ -364,7 +369,12 @@
           "versioning"
         ],
         "summary": "Displays possible operations for version.",
-        "operationId": "VersionOptions"
+        "operationId": "VersionOptions",
+        "responses": {
+          "200": {
+            "description": "Returns the possible request methods."
+          }
+        }
       }
     },
     "/api/{entity}/{name}/all": {
@@ -377,7 +387,7 @@
           "objects"
         ],
         "summary": "Obtain all objects related to Tenant or stray-device in the system using name.",
-        "operationId": "GetFromObject",
+        "operationId": "GetObjectHierarchy",
         "parameters": [
           {
             "type": "int",
@@ -404,14 +414,23 @@
           "objects"
         ],
         "summary": "Displays possible operations for the resource in response header.",
-        "operationId": "GetFromObjectOptions",
+        "operationId": "GetObjectHierarchyOptions",
         "parameters": [
           {
+            "type": "int",
             "description": "Name of tenant.",
             "name": "name",
             "in": "query"
           }
-        ]
+        ],
+        "responses": {
+          "200": {
+            "description": "Found. A response header will be returned with possible operation."
+          },
+          "404": {
+            "description": "Nothing Found."
+          }
+        }
       }
     },
     "/api/{objs}": {
@@ -798,7 +817,7 @@
           "objects"
         ],
         "summary": "Obtain all objects related to specified object in the system.",
-        "operationId": "GetFromObject",
+        "operationId": "GetFullObjectHierarchy",
         "parameters": [
           {
             "type": "string",
@@ -838,7 +857,7 @@
           "objects"
         ],
         "summary": "Displays possible operations for the resource in response header.",
-        "operationId": "GetFromObjectOptions",
+        "operationId": "GetFullObjectHierarchyOptions",
         "parameters": [
           {
             "description": "Only values of \"tenants\", \"sites\", \"buildings\", \"rooms\", \"racks\", \"devices\", and \"stray-devices\" are acceptable",
@@ -850,7 +869,15 @@
             "name": "id",
             "in": "query"
           }
-        ]
+        ],
+        "responses": {
+          "200": {
+            "description": "Found. A response header will be returned with possible operations."
+          },
+          "404": {
+            "description": "Nothing Found."
+          }
+        }
       }
     },
     "/api/{objs}?": {
@@ -1041,7 +1068,15 @@
             "name": "subent",
             "in": "query"
           }
-        ]
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "404": {
+            "description": "Nothing Found."
+          }
+        }
       }
     }
   },

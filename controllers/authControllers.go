@@ -109,9 +109,8 @@ var CreateAccount = func(w http.ResponseWriter, r *http.Request) {
 // produces:
 // - application/json
 // responses:
-//
-//	'200':
-//	    description: Returns header with possible operations
+//		'200':
+//	    	description: Returns header with possible operations
 var Authenticate = func(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("******************************************************")
 	fmt.Println("FUNCTION CALL: 	 Authenticate ")

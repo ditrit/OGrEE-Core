@@ -1060,13 +1060,11 @@ var GetTempUnit = func(w http.ResponseWriter, r *http.Request) {
 //     description: 'This refers to the sub object under the objs parameter.
 //     Please refer to the OGREE wiki to better understand what objects
 //     can be considered as sub objects.'
-//
 // responses:
-//
-//	'200':
-//	    description: 'OK'
-//	'404':
-//	    description: 'Nothing Found.'
+//		'200':
+//	    	description: 'OK'
+//		'404':
+//	    	description: 'Nothing Found.'
 var GetEntitiesOfAncestor = func(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("******************************************************")
 	fmt.Println("FUNCTION CALL: 	 GetEntitiesOfAncestor ")
@@ -1144,7 +1142,7 @@ var GetEntitiesOfAncestor = func(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// swagger:operation GET /api/{objs}/{id}/all objects GetFromObject
+// swagger:operation GET /api/{objs}/{id}/all objects GetFullObjectHierarchy
 // Obtain all objects related to specified object in the system.
 // Returns JSON body with all subobjects under the Object.
 // Note that objects returned will also included relevant objects.
@@ -1179,7 +1177,7 @@ var GetEntitiesOfAncestor = func(w http.ResponseWriter, r *http.Request) {
 //     '404':
 //         description: Nothing Found. An error message will be returned.
 
-// swagger:operation OPTIONS /api/{objs}/{id}/all objects GetFromObjectOptions
+// swagger:operation OPTIONS /api/{objs}/{id}/all objects GetFullObjectHierarchyOptions
 // Displays possible operations for the resource in response header.
 // ---
 // produces:
@@ -1194,14 +1192,12 @@ var GetEntitiesOfAncestor = func(w http.ResponseWriter, r *http.Request) {
 //     in: query
 //     description: 'ID of the object.For tenants and stray-devices the name
 //     can be used as the ID'
-//
 // responses:
-//
-//	'200':
-//	    description: 'Found. A response header will be returned with
-//	    possible operations.'
-//	'404':
-//	    description: Nothing Found.
+//		'200':
+//	    	description: 'Found. A response header will be returned with
+//	    	possible operations.'
+//		'404':
+//	    	description: Nothing Found.
 var GetEntityHierarchy = func(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("******************************************************")
 	fmt.Println("FUNCTION CALL: 	 GetEntityHierarchy ")
@@ -1376,7 +1372,7 @@ var GetEntityHierarchy = func(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// swagger:operation GET /api/{entity}/{name}/all objects GetFromObject
+// swagger:operation GET /api/{entity}/{name}/all objects GetObjectHierarchy
 // Obtain all objects related to Tenant or stray-device in the system using name.
 // Returns JSON body with all subobjects under the Tenant
 // ---
@@ -1395,7 +1391,7 @@ var GetEntityHierarchy = func(w http.ResponseWriter, r *http.Request) {
 //     '404':
 //         description: Nothing Found. An error message will be returned.
 
-// swagger:operation OPTIONS /api/{entity}/{name}/all objects GetFromObjectOptions
+// swagger:operation OPTIONS /api/{entity}/{name}/all objects GetObjectHierarchyOptions
 // Displays possible operations for the resource in response header.
 // ---
 // produces:
@@ -1404,14 +1400,13 @@ var GetEntityHierarchy = func(w http.ResponseWriter, r *http.Request) {
 //   - name: name
 //     in: query
 //     description: 'Name of tenant.'
-//
+//     type: int
 // responses:
-//
-//	'200':
-//	    description: 'Found. A response header will be returned with
-//	    possible operation.'
-//	'404':
-//	    description: Nothing Found.
+//		'200':
+//	    	description: 'Found. A response header will be returned with
+//	    	possible operation.'
+//		'404':
+//	    	description: Nothing Found.
 var GetHierarchyByName = func(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("******************************************************")
 	fmt.Println("FUNCTION CALL: 	 GetHierarchyByName ")
@@ -1984,9 +1979,8 @@ var ValidateEntity = func(w http.ResponseWriter, r *http.Request) {
 // produces:
 // - application/json
 // responses:
-//
-//	'200':
-//	    description: 'Returns the possible request methods.'
+//		'200':
+//	    	description: 'Returns the possible request methods.'
 var Version = func(w http.ResponseWriter, r *http.Request) {
 	data := map[string]interface{}{}
 	if r.Method == "OPTIONS" {
