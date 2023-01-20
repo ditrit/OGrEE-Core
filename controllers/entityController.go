@@ -150,36 +150,30 @@ func DispRequestMetaData(r *http.Request) {
 //   "stray-sensors" are acceptable'
 //   required: true
 //   type: string
-//   default: "sites"
 // - name: Name
 //   in: query
 //   description: Name of object
 //   required: true
 //   type: string
-//   default: "Object A"
 // - name: Category
 //   in: query
 //   description: Category of Object (ex. Consumer Electronics, Medical)
 //   required: true
 //   type: string
-//   default: "Research"
 // - name: Domain
 //   description: 'Domain of Object'
 //   required: true
 //   type: string
-//   default: 999
 // - name: ParentID
 //   description: 'All objects are linked to a
 //   parent with the exception of Tenant since it has no parent'
 //   required: true
 //   type: int
-//   default: 999
 // - name: Description
 //   in: query
 //   description: Description of Object
 //   required: false
 //   type: string[]
-//   default: ["Some abandoned object in Grenoble"]
 // - name: Attributes
 //   in: query
 //   description: 'Any other object attributes can be added.
@@ -291,14 +285,12 @@ var CreateEntity = func(w http.ResponseWriter, r *http.Request) {
 //   "corridors","sensors","stray-devices", "stray-sensors" are acceptable'
 //   required: true
 //   type: string
-//   default: "sites"
 // - name: ID
 //   in: path
 //   description: 'ID of desired object or Name of Tenant.
 //   For templates the slug is the ID. For stray-devices the name is the ID'
 //   required: true
 //   type: int
-//   default: 999
 // responses:
 //     '200':
 //         description: 'Found. A response body will be returned with
@@ -659,37 +651,31 @@ var DeleteEntity = func(w http.ResponseWriter, r *http.Request) {
 //   "corridors", "sensors", "stray-devices", "stray-sensors" are acceptable'
 //   required: true
 //   type: string
-//   default: "sites"
 // - name: ID
 //   in: path
 //   description: 'ID of the object or name of Tenant.
 //   For templates the slug is the ID. For stray-devices the name is the ID'
 //   required: true
 //   type: int
-//   default: 999
 // - name: Name
 //   in: query
 //   description: Name of Object
 //   required: false
 //   type: string
-//   default: "INFINITI"
 // - name: Category
 //   in: query
 //   description: Category of Object (ex. Consumer Electronics, Medical)
 //   required: false
 //   type: string
-//   default: "Auto"
 // - name: Description
 //   in: query
 //   description: Description of Object
 //   required: false
 //   type: string[]
-//   default: "High End Worldwide automotive company"
 // - name: Domain
 //   description: 'Domain of the Object'
 //   required: false
 //   type: string
-//   default: "High End Auto"
 // - name: Attributes
 //   in: query
 //   description: Any other object attributes can be updated
@@ -724,37 +710,31 @@ var DeleteEntity = func(w http.ResponseWriter, r *http.Request) {
 //   "corridors","sensors", "stray-devices", "stray-sensors" are acceptable'
 //   required: true
 //   type: string
-//   default: "sites"
 // - name: ID
 //   in: path
 //   description: 'ID of the object or name of Tenant.
 //   For templates the slug is the ID. For stray-devices the name is the ID'
 //   required: true
 //   type: int
-//   default: 999
 // - name: Name
 //   in: query
 //   description: Name of Object
 //   required: false
 //   type: string
-//   default: "INFINITI"
 // - name: Category
 //   in: query
 //   description: Category of Object (ex. Consumer Electronics, Medical)
 //   required: false
 //   type: string
-//   default: "Auto"
 // - name: Description
 //   in: query
 //   description: Description of Object
 //   required: false
 //   type: string[]
-//   default: "High End Worldwide automotive company"
 // - name: Domain
 //   description: 'Domain of the Object'
 //   required: false
 //   type: string
-//   default: "High End Auto"
 // - name: Attributes
 //   in: query
 //   description: Any other object attributes can be updated
@@ -1055,19 +1035,16 @@ var GetTempUnit = func(w http.ResponseWriter, r *http.Request) {
 //   "buildings", "rooms" are acceptable'
 //   required: true
 //   type: string
-//   default: "tenants"
 // - name: ID
 //   in: query
 //   description: ID of object
 //   required: true
 //   type: int
-//   default: 999
 // - name: subent
 //   in: query
 //   description: Objects which 2 are levels lower in the hierarchy.
 //   required: true
 //   type: string
-//   default: buildings
 // responses:
 //     '200':
 //         description: 'Found. A response body will be returned with
@@ -1195,14 +1172,12 @@ var GetEntitiesOfAncestor = func(w http.ResponseWriter, r *http.Request) {
 //   "buildings", "rooms", "racks", "devices", "stray-devices" are acceptable'
 //   required: true
 //   type: string
-//   default: "sites"
 // - name: ID
 //   in: query
 //   description: 'ID of object. For tenants and stray-devices the name
 //   can be used as the ID'
 //   required: true
 //   type: int
-//   default: 999
 // - name: limit
 //   in: query
 //   description: 'Limits the level of hierarchy for retrieval. if not
@@ -1210,7 +1185,6 @@ var GetEntitiesOfAncestor = func(w http.ResponseWriter, r *http.Request) {
 //   Example: /api/devices/{id}/all?limit=2'
 //   required: false
 //   type: string
-//   default: 1
 // responses:
 //     '200':
 //         description: 'Found. A response body will be returned with
@@ -1427,7 +1401,6 @@ var GetEntityHierarchy = func(w http.ResponseWriter, r *http.Request) {
 //   description: Name of Tenant
 //   required: true
 //   type: int
-//   default: 999
 // responses:
 //     '200':
 //         description: 'Found. A response body will be returned with
@@ -1608,14 +1581,12 @@ var GetHierarchyByName = func(w http.ResponseWriter, r *http.Request) {
 //   "buildings", "rooms", "racks", "devices", "stray-devices" are acceptable'
 //   required: true
 //   type: string
-//   default: "sites"
 // - name: ID
 //   in: path
 //   description: 'ID of desired object. For tenants and stray-devices the name
 //   can be used as the ID'
 //   required: true
 //   type: string
-//   default: "INFINITI"
 // - name: '*'
 //   in: path
 //   description: 'Hierarchal path to desired object(s).
@@ -1625,7 +1596,6 @@ var GetHierarchyByName = func(w http.ResponseWriter, r *http.Request) {
 //   For racks it can have "sensors"'
 //   required: true
 //   type: string
-//   default: "/buildings/BuildingB/RoomA"
 // responses:
 //     '200':
 //         description: 'Found. A response body will be returned with
@@ -1911,36 +1881,30 @@ var GetStats = func(w http.ResponseWriter, r *http.Request) {
 //   "stray-sensors" are acceptable'
 //   required: true
 //   type: string
-//   default: "sites"
 // - name: Name
 //   in: query
 //   description: Name of object
 //   required: true
 //   type: string
-//   default: "Object A"
 // - name: Category
 //   in: query
 //   description: Category of Object (ex. Consumer Electronics, Medical)
 //   required: true
 //   type: string
-//   default: "Research"
 // - name: Domain
 //   description: 'Domain of Object'
 //   required: true
 //   type: string
-//   default: 999
 // - name: ParentID
 //   description: 'All objects are linked to a
 //   parent with the exception of Tenant since it has no parent'
 //   required: true
 //   type: int
-//   default: 999
 // - name: Description
 //   in: query
 //   description: Description of Object
 //   required: false
 //   type: string[]
-//   default: ["Some abandoned object in Grenoble"]
 // - name: Attributes
 //   in: query
 //   description: 'Any other object attributes can be added.
