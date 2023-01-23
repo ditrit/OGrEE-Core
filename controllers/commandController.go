@@ -1790,6 +1790,8 @@ func GetOCLIAtrributesTemplateHelper(attr, data map[string]interface{}, ent int)
 							delete(attr, "technicalArea")
 						}
 
+						CopyAttr(attr, tmpl, "axisOrientation")
+
 						CopyAttr(attr, tmpl, "reservedArea")
 						if _, ok := attr["reservedArea"]; ok {
 							//tmp, _ = json.Marshal(attr["reservedArea"])

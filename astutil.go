@@ -40,7 +40,9 @@ func checkIfOrientation(x string) bool {
 		"+N-E", "-N-E", "-N+E",
 		"-N-W", "-N+W", "+N-W", "+N+W",
 		"-W-S", "-W+S", "+W-S", "+W+S",
-		"-S-E", "-S+E", "+S-E", "+S+E":
+		"-S-E", "-S+E", "+S-E", "+S+E",
+		"+x+y", "+x-y", "-x-y", "-x+y",
+		"+X+Y", "+X-Y", "-X-Y", "-X+Y":
 		return true
 	default:
 		return false

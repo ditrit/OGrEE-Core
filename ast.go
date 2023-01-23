@@ -1218,6 +1218,15 @@ func (n *getOCAttrNode) execute() (interface{}, error) {
 		//If axisOrientation was given, check if it is valid
 		attr := attributes["attributes"].(map[string]interface{})
 
+		//If size was given, check if it is valid
+		if _, ok := attr["size"]; ok {
+			sizeValid := IsInfArr(attr["size"])
+			if !sizeValid || sizeValid && len(attr["size"].([]interface{})) != 3 {
+				msg := "Invalid size attribute given. It must be a vector of length 3 elements. Please refer to the wiki or manual reference for more details on how to create objects using this syntax"
+				return nil, fmt.Errorf(msg)
+			}
+		}
+
 		//Ensure that the rotation is valid
 		if !IsFloat(attr["rotation"]) {
 			return nil, fmt.Errorf("Please provide a numerical value for the rotation")
