@@ -18,11 +18,10 @@ import (
 // - application/json
 // parameters:
 // - name: username
-//   in: body
+//   in: json
 //   description: Your Email Address
 //   type: string
 //   required: true
-//   default: "infiniti@nissan.com"
 // - name: password
 //   in: json
 //   description: Your password
@@ -84,17 +83,15 @@ var CreateAccount = func(w http.ResponseWriter, r *http.Request) {
 // - application/json
 // parameters:
 // - name: username
-//   in: body
+//   in: json
 //   description: Your Email Address
 //   type: string
 //   required: true
-//   default: "infiniti@nissan.com"
 // - name: password
 //   in: json
 //   description: Your password
 //   required: true
 //   format: password
-//   default: "secret"
 // responses:
 //     '200':
 //         description: Authenticated
@@ -109,6 +106,7 @@ var CreateAccount = func(w http.ResponseWriter, r *http.Request) {
 // produces:
 // - application/json
 // responses:
+//
 //		'200':
 //	    	description: Returns header with possible operations
 var Authenticate = func(w http.ResponseWriter, r *http.Request) {
@@ -161,6 +159,7 @@ var Authenticate = func(w http.ResponseWriter, r *http.Request) {
 // produces:
 // - application/json
 // responses:
+//
 //		'200':
 //	    	description: Returns header with possible operations
 var Verify = func(w http.ResponseWriter, r *http.Request) {

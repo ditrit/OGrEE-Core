@@ -285,7 +285,7 @@ var CreateEntity = func(w http.ResponseWriter, r *http.Request) {
 //   "corridors","sensors","stray-devices", "stray-sensors" are acceptable'
 //   required: true
 //   type: string
-// - name: ID
+// - name: id
 //   in: path
 //   description: 'ID of desired object or Name of Tenant.
 //   For templates the slug is the ID. For stray-devices the name is the ID'
@@ -318,7 +318,9 @@ var CreateEntity = func(w http.ResponseWriter, r *http.Request) {
 //     description: 'ID of the object or name of Tenant.
 //     For templates the slug is the ID. For stray-devices the name is the ID'
 //     type: string
+//
 // responses:
+//
 //		'200':
 //	    	description: 'Found. A response header will be returned with
 //	    	possible operations.'
@@ -452,7 +454,9 @@ var GetEntity = func(w http.ResponseWriter, r *http.Request) {
 //     "corridors", "sensors", "stray-devices", "stray-sensors" are acceptable'
 //     required: true
 //     type: string
+//
 // responses:
+//
 //		'200':
 //	    	description: 'Found. A response body will be returned with
 //	    	a meaningful message.'
@@ -643,7 +647,7 @@ var DeleteEntity = func(w http.ResponseWriter, r *http.Request) {
 //   "corridors", "sensors", "stray-devices", "stray-sensors" are acceptable'
 //   required: true
 //   type: string
-// - name: ID
+// - name: id
 //   in: path
 //   description: 'ID of the object or name of Tenant.
 //   For templates the slug is the ID. For stray-devices the name is the ID'
@@ -702,7 +706,7 @@ var DeleteEntity = func(w http.ResponseWriter, r *http.Request) {
 //   "corridors","sensors", "stray-devices", "stray-sensors" are acceptable'
 //   required: true
 //   type: string
-// - name: ID
+// - name: id
 //   in: path
 //   description: 'ID of the object or name of Tenant.
 //   For templates the slug is the ID. For stray-devices the name is the ID'
@@ -879,7 +883,9 @@ var UpdateEntity = func(w http.ResponseWriter, r *http.Request) {
 //     description: Any other object attributes can be queried
 //     required: false
 //     type: json
+//
 // responses:
+//
 //	    '204':
 //	         description: 'Found. A response body will be returned with
 //		         a meaningful message.'
@@ -1023,7 +1029,7 @@ var GetTempUnit = func(w http.ResponseWriter, r *http.Request) {
 //   "buildings", "rooms" are acceptable'
 //   required: true
 //   type: string
-// - name: ID
+// - name: id
 //   in: query
 //   description: ID of object
 //   required: true
@@ -1060,7 +1066,9 @@ var GetTempUnit = func(w http.ResponseWriter, r *http.Request) {
 //     description: 'This refers to the sub object under the objs parameter.
 //     Please refer to the OGREE wiki to better understand what objects
 //     can be considered as sub objects.'
+//
 // responses:
+//
 //		'200':
 //	    	description: 'OK'
 //		'404':
@@ -1142,7 +1150,7 @@ var GetEntitiesOfAncestor = func(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// swagger:operation GET /api/{objs}/{id}/all objects GetFullObjectHierarchy
+// swagger:operation GET /api/objs/id/all objects GetFullObjectHierarchy
 // Obtain all objects related to specified object in the system.
 // Returns JSON body with all subobjects under the Object.
 // Note that objects returned will also included relevant objects.
@@ -1157,7 +1165,7 @@ var GetEntitiesOfAncestor = func(w http.ResponseWriter, r *http.Request) {
 //   "buildings", "rooms", "racks", "devices", "stray-devices" are acceptable'
 //   required: true
 //   type: string
-// - name: ID
+// - name: id
 //   in: query
 //   description: 'ID of object. For tenants and stray-devices the name
 //   can be used as the ID'
@@ -1192,7 +1200,9 @@ var GetEntitiesOfAncestor = func(w http.ResponseWriter, r *http.Request) {
 //     in: query
 //     description: 'ID of the object.For tenants and stray-devices the name
 //     can be used as the ID'
+//
 // responses:
+//
 //		'200':
 //	    	description: 'Found. A response header will be returned with
 //	    	possible operations.'
@@ -1401,7 +1411,9 @@ var GetEntityHierarchy = func(w http.ResponseWriter, r *http.Request) {
 //     in: query
 //     description: 'Name of tenant.'
 //     type: int
+//
 // responses:
+//
 //		'200':
 //	    	description: 'Found. A response header will be returned with
 //	    	possible operation.'
@@ -1563,7 +1575,7 @@ var GetHierarchyByName = func(w http.ResponseWriter, r *http.Request) {
 //   "buildings", "rooms", "racks", "devices", "stray-devices" are acceptable'
 //   required: true
 //   type: string
-// - name: ID
+// - name: id
 //   in: path
 //   description: 'ID of desired object. For tenants and stray-devices the name
 //   can be used as the ID'
@@ -1798,7 +1810,9 @@ var GetEntitiesUsingNamesOfParents = func(w http.ResponseWriter, r *http.Request
 //     "cabinets", "groups", "corridors","sensors","stray-devices"
 //     "stray-sensors" are acceptable'
 //     type: string
+//
 // responses:
+//
 //		'200':
 //			description: 'Request is valid.'
 //		'404':
@@ -1825,6 +1839,7 @@ var BaseOption = func(w http.ResponseWriter, r *http.Request) {
 // produces:
 // - application/json
 // responses:
+//
 //		'200':
 //	    	description: 'OK'
 //		'504':
@@ -1914,7 +1929,9 @@ var GetStats = func(w http.ResponseWriter, r *http.Request) {
 //     "cabinets", "groups", "corridors","sensors","stray-devices"
 //     "stray-sensors" are acceptable'
 //     type: string
+//
 // responses:
+//
 //		'200':
 //	    	description: 'Request is valid.'
 //		'404':
@@ -1979,6 +1996,7 @@ var ValidateEntity = func(w http.ResponseWriter, r *http.Request) {
 // produces:
 // - application/json
 // responses:
+//
 //		'200':
 //	    	description: 'Returns the possible request methods.'
 var Version = func(w http.ResponseWriter, r *http.Request) {

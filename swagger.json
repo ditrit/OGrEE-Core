@@ -34,10 +34,9 @@
         "parameters": [
           {
             "type": "string",
-            "default": "infiniti@nissan.com",
             "description": "Your Email Address",
             "name": "username",
-            "in": "body",
+            "in": "json",
             "required": true
           },
           {
@@ -91,15 +90,13 @@
         "parameters": [
           {
             "type": "string",
-            "default": "infiniti@nissan.com",
             "description": "Your Email Address",
             "name": "username",
-            "in": "body",
+            "in": "json",
             "required": true
           },
           {
             "format": "password",
-            "default": "secret",
             "description": "Your password",
             "name": "password",
             "in": "json",
@@ -130,6 +127,49 @@
         "responses": {
           "200": {
             "description": "Returns header with possible operations"
+          }
+        }
+      }
+    },
+    "/api/objs/id/all": {
+      "get": {
+        "description": "Returns JSON body with all subobjects under the Object.\nNote that objects returned will also included relevant objects.\n(ie Room will contain acs, panels etc. Racks and devices will contain sensors)",
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "objects"
+        ],
+        "summary": "Obtain all objects related to specified object in the system.",
+        "operationId": "GetFullObjectHierarchy",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "Indicates the object. Only values of \"tenants\", \"sites\", \"buildings\", \"rooms\", \"racks\", \"devices\", \"stray-devices\" are acceptable",
+            "name": "objs",
+            "in": "query",
+            "required": true
+          },
+          {
+            "type": "int",
+            "description": "ID of object. For tenants and stray-devices the name can be used as the ID",
+            "name": "id",
+            "in": "query",
+            "required": true
+          },
+          {
+            "type": "string",
+            "description": "Limits the level of hierarchy for retrieval. if not specified for devices then the default value is maximum. Example: /api/devices/{id}/all?limit=2",
+            "name": "limit",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Found. A response body will be returned with a meaningful message."
+          },
+          "404": {
+            "description": "Nothing Found. An error message will be returned."
           }
         }
       }
@@ -513,7 +553,7 @@
           {
             "type": "int",
             "description": "ID of desired object or Name of Tenant. For templates the slug is the ID. For stray-devices the name is the ID",
-            "name": "ID",
+            "name": "id",
             "in": "path",
             "required": true
           }
@@ -551,7 +591,7 @@
           {
             "type": "int",
             "description": "ID of the object or name of Tenant. For templates the slug is the ID. For stray-devices the name is the ID",
-            "name": "ID",
+            "name": "id",
             "in": "path",
             "required": true
           },
@@ -687,7 +727,7 @@
           {
             "type": "int",
             "description": "ID of the object or name of Tenant. For templates the slug is the ID. For stray-devices the name is the ID",
-            "name": "ID",
+            "name": "id",
             "in": "path",
             "required": true
           },
@@ -756,7 +796,7 @@
           {
             "type": "string",
             "description": "ID of desired object. For tenants and stray-devices the name can be used as the ID",
-            "name": "ID",
+            "name": "id",
             "in": "path",
             "required": true
           },
@@ -808,47 +848,6 @@
       }
     },
     "/api/{objs}/{id}/all": {
-      "get": {
-        "description": "Returns JSON body with all subobjects under the Object.\nNote that objects returned will also included relevant objects.\n(ie Room will contain acs, panels etc. Racks and devices will contain sensors)",
-        "produces": [
-          "application/json"
-        ],
-        "tags": [
-          "objects"
-        ],
-        "summary": "Obtain all objects related to specified object in the system.",
-        "operationId": "GetFullObjectHierarchy",
-        "parameters": [
-          {
-            "type": "string",
-            "description": "Indicates the object. Only values of \"tenants\", \"sites\", \"buildings\", \"rooms\", \"racks\", \"devices\", \"stray-devices\" are acceptable",
-            "name": "objs",
-            "in": "query",
-            "required": true
-          },
-          {
-            "type": "int",
-            "description": "ID of object. For tenants and stray-devices the name can be used as the ID",
-            "name": "ID",
-            "in": "query",
-            "required": true
-          },
-          {
-            "type": "string",
-            "description": "Limits the level of hierarchy for retrieval. if not specified for devices then the default value is maximum. Example: /api/devices/{id}/all?limit=2",
-            "name": "limit",
-            "in": "query"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Found. A response body will be returned with a meaningful message."
-          },
-          "404": {
-            "description": "Nothing Found. An error message will be returned."
-          }
-        }
-      },
       "options": {
         "produces": [
           "application/json"
@@ -1022,7 +1021,7 @@
           {
             "type": "int",
             "description": "ID of object",
-            "name": "ID",
+            "name": "id",
             "in": "query",
             "required": true
           },
