@@ -96,6 +96,7 @@
             "required": true
           },
           {
+            "type": "string",
             "format": "password",
             "description": "Your password",
             "name": "password",
@@ -828,14 +829,18 @@
         "operationId": "GetFromObjectOptions",
         "parameters": [
           {
+            "type": "string",
             "description": "Only values of \"tenants\", \"sites\", \"buildings\", \"rooms\", \"racks\", \"devices\", and \"stray-devices\" are acceptable",
             "name": "objs",
-            "in": "query"
+            "in": "query",
+            "required": true
           },
           {
+            "type": "string",
             "description": "ID of the object.For tenants and stray-devices the name can be used as the ID",
             "name": "id",
-            "in": "query"
+            "in": "query",
+            "required": true
           },
           {
             "type": "string",
@@ -844,7 +849,15 @@
             "in": "path",
             "required": true
           }
-        ]
+        ],
+        "responses": {
+          "200": {
+            "description": "Found. A response header will be returned with possible operations."
+          },
+          "404": {
+            "description": "Not Found."
+          }
+        }
       }
     },
     "/api/{objs}/{id}/all": {
@@ -859,14 +872,18 @@
         "operationId": "GetFullObjectHierarchyOptions",
         "parameters": [
           {
+            "type": "string",
             "description": "Only values of \"tenants\", \"sites\", \"buildings\", \"rooms\", \"racks\", \"devices\", and \"stray-devices\" are acceptable",
             "name": "objs",
-            "in": "query"
+            "in": "query",
+            "required": true
           },
           {
+            "type": "string",
             "description": "ID of the object.For tenants and stray-devices the name can be used as the ID",
             "name": "id",
-            "in": "query"
+            "in": "query",
+            "required": true
           }
         ],
         "responses": {
@@ -953,33 +970,35 @@
             "type": "string",
             "description": "Name of object",
             "name": "Name",
-            "in": "query",
+            "in": "json",
             "required": true
           },
           {
             "type": "string",
             "description": "Category of Object (ex. Consumer Electronics, Medical)",
             "name": "Category",
-            "in": "query",
+            "in": "json",
             "required": true
           },
           {
             "type": "string",
             "description": "Domain of Object",
             "name": "Domain",
+            "in": "json",
             "required": true
           },
           {
             "type": "int",
             "description": "All objects are linked to a parent with the exception of Tenant since it has no parent",
             "name": "ParentID",
+            "in": "json",
             "required": true
           },
           {
             "type": "string[]",
             "description": "Description of Object",
             "name": "Description",
-            "in": "query"
+            "in": "json"
           },
           {
             "type": "json",
@@ -1001,7 +1020,7 @@
     },
     "/api/{obj}/{id}/subent": {
       "get": {
-        "description": "For Example: /api/tenants/{id}/buildings\nWill return all buildings of a tenant\nReturns JSON body with all subobjects under the Object",
+        "description": "(Example) /api/tenants/{id}/buildings\nWill return all buildings of a tenant\nReturns JSON body with all subobjects under the Object.",
         "produces": [
           "application/json"
         ],
@@ -1009,7 +1028,7 @@
           "objects"
         ],
         "summary": "Obtain all objects 2 levels lower in the system.",
-        "operationId": "GetFromObject",
+        "operationId": "GetObject2LevelsLower",
         "parameters": [
           {
             "type": "string",
@@ -1050,22 +1069,28 @@
           "objects"
         ],
         "summary": "Displays possible operations for the resource in response header.",
-        "operationId": "GetFromObjectOptions",
+        "operationId": "GetObject2LevelsLowerOptions",
         "parameters": [
           {
+            "type": "string",
             "description": "Only values of \"tenants\", \"sites\", \"buildings\", \"rooms\", \"racks\", \"devices\", and \"stray-devices\" are acceptable",
             "name": "objs",
-            "in": "query"
+            "in": "query",
+            "required": true
           },
           {
+            "type": "string",
             "description": "ID of the object. For stray-devices and tenants the name can be used as the ID.",
             "name": "id",
-            "in": "query"
+            "in": "query",
+            "required": true
           },
           {
+            "type": "string",
             "description": "This refers to the sub object under the objs parameter. Please refer to the OGREE wiki to better understand what objects can be considered as sub objects.",
             "name": "subent",
-            "in": "query"
+            "in": "query",
+            "required": true
           }
         ],
         "responses": {

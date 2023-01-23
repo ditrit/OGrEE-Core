@@ -92,6 +92,7 @@ var CreateAccount = func(w http.ResponseWriter, r *http.Request) {
 //   description: Your password
 //   required: true
 //   format: password
+//   type: string
 // responses:
 //     '200':
 //         description: Authenticated

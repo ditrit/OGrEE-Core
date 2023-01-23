@@ -151,12 +151,12 @@ func DispRequestMetaData(r *http.Request) {
 //   required: true
 //   type: string
 // - name: Name
-//   in: query
+//   in: json
 //   description: Name of object
 //   required: true
 //   type: string
 // - name: Category
-//   in: query
+//   in: json
 //   description: Category of Object (ex. Consumer Electronics, Medical)
 //   required: true
 //   type: string
@@ -164,16 +164,18 @@ func DispRequestMetaData(r *http.Request) {
 //   description: 'Domain of Object'
 //   required: true
 //   type: string
+//   in: json
 // - name: ParentID
 //   description: 'All objects are linked to a
 //   parent with the exception of Tenant since it has no parent'
 //   required: true
 //   type: int
+//   in: json
 // - name: Description
-//   in: query
 //   description: Description of Object
 //   required: false
 //   type: string[]
+//   in: json
 // - name: Attributes
 //   in: query
 //   description: 'Any other object attributes can be added.
@@ -1014,11 +1016,11 @@ var GetTempUnit = func(w http.ResponseWriter, r *http.Request) {
 	u.Respond(w, resp)
 }
 
-// swagger:operation GET /api/{obj}/{id}/subent objects GetFromObject
+// swagger:operation GET /api/{obj}/{id}/subent objects GetObject2LevelsLower
 // Obtain all objects 2 levels lower in the system.
-// For Example: /api/tenants/{id}/buildings
+// (Example) /api/tenants/{id}/buildings
 // Will return all buildings of a tenant
-// Returns JSON body with all subobjects under the Object
+// Returns JSON body with all subobjects under the Object.
 // ---
 // produces:
 // - application/json
@@ -1046,7 +1048,7 @@ var GetTempUnit = func(w http.ResponseWriter, r *http.Request) {
 //     '404':
 //         description: Nothing Found. An error message will be returned.
 
-// swagger:operation OPTIONS /api/{obj}/{id}/subent objects GetFromObjectOptions
+// swagger:operation OPTIONS /api/{obj}/{id}/subent objects GetObject2LevelsLowerOptions
 // Displays possible operations for the resource in response header.
 // ---
 // produces:
@@ -1057,11 +1059,17 @@ var GetTempUnit = func(w http.ResponseWriter, r *http.Request) {
 //     description: 'Only values of "tenants", "sites",
 //     "buildings", "rooms", "racks", "devices", and "stray-devices"
 //     are acceptable'
+//     type: string
+//     required: true
 //   - name: id
 //     in: 'query'
 //     description: 'ID of the object. For stray-devices and tenants the name
 //     can be used as the ID.'
+//     type: string
+//     required: true
 //   - name: subent
+//     type: string
+//     required: true
 //     in: 'query'
 //     description: 'This refers to the sub object under the objs parameter.
 //     Please refer to the OGREE wiki to better understand what objects
@@ -1196,13 +1204,15 @@ var GetEntitiesOfAncestor = func(w http.ResponseWriter, r *http.Request) {
 //     description: 'Only values of "tenants", "sites",
 //     "buildings", "rooms", "racks", "devices", and "stray-devices"
 //     are acceptable'
+//     type: string
+//     required: true
 //   - name: id
 //     in: query
 //     description: 'ID of the object.For tenants and stray-devices the name
 //     can be used as the ID'
-//
+//     type: string
+//     required: true
 // responses:
-//
 //		'200':
 //	    	description: 'Found. A response header will be returned with
 //	    	possible operations.'
@@ -1608,10 +1618,14 @@ var GetHierarchyByName = func(w http.ResponseWriter, r *http.Request) {
 //     description: 'Only values of "tenants", "sites",
 //     "buildings", "rooms", "racks", "devices", and "stray-devices"
 //     are acceptable'
+//     type: string
+//     required: true
 //   - name: id
 //     in: query
 //     description: 'ID of the object.For tenants and stray-devices the name
 //     can be used as the ID'
+//     type: string
+//     required: true
 //   - name: '*'
 //     in: path
 //     description: 'Hierarchal path to desired object(s).
@@ -1621,14 +1635,12 @@ var GetHierarchyByName = func(w http.ResponseWriter, r *http.Request) {
 //     For racks it can have "sensors"'
 //     required: true
 //     type: string
-//
 // responses:
-//
-//	'200':
-//	    description: 'Found. A response header will be returned with
+//		'200':
+//	    	description: 'Found. A response header will be returned with
 //	    possible operations.'
-//	'404':
-//	    description: Not Found.
+//		'404':
+//	    	description: Not Found.
 var GetEntitiesUsingNamesOfParents = func(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("******************************************************")
 	fmt.Println("FUNCTION CALL: 	 GetEntitiesUsingNamesOfParents ")
