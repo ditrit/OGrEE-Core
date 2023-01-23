@@ -1592,8 +1592,8 @@ func GetOCLIAtrributes(Path string, ent int, data map[string]interface{}) error 
 			sizeUValid := checkNumeric(attr["sizeU"])
 
 			if _, ok := attr["template"]; !ok && sizeUValid == false {
-				l.GetWarningLogger().Println("Invalid parameter provided for device ")
-				return fmt.Errorf("Invalid parameter provided for device")
+				l.GetWarningLogger().Println("Invalid template / sizeU parameter provided for device ")
+				return fmt.Errorf("Please provide a valid template or sizeU for device")
 			}
 
 			//Convert block
@@ -1614,7 +1614,7 @@ func GetOCLIAtrributes(Path string, ent int, data map[string]interface{}) error 
 		}
 		//}
 
-		//If slot not found
+		//Process the posU/slot attribute
 		if x, ok := attr["posU/slot"]; ok {
 			delete(attr, "posU/slot")
 			//Convert posU to string if numeric

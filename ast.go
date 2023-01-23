@@ -1220,7 +1220,15 @@ func (n *createDeviceNode) execute() (interface{}, error) {
 		//not be given with the orientation
 		//n.attrs[2] refers to the orientation
 		if n.attrs[2] != nil {
-			msg := "sizeU cannot be specified with the orientation. If you have given a template, ensure that it exists and try again. For more information please visit: https://ogree.ditrit.io/htmls/programming.html"
+			var msg string
+			if IsString(vals[1]) {
+				msg = "The template '" + vals[1].(string) + "' does not exist, ensure that it exists and try again. For more information please visit: https://ogree.ditrit.io/htmls/programming.html"
+			} else if IsFloat(vals[1]) { //All numbers are interpreted as floats for now
+				msg = "Templates can only be specified with the orientation, if you meant to provide the sizeU then please remove the orientation. For more information please visit: https://ogree.ditrit.io/htmls/programming.html"
+			} else {
+				msg = "Invalid argument specified for template / sizeU. Please provide a template name or numerical value for sizeU."
+			}
+
 			return nil, fmt.Errorf(msg)
 		}
 	} else {
