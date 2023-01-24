@@ -704,7 +704,7 @@ var DeleteEntity = func(w http.ResponseWriter, r *http.Request) {
 // - application/json
 // parameters:
 // - name: objs
-//   in: query
+//   in: path
 //   description: 'Indicates the location. Only values of "tenants", "sites",
 //   "buildings", "rooms", "racks", "devices", "room-templates",
 //   "obj-templates", "bldg-templates","rooms","acs", "panels", "cabinets", "groups",
@@ -716,31 +716,35 @@ var DeleteEntity = func(w http.ResponseWriter, r *http.Request) {
 //   description: 'ID of the object or name of Tenant.
 //   For templates the slug is the ID. For stray-devices the name is the ID'
 //   required: true
-//   type: int
+//   type: string
 // - name: Name
-//   in: query
+//   in: formData
 //   description: Name of Object
 //   required: false
 //   type: string
 // - name: Category
-//   in: query
+//   in: formData
 //   description: Category of Object (ex. Consumer Electronics, Medical)
 //   required: false
 //   type: string
 // - name: Description
-//   in: query
+//   in: formData
 //   description: Description of Object
 //   required: false
-//   type: string[]
+//   type: array
+//   items:
+//   	type: string
 // - name: Domain
 //   description: 'Domain of the Object'
 //   required: false
 //   type: string
+//   in: formData
 // - name: Attributes
-//   in: query
-//   description: Any other object attributes can be updated
+//   in: formData
+//   x-dataType: dictionary
+//   description: Any other object attributes can be updated in this dictionary. The values must be a string.
 //   required: false
-//   type: json
+//   type: string
 // responses:
 //     '200':
 //         description: 'Updated. A response body will be returned with

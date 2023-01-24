@@ -590,11 +590,11 @@
             "type": "string",
             "description": "Indicates the location. Only values of \"tenants\", \"sites\", \"buildings\", \"rooms\", \"racks\", \"devices\", \"room-templates\", \"obj-templates\", \"bldg-templates\",\"rooms\",\"acs\", \"panels\", \"cabinets\", \"groups\", \"corridors\",\"sensors\", \"stray-devices\", \"stray-sensors\" are acceptable",
             "name": "objs",
-            "in": "query",
+            "in": "path",
             "required": true
           },
           {
-            "type": "int",
+            "type": "string",
             "description": "ID of the object or name of Tenant. For templates the slug is the ID. For stray-devices the name is the ID",
             "name": "id",
             "in": "path",
@@ -604,30 +604,35 @@
             "type": "string",
             "description": "Name of Object",
             "name": "Name",
-            "in": "query"
+            "in": "formData"
           },
           {
             "type": "string",
             "description": "Category of Object (ex. Consumer Electronics, Medical)",
             "name": "Category",
-            "in": "query"
+            "in": "formData"
           },
           {
-            "type": "string[]",
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
             "description": "Description of Object",
             "name": "Description",
-            "in": "query"
+            "in": "formData"
           },
           {
             "type": "string",
             "description": "Domain of the Object",
-            "name": "Domain"
+            "name": "Domain",
+            "in": "formData"
           },
           {
-            "type": "json",
-            "description": "Any other object attributes can be updated",
+            "type": "string",
+            "x-dataType": "dictionary",
+            "description": "Any other object attributes can be updated in this dictionary. The values must be a string.",
             "name": "Attributes",
-            "in": "query"
+            "in": "formData"
           }
         ],
         "responses": {
