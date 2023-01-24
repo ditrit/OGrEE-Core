@@ -16,8 +16,8 @@
 //
 //      SecurityDefinitions:
 //          JWT:
-//              type: jwt
-//              name: Authorization
+//              type: apiKey
+//              name: JWT
 //              in: header
 // swagger:meta
 package main

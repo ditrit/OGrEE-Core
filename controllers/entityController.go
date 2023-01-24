@@ -135,7 +135,7 @@ func DispRequestMetaData(r *http.Request) {
 	fmt.Println(time.Now().Format("2006-Jan-02 Monday 03:04:05 PM MST -07:00"))
 }
 
-// swagger:operation POST /api/{obj} objects CreateObject
+// swagger:operation POST /api/{objs} objects CreateObject
 // Creates an object in the system.
 // ---
 // produces:
@@ -169,7 +169,7 @@ func DispRequestMetaData(r *http.Request) {
 //   description: 'All objects are linked to a
 //   parent with the exception of Tenant since it has no parent'
 //   required: true
-//   type: int
+//   type: string
 //   in: formData
 // - name: Description
 //   description: Description of Object
@@ -311,18 +311,19 @@ var CreateEntity = func(w http.ResponseWriter, r *http.Request) {
 // - application/json
 // parameters:
 //   - name: objs
-//     in: query
+//     in: path
 //     description: 'Only values of "tenants", "sites",
 //     "buildings", "rooms", "racks", "devices", "room-templates",
 //     "obj-templates", "bldg-templates","acs", "panels","cabinets", "groups",
 //     "corridors","sensors","stray-devices","stray-sensors", are acceptable'
 //     type: string
+//     required: true
 //   - name: id
-//     in: query
+//     in: path
 //     description: 'ID of the object or name of Tenant.
 //     For templates the slug is the ID. For stray-devices the name is the ID'
 //     type: string
-//
+//     required: true
 // responses:
 //
 //		'200':
@@ -451,7 +452,7 @@ var GetEntity = func(w http.ResponseWriter, r *http.Request) {
 // - application/json
 // parameters:
 //   - name: objs
-//     in: query
+//     in: path
 //     description: 'Indicates the location. Only values of "tenants", "sites",
 //     "buildings", "rooms", "racks", "devices", "room-templates",
 //     "obj-templates","acs", "panels", "cabinets", "groups",
@@ -1064,7 +1065,7 @@ var GetTempUnit = func(w http.ResponseWriter, r *http.Request) {
 // produces:
 // - application/json
 // parameters:
-//   - name: 'objs'
+//   - name: objs
 //     in: 'path'
 //     description: 'Only values of "tenants", "sites",
 //     "buildings", "rooms", "racks", "devices", and "stray-devices"
@@ -1210,14 +1211,14 @@ var GetEntitiesOfAncestor = func(w http.ResponseWriter, r *http.Request) {
 // - application/json
 // parameters:
 //   - name: objs
-//     in: query
+//     in: path
 //     description: 'Only values of "tenants", "sites",
 //     "buildings", "rooms", "racks", "devices", and "stray-devices"
 //     are acceptable'
 //     type: string
 //     required: true
 //   - name: id
-//     in: query
+//     in: path
 //     description: 'ID of the object.For tenants and stray-devices the name
 //     can be used as the ID'
 //     type: string
@@ -1600,7 +1601,7 @@ var GetHierarchyByName = func(w http.ResponseWriter, r *http.Request) {
 // - application/json
 // parameters:
 // - name: objs
-//   in: query
+//   in: path
 //   description: 'Indicates the object. Only values of "tenants", "sites",
 //   "buildings", "rooms", "racks", "devices", "stray-devices" are acceptable'
 //   required: true
@@ -1634,14 +1635,14 @@ var GetHierarchyByName = func(w http.ResponseWriter, r *http.Request) {
 // - application/json
 // parameters:
 //   - name: objs
-//     in: query
+//     in: path
 //     description: 'Only values of "tenants", "sites",
 //     "buildings", "rooms", "racks", "devices", and "stray-devices"
 //     are acceptable'
 //     type: string
 //     required: true
 //   - name: id
-//     in: query
+//     in: path
 //     description: 'ID of the object.For tenants and stray-devices the name
 //     can be used as the ID'
 //     type: string
@@ -1835,14 +1836,14 @@ var GetEntitiesUsingNamesOfParents = func(w http.ResponseWriter, r *http.Request
 // - application/json
 // parameters:
 //   - name: objs
-//     in: query
+//     in: path
 //     description: 'Only values of "tenants", "sites",
 //     "buildings", "rooms", "racks", "devices", "room-templates",
 //     "obj-templates", "bldg-templates","rooms", "acs", "panels",
 //     "cabinets", "groups", "corridors","sensors","stray-devices"
 //     "stray-sensors" are acceptable'
 //     type: string
-//
+//     required: true
 // responses:
 //
 //		'200':
@@ -1899,7 +1900,7 @@ var GetStats = func(w http.ResponseWriter, r *http.Request) {
 // - application/json
 // parameters:
 // - name: objs
-//   in: query
+//   in: path
 //   description: 'Indicates the Object. Only values of "tenants", "sites",
 //   "buildings", "rooms", "racks", "devices", "acs", "panels",
 //   "cabinets", "groups", "corridors",
@@ -1959,7 +1960,7 @@ var GetStats = func(w http.ResponseWriter, r *http.Request) {
 // - application/json
 // parameters:
 //   - name: obj
-//     in: query
+//     in: path
 //     description: 'Only values of "tenants", "sites",
 //     "buildings", "rooms", "racks", "devices", "room-templates",
 //     "obj-templates", "bldg-templates","rooms", "acs", "panels",

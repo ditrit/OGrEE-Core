@@ -86,7 +86,7 @@ var CreateAccount = func(w http.ResponseWriter, r *http.Request) {
 //   type: string
 //   required: true
 // - name: password
-//   in: json
+//   in: formData
 //   description: Your password
 //   required: true
 //   format: password

@@ -99,7 +99,7 @@
             "format": "password",
             "description": "Your password",
             "name": "password",
-            "in": "json",
+            "in": "formData",
             "required": true
           }
         ],
@@ -260,7 +260,7 @@
             "type": "string",
             "description": "Indicates the Object. Only values of \"tenants\", \"sites\", \"buildings\", \"rooms\", \"racks\", \"devices\", \"acs\", \"panels\", \"cabinets\", \"groups\", \"corridors\", \"room-templates\", \"obj-templates\", \"bldg-templates\",\"sensors\", \"stray-devices\" \"stray-sensors\" are acceptable",
             "name": "objs",
-            "in": "query",
+            "in": "path",
             "required": true
           },
           {
@@ -337,7 +337,7 @@
             "type": "string",
             "description": "Only values of \"tenants\", \"sites\", \"buildings\", \"rooms\", \"racks\", \"devices\", \"room-templates\", \"obj-templates\", \"bldg-templates\",\"rooms\", \"acs\", \"panels\", \"cabinets\", \"groups\", \"corridors\",\"sensors\",\"stray-devices\" \"stray-sensors\" are acceptable",
             "name": "obj",
-            "in": "query",
+            "in": "path",
             "required": true
           }
         ],
@@ -470,7 +470,7 @@
             "type": "string",
             "description": "Indicates the location. Only values of \"tenants\", \"sites\", \"buildings\", \"rooms\", \"racks\", \"devices\", \"room-templates\", \"obj-templates\",\"acs\", \"panels\", \"cabinets\", \"groups\", \"corridors\", \"sensors\", \"stray-devices\", \"stray-sensors\" are acceptable",
             "name": "objs",
-            "in": "query",
+            "in": "path",
             "required": true
           }
         ],
@@ -480,6 +480,77 @@
           },
           "404": {
             "description": "Nothing Found. An error message will be returned."
+          }
+        }
+      },
+      "post": {
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "objects"
+        ],
+        "summary": "Creates an object in the system.",
+        "operationId": "CreateObject",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "Indicates the Object. Only values of \"tenants\", \"sites\", \"buildings\", \"rooms\", \"racks\", \"devices\", \"acs\", \"panels\", \"cabinets\", \"groups\", \"corridors\", \"room-templates\", \"obj-templates\", \"bldg-templates\",\"sensors\", \"stray-devices\", \"stray-sensors\" are acceptable",
+            "name": "objs",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "description": "Name of object",
+            "name": "Name",
+            "in": "formData",
+            "required": true
+          },
+          {
+            "type": "string",
+            "description": "Category of Object (ex. Consumer Electronics, Medical)",
+            "name": "Category",
+            "in": "formData",
+            "required": true
+          },
+          {
+            "type": "string",
+            "description": "Domain of Object",
+            "name": "Domain",
+            "in": "formData",
+            "required": true
+          },
+          {
+            "type": "string",
+            "description": "All objects are linked to a parent with the exception of Tenant since it has no parent",
+            "name": "ParentID",
+            "in": "formData",
+            "required": true
+          },
+          {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Description of Object",
+            "name": "Description",
+            "in": "formData"
+          },
+          {
+            "type": "string",
+            "description": "Any other object attributes can be added. They are required depending on the obj type.",
+            "name": "Attributes",
+            "in": "formData",
+            "required": true
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Created. A response body will be returned with a meaningful message."
+          },
+          "400": {
+            "description": "Bad request. A response body with an error message will be returned."
           }
         }
       }
@@ -499,7 +570,8 @@
             "type": "string",
             "description": "Only values of \"tenants\", \"sites\", \"buildings\", \"rooms\", \"racks\", \"devices\", \"room-templates\", \"obj-templates\", \"bldg-templates\",\"rooms\", \"acs\", \"panels\", \"cabinets\", \"groups\", \"corridors\",\"sensors\",\"stray-devices\" \"stray-sensors\" are acceptable",
             "name": "objs",
-            "in": "query"
+            "in": "path",
+            "required": true
           }
         ],
         "responses": {
@@ -671,13 +743,15 @@
             "type": "string",
             "description": "Only values of \"tenants\", \"sites\", \"buildings\", \"rooms\", \"racks\", \"devices\", \"room-templates\", \"obj-templates\", \"bldg-templates\",\"acs\", \"panels\",\"cabinets\", \"groups\", \"corridors\",\"sensors\",\"stray-devices\",\"stray-sensors\", are acceptable",
             "name": "objs",
-            "in": "query"
+            "in": "path",
+            "required": true
           },
           {
             "type": "string",
             "description": "ID of the object or name of Tenant. For templates the slug is the ID. For stray-devices the name is the ID",
             "name": "id",
-            "in": "query"
+            "in": "path",
+            "required": true
           }
         ],
         "responses": {
@@ -780,7 +854,7 @@
             "type": "string",
             "description": "Indicates the object. Only values of \"tenants\", \"sites\", \"buildings\", \"rooms\", \"racks\", \"devices\", \"stray-devices\" are acceptable",
             "name": "objs",
-            "in": "query",
+            "in": "path",
             "required": true
           },
           {
@@ -821,14 +895,14 @@
             "type": "string",
             "description": "Only values of \"tenants\", \"sites\", \"buildings\", \"rooms\", \"racks\", \"devices\", and \"stray-devices\" are acceptable",
             "name": "objs",
-            "in": "query",
+            "in": "path",
             "required": true
           },
           {
             "type": "string",
             "description": "ID of the object.For tenants and stray-devices the name can be used as the ID",
             "name": "id",
-            "in": "query",
+            "in": "path",
             "required": true
           },
           {
@@ -905,14 +979,14 @@
             "type": "string",
             "description": "Only values of \"tenants\", \"sites\", \"buildings\", \"rooms\", \"racks\", \"devices\", and \"stray-devices\" are acceptable",
             "name": "objs",
-            "in": "query",
+            "in": "path",
             "required": true
           },
           {
             "type": "string",
             "description": "ID of the object.For tenants and stray-devices the name can be used as the ID",
             "name": "id",
-            "in": "query",
+            "in": "path",
             "required": true
           }
         ],
@@ -1022,79 +1096,6 @@
         }
       }
     },
-    "/api/{obj}": {
-      "post": {
-        "produces": [
-          "application/json"
-        ],
-        "tags": [
-          "objects"
-        ],
-        "summary": "Creates an object in the system.",
-        "operationId": "CreateObject",
-        "parameters": [
-          {
-            "type": "string",
-            "description": "Indicates the Object. Only values of \"tenants\", \"sites\", \"buildings\", \"rooms\", \"racks\", \"devices\", \"acs\", \"panels\", \"cabinets\", \"groups\", \"corridors\", \"room-templates\", \"obj-templates\", \"bldg-templates\",\"sensors\", \"stray-devices\", \"stray-sensors\" are acceptable",
-            "name": "objs",
-            "in": "path",
-            "required": true
-          },
-          {
-            "type": "string",
-            "description": "Name of object",
-            "name": "Name",
-            "in": "formData",
-            "required": true
-          },
-          {
-            "type": "string",
-            "description": "Category of Object (ex. Consumer Electronics, Medical)",
-            "name": "Category",
-            "in": "formData",
-            "required": true
-          },
-          {
-            "type": "string",
-            "description": "Domain of Object",
-            "name": "Domain",
-            "in": "formData",
-            "required": true
-          },
-          {
-            "type": "int",
-            "description": "All objects are linked to a parent with the exception of Tenant since it has no parent",
-            "name": "ParentID",
-            "in": "formData",
-            "required": true
-          },
-          {
-            "type": "array",
-            "items": {
-              "type": "string"
-            },
-            "description": "Description of Object",
-            "name": "Description",
-            "in": "formData"
-          },
-          {
-            "type": "string",
-            "description": "Any other object attributes can be added. They are required depending on the obj type.",
-            "name": "Attributes",
-            "in": "formData",
-            "required": true
-          }
-        ],
-        "responses": {
-          "201": {
-            "description": "Created. A response body will be returned with a meaningful message."
-          },
-          "400": {
-            "description": "Bad request. A response body with an error message will be returned."
-          }
-        }
-      }
-    },
     "/api/{obj}/{id}/{subent}": {
       "get": {
         "description": "(Example) /api/tenants/{id}/buildings\nWill return all buildings of a tenant\nReturns JSON body with all subobjects under the Object.",
@@ -1142,8 +1143,8 @@
   },
   "securityDefinitions": {
     "JWT": {
-      "type": "jwt",
-      "name": "Authorization",
+      "type": "apiKey",
+      "name": "JWT",
       "in": "header"
     }
   }
