@@ -132,49 +132,6 @@
         }
       }
     },
-    "/api/objs/id/all": {
-      "get": {
-        "description": "Returns JSON body with all subobjects under the Object.\nNote that objects returned will also included relevant objects.\n(ie Room will contain acs, panels etc. Racks and devices will contain sensors)",
-        "produces": [
-          "application/json"
-        ],
-        "tags": [
-          "objects"
-        ],
-        "summary": "Obtain all objects related to specified object in the system.",
-        "operationId": "GetFullObjectHierarchy",
-        "parameters": [
-          {
-            "type": "string",
-            "description": "Indicates the object. Only values of \"tenants\", \"sites\", \"buildings\", \"rooms\", \"racks\", \"devices\", \"stray-devices\" are acceptable",
-            "name": "objs",
-            "in": "query",
-            "required": true
-          },
-          {
-            "type": "int",
-            "description": "ID of object. For tenants and stray-devices the name can be used as the ID",
-            "name": "id",
-            "in": "query",
-            "required": true
-          },
-          {
-            "type": "string",
-            "description": "Limits the level of hierarchy for retrieval. if not specified for devices then the default value is maximum. Example: /api/devices/{id}/all?limit=2",
-            "name": "limit",
-            "in": "query"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Found. A response body will be returned with a meaningful message."
-          },
-          "404": {
-            "description": "Nothing Found. An error message will be returned."
-          }
-        }
-      }
-    },
     "/api/stats": {
       "get": {
         "produces": [
@@ -894,6 +851,47 @@
       }
     },
     "/api/{objs}/{id}/all": {
+      "get": {
+        "description": "Returns JSON body with all subobjects under the Object.\nNote that objects returned will also included relevant objects.\n(ie Room will contain acs, panels etc. Racks and devices will contain sensors)",
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "objects"
+        ],
+        "summary": "Obtain all objects related to specified object in the system.",
+        "operationId": "GetFullObjectHierarchy",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "Indicates the object. Only values of \"tenants\", \"sites\", \"buildings\", \"rooms\", \"racks\", \"devices\", \"stray-devices\" are acceptable",
+            "name": "objs",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "description": "ID of object. For tenants and stray-devices the name can be used as the ID",
+            "name": "id",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "description": "Limits the level of hierarchy for retrieval. if not specified for devices then the default value is maximum. example: /api/devices/{id}/all?limit=2",
+            "name": "limit",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Found. A response body will be returned with a meaningful message."
+          },
+          "404": {
+            "description": "Nothing Found. An error message will be returned."
+          }
+        }
+      },
       "options": {
         "produces": [
           "application/json"
@@ -944,7 +942,7 @@
             "type": "string",
             "description": "Indicates the object. Only values of \"tenants\", \"sites\", \"buildings\", \"rooms\", \"racks\", \"devices\", \"room-templates\", \"obj-templates\",\"acs\",\"panels\", \"groups\", \"corridors\", \"sensors\", \"stray-devices\" and \"stray-sensors\" are acceptable",
             "name": "objs",
-            "in": "query",
+            "in": "path",
             "required": true
           },
           {
@@ -962,10 +960,11 @@
           {
             "type": "string",
             "description": "Domain of the Tenant",
-            "name": "Domain"
+            "name": "Domain",
+            "in": "query"
           },
           {
-            "type": "json",
+            "type": "string",
             "description": "Any other object attributes can be queried",
             "name": "Attributes",
             "in": "query"

@@ -866,7 +866,7 @@ var UpdateEntity = func(w http.ResponseWriter, r *http.Request) {
 // - application/json
 // parameters:
 //   - name: objs
-//     in: query
+//     in: path
 //     description: 'Indicates the object. Only values of "tenants", "sites",
 //     "buildings", "rooms", "racks", "devices", "room-templates",
 //     "obj-templates","acs","panels", "groups", "corridors",
@@ -884,6 +884,7 @@ var UpdateEntity = func(w http.ResponseWriter, r *http.Request) {
 //     required: false
 //     type: string
 //   - name: Domain
+//     in: query
 //     description: 'Domain of the Tenant'
 //     required: false
 //     type: string
@@ -891,7 +892,7 @@ var UpdateEntity = func(w http.ResponseWriter, r *http.Request) {
 //     in: query
 //     description: Any other object attributes can be queried
 //     required: false
-//     type: json
+//     type: string
 //
 // responses:
 //
@@ -1165,7 +1166,7 @@ var GetEntitiesOfAncestor = func(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// swagger:operation GET /api/objs/id/all objects GetFullObjectHierarchy
+// swagger:operation GET /api/{objs}/{id}/all objects GetFullObjectHierarchy
 // Obtain all objects related to specified object in the system.
 // Returns JSON body with all subobjects under the Object.
 // Note that objects returned will also included relevant objects.
@@ -1175,22 +1176,22 @@ var GetEntitiesOfAncestor = func(w http.ResponseWriter, r *http.Request) {
 // - application/json
 // parameters:
 // - name: objs
-//   in: query
+//   in: path
 //   description: 'Indicates the object. Only values of "tenants", "sites",
 //   "buildings", "rooms", "racks", "devices", "stray-devices" are acceptable'
 //   required: true
 //   type: string
 // - name: id
-//   in: query
+//   in: path
 //   description: 'ID of object. For tenants and stray-devices the name
 //   can be used as the ID'
 //   required: true
-//   type: int
+//   type: string
 // - name: limit
 //   in: query
 //   description: 'Limits the level of hierarchy for retrieval. if not
 //   specified for devices then the default value is maximum.
-//   Example: /api/devices/{id}/all?limit=2'
+//   example: /api/devices/{id}/all?limit=2'
 //   required: false
 //   type: string
 // responses:
