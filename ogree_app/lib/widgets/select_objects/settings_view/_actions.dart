@@ -44,7 +44,7 @@ class _Action extends StatelessWidget {
   Widget build(BuildContext context) {
     return OutlinedButton(
       style: OutlinedButton.styleFrom(
-        primary: kDarkBlue,
+        foregroundColor: kDarkBlue,
         backgroundColor: const Color(0x331565c0),
         padding: const EdgeInsets.all(15),
         side: const BorderSide(style: BorderStyle.none),

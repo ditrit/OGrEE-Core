@@ -7,9 +7,8 @@ class AppController with ChangeNotifier {
   bool get isInitialized => _isInitialized;
   Map<String, List<String>> fetchedData = {};
   Map<String, List<String>> fetchedCategories = {};
-  final List<String> _appliedFilters = [];
-  final List<String> _rootFilters = [];
-  final Map<int, List<String>> _filterLevels = {0: [], 1: [], 2: [], 3: []};
+  final Map<int, List<String>> _filterLevels = {};
+  static const lastFilterLevel = 3;
 
   static AppController of(BuildContext context) {
     return context
@@ -32,6 +31,9 @@ class AppController with ChangeNotifier {
     );
     _isInitialized = true;
     selectedNodes = parentNodes;
+    for (var i = 0; i <= lastFilterLevel; i++) {
+      _filterLevels[i] = [];
+    }
   }
 
   //* == == == == == TreeView == == == == ==
@@ -80,65 +82,44 @@ class AppController with ChangeNotifier {
       filteredData[item] = List<String>.from(fetchedData[item]!);
     }
 
-    // Apply or remove filter
-    if (!_appliedFilters.contains(id)) {
-      _appliedFilters.add(id);
-      _filterLevels[level]!.add(id);
-      bool isRoot = true;
-      for (var root in _rootFilters) {
-        if (id.contains(root)) {
-          isRoot = false;
-          break;
-        }
-      }
-      if (isRoot) {
-        _rootFilters.add(id);
-      }
+    // Add or remove filter
+    var currentLevel = _filterLevels[level]!;
+    if (!currentLevel.contains(id)) {
+      currentLevel.add(id);
     } else {
-      _appliedFilters.remove(id);
-      _filterLevels[level]!.remove(id);
-      if (_rootFilters.contains(id)) _rootFilters.remove(id);
-      if (_rootFilters.isEmpty && _appliedFilters.isNotEmpty) {
-        // make child applied filter as root filter
-        var filters = List<String>.from(_appliedFilters);
-        while (_rootFilters.isEmpty) {
-          for (var i = 0; i < filters.length; i++) {
-            filters[i] = filters[i].substring(0, filters[i].lastIndexOf('.'));
-            if (filters[i] == id) {
-              _rootFilters.add(_appliedFilters[i]);
-            }
-          }
-        }
+      currentLevel.remove(id);
+    }
+
+    for (var i = 0; i <= lastFilterLevel; i++) {
+      if (_filterLevels[i]!.isNotEmpty) {
+        filteredData[kRootId] = _filterLevels[i]!;
+        break;
       }
     }
 
-    if (_rootFilters.isNotEmpty) filteredData[kRootId] = _rootFilters;
+    print("FILTERS");
+    print(_filterLevels);
 
-    // Filter
-    print(_appliedFilters);
-    print("ROOT");
-    print(_rootFilters);
-
-    if (_appliedFilters.isNotEmpty) {
-      var testLevel = 3;
-      List<String> filters = List<String>.from(_filterLevels[testLevel]!);
-      while (filters.isEmpty) {
-        testLevel--;
-        filters = List<String>.from(_filterLevels[testLevel]!);
+    // Find root filter level
+    var testLevel = lastFilterLevel;
+    List<String> filters = List<String>.from(_filterLevels[testLevel]!);
+    while (filters.isEmpty && testLevel > 0) {
+      testLevel--;
+      filters = List<String>.from(_filterLevels[testLevel]!);
+    }
+    // Apply all filters from root and bellow
+    while (testLevel > 0) {
+      List<String> newList = [];
+      for (var i = 0; i < filters.length; i++) {
+        var parent =
+            filters[i].substring(0, filters[i].lastIndexOf('.')); //parent
+        filteredData[parent]!.removeWhere((element) {
+          return !filters.contains("$parent.$element");
+        });
+        newList.add(parent);
       }
-      while (testLevel > 0) {
-        List<String> newList = [];
-        for (var i = 0; i < filters.length; i++) {
-          var parent =
-              filters[i].substring(0, filters[i].lastIndexOf('.')); //parent
-          filteredData[parent]!.removeWhere((element) {
-            return !filters.contains("$parent.$element");
-          });
-          newList.add(parent);
-        }
-        filters = newList;
-        testLevel--;
-      }
+      filters = newList;
+      testLevel--;
     }
 
     print(filteredData);
