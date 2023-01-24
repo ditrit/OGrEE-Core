@@ -1406,11 +1406,16 @@ var GetEntityHierarchy = func(w http.ResponseWriter, r *http.Request) {
 // produces:
 // - application/json
 // parameters:
+// - name: entity
+//   in: path
+//   description: Entity type (ie Tenant)
+//   required: true
+//   type: string
 // - name: name
-//   in: query
+//   in: path
 //   description: Name of Tenant
 //   required: true
-//   type: int
+//   type: string
 // responses:
 //     '200':
 //         description: 'Found. A response body will be returned with
@@ -1425,10 +1430,15 @@ var GetEntityHierarchy = func(w http.ResponseWriter, r *http.Request) {
 // - application/json
 // parameters:
 //   - name: name
-//     in: query
+//     in: path
 //     description: 'Name of tenant.'
-//     type: int
-//
+//     type: string
+//     required: true
+//   - name: entity
+//     in: path
+//     description: 'Entity type (ie Tenant).'
+//     type: string
+//     required: true
 // responses:
 //
 //		'200':

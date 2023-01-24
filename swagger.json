@@ -440,10 +440,17 @@
         "operationId": "GetObjectHierarchy",
         "parameters": [
           {
-            "type": "int",
+            "type": "string",
+            "description": "Entity type (ie Tenant)",
+            "name": "entity",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
             "description": "Name of Tenant",
             "name": "name",
-            "in": "query",
+            "in": "path",
             "required": true
           }
         ],
@@ -467,10 +474,18 @@
         "operationId": "GetObjectHierarchyOptions",
         "parameters": [
           {
-            "type": "int",
+            "type": "string",
             "description": "Name of tenant.",
             "name": "name",
-            "in": "query"
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "description": "Entity type (ie Tenant).",
+            "name": "entity",
+            "in": "path",
+            "required": true
           }
         ],
         "responses": {
