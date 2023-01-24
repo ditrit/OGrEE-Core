@@ -1879,7 +1879,7 @@ var GetStats = func(w http.ResponseWriter, r *http.Request) {
 
 }
 
-// swagger:operation POST /api/validate/{obj} objects ValidateObject
+// swagger:operation POST /api/validate/{objs} objects ValidateObject
 // Checks the received data and verifies if the object can be created in the system.
 // ---
 // produces:
@@ -1913,20 +1913,22 @@ var GetStats = func(w http.ResponseWriter, r *http.Request) {
 //   description: 'All objects are linked to a
 //   parent with the exception of Tenant since it has no parent'
 //   required: true
-//   type: int
+//   type: string
 //   in: formData
 // - name: Description
 //   in: formData
 //   description: Description of Object
 //   required: false
-//   type: string[]
+//   type: array
+//   items:
+//   	type: string
 // - name: Attributes
 //   in: formData
 //   x-dataType: dictionary
 //   description: 'Any other object attributes can be added in this as a dictionary. The values must be a string
 //   They are required depending on the obj type.'
 //   required: true
-//   type: json
+//   type: string
 // responses:
 //     '200':
 //         description: 'Createable. A response body will be returned with
