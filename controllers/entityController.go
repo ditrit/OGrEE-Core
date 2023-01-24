@@ -142,7 +142,7 @@ func DispRequestMetaData(r *http.Request) {
 // - application/json
 // parameters:
 // - name: objs
-//   in: query
+//   in: path
 //   description: 'Indicates the Object. Only values of "tenants", "sites",
 //   "buildings", "rooms", "racks", "devices", "acs", "panels",
 //   "cabinets", "groups", "corridors",
@@ -151,12 +151,12 @@ func DispRequestMetaData(r *http.Request) {
 //   required: true
 //   type: string
 // - name: Name
-//   in: json
+//   in: formData
 //   description: Name of object
 //   required: true
 //   type: string
 // - name: Category
-//   in: json
+//   in: formData
 //   description: Category of Object (ex. Consumer Electronics, Medical)
 //   required: true
 //   type: string
@@ -164,24 +164,26 @@ func DispRequestMetaData(r *http.Request) {
 //   description: 'Domain of Object'
 //   required: true
 //   type: string
-//   in: json
+//   in: formData
 // - name: ParentID
 //   description: 'All objects are linked to a
 //   parent with the exception of Tenant since it has no parent'
 //   required: true
 //   type: int
-//   in: json
+//   in: formData
 // - name: Description
 //   description: Description of Object
 //   required: false
-//   type: string[]
-//   in: json
+//   type: array
+//   items:
+//   	type: string
+//   in: formData
 // - name: Attributes
-//   in: query
+//   in: formData
 //   description: 'Any other object attributes can be added.
 //   They are required depending on the obj type.'
 //   required: true
-//   type: json
+//   type: string
 // responses:
 //     '201':
 //         description: 'Created. A response body will be returned with
@@ -280,7 +282,7 @@ var CreateEntity = func(w http.ResponseWriter, r *http.Request) {
 // - application/json
 // parameters:
 // - name: objs
-//   in: query
+//   in: path
 //   description: 'Indicates the location. Only values of "tenants", "sites",
 //   "buildings", "rooms", "racks", "devices", "room-templates",
 //   "obj-templates", "bldg-templates","acs", "panels","cabinets", "groups",
@@ -292,7 +294,7 @@ var CreateEntity = func(w http.ResponseWriter, r *http.Request) {
 //   description: 'ID of desired object or Name of Tenant.
 //   For templates the slug is the ID. For stray-devices the name is the ID'
 //   required: true
-//   type: int
+//   type: string
 // responses:
 //     '200':
 //         description: 'Found. A response body will be returned with
@@ -534,7 +536,7 @@ var GetAllEntities = func(w http.ResponseWriter, r *http.Request) {
 // - application/json
 // parameters:
 //   - name: objs
-//     in: query
+//     in: path
 //     description: 'Indicates the location. Only values of "tenants", "sites",
 //     "buildings", "rooms", "racks", "devices", "room-templates",
 //     "obj-templates", "bldg-templates","rooms","acs", "panels", "cabinets", "groups",
@@ -546,7 +548,7 @@ var GetAllEntities = func(w http.ResponseWriter, r *http.Request) {
 //     description: 'ID of the object or name of Tenant.
 //     For templates the slug is the ID. For stray-devices the name is the ID'
 //     required: true
-//     type: int
+//     type: string
 // responses:
 //		'200':
 //	    	description: 'Updated. A response body will be returned with
@@ -1024,7 +1026,7 @@ var GetTempUnit = func(w http.ResponseWriter, r *http.Request) {
 	u.Respond(w, resp)
 }
 
-// swagger:operation GET /api/{obj}/{id}/subent objects GetObject2LevelsLower
+// swagger:operation GET /api/{obj}/{id}/{subent} objects GetObject2LevelsLower
 // Obtain all objects 2 levels lower in the system.
 // (Example) /api/tenants/{id}/buildings
 // Will return all buildings of a tenant
@@ -1034,18 +1036,18 @@ var GetTempUnit = func(w http.ResponseWriter, r *http.Request) {
 // - application/json
 // parameters:
 // - name: obj
-//   in: query
+//   in: path
 //   description: 'Indicates the object. Only values of "tenants", "sites",
 //   "buildings", "rooms" are acceptable'
 //   required: true
 //   type: string
 // - name: id
-//   in: query
+//   in: path
 //   description: ID of object
 //   required: true
-//   type: int
+//   type: string
 // - name: subent
-//   in: query
+//   in: path
 //   description: Objects which 2 are levels lower in the hierarchy.
 //   required: true
 //   type: string
@@ -1056,21 +1058,21 @@ var GetTempUnit = func(w http.ResponseWriter, r *http.Request) {
 //     '404':
 //         description: Nothing Found. An error message will be returned.
 
-// swagger:operation OPTIONS /api/{obj}/{id}/subent objects GetObject2LevelsLowerOptions
+// swagger:operation OPTIONS /api/{objs}/{id}/{subent} objects GetObject2LevelsLowerOptions
 // Displays possible operations for the resource in response header.
 // ---
 // produces:
 // - application/json
 // parameters:
 //   - name: 'objs'
-//     in: 'query'
+//     in: 'path'
 //     description: 'Only values of "tenants", "sites",
 //     "buildings", "rooms", "racks", "devices", and "stray-devices"
 //     are acceptable'
 //     type: string
 //     required: true
 //   - name: id
-//     in: 'query'
+//     in: 'path'
 //     description: 'ID of the object. For stray-devices and tenants the name
 //     can be used as the ID.'
 //     type: string
@@ -1078,7 +1080,7 @@ var GetTempUnit = func(w http.ResponseWriter, r *http.Request) {
 //   - name: subent
 //     type: string
 //     required: true
-//     in: 'query'
+//     in: 'path'
 //     description: 'This refers to the sub object under the objs parameter.
 //     Please refer to the OGREE wiki to better understand what objects
 //     can be considered as sub objects.'

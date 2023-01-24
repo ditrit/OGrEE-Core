@@ -18,12 +18,12 @@ import (
 // - application/json
 // parameters:
 // - name: username
-//   in: json
+//   in: formData
 //   description: Your Email Address
 //   type: string
 //   required: true
 // - name: password
-//   in: json
+//   in: formData
 //   description: Your password
 //   required: true
 //   format: password
@@ -76,14 +76,12 @@ var CreateAccount = func(w http.ResponseWriter, r *http.Request) {
 
 // swagger:operation POST /api/login auth Authenticate
 // Generates a new JWT Key for the client.
-// Create a new JWT Key. This can also be used to verify credentials
-// The authorize and 'Try it out' buttons don't work
 // ---
 // produces:
 // - application/json
 // parameters:
 // - name: username
-//   in: json
+//   in: formData
 //   description: Your Email Address
 //   type: string
 //   required: true

@@ -36,7 +36,7 @@
             "type": "string",
             "description": "Your Email Address",
             "name": "username",
-            "in": "json",
+            "in": "formData",
             "required": true
           },
           {
@@ -44,7 +44,7 @@
             "format": "password",
             "description": "Your password",
             "name": "password",
-            "in": "json",
+            "in": "formData",
             "required": true
           }
         ],
@@ -78,7 +78,6 @@
     },
     "/api/login": {
       "post": {
-        "description": "Create a new JWT Key. This can also be used to verify credentials\nThe authorize and 'Try it out' buttons don't work",
         "produces": [
           "application/json"
         ],
@@ -92,7 +91,7 @@
             "type": "string",
             "description": "Your Email Address",
             "name": "username",
-            "in": "json",
+            "in": "formData",
             "required": true
           },
           {
@@ -529,11 +528,11 @@
             "type": "string",
             "description": "Indicates the location. Only values of \"tenants\", \"sites\", \"buildings\", \"rooms\", \"racks\", \"devices\", \"room-templates\", \"obj-templates\", \"bldg-templates\",\"acs\", \"panels\",\"cabinets\", \"groups\", \"corridors\",\"sensors\",\"stray-devices\", \"stray-sensors\" are acceptable",
             "name": "objs",
-            "in": "query",
+            "in": "path",
             "required": true
           },
           {
-            "type": "int",
+            "type": "string",
             "description": "ID of desired object or Name of Tenant. For templates the slug is the ID. For stray-devices the name is the ID",
             "name": "id",
             "in": "path",
@@ -638,11 +637,11 @@
             "type": "string",
             "description": "Indicates the location. Only values of \"tenants\", \"sites\", \"buildings\", \"rooms\", \"racks\", \"devices\", \"room-templates\", \"obj-templates\", \"bldg-templates\",\"rooms\",\"acs\", \"panels\", \"cabinets\", \"groups\", \"corridors\",\"sensors\", \"stray-devices\", \"stray-sensors\" are acceptable",
             "name": "objs",
-            "in": "query",
+            "in": "path",
             "required": true
           },
           {
-            "type": "int",
+            "type": "string",
             "description": "ID of the object or name of Tenant. For templates the slug is the ID. For stray-devices the name is the ID",
             "name": "id",
             "in": "path",
@@ -927,6 +926,49 @@
         }
       }
     },
+    "/api/{objs}/{id}/{subent}": {
+      "options": {
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "objects"
+        ],
+        "summary": "Displays possible operations for the resource in response header.",
+        "operationId": "GetObject2LevelsLowerOptions",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "Only values of \"tenants\", \"sites\", \"buildings\", \"rooms\", \"racks\", \"devices\", and \"stray-devices\" are acceptable",
+            "name": "objs",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "description": "ID of the object. For stray-devices and tenants the name can be used as the ID.",
+            "name": "id",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "description": "This refers to the sub object under the objs parameter. Please refer to the OGREE wiki to better understand what objects can be considered as sub objects.",
+            "name": "subent",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "404": {
+            "description": "Nothing Found."
+          }
+        }
+      }
+    },
     "/api/{objs}?": {
       "get": {
         "description": "Gets an Object using any attribute (with the exception of description)\nvia query in the system\nThe attributes are in the form {attr}=xyz\u0026{attr1}=abc\nAnd any combination can be used given that at least 1 is provided.",
@@ -995,48 +1037,51 @@
             "type": "string",
             "description": "Indicates the Object. Only values of \"tenants\", \"sites\", \"buildings\", \"rooms\", \"racks\", \"devices\", \"acs\", \"panels\", \"cabinets\", \"groups\", \"corridors\", \"room-templates\", \"obj-templates\", \"bldg-templates\",\"sensors\", \"stray-devices\", \"stray-sensors\" are acceptable",
             "name": "objs",
-            "in": "query",
+            "in": "path",
             "required": true
           },
           {
             "type": "string",
             "description": "Name of object",
             "name": "Name",
-            "in": "json",
+            "in": "formData",
             "required": true
           },
           {
             "type": "string",
             "description": "Category of Object (ex. Consumer Electronics, Medical)",
             "name": "Category",
-            "in": "json",
+            "in": "formData",
             "required": true
           },
           {
             "type": "string",
             "description": "Domain of Object",
             "name": "Domain",
-            "in": "json",
+            "in": "formData",
             "required": true
           },
           {
             "type": "int",
             "description": "All objects are linked to a parent with the exception of Tenant since it has no parent",
             "name": "ParentID",
-            "in": "json",
+            "in": "formData",
             "required": true
           },
           {
-            "type": "string[]",
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
             "description": "Description of Object",
             "name": "Description",
-            "in": "json"
+            "in": "formData"
           },
           {
-            "type": "json",
+            "type": "string",
             "description": "Any other object attributes can be added. They are required depending on the obj type.",
             "name": "Attributes",
-            "in": "query",
+            "in": "formData",
             "required": true
           }
         ],
@@ -1050,7 +1095,7 @@
         }
       }
     },
-    "/api/{obj}/{id}/subent": {
+    "/api/{obj}/{id}/{subent}": {
       "get": {
         "description": "(Example) /api/tenants/{id}/buildings\nWill return all buildings of a tenant\nReturns JSON body with all subobjects under the Object.",
         "produces": [
@@ -1066,21 +1111,21 @@
             "type": "string",
             "description": "Indicates the object. Only values of \"tenants\", \"sites\", \"buildings\", \"rooms\" are acceptable",
             "name": "obj",
-            "in": "query",
+            "in": "path",
             "required": true
           },
           {
-            "type": "int",
+            "type": "string",
             "description": "ID of object",
             "name": "id",
-            "in": "query",
+            "in": "path",
             "required": true
           },
           {
             "type": "string",
             "description": "Objects which 2 are levels lower in the hierarchy.",
             "name": "subent",
-            "in": "query",
+            "in": "path",
             "required": true
           }
         ],
@@ -1090,47 +1135,6 @@
           },
           "404": {
             "description": "Nothing Found. An error message will be returned."
-          }
-        }
-      },
-      "options": {
-        "produces": [
-          "application/json"
-        ],
-        "tags": [
-          "objects"
-        ],
-        "summary": "Displays possible operations for the resource in response header.",
-        "operationId": "GetObject2LevelsLowerOptions",
-        "parameters": [
-          {
-            "type": "string",
-            "description": "Only values of \"tenants\", \"sites\", \"buildings\", \"rooms\", \"racks\", \"devices\", and \"stray-devices\" are acceptable",
-            "name": "objs",
-            "in": "query",
-            "required": true
-          },
-          {
-            "type": "string",
-            "description": "ID of the object. For stray-devices and tenants the name can be used as the ID.",
-            "name": "id",
-            "in": "query",
-            "required": true
-          },
-          {
-            "type": "string",
-            "description": "This refers to the sub object under the objs parameter. Please refer to the OGREE wiki to better understand what objects can be considered as sub objects.",
-            "name": "subent",
-            "in": "query",
-            "required": true
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK"
-          },
-          "404": {
-            "description": "Nothing Found."
           }
         }
       }
