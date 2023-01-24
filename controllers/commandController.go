@@ -21,6 +21,8 @@ import (
 	"golang.org/x/exp/slices"
 )
 
+const APIErrorPrefix = "[API] "
+
 func PWD() string {
 	println(State.CurrPath)
 	return State.CurrPath
@@ -51,7 +53,7 @@ func PostObj(ent int, entity string, data map[string]interface{}) (map[string]in
 
 		return respMap["data"].(map[string]interface{}), nil
 	}
-	return nil, fmt.Errorf(respMap["message"].(string))
+	return nil, fmt.Errorf(APIErrorPrefix + respMap["message"].(string))
 }
 
 // Calls API's Validation
@@ -76,7 +78,7 @@ func ValidateObj(data map[string]interface{}, ent string, silence bool) bool {
 
 		return true
 	}
-	println("Error:", string(respMap["message"].(string)))
+	println("Error: ", string(APIErrorPrefix+respMap["message"].(string)))
 	println()
 	return false
 }
@@ -666,7 +668,7 @@ func UpdateObj(Path, id, ent string, data map[string]interface{}, deleteAndPut b
 			} else {
 				if mInf, ok := respJson["message"]; ok {
 					if m, ok := mInf.(string); ok {
-						return nil, fmt.Errorf(m)
+						return nil, fmt.Errorf(APIErrorPrefix + m)
 					}
 				}
 				msg := "Cannot update. Please ensure that your attributes " +
@@ -2792,7 +2794,7 @@ func LoadTemplate(data map[string]interface{}, filePath string) {
 			println("Error template wasn't loaded")
 			if mInf, ok := parsedResp["message"]; ok {
 				if msg, ok := mInf.(string); ok {
-					println(msg)
+					println(APIErrorPrefix + msg)
 				}
 			}
 
