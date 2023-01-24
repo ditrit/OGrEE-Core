@@ -311,39 +311,41 @@
             "type": "string",
             "description": "Name of object",
             "name": "Name",
-            "in": "query",
+            "in": "formData",
             "required": true
           },
           {
             "type": "string",
             "description": "Category of Object (ex. Consumer Electronics, Medical)",
             "name": "Category",
-            "in": "query",
+            "in": "formData",
             "required": true
           },
           {
             "type": "string",
             "description": "Domain of Object",
             "name": "Domain",
+            "in": "formData",
             "required": true
           },
           {
             "type": "int",
             "description": "All objects are linked to a parent with the exception of Tenant since it has no parent",
             "name": "ParentID",
+            "in": "formData",
             "required": true
           },
           {
             "type": "string[]",
             "description": "Description of Object",
             "name": "Description",
-            "in": "query"
+            "in": "formData"
           },
           {
             "type": "json",
-            "description": "Any other object attributes can be added. They are required depending on the obj type.",
+            "description": "Any other object attributes can be added in this as a dictionary. The values must be a string They are required depending on the obj type.",
             "name": "Attributes",
-            "in": "query",
+            "in": "formData",
             "required": true
           }
         ],
@@ -373,7 +375,8 @@
             "type": "string",
             "description": "Only values of \"tenants\", \"sites\", \"buildings\", \"rooms\", \"racks\", \"devices\", \"room-templates\", \"obj-templates\", \"bldg-templates\",\"rooms\", \"acs\", \"panels\", \"cabinets\", \"groups\", \"corridors\",\"sensors\",\"stray-devices\" \"stray-sensors\" are acceptable",
             "name": "obj",
-            "in": "query"
+            "in": "query",
+            "required": true
           }
         ],
         "responses": {

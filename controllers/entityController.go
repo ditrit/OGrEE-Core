@@ -1888,12 +1888,12 @@ var GetStats = func(w http.ResponseWriter, r *http.Request) {
 //   required: true
 //   type: string
 // - name: Name
-//   in: query
+//   in: formData
 //   description: Name of object
 //   required: true
 //   type: string
 // - name: Category
-//   in: query
+//   in: formData
 //   description: Category of Object (ex. Consumer Electronics, Medical)
 //   required: true
 //   type: string
@@ -1901,19 +1901,21 @@ var GetStats = func(w http.ResponseWriter, r *http.Request) {
 //   description: 'Domain of Object'
 //   required: true
 //   type: string
+//   in: formData
 // - name: ParentID
 //   description: 'All objects are linked to a
 //   parent with the exception of Tenant since it has no parent'
 //   required: true
 //   type: int
+//   in: formData
 // - name: Description
-//   in: query
+//   in: formData
 //   description: Description of Object
 //   required: false
 //   type: string[]
 // - name: Attributes
-//   in: query
-//   description: 'Any other object attributes can be added.
+//   in: formData
+//   description: 'Any other object attributes can be added in this as a dictionary. The values must be a string
 //   They are required depending on the obj type.'
 //   required: true
 //   type: json
@@ -1941,7 +1943,7 @@ var GetStats = func(w http.ResponseWriter, r *http.Request) {
 //     "cabinets", "groups", "corridors","sensors","stray-devices"
 //     "stray-sensors" are acceptable'
 //     type: string
-//
+//     required: true
 // responses:
 //
 //		'200':
