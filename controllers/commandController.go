@@ -1593,7 +1593,7 @@ func GetOCLIAtrributes(Path string, ent int, data map[string]interface{}) error 
 
 			if _, ok := attr["template"]; !ok && sizeUValid == false {
 				l.GetWarningLogger().Println("Invalid template / sizeU parameter provided for device ")
-				return fmt.Errorf("Please provide a valid template or sizeU for device")
+				return fmt.Errorf("Please provide a valid device template or sizeU")
 			}
 
 			//Convert block
