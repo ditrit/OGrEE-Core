@@ -21,8 +21,6 @@ import (
 	"golang.org/x/exp/slices"
 )
 
-const APIErrorPrefix = "[API] "
-
 func PWD() string {
 	println(State.CurrPath)
 	return State.CurrPath
