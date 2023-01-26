@@ -1250,6 +1250,12 @@ func (n *createDeviceNode) execute() (interface{}, error) {
 	}
 	attr := map[string]interface{}{"posU/slot": vals[0]}
 	if checkIfTemplate(vals[1], cmd.DEVICE) == false {
+		if IsString(vals[1]) {
+			return nil, fmt.Errorf("Template not found. Please provide a valid template and try again.")
+		}
+		if !IsFloat(vals[1]) && !IsInt(vals[1]) {
+			return nil, fmt.Errorf("SizeU must be a numerical value. Please provide a valid sizeU and try again.")
+		}
 		attr["sizeU"] = vals[1]
 
 		//In this case according to spec, sizeU should

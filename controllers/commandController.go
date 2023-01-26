@@ -1631,6 +1631,13 @@ func GetOCLIAtrributes(Path string, ent int, data map[string]interface{}) error 
 			}
 		}
 
+		//Ensure slot is a string
+		if _, ok := attr["slot"]; ok {
+			if _, ok := attr["slot"].(string); !ok {
+				return fmt.Errorf("The slot name must be a string")
+			}
+		}
+
 		//If user provided templates, get the JSON
 		//and parse into templates
 		if _, ok := attr["template"]; ok {
