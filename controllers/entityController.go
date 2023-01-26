@@ -444,7 +444,7 @@ var GetEntity = func(w http.ResponseWriter, r *http.Request) {
 		//data, e1 = models.GetEntity(bson.M{"_id": x}, s)
 		req := bson.M{"_id": x}
 		models.RequestGen(req, role, domain)
-		data, e1 = models.GetEntity(req, s)
+		data, e1 = models.GetEntity(req, s, []string{})
 
 	} else if id, e = mux.Vars(r)["name"]; e == true { //GET By String
 
@@ -452,11 +452,11 @@ var GetEntity = func(w http.ResponseWriter, r *http.Request) {
 			s != "stray_device" && s != "stray_sensor" { //GET By Slug
 			req := bson.M{"slug": id}
 			models.RequestGen(req, role, domain)
-			data, e1 = models.GetEntity(req, s)
+			data, e1 = models.GetEntity(req, s, []string{})
 		} else {
 			req := bson.M{"name": id}
 			models.RequestGen(req, role, domain)
-			data, e1 = models.GetEntity(req, s) //GET By Name
+			data, e1 = models.GetEntity(req, s, []string{}) //GET By Name
 		}
 	}
 
@@ -669,7 +669,7 @@ var DeleteEntity = func(w http.ResponseWriter, r *http.Request) {
 		if entity == "stray_device" || entity == "stray_sensor" {
 			req := bson.M{"name": name}
 			models.RequestGen(req, role, domain)
-			sd, _ := models.GetEntity(req, entity)
+			sd, _ := models.GetEntity(req, entity, []string{})
 			if sd == nil {
 				w.WriteHeader(http.StatusNotFound)
 				u.Respond(w, u.Message(false, "Error object not found"))
@@ -1348,15 +1348,14 @@ var GetEntityHierarchy = func(w http.ResponseWriter, r *http.Request) {
 
 	req := bson.M{}
 	models.RequestGen(req, role, domain)
+	// Get query params
+	r.ParseForm()
+	fields := r.Form["field"]
 
 	if entity == "site" {
-
-		//TODO
-		//This section appears to be broken =>RBAC
-		//is stil a WIP
 		newReq := req
 		newReq["_id"] = id
-		_, e := models.GetEntity(newReq, entity)
+		_, e := models.GetEntity(newReq, entity, fields)
 		if e != "" {
 			resp = u.Message(false, "Error while getting :"+entity+","+e)
 			u.ErrLog("Error while getting "+entity, "GET "+entity, e, r)
@@ -1365,9 +1364,9 @@ var GetEntityHierarchy = func(w http.ResponseWriter, r *http.Request) {
 	}
 
 	//Check if the request is a ranged hierarchy
-	arr := strings.SplitAfter(r.URL.RawQuery, "limit=")
-	if len(arr) == 2 { //limit={number} was provided
-		end, _ = strconv.Atoi(arr[1])
+	limitArr := r.Form["limit"]
+	if len(limitArr) > 0 { //limit={number} was provided
+		end, _ = strconv.Atoi(limitArr[0])
 		limit = u.EntityStrToInt(entity) + end
 
 		// HACK SECTION FOR FRONT END -- START //
@@ -1377,7 +1376,7 @@ var GetEntityHierarchy = func(w http.ResponseWriter, r *http.Request) {
 			objID, _ := primitive.ObjectIDFromHex(id)
 			newReq := req
 			newReq["_id"] = objID
-			data, e1 := models.GetEntity(newReq, entity)
+			data, e1 := models.GetEntity(newReq, entity, fields)
 
 			if e1 != "" {
 				resp = u.Message(false, "Error while getting :"+entity+","+e1)
@@ -1441,9 +1440,9 @@ var GetEntityHierarchy = func(w http.ResponseWriter, r *http.Request) {
 			end, _ = strconv.Atoi(arr[1])
 			end += 1
 		}
-		data, e1 = models.GetEntityHierarchy(oID, req, entity, entNum, limit)
+		data, e1 = models.GetEntityHierarchy(oID, req, entity, entNum, limit, fields)
 	} else {
-		data, e1 = models.GetEntityHierarchy(oID, req, entity, entNum, limit)
+		data, e1 = models.GetEntityHierarchy(oID, req, entity, entNum, limit, fields)
 	}
 
 	if data == nil {
@@ -1581,7 +1580,7 @@ var GetHierarchyByName = func(w http.ResponseWriter, r *http.Request) {
 		if end == 0 {
 
 			//objID, _ := primitive.ObjectIDFromHex(id)
-			data, e1 := models.GetEntity(bson.M{"name": id}, "site")
+			data, e1 := models.GetEntity(bson.M{"name": id}, "site", []string{})
 
 			if e1 != "" {
 				resp = u.Message(false, "Error while getting :"+entity+","+e1)

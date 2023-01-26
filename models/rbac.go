@@ -7,15 +7,15 @@ import (
 )
 
 func CheckDomainExists(domain string) bool {
-	x, e := GetEntity(bson.M{"name": domain}, "domain")
+	x, e := GetEntity(bson.M{"name": domain}, "domain", []string{})
 	if e != "" || x == nil {
 		return false
 	}
 	return true
 }
 
-//Checks if domain is in RBAC Table and gets
-//the hierarchy of the Domain
+// Checks if domain is in RBAC Table and gets
+// the hierarchy of the Domain
 func GetUserDomainSpace(domain string) []string {
 	ans := []string{domain}
 	raw, e := GetHierarchyByName("domain", domain, nil, u.DOMAIN, 99)
@@ -51,12 +51,12 @@ func RequestGen(x map[string]interface{}, role, domain string) {
 	}
 }
 
-//Check if user can create Domains or accounts
+// Check if user can create Domains or accounts
 func EnsureUserIsSuper(role string) bool {
 	return role == "super" || role == "issuer"
 }
 
-//Checks if user can create/delete/update this object
+// Checks if user can create/delete/update this object
 func EnsureObjectPermission(obj map[string]interface{}, domain, role string) (bool, string) {
 
 	switch role {

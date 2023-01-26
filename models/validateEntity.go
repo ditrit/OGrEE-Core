@@ -29,13 +29,13 @@ func validateParent(ent string, entNum int, t map[string]interface{}) (map[strin
 	parent := map[string]interface{}{"parent": ""}
 	switch entNum {
 	case DEVICE:
-		x, _ := GetEntity(bson.M{"_id": objID}, "rack")
+		x, _ := GetEntity(bson.M{"_id": objID}, "rack", []string{})
 		if x != nil {
 			parent["parent"] = "rack"
 			return parent, true
 		}
 
-		y, _ := GetEntity(bson.M{"_id": objID}, "device")
+		y, _ := GetEntity(bson.M{"_id": objID}, "device", []string{})
 		if y != nil {
 			parent["parent"] = "device"
 			return parent, true
@@ -45,25 +45,25 @@ func validateParent(ent string, entNum int, t map[string]interface{}) (map[strin
 			"ParentID should be correspond to Existing ID"), false
 
 	case SENSOR, GROUP:
-		w, _ := GetEntity(bson.M{"_id": objID}, "device")
+		w, _ := GetEntity(bson.M{"_id": objID}, "device", []string{})
 		if w != nil {
 			parent["parent"] = "device"
 			return parent, true
 		}
 
-		x, _ := GetEntity(bson.M{"_id": objID}, "rack")
+		x, _ := GetEntity(bson.M{"_id": objID}, "rack", []string{})
 		if x != nil {
 			parent["parent"] = "rack"
 			return parent, true
 		}
 
-		y, _ := GetEntity(bson.M{"_id": objID}, "room")
+		y, _ := GetEntity(bson.M{"_id": objID}, "room", []string{})
 		if y != nil {
 			parent["parent"] = "room"
 			return parent, true
 		}
 
-		z, _ := GetEntity(bson.M{"_id": objID}, "building")
+		z, _ := GetEntity(bson.M{"_id": objID}, "building", []string{})
 		if z != nil {
 			parent["parent"] = "building"
 			return parent, true
