@@ -94,10 +94,12 @@ func CreateEntity(entity int, t map[string]interface{}) (map[string]interface{},
 	//t = fixID(t)
 
 	switch entity {
-	case ROOMTMPL:
+	case u.ROOMTMPL:
 		message = "successfully created room_template"
-	case OBJTMPL:
+	case u.OBJTMPL:
 		message = "successfully created obj_template"
+	case u.BLDGTMPL:
+		message = "successfully created bldg_template"
 	default:
 		message = "successfully created object"
 	}
@@ -251,7 +253,7 @@ func DeleteEntity(entity string, id primitive.ObjectID, rnd map[string]interface
 	var t map[string]interface{}
 	var e string
 	eNum := u.EntityStrToInt(entity)
-	if eNum > DEVICE {
+	if eNum > u.DEVICE {
 		//Delete the non hierarchal objects
 		t, e = GetEntityHierarchy(id, rnd, entity, eNum, eNum+eNum, []string{})
 	} else {
@@ -284,7 +286,7 @@ func deleteHelper(t map[string]interface{}, ent int) (map[string]interface{}, st
 
 		println("So we got: ", ent)
 
-		if ent == RACK {
+		if ent == u.RACK {
 			ctx, cancel := u.Connect()
 			GetDB().Collection("sensor").DeleteMany(ctx,
 				bson.M{"parentId": t["id"].(primitive.ObjectID).Hex()})
@@ -295,10 +297,10 @@ func deleteHelper(t map[string]interface{}, ent int) (map[string]interface{}, st
 		}
 
 		//Delete associated non hierarchal objs
-		if ent == ROOM {
+		if ent == u.ROOM {
 			//ITER Through all nonhierarchal objs
 			ctx, cancel := u.Connect()
-			for i := AC; i < GROUP+1; i++ {
+			for i := u.AC; i < u.GROUP+1; i++ {
 				ent := u.EntityToString(i)
 				GetDB().Collection(ent).DeleteMany(ctx, bson.M{"parentId": t["id"].(primitive.ObjectID).Hex()})
 			}
@@ -306,7 +308,7 @@ func deleteHelper(t map[string]interface{}, ent int) (map[string]interface{}, st
 		}
 
 		//Delete hierarchy under stray-device
-		if ent == STRAYDEV {
+		if ent == u.STRAYDEV {
 			ctx, cancel := u.Connect()
 			entity := u.EntityToString(u.STRAYSENSOR)
 			GetDB().Collection(entity).DeleteMany(ctx, bson.M{"parentId": t["id"].(primitive.ObjectID).Hex()})
@@ -382,10 +384,12 @@ func UpdateEntity(ent string, req bson.M, t *map[string]interface{}, isPatch boo
 	//Response Message
 	message := ""
 	switch u.EntityStrToInt(ent) {
-	case ROOMTMPL:
+	case u.ROOMTMPL:
 		message = "successfully updated room_template"
-	case OBJTMPL:
+	case u.OBJTMPL:
 		message = "successfully updated obj_template"
+	case u.BLDGTMPL:
+		message = "successfully created bldg_template"
 	default:
 		message = "successfully updated object"
 	}

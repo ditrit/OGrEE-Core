@@ -93,6 +93,8 @@ func parseDataForNonStdResult(ent string, eNum int, data map[string]interface{})
 
 // This function is useful for debugging
 // purposes. It displays any JSON
+// This function is useful for debugging
+// purposes. It displays any JSON
 func viewJson(r *http.Request) {
 	var updateData map[string]interface{}
 	json.NewDecoder(r.Body).Decode(&updateData)
@@ -146,7 +148,7 @@ func DispRequestMetaData(r *http.Request) {
 //   description: 'Indicates the Object. Only values of "sites","domains",
 //   "buildings", "rooms", "racks", "devices", "acs", "panels",
 //   "cabinets", "groups", "corridors",
-//   "room-templates", "obj-templates", "sensors", "stray-devices",
+//   "room-templates", "obj-templates", "bldg-templates","sensors", "stray-devices",
 //   "stray-sensors" are acceptable'
 //   required: true
 //   type: string
@@ -344,7 +346,7 @@ var CreateEntity = func(w http.ResponseWriter, r *http.Request) {
 //   in: query
 //   description: 'Indicates the location. Only values of "sites","domains",
 //   "buildings", "rooms", "racks", "devices", "room-templates",
-//   "obj-templates", "acs", "panels","cabinets", "groups",
+//   "obj-templates", "bldg-templates","acs", "panels","cabinets", "groups",
 //   "corridors","sensors","stray-devices", "stray-sensors" are acceptable'
 //   required: true
 //   type: string
@@ -375,7 +377,7 @@ var CreateEntity = func(w http.ResponseWriter, r *http.Request) {
 //     in: query
 //     description: 'Only values of "sites","domains",
 //     "buildings", "rooms", "racks", "devices", "room-templates",
-//     "obj-templates", "acs", "panels","cabinets", "groups",
+//     "obj-templates", "bldg-templates","acs", "panels","cabinets", "groups",
 //     "corridors","sensors","stray-devices","stray-sensors", are acceptable'
 //   - name: id
 //     in: query
@@ -453,10 +455,21 @@ var GetEntity = func(w http.ResponseWriter, r *http.Request) {
 			req := bson.M{"slug": id}
 			models.RequestGen(req, role, domain)
 			data, e1 = models.GetEntity(req, s, []string{})
-		} else {
+
+		} else if s == "stray_device" || s == "stray_sensor" || s == "tenant" {
 			req := bson.M{"name": id}
 			models.RequestGen(req, role, domain)
 			data, e1 = models.GetEntity(req, s, []string{}) //GET By Name
+
+		} else {
+			//Invalid entity and ID/name/slug combination
+			msg := "Bad path parameter received. Names and Slugs are available for tenants, templates and stray objects only. Otherwise please provide a valid ID"
+			resp = u.Message(false, msg)
+			w.WriteHeader(http.StatusBadRequest)
+			resp["data"] = nil
+			u.Respond(w, resp)
+			return
+
 		}
 	}
 
@@ -473,6 +486,8 @@ var GetEntity = func(w http.ResponseWriter, r *http.Request) {
 		switch e1 {
 		case "record not found":
 			w.WriteHeader(http.StatusNotFound)
+		case "invalid request":
+			w.WriteHeader(http.StatusBadRequest)
 		default:
 			w.WriteHeader(http.StatusNotFound) //For now
 		}
@@ -738,7 +753,7 @@ var DeleteEntity = func(w http.ResponseWriter, r *http.Request) {
 //   in: query
 //   description: 'Indicates the location. Only values of "sites","domains",
 //   "buildings", "rooms", "racks", "devices", "room-templates",
-//   "obj-templates", "rooms", "acs", "panels", "cabinets", "groups",
+//   "obj-templates", "bldg-templates","rooms", "acs", "panels", "cabinets", "groups",
 //   "corridors", "sensors", "stray-devices", "stray-sensors" are acceptable'
 //   required: true
 //   type: string
@@ -803,7 +818,7 @@ var DeleteEntity = func(w http.ResponseWriter, r *http.Request) {
 //   in: query
 //   description: 'Indicates the location. Only values of "sites", "domains",
 //   "buildings", "rooms", "racks", "devices", "room-templates",
-//   "obj-templates", "rooms","acs", "panels", "cabinets", "groups",
+//   "obj-templates", "bldg-templates","rooms","acs", "panels", "cabinets", "groups",
 //   "corridors","sensors", "stray-devices", "stray-sensors" are acceptable'
 //   required: true
 //   type: string
@@ -1450,7 +1465,7 @@ var GetEntityHierarchy = func(w http.ResponseWriter, r *http.Request) {
 		u.ErrLog("Error while getting "+entity, "GET "+entity, e1, r)
 
 		switch e1 {
-		case "record not found":
+		case "mongo: no documents in result", "record not found":
 			w.WriteHeader(http.StatusNotFound)
 		default:
 			w.WriteHeader(http.StatusNotFound)
@@ -1912,7 +1927,7 @@ var GetEntitiesUsingNamesOfParents = func(w http.ResponseWriter, r *http.Request
 //     in: query
 //     description: 'Only values of "sites",
 //     "buildings", "rooms", "racks", "devices", "room-templates",
-//     "obj-templates", "rooms", "acs", "panels",
+//     "obj-templates", "bldg-templates","rooms", "acs", "panels",
 //     "cabinets", "groups", "corridors","sensors","stray-devices"
 //     "stray-sensors" are acceptable'
 //
@@ -1976,7 +1991,7 @@ var GetStats = func(w http.ResponseWriter, r *http.Request) {
 //   description: 'Indicates the Object. Only values of "domains", "sites",
 //   "buildings", "rooms", "racks", "devices", "acs", "panels",
 //   "cabinets", "groups", "corridors",
-//   "room-templates", "obj-templates", "sensors", "stray-devices"
+//   "room-templates", "obj-templates", "bldg-templates","sensors", "stray-devices"
 //   "stray-sensors" are acceptable'
 //   required: true
 //   type: string
@@ -2036,7 +2051,7 @@ var GetStats = func(w http.ResponseWriter, r *http.Request) {
 //     in: query
 //     description: 'Only values of "domains", "sites",
 //     "buildings", "rooms", "racks", "devices", "room-templates",
-//     "obj-templates", "rooms", "acs", "panels",
+//     "obj-templates", "bldg-templates","rooms", "acs", "panels",
 //     "cabinets", "groups", "corridors","sensors","stray-devices"
 //     "stray-sensors" are acceptable'
 //
