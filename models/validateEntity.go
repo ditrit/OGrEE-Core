@@ -2,6 +2,7 @@ package models
 
 import (
 	"encoding/hex"
+	"encoding/json"
 	u "p3/utils"
 	"strconv"
 	"strings"
@@ -288,21 +289,6 @@ func ValidateEntity(entity int, t map[string]interface{}) (map[string]interface{
 				} else {
 					switch entity {
 
-						if !IsString(v["color"]) {
-							return u.Message(false,
-								"Color Attribute must be a string (of a hex value)"), false
-						}
-
-						if len(v["color"].(string)) != 6 {
-							return u.Message(false,
-								"Color Attribute must have a length of 6"), false
-						}
-
-						if !IsHexString(v["color"].(string)) {
-							return u.Message(false,
-								"Color Attribute must be a Hex value"), false
-						}
-
 					case u.SITE:
 						if !IsOrientation(v["orientation"], entity) {
 							if v["orientation"] == nil || v["orientation"] == "" {
@@ -389,9 +375,9 @@ func ValidateEntity(entity int, t map[string]interface{}) (map[string]interface{
 								return u.Message(false, "Invalid posXYZ on payload: "+err.Error()), false
 							}
 
-						if len(posXYZ) != 3 {
-							return u.Message(false, "Invalid posXYZ on payload: should be Vector3 "), false
-						}
+							if len(posXYZ) != 3 {
+								return u.Message(false, "Invalid posXYZ on payload: should be Vector3 "), false
+							}
 
 							for _, key := range []string{"x", "y", "z"} {
 								if _, ok = posXYZ[key]; !ok {
