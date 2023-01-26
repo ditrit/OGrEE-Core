@@ -14,25 +14,6 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
-const (
-	SITE = iota
-	BLDG
-	ROOM
-	RACK
-	DEVICE
-	AC
-	CABINET
-	CORIDOR
-	PWRPNL
-	SENSOR
-	GROUP
-	ROOMTMPL
-	OBJTMPL
-	STRAYDEV
-	DOMAIN
-	STRAYSENSOR
-)
-
 // Function will recursively iterate through nested obj
 // and accumulate whatever is found into category arrays
 func parseDataForNonStdResult(ent string, eNum, end int, data map[string]interface{}) map[string][]map[string]interface{} {
@@ -257,7 +238,7 @@ func DeleteEntity(entity string, id primitive.ObjectID, rnd map[string]interface
 		//Delete the non hierarchal objects
 		t, e = GetEntityHierarchy(id, rnd, entity, eNum, eNum+eNum, []string{})
 	} else {
-		t, e = GetEntityHierarchy(id, rnd, entity, eNum, AC, []string{})
+		t, e = GetEntityHierarchy(id, rnd, entity, eNum, u.AC, []string{})
 	}
 
 	if e != "" {
@@ -274,7 +255,7 @@ func deleteHelper(t map[string]interface{}, ent int) (map[string]interface{}, st
 		if v, ok := t["children"]; ok {
 			if x, ok := v.([]map[string]interface{}); ok {
 				for i := range x {
-					if ent == STRAYDEV || ent == DOMAIN {
+					if ent == u.STRAYDEV || ent == u.DOMAIN {
 						deleteHelper(x[i], ent)
 					} else {
 						deleteHelper(x[i], ent+1)
@@ -315,7 +296,7 @@ func deleteHelper(t map[string]interface{}, ent int) (map[string]interface{}, st
 			defer cancel()
 		}
 
-		if ent == DEVICE {
+		if ent == u.DEVICE {
 			DeleteDeviceF(t["id"].(primitive.ObjectID), nil)
 		} else {
 			ctx, cancel := u.Connect()
@@ -457,23 +438,23 @@ func GetEntityHierarchy(ID primitive.ObjectID, req bson.M, ent string, start, en
 		}
 
 		if ent == "room" {
-			for i := AC; i < CABINET+1; i++ {
+			for i := u.AC; i < u.CABINET+1; i++ {
 				roomEnts, _ := GetManyEntities(u.EntityToString(i), bson.M{"parentId": pid}, filters)
 				if roomEnts != nil {
 					children = append(children, roomEnts...)
 				}
 			}
-			for i := PWRPNL; i < SENSOR+1; i++ {
+			for i := u.PWRPNL; i < u.SENSOR+1; i++ {
 				roomEnts, _ := GetManyEntities(u.EntityToString(i), bson.M{"parentId": pid}, filters)
 				if roomEnts != nil {
 					children = append(children, roomEnts...)
 				}
 			}
-			roomEnts, _ := GetManyEntities(u.EntityToString(CORIDOR), bson.M{"parentId": pid}, filters)
+			roomEnts, _ := GetManyEntities(u.EntityToString(u.CORIDOR), bson.M{"parentId": pid}, filters)
 			if roomEnts != nil {
 				children = append(children, roomEnts...)
 			}
-			roomEnts, _ = GetManyEntities(u.EntityToString(GROUP), bson.M{"parentId": pid}, filters)
+			roomEnts, _ = GetManyEntities(u.EntityToString(u.GROUP), bson.M{"parentId": pid}, filters)
 			if roomEnts != nil {
 				children = append(children, roomEnts...)
 			}
@@ -599,7 +580,7 @@ func GetHierarchyByName(entity, name string, req bson.M, entnum, end int) (map[s
 	t = fixID(t)
 
 	var subEnt string
-	if entnum == STRAYDEV || entnum == DOMAIN {
+	if entnum == u.STRAYDEV || entnum == u.DOMAIN {
 		subEnt = entity
 	} else {
 		subEnt = u.EntityToString(entnum + 1)
@@ -722,7 +703,7 @@ func GetEntitiesOfAncestor(id interface{}, req bson.M, ent int, entStr, wantedEn
 	var t map[string]interface{}
 	var e, e1 string
 	newReq := req
-	if ent == SITE {
+	if ent == u.SITE {
 
 		if newReq == nil {
 			newReq = bson.M{"name": id}

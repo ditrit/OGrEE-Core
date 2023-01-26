@@ -1,6 +1,7 @@
 package models
 
 import (
+	u "p3/utils"
 	"strings"
 
 	"go.mongodb.org/mongo-driver/bson"
@@ -27,7 +28,7 @@ func FixUnderScore(x map[string]interface{}) {
 
 // Perform any neccessary adjustments to objects before insertion into DB
 func FixAttributesBeforeInsert(entity int, data map[string]interface{}) {
-	if entity == RACK {
+	if entity == u.RACK {
 		pid, _ := primitive.ObjectIDFromHex(data["parentId"].(string))
 		req := bson.M{"_id": pid}
 		parent, _ := GetEntity(req, "room", []string{})

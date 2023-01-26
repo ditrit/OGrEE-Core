@@ -139,7 +139,7 @@ func ValidatePatch(ent int, t map[string]interface{}) (map[string]interface{}, b
 			}
 
 		case "attributes.orientation": //SITE, ROOM, RACK, DEVICE
-			if ent >= SITE && ent <= DEVICE {
+			if ent >= u.SITE && ent <= u.DEVICE {
 				if v, _ := t[k]; v == nil {
 					return u.Message(false,
 						"Field: "+k+" cannot nullified!"), false
