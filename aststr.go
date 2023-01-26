@@ -87,17 +87,28 @@ type concatNode struct {
 }
 
 func (n *concatNode) getStr() (string, error) {
-	var r string
+	//var r string
+	r := ""
 	for i := range n.nodes {
-		v, err := n.nodes[i].execute()
+		valAny, err := n.nodes[i].execute()
 		if err != nil {
 			return "", err
 		}
-		s, ok := v.(string)
-		if !ok {
-			return "", fmt.Errorf("Expression should return a string (concatenation expr %d)", i)
-		}
-		r = r + s
+		r += fmt.Sprintf("%v", valAny)
+		/*switch val := valAny.(type) {
+		case string:
+			r = r + val
+		case int:
+			r = r + strconv.Itoa(val)
+		case float64:
+			if val == float64(int(val)) {
+				r = r + strconv.Itoa((int(val)))
+			} else {
+				return "", fmt.Errorf("expression should return a string or an int, but returned a float (concatenation expr %d)", i+1)
+			}
+		default:
+			return "", fmt.Errorf("expression should return a string or an int (concatenation expr %d)", i+1)
+		}*/
 	}
 	return r, nil
 }
