@@ -334,6 +334,36 @@ var CreateEntity = func(w http.ResponseWriter, r *http.Request) {
 //	    	description: Bad request. An error message will be returned.
 //		'404':
 //			description: Not Found. An error message will be returned.
+
+// swagger:operation HEAD /api/{objs}/{id} objects ObjectHead
+// Returns content length of the resource in response header.
+// ---
+// produces:
+// - application/json
+// parameters:
+//   - name: objs
+//     in: path
+//     description: 'Only values of "tenants", "sites",
+//     "buildings", "rooms", "racks", "devices", "room-templates",
+//     "obj-templates", "bldg-templates","acs", "panels","cabinets", "groups",
+//     "corridors","sensors","stray-devices","stray-sensors", are acceptable'
+//     type: string
+//     required: true
+//   - name: id
+//     in: path
+//     description: 'ID of the object or name of Tenant.
+//     For templates the slug is the ID. For stray-devices the name is the ID'
+//     type: string
+//     required: true
+//
+// responses:
+//
+//		'200':
+//	    	description: 'Found. Content length sent in header'
+//		'400':
+//	    	description: Bad request. Content length sent in header.
+//		'404':
+//			description: Not Found. Content length sent in header.
 var GetEntity = func(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("******************************************************")
 	fmt.Println("FUNCTION CALL: 	 GetEntity ")
@@ -437,7 +467,7 @@ var GetEntity = func(w http.ResponseWriter, r *http.Request) {
 
 	if r.Method == "OPTIONS" && data != nil {
 		w.Header().Add("Content-Type", "application/json")
-		w.Header().Add("Allow", "GET, DELETE, OPTIONS, PATCH, PUT")
+		w.Header().Add("Allow", "GET, DELETE, HEAD, OPTIONS, PATCH, PUT")
 	} else {
 		resp["data"] = data
 		u.Respond(w, resp)
@@ -468,6 +498,28 @@ var GetEntity = func(w http.ResponseWriter, r *http.Request) {
 //	    	a meaningful message.'
 //		'404':
 //	    	description: Nothing Found. An error message will be returned.
+
+// swagger:operation HEAD /api/{objs} objects GetAllObjectsHead
+// Returns content length for get all present objects of specified category in the system.
+// ---
+// produces:
+// - application/json
+// parameters:
+//   - name: objs
+//     in: path
+//     description: 'Indicates the location. Only values of "tenants", "sites",
+//     "buildings", "rooms", "racks", "devices", "room-templates",
+//     "obj-templates","acs", "panels", "cabinets", "groups",
+//     "corridors", "sensors", "stray-devices", "stray-sensors" are acceptable'
+//     required: true
+//     type: string
+//
+// responses:
+//
+//		'200':
+//	    	description: 'OK. Content length sent in header'
+//		'404':
+//	    	description: Nothing Found. Content length sent in header.
 var GetAllEntities = func(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("******************************************************")
 	fmt.Println("FUNCTION CALL: 	 GetAllEntities ")
@@ -907,6 +959,51 @@ var UpdateEntity = func(w http.ResponseWriter, r *http.Request) {
 //		         a meaningful message.'
 //	    '404':
 //		        description: Not found. An error message will be returned.
+
+// swagger:operation HEAD /api/{objs}? objects GetObjectByQueryHead
+// Returns content length of  an Object using any attribute
+// (with the exception of description) via query in the system
+// The attributes are in the form {attr}=xyz&{attr1}=abc
+// And any combination can be used given that at least 1 is provided.
+// ---
+// produces:
+// - application/json
+// parameters:
+//   - name: objs
+//     in: path
+//     description: 'Indicates the object. Only values of "tenants", "sites",
+//     "buildings", "rooms", "racks", "devices", "room-templates",
+//     "obj-templates","acs","panels", "groups", "corridors",
+//     "sensors", "stray-devices" and "stray-sensors" are acceptable'
+//     required: true
+//     type: string
+//   - name: Name
+//     in: query
+//     description: Name of tenant
+//     required: false
+//     type: string
+//   - name: Category
+//     in: query
+//     description: Category of Tenant (ex. Consumer Electronics, Medical)
+//     required: false
+//     type: string
+//   - name: Domain
+//     in: query
+//     description: 'Domain of the Tenant'
+//     required: false
+//     type: string
+//   - name: Attributes
+//     in: query
+//     description: Any other object attributes can be queried
+//     required: false
+//     type: string
+//
+// responses:
+//
+//	    '204':
+//	         description: 'OK. Content length will be returned in header'
+//	    '404':
+//		        description: Not found. Content length will be returned in header.
 var GetEntityByQuery = func(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("******************************************************")
 	fmt.Println("FUNCTION CALL: 	 GetEntityByQuery ")
@@ -1024,7 +1121,7 @@ var GetEntityByQuery = func(w http.ResponseWriter, r *http.Request) {
 //		'200':
 //	   		description: 'OK. Content length is in header'
 //		'404':
-//	   		description: 'Content length of error message is in header'
+//	   		description: 'Content length of error is in header'
 var GetTempUnit = func(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("******************************************************")
 	fmt.Println("FUNCTION CALL: 	 GetTempUnit ")
@@ -1113,6 +1210,40 @@ var GetTempUnit = func(w http.ResponseWriter, r *http.Request) {
 //	    	description: 'OK'
 //		'404':
 //	    	description: 'Nothing Found.'
+
+// swagger:operation HEAD /api/{objs}/{id}/{subent} objects GetObject2LevelsLowerHead
+// Returns content length for objects 2 levels lower in response header.
+// ---
+// produces:
+// - application/json
+// parameters:
+//   - name: objs
+//     in: 'path'
+//     description: 'Only values of "tenants", "sites",
+//     "buildings", "rooms", "racks", "devices", and "stray-devices"
+//     are acceptable'
+//     type: string
+//     required: true
+//   - name: id
+//     in: 'path'
+//     description: 'ID of the object. For stray-devices and tenants the name
+//     can be used as the ID.'
+//     type: string
+//     required: true
+//   - name: subent
+//     type: string
+//     required: true
+//     in: 'path'
+//     description: 'This refers to the sub object under the objs parameter.
+//     Please refer to the OGREE wiki to better understand what objects
+//     can be considered as sub objects.'
+//
+// responses:
+//
+//		'200':
+//	    	description: 'OK. Content length sent in header'
+//		'404':
+//	    	description: 'Nothing Found. Content length sent in header'
 var GetEntitiesOfAncestor = func(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("******************************************************")
 	fmt.Println("FUNCTION CALL: 	 GetEntitiesOfAncestor ")
@@ -1183,7 +1314,7 @@ var GetEntitiesOfAncestor = func(w http.ResponseWriter, r *http.Request) {
 
 	if r.Method == "OPTIONS" {
 		w.Header().Add("Content-Type", "application/json")
-		w.Header().Add("Allow", "GET, OPTIONS")
+		w.Header().Add("Allow", "GET, HEAD, OPTIONS")
 	} else {
 		resp["data"] = map[string]interface{}{"objects": data}
 		u.Respond(w, resp)
@@ -1252,6 +1383,33 @@ var GetEntitiesOfAncestor = func(w http.ResponseWriter, r *http.Request) {
 //	    	possible operations.'
 //		'404':
 //	    	description: Nothing Found.
+
+// swagger:operation HEAD /api/{objs}/{id}/all objects GetFullObjectHierarchyHead
+// Returns content length of an object's hierarchy in response header.
+// ---
+// produces:
+// - application/json
+// parameters:
+//   - name: objs
+//     in: path
+//     description: 'Only values of "tenants", "sites",
+//     "buildings", "rooms", "racks", "devices", and "stray-devices"
+//     are acceptable'
+//     type: string
+//     required: true
+//   - name: id
+//     in: path
+//     description: 'ID of the object.For tenants and stray-devices the name
+//     can be used as the ID'
+//     type: string
+//     required: true
+//
+// responses:
+//
+//		'200':
+//	    	description: 'OK. Content length of hierarchy sent in header'
+//		'404':
+//	    	description: Nothing Found. Content length of error sent in header
 var GetEntityHierarchy = func(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("******************************************************")
 	fmt.Println("FUNCTION CALL: 	 GetEntityHierarchy ")
@@ -1419,7 +1577,7 @@ var GetEntityHierarchy = func(w http.ResponseWriter, r *http.Request) {
 
 	if r.Method == "OPTIONS" {
 		w.Header().Add("Content-Type", "application/json")
-		w.Header().Add("Allow", "GET, OPTIONS")
+		w.Header().Add("Allow", "GET, HEAD, OPTIONS")
 	} else {
 		resp["data"] = data
 		u.Respond(w, resp)
@@ -1474,6 +1632,30 @@ var GetEntityHierarchy = func(w http.ResponseWriter, r *http.Request) {
 //	    	possible operation.'
 //		'404':
 //	    	description: Nothing Found.
+
+// swagger:operation HEAD /api/{entity}/{name}/all objects GetObjectHierarchyHead
+// Returns content length of hierarchy in response header.
+// ---
+// produces:
+// - application/json
+// parameters:
+//   - name: name
+//     in: path
+//     description: 'Name of tenant.'
+//     type: string
+//     required: true
+//   - name: entity
+//     in: path
+//     description: 'Entity type (ie Tenant).'
+//     type: string
+//     required: true
+//
+// responses:
+//
+//		'200':
+//	    	description: 'OK. Content length sent in response header'
+//		'404':
+//	    	description: Nothing Found. Error content length sent in header
 var GetHierarchyByName = func(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("******************************************************")
 	fmt.Println("FUNCTION CALL: 	 GetHierarchyByName ")
@@ -1610,7 +1792,7 @@ var GetHierarchyByName = func(w http.ResponseWriter, r *http.Request) {
 
 	if r.Method == "OPTIONS" {
 		w.Header().Add("Content-Type", "application/json")
-		w.Header().Add("Allow", "GET, OPTIONS")
+		w.Header().Add("Allow", "GET, HEAD, OPTIONS")
 	} else {
 		resp["data"] = data
 		u.Respond(w, resp)
@@ -1688,6 +1870,42 @@ var GetHierarchyByName = func(w http.ResponseWriter, r *http.Request) {
 //	    possible operations.'
 //		'404':
 //	    	description: Not Found.
+
+// swagger:operation HEAD /api/{objs}/{id}/* objects GetFromObjectHead
+// Returns content length of the resource in response header.
+// ---
+// produces:
+// - application/json
+// parameters:
+//   - name: objs
+//     in: path
+//     description: 'Only values of "tenants", "sites",
+//     "buildings", "rooms", "racks", "devices", and "stray-devices"
+//     are acceptable'
+//     type: string
+//     required: true
+//   - name: id
+//     in: path
+//     description: 'ID of the object.For tenants and stray-devices the name
+//     can be used as the ID'
+//     type: string
+//     required: true
+//   - name: '*'
+//     in: path
+//     description: 'Hierarchal path to desired object(s).
+//     For rooms it can additionally have "acs","panels",
+//     "corridors", "sensors" and "cabinets".
+//     For devices it can have "sensors"
+//     For racks it can have "sensors"'
+//     required: true
+//     type: string
+//
+// responses:
+//
+//		'200':
+//	    	description: 'Found. Content length sent in header'
+//		'404':
+//	    	description: Not Found. Content length sent in header
 var GetEntitiesUsingNamesOfParents = func(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("******************************************************")
 	fmt.Println("FUNCTION CALL: 	 GetEntitiesUsingNamesOfParents ")

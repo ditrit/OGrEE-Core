@@ -244,7 +244,7 @@
             "description": "OK. Content length is in header"
           },
           "404": {
-            "description": "Content length of error message is in header"
+            "description": "Content length of error is in header"
           }
         }
       }
@@ -527,6 +527,40 @@
             "description": "Nothing Found."
           }
         }
+      },
+      "head": {
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "objects"
+        ],
+        "summary": "Returns content length of hierarchy in response header.",
+        "operationId": "GetObjectHierarchyHead",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "Name of tenant.",
+            "name": "name",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "description": "Entity type (ie Tenant).",
+            "name": "entity",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK. Content length sent in response header"
+          },
+          "404": {
+            "description": "Nothing Found. Error content length sent in header"
+          }
+        }
       }
     },
     "/api/{objs}": {
@@ -626,6 +660,33 @@
           },
           "400": {
             "description": "Bad request. A response body with an error message will be returned."
+          }
+        }
+      },
+      "head": {
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "objects"
+        ],
+        "summary": "Returns content length for get all present objects of specified category in the system.",
+        "operationId": "GetAllObjectsHead",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "Indicates the location. Only values of \"tenants\", \"sites\", \"buildings\", \"rooms\", \"racks\", \"devices\", \"room-templates\", \"obj-templates\",\"acs\", \"panels\", \"cabinets\", \"groups\", \"corridors\", \"sensors\", \"stray-devices\", \"stray-sensors\" are acceptable",
+            "name": "objs",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK. Content length sent in header"
+          },
+          "404": {
+            "description": "Nothing Found. Content length sent in header."
           }
         }
       }
@@ -841,6 +902,43 @@
           }
         }
       },
+      "head": {
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "objects"
+        ],
+        "summary": "Returns content length of the resource in response header.",
+        "operationId": "ObjectHead",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "Only values of \"tenants\", \"sites\", \"buildings\", \"rooms\", \"racks\", \"devices\", \"room-templates\", \"obj-templates\", \"bldg-templates\",\"acs\", \"panels\",\"cabinets\", \"groups\", \"corridors\",\"sensors\",\"stray-devices\",\"stray-sensors\", are acceptable",
+            "name": "objs",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "description": "ID of the object or name of Tenant. For templates the slug is the ID. For stray-devices the name is the ID",
+            "name": "id",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Found. Content length sent in header"
+          },
+          "400": {
+            "description": "Bad request. Content length sent in header."
+          },
+          "404": {
+            "description": "Not Found. Content length sent in header."
+          }
+        }
+      },
       "patch": {
         "description": "This is the preferred method for modifying data in the system.\nIf you want to do a full data replace, please use PUT instead.\nIf the operation succeeds, the data result will be returned.\nIf no new or any information is provided\nan OK will still be returned",
         "produces": [
@@ -996,6 +1094,47 @@
             "description": "Not Found."
           }
         }
+      },
+      "head": {
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "objects"
+        ],
+        "summary": "Returns content length of the resource in response header.",
+        "operationId": "GetFromObjectHead",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "Only values of \"tenants\", \"sites\", \"buildings\", \"rooms\", \"racks\", \"devices\", and \"stray-devices\" are acceptable",
+            "name": "objs",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "description": "ID of the object.For tenants and stray-devices the name can be used as the ID",
+            "name": "id",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "description": "Hierarchal path to desired object(s). For rooms it can additionally have \"acs\",\"panels\", \"corridors\", \"sensors\" and \"cabinets\". For devices it can have \"sensors\" For racks it can have \"sensors\"",
+            "name": "*",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Found. Content length sent in header"
+          },
+          "404": {
+            "description": "Not Found. Content length sent in header"
+          }
+        }
       }
     },
     "/api/{objs}/{id}/all": {
@@ -1073,6 +1212,40 @@
             "description": "Nothing Found."
           }
         }
+      },
+      "head": {
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "objects"
+        ],
+        "summary": "Returns content length of an object's hierarchy in response header.",
+        "operationId": "GetFullObjectHierarchyHead",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "Only values of \"tenants\", \"sites\", \"buildings\", \"rooms\", \"racks\", \"devices\", and \"stray-devices\" are acceptable",
+            "name": "objs",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "description": "ID of the object.For tenants and stray-devices the name can be used as the ID",
+            "name": "id",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK. Content length of hierarchy sent in header"
+          },
+          "404": {
+            "description": "Nothing Found. Content length of error sent in header"
+          }
+        }
       }
     },
     "/api/{objs}/{id}/{subent}": {
@@ -1114,6 +1287,47 @@
           },
           "404": {
             "description": "Nothing Found."
+          }
+        }
+      },
+      "head": {
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "objects"
+        ],
+        "summary": "Returns content length for objects 2 levels lower in response header.",
+        "operationId": "GetObject2LevelsLowerHead",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "Only values of \"tenants\", \"sites\", \"buildings\", \"rooms\", \"racks\", \"devices\", and \"stray-devices\" are acceptable",
+            "name": "objs",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "description": "ID of the object. For stray-devices and tenants the name can be used as the ID.",
+            "name": "id",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "description": "This refers to the sub object under the objs parameter. Please refer to the OGREE wiki to better understand what objects can be considered as sub objects.",
+            "name": "subent",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK. Content length sent in header"
+          },
+          "404": {
+            "description": "Nothing Found. Content length sent in header"
           }
         }
       }
@@ -1167,6 +1381,57 @@
           },
           "404": {
             "description": "Not found. An error message will be returned."
+          }
+        }
+      },
+      "head": {
+        "description": "Returns content length of  an Object using any attribute\n(with the exception of description) via query in the system\nThe attributes are in the form {attr}=xyz\u0026{attr1}=abc\nAnd any combination can be used given that at least 1 is provided.",
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "objects"
+        ],
+        "operationId": "GetObjectByQueryHead",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "Indicates the object. Only values of \"tenants\", \"sites\", \"buildings\", \"rooms\", \"racks\", \"devices\", \"room-templates\", \"obj-templates\",\"acs\",\"panels\", \"groups\", \"corridors\", \"sensors\", \"stray-devices\" and \"stray-sensors\" are acceptable",
+            "name": "objs",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "description": "Name of tenant",
+            "name": "Name",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "description": "Category of Tenant (ex. Consumer Electronics, Medical)",
+            "name": "Category",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "description": "Domain of the Tenant",
+            "name": "Domain",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "description": "Any other object attributes can be queried",
+            "name": "Attributes",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "OK. Content length will be returned in header"
+          },
+          "404": {
+            "description": "Not found. Content length will be returned in header."
           }
         }
       }
