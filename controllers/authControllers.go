@@ -161,6 +161,18 @@ var Authenticate = func(w http.ResponseWriter, r *http.Request) {
 //
 //		'200':
 //	    	description: Returns header with possible operations
+
+// swagger:operation HEAD /api/token/valid auth VerifyTokenHead
+// Returns content length of the Verify Token operation.
+// ---
+// produces:
+// - application/json
+// responses:
+//
+//		'200':
+//	    	description: Returns header with content length
+//		'403':
+//	    	description: Unauthorised
 var Verify = func(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("******************************************************")
 	fmt.Println("FUNCTION CALL: 	 Verify ")
@@ -169,7 +181,7 @@ var Verify = func(w http.ResponseWriter, r *http.Request) {
 
 	if r.Method == "OPTIONS" {
 		w.Header().Add("Content-Type", "application/json")
-		w.Header().Add("Allow", "GET, OPTIONS")
+		w.Header().Add("Allow", "GET,HEAD, OPTIONS")
 	} else {
 		u.Respond(w, u.Message(true, "working"))
 	}

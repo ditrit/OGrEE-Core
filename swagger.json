@@ -149,6 +149,21 @@
             "description": "Server error. An error message will be returned."
           }
         }
+      },
+      "options": {
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "statistics"
+        ],
+        "summary": "Displays possible HTTP operations for DB statistics.",
+        "operationId": "GetStatsOptions",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
       }
     },
     "/api/tempunits/id": {
@@ -205,6 +220,33 @@
             "description": "Nothing Found. An error message will be returned."
           }
         }
+      },
+      "head": {
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "tempunits"
+        ],
+        "summary": "Gets the content length for temperatureUnit attribute of the parent site of given object.",
+        "operationId": "GetTempUnitHead",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "ID of any object.",
+            "name": "id",
+            "in": "query",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK. Content length is in header"
+          },
+          "404": {
+            "description": "Content length of error message is in header"
+          }
+        }
       }
     },
     "/api/token/valid": {
@@ -241,6 +283,24 @@
         "responses": {
           "200": {
             "description": "Returns header with possible operations"
+          }
+        }
+      },
+      "head": {
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "auth"
+        ],
+        "summary": "Returns content length of the Verify Token operation.",
+        "operationId": "VerifyTokenHead",
+        "responses": {
+          "200": {
+            "description": "Returns header with content length"
+          },
+          "403": {
+            "description": "Unauthorised"
           }
         }
       }
@@ -379,6 +439,21 @@
         "responses": {
           "200": {
             "description": "Returns the possible request methods."
+          }
+        }
+      },
+      "head": {
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "versioning"
+        ],
+        "summary": "Returns content length of API version.",
+        "operationId": "VersionHead",
+        "responses": {
+          "200": {
+            "description": "Returns the content length in the response header."
           }
         }
       }

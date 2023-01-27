@@ -324,6 +324,7 @@ var CreateEntity = func(w http.ResponseWriter, r *http.Request) {
 //     For templates the slug is the ID. For stray-devices the name is the ID'
 //     type: string
 //     required: true
+//
 // responses:
 //
 //		'200':
@@ -550,7 +551,9 @@ var GetAllEntities = func(w http.ResponseWriter, r *http.Request) {
 //     For templates the slug is the ID. For stray-devices the name is the ID'
 //     required: true
 //     type: string
+//
 // responses:
+//
 //		'200':
 //	    	description: 'Updated. A response body will be returned with
 //	    	a meaningful message.'
@@ -1004,6 +1007,24 @@ var GetEntityByQuery = func(w http.ResponseWriter, r *http.Request) {
 //		'404':
 //	   		description: 'Nothing Found. An error message will be returned.'
 
+// swagger:operation HEAD /api/tempunits/id tempunits GetTempUnitHead
+// Gets the content length for temperatureUnit attribute of the parent site of given object.
+// ---
+// produces:
+// - application/json
+// parameters:
+//   - name: id
+//     in: query
+//     description: 'ID of any object.'
+//     required: true
+//     type: string
+//
+// responses:
+//
+//		'200':
+//	   		description: 'OK. Content length is in header'
+//		'404':
+//	   		description: 'Content length of error message is in header'
 var GetTempUnit = func(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("******************************************************")
 	fmt.Println("FUNCTION CALL: 	 GetTempUnit ")
@@ -1223,7 +1244,9 @@ var GetEntitiesOfAncestor = func(w http.ResponseWriter, r *http.Request) {
 //     can be used as the ID'
 //     type: string
 //     required: true
+//
 // responses:
+//
 //		'200':
 //	    	description: 'Found. A response header will be returned with
 //	    	possible operations.'
@@ -1443,6 +1466,7 @@ var GetEntityHierarchy = func(w http.ResponseWriter, r *http.Request) {
 //     description: 'Entity type (ie Tenant).'
 //     type: string
 //     required: true
+//
 // responses:
 //
 //		'200':
@@ -1656,7 +1680,9 @@ var GetHierarchyByName = func(w http.ResponseWriter, r *http.Request) {
 //     For racks it can have "sensors"'
 //     required: true
 //     type: string
+//
 // responses:
+//
 //		'200':
 //	    	description: 'Found. A response header will be returned with
 //	    possible operations.'
@@ -1844,6 +1870,7 @@ var GetEntitiesUsingNamesOfParents = func(w http.ResponseWriter, r *http.Request
 //     "stray-sensors" are acceptable'
 //     type: string
 //     required: true
+//
 // responses:
 //
 //		'200':
@@ -1877,6 +1904,16 @@ var BaseOption = func(w http.ResponseWriter, r *http.Request) {
 //	    	description: 'OK'
 //		'504':
 //	    	description: Server error. An error message will be returned.
+
+// swagger:operation OPTIONS /api/stats statistics GetStatsOptions
+// Displays possible HTTP operations for DB statistics.
+// ---
+// produces:
+// - application/json
+// responses:
+//
+//		'200':
+//	    	description: 'OK'
 var GetStats = func(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("******************************************************")
 	fmt.Println("FUNCTION CALL: 	 GetStats ")
@@ -1968,6 +2005,7 @@ var GetStats = func(w http.ResponseWriter, r *http.Request) {
 //     "stray-sensors" are acceptable'
 //     type: string
 //     required: true
+//
 // responses:
 //
 //		'200':
@@ -2037,7 +2075,20 @@ var ValidateEntity = func(w http.ResponseWriter, r *http.Request) {
 //
 //		'200':
 //	    	description: 'Returns the possible request methods.'
+
+// swagger:operation HEAD /api/version versioning VersionHead
+// Returns content length of API version.
+// ---
+// produces:
+// - application/json
+// responses:
+//
+//		'200':
+//	    	description: 'Returns the content length in the response header.'
 var Version = func(w http.ResponseWriter, r *http.Request) {
+	fmt.Println("******************************************************")
+	fmt.Println("FUNCTION CALL: 	 Version ")
+	fmt.Println("******************************************************")
 	data := map[string]interface{}{}
 	if r.Method == "OPTIONS" {
 		w.Header().Add("Content-Type", "application/json")
