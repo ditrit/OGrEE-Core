@@ -177,7 +177,7 @@ class _ResultsPageState extends State<ResultsPage> {
         }
         if (sum != null) {
           data[func]![attr] = func == sumStr
-              ? sum.toString()
+              ? sum.toStringAsFixed(3)
               : (sum / count).toStringAsFixed(3);
         }
       }
@@ -189,6 +189,7 @@ class _ResultsPageState extends State<ResultsPage> {
     return _allAttributes.map((String key) {
       return PopupMenuItem(
         padding: EdgeInsets.zero,
+        height: 0,
         value: key,
         child: StatefulBuilder(builder: (context, _setState) {
           return CheckboxListTile(

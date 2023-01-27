@@ -33,8 +33,8 @@ class _TreeFilterState extends State<TreeFilter> {
       enumParams[key.capitalize()] = idx;
       idx++;
     }
-    print("BUIILD ******");
-    print(objectsPerCategory);
+
+    // print(objectsPerCategory);
     return Column(
         children: objectsPerCategory.keys.map((key) {
       var enabled = enumParams[key]! > getMaxFilterLevel() ||

@@ -55,7 +55,6 @@ class __FindNodeFieldState extends State<_FindNodeField> {
         duration: const Duration(seconds: 3),
       );
     } else {
-      appController.toggleSelection(id, shouldSelect: true);
       if (!appController.treeController.isExpanded(id)) {
         appController.treeController.expandUntil(node);
       }

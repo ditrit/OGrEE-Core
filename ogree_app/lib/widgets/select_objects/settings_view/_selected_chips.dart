@@ -8,16 +8,17 @@ class SelectedChips extends StatefulWidget {
 }
 
 class _SelectedChipsState extends State<SelectedChips> {
-  // Group by testing sample
-  List<String> groupBy = ["siteA.B.R1", "siteB.C.R2"];
-  Map<String, bool> shouldGroupBy = {
-    "siteA.B.R1": true,
-    "siteB.C.R2": true,
-  };
+  // Group by
+  Map<String, bool> shouldGroupBy = {};
 
   @override
   Widget build(BuildContext context) {
     final appController = AppController.of(context);
+    if (shouldGroupBy.isEmpty) {
+      for (var room in appController.fetchedCategories["room"]!) {
+        shouldGroupBy[room] = true;
+      }
+    }
     return AnimatedBuilder(
         animation: appController,
         builder: (_, __) {
@@ -36,7 +37,7 @@ class _SelectedChipsState extends State<SelectedChips> {
 
     // Group by, create groups
     for (var key in nodes.keys) {
-      for (var group in groupBy) {
+      for (var group in shouldGroupBy.keys) {
         if (key.contains(group)) {
           if (!groups.containsKey(group)) {
             groups[group] = [key];
