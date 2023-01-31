@@ -2,6 +2,7 @@ package models
 
 import (
 	"encoding/hex"
+	"encoding/json"
 	u "p3/utils"
 	"strconv"
 	"strings"
@@ -137,7 +138,7 @@ func ValidatePatch(ent int, t map[string]interface{}) (map[string]interface{}, b
 				}
 			}
 
-		case "attributes.orientation": //SITE, ROOM, RACK, DEVICE
+		case "attributes.orientation": //u.SITE, u.ROOM, u.RACK, u.DEVICE
 			if ent >= u.SITE && ent <= u.DEVICE {
 				if v, _ := t[k]; v == nil {
 					return u.Message(false,
@@ -287,7 +288,6 @@ func ValidateEntity(entity int, t map[string]interface{}) (map[string]interface{
 					return u.Message(false, "Attributes should be a JSON Dictionary"), false
 				} else {
 					switch entity {
-
 					case u.SITE:
 						if !IsOrientation(v["orientation"], entity) {
 							if v["orientation"] == nil || v["orientation"] == "" {
@@ -364,8 +364,25 @@ func ValidateEntity(entity int, t map[string]interface{}) (map[string]interface{
 						}
 
 					case u.RACK:
-						if v["posXY"] == "" || v["posXY"] == nil {
-							return u.Message(false, "XY coordinates should be on payload"), false
+						if v["posXYZ"] == "" || v["posXYZ"] == nil {
+							return u.Message(false, "XYZ coordinates should be on payload"), false
+						} else {
+							//check if format is Vector3, example {\"x\":25,\"y\":29.4,\"z\":0}"
+							var posXYZ map[string]float32
+							err := json.Unmarshal([]byte(v["posXYZ"].(string)), &posXYZ)
+							if err != nil {
+								return u.Message(false, "Invalid posXYZ on payload: "+err.Error()), false
+							}
+
+							if len(posXYZ) != 3 {
+								return u.Message(false, "Invalid posXYZ on payload: should be Vector3 "), false
+							}
+
+							for _, key := range []string{"x", "y", "z"} {
+								if _, ok = posXYZ[key]; !ok {
+									return u.Message(false, "Invalid posXYZ on payload: missing "+key), false
+								}
+							}
 						}
 
 						if v["posXYUnit"] == "" || v["posXYUnit"] == nil {

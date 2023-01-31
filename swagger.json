@@ -149,6 +149,52 @@
         "operationId": "GetStats"
       }
     },
+    "/api/tempunits/{id}": {
+      "get": {
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "tempunits"
+        ],
+        "summary": "Gets the temperatureUnit attribute of the parent site of given object.",
+        "operationId": "GetTempUnit",
+        "parameters": [
+          {
+            "description": "ID of any object.",
+            "name": "id",
+            "in": "query",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Found. A response body will be returned with a meaningful message."
+          },
+          "404": {
+            "description": "Nothing Found. An error message will be returned."
+          }
+        }
+      },
+      "options": {
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "tempunits"
+        ],
+        "summary": "Gets the possible operations of the parent site tempunit of given object.",
+        "operationId": "GetTempUnit",
+        "parameters": [
+          {
+            "description": "ID of any object.",
+            "name": "id",
+            "in": "query",
+            "required": true
+          }
+        ]
+      }
+    },
     "/api/token/valid": {
       "get": {
         "produces": [
