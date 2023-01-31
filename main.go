@@ -52,7 +52,7 @@ func main() {
 		controllers.CreateAccount).Methods("POST", "OPTIONS")
 
 	router.HandleFunc("/api/stats",
-		controllers.GetStats).Methods("GET", "OPTIONS")
+		controllers.GetStats).Methods("GET", "OPTIONS", "HEAD")
 
 	router.HandleFunc("/api/login",
 		controllers.Authenticate).Methods("POST", "OPTIONS")

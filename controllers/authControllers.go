@@ -8,7 +8,7 @@ import (
 	u "p3/utils"
 )
 
-// swagger:operation POST /api auth CreateAccount
+// swagger:operation POST /api auth Create
 // Generate credentials for a user.
 // Create an account with Email credentials, it returns
 // a JWT key to use with the API. The
@@ -18,16 +18,17 @@ import (
 // - application/json
 // parameters:
 // - name: username
-//   in: formData
+//   in: body
 //   description: Your Email Address
 //   type: string
 //   required: true
+//   default: "infiniti@nissan.com"
 // - name: password
-//   in: formData
+//   in: json
 //   description: Your password
 //   required: true
 //   format: password
-//   type: string
+//   default: "secret"
 // responses:
 //     '200':
 //         description: Authenticated
@@ -36,7 +37,7 @@ import (
 //     '500':
 //         description: Internal server error
 
-// swagger:operation OPTIONS /api auth CreateAccountOptions
+// swagger:operation OPTIONS /api auth CreateOptions
 // Displays possible operations for the resource in response header.
 // ---
 // produces:
@@ -76,21 +77,24 @@ var CreateAccount = func(w http.ResponseWriter, r *http.Request) {
 
 // swagger:operation POST /api/login auth Authenticate
 // Generates a new JWT Key for the client.
+// Create a new JWT Key. This can also be used to verify credentials
+// The authorize and 'Try it out' buttons don't work
 // ---
 // produces:
 // - application/json
 // parameters:
 // - name: username
-//   in: formData
+//   in: body
 //   description: Your Email Address
 //   type: string
 //   required: true
+//   default: "infiniti@nissan.com"
 // - name: password
-//   in: formData
+//   in: json
 //   description: Your password
 //   required: true
 //   format: password
-//   type: string
+//   default: "secret"
 // responses:
 //     '200':
 //         description: Authenticated
@@ -99,15 +103,15 @@ var CreateAccount = func(w http.ResponseWriter, r *http.Request) {
 //     '500':
 //         description: Internal server error
 
-// swagger:operation OPTIONS /api/login auth AuthenticateOptions
+// swagger:operation OPTIONS /api/login auth CreateOptions
 // Displays possible operations for the resource in response header.
 // ---
 // produces:
 // - application/json
 // responses:
 //
-//		'200':
-//	    	description: Returns header with possible operations
+//	'200':
+//	    description: Returns header with possible operations
 var Authenticate = func(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("******************************************************")
 	fmt.Println("FUNCTION CALL: 	 Authenticate ")
@@ -152,27 +156,15 @@ var Authenticate = func(w http.ResponseWriter, r *http.Request) {
 //     '500':
 //         description: Internal server error
 
-// swagger:operation OPTIONS /api/token/valid auth VerifyTokenOptions
+// swagger:operation OPTIONS /api/token/valid auth VerifyToken
 // Displays possible operations for the resource in response header.
 // ---
 // produces:
 // - application/json
 // responses:
 //
-//		'200':
-//	    	description: Returns header with possible operations
-
-// swagger:operation HEAD /api/token/valid auth VerifyTokenHead
-// Returns content length of the Verify Token operation.
-// ---
-// produces:
-// - application/json
-// responses:
-//
-//		'200':
-//	    	description: Returns header with content length
-//		'403':
-//	    	description: Unauthorised
+//	'200':
+//	    description: Returns header with possible operations
 var Verify = func(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("******************************************************")
 	fmt.Println("FUNCTION CALL: 	 Verify ")
@@ -181,7 +173,7 @@ var Verify = func(w http.ResponseWriter, r *http.Request) {
 
 	if r.Method == "OPTIONS" {
 		w.Header().Add("Content-Type", "application/json")
-		w.Header().Add("Allow", "GET,HEAD, OPTIONS")
+		w.Header().Add("Allow", "GET, OPTIONS")
 	} else {
 		u.Respond(w, u.Message(true, "working"))
 	}

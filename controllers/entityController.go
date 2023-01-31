@@ -135,14 +135,14 @@ func DispRequestMetaData(r *http.Request) {
 	fmt.Println(time.Now().Format("2006-Jan-02 Monday 03:04:05 PM MST -07:00"))
 }
 
-// swagger:operation POST /api/{objs} objects CreateObject
+// swagger:operation POST /api/{obj} objects CreateObject
 // Creates an object in the system.
 // ---
 // produces:
 // - application/json
 // parameters:
 // - name: objs
-//   in: path
+//   in: query
 //   description: 'Indicates the Object. Only values of "tenants", "sites",
 //   "buildings", "rooms", "racks", "devices", "acs", "panels",
 //   "cabinets", "groups", "corridors",
@@ -150,40 +150,42 @@ func DispRequestMetaData(r *http.Request) {
 //   "stray-sensors" are acceptable'
 //   required: true
 //   type: string
+//   default: "sites"
 // - name: Name
-//   in: formData
+//   in: query
 //   description: Name of object
 //   required: true
 //   type: string
+//   default: "Object A"
 // - name: Category
-//   in: formData
+//   in: query
 //   description: Category of Object (ex. Consumer Electronics, Medical)
 //   required: true
 //   type: string
+//   default: "Research"
 // - name: Domain
 //   description: 'Domain of Object'
 //   required: true
 //   type: string
-//   in: formData
+//   default: 999
 // - name: ParentID
 //   description: 'All objects are linked to a
 //   parent with the exception of Tenant since it has no parent'
 //   required: true
-//   type: string
-//   in: formData
+//   type: int
+//   default: 999
 // - name: Description
+//   in: query
 //   description: Description of Object
 //   required: false
-//   type: array
-//   items:
-//   	type: string
-//   in: formData
+//   type: string[]
+//   default: ["Some abandoned object in Grenoble"]
 // - name: Attributes
-//   in: formData
+//   in: query
 //   description: 'Any other object attributes can be added.
 //   They are required depending on the obj type.'
 //   required: true
-//   type: string
+//   type: json
 // responses:
 //     '201':
 //         description: 'Created. A response body will be returned with
@@ -282,19 +284,21 @@ var CreateEntity = func(w http.ResponseWriter, r *http.Request) {
 // - application/json
 // parameters:
 // - name: objs
-//   in: path
+//   in: query
 //   description: 'Indicates the location. Only values of "tenants", "sites",
 //   "buildings", "rooms", "racks", "devices", "room-templates",
 //   "obj-templates", "bldg-templates","acs", "panels","cabinets", "groups",
 //   "corridors","sensors","stray-devices", "stray-sensors" are acceptable'
 //   required: true
 //   type: string
-// - name: id
+//   default: "sites"
+// - name: ID
 //   in: path
 //   description: 'ID of desired object or Name of Tenant.
 //   For templates the slug is the ID. For stray-devices the name is the ID'
 //   required: true
-//   type: string
+//   type: int
+//   default: 999
 // responses:
 //     '200':
 //         description: 'Found. A response body will be returned with
@@ -311,59 +315,25 @@ var CreateEntity = func(w http.ResponseWriter, r *http.Request) {
 // - application/json
 // parameters:
 //   - name: objs
-//     in: path
+//     in: query
 //     description: 'Only values of "tenants", "sites",
 //     "buildings", "rooms", "racks", "devices", "room-templates",
 //     "obj-templates", "bldg-templates","acs", "panels","cabinets", "groups",
 //     "corridors","sensors","stray-devices","stray-sensors", are acceptable'
-//     type: string
-//     required: true
 //   - name: id
-//     in: path
+//     in: query
 //     description: 'ID of the object or name of Tenant.
 //     For templates the slug is the ID. For stray-devices the name is the ID'
-//     type: string
-//     required: true
 //
 // responses:
 //
-//		'200':
-//	    	description: 'Found. A response header will be returned with
-//	    	possible operations.'
-//		'400':
-//	    	description: Bad request. An error message will be returned.
-//		'404':
-//			description: Not Found. An error message will be returned.
-
-// swagger:operation HEAD /api/{objs}/{id} objects ObjectHead
-// Returns content length of the resource in response header.
-// ---
-// produces:
-// - application/json
-// parameters:
-//   - name: objs
-//     in: path
-//     description: 'Only values of "tenants", "sites",
-//     "buildings", "rooms", "racks", "devices", "room-templates",
-//     "obj-templates", "bldg-templates","acs", "panels","cabinets", "groups",
-//     "corridors","sensors","stray-devices","stray-sensors", are acceptable'
-//     type: string
-//     required: true
-//   - name: id
-//     in: path
-//     description: 'ID of the object or name of Tenant.
-//     For templates the slug is the ID. For stray-devices the name is the ID'
-//     type: string
-//     required: true
-//
-// responses:
-//
-//		'200':
-//	    	description: 'Found. Content length sent in header'
-//		'400':
-//	    	description: Bad request. Content length sent in header.
-//		'404':
-//			description: Not Found. Content length sent in header.
+//	'200':
+//	    description: 'Found. A response header will be returned with
+//	    possible operations.'
+//	'400':
+//	    description: Bad request. An error message will be returned.
+//	'404':
+//	    description: Not Found. An error message will be returned.
 var GetEntity = func(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("******************************************************")
 	fmt.Println("FUNCTION CALL: 	 GetEntity ")
@@ -467,7 +437,7 @@ var GetEntity = func(w http.ResponseWriter, r *http.Request) {
 
 	if r.Method == "OPTIONS" && data != nil {
 		w.Header().Add("Content-Type", "application/json")
-		w.Header().Add("Allow", "GET, DELETE, HEAD, OPTIONS, PATCH, PUT")
+		w.Header().Add("Allow", "GET, DELETE, OPTIONS, PATCH, PUT")
 	} else {
 		resp["data"] = data
 		u.Respond(w, resp)
@@ -483,43 +453,22 @@ var GetEntity = func(w http.ResponseWriter, r *http.Request) {
 // - application/json
 // parameters:
 //   - name: objs
-//     in: path
+//     in: query
 //     description: 'Indicates the location. Only values of "tenants", "sites",
 //     "buildings", "rooms", "racks", "devices", "room-templates",
 //     "obj-templates","acs", "panels", "cabinets", "groups",
 //     "corridors", "sensors", "stray-devices", "stray-sensors" are acceptable'
 //     required: true
 //     type: string
+//     default: "sites"
 //
 // responses:
 //
-//		'200':
-//	    	description: 'Found. A response body will be returned with
-//	    	a meaningful message.'
-//		'404':
-//	    	description: Nothing Found. An error message will be returned.
-
-// swagger:operation HEAD /api/{objs} objects GetAllObjectsHead
-// Returns content length for get all present objects of specified category in the system.
-// ---
-// produces:
-// - application/json
-// parameters:
-//   - name: objs
-//     in: path
-//     description: 'Indicates the location. Only values of "tenants", "sites",
-//     "buildings", "rooms", "racks", "devices", "room-templates",
-//     "obj-templates","acs", "panels", "cabinets", "groups",
-//     "corridors", "sensors", "stray-devices", "stray-sensors" are acceptable'
-//     required: true
-//     type: string
-//
-// responses:
-//
-//		'200':
-//	    	description: 'OK. Content length sent in header'
-//		'404':
-//	    	description: Nothing Found. Content length sent in header.
+//	'200':
+//	    description: 'Found. A response body will be returned with
+//	    a meaningful message.'
+//	'404':
+//	    description: Nothing Found. An error message will be returned.
 var GetAllEntities = func(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("******************************************************")
 	fmt.Println("FUNCTION CALL: 	 GetAllEntities ")
@@ -590,27 +539,30 @@ var GetAllEntities = func(w http.ResponseWriter, r *http.Request) {
 // - application/json
 // parameters:
 //   - name: objs
-//     in: path
+//     in: query
 //     description: 'Indicates the location. Only values of "tenants", "sites",
 //     "buildings", "rooms", "racks", "devices", "room-templates",
-//     "obj-templates", "bldg-templates","rooms","acs", "panels", "cabinets", "groups",
-//     "corridors","sensors", "stray-devices", "stray-sensors" are acceptable'
+//     "obj-templates","acs", "panels",
+//     "cabinets", "groups", "corridors","sensors", "stray-devices"
+//     "stray-sensors" are acceptable'
 //     required: true
 //     type: string
-//   - name: id
+//     default: "sites"
+//   - name: ID
 //     in: path
 //     description: 'ID of the object or name of Tenant.
 //     For templates the slug is the ID. For stray-devices the name is the ID'
 //     required: true
-//     type: string
+//     type: int
+//     default: 999
 //
 // responses:
 //
-//		'200':
-//	    	description: 'Updated. A response body will be returned with
-//	    	a meaningful message.'
-//		'404':
-//	    	description: Not Found. An error message will be returned.
+//	'204':
+//	   description: 'Successfully deleted object.
+//	   No response body will be returned'
+//	'404':
+//	   description: Not found. An error message will be returned
 var DeleteEntity = func(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("******************************************************")
 	fmt.Println("FUNCTION CALL: 	 DeleteEntity ")
@@ -700,46 +652,49 @@ var DeleteEntity = func(w http.ResponseWriter, r *http.Request) {
 // - application/json
 // parameters:
 // - name: objs
-//   in: path
+//   in: query
 //   description: 'Indicates the location. Only values of "tenants", "sites",
 //   "buildings", "rooms", "racks", "devices", "room-templates",
 //   "obj-templates", "bldg-templates","rooms", "acs", "panels", "cabinets", "groups",
 //   "corridors", "sensors", "stray-devices", "stray-sensors" are acceptable'
 //   required: true
 //   type: string
-// - name: id
+//   default: "sites"
+// - name: ID
 //   in: path
 //   description: 'ID of the object or name of Tenant.
 //   For templates the slug is the ID. For stray-devices the name is the ID'
 //   required: true
-//   type: string
+//   type: int
+//   default: 999
 // - name: Name
-//   in: formData
+//   in: query
 //   description: Name of Object
 //   required: false
 //   type: string
+//   default: "INFINITI"
 // - name: Category
-//   in: formData
+//   in: query
 //   description: Category of Object (ex. Consumer Electronics, Medical)
 //   required: false
 //   type: string
+//   default: "Auto"
 // - name: Description
-//   in: formData
+//   in: query
 //   description: Description of Object
 //   required: false
-//   type: array
-//   items:
-//   	type: string
+//   type: string[]
+//   default: "High End Worldwide automotive company"
 // - name: Domain
 //   description: 'Domain of the Object'
 //   required: false
 //   type: string
-//   in: formData
+//   default: "High End Auto"
 // - name: Attributes
-//   in: formData
+//   in: query
 //   description: Any other object attributes can be updated
 //   required: false
-//   type: string
+//   type: json
 // responses:
 //     '200':
 //         description: 'Updated. A response body will be returned with
@@ -762,47 +717,49 @@ var DeleteEntity = func(w http.ResponseWriter, r *http.Request) {
 // - application/json
 // parameters:
 // - name: objs
-//   in: path
+//   in: query
 //   description: 'Indicates the location. Only values of "tenants", "sites",
 //   "buildings", "rooms", "racks", "devices", "room-templates",
 //   "obj-templates", "bldg-templates","rooms","acs", "panels", "cabinets", "groups",
 //   "corridors","sensors", "stray-devices", "stray-sensors" are acceptable'
 //   required: true
 //   type: string
-// - name: id
+//   default: "sites"
+// - name: ID
 //   in: path
 //   description: 'ID of the object or name of Tenant.
 //   For templates the slug is the ID. For stray-devices the name is the ID'
 //   required: true
-//   type: string
+//   type: int
+//   default: 999
 // - name: Name
-//   in: formData
+//   in: query
 //   description: Name of Object
 //   required: false
 //   type: string
+//   default: "INFINITI"
 // - name: Category
-//   in: formData
+//   in: query
 //   description: Category of Object (ex. Consumer Electronics, Medical)
 //   required: false
 //   type: string
+//   default: "Auto"
 // - name: Description
-//   in: formData
+//   in: query
 //   description: Description of Object
 //   required: false
-//   type: array
-//   items:
-//   	type: string
+//   type: string[]
+//   default: "High End Worldwide automotive company"
 // - name: Domain
 //   description: 'Domain of the Object'
 //   required: false
 //   type: string
-//   in: formData
+//   default: "High End Auto"
 // - name: Attributes
-//   in: formData
-//   x-dataType: dictionary
-//   description: Any other object attributes can be updated in this dictionary. The values must be a string.
+//   in: query
+//   description: Any other object attributes can be updated
 //   required: false
-//   type: string
+//   type: json
 // responses:
 //     '200':
 //         description: 'Updated. A response body will be returned with
@@ -914,7 +871,7 @@ var UpdateEntity = func(w http.ResponseWriter, r *http.Request) {
 	u.Respond(w, v)
 }
 
-// swagger:operation GET /api/{objs}? objects GetObjectByQuery
+// swagger:operation GET /api/{objs}? objects GetObject
 // Gets an Object using any attribute (with the exception of description)
 // via query in the system
 // The attributes are in the form {attr}=xyz&{attr1}=abc
@@ -924,86 +881,44 @@ var UpdateEntity = func(w http.ResponseWriter, r *http.Request) {
 // - application/json
 // parameters:
 //   - name: objs
-//     in: path
+//     in: query
 //     description: 'Indicates the object. Only values of "tenants", "sites",
 //     "buildings", "rooms", "racks", "devices", "room-templates",
 //     "obj-templates","acs","panels", "groups", "corridors",
 //     "sensors", "stray-devices" and "stray-sensors" are acceptable'
 //     required: true
 //     type: string
+//     default: "sites"
 //   - name: Name
 //     in: query
 //     description: Name of tenant
 //     required: false
 //     type: string
+//     default: "INFINITI"
 //   - name: Category
 //     in: query
 //     description: Category of Tenant (ex. Consumer Electronics, Medical)
 //     required: false
 //     type: string
+//     default: "Auto"
 //   - name: Domain
-//     in: query
 //     description: 'Domain of the Tenant'
 //     required: false
 //     type: string
+//     default: "High End Auto"
 //   - name: Attributes
 //     in: query
 //     description: Any other object attributes can be queried
 //     required: false
-//     type: string
+//     type: json
 //
 // responses:
 //
-//	    '204':
-//	         description: 'Found. A response body will be returned with
-//		         a meaningful message.'
-//	    '404':
-//		        description: Not found. An error message will be returned.
-
-// swagger:operation HEAD /api/{objs}? objects GetObjectByQueryHead
-// Returns content length of  an Object using any attribute
-// (with the exception of description) via query in the system
-// The attributes are in the form {attr}=xyz&{attr1}=abc
-// And any combination can be used given that at least 1 is provided.
-// ---
-// produces:
-// - application/json
-// parameters:
-//   - name: objs
-//     in: path
-//     description: 'Indicates the object. Only values of "tenants", "sites",
-//     "buildings", "rooms", "racks", "devices", "room-templates",
-//     "obj-templates","acs","panels", "groups", "corridors",
-//     "sensors", "stray-devices" and "stray-sensors" are acceptable'
-//     required: true
-//     type: string
-//   - name: Name
-//     in: query
-//     description: Name of tenant
-//     required: false
-//     type: string
-//   - name: Category
-//     in: query
-//     description: Category of Tenant (ex. Consumer Electronics, Medical)
-//     required: false
-//     type: string
-//   - name: Domain
-//     in: query
-//     description: 'Domain of the Tenant'
-//     required: false
-//     type: string
-//   - name: Attributes
-//     in: query
-//     description: Any other object attributes can be queried
-//     required: false
-//     type: string
-//
-// responses:
-//
-//	    '204':
-//	         description: 'OK. Content length will be returned in header'
-//	    '404':
-//		        description: Not found. Content length will be returned in header.
+//	'204':
+//	   description: 'Found. A response body will be returned with
+//	    a meaningful message.'
+//	'404':
+//	   description: Not found. An error message will be returned.
 var GetEntityByQuery = func(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("******************************************************")
 	fmt.Println("FUNCTION CALL: 	 GetEntityByQuery ")
@@ -1068,7 +983,7 @@ var GetEntityByQuery = func(w http.ResponseWriter, r *http.Request) {
 	u.Respond(w, resp)
 }
 
-// swagger:operation GET /api/tempunits/id tempunits GetTempUnit
+// swagger:operation GET /api/tempunits/{id} tempunits GetTempUnit
 // Gets the temperatureUnit attribute of the parent site of given object.
 // ---
 // produces:
@@ -1078,15 +993,14 @@ var GetEntityByQuery = func(w http.ResponseWriter, r *http.Request) {
 //     in: query
 //     description: 'ID of any object.'
 //     required: true
-//     type: string
 // responses:
-//  	'200':
-//     		description: 'Found. A response body will be returned with
-//     		a meaningful message.'
-//  	'404':
-//     		description: 'Nothing Found. An error message will be returned.'
+//  '200':
+//     description: 'Found. A response body will be returned with
+//     a meaningful message.'
+//  '404':
+//     description: 'Nothing Found. An error message will be returned.'
 
-// swagger:operation OPTIONS /api/tempunits/id tempunits GetTempUnitOptions
+// swagger:operation OPTIONS /api/tempunits/{id} tempunits GetTempUnit
 // Gets the possible operations of the parent site tempunit of given object.
 // ---
 // produces:
@@ -1096,32 +1010,13 @@ var GetEntityByQuery = func(w http.ResponseWriter, r *http.Request) {
 //     in: query
 //     description: 'ID of any object.'
 //     required: true
-//     type: string
 // responses:
-//		'200':
-//	   		description: 'Found. A response body will be returned with
-//	   		a meaningful message.'
-//		'404':
-//	   		description: 'Nothing Found. An error message will be returned.'
+//	'200':
+//	   description: 'Found. A response body will be returned with
+//	   a meaningful message.'
+//	'404':
+//	   description: 'Nothing Found. An error message will be returned.'
 
-// swagger:operation HEAD /api/tempunits/id tempunits GetTempUnitHead
-// Gets the content length for temperatureUnit attribute of the parent site of given object.
-// ---
-// produces:
-// - application/json
-// parameters:
-//   - name: id
-//     in: query
-//     description: 'ID of any object.'
-//     required: true
-//     type: string
-//
-// responses:
-//
-//		'200':
-//	   		description: 'OK. Content length is in header'
-//		'404':
-//	   		description: 'Content length of error is in header'
 var GetTempUnit = func(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("******************************************************")
 	fmt.Println("FUNCTION CALL: 	 GetTempUnit ")
@@ -1145,31 +1040,34 @@ var GetTempUnit = func(w http.ResponseWriter, r *http.Request) {
 	u.Respond(w, resp)
 }
 
-// swagger:operation GET /api/{obj}/{id}/{subent} objects GetObject2LevelsLower
+// swagger:operation GET /api/{obj}/{id}/{subent} objects GetFromObject
 // Obtain all objects 2 levels lower in the system.
-// (Example) /api/tenants/{id}/buildings
+// For Example: /api/tenants/{id}/buildings
 // Will return all buildings of a tenant
-// Returns JSON body with all subobjects under the Object.
+// Returns JSON body with all subobjects under the Object
 // ---
 // produces:
 // - application/json
 // parameters:
 // - name: obj
-//   in: path
+//   in: query
 //   description: 'Indicates the object. Only values of "tenants", "sites",
 //   "buildings", "rooms" are acceptable'
 //   required: true
 //   type: string
-// - name: id
-//   in: path
+//   default: "tenants"
+// - name: ID
+//   in: query
 //   description: ID of object
 //   required: true
-//   type: string
+//   type: int
+//   default: 999
 // - name: subent
-//   in: path
+//   in: query
 //   description: Objects which 2 are levels lower in the hierarchy.
 //   required: true
 //   type: string
+//   default: buildings
 // responses:
 //     '200':
 //         description: 'Found. A response body will be returned with
@@ -1177,73 +1075,34 @@ var GetTempUnit = func(w http.ResponseWriter, r *http.Request) {
 //     '404':
 //         description: Nothing Found. An error message will be returned.
 
-// swagger:operation OPTIONS /api/{objs}/{id}/{subent} objects GetObject2LevelsLowerOptions
+// swagger:operation OPTIONS /api/{obj}/{id}/{subent} objects GetFromObjectOptions
 // Displays possible operations for the resource in response header.
 // ---
 // produces:
 // - application/json
 // parameters:
 //   - name: objs
-//     in: 'path'
+//     in: query
 //     description: 'Only values of "tenants", "sites",
 //     "buildings", "rooms", "racks", "devices", and "stray-devices"
 //     are acceptable'
-//     type: string
-//     required: true
 //   - name: id
-//     in: 'path'
+//     in: query
 //     description: 'ID of the object. For stray-devices and tenants the name
 //     can be used as the ID.'
-//     type: string
-//     required: true
 //   - name: subent
-//     type: string
-//     required: true
-//     in: 'path'
+//     in: query
 //     description: 'This refers to the sub object under the objs parameter.
 //     Please refer to the OGREE wiki to better understand what objects
 //     can be considered as sub objects.'
 //
 // responses:
 //
-//		'200':
-//	    	description: 'OK'
-//		'404':
-//	    	description: 'Nothing Found.'
-
-// swagger:operation HEAD /api/{objs}/{id}/{subent} objects GetObject2LevelsLowerHead
-// Returns content length for objects 2 levels lower in response header.
-// ---
-// produces:
-// - application/json
-// parameters:
-//   - name: objs
-//     in: 'path'
-//     description: 'Only values of "tenants", "sites",
-//     "buildings", "rooms", "racks", "devices", and "stray-devices"
-//     are acceptable'
-//     type: string
-//     required: true
-//   - name: id
-//     in: 'path'
-//     description: 'ID of the object. For stray-devices and tenants the name
-//     can be used as the ID.'
-//     type: string
-//     required: true
-//   - name: subent
-//     type: string
-//     required: true
-//     in: 'path'
-//     description: 'This refers to the sub object under the objs parameter.
-//     Please refer to the OGREE wiki to better understand what objects
-//     can be considered as sub objects.'
-//
-// responses:
-//
-//		'200':
-//	    	description: 'OK. Content length sent in header'
-//		'404':
-//	    	description: 'Nothing Found. Content length sent in header'
+//	'200':
+//	    description: 'Found. A response body will be returned with
+//	    a meaningful message.'
+//	'404':
+//	    description: Nothing Found.
 var GetEntitiesOfAncestor = func(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("******************************************************")
 	fmt.Println("FUNCTION CALL: 	 GetEntitiesOfAncestor ")
@@ -1314,14 +1173,14 @@ var GetEntitiesOfAncestor = func(w http.ResponseWriter, r *http.Request) {
 
 	if r.Method == "OPTIONS" {
 		w.Header().Add("Content-Type", "application/json")
-		w.Header().Add("Allow", "GET, HEAD, OPTIONS")
+		w.Header().Add("Allow", "GET, OPTIONS")
 	} else {
 		resp["data"] = map[string]interface{}{"objects": data}
 		u.Respond(w, resp)
 	}
 }
 
-// swagger:operation GET /api/{objs}/{id}/all objects GetFullObjectHierarchy
+// swagger:operation GET /api/{objs}/{id}/all objects GetFromObject
 // Obtain all objects related to specified object in the system.
 // Returns JSON body with all subobjects under the Object.
 // Note that objects returned will also included relevant objects.
@@ -1331,24 +1190,27 @@ var GetEntitiesOfAncestor = func(w http.ResponseWriter, r *http.Request) {
 // - application/json
 // parameters:
 // - name: objs
-//   in: path
+//   in: query
 //   description: 'Indicates the object. Only values of "tenants", "sites",
 //   "buildings", "rooms", "racks", "devices", "stray-devices" are acceptable'
 //   required: true
 //   type: string
-// - name: id
-//   in: path
+//   default: "sites"
+// - name: ID
+//   in: query
 //   description: 'ID of object. For tenants and stray-devices the name
 //   can be used as the ID'
 //   required: true
-//   type: string
+//   type: int
+//   default: 999
 // - name: limit
 //   in: query
 //   description: 'Limits the level of hierarchy for retrieval. if not
 //   specified for devices then the default value is maximum.
-//   example: /api/devices/{id}/all?limit=2'
+//   Example: /api/devices/{id}/all?limit=2'
 //   required: false
 //   type: string
+//   default: 1
 // responses:
 //     '200':
 //         description: 'Found. A response body will be returned with
@@ -1356,60 +1218,29 @@ var GetEntitiesOfAncestor = func(w http.ResponseWriter, r *http.Request) {
 //     '404':
 //         description: Nothing Found. An error message will be returned.
 
-// swagger:operation OPTIONS /api/{objs}/{id}/all objects GetFullObjectHierarchyOptions
+// swagger:operation OPTIONS /api/{objs}/{id}/all objects GetFromObjectOptions
 // Displays possible operations for the resource in response header.
 // ---
 // produces:
 // - application/json
 // parameters:
 //   - name: objs
-//     in: path
+//     in: query
 //     description: 'Only values of "tenants", "sites",
 //     "buildings", "rooms", "racks", "devices", and "stray-devices"
 //     are acceptable'
-//     type: string
-//     required: true
 //   - name: id
-//     in: path
+//     in: query
 //     description: 'ID of the object.For tenants and stray-devices the name
 //     can be used as the ID'
-//     type: string
-//     required: true
 //
 // responses:
 //
-//		'200':
-//	    	description: 'Found. A response header will be returned with
-//	    	possible operations.'
-//		'404':
-//	    	description: Nothing Found.
-
-// swagger:operation HEAD /api/{objs}/{id}/all objects GetFullObjectHierarchyHead
-// Returns content length of an object's hierarchy in response header.
-// ---
-// produces:
-// - application/json
-// parameters:
-//   - name: objs
-//     in: path
-//     description: 'Only values of "tenants", "sites",
-//     "buildings", "rooms", "racks", "devices", and "stray-devices"
-//     are acceptable'
-//     type: string
-//     required: true
-//   - name: id
-//     in: path
-//     description: 'ID of the object.For tenants and stray-devices the name
-//     can be used as the ID'
-//     type: string
-//     required: true
-//
-// responses:
-//
-//		'200':
-//	    	description: 'OK. Content length of hierarchy sent in header'
-//		'404':
-//	    	description: Nothing Found. Content length of error sent in header
+//	'200':
+//	    description: 'Found. A response header will be returned with
+//	    possible operations.'
+//	'404':
+//	    description: Nothing Found.
 var GetEntityHierarchy = func(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("******************************************************")
 	fmt.Println("FUNCTION CALL: 	 GetEntityHierarchy ")
@@ -1577,30 +1408,26 @@ var GetEntityHierarchy = func(w http.ResponseWriter, r *http.Request) {
 
 	if r.Method == "OPTIONS" {
 		w.Header().Add("Content-Type", "application/json")
-		w.Header().Add("Allow", "GET, HEAD, OPTIONS")
+		w.Header().Add("Allow", "GET, OPTIONS")
 	} else {
 		resp["data"] = data
 		u.Respond(w, resp)
 	}
 }
 
-// swagger:operation GET /api/{entity}/{name}/all objects GetObjectHierarchy
+// swagger:operation GET /api/{entity}/{name}/all objects GetFromObject
 // Obtain all objects related to Tenant or stray-device in the system using name.
 // Returns JSON body with all subobjects under the Tenant
 // ---
 // produces:
 // - application/json
 // parameters:
-// - name: entity
-//   in: path
-//   description: Entity type (ie Tenant)
-//   required: true
-//   type: string
 // - name: name
-//   in: path
+//   in: query
 //   description: Name of Tenant
 //   required: true
-//   type: string
+//   type: int
+//   default: 999
 // responses:
 //     '200':
 //         description: 'Found. A response body will be returned with
@@ -1608,54 +1435,23 @@ var GetEntityHierarchy = func(w http.ResponseWriter, r *http.Request) {
 //     '404':
 //         description: Nothing Found. An error message will be returned.
 
-// swagger:operation OPTIONS /api/{entity}/{name}/all objects GetObjectHierarchyOptions
+// swagger:operation OPTIONS /api/{entity}/{name}/all objects GetFromObjectOptions
 // Displays possible operations for the resource in response header.
 // ---
 // produces:
 // - application/json
 // parameters:
 //   - name: name
-//     in: path
+//     in: query
 //     description: 'Name of tenant.'
-//     type: string
-//     required: true
-//   - name: entity
-//     in: path
-//     description: 'Entity type (ie Tenant).'
-//     type: string
-//     required: true
 //
 // responses:
 //
-//		'200':
-//	    	description: 'Found. A response header will be returned with
-//	    	possible operation.'
-//		'404':
-//	    	description: Nothing Found.
-
-// swagger:operation HEAD /api/{entity}/{name}/all objects GetObjectHierarchyHead
-// Returns content length of hierarchy in response header.
-// ---
-// produces:
-// - application/json
-// parameters:
-//   - name: name
-//     in: path
-//     description: 'Name of tenant.'
-//     type: string
-//     required: true
-//   - name: entity
-//     in: path
-//     description: 'Entity type (ie Tenant).'
-//     type: string
-//     required: true
-//
-// responses:
-//
-//		'200':
-//	    	description: 'OK. Content length sent in response header'
-//		'404':
-//	    	description: Nothing Found. Error content length sent in header
+//	'200':
+//	    description: 'Found. A response header will be returned with
+//	    possible operation.'
+//	'404':
+//	    description: Nothing Found.
 var GetHierarchyByName = func(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("******************************************************")
 	fmt.Println("FUNCTION CALL: 	 GetHierarchyByName ")
@@ -1792,7 +1588,7 @@ var GetHierarchyByName = func(w http.ResponseWriter, r *http.Request) {
 
 	if r.Method == "OPTIONS" {
 		w.Header().Add("Content-Type", "application/json")
-		w.Header().Add("Allow", "GET, HEAD, OPTIONS")
+		w.Header().Add("Allow", "GET, OPTIONS")
 	} else {
 		resp["data"] = data
 		u.Respond(w, resp)
@@ -1807,17 +1603,19 @@ var GetHierarchyByName = func(w http.ResponseWriter, r *http.Request) {
 // - application/json
 // parameters:
 // - name: objs
-//   in: path
+//   in: query
 //   description: 'Indicates the object. Only values of "tenants", "sites",
 //   "buildings", "rooms", "racks", "devices", "stray-devices" are acceptable'
 //   required: true
 //   type: string
-// - name: id
+//   default: "sites"
+// - name: ID
 //   in: path
 //   description: 'ID of desired object. For tenants and stray-devices the name
 //   can be used as the ID'
 //   required: true
 //   type: string
+//   default: "INFINITI"
 // - name: '*'
 //   in: path
 //   description: 'Hierarchal path to desired object(s).
@@ -1827,6 +1625,7 @@ var GetHierarchyByName = func(w http.ResponseWriter, r *http.Request) {
 //   For racks it can have "sensors"'
 //   required: true
 //   type: string
+//   default: "/buildings/BuildingB/RoomA"
 // responses:
 //     '200':
 //         description: 'Found. A response body will be returned with
@@ -1841,18 +1640,14 @@ var GetHierarchyByName = func(w http.ResponseWriter, r *http.Request) {
 // - application/json
 // parameters:
 //   - name: objs
-//     in: path
+//     in: query
 //     description: 'Only values of "tenants", "sites",
 //     "buildings", "rooms", "racks", "devices", and "stray-devices"
 //     are acceptable'
-//     type: string
-//     required: true
 //   - name: id
-//     in: path
+//     in: query
 //     description: 'ID of the object.For tenants and stray-devices the name
 //     can be used as the ID'
-//     type: string
-//     required: true
 //   - name: '*'
 //     in: path
 //     description: 'Hierarchal path to desired object(s).
@@ -1862,50 +1657,15 @@ var GetHierarchyByName = func(w http.ResponseWriter, r *http.Request) {
 //     For racks it can have "sensors"'
 //     required: true
 //     type: string
+//     default: "/buildings/BuildingB/RoomA"
 //
 // responses:
 //
-//		'200':
-//	    	description: 'Found. A response header will be returned with
+//	'200':
+//	    description: 'Found. A response header will be returned with
 //	    possible operations.'
-//		'404':
-//	    	description: Not Found.
-
-// swagger:operation HEAD /api/{objs}/{id}/* objects GetFromObjectHead
-// Returns content length of the resource in response header.
-// ---
-// produces:
-// - application/json
-// parameters:
-//   - name: objs
-//     in: path
-//     description: 'Only values of "tenants", "sites",
-//     "buildings", "rooms", "racks", "devices", and "stray-devices"
-//     are acceptable'
-//     type: string
-//     required: true
-//   - name: id
-//     in: path
-//     description: 'ID of the object.For tenants and stray-devices the name
-//     can be used as the ID'
-//     type: string
-//     required: true
-//   - name: '*'
-//     in: path
-//     description: 'Hierarchal path to desired object(s).
-//     For rooms it can additionally have "acs","panels",
-//     "corridors", "sensors" and "cabinets".
-//     For devices it can have "sensors"
-//     For racks it can have "sensors"'
-//     required: true
-//     type: string
-//
-// responses:
-//
-//		'200':
-//	    	description: 'Found. Content length sent in header'
-//		'404':
-//	    	description: Not Found. Content length sent in header
+//	'404':
+//	    description: Not Found.
 var GetEntitiesUsingNamesOfParents = func(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("******************************************************")
 	fmt.Println("FUNCTION CALL: 	 GetEntitiesUsingNamesOfParents ")
@@ -2073,28 +1833,26 @@ var GetEntitiesUsingNamesOfParents = func(w http.ResponseWriter, r *http.Request
 
 }
 
-// swagger:operation OPTIONS /api/{objs}/* objects ObjectPathOptions
+// swagger:operation OPTIONS /api/{objs}/* objects ObjectOptions
 // Displays possible operations for the resource in response header.
 // ---
 // produces:
 // - application/json
 // parameters:
 //   - name: objs
-//     in: path
+//     in: query
 //     description: 'Only values of "tenants", "sites",
 //     "buildings", "rooms", "racks", "devices", "room-templates",
 //     "obj-templates", "bldg-templates","rooms", "acs", "panels",
 //     "cabinets", "groups", "corridors","sensors","stray-devices"
 //     "stray-sensors" are acceptable'
-//     type: string
-//     required: true
 //
 // responses:
 //
-//		'200':
-//			description: 'Request is valid.'
-//		'404':
-//	    	description: Not Found. An error message will be returned.
+//	'200':
+//	    description: 'Request is valid.'
+//	'404':
+//	    description: Not Found. An error message will be returned.
 var BaseOption = func(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("******************************************************")
 	fmt.Println("FUNCTION CALL: 	 BaseOption ")
@@ -2111,27 +1869,17 @@ var BaseOption = func(w http.ResponseWriter, r *http.Request) {
 
 }
 
-// swagger:operation GET /api/stats statistics GetStats
+// swagger:operation GET /api/stats objects GetStats
 // Displays DB statistics.
 // ---
 // produces:
 // - application/json
 // responses:
 //
-//		'200':
-//	    	description: 'OK'
-//		'504':
-//	    	description: Server error. An error message will be returned.
-
-// swagger:operation OPTIONS /api/stats statistics GetStatsOptions
-// Displays possible HTTP operations for DB statistics.
-// ---
-// produces:
-// - application/json
-// responses:
-//
-//		'200':
-//	    	description: 'OK'
+//	'200':
+//	    description: 'Request is valid.'
+//	'504':
+//	    description: Server error.
 var GetStats = func(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("******************************************************")
 	fmt.Println("FUNCTION CALL: 	 GetStats ")
@@ -2148,14 +1896,14 @@ var GetStats = func(w http.ResponseWriter, r *http.Request) {
 
 }
 
-// swagger:operation POST /api/validate/{objs} objects ValidateObject
+// swagger:operation POST /api/validate/{obj} objects ValidateObject
 // Checks the received data and verifies if the object can be created in the system.
 // ---
 // produces:
 // - application/json
 // parameters:
 // - name: objs
-//   in: path
+//   in: query
 //   description: 'Indicates the Object. Only values of "tenants", "sites",
 //   "buildings", "rooms", "racks", "devices", "acs", "panels",
 //   "cabinets", "groups", "corridors",
@@ -2163,41 +1911,42 @@ var GetStats = func(w http.ResponseWriter, r *http.Request) {
 //   "stray-sensors" are acceptable'
 //   required: true
 //   type: string
+//   default: "sites"
 // - name: Name
-//   in: formData
+//   in: query
 //   description: Name of object
 //   required: true
 //   type: string
+//   default: "Object A"
 // - name: Category
-//   in: formData
+//   in: query
 //   description: Category of Object (ex. Consumer Electronics, Medical)
 //   required: true
 //   type: string
+//   default: "Research"
 // - name: Domain
 //   description: 'Domain of Object'
 //   required: true
 //   type: string
-//   in: formData
+//   default: 999
 // - name: ParentID
 //   description: 'All objects are linked to a
 //   parent with the exception of Tenant since it has no parent'
 //   required: true
-//   type: string
-//   in: formData
+//   type: int
+//   default: 999
 // - name: Description
-//   in: formData
+//   in: query
 //   description: Description of Object
 //   required: false
-//   type: array
-//   items:
-//   	type: string
+//   type: string[]
+//   default: ["Some abandoned object in Grenoble"]
 // - name: Attributes
-//   in: formData
-//   x-dataType: dictionary
-//   description: 'Any other object attributes can be added in this as a dictionary. The values must be a string
+//   in: query
+//   description: 'Any other object attributes can be added.
 //   They are required depending on the obj type.'
 //   required: true
-//   type: string
+//   type: json
 // responses:
 //     '200':
 //         description: 'Createable. A response body will be returned with
@@ -2215,21 +1964,19 @@ var GetStats = func(w http.ResponseWriter, r *http.Request) {
 // - application/json
 // parameters:
 //   - name: obj
-//     in: path
+//     in: query
 //     description: 'Only values of "tenants", "sites",
 //     "buildings", "rooms", "racks", "devices", "room-templates",
 //     "obj-templates", "bldg-templates","rooms", "acs", "panels",
 //     "cabinets", "groups", "corridors","sensors","stray-devices"
 //     "stray-sensors" are acceptable'
-//     type: string
-//     required: true
 //
 // responses:
 //
-//		'200':
-//	    	description: 'Request is valid.'
-//		'404':
-//	    	description: Not Found. An error message will be returned.
+//	'200':
+//	    description: 'Request is valid.'
+//	'404':
+//	    description: Not Found. An error message will be returned.
 var ValidateEntity = func(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("******************************************************")
 	fmt.Println("FUNCTION CALL: 	 ValidateEntity ")
@@ -2291,22 +2038,9 @@ var ValidateEntity = func(w http.ResponseWriter, r *http.Request) {
 // - application/json
 // responses:
 //
-//		'200':
-//	    	description: 'Returns the possible request methods.'
-
-// swagger:operation HEAD /api/version versioning VersionHead
-// Returns content length of API version.
-// ---
-// produces:
-// - application/json
-// responses:
-//
-//		'200':
-//	    	description: 'Returns the content length in the response header.'
+//	'200':
+//	    description: 'Returns the possible request methods.'
 var Version = func(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("******************************************************")
-	fmt.Println("FUNCTION CALL: 	 Version ")
-	fmt.Println("******************************************************")
 	data := map[string]interface{}{}
 	if r.Method == "OPTIONS" {
 		w.Header().Add("Content-Type", "application/json")
