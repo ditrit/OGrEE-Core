@@ -2643,15 +2643,18 @@ func LoadFile(path string) {
 func LoadTemplate(data map[string]interface{}, filePath string) {
 	var URL string
 
-	if cat, _ := data["category"]; cat == "room" || data["description"] == nil {
+	if cat, _ := data["category"]; cat == "room" {
 		//Room template
 		URL = State.APIURL + "/api/room-templates"
 	} else if cat == "bldg" || cat == "building" {
 		//Bldg template
 		URL = State.APIURL + "/api/bldg-templates"
-	} else {
+	} else if cat == "rack" || cat == "device" {
 		// Obj template
 		URL = State.APIURL + "/api/obj-templates"
+	} else {
+		println("This template does not have a valid category. Please add a category attribute with a value of building or room or rack or device")
+		return
 	}
 
 	r, e := models.Send("POST", URL, GetKey(), data)
