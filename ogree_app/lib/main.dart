@@ -15,6 +15,7 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'OGrEE App',
       theme: ThemeData(
+          // useMaterial3: true,
           fontFamily: GoogleFonts.inter().fontFamily,
           textTheme: TextTheme(
             headlineLarge: GoogleFonts.inter(

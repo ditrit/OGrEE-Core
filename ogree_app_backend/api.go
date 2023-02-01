@@ -1,19 +1,26 @@
 package main
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"log"
 	"net/http"
+	m "ogree_app_backend/models"
 	"os"
+	"time"
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
+	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 var OGREE_URL string
 var OGREE_TOKEN string
+
+const WEB_PROJECTS = "web_project"
 
 func init() {
 	err := godotenv.Load(".env")
@@ -27,11 +34,221 @@ func init() {
 func main() {
 	router := gin.Default()
 	router.Use(cors.Default())
+
+	router.GET("/projects", getProjectsByUserEmail)
+	router.POST("/projects", addProject)
+	router.PUT("/projects/:id", updateProject)
+	router.DELETE("/projects/:id", deleteProject)
+
 	router.GET("/hierarchy", getPhysicalHierarchy)
 	router.GET("/attributes/all", getAllPhysicalAttributes)
 	router.GET("/attributes", getPhysicalAttributesById)
 
-	router.Run("localhost:8080")
+	router.Run(":8080")
+}
+
+// PROJECTS
+
+// project represents data about a recorded web project.
+type project struct {
+	Id          string   `bson:"_id,omitempty"`
+	Name        string   `json:"name" binding:"required"`
+	DateRange   string   `json:"dateRange" binding:"required"`
+	Namespace   string   `json:"namespace" binding:"required"`
+	Attributes  []string `json:"attributes" binding:"required"`
+	Objects     []string `json:"objects" binding:"required"`
+	Permissions []string `json:"permissions" binding:"required,dive,email"`
+	Author      string   `json:"authorLastUpdate" binding:"required"`
+	LastUpdate  string   `json:"lastUpdate" binding:"required"`
+	ShowAvg     bool     `json:"showAvg"`
+	ShowSum     bool     `json:"showSum"`
+	IsPublic    bool     `json:"isPublic"`
+}
+
+// PROJECTS
+
+func getProjectsByUserEmail(c *gin.Context) {
+	data := map[string]interface{}{}
+	response := make(map[string]interface{})
+	response["projects"] = make([]interface{}, 0)
+	// Get query params
+	userId := c.Query("userid")
+	println("Get projects for " + userId)
+
+	// Get user's email
+	objId, err := primitive.ObjectIDFromHex(userId)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, "Invalid user ID format: "+err.Error())
+		return
+	}
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	err = m.GetDB().Collection("account").FindOne(ctx, bson.M{"_id": objId}).Decode(&data)
+
+	if err != nil {
+		c.JSON(http.StatusBadRequest, "Unable to find user: "+err.Error())
+	} else {
+		// Get projects with user permitted
+		var results []project
+		filter := bson.D{
+			{Key: "$or",
+				Value: bson.A{
+					bson.D{{Key: "permissions", Value: data["email"]}},
+					bson.D{{Key: "isPublic", Value: true}},
+				},
+			},
+		}
+		cursor, err := m.GetDB().Collection(WEB_PROJECTS).Find(ctx, filter)
+		if err != nil {
+			fmt.Println(err)
+		} else {
+			// response["projects"], _ = m.ExtractCursor(cursor, ctx)
+			if err = cursor.All(ctx, &results); err != nil {
+				fmt.Println(err)
+			} else if len(results) > 0 {
+				response["projects"] = results
+			}
+		}
+	}
+
+	defer cancel()
+
+	c.IndentedJSON(http.StatusOK, response)
+}
+
+// IF USERS HAVE LIST OF PROJECTS
+func getProjectsByUserId(c *gin.Context) {
+	data := map[string]interface{}{}
+	response := make(map[string]interface{})
+	response["projects"] = make([]interface{}, 0)
+	// Get query params
+	userId := c.Query("userid")
+	println("Get projects for " + userId)
+
+	// Get user project ids
+	objId, err := primitive.ObjectIDFromHex(userId)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, "Invalid user ID format: "+err.Error())
+		return
+	}
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	err = m.GetDB().Collection("account").FindOne(ctx, bson.M{"_id": objId}).Decode(&data)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, "Unable to find user: "+err.Error())
+	} else {
+		println(data["web_projects"])
+		projects, _ := data["web_projects"].(primitive.A)
+		projectIds := []interface{}(projects)
+		if len(projectIds) > 0 {
+			// Convert IDs to good format
+			println(projectIds)
+			var objIds []primitive.ObjectID
+			for _, id := range projectIds {
+				println("ID " + id.(string))
+				objId, err := primitive.ObjectIDFromHex(id.(string))
+				println(err != nil)
+				if err == nil {
+					objIds = append(objIds, objId)
+				}
+			}
+			// Get projects
+			println(objIds)
+			var results []project
+			cursor, err := m.GetDB().Collection("web_project").Find(ctx, bson.M{"_id": bson.M{"$in": objIds}})
+			if err != nil {
+				fmt.Println(err)
+			} else {
+				if err = cursor.All(ctx, &results); err != nil {
+					fmt.Println(err)
+				} else {
+					response["projects"] = results
+				}
+			}
+		}
+	}
+
+	defer cancel()
+
+	c.IndentedJSON(http.StatusOK, response)
+}
+
+func addProject(c *gin.Context) {
+	var newProject project
+
+	// Call BindJSON to bind the received JSON to newProject
+	if err := c.BindJSON(&newProject); err != nil {
+		c.IndentedJSON(http.StatusBadRequest, err.Error())
+		return
+	}
+
+	// Add the new project
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	_, err := m.GetDB().Collection(WEB_PROJECTS).InsertOne(ctx, newProject)
+	if err != nil {
+		c.IndentedJSON(http.StatusBadRequest, err.Error())
+		defer cancel()
+		return
+	}
+
+	// Add project id to users with permissions
+	// addedPermissions := []string{}
+	// for _, userEmail := range newProject.Permissions {
+	// 	println(userEmail)
+	// 	res, err := m.GetDB().Collection("account").UpdateOne(ctx,
+	// 		bson.M{"email": userEmail}, bson.M{"$push": bson.M{"web_projects": result.InsertedID.(primitive.ObjectID).Hex()}})
+	// 	if err == nil && res.MatchedCount > 0 {
+	// 		addedPermissions = append(addedPermissions, userEmail)
+	// 	}
+	// }
+	// newProject.Permissions = addedPermissions
+
+	defer cancel()
+	c.IndentedJSON(http.StatusCreated, newProject)
+}
+
+func updateProject(c *gin.Context) {
+	var newProject project
+	id := c.Param("id")
+	println(id)
+
+	// Call BindJSON to bind the received JSON to newProject
+	if err := c.BindJSON(&newProject); err != nil {
+		c.IndentedJSON(http.StatusBadRequest, err.Error())
+		return
+	}
+
+	// Update existing project, if exists
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	objId, _ := primitive.ObjectIDFromHex(id)
+	res, err := m.GetDB().Collection(WEB_PROJECTS).UpdateOne(ctx,
+		bson.M{"_id": objId}, bson.M{"$set": newProject})
+	defer cancel()
+	if err != nil {
+		c.IndentedJSON(http.StatusInternalServerError, err.Error())
+		return
+	}
+	if res.MatchedCount <= 0 {
+		c.IndentedJSON(http.StatusNotFound, "No project found with this ID")
+		return
+	}
+
+	c.IndentedJSON(http.StatusOK, newProject)
+}
+
+func deleteProject(c *gin.Context) {
+	id := c.Param("id")
+	println(id)
+
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	objId, _ := primitive.ObjectIDFromHex(id)
+	res, err := m.GetDB().Collection(WEB_PROJECTS).DeleteOne(ctx, bson.M{"_id": objId})
+	if err != nil {
+		c.IndentedJSON(http.StatusInternalServerError, err.Error())
+	} else if res.DeletedCount <= 0 {
+		c.IndentedJSON(http.StatusNotFound, "Project not found")
+	} else {
+		c.IndentedJSON(http.StatusOK, "")
+	}
+	defer cancel()
 }
 
 // ATTRIBUTES
@@ -43,18 +260,18 @@ func getAllPhysicalAttributes(c *gin.Context) {
 	data := getFromAPI("/api/sites")
 
 	// Get data for each site
-	println(data["objects"])
+	// println(data["objects"])
 	for _, site := range data["objects"].([]interface{}) {
 		name := (site.(map[string]interface{}))["name"].(string)
 		id := (site.(map[string]interface{}))["id"].(string)
 		// execution tip: remove the query params (after ?) if API not in special rbac branch
-		data = getFromAPI("/api/sites/" + id + "/all?field=name&field=attributes")
-		fmt.Println(data)
+		data = getFromAPI("/api/sites/" + id + "/all") //?field=name&field=attributes")
+		// fmt.Println(data)
 
 		getAllChildrenAttrs(data, &attributes, name)
 		fmt.Println("### getAllChildrenAttrs ###")
-		bs, _ := json.Marshal(attributes)
-		fmt.Println(string(bs))
+		// bs, _ := json.Marshal(attributes)
+		// fmt.Println(string(bs))
 	}
 
 	c.IndentedJSON(http.StatusOK, attributes)
@@ -85,8 +302,8 @@ func getPhysicalAttributesById(c *gin.Context) {
 		if data["name"] != nil && data["attributes"] != nil {
 			attributes[data["name"].(string)] = data["attributes"]
 			fmt.Println("### ATTRIBUTES ###")
-			bs, _ := json.Marshal(attributes)
-			fmt.Println(string(bs))
+			// bs, _ := json.Marshal(attributes)
+			// fmt.Println(string(bs))
 			c.IndentedJSON(http.StatusOK, attributes)
 		} else {
 			c.JSON(http.StatusInternalServerError, "Error getting object from OGrEE-API")
@@ -108,7 +325,7 @@ func getPhysicalHierarchy(c *gin.Context) {
 	data := getFromAPI("/api/sites")
 
 	// Get data for each site
-	println(data["objects"])
+	// println(data["objects"])
 	for _, site := range data["objects"].([]interface{}) {
 		name := (site.(map[string]interface{}))["name"].(string)
 		id := (site.(map[string]interface{}))["id"].(string)
@@ -182,6 +399,6 @@ func getFromAPI(path string) map[string]interface{} {
 	if err != nil {
 		panic(err)
 	}
-	fmt.Printf("%s", data["data"])
+	// fmt.Printf("%s", data["data"])
 	return data["data"].(map[string]interface{})
 }

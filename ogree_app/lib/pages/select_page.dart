@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
+import 'package:ogree_app/common/api.dart';
 import 'package:ogree_app/common/appbar.dart';
+import 'package:ogree_app/common/popup_dialog.dart';
 import 'package:ogree_app/common/snackbar.dart';
+import 'package:ogree_app/models/project.dart';
 import 'package:ogree_app/pages/projects_page.dart';
 import 'package:ogree_app/pages/results_page.dart';
 import 'package:ogree_app/widgets/select_objects/select_objects.dart';
@@ -11,7 +15,8 @@ import 'package:ogree_app/widgets/select_namespace.dart';
 enum Steps { date, namespace, objects, result }
 
 class SelectPage extends StatefulWidget {
-  const SelectPage({super.key});
+  Project? project;
+  SelectPage({super.key, this.project});
   @override
   State<SelectPage> createState() => _SelectPageState();
 
@@ -37,8 +42,22 @@ class _SelectPageState extends State<SelectPage> with TickerProviderStateMixin {
         _selectedObjects = value;
       };
 
-  final List<String> _selectedAttrs = [];
+  List<String> _selectedAttrs = [];
   List<String> get selectedAttrs => _selectedAttrs;
+
+  @override
+  void initState() {
+    if (widget.project != null) {
+      _selectedDate = widget.project!.dateRange;
+      _selectedNamespace = widget.project!.namespace;
+      _selectedAttrs = widget.project!.attributes;
+      for (var obj in widget.project!.objects) {
+        _selectedObjects[obj] = true;
+      }
+      _currentStep = Steps.result.index;
+    }
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -166,16 +185,44 @@ class _SelectPageState extends State<SelectPage> with TickerProviderStateMixin {
     if (_currentStep == Steps.objects.index && _selectedObjects.isEmpty) {
       showSnackBar(context, "Sélectionnez au moins 1 objet avant d'avancer",
           isError: true);
-      return;
+    } else if (_currentStep == Steps.result.index) {
+      Project project;
+      bool isCreate = true;
+      if (widget.project != null) {
+        project = widget.project!;
+        project.dateRange = _selectedDate;
+        project.namespace = _selectedNamespace;
+        project.attributes = _selectedAttrs;
+        project.objects = _selectedObjects.keys.toList();
+        isCreate = false;
+      } else {
+        project = Project(
+            "",
+            _selectedDate,
+            _selectedNamespace,
+            "BETIOL Helder",
+            "31/01/2023",
+            true,
+            true,
+            false,
+            _selectedAttrs,
+            _selectedObjects.keys.toList(),
+            ["helderbetiol@gmail.com"]);
+      }
+
+      showCustomDialog(context, project, "Nommer ce projet", "Annuler",
+          Icons.cancel_outlined, cancelProjectCallback, saveProjectCallback,
+          isCreate: isCreate);
+    } else {
+      _loadObjects = _currentStep == (Steps.objects.index - 1) ? true : false;
+      _currentStep < Steps.values.last.index
+          ? setState(() => _currentStep += 1)
+          : Navigator.of(context).push(
+              MaterialPageRoute(
+                builder: (context) => ProjectsPage(),
+              ),
+            );
     }
-    _loadObjects = _currentStep == (Steps.objects.index - 1) ? true : false;
-    _currentStep < Steps.values.last.index
-        ? setState(() => _currentStep += 1)
-        : Navigator.of(context).push(
-            MaterialPageRoute(
-              builder: (context) => const ProjectsPage(),
-            ),
-          );
   }
 
   cancel() {
@@ -184,8 +231,31 @@ class _SelectPageState extends State<SelectPage> with TickerProviderStateMixin {
         ? setState(() => _currentStep -= 1)
         : Navigator.of(context).push(
             MaterialPageRoute(
-              builder: (context) => const ProjectsPage(),
+              builder: (context) => ProjectsPage(),
             ),
           );
+  }
+
+  saveProjectCallback(String userInput, Project project, bool isCreate) async {
+    String response;
+    project.name = userInput;
+    if (isCreate) {
+      response = await createProject(project);
+    } else {
+      response = await modifyProject(project);
+    }
+    if (response == "") {
+      Navigator.of(context).push(
+        MaterialPageRoute(
+          builder: (context) => ProjectsPage(),
+        ),
+      );
+    } else {
+      showSnackBar(context, response, isError: true);
+    }
+  }
+
+  cancelProjectCallback(String id) {
+    Navigator.pop(context);
   }
 }

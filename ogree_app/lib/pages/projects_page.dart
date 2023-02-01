@@ -1,9 +1,21 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:ogree_app/common/api.dart';
 import 'package:ogree_app/common/appbar.dart';
+import 'package:ogree_app/common/popup_dialog.dart';
+import 'package:ogree_app/common/snackbar.dart';
+import 'package:ogree_app/models/project.dart';
 import 'package:ogree_app/pages/select_page.dart';
 
-class ProjectsPage extends StatelessWidget {
-  const ProjectsPage({super.key});
+class ProjectsPage extends StatefulWidget {
+  ProjectsPage({super.key});
+
+  @override
+  State<ProjectsPage> createState() => _ProjectsPageState();
+}
+
+class _ProjectsPageState extends State<ProjectsPage> {
+  List<Project>? _projects;
 
   @override
   Widget build(BuildContext context) {
@@ -24,7 +36,7 @@ class ProjectsPage extends StatelessWidget {
                     onPressed: () {
                       Navigator.of(context).push(
                         MaterialPageRoute(
-                          builder: (context) => const SelectPage(),
+                          builder: (context) => SelectPage(),
                         ),
                       );
                     },
@@ -44,22 +56,37 @@ class ProjectsPage extends StatelessWidget {
                 ),
               ],
             ),
-            Expanded(
-              child: GridView.extent(
-                padding: const EdgeInsets.only(top: 5),
-                maxCrossAxisExtent: 270,
-                children: getProjectCards(),
-              ),
-            ),
+            FutureBuilder(
+                future: getProjectData(),
+                builder: (context, _) {
+                  if (_projects == null) {
+                    return const Center(child: CircularProgressIndicator());
+                  } else if (_projects!.isNotEmpty) {
+                    return Expanded(
+                      child: GridView.extent(
+                        padding: const EdgeInsets.only(top: 5),
+                        maxCrossAxisExtent: 270,
+                        children: getProjectCards(context),
+                      ),
+                    );
+                  } else {
+                    // Empty messages
+                    return Text("Unable to get projects");
+                  }
+                }),
           ],
         ),
       ),
     );
   }
 
-  getProjectCards() {
+  getProjectData() async {
+    _projects = await fetchProjects();
+  }
+
+  getProjectCards(context) {
     List<Card> cards = [];
-    for (var i = 1; i <= 9; i++) {
+    for (var project in _projects!) {
       cards.add(Card(
         margin: const EdgeInsets.all(10),
         child: Padding(
@@ -71,13 +98,32 @@ class ProjectsPage extends StatelessWidget {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  const Text("Projet ABC",
-                      style:
-                          TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-                  Icon(
-                    Icons.star,
-                    color: i == 1 ? Colors.blueAccent : Colors.grey,
-                    size: 20,
+                  Container(
+                    width: 174,
+                    child: Text("Projet ${project.name}",
+                        overflow: TextOverflow.clip,
+                        style: TextStyle(
+                            fontWeight: FontWeight.bold, fontSize: 16)),
+                  ),
+                  CircleAvatar(
+                    radius: 13,
+                    backgroundColor: Colors.blue,
+                    child: IconButton(
+                        splashRadius: 18,
+                        iconSize: 13,
+                        padding: EdgeInsets.all(2),
+                        onPressed: () => showCustomDialog(
+                            context,
+                            project,
+                            "Editer ce projet",
+                            "Supprimer",
+                            Icons.delete,
+                            deleteProjectCallback,
+                            modifyProjectCallback),
+                        icon: Icon(
+                          Icons.mode_edit_outline_rounded,
+                          color: Colors.white,
+                        )),
                   )
                 ],
               ),
@@ -89,7 +135,7 @@ class ProjectsPage extends StatelessWidget {
                     child: Text("Auteur :"),
                   ),
                   Text(
-                    " DOE John ",
+                    " ${project.authorLastUpdate}",
                     style: TextStyle(backgroundColor: Colors.grey.shade200),
                   ),
                 ],
@@ -102,7 +148,7 @@ class ProjectsPage extends StatelessWidget {
                     child: Text("Dernière modification :"),
                   ),
                   Text(
-                    " 12/10/21 ",
+                    " ${project.lastUpdate}",
                     style: TextStyle(backgroundColor: Colors.grey.shade200),
                   ),
                 ],
@@ -110,7 +156,15 @@ class ProjectsPage extends StatelessWidget {
               Align(
                 alignment: Alignment.bottomRight,
                 child: TextButton.icon(
-                    onPressed: () {},
+                    onPressed: () {
+                      Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (context) => SelectPage(
+                            project: project,
+                          ),
+                        ),
+                      );
+                    },
                     icon: const Icon(Icons.play_circle),
                     label: const Text("Lancer")),
               )
@@ -120,5 +174,31 @@ class ProjectsPage extends StatelessWidget {
       ));
     }
     return cards;
+  }
+
+  modifyProjectCallback(
+      String userInput, Project project, bool isCreate) async {
+    if (userInput == project.name) {
+      Navigator.pop(context);
+    } else {
+      project.name = userInput;
+      var response = await modifyProject(project);
+      if (response == "") {
+        setState(() {});
+        Navigator.pop(context);
+      } else {
+        showSnackBar(context, response, isError: true);
+      }
+    }
+  }
+
+  deleteProjectCallback(String projectId) async {
+    var response = await deleteProject(projectId);
+    if (response == "") {
+      setState(() {});
+      Navigator.pop(context);
+    } else {
+      showSnackBar(context, response, isError: true);
+    }
   }
 }
