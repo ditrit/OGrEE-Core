@@ -1171,18 +1171,14 @@ func (n *getOCAttrNode) execute() (interface{}, error) {
 	}
 	if n.ent == cmd.BLDG {
 		attr := attributes["attributes"].(map[string]interface{})
-		//Distinguish between size & rotation
-		if IsInfArr(attr["size/rotation"]) {
-			attr["size"] = attr["size/rotation"]
 
-		} else { //This means it is rotation
-			attr["rotation"] = attr["size/rotation"]
+		if !IsFloat(attr["rotation"]) {
+			return nil, fmt.Errorf("Invalid rotation attribute provided. It must be a numerical value")
 		}
-		delete(attr, "size/rotation")
 
 		//Distinguish between rotation & template
-		if IsString(attr["rotation/template"]) {
-			attr["template"] = attr["rotation/template"]
+		if IsString(attr["size/template"]) {
+			attr["template"] = attr["size/template"]
 
 			//Check if the template exists
 			if !checkIfTemplate(attr["template"], cmd.BLDG) {
@@ -1190,15 +1186,16 @@ func (n *getOCAttrNode) execute() (interface{}, error) {
 					attr["template"].(string) + "\" does not exist. Please check and try again")
 			}
 
-		} else { //This means it is rotation
-			attr["rotation"] = attr["rotation/template"]
+		} else { //This means it is size
+			attr["size"] = attr["size/template"]
 		}
-		delete(attr, "rotation/template")
+		delete(attr, "size/template")
 
-		//Ensure that the rotation is valid
-		if _, ok := attr["rotation"]; ok {
-			if !IsFloat(attr["rotation"]) {
-				return nil, fmt.Errorf("Please provide a numerical value for the rotation")
+		//Ensure that the size is valid
+		if _, ok := attr["size"]; ok {
+			if !IsInfArr(attr["size"]) ||
+				IsInfArr(attr["size"]) && len(attr["size"].([]interface{})) != 3 {
+				return nil, fmt.Errorf("Please provide a vector3 for the size")
 			}
 		}
 
@@ -1246,14 +1243,17 @@ func (n *getOCAttrNode) execute() (interface{}, error) {
 				return nil, fmt.Errorf(msg)
 			}
 
-		} else { //Check if template is valid
+		} else if tmpl, ok := attr["template"]; ok { //Check if template is valid
 			// Because if axisOrientation was not specified then this means
 			// template was specified
-			sizeOrTmpl := attr["size"]
-			if checkIfTemplate(sizeOrTmpl, n.ent) {
-				//Have to use the template
-				delete(attr, "size")
-				attr["template"] = sizeOrTmpl.(string)
+			if !IsString(attr["template"]) {
+				return nil, fmt.Errorf("Please provide a valid and existing template")
+			}
+			if checkIfTemplate(tmpl, n.ent) {
+				attr["template"] = tmpl.(string)
+			} else {
+				return nil, fmt.Errorf("Template \"" +
+					attr["template"].(string) + "\" does not exist. Please check and try again")
 			}
 
 		}

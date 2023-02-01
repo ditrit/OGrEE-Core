@@ -1390,19 +1390,6 @@ func GetOCLIAtrributes(Path string, ent int, data map[string]interface{}) error 
 		//NOTE this function also assigns value for "size" attribute
 		GetOCLIAtrributesTemplateHelper(attr, data, ent)
 
-		if attr["size"] == "" {
-			if State.DebugLvl > 0 {
-				l.GetErrorLogger().Println(
-					"User gave invalid size value for creating room")
-				return fmt.Errorf("Invalid size attribute provided." +
-					" \nIt must be an array/list/vector with 3 elements." +
-					" Please refer to the wiki or manual reference" +
-					" for more details on how to create objects " +
-					"using this syntax")
-			}
-			return nil
-		}
-
 		if _, ok := attr["posXY"].(string); ok {
 			attr["posXY"] = serialiseAttr(attr, "posXY")
 		} else {
@@ -1426,6 +1413,19 @@ func GetOCLIAtrributes(Path string, ent int, data map[string]interface{}) error 
 		if _, ok := attr["rotation"].(float64); ok {
 			attr["rotation"] =
 				strconv.FormatFloat(attr["rotation"].(float64), 'f', -1, 64)
+		}
+
+		if attr["size"] == "" {
+			if State.DebugLvl > 0 {
+				l.GetErrorLogger().Println(
+					"User gave invalid size value for creating room")
+				return fmt.Errorf("Invalid size attribute provided." +
+					" \nIt must be an array/list/vector with 3 elements." +
+					" Please refer to the wiki or manual reference" +
+					" for more details on how to create objects " +
+					"using this syntax")
+			}
+			return nil
 		}
 
 		data["parentId"] = parent["id"]

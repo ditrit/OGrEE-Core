@@ -389,15 +389,15 @@ OCCR:
         |TOK_BLDG TOK_COL PHYSICAL_PATH TOK_ATTRSPEC EXPR TOK_ATTRSPEC EXPR TOK_ATTRSPEC WORD_OR_EXPR {
               //The TOK_WORD actually refers to "template" but kept as is for simpler distinguishing
               //in the ast code
-              attributes := map[string]interface{}{"attributes":map[string]interface{}{"posXY":$5, "size/rotation":$7, "rotation/template":$9}}
+              attributes := map[string]interface{}{"attributes":map[string]interface{}{"posXY":$5, "rotation":$7, "size/template":$9}}
               $$=&getOCAttrNode{$3, cmd.BLDG, attributes}
         }
         |TOK_ROOM TOK_COL PHYSICAL_PATH TOK_ATTRSPEC EXPR TOK_ATTRSPEC EXPR TOK_ATTRSPEC EXPR TOK_ATTRSPEC ORIENTATION TOK_ATTRSPEC EXPR_NOQUOTE{
-              attributes := map[string]interface{}{"attributes":map[string]interface{}{"posXY":$5, "size":$7, "rotation":$9,"axisOrientation":$11, "floorUnit":$13}}
+              attributes := map[string]interface{}{"attributes":map[string]interface{}{"posXY":$5, "rotation":$7, "size":$9,"axisOrientation":$11, "floorUnit":$13}}
               $$=&getOCAttrNode{$3, cmd.ROOM, attributes}
         }
         |TOK_ROOM TOK_COL PHYSICAL_PATH TOK_ATTRSPEC EXPR TOK_ATTRSPEC EXPR TOK_ATTRSPEC EXPR TOK_ATTRSPEC ORIENTATION {
-              attributes := map[string]interface{}{"attributes":map[string]interface{}{"posXY":$5, "size":$7, "rotation":$9,"axisOrientation":$11 }}
+              attributes := map[string]interface{}{"attributes":map[string]interface{}{"posXY":$5, "rotation":$7, "size":$9,"axisOrientation":$11 }}
               $$=&getOCAttrNode{$3, cmd.ROOM, attributes}
         }
         |TOK_ROOM TOK_COL PHYSICAL_PATH TOK_ATTRSPEC EXPR TOK_ATTRSPEC EXPR TOK_ATTRSPEC WORD_OR_EXPR {
