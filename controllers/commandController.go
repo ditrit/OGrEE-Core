@@ -1706,12 +1706,12 @@ func GetOCLIAtrributesTemplateHelper(attr, data map[string]interface{}, ent int)
 	//data from templates
 	attrSerialiser := func(someVal interface{}, idx string, ent int) string {
 		if x, ok := someVal.(int); ok {
-			if ent == DEVICE || ent == ROOM {
+			if ent == DEVICE || ent == ROOM || ent == BLDG {
 				return strconv.Itoa(x)
 			}
 			return strconv.Itoa(x / 10)
 		} else if x, ok := someVal.(float64); ok {
-			if ent == DEVICE || ent == ROOM {
+			if ent == DEVICE || ent == ROOM || ent == BLDG {
 				return strconv.FormatFloat(x, 'G', -1, 64)
 			}
 			return strconv.FormatFloat(x/10.0, 'G', -1, 64)
@@ -1852,7 +1852,10 @@ func GetOCLIAtrributesTemplateHelper(attr, data map[string]interface{}, ent int)
 
 					//fbxModel section
 					if check := CopyAttr(attr, tmpl, "fbxModel"); !check {
-						attr["fbxModel"] = ""
+						if ent != BLDG {
+							attr["fbxModel"] = ""
+						}
+
 					}
 
 					//Copy orientation if available
@@ -2643,15 +2646,18 @@ func LoadFile(path string) {
 func LoadTemplate(data map[string]interface{}, filePath string) {
 	var URL string
 
-	if cat, _ := data["category"]; cat == "room" || data["description"] == nil {
+	if cat, _ := data["category"]; cat == "room" {
 		//Room template
 		URL = State.APIURL + "/api/room-templates"
 	} else if cat == "bldg" || cat == "building" {
 		//Bldg template
 		URL = State.APIURL + "/api/bldg-templates"
-	} else {
+	} else if cat == "rack" || cat == "device" {
 		// Obj template
 		URL = State.APIURL + "/api/obj-templates"
+	} else {
+		println("This template does not have a valid category. Please add a category attribute with a value of building or room or rack or device")
+		return
 	}
 
 	r, e := models.Send("POST", URL, GetKey(), data)
