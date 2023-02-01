@@ -442,7 +442,7 @@ func CheckKeyIsValid(key string) bool {
 		if State.DebugLvl > NONE {
 			x := ParseResponse(resp, err, " Read API Response message")
 			if x != nil {
-				println(x["message"].(string))
+				println("[API] " + x["message"].(string))
 			} else {
 				println("Was not able to read API Response message")
 			}

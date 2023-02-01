@@ -51,7 +51,7 @@ func PostObj(ent int, entity string, data map[string]interface{}) (map[string]in
 
 		return respMap["data"].(map[string]interface{}), nil
 	}
-	return nil, fmt.Errorf(respMap["message"].(string))
+	return nil, fmt.Errorf(APIErrorPrefix + respMap["message"].(string))
 }
 
 // Calls API's Validation
@@ -76,7 +76,7 @@ func ValidateObj(data map[string]interface{}, ent string, silence bool) bool {
 
 		return true
 	}
-	println("Error:", string(respMap["message"].(string)))
+	println("Error: ", string(APIErrorPrefix+respMap["message"].(string)))
 	println()
 	return false
 }
@@ -666,7 +666,7 @@ func UpdateObj(Path, id, ent string, data map[string]interface{}, deleteAndPut b
 			} else {
 				if mInf, ok := respJson["message"]; ok {
 					if m, ok := mInf.(string); ok {
-						return nil, fmt.Errorf(m)
+						return nil, fmt.Errorf(APIErrorPrefix + m)
 					}
 				}
 				msg := "Cannot update. Please ensure that your attributes " +
@@ -1587,34 +1587,34 @@ func GetOCLIAtrributes(Path string, ent int, data map[string]interface{}) error 
 
 		//First check if attr has only posU & sizeU
 		//reject if true while also converting sizeU to string if numeric
-		if len(attr) == 2 {
-			if sizeU, ok := attr["sizeU"]; ok {
-				sizeUValid := checkNumeric(attr["sizeU"])
+		//if len(attr) == 2 {
+		if sizeU, ok := attr["sizeU"]; ok {
+			sizeUValid := checkNumeric(attr["sizeU"])
 
-				if _, ok := attr["template"]; !ok && sizeUValid == false {
-					l.GetWarningLogger().Println("Invalid parameter provided for device ")
-					return fmt.Errorf("Invalid parameter provided for device")
-				}
+			if _, ok := attr["template"]; !ok && sizeUValid == false {
+				l.GetWarningLogger().Println("Invalid template / sizeU parameter provided for device ")
+				return fmt.Errorf("Please provide a valid device template or sizeU")
+			}
 
-				//Convert block
-				//And Set height
-				if _, ok := sizeU.(int); ok {
-					attr["sizeU"] = strconv.Itoa(sizeU.(int))
-					attr["height"] = strconv.FormatFloat(
-						(float64(sizeU.(int)) * 44.5), 'G', -1, 64)
-				} else if _, ok := sizeU.(float64); ok {
-					attr["sizeU"] = strconv.FormatFloat(sizeU.(float64), 'G', -1, 64)
-					attr["height"] = strconv.FormatFloat(sizeU.(float64)*44.5, 'G', -1, 64)
-				}
-				//End of convert block
-				if _, ok := attr["slot"]; ok {
-					l.GetWarningLogger().Println("Invalid device syntax encountered")
-					return fmt.Errorf("Invalid device syntax: If you have provided a template, it was not found")
-				}
+			//Convert block
+			//And Set height
+			if _, ok := sizeU.(int); ok {
+				attr["sizeU"] = strconv.Itoa(sizeU.(int))
+				attr["height"] = strconv.FormatFloat(
+					(float64(sizeU.(int)) * 44.5), 'G', -1, 64)
+			} else if _, ok := sizeU.(float64); ok {
+				attr["sizeU"] = strconv.FormatFloat(sizeU.(float64), 'G', -1, 64)
+				attr["height"] = strconv.FormatFloat(sizeU.(float64)*44.5, 'G', -1, 64)
+			}
+			//End of convert block
+			if _, ok := attr["slot"]; ok {
+				l.GetWarningLogger().Println("Invalid device syntax encountered")
+				return fmt.Errorf("Invalid device syntax: If you have provided a template, it was not found")
 			}
 		}
+		//}
 
-		//If slot not found
+		//Process the posU/slot attribute
 		if x, ok := attr["posU/slot"]; ok {
 			delete(attr, "posU/slot")
 			//Convert posU to string if numeric
@@ -1628,6 +1628,13 @@ func GetOCLIAtrributes(Path string, ent int, data map[string]interface{}) error 
 				attr["slot"] = ""
 			} else {
 				attr["slot"] = x
+			}
+		}
+
+		//Ensure slot is a string
+		if _, ok := attr["slot"]; ok {
+			if _, ok := attr["slot"].(string); !ok {
+				return fmt.Errorf("The slot name must be a string")
 			}
 		}
 
@@ -2792,7 +2799,7 @@ func LoadTemplate(data map[string]interface{}, filePath string) {
 			println("Error template wasn't loaded")
 			if mInf, ok := parsedResp["message"]; ok {
 				if msg, ok := mInf.(string); ok {
-					println(msg)
+					println(APIErrorPrefix + msg)
 				}
 			}
 

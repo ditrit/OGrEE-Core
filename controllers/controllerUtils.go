@@ -35,6 +35,11 @@ const (
 	DEBUG
 )
 
+// Error Message Const
+// TODO: Replace Const with Err Msg/Reporting Func
+// that distinguishes API & CLI Errors
+const APIErrorPrefix = "[Response From API] "
+
 // Display contents of []map[string]inf array
 func DispMapArr(x []map[string]interface{}) {
 	for idx := range x {
