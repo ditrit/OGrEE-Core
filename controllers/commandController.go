@@ -1850,15 +1850,15 @@ func GetOCLIAtrributesTemplateHelper(attr, data map[string]interface{}, ent int)
 										if t == "chassis" || t == "server" {
 											res := 0
 											if val, ok := sizeInf[2].(float64); ok {
-												res = int((val / 1000) / 0.04445)
+												res = int((val / 1000) / RACKUNIT)
 											} else if val, ok := sizeInf[2].(int); ok {
-												res = int((float64(val) / 1000) / 0.04445)
+												res = int((float64(val) / 1000) / RACKUNIT)
 											} else {
 												//Resort to default value
 												msg := "Warning, invalid value provided for" +
 													" sizeU. Defaulting to 5"
 												println(msg)
-												res = int((5 / 1000) / 0.04445)
+												res = int((5 / 1000) / RACKUNIT)
 											}
 											attr["sizeU"] = strconv.Itoa(res)
 
