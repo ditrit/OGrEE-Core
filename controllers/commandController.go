@@ -1706,12 +1706,12 @@ func GetOCLIAtrributesTemplateHelper(attr, data map[string]interface{}, ent int)
 	//data from templates
 	attrSerialiser := func(someVal interface{}, idx string, ent int) string {
 		if x, ok := someVal.(int); ok {
-			if ent == DEVICE || ent == ROOM {
+			if ent == DEVICE || ent == ROOM || ent == BLDG {
 				return strconv.Itoa(x)
 			}
 			return strconv.Itoa(x / 10)
 		} else if x, ok := someVal.(float64); ok {
-			if ent == DEVICE || ent == ROOM {
+			if ent == DEVICE || ent == ROOM || ent == BLDG {
 				return strconv.FormatFloat(x, 'G', -1, 64)
 			}
 			return strconv.FormatFloat(x/10.0, 'G', -1, 64)
@@ -1852,7 +1852,10 @@ func GetOCLIAtrributesTemplateHelper(attr, data map[string]interface{}, ent int)
 
 					//fbxModel section
 					if check := CopyAttr(attr, tmpl, "fbxModel"); !check {
-						attr["fbxModel"] = ""
+						if ent != BLDG {
+							attr["fbxModel"] = ""
+						}
+
 					}
 
 					//Copy orientation if available
