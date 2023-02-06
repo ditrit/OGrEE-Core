@@ -1902,6 +1902,13 @@ func GetOCLIAtrributesTemplateHelper(attr, data map[string]interface{}, ent int)
 							attr["pillars"] = string(tmp)
 						}
 
+						CopyAttr(attr, tmpl, "floorUnit")
+						if _, ok := attr["floorUnit"]; ok {
+							if floorUnit, ok := attr["floorUnit"].(string); ok {
+								attr["floorUnit"] = floorUnit
+							}
+						}
+
 						CopyAttr(attr, tmpl, "tiles")
 						if _, ok := attr["tiles"]; ok {
 							tmp, _ = json.Marshal(attr["tiles"])
