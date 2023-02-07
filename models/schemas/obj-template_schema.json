@@ -1,0 +1,201 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "title": "OGrEE Obj Template Schema",
+    "type": "object",
+    "required": [
+        "attributes",
+        "colors",
+        "components",
+        "description",
+        "fbxModel",
+        "sizeWDHmm",
+        "slots",
+        "slug"
+    ],
+    "properties": {
+        "attributes": {
+            "type": "object",
+            "required": [
+                "type"
+            ],
+            "properties": {
+                "model": {
+                    "type": "string"
+                },
+                "type": {
+                    "type": "string"
+                },
+                "vendor": {
+                    "type": "string"
+                }
+            }
+        },
+        "category": {
+            "type": "string",
+            "enum": ["rack", "device"]
+        },
+        "colors": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "required": [
+                    "name",
+                    "value"
+                ],
+                "properties": {
+                    "name": {
+                        "type": "string"
+                    },
+                    "value": {
+                        "type": "string",
+                        "$ref": "refs/types.json#/definitions/color"
+                    }
+                }
+            }
+        },
+        "components": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "required": [
+                    "color",
+                    "elemOrient",
+                    "elemPos",
+                    "elemSize",
+                    "labelPos",
+                    "location",
+                    "type"
+                ],
+                "properties": {
+                    "attributes": {
+                        "type": "object",
+                        "properties": {
+                            "factor": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "color": {
+                        "type": "string"
+                    },
+                    "elemOrient": {
+                        "type": "string",
+                        "enum": ["horizontal", "vertical"]
+                    },
+                    "elemPos": {
+                        "type": "array",
+                        "items": {
+                            "type": "integer",
+                            "minItems": 3,
+                            "maxItems": 3
+                        }
+                    },
+                    "elemSize": {
+                        "type": "array",
+                        "items": {
+                            "type": "integer",
+                            "minItems": 3,
+                            "maxItems": 3
+                        }
+                    },
+                    "labelPos": {
+                        "type": "string",
+                        "enum": ["front", "rear", "frontrear", "top", "right", "left", "none"]
+                    },
+                    "location": {
+                        "type": "string"
+                    },
+                    "type": {
+                        "type": "string"
+                    }
+                }
+            }
+        },
+        "createdDate": {
+            "type": "string",
+            "format": "date-time"
+        },
+        "description": {
+            "type": "string"
+        },
+        "fbxModel": {
+            "type": "string"
+        },
+        "id": {
+            "type": "string"
+        },
+        "lastUpdated": {
+            "type": "string",
+            "format": "date-time"
+        },
+        "sizeWDHmm": {
+            "type": "array",
+            "items": {
+                "type": "number",
+                "minItems": 3,
+                "maxItems": 3
+            }
+        },
+        "slots": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "required": [
+                    "color",
+                    "elemOrient",
+                    "elemPos",
+                    "elemSize",
+                    "labelPos",
+                    "location",
+                    "type"
+                ],
+                "properties": {
+                    "attributes": {
+                        "type": "object",
+                        "properties": {
+                            "factor": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "color": {
+                        "type": "string"
+                    },
+                    "elemOrient": {
+                        "type": "string",
+                        "enum": ["horizontal", "vertical"]
+                    },
+                    "elemPos": {
+                        "type": "array",
+                        "items": {
+                            "type": "integer",
+                            "minItems": 3,
+                            "maxItems": 3
+                        }
+                    },
+                    "elemSize": {
+                        "type": "array",
+                        "items": {
+                            "type": "integer",
+                            "minItems": 3,
+                            "maxItems": 3
+                        }
+                    },
+                    "labelPos": {
+                        "type": "string",
+                        "enum": ["front", "rear", "frontrear", "top", "right", "left", "none"]
+                    },
+                    "location": {
+                        "type": "string"
+                    },
+                    "type": {
+                        "type": "string"
+                    }
+                }
+            }
+        },
+        "slug": {
+            "type": "string"
+        }
+    }
+}
