@@ -1134,6 +1134,19 @@ func (n *getOCAttrNode) execute() (interface{}, error) {
 				return nil, fmt.Errorf(msg)
 			}
 		}
+
+		//Check if template was given and is valid
+		if templ, ok := attributes["attributes"].(map[string]interface{})["template"]; ok {
+			if checkIfTemplate(templ, n.ent) == false {
+				//Invalid template
+				return nil, fmt.Errorf("Invalid template provided." +
+					" \nPlease ensure that it exists and try again. You may optionally provide a Vector3 size and orientation attributes instead" +
+					"\n\nFor more information " +
+					"please refer to the wiki or manual reference" +
+					" for more details on how to create objects " +
+					"using this syntax")
+			}
+		}
 	}
 	err = cmd.GetOCLIAtrributes(path, n.ent, attributes)
 	if err != nil {
@@ -1164,12 +1177,35 @@ func (n *createRackNode) execute() (interface{}, error) {
 		}
 	}
 	attr := make(map[string]interface{})
-	if checkIfTemplate(vals[1]) == false {
+	if IsInfArr(vals[1]) {
+		if x, _ := vals[1].([]interface{}); len(x) != 3 {
+			//Invalid size vector
+			return nil, fmt.Errorf("Invalid size attribute provided." +
+				" \nThe size must be an array/list/vector with " +
+				"3 elements. You may optionally specify a template instead." +
+				"\n\nFor more information " +
+				"please refer to the wiki or manual reference" +
+				" for more details on how to create objects " +
+				"using this syntax")
+		}
 		attr["size"] = vals[1]
-	} else {
+	} else if IsString(vals[1]) {
+		if checkIfTemplate(vals[1], cmd.RACK) == false {
+			//Invalid template
+			return nil, fmt.Errorf("Invalid template provided." +
+				" \nPlease ensure that it exists and try again. You may optionally provide a Vector3 size attribute instead" +
+				"\n\nFor more information " +
+				"please refer to the wiki or manual reference" +
+				" for more details on how to create objects " +
+				"using this syntax")
+		}
 		attr["template"] = vals[1]
+	} else {
+		//Invalid template / size attribute received
+		return nil, fmt.Errorf("Please provide a valid template or size")
 	}
-	attr["posXY"] = vals[0]
+
+	attr["posXYZ"] = vals[0]
 	attr["orientation"] = vals[2]
 	attributes := map[string]interface{}{"attributes": attr}
 	err = cmd.GetOCLIAtrributes(path, cmd.RACK, attributes)
@@ -1203,8 +1239,30 @@ func (n *createDeviceNode) execute() (interface{}, error) {
 		}
 	}
 	attr := map[string]interface{}{"posU/slot": vals[0]}
-	if checkIfTemplate(vals[1]) == false {
+	if checkIfTemplate(vals[1], cmd.DEVICE) == false {
+		if IsString(vals[1]) {
+			return nil, fmt.Errorf("Template not found. Please provide a valid template and try again.")
+		}
+		if !IsFloat(vals[1]) && !IsInt(vals[1]) {
+			return nil, fmt.Errorf("SizeU must be a numerical value. Please provide a valid sizeU and try again.")
+		}
 		attr["sizeU"] = vals[1]
+
+		//In this case according to spec, sizeU should
+		//not be given with the orientation
+		//n.attrs[2] refers to the orientation
+		if n.attrs[2] != nil {
+			var msg string
+			if IsString(vals[1]) {
+				msg = "The template '" + vals[1].(string) + "' does not exist, ensure that it exists and try again. For more information please visit: https://ogree.ditrit.io/htmls/programming.html"
+			} else if IsFloat(vals[1]) { //All numbers are interpreted as floats for now
+				msg = "Templates can only be specified with the orientation, if you meant to provide the sizeU then please remove the orientation. For more information please visit: https://ogree.ditrit.io/htmls/programming.html"
+			} else {
+				msg = "Invalid argument specified for template / sizeU. Please provide a template name or numerical value for sizeU."
+			}
+
+			return nil, fmt.Errorf(msg)
+		}
 	} else {
 		attr["template"] = vals[1]
 	}

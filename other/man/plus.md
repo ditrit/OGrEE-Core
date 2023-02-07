@@ -63,7 +63,7 @@ Where TEMPLATE refers to the room template name (which must be already existing)
 +rack:PATH/RACK_NAME@POSITION@SIZE@ORIENTATION   
 User must specify the path, RACK_NAME, POSITION and SIZE and ORIENTATION 
 
-Where POSITION (posXY attribute) must be a 2 element array/vector of coordinates (ie [1,2]) 
+Where POSITION (posXY attribute) must be a 2 or a 3 element array/vector of coordinates (ie [1,2]) 
 
 Where SIZE is a 3 numerical element array/vector (ie [1,2,3])
 
@@ -74,7 +74,7 @@ Where ORIENTATION is a string and can only be of the following values: {front,re
 +rack:PATH/RACK_NAME@POSITION@TEMPLATE@ORIENTATION   
 User must specify the path, RACK_NAME, POSITION and SIZE and ORIENTATION and TEMPLATE   
 
-Where POSITION (posXY attribute) must be a 2 element array/vector of coordinates (ie [1,2]) 
+Where POSITION (posXY attribute) must be a 2 or a 3 element array/vector of coordinates (ie [1,2]) 
 
 Where TEMPLATE refers to the rack template name (which must be already existing)
 
@@ -159,6 +159,8 @@ EXAMPLES
 +ro:CED/BETA/A/R1@[0,0]@[22.8,19.8,2]@+N+W
 +ro:CED/BETA/A/R1@[0,0]@[22.8,19.8,2]@+N+W@t
 
+
++rk:CED.BETA.A.R1.A01@[9,1,99]@[60,120,42]@front
 +rk:CED.BETA.A.R1.A01@[9,1]@[60,120,42]@front
 +rk:CED/BETA/A/R1/A01@[9,1]@RackTemplateA@right
 

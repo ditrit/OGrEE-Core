@@ -33,6 +33,10 @@ func serialiseAttr(attr map[string]interface{}, want string) string {
 			if len(nums) == 3 && want == "size" {
 				length = 2
 			} else {
+				//Make posXYZ length 3 for racks
+				if want == "posXYZ" && len(nums) == 2 {
+					nums = append(nums, "0")
+				}
 				length = len(nums)
 			}
 
@@ -68,6 +72,10 @@ func serialiseAttr2(attr map[string]interface{}, want string) string {
 		if len(items) == 3 && want == "size" {
 			length = 2
 		} else {
+			//Make posXYZ length 3 for racks
+			if want == "posXYZ" && len(items) == 2 {
+				items = append(items, 0)
+			}
 			length = len(items)
 		}
 
@@ -104,6 +112,8 @@ func arrayVerifier(x *[]interface{}, attribute string) bool {
 		return len(*x) == 3
 	case "posXY":
 		return len(*x) == 2
+	case "posXYZ":
+		return len(*x) == 2 || len(*x) == 3
 	}
 	return false
 }
@@ -114,6 +124,10 @@ func arrayVerifier(x *[]interface{}, attribute string) bool {
 func stringSplitter(want, separator, attribute string) []string {
 	arr := strings.Split(want, separator)
 	switch attribute {
+	case "posXYZ":
+		if len(arr) != 2 && len(arr) != 3 {
+			return nil
+		}
 	case "posXY":
 		if len(arr) != 2 {
 			return nil

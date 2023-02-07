@@ -2,6 +2,7 @@ package controllers
 
 //This file has a collection of utility functions used in the
 //controller package
+//And const definitions used throughout the controllers package
 import (
 	"encoding/json"
 	"fmt"
@@ -33,6 +34,12 @@ const (
 	INFO
 	DEBUG
 )
+
+// Error Message Const
+// TODO: Replace Const with Err Msg/Reporting Func
+// that distinguishes API & CLI Errors
+const APIErrorPrefix = "[Response From API] "
+const RACKUNIT = .04445 //meter
 
 // Display contents of []map[string]inf array
 func DispMapArr(x []map[string]interface{}) {
