@@ -90,6 +90,8 @@ pipeline {
         //and copy files 
         stage('Application Builds') {
             steps {
+                sh 'cp ./resources/Endpoint_List.md /OGrEE/buildService/filesForUpload/endpointList_v4.md'
+
                 //Linux Native
                 sh 'make linux'
                 sh 'mv OGrEE_API_Linux_x64 /OGrEE/bin/api'
@@ -109,7 +111,7 @@ pipeline {
                 //sh 'GOOS=darwin GOARCH=arm64 go build -o OGrEE_API_OSX_arm64 main.go'
                 //sh 'mv OGrEE_API_OSX_arm64 /home/ziad/bin/api'
 
-                //sh 'cp ./createdb.js /home/ziad/mongoDir'
+                
             }
         }
 

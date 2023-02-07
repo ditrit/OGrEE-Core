@@ -236,8 +236,8 @@ var CreateEntity = func(w http.ResponseWriter, r *http.Request) {
 	//Prevents Mongo from creating a new unidentified collection
 	if i < 0 {
 		w.WriteHeader(http.StatusBadRequest)
-		u.Respond(w, u.Message(false, "Invalid object in URL:"+entStr+" Please provide a valid object"))
-		u.ErrLog("Cannot create invalid object", "CREATE "+entStr, "", r)
+		u.Respond(w, u.Message(false, "Invalid entity in URL: '"+mux.Vars(r)["entity"]+"' Please provide a valid object"))
+		u.ErrLog("Cannot create invalid object", "CREATE "+mux.Vars(r)["entity"], "", r)
 		return
 	}
 
@@ -369,8 +369,8 @@ var GetEntity = func(w http.ResponseWriter, r *http.Request) {
 		//Prevents API from creating a new unidentified collection
 		if i := u.EntityStrToInt(s); i < 0 {
 			w.WriteHeader(http.StatusNotFound)
-			u.Respond(w, u.Message(false, "Invalid object in URL:"+s+" Please provide a valid object"))
-			u.ErrLog("Cannot get invalid object", "GET "+s, "", r)
+			u.Respond(w, u.Message(false, "Invalid object in URL: '"+mux.Vars(r)["entity"]+"' Please provide a valid object"))
+			u.ErrLog("Cannot get invalid object", "GET "+mux.Vars(r)["entity"], "", r)
 			return
 		}
 
@@ -381,8 +381,19 @@ var GetEntity = func(w http.ResponseWriter, r *http.Request) {
 		if idx := strings.Contains(s, "_"); idx == true &&
 			s != "stray_device" && s != "stray_sensor" { //GET By Slug
 			data, e1 = models.GetEntity(bson.M{"slug": id}, s)
-		} else {
+
+		} else if s == "stray_device" || s == "stray_sensor" || s == "tenant" {
 			data, e1 = models.GetEntity(bson.M{"name": id}, s) //GET By Name
+
+		} else {
+			//Invalid entity and ID/name/slug combination
+			msg := "Bad path parameter received. Names and Slugs are available for tenants, templates and stray objects only. Otherwise please provide a valid ID"
+			resp = u.Message(false, msg)
+			w.WriteHeader(http.StatusBadRequest)
+			resp["data"] = nil
+			u.Respond(w, resp)
+			return
+
 		}
 	}
 
@@ -399,6 +410,13 @@ var GetEntity = func(w http.ResponseWriter, r *http.Request) {
 		switch e1 {
 		case "record not found":
 			w.WriteHeader(http.StatusNotFound)
+
+		case "mongo: no documents in result":
+			resp = u.Message(false, "Error while getting :"+s+", No Objects Found!")
+			w.WriteHeader(http.StatusNotFound)
+
+		case "invalid request":
+			w.WriteHeader(http.StatusBadRequest)
 		default:
 			w.WriteHeader(http.StatusNotFound) //For now
 		}
@@ -474,8 +492,8 @@ var GetAllEntities = func(w http.ResponseWriter, r *http.Request) {
 	//Prevents Mongo from creating a new unidentified collection
 	if i := u.EntityStrToInt(entStr); i < 0 {
 		w.WriteHeader(http.StatusNotFound)
-		u.Respond(w, u.Message(false, "Invalid object in URL:"+entStr+" Please provide a valid object"))
-		u.ErrLog("Cannot get invalid object", "GET "+entStr, "", r)
+		u.Respond(w, u.Message(false, "Invalid object in URL: '"+mux.Vars(r)["entity"]+"' Please provide a valid object"))
+		u.ErrLog("Cannot get invalid object", "GET "+mux.Vars(r)["entity"], "", r)
 		return
 	}
 
@@ -566,8 +584,8 @@ var DeleteEntity = func(w http.ResponseWriter, r *http.Request) {
 	//Prevents Mongo from creating a new unidentified collection
 	if u.EntityStrToInt(entity) < 0 {
 		w.WriteHeader(http.StatusNotFound)
-		u.Respond(w, u.Message(false, "Invalid object in URL:"+entity+" Please provide a valid object"))
-		u.ErrLog("Cannot delete invalid object", "DELETE "+entity, "", r)
+		u.Respond(w, u.Message(false, "Invalid object in URL: '"+mux.Vars(r)["entity"]+"' Please provide a valid object"))
+		u.ErrLog("Cannot delete invalid object", "DELETE "+mux.Vars(r)["entity"], "", r)
 		return
 	}
 
@@ -613,6 +631,7 @@ var DeleteEntity = func(w http.ResponseWriter, r *http.Request) {
 
 	if v["status"] == false {
 		w.WriteHeader(http.StatusNotFound)
+		v["message"] = "No Records Found!"
 		u.ErrLog("Error while deleting entity", "DELETE ENTITY", "Not Found", r)
 	} else {
 		w.WriteHeader(http.StatusNoContent)
@@ -790,8 +809,8 @@ var UpdateEntity = func(w http.ResponseWriter, r *http.Request) {
 	//Prevents Mongo from creating a new unidentified collection
 	if u.EntityStrToInt(entity) < 0 {
 		w.WriteHeader(http.StatusNotFound)
-		u.Respond(w, u.Message(false, "Invalid object in URL:"+entity+" Please provide a valid object"))
-		u.ErrLog("Cannot update invalid object", "UPDATE "+entity, "", r)
+		u.Respond(w, u.Message(false, "Invalid object in URL: '"+mux.Vars(r)["entity"]+"' Please provide a valid object"))
+		u.ErrLog("Cannot update invalid object", "UPDATE "+mux.Vars(r)["entity"], "", r)
 		return
 	}
 
@@ -924,7 +943,7 @@ var GetEntityByQuery = func(w http.ResponseWriter, r *http.Request) {
 	//Prevents Mongo from creating a new unidentified collection
 	if u.EntityStrToInt(entStr) < 0 {
 		w.WriteHeader(http.StatusNotFound)
-		u.Respond(w, u.Message(false, "Invalid object in URL:"+entStr+" Please provide a valid object"))
+		u.Respond(w, u.Message(false, "Invalid object in URL: '"+entStr+"' Please provide a valid object"))
 		u.ErrLog("Cannot get invalid object", "GET ENTITYQUERY"+entStr, "", r)
 		return
 	}
@@ -960,6 +979,63 @@ var GetEntityByQuery = func(w http.ResponseWriter, r *http.Request) {
 	}
 
 	resp["data"] = map[string]interface{}{"objects": data}
+
+	u.Respond(w, resp)
+}
+
+// swagger:operation GET /api/tempunits/{id} tempunits GetTempUnit
+// Gets the temperatureUnit attribute of the parent site of given object.
+// ---
+// produces:
+// - application/json
+// parameters:
+//   - name: id
+//     in: query
+//     description: 'ID of any object.'
+//     required: true
+// responses:
+//  '200':
+//     description: 'Found. A response body will be returned with
+//     a meaningful message.'
+//  '404':
+//     description: 'Nothing Found. An error message will be returned.'
+
+// swagger:operation OPTIONS /api/tempunits/{id} tempunits GetTempUnit
+// Gets the possible operations of the parent site tempunit of given object.
+// ---
+// produces:
+// - application/json
+// parameters:
+//   - name: id
+//     in: query
+//     description: 'ID of any object.'
+//     required: true
+// responses:
+//	'200':
+//	   description: 'Found. A response body will be returned with
+//	   a meaningful message.'
+//	'404':
+//	   description: 'Nothing Found. An error message will be returned.'
+
+var GetTempUnit = func(w http.ResponseWriter, r *http.Request) {
+	fmt.Println("******************************************************")
+	fmt.Println("FUNCTION CALL: 	 GetTempUnit ")
+	fmt.Println("******************************************************")
+	var resp map[string]interface{}
+
+	data, err := models.GetSiteParentTempUnit(mux.Vars(r)["id"])
+	if err != "" {
+		w.WriteHeader(http.StatusNotFound)
+		resp = u.Message(false, "Error: "+err)
+	} else {
+		if r.Method == "OPTIONS" {
+			w.Header().Add("Content-Type", "application/json")
+			w.Header().Add("Allow", "GET, OPTIONS, HEAD")
+		} else {
+			resp = u.Message(true, "successfully got temperatureUnit from object's parent site")
+			resp["data"] = map[string]interface{}{"temperatureUnit": data}
+		}
+	}
 
 	u.Respond(w, resp)
 }
@@ -1045,7 +1121,7 @@ var GetEntitiesOfAncestor = func(w http.ResponseWriter, r *http.Request) {
 	//Prevents Mongo from creating a new unidentified collection
 	if enum < 0 {
 		w.WriteHeader(http.StatusNotFound)
-		u.Respond(w, u.Message(false, "Invalid object in URL:"+entStr+" Please provide a valid object"))
+		u.Respond(w, u.Message(false, "Invalid object in URL: '"+entStr+"' Please provide a valid object"))
 		u.ErrLog("Cannot get invalid object", "GET CHILDRENOFPARENT"+entStr, "", r)
 		return
 	}
@@ -1082,6 +1158,11 @@ var GetEntitiesOfAncestor = func(w http.ResponseWriter, r *http.Request) {
 		switch e1 {
 		case "record not found":
 			w.WriteHeader(http.StatusNotFound)
+
+		case "mongo: no documents in result":
+			resp = u.Message(false, "Error while getting :"+entStr+", No Objects Found!")
+			w.WriteHeader(http.StatusNotFound)
+
 		default:
 		}
 
@@ -1228,6 +1309,11 @@ var GetEntityHierarchy = func(w http.ResponseWriter, r *http.Request) {
 				switch e1 {
 				case "record not found":
 					w.WriteHeader(http.StatusNotFound)
+
+				case "mongo: no documents in result":
+					resp = u.Message(false, "Error while getting :"+entity+", No Objects Found!")
+					w.WriteHeader(http.StatusNotFound)
+
 				default:
 				}
 			} else {
@@ -1295,9 +1381,11 @@ var GetEntityHierarchy = func(w http.ResponseWriter, r *http.Request) {
 		u.ErrLog("Error while getting "+entity, "GET "+entity, e1, r)
 
 		switch e1 {
-		case "record not found":
+		case "mongo: no documents in result", "record not found":
+			resp = u.Message(false, "Error while getting :"+entity+", No Objects Found!")
 			w.WriteHeader(http.StatusNotFound)
 		default:
+			w.WriteHeader(http.StatusNotFound)
 		}
 
 	} else {
@@ -1472,7 +1560,13 @@ var GetHierarchyByName = func(w http.ResponseWriter, r *http.Request) {
 		switch e1 {
 		case "record not found":
 			w.WriteHeader(http.StatusNotFound)
+
+		case "mongo: no documents in result":
+			resp = u.Message(false, "Error while getting :"+entity+", No objects found!")
+			w.WriteHeader(http.StatusNotFound)
+
 		default:
+			println("DEBUG check e1:", e1)
 		}
 
 	} else {
@@ -1667,6 +1761,15 @@ var GetEntitiesUsingNamesOfParents = func(w http.ResponseWriter, r *http.Request
 			switch e3 {
 			case "record not found":
 				w.WriteHeader(http.StatusNotFound)
+
+			case "":
+				resp = u.Message(false, "No object(s) found in this path")
+				w.WriteHeader(http.StatusNotFound)
+
+			case "mongo: no documents in result":
+				resp = u.Message(false, "Error while getting :"+entity+", No Objects Found!")
+				w.WriteHeader(http.StatusNotFound)
+
 			default:
 				w.WriteHeader(http.StatusNotFound)
 			}
@@ -1699,6 +1802,16 @@ var GetEntitiesUsingNamesOfParents = func(w http.ResponseWriter, r *http.Request
 			switch e3 {
 			case "record not found":
 				w.WriteHeader(http.StatusNotFound)
+
+			case "":
+				//The specific object wasnt found
+				resp = u.Message(false, arr[len(arr)-1]+" wasn't found in this path!")
+				w.WriteHeader(http.StatusNotFound)
+
+			case "mongo: no documents in result":
+				resp = u.Message(false, "Error while getting :"+entity+", No Objects Found!")
+				w.WriteHeader(http.StatusNotFound)
+
 			default:
 				w.WriteHeader(http.StatusNotFound)
 			}
