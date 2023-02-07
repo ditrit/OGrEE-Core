@@ -23,8 +23,8 @@ A string or numerical Hex value maybe given here
 User must specify the path and SITE_NAME   
 
 
-+bd:PATH/BLDG_NAME@POSITION@SIZE@ROTATION   
-+building:PATH/BLDG_NAME@POSITION@SIZE@ROTATION 
++bd:PATH/BLDG_NAME@POSITION@ROTATION@SIZE   
++building:PATH/BLDG_NAME@POSITION@ROTATION@SIZE 
 User must specify the path, BLDG_NAME, SIZE, ROTATION   
 
 Where the POSITION (posXY attribute) must be a 2 element array/vector of coordinates (ie [1,2])   
@@ -44,8 +44,8 @@ Where the ROTATION (rotation attribute) must be a numerical value (ie 45)
 Where TEMPLATE refers to the bldg template name (which must be already existing)
 
 
-+ro:PATH/ROOM_NAME@POSITION@SIZE@ROTATION@AXISORIENTATION@FLOORUNIT   
-+room:PATH/ROOM_NAME@POSITION@SIZE@ROTATION@AXISORIENTATION@FLOORUNIT    
++ro:PATH/ROOM_NAME@POSITION@ROTATION@SIZE@AXISORIENTATION@FLOORUNIT   
++room:PATH/ROOM_NAME@POSITION@ROTATION@SIZE@AXISORIENTATION@FLOORUNIT    
 User must specify the path, ROOM_NAME, ROTATION, POSITION, SIZE, ORIENTATION and FLOORUNIT
 
 
@@ -60,8 +60,8 @@ Where AXISORIENTATION refers to the cardinal directions and can only be of the f
 Where FLOORUNIT refers to the measurement unit for the floor which can only be: {f,m,t}  
 
 
-+ro:PATH/ROOM_NAME@POSITION@SIZE@ROTATION@AXISORIENTATION   
-+room:PATH/ROOM_NAME@POSITION@SIZE@ROTATION@AXISORIENTATION    
++ro:PATH/ROOM_NAME@POSITION@ROTATION@SIZE@AXISORIENTATION   
++room:PATH/ROOM_NAME@POSITION@ROTATION@SIZE@AXISORIENTATION    
 User must specify the path, ROOM_NAME, ROTATION, POSITION, SIZE, ORIENTATION 
 
 
@@ -90,7 +90,7 @@ Where TEMPLATE refers to the room template name (which must be already existing)
 +rack:PATH/RACK_NAME@POSITION@SIZE@ORIENTATION   
 User must specify the path, RACK_NAME, POSITION and SIZE and ORIENTATION 
 
-Where POSITION (posXY attribute) must be a 2 element array/vector of coordinates (ie [1,2]) 
+Where POSITION (posXY attribute) must be a 2 or a 3 element array/vector of coordinates (ie [1,2]) 
 
 Where SIZE is a 3 numerical element array/vector (ie [1,2,3])
 
@@ -101,7 +101,7 @@ Where ORIENTATION is a string and can only be of the following values: {front,re
 +rack:PATH/RACK_NAME@POSITION@TEMPLATE@ORIENTATION   
 User must specify the path, RACK_NAME, POSITION and SIZE and ORIENTATION and TEMPLATE   
 
-Where POSITION (posXY attribute) must be a 2 element array/vector of coordinates (ie [1,2]) 
+Where POSITION (posXY attribute) must be a 2 or a 3 element array/vector of coordinates (ie [1,2]) 
 
 Where TEMPLATE refers to the rack template name (which must be already existing)
 
@@ -180,17 +180,18 @@ EXAMPLES
 +site:CED/BETA
 
 
-+bd:CED/BETA/A@[5,5]@[300,300,300]@49.1
-+bd:CED/BETA/A@[5,5,5]@-27.89@BldgTemplateA
-+building:CED/BETA/A@[5,5]@[300,300,300]@49.1
-+building:CED/BETA/A@[5,5,5]@-27.89@BldgTemplateA
++bd:CED/BETA/A@[5,5]@49.1@[300,300,300]
++bd:CED/BETA/A@[5,5]@-27.89@BldgTemplateA
++building:CED/BETA/A@[5,5]@49.1@[300,300,300]
++building:CED/BETA/A@[5,5]@-27.89@BldgTemplateA
 
 
-+room:CED/BETA/A/R1@[0,0]@[22.8,19.8,2]@RoomTemplateA
-+ro:CED/BETA/A/R1@[0,0]@[22.8,19.8,2]@-36.202@+N+W@t
-+ro:CED/BETA/A/R1@[0,0]@[22.8,19.8,2]@-36.202@+N+W
++ro:CED/BETA/A/R1@[0,0]@-36.202@[22.8,19.8,2]@+N+W@t
++ro:CED/BETA/A/R1@[0,0]@-36.202@[22.8,19.8,2]@+N+W
++room:CED/BETA/A/R1@[0,0]@-36.202@RoomTemplateA
 
 
++rk:CED.BETA.A.R1.A01@[9,1,99]@[60,120,42]@front
 +rk:CED.BETA.A.R1.A01@[9,1]@[60,120,42]@front
 +rk:CED/BETA/A/R1/A01@[9,1]@RackTemplateA@right
 

@@ -4,7 +4,8 @@ go 1.19
 
 require (
 	github.com/chzyer/test v0.0.0-20210722231415-061457976a23
-	golang.org/x/sys v0.0.0-20220114195835-da31bd327af9
+	golang.org/x/exp v0.0.0-20221217163422-3c43f8badb15
+	golang.org/x/sys v0.1.0
 )
 
 require (
