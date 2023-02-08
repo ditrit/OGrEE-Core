@@ -26,6 +26,9 @@ func init() {
 
 	if e != nil {
 		fmt.Print(e)
+		fmt.Println("\nPlease check that your .env file is present and try again")
+		fmt.Println("Now exiting")
+		os.Exit(-1)
 	}
 
 	var dbUri string
@@ -106,6 +109,7 @@ func CheckIfDBExists(name string) (bool, error) {
 			}
 		}
 	}
+	//`GetDB().Client().
 
 	return false, e
 

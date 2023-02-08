@@ -240,6 +240,16 @@ func GetStats() map[string]interface{} {
 	return ans
 }
 
+func GetDBName() string {
+	name := GetDB().Name()
+
+	//Remove the preceding 'ogree' at beginning of name
+	if strings.Index(name, "ogree") == 0 {
+		name = name[5:] //5=len('ogree')
+	}
+	return name
+}
+
 func DeleteEntityManual(entity string, req bson.M) (map[string]interface{}, string) {
 	//Finally delete the Entity
 	ctx, cancel := u.Connect()

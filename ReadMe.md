@@ -55,12 +55,10 @@ You can modify the port of the API in the .env file. This is the port that the A
  - Enter your password when the prompt asks you
  - Execute the bash script ```addTenant.sh``` with the flag --name myCompanyName (specify your company name here)
  - Be sure to enter your user password and the desired the DB access password
- - Update your .env file ```db_user=myCompanyName``` and ```db_pass=yourPassword```
+ - Update your .env file ```db_user=myCompanyName``` and ```db_pass=dbAccessPassword```
  - Execute the binary ```main```
 
-To view an example of the ```.env``` file: https://ogree.ditrit.io/htmls/apiReference.html   
-
-
+This .env file is not provided, so you must create it yourself. To view an example of the ```.env``` file: https://ogree.ditrit.io/htmls/apiReference.html   
 
 
 

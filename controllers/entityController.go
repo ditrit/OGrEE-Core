@@ -2060,6 +2060,7 @@ var Version = func(w http.ResponseWriter, r *http.Request) {
 			"BuildHash":  u.GetBuildHash(),
 			"CommitDate": u.GetCommitDate(),
 			"BuildTree":  u.GetBuildTree(),
+			"Customer":   models.GetDBName(),
 		}
 	}
 	u.Respond(w, data)
