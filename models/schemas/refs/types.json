@@ -4,8 +4,8 @@
         "color": {
             "pattern": "^[0-9a-fA-F]{6}$"
         },
-        "lengthUnit": {
-            "enum": ["mm", "cm", "m", "U", "OU", "tile", "t", "f"]
+        "metricImperialUnit": {
+            "enum": ["mm", "cm", "m", "f"]
         },
         "vector2": {
             "pattern": "^{\"x\"\\s*:\\s*([0-9]*[.])?[0-9]+\\s*,\\s*\"y\"\\s*:\\s*([0-9]*[.])?[0-9]+}$"
