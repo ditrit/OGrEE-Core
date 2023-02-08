@@ -18,6 +18,7 @@ var GitCommitDate string
 var State ShellState
 
 type ShellState struct {
+	Customer         string //Tenant name
 	CurrPath         string
 	PrevPath         string
 	ClipBoard        *[]string

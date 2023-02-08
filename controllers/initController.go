@@ -154,6 +154,28 @@ func InitState(analyser string, env map[string]string) {
 
 	//Set Draw Threshold
 	SetDrawThreshold(env)
+
+	//Set customer / tenant name
+	resp, e := models.Send("GET", State.APIURL+"/api/version", GetKey(), nil)
+	parsed := ParseResponse(resp, e, "Get API Information request")
+	if parsed != nil {
+		if info, ok := LoadObjectFromInf(parsed["data"]); ok {
+			if cInf, ok := info["Customer"]; ok {
+				if customer, ok := cInf.(string); ok {
+					State.Customer = customer
+				}
+			}
+
+		}
+	}
+
+	if State.Customer == "" {
+		if State.DebugLvl > NONE {
+			println("Tenant Information not found!")
+		}
+		State.Customer = "UNKNOWN"
+	}
+
 }
 
 // It is useful to have the state to hold

@@ -69,7 +69,7 @@ func Start(flags *Flags) {
 	c.InitState(flags.analyser, env)
 
 	rl, err := readline.NewEx(&readline.Config{
-		Prompt: "\u001b[1m\u001b[32m" + user + "@" + "OGrEE3D:" +
+		Prompt: "\u001b[1m\u001b[32m" + user + "@" + c.State.Customer + ":" +
 			"\u001b[37;1m" + c.State.CurrPath + "\u001b[1m\u001b[32m$>\u001b[0m ",
 		HistoryFile:     c.State.HistoryFilePath,
 		AutoComplete:    GetPrefixCompleter(),
@@ -120,7 +120,7 @@ func Repl(rl *readline.Instance, user string) {
 
 		//c.UpdateSessionState(&line)
 		//Update Prompt
-		rl.SetPrompt("\u001b[1m\u001b[32m" + user + "@" + "OGrEE3D:" +
+		rl.SetPrompt("\u001b[1m\u001b[32m" + user + "@" + c.State.Customer + ":" +
 			"\u001b[37;1m" + c.State.CurrPath + "\u001b[1m\u001b[32m$>\u001b[0m ")
 	}
 }
