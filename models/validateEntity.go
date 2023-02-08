@@ -256,25 +256,32 @@ func ValidateEntity(entity int, t map[string]interface{}) (map[string]interface{
 	*/
 
 	// Get JSON schema
-	var sch *jsonschema.Schema
-	var err error
+	var schemaName string
 	switch entity {
 	case u.AC, u.CABINET, u.PWRPNL:
-		sch, err = jsonschema.Compile("models/schemas/base_schema.json")
+		schemaName = "base_schema.json"
 	default:
-		sch, err = jsonschema.Compile("models/schemas/" + u.EntityToString(entity) + "_schema.json")
+		schemaName = u.EntityToString(entity) + "_schema.json"
 	}
 
+	schPrefix := "models/schemas/"
+	sch, err := jsonschema.Compile(schPrefix + schemaName)
 	if err != nil {
 		return u.Message(false, err.Error()), false
 	}
 
 	// Validate JSON Schema
 	if err := sch.Validate(t); err != nil {
+		switch v := err.(type) {
+		case *jsonschema.ValidationError:
+			println(v.GoString())
+			fileName := strings.Split(v.AbsoluteKeywordLocation, schPrefix)
+			errMsg := strings.ReplaceAll(v.GoString(), fileName[0]+schPrefix, "")
+			return u.Message(false, errMsg), false
+		}
 		return u.Message(false, err.Error()), false
 	} else {
-		println(t["category"].(string))
-		println("All good, validated!")
+		println("JSON Schema: all good, validated!")
 	}
 
 	// Extra checks
