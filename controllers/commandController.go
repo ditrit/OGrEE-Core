@@ -1383,26 +1383,34 @@ func GetOCLIAtrributes(Path string, ent int, data map[string]interface{}) error 
 
 	//Retrieve Parent
 	if ent != SITE && ent != GROUP && ent != STRAY_DEV &&
-		ent != STRAYSENSOR && ent != DOMAIN {
+		ent != STRAYSENSOR {
 		parent, parentURL = GetObject(Path, true)
-		if parent == nil {
+		if parent == nil && ent != DOMAIN { //Domains can have nil parent
 			return fmt.Errorf("The parent was not found in path")
 		}
 
-		//Retrieve parent name for domain
-		tmp := strings.Split(parentURL, State.APIURL+"/api/sites/")
+		//Retrieve parent name to assign as domain for objects
+		//Not applicable to domain objects
+		if ent != DOMAIN {
+			tmp := strings.Split(parentURL, State.APIURL+"/api/sites/")
 
-		domIDX := strings.Index(tmp[1], "/")
-		if domIDX == -1 {
-			domain = tmp[1]
-		} else {
-			domain = tmp[1][:domIDX]
+			domIDX := strings.Index(tmp[1], "/")
+			if domIDX == -1 {
+				domain = tmp[1]
+			} else {
+				domain = tmp[1][:domIDX]
+			}
 		}
 
 	}
 	var err error
 	switch ent {
 	case DOMAIN:
+		if parent != nil {
+			data["parentId"] = parent["id"]
+		} else {
+			data["parentId"] = nil
+		}
 
 	case SITE:
 		//Default values
@@ -1784,6 +1792,8 @@ func GetOCLIAtrributes(Path string, ent int, data map[string]interface{}) error 
 	//we can do the conversion for templates here
 	data["category"] = strings.Replace(data["category"].(string), "_", "-", 1)
 
+	println("DEBUG VIEW DATA")
+	Disp(data)
 	_, err = PostObj(ent, data["category"].(string), data)
 	if err != nil {
 		return err

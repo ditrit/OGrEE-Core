@@ -1114,7 +1114,8 @@ func (n *createDomainNode) execute() (interface{}, error) {
 
 	//Assert the color is valid
 	AssertColor(n.attrs["color"])
-	err = cmd.GetOCLIAtrributes(path, cmd.DOMAIN, n.attrs)
+	attributes := map[string]interface{}{"attributes": n.attrs}
+	err = cmd.GetOCLIAtrributes(path, cmd.DOMAIN, attributes)
 	return nil, err
 }
 
