@@ -132,6 +132,58 @@ func GetManyEntities(ent string, req bson.M, opts *options.FindOptions) ([]map[s
 	return data, ""
 }
 
+func GetCompleteHierarchy() (map[string]interface{}, string) {
+	response := make(map[string]interface{})
+	categories := make(map[string][]string)
+	hierarchy := make(map[string][]string)
+	// Get all collections names
+	ctx, cancel := u.Connect()
+	db := GetDB()
+	collNames, err := db.ListCollectionNames(ctx, bson.D{})
+	if err != nil {
+		fmt.Println(err.Error())
+		return nil, err.Error()
+	}
+
+	opts := options.Find().SetProjection(bson.D{{Key: "hierarchyName", Value: 1}})
+	for _, collName := range collNames {
+		if collName == "site" {
+			opts = options.Find().SetProjection(bson.D{{Key: "name", Value: 1}})
+		}
+		c, err := db.Collection(collName).Find(ctx, bson.M{}, opts)
+		if err != nil {
+			println(err.Error())
+		}
+		d, error := ExtractCursor(c, ctx)
+		if error != "" {
+			fmt.Println(error)
+			return nil, error
+		}
+		for _, m := range d {
+			// loop over keys and values in the map.
+			for k, v := range m {
+				if k == "hierarchyName" {
+					categories[collName] = append(categories[collName], v.(string))
+					fillHierarchyMap(v.(string), &hierarchy)
+				}
+			}
+		}
+	}
+
+	response["tree"] = hierarchy
+	response["categories"] = categories
+	defer cancel()
+	return response, ""
+}
+
+func fillHierarchyMap(hierarchyName string, data *map[string][]string) {
+	i := strings.LastIndex(hierarchyName, ".")
+	if i > 0 {
+		parent := hierarchyName[:i]
+		(*data)[parent] = append((*data)[parent], hierarchyName)
+	}
+}
+
 func GetSiteParentTempUnit(id string) (string, string) {
 	data := map[string]interface{}{}
 

@@ -1415,6 +1415,30 @@ var GetEntityHierarchy = func(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+var GetCompleteHierarchy = func(w http.ResponseWriter, r *http.Request) {
+	fmt.Println("******************************************************")
+	fmt.Println("FUNCTION CALL: 	 GetCompleteHierarchy ")
+	fmt.Println("******************************************************")
+	DispRequestMetaData(r)
+	var resp map[string]interface{}
+
+	data, err := models.GetCompleteHierarchy()
+	if err != "" {
+		w.WriteHeader(http.StatusNotFound)
+		resp = u.Message(false, "Error: "+err)
+	} else {
+		if r.Method == "OPTIONS" {
+			w.Header().Add("Content-Type", "application/json")
+			w.Header().Add("Allow", "GET, OPTIONS, HEAD")
+		} else {
+			resp = u.Message(true, "successfully got hierarchy")
+			resp["data"] = data
+		}
+	}
+
+	u.Respond(w, resp)
+}
+
 // swagger:operation GET /api/{entity}/{name}/all objects GetFromObject
 // Obtain all objects related to Tenant or stray-device in the system using name.
 // Returns JSON body with all subobjects under the Tenant
