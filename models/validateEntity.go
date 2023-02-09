@@ -33,12 +33,14 @@ func validateParent(ent string, entNum int, t map[string]interface{}) (map[strin
 		x, _ := GetEntity(bson.M{"_id": objID}, "rack")
 		if x != nil {
 			parent["parent"] = "rack"
+			parent["hierarchyName"] = getHierarchyName(x)
 			return parent, true
 		}
 
 		y, _ := GetEntity(bson.M{"_id": objID}, "device")
 		if y != nil {
 			parent["parent"] = "device"
+			parent["hierarchyName"] = getHierarchyName(y)
 			return parent, true
 		}
 
@@ -49,24 +51,28 @@ func validateParent(ent string, entNum int, t map[string]interface{}) (map[strin
 		w, _ := GetEntity(bson.M{"_id": objID}, "device")
 		if w != nil {
 			parent["parent"] = "device"
+			parent["hierarchyName"] = getHierarchyName(w)
 			return parent, true
 		}
 
 		x, _ := GetEntity(bson.M{"_id": objID}, "rack")
 		if x != nil {
 			parent["parent"] = "rack"
+			parent["hierarchyName"] = getHierarchyName(x)
 			return parent, true
 		}
 
 		y, _ := GetEntity(bson.M{"_id": objID}, "room")
 		if y != nil {
 			parent["parent"] = "room"
+			parent["hierarchyName"] = getHierarchyName(y)
 			return parent, true
 		}
 
 		z, _ := GetEntity(bson.M{"_id": objID}, "building")
 		if z != nil {
 			parent["parent"] = "building"
+			parent["hierarchyName"] = getHierarchyName(z)
 			return parent, true
 		}
 
@@ -78,13 +84,15 @@ func validateParent(ent string, entNum int, t map[string]interface{}) (map[strin
 			if pid, ok := t["parentId"].(string); ok {
 				ID, _ := primitive.ObjectIDFromHex(pid)
 
-				ctx, cancel := u.Connect()
-				if GetDB().Collection("stray_device").FindOne(ctx,
-					bson.M{"_id": ID}).Err() != nil {
+				p, err := GetEntity(bson.M{"_id": ID}, "stray_device")
+				if len(p) > 0 {
+					parent["parent"] = "stray_device"
+					parent["hierarchyName"] = getHierarchyName(p)
+					return parent, true
+				} else if err != "" {
 					return u.Message(false,
 						"ParentID should be an Existing ID or null"), false
 				}
-				defer cancel()
 			} else {
 				return u.Message(false,
 					"ParentID should be an Existing ID or null"), false
@@ -93,20 +101,29 @@ func validateParent(ent string, entNum int, t map[string]interface{}) (map[strin
 
 	default:
 		parentInt := u.GetParentOfEntityByInt(entNum)
-		parent := u.EntityToString(parentInt)
+		parentStr := u.EntityToString(parentInt)
 
-		ctx, cancel := u.Connect()
-		if GetDB().Collection(parent).
-			FindOne(ctx, bson.M{"_id": objID}).Err() != nil {
+		p, err := GetEntity(bson.M{"_id": objID}, parentStr)
+		if len(p) > 0 {
+			parent["parent"] = parentStr
+			parent["hierarchyName"] = getHierarchyName(p)
+			return parent, true
+		} else if err != "" {
 			println("ENTITY VALUE: ", ent)
 			println("We got Parent: ", parent, " with ID:", t["parentId"].(string))
 			return u.Message(false,
 				"ParentID should correspond to Existing ID"), false
-
 		}
-		defer cancel()
 	}
 	return nil, true
+}
+
+func getHierarchyName(parent map[string]interface{}) string {
+	if parent["hierarchyName"] != nil {
+		return parent["hierarchyName"].(string)
+	} else {
+		return parent["name"].(string)
+	}
 }
 
 func ValidatePatch(ent int, t map[string]interface{}) (map[string]interface{}, bool) {
@@ -127,6 +144,10 @@ func ValidatePatch(ent int, t map[string]interface{}) (map[string]interface{}, b
 				x, ok := validateParent(u.EntityToString(ent), ent, t)
 				if !ok {
 					return x, ok
+				} else if x["hierarchyName"] != nil {
+					t["hierarchyName"] = x["hierarchyName"].(string) + "." + t["name"].(string)
+				} else {
+					println("WARN: Unable to set hierarchyName")
 				}
 			}
 			//u.STRAYDEV's schema is very loose
@@ -284,6 +305,10 @@ func ValidateEntity(entity int, t map[string]interface{}) (map[string]interface{
 		r, ok := validateParent(u.EntityToString(entity), entity, t)
 		if !ok {
 			return r, ok
+		} else if r["hierarchyName"] != nil {
+			t["hierarchyName"] = r["hierarchyName"].(string) + "." + t["name"].(string)
+		} else {
+			println("WARN: Unable to set hierarchyName")
 		}
 
 		if entity < u.AC || entity == u.PWRPNL ||

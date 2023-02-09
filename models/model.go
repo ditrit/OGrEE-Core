@@ -145,11 +145,12 @@ func GetCompleteHierarchy() (map[string]interface{}, string) {
 		return nil, err.Error()
 	}
 
-	opts := options.Find().SetProjection(bson.D{{Key: "hierarchyName", Value: 1}})
 	for _, collName := range collNames {
+		opts := options.Find().SetProjection(bson.D{{Key: "hierarchyName", Value: 1}})
 		if collName == "site" {
 			opts = options.Find().SetProjection(bson.D{{Key: "name", Value: 1}})
 		}
+
 		c, err := db.Collection(collName).Find(ctx, bson.M{}, opts)
 		if err != nil {
 			println(err.Error())
@@ -159,12 +160,16 @@ func GetCompleteHierarchy() (map[string]interface{}, string) {
 			fmt.Println(error)
 			return nil, error
 		}
+
 		for _, m := range d {
 			// loop over keys and values in the map.
 			for k, v := range m {
 				if k == "hierarchyName" {
 					categories[collName] = append(categories[collName], v.(string))
-					fillHierarchyMap(v.(string), &hierarchy)
+					fillHierarchyMap(v.(string), hierarchy)
+				} else if k == "name" {
+					categories["site"] = append(categories["site"], v.(string))
+					hierarchy["Root"] = append(hierarchy["Root"], v.(string))
 				}
 			}
 		}
@@ -176,11 +181,11 @@ func GetCompleteHierarchy() (map[string]interface{}, string) {
 	return response, ""
 }
 
-func fillHierarchyMap(hierarchyName string, data *map[string][]string) {
+func fillHierarchyMap(hierarchyName string, data map[string][]string) {
 	i := strings.LastIndex(hierarchyName, ".")
 	if i > 0 {
 		parent := hierarchyName[:i]
-		(*data)[parent] = append((*data)[parent], hierarchyName)
+		data[parent] = append(data[parent], hierarchyName)
 	}
 }
 
