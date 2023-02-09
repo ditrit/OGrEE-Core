@@ -1792,8 +1792,6 @@ func GetOCLIAtrributes(Path string, ent int, data map[string]interface{}) error 
 	//we can do the conversion for templates here
 	data["category"] = strings.Replace(data["category"].(string), "_", "-", 1)
 
-	println("DEBUG VIEW DATA")
-	Disp(data)
 	_, err = PostObj(ent, data["category"].(string), data)
 	if err != nil {
 		return err

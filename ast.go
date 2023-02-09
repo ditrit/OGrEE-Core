@@ -1112,8 +1112,17 @@ func (n *createDomainNode) execute() (interface{}, error) {
 		return nil, fmt.Errorf("Path should be a string")
 	}
 
+	colorInf, err := n.attrs["color"].(node).execute()
+	if err != nil {
+		return nil, err
+	}
+
 	//Assert the color is valid
-	AssertColor(n.attrs["color"])
+	if color, ok := AssertColor(colorInf); !ok {
+		return nil, fmt.Errorf("Please provide a valid 6 digit Hex value for the color")
+	} else {
+		n.attrs["color"] = color
+	}
 	attributes := map[string]interface{}{"attributes": n.attrs}
 	err = cmd.GetOCLIAtrributes(path, cmd.DOMAIN, attributes)
 	return nil, err

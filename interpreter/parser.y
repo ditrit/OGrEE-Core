@@ -64,6 +64,7 @@ var _ = l.GetInfoLogger() //Suppresses annoying Dockerfile build error
 %type <sArr> WNARG2
 %type <node> OCCR PATH PHYSICAL_PATH STRAY_DEV_PATH EXPR CONCAT CONCAT_TERM stmnt st2 IF 
        EXPR_NOQUOTE ARRAY ORIENTATION EXPR_NOQUOTE_NOCOL CONCAT_NOCOL CONCAT_TERM_NOCOL EXPR_NOQUOTE_COMMON
+       WORD_OR_INT
 //%type <mapVoid> EQUAL_LIST
 
 %right UNARY
@@ -269,6 +270,9 @@ CONCAT_TERM:  CONCAT_TERM_NOCOL {$$=$1}
        | TOK_COL {$$=&strLeaf{":"}}
 ;
 
+WORD_OR_INT: TOK_WORD {$$=&strLeaf{$1}}
+              |TOK_INT {$$=&floatLeaf{float64($1)}}
+
 EXPR: TOK_INT {$$=&floatLeaf{float64($1)}}
        | TOK_FLOAT {$$=&floatLeaf{$1}}
        | TOK_TRUE {$$=&boolLeaf{true}}
@@ -375,7 +379,7 @@ ORIENTATION: TOK_WORD {$$=&strLeaf{$1} }
        | TOK_MINUS TOK_WORD TOK_MINUS TOK_WORD {$$=&strLeaf{$1+$2+$3+$4}}
        | TOK_MINUS TOK_WORD TOK_PLUS TOK_WORD {$$=&strLeaf{$1+$2+$3+$4}}
 
-OCCR:   TOK_DOMAIN TOK_COL PATH TOK_ATTRSPEC TOK_WORD {
+OCCR:   TOK_DOMAIN TOK_COL PATH TOK_ATTRSPEC WORD_OR_INT {
               attributes := map[string]interface{}{"color":$5}
               $$=&createDomainNode{$3, attributes}
        }
