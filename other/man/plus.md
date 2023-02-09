@@ -8,6 +8,12 @@ https://github.com/ditrit/OGREE-3D/wiki/How-it-works#ogreeobject-class
 
 USAGES     
 
++domain:PATH/DOMAIN_NAME@COLOR      
+User must specify the path, DOMAIN_NAME and COLOR   
+
+Where COLOR should be a 6 digit HEX Value (ie 00000A)
+
+
 +si:PATH/SITE_NAME@ORIENTATION   
 +site:PATH/SITE_NAME@ORIENTATION   
 User must specify the path, SITE_NAME and ORIENTATION   
@@ -146,8 +152,7 @@ Where TEMPLATE refers to the device template name (which must be already existin
 
 EXAMPLES   
 
-+tn:CED@ced666
-+tenant:MARCUS@42ff42
++domain:CED@ced666
 
 +si:CED.BETA@NW
 +site:CED/BETA@NE

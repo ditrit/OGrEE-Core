@@ -1097,6 +1097,27 @@ func (n *hierarchyNode) execute() (interface{}, error) {
 
 }
 
+type createDomainNode struct {
+	path  node
+	attrs map[string]interface{}
+}
+
+func (n *createDomainNode) execute() (interface{}, error) {
+	val, err := n.path.execute()
+	if err != nil {
+		return nil, err
+	}
+	path, ok := val.(string)
+	if !ok {
+		return nil, fmt.Errorf("Path should be a string")
+	}
+
+	//Assert the color is valid
+	AssertColor(n.attrs["color"])
+	err = cmd.GetOCLIAtrributes(path, cmd.DOMAIN, n.attrs)
+	return nil, err
+}
+
 type getOCAttrNode struct {
 	path       node
 	ent        int

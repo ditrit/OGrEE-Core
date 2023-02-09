@@ -1382,7 +1382,8 @@ func GetOCLIAtrributes(Path string, ent int, data map[string]interface{}) error 
 	data["description"] = []interface{}{}
 
 	//Retrieve Parent
-	if ent != SITE && ent != GROUP && ent != STRAY_DEV && ent != STRAYSENSOR {
+	if ent != SITE && ent != GROUP && ent != STRAY_DEV &&
+		ent != STRAYSENSOR && ent != DOMAIN {
 		parent, parentURL = GetObject(Path, true)
 		if parent == nil {
 			return fmt.Errorf("The parent was not found in path")
@@ -1401,6 +1402,8 @@ func GetOCLIAtrributes(Path string, ent int, data map[string]interface{}) error 
 	}
 	var err error
 	switch ent {
+	case DOMAIN:
+
 	case SITE:
 		//Default values
 		data["domain"] = data["name"]

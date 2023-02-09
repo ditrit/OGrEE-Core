@@ -24,6 +24,7 @@ const (
 	GROUP
 	STRAY_DEV
 	STRAYSENSOR
+	DOMAIN
 )
 
 // Debug Level Declaration
@@ -169,6 +170,8 @@ func MapStrayInt(x int) int {
 
 func EntityToString(entity int) string {
 	switch entity {
+	case DOMAIN:
+		return "domain"
 	case SITE:
 		return "site"
 	case BLDG:
@@ -204,6 +207,8 @@ func EntityToString(entity int) string {
 
 func EntityStrToInt(entity string) int {
 	switch entity {
+	case "domain":
+		return DOMAIN
 	case "site", "si":
 		return SITE
 	case "building", "bldg", "bd":
