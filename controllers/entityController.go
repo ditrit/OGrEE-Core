@@ -385,7 +385,7 @@ var GetEntity = func(w http.ResponseWriter, r *http.Request) {
 			s != "stray_device" && s != "stray_sensor" { //GET By Slug
 			data, e1 = models.GetEntity(bson.M{"slug": id}, s)
 
-		} else if s == "stray_device" || s == "stray_sensor" || s == "site" {
+		} else if s == "stray_device" || s == "stray_sensor" || s == "site" || s == "domain" {
 			data, e1 = models.GetEntity(bson.M{"name": id}, s) //GET By Name
 
 		} else {
