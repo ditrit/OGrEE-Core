@@ -1,6 +1,13 @@
+//Check if host was passed as argument
+//Otherwise use localhost
+try {
+  host;
+} catch(e) {
+  host = "localhost:27017"
+}
 
 //Authenticate first
-var m = new Mongo()
+var m = new Mongo(host)
 var authDB = m.getDB("test")
 authDB.auth('admin','adminpassword');
 

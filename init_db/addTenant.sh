@@ -21,6 +21,11 @@ while test $# -gt 0; do
                     port=$1
                     shift
                     ;;
+                -host)
+                    shift
+                    host=$1
+                    shift
+                    ;;
                 -name)
                     shift
                     name=$1
@@ -33,6 +38,10 @@ while test $# -gt 0; do
           esac
   done  
 
+if [  -z "$host" ];
+then
+    host="localhost"
+fi
 
 if [ -z "$port" ];
 then
@@ -44,18 +53,18 @@ then
     name="ogreeDevelop"
 fi
 
+echo "Host : $host";
 echo "Port : $port";
 echo "Name : $name";
 
 #Create the secured Database
-mongosh "localhost:"$port createdb.js --eval 'var dbName = "ogree'$name'"'
-
+mongosh "$host:"$port createdb.js --eval 'var dbName = "ogree'$name'", host = "'$host':'$port'"'
 
 #Create an API user for the new customer
 echo 
 echo "Please type a new a password for the customer: "
 read PASS
-mongosh "localhost:"$port createUser.js --eval 'let dbName = "ogree'$name'", pass = "'$PASS'";'
+mongosh "$host:"$port createUser.js --eval 'let dbName = "ogree'$name'", pass = "'$PASS'", host = "'$host':'$port'";'
 
 
 #Success so print credentials one last time

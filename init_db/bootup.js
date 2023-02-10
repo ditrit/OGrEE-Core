@@ -5,7 +5,17 @@
 // MongoDB docker image will execute scripts in alphabetical order
 //////
 
-var m = new Mongo()
+//Check if host was passed as argument
+//Otherwise use localhost
+try {
+    host;
+  } catch(e) {
+    host = "localhost:27017"
+  }
+  
+  
+//Authenticate first
+var m = new Mongo(host)
 var authDB = m.getDB("admin")
 
 //Create the Root user named Super

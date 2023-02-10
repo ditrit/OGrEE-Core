@@ -4,9 +4,16 @@
 // subscribes
 //////
 
+//Check if host was passed as argument
+//Otherwise use localhost
+try {
+  host;
+} catch(e) {
+  host = "localhost:27017"
+}
 
 //Authenticate first
-var m = new Mongo()
+var m = new Mongo(host)
 var authDB = m.getDB("test")
 authDB.auth('admin','adminpassword');
 
@@ -18,15 +25,12 @@ try {
 } catch(e) {
   dbName = "ogreeDevelop"
 }
-//var m = new Mongo()
+
 var db = m.getDB(dbName)
-
-
 
 //Update customer record table
 var odb = m.getDB("ogree")
 odb.customer.insertOne({"name": dbName});
-
 
 db.createCollection('account');
 db.createCollection('domain');
@@ -44,7 +48,6 @@ db.createCollection('bldg_template');
 //Group Collections
 db.createCollection('group');
 
-
 //Nonhierarchal objects
 db.createCollection('ac');
 db.createCollection('panel');
@@ -55,7 +58,6 @@ db.createCollection('sensor');
 //Stray Objects
 db.createCollection('stray_device');
 db.createCollection('stray_sensor');
-
 
 //Enfore unique Tenant Names
 db.domain.createIndex( {parentId:1, name:1}, { unique: true } );
@@ -68,12 +70,10 @@ db.rack.createIndex({parentId:1, name:1}, { unique: true });
 db.device.createIndex({parentId:1, name:1}, { unique: true });
 //Enforcing that the Parent Exists is done at the ORM Level for now
 
-
 //Make slugs unique identifiers for templates
 db.room_template.createIndex({slug:1}, { unique: true });
 db.obj_template.createIndex({slug:1}, { unique: true });
 db.bldg_template.createIndex({slug:1}, { unique: true });
-
 
 //Unique children restriction for nonhierarchal objects and sensors
 db.ac.createIndex({parentId:1, name:1}, { unique: true });
@@ -90,4 +90,3 @@ db.group.createIndex({parentId:1, name:1}, { unique: true });
 //Enforce unique stray objects
 db.stray_device.createIndex({parentId:1,name:1}, { unique: true });
 db.stray_sensor.createIndex({name:1}, { unique: true });
-

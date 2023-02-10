@@ -85,7 +85,6 @@ echo "Log :  $log";
 echo "Host : $host";
 echo "Name : $name";
 
-
 #killall mongod
 fuser -k $port/tcp
 rm -rf "$log"
@@ -94,10 +93,10 @@ mkdir "$path"
 mongod --dbpath "$path" --port $port --logpath "$log" --fork
 
 #Initialise the customer record DB
-mongosh "$host:"$port bootup.js
+mongosh "$host:"$port bootup.js --eval 'var host = "'$host':'$port'"'
 
 #The command below will execute the mongo script
-mongosh "$host:"$port"/"$name ./createdb.js --eval 'var dbName = "'$name'"'
+mongosh "$host:"$port"/"$name ./createdb.js --eval 'var dbName = "'$name'", host = "'$host':'$port'"'
 echo "PASSED BOOTUP"
 
 sudo fuser -k $port/tcp
