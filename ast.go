@@ -1809,11 +1809,11 @@ func parseSeparators(path string, first, second interface{}, arg *node) (map[str
 	}
 
 	separators, obj, e := fetchObjAttr(path, "separators")
-	var sepArray []interface{}
-	attr := obj["attributes"].(map[string]interface{})
-	if e != nil {
+	if e != nil || obj == nil {
 		return nil, e
 	}
+	var sepArray []interface{}
+	attr := obj["attributes"].(map[string]interface{})
 
 	if IsInfArr(separators) {
 		sepArray = separators.([]interface{})
@@ -1886,11 +1886,11 @@ func parsePillars(path string, first, second interface{}, arg *node) (map[string
 	}
 
 	pillars, obj, e := fetchObjAttr(path, "pillars")
-	var pillarArray []interface{}
-	attr := obj["attributes"].(map[string]interface{})
-	if e != nil {
+	if e != nil || obj == nil {
 		return nil, e
 	}
+	var pillarArray []interface{}
+	attr := obj["attributes"].(map[string]interface{})
 
 	if IsInfArr(pillars) {
 		pillarArray = pillars.([]interface{})
