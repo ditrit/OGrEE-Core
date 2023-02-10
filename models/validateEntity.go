@@ -288,7 +288,6 @@ func ValidateEntity(entity int, t map[string]interface{}) (map[string]interface{
 					return u.Message(false, "Attributes should be a JSON Dictionary"), false
 				} else {
 					switch entity {
-
 					case u.SITE:
 						if !IsOrientation(v["orientation"], entity) {
 							if v["orientation"] == nil || v["orientation"] == "" {
@@ -384,6 +383,10 @@ func ValidateEntity(entity int, t map[string]interface{}) (map[string]interface{
 									return u.Message(false, "Invalid posXYZ on payload: missing "+key), false
 								}
 							}
+						}
+
+						if v["posXYUnit"] == "" || v["posXYUnit"] == nil {
+							return u.Message(false, "PositionXYUnit should be on the payload"), false
 						}
 
 						//Check Orientation
@@ -771,7 +774,6 @@ func ValidateEntity(entity int, t map[string]interface{}) (map[string]interface{
 	return u.Message(true, "success"), true
 }
 
-// Auxillary Functions
 // Auxillary Functions
 func EnsureUnique(x []string) (string, bool) {
 	dict := map[string]int{}

@@ -88,6 +88,7 @@ Perform an HTTP OPTIONS operation without JSON body
 /api/token/valid
 /api/version
 /api/validate/{obj}
+/api/tempunits/{id}
 
 // HIERARCHY - START 
 /api/tenants/{id_or_name}/all
@@ -304,7 +305,7 @@ Perform an HTTP HEAD operation
 /api/stats
 /api/token/valid
 /api/version
-
+/api/tempunits/{id}
 
 // ENTIT(Y)IES USING NAMES OF PARENTS - START
 /api/tenants/{id}/sites/{site_name}
@@ -522,6 +523,11 @@ This URL is for development purposes only
 ### Get API Version information
 ```
 /api/version
+```
+
+### Get Parent's Temperature Unit Of Object (Site)
+```
+/api/tempunits/{id}
 ```
 
 ### Get All Objects

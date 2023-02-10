@@ -63,6 +63,10 @@ func main() {
 	router.HandleFunc("/api/version",
 		controllers.Version).Methods("GET", "OPTIONS", "HEAD")
 
+	// For Obtaining temperatureUnit from object's site
+	router.HandleFunc("/api/tempunits/{id:[a-zA-Z0-9]{24}}",
+		controllers.GetTempUnit).Methods("GET", "OPTIONS", "HEAD")
+
 	// ------ GET ------ //
 	//GET ENTITY HIERARCHY
 	//This matches ranged Tenant Hierarchy
