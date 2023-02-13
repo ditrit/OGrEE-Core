@@ -146,8 +146,8 @@ func ValidatePatch(ent int, t map[string]interface{}) (map[string]interface{}, b
 				}
 			}
 
-		case "attributes.orientation": //u.SITE, u.ROOM, u.RACK, u.DEVICE
-			if ent >= u.SITE && ent <= u.DEVICE {
+		case "attributes.orientation": // u.ROOM, u.RACK, u.DEVICE
+			if ent > u.SITE && ent <= u.DEVICE {
 				if v, _ := t[k]; v == nil {
 					return u.Message(false,
 						"Field: "+k+" cannot nullified!"), false
@@ -317,14 +317,6 @@ func ValidateEntity(entity int, t map[string]interface{}) (map[string]interface{
 								"Color Attribute must be a Hex value"), false
 						}
 
-					case u.SITE:
-						if !IsOrientation(v["orientation"], entity) {
-							if v["orientation"] == nil || v["orientation"] == "" {
-								return u.Message(false, "Orientation should be on the payload"), false
-							}
-							return u.Message(false, "Orientation is invalid!"), false
-						}
-
 					case u.BLDG:
 						if v["posXY"] == "" || v["posXY"] == nil {
 							return u.Message(false, "XY coordinates should be on payload"), false
@@ -350,6 +342,10 @@ func ValidateEntity(entity int, t map[string]interface{}) (map[string]interface{
 							return u.Message(false, "Building Height unit should be on the payload"), false
 						}
 
+						if v["rotation"] == "" || v["rotation"] == nil {
+							return u.Message(false, "Building Rotation should be on the payload"), false
+						}
+
 					case u.ROOM:
 						if v["posXY"] == "" || v["posXY"] == nil {
 							return u.Message(false, "XY coordinates should be on payload"), false
@@ -368,12 +364,16 @@ func ValidateEntity(entity int, t map[string]interface{}) (map[string]interface{
 
 						}
 
-						//Check Orientation
-						if !IsNonStdOrientation(v["orientation"], entity) {
-							if v["orientation"] == nil || v["orientation"] == "" {
-								return u.Message(false, "Orientation should be on the payload"), false
+						//Check Orientation (axisOrientation)
+						if !IsNonStdOrientation(v["axisOrientation"], entity) {
+							if v["axisOrientation"] == nil || v["axisOrientation"] == "" {
+								return u.Message(false, "Axis Orientation should be on the payload"), false
 							}
-							return u.Message(false, "Orientation is invalid!"), false
+							return u.Message(false, "Axis Orientation is invalid!"), false
+						}
+
+						if v["rotation"] == "" || v["rotation"] == nil {
+							return u.Message(false, "Rotation should be on the payload"), false
 						}
 
 						if v["size"] == "" || v["size"] == nil {
@@ -679,9 +679,9 @@ func ValidateEntity(entity int, t map[string]interface{}) (map[string]interface{
 			}
 
 		} else { //u.ROOMTMPL
-			if _, ok := t["orientation"]; !ok {
+			if _, ok := t["axisOrientation"]; !ok {
 				return u.Message(false,
-					"Orientation should be on payload"), false
+					"Axis Orientation should be on payload"), false
 			}
 
 			if _, ok := t["sizeWDHm"]; !ok {
@@ -715,14 +715,6 @@ func ValidateEntity(entity int, t map[string]interface{}) (map[string]interface{
 			return u.Message(false, "Slug should be on payload"), false
 		}
 
-		if t["orientation"] == "" || t["orientation"] == nil {
-			return u.Message(false, "Orientation should be on payload"), false
-		}
-
-		if !IsOrientation(t["orientation"], u.BLDGTMPL) {
-			return u.Message(false, "Orientation is invalid!"), false
-		}
-
 		if !IsInfArr(t["sizeWDHm"]) {
 			return u.Message(false,
 				"Please provide the size as a 3 numerical element array"), false
@@ -738,16 +730,6 @@ func ValidateEntity(entity int, t map[string]interface{}) (map[string]interface{
 				return u.Message(false,
 					"An element in the size was not numerical!"), false
 			}
-		}
-
-		if !IsInfArr(t["sizeWDHm"]) {
-			return u.Message(false,
-				"Please provide the size as a 3 numerical element array"), false
-		}
-
-		if len(t["sizeWDHm"].([]interface{})) != 3 {
-			return u.Message(false,
-				"The size can only have 3 numerical elements"), false
 		}
 
 		if !IsInfArr(t["vertices"]) {
@@ -877,16 +859,6 @@ func IsHexString(s string) bool {
 }
 
 func IsOrientation(x interface{}, ent int) bool {
-	if ent == u.SITE {
-		switch x {
-		case "EN", "NW", "WS", "SE", "NE", "SW":
-			return true
-
-		default:
-			return false
-		}
-	}
-
 	if ent == u.BLDGTMPL || ent == u.ROOMTMPL {
 		switch x {
 		case "EN", "NW", "WS", "SE", "NE", "SW",
@@ -894,7 +866,9 @@ func IsOrientation(x interface{}, ent int) bool {
 			"+N-E", "-N-E", "-N+E",
 			"-N-W", "-N+W", "+N-W", "+N+W",
 			"-W-S", "-W+S", "+W-S", "+W+S",
-			"-S-E", "-S+E", "+S-E", "+S+E":
+			"-S-E", "-S+E", "+S-E", "+S+E",
+			"+x+y", "+x-y", "-x-y", "-x+y",
+			"+X+Y", "+X-Y", "-X-Y", "-X+Y":
 			return true
 		default:
 			if !IsString(x) {
@@ -913,7 +887,9 @@ func IsOrientation(x interface{}, ent int) bool {
 			"+N-E", "-N-E", "-N+E",
 			"-N-W", "-N+W", "+N-W", "+N+W",
 			"-W-S", "-W+S", "+W-S", "+W+S",
-			"-S-E", "-S+E", "+S-E", "+S+E":
+			"-S-E", "-S+E", "+S-E", "+S+E",
+			"+x+y", "+x-y", "-x-y", "-x+y",
+			"+X+Y", "+X-Y", "-X-Y", "-X+Y":
 			return true
 		default:
 			return false
