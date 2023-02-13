@@ -9,6 +9,7 @@ import (
 	"os"
 	"regexp"
 
+	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
 )
 
@@ -171,7 +172,8 @@ func main() {
 	fmt.Println(port)
 
 	//Start app, localhost:8000/api
-	err := http.ListenAndServe(":"+port, router)
+	corsObj := handlers.AllowedOrigins([]string{"*"})
+	err := http.ListenAndServe(":"+port, handlers.CORS(corsObj)(router))
 	if err != nil {
 		fmt.Print(err)
 	}
