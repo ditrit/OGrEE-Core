@@ -429,6 +429,8 @@ var GetEntity = func(w http.ResponseWriter, r *http.Request) {
 			message = "successfully got room_template"
 		case u.OBJTMPL:
 			message = "successfully got obj_template"
+		case u.BLDGTMPL:
+			message = "successfully got building_template"
 		default:
 			message = "successfully got object"
 		}
