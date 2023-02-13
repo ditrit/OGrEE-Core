@@ -63,7 +63,8 @@ var _ = l.GetInfoLogger() //Suppresses annoying Dockerfile build error
 %type <mapVoid> ARGACC PRINTF
 %type <sArr> WNARG2
 %type <node> OCCR PATH PHYSICAL_PATH STRAY_DEV_PATH EXPR CONCAT CONCAT_TERM stmnt st2 IF 
-       EXPR_NOQUOTE ARRAY ORIENTATION EXPR_NOQUOTE_NOCOL CONCAT_NOCOL CONCAT_TERM_NOCOL EXPR_NOQUOTE_COMMON
+       EXPR_NOQUOTE ARRAY ORIENTATION EXPR_NOQUOTE_NOCOL CONCAT_NOCOL 
+       CONCAT_TERM_NOCOL EXPR_NOQUOTE_COMMON WORD_OR_EXPR
 //%type <mapVoid> EQUAL_LIST
 
 %right UNARY
@@ -375,29 +376,34 @@ ORIENTATION: TOK_WORD {$$=&strLeaf{$1} }
        | TOK_MINUS TOK_WORD TOK_MINUS TOK_WORD {$$=&strLeaf{$1+$2+$3+$4}}
        | TOK_MINUS TOK_WORD TOK_PLUS TOK_WORD {$$=&strLeaf{$1+$2+$3+$4}}
 
+WORD_OR_EXPR:  TOK_WORD {$$=&strLeaf{$1}}
+              | EXPR {$$=$1}
+; 
+
 OCCR:   
         TOK_TENANT TOK_COL PHYSICAL_PATH TOK_ATTRSPEC EXPR_NOQUOTE {
               attributes := map[string]interface{}{"attributes":map[string]interface{}{"color":$5}}
               $$=&getOCAttrNode{$3, cmd.TENANT, attributes}
         }
-        |TOK_SITE TOK_COL PHYSICAL_PATH TOK_ATTRSPEC ORIENTATION {
-              attributes := map[string]interface{}{"attributes":map[string]interface{}{"orientation":$5}}
-              $$=&getOCAttrNode{$3, cmd.SITE, attributes}
+        |TOK_SITE TOK_COL PHYSICAL_PATH {
+              $$=&getOCAttrNode{$3, cmd.SITE, nil}
         } 
-        |TOK_BLDG TOK_COL PHYSICAL_PATH TOK_ATTRSPEC EXPR TOK_ATTRSPEC EXPR {
-              attributes := map[string]interface{}{"attributes":map[string]interface{}{"posXY":$5, "size":$7}}
+        |TOK_BLDG TOK_COL PHYSICAL_PATH TOK_ATTRSPEC EXPR TOK_ATTRSPEC EXPR TOK_ATTRSPEC WORD_OR_EXPR {
+              //The TOK_WORD actually refers to "template" but kept as is for simpler distinguishing
+              //in the ast code
+              attributes := map[string]interface{}{"attributes":map[string]interface{}{"posXY":$5, "rotation":$7, "size/template":$9}}
               $$=&getOCAttrNode{$3, cmd.BLDG, attributes}
         }
-        |TOK_ROOM TOK_COL PHYSICAL_PATH TOK_ATTRSPEC EXPR TOK_ATTRSPEC EXPR TOK_ATTRSPEC ORIENTATION TOK_ATTRSPEC EXPR_NOQUOTE{
-              attributes := map[string]interface{}{"attributes":map[string]interface{}{"posXY":$5, "size":$7, "orientation":$9, "floorUnit":$11}}
+        |TOK_ROOM TOK_COL PHYSICAL_PATH TOK_ATTRSPEC EXPR TOK_ATTRSPEC EXPR TOK_ATTRSPEC EXPR TOK_ATTRSPEC ORIENTATION TOK_ATTRSPEC EXPR_NOQUOTE{
+              attributes := map[string]interface{}{"attributes":map[string]interface{}{"posXY":$5, "rotation":$7, "size":$9,"axisOrientation":$11, "floorUnit":$13}}
               $$=&getOCAttrNode{$3, cmd.ROOM, attributes}
         }
-        |TOK_ROOM TOK_COL PHYSICAL_PATH TOK_ATTRSPEC EXPR TOK_ATTRSPEC EXPR TOK_ATTRSPEC ORIENTATION {
-              attributes := map[string]interface{}{"attributes":map[string]interface{}{"posXY":$5, "size":$7, "orientation":$9}}
+        |TOK_ROOM TOK_COL PHYSICAL_PATH TOK_ATTRSPEC EXPR TOK_ATTRSPEC EXPR TOK_ATTRSPEC EXPR TOK_ATTRSPEC ORIENTATION {
+              attributes := map[string]interface{}{"attributes":map[string]interface{}{"posXY":$5, "rotation":$7, "size":$9,"axisOrientation":$11 }}
               $$=&getOCAttrNode{$3, cmd.ROOM, attributes}
         }
-        |TOK_ROOM TOK_COL PHYSICAL_PATH TOK_ATTRSPEC EXPR TOK_ATTRSPEC EXPR_NOQUOTE {
-              attributes := map[string]interface{}{"attributes":map[string]interface{}{"posXY":$5, "template":$7}}
+        |TOK_ROOM TOK_COL PHYSICAL_PATH TOK_ATTRSPEC EXPR TOK_ATTRSPEC EXPR TOK_ATTRSPEC WORD_OR_EXPR {
+              attributes := map[string]interface{}{"attributes":map[string]interface{}{"posXY":$5, "rotation":$7, "template":$9}}
               $$=&getOCAttrNode{$3, cmd.ROOM, attributes}
         }
         |TOK_RACK TOK_COL PHYSICAL_PATH TOK_ATTRSPEC EXPR TOK_ATTRSPEC EXPR_NOQUOTE TOK_ATTRSPEC EXPR_NOQUOTE {$$=&createRackNode{$3, [3]node{$5, $7, $9}}}

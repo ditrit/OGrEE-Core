@@ -1409,21 +1409,28 @@ func GetOCLIAtrributes(Path string, ent int, data map[string]interface{}) error 
 		//Default values
 		data["domain"] = domain
 		data["parentId"] = parent["id"]
+		data["attributes"] = map[string]interface{}{}
 
 	case BLDG:
 		attr = data["attributes"].(map[string]interface{})
 
-		//Serialise size and posXY if given
-		if _, ok := attr["size"].(string); ok {
-			attr["size"] = serialiseAttr(attr, "size")
+		//Check for template
+		if _, ok := attr["template"]; ok {
+			GetOCLIAtrributesTemplateHelper(attr, data, BLDG)
+
 		} else {
-			attr["size"] = serialiseAttr2(attr, "size")
+			//Serialise size and posXY manually instead
+			if _, ok := attr["size"].(string); ok {
+				attr["size"] = serialiseAttr(attr, "size")
+			} else {
+				attr["size"] = serialiseAttr2(attr, "size")
+			}
 		}
 
 		if attr["size"] == "" {
 			if State.DebugLvl > 0 {
 				l.GetErrorLogger().Println(
-					"User gave invalid size value for creating room")
+					"User gave invalid size value for creating building")
 				return fmt.Errorf("Invalid size attribute provided." +
 					" \nIt must be an array/list/vector with 3 elements." +
 					" Please refer to the wiki or manual reference" +
@@ -1442,7 +1449,7 @@ func GetOCLIAtrributes(Path string, ent int, data map[string]interface{}) error 
 		if attr["posXY"] == "" {
 			if State.DebugLvl > 0 {
 				l.GetErrorLogger().Println(
-					"User gave invalid posXY value for creating room")
+					"User gave invalid posXY value for creating building")
 				return fmt.Errorf("Invalid posXY attribute provided." +
 					" \nIt must be an array/list/vector with 2 elements." +
 					" Please refer to the wiki or manual reference" +
@@ -1450,6 +1457,12 @@ func GetOCLIAtrributes(Path string, ent int, data map[string]interface{}) error 
 					"using this syntax")
 			}
 			return nil
+		}
+
+		//Check rotation
+		if _, ok := attr["rotation"].(float64); ok {
+			attr["rotation"] =
+				strconv.FormatFloat(attr["rotation"].(float64), 'f', -1, 64)
 		}
 
 		attr["posXYUnit"] = "m"
@@ -1463,7 +1476,7 @@ func GetOCLIAtrributes(Path string, ent int, data map[string]interface{}) error 
 		attr = data["attributes"].(map[string]interface{})
 
 		baseAttrs := map[string]interface{}{
-			"orientation": "+N+E", "floorUnit": "t",
+			"floorUnit": "t",
 			"posXYUnit": "m", "sizeUnit": "m",
 			"height":     "5",
 			"heightUnit": "m"}
@@ -1474,19 +1487,6 @@ func GetOCLIAtrributes(Path string, ent int, data map[string]interface{}) error 
 		//and parse into templates
 		//NOTE this function also assigns value for "size" attribute
 		GetOCLIAtrributesTemplateHelper(attr, data, ent)
-
-		if attr["size"] == "" {
-			if State.DebugLvl > 0 {
-				l.GetErrorLogger().Println(
-					"User gave invalid size value for creating room")
-				return fmt.Errorf("Invalid size attribute provided." +
-					" \nIt must be an array/list/vector with 3 elements." +
-					" Please refer to the wiki or manual reference" +
-					" for more details on how to create objects " +
-					"using this syntax")
-			}
-			return nil
-		}
 
 		if _, ok := attr["posXY"].(string); ok {
 			attr["posXY"] = serialiseAttr(attr, "posXY")
@@ -1500,6 +1500,25 @@ func GetOCLIAtrributes(Path string, ent int, data map[string]interface{}) error 
 					"User gave invalid posXY value for creating room")
 				return fmt.Errorf("Invalid posXY attribute provided." +
 					" \nIt must be an array/list/vector with 2 elements." +
+					" Please refer to the wiki or manual reference" +
+					" for more details on how to create objects " +
+					"using this syntax")
+			}
+			return nil
+		}
+
+		//Check rotation
+		if _, ok := attr["rotation"].(float64); ok {
+			attr["rotation"] =
+				strconv.FormatFloat(attr["rotation"].(float64), 'f', -1, 64)
+		}
+
+		if attr["size"] == "" {
+			if State.DebugLvl > 0 {
+				l.GetErrorLogger().Println(
+					"User gave invalid size value for creating room")
+				return fmt.Errorf("Invalid size attribute provided." +
+					" \nIt must be an array/list/vector with 3 elements." +
 					" Please refer to the wiki or manual reference" +
 					" for more details on how to create objects " +
 					"using this syntax")
@@ -1565,7 +1584,7 @@ func GetOCLIAtrributes(Path string, ent int, data map[string]interface{}) error 
 		if attr["posXYZ"] == "" {
 			if State.DebugLvl > 0 {
 				l.GetErrorLogger().Println(
-					"User gave invalid posXYZ value for creating room")
+					"User gave invalid posXYZ value for creating rack")
 				return fmt.Errorf("Invalid posXYZ attribute provided." +
 					" \nIt must be an array/list/vector with 2 or 3 elements." +
 					" Please refer to the wiki or manual reference" +
@@ -1799,12 +1818,12 @@ func GetOCLIAtrributesTemplateHelper(attr, data map[string]interface{}, ent int)
 	//data from templates
 	attrSerialiser := func(someVal interface{}, idx string, ent int) string {
 		if x, ok := someVal.(int); ok {
-			if ent == DEVICE || ent == ROOM {
+			if ent == DEVICE || ent == ROOM || ent == BLDG {
 				return strconv.Itoa(x)
 			}
 			return strconv.Itoa(x / 10)
 		} else if x, ok := someVal.(float64); ok {
-			if ent == DEVICE || ent == ROOM {
+			if ent == DEVICE || ent == ROOM || ent == BLDG {
 				return strconv.FormatFloat(x, 'G', -1, 64)
 			}
 			return strconv.FormatFloat(x/10.0, 'G', -1, 64)
@@ -1823,6 +1842,8 @@ func GetOCLIAtrributesTemplateHelper(attr, data map[string]interface{}, ent int)
 			tInt := 0
 			if ent == ROOM {
 				tInt = ROOMTMPL
+			} else if ent == BLDG {
+				tInt = BLDGTMPL
 			} else {
 				tInt = OBJTMPL
 			} //End of determine block
@@ -1880,6 +1901,8 @@ func GetOCLIAtrributesTemplateHelper(attr, data map[string]interface{}, ent int)
 							attr["technical"] = attr["technicalArea"]
 							delete(attr, "technicalArea")
 						}
+
+						CopyAttr(attr, tmpl, "axisOrientation")
 
 						CopyAttr(attr, tmpl, "reservedArea")
 						if _, ok := attr["reservedArea"]; ok {
@@ -1951,6 +1974,10 @@ func GetOCLIAtrributesTemplateHelper(attr, data map[string]interface{}, ent int)
 							}
 						}
 
+					} else if ent == BLDG {
+						attr["sizeUnit"] = "m"
+						attr["heightUnit"] = "m"
+
 					} else {
 						attr["sizeUnit"] = "cm"
 						attr["heightUnit"] = "cm"
@@ -1969,7 +1996,10 @@ func GetOCLIAtrributesTemplateHelper(attr, data map[string]interface{}, ent int)
 
 					//fbxModel section
 					if check := CopyAttr(attr, tmpl, "fbxModel"); !check {
-						attr["fbxModel"] = ""
+						if ent != BLDG {
+							attr["fbxModel"] = ""
+						}
+
 					}
 
 					//Copy orientation if available
@@ -2772,12 +2802,18 @@ func LoadFile(path string) {
 func LoadTemplate(data map[string]interface{}, filePath string) {
 	var URL string
 
-	if cat, _ := data["category"]; cat == "room" || data["description"] == nil {
+	if cat, _ := data["category"]; cat == "room" {
 		//Room template
 		URL = State.APIURL + "/api/room-templates"
-	} else {
-		//Obj template
+	} else if cat == "bldg" || cat == "building" {
+		//Bldg template
+		URL = State.APIURL + "/api/bldg-templates"
+	} else if cat == "rack" || cat == "device" {
+		// Obj template
 		URL = State.APIURL + "/api/obj-templates"
+	} else {
+		println("This template does not have a valid category. Please add a category attribute with a value of building or room or rack or device")
+		return
 	}
 
 	r, e := models.Send("POST", URL, GetKey(), data)
@@ -3368,6 +3404,14 @@ func OnlinePathResolve(path []string) []string {
 		return []string{basePath}
 	}
 
+	if path[0] == "BldgTemplates" {
+		basePath += "/bldg-templates"
+		if len(path) > 1 {
+			basePath += "/" + path[1]
+		}
+		return []string{basePath}
+	}
+
 	if path[0] == "Groups" {
 		basePath += "/groups"
 		if len(path) > 1 {
@@ -3483,6 +3527,14 @@ func OnlineLevelResolver(path []string) []string {
 		return []string{basePath}
 	}
 
+	if path[0] == "BldgTemplates" {
+		basePath += "/bldg-templates"
+		if len(path) > 1 {
+			basePath += "/" + path[1]
+		}
+		return []string{basePath}
+	}
+
 	if path[0] == "Groups" {
 		basePath += "/groups"
 		if len(path) > 1 {
@@ -3553,6 +3605,8 @@ func fetchTemplate(name string, objType int) map[string]interface{} {
 	var URL string
 	if objType == ROOMTMPL {
 		URL = State.APIURL + "/api/room_templates/" + name
+	} else if objType == BLDGTMPL {
+		URL = State.APIURL + "/api/bldg_templates/" + name
 	} else {
 		URL = State.APIURL + "/api/obj_templates/" + name
 	}

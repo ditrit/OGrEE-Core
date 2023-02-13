@@ -1127,37 +1127,97 @@ func (n *getOCAttrNode) execute() (interface{}, error) {
 		}
 		attributes["attributes"].(map[string]interface{})["color"] = color
 	}
-	if n.ent == cmd.SITE {
-		//Check for valid orientation
-		orientation := attributes["attributes"].(map[string]interface{})["orientation"].(string)
-		if checkIfOrientation(orientation) == false {
-			msg := "You must provide a valid orientation"
-			return nil, fmt.Errorf(msg)
+	if n.ent == cmd.BLDG {
+		attr := attributes["attributes"].(map[string]interface{})
+
+		if !IsFloat(attr["rotation"]) {
+			return nil, fmt.Errorf("Invalid rotation attribute provided. It must be a numerical value")
 		}
+
+		//Distinguish between rotation & template
+		if IsString(attr["size/template"]) {
+			attr["template"] = attr["size/template"]
+
+			//Check if the template exists
+			if !checkIfTemplate(attr["template"], cmd.BLDG) {
+				return nil, fmt.Errorf("Template \"" +
+					attr["template"].(string) + "\" does not exist. Please check and try again")
+			}
+
+		} else { //This means it is size
+			attr["size"] = attr["size/template"]
+		}
+		delete(attr, "size/template")
+
+		//Ensure that the size is valid
+		if _, ok := attr["size"]; ok {
+			if !IsInfArr(attr["size"]) ||
+				IsInfArr(attr["size"]) && len(attr["size"].([]interface{})) != 3 {
+				return nil, fmt.Errorf("Please provide a vector3 for the size")
+			}
+		}
+
+		//Must check that we have either size or template
+		_, sizeExist := attr["size"]
+		_, templateExist := attr["template"]
+
+		if !sizeExist && !templateExist {
+			cmd.Disp(attributes)
+			return nil,
+				fmt.Errorf("Invalid parameters given for building. " +
+					"You should give position, size and rotation or position, rotation and template")
+		}
+
 	}
 	if n.ent == cmd.ROOM {
-		//Ensure orientation is valid if present
-		orientation := attributes["attributes"].(map[string]interface{})["orientation"]
-		if orientation != nil {
-			if checkIfOrientation(orientation.(string)) == false {
-				msg := "You must provide a valid orientation"
+		//If axisOrientation was given, check if it is valid
+		attr := attributes["attributes"].(map[string]interface{})
+
+		//If size was given, check if it is valid
+		if _, ok := attr["size"]; ok {
+			sizeValid := IsInfArr(attr["size"])
+			if !sizeValid || sizeValid && len(attr["size"].([]interface{})) != 3 {
+				msg := "Invalid size attribute given. It must be a vector of length 3 elements. Please refer to the wiki or manual reference for more details on how to create objects using this syntax"
 				return nil, fmt.Errorf(msg)
 			}
 		}
 
-		//Check if template was given and is valid
-		if templ, ok := attributes["attributes"].(map[string]interface{})["template"]; ok {
-			if checkIfTemplate(templ, n.ent) == false {
-				//Invalid template
-				return nil, fmt.Errorf("Invalid template provided." +
-					" \nPlease ensure that it exists and try again. You may optionally provide a Vector3 size and orientation attributes instead" +
-					"\n\nFor more information " +
-					"please refer to the wiki or manual reference" +
-					" for more details on how to create objects " +
-					"using this syntax")
-			}
+		//Ensure that the rotation is valid
+		if !IsFloat(attr["rotation"]) {
+			return nil, fmt.Errorf("Please provide a numerical value for the rotation")
 		}
+
+		if axisOrientation, ok := attr["axisOrientation"]; ok {
+
+			if IsString(axisOrientation) {
+				if !checkIfOrientation(axisOrientation.(string)) {
+					msg := "Invalid axisOrientation! You must provide cardinal coordinates of the form -W+S"
+					return nil, fmt.Errorf(msg)
+				}
+
+			} else {
+				//Error Case
+				msg := "Please provide a valid axisOrientation (cardinal coordinates of the form -W+S)"
+				return nil, fmt.Errorf(msg)
+			}
+
+		} else if tmpl, ok := attr["template"]; ok { //Check if template is valid
+			// Because if axisOrientation was not specified then this means
+			// template was specified
+			if !IsString(attr["template"]) {
+				return nil, fmt.Errorf("Please provide a valid and existing template")
+			}
+			if checkIfTemplate(tmpl, n.ent) {
+				attr["template"] = tmpl.(string)
+			} else {
+				return nil, fmt.Errorf("Template \"" +
+					attr["template"].(string) + "\" does not exist. Please check and try again")
+			}
+
+		}
+
 	}
+
 	err = cmd.GetOCLIAtrributes(path, n.ent, attributes)
 	if err != nil {
 		return nil, err

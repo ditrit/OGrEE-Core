@@ -18,53 +18,70 @@ A string or numerical Hex value maybe given here
 
 
 
-+si:PATH/SITE_NAME@ORIENTATION   
-+site:PATH/SITE_NAME@ORIENTATION   
-User must specify the path, SITE_NAME and ORIENTATION   
-
-Where ORIENTATION could be one of the following: {NE,NW,SE,SW}
++si:PATH/SITE_NAME   
++site:PATH/SITE_NAME   
+User must specify the path and SITE_NAME   
 
 
-+bd:PATH/BLDG_NAME@POSITION@SIZE   
-+building:PATH/BLDG_NAME@POSITION@SIZE   
-User must specify the path, BLDG_NAME, POSITION and SIZE   
++bd:PATH/BLDG_NAME@POSITION@ROTATION@SIZE   
++building:PATH/BLDG_NAME@POSITION@ROTATION@SIZE 
+User must specify the path, BLDG_NAME, SIZE, ROTATION   
 
 Where the POSITION (posXY attribute) must be a 2 element array/vector of coordinates (ie [1,2])   
 
 Where the SIZE (size attribute) must be a 3 element array/vector (ie [1,2,3])
 
+Where the ROTATION (rotation attribute) must be a numerical value (ie 45)
 
-+ro:PATH/ROOM_NAME@POSITION@SIZE@ORIENTATION   
-+room:PATH/ROOM_NAME@POSITION@SIZE@ORIENTATION    
-User must specify the path, ROOM_NAME, POSITION and SIZE and ORIENTATION   
++bd:PATH/BLDG_NAME@POSITION@ROTATION@TEMPLATE
++building:PATH/BLDG_NAME@POSITION@ROTATION@TEMPLATE
+User must specify the path, BLDG_NAME, POSITION, ROTATION,TEMPLATE
+
+Where the POSITION (posXY attribute) must be a 2 element array/vector of coordinates (ie [1,2])   
+
+Where the ROTATION (rotation attribute) must be a numerical value (ie 45)
+
+Where TEMPLATE refers to the bldg template name (which must be already existing)
+
+
++ro:PATH/ROOM_NAME@POSITION@ROTATION@SIZE@AXISORIENTATION@FLOORUNIT   
++room:PATH/ROOM_NAME@POSITION@ROTATION@SIZE@AXISORIENTATION@FLOORUNIT    
+User must specify the path, ROOM_NAME, ROTATION, POSITION, SIZE, ORIENTATION and FLOORUNIT
+
 
 Where POSITION (posXY attribute) must be a 2 element array/vector of coordinates (ie [1,2]) 
 
 Where SIZE is a 3 numerical element array/vector (ie [1,2,3])
 
-Where ORIENTATION refers to the cardinal directions and can only be of the following format: {[+/-][N/E/W/S][+/-][N/E/W/S]} (ie +N-E)
+Where ROTATION must be a numerical value (ie 36) 
 
-
-+ro:PATH/ROOM_NAME@POSITION@SIZE@ORIENTATION@FLOORUNIT   
-+room:PATH/ROOM_NAME@POSITION@SIZE@ORIENTATION@FLOORUNIT    
-User must specify the path, ROOM_NAME, POSITION and SIZE and ORIENTATION and FLOORUNIT
-
-
-Where POSITION (posXY attribute) must be a 2 element array/vector of coordinates (ie [1,2]) 
-
-Where SIZE is a 3 numerical element array/vector (ie [1,2,3])
-
-Where ORIENTATION refers to the cardinal directions and can only be of the following format: {[+/-][N/E/W/S][+/-][N/E/W/S]} (ie +N-E)
+Where AXISORIENTATION refers to the cardinal directions and can only be of the following format: {[+/-][N/E/W/S][+/-][N/E/W/S]} (ie +N-E)
 
 Where FLOORUNIT refers to the measurement unit for the floor which can only be: {f,m,t}  
 
 
-+ro:PATH/ROOM_NAME@POSITION@TEMPLATE   
-+room:PATH/ROOM_NAME@POSITION@TEMPLATE    
-User must specify the path, ROOM_NAME, POSITION and TEMPLATE
++ro:PATH/ROOM_NAME@POSITION@ROTATION@SIZE@AXISORIENTATION   
++room:PATH/ROOM_NAME@POSITION@ROTATION@SIZE@AXISORIENTATION    
+User must specify the path, ROOM_NAME, ROTATION, POSITION, SIZE, ORIENTATION 
 
 
 Where POSITION (posXY attribute) must be a 2 element array/vector of coordinates (ie [1,2]) 
+
+Where SIZE is a 3 numerical element array/vector (ie [1,2,3])
+
+Where ROTATION must be a numerical value (ie 36) 
+
+Where AXISORIENTATION refers to the cardinal directions and can only be of the following format: {[+/-][N/E/W/S][+/-][N/E/W/S]} (ie +N-E)
+
+
++ro:PATH/ROOM_NAME@POSITION@ROTATION@TEMPLATE   
++room:PATH/ROOM_NAME@POSITION@ROTATION@TEMPLATE    
+User must specify the path, ROOM_NAME,ROTATION, POSITION and TEMPLATE
+
+
+Where POSITION (posXY attribute) must be a 2 element array/vector of coordinates (ie [1,2]) 
+
+Where ROTATION must be a numerical value (ie 36) 
 
 Where TEMPLATE refers to the room template name (which must be already existing)
 
@@ -159,15 +176,19 @@ EXAMPLES
 +tn:CED@ced666
 +tenant:MARCUS@42ff42
 
-+si:CED.BETA@NW
-+site:CED/BETA@NE
++si:CED.BETA
++site:CED/BETA
 
-+bd:CED.BETA.A@[0,0]@[25,29.4,3]
-+bldg:CED/BETA/A@[0,0]@[25,29.4,3]
 
-+room:CED/BETA/A/R1@[0,0]@RoomTemplateA
-+ro:CED/BETA/A/R1@[0,0]@[22.8,19.8,2]@+N+W
-+ro:CED/BETA/A/R1@[0,0]@[22.8,19.8,2]@+N+W@t
++bd:CED/BETA/A@[5,5]@49.1@[300,300,300]
++bd:CED/BETA/A@[5,5]@-27.89@BldgTemplateA
++building:CED/BETA/A@[5,5]@49.1@[300,300,300]
++building:CED/BETA/A@[5,5]@-27.89@BldgTemplateA
+
+
++ro:CED/BETA/A/R1@[0,0]@-36.202@[22.8,19.8,2]@+N+W@t
++ro:CED/BETA/A/R1@[0,0]@-36.202@[22.8,19.8,2]@+N+W
++room:CED/BETA/A/R1@[0,0]@-36.202@RoomTemplateA
 
 
 +rk:CED.BETA.A.R1.A01@[9,1,99]@[60,120,42]@front

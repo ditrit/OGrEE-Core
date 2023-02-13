@@ -80,6 +80,12 @@ func LogicalWalk(root **Node, prefix string, depth int) {
 						State.APIURL+"/api/room-templates", GetKey(), nil)
 					resp := ParseResponse(r, e, "fetching objects")
 					RemoteGetAllWalk(resp["data"].(map[string]interface{}), prefix)
+				case "BldgTemplates":
+					//Get All Bldg Templates and print them
+					r, e := models.Send("GET",
+						State.APIURL+"/api/bldg-templates", GetKey(), nil)
+					resp := ParseResponse(r, e, "fetching objects")
+					RemoteGetAllWalk(resp["data"].(map[string]interface{}), prefix)
 				case "Groups":
 					//Get All Groups and print them
 					r, e := models.Send("GET",
