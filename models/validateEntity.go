@@ -109,6 +109,48 @@ func validateParent(ent string, entNum int, t map[string]interface{}) (map[strin
 	return nil, true
 }
 
+func validateJsonSchema(entity int, t map[string]interface{}, schPrefix string) (map[string]interface{}, bool) {
+	// Get JSON schema
+	var schemaName string
+	switch entity {
+	case u.AC, u.CABINET, u.PWRPNL:
+		schemaName = "base_schema.json"
+	default:
+		schemaName = u.EntityToString(entity) + "_schema.json"
+	}
+
+	sch, err := jsonschema.Compile(schPrefix + schemaName)
+	if err != nil {
+		return u.Message(false, err.Error()), false
+	}
+
+	// Validate JSON Schema
+	if err := sch.Validate(t); err != nil {
+		switch v := err.(type) {
+		case *jsonschema.ValidationError:
+			println(v.GoString())
+			resp := u.Message(false, "JSON body doesn't validate with the expected JSON schema")
+			// Format errors array
+			errSlice := []string{}
+			for _, schErr := range v.BasicOutput().Errors {
+				if len(schErr.Error) > 0 && !strings.Contains(schErr.Error, "doesn't validate with") {
+					if len(schErr.InstanceLocation) > 0 {
+						errSlice = append(errSlice, schErr.InstanceLocation+" "+schErr.Error)
+					} else {
+						errSlice = append(errSlice, schErr.Error)
+					}
+				}
+			}
+			resp["errors"] = errSlice
+			return resp, false
+		}
+		return u.Message(false, err.Error()), false
+	} else {
+		println("JSON Schema: all good, validated!")
+		return nil, true
+	}
+}
+
 func ValidatePatch(ent int, t map[string]interface{}) (map[string]interface{}, bool) {
 	for k := range t {
 		switch k {
@@ -255,44 +297,9 @@ func ValidateEntity(entity int, t map[string]interface{}) (map[string]interface{
 		attribute
 	*/
 
-	// Get JSON schema
-	var schemaName string
-	switch entity {
-	case u.AC, u.CABINET, u.PWRPNL:
-		schemaName = "base_schema.json"
-	default:
-		schemaName = u.EntityToString(entity) + "_schema.json"
-	}
-
-	schPrefix := "models/schemas/"
-	sch, err := jsonschema.Compile(schPrefix + schemaName)
-	if err != nil {
-		return u.Message(false, err.Error()), false
-	}
-
 	// Validate JSON Schema
-	if err := sch.Validate(t); err != nil {
-		switch v := err.(type) {
-		case *jsonschema.ValidationError:
-			println(v.GoString())
-			resp := u.Message(false, "JSON body doesn't validate with the expected JSON schema")
-			// Format errors array
-			errSlice := []string{}
-			for _, schErr := range v.BasicOutput().Errors {
-				if len(schErr.Error) > 0 && !strings.Contains(schErr.Error, "doesn't validate with") {
-					if len(schErr.InstanceLocation) > 0 {
-						errSlice = append(errSlice, schErr.InstanceLocation+" "+schErr.Error)
-					} else {
-						errSlice = append(errSlice, schErr.Error)
-					}
-				}
-			}
-			resp["errors"] = errSlice
-			return resp, false
-		}
-		return u.Message(false, err.Error()), false
-	} else {
-		println("JSON Schema: all good, validated!")
+	if resp, err := validateJsonSchema(entity, t, "models/schemas/"); !err {
+		return resp, false
 	}
 
 	// Extra checks

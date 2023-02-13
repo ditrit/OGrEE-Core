@@ -59,10 +59,10 @@
   "examples": [
     {
       "attributes": {
-        "height": 47,
+        "height": "47",
         "heightUnit": "U",
         "orientation": "front",
-        "posXYUnit": "t",
+        "posXYUnit": "m",
         "posXYZ": "{\"x\":4.1 ,\"y\":2 ,\"z\":0}",
         "size": "{\"x\":80 ,\"y\":100}",
         "sizeUnit": "cm",

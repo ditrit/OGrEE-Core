@@ -77,9 +77,9 @@
     {
       "attributes": {
         "floorUnit": "t",
-        "height": 2.8,
+        "height": "2.8",
         "heightUnit": "m",
-        "orientation": "+N+W",
+        "orientation": "NW",
         "posXY": "{\"x\":35.06,\"y\":0}",
         "posXYUnit": "m",
         "size": "{\"x\":13.7,\"y\":2.9}",

@@ -17,7 +17,7 @@
           },
           "heightUnit": {
             "type": "string",
-            "$ref": ["mm", "cm", "m", "U", "OU", "f"]
+            "enum": ["mm", "cm", "m", "U", "OU", "f"]
           },
           "orientation": {
             "type": "string",
@@ -64,7 +64,7 @@
           "TDP": "",
           "TDPmax": "",
           "fbxModel": "https://github.com/test.fbx",
-          "height": 40.1,
+          "height": "40.1",
           "heightUnit": "mm",
           "model": "TNF2LTX",
           "orientation": "front",
