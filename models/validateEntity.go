@@ -275,9 +275,20 @@ func ValidateEntity(entity int, t map[string]interface{}) (map[string]interface{
 		switch v := err.(type) {
 		case *jsonschema.ValidationError:
 			println(v.GoString())
-			fileName := strings.Split(v.AbsoluteKeywordLocation, schPrefix)
-			errMsg := strings.ReplaceAll(v.GoString(), fileName[0]+schPrefix, "")
-			return u.Message(false, errMsg), false
+			resp := u.Message(false, "JSON body doesn't validate with the expected JSON schema")
+			// Format errors array
+			errSlice := []string{}
+			for _, schErr := range v.BasicOutput().Errors {
+				if len(schErr.Error) > 0 && !strings.Contains(schErr.Error, "doesn't validate with") {
+					if len(schErr.InstanceLocation) > 0 {
+						errSlice = append(errSlice, schErr.InstanceLocation+" "+schErr.Error)
+					} else {
+						errSlice = append(errSlice, schErr.Error)
+					}
+				}
+			}
+			resp["errors"] = errSlice
+			return resp, false
 		}
 		return u.Message(false, err.Error()), false
 	} else {
