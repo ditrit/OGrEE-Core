@@ -56,9 +56,6 @@
       ]
     }
   },
-  "required": [
-    "attributes"
-  ],
   "examples": [
     {
       "attributes": {

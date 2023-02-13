@@ -46,9 +46,6 @@
             }
         }
     },
-    "required": [
-        "attributes"
-    ],
     "examples": [
         {
             "attributes": {

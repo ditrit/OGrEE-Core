@@ -30,13 +30,18 @@
         },
         "parentId": {
           "type": "string"
+        },
+        "attributes": {
+          "type": "object"
         }
       },
+      "additionalProperties":  false,
       "required": [
         "category",
         "description",
         "domain",
         "name",
-        "parentId"
+        "parentId",
+        "attributes"
       ]
 }

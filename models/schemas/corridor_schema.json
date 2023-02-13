@@ -28,9 +28,6 @@
             }
         }
     },
-    "required": [
-        "attributes"
-    ],
     "examples": [
         {
             "attributes": {

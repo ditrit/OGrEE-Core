@@ -34,9 +34,6 @@
       ]
     }
   },
-  "required": [
-    "attributes"
-  ],
   "examples": [
     {
       "attributes": {

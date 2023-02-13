@@ -42,6 +42,7 @@
         "type": "string"
       }
     },
+    "additionalProperties":  false,
     "required": [
       "attributes",
       "category",
