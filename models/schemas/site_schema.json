@@ -28,10 +28,7 @@
           "type": "string",
           "$ref": "refs/types.json#/definitions/color"
         }
-      },
-      "required": [
-        "orientation"
-      ]
+      }
     }
   },
   "examples": [

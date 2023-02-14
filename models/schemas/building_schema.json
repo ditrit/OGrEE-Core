@@ -13,7 +13,8 @@
                 "posXY",
                 "posXYUnit",
                 "size",
-                "sizeUnit"
+                "sizeUnit",
+                "rotation"
             ],
             "properties": {
                 "height": {
@@ -40,6 +41,10 @@
                     "type": "string",
                     "$ref": "refs/types.json#/definitions/metricImperialUnit"
                 },
+                "rotation": {
+                    "type": "string",
+                    "pattern": "^-?([0-9]*[.])?[0-9]+$"
+                  },
                 "template": {
                     "type": "string"
                 }
@@ -54,7 +59,8 @@
                 "posXY": "{\"x\":50 ,\"y\":0}",
                 "posXYUnit": "m",
                 "size": "{\"x\":49 ,\"y\":46.6}",
-                "sizeUnit": "m"
+                "sizeUnit": "m",
+                "rotation": "30.5"
             },
             "category": "building",
             "createdDate": "2023-01-26T10:46:40.612Z",

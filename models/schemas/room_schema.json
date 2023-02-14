@@ -19,15 +19,6 @@
           "type": "string",
           "$ref": "refs/types.json#/definitions/metricImperialUnit"
         },
-        "orientation": {
-          "type": "string",
-          "enum": [
-            "EN",
-            "NW",
-            "WS",
-            "SE"
-          ]
-        },
         "axisOrientation": {
           "type": "string",
           "enum": [
@@ -69,7 +60,8 @@
         "posXYUnit",
         "size",
         "sizeUnit",
-        "orientation"
+        "axisOrientation",
+        "rotation"
       ]
     }
   },
@@ -79,7 +71,8 @@
         "floorUnit": "t",
         "height": "2.8",
         "heightUnit": "m",
-        "orientation": "NW",
+        "axisOrientation": "+x+y",
+        "rotation": "-90",
         "posXY": "{\"x\":35.06,\"y\":0}",
         "posXYUnit": "m",
         "size": "{\"x\":13.7,\"y\":2.9}",
