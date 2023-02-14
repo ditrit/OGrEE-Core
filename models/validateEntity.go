@@ -188,8 +188,8 @@ func ValidatePatch(ent int, t map[string]interface{}) (map[string]interface{}, b
 				}
 			}
 
-		case "attributes.orientation": //u.SITE, u.ROOM, u.RACK, u.DEVICE
-			if ent >= u.SITE && ent <= u.DEVICE {
+		case "attributes.orientation": // u.ROOM, u.RACK, u.DEVICE
+			if ent > u.SITE && ent <= u.DEVICE {
 				if v, _ := t[k]; v == nil {
 					return u.Message(false,
 						"Field: "+k+" cannot nullified!"), false
@@ -558,16 +558,6 @@ func IsHexString(s string) bool {
 }
 
 func IsOrientation(x interface{}, ent int) bool {
-	if ent == u.SITE {
-		switch x {
-		case "EN", "NW", "WS", "SE", "NE", "SW":
-			return true
-
-		default:
-			return false
-		}
-	}
-
 	if ent == u.BLDGTMPL || ent == u.ROOMTMPL {
 		switch x {
 		case "EN", "NW", "WS", "SE", "NE", "SW",
@@ -575,7 +565,9 @@ func IsOrientation(x interface{}, ent int) bool {
 			"+N-E", "-N-E", "-N+E",
 			"-N-W", "-N+W", "+N-W", "+N+W",
 			"-W-S", "-W+S", "+W-S", "+W+S",
-			"-S-E", "-S+E", "+S-E", "+S+E":
+			"-S-E", "-S+E", "+S-E", "+S+E",
+			"+x+y", "+x-y", "-x-y", "-x+y",
+			"+X+Y", "+X-Y", "-X-Y", "-X+Y":
 			return true
 		default:
 			if !IsString(x) {
@@ -594,7 +586,9 @@ func IsOrientation(x interface{}, ent int) bool {
 			"+N-E", "-N-E", "-N+E",
 			"-N-W", "-N+W", "+N-W", "+N+W",
 			"-W-S", "-W+S", "+W-S", "+W+S",
-			"-S-E", "-S+E", "+S-E", "+S+E":
+			"-S-E", "-S+E", "+S-E", "+S+E",
+			"+x+y", "+x-y", "-x-y", "-x+y",
+			"+X+Y", "+X-Y", "-X-Y", "-X+Y":
 			return true
 		default:
 			return false
