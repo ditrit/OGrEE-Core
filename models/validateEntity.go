@@ -277,7 +277,7 @@ func ValidateEntity(entity int, t map[string]interface{}) (map[string]interface{
 	*/
 	switch entity {
 	case u.TENANT, u.SITE, u.BLDG, u.ROOM, u.RACK, u.DEVICE, u.AC,
-		u.PWRPNL, u.CABINET, u.CORIDOR, u.SENSOR, u.GROUP:
+		u.PWRPNL, u.CABINET, u.CORRIDOR, u.SENSOR, u.GROUP:
 		if t["name"] == nil || t["name"] == "" {
 			return u.Message(false, "Name should be on payload"), false
 		}
@@ -313,7 +313,7 @@ func ValidateEntity(entity int, t map[string]interface{}) (map[string]interface{
 
 		if entity < u.AC || entity == u.PWRPNL ||
 			entity == u.GROUP || entity == u.ROOMTMPL ||
-			entity == u.OBJTMPL || entity == u.CORIDOR {
+			entity == u.OBJTMPL || entity == u.CORRIDOR {
 			if _, ok := t["attributes"]; !ok {
 				return u.Message(false, "Attributes should be on the payload"), false
 			} else {
@@ -515,7 +515,7 @@ func ValidateEntity(entity int, t map[string]interface{}) (map[string]interface{
 							}
 						}
 
-					case u.CORIDOR:
+					case u.CORRIDOR:
 						//Ensure the temperature and 2 racks are valid
 						if !IsString(v["temperature"]) {
 							msg := "The temperature must be on the " +

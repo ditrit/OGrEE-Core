@@ -45,6 +45,13 @@ var tmatch mux.MatcherFunc = func(request *http.Request, match *mux.RouteMatch) 
 		MatchString(request.URL.String())
 }
 
+// For Obtaining hierarchy with hierarchyName
+var hnmatch mux.MatcherFunc = func(request *http.Request, match *mux.RouteMatch) bool {
+	println("CHECKING HN-MATCH")
+	return regexp.MustCompile(`^\/api\/(tenants|sites|buildings|rooms|racks|devices|stray-devices)+\/[A-Za-z0-9_.]+\/all(\?limit=[0-9]+)*$`).
+		MatchString(request.URL.String())
+}
+
 func main() {
 	router := mux.NewRouter()
 
@@ -78,22 +85,22 @@ func main() {
 		MatcherFunc(hmatch).HandlerFunc(controllers.GetEntityHierarchy).Methods("GET", "HEAD", "OPTIONS")
 
 	router.NewRoute().PathPrefix("/api/{entity}/{name}/all").
-		MatcherFunc(tmatch).HandlerFunc(controllers.GetHierarchyByName).Methods("GET", "HEAD", "OPTIONS")
+		MatcherFunc(hnmatch).HandlerFunc(controllers.GetHierarchyByName).Methods("GET", "HEAD", "OPTIONS")
 
 	//GET EXCEPTIONS
-	router.HandleFunc("/api/tenants/{tenant_name}/buildings",
+	router.HandleFunc("/api/{ancestor:tenants}/{tenant_name}/buildings",
 		controllers.GetEntitiesOfAncestor).Methods("GET", "HEAD", "OPTIONS")
 
-	router.HandleFunc("/api/sites/{id:[a-zA-Z0-9]{24}}/rooms",
+	router.HandleFunc("/api/{ancestor:sites}/{id:[a-zA-Z0-9]{24}}/rooms",
 		controllers.GetEntitiesOfAncestor).Methods("GET", "HEAD", "OPTIONS")
 
-	router.HandleFunc("/api/buildings/{id:[a-zA-Z0-9]{24}}/{sub:acs|corridors|cabinets|panels|sensors|groups}",
+	router.HandleFunc("/api/{ancestor:buildings}/{id:[a-zA-Z0-9]{24}}/{sub:acs|corridors|cabinets|panels|sensors|groups}",
 		controllers.GetEntitiesOfAncestor).Methods("GET", "HEAD", "OPTIONS")
 
-	router.HandleFunc("/api/buildings/{id:[a-zA-Z0-9]{24}}/racks",
+	router.HandleFunc("/api/{ancestor:buildings}/{id:[a-zA-Z0-9]{24}}/racks",
 		controllers.GetEntitiesOfAncestor).Methods("GET", "HEAD", "OPTIONS")
 
-	router.HandleFunc("/api/rooms/{id:[a-zA-Z0-9]{24}}/devices",
+	router.HandleFunc("/api/{ancestor:rooms}/{id:[a-zA-Z0-9]{24}}/devices",
 		controllers.GetEntitiesOfAncestor).Methods("GET", "HEAD", "OPTIONS")
 
 	/*router.HandleFunc("/api/rooms/{id:[a-zA-Z0-9]{24}}/sensors",
@@ -124,13 +131,6 @@ func main() {
 
 	router.HandleFunc("/api/{entity}",
 		controllers.GetAllEntities).Methods("HEAD", "GET")
-
-	//GET ALL NONSTD
-	router.HandleFunc("/api/tenants/{tenant_name}/all/nonstd",
-		controllers.GetEntityHierarchyNonStd).Methods("GET")
-
-	router.HandleFunc("/api/{entity}/{id:[a-zA-Z0-9]{24}}/all/nonstd",
-		controllers.GetEntityHierarchyNonStd).Methods("GET")
 
 	// CREATE ENTITY
 	router.HandleFunc("/api/{entity}",
