@@ -25,72 +25,6 @@ func getObjID(x string) (primitive.ObjectID, error) {
 	return objID, nil
 }
 
-func parseDataForNonStdResult(ent string, eNum int, data map[string]interface{}) map[string][]map[string]interface{} {
-
-	ans := map[string][]map[string]interface{}{}
-	add := []map[string]interface{}{}
-
-	firstIndex := u.EntityToString(eNum + 1)
-	firstArr := data[firstIndex+"s"].([]map[string]interface{})
-
-	ans[firstIndex+"s"] = firstArr
-
-	for i := range firstArr {
-		nxt := u.EntityToString(eNum + 2)
-		add = append(add, firstArr[i][nxt+"s"].([]map[string]interface{})...)
-	}
-
-	ans[u.EntityToString(eNum+2)+"s"] = add
-	newAdd := []map[string]interface{}{}
-	for i := range add {
-		nxt := u.EntityToString(eNum + 3)
-		newAdd = append(newAdd, add[i][nxt+"s"].([]map[string]interface{})...)
-	}
-
-	ans[u.EntityToString(eNum+3)+"s"] = newAdd
-
-	newAdd2 := []map[string]interface{}{}
-	for i := range newAdd {
-		nxt := u.EntityToString(eNum + 4)
-		newAdd2 = append(newAdd2, newAdd[i][nxt+"s"].([]map[string]interface{})...)
-	}
-
-	ans[u.EntityToString(eNum+4)+"s"] = newAdd2
-	newAdd3 := []map[string]interface{}{}
-
-	for i := range newAdd2 {
-		nxt := u.EntityToString(eNum + 5)
-		newAdd3 = append(newAdd3, newAdd2[i][nxt+"s"].([]map[string]interface{})...)
-	}
-	ans[u.EntityToString(eNum+5)+"s"] = newAdd3
-
-	newAdd4 := []map[string]interface{}{}
-
-	for i := range newAdd3 {
-		nxt := u.EntityToString(eNum + 6)
-		newAdd4 = append(newAdd4, newAdd3[i][nxt+"s"].([]map[string]interface{})...)
-	}
-
-	ans[u.EntityToString(eNum+6)+"s"] = newAdd4
-
-	newAdd5 := []map[string]interface{}{}
-
-	for i := range newAdd4 {
-		nxt := u.EntityToString(eNum + 7)
-		newAdd5 = append(newAdd5, newAdd4[i][nxt+"s"].([]map[string]interface{})...)
-	}
-
-	ans[u.EntityToString(eNum+7)+"s"] = newAdd5
-
-	//add := []map[string]interface{}{}
-
-	//Get All first entities
-	/*for i := eNum + 1; i < SUBDEV1; i++ {
-		add = append(add, firstArr[i])
-	}*/
-	return ans
-}
-
 // This function is useful for debugging
 // purposes. It displays any JSON
 func viewJson(r *http.Request) {
@@ -206,7 +140,7 @@ var CreateEntity = func(w http.ResponseWriter, r *http.Request) {
 
 	//strip the '/api' in URL
 	entStr, e1 := mux.Vars(r)["entity"]
-	if e1 == false {
+	if !e1 {
 		w.WriteHeader(http.StatusBadRequest)
 		u.Respond(w, u.Message(false, "Error while parsing path params"))
 		u.ErrLog("Error while parsing path params", "CREATE "+entStr, "", r)
@@ -224,12 +158,9 @@ var CreateEntity = func(w http.ResponseWriter, r *http.Request) {
 	}
 
 	//If creating templates, format them
-	if idx := strings.Index(entStr, "-"); idx != -1 {
-		//entStr[idx] = '_'
-		entStr = entStr[:idx] + "_" + entStr[idx+1:]
-	}
-	i := u.EntityStrToInt(entStr)
+	entStr = strings.Replace(entStr, "-", "_", 1)
 
+	i := u.EntityStrToInt(entStr)
 	println("ENT: ", entStr)
 	println("ENUM VAL: ", i)
 
@@ -352,9 +283,7 @@ var GetEntity = func(w http.ResponseWriter, r *http.Request) {
 	entityStr = entityStr[:len(entityStr)-1]
 
 	//If templates, format them
-	if idx := strings.Index(entityStr, "-"); idx != -1 {
-		entityStr = entityStr[:idx] + "_" + entityStr[idx+1:]
-	}
+	entityStr = strings.Replace(entityStr, "-", "_", 1)
 
 	//GET By ID
 	if id, e = mux.Vars(r)["id"]; e {
@@ -467,15 +396,12 @@ var GetAllEntities = func(w http.ResponseWriter, r *http.Request) {
 	var e, entStr string
 
 	//Main hierarchy objects
-
-	entStr, _ = mux.Vars(r)["entity"]
+	entStr = mux.Vars(r)["entity"]
 	entStr = entStr[:len(entStr)-1]
 	println("ENTSTR: ", entStr)
 
 	//If templates, format them
-	if idx := strings.Index(entStr, "-"); idx != -1 {
-		entStr = entStr[:idx] + "_" + entStr[idx+1:]
-	}
+	entStr = strings.Replace(entStr, "-", "_", 1)
 
 	//Prevents Mongo from creating a new unidentified collection
 	if i := u.EntityStrToInt(entStr); i < 0 {
@@ -488,7 +414,7 @@ var GetAllEntities = func(w http.ResponseWriter, r *http.Request) {
 	data, e = models.GetManyEntities(entStr, bson.M{}, nil)
 
 	entUpper := strings.ToUpper(entStr) // and the trailing 's'
-	resp := u.Message(true, "success")
+	var resp map[string]interface{}
 
 	if len(data) == 0 {
 		resp = u.Message(false, "Error while getting "+entStr+": "+e)
@@ -565,9 +491,7 @@ var DeleteEntity = func(w http.ResponseWriter, r *http.Request) {
 	entity = entity[:len(entity)-1]
 
 	//If templates, format them
-	if idx := strings.Index(entity, "-"); idx != -1 {
-		entity = entity[:idx] + "_" + entity[idx+1:]
-	}
+	entity = strings.Replace(entity, "-", "_", 1)
 
 	//Prevents Mongo from creating a new unidentified collection
 	if u.EntityStrToInt(entity) < 0 {
@@ -774,8 +698,6 @@ var UpdateEntity = func(w http.ResponseWriter, r *http.Request) {
 	}
 	println(r.Method)
 
-	//viewJson(r)
-
 	err := json.NewDecoder(r.Body).Decode(&updateData)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
@@ -785,13 +707,11 @@ var UpdateEntity = func(w http.ResponseWriter, r *http.Request) {
 	}
 
 	//Get entity from URL and strip trailing 's'
-	entity, _ = mux.Vars(r)["entity"]
+	entity = mux.Vars(r)["entity"]
 	entity = entity[:len(entity)-1]
 
 	//If templates, format them
-	if idx := strings.Index(entity, "-"); idx != -1 {
-		entity = entity[:idx] + "_" + entity[idx+1:]
-	}
+	entity = strings.Replace(entity, "-", "_", 1)
 
 	//Prevents Mongo from creating a new unidentified collection
 	if u.EntityStrToInt(entity) < 0 {
@@ -921,9 +841,7 @@ var GetEntityByQuery = func(w http.ResponseWriter, r *http.Request) {
 	entStr = r.URL.Path[5 : len(r.URL.Path)-1]
 
 	//If templates, format them
-	if idx := strings.Index(entStr, "-"); idx != -1 {
-		entStr = entStr[:idx] + "_" + entStr[idx+1:]
-	}
+	entStr = strings.Replace(entStr, "-", "_", 1)
 
 	query := u.ParamsParse(r.URL, u.EntityStrToInt(entStr))
 	js, _ := json.Marshal(query)
@@ -1104,7 +1022,6 @@ var GetEntitiesOfAncestor = func(w http.ResponseWriter, r *http.Request) {
 	entStr := mux.Vars(r)["ancestor"]
 	entStr = entStr[:len(entStr)-1] // remove s
 	enum := u.EntityStrToInt(entStr)
-	//childBase := u.EntityToString(enum + 1)
 
 	//Prevents Mongo from creating a new unidentified collection
 	if enum < 0 {
@@ -1986,4 +1903,64 @@ var GetEntityHierarchyNonStd = func(w http.ResponseWriter, r *http.Request) {
 	resp["racks"] = racks
 	resp["devices"] = devices*/
 	u.Respond(w, resp)
+}
+
+// DEAD CODE
+func parseDataForNonStdResult(ent string, eNum int, data map[string]interface{}) map[string][]map[string]interface{} {
+
+	ans := map[string][]map[string]interface{}{}
+	add := []map[string]interface{}{}
+
+	firstIndex := u.EntityToString(eNum + 1)
+	firstArr := data[firstIndex+"s"].([]map[string]interface{})
+
+	ans[firstIndex+"s"] = firstArr
+
+	for i := range firstArr {
+		nxt := u.EntityToString(eNum + 2)
+		add = append(add, firstArr[i][nxt+"s"].([]map[string]interface{})...)
+	}
+
+	ans[u.EntityToString(eNum+2)+"s"] = add
+	newAdd := []map[string]interface{}{}
+	for i := range add {
+		nxt := u.EntityToString(eNum + 3)
+		newAdd = append(newAdd, add[i][nxt+"s"].([]map[string]interface{})...)
+	}
+
+	ans[u.EntityToString(eNum+3)+"s"] = newAdd
+
+	newAdd2 := []map[string]interface{}{}
+	for i := range newAdd {
+		nxt := u.EntityToString(eNum + 4)
+		newAdd2 = append(newAdd2, newAdd[i][nxt+"s"].([]map[string]interface{})...)
+	}
+
+	ans[u.EntityToString(eNum+4)+"s"] = newAdd2
+	newAdd3 := []map[string]interface{}{}
+
+	for i := range newAdd2 {
+		nxt := u.EntityToString(eNum + 5)
+		newAdd3 = append(newAdd3, newAdd2[i][nxt+"s"].([]map[string]interface{})...)
+	}
+	ans[u.EntityToString(eNum+5)+"s"] = newAdd3
+
+	newAdd4 := []map[string]interface{}{}
+
+	for i := range newAdd3 {
+		nxt := u.EntityToString(eNum + 6)
+		newAdd4 = append(newAdd4, newAdd3[i][nxt+"s"].([]map[string]interface{})...)
+	}
+
+	ans[u.EntityToString(eNum+6)+"s"] = newAdd4
+
+	newAdd5 := []map[string]interface{}{}
+
+	for i := range newAdd4 {
+		nxt := u.EntityToString(eNum + 7)
+		newAdd5 = append(newAdd5, newAdd4[i][nxt+"s"].([]map[string]interface{})...)
+	}
+
+	ans[u.EntityToString(eNum+7)+"s"] = newAdd5
+	return ans
 }

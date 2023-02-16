@@ -424,7 +424,6 @@ func UpdateEntity(ent string, req bson.M, t *map[string]interface{}, isPatch boo
 }
 
 func propagateParentNameChange(ctx context.Context, oldParentName, newName string, entityInt int) {
-	println("PROPAGATE ***")
 	req := bson.M{"hierarchyName": primitive.Regex{Pattern: oldParentName + ".", Options: ""}}
 	update := bson.D{{
 		Key: "$set", Value: bson.M{
