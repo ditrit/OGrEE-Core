@@ -298,11 +298,14 @@ var CreateEntity = func(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	//Hard Code the 'category'
-	//for all objects that are
-	//not obj_template
-	if i != u.OBJTMPL {
-		entity["category"] = entStr
+	//Check if category and endpoint match, only for objects
+	if i != u.OBJTMPL && i != u.BLDGTMPL && i != u.ROOMTMPL {
+		if entity["category"] != entStr {
+			w.WriteHeader(http.StatusBadRequest)
+			u.Respond(w, u.Message(false, "Category in request body does not correspond with endpoint"))
+			u.ErrLog("Cannot create invalid object", "CREATE "+mux.Vars(r)["entity"], "", r)
+			return
+		}
 	}
 
 	//Clean the data of 'id' attribute if present
@@ -503,6 +506,8 @@ var GetEntity = func(w http.ResponseWriter, r *http.Request) {
 			message = "successfully got room_template"
 		case u.OBJTMPL:
 			message = "successfully got obj_template"
+		case u.BLDGTMPL:
+			message = "successfully got building_template"
 		default:
 			message = "successfully got object"
 		}
