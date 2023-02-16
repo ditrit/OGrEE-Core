@@ -15,35 +15,6 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
-// DEAD CODE
-// Function will recursively iterate through nested obj
-// and accumulate whatever is found into category arrays
-func parseDataForNonStdResult(ent string, eNum, end int, data map[string]interface{}) map[string][]map[string]interface{} {
-	var nxt string
-	ans := map[string][]map[string]interface{}{}
-	add := data[u.EntityToString(eNum+1)+"s"].([]map[string]interface{})
-
-	//NEW REWRITE
-	for i := eNum; i+2 < end; i++ {
-		idx := u.EntityToString(i + 1)
-		//println("trying IDX: ", idx)
-		firstArr := add
-
-		ans[idx+"s"] = firstArr
-
-		for q := range firstArr {
-			nxt = u.EntityToString(i + 2)
-			println("NXT: ", nxt)
-			ans[nxt+"s"] = append(ans[nxt+"s"],
-				ans[idx+"s"][q][nxt+"s"].([]map[string]interface{})...)
-		}
-		add = ans[nxt+"s"]
-
-	}
-
-	return ans
-}
-
 func CreateEntity(entity int, t map[string]interface{}) (map[string]interface{}, string) {
 	message := ""
 	if resp, ok := ValidateEntity(entity, t); !ok {
@@ -69,9 +40,7 @@ func CreateEntity(entity int, t map[string]interface{}) (map[string]interface{},
 	}
 	defer cancel()
 
-	//Remove _id
 	t["id"] = res.InsertedID
-	//t = fixID(t)
 
 	switch entity {
 	case u.ROOMTMPL:
@@ -425,6 +394,11 @@ func UpdateEntity(ent string, req bson.M, t *map[string]interface{}, isPatch boo
 		}
 	}
 
+	if oldObj["hierarchyName"] != (*t)["hierarchyName"] {
+		propagateParentNameChange(ctx, oldObj["hierarchyName"].(string),
+			(*t)["hierarchyName"].(string), u.EntityStrToInt(ent))
+	}
+
 	//Obtain new document then
 	//Fix the _id / id discrepancy
 	e.Decode(&updatedDoc)
@@ -447,6 +421,39 @@ func UpdateEntity(ent string, req bson.M, t *map[string]interface{}, isPatch boo
 	resp := u.Message(true, message)
 	resp["data"] = updatedDoc
 	return resp, ""
+}
+
+func propagateParentNameChange(ctx context.Context, oldParentName, newName string, entityInt int) {
+	println("PROPAGATE ***")
+	req := bson.M{"hierarchyName": primitive.Regex{Pattern: oldParentName + ".", Options: ""}}
+	update := bson.D{{
+		Key: "$set", Value: bson.M{
+			"hierarchyName": bson.M{
+				"$replaceOne": bson.M{
+					"input":       "$hierarchyName",
+					"find":        oldParentName,
+					"replacement": newName}}}}}
+	if entityInt == u.DEVICE {
+		_, e := GetDB().Collection(u.EntityToString(u.DEVICE)).UpdateMany(ctx,
+			req, mongo.Pipeline{update})
+		if e != nil {
+			println(e.Error())
+		}
+	} else if entityInt == u.STRAYDEV {
+		_, e := GetDB().Collection(u.EntityToString(u.STRAYDEV)).UpdateMany(ctx,
+			req, mongo.Pipeline{update})
+		if e != nil {
+			println(e.Error())
+		}
+	} else if entityInt >= u.TENANT && entityInt <= u.RACK {
+		for i := entityInt + 1; i <= u.GROUP; i++ {
+			_, e := GetDB().Collection(u.EntityToString(i)).UpdateMany(ctx,
+				req, mongo.Pipeline{update})
+			if e != nil {
+				println(e.Error())
+			}
+		}
+	}
 }
 
 func GetEntityHierarchy(ID primitive.ObjectID, ent string, start, end int) (map[string]interface{}, string) {
@@ -826,4 +833,33 @@ func ExtractCursor(c *mongo.Cursor, ctx context.Context) ([]map[string]interface
 		ans = append(ans, x)
 	}
 	return ans, ""
+}
+
+// DEAD CODE
+// Function will recursively iterate through nested obj
+// and accumulate whatever is found into category arrays
+func parseDataForNonStdResult(ent string, eNum, end int, data map[string]interface{}) map[string][]map[string]interface{} {
+	var nxt string
+	ans := map[string][]map[string]interface{}{}
+	add := data[u.EntityToString(eNum+1)+"s"].([]map[string]interface{})
+
+	//NEW REWRITE
+	for i := eNum; i+2 < end; i++ {
+		idx := u.EntityToString(i + 1)
+		//println("trying IDX: ", idx)
+		firstArr := add
+
+		ans[idx+"s"] = firstArr
+
+		for q := range firstArr {
+			nxt = u.EntityToString(i + 2)
+			println("NXT: ", nxt)
+			ans[nxt+"s"] = append(ans[nxt+"s"],
+				ans[idx+"s"][q][nxt+"s"].([]map[string]interface{})...)
+		}
+		add = ans[nxt+"s"]
+
+	}
+
+	return ans
 }

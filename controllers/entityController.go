@@ -1233,59 +1233,32 @@ var GetEntityHierarchy = func(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("FUNCTION CALL: 	 GetEntityHierarchy ")
 	fmt.Println("******************************************************")
 	DispRequestMetaData(r)
-	//Extract string between /api and /{id}
-	idx := strings.Index(r.URL.Path[5:], "/") + 4
-	entity := r.URL.Path[5:idx]
-	resp := u.Message(true, "success")
+	entity := mux.Vars(r)["entity"]
+	var resp map[string]interface{}
 	var limit int
 	var end int
-	var lastSlashIdx int
 	var data map[string]interface{}
 	var e1 string
-	var indicator string
 
 	//If template or stray convert '-' -> '_'
-	if idx := strings.Index(entity, "-"); idx != -1 {
-		entity = entity[:idx] + "_" + entity[idx+1:]
-	}
+	entity = strings.Replace(entity, "-", "_", 1)
 
 	id, e := mux.Vars(r)["id"]
 	if !e {
-
-		if entity != "tenant" {
-			u.Respond(w, u.Message(false, "Error while parsing path parameters"))
-			u.ErrLog("Error while parsing path parameters", "GET ENTITYHIERARCHY", "", r)
-			return
-		}
-		id, e = mux.Vars(r)["tenant_name"]
-
-		if !e {
-			u.Respond(w, u.Message(false, "Error while parsing tenant name"))
-			u.ErrLog("Error while parsing path parameters", "GET ENTITYHIERARCHY", "", r)
-			return
-		}
-	}
-
-	if entity == "tenant" {
-
-		_, e := models.GetEntity(bson.M{"name": id}, entity)
-		if e != "" {
-			resp = u.Message(false, "Error while getting :"+entity+","+e)
-			u.ErrLog("Error while getting "+entity, "GET "+entity, e, r)
-		}
-
+		u.Respond(w, u.Message(false, "Error while parsing path parameters"))
+		u.ErrLog("Error while parsing path parameters", "GET ENTITYHIERARCHY", "", r)
+		return
 	}
 
 	//Check if the request is a ranged hierarchy
-	arr := strings.SplitAfter(r.URL.RawQuery, "limit=")
-	if len(arr) == 2 { //limit={number} was provided
-		end, _ = strconv.Atoi(arr[1])
+	r.ParseForm()
+	arr := r.Form["limit"]
+	if len(arr) > 0 { //limit={number} was provided
+		end, _ = strconv.Atoi(arr[0])
 		limit = u.EntityStrToInt(entity) + end
 
-		// HACK SECTION FOR FRONT END -- START //
-
 		if end == 0 {
-
+			// It's a GetEntity, treat it here
 			objID, _ := primitive.ObjectIDFromHex(id)
 			data, e1 := models.GetEntity(bson.M{"_id": objID}, entity)
 
@@ -1312,34 +1285,17 @@ var GetEntityHierarchy = func(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		// HACK SECTION FOR FRONT END -- DONE //
-
 	} else {
-
-		lastSlashIdx = strings.LastIndex(r.URL.Path, "/")
-		indicator = r.URL.Path[lastSlashIdx+1:]
-		switch indicator {
-		case "all":
-			//arbitrarily set value to 999 instead of AC
-			limit = 999
-		case "nonstd":
-			//special case
-		default:
-			//set to int equivalent
-			//This strips the trailing s
-			limit = u.EntityStrToInt(indicator[:len(indicator)-1])
-		}
+		//arbitrarily set value to 999
+		limit = 999
 	}
 
-	println("Indicator: ", indicator)
 	println("The limit is: ", limit)
-
 	oID, _ := getObjID(id)
-
 	entNum := u.EntityStrToInt(entity)
 	println("EntNum:", entNum)
 
-	//Prevents Mongo from creating a new unidentified collection
+	// Prevents Mongo from creating a new unidentified collection
 	if entNum < 0 {
 		w.WriteHeader(http.StatusNotFound)
 		u.Respond(w, u.Message(false, "Invalid object in URL:"+entity+" Please provide a valid object"))
@@ -1347,21 +1303,9 @@ var GetEntityHierarchy = func(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Get hierarchy
 	println("Entity: ", entity, " & OID: ", oID.Hex())
-	if entity == "device" {
-		println("RETREIVE")
-		end = 999 //Arbitrary value for just obtaining everything
-		arr := strings.SplitAfter(r.URL.RawQuery, "limit=")
-		if len(arr) == 2 { //limit={number} was provided
-			end, _ = strconv.Atoi(arr[1])
-			end += 1
-		}
-		//data, e1 = models.RetrieveDeviceHierarch(oID, 0, end)
-		data, e1 = models.GetEntityHierarchy(oID, entity, entNum, limit)
-	} else {
-		//data, e1 = models.GetEntityHierarchy(entity, oID, entNum, limit)
-		data, e1 = models.GetEntityHierarchy(oID, entity, entNum, limit)
-	}
+	data, e1 = models.GetEntityHierarchy(oID, entity, entNum, limit)
 
 	if data == nil {
 		resp = u.Message(false, "Error while getting :"+entity+","+e1)
@@ -1376,20 +1320,6 @@ var GetEntityHierarchy = func(w http.ResponseWriter, r *http.Request) {
 		}
 
 	} else {
-		//object := ""
-		//message := ""
-		//if indicator == "" {
-		//	object = u.EntityToString(limit)
-		//	message = "successfully got " + entity + "'s hierarchy to " + object
-		//} else {
-		//	if indicator == "all" {
-		//		message = "successfully got " + entity + "'s complete hierarchy"
-		//	} else {
-		//		message = "successfully got " + entity + "'s hierarchy to " + indicator
-		//	}
-
-		//}
-
 		resp = u.Message(true, "successfully got object")
 	}
 
@@ -1485,12 +1415,10 @@ var GetHierarchyByName = func(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	entity = entity[:len(entity)-1]
+	entity = entity[:len(entity)-1] // remove s
 
 	//If template or stray convert '-' -> '_'
-	if idx := strings.Index(entity, "-"); idx != -1 {
-		entity = entity[:idx] + "_" + entity[idx+1:]
-	}
+	entity = strings.Replace(entity, "-", "_", 1)
 
 	//Check if the request is a ranged hierarchy
 	r.ParseForm()
@@ -1621,9 +1549,7 @@ var GetEntitiesUsingNamesOfParents = func(w http.ResponseWriter, r *http.Request
 	resp := u.Message(true, "success")
 
 	//If template or stray convert '-' -> '_'
-	if idx := strings.Index(entity, "-"); idx != -1 {
-		entity = entity[:idx] + "_" + entity[idx+1:]
-	}
+	entity = strings.Replace(entity, "-", "_", 1)
 
 	id, e := mux.Vars(r)["id"]
 	tname, e1 := mux.Vars(r)["tenant_name"]
@@ -1649,9 +1575,7 @@ var GetEntitiesUsingNamesOfParents = func(w http.ResponseWriter, r *http.Request
 		key := k[:len(k)-1]
 
 		//If templates, format them
-		if idx := strings.Index(key, "-"); idx != -1 {
-			key = key[:idx] + "_" + key[idx+1:]
-		}
+		key = strings.Replace(key, "-", "_", 1)
 
 		if i%2 == 0 { //The keys (entities) are at the even indexes
 			if i+1 >= len(arr) {
@@ -1690,7 +1614,7 @@ var GetEntitiesUsingNamesOfParents = func(w http.ResponseWriter, r *http.Request
 	if len(arr)%2 != 0 { //This means we are getting entities
 		var data []map[string]interface{}
 		var e3 string
-		if e1 == true {
+		if e1 {
 			println("we are getting entities here")
 			data, e3 = models.GetEntitiesUsingTenantAsAncestor(entity, tname, ancestry)
 
@@ -1698,7 +1622,7 @@ var GetEntitiesUsingNamesOfParents = func(w http.ResponseWriter, r *http.Request
 			data, e3 = models.GetEntitiesUsingAncestorNames(entity, oID, ancestry)
 		}
 
-		if data == nil || len(data) == 0 {
+		if len(data) == 0 {
 			resp = u.Message(false, "Error while getting :"+entity+","+e3)
 			u.ErrLog("Error while getting "+entity, "GET "+entity, e3, r)
 
@@ -1732,14 +1656,13 @@ var GetEntitiesUsingNamesOfParents = func(w http.ResponseWriter, r *http.Request
 	} else { //We are only retrieving an entity
 		var data map[string]interface{}
 		var e3 string
-		if e1 == true {
+		if e1 {
 			data, e3 = models.GetEntityUsingTenantAsAncestor(entity, tname, ancestry)
 		} else {
 			data, e3 = models.GetEntityUsingAncestorNames(entity, oID, ancestry)
 		}
 
-		//data, e := models.GetEntityUsingAncestorNames(entity, oID, ancestry)
-		if data == nil || len(data) == 0 {
+		if len(data) == 0 {
 			resp = u.Message(false, "Error while getting :"+entity+","+e3)
 			u.ErrLog("Error while getting "+entity, "GET "+entity, e3, r)
 
@@ -1761,8 +1684,6 @@ var GetEntitiesUsingNamesOfParents = func(w http.ResponseWriter, r *http.Request
 			}
 
 		} else {
-			upperEnt := arr[len(arr)-2]
-			upperEnt = upperEnt[:len(upperEnt)-1]
 			resp = u.Message(true, "successfully got object")
 		}
 
@@ -1804,7 +1725,7 @@ var BaseOption = func(w http.ResponseWriter, r *http.Request) {
 	DispRequestMetaData(r)
 	entity, e1 := mux.Vars(r)["entity"]
 	entity = entity[:len(entity)-1]
-	if e1 == false || u.EntityStrToInt(entity) == -1 {
+	if !e1 || u.EntityStrToInt(entity) == -1 {
 		w.WriteHeader(http.StatusNotFound)
 		return
 	}

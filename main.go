@@ -103,12 +103,6 @@ func main() {
 	router.HandleFunc("/api/{ancestor:rooms}/{id:[a-zA-Z0-9]{24}}/devices",
 		controllers.GetEntitiesOfAncestor).Methods("GET", "HEAD", "OPTIONS")
 
-	/*router.HandleFunc("/api/rooms/{id:[a-zA-Z0-9]{24}}/sensors",
-		controllers.GetEntitiesOfAncestor).Methods("GET")
-
-	router.HandleFunc("/api/racks/{id:[a-zA-Z0-9]{24}}/sensors",
-		controllers.GetEntitiesOfAncestor).Methods("GET")*/
-
 	// GET BY QUERY
 	router.NewRoute().PathPrefix("/api/{entity:[a-z]+}").MatcherFunc(dmatch).
 		HandlerFunc(controllers.GetEntityByQuery).Methods("HEAD", "GET")
