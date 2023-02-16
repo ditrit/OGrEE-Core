@@ -25,72 +25,6 @@ func getObjID(x string) (primitive.ObjectID, error) {
 	return objID, nil
 }
 
-func parseDataForNonStdResult(ent string, eNum int, data map[string]interface{}) map[string][]map[string]interface{} {
-
-	ans := map[string][]map[string]interface{}{}
-	add := []map[string]interface{}{}
-
-	firstIndex := u.EntityToString(eNum + 1)
-	firstArr := data[firstIndex+"s"].([]map[string]interface{})
-
-	ans[firstIndex+"s"] = firstArr
-
-	for i := range firstArr {
-		nxt := u.EntityToString(eNum + 2)
-		add = append(add, firstArr[i][nxt+"s"].([]map[string]interface{})...)
-	}
-
-	ans[u.EntityToString(eNum+2)+"s"] = add
-	newAdd := []map[string]interface{}{}
-	for i := range add {
-		nxt := u.EntityToString(eNum + 3)
-		newAdd = append(newAdd, add[i][nxt+"s"].([]map[string]interface{})...)
-	}
-
-	ans[u.EntityToString(eNum+3)+"s"] = newAdd
-
-	newAdd2 := []map[string]interface{}{}
-	for i := range newAdd {
-		nxt := u.EntityToString(eNum + 4)
-		newAdd2 = append(newAdd2, newAdd[i][nxt+"s"].([]map[string]interface{})...)
-	}
-
-	ans[u.EntityToString(eNum+4)+"s"] = newAdd2
-	newAdd3 := []map[string]interface{}{}
-
-	for i := range newAdd2 {
-		nxt := u.EntityToString(eNum + 5)
-		newAdd3 = append(newAdd3, newAdd2[i][nxt+"s"].([]map[string]interface{})...)
-	}
-	ans[u.EntityToString(eNum+5)+"s"] = newAdd3
-
-	newAdd4 := []map[string]interface{}{}
-
-	for i := range newAdd3 {
-		nxt := u.EntityToString(eNum + 6)
-		newAdd4 = append(newAdd4, newAdd3[i][nxt+"s"].([]map[string]interface{})...)
-	}
-
-	ans[u.EntityToString(eNum+6)+"s"] = newAdd4
-
-	newAdd5 := []map[string]interface{}{}
-
-	for i := range newAdd4 {
-		nxt := u.EntityToString(eNum + 7)
-		newAdd5 = append(newAdd5, newAdd4[i][nxt+"s"].([]map[string]interface{})...)
-	}
-
-	ans[u.EntityToString(eNum+7)+"s"] = newAdd5
-
-	//add := []map[string]interface{}{}
-
-	//Get All first entities
-	/*for i := eNum + 1; i < SUBDEV1; i++ {
-		add = append(add, firstArr[i])
-	}*/
-	return ans
-}
-
 // This function is useful for debugging
 // purposes. It displays any JSON
 func viewJson(r *http.Request) {
@@ -251,12 +185,9 @@ var CreateEntity = func(w http.ResponseWriter, r *http.Request) {
 	}
 
 	//If creating templates, format them
-	if idx := strings.Index(entStr, "-"); idx != -1 {
-		//entStr[idx] = '_'
-		entStr = entStr[:idx] + "_" + entStr[idx+1:]
-	}
-	i := u.EntityStrToInt(entStr)
+	entStr = strings.Replace(entStr, "-", "_", 1)
 
+	i := u.EntityStrToInt(entStr)
 	println("ENT: ", entStr)
 	println("ENUM VAL: ", i)
 
@@ -406,7 +337,7 @@ var GetEntity = func(w http.ResponseWriter, r *http.Request) {
 	var e bool
 	var e2 error
 
-	resp := u.Message(true, "success")
+	var resp map[string]interface{}
 
 	userData := r.Context().Value("user")
 	domain := userData.(map[string]interface{})["domain"].(string)
@@ -417,18 +348,15 @@ var GetEntity = func(w http.ResponseWriter, r *http.Request) {
 	println("Domain:", domain)
 	println("Role:", role)
 
-	//Get entity type and strip trailing 's'
-	s, _ := mux.Vars(r)["entity"]
-	s = s[:len(s)-1]
+	//Get entity type and strip trailing 'entityStr'
+	entityStr := mux.Vars(r)["entity"]
+	entityStr = entityStr[:len(entityStr)-1]
 
 	//If templates, format them
-	if idx := strings.Index(s, "-"); idx != -1 {
-		s = s[:idx] + "_" + s[idx+1:]
-	}
+	entityStr = strings.Replace(entityStr, "-", "_", 1)
 
 	//GET By ID
-	if id, e = mux.Vars(r)["id"]; e == true {
-
+	if id, e = mux.Vars(r)["id"]; e {
 		x, e2 = getObjID(id)
 		if e2 != nil {
 			u.Respond(w, u.Message(false, "Error while converting ID to ObjectID"))
@@ -437,7 +365,7 @@ var GetEntity = func(w http.ResponseWriter, r *http.Request) {
 		}
 
 		//Prevents API from creating a new unidentified collection
-		if i := u.EntityStrToInt(s); i < 0 {
+		if i := u.EntityStrToInt(entityStr); i < 0 {
 			w.WriteHeader(http.StatusNotFound)
 			u.Respond(w, u.Message(false, "Invalid object in URL: '"+mux.Vars(r)["entity"]+"' Please provide a valid object"))
 			u.ErrLog("Cannot get invalid object", "GET "+mux.Vars(r)["entity"], "", r)
@@ -446,49 +374,40 @@ var GetEntity = func(w http.ResponseWriter, r *http.Request) {
 
 		req := bson.M{"_id": x}
 		models.RequestGen(req, role, domain)
-		data, e1 = models.GetEntity(req, s, []string{})
+		data, e1 = models.GetEntity(req, entityStr, []string{})
 
 	} else if id, e = mux.Vars(r)["name"]; e == true { //GET By String
 
-		if idx := strings.Contains(s, "_"); idx == true &&
-			s != "stray_device" && s != "stray_sensor" { //GET By Slug
-			req := bson.M{"slug": id}
-			models.RequestGen(req, role, domain)
-			data, e1 = models.GetEntity(req, s, []string{})
-
-		} else if s == "stray_device" || s == "stray_sensor" {
+		if entityStr == "stray_device" || entityStr == "stray_sensor" { //GET By Name
 			req := bson.M{"name": id}
 			models.RequestGen(req, role, domain)
-			data, e1 = models.GetEntity(req, s, []string{}) //GET By Name
-
+			data, e1 = models.GetEntity(req, entityStr, []string{})
+		} else if strings.Contains(entityStr, "template") { //GET By Slug (template)
+			req := bson.M{"slug": id}
+			models.RequestGen(req, role, domain)
+			data, e1 = models.GetEntity(req, entityStr, []string{})
 		} else {
-			//Invalid entity and ID/name/slug combination
-			msg := "Bad path parameter received. Names and Slugs are available for tenants, templates and stray objects only. Otherwise please provide a valid ID"
-			resp = u.Message(false, msg)
-			w.WriteHeader(http.StatusBadRequest)
-			resp["data"] = nil
-			u.Respond(w, resp)
-			return
-
+			println(id)
+			data, e1 = models.GetEntity(bson.M{"hierarchyName": id}, entityStr, nil) // GET By hierarchyName
 		}
 	}
 
-	if e == false {
+	if !e {
 		u.Respond(w, u.Message(false, "Error while parsing path parameters"))
 		u.ErrLog("Error while parsing path parameters", "GET ENTITY", "", r)
 		return
 	}
 
 	if data == nil {
-		resp = u.Message(false, "Error while getting "+s+": "+e1)
-		u.ErrLog("Error while getting "+s, "GET "+strings.ToUpper(s), "", r)
+		resp = u.Message(false, "Error while getting "+entityStr+": "+e1)
+		u.ErrLog("Error while getting "+entityStr, "GET "+strings.ToUpper(entityStr), "", r)
 
 		switch e1 {
 		case "record not found":
 			w.WriteHeader(http.StatusNotFound)
 
 		case "mongo: no documents in result":
-			resp = u.Message(false, "Error while getting :"+s+", No Objects Found!")
+			resp = u.Message(false, "Error while getting :"+entityStr+", No Objects Found!")
 			w.WriteHeader(http.StatusNotFound)
 
 		case "invalid request":
@@ -500,7 +419,7 @@ var GetEntity = func(w http.ResponseWriter, r *http.Request) {
 	} else {
 
 		message := ""
-		switch u.EntityStrToInt(s) {
+		switch u.EntityStrToInt(entityStr) {
 		case u.ROOMTMPL:
 			message = "successfully got room_template"
 		case u.OBJTMPL:
@@ -564,15 +483,12 @@ var GetAllEntities = func(w http.ResponseWriter, r *http.Request) {
 	println("Domain:", domain)
 	println("Role:", role)
 
-	//entStr = arr[2][:len(arr[2])-1]
-	entStr, _ = mux.Vars(r)["entity"]
+	entStr = mux.Vars(r)["entity"]
 	entStr = entStr[:len(entStr)-1]
 	println("ENTSTR: ", entStr)
 
 	//If templates, format them
-	if idx := strings.Index(entStr, "-"); idx != -1 {
-		entStr = entStr[:idx] + "_" + entStr[idx+1:]
-	}
+	entStr = strings.Replace(entStr, "-", "_", 1)
 
 	//Prevents Mongo from creating a new unidentified collection
 	if i := u.EntityStrToInt(entStr); i < 0 {
@@ -587,7 +503,7 @@ var GetAllEntities = func(w http.ResponseWriter, r *http.Request) {
 	data, e = models.GetManyEntities(entStr, req, nil)
 
 	entUpper := strings.ToUpper(entStr) // and the trailing 's'
-	resp := u.Message(true, "success")
+	var resp map[string]interface{}
 
 	if len(data) == 0 {
 		resp = u.Message(false, "Error while getting "+entStr+": "+e)
@@ -670,13 +586,11 @@ var DeleteEntity = func(w http.ResponseWriter, r *http.Request) {
 	println("Role:", role)
 
 	//Get entity from URL and strip trailing 's'
-	entity, _ := mux.Vars(r)["entity"]
+	entity := mux.Vars(r)["entity"]
 	entity = entity[:len(entity)-1]
 
 	//If templates, format them
-	if idx := strings.Index(entity, "-"); idx != -1 {
-		entity = entity[:idx] + "_" + entity[idx+1:]
-	}
+	entity = strings.Replace(entity, "-", "_", 1)
 
 	//Prevents Mongo from creating a new unidentified collection
 	if u.EntityStrToInt(entity) < 0 {
@@ -687,11 +601,18 @@ var DeleteEntity = func(w http.ResponseWriter, r *http.Request) {
 	}
 
 	switch {
-	case e2 == true && e == false: // DELETE SLUG or stray-device name
-		if entity == "stray_device" || entity == "stray_sensor" {
-			req := bson.M{"name": name}
-			models.RequestGen(req, role, domain)
-			sd, _ := models.GetEntity(req, entity, []string{})
+	case e2 && !e: // DELETE by name
+		if strings.Contains(entity, "template") {
+			v, _ = models.DeleteEntityManual(entity, bson.M{"slug": name})
+		} else {
+			// use hierarchyName
+			filter := bson.M{"hierarchyName": name}
+			if entity == "stray_device" || entity == "stray_sensor" {
+				filter = bson.M{"name": name} // except for stray
+			}
+
+			models.RequestGen(filter, role, domain)
+			sd, _ := models.GetEntity(filter, entity, []string{})
 			if sd == nil {
 				w.WriteHeader(http.StatusNotFound)
 				u.Respond(w, u.Message(false, "Error object not found"))
@@ -703,15 +624,14 @@ var DeleteEntity = func(w http.ResponseWriter, r *http.Request) {
 					"Server was not able to process your request"))
 				return
 			}
-			//We have to delete name
-			delete(req, "name")
 
-			v, _ = models.DeleteEntity(entity, sd["id"].(primitive.ObjectID), req)
-		} else {
-			v, _ = models.DeleteEntityManual(entity, bson.M{"slug": name})
+			//We have to delete name
+			delete(filter, "name")
+			delete(filter, "nahierarchyNameme")
+			v, _ = models.DeleteEntity(entity, sd["id"].(primitive.ObjectID), filter)
 		}
 
-	case e == true && e2 == false: // DELETE NORMAL
+	case e && !e2: // DELETE by id
 		objID, err := primitive.ObjectIDFromHex(id)
 		if err != nil {
 			u.Respond(w, u.Message(false, "Error while converting ID to ObjectID"))
@@ -902,8 +822,6 @@ var UpdateEntity = func(w http.ResponseWriter, r *http.Request) {
 	}
 	println(r.Method)
 
-	//viewJson(r)
-
 	err := json.NewDecoder(r.Body).Decode(&updateData)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
@@ -913,13 +831,11 @@ var UpdateEntity = func(w http.ResponseWriter, r *http.Request) {
 	}
 
 	//Get entity from URL and strip trailing 's'
-	entity, _ = mux.Vars(r)["entity"]
+	entity = mux.Vars(r)["entity"]
 	entity = entity[:len(entity)-1]
 
 	//If templates, format them
-	if idx := strings.Index(entity, "-"); idx != -1 {
-		entity = entity[:idx] + "_" + entity[idx+1:]
-	}
+	entity = strings.Replace(entity, "-", "_", 1)
 
 	//Prevents Mongo from creating a new unidentified collection
 	if u.EntityStrToInt(entity) < 0 {
@@ -938,18 +854,20 @@ var UpdateEntity = func(w http.ResponseWriter, r *http.Request) {
 	}
 
 	switch {
-	case e2 == true: // UPDATE SLUG
+	case e2: // Update with name/slug/hierarchyName
 		var req bson.M
 		if entity == "stray_device" || entity == "stray_sensor" {
 			req = bson.M{"name": name}
-		} else {
+		} else if strings.Contains(entity, "template") {
 			req = bson.M{"slug": name}
+		} else {
+			req = bson.M{"hierarchyName": name}
 		}
 
 		models.RequestGen(req, role, domain)
 		v, e3 = models.UpdateEntity(entity, req, &updateData, isPatch)
 
-	case e == true: // UPDATE NORMAL
+	case e: // Update with id
 		println("updating Normale")
 		objID, err := primitive.ObjectIDFromHex(id)
 		if err != nil {
@@ -1059,9 +977,7 @@ var GetEntityByQuery = func(w http.ResponseWriter, r *http.Request) {
 	entStr = r.URL.Path[5 : len(r.URL.Path)-1]
 
 	//If templates, format them
-	if idx := strings.Index(entStr, "-"); idx != -1 {
-		entStr = entStr[:idx] + "_" + entStr[idx+1:]
-	}
+	entStr = strings.Replace(entStr, "-", "_", 1)
 
 	query := u.ParamsParse(r.URL, u.EntityStrToInt(entStr))
 	js, _ := json.Marshal(query)
@@ -1241,13 +1157,11 @@ var GetEntitiesOfAncestor = func(w http.ResponseWriter, r *http.Request) {
 	DispRequestMetaData(r)
 	var id string
 	var e bool
+	var resp map[string]interface{}
 	//Extract string between /api and /{id}
-	idx := strings.Index(r.URL.Path[5:], "/") + 4
-	entStr := r.URL.Path[5:idx]
-
-	//s, _ := getObjID(id)
+	entStr := mux.Vars(r)["ancestor"]
+	entStr = entStr[:len(entStr)-1] // remove s
 	enum := u.EntityStrToInt(entStr)
-	//childBase := u.EntityToString(enum + 1)
 
 	userData := r.Context().Value("user")
 	domain := userData.(map[string]interface{})["domain"].(string)
@@ -1266,15 +1180,13 @@ var GetEntitiesOfAncestor = func(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	resp := u.Message(true, "success")
-
 	if enum == u.SITE {
 		id, e = mux.Vars(r)["site_name"]
 	} else {
 		id, e = mux.Vars(r)["id"]
 	}
 
-	if e == false {
+	if !e {
 		u.Respond(w, u.Message(false, "Error while parsing path parameters"))
 		u.ErrLog("Error while parsing path parameters", "GET CHILDRENOFPARENT", "", r)
 		return
@@ -1389,16 +1301,12 @@ var GetEntityHierarchy = func(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("FUNCTION CALL: 	 GetEntityHierarchy ")
 	fmt.Println("******************************************************")
 	DispRequestMetaData(r)
-	//Extract string between /api and /{id}
-	idx := strings.Index(r.URL.Path[5:], "/") + 4
-	entity := r.URL.Path[5:idx]
-	resp := u.Message(true, "success")
+	entity := mux.Vars(r)["entity"]
+	var resp map[string]interface{}
 	var limit int
 	var end int
-	var lastSlashIdx int
 	var data map[string]interface{}
 	var e1 string
-	var indicator string
 
 	userData := r.Context().Value("user")
 	domain := userData.(map[string]interface{})["domain"].(string)
@@ -1410,12 +1318,10 @@ var GetEntityHierarchy = func(w http.ResponseWriter, r *http.Request) {
 	println("Role:", role)
 
 	//If template or stray convert '-' -> '_'
-	if idx := strings.Index(entity, "-"); idx != -1 {
-		entity = entity[:idx] + "_" + entity[idx+1:]
-	}
+	entity = strings.Replace(entity, "-", "_", 1)
 
 	id, e := mux.Vars(r)["id"]
-	if e == false {
+	if !e {
 
 		if entity != "site" {
 			u.Respond(w, u.Message(false, "Error while parsing path parameters"))
@@ -1454,10 +1360,8 @@ var GetEntityHierarchy = func(w http.ResponseWriter, r *http.Request) {
 		end, _ = strconv.Atoi(limitArr[0])
 		limit = u.EntityStrToInt(entity) + end
 
-		// HACK SECTION FOR FRONT END -- START //
-
 		if end == 0 {
-
+			// It's a GetEntity, treat it here
 			objID, _ := primitive.ObjectIDFromHex(id)
 			newReq := req
 			newReq["_id"] = objID
@@ -1486,34 +1390,17 @@ var GetEntityHierarchy = func(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		// HACK SECTION FOR FRONT END -- DONE //
-
 	} else {
-
-		lastSlashIdx = strings.LastIndex(r.URL.Path, "/")
-		indicator = r.URL.Path[lastSlashIdx+1:]
-		switch indicator {
-		case "all":
-			//arbitrarily set value to 999 instead of AC
-			limit = 999
-		case "nonstd":
-			//special case
-		default:
-			//set to int equivalent
-			//This strips the trailing s
-			limit = u.EntityStrToInt(indicator[:len(indicator)-1])
-		}
+		//arbitrarily set value to 999
+		limit = 999
 	}
 
-	println("Indicator: ", indicator)
 	println("The limit is: ", limit)
-
 	oID, _ := getObjID(id)
-
 	entNum := u.EntityStrToInt(entity)
 	println("EntNum:", entNum)
 
-	//Prevents Mongo from creating a new unidentified collection
+	// Prevents Mongo from creating a new unidentified collection
 	if entNum < 0 {
 		w.WriteHeader(http.StatusNotFound)
 		u.Respond(w, u.Message(false, "Invalid object in URL:"+entity+" Please provide a valid object"))
@@ -1521,19 +1408,9 @@ var GetEntityHierarchy = func(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Get hierarchy
 	println("Entity: ", entity, " & OID: ", oID.Hex())
-	if entity == "device" {
-		println("RETREIVE")
-		end = 999 //Arbitrary value for just obtaining everything
-		arr := strings.SplitAfter(r.URL.RawQuery, "limit=")
-		if len(arr) == 2 { //limit={number} was provided
-			end, _ = strconv.Atoi(arr[1])
-			end += 1
-		}
-		data, e1 = models.GetEntityHierarchy(oID, req, entity, entNum, limit, fields)
-	} else {
-		data, e1 = models.GetEntityHierarchy(oID, req, entity, entNum, limit, fields)
-	}
+	data, e1 = models.GetEntityHierarchy(oID, req, entity, entNum, limit, fields)
 
 	if data == nil {
 		resp = u.Message(false, "Error while getting :"+entity+","+e1)
@@ -1548,20 +1425,6 @@ var GetEntityHierarchy = func(w http.ResponseWriter, r *http.Request) {
 		}
 
 	} else {
-		//object := ""
-		//message := ""
-		//if indicator == "" {
-		//	object = u.EntityToString(limit)
-		//	message = "successfully got " + entity + "'s hierarchy to " + object
-		//} else {
-		//	if indicator == "all" {
-		//		message = "successfully got " + entity + "'s complete hierarchy"
-		//	} else {
-		//		message = "successfully got " + entity + "'s hierarchy to " + indicator
-		//	}
-
-		//}
-
 		resp = u.Message(true, "successfully got object")
 	}
 
@@ -1572,6 +1435,30 @@ var GetEntityHierarchy = func(w http.ResponseWriter, r *http.Request) {
 		resp["data"] = data
 		u.Respond(w, resp)
 	}
+}
+
+var GetCompleteHierarchy = func(w http.ResponseWriter, r *http.Request) {
+	fmt.Println("******************************************************")
+	fmt.Println("FUNCTION CALL: 	 GetCompleteHierarchy ")
+	fmt.Println("******************************************************")
+	DispRequestMetaData(r)
+	var resp map[string]interface{}
+
+	data, err := models.GetCompleteHierarchy()
+	if err != "" {
+		w.WriteHeader(http.StatusNotFound)
+		resp = u.Message(false, "Error: "+err)
+	} else {
+		if r.Method == "OPTIONS" {
+			w.Header().Add("Content-Type", "application/json")
+			w.Header().Add("Allow", "GET, OPTIONS, HEAD")
+		} else {
+			resp = u.Message(true, "successfully got hierarchy")
+			resp["data"] = data
+		}
+	}
+
+	u.Respond(w, resp)
 }
 
 // swagger:operation GET /api/{entity}/{name}/all objects GetFromObject
@@ -1616,13 +1503,8 @@ var GetHierarchyByName = func(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("FUNCTION CALL: 	 GetHierarchyByName ")
 	fmt.Println("******************************************************")
 	DispRequestMetaData(r)
-
-	entity := "site"
-	resp := u.Message(true, "success")
-	var indicator string
+	var resp map[string]interface{}
 	var limit int
-	var lastSlashIdx int
-	var end int
 
 	userData := r.Context().Value("user")
 	domain := userData.(map[string]interface{})["domain"].(string)
@@ -1633,96 +1515,44 @@ var GetHierarchyByName = func(w http.ResponseWriter, r *http.Request) {
 	println("Domain:", domain)
 	println("Role:", role)
 
-	id, e := mux.Vars(r)["name"]
-	if e == false {
+	name, e := mux.Vars(r)["name"]
+	if !e {
 		u.Respond(w, u.Message(false, "Error while parsing name"))
 		u.ErrLog("Error while parsing path parameters", "GetHierarchyByName", "", r)
 		return
 	}
 
 	entity, e2 := mux.Vars(r)["entity"]
-	if e2 == false {
+	if !e2 {
 		u.Respond(w, u.Message(false, "Error while parsing entity"))
 		u.ErrLog("Error while parsing path parameters", "GetHierarchyByName", "", r)
 		return
 	}
 
-	entity = entity[:len(entity)-1]
+	entity = entity[:len(entity)-1] // remove s
 
 	//If template or stray convert '-' -> '_'
-	if idx := strings.Index(entity, "-"); idx != -1 {
-		entity = entity[:idx] + "_" + entity[idx+1:]
-	}
-
-	if entity != "site" && entity != "stray_device" && entity != "domain" {
-		u.Respond(w, u.Message(false, "Error invalid entity provided"))
-		u.ErrLog("Invalid entity found while parsing path parameters", "GetHierarchyByName", "", r)
-		return
-	}
+	entity = strings.Replace(entity, "-", "_", 1)
 
 	//Check if the request is a ranged hierarchy
-	arr := strings.SplitAfter(r.URL.RawQuery, "limit=")
-	if len(arr) == 2 { //limit={number} was provided
-		end, _ = strconv.Atoi(arr[1])
-		limit = u.EntityStrToInt(entity) + end
-
-		// HACK SECTION FOR FRONT END -- START //
-
-		if end == 0 {
-
-			//objID, _ := primitive.ObjectIDFromHex(id)
-			data, e1 := models.GetEntity(bson.M{"name": id}, "site", []string{})
-
-			if e1 != "" {
-				resp = u.Message(false, "Error while getting :"+entity+","+e1)
-				u.ErrLog("Error while getting "+entity, "GET "+entity, e1, r)
-
-				switch e1 {
-				case "record not found":
-					w.WriteHeader(http.StatusNotFound)
-				default:
-				}
-			} else {
-				resp = u.Message(true, "successfully got object")
-			}
-
-			resp["data"] = data
-			u.Respond(w, resp)
-			return
-		}
-
-		// HACK SECTION FOR FRONT END -- DONE //
-
+	r.ParseForm()
+	limitArr := r.Form["limit"]
+	if len(limitArr) > 0 {
+		//limit={number} was provided
+		limit, _ = strconv.Atoi(limitArr[0])
 	} else {
-
-		lastSlashIdx = strings.LastIndex(r.URL.Path, "/")
-		indicator = r.URL.Path[lastSlashIdx+1:]
-		switch indicator {
-		case "all":
-			//set to AC1
-			if entity == "site" {
-				limit = u.AC
-			} else { //set limit for stray_device
-				limit = 99
-			}
-
-		case "nonstd":
-			//special case
-		default:
-			//set to int equivalent
-			//This strips the trailing s
-			limit = u.EntityStrToInt(indicator[:len(indicator)-1])
-		}
+		limit = 999
 	}
 
-	println("Indicator: ", indicator)
 	println("The limit is: ", limit)
 
 	entInt := u.EntityStrToInt(entity)
-
-	req := bson.M{}
+	req := bson.M{"hierarchyName": name}
 	models.RequestGen(req, role, domain)
-	data, e1 := models.GetHierarchyByName(entity, id, req, entInt, limit)
+	data, e1 := models.GetEntity(bson.M{"hierarchyName": name}, entity, nil)
+	if limit >= 1 && e1 == "" {
+		data["children"], e1 = models.GetHierarchyByName(entity, name, entInt+1, limit)
+	}
 
 	if data == nil {
 		resp = u.Message(false, "Error while getting :"+entity+","+e1)
@@ -1741,19 +1571,6 @@ var GetHierarchyByName = func(w http.ResponseWriter, r *http.Request) {
 		}
 
 	} else {
-		//object := ""
-		//message := ""
-		//if indicator == "" {
-		//	object = u.EntityToString(limit)
-		//	message = "successfully got " + entity + "'s hierarchy to " + object
-		//} else {
-		//	if indicator == "all" {
-		//		message = "successfully got " + entity + "'s complete hierarchy"
-		//	} else {
-		//		message = "successfully got " + entity + "'s hierarchy to " + indicator
-		//	}
-
-		//}
 		resp = u.Message(true, "successfully got object")
 	}
 
@@ -1848,9 +1665,7 @@ var GetEntitiesUsingNamesOfParents = func(w http.ResponseWriter, r *http.Request
 	resp := u.Message(true, "success")
 
 	//If template or stray convert '-' -> '_'
-	if idx := strings.Index(entity, "-"); idx != -1 {
-		entity = entity[:idx] + "_" + entity[idx+1:]
-	}
+	entity = strings.Replace(entity, "-", "_", 1)
 
 	userData := r.Context().Value("user")
 	domain := userData.(map[string]interface{})["domain"].(string)
@@ -1885,9 +1700,7 @@ var GetEntitiesUsingNamesOfParents = func(w http.ResponseWriter, r *http.Request
 		key := k[:len(k)-1]
 
 		//If templates, format them
-		if idx := strings.Index(key, "-"); idx != -1 {
-			key = key[:idx] + "_" + key[idx+1:]
-		}
+		key = strings.Replace(key, "-", "_", 1)
 
 		if i%2 == 0 { //The keys (entities) are at the even indexes
 			if i+1 >= len(arr) {
@@ -1928,7 +1741,7 @@ var GetEntitiesUsingNamesOfParents = func(w http.ResponseWriter, r *http.Request
 		var e3 string
 		req := bson.M{}
 		models.RequestGen(req, role, domain)
-		if e1 == true {
+		if e1 {
 			println("we are getting entities here")
 			data, e3 = models.GetEntitiesUsingSiteAsAncestor(entity, tname, req, ancestry)
 
@@ -1936,7 +1749,7 @@ var GetEntitiesUsingNamesOfParents = func(w http.ResponseWriter, r *http.Request
 			data, e3 = models.GetEntitiesUsingAncestorNames(entity, oID, req, ancestry)
 		}
 
-		if data == nil || len(data) == 0 {
+		if len(data) == 0 {
 			resp = u.Message(false, "Error while getting :"+entity+","+e3)
 			u.ErrLog("Error while getting "+entity, "GET "+entity, e3, r)
 
@@ -1972,14 +1785,13 @@ var GetEntitiesUsingNamesOfParents = func(w http.ResponseWriter, r *http.Request
 		var e3 string
 		req := bson.M{}
 		models.RequestGen(req, role, domain)
-		if e1 == true {
+		if e1 {
 			data, e3 = models.GetEntityUsingSiteAsAncestor(entity, tname, req, ancestry)
 		} else {
 			data, e3 = models.GetEntityUsingAncestorNames(entity, oID, req, ancestry)
 		}
 
-		//data, e := models.GetEntityUsingAncestorNames(entity, oID, ancestry)
-		if data == nil || len(data) == 0 {
+		if len(data) == 0 {
 			resp = u.Message(false, "Error while getting :"+entity+","+e3)
 			u.ErrLog("Error while getting "+entity, "GET "+entity, e3, r)
 
@@ -2001,8 +1813,6 @@ var GetEntitiesUsingNamesOfParents = func(w http.ResponseWriter, r *http.Request
 			}
 
 		} else {
-			upperEnt := arr[len(arr)-2]
-			upperEnt = upperEnt[:len(upperEnt)-1]
 			resp = u.Message(true, "successfully got object")
 		}
 
@@ -2044,7 +1854,7 @@ var BaseOption = func(w http.ResponseWriter, r *http.Request) {
 	DispRequestMetaData(r)
 	entity, e1 := mux.Vars(r)["entity"]
 	entity = entity[:len(entity)-1]
-	if e1 == false || u.EntityStrToInt(entity) == -1 {
+	if !e1 || u.EntityStrToInt(entity) == -1 {
 		w.WriteHeader(http.StatusNotFound)
 		return
 	}
@@ -2282,6 +2092,7 @@ var Version = func(w http.ResponseWriter, r *http.Request) {
 	u.Respond(w, data)
 }
 
+// DEAD CODE
 var GetEntityHierarchyNonStd = func(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("******************************************************")
 	fmt.Println("FUNCTION CALL: 	 GetEntityHierarchyNonStd ")
@@ -2311,10 +2122,10 @@ var GetEntityHierarchyNonStd = func(w http.ResponseWriter, r *http.Request) {
 	if entity == "site" {
 		println("Getting SITE HEIRARCHY")
 		println("With ID: ", id)
-		//data, err = models.GetHierarchyByName(entity, id, entNum, u.AC)
-		if err != "" {
-			println("We have ERR")
-		}
+		// data, err = models.GetHierarchyByName(entity, id, entNum, u.AC)
+		// if err != "" {
+		// 	println("We have ERR")
+		// }
 	} else {
 		//oID, _ := getObjID(id)
 		//data, err = models.GetEntityHierarchy(oID, entity, entNum, u.AC)
@@ -2344,4 +2155,64 @@ var GetEntityHierarchyNonStd = func(w http.ResponseWriter, r *http.Request) {
 	resp["racks"] = racks
 	resp["devices"] = devices*/
 	u.Respond(w, resp)
+}
+
+// DEAD CODE
+func parseDataForNonStdResult(ent string, eNum int, data map[string]interface{}) map[string][]map[string]interface{} {
+
+	ans := map[string][]map[string]interface{}{}
+	add := []map[string]interface{}{}
+
+	firstIndex := u.EntityToString(eNum + 1)
+	firstArr := data[firstIndex+"s"].([]map[string]interface{})
+
+	ans[firstIndex+"s"] = firstArr
+
+	for i := range firstArr {
+		nxt := u.EntityToString(eNum + 2)
+		add = append(add, firstArr[i][nxt+"s"].([]map[string]interface{})...)
+	}
+
+	ans[u.EntityToString(eNum+2)+"s"] = add
+	newAdd := []map[string]interface{}{}
+	for i := range add {
+		nxt := u.EntityToString(eNum + 3)
+		newAdd = append(newAdd, add[i][nxt+"s"].([]map[string]interface{})...)
+	}
+
+	ans[u.EntityToString(eNum+3)+"s"] = newAdd
+
+	newAdd2 := []map[string]interface{}{}
+	for i := range newAdd {
+		nxt := u.EntityToString(eNum + 4)
+		newAdd2 = append(newAdd2, newAdd[i][nxt+"s"].([]map[string]interface{})...)
+	}
+
+	ans[u.EntityToString(eNum+4)+"s"] = newAdd2
+	newAdd3 := []map[string]interface{}{}
+
+	for i := range newAdd2 {
+		nxt := u.EntityToString(eNum + 5)
+		newAdd3 = append(newAdd3, newAdd2[i][nxt+"s"].([]map[string]interface{})...)
+	}
+	ans[u.EntityToString(eNum+5)+"s"] = newAdd3
+
+	newAdd4 := []map[string]interface{}{}
+
+	for i := range newAdd3 {
+		nxt := u.EntityToString(eNum + 6)
+		newAdd4 = append(newAdd4, newAdd3[i][nxt+"s"].([]map[string]interface{})...)
+	}
+
+	ans[u.EntityToString(eNum+6)+"s"] = newAdd4
+
+	newAdd5 := []map[string]interface{}{}
+
+	for i := range newAdd4 {
+		nxt := u.EntityToString(eNum + 7)
+		newAdd5 = append(newAdd5, newAdd4[i][nxt+"s"].([]map[string]interface{})...)
+	}
+
+	ans[u.EntityToString(eNum+7)+"s"] = newAdd5
+	return ans
 }
