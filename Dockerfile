@@ -22,7 +22,7 @@ RUN go get -u golang.org/x/sys
 
 
 #Generate Binary
-RUN make
+RUN make CGO="CGO_ENABLED=0"
 
 
 #Final output image

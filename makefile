@@ -10,12 +10,16 @@ GITHASH=$(shell git rev-parse HEAD)
 GITBRANCH=$(shell git branch --show-current)
 GITHASHDATE=$(shell git show -s --format=%ci HEAD | sed 's/ /\//g')
 
+#Disable CGO if building for alpine, default value is empty string 
+#(meaning CGO_ENABLED=1)
+CGO?=
+
 #File building dependencies
 FILEDEPS = main.go ast.go semantic.go lexer.nn.go y.go repl.go ocli.go aststr.go \
  astnum.go astbool.go astflow.go astutil.go completer.go
 
 main: interpreter $(FILEDEPS)
-	go build \-ldflags="-X  cli/controllers.BuildHash=$(GITHASH) \
+	$(CGO) go build \-ldflags="-X  cli/controllers.BuildHash=$(GITHASH) \
 	-X cli/controllers.BuildTree=$(GITBRANCH) \
 	-X cli/controllers.BuildTime=$(DATE) \
 	-X cli/controllers.GitCommitDate=$(GITHASHDATE)" \
