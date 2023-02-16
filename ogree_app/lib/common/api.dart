@@ -113,3 +113,16 @@ Future<String> createProject(Project project) async {
     return response.body;
   }
 }
+
+Future<bool> loginAPI(String email, String password) async {
+  print("API login");
+  Uri url = Uri.parse('http://127.0.0.1:3001/api/login');
+  final response = await http.post(url,
+      body:
+          json.encode(<String, String>{'email': email, 'password': password}));
+  if (response.statusCode == 200) {
+    return true;
+  } else {
+    return false;
+  }
+}
