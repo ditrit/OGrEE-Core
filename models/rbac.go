@@ -18,13 +18,13 @@ func CheckDomainExists(domain string) bool {
 // the hierarchy of the Domain
 func GetUserDomainSpace(domain string) []string {
 	ans := []string{domain}
-	raw, e := GetHierarchyByName("domain", domain, nil, u.DOMAIN, 99)
+	raw, e := GetHierarchyByName("domain", domain, u.DOMAIN, 99)
 	if e != "" {
 		return nil
 	}
 
-	for i := range raw["children"].([]map[string]interface{}) {
-		domain := raw["children"].([]map[string]interface{})[i]
+	for i := range raw {
+		domain := raw[i]
 		ans = append(ans, domain["name"].(string))
 	}
 
