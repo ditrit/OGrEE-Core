@@ -1097,6 +1097,37 @@ func (n *hierarchyNode) execute() (interface{}, error) {
 
 }
 
+type createDomainNode struct {
+	path  node
+	attrs map[string]interface{}
+}
+
+func (n *createDomainNode) execute() (interface{}, error) {
+	val, err := n.path.execute()
+	if err != nil {
+		return nil, err
+	}
+	path, ok := val.(string)
+	if !ok {
+		return nil, fmt.Errorf("Path should be a string")
+	}
+
+	colorInf, err := n.attrs["color"].(node).execute()
+	if err != nil {
+		return nil, err
+	}
+
+	//Assert the color is valid
+	if color, ok := AssertColor(colorInf); !ok {
+		return nil, fmt.Errorf("Please provide a valid 6 digit Hex value for the color")
+	} else {
+		n.attrs["color"] = color
+	}
+	attributes := map[string]interface{}{"attributes": n.attrs}
+	err = cmd.GetOCLIAtrributes(path, cmd.DOMAIN, attributes)
+	return nil, err
+}
+
 type getOCAttrNode struct {
 	path       node
 	ent        int

@@ -324,7 +324,7 @@ func GetPrefixCompleter() *readline.PrefixCompleter {
 			readline.PcItem("+", false),
 			readline.PcItem(">", false)),
 		readline.PcItem("+", false,
-			readline.PcItem("tn:", true,
+			readline.PcItem("domain:", true,
 				readline.PcItemDynamic(SiteOCLICompleter(""), true)),
 			readline.PcItem("si:", true,
 				readline.PcItemDynamic(SiteOCLICompleter(""), true)),

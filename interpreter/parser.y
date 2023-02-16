@@ -23,7 +23,7 @@ var _ = l.GetInfoLogger() //Suppresses annoying Dockerfile build error
 
 %token <n> TOK_INT
 %token <f> TOK_FLOAT
-%token <s> TOK_WORD TOK_SITE TOK_BLDG TOK_ROOM
+%token <s> TOK_WORD TOK_SITE TOK_BLDG TOK_ROOM TOK_DOMAIN
 %token <s> TOK_RACK TOK_DEVICE TOK_STR
 %token <s> TOK_CORIDOR TOK_GROUP 
 %token <s> TOK_AC TOK_CABINET TOK_PANEL
@@ -64,6 +64,7 @@ var _ = l.GetInfoLogger() //Suppresses annoying Dockerfile build error
 %type <sArr> WNARG2
 %type <node> OCCR PATH PHYSICAL_PATH STRAY_DEV_PATH EXPR CONCAT CONCAT_TERM stmnt st2 IF 
        EXPR_NOQUOTE ARRAY ORIENTATION EXPR_NOQUOTE_NOCOL CONCAT_NOCOL CONCAT_TERM_NOCOL EXPR_NOQUOTE_COMMON
+       WORD_OR_INT
 //%type <mapVoid> EQUAL_LIST
 
 %right UNARY
@@ -269,6 +270,9 @@ CONCAT_TERM:  CONCAT_TERM_NOCOL {$$=$1}
        | TOK_COL {$$=&strLeaf{":"}}
 ;
 
+WORD_OR_INT: TOK_WORD {$$=&strLeaf{$1}}
+              |TOK_INT {$$=&floatLeaf{float64($1)}}
+
 EXPR: TOK_INT {$$=&floatLeaf{float64($1)}}
        | TOK_FLOAT {$$=&floatLeaf{$1}}
        | TOK_TRUE {$$=&boolLeaf{true}}
@@ -335,7 +339,7 @@ GETOBJS: PATH TOK_COMMA GETOBJS {x:=[]node{$1}; $$=append(x, $3...)}
        | PATH {x:=[]node{$1}; $$=x}
 ;
 
-OBJ_TYPE: TOK_SITE | TOK_BLDG | TOK_ROOM | TOK_RACK | TOK_DEVICE | TOK_AC | TOK_PANEL |TOK_CABINET 
+OBJ_TYPE: TOK_DOMAIN | TOK_SITE | TOK_BLDG | TOK_ROOM | TOK_RACK | TOK_DEVICE | TOK_AC | TOK_PANEL |TOK_CABINET 
        | TOK_SENSOR | TOK_CORIDOR | TOK_GROUP | TOK_OBJ_TMPL | TOK_ROOM_TMPL
 ;
 
@@ -375,8 +379,11 @@ ORIENTATION: TOK_WORD {$$=&strLeaf{$1} }
        | TOK_MINUS TOK_WORD TOK_MINUS TOK_WORD {$$=&strLeaf{$1+$2+$3+$4}}
        | TOK_MINUS TOK_WORD TOK_PLUS TOK_WORD {$$=&strLeaf{$1+$2+$3+$4}}
 
-OCCR:   
-        TOK_SITE TOK_COL PHYSICAL_PATH TOK_ATTRSPEC ORIENTATION {
+OCCR:   TOK_DOMAIN TOK_COL PATH TOK_ATTRSPEC WORD_OR_INT {
+              attributes := map[string]interface{}{"color":$5}
+              $$=&createDomainNode{$3, attributes}
+       }
+        |TOK_SITE TOK_COL PHYSICAL_PATH TOK_ATTRSPEC ORIENTATION {
               attributes := map[string]interface{}{"attributes":map[string]interface{}{"orientation":$5}}
               $$=&getOCAttrNode{$3, cmd.SITE, attributes}
         } 
