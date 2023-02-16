@@ -444,7 +444,6 @@ var GetEntity = func(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		//data, e1 = models.GetEntity(bson.M{"_id": x}, s)
 		req := bson.M{"_id": x}
 		models.RequestGen(req, role, domain)
 		data, e1 = models.GetEntity(req, s, []string{})
@@ -457,7 +456,7 @@ var GetEntity = func(w http.ResponseWriter, r *http.Request) {
 			models.RequestGen(req, role, domain)
 			data, e1 = models.GetEntity(req, s, []string{})
 
-		} else if s == "stray_device" || s == "stray_sensor" || s == "tenant" {
+		} else if s == "stray_device" || s == "stray_sensor" {
 			req := bson.M{"name": id}
 			models.RequestGen(req, role, domain)
 			data, e1 = models.GetEntity(req, s, []string{}) //GET By Name
