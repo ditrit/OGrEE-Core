@@ -12,3 +12,4 @@ init_db/mongod*
 resources/debug.log
 resources/scripts/mdb/*
 resources/scripts/mongod*
+*.DS_Store
