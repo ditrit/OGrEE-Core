@@ -17,6 +17,7 @@ ENV TZ=Europe/Paris \
 
 # Get backend from its build
 COPY --from=build /app/ogree_app_backend /app/ogree_app_backend
+COPY --from=build /app/.env /app/
 
 RUN apt-get update 
 RUN apt-get install -y curl git wget unzip libgconf-2-4 gdb libstdc++6 libglu1-mesa fonts-droid-fallback lib32stdc++6 python3
@@ -32,7 +33,6 @@ ENV PATH="/usr/local/flutter/bin:/usr/local/flutter/bin/cache/dart-sdk/bin:${PAT
 RUN flutter doctor
 
 # Copy files to container and build
-RUN mkdir -p /app/
 COPY ogree_app/ /app/
 WORKDIR /app/
 RUN flutter pub get
