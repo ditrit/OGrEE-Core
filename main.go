@@ -79,6 +79,19 @@ func main() {
 	router.HandleFunc("/api/hierarchy",
 		controllers.GetCompleteHierarchy).Methods("GET", "OPTIONS", "HEAD")
 
+	// FLUTTER FRONT
+	router.HandleFunc("/api/projects",
+		controllers.GetProjects).Methods("HEAD", "GET")
+
+	router.HandleFunc("/api/projects",
+		controllers.CreateOrUpdateProject).Methods("POST")
+
+	router.HandleFunc("/api/projects/{id:[a-zA-Z0-9]{24}}",
+		controllers.CreateOrUpdateProject).Methods("PUT")
+
+	router.HandleFunc("/api/projects/{id:[a-zA-Z0-9]{24}}",
+		controllers.DeleteProject).Methods("DELETE")
+
 	// ------ GET ------ //
 	//GET ENTITY HIERARCHY
 	//This matches ranged Tenant Hierarchy
