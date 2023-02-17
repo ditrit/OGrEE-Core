@@ -98,7 +98,7 @@ var DeleteProject = func(w http.ResponseWriter, r *http.Request) {
 			w.Header().Add("Content-Type", "application/json")
 			w.Header().Add("Allow", "GET, OPTIONS, HEAD")
 		} else {
-			resp = u.Message(true, "successfully handled project request")
+			resp = u.Message(true, "successfully removed project request")
 		}
 	}
 

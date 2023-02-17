@@ -176,6 +176,7 @@ func GetCompleteHierarchy() (map[string]interface{}, string) {
 		}
 	}
 
+	categories["KeysOrder"] = []string{"site", "building", "room", "rack"}
 	response["tree"] = hierarchy
 	response["categories"] = categories
 	defer cancel()
@@ -221,10 +222,12 @@ func GetCompleteHierarchyAttributes() (map[string]interface{}, string) {
 		}
 
 		for _, obj := range data {
-			if obj["hierarchyName"] != nil {
-				response[obj["hierarchyName"].(string)] = obj["attributes"]
-			} else if obj["name"] != nil {
-				response[obj["name"].(string)] = obj["attributes"]
+			if obj["attributes"] != nil {
+				if obj["hierarchyName"] != nil {
+					response[obj["hierarchyName"].(string)] = obj["attributes"]
+				} else if obj["name"] != nil {
+					response[obj["name"].(string)] = obj["attributes"]
+				}
 			}
 		}
 	}

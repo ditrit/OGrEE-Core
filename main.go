@@ -84,7 +84,7 @@ func main() {
 
 	// FLUTTER FRONT
 	router.HandleFunc("/api/projects",
-		controllers.GetProjects).Methods("HEAD", "GET")
+		controllers.GetProjects).Methods("HEAD", "GET", "OPTIONS")
 
 	router.HandleFunc("/api/projects",
 		controllers.CreateOrUpdateProject).Methods("POST")
@@ -93,7 +93,7 @@ func main() {
 		controllers.CreateOrUpdateProject).Methods("PUT")
 
 	router.HandleFunc("/api/projects/{id:[a-zA-Z0-9]{24}}",
-		controllers.DeleteProject).Methods("DELETE")
+		controllers.DeleteProject).Methods("DELETE", "OPTIONS")
 
 	// ------ GET ------ //
 	//GET ENTITY HIERARCHY
@@ -187,7 +187,9 @@ func main() {
 
 	//Start app, localhost:8000/api
 	corsObj := handlers.AllowedOrigins([]string{"*"})
-	err := http.ListenAndServe(":"+port, handlers.CORS(corsObj)(router))
+	headersOk := handlers.AllowedHeaders([]string{"X-Requested-With", "Content-Type", "Authorization", "Origin", "Accept"})
+	methodsOk := handlers.AllowedMethods([]string{"GET", "HEAD", "OPTIONS", "POST", "PUT", "DELETE", "PATCH"})
+	err := http.ListenAndServe(":"+port, handlers.CORS(corsObj, headersOk, methodsOk)(router))
 	if err != nil {
 		fmt.Print(err)
 	}
