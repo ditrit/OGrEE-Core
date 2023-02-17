@@ -79,6 +79,9 @@ func main() {
 	router.HandleFunc("/api/hierarchy",
 		controllers.GetCompleteHierarchy).Methods("GET", "OPTIONS", "HEAD")
 
+	router.HandleFunc("/api/hierarchy/attributes",
+		controllers.GetCompleteHierarchyAttributes).Methods("GET", "OPTIONS", "HEAD")
+
 	// FLUTTER FRONT
 	router.HandleFunc("/api/projects",
 		controllers.GetProjects).Methods("HEAD", "GET")

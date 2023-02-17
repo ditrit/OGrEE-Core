@@ -1461,6 +1461,30 @@ var GetCompleteHierarchy = func(w http.ResponseWriter, r *http.Request) {
 	u.Respond(w, resp)
 }
 
+var GetCompleteHierarchyAttributes = func(w http.ResponseWriter, r *http.Request) {
+	fmt.Println("******************************************************")
+	fmt.Println("FUNCTION CALL: 	 GetCompleteHierarchyAttributes ")
+	fmt.Println("******************************************************")
+	DispRequestMetaData(r)
+	var resp map[string]interface{}
+
+	data, err := models.GetCompleteHierarchyAttributes()
+	if err != "" {
+		w.WriteHeader(http.StatusNotFound)
+		resp = u.Message(false, "Error: "+err)
+	} else {
+		if r.Method == "OPTIONS" {
+			w.Header().Add("Content-Type", "application/json")
+			w.Header().Add("Allow", "GET, OPTIONS, HEAD")
+		} else {
+			resp = u.Message(true, "successfully got hierarchy attributes")
+			resp["data"] = data
+		}
+	}
+
+	u.Respond(w, resp)
+}
+
 // swagger:operation GET /api/{entity}/{name}/all objects GetFromObject
 // Obtain all objects related to Site or stray-device in the system using name.
 // Returns JSON body with all subobjects

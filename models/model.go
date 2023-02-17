@@ -190,6 +190,48 @@ func fillHierarchyMap(hierarchyName string, data map[string][]string) {
 	}
 }
 
+func GetCompleteHierarchyAttributes() (map[string]interface{}, string) {
+	response := make(map[string]interface{})
+	// Get all collections names
+	ctx, cancel := u.Connect()
+	db := GetDB()
+	collNames, err := db.ListCollectionNames(ctx, bson.D{})
+	if err != nil {
+		fmt.Println(err.Error())
+		return nil, err.Error()
+	}
+
+	for _, collName := range collNames {
+		var projection primitive.D
+		if collName == "site" {
+			projection = bson.D{{Key: "name", Value: 1}, {Key: "attributes", Value: 1}}
+		} else {
+			projection = bson.D{{Key: "hierarchyName", Value: 1}, {Key: "attributes", Value: 1}}
+		}
+		opts := options.Find().SetProjection(projection)
+
+		c, err := db.Collection(collName).Find(ctx, bson.M{}, opts)
+		if err != nil {
+			println(err.Error())
+		}
+		data, error := ExtractCursor(c, ctx)
+		if error != "" {
+			fmt.Println(error)
+			return nil, error
+		}
+
+		for _, obj := range data {
+			if obj["hierarchyName"] != nil {
+				response[obj["hierarchyName"].(string)] = obj["attributes"]
+			} else if obj["name"] != nil {
+				response[obj["name"].(string)] = obj["attributes"]
+			}
+		}
+	}
+	defer cancel()
+	return response, ""
+}
+
 func GetSiteParentTempUnit(id string) (string, string) {
 	data := map[string]interface{}{}
 
