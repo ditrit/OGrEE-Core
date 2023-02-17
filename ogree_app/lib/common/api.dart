@@ -4,17 +4,24 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:ogree_app/models/project.dart';
 
-const URL = "http://127.0.0.1:8080";
+const URL = "http://localhost:3001/api";
+const token = "INSERT TOKEN HERE";
+const header = {
+  'Content-Type': 'application/json',
+  'Accept': 'application/json',
+  'Authorization': 'Bearer $token',
+};
 
 Future<List<Map<String, List<String>>>> fetchObjectsTree() async {
   print("API get tree");
   Uri url = Uri.parse('$URL/hierarchy');
-  final response = await http.get(url);
+  final response = await http.get(url, headers: header);
   print(response.statusCode);
   if (response.statusCode == 200) {
     // If the server did return a 200 OK response,
     // then parse the JSON and convert to the right map format.
-    final Map<String, dynamic> data = json.decode(response.body);
+    Map<String, dynamic> data = json.decode(response.body);
+    data = (Map<String, dynamic>.from(data["data"]));
     Map<String, Map<String, dynamic>> converted = {};
     Map<String, List<String>> tree = {};
     Map<String, List<String>> categories = {};
@@ -28,7 +35,6 @@ Future<List<Map<String, List<String>>>> fetchObjectsTree() async {
       categories[item.toString()] =
           List<String>.from(converted["categories"]![item]);
     }
-
     return [tree, categories];
   } else {
     // If the server did not return a 200 OK response,
@@ -39,13 +45,14 @@ Future<List<Map<String, List<String>>>> fetchObjectsTree() async {
 
 Future<Map<String, Map<String, String>>> fetchAttributes() async {
   print("API get Attrs");
-  Uri url = Uri.parse('$URL/attributes/all');
-  final response = await http.get(url);
+  Uri url = Uri.parse('$URL/hierarchy/attributes');
+  final response = await http.get(url, headers: header);
   print(response.statusCode);
   if (response.statusCode == 200) {
     // If the server did return a 200 OK response,
     // then parse the JSON and convert to the right map format.
-    final Map<String, dynamic> data = json.decode(response.body);
+    Map<String, dynamic> data = json.decode(response.body);
+    data = (Map<String, dynamic>.from(data["data"]));
     Map<String, Map<String, String>> converted = {};
     for (var item in data.keys) {
       converted[item.toString()] = Map<String, String>.from(data[item]);
@@ -61,12 +68,13 @@ Future<Map<String, Map<String, String>>> fetchAttributes() async {
 Future<List<Project>> fetchProjects() async {
   print("API get Projects");
   Uri url = Uri.parse('$URL/projects?userid=63a33a07e7e6939da7378204');
-  final response = await http.get(url);
+  final response = await http.get(url, headers: header);
   print(response.statusCode);
   if (response.statusCode == 200) {
     // If the server did return a 200 OK response,
     // then parse the JSON and convert to the right format.
-    final Map<String, dynamic> data = json.decode(response.body);
+    Map<String, dynamic> data = json.decode(response.body);
+    data = (Map<String, dynamic>.from(data["data"]));
     List<Project> projects = [];
     for (var project in data["projects"]) {
       projects.add(Project.fromMap(project));
@@ -82,34 +90,38 @@ Future<List<Project>> fetchProjects() async {
 Future<String> deleteProject(String id) async {
   print("API delete Projects");
   Uri url = Uri.parse('$URL/projects/$id');
-  final response = await http.delete(url);
+  final response = await http.delete(url, headers: header);
   if (response.statusCode == 200) {
     return "";
   } else {
-    return response.body;
+    final Map<String, dynamic> data = json.decode(response.body);
+    return data["message"].toString();
   }
 }
 
 Future<String> modifyProject(Project project) async {
   print("API modify Projects");
   Uri url = Uri.parse('$URL/projects/${project.id}');
-  final response = await http.put(url, body: project.toJson());
+  final response = await http.put(url, body: project.toJson(), headers: header);
   print(response);
   if (response.statusCode == 200) {
     return "";
   } else {
-    return response.body;
+    final Map<String, dynamic> data = json.decode(response.body);
+    return data["message"].toString();
   }
 }
 
 Future<String> createProject(Project project) async {
   print("API create Projects");
   Uri url = Uri.parse('$URL/projects');
-  final response = await http.post(url, body: project.toJson());
+  final response =
+      await http.post(url, body: project.toJson(), headers: header);
   print(response);
-  if (response.statusCode == 201) {
+  if (response.statusCode == 200) {
     return "";
   } else {
-    return response.body;
+    final Map<String, dynamic> data = json.decode(response.body);
+    return data["message"].toString();
   }
 }

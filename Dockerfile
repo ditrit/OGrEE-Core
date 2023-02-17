@@ -3,13 +3,10 @@ FROM golang:1.19.3-buster AS build
 
 WORKDIR /app
 
-COPY ogree_app_backend/go.mod ./
-COPY ogree_app_backend/go.sum ./
-RUN go mod download
-
-COPY ogree_app_backend/*.go ./
+COPY ogree_app_backend/ ./
 COPY ogree_app_backend/.env ./
 
+RUN go mod download
 RUN go build -o ogree_app_backend
 
 # Install OS and dependencies to run frontend and backend
@@ -24,7 +21,7 @@ RUN apt-get clean
 
 # Get backend from its build
 COPY --from=build /app/ogree_app_backend /app/ogree_app_backend
-COPY ogree_app_backend/.env /app/
+COPY --from=build /app/.env /app/
 
 # Copy frontend
 RUN mkdir -p /app/build/web/

@@ -194,8 +194,10 @@ void generateTree(TreeNode parent, Map<String, List<String>> data) {
   parent.addChildren(
     childrenIds.map(
       (String childId) => TreeNode(
-          id: parent.id == kRootId ? childId : "${parent.id}.$childId",
-          label: childId),
+          id: childId,
+          label: parent.id == kRootId
+              ? childId
+              : childId.substring(childId.lastIndexOf(".") + 1)),
     ),
   );
   for (var node in parent.children) {
