@@ -1,15 +1,4 @@
-## Build backend
-FROM golang:1.19.3-buster AS build
-
-WORKDIR /app
-
-COPY ogree_app_backend/ ./
-COPY ogree_app_backend/.env ./
-
-RUN go mod download
-RUN go build -o ogree_app_backend
-
-# Install OS and dependencies to run frontend and backend
+# Install OS and dependencies to build frontend
 FROM ubuntu:20.04
 ENV GIN_MODE=release
 ENV TZ=Europe/Paris \
@@ -19,21 +8,23 @@ RUN apt-get update
 RUN apt-get install -y curl git wget unzip libgconf-2-4 gdb libstdc++6 libglu1-mesa fonts-droid-fallback lib32stdc++6 python3
 RUN apt-get clean
 
-# Get backend from its build
-COPY --from=build /app/ogree_app_backend /app/ogree_app_backend
-COPY --from=build /app/.env /app/
+# Download Flutter SDK from Flutter Github repo
+RUN git clone --depth 1 --branch 3.3.10 https://github.com/flutter/flutter.git /usr/local/flutter
 
-# Copy frontend
-RUN mkdir -p /app/build/web/
-COPY ogree_app/build/web/ /app/build/web
+# Set flutter environment path
+ENV PATH="/usr/local/flutter/bin:/usr/local/flutter/bin/cache/dart-sdk/bin:${PATH}"
+
+# Run flutter doctor
+RUN flutter doctor
+
+# Copy files to container and build
+COPY ogree_app/ /app/
 WORKDIR /app/
+RUN flutter pub get
+RUN flutter build web
 
-# Record the exposed ports: 5000 frontend, 8080 backend
+# Record the exposed port 5000 and run frontend
 EXPOSE 5000
-EXPOSE 8080
-
-# Make server startup script executable and start the web server
 COPY server.sh /app/
 RUN ["chmod", "+x", "/app/server.sh"]
-
 ENTRYPOINT [ "/app/server.sh"]

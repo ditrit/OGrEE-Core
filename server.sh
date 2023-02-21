@@ -3,9 +3,6 @@
 # Set the port
 PORT=5000
 
-# Start backend
-./ogree_app_backend &
-
 # switch directories
 cd build/web/
 
