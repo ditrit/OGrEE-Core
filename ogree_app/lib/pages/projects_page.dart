@@ -23,6 +23,7 @@ class _ProjectsPageState extends State<ProjectsPage> {
       body: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 80.0, vertical: 20),
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -62,10 +63,11 @@ class _ProjectsPageState extends State<ProjectsPage> {
                     return const Center(child: CircularProgressIndicator());
                   } else if (_projects!.isNotEmpty) {
                     return Expanded(
-                      child: GridView.extent(
-                        padding: const EdgeInsets.only(top: 5),
-                        maxCrossAxisExtent: 270,
-                        children: getProjectCards(context),
+                      child: SingleChildScrollView(
+                        child: Wrap(
+                          spacing: 5,
+                          children: getProjectCards(context),
+                        ),
                       ),
                     );
                   } else {
@@ -84,90 +86,94 @@ class _ProjectsPageState extends State<ProjectsPage> {
   }
 
   getProjectCards(context) {
-    List<Card> cards = [];
+    List<Widget> cards = [];
     for (var project in _projects!) {
-      cards.add(Card(
-        margin: const EdgeInsets.all(10),
-        child: Padding(
-          padding: const EdgeInsets.all(20.0),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Container(
-                    width: 170,
-                    child: Text("Projet ${project.name}",
-                        overflow: TextOverflow.clip,
-                        style: TextStyle(
-                            fontWeight: FontWeight.bold, fontSize: 16)),
-                  ),
-                  CircleAvatar(
-                    radius: 13,
-                    backgroundColor: Colors.blue,
-                    child: IconButton(
-                        splashRadius: 18,
-                        iconSize: 13,
-                        padding: EdgeInsets.all(2),
-                        onPressed: () => showCustomDialog(
-                            context,
-                            project,
-                            "Editer ce projet",
-                            "Supprimer",
-                            Icons.delete,
-                            deleteProjectCallback,
-                            modifyProjectCallback),
-                        icon: Icon(
-                          Icons.mode_edit_outline_rounded,
-                          color: Colors.white,
-                        )),
-                  )
-                ],
-              ),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Padding(
-                    padding: EdgeInsets.only(bottom: 2.0),
-                    child: Text("Auteur :"),
-                  ),
-                  Text(
-                    " ${project.authorLastUpdate}",
-                    style: TextStyle(backgroundColor: Colors.grey.shade200),
-                  ),
-                ],
-              ),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Padding(
-                    padding: EdgeInsets.only(bottom: 2.0),
-                    child: Text("Dernière modification :"),
-                  ),
-                  Text(
-                    " ${project.lastUpdate}",
-                    style: TextStyle(backgroundColor: Colors.grey.shade200),
-                  ),
-                ],
-              ),
-              Align(
-                alignment: Alignment.bottomRight,
-                child: TextButton.icon(
-                    onPressed: () {
-                      Navigator.of(context).push(
-                        MaterialPageRoute(
-                          builder: (context) => SelectPage(
-                            project: project,
+      cards.add(SizedBox(
+        width: 265,
+        height: 250,
+        child: Card(
+          margin: const EdgeInsets.all(10),
+          child: Padding(
+            padding: const EdgeInsets.all(20.0),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Container(
+                      width: 170,
+                      child: Text("Projet ${project.name}",
+                          overflow: TextOverflow.clip,
+                          style: TextStyle(
+                              fontWeight: FontWeight.bold, fontSize: 16)),
+                    ),
+                    CircleAvatar(
+                      radius: 13,
+                      backgroundColor: Colors.blue,
+                      child: IconButton(
+                          splashRadius: 18,
+                          iconSize: 13,
+                          padding: EdgeInsets.all(2),
+                          onPressed: () => showCustomDialog(
+                              context,
+                              project,
+                              "Editer ce projet",
+                              "Supprimer",
+                              Icons.delete,
+                              deleteProjectCallback,
+                              modifyProjectCallback),
+                          icon: Icon(
+                            Icons.mode_edit_outline_rounded,
+                            color: Colors.white,
+                          )),
+                    )
+                  ],
+                ),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Padding(
+                      padding: EdgeInsets.only(bottom: 2.0),
+                      child: Text("Auteur :"),
+                    ),
+                    Text(
+                      " ${project.authorLastUpdate}",
+                      style: TextStyle(backgroundColor: Colors.grey.shade200),
+                    ),
+                  ],
+                ),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Padding(
+                      padding: EdgeInsets.only(bottom: 2.0),
+                      child: Text("Dernière modification :"),
+                    ),
+                    Text(
+                      " ${project.lastUpdate}",
+                      style: TextStyle(backgroundColor: Colors.grey.shade200),
+                    ),
+                  ],
+                ),
+                Align(
+                  alignment: Alignment.bottomRight,
+                  child: TextButton.icon(
+                      onPressed: () {
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (context) => SelectPage(
+                              project: project,
+                            ),
                           ),
-                        ),
-                      );
-                    },
-                    icon: const Icon(Icons.play_circle),
-                    label: const Text("Lancer")),
-              )
-            ],
+                        );
+                      },
+                      icon: const Icon(Icons.play_circle),
+                      label: const Text("Lancer")),
+                )
+              ],
+            ),
           ),
         ),
       ));
