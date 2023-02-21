@@ -62,7 +62,7 @@ class _SelectPageState extends State<SelectPage> with TickerProviderStateMixin {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: myAppBar(),
+      appBar: myAppBar(context),
       body: Center(
           child: Stepper(
         type: StepperType.horizontal,
@@ -126,38 +126,6 @@ class _SelectPageState extends State<SelectPage> with TickerProviderStateMixin {
                 ? StepState.complete
                 : StepState.disabled,
           ),
-          // Step(
-          //   title: const Text('Créer la requête'),
-          //   subtitle: _selectedAttrs.isNotEmpty
-          //       ? Text(_selectedAttrs.length == 1
-          //           ? '1 paramètre'
-          //           : '${_selectedAttrs.length} paramètres')
-          //       : null,
-          //   content: _currentStep == Steps.attrs.index
-          //       ? SizedBox(
-          //           height: MediaQuery.of(context).size.height - 205,
-          //           child: SelectAttributes(
-          //               selectedObjects: _selectedObjects.keys.toList()))
-          //       : const Center(child: CircularProgressIndicator()),
-          //   isActive: _currentStep >= Steps.date.index,
-          //   state: _currentStep >= Steps.attrs.index
-          //       ? StepState.complete
-          //       : StepState.disabled,
-          // ),
-          // Step(
-          //   title: const Text('Résultat'),
-          //   content: _currentStep == Steps.result.index
-          //       ? SizedBox(
-          //           height: MediaQuery.of(context).size.height - 210,
-          //           child: ResultsPage(
-          //               selectedAttrs: _selectedAttrs,
-          //               selectedObjects: _selectedObjects.keys.toList()))
-          //       : const Center(child: CircularProgressIndicator()),
-          //   isActive: _currentStep >= Steps.date.index,
-          //   state: _currentStep >= Steps.result.index
-          //       ? StepState.complete
-          //       : StepState.disabled,
-          // ),
           Step(
             title: const Text('Résultat'),
             content: _currentStep == Steps.result.index
@@ -189,25 +157,25 @@ class _SelectPageState extends State<SelectPage> with TickerProviderStateMixin {
       Project project;
       bool isCreate = true;
       if (widget.project != null) {
+        isCreate = false;
         project = widget.project!;
         project.dateRange = _selectedDate;
         project.namespace = _selectedNamespace;
         project.attributes = _selectedAttrs;
         project.objects = _selectedObjects.keys.toList();
-        isCreate = false;
       } else {
         project = Project(
             "",
             _selectedDate,
             _selectedNamespace,
-            "BETIOL Helder",
-            "31/01/2023",
+            "Admin",
+            DateFormat('dd/MM/yyyy').format(DateTime.now()),
             true,
             true,
             false,
             _selectedAttrs,
             _selectedObjects.keys.toList(),
-            ["helderbetiol@gmail.com"]);
+            ["helderbetiol@gmail.com", "admin"]);
       }
 
       showCustomDialog(context, project, "Nommer ce projet", "Annuler",

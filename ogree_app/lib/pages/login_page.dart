@@ -87,6 +87,7 @@ class _LoginPageState extends State<LoginPage> {
                     TextFormField(
                       obscureText: true,
                       onSaved: (newValue) => _password = newValue,
+                      onEditingComplete: () => tryLogin(),
                       validator: (text) {
                         if (text == null || text.isEmpty) {
                           return 'Champ Obligatoire';
@@ -143,22 +144,7 @@ class _LoginPageState extends State<LoginPage> {
                     const SizedBox(height: 40),
                     Align(
                       child: TextButton(
-                        onPressed: () {
-                          if (_formKey.currentState!.validate()) {
-                            _formKey.currentState!.save();
-                            loginAPI(_email!, _password!)
-                                .then((value) => value
-                                    ? Navigator.of(context).push(
-                                        MaterialPageRoute(
-                                          builder: (context) => ProjectsPage(),
-                                        ),
-                                      )
-                                    : showSnackBar(context,
-                                        "Adresse email et/ou mot de passe non valide",
-                                        isError: true))
-                                .onError((error, stackTrace) => print(error));
-                          }
-                        },
+                        onPressed: () => tryLogin(),
                         style: TextButton.styleFrom(
                           backgroundColor:
                               Theme.of(context).colorScheme.primary,
@@ -186,5 +172,22 @@ class _LoginPageState extends State<LoginPage> {
         ),
       ),
     );
+  }
+
+  tryLogin() {
+    if (_formKey.currentState!.validate()) {
+      _formKey.currentState!.save();
+      loginAPI(_email!, _password!)
+          .then((value) => value
+              ? Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (context) => ProjectsPage(),
+                  ),
+                )
+              : showSnackBar(
+                  context, "Adresse email et/ou mot de passe non valide",
+                  isError: true))
+          .onError((error, stackTrace) => print(error));
+    }
   }
 }

@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:ogree_app/common/api.dart';
 import 'package:ogree_app/common/appbar.dart';
 import 'package:ogree_app/common/popup_dialog.dart';
@@ -20,7 +19,7 @@ class _ProjectsPageState extends State<ProjectsPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: myAppBar(),
+      appBar: myAppBar(context),
       body: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 80.0, vertical: 20),
         child: Column(
@@ -71,7 +70,7 @@ class _ProjectsPageState extends State<ProjectsPage> {
                     );
                   } else {
                     // Empty messages
-                    return Text("Unable to get projects");
+                    return Text("Pas encore de projets");
                   }
                 }),
           ],
@@ -99,7 +98,7 @@ class _ProjectsPageState extends State<ProjectsPage> {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Container(
-                    width: 174,
+                    width: 170,
                     child: Text("Projet ${project.name}",
                         overflow: TextOverflow.clip,
                         style: TextStyle(
