@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:ogree_app/common/api.dart';
 import 'package:ogree_app/common/appbar.dart';
@@ -15,8 +14,9 @@ import 'package:ogree_app/widgets/select_namespace.dart';
 enum Steps { date, namespace, objects, result }
 
 class SelectPage extends StatefulWidget {
+  final String userEmail;
   Project? project;
-  SelectPage({super.key, this.project});
+  SelectPage({super.key, this.project, required this.userEmail});
   @override
   State<SelectPage> createState() => _SelectPageState();
 
@@ -62,7 +62,7 @@ class _SelectPageState extends State<SelectPage> with TickerProviderStateMixin {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: myAppBar(context),
+      appBar: myAppBar(context, widget.userEmail),
       body: Center(
           child: Stepper(
         type: StepperType.horizontal,
@@ -78,7 +78,9 @@ class _SelectPageState extends State<SelectPage> with TickerProviderStateMixin {
               children: <Widget>[
                 TextButton(
                   onPressed: cancel,
-                  child: const Text('Annuler'),
+                  child: Text(_currentStep == Steps.values.first.index
+                      ? 'Annuler'
+                      : 'Précédent'),
                 ),
                 ElevatedButton(
                   onPressed: continued,
@@ -168,14 +170,14 @@ class _SelectPageState extends State<SelectPage> with TickerProviderStateMixin {
             "",
             _selectedDate,
             _selectedNamespace,
-            "Admin",
+            widget.userEmail,
             DateFormat('dd/MM/yyyy').format(DateTime.now()),
             true,
             true,
             false,
             _selectedAttrs,
             _selectedObjects.keys.toList(),
-            ["helderbetiol@gmail.com", "admin"]);
+            [widget.userEmail]);
       }
 
       showCustomDialog(context, project, "Nommer ce projet", "Annuler",
@@ -187,7 +189,7 @@ class _SelectPageState extends State<SelectPage> with TickerProviderStateMixin {
           ? setState(() => _currentStep += 1)
           : Navigator.of(context).push(
               MaterialPageRoute(
-                builder: (context) => ProjectsPage(),
+                builder: (context) => ProjectsPage(userEmail: widget.userEmail),
               ),
             );
     }
@@ -199,7 +201,7 @@ class _SelectPageState extends State<SelectPage> with TickerProviderStateMixin {
         ? setState(() => _currentStep -= 1)
         : Navigator.of(context).push(
             MaterialPageRoute(
-              builder: (context) => ProjectsPage(),
+              builder: (context) => ProjectsPage(userEmail: widget.userEmail),
             ),
           );
   }
@@ -215,7 +217,9 @@ class _SelectPageState extends State<SelectPage> with TickerProviderStateMixin {
     if (response == "") {
       Navigator.of(context).push(
         MaterialPageRoute(
-          builder: (context) => ProjectsPage(),
+          builder: (context) => ProjectsPage(
+            userEmail: widget.userEmail,
+          ),
         ),
       );
     } else {

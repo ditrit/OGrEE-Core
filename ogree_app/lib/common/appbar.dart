@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:ogree_app/pages/projects_page.dart';
 
-AppBar myAppBar(context) {
+AppBar myAppBar(context, userEmail) {
   return AppBar(
     backgroundColor: Colors.grey.shade900,
     leadingWidth: 150,
@@ -15,7 +15,7 @@ AppBar myAppBar(context) {
       ),
       onPressed: () => Navigator.of(context).push(
         MaterialPageRoute(
-          builder: (context) => ProjectsPage(),
+          builder: (context) => ProjectsPage(userEmail: userEmail),
         ),
       ),
     )),

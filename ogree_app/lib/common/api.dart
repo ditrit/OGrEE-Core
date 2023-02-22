@@ -4,6 +4,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:ogree_app/models/project.dart';
 
+// const URL = "http://localhost:3001/api";
 const URL = "https://b.api.ogree.ditrit.io/api";
 var token = "";
 getHeader(token) => {
@@ -65,9 +66,9 @@ Future<Map<String, Map<String, String>>> fetchAttributes() async {
   }
 }
 
-Future<List<Project>> fetchProjects() async {
+Future<List<Project>> fetchProjects(String userEmail) async {
   print("API get Projects");
-  Uri url = Uri.parse('$URL/projects?userid=63f4ada8d8857711849ab0a1');
+  Uri url = Uri.parse('$URL/projects?user=$userEmail');
   final response = await http.get(url, headers: getHeader(token));
   print(response.statusCode);
   if (response.statusCode == 200) {
@@ -127,7 +128,7 @@ Future<String> createProject(Project project) async {
   }
 }
 
-Future<bool> loginAPI(String email, String password) async {
+Future<String> loginAPI(String email, String password) async {
   print("API login");
   Uri url = Uri.parse('$URL/login');
   final response = await http.post(url,
@@ -137,8 +138,8 @@ Future<bool> loginAPI(String email, String password) async {
     Map<String, dynamic> data = json.decode(response.body);
     data = (Map<String, dynamic>.from(data["account"]));
     token = data["token"]!;
-    return true;
+    return data["Email"].toString();
   } else {
-    return false;
+    return "";
   }
 }

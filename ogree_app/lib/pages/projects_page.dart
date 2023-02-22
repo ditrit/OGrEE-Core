@@ -7,7 +7,8 @@ import 'package:ogree_app/models/project.dart';
 import 'package:ogree_app/pages/select_page.dart';
 
 class ProjectsPage extends StatefulWidget {
-  ProjectsPage({super.key});
+  final String userEmail;
+  ProjectsPage({super.key, required this.userEmail});
 
   @override
   State<ProjectsPage> createState() => _ProjectsPageState();
@@ -19,7 +20,7 @@ class _ProjectsPageState extends State<ProjectsPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: myAppBar(context),
+      appBar: myAppBar(context, widget.userEmail),
       body: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 80.0, vertical: 20),
         child: Column(
@@ -36,7 +37,8 @@ class _ProjectsPageState extends State<ProjectsPage> {
                     onPressed: () {
                       Navigator.of(context).push(
                         MaterialPageRoute(
-                          builder: (context) => SelectPage(),
+                          builder: (context) =>
+                              SelectPage(userEmail: widget.userEmail),
                         ),
                       );
                     },
@@ -82,7 +84,7 @@ class _ProjectsPageState extends State<ProjectsPage> {
   }
 
   getProjectData() async {
-    _projects = await fetchProjects();
+    _projects = await fetchProjects(widget.userEmail);
   }
 
   getProjectCards(context) {
@@ -165,6 +167,7 @@ class _ProjectsPageState extends State<ProjectsPage> {
                           MaterialPageRoute(
                             builder: (context) => SelectPage(
                               project: project,
+                              userEmail: widget.userEmail,
                             ),
                           ),
                         );

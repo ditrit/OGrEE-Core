@@ -178,10 +178,12 @@ class _LoginPageState extends State<LoginPage> {
     if (_formKey.currentState!.validate()) {
       _formKey.currentState!.save();
       loginAPI(_email!, _password!)
-          .then((value) => value
+          .then((value) => value != ""
               ? Navigator.of(context).push(
                   MaterialPageRoute(
-                    builder: (context) => ProjectsPage(),
+                    builder: (context) => ProjectsPage(
+                      userEmail: value,
+                    ),
                   ),
                 )
               : showSnackBar(
