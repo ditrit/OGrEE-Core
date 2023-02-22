@@ -19,14 +19,14 @@ var GetProjects = func(w http.ResponseWriter, r *http.Request) {
 
 	query, _ := url.ParseQuery(r.URL.RawQuery)
 
-	if len(query["userid"]) <= 0 {
+	if len(query["user"]) <= 0 {
 		w.WriteHeader(http.StatusBadRequest)
 		resp = u.Message(false, "Error: userid should be sent as query param")
 		u.Respond(w, resp)
 		return
 	}
 
-	data, err := models.GetProjectsByUserId(query["userid"][0])
+	data, err := models.GetProjectsByUserEmail(query["user"][0])
 	if err != "" {
 		w.WriteHeader(http.StatusNotFound)
 		resp = u.Message(false, "Error: "+err)

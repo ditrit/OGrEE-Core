@@ -30,45 +30,31 @@ type Project struct {
 
 // PROJECTS
 // GET
-func GetProjectsByUserId(userId string) (map[string]interface{}, string) {
-	userData := map[string]interface{}{}
+func GetProjectsByUserEmail(userEmail string) (map[string]interface{}, string) {
 	response := make(map[string]interface{})
 	response["projects"] = make([]interface{}, 0)
-	println("Get projects for " + userId)
+	println("Get projects for " + userEmail)
 
-	// Get user's email
-	objId, err := primitive.ObjectIDFromHex(userId)
-	if err != nil {
-		println("Invalid user ID format: " + err.Error())
-		return nil, "Invalid user ID format: " + err.Error()
+	// Get projects with user permitted
+	var results []Project
+	filter := bson.D{
+		{Key: "$or",
+			Value: bson.A{
+				bson.D{{Key: "permissions", Value: userEmail}},
+				bson.D{{Key: "isPublic", Value: true}},
+			},
+		},
 	}
 	ctx, cancel := u.Connect()
-	err = GetDB().Collection("account").FindOne(ctx, bson.M{"_id": objId}).Decode(&userData)
-
+	cursor, err := GetDB().Collection(WEB_PROJECTS).Find(ctx, filter)
 	if err != nil {
-		println("Unable to find user: " + err.Error())
-		return nil, "Unable to find user: " + err.Error()
+		fmt.Println(err)
 	} else {
-		// Get projects with user permitted
-		var results []Project
-		filter := bson.D{
-			{Key: "$or",
-				Value: bson.A{
-					bson.D{{Key: "permissions", Value: userData["email"]}},
-					bson.D{{Key: "isPublic", Value: true}},
-				},
-			},
-		}
-		cursor, err := GetDB().Collection(WEB_PROJECTS).Find(ctx, filter)
-		if err != nil {
+		// response["projects"], _ = m.ExtractCursor(cursor, ctx)
+		if err = cursor.All(ctx, &results); err != nil {
 			fmt.Println(err)
-		} else {
-			// response["projects"], _ = m.ExtractCursor(cursor, ctx)
-			if err = cursor.All(ctx, &results); err != nil {
-				fmt.Println(err)
-			} else if len(results) > 0 {
-				response["projects"] = results
-			}
+		} else if len(results) > 0 {
+			response["projects"] = results
 		}
 	}
 
