@@ -1,0 +1,47 @@
+{
+    "$id": "base.json",
+    "type": "object",
+      "properties": {
+        "description": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "category": {
+          "type": "string"
+        },
+        "domain": {
+          "type": "string"
+        },
+        "createdDate": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "lastUpdated": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "name": {
+          "type": "string"
+        },
+        "id": {
+          "type": "string"
+        },
+        "parentId": {
+          "type": "string"
+        },
+        "attributes": {
+          "type": "object"
+        }
+      },
+      "additionalProperties":  false,
+      "required": [
+        "category",
+        "description",
+        "domain",
+        "name",
+        "parentId",
+        "attributes"
+      ]
+}

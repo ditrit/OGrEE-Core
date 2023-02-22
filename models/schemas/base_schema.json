@@ -1,0 +1,12 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "title": "OGrEE Base Schema",
+    "description": "This serves as the complete schema for: AC, Cabinet, Panel",
+    "type": "object",
+    "$ref": "refs/base.json",
+    "properties": {
+      "attributes": {
+        "type": "object"
+      }
+    }
+  }

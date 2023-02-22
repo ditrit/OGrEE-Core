@@ -1,0 +1,185 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "title": "OGrEE Room Template Schema",
+    "type": "object",
+    "required": [
+        "category",
+        "center",
+        "colors",
+        "axisOrientation",
+        "reservedArea",
+        "separators",
+        "sizeWDHm",
+        "slug",
+        "technicalArea",
+        "tiles"
+    ],
+    "properties": {
+        "category": {
+            "type": "string",
+            "pattern": "room"
+        },
+        "center": {
+            "type": "array",
+            "items": {
+                "type": "integer"
+            },
+            "minItems": 2,
+            "maxItems": 2
+        },
+        "colors": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "required": [
+                    "name",
+                    "value"
+                ],
+                "properties": {
+                    "name": {
+                        "type": "string"
+                    },
+                    "value": {
+                        "type": "string",
+                        "$ref": "refs/types.json#/definitions/color"
+                    }
+                }
+            }
+        },
+        "createdDate": {
+            "type": "string",
+            "format": "date-time"
+        },
+        "floorUnit": {
+            "type": "string",
+            "enum": [
+                "m",
+                "t",
+                "f"
+            ]
+        },
+        "id": {
+            "type": "string"
+        },
+        "lastUpdated": {
+            "type": "string",
+            "format": "date-time"
+        },
+        "axisOrientation": {
+            "type": "string",
+            "enum": [
+                "+x+y",
+                "+x-y",
+                "-x+y",
+                "-x-y"
+            ]
+        },
+        "reservedArea": {
+            "type": "array",
+            "items": {
+                "type": "integer"
+            },
+            "minItems": 4,
+            "maxItems": 4
+        },
+        "separators": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "required": [
+                    "startPosXYm",
+                    "endPosXYm",
+                    "type"
+                ],
+                "properties": {
+                    "startPosXYm": {
+                        "type": "array",
+                        "items": {
+                            "type": "number"
+                        },
+                        "minItems": 2,
+                        "maxItems": 2
+                    },
+                    "endPosXYm": {
+                        "type": "array",
+                        "items": {
+                            "type": "number"
+                        },
+                        "minItems": 2,
+                        "maxItems": 2
+                    },
+                    "type": {
+                        "type": "string",
+                        "enum": [
+                            "wireframe",
+                            "plain"
+                        ]
+                    }
+                }
+            }
+        },
+        "sizeWDHm": {
+            "type": "array",
+            "items": {
+                "type": "number"
+            },
+            "minItems": 3,
+            "maxItems": 3
+        },
+        "slug": {
+            "type": "string"
+        },
+        "technicalArea": {
+            "type": "array",
+            "items": {
+                "type": "integer"
+            },
+            "minItems": 4,
+            "maxItems": 4
+        },
+        "tileAngle": {
+            "type": "number"
+        },
+        "tiles": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "required": [
+                    "color",
+                    "label",
+                    "location",
+                    "name",
+                    "texture"
+                ],
+                "properties": {
+                    "color": {
+                        "type": "string"
+                    },
+                    "label": {
+                        "type": "string"
+                    },
+                    "location": {
+                        "type": "string"
+                    },
+                    "name": {
+                        "type": "string"
+                    },
+                    "texture": {
+                        "type": "string"
+                    }
+                }
+            }
+        },
+        "vertices": {
+            "type": "array",
+            "items": {
+                "type": "array",
+                "items": {
+                    "type": "number"
+                },
+                "minItems": 2,
+                "maxItems": 2
+            }
+        }
+    }
+}
