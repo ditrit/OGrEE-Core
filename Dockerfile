@@ -26,5 +26,6 @@ RUN flutter build web
 # Record the exposed port 5000 and run frontend
 EXPOSE 5000
 COPY server.sh /app/
+COPY ogree_app/.env /app/build/web/
 RUN ["chmod", "+x", "/app/server.sh"]
 ENTRYPOINT [ "/app/server.sh"]

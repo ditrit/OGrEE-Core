@@ -1,11 +1,9 @@
 import 'dart:async';
 import 'dart:convert';
-
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
 import 'package:ogree_app/models/project.dart';
 
-// const URL = "http://localhost:3001/api";
-const URL = "https://b.api.ogree.ditrit.io/api";
 var token = "";
 getHeader(token) => {
       'Content-Type': 'application/json',
@@ -15,7 +13,7 @@ getHeader(token) => {
 
 Future<List<Map<String, List<String>>>> fetchObjectsTree() async {
   print("API get tree");
-  Uri url = Uri.parse('$URL/hierarchy');
+  Uri url = Uri.parse('${dotenv.env['API_URL']}/api/hierarchy');
   final response = await http.get(url, headers: getHeader(token));
   print(response.statusCode);
   if (response.statusCode == 200) {
@@ -46,7 +44,7 @@ Future<List<Map<String, List<String>>>> fetchObjectsTree() async {
 
 Future<Map<String, Map<String, String>>> fetchAttributes() async {
   print("API get Attrs");
-  Uri url = Uri.parse('$URL/hierarchy/attributes');
+  Uri url = Uri.parse('${dotenv.env['API_URL']}/api/hierarchy/attributes');
   final response = await http.get(url, headers: getHeader(token));
   print(response.statusCode);
   if (response.statusCode == 200) {
@@ -68,7 +66,7 @@ Future<Map<String, Map<String, String>>> fetchAttributes() async {
 
 Future<List<Project>> fetchProjects(String userEmail) async {
   print("API get Projects");
-  Uri url = Uri.parse('$URL/projects?user=$userEmail');
+  Uri url = Uri.parse('${dotenv.env['API_URL']}/api/projects?user=$userEmail');
   final response = await http.get(url, headers: getHeader(token));
   print(response.statusCode);
   if (response.statusCode == 200) {
@@ -90,7 +88,7 @@ Future<List<Project>> fetchProjects(String userEmail) async {
 
 Future<String> deleteProject(String id) async {
   print("API delete Projects");
-  Uri url = Uri.parse('$URL/projects/$id');
+  Uri url = Uri.parse('${dotenv.env['API_URL']}/api/projects/$id');
   final response = await http.delete(url, headers: getHeader(token));
   if (response.statusCode == 200) {
     return "";
@@ -102,7 +100,7 @@ Future<String> deleteProject(String id) async {
 
 Future<String> modifyProject(Project project) async {
   print("API modify Projects");
-  Uri url = Uri.parse('$URL/projects/${project.id}');
+  Uri url = Uri.parse('${dotenv.env['API_URL']}/api/projects/${project.id}');
   final response =
       await http.put(url, body: project.toJson(), headers: getHeader(token));
   print(response);
@@ -116,7 +114,7 @@ Future<String> modifyProject(Project project) async {
 
 Future<String> createProject(Project project) async {
   print("API create Projects");
-  Uri url = Uri.parse('$URL/projects');
+  Uri url = Uri.parse('${dotenv.env['API_URL']}/api/projects');
   final response =
       await http.post(url, body: project.toJson(), headers: getHeader(token));
   print(response);
@@ -130,7 +128,7 @@ Future<String> createProject(Project project) async {
 
 Future<String> loginAPI(String email, String password) async {
   print("API login");
-  Uri url = Uri.parse('$URL/login');
+  Uri url = Uri.parse('${dotenv.env['API_URL']}/api/login');
   final response = await http.post(url,
       body:
           json.encode(<String, String>{'email': email, 'password': password}));
