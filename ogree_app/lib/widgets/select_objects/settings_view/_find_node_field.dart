@@ -48,8 +48,14 @@ class __FindNodeFieldState extends State<_FindNodeField> {
   void _submitted() {
     final id = controller.text.trim();
     final appController = AppController.of(context);
-    final node = appController.treeController.find(id);
     final localeMsg = AppLocalizations.of(context)!;
+
+    final node = appController.rootNode.nullableDescendants.firstWhere(
+      (descendant) => descendant == null
+          ? false
+          : descendant.id.toLowerCase().contains(id.toLowerCase()),
+      orElse: () => null,
+    );
 
     if (node == null) {
       showSnackBar(
