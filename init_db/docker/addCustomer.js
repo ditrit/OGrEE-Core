@@ -1,82 +1,27 @@
+
 /////
-// NOTE
-// This creates a DB that maintains a list of customer DBs
-// with a customer collection
-//
-// An 'admin' DB will be created with an admin, super and backup user
-// MongoDB docker image will execute scripts in alphabetical order
-//
-// Finally a secured customer DB will be created with an API user
-// credential
-//
-// It is recommended that you use a secure method for supplying 
-// passwords
+// Create a new customer
 //////
-
-// How to Authenticate
-//
-// As Admin:
-// mongosh "mongodb://ADMIN_USER:ADMIN_PASS@localhost/test?authSource=test"
-// 
-// As Super:
-// mongosh "mongodb://SUPER_USER:SUPER_PASS@localhost/test?authSource=test" 
-
 
 //
 // CONSTANT DECLARATIONS START
 //
+// They should already be initialised by 
+// the container orchestration environment
+//
+// DB_NAME and CUSTOMER_API_PASS should be provided by the 
+// corresponding 'addCustomer.sh' script 
+//
 DB_NAME;
-CUSTOMER_API_PASS;
 CUSTOMER_RECORDS_DB;
-
-ADMIN_DB;
-SUPER_USER;
-SUPER_PASS;
+CUSTOMER_API_PASS;
 
 ADMIN_USER;
 ADMIN_PASS;
-
-GUARD_USER;
-GUARD_PASS;
-
 //
 // CONSTANT DECLARATIONS END
 //
 
-
-
-
-var m = new Mongo()
-var authDB = m.getDB(ADMIN_DB)
-
-//Create the Root user named Super
-db.createUser({ user: SUPER_USER, pwd: SUPER_PASS,
-                roles: [{role: "root", db: ADMIN_DB}]
-                })
-
-//Create the Admin user
-db.createUser({ user: ADMIN_USER, pwd: ADMIN_PASS,
-                roles: [{role: "userAdminAnyDatabase", db: ADMIN_DB},
-                { role: "readWriteAnyDatabase", db: ADMIN_DB}]
-                })
-
-//Create the Backup user named guard
-db.createUser({ user: GUARD_USER, pwd: GUARD_PASS,
-                roles: [{role: "backup", db: ADMIN_DB}, {role: "restore", db: ADMIN_DB}]
-                })
-
-//Create customer record collection                
-var db = m.getDB(CUSTOMER_RECORDS_DB);
-db.createCollection('customer');
-db.customer.createIndex({name:1}, { unique: true });
-
-
-
-
-
-/////
-// Create a new Database
-//////
 
 //Authenticate first
 var m = new Mongo()
