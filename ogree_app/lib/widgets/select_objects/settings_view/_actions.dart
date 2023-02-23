@@ -5,24 +5,25 @@ class _Actions extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final localeMsg = AppLocalizations.of(context)!;
     return Wrap(
       spacing: 10,
       runSpacing: 10,
       children: [
         _Action(
-          label: const Text('Expand All'),
+          label: Text(localeMsg.expandAll),
           onPressed: AppController.of(context).treeController.expandAll,
         ),
         _Action(
-          label: const Text('Collapse All'),
+          label: Text(localeMsg.collapseAll),
           onPressed: AppController.of(context).treeController.collapseAll,
         ),
         _Action(
-          label: const Text('Select All'),
+          label: Text(localeMsg.selectAll),
           onPressed: AppController.of(context).selectAll,
         ),
         _Action(
-          label: const Text('Deselect All'),
+          label: Text(localeMsg.deselectAll),
           onPressed: () => AppController.of(context).selectAll(false),
         ),
       ],

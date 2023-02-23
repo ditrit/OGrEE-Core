@@ -10,6 +10,7 @@ import 'package:ogree_app/pages/results_page.dart';
 import 'package:ogree_app/widgets/select_objects/select_objects.dart';
 import 'package:ogree_app/widgets/select_date.dart';
 import 'package:ogree_app/widgets/select_namespace.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 enum Steps { date, namespace, objects, result }
 
@@ -61,6 +62,7 @@ class _SelectPageState extends State<SelectPage> with TickerProviderStateMixin {
 
   @override
   Widget build(BuildContext context) {
+    final localeMsg = AppLocalizations.of(context)!;
     return Scaffold(
       appBar: myAppBar(context, widget.userEmail),
       body: Center(
@@ -79,14 +81,14 @@ class _SelectPageState extends State<SelectPage> with TickerProviderStateMixin {
                 TextButton(
                   onPressed: cancel,
                   child: Text(_currentStep == Steps.values.first.index
-                      ? 'Annuler'
-                      : 'Précédent'),
+                      ? localeMsg.cancel
+                      : localeMsg.back),
                 ),
                 ElevatedButton(
                   onPressed: continued,
                   child: Text(_currentStep == Steps.values.last.index
-                      ? 'Sauvegarder'
-                      : 'Suivant'),
+                      ? localeMsg.save
+                      : localeMsg.next),
                 ),
               ],
             ),
@@ -94,7 +96,7 @@ class _SelectPageState extends State<SelectPage> with TickerProviderStateMixin {
         },
         steps: <Step>[
           Step(
-            title: const Text('Choisir date'),
+            title: Text(localeMsg.selectDate),
             subtitle: Text(_selectedDate),
             content: const SelectDate(),
             isActive: _currentStep >= Steps.date.index,
@@ -103,7 +105,7 @@ class _SelectPageState extends State<SelectPage> with TickerProviderStateMixin {
                 : StepState.disabled,
           ),
           Step(
-            title: const Text('Choisir namespace'),
+            title: Text(localeMsg.selectNamespace),
             subtitle:
                 _selectedNamespace == '' ? null : Text(_selectedNamespace),
             content: const SelectNamespace(),
@@ -113,11 +115,9 @@ class _SelectPageState extends State<SelectPage> with TickerProviderStateMixin {
                 : StepState.disabled,
           ),
           Step(
-            title: const Text('Choisir les objets'),
+            title: Text(localeMsg.selectObjects),
             subtitle: _selectedObjects.keys.isNotEmpty
-                ? Text(_selectedObjects.keys.length == 1
-                    ? '1 objet'
-                    : '${_selectedObjects.keys.length} objets')
+                ? Text(localeMsg.nObjects(_selectedObjects.keys.length))
                 : null,
             content: SizedBox(
                 height: MediaQuery.of(context).size.height - 205,
@@ -129,7 +129,7 @@ class _SelectPageState extends State<SelectPage> with TickerProviderStateMixin {
                 : StepState.disabled,
           ),
           Step(
-            title: const Text('Résultat'),
+            title: Text(localeMsg.result),
             content: _currentStep == Steps.result.index
                 ? SizedBox(
                     height: MediaQuery.of(context).size.height - 210,
@@ -152,9 +152,9 @@ class _SelectPageState extends State<SelectPage> with TickerProviderStateMixin {
   }
 
   continued() {
+    final localeMsg = AppLocalizations.of(context)!;
     if (_currentStep == Steps.objects.index && _selectedObjects.isEmpty) {
-      showSnackBar(context, "Sélectionnez au moins 1 objet avant d'avancer",
-          isError: true);
+      showSnackBar(context, localeMsg.atLeastOneObject, isError: true);
     } else if (_currentStep == Steps.result.index) {
       Project project;
       bool isCreate = true;
@@ -180,8 +180,14 @@ class _SelectPageState extends State<SelectPage> with TickerProviderStateMixin {
             [widget.userEmail]);
       }
 
-      showCustomDialog(context, project, "Nommer ce projet", "Annuler",
-          Icons.cancel_outlined, cancelProjectCallback, saveProjectCallback,
+      showCustomDialog(
+          context,
+          project,
+          localeMsg.nameProject,
+          localeMsg.cancel,
+          Icons.cancel_outlined,
+          cancelProjectCallback,
+          saveProjectCallback,
           isCreate: isCreate);
     } else {
       _loadObjects = _currentStep == (Steps.objects.index - 1) ? true : false;

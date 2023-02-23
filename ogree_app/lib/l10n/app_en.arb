@@ -1,0 +1,69 @@
+{
+    "save": "Save",
+    "delete": "Delete",
+    "cancel": "Cancel",
+    "back": "Back",
+    "next": "Next",
+    "search": "Search",
+    "selectionOptions": "Selection options",
+
+    "welcome": "Welcome to OGrEE",
+    "welcomeConnect": "Login to your personal space:",
+    "mandatoryField": "Mandatory Field",
+    "password": "Password",
+    "stayLogged": "Stay connected",
+    "forgotPassword": "Forgot password?",
+    "login": "Login",
+    "invalidLogin": "Email and/or password not valid",
+
+    "myprojects": "My projects",
+    "newProject": "   Create new project",
+    "noProjects": "No projects yet :(",
+    "editProject": "Edit this project",
+    "author": "Author:",
+    "lastUpdate": "Last Update:",
+    "launch": "Launch",
+    "projectName": "Project's name",
+    "mandatoryProjectName": "Project's name is mandatory",
+    "nameProject": "Nommer ce projet",
+
+    "selectDate": "Pick a date",
+    "selectNamespace": "Pick a namespace",
+    "selectObjects": "Select objetcs",
+    "nObjects": "{count, plural, =0{No objects} =1{1 object} other{{count} objects}}",
+    "@nObjects": {
+      "description": "A plural objects message",
+      "placeholders": {
+        "count": {
+          "type": "num",
+          "format": "compact"
+        }
+      }
+    },
+    "result": "Result",
+    "atLeastOneObject": "Select at least one object",
+
+    "whatDate": "What dataset would you like to use?",
+    "pickDate": "Pick a date range",
+    "openLastDataset": "Last saved dataset",
+    "openSavedDataser": "Pick a dataset",
+    "useLastDataSet": "Use the last dataset saved:",
+
+    "whatNamespace": "Select a namespace:",
+
+    "searchById": "Search by ID",
+    "filters": "Filters",
+    "clearAllFilters": "Clear all",
+    "noNodeFound": "No node found with ID:",
+    "expandAll" : "Expand All",
+    "collapseAll": "Collapse All",
+    "selectAll": "Select All",
+    "deselectAll": "Deselect All",
+    "nodePath": "Node path:",
+
+    "addColumnTip":  "Add a column",
+    "yourReport": "Your report",
+    "mathFuncTip": "Math functions",
+    "showSum": "Display sum",
+    "showAvg": "Display average"
+}

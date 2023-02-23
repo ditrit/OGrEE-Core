@@ -5,6 +5,7 @@ import 'package:ogree_app/common/popup_dialog.dart';
 import 'package:ogree_app/common/snackbar.dart';
 import 'package:ogree_app/models/project.dart';
 import 'package:ogree_app/pages/select_page.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class ProjectsPage extends StatefulWidget {
   final String userEmail;
@@ -19,6 +20,7 @@ class _ProjectsPageState extends State<ProjectsPage> {
 
   @override
   Widget build(BuildContext context) {
+    final localeMsg = AppLocalizations.of(context)!;
     return Scaffold(
       appBar: myAppBar(context, widget.userEmail),
       body: Padding(
@@ -29,7 +31,7 @@ class _ProjectsPageState extends State<ProjectsPage> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text('Mes projets',
+                Text(localeMsg.myprojects,
                     style: Theme.of(context).textTheme.headlineLarge),
                 Padding(
                   padding: const EdgeInsets.only(right: 10.0, bottom: 10),
@@ -44,14 +46,12 @@ class _ProjectsPageState extends State<ProjectsPage> {
                     },
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
-                      children: const [
-                        Padding(
+                      children: [
+                        const Padding(
                           padding: EdgeInsets.symmetric(vertical: 10.0),
                           child: Icon(Icons.add_to_photos),
                         ),
-                        Text(
-                          "   Créer un nouveau projet",
-                        ),
+                        Text(localeMsg.newProject),
                       ],
                     ),
                   ),
@@ -74,7 +74,7 @@ class _ProjectsPageState extends State<ProjectsPage> {
                     );
                   } else {
                     // Empty messages
-                    return Text("Pas encore de projets");
+                    return Text(localeMsg.noProjects);
                   }
                 }),
           ],
@@ -88,6 +88,7 @@ class _ProjectsPageState extends State<ProjectsPage> {
   }
 
   getProjectCards(context) {
+    final localeMsg = AppLocalizations.of(context)!;
     List<Widget> cards = [];
     for (var project in _projects!) {
       cards.add(SizedBox(
@@ -108,7 +109,7 @@ class _ProjectsPageState extends State<ProjectsPage> {
                       width: 170,
                       child: Text("Projet ${project.name}",
                           overflow: TextOverflow.clip,
-                          style: TextStyle(
+                          style: const TextStyle(
                               fontWeight: FontWeight.bold, fontSize: 16)),
                     ),
                     CircleAvatar(
@@ -117,16 +118,16 @@ class _ProjectsPageState extends State<ProjectsPage> {
                       child: IconButton(
                           splashRadius: 18,
                           iconSize: 13,
-                          padding: EdgeInsets.all(2),
+                          padding: const EdgeInsets.all(2),
                           onPressed: () => showCustomDialog(
                               context,
                               project,
-                              "Editer ce projet",
-                              "Supprimer",
+                              localeMsg.editProject,
+                              localeMsg.delete,
                               Icons.delete,
                               deleteProjectCallback,
                               modifyProjectCallback),
-                          icon: Icon(
+                          icon: const Icon(
                             Icons.mode_edit_outline_rounded,
                             color: Colors.white,
                           )),
@@ -136,9 +137,9 @@ class _ProjectsPageState extends State<ProjectsPage> {
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Padding(
-                      padding: EdgeInsets.only(bottom: 2.0),
-                      child: Text("Auteur :"),
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 2.0),
+                      child: Text(localeMsg.author),
                     ),
                     Text(
                       " ${project.authorLastUpdate}",
@@ -149,9 +150,9 @@ class _ProjectsPageState extends State<ProjectsPage> {
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Padding(
-                      padding: EdgeInsets.only(bottom: 2.0),
-                      child: Text("Dernière modification :"),
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 2.0),
+                      child: Text(localeMsg.lastUpdate),
                     ),
                     Text(
                       " ${project.lastUpdate}",
@@ -173,7 +174,7 @@ class _ProjectsPageState extends State<ProjectsPage> {
                         );
                       },
                       icon: const Icon(Icons.play_circle),
-                      label: const Text("Lancer")),
+                      label: Text(localeMsg.launch)),
                 )
               ],
             ),

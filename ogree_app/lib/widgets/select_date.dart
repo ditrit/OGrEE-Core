@@ -3,8 +3,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:ogree_app/pages/select_page.dart';
 import 'package:syncfusion_flutter_datepicker/datepicker.dart';
-import 'package:flutter_localizations/flutter_localizations.dart';
-import 'package:syncfusion_localizations/syncfusion_localizations.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class SelectDate extends StatefulWidget {
   const SelectDate({super.key});
@@ -31,10 +30,12 @@ class _SelectDateState extends State<SelectDate> with TickerProviderStateMixin {
 
   @override
   Widget build(BuildContext context) {
+    final localeMsg = AppLocalizations.of(context)!;
+
     return Column(
       children: [
         Text(
-          'Quel jeu de données souhaitez-vous utiliser ?',
+          localeMsg.whatDate,
           style: Theme.of(context).textTheme.headlineLarge,
         ),
         const SizedBox(height: 25),
@@ -52,10 +53,10 @@ class _SelectDateState extends State<SelectDate> with TickerProviderStateMixin {
                       unselectedLabelColor: Colors.grey,
                       isScrollable: true,
                       indicatorSize: TabBarIndicatorSize.label,
-                      tabs: const [
-                        Tab(text: 'Choisir les dates'),
-                        Tab(text: 'Ouvrir le dernier jeu de données'),
-                        Tab(text: 'Ouvrir un jeu de données enregistré'),
+                      tabs: [
+                        Tab(text: localeMsg.pickDate),
+                        Tab(text: localeMsg.openLastDataset),
+                        Tab(text: localeMsg.openSavedDataser),
                       ],
                     ),
                   ),
@@ -71,7 +72,7 @@ class _SelectDateState extends State<SelectDate> with TickerProviderStateMixin {
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
                             Text(
-                              'Utiliser le dernier jeu de données :',
+                              localeMsg.useLastDataSet,
                               style: Theme.of(context).textTheme.headlineMedium,
                             ),
                             const SizedBox(height: 32),
@@ -176,26 +177,17 @@ class _DatePickerState extends State<DatePicker> {
       height: 700,
       child: Container(
         padding: const EdgeInsets.fromLTRB(5, 30, 5, 5),
-        child: Localizations(
-          locale: const Locale('fr', 'FR'),
-          delegates: const [
-            GlobalMaterialLocalizations.delegate,
-            GlobalWidgetsLocalizations.delegate,
-            GlobalCupertinoLocalizations.delegate,
-            SfGlobalLocalizations.delegate
-          ],
-          child: SfDateRangePicker(
-            onSelectionChanged: _onSelectionChanged,
-            selectionMode: DateRangePickerSelectionMode.range,
-            enableMultiView: true,
-            headerStyle:
-                const DateRangePickerHeaderStyle(textAlign: TextAlign.center),
-            initialSelectedRange: PickerDateRange(
-                // DateTime.now().subtract(const Duration(days: 4)),
-                // DateTime.now().add(const Duration(days: 3))
-                DateTime.now(),
-                DateTime.now()),
-          ),
+        child: SfDateRangePicker(
+          onSelectionChanged: _onSelectionChanged,
+          selectionMode: DateRangePickerSelectionMode.range,
+          enableMultiView: true,
+          headerStyle:
+              const DateRangePickerHeaderStyle(textAlign: TextAlign.center),
+          initialSelectedRange: PickerDateRange(
+              // DateTime.now().subtract(const Duration(days: 4)),
+              // DateTime.now().add(const Duration(days: 3))
+              DateTime.now(),
+              DateTime.now()),
         ),
       ),
     ));

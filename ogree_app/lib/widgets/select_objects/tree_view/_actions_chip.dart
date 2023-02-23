@@ -18,7 +18,7 @@ class _NodeActionsChipState extends State<_NodeActionsChip> {
 
     return PopupMenuButton<int>(
       key: _popupMenuKey,
-      tooltip: 'Options de sélection',
+      tooltip: AppLocalizations.of(context)!.selectionOptions,
       offset: const Offset(0, 32),
       itemBuilder: (_) => kPopupMenuItems,
       onSelected: (int selected) {

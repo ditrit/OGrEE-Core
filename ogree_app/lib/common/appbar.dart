@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:ogree_app/pages/projects_page.dart';
+import 'package:ogree_app/widgets/language_toggle.dart';
 
 AppBar myAppBar(context, userEmail) {
   return AppBar(
@@ -19,15 +20,16 @@ AppBar myAppBar(context, userEmail) {
         ),
       ),
     )),
-    actions: const [
-      Icon(Icons.account_circle),
-      SizedBox(
-        width: 15,
+    actions: [
+      Padding(
+        padding: const EdgeInsets.symmetric(vertical: 15),
+        child: LanguageToggle(),
       ),
-      Center(child: Text('Admin')),
-      SizedBox(
-        width: 50,
-      )
+      const SizedBox(width: 20),
+      const Icon(Icons.account_circle),
+      const SizedBox(width: 10),
+      Center(child: Text(userEmail)),
+      const SizedBox(width: 40)
     ],
   );
 }

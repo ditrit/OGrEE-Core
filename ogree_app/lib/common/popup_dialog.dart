@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:ogree_app/common/snackbar.dart';
 import 'package:ogree_app/models/project.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 void showCustomDialog(
     BuildContext context,
@@ -26,6 +27,7 @@ void showCustomDialog(
     barrierColor: Colors.black.withOpacity(0.5),
     transitionDuration: const Duration(milliseconds: 700),
     pageBuilder: (context, _, __) {
+      final localeMsg = AppLocalizations.of(context)!;
       return Center(
         child: Container(
           height: 240,
@@ -47,7 +49,7 @@ void showCustomDialog(
                       initialValue: project.name,
                       onChanged: (value) => editInput = value,
                       decoration: InputDecoration(
-                        labelText: 'Nom du projet',
+                        labelText: localeMsg.projectName,
                         labelStyle: GoogleFonts.inter(
                           fontSize: 12,
                           color: Colors.black,
@@ -76,13 +78,13 @@ void showCustomDialog(
                           print(editInput);
                           if (editInput == "") {
                             showSnackBar(
-                                context, "Il faut donner un nom au projet",
+                                context, localeMsg.mandatoryProjectName,
                                 isError: true);
                           } else {
                             saveCallback(editInput, project, isCreate);
                           }
                         },
-                        child: const Text("Sauvegarder"),
+                        child: Text(localeMsg.save),
                       )
                     ],
                   )

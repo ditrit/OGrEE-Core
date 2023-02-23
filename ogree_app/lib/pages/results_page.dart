@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:ogree_app/common/api.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 const String extraColumn = "Add new column";
 const String sumStr = "Somme()";
@@ -44,6 +45,7 @@ class _ResultsPageState extends State<ResultsPage> {
 
   @override
   Widget build(BuildContext context) {
+    final localeMsg = AppLocalizations.of(context)!;
     print("RESULT");
     // Column labels
     // First, the objects column
@@ -78,7 +80,7 @@ class _ResultsPageState extends State<ResultsPage> {
     // Finally, add new column
     columnLabels.add(DataColumn(
       label: PopupMenuButton<String>(
-        tooltip: 'Ajouter une colonne',
+        tooltip: localeMsg.addColumnTip,
         offset: const Offset(0, -32),
         itemBuilder: (_) => attributesCheckList(widget.selectedAttrs),
         onCanceled: () => print('canceleeed'),
@@ -95,8 +97,8 @@ class _ResultsPageState extends State<ResultsPage> {
               child: SingleChildScrollView(
                 padding: EdgeInsets.zero,
                 child: PaginatedDataTable(
-                  header: const Text(
-                    'Votre rapport',
+                  header: Text(
+                    localeMsg.yourReport,
                     style: TextStyle(fontWeight: FontWeight.w600),
                   ),
                   actions: [
@@ -105,7 +107,7 @@ class _ResultsPageState extends State<ResultsPage> {
                       child: Icon(Icons.file_download_outlined),
                     ),
                     PopupMenuButton<String>(
-                      tooltip: 'Options de sélection',
+                      tooltip: localeMsg.selectionOptions,
                       offset: const Offset(0, -32),
                       itemBuilder: (_) =>
                           attributesCheckList(widget.selectedAttrs),
@@ -113,7 +115,7 @@ class _ResultsPageState extends State<ResultsPage> {
                       icon: const Icon(Icons.add),
                     ),
                     PopupMenuButton<String>(
-                      tooltip: 'Fonctions mathématiques',
+                      tooltip: localeMsg.mathFuncTip,
                       offset: const Offset(0, -32),
                       itemBuilder: (_) => mathFunctionsPopup(),
                       onCanceled: () => print('canceled'),
@@ -214,6 +216,7 @@ class _ResultsPageState extends State<ResultsPage> {
   }
 
   List<PopupMenuEntry<String>> mathFunctionsPopup() {
+    final localeMsg = AppLocalizations.of(context)!;
     return <PopupMenuEntry<String>>[
       PopupMenuItem(
         value: sumStr,
@@ -227,7 +230,7 @@ class _ResultsPageState extends State<ResultsPage> {
             }
           });
         },
-        child: const Text("Afficher la somme"),
+        child: Text(localeMsg.showSum),
       ),
       PopupMenuItem(
         value: avgStr,
@@ -241,7 +244,7 @@ class _ResultsPageState extends State<ResultsPage> {
             }
           });
         },
-        child: const Text("Afficher la moyenne"),
+        child: Text(localeMsg.showAvg),
       ),
     ];
   }

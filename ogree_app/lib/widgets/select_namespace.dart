@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:ogree_app/pages/select_page.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 const Map<String, String> namespaces = {
-  "Physique": "site.batiment.salle",
-  "Logique": "app.cluster.lorem",
-  "Organisationnel": "service.lorem.ipsum"
+  "Physical": "site.building.room",
+  "Logical": "app.cluster.lorem",
+  "Organisational": "service.lorem.ipsum"
 };
 
 class SelectNamespace extends StatefulWidget {
@@ -25,10 +26,11 @@ class _SelectNamespaceState extends State<SelectNamespace> {
 
   @override
   Widget build(BuildContext context) {
+    final localeMsg = AppLocalizations.of(context)!;
     return Column(
       children: [
         Text(
-          'Sélectionnez le type de namespace :',
+          localeMsg.whatNamespace,
           style: Theme.of(context).textTheme.headlineLarge,
         ),
         const SizedBox(height: 25),

@@ -20,6 +20,8 @@ class __FindNodeFieldState extends State<_FindNodeField> {
 
   @override
   Widget build(BuildContext context) {
+    final localeMsg = AppLocalizations.of(context)!;
+
     return TextField(
       controller: controller,
       cursorColor: Colors.blueGrey,
@@ -27,13 +29,13 @@ class __FindNodeFieldState extends State<_FindNodeField> {
       focusNode: focusNode,
       decoration: InputDecoration(
         isDense: true,
-        hintText: 'Search...', // case sensitive
+        hintText: '${localeMsg.search}...', // case sensitive
         hintStyle: const TextStyle(
           fontStyle: FontStyle.italic,
         ),
         suffixIcon: IconButton(
           onPressed: _submitted,
-          tooltip: 'Search',
+          tooltip: localeMsg.search,
           icon: const Icon(
             Icons.search_rounded,
           ),
@@ -47,11 +49,12 @@ class __FindNodeFieldState extends State<_FindNodeField> {
     final id = controller.text.trim();
     final appController = AppController.of(context);
     final node = appController.treeController.find(id);
+    final localeMsg = AppLocalizations.of(context)!;
 
     if (node == null) {
       showSnackBar(
         context,
-        'No node was found with ID:  $id',
+        '${localeMsg.noNodeFound} $id',
         duration: const Duration(seconds: 3),
       );
     } else {

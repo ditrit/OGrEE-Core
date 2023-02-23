@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:ogree_app/widgets/select_objects/app_controller.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 import 'settings_view.dart';
 
@@ -137,13 +138,15 @@ class _AutocompleteFilterState extends State<AutocompleteFilter> {
 
   @override
   Widget build(BuildContext context) {
+    final localeMsg = AppLocalizations.of(context)!;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         widget.paramLevel == 0
             ? Row(
                 children: [
-                  const SettingsHeader(text: 'Filtres'),
+                  SettingsHeader(text: localeMsg.filters),
                   widget.showClearFilter
                       ? OutlinedButton(
                           style: OutlinedButton.styleFrom(
@@ -162,7 +165,7 @@ class _AutocompleteFilterState extends State<AutocompleteFilter> {
                           ),
                           onPressed: () => widget.notifyParent(
                               widget.param, "CLEAR ALL", true),
-                          child: const Text("Clear all filters"),
+                          child: Text(localeMsg.clearAllFilters),
                         )
                       : Container(),
                 ],

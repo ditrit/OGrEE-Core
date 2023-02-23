@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_fancy_tree_view/flutter_fancy_tree_view.dart';
 import 'package:ogree_app/common/snackbar.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 import '../app_controller.dart';
 
@@ -44,7 +45,7 @@ class _TreeNodeTileState extends State<TreeNodeTile> {
   void _describeAncestors(TreeNode node) {
     showSnackBar(
       context,
-      'Chemin du noeud : ${node.id}',
+      '${AppLocalizations.of(context)!.nodePath} ${node.id}',
       duration: const Duration(seconds: 3),
     );
   }

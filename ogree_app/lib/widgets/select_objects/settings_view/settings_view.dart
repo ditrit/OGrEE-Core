@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:ogree_app/common/snackbar.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 import '../app_controller.dart';
 import 'tree_filter.dart';
@@ -19,6 +20,7 @@ class SettingsView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final localeMsg = AppLocalizations.of(context)!;
     return TweenAnimationBuilder<double>(
       duration: kAnimationDuration,
       tween: Tween<double>(begin: .3, end: 1),
@@ -36,7 +38,7 @@ class SettingsView extends StatelessWidget {
           const _ActionsHeader(),
           const _Actions(),
           const SizedBox(height: 10),
-          const SettingsHeader(text: 'Rechercher par ID'),
+          SettingsHeader(text: localeMsg.searchById),
           const _FindNodeField(),
           const SizedBox(height: 10),
           TreeFilter(),
