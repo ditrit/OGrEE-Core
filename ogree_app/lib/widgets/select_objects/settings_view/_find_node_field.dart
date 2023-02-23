@@ -29,7 +29,7 @@ class __FindNodeFieldState extends State<_FindNodeField> {
       focusNode: focusNode,
       decoration: InputDecoration(
         isDense: true,
-        hintText: '${localeMsg.search}...', // case sensitive
+        hintText: '${localeMsg.search}...',
         hintStyle: const TextStyle(
           fontStyle: FontStyle.italic,
         ),

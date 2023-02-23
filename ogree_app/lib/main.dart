@@ -18,6 +18,7 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
+  // App language control
   Locale _locale = const Locale('fr', 'FR');
   void setLocale(Locale value) {
     setState(() {

@@ -8,6 +8,7 @@ class LanguageToggle extends StatefulWidget {
 }
 
 class _LanguageToggleState extends State<LanguageToggle> {
+  // languages = [FR, EN]
   var _selectedLanguage = [true, false];
 
   @override
@@ -38,9 +39,9 @@ class _LanguageToggleState extends State<LanguageToggle> {
         fillColor: Colors.blue,
         borderRadius: const BorderRadius.all(Radius.circular(8)),
         borderWidth: 0,
-        constraints: BoxConstraints(minWidth: 30, minHeight: 30),
+        constraints: const BoxConstraints(minWidth: 30, minHeight: 30),
         isSelected: _selectedLanguage,
-        children: <Widget>[Text("FR"), Text("EN")],
+        children: const <Widget>[Text("FR"), Text("EN")],
       ),
     );
   }

@@ -154,11 +154,14 @@ class _SelectPageState extends State<SelectPage> with TickerProviderStateMixin {
   continued() {
     final localeMsg = AppLocalizations.of(context)!;
     if (_currentStep == Steps.objects.index && _selectedObjects.isEmpty) {
+      // Should select at least one OBJECT before continue
       showSnackBar(context, localeMsg.atLeastOneObject, isError: true);
     } else if (_currentStep == Steps.result.index) {
+      // Continue of RESULT is actually Save
       Project project;
       bool isCreate = true;
       if (widget.project != null) {
+        // Editing existing project
         isCreate = false;
         project = widget.project!;
         project.dateRange = _selectedDate;
@@ -166,6 +169,7 @@ class _SelectPageState extends State<SelectPage> with TickerProviderStateMixin {
         project.attributes = _selectedAttrs;
         project.objects = _selectedObjects.keys.toList();
       } else {
+        // Saving new project
         project = Project(
             "",
             _selectedDate,
@@ -191,13 +195,7 @@ class _SelectPageState extends State<SelectPage> with TickerProviderStateMixin {
           isCreate: isCreate);
     } else {
       _loadObjects = _currentStep == (Steps.objects.index - 1) ? true : false;
-      _currentStep < Steps.values.last.index
-          ? setState(() => _currentStep += 1)
-          : Navigator.of(context).push(
-              MaterialPageRoute(
-                builder: (context) => ProjectsPage(userEmail: widget.userEmail),
-              ),
-            );
+      setState(() => _currentStep += 1);
     }
   }
 

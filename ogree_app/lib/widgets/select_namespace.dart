@@ -38,13 +38,13 @@ class _SelectNamespaceState extends State<SelectNamespace> {
             child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children:
-              namespaces.keys.map((label) => NameSpaceButton(label)).toList(),
+              namespaces.keys.map((label) => nameSpaceButton(label)).toList(),
         )),
       ],
     );
   }
 
-  Widget NameSpaceButton(String label) {
+  Widget nameSpaceButton(String label) {
     return Container(
       margin: const EdgeInsets.only(top: 30, bottom: 30),
       width: 250,

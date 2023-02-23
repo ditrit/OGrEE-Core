@@ -107,7 +107,7 @@ class _ProjectsPageState extends State<ProjectsPage> {
                   children: [
                     Container(
                       width: 170,
-                      child: Text("Projet ${project.name}",
+                      child: Text(project.name,
                           overflow: TextOverflow.clip,
                           style: const TextStyle(
                               fontWeight: FontWeight.bold, fontSize: 16)),
