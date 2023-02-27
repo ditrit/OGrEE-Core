@@ -85,7 +85,7 @@
                     "elemPos": {
                         "type": "array",
                         "items": {
-                            "type": "integer"
+                            "type": "number"
                         },
                         "minItems": 3,
                         "maxItems": 3
@@ -93,7 +93,7 @@
                     "elemSize": {
                         "type": "array",
                         "items": {
-                            "type": "integer"
+                            "type": "number"
                         },
                         "minItems": 3,
                         "maxItems": 3
@@ -168,7 +168,7 @@
                     "elemPos": {
                         "type": "array",
                         "items": {
-                            "type": "integer"
+                            "type": "number"
                         },
                         "minItems": 3,
                         "maxItems": 3
@@ -176,7 +176,7 @@
                     "elemSize": {
                         "type": "array",
                         "items": {
-                            "type": "integer"
+                            "type": "number"
                         },
                         "minItems": 3,
                         "maxItems": 3
