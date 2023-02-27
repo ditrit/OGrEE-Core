@@ -18,7 +18,7 @@ func TestValidateJsonSchema(t *testing.T) {
 			t.Error(e.Error())
 		}
 		json.Unmarshal(data, &obj)
-		resp, ok := validateJsonSchema(entInt, obj["examples"].([]interface{})[0].(map[string]interface{}), "schemas/")
+		resp, ok := validateJsonSchema(entInt, obj["examples"].([]interface{})[0].(map[string]interface{}))
 		if !ok {
 			t.Errorf("Error validating json schema: %s", resp)
 		}

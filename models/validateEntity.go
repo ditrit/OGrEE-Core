@@ -1,6 +1,7 @@
 package models
 
 import (
+	"embed"
 	u "p3/utils"
 	"strings"
 
@@ -8,6 +9,39 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
+
+//go:embed schemas/*.json
+//go:embed schemas/refs/*.json
+var embeddfs embed.FS
+var c *jsonschema.Compiler
+
+func init() {
+	// Load JSON schemas
+	c = jsonschema.NewCompiler()
+	println("Loaded json schemas for validation:")
+	loadJsonSchemas("")
+	loadJsonSchemas("refs/")
+	println()
+}
+
+func loadJsonSchemas(schemaPrefix string) {
+	var schemaPath = "schemas/"
+	dir := (schemaPath + schemaPrefix)[:len(schemaPath+schemaPrefix)-1] // without traling /
+	entries, err := embeddfs.ReadDir((dir))
+	if err != nil {
+		println(err.Error())
+	}
+
+	for _, e := range entries {
+		if strings.HasSuffix(e.Name(), ".json") {
+			file, err := embeddfs.Open(schemaPath + schemaPrefix + e.Name())
+			if err == nil {
+				print(schemaPrefix + e.Name() + " ")
+				c.AddResource(schemaPrefix+e.Name(), file)
+			}
+		}
+	}
+}
 
 func validateParent(ent string, entNum int, t map[string]interface{}) (map[string]interface{}, bool) {
 
@@ -107,7 +141,7 @@ func validateParent(ent string, entNum int, t map[string]interface{}) (map[strin
 	return nil, true
 }
 
-func validateJsonSchema(entity int, t map[string]interface{}, schPrefix string) (map[string]interface{}, bool) {
+func validateJsonSchema(entity int, t map[string]interface{}) (map[string]interface{}, bool) {
 	// Get JSON schema
 	var schemaName string
 	switch entity {
@@ -119,7 +153,8 @@ func validateJsonSchema(entity int, t map[string]interface{}, schPrefix string) 
 		schemaName = u.EntityToString(entity) + "_schema.json"
 	}
 
-	sch, err := jsonschema.Compile(schPrefix + schemaName)
+	println(schemaName)
+	sch, err := c.Compile(schemaName)
 	if err != nil {
 		return u.Message(false, err.Error()), false
 	}
@@ -298,7 +333,7 @@ func ValidateEntity(entity int, t map[string]interface{}) (map[string]interface{
 	*/
 
 	// Validate JSON Schema
-	if resp, err := validateJsonSchema(entity, t, "models/schemas/"); !err {
+	if resp, err := validateJsonSchema(entity, t); !err {
 		return resp, false
 	}
 
