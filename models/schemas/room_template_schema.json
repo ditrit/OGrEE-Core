@@ -118,6 +118,35 @@
                 }
             }
         },
+        "pillars":{
+            "type":"object",
+            "properties": {
+                "required": [
+                    "centerXY",
+                    "sizeXY",
+                    "rotation"
+                ],
+                "centerXY": {
+                    "type": "array",
+                    "items": {
+                        "type": "number"
+                    },
+                    "minItems": 2,
+                    "maxItems": 2
+                },
+                "sizeXY": {
+                    "type": "array",
+                    "items": {
+                        "type": "number"
+                    },
+                    "minItems": 2,
+                    "maxItems": 2
+                },
+                "rotation": {
+                    "type": "string"
+                }
+            }
+        },
         "sizeWDHm": {
             "type": "array",
             "items": {
