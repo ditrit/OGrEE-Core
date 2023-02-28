@@ -3,6 +3,7 @@ package main
 import (
 	cmd "cli/controllers"
 	"fmt"
+	"path"
 	"strings"
 )
 
@@ -61,7 +62,7 @@ func (n pathNode) getStr() (string, error) {
 			output_words[0] = "Logical"
 		}
 	}
-	return "/" + strings.Join(output_words, "/"), nil
+	return path.Clean("/" + strings.Join(output_words, "/")), nil
 }
 
 func (n pathNode) execute() (interface{}, error) {
