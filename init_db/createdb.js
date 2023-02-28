@@ -4,6 +4,15 @@
 // subscribes
 //////
 
+//
+// CONSTANT DECLARATIONS
+//
+DB_NAME;
+CUSTOMER_RECORDS_DB;
+ADMIN_USER;
+ADMIN_PASS;
+
+
 //Check if host was passed as argument
 //Otherwise use localhost
 try {
@@ -15,23 +24,14 @@ try {
 //Authenticate first
 var m = new Mongo(host)
 var authDB = m.getDB("test")
-authDB.auth('admin','adminpassword');
+authDB.auth(ADMIN_USER,ADMIN_PASS);
 
-
-//Check if dbName was passed as argument
-//Otherwise use "ogreeDevelop"
-try {
-  dbName;
-} catch(e) {
-  dbName = "ogreeDevelop"
-}
-
-var db = m.getDB(dbName)
 
 //Update customer record table
-var odb = m.getDB("ogree")
-odb.customer.insertOne({"name": dbName});
+var odb = m.getDB(CUSTOMER_RECORDS_DB)
+odb.customer.insertOne({"name": DB_NAME});
 
+var db = m.getDB("ogree"+DB_NAME)
 db.createCollection('account');
 db.createCollection('domain');
 db.createCollection('site');

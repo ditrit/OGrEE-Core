@@ -26,9 +26,24 @@ while test $# -gt 0; do
                     host=$1
                     shift
                     ;;
-                -name)
+                -DB_NAME)
                     shift
-                    name=$1
+                    DB_NAME=$1
+                    shift
+                    ;;
+                -CUSTOMER_RECORDS_DB)
+                    shift
+                    CUSTOMER_RECORDS_DB=$1
+                    shift
+                    ;;
+                -ADMIN_USER)
+                    shift
+                    ADMIN_USER=$1
+                    shift
+                    ;;
+                -ADMIN_PASS)
+                    shift
+                    ADMIN_PASS=$1
                     shift
                     ;;
                 *)
@@ -48,27 +63,57 @@ then
     port=27017
 fi
 
-if [  -z "$name" ];
+if [  -z "$DB_NAME" ];
 then
-    name="ogreeDevelop"
+    echo "You need to provide the DB_NAME"
+    exit
+fi
+
+if [  -z "$CUSTOMER_RECORDS_DB" ];
+then
+    echo "You need to provide the name of the CUSTOMER_RECORDS_DB"
+    exit
+fi
+
+if [  -z "$ADMIN_USER" ];
+then
+    echo "You need to provide the ADMIN_USER credential"
+    exit
+fi
+
+if [  -z "$ADMIN_PASS" ];
+then
+    echo "You need to provide the ADMIN_PASS credential"
+    exit
 fi
 
 echo "Host : $host";
 echo "Port : $port";
-echo "Name : $name";
+echo "Name : $DB_NAME";
 
-#Create the secured Database
-mongosh "$host:"$port createdb.js --eval 'var dbName = "ogree'$name'", host = "'$host':'$port'"'
+
+#The command below will create the new customer DB 
+mongosh "$host:"$port"/"$DB_NAME ./createdb.js --eval '
+var host = "'$host':'$port'",
+DB_NAME = "'$DB_NAME'",
+CUSTOMER_RECORDS_DB = "'$CUSTOMER_RECORDS_DB'",
+ADMIN_USER = "'$ADMIN_USER'",
+ADMIN_PASS = "'$ADMIN_PASS'"'
 
 #Create an API user for the new customer
 echo 
 echo "Please type a new a password for the customer: "
 read PASS
-mongosh "$host:"$port createUser.js --eval 'let dbName = "ogree'$name'", pass = "'$PASS'", host = "'$host':'$port'";'
+mongosh "$host:"$port createUser.js --eval '
+let DB_NAME = "ogree'$DB_NAME'",
+ADMIN_USER = "'$ADMIN_USER'",
+ADMIN_PASS = "'$ADMIN_PASS'",
+PASS = "'$PASS'",
+host = "'$host':'$port'";'
 
 
 #Success so print credentials one last time
 echo "Great, be sure to save these credentials in your API env file" 
 echo "since they will not be saved anywhere else! "
-echo "db_user='$name'"
+echo "db_user='$DB_NAME'"
 echo "db_pass='$PASS'"

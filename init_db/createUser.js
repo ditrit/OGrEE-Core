@@ -1,3 +1,8 @@
+DB_NAME;
+ADMIN_USER;
+ADMIN_PASS;
+PASS;
+
 //Check if host was passed as argument
 //Otherwise use localhost
 try {
@@ -9,25 +14,11 @@ try {
 //Authenticate first
 var m = new Mongo(host)
 var authDB = m.getDB("test")
-authDB.auth('admin','adminpassword');
+authDB.auth(ADMIN_USER, ADMIN_PASS);
 
 
-//Check if dbName was passed as argument
-//Otherwise use "ogreeDevelop"
-try {
-  dbName;
-} catch(e) {
-  dbName = "ogreeDevelop"
-}
-var db = m.getDB(dbName)
 
-try {
-  pass;
-} catch(e) {
-  pass = "somethingElse" //code should not reach here
-}
-//passwordPrompt()
-
-db.createUser({ user: dbName+"Admin", pwd: pass,
-                roles: [{role: "readWrite", db: dbName}]
+var db = m.getDB(DB_NAME)
+db.createUser({ user: DB_NAME+"Admin", pwd: PASS,
+                roles: [{role: "readWrite", db: DB_NAME}]
                 })

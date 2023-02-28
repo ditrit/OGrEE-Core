@@ -5,6 +5,25 @@
 // MongoDB docker image will execute scripts in alphabetical order
 //////
 
+//
+// CONSTANT DECLARATIONS START
+//
+CUSTOMER_RECORDS_DB;
+
+ADMIN_DB;
+SUPER_USER;
+SUPER_PASS;
+
+ADMIN_USER;
+ADMIN_PASS;
+
+GUARD_USER;
+GUARD_PASS;
+
+//
+// CONSTANT DECLARATIONS END
+//
+
 //Check if host was passed as argument
 //Otherwise use localhost
 try {
