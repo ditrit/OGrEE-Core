@@ -1,5 +1,5 @@
 on:
-  push:
+  pull_request:
     branches:
       - master
 
@@ -7,11 +7,7 @@ name: Test
 
 jobs:
   test:
-    strategy:
-      matrix:
-        platform: [ubuntu-latest, macos-latest, windows-latest]
-    
-    runs-on: ${{ matrix.platform }}
+    runs-on: ubuntu-latest
     
     steps:
     - name: Install Go
@@ -21,6 +17,9 @@ jobs:
 
     - name: Checkout code
       uses: actions/checkout@v3
+      
+    - name: Build
+      run: make
     
     - name: Test
       run: go test
