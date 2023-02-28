@@ -3,7 +3,6 @@ package main
 import (
 	cmd "cli/controllers"
 	"fmt"
-	"path"
 	"strings"
 )
 
@@ -18,17 +17,8 @@ func (l strLeaf) execute() (interface{}, error) {
 	return l.getStr()
 }
 
-type PathMode int64
-
-const (
-	STD PathMode = iota
-	PHYSICAL
-	STRAY_DEV
-)
-
 type pathNode struct {
 	path node
-	mode PathMode
 }
 
 func (n pathNode) getStr() (string, error) {
@@ -38,31 +28,21 @@ func (n pathNode) getStr() (string, error) {
 	}
 	p, ok := val.(string)
 	if !ok {
-		return "", fmt.Errorf("Path should be a string")
+		return "", fmt.Errorf("path should be a string")
+	}
+	if p == "" {
+		p = "."
 	}
 	if p == "_" {
 		return "_", nil
 	}
-	if p == "." {
-		return cmd.State.CurrPath, nil
-	}
 	var output_words []string
 	if p[0] != '/' {
-		switch n.mode {
-		case STD:
-			output_words = append(strings.Split(cmd.State.CurrPath, "/")[1:], output_words...)
-		case PHYSICAL:
-			output_words = append([]string{"Physical"}, output_words...)
-		case STRAY_DEV:
-			output_words = append([]string{"Physical", "Stray", "Devices"}, output_words...)
-		}
+		output_words = strings.Split(cmd.State.CurrPath, "/")[1:]
+	} else {
+		p = p[1:]
 	}
-	// split between /, then between dots
 	input_words := strings.Split(p, "/")
-	if input_words[len(input_words)-1] != ".." && input_words[len(input_words)-1] != "." {
-		input_words = append(input_words[:len(input_words)-1], strings.Split(input_words[len(input_words)-1], ".")...)
-	}
-
 	for _, word := range input_words {
 		if word == "." {
 			continue
@@ -74,45 +54,37 @@ func (n pathNode) getStr() (string, error) {
 			output_words = append(output_words, word)
 		}
 	}
-	r := "/" + strings.Join(output_words, "/")
-	return path.Clean(r), nil
+	if len(output_words) > 0 {
+		if output_words[0] == "P" {
+			output_words[0] = "Physical"
+		} else if output_words[0] == "L" {
+			output_words[0] = "Logical"
+		}
+	}
+	return "/" + strings.Join(output_words, "/"), nil
 }
 
 func (n pathNode) execute() (interface{}, error) {
 	return n.getStr()
 }
 
-type concatNode struct {
-	nodes []node
+type formatStringNode struct {
+	str       string
+	varsDeref []symbolReferenceNode
 }
 
-func (n *concatNode) getStr() (string, error) {
-	//var r string
-	r := ""
-	for i := range n.nodes {
-		valAny, err := n.nodes[i].execute()
+func (n *formatStringNode) getStr() (string, error) {
+	vals := []any{}
+	for _, varDeref := range n.varsDeref {
+		val, err := varDeref.execute()
 		if err != nil {
 			return "", err
 		}
-		r += fmt.Sprintf("%v", valAny)
-		/*switch val := valAny.(type) {
-		case string:
-			r = r + val
-		case int:
-			r = r + strconv.Itoa(val)
-		case float64:
-			if val == float64(int(val)) {
-				r = r + strconv.Itoa((int(val)))
-			} else {
-				return "", fmt.Errorf("expression should return a string or an int, but returned a float (concatenation expr %d)", i+1)
-			}
-		default:
-			return "", fmt.Errorf("expression should return a string or an int (concatenation expr %d)", i+1)
-		}*/
+		vals = append(vals, val)
 	}
-	return r, nil
+	return fmt.Sprintf(n.str, vals...), nil
 }
 
-func (n *concatNode) execute() (interface{}, error) {
+func (n *formatStringNode) execute() (interface{}, error) {
 	return n.getStr()
 }

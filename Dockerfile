@@ -1,33 +1,16 @@
-#
-# Dockerfile for the CLI
-#
-#LABEL author="Ziad Khalaf"
-FROM golang:latest AS builder
+
+FROM golang:1.19.6-bullseye AS builder
 USER root
-
-#Setup build environment
-RUN apt-get update && apt-get -y install python3 python3-setuptools python3-pip
-
 
 #Setup app files
 WORKDIR /home
 ADD . /home/
 
-
-#Setup build dependencies
-RUN go install modernc.org/goyacc@latest
-RUN go install github.com/blynn/nex@latest
-RUN go get -u github.com/chzyer/test
-RUN go get -u golang.org/x/sys
-
-
-#Generate Binary
 RUN make
 
-
 #Final output image
-FROM alpine:latest
+FROM gcr.io/distroless/base-debian11
 WORKDIR /home
 ADD . /home/
-COPY --from=builder /home/main /home/
-CMD /home/main
+COPY --from=builder /home/cli /home/
+ENTRYPOINT ["/home/cli"]

@@ -9,15 +9,14 @@ import (
 	"os"
 	"path/filepath"
 	"strconv"
-	"strings"
 )
 
 func ValidateFile(comBuf *[]map[string]int, file string) bool {
 	invalidCommands := []string{}
 	for i := range *comBuf {
 		for k := range (*comBuf)[i] {
-			lex := NewLexer(strings.NewReader(k))
-			if yyAnalyse(lex) != 0 {
+			_, err := Parse(k)
+			if err != nil {
 				invalidCommands = append(invalidCommands,
 					" LINE#: "+strconv.Itoa((*comBuf)[i][k])+"\t"+"COMMAND:"+k)
 			}
@@ -43,7 +42,7 @@ func ExecuteFile(comBuf *[]map[string]int, file string) {
 		for st := range (*comBuf)[i] {
 			c.State.LineNumber = (*comBuf)[i][st]
 			fmt.Println(st)
-			if InterpretLine(&st) == false {
+			if !InterpretLine(st) {
 				//println("Command: ", st)
 				return
 			}
@@ -83,8 +82,8 @@ func LoadFile(path string) {
 
 	//Validate the commandbuffer
 	fName := filepath.Base(path)
-	if c.State.Analyser == true {
-		if ValidateFile(&commandBuffer, fName) == true {
+	if c.State.Analyser {
+		if ValidateFile(&commandBuffer, fName) {
 			c.State.ScriptCalled = false
 			ExecuteFile(&commandBuffer, path)
 		}

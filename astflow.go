@@ -15,9 +15,9 @@ func (n *ifNode) execute() (interface{}, error) {
 	}
 	condition, ok := val.(bool)
 	if !ok {
-		return nil, fmt.Errorf("Condition should be a boolean")
+		return nil, fmt.Errorf("condition should be a boolean")
 	}
-	if condition == true {
+	if condition {
 		_, err := n.ifBranch.execute()
 		if err != nil {
 			return nil, err
@@ -39,14 +39,14 @@ type whileNode struct {
 }
 
 func (n *whileNode) execute() (interface{}, error) {
-	for true {
+	for {
 		val, err := n.condition.execute()
 		if err != nil {
 			return nil, err
 		}
 		condition, ok := val.(bool)
 		if !ok {
-			return nil, fmt.Errorf("Condition should be a boolean")
+			return nil, fmt.Errorf("condition should be a boolean")
 		}
 		if !condition {
 			break
@@ -71,14 +71,14 @@ func (n *forNode) execute() (interface{}, error) {
 	if err != nil {
 		return nil, err
 	}
-	for true {
+	for {
 		val, err := n.condition.execute()
 		if err != nil {
 			return nil, err
 		}
 		condition, ok := val.(bool)
 		if !ok {
-			return nil, fmt.Errorf("Condition should be a boolean")
+			return nil, fmt.Errorf("condition should be a boolean")
 		}
 		if !condition {
 			break
@@ -131,20 +131,26 @@ type forRangeNode struct {
 }
 
 func (n *forRangeNode) execute() (interface{}, error) {
-	end, e := n.end.execute()
-	if e != nil {
-		return nil, e
+	startAny, err := n.start.execute()
+	if err != nil {
+		return nil, err
 	}
-	start, e1 := n.start.execute()
-	if e1 != nil {
-		return nil, e1
+	start, ok := startAny.(int)
+	if !ok {
+		return nil, fmt.Errorf("start index should be an integer")
 	}
-
-	if !checkTypeAreNumeric(start, end) {
-		return nil,
-			fmt.Errorf("Please provide a valid integer range to iterate")
+	endAny, err := n.end.execute()
+	if err != nil {
+		return nil, err
 	}
-	for i := int(start.(float64)); i < int(end.(float64)); i++ {
+	end, ok := endAny.(int)
+	if !ok {
+		return nil, fmt.Errorf("end index should be an integer")
+	}
+	if start > end {
+		return nil, fmt.Errorf("start index should be lower than end index")
+	}
+	for i := start; i <= end; i++ {
 		_, err := (&assignNode{n.variable, &intLeaf{i}}).execute()
 		if err != nil {
 			return nil, err

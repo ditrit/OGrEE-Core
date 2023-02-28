@@ -13,7 +13,6 @@ import (
 	"os"
 	"os/exec"
 	"path"
-	"path/filepath"
 	"runtime"
 	"strconv"
 	"strings"
@@ -907,7 +906,7 @@ func Env(userVars, userFuncs map[string]interface{}) {
 	}
 }
 
-func LSOBJECT(x string, entity int, silence bool) []interface{} {
+func LSOBJECT(x string, entity int) []interface{} {
 	var obj map[string]interface{}
 	var Path string
 
@@ -930,8 +929,6 @@ func LSOBJECT(x string, entity int, silence bool) []interface{} {
 		}
 	}
 
-	objects := []interface{}{}
-
 	//Retrieve the desired objects under the working path
 	entStr := EntityToString(entity) + "s"
 	r, e := models.Send("GET", Path+"/"+entStr, GetKey(), nil)
@@ -939,20 +936,7 @@ func LSOBJECT(x string, entity int, silence bool) []interface{} {
 	if parsed == nil {
 		return nil
 	}
-
-	//Data verification and print block
-	objects = GetRawObjects(parsed)
-	if silence == false {
-		for i := range objects {
-			if object, ok := objects[i].(map[string]interface{}); ok {
-				if object["name"] != nil {
-					println(object["name"].(string))
-				}
-			}
-		}
-	}
-
-	return objects
+	return GetRawObjects(parsed)
 }
 
 func GetByAttr(x string, u interface{}) {
@@ -1085,10 +1069,10 @@ func CD(x string) string {
 		var pth string
 
 		if string(x[0]) != "/" {
-			pth = path.Clean(State.CurrPath + "/" + x)
+			pth = State.CurrPath + "/" + x
 			exist, _ = CheckPathOnline(pth)
 		} else {
-			pth = path.Clean(x)
+			pth = x
 			exist, _ = CheckPathOnline(pth)
 		}
 		if exist == true {
@@ -1105,7 +1089,6 @@ func CD(x string) string {
 			} else {
 				pth = x
 			}
-			pth = path.Clean(pth)
 			if FindNodeInTree(&State.TreeHierarchy, StrToStack(pth), true) != nil {
 				State.PrevPath = State.CurrPath
 				State.CurrPath = pth
@@ -1236,8 +1219,6 @@ func Tree(x string, depth int) {
 		println(State.CurrPath + "/" + x)
 		Path = State.CurrPath + "/" + x
 	}
-
-	Path = path.Clean(Path)
 	tree(Path, depth)
 }
 
@@ -2084,7 +2065,7 @@ func UIHighlight(objArg string) error {
 	return nil
 }
 
-func CameraMove(command string, position []interface{}, rotation []interface{}) {
+func CameraMove(command string, position []float64, rotation []float64) {
 	subdata := map[string]interface{}{"command": command}
 	subdata["position"] = map[string]interface{}{"x": position[0], "y": position[1], "z": position[2]}
 	subdata["rotation"] = map[string]interface{}{"x": rotation[0], "y": rotation[1]}
@@ -2516,7 +2497,7 @@ func objectCounter(parent *map[string]interface{}) int {
 // by retrieving the hierarchy. 'force' bool is useful
 // for scripting where the user can 'force' input if
 // the num objects to draw surpasses threshold
-func Draw(x string, depth int, force string) error {
+func Draw(x string, depth int, force bool) error {
 	obj, _ := GetObject(x, true)
 	if obj == nil {
 		return fmt.Errorf("object not found")
@@ -2534,7 +2515,7 @@ func Draw(x string, depth int, force string) error {
 		count := objectCounter(&obj)
 		if State.UnityClientAvail {
 			okToGo := true
-			if count > State.DrawThreshold && force == "" {
+			if count > State.DrawThreshold && !force {
 				msg := "You are about to send " + strconv.Itoa(count) +
 					" objects to the Unity 3D client. " +
 					"Do you want to continue ? (y/n)\n"
@@ -2544,9 +2525,9 @@ func Draw(x string, depth int, force string) error {
 				if ans != "y" && ans != "Y" {
 					okToGo = false
 				}
-			} else if force == "y" {
+			} else if force {
 				okToGo = true
-			} else if force == "n" && count > State.DrawThreshold {
+			} else if !force && count > State.DrawThreshold {
 				okToGo = false
 			}
 			if okToGo {
@@ -2798,7 +2779,7 @@ func LoadFile(path string) {
 	//Alternative to this would be to pass the LoadFile()
 	//function as an argument here
 	State.ScriptCalled = true
-	State.ScriptPath, _ = filepath.Abs(filepath.Clean(path))
+	State.ScriptPath = path
 }
 
 func LoadTemplate(data map[string]interface{}, filePath string) {
@@ -3058,7 +3039,7 @@ func InformUnity(caller string, entity int, data map[string]interface{}) error {
 }
 
 // x is path
-func LSOBJECTRecursive(x string, entity int, silence bool) []interface{} {
+func LSOBJECTRecursive(x string, entity int) []interface{} {
 	var obj map[string]interface{}
 	var Path string
 
@@ -3067,16 +3048,7 @@ func LSOBJECTRecursive(x string, entity int, silence bool) []interface{} {
 			r, e := models.Send("GET",
 				State.APIURL+"/api/tenants", GetKey(), nil)
 			obj = ParseResponse(r, e, "Get Tenants")
-			arr := LoadArrFromResp(obj, "objects")
-			if !silence {
-				for _, tenantInf := range arr {
-					if tenant, _ := LoadObjectFromInf(tenantInf); tenant != nil {
-						println(tenant["name"].(string))
-					}
-				}
-			}
-
-			return arr
+			return LoadArrFromResp(obj, "objects")
 		} else {
 			//Return nothing
 			return nil
@@ -3127,18 +3099,7 @@ func LSOBJECTRecursive(x string, entity int, silence bool) []interface{} {
 	//println(entities)
 	//println(obi)
 	//println("WANT:", EntityToString(entity))
-	res := lsobjHelperRecursive(State.APIURL, idToSend, obi, entity)
-	if !silence {
-		for i := range res {
-			if item, ok := res[i].(map[string]interface{}); ok {
-				if item != nil && item["name"] != nil {
-					println(item["name"].(string))
-				}
-			}
-		}
-	}
-
-	return res
+	return lsobjHelperRecursive(State.APIURL, idToSend, obi, entity)
 	//return nil
 }
 
@@ -3314,10 +3275,10 @@ func PreProPath(Path string) []string {
 		pathSplit = pathSplit[2:]
 	default:
 		if Path[0] != '/' && len(State.CurrPath) > 1 {
-			pathSplit = strings.Split(path.Clean(State.CurrPath+"/"+Path), "/")
+			pathSplit = strings.Split(State.CurrPath+"/"+Path, "/")
 			pathSplit = pathSplit[2:]
 		} else {
-			pathSplit = strings.Split(path.Clean(Path), "/")
+			pathSplit = strings.Split(Path, "/")
 			if strings.TrimSpace(pathSplit[0]) == "Physical" ||
 				strings.TrimSpace(pathSplit[0]) == "Logical" ||
 				strings.TrimSpace(pathSplit[0]) == "Enterprise" {

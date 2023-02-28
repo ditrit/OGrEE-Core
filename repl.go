@@ -20,10 +20,10 @@ import (
 	"github.com/joho/godotenv"
 )
 
-func InterpretLine(str *string) bool {
-	lex := NewLexer(strings.NewReader(*str))
-	result := yyParse(lex)
-	if result != 0 {
+func InterpretLine(str string) bool {
+	root, err := Parse(str)
+	if err != nil {
+		fmt.Println(err.Error())
 		return false
 	}
 	if root != nil {
@@ -115,7 +115,7 @@ func Repl(rl *readline.Instance, user string) {
 			if err != nil { // io.EOF
 				break
 			}
-			InterpretLine(&line)
+			InterpretLine(line)
 		}
 
 		//c.UpdateSessionState(&line)
