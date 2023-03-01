@@ -1016,6 +1016,10 @@ func parseTree(frame Frame) (node, Frame, *ParserError) {
 }
 
 func parseUi(frame Frame) (node, Frame, *ParserError) {
+	clearcache, frame := parseExact("clearcache", frame)
+	if clearcache {
+		return &uiClearCacheNode{}, frame, nil
+	}
 	key, valueFrame, err := parseAssign(frame)
 	if err != nil {
 		return nil, frame, err

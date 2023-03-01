@@ -2068,6 +2068,16 @@ func UIHighlight(objArg string) error {
 	return nil
 }
 
+func UIClearCache() error {
+	subdata := map[string]interface{}{"command": "clearcache", "data": ""}
+	data := map[string]interface{}{"type": "ui", "data": subdata}
+	if State.DebugLvl > WARNING {
+		Disp(data)
+	}
+	InformUnity("HandleUI", -1, data)
+	return nil
+}
+
 func CameraMove(command string, position []float64, rotation []float64) {
 	subdata := map[string]interface{}{"command": command}
 	subdata["position"] = map[string]interface{}{"x": position[0], "y": position[1], "z": position[2]}
