@@ -978,10 +978,9 @@ func parseMan(frame Frame) (node, Frame, *ParserError) {
 	if commandEnd(frame) {
 		return &helpNode{""}, frame, nil
 	}
-	endCommandName := findNext(" ", frame)
-	commandName := frame.until(endCommandName).str()
+	commandName, frame := parseCommandKeyWord(frame)
 	if !sliceContains(manCommands, commandName) {
-		return nil, frame, newParserError(frame, "unknown command")
+		return nil, frame, newParserError(frame, "no manual for this command")
 	}
 	return &helpNode{commandName}, frame, nil
 }
