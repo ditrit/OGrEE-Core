@@ -17,7 +17,7 @@ var noArgsCommands map[string]node
 
 var manCommands = []string{
 	"get", "getu", "getslot",
-	"+", "-", "=",
+	"+", "-", "=", ">",
 	".cmds", ".template", ".var",
 	"ui", "camera",
 	"link", "unlink",
@@ -26,6 +26,7 @@ var manCommands = []string{
 	"drawable", "draw", "undraw",
 	"tree", "lsog", "env", "cd", "pwd", "clear", "grep", "ls", "exit", "len", "man", "hc",
 	"print", "unset", "selection",
+	"for", "while", "if",
 }
 
 func sliceContains(slice []string, s string) bool {
