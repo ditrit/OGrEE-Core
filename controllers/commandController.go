@@ -1069,10 +1069,10 @@ func CD(x string) string {
 		var pth string
 
 		if string(x[0]) != "/" {
-			pth = State.CurrPath + "/" + x
+			pth = path.Clean(State.CurrPath + "/" + x)
 			exist, _ = CheckPathOnline(pth)
 		} else {
-			pth = x
+			pth = path.Clean(x)
 			exist, _ = CheckPathOnline(pth)
 		}
 		if exist == true {
@@ -1089,6 +1089,7 @@ func CD(x string) string {
 			} else {
 				pth = x
 			}
+			pth = path.Clean(pth)
 			if FindNodeInTree(&State.TreeHierarchy, StrToStack(pth), true) != nil {
 				State.PrevPath = State.CurrPath
 				State.CurrPath = pth
@@ -1219,6 +1220,8 @@ func Tree(x string, depth int) {
 		println(State.CurrPath + "/" + x)
 		Path = State.CurrPath + "/" + x
 	}
+
+	Path = path.Clean(Path)
 	tree(Path, depth)
 }
 
@@ -3275,10 +3278,10 @@ func PreProPath(Path string) []string {
 		pathSplit = pathSplit[2:]
 	default:
 		if Path[0] != '/' && len(State.CurrPath) > 1 {
-			pathSplit = strings.Split(State.CurrPath+"/"+Path, "/")
+			pathSplit = strings.Split(path.Clean(State.CurrPath+"/"+Path), "/")
 			pathSplit = pathSplit[2:]
 		} else {
-			pathSplit = strings.Split(Path, "/")
+			pathSplit = strings.Split(path.Clean(Path), "/")
 			if strings.TrimSpace(pathSplit[0]) == "Physical" ||
 				strings.TrimSpace(pathSplit[0]) == "Logical" ||
 				strings.TrimSpace(pathSplit[0]) == "Enterprise" {

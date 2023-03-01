@@ -6,6 +6,7 @@ import (
 	"cli/readline"
 	"container/list"
 	"net/http"
+	"path"
 	"strings"
 	"time"
 )
@@ -132,7 +133,7 @@ func FetchNodesAtLevel(Path string) []string {
 	names := []string{}
 	urls := []string{}
 
-	paths := strings.Split(Path, "/")
+	paths := strings.Split(path.Clean(Path), "/")
 
 	/*if len(paths) == 1 || len(paths) == 0 {
 		println("DEBUG only / encountered")
@@ -202,7 +203,7 @@ func FetchJsonNodesAtLevel(Path string) []map[string]interface{} {
 	objects := []map[string]interface{}{}
 	urls := []string{}
 
-	paths := strings.Split(Path, "/")
+	paths := strings.Split(path.Clean(Path), "/")
 
 	if len(paths) == 2 && paths[1] == "Physical" {
 		x := NodesAtLevel(&State.TreeHierarchy, *StrToStack(Path))
@@ -288,7 +289,7 @@ func FetchJsonNodesAtLevel(Path string) []map[string]interface{} {
 // func will still verify it with local tree
 func CheckPathOnline(Path string) (bool, string) {
 
-	pathSplit := strings.Split(Path, "/")
+	pathSplit := strings.Split(path.Clean(Path), "/")
 
 	//Check if path refers to object in local State Tree
 	//There is an edge case for Stray object paths ending
