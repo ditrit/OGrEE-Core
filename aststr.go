@@ -37,6 +37,9 @@ func (n pathNode) getStr() (string, error) {
 	if p == "_" {
 		return "_", nil
 	}
+	if p == "-" {
+		return cmd.State.PrevPath, nil
+	}
 	var output_words []string
 	if p[0] != '/' {
 		output_words = strings.Split(cmd.State.CurrPath, "/")[1:]
