@@ -282,6 +282,8 @@ func vec4(x float64, y float64, z float64, w float64) node {
 var commandsMatching = map[string]node{
 	"man":                            &helpNode{""},
 	"man draw":                       &helpNode{"draw"},
+	"man camera":                     &helpNode{"camera"},
+	"man ui":                         &helpNode{"ui"},
 	"ls":                             &lsNode{&pathNode{&strLeaf{""}}},
 	"get ${toto}/tata":               &getObjectNode{testPath},
 	"getu rackA 42":                  &getUNode{&pathNode{&strLeaf{"rackA"}}, &intLeaf{42}},
