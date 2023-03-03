@@ -1,0 +1,1025 @@
+{
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
+  "schemes": [
+    "http"
+  ],
+  "swagger": "2.0",
+  "info": {
+    "description": "Testing Swagger spec. It's still in progress\n\nThe API may return incorrect response codes and have bugs.",
+    "title": "Golang OGREE API",
+    "contact": {
+      "name": "Ziad Khalaf",
+      "email": "ziad.khalaf@orness.com"
+    },
+    "version": "1.0"
+  },
+  "basePath": "/api/user",
+  "paths": {
+    "/api": {
+      "post": {
+        "description": "Create an account with Email credentials, it returns\na JWT key to use with the API. The\nauthorize and 'Try it out' buttons don't work",
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "auth"
+        ],
+        "summary": "Generate credentials for a user.",
+        "operationId": "Create",
+        "parameters": [
+          {
+            "type": "string",
+            "default": "infiniti@nissan.com",
+            "description": "Your Email Address",
+            "name": "username",
+            "in": "body",
+            "required": true
+          },
+          {
+            "format": "password",
+            "default": "secret",
+            "description": "Your password",
+            "name": "password",
+            "in": "json",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Authenticated"
+          },
+          "400": {
+            "description": "Bad request"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      },
+      "options": {
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "auth"
+        ],
+        "summary": "Displays possible operations for the resource in response header.",
+        "operationId": "CreateOptions",
+        "responses": {
+          "200": {
+            "description": "Returns header with possible operations"
+          }
+        }
+      }
+    },
+    "/api/login": {
+      "post": {
+        "description": "Create a new JWT Key. This can also be used to verify credentials\nThe authorize and 'Try it out' buttons don't work",
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "auth"
+        ],
+        "summary": "Generates a new JWT Key for the client.",
+        "operationId": "Authenticate",
+        "parameters": [
+          {
+            "type": "string",
+            "default": "infiniti@nissan.com",
+            "description": "Your Email Address",
+            "name": "username",
+            "in": "body",
+            "required": true
+          },
+          {
+            "format": "password",
+            "default": "secret",
+            "description": "Your password",
+            "name": "password",
+            "in": "json",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Authenticated"
+          },
+          "400": {
+            "description": "Bad request"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      },
+      "options": {
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "auth"
+        ],
+        "summary": "Displays possible operations for the resource in response header.",
+        "operationId": "CreateOptions"
+      }
+    },
+    "/api/stats": {
+      "get": {
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "objects"
+        ],
+        "summary": "Displays DB statistics.",
+        "operationId": "GetStats"
+      }
+    },
+    "/api/tempunits/{id}": {
+      "get": {
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "tempunits"
+        ],
+        "summary": "Gets the temperatureUnit attribute of the parent site of given object.",
+        "operationId": "GetTempUnit",
+        "parameters": [
+          {
+            "description": "ID of any object.",
+            "name": "id",
+            "in": "query",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Found. A response body will be returned with a meaningful message."
+          },
+          "404": {
+            "description": "Nothing Found. An error message will be returned."
+          }
+        }
+      },
+      "options": {
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "tempunits"
+        ],
+        "summary": "Gets the possible operations of the parent site tempunit of given object.",
+        "operationId": "GetTempUnit",
+        "parameters": [
+          {
+            "description": "ID of any object.",
+            "name": "id",
+            "in": "query",
+            "required": true
+          }
+        ]
+      }
+    },
+    "/api/token/valid": {
+      "get": {
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "auth"
+        ],
+        "summary": "A custom client specified URL for verifying if their key is valid.",
+        "operationId": "VerifyToken",
+        "responses": {
+          "200": {
+            "description": "Authenticated"
+          },
+          "400": {
+            "description": "Bad request"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      },
+      "options": {
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "auth"
+        ],
+        "summary": "Displays possible operations for the resource in response header.",
+        "operationId": "VerifyToken"
+      }
+    },
+    "/api/validate/{obj}": {
+      "post": {
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "objects"
+        ],
+        "summary": "Checks the received data and verifies if the object can be created in the system.",
+        "operationId": "ValidateObject",
+        "parameters": [
+          {
+            "type": "string",
+            "default": "sites",
+            "description": "Indicates the Object. Only values of \"tenants\", \"sites\", \"buildings\", \"rooms\", \"racks\", \"devices\", \"acs\", \"panels\", \"cabinets\", \"groups\", \"corridors\", \"room-templates\", \"obj-templates\", \"bldg-templates\",\"sensors\", \"stray-devices\" \"stray-sensors\" are acceptable",
+            "name": "objs",
+            "in": "query",
+            "required": true
+          },
+          {
+            "type": "string",
+            "default": "Object A",
+            "description": "Name of object",
+            "name": "Name",
+            "in": "query",
+            "required": true
+          },
+          {
+            "type": "string",
+            "default": "Research",
+            "description": "Category of Object (ex. Consumer Electronics, Medical)",
+            "name": "Category",
+            "in": "query",
+            "required": true
+          },
+          {
+            "type": "string",
+            "default": 999,
+            "description": "Domain of Object",
+            "name": "Domain",
+            "required": true
+          },
+          {
+            "type": "int",
+            "default": 999,
+            "description": "All objects are linked to a parent with the exception of Tenant since it has no parent",
+            "name": "ParentID",
+            "required": true
+          },
+          {
+            "type": "string[]",
+            "default": [
+              "Some abandoned object in Grenoble"
+            ],
+            "description": "Description of Object",
+            "name": "Description",
+            "in": "query"
+          },
+          {
+            "type": "json",
+            "description": "Any other object attributes can be added. They are required depending on the obj type.",
+            "name": "Attributes",
+            "in": "query",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Createable. A response body will be returned with a meaningful message."
+          },
+          "400": {
+            "description": "Bad request. A response body with an error message will be returned."
+          },
+          "404": {
+            "description": "Not Found. An error message will be returned."
+          }
+        }
+      },
+      "options": {
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "objects"
+        ],
+        "summary": "Displays possible operations for the resource in response header.",
+        "operationId": "ValidateObjectOptions",
+        "parameters": [
+          {
+            "description": "Only values of \"tenants\", \"sites\", \"buildings\", \"rooms\", \"racks\", \"devices\", \"room-templates\", \"obj-templates\", \"bldg-templates\",\"rooms\", \"acs\", \"panels\", \"cabinets\", \"groups\", \"corridors\",\"sensors\",\"stray-devices\" \"stray-sensors\" are acceptable",
+            "name": "obj",
+            "in": "query"
+          }
+        ]
+      }
+    },
+    "/api/version": {
+      "get": {
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "versioning"
+        ],
+        "summary": "Gets the API version.",
+        "operationId": "GetAPIVersion",
+        "responses": {
+          "200": {
+            "description": "OK. A response body will be returned with version details."
+          }
+        }
+      },
+      "options": {
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "versioning"
+        ],
+        "summary": "Displays possible operations for version.",
+        "operationId": "VersionOptions"
+      }
+    },
+    "/api/{entity}/{name}/all": {
+      "get": {
+        "description": "Returns JSON body with all subobjects under the Tenant",
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "objects"
+        ],
+        "summary": "Obtain all objects related to Tenant or stray-device in the system using name.",
+        "operationId": "GetFromObject",
+        "parameters": [
+          {
+            "type": "int",
+            "default": 999,
+            "description": "Name of Tenant",
+            "name": "name",
+            "in": "query",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Found. A response body will be returned with a meaningful message."
+          },
+          "404": {
+            "description": "Nothing Found. An error message will be returned."
+          }
+        }
+      },
+      "options": {
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "objects"
+        ],
+        "summary": "Displays possible operations for the resource in response header.",
+        "operationId": "GetFromObjectOptions",
+        "parameters": [
+          {
+            "description": "Name of tenant.",
+            "name": "name",
+            "in": "query"
+          }
+        ]
+      }
+    },
+    "/api/{objs}": {
+      "get": {
+        "description": "Returns JSON body with all specified objects of type and their IDs",
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "objects"
+        ],
+        "summary": "Gets all present objects for specified category in the system.",
+        "operationId": "GetAllObjects",
+        "parameters": [
+          {
+            "type": "string",
+            "default": "sites",
+            "description": "Indicates the location. Only values of \"tenants\", \"sites\", \"buildings\", \"rooms\", \"racks\", \"devices\", \"room-templates\", \"obj-templates\",\"acs\", \"panels\", \"cabinets\", \"groups\", \"corridors\", \"sensors\", \"stray-devices\", \"stray-sensors\" are acceptable",
+            "name": "objs",
+            "in": "query",
+            "required": true
+          }
+        ]
+      }
+    },
+    "/api/{objs}/*": {
+      "options": {
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "objects"
+        ],
+        "summary": "Displays possible operations for the resource in response header.",
+        "operationId": "ObjectOptions",
+        "parameters": [
+          {
+            "description": "Only values of \"tenants\", \"sites\", \"buildings\", \"rooms\", \"racks\", \"devices\", \"room-templates\", \"obj-templates\", \"bldg-templates\",\"rooms\", \"acs\", \"panels\", \"cabinets\", \"groups\", \"corridors\",\"sensors\",\"stray-devices\" \"stray-sensors\" are acceptable",
+            "name": "objs",
+            "in": "query"
+          }
+        ]
+      }
+    },
+    "/api/{objs}/{id}": {
+      "get": {
+        "description": "The ID must be provided in the URL parameter\nThe name can be used instead of ID if the obj is tenant",
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "objects"
+        ],
+        "summary": "Gets an Object from the system.",
+        "operationId": "GetObject",
+        "parameters": [
+          {
+            "type": "string",
+            "default": "sites",
+            "description": "Indicates the location. Only values of \"tenants\", \"sites\", \"buildings\", \"rooms\", \"racks\", \"devices\", \"room-templates\", \"obj-templates\", \"bldg-templates\",\"acs\", \"panels\",\"cabinets\", \"groups\", \"corridors\",\"sensors\",\"stray-devices\", \"stray-sensors\" are acceptable",
+            "name": "objs",
+            "in": "query",
+            "required": true
+          },
+          {
+            "type": "int",
+            "default": 999,
+            "description": "ID of desired object or Name of Tenant. For templates the slug is the ID. For stray-devices the name is the ID",
+            "name": "ID",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Found. A response body will be returned with a meaningful message."
+          },
+          "400": {
+            "description": "Bad request. An error message will be returned."
+          },
+          "404": {
+            "description": "Not Found. An error message will be returned."
+          }
+        }
+      },
+      "put": {
+        "description": "This method will replace the existing data with the JSON\nreceived, thus fully replacing the data. If you do not\nwant to do this, please use PATCH.\nIf the operation succeeds, the data result will be returned.\nIf no new or any information is provided\nan OK will still be returned",
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "objects"
+        ],
+        "summary": "Changes Object data in the system.",
+        "operationId": "UpdateObject",
+        "parameters": [
+          {
+            "type": "string",
+            "default": "sites",
+            "description": "Indicates the location. Only values of \"tenants\", \"sites\", \"buildings\", \"rooms\", \"racks\", \"devices\", \"room-templates\", \"obj-templates\", \"bldg-templates\",\"rooms\",\"acs\", \"panels\", \"cabinets\", \"groups\", \"corridors\",\"sensors\", \"stray-devices\", \"stray-sensors\" are acceptable",
+            "name": "objs",
+            "in": "query",
+            "required": true
+          },
+          {
+            "type": "int",
+            "default": 999,
+            "description": "ID of the object or name of Tenant. For templates the slug is the ID. For stray-devices the name is the ID",
+            "name": "ID",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "default": "INFINITI",
+            "description": "Name of Object",
+            "name": "Name",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "default": "Auto",
+            "description": "Category of Object (ex. Consumer Electronics, Medical)",
+            "name": "Category",
+            "in": "query"
+          },
+          {
+            "type": "string[]",
+            "default": "High End Worldwide automotive company",
+            "description": "Description of Object",
+            "name": "Description",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "default": "High End Auto",
+            "description": "Domain of the Object",
+            "name": "Domain"
+          },
+          {
+            "type": "json",
+            "description": "Any other object attributes can be updated",
+            "name": "Attributes",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Updated. A response body will be returned with a meaningful message."
+          },
+          "400": {
+            "description": "Bad request. An error message will be returned."
+          },
+          "404": {
+            "description": "Not Found. An error message will be returned."
+          }
+        }
+      },
+      "delete": {
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "objects"
+        ],
+        "summary": "Deletes an Object in the system.",
+        "operationId": "DeleteObject",
+        "parameters": [
+          {
+            "type": "string",
+            "default": "sites",
+            "description": "Indicates the location. Only values of \"tenants\", \"sites\", \"buildings\", \"rooms\", \"racks\", \"devices\", \"room-templates\", \"obj-templates\",\"acs\", \"panels\", \"cabinets\", \"groups\", \"corridors\",\"sensors\", \"stray-devices\" \"stray-sensors\" are acceptable",
+            "name": "objs",
+            "in": "query",
+            "required": true
+          },
+          {
+            "type": "int",
+            "default": 999,
+            "description": "ID of the object or name of Tenant. For templates the slug is the ID. For stray-devices the name is the ID",
+            "name": "ID",
+            "in": "path",
+            "required": true
+          }
+        ]
+      },
+      "options": {
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "objects"
+        ],
+        "summary": "Displays possible operations for the resource in response header.",
+        "operationId": "ObjectOptions",
+        "parameters": [
+          {
+            "description": "Only values of \"tenants\", \"sites\", \"buildings\", \"rooms\", \"racks\", \"devices\", \"room-templates\", \"obj-templates\", \"bldg-templates\",\"acs\", \"panels\",\"cabinets\", \"groups\", \"corridors\",\"sensors\",\"stray-devices\",\"stray-sensors\", are acceptable",
+            "name": "objs",
+            "in": "query"
+          },
+          {
+            "description": "ID of the object or name of Tenant. For templates the slug is the ID. For stray-devices the name is the ID",
+            "name": "id",
+            "in": "query"
+          }
+        ]
+      },
+      "patch": {
+        "description": "This is the preferred method for modifying data in the system.\nIf you want to do a full data replace, please use PUT instead.\nIf the operation succeeds, the data result will be returned.\nIf no new or any information is provided\nan OK will still be returned",
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "objects"
+        ],
+        "summary": "Partially update data in the system.",
+        "operationId": "PartialUpdateObject",
+        "parameters": [
+          {
+            "type": "string",
+            "default": "sites",
+            "description": "Indicates the location. Only values of \"tenants\", \"sites\", \"buildings\", \"rooms\", \"racks\", \"devices\", \"room-templates\", \"obj-templates\", \"bldg-templates\",\"rooms\", \"acs\", \"panels\", \"cabinets\", \"groups\", \"corridors\", \"sensors\", \"stray-devices\", \"stray-sensors\" are acceptable",
+            "name": "objs",
+            "in": "query",
+            "required": true
+          },
+          {
+            "type": "int",
+            "default": 999,
+            "description": "ID of the object or name of Tenant. For templates the slug is the ID. For stray-devices the name is the ID",
+            "name": "ID",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "default": "INFINITI",
+            "description": "Name of Object",
+            "name": "Name",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "default": "Auto",
+            "description": "Category of Object (ex. Consumer Electronics, Medical)",
+            "name": "Category",
+            "in": "query"
+          },
+          {
+            "type": "string[]",
+            "default": "High End Worldwide automotive company",
+            "description": "Description of Object",
+            "name": "Description",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "default": "High End Auto",
+            "description": "Domain of the Object",
+            "name": "Domain"
+          },
+          {
+            "type": "json",
+            "description": "Any other object attributes can be updated",
+            "name": "Attributes",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Updated. A response body will be returned with a meaningful message."
+          },
+          "400": {
+            "description": "Bad request. An error message will be returned."
+          },
+          "404": {
+            "description": "Not Found. An error message will be returned."
+          }
+        }
+      }
+    },
+    "/api/{objs}/{id}/*": {
+      "get": {
+        "description": "The path can only contain object type or object names",
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "objects"
+        ],
+        "summary": "A category of objects of a Parent Object can be retrieved from the system.",
+        "operationId": "GetFromObect",
+        "parameters": [
+          {
+            "type": "string",
+            "default": "sites",
+            "description": "Indicates the object. Only values of \"tenants\", \"sites\", \"buildings\", \"rooms\", \"racks\", \"devices\", \"stray-devices\" are acceptable",
+            "name": "objs",
+            "in": "query",
+            "required": true
+          },
+          {
+            "type": "string",
+            "default": "INFINITI",
+            "description": "ID of desired object. For tenants and stray-devices the name can be used as the ID",
+            "name": "ID",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "default": "/buildings/BuildingB/RoomA",
+            "description": "Hierarchal path to desired object(s). For rooms it can additionally have \"acs\",\"panels\", \"corridors\", \"sensors\" and \"cabinets\". For devices it can have \"sensors\" For racks it can have \"sensors\"",
+            "name": "*",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Found. A response body will be returned with a meaningful message."
+          },
+          "404": {
+            "description": "Not Found. An error message will be returned."
+          }
+        }
+      },
+      "options": {
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "objects"
+        ],
+        "summary": "Displays possible operations for the resource in response header.",
+        "operationId": "GetFromObjectOptions",
+        "parameters": [
+          {
+            "description": "Only values of \"tenants\", \"sites\", \"buildings\", \"rooms\", \"racks\", \"devices\", and \"stray-devices\" are acceptable",
+            "name": "objs",
+            "in": "query"
+          },
+          {
+            "description": "ID of the object.For tenants and stray-devices the name can be used as the ID",
+            "name": "id",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "default": "/buildings/BuildingB/RoomA",
+            "description": "Hierarchal path to desired object(s). For rooms it can additionally have \"acs\",\"panels\", \"corridors\", \"sensors\" and \"cabinets\". For devices it can have \"sensors\" For racks it can have \"sensors\"",
+            "name": "*",
+            "in": "path",
+            "required": true
+          }
+        ]
+      }
+    },
+    "/api/{objs}/{id}/all": {
+      "get": {
+        "description": "Returns JSON body with all subobjects under the Object.\nNote that objects returned will also included relevant objects.\n(ie Room will contain acs, panels etc. Racks and devices will contain sensors)",
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "objects"
+        ],
+        "summary": "Obtain all objects related to specified object in the system.",
+        "operationId": "GetFromObject",
+        "parameters": [
+          {
+            "type": "string",
+            "default": "sites",
+            "description": "Indicates the object. Only values of \"tenants\", \"sites\", \"buildings\", \"rooms\", \"racks\", \"devices\", \"stray-devices\" are acceptable",
+            "name": "objs",
+            "in": "query",
+            "required": true
+          },
+          {
+            "type": "int",
+            "default": 999,
+            "description": "ID of object. For tenants and stray-devices the name can be used as the ID",
+            "name": "ID",
+            "in": "query",
+            "required": true
+          },
+          {
+            "type": "string",
+            "default": 1,
+            "description": "Limits the level of hierarchy for retrieval. if not specified for devices then the default value is maximum. Example: /api/devices/{id}/all?limit=2",
+            "name": "limit",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Found. A response body will be returned with a meaningful message."
+          },
+          "404": {
+            "description": "Nothing Found. An error message will be returned."
+          }
+        }
+      },
+      "options": {
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "objects"
+        ],
+        "summary": "Displays possible operations for the resource in response header.",
+        "operationId": "GetFromObjectOptions",
+        "parameters": [
+          {
+            "description": "Only values of \"tenants\", \"sites\", \"buildings\", \"rooms\", \"racks\", \"devices\", and \"stray-devices\" are acceptable",
+            "name": "objs",
+            "in": "query"
+          },
+          {
+            "description": "ID of the object.For tenants and stray-devices the name can be used as the ID",
+            "name": "id",
+            "in": "query"
+          }
+        ]
+      }
+    },
+    "/api/{objs}?": {
+      "get": {
+        "description": "Gets an Object using any attribute (with the exception of description)\nvia query in the system\nThe attributes are in the form {attr}=xyz\u0026{attr1}=abc\nAnd any combination can be used given that at least 1 is provided.",
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "objects"
+        ],
+        "operationId": "GetObject",
+        "parameters": [
+          {
+            "type": "string",
+            "default": "sites",
+            "description": "Indicates the object. Only values of \"tenants\", \"sites\", \"buildings\", \"rooms\", \"racks\", \"devices\", \"room-templates\", \"obj-templates\",\"acs\",\"panels\", \"groups\", \"corridors\", \"sensors\", \"stray-devices\" and \"stray-sensors\" are acceptable",
+            "name": "objs",
+            "in": "query",
+            "required": true
+          },
+          {
+            "type": "string",
+            "default": "INFINITI",
+            "description": "Name of tenant",
+            "name": "Name",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "default": "Auto",
+            "description": "Category of Tenant (ex. Consumer Electronics, Medical)",
+            "name": "Category",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "default": "High End Auto",
+            "description": "Domain of the Tenant",
+            "name": "Domain"
+          },
+          {
+            "type": "json",
+            "description": "Any other object attributes can be queried",
+            "name": "Attributes",
+            "in": "query"
+          }
+        ]
+      }
+    },
+    "/api/{obj}": {
+      "post": {
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "objects"
+        ],
+        "summary": "Creates an object in the system.",
+        "operationId": "CreateObject",
+        "parameters": [
+          {
+            "type": "string",
+            "default": "sites",
+            "description": "Indicates the Object. Only values of \"tenants\", \"sites\", \"buildings\", \"rooms\", \"racks\", \"devices\", \"acs\", \"panels\", \"cabinets\", \"groups\", \"corridors\", \"room-templates\", \"obj-templates\", \"bldg-templates\",\"sensors\", \"stray-devices\", \"stray-sensors\" are acceptable",
+            "name": "objs",
+            "in": "query",
+            "required": true
+          },
+          {
+            "type": "string",
+            "default": "Object A",
+            "description": "Name of object",
+            "name": "Name",
+            "in": "query",
+            "required": true
+          },
+          {
+            "type": "string",
+            "default": "Research",
+            "description": "Category of Object (ex. Consumer Electronics, Medical)",
+            "name": "Category",
+            "in": "query",
+            "required": true
+          },
+          {
+            "type": "string",
+            "default": 999,
+            "description": "Domain of Object",
+            "name": "Domain",
+            "required": true
+          },
+          {
+            "type": "int",
+            "default": 999,
+            "description": "All objects are linked to a parent with the exception of Tenant since it has no parent",
+            "name": "ParentID",
+            "required": true
+          },
+          {
+            "type": "string[]",
+            "default": [
+              "Some abandoned object in Grenoble"
+            ],
+            "description": "Description of Object",
+            "name": "Description",
+            "in": "query"
+          },
+          {
+            "type": "json",
+            "description": "Any other object attributes can be added. They are required depending on the obj type.",
+            "name": "Attributes",
+            "in": "query",
+            "required": true
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Created. A response body will be returned with a meaningful message."
+          },
+          "400": {
+            "description": "Bad request. A response body with an error message will be returned."
+          }
+        }
+      }
+    },
+    "/api/{obj}/{id}/{subent}": {
+      "get": {
+        "description": "For Example: /api/tenants/{id}/buildings\nWill return all buildings of a tenant\nReturns JSON body with all subobjects under the Object",
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "objects"
+        ],
+        "summary": "Obtain all objects 2 levels lower in the system.",
+        "operationId": "GetFromObject",
+        "parameters": [
+          {
+            "type": "string",
+            "default": "tenants",
+            "description": "Indicates the object. Only values of \"tenants\", \"sites\", \"buildings\", \"rooms\" are acceptable",
+            "name": "obj",
+            "in": "query",
+            "required": true
+          },
+          {
+            "type": "int",
+            "default": 999,
+            "description": "ID of object",
+            "name": "ID",
+            "in": "query",
+            "required": true
+          },
+          {
+            "type": "string",
+            "default": "buildings",
+            "description": "Objects which 2 are levels lower in the hierarchy.",
+            "name": "subent",
+            "in": "query",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Found. A response body will be returned with a meaningful message."
+          },
+          "404": {
+            "description": "Nothing Found. An error message will be returned."
+          }
+        }
+      },
+      "options": {
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "objects"
+        ],
+        "summary": "Displays possible operations for the resource in response header.",
+        "operationId": "GetFromObjectOptions",
+        "parameters": [
+          {
+            "description": "Only values of \"tenants\", \"sites\", \"buildings\", \"rooms\", \"racks\", \"devices\", and \"stray-devices\" are acceptable",
+            "name": "objs",
+            "in": "query"
+          },
+          {
+            "description": "ID of the object. For stray-devices and tenants the name can be used as the ID.",
+            "name": "id",
+            "in": "query"
+          },
+          {
+            "description": "This refers to the sub object under the objs parameter. Please refer to the OGREE wiki to better understand what objects can be considered as sub objects.",
+            "name": "subent",
+            "in": "query"
+          }
+        ]
+      }
+    }
+  },
+  "securityDefinitions": {
+    "JWT": {
+      "type": "jwt",
+      "name": "Authorization",
+      "in": "header"
+    }
+  }
+}

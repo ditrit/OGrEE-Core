@@ -1,0 +1,11 @@
+gocontacts
+gocontacts/*
+jenkins
+jenkins/*
+main
+ogreedb/
+mongod.log
+mdb/*
+*.txt
+resources/debug.log
+*.DS_Store

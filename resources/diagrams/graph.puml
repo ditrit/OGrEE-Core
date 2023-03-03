@@ -1,0 +1,15 @@
+@startuml
+class Token {
++UserId: uint
++: StandardClaims
+
+}
+class Account {
++: Model
++Email: string
++Password: string
++Token: string
++*Validate(): map[string]interface, bool
++*Create(): map[string]interface
+}
+@enduml

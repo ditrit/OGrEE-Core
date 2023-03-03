@@ -1,0 +1,6239 @@
+{
+	"info": {
+		"_postman_id": "4e21f62c-f1f8-4865-8d81-5b55c8d4b16a",
+		"name": "Basic Functionality (MDB)",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Populate DB 1",
+			"item": [
+				{
+					"name": "Create Tenant",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var data = pm.response.json();",
+									"tests[\"Successful POST Request\"] = responseCode.code === 201;",
+									"",
+									"pm.environment.set(\"TenantID\", data[\"data\"][\"id\"])",
+									"pm.environment.set(\"TenantName\", data[\"data\"][\"name\"])",
+									"console.log(\"The ID is: \", data[\"data\"][\"id\"])",
+									"pm.environment.set(\"TenantJSON\", data[\"data\"])"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{AuthToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"DEMO\",\n  \"parentId\": null,\n  \"category\": \"tenant\",\n  \"description\": [],\n  \"domain\": \"DEMO\",\n  \"attributes\": {\n    \"color\": \"FFFFFF\",\n    \"mainContact\": \"Ced\",\n    \"mainPhone\": \"0612345678\",\n    \"mainEmail\": \"ced@ogree3D.com\"\n  }\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{URL}}/api/tenants",
+							"host": [
+								"{{URL}}"
+							],
+							"path": [
+								"api",
+								"tenants"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Verify Create Tenant",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"tests[\"Successful GET\"] = responseCode.code === 200;",
+									"var data =  pm.response.json()[\"data\"];",
+									"var OGdata = pm.environment.get(\"TenantJSON\");",
+									"",
+									"function isEqual(x, y) {",
+									"    // if both are function",
+									"    if (x instanceof Function) {",
+									"        if (y instanceof Function) {",
+									"            return x.toString() === y.toString();",
+									"        }",
+									"        return false;",
+									"    }",
+									"    if (x === null || x === undefined || y === null || y === undefined) { return x === y; }",
+									"    if (x === y || x.valueOf() === y.valueOf()) { return true; }",
+									"",
+									"    // if one of them is date, they must had equal valueOf",
+									"    if (x instanceof Date) { return false; }",
+									"    if (y instanceof Date) { return false; }",
+									"",
+									"    // if they are not function or strictly equal, they both need to be Objects",
+									"    if (!(x instanceof Object)) { return false; }",
+									"    if (!(y instanceof Object)) { return false; }",
+									"",
+									"    var p = Object.keys(x);",
+									"    return Object.keys(y).every(function (i) { return p.indexOf(i) !== -1; }) ?",
+									"            p.every(function (i) { return isEqual(x[i], y[i]); }) : false;",
+									"}",
+									"",
+									"function isEqualsJson(obj1, obj2) {",
+									"    const obj1Keys = Object.keys(obj1);",
+									"    const obj2Keys = Object.keys(obj2);",
+									"",
+									"    if(obj1Keys.length !== obj2Keys.length) {",
+									"        return false;",
+									"    }",
+									"",
+									"    for (let objKey of obj1Keys) {",
+									"        if (obj1[objKey] !== obj2[objKey]) {",
+									"            if(typeof obj1[objKey] == \"object\" && typeof obj2[objKey] == \"object\") {",
+									"                if(!isEqual(obj1[objKey], obj2[objKey])) {",
+									"                    return false;",
+									"                }",
+									"            } ",
+									"            else {",
+									"                return false;",
+									"            }",
+									"        }",
+									"    }",
+									"",
+									"    return true;",
+									"}",
+									"",
+									"",
+									"",
+									"/*var locjson = {",
+									"    \"data\": {",
+									"            \"attributes\": {",
+									"            \"color\": \"FFFFFF\",",
+									"            \"mainContact\": \"Ced\",",
+									"            \"mainEmail\": \"ced@ogree3D.com\",",
+									"            \"mainPhone\": \"0612345678\"",
+									"        },",
+									"        \"category\": \"tenant\",",
+									"        \"description\": [],",
+									"        \"domain\": \"DEMO\",",
+									"        \"_id\": pm.environment.get(\"TenantID\"),",
+									"        \"name\": \"DEMO\",",
+									"        \"parentId\": null",
+									"    },",
+									"    \"message\": \"success\",",
+									"    \"status\": true",
+									"};*/",
+									"",
+									"/*function isEqualsJson(obj1, obj2) {",
+									"    return JSON.stringify(obj1) == JSON.stringify(obj2)",
+									"}*/",
+									"",
+									"",
+									"tests[\"Successful Create & Get Request\"] = isEqualsJson(data, OGdata) == true;"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{AuthToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{AuthToken}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{URL}}/api/tenants/{{TenantID}}",
+							"host": [
+								"{{URL}}"
+							],
+							"path": [
+								"api",
+								"tenants",
+								"{{TenantID}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create Site",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var data = pm.response.json();",
+									"tests[\"Successful POST Request\"] = responseCode.code === 201;",
+									"",
+									"pm.environment.set(\"SiteID\", data[\"data\"][\"id\"])",
+									"pm.environment.set(\"SiteJSONStr\", JSON.stringify(data));"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{AuthToken}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"ALPHA\",\n    \"parentId\": \"{{TenantID}}\",\n    \"category\": \"site\",\n    \"description\": [\n        \"This is a demo...\"\n    ],\n    \"domain\": \"DEMO\",\n    \"attributes\": {\n        \"orientation\": \"NW\",\n        \"usableColor\": \"5BDCFF\",\n        \"reservedColor\": \"AAAAAA\",\n        \"technicalColor\": \"D0FF78\",\n        \"address\": \"1 rue bidule\",\n        \"zipcode\": \"42000\",\n        \"city\": \"Truc\",\n        \"country\": \"FRANCE\",\n        \"gps\": \"[1,2,0]\"\n    }\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{URL}}/api/sites",
+							"host": [
+								"{{URL}}"
+							],
+							"path": [
+								"api",
+								"sites"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Verify Create Site",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"tests[\"Successful GET\"] = responseCode.code === 200;",
+									"var jsonData =  pm.response.json();",
+									"",
+									"var locjson = {",
+									"    \"data\": {",
+									"        \"id\": \"649654546428854273\",",
+									"        \"name\": \"ALPHA\",",
+									"        \"category\": \"site\",",
+									"        \"domain\": \"DEMO\",",
+									"        \"parentId\": \"649654546050613249\",",
+									"        \"description\": [",
+									"            \"This is a demo...\"",
+									"        ],",
+									"        \"attributes\": {",
+									"            \"orientation\": \"NW\",",
+									"            \"usableColor\": \"5BDCFF\",",
+									"            \"reservedColor\": \"AAAAAA\",",
+									"            \"technicalColor\": \"D0FF78\",",
+									"            \"address\": \"1 rue bidule\",",
+									"            \"zipcode\": \"42000\",",
+									"            \"city\": \"Truc\",",
+									"            \"country\": \"FRANCE\",",
+									"            \"gps\": \"[1,2,0]\"",
+									"        }",
+									"    },",
+									"    \"message\": \"success\",",
+									"    \"status\": true",
+									"};",
+									"",
+									"function isEqualsJson(obj1, obj2) {",
+									"    return JSON.stringify(obj1) == JSON.stringify(obj2)",
+									"}",
+									"",
+									"",
+									"tests[\"Successful Create & Get Request\"] = locjson,jsonData == true;"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{AuthToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [
+							{
+								"warning": "This is a duplicate header and will be overridden by the Authorization header generated by Postman.",
+								"key": "Authorization",
+								"value": "{{AuthToken}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{URL}}/api/sites/{{SiteID}}",
+							"host": [
+								"{{URL}}"
+							],
+							"path": [
+								"api",
+								"sites",
+								"{{SiteID}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create Building",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var data = pm.response.json();",
+									"tests[\"Successful POST Request\"] = responseCode.code === 201;",
+									"",
+									"pm.environment.set(\"BuildingID\", data[\"data\"][\"id\"])",
+									"pm.environment.set(\"BldgJSONStr\", JSON.stringify(data[\"building\"]))"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{AuthToken}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"B\",\n    \"id\": null,\n    \"parentId\": \"{{SiteID}}\",\n    \"category\": \"building\",\n    \"description\": [\n        \"Building B\"\n    ],\n    \"domain\": \"DEMO\",\n    \"attributes\": {\n        \"posXY\": \"{\\\"x\\\":-30.0,\\\"y\\\":0.0}\",\n        \"posXYUnit\": \"m\",\n        \"posXYU\": \"m\",\n        \"posZ\": \"10\",\n        \"posZUnit\": \"m\",\n        \"size\": \"{\\\"x\\\":25.0,\\\"y\\\":29.399999618530275}\",\n        \"sizeU\": \"m\",\n        \"sizeUnit\": \"m\",\n        \"height\": \"0\",\n        \"rotation\":\"99\",\n        \"heightUnit\": \"m\",\n        \"heightU\": \"m\",\n        \"nbFloors\": \"1\"\n    }\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{URL}}/api/buildings",
+							"host": [
+								"{{URL}}"
+							],
+							"path": [
+								"api",
+								"buildings"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Verify Create Building",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"tests[\"Successful GET\"] = responseCode.code === 200;",
+									"var data =  pm.response.json()[\"data\"];",
+									"",
+									"locjson = pm.environment.get(\"BldgJSONStr\")",
+									"",
+									"function isEqualsJson(obj1, obj2) {",
+									"    return obj1 == obj2",
+									"}",
+									"",
+									"console.log(\"The loc is: \", JSON.stringify(locjson))",
+									"console.log(\"The received response is: \", JSON.stringify(data))",
+									"tests[\"Successful Create & Get Request\"] = isEqualsJson(JSON.stringify(data[\"data\"]), locjson) == true;"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{AuthToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [
+							{
+								"warning": "This is a duplicate header and will be overridden by the Authorization header generated by Postman.",
+								"key": "Authorization",
+								"value": "{{AuthToken}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{URL}}/api/buildings/{{BuildingID}}",
+							"host": [
+								"{{URL}}"
+							],
+							"path": [
+								"api",
+								"buildings",
+								"{{BuildingID}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create Room",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var data = pm.response.json();",
+									"tests[\"Successful POST Request\"] = responseCode.code === 201;",
+									"",
+									"pm.environment.set(\"RoomID\", data[\"data\"][\"id\"])",
+									"pm.environment.set(\"RoomJSONStr\", JSON.stringify(data[\"data\"]))"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{AuthToken}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"R1\",\n    \"id\": null,\n    \"parentId\": \"{{BuildingID}}\",\n    \"category\": \"room\",\n    \"description\": [\n        \"First room\"\n    ],\n    \"domain\": \"DEMO\",\n    \"attributes\": {\n        \"posXY\": \"{\\\"x\\\":0.0,\\\"y\\\":0.0}\",\n        \"posXYUnit\": \"m\",\n        \"posXYU\": \"m\",\n        \"posZ\": \"0\",\n        \"posZUnit\": \"m\",\n        \"floorUnit\":\"f\",\n        \"template\": \"demo.R1\",\n        \"rotation\":\"-99\",\n        \"axisOrientation\": \"+N+W\",\n        \"size\": \"{\\\"x\\\":22.799999237060548,\\\"y\\\":19.799999237060548}\",\n        \"sizeUnit\": \"m\",\n        \"sizeU\": \"m\",\n        \"height\": \"3\",\n        \"heightUnit\": \"m\",\n        \"heightU\": \"m\"\n    }\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{URL}}/api/rooms",
+							"host": [
+								"{{URL}}"
+							],
+							"path": [
+								"api",
+								"rooms"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Verify Create Room",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"tests[\"Successful GET\"] = responseCode.code === 200;",
+									"//var data =  pm.response.json()[\"data\"];",
+									"//",
+									"//locjson = pm.environment.get(\"RoomJSONStr\")",
+									"//",
+									"//function isEqualsJson(obj1, obj2) {",
+									"//    return obj1 == obj2",
+									"//}",
+									"//",
+									"//console.log(\"The loc is: \", JSON.stringify(locjson))",
+									"//console.log(\"The received response is: \", JSON.stringify//(data))",
+									"//tests[\"Successful Create & Get Request\"] = isEqualsJson//(JSON.stringify(data[\"data\"]), locjson) == true;"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{AuthToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [
+							{
+								"warning": "This is a duplicate header and will be overridden by the Authorization header generated by Postman.",
+								"key": "Authorization",
+								"value": "{{AuthToken}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{URL}}/api/rooms/{{RoomID}}",
+							"host": [
+								"{{URL}}"
+							],
+							"path": [
+								"api",
+								"rooms",
+								"{{RoomID}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create AC",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"tests[\"Successful POST Request\"] = responseCode.code === 201;",
+									"",
+									"var data = JSON.parse(responseBody)",
+									"//console.log(\"Here is what we got: \", data[\"tenant\"][\"id\"])",
+									"",
+									"var ID = data[\"data\"][\"id\"]",
+									"pm.environment.set(\"ACID\", ID)",
+									"pm.environment.set(\"ACJSONStr\", JSON.stringify(data[\"data\"]))"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{AuthToken}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"TCL 2021\",\n    \"id\": null,\n    \"parentId\": \"{{RoomID}}\",\n    \"category\": \"ac\",\n    \"description\": [\n        \"TCL\"\n    ],\n    \"domain\": \"AC DOMAIN\",\n    \"attributes\": {\n    }\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{URL}}/api/acs",
+							"host": [
+								"{{URL}}"
+							],
+							"path": [
+								"api",
+								"acs"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Verify Create AC",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"tests[\"Successful GET\"] = responseCode.code === 200;",
+									"//var data =  pm.response.json()[\"data\"];",
+									"//",
+									"//locjson = pm.environment.get(\"ACJSONStr\")",
+									"//",
+									"//function isEqualsJson(obj1, obj2) {",
+									"//    return obj1 == obj2",
+									"//}",
+									"//",
+									"//console.log(\"The loc is: \", JSON.stringify(locjson))",
+									"//console.log(\"The received response is: \", JSON.stringify//(data))",
+									"//tests[\"Successful Create & Get Request\"] = isEqualsJson//(JSON.stringify(data[\"data\"]), locjson) == true;"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{AuthToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [
+							{
+								"warning": "This is a duplicate header and will be overridden by the Authorization header generated by Postman.",
+								"key": "Authorization",
+								"value": "{{AuthToken}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{URL}}/api/acs/{{ACID}}",
+							"host": [
+								"{{URL}}"
+							],
+							"path": [
+								"api",
+								"acs",
+								"{{ACID}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create Panel",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"tests[\"Successful POST Request\"] = responseCode.code === 201;",
+									"",
+									"var data = JSON.parse(responseBody)",
+									"//console.log(\"Here is what we got: \", data[\"tenant\"][\"id\"])",
+									"",
+									"var ID = data[\"data\"][\"id\"]",
+									"pm.environment.set(\"PanelID\", ID)"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{AuthToken}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Panel A\",\n    \"id\": null,\n    \"parentId\": \"{{RoomID}}\",\n    \"category\": \"powerpanel\",\n    \"description\": [\n        \"YINGLI\"\n    ],\n    \"domain\": \"Panel DOMAIN\",\n    \"attributes\": {\n    }\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{URL}}/api/panels",
+							"host": [
+								"{{URL}}"
+							],
+							"path": [
+								"api",
+								"panels"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Verify Create Panel",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"tests[\"Successful GET\"] = responseCode.code === 200;",
+									"var data =  pm.response.json();"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{AuthToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [
+							{
+								"warning": "This is a duplicate header and will be overridden by the Authorization header generated by Postman.",
+								"key": "Authorization",
+								"value": "{{AuthToken}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{URL}}/api/panels/{{PanelID}}",
+							"host": [
+								"{{URL}}"
+							],
+							"path": [
+								"api",
+								"panels",
+								"{{PanelID}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create Cabinet",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"tests[\"Successful POST Request\"] = responseCode.code === 201;",
+									"",
+									"var data = JSON.parse(responseBody)",
+									"//console.log(\"Here is what we got: \", data[\"tenant\"][\"id\"])",
+									"",
+									"var ID = data[\"data\"][\"id\"]",
+									"pm.environment.set(\"CabinetID\", ID)"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{AuthToken}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"CabinetA\",\n    \"domain\": \"DEMO\",\n    \"category\": \"cabinet\",\n    \"description\":[],\n  \"parentId\" : \"{{RoomID}}\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{URL}}/api/cabinets",
+							"host": [
+								"{{URL}}"
+							],
+							"path": [
+								"api",
+								"cabinets"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Verify Create Cabinet",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"tests[\"Successful GET\"] = responseCode.code === 200;",
+									"var data =  pm.response.json();"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{AuthToken}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\"        : \"AisleA\",\n  \"locationY\"   : \"101,101\",\n  \"orientation\" : \"+N+E\",\n  \"parentId\" : \"{{RoomID}}\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{URL}}/api/cabinets/{{CabinetID}}",
+							"host": [
+								"{{URL}}"
+							],
+							"path": [
+								"api",
+								"cabinets",
+								"{{CabinetID}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create Rack",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var data = pm.response.json();",
+									"tests[\"Successful POST Request\"] = responseCode.code === 201;",
+									"",
+									"pm.environment.set(\"RackID\", data[\"data\"][\"id\"])",
+									"pm.environment.set(\"RackJSONStr\", JSON.stringify(data[\"rack\"]))"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{AuthToken}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"A01\",\n    \"id\": null,\n    \"parentId\": \"{{RoomID}}\",\n    \"category\": \"rack\",\n    \"description\": [\n        \"Rack A01\",\n        \"The original one\",\n        \"-3/-5\\\\nA0-Z9\"\n    ],\n    \"domain\": \"DEMO\",\n    \"attributes\": {\n        \"posXY\": \"{\\\"x\\\":10.0,\\\"y\\\":0.0}\",\n        \"posXYUnit\": \"tile\",\n        \"posXYU\": \"tile\",\n        \"size\": \"{\\\"x\\\":60.0,\\\"y\\\":120.0}\",\n        \"sizeUnit\": \"cm\",\n        \"sizeU\": \"cm\",\n        \"posZ\": \"Some position\",\n        \"posZUnit\": \"cm\",\n        \"posZU\": \"cm\",\n        \"height\": \"42\",\n        \"heightUnit\": \"U\",\n        \"heightU\": \"U\",\n        \"template\": \"Some template\",\n        \"orientation\": \"front\",\n        \"vendor\": \"someVendor\",\n        \"type\": \"someType\",\n        \"model\": \"someModel\",\n        \"serial\": \"someSerial\"\n    }\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{URL}}/api/racks",
+							"host": [
+								"{{URL}}"
+							],
+							"path": [
+								"api",
+								"racks"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Verify Create Rack",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"tests[\"Successful GET\"] = responseCode.code === 200;",
+									"var data =  pm.response.json();",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{AuthToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [
+							{
+								"warning": "This is a duplicate header and will be overridden by the Authorization header generated by Postman.",
+								"key": "Authorization",
+								"value": "{{AuthToken}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{URL}}/api/racks/{{RackID}}",
+							"host": [
+								"{{URL}}"
+							],
+							"path": [
+								"api",
+								"racks",
+								"{{RackID}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create Corridor",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"tests[\"Successful POST Request\"] = responseCode.code === 201;",
+									"",
+									"var data = JSON.parse(responseBody)",
+									"//console.log(\"Here is what we got: \", data[\"tenant\"][\"id\"])",
+									"",
+									"var ID = data[\"data\"][\"id\"]",
+									"pm.environment.set(\"CorridorID\", ID)"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{AuthToken}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"CorridorA\",\n    \"parentId\" : \"{{RoomID}}\",\n    \"domain\": \"DEMO\",\n    \"description\":[],\n    \"category\": \"corridor\",\n    \"attributes\":{\n        \"content\":\"A01,A01\",\n        \"temperature\": \"warm\"\n    }\n    \n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{URL}}/api/corridors",
+							"host": [
+								"{{URL}}"
+							],
+							"path": [
+								"api",
+								"corridors"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Verify Create Corridor",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"tests[\"Successful GET\"] = responseCode.code === 200;",
+									"var data =  pm.response.json();"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{AuthToken}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\"        : \"AisleA\",\n  \"locationY\"   : \"101,101\",\n  \"orientation\" : \"+N+E\",\n  \"parentId\" : \"{{RoomID}}\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{URL}}/api/corridors/{{CorridorID}}",
+							"host": [
+								"{{URL}}"
+							],
+							"path": [
+								"api",
+								"corridors",
+								"{{CorridorID}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create Device",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var data = pm.response.json();",
+									"tests[\"Successful POST Request\"] = responseCode.code === 201;",
+									"",
+									"pm.environment.set(\"DeviceID\", data[\"data\"][\"id\"])",
+									"pm.environment.set(\"DeviceJSONStr\", JSON.stringify(data[\"data\"]))"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{AuthToken}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"DeviceA\",\n    \"parentId\": \"{{RackID}}\",\n    \"category\": \"device\",\n    \"description\": [\n        \"Rack A01\",\n        \"The original one\",\n        \"-3/-5\\\\nA0-Z9\"\n    ],\n    \"domain\": \"Device DOMAIN\",\n    \"attributes\": {\n        \"side\":\"front\",\n        \"posXY\": \"{\\\"x\\\":10.0,\\\"y\\\":0.0}\",\n        \"posXYUnit\": \"tile\",\n        \"posZ\": \"{\\\"x\\\":10.0,\\\"y\\\":0.0}\",\n        \"posZUnit\": \"tile\",\n        \"size\": \"{\\\"x\\\":60.0,\\\"y\\\":120.0}\",\n        \"sizeUnit\": \"cm\",\n        \"height\": \"23\",\n        \"sizeU\":\"5\",\n        \"heightUnit\": \"U\",\n        \"heightU\": \"23\",\n        \"template\": \"Some template\",\n        \"orientation\": \"front\",\n        \"vendor\": \"someVendor\",\n        \"type\": \"someType\",\n        \"model\": \"someModel\",\n        \"serial\": \"someSerial\"\n    }\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{URL}}/api/devices",
+							"host": [
+								"{{URL}}"
+							],
+							"path": [
+								"api",
+								"devices"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Verify Create Device",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"tests[\"Successful GET\"] = responseCode.code === 200;",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{AuthToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [
+							{
+								"warning": "This is a duplicate header and will be overridden by the Authorization header generated by Postman.",
+								"key": "Authorization",
+								"value": "{{AuthToken}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{URL}}/api/devices/{{DeviceID}}",
+							"host": [
+								"{{URL}}"
+							],
+							"path": [
+								"api",
+								"devices",
+								"{{DeviceID}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create (Sub)Device",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var data = pm.response.json();",
+									"tests[\"Successful POST Request\"] = responseCode.code === 201;",
+									"",
+									"pm.environment.set(\"SubDeviceID\", data[\"data\"][\"id\"])",
+									"pm.environment.set(\"SubDeviceJSONStr\", JSON.stringify(data[\"data\"]))"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{AuthToken}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"SubDeviceA\",\n    \"parentId\": \"{{DeviceID}}\",\n    \"category\": \"device\",\n    \"description\": [\n        \"Rack A01\",\n        \"The original one\",\n        \"-3/-5\\\\nA0-Z9\"\n    ],\n    \"domain\": \"Device DOMAIN\",\n    \"attributes\": {\n        \"side\":\"front\",\n        \"posXY\": \"{\\\"x\\\":10.0,\\\"y\\\":0.0}\",\n        \"posXYUnit\": \"tile\",\n        \"posZ\": \"{\\\"x\\\":10.0,\\\"y\\\":0.0}\",\n        \"posZUnit\": \"tile\",\n        \"size\": \"{\\\"x\\\":60.0,\\\"y\\\":120.0}\",\n        \"sizeUnit\": \"cm\",\n        \"height\": \"23\",\n        \"sizeU\":\"5\",\n        \"heightUnit\": \"U\",\n        \"heightU\": \"23\",\n        \"template\": \"Some template\",\n        \"orientation\": \"front\",\n        \"vendor\": \"someVendor\",\n        \"type\": \"someType\",\n        \"model\": \"someModel\",\n        \"serial\": \"someSerial\"\n    }\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{URL}}/api/devices",
+							"host": [
+								"{{URL}}"
+							],
+							"path": [
+								"api",
+								"devices"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Verify Create (Sub)Device",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"tests[\"Successful GET\"] = responseCode.code === 200;",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{AuthToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [
+							{
+								"warning": "This is a duplicate header and will be overridden by the Authorization header generated by Postman.",
+								"key": "Authorization",
+								"value": "{{AuthToken}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{URL}}/api/devices/{{SubDeviceID}}",
+							"host": [
+								"{{URL}}"
+							],
+							"path": [
+								"api",
+								"devices",
+								"{{SubDeviceID}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create Stray Device",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"tests[\"Successful POST Request\"] = responseCode.code === 201;",
+									"",
+									"var data = JSON.parse(responseBody)",
+									"//console.log(\"Here is what we got: \", data[\"tenant\"][\"id\"])",
+									"",
+									"var ID = data[\"data\"][\"id\"]",
+									"pm.environment.set(\"StrayDeviceID\", ID)"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{AuthToken}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"SaintPepsi\",\n    \"id\": null,\n    \"parentId\": null,\n    \"category\": \"device\",\n    \"description\": [\n        \"-3/-5\\\\nA0-Z9\"\n    ],\n    \"domain\": \"Device DOMAIN\",\n    \"attributes\": {\n        \"posXY\": \"{\\\"x\\\":10.0,\\\"y\\\":0.0}\",\n        \"posXYUnit\": \"tile\",\n        \"posZ\": \"{\\\"x\\\":10.0,\\\"y\\\":0.0}\",\n        \"posZUnit\": \"tile\",\n        \"size\": \"{\\\"x\\\":60.0,\\\"y\\\":120.0}\",\n        \"sizeUnit\": \"cm\",\n        \"height\": \"42\",\n        \"heightUnit\": \"U\",\n        \"heightU\": \"U\",\n        \"template\": \"Some template\",\n        \"orientation\": \"front\",\n        \"vendor\": \"someVendor\",\n        \"type\": \"someType\",\n        \"model\": \"someModel\",\n        \"serial\": \"someSerial\"\n    }\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{URL}}/api/stray-devices",
+							"host": [
+								"{{URL}}"
+							],
+							"path": [
+								"api",
+								"stray-devices"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Verify Create Stray Device",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"tests[\"Successful GET\"] = responseCode.code === 200;",
+									"var data =  pm.response.json();"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{AuthToken}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\"        : \"AisleA\",\n  \"locationY\"   : \"101,101\",\n  \"orientation\" : \"+N+E\",\n  \"parentId\" : \"{{RoomID}}\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{URL}}/api/stray-devices/{{StrayDeviceID}}",
+							"host": [
+								"{{URL}}"
+							],
+							"path": [
+								"api",
+								"stray-devices",
+								"{{StrayDeviceID}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create Stray Sensor",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"tests[\"Successful POST Request\"] = responseCode.code === 201;",
+									"",
+									"var data = JSON.parse(responseBody)",
+									"//console.log(\"Here is what we got: \", data[\"tenant\"][\"id\"])",
+									"",
+									"var ID = data[\"data\"][\"id\"]",
+									"pm.environment.set(\"StraySensorID\", ID)"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{AuthToken}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"StrayDeviceSensorA\",\n    \"parentId\" : \"\",\n    \"category\": \"SENSOR-D\",\n    \"type\": \"device\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{URL}}/api/stray-sensors",
+							"host": [
+								"{{URL}}"
+							],
+							"path": [
+								"api",
+								"stray-sensors"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Verify Create Stray Sensor",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{AuthToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{URL}}/api/stray-sensors/{{StraySensorID}}",
+							"host": [
+								"{{URL}}"
+							],
+							"path": [
+								"api",
+								"stray-sensors",
+								"{{StraySensorID}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create Group",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"tests[\"Successful POST Request\"] = responseCode.code === 201;",
+									"",
+									"var data = JSON.parse(responseBody)",
+									"//console.log(\"Here is what we got: \", data[\"tenant\"][\"id\"])",
+									"",
+									"var ID = data[\"data\"][\"id\"]",
+									"pm.environment.set(\"GroupID\", ID)"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{AuthToken}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"GroupB\",\n    \"type\": \"rack\",\n    \"domain\": \"DEMO\",\n    \"description\":[],\n    \"parentId\": \"{{RoomID}}\",\n    \"attributes\": {\n        \"content\": \"A01\"\n    },\n    \"contents\": []\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{URL}}/api/groups",
+							"host": [
+								"{{URL}}"
+							],
+							"path": [
+								"api",
+								"groups"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Verify Create Group",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"tests[\"Successful GET\"] = responseCode.code === 200;",
+									"var data =  pm.response.json();"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{AuthToken}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\"        : \"AisleA\",\n  \"locationY\"   : \"101,101\",\n  \"orientation\" : \"+N+E\",\n  \"parentId\" : \"{{RoomID}}\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{URL}}/api/groups/{{GroupID}}",
+							"host": [
+								"{{URL}}"
+							],
+							"path": [
+								"api",
+								"groups",
+								"{{GroupID}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create Room Template",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"tests[\"Successful POST Request\"] = responseCode.code === 201;",
+									"",
+									"var data = JSON.parse(responseBody)",
+									"//console.log(\"Here is what we got: \", data[\"tenant\"][\"id\"])",
+									"",
+									"var ID = data[\"data\"][\"slug\"]",
+									"pm.environment.set(\"RoomTemplateID\", ID)"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{AuthToken}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"slug\"          : \"RT1\",\n  \"axisOrientation\"   : \"+N+E\",\n  \"sizeWDHm\"      : [200,200,200],\n  \"technicalArea\" : [\"width\",\"depth\",\"height\"],\n  \"reservedArea\"  : [\"width\",\"depth\",\"height\"],\n  \"separators\"    : [\n  ],\n  \"colors\"        : [\n  ],\n  \"tiles\"         : [\n  ],\n  \"aisles\"        : [\n  ]\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{URL}}/api/room-templates",
+							"host": [
+								"{{URL}}"
+							],
+							"path": [
+								"api",
+								"room-templates"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Verify Create Room Template",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"tests[\"Successful GET Request\"] = responseCode.code === 200;"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{AuthToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [
+							{
+								"warning": "This is a duplicate header and will be overridden by the Authorization header generated by Postman.",
+								"key": "Authorization",
+								"value": "{{AuthToken}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{URL}}/api/room-templates/{{RoomTemplateID}}",
+							"host": [
+								"{{URL}}"
+							],
+							"path": [
+								"api",
+								"room-templates",
+								"{{RoomTemplateID}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create Rack Template",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"tests[\"Successful POST Request\"] = responseCode.code === 201;",
+									"",
+									"var data = JSON.parse(responseBody)",
+									"//console.log(\"Here is what we got: \", data[\"tenant\"][\"id\"])",
+									"",
+									"var ID = data[\"data\"][\"slug\"]",
+									"pm.environment.set(\"RackTemplateID\", ID)"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{AuthToken}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"slug\"        : \"RACK1T\",\n  \"description\" : [\"Rack Template 1\"],\n  \"category\"    : \"rack\",\n  \"sizeWDHmm\"   : [\"width\",\"depth\",\"height\"],\n  \"fbxModel\"    : \"1\",\n  \"attributes\"  : {\n    \"type\" : \"\"\n  },\n  \"colors\"      : [\n  ],\n  \"components\"  : [\n  ],\n  \"slots\"       : [\n  ]\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{URL}}/api/obj-templates",
+							"host": [
+								"{{URL}}"
+							],
+							"path": [
+								"api",
+								"obj-templates"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Verify Create Rack Template",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"tests[\"Successful GET Request\"] = responseCode.code === 200;"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{AuthToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [
+							{
+								"warning": "This is a duplicate header and will be overridden by the Authorization header generated by Postman.",
+								"key": "Authorization",
+								"value": "{{AuthToken}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{URL}}/api/obj-templates/{{RackTemplateID}}",
+							"host": [
+								"{{URL}}"
+							],
+							"path": [
+								"api",
+								"obj-templates",
+								"{{RackTemplateID}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create Device Template",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"tests[\"Successful POST Request\"] = responseCode.code === 201;",
+									"",
+									"var data = JSON.parse(responseBody)",
+									"//console.log(\"Here is what we got: \", data[\"tenant\"][\"id\"])",
+									"",
+									"var ID = data[\"data\"][\"slug\"]",
+									"pm.environment.set(\"DeviceTemplateID\", ID)"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{AuthToken}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"slug\"        : \"DEVICE1T\",\n  \"description\" : [\"Device Template 1\"],\n  \"category\"    : \"device\",\n  \"sizeWDHmm\"   : [\"width\",\"depth\",\"height\"],\n  \"fbxModel\"    : \"1\",\n  \"attributes\"  : {\n    \"type\" : \"\"\n  },\n  \"colors\"      : [\n  ],\n  \"components\"  : [\n  ],\n  \"slots\"       : [\n  ]\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{URL}}/api/obj-templates",
+							"host": [
+								"{{URL}}"
+							],
+							"path": [
+								"api",
+								"obj-templates"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Verify Create Device Template",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"tests[\"Successful GET Request\"] = responseCode.code === 200;"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{AuthToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [
+							{
+								"warning": "This is a duplicate header and will be overridden by the Authorization header generated by Postman.",
+								"key": "Authorization",
+								"value": "{{AuthToken}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{URL}}/api/obj-templates/{{DeviceTemplateID}}",
+							"host": [
+								"{{URL}}"
+							],
+							"path": [
+								"api",
+								"obj-templates",
+								"{{DeviceTemplateID}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create Bldg Template",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"tests[\"Successful POST Request\"] = responseCode.code === 201;",
+									"",
+									"var data = JSON.parse(responseBody)",
+									"//console.log(\"Here is what we got: \", data[\"tenant\"][\"id\"])",
+									"",
+									"var ID = data[\"data\"][\"slug\"]",
+									"pm.environment.set(\"BldgTemplateID\", ID)"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{AuthToken}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"slug\"          : \"BT1\",\n  \"category\"      : \"bldg\",\n  \"description\"   :[],\n  \"orientation\"   : \"+N+E\",\n  \"sizeWDHm\"      : [100,100,100],\n  \"vertices\":[[-19.5,5.64]]\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{URL}}/api/bldg-templates",
+							"host": [
+								"{{URL}}"
+							],
+							"path": [
+								"api",
+								"bldg-templates"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Verify Create Bldg Template",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"tests[\"Successful GET Request\"] = responseCode.code === 200;"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{AuthToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [
+							{
+								"warning": "This is a duplicate header and will be overridden by the Authorization header generated by Postman.",
+								"key": "Authorization",
+								"value": "{{AuthToken}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{URL}}/api/bldg-templates/{{BldgTemplateID}}",
+							"host": [
+								"{{URL}}"
+							],
+							"path": [
+								"api",
+								"bldg-templates",
+								"{{BldgTemplateID}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create Device Sensor",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"tests[\"Successful POST Request\"] = responseCode.code === 201;",
+									"",
+									"var data = JSON.parse(responseBody)",
+									"//console.log(\"Here is what we got: \", data[\"tenant\"][\"id\"])",
+									"",
+									"var ID = data[\"data\"][\"id\"]",
+									"pm.environment.set(\"DeviceSensorID\", ID)"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{AuthToken}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"DeviceSensorA\",\n    \"parentId\" : \"{{DeviceID}}\",\n    \"category\": \"SENSOR-D\",\n    \"domain\": \"DEMO\",\n    \"description\":[],\n    \"type\":\"device\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{URL}}/api/sensors",
+							"host": [
+								"{{URL}}"
+							],
+							"path": [
+								"api",
+								"sensors"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Verify Create Device Sensor",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"tests[\"Successful GET Request\"] = responseCode.code === 200;"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{AuthToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [
+							{
+								"warning": "This is a duplicate header and will be overridden by the Authorization header generated by Postman.",
+								"key": "Authorization",
+								"value": "{{AuthToken}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{URL}}/api/sensors/{{DeviceSensorID}}",
+							"host": [
+								"{{URL}}"
+							],
+							"path": [
+								"api",
+								"sensors",
+								"{{DeviceSensorID}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create Rack Sensor",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"tests[\"Successful POST Request\"] = responseCode.code === 201;",
+									"",
+									"var data = JSON.parse(responseBody)",
+									"//console.log(\"Here is what we got: \", data[\"tenant\"][\"id\"])",
+									"",
+									"var ID = data[\"data\"][\"id\"]",
+									"pm.environment.set(\"RackSensorID\", ID)"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{AuthToken}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"SensorA\",\n    \"parentId\" : \"{{RackID}}\",\n    \"category\": \"SENSOR-A\",\n    \"domain\": \"DEMO\",\n    \"description\":[],\n    \"type\":\"rack\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{URL}}/api/sensors",
+							"host": [
+								"{{URL}}"
+							],
+							"path": [
+								"api",
+								"sensors"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Verify Create Rack Sensor",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"tests[\"Successful GET Request\"] = responseCode.code === 200;"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{AuthToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [
+							{
+								"warning": "This is a duplicate header and will be overridden by the Authorization header generated by Postman.",
+								"key": "Authorization",
+								"value": "{{AuthToken}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{URL}}/api/sensors/{{RackSensorID}}",
+							"host": [
+								"{{URL}}"
+							],
+							"path": [
+								"api",
+								"sensors",
+								"{{RackSensorID}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create Room Sensor",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"tests[\"Successful POST Request\"] = responseCode.code === 201;",
+									"",
+									"var data = JSON.parse(responseBody)",
+									"//console.log(\"Here is what we got: \", data[\"tenant\"][\"id\"])",
+									"",
+									"var ID = data[\"data\"][\"id\"]",
+									"pm.environment.set(\"RoomSensorID\", ID)"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{AuthToken}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"RoomSensorLight\",\n    \"parentId\" : \"{{RoomID}}\",\n    \"category\": \"SENSOR-R\",\n    \"domain\": \"DEMO\",\n    \"description\":[],\n    \"type\":\"room\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{URL}}/api/sensors",
+							"host": [
+								"{{URL}}"
+							],
+							"path": [
+								"api",
+								"sensors"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Verify Create Room Sensor",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"tests[\"Successful GET Request\"] = responseCode.code === 200;"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{AuthToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [
+							{
+								"warning": "This is a duplicate header and will be overridden by the Authorization header generated by Postman.",
+								"key": "Authorization",
+								"value": "{{AuthToken}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{URL}}/api/sensors/{{RoomSensorID}}",
+							"host": [
+								"{{URL}}"
+							],
+							"path": [
+								"api",
+								"sensors",
+								"{{RoomSensorID}}"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Update DB",
+			"item": [
+				{
+					"name": "Update Tenant",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var data = pm.response.json();",
+									"tests[\"Successful PUT Request\"] = responseCode.code === 200;",
+									"",
+									"pm.environment.set(\"TenantUpdateStr\", JSON.stringify(JSON.parse(request.data)));"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{AuthToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [
+							{
+								"warning": "This is a duplicate header and will be overridden by the Authorization header generated by Postman.",
+								"key": "Authorization",
+								"value": "{{AuthToken}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"FISHER\",\n  \"id\": null,\n  \"category\":\"tenant\",\n  \"parentId\": null,\n  \"description\": [\"Some Forsaken Joint\", \"Rotten Apple\"],\n  \"domain\": \"999999\",\n  \"attributes\": {\n    \"color\": \"999999\",\n    \"mainContact\": \"99\",\n    \"mainPhone\": \"999\",\n    \"mainEmail\": \"ghetto@ogree3D.com\"\n  }\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{URL}}/api/tenants/{{TenantID}}",
+							"host": [
+								"{{URL}}"
+							],
+							"path": [
+								"api",
+								"tenants",
+								"{{TenantID}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Verify Update Tenant",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"tests[\"Successful GET\"] = responseCode.code === 200;",
+									"var data =  pm.response.json();",
+									"var input = JSON.parse(pm.environment.get(\"TenantUpdateStr\"))",
+									"",
+									"input[\"id\"] = data[\"data\"][\"id\"]",
+									"input[\"parentId\"] = data[\"data\"][\"parentId\"]",
+									"input[\"category\"] = data[\"data\"][\"category\"]",
+									"",
+									"",
+									"function isEqualsJson(obj1, obj2) {",
+									"    for (let i in obj1) {",
+									"        //console.log(obj2[i])",
+									"        //console.log(obj1[i])",
+									"        if (obj1[i] !== obj2[i] && i != \"lastUpdated\" && i != \"createdDate\") {",
+									"            console.log(\"Failed at: \", obj1[i])",
+									"            ",
+									"            for (let idx in obj1[i]) {",
+									"                if (obj1[i][idx] !== obj2[i][idx]) {",
+									"                    console.log(\"Bad News: \", obj1[i][idx])",
+									"                    return false",
+									"                }",
+									"            }",
+									"        }",
+									"      }",
+									"      return true",
+									"}",
+									"",
+									"",
+									"",
+									"//console.log(\"Input: \", input)",
+									"//onsole.log(\"response: \", data[\"data\"])",
+									"",
+									"tests[\"Successful Update & Get Request\"] = isEqualsJson(data[\"data\"], input) == true;"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{AuthToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [
+							{
+								"warning": "This is a duplicate header and will be overridden by the Authorization header generated by Postman.",
+								"key": "Authorization",
+								"value": "{{AuthToken}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{URL}}/api/tenants/{{TenantID}}",
+							"host": [
+								"{{URL}}"
+							],
+							"path": [
+								"api",
+								"tenants",
+								"{{TenantID}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Site",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var data = pm.response.json();",
+									"tests[\"Successful PUT Request\"] = responseCode.code === 200;",
+									"",
+									"pm.environment.set(\"SiteUpdateStr\", JSON.stringify(JSON.parse(request.data)));"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{AuthToken}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"SiteA\",\n    \"id\": null,\n    \"parentId\": \"{{TenantID}}\",\n    \"category\": \"site\",\n    \"description\": [\n        \"guess whos back\"\n    ],\n    \"domain\": \"DERELICT\",\n    \"attributes\": {\n        \"orientation\": \"NW\",\n        \"usableColor\": \"99\",\n        \"reservedColor\": \"99\",\n        \"technicalColor\": \"99\",\n        \"address\": \"99\",\n        \"zipcode\": \"99\",\n        \"city\": \"99\",\n        \"country\": \"99\",\n        \"gps\": \"99\"\n    }\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{URL}}/api/sites/{{SiteID}}",
+							"host": [
+								"{{URL}}"
+							],
+							"path": [
+								"api",
+								"sites",
+								"{{SiteID}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Verify Update Site",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"tests[\"Successful GET\"] = responseCode.code === 200;",
+									"var data =  pm.response.json();",
+									"var input = JSON.parse(pm.environment.get(\"SiteUpdateStr\"))",
+									"",
+									"input[\"id\"] = data[\"data\"][\"id\"]",
+									"input[\"parentId\"] = data[\"data\"][\"parentId\"]",
+									"input[\"category\"] = data[\"data\"][\"category\"]",
+									"",
+									"",
+									"function isEqualsJson(obj1, obj2) {",
+									"    for (let i in obj1) {",
+									"        //console.log(obj2[i])",
+									"        //console.log(obj1[i])",
+									"        if (obj1[i] !== obj2[i] && i != \"lastUpdated\" && i != \"createdDate\") {",
+									"            console.log(\"Failed at: \", obj1[i])",
+									"            ",
+									"            for (let idx in obj1[i]) {",
+									"                if (obj1[i][idx] !== obj2[i][idx]) {",
+									"                    console.log(\"Bad News: \", obj1[i][idx])",
+									"                    return false",
+									"                }",
+									"            }",
+									"        }",
+									"      }",
+									"      return true",
+									"}",
+									"",
+									"",
+									"",
+									"console.log(\"Input: \", input)",
+									"console.log(\"response: \", data[\"data\"])",
+									"",
+									"tests[\"Successful Update & Get Request\"] = isEqualsJson(data[\"data\"], input) == true;",
+									"",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{AuthToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{URL}}/api/sites/{{SiteID}}",
+							"host": [
+								"{{URL}}"
+							],
+							"path": [
+								"api",
+								"sites",
+								"{{SiteID}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Building",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var data = pm.response.json();",
+									"tests[\"Successful PUT Request\"] = responseCode.code === 200;",
+									"",
+									"pm.environment.set(\"BuildingUpdateStr\", JSON.stringify(JSON.parse(request.data)));"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{AuthToken}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Abandoned Building\",\n    \"id\": null,\n    \"parentId\": \"{{SiteID}}\",\n    \"category\": \"999\",\n    \"description\": [\n        \"Wassup yo\",\n        \"Guess whos back\"\n    ],\n    \"domain\": \"999\",\n    \"attributes\": {\n        \"posXY\": \"999\",\n        \"posXYUnit\": \"m\",\n        \"posZ\": \"999\",\n        \"posZUnit\": \"m\",\n        \"size\": \"999\",\n        \"sizeUnit\": \"m\",\n        \"height\": \"0\",\n        \"heightUnit\": \"m\",\n        \"nbFloors\": \"99\",\n        \"rotation\":\"60\"\n    }\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{URL}}/api/buildings/{{BuildingID}}",
+							"host": [
+								"{{URL}}"
+							],
+							"path": [
+								"api",
+								"buildings",
+								"{{BuildingID}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Verify Update Building",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"tests[\"Successful GET\"] = responseCode.code === 200;",
+									"var data =  pm.response.json();",
+									"var input = JSON.parse(pm.environment.get(\"BuildingUpdateStr\"))",
+									"",
+									"input[\"id\"] = data[\"data\"][\"id\"]",
+									"input[\"parentId\"] = data[\"data\"][\"parentId\"]",
+									"input[\"category\"] = data[\"data\"][\"category\"]",
+									"",
+									"",
+									"function isEqualsJson(obj1, obj2) {",
+									"    for (let i in obj1) {",
+									"        //console.log(obj2[i])",
+									"        //console.log(obj1[i])",
+									"        if (obj1[i] !== obj2[i] && i != \"lastUpdated\" && i != \"createdDate\") {",
+									"            console.log(\"Failed at: \", obj1[i])",
+									"            ",
+									"            for (let idx in obj1[i]) {",
+									"                if (obj1[i][idx] !== obj2[i][idx]) {",
+									"                    console.log(\"Bad News: \", obj1[i][idx])",
+									"                    return false",
+									"                }",
+									"            }",
+									"        }",
+									"      }",
+									"      return true",
+									"}",
+									"",
+									"",
+									"",
+									"//console.log(\"Input: \", input)",
+									"//onsole.log(\"response: \", data[\"data\"])",
+									"",
+									"tests[\"Successful Update & Get Request\"] = isEqualsJson(data[\"data\"], input) == true;"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{AuthToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{URL}}/api/buildings/{{BuildingID}}",
+							"host": [
+								"{{URL}}"
+							],
+							"path": [
+								"api",
+								"buildings",
+								"{{BuildingID}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Room",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var data = pm.response.json();",
+									"tests[\"Successful PUT Request\"] = responseCode.code === 200;",
+									"",
+									"pm.environment.set(\"RoomUpdateStr\", JSON.stringify(JSON.parse(request.data)));"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{AuthToken}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Abandoned Room\",\n    \"id\": null,\n    \"parentId\": \"{{BuildingID}}\",\n    \"category\": \"999\",\n    \"description\": [\n        \"999\"\n    ],\n    \"domain\": \"999\",\n    \"attributes\": {\n        \"posXY\": \"999\",\n        \"posXYUnit\": \"m\",\n        \"posZ\": \"999\",\n        \"posZUnit\": \"m\",\n        \"template\": \"999\",\n        \"axisOrientation\": \"-N-W\",\n        \"size\": \"999\",\n        \"floorUnit\":\"t\",\n        \"sizeUnit\": \"m\",\n        \"height\": \"999\",\n        \"heightUnit\": \"m\",\n        \"rotation\":\"60\"\n    }\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{URL}}/api/rooms/{{RoomID}}",
+							"host": [
+								"{{URL}}"
+							],
+							"path": [
+								"api",
+								"rooms",
+								"{{RoomID}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Verify Update Room",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"tests[\"Successful GET\"] = responseCode.code === 200;",
+									"var data =  pm.response.json();",
+									"var input = JSON.parse(pm.environment.get(\"RoomUpdateStr\"))",
+									"",
+									"input[\"id\"] = data[\"data\"][\"id\"]",
+									"input[\"parentId\"] = data[\"data\"][\"parentId\"]",
+									"input[\"category\"] = data[\"data\"][\"category\"]",
+									"",
+									"console.log(\"The response: \", data)",
+									"console.log(\"The input: \", input)",
+									"",
+									"function isEqualsJson(obj1, obj2) {",
+									"    for (let i in obj1) {",
+									"        //console.log(obj2[i])",
+									"        //console.log(obj1[i])",
+									"        if (obj1[i] !== obj2[i] && i != \"lastUpdated\" && i != \"createdDate\") {",
+									"            console.log(\"Failed at: \", obj1[i])",
+									"            ",
+									"            for (let idx in obj1[i]) {",
+									"                if (obj1[i][idx] !== obj2[i][idx] && obj2[i][idx] !== undefined) {",
+									"                    console.log(\"The iter: \", i, \"and the inner: \", idx)",
+									"                    console.log(\"Bad News: \", obj1[i][idx])",
+									"                    console.log(\"Here is what was already in there: \", i, \" and \", idx)",
+									"                    console.log(\"The contents: \", obj2[i][idx])",
+									"                    return false",
+									"                }",
+									"            }",
+									"        }",
+									"      }",
+									"      return true",
+									"}",
+									"",
+									"",
+									"",
+									"//console.log(\"Input: \", input)",
+									"//onsole.log(\"response: \", data[\"data\"])",
+									"",
+									"tests[\"Successful Update & Get Request\"] = isEqualsJson(data[\"data\"], input) == true;"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{AuthToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{URL}}/api/rooms/{{RoomID}}",
+							"host": [
+								"{{URL}}"
+							],
+							"path": [
+								"api",
+								"rooms",
+								"{{RoomID}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Rack",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var data = pm.response.json();",
+									"tests[\"Successful PUT Request\"] = responseCode.code === 200;",
+									"",
+									"pm.environment.set(\"RackUpdateStr\", JSON.stringify(JSON.parse(request.data)));"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{AuthToken}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Abandoned Rack\",\n    \"id\": null,\n    \"parentId\": \"{{RoomID}}\",\n    \"category\": \"rack\",\n    \"description\": [\n        \"99\",\n        \"999\",\n        \"9999\"\n    ],\n    \"domain\": \"Abandoned Rack\",\n    \"attributes\": {\n        \"posXY\": \"999\",\n        \"posXYUnit\": \"tile\",\n        \"size\": \"99\",\n        \"sizeUnit\": \"cm\",\n        \"height\": \"999\",\n        \"heightUnit\": \"U\",\n        \"template\": \"\",\n        \"orientation\": \"front\",\n        \"vendor\": \"999\",\n        \"type\": \"999\",\n        \"model\": \"999\",\n        \"serial\": \"999\"\n    }\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{URL}}/api/racks/{{RackID}}",
+							"host": [
+								"{{URL}}"
+							],
+							"path": [
+								"api",
+								"racks",
+								"{{RackID}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Verify Update Rack",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"tests[\"Successful GET\"] = responseCode.code === 200;",
+									"var data =  pm.response.json();",
+									"var input = JSON.parse(pm.environment.get(\"RackUpdateStr\"))",
+									"",
+									"input[\"id\"] = data[\"data\"][\"id\"]",
+									"input[\"parentId\"] = data[\"data\"][\"parentId\"]",
+									"input[\"category\"] = data[\"data\"][\"category\"]",
+									"",
+									"console.log(\"The response: \", data)",
+									"console.log(\"The input: \", input)",
+									"",
+									"function isEqualsJson(obj1, obj2) {",
+									"    for (let i in obj1) {",
+									"        //console.log(obj2[i])",
+									"        //console.log(obj1[i])",
+									"        if (obj1[i] !== obj2[i] && i != \"lastUpdated\" && i != \"createdDate\") {",
+									"            console.log(\"Failed at: \", obj1[i])",
+									"            ",
+									"            for (let idx in obj1[i]) {",
+									"                if (obj1[i][idx] !== obj2[i][idx] && (obj2[i][idx] !== undefined && obj2[i][idx] !== \"\")) {",
+									"                    console.log(\"The iter: \", i, \"and the inner: \", idx)",
+									"                    console.log(\"Bad News: \", obj1[i][idx])",
+									"",
+									"                    console.log(\"The contents that was already present: \", obj2[i][idx])",
+									"                    return false",
+									"                }",
+									"            }",
+									"        }",
+									"      }",
+									"      return true",
+									"}",
+									"",
+									"",
+									"",
+									"//console.log(\"Input: \", input)",
+									"//onsole.log(\"response: \", data[\"data\"])",
+									"",
+									"tests[\"Successful Update & Get Request\"] = isEqualsJson(data[\"data\"], input) == true;"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{AuthToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{URL}}/api/racks/{{RackID}}",
+							"host": [
+								"{{URL}}"
+							],
+							"path": [
+								"api",
+								"racks",
+								"{{RackID}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Device",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var data = pm.response.json();",
+									"tests[\"Successful PUT Request\"] = responseCode.code === 200;",
+									"",
+									"pm.environment.set(\"DeviceUpdateStr\", JSON.stringify(JSON.parse(request.data)));"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{AuthToken}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Abandoned Device\",\n    \"id\": null,\n    \"parentId\": \"{{RackID}}\",\n    \"category\": \"999\",\n    \"description\": [\n        \"Rack A01\",\n        \"The original one\",\n        \"-3/-5\\\\nA0-Z9\"\n    ],\n    \"domain\": \"99\",\n    \"attributes\": {\n        \"posXY\": \"99\",\n        \"posXYUnit\": \"tile\",\n        \"size\": \"99\",\n        \"sizeUnit\": \"cm\",\n        \"height\": \"99\",\n        \"heightUnit\": \"U\",\n        \"template\": \"\",\n        \"orientation\": \"front\",\n        \"vendor\": \"99\",\n        \"type\": \"99\",\n        \"model\": \"99\",\n        \"serial\": \"99\"\n    }\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{URL}}/api/devices/{{DeviceID}}",
+							"host": [
+								"{{URL}}"
+							],
+							"path": [
+								"api",
+								"devices",
+								"{{DeviceID}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Verify Update Device",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"tests[\"Successful GET\"] = responseCode.code === 200;",
+									"var data =  pm.response.json();",
+									"var input = JSON.parse(pm.environment.get(\"DeviceUpdateStr\"))",
+									"",
+									"input[\"id\"] = data[\"data\"][\"id\"]",
+									"input[\"parentId\"] = data[\"data\"][\"parentId\"]",
+									"input[\"category\"] = data[\"data\"][\"category\"]",
+									"",
+									"console.log(\"The response: \", data)",
+									"console.log(\"The input: \", input)",
+									"",
+									"function isEqualsJson(obj1, obj2) {",
+									"    for (let i in obj1) {",
+									"        //console.log(obj2[i])",
+									"        //console.log(obj1[i])",
+									"        if (obj1[i] !== obj2[i] && obj2.hasOwnProperty(i) == true) {",
+									"            console.log(\"Failed at: \", obj1[i])",
+									"            ",
+									"            for (let idx in obj1[i]) {",
+									"                if (obj1[i][idx] !== obj2[i][idx] && (obj2[i][idx] !== undefined && obj2[i][idx] !== \"\")) {",
+									"                    console.log(\"The iter: \", i, \"and the inner: \", idx)",
+									"                    console.log(\"Bad News: \", obj1[i][idx])",
+									"",
+									"                    console.log(\"The contents that was already present: \", obj2[i][idx])",
+									"                    return false",
+									"                }",
+									"            }",
+									"        }",
+									"      }",
+									"      return true",
+									"}",
+									"",
+									"",
+									"",
+									"//console.log(\"Input: \", input)",
+									"//onsole.log(\"response: \", data[\"data\"])",
+									"",
+									"tests[\"Successful Update & Get Request\"] = isEqualsJson(data[\"data\"], input) == true;"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{AuthToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{URL}}/api/devices/{{DeviceID}}",
+							"host": [
+								"{{URL}}"
+							],
+							"path": [
+								"api",
+								"devices",
+								"{{DeviceID}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update AC",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var data = pm.response.json();",
+									"tests[\"Successful PUT Request\"] = responseCode.code === 200;",
+									"",
+									"pm.environment.set(\"ACUpdateStr\", JSON.stringify(JSON.parse(request.data)));"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{AuthToken}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"AquaSky01\",\n    \"id\": \"12353\",\n    \"parentId\": \"{{RoomID}}\",\n    \"category\": \"ac\",\n    \"description\": [\n        \"SPEED\"\n    ],\n    \"domain\": \"AC DOMAIN\",\n    \"attributes\": {\n        \"new\": \"IDX\"\n    }\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{URL}}/api/acs/{{ACID}}",
+							"host": [
+								"{{URL}}"
+							],
+							"path": [
+								"api",
+								"acs",
+								"{{ACID}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Verify Update AC",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"tests[\"Successful GET\"] = responseCode.code === 200;",
+									"var data =  pm.response.json();",
+									"var input = JSON.parse(pm.environment.get(\"ACUpdateStr\"))",
+									"",
+									"input[\"id\"] = data[\"data\"][\"id\"]",
+									"input[\"parentId\"] = data[\"data\"][\"parentId\"]",
+									"input[\"category\"] = data[\"data\"][\"category\"]",
+									"",
+									"console.log(\"The response: \", data)",
+									"console.log(\"The input: \", input)",
+									"",
+									"function isEqualsJson(obj1, obj2) {",
+									"    for (let i in obj1) {",
+									"        //console.log(obj2[i])",
+									"        //console.log(obj1[i])",
+									"        if (obj1[i] !== obj2[i] && obj2.hasOwnProperty(i) == true) {",
+									"            console.log(\"Failed at: \", obj1[i])",
+									"            ",
+									"            for (let idx in obj1[i]) {",
+									"                if (obj1[i][idx] !== obj2[i][idx] && (obj2[i][idx] !== undefined && obj2[i][idx] !== \"\")) {",
+									"                    console.log(\"The iter: \", i, \"and the inner: \", idx)",
+									"                    console.log(\"Bad News: \", obj1[i][idx])",
+									"",
+									"                    console.log(\"The contents that was already present: \", obj2[i][idx])",
+									"                    return false",
+									"                }",
+									"            }",
+									"        }",
+									"      }",
+									"      return true",
+									"}",
+									"",
+									"",
+									"",
+									"//console.log(\"Input: \", input)",
+									"//onsole.log(\"response: \", data[\"data\"])",
+									"",
+									"tests[\"Successful Update & Get Request\"] = isEqualsJson(data[\"data\"], input) == true;"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{AuthToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{URL}}/api/acs/{{ACID}}",
+							"host": [
+								"{{URL}}"
+							],
+							"path": [
+								"api",
+								"acs",
+								"{{ACID}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Panel",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var data = pm.response.json();",
+									"tests[\"Successful PUT Request\"] = responseCode.code === 200;",
+									"",
+									"pm.environment.set(\"PanelUpdateStr\", JSON.stringify(JSON.parse(request.data)));"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{AuthToken}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Power_Panel_99\",\n    \"category\": \"SOLARpanel\",\n    \"parentId\": \"{{RoomID}}\",\n    \"description\": [\n        \"GRENOBLE DERELICT\"\n    ],\n    \"domain\": \"PANEL DOMAIN\",\n    \"attributes\": {\n        \"new\": \"IDX\"\n    }\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{URL}}/api/panels/{{PanelID}}",
+							"host": [
+								"{{URL}}"
+							],
+							"path": [
+								"api",
+								"panels",
+								"{{PanelID}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Verify Update Panel",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"tests[\"Successful GET\"] = responseCode.code === 200;",
+									"var data =  pm.response.json();",
+									"var input = JSON.parse(pm.environment.get(\"PanelUpdateStr\"))",
+									"",
+									"input[\"id\"] = data[\"data\"][\"id\"]",
+									"input[\"parentId\"] = data[\"data\"][\"parentId\"]",
+									"input[\"category\"] = data[\"data\"][\"category\"]",
+									"",
+									"console.log(\"The response: \", data)",
+									"console.log(\"The input: \", input)",
+									"",
+									"function isEqualsJson(obj1, obj2) {",
+									"    for (let i in obj1) {",
+									"        //console.log(obj2[i])",
+									"        //console.log(obj1[i])",
+									"        if (obj1[i] !== obj2[i] && obj2.hasOwnProperty(i) == true) {",
+									"            console.log(\"Failed at: \", obj1[i])",
+									"            ",
+									"            for (let idx in obj1[i]) {",
+									"                if (obj1[i][idx] !== obj2[i][idx] && (obj2[i][idx] !== undefined && obj2[i][idx] !== \"\")) {",
+									"                    console.log(\"The iter: \", i, \"and the inner: \", idx)",
+									"                    console.log(\"Bad News: \", obj1[i][idx])",
+									"",
+									"                    console.log(\"The contents that was already present: \", obj2[i][idx])",
+									"                    return false",
+									"                }",
+									"            }",
+									"        }",
+									"      }",
+									"      return true",
+									"}",
+									"",
+									"",
+									"",
+									"//console.log(\"Input: \", input)",
+									"//onsole.log(\"response: \", data[\"data\"])",
+									"",
+									"tests[\"Successful Update & Get Request\"] = isEqualsJson(data[\"data\"], input) == true;"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{AuthToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{URL}}/api/panels/{{PanelID}}",
+							"host": [
+								"{{URL}}"
+							],
+							"path": [
+								"api",
+								"panels",
+								"{{PanelID}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Cabinet",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var data = pm.response.json();",
+									"tests[\"Successful PUT Request\"] = responseCode.code === 200;",
+									"",
+									"pm.environment.set(\"CabinetUpdateStr\", JSON.stringify(JSON.parse(request.data)));"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{AuthToken}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"TAKEUSDOWN\",\n    \"domain\": \"DEMO\",\n    \"category\": \"cabinet\",\n    \"description\":[],\n  \"parentId\" : \"{{RoomID}}\",\n  \"attributes\": {}\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{URL}}/api/cabinets/{{CabinetID}}",
+							"host": [
+								"{{URL}}"
+							],
+							"path": [
+								"api",
+								"cabinets",
+								"{{CabinetID}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Verify Update Cabinet",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"tests[\"Successful GET\"] = responseCode.code === 200;",
+									"var data =  pm.response.json();",
+									"var input = JSON.parse(pm.environment.get(\"CabinetUpdateStr\"))",
+									"",
+									"input[\"id\"] = data[\"data\"][\"id\"]",
+									"input[\"parentId\"] = data[\"data\"][\"parentId\"]",
+									"input[\"category\"] = data[\"data\"][\"category\"]",
+									"",
+									"console.log(\"The response: \", data)",
+									"console.log(\"The input: \", input)",
+									"",
+									"function isEqualsJson(obj1, obj2) {",
+									"    for (let i in obj1) {",
+									"        //console.log(obj2[i])",
+									"        //console.log(obj1[i])",
+									"        if (obj1[i] !== obj2[i] && obj2.hasOwnProperty(i) == true) {",
+									"            console.log(\"Failed at: \", obj1[i])",
+									"            ",
+									"            for (let idx in obj1[i]) {",
+									"                if (obj1[i][idx] !== obj2[i][idx] && (obj2[i][idx] !== undefined && obj2[i][idx] !== \"\")) {",
+									"                    console.log(\"The iter: \", i, \"and the inner: \", idx)",
+									"                    console.log(\"Bad News: \", obj1[i][idx])",
+									"",
+									"                    console.log(\"The contents that was already present: \", obj2[i][idx])",
+									"                    return false",
+									"                }",
+									"            }",
+									"        }",
+									"      }",
+									"      return true",
+									"}",
+									"",
+									"",
+									"",
+									"//console.log(\"Input: \", input)",
+									"//onsole.log(\"response: \", data[\"data\"])",
+									"",
+									"tests[\"Successful Update & Get Request\"] = isEqualsJson(data[\"data\"], input) == true;"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{AuthToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{URL}}/api/cabinets/{{CabinetID}}",
+							"host": [
+								"{{URL}}"
+							],
+							"path": [
+								"api",
+								"cabinets",
+								"{{CabinetID}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Group",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var data = pm.response.json();",
+									"tests[\"Successful PUT Request\"] = responseCode.code === 200;",
+									"",
+									"pm.environment.set(\"GroupUpdateStr\", JSON.stringify(JSON.parse(request.data)));"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{AuthToken}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Group909\",\n    \"domain\":\"FISHER\",\n    \"category\":\"group\",\n    \"description\":[],\n    \"parentId\" : \"{{RoomID}}\",\n    \"racks\":  [],\n    \"attributes\": {\n        \"content\": \"Abandoned Rack\"\n    }\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{URL}}/api/groups/{{GroupID}}",
+							"host": [
+								"{{URL}}"
+							],
+							"path": [
+								"api",
+								"groups",
+								"{{GroupID}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Verify Update Group",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"tests[\"Successful GET\"] = responseCode.code === 200;",
+									"var data =  pm.response.json();",
+									"var input = JSON.parse(pm.environment.get(\"GroupUpdateStr\"))",
+									"",
+									"input[\"id\"] = data[\"data\"][\"id\"]",
+									"input[\"parentId\"] = data[\"data\"][\"parentId\"]",
+									"input[\"category\"] = data[\"data\"][\"category\"]",
+									"",
+									"console.log(\"The response: \", data)",
+									"console.log(\"The input: \", input)",
+									"",
+									"function isEqualsJson(obj1, obj2) {",
+									"    for (let i in obj1) {",
+									"        //console.log(obj2[i])",
+									"        //console.log(obj1[i])",
+									"        if (obj1[i] !== obj2[i] && obj2.hasOwnProperty(i) == true) {",
+									"            console.log(\"Failed at: \", obj1[i])",
+									"            ",
+									"            for (let idx in obj1[i]) {",
+									"                if (obj1[i][idx] !== obj2[i][idx] && (obj2[i][idx] !== undefined && obj2[i][idx] !== \"\")) {",
+									"                    console.log(\"The iter: \", i, \"and the inner: \", idx)",
+									"                    console.log(\"Bad News: \", obj1[i][idx])",
+									"",
+									"                    console.log(\"The contents that was already present: \", obj2[i][idx])",
+									"                    return false",
+									"                }",
+									"            }",
+									"        }",
+									"      }",
+									"      return true",
+									"}",
+									"",
+									"",
+									"",
+									"//console.log(\"Input: \", input)",
+									"//onsole.log(\"response: \", data[\"data\"])",
+									"",
+									"tests[\"Successful Update & Get Request\"] = isEqualsJson(data[\"data\"], input) == true;"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{AuthToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{URL}}/api/groups/{{GroupID}}",
+							"host": [
+								"{{URL}}"
+							],
+							"path": [
+								"api",
+								"groups",
+								"{{GroupID}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Corridor",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var data = pm.response.json();",
+									"tests[\"Successful PUT Request\"] = responseCode.code === 200;",
+									"",
+									"pm.environment.set(\"CorridorUpdateStr\", JSON.stringify(JSON.parse(request.data)));"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{AuthToken}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Corridor909\",\n    \"description\":[],\n    \"domain\":\"FISHER\",\n    \"category\":\"corridor\",\n    \"parentId\" : \"{{RoomID}}\",\n    \"attributes\":{\n        \"temperature\": \"cold\",\n        \"content\":\"Abandoned Rack,Abandoned Rack\"\n    }\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{URL}}/api/corridors/{{CorridorID}}",
+							"host": [
+								"{{URL}}"
+							],
+							"path": [
+								"api",
+								"corridors",
+								"{{CorridorID}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Verify Update Corridor",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"tests[\"Successful GET\"] = responseCode.code === 200;",
+									"var data =  pm.response.json();",
+									"var input = JSON.parse(pm.environment.get(\"CorridorUpdateStr\"))",
+									"",
+									"input[\"id\"] = data[\"data\"][\"id\"]",
+									"input[\"parentId\"] = data[\"data\"][\"parentId\"]",
+									"input[\"category\"] = data[\"data\"][\"category\"]",
+									"",
+									"console.log(\"The response: \", data)",
+									"console.log(\"The input: \", input)",
+									"",
+									"function isEqualsJson(obj1, obj2) {",
+									"    for (let i in obj1) {",
+									"        //console.log(obj2[i])",
+									"        //console.log(obj1[i])",
+									"        if (obj1[i] !== obj2[i] && obj2.hasOwnProperty(i) == true) {",
+									"            console.log(\"Failed at: \", obj1[i])",
+									"            ",
+									"            for (let idx in obj1[i]) {",
+									"                if (obj1[i][idx] !== obj2[i][idx] && (obj2[i][idx] !== undefined && obj2[i][idx] !== \"\")) {",
+									"                    console.log(\"The iter: \", i, \"and the inner: \", idx)",
+									"                    console.log(\"Bad News: \", obj1[i][idx])",
+									"",
+									"                    console.log(\"The contents that was already present: \", obj2[i][idx])",
+									"                    return false",
+									"                }",
+									"            }",
+									"        }",
+									"      }",
+									"      return true",
+									"}",
+									"",
+									"",
+									"",
+									"//console.log(\"Input: \", input)",
+									"//onsole.log(\"response: \", data[\"data\"])",
+									"",
+									"tests[\"Successful Update & Get Request\"] = isEqualsJson(data[\"data\"], input) == true;"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{AuthToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{URL}}/api/corridors/{{CorridorID}}",
+							"host": [
+								"{{URL}}"
+							],
+							"path": [
+								"api",
+								"corridors",
+								"{{CorridorID}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Device Sensor",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var data = pm.response.json();",
+									"tests[\"Successful PUT Request\"] = responseCode.code === 200;",
+									"",
+									"pm.environment.set(\"DeviceSensorUpdateStr\", JSON.stringify(JSON.parse(request.data)));"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{AuthToken}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Sensor909\",\n    \"domain\":\"FISHER\",\n    \"description\":[],\n    \"category\":\"sensor\",\n    \"parentId\" : \"{{RoomID}}\",\n    \"temperature\": \"cold\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{URL}}/api/sensors/{{DeviceSensorID}}",
+							"host": [
+								"{{URL}}"
+							],
+							"path": [
+								"api",
+								"sensors",
+								"{{DeviceSensorID}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Verify Update Device Sensor",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"tests[\"Successful GET\"] = responseCode.code === 200;",
+									"var data =  pm.response.json();",
+									"var input = JSON.parse(pm.environment.get(\"DeviceSensorUpdateStr\"))",
+									"",
+									"input[\"id\"] = data[\"data\"][\"id\"]",
+									"input[\"parentId\"] = data[\"data\"][\"parentId\"]",
+									"input[\"category\"] = data[\"data\"][\"category\"]",
+									"",
+									"console.log(\"The response: \", data)",
+									"console.log(\"The input: \", input)",
+									"",
+									"function isEqualsJson(obj1, obj2) {",
+									"    for (let i in obj1) {",
+									"        //console.log(obj2[i])",
+									"        //console.log(obj1[i])",
+									"        if (obj1[i] !== obj2[i] && obj2.hasOwnProperty(i) == true) {",
+									"            console.log(\"Failed at: \", obj1[i])",
+									"            ",
+									"            for (let idx in obj1[i]) {",
+									"                if (obj1[i][idx] !== obj2[i][idx] && (obj2[i][idx] !== undefined && obj2[i][idx] !== \"\")) {",
+									"                    console.log(\"The iter: \", i, \"and the inner: \", idx)",
+									"                    console.log(\"Bad News: \", obj1[i][idx])",
+									"",
+									"                    console.log(\"The contents that was already present: \", obj2[i][idx])",
+									"                    return false",
+									"                }",
+									"            }",
+									"        }",
+									"      }",
+									"      return true",
+									"}",
+									"",
+									"",
+									"",
+									"//console.log(\"Input: \", input)",
+									"//onsole.log(\"response: \", data[\"data\"])",
+									"",
+									"tests[\"Successful Update & Get Request\"] = isEqualsJson(data[\"data\"], input) == true;"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{AuthToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{URL}}/api/sensors/{{DeviceSensorID}}",
+							"host": [
+								"{{URL}}"
+							],
+							"path": [
+								"api",
+								"sensors",
+								"{{DeviceSensorID}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Room Sensor",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var data = pm.response.json();",
+									"tests[\"Successful PUT Request\"] = responseCode.code === 200;",
+									"",
+									"pm.environment.set(\"RoomSensorUpdateStr\", JSON.stringify(JSON.parse(request.data)));"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{AuthToken}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"ROOMSENSor909\",\n    \"category\":\"sensor\",\n    \"description\":[],\n    \"domain\":\"FISHER\",\n    \"parentId\" : \"{{RoomID}}\",\n    \"type\":\"room\",\n    \"temperature\": \"cold\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{URL}}/api/sensors/{{RoomSensorID}}",
+							"host": [
+								"{{URL}}"
+							],
+							"path": [
+								"api",
+								"sensors",
+								"{{RoomSensorID}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Verify Update Room Sensor",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"tests[\"Successful GET\"] = responseCode.code === 200;",
+									"var data =  pm.response.json();",
+									"var input = JSON.parse(pm.environment.get(\"RoomSensorUpdateStr\"))",
+									"",
+									"input[\"id\"] = data[\"data\"][\"id\"]",
+									"input[\"parentId\"] = data[\"data\"][\"parentId\"]",
+									"input[\"category\"] = data[\"data\"][\"category\"]",
+									"",
+									"console.log(\"The response: \", data)",
+									"console.log(\"The input: \", input)",
+									"",
+									"function isEqualsJson(obj1, obj2) {",
+									"    for (let i in obj1) {",
+									"        //console.log(obj2[i])",
+									"        //console.log(obj1[i])",
+									"        if (obj1[i] !== obj2[i] && obj2.hasOwnProperty(i) == true) {",
+									"            console.log(\"Failed at: \", obj1[i])",
+									"            ",
+									"            for (let idx in obj1[i]) {",
+									"                if (obj1[i][idx] !== obj2[i][idx] && (obj2[i][idx] !== undefined && obj2[i][idx] !== \"\")) {",
+									"                    console.log(\"The iter: \", i, \"and the inner: \", idx)",
+									"                    console.log(\"Bad News: \", obj1[i][idx])",
+									"",
+									"                    console.log(\"The contents that was already present: \", obj2[i][idx])",
+									"                    return false",
+									"                }",
+									"            }",
+									"        }",
+									"      }",
+									"      return true",
+									"}",
+									"",
+									"",
+									"",
+									"//console.log(\"Input: \", input)",
+									"//onsole.log(\"response: \", data[\"data\"])",
+									"",
+									"tests[\"Successful Update & Get Request\"] = isEqualsJson(data[\"data\"], input) == true;"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{AuthToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{URL}}/api/sensors/{{RoomSensorID}}",
+							"host": [
+								"{{URL}}"
+							],
+							"path": [
+								"api",
+								"sensors",
+								"{{RoomSensorID}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Rack Sensor",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var data = pm.response.json();",
+									"tests[\"Successful PUT Request\"] = responseCode.code === 200;",
+									"",
+									"pm.environment.set(\"RackSensorUpdateStr\", JSON.stringify(JSON.parse(request.data)));"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{AuthToken}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"RACKSensor909\",\n    \"category\":\"sensor\",\n    \"description\":[],\n    \"domain\":\"FISHER\",\n    \"parentId\" : \"{{RoomID}}\",\n    \"type\": \"rack\",\n    \"temperature\": \"cold\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{URL}}/api/sensors/{{RackSensorID}}",
+							"host": [
+								"{{URL}}"
+							],
+							"path": [
+								"api",
+								"sensors",
+								"{{RackSensorID}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Verify Update Rack Sensor",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"tests[\"Successful GET\"] = responseCode.code === 200;",
+									"var data =  pm.response.json();",
+									"var input = JSON.parse(pm.environment.get(\"RackSensorUpdateStr\"))",
+									"",
+									"input[\"id\"] = data[\"data\"][\"id\"]",
+									"input[\"parentId\"] = data[\"data\"][\"parentId\"]",
+									"input[\"category\"] = data[\"data\"][\"category\"]",
+									"",
+									"console.log(\"The response: \", data)",
+									"console.log(\"The input: \", input)",
+									"",
+									"function isEqualsJson(obj1, obj2) {",
+									"    for (let i in obj1) {",
+									"        //console.log(obj2[i])",
+									"        //console.log(obj1[i])",
+									"        if (obj1[i] !== obj2[i] && obj2.hasOwnProperty(i) == true) {",
+									"            console.log(\"Failed at: \", obj1[i])",
+									"            ",
+									"            for (let idx in obj1[i]) {",
+									"                if (obj1[i][idx] !== obj2[i][idx] && (obj2[i][idx] !== undefined && obj2[i][idx] !== \"\")) {",
+									"                    console.log(\"The iter: \", i, \"and the inner: \", idx)",
+									"                    console.log(\"Bad News: \", obj1[i][idx])",
+									"",
+									"                    console.log(\"The contents that was already present: \", obj2[i][idx])",
+									"                    return false",
+									"                }",
+									"            }",
+									"        }",
+									"      }",
+									"      return true",
+									"}",
+									"",
+									"",
+									"",
+									"//console.log(\"Input: \", input)",
+									"//onsole.log(\"response: \", data[\"data\"])",
+									"",
+									"tests[\"Successful Update & Get Request\"] = isEqualsJson(data[\"data\"], input) == true;"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{AuthToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{URL}}/api/sensors/{{RackSensorID}}",
+							"host": [
+								"{{URL}}"
+							],
+							"path": [
+								"api",
+								"sensors",
+								"{{RackSensorID}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Room Template",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var data = pm.response.json();",
+									"tests[\"Successful PUT Request\"] = responseCode.code === 200;",
+									"",
+									"pm.environment.set(\"RoomTemplateUpdateStr\", JSON.stringify(JSON.parse(request.data)));",
+									"var data = JSON.parse(responseBody)",
+									"//console.log(\"Here is what we got: \", data[\"tenant\"][\"id\"])",
+									"",
+									"var ID = data[\"data\"][\"slug\"]",
+									"pm.environment.set(\"RoomTemplateID\", ID)"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{AuthToken}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"slug\"          : \"HOTTESTDNB\",\n  \"axisOrientation\"   : \"+N+W\",\n  \"sizeWDHm\"      : [],\n  \"technicalArea\" : [],\n  \"reservedArea\"  : [],\n  \"separators\"    : [\n  ],\n  \"colors\"        : [\n  ],\n  \"tiles\"         : [\n  ],\n  \"aisles\"        : [\n  ]\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{URL}}/api/room-templates/{{RoomTemplateID}}",
+							"host": [
+								"{{URL}}"
+							],
+							"path": [
+								"api",
+								"room-templates",
+								"{{RoomTemplateID}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Verify Update Room Template",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"tests[\"Successful GET\"] = responseCode.code === 200;",
+									"var data =  pm.response.json();",
+									"var input = JSON.parse(pm.environment.get(\"RoomTemplateUpdateStr\"))",
+									"",
+									"input[\"id\"] = data[\"data\"][\"id\"]",
+									"input[\"parentId\"] = data[\"data\"][\"parentId\"]",
+									"input[\"category\"] = data[\"data\"][\"category\"]",
+									"",
+									"console.log(\"The response: \", data)",
+									"console.log(\"The input: \", input)",
+									"",
+									"function isEqualsJson(obj1, obj2) {",
+									"    for (let i in obj1) {",
+									"        //console.log(obj2[i])",
+									"        //console.log(obj1[i])",
+									"        if (obj1[i] !== obj2[i] && obj2.hasOwnProperty(i) == true) {",
+									"            console.log(\"Failed at: \", obj1[i])",
+									"            ",
+									"            for (let idx in obj1[i]) {",
+									"                if (obj1[i][idx] !== obj2[i][idx] && (obj2[i][idx] !== undefined && obj2[i][idx] !== \"\")) {",
+									"                    console.log(\"The iter: \", i, \"and the inner: \", idx)",
+									"                    console.log(\"Bad News: \", obj1[i][idx])",
+									"",
+									"                    console.log(\"The contents that was already present: \", obj2[i][idx])",
+									"                    return false",
+									"                }",
+									"            }",
+									"        }",
+									"      }",
+									"      return true",
+									"}",
+									"",
+									"",
+									"",
+									"//console.log(\"Input: \", input)",
+									"//onsole.log(\"response: \", data[\"data\"])",
+									"",
+									"tests[\"Successful Update & Get Request\"] = isEqualsJson(data[\"data\"], input) == true;"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{AuthToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{URL}}/api/room-templates/{{RoomTemplateID}}",
+							"host": [
+								"{{URL}}"
+							],
+							"path": [
+								"api",
+								"room-templates",
+								"{{RoomTemplateID}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Rack Template",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var data = pm.response.json();",
+									"tests[\"Successful PUT Request\"] = responseCode.code === 200;",
+									"",
+									"pm.environment.set(\"RackTemplateUpdateStr\", JSON.stringify(JSON.parse(request.data)));",
+									"var data = JSON.parse(responseBody)",
+									"//console.log(\"Here is what we got: \", data[\"tenant\"][\"id\"])",
+									"",
+									"var ID = data[\"data\"][\"slug\"]",
+									"pm.environment.set(\"RackTemplateID\", ID)"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{AuthToken}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"slug\"        : \"RACK2000\",\n  \"description\" : \"Rack Template 2000\",\n  \"category\"    : \"rack\",\n  \"sizeWDHmm\"   : [],\n  \"fbxModel\"    : \"1\",\n  \"attributes\"  : {\n    \"type\" : \"\"\n  },\n  \"colors\"      : [\n  ],\n  \"components\"  : [\n  ],\n  \"slots\"       : [\n  ]\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{URL}}/api/obj-templates/{{RackTemplateID}}",
+							"host": [
+								"{{URL}}"
+							],
+							"path": [
+								"api",
+								"obj-templates",
+								"{{RackTemplateID}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Verify Update Rack Template",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"tests[\"Successful GET\"] = responseCode.code === 200;",
+									"var data =  pm.response.json();",
+									"var input = JSON.parse(pm.environment.get(\"RackTemplateUpdateStr\"))",
+									"",
+									"input[\"id\"] = data[\"data\"][\"id\"]",
+									"input[\"parentId\"] = data[\"data\"][\"parentId\"]",
+									"input[\"category\"] = data[\"data\"][\"category\"]",
+									"",
+									"console.log(\"The response: \", data)",
+									"console.log(\"The input: \", input)",
+									"",
+									"function isEqualsJson(obj1, obj2) {",
+									"    for (let i in obj1) {",
+									"        //console.log(obj2[i])",
+									"        //console.log(obj1[i])",
+									"        if (obj1[i] !== obj2[i] && obj2.hasOwnProperty(i) == true) {",
+									"            console.log(\"Failed at: \", obj1[i])",
+									"            ",
+									"            for (let idx in obj1[i]) {",
+									"                if (obj1[i][idx] !== obj2[i][idx] && (obj2[i][idx] !== undefined && obj2[i][idx] !== \"\")) {",
+									"                    console.log(\"The iter: \", i, \"and the inner: \", idx)",
+									"                    console.log(\"Bad News: \", obj1[i][idx])",
+									"",
+									"                    console.log(\"The contents that was already present: \", obj2[i][idx])",
+									"                    return false",
+									"                }",
+									"            }",
+									"        }",
+									"      }",
+									"      return true",
+									"}",
+									"",
+									"",
+									"",
+									"//console.log(\"Input: \", input)",
+									"//onsole.log(\"response: \", data[\"data\"])",
+									"",
+									"tests[\"Successful Update & Get Request\"] = isEqualsJson(data[\"data\"], input) == true;"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{AuthToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{URL}}/api/obj-templates/{{RackTemplateID}}",
+							"host": [
+								"{{URL}}"
+							],
+							"path": [
+								"api",
+								"obj-templates",
+								"{{RackTemplateID}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Bldg Template",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var data = pm.response.json();",
+									"tests[\"Successful PUT Request\"] = responseCode.code === 200;",
+									"",
+									"pm.environment.set(\"BldgTemplateUpdateStr\", JSON.stringify(JSON.parse(request.data)));",
+									"var data = JSON.parse(responseBody)",
+									"//console.log(\"Here is what we got: \", data[\"tenant\"][\"id\"])",
+									"",
+									"var ID = data[\"data\"][\"slug\"]",
+									"pm.environment.set(\"BldgTemplateID\", ID)"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{AuthToken}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"slug\"          : \"BuildingTemplateUPDATED\",\n  \"orientation\"   : \"+N+W\",\n  \"sizeWDHm\"      : [1000,1000,1000],\n  \"vertices\":[[-190.5,50.64]]\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{URL}}/api/bldg-templates/{{BldgTemplateID}}",
+							"host": [
+								"{{URL}}"
+							],
+							"path": [
+								"api",
+								"bldg-templates",
+								"{{BldgTemplateID}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Verify Update Bldg Template",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"tests[\"Successful GET\"] = responseCode.code === 200;",
+									"var data =  pm.response.json();",
+									"var input = JSON.parse(pm.environment.get(\"BldgTemplateUpdateStr\"))",
+									"",
+									"input[\"id\"] = data[\"data\"][\"id\"]",
+									"input[\"parentId\"] = data[\"data\"][\"parentId\"]",
+									"input[\"category\"] = data[\"data\"][\"category\"]",
+									"",
+									"console.log(\"The response: \", data)",
+									"console.log(\"The input: \", input)",
+									"",
+									"function isEqualsJson(obj1, obj2) {",
+									"    for (let i in obj1) {",
+									"        //console.log(obj2[i])",
+									"        //console.log(obj1[i])",
+									"        if (obj1[i] !== obj2[i] && obj2.hasOwnProperty(i) == true) {",
+									"            console.log(\"Failed at: \", obj1[i])",
+									"            ",
+									"            for (let idx in obj1[i]) {",
+									"                if (obj1[i][idx] !== obj2[i][idx] && (obj2[i][idx] !== undefined && obj2[i][idx] !== \"\")) {",
+									"                    console.log(\"The iter: \", i, \"and the inner: \", idx)",
+									"                    console.log(\"Bad News: \", obj1[i][idx])",
+									"",
+									"                    console.log(\"The contents that was already present: \", obj2[i][idx])",
+									"                    return false",
+									"                }",
+									"            }",
+									"        }",
+									"      }",
+									"      return true",
+									"}",
+									"",
+									"",
+									"",
+									"//console.log(\"Input: \", input)",
+									"//onsole.log(\"response: \", data[\"data\"])",
+									"",
+									"tests[\"Successful Update & Get Request\"] = isEqualsJson(data[\"data\"], input) == true;"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{AuthToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{URL}}/api/bldg-templates/{{BldgTemplateID}}",
+							"host": [
+								"{{URL}}"
+							],
+							"path": [
+								"api",
+								"bldg-templates",
+								"{{BldgTemplateID}}"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Delete DB",
+			"item": [
+				{
+					"name": "Delete Tenant & Hierarchy",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"tests[\"Successful DELETE Request\"] = responseCode.code === 204;"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{AuthToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{URL}}/api/tenants/{{TenantID}}",
+							"host": [
+								"{{URL}}"
+							],
+							"path": [
+								"api",
+								"tenants",
+								"{{TenantID}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Verify Delete Tenant",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"tests[\"Successful DELETE & GET Request\"] = responseCode.code === 404;"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{AuthToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [
+							{
+								"warning": "This is a duplicate header and will be overridden by the Authorization header generated by Postman.",
+								"key": "Authorization",
+								"value": "{{AuthToken}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{URL}}/api/tenants/{{TenantID}}",
+							"host": [
+								"{{URL}}"
+							],
+							"path": [
+								"api",
+								"tenants",
+								"{{TenantID}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Verify Delete Site",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"tests[\"Successful DELETE & GET Request\"] = responseCode.code === 404;"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{AuthToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{URL}}/api/sites/{{SiteID}}",
+							"host": [
+								"{{URL}}"
+							],
+							"path": [
+								"api",
+								"sites",
+								"{{SiteID}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Verify Delete Building",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"tests[\"Successful DELETE & GET Request\"] = responseCode.code === 404;"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{AuthToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{URL}}/api/buildings/{{BuildingID}}",
+							"host": [
+								"{{URL}}"
+							],
+							"path": [
+								"api",
+								"buildings",
+								"{{BuildingID}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Verify Delete Room",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"tests[\"Successful DELETE & GET Request\"] = responseCode.code === 404;"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{AuthToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{URL}}/api/rooms/{{RoomID}}",
+							"host": [
+								"{{URL}}"
+							],
+							"path": [
+								"api",
+								"rooms",
+								"{{RoomID}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Verify Delete AC",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"tests[\"Successful GET Request\"] = responseCode.code === 404;"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{AuthToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{URL}}/api/acs/{{ACID}}",
+							"host": [
+								"{{URL}}"
+							],
+							"path": [
+								"api",
+								"acs",
+								"{{ACID}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Verify Delete Panel",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"tests[\"Successful GET Request\"] = responseCode.code === 404;"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{AuthToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{URL}}/api/panels/{{PanelID}}",
+							"host": [
+								"{{URL}}"
+							],
+							"path": [
+								"api",
+								"panels",
+								"{{PanelID}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Verify Delete Cabinet",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"tests[\"Successful GET Request\"] = responseCode.code === 404;"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{AuthToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{URL}}/api/cabinets/{{CabinetID}}",
+							"host": [
+								"{{URL}}"
+							],
+							"path": [
+								"api",
+								"cabinets",
+								"{{CabinetID}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Verify Delete Corridor",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"tests[\"Successful GET Request\"] = responseCode.code === 404;"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{AuthToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{URL}}/api/corridors/{{CorridorID}}",
+							"host": [
+								"{{URL}}"
+							],
+							"path": [
+								"api",
+								"corridors",
+								"{{CorridorID}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Verify Delete Room Sensor",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"tests[\"Successful DELETE & GET Request\"] = responseCode.code === 404;"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{AuthToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{URL}}/api/sensors/{{RoomSensorID}}",
+							"host": [
+								"{{URL}}"
+							],
+							"path": [
+								"api",
+								"sensors",
+								"{{RoomSensorID}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Verify Delete Rack",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"tests[\"Successful DELETE & GET Request\"] = responseCode.code === 404;"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{AuthToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{URL}}/api/racks/{{RackID}}",
+							"host": [
+								"{{URL}}"
+							],
+							"path": [
+								"api",
+								"racks",
+								"{{RackID}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Verify Delete Rack Sensor",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"tests[\"Successful DELETE & GET Request\"] = responseCode.code === 404;"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{AuthToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{URL}}/api/sensors/{{RackSensorID}}",
+							"host": [
+								"{{URL}}"
+							],
+							"path": [
+								"api",
+								"sensors",
+								"{{RackSensorID}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Verify Delete Group",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"tests[\"Successful GET Request\"] = responseCode.code === 404;"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{AuthToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{URL}}/api/groups/{{GroupID}}",
+							"host": [
+								"{{URL}}"
+							],
+							"path": [
+								"api",
+								"groups",
+								"{{GroupID}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Verify Delete Device",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"tests[\"Successful DELETE & GET Request\"] = responseCode.code === 404;"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{AuthToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{URL}}/api/devices/{{DeviceID}}",
+							"host": [
+								"{{URL}}"
+							],
+							"path": [
+								"api",
+								"devices",
+								"{{DeviceID}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Verify Delete Device Sensor",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"tests[\"Successful DELETE & GET Request\"] = responseCode.code === 404;"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{AuthToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{URL}}/api/sensors/{{DeviceSensorID}}",
+							"host": [
+								"{{URL}}"
+							],
+							"path": [
+								"api",
+								"sensors",
+								"{{DeviceSensorID}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Stray Device",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{AuthToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{URL}}/api/stray-devices/{{StrayDeviceID}}",
+							"host": [
+								"{{URL}}"
+							],
+							"path": [
+								"api",
+								"stray-devices",
+								"{{StrayDeviceID}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Verify Delete Stray Device",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"tests[\"Successful DELETE & GET Request\"] = responseCode.code === 404;"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{AuthToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{URL}}/api/stray-devices/{{StrayDeviceID}}",
+							"host": [
+								"{{URL}}"
+							],
+							"path": [
+								"api",
+								"stray-devices",
+								"{{StrayDeviceID}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Stray Sensor",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{AuthToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{URL}}/api/stray-sensors/{{StraySensorID}}",
+							"host": [
+								"{{URL}}"
+							],
+							"path": [
+								"api",
+								"stray-sensors",
+								"{{StraySensorID}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Verify Delete Stray Sensor",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"tests[\"Successful DELETE & GET Request\"] = responseCode.code === 404;"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{AuthToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{URL}}/api/stray-sensors/{{StraySensorID}}",
+							"host": [
+								"{{URL}}"
+							],
+							"path": [
+								"api",
+								"stray-sensors",
+								"{{StraySensorID}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Room Template",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"tests[\"Successful DELETE Request\"] = responseCode.code === 204;"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{AuthToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{URL}}/api/room-templates/{{RoomTemplateID}}",
+							"host": [
+								"{{URL}}"
+							],
+							"path": [
+								"api",
+								"room-templates",
+								"{{RoomTemplateID}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Verify Delete Room Template",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"tests[\"Successful DELETE & GET Request\"] = responseCode.code === 404;"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{AuthToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{URL}}/api/room-templates/{{RoomTemplateID}}",
+							"host": [
+								"{{URL}}"
+							],
+							"path": [
+								"api",
+								"room-templates",
+								"{{RoomTemplateID}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Rack Template",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"tests[\"Successful DELETE Request\"] = responseCode.code === 204;"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{AuthToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{URL}}/api/obj-templates/{{RackTemplateID}}",
+							"host": [
+								"{{URL}}"
+							],
+							"path": [
+								"api",
+								"obj-templates",
+								"{{RackTemplateID}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Verify Delete Rack Template",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"tests[\"Successful GET Request\"] = responseCode.code === 404;"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{AuthToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{URL}}/api/rack-templates/{{RackTemplateID}}",
+							"host": [
+								"{{URL}}"
+							],
+							"path": [
+								"api",
+								"rack-templates",
+								"{{RackTemplateID}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Device Template",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"tests[\"Successful DELETE Request\"] = responseCode.code === 204;"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{AuthToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{URL}}/api/obj-templates/{{DeviceTemplateID}}",
+							"host": [
+								"{{URL}}"
+							],
+							"path": [
+								"api",
+								"obj-templates",
+								"{{DeviceTemplateID}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Verify Delete Device Template",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"tests[\"Successful GET Request\"] = responseCode.code === 404;"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{AuthToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{URL}}/api/device-templates/{{DeviceTemplateID}}",
+							"host": [
+								"{{URL}}"
+							],
+							"path": [
+								"api",
+								"device-templates",
+								"{{DeviceTemplateID}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Bldg Template",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"tests[\"Successful DELETE Request\"] = responseCode.code === 204;"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{AuthToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{URL}}/api/bldg-templates/{{BldgTemplateID}}",
+							"host": [
+								"{{URL}}"
+							],
+							"path": [
+								"api",
+								"bldg-templates",
+								"{{BldgTemplateID}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Verify Delete Bldg Template",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"tests[\"Successful GET Request\"] = responseCode.code === 404;"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{AuthToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{URL}}/api/bldg-templates/{{BldgTemplateID}}",
+							"host": [
+								"{{URL}}"
+							],
+							"path": [
+								"api",
+								"bldg-templates",
+								"{{BldgTemplateID}}"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Verify DB is Empty",
+			"item": [
+				{
+					"name": "Verify Tentants Empty",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"tests[\"Successful GET Request\"] = responseCode.code === 404;"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{AuthToken}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{URL}}/api/tenants",
+							"host": [
+								"{{URL}}"
+							],
+							"path": [
+								"api",
+								"tenants"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Verify Sites Empty",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"tests[\"Successful GET Request\"] = responseCode.code === 404;"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{AuthToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{URL}}/api/sites",
+							"host": [
+								"{{URL}}"
+							],
+							"path": [
+								"api",
+								"sites"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Verify Buildings Empty",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"tests[\"Successful GET Request\"] = responseCode.code === 404;"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{AuthToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{URL}}/api/buildings",
+							"host": [
+								"{{URL}}"
+							],
+							"path": [
+								"api",
+								"buildings"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Verify Rooms Empty",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"tests[\"Successful GET Request\"] = responseCode.code === 404;"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{AuthToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{URL}}/api/rooms",
+							"host": [
+								"{{URL}}"
+							],
+							"path": [
+								"api",
+								"rooms"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Verify ACs Empty",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"tests[\"Successful GET Request\"] = responseCode.code === 404;"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{AuthToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{URL}}/api/acs",
+							"host": [
+								"{{URL}}"
+							],
+							"path": [
+								"api",
+								"acs"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Verify Panels Empty",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"tests[\"Successful GET Request\"] = responseCode.code === 404;"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{AuthToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{URL}}/api/panels",
+							"host": [
+								"{{URL}}"
+							],
+							"path": [
+								"api",
+								"panels"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Verify Cabinets Empty",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"tests[\"Successful GET Request\"] = responseCode.code === 404;"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{AuthToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{URL}}/api/cabinets",
+							"host": [
+								"{{URL}}"
+							],
+							"path": [
+								"api",
+								"cabinets"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Verify Groups Empty",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"tests[\"Successful GET Request\"] = responseCode.code === 404;"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{AuthToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{URL}}/api/groups",
+							"host": [
+								"{{URL}}"
+							],
+							"path": [
+								"api",
+								"groups"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Verify Corridors Empty",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"tests[\"Successful GET Request\"] = responseCode.code === 404;"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{AuthToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{URL}}/api/corridors",
+							"host": [
+								"{{URL}}"
+							],
+							"path": [
+								"api",
+								"corridors"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Verify Racks Empty",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"tests[\"Successful GET Request\"] = responseCode.code === 404;"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{AuthToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{URL}}/api/racks",
+							"host": [
+								"{{URL}}"
+							],
+							"path": [
+								"api",
+								"racks"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Verify Devices Empty",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"tests[\"Successful GET Request\"] = responseCode.code === 404;"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{AuthToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{URL}}/api/devices",
+							"host": [
+								"{{URL}}"
+							],
+							"path": [
+								"api",
+								"devices"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Verify Sensors Empty",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"tests[\"Successful GET Request\"] = responseCode.code === 404;"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{AuthToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{URL}}/api/sensors",
+							"host": [
+								"{{URL}}"
+							],
+							"path": [
+								"api",
+								"sensors"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Verify Stray Sensors Empty",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"tests[\"Successful GET Request\"] = responseCode.code === 404;"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{AuthToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{URL}}/api/stray-sensors",
+							"host": [
+								"{{URL}}"
+							],
+							"path": [
+								"api",
+								"stray-sensors"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Verify Stray Devices Empty",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"tests[\"Successful GET Request\"] = responseCode.code === 404;"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{AuthToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{URL}}/api/stray-devices",
+							"host": [
+								"{{URL}}"
+							],
+							"path": [
+								"api",
+								"stray-devices"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Verify Room-Template Empty",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"tests[\"Successful GET Request\"] = responseCode.code === 404;"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{AuthToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{URL}}/api/room-templates",
+							"host": [
+								"{{URL}}"
+							],
+							"path": [
+								"api",
+								"room-templates"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Verify Obj-Template Empty",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"tests[\"Successful GET Request\"] = responseCode.code === 404;"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{AuthToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{URL}}/api/obj-templates",
+							"host": [
+								"{{URL}}"
+							],
+							"path": [
+								"api",
+								"obj-templates"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Verify Bldg-Template Empty",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"tests[\"Successful GET Request\"] = responseCode.code === 404;"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{AuthToken}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{URL}}/api/bldg-templates",
+							"host": [
+								"{{URL}}"
+							],
+							"path": [
+								"api",
+								"bldg-templates"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	]
+}

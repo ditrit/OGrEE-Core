@@ -1,0 +1,138 @@
+digraph gocallvis {
+    label="p3";
+    labeljust="l";
+    fontname="Arial";
+    fontsize="14";
+    rankdir="LR";
+    bgcolor="lightgray";
+    style="solid";
+    penwidth="0.5";
+    pad="0.0";
+    nodesep="0.35";
+
+    node [shape="ellipse" style="filled" fillcolor="honeydew" fontname="Verdana" penwidth="1.0" margin="0.05,0.0"];
+    edge [minlen="2"]
+
+    subgraph "cluster_focus" {
+        labelloc="t";
+labeljust="c";
+fontsize="18";
+bgcolor="#e6ecfa";
+label="main";
+        
+        "p3.init$1" [ fillcolor="lightblue" label="init$1" style="dotted,filled" ]
+        "p3.main" [ fillcolor="lightblue" label="main" penwidth="0.5" ]
+        
+        subgraph "cluster_fmt" {
+        penwidth="0.8";
+style="filled";
+fillcolor="#E0FFE1";
+fontname="Tahoma bold";
+tooltip="package: fmt";
+fontsize="16";
+rank="sink";
+label="fmt";
+URL="/?f=fmt";
+        
+        "fmt.Println" [ fillcolor="#adedad" label="Println" penwidth="1.5" ]
+        "fmt.Print" [ fillcolor="#adedad" label="Print" penwidth="1.5" ]
+        
+    }
+
+        subgraph "cluster_github.com/gorilla/mux" {
+        tooltip="package: github.com/gorilla/mux";
+penwidth="0.8";
+rank="sink";
+label="mux";
+URL="/?f=github.com/gorilla/mux";
+fontsize="16";
+style="filled";
+fillcolor="lightyellow";
+fontname="Tahoma bold";
+        
+        "(github.com/gorilla/mux.MatcherFunc).Match" [ label="(MatcherFunc).Match" penwidth="1.5" fillcolor="moccasin" ]
+        "github.com/gorilla/mux.NewRouter" [ fillcolor="moccasin" label="NewRouter" penwidth="1.5" ]
+        "(*github.com/gorilla/mux.Router).HandleFunc" [ penwidth="1.5" fillcolor="moccasin" label="(*Router).HandleFunc" ]
+        "(*github.com/gorilla/mux.Route).Methods" [ penwidth="1.5" fillcolor="moccasin" label="(*Route).Methods" ]
+        "(*github.com/gorilla/mux.Route).MatcherFunc" [ label="(*Route).MatcherFunc" penwidth="1.5" fillcolor="moccasin" ]
+        "(*github.com/gorilla/mux.Router).Use" [ fillcolor="moccasin" label="(*Router).Use" penwidth="1.5" ]
+        
+    }
+
+        subgraph "cluster_net/http" {
+        penwidth="0.8";
+fontsize="16";
+style="filled";
+fontname="Tahoma bold";
+label="net/http";
+URL="/?f=net/http";
+fillcolor="#E0FFE1";
+rank="sink";
+tooltip="package: net/http";
+        
+        "net/http.ListenAndServe" [ penwidth="1.5" fillcolor="#adedad" label="ListenAndServe" ]
+        
+    }
+
+        subgraph "cluster_net/url" {
+        penwidth="0.8";
+fontsize="16";
+style="filled";
+fillcolor="#E0FFE1";
+rank="sink";
+fontname="Tahoma bold";
+label="net/url";
+URL="/?f=net/url";
+tooltip="package: net/url";
+        
+        "(*net/url.URL).String" [ fillcolor="#adedad" label="(*URL).String" penwidth="1.5" ]
+        
+    }
+
+        subgraph "cluster_os" {
+        style="filled";
+fillcolor="#E0FFE1";
+rank="sink";
+label="os";
+tooltip="package: os";
+penwidth="0.8";
+fontsize="16";
+fontname="Tahoma bold";
+URL="/?f=os";
+        
+        "os.Getenv" [ penwidth="1.5" fillcolor="#adedad" label="Getenv" ]
+        
+    }
+
+        subgraph "cluster_regexp" {
+        fillcolor="#E0FFE1";
+label="regexp";
+tooltip="package: regexp";
+rank="sink";
+URL="/?f=regexp";
+penwidth="0.8";
+fontsize="16";
+style="filled";
+fontname="Tahoma bold";
+        
+        "regexp.MustCompile" [ label="MustCompile" penwidth="1.5" fillcolor="#adedad" ]
+        "(*regexp.Regexp).MatchString" [ fillcolor="#adedad" label="(*Regexp).MatchString" penwidth="1.5" ]
+        
+    }
+
+    }
+
+    "p3.init$1" -> "regexp.MustCompile" [ color="saddlebrown" ]
+    "p3.init$1" -> "(*net/url.URL).String" [ color="saddlebrown" ]
+    "p3.init$1" -> "(*regexp.Regexp).MatchString" [ color="saddlebrown" ]
+    "(github.com/gorilla/mux.MatcherFunc).Match" -> "p3.init$1" [ style="dashed" color="saddlebrown" ]
+    "p3.main" -> "github.com/gorilla/mux.NewRouter" [ color="saddlebrown" ]
+    "p3.main" -> "(*github.com/gorilla/mux.Router).HandleFunc" [ color="saddlebrown" ]
+    "p3.main" -> "(*github.com/gorilla/mux.Route).Methods" [ color="saddlebrown" ]
+    "p3.main" -> "(*github.com/gorilla/mux.Route).MatcherFunc" [ color="saddlebrown" ]
+    "p3.main" -> "(*github.com/gorilla/mux.Router).Use" [ color="saddlebrown" ]
+    "p3.main" -> "os.Getenv" [ color="saddlebrown" ]
+    "p3.main" -> "fmt.Println" [ color="saddlebrown" ]
+    "p3.main" -> "net/http.ListenAndServe" [ color="saddlebrown" ]
+    "p3.main" -> "fmt.Print" [ color="saddlebrown" ]
+}
