@@ -1,15 +1,23 @@
-# Binaries for programs and plugins
-*.exe
-*.exe~
-*.dll
-*.so
-*.dylib
-
-# Test binary, built with `go test -c`
-*.test
-
-# Output of the go coverage tool, specifically when used with LiteIDE
-*.out
-
-# Dependency directories (remove the comment below to include it)
-# vendor/
+interpreter/note.txt
+interpreter/y.output
+interpreter/main
+interpreter/*.go
+interpreter/y
+.resources/
+.vscode/
+cli
+cli.exe
+main
+main*
+log.txt
+__debug_bin
+parser.tab.c
+BisonExmple.txt
+delme.sh
+y.output
+*.txt
+.history
+.env
+y.go
+lexer.nn.go
+*.ocli
