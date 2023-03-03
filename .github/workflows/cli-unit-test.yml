@@ -8,6 +8,9 @@ name: Test
 jobs:
   test:
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./CLI
     
     steps:
     - name: Install Go
