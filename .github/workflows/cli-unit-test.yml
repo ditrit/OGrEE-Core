@@ -1,7 +1,9 @@
 on:
   pull_request:
     branches:
-      - master
+    - master
+    paths:
+    - API
 
 name: CLI Unit Tests
 
