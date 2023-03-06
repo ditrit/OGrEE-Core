@@ -114,15 +114,13 @@ class AppController with ChangeNotifier {
         var parent =
             filters[i].substring(0, filters[i].lastIndexOf('.')); //parent
         filteredData[parent]!.removeWhere((element) {
-          return !filters.contains("$parent.$element");
+          return !filters.contains(element);
         });
         newList.add(parent);
       }
       filters = newList;
       testLevel--;
     }
-
-    print(filteredData);
 
     // Regenerate tree
     treeController.rootNode
