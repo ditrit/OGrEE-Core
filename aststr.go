@@ -43,6 +43,9 @@ func (n pathNode) getStr() (string, error) {
 	var output_words []string
 	if p[0] != '/' {
 		output_words = strings.Split(cmd.State.CurrPath, "/")[1:]
+		if len(output_words) == 1 && output_words[0] == "" {
+			output_words = output_words[0:0]
+		}
 	} else {
 		p = p[1:]
 	}
