@@ -471,6 +471,8 @@ func GetPrefixCompleter() *readline.PrefixCompleter {
 		readline.PcItem("ui.delay", false,
 			readline.PcItem(" = ", false)),
 
+		readline.PcItem("ui.clearcache", false),
+
 		readline.PcItem(">", true,
 			readline.PcItemDynamic(ListEntities(""), false)),
 		readline.PcItem("hc", true,
