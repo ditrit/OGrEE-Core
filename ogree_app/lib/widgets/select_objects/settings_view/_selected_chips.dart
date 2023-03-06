@@ -56,6 +56,7 @@ class _SelectedChipsState extends State<SelectedChips> {
           onPressed: () => setState(() {
             shouldGroupBy[key] = !shouldGroupBy[key]!;
           }),
+          side: const BorderSide(style: BorderStyle.none),
           backgroundColor: Colors.blue.shade200,
           tooltip: value.reduce((value, element) => value = '$value\n$element'),
           label: Text(
@@ -86,6 +87,7 @@ class _SelectedChipsState extends State<SelectedChips> {
         chips.add(RawChip(
           onPressed: () => appController.toggleSelection(key),
           backgroundColor: Colors.lightGreen.shade200,
+          side: const BorderSide(style: BorderStyle.none),
           label: Text(
             key,
             style: TextStyle(

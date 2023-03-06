@@ -40,16 +40,17 @@ class _MyAppState extends State<MyApp> {
       supportedLocales: AppLocalizations.supportedLocales,
       theme: ThemeData(
           useMaterial3: true,
+          colorSchemeSeed: Colors.blue,
           fontFamily: GoogleFonts.inter().fontFamily,
           elevatedButtonTheme: ElevatedButtonThemeData(
               style: ElevatedButton.styleFrom(
             backgroundColor: Colors.blue,
             foregroundColor: Colors.white,
           )),
-          cardTheme: CardTheme(
-            elevation: 3,
-            surfaceTintColor: Colors.white,
-          ),
+          cardTheme: const CardTheme(
+              elevation: 3,
+              surfaceTintColor: Colors.white,
+              color: Colors.white),
           textTheme: TextTheme(
             headlineLarge: GoogleFonts.inter(
               fontSize: 22,

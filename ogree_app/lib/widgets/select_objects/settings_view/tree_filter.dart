@@ -264,6 +264,7 @@ class _AutocompleteFilterState extends State<AutocompleteFilter> {
           });
         },
         backgroundColor: ColorChip[widget.param]!.shade100,
+        side: const BorderSide(style: BorderStyle.none),
         label: Text(
           value,
           style: TextStyle(
