@@ -1359,6 +1359,13 @@ func (n *uiHighlightNode) execute() (interface{}, error) {
 	return nil, cmd.UIHighlight(path)
 }
 
+type uiClearCacheNode struct {
+}
+
+func (n *uiClearCacheNode) execute() (interface{}, error) {
+	return nil, cmd.UIClearCache()
+}
+
 type cameraMoveNode struct {
 	command  string
 	position node
