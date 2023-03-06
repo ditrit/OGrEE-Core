@@ -26,9 +26,16 @@ AppBar myAppBar(context, userEmail) {
         child: LanguageToggle(),
       ),
       const SizedBox(width: 20),
-      const Icon(Icons.account_circle),
+      const Icon(
+        Icons.account_circle,
+        color: Colors.white,
+      ),
       const SizedBox(width: 10),
-      Center(child: Text(userEmail)),
+      Center(
+          child: Text(
+        userEmail,
+        style: TextStyle(color: Colors.white),
+      )),
       const SizedBox(width: 40)
     ],
   );

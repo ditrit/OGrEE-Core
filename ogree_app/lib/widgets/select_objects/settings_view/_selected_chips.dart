@@ -61,6 +61,8 @@ class _SelectedChipsState extends State<SelectedChips> {
           label: Text(
             shouldGroupBy[key]! ? "(${value.length}) $key..." : "$key...",
             style: TextStyle(
+              fontSize: 14,
+              fontFamily: GoogleFonts.inter().fontFamily,
               color: Colors.blue.shade900,
               fontWeight: FontWeight.w600,
             ),
@@ -87,6 +89,8 @@ class _SelectedChipsState extends State<SelectedChips> {
           label: Text(
             key,
             style: TextStyle(
+              fontSize: 14,
+              fontFamily: GoogleFonts.inter().fontFamily,
               color: Colors.green.shade900,
               fontWeight: FontWeight.w600,
             ),

@@ -47,14 +47,16 @@ class _Action extends StatelessWidget {
       style: OutlinedButton.styleFrom(
         foregroundColor: kDarkBlue,
         backgroundColor: const Color(0x331565c0),
-        padding: const EdgeInsets.all(15),
+        padding: const EdgeInsets.all(10),
         side: const BorderSide(style: BorderStyle.none),
         shape: const RoundedRectangleBorder(
           borderRadius: BorderRadius.all(Radius.circular(12)),
         ),
-        textStyle: const TextStyle(
+        textStyle: TextStyle(
+          fontSize: 13.5,
+          fontFamily: GoogleFonts.inter().fontFamily,
           color: kDarkBlue,
-          fontWeight: FontWeight.w600,
+          fontWeight: FontWeight.w700,
         ),
       ),
       onPressed: onPressed,

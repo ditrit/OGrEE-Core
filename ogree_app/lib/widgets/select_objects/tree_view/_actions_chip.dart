@@ -32,7 +32,9 @@ class _NodeActionsChipState extends State<_NodeActionsChip> {
         backgroundColor: const Color(0x331565c0),
         label: Text(
           nodeScope.node.label,
-          style: const TextStyle(
+          style: TextStyle(
+            fontSize: 14,
+            fontFamily: GoogleFonts.inter().fontFamily,
             color: _kDarkBlue,
             fontWeight: FontWeight.w600,
           ),

@@ -64,12 +64,16 @@ Future<Map<String, Map<String, String>>> fetchAttributes() async {
   }
 }
 
-Future<List<Project>> fetchProjects(String userEmail) async {
+Future<List<Project>> fetchProjects(String userEmail,
+    {http.Client? client}) async {
   print("API get Projects");
+  client ??= http.Client();
   Uri url = Uri.parse('${dotenv.env['API_URL']}/api/projects?user=$userEmail');
-  final response = await http.get(url, headers: getHeader(token));
+  final response = await client.get(url, headers: getHeader(token));
   print(response.statusCode);
   if (response.statusCode == 200) {
+    print(response);
+    print(response.body);
     // If the server did return a 200 OK response,
     // then parse the JSON and convert to the right format.
     Map<String, dynamic> data = json.decode(response.body);

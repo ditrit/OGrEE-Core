@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:ogree_app/widgets/select_objects/app_controller.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
@@ -173,7 +174,6 @@ class _AutocompleteFilterState extends State<AutocompleteFilter> {
             : Container(),
         RawAutocomplete<String>(
           optionsBuilder: (TextEditingValue textEditingValue) {
-            // print("OPTIONS BUILDER");
             return widget.options.where((String option) {
               return option.contains(textEditingValue.text);
             });
@@ -188,7 +188,9 @@ class _AutocompleteFilterState extends State<AutocompleteFilter> {
               decoration: InputDecoration(
                   enabled: widget.enabled,
                   isDense: true,
-                  labelText: widget.param), // placeholder text
+                  labelText: widget.param,
+                  labelStyle:
+                      const TextStyle(fontSize: 14)), // placeholder text
               onFieldSubmitted: (String value) {
                 // print("submitted " + value);
                 if (widget.options.contains(value)) {
@@ -229,7 +231,8 @@ class _AutocompleteFilterState extends State<AutocompleteFilter> {
                           onSelected(option);
                         },
                         child: ListTile(
-                          title: Text(option),
+                          title: Text(option,
+                              style: const TextStyle(fontSize: 14)),
                         ),
                       );
                     },
@@ -245,10 +248,8 @@ class _AutocompleteFilterState extends State<AutocompleteFilter> {
           runSpacing: 10,
           children: getChips(_selectedOptions, context),
         ),
-        const SizedBox(height: 2),
       ],
     );
-    // });
   }
 
   List<Widget> getChips(List<String> nodes, BuildContext context) {
@@ -256,7 +257,6 @@ class _AutocompleteFilterState extends State<AutocompleteFilter> {
     nodes.forEach((value) {
       chips.add(RawChip(
         onPressed: () {
-          // print("onPressed autocomplete chip");
           AppController.of(context).filterTree(value, widget.paramLevel);
           setState(() {
             _selectedOptions.removeWhere((opt) => opt == value);
@@ -267,6 +267,8 @@ class _AutocompleteFilterState extends State<AutocompleteFilter> {
         label: Text(
           value,
           style: TextStyle(
+            fontSize: 13.5,
+            fontFamily: GoogleFonts.inter().fontFamily,
             color: ColorChip[widget.param],
             fontWeight: FontWeight.w600,
           ),

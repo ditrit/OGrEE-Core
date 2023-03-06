@@ -32,156 +32,166 @@ class _LoginPageState extends State<LoginPage> {
     final localeMsg = AppLocalizations.of(context)!;
     return Scaffold(
       body: Container(
+        // height: MediaQuery.of(context).size.height,
         decoration: const BoxDecoration(
           image: DecorationImage(
             image: AssetImage("assets/server_background.png"),
             fit: BoxFit.cover,
           ),
         ),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Align(
-              alignment: Alignment.topCenter,
-              child: LanguageToggle(),
-            ),
-            SizedBox(height: 5),
-            Card(
-              child: Form(
-                key: _formKey,
-                child: Container(
-                  constraints:
-                      const BoxConstraints(maxWidth: 550, maxHeight: 600),
-                  padding: const EdgeInsets.only(
-                      right: 100, left: 100, top: 50, bottom: 30),
-                  child: ListView(
-                    shrinkWrap: true,
-                    children: [
-                      Center(
-                          child: Text(localeMsg.welcome,
-                              style:
-                                  Theme.of(context).textTheme.headlineLarge)),
-                      const SizedBox(height: 8),
-                      Center(
-                        child: Text(
-                          localeMsg.welcomeConnect,
-                          style: Theme.of(context).textTheme.headlineMedium,
-                        ),
-                      ),
-                      const SizedBox(height: 32),
-                      Center(
-                        child: Image.asset(
-                          "assets/edf_logo.png",
-                          height: 30,
-                        ),
-                      ),
-                      const SizedBox(height: 32),
-                      TextFormField(
-                        onSaved: (newValue) => _email = newValue,
-                        validator: (text) {
-                          if (text == null || text.isEmpty) {
-                            return localeMsg.mandatoryField;
-                          }
-                          return null;
-                        },
-                        decoration: InputDecoration(
-                          labelText: 'E-mail',
-                          hintText: 'abc@example.com',
-                          labelStyle: GoogleFonts.inter(
-                            fontSize: 12,
-                            color: Colors.black,
-                          ),
-                          border: inputStyle,
-                        ),
-                      ),
-                      const SizedBox(height: 20),
-                      TextFormField(
-                        obscureText: true,
-                        onSaved: (newValue) => _password = newValue,
-                        onEditingComplete: () => tryLogin(),
-                        validator: (text) {
-                          if (text == null || text.isEmpty) {
-                            return localeMsg.mandatoryField;
-                          }
-                          return null;
-                        },
-                        decoration: InputDecoration(
-                          labelText: localeMsg.password,
-                          hintText: '********',
-                          labelStyle: GoogleFonts.inter(
-                            fontSize: 12,
-                            color: Colors.black,
-                          ),
-                          border: inputStyle,
-                        ),
-                      ),
-                      const SizedBox(height: 25),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        children: [
-                          Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              SizedBox(
-                                height: 24,
-                                width: 24,
-                                child: Checkbox(
-                                  value: _isChecked,
-                                  onChanged: (bool? value) =>
-                                      setState(() => _isChecked = value!),
-                                ),
+        child: CustomScrollView(slivers: [
+          SliverFillRemaining(
+            hasScrollBody: false,
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Align(
+                  alignment: Alignment.topCenter,
+                  child: LanguageToggle(),
+                ),
+                const SizedBox(height: 5),
+                Card(
+                  // surfaceTintColor: Colors.white,
+                  // elevation: 0,
+                  child: Form(
+                    key: _formKey,
+                    child: Container(
+                      constraints:
+                          const BoxConstraints(maxWidth: 550, maxHeight: 500),
+                      padding: const EdgeInsets.only(
+                          right: 100, left: 100, top: 50, bottom: 30),
+                      child: SingleChildScrollView(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            Center(
+                                child: Text(localeMsg.welcome,
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .headlineLarge)),
+                            const SizedBox(height: 8),
+                            Center(
+                              child: Text(
+                                localeMsg.welcomeConnect,
+                                style:
+                                    Theme.of(context).textTheme.headlineMedium,
                               ),
-                              const SizedBox(width: 8),
-                              Text(
-                                localeMsg.stayLogged,
-                                style: GoogleFonts.inter(
-                                  fontSize: 14,
+                            ),
+                            const SizedBox(height: 25),
+                            Center(
+                              child: Image.asset(
+                                "assets/edf_logo.png",
+                                height: 30,
+                              ),
+                            ),
+                            const SizedBox(height: 32),
+                            TextFormField(
+                              onSaved: (newValue) => _email = newValue,
+                              validator: (text) {
+                                if (text == null || text.isEmpty) {
+                                  return localeMsg.mandatoryField;
+                                }
+                                return null;
+                              },
+                              decoration: InputDecoration(
+                                labelText: 'E-mail',
+                                hintText: 'abc@example.com',
+                                labelStyle: GoogleFonts.inter(
+                                  fontSize: 11,
                                   color: Colors.black,
                                 ),
+                                border: inputStyle,
                               ),
-                            ],
-                          ),
-                          const SizedBox(width: 25),
-                          Text(
-                            localeMsg.forgotPassword,
-                            style: GoogleFonts.inter(
-                              fontSize: 14,
-                              color: const Color.fromARGB(255, 0, 84, 152),
                             ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 40),
-                      Align(
-                        child: TextButton(
-                          onPressed: () => tryLogin(),
-                          style: TextButton.styleFrom(
-                            backgroundColor:
-                                Theme.of(context).colorScheme.primary,
-                            padding: const EdgeInsets.symmetric(
-                              vertical: 20,
-                              horizontal: 20,
+                            const SizedBox(height: 20),
+                            TextFormField(
+                              obscureText: true,
+                              onSaved: (newValue) => _password = newValue,
+                              onEditingComplete: () => tryLogin(),
+                              validator: (text) {
+                                if (text == null || text.isEmpty) {
+                                  return localeMsg.mandatoryField;
+                                }
+                                return null;
+                              },
+                              decoration: InputDecoration(
+                                labelText: localeMsg.password,
+                                hintText: '********',
+                                labelStyle: GoogleFonts.inter(
+                                  fontSize: 11,
+                                  color: Colors.black,
+                                ),
+                                border: inputStyle,
+                              ),
                             ),
-                          ),
-                          child: Text(
-                            localeMsg.login,
-                            style: GoogleFonts.inter(
-                              fontSize: 14,
-                              color: Colors.white,
-                              fontWeight: FontWeight.w600,
+                            const SizedBox(height: 25),
+                            Wrap(
+                              alignment: WrapAlignment.spaceBetween,
+                              crossAxisAlignment: WrapCrossAlignment.center,
+                              children: [
+                                Wrap(
+                                  crossAxisAlignment: WrapCrossAlignment.center,
+                                  children: [
+                                    SizedBox(
+                                      height: 24,
+                                      width: 24,
+                                      child: Checkbox(
+                                        value: _isChecked,
+                                        onChanged: (bool? value) =>
+                                            setState(() => _isChecked = value!),
+                                      ),
+                                    ),
+                                    const SizedBox(width: 8),
+                                    Text(
+                                      localeMsg.stayLogged,
+                                      style: GoogleFonts.inter(
+                                        fontSize: 14,
+                                        color: Colors.black,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                Text(
+                                  localeMsg.forgotPassword,
+                                  style: GoogleFonts.inter(
+                                    fontSize: 14,
+                                    color:
+                                        const Color.fromARGB(255, 0, 84, 152),
+                                  ),
+                                ),
+                              ],
                             ),
-                          ),
+                            const SizedBox(height: 30),
+                            Align(
+                              child: ElevatedButton(
+                                onPressed: () => tryLogin(),
+                                style: ElevatedButton.styleFrom(
+                                  padding: const EdgeInsets.symmetric(
+                                    vertical: 20,
+                                    horizontal: 20,
+                                  ),
+                                ),
+                                child: Text(
+                                  localeMsg.login,
+                                  style: GoogleFonts.inter(
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ),
+                            ),
+                            const SizedBox(height: 15),
+                          ],
                         ),
                       ),
-                      const SizedBox(height: 15),
-                    ],
+                    ),
                   ),
                 ),
-              ),
+              ],
             ),
-          ],
-        ),
+          )
+        ]),
       ),
     );
   }

@@ -39,11 +39,20 @@ class _MyAppState extends State<MyApp> {
       localizationsDelegates: AppLocalizations.localizationsDelegates,
       supportedLocales: AppLocalizations.supportedLocales,
       theme: ThemeData(
-          // useMaterial3: true,
+          useMaterial3: true,
           fontFamily: GoogleFonts.inter().fontFamily,
+          elevatedButtonTheme: ElevatedButtonThemeData(
+              style: ElevatedButton.styleFrom(
+            backgroundColor: Colors.blue,
+            foregroundColor: Colors.white,
+          )),
+          cardTheme: CardTheme(
+            elevation: 3,
+            surfaceTintColor: Colors.white,
+          ),
           textTheme: TextTheme(
             headlineLarge: GoogleFonts.inter(
-              fontSize: 23,
+              fontSize: 22,
               color: Colors.black,
               fontWeight: FontWeight.w700,
             ),

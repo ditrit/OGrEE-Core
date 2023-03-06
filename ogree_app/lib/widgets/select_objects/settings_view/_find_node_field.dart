@@ -32,6 +32,7 @@ class __FindNodeFieldState extends State<_FindNodeField> {
         hintText: '${localeMsg.search}...',
         hintStyle: const TextStyle(
           fontStyle: FontStyle.italic,
+          fontSize: 14,
         ),
         suffixIcon: IconButton(
           onPressed: _submitted,

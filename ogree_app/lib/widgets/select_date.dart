@@ -51,6 +51,12 @@ class _SelectDateState extends State<SelectDate> with TickerProviderStateMixin {
                       labelPadding: const EdgeInsets.only(left: 20, right: 20),
                       labelColor: Colors.black,
                       unselectedLabelColor: Colors.grey,
+                      labelStyle: TextStyle(
+                          fontSize: 14,
+                          fontFamily: GoogleFonts.inter().fontFamily),
+                      unselectedLabelStyle: TextStyle(
+                          fontSize: 14,
+                          fontFamily: GoogleFonts.inter().fontFamily),
                       isScrollable: true,
                       indicatorSize: TabBarIndicatorSize.label,
                       tabs: [

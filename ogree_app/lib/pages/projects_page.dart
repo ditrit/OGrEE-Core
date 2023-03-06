@@ -95,6 +95,8 @@ class _ProjectsPageState extends State<ProjectsPage> {
         width: 265,
         height: 250,
         child: Card(
+          elevation: 3,
+          surfaceTintColor: Colors.white,
           margin: const EdgeInsets.all(10),
           child: Padding(
             padding: const EdgeInsets.all(20.0),

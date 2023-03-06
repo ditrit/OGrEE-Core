@@ -22,7 +22,7 @@ class SettingsHeader extends StatelessWidget {
       child: Text(
         text,
         style: GoogleFonts.inter(
-          fontSize: 18,
+          fontSize: 17,
           color: Colors.black,
           fontWeight: FontWeight.w500,
         ),
