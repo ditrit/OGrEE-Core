@@ -2635,6 +2635,13 @@ func IsEntityDrawable(path string) bool {
 	obj, _ := GetObject(path, true)
 	if obj == nil {
 		l.GetWarningLogger().Println("Error: object was not found")
+		if FindNodeInTree(&State.TreeHierarchy, StrToStack(path), true) == nil {
+			if State.DebugLvl > NONE {
+				println("This object does not exist")
+			}
+		} else {
+			println("This isn't drawable")
+		}
 		return false
 	}
 
