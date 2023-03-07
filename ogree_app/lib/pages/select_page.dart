@@ -96,7 +96,8 @@ class _SelectPageState extends State<SelectPage> with TickerProviderStateMixin {
         },
         steps: <Step>[
           Step(
-            title: Text(localeMsg.selectDate),
+            title: Text(localeMsg.selectDate,
+                style: const TextStyle(fontSize: 14)),
             subtitle: Text(_selectedDate),
             content: const SelectDate(),
             isActive: _currentStep >= Steps.date.index,
@@ -105,7 +106,8 @@ class _SelectPageState extends State<SelectPage> with TickerProviderStateMixin {
                 : StepState.disabled,
           ),
           Step(
-            title: Text(localeMsg.selectNamespace),
+            title: Text(localeMsg.selectNamespace,
+                style: const TextStyle(fontSize: 14)),
             subtitle:
                 _selectedNamespace == '' ? null : Text(_selectedNamespace),
             content: const SelectNamespace(),
@@ -115,7 +117,8 @@ class _SelectPageState extends State<SelectPage> with TickerProviderStateMixin {
                 : StepState.disabled,
           ),
           Step(
-            title: Text(localeMsg.selectObjects),
+            title: Text(localeMsg.selectObjects,
+                style: const TextStyle(fontSize: 14)),
             subtitle: _selectedObjects.keys.isNotEmpty
                 ? Text(localeMsg.nObjects(_selectedObjects.keys.length))
                 : null,
@@ -129,7 +132,7 @@ class _SelectPageState extends State<SelectPage> with TickerProviderStateMixin {
                 : StepState.disabled,
           ),
           Step(
-            title: Text(localeMsg.result),
+            title: Text(localeMsg.result, style: const TextStyle(fontSize: 14)),
             content: _currentStep == Steps.result.index
                 ? SizedBox(
                     height: MediaQuery.of(context).size.height - 210,
