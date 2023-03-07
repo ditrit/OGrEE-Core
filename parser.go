@@ -1004,7 +1004,7 @@ func parseMan(frame Frame) (node, Frame, *ParserError) {
 
 func parseCd(frame Frame) (node, Frame, *ParserError) {
 	if commandEnd(frame) {
-		return &cdNode{strLeaf{"/"}}, frame, nil
+		return &cdNode{&pathNode{&strLeaf{"/"}}}, frame, nil
 	}
 	path, frame, err := parsePath(frame)
 	if err != nil {
@@ -1194,7 +1194,6 @@ func parseIf(frame Frame) (node, Frame, *ParserError) {
 		}
 		return &ifNode{condition, body, elseBody}, frame, nil
 	case "elif":
-		frame := frame.new(frame.start-2, frame.end)
 		elseBody, frame, err := parseIf(frame)
 		if err != nil {
 			return nil, frame, err.extend(frame, "parsing elif body")

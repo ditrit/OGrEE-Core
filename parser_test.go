@@ -285,6 +285,8 @@ var commandsMatching = map[string]node{
 	"man camera":                     &helpNode{"camera"},
 	"man ui":                         &helpNode{"ui"},
 	"ls":                             &lsNode{&pathNode{&strLeaf{""}}},
+	"cd":                             &cdNode{&pathNode{&strLeaf{"/"}}},
+	"tree":                           &treeNode{&pathNode{&strLeaf{"."}}, 0},
 	"get ${toto}/tata":               &getObjectNode{testPath},
 	"getu rackA 42":                  &getUNode{&pathNode{&strLeaf{"rackA"}}, &intLeaf{42}},
 	"undraw":                         &undrawNode{nil},
@@ -395,4 +397,16 @@ func TestIf(t *testing.T) {
 		}
 		assertParsing(result, expected, t)
 	}
+}
+
+func TestElif(t *testing.T) {
+	command := "if 5 == 6  {ls;} elif 5 == 4 {tree;} else {pwd;}"
+	condition := &equalityNode{"==", &intLeaf{5}, &intLeaf{6}}
+	conditionElif := &equalityNode{"==", &intLeaf{5}, &intLeaf{4}}
+	ifBody := &ast{[]node{&lsNode{&pathNode{&strLeaf{""}}}, nil}}
+	elifBody := &ast{[]node{&treeNode{&pathNode{&strLeaf{"."}}, 0}, nil}}
+	elseBody := &ast{[]node{&pwdNode{}, nil}}
+	elif := &ifNode{conditionElif, elifBody, elseBody}
+	expected := &ifNode{condition, ifBody, elif}
+	testCommand(command, expected, t)
 }
