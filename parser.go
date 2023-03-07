@@ -1324,6 +1324,7 @@ type objParam struct {
 func parseObjectParams(sig []objParam, frame Frame) (map[string]node, Frame, *ParserError) {
 	values := map[string]node{}
 	for i, param := range sig {
+		frame = skipWhiteSpaces(frame)
 		if i != 0 {
 			ok, nextFrame := parseExact("@", frame)
 			if !ok {
@@ -1355,6 +1356,7 @@ func parseObjectParams(sig []objParam, frame Frame) (map[string]node, Frame, *Pa
 			return nil, frame, err.extend(frame, "parsing "+param.name)
 		}
 		values[param.name] = value
+		frame = skipWhiteSpaces(frame)
 	}
 	return values, frame, nil
 }
@@ -1466,6 +1468,7 @@ func parseCreateGroup(frame Frame) (node, Frame, *ParserError) {
 	if !ok {
 		return nil, frame, newParserError(frame, "@ expected")
 	}
+	frame = skipWhiteSpaces(frame)
 	childs, frame, err := parsePathGroup(frame)
 	if err != nil {
 		return nil, frame, err.extendMessage("parsing group childs")
@@ -1482,6 +1485,7 @@ func parseCreateCorridor(frame Frame) (node, Frame, *ParserError) {
 	if !ok {
 		return nil, frame, newParserError(frame, "@ expected")
 	}
+	frame = skipWhiteSpaces(frame)
 	racks, frame, err := parsePathGroup(frame)
 	if err != nil {
 		return nil, frame, err.extendMessage("parsing group childs")
@@ -1493,6 +1497,7 @@ func parseCreateCorridor(frame Frame) (node, Frame, *ParserError) {
 	if !ok {
 		return nil, frame, newParserError(frame, "@ expected")
 	}
+	frame = skipWhiteSpaces(frame)
 	temperature, frame, err := parseTemperature(frame)
 	if err != nil {
 		return nil, frame, err.extendMessage("parsing corridor temperature")
@@ -1530,6 +1535,7 @@ func parseCreateOrphanAux(frame Frame, sensor bool) (node, Frame, *ParserError) 
 	if !ok {
 		return nil, frame, newParserError(frame, "@ expected")
 	}
+	frame = skipWhiteSpaces(frame)
 	template, frame, err := parseStringExpr(frame)
 	if err != nil {
 		return nil, frame, err.extendMessage("parsing orphan template")
