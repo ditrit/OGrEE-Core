@@ -145,15 +145,15 @@ class _AutocompleteFilterState extends State<AutocompleteFilter> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         widget.paramLevel == 0
-            ? Row(
+            ? Wrap(
                 children: [
                   SettingsHeader(text: localeMsg.filters),
                   widget.showClearFilter
                       ? OutlinedButton(
                           style: OutlinedButton.styleFrom(
-                            primary: kDarkBlue,
-                            backgroundColor: const Color(0x331565c0),
-                            padding: const EdgeInsets.all(15),
+                            foregroundColor: Colors.orange.shade700,
+                            backgroundColor: Colors.orange.shade100,
+                            padding: const EdgeInsets.all(8),
                             side: const BorderSide(style: BorderStyle.none),
                             shape: const RoundedRectangleBorder(
                               borderRadius:

@@ -44,7 +44,7 @@ class _MyAppState extends State<MyApp> {
           fontFamily: GoogleFonts.inter().fontFamily,
           elevatedButtonTheme: ElevatedButtonThemeData(
               style: ElevatedButton.styleFrom(
-            backgroundColor: Colors.blue,
+            backgroundColor: Colors.blue.shade600,
             foregroundColor: Colors.white,
           )),
           cardTheme: const CardTheme(

@@ -16,21 +16,26 @@ class AppController with ChangeNotifier {
         .controller;
   }
 
-  Future<void> init(Map<String, bool> parentNodes) async {
+  Future<void> init(Map<String, bool> nodes, {bool isTest = false}) async {
     if (_isInitialized) return;
 
     final rootNode = TreeNode(id: kRootId);
     print("Get API data");
-    var resp = await fetchObjectsTree();
-    fetchedData = resp[0];
-    fetchedCategories = resp[1];
+    if (isTest) {
+      fetchedData = kDataSample;
+      fetchedCategories = kDataSampleCategories;
+    } else {
+      var resp = await fetchObjectsTree();
+      fetchedData = resp[0];
+      fetchedCategories = resp[1];
+    }
     generateTree(rootNode, fetchedData);
 
     treeController = TreeViewController(
       rootNode: rootNode,
     );
     _isInitialized = true;
-    selectedNodes = parentNodes;
+    selectedNodes = nodes;
     for (var i = 0; i <= lastFilterLevel; i++) {
       _filterLevels[i] = [];
     }
@@ -206,19 +211,57 @@ void generateTree(TreeNode parent, Map<String, List<String>> data) {
 const String kRootId = 'Root';
 
 const Map<String, List<String>> kDataSample = {
-  kRootId: ['PACY', 'PICASSO', 'NOE', 'PB6', 'SACLAY'],
-  'PACY': ['A 1', 'A 2'],
-  'A 2': ['A 2 1'],
-  'PICASSO': ['B 1', 'B 2', 'B 3'],
-  'B 1': ['B 1 1'],
-  'B 1 1': ['B 1 1 1', 'B 1 1 2'],
-  'B 2': ['B 2 1'],
-  'B 2 1': ['B 2 1 1'],
-  'NOE': ['BA1', 'BB1', 'BI1', 'BLOG'],
-  'BI1': ['C8', 'C7'],
-  'C8': ['C07', 'C08', 'C09', 'C10'],
-  'C08': ['Lame 391', 'Lame 392'],
-  'PB6': ['D 1'],
-  'D 1': ['D 1 1'],
-  'SACLAY': ['E 1'],
+  kRootId: ['sitePA', 'sitePI', 'siteNO', 'sitePB'],
+  'sitePA': ['sitePA.A1', 'sitePA.A2'],
+  'sitePA.A2': ['sitePA.A2.1'],
+  'sitePI': ['sitePI.B1', 'sitePI.B2', 'sitePI.B3'],
+  'sitePI.B1': ['sitePI.B1.1', 'sitePI.B1.2', 'sitePI.B1.3'],
+  'sitePI.B1.1': ['sitePI.B1.1.rack1', 'sitePI.B1.1.rack2'],
+  'sitePI.B1.1.rack1': [
+    'sitePI.B1.1.rack1.devA',
+    'sitePI.B1.1.rack1.devB',
+    'sitePI.B1.1.rack1.devC',
+    'sitePI.B1.1.rack1.devD'
+  ],
+  'sitePI.B1.1.rack2': [
+    'sitePI.B1.1.rack2.devA',
+    'sitePI.B1.1.rack2.devB',
+    'sitePI.B1.1.rack2.devC',
+    'sitePI.B1.1.rack2.devD'
+  ],
+  'sitePI.B1.1.rack2.devB': [
+    'sitePI.B1.1.rack2.devB.1',
+    'sitePI.B1.1.rack2.devB.devB-2'
+  ],
+  'sitePI.B1.1.rack2.devC': [
+    'sitePI.B1.1.rack2.devC.1',
+    'sitePI.B1.1.rack2.devC.devC-2'
+  ],
+  'sitePI.B2': ['sitePI.B2.1'],
+  'sitePI.B2.1': ['sitePI.B2.1.rack1'],
+  'siteNO': ['siteNO.BA1', 'siteNO.BB1', 'siteNO.BI1', 'siteNO.BL']
+};
+
+const Map<String, List<String>> kDataSampleCategories = {
+  "KeysOrder": ["site", "building", "room", "rack"],
+  "site": ['sitePA', 'sitePI', 'siteNO', 'sitePB'],
+  "building": [
+    'sitePA.A1',
+    'sitePA.A2',
+    'sitePI.B1',
+    'sitePI.B2',
+    'sitePI.B3',
+    'siteNO.BA1',
+    'siteNO.BB1',
+    'siteNO.BI1',
+    'siteNO.BL'
+  ],
+  "room": [
+    'sitePA.A2.1',
+    'sitePI.B1.1',
+    'sitePI.B1.2',
+    'sitePI.B1.3',
+    'sitePI.B2.1'
+  ],
+  "rack": ['sitePI.B1.1.rack1', 'sitePI.B1.1.rack2', 'sitePI.B2.1.rack1']
 };

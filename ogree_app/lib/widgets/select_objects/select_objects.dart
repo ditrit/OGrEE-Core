@@ -23,7 +23,11 @@ class _SelectObjectsState extends State<SelectObjects> {
       controller: appController,
       child: FutureBuilder<void>(
         future: widget.load
-            ? appController.init(SelectPage.of(context)!.selectedObjects)
+            ? appController.init(
+                widget.namespace == 'TEST'
+                    ? {}
+                    : SelectPage.of(context)!.selectedObjects,
+                isTest: widget.namespace == 'TEST')
             : null,
         builder: (_, __) {
           if (appController.isInitialized && widget.load) {

@@ -20,11 +20,14 @@ class LocalizationsInjApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      locale: const Locale('fr', 'FR'),
-      localizationsDelegates: AppLocalizations.localizationsDelegates,
-      supportedLocales: AppLocalizations.supportedLocales,
-      home: child,
+    return MediaQuery(
+      data: const MediaQueryData(),
+      child: MaterialApp(
+        locale: const Locale('fr', 'FR'),
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
+        home: child,
+      ),
     );
   }
 }

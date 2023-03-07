@@ -116,7 +116,6 @@ class _ProjectsPageState extends State<ProjectsPage> {
                     ),
                     CircleAvatar(
                       radius: 13,
-                      backgroundColor: Colors.blue,
                       child: IconButton(
                           splashRadius: 18,
                           iconSize: 13,
@@ -131,7 +130,6 @@ class _ProjectsPageState extends State<ProjectsPage> {
                               modifyProjectCallback),
                           icon: const Icon(
                             Icons.mode_edit_outline_rounded,
-                            color: Colors.white,
                           )),
                     )
                   ],
