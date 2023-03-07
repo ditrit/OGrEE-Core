@@ -1,14 +1,15 @@
 # Install OS and dependencies to build frontend
-FROM ubuntu:20.04
+FROM ubuntu:20.04 AS build
 ENV GIN_MODE=release
 ENV TZ=Europe/Paris \
     DEBIAN_FRONTEND=noninteractive
 
+# Install dependencies
 RUN apt-get update 
 RUN apt-get install -y curl git wget unzip libgconf-2-4 gdb libstdc++6 libglu1-mesa fonts-droid-fallback lib32stdc++6 python3
 RUN apt-get clean
 
-# Download Flutter SDK from Flutter Github repo
+# Download Flutter SDK from Github repo
 RUN git clone --depth 1 --branch 3.7.6 https://github.com/flutter/flutter.git /usr/local/flutter
 
 # Set flutter environment path
@@ -23,9 +24,8 @@ WORKDIR /app/
 RUN flutter pub get
 RUN flutter build web
 
-# Record the exposed port 5000 and run frontend
-EXPOSE 5000
-COPY server.sh /app/
 COPY ogree_app/.env /app/build/web/
-RUN ["chmod", "+x", "/app/server.sh"]
-ENTRYPOINT [ "/app/server.sh"]
+
+# Runtime image
+FROM nginx:1.21.1-alpine
+COPY --from=build /app/build/web /usr/share/nginx/html
