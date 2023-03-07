@@ -188,7 +188,7 @@ func TestParseExprArrayRef(t *testing.T) {
 	if err != nil {
 		t.Errorf("error while parsing : %s", err.Error())
 	}
-	expected := &objReferenceNode{"ab", &arithNode{op: "+", left: &intLeaf{42}, right: &intLeaf{1}}}
+	expected := &arrayReferenceNode{"ab", &arithNode{op: "+", left: &intLeaf{42}, right: &intLeaf{1}}}
 	if !reflect.DeepEqual(expr, expected) {
 		t.Errorf("unexpected parsing : \ntree : %s\nexpected : %s",
 			spew.Sdump(expr), spew.Sdump(expected))

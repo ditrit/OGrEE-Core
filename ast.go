@@ -107,7 +107,7 @@ func (n *lenNode) execute() (interface{}, error) {
 	if !ok {
 		return nil, fmt.Errorf("Undefined variable %s", n.variable)
 	}
-	arr, ok := val.([]interface{})
+	arr, ok := val.([]float64)
 	if !ok {
 		return nil, fmt.Errorf("Variable %s does not contain an array.", n.variable)
 	}
@@ -1528,7 +1528,7 @@ func (n *arrayReferenceNode) execute() (interface{}, error) {
 	if !ok {
 		return nil, fmt.Errorf("Undefined variable %s", n.variable)
 	}
-	arr, ok := v.([]interface{})
+	arr, ok := v.([]float64)
 	if !ok {
 		return nil, fmt.Errorf("You can only index an array.")
 	}
@@ -1562,7 +1562,7 @@ func (a *assignNode) execute() (interface{}, error) {
 		return nil, err
 	}
 	switch v := val.(type) {
-	case bool, int, float64, string, []interface{}, map[string]interface{}:
+	case bool, int, float64, string, []float64, map[string]interface{}:
 		dynamicSymbolTable[a.variable] = v
 		if cmd.State.DebugLvl >= 3 {
 			println("You want to assign", a.variable, "with value of", v)

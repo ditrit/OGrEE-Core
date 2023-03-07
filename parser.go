@@ -460,7 +460,7 @@ func parsePrimaryExpr(l *lexer) (node, *ParserError) {
 			return nil, exprError(l, "square bracket opened but not closed")
 		}
 		l.nextToken(lexExpr)
-		return &objReferenceNode{tok.val.(string), index}, nil
+		return &arrayReferenceNode{tok.val.(string), index}, nil
 	case tokLeftParen:
 		expr, err := parseExprFromLex(l)
 		if err != nil {
