@@ -342,6 +342,7 @@ var commandsMatching = map[string]node{
 	"camera.move=[1., 2., 3.]@[1., 2.]":                    &cameraMoveNode{"move", vec3(1., 2., 3.), vec2(1., 2.)},
 	"camera.translate=[1., 2., 3.]@[1., 2.]":               &cameraMoveNode{"translate", vec3(1., 2., 3.), vec2(1., 2.)},
 	"camera.wait=15":                                       &cameraWaitNode{15.},
+	"camera.wait = 15":                                     &cameraWaitNode{15.},
 	"clear":                                                &clrNode{},
 	".cmds:${CUST}/DEMO.PERF.ocli":                         &loadNode{&formatStringNode{"%v/DEMO.PERF.ocli", []symbolReferenceNode{{"CUST"}}}},
 	".cmds:${a}/${b}.ocli":                                 &loadNode{&formatStringNode{"%v/%v.ocli", []symbolReferenceNode{{"a"}, {"b"}}}},

@@ -305,6 +305,7 @@ func charIsNumber(char byte) bool {
 }
 
 func parseInt(frame Frame) (int, Frame, *ParserError) {
+	frame = skipWhiteSpaces(frame)
 	end := frame.start
 	for end < frame.end && charIsNumber(frame.char(end)) {
 		end++
@@ -321,6 +322,7 @@ func parseInt(frame Frame) (int, Frame, *ParserError) {
 }
 
 func parseFloat(frame Frame) (float64, Frame, *ParserError) {
+	frame = skipWhiteSpaces(frame)
 	end := frame.start
 	dotseen := false
 	for end < frame.end {
@@ -346,6 +348,7 @@ func parseFloat(frame Frame) (float64, Frame, *ParserError) {
 }
 
 func parseBool(frame Frame) (bool, Frame, *ParserError) {
+	frame = skipWhiteSpaces(frame)
 	if frame.end-frame.start >= 4 && frame.until(frame.start+4).str() == "true" {
 		return true, frame.forward(4), nil
 	}
