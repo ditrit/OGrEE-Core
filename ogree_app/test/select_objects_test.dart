@@ -63,7 +63,7 @@ void main() {
       namespace: 'TEST',
     )));
 
-    const searchStr = "rack2.devB.devB2";
+    const searchStr = "rack2.devB.devB-2";
     final searchInput = find.ancestor(
         of: find.text('Rechercher...'), matching: find.byType(TextField));
     await tester.enterText(searchInput, searchStr);
@@ -75,7 +75,7 @@ void main() {
     for (var name in parents) {
       expect(find.text(name), findsOneWidget);
     }
-    expect(find.text("devC2"), findsNothing);
+    expect(find.text("devC-2"), findsNothing);
   });
 
   testWidgets('SelectObjects can filter objects', (tester) async {

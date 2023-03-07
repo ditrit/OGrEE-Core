@@ -22,12 +22,18 @@ class _CustomTreeViewState extends State<CustomTreeView> {
         return Scrollbar(
           thumbVisibility: false,
           controller: appController.scrollController,
-          child: TreeView(
-            controller: appController.treeController,
-            theme: treeViewTheme,
-            scrollController: appController.scrollController,
-            nodeHeight: appController.nodeHeight,
-            nodeBuilder: (_, __) => const TreeNodeTile(),
+          child: SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: SizedBox(
+              width: MediaQuery.of(context).size.width - 15,
+              child: TreeView(
+                controller: appController.treeController,
+                theme: treeViewTheme,
+                scrollController: appController.scrollController,
+                nodeHeight: appController.nodeHeight,
+                nodeBuilder: (_, __) => const TreeNodeTile(),
+              ),
+            ),
           ),
         );
       },

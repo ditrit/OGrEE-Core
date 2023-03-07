@@ -29,6 +29,7 @@ class _TreeNodeTileState extends State<TreeNodeTile> {
     final nodeScope = TreeNodeScope.of(context);
 
     return InkWell(
+        hoverColor: Colors.white,
         onTap: () => _describeAncestors(nodeScope.node),
         onLongPress: () => appController.toggleSelection(nodeScope.node.id),
         child: Row(children: const [
