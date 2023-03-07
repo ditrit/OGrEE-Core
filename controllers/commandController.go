@@ -960,6 +960,9 @@ func GetByAttr(x string, u interface{}) {
 	//test if the result is a device array
 	obj, url := GetObject(path, true)
 	if obj == nil {
+		if State.DebugLvl > NONE {
+			println("Object was not found, please check the path you provided and try again")
+		}
 		return
 	}
 
@@ -992,6 +995,9 @@ func GetByAttr(x string, u interface{}) {
 				}
 			}
 		}
+		if State.DebugLvl > NONE {
+			println("The 'U' you provided does not correspond to any device in this rack")
+		}
 	default: //String
 		for i := range devices {
 			if attr, ok := devices[i]["attributes"].(map[string]interface{}); ok {
@@ -1000,6 +1006,9 @@ func GetByAttr(x string, u interface{}) {
 					return //What if the user placed multiple devices at same slot?
 				}
 			}
+		}
+		if State.DebugLvl > NONE {
+			println("The slot you provided does not correspond to any device in this rack")
 		}
 	}
 }
