@@ -256,6 +256,8 @@ func TestParseLsObj(t *testing.T) {
 	format := ""
 	expected := &lsObjNode{path, entity, recursive, sort, attrList, format}
 	testCommand(buffer, expected, t)
+	buffer = "lsbldg -s height - f \"attr1:attr2\" -r plouf.plaf "
+	testCommand(buffer, expected, t)
 
 	buffer = "lsbldg -s height - f (\"height is %s\", height) -r plouf.plaf "
 	attrList = []string{"height"}

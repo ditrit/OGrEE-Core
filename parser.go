@@ -614,7 +614,7 @@ func parseArgValue(frame Frame) (string, Frame, *ParserError) {
 			return "", frame, newParserError(frame, "( opened but never closed")
 		}
 		return frame.until(close + 1).str(), frame.from(close + 1), nil
-	} else if ok, _ := parseExact("\"", frame); ok {
+	} else if ok, frame := parseExact("\"", frame); ok {
 		endQuote := findNextQuote(frame)
 		if endQuote == frame.end {
 			return "", frame, newParserError(frame, "\" opened but never closed")
