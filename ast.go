@@ -221,6 +221,9 @@ func (n *getUNode) execute() (interface{}, error) {
 	if !ok {
 		return nil, fmt.Errorf("u should be an integer")
 	}
+	if u < 0 {
+		return nil, fmt.Errorf("The U value must be positive")
+	}
 	cmd.GetByAttr(path, u)
 	return nil, nil
 }
