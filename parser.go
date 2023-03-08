@@ -1701,7 +1701,7 @@ func parseCommand(frame Frame) (node, Frame, *ParserError) {
 	}
 }
 
-func Parse(buffer string) (node, *ParserError) {
+func Parse(buffer string) (node, error) {
 	commentIdx := strings.Index(buffer, "//")
 	if commentIdx != -1 {
 		buffer = buffer[:commentIdx]
@@ -1714,5 +1714,5 @@ func Parse(buffer string) (node, *ParserError) {
 	if frame.start != frame.end {
 		return nil, newParserError(frame, "unexpected characters")
 	}
-	return node, err
+	return node, nil
 }

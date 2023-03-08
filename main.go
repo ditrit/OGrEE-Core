@@ -12,7 +12,6 @@ type Flags struct {
 	listenPort int
 	envPath    string
 	histPath   string
-	analyser   string
 	script     string
 }
 
@@ -30,7 +29,7 @@ func NonDefault[T comparable](x, y, defaultValue T) T {
 func main() {
 	var listenPORT, l int
 	var verboseLevel, v, unityURL, u, APIURL, a, APIKEY, k,
-		envPath, e, histPath, h, analyse, s, file, f string
+		envPath, e, histPath, h, file, f string
 
 	flag.StringVar(&v, "v", "ERROR",
 		"Indicates level of debugging messages."+
@@ -66,11 +65,6 @@ func main() {
 	flag.StringVar(&h, "h", "./.history",
 		"Indicate the location of the Shell's history file")
 
-	flag.StringVar(&analyse, "analyser", "true", "Dictate if the Shell shall"+
-		" use the Static Analyser before script execution")
-	flag.StringVar(&s, "s", "true", "Dictate if the Shell shall"+
-		" use the Static Analyser before script execution")
-
 	flag.StringVar(&file, "file", "", "Launch the shell as an interpreter "+
 		" by only executing an OCLI script file")
 	flag.StringVar(&f, "f", "", "Launch the shell as an interpreter "+
@@ -86,7 +80,6 @@ func main() {
 	flags.listenPort = NonDefault(l, listenPORT, 0)
 	flags.envPath = NonDefault(e, envPath, "./.env")
 	flags.histPath = NonDefault(h, histPath, "./.history")
-	flags.analyser = NonDefault(s, analyse, "true")
 	flags.script = NonDefault(f, file, "")
 	//Pass control to repl.go
 	Start(&flags)

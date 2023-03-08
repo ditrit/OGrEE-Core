@@ -5,97 +5,123 @@ package main
 import (
 	"bufio"
 	c "cli/controllers"
+	l "cli/logger"
 	"fmt"
 	"os"
 	"path/filepath"
-	"strconv"
+	"strings"
 )
 
-func ValidateFile(comBuf *[]map[string]int, file string) bool {
-	invalidCommands := []string{}
-	for i := range *comBuf {
-		for k := range (*comBuf)[i] {
-			_, err := Parse(k)
-			if err != nil {
-				invalidCommands = append(invalidCommands,
-					" LINE#: "+strconv.Itoa((*comBuf)[i][k])+"\t"+"COMMAND:"+k)
-			}
-		}
-	}
-
-	if len(invalidCommands) > 0 {
-		if c.State.DebugLvl > c.NONE {
-			println("Syntax errors were found in the file: ", file)
-			println("The following commands were invalid")
-			for i := range invalidCommands {
-				println(invalidCommands[i])
-			}
-		}
-
-		return false
-	}
-	return true
+type fileParseError struct {
+	filename   string
+	lineErrors []string
 }
 
-func ExecuteFile(comBuf *[]map[string]int, file string) {
-	for i := range *comBuf {
-		for st := range (*comBuf)[i] {
-			c.State.LineNumber = (*comBuf)[i][st]
-			fmt.Println(st)
-			if !InterpretLine(st) {
-				//println("Command: ", st)
-				return
-			}
-
-			if file != c.State.ScriptPath { //Nested Execution
-				LoadFile(c.State.ScriptPath)
-				c.State.ScriptPath = file
-			}
-		}
+func (e *fileParseError) Error() string {
+	msg := "Syntax errors were found in the file: " + e.filename
+	msg += "\nThe following commands were invalid"
+	for _, err := range e.lineErrors {
+		msg += "\n" + err
 	}
-
+	return msg
 }
 
-func LoadFile(path string) {
-	originalPath := path
-	file, err := os.Open(originalPath)
-	if err != nil {
-		if c.State.DebugLvl > c.NONE {
-			println("Error:", err.Error())
-		}
-		return
+func addLineError(
+	fileErr *fileParseError,
+	lineErr error,
+	filename string,
+	lineNumber int,
+	line string,
+) *fileParseError {
+	msg := fmt.Sprintf("  LINE#: %d\tCOMMAND:%s", lineNumber, line)
+	if fileErr == nil {
+		return &fileParseError{filename, []string{msg}}
 	}
+	fileErr.lineErrors = append(fileErr.lineErrors, msg)
+	return fileErr
+}
 
+type parsedLine struct {
+	line       string
+	lineNumber int
+	root       node
+}
+
+func parseFile(path string) ([]parsedLine, error) {
+	filename := filepath.Base(path)
+	file, openErr := os.Open(path)
+	if openErr != nil {
+		return nil, openErr
+	}
+	result := []parsedLine{}
+	var fileErr *fileParseError
 	scanner := bufio.NewScanner(file)
-	c.State.LineNumber = 1 //Indicate Line Number
-	commandBuffer := []map[string]int{}
-
-	for scanner.Scan() {
-		x := scanner.Text()
-		if len(x) > 0 {
-			commandBuffer = append(commandBuffer,
-				map[string]int{x: c.State.LineNumber})
+	for lineNumber := 1; scanner.Scan(); lineNumber++ {
+		line := scanner.Text()
+		if len(line) > 0 {
+			root, err := Parse(line)
+			if err != nil {
+				fileErr = addLineError(fileErr, err, filename, lineNumber, line)
+			}
+			if root != nil {
+				result = append(result, parsedLine{line, lineNumber, root})
+			}
 		}
-
-		c.State.LineNumber++ //Increment
 	}
-
-	//Validate the commandbuffer
-	fName := filepath.Base(path)
-	if c.State.Analyser {
-		if ValidateFile(&commandBuffer, fName) {
-			c.State.ScriptCalled = false
-			ExecuteFile(&commandBuffer, path)
-		}
-	} else {
-		ExecuteFile(&commandBuffer, path)
+	if fileErr != nil {
+		return result, fileErr
 	}
-
-	ResetStateScriptData()
+	return result, nil
 }
 
-func ResetStateScriptData() {
-	//Reset
-	c.State.LineNumber = 0
-	c.State.ScriptCalled = false
+type stackTraceError struct {
+	err     error
+	history string
+}
+
+func newStackTraceError(err error, filename string, line string, lineNumber int) *stackTraceError {
+	stackErr := &stackTraceError{err: err}
+	stackErr.extend(filename, line, lineNumber)
+	return stackErr
+}
+
+func (s *stackTraceError) extend(filename string, line string, lineNumber int) {
+	trace := fmt.Sprintf("  File \"%s\", line %d\n", filename, lineNumber)
+	trace += "    " + line + "\n"
+	s.history = trace + s.history
+}
+
+func (s *stackTraceError) Error() string {
+	msg := "Stack trace (most recent call last):\n"
+	return msg + s.history + "Error : " + s.err.Error()
+}
+
+func LoadFile(path string) error {
+	filename := filepath.Base(path)
+	file, err := parseFile(path)
+	if err != nil {
+		return err
+	}
+	for i := range file {
+		fmt.Println(file[i].line)
+		_, err := file[i].root.execute()
+		if err != nil {
+			errMsg := err.Error()
+			if strings.Contains(errMsg, "Duplicate") || strings.Contains(errMsg, "duplicate") {
+				l.GetWarningLogger().Println(errMsg)
+				if c.State.DebugLvl > c.NONE {
+					fmt.Println(errMsg)
+				}
+				continue
+			}
+			stackTraceErr, ok := err.(*stackTraceError)
+			if ok {
+				stackTraceErr.extend(filename, file[i].line, file[i].lineNumber)
+			} else {
+				stackTraceErr = newStackTraceError(err, filename, file[i].line, file[i].lineNumber)
+			}
+			return stackTraceErr
+		}
+	}
+	return nil
 }

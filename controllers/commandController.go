@@ -878,7 +878,6 @@ func LSEnterprise() {
 func Env(userVars, userFuncs map[string]interface{}) {
 	fmt.Println("Unity: ", State.UnityClientAvail)
 	fmt.Println("Filter: ", State.FilterDisplay)
-	fmt.Println("Analyser: ", State.Analyser)
 	fmt.Println()
 	fmt.Println("Objects Unity shall be informed of upon update:")
 	for _, k := range State.ObjsForUnity {
@@ -2784,21 +2783,9 @@ func UpdateSelection(data map[string]interface{}) error {
 	return nil
 }
 
-func LoadFile(path string) {
-	//By setting the 'ScriptCalled' variable
-	//the REPL will recognise this and invoke the
-	//LoadFile() Function in ocli.go
-
-	//Alternative to this would be to pass the LoadFile()
-	//function as an argument here
-	State.ScriptCalled = true
-	State.ScriptPath = path
-}
-
-func LoadTemplate(data map[string]interface{}, filePath string) {
+func LoadTemplate(data map[string]interface{}, filePath string) error {
 	var URL string
-
-	if cat, _ := data["category"]; cat == "room" {
+	if cat := data["category"]; cat == "room" {
 		//Room template
 		URL = State.APIURL + "/api/room-templates"
 	} else if cat == "bldg" || cat == "building" {
@@ -2808,42 +2795,29 @@ func LoadTemplate(data map[string]interface{}, filePath string) {
 		// Obj template
 		URL = State.APIURL + "/api/obj-templates"
 	} else {
-		println("This template does not have a valid category. Please add a category attribute with a value of building or room or rack or device")
-		return
+		return fmt.Errorf("this template does not have a valid category. Please add a category attribute with a value of building or room or rack or device")
 	}
-
 	r, e := models.Send("POST", URL, GetKey(), data)
 	if e != nil {
-		l.GetErrorLogger().Println(e.Error())
-		if State.DebugLvl > NONE {
-			println("Error: ", e.Error())
-		}
-
+		return fmt.Errorf(e.Error())
 	}
-
 	//Crashes here if API timeout
 	if r == nil {
-		if State.DebugLvl > NONE {
-			println("Unable to recieve response from API")
-		}
-		return
+		return fmt.Errorf("unable to recieve response from API")
 	}
-
 	if r.StatusCode == http.StatusCreated {
 		println("Template Loaded")
+		return nil
 	} else {
 		l.GetWarningLogger().Println("Couldn't load template, Status Code :", r.StatusCode, " filePath :", filePath)
 		parsedResp := ParseResponse(r, e, "sending template")
-		if State.DebugLvl > 0 {
-			println("Error template wasn't loaded")
-			if mInf, ok := parsedResp["message"]; ok {
-				if msg, ok := mInf.(string); ok {
-					println(APIErrorPrefix + msg)
-				}
+		errorMsg := "Error template wasn't loaded\n"
+		if mInf, ok := parsedResp["message"]; ok {
+			if msg, ok := mInf.(string); ok {
+				errorMsg += APIErrorPrefix + msg
 			}
-
 		}
-
+		return fmt.Errorf(errorMsg)
 	}
 }
 
@@ -2908,19 +2882,6 @@ func SetEnv(arg string, val interface{}) {
 			}
 
 			println(arg + " Display Environment variable set")
-		}
-
-	case "Analyser":
-		if _, ok := val.(bool); !ok {
-			msg := "Can only assign bool values for SAnalyser Env Var"
-			l.GetWarningLogger().Println(msg)
-			if State.DebugLvl > 0 {
-				println(msg)
-			}
-
-		} else {
-			State.Analyser = val.(bool)
-			println("Static Analyser Environment variable set")
 		}
 
 	default:
