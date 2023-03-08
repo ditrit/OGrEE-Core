@@ -1095,6 +1095,9 @@ func parseCamera(frame Frame) (node, Frame, *ParserError) {
 }
 
 func parseFocus(frame Frame) (node, Frame, *ParserError) {
+	if commandEnd(frame) {
+		return &focusNode{&strLeaf{""}}, frame, nil
+	}
 	path, frame, err := parsePath(frame)
 	if err != nil {
 		return nil, frame, err.extendMessage("parsing path")
