@@ -19,7 +19,6 @@ import (
 var db *mongo.Database
 
 func init() {
-
 	e := godotenv.Load()
 
 	if e != nil {
@@ -35,7 +34,14 @@ func init() {
 	dbName := os.Getenv("db")
 
 	println("USER:", user)
-	println("PASS:", pass)
+	println("PASS:", dbName)
+
+	if dbHost == "" {
+		dbHost = "localhost"
+	}
+	if dbPort == "" {
+		dbPort = "27017"
+	}
 
 	if user == "" || pass == "" {
 		dbUri = fmt.Sprintf("mongodb://%s:%s/?readPreference=primary&ssl=false",

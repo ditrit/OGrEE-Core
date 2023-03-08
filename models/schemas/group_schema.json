@@ -17,17 +17,17 @@
           ]
       }
     },
-    "examples": [{
+    "examples": 
+    [
+      {
         "attributes": {
             "content": "B11,B12,C11,C12"
         },
         "category": "group",
-        "createdDate": "2022-09-30T12:03:04.026Z",
         "description": [],
         "domain": "DEMO",
-        "id": "xxxxdaf8618082206682xxxx",
-        "lastUpdated": "2022-09-30T12:03:04.026Z",
         "name": "group3",
         "parentId": "xxxxdaf6618082206682xxxx"
-    }]
+      }
+    ]
 }

@@ -4,11 +4,12 @@
     "type": "object",
     "properties": {
         "slug": {
-            "type": "string"
+            "type": "string",
+            "pattern": "^[a-zA-Z0-9-]+$"
         },
         "category": {
             "type": "string",
-            "enum": ["building"]
+            "pattern": "building"
         },
         "center": {
             "type": "array",
@@ -55,7 +56,7 @@
                 5
             ],
             "vertices": [],
-            "center":[1,1]
-        }
+            "center":[0,45]
+        }    
     ]
 }

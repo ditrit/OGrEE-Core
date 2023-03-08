@@ -1,0 +1,13 @@
+{
+    "slug"     : "error-example",
+    "category" : "building",
+    "sizeWDHm" : [80,65],
+    "vertices" : [
+        [0,0],
+        [-50,0],
+        [-19.8],
+        [-17.8,-62.8],
+        [0,-53]
+    ],
+    "center": []
+}

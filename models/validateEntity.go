@@ -153,7 +153,6 @@ func validateJsonSchema(entity int, t map[string]interface{}) (map[string]interf
 		schemaName = u.EntityToString(entity) + "_schema.json"
 	}
 
-	println(schemaName)
 	sch, err := c.Compile(schemaName)
 	if err != nil {
 		return u.Message(false, err.Error()), false
