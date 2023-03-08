@@ -15,12 +15,8 @@
           "type": "string"
         },
         "createdDate": {
-          "type": "string",
-          "format": "date-time"
         },
         "lastUpdated": {
-          "type": "string",
-          "format": "date-time"
         },
         "name": {
           "type": "string"

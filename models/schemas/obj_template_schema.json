@@ -93,8 +93,6 @@
             }
         },
         "createdDate": {
-            "type": "string",
-            "format": "date-time"
         },
         "description": {
             "type": "string"
@@ -106,8 +104,6 @@
             "type": "string"
         },
         "lastUpdated": {
-            "type": "string",
-            "format": "date-time"
         },
         "sizeWDHmm": {
             "type": "array",

@@ -47,8 +47,6 @@
             }
         },
         "createdDate": {
-            "type": "string",
-            "format": "date-time"
         },
         "floorUnit": {
             "type": "string",
@@ -62,8 +60,6 @@
             "type": "string"
         },
         "lastUpdated": {
-            "type": "string",
-            "format": "date-time"
         },
         "axisOrientation": {
             "type": "string",
