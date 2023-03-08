@@ -834,7 +834,7 @@ func LSOG() {
 	fmt.Println("BUILD TREE:", BuildTree)
 	fmt.Println("BUILD HASH:", BuildHash)
 	fmt.Println("COMMIT DATE: ", GitCommitDate)
-	fmt.Println("ENV FILE PATH: ", State.EnvFilePath)
+	fmt.Println("CONFIG FILE PATH: ", State.ConfigPath)
 	fmt.Println("LOG PATH:", "./log.txt")
 	fmt.Println("HISTORY FILE PATH:", State.HistoryFilePath)
 	fmt.Println("DEBUG LEVEL: ", State.DebugLvl)
@@ -881,7 +881,7 @@ func Env(userVars, userFuncs map[string]interface{}) {
 	fmt.Println()
 	fmt.Println("Objects Unity shall be informed of upon update:")
 	for _, k := range State.ObjsForUnity {
-		fmt.Println(EntityToString(k))
+		fmt.Println(k)
 	}
 	fmt.Println()
 	fmt.Println("Objects Unity shall draw:")

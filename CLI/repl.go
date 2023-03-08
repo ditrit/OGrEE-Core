@@ -10,14 +10,13 @@ package main
 // questions/33025599/move-the-cursor-in-a-c-program
 
 import (
+	"cli/config"
 	c "cli/controllers"
 	l "cli/logger"
 	"cli/readline"
 	"fmt"
 	"os"
 	"strings"
-
-	"github.com/joho/godotenv"
 )
 
 func InterpretLine(str string) {
@@ -43,28 +42,26 @@ func InterpretLine(str string) {
 }
 
 // Init the Shell
-func Start(flags *Flags) {
+func Start(conf *config.Config) {
 	l.InitLogs()
-	c.InitEnvFilePath(flags.envPath)
-	c.InitHistoryFilePath(flags.histPath)
-	c.InitDebugLevel(flags.verbose) //Set the Debug level
-
-	env, envErr := godotenv.Read(flags.envPath)
-	if envErr != nil {
-		fmt.Println("Cannot read environment file", flags.envPath, ":", envErr.Error())
-		fmt.Println("Please ensure that you have a properly formatted environment file saved as '.env' in the same directory here with the shell")
-		fmt.Println("\n\nFor more details please refer to: https://ogree.ditrit.io/htmls/programming.html")
-		fmt.Println("View an environment file example here: https://ogree.ditrit.io/htmls/clienv.html")
-		return
+	c.InitConfigFilePath(conf.ConfigPath)
+	c.InitHistoryFilePath(conf.HistPath)
+	c.InitDebugLevel(conf.Verbose)         //Set the Debug level
+	c.InitTimeout(conf.UnityTimeout)       //Set the Unity Timeout
+	c.InitURLs(conf.APIURL, conf.UnityURL) //Set the URLs
+	c.InitKey(conf.APIKEY)                 //Set the API Key
+	conf.User, conf.APIKEY = c.Login(conf.User, conf.APIKEY)
+	err := config.UpdateConfigFile(conf)
+	if err != nil {
+		if c.State.DebugLvl > 0 {
+			println(err.Error())
+		}
+		l.GetErrorLogger().Println(err.Error())
+		os.Exit(-1)
 	}
+	c.InitState(conf)
 
-	c.InitTimeout(env)                           //Set the Unity Timeout
-	c.GetURLs(flags.APIURL, flags.unityURL, env) //Set the URLs
-	c.InitKey(flags.APIKEY, env)                 //Set the API Key
-	user, _ := c.Login(env)
-
-	c.InitState(env)
-
+	user := strings.Split(conf.User, "@")[0]
 	rl, err := readline.NewEx(&readline.Config{
 		Prompt: "\u001b[1m\u001b[32m" + user + "@" + "OGrEE3D:" +
 			"\u001b[37;1m" + c.State.CurrPath + "\u001b[1m\u001b[32m$>\u001b[0m ",
@@ -85,9 +82,11 @@ func Start(flags *Flags) {
 	c.SetStateReadline(rl)
 
 	//Execute Script if provided as arg and exit
-	if flags.script != "" {
-		if strings.Contains(flags.script, ".ocli") {
-			script := flags.script
+	if conf.Script != "" {
+		if strings.Contains(conf.Script, ".ocli") {
+			script := conf.Script
+			c.State.ScriptCalled = true
+			c.State.ScriptPath = script
 			LoadFile(script)
 			os.Exit(0)
 		}

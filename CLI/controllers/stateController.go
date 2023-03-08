@@ -22,7 +22,7 @@ type ShellState struct {
 	PrevPath         string
 	ClipBoard        *[]string
 	TreeHierarchy    *Node
-	EnvFilePath      string //Holds file path of '.env'
+	ConfigPath       string //Holds file path of '.env'
 	HistoryFilePath  string //Holds file path of '.history'
 	UnityClientURL   string
 	APIURL           string
