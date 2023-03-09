@@ -49,8 +49,8 @@ func Start(conf *config.Config) {
 	c.InitDebugLevel(conf.Verbose)         //Set the Debug level
 	c.InitTimeout(conf.UnityTimeout)       //Set the Unity Timeout
 	c.InitURLs(conf.APIURL, conf.UnityURL) //Set the URLs
-	c.InitKey(conf.APIKEY)                 //Set the API Key
 	conf.User, conf.APIKEY = c.Login(conf.User, conf.APIKEY)
+	c.InitKey(conf.APIKEY) //Set the API Key
 	err := config.UpdateConfigFile(conf)
 	if err != nil {
 		if c.State.DebugLvl > 0 {

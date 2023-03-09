@@ -10,10 +10,9 @@ import (
 
 type Config struct {
 	Verbose      string
+	APIURL       string
 	UnityURL     string
 	UnityTimeout string
-	APIURL       string
-	APIKEY       string
 	ConfigPath   string
 	HistPath     string
 	Script       string
@@ -22,15 +21,15 @@ type Config struct {
 	DrawLimit    int
 	Updates      []string
 	User         string
+	APIKEY       string
 }
 
 func defaultConfig() Config {
 	return Config{
 		Verbose:      "ERROR",
+		APIURL:       "",
 		UnityURL:     "",
 		UnityTimeout: "10ms",
-		APIURL:       "",
-		APIKEY:       "",
 		ConfigPath:   "./config.toml",
 		HistPath:     "./.history",
 		Script:       "",
@@ -39,6 +38,7 @@ func defaultConfig() Config {
 		DrawLimit:    50,
 		Updates:      []string{"all"},
 		User:         "",
+		APIKEY:       "",
 	}
 }
 
@@ -63,7 +63,7 @@ func ReadConfig() *Config {
 			"The levels are of in ascending order:"+
 			"{NONE,ERROR,WARNING,INFO,DEBUG}.")
 	flag.StringVarP(&conf.UnityURL, "unity_url", "u", conf.UnityURL, "Unity URL")
-	flag.StringVarP(&conf.APIURL, "api_url", "a", "", "API URL")
+	flag.StringVarP(&conf.APIURL, "api_url", "a", conf.APIURL, "API URL")
 	flag.StringVarP(&conf.APIKEY, "api_key", "k", conf.APIKEY, "Indicate the key of the API")
 	flag.StringVarP(&conf.HistPath, "history_path", "h", conf.HistPath,
 		"Indicate the location of the Shell's history file")

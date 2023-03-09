@@ -270,10 +270,10 @@ func InitURLs(apiURL string, unityURL string) {
 	}
 	State.UnityClientURL = unityURL
 	if State.UnityClientURL == "" {
-		msg := "Falling back to defaul Unity URL: http://localhost:5500"
+		msg := "Falling back to defaul Unity URL: localhost:5500"
 		fmt.Println(msg)
 		l.GetInfoLogger().Println(msg)
-		State.APIURL = "http://localhost:5500"
+		State.UnityClientURL = "localhost:5500"
 	}
 }
 
@@ -372,10 +372,8 @@ func CheckKeyIsValid(key string) bool {
 		}
 		return false
 	}
-
 	if resp.StatusCode != 200 {
-		readline.Line("HTTP Response Status code: " +
-			strconv.Itoa(resp.StatusCode))
+		println("HTTP Response Status code : " + strconv.Itoa(resp.StatusCode))
 		if State.DebugLvl > NONE {
 			x := ParseResponse(resp, err, " Read API Response message")
 			if x != nil {
@@ -389,9 +387,8 @@ func CheckKeyIsValid(key string) bool {
 	return true
 }
 
-func Login(confUser string, confKey string) (string, string) {
-	var user, key string
-	if confUser == "" || confKey == "" {
+func Login(user string, key string) (string, string) {
+	if user == "" || key == "" {
 		l.GetInfoLogger().Println("Key not found, going to generate..")
 		user, key = CreateCredentials()
 	}
