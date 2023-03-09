@@ -84,10 +84,7 @@ func Start(conf *config.Config) {
 	//Execute Script if provided as arg and exit
 	if conf.Script != "" {
 		if strings.Contains(conf.Script, ".ocli") {
-			script := conf.Script
-			c.State.ScriptCalled = true
-			c.State.ScriptPath = script
-			LoadFile(script)
+			LoadFile(conf.Script)
 			os.Exit(0)
 		}
 	}
