@@ -40,8 +40,32 @@ const (
 // Error Message Const
 // TODO: Replace Const with Err Msg/Reporting Func
 // that distinguishes API & CLI Errors
-const APIErrorPrefix = "[Response From API] "
 const RACKUNIT = .04445 //meter
+
+func APIErrorMsg(respMap map[string]any) string {
+	respMsgAny, ok := respMap["message"]
+	if !ok {
+		return ""
+	}
+	respMsg, ok := respMsgAny.(string)
+	if !ok {
+		return ""
+	}
+	msg := "[Response From API] " + respMsg
+	errorsAny, ok := respMap["errors"]
+	if !ok {
+		return msg
+	}
+	errorsList := errorsAny.([]any)
+	for _, err := range errorsList {
+		msg += "\n    " + err.(string)
+	}
+	return msg
+}
+
+func APIError(respMap map[string]any) error {
+	return fmt.Errorf(APIErrorMsg(respMap))
+}
 
 // Display contents of []map[string]inf array
 func DispMapArr(x []map[string]interface{}) {
