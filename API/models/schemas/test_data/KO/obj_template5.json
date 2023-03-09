@@ -1,0 +1,30 @@
+{
+    "slug"       : "error example",
+    "description": "IBM 42U Deep Rack",
+    "category"   : "rack",
+    "sizeWDHmm"  : [605 ,1200 ,2003],
+    "fbxModel"   : "",
+    "attributes" : {
+      "vendor"     : 76,
+      "model"      : "9360-4PX"
+    },
+    "colors"	   : [
+        { "name": "color1", "value": "b0e0e6"},
+        { "name": "color2", "value": "ffa500"},
+        { "name": "color3", "value": "0000ff"}
+    ],
+    "components" : [],
+    "sensors"  : [
+      { "location": "se1", "elemPos" : [ "right","rear", "upper" ],  "elemSize" : [ 50, 20, 20]  },
+      { "location": "se3", "elemPos" : [ "right","rear", 300 ],  "elemSize" : [ 50, 20, 20]  },
+      { "location": "se4", "elemPos" : [ "right","rear", 1200 ],  "elemSize" : [ 50, 20, 20]  },
+      { "location": "se2", "elemPos" : [ "left","front", "lower" ],  "elemSize" : [ 10 ] }
+    ],
+    "slots"      : [
+     { "location": "u01",  "type": "u",   "elemOrient": "banana", "elemPos" : [58,51,44.45],        "elemSize" : [482.6,1138,44.45], "mandatory":"no", "labelPos":"frontrear", "color": "@color1"},
+     { "location": "u02",  "type": "u",   "elemOrient": "", "elemPos" : [58,51,1,2],         "elemSize" : [482.6,1138], "mandatory":"no", "labelPos":"frontrear", "color": "@color1"},
+     { "location": "u03",  "type": "u",   "elemPos" : [58,51,133.35],       "elemSize" : [482.6,1138,44.45], "mandatory":"no", "labelPos":"banana", "color": "@color1"},
+     { "location": "u04",  "type": "u",   "elemOrient": "horizontal", "elemPos" : [58,51,177.8],        "elemSize" : [482.6,1138,44.45], "mandatory":"no", "labelPos":"frontrear", "color": "color1"}
+
+    ]
+}

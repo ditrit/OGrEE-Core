@@ -63,17 +63,14 @@
         "heightUnit": "U",
         "orientation": "front",
         "posXYUnit": "m",
-        "posXYZ": "{\"x\":4.1 ,\"y\":2 ,\"z\":0}",
-        "size": "{\"x\":80 ,\"y\":100}",
+        "posXYZ": "{\"x\":4.6666666666667 ,\"y\": -2 ,\"z\":0}",
+        "size": "{\"x\":80 ,\"y\":100.532442}",
         "sizeUnit": "cm",
         "template": ""
       },
       "category": "rack",
-      "createdDate": "2023-01-26T10:46:40.987Z",
       "description": [],
       "domain": "DEMO",
-      "id": "xxxx5a101ac5f3b6f313xxxx",
-      "lastUpdated": "2023-01-26T10:46:40.987Z",
       "name": "RackA",
       "parentId": "xxxx5a101ac5f3b6f313xxxx"
     }

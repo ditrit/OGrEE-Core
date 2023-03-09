@@ -4,16 +4,16 @@
     "type": "object",
     "required": [
         "category",
-        "center",
-        "colors",
         "axisOrientation",
-        "reservedArea",
-        "separators",
         "sizeWDHm",
         "slug",
-        "technicalArea",
-        "tiles"
+        "floorUnit"
     ],
+    "dependentRequired": {
+        "vertices": ["tileAngle", "center"],
+        "tileAngle": ["vertices", "center"],
+        "center": ["vertices", "tileAngle"]
+    },
     "properties": {
         "category": {
             "type": "string",
@@ -22,7 +22,7 @@
         "center": {
             "type": "array",
             "items": {
-                "type": "integer"
+                "type": "number"
             },
             "minItems": 2,
             "maxItems": 2
@@ -47,8 +47,6 @@
             }
         },
         "createdDate": {
-            "type": "string",
-            "format": "date-time"
         },
         "floorUnit": {
             "type": "string",
@@ -62,8 +60,6 @@
             "type": "string"
         },
         "lastUpdated": {
-            "type": "string",
-            "format": "date-time"
         },
         "axisOrientation": {
             "type": "string",
@@ -119,31 +115,34 @@
             }
         },
         "pillars":{
-            "type":"object",
-            "properties": {
+            "type": "array",
+            "items": {
+                "type":"object",
                 "required": [
                     "centerXY",
                     "sizeXY",
                     "rotation"
                 ],
-                "centerXY": {
-                    "type": "array",
-                    "items": {
-                        "type": "number"
+                "properties": {
+                    "centerXY": {
+                        "type": "array",
+                        "items": {
+                            "type": "number"
+                        },
+                        "minItems": 2,
+                        "maxItems": 2
                     },
-                    "minItems": 2,
-                    "maxItems": 2
-                },
-                "sizeXY": {
-                    "type": "array",
-                    "items": {
-                        "type": "number"
+                    "sizeXY": {
+                        "type": "array",
+                        "items": {
+                            "type": "number"
+                        },
+                        "minItems": 2,
+                        "maxItems": 2
                     },
-                    "minItems": 2,
-                    "maxItems": 2
-                },
-                "rotation": {
-                    "type": "string"
+                    "rotation": {
+                        "type": "number"
+                    }
                 }
             }
         },
@@ -156,7 +155,8 @@
             "maxItems": 3
         },
         "slug": {
-            "type": "string"
+            "type": "string",
+            "pattern": "^[a-zA-Z0-9-]+$"
         },
         "technicalArea": {
             "type": "array",
@@ -182,7 +182,8 @@
                 ],
                 "properties": {
                     "color": {
-                        "type": "string"
+                        "type": "string",
+                        "pattern": "(^[0-9a-fA-F]{6}$)|(^@[a-zA-Z0-9-]+$)|(^$)"
                     },
                     "label": {
                         "type": "string"
@@ -210,5 +211,27 @@
                 "maxItems": 2
             }
         }
-    }
+    },
+    "examples": [
+        { 
+            "slug"          : "small-room",
+            "category"      : "room",
+            "axisOrientation" : "+x+y",
+            "sizeWDHm"      : [9.6,22.8,3],
+            "floorUnit"     : "t",
+            "technicalArea" : [5,0,0,0],
+            "reservedArea"  : [3,1,1,3],
+            "separators"    : [
+                { "startPosXYm" : [3,0],  "endPosXYm": [3,12], "type" :  "wireframe" },
+                { "startPosXYm" : [0,12], "endPosXYm": [3,12], "type" : "plain" }
+            ],
+            "pillars"       : [
+                { "centerXY" : [3, 12], "sizeXY" : [0.3, 0.3], "rotation" : 45 },
+                { "centerXY" : [7, 7], "sizeXY" : [0.3, 0.3], "rotation" : 30 }
+            ],
+            "colors"        : [],
+            "tiles"         : [],
+            "rows"          : []
+        }
+    ]
 }

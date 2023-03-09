@@ -1,0 +1,28 @@
+{
+    "slug": "bnpp-md-1ss-srv",
+    "category": "room",
+    "axisOrientation": "+x+z",
+    "sizeWDHm": [8.25, -4, -0.53452443],
+    "floorUnit": "cm",
+    "vertices": [
+        [0,    0],
+        [8.3,  0],
+        [8.4, -0.3],
+        [-10, 0.8],
+        [8.9],
+        [0,    4.5]
+    ],
+    "separators": [{ "startPosXYm" : [0,12], "endPosXYm": [3,12], "type" : "banana" }],
+    "pillars": [{ "centerXY" : [-7, 7], "sizeXY" : [-10.3, 0.3], "rotation" : -30 }],
+    "colors": [
+        {"name": "rampe", "value": "c0c0c0"}
+    ],
+    "tiles": [
+        {
+            "name": "",
+            "label": "11/3",
+            "texture": "",
+            "color": ""
+        }
+    ]
+}

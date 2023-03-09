@@ -1,0 +1,20 @@
+{
+    "attributes": {
+      "floorUnit": "t",
+      "height": "2.8",
+      "heightUnit": "m",
+      "axisOrientation": "x+y",
+      "rotation": "-90",
+      "posXY": "{\"x\":-46.25,\"y\":-20}",
+      "posXYUnit": "m",
+      "size": "{\"x\": 0.0,\"y\":+2.9}",
+      "sizeUnit": "m",
+      "template": ""
+    },
+    "category": "room",
+    "description": ["ERROR, NOT VALID JSON EXAMPLE"],
+    "domain": "DEMO",
+    "name": "RoomA",
+    "parentId": "xxxx5a101ac5f3b6f313eebc",
+    "banana": "apple"
+}
