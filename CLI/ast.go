@@ -107,7 +107,7 @@ func (n *lenNode) execute() (interface{}, error) {
 	if !ok {
 		return nil, fmt.Errorf("Undefined variable %s", n.variable)
 	}
-	arr, ok := val.([]interface{})
+	arr, ok := val.([]float64)
 	if !ok {
 		return nil, fmt.Errorf("Variable %s does not contain an array.", n.variable)
 	}
@@ -258,10 +258,12 @@ func (n *loadNode) execute() (interface{}, error) {
 	}
 	path, ok := val.(string)
 	if !ok {
-		return nil, fmt.Errorf("Path should be a string")
+		return nil, fmt.Errorf("path should be a string")
 	}
-	cmd.LoadFile(path)
-	return nil, nil
+
+	//Usually functions from 'controller' pkg are called
+	//But in this case we are calling a function from 'main' pkg
+	return nil, LoadFile(path)
 }
 
 type loadTemplateNode struct {
@@ -275,14 +277,13 @@ func (n *loadTemplateNode) execute() (interface{}, error) {
 	}
 	path, ok := val.(string)
 	if !ok {
-		return nil, fmt.Errorf("Path should be a string")
+		return nil, fmt.Errorf("path should be a string")
 	}
 	data := fileToJSON(path)
 	if data == nil {
-		return nil, fmt.Errorf("Cannot read json file : %s", path)
+		return nil, fmt.Errorf("cannot read json file : %s", path)
 	}
-	cmd.LoadTemplate(data, path)
-	return path, nil
+	return path, cmd.LoadTemplate(data, path)
 }
 
 type printNode struct {
@@ -1359,6 +1360,13 @@ func (n *uiHighlightNode) execute() (interface{}, error) {
 	return nil, cmd.UIHighlight(path)
 }
 
+type uiClearCacheNode struct {
+}
+
+func (n *uiClearCacheNode) execute() (interface{}, error) {
+	return nil, cmd.UIClearCache()
+}
+
 type cameraMoveNode struct {
 	command  string
 	position node
@@ -1521,7 +1529,7 @@ func (n *arrayReferenceNode) execute() (interface{}, error) {
 	if !ok {
 		return nil, fmt.Errorf("Undefined variable %s", n.variable)
 	}
-	arr, ok := v.([]interface{})
+	arr, ok := v.([]float64)
 	if !ok {
 		return nil, fmt.Errorf("You can only index an array.")
 	}
@@ -1555,7 +1563,7 @@ func (a *assignNode) execute() (interface{}, error) {
 		return nil, err
 	}
 	switch v := val.(type) {
-	case bool, int, float64, string, []interface{}, map[string]interface{}:
+	case bool, int, float64, string, []float64, map[string]interface{}:
 		dynamicSymbolTable[a.variable] = v
 		if cmd.State.DebugLvl >= 3 {
 			println("You want to assign", a.variable, "with value of", v)

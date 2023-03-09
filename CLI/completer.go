@@ -283,10 +283,6 @@ func GetPrefixCompleter() *readline.PrefixCompleter {
 			readline.PcItem("Filter", false,
 				readline.PcItem("=", false,
 					readline.PcItem("true", false),
-					readline.PcItem("false", false))),
-			readline.PcItem("Analyser", false,
-				readline.PcItem("=", false,
-					readline.PcItem("true", false),
 					readline.PcItem("false", false)))),
 		readline.PcItem("grep", false),
 		readline.PcItem("drawable(", true,
@@ -470,6 +466,8 @@ func GetPrefixCompleter() *readline.PrefixCompleter {
 			readline.PcItem(" = ", false)),
 		readline.PcItem("ui.delay", false,
 			readline.PcItem(" = ", false)),
+
+		readline.PcItem("ui.clearcache", false),
 
 		readline.PcItem(">", true,
 			readline.PcItemDynamic(ListEntities(""), false)),

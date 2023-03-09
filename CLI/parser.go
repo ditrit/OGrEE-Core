@@ -143,6 +143,9 @@ func (frame Frame) forward(offset int) Frame {
 }
 
 func (frame Frame) first() byte {
+	if frame.start >= frame.end {
+		return eof
+	}
 	return frame.char(frame.start)
 }
 
@@ -273,10 +276,12 @@ func parseSeparatedStuff(
 		if frame.start == frame.end {
 			return items, nil
 		}
-		if frame.first() != sep {
+		var ok bool
+		ok, frame = parseExact(string(sep), frame)
+		if !ok {
 			return nil, newParserError(frame, string(sep)+" expected")
 		}
-		frame = skipWhiteSpaces(frame.forward(1))
+		frame = skipWhiteSpaces(frame)
 	}
 }
 
@@ -300,6 +305,7 @@ func charIsNumber(char byte) bool {
 }
 
 func parseInt(frame Frame) (int, Frame, *ParserError) {
+	frame = skipWhiteSpaces(frame)
 	end := frame.start
 	for end < frame.end && charIsNumber(frame.char(end)) {
 		end++
@@ -316,6 +322,7 @@ func parseInt(frame Frame) (int, Frame, *ParserError) {
 }
 
 func parseFloat(frame Frame) (float64, Frame, *ParserError) {
+	frame = skipWhiteSpaces(frame)
 	end := frame.start
 	dotseen := false
 	for end < frame.end {
@@ -341,6 +348,7 @@ func parseFloat(frame Frame) (float64, Frame, *ParserError) {
 }
 
 func parseBool(frame Frame) (bool, Frame, *ParserError) {
+	frame = skipWhiteSpaces(frame)
 	if frame.end-frame.start >= 4 && frame.until(frame.start+4).str() == "true" {
 		return true, frame.forward(4), nil
 	}
@@ -452,7 +460,7 @@ func parsePrimaryExpr(l *lexer) (node, *ParserError) {
 			return nil, exprError(l, "square bracket opened but not closed")
 		}
 		l.nextToken(lexExpr)
-		return &objReferenceNode{tok.val.(string), index}, nil
+		return &arrayReferenceNode{tok.val.(string), index}, nil
 	case tokLeftParen:
 		expr, err := parseExprFromLex(l)
 		if err != nil {
@@ -572,10 +580,11 @@ func parseAssign(frame Frame) (string, Frame, *ParserError) {
 		return "", frame, err.extendMessage("parsing word on the left of =")
 	}
 	frame = skipWhiteSpaces(frame)
-	if frame.first() != '=' {
+	ok, frame := parseExact("=", frame)
+	if !ok {
 		return "", frame, newParserError(skipWhiteSpaces(frame), "= expected")
 	}
-	return varName, frame.forward(1), nil
+	return varName, frame, nil
 }
 
 func parseIndexing(frame Frame) (node, Frame, *ParserError) {
@@ -599,13 +608,13 @@ func parseArgValue(frame Frame) (string, Frame, *ParserError) {
 	if commandEnd(frame) {
 		return "", frame, newParserError(frame, "argument value expected")
 	}
-	if frame.first() == '(' {
+	if ok, _ := parseExact("(", frame); ok {
 		close := findClosing(frame)
 		if close == frame.end {
 			return "", frame, newParserError(frame, "( opened but never closed")
 		}
 		return frame.until(close + 1).str(), frame.from(close + 1), nil
-	} else if frame.first() == '"' {
+	} else if ok, frame := parseExact("\"", frame); ok {
 		endQuote := findNextQuote(frame)
 		if endQuote == frame.end {
 			return "", frame, newParserError(frame, "\" opened but never closed")
@@ -647,7 +656,10 @@ func parseArgs(allowedArgs []string, allowedFlags []string, frame Frame) (
 ) {
 	args := map[string]string{}
 	frame = skipWhiteSpaces(frame)
-	for frame.start < frame.end && frame.first() == '-' {
+	for {
+		if ok, _ := parseExact("-", frame); !ok {
+			break
+		}
 		arg, value, newFrame, err := parseSingleArg(allowedArgs, allowedFlags, frame)
 		if err != nil {
 			return nil, frame, err
@@ -862,12 +874,16 @@ func parseDelete(frame Frame) (node, Frame, *ParserError) {
 }
 
 func parseEqual(frame Frame) (node, Frame, *ParserError) {
-	if frame.first() == '{' {
+	ok, _ := parseExact("{", frame)
+	if ok {
 		paths, frame, err := parsePathGroup(frame)
 		if err != nil {
 			return nil, frame, err.extendMessage("parsing selection paths")
 		}
 		return &selectChildrenNode{paths}, frame, nil
+	}
+	if commandEnd(frame) {
+		return &selectObjectNode{&strLeaf{""}}, frame, nil
 	}
 	path, frame, err := parsePath(frame)
 	if err != nil {
@@ -988,7 +1004,7 @@ func parseMan(frame Frame) (node, Frame, *ParserError) {
 
 func parseCd(frame Frame) (node, Frame, *ParserError) {
 	if commandEnd(frame) {
-		return &cdNode{strLeaf{"/"}}, frame, nil
+		return &cdNode{&pathNode{&strLeaf{"/"}}}, frame, nil
 	}
 	path, frame, err := parsePath(frame)
 	if err != nil {
@@ -1016,6 +1032,10 @@ func parseTree(frame Frame) (node, Frame, *ParserError) {
 }
 
 func parseUi(frame Frame) (node, Frame, *ParserError) {
+	clearcache, frame := parseExact("clearcache", frame)
+	if clearcache {
+		return &uiClearCacheNode{}, frame, nil
+	}
 	key, valueFrame, err := parseAssign(frame)
 	if err != nil {
 		return nil, frame, err
@@ -1075,6 +1095,9 @@ func parseCamera(frame Frame) (node, Frame, *ParserError) {
 }
 
 func parseFocus(frame Frame) (node, Frame, *ParserError) {
+	if commandEnd(frame) {
+		return &focusNode{&strLeaf{""}}, frame, nil
+	}
 	path, frame, err := parsePath(frame)
 	if err != nil {
 		return nil, frame, err.extendMessage("parsing path")
@@ -1174,7 +1197,6 @@ func parseIf(frame Frame) (node, Frame, *ParserError) {
 		}
 		return &ifNode{condition, body, elseBody}, frame, nil
 	case "elif":
-		frame := frame.new(frame.start-2, frame.end)
 		elseBody, frame, err := parseIf(frame)
 		if err != nil {
 			return nil, frame, err.extend(frame, "parsing elif body")
@@ -1233,10 +1255,11 @@ func parseCreate(frame Frame) (node, Frame, *ParserError) {
 	if objType == "orphan" {
 		return parseCreateOrphan(frame)
 	}
-	if frame.first() != ':' {
+	ok, frame := parseExact(":", frame)
+	if !ok {
 		return nil, frame, newParserError(frame, ": expected")
 	}
-	frame = skipWhiteSpaces(frame.forward(1))
+	frame = skipWhiteSpaces(frame)
 	return createObjDispatch[objType](frame)
 }
 
@@ -1306,6 +1329,7 @@ type objParam struct {
 func parseObjectParams(sig []objParam, frame Frame) (map[string]node, Frame, *ParserError) {
 	values := map[string]node{}
 	for i, param := range sig {
+		frame = skipWhiteSpaces(frame)
 		if i != 0 {
 			ok, nextFrame := parseExact("@", frame)
 			if !ok {
@@ -1337,6 +1361,7 @@ func parseObjectParams(sig []objParam, frame Frame) (map[string]node, Frame, *Pa
 			return nil, frame, err.extend(frame, "parsing "+param.name)
 		}
 		values[param.name] = value
+		frame = skipWhiteSpaces(frame)
 	}
 	return values, frame, nil
 }
@@ -1448,6 +1473,7 @@ func parseCreateGroup(frame Frame) (node, Frame, *ParserError) {
 	if !ok {
 		return nil, frame, newParserError(frame, "@ expected")
 	}
+	frame = skipWhiteSpaces(frame)
 	childs, frame, err := parsePathGroup(frame)
 	if err != nil {
 		return nil, frame, err.extendMessage("parsing group childs")
@@ -1464,6 +1490,7 @@ func parseCreateCorridor(frame Frame) (node, Frame, *ParserError) {
 	if !ok {
 		return nil, frame, newParserError(frame, "@ expected")
 	}
+	frame = skipWhiteSpaces(frame)
 	racks, frame, err := parsePathGroup(frame)
 	if err != nil {
 		return nil, frame, err.extendMessage("parsing group childs")
@@ -1475,6 +1502,7 @@ func parseCreateCorridor(frame Frame) (node, Frame, *ParserError) {
 	if !ok {
 		return nil, frame, newParserError(frame, "@ expected")
 	}
+	frame = skipWhiteSpaces(frame)
 	temperature, frame, err := parseTemperature(frame)
 	if err != nil {
 		return nil, frame, err.extendMessage("parsing corridor temperature")
@@ -1499,18 +1527,20 @@ func parseCreateOrphan(frame Frame) (node, Frame, *ParserError) {
 }
 
 func parseCreateOrphanAux(frame Frame, sensor bool) (node, Frame, *ParserError) {
-	if frame.first() != ':' {
+	ok, frame := parseExact(":", frame)
+	if !ok {
 		return nil, frame, newParserError(frame, ": expected")
 	}
-	frame = skipWhiteSpaces(frame.forward(1))
+	frame = skipWhiteSpaces(frame)
 	path, frame, err := parsePath(frame)
 	if err != nil {
 		return nil, frame, err.extendMessage("parsing orphan physical path")
 	}
-	ok, frame := parseExact("@", frame)
+	ok, frame = parseExact("@", frame)
 	if !ok {
 		return nil, frame, newParserError(frame, "@ expected")
 	}
+	frame = skipWhiteSpaces(frame)
 	template, frame, err := parseStringExpr(frame)
 	if err != nil {
 		return nil, frame, err.extendMessage("parsing orphan template")
@@ -1674,7 +1704,7 @@ func parseCommand(frame Frame) (node, Frame, *ParserError) {
 	}
 }
 
-func Parse(buffer string) (node, *ParserError) {
+func Parse(buffer string) (node, error) {
 	commentIdx := strings.Index(buffer, "//")
 	if commentIdx != -1 {
 		buffer = buffer[:commentIdx]
@@ -1687,5 +1717,5 @@ func Parse(buffer string) (node, *ParserError) {
 	if frame.start != frame.end {
 		return nil, newParserError(frame, "unexpected characters")
 	}
-	return node, err
+	return node, nil
 }

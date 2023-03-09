@@ -188,7 +188,7 @@ func TestParseExprArrayRef(t *testing.T) {
 	if err != nil {
 		t.Errorf("error while parsing : %s", err.Error())
 	}
-	expected := &objReferenceNode{"ab", &arithNode{op: "+", left: &intLeaf{42}, right: &intLeaf{1}}}
+	expected := &arrayReferenceNode{"ab", &arithNode{op: "+", left: &intLeaf{42}, right: &intLeaf{1}}}
 	if !reflect.DeepEqual(expr, expected) {
 		t.Errorf("unexpected parsing : \ntree : %s\nexpected : %s",
 			spew.Sdump(expr), spew.Sdump(expected))
@@ -256,6 +256,8 @@ func TestParseLsObj(t *testing.T) {
 	format := ""
 	expected := &lsObjNode{path, entity, recursive, sort, attrList, format}
 	testCommand(buffer, expected, t)
+	buffer = "lsbldg -s height - f \"attr1:attr2\" -r plouf.plaf "
+	testCommand(buffer, expected, t)
 
 	buffer = "lsbldg -s height - f (\"height is %s\", height) -r plouf.plaf "
 	attrList = []string{"height"}
@@ -285,6 +287,8 @@ var commandsMatching = map[string]node{
 	"man camera":                     &helpNode{"camera"},
 	"man ui":                         &helpNode{"ui"},
 	"ls":                             &lsNode{&pathNode{&strLeaf{""}}},
+	"cd":                             &cdNode{&pathNode{&strLeaf{"/"}}},
+	"tree":                           &treeNode{&pathNode{&strLeaf{"."}}, 0},
 	"get ${toto}/tata":               &getObjectNode{testPath},
 	"getu rackA 42":                  &getUNode{&pathNode{&strLeaf{"rackA"}}, &intLeaf{42}},
 	"undraw":                         &undrawNode{nil},
@@ -342,6 +346,7 @@ var commandsMatching = map[string]node{
 	"camera.move=[1., 2., 3.]@[1., 2.]":                    &cameraMoveNode{"move", vec3(1., 2., 3.), vec2(1., 2.)},
 	"camera.translate=[1., 2., 3.]@[1., 2.]":               &cameraMoveNode{"translate", vec3(1., 2., 3.), vec2(1., 2.)},
 	"camera.wait=15":                                       &cameraWaitNode{15.},
+	"camera.wait = 15":                                     &cameraWaitNode{15.},
 	"clear":                                                &clrNode{},
 	".cmds:${CUST}/DEMO.PERF.ocli":                         &loadNode{&formatStringNode{"%v/DEMO.PERF.ocli", []symbolReferenceNode{{"CUST"}}}},
 	".cmds:${a}/${b}.ocli":                                 &loadNode{&formatStringNode{"%v/%v.ocli", []symbolReferenceNode{{"a"}, {"b"}}}},
@@ -394,4 +399,16 @@ func TestIf(t *testing.T) {
 		}
 		assertParsing(result, expected, t)
 	}
+}
+
+func TestElif(t *testing.T) {
+	command := "if 5 == 6  {ls;} elif 5 == 4 {tree;} else {pwd;}"
+	condition := &equalityNode{"==", &intLeaf{5}, &intLeaf{6}}
+	conditionElif := &equalityNode{"==", &intLeaf{5}, &intLeaf{4}}
+	ifBody := &ast{[]node{&lsNode{&pathNode{&strLeaf{""}}}, nil}}
+	elifBody := &ast{[]node{&treeNode{&pathNode{&strLeaf{"."}}, 0}, nil}}
+	elseBody := &ast{[]node{&pwdNode{}, nil}}
+	elif := &ifNode{conditionElif, elifBody, elseBody}
+	expected := &ifNode{condition, ifBody, elif}
+	testCommand(command, expected, t)
 }
