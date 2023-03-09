@@ -16,7 +16,6 @@ type Config struct {
 	APIKEY       string
 	ConfigPath   string
 	HistPath     string
-	Analyser     bool
 	Script       string
 	Drawable     []string
 	DrawableJson map[string]string
@@ -34,7 +33,6 @@ func defaultConfig() Config {
 		APIKEY:       "",
 		ConfigPath:   "./config.toml",
 		HistPath:     "./.history",
-		Analyser:     true,
 		Script:       "",
 		Drawable:     []string{"all"},
 		DrawableJson: map[string]string{},
@@ -69,8 +67,6 @@ func ReadConfig() *Config {
 	flag.StringVarP(&conf.APIKEY, "api_key", "k", conf.APIKEY, "Indicate the key of the API")
 	flag.StringVarP(&conf.HistPath, "history_path", "h", conf.HistPath,
 		"Indicate the location of the Shell's history file")
-	flag.BoolVarP(&conf.Analyser, "analyser", "s", conf.Analyser, "Dictate if the Shell shall"+
-		" use the Static Analyser before script execution")
 	flag.StringVarP(&conf.Script, "file", "f", conf.Script, "Launch the shell as an interpreter "+
 		" by only executing an OCLI script file")
 	flag.Parse()

@@ -55,9 +55,6 @@ func InitState(conf *config.Config) {
 	//Set the filter attributes setting
 	State.FilterDisplay = false
 
-	//Set the Analyser setting to ON for now
-	State.Analyser = conf.Analyser
-
 	phys := &Node{}
 	phys.Name = "Physical"
 	phys.PID = ""
