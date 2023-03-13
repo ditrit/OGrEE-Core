@@ -13,7 +13,7 @@ class _LanguageToggleState extends State<LanguageToggle> {
 
   @override
   Widget build(BuildContext context) {
-    if (MyApp.of(context)!.getLocale() == 'en') {
+    if (MyApp.of(context) != null && MyApp.of(context)!.getLocale() == 'en') {
       _selectedLanguage = [false, true];
     }
     return Container(

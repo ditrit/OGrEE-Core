@@ -67,7 +67,9 @@ class _SelectPageState extends State<SelectPage> with TickerProviderStateMixin {
       appBar: myAppBar(context, widget.userEmail),
       body: Center(
           child: Stepper(
-        type: StepperType.horizontal,
+        type: MediaQuery.of(context).size.width > 800
+            ? StepperType.horizontal
+            : StepperType.vertical,
         physics: const ScrollPhysics(),
         currentStep: _currentStep,
         // onStepTapped: (step) => tapped(step),

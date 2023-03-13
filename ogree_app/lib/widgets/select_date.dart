@@ -177,6 +177,7 @@ class _DatePickerState extends State<DatePicker> {
 
   @override
   Widget build(BuildContext context) {
+    print(DateTime.now());
     return Center(
         child: SizedBox(
       width: 700,
@@ -186,7 +187,7 @@ class _DatePickerState extends State<DatePicker> {
         child: SfDateRangePicker(
           onSelectionChanged: _onSelectionChanged,
           selectionMode: DateRangePickerSelectionMode.range,
-          enableMultiView: true,
+          enableMultiView: MediaQuery.of(context).size.width > 700,
           headerStyle:
               const DateRangePickerHeaderStyle(textAlign: TextAlign.center),
           initialSelectedRange: PickerDateRange(

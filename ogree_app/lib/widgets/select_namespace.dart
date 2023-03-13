@@ -34,21 +34,26 @@ class _SelectNamespaceState extends State<SelectNamespace> {
           style: Theme.of(context).textTheme.headlineLarge,
         ),
         const SizedBox(height: 25),
-        Card(
-            child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-          children:
-              namespaces.keys.map((label) => nameSpaceButton(label)).toList(),
-        )),
+        SizedBox(
+          width: MediaQuery.of(context).size.width - 50,
+          child: Card(
+              child: Wrap(
+            alignment: WrapAlignment.spaceEvenly,
+            crossAxisAlignment: WrapCrossAlignment.center,
+            children:
+                namespaces.keys.map((label) => nameSpaceButton(label)).toList(),
+          )),
+        ),
       ],
     );
   }
 
   Widget nameSpaceButton(String label) {
+    var isBigScreen = MediaQuery.of(context).size.width > 800;
     return Container(
       margin: const EdgeInsets.only(top: 30, bottom: 30),
-      width: 250,
-      height: 100.0,
+      width: isBigScreen ? 250 : 200,
+      height: isBigScreen ? 100 : 70,
       child: OutlinedButton(
         onPressed: () => setState(() {
           _selection = label;
@@ -72,7 +77,7 @@ class _SelectNamespaceState extends State<SelectNamespace> {
               ),
             ),
             Text(
-              '\n${namespaces[label]}',
+              isBigScreen ? '\n${namespaces[label]}' : namespaces[label]!,
               style: GoogleFonts.inter(
                 color: _selection == label ? Colors.blue : Colors.black,
               ),
