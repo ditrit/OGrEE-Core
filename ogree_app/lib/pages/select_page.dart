@@ -137,8 +137,10 @@ class _SelectPageState extends State<SelectPage> with TickerProviderStateMixin {
                 ? SizedBox(
                     height: MediaQuery.of(context).size.height - 210,
                     child: ResultsPage(
-                        selectedAttrs: _selectedAttrs,
-                        selectedObjects: _selectedObjects.keys.toList()))
+                      selectedAttrs: _selectedAttrs,
+                      selectedObjects: _selectedObjects.keys.toList(),
+                      namespace: "Physical",
+                    ))
                 : const Center(child: CircularProgressIndicator()),
             isActive: _currentStep >= Steps.date.index,
             state: _currentStep >= Steps.result.index

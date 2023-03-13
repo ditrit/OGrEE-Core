@@ -1,6 +1,9 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:ogree_app/common/api.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:ogree_app/widgets/select_objects/app_controller.dart';
 
 const String extraColumn = "Add new column";
 const String sumStr = "Somme()";
@@ -9,9 +12,13 @@ const String avgStr = "Moyenne()";
 class ResultsPage extends StatefulWidget {
   List<String> selectedAttrs;
   List<String> selectedObjects;
+  final String namespace;
 
   ResultsPage(
-      {super.key, required this.selectedAttrs, required this.selectedObjects});
+      {super.key,
+      required this.selectedAttrs,
+      required this.selectedObjects,
+      required this.namespace});
 
   @override
   State<StatefulWidget> createState() => _ResultsPageState();
@@ -46,7 +53,6 @@ class _ResultsPageState extends State<ResultsPage> {
   @override
   Widget build(BuildContext context) {
     final localeMsg = AppLocalizations.of(context)!;
-    print("RESULT");
     // Column labels
     // First, the objects column
     columnLabels = [
@@ -83,7 +89,7 @@ class _ResultsPageState extends State<ResultsPage> {
         tooltip: localeMsg.addColumnTip,
         offset: const Offset(0, -32),
         itemBuilder: (_) => attributesCheckList(widget.selectedAttrs),
-        onCanceled: () => print('canceleeed'),
+        onCanceled: () => print('canceled'),
         icon: const Icon(Icons.add),
       ),
     ));
@@ -141,11 +147,30 @@ class _ResultsPageState extends State<ResultsPage> {
 
   getData() async {
     print("GET DATA");
-    _data = await fetchAttributes();
+    if (widget.namespace == "TEST") {
+      _data = getSampleData();
+    } else {
+      _data = await fetchAttributes();
+    }
     getAllAttributes(_data!);
     applyMathFunctions(_data!); // Calculate sum and average
     print("GOT DATA");
     print(_data);
+  }
+
+  Map<String, Map<String, String>> getSampleData() {
+    var rng = Random();
+    Map<String, Map<String, String>> sampleData = {};
+    for (var listObjs in kDataSample.values) {
+      for (var obj in listObjs) {
+        sampleData[obj] = {
+          "height": rng.nextInt(100).toString(),
+          "weight": "45.5",
+          "vendor": "test"
+        };
+      }
+    }
+    return sampleData;
   }
 
   getAllAttributes(Map<String, Map<String, String>> data) {
