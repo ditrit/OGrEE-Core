@@ -2,7 +2,7 @@
 #
 # Helper script catches environment variables passed from docker to init MongoDB.
 
-mongosh localhost:27017 dbft.js --eval '
+mongosh localhost:27017 /home/dbft.js --eval '
 var DB_NAME ="'$DB_NAME'",
 CUSTOMER_API_PASS="'$CUSTOMER_API_PASS'",
 CUSTOMER_RECORDS_DB="'$CUSTOMER_RECORDS_DB'",

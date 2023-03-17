@@ -4,22 +4,21 @@ services:
   dbft_api:
     build: ${APIBUILDDIR}#${APIBRANCH}
     image: dbft/api:dockerfile
-    container_name: dbft_api
-    network_mode: "host"
+    container_name: ${COMPOSE_PROJECT_NAME}t_api
     entrypoint: /home/main
     environment:
       - api_port=3551
-      - db_host=0.0.0.0
-      - db_port=27900
-      - db_user=TenantName
+      - db_host=${COMPOSE_PROJECT_NAME}_db
+      - db_port=27017
+      - db_user=$TENANT
       - db_pass=123
-      - db=TenantName
+      - db=$TENANT
       - token_password=yourSecretPasswordGoesHere
+    ports:
+      - ${APIPORT}:3551
     depends_on:
       - dbft_db
-    restart: "yes"
-    restart: on-failure
-    restart: unless-stopped
+    restart: on-failure:10
 
     #Specifying the environment variables here is the superior option compared to inserting
     #the .env file and building an image. Here you can specify all the parameters of the
@@ -27,9 +26,9 @@ services:
 
   dbft_db:
     image: mongo:latest
-    container_name: dbft_db
+    container_name: ${COMPOSE_PROJECT_NAME}_db
     environment:
-        - DB_NAME=Mitsubishi
+        - DB_NAME=$TENANT
         - CUSTOMER_API_PASS=123
         - CUSTOMER_RECORDS_DB=ogree
 
@@ -68,9 +67,8 @@ services:
   dbft_cli:
     #build: ${CLIBUILDDIR}#${CLIBRANCH}
     build: ${LOCAL_CLI_BUILD_DIR}
-    network_mode: "host"
     image: dbft/cli:dockerfile
-    container_name: dbft_cli
+    container_name: ${COMPOSE_PROJECT_NAME}_cli
     tty: true
     environment:
       - APIKEY="YourAPIKEYGoesHere"
@@ -84,3 +82,17 @@ services:
       - User=new@yo.com
     depends_on:
       - dbft_api
+
+  dbft_webapp:
+    build: 
+      #context: ${APPBUILDDIR}#${APPBRANCH}
+      context: ${LOCAL_APP_BUILD_DIR}
+      args:
+      - API_URL=localhost:3551
+    image: dbft/webapp:dockerfile
+    container_name: ${COMPOSE_PROJECT_NAME}_webapp
+    ports:
+      - ${WEBPORT}:80
+    depends_on:
+      - dbft_api
+    restart: on-failure:10
