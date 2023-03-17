@@ -12,7 +12,8 @@ void showCustomDialog(
     IconData cancelIcon,
     Function cancelCallback,
     Function saveCallback,
-    {bool isCreate = false}) {
+    {bool isCreate = false,
+    Function? parentCallback}) {
   String editInput = project.name;
   const inputStyle = OutlineInputBorder(
     borderSide: BorderSide(
@@ -65,7 +66,8 @@ void showCustomDialog(
                       TextButton.icon(
                         style: OutlinedButton.styleFrom(
                             foregroundColor: Colors.red.shade900),
-                        onPressed: () => cancelCallback(project.id),
+                        onPressed: () =>
+                            cancelCallback(project.id, parentCallback),
                         label: Text(cancelBtnTitle),
                         icon: Icon(
                           cancelIcon,
@@ -81,7 +83,8 @@ void showCustomDialog(
                                 context, localeMsg.mandatoryProjectName,
                                 isError: true);
                           } else {
-                            saveCallback(editInput, project, isCreate);
+                            saveCallback(
+                                editInput, project, isCreate, parentCallback);
                           }
                         },
                         child: Text(localeMsg.save),

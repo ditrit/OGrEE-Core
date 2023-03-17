@@ -65,5 +65,9 @@
     "yourReport": "Your report",
     "mathFuncTip": "Math functions",
     "showSum": "Display sum",
-    "showAvg": "Display average"
+    "showAvg": "Display average",
+
+    "newTenant": "   Create new tenant",
+    "create": "Create",
+    "tenantCreated": "Tenant successfully created!"
 }
