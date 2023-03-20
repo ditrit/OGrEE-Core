@@ -1,9 +1,12 @@
+import 'dart:convert';
 import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:ogree_app/common/api.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:ogree_app/widgets/select_objects/app_controller.dart';
+import 'package:csv/csv.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 const String extraColumn = "Add new column";
 const String sumStr = "Somme()";
@@ -105,12 +108,15 @@ class _ResultsPageState extends State<ResultsPage> {
                 child: PaginatedDataTable(
                   header: Text(
                     localeMsg.yourReport,
-                    style: TextStyle(fontWeight: FontWeight.w600),
+                    style: const TextStyle(fontWeight: FontWeight.w600),
                   ),
                   actions: [
-                    const Padding(
-                      padding: EdgeInsets.only(right: 8.0),
-                      child: Icon(Icons.file_download_outlined),
+                    Padding(
+                      padding: const EdgeInsets.only(right: 6.0),
+                      child: IconButton(
+                        icon: const Icon(Icons.file_download_outlined),
+                        onPressed: () => getCSV(),
+                      ),
                     ),
                     PopupMenuButton<String>(
                       tooltip: localeMsg.selectionOptions,
@@ -272,6 +278,38 @@ class _ResultsPageState extends State<ResultsPage> {
         child: Text(localeMsg.showAvg),
       ),
     ];
+  }
+
+  getCSV() async {
+    // Prepare data
+    final firstRow = ["Objects", ...widget.selectedAttrs];
+    firstRow.remove(extraColumn);
+    List<List<String>> rows = [firstRow];
+    for (var obj in widget.selectedObjects) {
+      List<String> row = [];
+      row.add(obj);
+      for (String attr in widget.selectedAttrs) {
+        if (attr != extraColumn) {
+          String value = "-";
+          if (_data!.containsKey(obj) && _data![obj]!.containsKey(attr)) {
+            value = _data![obj]![attr]!;
+          }
+          row.add(value);
+        }
+      }
+      rows.add(row);
+    }
+
+    // Prepare the file
+    String csv = const ListToCsvConverter().convert(rows);
+    final bytes = utf8.encode(csv);
+    launchUrl(
+      Uri.dataFromBytes(bytes),
+      webViewConfiguration: const WebViewConfiguration(
+          headers: <String, String>{
+            'Content-Disposition': 'attachment;filename=report.csv'
+          }),
+    );
   }
 }
 

@@ -6,8 +6,8 @@ import 'package:ogree_app/models/tenant.dart';
 
 const String apiUrl = String.fromEnvironment(
   'API_URL',
-  defaultValue: 'http://localhost:8081',
-  // defaultValue: 'https://b.api.ogree.ditrit.io',
+  // defaultValue: 'http://localhost:8081',
+  defaultValue: 'https://b.api.ogree.ditrit.io',
 );
 var token = "";
 getHeader(token) => {

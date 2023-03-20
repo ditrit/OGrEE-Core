@@ -20,7 +20,7 @@ class ProjectsPage extends StatefulWidget {
 class _ProjectsPageState extends State<ProjectsPage> {
   List<Project>? _projects;
   List<Tenant>? _tenants;
-  var isTenantMode = true;
+  var isTenantMode = false;
 
   @override
   Widget build(BuildContext context) {
