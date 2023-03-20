@@ -1,4 +1,3 @@
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mockito/annotations.dart';
@@ -20,10 +19,7 @@ void main() {
 
       // Use Mockito to return a successful response when it calls the
       // provided http.Client.
-      await dotenv.load();
-      when(mockClient.get(
-              Uri.parse(
-                  '${dotenv.env['API_URL']}/api/projects?user=user@email.com'),
+      when(mockClient.get(Uri.parse('$apiUrl/api/projects?user=user@email.com'),
               headers: getHeader(token)))
           .thenAnswer((_) async => http.Response(projectSample, 200));
 
@@ -37,10 +33,7 @@ void main() {
 
       // Use Mockito to return an unsuccessful response when it calls the
       // provided http.Client.
-      await dotenv.load();
-      when(mockClient.get(
-              Uri.parse(
-                  '${dotenv.env['API_URL']}/api/projects?user=user@email.com'),
+      when(mockClient.get(Uri.parse('$apiUrl/api/projects?user=user@email.com'),
               headers: getHeader(token)))
           .thenAnswer((_) async => http.Response('Not Found', 404));
 

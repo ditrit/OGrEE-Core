@@ -1,0 +1,104 @@
+version: '3.9'
+services:
+  dbft_api:
+    # build: ${APIBUILDDIR}#${APIBRANCH}
+    build: ../../../OGrEE-API
+    image: dbft/api:dockerfile
+    container_name: ${COMPOSE_PROJECT_NAME}_api
+    entrypoint: /home/main
+    environment:
+      - api_port=3551
+      - db_host=${COMPOSE_PROJECT_NAME}_db
+      - db_port=27017
+      - db_user=$TENANT
+      - db_pass=123
+      - db=$TENANT
+      - token_password=yourSecretPasswordGoesHere
+    ports:
+      - ${APIPORT}:3551
+    depends_on:
+      - dbft_db
+    restart: on-failure:10
+
+    #Specifying the environment variables here is the superior option compared to inserting
+    #the .env file and building an image. Here you can specify all the parameters of the
+    #the API 
+
+  dbft_db:
+    image: mongo:latest
+    container_name: ${COMPOSE_PROJECT_NAME}_db
+    environment:
+        - DB_NAME=$TENANT
+        - CUSTOMER_API_PASS=123
+        - CUSTOMER_RECORDS_DB=ogree
+
+        - ADMIN_DB=admin
+        - SUPER_USER=super
+        - SUPER_PASS=superpassword
+
+        - ADMIN_USER=admin
+        - ADMIN_PASS=adminpassword
+
+        - GUARD_USER=guard
+        - GUARD_PASS=adminpassword
+    volumes:
+        -  ${MONGOINIT}/init.sh:/docker-entrypoint-initdb.d/init.sh
+        -  ${MONGOINIT}/dbft.js:/home/dbft.js
+        -  ${MONGOINIT}/addCustomer.sh:/home/addCustomer.sh
+        -  ${MONGOINIT}/addCustomer.js:/home/addCustomer.js
+    #By default MongoDB will attempt to take port 27017, so just map it
+    #for ease of use
+
+
+  # Deploying the CLI in an orchestrated fashion does 
+  # not work since containers exit when a program
+  # is done executing. It is left here for reference 
+  dbft_cli:
+   #build: ${CLIBUILDDIR}#${CLIBRANCH}
+   build: ${LOCAL_CLI_BUILD_DIR}
+   image: dbft/cli:dockerfile
+   container_name: ${COMPOSE_PROJECT_NAME}_cli
+   entrypoint: tail -f /dev/null
+   environment:
+     - acDrawableJson=null
+     - apiKey=yourJWTKeyGoesHere
+     - apiURL=http://localhost:3551
+     - buildingDrawableJson=null
+     - cabinetDrawableJson=null
+     - corridorDrawableJson=null
+     - deviceDrawableJson=null
+     - drawLimit=1
+     - drawable=all
+     - groupDrawableJson=null
+     - listenPort=5501
+     - objTemplateDrawableJson=null
+     - powerpanelDrawableJson=null
+     - rackDrawableJson=null
+     - roomDrawableJson=null
+     - roomTemplateDrawableJson=null
+     - rowDrawableJson=null
+     - sensorDrawableJson=null
+     - separatorDrawableJson=null
+     - siteDrawableJson=null
+     - tenantDrawableJson=./other/drawTemplates/tenant.json
+     - tileDrawableJson=null
+     - unityTimeout=10ms
+     - unityURL=localhost:5500
+     - updates=all
+     - user=new@yo.com
+   depends_on:
+     - dbft_api
+
+  dbft_webapp:
+    build: 
+      #context: ${APPBUILDDIR}#${APPBRANCH}
+      context: ../../
+      args:
+      - API_URL=localhost:${APIPORT}
+    image: dbft/webapp:dockerfile
+    container_name: ${COMPOSE_PROJECT_NAME}_webapp
+    ports:
+      - ${WEBPORT}:80
+    depends_on:
+      - dbft_api
+    restart: on-failure:10

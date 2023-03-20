@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:ogree_app/common/api.dart';
 import 'package:ogree_app/common/appbar.dart';
-import 'package:ogree_app/common/popup_dialog.dart';
+import 'package:ogree_app/widgets/projects_tenants/popup_dialog.dart';
 import 'package:ogree_app/common/snackbar.dart';
 import 'package:ogree_app/models/project.dart';
 import 'package:ogree_app/pages/projects_page.dart';

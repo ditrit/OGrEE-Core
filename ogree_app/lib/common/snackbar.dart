@@ -5,14 +5,17 @@ void showSnackBar(
   String message, {
   Duration duration = const Duration(seconds: 2),
   bool isError = false,
+  bool isSuccess = false,
 }) {
+  var color = Colors.blueGrey.shade900;
+  if (isError) color = Colors.red.shade900;
+  if (isSuccess) color = Colors.green;
   ScaffoldMessenger.of(context)
     ..hideCurrentSnackBar()
     ..showSnackBar(
       SnackBar(
         behavior: SnackBarBehavior.floating,
-        backgroundColor:
-            isError ? Colors.red.shade900 : Colors.blueGrey.shade900,
+        backgroundColor: color,
         content: Text(message),
         duration: duration,
       ),

@@ -44,7 +44,7 @@ dependencies:
   syncfusion_localizations: ^20.3.61
   flutter_fancy_tree_view: ^0.5.3+2
   http: ^0.13.5
-  flutter_dotenv: ^5.0.2
+  url_launcher: ^6.1.10
 
 dev_dependencies:
   mockito: ^5.3.2
@@ -75,4 +75,3 @@ flutter:
     - assets/edf_logo.png
     - assets/server_background.png
     - lib/l10n/app_fr.arb
-    - .env
