@@ -1329,7 +1329,6 @@ type objParam struct {
 func parseObjectParams(sig []objParam, frame Frame) (map[string]node, Frame, *ParserError) {
 	values := map[string]node{}
 	for i, param := range sig {
-		frame = skipWhiteSpaces(frame)
 		if i != 0 {
 			ok, nextFrame := parseExact("@", frame)
 			if !ok {
@@ -1337,6 +1336,7 @@ func parseObjectParams(sig []objParam, frame Frame) (map[string]node, Frame, *Pa
 			}
 			frame = nextFrame
 		}
+		frame = skipWhiteSpaces(frame)
 		var value node
 		var err *ParserError
 		switch param.t {
