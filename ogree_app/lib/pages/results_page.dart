@@ -1,4 +1,8 @@
 import 'dart:convert';
+import 'dart:io';
+import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:ogree_app/common/snackbar.dart';
+import 'package:universal_html/html.dart' as html;
 import 'dart:math';
 
 import 'package:flutter/material.dart';
@@ -6,7 +10,7 @@ import 'package:ogree_app/common/api.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:ogree_app/widgets/select_objects/app_controller.dart';
 import 'package:csv/csv.dart';
-import 'package:url_launcher/url_launcher.dart';
+import 'package:path_provider/path_provider.dart';
 
 const String extraColumn = "Add new column";
 const String sumStr = "Somme()";
@@ -303,13 +307,25 @@ class _ResultsPageState extends State<ResultsPage> {
     // Prepare the file
     String csv = const ListToCsvConverter().convert(rows);
     final bytes = utf8.encode(csv);
-    launchUrl(
-      Uri.dataFromBytes(bytes),
-      webViewConfiguration: const WebViewConfiguration(
-          headers: <String, String>{
-            'Content-Disposition': 'attachment;filename=report.csv'
-          }),
-    );
+    if (kIsWeb) {
+      // If web, use html to download csv
+      html.AnchorElement(
+          href: 'data:application/octet-stream;base64,${base64Encode(bytes)}')
+        ..setAttribute("download", "report.csv")
+        ..click();
+    } else {
+      // Save to local filesystem
+      var path = (await getApplicationDocumentsDirectory()).path;
+      var fileName = '$path/report.csv';
+      var file = File(fileName);
+      for (var i = 1; await file.exists(); i++) {
+        print("FOR");
+        fileName = '$path/report ($i).csv';
+        file = File(fileName);
+      }
+      file.writeAsBytes(bytes, flush: true).then((value) =>
+          showSnackBar(context, "File succesfully saved to: $fileName"));
+    }
   }
 }
 
