@@ -90,27 +90,28 @@ func ParamsParse(link *url.URL, objType int) map[string]interface{} {
 	//Building Attribute query varies based on
 	//object type
 	for key, _ := range q {
-		if objType != ROOMTMPL && objType != OBJTMPL &&
-			objType != BLDGTMPL { //Non template objects
-			switch key {
-			case "id", "name", "category", "parentID",
-				"description", "domain", "parentid", "parentId",
-				"hierarchyName", "createdDate", "lastUpdated":
-				values[key] = q.Get(key)
-			default:
-				values["attributes."+key] = q.Get(key)
-			}
-		} else { //Template objects
-			//Not sure how to search FBX TEMPLATES
-			//For now it is disabled
-			switch key {
-			case "description", "slug", "category", "sizeWDHmm", "fbxModel":
-				values[key] = q.Get(key)
-			default:
-				values["attributes."+key] = q.Get(key)
+		if key != "fieldOnly" && key != "startDate" && key != "endDate" {
+			if objType != ROOMTMPL && objType != OBJTMPL &&
+				objType != BLDGTMPL { //Non template objects
+				switch key {
+				case "id", "name", "category", "parentID",
+					"description", "domain", "parentid", "parentId",
+					"hierarchyName", "createdDate", "lastUpdated":
+					values[key] = q.Get(key)
+				default:
+					values["attributes."+key] = q.Get(key)
+				}
+			} else { //Template objects
+				//Not sure how to search FBX TEMPLATES
+				//For now it is disabled
+				switch key {
+				case "description", "slug", "category", "sizeWDHmm", "fbxModel":
+					values[key] = q.Get(key)
+				default:
+					values["attributes."+key] = q.Get(key)
+				}
 			}
 		}
-
 	}
 	return values
 }

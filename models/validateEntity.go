@@ -67,14 +67,14 @@ func validateParent(ent string, entNum int, t map[string]interface{}) (map[strin
 	parent := map[string]interface{}{"parent": ""}
 	switch entNum {
 	case u.DEVICE:
-		x, _ := GetEntity(req, "rack", []string{})
+		x, _ := GetEntity(req, "rack", nil)
 		if x != nil {
 			parent["parent"] = "rack"
 			parent["hierarchyName"] = getHierarchyName(x)
 			return parent, true
 		}
 
-		y, _ := GetEntity(req, "device", []string{})
+		y, _ := GetEntity(req, "device", nil)
 		if y != nil {
 			parent["parent"] = "device"
 			parent["hierarchyName"] = getHierarchyName(y)
@@ -85,28 +85,28 @@ func validateParent(ent string, entNum int, t map[string]interface{}) (map[strin
 			"ParentID should be correspond to Existing ID"), false
 
 	case u.SENSOR, u.GROUP:
-		w, _ := GetEntity(req, "device", []string{})
+		w, _ := GetEntity(req, "device", nil)
 		if w != nil {
 			parent["parent"] = "device"
 			parent["hierarchyName"] = getHierarchyName(w)
 			return parent, true
 		}
 
-		x, _ := GetEntity(req, "rack", []string{})
+		x, _ := GetEntity(req, "rack", nil)
 		if x != nil {
 			parent["parent"] = "rack"
 			parent["hierarchyName"] = getHierarchyName(x)
 			return parent, true
 		}
 
-		y, _ := GetEntity(req, "room", []string{})
+		y, _ := GetEntity(req, "room", nil)
 		if y != nil {
 			parent["parent"] = "room"
 			parent["hierarchyName"] = getHierarchyName(y)
 			return parent, true
 		}
 
-		z, _ := GetEntity(req, "building", []string{})
+		z, _ := GetEntity(req, "building", nil)
 		if z != nil {
 			parent["parent"] = "building"
 			parent["hierarchyName"] = getHierarchyName(z)
@@ -121,7 +121,7 @@ func validateParent(ent string, entNum int, t map[string]interface{}) (map[strin
 			if pid, ok := t["parentId"].(string); ok {
 				ID, _ := primitive.ObjectIDFromHex(pid)
 
-				p, err := GetEntity(bson.M{"_id": ID}, "stray_device", []string{})
+				p, err := GetEntity(bson.M{"_id": ID}, "stray_device", nil)
 				if len(p) > 0 {
 					parent["parent"] = "stray_device"
 					parent["hierarchyName"] = getHierarchyName(p)
@@ -140,7 +140,7 @@ func validateParent(ent string, entNum int, t map[string]interface{}) (map[strin
 		parentInt := u.GetParentOfEntityByInt(entNum)
 		parentStr := u.EntityToString(parentInt)
 
-		p, err := GetEntity(req, parentStr, []string{})
+		p, err := GetEntity(req, parentStr, nil)
 		if len(p) > 0 {
 			parent["parent"] = parentStr
 			parent["hierarchyName"] = getHierarchyName(p)
