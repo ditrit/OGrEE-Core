@@ -18,32 +18,38 @@ class TreeFilter extends StatefulWidget {
 
   @override
   State<TreeFilter> createState() => _TreeFilterState();
+
+  static _TreeFilterState? of(BuildContext context) =>
+      context.findAncestorStateOfType<_TreeFilterState>();
 }
 
 class _TreeFilterState extends State<TreeFilter> {
   final Map<int, List<String>> _filterLevels = {0: [], 1: [], 2: [], 3: []};
+  Map<int, List<String>> get filterLevels => _filterLevels;
+
   Map<String, List<String>> objectsPerCategory = {};
   Map<String, int> enumParams = {};
 
   @override
   Widget build(BuildContext context) {
+    // Get which fields to filter and their list of suggestions
     int idx = 0;
     for (String key
         in AppController.of(context).fetchedCategories["KeysOrder"]!) {
       objectsPerCategory[key.capitalize()] =
-          AppController.of(context).fetchedCategories[key]!;
-      enumParams[key.capitalize()] = idx;
+          AppController.of(context).fetchedCategories[key]!; // field name
+      enumParams[key.capitalize()] = idx; // field name -> id
       idx++;
     }
 
-    // print(objectsPerCategory);
     return Column(
         children: objectsPerCategory.keys.map((key) {
+      // Input enabled only if child of selected filter or if last level
       var enabled = enumParams[key]! > getMaxFilterLevel() ||
           enumParams[key]! == lastLevel;
       List<String> options = objectsPerCategory[key]!;
 
-      // Apply last level filters to current options
+      // Update suggestions according to last selected level
       if (enabled && !isFilterEmpty(topLevel: lastLevel - 1)) {
         var lastLevelFilters =
             _filterLevels[getMaxFilterLevel(topLevel: lastLevel - 1)]!;
@@ -68,24 +74,21 @@ class _TreeFilterState extends State<TreeFilter> {
         param: key,
         paramLevel: enumParams[key]!,
         options: options,
-        notifyParent: notifySelection,
+        notifyParent: notifyChildSelection,
         showClearFilter: enumParams[key] == 0 ? !isFilterEmpty() : false,
       );
     }).toList());
   }
 
-  void notifySelection(String param, String filter, bool selected) {
-    if (filter == "CLEAR ALL") {
-      // setState(() {
-      //   for (var value in _filterLevels.values) {
-      //     value = [];
-      //   }
-      // });
-    } else {
-      setState(() => selected
-          ? _filterLevels[enumParams[param]]!.add(filter)
-          : _filterLevels[enumParams[param]]!.remove(filter));
+  // Callback for child to update parent state
+  void notifyChildSelection({bool isClearAll = false}) {
+    if (isClearAll) {
+      for (var level in _filterLevels.keys) {
+        _filterLevels[level] = [];
+      }
+      AppController.of(context).filterTree("", -1);
     }
+    setState(() {});
   }
 
   int getMaxFilterLevel({int topLevel = 3}) {
@@ -116,7 +119,7 @@ class AutocompleteFilter extends StatefulWidget {
   final String param;
   final int paramLevel;
   final List<String> options;
-  final Function(String, String, bool) notifyParent;
+  final Function({bool isClearAll}) notifyParent;
   final bool showClearFilter;
 
   const AutocompleteFilter(
@@ -135,11 +138,12 @@ class AutocompleteFilter extends StatefulWidget {
 const Color kDarkBlue = Color(0xff1565c0);
 
 class _AutocompleteFilterState extends State<AutocompleteFilter> {
-  List<String> _selectedOptions = [];
+  List<String> _selectedOptions = []; // overwritten at init by parent ref
 
   @override
   Widget build(BuildContext context) {
     final localeMsg = AppLocalizations.of(context)!;
+    _selectedOptions = TreeFilter.of(context)!.filterLevels[widget.paramLevel]!;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -164,8 +168,8 @@ class _AutocompleteFilterState extends State<AutocompleteFilter> {
                               fontWeight: FontWeight.w600,
                             ),
                           ),
-                          onPressed: () => widget.notifyParent(
-                              widget.param, "CLEAR ALL", true),
+                          onPressed: () =>
+                              widget.notifyParent(isClearAll: true),
                           child: Text(localeMsg.clearAllFilters),
                         )
                       : Container(),
@@ -189,15 +193,13 @@ class _AutocompleteFilterState extends State<AutocompleteFilter> {
                   enabled: widget.enabled,
                   isDense: true,
                   labelText: widget.param,
-                  labelStyle:
-                      const TextStyle(fontSize: 14)), // placeholder text
+                  labelStyle: const TextStyle(fontSize: 14)),
               onFieldSubmitted: (String value) {
-                // print("submitted " + value);
                 if (widget.options.contains(value)) {
                   setState(() {
                     AppController.of(context)
                         .filterTree(value, widget.paramLevel);
-                    widget.notifyParent(widget.param, value, true);
+                    widget.notifyParent();
                     _selectedOptions.add(value);
                     textEditingController.clear();
                   });
@@ -214,7 +216,6 @@ class _AutocompleteFilterState extends State<AutocompleteFilter> {
           optionsViewBuilder: (BuildContext context,
               AutocompleteOnSelected<String> onSelected,
               Iterable<String> options) {
-            // print("options view builder");
             return Align(
               alignment: Alignment.topLeft,
               child: Material(
@@ -252,6 +253,7 @@ class _AutocompleteFilterState extends State<AutocompleteFilter> {
     );
   }
 
+  // One chip per selected filter
   List<Widget> getChips(List<String> nodes, BuildContext context) {
     List<Widget> chips = [];
     nodes.forEach((value) {
@@ -260,7 +262,7 @@ class _AutocompleteFilterState extends State<AutocompleteFilter> {
           AppController.of(context).filterTree(value, widget.paramLevel);
           setState(() {
             _selectedOptions.removeWhere((opt) => opt == value);
-            widget.notifyParent(widget.param, value, false);
+            widget.notifyParent();
           });
         },
         backgroundColor: ColorChip[widget.param]!.shade100,

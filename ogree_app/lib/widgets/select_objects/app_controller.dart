@@ -88,11 +88,18 @@ class AppController with ChangeNotifier {
     }
 
     // Add or remove filter
-    var currentLevel = _filterLevels[level]!;
-    if (!currentLevel.contains(id)) {
-      currentLevel.add(id);
+    if (level < 0) {
+      // Clear All
+      for (var level in _filterLevels.keys) {
+        _filterLevels[level] = [];
+      }
     } else {
-      currentLevel.remove(id);
+      var currentLevel = _filterLevels[level]!;
+      if (!currentLevel.contains(id)) {
+        currentLevel.add(id);
+      } else {
+        currentLevel.remove(id);
+      }
     }
 
     for (var i = 0; i <= lastFilterLevel; i++) {

@@ -149,5 +149,16 @@ void main() {
     ]) {
       expect(find.textContaining(obj), findsNothing);
     }
+
+    // clear all filters
+    final clearButton = find.text("Effacer tout");
+    await tester.tap(clearButton);
+    await tester.pumpAndSettle();
+    for (var obj in ["devA", "devB", "devC", "devD"]) {
+      expect(find.text(obj), findsNothing);
+    }
+    for (var obj in kDataSample[kRootId]!) {
+      expect(find.text(obj), findsOneWidget);
+    }
   });
 }
