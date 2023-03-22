@@ -1,0 +1,32 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "title": "OGrEE Group Schema",
+    "type": "object",
+    "$ref": "refs/base.json",
+    "properties": {
+      "attributes": {
+        "type": "object",
+        "properties": {
+            "content": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "content"
+          ]
+      }
+    },
+    "examples": 
+    [
+      {
+        "attributes": {
+            "content": "B11,B12,C11,C12"
+        },
+        "category": "group",
+        "description": [],
+        "domain": "DEMO",
+        "name": "g_roup-3",
+        "parentId": "xxxxdaf6618082206682xxxx"
+      }
+    ]
+}

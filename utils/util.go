@@ -10,6 +10,7 @@ import (
 	"net/http"
 	"net/url"
 	"os"
+	"strings"
 	"time"
 )
 
@@ -27,7 +28,7 @@ const (
 	DEVICE
 	AC
 	CABINET
-	CORIDOR
+	CORRIDOR
 	PWRPNL
 	SENSOR
 	GROUP
@@ -93,7 +94,8 @@ func ParamsParse(link *url.URL, objType int) map[string]interface{} {
 			objType != BLDGTMPL { //Non template objects
 			switch key {
 			case "id", "name", "category", "parentID",
-				"description", "domain", "parentid", "parentId":
+				"description", "domain", "parentid", "parentId",
+				"hierarchyName", "createdDate", "lastUpdated":
 				values[key] = q.Get(key)
 			default:
 				values["attributes."+key] = q.Get(key)
@@ -145,7 +147,7 @@ func EntityToString(entity int) string {
 		return "cabinet"
 	case GROUP:
 		return "group"
-	case CORIDOR:
+	case CORRIDOR:
 		return "corridor"
 	case SENSOR:
 		return "sensor"
@@ -187,7 +189,7 @@ func EntityStrToInt(entity string) int {
 	case "group":
 		return GROUP
 	case "corridor":
-		return CORIDOR
+		return CORRIDOR
 	case "sensor":
 		return SENSOR
 	default:
@@ -195,9 +197,32 @@ func EntityStrToInt(entity string) int {
 	}
 }
 
+func HierachyNameToEntity(name string) []int {
+	resp := []int{STRAYDEV} // it can always be a stray
+	switch strings.Count(name, ".") {
+	case 0:
+		resp = append(resp, TENANT)
+	case 1:
+		resp = append(resp, SITE)
+	case 2:
+		resp = append(resp, BLDG)
+	case 3:
+		resp = append(resp, ROOM)
+	case 4:
+		resp = append(resp, RACK, GROUP, AC, CORRIDOR, PWRPNL, CABINET)
+	case 5:
+		resp = append(resp, DEVICE, GROUP)
+	default:
+		resp = append(resp, DEVICE)
+	}
+
+	return resp
+
+}
+
 func GetParentOfEntityByInt(entity int) int {
 	switch entity {
-	case AC, PWRPNL, CABINET, CORIDOR:
+	case AC, PWRPNL, CABINET, CORRIDOR:
 		return ROOM
 	case SENSOR:
 		return -2

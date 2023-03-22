@@ -1,0 +1,74 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "title": "OGrEE Building Schema",
+    "type": "object",
+    "$ref": "refs/base.json",
+    "properties": {
+        "attributes": {
+            "type": "object",
+            "title": "The attributes Schema",
+            "required": [
+                "height",
+                "heightUnit",
+                "posXY",
+                "posXYUnit",
+                "size",
+                "sizeUnit",
+                "rotation"
+            ],
+            "properties": {
+                "height": {
+                    "type": "string",
+                    "$ref": "refs/types.json#/definitions/float"
+                },
+                "heightUnit": {
+                    "type": "string",
+                    "$ref": "refs/types.json#/definitions/metricImperialUnit"
+                },
+                "posXY": {
+                    "type": "string",
+                    "$ref": "refs/types.json#/definitions/vector2"
+                },
+                "posXYUnit": {
+                    "type": "string",
+                    "$ref": "refs/types.json#/definitions/metricImperialUnit"
+                },
+                "size": {
+                    "type": "string",
+                    "$ref": "refs/types.json#/definitions/vector2"
+                },
+                "sizeUnit": {
+                    "type": "string",
+                    "$ref": "refs/types.json#/definitions/metricImperialUnit"
+                },
+                "rotation": {
+                    "type": "string",
+                    "pattern": "^-?([0-9]*[.])?[0-9]+$"
+                  },
+                "template": {
+                    "type": "string"
+                }
+            }
+        }
+    },
+    "examples": [
+        {
+            "attributes": {
+                "height": "5",
+                "heightUnit": "m",
+                "posXY": "{\"x\":50 ,\"y\":0}",
+                "posXYUnit": "m",
+                "size": "{\"x\":49 ,\"y\":46.6}",
+                "sizeUnit": "m",
+                "rotation": "30.5"
+            },
+            "category": "building",
+            "description": [
+                "building"
+            ],
+            "domain": "DEMO",
+            "name": "B1",
+            "parentId": "xxxx592b1ac5f3b6f313xxxx"
+        }
+    ]
+}

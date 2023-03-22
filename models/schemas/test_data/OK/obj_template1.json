@@ -1,0 +1,547 @@
+{
+    "slug": "ibm-ns1200",
+    "description": "NeXtScale ns1200",
+    "category": "device",
+    "sizeWDHmm": [
+        447,
+        914.5,
+        263.3
+    ],
+    "fbxModel": "",
+    "attributes": {
+        "type": "chassis",
+        "vendor": "IBM",
+        "model": "5456-HC1"
+    },
+    "colors": [],
+    "components": [
+        {
+            "location": "midplane",
+            "type": "chassis",
+            "elemOrient": "",
+            "elemPos": [
+                0,
+                230,
+                0
+            ],
+            "elemSize": [
+                450,
+                30,
+                270
+            ],
+            "labelPos": "top",
+            "color": "FFFFFF",
+            "attributes": {}
+        },
+        {
+            "location": "fpc",
+            "type": "mgmt",
+            "elemOrient": "",
+            "elemPos": [
+                180,
+                0,
+                90
+            ],
+            "elemSize": [
+                40,
+                230,
+                90
+            ],
+            "labelPos": "rear",
+            "color": "FF1493"
+        },
+        {
+            "location": "psu01",
+            "type": "power",
+            "elemOrient": "",
+            "elemPos": [
+                225,
+                0,
+                0
+            ],
+            "elemSize": [
+                45,
+                230,
+                90
+            ],
+            "labelPos": "rear",
+            "color": "EE82EE"
+        },
+        {
+            "location": "fan01",
+            "type": "fan",
+            "elemOrient": "",
+            "elemPos": [
+                360,
+                0,
+                0
+            ],
+            "elemSize": [
+                90,
+                115,
+                90
+            ],
+            "labelPos": "rear",
+            "color": "66CDAA"
+        },
+        {
+            "location": "psu06",
+            "type": "power",
+            "elemOrient": "",
+            "elemPos": [
+                0,
+                0,
+                180
+            ],
+            "elemSize": [
+                44,
+                230,
+                90
+            ],
+            "labelPos": "rear",
+            "color": "EE82EE"
+        },
+        {
+            "location": "fan10",
+            "type": "fan",
+            "elemOrient": "",
+            "elemPos": [
+                46,
+                0,
+                180
+            ],
+            "elemSize": [
+                88,
+                115,
+                90
+            ],
+            "labelPos": "rear",
+            "color": "66CDAA"
+        },
+        {
+            "location": "fan09",
+            "type": "fan",
+            "elemOrient": "",
+            "elemPos": [
+                135,
+                0,
+                180
+            ],
+            "elemSize": [
+                88,
+                115,
+                90
+            ],
+            "labelPos": "rear",
+            "color": "00ffAA"
+        },
+        {
+            "location": "psu05",
+            "type": "power",
+            "elemOrient": "",
+            "elemPos": [
+                225,
+                0,
+                180
+            ],
+            "elemSize": [
+                44,
+                230,
+                90
+            ],
+            "labelPos": "rear",
+            "color": "EE82EE"
+        },
+        {
+            "location": "fan08",
+            "type": "fan",
+            "elemOrient": "",
+            "elemPos": [
+                270,
+                0,
+                180
+            ],
+            "elemSize": [
+                88,
+                115,
+                90
+            ],
+            "labelPos": "rear",
+            "color": "66CDAA"
+        },
+        {
+            "location": "fan07",
+            "type": "fan",
+            "elemOrient": "",
+            "elemPos": [
+                360,
+                0,
+                180
+            ],
+            "elemSize": [
+                88,
+                115,
+                90
+            ],
+            "labelPos": "rear",
+            "color": "66CDAA"
+        },
+        {
+            "location": "psu04",
+            "type": "power",
+            "elemOrient": "",
+            "elemPos": [
+                0,
+                0,
+                90
+            ],
+            "elemSize": [
+                45,
+                230,
+                90
+            ],
+            "labelPos": "rear",
+            "color": "EE82EE"
+        },
+        {
+            "location": "fan06",
+            "type": "fan",
+            "elemOrient": "",
+            "elemPos": [
+                45,
+                0,
+                90
+            ],
+            "elemSize": [
+                90,
+                115,
+                90
+            ],
+            "labelPos": "rear",
+            "color": "66CDAA"
+        },
+        {
+            "location": "psu03",
+            "type": "power",
+            "elemOrient": "",
+            "elemPos": [
+                225,
+                0,
+                90
+            ],
+            "elemSize": [
+                45,
+                230,
+                90
+            ],
+            "labelPos": "rear",
+            "color": "EE82EE"
+        },
+        {
+            "location": "fan05",
+            "type": "fan",
+            "elemOrient": "",
+            "elemPos": [
+                270,
+                0,
+                90
+            ],
+            "elemSize": [
+                90,
+                115,
+                90
+            ],
+            "labelPos": "rear",
+            "color": "66CDAA"
+        },
+        {
+            "location": "psu02",
+            "type": "power",
+            "elemOrient": "",
+            "elemPos": [
+                0,
+                0,
+                0
+            ],
+            "elemSize": [
+                45,
+                230,
+                90
+            ],
+            "labelPos": "rear",
+            "color": "EE82EE"
+        },
+        {
+            "location": "fan04",
+            "type": "fan",
+            "elemOrient": "",
+            "elemPos": [
+                45,
+                0,
+                0
+            ],
+            "elemSize": [
+                90,
+                115,
+                90
+            ],
+            "labelPos": "rear",
+            "color": "66CDAA"
+        },
+        {
+            "location": "fan03",
+            "type": "fan",
+            "elemOrient": "",
+            "elemPos": [
+                135,
+                0,
+                0
+            ],
+            "elemSize": [
+                90,
+                115,
+                90
+            ],
+            "labelPos": "rear",
+            "color": "66CDAA"
+        },
+        {
+            "location": "fan02",
+            "type": "fan",
+            "elemOrient": "",
+            "elemPos": [
+                270,
+                0,
+                0
+            ],
+            "elemSize": [
+                90,
+                115,
+                90
+            ],
+            "labelPos": "rear",
+            "color": "66CDAA"
+        }
+    ],
+    "slots": [
+        {
+            "location": "blade01",
+            "type": "blade",
+            "elemOrient": "",
+            "elemPos": [
+                225,
+                260,
+                0
+            ],
+            "elemSize": [
+                225,
+                660,
+                45
+            ],
+            "labelPos": "front",
+            "color": ""
+        },
+        {
+            "location": "blade02",
+            "type": "blade",
+            "elemOrient": "",
+            "elemPos": [
+                0,
+                260,
+                0
+            ],
+            "elemSize": [
+                225,
+                660,
+                45
+            ],
+            "labelPos": "front",
+            "color": ""
+        },
+        {
+            "location": "blade03",
+            "type": "blade",
+            "elemOrient": "",
+            "elemPos": [
+                225,
+                260,
+                45
+            ],
+            "elemSize": [
+                225,
+                660,
+                45
+            ],
+            "labelPos": "front",
+            "color": ""
+        },
+        {
+            "location": "blade04",
+            "type": "blade",
+            "elemOrient": "",
+            "elemPos": [
+                0,
+                260,
+                45
+            ],
+            "elemSize": [
+                225,
+                660,
+                45
+            ],
+            "labelPos": "front",
+            "color": ""
+        },
+        {
+            "location": "blade05",
+            "type": "blade",
+            "elemOrient": "",
+            "elemPos": [
+                225,
+                260,
+                90
+            ],
+            "elemSize": [
+                225,
+                660,
+                45
+            ],
+            "labelPos": "front",
+            "color": ""
+        },
+        {
+            "location": "blade06",
+            "type": "blade",
+            "elemOrient": "",
+            "elemPos": [
+                0,
+                260,
+                90
+            ],
+            "elemSize": [
+                225,
+                660,
+                45
+            ],
+            "labelPos": "front",
+            "color": ""
+        },
+        {
+            "location": "blade07",
+            "type": "blade",
+            "elemOrient": "",
+            "elemPos": [
+                225,
+                260,
+                135
+            ],
+            "elemSize": [
+                225,
+                660,
+                45
+            ],
+            "labelPos": "front",
+            "color": ""
+        },
+        {
+            "location": "blade08",
+            "type": "blade",
+            "elemOrient": "",
+            "elemPos": [
+                0,
+                260,
+                135
+            ],
+            "elemSize": [
+                225,
+                660,
+                45
+            ],
+            "labelPos": "front",
+            "color": ""
+        },
+        {
+            "location": "blade09",
+            "type": "blade",
+            "elemOrient": "",
+            "elemPos": [
+                225,
+                260,
+                180
+            ],
+            "elemSize": [
+                225,
+                660,
+                45
+            ],
+            "labelPos": "front",
+            "color": ""
+        },
+        {
+            "location": "blade10",
+            "type": "blade",
+            "elemOrient": "",
+            "elemPos": [
+                0,
+                260,
+                180
+            ],
+            "elemSize": [
+                225,
+                660,
+                45
+            ],
+            "labelPos": "front",
+            "color": ""
+        },
+        {
+            "location": "blade11",
+            "type": "blade",
+            "elemOrient": "",
+            "elemPos": [
+                225,
+                260,
+                225
+            ],
+            "elemSize": [
+                225,
+                660,
+                45
+            ],
+            "labelPos": "front",
+            "color": ""
+        },
+        {
+            "location": "blade12",
+            "type": "blade",
+            "elemOrient": "",
+            "elemPos": [
+                0,
+                260,
+                225
+            ],
+            "elemSize": [
+                225,
+                660,
+                45
+            ],
+            "labelPos": "front",
+            "color": ""
+        }
+    ],
+    "sensors": [
+        {
+            "location": "sensor01",
+            "elemPos": [
+                "center",
+                "center",
+                "center"
+            ],
+            "elemSize": [
+                20,
+                20,
+                20
+            ]
+        }
+    ]
+}

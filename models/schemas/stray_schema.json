@@ -1,0 +1,65 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "title": "OGrEE Stray Device Schema",
+    "type": "object",
+    "properties": {
+      "description": {
+        "type": "array",
+        "items": {
+          "type": "string"
+        }
+      },
+      "category": {
+        "type": "string"
+      },
+      "domain": {
+        "type": "string"
+      },
+      "createdDate": {
+      },
+      "lastUpdated": {
+      },
+      "name": {
+        "type": "string"
+      },
+      "id": {
+        "type": "string"
+      },
+      "attributes": {
+        "type": "object"
+      }
+    },
+    "additionalProperties":  true,
+    "required": [
+      "category",
+      "description",
+      "domain",
+      "name",
+      "attributes"
+    ],
+      "examples": [{
+        "name": "StrayDevice1",
+        "category": "device",
+        "description": [
+            "-3/-5\\nA0-Z9"
+        ],
+        "domain": "SomeDomain",
+        "attributes": {
+            "posXY": "{\"x\":10.0,\"y\":0.0}",
+            "posXYUnit": "tile",
+            "posZ": "{\"x\":10.0,\"y\":0.0}",
+            "posZUnit": "tile",
+            "size": "{\"x\":60.0,\"y\":120.0}",
+            "sizeUnit": "cm",
+            "height": "42",
+            "heightUnit": "U",
+            "heightU": "U",
+            "template": "Some template",
+            "orientation": "front",
+            "vendor": "someVendor",
+            "type": "someType",
+            "model": "someModel",
+            "serial": "someSerial"
+        }
+    }]
+  }

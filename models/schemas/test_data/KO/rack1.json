@@ -1,0 +1,17 @@
+{
+    "attributes": {
+      "height": "47",
+      "heightUnit": "u",
+      "orientation": "rear",
+      "posXYUnit": "m",
+      "posXYZ": "{\"x\":4.6666666666667 ,\"y\": -2}",
+      "size": "{\"x\":80 ,\"y\":100.532442}",
+      "sizeUnit": "m",
+      "template": ""
+    },
+    "category": "rack",
+    "description": ["ERROR, NOT VALID JSON EXAMPLE"],
+    "domain": "DEMO",
+    "name": "RackA",
+    "parentId": "xxxx5a101ac5f3b6f313xxxx"
+}

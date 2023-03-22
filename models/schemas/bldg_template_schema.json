@@ -1,0 +1,62 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "title": "OGrEE Building Template Schema",
+    "type": "object",
+    "properties": {
+        "slug": {
+            "type": "string",
+            "pattern": "^[a-zA-Z0-9-]+$"
+        },
+        "category": {
+            "type": "string",
+            "pattern": "building"
+        },
+        "center": {
+            "type": "array",
+            "items": {
+                "type": "number"
+            },
+            "minItems": 2,
+            "maxItems": 2
+        },
+        "sizeWDHm": {
+            "type": "array",
+            "items": {
+                "type": "number"
+            },
+            "minItems": 3,
+            "maxItems": 3
+        },
+        "vertices": {
+            "type": "array",
+            "items": {
+                "type": "array",
+                "items": {
+                    "type": "number"
+                },
+                "minItems": 2,
+                "maxItems": 2
+            }
+        }
+    },
+    "required": [
+        "slug",
+        "category",
+        "sizeWDHm",
+        "vertices",
+        "center"
+    ],
+    "examples": [
+        {
+            "slug": "demo-b1",
+            "category": "building",
+            "sizeWDHm": [
+                42,
+                104,
+                5
+            ],
+            "vertices": [],
+            "center":[0,45]
+        }    
+    ]
+}
