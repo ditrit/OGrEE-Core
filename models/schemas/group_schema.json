@@ -1,7 +1,6 @@
 {
     "$schema": "https://json-schema.org/draft/2020-12/schema",
-    "title": "OGrEE Base Schema",
-    "description": "This schema applies to: AC, Cabinet, Panel",
+    "title": "OGrEE Group Schema",
     "type": "object",
     "$ref": "refs/base.json",
     "properties": {
@@ -26,7 +25,7 @@
         "category": "group",
         "description": [],
         "domain": "DEMO",
-        "name": "group3",
+        "name": "g_roup-3",
         "parentId": "xxxxdaf6618082206682xxxx"
       }
     ]

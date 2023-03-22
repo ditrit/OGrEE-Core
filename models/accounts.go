@@ -54,7 +54,7 @@ func (account *Account) Validate() (map[string]interface{}, bool) {
 func (account *Account) Create() (map[string]interface{}, string) {
 
 	if resp, ok := account.Validate(); !ok {
-		return resp, ""
+		return resp, "exists"
 	}
 
 	hashedPassword, _ := bcrypt.GenerateFromPassword(
