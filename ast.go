@@ -912,7 +912,7 @@ func (n *hierarchyNode) execute() (interface{}, error) {
 
 type createDomainNode struct {
 	path  node
-	attrs map[string]interface{}
+	color node
 }
 
 func (n *createDomainNode) execute() (interface{}, error) {
@@ -924,21 +924,39 @@ func (n *createDomainNode) execute() (interface{}, error) {
 	if !ok {
 		return nil, fmt.Errorf("Path should be a string")
 	}
-
-	colorInf, err := n.attrs["color"].(node).execute()
+	colorInf, err := n.color.execute()
 	if err != nil {
 		return nil, err
 	}
-
+	attr := map[string]any{}
 	//Assert the color is valid
 	if color, ok := AssertColor(colorInf); !ok {
 		return nil, fmt.Errorf("Please provide a valid 6 digit Hex value for the color")
 	} else {
-		n.attrs["color"] = color
+		attr["color"] = color
 	}
-	attributes := map[string]interface{}{"attributes": n.attrs}
-	err = cmd.GetOCLIAtrributes(path, cmd.DOMAIN, attributes)
+	err = cmd.GetOCLIAtrributes(path, cmd.DOMAIN, map[string]any{"attributes": attr})
 	return nil, err
+}
+
+type createSiteNode struct {
+	path node
+}
+
+func (n *createSiteNode) execute() (interface{}, error) {
+	pathVal, err := n.path.execute()
+	if err != nil {
+		return nil, err
+	}
+	path, ok := pathVal.(string)
+	if !ok {
+		return nil, fmt.Errorf("path should be a string")
+	}
+	err = cmd.GetOCLIAtrributes(path, cmd.SITE, map[string]any{})
+	if err != nil {
+		return nil, err
+	}
+	return nil, nil
 }
 
 type createBuildingNode struct {
