@@ -18,7 +18,6 @@ Verbose = "ERROR"
 APIURL = "http://127.0.0.1:3001"
 UnityURL = "127.0.0.1:5500"
 UnityTimeout = "10ms"
-ConfigPath = "./config.toml"
 HistPath = "./.history"
 Script = ""
 Drawable = ["all"]
