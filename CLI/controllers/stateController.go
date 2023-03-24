@@ -25,6 +25,7 @@ type ShellState struct {
 	ConfigPath       string //Holds file path of '.env'
 	HistoryFilePath  string //Holds file path of '.history'
 	UnityClientURL   string
+	UserEmail        string
 	APIURL           string
 	APIKEY           string
 	UnityClientAvail bool  //For deciding to message unity or not

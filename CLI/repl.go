@@ -50,6 +50,7 @@ func Start(conf *config.Config) {
 	c.InitTimeout(conf.UnityTimeout)       //Set the Unity Timeout
 	c.InitURLs(conf.APIURL, conf.UnityURL) //Set the URLs
 	conf.User, conf.APIKEY = c.Login(conf.User, conf.APIKEY)
+	c.InitEmail(conf.User) //Set the User email
 	c.InitKey(conf.APIKEY) //Set the API Key
 	c.InitState(conf)
 

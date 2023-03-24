@@ -827,7 +827,7 @@ func LSOG() {
 	fmt.Println("OGREE Shell Information")
 	fmt.Println("********************************************")
 
-	fmt.Println("USER EMAIL:", GetEmail())
+	fmt.Println("USER EMAIL:", State.UserEmail)
 	fmt.Println("API URL:", State.APIURL+"/api/")
 	fmt.Println("UNITY URL:", State.UnityClientURL)
 	fmt.Println("BUILD DATE:", BuildTime)
