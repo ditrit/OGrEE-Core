@@ -670,8 +670,6 @@ func (n *lsObjNode) execute() (interface{}, error) {
 	if n.recursive {
 		objects = cmd.LSOBJECTRecursive(path, n.entity)
 	} else {
-		println("DEBUG REACHED HERE")
-		println("DEBUG ENTITY:", n.entity)
 		objects = cmd.LSOBJECT(path, n.entity)
 	}
 	if n.sort != "" {
@@ -926,12 +924,10 @@ func (n *createDomainNode) execute() (interface{}, error) {
 	if !ok {
 		return nil, fmt.Errorf("Path should be a string")
 	}
-
-	colorInf, err := n.color.(node).execute()
+	colorInf, err := n.color.execute()
 	if err != nil {
 		return nil, err
 	}
-
 	//Assert the color is valid
 	var color string
 	if color, ok = AssertColor(colorInf); !ok {

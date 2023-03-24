@@ -213,25 +213,6 @@ func SiteOCLICompleter(path string) func(string) []string {
 	}
 }
 
-func TenantSiteOCLICompleter(path string) func(string) []string {
-	return func(line string) []string {
-
-		//Trim everything up to and including the ':'
-		idx := strings.Index(line, ":")
-		if idx == -1 {
-			return nil
-		}
-
-		fn := ListEntities("")
-		ans := fn(line[idx:])
-		if !strings.Contains(line, "@") {
-			ans = append(ans, " @ ")
-		}
-
-		return ans
-	}
-}
-
 func BldgOCLICompleter(path string) func(string) []string {
 	return func(line string) []string {
 
