@@ -11,9 +11,6 @@ The value is automatically set upon startup and depends on whether or not the sh
 - Filter   
 Indicates to the shell whether or not to inform the Unity viewer of certain attributes of object updates.     
 This variable is set to false by default and must be enabled by the user manually.
-
-- Analyser
-Tells the system to use a Static Analyser before executing a script. This will catch syntax errors in the script before execution. This is set to 'true' by default. 
  
 
 
@@ -22,4 +19,3 @@ EXAMPLE
    env
    env Unity = true
    env Filter = false
-   env Analyser = false

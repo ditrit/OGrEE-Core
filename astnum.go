@@ -7,47 +7,30 @@ import (
 	"strconv"
 )
 
-type numNode interface {
-	getNum() (float64, error)
-	execute() (interface{}, error)
-}
-
-type floatNode interface {
-	getFloat() (float64, error)
-	execute() (interface{}, error)
-}
-
 type floatLeaf struct {
 	val float64
 }
 
-func (l floatLeaf) getFloat() (float64, error) {
-	return l.val, nil
-}
 func (l floatLeaf) execute() (interface{}, error) {
 	return l.val, nil
-}
-
-func (l floatLeaf) getNum() (float64, error) {
-	return l.val, nil
-}
-
-type intNode interface {
-	getInt() (int, error)
 }
 
 type intLeaf struct {
 	val int
 }
 
-func (l intLeaf) getInt() (int, error) {
-	return l.val, nil
-}
 func (l intLeaf) execute() (interface{}, error) {
 	return l.val, nil
 }
-func (l intLeaf) getNum() (float64, error) {
-	return float64(l.val), nil
+
+func numToString(num any) string {
+	switch v := num.(type) {
+	case int:
+		return strconv.Itoa(v)
+	case float64:
+		return strconv.FormatFloat(v, 'f', -1, 64)
+	}
+	panic("non numeric type to convert to string")
 }
 
 type arithNode struct {
@@ -71,117 +54,90 @@ func (a *arithNode) execute() (interface{}, error) {
 	if cmd.State.DebugLvl >= 3 {
 		println("Right: ", rv)
 	}
-	switch a.op {
-	case "+":
-		if checkTypesAreSame(lv, rv) == true {
-			switch lv.(type) {
-			case int:
-				return lv.(int) + rv.(int), nil
-			case float64:
-				return lv.(float64) + rv.(float64), nil
-			case float32:
-				return lv.(float64) + rv.(float64), nil
-			case string:
-				return lv.(string) + rv.(string), nil
-			}
-		} else if checkTypeAreNumeric(lv, rv) == true {
-			if _, ok := lv.(float64); ok {
-				return lv.(float64) + float64(rv.(int)), nil
-			} else {
-				return rv.(float64) + float64(lv.(int)), nil
-			}
-		} else { //we have string and numeric type
-			//this code occurs when assigning and not
-			//when using + while printing
 
-			switch lv.(type) {
-			case int:
-				return strconv.Itoa(lv.(int)) + rv.(string), nil
-			case float64:
-				return strconv.FormatFloat(lv.(float64), 'f', -1, 64) + rv.(string), nil
-			}
+	leftIntVal, leftInt := lv.(int)
+	rightIntVal, rightInt := rv.(int)
+	leftFloatVal, leftFloat := lv.(float64)
+	rightFloatVal, rightFloat := rv.(float64)
+	leftStringVal, leftString := lv.(string)
+	rightStringVal, rightString := rv.(string)
 
-			switch rv.(type) {
-			case int:
-				return lv.(string) + strconv.Itoa(rv.(int)), nil
-			case float64:
-				return lv.(string) + strconv.FormatFloat(rv.(float64), 'f', -1, 64), nil
+	if leftInt && rightInt {
+		switch a.op {
+		case "+":
+			return leftIntVal + rightIntVal, nil
+		case "-":
+			return leftIntVal - rightIntVal, nil
+		case "*":
+			return leftIntVal * rightIntVal, nil
+		case "/":
+			if rightIntVal == 0 {
+				return nil, fmt.Errorf("cannot divide by 0")
 			}
+			return float64(leftIntVal) / float64(rightIntVal), nil
+		case "%":
+			return leftIntVal % rightIntVal, nil
+		default:
+			return nil, fmt.Errorf("invalid operator for integer operands")
 		}
-		//Otherwise the types are incompatible so return nil
-		//TODO:see if team would want to have bool support
-		return nil, fmt.Errorf("Incompatible types")
-
-	case "-":
-		if checkTypesAreSame(lv, rv) == true {
-			switch lv.(type) {
-			case int:
-				return lv.(int) - rv.(int), nil
-			case float64:
-				return lv.(float64) - rv.(float64), nil
-			case float32:
-				return lv.(float64) - rv.(float64), nil
-			}
-		} else if checkTypeAreNumeric(lv, rv) == true {
-			if _, ok := lv.(float64); ok {
-				return lv.(float64) - float64(rv.(int)), nil
-			} else {
-				return float64(lv.(int)) - rv.(float64), nil
-			}
+	}
+	if (leftInt || leftFloat) && (rightInt || rightFloat) {
+		if leftInt {
+			leftFloatVal = float64(leftIntVal)
 		}
-
-	case "*":
-		if checkTypesAreSame(lv, rv) == true {
-			switch lv.(type) {
-			case int:
-				return lv.(int) * rv.(int), nil
-			case float64:
-				return lv.(float64) * rv.(float64), nil
-			case float32:
-				return lv.(float64) * rv.(float64), nil
-			}
-		} else if checkTypeAreNumeric(lv, rv) == true {
-			if _, ok := lv.(float64); ok {
-				return lv.(float64) * float64(rv.(int)), nil
-			} else {
-				return float64(lv.(int)) * rv.(float64), nil
-			}
+		if rightInt {
+			rightFloatVal = float64(rightIntVal)
 		}
-	case "%":
-		if checkTypesAreSame(lv, rv) == true {
-			switch lv.(type) {
-			case int:
-				return lv.(int) % rv.(int), nil
-			case float64:
-				return int(lv.(float64)) % int(rv.(float64)), nil
-			case float32:
-				return int(lv.(float32)) % int(rv.(float32)), nil
+		switch a.op {
+		case "+":
+			return leftFloatVal + rightFloatVal, nil
+		case "-":
+			return leftFloatVal - rightFloatVal, nil
+		case "*":
+			return leftFloatVal * rightFloatVal, nil
+		case "/":
+			if rightFloatVal == 0. {
+				return nil, fmt.Errorf("cannot divide by 0")
 			}
-		} else if checkTypeAreNumeric(lv, rv) == true {
-			if _, ok := lv.(float64); ok {
-				return int(lv.(float64)) % rv.(int), nil
-			} else {
-				return lv.(int) % int(rv.(float64)), nil
-			}
+			return leftFloatVal / rightFloatVal, nil
+		default:
+			return nil, fmt.Errorf("invalid operator for float operands")
 		}
-	case "/":
-		if checkTypesAreSame(lv, rv) == true {
-			switch lv.(type) {
-			case int:
-				return lv.(int) / rv.(int), nil
-			case float64:
-				return lv.(float64) / rv.(float64), nil
-			case float32:
-				return lv.(float64) / rv.(float64), nil
-			}
-		} else if checkTypeAreNumeric(lv, rv) == true {
-			if _, ok := lv.(float64); ok {
-				return lv.(float64) / float64(rv.(int)), nil
-			} else {
-				return float64(lv.(int)) / rv.(float64), nil
-			}
+	}
+	if leftString || rightString {
+		if !leftString && (leftFloat || leftInt) {
+			leftStringVal = numToString(lv)
+		}
+		if !rightString && (rightFloat || rightInt) {
+			rightStringVal = numToString(rv)
+		}
+		switch a.op {
+		case "+":
+			return leftStringVal + rightStringVal, nil
+		default:
+			return nil, fmt.Errorf("invalid operator for string operands")
 		}
 	}
 	l.GetWarningLogger().Println("Invalid arithmetic operation attempted")
-	return nil, fmt.Errorf("Invalid arithmetic operation attempted")
+	return nil, fmt.Errorf("invalid arithmetic operation attempted")
+}
+
+type negateNode struct {
+	val node
+}
+
+func (n *negateNode) execute() (interface{}, error) {
+	v, err := n.val.execute()
+	if err != nil {
+		return nil, err
+	}
+	intVal, isInt := v.(int)
+	if isInt {
+		return -intVal, nil
+	}
+	floatVal, isFloat := v.(float64)
+	if isFloat {
+		return -floatVal, nil
+	}
+	return nil, fmt.Errorf("cannot negate non numeric value")
 }

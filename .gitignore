@@ -4,6 +4,9 @@ interpreter/main
 interpreter/*.go
 interpreter/y
 .resources/
+.vscode/
+cli
+cli.exe
 main
 main*
 log.txt
@@ -17,3 +20,4 @@ y.output
 .env
 y.go
 lexer.nn.go
+*.ocli

@@ -20,29 +20,26 @@ import (
 	"github.com/joho/godotenv"
 )
 
-func InterpretLine(str *string) bool {
-	lex := NewLexer(strings.NewReader(*str))
-	result := yyParse(lex)
-	if result != 0 {
-		return false
+func InterpretLine(str string) {
+	root, parseErr := Parse(str)
+	if parseErr != nil {
+		fmt.Println(parseErr.Error())
+		return
 	}
-	if root != nil {
-		_, err := root.execute()
-		if err != nil {
-			if strings.Contains(err.Error(), "duplicate") {
-				l.GetWarningLogger().Println(err.Error())
-				if c.State.DebugLvl > c.NONE {
-					fmt.Println(err.Error())
-				}
-				return true
+	if root == nil {
+		return
+	}
+	_, err := root.execute()
+	if err != nil {
+		l.GetErrorLogger().Println(err.Error())
+		if c.State.DebugLvl > c.NONE {
+			if traceErr, ok := err.(*stackTraceError); ok {
+				fmt.Println(traceErr.Error())
 			} else {
-				l.GetErrorLogger().Println(err.Error())
 				fmt.Println("Error : " + err.Error())
-				return false
 			}
 		}
 	}
-	return true
 }
 
 // Init the Shell
@@ -66,7 +63,7 @@ func Start(flags *Flags) {
 	c.InitKey(flags.APIKEY, env)                 //Set the API Key
 	user, _ := c.Login(env)
 
-	c.InitState(flags.analyser, env)
+	c.InitState(env)
 
 	rl, err := readline.NewEx(&readline.Config{
 		Prompt: "\u001b[1m\u001b[32m" + user + "@" + c.State.Customer + ":" +
@@ -91,8 +88,6 @@ func Start(flags *Flags) {
 	if flags.script != "" {
 		if strings.Contains(flags.script, ".ocli") {
 			script := flags.script
-			c.State.ScriptCalled = true
-			c.State.ScriptPath = script
 			LoadFile(script)
 			os.Exit(0)
 		}
@@ -105,19 +100,11 @@ func Start(flags *Flags) {
 // The loop of the program
 func Repl(rl *readline.Instance, user string) {
 	for {
-		if c.State.ScriptCalled == true {
-			//Load the path and
-			//call interpret line
-			LoadFile(c.State.ScriptPath)
-			c.State.ScriptCalled = false
-		} else {
-			line, err := rl.Readline()
-			if err != nil { // io.EOF
-				break
-			}
-			InterpretLine(&line)
+		line, err := rl.Readline()
+		if err != nil { // io.EOF
+			break
 		}
-
+		InterpretLine(line)
 		//c.UpdateSessionState(&line)
 		//Update Prompt
 		rl.SetPrompt("\u001b[1m\u001b[32m" + user + "@" + c.State.Customer + ":" +
