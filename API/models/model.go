@@ -432,7 +432,7 @@ func updateOldObjWithPatch(old map[string]interface{}, patch map[string]interfac
 	for k, v := range patch {
 		switch child := v.(type) {
 		case map[string]interface{}:
-			switch oldChild := v.(type) {
+			switch oldChild := old[k].(type) {
 			case map[string]interface{}:
 				updateOldObjWithPatch(oldChild, child)
 			default:
