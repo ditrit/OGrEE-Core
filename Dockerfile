@@ -31,5 +31,5 @@ WORKDIR /home
 
 ADD . /home/
 COPY ./resources/test/ /home/
-COPY ./.env /home/
 COPY --from=builder /home/main /home
+ENTRYPOINT [ "/home/main" ]
