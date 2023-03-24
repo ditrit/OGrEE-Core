@@ -8,6 +8,10 @@ import (
 	flag "github.com/spf13/pflag"
 )
 
+type globalConfig struct {
+	Conf Config `toml:"OGrEE-CLI"`
+}
+
 type Config struct {
 	Verbose      string
 	APIURL       string
@@ -30,7 +34,7 @@ func defaultConfig() Config {
 		APIURL:       "",
 		UnityURL:     "",
 		UnityTimeout: "10ms",
-		ConfigPath:   "./config.toml",
+		ConfigPath:   "../config.toml",
 		HistPath:     "./.history",
 		Script:       "",
 		Drawable:     []string{"all"},
@@ -43,18 +47,20 @@ func defaultConfig() Config {
 }
 
 func ReadConfig() *Config {
-	conf := defaultConfig()
+	globalConf := globalConfig{
+		Conf: defaultConfig(),
+	}
+	conf := &globalConf.Conf
 	flag.StringVarP(&conf.ConfigPath, "conf_path", "c", conf.ConfigPath,
 		"Indicate the location of the Shell's config file")
 	flag.Parse()
 	configBytes, err := os.ReadFile(conf.ConfigPath)
 	if err != nil {
 		fmt.Println("Cannot read config file", conf.ConfigPath, ":", err.Error())
-		fmt.Println("Please ensure that you have a properly formatted config file saved as 'config.toml' in the current directory")
-		fmt.Println("\n\nFor more details please refer to: https://ogree.ditrit.io/htmls/programming.html")
-		fmt.Println("View an environment file example here: https://ogree.ditrit.io/htmls/clienv.html")
+		fmt.Println("Please ensure that you have a properly formatted config file saved as 'config.toml' in the parent directory")
+		fmt.Println("For more details please refer to: https://github.com/ditrit/OGrEE-Core/blob/main/README.md")
 	}
-	_, err = toml.Decode(string(configBytes), &conf)
+	_, err = toml.Decode(string(configBytes), &globalConf)
 	if err != nil {
 		println("Error reading config :", err.Error())
 	}
@@ -70,17 +76,5 @@ func ReadConfig() *Config {
 	flag.StringVarP(&conf.Script, "file", "f", conf.Script, "Launch the shell as an interpreter "+
 		" by only executing an OCLI script file")
 	flag.Parse()
-	return &conf
-}
-
-func UpdateConfigFile(conf *Config) error {
-	configFile, err := os.Create(conf.ConfigPath)
-	if err != nil {
-		return fmt.Errorf("cannot open config file to edit user and key")
-	}
-	err = toml.NewEncoder(configFile).Encode(conf)
-	if err != nil {
-		panic("invalid config : " + err.Error())
-	}
-	return nil
+	return conf
 }

@@ -388,9 +388,10 @@ func CheckKeyIsValid(key string) bool {
 }
 
 func Login(user string, key string) (string, string) {
-	if user == "" || key == "" {
+	if key == "" {
 		l.GetInfoLogger().Println("Key not found, going to generate..")
 		user, key = CreateCredentials()
+		fmt.Printf("Here is your api key, you can save it to your config.toml file :\n%s\n", key)
 	}
 	if !CheckKeyIsValid(key) {
 		if State.DebugLvl > 0 {

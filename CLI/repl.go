@@ -51,14 +51,6 @@ func Start(conf *config.Config) {
 	c.InitURLs(conf.APIURL, conf.UnityURL) //Set the URLs
 	conf.User, conf.APIKEY = c.Login(conf.User, conf.APIKEY)
 	c.InitKey(conf.APIKEY) //Set the API Key
-	err := config.UpdateConfigFile(conf)
-	if err != nil {
-		if c.State.DebugLvl > 0 {
-			println(err.Error())
-		}
-		l.GetErrorLogger().Println(err.Error())
-		os.Exit(-1)
-	}
 	c.InitState(conf)
 
 	user := strings.Split(conf.User, "@")[0]

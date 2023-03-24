@@ -34,28 +34,8 @@ For Linux, consult your respective Distribution docs
 
 Running
 -------------
-You must first have a ```config.toml``` file to be included in the same directory as the executable. If not included the CLI will exit on startup with an error message about this file.   
-
-Here is an example of ```config.toml``` file :
-
-```
-Verbose = "ERROR"
-APIURL = "http://127.0.0.1:3001"
-UnityURL = "127.0.0.1:5500"
-UnityTimeout = "10ms"
-ConfigPath = "./config.toml"
-HistPath = "./.history"
-Script = ""
-Drawable = ["all"]
-DrawLimit = 100
-Updates = ["all"]
-User = ""
-APIKEY = ""
-
-[DrawableJson]
-  tenant = "./other/drawTemplates/tenant.json"
-
-```
+You must first have a ```config.toml``` file to be included in the parent directory of the executable. If not included the CLI will exit on startup with an error message about this file.   
+See https://github.com/ditrit/OGrEE-Core/blob/main/README.md for an example.
 
  - Execute ```./cli``` (or cli.exe on windows)
 
