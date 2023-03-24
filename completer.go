@@ -208,9 +208,6 @@ func SiteOCLICompleter(path string) func(string) []string {
 
 		fn := ListEntities("")
 		ans := fn(line[idx:])
-		if !strings.Contains(line, "@") {
-			ans = append(ans, " @ ")
-		}
 
 		return ans
 	}
@@ -265,10 +262,6 @@ func GetPrefixCompleter() *readline.PrefixCompleter {
 					readline.PcItem("true", false),
 					readline.PcItem("false", false))),
 			readline.PcItem("Filter", false,
-				readline.PcItem("=", false,
-					readline.PcItem("true", false),
-					readline.PcItem("false", false))),
-			readline.PcItem("Analyser", false,
 				readline.PcItem("=", false,
 					readline.PcItem("true", false),
 					readline.PcItem("false", false)))),
@@ -449,6 +442,8 @@ func GetPrefixCompleter() *readline.PrefixCompleter {
 			readline.PcItem(" = ", false)),
 		readline.PcItem("ui.delay", false,
 			readline.PcItem(" = ", false)),
+
+		readline.PcItem("ui.clearcache", false),
 
 		readline.PcItem(">", true,
 			readline.PcItemDynamic(ListEntities(""), false)),

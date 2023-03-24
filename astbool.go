@@ -123,11 +123,11 @@ func (n *logicalNode) execute() (interface{}, error) {
 	return n.getBool()
 }
 
-type negateNode struct {
+type negateBoolNode struct {
 	expr node
 }
 
-func (n *negateNode) getBool() (bool, error) {
+func (n *negateBoolNode) getBool() (bool, error) {
 	val, err := n.expr.execute()
 	if err != nil {
 		return false, err
@@ -139,6 +139,6 @@ func (n *negateNode) getBool() (bool, error) {
 	return !b, nil
 }
 
-func (n *negateNode) execute() (interface{}, error) {
+func (n *negateBoolNode) execute() (interface{}, error) {
 	return n.getBool()
 }

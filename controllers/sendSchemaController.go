@@ -61,7 +61,7 @@ func serialiseAttr(attr map[string]interface{}, want string) string {
 // and want to cast it to -> "size": "{\"x\":25,\"y\":29.4,\"z\":0}"
 func serialiseAttr2(attr map[string]interface{}, want string) string {
 	var newSize string
-	if items, ok := attr[want].([]interface{}); ok {
+	if items, ok := attr[want].([]float64); ok {
 		coords := []string{"x", "y", "z"}
 		var length int
 
@@ -92,12 +92,7 @@ func serialiseAttr2(attr map[string]interface{}, want string) string {
 		newSize = "{" + newSize + "}"
 
 		if len(items) == 3 && want == "size" {
-			if _, ok := items[2].(int); ok {
-				items[2] = strconv.Itoa(items[2].(int))
-			} else if _, ok := items[2].(float64); ok {
-				items[2] = strconv.FormatFloat(items[2].(float64), 'G', -1, 64)
-			}
-			attr["height"] = items[2]
+			attr["height"] = strconv.FormatFloat(items[2], 'G', -1, 64)
 		}
 	}
 	return newSize
@@ -106,7 +101,7 @@ func serialiseAttr2(attr map[string]interface{}, want string) string {
 // Auxillary function for serialiseAttr2
 // to help ensure that the arbitrary arrays
 // ([]interface{}) are valid before they get serialised
-func arrayVerifier(x *[]interface{}, attribute string) bool {
+func arrayVerifier(x *[]float64, attribute string) bool {
 	switch attribute {
 	case "size":
 		return len(*x) == 3

@@ -42,23 +42,18 @@ func InitDebugLevel(verbose string) {
 }
 
 // Intialise the ShellState
-func InitState(analyser string, env map[string]string) {
-
+func InitState(env map[string]string) {
 	State.ClipBoard = nil
 	State.TreeHierarchy = &(Node{})
 	(*(State.TreeHierarchy)).Entity = -1
 	State.TreeHierarchy.PID = ""
 	State.CurrPath = "/Physical"
 	State.PrevPath = "/Physical"
-	State.LineNumber = 0
 
 	State.UnityClientAvail = false
 
 	//Set the filter attributes setting
 	State.FilterDisplay = false
-
-	//Set the Analyser setting to ON for now
-	State.Analyser, _ = strconv.ParseBool(analyser)
 
 	phys := &Node{}
 	phys.Name = "Physical"
@@ -110,6 +105,14 @@ func InitState(analyser string, env map[string]string) {
 	rTemplate.Name = "RoomTemplates"
 	rTemplate.Path = "/Logical"
 	SearchAndInsert(&State.TreeHierarchy, rTemplate, "/Logical")
+
+	bTemplate := &Node{}
+	bTemplate.ID = "3"
+	bTemplate.PID = "0"
+	bTemplate.Entity = -1
+	bTemplate.Name = "BldgTemplates"
+	bTemplate.Path = "/Logical"
+	SearchAndInsert(&State.TreeHierarchy, bTemplate, "/Logical")
 
 	group := &Node{}
 	group.ID = "3"

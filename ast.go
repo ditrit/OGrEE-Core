@@ -37,7 +37,7 @@ type ast struct {
 }
 
 func (a *ast) execute() (interface{}, error) {
-	for i, _ := range a.statements {
+	for i := range a.statements {
 		if a.statements[i] != nil {
 			_, err := a.statements[i].execute()
 			if err != nil {
@@ -83,7 +83,7 @@ type arrNode struct {
 }
 
 func (n *arrNode) execute() (interface{}, error) {
-	var r []interface{}
+	var r []float64
 	for i := range n.nodes {
 		v, err := n.nodes[i].execute()
 		if err != nil {
@@ -107,7 +107,7 @@ func (n *lenNode) execute() (interface{}, error) {
 	if !ok {
 		return nil, fmt.Errorf("Undefined variable %s", n.variable)
 	}
-	arr, ok := val.([]interface{})
+	arr, ok := val.([]float64)
 	if !ok {
 		return nil, fmt.Errorf("Variable %s does not contain an array.", n.variable)
 	}
@@ -121,35 +121,6 @@ type postObjNode struct {
 
 func (n *postObjNode) execute() (interface{}, error) {
 	return cmd.PostObj(cmd.EntityStrToInt(n.entity), n.entity, n.data)
-}
-
-type easyPostNode struct {
-	entity string
-	path   node
-}
-
-func (n *easyPostNode) execute() (interface{}, error) {
-	val, err := n.path.execute()
-	if err != nil {
-		return nil, err
-	}
-	path, ok := val.(string)
-	if !ok {
-		return nil, fmt.Errorf("Path should be a string")
-	}
-
-	data := make(map[string]interface{})
-	/*x, e := ioutil.ReadFile(n.path)
-	if e != nil {
-		println("Error while opening file! " + e.Error())
-		return nil
-	}
-	json.Unmarshal(x, &data)*/
-	data = fileToJSON(path)
-	if data == nil {
-		return nil, fmt.Errorf("Cannot read json file.")
-	}
-	return cmd.PostObj(cmd.EntityStrToInt(n.entity), n.entity, data)
 }
 
 type helpNode struct {
@@ -228,34 +199,6 @@ func (n *lsAttrNode) execute() (interface{}, error) {
 	return nil, nil
 }
 
-type lsAttrGenericNode struct {
-	path     node
-	argFlags map[string]interface{}
-}
-
-func (n *lsAttrGenericNode) execute() (interface{}, error) {
-	arg := ""
-	path, err := AssertString(&n.path, "Path")
-	if err != nil {
-		return nil, err
-	}
-
-	if len(n.argFlags) > 1 {
-		return nil,
-			fmt.Errorf("This command accepts a single '-s' argument only")
-	}
-
-	if len(n.argFlags) > 0 && n.argFlags["s"] == nil {
-		return nil,
-			fmt.Errorf("This command accepts a single '-s' argument only")
-	} else {
-		arg = n.argFlags["s"].(string)
-	}
-
-	cmd.LSATTR(path, arg)
-	return nil, nil
-}
-
 type getUNode struct {
 	path node
 	u    node
@@ -268,13 +211,39 @@ func (n *getUNode) execute() (interface{}, error) {
 	}
 	path, ok := val.(string)
 	if !ok {
-		return nil, fmt.Errorf("Path should be a string")
+		return nil, fmt.Errorf("path should be a string")
 	}
-	u, e1 := n.u.execute()
-	if e1 != nil {
-		return nil, e1
+	uAny, err := n.u.execute()
+	if err != nil {
+		return nil, err
+	}
+	u, ok := uAny.(int)
+	if !ok {
+		return nil, fmt.Errorf("u should be an integer")
 	}
 	cmd.GetByAttr(path, u)
+	return nil, nil
+}
+
+type getSlotNode struct {
+	path node
+	slot node
+}
+
+func (n *getSlotNode) execute() (interface{}, error) {
+	val, err := n.path.execute()
+	if err != nil {
+		return nil, err
+	}
+	path, ok := val.(string)
+	if !ok {
+		return nil, fmt.Errorf("Path should be a string")
+	}
+	slot, err := n.slot.execute()
+	if err != nil {
+		return nil, err
+	}
+	cmd.GetByAttr(path, slot)
 	return nil, nil
 }
 
@@ -289,10 +258,12 @@ func (n *loadNode) execute() (interface{}, error) {
 	}
 	path, ok := val.(string)
 	if !ok {
-		return nil, fmt.Errorf("Path should be a string")
+		return nil, fmt.Errorf("path should be a string")
 	}
-	cmd.LoadFile(path)
-	return nil, nil
+
+	//Usually functions from 'controller' pkg are called
+	//But in this case we are calling a function from 'main' pkg
+	return nil, LoadFile(path)
 }
 
 type loadTemplateNode struct {
@@ -306,14 +277,13 @@ func (n *loadTemplateNode) execute() (interface{}, error) {
 	}
 	path, ok := val.(string)
 	if !ok {
-		return nil, fmt.Errorf("Path should be a string")
+		return nil, fmt.Errorf("path should be a string")
 	}
 	data := fileToJSON(path)
 	if data == nil {
-		return nil, fmt.Errorf("Cannot read json file : %s", path)
+		return nil, fmt.Errorf("cannot read json file : %s", path)
 	}
-	cmd.LoadTemplate(data, path)
-	return path, nil
+	return path, cmd.LoadTemplate(data, path)
 }
 
 type printNode struct {
@@ -367,8 +337,8 @@ func (n *isEntityDrawableNode) execute() (interface{}, error) {
 }
 
 type isAttrDrawableNode struct {
-	path   node
-	factor node
+	path node
+	attr string
 }
 
 func (n *isAttrDrawableNode) execute() (interface{}, error) {
@@ -380,14 +350,7 @@ func (n *isAttrDrawableNode) execute() (interface{}, error) {
 	if !ok {
 		return nil, fmt.Errorf("Object path should be a string")
 	}
-	attrInf, err := n.factor.execute()
-	if err != nil {
-		return nil, err
-	}
-	if _, ok := attrInf.(string); !ok {
-		return nil, fmt.Errorf("Attribute operand is invalid")
-	}
-	return cmd.IsAttrDrawable(path, attrInf.(string), nil, false), nil
+	return cmd.IsAttrDrawable(path, n.attr, nil, false), nil
 }
 
 type getObjectNode struct {
@@ -494,10 +457,154 @@ func (n *recursiveUpdateObjNode) execute() (interface{}, error) {
 	return nil, nil
 }
 
+func setRoomAreas(path string, values []any) (map[string]any, error) {
+	if len(values) != 2 {
+		return nil, fmt.Errorf("2 values (reserved, technical) expected to set room areas")
+	}
+	areas := map[string]any{"reserved": values[0], "technical": values[1]}
+	attributes, e := parseAreas(areas)
+	if e != nil {
+		return nil, e
+	}
+	return cmd.UpdateObj(path, "", "", attributes, false)
+}
+
+func setLabel(path string, values []any, hasSharpe bool) (map[string]any, error) {
+	if len(values) != 1 {
+		return nil, fmt.Errorf("only 1 value expected")
+	}
+	value, ok := values[0].(string)
+	if !ok {
+		return nil, fmt.Errorf("value should be a string")
+	}
+	return nil, cmd.InteractObject(path, "label", value, hasSharpe)
+}
+
+func setLabelFont(path string, values []any) (map[string]any, error) {
+	msg := "The font can only be bold or italic" +
+		" or be in the form of color@[colorValue]." +
+		"\n\nFor more information please refer to: " +
+		"\nhttps://github.com/ditrit/OGrEE-3D/wiki/CLI-langage#interact-with-objects"
+
+	switch len(values) {
+	case 1:
+		if values[0] != "bold" && values[0] != "italic" {
+			return nil, fmt.Errorf(msg)
+		}
+		return nil, cmd.InteractObject(path, "labelFont", values[0], false)
+	case 2:
+		if values[0] != "color" {
+			return nil, fmt.Errorf(msg)
+		}
+		c, ok := AssertColor(values[1])
+		if !ok {
+			return nil, fmt.Errorf("please provide a valid 6 length hex value for the color")
+		}
+		return nil, cmd.InteractObject(path, "labelFont", "color@"+c, false)
+	default:
+		return nil, fmt.Errorf(msg)
+	}
+}
+
+func addRoomSeparator(path string, values []any) (map[string]any, error) {
+	if len(values) != 3 {
+		return nil, fmt.Errorf("3 values (startPos, endPos, type) expected to add a separator")
+	}
+	startPos, ok := values[0].([]float64)
+	if !ok || len(startPos) != 2 {
+		return nil, fmt.Errorf("startPos should be a vector2")
+	}
+	endPos, ok := values[1].([]float64)
+	if !ok || len(startPos) != 2 {
+		return nil, fmt.Errorf("endPos should be a vector2")
+	}
+	sepType, ok := values[2].(string)
+	if !ok {
+		return nil, fmt.Errorf("type of separator should \"wireframe\" or \"plain\"")
+	}
+	sepType = strings.ToLower(sepType)
+	if sepType != "wireframe" && sepType != "plain" {
+		return nil, fmt.Errorf("type of separator should \"wireframe\" or \"plain\"")
+	}
+	nextSep := map[string]any{"startPosXYm": startPos, "endPosXYm": endPos, "type": sepType}
+	obj, _ := cmd.GetObject(path, true)
+	if obj == nil {
+		return nil, fmt.Errorf("cannot find object")
+	}
+	attr := obj["attributes"].(map[string]any)
+	var sepArray []any
+	separators := attr["separators"]
+	if IsInfArr(separators) {
+		sepArray = separators.([]any)
+		sepArray = append(sepArray, nextSep)
+		sepArrStr, _ := json.Marshal(&sepArray)
+		attr["separators"] = string(sepArrStr)
+	} else {
+		var sepStr string
+		nextSepStr, _ := json.Marshal(nextSep)
+		if IsString(separators) && separators != "" && separators != "[]" {
+			sepStr = separators.(string)
+			size := len(sepStr)
+			sepStr = sepStr[:size-1] + "," + string(nextSepStr) + "]"
+		} else {
+			sepStr = "[" + string(nextSepStr) + "]"
+		}
+		attr["separators"] = sepStr
+	}
+	return cmd.UpdateObj(path, "", "", attr, false)
+}
+
+func addRoomPillar(path string, values []any) (map[string]any, error) {
+	centerXY, ok := values[0].([]float64)
+	if !ok || len(centerXY) != 2 {
+		return nil, fmt.Errorf("centerXY should be a vector2")
+	}
+	sizeXY, ok := values[1].([]float64)
+	if !ok || len(sizeXY) != 2 {
+		return nil, fmt.Errorf("sizeXY should be a vector2")
+	}
+	rotation, err := getFloat(values[2])
+	if err != nil {
+		return nil, fmt.Errorf("rotation should be a number")
+	}
+	obj, _ := cmd.GetObject(path, true)
+	if obj == nil {
+		return nil, fmt.Errorf("cannot find object")
+	}
+	var pillarArray []any
+	attr := obj["attributes"].(map[string]any)
+	pillars := attr["pillars"]
+
+	if IsInfArr(pillars) {
+		pillarArray = pillars.([]any)
+		pillarArray = append(pillarArray, map[string]any{
+			"centerXY": centerXY, "sizeXY": sizeXY, "rotation": rotation})
+
+		pillarArrStr, _ := json.Marshal(&pillarArray)
+		attr["pillars"] = string(pillarArrStr)
+	} else {
+		var pillStr string
+		nextPill := map[string]any{
+			"centerXY": centerXY, "sizeXY": sizeXY, "rotation": rotation}
+
+		nextPillStr, _ := json.Marshal(nextPill)
+		if IsString(pillars) && pillars != "" && pillars != "[]" {
+			pillStr = pillars.(string)
+			size := len(pillStr)
+			pillStr = pillStr[:size-1] + "," + string(nextPillStr) + "]"
+		} else {
+			pillStr = "[" + string(nextPillStr) + "]"
+		}
+		attr["pillars"] = pillStr
+	}
+	return attr, nil
+}
+
 type updateObjNode struct {
-	path       node
-	attributes map[string]interface{}
-	hasSharp   bool //Refers to indexing in 'description' array attributes
+	path      node
+	attr      string
+	values    []node
+	hasSharpe bool
 }
 
 func (n *updateObjNode) execute() (interface{}, error) {
@@ -505,148 +612,49 @@ func (n *updateObjNode) execute() (interface{}, error) {
 	if err != nil {
 		return nil, err
 	}
-
-	attributes, err := evalMapNodes(n.attributes)
-	if err != nil {
-		return nil, err
+	values := []any{}
+	for _, valueNode := range n.values {
+		val, err := valueNode.execute()
+		if err != nil {
+			return nil, err
+		}
+		values = append(values, val)
 	}
 	if path == "_" {
-		return nil, cmd.UpdateSelection(attributes)
+		if len(values) != 1 {
+			return nil, fmt.Errorf("only one value is expected when updating selection")
+		}
+		return nil, cmd.UpdateSelection(map[string]any{n.attr: values[0]})
 	}
-
-	//Check if the syntax refers to update or an interact command
-	//
-	for i := range attributes {
-		vals := []string{"label", "labelFont", "content",
-			"alpha", "tilesName", "tilesColor", "U", "slots", "localCS"}
-
-		invalidVals := []string{"separator", "areas"}
-		if AssertInStringValues(i, invalidVals) {
-			msg := "This is invalid syntax. You must specify" +
-				" 2 arrays (and for separator commands, the type) separated by '@' "
-			return nil, fmt.Errorf(msg)
+	boolInteractVals := []string{"content", "alpha", "tilesName", "tilesColor", "U", "slots", "localCS"}
+	if AssertInStringValues(n.attr, boolInteractVals) {
+		if !IsBool(values[0]) {
+			return nil, fmt.Errorf("boolean value expected")
 		}
-
-		if AssertInStringValues(i, vals) {
-			//labelFont should be 'bold' or 'italic' here in this node
-			if i != "labelFont" && i != "label" && !IsBool(attributes[i]) &&
-				attributes[i] != "true" && attributes[i] != "false" {
-				msg := "Only boolean values can be used for interact commands"
-				return nil, fmt.Errorf(msg)
-			}
-
-			if i == "labelFont" && attributes[i] != "bold" && attributes[i] != "italic" {
-				msg := "The font can only be bold or italic" +
-					" or be in the form of color@[colorValue]." +
-					"\n\nFor more information please refer to: " +
-					"\nhttps://github.com/ditrit/OGrEE-3D/wiki/CLI-langage#interact-with-objects"
-				return nil, fmt.Errorf(msg)
-			}
-			return nil, cmd.InteractObject(path, i, attributes[i], n.hasSharp)
-		}
+		return nil, cmd.InteractObject(path, n.attr, values[0], n.hasSharpe)
 	}
-	return cmd.UpdateObj(path, "", "", attributes, false)
-}
-
-type specialUpdateNode struct {
-	path     node
-	variable string
-	first    node
-	second   node
-	extraArg node //Could be sepType or Rotation
-}
-
-func (n *specialUpdateNode) execute() (interface{}, error) {
-	path, err := AssertString(&n.path, "Object path")
-	if err != nil {
-		return nil, err
+	switch n.attr {
+	case "areas":
+		return setRoomAreas(path, values)
+	case "label":
+		return setLabel(path, values, n.hasSharpe)
+	case "labelFont":
+		return setLabelFont(path, values)
+	case "separator":
+		return addRoomSeparator(path, values)
+	case "pillar":
+		return addRoomPillar(path, values)
 	}
-
-	first, err := n.first.execute()
-	if err != nil {
-		return nil, err
-	}
-	second, err := n.second.execute()
-	if err != nil {
-		return nil, err
-	}
-
-	if n.variable == "areas" {
-		if n.extraArg != nil {
-			return nil, fmt.Errorf("Unrecognised argument. Only 2 arrays can be specified")
-		}
-		areas := map[string]interface{}{"reserved": first, "technical": second}
-		attributes, e := parseAreas(areas)
-		if e != nil {
-			return nil, e
-		}
-		return cmd.UpdateObj(path, "", "", attributes, false)
-	} else if n.variable == "separator" {
-
-		attr, e := parseSeparators(path, first, second, &n.extraArg)
-		if e != nil {
-			return nil, e
-		}
-
-		return cmd.UpdateObj(path, "", "", attr, false)
-
-	} else if n.variable == "pillar" {
-
-		attr, e := parsePillars(path, first, second, &n.extraArg)
-		if e != nil {
-			return nil, e
-		}
-
-		return cmd.UpdateObj(path, "", "", attr, false)
-
-	} else if n.variable == "labelFont" {
-		//This section will be expanded later on as
-		//the language grows
-		if !IsStringValue(first, "color") {
-			msg := "'color' attribute can only specified via this syntax"
-			return nil, fmt.Errorf(msg)
-		}
-
-		c, ok := AssertColor(second)
-		if ok == false {
-			msg := "Please provide a valid 6 length hex value for the color"
-			return nil, fmt.Errorf(msg)
-		}
-		second = "color@" + c
-
-		return nil,
-			cmd.InteractObject(path, "labelFont", second, false)
-	} else {
-		msg := "Invalid attribute specified special updating." +
-			" Please refer to the language reference for more information:" +
-			"https://ogree.ditrit.io/htmls/programming.html"
-		return nil,
-			fmt.Errorf(msg)
-	}
-	//Control should not reach here
-	//code added to suppress compiler error
-	return nil, fmt.Errorf("Invalid syntax")
-}
-
-type easyUpdateNode struct {
-	nodePath     string
-	jsonPath     string
-	deleteAndPut bool
-}
-
-func (n *easyUpdateNode) execute() (interface{}, error) {
-	data := make(map[string]interface{})
-	data = fileToJSON(n.jsonPath)
-	if data == nil {
-		return nil, fmt.Errorf("Cannot open json file")
-	}
-	return cmd.UpdateObj(n.nodePath, "", "", data, n.deleteAndPut)
+	return cmd.UpdateObj(path, "", "", map[string]any{n.attr: values[0]}, false)
 }
 
 type lsObjNode struct {
-	path     node
-	entity   int
-	argFlags map[string]interface{}
+	path      node
+	entity    int
+	recursive bool
+	sort      string
+	attrList  []string
+	format    string
 }
 
 func (n *lsObjNode) execute() (interface{}, error) {
@@ -658,199 +666,36 @@ func (n *lsObjNode) execute() (interface{}, error) {
 	if !ok {
 		return nil, fmt.Errorf("Path should be a string")
 	}
-
-	args := n.argFlags
-	switch len(args) {
-	case 0:
-		return cmd.LSOBJECT(path, n.entity, false), nil
-	case 1:
-		//check for -r or -s or -f
-		if _, ok := args["r"]; ok {
-			if args["r"] != nil {
-				return nil, fmt.Errorf("-r takes no arguments")
-			}
-			return cmd.LSOBJECTRecursive(path, n.entity, false), nil
-
-		} else if _, ok := args["s"]; ok {
-			if IsStringArr(args["s"]) {
-				msg := "Too many arguments supplied, -s only takes one"
-				return nil, fmt.Errorf(msg)
-			}
-			if !IsString(args["s"]) {
-				msg := "Please provide a string argument for '-s'"
-				return nil, fmt.Errorf(msg)
-			}
-
-			objs := cmd.LSOBJECT(path, n.entity, true)
-			sorted := cmd.SortObjects(&objs, args["s"].(string))
-			sorted.Print()
-			return objs, nil
-
-		} else if _, ok := args["f"]; ok {
-			if !IsString(args["f"]) && !IsMapStrInf(args["f"]) {
-				msg := "Please provide a quote enclosed string for '-f' with arguments separated by ':'. Or provide an argument with printf formatting (ie -f (\"%d\",arg1))"
-				return nil,
-					fmt.Errorf(msg)
-			}
-			if IsString(args["f"]) {
-				arr := strings.Split(args["f"].(string), ":")
-
-				objs := cmd.LSOBJECT(path, n.entity, true)
-				cmd.DispWithAttrs(&objs, &arr)
-			}
-
-			if IsMapStrInf(args["f"]) {
-				var format string
-				var arr []string
-
-				//There is only 1 key in the map
-				for i := range args["f"].(map[string]interface{}) {
-					format = i
-				}
-
-				arr = args["f"].(map[string]interface{})[format].([]string)
-				objs := cmd.LSOBJECT(path, n.entity, true)
-				cmd.DispfWithAttrs(format, &objs, &arr)
-
-			}
-
-			return nil, nil
-
-		} else {
-			msg := "Unknown argument received. You can only use '-r' or '-s'"
-			return nil, fmt.Errorf(msg)
-		}
-	case 2:
-		//check for -r and (-s  or -f)
-		var objs []interface{}
-		for i := range args {
-			if !IsAmongValues(i, &[]string{"r", "s", "f"}) {
-				msg := "Unknown argument received." +
-					" You can only use '-r' or '-s' or '-f'"
-				return nil, fmt.Errorf(msg)
-			}
-		}
-
-		if args["r"] != nil {
-			return nil, fmt.Errorf("-r takes no arguments")
-		}
-
-		if _, ok := args["r"]; ok {
-			objs = cmd.LSOBJECTRecursive(path, n.entity, true)
-		} else {
-			objs = cmd.LSOBJECT(path, n.entity, true)
-		}
-
-		if _, ok := args["s"]; ok {
-			if IsString(args["s"]) {
-				sorted := cmd.SortObjects(&objs, args["s"].(string))
-				if _, ok := args["r"]; ok && args["r"] == nil {
-					sorted.Print()
-					return objs, nil
-				} else {
-					objs = sorted.GetData()
-				}
-
-			} else {
-				msg := "Please provide a string argument for '-s'"
-				return nil, fmt.Errorf(msg)
-			}
-
-		}
-
-		if IsString(args["f"]) {
-			attrs := strings.Split(args["f"].(string), ":")
-
-			//We want to display the attribute used for sorting
-			if !IsAmongValues(args["s"], &attrs) && args["s"] != nil {
-				attrs = append([]string{args["s"].(string)}, attrs...)
-			}
-
-			cmd.DispWithAttrs(&objs, &attrs)
-			return objs, nil
-		}
-
-		if IsMapStrInf(args["f"]) {
-			var format string
-			var arr []string
-
-			//There is only 1 key in the map
-			for i := range args["f"].(map[string]interface{}) {
-				format = i
-			}
-
-			arr = args["f"].(map[string]interface{})[format].([]string)
-			cmd.DispfWithAttrs(format, &objs, &arr)
-			return objs, nil
-		}
-		msg := "Please provide a quote enclosed string for '-f' with arguments separated by ':'. Or with printf formatting and attributes"
-		return nil, fmt.Errorf(msg)
-
-	case 3:
-		for i := range args {
-			if !IsAmongValues(i, &[]string{"r", "s", "f"}) {
-				msg := "Unknown argument received." +
-					" You can only use '-r' or '-s' or '-f'"
-				return nil, fmt.Errorf(msg)
-			}
-		}
-
-		if args["r"] != nil {
-			return nil, fmt.Errorf("-r takes no arguments")
-		}
-
-		//Verify then get,sort,display
-		if IsStringArr(args["s"]) {
-			msg := "Too many arguments supplied, -s only takes one"
-			return nil, fmt.Errorf(msg)
-		}
-		if !IsString(args["s"]) {
-			msg := "Please provide a string argument for '-s'"
-			return nil, fmt.Errorf(msg)
-		}
-
-		if IsString(args["f"]) {
-			attrs := strings.Split(args["f"].(string), ":")
-
-			objs := cmd.LSOBJECTRecursive(path, n.entity, true)
-
-			sorted := cmd.SortObjects(&objs, args["s"].(string)).GetData()
-
-			//We want to display the attribute used for sorting
-			if !IsAmongValues(args["s"], &attrs) {
-				attrs = append([]string{args["s"].(string)}, attrs...)
-			}
-
-			cmd.DispWithAttrs(&sorted, &attrs)
-			return sorted, nil
-		}
-
-		if IsMapStrInf(args["f"]) {
-			var format string
-			var arr []string
-
-			objs := cmd.LSOBJECTRecursive(path, n.entity, true)
-			sorted := cmd.SortObjects(&objs, args["s"].(string)).GetData()
-
-			//There is only 1 key in the map
-			for i := range args["f"].(map[string]interface{}) {
-				format = i
-			}
-
-			arr = args["f"].(map[string]interface{})[format].([]string)
-			cmd.DispfWithAttrs(format, &sorted, &arr)
-			return sorted, nil
-		}
-
-		msg := "Please provide a quote enclosed string for '-f' with arguments separated by ':'. Or with printf formatting and attributes"
-		return nil, fmt.Errorf(msg)
-
-	default:
-		//Return err
-		msg := "Too many arguments. You can only use '-r' or '-s'"
-		return nil, fmt.Errorf(msg)
+	var objects []any
+	if n.recursive {
+		objects = cmd.LSOBJECTRecursive(path, n.entity)
+	} else {
+		objects = cmd.LSOBJECT(path, n.entity)
 	}
-
+	if n.sort != "" {
+		objects = cmd.SortObjects(&objects, n.sort).GetData()
+	}
+	if n.attrList != nil {
+		if n.format != "" {
+			cmd.DispfWithAttrs(n.format, &objects, &n.attrList)
+		} else {
+			cmd.DispWithAttrs(&objects, &n.attrList)
+		}
+	} else {
+		if n.sort != "" {
+			//We want to display the attribute used for sorting
+			attrList := append(n.attrList, n.sort)
+			cmd.DispWithAttrs(&objects, &attrList)
+		} else {
+			for i := range objects {
+				object, ok := objects[i].(map[string]interface{})
+				if ok && object != nil && object["name"] != nil {
+					println(object["name"].(string))
+				}
+			}
+		}
+	}
+	return objects, nil
 }
 
 type treeNode struct {
@@ -872,9 +717,9 @@ func (n *treeNode) execute() (interface{}, error) {
 }
 
 type drawNode struct {
-	path     node
-	depth    int
-	argument map[string]interface{}
+	path  node
+	depth int
+	force bool
 }
 
 func (n *drawNode) execute() (interface{}, error) {
@@ -886,19 +731,7 @@ func (n *drawNode) execute() (interface{}, error) {
 	if !ok {
 		return nil, fmt.Errorf("Path should be a string")
 	}
-
-	if n.argument != nil {
-		if len(n.argument) > 1 {
-			msg := "Too many flags supplied, only -f acceptable"
-			return nil, fmt.Errorf(msg)
-		}
-		if n.argument["f"] == "n" || n.argument["f"] == "y" {
-			return nil, cmd.Draw(path, n.depth, n.argument["f"].(string))
-		}
-		msg := "Unrecognised argument, only -f and 'y' or 'n' are acceptable"
-		return nil, fmt.Errorf(msg)
-	}
-	return nil, cmd.Draw(path, n.depth, "")
+	return nil, cmd.Draw(path, n.depth, n.force)
 }
 
 type undrawNode struct {
@@ -998,26 +831,28 @@ func (n *updateSelectNode) execute() (interface{}, error) {
 	return nil, nil
 }
 
+type unsetFuncNode struct {
+	funcName string
+}
+
+func (n *unsetFuncNode) execute() (interface{}, error) {
+	delete(funcTable, n.funcName)
+	return nil, nil
+}
+
 type unsetVarNode struct {
-	option string
-	name   string
+	varName string
 }
 
 func (n *unsetVarNode) execute() (interface{}, error) {
-	switch n.option {
-	case "-f":
-		delete(funcTable, n.name)
-	case "-v":
-		dynamicSymbolTable[n.name] = nil
-	default:
-		return nil, fmt.Errorf("unset option needed (-v or -f)")
-	}
+	delete(dynamicSymbolTable, n.varName)
 	return nil, nil
 }
 
 type unsetAttrNode struct {
-	path node
-	arr  node
+	path  node
+	attr  string
+	index node
 }
 
 func (n *unsetAttrNode) execute() (interface{}, error) {
@@ -1027,42 +862,20 @@ func (n *unsetAttrNode) execute() (interface{}, error) {
 	}
 	path, ok := val.(string)
 	if !ok {
-		return nil, fmt.Errorf("Path should be a string")
+		return nil, fmt.Errorf("path should be a string")
 	}
-	arr := strings.Split(path, ":")
-	if len(arr) != 2 {
-		msg := "You must specify the attribute to delete with a colon!\n" +
-			"(ie. $> unset path/to/object:attributex). \n" +
-			"Please refer to the language reference help for more details" +
-			"\n($> man unset)"
-		return nil, fmt.Errorf(msg)
-	}
-	path = arr[0]
-	data := map[string]interface{}{arr[1]: nil}
-
-	//If the user wants to delete an element in an array
-	//(description, separator etc)
-	if n.arr != nil {
-		var idx int
-		x, _ := n.arr.execute()
-		if IsInfArr(x) && len(x.([]interface{})) == 1 {
-			if IsInt(x.([]interface{})[0]) {
-				idx = x.([]interface{})[0].(int)
-			} else if IsFloat(x.([]interface{})[0]) {
-				idx = int(x.([]interface{})[0].(float64))
-			} else {
-				return nil, fmt.Errorf("Invalid index, please provide an integer")
-			}
-
-		} else {
-			return nil, fmt.Errorf("Invalid index syntax, you must provide a single element")
+	if n.index != nil {
+		idxAny, err := n.index.execute()
+		if err != nil {
+			return nil, err
 		}
-
-		return cmd.UnsetInObj(path, arr[1], idx)
+		idx, ok := idxAny.(int)
+		if !ok {
+			return nil, fmt.Errorf("index should be an integer")
+		}
+		return cmd.UnsetInObj(path, n.attr, idx)
 	}
-
-	return cmd.UpdateObj(path, "", "", data, true)
-
+	return cmd.UpdateObj(path, "", "", map[string]any{n.attr: nil}, true)
 }
 
 type setEnvNode struct {
@@ -1128,58 +941,142 @@ func (n *createDomainNode) execute() (interface{}, error) {
 	return nil, err
 }
 
-type getOCAttrNode struct {
-	path       node
-	ent        int
-	attributes map[string]interface{}
+type createBuildingNode struct {
+	path           node
+	posXY          node
+	rotation       node
+	sizeOrTemplate node
 }
 
-func (n *getOCAttrNode) execute() (interface{}, error) {
-	val, err := n.path.execute()
+func (n *createBuildingNode) execute() (interface{}, error) {
+	pathVal, err := n.path.execute()
 	if err != nil {
 		return nil, err
 	}
-	path, ok := val.(string)
+	path, ok := pathVal.(string)
 	if !ok {
-		return nil, fmt.Errorf("Path should be a string")
+		return nil, fmt.Errorf("path should be a string")
 	}
-	attributes, err := evalMapNodes(n.attributes)
+	posXYany, err := n.posXY.execute()
 	if err != nil {
 		return nil, err
 	}
-
-	if n.ent == cmd.SITE {
-		//Check for valid orientation
-		orientation := attributes["attributes"].(map[string]interface{})["orientation"].(string)
-		if checkIfOrientation(orientation) == false {
-			msg := "You must provide a valid orientation"
-			return nil, fmt.Errorf(msg)
-		}
+	posXY, ok := posXYany.([]float64)
+	if !ok || len(posXY) != 2 {
+		fmt.Printf("%v\n", posXYany)
+		return nil, fmt.Errorf("posXY should be a vector2")
 	}
-	if n.ent == cmd.ROOM {
-		//Ensure orientation is valid if present
-		orientation := attributes["attributes"].(map[string]interface{})["orientation"]
-		if orientation != nil {
-			if checkIfOrientation(orientation.(string)) == false {
-				msg := "You must provide a valid orientation"
-				return nil, fmt.Errorf(msg)
-			}
-		}
-
-		//Check if template was given and is valid
-		if templ, ok := attributes["attributes"].(map[string]interface{})["template"]; ok {
-			if checkIfTemplate(templ, n.ent) == false {
-				//Invalid template
-				return nil, fmt.Errorf("Invalid template provided." +
-					" \nPlease ensure that it exists and try again. You may optionally provide a Vector3 size and orientation attributes instead" +
-					"\n\nFor more information " +
-					"please refer to the wiki or manual reference" +
-					" for more details on how to create objects " +
-					"using this syntax")
-			}
-		}
+	rotationAny, err := n.rotation.execute()
+	if err != nil {
+		return nil, err
 	}
-	err = cmd.GetOCLIAtrributes(path, n.ent, attributes)
+	rotation, err := getFloat(rotationAny)
+	if err != nil {
+		return nil, fmt.Errorf("rotation should be a number")
+	}
+	attributes := map[string]any{"posXY": posXY, "rotation": rotation}
+
+	sizeOrTemplateAny, err := n.sizeOrTemplate.execute()
+	if err != nil {
+		return nil, err
+	}
+	template, ok := sizeOrTemplateAny.(string)
+	if ok && checkIfTemplate(template, cmd.BLDG) {
+		attributes["template"] = template
+	} else {
+		size, ok := sizeOrTemplateAny.([]float64)
+		if !ok || len(size) != 3 {
+			return nil, fmt.Errorf("vector3 (size) or template expected")
+		}
+		attributes["size"] = size
+	}
+	err = cmd.GetOCLIAtrributes(path, cmd.BLDG, map[string]any{"attributes": attributes})
+	if err != nil {
+		return nil, err
+	}
+	return nil, nil
+}
+
+type createRoomNode struct {
+	path            node
+	posXY           node
+	rotation        node
+	size            node
+	axisOrientation node
+	floorUnit       node
+	template        node
+}
+
+func (n *createRoomNode) execute() (interface{}, error) {
+	pathVal, err := n.path.execute()
+	if err != nil {
+		return nil, err
+	}
+	path, ok := pathVal.(string)
+	if !ok {
+		return nil, fmt.Errorf("path should be a string")
+	}
+	posXYany, err := n.posXY.execute()
+	if err != nil {
+		return nil, err
+	}
+	posXY, ok := posXYany.([]float64)
+	if !ok || len(posXY) != 2 {
+		return nil, fmt.Errorf("posXY should be a vector2")
+	}
+	rotationAny, err := n.rotation.execute()
+	if err != nil {
+		return nil, err
+	}
+	rotation, err := getFloat(rotationAny)
+	if err != nil {
+		return nil, fmt.Errorf("rotation should be a number")
+	}
+	attributes := map[string]any{"posXY": posXY, "rotation": rotation}
+
+	if n.template != nil {
+		templateAny, err := n.template.execute()
+		if err != nil {
+			return nil, err
+		}
+		template, ok := templateAny.(string)
+		if !ok || !checkIfTemplate(template, cmd.ROOM) {
+			return nil, fmt.Errorf("invalid template")
+		}
+		attributes["template"] = template
+	} else {
+		sizeAny, err := n.size.execute()
+		if err != nil {
+			return nil, err
+		}
+		size, ok := sizeAny.([]float64)
+		if !ok || len(size) != 3 {
+			return nil, fmt.Errorf("size should be a vector3")
+		}
+		attributes["size"] = size
+		axisOrientationAny, err := n.axisOrientation.execute()
+		if err != nil {
+			return nil, err
+		}
+		axisOrientation, ok := axisOrientationAny.(string)
+		if !ok || (axisOrientation != "+x+y" && axisOrientation != "+x-y" &&
+			axisOrientation != "-x-y" && axisOrientation != "-x+y") {
+			return nil, fmt.Errorf("orientation should be +x+y, +x-y, -x-y or x+y")
+		}
+		attributes["axisOrientation"] = axisOrientation
+	}
+	if n.floorUnit != nil {
+		floorUnitAny, err := n.floorUnit.execute()
+		if err != nil {
+			return nil, err
+		}
+		floorUnit, ok := floorUnitAny.(string)
+		if !ok {
+			return nil, fmt.Errorf("floorUnit should be a string")
+		}
+		attributes["floorUnit"] = floorUnit
+	}
+	err = cmd.GetOCLIAtrributes(path, cmd.ROOM, map[string]any{"attributes": attributes})
 	if err != nil {
 		return nil, err
 	}
@@ -1187,59 +1084,54 @@ func (n *getOCAttrNode) execute() (interface{}, error) {
 }
 
 type createRackNode struct {
-	path  node
-	attrs [3]node
+	path           node
+	pos            node
+	sizeOrTemplate node
+	orientation    node
 }
 
 func (n *createRackNode) execute() (interface{}, error) {
-	val, err := n.path.execute()
+	pathVal, err := n.path.execute()
 	if err != nil {
 		return nil, err
 	}
-	path, ok := val.(string)
+	path, ok := pathVal.(string)
 	if !ok {
-		return nil, fmt.Errorf("Path should be a string")
+		return nil, fmt.Errorf("path should be a string")
 	}
-	var vals [3]interface{}
-	for i := 0; i < 3; i++ {
-		vals[i], err = n.attrs[i].execute()
-		if err != nil {
-			return nil, err
-		}
+	posAny, err := n.pos.execute()
+	if err != nil {
+		return nil, err
 	}
-	attr := make(map[string]interface{})
-	if IsInfArr(vals[1]) {
-		if x, _ := vals[1].([]interface{}); len(x) != 3 {
-			//Invalid size vector
-			return nil, fmt.Errorf("Invalid size attribute provided." +
-				" \nThe size must be an array/list/vector with " +
-				"3 elements. You may optionally specify a template instead." +
-				"\n\nFor more information " +
-				"please refer to the wiki or manual reference" +
-				" for more details on how to create objects " +
-				"using this syntax")
-		}
-		attr["size"] = vals[1]
-	} else if IsString(vals[1]) {
-		if checkIfTemplate(vals[1], cmd.RACK) == false {
-			//Invalid template
-			return nil, fmt.Errorf("Invalid template provided." +
-				" \nPlease ensure that it exists and try again. You may optionally provide a Vector3 size attribute instead" +
-				"\n\nFor more information " +
-				"please refer to the wiki or manual reference" +
-				" for more details on how to create objects " +
-				"using this syntax")
-		}
-		attr["template"] = vals[1]
-	} else {
-		//Invalid template / size attribute received
-		return nil, fmt.Errorf("Please provide a valid template or size")
+	pos, ok := posAny.([]float64)
+	if !ok || (len(pos) != 2 && len(pos) != 3) {
+		return nil, fmt.Errorf("position should be a vector2 or a vector3")
 	}
+	orientationAny, err := n.orientation.execute()
+	if err != nil {
+		return nil, err
+	}
+	orientation, ok := orientationAny.(string)
+	if !ok || (orientation != "front" && orientation != "rear" && orientation != "left" && orientation != "right") {
+		return nil, fmt.Errorf("orientation should be a front, rear, left or right")
+	}
+	attributes := map[string]any{"posXYZ": pos, "orientation": orientation}
 
-	attr["posXYZ"] = vals[0]
-	attr["orientation"] = vals[2]
-	attributes := map[string]interface{}{"attributes": attr}
-	err = cmd.GetOCLIAtrributes(path, cmd.RACK, attributes)
+	sizeOrTemplateAny, err := n.sizeOrTemplate.execute()
+	if err != nil {
+		return nil, err
+	}
+	template, ok := sizeOrTemplateAny.(string)
+	if ok && checkIfTemplate(template, cmd.RACK) {
+		attributes["template"] = template
+	} else {
+		size, ok := sizeOrTemplateAny.([]float64)
+		if !ok || len(size) != 3 {
+			return nil, fmt.Errorf("vector3 (size) or template expected")
+		}
+		attributes["size"] = size
+	}
+	err = cmd.GetOCLIAtrributes(path, cmd.RACK, map[string]any{"attributes": attributes})
 	if err != nil {
 		return nil, err
 	}
@@ -1247,8 +1139,10 @@ func (n *createRackNode) execute() (interface{}, error) {
 }
 
 type createDeviceNode struct {
-	path  node
-	attrs [3]node
+	path            node
+	posUOrSlot      node
+	sizeUOrTemplate node
+	side            node
 }
 
 func (n *createDeviceNode) execute() (interface{}, error) {
@@ -1258,47 +1152,29 @@ func (n *createDeviceNode) execute() (interface{}, error) {
 	}
 	path, ok := val.(string)
 	if !ok {
-		return nil, fmt.Errorf("Path should be a string")
+		return nil, fmt.Errorf("path should be a string")
 	}
-	var vals [3]interface{}
-	for i := 0; i < 3; i++ {
-		if n.attrs[i] != nil {
-			vals[i], err = n.attrs[i].execute()
-			if err != nil {
-				return nil, err
-			}
-		}
+	posUOrSlot, err := n.posUOrSlot.execute()
+	if err != nil {
+		return nil, err
 	}
-	attr := map[string]interface{}{"posU/slot": vals[0]}
-	if checkIfTemplate(vals[1], cmd.DEVICE) == false {
-		if IsString(vals[1]) {
-			return nil, fmt.Errorf("Template not found. Please provide a valid template and try again.")
-		}
-		if !IsFloat(vals[1]) && !IsInt(vals[1]) {
-			return nil, fmt.Errorf("SizeU must be a numerical value. Please provide a valid sizeU and try again.")
-		}
-		attr["sizeU"] = vals[1]
+	attr := map[string]any{"posU/slot": posUOrSlot}
 
-		//In this case according to spec, sizeU should
-		//not be given with the orientation
-		//n.attrs[2] refers to the orientation
-		if n.attrs[2] != nil {
-			var msg string
-			if IsString(vals[1]) {
-				msg = "The template '" + vals[1].(string) + "' does not exist, ensure that it exists and try again. For more information please visit: https://ogree.ditrit.io/htmls/programming.html"
-			} else if IsFloat(vals[1]) { //All numbers are interpreted as floats for now
-				msg = "Templates can only be specified with the orientation, if you meant to provide the sizeU then please remove the orientation. For more information please visit: https://ogree.ditrit.io/htmls/programming.html"
-			} else {
-				msg = "Invalid argument specified for template / sizeU. Please provide a template name or numerical value for sizeU."
-			}
-
-			return nil, fmt.Errorf(msg)
-		}
+	sizeUOrTemplate, err := n.sizeUOrTemplate.execute()
+	if err != nil {
+		return nil, err
+	}
+	if !checkIfTemplate(sizeUOrTemplate, cmd.DEVICE) {
+		attr["sizeU"] = sizeUOrTemplate
 	} else {
-		attr["template"] = vals[1]
+		attr["template"] = sizeUOrTemplate
 	}
-	if n.attrs[2] != nil {
-		attr["orientation"] = vals[2]
+	if n.side != nil {
+		side, err := n.side.execute()
+		if err != nil {
+			return nil, err
+		}
+		attr["orientation"] = side
 	}
 	attributes := map[string]interface{}{"attributes": attr}
 	err = cmd.GetOCLIAtrributes(path, cmd.DEVICE, attributes)
@@ -1320,7 +1196,7 @@ func (n *createGroupNode) execute() (interface{}, error) {
 	}
 	path, ok := val.(string)
 	if !ok {
-		return nil, fmt.Errorf("Path should be a string")
+		return nil, fmt.Errorf("path should be a string")
 	}
 	var objs []string
 	data := map[string]interface{}{}
@@ -1375,7 +1251,7 @@ func (n *createCorridorNode) execute() (interface{}, error) {
 	tempIsValid := AssertInStringValues(temp, []string{"warm", "cold"})
 	if !tempIsValid {
 		return nil,
-			fmt.Errorf("Temperature should be either 'warm' or 'cold'")
+			fmt.Errorf("temperature should be either 'warm' or 'cold'")
 	}
 	leftRack = filepath.Base(leftRack)
 	rightRack = filepath.Base(rightRack)
@@ -1392,38 +1268,60 @@ func (n *createCorridorNode) execute() (interface{}, error) {
 	return nil, nil
 }
 
-type uiDelayNode struct {
-	time node
+type createOrphanNode struct {
+	path     node
+	template node
+	sensor   bool
 }
 
-func (n *uiDelayNode) execute() (interface{}, error) {
-	val, err := n.time.execute()
+func (n *createOrphanNode) execute() (interface{}, error) {
+	pathVal, err := n.path.execute()
 	if err != nil {
 		return nil, err
 	}
-	time, ok := val.(float64)
+	path, ok := pathVal.(string)
 	if !ok {
-		return nil, fmt.Errorf("delay should be a float")
+		return nil, fmt.Errorf("path should be a string")
 	}
-	cmd.UIDelay(time)
+	var t int
+	if n.sensor {
+		t = cmd.STRAYSENSOR
+	} else {
+		t = cmd.STRAY_DEV
+	}
+	templateAny, err := n.template.execute()
+	if err != nil {
+		return nil, err
+	}
+	template, ok := templateAny.(string)
+	if !ok || !checkIfTemplate(template, t) {
+		return nil, fmt.Errorf("invalid template")
+	}
+	attributes := map[string]any{"template": template}
+
+	err = cmd.GetOCLIAtrributes(path, t, map[string]any{"attributes": attributes})
+	if err != nil {
+		return nil, err
+	}
+	return nil, nil
+}
+
+type uiDelayNode struct {
+	time float64
+}
+
+func (n *uiDelayNode) execute() (interface{}, error) {
+	cmd.UIDelay(n.time)
 	return nil, nil
 }
 
 type uiToggleNode struct {
 	feature string
-	enable  node
+	enable  bool
 }
 
 func (n *uiToggleNode) execute() (interface{}, error) {
-	val, err := n.enable.execute()
-	if err != nil {
-		return nil, err
-	}
-	enable, ok := val.(bool)
-	if !ok {
-		return nil, fmt.Errorf("feature %s expects a boolean", n.feature)
-	}
-	cmd.UIToggle(n.feature, enable)
+	cmd.UIToggle(n.feature, n.enable)
 	return nil, nil
 }
 
@@ -1443,6 +1341,13 @@ func (n *uiHighlightNode) execute() (interface{}, error) {
 	return nil, cmd.UIHighlight(path)
 }
 
+type uiClearCacheNode struct {
+}
+
+func (n *uiClearCacheNode) execute() (interface{}, error) {
+	return nil, cmd.UIClearCache()
+}
+
 type cameraMoveNode struct {
 	command  string
 	position node
@@ -1454,36 +1359,28 @@ func (n *cameraMoveNode) execute() (interface{}, error) {
 	if err != nil {
 		return nil, err
 	}
-	position, ok := posVal.([]interface{})
+	position, ok := posVal.([]float64)
 	if !ok || len(position) != 3 {
-		return nil, fmt.Errorf("Position (first argument) is invalid\nPlease provide a vector3")
+		return nil, fmt.Errorf("position (first argument) is invalid\nPlease provide a vector3")
 	}
 	rotVal, err := n.rotation.execute()
 	if err != nil {
 		return nil, err
 	}
-	rotation, ok := rotVal.([]interface{})
+	rotation, ok := rotVal.([]float64)
 	if !ok || len(rotation) != 2 {
-		return nil, fmt.Errorf("Rotation (second argument) is invalid\nPlease provide a vector2")
+		return nil, fmt.Errorf("rotation (second argument) is invalid\nPlease provide a vector2")
 	}
 	cmd.CameraMove(n.command, position, rotation)
 	return nil, nil
 }
 
 type cameraWaitNode struct {
-	time node
+	time float64
 }
 
 func (n *cameraWaitNode) execute() (interface{}, error) {
-	val, err := n.time.execute()
-	if err != nil {
-		return nil, err
-	}
-	time, ok := val.(float64)
-	if !ok {
-		return nil, fmt.Errorf("delay should be a float")
-	}
-	cmd.CameraWait(time)
+	cmd.CameraWait(n.time)
 	return nil, nil
 }
 
@@ -1613,7 +1510,7 @@ func (n *arrayReferenceNode) execute() (interface{}, error) {
 	if !ok {
 		return nil, fmt.Errorf("Undefined variable %s", n.variable)
 	}
-	arr, ok := v.([]interface{})
+	arr, ok := v.([]float64)
 	if !ok {
 		return nil, fmt.Errorf("You can only index an array.")
 	}
@@ -1647,7 +1544,7 @@ func (a *assignNode) execute() (interface{}, error) {
 		return nil, err
 	}
 	switch v := val.(type) {
-	case bool, int, float64, string, []interface{}, map[string]interface{}:
+	case bool, int, float64, string, []float64, map[string]interface{}:
 		dynamicSymbolTable[a.variable] = v
 		if cmd.State.DebugLvl >= 3 {
 			println("You want to assign", a.variable, "with value of", v)
@@ -1685,8 +1582,8 @@ func parseAreas(areas map[string]interface{}) (map[string]interface{}, error) {
 	var reservedStr string
 	var techStr string
 
-	if reserved, ok := areas["reserved"].([]interface{}); ok {
-		if tech, ok := areas["technical"].([]interface{}); ok {
+	if reserved, ok := areas["reserved"].([]float64); ok {
+		if tech, ok := areas["technical"].([]float64); ok {
 			if len(reserved) == 4 && len(tech) == 4 {
 				var r [4]*bytes.Buffer
 				var t [4]*bytes.Buffer
@@ -1716,177 +1613,4 @@ func parseAreas(areas map[string]interface{}) (map[string]interface{}, error) {
 		return nil, errorResponder("reserved", "4", false)
 	}
 	return areas, nil
-}
-
-// Hack function for the [room]:separator=[x,y]@[x,y]@type
-func parseSeparators(path string, first, second interface{}, arg *node) (map[string]interface{}, error) {
-	if (*arg) == nil {
-		return nil, fmt.Errorf(
-			"Separator type must be specified. Either 'wireframe' or 'plain'",
-		)
-	}
-
-	extraArg, err := (*arg).execute()
-	if err != nil {
-		return nil, err
-	}
-
-	if !IsString(extraArg) {
-		return nil,
-			fmt.Errorf("Invalid separator argument given, it can only be 'wireframe' or 'plain'")
-	}
-
-	sepType := strings.ToLower(extraArg.(string))
-	if sepType != "wireframe" && sepType != "plain" {
-		msg := "Invalid separator type given. " +
-			"It can only be 'wireframe' or 'plain'"
-		return nil, fmt.Errorf(msg)
-	}
-
-	if !IsInfArr(first) {
-		if !IsInfArr(second) {
-			return nil, errorResponder("Starting and ending", "2", true)
-		}
-		return nil, errorResponder("Starting", "2", false)
-	}
-
-	if !IsInfArr(second) {
-		return nil, errorResponder("Ending", "2", false)
-	}
-
-	startLen := len(first.([]interface{}))
-	endLen := len(second.([]interface{}))
-
-	if startLen != 2 && endLen == 2 {
-		return nil, errorResponder("starting position", "2", false)
-	}
-
-	if endLen != 2 && startLen == 2 {
-		return nil, errorResponder("ending position", "2", false)
-	}
-
-	if startLen != 2 && endLen != 2 {
-		return nil, errorResponder("starting and ending position", "2", true)
-	}
-
-	separators, obj, e := fetchObjAttr(path, "separators")
-	var sepArray []interface{}
-	attr := obj["attributes"].(map[string]interface{})
-	if e != nil {
-		return nil, e
-	}
-
-	if IsInfArr(separators) {
-		sepArray = separators.([]interface{})
-		sepArray = append(sepArray, map[string]interface{}{
-			"startPosXYm": first, "endPosXYm": second, "type": sepType})
-
-		sepArrStr, _ := json.Marshal(&sepArray)
-		attr["separators"] = string(sepArrStr)
-	} else {
-		var sepStr string
-		nextSep := map[string]interface{}{
-			"startPosXYm": first, "endPosXYm": second, "type": sepType}
-
-		nextSepStr, _ := json.Marshal(nextSep)
-		if IsString(separators) && separators != "" && separators != "[]" {
-			sepStr = separators.(string)
-			size := len(sepStr)
-			sepStr = sepStr[:size-1] + "," + string(nextSepStr) + "]"
-		} else {
-			sepStr = "[" + string(nextSepStr) + "]"
-		}
-
-		attr["separators"] = sepStr
-	}
-	return attr, nil
-}
-
-// Hack function for the [room]:pillar=[x,y]@[x,y]@rotation
-func parsePillars(path string, first, second interface{}, arg *node) (map[string]interface{}, error) {
-	if (*arg) == nil {
-		return nil, fmt.Errorf(
-			"Pillar rotation must be specified and be a numerical value",
-		)
-	}
-
-	extraArg, err := (*arg).execute()
-	if err != nil {
-		return nil, err
-	}
-
-	if !IsFloat(extraArg) {
-		return nil,
-			fmt.Errorf("Invalid rotation type given, please provide a numerical value")
-	}
-
-	if !IsInfArr(first) {
-		if !IsInfArr(second) {
-			return nil, errorResponder("centerXY and sizeXY", "2", true)
-		}
-		return nil, errorResponder("centerXY", "2", false)
-	}
-
-	if !IsInfArr(second) {
-		return nil, errorResponder("sizeXY", "2", false)
-	}
-
-	centerXYLen := len(first.([]interface{}))
-	sizeXYLen := len(second.([]interface{}))
-
-	if centerXYLen != 2 && sizeXYLen == 2 {
-		return nil, errorResponder("center position", "2", false)
-	}
-
-	if sizeXYLen != 2 && centerXYLen == 2 {
-		return nil, errorResponder("size position", "2", false)
-	}
-
-	if centerXYLen != 2 && sizeXYLen != 2 {
-		return nil, errorResponder("center and size position", "2", true)
-	}
-
-	pillars, obj, e := fetchObjAttr(path, "pillars")
-	var pillarArray []interface{}
-	attr := obj["attributes"].(map[string]interface{})
-	if e != nil {
-		return nil, e
-	}
-
-	if IsInfArr(pillars) {
-		pillarArray = pillars.([]interface{})
-		pillarArray = append(pillarArray, map[string]interface{}{
-			"centerXY": first, "sizeXY": second, "rotation": extraArg.(float64)})
-
-		pillarArrStr, _ := json.Marshal(&pillarArray)
-		attr["pillars"] = string(pillarArrStr)
-	} else {
-		var pillStr string
-		nextPill := map[string]interface{}{
-			"centerXY": first, "sizeXY": second, "rotation": extraArg.(float64)}
-
-		nextPillStr, _ := json.Marshal(nextPill)
-		if IsString(pillars) && pillars != "" && pillars != "[]" {
-			pillStr = pillars.(string)
-			size := len(pillStr)
-			pillStr = pillStr[:size-1] + "," + string(nextPillStr) + "]"
-		} else {
-			pillStr = "[" + string(nextPillStr) + "]"
-		}
-
-		attr["pillars"] = pillStr
-	}
-	return attr, nil
-}
-
-// Another helper function for separators and pillars
-// Returns separator/pillarArr attribute,object,error
-func fetchObjAttr(path, attribute string) (interface{}, map[string]interface{}, error) {
-	obj, _ := cmd.GetObject(path, true)
-	if obj == nil {
-		return nil, nil, fmt.Errorf("cannot find object")
-	}
-	attr := obj["attributes"].(map[string]interface{})
-	wantedArray, _ := attr[attribute]
-	return wantedArray, obj, nil
 }

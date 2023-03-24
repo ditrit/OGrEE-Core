@@ -13,7 +13,6 @@ import (
 	"os"
 	"os/exec"
 	"path"
-	"path/filepath"
 	"runtime"
 	"strconv"
 	"strings"
@@ -882,7 +881,6 @@ func LSEnterprise() {
 func Env(userVars, userFuncs map[string]interface{}) {
 	fmt.Println("Unity: ", State.UnityClientAvail)
 	fmt.Println("Filter: ", State.FilterDisplay)
-	fmt.Println("Analyser: ", State.Analyser)
 	fmt.Println()
 	fmt.Println("Objects Unity shall be informed of upon update:")
 	for _, k := range State.ObjsForUnity {
@@ -910,7 +908,7 @@ func Env(userVars, userFuncs map[string]interface{}) {
 	}
 }
 
-func LSOBJECT(x string, entity int, silence bool) []interface{} {
+func LSOBJECT(x string, entity int) []interface{} {
 	var obj map[string]interface{}
 	var Path string
 
@@ -933,8 +931,6 @@ func LSOBJECT(x string, entity int, silence bool) []interface{} {
 		}
 	}
 
-	objects := []interface{}{}
-
 	//Retrieve the desired objects under the working path
 	entStr := EntityToString(entity) + "s"
 	r, e := models.Send("GET", Path+"/"+entStr, GetKey(), nil)
@@ -942,20 +938,7 @@ func LSOBJECT(x string, entity int, silence bool) []interface{} {
 	if parsed == nil {
 		return nil
 	}
-
-	//Data verification and print block
-	objects = GetRawObjects(parsed)
-	if silence == false {
-		for i := range objects {
-			if object, ok := objects[i].(map[string]interface{}); ok {
-				if object["name"] != nil {
-					println(object["name"].(string))
-				}
-			}
-		}
-	}
-
-	return objects
+	return GetRawObjects(parsed)
 }
 
 func GetByAttr(x string, u interface{}) {
@@ -1423,17 +1406,26 @@ func GetOCLIAtrributes(Path string, ent int, data map[string]interface{}) error 
 	case BLDG:
 		attr = data["attributes"].(map[string]interface{})
 
-		//Serialise size and posXY if given
-		if _, ok := attr["size"].(string); ok {
-			attr["size"] = serialiseAttr(attr, "size")
+		//Check for template
+		if _, ok := attr["template"]; ok {
+			GetOCLIAtrributesTemplateHelper(attr, data, BLDG)
+
 		} else {
-			attr["size"] = serialiseAttr2(attr, "size")
+			//Serialise size and posXY manually instead
+			if _, ok := attr["size"].(string); ok {
+				attr["size"] = serialiseAttr(attr, "size")
+			} else {
+				attr["size"] = serialiseAttr2(attr, "size")
+			}
+
+			//Since template was not provided, set it empty
+			attr["template"] = ""
 		}
 
 		if attr["size"] == "" {
 			if State.DebugLvl > 0 {
 				l.GetErrorLogger().Println(
-					"User gave invalid size value for creating room")
+					"User gave invalid size value for creating building")
 				return fmt.Errorf("Invalid size attribute provided." +
 					" \nIt must be an array/list/vector with 3 elements." +
 					" Please refer to the wiki or manual reference" +
@@ -1452,7 +1444,7 @@ func GetOCLIAtrributes(Path string, ent int, data map[string]interface{}) error 
 		if attr["posXY"] == "" {
 			if State.DebugLvl > 0 {
 				l.GetErrorLogger().Println(
-					"User gave invalid posXY value for creating room")
+					"User gave invalid posXY value for creating building")
 				return fmt.Errorf("Invalid posXY attribute provided." +
 					" \nIt must be an array/list/vector with 2 elements." +
 					" Please refer to the wiki or manual reference" +
@@ -1460,6 +1452,12 @@ func GetOCLIAtrributes(Path string, ent int, data map[string]interface{}) error 
 					"using this syntax")
 			}
 			return nil
+		}
+
+		//Check rotation
+		if _, ok := attr["rotation"].(float64); ok {
+			attr["rotation"] =
+				strconv.FormatFloat(attr["rotation"].(float64), 'f', -1, 64)
 		}
 
 		attr["posXYUnit"] = "m"
@@ -1473,7 +1471,7 @@ func GetOCLIAtrributes(Path string, ent int, data map[string]interface{}) error 
 		attr = data["attributes"].(map[string]interface{})
 
 		baseAttrs := map[string]interface{}{
-			"orientation": "+N+E", "floorUnit": "t",
+			"floorUnit": "t",
 			"posXYUnit": "m", "sizeUnit": "m",
 			"height":     "5",
 			"heightUnit": "m"}
@@ -1484,19 +1482,6 @@ func GetOCLIAtrributes(Path string, ent int, data map[string]interface{}) error 
 		//and parse into templates
 		//NOTE this function also assigns value for "size" attribute
 		GetOCLIAtrributesTemplateHelper(attr, data, ent)
-
-		if attr["size"] == "" {
-			if State.DebugLvl > 0 {
-				l.GetErrorLogger().Println(
-					"User gave invalid size value for creating room")
-				return fmt.Errorf("Invalid size attribute provided." +
-					" \nIt must be an array/list/vector with 3 elements." +
-					" Please refer to the wiki or manual reference" +
-					" for more details on how to create objects " +
-					"using this syntax")
-			}
-			return nil
-		}
 
 		if _, ok := attr["posXY"].(string); ok {
 			attr["posXY"] = serialiseAttr(attr, "posXY")
@@ -1510,6 +1495,25 @@ func GetOCLIAtrributes(Path string, ent int, data map[string]interface{}) error 
 					"User gave invalid posXY value for creating room")
 				return fmt.Errorf("Invalid posXY attribute provided." +
 					" \nIt must be an array/list/vector with 2 elements." +
+					" Please refer to the wiki or manual reference" +
+					" for more details on how to create objects " +
+					"using this syntax")
+			}
+			return nil
+		}
+
+		//Check rotation
+		if _, ok := attr["rotation"].(float64); ok {
+			attr["rotation"] =
+				strconv.FormatFloat(attr["rotation"].(float64), 'f', -1, 64)
+		}
+
+		if attr["size"] == "" {
+			if State.DebugLvl > 0 {
+				l.GetErrorLogger().Println(
+					"User gave invalid size value for creating room")
+				return fmt.Errorf("Invalid size attribute provided." +
+					" \nIt must be an array/list/vector with 3 elements." +
 					" Please refer to the wiki or manual reference" +
 					" for more details on how to create objects " +
 					"using this syntax")
@@ -1575,7 +1579,7 @@ func GetOCLIAtrributes(Path string, ent int, data map[string]interface{}) error 
 		if attr["posXYZ"] == "" {
 			if State.DebugLvl > 0 {
 				l.GetErrorLogger().Println(
-					"User gave invalid posXYZ value for creating room")
+					"User gave invalid posXYZ value for creating rack")
 				return fmt.Errorf("Invalid posXYZ attribute provided." +
 					" \nIt must be an array/list/vector with 2 or 3 elements." +
 					" Please refer to the wiki or manual reference" +
@@ -1809,12 +1813,12 @@ func GetOCLIAtrributesTemplateHelper(attr, data map[string]interface{}, ent int)
 	//data from templates
 	attrSerialiser := func(someVal interface{}, idx string, ent int) string {
 		if x, ok := someVal.(int); ok {
-			if ent == DEVICE || ent == ROOM {
+			if ent == DEVICE || ent == ROOM || ent == BLDG {
 				return strconv.Itoa(x)
 			}
 			return strconv.Itoa(x / 10)
 		} else if x, ok := someVal.(float64); ok {
-			if ent == DEVICE || ent == ROOM {
+			if ent == DEVICE || ent == ROOM || ent == BLDG {
 				return strconv.FormatFloat(x, 'G', -1, 64)
 			}
 			return strconv.FormatFloat(x/10.0, 'G', -1, 64)
@@ -1833,6 +1837,8 @@ func GetOCLIAtrributesTemplateHelper(attr, data map[string]interface{}, ent int)
 			tInt := 0
 			if ent == ROOM {
 				tInt = ROOMTMPL
+			} else if ent == BLDG {
+				tInt = BLDGTMPL
 			} else {
 				tInt = OBJTMPL
 			} //End of determine block
@@ -1890,6 +1896,8 @@ func GetOCLIAtrributesTemplateHelper(attr, data map[string]interface{}, ent int)
 							attr["technical"] = attr["technicalArea"]
 							delete(attr, "technicalArea")
 						}
+
+						CopyAttr(attr, tmpl, "axisOrientation")
 
 						CopyAttr(attr, tmpl, "reservedArea")
 						if _, ok := attr["reservedArea"]; ok {
@@ -1961,6 +1969,10 @@ func GetOCLIAtrributesTemplateHelper(attr, data map[string]interface{}, ent int)
 							}
 						}
 
+					} else if ent == BLDG {
+						attr["sizeUnit"] = "m"
+						attr["heightUnit"] = "m"
+
 					} else {
 						attr["sizeUnit"] = "cm"
 						attr["heightUnit"] = "cm"
@@ -1979,7 +1991,10 @@ func GetOCLIAtrributesTemplateHelper(attr, data map[string]interface{}, ent int)
 
 					//fbxModel section
 					if check := CopyAttr(attr, tmpl, "fbxModel"); !check {
-						attr["fbxModel"] = ""
+						if ent != BLDG {
+							attr["fbxModel"] = ""
+						}
+
 					}
 
 					//Copy orientation if available
@@ -2062,7 +2077,17 @@ func UIHighlight(objArg string) error {
 	return nil
 }
 
-func CameraMove(command string, position []interface{}, rotation []interface{}) {
+func UIClearCache() error {
+	subdata := map[string]interface{}{"command": "clearcache", "data": ""}
+	data := map[string]interface{}{"type": "ui", "data": subdata}
+	if State.DebugLvl > WARNING {
+		Disp(data)
+	}
+	InformUnity("HandleUI", -1, data)
+	return nil
+}
+
+func CameraMove(command string, position []float64, rotation []float64) {
 	subdata := map[string]interface{}{"command": command}
 	subdata["position"] = map[string]interface{}{"x": position[0], "y": position[1], "z": position[2]}
 	subdata["rotation"] = map[string]interface{}{"x": rotation[0], "y": rotation[1]}
@@ -2494,7 +2519,7 @@ func objectCounter(parent *map[string]interface{}) int {
 // by retrieving the hierarchy. 'force' bool is useful
 // for scripting where the user can 'force' input if
 // the num objects to draw surpasses threshold
-func Draw(x string, depth int, force string) error {
+func Draw(x string, depth int, force bool) error {
 	obj, _ := GetObject(x, true)
 	if obj == nil {
 		return fmt.Errorf("object not found")
@@ -2512,7 +2537,7 @@ func Draw(x string, depth int, force string) error {
 		count := objectCounter(&obj)
 		if State.UnityClientAvail {
 			okToGo := true
-			if count > State.DrawThreshold && force == "" {
+			if count > State.DrawThreshold && !force {
 				msg := "You are about to send " + strconv.Itoa(count) +
 					" objects to the Unity 3D client. " +
 					"Do you want to continue ? (y/n)\n"
@@ -2522,9 +2547,9 @@ func Draw(x string, depth int, force string) error {
 				if ans != "y" && ans != "Y" {
 					okToGo = false
 				}
-			} else if force == "y" {
+			} else if force {
 				okToGo = true
-			} else if force == "n" && count > State.DrawThreshold {
+			} else if !force && count > State.DrawThreshold {
 				okToGo = false
 			}
 			if okToGo {
@@ -2768,60 +2793,41 @@ func UpdateSelection(data map[string]interface{}) error {
 	return nil
 }
 
-func LoadFile(path string) {
-	//By setting the 'ScriptCalled' variable
-	//the REPL will recognise this and invoke the
-	//LoadFile() Function in ocli.go
-
-	//Alternative to this would be to pass the LoadFile()
-	//function as an argument here
-	State.ScriptCalled = true
-	State.ScriptPath, _ = filepath.Abs(filepath.Clean(path))
-}
-
-func LoadTemplate(data map[string]interface{}, filePath string) {
+func LoadTemplate(data map[string]interface{}, filePath string) error {
 	var URL string
-
-	if cat, _ := data["category"]; cat == "room" || data["description"] == nil {
+	if cat := data["category"]; cat == "room" {
 		//Room template
 		URL = State.APIURL + "/api/room-templates"
-	} else {
-		//Obj template
+	} else if cat == "bldg" || cat == "building" {
+		//Bldg template
+		URL = State.APIURL + "/api/bldg-templates"
+	} else if cat == "rack" || cat == "device" {
+		// Obj template
 		URL = State.APIURL + "/api/obj-templates"
+	} else {
+		return fmt.Errorf("this template does not have a valid category. Please add a category attribute with a value of building or room or rack or device")
 	}
-
 	r, e := models.Send("POST", URL, GetKey(), data)
 	if e != nil {
-		l.GetErrorLogger().Println(e.Error())
-		if State.DebugLvl > NONE {
-			println("Error: ", e.Error())
-		}
-
+		return fmt.Errorf(e.Error())
 	}
-
 	//Crashes here if API timeout
 	if r == nil {
-		if State.DebugLvl > NONE {
-			println("Unable to recieve response from API")
-		}
-		return
+		return fmt.Errorf("unable to recieve response from API")
 	}
-
 	if r.StatusCode == http.StatusCreated {
 		println("Template Loaded")
+		return nil
 	} else {
 		l.GetWarningLogger().Println("Couldn't load template, Status Code :", r.StatusCode, " filePath :", filePath)
 		parsedResp := ParseResponse(r, e, "sending template")
-		if State.DebugLvl > 0 {
-			println("Error template wasn't loaded")
-			if mInf, ok := parsedResp["message"]; ok {
-				if msg, ok := mInf.(string); ok {
-					println(APIErrorPrefix + msg)
-				}
+		errorMsg := "Error template wasn't loaded\n"
+		if mInf, ok := parsedResp["message"]; ok {
+			if msg, ok := mInf.(string); ok {
+				errorMsg += APIErrorPrefix + msg
 			}
-
 		}
-
+		return fmt.Errorf(errorMsg)
 	}
 }
 
@@ -2886,19 +2892,6 @@ func SetEnv(arg string, val interface{}) {
 			}
 
 			println(arg + " Display Environment variable set")
-		}
-
-	case "Analyser":
-		if _, ok := val.(bool); !ok {
-			msg := "Can only assign bool values for SAnalyser Env Var"
-			l.GetWarningLogger().Println(msg)
-			if State.DebugLvl > 0 {
-				println(msg)
-			}
-
-		} else {
-			State.Analyser = val.(bool)
-			println("Static Analyser Environment variable set")
 		}
 
 	default:
@@ -3030,25 +3023,16 @@ func InformUnity(caller string, entity int, data map[string]interface{}) error {
 }
 
 // x is path
-func LSOBJECTRecursive(x string, entity int, silence bool) []interface{} {
+func LSOBJECTRecursive(x string, entity int) []interface{} {
 	var obj map[string]interface{}
 	var Path string
 
 	if entity == SITE { //Edge case
 		if x == "/Physical" {
 			r, e := models.Send("GET",
-				State.APIURL+"/api/sites", GetKey(), nil)
-			obj = ParseResponse(r, e, "Get Sites")
-			arr := LoadArrFromResp(obj, "objects")
-			if !silence {
-				for _, siteInf := range arr {
-					if site, _ := LoadObjectFromInf(siteInf); site != nil {
-						println(site["name"].(string))
-					}
-				}
-			}
-
-			return arr
+				State.APIURL+"/api/tenants", GetKey(), nil)
+			obj = ParseResponse(r, e, "Get Tenants")
+			return LoadArrFromResp(obj, "objects")
 		} else {
 			//Return nothing
 			return nil
@@ -3099,18 +3083,7 @@ func LSOBJECTRecursive(x string, entity int, silence bool) []interface{} {
 	//println(entities)
 	//println(obi)
 	//println("WANT:", EntityToString(entity))
-	res := lsobjHelperRecursive(State.APIURL, idToSend, obi, entity)
-	if !silence {
-		for i := range res {
-			if item, ok := res[i].(map[string]interface{}); ok {
-				if item != nil && item["name"] != nil {
-					println(item["name"].(string))
-				}
-			}
-		}
-	}
-
-	return res
+	return lsobjHelperRecursive(State.APIURL, idToSend, obi, entity)
 	//return nil
 }
 
@@ -3378,6 +3351,14 @@ func OnlinePathResolve(path []string) []string {
 		return []string{basePath}
 	}
 
+	if path[0] == "BldgTemplates" {
+		basePath += "/bldg-templates"
+		if len(path) > 1 {
+			basePath += "/" + path[1]
+		}
+		return []string{basePath}
+	}
+
 	if path[0] == "Groups" {
 		basePath += "/groups"
 		if len(path) > 1 {
@@ -3496,6 +3477,14 @@ func OnlineLevelResolver(path []string) []string {
 		return []string{basePath}
 	}
 
+	if path[0] == "BldgTemplates" {
+		basePath += "/bldg-templates"
+		if len(path) > 1 {
+			basePath += "/" + path[1]
+		}
+		return []string{basePath}
+	}
+
 	if path[0] == "Groups" {
 		basePath += "/groups"
 		if len(path) > 1 {
@@ -3564,6 +3553,8 @@ func fetchTemplate(name string, objType int) map[string]interface{} {
 	var URL string
 	if objType == ROOMTMPL {
 		URL = State.APIURL + "/api/room_templates/" + name
+	} else if objType == BLDGTMPL {
+		URL = State.APIURL + "/api/bldg_templates/" + name
 	} else {
 		URL = State.APIURL + "/api/obj_templates/" + name
 	}

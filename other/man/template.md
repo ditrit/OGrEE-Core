@@ -6,5 +6,5 @@ Complete path must be provided. At this time it is preferable to enclose the pat
 
 EXAMPLE   
 
-    .template: ../../scripts/ocliScript   
-    .template: "path/to/scriptFile/ocliScript.ocli" 
+    .template: ../../templates/roomTemplateA.json   
+    .template: "path/to/templates/someTemplate.json" 
