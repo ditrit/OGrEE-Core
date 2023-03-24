@@ -43,6 +43,7 @@ func Disp(x map[string]interface{}) {
 	println("JSON: ", string(jx))
 }
 
+// NOT IN USE
 // 'Flattens' the map[string]interface{}
 // for PATCH requests
 func Flatten(prefix string, src map[string]interface{}, dest map[string]interface{}) {
@@ -53,10 +54,6 @@ func Flatten(prefix string, src map[string]interface{}, dest map[string]interfac
 		switch child := v.(type) {
 		case map[string]interface{}:
 			Flatten(prefix+k, child, dest)
-		// case []interface{}:
-		// 	for i := 0; i < len(child); i++ {
-		// 		dest[prefix+k+"."+strconv.Itoa(i)] = child[i]
-		// 	}
 		default:
 			dest[prefix+k] = v
 		}
@@ -781,14 +778,6 @@ var UpdateEntity = func(w http.ResponseWriter, r *http.Request) {
 		u.ErrLog("Cannot update invalid object", "UPDATE "+mux.Vars(r)["entity"], "", r)
 		return
 	}
-
-	//Flatten updateData if we have
-	//a PATCH request
-	// if isPatch {
-	// 	newUpdateData := map[string]interface{}{}
-	// 	Flatten("", updateData, newUpdateData)
-	// 	updateData = newUpdateData
-	// }
 
 	switch {
 	case e2: // Update with slug/hierarchyName

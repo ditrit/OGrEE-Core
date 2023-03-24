@@ -467,12 +467,14 @@ func UpdateEntity(ent string, req bson.M, t map[string]interface{}, isPatch bool
 		bytes, _ := json.Marshal(oldObj)
 		json.Unmarshal(bytes, &formattedOldObj)
 		// Update old with new
-		delete(formattedOldObj, "id")
 		e1 = updateOldObjWithPatch(formattedOldObj, t)
 		if e1 != "" {
 			return u.Message(false, "Error: "+e1), e1
 		}
 		t = formattedOldObj
+		// Remove API set fields
+		delete(t, "id")
+		delete(t, "hierarchyName")
 	}
 
 	// Ensure the update is valid and apply it
