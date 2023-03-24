@@ -2927,7 +2927,7 @@ func InteractObject(path string, keyword string, val interface{}, fromAttr bool)
 						if i == 0 {
 							val = desc[i].(string)
 						} else {
-							val = val.(string) + "-" + desc[i].(string)
+							val = val.(string) + "\n" + desc[i].(string)
 						}
 
 					}
