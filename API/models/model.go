@@ -427,7 +427,24 @@ func deleteHelper(t map[string]interface{}, ent int) (map[string]interface{}, st
 	return nil, ""
 }
 
-func UpdateEntity(ent string, req bson.M, t *map[string]interface{}, isPatch bool) (map[string]interface{}, string) {
+func updateOldObjWithPatch(old map[string]interface{}, patch map[string]interface{}) string {
+	for k, v := range patch {
+		switch child := v.(type) {
+		case map[string]interface{}:
+			switch oldChild := v.(type) {
+			case map[string]interface{}:
+				updateOldObjWithPatch(oldChild, child)
+			default:
+				return "Wrong format for property " + k
+			}
+		default:
+			old[k] = v
+		}
+	}
+	return ""
+}
+
+func UpdateEntity(ent string, req bson.M, t map[string]interface{}, isPatch bool) (map[string]interface{}, string) {
 	var e *mongo.SingleResult
 	updatedDoc := bson.M{}
 	retDoc := options.ReturnDocument(options.After)
@@ -439,34 +456,27 @@ func UpdateEntity(ent string, req bson.M, t *map[string]interface{}, isPatch boo
 	if e1 != "" {
 		return u.Message(false, "Error: "+e1), e1
 	}
-	(*t)["lastUpdated"] = primitive.NewDateTimeFromTime(time.Now())
-	(*t)["createdDate"] = oldObj["createdDate"]
+	t["lastUpdated"] = primitive.NewDateTimeFromTime(time.Now())
+	t["createdDate"] = oldObj["createdDate"]
+
+	// Update old object with patch data
+	if isPatch {
+		delete(oldObj, "id")
+		updateOldObjWithPatch(oldObj, t)
+		t = oldObj
+	}
 
 	// Ensure the update is valid and apply it
 	ctx, cancel := u.Connect()
-	if isPatch {
-		msg, ok := ValidatePatch(u.EntityStrToInt(ent), *t)
-		if !ok {
-			return msg, "invalid"
-		}
-		e = GetDB().Collection(ent).FindOneAndUpdate(ctx,
-			req, bson.M{"$set": *t},
-			&options.FindOneAndUpdateOptions{ReturnDocument: &retDoc})
-		if e.Err() != nil {
-			return u.Message(false, "failure: "+e.Err().Error()), e.Err().Error()
-		}
-	} else {
-		println("NOT A PATCH")
-		msg, ok := ValidateEntity(u.EntityStrToInt(ent), *t)
-		if !ok {
-			return msg, "invalid"
-		}
-		e = GetDB().Collection(ent).FindOneAndReplace(ctx,
-			req, *t,
-			&options.FindOneAndReplaceOptions{ReturnDocument: &retDoc})
-		if e.Err() != nil {
-			return u.Message(false, "failure: "+e.Err().Error()), e.Err().Error()
-		}
+	msg, ok := ValidateEntity(u.EntityStrToInt(ent), t)
+	if !ok {
+		return msg, "invalid"
+	}
+	e = GetDB().Collection(ent).FindOneAndReplace(ctx,
+		req, t,
+		&options.FindOneAndReplaceOptions{ReturnDocument: &retDoc})
+	if e.Err() != nil {
+		return u.Message(false, "failure: "+e.Err().Error()), e.Err().Error()
 	}
 
 	// Changes to hierarchyName should be propagated to its children

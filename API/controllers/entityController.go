@@ -784,11 +784,11 @@ var UpdateEntity = func(w http.ResponseWriter, r *http.Request) {
 
 	//Flatten updateData if we have
 	//a PATCH request
-	if isPatch {
-		newUpdateData := map[string]interface{}{}
-		Flatten("", updateData, newUpdateData)
-		updateData = newUpdateData
-	}
+	// if isPatch {
+	// 	newUpdateData := map[string]interface{}{}
+	// 	Flatten("", updateData, newUpdateData)
+	// 	updateData = newUpdateData
+	// }
 
 	switch {
 	case e2: // Update with slug/hierarchyName
@@ -801,7 +801,7 @@ var UpdateEntity = func(w http.ResponseWriter, r *http.Request) {
 			req = bson.M{"hierarchyName": name}
 		}
 
-		v, e3 = models.UpdateEntity(entity, req, &updateData, isPatch)
+		v, e3 = models.UpdateEntity(entity, req, updateData, isPatch)
 
 	case e: // Update with id
 		objID, err := primitive.ObjectIDFromHex(id)
@@ -815,7 +815,7 @@ var UpdateEntity = func(w http.ResponseWriter, r *http.Request) {
 		println("OBJID:", objID.Hex())
 		println("Entity;", entity)
 
-		v, e3 = models.UpdateEntity(entity, bson.M{"_id": objID}, &updateData, isPatch)
+		v, e3 = models.UpdateEntity(entity, bson.M{"_id": objID}, updateData, isPatch)
 
 	default:
 		w.WriteHeader(http.StatusBadRequest)
