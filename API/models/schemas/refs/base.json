@@ -19,7 +19,8 @@
         "lastUpdated": {
         },
         "name": {
-          "type": "string"
+          "type": "string",
+          "pattern":"^\\w(\\w|\\-)*$"
         },
         "id": {
           "type": "string"
