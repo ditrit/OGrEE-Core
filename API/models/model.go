@@ -2,6 +2,7 @@ package models
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	u "p3/utils"
 	"strconv"
@@ -459,11 +460,19 @@ func UpdateEntity(ent string, req bson.M, t map[string]interface{}, isPatch bool
 	t["lastUpdated"] = primitive.NewDateTimeFromTime(time.Now())
 	t["createdDate"] = oldObj["createdDate"]
 
-	// Update old object with patch data
+	// Update old object data with patch data
 	if isPatch {
-		delete(oldObj, "id")
-		updateOldObjWithPatch(oldObj, t)
-		t = oldObj
+		var formattedOldObj map[string]interface{}
+		// Convert primitive.A and similar types
+		bytes, _ := json.Marshal(oldObj)
+		json.Unmarshal(bytes, &formattedOldObj)
+		// Update old with new
+		delete(formattedOldObj, "id")
+		e1 = updateOldObjWithPatch(formattedOldObj, t)
+		if e1 != "" {
+			return u.Message(false, "Error: "+e1), e1
+		}
+		t = formattedOldObj
 	}
 
 	// Ensure the update is valid and apply it
@@ -480,13 +489,13 @@ func UpdateEntity(ent string, req bson.M, t map[string]interface{}, isPatch bool
 	}
 
 	// Changes to hierarchyName should be propagated to its children
-	if ent == "tenant" && oldObj["name"] != (*t)["name"] {
+	if ent == "tenant" && oldObj["name"] != t["name"] {
 		propagateParentNameChange(ctx, oldObj["name"].(string),
-			(*t)["name"].(string), u.EntityStrToInt(ent))
+			t["name"].(string), u.EntityStrToInt(ent))
 	}
-	if oldObj["hierarchyName"] != (*t)["hierarchyName"] {
+	if oldObj["hierarchyName"] != t["hierarchyName"] {
 		propagateParentNameChange(ctx, oldObj["hierarchyName"].(string),
-			(*t)["hierarchyName"].(string), u.EntityStrToInt(ent))
+			t["hierarchyName"].(string), u.EntityStrToInt(ent))
 	}
 
 	//Obtain new document then
