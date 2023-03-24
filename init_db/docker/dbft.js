@@ -80,7 +80,7 @@ db.customer.createIndex({name:1}, { unique: true });
 
 //Authenticate first
 var m = new Mongo()
-var authDB = m.getDB("test")
+var authDB = m.getDB(ADMIN_DB)
 authDB.auth(ADMIN_USER, ADMIN_PASS);
 
 
@@ -163,7 +163,7 @@ db.stray_sensor.createIndex({name:1}, { unique: true });
 
 //Authenticate first
 var m = new Mongo()
-var authDB = m.getDB("test")
+var authDB = m.getDB(ADMIN_DB)
 authDB.auth(ADMIN_USER, ADMIN_PASS);
 
 

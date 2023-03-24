@@ -32,12 +32,12 @@ services:
         - CUSTOMER_API_PASS=123
         - CUSTOMER_RECORDS_DB=ogree
 
+        - MONGO_INITDB_ROOT_USERNAME=admin
+        - MONGO_INITDB_ROOT_PASSWORD=adminpassword
+
         - ADMIN_DB=admin
         - SUPER_USER=super
         - SUPER_PASS=superpassword
-
-        - ADMIN_USER=admin
-        - ADMIN_PASS=adminpassword
 
         - GUARD_USER=guard
         - GUARD_PASS=adminpassword
