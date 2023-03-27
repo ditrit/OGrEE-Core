@@ -13,6 +13,7 @@ import (
 	"time"
 
 	"github.com/gorilla/mux"
+	"github.com/gorilla/schema"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
@@ -69,12 +70,11 @@ func DispRequestMetaData(r *http.Request) {
 	fmt.Println(time.Now().Format("2006-Jan-02 Monday 03:04:05 PM MST -07:00"))
 }
 
-func getFiltersFromQueryParams(r *http.Request) map[string][]string {
-	filters := map[string][]string{}
-	r.ParseForm()
-	filters["fields"] = r.Form["fieldOnly"]
-	filters["startDate"] = r.Form["startDate"]
-	filters["endDate"] = r.Form["endDate"]
+var decoder = schema.NewDecoder()
+
+func getFiltersFromQueryParams(r *http.Request) u.RequestFilters {
+	var filters u.RequestFilters
+	decoder.Decode(&filters, r.URL.Query())
 	return filters
 }
 
@@ -495,7 +495,7 @@ var GetAllEntities = func(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	data, e = models.GetManyEntities(entStr, bson.M{}, nil)
+	data, e = models.GetManyEntities(entStr, bson.M{}, u.RequestFilters{})
 
 	var resp map[string]interface{}
 	if len(data) == 0 {
@@ -1950,7 +1950,7 @@ var GetEntityHierarchyNonStd = func(w http.ResponseWriter, r *http.Request) {
 		// }
 	} else {
 		oID, _ := getObjID(id)
-		data, err = models.GetEntityHierarchy(oID, entity, entNum, u.AC, nil)
+		data, err = models.GetEntityHierarchy(oID, entity, entNum, u.AC, u.RequestFilters{})
 	}
 
 	if data == nil {

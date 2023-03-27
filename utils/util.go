@@ -39,6 +39,12 @@ const (
 	STRAYSENSOR
 )
 
+type RequestFilters struct {
+	FieldsToShow []string `schema:"fieldOnly"`
+	StartDate    []string `schema:"startDate"`
+	EndDate      []string `schema:"endDate"`
+}
+
 func GetBuildDate() string {
 	return BuildTime
 }
