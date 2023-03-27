@@ -99,7 +99,7 @@ func GetEntity(req bson.M, ent string, filters map[string][]string) (map[string]
 			}
 			opts = options.FindOne().SetProjection(compoundIndex)
 		}
-		e = getFilters(req, filters)
+		e = getDateFilters(req, filters)
 		if e != nil {
 			return nil, e.Error()
 		}
@@ -124,35 +124,27 @@ func GetEntity(req bson.M, ent string, filters map[string][]string) (map[string]
 	return t, ""
 }
 
-func getFilters(req bson.M, filters map[string][]string) error {
-	if len(filters["startDate"]) > 0 && len(filters["endDate"]) > 0 {
-		startDate, e := time.Parse("2006-01-02", filters["startDate"][0])
-		if e != nil {
-			return e
+func getDateFilters(req bson.M, filters map[string][]string) error {
+	if len(filters["startDate"]) > 0 || len(filters["endDate"]) > 0 {
+		lastUpdateReq := bson.M{}
+		if len(filters["startDate"]) > 0 {
+			startDate, e := time.Parse("2006-01-02", filters["startDate"][0])
+			if e != nil {
+				return e
+			}
+			lastUpdateReq["$gte"] = primitive.NewDateTimeFromTime(startDate)
 		}
-		endDate, e := time.Parse("2006-01-02", filters["endDate"][0])
-		fmt.Println(endDate)
-		endDate = endDate.Add(time.Hour * 24)
-		fmt.Println(endDate)
-		if e != nil {
-			return e
+
+		if len(filters["endDate"]) > 0 {
+			endDate, e := time.Parse("2006-01-02", filters["endDate"][0])
+			endDate = endDate.Add(time.Hour * 24)
+			fmt.Println(endDate)
+			if e != nil {
+				return e
+			}
+			lastUpdateReq["$lte"] = primitive.NewDateTimeFromTime(endDate)
 		}
-		req["lastUpdated"] = bson.M{"$gte": primitive.NewDateTimeFromTime(startDate),
-			"$lte": primitive.NewDateTimeFromTime(endDate)}
-	} else if len(filters["startDate"]) > 0 {
-		startDate, e := time.Parse("2006-01-02", filters["startDate"][0])
-		if e != nil {
-			return e
-		}
-		req["lastUpdated"] = bson.M{"$gte": primitive.NewDateTimeFromTime(startDate)}
-	} else if len(filters["endDate"]) > 0 {
-		endDate, e := time.Parse("2006-01-02", filters["endDate"][0])
-		endDate = endDate.Add(time.Hour * 24)
-		fmt.Println(endDate)
-		if e != nil {
-			return e
-		}
-		req["lastUpdated"] = bson.M{"$lte": primitive.NewDateTimeFromTime(endDate)}
+		req["lastUpdated"] = lastUpdateReq
 	}
 	return nil
 }
@@ -171,7 +163,7 @@ func GetManyEntities(ent string, req bson.M, filters map[string][]string) ([]map
 			}
 			opts = options.Find().SetProjection(compoundIndex)
 		}
-		err = getFilters(req, filters)
+		err = getDateFilters(req, filters)
 		if err != nil {
 			return nil, err.Error()
 		}
@@ -781,7 +773,11 @@ func GetHierarchyByName(entity, hierarchyName string, limit int, filters map[str
 
 	// Define in which collections we can find children
 	rangeEntities := getChildrenCollections(limit, entity)
-	fmt.Println(rangeEntities)
+
+	// Guarantee hierarchyName is present even with filters
+	if len(filters["fields"]) > 0 && !u.StrSliceContains(filters["fields"], "hierarchyName") {
+		filters["fields"] = append(filters["fields"], "hierarchyName")
+	}
 
 	// Get children from all given collections
 	for _, checkEnt := range rangeEntities {

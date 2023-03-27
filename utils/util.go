@@ -234,11 +234,12 @@ func GetParentOfEntityByInt(entity int) int {
 	}
 }
 
-//func GetParentOfEntityByStr(entity string) int {
-//	switch entity {
-//	case AC,PWRPNL,WALL:
-//		return "room"
-//	default:
-//		return
-//	}
-//}
+// Helper functions
+func StrSliceContains(slice []string, elem string) bool {
+	for _, e := range slice {
+		if e == elem {
+			return true
+		}
+	}
+	return false
+}
