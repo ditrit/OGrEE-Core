@@ -20,6 +20,9 @@
 // 
 // As Super:
 // mongosh "mongodb://SUPER_USER:SUPER_PASS@localhost/test?authSource=test" 
+//
+// As API:
+// mongosh "mongodb://"ogree"+DB_NAME+"Admin":CUSTOMER_API_PASS@localhost/"ogree"+DB_NAME?authSource="ogree"+DB_NAME"
 
 
 //
