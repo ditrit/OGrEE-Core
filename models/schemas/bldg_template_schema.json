@@ -4,29 +4,38 @@
     "type": "object",
     "properties": {
         "slug": {
-            "type": "string"
+            "type": "string",
+            "pattern": "^[a-zA-Z0-9-]+$"
         },
         "category": {
             "type": "string",
-            "enum": ["building"]
+            "pattern": "building"
+        },
+        "center": {
+            "type": "array",
+            "items": {
+                "type": "number"
+            },
+            "minItems": 2,
+            "maxItems": 2
         },
         "sizeWDHm": {
             "type": "array",
             "items": {
-                "type": "number",
-                "minItems": 3,
-                "maxItems": 3
-            }
+                "type": "number"
+            },
+            "minItems": 3,
+            "maxItems": 3
         },
         "vertices": {
             "type": "array",
             "items": {
                 "type": "array",
                 "items": {
-                    "type": "number",
-                    "minItems": 2,
-                    "maxItems": 2
-                }
+                    "type": "number"
+                },
+                "minItems": 2,
+                "maxItems": 2
             }
         }
     },
@@ -34,7 +43,8 @@
         "slug",
         "category",
         "sizeWDHm",
-        "vertices"
+        "vertices",
+        "center"
     ],
     "examples": [
         {
@@ -45,7 +55,8 @@
                 104,
                 5
             ],
-            "vertices": []
-        }
+            "vertices": [],
+            "center":[0,45]
+        }    
     ]
 }

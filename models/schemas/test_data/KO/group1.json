@@ -1,0 +1,10 @@
+{
+    "attributes": {
+        "contents": "B11,B12,C11,C12"
+    },
+    "category": "group",
+    "description": ["ERROR", "NOT VALID", "TESTING"],
+    "domain": "DEMO",
+    "name": "group 3",
+    "parentId": "xxxxdaf6618082206682xxxx"
+}

@@ -4,35 +4,30 @@
     "type": "object",
     "required": [
         "attributes",
-        "colors",
         "components",
         "description",
         "fbxModel",
         "sizeWDHmm",
         "slots",
-        "slug"
+        "slug",
+        "category"
     ],
     "properties": {
         "attributes": {
             "type": "object",
-            "required": [
-                "type"
-            ],
-            "properties": {
-                "model": {
-                    "type": "string"
-                },
-                "type": {
-                    "type": "string"
-                },
-                "vendor": {
+            "patternProperties": {
+                "^.*$": {
                     "type": "string"
                 }
-            }
+              },
+              "additionalProperties": false
         },
         "category": {
             "type": "string",
-            "enum": ["rack", "device"]
+            "enum": [
+                "rack",
+                "device"
+            ]
         },
         "colors": {
             "type": "array",
@@ -58,8 +53,6 @@
             "items": {
                 "type": "object",
                 "required": [
-                    "color",
-                    "elemOrient",
                     "elemPos",
                     "elemSize",
                     "labelPos",
@@ -68,39 +61,27 @@
                 ],
                 "properties": {
                     "attributes": {
-                        "type": "object",
-                        "properties": {
-                            "factor": {
-                                "type": "string"
-                            }
-                        }
+                        "$ref": "#/$defs/attributes"
                     },
                     "color": {
-                        "type": "string"
+                        "$ref": "#/$defs/color"
                     },
                     "elemOrient": {
                         "type": "string",
-                        "enum": ["horizontal", "vertical"]
+                        "enum": [
+                            "horizontal",
+                            "vertical",
+                            ""
+                        ]
                     },
                     "elemPos": {
-                        "type": "array",
-                        "items": {
-                            "type": "integer",
-                            "minItems": 3,
-                            "maxItems": 3
-                        }
+                        "$ref": "#/$defs/elemPos"
                     },
                     "elemSize": {
-                        "type": "array",
-                        "items": {
-                            "type": "integer",
-                            "minItems": 3,
-                            "maxItems": 3
-                        }
+                        "$ref": "#/$defs/elemSize"
                     },
                     "labelPos": {
-                        "type": "string",
-                        "enum": ["front", "rear", "frontrear", "top", "right", "left", "none"]
+                        "$ref": "#/$defs/labelPos"
                     },
                     "location": {
                         "type": "string"
@@ -112,8 +93,6 @@
             }
         },
         "createdDate": {
-            "type": "string",
-            "format": "date-time"
         },
         "description": {
             "type": "string"
@@ -125,77 +104,211 @@
             "type": "string"
         },
         "lastUpdated": {
-            "type": "string",
-            "format": "date-time"
         },
         "sizeWDHmm": {
             "type": "array",
             "items": {
-                "type": "number",
-                "minItems": 3,
-                "maxItems": 3
-            }
+                "type": "number"
+            },
+            "minItems": 3,
+            "maxItems": 3
         },
-        "slots": {
-            "type": "array",
-            "items": {
-                "type": "object",
-                "required": [
-                    "color",
-                    "elemOrient",
-                    "elemPos",
-                    "elemSize",
-                    "labelPos",
-                    "location",
-                    "type"
-                ],
-                "properties": {
-                    "attributes": {
-                        "type": "object",
-                        "properties": {
-                            "factor": {
-                                "type": "string"
-                            }
+        "slug": {
+            "type": "string",
+            "pattern": "^[a-zA-Z0-9-]+$"
+        }
+    },
+    "if": {
+        "properties": {
+            "category": {
+                "const": "rack"
+            }
+        }
+    },
+    "then": {
+        "properties": {
+            "slots": {
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "required": [
+                        "elemOrient",
+                        "elemPos",
+                        "elemSize",
+                        "labelPos",
+                        "location",
+                        "type"
+                    ],
+                    "properties": {
+                        "elemOrient": {
+                            "type": "string",
+                            "enum": [
+                                "horizontal",
+                                "vertical"
+                            ]
+                        },
+                        "attributes": {
+                            "$ref": "#/$defs/attributes"
+                        },
+                        "color": {
+                            "$ref": "#/$defs/color"
+                        },
+                        
+                        "elemPos": {
+                            "$ref": "#/$defs/elemPos"
+                        },
+                        "elemSize": {
+                            "$ref": "#/$defs/elemSize"
+                        },
+                        "labelPos": {
+                            "$ref": "#/$defs/labelPos"
+                        },
+                        "location": {
+                            "type": "string"
+                        },
+                        "type": {
+                            "type": "string"
                         }
-                    },
-                    "color": {
-                        "type": "string"
-                    },
-                    "elemOrient": {
-                        "type": "string",
-                        "enum": ["horizontal", "vertical"]
-                    },
-                    "elemPos": {
-                        "type": "array",
-                        "items": {
-                            "type": "integer",
-                            "minItems": 3,
-                            "maxItems": 3
-                        }
-                    },
-                    "elemSize": {
-                        "type": "array",
-                        "items": {
-                            "type": "integer",
-                            "minItems": 3,
-                            "maxItems": 3
-                        }
-                    },
-                    "labelPos": {
-                        "type": "string",
-                        "enum": ["front", "rear", "frontrear", "top", "right", "left", "none"]
-                    },
-                    "location": {
-                        "type": "string"
-                    },
-                    "type": {
-                        "type": "string"
                     }
                 }
             }
-        },
-        "slug": {
-            "type": "string"
         }
-    }
+    },
+    "else": {
+        "properties": {
+            "slots": {
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "required": [
+                        "elemPos",
+                        "elemSize",
+                        "labelPos",
+                        "location",
+                        "type"
+                    ],
+                    "properties": {
+                        "elemOrient": {
+                            "type": "string",
+                            "enum": [
+                                "horizontal",
+                                "vertical",
+                                ""
+                            ]
+                        },
+                        "attributes": {
+                            "$ref": "#/$defs/attributes"
+                        },
+                        "color": {
+                            "$ref": "#/$defs/color"
+                        },
+                        
+                        "elemPos": {
+                            "$ref": "#/$defs/elemPos"
+                        },
+                        "elemSize": {
+                            "$ref": "#/$defs/elemSize"
+                        },
+                        "labelPos": {
+                            "$ref": "#/$defs/labelPos"
+                        },
+                        "location": {
+                            "type": "string"
+                        },
+                        "type": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "$defs": {
+        "attributes": {
+            "type": "object",
+            "properties": {
+                "factor": {
+                    "type": "string"
+                }
+            }
+        },
+        "color": {
+            "type": "string",
+            "pattern": "(^[0-9a-fA-F]{6}$)|(^@[a-zA-Z0-9-]+$)|(^$)"
+        },
+        "elemPos": {
+            "type": "array",
+            "items": {
+                "type": "number"
+            },
+            "minItems": 3,
+            "maxItems": 3
+        },
+        "elemSize": {
+            "type": "array",
+            "items": {
+                "type": "number"
+            },
+            "minItems": 3,
+            "maxItems": 3
+        },
+        "labelPos": {
+            "type": "string",
+            "enum": [
+                "front",
+                "rear",
+                "frontrear",
+                "top",
+                "right",
+                "left",
+                "none"
+            ]
+        }
+    },
+    "examples": [
+        {
+            "slug": "ibm-example",
+            "description": "example",
+            "category": "device",
+            "sizeWDHmm": [216, 659, 41],
+            "fbxModel": "",
+            "attributes": {
+                "type": "blade",
+                "vendor": "IBM",
+                "model": "HC1",
+                "ram order": "8,1,6, / 8,5,5,12,4,13"
+            },
+            "colors": [],
+            "components": [
+                {
+                    "location": "eth2",
+                    "type": "port",
+                    "elemOrient": "",
+                    "elemPos": [ 104, 649, 0],
+                    "elemSize": [14, 11, 11],
+                    "mandatory": "yes",
+                    "labelPos": "front",
+                    "color": "ffc0cb",
+                    "attributes": {
+                        "factor": "rj45"
+                    }
+                }
+            ],
+            "slots": [
+                {
+                    "location": "cpu1",
+                    "type": "processor",
+                    "elemOrient": "",
+                    "elemPos": [68, 343, 0],
+                    "elemSize": [97, 97, 30],
+                    "mandatory": "yes",
+                    "labelPos": "top",
+                    "color": "ffff00",
+                    "attributes": {
+                        "factor": "XXXX-R"
+                    }
+                }
+            ]
+        }
+    ]
 }

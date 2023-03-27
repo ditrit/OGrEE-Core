@@ -1,15 +1,48 @@
 package models
 
 import (
-	"encoding/hex"
+	"embed"
+	"fmt"
 	u "p3/utils"
-	"strconv"
 	"strings"
 
 	"github.com/santhosh-tekuri/jsonschema/v5"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
+
+//go:embed schemas/*.json
+//go:embed schemas/refs/*.json
+var embeddfs embed.FS
+var c *jsonschema.Compiler
+
+func init() {
+	// Load JSON schemas
+	c = jsonschema.NewCompiler()
+	println("Loaded json schemas for validation:")
+	loadJsonSchemas("")
+	loadJsonSchemas("refs/")
+	println()
+}
+
+func loadJsonSchemas(schemaPrefix string) {
+	var schemaPath = "schemas/"
+	dir := strings.Trim(schemaPath+schemaPrefix, "/") // without trailing '/'
+	entries, err := embeddfs.ReadDir((dir))
+	if err != nil {
+		println(err.Error())
+	}
+
+	for _, e := range entries {
+		if strings.HasSuffix(e.Name(), ".json") {
+			file, err := embeddfs.Open(schemaPath + schemaPrefix + e.Name())
+			if err == nil {
+				print(schemaPrefix + e.Name() + " ")
+				c.AddResource(schemaPrefix+e.Name(), file)
+			}
+		}
+	}
+}
 
 func validateParent(ent string, entNum int, t map[string]interface{}) (map[string]interface{}, bool) {
 
@@ -18,26 +51,30 @@ func validateParent(ent string, entNum int, t map[string]interface{}) (map[strin
 	}
 
 	//Check ParentID is valid
-	if t["parentId"] == nil {
+	if t["parentId"] == nil || t["parentId"] == "" {
 		return u.Message(false, "ParentID is not valid"), false
 	}
-
 	objID, err := primitive.ObjectIDFromHex(t["parentId"].(string))
-	if err != nil {
-		return u.Message(false, "ParentID is not valid"), false
+	var req primitive.M
+	if err == nil {
+		// parentId given with ID
+		req = bson.M{"_id": objID}
+	} else {
+		// parentId given with hierarchyName
+		req = bson.M{"hierarchyName": t["parentId"].(string)}
 	}
 
 	parent := map[string]interface{}{"parent": ""}
 	switch entNum {
 	case u.DEVICE:
-		x, _ := GetEntity(bson.M{"_id": objID}, "rack", []string{})
+		x, _ := GetEntity(req, "rack")
 		if x != nil {
 			parent["parent"] = "rack"
 			parent["hierarchyName"] = getHierarchyName(x)
 			return parent, true
 		}
 
-		y, _ := GetEntity(bson.M{"_id": objID}, "device", []string{})
+		y, _ := GetEntity(req, "device")
 		if y != nil {
 			parent["parent"] = "device"
 			parent["hierarchyName"] = getHierarchyName(y)
@@ -48,28 +85,28 @@ func validateParent(ent string, entNum int, t map[string]interface{}) (map[strin
 			"ParentID should be correspond to Existing ID"), false
 
 	case u.SENSOR, u.GROUP:
-		w, _ := GetEntity(bson.M{"_id": objID}, "device", []string{})
+		w, _ := GetEntity(req, "device")
 		if w != nil {
 			parent["parent"] = "device"
 			parent["hierarchyName"] = getHierarchyName(w)
 			return parent, true
 		}
 
-		x, _ := GetEntity(bson.M{"_id": objID}, "rack", []string{})
+		x, _ := GetEntity(req, "rack")
 		if x != nil {
 			parent["parent"] = "rack"
 			parent["hierarchyName"] = getHierarchyName(x)
 			return parent, true
 		}
 
-		y, _ := GetEntity(bson.M{"_id": objID}, "room", []string{})
+		y, _ := GetEntity(req, "room")
 		if y != nil {
 			parent["parent"] = "room"
 			parent["hierarchyName"] = getHierarchyName(y)
 			return parent, true
 		}
 
-		z, _ := GetEntity(bson.M{"_id": objID}, "building", []string{})
+		z, _ := GetEntity(req, "building")
 		if z != nil {
 			parent["parent"] = "building"
 			parent["hierarchyName"] = getHierarchyName(z)
@@ -103,7 +140,7 @@ func validateParent(ent string, entNum int, t map[string]interface{}) (map[strin
 		parentInt := u.GetParentOfEntityByInt(entNum)
 		parentStr := u.EntityToString(parentInt)
 
-		p, err := GetEntity(bson.M{"_id": objID}, parentStr, nil)
+		p, err := GetEntity(req, parentStr)
 		if len(p) > 0 {
 			parent["parent"] = parentStr
 			parent["hierarchyName"] = getHierarchyName(p)
@@ -118,17 +155,27 @@ func validateParent(ent string, entNum int, t map[string]interface{}) (map[strin
 	return nil, true
 }
 
-func validateJsonSchema(entity int, t map[string]interface{}, schPrefix string) (map[string]interface{}, bool) {
+func getHierarchyName(parent map[string]interface{}) string {
+	if parent["hierarchyName"] != nil {
+		return parent["hierarchyName"].(string)
+	} else {
+		return parent["name"].(string)
+	}
+}
+
+func validateJsonSchema(entity int, t map[string]interface{}) (map[string]interface{}, bool) {
 	// Get JSON schema
 	var schemaName string
 	switch entity {
 	case u.AC, u.CABINET, u.PWRPNL:
 		schemaName = "base_schema.json"
+	case u.STRAYDEV, u.STRAYSENSOR:
+		schemaName = "stray_schema.json"
 	default:
 		schemaName = u.EntityToString(entity) + "_schema.json"
 	}
 
-	sch, err := jsonschema.Compile(schPrefix + schemaName)
+	sch, err := c.Compile(schemaName)
 	if err != nil {
 		return u.Message(false, err.Error()), false
 	}
@@ -137,6 +184,7 @@ func validateJsonSchema(entity int, t map[string]interface{}, schPrefix string) 
 	if err := sch.Validate(t); err != nil {
 		switch v := err.(type) {
 		case *jsonschema.ValidationError:
+			fmt.Println(t)
 			println(v.GoString())
 			resp := u.Message(false, "JSON body doesn't validate with the expected JSON schema")
 			// Format errors array
@@ -157,14 +205,6 @@ func validateJsonSchema(entity int, t map[string]interface{}, schPrefix string) 
 	} else {
 		println("JSON Schema: all good, validated!")
 		return nil, true
-	}
-}
-
-func getHierarchyName(parent map[string]interface{}) string {
-	if parent["hierarchyName"] != nil {
-		return parent["hierarchyName"].(string)
-	} else {
-		return parent["name"].(string)
 	}
 }
 
@@ -311,7 +351,7 @@ func ValidateEntity(entity int, t map[string]interface{}) (map[string]interface{
 	*/
 
 	// Validate JSON Schema
-	if resp, err := validateJsonSchema(entity, t, "models/schemas/"); !err {
+	if resp, err := validateJsonSchema(entity, t); !err {
 		return resp, false
 	}
 
@@ -357,24 +397,7 @@ func ValidateEntity(entity int, t map[string]interface{}) (map[string]interface{
 						}
 
 					case u.CORRIDOR:
-						//Ensure the temperature and 2 racks are valid
-						if !IsString(v["temperature"]) {
-							msg := "The temperature must be on the " +
-								"payload and can only be a string value 'cold' or 'warm'"
-							return u.Message(false, msg), false
-						}
-						if !StringIsAmongValues(v["temperature"].(string), []string{"warm", "cold"}) {
-							msg := "The temperature must be on the " +
-								"payload and can only be 'cold' or 'warm'"
-							return u.Message(false, msg), false
-						}
-
-						if !IsString(v["content"]) {
-							msg := "The racks must be on the payload and have the key:" +
-								"'content' "
-							return u.Message(false, msg), false
-						}
-
+						//Ensure the 2 racks are valid
 						racks := strings.Split(v["content"].(string), ",")
 						if len(racks) != 2 {
 							msg := "2 racks separated by a comma must be on the payload"
@@ -528,142 +551,4 @@ func EnsureUnique(x []string) (string, bool) {
 		}
 	}
 	return "", true
-}
-
-func StringIsAmongValues(x string, values []string) bool {
-	for i := range values {
-		if x == values[i] {
-			return true
-		}
-	}
-	return false
-}
-
-func IsString(x interface{}) bool {
-	if _, ok := x.(string); ok {
-		return true
-	}
-	return false
-}
-
-func IsInt(x interface{}) bool {
-	if _, ok := x.(int); ok {
-		return true
-	}
-	return false
-}
-
-func IsFloat(x interface{}) bool {
-	if _, ok := x.(float64); ok {
-		return true
-	}
-	return false
-}
-
-func IsFloatArr(x interface{}) bool {
-	if _, ok := x.([]float64); ok {
-		return true
-	}
-	return false
-}
-
-func IsInfArr(x interface{}) bool {
-	if _, ok := x.([]interface{}); ok {
-		return true
-	}
-	return false
-}
-
-func IsIntArr(x interface{}) bool {
-	if _, ok := x.([]int); ok {
-		return true
-	}
-	return false
-}
-
-func IsHexString(s string) bool {
-	//Eliminate 'odd length' errors
-	if len(s)%2 != 0 {
-		s = "0" + s
-	}
-
-	_, err := hex.DecodeString(s)
-	return err == nil
-}
-
-func IsOrientation(x interface{}, ent int) bool {
-	if ent == u.BLDGTMPL || ent == u.ROOMTMPL {
-		switch x {
-		case "EN", "NW", "WS", "SE", "NE", "SW",
-			"-E-N", "-E+N", "+E-N", "+E+N", "+N+E",
-			"+N-E", "-N-E", "-N+E",
-			"-N-W", "-N+W", "+N-W", "+N+W",
-			"-W-S", "-W+S", "+W-S", "+W+S",
-			"-S-E", "-S+E", "+S-E", "+S+E",
-			"+x+y", "+x-y", "-x-y", "-x+y",
-			"+X+Y", "+X-Y", "-X-Y", "-X+Y":
-			return true
-		default:
-			if !IsString(x) {
-				return false
-			}
-			_, e := strconv.Atoi(x.(string))
-			_, e1 := strconv.ParseFloat(x.(string), 64)
-			return e1 == nil || e == nil
-		}
-	}
-
-	if ent == u.ROOM {
-		switch x {
-		case "EN", "NW", "WS", "SE", "NE", "SW",
-			"-E-N", "-E+N", "+E-N", "+E+N", "+N+E",
-			"+N-E", "-N-E", "-N+E",
-			"-N-W", "-N+W", "+N-W", "+N+W",
-			"-W-S", "-W+S", "+W-S", "+W+S",
-			"-S-E", "-S+E", "+S-E", "+S+E",
-			"+x+y", "+x-y", "-x-y", "-x+y",
-			"+X+Y", "+X-Y", "-X-Y", "-X+Y":
-			return true
-		default:
-			return false
-		}
-	}
-
-	if ent == u.RACK {
-		switch x {
-		case "front", "rear", "left", "right":
-			return true
-		default:
-			return false
-		}
-	}
-
-	if ent == u.DEVICE {
-		switch x {
-		case "front", "rear", "frontflipped", "rearflipped":
-			return true
-		default:
-			return false
-		}
-
-	}
-	//Control should not reach here
-	return false
-}
-
-func IsNonStdOrientation(x interface{}, ent int) bool {
-	switch x.(type) {
-	case string:
-		if !IsOrientation(x, ent) {
-			//Check if it is a numerical string
-			_, intErr := strconv.Atoi(x.(string))
-			_, floatErr := strconv.ParseFloat(x.(string), 64)
-			return intErr == nil || floatErr == nil
-		}
-		return true
-	case float64, float32, int:
-		return true
-	default:
-		return false
-	}
 }

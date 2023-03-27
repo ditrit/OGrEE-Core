@@ -1,10 +1,11 @@
 module p3
 
-go 1.15
+go 1.16
 
 require (
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/gorilla/handlers v1.5.1
+	github.com/go-playground/assert/v2 v2.2.0
 	github.com/gorilla/mux v1.8.0
 	github.com/joho/godotenv v1.3.0
 	github.com/santhosh-tekuri/jsonschema/v5 v5.2.0

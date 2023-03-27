@@ -10,6 +10,7 @@ import (
 	"net/http"
 	"net/url"
 	"os"
+	"strings"
 	"time"
 )
 
@@ -194,6 +195,29 @@ func EntityStrToInt(entity string) int {
 	default:
 		return -1
 	}
+}
+
+func HierachyNameToEntity(name string) []int {
+	resp := []int{STRAYDEV} // it can always be a stray
+	switch strings.Count(name, ".") {
+	case 0:
+		resp = append(resp, TENANT)
+	case 1:
+		resp = append(resp, SITE)
+	case 2:
+		resp = append(resp, BLDG)
+	case 3:
+		resp = append(resp, ROOM)
+	case 4:
+		resp = append(resp, RACK, GROUP, AC, CORRIDOR, PWRPNL, CABINET)
+	case 5:
+		resp = append(resp, DEVICE, GROUP)
+	default:
+		resp = append(resp, DEVICE)
+	}
+
+	return resp
+
 }
 
 func GetParentOfEntityByInt(entity int) int {

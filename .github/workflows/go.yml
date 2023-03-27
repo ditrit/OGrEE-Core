@@ -1,0 +1,42 @@
+# This workflow will build the golang project, create a Mongo database and test it
+
+name: Go-Testing
+
+on:
+  pull_request:
+    branches: [ "master" ]
+
+jobs:
+
+  test:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Set up Go
+      uses: actions/setup-go@v3
+      with:
+        go-version: 1.19
+        
+    - name: Start MongoDB
+      uses: supercharge/mongodb-github-action@1.8.0
+      with:
+        mongodb-version: 6.0.1
+        
+    - name: Install mongosh command
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y wget gnupg
+        wget -qO - https://www.mongodb.org/static/pgp/server-6.0.asc | sudo apt-key add -
+        echo "deb [ arch=amd64,arm64 ] https://repo.mongodb.org/apt/ubuntu jammy/mongodb-org/6.0 multiverse" | sudo tee /etc/apt/sources.list.d/mongodb-org-6.0.list
+        sudo apt-get update
+        sudo apt-get install -y mongodb-mongosh
+        
+    - name: Create database
+      run: mongosh localhost:27017/ogree ./init_db/createdb.js
+
+    - name: Build
+      run: make
+
+    - name: Test
+      run: go test -v ./...

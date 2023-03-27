@@ -96,6 +96,8 @@ var CreateAccount = func(w http.ResponseWriter, r *http.Request) {
 			w.WriteHeader(http.StatusBadRequest)
 		case "unauthorised":
 			w.WriteHeader(http.StatusForbidden)
+		case "exists":
+			w.WriteHeader(http.StatusConflict)
 		default:
 			w.WriteHeader(http.StatusCreated)
 		}
