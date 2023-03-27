@@ -4,7 +4,6 @@ services:
   ogree_api:
     build:
       context: .
-      dockerfile: dev.dockerfile
     env_file: ./dev.env
     container_name: ogree_api
     entrypoint: /home/main
