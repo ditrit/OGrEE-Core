@@ -3,19 +3,19 @@ version: '3.9'
 services:
   dbft_api:
     build: ${APIBUILDDIR}#${APIBRANCH}
+    network_mode: "host"
     image: dbft/api:dockerfile
     container_name: ${COMPOSE_PROJECT_NAME}t_api
-    entrypoint: /home/main
     environment:
-      - api_port=3551
-      - db_host=${COMPOSE_PROJECT_NAME}_db
-      - db_port=27017
-      - db_user=$TENANT
+      - api_port=${APIPORT}
+      - db_host=0.0.0.0
+      - db_port=${DBPORT}
+      - db_user=${TENANT}
       - db_pass=123
-      - db=$TENANT
+      - db=${TENANT}
       - token_password=yourSecretPasswordGoesHere
     ports:
-      - ${APIPORT}:3551
+      - ${APIPORT}:${APIPORT}
     depends_on:
       - dbft_db
     restart: on-failure:10
@@ -28,7 +28,7 @@ services:
     image: mongo:latest
     container_name: ${COMPOSE_PROJECT_NAME}_db
     environment:
-        - DB_NAME=$TENANT
+        - DB_NAME=${TENANT}
         - CUSTOMER_API_PASS=123
         - CUSTOMER_RECORDS_DB=ogree
 
@@ -47,7 +47,7 @@ services:
         -  ${MONGOINIT}/addCustomer.sh:/home/addCustomer.sh
         -  ${MONGOINIT}/addCustomer.js:/home/addCustomer.js
     ports:
-      - 27900:27017
+      - ${DBPORT}:27017
     #By default MongoDB will attempt to take port 27017, so just map it
     #for ease of use
 
@@ -67,12 +67,13 @@ services:
   dbft_cli:
     #build: ${CLIBUILDDIR}#${CLIBRANCH}
     build: ${LOCAL_CLI_BUILD_DIR}
+    network_mode: "host"
     image: dbft/cli:dockerfile
     container_name: ${COMPOSE_PROJECT_NAME}_cli
     tty: true
     environment:
-      - APIKEY="YourAPIKEYGoesHere"
-      - APIURL=http://0.0.0.0:3551
+      - APIKEY=YourAPIKEYGoesHere
+      - APIURL=http://0.0.0.0:${APIPORT}
       - DrawLimit=1
       - Drawable=all
       - tenantDrawableJson=./other/drawTemplates/tenant.json
@@ -88,7 +89,7 @@ services:
       #context: ${APPBUILDDIR}#${APPBRANCH}
       context: ${LOCAL_APP_BUILD_DIR}
       args:
-      - API_URL=localhost:3551
+      - API_URL=localhost:${APIPORT}
     image: dbft/webapp:dockerfile
     container_name: ${COMPOSE_PROJECT_NAME}_webapp
     ports:
