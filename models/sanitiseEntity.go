@@ -20,7 +20,7 @@ func fixID(data map[string]interface{}) map[string]interface{} {
 // Removes underscore in object category if present
 func FixUnderScore(x map[string]interface{}) {
 	if catInf, ok := x["category"]; ok {
-		if cat, _ := catInf.(string); strings.Contains(cat, "_") == true {
+		if cat, _ := catInf.(string); strings.Contains(cat, "_") {
 			x["category"] = strings.Replace(cat, "_", "-", 1)
 		}
 	}
@@ -31,7 +31,7 @@ func FixAttributesBeforeInsert(entity int, data map[string]interface{}) {
 	if entity == u.RACK {
 		pid, _ := primitive.ObjectIDFromHex(data["parentId"].(string))
 		req := bson.M{"_id": pid}
-		parent, _ := GetEntity(req, "room", []string{})
+		parent, _ := GetEntity(req, "room", u.RequestFilters{})
 		parentUnit := parent["attributes"].(map[string]interface{})["posXYUnit"]
 		data["attributes"].(map[string]interface{})["posXYUnit"] = parentUnit
 	}

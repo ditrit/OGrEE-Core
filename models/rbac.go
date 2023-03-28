@@ -7,7 +7,7 @@ import (
 )
 
 func CheckDomainExists(domain string) bool {
-	x, e := GetEntity(bson.M{"name": domain}, "domain", []string{})
+	x, e := GetEntity(bson.M{"name": domain}, "domain", u.RequestFilters{})
 	if e != "" || x == nil {
 		return false
 	}
@@ -18,7 +18,7 @@ func CheckDomainExists(domain string) bool {
 // the hierarchy of the Domain
 func GetUserDomainSpace(domain string) []string {
 	ans := []string{domain}
-	raw, e := GetHierarchyByName("domain", domain, u.DOMAIN, 99)
+	raw, e := GetHierarchyByName("domain", domain, 99, u.RequestFilters{})
 	if e != "" {
 		return nil
 	}

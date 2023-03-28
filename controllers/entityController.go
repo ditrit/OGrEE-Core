@@ -1362,6 +1362,9 @@ var GetEntityHierarchy = func(w http.ResponseWriter, r *http.Request) {
 	println("Domain:", domain)
 	println("Role:", role)
 
+	req := bson.M{}
+	models.RequestGen(req, role, domain)
+
 	//If template or stray convert '-' -> '_'
 	entity = strings.Replace(entity, "-", "_", 1)
 
@@ -1374,9 +1377,8 @@ var GetEntityHierarchy = func(w http.ResponseWriter, r *http.Request) {
 
 	//Check if the request is a ranged hierarchy
 	filters := getFiltersFromQueryParams(r)
-	arr := r.Form["limit"]
-	if len(arr) > 0 { //limit={number} was provided
-		end, _ = strconv.Atoi(arr[0])
+	if len(filters.Limit) > 0 { //limit={number} was provided
+		end, _ = strconv.Atoi(filters.Limit[0])
 		limit = u.EntityStrToInt(entity) + end
 
 		if end == 0 {
@@ -1589,10 +1591,9 @@ var GetHierarchyByName = func(w http.ResponseWriter, r *http.Request) {
 
 	// Check if the request is a ranged hierarchy
 	filters := getFiltersFromQueryParams(r)
-	limitArr := r.Form["limit"]
-	if len(limitArr) > 0 {
+	if len(filters.Limit) > 0 {
 		//limit={number} was provided
-		limit, _ = strconv.Atoi(limitArr[0])
+		limit, _ = strconv.Atoi(filters.Limit[0])
 	} else {
 		limit = 999
 	}

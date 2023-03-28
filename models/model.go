@@ -70,9 +70,6 @@ func GetObjectByName(hierarchyName string, filters u.RequestFilters) (map[string
 	// Search each collection
 	for _, entity := range rangeEntities {
 		req := bson.M{"hierarchyName": hierarchyName}
-		if entity == u.TENANT {
-			req = bson.M{"name": hierarchyName}
-		}
 		entityStr := u.EntityToString(entity)
 		data, _ := GetEntity(req, entityStr, filters)
 		if data != nil {
@@ -902,16 +899,6 @@ func getChildrenCollections(limit int, parentEntStr string) []int {
 	}
 
 	return rangeEntities
-}
-
-func recursivelyGetChildrenFromMaps(hierarchyName string, hierarchy map[string][]string, allChildren map[string]interface{}) []map[string]interface{} {
-	var children []map[string]interface{}
-	for _, childName := range hierarchy[hierarchyName] {
-		child := allChildren[childName].(map[string]interface{})
-		child["children"] = recursivelyGetChildrenFromMaps(childName, hierarchy, allChildren)
-		children = append(children, child)
-	}
-	return children
 }
 
 func GetEntitiesUsingSiteAsAncestor(ent, id string, req map[string]interface{}, ancestry []map[string]string) ([]map[string]interface{}, string) {

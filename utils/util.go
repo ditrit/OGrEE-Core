@@ -43,6 +43,7 @@ type RequestFilters struct {
 	FieldsToShow []string `schema:"fieldOnly"`
 	StartDate    []string `schema:"startDate"`
 	EndDate      []string `schema:"endDate"`
+	Limit        []string `schema:"limit"`
 }
 
 func GetBuildDate() string {
@@ -208,16 +209,14 @@ func HierachyNameToEntity(name string) []int {
 	resp := []int{STRAYDEV} // it can always be a stray
 	switch strings.Count(name, ".") {
 	case 0:
-		resp = append(resp, TENANT)
-	case 1:
 		resp = append(resp, SITE)
-	case 2:
+	case 1:
 		resp = append(resp, BLDG)
-	case 3:
+	case 2:
 		resp = append(resp, ROOM)
-	case 4:
+	case 3:
 		resp = append(resp, RACK, GROUP, AC, CORRIDOR, PWRPNL, CABINET)
-	case 5:
+	case 4:
 		resp = append(resp, DEVICE, GROUP)
 	default:
 		resp = append(resp, DEVICE)
