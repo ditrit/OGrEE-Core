@@ -28,7 +28,7 @@ var dmatch mux.MatcherFunc = func(request *http.Request, match *mux.RouteMatch) 
 // Obtain object hierarchy
 var hmatch mux.MatcherFunc = func(request *http.Request, match *mux.RouteMatch) bool {
 	println("CHECKING H-MATCH")
-	return regexp.MustCompile(`(^(\/api\/(site|building|room|rack|device|stray-device|domain)\/[a-zA-Z0-9]{24}\/all)(\/(sites|buildings|rooms|rooms|racks|devices|stray-(devices|sensors)|domains))*$)|(^(\/api\/(sites|buildings|rooms|racks|devices|stray-devices|domains)\/[a-zA-Z0-9]{24}\/all)(\?limit=[0-9]+)*$)`).
+	return regexp.MustCompile(`(^(\/api\/(site|building|room|rack|device|stray-device|domain)\/[a-zA-Z0-9]{24}\/all)(\/(sites|buildings|rooms|rooms|racks|devices|stray-(devices|sensors)|domains))*$)|(^(\/api\/(sites|buildings|rooms|racks|devices|stray-devices|domains)\/[a-zA-Z0-9]{24}\/all)(\?.*)*$)`).
 		MatchString(request.URL.String())
 }
 
@@ -56,7 +56,7 @@ var hnmatch mux.MatcherFunc = func(request *http.Request, match *mux.RouteMatch)
 // For Obtaining hierarchy with hierarchyName
 var hnmatch mux.MatcherFunc = func(request *http.Request, match *mux.RouteMatch) bool {
 	println("CHECKING HN-MATCH")
-	return regexp.MustCompile(`^\/api\/(tenants|sites|buildings|rooms|racks|devices|stray-devices)+\/[A-Za-z0-9_.]+\/all(\?limit=[0-9]+)*$`).
+	return regexp.MustCompile(`^\/api\/(tenants|sites|buildings|rooms|racks|devices|stray-devices)+\/[A-Za-z0-9_.]+\/all(\?.*)*$`).
 		MatchString(request.URL.String())
 }
 
