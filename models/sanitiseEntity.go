@@ -2,7 +2,7 @@ package models
 
 import "strings"
 
-//Mongo returns '_id' instead of id
+// Mongo returns '_id' instead of id
 func fixID(data map[string]interface{}) map[string]interface{} {
 	if v, ok := data["_id"]; ok {
 		data["id"] = v
@@ -11,7 +11,7 @@ func fixID(data map[string]interface{}) map[string]interface{} {
 	return data
 }
 
-//Removes underscore in object category if present
+// Removes underscore in object category if present
 func FixUnderScore(x map[string]interface{}) {
 	if catInf, ok := x["category"]; ok {
 		if cat, _ := catInf.(string); strings.Contains(cat, "_") == true {
