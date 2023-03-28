@@ -84,6 +84,19 @@ services:
     depends_on:
       - dbft_api
 
+  # You will have to retrieve the swagger.json file from
+  # the api root dir and supply it here 
+  api_docs_ui:
+    image: swaggerapi/swagger-ui:latest
+    container_name: api_docs_ui
+    network_mode: "bridge"
+    volumes:
+      - ${APIDOCDIR}:/home # Must contain the swagger.json file
+    ports:
+      - ${APIDOCUIPORT}:8080
+    environment:
+      SWAGGER_JSON: /home/swagger.json
+
   dbft_webapp:
     build: 
       #context: ${APPBUILDDIR}#${APPBRANCH}
