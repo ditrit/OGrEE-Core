@@ -2,20 +2,20 @@ version: '3.9'
 
 services:
   dbft_api:
-    build: ${APIBUILDDIR}#${APIBRANCH}
+    build: ${API_BUILD_DIR}#${API_BRANCH}
     network_mode: "host"
     image: dbft/api:dockerfile
     container_name: ${COMPOSE_PROJECT_NAME}t_api
     environment:
-      - api_port=${APIPORT}
+      - api_port=${API_PORT}
       - db_host=0.0.0.0
-      - db_port=${DBPORT}
+      - db_port=${DB_PORT}
       - db_user=${TENANT}
       - db_pass=123
       - db=${TENANT}
       - token_password=yourSecretPasswordGoesHere
     ports:
-      - ${APIPORT}:${APIPORT}
+      - ${API_PORT}:${API_PORT}
     depends_on:
       - dbft_db
     restart: on-failure:10
@@ -42,12 +42,12 @@ services:
         - GUARD_USER=guard
         - GUARD_PASS=adminpassword
     volumes:
-        -  ${MONGOINIT}/init.sh:/docker-entrypoint-initdb.d/init.sh
-        -  ${MONGOINIT}/dbft.js:/home/dbft.js
-        -  ${MONGOINIT}/addCustomer.sh:/home/addCustomer.sh
-        -  ${MONGOINIT}/addCustomer.js:/home/addCustomer.js
+        -  ${MONGO_INIT}/init.sh:/docker-entrypoint-initdb.d/init.sh
+        -  ${MONGO_INIT}/dbft.js:/home/dbft.js
+        -  ${MONGO_INIT}/addCustomer.sh:/home/addCustomer.sh
+        -  ${MONGO_INIT}/addCustomer.js:/home/addCustomer.js
     ports:
-      - ${DBPORT}:27017
+      - ${DB_PORT}:27017
     #By default MongoDB will attempt to take port 27017, so just map it
     #for ease of use
 
@@ -65,7 +65,7 @@ services:
   # Updates -> Same thing as Drawable
   # {obj}DrawableJson -> Specify them as usual, objDrawableJson="xyz"
   dbft_cli:
-    #build: ${CLIBUILDDIR}#${CLIBRANCH}
+    #build: ${CLI_BUILD_DIR}#${CLI_BRANCH}
     build: ${LOCAL_CLI_BUILD_DIR}
     network_mode: "host"
     image: dbft/cli:dockerfile
@@ -73,7 +73,7 @@ services:
     tty: true
     environment:
       - APIKEY=YourAPIKEYGoesHere
-      - APIURL=http://0.0.0.0:${APIPORT}
+      - APIURL=http://0.0.0.0:${API_PORT}
       - DrawLimit=1
       - Drawable=all
       - tenantDrawableJson=./other/drawTemplates/tenant.json
@@ -91,22 +91,22 @@ services:
     container_name: api_docs_ui
     network_mode: "bridge"
     volumes:
-      - ${APIDOCDIR}:/home # Must contain the swagger.json file
+      - ${API_DOC_DIR}:/home # Must contain the swagger.json file
     ports:
-      - ${APIDOCUIPORT}:8080
+      - ${API_DOC_UI_PORT}:8080
     environment:
       SWAGGER_JSON: /home/swagger.json
 
   dbft_webapp:
     build: 
-      #context: ${APPBUILDDIR}#${APPBRANCH}
+      #context: ${APP_BUILD_DIR}#${APP_BRANCH}
       context: ${LOCAL_APP_BUILD_DIR}
       args:
-      - API_URL=localhost:${APIPORT}
+      - API_URL=localhost:${API_PORT}
     image: dbft/webapp:dockerfile
     container_name: ${COMPOSE_PROJECT_NAME}_webapp
     ports:
-      - ${WEBPORT}:80
+      - ${WEB_PORT}:80
     depends_on:
       - dbft_api
     restart: on-failure:10
