@@ -9,6 +9,7 @@ import (
 	"os"
 	"regexp"
 
+	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
 )
 
@@ -20,35 +21,35 @@ var dmatch mux.MatcherFunc = func(request *http.Request, match *mux.RouteMatch) 
 	//https://stackoverflow.com/questions/21664489/
 	//golang-mux-routing-wildcard-custom-func-match
 	println("Checking MATCH")
-	return regexp.MustCompile(`^(\/api\/(tenants|sites|buildings|rooms|acs|panels|cabinets|groups|corridors|racks|devices|sensors|stray-(devices|sensors)|(room|obj|bldg)-templates)\?.*)$`).
+	return regexp.MustCompile(`^(\/api\/(domains|sites|buildings|rooms|acs|panels|cabinets|groups|corridors|racks|devices|sensors|stray-(devices|sensors)|(room|obj|bldg)-templates)\?.*)$`).
 		MatchString(request.URL.String())
 }
 
 // Obtain object hierarchy
 var hmatch mux.MatcherFunc = func(request *http.Request, match *mux.RouteMatch) bool {
 	println("CHECKING H-MATCH")
-	return regexp.MustCompile(`(^(\/api\/(tenant|site|building|room|room|rack|device|stray-device)\/[a-zA-Z0-9]{24}\/all)(\/(tenants|sites|buildings|rooms|rooms|racks|devices|stray-(devices|sensors)))*$)|(^(\/api\/(tenants|sites|buildings|rooms|rooms|racks|devices|stray-devices)\/[a-zA-Z0-9]{24}\/all)(\?limit=[0-9]+)*$)`).
+	return regexp.MustCompile(`(^(\/api\/(site|building|room|rack|device|stray-device|domain)\/[a-zA-Z0-9]{24}\/all)(\/(sites|buildings|rooms|rooms|racks|devices|stray-(devices|sensors)|domains))*$)|(^(\/api\/(sites|buildings|rooms|racks|devices|stray-devices|domains)\/[a-zA-Z0-9]{24}\/all)(\?.*)*$)`).
 		MatchString(request.URL.String())
 }
 
 // For Obtaining objects using parent
 var pmatch mux.MatcherFunc = func(request *http.Request, match *mux.RouteMatch) bool {
 	println("CHECKING P-MATCH")
-	return regexp.MustCompile(`^(\/api\/(tenants|sites|buildings|rooms|rooms|racks|devices|stray-devices)\/[a-zA-Z0-9]{24}(\/.*)+)$`).
+	return regexp.MustCompile(`^(\/api\/(sites|buildings|rooms|rooms|racks|devices|stray-devices|domains)\/[a-zA-Z0-9]{24}(\/.*)+)$`).
 		MatchString(request.URL.String())
 }
 
-// For Obtaining Tenant hierarchy
+// For Obtaining Site hierarchy
 var tmatch mux.MatcherFunc = func(request *http.Request, match *mux.RouteMatch) bool {
 	println("CHECKING T-MATCH")
-	return regexp.MustCompile(`^(\/api\/(tenants|stray-devices)(\/[A-Za-z0-9_]+)(\/.*)+)$`).
+	return regexp.MustCompile(`^(\/api\/(sites|stray-devices|domains)(\/[A-Za-z0-9_]+)(\/.*)+)$`).
 		MatchString(request.URL.String())
 }
 
 // For Obtaining hierarchy with hierarchyName
 var hnmatch mux.MatcherFunc = func(request *http.Request, match *mux.RouteMatch) bool {
 	println("CHECKING HN-MATCH")
-	return regexp.MustCompile(`^\/api\/(tenants|sites|buildings|rooms|racks|devices|stray-devices)+\/[A-Za-z0-9_.]+\/all(\?limit=[0-9]+)*$`).
+	return regexp.MustCompile(`^\/api\/(sites|buildings|rooms|racks|devices|stray-devices)+\/[A-Za-z0-9_.]+\/all(\?.*)*$`).
 		MatchString(request.URL.String())
 }
 
@@ -77,6 +78,22 @@ func Router(jwt func(next http.Handler) http.Handler) *mux.Router {
 	// For obtaining the complete hierarchy (tree)
 	router.HandleFunc("/api/hierarchy",
 		controllers.GetCompleteHierarchy).Methods("GET", "OPTIONS", "HEAD")
+
+	router.HandleFunc("/api/hierarchy/attributes",
+		controllers.GetCompleteHierarchyAttributes).Methods("GET", "OPTIONS", "HEAD")
+
+	// FLUTTER FRONT
+	router.HandleFunc("/api/projects",
+		controllers.GetProjects).Methods("HEAD", "GET", "OPTIONS")
+
+	router.HandleFunc("/api/projects",
+		controllers.CreateOrUpdateProject).Methods("POST")
+
+	router.HandleFunc("/api/projects/{id:[a-zA-Z0-9]{24}}",
+		controllers.CreateOrUpdateProject).Methods("PUT")
+
+	router.HandleFunc("/api/projects/{id:[a-zA-Z0-9]{24}}",
+		controllers.DeleteProject).Methods("DELETE", "OPTIONS")
 
 	// ------ GET ------ //
 	router.HandleFunc("/api/objects/{name}",
@@ -118,8 +135,8 @@ func Router(jwt func(next http.Handler) http.Handler) *mux.Router {
 		controllers.GetEntity).Methods("GET", "HEAD", "OPTIONS")
 
 	//GET BY NAME OF PARENT
-	router.NewRoute().PathPrefix("/api/{entity}s/{tenant_name}").
-		MatcherFunc(tmatch).HandlerFunc(controllers.GetEntitiesUsingNamesOfParents).Methods("GET", "HEAD", "OPTIONS")
+	router.NewRoute().PathPrefix("/api/{entity}s/{site_name}").
+		MatcherFunc(tmatch).HandlerFunc(controllers.GetEntitiesUsingNamesOfParents).Methods("GET", "OPTIONS")
 
 	router.NewRoute().PathPrefix("/api/{entity}s/{id:[a-zA-Z0-9]{24}}").
 		MatcherFunc(pmatch).HandlerFunc(controllers.GetEntitiesUsingNamesOfParents).Methods("GET", "HEAD", "OPTIONS")
@@ -180,7 +197,10 @@ func main() {
 	fmt.Println(port)
 
 	//Start app, localhost:8000/api
-	err := http.ListenAndServe(":"+port, router)
+	corsObj := handlers.AllowedOrigins([]string{"*"})
+	headersOk := handlers.AllowedHeaders([]string{"X-Requested-With", "Content-Type", "Authorization", "Origin", "Accept"})
+	methodsOk := handlers.AllowedMethods([]string{"GET", "HEAD", "OPTIONS", "POST", "PUT", "DELETE", "PATCH"})
+	err := http.ListenAndServe(":"+port, handlers.CORS(corsObj, headersOk, methodsOk)(router))
 	if err != nil {
 		fmt.Print(err)
 	}

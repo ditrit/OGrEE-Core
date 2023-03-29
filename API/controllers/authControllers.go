@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"p3/app"
 	"p3/models"
 	u "p3/utils"
 )
@@ -29,11 +30,19 @@ import (
 //   required: true
 //   format: password
 //   default: "secret"
+// - name: customer
+//   in: json
+//   description: Name of the the customer
+//   required: true
+//   format: string
+//   default: "ORNESS"
 // responses:
-//     '200':
-//         description: Authenticated
+//     '201':
+//         description: Authenticated and new account created
 //     '400':
 //         description: Bad request
+//     '403':
+//         description: User not authorised to create an account
 //     '500':
 //         description: Internal server error
 
@@ -51,6 +60,8 @@ var CreateAccount = func(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("FUNCTION CALL: 	 CreateAccount ")
 	fmt.Println("******************************************************")
 	DispRequestMetaData(r)
+	var role string
+	var domain string
 
 	if r.Method == "OPTIONS" {
 		w.Header().Add("Content-Type", "application/json")
@@ -59,15 +70,32 @@ var CreateAccount = func(w http.ResponseWriter, r *http.Request) {
 		account := &models.Account{}
 		err := json.NewDecoder(r.Body).Decode(account)
 		if err != nil {
+			w.WriteHeader(http.StatusBadRequest)
 			u.Respond(w, u.Message(false, "Invalid request"))
 			return
 		}
-		resp, e := account.Create()
+
+		//Extra block here because accounts can be created using
+		//an adminPassword or via managers or super users
+		if userData := app.ParseToken(w, r); userData != nil {
+			role = userData["role"].(string)
+			domain = userData["domain"].(string)
+		} else {
+			role = ""
+			domain = ""
+		}
+
+		println("Domain:", domain)
+		println("Role:", role)
+
+		resp, e := account.Create(role, domain)
 		switch e {
 		case "internal":
 			w.WriteHeader(http.StatusInternalServerError)
-		case "clientError":
+		case "clientError", "validate":
 			w.WriteHeader(http.StatusBadRequest)
+		case "unauthorised":
+			w.WriteHeader(http.StatusForbidden)
 		case "exists":
 			w.WriteHeader(http.StatusConflict)
 		default:

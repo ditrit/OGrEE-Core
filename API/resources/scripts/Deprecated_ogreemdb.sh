@@ -11,11 +11,13 @@
 #         store records
 #   port: DB port to be exposed
 #   log: Path for Mongo log
+#   name: Name of the database 
 
 # Default values:
 #   path: ./mdb
 #   port: 27017
 #   log: /mongod.log
+#   name: ogree
 #######################################
 while test $# -gt 0; do
            case "$1" in
@@ -37,6 +39,11 @@ while test $# -gt 0; do
                 -host)
                     shift
                     host=$1
+                    shift
+                    ;;
+                -name)
+                    shift
+                    name=$1
                     shift
                     ;;
                 *)
@@ -67,12 +74,16 @@ then
     host="localhost"
 fi
 
-
+if [  -z "$name" ];
+then
+    name="ogreeDevelop"
+fi
 
 echo "Path : $path";
 echo "Port : $port";
-echo "Log : $log";
+echo "Log :  $log";
 echo "Host : $host";
+echo "Name : $name";
 
 
 #killall mongod
@@ -80,8 +91,15 @@ fuser -k $port/tcp
 rm -rf "$log"
 rm -rf "$path"/*
 mkdir "$path"
-mongod --dbpath "$path" --port $port --logpath "$log" --fork
+mongod --dbpath "$path" --port $port --logpath "$log" --fork --auth
+
+#Initialise the customer record DB
+#"myTester:xyz123@"
+echo "HI WE ALL HERE"
+mongosh "$host:"$port bootup.js
+echo "HEY WE PASSED THE BOOTUP"
 
 #The command below will execute the mongo script
-mongosh "$host:"$port"/ogree" ./init_db/createdb.js
+#--authenticationDatabase 'admin' -u 'myTester' -p 'xyz123'
+mongosh --username "myTester" --password "xyz123" "$host:"$port"/admin" ./createdb.js --eval 'var dbName = "'$name'"' 
 echo "done"

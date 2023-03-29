@@ -40,15 +40,15 @@ func TestMessageToReturnFalseMSI(t *testing.T) {
 
 func TestEntityStrToIntToReturnTrue(t *testing.T) {
 	//Test Case 1
-	testString := "tenant"
-	ent := EntityStrToInt(testString)
-	if ent != TENANT {
-		t.Error("Test Case 1 failed")
-	}
+	// testString := "tenant"
+	// ent := EntityStrToInt(testString)
+	// if ent != TENANT {
+	// 	t.Error("Test Case 1 failed")
+	// }
 
 	//Test Case 2
-	testString = "site"
-	ent = EntityStrToInt(testString)
+	testString := "site"
+	ent := EntityStrToInt(testString)
 	if ent != SITE {
 		t.Error("Test Case 2 failed")
 	}
@@ -91,15 +91,15 @@ func TestEntityStrToIntToReturnTrue(t *testing.T) {
 
 func TestEntityToStringToReturnTrue(t *testing.T) {
 	//Test Case 1
-	testString := TENANT
-	ent := EntityToString(testString)
-	if ent != "tenant" {
-		t.Error("Test Case 1 failed")
-	}
+	// testString := TENANT
+	// ent := EntityToString(testString)
+	// if ent != "tenant" {
+	// 	t.Error("Test Case 1 failed")
+	// }
 
 	//Test Case 2
-	testString = SITE
-	ent = EntityToString(testString)
+	testString := SITE
+	ent := EntityToString(testString)
 	if ent != "site" {
 		t.Error("Test Case 2 failed")
 	}

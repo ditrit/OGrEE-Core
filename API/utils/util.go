@@ -20,8 +20,7 @@ var BuildTime string
 var GitCommitDate string
 
 const (
-	TENANT = iota
-	SITE
+	SITE = iota
 	BLDG
 	ROOM
 	RACK
@@ -36,8 +35,16 @@ const (
 	OBJTMPL
 	BLDGTMPL
 	STRAYDEV
+	DOMAIN
 	STRAYSENSOR
 )
+
+type RequestFilters struct {
+	FieldsToShow []string `schema:"fieldOnly"`
+	StartDate    []string `schema:"startDate"`
+	EndDate      []string `schema:"endDate"`
+	Limit        []string `schema:"limit"`
+}
 
 func GetBuildDate() string {
 	return BuildTime
@@ -90,35 +97,34 @@ func ParamsParse(link *url.URL, objType int) map[string]interface{} {
 	//Building Attribute query varies based on
 	//object type
 	for key, _ := range q {
-		if objType != ROOMTMPL && objType != OBJTMPL &&
-			objType != BLDGTMPL { //Non template objects
-			switch key {
-			case "id", "name", "category", "parentID",
-				"description", "domain", "parentid", "parentId",
-				"hierarchyName", "createdDate", "lastUpdated":
-				values[key] = q.Get(key)
-			default:
-				values["attributes."+key] = q.Get(key)
-			}
-		} else { //Template objects
-			//Not sure how to search FBX TEMPLATES
-			//For now it is disabled
-			switch key {
-			case "description", "slug", "category", "sizeWDHmm", "fbxModel":
-				values[key] = q.Get(key)
-			default:
-				values["attributes."+key] = q.Get(key)
+		if key != "fieldOnly" && key != "startDate" && key != "endDate" {
+			if objType != ROOMTMPL && objType != OBJTMPL &&
+				objType != BLDGTMPL { //Non template objects
+				switch key {
+				case "id", "name", "category", "parentID",
+					"description", "domain", "parentid", "parentId",
+					"hierarchyName", "createdDate", "lastUpdated":
+					values[key] = q.Get(key)
+				default:
+					values["attributes."+key] = q.Get(key)
+				}
+			} else { //Template objects
+				//Not sure how to search FBX TEMPLATES
+				//For now it is disabled
+				switch key {
+				case "description", "slug", "category", "sizeWDHmm", "fbxModel":
+					values[key] = q.Get(key)
+				default:
+					values["attributes."+key] = q.Get(key)
+				}
 			}
 		}
-
 	}
 	return values
 }
 
 func EntityToString(entity int) string {
 	switch entity {
-	case TENANT:
-		return "tenant"
 	case SITE:
 		return "site"
 	case BLDG:
@@ -133,6 +139,8 @@ func EntityToString(entity int) string {
 		return "ac"
 	case PWRPNL:
 		return "panel"
+	case DOMAIN:
+		return "domain"
 	case STRAYDEV:
 		return "stray_device"
 	case STRAYSENSOR:
@@ -158,8 +166,6 @@ func EntityToString(entity int) string {
 
 func EntityStrToInt(entity string) int {
 	switch entity {
-	case "tenant":
-		return TENANT
 	case "site":
 		return SITE
 	case "building", "bldg":
@@ -174,6 +180,8 @@ func EntityStrToInt(entity string) int {
 		return AC
 	case "panel":
 		return PWRPNL
+	case "domain":
+		return DOMAIN
 	case "stray_device":
 		return STRAYDEV
 	case "stray_sensor":
@@ -201,16 +209,14 @@ func HierachyNameToEntity(name string) []int {
 	resp := []int{STRAYDEV} // it can always be a stray
 	switch strings.Count(name, ".") {
 	case 0:
-		resp = append(resp, TENANT)
-	case 1:
 		resp = append(resp, SITE)
-	case 2:
+	case 1:
 		resp = append(resp, BLDG)
-	case 3:
+	case 2:
 		resp = append(resp, ROOM)
-	case 4:
+	case 3:
 		resp = append(resp, RACK, GROUP, AC, CORRIDOR, PWRPNL, CABINET)
-	case 5:
+	case 4:
 		resp = append(resp, DEVICE, GROUP)
 	default:
 		resp = append(resp, DEVICE)
@@ -233,11 +239,12 @@ func GetParentOfEntityByInt(entity int) int {
 	}
 }
 
-//func GetParentOfEntityByStr(entity string) int {
-//	switch entity {
-//	case AC,PWRPNL,WALL:
-//		return "room"
-//	default:
-//		return
-//	}
-//}
+// Helper functions
+func StrSliceContains(slice []string, elem string) bool {
+	for _, e := range slice {
+		if e == elem {
+			return true
+		}
+	}
+	return false
+}
