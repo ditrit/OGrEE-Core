@@ -6,7 +6,6 @@ services:
       context: .
     env_file: ./dev.env
     container_name: ogree_api
-    entrypoint: /home/main
     depends_on:
       - mongodb
       - api_docs
