@@ -284,6 +284,31 @@ func GetObject(path string, silenced bool) (map[string]interface{}, string) {
 	return nil, ""
 }
 
+func GetSlot(rack map[string]any, location string) (map[string]any, error) {
+	templateAny, ok := rack["attributes"].(map[string]any)["template"]
+	if !ok {
+		return nil, nil
+	}
+	template := templateAny.(string)
+	URL := State.APIURL + "/api/obj-templates/" + template
+	resp, err := models.Send("GET", URL, GetKey(), nil)
+	if err != nil {
+		return nil, err
+	}
+	parsedResp := ParseResponse(resp, err, "GET")
+	slots, ok := parsedResp["data"].(map[string]any)["slots"]
+	if !ok {
+		return nil, nil
+	}
+	for _, slotAny := range slots.([]any) {
+		slot := slotAny.(map[string]any)
+		if slot["location"] == location {
+			return slot, nil
+		}
+	}
+	return nil, fmt.Errorf("the slot %s does not exist", location)
+}
+
 // This is an auxillary function
 // for writing proper JSONs
 func GenUpdateJSON(m map[string]interface{}, key string, value interface{}, del bool) bool {
@@ -1618,6 +1643,7 @@ func GetOCLIAtrributes(Path string, ent int, data map[string]interface{}) error 
 		}
 		//}
 
+		var slot map[string]any
 		//Process the posU/slot attribute
 		if x, ok := attr["posU/slot"]; ok {
 			delete(attr, "posU/slot")
@@ -1626,12 +1652,18 @@ func GetOCLIAtrributes(Path string, ent int, data map[string]interface{}) error 
 				x = strconv.FormatFloat(x.(float64), 'G', -1, 64)
 				attr["posU"] = x
 				attr["slot"] = ""
+				slot, err = GetSlot(parent, x.(string))
 			} else if _, ok := x.(int); ok {
 				x = strconv.Itoa(x.(int))
 				attr["posU"] = x
 				attr["slot"] = ""
+				slot, err = GetSlot(parent, x.(string))
 			} else {
 				attr["slot"] = x
+				slot, err = GetSlot(parent, x.(string))
+			}
+			if err != nil {
+				return err
 			}
 		}
 
@@ -1648,38 +1680,18 @@ func GetOCLIAtrributes(Path string, ent int, data map[string]interface{}) error 
 			GetOCLIAtrributesTemplateHelper(attr, data, DEVICE)
 		} else {
 			attr["template"] = ""
-			if parAttr, ok := parent["attributes"].(map[string]interface{}); ok {
-				if rackSizeInf, ok := parAttr["size"]; ok {
-					values := map[string]interface{}{}
-
-					if rackSizeComplex, ok := rackSizeInf.(string); ok {
-						q := json.NewDecoder(strings.NewReader(rackSizeComplex))
-						q.Decode(&values)
-						if determineStrKey(values, []string{"x"}) == "x" &&
-							determineStrKey(values, []string{"y"}) == "y" {
-							if _, ok := values["x"].(int); ok {
-								values["x"] = values["x"].(int) / 10
-
-							} else if _, ok := values["x"].(float64); ok {
-								values["x"] = values["x"].(float64) / 10.0
-							}
-
-							if _, ok := values["y"].(int); ok {
-								values["y"] = values["y"].(int) / 10
-
-							} else if _, ok := values["y"].(float64); ok {
-								values["y"] = values["y"].(float64) / 10.0
-							}
-							newValues, _ := json.Marshal(values)
-							attr["size"] = string(newValues)
-
-						}
+			if slot != nil {
+				size := slot["elemSize"].([]any)
+				attr["size"] = fmt.Sprintf(
+					"{\"x\":%f, \"y\":%f}", size[0].(float64)/10., size[1].(float64)/10.)
+			} else {
+				if parAttr, ok := parent["attributes"].(map[string]interface{}); ok {
+					if rackSize, ok := parAttr["size"]; ok {
+						attr["size"] = rackSize
 					}
-
 				}
 			}
 		}
-
 		//End of device special routine
 
 		baseAttrs := map[string]interface{}{
