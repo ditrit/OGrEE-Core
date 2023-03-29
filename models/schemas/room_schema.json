@@ -1,0 +1,89 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "OGrEE Room Schema",
+  "type": "object",
+  "$ref": "refs/base.json",
+  "properties": {
+    "attributes": {
+      "type": "object",
+      "properties": {
+        "floorUnit": {
+          "type": "string",
+          "enum": ["m", "t", "f"]
+        },
+        "height": {
+          "type": "string",
+          "$ref": "refs/types.json#/definitions/float"
+        },
+        "heightUnit": {
+          "type": "string",
+          "$ref": "refs/types.json#/definitions/metricImperialUnit"
+        },
+        "axisOrientation": {
+          "type": "string",
+          "enum": [
+            "+x+y",
+            "+x-y",
+            "-x+y",
+            "-x-y"
+          ]
+        },
+        "rotation": {
+          "type": "string",
+          "pattern": "^-?([0-9]*[.])?[0-9]+$"
+        },
+        "posXY": {
+          "type": "string",
+          "$ref": "refs/types.json#/definitions/vector2"
+        },
+        "posXYUnit": {
+          "type": "string",
+          "$ref": "refs/types.json#/definitions/metricImperialUnit"
+        },
+        "size": {
+          "type": "string",
+          "$ref": "refs/types.json#/definitions/vector2"
+        },
+        "sizeUnit": {
+          "type": "string",
+          "$ref": "refs/types.json#/definitions/metricImperialUnit"
+        },
+        "template": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "floorUnit",
+        "height",
+        "heightUnit",
+        "posXY",
+        "posXYUnit",
+        "size",
+        "sizeUnit",
+        "axisOrientation",
+        "rotation"
+      ]
+    }
+  },
+  "examples": [
+    {
+      "attributes": {
+        "floorUnit": "t",
+        "height": "2.8",
+        "heightUnit": "m",
+        "axisOrientation": "+x+y",
+        "rotation": "-90",
+        "posXY": "{\"x\":0,\"y\":0}",
+        "posXYUnit": "m",
+        "size": "{\"x\": -13,\"y\":-2.9}",
+        "sizeUnit": "m",
+        "template": ""
+      },
+      "category": "room",
+      "description": [],
+      "domain": "DEMO",
+      "name": "RoomA",
+      "parentId": "xxxx5a101ac5f3b6f313eebc"
+    }
+  ]
+}

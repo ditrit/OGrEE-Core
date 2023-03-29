@@ -1,0 +1,78 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "OGrEE Rack Schema",
+  "type": "object",
+  "$ref": "refs/base.json",
+  "properties": {
+    "attributes": {
+      "type": "object",
+      "properties": {
+        "height": {
+          "type": "string",
+          "$ref": "refs/types.json#/definitions/float"
+        },
+        "heightUnit": {
+          "type": "string",
+          "enum": ["mm", "cm", "m", "U", "OU", "f"]
+        },
+        "orientation": {
+          "type": "string",
+          "enum": [
+            "front",
+            "rear",
+            "left",
+            "right"
+          ]
+        },
+        "posXYZ": {
+          "type": "string",
+          "$ref": "refs/types.json#/definitions/vector3"
+        },
+        "posXYUnit": {
+          "type": "string",
+          "enum": ["m", "t", "f"]
+        },
+        "size": {
+          "type": "string",
+          "$ref": "refs/types.json#/definitions/vector2"
+        },
+        "sizeUnit": {
+          "type": "string",
+          "$ref": "refs/types.json#/definitions/metricImperialUnit"
+        },
+        "template": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "height",
+        "heightUnit",
+        "orientation",
+        "posXYUnit",
+        "posXYZ",
+        "size",
+        "sizeUnit",
+        "template"
+      ]
+    }
+  },
+  "examples": [
+    {
+      "attributes": {
+        "height": "47",
+        "heightUnit": "U",
+        "orientation": "front",
+        "posXYUnit": "m",
+        "posXYZ": "{\"x\":4.6666666666667 ,\"y\": -2 ,\"z\":0}",
+        "size": "{\"x\":80 ,\"y\":100.532442}",
+        "sizeUnit": "cm",
+        "template": ""
+      },
+      "category": "rack",
+      "description": [],
+      "domain": "DEMO",
+      "name": "RackA",
+      "parentId": "xxxx5a101ac5f3b6f313xxxx"
+    }
+  ]
+}

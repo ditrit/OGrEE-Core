@@ -1,0 +1,44 @@
+{
+    "$id": "base.json",
+    "type": "object",
+      "properties": {
+        "description": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "category": {
+          "type": "string"
+        },
+        "domain": {
+          "type": "string"
+        },
+        "createdDate": {
+        },
+        "lastUpdated": {
+        },
+        "name": {
+          "type": "string",
+          "pattern":"^\\w(\\w|\\-)*$"
+        },
+        "id": {
+          "type": "string"
+        },
+        "parentId": {
+          "type": "string"
+        },
+        "attributes": {
+          "type": "object"
+        }
+      },
+      "additionalProperties":  false,
+      "required": [
+        "category",
+        "description",
+        "domain",
+        "name",
+        "parentId",
+        "attributes"
+      ]
+}

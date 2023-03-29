@@ -1,0 +1,23 @@
+{
+    "attributes": {
+        "TDP": "",
+        "TDPmax": "",
+        "fbxModel": "https://github.com/test.fbx",
+        "height": "40.1",
+        "heightUnit": "mm",
+        "model": "TNF2LTX",
+        "orientation": "front",
+        "partNumber": "0303XXXX",
+        "size": "{\"x\":388.4, \"y\":205.9}",
+        "sizeUnit": "mm",
+        "slot": "slot6",
+        "type": "blade",
+        "vendor": "Huawei",
+        "weightKg": "1.81"
+    },
+    "category": "device",
+    "description": "ERROR, NOT VALID JSON EXAMPLE",
+    "domain": "DEMO",
+    "name": "deviceName",
+    "parentId": "xxxx5a111ac5f3b6f313xxxx"
+}

@@ -1,0 +1,90 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "OGrEE Device Schema",
+  "$ref": "refs/base.json",
+  "type": "object",
+    "properties": {
+      "attributes": {
+        "type": "object",
+        "properties": {
+          "fbxModel": {
+            "type": "string"
+          },
+          "height": {
+            "type": "string",
+            "$ref": "refs/types.json#/definitions/float"
+
+          },
+          "heightUnit": {
+            "type": "string",
+            "enum": ["mm", "cm", "m", "U", "OU", "f"]
+          },
+          "orientation": {
+            "type": "string",
+            "enum": ["front", "rear", "frontflipped", "rearflipped"]
+          },
+          "size": {
+            "type": "string",
+            "format": "vector2"
+          },
+          "sizeUnit": {
+            "type": "string",
+            "$ref": "refs/types.json#/definitions/metricImperialUnit"
+          },
+          "slot": {
+            "type": "string"
+          },
+          "template": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string"
+          },
+          "posU": {
+            "type": "string",
+            "$ref": "refs/types.json#/definitions/float"
+          },
+          "sizeU": {
+            "type": "string",
+            "$ref": "refs/types.json#/definitions/float"
+          }
+        },
+        "required": [
+          "height",
+          "heightUnit",
+          "orientation",
+          "size",
+          "sizeUnit",
+          "template"
+        ]
+      }
+    },
+    "examples": [
+      {
+      "attributes": {
+          "TDP": "",
+          "TDPmax": "",
+          "fbxModel": "https://github.com/test.fbx",
+          "height": "40.1",
+          "heightUnit": "mm",
+          "model": "TNF2LTX",
+          "orientation": "front",
+          "partNumber": "0303XXXX",
+          "size": "{\"x\":388.4, \"y\":205.9}",
+          "sizeUnit": "mm",
+          "slot": "slot6",
+          "template": "huawei-xxxxxx",
+          "type": "blade",
+          "vendor": "Huawei",
+          "weightKg": 1.81
+      },
+      "category": "device",
+      "description": [
+          "Optix XXX - Dual 9-Port Wavelength Selective Switching Board"
+      ],
+      "domain": "DEMO",
+      "name": "deviceName",
+      "parentId": "xxxx5a111ac5f3b6f313xxxx"
+    }
+  ]
+}

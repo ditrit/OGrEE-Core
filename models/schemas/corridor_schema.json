@@ -1,0 +1,42 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "title": "OGrEE Corridor Schema",
+    "type": "object",
+    "$ref": "refs/base.json",
+    "properties": {
+        "attributes": {
+            "type": "object",
+            "required": [
+                "content",
+                "temperature"
+            ],
+            "properties": {
+                "content": {
+                    "type": "string"
+                },
+                "temperature": {
+                    "type": "string",
+                    "enum": [
+                        "cold",
+                        "warm"
+                    ]
+                }
+            }
+        }
+    },
+    "examples": [
+        {
+            "attributes": {
+                "color": "000099",
+                "content": "B11,C19",
+                "temperature": "cold"
+            },
+            "category": "corridor",
+            "description": [],
+            "domain": "DEMO",
+            "id": "xxxx5a231ac5f3b6f313xxxx",
+            "name": "GCorridor",
+            "parentId": "xxxx5a1f1ac5f3b6f313xxxx"
+        }
+    ]
+}

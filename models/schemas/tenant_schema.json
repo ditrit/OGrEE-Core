@@ -1,0 +1,49 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "title": "OGrEE Tenant Schema",
+    "type": "object",
+    "properties": {
+      "attributes": {
+        "type": "object",
+        "properties": {
+          "color": {
+            "type": "string",
+            "$ref": "refs/types.json#/definitions/color"
+          }
+        },
+        "required": [
+          "color"
+        ]
+      },
+      "category": {
+        "type": "string"
+      },
+      "createdDate": {
+      },
+      "description": {
+        "type": "array",
+        "items": {
+            "type": "string"
+        }
+      },
+      "domain": {
+        "type": "string"
+      },
+      "id": {
+        "type": "string"
+      },
+      "lastUpdated": {
+      },
+      "name": {
+        "type": "string"
+      }
+    },
+    "additionalProperties":  false,
+    "required": [
+      "attributes",
+      "category",
+      "description",
+      "domain",
+      "name"
+    ]
+  }

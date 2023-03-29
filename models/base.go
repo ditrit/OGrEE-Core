@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/joho/godotenv"
@@ -21,7 +22,6 @@ var db *mongo.Database
 var globalClient *mongo.Client
 
 func init() {
-
 	e := godotenv.Load()
 
 	if e != nil {
@@ -35,16 +35,26 @@ func init() {
 	user := os.Getenv("db_user")
 	pass := os.Getenv("db_pass")
 	dbName := "ogree" + os.Getenv("db")
+	if strings.HasSuffix(os.Args[0], ".test") {
+		dbName = "autoTest"
+	}
 
 	println("USER:", user)
-	println("PASS:", pass)
+	println("DB:", dbName)
+
+	if dbHost == "" {
+		dbHost = "localhost"
+	}
+	if dbPort == "" {
+		dbPort = "27017"
+	}
 
 	if user == "" || pass == "" {
 		dbUri = fmt.Sprintf("mongodb://%s:%s/?readPreference=primary&ssl=false",
 			dbHost, dbPort)
 	} else {
-		dbUri = fmt.Sprintf("mongodb://ogree%sAdmin:%s@%s:%s/%s?readPreference=primary",
-			user, pass, dbHost, dbPort, dbName)
+		dbUri = fmt.Sprintf("mongodb://ogree%sAdmin:%s@%s:%s/%s?readPreference=primary&authSource=%s",
+			user, pass, dbHost, dbPort, dbName, dbName)
 	}
 
 	fmt.Println(dbUri)
