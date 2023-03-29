@@ -65,8 +65,8 @@ services:
   # Updates -> Same thing as Drawable
   # {obj}DrawableJson -> Specify them as usual, objDrawableJson="xyz"
   dbft_cli:
-    #build: ${CLI_BUILD_DIR}#${CLI_BRANCH}
-    build: ${LOCAL_CLI_BUILD_DIR}
+    build: ${CLI_BUILD_DIR}#${CLI_BRANCH}
+    #build: ${LOCAL_CLI_BUILD_DIR}
     network_mode: "host"
     image: dbft/cli:dockerfile
     container_name: ${COMPOSE_PROJECT_NAME}_cli

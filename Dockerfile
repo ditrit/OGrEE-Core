@@ -8,7 +8,7 @@ WORKDIR /home
 ADD . /home/
 
 # Install Dependencies
-RUN go install .
+RUN apt install git && go install .
 
 #Build
 RUN cd /home && make
