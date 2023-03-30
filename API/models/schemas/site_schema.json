@@ -7,15 +7,6 @@
     "attributes": {
       "type": "object",
       "properties": {
-        "orientation": {
-          "type": "string",
-          "enum": [
-            "EN",
-            "NW",
-            "WS",
-            "SE"
-          ]
-        },
         "reservedColor": {
           "type": "string",
           "$ref": "refs/types.json#/definitions/color"
@@ -34,7 +25,6 @@
   "examples": [
     {
       "attributes": {
-        "orientation": "NW",
         "reservedColor": "AAAAAA",
         "technicalColor": "D0FF78",
         "usableColor": "5BDCFF"
