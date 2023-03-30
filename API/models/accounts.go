@@ -7,6 +7,7 @@ import (
 
 	"github.com/dgrijalva/jwt-go"
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"golang.org/x/crypto/bcrypt"
 )
@@ -14,19 +15,19 @@ import (
 // JWT Claims struct
 type Token struct {
 	Email  string `json:"email"`
-	UserId uint
+	UserId primitive.ObjectID
 	Roles  map[string]string
 	jwt.StandardClaims
 }
 
 // a struct for rep user account
 type Account struct {
-	ID        uint              ``
-	AdminAuth string            `json:"adminPassword"`
-	Email     string            `json:"email"`
-	Password  string            `json:"password"`
-	Roles     map[string]string `json:"roles"`
-	Token     string            `json:"token" sql:"-"`
+	ID        primitive.ObjectID `bson:"_id,omitempty"`
+	AdminAuth string             `bson:"adminauth" json:"adminPassword"`
+	Email     string             `bson:"email" json:"email"`
+	Password  string             `bson:"password" json:"password"`
+	Roles     map[string]string  `bson:"roles" json:"roles"`
+	Token     string             `bson:"token,omitempty"`
 }
 
 // Validate incoming user
@@ -168,7 +169,7 @@ func GetAllUsers() ([]Account, string) {
 		return nil, err.Error()
 	}
 	users := []Account{}
-	err = c.Decode(&users)
+	err = c.All(ctx, &users)
 	if err != nil {
 		println(err.Error())
 		return nil, err.Error()
