@@ -208,3 +208,26 @@ var Verify = func(w http.ResponseWriter, r *http.Request) {
 		u.Respond(w, u.Message(true, "working"))
 	}
 }
+
+var GetAllAccounts = func(w http.ResponseWriter, r *http.Request) {
+	fmt.Println("******************************************************")
+	fmt.Println("FUNCTION CALL: 	 GetAllAccount ")
+	fmt.Println("******************************************************")
+	DispRequestMetaData(r)
+
+	if r.Method == "OPTIONS" {
+		w.Header().Add("Content-Type", "application/json")
+		w.Header().Add("Allow", "GET, OPTIONS, HEAD")
+	} else {
+		var resp map[string]interface{}
+		data, err := models.GetAllUsers()
+		if err != "" {
+			w.WriteHeader(http.StatusInternalServerError)
+			resp = u.Message(false, "Error: "+err)
+		} else {
+			resp = u.Message(true, "successfully got users")
+			resp["data"] = data
+		}
+		u.Respond(w, resp)
+	}
+}

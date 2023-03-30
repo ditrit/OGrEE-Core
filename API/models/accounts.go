@@ -15,20 +15,18 @@ import (
 type Token struct {
 	Email  string `json:"email"`
 	UserId uint
-	Domain string
-	Role   string
+	Roles  map[string]string
 	jwt.StandardClaims
 }
 
 // a struct for rep user account
 type Account struct {
-	ID        uint   ``
-	AdminAuth string `json:"adminPassword"`
-	Email     string `json: "email"`
-	Password  string `json: "password"`
-	Domain    string `json: "domain"`
-	Role      string `json: "role"`
-	Token     string `json:"token";sql:"-"`
+	ID        uint              ``
+	AdminAuth string            `json:"adminPassword"`
+	Email     string            `json:"email"`
+	Password  string            `json:"password"`
+	Roles     map[string]string `json:"roles"`
+	Token     string            `json:"token" sql:"-"`
 }
 
 // Validate incoming user
@@ -70,8 +68,7 @@ func (account *Account) Create(role, domain string) (map[string]interface{}, str
 	//only admins (issuer or super roles) can create accounts
 	//managers can create user roles in their domain
 	//or if the the request included the adminPassword
-	if !(role == "manager" && account.Role == "user" &&
-		(domain == account.Domain)) &&
+	if !(role == "manager" && account.Roles[domain] == "user") &&
 		!(role == "super") &&
 		(os.Getenv("signing_password") != account.AdminAuth) {
 
@@ -97,7 +94,7 @@ func (account *Account) Create(role, domain string) (map[string]interface{}, str
 	defer cancel()
 
 	//Create new JWT token for the newly created account
-	tk := &Token{Email: account.Email, UserId: account.ID, Domain: account.Domain, Role: account.Role}
+	tk := &Token{Email: account.Email, UserId: account.ID, Roles: account.Roles}
 	token := jwt.NewWithClaims(jwt.GetSigningMethod("HS256"), tk)
 	tokenString, _ := token.SignedString([]byte(os.Getenv("token_password")))
 
@@ -161,4 +158,22 @@ func GetUser(user int) *Account {
 
 	acc.Password = ""
 	return acc
+}
+
+func GetAllUsers() ([]Account, string) {
+	ctx, cancel := u.Connect()
+	c, err := GetDB().Collection("account").Find(ctx, bson.M{})
+	if err != nil {
+		println(err.Error())
+		return nil, err.Error()
+	}
+	users := []Account{}
+	err = c.Decode(&users)
+	if err != nil {
+		println(err.Error())
+		return nil, err.Error()
+	}
+
+	defer cancel()
+	return users, ""
 }
