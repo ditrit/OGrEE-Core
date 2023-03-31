@@ -50,7 +50,7 @@ func PostObj(ent int, entity string, data map[string]interface{}) (map[string]in
 
 		return respMap["data"].(map[string]interface{}), nil
 	}
-	return nil, fmt.Errorf(APIErrorPrefix + respMap["message"].(string))
+	return nil, APIError(respMap)
 }
 
 // Calls API's Validation
@@ -75,7 +75,7 @@ func ValidateObj(data map[string]interface{}, ent string, silence bool) bool {
 
 		return true
 	}
-	println("Error: ", string(APIErrorPrefix+respMap["message"].(string)))
+	println("Error: ", APIErrorMsg(respMap))
 	println()
 	return false
 }
@@ -663,15 +663,10 @@ func UpdateObj(Path, id, ent string, data map[string]interface{}, deleteAndPut b
 				}
 
 			} else {
-				if mInf, ok := respJson["message"]; ok {
-					if m, ok := mInf.(string); ok {
-						return nil, fmt.Errorf(APIErrorPrefix + m)
-					}
-				}
 				msg := "Cannot update. Please ensure that your attributes " +
 					"are modifiable and try again. For more details see the " +
-					"OGREE wiki: https://github.com/ditrit/OGrEE-3D/wiki"
-				return nil, fmt.Errorf(msg)
+					"OGREE wiki: https://github.com/ditrit/OGrEE-3D/wiki\n"
+				return nil, fmt.Errorf(msg + APIErrorMsg(respJson))
 			}
 
 		}
@@ -2812,12 +2807,7 @@ func LoadTemplate(data map[string]interface{}, filePath string) error {
 		l.GetWarningLogger().Println("Couldn't load template, Status Code :", r.StatusCode, " filePath :", filePath)
 		parsedResp := ParseResponse(r, e, "sending template")
 		errorMsg := "Error template wasn't loaded\n"
-		if mInf, ok := parsedResp["message"]; ok {
-			if msg, ok := mInf.(string); ok {
-				errorMsg += APIErrorPrefix + msg
-			}
-		}
-		return fmt.Errorf(errorMsg)
+		return fmt.Errorf(errorMsg + APIErrorMsg(parsedResp))
 	}
 }
 
