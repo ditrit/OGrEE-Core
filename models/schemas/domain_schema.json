@@ -30,7 +30,13 @@
         "type": "string"
       },
       "attributes": {
-        "type": "object"
+        "type": "object",
+        "properties": {
+          "color": {
+            "type" : "string",
+            "$ref": "refs/types.json#/definitions/color"
+          }
+        }
       }
     },
     "additionalProperties":  false,
