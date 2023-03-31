@@ -69,14 +69,17 @@ func (err *ParserError) Error() string {
 		errorString += " "
 	}
 	errorString += "\033[31m" + "^" + "\033[0m" + "\n"
-	errorString += "parsing stack : "
-	for i := len(err.messages) - 1; i > 0; i-- {
-		if i < len(err.messages)-1 {
-			errorString += " -> "
+	if len(err.messages) > 1 {
+		errorString += "parsing stack : "
+		for i := len(err.messages) - 1; i > 0; i-- {
+			if i < len(err.messages)-1 {
+				errorString += " -> "
+			}
+			errorString += err.messages[i]
 		}
-		errorString += err.messages[i]
+		errorString += "\n"
 	}
-	errorString += "\n\033[31m" + "error : " + "\033[0m" + err.messages[0]
+	errorString += "\033[31m" + "error : " + "\033[0m" + err.messages[0]
 	return errorString
 }
 
