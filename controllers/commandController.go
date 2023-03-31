@@ -1399,9 +1399,12 @@ func GetOCLIAtrributes(Path string, ent int, data map[string]interface{}) error 
 	case DOMAIN:
 		if parent != nil {
 			data["parentId"] = parent["id"]
+			data["domain"] = parent["name"]
 		} else {
-			data["parentId"] = nil
+			data["parentId"] = ""
+			data["domain"] = ""
 		}
+		data["attributes"] = map[string]interface{}{}
 
 	case SITE:
 		//Default values
@@ -3271,7 +3274,7 @@ func PreProPath(Path string) []string {
 			pathSplit = strings.Split(path.Clean(Path), "/")
 			if strings.TrimSpace(pathSplit[0]) == "Physical" ||
 				strings.TrimSpace(pathSplit[0]) == "Logical" ||
-				strings.TrimSpace(pathSplit[0]) == "Enterprise" {
+				strings.TrimSpace(pathSplit[0]) == "Organisation" {
 				pathSplit = pathSplit[1:]
 			} else {
 				pathSplit = pathSplit[2:]
