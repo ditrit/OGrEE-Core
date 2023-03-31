@@ -1404,7 +1404,6 @@ func GetOCLIAtrributes(Path string, ent int, data map[string]interface{}) error 
 			data["parentId"] = ""
 			data["domain"] = ""
 		}
-		data["attributes"] = map[string]interface{}{}
 
 	case SITE:
 		//Default values

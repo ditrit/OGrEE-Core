@@ -934,7 +934,7 @@ func (n *createDomainNode) execute() (interface{}, error) {
 		return nil, fmt.Errorf("Please provide a valid 6 digit Hex value for the color")
 	}
 
-	attributes := map[string]interface{}{"attributes": color}
+	attributes := map[string]interface{}{"attributes": map[string]interface{}{"color": color}}
 	err = cmd.GetOCLIAtrributes(path, cmd.DOMAIN, attributes)
 	return nil, err
 }
