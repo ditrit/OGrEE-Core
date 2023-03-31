@@ -345,7 +345,7 @@ func Filter(root map[string]interface{}, depth int, ent string) {
 
 	for _, m := range arr {
 		if object, ok := m.(map[string]interface{}); ok {
-			if object["parentId"] == nil {
+			if object["parentId"] == nil || object["parentId"] == "" {
 				//Change m -> result of hierarchal API call
 				ext := object["id"].(string) + "/all?limit=" + strconv.Itoa(depth)
 				URL := State.APIURL + "/api/" + ent + "/" + ext
