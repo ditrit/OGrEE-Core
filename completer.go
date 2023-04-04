@@ -439,7 +439,9 @@ func GetPrefixCompleter() *readline.PrefixCompleter {
 				readline.PcItem("false", false))),
 
 		readline.PcItem("ui.wireframe", false,
-			readline.PcItem(" = ", false)),
+			readline.PcItem("=", false,
+				readline.PcItem("true", false),
+				readline.PcItem("false", false))),
 		readline.PcItem("ui.delay", false,
 			readline.PcItem(" = ", false)),
 
