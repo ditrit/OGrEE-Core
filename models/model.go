@@ -273,7 +273,8 @@ func CommandRunner(cmd interface{}) *mongo.SingleResult {
 func GetStats() map[string]interface{} {
 	ans := map[string]interface{}{}
 	t := map[string]interface{}{}
-	t2 := map[string]interface{}{}
+	latestDocArr := []map[string]interface{}{}
+	var latestTime interface{}
 
 	for i := 0; i <= u.STRAYSENSOR; i++ {
 		num := GetEntityCount(i)
@@ -282,24 +283,42 @@ func GetStats() map[string]interface{} {
 		}
 
 		ans["Number of "+u.EntityToString(i)+"s:"] = num
+
+		//Retrieve the latest updated document in each collection
+		//and store into the latestDocArr array
+		obj := map[string]interface{}{}
+		filter := options.FindOne().SetSort(bson.M{"lastUpdated": -1})
+		ctx, cancel := u.Connect()
+
+		e := GetDB().Collection(u.EntityToString(i)).FindOne(ctx, bson.M{}, filter).Decode(&obj)
+		if e == nil {
+			latestDocArr = append(latestDocArr, obj)
+		}
+		defer cancel()
+	}
+
+	//Get the latest update out of latestDocArr
+	value := -1
+	for _, obj := range latestDocArr {
+		if int(obj["lastUpdated"].(primitive.DateTime)) > value {
+			value = int(obj["lastUpdated"].(primitive.DateTime))
+			latestTime = obj["lastUpdated"]
+		}
+	}
+
+	if latestTime == nil {
+		latestTime = "N/A"
 	}
 
 	cmd := bson.D{{"dbStats", 1}, {"scale", 1024}}
-	cmd2 := bson.D{{"serverStatus", 1}} //This cmd gives too much info
-	//logicalSessionRecordCache,lastSessionsCollectionJobTimestamp
 
 	if e := CommandRunner(cmd).Decode(&t); e != nil {
 		println(e.Error())
 		return nil
 	}
-	if e := CommandRunner(cmd2).Decode(&t2); e != nil {
-		println(e.Error())
-		return nil
-	}
 
 	ans["Number of Hierarchal Objects"] = t["collections"]
-	ans["Last Job Timestamp"] =
-		t2["logicalSessionRecordCache"].(map[string]interface{})["lastTransactionReaperJobTimestamp"]
+	ans["Last Job Timestamp"] = latestTime
 
 	return ans
 }
