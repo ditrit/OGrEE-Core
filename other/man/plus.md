@@ -14,8 +14,8 @@ User must specify the path, DOMAIN_NAME and COLOR
 Where COLOR should be a 6 digit HEX Value (ie 00000A)
 
 
-+si:PATH/SITE_NAME   
-+site:PATH/SITE_NAME   
++si:SITE_NAME   
++site:SITE_NAME   
 User must specify the path and SITE_NAME   
 
 
@@ -171,8 +171,8 @@ EXAMPLES
 
 +domain:CED@ced666
 
-+si:CED.BETA
-+site:CED/BETA
++si:CED
++site:CED
 
 
 +bd:CED/BETA/A@[5,5]@49.1@[300,300,300]
