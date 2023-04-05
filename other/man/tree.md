@@ -3,6 +3,9 @@ Recursively display hierarchy with depth indentation
 If no options are specified then tree executes with    
 current path and depth of 0      
 
+NOTE   
+
+    The '.' (current directory) is optional if no other arguments are provided
 
 EXAMPLE   
 
