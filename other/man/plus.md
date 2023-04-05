@@ -171,38 +171,38 @@ EXAMPLES
 
 +domain:CED@ced666
 
-+si:CED
-+site:CED
++si:BETA
++site:BETA
 
 
-+bd:CED/BETA/A@[5,5]@49.1@[300,300,300]
-+bd:CED/BETA/A@[5,5]@-27.89@BldgTemplateA
-+building:CED/BETA/A@[5,5]@49.1@[300,300,300]
-+building:CED/BETA/A@[5,5]@-27.89@BldgTemplateA
++bd:BETA/A@[5,5]@49.1@[300,300,300]
++bd:BETA/A@[5,5]@-27.89@BldgTemplateA
++building:BETA/A@[5,5]@49.1@[300,300,300]
++building:BETA/A@[5,5]@-27.89@BldgTemplateA
 
 
-+ro:CED/BETA/A/R1@[0,0]@-36.202@[22.8,19.8,2]@+N+W@t
-+ro:CED/BETA/A/R1@[0,0]@-36.202@[22.8,19.8,2]@+N+W
++ro:BETA/A/R1@[0,0]@-36.202@[22.8,19.8,2]@+N+W@t
++ro:BETA/A/R1@[0,0]@-36.202@[22.8,19.8,2]@+N+W
 +room:CED/BETA/A/R1@[0,0]@-36.202@RoomTemplateA
 
 
-+rk:CED.BETA.A.R1.A01@[9,1,99]@[60,120,42]@front
-+rk:CED.BETA.A.R1.A01@[9,1]@[60,120,42]@front
-+rk:CED/BETA/A/R1/A01@[9,1]@RackTemplateA@right
++rk:BETA.A.R1.A01@[9,1,99]@[60,120,42]@front
++rk:BETA.A.R1.A01@[9,1]@[60,120,42]@front
++rk:BETA/A/R1/A01@[9,1]@RackTemplateA@right
 
 
-+dv:CED.BETA.A.R1.A01.chT@12@10
-+dv:CED.BETA.A.R1.A01.chT@SlotA@10
++dv:BETA.A.R1.A01.chT@12@10
++dv:BETA.A.R1.A01.chT@SlotA@10
 
-+dv:CED.BETA.A.R1.A01.chT@12@ibm-ns1200
-+dv:CED.BETA.A.R1.A01.chT@Slot5@ibm-ns1200
++dv:BETA.A.R1.A01.chT@12@ibm-ns1200
++dv:BETA.A.R1.A01.chT@Slot5@ibm-ns1200
 
-+dv:CED.BETA.A.R1.A01.chT@15@ibm-ns1200
-+dv:CED.BETA.A.R1.A01.chT@Slot5@ibm-ns1200@frontflipped
++dv:BETA.A.R1.A01.chT@15@ibm-ns1200
++dv:BETA.A.R1.A01.chT@Slot5@ibm-ns1200@frontflipped
 
-+co:CED.BETA.A.R1.CorridorD@{A01,A09}@warm 
++co:BETA.A.R1.CorridorD@{A01,A09}@warm 
 
-+gr:CED.BETA.A.R1.GroupG@{A01,A02,A03,A04}
++gr:BETA.A.R1.GroupG@{A01,A02,A03,A04}
 
 + orphan sensor: StraySensorDEMO @ SensorTemplateA
 
