@@ -2457,14 +2457,16 @@ func UnlinkObject(source, destination string) {
 	//Dive POST
 	var parent map[string]interface{}
 
-	if destination != "" {
+	//If destination was specified as "" it would auto set to curr path
+	//instead it was meant as default stray dir
+	if destination != "" && destination != State.CurrPath {
 		parent, _ = GetObject(destination, true)
 		if parent != nil {
 			dev["parentId"] = parent["id"]
 		}
 	}
 
-	if parent == nil {
+	if parent == nil || len(parent) == 0 {
 		DeleteAttr(dev, "parentId")
 	}
 
