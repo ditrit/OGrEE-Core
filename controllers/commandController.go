@@ -1781,6 +1781,7 @@ func GetOCLIAtrributes(Path string, ent int, data map[string]interface{}) error 
 		}
 
 	case STRAY_DEV:
+		data["domain"] = State.Customer
 		attr = data["attributes"].(map[string]interface{})
 		if _, ok := attr["template"]; ok {
 			GetOCLIAtrributesTemplateHelper(attr, data, DEVICE)
