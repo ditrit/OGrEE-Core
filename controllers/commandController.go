@@ -2172,14 +2172,14 @@ func LinkObject(source, destination string, destinationSlot interface{}) {
 
 		return
 	}
-	if cat, _ := sdev["category"]; cat != "stray-device" {
+	/*if cat, _ := sdev["category"]; cat != "stray-device" {
 		l.GetWarningLogger().Println("Attempted to link non stray-device ")
 		if State.DebugLvl > 0 {
 			println("Error: Invalid object. Only stray-devices can be linked")
 		}
 
 		return
-	}
+	}*/
 
 	//Retrieve the stray-device hierarchy
 	h = GetHierarchy(source, 50, true)
@@ -2215,7 +2215,7 @@ func LinkObject(source, destination string, destinationSlot interface{}) {
 	//Need to make sure that origin and destination are
 	//not the same!
 	if parent["id"] == sdev["id"] && parent["name"] == sdev["name"] {
-		l.GetWarningLogger().Println("Attempted to object to itself")
+		l.GetWarningLogger().Println("Attempted to link object to itself")
 		if State.DebugLvl > 0 {
 			println("Error you must provide a unique stray-device" +
 				" and a unique destination for it")
@@ -2242,8 +2242,10 @@ func LinkObject(source, destination string, destinationSlot interface{}) {
 		}
 	}
 
-	sdev, _ = PostObj(DEVICE, "device", sdev)
+	var e error
+	sdev, e = PostObj(DEVICE, "device", sdev)
 	if sdev == nil {
+		println(e.Error())
 		println("Aborting link operation")
 		return
 	}

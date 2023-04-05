@@ -1,4 +1,4 @@
-USAGE: unlink: [PATH/TO/DEVICE] @ [PATH/TO/STRAY-DEVICE-PARENT] (Optional)    
+USAGE: unlink [PATH/TO/DEVICE] @ [PATH/TO/STRAY-DEVICE-PARENT] (Optional)    
 Moves a device from the OGREE hierarchy to be stray-device.    
 		
 NOTE   

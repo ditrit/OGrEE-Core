@@ -1638,7 +1638,7 @@ func parseCommand(frame Frame) (node, Frame, *ParserError) {
 			".cmds:":     parseLoad,
 			".template:": parseTemplate,
 			"len":        parseLen,
-			"link:":      parseLink,
+			"link":       parseLink,
 			"unlink":     parseUnlink,
 			"print":      parsePrint,
 			"man":        parseMan,

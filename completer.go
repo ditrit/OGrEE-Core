@@ -94,7 +94,7 @@ func ListLocal(path string) func(string) []string {
 
 func UnLinkObjCompleter(path string) func(string) []string {
 	return func(line string) []string {
-		splitted := strings.SplitAfter(line, ":")
+		splitted := strings.SplitAfter(line, "link")
 		length := len(splitted)
 		if length < 1 {
 			return nil
@@ -461,9 +461,9 @@ func GetPrefixCompleter() *readline.PrefixCompleter {
 			readline.PcItem("subdevice1", false),
 		),*/
 
-		readline.PcItem("link:", true,
+		readline.PcItem("link", true,
 			readline.PcItemDynamic(UnLinkObjCompleter(""), false)),
-		readline.PcItem("unlink:", true,
+		readline.PcItem("unlink", true,
 			readline.PcItemDynamic(UnLinkObjCompleter(""), false)),
 		readline.PcItem("-", true,
 			readline.PcItem("selection", false),
