@@ -380,7 +380,7 @@ var GetEntity = func(w http.ResponseWriter, r *http.Request) {
 		data, e1 = models.GetEntity(bson.M{"_id": x}, entityStr)
 
 	} else if id, e = mux.Vars(r)["name"]; e { //GET By String
-		if entityStr == "site" || entityStr == "domain" {
+		if entityStr == "site" || entityStr == "domain" || entityStr == "stray_device" {
 			data, e1 = models.GetEntity(bson.M{"name": id}, entityStr) //GET By Name
 		} else if strings.Contains(entityStr, "template") {
 			data, e1 = models.GetEntity(bson.M{"slug": id}, entityStr) //GET By Slug (template)
