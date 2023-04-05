@@ -2243,6 +2243,7 @@ func LinkObject(source, destination string, destinationSlot interface{}) {
 	}
 
 	var e error
+	sdev["category"] = "device"
 	sdev, e = PostObj(DEVICE, "device", sdev)
 	if sdev == nil {
 		println(e.Error())
@@ -2271,10 +2272,17 @@ func LinkObject(source, destination string, destinationSlot interface{}) {
 					ent = entity
 				}
 
+				x[i]["category"] = ent
+
+				//The API will not validate the object if the
+				//'children' attribute is present.
+				tmpChildren := x[i]["children"]
+				DeleteAttr(x[i], "children")
 				res := ValidateObj(x[i], ent, true)
 				if res == false {
 					return false, x[i]
 				}
+				x[i]["children"] = tmpChildren
 
 				childrenInfArr := x[i]["children"]
 				if childrenInfArr != nil {
@@ -2369,6 +2377,7 @@ func validFn(x []map[string]interface{}, entity string, pid interface{}) (bool, 
 				ent = entity
 			}
 
+			x[i]["category"] = ent
 			res := ValidateObj(x[i], ent, true)
 			if res == false {
 				return false, x[i]
@@ -2466,6 +2475,7 @@ func UnlinkObject(source, destination string) {
 		}
 	}
 
+	dev["category"] = "stray-device"
 	if parent == nil || len(parent) == 0 {
 		DeleteAttr(dev, "parentId")
 	}
