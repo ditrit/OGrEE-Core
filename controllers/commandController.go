@@ -1143,9 +1143,9 @@ func Help(entry string) {
 	var path string
 	entry = strings.TrimSpace(entry)
 	switch entry {
-	case "ls", "pwd", "print", "cd", "tree", "create", "get", "clear",
-		"update", "delete", "lsog", "grep", "for", "while", "if", "env",
-		"cmds", "var", "unset", "select", "camera", "ui", "hc", "drawable",
+	case "ls", "pwd", "print", "cd", "tree", "get", "clear",
+		"lsog", "grep", "for", "while", "if", "env",
+		"cmds", "var", "unset", "selection", "camera", "ui", "hc", "drawable",
 		"link", "unlink", "draw", "getu", "getslot", "undraw",
 		"lsenterprise":
 		path = "./other/man/" + entry + ".md"
