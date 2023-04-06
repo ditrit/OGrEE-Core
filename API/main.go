@@ -56,9 +56,6 @@ var hnmatch mux.MatcherFunc = func(request *http.Request, match *mux.RouteMatch)
 func Router(jwt func(next http.Handler) http.Handler) *mux.Router {
 	router := mux.NewRouter()
 
-	router.HandleFunc("/api",
-		controllers.CreateAccount).Methods("POST", "OPTIONS")
-
 	router.HandleFunc("/api/stats",
 		controllers.GetStats).Methods("GET", "OPTIONS", "HEAD")
 
@@ -67,6 +64,9 @@ func Router(jwt func(next http.Handler) http.Handler) *mux.Router {
 
 	router.HandleFunc("/api/token/valid",
 		controllers.Verify).Methods("GET", "OPTIONS", "HEAD")
+
+	router.HandleFunc("/api/users",
+		controllers.CreateAccount).Methods("POST", "OPTIONS")
 
 	router.HandleFunc("/api/users",
 		controllers.GetAllAccounts).Methods("GET", "OPTIONS", "HEAD")

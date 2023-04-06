@@ -10,6 +10,7 @@ import (
 	"p3/models"
 
 	jwt "github.com/dgrijalva/jwt-go"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 var Log = func(next http.Handler) http.Handler {
@@ -91,14 +92,14 @@ var JwtAuthentication = func(next http.Handler) http.Handler {
 		//Success
 		//set the caller to the user retrieved from the parsed token
 		//Useful for monitoring
-		userData := map[string]interface{}{"email": tk.Email, "userID": tk.UserId, "roles": tk.Roles}
+		userData := map[string]interface{}{"email": tk.Email, "userID": tk.UserId}
 		ctx := context.WithValue(r.Context(), "user", userData)
 		r = r.WithContext(ctx)
 		next.ServeHTTP(w, r) //proceed in the middleware chain!
 	})
 }
 
-func ParseToken(w http.ResponseWriter, r *http.Request) map[string]interface{} {
+func ParseToken(w http.ResponseWriter, r *http.Request) map[string]primitive.ObjectID {
 	//Grab the token from the header
 	tokenHeader := r.Header.Get("Authorization")
 
@@ -132,6 +133,6 @@ func ParseToken(w http.ResponseWriter, r *http.Request) map[string]interface{} {
 	}
 
 	//Success
-	return map[string]interface{}{
-		"userID": tk.UserId, "roles": tk.Roles}
+	return map[string]primitive.ObjectID{
+		"userID": tk.UserId}
 }

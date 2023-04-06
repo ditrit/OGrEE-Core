@@ -50,7 +50,6 @@ func GetProjectsByUserEmail(userEmail string) (map[string]interface{}, string) {
 	if err != nil {
 		fmt.Println(err)
 	} else {
-		// response["projects"], _ = m.ExtractCursor(cursor, ctx)
 		if err = cursor.All(ctx, &results); err != nil {
 			fmt.Println(err)
 		} else if len(results) > 0 {

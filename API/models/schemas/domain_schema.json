@@ -1,6 +1,6 @@
 {
     "$schema": "https://json-schema.org/draft/2020-12/schema",
-    "title": "OGrEE Tenant Schema",
+    "title": "OGrEE Domain Schema",
     "type": "object",
     "properties": {
       "attributes": {
@@ -26,10 +26,10 @@
             "type": "string"
         }
       },
-      "domain": {
+      "id": {
         "type": "string"
       },
-      "id": {
+      "parentId": {
         "type": "string"
       },
       "lastUpdated": {
@@ -43,7 +43,6 @@
       "attributes",
       "category",
       "description",
-      "domain",
       "name"
     ]
   }

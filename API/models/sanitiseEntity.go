@@ -31,8 +31,20 @@ func FixAttributesBeforeInsert(entity int, data map[string]interface{}) {
 	if entity == u.RACK {
 		pid, _ := primitive.ObjectIDFromHex(data["parentId"].(string))
 		req := bson.M{"_id": pid}
-		parent, _ := GetEntity(req, "room", u.RequestFilters{})
+		parent, _ := GetEntity(req, "room", u.RequestFilters{}, nil)
 		parentUnit := parent["attributes"].(map[string]interface{})["posXYUnit"]
 		data["attributes"].(map[string]interface{})["posXYUnit"] = parentUnit
 	}
+}
+
+func FixReadOnlyName(data map[string]interface{}) map[string]interface{} {
+	cleanData := map[string]interface{}{}
+	cleanData["id"] = data["id"]
+	cleanData["category"] = data["category"]
+	cleanData["name"] = data["name"]
+	cleanData["hierarchyName"] = data["hierarchyName"]
+	if _, ok := data["children"]; ok {
+		cleanData["children"] = data["children"]
+	}
+	return cleanData
 }

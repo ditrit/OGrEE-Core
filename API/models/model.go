@@ -15,10 +15,17 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
-func CreateEntity(entity int, t map[string]interface{}) (map[string]interface{}, string) {
+func CreateEntity(entity int, t map[string]interface{}, userRoles map[string]string) (map[string]interface{}, string) {
 	message := ""
 	if resp, ok := ValidateEntity(entity, t); !ok {
 		return resp, "validate"
+	}
+
+	// Check user permissions
+	if ok, _ := CheckUserPermissions(userRoles, entity, WRITE, t["domain"].(string)); !ok {
+		return u.Message(false,
+				"User does not have permission to create this object"),
+			"permission"
 	}
 
 	//Set timestamp
@@ -62,7 +69,7 @@ func CreateEntity(entity int, t map[string]interface{}) (map[string]interface{},
 }
 
 // GetObjectByName: search for hierarchyName in all possible collections
-func GetObjectByName(hierarchyName string, filters u.RequestFilters) (map[string]interface{}, string) {
+func GetObjectByName(hierarchyName string, filters u.RequestFilters, userRoles map[string]string) (map[string]interface{}, string) {
 	var resp map[string]interface{}
 	// Get possible collections for this name
 	rangeEntities := u.HierachyNameToEntity(hierarchyName)
@@ -71,7 +78,7 @@ func GetObjectByName(hierarchyName string, filters u.RequestFilters) (map[string
 	for _, entity := range rangeEntities {
 		req := bson.M{"hierarchyName": hierarchyName}
 		entityStr := u.EntityToString(entity)
-		data, _ := GetEntity(req, entityStr, filters)
+		data, _ := GetEntity(req, entityStr, filters, userRoles)
 		if data != nil {
 			resp = data
 			break
@@ -85,7 +92,7 @@ func GetObjectByName(hierarchyName string, filters u.RequestFilters) (map[string
 	}
 }
 
-func GetEntity(req bson.M, ent string, filters u.RequestFilters) (map[string]interface{}, string) {
+func GetEntity(req bson.M, ent string, filters u.RequestFilters, userRoles map[string]string) (map[string]interface{}, string) {
 	t := map[string]interface{}{}
 	ctx, cancel := u.Connect()
 	var e error
@@ -112,8 +119,20 @@ func GetEntity(req bson.M, ent string, filters u.RequestFilters) (map[string]int
 		return nil, e.Error()
 	}
 	defer cancel()
+
 	//Remove _id
 	t = fixID(t)
+
+	// Check permissions
+	if userRoles != nil {
+		if ok, readLevel := CheckUserPermissions(userRoles, u.EntityStrToInt(ent), READ, t["domain"].(string)); !ok {
+			return u.Message(false,
+					"User does not have permission to see this object"),
+				"permission"
+		} else if readLevel == READONLYNAME {
+			t = FixReadOnlyName(t)
+		}
+	}
 
 	//If entity has '_' remove it
 	if strings.Contains(ent, "_") {
@@ -146,7 +165,7 @@ func getDateFilters(req bson.M, filters u.RequestFilters) error {
 	return nil
 }
 
-func GetManyEntities(ent string, req bson.M, filters u.RequestFilters) ([]map[string]interface{}, string) {
+func GetManyEntities(ent string, req bson.M, filters u.RequestFilters, userRoles map[string]string) ([]map[string]interface{}, string) {
 	ctx, cancel := u.Connect()
 	var err error
 	var c *mongo.Cursor
@@ -175,7 +194,7 @@ func GetManyEntities(ent string, req bson.M, filters u.RequestFilters) ([]map[st
 	}
 	defer cancel()
 
-	data, e1 := ExtractCursor(c, ctx)
+	data, e1 := ExtractCursor(c, ctx, u.EntityStrToInt(ent), userRoles)
 	if e1 != "" {
 		fmt.Println(e1)
 		return nil, e1
@@ -197,7 +216,7 @@ func GetManyEntities(ent string, req bson.M, filters u.RequestFilters) ([]map[st
 //   - categories: map with category name as key and corresponding objects
 //     as an array value
 //     categories: {categoryName:[children]}
-func GetCompleteHierarchy() (map[string]interface{}, string) {
+func GetCompleteHierarchy(userRoles map[string]string) (map[string]interface{}, string) {
 	response := make(map[string]interface{})
 	categories := make(map[string][]string)
 	hierarchy := make(map[string][]string)
@@ -223,7 +242,7 @@ func GetCompleteHierarchy() (map[string]interface{}, string) {
 		if err != nil {
 			println(err.Error())
 		}
-		data, error := ExtractCursor(c, ctx)
+		data, error := ExtractCursor(c, ctx, u.EntityStrToInt(collName), userRoles)
 		if error != "" {
 			fmt.Println(error)
 			return nil, error
@@ -256,7 +275,7 @@ func fillHierarchyMap(hierarchyName string, data map[string][]string) {
 	}
 }
 
-func GetCompleteHierarchyAttributes() (map[string]interface{}, string) {
+func GetCompleteHierarchyAttributes(userRoles map[string]string) (map[string]interface{}, string) {
 	response := make(map[string]interface{})
 	// Get all collections names
 	ctx, cancel := u.Connect()
@@ -280,7 +299,7 @@ func GetCompleteHierarchyAttributes() (map[string]interface{}, string) {
 		if err != nil {
 			println(err.Error())
 		}
-		data, error := ExtractCursor(c, ctx)
+		data, error := ExtractCursor(c, ctx, u.EntityStrToInt(collName), userRoles)
 		if error != "" {
 			fmt.Println(error)
 			return nil, error
@@ -452,9 +471,9 @@ func DeleteEntity(entity string, id primitive.ObjectID, rnd map[string]interface
 	eNum := u.EntityStrToInt(entity)
 	if eNum > u.DEVICE {
 		//Delete the non hierarchal objects
-		t, e = GetEntityHierarchy(id, rnd, entity, eNum, eNum+eNum, u.RequestFilters{})
+		t, e = GetEntityHierarchy(id, rnd, entity, eNum, eNum+eNum, u.RequestFilters{}, nil)
 	} else {
-		t, e = GetEntityHierarchy(id, rnd, entity, eNum, u.AC, u.RequestFilters{})
+		t, e = GetEntityHierarchy(id, rnd, entity, eNum, u.AC, u.RequestFilters{}, nil)
 	}
 
 	if e != "" {
@@ -528,7 +547,7 @@ func deleteHelper(t map[string]interface{}, ent int) (map[string]interface{}, st
 	return nil, ""
 }
 
-func UpdateEntity(ent string, req bson.M, t *map[string]interface{}, isPatch bool) (map[string]interface{}, string) {
+func UpdateEntity(ent string, req bson.M, t *map[string]interface{}, isPatch bool, userRoles map[string]string) (map[string]interface{}, string) {
 	var e *mongo.SingleResult
 	updatedDoc := bson.M{}
 	retDoc := options.ReturnDocument(options.After)
@@ -536,7 +555,7 @@ func UpdateEntity(ent string, req bson.M, t *map[string]interface{}, isPatch boo
 	//Update timestamp requires first obj retrieval
 	//there isn't any way for mongoDB to make a field
 	//immutable in a document
-	oldObj, e1 := GetEntity(req, ent, u.RequestFilters{})
+	oldObj, e1 := GetEntity(req, ent, u.RequestFilters{}, userRoles)
 	if e1 != "" {
 		return u.Message(false, "Error: "+e1), e1
 	}
@@ -636,7 +655,7 @@ func propagateParentNameChange(ctx context.Context, oldParentName, newName strin
 	}
 }
 
-func GetEntityHierarchy(ID primitive.ObjectID, req bson.M, ent string, start, end int, filters u.RequestFilters) (map[string]interface{}, string) {
+func GetEntityHierarchy(ID primitive.ObjectID, req bson.M, ent string, start, end int, filters u.RequestFilters, userRoles map[string]string) (map[string]interface{}, string) {
 	var childEnt string
 
 	if start < end {
@@ -649,7 +668,7 @@ func GetEntityHierarchy(ID primitive.ObjectID, req bson.M, ent string, start, en
 			newReq["_id"] = ID
 		}
 
-		top, e := GetEntity(newReq, ent, filters)
+		top, e := GetEntity(newReq, ent, filters, userRoles)
 		if top == nil {
 			return nil, e
 		}
@@ -660,10 +679,10 @@ func GetEntityHierarchy(ID primitive.ObjectID, req bson.M, ent string, start, en
 		//Get sensors & groups
 		if ent == "rack" || ent == "device" {
 			//Get sensors
-			sensors, _ := GetManyEntities("sensor", bson.M{"parentId": pid}, filters)
+			sensors, _ := GetManyEntities("sensor", bson.M{"parentId": pid}, filters, userRoles)
 
 			//Get groups
-			groups, _ := GetManyEntities("group", bson.M{"parentId": pid}, filters)
+			groups, _ := GetManyEntities("group", bson.M{"parentId": pid}, filters, userRoles)
 
 			if sensors != nil {
 				children = append(children, sensors...)
@@ -679,10 +698,10 @@ func GetEntityHierarchy(ID primitive.ObjectID, req bson.M, ent string, start, en
 			childEnt = u.EntityToString(start + 1)
 		}
 
-		subEnts, _ := GetManyEntities(childEnt, bson.M{"parentId": pid}, filters)
+		subEnts, _ := GetManyEntities(childEnt, bson.M{"parentId": pid}, filters, userRoles)
 
 		for idx := range subEnts {
-			tmp, _ := GetEntityHierarchy(subEnts[idx]["id"].(primitive.ObjectID), req, childEnt, start+1, end, filters)
+			tmp, _ := GetEntityHierarchy(subEnts[idx]["id"].(primitive.ObjectID), req, childEnt, start+1, end, filters, userRoles)
 			if tmp != nil {
 				subEnts[idx] = tmp
 			}
@@ -694,29 +713,29 @@ func GetEntityHierarchy(ID primitive.ObjectID, req bson.M, ent string, start, en
 
 		if ent == "room" {
 			for i := u.AC; i < u.CABINET+1; i++ {
-				roomEnts, _ := GetManyEntities(u.EntityToString(i), bson.M{"parentId": pid}, filters)
+				roomEnts, _ := GetManyEntities(u.EntityToString(i), bson.M{"parentId": pid}, filters, userRoles)
 				if roomEnts != nil {
 					children = append(children, roomEnts...)
 				}
 			}
 			for i := u.PWRPNL; i < u.SENSOR+1; i++ {
-				roomEnts, _ := GetManyEntities(u.EntityToString(i), bson.M{"parentId": pid}, filters)
+				roomEnts, _ := GetManyEntities(u.EntityToString(i), bson.M{"parentId": pid}, filters, userRoles)
 				if roomEnts != nil {
 					children = append(children, roomEnts...)
 				}
 			}
-			roomEnts, _ := GetManyEntities(u.EntityToString(u.CORRIDOR), bson.M{"parentId": pid}, filters)
+			roomEnts, _ := GetManyEntities(u.EntityToString(u.CORRIDOR), bson.M{"parentId": pid}, filters, userRoles)
 			if roomEnts != nil {
 				children = append(children, roomEnts...)
 			}
-			roomEnts, _ = GetManyEntities(u.EntityToString(u.GROUP), bson.M{"parentId": pid}, filters)
+			roomEnts, _ = GetManyEntities(u.EntityToString(u.GROUP), bson.M{"parentId": pid}, filters, userRoles)
 			if roomEnts != nil {
 				children = append(children, roomEnts...)
 			}
 		}
 
 		if ent == "stray_device" {
-			sSensors, _ := GetManyEntities("stray_sensor", bson.M{"parentId": pid}, filters)
+			sSensors, _ := GetManyEntities("stray_sensor", bson.M{"parentId": pid}, filters, userRoles)
 			if sSensors != nil {
 				children = append(children, sSensors...)
 			}
@@ -731,7 +750,7 @@ func GetEntityHierarchy(ID primitive.ObjectID, req bson.M, ent string, start, en
 	return nil, ""
 }
 
-func GetEntitiesUsingAncestorNames(ent string, id primitive.ObjectID, req map[string]interface{}, ancestry []map[string]string) ([]map[string]interface{}, string) {
+func GetEntitiesUsingAncestorNames(ent string, id primitive.ObjectID, req map[string]interface{}, ancestry []map[string]string, userRoles map[string]string) ([]map[string]interface{}, string) {
 
 	newReq := req
 	if newReq == nil {
@@ -739,7 +758,7 @@ func GetEntitiesUsingAncestorNames(ent string, id primitive.ObjectID, req map[st
 	} else {
 		newReq["_id"] = id
 	}
-	top, e := GetEntity(newReq, ent, u.RequestFilters{})
+	top, e := GetEntity(newReq, ent, u.RequestFilters{}, nil)
 	if e != "" {
 		return nil, e
 	}
@@ -762,10 +781,10 @@ func GetEntitiesUsingAncestorNames(ent string, id primitive.ObjectID, req map[st
 				/*if k == "device" {
 					return GetDeviceFByParentID(pid) nil, ""
 				}*/
-				return GetManyEntities(k, bson.M{"parentId": pid}, u.RequestFilters{})
+				return GetManyEntities(k, bson.M{"parentId": pid}, u.RequestFilters{}, userRoles)
 			}
 
-			x, e1 = GetEntity(bson.M{"parentId": pid, "name": v}, k, u.RequestFilters{})
+			x, e1 = GetEntity(bson.M{"parentId": pid, "name": v}, k, u.RequestFilters{}, userRoles)
 			if e1 != "" {
 				println("Failing here")
 				return nil, ""
@@ -785,7 +804,7 @@ func GetEntityUsingAncestorNames(ent string, id primitive.ObjectID, req map[stri
 	} else {
 		newReq["_id"] = id
 	}
-	top, e := GetEntity(newReq, ent, u.RequestFilters{})
+	top, e := GetEntity(newReq, ent, u.RequestFilters{}, nil)
 	if e != "" {
 		return nil, e
 	}
@@ -802,7 +821,7 @@ func GetEntityUsingAncestorNames(ent string, id primitive.ObjectID, req map[stri
 
 			println("KEY:", k, " VAL:", v)
 
-			x, e1 = GetEntity(bson.M{"parentId": pid, "name": v}, k, u.RequestFilters{})
+			x, e1 = GetEntity(bson.M{"parentId": pid, "name": v}, k, u.RequestFilters{}, nil)
 			if e1 != "" {
 				println("Failing here")
 				return nil, ""
@@ -837,7 +856,7 @@ func GetHierarchyByName(entity, hierarchyName string, limit int, filters u.Reque
 		// Obj should include parentName and not surpass limit range
 		pattern := primitive.Regex{Pattern: hierarchyName +
 			"(.[A-Za-z0-9_\" \"]+){1," + strconv.Itoa(limit) + "}$", Options: ""}
-		children, e1 := GetManyEntities(checkEntName, bson.M{"hierarchyName": pattern}, filters)
+		children, e1 := GetManyEntities(checkEntName, bson.M{"hierarchyName": pattern}, filters, nil)
 		if e1 != "" {
 			println("SUBENT: ", checkEntName)
 			println("ERR: ", e1)
@@ -901,7 +920,7 @@ func getChildrenCollections(limit int, parentEntStr string) []int {
 	return rangeEntities
 }
 
-func GetEntitiesUsingSiteAsAncestor(ent, id string, req map[string]interface{}, ancestry []map[string]string) ([]map[string]interface{}, string) {
+func GetEntitiesUsingSiteAsAncestor(ent, id string, req map[string]interface{}, ancestry []map[string]string, userRoles map[string]string) ([]map[string]interface{}, string) {
 
 	newReq := req
 	if newReq == nil {
@@ -909,7 +928,7 @@ func GetEntitiesUsingSiteAsAncestor(ent, id string, req map[string]interface{}, 
 	} else {
 		newReq["name"] = id
 	}
-	top, e := GetEntity(newReq, ent, u.RequestFilters{})
+	top, e := GetEntity(newReq, ent, u.RequestFilters{}, nil)
 	if e != "" {
 		return nil, e
 	}
@@ -929,10 +948,10 @@ func GetEntitiesUsingSiteAsAncestor(ent, id string, req map[string]interface{}, 
 
 			if v == "all" {
 				println("K:", k)
-				return GetManyEntities(k, bson.M{"parentId": pid}, u.RequestFilters{})
+				return GetManyEntities(k, bson.M{"parentId": pid}, u.RequestFilters{}, userRoles)
 			}
 
-			x, e1 = GetEntity(bson.M{"parentId": pid, "name": v}, k, u.RequestFilters{})
+			x, e1 = GetEntity(bson.M{"parentId": pid, "name": v}, k, u.RequestFilters{}, userRoles)
 			if e1 != "" {
 				println("Failing here")
 				println("E1: ", e1)
@@ -953,7 +972,7 @@ func GetEntityUsingSiteAsAncestor(ent, id string, req map[string]interface{}, an
 	} else {
 		newReq["name"] = id
 	}
-	top, e := GetEntity(newReq, ent, u.RequestFilters{})
+	top, e := GetEntity(newReq, ent, u.RequestFilters{}, nil)
 	if e != "" {
 		return nil, e
 	}
@@ -967,7 +986,7 @@ func GetEntityUsingSiteAsAncestor(ent, id string, req map[string]interface{}, an
 
 			println("KEY:", k, " VAL:", v)
 
-			x, e1 = GetEntity(bson.M{"parentId": pid, "name": v}, k, u.RequestFilters{})
+			x, e1 = GetEntity(bson.M{"parentId": pid, "name": v}, k, u.RequestFilters{}, nil)
 			if e1 != "" {
 				println("Failing here")
 				return nil, ""
@@ -992,7 +1011,7 @@ func GetEntitiesOfAncestor(id interface{}, req bson.M, ent int, entStr, wantedEn
 			newReq["name"] = id
 		}
 
-		t, e = GetEntity(newReq, "site", u.RequestFilters{})
+		t, e = GetEntity(newReq, "site", u.RequestFilters{}, nil)
 		if e != "" {
 			return nil, e
 		}
@@ -1007,14 +1026,14 @@ func GetEntitiesOfAncestor(id interface{}, req bson.M, ent int, entStr, wantedEn
 			newReq["_id"] = ID
 		}
 
-		t, e = GetEntity(newReq, entStr, u.RequestFilters{})
+		t, e = GetEntity(newReq, entStr, u.RequestFilters{}, nil)
 		if e != "" {
 			return nil, e
 		}
 	}
 
 	sub, e1 := GetManyEntities(u.EntityToString(ent+1),
-		bson.M{"parentId": t["id"].(primitive.ObjectID).Hex()}, u.RequestFilters{})
+		bson.M{"parentId": t["id"].(primitive.ObjectID).Hex()}, u.RequestFilters{}, nil)
 	if e1 != "" {
 		return nil, e1
 	}
@@ -1025,7 +1044,7 @@ func GetEntitiesOfAncestor(id interface{}, req bson.M, ent int, entStr, wantedEn
 
 	for i := range sub {
 		x, _ := GetManyEntities(wantedEnt,
-			bson.M{"parentId": sub[i]["id"].(primitive.ObjectID).Hex()}, u.RequestFilters{})
+			bson.M{"parentId": sub[i]["id"].(primitive.ObjectID).Hex()}, u.RequestFilters{}, nil)
 		ans = append(ans, x...)
 	}
 	return ans, ""
@@ -1036,7 +1055,7 @@ func GetEntitiesOfAncestor(id interface{}, req bson.M, ent int, entStr, wantedEn
 func DeleteDeviceF(entityID primitive.ObjectID, req bson.M) (map[string]interface{}, string) {
 	//var deviceType string
 
-	t, e := GetEntityHierarchy(entityID, req, "device", 0, 999, u.RequestFilters{})
+	t, e := GetEntityHierarchy(entityID, req, "device", 0, 999, u.RequestFilters{}, nil)
 	if e != "" {
 		return u.Message(false,
 			"There was an error in deleting the entity"), "not found"
@@ -1075,7 +1094,7 @@ func deleteDeviceHelper(t map[string]interface{}) (map[string]interface{}, strin
 	return nil, ""
 }
 
-func ExtractCursor(c *mongo.Cursor, ctx context.Context) ([]map[string]interface{}, string) {
+func ExtractCursor(c *mongo.Cursor, ctx context.Context, entity int, userRoles map[string]string) ([]map[string]interface{}, string) {
 	ans := []map[string]interface{}{}
 	for c.Next(ctx) {
 		x := map[string]interface{}{}
@@ -1086,36 +1105,16 @@ func ExtractCursor(c *mongo.Cursor, ctx context.Context) ([]map[string]interface
 		}
 		//Remove _id
 		x = fixID(x)
-		ans = append(ans, x)
+		if userRoles != nil {
+			if ok, readLevel := CheckUserPermissions(userRoles, entity, READ, x["domain"].(string)); ok {
+				if readLevel == READONLYNAME {
+					x = FixReadOnlyName(x)
+				}
+				ans = append(ans, x)
+			}
+		} else {
+			ans = append(ans, x)
+		}
 	}
 	return ans, ""
-}
-
-// DEAD CODE
-// Function will recursively iterate through nested obj
-// and accumulate whatever is found into category arrays
-func parseDataForNonStdResult(ent string, eNum, end int, data map[string]interface{}) map[string][]map[string]interface{} {
-	var nxt string
-	ans := map[string][]map[string]interface{}{}
-	add := data[u.EntityToString(eNum+1)+"s"].([]map[string]interface{})
-
-	//NEW REWRITE
-	for i := eNum; i+2 < end; i++ {
-		idx := u.EntityToString(i + 1)
-		//println("trying IDX: ", idx)
-		firstArr := add
-
-		ans[idx+"s"] = firstArr
-
-		for q := range firstArr {
-			nxt = u.EntityToString(i + 2)
-			println("NXT: ", nxt)
-			ans[nxt+"s"] = append(ans[nxt+"s"],
-				ans[idx+"s"][q][nxt+"s"].([]map[string]interface{})...)
-		}
-		add = ans[nxt+"s"]
-
-	}
-
-	return ans
 }

@@ -1,6 +1,7 @@
 package models
 
 import (
+	"fmt"
 	"os"
 	u "p3/utils"
 	"regexp"
@@ -14,20 +15,18 @@ import (
 
 // JWT Claims struct
 type Token struct {
-	Email  string `json:"email"`
-	UserId primitive.ObjectID
-	Roles  map[string]string
+	Email  string             `json:"email"`
+	UserId primitive.ObjectID `bson:"_id,omitempty" json:"_id,omitempty"`
 	jwt.StandardClaims
 }
 
 // a struct for rep user account
 type Account struct {
-	ID        primitive.ObjectID `bson:"_id,omitempty"`
-	AdminAuth string             `bson:"adminauth" json:"adminPassword"`
-	Email     string             `bson:"email" json:"email"`
-	Password  string             `bson:"password" json:"password"`
-	Roles     map[string]string  `bson:"roles" json:"roles"`
-	Token     string             `bson:"token,omitempty"`
+	ID       primitive.ObjectID `bson:"_id,omitempty" json:"_id,omitempty"`
+	Email    string             `bson:"email" json:"email"`
+	Password string             `bson:"password" json:"password"`
+	Roles    map[string]string  `bson:"roles" json:"roles"`
+	Token    string             `bson:"token,omitempty" json:"token,omitempty"`
 }
 
 // Validate incoming user
@@ -56,26 +55,39 @@ func (account *Account) Validate() (map[string]interface{}, bool) {
 		return u.Message(false, "Error: User already exists"), false
 	}
 	defer cancel()
+
+	// Validate domains and roles
+	if len(account.Roles) <= 0 {
+		return u.Message(false, "Object 'roles' with domain names as keys and roles as values is mandatory"), false
+	}
+	for domain, role := range account.Roles {
+		if !CheckDomainExists(domain) {
+			return u.Message(false, "Domain does not exist: "+domain), false
+		}
+		switch role {
+		case Manager:
+		case Viewer:
+		case User:
+			break
+		default:
+			return u.Message(false, "Role assigned is not valid: "+role), false
+		}
+	}
+
 	return u.Message(false, "Requirement passed"), true
 }
 
-func (account *Account) Create(role, domain string) (map[string]interface{}, string) {
-
-	if resp, ok := account.Validate(); !ok {
-		return resp, "validate"
-	}
-
-	//Check if user is allowed to do account creation
-	//only admins (issuer or super roles) can create accounts
-	//managers can create user roles in their domain
-	//or if the the request included the adminPassword
-	if !(role == "manager" && account.Roles[domain] == "user") &&
-		!(role == "super") &&
-		(os.Getenv("signing_password") != account.AdminAuth) {
-
+func (account *Account) Create(callerRoles map[string]string) (map[string]interface{}, string) {
+	// Check if user is allowed to create new users
+	if !CheckCanCreateUser(callerRoles, account.Roles) {
 		return u.Message(false,
 			"Invalid credentials for creating an account."+
-				"Please note only admins can create accounts"), "unauthorised"
+				"Manager role in requested domains is needed"), "unauthorised"
+	}
+
+	// Validate new user
+	if resp, ok := account.Validate(); !ok {
+		return resp, "validate"
 	}
 
 	hashedPassword, _ := bcrypt.GenerateFromPassword(
@@ -84,23 +96,20 @@ func (account *Account) Create(role, domain string) (map[string]interface{}, str
 	account.Password = string(hashedPassword)
 
 	ctx, cancel := u.Connect()
-	search := GetDB().Collection("account").FindOne(ctx, bson.M{"email": account.Email})
-	if search.Err() != nil {
-		GetDB().Collection("account").InsertOne(ctx, account)
-	} else {
+	res, err := GetDB().Collection("account").InsertOne(ctx, account)
+	if err != nil {
 		return u.Message(false,
-			"Error: User already exists:"), "clientError"
+			"DB error when creating user: "+err.Error()), "internal"
+	} else {
+		account.ID = res.InsertedID.(primitive.ObjectID)
 	}
-
 	defer cancel()
 
 	//Create new JWT token for the newly created account
-	tk := &Token{Email: account.Email, UserId: account.ID, Roles: account.Roles}
+	tk := &Token{Email: account.Email, UserId: account.ID}
 	token := jwt.NewWithClaims(jwt.GetSigningMethod("HS256"), tk)
 	tokenString, _ := token.SignedString([]byte(os.Getenv("token_password")))
-
 	account.Token = tokenString
-
 	account.Password = ""
 
 	response := u.Message(true, "Account has been created")
@@ -110,11 +119,10 @@ func (account *Account) Create(role, domain string) (map[string]interface{}, str
 
 func Login(email, password string) (map[string]interface{}, string) {
 	account := &Account{}
+	resp := u.Message(true, "Logged In")
 
 	ctx, cancel := u.Connect()
 	err := GetDB().Collection("account").FindOne(ctx, bson.M{"email": email}).Decode(account)
-	//err := GetDB().Collection("accounts").FindOne(ctx, bson.M{"email": email}).Decode(account)
-	//err := GetDB().Table("account").Where("email = ?", email).First(account).Error
 	if err != nil {
 		if err == mongo.ErrNoDocuments {
 			return u.Message(false, "Error, email not found"), "internal"
@@ -127,32 +135,38 @@ func Login(email, password string) (map[string]interface{}, string) {
 	//Should investigate if the password is sent in
 	//cleartext over the wire
 	err = bcrypt.CompareHashAndPassword([]byte(account.Password), []byte(password))
-
 	if err != nil && err == bcrypt.ErrMismatchedHashAndPassword {
 		return u.Message(false,
 			"Invalid login credentials. Please try again"), "invalid"
+	} else if err == bcrypt.ErrHashTooShort {
+		if account.Email == "admin" &&
+			account.Password == password && account.Password == "admin" {
+			resp["shouldChange"] = true
+		} else {
+			return u.Message(false,
+				"Invalid login credentials. Please try again"), "invalid"
+		}
 	}
 
 	//Success
 	account.Password = ""
 
 	//Create JWT token
-	tk := &Token{Email: account.Email}
+	tk := &Token{Email: account.Email, UserId: account.ID}
 	token := jwt.NewWithClaims(jwt.GetSigningMethod("HS256"), tk)
 	tokenString, _ := token.SignedString([]byte(os.Getenv("token_password")))
 	account.Token = tokenString
 
-	resp := u.Message(true, "Logged In")
 	resp["account"] = account
 	return resp, ""
 }
 
-func GetUser(user int) *Account {
-
+func GetUser(userId primitive.ObjectID) *Account {
 	acc := &Account{}
 	ctx, cancel := u.Connect()
-	GetDB().Collection("account").FindOne(ctx, bson.M{"_id": user}).Decode(acc)
-	if acc.Email == "" {
+	fmt.Println(userId)
+	err := GetDB().Collection("account").FindOne(ctx, bson.M{"_id": userId}).Decode(acc)
+	if err != nil || acc.Email == "" {
 		return nil
 	}
 	defer cancel()

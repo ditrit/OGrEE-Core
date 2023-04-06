@@ -4,9 +4,10 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"p3/app"
 	"p3/models"
 	u "p3/utils"
+
+	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 // swagger:operation POST /api auth Create
@@ -60,8 +61,6 @@ var CreateAccount = func(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("FUNCTION CALL: 	 CreateAccount ")
 	fmt.Println("******************************************************")
 	DispRequestMetaData(r)
-	var role string
-	var domain string
 
 	if r.Method == "OPTIONS" {
 		w.Header().Add("Content-Type", "application/json")
@@ -75,20 +74,24 @@ var CreateAccount = func(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		//Extra block here because accounts can be created using
-		//an adminPassword or via managers or super users
-		if userData := app.ParseToken(w, r); userData != nil {
-			role = userData["role"].(string)
-			domain = userData["domain"].(string)
-		} else {
-			role = ""
-			domain = ""
+		userData := r.Context().Value("user")
+		if userData == nil {
+			w.WriteHeader(http.StatusBadRequest)
+			u.Respond(w, u.Message(false, "Error while parsing path params"))
+			u.ErrLog("Error while parsing path params", "GET GENERIC", "", r)
+			return
+		}
+		userId := userData.(map[string]interface{})["userID"].(primitive.ObjectID)
+		user := models.GetUser(userId)
+		fmt.Println(user)
+		if user == nil || len(user.Roles) <= 0 {
+			w.WriteHeader(http.StatusBadRequest)
+			u.Respond(w, u.Message(false, "Invalid token: no valid user found"))
+			u.ErrLog("Unable to find user associated to token", "GET GENERIC", "", r)
+			return
 		}
 
-		println("Domain:", domain)
-		println("Role:", role)
-
-		resp, e := account.Create(role, domain)
+		resp, e := account.Create(user.Roles)
 		switch e {
 		case "internal":
 			w.WriteHeader(http.StatusInternalServerError)
