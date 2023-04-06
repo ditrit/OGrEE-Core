@@ -31,7 +31,7 @@ func FixAttributesBeforeInsert(entity int, data map[string]interface{}) {
 	if entity == u.RACK {
 		pid, _ := primitive.ObjectIDFromHex(data["parentId"].(string))
 		req := bson.M{"_id": pid}
-		parent, _ := GetEntity(req, "room")
+		parent, _ := GetEntity(req, "room", u.RequestFilters{})
 		parentUnit := parent["attributes"].(map[string]interface{})["posXYUnit"]
 		data["attributes"].(map[string]interface{})["posXYUnit"] = parentUnit
 	}

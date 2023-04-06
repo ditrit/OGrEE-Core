@@ -13,6 +13,7 @@ import (
 	"time"
 
 	"github.com/gorilla/mux"
+	"github.com/gorilla/schema"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
@@ -67,6 +68,14 @@ func DispRequestMetaData(r *http.Request) {
 	fmt.Println("URL:", r.URL.String())
 	fmt.Println("IP-ADDR: ", r.RemoteAddr)
 	fmt.Println(time.Now().Format("2006-Jan-02 Monday 03:04:05 PM MST -07:00"))
+}
+
+var decoder = schema.NewDecoder()
+
+func getFiltersFromQueryParams(r *http.Request) u.RequestFilters {
+	var filters u.RequestFilters
+	decoder.Decode(&filters, r.URL.Query())
+	return filters
 }
 
 // swagger:operation POST /api/{obj} objects CreateObject
@@ -255,8 +264,9 @@ var GetGenericObject = func(w http.ResponseWriter, r *http.Request) {
 	var resp map[string]interface{}
 
 	name, e := mux.Vars(r)["name"]
+	filters := getFiltersFromQueryParams(r)
 	if e {
-		data, e1 = models.GetObjectByName(name)
+		data, e1 = models.GetObjectByName(name, filters)
 	} else {
 		u.Respond(w, u.Message(false, "Error while parsing path parameters"))
 		u.ErrLog("Error while parsing path parameters", "GET ENTITY", "", r)
@@ -356,6 +366,7 @@ var GetEntity = func(w http.ResponseWriter, r *http.Request) {
 
 	//Get entity type
 	entityStr := mux.Vars(r)["entity"]
+	filters := getFiltersFromQueryParams(r)
 
 	//If templates, format them
 	entityStr = strings.Replace(entityStr, "-", "_", 1)
@@ -377,16 +388,16 @@ var GetEntity = func(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		data, e1 = models.GetEntity(bson.M{"_id": x}, entityStr)
+		data, e1 = models.GetEntity(bson.M{"_id": x}, entityStr, filters)
 
 	} else if id, e = mux.Vars(r)["name"]; e { //GET By String
 		if entityStr == "site" || entityStr == "domain" || entityStr == "stray_device" {
-			data, e1 = models.GetEntity(bson.M{"name": id}, entityStr) //GET By Name
+			data, e1 = models.GetEntity(bson.M{"name": id}, entityStr, filters) //GET By Name
 		} else if strings.Contains(entityStr, "template") {
-			data, e1 = models.GetEntity(bson.M{"slug": id}, entityStr) //GET By Slug (template)
+			data, e1 = models.GetEntity(bson.M{"slug": id}, entityStr, filters) //GET By Slug (template)
 		} else {
 			println(id)
-			data, e1 = models.GetEntity(bson.M{"hierarchyName": id}, entityStr) // GET By hierarchyName
+			data, e1 = models.GetEntity(bson.M{"hierarchyName": id}, entityStr, filters) // GET By hierarchyName
 		}
 	}
 
@@ -487,7 +498,7 @@ var GetAllEntities = func(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	data, e = models.GetManyEntities(entStr, bson.M{}, nil)
+	data, e = models.GetManyEntities(entStr, bson.M{}, u.RequestFilters{})
 
 	var resp map[string]interface{}
 	if len(data) == 0 {
@@ -902,6 +913,7 @@ var GetEntityByQuery = func(w http.ResponseWriter, r *http.Request) {
 	var e, entStr string
 
 	entStr = r.URL.Path[5 : len(r.URL.Path)-1]
+	filters := getFiltersFromQueryParams(r)
 
 	//If templates, format them
 	entStr = strings.Replace(entStr, "-", "_", 1)
@@ -918,9 +930,7 @@ var GetEntityByQuery = func(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	println("DEBUG entstr", entStr)
-	Disp(bsonMap)
-	data, e = models.GetManyEntities(entStr, bsonMap, nil)
+	data, e = models.GetManyEntities(entStr, bsonMap, filters)
 
 	if len(data) == 0 {
 		resp = u.Message(false, "Error: "+e)
@@ -1225,16 +1235,15 @@ var GetEntityHierarchy = func(w http.ResponseWriter, r *http.Request) {
 	}
 
 	//Check if the request is a ranged hierarchy
-	r.ParseForm()
-	arr := r.Form["limit"]
-	if len(arr) > 0 { //limit={number} was provided
-		end, _ = strconv.Atoi(arr[0])
+	filters := getFiltersFromQueryParams(r)
+	if len(filters.Limit) > 0 { //limit={number} was provided
+		end, _ = strconv.Atoi(filters.Limit)
 		limit = u.EntityStrToInt(entity) + end
 
 		if end == 0 {
 			// It's a GetEntity, treat it here
 			objID, _ := primitive.ObjectIDFromHex(id)
-			data, e1 := models.GetEntity(bson.M{"_id": objID}, entity)
+			data, e1 := models.GetEntity(bson.M{"_id": objID}, entity, filters)
 
 			if e1 != "" {
 				resp = u.Message(false, "Error while getting :"+entity+","+e1)
@@ -1279,7 +1288,7 @@ var GetEntityHierarchy = func(w http.ResponseWriter, r *http.Request) {
 
 	// Get hierarchy
 	println("Entity: ", entity, " & OID: ", oID.Hex())
-	data, e1 = models.GetEntityHierarchy(oID, entity, entNum, limit)
+	data, e1 = models.GetEntityHierarchy(oID, entity, entNum, limit, filters)
 
 	if data == nil {
 		resp = u.Message(false, "Error while getting :"+entity+","+e1)
@@ -1405,11 +1414,10 @@ var GetHierarchyByName = func(w http.ResponseWriter, r *http.Request) {
 	entity = strings.Replace(entity, "-", "_", 1)
 
 	// Check if the request is a ranged hierarchy
-	r.ParseForm()
-	limitArr := r.Form["limit"]
-	if len(limitArr) > 0 {
-		// limit={number} was provided
-		limit, _ = strconv.Atoi(limitArr[0])
+	filters := getFiltersFromQueryParams(r)
+	if len(filters.Limit) > 0 {
+		//limit={number} was provided
+		limit, _ = strconv.Atoi(filters.Limit)
 	} else {
 		limit = 999
 	}
@@ -1422,9 +1430,9 @@ var GetHierarchyByName = func(w http.ResponseWriter, r *http.Request) {
 	} else {
 		req = bson.M{"hierarchyName": name}
 	}
-	data, e1 := models.GetEntity(req, entity)
+	data, e1 := models.GetEntity(req, entity, filters)
 	if limit >= 1 && e1 == "" {
-		data["children"], e1 = models.GetHierarchyByName(entity, name, limit)
+		data["children"], e1 = models.GetHierarchyByName(entity, name, limit, filters)
 	}
 
 	if data == nil {
@@ -1945,7 +1953,7 @@ var GetEntityHierarchyNonStd = func(w http.ResponseWriter, r *http.Request) {
 		// }
 	} else {
 		oID, _ := getObjID(id)
-		data, err = models.GetEntityHierarchy(oID, entity, entNum, u.AC)
+		data, err = models.GetEntityHierarchy(oID, entity, entNum, u.AC, u.RequestFilters{})
 	}
 
 	if data == nil {
