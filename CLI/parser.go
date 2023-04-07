@@ -1369,7 +1369,7 @@ func parseCreateDomain(frame Frame) (node, Frame, *ParserError) {
 	sig := []objParam{{"path", "path"}, {"color", "color"}}
 	params, frame, err := parseObjectParams(sig, frame)
 	if err != nil {
-		return nil, frame, err.extendMessage("parsing domain parameters")
+		return nil, frame, err.extend(frame, "parsing domain parameters")
 	}
 	return &createDomainNode{params["path"], params["color"]}, frame, nil
 }

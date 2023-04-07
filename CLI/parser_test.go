@@ -5,6 +5,8 @@ import (
 	"testing"
 
 	"github.com/davecgh/go-spew/spew"
+
+	c "cli/controllers"
 )
 
 func TestFindClosing(t *testing.T) {
@@ -249,7 +251,7 @@ func testCommand(buffer string, expected node, t *testing.T) {
 func TestParseLsObj(t *testing.T) {
 	buffer := "lsbldg -s height - f attr1:attr2 -r plouf.plaf "
 	path := &pathNode{&strLeaf{"plouf.plaf"}}
-	entity := 2
+	entity := c.EntityStrToInt("building")
 	recursive := true
 	sort := "height"
 	attrList := []string{"attr1", "attr2"}
