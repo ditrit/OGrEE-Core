@@ -27,7 +27,7 @@ User = ""
 APIKEY = ""
 Variables = [
     {Name = "ROOT", Value = "path_to_root"},
-    {Name = "ROOT2", Value = "path_to_root2"},
+    {Name = "ROOT2", Value = "$ROOT/path_to_root2"},
 ]
 
 [OGrEE-CLI.DrawableJson]
