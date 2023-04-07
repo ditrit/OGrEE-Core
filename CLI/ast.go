@@ -221,6 +221,9 @@ func (n *getUNode) execute() (interface{}, error) {
 	if !ok {
 		return nil, fmt.Errorf("u should be an integer")
 	}
+	if u < 0 {
+		return nil, fmt.Errorf("The U value must be positive")
+	}
 	cmd.GetByAttr(path, u)
 	return nil, nil
 }
@@ -910,34 +913,33 @@ func (n *hierarchyNode) execute() (interface{}, error) {
 
 }
 
-type createTenantNode struct {
+type createDomainNode struct {
 	path  node
 	color node
 }
 
-func (n *createTenantNode) execute() (interface{}, error) {
-	pathVal, err := n.path.execute()
+func (n *createDomainNode) execute() (interface{}, error) {
+	val, err := n.path.execute()
 	if err != nil {
 		return nil, err
 	}
-	path, ok := pathVal.(string)
+	path, ok := val.(string)
 	if !ok {
-		return nil, fmt.Errorf("path should be a string")
+		return nil, fmt.Errorf("Path should be a string")
 	}
 	colorInf, err := n.color.execute()
 	if err != nil {
 		return nil, err
 	}
-	color, ok := AssertColor(colorInf)
-	if !ok {
-		return nil, fmt.Errorf("please provide a valid 6 length hex value for the color")
+	//Assert the color is valid
+	var color string
+	if color, ok = AssertColor(colorInf); !ok {
+		return nil, fmt.Errorf("Please provide a valid 6 digit Hex value for the color")
 	}
-	attributes := map[string]any{"color": color}
-	err = cmd.GetOCLIAtrributes(path, cmd.TENANT, map[string]any{"attributes": attributes})
-	if err != nil {
-		return nil, err
-	}
-	return nil, nil
+
+	attributes := map[string]interface{}{"attributes": map[string]interface{}{"color": color}}
+	err = cmd.GetOCLIAtrributes(path, cmd.DOMAIN, attributes)
+	return nil, err
 }
 
 type createSiteNode struct {

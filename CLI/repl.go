@@ -43,7 +43,7 @@ func InterpretLine(str string) {
 }
 
 func SetPrompt(user string) string {
-	c.State.Prompt = "\u001b[1m\u001b[32m" + user + "@" + "OGrEE3D:" +
+	c.State.Prompt = "\u001b[1m\u001b[32m" + user + "@" + c.State.Customer + ":" +
 		"\u001b[37;1m" + c.State.CurrPath + "\u001b[1m\u001b[32m>\u001b[0m "
 	c.State.BlankPrompt = user + "@" + "OGrEE3D:" + c.State.CurrPath + "> "
 	return c.State.Prompt

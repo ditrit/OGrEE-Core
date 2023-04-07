@@ -150,13 +150,35 @@ func InitState(env map[string]string) {
 	State.DrawableObjs = SetObjsForUnity("drawable", env)
 	State.DrawableJsons = make(map[string]map[string]interface{}, 16)
 
-	for i := TENANT; i < GROUP+1; i++ {
+	for i := SITE; i < GROUP+1; i++ {
 		ent := EntityToString(i)
 		State.DrawableJsons[ent] = SetDrawableTemplate(ent, env)
 	}
 
 	//Set Draw Threshold
 	SetDrawThreshold(env)
+
+	//Set customer / tenant name
+	resp, e := models.Send("GET", State.APIURL+"/api/version", GetKey(), nil)
+	parsed := ParseResponse(resp, e, "Get API Information request")
+	if parsed != nil {
+		if info, ok := LoadObjectFromInf(parsed["data"]); ok {
+			if cInf, ok := info["Customer"]; ok {
+				if customer, ok := cInf.(string); ok {
+					State.Customer = customer
+				}
+			}
+
+		}
+	}
+
+	if State.Customer == "" {
+		if State.DebugLvl > NONE {
+			println("Tenant Information not found!")
+		}
+		State.Customer = "UNKNOWN"
+	}
+
 }
 
 // It is useful to have the state to hold
@@ -466,7 +488,7 @@ func Login(env map[string]string) (string, string) {
 		user, key = CreateCredentials()
 	}
 
-	if !CheckKeyIsValid(key) {
+	if ok := CheckKeyIsValid(key); !ok {
 		if State.DebugLvl > 0 {
 			println("Error while checking key. Now exiting")
 		}

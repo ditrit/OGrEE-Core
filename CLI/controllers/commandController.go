@@ -415,6 +415,8 @@ func UpdateObj(Path, id, ent string, data map[string]interface{}, deleteAndPut b
 			//we don't want to update the wrong object
 			objJSON, GETURL = GetObject(Path, true)
 			if objJSON == nil {
+				println("DEBUG VIEW PATH:", Path)
+				println("DEBUG VIEW URL:", GETURL)
 				l.GetWarningLogger().Println("Error while getting Object!")
 				return nil, fmt.Errorf("error while getting Object")
 			}
@@ -839,10 +841,6 @@ func Clear() {
 
 func LSOG() {
 
-	//Need to add GET /api/version call data here
-	r, e := models.Send("GET", State.APIURL+"/api/version", GetKey(), nil)
-	parsedResp := ParseResponse(r, e, "get API information request")
-
 	fmt.Println("********************************************")
 	fmt.Println("OGREE Shell Information")
 	fmt.Println("********************************************")
@@ -859,25 +857,32 @@ func LSOG() {
 	fmt.Println("HISTORY FILE PATH:", State.HistoryFilePath)
 	fmt.Println("DEBUG LEVEL: ", State.DebugLvl)
 
+	fmt.Printf("\n\n")
+	fmt.Println("********************************************")
+	fmt.Println("API Information")
+	fmt.Println("********************************************")
+
+	//Get API Information here
+	r, e := models.Send("GET", State.APIURL+"/api/version", GetKey(), nil)
+	parsedResp := ParseResponse(r, e, "get API information request")
+
 	if parsedResp != nil {
 		if apiInfo, ok := parsedResp["data"].(map[string]interface{}); ok {
-			fmt.Println("********************************************")
-			fmt.Println("API Information")
-			fmt.Println("********************************************")
 			fmt.Println("BUILD DATE:", apiInfo["BuildDate"].(string))
 			fmt.Println("BUILD TREE:", apiInfo["BuildTree"].(string))
 			fmt.Println("BUILD HASH:", apiInfo["BuildHash"].(string))
 			fmt.Println("COMMIT DATE: ", apiInfo["CommitDate"].(string))
+			fmt.Println("CUSTOMER: ", apiInfo["Customer"].(string))
 
 		} else if State.DebugLvl > 1 {
-			msg := "Received invalid response from API on GET /api/version"
+			msg := "Received invalid response for API on GET /api/version"
 			l.GetWarningLogger().Println(msg)
-			fmt.Println("NOTE: " + msg)
+			fmt.Println("NOTE: Received invalid response from API on information request")
 		}
 
 	} else {
 		if State.DebugLvl > 1 {
-			msg := "Received nil response from API on GET /api/version"
+			msg := "Could not get API information"
 			l.GetWarningLogger().Println(msg)
 			fmt.Println("NOTE: " + msg)
 		}
@@ -929,7 +934,7 @@ func LSOBJECT(x string, entity int) []interface{} {
 	var obj map[string]interface{}
 	var Path string
 
-	if entity == TENANT { //Special for tenants case
+	if entity == SITE { //Special for sites case
 		if x == "/Physical" {
 			Path = State.APIURL + "/api"
 		} else {
@@ -975,6 +980,9 @@ func GetByAttr(x string, u interface{}) {
 	//test if the result is a device array
 	obj, url := GetObject(path, true)
 	if obj == nil {
+		if State.DebugLvl > NONE {
+			println("Object was not found, please check the path you provided and try again")
+		}
 		return
 	}
 
@@ -1007,6 +1015,9 @@ func GetByAttr(x string, u interface{}) {
 				}
 			}
 		}
+		if State.DebugLvl > NONE {
+			println("The 'U' you provided does not correspond to any device in this rack")
+		}
 	default: //String
 		for i := range devices {
 			if attr, ok := devices[i]["attributes"].(map[string]interface{}); ok {
@@ -1015,6 +1026,9 @@ func GetByAttr(x string, u interface{}) {
 					return //What if the user placed multiple devices at same slot?
 				}
 			}
+		}
+		if State.DebugLvl > NONE {
+			println("The slot you provided does not correspond to any device in this rack")
 		}
 	}
 }
@@ -1157,9 +1171,9 @@ func Help(entry string) {
 	var path string
 	entry = strings.TrimSpace(entry)
 	switch entry {
-	case "ls", "pwd", "print", "cd", "tree", "create", "get", "clear",
-		"update", "delete", "lsog", "grep", "for", "while", "if", "env",
-		"cmds", "var", "unset", "select", "camera", "ui", "hc", "drawable",
+	case "ls", "pwd", "print", "cd", "tree", "get", "clear",
+		"lsog", "grep", "for", "while", "if", "env",
+		"cmds", "var", "unset", "selection", "camera", "ui", "hc", "drawable",
 		"link", "unlink", "draw", "getu", "getslot", "undraw",
 		"lsenterprise":
 		path = "./other/man/" + entry + ".md"
@@ -1186,7 +1200,7 @@ func Help(entry string) {
 		path = "./other/man/var.md"
 
 	case "lsobj", "lsten", "lssite", "lsbldg", "lsroom", "lsrack",
-		"lsdev":
+		"lsdev", "lsac", "lscorridor", "lspanel", "lssensor", "lscabinet":
 		path = "./other/man/lsobj.md"
 
 	default:
@@ -1287,8 +1301,10 @@ func tree(path string, depth int) {
 
 		OrganisationWalk(org, "", depth)
 	default: //Error! This should never occur
-		println("DEBUG ERROR!")
-		println("DEBUG LEN:", len(arr))
+		//println("DEBUG ERROR!")
+		//println("DEBUG LEN:", len(arr))
+		println("Invalid parameters given")
+		println("Please check the path and try again")
 	}
 
 }
@@ -1385,32 +1401,42 @@ func GetOCLIAtrributes(Path string, ent int, data map[string]interface{}) error 
 	data["description"] = []interface{}{}
 
 	//Retrieve Parent
-	if ent != TENANT && ent != STRAY_DEV && ent != STRAYSENSOR {
+	if ent != SITE && ent != GROUP && ent != STRAY_DEV &&
+		ent != STRAYSENSOR {
 		parent, parentURL = GetObject(Path, true)
-		if parent == nil {
+		if parent == nil && ent != DOMAIN { //Domains can have nil parent
 			return fmt.Errorf("The parent was not found in path")
 		}
 
-		//Retrieve parent name for domain
-		tmp := strings.Split(parentURL, State.APIURL+"/api/tenants/")
+		//Retrieve parent name to assign as domain for objects
+		//Not applicable to domain objects
+		if ent != DOMAIN {
+			tmp := strings.Split(parentURL, State.APIURL+"/api/sites/")
 
-		domIDX := strings.Index(tmp[1], "/")
-		if domIDX == -1 {
-			domain = tmp[1]
-		} else {
-			domain = tmp[1][:domIDX]
+			domIDX := strings.Index(tmp[1], "/")
+			if domIDX == -1 {
+				domain = tmp[1]
+			} else {
+				domain = tmp[1][:domIDX]
+			}
 		}
 
 	}
 	var err error
 	switch ent {
-	case TENANT:
-		data["domain"] = data["name"]
+	case DOMAIN:
+		if parent != nil {
+			data["parentId"] = parent["id"]
+			data["domain"] = parent["name"]
+		} else {
+			data["parentId"] = ""
+			data["domain"] = ""
+		}
 
 	case SITE:
 		//Default values
-		data["domain"] = domain
-		data["parentId"] = parent["id"]
+		data["domain"] = data["name"]
+		//data["parentId"] = parent["id"]
 		data["attributes"] = map[string]interface{}{}
 
 	case BLDG:
@@ -1717,26 +1743,26 @@ func GetOCLIAtrributes(Path string, ent int, data map[string]interface{}) error 
 		attr = data["attributes"].(map[string]interface{})
 
 		//Client demands that the group color be
-		//the same as Tenant/Domain thus we have
+		//the same as Site/Domain thus we have
 		//to retrieve it
 		arr := strings.Split(Path, "/")
 		if len(arr) >= 2 {
 			for i := range arr {
 				if arr[i] == "Physical" {
-					tenantName := arr[i+1]
+					siteName := arr[i+1]
 
-					//GET Tenant/Domain
+					//GET Site/Domain
 					r, e := models.Send("GET",
-						State.APIURL+"/api/tenants/"+tenantName, GetKey(), nil)
+						State.APIURL+"/api/sites/"+siteName, GetKey(), nil)
 					parsed := ParseResponse(r, e, "get color")
 					if parsed == nil {
 						msg := "Unable to retrieve color from server"
 						return fmt.Errorf(msg)
 					}
 
-					if tenantData, ok := parsed["data"]; ok {
-						if tenant, ok := tenantData.(map[string]interface{}); ok {
-							if attrInf, ok := tenant["attributes"]; ok {
+					if siteData, ok := parsed["data"]; ok {
+						if site, ok := siteData.(map[string]interface{}); ok {
+							if attrInf, ok := site["attributes"]; ok {
 								if a, ok := attrInf.(map[string]interface{}); ok {
 									if colorInf, ok := a["color"]; ok {
 										if color, ok := colorInf.(string); ok {
@@ -1771,6 +1797,7 @@ func GetOCLIAtrributes(Path string, ent int, data map[string]interface{}) error 
 		}
 
 	case STRAY_DEV:
+		data["domain"] = State.Customer
 		attr = data["attributes"].(map[string]interface{})
 		if _, ok := attr["template"]; ok {
 			GetOCLIAtrributesTemplateHelper(attr, data, DEVICE)
@@ -2120,11 +2147,11 @@ func FocusUI(path string) {
 			}
 		}
 		category := EntityStrToInt(obj["category"].(string))
-		if category == TENANT || category == SITE ||
-			category == BLDG || category == ROOM {
+		if category == SITE || category == BLDG ||
+			category == ROOM {
 			if State.DebugLvl > 0 {
 				msg := "You cannot focus on this object. Note you cannot" +
-					" focus on Tenants, Sites, Buildings and Rooms. " +
+					" focus on Sites, Buildings and Rooms. " +
 					"For more information please refer to the help doc  (man >)"
 				println(msg)
 				return
@@ -2162,14 +2189,14 @@ func LinkObject(source, destination string, destinationSlot interface{}) {
 
 		return
 	}
-	if cat, _ := sdev["category"]; cat != "stray-device" {
+	/*if cat, _ := sdev["category"]; cat != "stray-device" {
 		l.GetWarningLogger().Println("Attempted to link non stray-device ")
 		if State.DebugLvl > 0 {
 			println("Error: Invalid object. Only stray-devices can be linked")
 		}
 
 		return
-	}
+	}*/
 
 	//Retrieve the stray-device hierarchy
 	h = GetHierarchy(source, 50, true)
@@ -2205,7 +2232,7 @@ func LinkObject(source, destination string, destinationSlot interface{}) {
 	//Need to make sure that origin and destination are
 	//not the same!
 	if parent["id"] == sdev["id"] && parent["name"] == sdev["name"] {
-		l.GetWarningLogger().Println("Attempted to object to itself")
+		l.GetWarningLogger().Println("Attempted to link object to itself")
 		if State.DebugLvl > 0 {
 			println("Error you must provide a unique stray-device" +
 				" and a unique destination for it")
@@ -2232,8 +2259,11 @@ func LinkObject(source, destination string, destinationSlot interface{}) {
 		}
 	}
 
-	sdev, _ = PostObj(DEVICE, "device", sdev)
+	var e error
+	sdev["category"] = "device"
+	sdev, e = PostObj(DEVICE, "device", sdev)
 	if sdev == nil {
+		println(e.Error())
 		println("Aborting link operation")
 		return
 	}
@@ -2259,10 +2289,17 @@ func LinkObject(source, destination string, destinationSlot interface{}) {
 					ent = entity
 				}
 
+				x[i]["category"] = ent
+
+				//The API will not validate the object if the
+				//'children' attribute is present.
+				tmpChildren := x[i]["children"]
+				DeleteAttr(x[i], "children")
 				res := ValidateObj(x[i], ent, true)
 				if res == false {
 					return false, x[i]
 				}
+				x[i]["children"] = tmpChildren
 
 				childrenInfArr := x[i]["children"]
 				if childrenInfArr != nil {
@@ -2357,6 +2394,7 @@ func validFn(x []map[string]interface{}, entity string, pid interface{}) (bool, 
 				ent = entity
 			}
 
+			x[i]["category"] = ent
 			res := ValidateObj(x[i], ent, true)
 			if res == false {
 				return false, x[i]
@@ -2445,14 +2483,17 @@ func UnlinkObject(source, destination string) {
 	//Dive POST
 	var parent map[string]interface{}
 
-	if destination != "" {
+	//If destination was specified as "" it would auto set to curr path
+	//instead it was meant as default stray dir
+	if destination != "" && destination != State.CurrPath {
 		parent, _ = GetObject(destination, true)
 		if parent != nil {
 			dev["parentId"] = parent["id"]
 		}
 	}
 
-	if parent == nil {
+	dev["category"] = "stray-device"
+	if parent == nil || len(parent) == 0 {
 		DeleteAttr(dev, "parentId")
 	}
 
@@ -2601,6 +2642,13 @@ func IsEntityDrawable(path string) bool {
 	obj, _ := GetObject(path, true)
 	if obj == nil {
 		l.GetWarningLogger().Println("Error: object was not found")
+		if FindNodeInTree(&State.TreeHierarchy, StrToStack(path), true) == nil {
+			if State.DebugLvl > NONE {
+				println("This object does not exist")
+			}
+		} else {
+			println("This isn't drawable")
+		}
 		return false
 	}
 
@@ -3019,11 +3067,11 @@ func LSOBJECTRecursive(x string, entity int) []interface{} {
 	var obj map[string]interface{}
 	var Path string
 
-	if entity == TENANT { //Edge case
+	if entity == SITE { //Edge case
 		if x == "/Physical" {
 			r, e := models.Send("GET",
-				State.APIURL+"/api/tenants", GetKey(), nil)
-			obj = ParseResponse(r, e, "Get Tenants")
+				State.APIURL+"/api/sites", GetKey(), nil)
+			obj = ParseResponse(r, e, "Get Sites")
 			return LoadArrFromResp(obj, "objects")
 		} else {
 			//Return nothing
@@ -3067,7 +3115,7 @@ func LSOBJECTRecursive(x string, entity int) []interface{} {
 
 	//println(entities)
 	var idToSend string
-	if obi == TENANT {
+	if obi == SITE {
 		idToSend = obj["name"].(string)
 	} else {
 		idToSend = obj["id"].(string)
@@ -3257,7 +3305,7 @@ func PreProPath(Path string) []string {
 			pathSplit = strings.Split(path.Clean(Path), "/")
 			if strings.TrimSpace(pathSplit[0]) == "Physical" ||
 				strings.TrimSpace(pathSplit[0]) == "Logical" ||
-				strings.TrimSpace(pathSplit[0]) == "Enterprise" {
+				strings.TrimSpace(pathSplit[0]) == "Organisation" {
 				pathSplit = pathSplit[1:]
 			} else {
 				pathSplit = pathSplit[2:]
@@ -3360,35 +3408,35 @@ func OnlinePathResolve(path []string) []string {
 	} //END OF template group type check
 
 	for i := range path {
-		if i < 4 {
+		if i < 3 {
 			basePath += "/" + EntityToString(i) + "s/" + path[i]
 		}
 	}
 
-	if len(path) <= 4 {
+	if len(path) <= 3 {
 		return []string{basePath}
 	}
 
-	if len(path) == 5 { //Possible paths for children of room
+	if len(path) == 4 { //Possible paths for children of room
 		for idx := range roomChildren {
-			paths = append(paths, basePath+roomChildren[idx]+"/"+path[4])
+			paths = append(paths, basePath+roomChildren[idx]+"/"+path[3])
 		}
-		paths = append(paths, basePath+"/racks/"+path[4])
+		paths = append(paths, basePath+"/racks/"+path[3])
 		return paths
 	}
 
-	basePath += "/racks/" + path[4]
+	basePath += "/racks/" + path[3]
 
-	if len(path) == 6 { //Possible paths for children of racks
-		paths = append(paths, basePath+"/devices/"+path[5])
-		paths = append(paths, basePath+"/sensors/"+path[5])
-		paths = append(paths, basePath+"/groups/"+path[5])
+	if len(path) == 5 { //Possible paths for children of racks
+		paths = append(paths, basePath+"/devices/"+path[4])
+		paths = append(paths, basePath+"/sensors/"+path[4])
+		paths = append(paths, basePath+"/groups/"+path[4])
 		return paths
 	}
 
-	basePath += "/devices/" + path[5]
-	if len(path) >= 7 { //Possible paths for recursive device family
-		for i := 6; i < len(path)-1; i++ {
+	basePath += "/devices/" + path[4]
+	if len(path) >= 6 { //Possible paths for recursive device family
+		for i := 5; i < len(path)-1; i++ {
 			basePath = basePath + "/devices/" + path[i]
 		}
 		paths = append(paths, basePath+"/devices/"+path[len(path)-1])
@@ -3409,6 +3457,9 @@ func OnlineLevelResolver(path []string) []string {
 	basePath := State.APIURL + "/api"
 	roomChildren := []string{"/acs", "/panels", "/cabinets",
 		"/groups", "/corridors", "/sensors"}
+
+	//println("DEBUG OLR should be called")
+	//println("Len path:", len(path))
 
 	//Check if path is templates or groups type or stray device
 	if path[0] == "Stray" {
@@ -3488,7 +3539,7 @@ func OnlineLevelResolver(path []string) []string {
 		}
 	}
 
-	if len(path) < 4 {
+	if len(path) < 3 {
 		x := strings.Split(basePath, "/")
 		if len(x)%2 == 0 {
 			//Grab 2nd last entity type and get its subentity
@@ -3501,32 +3552,30 @@ func OnlineLevelResolver(path []string) []string {
 		return []string{basePath}
 	}
 
-	if len(path) == 4 { //Possible paths for children of room
+	if len(path) == 3 { //Possible paths for children of room
 		for idx := range roomChildren {
 			paths = append(paths, basePath+roomChildren[idx])
 		}
 		paths = append(paths, basePath+"/racks")
+		//println("DEBUG should place all these paths")
 		return paths
 	}
 
-	if len(path) == 5 {
+	if len(path) == 4 {
 		return []string{basePath + "/sensors",
 			basePath + "/groups",
 			basePath + "/devices"}
 	}
 
-	basePath += "/devices"
-
-	if len(path) == 6 { //Possible paths for children of racks
-		paths = append(paths, basePath+"/"+path[5]+"/sensors")
-		paths = append(paths, basePath+"/"+path[5]+"/groups")
-		paths = append(paths, basePath+"/"+path[5]+"/devices")
+	if len(path) == 5 { //Possible paths for children of racks
+		paths = append(paths, basePath+"/sensors")
+		paths = append(paths, basePath+"/groups")
+		paths = append(paths, basePath+"/devices")
 		return paths
 	}
 
-	basePath += "/" + path[5]
-	if len(path) >= 7 { //Possible paths for recursive device family
-		for i := 6; i < len(path); i++ {
+	if len(path) >= 6 { //Possible paths for recursive device family
+		for i := 5; i < len(path); i++ {
 			basePath = basePath + "/devices/" + path[i]
 		}
 		paths = append(paths, basePath+"/devices")

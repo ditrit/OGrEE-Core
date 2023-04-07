@@ -39,13 +39,6 @@ func ParamsParse(link *url.URL) []byte {
 	}
 
 	return js
-
-	/*
-		mydata := &models.Tenant{}
-		json.Unmarshal(query, mydata)
-		json.Unmarshal(query, &(mydata.Attributes))
-	*/
-	//return values
 }
 
 func IsNestedAttr(key, ent string) bool {

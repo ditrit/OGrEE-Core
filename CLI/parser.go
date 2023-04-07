@@ -12,7 +12,7 @@ type parseCommandFunc func(frame Frame) (node, Frame, *ParserError)
 var commandDispatch map[string]parseCommandFunc
 var createObjDispatch map[string]parseCommandFunc
 
-var lsCommands = []string{"lsten", "lssite", "lsbldg", "lsroom", "lsrack", "lsdev", "lsac",
+var lsCommands = []string{"lssite", "lsbldg", "lsroom", "lsrack", "lsdev", "lsac",
 	"lspanel", "lscabinet", "lscorridor", "lssensor"}
 var noArgsCommands map[string]node
 
@@ -22,7 +22,7 @@ var manCommands = []string{
 	".cmds", ".template", ".var",
 	"ui", "camera",
 	"link", "unlink",
-	"lsten", "lssite", "lsbldg", "lsroom", "lsrack", "lsdev", "lsac",
+	"lssite", "lsbldg", "lsroom", "lsrack", "lsdev", "lsac",
 	"lspanel", "lscabinet", "lscorridor", "lssensor", "lsenterprise",
 	"drawable", "draw", "undraw",
 	"tree", "lsog", "env", "cd", "pwd", "clear", "grep", "ls", "exit", "len", "man", "hc",
@@ -1365,13 +1365,13 @@ func parseObjectParams(sig []objParam, frame Frame) (map[string]node, Frame, *Pa
 	return values, frame, nil
 }
 
-func parseCreateTenant(frame Frame) (node, Frame, *ParserError) {
+func parseCreateDomain(frame Frame) (node, Frame, *ParserError) {
 	sig := []objParam{{"path", "path"}, {"color", "color"}}
 	params, frame, err := parseObjectParams(sig, frame)
 	if err != nil {
-		return nil, frame, err.extend(frame, "tenant parameters")
+		return nil, frame, err.extendMessage("parsing domain parameters")
 	}
-	return &createTenantNode{params["path"], params["color"]}, frame, nil
+	return &createDomainNode{params["path"], params["color"]}, frame, nil
 }
 
 func parseCreateSite(frame Frame) (node, Frame, *ParserError) {
@@ -1637,7 +1637,7 @@ func parseCommand(frame Frame) (node, Frame, *ParserError) {
 			".cmds:":     parseLoad,
 			".template:": parseTemplate,
 			"len":        parseLen,
-			"link:":      parseLink,
+			"link":       parseLink,
 			"unlink":     parseUnlink,
 			"print":      parsePrint,
 			"man":        parseMan,
@@ -1652,8 +1652,8 @@ func parseCommand(frame Frame) (node, Frame, *ParserError) {
 			"alias":      parseAlias,
 		}
 		createObjDispatch = map[string]parseCommandFunc{
-			"tenant":   parseCreateTenant,
-			"tn":       parseCreateTenant,
+			"domain":   parseCreateDomain,
+			"dm":       parseCreateDomain,
 			"site":     parseCreateSite,
 			"si":       parseCreateSite,
 			"bldg":     parseCreateBuilding,

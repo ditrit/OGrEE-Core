@@ -94,7 +94,7 @@ func ListLocal(path string) func(string) []string {
 
 func UnLinkObjCompleter(path string) func(string) []string {
 	return func(line string) []string {
-		splitted := strings.SplitAfter(line, ":")
+		splitted := strings.SplitAfter(line, "link")
 		length := len(splitted)
 		if length < 1 {
 			return nil
@@ -213,30 +213,11 @@ func SiteOCLICompleter(path string) func(string) []string {
 	}
 }
 
-func TenantSiteOCLICompleter(path string) func(string) []string {
-	return func(line string) []string {
-
-		//Trim everything up to and including the ':'
-		idx := strings.Index(line, ":")
-		if idx == -1 {
-			return nil
-		}
-
-		fn := ListEntities("")
-		ans := fn(line[idx:])
-		if !strings.Contains(line, "@") {
-			ans = append(ans, " @ ")
-		}
-
-		return ans
-	}
-}
-
 func BldgOCLICompleter(path string) func(string) []string {
 	return func(line string) []string {
 
 		//Trim everything up to and including the ':'
-		fn := TenantSiteOCLICompleter("")
+		fn := SiteOCLICompleter("")
 		ans := fn(line)
 		if strings.Count(line, "@") == 1 {
 			ans = append(ans, " @ ")
@@ -285,8 +266,8 @@ func GetPrefixCompleter() *readline.PrefixCompleter {
 					readline.PcItem("true", false),
 					readline.PcItem("false", false)))),
 		readline.PcItem("grep", false),
-		readline.PcItem("drawable(", true,
-			readline.PcItemDynamic(DrawCompleter(""), false)),
+		readline.PcItem("drawable", true,
+			readline.PcItemDynamic(ListEntities(""), false)),
 		readline.PcItem("draw", true,
 			readline.PcItemDynamic(ListEntities(""), false)),
 		readline.PcItem("ls", true,
@@ -308,7 +289,6 @@ func GetPrefixCompleter() *readline.PrefixCompleter {
 			readline.PcItem("env", false),
 			readline.PcItem("link", false),
 			readline.PcItem("unlink", false),
-			readline.PcItem("lsten", false),
 			readline.PcItem("lssite", false),
 			readline.PcItem("lsbldg", false),
 			readline.PcItem("lsroom", false),
@@ -337,34 +317,28 @@ func GetPrefixCompleter() *readline.PrefixCompleter {
 			readline.PcItem("+", false),
 			readline.PcItem(">", false)),
 		readline.PcItem("+", false,
-			readline.PcItem("tn:", true,
-				readline.PcItemDynamic(TenantSiteOCLICompleter(""), true)),
+			readline.PcItem("domain:", true,
+				readline.PcItemDynamic(SiteOCLICompleter(""), true)),
 			readline.PcItem("si:", true,
 				readline.PcItemDynamic(SiteOCLICompleter(""), true)),
 			readline.PcItem("bd:", true,
 				readline.PcItemDynamic(BldgOCLICompleter(""), true)),
 			readline.PcItem("ro:", true,
-				readline.PcItemDynamic(TenantSiteOCLICompleter(""), true)),
+				readline.PcItemDynamic(SiteOCLICompleter(""), true)),
 			readline.PcItem("rk:", true,
-				readline.PcItemDynamic(TenantSiteOCLICompleter(""), true)),
+				readline.PcItemDynamic(SiteOCLICompleter(""), true)),
 			readline.PcItem("dv:", true,
-				readline.PcItemDynamic(TenantSiteOCLICompleter(""), true)),
+				readline.PcItemDynamic(SiteOCLICompleter(""), true)),
 			readline.PcItem("gr:", true,
-				readline.PcItemDynamic(TenantSiteOCLICompleter(""), true)),
+				readline.PcItemDynamic(SiteOCLICompleter(""), true)),
 			readline.PcItem("co:", true,
-				readline.PcItemDynamic(TenantSiteOCLICompleter(""), true)),
+				readline.PcItemDynamic(SiteOCLICompleter(""), true)),
 			readline.PcItem("orphan sensor:", true,
-				readline.PcItemDynamic(TenantSiteOCLICompleter(""), true)),
+				readline.PcItemDynamic(SiteOCLICompleter(""), true)),
 			readline.PcItem("orphan device:", true,
-				readline.PcItemDynamic(TenantSiteOCLICompleter(""), true))),
+				readline.PcItemDynamic(SiteOCLICompleter(""), true))),
 
 		readline.PcItem("get", true,
-			readline.PcItem("tenant", false),
-			readline.PcItem("site", false),
-			readline.PcItem("building", false),
-			readline.PcItem("room", false),
-			readline.PcItem("rack", false),
-			readline.PcItem("device", false),
 			readline.PcItemDynamic(ListEntities(""), false)),
 		readline.PcItem("getu", true,
 			readline.PcItemDynamic(ListEntities(""), false)),
@@ -379,9 +353,6 @@ func GetPrefixCompleter() *readline.PrefixCompleter {
 			readline.PcItemDynamic(ListLocal(""), false)),
 		readline.PcItem(".var:", false),
 		readline.PcItem("tree", true,
-			readline.PcItemDynamic(ListEntities(""), false)),
-		readline.PcItem("lsten", true,
-			readline.PcItem("-r", false),
 			readline.PcItemDynamic(ListEntities(""), false)),
 		readline.PcItem("lssite", true,
 			readline.PcItem("-r", false),
@@ -424,25 +395,16 @@ func GetPrefixCompleter() *readline.PrefixCompleter {
 				readline.PcItemDynamic(ListUserVars("", false), false)),
 			readline.PcItem("-f", false,
 				readline.PcItemDynamic(ListUserFuncs(""), false))),
-		readline.PcItem("while", false,
-			readline.PcItem("done", false),
-		),
-		readline.PcItem("for", false,
-			readline.PcItem("in", false),
-			readline.PcItem("done", false),
-		),
-		readline.PcItem("if", false,
-			readline.PcItem("then", false),
-			readline.PcItem("elif", false),
-			readline.PcItem("else", false),
-			readline.PcItem("fi", false),
-		),
-		readline.PcItem("camera.move", false,
-			readline.PcItem("=", false)),
-		readline.PcItem("camera.translate", false,
-			readline.PcItem("=", false)),
-		readline.PcItem("camera.wait", false,
-			readline.PcItem("=", false)),
+		readline.PcItem("while", false),
+		readline.PcItem("for", false),
+		readline.PcItem("if", false),
+		readline.PcItem("camera.", false,
+			readline.PcItem("move", false,
+				readline.PcItem("=", false)),
+			readline.PcItem("translate", false,
+				readline.PcItem("=", false)),
+			readline.PcItem("wait", false,
+				readline.PcItem("=", false))),
 
 		readline.PcItem("ui.highlight", false,
 			readline.PcItem("=", true,
@@ -463,7 +425,9 @@ func GetPrefixCompleter() *readline.PrefixCompleter {
 				readline.PcItem("false", false))),
 
 		readline.PcItem("ui.wireframe", false,
-			readline.PcItem(" = ", false)),
+			readline.PcItem("=", false,
+				readline.PcItem("true", false),
+				readline.PcItem("false", false))),
 		readline.PcItem("ui.delay", false,
 			readline.PcItem(" = ", false)),
 
@@ -474,7 +438,6 @@ func GetPrefixCompleter() *readline.PrefixCompleter {
 		readline.PcItem("hc", true,
 			readline.PcItemDynamic(ListEntities(""), false)),
 		/*readline.PcItem("gt", false,
-			readline.PcItem("tenant", false),
 			readline.PcItem("site", false),
 			readline.PcItem("building", false),
 			readline.PcItem("room", false),
@@ -484,9 +447,9 @@ func GetPrefixCompleter() *readline.PrefixCompleter {
 			readline.PcItem("subdevice1", false),
 		),*/
 
-		readline.PcItem("link:", true,
+		readline.PcItem("link", true,
 			readline.PcItemDynamic(UnLinkObjCompleter(""), false)),
-		readline.PcItem("unlink:", true,
+		readline.PcItem("unlink", true,
 			readline.PcItemDynamic(UnLinkObjCompleter(""), false)),
 		readline.PcItem("-", true,
 			readline.PcItem("selection", false),

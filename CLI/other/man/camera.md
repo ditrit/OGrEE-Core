@@ -8,4 +8,6 @@ https://github.com/ditrit/OGrEE-3D/wiki/CLI-langage#Manipulate-camera
 
 EXAMPLE
 
-    camera.position="someValue"
+    camera.wait = 2
+    camera.move = [5,5,5]@[0,0]
+    camera.translate = [5,5,5]@[0,0]
