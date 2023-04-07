@@ -43,6 +43,7 @@ func Disp(x map[string]interface{}) {
 	println("JSON: ", string(jx))
 }
 
+// NOT IN USE
 // 'Flattens' the map[string]interface{}
 // for PATCH requests
 func Flatten(prefix string, src map[string]interface{}, dest map[string]interface{}) {
@@ -53,10 +54,6 @@ func Flatten(prefix string, src map[string]interface{}, dest map[string]interfac
 		switch child := v.(type) {
 		case map[string]interface{}:
 			Flatten(prefix+k, child, dest)
-		// case []interface{}:
-		// 	for i := 0; i < len(child); i++ {
-		// 		dest[prefix+k+"."+strconv.Itoa(i)] = child[i]
-		// 	}
 		default:
 			dest[prefix+k] = v
 		}
@@ -782,14 +779,6 @@ var UpdateEntity = func(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	//Flatten updateData if we have
-	//a PATCH request
-	if isPatch {
-		newUpdateData := map[string]interface{}{}
-		Flatten("", updateData, newUpdateData)
-		updateData = newUpdateData
-	}
-
 	switch {
 	case e2: // Update with slug/hierarchyName
 		var req bson.M
@@ -801,7 +790,7 @@ var UpdateEntity = func(w http.ResponseWriter, r *http.Request) {
 			req = bson.M{"hierarchyName": name}
 		}
 
-		v, e3 = models.UpdateEntity(entity, req, &updateData, isPatch)
+		v, e3 = models.UpdateEntity(entity, req, updateData, isPatch)
 
 	case e: // Update with id
 		objID, err := primitive.ObjectIDFromHex(id)
@@ -815,7 +804,7 @@ var UpdateEntity = func(w http.ResponseWriter, r *http.Request) {
 		println("OBJID:", objID.Hex())
 		println("Entity;", entity)
 
-		v, e3 = models.UpdateEntity(entity, bson.M{"_id": objID}, &updateData, isPatch)
+		v, e3 = models.UpdateEntity(entity, bson.M{"_id": objID}, updateData, isPatch)
 
 	default:
 		w.WriteHeader(http.StatusBadRequest)

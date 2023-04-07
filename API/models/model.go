@@ -2,6 +2,7 @@ package models
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	u "p3/utils"
 	"strconv"
@@ -427,7 +428,24 @@ func deleteHelper(t map[string]interface{}, ent int) (map[string]interface{}, st
 	return nil, ""
 }
 
-func UpdateEntity(ent string, req bson.M, t *map[string]interface{}, isPatch bool) (map[string]interface{}, string) {
+func updateOldObjWithPatch(old map[string]interface{}, patch map[string]interface{}) string {
+	for k, v := range patch {
+		switch child := v.(type) {
+		case map[string]interface{}:
+			switch oldChild := old[k].(type) {
+			case map[string]interface{}:
+				updateOldObjWithPatch(oldChild, child)
+			default:
+				return "Wrong format for property " + k
+			}
+		default:
+			old[k] = v
+		}
+	}
+	return ""
+}
+
+func UpdateEntity(ent string, req bson.M, t map[string]interface{}, isPatch bool) (map[string]interface{}, string) {
 	var e *mongo.SingleResult
 	updatedDoc := bson.M{}
 	retDoc := options.ReturnDocument(options.After)
@@ -439,44 +457,47 @@ func UpdateEntity(ent string, req bson.M, t *map[string]interface{}, isPatch boo
 	if e1 != "" {
 		return u.Message(false, "Error: "+e1), e1
 	}
-	(*t)["lastUpdated"] = primitive.NewDateTimeFromTime(time.Now())
-	(*t)["createdDate"] = oldObj["createdDate"]
+	t["lastUpdated"] = primitive.NewDateTimeFromTime(time.Now())
+	t["createdDate"] = oldObj["createdDate"]
+
+	// Update old object data with patch data
+	if isPatch {
+		var formattedOldObj map[string]interface{}
+		// Convert primitive.A and similar types
+		bytes, _ := json.Marshal(oldObj)
+		json.Unmarshal(bytes, &formattedOldObj)
+		// Update old with new
+		e1 = updateOldObjWithPatch(formattedOldObj, t)
+		if e1 != "" {
+			return u.Message(false, "Error: "+e1), e1
+		}
+		t = formattedOldObj
+		// Remove API set fields
+		delete(t, "id")
+		delete(t, "hierarchyName")
+	}
 
 	// Ensure the update is valid and apply it
 	ctx, cancel := u.Connect()
-	if isPatch {
-		msg, ok := ValidatePatch(u.EntityStrToInt(ent), *t)
-		if !ok {
-			return msg, "invalid"
-		}
-		e = GetDB().Collection(ent).FindOneAndUpdate(ctx,
-			req, bson.M{"$set": *t},
-			&options.FindOneAndUpdateOptions{ReturnDocument: &retDoc})
-		if e.Err() != nil {
-			return u.Message(false, "failure: "+e.Err().Error()), e.Err().Error()
-		}
-	} else {
-		println("NOT A PATCH")
-		msg, ok := ValidateEntity(u.EntityStrToInt(ent), *t)
-		if !ok {
-			return msg, "invalid"
-		}
-		e = GetDB().Collection(ent).FindOneAndReplace(ctx,
-			req, *t,
-			&options.FindOneAndReplaceOptions{ReturnDocument: &retDoc})
-		if e.Err() != nil {
-			return u.Message(false, "failure: "+e.Err().Error()), e.Err().Error()
-		}
+	msg, ok := ValidateEntity(u.EntityStrToInt(ent), t)
+	if !ok {
+		return msg, "invalid"
+	}
+	e = GetDB().Collection(ent).FindOneAndReplace(ctx,
+		req, t,
+		&options.FindOneAndReplaceOptions{ReturnDocument: &retDoc})
+	if e.Err() != nil {
+		return u.Message(false, "failure: "+e.Err().Error()), e.Err().Error()
 	}
 
 	// Changes to hierarchyName should be propagated to its children
-	if ent == "tenant" && oldObj["name"] != (*t)["name"] {
+	if ent == "tenant" && oldObj["name"] != t["name"] {
 		propagateParentNameChange(ctx, oldObj["name"].(string),
-			(*t)["name"].(string), u.EntityStrToInt(ent))
+			t["name"].(string), u.EntityStrToInt(ent))
 	}
-	if oldObj["hierarchyName"] != (*t)["hierarchyName"] {
+	if oldObj["hierarchyName"] != t["hierarchyName"] {
 		propagateParentNameChange(ctx, oldObj["hierarchyName"].(string),
-			(*t)["hierarchyName"].(string), u.EntityStrToInt(ent))
+			t["hierarchyName"].(string), u.EntityStrToInt(ent))
 	}
 
 	//Obtain new document then
