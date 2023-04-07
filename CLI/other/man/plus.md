@@ -183,7 +183,7 @@ EXAMPLES
 
 +ro:BETA/A/R1@[0,0]@-36.202@[22.8,19.8,2]@+N+W@t
 +ro:BETA/A/R1@[0,0]@-36.202@[22.8,19.8,2]@+N+W
-+room:CED/BETA/A/R1@[0,0]@-36.202@RoomTemplateA
++room:BETA/A/R1@[0,0]@-36.202@RoomTemplateA
 
 
 +rk:BETA.A.R1.A01@[9,1,99]@[60,120,42]@front
