@@ -584,7 +584,7 @@ func UpdateEntity(ent string, req bson.M, t map[string]interface{}, isPatch bool
 	}
 
 	// Changes to hierarchyName should be propagated to its children
-	if ent == "site" && oldObj["name"] != (*t)["name"] {
+	if ent == "site" && oldObj["name"] != t["name"] {
 		propagateParentNameChange(ctx, oldObj["name"].(string),
 			t["name"].(string), u.EntityStrToInt(ent))
 	}
