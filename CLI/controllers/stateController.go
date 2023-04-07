@@ -18,6 +18,8 @@ var GitCommitDate string
 var State ShellState
 
 type ShellState struct {
+	Prompt           string
+	BlankPrompt      string
 	CurrPath         string
 	PrevPath         string
 	ClipBoard        *[]string

@@ -42,6 +42,13 @@ func InterpretLine(str string) {
 	}
 }
 
+func SetPrompt(user string) string {
+	c.State.Prompt = "\u001b[1m\u001b[32m" + user + "@" + "OGrEE3D:" +
+		"\u001b[37;1m" + c.State.CurrPath + "\u001b[1m\u001b[32m>\u001b[0m "
+	c.State.BlankPrompt = user + "@" + "OGrEE3D:" + c.State.CurrPath + "> "
+	return c.State.Prompt
+}
+
 // Init the Shell
 func Start(flags *Flags) {
 	l.InitLogs()
@@ -66,8 +73,7 @@ func Start(flags *Flags) {
 	c.InitState(env)
 
 	rl, err := readline.NewEx(&readline.Config{
-		Prompt: "\u001b[1m\u001b[32m" + user + "@" + "OGrEE3D:" +
-			"\u001b[37;1m" + c.State.CurrPath + "\u001b[1m\u001b[32m$>\u001b[0m ",
+		Prompt:          SetPrompt(user),
 		HistoryFile:     c.State.HistoryFilePath,
 		AutoComplete:    GetPrefixCompleter(),
 		InterruptPrompt: "^C",
@@ -107,7 +113,6 @@ func Repl(rl *readline.Instance, user string) {
 		InterpretLine(line)
 		//c.UpdateSessionState(&line)
 		//Update Prompt
-		rl.SetPrompt("\u001b[1m\u001b[32m" + user + "@" + "OGrEE3D:" +
-			"\u001b[37;1m" + c.State.CurrPath + "\u001b[1m\u001b[32m$>\u001b[0m ")
+		rl.SetPrompt(SetPrompt(user))
 	}
 }
