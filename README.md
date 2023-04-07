@@ -25,6 +25,10 @@ DrawLimit = 100
 Updates = ["all"]
 User = ""
 APIKEY = ""
+Variables = [
+    {Name = "ROOT", Value = "path_to_root"},
+    {Name = "ROOT2", Value = "path_to_root2"},
+]
 
 [OGrEE-CLI.DrawableJson]
 tenant = "./other/drawTemplates/tenant.json"

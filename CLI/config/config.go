@@ -12,6 +12,11 @@ type globalConfig struct {
 	Conf Config `toml:"OGrEE-CLI"`
 }
 
+type Vardef struct {
+	Name  string
+	Value string
+}
+
 type Config struct {
 	Verbose      string
 	APIURL       string
@@ -26,6 +31,7 @@ type Config struct {
 	Updates      []string
 	User         string
 	APIKEY       string
+	Variables    []Vardef
 }
 
 func defaultConfig() Config {
@@ -43,6 +49,7 @@ func defaultConfig() Config {
 		Updates:      []string{"all"},
 		User:         "",
 		APIKEY:       "",
+		Variables:    []Vardef{},
 	}
 }
 

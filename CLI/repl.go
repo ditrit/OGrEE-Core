@@ -53,7 +53,11 @@ func Start(conf *config.Config) {
 	c.InitEmail(conf.User) //Set the User email
 	c.InitKey(conf.APIKEY) //Set the API Key
 	c.InitState(conf)
-
+	err := InitVars(conf.Variables)
+	if err != nil {
+		println("Error while initializing variables :", err.Error())
+		return
+	}
 	user := strings.Split(conf.User, "@")[0]
 	rl, err := readline.NewEx(&readline.Config{
 		Prompt: "\u001b[1m\u001b[32m" + user + "@" + "OGrEE3D:" +

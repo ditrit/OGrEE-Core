@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"cli/config"
 	cmd "cli/controllers"
 	"encoding/json"
 	"fmt"
@@ -18,6 +19,23 @@ func GetFuncTable() map[string]interface{} {
 
 func GetDynamicSymbolTable() map[string]interface{} {
 	return dynamicSymbolTable
+}
+
+func InitVars(variables []config.Vardef) error {
+	for _, v := range variables {
+		varNode, _, err := parseRawText(lexQuotedString, newFrame(v.Value))
+		if err != nil {
+			return err
+		}
+		n := &assignNode{
+			variable: v.Name,
+			val:      varNode,
+		}
+		if _, err := n.execute(); err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 type node interface {
