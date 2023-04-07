@@ -36,10 +36,10 @@ jobs:
         wget -qO - https://www.mongodb.org/static/pgp/server-6.0.asc | sudo apt-key add -
         echo "deb [ arch=amd64,arm64 ] https://repo.mongodb.org/apt/ubuntu jammy/mongodb-org/6.0 multiverse" | sudo tee /etc/apt/sources.list.d/mongodb-org-6.0.list
         sudo apt-get update
-        sudo apt-get install -y mongodb-mongosh
+        sudo apt-get install -y mongodb-mongosh mongodb
         
     - name: Create database
-      run: mongosh localhost:27017/ogree ./init_db/createdb.js
+      run: ./init_db/ogreeBoot.sh -DB_NAME autoTest
 
     - name: Build
       run: make
