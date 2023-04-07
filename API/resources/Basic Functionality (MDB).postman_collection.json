@@ -1,7 +1,7 @@
 {
 	"info": {
-		"_postman_id": "4e21f62c-f1f8-4865-8d81-5b55c8d4b16a",
-		"name": "Basic Functionality (MDB)",
+		"_postman_id": "f0f116fa-71c4-411c-8cd3-aa43c4b5f3e1",
+		"name": "Basic Functionality (DBFT)",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
 	"item": [
@@ -9,7 +9,7 @@
 			"name": "Populate DB 1",
 			"item": [
 				{
-					"name": "Create Tenant",
+					"name": "Create Domain",
 					"event": [
 						{
 							"listen": "test",
@@ -18,40 +18,25 @@
 									"var data = pm.response.json();",
 									"tests[\"Successful POST Request\"] = responseCode.code === 201;",
 									"",
-									"pm.environment.set(\"TenantID\", data[\"data\"][\"id\"])",
-									"pm.environment.set(\"TenantName\", data[\"data\"][\"name\"])",
-									"console.log(\"The ID is: \", data[\"data\"][\"id\"])",
-									"pm.environment.set(\"TenantJSON\", data[\"data\"])"
-								],
-								"type": "text/javascript"
-							}
-						},
-						{
-							"listen": "prerequest",
-							"script": {
-								"exec": [
-									""
+									"pm.environment.set(\"DomainID\", data[\"data\"][\"id\"])",
+									"pm.environment.set(\"DomainJSONStr\", JSON.stringify(data));"
 								],
 								"type": "text/javascript"
 							}
 						}
 					],
 					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": [
-								{
-									"key": "token",
-									"value": "{{AuthToken}}",
-									"type": "string"
-								}
-							]
-						},
 						"method": "POST",
-						"header": [],
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{AuthToken}}",
+								"type": "text"
+							}
+						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n  \"name\": \"DEMO\",\n  \"parentId\": null,\n  \"category\": \"tenant\",\n  \"description\": [],\n  \"domain\": \"DEMO\",\n  \"attributes\": {\n    \"color\": \"FFFFFF\",\n    \"mainContact\": \"Ced\",\n    \"mainPhone\": \"0612345678\",\n    \"mainEmail\": \"ced@ogree3D.com\"\n  }\n}",
+							"raw": "{\n    \"name\": \"D2\",\n    \"category\": \"domain\",\n    \"description\": [\n        \"This is a demo...\"\n    ],\n    \"domain\": \"Mitsubishi\",\n    \"attributes\": {\n        \"orientation\": \"NW\",\n        \"usableColor\": \"5BDCFF\",\n        \"reservedColor\": \"AAAAAA\",\n        \"technicalColor\": \"D0FF78\",\n        \"address\": \"1 rue bidule\",\n        \"zipcode\": \"42000\",\n        \"city\": \"Truc\",\n        \"country\": \"FRANCE\",\n        \"gps\": \"[1,2,0]\"\n    }\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -59,20 +44,20 @@
 							}
 						},
 						"url": {
-							"raw": "{{URL}}/api/tenants",
+							"raw": "{{URL}}/api/domains",
 							"host": [
 								"{{URL}}"
 							],
 							"path": [
 								"api",
-								"tenants"
+								"domains"
 							]
 						}
 					},
 					"response": []
 				},
 				{
-					"name": "Verify Create Tenant",
+					"name": "Verify Create Domain",
 					"event": [
 						{
 							"listen": "prerequest",
@@ -88,84 +73,40 @@
 							"script": {
 								"exec": [
 									"tests[\"Successful GET\"] = responseCode.code === 200;",
-									"var data =  pm.response.json()[\"data\"];",
-									"var OGdata = pm.environment.get(\"TenantJSON\");",
+									"var jsonData =  pm.response.json();",
 									"",
-									"function isEqual(x, y) {",
-									"    // if both are function",
-									"    if (x instanceof Function) {",
-									"        if (y instanceof Function) {",
-									"            return x.toString() === y.toString();",
-									"        }",
-									"        return false;",
-									"    }",
-									"    if (x === null || x === undefined || y === null || y === undefined) { return x === y; }",
-									"    if (x === y || x.valueOf() === y.valueOf()) { return true; }",
-									"",
-									"    // if one of them is date, they must had equal valueOf",
-									"    if (x instanceof Date) { return false; }",
-									"    if (y instanceof Date) { return false; }",
-									"",
-									"    // if they are not function or strictly equal, they both need to be Objects",
-									"    if (!(x instanceof Object)) { return false; }",
-									"    if (!(y instanceof Object)) { return false; }",
-									"",
-									"    var p = Object.keys(x);",
-									"    return Object.keys(y).every(function (i) { return p.indexOf(i) !== -1; }) ?",
-									"            p.every(function (i) { return isEqual(x[i], y[i]); }) : false;",
-									"}",
-									"",
-									"function isEqualsJson(obj1, obj2) {",
-									"    const obj1Keys = Object.keys(obj1);",
-									"    const obj2Keys = Object.keys(obj2);",
-									"",
-									"    if(obj1Keys.length !== obj2Keys.length) {",
-									"        return false;",
-									"    }",
-									"",
-									"    for (let objKey of obj1Keys) {",
-									"        if (obj1[objKey] !== obj2[objKey]) {",
-									"            if(typeof obj1[objKey] == \"object\" && typeof obj2[objKey] == \"object\") {",
-									"                if(!isEqual(obj1[objKey], obj2[objKey])) {",
-									"                    return false;",
-									"                }",
-									"            } ",
-									"            else {",
-									"                return false;",
-									"            }",
-									"        }",
-									"    }",
-									"",
-									"    return true;",
-									"}",
-									"",
-									"",
-									"",
-									"/*var locjson = {",
+									"var locjson = {",
 									"    \"data\": {",
-									"            \"attributes\": {",
-									"            \"color\": \"FFFFFF\",",
-									"            \"mainContact\": \"Ced\",",
-									"            \"mainEmail\": \"ced@ogree3D.com\",",
-									"            \"mainPhone\": \"0612345678\"",
-									"        },",
-									"        \"category\": \"tenant\",",
-									"        \"description\": [],",
+									"        \"id\": \"649654546428854273\",",
+									"        \"name\": \"ALPHA\",",
+									"        \"category\": \"site\",",
 									"        \"domain\": \"DEMO\",",
-									"        \"_id\": pm.environment.get(\"TenantID\"),",
-									"        \"name\": \"DEMO\",",
-									"        \"parentId\": null",
+									"        \"parentId\": \"649654546050613249\",",
+									"        \"description\": [",
+									"            \"This is a demo...\"",
+									"        ],",
+									"        \"attributes\": {",
+									"            \"orientation\": \"NW\",",
+									"            \"usableColor\": \"5BDCFF\",",
+									"            \"reservedColor\": \"AAAAAA\",",
+									"            \"technicalColor\": \"D0FF78\",",
+									"            \"address\": \"1 rue bidule\",",
+									"            \"zipcode\": \"42000\",",
+									"            \"city\": \"Truc\",",
+									"            \"country\": \"FRANCE\",",
+									"            \"gps\": \"[1,2,0]\"",
+									"        }",
 									"    },",
 									"    \"message\": \"success\",",
 									"    \"status\": true",
-									"};*/",
+									"};",
 									"",
-									"/*function isEqualsJson(obj1, obj2) {",
+									"function isEqualsJson(obj1, obj2) {",
 									"    return JSON.stringify(obj1) == JSON.stringify(obj2)",
-									"}*/",
+									"}",
 									"",
 									"",
-									"tests[\"Successful Create & Get Request\"] = isEqualsJson(data, OGdata) == true;"
+									"tests[\"Successful Create & Get Request\"] = locjson,jsonData == true;"
 								],
 								"type": "text/javascript"
 							}
@@ -203,14 +144,14 @@
 							}
 						},
 						"url": {
-							"raw": "{{URL}}/api/tenants/{{TenantID}}",
+							"raw": "{{URL}}/api/domains/{{DomainID}}",
 							"host": [
 								"{{URL}}"
 							],
 							"path": [
 								"api",
-								"tenants",
-								"{{TenantID}}"
+								"domains",
+								"{{DomainID}}"
 							]
 						}
 					},
@@ -244,7 +185,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"name\": \"ALPHA\",\n    \"parentId\": \"{{TenantID}}\",\n    \"category\": \"site\",\n    \"description\": [\n        \"This is a demo...\"\n    ],\n    \"domain\": \"DEMO\",\n    \"attributes\": {\n        \"orientation\": \"NW\",\n        \"usableColor\": \"5BDCFF\",\n        \"reservedColor\": \"AAAAAA\",\n        \"technicalColor\": \"D0FF78\",\n        \"address\": \"1 rue bidule\",\n        \"zipcode\": \"42000\",\n        \"city\": \"Truc\",\n        \"country\": \"FRANCE\",\n        \"gps\": \"[1,2,0]\"\n    }\n}",
+							"raw": "{\n    \"name\": \"siteA\",\n    \"category\": \"site\",\n    \"description\": [\n        \"This is a demo...\"\n    ],\n    \"domain\": \"DEMO\",\n    \"attributes\": {\n        \"orientation\": \"NW\",\n        \"usableColor\": \"5BDCFF\",\n        \"reservedColor\": \"AAAAAA\",\n        \"technicalColor\": \"D0FF78\",\n        \"address\": \"1 rue bidule\",\n        \"zipcode\": \"42000\",\n        \"city\": \"Truc\",\n        \"country\": \"FRANCE\",\n        \"gps\": \"[1,2,0]\"\n    }\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -2524,174 +2465,6 @@
 			"name": "Update DB",
 			"item": [
 				{
-					"name": "Update Tenant",
-					"event": [
-						{
-							"listen": "prerequest",
-							"script": {
-								"exec": [
-									""
-								],
-								"type": "text/javascript"
-							}
-						},
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"var data = pm.response.json();",
-									"tests[\"Successful PUT Request\"] = responseCode.code === 200;",
-									"",
-									"pm.environment.set(\"TenantUpdateStr\", JSON.stringify(JSON.parse(request.data)));"
-								],
-								"type": "text/javascript"
-							}
-						}
-					],
-					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": [
-								{
-									"key": "token",
-									"value": "{{AuthToken}}",
-									"type": "string"
-								}
-							]
-						},
-						"method": "PUT",
-						"header": [
-							{
-								"warning": "This is a duplicate header and will be overridden by the Authorization header generated by Postman.",
-								"key": "Authorization",
-								"value": "{{AuthToken}}",
-								"type": "text"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n  \"name\": \"FISHER\",\n  \"id\": null,\n  \"category\":\"tenant\",\n  \"parentId\": null,\n  \"description\": [\"Some Forsaken Joint\", \"Rotten Apple\"],\n  \"domain\": \"999999\",\n  \"attributes\": {\n    \"color\": \"999999\",\n    \"mainContact\": \"99\",\n    \"mainPhone\": \"999\",\n    \"mainEmail\": \"ghetto@ogree3D.com\"\n  }\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{URL}}/api/tenants/{{TenantID}}",
-							"host": [
-								"{{URL}}"
-							],
-							"path": [
-								"api",
-								"tenants",
-								"{{TenantID}}"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Verify Update Tenant",
-					"event": [
-						{
-							"listen": "prerequest",
-							"script": {
-								"exec": [
-									""
-								],
-								"type": "text/javascript"
-							}
-						},
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"tests[\"Successful GET\"] = responseCode.code === 200;",
-									"var data =  pm.response.json();",
-									"var input = JSON.parse(pm.environment.get(\"TenantUpdateStr\"))",
-									"",
-									"input[\"id\"] = data[\"data\"][\"id\"]",
-									"input[\"parentId\"] = data[\"data\"][\"parentId\"]",
-									"input[\"category\"] = data[\"data\"][\"category\"]",
-									"",
-									"",
-									"function isEqualsJson(obj1, obj2) {",
-									"    for (let i in obj1) {",
-									"        //console.log(obj2[i])",
-									"        //console.log(obj1[i])",
-									"        if (obj1[i] !== obj2[i] && i != \"lastUpdated\" && i != \"createdDate\") {",
-									"            console.log(\"Failed at: \", obj1[i])",
-									"            ",
-									"            for (let idx in obj1[i]) {",
-									"                if (obj1[i][idx] !== obj2[i][idx]) {",
-									"                    console.log(\"Bad News: \", obj1[i][idx])",
-									"                    return false",
-									"                }",
-									"            }",
-									"        }",
-									"      }",
-									"      return true",
-									"}",
-									"",
-									"",
-									"",
-									"//console.log(\"Input: \", input)",
-									"//onsole.log(\"response: \", data[\"data\"])",
-									"",
-									"tests[\"Successful Update & Get Request\"] = isEqualsJson(data[\"data\"], input) == true;"
-								],
-								"type": "text/javascript"
-							}
-						}
-					],
-					"protocolProfileBehavior": {
-						"disableBodyPruning": true
-					},
-					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": [
-								{
-									"key": "token",
-									"value": "{{AuthToken}}",
-									"type": "string"
-								}
-							]
-						},
-						"method": "GET",
-						"header": [
-							{
-								"warning": "This is a duplicate header and will be overridden by the Authorization header generated by Postman.",
-								"key": "Authorization",
-								"value": "{{AuthToken}}",
-								"type": "text"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{URL}}/api/tenants/{{TenantID}}",
-							"host": [
-								"{{URL}}"
-							],
-							"path": [
-								"api",
-								"tenants",
-								"{{TenantID}}"
-							]
-						}
-					},
-					"response": []
-				},
-				{
 					"name": "Update Site",
 					"event": [
 						{
@@ -2718,7 +2491,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"name\": \"SiteA\",\n    \"id\": null,\n    \"parentId\": \"{{TenantID}}\",\n    \"category\": \"site\",\n    \"description\": [\n        \"guess whos back\"\n    ],\n    \"domain\": \"DERELICT\",\n    \"attributes\": {\n        \"orientation\": \"NW\",\n        \"usableColor\": \"99\",\n        \"reservedColor\": \"99\",\n        \"technicalColor\": \"99\",\n        \"address\": \"99\",\n        \"zipcode\": \"99\",\n        \"city\": \"99\",\n        \"country\": \"99\",\n        \"gps\": \"99\"\n    }\n}",
+							"raw": "{\n    \"name\": \"SiteA\",\n    \"id\": null,\n    \"category\": \"site\",\n    \"description\": [\n        \"guess whos back\"\n    ],\n    \"domain\": \"DERELICT\",\n    \"attributes\": {\n        \"orientation\": \"NW\",\n        \"usableColor\": \"99\",\n        \"reservedColor\": \"99\",\n        \"technicalColor\": \"99\",\n        \"address\": \"99\",\n        \"zipcode\": \"99\",\n        \"city\": \"99\",\n        \"country\": \"99\",\n        \"gps\": \"99\"\n    }\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -2751,7 +2524,6 @@
 									"var input = JSON.parse(pm.environment.get(\"SiteUpdateStr\"))",
 									"",
 									"input[\"id\"] = data[\"data\"][\"id\"]",
-									"input[\"parentId\"] = data[\"data\"][\"parentId\"]",
 									"input[\"category\"] = data[\"data\"][\"category\"]",
 									"",
 									"",
@@ -4640,7 +4412,7 @@
 			"name": "Delete DB",
 			"item": [
 				{
-					"name": "Delete Tenant & Hierarchy",
+					"name": "Delete Site & Hierarchy",
 					"event": [
 						{
 							"listen": "test",
@@ -4662,82 +4434,50 @@
 							}
 						],
 						"url": {
-							"raw": "{{URL}}/api/tenants/{{TenantID}}",
+							"raw": "{{URL}}/api/sites/{{SiteID}}",
 							"host": [
 								"{{URL}}"
 							],
 							"path": [
 								"api",
-								"tenants",
-								"{{TenantID}}"
+								"sites",
+								"{{SiteID}}"
 							]
 						}
 					},
 					"response": []
 				},
 				{
-					"name": "Verify Delete Tenant",
+					"name": "Delete Domain & Hierarchy",
 					"event": [
-						{
-							"listen": "prerequest",
-							"script": {
-								"exec": [
-									""
-								],
-								"type": "text/javascript"
-							}
-						},
 						{
 							"listen": "test",
 							"script": {
 								"exec": [
-									"tests[\"Successful DELETE & GET Request\"] = responseCode.code === 404;"
+									"tests[\"Successful DELETE Request\"] = responseCode.code === 204;"
 								],
 								"type": "text/javascript"
 							}
 						}
 					],
-					"protocolProfileBehavior": {
-						"disableBodyPruning": true
-					},
 					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": [
-								{
-									"key": "token",
-									"value": "{{AuthToken}}",
-									"type": "string"
-								}
-							]
-						},
-						"method": "GET",
+						"method": "DELETE",
 						"header": [
 							{
-								"warning": "This is a duplicate header and will be overridden by the Authorization header generated by Postman.",
 								"key": "Authorization",
-								"value": "{{AuthToken}}",
+								"value": "Bearer {{AuthToken}}",
 								"type": "text"
 							}
 						],
-						"body": {
-							"mode": "raw",
-							"raw": "",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
 						"url": {
-							"raw": "{{URL}}/api/tenants/{{TenantID}}",
+							"raw": "{{URL}}/api/domains/{{DomainID}}",
 							"host": [
 								"{{URL}}"
 							],
 							"path": [
 								"api",
-								"tenants",
-								"{{TenantID}}"
+								"domains",
+								"{{DomainID}}"
 							]
 						}
 					},
@@ -5627,7 +5367,7 @@
 			"name": "Verify DB is Empty",
 			"item": [
 				{
-					"name": "Verify Tentants Empty",
+					"name": "Verify Domains Empty",
 					"event": [
 						{
 							"listen": "test",
@@ -5661,13 +5401,13 @@
 							}
 						},
 						"url": {
-							"raw": "{{URL}}/api/tenants",
+							"raw": "{{URL}}/api/domains",
 							"host": [
 								"{{URL}}"
 							],
 							"path": [
 								"api",
-								"tenants"
+								"domains"
 							]
 						}
 					},

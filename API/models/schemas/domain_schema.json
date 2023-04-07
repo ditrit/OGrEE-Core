@@ -1,0 +1,63 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "title": "OGrEE Domain Schema",
+    "type": "object",
+    "properties": {
+      "description": {
+        "type": "array",
+        "items": {
+          "type": "string"
+        }
+      },
+      "parentId": {
+        "type": "string"
+      },
+      "category": {
+        "type": "string"
+      },
+      "domain": {
+        "type": "string"
+      },
+      "createdDate": {
+      },
+      "lastUpdated": {
+      },
+      "name": {
+        "type": "string",
+        "pattern":"^\\w(\\w|\\-)*$"
+      },
+      "id": {
+        "type": "string"
+      },
+      "attributes": {
+        "type": "object",
+        "properties": {
+          "color": {
+            "type" : "string",
+            "$ref": "refs/types.json#/definitions/color"
+          }
+        }
+      }
+    },
+    "additionalProperties":  false,
+    "required": [
+      "category",
+      "description",
+      "domain",
+      "name",
+      "attributes"
+    ],
+    "examples": [
+      {
+        "attributes": {
+        },
+        "category": "domain",
+        "description": [
+          "domain"
+        ],
+        "domain": "DEMO",
+        "name": "DomainA",
+        "parentId": "xxxx592b1ac5f3b6f313ee8f"
+      }
+    ]
+  }

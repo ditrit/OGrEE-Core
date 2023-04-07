@@ -10,7 +10,7 @@
   ],
   "swagger": "2.0",
   "info": {
-    "description": "Testing Swagger spec. It's still in progress\n\nThe API may return incorrect response codes and have bugs.",
+    "description": "Testing Swagger spec. It's still in progress\n\nThe API may return incorrect response codes and have bugs.\n\nFor a list of endpoints please consult: https://nextcloud.ditrit.io/index.php/apps/files/?dir=/Ogree/1_Core/1_API/Endpoint_List\u0026openfile=20692",
     "title": "Golang OGREE API",
     "contact": {
       "name": "Ziad Khalaf",
@@ -45,6 +45,14 @@
             "default": "secret",
             "description": "Your password",
             "name": "password",
+            "in": "json",
+            "required": true
+          },
+          {
+            "format": "string",
+            "default": "ORNESS",
+            "description": "Name of the the customer",
+            "name": "customer",
             "in": "json",
             "required": true
           }
@@ -126,12 +134,7 @@
           "auth"
         ],
         "summary": "Displays possible operations for the resource in response header.",
-        "operationId": "CreateOptions",
-        "responses": {
-          "200": {
-            "description": "Returns header with possible operations"
-          }
-        }
+        "operationId": "CreateOptions"
       }
     },
     "/api/stats": {
@@ -143,15 +146,53 @@
           "objects"
         ],
         "summary": "Displays DB statistics.",
-        "operationId": "GetStats",
+        "operationId": "GetStats"
+      }
+    },
+    "/api/tempunits/{id}": {
+      "get": {
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "tempunits"
+        ],
+        "summary": "Gets the temperatureUnit attribute of the parent site of given object.",
+        "operationId": "GetTempUnit",
+        "parameters": [
+          {
+            "description": "ID of any object.",
+            "name": "id",
+            "in": "query",
+            "required": true
+          }
+        ],
         "responses": {
           "200": {
-            "description": "Request is valid."
+            "description": "Found. A response body will be returned with a meaningful message."
           },
-          "504": {
-            "description": "Server error."
+          "404": {
+            "description": "Nothing Found. An error message will be returned."
           }
         }
+      },
+      "options": {
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "tempunits"
+        ],
+        "summary": "Gets the possible operations of the parent site tempunit of given object.",
+        "operationId": "GetTempUnit",
+        "parameters": [
+          {
+            "description": "ID of any object.",
+            "name": "id",
+            "in": "query",
+            "required": true
+          }
+        ]
       }
     },
     "/api/token/valid": {
@@ -184,12 +225,7 @@
           "auth"
         ],
         "summary": "Displays possible operations for the resource in response header.",
-        "operationId": "VerifyToken",
-        "responses": {
-          "200": {
-            "description": "Returns header with possible operations"
-          }
-        }
+        "operationId": "VerifyToken"
       }
     },
     "/api/validate/{obj}": {
@@ -206,7 +242,7 @@
           {
             "type": "string",
             "default": "sites",
-            "description": "Indicates the Object. Only values of \"tenants\", \"sites\", \"buildings\", \"rooms\", \"racks\", \"devices\", \"acs\", \"panels\", \"cabinets\", \"groups\", \"corridors\", \"room-templates\", \"obj-templates\", \"sensors\", \"stray-devices\" \"stray-sensors\" are acceptable",
+            "description": "Indicates the Object. Only values of \"domains\", \"sites\", \"buildings\", \"rooms\", \"racks\", \"devices\", \"acs\", \"panels\", \"cabinets\", \"groups\", \"corridors\", \"room-templates\", \"obj-templates\", \"bldg-templates\",\"sensors\", \"stray-devices\" \"stray-sensors\" are acceptable",
             "name": "objs",
             "in": "query",
             "required": true
@@ -237,7 +273,7 @@
           {
             "type": "int",
             "default": 999,
-            "description": "All objects are linked to a parent with the exception of Tenant since it has no parent",
+            "description": "All objects are linked to a parent with the exception of Site since it has no parent",
             "name": "ParentID",
             "required": true
           },
@@ -281,19 +317,11 @@
         "operationId": "ValidateObjectOptions",
         "parameters": [
           {
-            "description": "Only values of \"tenants\", \"sites\", \"buildings\", \"rooms\", \"racks\", \"devices\", \"room-templates\", \"obj-templates\", \"rooms\", \"acs\", \"panels\", \"cabinets\", \"groups\", \"corridors\",\"sensors\",\"stray-devices\" \"stray-sensors\" are acceptable",
+            "description": "Only values of \"domains\", \"sites\", \"buildings\", \"rooms\", \"racks\", \"devices\", \"room-templates\", \"obj-templates\",\"bldg-templates\", \"rooms\", \"acs\", \"panels\", \"cabinets\", \"groups\", \"corridors\",\"sensors\",\"stray-devices\" \"stray-sensors\" are acceptable",
             "name": "obj",
             "in": "query"
           }
-        ],
-        "responses": {
-          "200": {
-            "description": "Request is valid."
-          },
-          "404": {
-            "description": "Not Found. An error message will be returned."
-          }
-        }
+        ]
       }
     },
     "/api/version": {
@@ -320,30 +348,25 @@
           "versioning"
         ],
         "summary": "Displays possible operations for version.",
-        "operationId": "VersionOptions",
-        "responses": {
-          "200": {
-            "description": "Returns the possible request methods."
-          }
-        }
+        "operationId": "VersionOptions"
       }
     },
     "/api/{entity}/{name}/all": {
       "get": {
-        "description": "Returns JSON body with all subobjects under the Tenant",
+        "description": "Returns JSON body with all subobjects",
         "produces": [
           "application/json"
         ],
         "tags": [
           "objects"
         ],
-        "summary": "Obtain all objects related to Tenant or stray-device in the system using name.",
+        "summary": "Obtain all objects related to Site or stray-device in the system using name.",
         "operationId": "GetFromObject",
         "parameters": [
           {
             "type": "int",
             "default": 999,
-            "description": "Name of Tenant",
+            "description": "Name of Site",
             "name": "name",
             "in": "query",
             "required": true
@@ -369,19 +392,11 @@
         "operationId": "GetFromObjectOptions",
         "parameters": [
           {
-            "description": "Name of tenant.",
+            "description": "Name of site.",
             "name": "name",
             "in": "query"
           }
-        ],
-        "responses": {
-          "200": {
-            "description": "Found. A response header will be returned with possible operation."
-          },
-          "404": {
-            "description": "Nothing Found."
-          }
-        }
+        ]
       }
     },
     "/api/{objs}": {
@@ -399,20 +414,12 @@
           {
             "type": "string",
             "default": "sites",
-            "description": "Indicates the location. Only values of \"tenants\", \"sites\", \"buildings\", \"rooms\", \"racks\", \"devices\", \"room-templates\", \"obj-templates\",\"acs\", \"panels\", \"cabinets\", \"groups\", \"corridors\", \"sensors\", \"stray-devices\", \"stray-sensors\" are acceptable",
+            "description": "Indicates the location. Only values of \"sites\",\"domains\", \"buildings\", \"rooms\", \"racks\", \"devices\", \"room-templates\", \"obj-templates\",\"bldg-templates\",\"acs\", \"panels\", \"cabinets\", \"groups\", \"corridors\", \"sensors\", \"stray-devices\", \"stray-sensors\" are acceptable",
             "name": "objs",
             "in": "query",
             "required": true
           }
-        ],
-        "responses": {
-          "200": {
-            "description": "Found. A response body will be returned with a meaningful message."
-          },
-          "404": {
-            "description": "Nothing Found. An error message will be returned."
-          }
-        }
+        ]
       }
     },
     "/api/{objs}/*": {
@@ -427,24 +434,16 @@
         "operationId": "ObjectOptions",
         "parameters": [
           {
-            "description": "Only values of \"tenants\", \"sites\", \"buildings\", \"rooms\", \"racks\", \"devices\", \"room-templates\", \"obj-templates\", \"rooms\", \"acs\", \"panels\", \"cabinets\", \"groups\", \"corridors\",\"sensors\",\"stray-devices\" \"stray-sensors\" are acceptable",
+            "description": "Only values of \"sites\", \"buildings\", \"rooms\", \"racks\", \"devices\", \"room-templates\", \"obj-templates\",\"bldg-templates\", \"rooms\", \"acs\", \"panels\", \"cabinets\", \"groups\", \"corridors\",\"sensors\",\"stray-devices\" \"stray-sensors\" are acceptable",
             "name": "objs",
             "in": "query"
           }
-        ],
-        "responses": {
-          "200": {
-            "description": "Request is valid."
-          },
-          "404": {
-            "description": "Not Found. An error message will be returned."
-          }
-        }
+        ]
       }
     },
     "/api/{objs}/{id}": {
       "get": {
-        "description": "The ID must be provided in the URL parameter\nThe name can be used instead of ID if the obj is tenant",
+        "description": "The ID must be provided in the URL parameter\nThe name can be used instead of ID if the obj is site",
         "produces": [
           "application/json"
         ],
@@ -457,7 +456,7 @@
           {
             "type": "string",
             "default": "sites",
-            "description": "Indicates the location. Only values of \"tenants\", \"sites\", \"buildings\", \"rooms\", \"racks\", \"devices\", \"room-templates\", \"obj-templates\", \"acs\", \"panels\",\"cabinets\", \"groups\", \"corridors\",\"sensors\",\"stray-devices\", \"stray-sensors\" are acceptable",
+            "description": "Indicates the location. Only values of \"sites\",\"domains\", \"buildings\", \"rooms\", \"racks\", \"devices\", \"room-templates\", \"obj-templates\", \"bldg-templates\",\"acs\", \"panels\",\"cabinets\", \"groups\", \"corridors\",\"sensors\",\"stray-devices\", \"stray-sensors\" are acceptable",
             "name": "objs",
             "in": "query",
             "required": true
@@ -465,7 +464,7 @@
           {
             "type": "int",
             "default": 999,
-            "description": "ID of desired object or Name of Tenant. For templates the slug is the ID. For stray-devices the name is the ID",
+            "description": "ID of desired object or Name of Site. For templates the slug is the ID. For stray-devices the name is the ID",
             "name": "ID",
             "in": "path",
             "required": true
@@ -497,7 +496,7 @@
           {
             "type": "string",
             "default": "sites",
-            "description": "Indicates the location. Only values of \"tenants\", \"sites\", \"buildings\", \"rooms\", \"racks\", \"devices\", \"room-templates\", \"obj-templates\", \"rooms\",\"acs\", \"panels\", \"cabinets\", \"groups\", \"corridors\",\"sensors\", \"stray-devices\", \"stray-sensors\" are acceptable",
+            "description": "Indicates the location. Only values of \"sites\", \"domains\", \"buildings\", \"rooms\", \"racks\", \"devices\", \"room-templates\", \"obj-templates\", \"bldg-templates\",\"rooms\",\"acs\", \"panels\", \"cabinets\", \"groups\", \"corridors\",\"sensors\", \"stray-devices\", \"stray-sensors\" are acceptable",
             "name": "objs",
             "in": "query",
             "required": true
@@ -505,7 +504,7 @@
           {
             "type": "int",
             "default": 999,
-            "description": "ID of the object or name of Tenant. For templates the slug is the ID. For stray-devices the name is the ID",
+            "description": "ID of the object or name of Site. For templates the slug is the ID. For stray-devices the name is the ID",
             "name": "ID",
             "in": "path",
             "required": true
@@ -569,7 +568,7 @@
           {
             "type": "string",
             "default": "sites",
-            "description": "Indicates the location. Only values of \"tenants\", \"sites\", \"buildings\", \"rooms\", \"racks\", \"devices\", \"room-templates\", \"obj-templates\",\"acs\", \"panels\", \"cabinets\", \"groups\", \"corridors\",\"sensors\", \"stray-devices\" \"stray-sensors\" are acceptable",
+            "description": "Indicates the location. Only values of \"sites\",\"domains\", \"buildings\", \"rooms\", \"racks\", \"devices\", \"room-templates\", \"obj-templates\",\"bldg-templates\",\"acs\", \"panels\", \"cabinets\", \"groups\", \"corridors\",\"sensors\", \"stray-devices\" \"stray-sensors\" are acceptable",
             "name": "objs",
             "in": "query",
             "required": true
@@ -577,20 +576,12 @@
           {
             "type": "int",
             "default": 999,
-            "description": "ID of the object or name of Tenant. For templates the slug is the ID. For stray-devices the name is the ID",
+            "description": "ID of the object or name of Site. For templates the slug is the ID. For stray-devices the name is the ID",
             "name": "ID",
             "in": "path",
             "required": true
           }
-        ],
-        "responses": {
-          "204": {
-            "description": "Successfully deleted object. No response body will be returned"
-          },
-          "404": {
-            "description": "Not found. An error message will be returned"
-          }
-        }
+        ]
       },
       "options": {
         "produces": [
@@ -603,27 +594,16 @@
         "operationId": "ObjectOptions",
         "parameters": [
           {
-            "description": "Only values of \"tenants\", \"sites\", \"buildings\", \"rooms\", \"racks\", \"devices\", \"room-templates\", \"obj-templates\", \"acs\", \"panels\",\"cabinets\", \"groups\", \"corridors\",\"sensors\",\"stray-devices\",\"stray-sensors\", are acceptable",
+            "description": "Only values of \"sites\",\"domains\", \"buildings\", \"rooms\", \"racks\", \"devices\", \"room-templates\", \"obj-templates\",\"bldg-templates\", \"acs\", \"panels\",\"cabinets\", \"groups\", \"corridors\",\"sensors\",\"stray-devices\",\"stray-sensors\", are acceptable",
             "name": "objs",
             "in": "query"
           },
           {
-            "description": "ID of the object or name of Tenant. For templates the slug is the ID. For stray-devices the name is the ID",
+            "description": "ID of the object or name of Site. For templates the slug is the ID. For stray-devices the name is the ID",
             "name": "id",
             "in": "query"
           }
-        ],
-        "responses": {
-          "200": {
-            "description": "Found. A response header will be returned with possible operations."
-          },
-          "400": {
-            "description": "Bad request. An error message will be returned."
-          },
-          "404": {
-            "description": "Not Found. An error message will be returned."
-          }
-        }
+        ]
       },
       "patch": {
         "description": "This is the preferred method for modifying data in the system.\nIf you want to do a full data replace, please use PUT instead.\nIf the operation succeeds, the data result will be returned.\nIf no new or any information is provided\nan OK will still be returned",
@@ -639,7 +619,7 @@
           {
             "type": "string",
             "default": "sites",
-            "description": "Indicates the location. Only values of \"tenants\", \"sites\", \"buildings\", \"rooms\", \"racks\", \"devices\", \"room-templates\", \"obj-templates\", \"rooms\", \"acs\", \"panels\", \"cabinets\", \"groups\", \"corridors\", \"sensors\", \"stray-devices\", \"stray-sensors\" are acceptable",
+            "description": "Indicates the location. Only values of \"sites\",\"domains\", \"buildings\", \"rooms\", \"racks\", \"devices\", \"room-templates\", \"obj-templates\", \"bldg-templates\",\"rooms\", \"acs\", \"panels\", \"cabinets\", \"groups\", \"corridors\", \"sensors\", \"stray-devices\", \"stray-sensors\" are acceptable",
             "name": "objs",
             "in": "query",
             "required": true
@@ -647,7 +627,7 @@
           {
             "type": "int",
             "default": 999,
-            "description": "ID of the object or name of Tenant. For templates the slug is the ID. For stray-devices the name is the ID",
+            "description": "ID of the object or name of Site. For templates the slug is the ID. For stray-devices the name is the ID",
             "name": "ID",
             "in": "path",
             "required": true
@@ -714,7 +694,7 @@
           {
             "type": "string",
             "default": "sites",
-            "description": "Indicates the object. Only values of \"tenants\", \"sites\", \"buildings\", \"rooms\", \"racks\", \"devices\", \"stray-devices\" are acceptable",
+            "description": "Indicates the object. Only values of \"sites\", \"domains\", \"buildings\", \"rooms\", \"racks\", \"devices\", \"stray-devices\" are acceptable",
             "name": "objs",
             "in": "query",
             "required": true
@@ -722,7 +702,7 @@
           {
             "type": "string",
             "default": "INFINITI",
-            "description": "ID of desired object. For tenants and stray-devices the name can be used as the ID",
+            "description": "ID of desired object. For Sites and stray-devices the name can be used as the ID",
             "name": "ID",
             "in": "path",
             "required": true
@@ -756,12 +736,12 @@
         "operationId": "GetFromObjectOptions",
         "parameters": [
           {
-            "description": "Only values of \"tenants\", \"sites\", \"buildings\", \"rooms\", \"racks\", \"devices\", and \"stray-devices\" are acceptable",
+            "description": "Only values of \"sites\", \"domains\", \"buildings\", \"rooms\", \"racks\", \"devices\", and \"stray-devices\" are acceptable",
             "name": "objs",
             "in": "query"
           },
           {
-            "description": "ID of the object.For tenants and stray-devices the name can be used as the ID",
+            "description": "ID of the object.For Sites and stray-devices the name can be used as the ID",
             "name": "id",
             "in": "query"
           },
@@ -773,15 +753,7 @@
             "in": "path",
             "required": true
           }
-        ],
-        "responses": {
-          "200": {
-            "description": "Found. A response header will be returned with possible operations."
-          },
-          "404": {
-            "description": "Not Found."
-          }
-        }
+        ]
       }
     },
     "/api/{objs}/{id}/all": {
@@ -799,7 +771,7 @@
           {
             "type": "string",
             "default": "sites",
-            "description": "Indicates the object. Only values of \"tenants\", \"sites\", \"buildings\", \"rooms\", \"racks\", \"devices\", \"stray-devices\" are acceptable",
+            "description": "Indicates the object. Only values of \"sites\", \"domains\" \"buildings\", \"rooms\", \"racks\", \"devices\", \"stray-devices\" are acceptable",
             "name": "objs",
             "in": "query",
             "required": true
@@ -807,7 +779,7 @@
           {
             "type": "int",
             "default": 999,
-            "description": "ID of object. For tenants and stray-devices the name can be used as the ID",
+            "description": "ID of object. For Sites and stray-devices the name can be used as the ID",
             "name": "ID",
             "in": "query",
             "required": true
@@ -840,24 +812,16 @@
         "operationId": "GetFromObjectOptions",
         "parameters": [
           {
-            "description": "Only values of \"tenants\", \"sites\", \"buildings\", \"rooms\", \"racks\", \"devices\", and \"stray-devices\" are acceptable",
+            "description": "Only values of \"sites\", \"domains\", \"buildings\", \"rooms\", \"racks\", \"devices\", and \"stray-devices\" are acceptable",
             "name": "objs",
             "in": "query"
           },
           {
-            "description": "ID of the object.For tenants and stray-devices the name can be used as the ID",
+            "description": "ID of the object.For Sites and stray-devices the name can be used as the ID",
             "name": "id",
             "in": "query"
           }
-        ],
-        "responses": {
-          "200": {
-            "description": "Found. A response header will be returned with possible operations."
-          },
-          "404": {
-            "description": "Nothing Found."
-          }
-        }
+        ]
       }
     },
     "/api/{objs}?": {
@@ -874,7 +838,7 @@
           {
             "type": "string",
             "default": "sites",
-            "description": "Indicates the object. Only values of \"tenants\", \"sites\", \"buildings\", \"rooms\", \"racks\", \"devices\", \"room-templates\", \"obj-templates\",\"acs\",\"panels\", \"groups\", \"corridors\", \"sensors\", \"stray-devices\" and \"stray-sensors\" are acceptable",
+            "description": "Indicates the object. Only values of \"domains\", \"sites\", \"buildings\", \"rooms\", \"racks\", \"devices\", \"room-templates\", \"obj-templates\",\"bldg-templates\",\"acs\",\"panels\", \"groups\", \"corridors\", \"sensors\", \"stray-devices\" and \"stray-sensors\" are acceptable",
             "name": "objs",
             "in": "query",
             "required": true
@@ -882,21 +846,21 @@
           {
             "type": "string",
             "default": "INFINITI",
-            "description": "Name of tenant",
+            "description": "Name of Site",
             "name": "Name",
             "in": "query"
           },
           {
             "type": "string",
             "default": "Auto",
-            "description": "Category of Tenant (ex. Consumer Electronics, Medical)",
+            "description": "Category of Site (ex. Consumer Electronics, Medical)",
             "name": "Category",
             "in": "query"
           },
           {
             "type": "string",
             "default": "High End Auto",
-            "description": "Domain of the Tenant",
+            "description": "Domain of the Site",
             "name": "Domain"
           },
           {
@@ -905,15 +869,7 @@
             "name": "Attributes",
             "in": "query"
           }
-        ],
-        "responses": {
-          "204": {
-            "description": "Found. A response body will be returned with a meaningful message."
-          },
-          "404": {
-            "description": "Not found. An error message will be returned."
-          }
-        }
+        ]
       }
     },
     "/api/{obj}": {
@@ -930,7 +886,7 @@
           {
             "type": "string",
             "default": "sites",
-            "description": "Indicates the Object. Only values of \"tenants\", \"sites\", \"buildings\", \"rooms\", \"racks\", \"devices\", \"acs\", \"panels\", \"cabinets\", \"groups\", \"corridors\", \"room-templates\", \"obj-templates\", \"sensors\", \"stray-devices\", \"stray-sensors\" are acceptable",
+            "description": "Indicates the Object. Only values of \"sites\",\"domains\", \"buildings\", \"rooms\", \"racks\", \"devices\", \"acs\", \"panels\", \"cabinets\", \"groups\", \"corridors\", \"room-templates\", \"obj-templates\", \"bldg-templates\",\"sensors\", \"stray-devices\", \"stray-sensors\" are acceptable",
             "name": "objs",
             "in": "query",
             "required": true
@@ -961,7 +917,7 @@
           {
             "type": "int",
             "default": 999,
-            "description": "All objects are linked to a parent with the exception of Tenant since it has no parent",
+            "description": "All objects are linked to a parent with the exception of Site since it has no parent",
             "name": "ParentID",
             "required": true
           },
@@ -994,7 +950,7 @@
     },
     "/api/{obj}/{id}/{subent}": {
       "get": {
-        "description": "For Example: /api/tenants/{id}/buildings\nWill return all buildings of a tenant\nReturns JSON body with all subobjects under the Object",
+        "description": "For Example: /api/sites/{id}/buildings\nWill return all buildings of a site\nReturns JSON body with all subobjects under the Object",
         "produces": [
           "application/json"
         ],
@@ -1006,8 +962,8 @@
         "parameters": [
           {
             "type": "string",
-            "default": "tenants",
-            "description": "Indicates the object. Only values of \"tenants\", \"sites\", \"buildings\", \"rooms\" are acceptable",
+            "default": "sites",
+            "description": "Indicates the object. Only values of \"sites\", \"buildings\", \"rooms\" are acceptable",
             "name": "obj",
             "in": "query",
             "required": true
@@ -1049,12 +1005,12 @@
         "operationId": "GetFromObjectOptions",
         "parameters": [
           {
-            "description": "Only values of \"tenants\", \"sites\", \"buildings\", \"rooms\", \"racks\", \"devices\", and \"stray-devices\" are acceptable",
+            "description": "Only values of \"sites\", \"domains\", \"buildings\", \"rooms\", \"racks\", \"devices\", and \"stray-devices\" are acceptable",
             "name": "objs",
             "in": "query"
           },
           {
-            "description": "ID of the object. For stray-devices and tenants the name can be used as the ID.",
+            "description": "ID of the object. For stray-devices and Sites the name can be used as the ID.",
             "name": "id",
             "in": "query"
           },
@@ -1063,15 +1019,7 @@
             "name": "subent",
             "in": "query"
           }
-        ],
-        "responses": {
-          "200": {
-            "description": "Found. A response body will be returned with a meaningful message."
-          },
-          "404": {
-            "description": "Nothing Found."
-          }
-        }
+        ]
       }
     }
   },

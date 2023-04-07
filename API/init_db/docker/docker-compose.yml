@@ -1,0 +1,112 @@
+version: '3.9'
+
+services:
+  dbft_api:
+    build: ${API_BUILD_DIR}#${API_BRANCH}
+    network_mode: "host"
+    image: dbft/api:dockerfile
+    container_name: ${COMPOSE_PROJECT_NAME}t_api
+    environment:
+      - api_port=${API_PORT}
+      - db_host=0.0.0.0
+      - db_port=${DB_PORT}
+      - db_user=${TENANT}
+      - db_pass=123
+      - db=${TENANT}
+      - token_password=yourSecretPasswordGoesHere
+    ports:
+      - ${API_PORT}:${API_PORT}
+    depends_on:
+      - dbft_db
+    restart: on-failure:10
+
+    #Specifying the environment variables here is the superior option compared to inserting
+    #the .env file and building an image. Here you can specify all the parameters of the
+    #the API 
+
+  dbft_db:
+    image: mongo:latest
+    container_name: ${COMPOSE_PROJECT_NAME}_db
+    environment:
+        - DB_NAME=${TENANT}
+        - CUSTOMER_API_PASS=123
+        - CUSTOMER_RECORDS_DB=ogree
+
+        - MONGO_INITDB_ROOT_USERNAME=admin
+        - MONGO_INITDB_ROOT_PASSWORD=adminpassword
+
+        - ADMIN_DB=admin
+        - SUPER_USER=super
+        - SUPER_PASS=superpassword
+
+        - GUARD_USER=guard
+        - GUARD_PASS=adminpassword
+    volumes:
+        -  ${MONGO_INIT}/init.sh:/docker-entrypoint-initdb.d/init.sh
+        -  ${MONGO_INIT}/dbft.js:/home/dbft.js
+        -  ${MONGO_INIT}/addCustomer.sh:/home/addCustomer.sh
+        -  ${MONGO_INIT}/addCustomer.js:/home/addCustomer.js
+    ports:
+      - ${DB_PORT}:27017
+    #By default MongoDB will attempt to take port 27017, so just map it
+    #for ease of use
+
+
+  # Deploying the CLI in an orchestrated fashion does 
+  # not work since containers exit when a program
+  # is done executing. Instead make container 'hang'
+  # to allow for on demand access. 
+  # The 'tty: true' entry allows the container to hang 
+  # by using the container's shell
+  # The cli binary is found @ /home/cli
+
+  # Environment notes:
+  # Drawable -> You should specify a string with multiple objects separated by ':'
+  # Updates -> Same thing as Drawable
+  # {obj}DrawableJson -> Specify them as usual, objDrawableJson="xyz"
+  dbft_cli:
+    build: ${CLI_BUILD_DIR}#${CLI_BRANCH}
+    #build: ${LOCAL_CLI_BUILD_DIR}
+    network_mode: "host"
+    image: dbft/cli:dockerfile
+    container_name: ${COMPOSE_PROJECT_NAME}_cli
+    tty: true
+    environment:
+      - APIKEY=YourAPIKEYGoesHere
+      - APIURL=http://0.0.0.0:${API_PORT}
+      - DrawLimit=1
+      - Drawable=all
+      - tenantDrawableJson=./other/drawTemplates/tenant.json
+      - UnityTimeout=10ms
+      - UnityURL=localhost:5500
+      - Updates=all
+      - User=new@yo.com
+    depends_on:
+      - dbft_api
+
+  # You will have to retrieve the swagger.json file from
+  # the api root dir and supply it here 
+  api_docs_ui:
+    image: swaggerapi/swagger-ui:latest
+    container_name: api_docs_ui
+    network_mode: "bridge"
+    volumes:
+      - ${API_DOC_DIR}:/home # Must contain the swagger.json file
+    ports:
+      - ${API_DOC_UI_PORT}:8080
+    environment:
+      SWAGGER_JSON: /home/swagger.json
+
+  dbft_webapp:
+    build: 
+      #context: ${APP_BUILD_DIR}#${APP_BRANCH}
+      context: ${LOCAL_APP_BUILD_DIR}
+      args:
+      - API_URL=localhost:${API_PORT}
+    image: dbft/webapp:dockerfile
+    container_name: ${COMPOSE_PROJECT_NAME}_webapp
+    ports:
+      - ${WEB_PORT}:80
+    depends_on:
+      - dbft_api
+    restart: on-failure:10

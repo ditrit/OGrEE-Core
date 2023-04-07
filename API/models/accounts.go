@@ -39,10 +39,12 @@ func (account *Account) Validate() (map[string]interface{}, bool) {
 
 	//Error checking and duplicate emails
 	ctx, cancel := u.Connect()
-	err := GetDB().Collection("account").FindOne(ctx, bson.M{"email": account.Email}).Err() //.Where("email = ?", account.Email).First(temp).Error
+	err := GetDB().Collection("account").FindOne(ctx, bson.M{"email": account.Email}).Err()
 	if err != nil && err != mongo.ErrNoDocuments {
-		return u.Message(false, "Connection error : "+err.Error()), false
+		println("Error while creating account:", err.Error())
+		return u.Message(false, "Connection error. Please retry"), false
 	}
+
 	//User already exists
 	if err == nil {
 		return u.Message(false, "Error: User already exists"), false
@@ -63,9 +65,12 @@ func (account *Account) Create() (map[string]interface{}, string) {
 	account.Password = string(hashedPassword)
 
 	ctx, cancel := u.Connect()
-	_, e := GetDB().Collection("account").InsertOne(ctx, account)
-	if e != nil {
-		return u.Message(false, "Connection error please retry again later"), "internal"
+	search := GetDB().Collection("account").FindOne(ctx, bson.M{"email": account.Email})
+	if search.Err() != nil {
+		GetDB().Collection("account").InsertOne(ctx, account)
+	} else {
+		return u.Message(false,
+			"Error: User already exists:"), "clientError"
 	}
 
 	defer cancel()
@@ -89,6 +94,7 @@ func Login(email, password string) (map[string]interface{}, string) {
 
 	ctx, cancel := u.Connect()
 	err := GetDB().Collection("account").FindOne(ctx, bson.M{"email": email}).Decode(account)
+	//err := GetDB().Collection("accounts").FindOne(ctx, bson.M{"email": email}).Decode(account)
 	//err := GetDB().Table("account").Where("email = ?", email).First(account).Error
 	if err != nil {
 		if err == mongo.ErrNoDocuments {

@@ -2,8 +2,30 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "title": "OGrEE Site Schema",
   "type": "object",
-  "$ref": "refs/base.json",
   "properties": {
+    "description": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "category": {
+      "type": "string"
+    },
+    "domain": {
+      "type": "string"
+    },
+    "createdDate": {
+    },
+    "lastUpdated": {
+    },
+    "name": {
+      "type": "string",
+      "pattern":"^\\w(\\w|\\-)*$"
+    },
+    "id": {
+      "type": "string"
+    },
     "attributes": {
       "type": "object",
       "properties": {
@@ -22,6 +44,14 @@
       }
     }
   },
+  "additionalProperties":  false,
+  "required": [
+    "category",
+    "description",
+    "domain",
+    "name",
+    "attributes"
+  ],
   "examples": [
     {
       "attributes": {

@@ -4,10 +4,8 @@ services:
   ogree_api:
     build:
       context: .
-      dockerfile: dev.dockerfile
     env_file: ./dev.env
     container_name: ogree_api
-    entrypoint: /home/main
     depends_on:
       - mongodb
       - api_docs
@@ -28,15 +26,16 @@ services:
       - ogree_backend
 
   api_docs:
-    image: quay.io/goswagger/swagger:latest
+    image: swaggerapi/swagger-ui:latest
     container_name: api_docs
-    command: serve  --port=3003 --no-open "/home/swagger.json"
     volumes:
       - ./apiDocs:/home
     ports:
-      - 3003:3003
+      - 3003:8080
     networks:
       - ogree_backend
+    environment:
+      SWAGGER_JSON: /home/swagger.json
 
 networks:
   ogree_backend:

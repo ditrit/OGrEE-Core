@@ -4,34 +4,30 @@
 // subscribes
 //////
 
-//
-// CONSTANT DECLARATIONS
-//
-DB_NAME;
-CUSTOMER_RECORDS_DB;
-ADMIN_USER;
-ADMIN_PASS;
-
-
-//Check if host was passed as argument
-//Otherwise use localhost
-try {
-  host;
-} catch(e) {
-  host = "localhost:27017"
-}
 
 //Authenticate first
-var m = new Mongo(host)
+var m = new Mongo()
 var authDB = m.getDB("test")
-authDB.auth(ADMIN_USER,ADMIN_PASS);
+authDB.auth('admin','adminpassword');
+
+
+//Check if dbName was passed as argument
+//Otherwise use "ogreeDevelop"
+try {
+  dbName;
+} catch(e) {
+  dbName = "ogreeDevelop"
+}
+//var m = new Mongo()
+var db = m.getDB(dbName)
+
 
 
 //Update customer record table
-var odb = m.getDB(CUSTOMER_RECORDS_DB)
-odb.customer.insertOne({"name": DB_NAME});
+var odb = m.getDB("ogree")
+odb.customer.insertOne({"name": dbName});
 
-var db = m.getDB("ogree"+DB_NAME)
+
 db.createCollection('account');
 db.createCollection('domain');
 db.createCollection('site');
@@ -43,10 +39,10 @@ db.createCollection('device');
 //Template Collections
 db.createCollection('room_template');
 db.createCollection('obj_template');
-db.createCollection('bldg_template');
 
 //Group Collections
 db.createCollection('group');
+
 
 //Nonhierarchal objects
 db.createCollection('ac');
@@ -59,7 +55,8 @@ db.createCollection('sensor');
 db.createCollection('stray_device');
 db.createCollection('stray_sensor');
 
-//Enfore unique Tenant Names
+
+//Enfore unique Domain Names
 db.domain.createIndex( {parentId:1, name:1}, { unique: true } );
 
 //Enforce unique children
@@ -70,10 +67,11 @@ db.rack.createIndex({parentId:1, name:1}, { unique: true });
 db.device.createIndex({parentId:1, name:1}, { unique: true });
 //Enforcing that the Parent Exists is done at the ORM Level for now
 
+
 //Make slugs unique identifiers for templates
 db.room_template.createIndex({slug:1}, { unique: true });
 db.obj_template.createIndex({slug:1}, { unique: true });
-db.bldg_template.createIndex({slug:1}, { unique: true });
+
 
 //Unique children restriction for nonhierarchal objects and sensors
 db.ac.createIndex({parentId:1, name:1}, { unique: true });
@@ -90,3 +88,4 @@ db.group.createIndex({parentId:1, name:1}, { unique: true });
 //Enforce unique stray objects
 db.stray_device.createIndex({parentId:1,name:1}, { unique: true });
 db.stray_sensor.createIndex({name:1}, { unique: true });
+
