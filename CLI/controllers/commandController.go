@@ -290,10 +290,16 @@ func GetSlot(rack map[string]any, location string) (map[string]any, error) {
 		return nil, nil
 	}
 	template := templateAny.(string)
+	if template == "" {
+		return nil, nil
+	}
 	URL := State.APIURL + "/api/obj-templates/" + template
 	resp, err := models.Send("GET", URL, GetKey(), nil)
 	if err != nil {
 		return nil, err
+	}
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("cannot get template %s", template)
 	}
 	parsedResp := ParseResponse(resp, err, "GET")
 	slots, ok := parsedResp["data"].(map[string]any)["slots"]
