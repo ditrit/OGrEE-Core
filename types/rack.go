@@ -6,42 +6,9 @@ import (
 )
 
 type RackOrientation string
-
-const (
-	RackFront RackOrientation = "front"
-	RackRear  RackOrientation = "rear"
-	RackLeft  RackOrientation = "left"
-	RackRight RackOrientation = "right"
-)
-
 type RackUnit string
-
-const (
-	RackMM RackUnit = "mm"
-	RackCM RackUnit = "cm"
-	RackM  RackUnit = "m"
-	RackU  RackUnit = "u"
-	RackOU RackUnit = "ou"
-	RackF  RackUnit = "f"
-)
-
 type LabelPosition string
-
-const (
-	LabelFront     LabelPosition = "front"
-	LabelRear      LabelPosition = "rear"
-	LabelFrontrear LabelPosition = "frontrear"
-	LabelTop       LabelPosition = "top"
-	LabelRight     LabelPosition = "right"
-	LabelLeft      LabelPosition = "left"
-)
-
 type ComponentOrientation string
-
-const (
-	ComponentHorizontal ComponentOrientation = "horizontal"
-	ComponentVertical   ComponentOrientation = "vertical"
-)
 
 type Component struct {
 	Factor     string                `json:"factor,omitempty"`

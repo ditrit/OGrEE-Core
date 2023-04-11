@@ -4,13 +4,6 @@ import "encoding/json"
 
 type DeviceOrientation string
 
-const (
-	DeviceFront        DeviceOrientation = "front"
-	DeviceRear         DeviceOrientation = "rear"
-	DeviceFrontflipped DeviceOrientation = "frontflipped"
-	DeviceRearflipped  DeviceOrientation = "rearflipped"
-)
-
 type DeviceTemplate = RackTemplate
 
 type Device struct {

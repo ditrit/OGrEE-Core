@@ -4,11 +4,6 @@ import "encoding/json"
 
 type Temperature string
 
-const (
-	COLD Temperature = "cold"
-	WARM Temperature = "warm"
-)
-
 type Corridor struct {
 	Header
 	Content     string      `json:"content"`

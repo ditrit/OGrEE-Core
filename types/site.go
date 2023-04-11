@@ -4,13 +4,6 @@ import "encoding/json"
 
 type SiteOrientation string
 
-const (
-	EN SiteOrientation = "EN"
-	NW SiteOrientation = "NW"
-	WS SiteOrientation = "WS"
-	SE SiteOrientation = "SE"
-)
-
 type Site struct {
 	Header
 	Orientation    *SiteOrientation `json:"orientation,omitempty"`

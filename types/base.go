@@ -7,8 +7,12 @@ import (
 )
 
 type Vector2 struct {
-	X float64 `json:"x"`
-	Y float64 `json:"y"`
+	X float64
+	Y float64
+}
+
+func (v Vector2) MarshalJSON() ([]byte, error) {
+	return json.Marshal([]float64{v.X, v.Y})
 }
 
 type Vector2Wrapper struct {
@@ -29,9 +33,13 @@ func (v *Vector2Wrapper) UnmarshalJSON(data []byte) error {
 }
 
 type Vector3 struct {
-	X float64 `json:"x"`
-	Y float64 `json:"y"`
-	Z float64 `json:"z"`
+	X float64
+	Y float64
+	Z float64
+}
+
+func (v Vector3) MarshalJSON() ([]byte, error) {
+	return json.Marshal([]float64{v.X, v.Y, v.Z})
 }
 
 type Vector3Wrapper struct {
@@ -52,24 +60,8 @@ func (v *Vector3Wrapper) UnmarshalJSON(data []byte) error {
 }
 
 type Color string
-
 type MetricImperialUnit string
-
-const (
-	MetricMM MetricImperialUnit = "mm"
-	MetricCM MetricImperialUnit = "cm"
-	MetricM  MetricImperialUnit = "m"
-	MetricF  MetricImperialUnit = "f"
-)
-
 type FloorMetric string
-
-const (
-	FloorM FloorMetric = "m"
-	FloorT FloorMetric = "t"
-	FloorF FloorMetric = "f"
-)
-
 type Slug string
 
 type Header struct {
