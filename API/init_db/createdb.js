@@ -4,32 +4,39 @@
 // subscribes
 //////
 
-//
-// CONSTANT DECLARATIONS
-//
-DB_NAME;
-CUSTOMER_RECORDS_DB;
-ADMIN_USER;
-ADMIN_PASS;
-
-
-//Check if host was passed as argument
-//Otherwise use localhost
 try {
   host;
 } catch(e) {
   host = "localhost:27017"
 }
-
-//Authenticate first
 var m = new Mongo(host)
-var authDB = m.getDB("test")
-authDB.auth(ADMIN_USER,ADMIN_PASS);
 
+try {
+  isTest;
+} catch(e) {
+  isTest = false
+}
 
-//Update customer record table
-var odb = m.getDB(CUSTOMER_RECORDS_DB)
-odb.customer.insertOne({"name": DB_NAME});
+if (isTest) {
+  try {
+    DB_NAME;
+  } catch(e) {
+    DB_NAME = "AutoTest"
+  }
+} else {
+  DB_NAME;
+  CUSTOMER_RECORDS_DB;
+  ADMIN_USER;
+  ADMIN_PASS;
+
+  //Authenticate first
+  var authDB = m.getDB("test")
+  authDB.auth(ADMIN_USER,ADMIN_PASS);
+
+  //Update customer record table
+  var odb = m.getDB(CUSTOMER_RECORDS_DB)
+  odb.customer.insertOne({"name": DB_NAME});
+}
 
 var db = m.getDB("ogree"+DB_NAME)
 db.createCollection('account');

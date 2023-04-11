@@ -39,7 +39,7 @@ jobs:
         sudo apt-get install -y mongodb-mongosh
         
     - name: Create database
-      run: mongosh localhost:27017/ogree ./init_db/createdb.js
+      run: mongosh localhost:27017/ogree ./init_db/createdb.js --eval 'var isTest=true'
 
     - name: Build
       run: make

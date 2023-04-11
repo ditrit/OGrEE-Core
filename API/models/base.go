@@ -36,7 +36,7 @@ func init() {
 	pass := os.Getenv("db_pass")
 	dbName := "ogree" + os.Getenv("db")
 	if strings.HasSuffix(os.Args[0], ".test") {
-		dbName = "autoTest"
+		dbName = "ogreeAutoTest"
 	}
 
 	println("USER:", user)
