@@ -86,7 +86,7 @@
       "description": [
           "Optix XXX - Dual 9-Port Wavelength Selective Switching Board"
       ],
-      "domain": "DEMO",
+      "domain": "domainTest",
       "name": "deviceName",
       "parentId": "xxxx5a111ac5f3b6f313xxxx"
     }

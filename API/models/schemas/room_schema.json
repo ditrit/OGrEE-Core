@@ -81,7 +81,7 @@
       },
       "category": "room",
       "description": [],
-      "domain": "DEMO",
+      "domain": "domainTest",
       "name": "RoomA",
       "parentId": "xxxx5a101ac5f3b6f313eebc"
     }

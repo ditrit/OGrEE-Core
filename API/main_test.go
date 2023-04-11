@@ -75,14 +75,14 @@ func TestObjects(t *testing.T) {
 	var exists bool
 
 	// Create objects from schema examples
-	for _, entInt := range []int{u.SITE, u.BLDG, u.ROOM, u.RACK, u.DEVICE} {
+	for _, entInt := range []int{u.DOMAIN, u.SITE, u.BLDG, u.ROOM, u.RACK, u.DEVICE} {
 		// Get object from schema
 		entStr := u.EntityToString(entInt)
 		data, _ := ioutil.ReadFile("models/schemas/" + entStr + "_schema.json")
 		var obj map[string]interface{}
 		json.Unmarshal(data, &obj)
 		obj = obj["examples"].([]interface{})[0].(map[string]interface{})
-		if entInt != u.SITE {
+		if entInt != u.SITE && entInt != u.DOMAIN {
 			// Add parentId
 			obj["parentId"] = parentId
 		}

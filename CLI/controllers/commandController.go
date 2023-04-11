@@ -290,6 +290,9 @@ func GetSlot(rack map[string]any, location string) (map[string]any, error) {
 		return nil, nil
 	}
 	template := templateAny.(string)
+	if template == "" {
+		return nil, nil
+	}
 	URL := State.APIURL + "/api/obj-templates/" + template
 	resp, err := models.Send("GET", URL, GetKey(), nil)
 	if err != nil {
@@ -1401,7 +1404,7 @@ func GetOCLIAtrributes(Path string, ent int, data map[string]interface{}) error 
 	data["description"] = []interface{}{}
 
 	//Retrieve Parent
-	if ent != SITE && ent != GROUP && ent != STRAY_DEV &&
+	if ent != SITE && ent != STRAY_DEV &&
 		ent != STRAYSENSOR {
 		parent, parentURL = GetObject(Path, true)
 		if parent == nil && ent != DOMAIN { //Domains can have nil parent
@@ -1741,48 +1744,6 @@ func GetOCLIAtrributes(Path string, ent int, data map[string]interface{}) error 
 	case CORIDOR:
 		//name, category, domain, pid
 		attr = data["attributes"].(map[string]interface{})
-
-		//Client demands that the group color be
-		//the same as Site/Domain thus we have
-		//to retrieve it
-		arr := strings.Split(Path, "/")
-		if len(arr) >= 2 {
-			for i := range arr {
-				if arr[i] == "Physical" {
-					siteName := arr[i+1]
-
-					//GET Site/Domain
-					r, e := models.Send("GET",
-						State.APIURL+"/api/sites/"+siteName, GetKey(), nil)
-					parsed := ParseResponse(r, e, "get color")
-					if parsed == nil {
-						msg := "Unable to retrieve color from server"
-						return fmt.Errorf(msg)
-					}
-
-					if siteData, ok := parsed["data"]; ok {
-						if site, ok := siteData.(map[string]interface{}); ok {
-							if attrInf, ok := site["attributes"]; ok {
-								if a, ok := attrInf.(map[string]interface{}); ok {
-									if colorInf, ok := a["color"]; ok {
-										if color, ok := colorInf.(string); ok {
-
-											attr["color"] = color
-										}
-									}
-								}
-							}
-						}
-					}
-
-				}
-			}
-		}
-
-		if attr["color"] == nil {
-			return fmt.Errorf("Couldn't get respective color from server")
-		}
-
 		data["domain"] = domain
 		data["parentId"] = parent["id"]
 
