@@ -45,13 +45,15 @@ func loadJsonSchemas(schemaPrefix string) {
 }
 
 func validateParent(ent string, entNum int, t map[string]interface{}) (map[string]interface{}, bool) {
-
 	if entNum == u.SITE {
 		return nil, true
 	}
 
 	//Check ParentID is valid
 	if t["parentId"] == nil || t["parentId"] == "" {
+		if entNum == u.DOMAIN || entNum == u.STRAYDEV {
+			return nil, true
+		}
 		return u.Message(false, "ParentID is not valid"), false
 	}
 	objID, err := primitive.ObjectIDFromHex(t["parentId"].(string))
@@ -209,8 +211,6 @@ func validateJsonSchema(entity int, t map[string]interface{}) (map[string]interf
 }
 
 func ValidateEntity(entity int, t map[string]interface{}) (map[string]interface{}, bool) {
-
-	//parentObj := nil
 	/*
 		TODO:
 		Need to capture device if it is a parent
@@ -224,185 +224,166 @@ func ValidateEntity(entity int, t map[string]interface{}) (map[string]interface{
 	}
 
 	// Extra checks
-	switch entity {
-	case u.SITE, u.BLDG, u.ROOM, u.RACK, u.DEVICE, u.AC,
-		u.PWRPNL, u.CABINET, u.CORRIDOR, u.SENSOR, u.GROUP:
-		//Check if Parent ID is valid
-		//returns a map[string]interface{} to hold parent entity
-		//if parent found
-		r, ok := validateParent(u.EntityToString(entity), entity, t)
+	// Check parent for objects
+	var parent map[string]interface{}
+	if entity != u.BLDGTMPL && entity != u.ROOMTMPL && entity != u.OBJTMPL {
+		var ok bool
+		parent, ok = validateParent(u.EntityToString(entity), entity, t)
 		if !ok {
-			return r, ok
-		} else if r["hierarchyName"] != nil {
-			t["hierarchyName"] = r["hierarchyName"].(string) + "." + t["name"].(string)
+			return parent, ok
+		} else if parent["hierarchyName"] != nil {
+			t["hierarchyName"] = parent["hierarchyName"].(string) + u.HN_DELIMETER + t["name"].(string)
 		} else {
-			println("WARN: Unable to set hierarchyName")
+			t["hierarchyName"] = t["name"].(string)
 		}
+	}
 
-		if entity < u.AC || entity == u.PWRPNL ||
-			entity == u.GROUP || entity == u.ROOMTMPL ||
-			entity == u.OBJTMPL || entity == u.CORRIDOR {
-			if _, ok := t["attributes"]; !ok {
-				return u.Message(false, "Attributes should be on the payload"), false
+	// Check attributes
+	if entity == u.RACK || entity == u.GROUP || entity == u.CORRIDOR {
+		if _, ok := t["attributes"]; !ok {
+			return u.Message(false, "Attributes should be on the payload"), false
+		} else {
+			if v, ok := t["attributes"].(map[string]interface{}); !ok {
+				return u.Message(false, "Attributes should be a JSON Dictionary"), false
 			} else {
-				if v, ok := t["attributes"].(map[string]interface{}); !ok {
-					return u.Message(false, "Attributes should be a JSON Dictionary"), false
-				} else {
-					switch entity {
-					case u.RACK:
-						//Ensure the name is also unique among corridors
-						req := bson.M{"name": t["name"].(string)}
-						nameCheck, _ := GetManyEntities("corridor", req, u.RequestFilters{})
-						if nameCheck != nil {
-							if len(nameCheck) != 0 {
-								msg := "Rack name must be unique among corridors and racks"
-								if nameCheck != nil {
-									println(nameCheck[0]["name"].(string))
-								}
-								return u.Message(false, msg), false
+				switch entity {
+				case u.RACK:
+					//Ensure the name is also unique among corridors
+					req := bson.M{"name": t["name"].(string)}
+					nameCheck, _ := GetManyEntities("corridor", req, u.RequestFilters{})
+					if nameCheck != nil {
+						if len(nameCheck) != 0 {
+							msg := "Rack name must be unique among corridors and racks"
+							if nameCheck != nil {
+								println(nameCheck[0]["name"].(string))
 							}
-
-						}
-
-					case u.CORRIDOR:
-						//Ensure the 2 racks are valid
-						racks := strings.Split(v["content"].(string), ",")
-						if len(racks) != 2 {
-							msg := "2 racks separated by a comma must be on the payload"
 							return u.Message(false, msg), false
-						}
-
-						//Trim Spaces because they mess up
-						//the retrieval of objects from DB
-						racks[0] = strings.TrimSpace(racks[0])
-						racks[1] = strings.TrimSpace(racks[1])
-
-						//Ensure the name is also unique among racks
-						req := bson.M{"name": t["name"].(string)}
-						nameCheck, _ := GetManyEntities("rack", req, u.RequestFilters{})
-						if nameCheck != nil {
-							if len(nameCheck) != 0 {
-								msg := "Corridor name must be unique among corridors and racks"
-								return u.Message(false, msg), false
-							}
-
-						}
-
-						//Fetch the 2 racks and ensure they exist
-						filter := bson.M{"_id": t["parentId"], "name": racks[0]}
-						orReq := bson.A{bson.D{{"name", racks[0]}}, bson.D{{"name", racks[1]}}}
-
-						filter = bson.M{"parentId": t["parentId"], "$or": orReq}
-						ans, e := GetManyEntities("rack", filter, u.RequestFilters{})
-						if e != "" {
-							msg := "The racks you specified were not found." +
-								" Please verify your input and try again"
-							println(e)
-							return u.Message(false, msg), false
-						}
-
-						if len(ans) != 2 {
-							//Request possibly mentioned same racks
-							//thus giving length of 1
-							if !(len(ans) == 1 && racks[0] == racks[1]) {
-
-								//Figure out the rack name that wasn't found
-								var notFound string
-								if racks[0] != ans[0]["name"].(string) {
-									notFound = racks[0]
-								} else {
-									notFound = racks[1]
-								}
-								msg := "Unable to get the rack: " + notFound + ". Please check your inventory and try again"
-								println("LENGTH OF u.RACK CHECK:", len(ans))
-								println("CORRIDOR PARENTID: ", t["parentId"].(string))
-								return u.Message(false, msg), false
-							}
-
-						}
-
-						//Set the color manually based on temp. as specified by client
-						if v["temperature"] == "warm" {
-							v["color"] = "990000"
-						} else if v["temperature"] == "cold" {
-							v["color"] = "000099"
-						}
-
-					case u.GROUP:
-						objects := strings.Split(v["content"].(string), ",")
-						if len(objects) <= 1 {
-							if objects[0] == "" {
-								msg := "objects separated by a comma must be" +
-									" on the payload"
-								return u.Message(false, msg), false
-							}
-
-						}
-
-						//Ensure objects are all unique
-						if _, ok := EnsureUnique(objects); !ok {
-							msg := "The group cannot have duplicate objects"
-							return u.Message(false, msg), false
-						}
-
-						//Ensure objects all exist
-						orReq := bson.A{}
-						for i := range objects {
-							orReq = append(orReq, bson.D{{"name", objects[i]}})
-						}
-						filter := bson.M{"parentId": t["parentId"], "$or": orReq}
-
-						//If parent is rack, retrieve devices
-						if r["parent"].(string) == "rack" {
-							ans, ok := GetManyEntities("device", filter, u.RequestFilters{})
-							if ok != "" {
-								return u.Message(false, ok), false
-							}
-							if len(ans) != len(objects) {
-								msg := "Unable to verify objects in specified group" +
-									" please check and try again"
-								return u.Message(false, msg), false
-							}
-
-						} else if r["parent"].(string) == "room" {
-
-							//If parent is room, retrieve corridors and racks
-							corridors, e1 := GetManyEntities("corridor", filter, u.RequestFilters{})
-							if e1 != "" {
-								return u.Message(false, e1), false
-							}
-
-							racks, e2 := GetManyEntities("rack", filter, u.RequestFilters{})
-							if e2 != "" {
-								return u.Message(false, e1), false
-							}
-							if len(racks)+len(corridors) != len(objects) {
-								msg := "Some object(s) could be not be found. " +
-									"Please check and try again"
-								return u.Message(false, msg), false
-							}
 						}
 
 					}
+
+				case u.CORRIDOR:
+					//Ensure the 2 racks are valid
+					racks := strings.Split(v["content"].(string), ",")
+					if len(racks) != 2 {
+						msg := "2 racks separated by a comma must be on the payload"
+						return u.Message(false, msg), false
+					}
+
+					//Trim Spaces because they mess up
+					//the retrieval of objects from DB
+					racks[0] = strings.TrimSpace(racks[0])
+					racks[1] = strings.TrimSpace(racks[1])
+
+					//Ensure the name is also unique among racks
+					req := bson.M{"name": t["name"].(string)}
+					nameCheck, _ := GetManyEntities("rack", req, u.RequestFilters{})
+					if nameCheck != nil {
+						if len(nameCheck) != 0 {
+							msg := "Corridor name must be unique among corridors and racks"
+							return u.Message(false, msg), false
+						}
+
+					}
+
+					//Fetch the 2 racks and ensure they exist
+					filter := bson.M{"_id": t["parentId"], "name": racks[0]}
+					orReq := bson.A{bson.D{{"name", racks[0]}}, bson.D{{"name", racks[1]}}}
+
+					filter = bson.M{"parentId": t["parentId"], "$or": orReq}
+					ans, e := GetManyEntities("rack", filter, u.RequestFilters{})
+					if e != "" {
+						msg := "The racks you specified were not found." +
+							" Please verify your input and try again"
+						println(e)
+						return u.Message(false, msg), false
+					}
+
+					if len(ans) != 2 {
+						//Request possibly mentioned same racks
+						//thus giving length of 1
+						if !(len(ans) == 1 && racks[0] == racks[1]) {
+
+							//Figure out the rack name that wasn't found
+							var notFound string
+							if racks[0] != ans[0]["name"].(string) {
+								notFound = racks[0]
+							} else {
+								notFound = racks[1]
+							}
+							msg := "Unable to get the rack: " + notFound + ". Please check your inventory and try again"
+							println("LENGTH OF u.RACK CHECK:", len(ans))
+							println("CORRIDOR PARENTID: ", t["parentId"].(string))
+							return u.Message(false, msg), false
+						}
+
+					}
+
+					//Set the color manually based on temp. as specified by client
+					if v["temperature"] == "warm" {
+						v["color"] = "990000"
+					} else if v["temperature"] == "cold" {
+						v["color"] = "000099"
+					}
+
+				case u.GROUP:
+					objects := strings.Split(v["content"].(string), ",")
+					if len(objects) <= 1 {
+						if objects[0] == "" {
+							msg := "objects separated by a comma must be" +
+								" on the payload"
+							return u.Message(false, msg), false
+						}
+
+					}
+
+					//Ensure objects are all unique
+					if _, ok := EnsureUnique(objects); !ok {
+						msg := "The group cannot have duplicate objects"
+						return u.Message(false, msg), false
+					}
+
+					//Ensure objects all exist
+					orReq := bson.A{}
+					for i := range objects {
+						orReq = append(orReq, bson.D{{"name", objects[i]}})
+					}
+					filter := bson.M{"parentId": t["parentId"], "$or": orReq}
+
+					//If parent is rack, retrieve devices
+					if parent["parent"].(string) == "rack" {
+						ans, ok := GetManyEntities("device", filter, u.RequestFilters{})
+						if ok != "" {
+							return u.Message(false, ok), false
+						}
+						if len(ans) != len(objects) {
+							msg := "Unable to verify objects in specified group" +
+								" please check and try again"
+							return u.Message(false, msg), false
+						}
+
+					} else if parent["parent"].(string) == "room" {
+
+						//If parent is room, retrieve corridors and racks
+						corridors, e1 := GetManyEntities("corridor", filter, u.RequestFilters{})
+						if e1 != "" {
+							return u.Message(false, e1), false
+						}
+
+						racks, e2 := GetManyEntities("rack", filter, u.RequestFilters{})
+						if e2 != "" {
+							return u.Message(false, e1), false
+						}
+						if len(racks)+len(corridors) != len(objects) {
+							msg := "Some object(s) could be not be found. " +
+								"Please check and try again"
+							return u.Message(false, msg), false
+						}
+					}
+
 				}
 			}
 		}
-
-	case u.STRAYDEV, u.STRAYSENSOR:
-		//Check for parent if PID provided
-		//Need to check for uniqueness before inserting
-		//this is helpful for the validation endpoints
-		ctx, cancel := u.Connect()
-		entStr := u.EntityToString(entity)
-
-		if c, _ := GetDB().Collection(entStr).CountDocuments(ctx,
-			bson.M{"name": t["name"]}); c != 0 {
-			msg := "Error a " + entStr + " with the name provided already exists." +
-				"Please provide a unique name"
-			return u.Message(false, msg), false
-		}
-		defer cancel()
-
 	}
 
 	//Successfully validated the Object

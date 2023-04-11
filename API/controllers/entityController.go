@@ -44,23 +44,6 @@ func Disp(x map[string]interface{}) {
 	println("JSON: ", string(jx))
 }
 
-// NOT IN USE
-// 'Flattens' the map[string]interface{}
-// for PATCH requests
-func Flatten(prefix string, src map[string]interface{}, dest map[string]interface{}) {
-	if len(prefix) > 0 {
-		prefix += "."
-	}
-	for k, v := range src {
-		switch child := v.(type) {
-		case map[string]interface{}:
-			Flatten(prefix+k, child, dest)
-		default:
-			dest[prefix+k] = v
-		}
-	}
-}
-
 func DispRequestMetaData(r *http.Request) {
 	fmt.Println("URL:", r.URL.String())
 	fmt.Println("IP-ADDR: ", r.RemoteAddr)
@@ -388,9 +371,7 @@ var GetEntity = func(w http.ResponseWriter, r *http.Request) {
 		data, e1 = models.GetEntity(bson.M{"_id": x}, entityStr, filters)
 
 	} else if id, e = mux.Vars(r)["name"]; e { //GET By String
-		if entityStr == "site" || entityStr == "domain" || entityStr == "stray_device" {
-			data, e1 = models.GetEntity(bson.M{"name": id}, entityStr, filters) //GET By Name
-		} else if strings.Contains(entityStr, "template") {
+		if strings.Contains(entityStr, "template") {
 			data, e1 = models.GetEntity(bson.M{"slug": id}, entityStr, filters) //GET By Slug (template)
 		} else {
 			println(id)
@@ -798,8 +779,6 @@ var UpdateEntity = func(w http.ResponseWriter, r *http.Request) {
 		var req bson.M
 		if strings.Contains(entity, "template") {
 			req = bson.M{"slug": name}
-		} else if entity == "site" {
-			req = bson.M{"name": name}
 		} else {
 			req = bson.M{"hierarchyName": name}
 		}
@@ -1414,11 +1393,7 @@ var GetHierarchyByName = func(w http.ResponseWriter, r *http.Request) {
 
 	// Get hierarchy
 	var req primitive.M
-	if entity == "site" {
-		req = bson.M{"name": name}
-	} else {
-		req = bson.M{"hierarchyName": name}
-	}
+	req = bson.M{"hierarchyName": name}
 	data, e1 := models.GetEntity(req, entity, filters)
 	if limit >= 1 && e1 == "" {
 		data["children"], e1 = models.GetHierarchyByName(entity, name, limit, filters)

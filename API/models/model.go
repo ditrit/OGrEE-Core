@@ -252,7 +252,7 @@ func GetCompleteHierarchy() (map[string]interface{}, string) {
 
 // fillHierarchyMap: add hierarchyName to the children array of its parent
 func fillHierarchyMap(hierarchyName string, data map[string][]string) {
-	i := strings.LastIndex(hierarchyName, ".")
+	i := strings.LastIndex(hierarchyName, u.HN_DELIMETER)
 	if i > 0 {
 		parent := hierarchyName[:i]
 		data[parent] = append(data[parent], hierarchyName)
@@ -289,14 +289,10 @@ func GetSiteParentTempUnit(id string) (string, string) {
 				break
 			} else {
 				// Find its parent site
-				nameSlice := strings.Split(data["hierarchyName"].(string), ".")
-				//if len(nameSlice) < 2 { // REMOVE IT FOR DBFORTENANTS
-				//	return "", "Could not find parent site for given object"
-				//}
-				siteName := nameSlice[1] // CONSIDER SITE AS 0
+				nameSlice := strings.Split(data["hierarchyName"].(string), u.HN_DELIMETER)
+				siteName := nameSlice[0] // CONSIDER SITE AS 0
 				err := db.Collection("site").FindOne(ctx, bson.M{"hierarchyName": siteName}).Decode(&data)
 				if err != nil {
-					// id not found in any collection
 					return "", "Could not find parent site for given object"
 				}
 			}
@@ -621,7 +617,7 @@ func UpdateEntity(ent string, req bson.M, t map[string]interface{}, isPatch bool
 // update their hierarchyName with new parent name
 func propagateParentNameChange(ctx context.Context, oldParentName, newName string, entityInt int) {
 	// Find all objects containing parent name
-	req := bson.M{"hierarchyName": primitive.Regex{Pattern: oldParentName + ".", Options: ""}}
+	req := bson.M{"hierarchyName": primitive.Regex{Pattern: oldParentName + u.HN_DELIMETER, Options: ""}}
 	// For each object found, replace old name by new
 	update := bson.D{{
 		Key: "$set", Value: bson.M{

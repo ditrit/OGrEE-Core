@@ -22,9 +22,6 @@
           "type": "string",
           "pattern":"^\\w(\\w|\\-)*$"
         },
-        "hierarchyName": {
-          "type": "string"
-        },
         "id": {
           "type": "string"
         },

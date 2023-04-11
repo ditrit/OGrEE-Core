@@ -39,6 +39,8 @@ const (
 	STRAYSENSOR
 )
 
+const HN_DELIMETER = "." // hierarchyName path delimiter
+
 type RequestFilters struct {
 	FieldsToShow []string `schema:"fieldOnly"`
 	StartDate    string   `schema:"startDate"`
@@ -207,7 +209,7 @@ func EntityStrToInt(entity string) int {
 
 func HierachyNameToEntity(name string) []int {
 	resp := []int{STRAYDEV} // it can always be a stray
-	switch strings.Count(name, ".") {
+	switch strings.Count(name, HN_DELIMETER) {
 	case 0:
 		resp = append(resp, SITE)
 	case 1:
@@ -228,6 +230,8 @@ func HierachyNameToEntity(name string) []int {
 
 func GetParentOfEntityByInt(entity int) int {
 	switch entity {
+	case DOMAIN:
+		return DOMAIN
 	case AC, PWRPNL, CABINET, CORRIDOR:
 		return ROOM
 	case SENSOR:
