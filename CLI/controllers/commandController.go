@@ -1503,7 +1503,6 @@ func GetOCLIAtrributes(Path string, ent int, data map[string]interface{}) error 
 		baseAttrs := map[string]interface{}{
 			"floorUnit": "t",
 			"posXYUnit": "m", "sizeUnit": "m",
-			"height":     "5",
 			"heightUnit": "m"}
 
 		MergeMaps(attr, baseAttrs, false)
@@ -1711,9 +1710,7 @@ func GetOCLIAtrributes(Path string, ent int, data map[string]interface{}) error 
 
 		baseAttrs := map[string]interface{}{
 			"orientation": "front",
-			"size":        "{\"x\":5,\"y\":5}",
 			"sizeUnit":    "mm",
-			"height":      "5",
 			"heightUnit":  "mm",
 		}
 
