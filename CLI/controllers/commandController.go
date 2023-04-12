@@ -1389,7 +1389,6 @@ func GetOCLIAtrributes(Path string, ent int, data map[string]interface{}) error 
 	var attr map[string]interface{}
 	var parent map[string]interface{}
 	var domain string
-	var parentURL string
 
 	ogPath := Path
 	Path = path.Dir(Path)
@@ -1406,25 +1405,17 @@ func GetOCLIAtrributes(Path string, ent int, data map[string]interface{}) error 
 	//Retrieve Parent
 	if ent != SITE && ent != STRAY_DEV &&
 		ent != STRAYSENSOR {
-		parent, parentURL = GetObject(Path, true)
+		parent, _ = GetObject(Path, true)
 		if parent == nil && ent != DOMAIN { //Domains can have nil parent
 			return fmt.Errorf("The parent was not found in path")
 		}
-
-		//Retrieve parent name to assign as domain for objects
-		//Not applicable to domain objects
-		if ent != DOMAIN {
-			tmp := strings.Split(parentURL, State.APIURL+"/api/sites/")
-
-			domIDX := strings.Index(tmp[1], "/")
-			if domIDX == -1 {
-				domain = tmp[1]
-			} else {
-				domain = tmp[1][:domIDX]
-			}
-		}
-
 	}
+
+	// Set default domain
+	if ent != DOMAIN {
+		domain = State.Customer
+	}
+
 	var err error
 	switch ent {
 	case DOMAIN:
@@ -1438,7 +1429,7 @@ func GetOCLIAtrributes(Path string, ent int, data map[string]interface{}) error 
 
 	case SITE:
 		//Default values
-		data["domain"] = data["name"]
+		data["domain"] = domain
 		//data["parentId"] = parent["id"]
 		data["attributes"] = map[string]interface{}{}
 
@@ -1741,7 +1732,7 @@ func GetOCLIAtrributes(Path string, ent int, data map[string]interface{}) error 
 		groups := strings.Join(attr["content"].([]string), ",")
 		attr["content"] = groups
 
-	case CORIDOR:
+	case CORRIDOR:
 		//name, category, domain, pid
 		attr = data["attributes"].(map[string]interface{})
 		data["domain"] = domain
@@ -3066,7 +3057,7 @@ func LSOBJECTRecursive(x string, entity int) []interface{} {
 	//YouareAt -> obi
 	//want 	   -> entity
 
-	if (entity >= AC && entity <= CORIDOR) && obi > ROOM {
+	if (entity >= AC && entity <= CORRIDOR) && obi > ROOM {
 		return nil
 	}
 
@@ -3116,7 +3107,7 @@ func lsobjHelperRecursive(api, objID string, curr, entity int) []interface{} {
 		//println("DEBUG-URL:", URL)
 
 		//EDGE CASE, if user is at a BLDG and requests object of room
-		if (curr == BLDG || curr == ROOM) && (entity >= AC && entity <= CORIDOR) {
+		if (curr == BLDG || curr == ROOM) && (entity >= AC && entity <= CORRIDOR) {
 			ext = EntityToString(curr) + "s/" + objID + "/" + EntityToString(entity) + "s"
 			r, e := models.Send("GET", State.APIURL+"/api/"+ext, GetKey(), nil)
 			tmp := ParseResponse(r, e, "getting objects")
@@ -3141,7 +3132,7 @@ func lsobjHelperRecursive(api, objID string, curr, entity int) []interface{} {
 		if objs != nil {
 			x := []interface{}{}
 
-			if entity >= AC && entity <= CORIDOR {
+			if entity >= AC && entity <= CORRIDOR {
 
 				for q := range objs {
 					id := objs[q].(map[string]interface{})["id"].(string)
@@ -3189,7 +3180,7 @@ func lsobjHelperRecursive(api, objID string, curr, entity int) []interface{} {
 		if objs != nil {
 			ans := []interface{}{}
 			//For associated objects of room
-			if entity >= AC && entity <= CORIDOR {
+			if entity >= AC && entity <= CORRIDOR {
 				for i := range objs {
 					ext2 := "/api/" + EntityToString(curr) + "s/" +
 						objs[i].(map[string]interface{})["id"].(string) +

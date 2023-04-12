@@ -1282,7 +1282,7 @@ func (n *createCorridorNode) execute() (interface{}, error) {
 
 	data := map[string]interface{}{"attributes": attributes}
 
-	err = cmd.GetOCLIAtrributes(path, cmd.CORIDOR, data)
+	err = cmd.GetOCLIAtrributes(path, cmd.CORRIDOR, data)
 	if err != nil {
 		return nil, err
 	}

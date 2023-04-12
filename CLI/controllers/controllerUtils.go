@@ -17,7 +17,7 @@ const (
 	AC
 	PWRPNL
 	CABINET
-	CORIDOR
+	CORRIDOR
 	SENSOR
 	ROOMTMPL
 	OBJTMPL
@@ -223,7 +223,7 @@ func EntityToString(entity int) string {
 		return "cabinet"
 	case GROUP:
 		return "group"
-	case CORIDOR:
+	case CORRIDOR:
 		return "corridor"
 	case SENSOR:
 		return "sensor"
@@ -263,7 +263,7 @@ func EntityStrToInt(entity string) int {
 	case "group", "gr":
 		return GROUP
 	case "corridor", "co":
-		return CORIDOR
+		return CORRIDOR
 	case "sensor", "sr":
 		return SENSOR
 	default:
@@ -297,7 +297,7 @@ func GetParentOfEntity(ent int) int {
 		return ROOM
 	case GROUP:
 		return -1
-	case CORIDOR:
+	case CORRIDOR:
 		return ROOM
 	case SENSOR:
 		return -2
