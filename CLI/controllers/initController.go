@@ -376,6 +376,7 @@ func SetObjsForUnity(x string, env map[string]string) []int {
 		for idx := 0; idx < GROUP+1; idx++ {
 			res = append(res, idx)
 		}
+		res = append(res, DOMAIN)
 	}
 	return res
 }
