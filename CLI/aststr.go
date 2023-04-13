@@ -66,6 +66,8 @@ func (n pathNode) getStr() (string, error) {
 			output_words[0] = "Physical"
 		} else if output_words[0] == "L" {
 			output_words[0] = "Logical"
+		} else if output_words[0] == "O" {
+			output_words[0] = "Organisation"
 		}
 	}
 	return path.Clean("/" + strings.Join(output_words, "/")), nil
