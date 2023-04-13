@@ -3,7 +3,8 @@ version: '3'
 services:
   ogree_api:
     build:
-      context: .
+      context: ..
+      dockerfile: API/Dockerfile
     env_file: ./dev.env
     container_name: ogree_api
     depends_on:
