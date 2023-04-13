@@ -1412,7 +1412,9 @@ func GetOCLIAtrributes(Path string, ent int, data map[string]interface{}) error 
 	}
 
 	// Set default domain
-	if ent != DOMAIN {
+	if parent != nil {
+		domain = parent["domain"].(string)
+	} else if ent != DOMAIN {
 		domain = State.Customer
 	}
 
