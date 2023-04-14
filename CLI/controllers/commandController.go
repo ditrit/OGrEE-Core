@@ -298,6 +298,9 @@ func GetSlot(rack map[string]any, location string) (map[string]any, error) {
 	if err != nil {
 		return nil, err
 	}
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("cannot get template %s", template)
+	}
 	parsedResp := ParseResponse(resp, err, "GET")
 	slots, ok := parsedResp["data"].(map[string]any)["slots"]
 	if !ok {
