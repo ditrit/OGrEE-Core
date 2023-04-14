@@ -82,6 +82,9 @@ func Router(jwt func(next http.Handler) http.Handler) *mux.Router {
 	router.HandleFunc("/api/hierarchy",
 		controllers.GetCompleteHierarchy).Methods("GET", "OPTIONS", "HEAD")
 
+	router.HandleFunc("/api/hierarchy/domains",
+		controllers.GetCompleteDomainHierarchy).Methods("GET", "OPTIONS", "HEAD")
+
 	router.HandleFunc("/api/hierarchy/attributes",
 		controllers.GetCompleteHierarchyAttributes).Methods("GET", "OPTIONS", "HEAD")
 

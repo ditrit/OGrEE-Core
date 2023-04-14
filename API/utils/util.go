@@ -228,6 +228,8 @@ func HierachyNameToEntity(name string) []int {
 
 func GetParentOfEntityByInt(entity int) int {
 	switch entity {
+	case DOMAIN:
+		return DOMAIN
 	case AC, PWRPNL, CABINET, CORRIDOR:
 		return ROOM
 	case SENSOR:

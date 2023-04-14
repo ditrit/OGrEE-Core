@@ -22,7 +22,13 @@ func CreateEntity(entity int, t map[string]interface{}, userRoles map[string]str
 	}
 
 	// Check user permissions
-	if ok, _ := CheckUserPermissions(userRoles, entity, WRITE, t["domain"].(string)); !ok {
+	var domain string
+	if entity == u.DOMAIN {
+		domain = t["name"].(string)
+	} else {
+		domain = t["domain"].(string)
+	}
+	if ok, _ := CheckUserPermissions(userRoles, entity, WRITE, domain); !ok {
 		return u.Message(false,
 				"User does not have permission to create this object"),
 			"permission"
@@ -124,8 +130,14 @@ func GetEntity(req bson.M, ent string, filters u.RequestFilters, userRoles map[s
 	t = fixID(t)
 
 	// Check permissions
+	var domain string
+	if ent == "domain" {
+		domain = t["name"].(string)
+	} else {
+		domain = t["domain"].(string)
+	}
 	if userRoles != nil {
-		if ok, readLevel := CheckUserPermissions(userRoles, u.EntityStrToInt(ent), READ, t["domain"].(string)); !ok {
+		if ok, readLevel := CheckUserPermissions(userRoles, u.EntityStrToInt(ent), READ, domain); !ok {
 			return u.Message(false,
 					"User does not have permission to see this object"),
 				"permission"
@@ -216,27 +228,65 @@ func GetManyEntities(ent string, req bson.M, filters u.RequestFilters, userRoles
 //   - categories: map with category name as key and corresponding objects
 //     as an array value
 //     categories: {categoryName:[children]}
-func GetCompleteHierarchy(userRoles map[string]string) (map[string]interface{}, string) {
+func GetCompleteDomainHierarchy(userRoles map[string]string) (map[string]interface{}, string) {
 	response := make(map[string]interface{})
-	categories := make(map[string][]string)
 	hierarchy := make(map[string][]string)
-	rootCollectionName := "tenant"
 
 	// Get all collections names
 	ctx, cancel := u.Connect()
 	db := GetDB()
-	collNames, err := db.ListCollectionNames(ctx, bson.D{})
+	collName := "domain"
+
+	// Get all objects hierarchyNames for each collection
+	opts := options.Find().SetProjection(bson.D{{Key: "hierarchyName", Value: 1}, {Key: "domain", Value: 1}})
+
+	c, err := db.Collection(collName).Find(ctx, bson.M{}, opts)
 	if err != nil {
-		fmt.Println(err.Error())
-		return nil, err.Error()
+		println(err.Error())
 	}
+	data, error := ExtractCursor(c, ctx, u.EntityStrToInt(collName), userRoles)
+	if error != "" {
+		fmt.Println(error)
+		return nil, error
+	}
+
+	for _, obj := range data {
+		if strings.Contains(obj["hierarchyName"].(string), ".") {
+			fillHierarchyMap(obj["hierarchyName"].(string), hierarchy)
+		} else {
+			hierarchy["Root"] = append(hierarchy["Root"], obj["hierarchyName"].(string))
+		}
+	}
+
+	response["tree"] = hierarchy
+	defer cancel()
+	return response, ""
+}
+
+// GetCompleteHierarchy: gets all objects in db using hierachyName and returns:
+//   - tree: map with parents as key and their children as an array value
+//     tree: {parent:[children]}
+//   - categories: map with category name as key and corresponding objects
+//     as an array value
+//     categories: {categoryName:[children]}
+func GetCompleteHierarchy(userRoles map[string]string) (map[string]interface{}, string) {
+	response := make(map[string]interface{})
+	categories := make(map[string][]string)
+	hierarchy := make(map[string][]string)
+	rootCollectionName := "site"
+
+	// Get all collections names
+	var collNames []string
+	for i := u.SITE; i <= u.GROUP; i++ {
+		collNames = append(collNames, u.EntityToString(i))
+	}
+
+	ctx, cancel := u.Connect()
+	db := GetDB()
 
 	// Get all objects hierarchyNames for each collection
 	for _, collName := range collNames {
-		opts := options.Find().SetProjection(bson.D{{Key: "hierarchyName", Value: 1}})
-		if collName == rootCollectionName {
-			opts = options.Find().SetProjection(bson.D{{Key: "name", Value: 1}})
-		}
+		opts := options.Find().SetProjection(bson.D{{Key: "hierarchyName", Value: 1}, {Key: "domain", Value: 1}})
 
 		c, err := db.Collection(collName).Find(ctx, bson.M{}, opts)
 		if err != nil {
@@ -249,12 +299,13 @@ func GetCompleteHierarchy(userRoles map[string]string) (map[string]interface{}, 
 		}
 
 		for _, obj := range data {
-			if obj["hierarchyName"] != nil {
+			if collName == rootCollectionName {
+				categories[rootCollectionName] = append(categories[rootCollectionName], obj["hierarchyName"].(string))
+				hierarchy["Root"] = append(hierarchy["Root"], obj["hierarchyName"].(string))
+
+			} else if obj["hierarchyName"] != nil {
 				categories[collName] = append(categories[collName], obj["hierarchyName"].(string))
 				fillHierarchyMap(obj["hierarchyName"].(string), hierarchy)
-			} else if obj["name"] != nil {
-				categories[rootCollectionName] = append(categories[rootCollectionName], obj["name"].(string))
-				hierarchy["Root"] = append(hierarchy["Root"], obj["name"].(string))
 			}
 		}
 	}
@@ -1105,8 +1156,16 @@ func ExtractCursor(c *mongo.Cursor, ctx context.Context, entity int, userRoles m
 		}
 		//Remove _id
 		x = fixID(x)
+		//Check permissions
 		if userRoles != nil {
-			if ok, readLevel := CheckUserPermissions(userRoles, entity, READ, x["domain"].(string)); ok {
+			var domain string
+			if entity == u.DOMAIN {
+				fmt.Println(x)
+				domain = x["hierarchyName"].(string)
+			} else {
+				domain = x["domain"].(string)
+			}
+			if ok, readLevel := CheckUserPermissions(userRoles, entity, READ, domain); ok {
 				if readLevel == READONLYNAME {
 					x = FixReadOnlyName(x)
 				}

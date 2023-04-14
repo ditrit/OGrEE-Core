@@ -178,7 +178,6 @@ var CreateEntity = func(w http.ResponseWriter, r *http.Request) {
 	println("User Roles:")
 	fmt.Println(user.Roles)
 
-	entStr = entStr[:len(entStr)-1] // and the trailing 's'
 	entUpper := strings.ToUpper(entStr)
 
 	if err != nil {
@@ -1425,6 +1424,36 @@ var GetCompleteHierarchy = func(w http.ResponseWriter, r *http.Request) {
 	}
 
 	data, err := models.GetCompleteHierarchy(user.Roles)
+	if err != "" {
+		w.WriteHeader(http.StatusInternalServerError)
+		resp = u.Message(false, "Error: "+err)
+	} else {
+		if r.Method == "OPTIONS" {
+			w.Header().Add("Content-Type", "application/json")
+			w.Header().Add("Allow", "GET, OPTIONS, HEAD")
+		} else {
+			resp = u.Message(true, "successfully got hierarchy")
+			resp["data"] = data
+		}
+	}
+
+	u.Respond(w, resp)
+}
+
+var GetCompleteDomainHierarchy = func(w http.ResponseWriter, r *http.Request) {
+	fmt.Println("******************************************************")
+	fmt.Println("FUNCTION CALL: 	 GetCompleteHierarchy ")
+	fmt.Println("******************************************************")
+	DispRequestMetaData(r)
+	var resp map[string]interface{}
+
+	// Get user roles for permissions
+	user := getUserFromToken(w, r)
+	if user == nil {
+		return
+	}
+
+	data, err := models.GetCompleteDomainHierarchy(user.Roles)
 	if err != "" {
 		w.WriteHeader(http.StatusInternalServerError)
 		resp = u.Message(false, "Error: "+err)

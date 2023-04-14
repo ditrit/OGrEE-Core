@@ -362,18 +362,22 @@ func ValidateEntity(entity int, t map[string]interface{}) (map[string]interface{
 
 	// Extra checks
 	switch entity {
-	case u.SITE, u.BLDG, u.ROOM, u.RACK, u.DEVICE, u.AC,
+	case u.DOMAIN, u.SITE, u.BLDG, u.ROOM, u.RACK, u.DEVICE, u.AC,
 		u.PWRPNL, u.CABINET, u.CORRIDOR, u.SENSOR, u.GROUP:
 		//Check if Parent ID is valid
 		//returns a map[string]interface{} to hold parent entity
 		//if parent found
 		r, ok := validateParent(u.EntityToString(entity), entity, t)
 		if !ok {
-			return r, ok
+			if entity == u.DOMAIN {
+				t["hierarchyName"] = t["name"].(string)
+			} else {
+				return r, ok
+			}
 		} else if r["hierarchyName"] != nil {
 			t["hierarchyName"] = r["hierarchyName"].(string) + "." + t["name"].(string)
 		} else {
-			println("WARN: Unable to set hierarchyName")
+			t["hierarchyName"] = t["name"].(string)
 		}
 
 		if entity < u.AC || entity == u.PWRPNL ||
