@@ -2220,6 +2220,7 @@ func LinkObject(source, destination string, destinationSlot interface{}) {
 
 	var e error
 	sdev["category"] = "device"
+	DeleteAttr(sdev, "hierarchyName")
 	sdev, e = PostObj(DEVICE, "device", sdev)
 	if sdev == nil {
 		println(e.Error())
