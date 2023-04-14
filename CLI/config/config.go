@@ -15,7 +15,7 @@ type globalConfig struct {
 
 type Vardef struct {
 	Name  string
-	Value string
+	Value any
 }
 
 type Config struct {
@@ -90,11 +90,11 @@ func ReadConfig() *Config {
 
 	configBytes, err := os.ReadFile(args.ConfigPath)
 	if err != nil {
-		fmt.Println("Cannot read config file", conf.ConfigPath, ":", err.Error())
+		fmt.Println("Cannot read config file", args.ConfigPath, ":", err.Error())
 		fmt.Println("Please ensure that you have a properly formatted config file saved as 'config.toml' in the parent directory")
 		fmt.Println("For more details please refer to: https://github.com/ditrit/OGrEE-Core/blob/main/README.md")
 	}
-	_, err = toml.Decode(string(configBytes), &globalConf.Conf)
+	_, err = toml.Decode(string(configBytes), &globalConf)
 	if err != nil {
 		println("Error reading config :", err.Error())
 	}
