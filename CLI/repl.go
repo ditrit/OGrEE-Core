@@ -14,10 +14,6 @@ import (
 	l "cli/logger"
 	"cli/readline"
 	"fmt"
-	"os"
-	"strings"
-
-	"github.com/joho/godotenv"
 )
 
 func InterpretLine(str string) {
@@ -42,76 +38,15 @@ func InterpretLine(str string) {
 	}
 }
 
-func SetPrompt(user string) string {
-	c.State.Prompt = "\u001b[1m\u001b[32m" + user + "@" + c.State.Customer + ":" +
-		"\u001b[37;1m" + c.State.CurrPath + "\u001b[1m\u001b[32m>\u001b[0m "
-	c.State.BlankPrompt = user + "@" + "OGrEE3D:" + c.State.CurrPath + "> "
-	return c.State.Prompt
-}
-
-// Init the Shell
-func Start(flags *Flags) {
-	l.InitLogs()
-	c.InitEnvFilePath(flags.envPath)
-	c.InitHistoryFilePath(flags.histPath)
-	c.InitDebugLevel(flags.verbose) //Set the Debug level
-
-	env, envErr := godotenv.Read(flags.envPath)
-	if envErr != nil {
-		fmt.Println("Cannot read environment file", flags.envPath, ":", envErr.Error())
-		fmt.Println("Please ensure that you have a properly formatted environment file saved as '.env' in the same directory here with the shell")
-		fmt.Println("\n\nFor more details please refer to: https://ogree.ditrit.io/htmls/programming.html")
-		fmt.Println("View an environment file example here: https://ogree.ditrit.io/htmls/clienv.html")
-		return
-	}
-
-	c.InitTimeout(env)                           //Set the Unity Timeout
-	c.GetURLs(flags.APIURL, flags.unityURL, env) //Set the URLs
-	c.InitKey(flags.APIKEY, env)                 //Set the API Key
-	user, _ := c.Login(env)
-
-	c.InitState(env)
-
-	rl, err := readline.NewEx(&readline.Config{
-		Prompt:          SetPrompt(user),
-		HistoryFile:     c.State.HistoryFilePath,
-		AutoComplete:    GetPrefixCompleter(),
-		InterruptPrompt: "^C",
-		//EOFPrompt:       "exit",
-
-		HistorySearchFold: true,
-		//FuncFilterInputRune: filterInput,
-	})
-	if err != nil {
-		panic(err)
-	}
-	defer rl.Close()
-
-	//Allow the ShellState to hold a ptr to readline
-	c.SetStateReadline(rl)
-
-	//Execute Script if provided as arg and exit
-	if flags.script != "" {
-		if strings.Contains(flags.script, ".ocli") {
-			script := flags.script
-			LoadFile(script)
-			os.Exit(0)
-		}
-	}
-	c.InitUnityCom(rl, c.State.UnityClientURL)
-
-	Repl(rl, user)
-}
-
 // The loop of the program
-func Repl(rl *readline.Instance, user string) {
+func Start(rl *readline.Instance, user string) {
 	for {
 		line, err := rl.Readline()
 		if err != nil { // io.EOF
 			break
 		}
 		InterpretLine(line)
-		//c.UpdateSessionState(&line)
+
 		//Update Prompt
 		rl.SetPrompt(SetPrompt(user))
 	}

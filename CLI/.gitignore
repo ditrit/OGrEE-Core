@@ -12,6 +12,6 @@ BisonExmple.txt
 delme.sh
 *.txt
 .history
-.env
+*.toml
 *.ocli
 *.toml
