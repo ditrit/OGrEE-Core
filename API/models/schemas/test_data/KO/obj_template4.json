@@ -1,0 +1,29 @@
+{ 
+    "slug"        : "ERROR-example-123",
+    "description" : "NeXtScale ns1200",
+    "category"    : "device",
+    "sizeWDHmm"   : [447, 914.5, 263.3],
+    "fbxModel"    : "",
+    "attributes"  : {
+    "type"        : "chassis",
+    "vendor"      : "IBM",
+    "model"       : "5456-HC1"
+    },
+    "colors"      : [],
+    "components"  : [
+    { "location": "midplane", "type": "chassis", "elemOrient" : "", "elemPos" : [], "elemSize" : [450, 30,270], "labelPos"  : "top",  "color" : "FFFFFF",  "attributes":{} },
+    { "location": "fpc",      "type": "mgmt",    "elemOrient" : "banana", "elemPos" : [180,  0,90], "elemSize" : [40, 230, 90], "labelPos"  : "rear", "color" : "color" },
+    { "location": "psu01",    "type": "power", "elemPos" : [225,  0, 0], "elemSize" : [45, 230, 90], "labelPos"  : "rear", "color" : "EE82EE" },
+    { "location": "fan02",    "type": "fan",     "elemOrient" : "", "elemPos" : [270,0,0],    "elemSize" : [90, 115, 90], "labelPos" : "banana",  "color" : "" }
+        ],
+
+    "slots"  : [
+    { "location": "blade01",  "type": "blade",   "elemOrient" : "banana", "elemPos" : [225,260, 0],  "elemSize" : [225,660, 45], "labelPos" : "front" },
+    { "location": "blade02",  "type": "blade",   "elemPos" : [  0,260, 0],  "elemSize" : [225,660, 45], "labelPos" : "front" },
+    { "location": "blade03",  "type": "blade",   "elemOrient" : "", "elemPos" : [225,260,45],  "elemSize" : [225,660, 45], "labelPos" : "front", "color" : "" }
+        ]
+            ,
+    "sensors"  : [
+    {	"location":"sensor01", "elemPos":["center", "center", "center"], "elemSize":[ 20,20,20] }
+        ]
+}

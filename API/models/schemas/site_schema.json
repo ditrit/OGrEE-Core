@@ -7,15 +7,6 @@
     "attributes": {
       "type": "object",
       "properties": {
-        "orientation": {
-          "type": "string",
-          "enum": [
-            "EN",
-            "NW",
-            "WS",
-            "SE"
-          ]
-        },
         "reservedColor": {
           "type": "string",
           "$ref": "refs/types.json#/definitions/color"
@@ -34,19 +25,15 @@
   "examples": [
     {
       "attributes": {
-        "orientation": "NW",
         "reservedColor": "AAAAAA",
         "technicalColor": "D0FF78",
         "usableColor": "5BDCFF"
       },
       "category": "site",
-      "createdDate": "2023-01-26T10:42:51.445Z",
       "description": [
         "site"
       ],
       "domain": "DEMO",
-      "id": "xxxx592b1ac5f3b6f313ee90",
-      "lastUpdated": "2023-01-26T10:46:40.456Z",
       "name": "SITEA",
       "parentId": "xxxx592b1ac5f3b6f313ee8f"
     }

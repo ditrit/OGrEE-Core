@@ -1,0 +1,694 @@
+{
+    "slug": "ibm-nx360m5",
+    "description": "NX360M5",
+    "category": "device",
+    "sizeWDHmm": [
+        216,
+        659,
+        41
+    ],
+    "fbxModel": "",
+    "attributes": {
+        "type": "blade",
+        "vendor": "IBM",
+        "model": "5456-HC1",
+        "ram order": "8,1,6,3,7,2,5,4 / 8,9,1,16,6,11,3,14,7,10,2,15,5,12,4,13"
+    },
+    "colors": [],
+    "components": [
+        {
+            "location": "eth1imm",
+            "type": "port",
+            "elemOrient": "",
+            "elemPos": [
+                86,
+                649,
+                0
+            ],
+            "elemSize": [
+                14,
+                11,
+                11
+            ],
+            "mandatory": "yes",
+            "labelPos": "front",
+            "color": "ffc0cb",
+            "attributes": {
+                "factor": "rj45"
+            }
+        },
+        {
+            "location": "eth2",
+            "type": "port",
+            "elemOrient": "",
+            "elemPos": [
+                104,
+                649,
+                0
+            ],
+            "elemSize": [
+                14,
+                11,
+                11
+            ],
+            "mandatory": "yes",
+            "labelPos": "front",
+            "color": "ffc0cb",
+            "attributes": {
+                "factor": "rj45"
+            }
+        },
+        {
+            "location": "raidadapter",
+            "type": "disk",
+            "elemOrient": "",
+            "elemPos": [
+                152,
+                72,
+                10
+            ],
+            "elemSize": [
+                54,
+                78,
+                5
+            ],
+            "mandatory": "yes",
+            "labelPos": "top",
+            "color": "ffff00",
+            "attributes": {
+                "factor": "onboard"
+            }
+        }
+    ],
+    "slots": [
+        {
+            "location": "cpu1",
+            "type": "processor",
+            "elemOrient": "",
+            "elemPos": [
+                68,
+                343,
+                0
+            ],
+            "elemSize": [
+                97,
+                97,
+                30
+            ],
+            "mandatory": "yes",
+            "labelPos": "top",
+            "color": "ffff00",
+            "attributes": {
+                "factor": "LGA2011-R"
+            }
+        },
+        {
+            "location": "cpu2",
+            "type": "processor",
+            "elemOrient": "",
+            "elemPos": [
+                53,
+                223,
+                0
+            ],
+            "elemSize": [
+                97,
+                97,
+                30
+            ],
+            "mandatory": "no",
+            "labelPos": "top",
+            "color": "ffff00",
+            "attributes": {
+                "factor": "LGA2011-R"
+            }
+        },
+        {
+            "location": "dimm1",
+            "type": "memory",
+            "elemOrient": "",
+            "elemPos": [
+                200,
+                336,
+                0
+            ],
+            "elemSize": [
+                1,
+                133,
+                31
+            ],
+            "mandatory": "no",
+            "labelPos": "left",
+            "color": "007700",
+            "attributes": {
+                "factor": "LRDIMM"
+            }
+        },
+        {
+            "location": "dimm2",
+            "type": "memory",
+            "elemOrient": "",
+            "elemPos": [
+                190,
+                336,
+                0
+            ],
+            "elemSize": [
+                1,
+                133,
+                31
+            ],
+            "mandatory": "no",
+            "labelPos": "left",
+            "color": "007700",
+            "attributes": {
+                "factor": "LRDIMM"
+            }
+        },
+        {
+            "location": "dimm4",
+            "type": "memory",
+            "elemOrient": "",
+            "elemPos": [
+                180,
+                336,
+                0
+            ],
+            "elemSize": [
+                1,
+                133,
+                31
+            ],
+            "mandatory": "no",
+            "labelPos": "left",
+            "color": "007700",
+            "attributes": {
+                "factor": "LRDIMM"
+            }
+        },
+        {
+            "location": "dimm3",
+            "type": "memory",
+            "elemOrient": "",
+            "elemPos": [
+                170,
+                336,
+                0
+            ],
+            "elemSize": [
+                1,
+                133,
+                31
+            ],
+            "mandatory": "no",
+            "labelPos": "left",
+            "color": "007700",
+            "attributes": {
+                "factor": "LRDIMM"
+            }
+        },
+        {
+            "location": "dimm5",
+            "type": "memory",
+            "elemOrient": "",
+            "elemPos": [
+                64,
+                336,
+                0
+            ],
+            "elemSize": [
+                1,
+                133,
+                31
+            ],
+            "mandatory": "no",
+            "labelPos": "left",
+            "color": "007700",
+            "attributes": {
+                "factor": "LRDIMM"
+            }
+        },
+        {
+            "location": "dimm6",
+            "type": "memory",
+            "elemOrient": "",
+            "elemPos": [
+                54,
+                336,
+                0
+            ],
+            "elemSize": [
+                1,
+                133,
+                31
+            ],
+            "mandatory": "no",
+            "labelPos": "left",
+            "color": "007700",
+            "attributes": {
+                "factor": "LRDIMM"
+            }
+        },
+        {
+            "location": "dimm7",
+            "type": "memory",
+            "elemOrient": "",
+            "elemPos": [
+                44,
+                336,
+                0
+            ],
+            "elemSize": [
+                1,
+                133,
+                31
+            ],
+            "mandatory": "no",
+            "labelPos": "left",
+            "color": "007700",
+            "attributes": {
+                "factor": "LRDIMM"
+            }
+        },
+        {
+            "location": "dimm8",
+            "type": "memory",
+            "elemOrient": "",
+            "elemPos": [
+                34,
+                336,
+                0
+            ],
+            "elemSize": [
+                1,
+                133,
+                31
+            ],
+            "mandatory": "yes",
+            "labelPos": "left",
+            "color": "007700",
+            "attributes": {
+                "factor": "LRDIMM"
+            }
+        },
+        {
+            "location": "dimm9",
+            "type": "memory",
+            "elemOrient": "",
+            "elemPos": [
+                190,
+                194,
+                0
+            ],
+            "elemSize": [
+                1,
+                133,
+                31
+            ],
+            "mandatory": "no",
+            "labelPos": "left",
+            "color": "007700",
+            "attributes": {
+                "factor": "LRDIMM"
+            }
+        },
+        {
+            "location": "dimm10",
+            "type": "memory",
+            "elemOrient": "",
+            "elemPos": [
+                180,
+                194,
+                0
+            ],
+            "elemSize": [
+                1,
+                133,
+                31
+            ],
+            "mandatory": "no",
+            "labelPos": "left",
+            "color": "007700",
+            "attributes": {
+                "factor": "LRDIMM"
+            }
+        },
+        {
+            "location": "dimm11",
+            "type": "memory",
+            "elemOrient": "",
+            "elemPos": [
+                170,
+                194,
+                0
+            ],
+            "elemSize": [
+                1,
+                133,
+                31
+            ],
+            "mandatory": "no",
+            "labelPos": "left",
+            "color": "007700",
+            "attributes": {
+                "factor": "LRDIMM"
+            }
+        },
+        {
+            "location": "dimm12",
+            "type": "memory",
+            "elemOrient": "",
+            "elemPos": [
+                160,
+                194,
+                0
+            ],
+            "elemSize": [
+                1,
+                133,
+                31
+            ],
+            "mandatory": "no",
+            "labelPos": "left",
+            "color": "007700",
+            "attributes": {
+                "factor": "LRDIMM"
+            }
+        },
+        {
+            "location": "dimm13",
+            "type": "memory",
+            "elemOrient": "",
+            "elemPos": [
+                45,
+                194,
+                0
+            ],
+            "elemSize": [
+                1,
+                133,
+                31
+            ],
+            "mandatory": "no",
+            "labelPos": "left",
+            "color": "007700",
+            "attributes": {
+                "factor": "LRDIMM"
+            }
+        },
+        {
+            "location": "dimm14",
+            "type": "memory",
+            "elemOrient": "",
+            "elemPos": [
+                35,
+                194,
+                0
+            ],
+            "elemSize": [
+                1,
+                133,
+                31
+            ],
+            "mandatory": "no",
+            "labelPos": "left",
+            "color": "007700",
+            "attributes": {
+                "factor": "LRDIMM"
+            }
+        },
+        {
+            "location": "dimm15",
+            "type": "memory",
+            "elemOrient": "",
+            "elemPos": [
+                25,
+                194,
+                0
+            ],
+            "elemSize": [
+                1,
+                133,
+                31
+            ],
+            "mandatory": "no",
+            "labelPos": "left",
+            "color": "007700",
+            "attributes": {
+                "factor": "LRDIMM"
+            }
+        },
+        {
+            "location": "dimm16",
+            "type": "memory",
+            "elemOrient": "",
+            "elemPos": [
+                15,
+                194,
+                0
+            ],
+            "elemSize": [
+                1,
+                133,
+                31
+            ],
+            "mandatory": "no",
+            "labelPos": "left",
+            "color": "007700",
+            "attributes": {
+                "factor": "LRDIMM"
+            }
+        },
+        {
+            "location": "slot2",
+            "type": "adapter",
+            "elemOrient": "",
+            "elemPos": [
+                153,
+                493,
+                18
+            ],
+            "elemSize": [
+                51,
+                167,
+                18
+            ],
+            "mandatory": "no",
+            "labelPos": "front",
+            "color": "C71585",
+            "attributes": {
+                "factor": "ml2"
+            }
+        },
+        {
+            "location": "slot1",
+            "type": "adapter",
+            "elemOrient": "",
+            "elemPos": [
+                29,
+                485,
+                18
+            ],
+            "elemSize": [
+                101,
+                175,
+                18
+            ],
+            "mandatory": "no",
+            "labelPos": "front",
+            "color": "C71585",
+            "attributes": {
+                "factor": "pci3x16fhhl"
+            }
+        },
+        {
+            "location": "eth1imm",
+            "type": "port",
+            "elemOrient": "",
+            "elemPos": [
+                86,
+                649,
+                0
+            ],
+            "elemSize": [
+                14,
+                11,
+                11
+            ],
+            "mandatory": "yes",
+            "labelPos": "front",
+            "color": "ffc0cb",
+            "attributes": {
+                "factor": "rj45"
+            }
+        },
+        {
+            "location": "imm2",
+            "type": "port",
+            "elemOrient": "",
+            "elemPos": [
+                162,
+                649,
+                0
+            ],
+            "elemSize": [
+                14,
+                11,
+                11
+            ],
+            "mandatory": "no",
+            "labelPos": "front",
+            "color": "000000",
+            "attributes": {
+                "factor": "rj45"
+            }
+        },
+        {
+            "location": "eth2",
+            "type": "port",
+            "elemOrient": "",
+            "elemPos": [
+                104,
+                649,
+                0
+            ],
+            "elemSize": [
+                14,
+                11,
+                11
+            ],
+            "mandatory": "yes",
+            "labelPos": "front",
+            "color": "ffc0cb",
+            "attributes": {
+                "factor": "rj45"
+            }
+        },
+        {
+            "location": "hdd182",
+            "type": "disk",
+            "elemOrient": "",
+            "elemPos": [
+                152,
+                72,
+                15
+            ],
+            "elemSize": [
+                54,
+                78,
+                5
+            ],
+            "mandatory": "no",
+            "labelPos": "front",
+            "color": "777777",
+            "attributes": {
+                "factor": "1.8hd"
+            }
+        },
+        {
+            "location": "hdd183",
+            "type": "disk",
+            "elemOrient": "",
+            "elemPos": [
+                152,
+                72,
+                20
+            ],
+            "elemSize": [
+                54,
+                78,
+                5
+            ],
+            "mandatory": "no",
+            "labelPos": "front",
+            "color": "777777",
+            "attributes": {
+                "factor": "1.8hd"
+            }
+        },
+        {
+            "location": "hdd184",
+            "type": "disk",
+            "elemOrient": "",
+            "elemPos": [
+                152,
+                72,
+                25
+            ],
+            "elemSize": [
+                54,
+                78,
+                5
+            ],
+            "mandatory": "no",
+            "labelPos": "front",
+            "color": "777777",
+            "attributes": {
+                "factor": "1.8hd"
+            }
+        },
+        {
+            "location": "hdd251",
+            "type": "disk",
+            "elemOrient": "",
+            "elemPos": [
+                136,
+                50,
+                8
+            ],
+            "elemSize": [
+                70,
+                100,
+                7
+            ],
+            "mandatory": "no",
+            "labelPos": "front",
+            "color": "777777",
+            "attributes": {
+                "factor": "2.5hd"
+            }
+        },
+        {
+            "location": "hdd252",
+            "type": "disk",
+            "elemOrient": "",
+            "elemPos": [
+                136,
+                50,
+                15
+            ],
+            "elemSize": [
+                70,
+                100,
+                7
+            ],
+            "mandatory": "no",
+            "labelPos": "front",
+            "color": "777777",
+            "attributes": {
+                "factor": "2.5hd"
+            }
+        },
+        {
+            "location": "hdd351",
+            "type": "disk",
+            "elemOrient": "",
+            "elemPos": [
+                104,
+                3,
+                4
+            ],
+            "elemSize": [
+                102,
+                147,
+                26
+            ],
+            "mandatory": "no",
+            "labelPos": "front",
+            "color": "777777",
+            "attributes": {
+                "factor": "3.5hd"
+            }
+        }
+    ]
+}

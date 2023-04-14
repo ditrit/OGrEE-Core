@@ -9,6 +9,13 @@ import (
 	"strings"
 )
 
+func SetPrompt(user string) string {
+	c.State.Prompt = "\u001b[1m\u001b[32m" + user + "@" + "OGrEE3D:" +
+		"\u001b[37;1m" + c.State.CurrPath + "\u001b[1m\u001b[32m>\u001b[0m "
+	c.State.BlankPrompt = user + "@" + "OGrEE3D:" + c.State.CurrPath + "> "
+	return c.State.Prompt
+}
+
 func main() {
 	conf := config.ReadConfig()
 
@@ -32,8 +39,7 @@ func main() {
 	user := strings.Split(conf.User, "@")[0]
 
 	rl, err := readline.NewEx(&readline.Config{
-		Prompt: "\u001b[1m\u001b[32m" + user + "@" + "OGrEE3D:" +
-			"\u001b[37;1m" + c.State.CurrPath + "\u001b[1m\u001b[32m$>\u001b[0m ",
+		Prompt:          SetPrompt(user),
 		HistoryFile:     c.State.HistoryFilePath,
 		AutoComplete:    GetPrefixCompleter(),
 		InterruptPrompt: "^C",

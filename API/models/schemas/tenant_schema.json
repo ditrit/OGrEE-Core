@@ -19,8 +19,6 @@
         "type": "string"
       },
       "createdDate": {
-        "type": "string",
-        "format": "date-time"
       },
       "description": {
         "type": "array",
@@ -35,8 +33,6 @@
         "type": "string"
       },
       "lastUpdated": {
-        "type": "string",
-        "format": "date-time"
       },
       "name": {
         "type": "string"

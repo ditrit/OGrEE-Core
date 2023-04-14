@@ -47,6 +47,10 @@
           "sizeU": {
             "type": "string",
             "$ref": "refs/types.json#/definitions/float"
+          },
+          "color": {
+            "type": "string",
+            "$ref": "refs/types.json#/definitions/color"
           }
         },
         "required": [
@@ -59,7 +63,8 @@
         ]
       }
     },
-    "examples": [{
+    "examples": [
+      {
       "attributes": {
           "TDP": "",
           "TDPmax": "",
@@ -78,14 +83,12 @@
           "weightKg": 1.81
       },
       "category": "device",
-      "createdDate": "2023-01-26T10:46:41.212Z",
       "description": [
           "Optix XXX - Dual 9-Port Wavelength Selective Switching Board"
       ],
       "domain": "DEMO",
-      "id": "xxxx5a111ac5f3b6f313xxxx",
-      "lastUpdated": "2023-01-26T10:46:41.212Z",
       "name": "deviceName",
       "parentId": "xxxx5a111ac5f3b6f313xxxx"
-  }]
+    }
+  ]
 }

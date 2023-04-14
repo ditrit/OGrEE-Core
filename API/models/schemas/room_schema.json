@@ -73,18 +73,15 @@
         "heightUnit": "m",
         "axisOrientation": "+x+y",
         "rotation": "-90",
-        "posXY": "{\"x\":35.06,\"y\":0}",
+        "posXY": "{\"x\":0,\"y\":0}",
         "posXYUnit": "m",
-        "size": "{\"x\":13.7,\"y\":2.9}",
+        "size": "{\"x\": -13,\"y\":-2.9}",
         "sizeUnit": "m",
         "template": ""
       },
       "category": "room",
-      "createdDate": "2023-01-26T10:46:40.509Z",
       "description": [],
       "domain": "DEMO",
-      "id": "xxxx5a101ac5f3b6f313eebf",
-      "lastUpdated": "2023-01-26T10:46:40.509Z",
       "name": "RoomA",
       "parentId": "xxxx5a101ac5f3b6f313eebc"
     }

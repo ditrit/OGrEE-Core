@@ -2,6 +2,7 @@ package models
 
 import (
 	"embed"
+	"fmt"
 	u "p3/utils"
 	"strings"
 
@@ -26,7 +27,7 @@ func init() {
 
 func loadJsonSchemas(schemaPrefix string) {
 	var schemaPath = "schemas/"
-	dir := (schemaPath + schemaPrefix)[:len(schemaPath+schemaPrefix)-1] // without traling /
+	dir := strings.Trim(schemaPath+schemaPrefix, "/") // without trailing '/'
 	entries, err := embeddfs.ReadDir((dir))
 	if err != nil {
 		println(err.Error())
@@ -50,27 +51,33 @@ func validateParent(ent string, entNum int, t map[string]interface{}) (map[strin
 	}
 
 	//Check ParentID is valid
-	if t["parentId"] == nil {
+	if t["parentId"] == nil || t["parentId"] == "" {
 		return u.Message(false, "ParentID is not valid"), false
 	}
-
 	objID, err := primitive.ObjectIDFromHex(t["parentId"].(string))
-	if err != nil {
-		return u.Message(false, "ParentID is not valid"), false
+	var req primitive.M
+	if err == nil {
+		// parentId given with ID
+		req = bson.M{"_id": objID}
+	} else {
+		// parentId given with hierarchyName
+		req = bson.M{"hierarchyName": t["parentId"].(string)}
 	}
 
 	parent := map[string]interface{}{"parent": ""}
 	switch entNum {
 	case u.DEVICE:
-		x, _ := GetEntity(bson.M{"_id": objID}, "rack")
+		x, _ := GetEntity(req, "rack")
 		if x != nil {
 			parent["parent"] = "rack"
+			parent["hierarchyName"] = getHierarchyName(x)
 			return parent, true
 		}
 
-		y, _ := GetEntity(bson.M{"_id": objID}, "device")
+		y, _ := GetEntity(req, "device")
 		if y != nil {
 			parent["parent"] = "device"
+			parent["hierarchyName"] = getHierarchyName(y)
 			return parent, true
 		}
 
@@ -78,27 +85,31 @@ func validateParent(ent string, entNum int, t map[string]interface{}) (map[strin
 			"ParentID should be correspond to Existing ID"), false
 
 	case u.SENSOR, u.GROUP:
-		w, _ := GetEntity(bson.M{"_id": objID}, "device")
+		w, _ := GetEntity(req, "device")
 		if w != nil {
 			parent["parent"] = "device"
+			parent["hierarchyName"] = getHierarchyName(w)
 			return parent, true
 		}
 
-		x, _ := GetEntity(bson.M{"_id": objID}, "rack")
+		x, _ := GetEntity(req, "rack")
 		if x != nil {
 			parent["parent"] = "rack"
+			parent["hierarchyName"] = getHierarchyName(x)
 			return parent, true
 		}
 
-		y, _ := GetEntity(bson.M{"_id": objID}, "room")
+		y, _ := GetEntity(req, "room")
 		if y != nil {
 			parent["parent"] = "room"
+			parent["hierarchyName"] = getHierarchyName(y)
 			return parent, true
 		}
 
-		z, _ := GetEntity(bson.M{"_id": objID}, "building")
+		z, _ := GetEntity(req, "building")
 		if z != nil {
 			parent["parent"] = "building"
+			parent["hierarchyName"] = getHierarchyName(z)
 			return parent, true
 		}
 
@@ -110,13 +121,15 @@ func validateParent(ent string, entNum int, t map[string]interface{}) (map[strin
 			if pid, ok := t["parentId"].(string); ok {
 				ID, _ := primitive.ObjectIDFromHex(pid)
 
-				ctx, cancel := u.Connect()
-				if GetDB().Collection("stray_device").FindOne(ctx,
-					bson.M{"_id": ID}).Err() != nil {
+				p, err := GetEntity(bson.M{"_id": ID}, "stray_device")
+				if len(p) > 0 {
+					parent["parent"] = "stray_device"
+					parent["hierarchyName"] = getHierarchyName(p)
+					return parent, true
+				} else if err != "" {
 					return u.Message(false,
 						"ParentID should be an Existing ID or null"), false
 				}
-				defer cancel()
 			} else {
 				return u.Message(false,
 					"ParentID should be an Existing ID or null"), false
@@ -125,20 +138,29 @@ func validateParent(ent string, entNum int, t map[string]interface{}) (map[strin
 
 	default:
 		parentInt := u.GetParentOfEntityByInt(entNum)
-		parent := u.EntityToString(parentInt)
+		parentStr := u.EntityToString(parentInt)
 
-		ctx, cancel := u.Connect()
-		if GetDB().Collection(parent).
-			FindOne(ctx, bson.M{"_id": objID}).Err() != nil {
+		p, err := GetEntity(req, parentStr)
+		if len(p) > 0 {
+			parent["parent"] = parentStr
+			parent["hierarchyName"] = getHierarchyName(p)
+			return parent, true
+		} else if err != "" {
 			println("ENTITY VALUE: ", ent)
 			println("We got Parent: ", parent, " with ID:", t["parentId"].(string))
 			return u.Message(false,
 				"ParentID should correspond to Existing ID"), false
-
 		}
-		defer cancel()
 	}
 	return nil, true
+}
+
+func getHierarchyName(parent map[string]interface{}) string {
+	if parent["hierarchyName"] != nil {
+		return parent["hierarchyName"].(string)
+	} else {
+		return parent["name"].(string)
+	}
 }
 
 func validateJsonSchema(entity int, t map[string]interface{}) (map[string]interface{}, bool) {
@@ -153,7 +175,6 @@ func validateJsonSchema(entity int, t map[string]interface{}) (map[string]interf
 		schemaName = u.EntityToString(entity) + "_schema.json"
 	}
 
-	println(schemaName)
 	sch, err := c.Compile(schemaName)
 	if err != nil {
 		return u.Message(false, err.Error()), false
@@ -163,6 +184,7 @@ func validateJsonSchema(entity int, t map[string]interface{}) (map[string]interf
 	if err := sch.Validate(t); err != nil {
 		switch v := err.(type) {
 		case *jsonschema.ValidationError:
+			fmt.Println(t)
 			println(v.GoString())
 			resp := u.Message(false, "JSON body doesn't validate with the expected JSON schema")
 			// Format errors array
@@ -186,142 +208,6 @@ func validateJsonSchema(entity int, t map[string]interface{}) (map[string]interf
 	}
 }
 
-func ValidatePatch(ent int, t map[string]interface{}) (map[string]interface{}, bool) {
-	for k := range t {
-		switch k {
-		case "name", "category", "domain":
-			//Only for Entities until u.GROUP
-			//And u.OBJTMPL
-			if ent < u.GROUP+1 || ent == u.OBJTMPL {
-				if v, _ := t[k]; v == nil {
-					return u.Message(false,
-						"Field: "+k+" cannot be nullified!"), false
-				}
-			}
-
-		case "parentId":
-			if ent < u.ROOMTMPL && ent > u.TENANT {
-				x, ok := validateParent(u.EntityToString(ent), ent, t)
-				if !ok {
-					return x, ok
-				}
-			}
-			//u.STRAYDEV's schema is very loose
-			//thus we can safely invoke validateEntity
-			if ent == u.STRAYDEV {
-				x, ok := ValidateEntity(ent, t)
-				if !ok {
-					return x, ok
-				}
-			}
-
-		case "attributes.color": // u.TENANT
-			if ent == u.TENANT {
-				if v, _ := t[k]; v == nil {
-					return u.Message(false,
-						"Field: "+k+" cannot nullified!"), false
-				}
-			}
-
-		case "attributes.orientation": // u.ROOM, u.RACK, u.DEVICE
-			if ent > u.SITE && ent <= u.DEVICE {
-				if v, _ := t[k]; v == nil {
-					return u.Message(false,
-						"Field: "+k+" cannot nullified!"), false
-				}
-			}
-
-		case "attributes.usableColor",
-			"attributes.reservedColor",
-			"attributes.technicalColor": //u.SITE
-			if ent == u.SITE {
-				if v, _ := t[k]; v == nil {
-					return u.Message(false,
-						"Field: "+k+" cannot nullified!"), false
-				}
-			}
-
-		case "attributes.posXY", "attributes.posXYUnit": // u.BLDG, u.ROOM, u.RACK
-			if ent >= u.BLDG && ent <= u.RACK {
-				if v, _ := t[k]; v == nil {
-					return u.Message(false,
-						"Field: "+k+" cannot nullified!"), false
-				}
-			}
-
-		case "attributes": //u.TENANT ... u.SENSOR, u.OBJTMPL
-			if (ent >= u.TENANT && ent < u.ROOMTMPL) || ent == u.OBJTMPL {
-				if v, _ := t[k]; v == nil {
-					return u.Message(false,
-						"Field: "+k+" cannot nullified!"), false
-				}
-			}
-
-		case "attributes.size", "attributes.sizeUnit",
-			"attributes.height", "attributes.heightUnit":
-			//u.BLDG ... u.DEVICE
-			if ent >= u.BLDG && ent <= u.DEVICE {
-				if v, _ := t[k]; v == nil {
-					return u.Message(false,
-						"Field: "+k+" cannot nullified!"), false
-				}
-			}
-
-		case "attributes.floorUnit": //u.ROOM
-			if ent == u.ROOM {
-				if v, _ := t[k]; v == nil {
-					return u.Message(false,
-						"Field: "+k+" cannot nullified!"), false
-				}
-			}
-
-		case "slug", "colors": //TEMPLATES
-			if ent == u.OBJTMPL || ent == u.ROOMTMPL {
-				if v, _ := t[k]; v == nil {
-					return u.Message(false,
-						"Field: "+k+" cannot nullified!"), false
-				}
-			}
-
-		case "orientation", "sizeWDHm", "reservedArea",
-			"technicalArea", "separators", "tiles": //u.ROOMTMPL
-			if ent == u.ROOMTMPL {
-				if v, _ := t[k]; v == nil {
-					return u.Message(false,
-						"Field: "+k+" cannot nullified!"), false
-				}
-			}
-
-		case "description", "slots",
-			"sizeWDHmm", "fbxModel": //u.OBJTMPL
-			if ent == u.OBJTMPL {
-				if v, _ := t[k]; v == nil {
-					return u.Message(false,
-						"Field: "+k+" cannot nullified!"), false
-				}
-			}
-
-			/*case "type":
-			if ent == u.SENSOR {
-				if v, _ := t[k]; v == nil {
-					return u.Message(false,
-						"Field: "+k+" cannot nullified!"), false
-				}
-
-				if t[k] != "rack" &&
-					t[k] != "device" && t[k] != "room" {
-					return u.Message(false,
-						"Incorrect values given for: "+k+"!"+
-							"Please provide rack or device or room"), false
-				}
-			}*/
-
-		}
-	}
-	return nil, true
-
-}
-
 func ValidateEntity(entity int, t map[string]interface{}) (map[string]interface{}, bool) {
 
 	//parentObj := nil
@@ -340,18 +226,22 @@ func ValidateEntity(entity int, t map[string]interface{}) (map[string]interface{
 	// Extra checks
 	switch entity {
 	case u.SITE, u.BLDG, u.ROOM, u.RACK, u.DEVICE, u.AC,
-		u.PWRPNL, u.CABINET, u.CORIDOR, u.SENSOR, u.GROUP:
+		u.PWRPNL, u.CABINET, u.CORRIDOR, u.SENSOR, u.GROUP:
 		//Check if Parent ID is valid
 		//returns a map[string]interface{} to hold parent entity
 		//if parent found
 		r, ok := validateParent(u.EntityToString(entity), entity, t)
 		if !ok {
 			return r, ok
+		} else if r["hierarchyName"] != nil {
+			t["hierarchyName"] = r["hierarchyName"].(string) + "." + t["name"].(string)
+		} else {
+			println("WARN: Unable to set hierarchyName")
 		}
 
 		if entity < u.AC || entity == u.PWRPNL ||
 			entity == u.GROUP || entity == u.ROOMTMPL ||
-			entity == u.OBJTMPL || entity == u.CORIDOR {
+			entity == u.OBJTMPL || entity == u.CORRIDOR {
 			if _, ok := t["attributes"]; !ok {
 				return u.Message(false, "Attributes should be on the payload"), false
 			} else {
@@ -374,7 +264,7 @@ func ValidateEntity(entity int, t map[string]interface{}) (map[string]interface{
 
 						}
 
-					case u.CORIDOR:
+					case u.CORRIDOR:
 						//Ensure the 2 racks are valid
 						racks := strings.Split(v["content"].(string), ",")
 						if len(racks) != 2 {

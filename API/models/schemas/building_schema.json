@@ -63,13 +63,10 @@
                 "rotation": "30.5"
             },
             "category": "building",
-            "createdDate": "2023-01-26T10:46:40.612Z",
             "description": [
                 "building"
             ],
             "domain": "DEMO",
-            "id": "xxxx5a101ac5f3b6f313xxxx",
-            "lastUpdated": "2023-01-26T10:46:40.612Z",
             "name": "B1",
             "parentId": "xxxx592b1ac5f3b6f313xxxx"
         }

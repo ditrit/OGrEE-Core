@@ -18,6 +18,8 @@ var GitCommitDate string
 var State ShellState
 
 type ShellState struct {
+	Prompt           string
+	BlankPrompt      string
 	CurrPath         string
 	PrevPath         string
 	ClipBoard        *[]string
@@ -110,6 +112,13 @@ func View(root *Node, dt int) {
 func getNextInPath(name string, root *Node) *Node {
 	for i := root.Nodes.Front(); i != nil; i = i.Next() {
 		if (i.Value.(*Node)).Name == name {
+			return (i.Value.(*Node))
+			//Remaining cases return nodes if the alias was found
+		} else if name == "O" && (i.Value.(*Node)).Name == "Organisation" {
+			return (i.Value.(*Node))
+		} else if name == "P" && (i.Value.(*Node)).Name == "Physical" {
+			return (i.Value.(*Node))
+		} else if name == "L" && (i.Value.(*Node)).Name == "Logical" {
 			return (i.Value.(*Node))
 		}
 	}

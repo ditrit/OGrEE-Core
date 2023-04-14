@@ -32,11 +32,9 @@
                 "temperature": "cold"
             },
             "category": "corridor",
-            "createdDate": "2023-01-26T10:46:59.631Z",
             "description": [],
             "domain": "DEMO",
             "id": "xxxx5a231ac5f3b6f313xxxx",
-            "lastUpdated": "2023-01-26T11:05:04.629Z",
             "name": "GCorridor",
             "parentId": "xxxx5a1f1ac5f3b6f313xxxx"
         }

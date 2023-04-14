@@ -50,7 +50,7 @@ func PostObj(ent int, entity string, data map[string]interface{}) (map[string]in
 
 		return respMap["data"].(map[string]interface{}), nil
 	}
-	return nil, fmt.Errorf(APIErrorPrefix + respMap["message"].(string))
+	return nil, APIError(respMap)
 }
 
 // Calls API's Validation
@@ -75,7 +75,7 @@ func ValidateObj(data map[string]interface{}, ent string, silence bool) bool {
 
 		return true
 	}
-	println("Error: ", string(APIErrorPrefix+respMap["message"].(string)))
+	println("Error: ", APIErrorMsg(respMap))
 	println()
 	return false
 }
@@ -282,6 +282,37 @@ func GetObject(path string, silenced bool) (map[string]interface{}, string) {
 	l.GetWarningLogger().Println("Object to Get not found :", path)
 
 	return nil, ""
+}
+
+func GetSlot(rack map[string]any, location string) (map[string]any, error) {
+	templateAny, ok := rack["attributes"].(map[string]any)["template"]
+	if !ok {
+		return nil, nil
+	}
+	template := templateAny.(string)
+	if template == "" {
+		return nil, nil
+	}
+	URL := State.APIURL + "/api/obj-templates/" + template
+	resp, err := models.Send("GET", URL, GetKey(), nil)
+	if err != nil {
+		return nil, err
+	}
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("cannot get template %s", template)
+	}
+	parsedResp := ParseResponse(resp, err, "GET")
+	slots, ok := parsedResp["data"].(map[string]any)["slots"]
+	if !ok {
+		return nil, nil
+	}
+	for _, slotAny := range slots.([]any) {
+		slot := slotAny.(map[string]any)
+		if slot["location"] == location {
+			return slot, nil
+		}
+	}
+	return nil, fmt.Errorf("the slot %s does not exist", location)
 }
 
 // This is an auxillary function
@@ -663,15 +694,10 @@ func UpdateObj(Path, id, ent string, data map[string]interface{}, deleteAndPut b
 				}
 
 			} else {
-				if mInf, ok := respJson["message"]; ok {
-					if m, ok := mInf.(string); ok {
-						return nil, fmt.Errorf(APIErrorPrefix + m)
-					}
-				}
 				msg := "Cannot update. Please ensure that your attributes " +
 					"are modifiable and try again. For more details see the " +
-					"OGREE wiki: https://github.com/ditrit/OGrEE-3D/wiki"
-				return nil, fmt.Errorf(msg)
+					"OGREE wiki: https://github.com/ditrit/OGrEE-3D/wiki\n"
+				return nil, fmt.Errorf(msg + APIErrorMsg(respJson))
 			}
 
 		}
@@ -1618,6 +1644,7 @@ func GetOCLIAtrributes(Path string, ent int, data map[string]interface{}) error 
 		}
 		//}
 
+		var slot map[string]any
 		//Process the posU/slot attribute
 		if x, ok := attr["posU/slot"]; ok {
 			delete(attr, "posU/slot")
@@ -1626,12 +1653,18 @@ func GetOCLIAtrributes(Path string, ent int, data map[string]interface{}) error 
 				x = strconv.FormatFloat(x.(float64), 'G', -1, 64)
 				attr["posU"] = x
 				attr["slot"] = ""
+				slot, err = GetSlot(parent, x.(string))
 			} else if _, ok := x.(int); ok {
 				x = strconv.Itoa(x.(int))
 				attr["posU"] = x
 				attr["slot"] = ""
+				slot, err = GetSlot(parent, x.(string))
 			} else {
 				attr["slot"] = x
+				slot, err = GetSlot(parent, x.(string))
+			}
+			if err != nil {
+				return err
 			}
 		}
 
@@ -1648,38 +1681,18 @@ func GetOCLIAtrributes(Path string, ent int, data map[string]interface{}) error 
 			GetOCLIAtrributesTemplateHelper(attr, data, DEVICE)
 		} else {
 			attr["template"] = ""
-			if parAttr, ok := parent["attributes"].(map[string]interface{}); ok {
-				if rackSizeInf, ok := parAttr["size"]; ok {
-					values := map[string]interface{}{}
-
-					if rackSizeComplex, ok := rackSizeInf.(string); ok {
-						q := json.NewDecoder(strings.NewReader(rackSizeComplex))
-						q.Decode(&values)
-						if determineStrKey(values, []string{"x"}) == "x" &&
-							determineStrKey(values, []string{"y"}) == "y" {
-							if _, ok := values["x"].(int); ok {
-								values["x"] = values["x"].(int) / 10
-
-							} else if _, ok := values["x"].(float64); ok {
-								values["x"] = values["x"].(float64) / 10.0
-							}
-
-							if _, ok := values["y"].(int); ok {
-								values["y"] = values["y"].(int) / 10
-
-							} else if _, ok := values["y"].(float64); ok {
-								values["y"] = values["y"].(float64) / 10.0
-							}
-							newValues, _ := json.Marshal(values)
-							attr["size"] = string(newValues)
-
-						}
+			if slot != nil {
+				size := slot["elemSize"].([]any)
+				attr["size"] = fmt.Sprintf(
+					"{\"x\":%f, \"y\":%f}", size[0].(float64)/10., size[1].(float64)/10.)
+			} else {
+				if parAttr, ok := parent["attributes"].(map[string]interface{}); ok {
+					if rackSize, ok := parAttr["size"]; ok {
+						attr["size"] = rackSize
 					}
-
 				}
 			}
 		}
-
 		//End of device special routine
 
 		baseAttrs := map[string]interface{}{
@@ -2812,12 +2825,7 @@ func LoadTemplate(data map[string]interface{}, filePath string) error {
 		l.GetWarningLogger().Println("Couldn't load template, Status Code :", r.StatusCode, " filePath :", filePath)
 		parsedResp := ParseResponse(r, e, "sending template")
 		errorMsg := "Error template wasn't loaded\n"
-		if mInf, ok := parsedResp["message"]; ok {
-			if msg, ok := mInf.(string); ok {
-				errorMsg += APIErrorPrefix + msg
-			}
-		}
-		return fmt.Errorf(errorMsg)
+		return fmt.Errorf(errorMsg + APIErrorMsg(parsedResp))
 	}
 }
 
@@ -2927,7 +2935,7 @@ func InteractObject(path string, keyword string, val interface{}, fromAttr bool)
 						if i == 0 {
 							val = desc[i].(string)
 						} else {
-							val = val.(string) + "-" + desc[i].(string)
+							val = val.(string) + "\n" + desc[i].(string)
 						}
 
 					}

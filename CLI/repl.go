@@ -40,7 +40,6 @@ func InterpretLine(str string) {
 
 // The loop of the program
 func Start(rl *readline.Instance, user string) {
-
 	for {
 		line, err := rl.Readline()
 		if err != nil { // io.EOF
@@ -49,7 +48,6 @@ func Start(rl *readline.Instance, user string) {
 		InterpretLine(line)
 
 		//Update Prompt
-		rl.SetPrompt("\u001b[1m\u001b[32m" + user + "@" + "OGrEE3D:" +
-			"\u001b[37;1m" + c.State.CurrPath + "\u001b[1m\u001b[32m$>\u001b[0m ")
+		rl.SetPrompt(SetPrompt(user))
 	}
 }
