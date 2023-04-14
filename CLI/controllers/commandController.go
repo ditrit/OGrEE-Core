@@ -127,10 +127,15 @@ func DeleteObj(Path string) bool {
 	if resp.StatusCode == http.StatusNoContent {
 		println("Success")
 	} else {
-		if State.DebugLvl > 0 {
-			println("Error while deleting Object!")
+		msg := "Error while deleting Object!"
+		respMap := ParseResponse(resp, e, "Delete")
+		if respMap != nil && respMap["message"] != nil {
+			msg = respMap["message"].(string)
 		}
-		l.GetWarningLogger().Println("Error while deleting Object!", e)
+		if State.DebugLvl > 0 {
+			println(msg)
+		}
+		l.GetWarningLogger().Println(msg, e)
 		return false
 	}
 
