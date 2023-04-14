@@ -564,13 +564,14 @@ var DeleteEntity = func(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	errType := ""
 	switch {
 	case e2 && !e: // DELETE by name
 		if strings.Contains(entity, "template") {
-			v, _ = models.DeleteEntityManual(entity, bson.M{"slug": name})
+			v, errType = models.DeleteEntityManual(entity, bson.M{"slug": name})
 		} else {
 			//use hierarchyName
-			v = models.DeleteEntityByName(entity, name)
+			v, errType = models.DeleteEntityByName(entity, name)
 
 		}
 
@@ -583,9 +584,9 @@ var DeleteEntity = func(w http.ResponseWriter, r *http.Request) {
 		}
 
 		if entity == "device" {
-			v, _ = models.DeleteDeviceF(objID)
+			v, errType = models.DeleteDeviceF(objID)
 		} else {
-			v, _ = models.DeleteEntity(entity, objID)
+			v, errType = models.DeleteEntity(entity, objID)
 		}
 
 	default:
@@ -595,8 +596,11 @@ var DeleteEntity = func(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if v["status"] == false {
-		w.WriteHeader(http.StatusNotFound)
-		v["message"] = "No Records Found!"
+		if errType == "domain" {
+			w.WriteHeader(http.StatusBadRequest)
+		} else {
+			w.WriteHeader(http.StatusNotFound)
+		}
 		u.ErrLog("Error while deleting entity", "DELETE ENTITY", "Not Found", r)
 	} else {
 		w.WriteHeader(http.StatusNoContent)

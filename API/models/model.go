@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"os"
 	u "p3/utils"
 	"strconv"
 	"strings"
@@ -259,6 +260,27 @@ func fillHierarchyMap(hierarchyName string, data map[string][]string) {
 	}
 }
 
+func domainHasObjects(domain string) bool {
+	data := map[string]interface{}{}
+	// Get all collections names
+	ctx, cancel := u.Connect()
+	db := GetDB()
+	collNames, _ := db.ListCollectionNames(ctx, bson.D{})
+
+	// Check if at least one object belongs to domain
+	for _, collName := range collNames {
+		pattern := primitive.Regex{Pattern: "^" + domain, Options: ""}
+		e := db.Collection(collName).FindOne(ctx, bson.M{"domain": pattern}).Decode(&data)
+		if e == nil {
+			// Found one!
+			return true
+		}
+	}
+
+	defer cancel()
+	return false
+}
+
 // GetSiteParentTempUnit: search for the object of given ID,
 // then search for is site parent and return its attributes.temperatureUnit
 func GetSiteParentTempUnit(id string) (string, string) {
@@ -395,7 +417,16 @@ func GetDBName() string {
 // DeleteEntityByName: delete object of given hierarchyName
 // search for all its children and delete them too, return:
 // - success or fail message map
-func DeleteEntityByName(entity string, name string) map[string]interface{} {
+func DeleteEntityByName(entity string, name string) (map[string]interface{}, string) {
+	if entity == "domain" {
+		if name == os.Getenv("db") {
+			return u.Message(false, "Cannot delete tenant's default domain"), "domain"
+		}
+		if domainHasObjects(name) {
+			return u.Message(false, "Cannot delete domain if it has at least one object"), "domain"
+		}
+	}
+
 	var req primitive.M
 	if entity == "site" {
 		req = bson.M{"name": name}
@@ -403,9 +434,10 @@ func DeleteEntityByName(entity string, name string) map[string]interface{} {
 		req = bson.M{"hierarchyName": name}
 	}
 	resp, err := DeleteEntityManual(entity, req)
+
 	if err != "" {
 		// Unable to delete given object
-		return resp
+		return resp, err
 	} else {
 		// Delete possible children
 		rangeEntities := getChildrenCollections(u.STRAYSENSOR, entity)
@@ -420,7 +452,7 @@ func DeleteEntityByName(entity string, name string) map[string]interface{} {
 		}
 	}
 
-	return u.Message(true, "success")
+	return u.Message(true, "success"), ""
 }
 
 func DeleteEntityManual(entity string, req bson.M) (map[string]interface{}, string) {
@@ -504,11 +536,19 @@ func deleteHelper(t map[string]interface{}, ent int) (map[string]interface{}, st
 		if ent == u.DEVICE {
 			DeleteDeviceF(t["id"].(primitive.ObjectID))
 		} else {
+			if ent == u.DOMAIN {
+				if t["name"] == os.Getenv("db") {
+					return u.Message(false, "Cannot delete tenant's default domain"), "domain"
+				}
+				if domainHasObjects(t["hierarchyName"].(string)) {
+					return u.Message(false, "Cannot delete domain if it has at least one object"), "domain"
+				}
+			}
 			ctx, cancel := u.Connect()
 			entity := u.EntityToString(ent)
 			c, _ := GetDB().Collection(entity).DeleteOne(ctx, bson.M{"_id": t["id"].(primitive.ObjectID)})
 			if c.DeletedCount == 0 {
-				return u.Message(false, "There was an error in deleting the entity"), "not found"
+				return u.Message(false, "No Records Found!"), "not found"
 			}
 			defer cancel()
 
