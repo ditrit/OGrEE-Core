@@ -1,6 +1,7 @@
 package logger
 
 import (
+	"cli/utils"
 	"log"
 	"os"
 )
@@ -15,12 +16,12 @@ var (
 )
 
 func InitLogs() {
-	file, err := os.OpenFile("log.txt", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0666)
+	file, err := os.OpenFile(utils.ExeDir()+"/log.txt", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0666)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	f2, err2 := os.OpenFile("unitylog.txt", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0666)
+	f2, err2 := os.OpenFile(utils.ExeDir()+"unitylog.txt", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0666)
 	if err2 != nil {
 		log.Fatal(err2)
 	}

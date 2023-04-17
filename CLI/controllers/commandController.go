@@ -4,6 +4,7 @@ import (
 	"cli/logger"
 	l "cli/logger"
 	"cli/models"
+	"cli/utils"
 	u "cli/utils"
 	"encoding/hex"
 	"encoding/json"
@@ -1198,8 +1199,7 @@ func Help(entry string) {
 	default:
 		path = "./other/man/default.md"
 	}
-
-	text, e := os.ReadFile(path)
+	text, e := os.ReadFile(utils.ExeDir() + "/" + path)
 	if e != nil {
 		println("Manual Page not found!")
 	} else {

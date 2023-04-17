@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"os"
 
+	"cli/utils"
+
 	"github.com/BurntSushi/toml"
 	flag "github.com/spf13/pflag"
 )
@@ -53,7 +55,7 @@ func defaultConfig() Config {
 		APIURL:       "",
 		UnityURL:     "",
 		UnityTimeout: "10ms",
-		ConfigPath:   "../config.toml",
+		ConfigPath:   utils.ExeDir() + "/../config.toml",
 		HistPath:     "./.history",
 		Script:       "",
 		Drawable:     []string{"all"},
