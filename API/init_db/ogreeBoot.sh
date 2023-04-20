@@ -190,8 +190,42 @@ mkdir "$path"
 mongod --dbpath "$path" --port $port --logpath "$log" --fork
 
 #Initialise the customer record DB
-mongosh "$host:"$port bootup.js --eval '
-var host = "'$host':'$port'", 
+#mongosh "$host:"$port bootup.js --eval '
+#var host = "'$host':'$port'", 
+#CUSTOMER_RECORDS_DB="'$CUSTOMER_RECORDS_DB'",
+#ADMIN_DB="'$ADMIN_DB'",
+#SUPER_USER="'$SUPER_USER'",
+#SUPER_PASS="'$SUPER_PASS'",
+#ADMIN_USER="'$ADMIN_USER'",
+#ADMIN_PASS="'$ADMIN_PASS'",
+#GUARD_USER="'$GUARD_USER'",
+#GUARD_PASS="'$GUARD_PASS'"'
+
+#The command below will create the new customer DB 
+#mongosh "$host:"$port"/"$DB_NAME ./createdb.js --eval '
+#var host = "'$host':'$port'",
+#DB_NAME = "'$DB_NAME'",
+#CUSTOMER_RECORDS_DB = "'$CUSTOMER_RECORDS_DB'",
+#ADMIN_USER = "'$ADMIN_USER'",
+#ADMIN_PASS = "'$ADMIN_PASS'"'
+
+
+# Create API User to access customer DB
+echo 
+echo "Please type a new a password for the customer: "
+read PASS
+#mongosh "$host:"$port createUser.js --eval '
+#let DB_NAME = "ogree'$DB_NAME'",
+#ADMIN_USER = "'$ADMIN_USER'",
+#ADMIN_PASS = "'$ADMIN_PASS'",
+#PASS = "'$PASS'",
+#host = "'$host':'$port'";'
+echo $ADMIN_USER
+echo $ADMIN_PASS
+echo $ADMIN_DB
+mongosh localhost:27017 docker/dbft.js --eval '
+let DB_NAME ="'$DB_NAME'",
+CUSTOMER_API_PASS="'$PASS'",
 CUSTOMER_RECORDS_DB="'$CUSTOMER_RECORDS_DB'",
 ADMIN_DB="'$ADMIN_DB'",
 SUPER_USER="'$SUPER_USER'",
@@ -201,31 +235,11 @@ ADMIN_PASS="'$ADMIN_PASS'",
 GUARD_USER="'$GUARD_USER'",
 GUARD_PASS="'$GUARD_PASS'"'
 
-#The command below will create the new customer DB 
-mongosh "$host:"$port"/"$DB_NAME ./createdb.js --eval '
-var host = "'$host':'$port'",
-DB_NAME = "'$DB_NAME'",
-CUSTOMER_RECORDS_DB = "'$CUSTOMER_RECORDS_DB'",
-ADMIN_USER = "'$ADMIN_USER'",
-ADMIN_PASS = "'$ADMIN_PASS'"'
-
-
-# Create API User to access customer DB
-echo 
-echo "Please type a new a password for the customer: "
-read PASS
-mongosh "$host:"$port createUser.js --eval '
-let DB_NAME = "ogree'$DB_NAME'",
-ADMIN_USER = "'$ADMIN_USER'",
-ADMIN_PASS = "'$ADMIN_PASS'",
-PASS = "'$PASS'",
-host = "'$host':'$port'";'
-
 echo "PASSED BOOTUP"
 
 sudo fuser -k $port/tcp
 mongod --dbpath "$path" --port $port --logpath "$log" --fork --auth
 echo "PASSED RESTART"
-exit
+#exit
 
 echo "done"

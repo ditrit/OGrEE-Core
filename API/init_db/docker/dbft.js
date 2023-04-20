@@ -53,28 +53,29 @@ var m = new Mongo()
 var authDB = m.getDB(ADMIN_DB)
 
 //Create the Root user named Super
-db.createUser({ user: SUPER_USER, pwd: SUPER_PASS,
+authDB.createUser({ user: SUPER_USER, pwd: SUPER_PASS,
                 roles: [{role: "root", db: ADMIN_DB}]
-                })
+                });
 
 //Create the Admin user
-db.createUser({ user: ADMIN_USER, pwd: ADMIN_PASS,
+authDB.createUser({ user: ADMIN_USER, pwd: ADMIN_PASS,
                 roles: [{role: "userAdminAnyDatabase", db: ADMIN_DB},
                 { role: "readWriteAnyDatabase", db: ADMIN_DB}]
-                })
+                });
 
 //Create the Backup user named guard
-db.createUser({ user: GUARD_USER, pwd: GUARD_PASS,
+authDB.createUser({ user: GUARD_USER, pwd: GUARD_PASS,
                 roles: [{role: "backup", db: ADMIN_DB}, {role: "restore", db: ADMIN_DB}]
-                })
+                });
 
 //Create customer record collection                
 var db = m.getDB(CUSTOMER_RECORDS_DB);
 db.createCollection('customer');
 db.customer.createIndex({name:1}, { unique: true });
 
-
-
+console.log("ADMIN:",ADMIN_USER)
+console.log("ADMIN PASS:",ADMIN_PASS)
+console.log("ADMIN DB:",ADMIN_DB)
 
 
 /////
