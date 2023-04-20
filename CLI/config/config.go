@@ -106,6 +106,6 @@ func ReadConfig() *Config {
 	json.Unmarshal(argBytes, &conf)
 
 	conf.ConfigPath, _ = filepath.Abs(conf.ConfigPath)
-
+	conf.HistPath, _ = filepath.Abs(conf.HistPath)
 	return conf
 }
