@@ -58,10 +58,25 @@ authDB.createUser({ user: SUPER_USER, pwd: SUPER_PASS,
                 });
 
 //Create the Admin user
-authDB.createUser({ user: ADMIN_USER, pwd: ADMIN_PASS,
-                roles: [{role: "userAdminAnyDatabase", db: ADMIN_DB},
-                { role: "readWriteAnyDatabase", db: ADMIN_DB}]
-                });
+
+// Get all existing users
+var users = authDB.getUsers()["users"];
+var found = false;
+
+// Check if a specific user exists
+for (var i = 0; i < users.length; i++) {
+    if (users[i].hasOwnProperty('user') && users[i]['user'] === 'admin') {
+        found = true;
+    }
+}
+
+if (!found) {
+    authDB.createUser({ user: ADMIN_USER, pwd: ADMIN_PASS,
+        roles: [{role: "userAdminAnyDatabase", db: ADMIN_DB},
+        { role: "readWriteAnyDatabase", db: ADMIN_DB}]
+        });
+} 
+
 
 //Create the Backup user named guard
 authDB.createUser({ user: GUARD_USER, pwd: GUARD_PASS,
@@ -72,10 +87,6 @@ authDB.createUser({ user: GUARD_USER, pwd: GUARD_PASS,
 var db = m.getDB(CUSTOMER_RECORDS_DB);
 db.createCollection('customer');
 db.customer.createIndex({name:1}, { unique: true });
-
-console.log("ADMIN:",ADMIN_USER)
-console.log("ADMIN PASS:",ADMIN_PASS)
-console.log("ADMIN DB:",ADMIN_DB)
 
 
 /////
