@@ -52,29 +52,45 @@ GUARD_PASS;
 var m = new Mongo()
 var authDB = m.getDB(ADMIN_DB)
 
-//Create the Root user named Super
-db.createUser({ user: SUPER_USER, pwd: SUPER_PASS,
-                roles: [{role: "root", db: ADMIN_DB}]
-                })
+// Get all existing users
+var users = authDB.getUsers()["users"];
+var found = false;
 
-//Create the Admin user
-db.createUser({ user: ADMIN_USER, pwd: ADMIN_PASS,
-                roles: [{role: "userAdminAnyDatabase", db: ADMIN_DB},
-                { role: "readWriteAnyDatabase", db: ADMIN_DB}]
-                })
+// Check if a specific user exists 
+// we loop here for future proofing purposes
+// this is meant for docker-compose 
+for (var i = 0; i < users.length; i++) {
+    if (users[i].hasOwnProperty('user') && users[i]['user'] === ADMIN_USER) {
+        found = true;
+    }
+}
+
+//Create the Admin user if not found
+if (!found) {
+    authDB.createUser({ user: ADMIN_USER, pwd: ADMIN_PASS,
+        roles: [{role: "userAdminAnyDatabase", db: ADMIN_DB},
+        { role: "readWriteAnyDatabase", db: ADMIN_DB}]
+        });
+} 
+
+
+//Create the Root user named Super
+authDB.createUser({ user: SUPER_USER, pwd: SUPER_PASS,
+                roles: [{role: "root", db: ADMIN_DB}]
+                });
+
 
 //Create the Backup user named guard
-db.createUser({ user: GUARD_USER, pwd: GUARD_PASS,
+authDB.createUser({ user: GUARD_USER, pwd: GUARD_PASS,
                 roles: [{role: "backup", db: ADMIN_DB}, {role: "restore", db: ADMIN_DB}]
-                })
+                });
+
+                
 
 //Create customer record collection                
 var db = m.getDB(CUSTOMER_RECORDS_DB);
 db.createCollection('customer');
 db.customer.createIndex({name:1}, { unique: true });
-
-
-
 
 
 /////
