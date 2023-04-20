@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
+	"path/filepath"
 
 	"cli/utils"
 
@@ -103,6 +104,8 @@ func ReadConfig() *Config {
 
 	argBytes, _ := json.Marshal(args)
 	json.Unmarshal(argBytes, &conf)
+
+	conf.ConfigPath, _ = filepath.Abs(conf.ConfigPath)
 
 	return conf
 }
