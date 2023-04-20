@@ -44,8 +44,6 @@ services:
     volumes:
         -  ${MONGO_INIT}/init.sh:/docker-entrypoint-initdb.d/init.sh
         -  ${MONGO_INIT}/dbft.js:/home/dbft.js
-        -  ${MONGO_INIT}/addCustomer.sh:/home/addCustomer.sh
-        -  ${MONGO_INIT}/addCustomer.js:/home/addCustomer.js
     ports:
       - ${DB_PORT}:27017
     #By default MongoDB will attempt to take port 27017, so just map it
