@@ -7,6 +7,7 @@ import (
 	"p3/models"
 	u "p3/utils"
 
+	"github.com/gorilla/mux"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
@@ -230,6 +231,29 @@ var GetAllAccounts = func(w http.ResponseWriter, r *http.Request) {
 		} else {
 			resp = u.Message(true, "successfully got users")
 			resp["data"] = data
+		}
+		u.Respond(w, resp)
+	}
+}
+
+var RemoveAccount = func(w http.ResponseWriter, r *http.Request) {
+	fmt.Println("******************************************************")
+	fmt.Println("FUNCTION CALL: 	 RemoveAllAccount ")
+	fmt.Println("******************************************************")
+	DispRequestMetaData(r)
+
+	if r.Method == "OPTIONS" {
+		w.Header().Add("Content-Type", "application/json")
+		w.Header().Add("Allow", "DELETE, OPTIONS, HEAD")
+	} else {
+		var resp map[string]interface{}
+		userId := mux.Vars(r)["id"]
+		err := models.DeleteUser(userId)
+		if err != "" {
+			w.WriteHeader(http.StatusInternalServerError)
+			resp = u.Message(false, "Error: "+err)
+		} else {
+			resp = u.Message(true, "successfully removed user")
 		}
 		u.Respond(w, resp)
 	}

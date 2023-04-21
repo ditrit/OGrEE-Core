@@ -71,6 +71,9 @@ func Router(jwt func(next http.Handler) http.Handler) *mux.Router {
 	router.HandleFunc("/api/users",
 		controllers.GetAllAccounts).Methods("GET", "OPTIONS", "HEAD")
 
+	router.HandleFunc("/api/users/{id}",
+		controllers.RemoveAccount).Methods("DELETE", "OPTIONS")
+
 	router.HandleFunc("/api/version",
 		controllers.Version).Methods("GET", "OPTIONS", "HEAD")
 

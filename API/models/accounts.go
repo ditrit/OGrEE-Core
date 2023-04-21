@@ -192,3 +192,18 @@ func GetAllUsers() ([]Account, string) {
 	defer cancel()
 	return users, ""
 }
+
+func DeleteUser(id string) string {
+	ctx, cancel := u.Connect()
+	objID, err := primitive.ObjectIDFromHex(id)
+	if err != nil {
+		return "User ID not valid"
+	}
+	req := bson.M{"_id": objID}
+	c, _ := GetDB().Collection("account").DeleteOne(ctx, req)
+	if c.DeletedCount == 0 {
+		return "Internal error try to delete user"
+	}
+	defer cancel()
+	return ""
+}

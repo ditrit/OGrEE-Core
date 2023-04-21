@@ -840,7 +840,7 @@ var UpdateEntity = func(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	//Get entity from URL and strip trailing 's'
+	//Get entity from URL
 	entity = mux.Vars(r)["entity"]
 
 	//If templates, format them
