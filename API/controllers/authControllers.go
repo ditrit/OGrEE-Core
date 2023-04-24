@@ -238,7 +238,7 @@ var GetAllAccounts = func(w http.ResponseWriter, r *http.Request) {
 
 var RemoveAccount = func(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("******************************************************")
-	fmt.Println("FUNCTION CALL: 	 RemoveAllAccount ")
+	fmt.Println("FUNCTION CALL: 	 RemoveAccount ")
 	fmt.Println("******************************************************")
 	DispRequestMetaData(r)
 
@@ -254,6 +254,66 @@ var RemoveAccount = func(w http.ResponseWriter, r *http.Request) {
 			resp = u.Message(false, "Error: "+err)
 		} else {
 			resp = u.Message(true, "successfully removed user")
+		}
+		u.Respond(w, resp)
+	}
+}
+
+var ModifyUserRoles = func(w http.ResponseWriter, r *http.Request) {
+	fmt.Println("******************************************************")
+	fmt.Println("FUNCTION CALL: 	 ModifyUserRoles ")
+	fmt.Println("******************************************************")
+	DispRequestMetaData(r)
+
+	if r.Method == "OPTIONS" {
+		w.Header().Add("Content-Type", "application/json")
+		w.Header().Add("Allow", "PATCH, OPTIONS, HEAD")
+	} else {
+		var resp map[string]interface{}
+		userId := mux.Vars(r)["id"]
+
+		var data map[string]interface{}
+		err := json.NewDecoder(r.Body).Decode(&data)
+		if err != nil {
+			w.WriteHeader(http.StatusBadRequest)
+			u.Respond(w, u.Message(false, "Invalid request"))
+			return
+		}
+
+		roles, ok := data["roles"].(map[string]interface{})
+		if len(data) > 1 || !ok {
+			w.WriteHeader(http.StatusBadRequest)
+			u.Respond(w, u.Message(false, "Only 'roles' should be provided to patch"))
+			return
+		}
+
+		rolesConverted := map[string]string{}
+		for k := range roles {
+			if v, ok := roles[k].(string); ok {
+				rolesConverted[k] = v
+			} else {
+				w.WriteHeader(http.StatusBadRequest)
+				u.Respond(w, u.Message(false, "Invalid roles format"))
+				return
+			}
+		}
+
+		e, eType := models.ModifyUser(userId, rolesConverted)
+		if e != "" {
+			switch eType {
+			case "internal":
+				w.WriteHeader(http.StatusInternalServerError)
+			case "validate":
+				w.WriteHeader(http.StatusBadRequest)
+			case "unauthorised":
+				w.WriteHeader(http.StatusForbidden)
+			default:
+				w.WriteHeader(http.StatusInternalServerError)
+			}
+			w.WriteHeader(http.StatusInternalServerError)
+			resp = u.Message(false, "Error: "+e)
+		} else {
+			resp = u.Message(true, "successfully updated user roles")
 		}
 		u.Respond(w, resp)
 	}

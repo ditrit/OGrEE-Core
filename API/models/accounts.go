@@ -57,12 +57,21 @@ func (account *Account) Validate() (map[string]interface{}, bool) {
 	defer cancel()
 
 	// Validate domains and roles
-	if len(account.Roles) <= 0 {
-		return u.Message(false, "Object 'roles' with domain names as keys and roles as values is mandatory"), false
+	if e := validateDomainRoles(account.Roles); e != "" {
+		return u.Message(false, e), false
 	}
-	for domain, role := range account.Roles {
+
+	return u.Message(false, "Requirement passed"), true
+}
+
+func validateDomainRoles(roles map[string]string) string {
+	// Validate domains and roles
+	if len(roles) <= 0 {
+		return "Object 'roles' with domain names as keys and roles as values is mandatory"
+	}
+	for domain, role := range roles {
 		if !CheckDomainExists(domain) {
-			return u.Message(false, "Domain does not exist: "+domain), false
+			return "Domain does not exist: " + domain
 		}
 		switch role {
 		case Manager:
@@ -70,11 +79,10 @@ func (account *Account) Validate() (map[string]interface{}, bool) {
 		case User:
 			break
 		default:
-			return u.Message(false, "Role assigned is not valid: "+role), false
+			return "Role assigned is not valid: "
 		}
 	}
-
-	return u.Message(false, "Requirement passed"), true
+	return ""
 }
 
 func (account *Account) Create(callerRoles map[string]string) (map[string]interface{}, string) {
@@ -206,4 +214,27 @@ func DeleteUser(id string) string {
 	}
 	defer cancel()
 	return ""
+}
+
+func ModifyUser(id string, roles map[string]string) (string, string) {
+	objID, err := primitive.ObjectIDFromHex(id)
+	if err != nil {
+		return "User ID not valid", "validate"
+	}
+
+	if e := validateDomainRoles(roles); e != "" {
+		return e, "validate"
+	}
+
+	println("UPDATE!")
+	ctx, cancel := u.Connect()
+	defer cancel()
+	user := map[string]interface{}{}
+	user["roles"] = roles
+	err = GetDB().Collection("account").FindOneAndUpdate(ctx, bson.M{"_id": objID}, bson.M{"$set": user}).Err()
+	if err != nil {
+		return "Internal error while updating user roles", "internal"
+	}
+
+	return "", ""
 }
