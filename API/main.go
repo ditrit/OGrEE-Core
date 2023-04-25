@@ -162,6 +162,9 @@ func Router(jwt func(next http.Handler) http.Handler) *mux.Router {
 	router.HandleFunc("/api/{entity}s",
 		controllers.CreateEntity).Methods("POST")
 
+	router.HandleFunc("/api/domains/bulk",
+		controllers.CreateBulkDomain).Methods("POST")
+
 	//DELETE ENTITY
 	router.HandleFunc("/api/{entity}s/{id:[a-zA-Z0-9]{24}}",
 		controllers.DeleteEntity).Methods("DELETE")

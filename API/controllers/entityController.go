@@ -239,6 +239,84 @@ var CreateEntity = func(w http.ResponseWriter, r *http.Request) {
 	u.Respond(w, resp)
 }
 
+var CreateBulkDomain = func(w http.ResponseWriter, r *http.Request) {
+	fmt.Println("******************************************************")
+	fmt.Println("FUNCTION CALL: 	 CreateBulkDomain ")
+	fmt.Println("******************************************************")
+
+	// Get user roles for permissions
+	user := getUserFromToken(w, r)
+	if user == nil {
+		return
+	}
+
+	listDomains := []map[string]interface{}{}
+	err := json.NewDecoder(r.Body).Decode(&listDomains)
+	if err != nil || len(listDomains) < 0 {
+		w.WriteHeader(http.StatusBadRequest)
+		u.Respond(w, u.Message(false, "Error while decoding request body"))
+		u.ErrLog("Error while decoding request body", "CREATE BULK DOMAIN", "", r)
+		return
+	}
+
+	domainsToCreate := getBulkDomainsRecursively("", listDomains)
+	fmt.Println(domainsToCreate)
+
+	resp := map[string]interface{}{}
+	for _, domain := range domainsToCreate {
+		// Convert back to json to avoid invalid types in json schema validation
+		bytes, _ := json.Marshal(domain)
+		json.Unmarshal(bytes, &domain)
+		// Create
+		result, _ := models.CreateEntity(u.DOMAIN, domain, user.Roles)
+		resp[domain["name"].(string)] = result["message"]
+	}
+	w.WriteHeader(http.StatusOK)
+	u.Respond(w, resp)
+}
+
+func getBulkDomainsRecursively(parent string, listDomains []map[string]interface{}) []map[string]interface{} {
+	domainsToCreate := []map[string]interface{}{}
+	for _, domain := range listDomains {
+		domainObj := map[string]interface{}{}
+		domainObj["name"] = domain["name"].(string)
+		println(domain["name"].(string))
+		if parent != "" {
+			domainObj["parentId"] = parent
+		}
+		domainObj["category"] = "domain"
+		if desc, ok := domain["description"].(string); ok {
+			domainObj["description"] = []string{desc}
+		} else {
+			domainObj["description"] = []string{""}
+		}
+		domainObj["attributes"] = map[string]string{}
+		if color, ok := domain["color"].(string); ok {
+			domainObj["attributes"].(map[string]string)["color"] = color
+		} else {
+			domainObj["attributes"].(map[string]string)["color"] = "ffffff"
+		}
+		domainsToCreate = append(domainsToCreate, domainObj)
+		if children, ok := domain["domains"].([]interface{}); ok {
+			if len(children) > 0 {
+				println("found baby")
+				dChildren := []map[string]interface{}{}
+				for _, d := range children {
+					dChildren = append(dChildren, d.(map[string]interface{}))
+				}
+				var parentId string
+				if parent == "" {
+					parentId = domain["name"].(string)
+				} else {
+					parentId = parent + "." + domain["name"].(string)
+				}
+				domainsToCreate = append(domainsToCreate, getBulkDomainsRecursively(parentId, dChildren)...)
+			}
+		}
+	}
+	return domainsToCreate
+}
+
 // swagger:operation GET /api/objects/{name} objects GetObject
 // Gets an Object from the system.
 // The hierarchyName must be provided in the URL parameter

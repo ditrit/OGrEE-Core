@@ -50,6 +50,10 @@ func validateParent(ent string, entNum int, t map[string]interface{}) (map[strin
 		return nil, true
 	}
 
+	if entNum == u.DOMAIN && (t["parentId"] == nil || t["parentId"] == "") {
+		return nil, true
+	}
+
 	//Check ParentID is valid
 	if t["parentId"] == nil || t["parentId"] == "" {
 		return u.Message(false, "ParentID is not valid"), false
@@ -369,11 +373,7 @@ func ValidateEntity(entity int, t map[string]interface{}) (map[string]interface{
 		//if parent found
 		r, ok := validateParent(u.EntityToString(entity), entity, t)
 		if !ok {
-			if entity == u.DOMAIN {
-				t["hierarchyName"] = t["name"].(string)
-			} else {
-				return r, ok
-			}
+			return r, ok
 		} else if r["hierarchyName"] != nil {
 			t["hierarchyName"] = r["hierarchyName"].(string) + "." + t["name"].(string)
 		} else {
