@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"log"
 	"os"
-	"strings"
 	"time"
 
 	"github.com/joho/godotenv"
@@ -35,9 +34,6 @@ func init() {
 	user := os.Getenv("db_user")
 	pass := os.Getenv("db_pass")
 	dbName := "ogree" + os.Getenv("db")
-	if strings.HasSuffix(os.Args[0], ".test") {
-		dbName = "ogreeAutoTest"
-	}
 
 	println("USER:", user)
 	println("DB:", dbName)
