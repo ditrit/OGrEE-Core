@@ -1,7 +1,5 @@
 /////
 // NOTE
-// This creates a DB that maintains a list of customer DBs
-// with a customer collection
 //
 // An 'admin' DB will be created with an admin, super and backup user
 // MongoDB docker image will execute scripts in alphabetical order
@@ -22,15 +20,14 @@
 // mongosh "mongodb://SUPER_USER:SUPER_PASS@localhost/test?authSource=test" 
 //
 // As API:
-// mongosh "mongodb://"ogree"+DB_NAME+"Admin":CUSTOMER_API_PASS@localhost/"ogree"+DB_NAME?authSource="ogree"+DB_NAME"
+// mongosh "mongodb://"ogree"+DB_NAME+"Admin":CUSTOMER_API_PASSWORD@localhost/"ogree"+DB_NAME?authSource="ogree"+DB_NAME"
 
 
 //
 // CONSTANT DECLARATIONS START
 //
 DB_NAME;
-CUSTOMER_API_PASS;
-CUSTOMER_RECORDS_DB;
+CUSTOMER_API_PASSWORD;
 
 ADMIN_DB;
 SUPER_USER;
@@ -85,12 +82,6 @@ authDB.createUser({ user: GUARD_USER, pwd: GUARD_PASS,
                 roles: [{role: "backup", db: ADMIN_DB}, {role: "restore", db: ADMIN_DB}]
                 });
 
-                
-
-//Create customer record collection                
-var db = m.getDB(CUSTOMER_RECORDS_DB);
-db.createCollection('customer');
-db.customer.createIndex({name:1}, { unique: true });
 
 
 /////
@@ -102,11 +93,6 @@ var m = new Mongo()
 var authDB = m.getDB(ADMIN_DB)
 authDB.auth(ADMIN_USER, ADMIN_PASS);
 
-
-
-//First Update customer record collection
-var odb = m.getDB(CUSTOMER_RECORDS_DB)
-odb.customer.insertOne({"name": DB_NAME});
 
 
 //Then Create the customer DB
@@ -140,10 +126,8 @@ db.createCollection('stray_device');
 db.createCollection('stray_sensor');
 
 
-//Enfore unique Tenant Names
-db.domain.createIndex( {parentId:1, name:1}, { unique: true } );
-
 //Enforce unique children
+db.domain.createIndex( {parentId:1, name:1}, { unique: true } );
 db.site.createIndex({name:1}, { unique: true });
 db.building.createIndex({parentId:1, name:1}, { unique: true });
 db.room.createIndex({parentId:1, name:1}, { unique: true });
@@ -175,17 +159,13 @@ db.stray_device.createIndex({parentId:1,name:1}, { unique: true });
 db.stray_sensor.createIndex({name:1}, { unique: true });
 
 
-// Create Respective API User
-// To create a new customer you should access the 
-// running container, run the createdb.js and createUser.js scripts
-// contained in the home folder 
 
-//Authenticate first
+//Authenticate first then create the customer user
 var m = new Mongo()
 var authDB = m.getDB(ADMIN_DB)
 authDB.auth(ADMIN_USER, ADMIN_PASS);
 
 
-db.createUser({ user: "ogree"+DB_NAME+"Admin", pwd: CUSTOMER_API_PASS,
+db.createUser({ user: "ogree"+DB_NAME+"Admin", pwd: CUSTOMER_API_PASSWORD,
                 roles: [{role: "readWrite", db: "ogree"+DB_NAME}]
                 })

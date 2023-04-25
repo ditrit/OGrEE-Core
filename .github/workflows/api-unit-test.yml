@@ -33,16 +33,15 @@ jobs:
           -e DB_NAME=test \
           -e MONGO_INITDB_ROOT_USERNAME=admin \
           -e MONGO_INITDB_ROOT_PASSWORD=password \
-          -e CUSTOMER_API_PASS=123 \
-          -e CUSTOMER_RECORDS_DB=ogree \
+          -e CUSTOMER_API_PASSWORD=123 \
           -e ADMIN_DB=admin \
           -e SUPER_USER=super \
           -e SUPER_PASS=password \
           -e GUARD_USER=guard \
           -e GUARD_PASS=password \
           -p 27017:27017 \
-          --mount type=bind,source=$(pwd)/init_db/docker/init.sh,target=/docker-entrypoint-initdb.d/init.sh \
-          --mount type=bind,source=$(pwd)/init_db/docker/dbft.js,target=/home/dbft.js \
+          --mount type=bind,source=$(pwd)/../deploy/docker/init.sh,target=/docker-entrypoint-initdb.d/init.sh \
+          --mount type=bind,source=$(pwd)/../deploy/createdb.js,target=/home/createdb.js \
           mongo:latest
 
     - name: Build

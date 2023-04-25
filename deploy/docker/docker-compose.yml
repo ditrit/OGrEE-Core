@@ -1,21 +1,20 @@
 version: '3.9'
-
 services:
   dbft_api:
     build: ${API_BUILD_DIR}#${API_BRANCH}
-    network_mode: "host"
+    # build: ../../OGrEE-API
     image: dbft/api:dockerfile
-    container_name: ${COMPOSE_PROJECT_NAME}t_api
+    container_name: ${COMPOSE_PROJECT_NAME}_api
     environment:
-      - api_port=${API_PORT}
-      - db_host=0.0.0.0
-      - db_port=${DB_PORT}
-      - db_user=${TENANT}
-      - db_pass=123
-      - db=${TENANT}
+      - api_port=3551
+      - db_host=${COMPOSE_PROJECT_NAME}_db
+      - db_port=27017
+      - db_user=$COMPOSE_PROJECT_NAME
+      - db_pass=$CUSTOMER_API_PASSWORD
+      - db=$COMPOSE_PROJECT_NAME
       - token_password=yourSecretPasswordGoesHere
     ports:
-      - ${API_PORT}:${API_PORT}
+      - ${API_PORT}:3551
     depends_on:
       - dbft_db
     restart: on-failure:10
@@ -28,24 +27,18 @@ services:
     image: mongo:latest
     container_name: ${COMPOSE_PROJECT_NAME}_db
     environment:
-        - DB_NAME=${TENANT}
-        - CUSTOMER_API_PASS=123
-        - CUSTOMER_RECORDS_DB=ogree
-
-        - MONGO_INITDB_ROOT_USERNAME=admin
-        - MONGO_INITDB_ROOT_PASSWORD=adminpassword
-
+        - DB_NAME=$COMPOSE_PROJECT_NAME
+        - CUSTOMER_API_PASSWORD=$CUSTOMER_API_PASSWORD
         - ADMIN_DB=admin
         - SUPER_USER=super
         - SUPER_PASS=superpassword
-
+        - MONGO_INITDB_ROOT_USERNAME=admin
+        - MONGO_INITDB_ROOT_PASSWORD=adminpassword
         - GUARD_USER=guard
         - GUARD_PASS=adminpassword
     volumes:
-        -  ${MONGO_INIT}/init.sh:/docker-entrypoint-initdb.d/init.sh
-        -  ${MONGO_INIT}/dbft.js:/home/dbft.js
-    ports:
-      - ${DB_PORT}:27017
+        -  ./init.sh:/docker-entrypoint-initdb.d/init.sh
+        -  ../createdb.js:/home/createdb.js
     #By default MongoDB will attempt to take port 27017, so just map it
     #for ease of use
 
@@ -64,9 +57,8 @@ services:
   # {obj}DrawableJson -> Specify them as usual, objDrawableJson="xyz"
   dbft_cli:
     build: ${CLI_BUILD_DIR}#${CLI_BRANCH}
-    #build: ${LOCAL_CLI_BUILD_DIR}
-    network_mode: "host"
     image: dbft/cli:dockerfile
+    profiles: ["cli"]
     container_name: ${COMPOSE_PROJECT_NAME}_cli
     tty: true
     environment:
@@ -88,8 +80,9 @@ services:
     image: swaggerapi/swagger-ui:latest
     container_name: api_docs_ui
     network_mode: "bridge"
+    profiles: ["doc"]
     volumes:
-      - ${API_DOC_DIR}:/home # Must contain the swagger.json file
+      - ${API_DOC_DIR}/swagger.json:/home/swagger.json
     ports:
       - ${API_DOC_UI_PORT}:8080
     environment:
@@ -97,11 +90,11 @@ services:
 
   dbft_webapp:
     build: 
-      #context: ${APP_BUILD_DIR}#${APP_BRANCH}
-      context: ${LOCAL_APP_BUILD_DIR}
+      context: ${APP_BUILDDIR}#${APP_BRANCH}
       args:
-      - API_URL=localhost:${API_PORT}
+      - API_URL=http://${API_EXTERNALURL}:${API_PORT}
     image: dbft/webapp:dockerfile
+    profiles: ["web"]
     container_name: ${COMPOSE_PROJECT_NAME}_webapp
     ports:
       - ${WEB_PORT}:80

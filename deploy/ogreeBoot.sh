@@ -16,7 +16,6 @@
 #   port: DB port to be exposed
 #   log: Path for Mongo log
 #   name: Name of the customer/dev database 
-#   CUSTOMER_RECORDS_DB: Name of the customer records keeping database   
 #   ADMIN_DB: Name of the Admin database to create
 #   SUPER_USER: Name of the Super user to create
 #   SUPER_PASS: Super user password 
@@ -31,7 +30,6 @@
 #   port: 27017
 #   log: /mongod.log
 #   DB_NAME: ogreeDevelop
-#   CUSTOMER_RECORDS_DB: ogree    
 #   ADMIN_DB: admin
 #   SUPER_USER: super
 #   SUPER_PASS: superpassword
@@ -61,11 +59,6 @@ while test $# -gt 0; do
                 -host)
                     shift
                     host=$1
-                    shift
-                    ;;
-                -CUSTOMER_RECORDS_DB)
-                    shift
-                    CUSTOMER_RECORDS_DB=$1
                     shift
                     ;;
                 -DB_NAME)
@@ -189,24 +182,21 @@ rm -rf "$path"/*
 mkdir "$path"
 mongod --dbpath "$path" --port $port --logpath "$log" --fork
 
-
 # Get password for API User to access customer DB
 echo 
 echo "Please type a new a password for the customer: "
 read PASS
 
-mongosh localhost:27017 docker/dbft.js --eval '
+mongosh localhost:27017 createdb.js --eval '
 let DB_NAME ="'$DB_NAME'",
-CUSTOMER_API_PASS="'$PASS'",
-CUSTOMER_RECORDS_DB="'$CUSTOMER_RECORDS_DB'",
 ADMIN_DB="'$ADMIN_DB'",
+CUSTOMER_API_PASSWORD="'$PASS'",
 SUPER_USER="'$SUPER_USER'",
 SUPER_PASS="'$SUPER_PASS'",
 ADMIN_USER="'$ADMIN_USER'",
 ADMIN_PASS="'$ADMIN_PASS'",
 GUARD_USER="'$GUARD_USER'",
 GUARD_PASS="'$GUARD_PASS'"'
-
 
 sudo fuser -k $port/tcp
 mongod --dbpath "$path" --port $port --logpath "$log" --fork --auth
