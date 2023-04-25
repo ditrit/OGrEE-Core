@@ -41,8 +41,8 @@ jobs:
           -e GUARD_USER=guard \
           -e GUARD_PASS=password \
           -p 27017:27017 \
-          -v init_db/docker/init.sh:/docker-entrypoint-initdb.d/init.sh \
-          -v init_db/docker/dbft.js:/home/dbft.js \
+          --mount type=bind,source=init_db/docker/init.sh,target=/docker-entrypoint-initdb.d/init.sh \
+          --mount type=bind,source=init_db/docker/dbft.js,target=/home/dbft.js \
           mongo:latest
 
     - name: Build
