@@ -4,7 +4,7 @@ name: API Unit Tests
 
 on:
   pull_request:
-    branches: [ "dbftTest" ]
+    branches: [ "main" ]
     paths:
     - API/**
 
