@@ -68,6 +68,9 @@ func Router(jwt func(next http.Handler) http.Handler) *mux.Router {
 	router.HandleFunc("/api/users",
 		controllers.CreateAccount).Methods("POST", "OPTIONS")
 
+	router.HandleFunc("/api/users/bulk",
+		controllers.CreateBulkAccount).Methods("POST", "OPTIONS")
+
 	router.HandleFunc("/api/users",
 		controllers.GetAllAccounts).Methods("GET", "OPTIONS", "HEAD")
 

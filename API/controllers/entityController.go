@@ -280,7 +280,6 @@ func getBulkDomainsRecursively(parent string, listDomains []map[string]interface
 	for _, domain := range listDomains {
 		domainObj := map[string]interface{}{}
 		domainObj["name"] = domain["name"].(string)
-		println(domain["name"].(string))
 		if parent != "" {
 			domainObj["parentId"] = parent
 		}
@@ -288,7 +287,7 @@ func getBulkDomainsRecursively(parent string, listDomains []map[string]interface
 		if desc, ok := domain["description"].(string); ok {
 			domainObj["description"] = []string{desc}
 		} else {
-			domainObj["description"] = []string{""}
+			domainObj["description"] = []string{domain["name"].(string)}
 		}
 		domainObj["attributes"] = map[string]string{}
 		if color, ok := domain["color"].(string); ok {
@@ -299,7 +298,6 @@ func getBulkDomainsRecursively(parent string, listDomains []map[string]interface
 		domainsToCreate = append(domainsToCreate, domainObj)
 		if children, ok := domain["domains"].([]interface{}); ok {
 			if len(children) > 0 {
-				println("found baby")
 				dChildren := []map[string]interface{}{}
 				for _, d := range children {
 					dChildren = append(dChildren, d.(map[string]interface{}))

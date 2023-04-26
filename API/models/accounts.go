@@ -23,6 +23,7 @@ type Token struct {
 // a struct for rep user account
 type Account struct {
 	ID       primitive.ObjectID `bson:"_id,omitempty" json:"_id,omitempty"`
+	Name     string             `bson:"name" json:"name"`
 	Email    string             `bson:"email" json:"email"`
 	Password string             `bson:"password" json:"password"`
 	Roles    map[string]string  `bson:"roles" json:"roles"`

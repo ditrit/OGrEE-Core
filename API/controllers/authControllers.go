@@ -3,13 +3,19 @@ package controllers
 import (
 	"encoding/json"
 	"fmt"
+	"math/rand"
 	"net/http"
 	"p3/models"
 	u "p3/utils"
+	"time"
 
 	"github.com/gorilla/mux"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
+
+func init() {
+	rand.Seed(time.Now().UnixNano())
+}
 
 // swagger:operation POST /api auth Create
 // Generate credentials for a user.
@@ -107,6 +113,68 @@ var CreateAccount = func(w http.ResponseWriter, r *http.Request) {
 		}
 		u.Respond(w, resp)
 	}
+}
+
+var CreateBulkAccount = func(w http.ResponseWriter, r *http.Request) {
+	fmt.Println("******************************************************")
+	fmt.Println("FUNCTION CALL: 	 CreateBulkAccount ")
+	fmt.Println("******************************************************")
+	DispRequestMetaData(r)
+
+	var accounts []models.Account
+	err := json.NewDecoder(r.Body).Decode(&accounts)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		u.Respond(w, u.Message(false, "Invalid request"))
+		return
+	}
+
+	userData := r.Context().Value("user")
+	if userData == nil {
+		w.WriteHeader(http.StatusBadRequest)
+		u.Respond(w, u.Message(false, "Error while parsing path params"))
+		u.ErrLog("Error while parsing path params", "GET GENERIC", "", r)
+		return
+	}
+	userId := userData.(map[string]interface{})["userID"].(primitive.ObjectID)
+	user := models.GetUser(userId)
+	fmt.Println(user)
+	if user == nil || len(user.Roles) <= 0 {
+		w.WriteHeader(http.StatusBadRequest)
+		u.Respond(w, u.Message(false, "Invalid token: no valid user found"))
+		u.ErrLog("Unable to find user associated to token", "GET GENERIC", "", r)
+		return
+	}
+
+	resp := map[string]interface{}{}
+	for _, account := range accounts {
+		password := ""
+		if len(account.Password) <= 0 {
+			password = randStringBytes(8)
+			account.Password = password
+		}
+		resp[account.Email] = map[string]interface{}{}
+		res, _ := account.Create(user.Roles)
+		for key, value := range res {
+			if key == "account" && password != "" {
+				resp[account.Email].(map[string]interface{})["password"] = password
+			} else {
+				resp[account.Email].(map[string]interface{})[key] = value
+			}
+		}
+	}
+	w.WriteHeader(http.StatusOK)
+	u.Respond(w, resp)
+}
+
+const passChars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
+
+func randStringBytes(n int) string {
+	b := make([]byte, n)
+	for i := range b {
+		b[i] = passChars[rand.Intn(len(passChars))]
+	}
+	return string(b)
 }
 
 // swagger:operation POST /api/login auth Authenticate

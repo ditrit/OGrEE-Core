@@ -478,11 +478,8 @@ func GetStats() map[string]interface{} {
 // - success or fail message map
 func DeleteEntityByName(entity string, name string) map[string]interface{} {
 	var req primitive.M
-	if entity == "tenant" {
-		req = bson.M{"name": name}
-	} else {
-		req = bson.M{"hierarchyName": name}
-	}
+	req = bson.M{"hierarchyName": name}
+
 	resp, err := DeleteEntityManual(entity, req)
 	if err != "" {
 		// Unable to delete given object
@@ -945,7 +942,11 @@ func getChildrenCollections(limit int, parentEntStr string) []int {
 	rangeEntities := []int{}
 	startEnt := u.EntityStrToInt(parentEntStr) + 1
 	endEnt := startEnt + limit
-	if parentEntStr == "device" {
+	if parentEntStr == "domain" {
+		// device special case (devices can have devices)
+		startEnt = u.DOMAIN
+		endEnt = u.DOMAIN
+	} else if parentEntStr == "device" {
 		// device special case (devices can have devices)
 		startEnt = u.DEVICE
 		endEnt = u.DEVICE
@@ -959,9 +960,11 @@ func getChildrenCollections(limit int, parentEntStr string) []int {
 		// but no need to search further than group
 		endEnt = u.GROUP
 	}
+
 	for i := startEnt; i <= endEnt; i++ {
 		rangeEntities = append(rangeEntities, i)
 	}
+
 	if startEnt == u.ROOM && endEnt == u.RACK {
 		// ROOM limit=1 special case should include extra
 		// ROOM children but avoiding DEVICE (big collection)
