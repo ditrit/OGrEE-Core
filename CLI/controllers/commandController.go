@@ -513,23 +513,7 @@ func UpdateObj(Path, id, ent string, data map[string]interface{}, deleteAndPut b
 					} else { //Description is some invalid value
 						objJSON["description"] = []interface{}{data[i]}
 					}
-
 				}
-
-				if strings.Contains(i, "temperature_") {
-					category := EntityStrToInt(objJSON["category"].(string))
-					if category == RACK || category == DEVICE ||
-						category == ROOM {
-						switch data[i].(type) {
-						case float64, float32: //GOOD
-						default:
-							msg := "The temperature for sensors should be a float"
-							return nil, fmt.Errorf(msg)
-						}
-					}
-
-				}
-
 				if i == "usableColor" || i == "reservedColor" ||
 					i == "technicalColor" {
 					category := EntityStrToInt(objJSON["category"].(string))

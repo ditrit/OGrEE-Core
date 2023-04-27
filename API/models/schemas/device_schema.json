@@ -13,7 +13,6 @@
           "height": {
             "type": "string",
             "$ref": "refs/types.json#/definitions/float"
-
           },
           "heightUnit": {
             "type": "string",
@@ -51,6 +50,12 @@
           "color": {
             "type": "string",
             "$ref": "refs/types.json#/definitions/color"
+          }
+        },
+        "patternProperties": {
+          "^temperature_[0-9a-zA-Z_-]+$": {
+            "type": "string",
+            "$ref": "refs/types.json#/definitions/float"
           }
         },
         "required": [
