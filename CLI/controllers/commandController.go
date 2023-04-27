@@ -878,12 +878,12 @@ func LSOG() {
 	parsedResp := ParseResponse(r, e, "get API information request")
 
 	if parsedResp != nil {
-		if apiInfo, ok := parsedResp["data"].(map[string]interface{}); ok {
-			fmt.Println("BUILD DATE:", apiInfo["BuildDate"].(string))
-			fmt.Println("BUILD TREE:", apiInfo["BuildTree"].(string))
-			fmt.Println("BUILD HASH:", apiInfo["BuildHash"].(string))
-			fmt.Println("COMMIT DATE: ", apiInfo["CommitDate"].(string))
-			fmt.Println("CUSTOMER: ", apiInfo["Customer"].(string))
+		if apiInfo, ok := LoadObjectFromInf(parsedResp["data"]); ok {
+			fmt.Println("BUILD DATE:", apiInfo["BuildDate"])
+			fmt.Println("BUILD TREE:", apiInfo["BuildTree"])
+			fmt.Println("BUILD HASH:", apiInfo["BuildHash"])
+			fmt.Println("COMMIT DATE: ", apiInfo["CommitDate"])
+			fmt.Println("CUSTOMER: ", apiInfo["Customer"])
 
 		} else if State.DebugLvl > 1 {
 			msg := "Received invalid response for API on GET /api/version"

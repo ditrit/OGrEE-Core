@@ -359,12 +359,20 @@ func CreateCredentials() (string, string) {
 		os.Exit(-1)
 	}
 
-	if !tp["status"].(bool) {
-		errMessage := "Error while creating credentials : " + tp["message"].(string)
-		if State.DebugLvl > 0 {
-			println(errMessage)
+	if tp["status"] != nil {
+		if !tp["status"].(bool) {
+			errMessage := "Error while creating credentials : " + tp["message"].(string)
+			if State.DebugLvl > 0 {
+				println(errMessage)
+			}
+			l.GetErrorLogger().Println(errMessage)
+			os.Exit(-1)
 		}
-		l.GetErrorLogger().Println(errMessage)
+	} else {
+		if State.DebugLvl > 0 {
+			println("An error occurred while creating credentials")
+			l.GetErrorLogger().Println("Could not read API status on create credential attempt")
+		}
 		os.Exit(-1)
 	}
 
@@ -393,7 +401,11 @@ func CheckKeyIsValid(key string) bool {
 		if State.DebugLvl > NONE {
 			x := ParseResponse(resp, err, " Read API Response message")
 			if x != nil {
-				println("[API] " + x["message"].(string))
+				if x["message"] != nil && x["message"] != "" {
+					println("[API] " + x["message"].(string))
+				} else {
+					println("Was not able to read API Response message")
+				}
 			} else {
 				println("Was not able to read API Response message")
 			}
