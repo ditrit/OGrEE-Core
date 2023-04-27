@@ -259,7 +259,13 @@ var CreateBulkDomain = func(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	domainsToCreate := getBulkDomainsRecursively("", listDomains)
+	domainsToCreate, e := getBulkDomainsRecursively("", listDomains)
+	if e != "" {
+		w.WriteHeader(http.StatusBadRequest)
+		u.Respond(w, u.Message(false, e))
+		u.ErrLog(e, "CREATE BULK DOMAIN", "", r)
+		return
+	}
 	fmt.Println(domainsToCreate)
 
 	resp := map[string]interface{}{}
@@ -275,11 +281,18 @@ var CreateBulkDomain = func(w http.ResponseWriter, r *http.Request) {
 	u.Respond(w, resp)
 }
 
-func getBulkDomainsRecursively(parent string, listDomains []map[string]interface{}) []map[string]interface{} {
+func getBulkDomainsRecursively(parent string, listDomains []map[string]interface{}) ([]map[string]interface{}, string) {
 	domainsToCreate := []map[string]interface{}{}
 	for _, domain := range listDomains {
 		domainObj := map[string]interface{}{}
-		domainObj["name"] = domain["name"].(string)
+		// Name is the only required attribute
+		name, ok := domain["name"].(string)
+		if !ok {
+			return nil, "Invalid format: Name is required for all domains"
+		}
+		domainObj["name"] = name
+
+		// Optional/default attributes
 		if parent != "" {
 			domainObj["parentId"] = parent
 		}
@@ -287,7 +300,7 @@ func getBulkDomainsRecursively(parent string, listDomains []map[string]interface
 		if desc, ok := domain["description"].(string); ok {
 			domainObj["description"] = []string{desc}
 		} else {
-			domainObj["description"] = []string{domain["name"].(string)}
+			domainObj["description"] = []string{name}
 		}
 		domainObj["attributes"] = map[string]string{}
 		if color, ok := domain["color"].(string); ok {
@@ -295,24 +308,34 @@ func getBulkDomainsRecursively(parent string, listDomains []map[string]interface
 		} else {
 			domainObj["attributes"].(map[string]string)["color"] = "ffffff"
 		}
+
 		domainsToCreate = append(domainsToCreate, domainObj)
+
+		// Add children domain, if any
 		if children, ok := domain["domains"].([]interface{}); ok {
 			if len(children) > 0 {
+				// Convert from interface to map
 				dChildren := []map[string]interface{}{}
 				for _, d := range children {
 					dChildren = append(dChildren, d.(map[string]interface{}))
 				}
+				// Set parentId for children
 				var parentId string
 				if parent == "" {
 					parentId = domain["name"].(string)
 				} else {
 					parentId = parent + "." + domain["name"].(string)
 				}
-				domainsToCreate = append(domainsToCreate, getBulkDomainsRecursively(parentId, dChildren)...)
+				// Add children
+				childDomains, e := getBulkDomainsRecursively(parentId, dChildren)
+				if e != "" {
+					return nil, e
+				}
+				domainsToCreate = append(domainsToCreate, childDomains...)
 			}
 		}
 	}
-	return domainsToCreate
+	return domainsToCreate, ""
 }
 
 // swagger:operation GET /api/objects/{name} objects GetObject
