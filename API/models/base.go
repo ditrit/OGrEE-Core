@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/joho/godotenv"
@@ -57,15 +58,39 @@ func init() {
 
 	client, err := mongo.NewClient(options.Client().ApplyURI(dbUri))
 	if err != nil {
-		log.Fatal(err)
 		println("Error while generating client")
+		log.Fatal(err)
 	}
 	ctx, _ := context.WithTimeout(context.Background(), 10*time.Second)
 	err = client.Connect(ctx)
 	if err != nil {
-		log.Fatal(err)
 		println("Error while connecting")
+		log.Fatal(err)
 	}
+
+	//Check if API is authenticated
+	dbs, e := client.ListDatabaseNames(ctx, bson.D{}, options.ListDatabases())
+	if e != nil {
+		if strings.Contains(e.Error(), "requires authentication") {
+			log.Fatal("Authentication failed")
+		}
+		log.Fatal(e.Error())
+	} else {
+		found := false
+		for i := range dbs {
+			if dbs[i] == dbName {
+				found = true
+			}
+		}
+
+		//Target DB was not found
+		if found == false {
+			msg := "Requested Database was not found. Please check" +
+				"that your DB exists and that you are authorised to access it"
+			log.Fatal(msg)
+		}
+	}
+
 	//defer client.Disconnect(ctx)
 	if dbName != "" {
 		db = client.Database(dbName)
