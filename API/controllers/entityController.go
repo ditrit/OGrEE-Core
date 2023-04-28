@@ -273,9 +273,15 @@ var CreateBulkDomain = func(w http.ResponseWriter, r *http.Request) {
 		// Convert back to json to avoid invalid types in json schema validation
 		bytes, _ := json.Marshal(domain)
 		json.Unmarshal(bytes, &domain)
-		// Create
+		// Create and save response
 		result, _ := models.CreateEntity(u.DOMAIN, domain, user.Roles)
-		resp[domain["name"].(string)] = result["message"]
+		var name string
+		if v, ok := domain["parentId"].(string); ok && v != "" {
+			name = v + "." + domain["name"].(string)
+		} else {
+			name = domain["name"].(string)
+		}
+		resp[name] = result["message"]
 	}
 	w.WriteHeader(http.StatusOK)
 	u.Respond(w, resp)
