@@ -69,34 +69,18 @@ func init() {
 	}
 
 	//Check if API is authenticated
-	dbs, e := client.ListDatabaseNames(ctx, bson.D{}, options.ListDatabases())
-	if e != nil {
-		if strings.Contains(e.Error(), "requires authentication") {
-			log.Fatal("Authentication failed")
-		}
-		log.Fatal(e.Error())
-	} else {
-		found := false
-		for i := range dbs {
-			if dbs[i] == dbName {
-				found = true
+	if found, err1 := CheckIfDBExists(dbName, client); !found || err1 != nil {
+		if err1 != nil {
+			if strings.Contains(err1.Error(), "listDatabases requires authentication") {
+				log.Fatal("Error! Authentication failed")
 			}
+			log.Fatal(err1.Error())
 		}
-
-		//Target DB was not found
-		if found == false {
-			msg := "Requested Database was not found. Please check" +
-				"that your DB exists and that you are authorised to access it"
-			log.Fatal(msg)
-		}
+		log.Fatal("Target DB not found. Please check that you are authorized")
 	}
 
 	//defer client.Disconnect(ctx)
-	if dbName != "" {
-		db = client.Database(dbName)
-	} else {
-		db = client.Database("ogree")
-	}
+	db = client.Database(dbName)
 
 	if db == nil {
 		println("Error while connecting")
@@ -123,13 +107,13 @@ func GetDBByName(name string) *mongo.Database {
 	return GetClient().Database(name)
 }
 
-func CheckIfDBExists(name string) (bool, error) {
+func CheckIfDBExists(name string, client *mongo.Client) (bool, error) {
 	//options.ListDatabasesOptions{}
 	if name == "admin" || name == "config" || name == "local" {
 		return false, nil
 	}
 
-	ldr, e := GetDB().Client().ListDatabaseNames(context.TODO(), bson.D{{}})
+	ldr, e := client.ListDatabaseNames(context.TODO(), bson.D{{}})
 	if e == nil {
 		for i := range ldr {
 			if ldr[i] == name {
@@ -137,8 +121,6 @@ func CheckIfDBExists(name string) (bool, error) {
 			}
 		}
 	}
-	//`GetDB().Client().
 
 	return false, e
-
 }
