@@ -21,7 +21,7 @@ func InitLogs() {
 		log.Fatal(err)
 	}
 
-	f2, err2 := os.OpenFile(utils.ExeDir()+"unitylog.txt", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0666)
+	f2, err2 := os.OpenFile(utils.ExeDir()+"/unitylog.txt", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0666)
 	if err2 != nil {
 		log.Fatal(err2)
 	}
