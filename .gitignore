@@ -1,4 +1,20 @@
+# Core Ignore
 .vscode/
 go.work
 *.code-workspace
 *.toml
+*.txt
+*.env
+*log*
+
+# API Ignore
+main
+deploy/mdb/*
+*.DS_Store
+
+# CLI Ignore
+.idea/
+cli
+cli.exe
+.history
+*.ocli
