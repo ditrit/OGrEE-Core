@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/joho/godotenv"
@@ -57,21 +58,29 @@ func init() {
 
 	client, err := mongo.NewClient(options.Client().ApplyURI(dbUri))
 	if err != nil {
-		log.Fatal(err)
 		println("Error while generating client")
+		log.Fatal(err)
 	}
 	ctx, _ := context.WithTimeout(context.Background(), 10*time.Second)
 	err = client.Connect(ctx)
 	if err != nil {
-		log.Fatal(err)
 		println("Error while connecting")
+		log.Fatal(err)
 	}
+
+	//Check if API is authenticated
+	if found, err1 := CheckIfDBExists(dbName, client); !found || err1 != nil {
+		if err1 != nil {
+			if strings.Contains(err1.Error(), "listDatabases requires authentication") {
+				log.Fatal("Error! Authentication failed")
+			}
+			log.Fatal(err1.Error())
+		}
+		log.Fatal("Target DB not found. Please check that you are authorized")
+	}
+
 	//defer client.Disconnect(ctx)
-	if dbName != "" {
-		db = client.Database(dbName)
-	} else {
-		db = client.Database("ogree")
-	}
+	db = client.Database(dbName)
 
 	if db == nil {
 		println("Error while connecting")
@@ -98,13 +107,13 @@ func GetDBByName(name string) *mongo.Database {
 	return GetClient().Database(name)
 }
 
-func CheckIfDBExists(name string) (bool, error) {
+func CheckIfDBExists(name string, client *mongo.Client) (bool, error) {
 	//options.ListDatabasesOptions{}
 	if name == "admin" || name == "config" || name == "local" {
 		return false, nil
 	}
 
-	ldr, e := GetDB().Client().ListDatabaseNames(context.TODO(), bson.D{{}})
+	ldr, e := client.ListDatabaseNames(context.TODO(), bson.D{{}})
 	if e == nil {
 		for i := range ldr {
 			if ldr[i] == name {
@@ -112,8 +121,6 @@ func CheckIfDBExists(name string) (bool, error) {
 			}
 		}
 	}
-	//`GetDB().Client().
 
 	return false, e
-
 }
