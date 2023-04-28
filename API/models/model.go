@@ -228,8 +228,8 @@ func GetSiteParentTempUnit(id string) (string, string) {
 				if len(nameSlice) < 2 { // REMOVE IT FOR DBFORTENANTS
 					return "", "Could not find parent site for given object"
 				}
-				siteName := nameSlice[1] // CONSIDER TENANT AS 0
-				err := db.Collection("site").FindOne(ctx, bson.M{"hierarchyName": siteName}).Decode(&data)
+				siteHName := nameSlice[0] + "." + nameSlice[1] // CONSIDER TENANT AS 0
+				err := db.Collection("site").FindOne(ctx, bson.M{"hierarchyName": siteHName}).Decode(&data)
 				if err != nil {
 					// id not found in any collection
 					return "", "Could not find parent site for given object"
