@@ -256,47 +256,36 @@ func parseWord(frame Frame) (string, Frame, *ParserError) {
 	return tok.str, frame.from(tok.end), nil
 }
 
-func parseSeparatedStuff(
-	sep byte,
-	frame Frame,
-	parseStuff func(Frame) (any, Frame, *ParserError),
-) ([]any, *ParserError) {
-	items := []any{}
+func parseAttribute(frame Frame) (string, Frame, *ParserError) {
+	frame = skipWhiteSpaces(frame)
+	l := lexerFromFrame(frame)
+	tok := l.nextToken(lexAttribute)
+	if tok.t != tokAttribute {
+		return "", frame, newParserError(frame, "attribute expected")
+	}
+	return tok.str, frame.from(tok.end), nil
+}
 
+func parseSeparatedAttributes(sep byte, frame Frame) ([]string, *ParserError) {
+	attrList := []string{}
 	for {
-		var item any
+		var attr string
 		var err *ParserError
-		item, frame, err = parseStuff(frame)
+		attr, frame, err = parseAttribute(frame)
 		if err != nil {
-			return nil, err.extend(frame, "item in list")
+			return nil, err.extend(frame, "list of attributes")
 		}
-		items = append(items, item)
+		attrList = append(attrList, attr)
 		frame = skipWhiteSpaces(frame)
 		if frame.start == frame.end {
-			return items, nil
+			return attrList, nil
 		}
 		var ok bool
 		ok, frame = parseExact(string(sep), frame)
 		if !ok {
 			return nil, newParserError(frame, string(sep)+" expected")
 		}
-		frame = skipWhiteSpaces(frame)
 	}
-}
-
-func parseSeparatedWords(sep byte, frame Frame) ([]string, *ParserError) {
-	parseFunc := func(frame Frame) (any, Frame, *ParserError) {
-		return parseWord(frame)
-	}
-	wordsAny, err := parseSeparatedStuff(sep, frame, parseFunc)
-	if err != nil {
-		return nil, err.extend(frame, "list of words")
-	}
-	words := []string{}
-	for _, wordAny := range wordsAny {
-		words = append(words, wordAny.(string))
-	}
-	return words, nil
 }
 
 func charIsNumber(char byte) bool {
@@ -570,10 +559,6 @@ func parseExpr(frame Frame) (node, Frame, *ParserError) {
 }
 
 func parseAssign(frame Frame) (string, Frame, *ParserError) {
-	eqIdx := findNext("=", frame)
-	if eqIdx == frame.end {
-		return "", frame, newParserError(frame, "= expected")
-	}
 	varName, frame, err := parseWord(frame)
 	if err != nil {
 		return "", frame, err.extend(frame, "word on the left of =")
@@ -692,13 +677,13 @@ func parseLsObj(lsIdx int, frame Frame) (node, Frame, *ParserError) {
 			endFormat := findNextQuote(formatFrame.from(startFormat + 1))
 			format = formatArg[startFormat+1 : endFormat]
 			cursor := findNext(",", formatFrame.from(endFormat)) + 1
-			attrList, err = parseSeparatedWords(',', formatFrame.new(cursor, len(formatArg)-1))
+			attrList, err = parseSeparatedAttributes(',', formatFrame.new(cursor, len(formatArg)-1))
 			if err != nil {
 				return nil, frame, err.extend(frame, "lsobj format")
 			}
 		} else {
 			formatFrame := newFrame(formatArg)
-			attrList, err = parseSeparatedWords(':', formatFrame)
+			attrList, err = parseSeparatedAttributes(':', formatFrame)
 			if err != nil {
 				return nil, frame, err.extend(frame, "lsobj format")
 			}
@@ -793,7 +778,7 @@ func parseDrawable(frame Frame) (node, Frame, *ParserError) {
 	if commandEnd(frame) {
 		return &isEntityDrawableNode{path}, frame, nil
 	}
-	attrName, _, err := parseWord(frame)
+	attrName, _, err := parseAttribute(frame)
 	if err != nil {
 		return nil, frame, err.extend(frame, "drawable attribute name")
 	}
@@ -829,7 +814,7 @@ func parseUnset(frame Frame) (node, Frame, *ParserError) {
 		if !ok {
 			return nil, frame, newParserError(frame, ": expected")
 		}
-		attr, frame, err := parseWord(frame)
+		attr, frame, err := parseAttribute(frame)
 		if err != nil {
 			return nil, frame, err.extend(frame, "attribute name")
 		}
@@ -1557,9 +1542,15 @@ func parseUpdate(frame Frame) (node, Frame, *ParserError) {
 	if !ok {
 		return nil, frame, newParserError(frame, ": expected")
 	}
-	attr, frame, err := parseAssign(frame)
+	frame = skipWhiteSpaces(frame)
+	attr, frame, err := parseAttribute(frame)
 	if err != nil {
-		return nil, frame, err.extend(frame, "update")
+		return nil, frame, err.extend(frame, "attribute")
+	}
+	frame = skipWhiteSpaces(frame)
+	ok, frame = parseExact("=", frame)
+	if !ok {
+		return nil, frame, newParserError(frame, "= expected")
 	}
 	frame = skipWhiteSpaces(frame)
 	sharpe, frame := parseExact("#", frame)
