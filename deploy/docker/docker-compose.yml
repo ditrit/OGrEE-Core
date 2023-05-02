@@ -1,8 +1,7 @@
 version: '3.9'
 services:
   ogree_api:
-    #build: ${API_BUILD_DIR}#${API_BRANCH}
-    build: ../../API
+    build: ${API_BUILD_DIR}
     image: ogree/api:dockerfile
     container_name: ${COMPOSE_PROJECT_NAME}_api
     environment:
@@ -39,8 +38,6 @@ services:
     volumes:
         -  ./init.sh:/docker-entrypoint-initdb.d/init.sh
         -  ../createdb.js:/home/createdb.js
-    #By default MongoDB will attempt to take port 27017, so just map it
-    #for ease of use
 
 
   # Deploying the CLI in an orchestrated fashion does 
@@ -56,14 +53,13 @@ services:
   # Updates -> Same thing as Drawable
   # {obj}DrawableJson -> Specify them as usual, objDrawableJson="xyz"
   ogree_cli:
-    #build: ${CLI_BUILD_DIR}#${CLI_BRANCH}
-    build: ../../CLI
+    build: ${CLI_BUILD_DIR}
     image: ogree/cli:dockerfile
     profiles: ["cli"]
     container_name: ${COMPOSE_PROJECT_NAME}_cli
     tty: true
     volumes:
-      - config_toml:/home/config.toml
+      - cli_config:/home/config.toml
     depends_on:
       - ogree_api
 
@@ -72,7 +68,6 @@ services:
   api_docs_ui:
     image: swaggerapi/swagger-ui:latest
     container_name: api_docs_ui
-    network_mode: "bridge"
     profiles: ["doc"]
     volumes:
       - ${API_DOC_DIR}/swagger.json:/home/swagger.json
@@ -83,7 +78,7 @@ services:
 
   ogree_webapp:
     build: 
-      context: ${APP_BUILDDIR}#${APP_BRANCH}
+      context: ${APP_BUILD_DIR}
       args:
       - API_URL=http://${API_EXTERNALURL}:${API_PORT}
     image: ogree/webapp:dockerfile
