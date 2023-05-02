@@ -30,7 +30,7 @@ jobs:
     - name: Create MongoDB Container
       run: |
         docker run -d --name mongo \
-          -e DB_NAME=test \
+          -e DB_NAME=AutoTest \
           -e MONGO_INITDB_ROOT_USERNAME=admin \
           -e MONGO_INITDB_ROOT_PASSWORD=password \
           -e CUSTOMER_API_PASSWORD=123 \

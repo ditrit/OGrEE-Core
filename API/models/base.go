@@ -25,7 +25,7 @@ func init() {
 	e := godotenv.Load()
 
 	if e != nil {
-		fmt.Print(e)
+		fmt.Println(e)
 	}
 
 	var dbUri string
@@ -35,6 +35,11 @@ func init() {
 	user := os.Getenv("db_user")
 	pass := os.Getenv("db_pass")
 	dbName := "ogree" + os.Getenv("db")
+	if strings.HasSuffix(os.Args[0], ".test") {
+		dbName = "ogreeAutoTest"
+		user = "AutoTest"
+		pass = "123"
+	}
 
 	println("USER:", user)
 	println("DB:", dbName)

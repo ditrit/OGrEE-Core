@@ -22,10 +22,7 @@
 // As API:
 // mongosh "mongodb://"ogree"+DB_NAME+"Admin":CUSTOMER_API_PASSWORD@localhost/"ogree"+DB_NAME?authSource="ogree"+DB_NAME"
 
-
-//
-// CONSTANT DECLARATIONS START
-//
+// CONSTANT DECLARATIONS
 DB_NAME;
 CUSTOMER_API_PASSWORD;
 
@@ -39,13 +36,6 @@ ADMIN_PASS;
 GUARD_USER;
 GUARD_PASS;
 
-//
-// CONSTANT DECLARATIONS END
-//
-
-
-
-
 var m = new Mongo()
 var authDB = m.getDB(ADMIN_DB)
 
@@ -58,44 +48,35 @@ var found = false;
 // this is meant for docker-compose 
 for (var i = 0; i < users.length; i++) {
     if (users[i].hasOwnProperty('user') && users[i]['user'] === ADMIN_USER) {
+        console.log("User already exists, skip user creation")
         found = true;
     }
 }
 
-//Create the Admin user if not found
+//Create users if not found
 if (!found) {
     authDB.createUser({ user: ADMIN_USER, pwd: ADMIN_PASS,
         roles: [{role: "userAdminAnyDatabase", db: ADMIN_DB},
         { role: "readWriteAnyDatabase", db: ADMIN_DB}]
         });
+
+    //Create the Root user named Super
+    authDB.createUser({ user: SUPER_USER, pwd: SUPER_PASS,
+        roles: [{role: "root", db: ADMIN_DB}]
+        });
+
+    //Create the Backup user named guard
+    authDB.createUser({ user: GUARD_USER, pwd: GUARD_PASS,
+        roles: [{role: "backup", db: ADMIN_DB}, {role: "restore", db: ADMIN_DB}]
+        });
 } 
-
-
-//Create the Root user named Super
-authDB.createUser({ user: SUPER_USER, pwd: SUPER_PASS,
-                roles: [{role: "root", db: ADMIN_DB}]
-                });
-
-
-//Create the Backup user named guard
-authDB.createUser({ user: GUARD_USER, pwd: GUARD_PASS,
-                roles: [{role: "backup", db: ADMIN_DB}, {role: "restore", db: ADMIN_DB}]
-                });
-
-
-
-/////
-// Create a new Database
-//////
 
 //Authenticate first
 var m = new Mongo()
 var authDB = m.getDB(ADMIN_DB)
 authDB.auth(ADMIN_USER, ADMIN_PASS);
 
-
-
-//Then Create the customer DB
+// Create a new Database
 var db = m.getDB("ogree"+DB_NAME)
 db.createCollection('account');
 db.createCollection('domain');
@@ -113,18 +94,14 @@ db.createCollection('bldg_template');
 //Group Collections
 db.createCollection('group');
 
-
 //Nonhierarchal objects
 db.createCollection('ac');
 db.createCollection('panel');
 db.createCollection('cabinet');
 db.createCollection('corridor');
-db.createCollection('sensor');
 
 //Stray Objects
 db.createCollection('stray_device');
-db.createCollection('stray_sensor');
-
 
 //Enforce unique children
 db.domain.createIndex( {parentId:1, name:1}, { unique: true } );
@@ -133,14 +110,11 @@ db.building.createIndex({parentId:1, name:1}, { unique: true });
 db.room.createIndex({parentId:1, name:1}, { unique: true });
 db.rack.createIndex({parentId:1, name:1}, { unique: true });
 db.device.createIndex({parentId:1, name:1}, { unique: true });
-//Enforcing that the Parent Exists is done at the ORM Level for now
-
 
 //Make slugs unique identifiers for templates
 db.room_template.createIndex({slug:1}, { unique: true });
 db.obj_template.createIndex({slug:1}, { unique: true });
 db.bldg_template.createIndex({slug:1}, { unique: true });
-
 
 //Unique children restriction for nonhierarchal objects and sensors
 db.ac.createIndex({parentId:1, name:1}, { unique: true });
@@ -148,24 +122,17 @@ db.panel.createIndex({parentId:1, name:1}, { unique: true });
 db.cabinet.createIndex({parentId:1, name:1}, { unique: true });
 db.corridor.createIndex({parentId:1, name:1}, { unique: true });
 
-//Enforce unique children sensors
-db.sensor.createIndex({parentId:1, type:1, name:1}, { unique: true });
-
 //Enforce unique Group names 
 db.group.createIndex({parentId:1, name:1}, { unique: true });
 
 //Enforce unique stray objects
 db.stray_device.createIndex({parentId:1,name:1}, { unique: true });
-db.stray_sensor.createIndex({name:1}, { unique: true });
 
+//Create a default domain
+db.domain.insertOne({name: DB_NAME, hierarchyName: DB_NAME, category: "domain", 
+    attributes:{color:"ffffff"}, description:[], createdData: new Date(), lastUpdated: new Date()})
 
-
-//Authenticate first then create the customer user
-var m = new Mongo()
-var authDB = m.getDB(ADMIN_DB)
-authDB.auth(ADMIN_USER, ADMIN_PASS);
-
-
+// Create API User
 db.createUser({ user: "ogree"+DB_NAME+"Admin", pwd: CUSTOMER_API_PASSWORD,
                 roles: [{role: "readWrite", db: "ogree"+DB_NAME}]
                 })
