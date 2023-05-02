@@ -4,6 +4,7 @@ import (
 	"cli/logger"
 	l "cli/logger"
 	"cli/models"
+	"cli/utils"
 	u "cli/utils"
 	"encoding/hex"
 	"encoding/json"
@@ -14,6 +15,7 @@ import (
 	"os/exec"
 	"path"
 	"runtime"
+	"sort"
 	"strconv"
 	"strings"
 
@@ -519,23 +521,7 @@ func UpdateObj(Path, id, ent string, data map[string]interface{}, deleteAndPut b
 					} else { //Description is some invalid value
 						objJSON["description"] = []interface{}{data[i]}
 					}
-
 				}
-
-				if strings.Contains(i, "temperature_") {
-					category := EntityStrToInt(objJSON["category"].(string))
-					if category == RACK || category == DEVICE ||
-						category == ROOM {
-						switch data[i].(type) {
-						case float64, float32: //GOOD
-						default:
-							msg := "The temperature for sensors should be a float"
-							return nil, fmt.Errorf(msg)
-						}
-					}
-
-				}
-
 				if i == "usableColor" || i == "reservedColor" ||
 					i == "technicalColor" {
 					category := EntityStrToInt(objJSON["category"].(string))
@@ -811,6 +797,14 @@ func UnsetInObj(Path, attr string, idx int) (map[string]interface{}, error) {
 	return nil, nil
 }
 
+func getSlugOrName(obj map[string]any) string {
+	if _, ok := obj["slug"].(string); ok {
+		return obj["slug"].(string)
+	} else {
+		return obj["name"].(string)
+	}
+}
+
 func LS(x string) []map[string]interface{} {
 	var path string
 	if x == "" || x == "." {
@@ -822,20 +816,16 @@ func LS(x string) []map[string]interface{} {
 	} else {
 		path = State.CurrPath + "/" + x
 	}
-
 	res := FetchJsonNodesAtLevel(path)
-
+	sort.SliceStable(res, func(i, j int) bool {
+		return getSlugOrName(res[i]) < getSlugOrName(res[j])
+	})
 	//Display the objects by otherwise by name
 	//or slug for templates
 	for i := range res {
-		if _, ok := res[i]["slug"].(string); ok {
-			println(res[i]["slug"].(string))
-		} else {
-			println(res[i]["name"].(string))
-		}
+		println(getSlugOrName(res[i]))
 	}
 	return res
-
 }
 
 func Clear() {
@@ -1217,8 +1207,7 @@ func Help(entry string) {
 	default:
 		path = "./other/man/default.md"
 	}
-
-	text, e := os.ReadFile(path)
+	text, e := os.ReadFile(utils.ExeDir() + "/" + path)
 	if e != nil {
 		println("Manual Page not found!")
 	} else {

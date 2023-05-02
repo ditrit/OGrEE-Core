@@ -242,7 +242,7 @@ func assertParsing(n node, expected node, t *testing.T) {
 func testCommand(buffer string, expected node, t *testing.T) {
 	n, err := Parse(buffer)
 	if err != nil {
-		t.Errorf("cannot parse command : %s", err.Error())
+		t.Errorf("cannot parse command : %s\n%s", buffer, err.Error())
 		return
 	}
 	assertParsing(n, expected, t)
@@ -338,19 +338,20 @@ var commandsMatching = map[string]node{
 	"${toto}/tata:slots=false":                             &updateObjNode{testPath, "slots", []node{&boolLeaf{false}}, false},
 	"${toto}/tata:localCS=false":                           &updateObjNode{testPath, "localCS", []node{&boolLeaf{false}}, false},
 	"${toto}/tata:content=false":                           &updateObjNode{testPath, "content", []node{&boolLeaf{false}}, false},
-	"ui.delay=15":                                          &uiDelayNode{15.},
-	"ui.infos=true":                                        &uiToggleNode{"infos", true},
-	"ui.debug=false":                                       &uiToggleNode{"debug", false},
-	"ui.highlight=${toto}/tata":                            &uiHighlightNode{testPath},
-	"ui.hl=${toto}/tata":                                   &uiHighlightNode{testPath},
-	"camera.move=[1., 2., 3.]@[1., 2.]":                    &cameraMoveNode{"move", vec3(1., 2., 3.), vec2(1., 2.)},
-	"camera.translate=[1., 2., 3.]@[1., 2.]":               &cameraMoveNode{"translate", vec3(1., 2., 3.), vec2(1., 2.)},
-	"camera.wait=15":                                       &cameraWaitNode{15.},
-	"camera.wait = 15":                                     &cameraWaitNode{15.},
-	"clear":                                                &clrNode{},
-	".cmds:${CUST}/DEMO.PERF.ocli":                         &loadNode{&formatStringNode{"%v/DEMO.PERF.ocli", []symbolReferenceNode{{"CUST"}}}},
-	".cmds:${a}/${b}.ocli":                                 &loadNode{&formatStringNode{"%v/%v.ocli", []symbolReferenceNode{{"a"}, {"b"}}}},
-	"while $i<6 {print \"a\"}":                             &whileNode{&comparatorNode{"<", &symbolReferenceNode{"i"}, &intLeaf{6}}, &printNode{&strLeaf{"a"}}},
+	"${toto}/tata:temperature_01-Inlet-Ambient=7":          &updateObjNode{testPath, "temperature_01-Inlet-Ambient", []node{&intLeaf{7}}, false},
+	"ui.delay=15":                            &uiDelayNode{15.},
+	"ui.infos=true":                          &uiToggleNode{"infos", true},
+	"ui.debug=false":                         &uiToggleNode{"debug", false},
+	"ui.highlight=${toto}/tata":              &uiHighlightNode{testPath},
+	"ui.hl=${toto}/tata":                     &uiHighlightNode{testPath},
+	"camera.move=[1., 2., 3.]@[1., 2.]":      &cameraMoveNode{"move", vec3(1., 2., 3.), vec2(1., 2.)},
+	"camera.translate=[1., 2., 3.]@[1., 2.]": &cameraMoveNode{"translate", vec3(1., 2., 3.), vec2(1., 2.)},
+	"camera.wait=15":                         &cameraWaitNode{15.},
+	"camera.wait = 15":                       &cameraWaitNode{15.},
+	"clear":                                  &clrNode{},
+	".cmds:${CUST}/DEMO.PERF.ocli":           &loadNode{&formatStringNode{"%v/DEMO.PERF.ocli", []symbolReferenceNode{{"CUST"}}}},
+	".cmds:${a}/${b}.ocli":                   &loadNode{&formatStringNode{"%v/%v.ocli", []symbolReferenceNode{{"a"}, {"b"}}}},
+	"while $i<6 {print \"a\"}":               &whileNode{&comparatorNode{"<", &symbolReferenceNode{"i"}, &intLeaf{6}}, &printNode{&strLeaf{"a"}}},
 }
 
 func TestSimpleCommands(t *testing.T) {

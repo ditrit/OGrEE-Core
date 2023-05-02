@@ -7,10 +7,12 @@ import (
 	l "cli/logger"
 	"cli/models"
 	"cli/readline"
+	"cli/utils"
 	"encoding/json"
 	"fmt"
 	"net/url"
 	"os"
+	"path/filepath"
 	"regexp"
 	"strconv"
 	"strings"
@@ -331,6 +333,9 @@ func SetDrawableTemplate(entity string, DrawableJson map[string]string) map[stri
 		objStr = strings.Trim(objStr, "'\"")
 		//Now retrieve file
 		ans := map[string]interface{}{}
+		if !filepath.IsAbs(objStr) {
+			objStr = utils.ExeDir() + "/" + objStr
+		}
 		f, e := os.ReadFile(objStr)
 		if e == nil {
 			json.Unmarshal(f, &ans)

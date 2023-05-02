@@ -4,6 +4,9 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
+	"path/filepath"
+
+	"cli/utils"
 
 	"github.com/BurntSushi/toml"
 	flag "github.com/spf13/pflag"
@@ -53,7 +56,7 @@ func defaultConfig() Config {
 		APIURL:       "",
 		UnityURL:     "",
 		UnityTimeout: "10ms",
-		ConfigPath:   "../config.toml",
+		ConfigPath:   utils.ExeDir() + "/../config.toml",
 		HistPath:     "./.history",
 		Script:       "",
 		Drawable:     []string{"all"},
@@ -102,5 +105,7 @@ func ReadConfig() *Config {
 	argBytes, _ := json.Marshal(args)
 	json.Unmarshal(argBytes, &conf)
 
+	conf.ConfigPath, _ = filepath.Abs(conf.ConfigPath)
+	conf.HistPath, _ = filepath.Abs(conf.HistPath)
 	return conf
 }
