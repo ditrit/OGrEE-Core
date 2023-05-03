@@ -4,7 +4,7 @@ USER root
 
 #Setup app files
 WORKDIR /home
-ADD . /home/
+ADD CLI /home/
 
 RUN make
 

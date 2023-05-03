@@ -1,7 +1,9 @@
 version: '3.9'
 services:
   ogree_api:
-    build: ${API_BUILD_DIR}
+    build: 
+      context: ${CORE_DIR}
+      dockerfile: ${API_BUILD_DIR}/Dockerfile
     image: ogree/api:dockerfile
     container_name: ${COMPOSE_PROJECT_NAME}_api
     environment:
@@ -39,7 +41,6 @@ services:
         -  ./init.sh:/docker-entrypoint-initdb.d/init.sh
         -  ../createdb.js:/home/createdb.js
 
-
   # Deploying the CLI in an orchestrated fashion does 
   # not work since containers exit when a program
   # is done executing. Instead make container 'hang'
@@ -53,7 +54,9 @@ services:
   # Updates -> Same thing as Drawable
   # {obj}DrawableJson -> Specify them as usual, objDrawableJson="xyz"
   ogree_cli:
-    build: ${CLI_BUILD_DIR}
+    build: 
+      context: ${CORE_DIR}
+      dockerfile: ${CLI_BUILD_DIR}/Dockerfile
     image: ogree/cli:dockerfile
     profiles: ["cli"]
     container_name: ${COMPOSE_PROJECT_NAME}_cli
@@ -67,10 +70,10 @@ services:
   # the api root dir and supply it here 
   api_docs_ui:
     image: swaggerapi/swagger-ui:latest
-    container_name: api_docs_ui
+    container_name: ${COMPOSE_PROJECT_NAME}_doc
     profiles: ["doc"]
     volumes:
-      - ${API_DOC_DIR}/swagger.json:/home/swagger.json
+      - ${CORE_DIR}/${API_BUILD_DIR}/swagger.json:/home/swagger.json
     ports:
       - ${API_DOC_UI_PORT}:8080
     environment:
