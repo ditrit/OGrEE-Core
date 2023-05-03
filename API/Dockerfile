@@ -5,8 +5,7 @@ FROM golang:latest AS builder
 USER root
 WORKDIR /home
 
-ADD API /home/
-ADD .git /home/
+COPY API/ .git* /home/
 
 # Install Dependencies
 RUN apt install git && go install .
@@ -14,12 +13,9 @@ RUN apt install git && go install .
 #Build
 RUN cd /home && make
 
-
 FROM busybox:latest
 USER root
 WORKDIR /home
 
-ADD API /home/
-COPY API/resources/test/ /home/
 COPY --from=builder /home/main /home
 ENTRYPOINT [ "/home/main" ]
