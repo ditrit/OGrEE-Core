@@ -165,7 +165,7 @@ class _CreateTenantPopupState extends State<CreateTenantPopup> {
                                   _webPort,
                                   _hasWeb,
                                   _hasCli,
-                                  _hasWeb,
+                                  _hasDoc,
                                   _docUrl,
                                   _docPort));
                               if (response == "") {
