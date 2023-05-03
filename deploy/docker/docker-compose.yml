@@ -57,7 +57,7 @@ services:
     container_name: ${COMPOSE_PROJECT_NAME}_cli
     tty: true
     volumes:
-      - ${CORE_DIR}/config.toml:/config.toml
+      - ../../config.toml:/config.toml
     depends_on:
       - ogree_api
 
@@ -68,7 +68,7 @@ services:
     container_name: ${COMPOSE_PROJECT_NAME}_doc
     profiles: ["doc"]
     volumes:
-      - ${CORE_DIR}/${API_BUILD_DIR}/swagger.json:/home/swagger.json
+      - ../../${API_BUILD_DIR}/swagger.json:/home/swagger.json
     ports:
       - ${API_DOC_UI_PORT}:8080
     environment:
