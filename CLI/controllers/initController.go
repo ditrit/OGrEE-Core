@@ -152,13 +152,34 @@ func InitState(conf *config.Config) {
 	State.DrawableObjs = SetObjsForUnity(conf.Drawable)
 	State.DrawableJsons = make(map[string]map[string]interface{}, 16)
 
-	for i := TENANT; i < GROUP+1; i++ {
+	for i := SITE; i < GROUP+1; i++ {
 		ent := EntityToString(i)
 		State.DrawableJsons[ent] = SetDrawableTemplate(ent, conf.DrawableJson)
 	}
 
 	//Set Draw Threshold
 	SetDrawThreshold(conf.DrawLimit)
+
+	//Set customer / tenant name
+	resp, e := models.Send("GET", State.APIURL+"/api/version", GetKey(), nil)
+	parsed := ParseResponse(resp, e, "Get API Information request")
+	if parsed != nil {
+		if info, ok := LoadObjectFromInf(parsed["data"]); ok {
+			if cInf, ok := info["Customer"]; ok {
+				if customer, ok := cInf.(string); ok {
+					State.Customer = customer
+				}
+			}
+
+		}
+	}
+
+	if State.Customer == "" {
+		if State.DebugLvl > NONE {
+			println("Tenant Information not found!")
+		}
+		State.Customer = "UNKNOWN"
+	}
 }
 
 // It is useful to have the state to hold
@@ -290,6 +311,7 @@ func SetObjsForUnity(objs []string) []int {
 		for idx := 0; idx < GROUP+1; idx++ {
 			res = append(res, idx)
 		}
+		res = append(res, DOMAIN)
 	}
 	return res
 }
@@ -342,12 +364,20 @@ func CreateCredentials() (string, string) {
 		os.Exit(-1)
 	}
 
-	if !tp["status"].(bool) {
-		errMessage := "Error while creating credentials : " + tp["message"].(string)
-		if State.DebugLvl > 0 {
-			println(errMessage)
+	if tp["status"] != nil {
+		if !tp["status"].(bool) {
+			errMessage := "Error while creating credentials : " + tp["message"].(string)
+			if State.DebugLvl > 0 {
+				println(errMessage)
+			}
+			l.GetErrorLogger().Println(errMessage)
+			os.Exit(-1)
 		}
-		l.GetErrorLogger().Println(errMessage)
+	} else {
+		if State.DebugLvl > 0 {
+			println("An error occurred while creating credentials")
+			l.GetErrorLogger().Println("Could not read API status on create credential attempt")
+		}
 		os.Exit(-1)
 	}
 
@@ -376,7 +406,11 @@ func CheckKeyIsValid(key string) bool {
 		if State.DebugLvl > NONE {
 			x := ParseResponse(resp, err, " Read API Response message")
 			if x != nil {
-				println("[API] " + x["message"].(string))
+				if x["message"] != nil && x["message"] != "" {
+					println("[API] " + x["message"].(string))
+				} else {
+					println("Was not able to read API Response message")
+				}
 			} else {
 				println("Was not able to read API Response message")
 			}

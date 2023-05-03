@@ -6,20 +6,16 @@ When properly executed object will be created.
 The required attributes for each object is found:    
 https://github.com/ditrit/OGREE-3D/wiki/How-it-works#ogreeobject-class   
 
-USAGES   
+USAGES     
 
-+tn:PATH/TENANT_NAME@TENANT_NAME@COLOR   
-+tenant:PATH/TENANT_NAME@TENANT_NAME@COLOR   
-User must specify the path, TENANT_NAME and COLOR   
++domain:PATH/DOMAIN_NAME@COLOR      
+User must specify the path, DOMAIN_NAME and COLOR   
 
-Where COLOR refers to a 6 digit Hex value. If the    
-value is less than 6 digits then zeros will be prepended.   
-A string or numerical Hex value maybe given here
+Where COLOR should be a 6 digit HEX Value (ie 00000A)
 
 
-
-+si:PATH/SITE_NAME   
-+site:PATH/SITE_NAME   
++si:SITE_NAME   
++site:SITE_NAME   
 User must specify the path and SITE_NAME   
 
 
@@ -173,41 +169,40 @@ Where TEMPLATE refers to the device template name (which must be already existin
 
 EXAMPLES   
 
-+tn:CED@ced666
-+tenant:MARCUS@42ff42
++domain:CED@ced666
 
-+si:CED.BETA
-+site:CED/BETA
-
-
-+bd:CED/BETA/A@[5,5]@49.1@[300,300,300]
-+bd:CED/BETA/A@[5,5]@-27.89@BldgTemplateA
-+building:CED/BETA/A@[5,5]@49.1@[300,300,300]
-+building:CED/BETA/A@[5,5]@-27.89@BldgTemplateA
++si:BETA
++site:BETA
 
 
-+ro:CED/BETA/A/R1@[0,0]@-36.202@[22.8,19.8,2]@+N+W@t
-+ro:CED/BETA/A/R1@[0,0]@-36.202@[22.8,19.8,2]@+N+W
-+room:CED/BETA/A/R1@[0,0]@-36.202@RoomTemplateA
++bd:BETA/A@[5,5]@49.1@[300,300,300]
++bd:BETA/A@[5,5]@-27.89@BldgTemplateA
++building:BETA/A@[5,5]@49.1@[300,300,300]
++building:BETA/A@[5,5]@-27.89@BldgTemplateA
 
 
-+rk:CED.BETA.A.R1.A01@[9,1,99]@[60,120,42]@front
-+rk:CED.BETA.A.R1.A01@[9,1]@[60,120,42]@front
-+rk:CED/BETA/A/R1/A01@[9,1]@RackTemplateA@right
++ro:BETA/A/R1@[0,0]@-36.202@[22.8,19.8,2]@+N+W@t
++ro:BETA/A/R1@[0,0]@-36.202@[22.8,19.8,2]@+N+W
++room:BETA/A/R1@[0,0]@-36.202@RoomTemplateA
 
 
-+dv:CED.BETA.A.R1.A01.chT@12@10
-+dv:CED.BETA.A.R1.A01.chT@SlotA@10
++rk:BETA.A.R1.A01@[9,1,99]@[60,120,42]@front
++rk:BETA.A.R1.A01@[9,1]@[60,120,42]@front
++rk:BETA/A/R1/A01@[9,1]@RackTemplateA@right
 
-+dv:CED.BETA.A.R1.A01.chT@12@ibm-ns1200
-+dv:CED.BETA.A.R1.A01.chT@Slot5@ibm-ns1200
 
-+dv:CED.BETA.A.R1.A01.chT@15@ibm-ns1200
-+dv:CED.BETA.A.R1.A01.chT@Slot5@ibm-ns1200@frontflipped
++dv:BETA.A.R1.A01.chT@12@10
++dv:BETA.A.R1.A01.chT@SlotA@10
 
-+co:CED.BETA.A.R1.CorridorD@{A01,A09}@warm 
++dv:BETA.A.R1.A01.chT@12@ibm-ns1200
++dv:BETA.A.R1.A01.chT@Slot5@ibm-ns1200
 
-+gr:CED.BETA.A.R1.GroupG@{A01,A02,A03,A04}
++dv:BETA.A.R1.A01.chT@15@ibm-ns1200
++dv:BETA.A.R1.A01.chT@Slot5@ibm-ns1200@frontflipped
+
++co:BETA.A.R1.CorridorD@{A01,A09}@warm 
+
++gr:BETA.A.R1.GroupG@{A01,A02,A03,A04}
 
 + orphan sensor: StraySensorDEMO @ SensorTemplateA
 

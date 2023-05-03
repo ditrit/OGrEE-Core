@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/joho/godotenv"
+	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"go.mongodb.org/mongo-driver/mongo/readpref"
@@ -18,12 +19,13 @@ import (
 
 // Database
 var db *mongo.Database
+var globalClient *mongo.Client
 
 func init() {
 	e := godotenv.Load()
 
 	if e != nil {
-		fmt.Print(e)
+		fmt.Println(e)
 	}
 
 	var dbUri string
@@ -32,9 +34,11 @@ func init() {
 	dbPort := os.Getenv("db_port")
 	user := os.Getenv("db_user")
 	pass := os.Getenv("db_pass")
-	dbName := os.Getenv("db")
+	dbName := "ogree" + os.Getenv("db")
 	if strings.HasSuffix(os.Args[0], ".test") {
-		dbName = "autoTest"
+		dbName = "ogreeAutoTest"
+		user = "AutoTest"
+		pass = "123"
 	}
 
 	println("USER:", user)
@@ -51,29 +55,37 @@ func init() {
 		dbUri = fmt.Sprintf("mongodb://%s:%s/?readPreference=primary&ssl=false",
 			dbHost, dbPort)
 	} else {
-		dbUri = fmt.Sprintf("mongodb://%s:%s@%s:%s/?readPreference=primary",
-			user, pass, dbHost, dbPort)
+		dbUri = fmt.Sprintf("mongodb://ogree%sAdmin:%s@%s:%s/%s?readPreference=primary&authSource=%s",
+			user, pass, dbHost, dbPort, dbName, dbName)
 	}
 
 	fmt.Println(dbUri)
 
 	client, err := mongo.NewClient(options.Client().ApplyURI(dbUri))
 	if err != nil {
-		log.Fatal(err)
 		println("Error while generating client")
+		log.Fatal(err)
 	}
 	ctx, _ := context.WithTimeout(context.Background(), 10*time.Second)
 	err = client.Connect(ctx)
 	if err != nil {
-		log.Fatal(err)
 		println("Error while connecting")
+		log.Fatal(err)
 	}
+
+	//Check if API is authenticated
+	if found, err1 := CheckIfDBExists(dbName, client); !found || err1 != nil {
+		if err1 != nil {
+			if strings.Contains(err1.Error(), "listDatabases requires authentication") {
+				log.Fatal("Error! Authentication failed")
+			}
+			log.Fatal(err1.Error())
+		}
+		log.Fatal("Target DB not found. Please check that you are authorized")
+	}
+
 	//defer client.Disconnect(ctx)
-	if dbName != "" {
-		db = client.Database(dbName)
-	} else {
-		db = client.Database("ogree")
-	}
+	db = client.Database(dbName)
 
 	if db == nil {
 		println("Error while connecting")
@@ -84,10 +96,36 @@ func init() {
 		} else {
 			println("Successfully connected to DB")
 		}
-
+		globalClient = client
 	}
 }
 
 func GetDB() *mongo.Database {
 	return db
+}
+
+func GetClient() *mongo.Client {
+	return globalClient
+}
+
+func GetDBByName(name string) *mongo.Database {
+	return GetClient().Database(name)
+}
+
+func CheckIfDBExists(name string, client *mongo.Client) (bool, error) {
+	//options.ListDatabasesOptions{}
+	if name == "admin" || name == "config" || name == "local" {
+		return false, nil
+	}
+
+	ldr, e := client.ListDatabaseNames(context.TODO(), bson.D{{}})
+	if e == nil {
+		for i := range ldr {
+			if ldr[i] == name {
+				return true, nil
+			}
+		}
+	}
+
+	return false, e
 }

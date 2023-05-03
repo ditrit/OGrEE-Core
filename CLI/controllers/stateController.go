@@ -20,6 +20,7 @@ var State ShellState
 type ShellState struct {
 	Prompt           string
 	BlankPrompt      string
+	Customer         string //Tenant name
 	CurrPath         string
 	PrevPath         string
 	ClipBoard        *[]string
@@ -138,8 +139,8 @@ func FetchNodesAtLevel(Path string) []string {
 	}*/
 
 	if len(paths) == 2 && paths[1] == "Physical" {
-		urls = []string{State.APIURL + "/api/tenants"}
 		names = NodesAtLevel(&State.TreeHierarchy, *StrToStack(Path))
+		urls = []string{State.APIURL + "/api/sites"}
 	} else {
 		if len(paths) == 3 && paths[2] == "Stray" {
 			names = NodesAtLevel(&State.TreeHierarchy, *StrToStack(Path))
@@ -206,8 +207,7 @@ func FetchJsonNodesAtLevel(Path string) []map[string]interface{} {
 	if len(paths) == 2 && paths[1] == "Physical" {
 		x := NodesAtLevel(&State.TreeHierarchy, *StrToStack(Path))
 		objects = append(objects, strArrToMapStrInfArr(x)...)
-		urls = []string{State.APIURL + "/api/tenants"}
-
+		urls = []string{State.APIURL + "/api/sites"}
 	} else {
 		if len(paths) == 3 && paths[2] == "Stray" || len(paths) < 3 {
 			x := NodesAtLevel(&State.TreeHierarchy, *StrToStack(Path))
@@ -215,8 +215,6 @@ func FetchJsonNodesAtLevel(Path string) []map[string]interface{} {
 		}
 
 		if len(paths) == 3 && paths[2] == "Domain" {
-			//println("DEBUG this section for the new nodes")
-			//println("DEBUG path2: ", paths[3])
 			urls = []string{State.APIURL + "/api/domains"}
 
 		}
@@ -299,7 +297,6 @@ func CheckPathOnline(Path string) (bool, string) {
 			return true, Path
 		}
 	}
-
 	paths := OnlinePathResolve(pathSplit[2:])
 
 	for i := range paths {

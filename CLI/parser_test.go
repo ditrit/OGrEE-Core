@@ -5,6 +5,8 @@ import (
 	"testing"
 
 	"github.com/davecgh/go-spew/spew"
+
+	c "cli/controllers"
 )
 
 func TestFindClosing(t *testing.T) {
@@ -249,7 +251,7 @@ func testCommand(buffer string, expected node, t *testing.T) {
 func TestParseLsObj(t *testing.T) {
 	buffer := "lsbldg -s height - f attr1:attr2 -r plouf.plaf "
 	path := &pathNode{&strLeaf{"plouf.plaf"}}
-	entity := 2
+	entity := c.EntityStrToInt("building")
 	recursive := true
 	sort := "height"
 	attrList := []string{"attr1", "attr2"}
@@ -308,8 +310,6 @@ var commandsMatching = map[string]node{
 	"={${toto}/tata, /toto/../tata}": &selectChildrenNode{[]node{testPath, testPath2}},
 	"-${toto}/tata":                  &deleteObjNode{testPath},
 	">${toto}/tata":                  &focusNode{testPath},
-	"+tenant:${toto}/tata@42ff42":    &createTenantNode{testPath, &strLeaf{"42ff42"}},
-	"+tn:${toto}/tata@42ff42":        &createTenantNode{testPath, &strLeaf{"42ff42"}},
 	"+site:${toto}/tata":             &createSiteNode{testPath},
 	"+si:${toto}/tata":               &createSiteNode{testPath},
 	"+building:${toto}/tata@[1., 2.]@3.@[.1, 2., 3.]":      &createBuildingNode{testPath, vec2(1., 2.), &floatLeaf{3.}, vec3(.1, 2., 3.)},

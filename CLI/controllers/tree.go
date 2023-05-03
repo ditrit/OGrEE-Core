@@ -172,7 +172,7 @@ func PhysicalWalk(root **Node, prefix, path string, depth int) {
 				fmt.Println(prefix + "└──Sensor")
 			}
 
-		} else { //Interacting with Tenants
+		} else { //Interacting with Sites
 			ObjectAndHierarchWalk(path, prefix, depth)
 
 		}
@@ -182,11 +182,11 @@ func PhysicalWalk(root **Node, prefix, path string, depth int) {
 		var resp map[string]interface{}
 		if arr[1] == "Physical" { //Means path== "/Physical"
 
-			//Need to check num tenants before passing the prefix
-			//Get and Print Tenants Block
+			//Need to check num sites before passing the prefix
+			//Get and Print Sites Block
 
 			r, e := models.Send("GET",
-				State.APIURL+"/api/tenants", GetKey(), nil)
+				State.APIURL+"/api/sites", GetKey(), nil)
 			resp = ParseResponse(r, e, "fetch objects")
 			strayNode := FindNodeInTree(&State.TreeHierarchy,
 				StrToStack("/Physical/Stray"), true)
@@ -212,12 +212,12 @@ func PhysicalWalk(root **Node, prefix, path string, depth int) {
 
 			if depth > 0 {
 				if _, ok := resp["data"]; ok {
-					tenants := GetRawObjects(resp)
+					sites := GetRawObjects(resp)
 
-					size := len(tenants)
-					for idx, tInf := range tenants {
-						tenant := tInf.(map[string]interface{})
-						ID := tenant["id"].(string)
+					size := len(sites)
+					for idx, tInf := range sites {
+						site := tInf.(map[string]interface{})
+						ID := site["id"].(string)
 						depthStr := strconv.Itoa(depth)
 
 						var subPrefix string
@@ -230,11 +230,11 @@ func PhysicalWalk(root **Node, prefix, path string, depth int) {
 							currPrefix = prefix + "├──"
 						}
 
-						fmt.Println(currPrefix + tenant["name"].(string))
+						fmt.Println(currPrefix + site["name"].(string))
 
-						//Get Hierarchy for each tenant and walk
+						//Get Hierarchy for each site and walk
 						r, e := models.Send("GET",
-							State.APIURL+"/api/tenants/"+ID+"/all?limit="+depthStr, GetKey(), nil)
+							State.APIURL+"/api/sites/"+ID+"/all?limit="+depthStr, GetKey(), nil)
 						resp := ParseResponse(r, e, "fetch objects")
 						if resp != nil {
 							RemoteHierarchyWalk(resp["data"].(map[string]interface{}),
@@ -252,12 +252,12 @@ func PhysicalWalk(root **Node, prefix, path string, depth int) {
 				strayNode := FindNodeInTree(&State.TreeHierarchy,
 					StrToStack("/Physical/Stray"), true)
 
-				//Get and Print Tenants Block
+				//Get and Print Sites Block
 				r, e := models.Send("GET",
-					State.APIURL+"/api/tenants", GetKey(), nil)
+					State.APIURL+"/api/sites", GetKey(), nil)
 				resp = ParseResponse(r, e, "fetch objects")
 
-				//Need to check num tenants before passing the prefix
+				//Need to check num sites before passing the prefix
 				if length, _ := GetRawObjectsLength(resp); length > 0 {
 					fmt.Println(prefix + "├──" + " Stray")
 					StrayWalk(strayNode, prefix+"│   ", depth)
@@ -278,16 +278,16 @@ func PhysicalWalk(root **Node, prefix, path string, depth int) {
 
 				//If hierarchy happens to be greater than 1
 				if depth > 0 && resp != nil {
-					if tenants := GetRawObjects(resp); tenants != nil {
-						size := len(tenants)
-						for idx, tInf := range tenants {
-							tenant := tInf.(map[string]interface{})
-							ID := tenant["id"].(string)
+					if sites := GetRawObjects(resp); sites != nil {
+						size := len(sites)
+						for idx, tInf := range sites {
+							site := tInf.(map[string]interface{})
+							ID := site["id"].(string)
 							depthStr := strconv.Itoa(depth)
 
-							//Get Hierarchy for each tenant and walk
+							//Get Hierarchy for each site and walk
 							r, e := models.Send("GET",
-								State.APIURL+"/api/tenants/"+ID+"/all?limit="+depthStr, GetKey(), nil)
+								State.APIURL+"/api/sites/"+ID+"/all?limit="+depthStr, GetKey(), nil)
 							resp := ParseResponse(r, e, "fetch objects")
 
 							var subPrefix string
@@ -300,7 +300,7 @@ func PhysicalWalk(root **Node, prefix, path string, depth int) {
 								currPrefix = prefix + "├──"
 							}
 
-							fmt.Println(currPrefix + tenant["name"].(string))
+							fmt.Println(currPrefix + site["name"].(string))
 							if resp != nil {
 								RemoteHierarchyWalk(resp["data"].(map[string]interface{}),
 									subPrefix, depth)
@@ -345,7 +345,7 @@ func Filter(root map[string]interface{}, depth int, ent string) {
 
 	for _, m := range arr {
 		if object, ok := m.(map[string]interface{}); ok {
-			if object["parentId"] == nil {
+			if object["parentId"] == nil || object["parentId"] == "" {
 				//Change m -> result of hierarchal API call
 				ext := object["id"].(string) + "/all?limit=" + strconv.Itoa(depth)
 				URL := State.APIURL + "/api/" + ent + "/" + ext

@@ -74,7 +74,7 @@
       },
       "category": "rack",
       "description": [],
-      "domain": "DEMO",
+      "domain": "domainTest",
       "name": "RackA",
       "parentId": "xxxx5a101ac5f3b6f313xxxx"
     }

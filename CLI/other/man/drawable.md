@@ -7,4 +7,4 @@ If the path is empty then the current path will be used
 
 EXAMPLE   
 
-   drawable(/Physical/DEMO/SiteB)
+   drawable /Physical/DEMO/SiteB
