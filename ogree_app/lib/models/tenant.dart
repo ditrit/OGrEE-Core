@@ -10,9 +10,22 @@ class Tenant {
   String webPort;
   bool hasWeb;
   bool hasCli;
+  bool hasDoc;
+  String docUrl;
+  String docPort;
 
-  Tenant(this.name, this.customerPassword, this.apiUrl, this.webUrl,
-      this.apiPort, this.webPort, this.hasWeb, this.hasCli);
+  Tenant(
+      this.name,
+      this.customerPassword,
+      this.apiUrl,
+      this.webUrl,
+      this.apiPort,
+      this.webPort,
+      this.hasWeb,
+      this.hasCli,
+      this.hasDoc,
+      this.docUrl,
+      this.docPort);
 
   Map<String, dynamic> toMap() {
     return <String, dynamic>{
@@ -24,6 +37,9 @@ class Tenant {
       'webPort': webPort,
       'hasWeb': hasWeb,
       'hasCli': hasCli,
+      'hasDoc': hasDoc,
+      'docUrl': docUrl,
+      'docPort': docPort,
     };
   }
 
@@ -36,7 +52,10 @@ class Tenant {
         map['apiPort'].toString(),
         map['webPort'].toString(),
         map['hasWeb'],
-        map['hasCli']);
+        map['hasCli'],
+        map['hasDoc'],
+        map['docUrl'].toString(),
+        map['docPort'].toString());
   }
 
   String toJson() => json.encode(toMap());

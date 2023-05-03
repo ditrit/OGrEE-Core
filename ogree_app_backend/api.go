@@ -68,8 +68,11 @@ type tenant struct {
 	WebUrl           string `json:"webUrl"`
 	ApiPort          string `json:"apiPort"`
 	WebPort          string `json:"webPort"`
+	DocUrl           string `json:"docUrl"`
+	DocPort          string `json:"docPort"`
 	HasWeb           bool   `json:"hasWeb"`
 	HasCli           bool   `json:"hasCli"`
+	HasDoc           bool   `json:"hasDoc"`
 }
 
 type container struct {
@@ -203,6 +206,15 @@ func addTenant(c *gin.Context) {
 			panic(err)
 		}
 		file.Close()
+		// Create .env copy
+		file, _ = os.Create("docker/" + strings.ToLower(newTenant.Name) + ".env")
+		err = tmplt.Execute(file, newTenant)
+		if err != nil {
+			fmt.Println("Error creating .env copy: " + err.Error())
+		}
+		file.Close()
+
+		println("Run docker (may take a long time...)")
 
 		// Docker compose up
 		args := []string{"-p", strings.ToLower(newTenant.Name)}
@@ -213,6 +225,10 @@ func addTenant(c *gin.Context) {
 		if newTenant.HasCli {
 			args = append(args, "--profile")
 			args = append(args, "cli")
+		}
+		if newTenant.HasDoc {
+			args = append(args, "--profile")
+			args = append(args, "doc")
 		}
 		args = append(args, "up")
 		args = append(args, "-d")
@@ -225,19 +241,12 @@ func addTenant(c *gin.Context) {
 			c.IndentedJSON(http.StatusInternalServerError, stderr.String())
 			return
 		}
+		println("Finished with docker")
 
-		// Add to local json
+		// Add to local json and respond
 		listTenants = append(listTenants, newTenant)
 		data, _ := json.MarshalIndent(listTenants, "", "  ")
 		_ = ioutil.WriteFile("tenants.json", data, 0644)
-		// Create .env copy
-		args = []string{"docker/.env", "docker/" + strings.ToLower(newTenant.Name) + ".env"}
-		cmd = exec.Command("cp", args...)
-		cmd.Stderr = &stderr
-		if _, err := cmd.Output(); err != nil {
-			fmt.Println(fmt.Sprint(err) + ": " + stderr.String())
-		}
-
 		c.IndentedJSON(http.StatusOK, "all good")
 	}
 
@@ -246,7 +255,7 @@ func addTenant(c *gin.Context) {
 func removeTenant(c *gin.Context) {
 	tenantName := c.Param("name")
 
-	for _, str := range []string{"_cli", "_webapp", "_api", "_db"} {
+	for _, str := range []string{"_cli", "_webapp", "_api", "_db", "_doc"} {
 		cmd := exec.Command("docker", "rm", "--force", strings.ToLower(tenantName)+str)
 		cmd.Dir = "docker/"
 		var stderr bytes.Buffer

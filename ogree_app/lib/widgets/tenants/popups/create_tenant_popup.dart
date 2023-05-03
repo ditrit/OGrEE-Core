@@ -19,11 +19,14 @@ class _CreateTenantPopupState extends State<CreateTenantPopup> {
   String? _tenantName;
   String? _tenantPassword;
   String? _apiUrl;
-  String? _webUrl;
+  String _webUrl = "";
   String? _apiPort;
-  String? _webPort;
+  String _webPort = "";
+  String _docUrl = "";
+  String _docPort = "";
   bool _hasWeb = true;
   bool _hasCli = true;
+  bool _hasDoc = false;
   bool _isLoading = false;
 
   @override
@@ -73,39 +76,25 @@ class _CreateTenantPopupState extends State<CreateTenantPopup> {
                     alignment: WrapAlignment.start,
                     crossAxisAlignment: WrapCrossAlignment.center,
                     children: [
-                      Text("Services:"),
-                      SizedBox(
-                        width: 112,
-                        child: CheckboxListTile(
-                          controlAffinity: ListTileControlAffinity.leading,
-                          value: true,
-                          enabled: false,
-                          onChanged: (_) {},
-                          title: Text("API"),
-                        ),
-                      ),
-                      SizedBox(
-                        width: 120,
-                        child: CheckboxListTile(
-                          controlAffinity: ListTileControlAffinity.leading,
-                          value: _hasWeb,
-                          onChanged: (value) => setState(() {
-                            _hasWeb = value!;
-                          }),
-                          title: Text("WEB"),
-                        ),
-                      ),
-                      SizedBox(
-                        width: 112,
-                        child: CheckboxListTile(
-                          controlAffinity: ListTileControlAffinity.leading,
-                          value: _hasCli,
-                          onChanged: (value) => setState(() {
-                            _hasCli = value!;
-                          }),
-                          title: Text("CLI"),
-                        ),
-                      ),
+                      getCheckBox("API", true, (_) {}, enabled: false),
+                      getCheckBox(
+                          "WEB",
+                          _hasWeb,
+                          (value) => setState(() {
+                                _hasWeb = value!;
+                              })),
+                      getCheckBox(
+                          "CLI",
+                          _hasCli,
+                          (value) => setState(() {
+                                _hasCli = value!;
+                              })),
+                      getCheckBox(
+                          "DOC",
+                          _hasDoc,
+                          (value) => setState(() {
+                                _hasDoc = value!;
+                              })),
                     ],
                   ),
                   getFormField(
@@ -119,17 +108,32 @@ class _CreateTenantPopupState extends State<CreateTenantPopup> {
                     prefix: "http://",
                     isUrl: true,
                   ),
-                  getFormField(
-                    save: (newValue) {
-                      var splitted = newValue!.split(":");
-                      _webUrl = splitted[0];
-                      _webPort = splitted[1];
-                    },
-                    label: "New Web URL (hostname:port)",
-                    icon: Icons.monitor,
-                    prefix: "http://",
-                    isUrl: true,
-                  ),
+                  _hasWeb
+                      ? getFormField(
+                          save: (newValue) {
+                            var splitted = newValue!.split(":");
+                            _webUrl = splitted[0];
+                            _webPort = splitted[1];
+                          },
+                          label: "New Web URL (hostname:port)",
+                          icon: Icons.monitor,
+                          prefix: "http://",
+                          isUrl: true,
+                        )
+                      : Container(),
+                  _hasDoc
+                      ? getFormField(
+                          save: (newValue) {
+                            var splitted = newValue!.split(":");
+                            _docUrl = splitted[0];
+                            _docPort = splitted[1];
+                          },
+                          label: "New Swagger UI URL (hostname:port)",
+                          icon: Icons.book,
+                          prefix: "http://",
+                          isUrl: true,
+                        )
+                      : Container(),
                   const SizedBox(height: 40),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.end,
@@ -156,11 +160,14 @@ class _CreateTenantPopupState extends State<CreateTenantPopup> {
                                   _tenantName!,
                                   _tenantPassword!,
                                   _apiUrl!,
-                                  _webUrl!,
+                                  _webUrl,
                                   _apiPort!,
-                                  _webPort!,
+                                  _webPort,
                                   _hasWeb,
-                                  _hasCli));
+                                  _hasCli,
+                                  _hasWeb,
+                                  _docUrl,
+                                  _docPort));
                               if (response == "") {
                                 widget.parentCallback();
                                 showSnackBar(
@@ -194,6 +201,22 @@ class _CreateTenantPopupState extends State<CreateTenantPopup> {
             ),
           ),
         ),
+      ),
+    );
+  }
+
+  getCheckBox(String title, bool value, Function(bool?) onChange,
+      {bool enabled = true}) {
+    return SizedBox(
+      width: 100,
+      child: CheckboxListTile(
+        contentPadding: EdgeInsets.zero,
+        controlAffinity: ListTileControlAffinity.leading,
+        value: value,
+        enabled: enabled,
+        onChanged: (value) => onChange(value),
+        title: Transform.translate(
+            offset: const Offset(-10, 0), child: Text(title)),
       ),
     );
   }
