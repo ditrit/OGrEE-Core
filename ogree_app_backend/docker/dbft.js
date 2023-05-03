@@ -93,6 +93,7 @@ odb.customer.insertOne({"name": DB_NAME});
 //Then Create the customer DB
 var db = m.getDB("ogree"+DB_NAME)
 db.createCollection('account');
+db.account.insertOne( { email: "admin", password: "admin", roles: {"*":"manager"} } );
 db.createCollection('domain');
 db.createCollection('site');
 db.createCollection('building');

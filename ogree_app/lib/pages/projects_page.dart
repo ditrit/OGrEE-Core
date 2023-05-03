@@ -1,17 +1,20 @@
 import 'package:flutter/material.dart';
-import 'package:ogree_app/common/api.dart';
+import 'package:ogree_app/common/api_backend.dart';
 import 'package:ogree_app/common/appbar.dart';
+import 'package:ogree_app/common/popup_dialog.dart';
 import 'package:ogree_app/models/project.dart';
 import 'package:ogree_app/models/tenant.dart';
 import 'package:ogree_app/pages/select_page.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
-import 'package:ogree_app/widgets/projects_tenants/create_tenant_popup.dart';
-import 'package:ogree_app/widgets/projects_tenants/project_card.dart';
-import 'package:ogree_app/widgets/projects_tenants/tenant_card.dart';
+import 'package:ogree_app/widgets/tenants/popups/create_tenant_popup.dart';
+import 'package:ogree_app/widgets/projects/project_card.dart';
+import 'package:ogree_app/widgets/tenants/tenant_card.dart';
 
 class ProjectsPage extends StatefulWidget {
   final String userEmail;
-  ProjectsPage({super.key, required this.userEmail});
+  final bool isTenantMode;
+  ProjectsPage(
+      {super.key, required this.userEmail, required this.isTenantMode});
 
   @override
   State<ProjectsPage> createState() => _ProjectsPageState();
@@ -20,13 +23,13 @@ class ProjectsPage extends StatefulWidget {
 class _ProjectsPageState extends State<ProjectsPage> {
   List<Project>? _projects;
   List<Tenant>? _tenants;
-  var isTenantMode = false;
 
   @override
   Widget build(BuildContext context) {
     final localeMsg = AppLocalizations.of(context)!;
     return Scaffold(
-      appBar: myAppBar(context, widget.userEmail),
+      appBar: myAppBar(context, widget.userEmail,
+          isTenantMode: widget.isTenantMode),
       body: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 80.0, vertical: 20),
         child: Column(
@@ -35,7 +38,7 @@ class _ProjectsPageState extends State<ProjectsPage> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text(isTenantMode ? "Tenants" : localeMsg.myprojects,
+                Text(widget.isTenantMode ? "Tenants" : localeMsg.myprojects,
                     style: Theme.of(context).textTheme.headlineLarge),
                 Padding(
                   padding: const EdgeInsets.only(right: 10.0, bottom: 10),
@@ -82,7 +85,7 @@ class _ProjectsPageState extends State<ProjectsPage> {
   }
 
   getProjectData() async {
-    if (isTenantMode) {
+    if (widget.isTenantMode) {
       _tenants = await fetchTenants();
     } else {
       _projects = await fetchProjects(widget.userEmail);
@@ -93,8 +96,9 @@ class _ProjectsPageState extends State<ProjectsPage> {
     final localeMsg = AppLocalizations.of(context)!;
     return ElevatedButton(
       onPressed: () {
-        if (isTenantMode) {
-          createTenantPopup(context, refreshFromChildren);
+        if (widget.isTenantMode) {
+          showCustomPopup(
+              context, CreateTenantPopup(parentCallback: refreshFromChildren));
         } else {
           Navigator.of(context).push(
             MaterialPageRoute(
@@ -110,7 +114,8 @@ class _ProjectsPageState extends State<ProjectsPage> {
             padding: EdgeInsets.symmetric(vertical: 10.0),
             child: Icon(Icons.add_to_photos),
           ),
-          Text(isTenantMode ? localeMsg.newTenant : localeMsg.newProject),
+          Text(
+              widget.isTenantMode ? localeMsg.newTenant : localeMsg.newProject),
         ],
       ),
     );
@@ -118,9 +123,12 @@ class _ProjectsPageState extends State<ProjectsPage> {
 
   getCards(context) {
     List<Widget> cards = [];
-    if (isTenantMode) {
+    if (widget.isTenantMode) {
       for (var tenant in _tenants!) {
-        cards.add(TenantCard(tenant: tenant));
+        cards.add(TenantCard(
+          tenant: tenant,
+          parentCallback: refreshFromChildren,
+        ));
       }
     } else {
       for (var project in _projects!) {

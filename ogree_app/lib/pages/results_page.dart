@@ -6,7 +6,7 @@ import 'package:universal_html/html.dart' as html;
 import 'dart:math';
 
 import 'package:flutter/material.dart';
-import 'package:ogree_app/common/api.dart';
+import 'package:ogree_app/common/api_backend.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:ogree_app/widgets/select_objects/app_controller.dart';
 import 'package:csv/csv.dart';
@@ -329,8 +329,8 @@ class _ResultsPageState extends State<ResultsPage> {
   }
 }
 
-class _Row {
-  _Row(
+class CustomRow {
+  CustomRow(
     this.cells,
   );
 
@@ -349,7 +349,7 @@ class _DataSource extends DataTableSource {
     _rows = getChildren();
   }
   final BuildContext context;
-  late List<_Row> _rows;
+  late List<CustomRow> _rows;
 
   int _selectedCount = 0;
 
@@ -382,8 +382,8 @@ class _DataSource extends DataTableSource {
   @override
   int get selectedRowCount => _selectedCount;
 
-  List<_Row> getChildren() {
-    List<_Row> children = [];
+  List<CustomRow> getChildren() {
+    List<CustomRow> children = [];
     for (var obj in selectedObjects) {
       List<DataCell> row = [];
       row.add(label(obj, fontWeight: FontWeight.w500));
@@ -398,7 +398,7 @@ class _DataSource extends DataTableSource {
       }
       // for add column at the end
       if (selectedAttrs.contains(extraColumn)) row.add(label(""));
-      children.add(_Row(row));
+      children.add(CustomRow(row));
     }
     return children;
   }

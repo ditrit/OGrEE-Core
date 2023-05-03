@@ -68,19 +68,19 @@ class _ResponsiveBody extends StatelessWidget {
   Widget build(BuildContext context) {
     // print("BUILD RespBody");
     if (MediaQuery.of(context).size.width < 600) {
-      return const CustomTreeView();
+      return const CustomTreeView(isTenantMode: false);
     }
     return Padding(
       padding: const EdgeInsets.all(8.0),
       child: Row(
         children: const [
-          Flexible(flex: 2, child: CustomTreeView()),
+          Flexible(flex: 2, child: CustomTreeView(isTenantMode: false)),
           VerticalDivider(
             width: 1,
             thickness: 1,
             color: Colors.black26,
           ),
-          Expanded(child: SettingsView()),
+          Expanded(child: SettingsView(isTenantMode: false)),
         ],
       ),
     );

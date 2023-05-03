@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:ogree_app/common/api.dart';
+import 'package:ogree_app/common/api_backend.dart';
 import 'package:ogree_app/common/snackbar.dart';
 import 'package:ogree_app/pages/projects_page.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
@@ -26,6 +26,7 @@ class _LoginPageState extends State<LoginPage> {
 
   String? _email;
   String? _password;
+  String _apiUrl = "";
 
   @override
   Widget build(BuildContext context) {
@@ -79,12 +80,14 @@ class _LoginPageState extends State<LoginPage> {
                               ),
                             ),
                             const SizedBox(height: 25),
-                            Center(
-                              child: Image.asset(
-                                "assets/edf_logo.png",
-                                height: 30,
-                              ),
-                            ),
+                            allowBackChoice
+                                ? backendInput()
+                                : Center(
+                                    child: Image.asset(
+                                      "assets/edf_logo.png",
+                                      height: 30,
+                                    ),
+                                  ),
                             const SizedBox(height: 32),
                             TextFormField(
                               onSaved: (newValue) => _email = newValue,
@@ -145,7 +148,7 @@ class _LoginPageState extends State<LoginPage> {
                                     const SizedBox(width: 8),
                                     Text(
                                       localeMsg.stayLogged,
-                                      style: GoogleFonts.inter(
+                                      style: TextStyle(
                                         fontSize: 14,
                                         color: Colors.black,
                                       ),
@@ -154,7 +157,7 @@ class _LoginPageState extends State<LoginPage> {
                                 ),
                                 Text(
                                   localeMsg.forgotPassword,
-                                  style: GoogleFonts.inter(
+                                  style: TextStyle(
                                     fontSize: 14,
                                     color:
                                         const Color.fromARGB(255, 0, 84, 152),
@@ -174,7 +177,7 @@ class _LoginPageState extends State<LoginPage> {
                                 ),
                                 child: Text(
                                   localeMsg.login,
-                                  style: GoogleFonts.inter(
+                                  style: TextStyle(
                                     fontSize: 14,
                                     fontWeight: FontWeight.w600,
                                   ),
@@ -199,19 +202,97 @@ class _LoginPageState extends State<LoginPage> {
   tryLogin() {
     if (_formKey.currentState!.validate()) {
       _formKey.currentState!.save();
-      loginAPI(_email!, _password!)
-          .then((value) => value != ""
+      loginAPI(_email!, _password!, userUrl: _apiUrl)
+          .then((value) => value.first != ""
               ? Navigator.of(context).push(
                   MaterialPageRoute(
                     builder: (context) => ProjectsPage(
-                      userEmail: value,
+                      userEmail: value.first,
+                      isTenantMode: value[1] == "true",
                     ),
                   ),
                 )
               : showSnackBar(
                   context, AppLocalizations.of(context)!.invalidLogin,
                   isError: true))
-          .onError((error, stackTrace) => print(error));
+          .onError((error, stackTrace) {
+        print(error);
+        showSnackBar(context, error.toString().trim(), isError: true);
+      });
     }
   }
+
+  backendInput() {
+    final options = backendUrl.split(",");
+    final localeMsg = AppLocalizations.of(context)!;
+    return RawAutocomplete<String>(
+      optionsBuilder: (TextEditingValue textEditingValue) {
+        return options.where((String option) {
+          return option.contains(textEditingValue.text);
+        });
+      },
+      fieldViewBuilder: (BuildContext context,
+          TextEditingController textEditingController,
+          FocusNode focusNode,
+          VoidCallback onFieldSubmitted) {
+        textEditingController.text = options.first;
+        return TextFormField(
+          controller: textEditingController,
+          focusNode: focusNode,
+          onSaved: (newValue) => _apiUrl = newValue!,
+          validator: (text) {
+            if (text == null || text.trim().isEmpty) {
+              return localeMsg.mandatoryField;
+            }
+            return null;
+          },
+          decoration: InputDecoration(
+              isDense: true,
+              labelText: localeMsg.selectServer,
+              labelStyle: TextStyle(fontSize: 14)),
+          onTap: () {
+            textEditingController.clear();
+          },
+        );
+      },
+      optionsViewBuilder: (BuildContext context,
+          AutocompleteOnSelected<String> onSelected, Iterable<String> options) {
+        return Align(
+          alignment: Alignment.topLeft,
+          child: Material(
+            elevation: 4.0,
+            child: SizedBox(
+              height: options.length > 2 ? 171.0 : 57.0 * options.length,
+              width: 350,
+              child: ListView.builder(
+                padding: const EdgeInsets.all(8.0),
+                itemCount: options.length,
+                itemBuilder: (BuildContext context, int index) {
+                  final String option = options.elementAt(index);
+                  return GestureDetector(
+                    onTap: () {
+                      onSelected(option);
+                    },
+                    child: ListTile(
+                      title: Text(option, style: const TextStyle(fontSize: 14)),
+                    ),
+                  );
+                },
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
 }
+
+String backendUrl = const String.fromEnvironment(
+  'BACK_URLS',
+  defaultValue: 'http://localhost:8082,https://b.api.ogree.ditrit.io',
+);
+
+bool allowBackChoice = const bool.fromEnvironment(
+  'ALLOW_SET_BACK',
+  defaultValue: true,
+);

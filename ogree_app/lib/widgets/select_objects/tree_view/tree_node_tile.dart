@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_fancy_tree_view/flutter_fancy_tree_view.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:ogree_app/common/popup_dialog.dart';
 import 'package:ogree_app/common/snackbar.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:ogree_app/widgets/tenants/popups/domain_popup.dart';
 
 import '../app_controller.dart';
 
@@ -16,7 +18,8 @@ const RoundedRectangleBorder kRoundedRectangleBorder = RoundedRectangleBorder(
 );
 
 class TreeNodeTile extends StatefulWidget {
-  const TreeNodeTile({Key? key}) : super(key: key);
+  final bool isTenantMode;
+  const TreeNodeTile({Key? key, required this.isTenantMode}) : super(key: key);
 
   @override
   _TreeNodeTileState createState() => _TreeNodeTileState();
@@ -32,15 +35,55 @@ class _TreeNodeTileState extends State<TreeNodeTile> {
         hoverColor: Colors.white,
         onTap: () => _describeAncestors(nodeScope.node),
         onLongPress: () => appController.toggleSelection(nodeScope.node.id),
-        child: Row(children: const [
-          LinesWidget(),
+        child: Row(children: [
+          const LinesWidget(),
           NodeWidgetLeadingIcon(
-            expandIcon: Icon(Icons.auto_awesome_mosaic),
-            collapseIcon: Icon(Icons.auto_awesome_mosaic_outlined),
-            leafIcon: Icon(Icons.dns),
+            expandIcon: const Icon(Icons.auto_awesome_mosaic),
+            collapseIcon: const Icon(Icons.auto_awesome_mosaic_outlined),
+            leafIcon: widget.isTenantMode
+                ? const Icon(Icons.dns)
+                : const Icon(Icons.auto_awesome_mosaic),
           ),
-          _NodeActionsChip(),
-          _NodeSelector(),
+          const _NodeActionsChip(),
+          widget.isTenantMode
+              ? Row(
+                  children: [
+                    Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 8.0),
+                      child: CircleAvatar(
+                        radius: 13,
+                        child: IconButton(
+                            splashRadius: 18,
+                            iconSize: 14,
+                            padding: EdgeInsets.all(2),
+                            onPressed: () => showCustomPopup(
+                                context,
+                                DomainPopup(
+                                  parentCallback: () => appController
+                                      .init({}, onlyDomain: true, reload: true),
+                                  domainId: nodeScope.node.id,
+                                )),
+                            icon: Icon(
+                              Icons.edit,
+                              color: Colors.black,
+                            )),
+                      ),
+                    ),
+                    CircleAvatar(
+                      radius: 13,
+                      child: IconButton(
+                          splashRadius: 18,
+                          iconSize: 14,
+                          padding: EdgeInsets.all(2),
+                          onPressed: null,
+                          icon: Icon(
+                            Icons.people,
+                            color: Colors.black,
+                          )),
+                    ),
+                  ],
+                )
+              : const _NodeSelector(),
         ]));
   }
 

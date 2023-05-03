@@ -5,7 +5,14 @@
   "back": "Précédent",
   "next": "Suivant",
   "search": "Rechercher",
+  "create": "Créer",
+  "modify": "Modifier",
   "selectionOptions": "Options de sélection",
+  "deleteOK": "Supprimé avec succès",
+  "modifyOK": "Utilisateur modifié avec succès",
+  "createOK": "Crée avec succès !",
+  "color": "Couleur",
+  "optional": "facultatif",
   
   "@welcome": { "description": "Login Page" },
   "welcome": "Bienvenue sur OGrEE",
@@ -72,6 +79,47 @@
   "showAvg": "Afficher la moyenne",
 
   "newTenant": "   Créer un nouveau tenant",
-  "create": "Créer",
-  "tenantCreated": "Tenant créé avec succès !"
+  "tenantCreated": "Tenant créé avec succès !",
+  "deployment": "Déploiment",
+  "loginTenant": "Connectez-vous à l'API de ce Tenant :",
+  "areYouSure": "Êtes-vous sûr ?",
+  "allWillBeLost": "Toutes les données seront définitivement perdues !",
+  "noDockerInfo": "Impossible de récupérer les informations docker",
+  "noDockerLogs": "Pas de logs pour ce container",
+  "selectJSON": "Choisir fichier JSON",
+  "mustSelectJSON": "Il faut choisir un fichier JSON pour la création",
+  "fileLoaded": "Fichier {fileName} téléchargé",
+  "@fileLoaded": {
+    "placeholders": {
+      "fileName": {
+        "type": "String",
+        "example": "file.json"
+      }
+    }
+  },
+  "modifyUser": "Modifier Utilisateur",
+  "createUser": "Créer un utilisateur",
+  "createBulkFile": "Créer avec fichier JSON",
+  "onlyOneRoleDomain": "Attention : un seul rôle par domaine",
+  "modifyDomain": "Modifier Domaine",
+  "createDomain": "Créer un domaine",
+  "domainName": "Nom du domaine",
+  "parentDomain": "Domaine Parent",
+  "shouldHaveXChars": "Il faut au moins {X} caractères",
+  "@shouldHaveXChars": {
+    "placeholders": {
+      "X": {
+        "type": "num",
+        "example": "6"
+      }
+    }
+  },
+  "domain": "Domaine",
+  "user": "Utilisateur",
+
+  "addServer": "Ajouter nouveau serveur",
+  "selectServer": "Choisir serveur",
+  "createServer": "Créer backend dans serveur",
+  "serverPath": "Chemin d'installation (serveur)",
+  "portServer": "Porte pour le backend (serveur)"
 }

@@ -1,32 +1,36 @@
 part of 'settings_view.dart';
 
 class _Actions extends StatelessWidget {
-  const _Actions({Key? key}) : super(key: key);
+  final bool isTenantMode;
+  const _Actions({Key? key, required this.isTenantMode}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     final localeMsg = AppLocalizations.of(context)!;
+    final actionsRow = [
+      _Action(
+        label: Text(localeMsg.expandAll),
+        onPressed: AppController.of(context).treeController.expandAll,
+      ),
+      _Action(
+        label: Text(localeMsg.collapseAll),
+        onPressed: AppController.of(context).treeController.collapseAll,
+      ),
+    ];
+    if (!isTenantMode) {
+      actionsRow.add(_Action(
+        label: Text(localeMsg.selectAll),
+        onPressed: AppController.of(context).selectAll,
+      ));
+      actionsRow.add(_Action(
+        label: Text(localeMsg.deselectAll),
+        onPressed: () => AppController.of(context).selectAll(false),
+      ));
+    }
     return Wrap(
       spacing: 10,
       runSpacing: 10,
-      children: [
-        _Action(
-          label: Text(localeMsg.expandAll),
-          onPressed: AppController.of(context).treeController.expandAll,
-        ),
-        _Action(
-          label: Text(localeMsg.collapseAll),
-          onPressed: AppController.of(context).treeController.collapseAll,
-        ),
-        _Action(
-          label: Text(localeMsg.selectAll),
-          onPressed: AppController.of(context).selectAll,
-        ),
-        _Action(
-          label: Text(localeMsg.deselectAll),
-          onPressed: () => AppController.of(context).selectAll(false),
-        ),
-      ],
+      children: actionsRow,
     );
   }
 }

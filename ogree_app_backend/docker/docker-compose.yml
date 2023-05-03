@@ -1,8 +1,8 @@
 version: '3.9'
 services:
   dbft_api:
-    # build: ${APIBUILDDIR}#${APIBRANCH}
-    build: ../../../OGrEE-API
+    build: ${APICLIBUILDDIR}#${APIBRANCH}:API
+    # build: ../../../OGrEE-API
     image: dbft/api:dockerfile
     container_name: ${COMPOSE_PROJECT_NAME}_api
     entrypoint: /home/main
@@ -11,7 +11,7 @@ services:
       - db_host=${COMPOSE_PROJECT_NAME}_db
       - db_port=27017
       - db_user=$TENANT
-      - db_pass=123
+      - db_pass=$PASSWORD
       - db=$TENANT
       - token_password=yourSecretPasswordGoesHere
     ports:
@@ -29,7 +29,7 @@ services:
     container_name: ${COMPOSE_PROJECT_NAME}_db
     environment:
         - DB_NAME=$TENANT
-        - CUSTOMER_API_PASS=123
+        - CUSTOMER_API_PASS=$PASSWORD
         - CUSTOMER_RECORDS_DB=ogree
 
         - ADMIN_DB=admin
@@ -52,13 +52,18 @@ services:
 
   # Deploying the CLI in an orchestrated fashion does 
   # not work since containers exit when a program
-  # is done executing. It is left here for reference 
+  # is done executing. Instead make container 'hang'
+  # to allow for on demand access. 
+  # The 'tty: true' entry allows the container to hang 
+  # by using the container's shell
+  # The cli binary is found @ /home/cli
   dbft_cli:
-   #build: ${CLIBUILDDIR}#${CLIBRANCH}
-   build: ${LOCAL_CLI_BUILD_DIR}
+   build: ${APICLIBUILDDIR}#${CLIBRANCH}:CLI
+  #  build: ${LOCAL_CLI_BUILD_DIR}
    image: dbft/cli:dockerfile
+   profiles: ["cli"]
    container_name: ${COMPOSE_PROJECT_NAME}_cli
-   entrypoint: tail -f /dev/null
+   tty: true
    environment:
      - acDrawableJson=null
      - apiKey=yourJWTKeyGoesHere
@@ -91,11 +96,12 @@ services:
 
   dbft_webapp:
     build: 
-      #context: ${APPBUILDDIR}#${APPBRANCH}
-      context: ../../
+      context: ${APPBUILDDIR}#${APPBRANCH}
+      # context: ../../
       args:
-      - API_URL=localhost:${APIPORT}
+      - API_URL=http://${APIEXTERNALURL}:${APIPORT}
     image: dbft/webapp:dockerfile
+    profiles: ["web"]
     container_name: ${COMPOSE_PROJECT_NAME}_webapp
     ports:
       - ${WEBPORT}:80

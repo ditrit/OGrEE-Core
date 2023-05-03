@@ -38,7 +38,7 @@ class _SelectDateState extends State<SelectDate> with TickerProviderStateMixin {
           localeMsg.whatDate,
           style: Theme.of(context).textTheme.headlineLarge,
         ),
-        const SizedBox(height: 25),
+        const SizedBox(height: 20),
         Card(
           child: Container(
               alignment: Alignment.center,
@@ -60,9 +60,18 @@ class _SelectDateState extends State<SelectDate> with TickerProviderStateMixin {
                       isScrollable: true,
                       indicatorSize: TabBarIndicatorSize.label,
                       tabs: [
-                        Tab(text: localeMsg.pickDate),
-                        Tab(text: localeMsg.openLastDataset),
-                        Tab(text: localeMsg.openSavedDataser),
+                        Tab(
+                          text: localeMsg.pickDate,
+                          icon: Icon(Icons.calendar_month),
+                        ),
+                        Tab(
+                          text: localeMsg.openLastDataset,
+                          icon: Icon(Icons.timelapse),
+                        ),
+                        Tab(
+                          text: localeMsg.openSavedDataser,
+                          icon: Icon(Icons.calendar_view_day),
+                        ),
                       ],
                     ),
                   ),

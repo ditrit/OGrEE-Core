@@ -1,6 +1,6 @@
 import 'package:flutter/widgets.dart';
 import 'package:flutter_fancy_tree_view/flutter_fancy_tree_view.dart';
-import 'package:ogree_app/common/api.dart';
+import 'package:ogree_app/common/api_backend.dart';
 
 class AppController with ChangeNotifier {
   bool _isInitialized = false;
@@ -16,12 +16,19 @@ class AppController with ChangeNotifier {
         .controller;
   }
 
-  Future<void> init(Map<String, bool> nodes, {bool isTest = false}) async {
-    if (_isInitialized) return;
-
+  Future<void> init(Map<String, bool> nodes,
+      {bool isTest = false,
+      bool onlyDomain = false,
+      bool reload = false}) async {
+    print("INIIIIIIIIIT");
+    if (_isInitialized && !reload) return;
+    print("FOR REAL INIIIIIIIIIT");
     final rootNode = TreeNode(id: kRootId);
     print("Get API data");
-    if (isTest) {
+    if (onlyDomain) {
+      fetchedData = (await fetchObjectsTree(onlyDomain: true)).first;
+      print(fetchedData);
+    } else if (isTest) {
       fetchedData = kDataSample;
       fetchedCategories = kDataSampleCategories;
     } else {
@@ -29,15 +36,27 @@ class AppController with ChangeNotifier {
       fetchedData = resp[0];
       fetchedCategories = resp[1];
     }
-    generateTree(rootNode, fetchedData);
 
-    treeController = TreeViewController(
-      rootNode: rootNode,
-    );
-    _isInitialized = true;
-    selectedNodes = nodes;
-    for (var i = 0; i <= lastFilterLevel; i++) {
-      _filterLevels[i] = [];
+    if (reload) {
+      // Regenerate tree
+      treeController.rootNode
+          .clearChildren()
+          .forEach((child) => child.delete(recursive: true));
+      generateTree(treeController.rootNode, fetchedData);
+      // Force redraw tree view
+      treeController.refreshNode(treeController.rootNode);
+      treeController.reset();
+    } else {
+      generateTree(rootNode, fetchedData);
+
+      treeController = TreeViewController(
+        rootNode: rootNode,
+      );
+      _isInitialized = true;
+      selectedNodes = nodes;
+      for (var i = 0; i <= lastFilterLevel; i++) {
+        _filterLevels[i] = [];
+      }
     }
   }
 

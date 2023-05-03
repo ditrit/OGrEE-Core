@@ -1,5 +1,5 @@
 # OGrEE-APP
-A Flutter application for OGrEE. It includes a frontend (ogree_app) mainly compiled as a web app and a backend (ogree_app_backend) originally developed in GO to interact with OGrEE-API but currently **deprecated**. The flutter app can interact directly with OGrEE-API
+A Flutter application for OGrEE. It includes a frontend (ogree_app) mainly compiled as a web app and a backend (ogree_app_backend) only used for Super Admin mode. The flutter app can interact directly with OGrEE-API.
 
 ## Getting Starded: Frontend
 ```console
@@ -10,25 +10,28 @@ With Flutter, we can use the same base code to build applications for different 
 For development, you should install the Flutter SDK and all its dependencies (depending on your OS). We recommed you use VSCode with the Flutter and Dart extensions.  
 
 ### Run web app on debug mode
-Only Google Chrome can run a Flutter web app on debug mode. If the `flutter doctor` command gives you a green pass, other than directly on VSCode, you can also compile and run the web app with the following:
+Only Google Chrome can run a Flutter web app on debug mode. If the `flutter doctor` command gives you a green pass, other than directly on VSCode, you can also compile and run the web app in the terminal. To configure the list of possible backend URLs to which the frontend can connect (displayed as a dropdown menu in the login page), you can pass it as a environment variable:
 ```console
-flutter run -d chrome
+flutter run -d chrome --dart-define=BACK_URLS=http://localhost:5551,https://banana.com --dart-define=ALLOW_SET_BACK=true
 ```
 
-Before running it, create a **.env** file under ogree_app/ with the URL of the target OGrEE-API:
+To use the frontend with just one backend, run:
 ```console
-API_URL=[URL of OGrEE-API]
+flutter run -d chrome --dart-define=API_URL=http://localhost:5551
 ```
 
 ## Building and running with Docker
 Our dockerfile is multi-stage: the first image install flutter and its dependencies, then compiles the web app; the second image is nginx based and runs the web server for the previously compiled app.
 
-
-Before building it, add a **.env** file to the backend directory with the URL and access token to the OGrEE-API to which it should connect.
-
-To build the Docker image, run in the root of this project:
+To build the Docker image to use the frontend for tenants (Super Admin), run in the root of this project:
 ```console
-docker build . -t ogree-app
+docker build . -t ogree-app --build-arg BACK_URLS=http://localhost:5551,https://banana.com --build-arg ALLOW_SET_BACK=true
+```
+
+If not, to build in normal mode, set the API URL:
+```console
+docker build . -t ogree-app --build-arg API_URL=http://localhost:5551
+
 ```
 
 To run a container with the built image:
@@ -38,26 +41,25 @@ docker run -p 8080:80 -d ogree-app:latest
 
 If all goes well, you should be able to acess the OGrEE Web App on http://localhost:8080.
 
-## [DEPRECATED] Getting Started: Backend
+## Getting Started: Backend
 ```console
 cd ogree_app_backend
 ```
-This is a simple API interfacing with OGrEE-API to make the frontend life easier, providing it with OGrEE data in the format it needs. It uses GIN, a HTTP web framework in Go. 
+This is a backend that connects to a local instance of docker to create new tenants. A new tenant consists of a docker compose deployment of 4 containers: API, DB, CLI and WebApp. Once the frontend connects to this backend, it changes its interface to tenant mode. For the backend API, it uses GIN, a HTTP web framework in Go. 
 
 ### Building and running
-You should have Go installed We are currently using the 1.19.3 version. In the backend directory, run the following to install dependecies:
+You should have Go installed We are currently using at least the 1.19.3 version. In the backend directory, run the following to install dependecies:
 ```console
 go mod download
 ```
 
-Before running it, you should set two environmental variables to allow the backend to connect to the OGrEE-API, a .env file can be created with the following:
-```console
-OGREE_URL=[URL of OGrEE-API]
-OGREE_TOKEN=[authentication token for given URL]
-```
-
-Then, to compile than run:
+Then, to compile and run:
 ```console
 go build -o ogree_app_backend
 ./ogree_app_backend
+```
+
+Or run directly:
+```console
+go run .
 ```
