@@ -48,11 +48,6 @@ services:
   # The 'tty: true' entry allows the container to hang 
   # by using the container's shell
   # The cli binary is found @ /home/cli
-
-  # Environment notes:
-  # Drawable -> You should specify a string with multiple objects separated by ':'
-  # Updates -> Same thing as Drawable
-  # {obj}DrawableJson -> Specify them as usual, objDrawableJson="xyz"
   ogree_cli:
     build: 
       context: ${CORE_DIR}
@@ -62,7 +57,7 @@ services:
     container_name: ${COMPOSE_PROJECT_NAME}_cli
     tty: true
     volumes:
-      - cli_config:/home/config.toml
+      - ${CORE_DIR}/config.toml:/config.toml
     depends_on:
       - ogree_api
 
@@ -92,16 +87,3 @@ services:
     depends_on:
       - ogree_api
     restart: on-failure:10
-
-
-# NOTE 
-# The config.toml file must be at the root of 
-# this project dir and is not tracked by git
-volumes:
-  cli_config:
-    driver: local
-    driver_opts:
-      type: none
-      o: bind
-      device: "$(pwd)/../../config.toml"
-    name: "cli_config"
