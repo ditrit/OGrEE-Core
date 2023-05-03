@@ -17,5 +17,6 @@ FROM busybox:latest
 USER root
 WORKDIR /home
 
+COPY API/resources/test/ /home/resources/test/
 COPY --from=builder /home/main /home
 ENTRYPOINT [ "/home/main" ]
