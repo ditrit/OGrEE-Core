@@ -26,12 +26,19 @@ import (
 )
 
 var tmplt *template.Template
+var DEPLOY_DIR string
+var DOCKER_DIR string
 
 func init() {
 	err := godotenv.Load(".env")
 	if err != nil {
 		panic("Error loading .env file")
 	}
+	DEPLOY_DIR = os.Getenv("DEPLOY_DIR")
+	if DEPLOY_DIR == "" {
+		DEPLOY_DIR = "../../deploy/"
+	}
+	DOCKER_DIR = DOCKER_DIR + "docker/"
 	// hashedPassword, _ := bcrypt.GenerateFromPassword(
 	// 	[]byte("password"), bcrypt.DefaultCost)
 	// println(string(hashedPassword))
@@ -132,7 +139,7 @@ func getTenantDockerInfo(c *gin.Context) {
 	name := c.Param("name")
 	println(name)
 	cmd := exec.Command("docker", "ps", "--all", "--format", "\"{{json .}}\"")
-	cmd.Dir = "docker/"
+	cmd.Dir = DOCKER_DIR
 	var stderr bytes.Buffer
 	cmd.Stderr = &stderr
 	if output, err := cmd.Output(); err != nil {
@@ -170,7 +177,7 @@ func getContainerLogs(c *gin.Context) {
 	name := c.Param("name")
 	println(name)
 	cmd := exec.Command("docker", "logs", name, "--tail", "1000")
-	cmd.Dir = "docker/"
+	cmd.Dir = DOCKER_DIR
 	var stderr bytes.Buffer
 	cmd.Stderr = &stderr
 	if output, err := cmd.Output(); err != nil {
@@ -200,14 +207,14 @@ func addTenant(c *gin.Context) {
 		return
 	} else {
 		// Create .env file
-		file, _ := os.Create("docker/.env")
+		file, _ := os.Create(DOCKER_DIR + ".env")
 		err = tmplt.Execute(file, newTenant)
 		if err != nil {
 			panic(err)
 		}
 		file.Close()
 		// Create .env copy
-		file, _ = os.Create("docker/" + strings.ToLower(newTenant.Name) + ".env")
+		file, _ = os.Create(DOCKER_DIR + strings.ToLower(newTenant.Name) + ".env")
 		err = tmplt.Execute(file, newTenant)
 		if err != nil {
 			fmt.Println("Error creating .env copy: " + err.Error())
@@ -233,7 +240,7 @@ func addTenant(c *gin.Context) {
 		args = append(args, "up")
 		args = append(args, "-d")
 		cmd := exec.Command("docker-compose", args...)
-		cmd.Dir = "docker/"
+		cmd.Dir = DOCKER_DIR
 		var stderr bytes.Buffer
 		cmd.Stderr = &stderr
 		if _, err := cmd.Output(); err != nil {
@@ -257,7 +264,7 @@ func removeTenant(c *gin.Context) {
 
 	for _, str := range []string{"_cli", "_webapp", "_api", "_db", "_doc"} {
 		cmd := exec.Command("docker", "rm", "--force", strings.ToLower(tenantName)+str)
-		cmd.Dir = "docker/"
+		cmd.Dir = DOCKER_DIR
 		var stderr bytes.Buffer
 		cmd.Stderr = &stderr
 		if _, err := cmd.Output(); err != nil {
@@ -384,16 +391,20 @@ func createNewBackend(c *gin.Context) {
 	}
 	defer conn.Close()
 
+	//Create .env file for distant copy
+	if e := createEnvFile(DEPLOY_DIR); e != "" {
+		c.String(http.StatusInternalServerError, e)
+		return
+	}
+
 	SSHRunCmd("mkdir -p "+newServer.DstPath+"/docker", conn, true)
 
 	SSHCopyFile("ogree_app_backend_linux", newServer.DstPath+"/ogree_app_backend", conn)
 	SSHCopyFile("docker-env-template.txt", newServer.DstPath+"/docker-env-template.txt", conn)
-	SSHCopyFile(".env", newServer.DstPath+"/.env", conn)
-	SSHCopyFile("docker/docker-compose.yml", newServer.DstPath+"/docker/docker-compose.yml", conn)
-	SSHCopyFile("docker/addCustomer.js", newServer.DstPath+"/docker/addCustomer.js", conn)
-	SSHCopyFile("docker/addCustomer.sh", newServer.DstPath+"/docker/addCustomer.sh", conn)
-	SSHCopyFile("docker/dbft.js", newServer.DstPath+"/docker/dbft.js", conn)
-	SSHCopyFile("docker/init.sh", newServer.DstPath+"/docker/init.sh", conn)
+	SSHCopyFile(".envcopy", newServer.DstPath+"/.env", conn)
+	SSHCopyFile(DOCKER_DIR+"docker-compose.yml", newServer.DstPath+"/docker/docker-compose.yml", conn)
+	SSHCopyFile(DEPLOY_DIR+"createdb.js", newServer.DstPath+"/createdb.js", conn)
+	SSHCopyFile(DOCKER_DIR+"init.sh", newServer.DstPath+"/docker/init.sh", conn)
 
 	SSHRunCmd("chmod +x "+newServer.DstPath+"/ogree_app_backend", conn, true)
 	SSHRunCmd("cd "+newServer.DstPath+" && nohup "+newServer.DstPath+"/ogree_app_backend -port "+newServer.RunPort+" > "+newServer.DstPath+"/ogree_backend.out", conn, false)
@@ -459,4 +470,26 @@ func SSHRunCmd(cmd string, client *ssh.Client, wait bool) {
 			fmt.Println(buff.String())
 		}
 	}
+}
+
+func createEnvFile(dir string) string {
+	input, err := ioutil.ReadFile(".env")
+	if err != nil {
+		return err.Error()
+	}
+
+	lines := strings.Split(string(input), "\n")
+
+	for i, line := range lines {
+		if strings.Contains(line, "DEPLOY_DIR") {
+			lines[i] = "DEPLOY_DIR=" + dir
+		}
+	}
+	output := strings.Join(lines, "\n")
+	err = ioutil.WriteFile(".envcopy", []byte(output), 0644)
+	if err != nil {
+		return err.Error()
+	}
+
+	return ""
 }

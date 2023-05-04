@@ -1,8 +1,9 @@
-# How to deploy the API
+# OGrEE-Core
+## How to quickly deploy the API
 
 Run ```docker compose -f deploy/docker/docker-compose.yml up```
 
-# Config
+## Config
 To use the frontend (CLI, 3D, APP), a ```config.toml``` file must be created at the root of the repo.
 
 Example :

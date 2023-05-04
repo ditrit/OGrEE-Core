@@ -76,7 +76,8 @@ services:
 
   ogree_webapp:
     build: 
-      context: ${APP_BUILD_DIR}
+      context: ${CORE_DIR}
+      dockerfile: ${APP_BUILD_DIR}/Dockerfile
       args:
       - API_URL=http://${API_EXTERNALURL}:${API_PORT}
     image: ogree/webapp:latest
