@@ -1,3 +1,9 @@
+# How to deploy
+
+* Create a config.toml file at the root of the repo, as in the next section.
+* Run ```docker compose -f deploy/docker/docker-compose.yml up```
+
+# Config
 
 An example of configuration file for the entire OGrEE frontend.
 The default location for this file is as below :
