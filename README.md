@@ -1,23 +1,11 @@
-# How to deploy
+# How to deploy the API
 
-* Create a config.toml file at the root of the repo, as in the next section.
-* Run ```docker compose -f deploy/docker/docker-compose.yml up```
+Run ```docker compose -f deploy/docker/docker-compose.yml up```
 
 # Config
+To use the frontend (CLI, 3D, APP), a ```config.toml``` file must be created at the root of the repo.
 
-An example of configuration file for the entire OGrEE frontend.
-The default location for this file is as below :
-
-```bash
-├── config.toml
-├── CLI
-│   ├── cli.exe
-│   └── ...
-└── OGrEE-3D
-    ├── OGrEE-3D.exe
-    └── ...
-```
-config.toml :
+Example :
 ```
 [OGrEE-CLI]
 Verbose = "ERROR"
