@@ -12,7 +12,7 @@ jobs:
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: ./ogree_app
+        working-directory: ./APP/ogree_app
         
     steps:
       - uses: actions/checkout@v3
