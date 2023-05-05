@@ -480,11 +480,18 @@ func createEnvFile(dir string) string {
 
 	lines := strings.Split(string(input), "\n")
 
+	replaced := false
 	for i, line := range lines {
 		if strings.Contains(line, "DEPLOY_DIR") {
 			lines[i] = "DEPLOY_DIR=" + dir
+			replaced = true
+			break
 		}
 	}
+	if !replaced {
+		lines = append(lines, "DEPLOY_DIR="+dir)
+	}
+
 	output := strings.Join(lines, "\n")
 	err = ioutil.WriteFile(".envcopy", []byte(output), 0644)
 	if err != nil {

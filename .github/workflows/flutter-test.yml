@@ -1,0 +1,31 @@
+name: Flutter
+
+on:
+  pull_request:
+    branches:
+    - main
+    paths:
+    - APP/**
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./ogree_app
+        
+    steps:
+      - uses: actions/checkout@v3
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.7.6'
+          channel: 'stable'
+          
+      - name: Set up 
+        run: flutter pub get
+      
+      - name: Test
+        run: flutter test
+      
+      - name: Web build
+        run: flutter build web
