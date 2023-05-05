@@ -392,7 +392,7 @@ func createNewBackend(c *gin.Context) {
 	defer conn.Close()
 
 	//Create .env file for distant copy
-	if e := createEnvFile(DEPLOY_DIR); e != "" {
+	if e := createEnvFile(newServer.DstPath + "/"); e != "" {
 		c.String(http.StatusInternalServerError, e)
 		return
 	}
