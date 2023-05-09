@@ -17,18 +17,25 @@ LINUX_COMMAND=$(BUILD_COMMAND) -o cli
 MAC_COMMAND=GOOS=darwin $(BUILD_COMMAND) -o cli.mac
 WIN_COMMAND=GOOS=windows $(BUILD_COMMAND) -o cli.exe
 CROSS_COMMAND=$(LINUX_COMMAND) ; $(MAC_COMMAND) ; $(WIN_COMMAND)
+DOCKER_PREFIX=docker run --rm -v $(shell pwd):/workdir -w /workdir golang:1.19.6 bash -c
 
 .PHONY: main mac win
 
 main:
-	$(LINUX_COMMAND)
+	eval $(LINUX_COMMAND)
 mac: 
-	$(MAC_COMMAND)
+	eval $(MAC_COMMAND)
 win: 
-	$(WIN_COMMAND)
+	eval $(WIN_COMMAND)
 
 docker:
-	docker run --rm -v $(shell pwd):/workdir -w /workdir golang:1.19.6 bash -c "$(CROSS_COMMAND)"
+	$(DOCKER_PREFIX) "$(LINUX_COMMAND)"
+dockermac:
+	$(DOCKER_PREFIX) "$(MAC_COMMAND)"
+dockerwin:
+	$(DOCKER_PREFIX) "$(WIN_COMMAND)"
+dockercross:
+	$(DOCKER_PREFIX) "$(CROSS_COMMAND)"
 
 clean:
 	rm cli
