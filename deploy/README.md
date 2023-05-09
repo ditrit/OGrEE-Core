@@ -1,9 +1,9 @@
 # How to deploy OGrEE
 
 ## Docker
-In the docker folder, you will find a docker compose file that can deploy a tenant with the following components: API, Mongo DB, CLI, WEB APP and Swagger UI DOC. The API and DB are the most essential part of OGrEE-Core, so they are always deployed. For the others, a profile should be passed. To build and run all componentes, in the docker folder, run:
+In the docker folder, you will find a docker compose file that can deploy a tenant with the following components: API, Mongo DB, WEB APP and Swagger UI DOC. The API and DB are the most essential part of OGrEE-Core, so they are always deployed. For the others, a profile should be passed. To build and run all componentes, in the docker folder, run:
 ```
-docker compose -p mytenant --profile cli --profile web --profile doc up -d
+docker compose -p mytenant --profile web --profile doc up -d
 ```
 Due to docker limitation, the tenant name passed in the -p argument (can be also put in the .env file as COMPOSE_PROJECT_NAME) must contain only characters from [a-z0-9_-] and start with [a-z0-9].
 
@@ -14,7 +14,6 @@ CORE_DIR=../..
 # Distant Core repo
 # CORE_DIR=https://github.com/ditrit/OGrEE-APP.git#main
 API_BUILD_DIR=API
-CLI_BUILD_DIR=CLI
 APP_BUILD_DIR=APP
 API_DOC_UI_PORT=8075
 API_PORT=3001

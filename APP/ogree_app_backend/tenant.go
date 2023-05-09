@@ -24,7 +24,6 @@ type tenant struct {
 	DocUrl           string `json:"docUrl"`
 	DocPort          string `json:"docPort"`
 	HasWeb           bool   `json:"hasWeb"`
-	HasCli           bool   `json:"hasCli"`
 	HasDoc           bool   `json:"hasDoc"`
 }
 
@@ -164,10 +163,6 @@ func addTenant(c *gin.Context) {
 		if newTenant.HasWeb {
 			args = append(args, "--profile")
 			args = append(args, "web")
-		}
-		if newTenant.HasCli {
-			args = append(args, "--profile")
-			args = append(args, "cli")
 		}
 		if newTenant.HasDoc {
 			args = append(args, "--profile")

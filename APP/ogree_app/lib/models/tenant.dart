@@ -9,7 +9,6 @@ class Tenant {
   String apiPort;
   String webPort;
   bool hasWeb;
-  bool hasCli;
   bool hasDoc;
   String docUrl;
   String docPort;
@@ -22,7 +21,6 @@ class Tenant {
       this.apiPort,
       this.webPort,
       this.hasWeb,
-      this.hasCli,
       this.hasDoc,
       this.docUrl,
       this.docPort);
@@ -36,7 +34,6 @@ class Tenant {
       'apiPort': apiPort,
       'webPort': webPort,
       'hasWeb': hasWeb,
-      'hasCli': hasCli,
       'hasDoc': hasDoc,
       'docUrl': docUrl,
       'docPort': docPort,
@@ -52,7 +49,6 @@ class Tenant {
         map['apiPort'].toString(),
         map['webPort'].toString(),
         map['hasWeb'],
-        map['hasCli'],
         map['hasDoc'],
         map['docUrl'].toString(),
         map['docPort'].toString());

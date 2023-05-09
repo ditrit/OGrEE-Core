@@ -25,7 +25,6 @@ class _CreateTenantPopupState extends State<CreateTenantPopup> {
   String _docUrl = "";
   String _docPort = "";
   bool _hasWeb = true;
-  bool _hasCli = true;
   bool _hasDoc = false;
   bool _isLoading = false;
 
@@ -76,18 +75,16 @@ class _CreateTenantPopupState extends State<CreateTenantPopup> {
                     alignment: WrapAlignment.start,
                     crossAxisAlignment: WrapCrossAlignment.center,
                     children: [
+                      Padding(
+                        padding: const EdgeInsets.only(right: 12),
+                        child: Text("Services:"),
+                      ),
                       getCheckBox("API", true, (_) {}, enabled: false),
                       getCheckBox(
                           "WEB",
                           _hasWeb,
                           (value) => setState(() {
                                 _hasWeb = value!;
-                              })),
-                      getCheckBox(
-                          "CLI",
-                          _hasCli,
-                          (value) => setState(() {
-                                _hasCli = value!;
                               })),
                       getCheckBox(
                           "DOC",
@@ -164,7 +161,6 @@ class _CreateTenantPopupState extends State<CreateTenantPopup> {
                                   _apiPort!,
                                   _webPort,
                                   _hasWeb,
-                                  _hasCli,
                                   _hasDoc,
                                   _docUrl,
                                   _docPort));
