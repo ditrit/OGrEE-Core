@@ -1,8 +1,11 @@
-# How to deploy the API
+# OGrEE-Core
+## How to quickly deploy the API
 
-Run ```docker compose -f deploy/docker/docker-compose.yml up```
+Run:
 
-# Config
+```docker compose -f deploy/docker/docker-compose.yml up```
+
+## Config
 To use the frontend (CLI, 3D, APP), a ```config.toml``` file must be created at the root of the repo.
 
 Example :
@@ -67,4 +70,18 @@ customTemperatureGradient = [
     [255,0,0,100],
     [255,255,0,50]
 ]
+```
+## How to checkout a single component
+OGrEE-Core is a monorepo hosting 3 differents applications: API, CLI and APP. With git sparse checkout functionality, you can choose which component you want to checkout instead of the whole repo. 
+
+```
+mkdir sparse
+cd sparse
+git init
+git remote add -f origin https://github.com/ditrit/OGrEE-Core.git
+git sparse-checkout init
+# subfolders to checkout
+git sparse-checkout set "deploy" "APP"
+# branch you wish to checkout
+git pull origin main 
 ```
