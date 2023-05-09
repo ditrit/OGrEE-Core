@@ -193,7 +193,7 @@ func addTenant(c *gin.Context) {
 func removeTenant(c *gin.Context) {
 	tenantName := c.Param("name")
 
-	for _, str := range []string{"_cli", "_webapp", "_api", "_db", "_doc"} {
+	for _, str := range []string{"_webapp", "_api", "_db", "_doc"} {
 		cmd := exec.Command("docker", "rm", "--force", strings.ToLower(tenantName)+str)
 		cmd.Dir = DOCKER_DIR
 		var stderr bytes.Buffer
