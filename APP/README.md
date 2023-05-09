@@ -45,13 +45,23 @@ If all goes well, you should be able to acess the OGrEE Web App on http://localh
 ```console
 cd ogree_app_backend
 ```
-This is a backend that connects to a local instance of docker to create new tenants. A new tenant consists of a docker compose deployment of 4 containers: API, DB, CLI and WebApp. Once the frontend connects to this backend, it changes its interface to tenant mode. For the backend API, it uses GIN, a HTTP web framework in Go. 
+This is a backend that connects to a local instance of docker to create new tenants. A new tenant consists of a docker compose deployment of 5 containers: API, DB, CLI, WebApp and Swagger Doc. Once the frontend connects to this backend, it changes its interface to tenant mode.  
 
 ### Building and running
 You should have Go installed We are currently using at least the 1.19.3 version. In the backend directory, run the following to install dependecies:
 ```console
 go mod download
 ```
+
+It is mandatory to have the deploy folder of OGrEE-Core to properly run the backend and also a .env file which should include:
+```
+TOKEN_SECRET=yoursecretstring
+TOKEN_HOUR_LIFESPAN=1
+ADM_PASSWORD=adminHashedPassword
+DEPLOY_DIR = ../../deploy
+```
+
+Only one user (admin) can login to the superadmin backend with the password that should be added hashed to the .env file. If DEPLOY_DIR is omitted, the default as given in the example will be set.
 
 Then, to compile and run:
 ```console
@@ -62,4 +72,14 @@ go build -o ogree_app_backend
 Or run directly:
 ```console
 go run .
+```
+
+To cross compile:
+```console
+# Linux 64-bit
+GOOS=linux GOARCH=amd64 go build -o ogree_app_backend_linux
+# Windows 64-bit
+GOOS=windows GOARCH=amd64 go build -o ogree_app_backend_linux
+# MacOS 64-bit
+GOOS=darwin GOARCH=amd64 go build -o ogree_app_backend_linux
 ```
