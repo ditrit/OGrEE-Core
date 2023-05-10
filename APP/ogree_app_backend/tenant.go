@@ -24,7 +24,6 @@ type tenant struct {
 	DocUrl           string `json:"docUrl"`
 	DocPort          string `json:"docPort"`
 	HasWeb           bool   `json:"hasWeb"`
-	HasCli           bool   `json:"hasCli"`
 	HasDoc           bool   `json:"hasDoc"`
 }
 
@@ -165,10 +164,6 @@ func addTenant(c *gin.Context) {
 			args = append(args, "--profile")
 			args = append(args, "web")
 		}
-		if newTenant.HasCli {
-			args = append(args, "--profile")
-			args = append(args, "cli")
-		}
 		if newTenant.HasDoc {
 			args = append(args, "--profile")
 			args = append(args, "doc")
@@ -198,7 +193,7 @@ func addTenant(c *gin.Context) {
 func removeTenant(c *gin.Context) {
 	tenantName := c.Param("name")
 
-	for _, str := range []string{"_cli", "_webapp", "_api", "_db", "_doc"} {
+	for _, str := range []string{"_webapp", "_api", "_db", "_doc"} {
 		cmd := exec.Command("docker", "rm", "--force", strings.ToLower(tenantName)+str)
 		cmd.Dir = DOCKER_DIR
 		var stderr bytes.Buffer

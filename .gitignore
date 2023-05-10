@@ -16,5 +16,6 @@ deploy/mdb/*
 .idea/
 cli
 cli.exe
+cli.mac
 .history
 *.ocli
