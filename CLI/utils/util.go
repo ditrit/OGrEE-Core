@@ -9,7 +9,17 @@ import (
 	"encoding/json"
 	"net/http"
 	"net/url"
+	"os"
+	"path/filepath"
 )
+
+func ExeDir() string {
+	exe, err := os.Executable()
+	if err != nil {
+		panic(err)
+	}
+	return filepath.Dir(exe)
+}
 
 func Message(status bool, message string) map[string]interface{} {
 	return map[string]interface{}{"status": status, "message": message}
@@ -39,13 +49,6 @@ func ParamsParse(link *url.URL) []byte {
 	}
 
 	return js
-
-	/*
-		mydata := &models.Tenant{}
-		json.Unmarshal(query, mydata)
-		json.Unmarshal(query, &(mydata.Attributes))
-	*/
-	//return values
 }
 
 func IsNestedAttr(key, ent string) bool {

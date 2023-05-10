@@ -2,7 +2,9 @@ package models
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
+	"os"
 	u "p3/utils"
 	"strconv"
 	"strings"
@@ -157,7 +159,7 @@ func getDateFilters(req bson.M, filters u.RequestFilters) error {
 	if len(filters.StartDate) > 0 || len(filters.EndDate) > 0 {
 		lastUpdateReq := bson.M{}
 		if len(filters.StartDate) > 0 {
-			startDate, e := time.Parse("2006-01-02", filters.StartDate[0])
+			startDate, e := time.Parse("2006-01-02", filters.StartDate)
 			if e != nil {
 				return e
 			}
@@ -165,7 +167,7 @@ func getDateFilters(req bson.M, filters u.RequestFilters) error {
 		}
 
 		if len(filters.EndDate) > 0 {
-			endDate, e := time.Parse("2006-01-02", filters.EndDate[0])
+			endDate, e := time.Parse("2006-01-02", filters.EndDate)
 			endDate = endDate.Add(time.Hour * 24)
 			if e != nil {
 				return e
@@ -319,7 +321,7 @@ func GetCompleteHierarchy(userRoles map[string]string) (map[string]interface{}, 
 
 // fillHierarchyMap: add hierarchyName to the children array of its parent
 func fillHierarchyMap(hierarchyName string, data map[string][]string) {
-	i := strings.LastIndex(hierarchyName, ".")
+	i := strings.LastIndex(hierarchyName, u.HN_DELIMETER)
 	if i > 0 {
 		parent := hierarchyName[:i]
 		data[parent] = append(data[parent], hierarchyName)
@@ -370,6 +372,29 @@ func GetCompleteHierarchyAttributes(userRoles map[string]string) (map[string]int
 	return response, ""
 }
 
+func domainHasObjects(domain string) bool {
+	data := map[string]interface{}{}
+	// Get all collections names
+	ctx, cancel := u.Connect()
+	db := GetDB()
+	collNames, _ := db.ListCollectionNames(ctx, bson.D{})
+
+	// Check if at least one object belongs to domain
+	for _, collName := range collNames {
+		pattern := primitive.Regex{Pattern: "^" + domain, Options: ""}
+		e := db.Collection(collName).FindOne(ctx, bson.M{"domain": pattern}).Decode(&data)
+		if e == nil {
+			// Found one!
+			return true
+		}
+	}
+
+	defer cancel()
+	return false
+}
+
+// GetSiteParentTempUnit: search for the object of given ID,
+// then search for is site parent and return its attributes.temperatureUnit
 func GetSiteParentTempUnit(id string) (string, string) {
 	data := map[string]interface{}{}
 
@@ -398,11 +423,10 @@ func GetSiteParentTempUnit(id string) (string, string) {
 				break
 			} else {
 				// Find its parent site
-				nameSlice := strings.Split(data["hierarchyName"].(string), ".")
-				siteName := nameSlice[0]
+				nameSlice := strings.Split(data["hierarchyName"].(string), u.HN_DELIMETER)
+				siteName := nameSlice[0] // CONSIDER SITE AS 0
 				err := db.Collection("site").FindOne(ctx, bson.M{"hierarchyName": siteName}).Decode(&data)
 				if err != nil {
-					// id not found in any collection
 					return "", "Could not find parent site for given object"
 				}
 			}
@@ -442,7 +466,8 @@ func CommandRunner(cmd interface{}) *mongo.SingleResult {
 func GetStats() map[string]interface{} {
 	ans := map[string]interface{}{}
 	t := map[string]interface{}{}
-	t2 := map[string]interface{}{}
+	latestDocArr := []map[string]interface{}{}
+	var latestTime interface{}
 
 	for i := 0; i <= u.STRAYSENSOR; i++ {
 		num := GetEntityCount(i)
@@ -451,39 +476,77 @@ func GetStats() map[string]interface{} {
 		}
 
 		ans["Number of "+u.EntityToString(i)+"s:"] = num
+
+		//Retrieve the latest updated document in each collection
+		//and store into the latestDocArr array
+		obj := map[string]interface{}{}
+		filter := options.FindOne().SetSort(bson.M{"lastUpdated": -1})
+		ctx, cancel := u.Connect()
+
+		e := GetDB().Collection(u.EntityToString(i)).FindOne(ctx, bson.M{}, filter).Decode(&obj)
+		if e == nil {
+			latestDocArr = append(latestDocArr, obj)
+		}
+		defer cancel()
+	}
+
+	//Get the latest update out of latestDocArr
+	value := -1
+	for _, obj := range latestDocArr {
+		if int(obj["lastUpdated"].(primitive.DateTime)) > value {
+			value = int(obj["lastUpdated"].(primitive.DateTime))
+			latestTime = obj["lastUpdated"]
+		}
+	}
+
+	if latestTime == nil {
+		latestTime = "N/A"
 	}
 
 	cmd := bson.D{{"dbStats", 1}, {"scale", 1024}}
-	cmd2 := bson.D{{"serverStatus", 1}} //This cmd gives too much info
-	//logicalSessionRecordCache,lastSessionsCollectionJobTimestamp
 
 	if e := CommandRunner(cmd).Decode(&t); e != nil {
 		println(e.Error())
 		return nil
 	}
-	if e := CommandRunner(cmd2).Decode(&t2); e != nil {
-		println(e.Error())
-		return nil
-	}
 
 	ans["Number of Hierarchal Objects"] = t["collections"]
-	ans["Last Job Timestamp"] =
-		t2["logicalSessionRecordCache"].(map[string]interface{})["lastTransactionReaperJobTimestamp"]
+	ans["Last Job Timestamp"] = latestTime
 
 	return ans
+}
+
+func GetDBName() string {
+	name := GetDB().Name()
+
+	//Remove the preceding 'ogree' at beginning of name
+	if strings.Index(name, "ogree") == 0 {
+		name = name[5:] //5=len('ogree')
+	}
+	return name
 }
 
 // DeleteEntityByName: delete object of given hierarchyName
 // search for all its children and delete them too, return:
 // - success or fail message map
-func DeleteEntityByName(entity string, name string) map[string]interface{} {
+func DeleteEntityByName(entity string, name string) (map[string]interface{}, string) {
+	if entity == "domain" {
+		if name == os.Getenv("db") {
+			return u.Message(false, "Cannot delete tenant's default domain"), "domain"
+		}
+		if domainHasObjects(name) {
+			return u.Message(false, "Cannot delete domain if it has at least one object"), "domain"
+		}
+	}
+
 	var req primitive.M
 	req = bson.M{"hierarchyName": name}
 
 	resp, err := DeleteEntityManual(entity, req)
+
 	if err != "" {
 		// Unable to delete given object
-		return resp
+		return resp, err
 	} else {
 		// Delete possible children
 		rangeEntities := getChildrenCollections(u.STRAYSENSOR, entity)
@@ -498,7 +561,7 @@ func DeleteEntityByName(entity string, name string) map[string]interface{} {
 		}
 	}
 
-	return u.Message(true, "success")
+	return u.Message(true, "success"), ""
 }
 
 func DeleteEntityManual(entity string, req bson.M) (map[string]interface{}, string) {
@@ -582,17 +645,42 @@ func deleteHelper(t map[string]interface{}, ent int) (map[string]interface{}, st
 		if ent == u.DEVICE {
 			DeleteDeviceF(t["id"].(primitive.ObjectID), nil)
 		} else {
+			if ent == u.DOMAIN {
+				if t["name"] == os.Getenv("db") {
+					return u.Message(false, "Cannot delete tenant's default domain"), "domain"
+				}
+				if domainHasObjects(t["hierarchyName"].(string)) {
+					return u.Message(false, "Cannot delete domain if it has at least one object"), "domain"
+				}
+			}
 			ctx, cancel := u.Connect()
 			entity := u.EntityToString(ent)
 			c, _ := GetDB().Collection(entity).DeleteOne(ctx, bson.M{"_id": t["id"].(primitive.ObjectID)})
 			if c.DeletedCount == 0 {
-				return u.Message(false, "There was an error in deleting the entity"), "not found"
+				return u.Message(false, "No Records Found!"), "not found"
 			}
 			defer cancel()
 
 		}
 	}
 	return nil, ""
+}
+
+func updateOldObjWithPatch(old map[string]interface{}, patch map[string]interface{}) string {
+	for k, v := range patch {
+		switch child := v.(type) {
+		case map[string]interface{}:
+			switch oldChild := old[k].(type) {
+			case map[string]interface{}:
+				updateOldObjWithPatch(oldChild, child)
+			default:
+				return "Wrong format for property " + k
+			}
+		default:
+			old[k] = v
+		}
+	}
+	return ""
 }
 
 func UpdateEntity(ent string, req bson.M, t *map[string]interface{}, isPatch bool, userRoles map[string]string) (map[string]interface{}, string) {
@@ -607,40 +695,43 @@ func UpdateEntity(ent string, req bson.M, t *map[string]interface{}, isPatch boo
 	if e1 != "" {
 		return u.Message(false, "Error: "+e1), e1
 	}
-	(*t)["lastUpdated"] = primitive.NewDateTimeFromTime(time.Now())
-	(*t)["createdDate"] = oldObj["createdDate"]
+	t["lastUpdated"] = primitive.NewDateTimeFromTime(time.Now())
+	t["createdDate"] = oldObj["createdDate"]
+
+	// Update old object data with patch data
+	if isPatch {
+		var formattedOldObj map[string]interface{}
+		// Convert primitive.A and similar types
+		bytes, _ := json.Marshal(oldObj)
+		json.Unmarshal(bytes, &formattedOldObj)
+		// Update old with new
+		e1 = updateOldObjWithPatch(formattedOldObj, t)
+		if e1 != "" {
+			return u.Message(false, "Error: "+e1), e1
+		}
+		t = formattedOldObj
+		// Remove API set fields
+		delete(t, "id")
+		delete(t, "hierarchyName")
+	}
 
 	// Ensure the update is valid and apply it
 	ctx, cancel := u.Connect()
-	if isPatch {
-		msg, ok := ValidatePatch(u.EntityStrToInt(ent), *t)
-		if !ok {
-			return msg, "invalid"
-		}
-		e = GetDB().Collection(ent).FindOneAndUpdate(ctx,
-			req, bson.M{"$set": *t},
-			&options.FindOneAndUpdateOptions{ReturnDocument: &retDoc})
-		if e.Err() != nil {
-			return u.Message(false, "failure: "+e.Err().Error()), e.Err().Error()
-		}
-	} else {
-		println("NOT A PATCH")
-		msg, ok := ValidateEntity(u.EntityStrToInt(ent), *t)
-		if !ok {
-			return msg, "invalid"
-		}
-		e = GetDB().Collection(ent).FindOneAndReplace(ctx,
-			req, *t,
-			&options.FindOneAndReplaceOptions{ReturnDocument: &retDoc})
-		if e.Err() != nil {
-			return u.Message(false, "failure: "+e.Err().Error()), e.Err().Error()
-		}
+	msg, ok := ValidateEntity(u.EntityStrToInt(ent), t)
+	if !ok {
+		return msg, "invalid"
+	}
+	e = GetDB().Collection(ent).FindOneAndReplace(ctx,
+		req, t,
+		&options.FindOneAndReplaceOptions{ReturnDocument: &retDoc})
+	if e.Err() != nil {
+		return u.Message(false, "failure: "+e.Err().Error()), e.Err().Error()
 	}
 
 	// Changes to hierarchyName should be propagated to its children
-	if oldObj["hierarchyName"] != (*t)["hierarchyName"] {
+	if oldObj["hierarchyName"] != t["hierarchyName"] {
 		propagateParentNameChange(ctx, oldObj["hierarchyName"].(string),
-			(*t)["hierarchyName"].(string), u.EntityStrToInt(ent))
+			t["hierarchyName"].(string), u.EntityStrToInt(ent))
 	}
 
 	//Obtain new document then
@@ -671,7 +762,7 @@ func UpdateEntity(ent string, req bson.M, t *map[string]interface{}, isPatch boo
 // update their hierarchyName with new parent name
 func propagateParentNameChange(ctx context.Context, oldParentName, newName string, entityInt int) {
 	// Find all objects containing parent name
-	req := bson.M{"hierarchyName": primitive.Regex{Pattern: oldParentName + ".", Options: ""}}
+	req := bson.M{"hierarchyName": primitive.Regex{Pattern: oldParentName + u.HN_DELIMETER, Options: ""}}
 	// For each object found, replace old name by new
 	update := bson.D{{
 		Key: "$set", Value: bson.M{

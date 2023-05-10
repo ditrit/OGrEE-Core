@@ -13,6 +13,7 @@ const (
 	tokEOF tokenType = iota
 	tokError
 	tokWord       // identifier
+	tokAttribute  // attribute name
 	tokDeref      // variable dereferenciation
 	tokInt        // integer constant
 	tokFloat      // float constant
@@ -370,6 +371,21 @@ func lexAlphaNumeric(l *lexer) stateFn {
 			return l.emit(tokBool, false)
 		}
 		return l.emit(tokWord, nil)
+	}
+}
+
+func lexAttribute(l *lexer) stateFn {
+	c := l.next()
+	if !isLetter(c) {
+		return l.errorf("letter expected")
+	}
+	for {
+		c := l.next()
+		if isAlphaNumeric(c) || c == '-' || c == '_' {
+			continue
+		}
+		l.backup()
+		return l.emit(tokAttribute, nil)
 	}
 }
 

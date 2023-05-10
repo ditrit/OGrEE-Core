@@ -1,0 +1,125 @@
+{
+  "save": "Sauvegarder",
+  "delete": "Supprimer",
+  "cancel": "Annuler",
+  "back": "Précédent",
+  "next": "Suivant",
+  "search": "Rechercher",
+  "create": "Créer",
+  "modify": "Modifier",
+  "selectionOptions": "Options de sélection",
+  "deleteOK": "Supprimé avec succès",
+  "modifyOK": "Utilisateur modifié avec succès",
+  "createOK": "Crée avec succès !",
+  "color": "Couleur",
+  "optional": "facultatif",
+  
+  "@welcome": { "description": "Login Page" },
+  "welcome": "Bienvenue sur OGrEE",
+  "welcomeConnect": "Connectez-vous à votre espace :",
+  "mandatoryField": "Champ Obligatoire",
+  "password": "Mot de passe",
+  "stayLogged": "Rester connecté",
+  "forgotPassword": "Mot de passe oublié ?",
+  "login": "Se connecter",
+  "invalidLogin": "Adresse email et/ou mot de passe non valide",
+
+  "@myprojects": { "description": "Projects Page" },
+  "myprojects": "Mes projets",
+  "newProject": "   Créer un nouveau projet",
+  "noProjects": "Pas encore de projets crées :(",
+  "editProject": "Editer ce projet",
+  "author": "Auteur :",
+  "lastUpdate": "Dernière modification :",
+  "launch": "Lancer",
+  "projectName": "Nom du projet",
+  "mandatoryProjectName": "Il faut donner un nom au projet",
+  "nameProject": "Nommer ce projet",
+
+  "@selectDate": { "description": "Select Page" },
+  "selectDate": "Choisir date",
+  "selectNamespace": "Choisir Namespace",
+  "selectObjects": "Choisir les objets",
+  "nObjects": "{count, plural, =0{Pas d'objets} =1{1 objet} other{{count} objets}}",
+  "@nObjects": {
+    "description": "A plural objects message",
+    "placeholders": {
+      "count": {
+        "type": "num",
+        "format": "compact"
+      }
+    }
+  },
+  "atLeastOneObject": "Sélectionnez au moins 1 objet avant d'avancer",
+
+  "whatDate": "Quel jeu de données souhaitez-vous utiliser ?",
+  "pickDate": "Choisir les dates",
+  "openLastDataset": "Ouvrir le dernier jeu de données",
+  "openSavedDataser": "Ouvrir un jeu de données enregistré",
+  "useLastDataSet": "Utiliser le dernier jeu de données :",
+
+  "whatNamespace": "Sélectionnez le type de namespace :",
+
+  "searchById": "Rechercher par ID",
+  "filters": "Filtres",
+  "clearAllFilters": "Effacer tout",
+  "noNodeFound": "Pas de node trouvé avec l'ID :",
+  "expandAll" : "Développer tout",
+  "collapseAll": "Réduire tout",
+  "selectAll": "Sélectionner tout",
+  "deselectAll": "Désélectionner tout",
+  "nodePath": "Chemin du noeud :",
+
+  "@result": { "description": "Result Page" },
+  "result": "Résultat",
+  "addColumnTip":  "Ajouter une colonne",
+  "yourReport": "Votre rapport",
+  "mathFuncTip": "Fonctions mathématiques",
+  "showSum": "Afficher la somme",
+  "showAvg": "Afficher la moyenne",
+
+  "newTenant": "   Créer un nouveau tenant",
+  "tenantCreated": "Tenant créé avec succès !",
+  "deployment": "Déploiment",
+  "loginTenant": "Connectez-vous à l'API de ce Tenant :",
+  "areYouSure": "Êtes-vous sûr ?",
+  "allWillBeLost": "Toutes les données seront définitivement perdues !",
+  "noDockerInfo": "Impossible de récupérer les informations docker",
+  "noDockerLogs": "Pas de logs pour ce container",
+  "selectJSON": "Choisir fichier JSON",
+  "mustSelectJSON": "Il faut choisir un fichier JSON pour la création",
+  "fileLoaded": "Fichier {fileName} téléchargé",
+  "@fileLoaded": {
+    "placeholders": {
+      "fileName": {
+        "type": "String",
+        "example": "file.json"
+      }
+    }
+  },
+  "modifyUser": "Modifier Utilisateur",
+  "createUser": "Créer un utilisateur",
+  "createBulkFile": "Créer avec fichier JSON",
+  "onlyOneRoleDomain": "Attention : un seul rôle par domaine",
+  "modifyDomain": "Modifier Domaine",
+  "createDomain": "Créer un domaine",
+  "domainName": "Nom du domaine",
+  "parentDomain": "Domaine Parent",
+  "shouldHaveXChars": "Il faut au moins {X} caractères",
+  "@shouldHaveXChars": {
+    "placeholders": {
+      "X": {
+        "type": "num",
+        "example": "6"
+      }
+    }
+  },
+  "domain": "Domaine",
+  "user": "Utilisateur",
+
+  "addServer": "Ajouter nouveau serveur",
+  "selectServer": "Choisir serveur",
+  "createServer": "Créer backend dans serveur",
+  "serverPath": "Chemin d'installation (serveur)",
+  "portServer": "Porte pour le backend (serveur)"
+}

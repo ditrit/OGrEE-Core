@@ -18,13 +18,17 @@ var GitCommitDate string
 var State ShellState
 
 type ShellState struct {
+	Prompt           string
+	BlankPrompt      string
+	Customer         string //Tenant name
 	CurrPath         string
 	PrevPath         string
 	ClipBoard        *[]string
 	TreeHierarchy    *Node
-	EnvFilePath      string //Holds file path of '.env'
+	ConfigPath       string //Holds file path of '.env'
 	HistoryFilePath  string //Holds file path of '.history'
 	UnityClientURL   string
+	UserEmail        string
 	APIURL           string
 	APIKEY           string
 	UnityClientAvail bool  //For deciding to message unity or not
@@ -110,6 +114,13 @@ func getNextInPath(name string, root *Node) *Node {
 	for i := root.Nodes.Front(); i != nil; i = i.Next() {
 		if (i.Value.(*Node)).Name == name {
 			return (i.Value.(*Node))
+			//Remaining cases return nodes if the alias was found
+		} else if name == "O" && (i.Value.(*Node)).Name == "Organisation" {
+			return (i.Value.(*Node))
+		} else if name == "P" && (i.Value.(*Node)).Name == "Physical" {
+			return (i.Value.(*Node))
+		} else if name == "L" && (i.Value.(*Node)).Name == "Logical" {
+			return (i.Value.(*Node))
 		}
 	}
 	return nil
@@ -128,8 +139,8 @@ func FetchNodesAtLevel(Path string) []string {
 	}*/
 
 	if len(paths) == 2 && paths[1] == "Physical" {
-		urls = []string{State.APIURL + "/api/tenants"}
 		names = NodesAtLevel(&State.TreeHierarchy, *StrToStack(Path))
+		urls = []string{State.APIURL + "/api/sites"}
 	} else {
 		if len(paths) == 3 && paths[2] == "Stray" {
 			names = NodesAtLevel(&State.TreeHierarchy, *StrToStack(Path))
@@ -196,8 +207,7 @@ func FetchJsonNodesAtLevel(Path string) []map[string]interface{} {
 	if len(paths) == 2 && paths[1] == "Physical" {
 		x := NodesAtLevel(&State.TreeHierarchy, *StrToStack(Path))
 		objects = append(objects, strArrToMapStrInfArr(x)...)
-		urls = []string{State.APIURL + "/api/tenants"}
-
+		urls = []string{State.APIURL + "/api/sites"}
 	} else {
 		if len(paths) == 3 && paths[2] == "Stray" || len(paths) < 3 {
 			x := NodesAtLevel(&State.TreeHierarchy, *StrToStack(Path))
@@ -205,8 +215,6 @@ func FetchJsonNodesAtLevel(Path string) []map[string]interface{} {
 		}
 
 		if len(paths) == 3 && paths[2] == "Domain" {
-			//println("DEBUG this section for the new nodes")
-			//println("DEBUG path2: ", paths[3])
 			urls = []string{State.APIURL + "/api/domains"}
 
 		}
@@ -289,7 +297,6 @@ func CheckPathOnline(Path string) (bool, string) {
 			return true, Path
 		}
 	}
-
 	paths := OnlinePathResolve(pathSplit[2:])
 
 	for i := range paths {

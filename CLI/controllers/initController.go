@@ -3,23 +3,24 @@ package controllers
 //This file contains code associated with initialising the Shell
 
 import (
-	"bufio"
+	"cli/config"
 	l "cli/logger"
 	"cli/models"
 	"cli/readline"
+	"cli/utils"
 	"encoding/json"
 	"fmt"
 	"net/url"
 	"os"
+	"path/filepath"
+	"regexp"
 	"strconv"
 	"strings"
 	"time"
-
-	"github.com/joho/godotenv"
 )
 
-func InitEnvFilePath(envPath string) {
-	State.EnvFilePath = envPath
+func InitConfigFilePath(configPath string) {
+	State.ConfigPath = configPath
 }
 
 func InitHistoryFilePath(histPath string) {
@@ -42,7 +43,8 @@ func InitDebugLevel(verbose string) {
 }
 
 // Intialise the ShellState
-func InitState(env map[string]string) {
+func InitState(conf *config.Config) {
+
 	State.ClipBoard = nil
 	State.TreeHierarchy = &(Node{})
 	(*(State.TreeHierarchy)).Entity = -1
@@ -146,17 +148,38 @@ func InitState(env map[string]string) {
 	SearchAndInsert(&State.TreeHierarchy, enterprise, "/Organisation")
 
 	//Set which objects Unity will be notified about
-	State.ObjsForUnity = SetObjsForUnity("updates", env)
-	State.DrawableObjs = SetObjsForUnity("drawable", env)
+	State.ObjsForUnity = SetObjsForUnity(conf.Updates)
+	State.DrawableObjs = SetObjsForUnity(conf.Drawable)
 	State.DrawableJsons = make(map[string]map[string]interface{}, 16)
 
-	for i := TENANT; i < GROUP+1; i++ {
+	for i := SITE; i < GROUP+1; i++ {
 		ent := EntityToString(i)
-		State.DrawableJsons[ent] = SetDrawableTemplate(ent, env)
+		State.DrawableJsons[ent] = SetDrawableTemplate(ent, conf.DrawableJson)
 	}
 
 	//Set Draw Threshold
-	SetDrawThreshold(env)
+	SetDrawThreshold(conf.DrawLimit)
+
+	//Set customer / tenant name
+	resp, e := models.Send("GET", State.APIURL+"/api/version", GetKey(), nil)
+	parsed := ParseResponse(resp, e, "Get API Information request")
+	if parsed != nil {
+		if info, ok := LoadObjectFromInf(parsed["data"]); ok {
+			if cInf, ok := info["Customer"]; ok {
+				if customer, ok := cInf.(string); ok {
+					State.Customer = customer
+				}
+			}
+
+		}
+	}
+
+	if State.Customer == "" {
+		if State.DebugLvl > NONE {
+			println("Tenant Information not found!")
+		}
+		State.Customer = "UNKNOWN"
+	}
 }
 
 // It is useful to have the state to hold
@@ -187,181 +210,115 @@ func InitUnityCom(rl *readline.Instance, addr string) {
 	go models.ReceiveLoop(rl, addr, &State.UnityClientAvail)
 }
 
-func InitTimeout(env map[string]string) {
-	if duration, ok := env["unityTimeout"]; ok && duration != "" {
-		var timeLen int
-		var durationType string
-		fmt.Sscanf(duration, "%d%s", &timeLen, &durationType)
-		switch durationType {
-		case "ns":
-			State.Timeout = time.Nanosecond * time.Duration(timeLen)
-		case "us":
-			State.Timeout = time.Microsecond * time.Duration(timeLen)
-		case "ms":
-			State.Timeout = time.Millisecond * time.Duration(timeLen)
-		case "s":
-			State.Timeout = time.Second * time.Duration(timeLen)
-		default:
-			l.GetWarningLogger().Println("Invalid duration unit found. Resorting to default of ms")
-			if State.DebugLvl > 1 {
-				println("Invalid duration unit found in env file. Resorting to default of ms")
-			}
-
-			State.Timeout = time.Millisecond * time.Duration(timeLen)
+func InitTimeout(duration string) {
+	var timeLen int
+	var durationType string
+	_, err := fmt.Sscanf(duration, "%d%s", &timeLen, &durationType)
+	if err != nil {
+		msg := "Invalid unity timeout format. Resorting to default of 10ms"
+		l.GetWarningLogger().Println(msg)
+		if State.DebugLvl > 1 {
+			println(msg)
 		}
-		return
+		State.Timeout = time.Millisecond * time.Duration(10)
 	}
-
-	if State.DebugLvl > 1 {
-		l.GetWarningLogger().Println("Unity deadline not found. Resorting to default time duration of 10 ms")
-		println("Warning: Unity deadline not found in env file. Resorting to default of 10 ms")
+	switch durationType {
+	case "ns":
+		State.Timeout = time.Nanosecond * time.Duration(timeLen)
+	case "us":
+		State.Timeout = time.Microsecond * time.Duration(timeLen)
+	case "ms":
+		State.Timeout = time.Millisecond * time.Duration(timeLen)
+	case "s":
+		State.Timeout = time.Second * time.Duration(timeLen)
+	default:
+		msg := "Invalid duration unit found. Resorting to default of ms"
+		l.GetWarningLogger().Println(msg)
+		if State.DebugLvl > 1 {
+			println(msg)
+		}
+		State.Timeout = time.Millisecond * time.Duration(timeLen)
 	}
-
-	State.Timeout = time.Millisecond * time.Duration(10)
-	return
 }
 
-func InitKey(apiKey string, env map[string]string) string {
-	if apiKey != "" {
-		State.APIKEY = apiKey
-		return State.APIKEY
+func InitEmail(email string) string {
+	if email != "" {
+		State.UserEmail = email
+		return State.UserEmail
 	}
-	envApiKey, ok := env["apiKey"]
-	if ok {
-		State.APIKEY = envApiKey
-		return State.APIKEY
-	}
-	fmt.Println("Error: No API Key Found")
+	fmt.Println("Error: No User Email Found")
 	if State.DebugLvl > 0 {
 		l.GetErrorLogger().Println(
-			"No API Key provided in env file nor as argument")
+			"No User Email provided in env file nor as argument")
 	}
 
-	State.APIKEY = ""
+	State.UserEmail = ""
 	return ""
 }
 
-// Invoked on 'lsog' command
-func GetEmail() string {
-	file, err := os.Open("./.env")
-	if err != nil {
-		fmt.Println(err)
-	}
-	defer file.Close()
-
-	scanner := bufio.NewScanner(file)
-	scanner.Split(bufio.ScanWords) // use scanwords
-	for scanner.Scan() {
-		if strings.HasPrefix(scanner.Text(), "user=") {
-			return scanner.Text()[5:]
-		}
-	}
-
-	if err := scanner.Err(); err != nil {
+func InitKey(apiKey string) {
+	if apiKey != "" {
+		State.APIKEY = apiKey
+	} else {
+		fmt.Println("Error: No API Key Found")
 		if State.DebugLvl > 0 {
-			fmt.Println(err)
+			l.GetErrorLogger().Println(
+				"No API Key provided in env file nor as argument")
 		}
-
-		l.GetErrorLogger().Println(err.Error())
 	}
-	return ""
 }
 
-// Automatically assign Unity and API URLs
-func GetURLs(apiURL string, unityURL string, env map[string]string) {
-	if apiURL != "" {
+func InitURLs(apiURL string, unityURL string) {
+	apiURL = strings.TrimRight(apiURL, "/")
+	_, err := url.ParseRequestURI(apiURL)
+	if err != nil {
+		msg := "apiURL is not valid!\n"
+		msg += "Falling back to default API URL: http://localhost:3001"
+		fmt.Println(msg)
+		l.GetInfoLogger().Println(msg)
+		State.APIURL = "http://localhost:3001"
+	} else {
 		State.APIURL = apiURL
 	}
-
-	if unityURL != "" {
-		State.UnityClientURL = unityURL
-	}
-
+	State.UnityClientURL = unityURL
 	if State.UnityClientURL == "" {
-		if envUnityURL, ok := env["unityURL"]; ok {
-			State.UnityClientURL = envUnityURL
-		}
-	}
-
-	if State.APIURL == "" {
-		if envApiURL, ok := env["apiURL"]; ok {
-			// if present, remove the last / to avoid path issues in ls command
-			envApiURL = strings.TrimRight(envApiURL, "/")
-
-			// check if URL is valid
-			_, err := url.ParseRequestURI(envApiURL)
-			if err != nil {
-				println("apiURL is not valid! ")
-			} else {
-				State.APIURL = envApiURL
-			}
-		}
-	}
-
-	if State.APIURL == "" {
-		fmt.Println("Falling back to default API URL:" +
-			"http://localhost:3001")
-		l.GetInfoLogger().Println("Falling back to default API URL:" +
-			"http://localhost:3001")
-		State.APIURL = "http://localhost:3001"
-	}
-
-	if State.UnityClientURL == "" {
-		fmt.Println("Falling back to default Unity URL:" +
-			"http://localhost:5500")
-		l.GetInfoLogger().Println("Falling back to default Unity URL:" +
-			"http://localhost:5500")
-		State.APIURL = "http://localhost:5500"
+		msg := "Falling back to defaul Unity URL: localhost:5500"
+		fmt.Println(msg)
+		l.GetInfoLogger().Println(msg)
+		State.UnityClientURL = "localhost:5500"
 	}
 }
 
 // Helper for InitState will insert objs
 // and init DrawThreshold
-func SetObjsForUnity(x string, env map[string]string) []int {
+func SetObjsForUnity(objs []string) []int {
 	res := []int{}
 	allDetected := false
-
-	if objStr, ok := env[x]; ok && objStr != "" {
-		//ObjStr is equal to everything after 'updates='
-		arr := strings.Split(objStr, ",")
-
-		for i := range arr {
-			arr[i] = strings.ToLower(arr[i])
-
-			if val := EntityStrToInt(arr[i]); val != -1 {
-				res = append(res, val)
-
-			} else if arr[i] == "all" {
-				//Exit the loop and use default code @ end of function
-				allDetected = true
-				i = len(arr)
-			}
+	for _, obj := range objs {
+		obj = strings.ToLower(obj)
+		if val := EntityStrToInt(obj); val != -1 {
+			res = append(res, val)
+		} else if obj == "all" {
+			//Exit the loop and use default code @ end of function
+			allDetected = true
+			break
 		}
 	}
-
-	//Use default values
 	//Set the array to all and exit
 	//GROUP is the greatest value int enum type
 	//So we use that for the cond guard
-	if allDetected || len(res) == 0 {
-		if len(res) == 0 && !allDetected {
-			l.GetWarningLogger().Println(x + " key not found, going to use defaults")
-			if State.DebugLvl > 1 {
-				println(x + " key not found, going to use defaults")
-			}
-
-		}
+	if allDetected {
 		for idx := 0; idx < GROUP+1; idx++ {
 			res = append(res, idx)
 		}
+		res = append(res, DOMAIN)
 	}
 	return res
 }
 
-func SetDrawThreshold(env map[string]string) {
+func SetDrawThreshold(limit int) {
 	//Set Draw Threshold
-	limit, e := strconv.Atoi(env["drawLimit"])
-	if e != nil || limit < 0 {
+	if limit < 0 {
 		if State.DebugLvl > 0 {
 			println("Setting Draw Limit to default")
 		}
@@ -371,12 +328,14 @@ func SetDrawThreshold(env map[string]string) {
 	}
 }
 
-func SetDrawableTemplate(entity string, env map[string]string) map[string]interface{} {
-	templateKey := entity + "DrawableJson"
-	if objStr, ok := env[templateKey]; ok && objStr != "" {
+func SetDrawableTemplate(entity string, DrawableJson map[string]string) map[string]interface{} {
+	if objStr, ok := DrawableJson[entity]; ok && objStr != "" {
 		objStr = strings.Trim(objStr, "'\"")
 		//Now retrieve file
 		ans := map[string]interface{}{}
+		if !filepath.IsAbs(objStr) {
+			objStr = utils.ExeDir() + "/" + objStr
+		}
 		f, e := os.ReadFile(objStr)
 		if e == nil {
 			json.Unmarshal(f, &ans)
@@ -405,27 +364,31 @@ func CreateCredentials() (string, string) {
 		os.Exit(-1)
 	}
 
-	if !tp["status"].(bool) {
-		errMessage := "Error while creating credentials : " + tp["message"].(string)
-		if State.DebugLvl > 0 {
-			println(errMessage)
+	if tp["status"] != nil {
+		if !tp["status"].(bool) {
+			errMessage := "Error while creating credentials : " + tp["message"].(string)
+			if State.DebugLvl > 0 {
+				println(errMessage)
+			}
+			l.GetErrorLogger().Println(errMessage)
+			os.Exit(-1)
 		}
-		l.GetErrorLogger().Println(errMessage)
+	} else {
+		if State.DebugLvl > 0 {
+			println("An error occurred while creating credentials")
+			l.GetErrorLogger().Println("Could not read API status on create credential attempt")
+		}
 		os.Exit(-1)
 	}
 
 	token := (tp["account"].(map[string]interface{}))["token"].(string)
-
-	envMap, err := godotenv.Read(State.EnvFilePath)
-	if err != nil {
-		panic(err)
-	}
-	envMap["user"] = user
-	envMap["apiKey"] = token
-	godotenv.Write(envMap, State.EnvFilePath)
-
 	l.GetInfoLogger().Println("Credentials created")
 	return user, token
+}
+
+func CheckEmailIsValid(email string) bool {
+	emailRegex := "(\\w)+@(\\w)+\\.(\\w)+"
+	return regexp.MustCompile(emailRegex).MatchString(email)
 }
 
 func CheckKeyIsValid(key string) bool {
@@ -438,47 +401,41 @@ func CheckKeyIsValid(key string) bool {
 		}
 		return false
 	}
-
 	if resp.StatusCode != 200 {
-		readline.Line("HTTP Response Status code: " +
-			strconv.Itoa(resp.StatusCode))
+		println("HTTP Response Status code : " + strconv.Itoa(resp.StatusCode))
 		if State.DebugLvl > NONE {
 			x := ParseResponse(resp, err, " Read API Response message")
 			if x != nil {
-				println("[API] " + x["message"].(string))
+				if x["message"] != nil && x["message"] != "" {
+					println("[API] " + x["message"].(string))
+				} else {
+					println("Was not able to read API Response message")
+				}
 			} else {
 				println("Was not able to read API Response message")
 			}
 		}
-
 		return false
 	}
-
 	return true
 }
 
-func Login(env map[string]string) (string, string) {
-	user, userOk := env["user"]
-	key, keyOk := env["apiKey"]
-
-	if !userOk || !keyOk || (userOk && user == "") || (keyOk && key == "") {
-		l.GetInfoLogger().Println("Key not found, going to generate..")
+func Login(user string, key string) (string, string) {
+	if key == "" || !CheckEmailIsValid(user) || !CheckKeyIsValid(key) {
+		l.GetInfoLogger().Println("Credentials not found or invalid, going to generate..")
+		if State.DebugLvl > NONE {
+			println("Credentials not found or invalid, going to generate..")
+		}
 		user, key = CreateCredentials()
+		fmt.Printf("Here is your api key, you can save it to your config.toml file :\n%s\n", key)
 	}
-
 	if !CheckKeyIsValid(key) {
 		if State.DebugLvl > 0 {
 			println("Error while checking key. Now exiting")
 		}
-
 		l.GetErrorLogger().Println("Error while checking key. Now exiting")
 		os.Exit(-1)
 	}
-
-	//println("Checking credentials...")
-	//println(CheckKeyIsValid(key))
-
-	user = (strings.Split(user, "@"))[0]
 	l.GetInfoLogger().Println("Successfully Logged In")
 	return user, key
 }

@@ -1,86 +1,69 @@
 package main
 
 import (
-	"flag"
+	"cli/config"
+	c "cli/controllers"
+	l "cli/logger"
+	"cli/readline"
+	"os"
+	"strings"
 )
 
-type Flags struct {
-	verbose    string
-	unityURL   string
-	APIURL     string
-	APIKEY     string
-	listenPort int
-	envPath    string
-	histPath   string
-	script     string
-}
-
-// Assign value to flag with preference to 'x'
-func NonDefault[T comparable](x, y, defaultValue T) T {
-	if x != defaultValue {
-		return x
-	} else if y != defaultValue {
-		return y
-	} else {
-		return defaultValue
-	}
+func SetPrompt(user string) string {
+	c.State.Prompt = "\u001b[1m\u001b[32m" + user + "@" + c.State.Customer + ":" +
+		"\u001b[37;1m" + c.State.CurrPath + "\u001b[1m\u001b[32m>\u001b[0m "
+	c.State.BlankPrompt = user + "@" + c.State.Customer + c.State.CurrPath + "> "
+	return c.State.Prompt
 }
 
 func main() {
-	var listenPORT, l int
-	var verboseLevel, v, unityURL, u, APIURL, a, APIKEY, k,
-		envPath, e, histPath, h, file, f string
+	conf := config.ReadConfig()
 
-	flag.StringVar(&v, "v", "ERROR",
-		"Indicates level of debugging messages."+
-			"The levels are of in ascending order:"+
-			"{NONE,ERROR,WARNING,INFO,DEBUG}.")
+	l.InitLogs()
+	c.InitConfigFilePath(conf.ConfigPath)
+	c.InitHistoryFilePath(conf.HistPath)
+	c.InitDebugLevel(conf.Verbose)         //Set the Debug level
+	c.InitTimeout(conf.UnityTimeout)       //Set the Unity Timeout
+	c.InitURLs(conf.APIURL, conf.UnityURL) //Set the URLs
 
-	flag.StringVar(&verboseLevel, "verbose", "ERROR",
-		"Indicates level of debugging messages."+
-			"The levels are of in ascending order:"+
-			"{NONE,ERROR,WARNING,INFO,DEBUG}.")
+	conf.User, conf.APIKEY = c.Login(conf.User, conf.APIKEY)
+	c.InitEmail(conf.User) //Set the User email
+	c.InitKey(conf.APIKEY) //Set the API Key
+	c.InitState(conf)
+	err := InitVars(conf.Variables)
+	if err != nil {
+		println("Error while initializing variables :", err.Error())
+		return
+	}
 
-	flag.StringVar(&unityURL, "unity_url", "", "Unity URL")
-	flag.StringVar(&u, "u", "", "Unity URL")
+	user := strings.Split(conf.User, "@")[0]
 
-	flag.StringVar(&APIURL, "api_url", "", "API URL")
-	flag.StringVar(&a, "a", "", "API URL")
+	rl, err := readline.NewEx(&readline.Config{
+		Prompt:          SetPrompt(user),
+		HistoryFile:     c.State.HistoryFilePath,
+		AutoComplete:    GetPrefixCompleter(),
+		InterruptPrompt: "^C",
+		//EOFPrompt:       "exit",
 
-	flag.IntVar(&listenPORT, "listen_port", 0,
-		"Indicates which port to communicate to Unity")
-	flag.IntVar(&l, "l", 0,
-		"Indicates which port to communicate to Unity")
+		HistorySearchFold: true,
+		//FuncFilterInputRune: filterInput,
+	})
+	if err != nil {
+		panic(err)
+	}
+	defer rl.Close()
 
-	flag.StringVar(&APIKEY, "api_key", "", "Indicate the key of the API")
-	flag.StringVar(&k, "k", "", "Indicate the key of the API")
+	//Allow the ShellState to hold a ptr to readline
+	c.SetStateReadline(rl)
 
-	flag.StringVar(&envPath, "env_path", "./.env",
-		"Indicate the location of the Shell's env file")
-	flag.StringVar(&e, "e", "./.env",
-		"Indicate the location of the Shell's env file")
-
-	flag.StringVar(&histPath, "history_path", "./.history",
-		"Indicate the location of the Shell's history file")
-	flag.StringVar(&h, "h", "./.history",
-		"Indicate the location of the Shell's history file")
-
-	flag.StringVar(&file, "file", "", "Launch the shell as an interpreter "+
-		" by only executing an OCLI script file")
-	flag.StringVar(&f, "f", "", "Launch the shell as an interpreter "+
-		" by only executing an OCLI script file")
-
-	flag.Parse()
-
-	var flags Flags
-	flags.verbose = NonDefault(v, verboseLevel, "ERROR")
-	flags.unityURL = NonDefault(u, unityURL, "")
-	flags.APIURL = NonDefault(a, APIURL, "")
-	flags.APIKEY = NonDefault(k, APIKEY, "")
-	flags.listenPort = NonDefault(l, listenPORT, 0)
-	flags.envPath = NonDefault(e, envPath, "./.env")
-	flags.histPath = NonDefault(h, histPath, "./.history")
-	flags.script = NonDefault(f, file, "")
+	//Execute Script if provided as arg and exit
+	if conf.Script != "" {
+		if strings.Contains(conf.Script, ".ocli") {
+			LoadFile(conf.Script)
+			os.Exit(0)
+		}
+	}
+	c.InitUnityCom(rl, c.State.UnityClientURL)
 	//Pass control to repl.go
-	Start(&flags)
+	Start(rl, user)
 }

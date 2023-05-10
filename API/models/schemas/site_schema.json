@@ -2,20 +2,33 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "title": "OGrEE Site Schema",
   "type": "object",
-  "$ref": "refs/base.json",
   "properties": {
+    "description": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "category": {
+      "type": "string"
+    },
+    "domain": {
+      "type": "string"
+    },
+    "createdDate": {
+    },
+    "lastUpdated": {
+    },
+    "name": {
+      "type": "string",
+      "pattern":"^\\w(\\w|\\-)*$"
+    },
+    "id": {
+      "type": "string"
+    },
     "attributes": {
       "type": "object",
       "properties": {
-        "orientation": {
-          "type": "string",
-          "enum": [
-            "EN",
-            "NW",
-            "WS",
-            "SE"
-          ]
-        },
         "reservedColor": {
           "type": "string",
           "$ref": "refs/types.json#/definitions/color"
@@ -31,10 +44,17 @@
       }
     }
   },
+  "additionalProperties":  false,
+  "required": [
+    "category",
+    "description",
+    "domain",
+    "name",
+    "attributes"
+  ],
   "examples": [
     {
       "attributes": {
-        "orientation": "NW",
         "reservedColor": "AAAAAA",
         "technicalColor": "D0FF78",
         "usableColor": "5BDCFF"
@@ -43,9 +63,8 @@
       "description": [
         "site"
       ],
-      "domain": "DEMO",
-      "name": "SITEA",
-      "parentId": "xxxx592b1ac5f3b6f313ee8f"
+      "domain": "domainTest",
+      "name": "SITEA"
     }
   ]
 }

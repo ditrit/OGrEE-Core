@@ -13,7 +13,6 @@
           "height": {
             "type": "string",
             "$ref": "refs/types.json#/definitions/float"
-
           },
           "heightUnit": {
             "type": "string",
@@ -45,6 +44,16 @@
             "$ref": "refs/types.json#/definitions/float"
           },
           "sizeU": {
+            "type": "string",
+            "$ref": "refs/types.json#/definitions/float"
+          },
+          "color": {
+            "type": "string",
+            "$ref": "refs/types.json#/definitions/color"
+          }
+        },
+        "patternProperties": {
+          "^temperature_[0-9a-zA-Z_-]+$": {
             "type": "string",
             "$ref": "refs/types.json#/definitions/float"
           }
@@ -82,7 +91,7 @@
       "description": [
           "Optix XXX - Dual 9-Port Wavelength Selective Switching Board"
       ],
-      "domain": "DEMO",
+      "domain": "domainTest",
       "name": "deviceName",
       "parentId": "xxxx5a111ac5f3b6f313xxxx"
     }

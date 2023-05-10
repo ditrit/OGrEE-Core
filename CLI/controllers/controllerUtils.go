@@ -9,8 +9,7 @@ import (
 )
 
 const (
-	TENANT = iota
-	SITE
+	SITE = iota
 	BLDG
 	ROOM
 	RACK
@@ -18,7 +17,7 @@ const (
 	AC
 	PWRPNL
 	CABINET
-	CORIDOR
+	CORRIDOR
 	SENSOR
 	ROOMTMPL
 	OBJTMPL
@@ -26,6 +25,7 @@ const (
 	GROUP
 	STRAY_DEV
 	STRAYSENSOR
+	DOMAIN
 )
 
 // Debug Level Declaration
@@ -40,8 +40,32 @@ const (
 // Error Message Const
 // TODO: Replace Const with Err Msg/Reporting Func
 // that distinguishes API & CLI Errors
-const APIErrorPrefix = "[Response From API] "
 const RACKUNIT = .04445 //meter
+
+func APIErrorMsg(respMap map[string]any) string {
+	respMsgAny, ok := respMap["message"]
+	if !ok {
+		return ""
+	}
+	respMsg, ok := respMsgAny.(string)
+	if !ok {
+		return ""
+	}
+	msg := "[Response From API] " + respMsg
+	errorsAny, ok := respMap["errors"]
+	if !ok {
+		return msg
+	}
+	errorsList := errorsAny.([]any)
+	for _, err := range errorsList {
+		msg += "\n    " + err.(string)
+	}
+	return msg
+}
+
+func APIError(respMap map[string]any) error {
+	return fmt.Errorf(APIErrorMsg(respMap))
+}
 
 // Display contents of []map[string]inf array
 func DispMapArr(x []map[string]interface{}) {
@@ -171,8 +195,8 @@ func MapStrayInt(x int) int {
 
 func EntityToString(entity int) string {
 	switch entity {
-	case TENANT:
-		return "tenant"
+	case DOMAIN:
+		return "domain"
 	case SITE:
 		return "site"
 	case BLDG:
@@ -199,7 +223,7 @@ func EntityToString(entity int) string {
 		return "cabinet"
 	case GROUP:
 		return "group"
-	case CORIDOR:
+	case CORRIDOR:
 		return "corridor"
 	case SENSOR:
 		return "sensor"
@@ -210,8 +234,8 @@ func EntityToString(entity int) string {
 
 func EntityStrToInt(entity string) int {
 	switch entity {
-	case "tenant", "tn":
-		return TENANT
+	case "domain":
+		return DOMAIN
 	case "site", "si":
 		return SITE
 	case "building", "bldg", "bd":
@@ -239,7 +263,7 @@ func EntityStrToInt(entity string) int {
 	case "group", "gr":
 		return GROUP
 	case "corridor", "co":
-		return CORIDOR
+		return CORRIDOR
 	case "sensor", "sr":
 		return SENSOR
 	default:
@@ -249,8 +273,6 @@ func EntityStrToInt(entity string) int {
 
 func GetParentOfEntity(ent int) int {
 	switch ent {
-	case TENANT:
-		return -1
 	case SITE:
 		return ent - 1
 	case BLDG:
@@ -275,7 +297,7 @@ func GetParentOfEntity(ent int) int {
 		return ROOM
 	case GROUP:
 		return -1
-	case CORIDOR:
+	case CORRIDOR:
 		return ROOM
 	case SENSOR:
 		return -2

@@ -1,4 +1,4 @@
-USAGE: if [expr1] then body1 elif [expr2] then body2 elif ... else bodyN fi
+USAGE: if expr1 {body1} elif expr2 {body2} elif ... else {bodyN}
 
 
 The  if command evaluates expr1 as an expression.
@@ -13,6 +13,6 @@ The  return  value for now is NULL.
 
 EXAMPLE   
 
-   if [5 < 6] then ls fi   
-   if [5 < 6] then ls else tree fi   
-   if [5 == 6] then ls elif [5 == 4 ] then tree else pwd fi   
+   if 5 < 6 {ls}   
+   if 5 < 6 {ls} else {tree}   
+   if 5 == 6  {ls} elif 5 == 4 {tree} else {pwd}   

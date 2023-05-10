@@ -44,26 +44,6 @@ func Disp(x map[string]interface{}) {
 	println("JSON: ", string(jx))
 }
 
-// 'Flattens' the map[string]interface{}
-// for PATCH requests
-func Flatten(prefix string, src map[string]interface{}, dest map[string]interface{}) {
-	if len(prefix) > 0 {
-		prefix += "."
-	}
-	for k, v := range src {
-		switch child := v.(type) {
-		case map[string]interface{}:
-			Flatten(prefix+k, child, dest)
-		// case []interface{}:
-		// 	for i := 0; i < len(child); i++ {
-		// 		dest[prefix+k+"."+strconv.Itoa(i)] = child[i]
-		// 	}
-		default:
-			dest[prefix+k] = v
-		}
-	}
-}
-
 func DispRequestMetaData(r *http.Request) {
 	fmt.Println("URL:", r.URL.String())
 	fmt.Println("IP-ADDR: ", r.RemoteAddr)
@@ -603,7 +583,7 @@ var GetEntity = func(w http.ResponseWriter, r *http.Request) {
 //     in: query
 //     description: 'Indicates the location. Only values of "sites","domains",
 //     "buildings", "rooms", "racks", "devices", "room-templates",
-//     "obj-templates","acs", "panels", "cabinets", "groups",
+//     "obj-templates","bldg-templates","acs", "panels", "cabinets", "groups",
 //     "corridors", "sensors", "stray-devices", "stray-sensors" are acceptable'
 //     required: true
 //     type: string
@@ -688,7 +668,7 @@ var GetAllEntities = func(w http.ResponseWriter, r *http.Request) {
 //     in: query
 //     description: 'Indicates the location. Only values of "sites","domains",
 //     "buildings", "rooms", "racks", "devices", "room-templates",
-//     "obj-templates","acs", "panels",
+//     "obj-templates","bldg-templates","acs", "panels",
 //     "cabinets", "groups", "corridors","sensors", "stray-devices"
 //     "stray-sensors" are acceptable'
 //     required: true
@@ -739,13 +719,14 @@ var DeleteEntity = func(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	errType := ""
 	switch {
 	case e2 && !e: // DELETE by name
 		if strings.Contains(entity, "template") {
-			v, _ = models.DeleteEntityManual(entity, bson.M{"slug": name})
+			v, errType = models.DeleteEntityManual(entity, bson.M{"slug": name})
 		} else {
 			//use hierarchyName
-			v = models.DeleteEntityByName(entity, name)
+			v, errType = models.DeleteEntityByName(entity, name)
 
 		}
 
@@ -774,8 +755,11 @@ var DeleteEntity = func(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if v["status"] == false {
-		w.WriteHeader(http.StatusNotFound)
-		v["message"] = "No Records Found!"
+		if errType == "domain" {
+			w.WriteHeader(http.StatusBadRequest)
+		} else {
+			w.WriteHeader(http.StatusNotFound)
+		}
 		u.ErrLog("Error while deleting entity", "DELETE ENTITY", "Not Found", r)
 	} else {
 		w.WriteHeader(http.StatusNoContent)
@@ -959,21 +943,11 @@ var UpdateEntity = func(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	//Flatten updateData if we have
-	//a PATCH request
-	if isPatch {
-		newUpdateData := map[string]interface{}{}
-		Flatten("", updateData, newUpdateData)
-		updateData = newUpdateData
-	}
-
 	switch {
 	case e2: // Update with slug/hierarchyName
 		var req bson.M
 		if strings.Contains(entity, "template") {
 			req = bson.M{"slug": name}
-		} else if entity == "tenant" {
-			req = bson.M{"name": name}
 		} else {
 			req = bson.M{"hierarchyName": name}
 		}
@@ -1031,7 +1005,7 @@ var UpdateEntity = func(w http.ResponseWriter, r *http.Request) {
 //     in: query
 //     description: 'Indicates the object. Only values of "domains", "sites",
 //     "buildings", "rooms", "racks", "devices", "room-templates",
-//     "obj-templates","acs","panels", "groups", "corridors",
+//     "obj-templates","bldg-templates","acs","panels", "groups", "corridors",
 //     "sensors", "stray-devices" and "stray-sensors" are acceptable'
 //     required: true
 //     type: string
@@ -1423,7 +1397,7 @@ var GetEntityHierarchy = func(w http.ResponseWriter, r *http.Request) {
 	//Check if the request is a ranged hierarchy
 	filters := getFiltersFromQueryParams(r)
 	if len(filters.Limit) > 0 { //limit={number} was provided
-		end, _ = strconv.Atoi(filters.Limit[0])
+		end, _ = strconv.Atoi(filters.Limit)
 		limit = u.EntityStrToInt(entity) + end
 
 		if end == 0 {
@@ -1677,7 +1651,7 @@ var GetHierarchyByName = func(w http.ResponseWriter, r *http.Request) {
 	filters := getFiltersFromQueryParams(r)
 	if len(filters.Limit) > 0 {
 		//limit={number} was provided
-		limit, _ = strconv.Atoi(filters.Limit[0])
+		limit, _ = strconv.Atoi(filters.Limit)
 	} else {
 		limit = 999
 	}
@@ -2189,6 +2163,7 @@ var Version = func(w http.ResponseWriter, r *http.Request) {
 			"BuildHash":  u.GetBuildHash(),
 			"CommitDate": u.GetCommitDate(),
 			"BuildTree":  u.GetBuildTree(),
+			"Customer":   models.GetDBName(),
 		}
 	}
 	u.Respond(w, data)

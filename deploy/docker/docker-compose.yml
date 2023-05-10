@@ -1,0 +1,90 @@
+version: '3.9'
+services:
+  ogree_api:
+    build: 
+      context: ${CORE_DIR}
+      dockerfile: ${API_BUILD_DIR}/Dockerfile
+    image: ogree/api:latest
+    container_name: ${COMPOSE_PROJECT_NAME}_api
+    environment:
+      - api_port=3551
+      - db_host=${COMPOSE_PROJECT_NAME}_db
+      - db_port=27017
+      - db_user=${COMPOSE_PROJECT_NAME}
+      - db_pass=${CUSTOMER_API_PASSWORD}
+      - db=${COMPOSE_PROJECT_NAME}
+      - token_password=yourSecretPasswordGoesHere
+    ports:
+      - ${API_PORT}:3551
+    depends_on:
+      - ogree_db
+    restart: on-failure:10
+
+    #Specifying the environment variables here is the superior option compared to inserting
+    #the .env file and building an image. Here you can specify all the parameters of the
+    #the API 
+
+  ogree_db:
+    image: mongo:latest
+    container_name: ${COMPOSE_PROJECT_NAME}_db
+    environment:
+        - DB_NAME=${COMPOSE_PROJECT_NAME}
+        - CUSTOMER_API_PASSWORD=${CUSTOMER_API_PASSWORD}
+        - ADMIN_DB=admin
+        - SUPER_USER=super
+        - SUPER_PASS=superpassword
+        - MONGO_INITDB_ROOT_USERNAME=admin
+        - MONGO_INITDB_ROOT_PASSWORD=adminpassword
+        - GUARD_USER=guard
+        - GUARD_PASS=adminpassword
+    volumes:
+        -  ./init.sh:/docker-entrypoint-initdb.d/init.sh
+        -  ../createdb.js:/home/createdb.js
+
+  # Deploying the CLI in an orchestrated fashion does 
+  # not work since containers exit when a program
+  # is done executing. Instead make container 'hang'
+  # to allow for on demand access. 
+  # The 'tty: true' entry allows the container to hang 
+  # by using the container's shell
+  # The cli binary is found @ /home/cli
+  ogree_cli:
+    build: 
+      context: ${CORE_DIR}
+      dockerfile: ${CLI_BUILD_DIR}/Dockerfile
+    image: ogree/cli:latest
+    profiles: ["cli"]
+    container_name: ${COMPOSE_PROJECT_NAME}_cli
+    tty: true
+    volumes:
+      - ../../config.toml:/config.toml
+    depends_on:
+      - ogree_api
+
+  # You will have to retrieve the swagger.json file from
+  # the api root dir and supply it here 
+  api_docs_ui:
+    image: swaggerapi/swagger-ui:latest
+    container_name: ${COMPOSE_PROJECT_NAME}_doc
+    profiles: ["doc"]
+    volumes:
+      - ../../${API_BUILD_DIR}/swagger.json:/home/swagger.json
+    ports:
+      - ${API_DOC_UI_PORT}:8080
+    environment:
+      SWAGGER_JSON: /home/swagger.json
+
+  ogree_webapp:
+    build: 
+      context: ${CORE_DIR}
+      dockerfile: ${APP_BUILD_DIR}/Dockerfile
+      args:
+      - API_URL=http://${API_EXTERNALURL}:${API_PORT}
+    image: ogree/webapp:latest
+    profiles: ["web"]
+    container_name: ${COMPOSE_PROJECT_NAME}_webapp
+    ports:
+      - ${WEB_PORT}:80
+    depends_on:
+      - ogree_api
+    restart: on-failure:10

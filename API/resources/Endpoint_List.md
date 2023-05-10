@@ -10,7 +10,7 @@ Perform an HTTP POST operation with the appropriate JSON
 /api/login
 /api/validate/{obj}
 
-/api/tenants
+/api/domains
 /api/sites
 /api/buildings
 /api/rooms
@@ -27,6 +27,7 @@ Perform an HTTP POST operation with the appropriate JSON
 /api/bldg-templates
 /api/stray-sensors
 /api/stray-devices
+/api/validate/{obj}
 ```
 
 
@@ -35,7 +36,7 @@ DELETE / Delete
 ------------
 Perform an HTTP DELETE operation without JSON body
 ```
-/api/tenants/{id}
+/api/domains/{id}
 /api/sites/{id}
 /api/buildings/{id}
 /api/rooms/{id}
@@ -59,7 +60,7 @@ PATCH OR PUT / Update
 -------------
 Perform an HTTP PUT or PATCH operation with desired JSON body
 ```
-/api/tenants/{id}
+/api/domains/{id}
 /api/sites/{id}
 /api/buildings/{id}
 /api/rooms/{id}
@@ -91,8 +92,8 @@ Perform an HTTP OPTIONS operation without JSON body
 /api/tempunits/{id}
 
 // HIERARCHY - START 
-/api/tenants/{id_or_name}/all
-/api/sites/{id}/all
+/api/domains/{id_or_name}/all
+/api/sites/{id_or_name}/all
 /api/buildings/{id}/all
 /api/rooms/{id}/all
 /api/racks/{id}/all
@@ -101,55 +102,42 @@ Perform an HTTP OPTIONS operation without JSON body
 // HIERARCHY - END 
 
 // HIERARCHY RANGE - START
-/api/tenants/{id_or_name}/all
-/api/tenants/{id_or_name}/all?limit={#}
-/api/tenants/{id_or_name}/all/sites
-/api/tenants/{id_or_name}/all/sites/buildings
-/api/tenants/{id_or_name}/all/sites/buildings/rooms
-/api/tenants/{id_or_name}/all/sites/buildings/rooms/racks
-/api/tenants/{id_or_name}/all/sites/buildings/rooms/racks/devices
+/api/domains/{id_or_name}/all?limit={#}
 
-/api/sites/{id}/all
-/api/sites/{id}/all?limit={#}
-/api/sites/{id}/all/buildings
-/api/sites/{id}/all/buildings/rooms
-/api/sites/{id}/all/buildings/rooms/racks
-/api/sites/{id}/all/buildings/rooms/racks/devices
+/api/sites/{id_or_name}/all?limit={#}
+/api/sites/{id_or_name}/all/buildings
+/api/sites/{id_or_name}/all/buildings/rooms
+/api/sites/{id_or_name}/all/buildings/rooms/racks
+/api/sites/{id_or_name}/all/buildings/rooms/racks/devices
 
-/api/buildings/{id}/all
 /api/buildings/{id}/all?limit={#}
 /api/buildings/{id}/all/rooms/racks
 /api/buildings/{id}/all/rooms/racks/devices
 
-/api/rooms/{id}/all
 /api/rooms/{id}/all?limit={#}
 /api/rooms/{id}/all/racks
 /api/rooms/{id}/all/racks/devices
 
-/api/racks/{id}/all
 /api/racks/{id}/all?limit={#}
 /api/racks/{id}/all/devices
 // HIERARCHY RANGE - END 
 
 
 // HIERARCHY JUMP SERIES - START
-/api/tenants/{tenant_name}/buildings
-/api/sites/{id}/rooms
+/api/sites/{site_name}/rooms
 /api/buildings/{id}/{acs|corridors|cabinets|panels|sensors|groups|racks}
 /api/rooms/{id}/devices
 // HIERARCHY JUMP SERIES - END
 
 // HIERARCHY '1 BELOW' SERIES - START
-/api/tenants/{tenant_name}/sites
-/api/sites/{id}/buildings
+/api/sites/{site_name}/buildings
 /api/buildings/{id}/rooms
 /api/rooms/{id}/racks
 /api/racks/{id}/devices
 // HIERARCHY '1 BELOW' SERIES - END
 
-
-/api/tenants/{id_or_name}
-/api/sites/{id}
+/api/domains/{id}
+/api/sites/{id_or_name}
 /api/buildings/{id}
 /api/rooms/{id}
 /api/racks/{id}
@@ -168,21 +156,6 @@ Perform an HTTP OPTIONS operation without JSON body
 
 
 // ENTIT(Y)IES USING NAMES OF PARENTS - START
-/api/tenants/{id}/sites/{site_name}
-/api/tenants/{id}/sites/{site_name}/buildings/{building_name}
-/api/tenants/{id}/sites/{site_name}/buildings/{building_name}/rooms/{room_name}
-/api/tenants/{id}/sites/{site_name}/buildings/{building_name}/rooms/{room_name}/acs/{ac_name}
-/api/tenants/{id}/sites/{site_name}/buildings/{building_name}/rooms/{room_name}/cabinets/{cabinet_name}
-/api/tenants/{id}/sites/{site_name}/buildings/{building_name}/rooms/{room_name}/corridors/{corridor_name}
-/api/tenants/{id}/sites/{site_name}/buildings/{building_name}/rooms/{room_name}/panels/{panel_name}
-/api/tenants/{id}/sites/{site_name}/buildings/{building_name}/rooms/{room_name}/sensors/{sensor_name}
-/api/tenants/{id}/sites/{site_name}/buildings/{building_name}/rooms/{room_name}/groups/{group_name}
-/api/tenants/{id}/sites/{site_name}/buildings/{building_name}/rooms/{room_name}/racks/{rack_name}/devices/{device_name}
-/api/tenants/{id}/sites/{site_name}/buildings/{building_name}/rooms/{room_name}/racks/{rack_name}
-/api/tenants/{id}/sites/{site_name}/buildings/{building_name}/rooms/{room_name}/racks/{rack_name}/devices/{device_name}/sensors/{sensor_name}
-/api/tenants/{id}/sites/{site_name}/buildings/{building_name}/rooms/{room_name}/racks/{rack_name}/sensors/{sensor_name}
-
-
 
 /api/sites/{id}/buildings/{building_name}
 /api/sites/{id}/buildings/{building_name}/rooms/{room_name}
@@ -233,21 +206,6 @@ Perform an HTTP OPTIONS operation without JSON body
 
 
 // ENTITIES USING NAMES OF PARENTS - START
-/api/tenants/{id}/sites
-/api/tenants/{id}/sites/{site_name}/buildings
-/api/tenants/{id}/sites/{site_name}/buildings/{building_name}/rooms
-/api/tenants/{id}/sites/{site_name}/buildings/{building_name}/rooms/{room_name}/acs
-/api/tenants/{id}/sites/{site_name}/buildings/{building_name}/rooms/{room_name}/cabinets
-/api/tenants/{id}/sites/{site_name}/buildings/{building_name}/rooms/{room_name}/corridors
-/api/tenants/{id}/sites/{site_name}/buildings/{building_name}/rooms/{room_name}/panels
-/api/tenants/{id}/sites/{site_name}/buildings/{building_name}/rooms/{room_name}/sensors
-/api/tenants/{id}/sites/{site_name}/buildings/{building_name}/rooms/{room_name}/groups
-/api/tenants/{id}/sites/{site_name}/buildings/{building_name}/rooms/{room_name}/racks/{rack_name}/devices
-/api/tenants/{id}/sites/{site_name}/buildings/{building_name}/rooms/{room_name}/racks
-/api/tenants/{id}/sites/{site_name}/buildings/{building_name}/rooms/{room_name}/racks/{rack_name}/devices/{device_name}/sensors
-/api/tenants/{id}/sites/{site_name}/buildings/{building_name}/rooms/{room_name}/racks/{rack_name}/sensors
-
-
 
 /api/sites/{id}/buildings/{building_name}
 /api/sites/{id}/buildings/{building_name}/rooms
@@ -308,21 +266,6 @@ Perform an HTTP HEAD operation
 /api/tempunits/{id}
 
 // ENTIT(Y)IES USING NAMES OF PARENTS - START
-/api/tenants/{id}/sites/{site_name}
-/api/tenants/{id}/sites/{site_name}/buildings/{building_name}
-/api/tenants/{id}/sites/{site_name}/buildings/{building_name}/rooms/{room_name}
-/api/tenants/{id}/sites/{site_name}/buildings/{building_name}/rooms/{room_name}/acs/{ac_name}
-/api/tenants/{id}/sites/{site_name}/buildings/{building_name}/rooms/{room_name}/cabinets/{cabinet_name}
-/api/tenants/{id}/sites/{site_name}/buildings/{building_name}/rooms/{room_name}/corridors/{corridor_name}
-/api/tenants/{id}/sites/{site_name}/buildings/{building_name}/rooms/{room_name}/panels/{panel_name}
-/api/tenants/{id}/sites/{site_name}/buildings/{building_name}/rooms/{room_name}/sensors/{sensor_name}
-/api/tenants/{id}/sites/{site_name}/buildings/{building_name}/rooms/{room_name}/groups/{group_name}
-/api/tenants/{id}/sites/{site_name}/buildings/{building_name}/rooms/{room_name}/racks/{rack_name}/devices/{device_name}
-/api/tenants/{id}/sites/{site_name}/buildings/{building_name}/rooms/{room_name}/racks/{rack_name}
-/api/tenants/{id}/sites/{site_name}/buildings/{building_name}/rooms/{room_name}/racks/{rack_name}/devices/{device_name}/sensors/{sensor_name}
-/api/tenants/{id}/sites/{site_name}/buildings/{building_name}/rooms/{room_name}/racks/{rack_name}/sensors/{sensor_name}
-
-
 
 /api/sites/{id}/buildings/{building_name}
 /api/sites/{id}/buildings/{building_name}/rooms/{room_name}
@@ -373,21 +316,6 @@ Perform an HTTP HEAD operation
 
 
 // ENTITIES USING NAMES OF PARENTS - START
-/api/tenants/{id}/sites
-/api/tenants/{id}/sites/{site_name}/buildings
-/api/tenants/{id}/sites/{site_name}/buildings/{building_name}/rooms
-/api/tenants/{id}/sites/{site_name}/buildings/{building_name}/rooms/{room_name}/acs
-/api/tenants/{id}/sites/{site_name}/buildings/{building_name}/rooms/{room_name}/cabinets
-/api/tenants/{id}/sites/{site_name}/buildings/{building_name}/rooms/{room_name}/corridors
-/api/tenants/{id}/sites/{site_name}/buildings/{building_name}/rooms/{room_name}/panels
-/api/tenants/{id}/sites/{site_name}/buildings/{building_name}/rooms/{room_name}/sensors
-/api/tenants/{id}/sites/{site_name}/buildings/{building_name}/rooms/{room_name}/groups
-/api/tenants/{id}/sites/{site_name}/buildings/{building_name}/rooms/{room_name}/racks/{rack_name}/devices
-/api/tenants/{id}/sites/{site_name}/buildings/{building_name}/rooms/{room_name}/racks
-/api/tenants/{id}/sites/{site_name}/buildings/{building_name}/rooms/{room_name}/racks/{rack_name}/devices/{device_name}/sensors
-/api/tenants/{id}/sites/{site_name}/buildings/{building_name}/rooms/{room_name}/racks/{rack_name}/sensors
-
-
 
 /api/sites/{id}/buildings/{building_name}
 /api/sites/{id}/buildings/{building_name}/rooms
@@ -438,15 +366,14 @@ Perform an HTTP HEAD operation
 
 
 //GET EXCEPTIONS
-/api/tenants/{tenant_name}/buildings
-/api/sites/{id}/rooms
+/api/sites/{site_name}/rooms
 /api/buildings/{id}/{acs|corridors|cabinets|panels|sensors|groups}
 /api/buildings/{id}/racks
 /api/rooms/{id}/devices
 
 
 // SEARCH QUERY TYPE
-/api/tenants?
+/api/domains?
 /api/sites?
 /api/buildings?
 /api/rooms?
@@ -466,7 +393,7 @@ Perform an HTTP HEAD operation
 
 
 // ALL ENTITIES 
-/api/tenants
+/api/domains
 /api/sites
 /api/buildings
 /api/rooms
@@ -486,8 +413,8 @@ Perform an HTTP HEAD operation
 
 
 // SINGLE ENTITY
-/api/tenants/{id_or_name}
-/api/sites/{id}
+/api/domains/{id_or_name}
+/api/sites/{id_or_name}
 /api/buildings/{id}
 /api/rooms/{id}
 /api/racks/{id}
@@ -532,7 +459,7 @@ This URL is for development purposes only
 
 ### Get All Objects
 ```
-/api/tenants
+/api/domains
 /api/sites
 /api/buildings
 /api/rooms
@@ -554,8 +481,8 @@ This URL is for development purposes only
 ### Get by ID (non hierarchal)
 ID is a string of length 24    
 ```
-/api/tenants/{id_or_name}
-/api/sites/{id}
+/api/domains/{id_or_name}
+/api/sites/{id_or_name}
 /api/buildings/{id}
 /api/rooms/{id}
 /api/racks/{id}
@@ -579,7 +506,7 @@ Objects that match the query will be returned
 Example: /devices?name=myValue?color=silver
 will return silver devices with name 'myValue'
 ```
-/api/tenants?
+/api/domains?
 /api/sites?
 /api/buildings?
 /api/rooms?
@@ -601,8 +528,7 @@ will return silver devices with name 'myValue'
 
 ### Get all Objects 2 levels lower
 ```
-/api/tenants/{tenant_name}/buildings
-/api/sites/{id}/rooms
+/api/sites/{site_name}/rooms
 /api/buildings/{id}/racks
 /api/rooms/{id}/devices
 ```
@@ -611,8 +537,8 @@ will return silver devices with name 'myValue'
 The object and everything related to it will be returned    
 in a nested JSON fashion
 ```
-/api/tenants/{tenant_name}/all
-/api/sites/{id}/all
+/api/domains/{id_or_name}/all
+/api/sites/{site_name}/all
 /api/buildings/{id}/all
 /api/rooms/{id}/all
 /api/racks/{id}/all
@@ -624,12 +550,6 @@ in a nested JSON fashion
 Limits the depth of the hierarchy to retrieve. This is observed by the    
 URL given. 
 ```
-/api/tenants/{tenant_name}/all/sites/buildings/rooms/racks/devices
-/api/tenants/{tenant_name}/all/sites/buildings/rooms/racks
-/api/tenants/{tenant_name}/all/sites/buildings/rooms
-/api/tenants/{tenant_name}/all/sites/buildings
-/api/tenants/{tenant_name}/all/sites
-
 /api/sites/{id}/all/buildings/rooms/racks/devices
 /api/sites/{id}/all/buildings/rooms/racks
 /api/sites/{id}/all/buildings/rooms
@@ -649,8 +569,8 @@ URL given.
 The object and everything related until the number specified by limit will be returned    
 in a nested JSON fashion
 ```
-/api/tenants/{tenant_name}/all?limit={#}
-/api/sites/{id}/all?limit={#}
+/api/domains/{id_or_name}/all?limit={#}
+/api/sites/{site_name}/all?limit={#}
 /api/buildings/{id}/all?limit={#}
 /api/rooms/{id}/all?limit={#}
 /api/racks/{id}/all?limit={#}
@@ -661,18 +581,6 @@ in a nested JSON fashion
 ### Get objects through the hierarchy
 Returns an object if name given or all the objects immediately under the given URL
 ```
-/api/tenants/{tenant_name}/sites/{site_name}/buildings/{building_name}/rooms/{room_name}/racks/{rack_name}/devices/{device_name}
-/api/tenants/{tenant_name}/sites/{site_name}/buildings/{building_name}/rooms/{room_name}/racks/{rack_name}/devices
-/api/tenants/{tenant_name}/sites/{site_name}/buildings/{building_name}/rooms/{room_name}/racks/{rack_name}
-/api/tenants/{tenant_name}/sites/{site_name}/buildings/{building_name}/rooms/{room_name}/racks
-/api/tenants/{tenant_name}/sites/{site_name}/buildings/{building_name}/rooms/{room_name}
-/api/tenants/{tenant_name}/sites/{site_name}/buildings/{building_name}/rooms
-/api/tenants/{tenant_name}/sites/{site_name}/buildings/{building_name}
-/api/tenants/{tenant_name}/sites/{site_name}/buildings
-/api/tenants/{tenant_name}/sites/{site_name}
-/api/tenants/{tenant_name}/sites
-
-
 
 /api/sites/{id}/buildings/{building_name}/rooms/{room_name}/racks/{rack_name}/devices/{device_name}
 /api/sites/{id}/buildings/{building_name}/rooms/{room_name}/racks/{rack_name}/devices
@@ -724,8 +632,7 @@ Returns an object if name given or all the objects immediately under the given U
 This returns an object's hierarchy in a non standard fashion    
 and will be removed in the future
 ```
-/api/tenants/{tenant_name}/all/nonstd
-/api/sites/{id}/all/nonstd
+/api/sites/{site_name}/all/nonstd
 /api/buildings/{id}/all/nonstd
 /api/rooms/{id}/all/nonstd
 /api/racks/{id}/all/nonstd

@@ -38,12 +38,6 @@ func init() {
 //   required: true
 //   format: password
 //   default: "secret"
-// - name: customer
-//   in: json
-//   description: Name of the the customer
-//   required: true
-//   format: string
-//   default: "ORNESS"
 // responses:
 //     '201':
 //         description: Authenticated and new account created

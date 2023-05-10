@@ -19,6 +19,9 @@ func ParseResponse(resp *http.Response, e error, purpose string) map[string]inte
 	if e != nil {
 		l.GetWarningLogger().Println("Error while sending "+purpose+" to server: ", e)
 		if State.DebugLvl > 0 {
+			if State.DebugLvl > ERROR {
+				println(e.Error())
+			}
 			println("There was an error!")
 		}
 		return nil

@@ -9,6 +9,10 @@
         "properties": {
             "content": {
               "type": "string"
+            },
+            "color": {
+              "type": "string",
+              "$ref": "refs/types.json#/definitions/color"
             }
           },
           "required": [

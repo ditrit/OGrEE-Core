@@ -49,73 +49,16 @@ For Linux, consult your respective Distribution docs
 
 Running
 -------------
-You can modify the port of the API in the .env file 
- - Execute the bash script start.sh
- - Execute ```go run main.go```
+You can modify the port of the API in the .env file. This is the port that the API will use to listen for requests.
+ - Navigate in your terminal to the ```init_db``` directory  
+ - Execute the bash script ```ogreeBoot.sh```
+ - Enter your password when the prompt asks you
+ - Execute the bash script ```addTenant.sh``` with the flag --name myCompanyName (specify your company name here)
+ - Be sure to enter your user password and the desired the DB access password
+ - Update your .env file ```db_user=myCompanyName``` and ```db_pass=dbAccessPassword```
+ - Execute the binary ```main```
 
-To view an example of the ```.env``` file: https://ogree.ditrit.io/htmls/apiReference.html   
-
-
-Anatomy
--------------
-The API follows the [MVC Architecture](https://en.wikipedia.org/wiki/Model%E2%80%93view%E2%80%93controller) using an [Active Record](https://en.wikipedia.org/wiki/Active_record_pattern) Persistence Pattern (Managed by the Model)   
-The code is divided into isolated components where each component performs a certain set of tasks. The Model manages the Data and interacts with the Database   
-The Controller interacts with the View and Model   
-The View is the front end   
-<p align="center">
-  <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/a/a0/MVC-Process.svg/218px-MVC-Process.svg.png">
-</p>
-
-
-   
-This design was chosen to follow the microservices design for scalability and potential reuse in other projects such as GANDALF
-   
-API Files
--------------
-   
-### Folder Structure   
-```
-├─app   
-├─controllers   
-├─models    
-├─resources   
-├───diagrams   
-└─utils   
-```
-    
-
-The 'app' dir contains error and authentication files  
-The 'controllers' dir contains controller files  
-The 'models' dir contains model files  
-The 'resources' dir contains SQL files and DB Diagram information   
-The 'utils' dir contains useful functions for JSON messaging
-
-### Files of Interest in the root directory  
-```
-- ogreemdb.sh   
-- main.go  
-- .env   
-- doc.go   
-- swagger.json   
-- Jenkinsfile   
-- Dockerfile   
-```
-
-   
-The ogreemdb.sh is a script to start the MongoDB   
-main.go is the entry of the API  
-.env contains variables useful for the API  
-doc.go & swagger.json are OpenAPI documentation files   
-Jenkinsfile will be used to implement a CI Pipeline later  
-Dockerfile is a file for docker to create a container of the API  
-
-
-
-
-
-### API UML   
-![image info](./resources/diagrams/UML.png)
-
+This .env file is not provided, so you must create it yourself. To view an example of the ```.env``` file: https://ogree.ditrit.io/htmls/apiReference.html   
 
 
 

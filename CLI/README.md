@@ -26,10 +26,6 @@ For Linux, consult your respective Distribution docs
    
   Clone the CLI repository  
   Execute make. It should automatically retrieve the necessary libraries. If not then execute the commands below 
-  ```
-  go get github.com/blynn/nex
-  go get -u github.com/cznic/goyacc
-  ```  
 
     make
 
@@ -38,15 +34,14 @@ For Linux, consult your respective Distribution docs
 
 Running
 -------------
-You must first have a ```.env``` file to be included in the same directory as the executable. If not included the CLI will exit on startup with an error message about this file.   
+You must first have a ```config.toml``` file to be included in the parent directory of the executable. If not included the CLI will exit on startup with an error message about this file.   
+See https://github.com/ditrit/OGrEE-Core/blob/main/README.md for an example.
 
-You can view an example ```.env``` file here: https://ogree.ditrit.io/htmls/clienv.html  
-
- - Execute ```./main```
+ - Execute ```./cli``` (or cli.exe on windows)
 
 If this is the first running the Shell, you will be greeted with a sign up prompt to input a user email and password. 
 
-DO NOT SHARE YOUR ```.env``` file since it contains your credentials 
+DO NOT SHARE YOUR ```config.toml``` file since it contains your credentials 
 
 Usage & Notes
 -------------

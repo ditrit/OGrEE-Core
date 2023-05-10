@@ -3,46 +3,59 @@
     "title": "OGrEE Domain Schema",
     "type": "object",
     "properties": {
-      "attributes": {
-        "type": "object",
-        "properties": {
-          "color": {
-            "type": "string",
-            "$ref": "refs/types.json#/definitions/color"
-          }
-        },
-        "required": [
-          "color"
-        ]
-      },
-      "category": {
-        "type": "string"
-      },
-      "createdDate": {
-      },
       "description": {
         "type": "array",
         "items": {
-            "type": "string"
+          "type": "string"
         }
-      },
-      "id": {
-        "type": "string"
       },
       "parentId": {
         "type": "string"
       },
+      "category": {
+        "type": "string"
+      },
+      "domain": {
+        "type": "string"
+      },
+      "createdDate": {
+      },
       "lastUpdated": {
       },
       "name": {
+        "type": "string",
+        "pattern":"^\\w(\\w|\\-)*$"
+      },
+      "id": {
         "type": "string"
+      },
+      "attributes": {
+        "type": "object",
+        "properties": {
+          "color": {
+            "type" : "string",
+            "$ref": "refs/types.json#/definitions/color"
+          }
+        }
       }
     },
     "additionalProperties":  false,
     "required": [
-      "attributes",
       "category",
       "description",
-      "name"
+      "name",
+      "attributes"
+    ],
+    "examples": [
+      {
+        "attributes": {
+        },
+        "category": "domain",
+        "description": [
+          "domain"
+        ],
+        "domain": "DEMO",
+        "name": "DEMO"
+      }
     ]
   }
