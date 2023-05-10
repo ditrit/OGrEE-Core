@@ -167,7 +167,7 @@ func getHierarchyName(parent map[string]interface{}) string {
 
 func validateDomain(domainName string) bool {
 	req := bson.M{"hierarchyName": domainName}
-	_, err := GetEntity(req, "domain", u.RequestFilters{})
+	_, err := GetEntity(req, "domain", u.RequestFilters{}, nil)
 	return err == ""
 }
 
@@ -267,7 +267,8 @@ func ValidateEntity(entity int, t map[string]interface{}) (map[string]interface{
 				case u.RACK:
 					//Ensure the name is also unique among corridors
 					req := bson.M{"name": t["name"].(string)}
-					nameCheck, _ := GetManyEntities("corridor", req, u.RequestFilters{})
+					req["domain"] = t["domain"].(string)
+					nameCheck, _ := GetManyEntities("corridor", req, u.RequestFilters{}, nil)
 					if nameCheck != nil {
 						if len(nameCheck) != 0 {
 							msg := "Rack name must be unique among corridors and racks"
@@ -294,7 +295,8 @@ func ValidateEntity(entity int, t map[string]interface{}) (map[string]interface{
 
 					//Ensure the name is also unique among racks
 					req := bson.M{"name": t["name"].(string)}
-					nameCheck, _ := GetManyEntities("rack", req, u.RequestFilters{})
+					req["domain"] = t["domain"].(string)
+					nameCheck, _ := GetManyEntities("rack", req, u.RequestFilters{}, nil)
 					if nameCheck != nil {
 						if len(nameCheck) != 0 {
 							msg := "Corridor name must be unique among corridors and racks"
@@ -308,7 +310,7 @@ func ValidateEntity(entity int, t map[string]interface{}) (map[string]interface{
 					orReq := bson.A{bson.D{{"name", racks[0]}}, bson.D{{"name", racks[1]}}}
 
 					filter = bson.M{"parentId": t["parentId"], "$or": orReq}
-					ans, e := GetManyEntities("rack", filter, u.RequestFilters{})
+					ans, e := GetManyEntities("rack", filter, u.RequestFilters{}, nil)
 					if e != "" {
 						msg := "The racks you specified were not found." +
 							" Please verify your input and try again"
@@ -369,7 +371,7 @@ func ValidateEntity(entity int, t map[string]interface{}) (map[string]interface{
 
 					//If parent is rack, retrieve devices
 					if parent["parent"].(string) == "rack" {
-						ans, ok := GetManyEntities("device", filter, u.RequestFilters{})
+						ans, ok := GetManyEntities("device", filter, u.RequestFilters{}, nil)
 						if ok != "" {
 							return u.Message(false, ok), false
 						}
@@ -382,12 +384,12 @@ func ValidateEntity(entity int, t map[string]interface{}) (map[string]interface{
 					} else if parent["parent"].(string) == "room" {
 
 						//If parent is room, retrieve corridors and racks
-						corridors, e1 := GetManyEntities("corridor", filter, u.RequestFilters{})
+						corridors, e1 := GetManyEntities("corridor", filter, u.RequestFilters{}, nil)
 						if e1 != "" {
 							return u.Message(false, e1), false
 						}
 
-						racks, e2 := GetManyEntities("rack", filter, u.RequestFilters{})
+						racks, e2 := GetManyEntities("rack", filter, u.RequestFilters{}, nil)
 						if e2 != "" {
 							return u.Message(false, e1), false
 						}

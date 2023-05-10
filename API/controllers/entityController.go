@@ -952,7 +952,7 @@ var UpdateEntity = func(w http.ResponseWriter, r *http.Request) {
 			req = bson.M{"hierarchyName": name}
 		}
 
-		v, e3 = models.UpdateEntity(entity, req, &updateData, isPatch, user.Roles)
+		v, e3 = models.UpdateEntity(entity, req, updateData, isPatch, user.Roles)
 
 	case e: // Update with id
 		objID, err := primitive.ObjectIDFromHex(id)
@@ -967,7 +967,7 @@ var UpdateEntity = func(w http.ResponseWriter, r *http.Request) {
 		println("Entity;", entity)
 
 		req := bson.M{"_id": objID}
-		v, e3 = models.UpdateEntity(entity, req, &updateData, isPatch, user.Roles)
+		v, e3 = models.UpdateEntity(entity, req, updateData, isPatch, user.Roles)
 
 	default:
 		w.WriteHeader(http.StatusBadRequest)

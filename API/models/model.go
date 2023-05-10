@@ -683,7 +683,7 @@ func updateOldObjWithPatch(old map[string]interface{}, patch map[string]interfac
 	return ""
 }
 
-func UpdateEntity(ent string, req bson.M, t *map[string]interface{}, isPatch bool, userRoles map[string]string) (map[string]interface{}, string) {
+func UpdateEntity(ent string, req bson.M, t map[string]interface{}, isPatch bool, userRoles map[string]string) (map[string]interface{}, string) {
 	var e *mongo.SingleResult
 	updatedDoc := bson.M{}
 	retDoc := options.ReturnDocument(options.After)
