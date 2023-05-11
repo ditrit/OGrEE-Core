@@ -7,22 +7,6 @@ import (
 	"strconv"
 )
 
-type floatLeaf struct {
-	val float64
-}
-
-func (l floatLeaf) execute() (interface{}, error) {
-	return l.val, nil
-}
-
-type intLeaf struct {
-	val int
-}
-
-func (l intLeaf) execute() (interface{}, error) {
-	return l.val, nil
-}
-
 func numToString(num any) string {
 	switch v := num.(type) {
 	case int:

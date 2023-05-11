@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"strconv"
 	"strings"
 	"unicode"
@@ -10,73 +9,69 @@ import (
 type tokenType int
 
 const (
-	tokEOF tokenType = iota
-	tokError
-	tokWord       // identifier
-	tokAttribute  // attribute name
-	tokDeref      // variable dereferenciation
-	tokInt        // integer constant
-	tokFloat      // float constant
-	tokBool       // boolean constant
-	tokString     // quoted string
-	tokLeftBrac   // '['
-	tokRightBrac  // ']'
-	tokComma      // ','
-	tokSemiCol    // ';'
-	tokAt         // '@'
-	tokLeftParen  // '('
-	tokRightParen // ')'
-	tokNot        // '!'
-	tokAdd        // '+'
-	tokSub        // '-'
-	tokMul        // '*'
-	tokDiv        // '/'
-	tokMod        // '%'
-	tokOr         // '||'
-	tokAnd        // '&&'
-	tokEq         // '=='
-	tokNeq        // '!='
-	tokLeq        // '<=
-	tokGeq        // '>='
-	tokGtr        // '>'
-	tokLss        // '<'
+	tokEOF         tokenType = iota
+	tokDeref                 // variable dereferenciation
+	tokInt                   // integer constant
+	tokFloat                 // float constant
+	tokBool                  // boolean constant
+	tokDoubleQuote           // '"'
+	tokLeftBrac              // '['
+	tokRightBrac             // ']'
+	tokComma                 // ','
+	tokSemiCol               // ';'
+	tokAt                    // '@'
+	tokLeftParen             // '('
+	tokRightParen            // ')'
+	tokNot                   // '!'
+	tokAdd                   // '+'
+	tokSub                   // '-'
+	tokMul                   // '*'
+	tokDiv                   // '/'
+	tokMod                   // '%'
+	tokOr                    // '||'
+	tokAnd                   // '&&'
+	tokEq                    // '=='
+	tokNeq                   // '!='
+	tokLeq                   // '<=
+	tokGeq                   // '>='
+	tokGtr                   // '>'
+	tokLss                   // '<'
 	tokColor
 	tokText
+	tokLeftEval // '$(('
 )
 
 func (s tokenType) String() string {
 	return map[tokenType]string{
-		tokEOF:        "eof",
-		tokError:      "error",
-		tokWord:       "word",
-		tokDeref:      "deref",
-		tokInt:        "int",
-		tokFloat:      "float",
-		tokBool:       "bool",
-		tokString:     "string",
-		tokLeftBrac:   "leftBrac",
-		tokRightBrac:  "rightBrac",
-		tokComma:      "comma",
-		tokSemiCol:    "semicol",
-		tokAt:         "at",
-		tokLeftParen:  "leftParen",
-		tokRightParen: "rightParen",
-		tokNot:        "not",
-		tokAdd:        "add",
-		tokSub:        "sub",
-		tokMul:        "mul",
-		tokDiv:        "div",
-		tokMod:        "mod",
-		tokOr:         "or",
-		tokAnd:        "and",
-		tokEq:         "eq",
-		tokNeq:        "neq",
-		tokLeq:        "leq",
-		tokGeq:        "geq",
-		tokGtr:        "gtr",
-		tokLss:        "lss",
-		tokColor:      "color",
-		tokText:       "text",
+		tokEOF:         "eof",
+		tokDeref:       "deref",
+		tokInt:         "int",
+		tokFloat:       "float",
+		tokBool:        "bool",
+		tokDoubleQuote: "doublQuote",
+		tokLeftBrac:    "leftBrac",
+		tokRightBrac:   "rightBrac",
+		tokComma:       "comma",
+		tokSemiCol:     "semicol",
+		tokAt:          "at",
+		tokLeftParen:   "leftParen",
+		tokRightParen:  "rightParen",
+		tokNot:         "not",
+		tokAdd:         "add",
+		tokSub:         "sub",
+		tokMul:         "mul",
+		tokDiv:         "div",
+		tokMod:         "mod",
+		tokOr:          "or",
+		tokAnd:         "and",
+		tokEq:          "eq",
+		tokNeq:         "neq",
+		tokLeq:         "leq",
+		tokGeq:         "geq",
+		tokGtr:         "gtr",
+		tokLss:         "lss",
+		tokColor:       "color",
+		tokText:        "text",
 	}[s]
 }
 
@@ -108,85 +103,31 @@ func (t token) precedence() int {
 
 const eof = 0
 
-type lexer struct {
-	input string
-	pos   int
-	start int
-	end   int
-	tok   token
-	atEOF bool
-}
-
-type stateFn func(*lexer) stateFn
-
-func (l *lexer) emit(t tokenType, val interface{}) stateFn {
-	str := l.input[l.start:l.pos]
+func (p *parser) emit(t tokenType, val interface{}) token {
+	str := p.item(false)
 	if t == tokEOF {
 		str = "eof"
 	}
-	l.tok = token{
+	p.tok = token{
 		t:     t,
-		start: l.start,
-		end:   l.pos,
+		start: p.startCursor,
+		end:   p.cursor,
 		str:   str,
 		val:   val,
 	}
-	l.start = l.pos
-	return nil
+	return p.tok
 }
 
-func (l *lexer) errorf(format string, args ...interface{}) stateFn {
-	val := fmt.Sprintf(format, args...)
-	l.tok = token{
-		t:     tokError,
-		start: l.start,
-		str:   val,
-		val:   val,
+func (p *parser) acceptRun(valid string) {
+	for strings.Contains(valid, string(p.next())) {
 	}
-	//l.start = 0
-	//l.pos = 0
-	//l.input = l.input[:0]
-	return nil
+	p.backward(1)
 }
 
-func (l *lexer) next() byte {
-	if l.pos >= l.end {
-		l.atEOF = true
-		return eof
+func (p *parser) acceptRunAlphaNumeric() {
+	for isAlphaNumeric(p.next()) {
 	}
-	char := l.input[l.pos]
-	l.pos++
-	return char
-}
-
-func (l *lexer) ignore() {
-	l.start = l.pos
-}
-
-func (l *lexer) backup() {
-	if l.pos > 0 && !l.atEOF {
-		l.pos--
-	}
-}
-
-func (l *lexer) accept(valid string) bool {
-	if strings.Contains(valid, string(l.next())) {
-		return true
-	}
-	l.backup()
-	return false
-}
-
-func (l *lexer) acceptRun(valid string) {
-	for strings.Contains(valid, string(l.next())) {
-	}
-	l.backup()
-}
-
-func (l *lexer) acceptRunAlphaNumeric() {
-	for isAlphaNumeric(l.next()) {
-	}
-	l.backup()
+	p.backward(1)
 }
 
 func isSpace(c byte) bool {
@@ -205,242 +146,200 @@ func isAlphaNumeric(c byte) bool {
 	return isLetter(c) || isDigit(c)
 }
 
-func lexExpr(l *lexer) stateFn {
-	c := l.next()
+func (p *parser) parseExprToken() token {
+	defer un(trace(p, ""))
+	c := p.next()
 	switch c {
 	case ' ', '\t':
-		l.ignore()
-		return lexExpr
+		return p.parseExprToken()
 	case '$':
-		return lexDeref
+		return p.lexDeref()
 	case '"':
-		return lexString
+		return p.emit(tokDoubleQuote, nil)
 	case '[':
-		return l.emit(tokLeftBrac, nil)
+		return p.emit(tokLeftBrac, nil)
 	case ']':
-		return l.emit(tokRightBrac, nil)
+		return p.emit(tokRightBrac, nil)
 	case ',':
-		return l.emit(tokComma, nil)
+		return p.emit(tokComma, nil)
 	case '(':
-		return l.emit(tokLeftParen, nil)
+		return p.emit(tokLeftParen, nil)
 	case ')':
-		return l.emit(tokRightParen, nil)
+		return p.emit(tokRightParen, nil)
 	case '+':
-		return l.emit(tokAdd, nil)
+		return p.emit(tokAdd, nil)
 	case '-':
-		return l.emit(tokSub, nil)
+		return p.emit(tokSub, nil)
 	case '*':
-		return l.emit(tokMul, nil)
+		return p.emit(tokMul, nil)
 	case '/':
-		return l.emit(tokDiv, nil)
+		return p.emit(tokDiv, nil)
 	case '%':
-		return l.emit(tokMod, nil)
+		return p.emit(tokMod, nil)
 	case '|':
-		if l.next() != '|' {
-			return l.errorf("| expected")
+		if p.next() != '|' {
+			p.backward(2)
+			return p.emit(tokEOF, nil)
 		}
-		return l.emit(tokOr, nil)
+		return p.emit(tokOr, nil)
 	case '&':
-		if l.next() != '&' {
-			return l.errorf("& expected")
+		if p.next() != '&' {
+			p.backward(2)
+			return p.emit(tokEOF, nil)
 		}
-		return l.emit(tokAnd, nil)
+		return p.emit(tokAnd, nil)
 	case '=':
-		if l.next() != '=' {
-			return l.errorf("= expected")
+		if p.next() != '=' {
+			p.backward(2)
+			return p.emit(tokEOF, nil)
 		}
-		return l.emit(tokEq, nil)
+		return p.emit(tokEq, nil)
 	case '!':
-		if l.next() == '=' {
-			return l.emit(tokNeq, nil)
+		if p.next() == '=' {
+			return p.emit(tokNeq, nil)
 		}
-		l.backup()
-		return l.emit(tokNot, nil)
+		p.backward(1)
+		return p.emit(tokNot, nil)
 	case '<':
-		if l.next() == '=' {
-			return l.emit(tokLeq, nil)
+		if p.next() == '=' {
+			return p.emit(tokLeq, nil)
 		}
-		l.backup()
-		return l.emit(tokLss, nil)
+		p.backward(1)
+		return p.emit(tokLss, nil)
 	case '>':
-		c = l.next()
+		c = p.next()
 		if c == '=' {
-			return l.emit(tokGeq, nil)
+			return p.emit(tokGeq, nil)
 		}
-		l.backup()
-		return l.emit(tokGtr, nil)
+		p.backward(1)
+		return p.emit(tokGtr, nil)
 	}
 	if isDigit(c) {
-		return lexNumber
+		return p.lexNumber()
 	}
 	if c == '.' {
-		if l.accept(".") {
-			return l.emit(tokEOF, nil)
-		}
-		l.backup()
-		return lexNumber
+		p.backward(1)
+		return p.lexNumber()
 	}
+	p.backward(1)
+	if p.parseExact("true") {
+		return p.emit(tokBool, true)
+	}
+	if p.parseExact("false") {
+		return p.emit(tokBool, false)
+	}
+	return p.emit(tokEOF, nil)
+}
+
+func (p *parser) lexDeref() token {
+	if p.parseExact("{") {
+		return p.lexDerefBracket()
+	}
+	if p.parseExact("((") {
+		return p.emit(tokLeftEval, nil)
+	}
+	if !isAlphaNumeric(p.next()) {
+		p.backward(1)
+		p.error("identifier expected")
+	}
+	p.acceptRunAlphaNumeric()
+	return p.emit(tokDeref, p.item(false)[1:])
+}
+
+func (p *parser) lexDerefBracket() token {
+	for isSpace(p.next()) {
+	}
+	p.backward(1)
+	for isAlphaNumeric(p.next()) {
+	}
+	p.backward(1)
+	for isSpace(p.next()) {
+	}
+	p.backward(1)
+	if !p.parseExact("}") {
+		p.error("} expected")
+	}
+	s := p.item(false)
+	return p.emit(tokDeref, s[2:len(s)-1])
+}
+
+func (p *parser) endNumber(t tokenType, val any) token {
+	c := p.peek()
 	if isLetter(c) {
-		return lexAlphaNumeric
+		return p.lexUnquotedString()
 	}
-	return l.emit(tokEOF, nil)
+	return p.emit(t, val)
 }
 
-func lexDeref(l *lexer) stateFn {
-	if l.accept("{") {
-		return lexDerefBracket
-	}
-	if !isAlphaNumeric(l.next()) {
-		l.backup()
-		return l.errorf("identifier expected")
-	}
-	l.acceptRunAlphaNumeric()
-	return l.emit(tokDeref, l.input[l.start+1:l.pos])
-}
-
-func lexDerefBracket(l *lexer) stateFn {
-	for isSpace(l.next()) {
-	}
-	l.backup()
-	for isAlphaNumeric(l.next()) {
-	}
-	l.backup()
-	for isSpace(l.next()) {
-	}
-	l.backup()
-	if !l.accept("}") {
-		return l.errorf("} expected")
-	}
-	return l.emit(tokDeref, l.input[l.start+2:l.pos-1])
-}
-
-func lexString(l *lexer) stateFn {
-	for {
-		switch l.next() {
-		case eof:
-			return l.errorf("unterminated string")
-		case '"':
-			return l.emit(tokString, l.input[l.start+1:l.pos-1])
-		}
-	}
-}
-
-func (l *lexer) endNumber(t tokenType, val any) stateFn {
-	c := l.next()
-	l.backup()
-	if isLetter(c) {
-		return lexAlphaNumeric
-	}
-	return l.emit(t, val)
-}
-
-func lexNumber(l *lexer) stateFn {
+func (p *parser) lexNumber() token {
 	digits := "0123456789_"
-	l.acceptRun(digits)
-	isFloat := false
-	if l.accept(".") {
-		if l.accept(".") {
-			l.backup()
-			l.backup()
-			val, _ := strconv.Atoi(l.input[l.start:l.pos])
-			return l.endNumber(tokInt, val)
+	p.acceptRun(digits)
+	if p.parseExact(".") {
+		if p.parseExact(".") {
+			p.backward(2)
+			if p.item(false) == "" {
+				return p.emit(tokEOF, nil)
+			}
+			val, err := strconv.Atoi(p.item(false))
+			if err != nil {
+				panic("cannot convert string " + p.item(false) + " to int")
+			}
+			return p.endNumber(tokInt, val)
 		}
-		isFloat = true
-		l.acceptRun(digits)
+		p.acceptRun(digits)
+		val, err := strconv.ParseFloat(p.item(false), 64)
+		if err != nil {
+			p.error("invalid float")
+		}
+		return p.endNumber(tokFloat, val)
 	}
-	if isFloat {
-		val, _ := strconv.ParseFloat(l.input[l.start:l.pos], 64)
-		return l.endNumber(tokFloat, val)
+	val, err := strconv.Atoi(p.item(false))
+	if err != nil {
+		p.error("invalid integer")
 	}
-	val, _ := strconv.Atoi(l.input[l.start:l.pos])
-	return l.endNumber(tokInt, val)
+	return p.endNumber(tokInt, val)
 }
 
-func lexAlphaNumeric(l *lexer) stateFn {
-	for {
-		c := l.next()
-		if isAlphaNumeric(c) {
-			continue
-		}
-		l.backup()
-		word := l.input[l.start:l.pos]
-		if word == "true" {
-			return l.emit(tokBool, true)
-		}
-		if word == "false" {
-			return l.emit(tokBool, false)
-		}
-		return l.emit(tokWord, nil)
-	}
-}
-
-func lexAttribute(l *lexer) stateFn {
-	c := l.next()
-	if !isLetter(c) {
-		return l.errorf("letter expected")
-	}
-	for {
-		c := l.next()
-		if isAlphaNumeric(c) || c == '-' || c == '_' {
-			continue
-		}
-		l.backup()
-		return l.emit(tokAttribute, nil)
-	}
-}
-
-func lexColor(l *lexer) stateFn {
-	for i := 0; i < 6; i++ {
-		if !l.accept("0123456789ABCDEFabcdef") {
-			return l.errorf("invalid character in color")
-		}
-	}
-	return l.emit(tokColor, nil)
-}
-
-func lexText(l *lexer, endCharacters string, caller stateFn) stateFn {
-	c := l.next()
+func (p *parser) lexText(endCharacters string) token {
+	c := p.next()
 	if c == '$' {
-		return lexDeref
+		return p.lexDeref()
 	}
 	for {
 		if c == eof || strings.Contains(endCharacters+"$", string(c)) {
-			l.backup()
-			if l.pos == l.start {
-				return l.emit(tokEOF, nil)
+			p.backward(1)
+			if p.cursor == p.startCursor {
+				return p.emit(tokEOF, nil)
 			}
-			return l.emit(tokText, nil)
+			return p.emit(tokText, nil)
 		}
-		c = l.next()
+		c = p.next()
 	}
 }
 
-func lexUnquotedString(l *lexer) stateFn {
-	return lexText(l, " @;,})", lexUnquotedString)
+func (p *parser) lexUnquotedString() token {
+	return p.lexText(" @;,})")
 }
 
-func lexQuotedString(l *lexer) stateFn {
-	return lexText(l, "", lexQuotedString)
+func (p *parser) parseUnquotedStringToken() token {
+	defer un(trace(p, ""))
+	return p.lexUnquotedString()
 }
 
-func lexPath(l *lexer) stateFn {
-	return lexText(l, " @;,}):", lexPath)
+func (p *parser) lexQuotedString() token {
+	return p.lexText("\"")
 }
 
-func (l *lexer) nextToken(state stateFn) token {
-	if l.next() == eof {
-		state = l.emit(tokEOF, nil)
-	} else {
-		l.backup()
-	}
-	for {
-		if state == nil {
-			return l.tok
-		}
-		state = state(l)
-	}
+func (p *parser) parseQuotedStringToken() token {
+	defer un(trace(p, ""))
+	return p.lexQuotedString()
 }
 
-func newLexer(input string, start int, end int) *lexer {
-	return &lexer{input: input, start: start, end: end, pos: start}
+func (p *parser) lexPath() token {
+	return p.lexText(" @;,}):")
+}
+
+func (p *parser) parsePathToken() token {
+	defer un(trace(p, ""))
+	return p.lexPath()
 }

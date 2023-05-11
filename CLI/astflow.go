@@ -1,6 +1,9 @@
 package main
 
-import "fmt"
+import (
+	c "cli/controllers"
+	"fmt"
+)
 
 type ifNode struct {
 	condition  node
@@ -151,10 +154,7 @@ func (n *forRangeNode) execute() (interface{}, error) {
 		return nil, fmt.Errorf("start index should be lower than end index")
 	}
 	for i := start; i <= end; i++ {
-		_, err := (&assignNode{n.variable, &intLeaf{i}}).execute()
-		if err != nil {
-			return nil, err
-		}
+		c.State.DynamicSymbolTable[n.variable] = i
 		_, err = n.body.execute()
 		if err != nil {
 			return nil, err

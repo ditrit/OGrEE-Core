@@ -18,28 +18,30 @@ var GitCommitDate string
 var State ShellState
 
 type ShellState struct {
-	Prompt           string
-	BlankPrompt      string
-	Customer         string //Tenant name
-	CurrPath         string
-	PrevPath         string
-	ClipBoard        *[]string
-	TreeHierarchy    *Node
-	ConfigPath       string //Holds file path of '.env'
-	HistoryFilePath  string //Holds file path of '.history'
-	UnityClientURL   string
-	UserEmail        string
-	APIURL           string
-	APIKEY           string
-	UnityClientAvail bool  //For deciding to message unity or not
-	FilterDisplay    bool  //Set whether or not to send attributes to unity
-	ObjsForUnity     []int //Deciding what objects should be sent to unity
-	DrawThreshold    int   //Number of objects to be sent at a time to unity
-	DrawableObjs     []int //Indicate which objs drawable in unity
-	DrawableJsons    map[string]map[string]interface{}
-	DebugLvl         int
-	Terminal         **readline.Instance
-	Timeout          time.Duration
+	Prompt             string
+	BlankPrompt        string
+	Customer           string //Tenant name
+	CurrPath           string
+	PrevPath           string
+	ClipBoard          *[]string
+	TreeHierarchy      *Node
+	ConfigPath         string //Holds file path of '.env'
+	HistoryFilePath    string //Holds file path of '.history'
+	UnityClientURL     string
+	UserEmail          string
+	APIURL             string
+	APIKEY             string
+	UnityClientAvail   bool  //For deciding to message unity or not
+	FilterDisplay      bool  //Set whether or not to send attributes to unity
+	ObjsForUnity       []int //Deciding what objects should be sent to unity
+	DrawThreshold      int   //Number of objects to be sent at a time to unity
+	DrawableObjs       []int //Indicate which objs drawable in unity
+	DrawableJsons      map[string]map[string]interface{}
+	DebugLvl           int
+	Terminal           **readline.Instance
+	Timeout            time.Duration
+	DynamicSymbolTable map[string]interface{}
+	FuncTable          map[string]interface{}
 }
 
 type Node struct {

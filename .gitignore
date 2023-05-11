@@ -1,6 +1,7 @@
 # Core Ignore
 .vscode/
 go.work
+go.work.sum
 *.code-workspace
 *.toml
 *.txt

@@ -1660,21 +1660,13 @@ func GetOCLIAtrributes(Path string, ent int, data map[string]interface{}) error 
 		//Process the posU/slot attribute
 		if x, ok := attr["posU/slot"]; ok {
 			delete(attr, "posU/slot")
-			//Convert posU to string if numeric
-			if _, ok := x.(float64); ok {
-				x = strconv.FormatFloat(x.(float64), 'G', -1, 64)
+			if _, err := strconv.Atoi(x.(string)); err == nil {
 				attr["posU"] = x
 				attr["slot"] = ""
-				slot, err = GetSlot(parent, x.(string))
-			} else if _, ok := x.(int); ok {
-				x = strconv.Itoa(x.(int))
-				attr["posU"] = x
-				attr["slot"] = ""
-				slot, err = GetSlot(parent, x.(string))
 			} else {
 				attr["slot"] = x
-				slot, err = GetSlot(parent, x.(string))
 			}
+			slot, err = GetSlot(parent, x.(string))
 			if err != nil {
 				return err
 			}

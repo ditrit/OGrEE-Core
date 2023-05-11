@@ -7,18 +7,6 @@ type boolNode interface {
 	execute() (interface{}, error)
 }
 
-type boolLeaf struct {
-	val bool
-}
-
-func (l boolLeaf) getBool() (bool, error) {
-	return l.val, nil
-}
-
-func (l boolLeaf) execute() (interface{}, error) {
-	return l.val, nil
-}
-
 type equalityNode struct {
 	op    string
 	left  node

@@ -3,34 +3,29 @@ package main
 import (
 	"bytes"
 	"cli/config"
+	c "cli/controllers"
 	cmd "cli/controllers"
 	"encoding/json"
 	"fmt"
 	"path/filepath"
+	"strconv"
 	"strings"
 )
 
-var dynamicSymbolTable = make(map[string]interface{})
-var funcTable = make(map[string]interface{})
-
-func GetFuncTable() map[string]interface{} {
-	return funcTable
-}
-
-func GetDynamicSymbolTable() map[string]interface{} {
-	return dynamicSymbolTable
-}
-
-func InitVars(variables []config.Vardef) error {
+func InitVars(variables []config.Vardef) (err error) {
+	defer func() {
+		if r := recover(); r != nil {
+			err = fmt.Errorf("cannot parse config variables")
+		}
+	}()
+	c.State.DynamicSymbolTable = make(map[string]interface{})
+	c.State.FuncTable = make(map[string]interface{})
 	for _, v := range variables {
 		var varNode node
 		switch val := v.Value.(type) {
 		case string:
-			var err *ParserError
-			varNode, _, err = parseRawText(lexQuotedString, newFrame(val))
-			if err != nil {
-				return err
-			}
+			p := newParser(val)
+			varNode = p.parseText(p.parseUnquotedStringToken)
 		case int64:
 			varNode = &valueNode{int(val)}
 		default:
@@ -40,11 +35,11 @@ func InitVars(variables []config.Vardef) error {
 			variable: v.Name,
 			val:      varNode,
 		}
-		if _, err := n.execute(); err != nil {
+		if _, err = n.execute(); err != nil {
 			return err
 		}
 	}
-	return nil
+	return err
 }
 
 type node interface {
@@ -81,7 +76,7 @@ type funcDefNode struct {
 }
 
 func (n *funcDefNode) execute() (interface{}, error) {
-	funcTable[n.name] = n.body
+	c.State.FuncTable[n.name] = n.body
 	if cmd.State.DebugLvl >= 3 {
 		println("New function ", n.name)
 	}
@@ -93,7 +88,7 @@ type funcCallNode struct {
 }
 
 func (n *funcCallNode) execute() (interface{}, error) {
-	val, ok := funcTable[n.name]
+	val, ok := c.State.FuncTable[n.name]
 	if !ok {
 		return nil, fmt.Errorf("undefined function %s", n.name)
 	}
@@ -130,7 +125,7 @@ type lenNode struct {
 }
 
 func (n *lenNode) execute() (interface{}, error) {
-	val, ok := dynamicSymbolTable[n.variable]
+	val, ok := c.State.DynamicSymbolTable[n.variable]
 	if !ok {
 		return nil, fmt.Errorf("Undefined variable %s", n.variable)
 	}
@@ -684,7 +679,6 @@ type lsObjNode struct {
 	recursive bool
 	sort      string
 	attrList  []string
-	format    string
 }
 
 func (n *lsObjNode) execute() (interface{}, error) {
@@ -706,16 +700,12 @@ func (n *lsObjNode) execute() (interface{}, error) {
 		objects = cmd.SortObjects(&objects, n.sort).GetData()
 	}
 	if n.attrList != nil {
-		if n.format != "" {
-			cmd.DispfWithAttrs(n.format, &objects, &n.attrList)
-		} else {
-			cmd.DispWithAttrs(&objects, &n.attrList)
-		}
+		cmd.DispWithAttrs(objects, n.attrList)
 	} else {
 		if n.sort != "" {
 			//We want to display the attribute used for sorting
 			attrList := append(n.attrList, n.sort)
-			cmd.DispWithAttrs(&objects, &attrList)
+			cmd.DispWithAttrs(objects, attrList)
 		} else {
 			for i := range objects {
 				object, ok := objects[i].(map[string]interface{})
@@ -810,7 +800,7 @@ func (n *clrNode) execute() (interface{}, error) {
 type envNode struct{}
 
 func (n *envNode) execute() (interface{}, error) {
-	cmd.Env(dynamicSymbolTable, funcTable)
+	cmd.Env(c.State.DynamicSymbolTable, c.State.FuncTable)
 	return nil, nil
 }
 
@@ -866,7 +856,7 @@ type unsetFuncNode struct {
 }
 
 func (n *unsetFuncNode) execute() (interface{}, error) {
-	delete(funcTable, n.funcName)
+	delete(c.State.FuncTable, n.funcName)
 	return nil, nil
 }
 
@@ -875,7 +865,7 @@ type unsetVarNode struct {
 }
 
 func (n *unsetVarNode) execute() (interface{}, error) {
-	delete(dynamicSymbolTable, n.varName)
+	delete(c.State.DynamicSymbolTable, n.varName)
 	return nil, nil
 }
 
@@ -1034,7 +1024,7 @@ func (n *createBuildingNode) execute() (interface{}, error) {
 	} else {
 		size, ok := sizeOrTemplateAny.([]float64)
 		if !ok || len(size) != 3 {
-			return nil, fmt.Errorf("vector3 (size) or template expected")
+			return nil, fmt.Errorf("vector3 (size) or string (template) expected")
 		}
 		attributes["size"] = size
 	}
@@ -1175,7 +1165,7 @@ func (n *createRackNode) execute() (interface{}, error) {
 	} else {
 		size, ok := sizeOrTemplateAny.([]float64)
 		if !ok || len(size) != 3 {
-			return nil, fmt.Errorf("vector3 (size) or template expected")
+			return nil, fmt.Errorf("vector3 (size) or string (template) expected")
 		}
 		attributes["size"] = size
 	}
@@ -1213,7 +1203,11 @@ func (n *createDeviceNode) execute() (interface{}, error) {
 		return nil, err
 	}
 	if !checkIfTemplate(sizeUOrTemplate, cmd.DEVICE) {
-		attr["sizeU"] = sizeUOrTemplate
+		if sizeU, err := strconv.Atoi(sizeUOrTemplate.(string)); err == nil {
+			attr["sizeU"] = sizeU
+		} else {
+			return nil, fmt.Errorf("please provide a valid device template or sizeU")
+		}
 	} else {
 		attr["template"] = sizeUOrTemplate
 	}
@@ -1319,7 +1313,6 @@ func (n *createCorridorNode) execute() (interface{}, error) {
 type createOrphanNode struct {
 	path     node
 	template node
-	sensor   bool
 }
 
 func (n *createOrphanNode) execute() (interface{}, error) {
@@ -1331,23 +1324,16 @@ func (n *createOrphanNode) execute() (interface{}, error) {
 	if !ok {
 		return nil, fmt.Errorf("path should be a string")
 	}
-	var t int
-	if n.sensor {
-		t = cmd.STRAYSENSOR
-	} else {
-		t = cmd.STRAY_DEV
-	}
 	templateAny, err := n.template.execute()
 	if err != nil {
 		return nil, err
 	}
 	template, ok := templateAny.(string)
-	if !ok || !checkIfTemplate(template, t) {
+	if !ok || !checkIfTemplate(template, cmd.STRAY_DEV) {
 		return nil, fmt.Errorf("invalid template")
 	}
 	attributes := map[string]any{"template": template}
-
-	err = cmd.GetOCLIAtrributes(path, t, map[string]any{"attributes": attributes})
+	err = cmd.GetOCLIAtrributes(path, cmd.STRAY_DEV, map[string]any{"attributes": attributes})
 	if err != nil {
 		return nil, err
 	}
@@ -1492,7 +1478,7 @@ type symbolReferenceNode struct {
 }
 
 func (s *symbolReferenceNode) execute() (interface{}, error) {
-	val, ok := dynamicSymbolTable[s.va]
+	val, ok := c.State.DynamicSymbolTable[s.va]
 	if !ok {
 		return nil, fmt.Errorf("Undefined variable %s", s.va)
 	}
@@ -1511,7 +1497,7 @@ type objReferenceNode struct {
 }
 
 func (o *objReferenceNode) execute() (interface{}, error) {
-	val, ok := dynamicSymbolTable[o.va]
+	val, ok := c.State.DynamicSymbolTable[o.va]
 	if !ok {
 		return nil, fmt.Errorf("Undefined variable %s", o.va)
 	}
@@ -1554,7 +1540,7 @@ type arrayReferenceNode struct {
 }
 
 func (n *arrayReferenceNode) execute() (interface{}, error) {
-	v, ok := dynamicSymbolTable[n.variable]
+	v, ok := c.State.DynamicSymbolTable[n.variable]
 	if !ok {
 		return nil, fmt.Errorf("Undefined variable %s", n.variable)
 	}
@@ -1593,7 +1579,7 @@ func (a *assignNode) execute() (interface{}, error) {
 	}
 	switch v := val.(type) {
 	case bool, int, float64, string, []float64, map[string]interface{}:
-		dynamicSymbolTable[a.variable] = v
+		c.State.DynamicSymbolTable[a.variable] = v
 		if cmd.State.DebugLvl >= 3 {
 			println("You want to assign", a.variable, "with value of", v)
 		}
