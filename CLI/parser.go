@@ -285,7 +285,7 @@ func (p *parser) parseBool() bool {
 	return tok.val.(bool)
 }
 
-func (p *parser) parseText(lexFunc func() token) node {
+func (p *parser) parseText(lexFunc func() token, trim bool) node {
 	defer un(trace(p, ""))
 	s := ""
 	subExpr := []node{}
@@ -299,6 +299,7 @@ loop:
 			s += "%v"
 			subExpr = append(subExpr, &symbolReferenceNode{tok.val.(string)})
 		case tokLeftEval:
+			s += "%v"
 			subExpr = append(subExpr, p.parseExpr(""))
 			p.expect("))")
 		case tokEOF:
@@ -306,6 +307,9 @@ loop:
 		default:
 			p.error("unexpected token")
 		}
+	}
+	if trim {
+		s = strings.Trim(s, " ")
 	}
 	if len(subExpr) == 0 {
 		return &valueNode{s}
@@ -321,7 +325,7 @@ func (p *parser) parsePath(name string) node {
 	}
 	defer un(trace(p, name))
 	p.skipWhiteSpaces()
-	path := p.parseText(p.parsePathToken)
+	path := p.parseText(p.parsePathToken, true)
 	p.skipWhiteSpaces()
 	return &pathNode{path}
 }
@@ -357,7 +361,7 @@ func (p *parser) parsePrimaryExpr() node {
 	case tokFloat:
 		return &valueNode{tok.val.(float64)}
 	case tokDoubleQuote:
-		n := p.parseText(p.parseQuotedStringToken)
+		n := p.parseText(p.parseQuotedStringToken, false)
 		p.expect("\"")
 		return n
 	case tokDeref:
@@ -459,7 +463,7 @@ func (p *parser) parseString(name string) node {
 		p.backward(1)
 		return p.parseExpr("")
 	}
-	n := p.parseText(p.parseUnquotedStringToken)
+	n := p.parseText(p.parseUnquotedStringToken, true)
 	p.skipWhiteSpaces()
 	return n
 }
@@ -471,11 +475,12 @@ func (p *parser) parseValue() node {
 		p.backward(1)
 		return p.parseExpr("")
 	}
-	if p.parseExact("$(") {
+	if !p.parseExact("$((") && p.parseExact("$(") {
 		n := p.parseCommand("")
 		p.expect(")")
 		return n
 	}
+	p.reset()
 	return p.parseString("")
 }
 
@@ -744,7 +749,7 @@ func (p *parser) parseUnlink() node {
 
 func (p *parser) parsePrint() node {
 	defer un(trace(p, "print"))
-	return &printNode{p.parseString("message to print")}
+	return &printNode{p.parseValue()}
 }
 
 func (p *parser) parseMan() node {

@@ -2847,17 +2847,6 @@ func SetClipBoard(x []string) ([]string, error) {
 	return *State.ClipBoard, nil
 }
 
-func Print(a []interface{}) string {
-	ans := ""
-
-	for i := range a {
-		ans += fmt.Sprintf("%v", a[i])
-	}
-	fmt.Println(ans)
-
-	return ans
-}
-
 func SetEnv(arg string, val interface{}) {
 	switch arg {
 	case "Filter", "Unity":

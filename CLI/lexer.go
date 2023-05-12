@@ -318,7 +318,7 @@ func (p *parser) lexText(endCharacters string) token {
 }
 
 func (p *parser) lexUnquotedString() token {
-	return p.lexText(" @;,})")
+	return p.lexText("@;,})")
 }
 
 func (p *parser) parseUnquotedStringToken() token {

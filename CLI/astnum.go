@@ -1,21 +1,8 @@
 package main
 
 import (
-	cmd "cli/controllers"
-	l "cli/logger"
 	"fmt"
-	"strconv"
 )
-
-func numToString(num any) string {
-	switch v := num.(type) {
-	case int:
-		return strconv.Itoa(v)
-	case float64:
-		return strconv.FormatFloat(v, 'f', -1, 64)
-	}
-	panic("non numeric type to convert to string")
-}
 
 type arithNode struct {
 	op    string
@@ -24,28 +11,18 @@ type arithNode struct {
 }
 
 func (a *arithNode) execute() (interface{}, error) {
-	lv, err := a.left.execute()
+	lv, err := nodeToNum(a.left, "left operand")
 	if err != nil {
 		return nil, err
 	}
-	if cmd.State.DebugLvl >= 3 {
-		println("Left:", lv)
-	}
-	rv, err := a.right.execute()
+	rv, err := nodeToNum(a.right, "right operand")
 	if err != nil {
 		return nil, err
 	}
-	if cmd.State.DebugLvl >= 3 {
-		println("Right: ", rv)
-	}
-
 	leftIntVal, leftInt := lv.(int)
 	rightIntVal, rightInt := rv.(int)
-	leftFloatVal, leftFloat := lv.(float64)
-	rightFloatVal, rightFloat := rv.(float64)
-	leftStringVal, leftString := lv.(string)
-	rightStringVal, rightString := rv.(string)
-
+	leftFloatVal, _ := lv.(float64)
+	rightFloatVal, _ := rv.(float64)
 	if leftInt && rightInt {
 		switch a.op {
 		case "+":
@@ -59,51 +36,38 @@ func (a *arithNode) execute() (interface{}, error) {
 				return nil, fmt.Errorf("cannot divide by 0")
 			}
 			return float64(leftIntVal) / float64(rightIntVal), nil
+		case "//":
+			if rightIntVal == 0 {
+				return nil, fmt.Errorf("cannot divide by 0")
+			}
+			return leftIntVal / rightIntVal, nil
 		case "%":
 			return leftIntVal % rightIntVal, nil
 		default:
 			return nil, fmt.Errorf("invalid operator for integer operands")
 		}
 	}
-	if (leftInt || leftFloat) && (rightInt || rightFloat) {
-		if leftInt {
-			leftFloatVal = float64(leftIntVal)
-		}
-		if rightInt {
-			rightFloatVal = float64(rightIntVal)
-		}
-		switch a.op {
-		case "+":
-			return leftFloatVal + rightFloatVal, nil
-		case "-":
-			return leftFloatVal - rightFloatVal, nil
-		case "*":
-			return leftFloatVal * rightFloatVal, nil
-		case "/":
-			if rightFloatVal == 0. {
-				return nil, fmt.Errorf("cannot divide by 0")
-			}
-			return leftFloatVal / rightFloatVal, nil
-		default:
-			return nil, fmt.Errorf("invalid operator for float operands")
-		}
+	if leftInt {
+		leftFloatVal = float64(leftIntVal)
 	}
-	if leftString || rightString {
-		if !leftString && (leftFloat || leftInt) {
-			leftStringVal = numToString(lv)
-		}
-		if !rightString && (rightFloat || rightInt) {
-			rightStringVal = numToString(rv)
-		}
-		switch a.op {
-		case "+":
-			return leftStringVal + rightStringVal, nil
-		default:
-			return nil, fmt.Errorf("invalid operator for string operands")
-		}
+	if rightInt {
+		rightFloatVal = float64(rightIntVal)
 	}
-	l.GetWarningLogger().Println("Invalid arithmetic operation attempted")
-	return nil, fmt.Errorf("invalid arithmetic operation attempted")
+	switch a.op {
+	case "+":
+		return leftFloatVal + rightFloatVal, nil
+	case "-":
+		return leftFloatVal - rightFloatVal, nil
+	case "*":
+		return leftFloatVal * rightFloatVal, nil
+	case "/":
+		if rightFloatVal == 0. {
+			return nil, fmt.Errorf("cannot divide by 0")
+		}
+		return leftFloatVal / rightFloatVal, nil
+	default:
+		return nil, fmt.Errorf("invalid operator for float operands")
+	}
 }
 
 type negateNode struct {
@@ -111,7 +75,7 @@ type negateNode struct {
 }
 
 func (n *negateNode) execute() (interface{}, error) {
-	v, err := n.val.execute()
+	v, err := nodeToNum(n.val, "expression")
 	if err != nil {
 		return nil, err
 	}

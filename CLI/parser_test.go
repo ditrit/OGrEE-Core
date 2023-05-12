@@ -127,6 +127,19 @@ func TestParseExpr(t *testing.T) {
 	if p.cursor != 34 {
 		t.Errorf("unexpected cursor : %d", p.cursor)
 	}
+	p = newParser("$a+3))")
+	expr = p.parseExpr("")
+	expectedExpr = &arithNode{
+		op:    "+",
+		left:  &symbolReferenceNode{"a"},
+		right: &valueNode{3},
+	}
+	if !reflect.DeepEqual(expr, expectedExpr) {
+		t.Errorf("unexpected expression : \n%s", spew.Sdump(expr))
+	}
+	if p.cursor != 4 {
+		t.Errorf("unexpected cursor : %d", p.cursor)
+	}
 }
 
 func TestParseExprRange(t *testing.T) {
@@ -175,7 +188,7 @@ func TestParseExprArrayRef(t *testing.T) {
 func TestParseRawText(t *testing.T) {
 	defer recoverFunc(t)
 	p := newParser("${a}a")
-	expr := p.parseText(p.parseUnquotedStringToken)
+	expr := p.parseText(p.parseUnquotedStringToken, false)
 	expected := &formatStringNode{"%va", []node{&symbolReferenceNode{"a"}}}
 	if !reflect.DeepEqual(expr, expected) {
 		t.Errorf("unexpected expression : \n%s", spew.Sdump(expr))
@@ -270,6 +283,7 @@ var commandsMatching = map[string]node{
 	".cmds:../toto/tata.ocli":        &loadNode{&valueNode{"../toto/tata.ocli"}},
 	".template:../toto/tata.ocli":    &loadTemplateNode{&valueNode{"../toto/tata.ocli"}},
 	".var:a=42":                      &assignNode{"a", &valueNode{"42"}},
+	".var:b= $(($a+3))":              &assignNode{"b", &formatStringNode{"%v", []node{&arithNode{"+", &symbolReferenceNode{"a"}, &valueNode{3}}}}},
 	"=${toto}/tata":                  &selectObjectNode{testPath},
 	"=..":                            &selectObjectNode{&pathNode{&valueNode{".."}}},
 	"={${toto}/tata}":                &selectChildrenNode{[]node{testPath}},

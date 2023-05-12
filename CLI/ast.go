@@ -24,8 +24,8 @@ func InitVars(variables []config.Vardef) (err error) {
 		var varNode node
 		switch val := v.Value.(type) {
 		case string:
-			p := newParser(val)
-			varNode = p.parseText(p.parseUnquotedStringToken)
+			p := newParser("\"" + val + "\"")
+			varNode = p.parseExpr("")
 		case int64:
 			varNode = &valueNode{int(val)}
 		default:
@@ -235,13 +235,9 @@ func (n *getUNode) execute() (interface{}, error) {
 	if !ok {
 		return nil, fmt.Errorf("path should be a string")
 	}
-	uAny, err := n.u.execute()
+	u, err := nodeToInt(n.u, "u")
 	if err != nil {
 		return nil, err
-	}
-	u, ok := uAny.(int)
-	if !ok {
-		return nil, fmt.Errorf("u should be an integer")
 	}
 	if u < 0 {
 		return nil, fmt.Errorf("The U value must be positive")
@@ -320,7 +316,8 @@ func (n *printNode) execute() (interface{}, error) {
 	if err != nil {
 		return nil, err
 	}
-	return cmd.Print([]interface{}{val}), nil
+	fmt.Printf("%v\n", val)
+	return nil, nil
 }
 
 type deleteObjNode struct {
@@ -885,13 +882,9 @@ func (n *unsetAttrNode) execute() (interface{}, error) {
 		return nil, fmt.Errorf("path should be a string")
 	}
 	if n.index != nil {
-		idxAny, err := n.index.execute()
+		idx, err := nodeToInt(n.index, "index")
 		if err != nil {
 			return nil, err
-		}
-		idx, ok := idxAny.(int)
-		if !ok {
-			return nil, fmt.Errorf("index should be an integer")
 		}
 		return cmd.UnsetInObj(path, n.attr, idx)
 	}
@@ -1001,7 +994,6 @@ func (n *createBuildingNode) execute() (interface{}, error) {
 	}
 	posXY, ok := posXYany.([]float64)
 	if !ok || len(posXY) != 2 {
-		fmt.Printf("%v\n", posXYany)
 		return nil, fmt.Errorf("posXY should be a vector2")
 	}
 	rotationAny, err := n.rotation.execute()
@@ -1548,13 +1540,9 @@ func (n *arrayReferenceNode) execute() (interface{}, error) {
 	if !ok {
 		return nil, fmt.Errorf("You can only index an array.")
 	}
-	idx, err := n.idx.execute()
+	i, err := nodeToInt(n.idx, "index")
 	if err != nil {
 		return nil, err
-	}
-	i, ok := idx.(int)
-	if !ok {
-		return nil, fmt.Errorf("Index should be an integer.")
 	}
 	if i < 0 || i >= len(arr) {
 		return nil, fmt.Errorf(
