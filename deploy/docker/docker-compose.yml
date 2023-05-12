@@ -40,6 +40,7 @@ services:
     volumes:
         -  ./init.sh:/docker-entrypoint-initdb.d/init.sh
         -  ../createdb.js:/home/createdb.js
+        -  db:/data/db
 
   # You will have to retrieve the swagger.json file from
   # the api root dir and supply it here 
@@ -68,3 +69,6 @@ services:
     depends_on:
       - ogree_api
     restart: on-failure:10
+
+volumes:
+  db:
