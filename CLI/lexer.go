@@ -27,6 +27,7 @@ const (
 	tokSub                   // '-'
 	tokMul                   // '*'
 	tokDiv                   // '/'
+	tokIntDiv                // '\'
 	tokMod                   // '%'
 	tokOr                    // '||'
 	tokAnd                   // '&&'
@@ -61,6 +62,7 @@ func (s tokenType) String() string {
 		tokSub:         "sub",
 		tokMul:         "mul",
 		tokDiv:         "div",
+		tokIntDiv:      "intdiv",
 		tokMod:         "mod",
 		tokOr:          "or",
 		tokAnd:         "and",
@@ -93,7 +95,7 @@ func (t token) precedence() int {
 		return 3
 	case tokAdd, tokSub:
 		return 4
-	case tokMul, tokDiv, tokMod:
+	case tokMul, tokDiv, tokIntDiv, tokMod:
 		return 5
 	case tokNot:
 		return 6
@@ -174,6 +176,8 @@ func (p *parser) parseExprToken() token {
 		return p.emit(tokMul, nil)
 	case '/':
 		return p.emit(tokDiv, nil)
+	case '\\':
+		return p.emit(tokIntDiv, nil)
 	case '%':
 		return p.emit(tokMod, nil)
 	case '|':

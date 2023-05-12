@@ -36,7 +36,7 @@ func (a *arithNode) execute() (interface{}, error) {
 				return nil, fmt.Errorf("cannot divide by 0")
 			}
 			return float64(leftIntVal) / float64(rightIntVal), nil
-		case "//":
+		case "\\":
 			if rightIntVal == 0 {
 				return nil, fmt.Errorf("cannot divide by 0")
 			}

@@ -437,7 +437,7 @@ func (p *parser) parseBinaryExpr(leftOperand node, precedence int) node {
 		}
 		rightOperand := p.parseBinaryExpr(nil, operatorPrecedence+1)
 		switch operator.t {
-		case tokAdd, tokSub, tokMul, tokDiv, tokMod:
+		case tokAdd, tokSub, tokMul, tokDiv, tokIntDiv, tokMod:
 			leftOperand = &arithNode{operator.str, leftOperand, rightOperand}
 		case tokOr, tokAnd:
 			leftOperand = &logicalNode{operator.str, leftOperand, rightOperand}
