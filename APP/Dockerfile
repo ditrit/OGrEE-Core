@@ -22,7 +22,7 @@ ENV PATH="/usr/local/flutter/bin:/usr/local/flutter/bin/cache/dart-sdk/bin:${PAT
 RUN flutter doctor
 
 # Copy files to container and build
-COPY ogree_app/ /app/
+COPY APP/ogree_app/ /app/
 WORKDIR /app/
 RUN flutter pub get
 RUN flutter build web --dart-define=API_URL=$API_URL --dart-define=ALLOW_SET_BACK=$ALLOW_SET_BACK --dart-define=BACK_URLS=$BACK_URLS
