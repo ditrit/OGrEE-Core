@@ -32,7 +32,7 @@ func InterpretLine(str string) {
 			if traceErr, ok := err.(*stackTraceError); ok {
 				fmt.Println(traceErr.Error())
 			} else {
-				fmt.Println("Error : " + err.Error())
+				fmt.Println("\033[31m" + "Error : " + "\033[0m" + err.Error())
 			}
 		}
 	}

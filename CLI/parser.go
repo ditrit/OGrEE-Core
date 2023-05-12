@@ -159,7 +159,7 @@ func (p *parser) error(message string) {
 		}
 		errorStr += "\n"
 	}
-	errorStr += "\033[31m" + "error : " + "\033[0m" + message
+	errorStr += "\033[31m" + "Error : " + "\033[0m" + message
 	p.err = message
 	panic(errorStr)
 }
