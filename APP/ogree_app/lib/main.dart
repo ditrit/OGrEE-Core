@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:ogree_app/pages/login_page.dart';
+import 'package:ogree_app/pages/reset_page.dart';
 
 Future<void> main() async {
   runApp(const MyApp());
@@ -32,35 +33,56 @@ class _MyAppState extends State<MyApp> {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'OGrEE App',
-      locale: _locale,
-      localizationsDelegates: AppLocalizations.localizationsDelegates,
-      supportedLocales: AppLocalizations.supportedLocales,
-      theme: ThemeData(
-          useMaterial3: true,
-          colorSchemeSeed: Colors.blue,
-          fontFamily: GoogleFonts.inter().fontFamily,
-          elevatedButtonTheme: ElevatedButtonThemeData(
-              style: ElevatedButton.styleFrom(
-            backgroundColor: Colors.blue.shade600,
-            foregroundColor: Colors.white,
-          )),
-          cardTheme: const CardTheme(
-              elevation: 3,
-              surfaceTintColor: Colors.white,
-              color: Colors.white),
-          textTheme: TextTheme(
-            headlineLarge: GoogleFonts.inter(
-              fontSize: 22,
-              color: Colors.black,
-              fontWeight: FontWeight.w700,
-            ),
-            headlineMedium: GoogleFonts.inter(
-              fontSize: 17,
-              color: Colors.black,
-            ),
-          )),
-      home: const LoginPage(),
+        title: 'OGrEE App',
+        locale: _locale,
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
+        theme: ThemeData(
+            useMaterial3: true,
+            colorSchemeSeed: Colors.blue,
+            fontFamily: GoogleFonts.inter().fontFamily,
+            elevatedButtonTheme: ElevatedButtonThemeData(
+                style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.blue.shade600,
+              foregroundColor: Colors.white,
+            )),
+            cardTheme: const CardTheme(
+                elevation: 3,
+                surfaceTintColor: Colors.white,
+                color: Colors.white),
+            textTheme: TextTheme(
+              headlineLarge: GoogleFonts.inter(
+                fontSize: 22,
+                color: Colors.black,
+                fontWeight: FontWeight.w700,
+              ),
+              headlineMedium: GoogleFonts.inter(
+                fontSize: 17,
+                color: Colors.black,
+              ),
+            )),
+        home: const LoginPage(),
+        onGenerateRoute: RouteGenerator.generateRoute);
+  }
+}
+
+class RouteGenerator {
+  static Route<dynamic> generateRoute(RouteSettings settings) {
+    String? route;
+    Map? queryParameters;
+    if (settings.name != null) {
+      var uriData = Uri.parse(settings.name!);
+      route = uriData.path;
+      queryParameters = uriData.queryParameters;
+    }
+    var message =
+        'generateRoute: Route $route, QueryParameters $queryParameters';
+    print(message);
+    return MaterialPageRoute(
+      builder: (context) {
+        return ResetPage(token: queryParameters!["token"].toString());
+      },
+      settings: settings,
     );
   }
 }

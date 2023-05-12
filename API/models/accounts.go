@@ -1,10 +1,10 @@
 package models
 
 import (
-	"fmt"
 	"os"
 	u "p3/utils"
 	"regexp"
+	"time"
 
 	"github.com/dgrijalva/jwt-go"
 	"go.mongodb.org/mongo-driver/bson"
@@ -12,6 +12,8 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 	"golang.org/x/crypto/bcrypt"
 )
+
+const token_expiration = time.Hour * 72
 
 // JWT Claims struct
 type Token struct {
@@ -38,9 +40,8 @@ func (account *Account) Validate() (map[string]interface{}, bool) {
 		return u.Message(false, "A valid email address is required"), false
 	}
 
-	if len(account.Password) < 7 {
-		return u.Message(false,
-			"Please provide a Password with a length greater than 6"), false
+	if e := validatePasswordFormat(account.Password); e != "" {
+		return u.Message(false, e), false
 	}
 
 	//Error checking and duplicate emails
@@ -115,15 +116,67 @@ func (account *Account) Create(callerRoles map[string]string) (map[string]interf
 	defer cancel()
 
 	//Create new JWT token for the newly created account
-	tk := &Token{Email: account.Email, UserId: account.ID}
-	token := jwt.NewWithClaims(jwt.GetSigningMethod("HS256"), tk)
-	tokenString, _ := token.SignedString([]byte(os.Getenv("token_password")))
-	account.Token = tokenString
+	account.Token = GenerateToken(account.Email, account.ID, token_expiration)
 	account.Password = ""
 
 	response := u.Message(true, "Account has been created")
 	response["account"] = account
 	return response, ""
+}
+
+func validatePasswordFormat(password string) string {
+	if len(password) < 7 {
+		return "Please provide a password with a length greater than 6"
+	}
+	return ""
+}
+
+func comparePasswordToAccount(account Account, inputPassword string) (string, string) {
+	println(inputPassword)
+	println(account.Password)
+	err := bcrypt.CompareHashAndPassword([]byte(account.Password), []byte(inputPassword))
+	if err == bcrypt.ErrMismatchedHashAndPassword {
+		return "Password is not correct", "validate"
+	} else if err == bcrypt.ErrHashTooShort {
+		if account.Email == "admin" &&
+			account.Password == inputPassword && account.Password == "admin" {
+			return "", "change"
+		} else {
+			return "Password is not correct", "validate"
+		}
+	} else if err != nil {
+		return "Internal error comparing passwords", "internal"
+	}
+	return "", ""
+}
+
+func (account *Account) ChangePassword(password string, newPassword string, isReset bool) (string, string) {
+	if !isReset {
+		// Check if current password is correct
+		errStr, errType := comparePasswordToAccount(*account, password)
+		if errStr != "" {
+			return errStr, errType
+		}
+	}
+
+	// Validate new password
+	if e := validatePasswordFormat(newPassword); e != "" {
+		return "New password not valid: " + e, "validate"
+	}
+
+	// Update user
+	ctx, cancel := u.Connect()
+	defer cancel()
+	user := map[string]interface{}{}
+	hashedPassword, _ := bcrypt.GenerateFromPassword(
+		[]byte(newPassword), bcrypt.DefaultCost)
+	user["password"] = string(hashedPassword)
+	err := GetDB().Collection("account").FindOneAndUpdate(ctx, bson.M{"_id": account.ID}, bson.M{"$set": user}).Err()
+	if err != nil {
+		return "Internal error while updating user password", "internal"
+	}
+
+	return GenerateToken(account.Email, account.ID, token_expiration), ""
 }
 
 func Login(email, password string) (map[string]interface{}, string) {
@@ -141,39 +194,37 @@ func Login(email, password string) (map[string]interface{}, string) {
 	}
 	defer cancel()
 
-	//Should investigate if the password is sent in
-	//cleartext over the wire
-	err = bcrypt.CompareHashAndPassword([]byte(account.Password), []byte(password))
-	if err != nil && err == bcrypt.ErrMismatchedHashAndPassword {
+	//Check password
+	errStr, errType := comparePasswordToAccount(*account, password)
+	if errStr != "" {
 		return u.Message(false,
-			"Invalid login credentials. Please try again"), "invalid"
-	} else if err == bcrypt.ErrHashTooShort {
-		if account.Email == "admin" &&
-			account.Password == password && account.Password == "admin" {
-			resp["shouldChange"] = true
-		} else {
-			return u.Message(false,
-				"Invalid login credentials. Please try again"), "invalid"
-		}
+			"Invalid login credentials. Please try again"), errType
+	} else if errType != "" {
+		resp["shouldChange"] = true
 	}
 
 	//Success
 	account.Password = ""
 
 	//Create JWT token
-	tk := &Token{Email: account.Email, UserId: account.ID}
-	token := jwt.NewWithClaims(jwt.GetSigningMethod("HS256"), tk)
-	tokenString, _ := token.SignedString([]byte(os.Getenv("token_password")))
-	account.Token = tokenString
+	account.Token = GenerateToken(account.Email, account.ID, token_expiration)
 
 	resp["account"] = account
 	return resp, ""
 }
 
+func GenerateToken(email string, id primitive.ObjectID, expire time.Duration) string {
+	// Create JWT token
+	tk := &Token{Email: email, UserId: id}
+	tk.ExpiresAt = time.Now().Add(expire).Unix()
+	token := jwt.NewWithClaims(jwt.GetSigningMethod("HS256"), tk)
+	tokenString, _ := token.SignedString([]byte(os.Getenv("token_password")))
+	return tokenString
+}
+
 func GetUser(userId primitive.ObjectID) *Account {
 	acc := &Account{}
 	ctx, cancel := u.Connect()
-	fmt.Println(userId)
 	err := GetDB().Collection("account").FindOne(ctx, bson.M{"_id": userId}).Decode(acc)
 	if err != nil || acc.Email == "" {
 		return nil
@@ -181,6 +232,18 @@ func GetUser(userId primitive.ObjectID) *Account {
 	defer cancel()
 
 	acc.Password = ""
+	return acc
+}
+
+func GetUserByEmail(email string) *Account {
+	acc := &Account{}
+	ctx, cancel := u.Connect()
+	err := GetDB().Collection("account").FindOne(ctx, bson.M{"email": email}).Decode(acc)
+	if err != nil || acc.Email == "" {
+		return nil
+	}
+	defer cancel()
+
 	return acc
 }
 

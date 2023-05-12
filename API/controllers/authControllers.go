@@ -227,7 +227,7 @@ var Authenticate = func(w http.ResponseWriter, r *http.Request) {
 
 		resp, e := models.Login(account.Email, account.Password)
 		if resp["status"] == false {
-			if e == "invalid" {
+			if e == "validate" {
 				w.WriteHeader(http.StatusUnauthorized)
 			} else if e == "internal" {
 				w.WriteHeader(http.StatusInternalServerError)
@@ -372,11 +372,133 @@ var ModifyUserRoles = func(w http.ResponseWriter, r *http.Request) {
 			default:
 				w.WriteHeader(http.StatusInternalServerError)
 			}
-			w.WriteHeader(http.StatusInternalServerError)
 			resp = u.Message(false, "Error: "+e)
 		} else {
 			resp = u.Message(true, "successfully updated user roles")
 		}
+		u.Respond(w, resp)
+	}
+}
+
+var ModifyUserPassword = func(w http.ResponseWriter, r *http.Request) {
+	fmt.Println("******************************************************")
+	fmt.Println("FUNCTION CALL: 	 ModifyUserPassword ")
+	fmt.Println("******************************************************")
+	DispRequestMetaData(r)
+
+	if r.Method == "OPTIONS" {
+		w.Header().Add("Content-Type", "application/json")
+		w.Header().Add("Allow", "POST, OPTIONS, HEAD")
+	} else {
+		var resp map[string]interface{}
+
+		// Get userId from token, then get user
+		userData := r.Context().Value("user")
+		if userData == nil {
+			w.WriteHeader(http.StatusBadRequest)
+			u.Respond(w, u.Message(false, "Error while parsing path params"))
+			u.ErrLog("Error while parsing path params", "GET GENERIC", "", r)
+			return
+		}
+		userId := userData.(map[string]interface{})["userID"].(primitive.ObjectID)
+		userEmail := userData.(map[string]interface{})["email"].(string)
+
+		// Check if POST body is valid
+		var data map[string]interface{}
+		err := json.NewDecoder(r.Body).Decode(&data)
+		if err != nil {
+			w.WriteHeader(http.StatusBadRequest)
+			u.Respond(w, u.Message(false, "Invalid request"))
+			return
+		}
+		isReset := false
+		hasCurrent := true
+		currentPassword := ""
+		if userEmail == "RESET" {
+			isReset = true
+		} else {
+			currentPassword, hasCurrent = data["currentPassword"].(string)
+		}
+		newPassword, hasNew := data["newPassword"].(string)
+		if !hasCurrent || !hasNew {
+			w.WriteHeader(http.StatusBadRequest)
+			u.Respond(w, u.Message(false, "Invalid request: wrong body format"))
+			return
+		}
+
+		// Check if user is valid
+		var user *models.Account
+		if isReset {
+			user = models.GetUser(userId)
+		} else {
+			user = models.GetUserByEmail(userEmail)
+		}
+		if user == nil {
+			w.WriteHeader(http.StatusBadRequest)
+			u.Respond(w, u.Message(false, "Invalid token: no valid user found"))
+			u.ErrLog("Unable to find user associated to token", "GET GENERIC", "", r)
+			return
+		}
+
+		// Change user password
+		response, errType := user.ChangePassword(currentPassword, newPassword, isReset)
+		if errType != "" {
+			switch errType {
+			case "internal":
+				w.WriteHeader(http.StatusInternalServerError)
+			case "validate":
+				w.WriteHeader(http.StatusBadRequest)
+			default:
+				w.WriteHeader(http.StatusInternalServerError)
+			}
+			resp = u.Message(false, "Error: "+response)
+		} else {
+			resp = u.Message(true, "successfully updated user password")
+			if !isReset {
+				resp["token"] = response
+			}
+		}
+		u.Respond(w, resp)
+
+	}
+}
+
+var UserForgotPassword = func(w http.ResponseWriter, r *http.Request) {
+	fmt.Println("******************************************************")
+	fmt.Println("FUNCTION CALL: 	 UserForgotPassword ")
+	fmt.Println("******************************************************")
+	DispRequestMetaData(r)
+
+	if r.Method == "OPTIONS" {
+		w.Header().Add("Content-Type", "application/json")
+		w.Header().Add("Allow", "POST, OPTIONS, HEAD")
+	} else {
+		resp := map[string]interface{}{}
+
+		// Check if POST body is valid
+		var data map[string]interface{}
+		err := json.NewDecoder(r.Body).Decode(&data)
+		if err != nil {
+			w.WriteHeader(http.StatusBadRequest)
+			u.Respond(w, u.Message(false, "Invalid request"))
+			return
+		}
+		userEmail, hasEmail := data["email"].(string)
+		if !hasEmail {
+			w.WriteHeader(http.StatusBadRequest)
+			u.Respond(w, u.Message(false, "Invalid request: email should be provided"))
+			return
+		}
+
+		// Create token, if user exists
+		user := models.GetUserByEmail(userEmail)
+		token := ""
+		if user != nil {
+			token = models.GenerateToken("RESET", user.ID, time.Minute*15)
+			u.SendEmail(token)
+		}
+
+		resp["resetToken"] = token
 		u.Respond(w, resp)
 	}
 }

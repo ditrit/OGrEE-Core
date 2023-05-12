@@ -59,6 +59,10 @@ func Router(jwt func(next http.Handler) http.Handler) *mux.Router {
 	router.HandleFunc("/api/stats",
 		controllers.GetStats).Methods("GET", "OPTIONS", "HEAD")
 
+	router.HandleFunc("/api/version",
+		controllers.Version).Methods("GET", "OPTIONS", "HEAD")
+
+	// User and Authentication
 	router.HandleFunc("/api/login",
 		controllers.Authenticate).Methods("POST", "OPTIONS")
 
@@ -80,8 +84,14 @@ func Router(jwt func(next http.Handler) http.Handler) *mux.Router {
 	router.HandleFunc("/api/users/{id}",
 		controllers.ModifyUserRoles).Methods("PATCH", "OPTIONS")
 
-	router.HandleFunc("/api/version",
-		controllers.Version).Methods("GET", "OPTIONS", "HEAD")
+	router.HandleFunc("/api/users/password/change",
+		controllers.ModifyUserPassword).Methods("POST", "OPTIONS")
+
+	router.HandleFunc("/api/users/password/reset",
+		controllers.ModifyUserPassword).Methods("POST", "OPTIONS")
+
+	router.HandleFunc("/api/users/password/forgot",
+		controllers.UserForgotPassword).Methods("POST", "OPTIONS")
 
 	// For obtaining temperatureUnit from object's site
 	router.HandleFunc("/api/tempunits/{id}",
