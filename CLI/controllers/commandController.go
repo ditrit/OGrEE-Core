@@ -428,8 +428,10 @@ func UpdateObj(Path, id, ent string, data map[string]interface{}, deleteAndPut b
 			//we don't want to update the wrong object
 			objJSON, GETURL = GetObject(Path, true)
 			if objJSON == nil {
-				println("DEBUG VIEW PATH:", Path)
-				println("DEBUG VIEW URL:", GETURL)
+				if State.DebugLvl >= 3 {
+					println("DEBUG VIEW PATH:", Path)
+					println("DEBUG VIEW URL:", GETURL)
+				}
 				l.GetWarningLogger().Println("Error while getting Object!")
 				return nil, fmt.Errorf("error while getting Object")
 			}
