@@ -7,7 +7,7 @@ services:
     image: ogree/api:latest
     container_name: ${COMPOSE_PROJECT_NAME}_api
     environment:
-      - api_port=3551
+      - api_port=3001
       - db_host=${COMPOSE_PROJECT_NAME}_db
       - db_port=27017
       - db_user=${COMPOSE_PROJECT_NAME}
@@ -15,7 +15,7 @@ services:
       - db=${COMPOSE_PROJECT_NAME}
       - token_password=yourSecretPasswordGoesHere
     ports:
-      - ${API_PORT}:3551
+      - ${API_PORT}:3001
     depends_on:
       - ogree_db
     restart: on-failure:10
@@ -40,26 +40,7 @@ services:
     volumes:
         -  ./init.sh:/docker-entrypoint-initdb.d/init.sh
         -  ../createdb.js:/home/createdb.js
-
-  # Deploying the CLI in an orchestrated fashion does 
-  # not work since containers exit when a program
-  # is done executing. Instead make container 'hang'
-  # to allow for on demand access. 
-  # The 'tty: true' entry allows the container to hang 
-  # by using the container's shell
-  # The cli binary is found @ /home/cli
-  ogree_cli:
-    build: 
-      context: ${CORE_DIR}
-      dockerfile: ${CLI_BUILD_DIR}/Dockerfile
-    image: ogree/cli:latest
-    profiles: ["cli"]
-    container_name: ${COMPOSE_PROJECT_NAME}_cli
-    tty: true
-    volumes:
-      - ../../config.toml:/config.toml
-    depends_on:
-      - ogree_api
+        -  db:/data/db
 
   # You will have to retrieve the swagger.json file from
   # the api root dir and supply it here 
@@ -88,3 +69,6 @@ services:
     depends_on:
       - ogree_api
     restart: on-failure:10
+
+volumes:
+  db:

@@ -187,7 +187,7 @@ func Login(email, password string) (map[string]interface{}, string) {
 	err := GetDB().Collection("account").FindOne(ctx, bson.M{"email": email}).Decode(account)
 	if err != nil {
 		if err == mongo.ErrNoDocuments {
-			return u.Message(false, "Error, email not found"), "internal"
+			return u.Message(false, "User does not exist"), "internal"
 		}
 		return u.Message(false, "Connection error. Please try again later"),
 			"internal"
