@@ -89,7 +89,7 @@ func validateDomainRoles(roles map[string]string) string {
 
 func (account *Account) Create(callerRoles map[string]string) (map[string]interface{}, string) {
 	// Check if user is allowed to create new users
-	if !CheckCanCreateUser(callerRoles, account.Roles) {
+	if !CheckCanManageUser(callerRoles, account.Roles) {
 		return u.Message(false,
 			"Invalid credentials for creating an account."+
 				"Manager role in requested domains is needed"), "unauthorised"
@@ -247,7 +247,8 @@ func GetUserByEmail(email string) *Account {
 	return acc
 }
 
-func GetAllUsers() ([]Account, string) {
+func GetAllUsers(callerRoles map[string]string) ([]Account, string) {
+	// Get all users
 	ctx, cancel := u.Connect()
 	c, err := GetDB().Collection("account").Find(ctx, bson.M{})
 	if err != nil {
@@ -261,17 +262,21 @@ func GetAllUsers() ([]Account, string) {
 		return nil, err.Error()
 	}
 
+	// Return allowed users according to caller permissions
+	allowedUser := []Account{}
+	for _, user := range users {
+		if CheckCanManageUser(callerRoles, user.Roles) {
+			allowedUser = append(allowedUser, user)
+		}
+	}
+
 	defer cancel()
-	return users, ""
+	return allowedUser, ""
 }
 
-func DeleteUser(id string) string {
+func DeleteUser(userId primitive.ObjectID) string {
 	ctx, cancel := u.Connect()
-	objID, err := primitive.ObjectIDFromHex(id)
-	if err != nil {
-		return "User ID not valid"
-	}
-	req := bson.M{"_id": objID}
+	req := bson.M{"_id": userId}
 	c, _ := GetDB().Collection("account").DeleteOne(ctx, req)
 	if c.DeletedCount == 0 {
 		return "Internal error try to delete user"

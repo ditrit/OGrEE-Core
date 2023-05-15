@@ -101,7 +101,7 @@ func CheckUserPermissions(userRoles map[string]string, objEntity, requestType in
 	return false, -1
 }
 
-func CheckCanCreateUser(callerRoles map[string]string, newUserRoles map[string]string) bool {
+func CheckCanManageUser(callerRoles map[string]string, newUserRoles map[string]string) bool {
 	if callerRoles[ROOT_DOMAIN] != Manager {
 		for newUserDomain := range newUserRoles {
 			roleValidated := false

@@ -81,7 +81,7 @@ var JwtAuthentication = func(next http.Handler) http.Handler {
 		}
 
 		//Token is invalid
-		if !token.Valid || ((tk.Email == "RESET") != (requestPath == "/api/users/password/reset")) {
+		if !token.Valid || ((tk.Email == u.RESET_TAG) != (requestPath == "/api/users/password/reset")) {
 			response = u.Message(false, "Token is not valid.")
 			w.WriteHeader(http.StatusForbidden)
 			w.Header().Add("Content-Type", "application/json")
