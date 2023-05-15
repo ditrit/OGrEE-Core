@@ -62,7 +62,7 @@ var CreateAccount = func(w http.ResponseWriter, r *http.Request) {
 			u.Respond(w, u.Message(false, "Invalid request"))
 			return
 		}
-		resp, e := account.Create(false)
+		resp, e := account.Create()
 		switch e {
 		case "internal":
 			w.WriteHeader(http.StatusInternalServerError)

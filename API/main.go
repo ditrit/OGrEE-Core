@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"p3/app"
 	"p3/controllers"
-	"p3/models"
 
 	"net/http"
 	"os"
@@ -157,9 +156,6 @@ func Router(jwt func(next http.Handler) http.Handler) *mux.Router {
 }
 
 func main() {
-	account := models.Account{Email: "admin", Password: "admin"}
-	account.Create(true)
-
 	//TODO:
 	//Use the URL below to help make the router functions more
 	//flexible and thus implement the http OPTIONS method

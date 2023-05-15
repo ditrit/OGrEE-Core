@@ -54,12 +54,9 @@ func (account *Account) Validate() (map[string]interface{}, bool) {
 	return u.Message(false, "Requirement passed"), true
 }
 
-func (account *Account) Create(skipValidation bool) (map[string]interface{}, string) {
-
-	if !skipValidation {
-		if resp, ok := account.Validate(); !ok {
-			return resp, "exists"
-		}
+func (account *Account) Create() (map[string]interface{}, string) {
+	if resp, ok := account.Validate(); !ok {
+		return resp, "exists"
 	}
 
 	hashedPassword, _ := bcrypt.GenerateFromPassword(
