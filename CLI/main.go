@@ -22,15 +22,24 @@ func main() {
 	l.InitLogs()
 	c.InitConfigFilePath(conf.ConfigPath)
 	c.InitHistoryFilePath(conf.HistPath)
-	c.InitDebugLevel(conf.Verbose)         //Set the Debug level
-	c.InitTimeout(conf.UnityTimeout)       //Set the Unity Timeout
-	c.InitURLs(conf.APIURL, conf.UnityURL) //Set the URLs
+	c.InitDebugLevel(conf.Verbose)
+	c.InitTimeout(conf.UnityTimeout)
+	c.InitURLs(conf.APIURL, conf.UnityURL)
 
-	conf.User, conf.APIKEY = c.Login(conf.User, conf.APIKEY)
-	c.InitEmail(conf.User) //Set the User email
-	c.InitKey(conf.APIKEY) //Set the API Key
+	var err error
+	var apiKey string
+	conf.User, apiKey, err = c.Login(conf.User)
+	if err != nil {
+		println(err.Error())
+		return
+	} else {
+		println("Successfully connected")
+	}
+
+	c.InitEmail(conf.User)
+	c.InitKey(apiKey)
 	c.InitState(conf)
-	err := InitVars(conf.Variables)
+	err = InitVars(conf.Variables)
 	if err != nil {
 		println("Error while initializing variables :", err.Error())
 		return
