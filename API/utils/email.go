@@ -3,12 +3,17 @@ package utils
 import (
 	"fmt"
 	"net/smtp"
+	"os"
 )
 
 func SendEmail(token string, email string) {
 	// Sender data.
-	from := ""
-	password := ""
+	from := os.Getenv("email_account")
+	password := os.Getenv("email_password")
+	if from == "" || password == "" {
+		fmt.Println("Unable to send reset email: sender credentials not provided")
+		return
+	}
 
 	// Receiver email address.
 	to := []string{
@@ -20,9 +25,15 @@ func SendEmail(token string, email string) {
 	smtpPort := "587"
 
 	// Message.
-	message := []byte("Hello! Use the link below to reset your OGrEE password.\r\n" +
-		"http://localhost:52836/#/reset?token=" +
-		token + "\r\n")
+	var message []byte
+	reset_url := os.Getenv("reset_url")
+	if reset_url == "" {
+		message = []byte("Hello! Use the reset token below to change your OGrEE password:\r\n" +
+			token + "\r\n")
+	} else {
+		message = []byte("Hello! Use the link below to reset your OGrEE password.\r\n" +
+			reset_url + token + "\r\n")
+	}
 
 	// Authentication.
 	auth := smtp.PlainAuth("", from, password, smtpHost)

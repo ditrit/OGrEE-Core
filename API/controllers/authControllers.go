@@ -495,7 +495,7 @@ var UserForgotPassword = func(w http.ResponseWriter, r *http.Request) {
 		token := ""
 		if user != nil {
 			token = models.GenerateToken("RESET", user.ID, time.Minute*15)
-			u.SendEmail(token)
+			u.SendEmail(token, user.Email)
 		}
 
 		resp["resetToken"] = token
