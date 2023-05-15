@@ -1,6 +1,7 @@
 package models
 
 import (
+	"net/http"
 	"os"
 	u "p3/utils"
 	"regexp"
@@ -53,10 +54,12 @@ func (account *Account) Validate() (map[string]interface{}, bool) {
 	return u.Message(false, "Requirement passed"), true
 }
 
-func (account *Account) Create() (map[string]interface{}, string) {
+func (account *Account) Create(skipValidation bool) (map[string]interface{}, string) {
 
-	if resp, ok := account.Validate(); !ok {
-		return resp, "exists"
+	if !skipValidation {
+		if resp, ok := account.Validate(); !ok {
+			return resp, "exists"
+		}
 	}
 
 	hashedPassword, _ := bcrypt.GenerateFromPassword(
@@ -89,7 +92,7 @@ func (account *Account) Create() (map[string]interface{}, string) {
 	return response, ""
 }
 
-func Login(email, password string) (map[string]interface{}, string) {
+func Login(email, password string) (map[string]interface{}, int) {
 	account := &Account{}
 
 	ctx, cancel := u.Connect()
@@ -98,10 +101,10 @@ func Login(email, password string) (map[string]interface{}, string) {
 	//err := GetDB().Table("account").Where("email = ?", email).First(account).Error
 	if err != nil {
 		if err == mongo.ErrNoDocuments {
-			return u.Message(false, "Error, email not found"), "internal"
+			return u.Message(false, "user does not exist"), http.StatusInternalServerError
 		}
 		return u.Message(false, "Connection error. Please try again later"),
-			"internal"
+			http.StatusInternalServerError
 	}
 	defer cancel()
 
@@ -111,7 +114,7 @@ func Login(email, password string) (map[string]interface{}, string) {
 
 	if err != nil && err == bcrypt.ErrMismatchedHashAndPassword {
 		return u.Message(false,
-			"Invalid login credentials. Please try again"), "invalid"
+			"Invalid login credentials. Please try again"), http.StatusUnauthorized
 	}
 
 	//Success
@@ -125,7 +128,7 @@ func Login(email, password string) (map[string]interface{}, string) {
 
 	resp := u.Message(true, "Logged In")
 	resp["account"] = account
-	return resp, ""
+	return resp, http.StatusOK
 }
 
 func GetUser(user int) *Account {
