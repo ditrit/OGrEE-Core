@@ -26,18 +26,25 @@ func init() {
 // produces:
 // - application/json
 // parameters:
-// - name: username
-//   in: body
-//   description: Your Email Address
-//   type: string
-//   required: true
-//   default: "infiniti@nissan.com"
-// - name: password
-//   in: json
-//   description: Your password
-//   required: true
-//   format: password
-//   default: "secret"
+//   - name: name
+//     in: json
+//     description: User name
+//     type: string
+//     required: false
+//     default: "John Doe"
+//   - name: email
+//     in: json
+//     description: User Email Address
+//     type: string
+//     required: true
+//     default: "user@email.com"
+//   - name: password
+//     in: json
+//     description: User password
+//     required: true
+//     format: password
+//     default: "secret123"
+//
 // responses:
 //     '201':
 //         description: Authenticated and new account created
@@ -97,6 +104,39 @@ var CreateAccount = func(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// swagger:operation POST /api/users/bulk auth CreateBulk
+// Create multiples users with one request
+// ---
+// produces:
+// - application/json
+// parameters:
+//   - name: name
+//     in: json
+//     description: User name
+//     type: string
+//     required: false
+//     default: "John Doe"
+//   - name: email
+//     in: body
+//     description: User Email Address
+//     type: string
+//     required: true
+//     default: "user@email.com"
+//   - name: password
+//     in: json
+//     description: User password
+//     required: true
+//     format: password
+//     default: "secret123"
+//
+// responses:
+//
+//	'200':
+//	    description: Request processed, check response body for results
+//	'400':
+//	    description: Bad request
+//	'500':
+//	    description: Internal server error
 var CreateBulkAccount = func(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("******************************************************")
 	fmt.Println("FUNCTION CALL: 	 CreateBulkAccount ")
@@ -251,6 +291,17 @@ var Verify = func(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// swagger:operation GET /api/users auth GetAllAccounts
+// Get a list of users that the caller is allowed to see
+// ---
+// produces:
+// - application/json
+// responses:
+//
+//	'200':
+//	    description: Got all possible users
+//	'500':
+//	    description: Internal server error
 var GetAllAccounts = func(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("******************************************************")
 	fmt.Println("FUNCTION CALL: 	 GetAllAccount ")
@@ -282,6 +333,21 @@ var GetAllAccounts = func(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// swagger:operation DELETE /api/users/{id} auth RemoveAccount
+// Romeve the specified user account
+// ---
+// produces:
+// - application/json
+// responses:
+//
+//	'200':
+//		description: User removed
+//	'400':
+//		description: User ID not valid or not found
+//	'403':
+//		description: Caller not authorised to delete this user
+//	'500':
+//		description: Internal server error
 var RemoveAccount = func(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("******************************************************")
 	fmt.Println("FUNCTION CALL: 	 RemoveAccount ")
@@ -331,6 +397,28 @@ var RemoveAccount = func(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// swagger:operation PATCH /api/users/{id} auth ModifyUserRoles
+// Modify user permissions: domain and role.
+// ---
+// produces:
+// - application/json
+// parameters:
+//   - name: roles
+//     in: body
+//     description: An object with domains as keys and roles as values
+//     type: json
+//     required: true
+//
+// responses:
+//
+//	'200':
+//		description: User roles modified
+//	'400':
+//		description: Bad request
+//	'403':
+//		description: Caller not authorised to modify this user
+//	'500':
+//		description: Internal server error
 var ModifyUserRoles = func(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("******************************************************")
 	fmt.Println("FUNCTION CALL: 	 ModifyUserRoles ")
@@ -412,6 +500,52 @@ var ModifyUserRoles = func(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// swagger:operation POST /api/users/password/change auth ModifyUserPassword
+// For logged in user to change own password.
+// ---
+// produces:
+// - application/json
+// parameters:
+//   - name: currentPassword
+//     in: body
+//     description: User current password
+//     type: string
+//     required: true
+//   - name: newPassword
+//     in: body
+//     description: User new desired password
+//     type: string
+//     required: true
+//
+// responses:
+//
+//	'200':
+//		description: Password changed
+//	'400':
+//		description: Bad request
+//	'500':
+//		description: Internal server error
+
+// swagger:operation POST /api/users/password/reset auth ModifyUserPassword
+// To change password of user that forgot password and received a reset token by email.
+// ---
+// produces:
+// - application/json
+// parameters:
+//   - name: newPassword
+//     in: body
+//     description: User new desired password
+//     type: string
+//     required: true
+//
+// responses:
+//
+//	'200':
+//		description: Password changed
+//	'400':
+//		description: Bad request
+//	'500':
+//		description: Internal server error
 var ModifyUserPassword = func(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("******************************************************")
 	fmt.Println("FUNCTION CALL: 	 ModifyUserPassword ")
@@ -495,6 +629,26 @@ var ModifyUserPassword = func(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// swagger:operation POST /api/users/password/forgot auth UserForgotPassword
+// To request a reset of a user's password (forgot my password).
+// ---
+// produces:
+// - application/json
+// parameters:
+//   - name: email
+//     in: body
+//     description: User email
+//     type: string
+//     required: true
+//
+// responses:
+//
+//	'200':
+//		description: request processed. If account exists, an email with a reset token will be sent to it
+//	'400':
+//		description: Bad request
+//	'500':
+//		description: Internal server error
 var UserForgotPassword = func(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("******************************************************")
 	fmt.Println("FUNCTION CALL: 	 UserForgotPassword ")

@@ -34,35 +34,37 @@
         "parameters": [
           {
             "type": "string",
-            "default": "infiniti@nissan.com",
-            "description": "Your Email Address",
-            "name": "username",
-            "in": "body",
-            "required": true
+            "default": "John Doe",
+            "description": "User name",
+            "name": "name",
+            "in": "json"
           },
           {
-            "format": "password",
-            "default": "secret",
-            "description": "Your password",
-            "name": "password",
+            "type": "string",
+            "default": "user@email.com",
+            "description": "User Email Address",
+            "name": "email",
             "in": "json",
             "required": true
           },
           {
-            "format": "string",
-            "default": "ORNESS",
-            "description": "Name of the the customer",
-            "name": "customer",
+            "format": "password",
+            "default": "secret123",
+            "description": "User password",
+            "name": "password",
             "in": "json",
             "required": true
           }
         ],
         "responses": {
-          "200": {
-            "description": "Authenticated"
+          "201": {
+            "description": "Authenticated and new account created"
           },
           "400": {
             "description": "Bad request"
+          },
+          "403": {
+            "description": "User not authorised to create an account"
           },
           "500": {
             "description": "Internal server error"
@@ -83,6 +85,18 @@
             "description": "Returns header with possible operations"
           }
         }
+      }
+    },
+    "/api/hierarchy": {
+      "get": {
+        "description": "Returns all objects hierarchyName arranged by relationship (father:[children])\nand category (category:[objects])",
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "objects"
+        ],
+        "operationId": "GetCompleteHierarchy"
       }
     },
     "/api/login": {
@@ -137,6 +151,43 @@
         "operationId": "CreateOptions"
       }
     },
+    "/api/objects/{name}": {
+      "get": {
+        "description": "The hierarchyName must be provided in the URL parameter",
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "objects"
+        ],
+        "summary": "Gets an Object from the system.",
+        "operationId": "GetObject",
+        "parameters": [
+          {
+            "description": "hierarchyName of the object",
+            "name": "name",
+            "in": "query"
+          }
+        ]
+      },
+      "options": {
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "objects"
+        ],
+        "summary": "Displays possible operations for the resource in response header.",
+        "operationId": "ObjectOptions",
+        "parameters": [
+          {
+            "description": "hierarchyName of the object",
+            "name": "name",
+            "in": "query"
+          }
+        ]
+      }
+    },
     "/api/stats": {
       "get": {
         "produces": [
@@ -187,7 +238,7 @@
         "operationId": "GetTempUnit",
         "parameters": [
           {
-            "description": "ID of any object.",
+            "description": "ID or hierarchyName of any object.",
             "name": "id",
             "in": "query",
             "required": true
@@ -226,6 +277,156 @@
         ],
         "summary": "Displays possible operations for the resource in response header.",
         "operationId": "VerifyToken"
+      }
+    },
+    "/api/users": {
+      "get": {
+        "description": "Get a list of users that the caller is allowed to see",
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "auth"
+        ],
+        "operationId": "GetAllAccounts"
+      }
+    },
+    "/api/users/bulk": {
+      "post": {
+        "description": "Create multiples users with one request",
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "auth"
+        ],
+        "operationId": "CreateBulk",
+        "parameters": [
+          {
+            "type": "string",
+            "default": "John Doe",
+            "description": "User name",
+            "name": "name",
+            "in": "json"
+          },
+          {
+            "type": "string",
+            "default": "user@email.com",
+            "description": "User Email Address",
+            "name": "email",
+            "in": "body",
+            "required": true
+          },
+          {
+            "format": "password",
+            "default": "secret123",
+            "description": "User password",
+            "name": "password",
+            "in": "json",
+            "required": true
+          }
+        ]
+      }
+    },
+    "/api/users/password/change": {
+      "post": {
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "auth"
+        ],
+        "summary": "For logged in user to change own password.",
+        "operationId": "ModifyUserPassword",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "User current password",
+            "name": "currentPassword",
+            "in": "body",
+            "required": true
+          },
+          {
+            "type": "string",
+            "description": "User new desired password",
+            "name": "newPassword",
+            "in": "body",
+            "required": true
+          }
+        ]
+      }
+    },
+    "/api/users/password/forgot": {
+      "post": {
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "auth"
+        ],
+        "summary": "To request a reset of a user's password (forgot my password).",
+        "operationId": "UserForgotPassword",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "User email",
+            "name": "email",
+            "in": "body",
+            "required": true
+          }
+        ]
+      }
+    },
+    "/api/users/password/reset": {
+      "post": {
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "auth"
+        ],
+        "summary": "To change password of user that forgot password and received a reset token by email.",
+        "operationId": "ModifyUserPassword",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "User new desired password",
+            "name": "newPassword",
+            "in": "body",
+            "required": true
+          }
+        ]
+      }
+    },
+    "/api/users/{id}": {
+      "delete": {
+        "description": "Romeve the specified user account",
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "auth"
+        ],
+        "operationId": "RemoveAccount"
+      },
+      "patch": {
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "auth"
+        ],
+        "summary": "Modify user permissions: domain and role.",
+        "operationId": "ModifyUserRoles",
+        "parameters": [
+          {
+            "type": "json",
+            "description": "An object with domains as keys and roles as values",
+            "name": "roles",
+            "in": "body",
+            "required": true
+          }
+        ]
       }
     },
     "/api/validate/{obj}": {
@@ -317,7 +518,7 @@
         "operationId": "ValidateObjectOptions",
         "parameters": [
           {
-            "description": "Only values of \"domains\", \"sites\", \"buildings\", \"rooms\", \"racks\", \"devices\", \"room-templates\", \"obj-templates\",\"bldg-templates\", \"rooms\", \"acs\", \"panels\", \"cabinets\", \"groups\", \"corridors\",\"sensors\",\"stray-devices\" \"stray-sensors\" are acceptable",
+            "description": "Only values of \"domains\", \"sites\", \"buildings\", \"rooms\", \"racks\", \"devices\", \"room-templates\", \"obj-templates\", \"bldg-templates\",\"rooms\", \"acs\", \"panels\", \"cabinets\", \"groups\", \"corridors\",\"sensors\",\"stray-devices\" \"stray-sensors\" are acceptable",
             "name": "obj",
             "in": "query"
           }
@@ -434,7 +635,7 @@
         "operationId": "ObjectOptions",
         "parameters": [
           {
-            "description": "Only values of \"sites\", \"buildings\", \"rooms\", \"racks\", \"devices\", \"room-templates\", \"obj-templates\",\"bldg-templates\", \"rooms\", \"acs\", \"panels\", \"cabinets\", \"groups\", \"corridors\",\"sensors\",\"stray-devices\" \"stray-sensors\" are acceptable",
+            "description": "Only values of \"sites\", \"buildings\", \"rooms\", \"racks\", \"devices\", \"room-templates\", \"obj-templates\", \"bldg-templates\",\"rooms\", \"acs\", \"panels\", \"cabinets\", \"groups\", \"corridors\",\"sensors\",\"stray-devices\" \"stray-sensors\" are acceptable",
             "name": "objs",
             "in": "query"
           }
@@ -594,7 +795,7 @@
         "operationId": "ObjectOptions",
         "parameters": [
           {
-            "description": "Only values of \"sites\",\"domains\", \"buildings\", \"rooms\", \"racks\", \"devices\", \"room-templates\", \"obj-templates\",\"bldg-templates\", \"acs\", \"panels\",\"cabinets\", \"groups\", \"corridors\",\"sensors\",\"stray-devices\",\"stray-sensors\", are acceptable",
+            "description": "Only values of \"sites\",\"domains\", \"buildings\", \"rooms\", \"racks\", \"devices\", \"room-templates\", \"obj-templates\", \"bldg-templates\",\"acs\", \"panels\",\"cabinets\", \"groups\", \"corridors\",\"sensors\",\"stray-devices\",\"stray-sensors\", are acceptable",
             "name": "objs",
             "in": "query"
           },
@@ -689,7 +890,7 @@
           "objects"
         ],
         "summary": "A category of objects of a Parent Object can be retrieved from the system.",
-        "operationId": "GetFromObect",
+        "operationId": "GetFromObject",
         "parameters": [
           {
             "type": "string",

@@ -222,6 +222,7 @@ func GenerateToken(email string, id primitive.ObjectID, expire time.Duration) st
 	return tokenString
 }
 
+// Returns user omitting password
 func GetUser(userId primitive.ObjectID) *Account {
 	acc := &Account{}
 	ctx, cancel := u.Connect()
@@ -235,6 +236,7 @@ func GetUser(userId primitive.ObjectID) *Account {
 	return acc
 }
 
+// Returns user with password in clear text
 func GetUserByEmail(email string) *Account {
 	acc := &Account{}
 	ctx, cancel := u.Connect()
