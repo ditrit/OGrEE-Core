@@ -678,13 +678,16 @@ var UserForgotPassword = func(w http.ResponseWriter, r *http.Request) {
 
 		// Create token, if user exists, and send it by email
 		user := models.GetUserByEmail(userEmail)
-		token := ""
 		if user != nil {
-			token = models.GenerateToken(u.RESET_TAG, user.ID, time.Minute*15)
-			u.SendEmail(token, user.Email)
+			token := models.GenerateToken(u.RESET_TAG, user.ID, time.Minute*15)
+			if e := u.SendEmail(token, user.Email); e != "" {
+				w.WriteHeader(http.StatusInternalServerError)
+				u.Respond(w, u.Message(false, "Unable to send email: "+e))
+				return
+			}
 		}
 
-		resp["resetToken"] = token
+		resp = u.Message(true, "request processed")
 		u.Respond(w, resp)
 	}
 }

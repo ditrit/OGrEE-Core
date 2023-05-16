@@ -6,13 +6,12 @@ import (
 	"os"
 )
 
-func SendEmail(token string, email string) {
+func SendEmail(token string, email string) string {
 	// Sender data.
 	from := os.Getenv("email_account")
 	password := os.Getenv("email_password")
 	if from == "" || password == "" {
-		fmt.Println("Unable to send reset email: sender credentials not provided")
-		return
+		return "Unable to send reset email: sender credentials not provided"
 	}
 
 	// Receiver email address.
@@ -41,8 +40,8 @@ func SendEmail(token string, email string) {
 	// Sending email.
 	err := smtp.SendMail(smtpHost+":"+smtpPort, auth, from, to, message)
 	if err != nil {
-		fmt.Println(err)
-		return
+		return err.Error()
 	}
 	fmt.Println("Email Sent Successfully!")
+	return ""
 }
