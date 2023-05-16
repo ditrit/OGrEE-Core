@@ -2112,14 +2112,16 @@ var ValidateEntity = func(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if ok, _ := models.CheckUserPermissions(user.Roles, entInt, models.WRITE, obj["domain"].(string)); !ok {
-		w.WriteHeader(http.StatusMethodNotAllowed)
-		u.Respond(w, u.Message(false, "This user"+
-			" does not have sufficient permissions to create"+
-			" this object under this domain "))
-		u.ErrLog("Cannot validate object creation due to limited user privilege",
-			"Validate CREATE "+entity, "", r)
-		return
+	if entInt != u.BLDGTMPL && entInt != u.ROOMTMPL && entInt != u.OBJTMPL {
+		if ok, _ := models.CheckUserPermissions(user.Roles, entInt, models.WRITE, obj["domain"].(string)); !ok {
+			w.WriteHeader(http.StatusMethodNotAllowed)
+			u.Respond(w, u.Message(false, "This user"+
+				" does not have sufficient permissions to create"+
+				" this object under this domain "))
+			u.ErrLog("Cannot validate object creation due to limited user privilege",
+				"Validate CREATE "+entity, "", r)
+			return
+		}
 	}
 
 	ans, status := models.ValidateEntity(entInt, obj)

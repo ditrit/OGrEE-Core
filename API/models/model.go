@@ -24,16 +24,18 @@ func CreateEntity(entity int, t map[string]interface{}, userRoles map[string]str
 	}
 
 	// Check user permissions
-	var domain string
-	if entity == u.DOMAIN {
-		domain = t["name"].(string)
-	} else {
-		domain = t["domain"].(string)
-	}
-	if ok, _ := CheckUserPermissions(userRoles, entity, WRITE, domain); !ok {
-		return u.Message(false,
-				"User does not have permission to create this object"),
-			"permission"
+	if entity != u.BLDGTMPL && entity != u.ROOMTMPL && entity != u.OBJTMPL {
+		var domain string
+		if entity == u.DOMAIN {
+			domain = t["name"].(string)
+		} else {
+			domain = t["domain"].(string)
+		}
+		if ok, _ := CheckUserPermissions(userRoles, entity, WRITE, domain); !ok {
+			return u.Message(false,
+					"User does not have permission to create this object"),
+				"permission"
+		}
 	}
 
 	//Set timestamp
@@ -132,19 +134,21 @@ func GetEntity(req bson.M, ent string, filters u.RequestFilters, userRoles map[s
 	t = fixID(t)
 
 	// Check permissions
-	var domain string
-	if ent == "domain" {
-		domain = t["name"].(string)
-	} else {
-		domain = t["domain"].(string)
-	}
-	if userRoles != nil {
-		if ok, readLevel := CheckUserPermissions(userRoles, u.EntityStrToInt(ent), READ, domain); !ok {
-			return u.Message(false,
-					"User does not have permission to see this object"),
-				"permission"
-		} else if readLevel == READONLYNAME {
-			t = FixReadOnlyName(t)
+	if !strings.Contains(ent, "template") {
+		var domain string
+		if ent == "domain" {
+			domain = t["name"].(string)
+		} else {
+			domain = t["domain"].(string)
+		}
+		if userRoles != nil {
+			if ok, readLevel := CheckUserPermissions(userRoles, u.EntityStrToInt(ent), READ, domain); !ok {
+				return u.Message(false,
+						"User does not have permission to see this object"),
+					"permission"
+			} else if readLevel == READONLYNAME {
+				t = FixReadOnlyName(t)
+			}
 		}
 	}
 
@@ -1250,8 +1254,8 @@ func ExtractCursor(c *mongo.Cursor, ctx context.Context, entity int, userRoles m
 		}
 		//Remove _id
 		x = fixID(x)
-		//Check permissions
-		if userRoles != nil {
+		if entity != u.BLDGTMPL && entity != u.ROOMTMPL && entity != u.OBJTMPL && userRoles != nil {
+			//Check permissions
 			var domain string
 			if entity == u.DOMAIN {
 				fmt.Println(x)
@@ -1268,6 +1272,7 @@ func ExtractCursor(c *mongo.Cursor, ctx context.Context, entity int, userRoles m
 		} else {
 			ans = append(ans, x)
 		}
+
 	}
 	return ans, ""
 }

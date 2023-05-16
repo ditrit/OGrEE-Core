@@ -165,12 +165,6 @@ func getHierarchyName(parent map[string]interface{}) string {
 	}
 }
 
-func validateDomain(domainName string) bool {
-	req := bson.M{"hierarchyName": domainName}
-	_, err := GetEntity(req, "domain", u.RequestFilters{}, nil)
-	return err == ""
-}
-
 func validateJsonSchema(entity int, t map[string]interface{}) (map[string]interface{}, bool) {
 	// Get JSON schema
 	var schemaName string
@@ -229,11 +223,6 @@ func ValidateEntity(entity int, t map[string]interface{}) (map[string]interface{
 		return resp, false
 	}
 
-	// Check if objects domain exists
-	if entity != u.DOMAIN && !CheckDomainExists(t["domain"].(string)) {
-		return u.Message(false, "Domain does not exist"), false
-	}
-
 	// Extra checks
 	// Check parent and domain for objects
 	var parent map[string]interface{}
@@ -249,7 +238,7 @@ func ValidateEntity(entity int, t map[string]interface{}) (map[string]interface{
 		}
 		//Check domain
 		if entity != u.DOMAIN {
-			if !validateDomain(t["domain"].(string)) {
+			if !CheckDomainExists(t["domain"].(string)) {
 				return u.Message(false, "Domain not found: "+t["domain"].(string)), false
 			}
 		}
