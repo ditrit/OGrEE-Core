@@ -69,7 +69,7 @@ func getUserFromToken(w http.ResponseWriter, r *http.Request) *models.Account {
 	userId := userData.(map[string]interface{})["userID"].(primitive.ObjectID)
 	user := models.GetUser(userId)
 	if user == nil || len(user.Roles) <= 0 {
-		w.WriteHeader(http.StatusBadRequest)
+		w.WriteHeader(http.StatusUnauthorized)
 		u.Respond(w, u.Message(false, "Invalid token: no valid user found"))
 		u.ErrLog("Unable to find user associated to token", "GET GENERIC", "", r)
 		return nil

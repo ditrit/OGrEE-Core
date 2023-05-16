@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"os"
+	"p3/app"
 	"p3/models"
 	u "p3/utils"
 	"reflect"
@@ -14,12 +15,30 @@ import (
 	"testing"
 
 	"github.com/go-playground/assert/v2"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 func TestMain(m *testing.M) {
-	//teardown()
+	// teardown()
+	getAdminToken()
 	exitCode := m.Run()
 	os.Exit(exitCode)
+}
+
+var adminId primitive.ObjectID
+var adminToken string
+
+func getAdminToken() {
+	// Create admin account
+	admin := models.Account{}
+	admin.Email = "admin@admin.com"
+	admin.Password = "admin123"
+	admin.Roles = map[string]string{"*": "manager"}
+	response, _ := admin.Create(map[string]string{"*": "manager"})
+	if response["account"] != nil {
+		adminId = response["account"].(*models.Account).ID
+		adminToken = response["account"].(*models.Account).Token
+	}
 }
 
 func teardown() {
@@ -27,16 +46,11 @@ func teardown() {
 	models.GetDB().Drop(ctx)
 }
 
-var JwtAuthSkip = func(next http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		next.ServeHTTP(w, r)
-	})
-}
-
 func makeRequest(method, url string, requestBody []byte) *httptest.ResponseRecorder {
-	router := Router(JwtAuthSkip)
+	router := Router(app.JwtAuthentication)
 	recorder := httptest.NewRecorder()
 	request, _ := http.NewRequest(method, url, bytes.NewBuffer(requestBody))
+	request.Header.Set("Authorization", "Bearer "+adminToken)
 	router.ServeHTTP(recorder, request)
 	return recorder
 }
@@ -45,10 +59,10 @@ func TestCreateLoginAccount(t *testing.T) {
 	// Test create new account
 	requestBody := []byte(`{
 		"email": "test@test.com",
-    	"password": "pass123secret"
+    	"password": "pass123secret",
+		"roles":{"*":"manager"}
 	}`)
-	recorder := makeRequest("POST", "/api", requestBody)
-
+	recorder := makeRequest("POST", "/api/users", requestBody)
 	assert.Equal(t, http.StatusCreated, recorder.Code)
 
 	var response map[string]interface{}
@@ -57,8 +71,8 @@ func TestCreateLoginAccount(t *testing.T) {
 	assert.Equal(t, true, exists)
 
 	// Test recreate existing account
-	recorder = makeRequest("POST", "/api", requestBody)
-	assert.Equal(t, http.StatusConflict, recorder.Code)
+	recorder = makeRequest("POST", "/api/users", requestBody)
+	assert.Equal(t, http.StatusBadRequest, recorder.Code)
 
 	// Test login
 	recorder = makeRequest("POST", "/api/login", requestBody)
