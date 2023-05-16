@@ -1661,19 +1661,24 @@ func GetOCLIAtrributes(Path string, ent int, data map[string]interface{}) error 
 		if x, ok := attr["posU/slot"]; ok {
 			delete(attr, "posU/slot")
 			//Convert posU to string if numeric
-			if _, ok := x.(float64); ok {
-				x = strconv.FormatFloat(x.(float64), 'G', -1, 64)
+			switch xval := x.(type) {
+			case float64:
+				xstr := strconv.FormatFloat(xval, 'G', -1, 64)
 				attr["posU"] = x
 				attr["slot"] = ""
-				slot, err = GetSlot(parent, x.(string))
-			} else if _, ok := x.(int); ok {
-				x = strconv.Itoa(x.(int))
+				slot, err = GetSlot(parent, xstr)
+				x = xstr
+			case int:
+				xstr := strconv.Itoa(xval)
 				attr["posU"] = x
 				attr["slot"] = ""
-				slot, err = GetSlot(parent, x.(string))
-			} else {
-				attr["slot"] = x
-				slot, err = GetSlot(parent, x.(string))
+				slot, err = GetSlot(parent, xstr)
+				x = xstr
+			case string:
+				attr["slot"] = xval
+				slot, err = GetSlot(parent, xval)
+			default:
+				return fmt.Errorf("posU/slot should be a string or a number")
 			}
 			if err != nil {
 				return err
