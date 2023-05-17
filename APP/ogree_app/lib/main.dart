@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:ogree_app/pages/login_page.dart';
 import 'package:ogree_app/pages/reset_page.dart';
 
 Future<void> main() async {
+  await dotenv.load(fileName: "assets/custom/.env");
   runApp(const MyApp());
 }
 
