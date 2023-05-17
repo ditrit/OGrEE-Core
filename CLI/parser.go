@@ -141,7 +141,7 @@ func (p *parser) backward(n int) {
 
 func (p *parser) error(message string) {
 	errorStr := ""
-	for i := 0; i < len([]rune(c.State.BlankPrompt))+p.cursor; i++ {
+	for i := 0; i < len([]rune(c.State.BlankPrompt))+p.cursor+1; i++ {
 		errorStr += " "
 	}
 	errorStr += "\033[31m" + "^" + "\033[0m" + "\n"
