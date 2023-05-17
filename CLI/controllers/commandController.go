@@ -1385,7 +1385,6 @@ func GetHierarchy(x string, depth int, silence bool) []map[string]interface{} {
 func GetOCLIAtrributes(Path string, ent int, data map[string]interface{}) error {
 	var attr map[string]interface{}
 	var parent map[string]interface{}
-	var domain string
 
 	ogPath := Path
 	Path = path.Dir(Path)
@@ -1408,11 +1407,18 @@ func GetOCLIAtrributes(Path string, ent int, data map[string]interface{}) error 
 		}
 	}
 
-	// Set default domain
-	if parent != nil {
-		domain = parent["domain"].(string)
-	} else if ent != DOMAIN {
-		domain = State.Customer
+	if ent == DOMAIN {
+		if parent != nil {
+			data["domain"] = parent["name"]
+		} else {
+			data["domain"] = ""
+		}
+	} else {
+		if parent != nil {
+			data["domain"] = parent["domain"]
+		} else {
+			data["domain"] = State.Customer
+		}
 	}
 
 	var err error
@@ -1420,15 +1426,12 @@ func GetOCLIAtrributes(Path string, ent int, data map[string]interface{}) error 
 	case DOMAIN:
 		if parent != nil {
 			data["parentId"] = parent["id"]
-			data["domain"] = parent["name"]
 		} else {
 			data["parentId"] = ""
-			data["domain"] = ""
 		}
 
 	case SITE:
 		//Default values
-		data["domain"] = domain
 		//data["parentId"] = parent["id"]
 		data["attributes"] = map[string]interface{}{}
 
@@ -1494,7 +1497,6 @@ func GetOCLIAtrributes(Path string, ent int, data map[string]interface{}) error 
 		attr["heightUnit"] = "m"
 		//attr["height"] = 0 //Should be set from parser by default
 		data["parentId"] = parent["id"]
-		data["domain"] = domain
 
 	case ROOM:
 		attr = data["attributes"].(map[string]interface{})
@@ -1550,7 +1552,6 @@ func GetOCLIAtrributes(Path string, ent int, data map[string]interface{}) error 
 		}
 
 		data["parentId"] = parent["id"]
-		data["domain"] = domain
 		data["attributes"] = attr
 		if State.DebugLvl >= 3 {
 			println("DEBUG VIEW THE JSON")
@@ -1618,7 +1619,6 @@ func GetOCLIAtrributes(Path string, ent int, data map[string]interface{}) error 
 		}
 
 		data["parentId"] = parent["id"]
-		data["domain"] = domain
 		data["attributes"] = attr
 
 	case DEVICE:
@@ -1720,13 +1720,11 @@ func GetOCLIAtrributes(Path string, ent int, data map[string]interface{}) error 
 
 		MergeMaps(attr, baseAttrs, false)
 
-		data["domain"] = domain
 		data["parentId"] = parent["id"]
 		data["attributes"] = attr
 
 	case GROUP:
 		//name, category, domain, pid
-		data["domain"] = domain
 		data["parentId"] = parent["id"]
 		attr := data["attributes"].(map[string]interface{})
 
@@ -1736,7 +1734,6 @@ func GetOCLIAtrributes(Path string, ent int, data map[string]interface{}) error 
 	case CORRIDOR:
 		//name, category, domain, pid
 		attr = data["attributes"].(map[string]interface{})
-		data["domain"] = domain
 		data["parentId"] = parent["id"]
 
 	case STRAYSENSOR:
@@ -1750,7 +1747,6 @@ func GetOCLIAtrributes(Path string, ent int, data map[string]interface{}) error 
 		}
 
 	case STRAY_DEV:
-		data["domain"] = State.Customer
 		attr = data["attributes"].(map[string]interface{})
 		if _, ok := attr["template"]; ok {
 			GetOCLIAtrributesTemplateHelper(attr, data, DEVICE)
