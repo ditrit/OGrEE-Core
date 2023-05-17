@@ -25,6 +25,7 @@ type tenant struct {
 	DocPort          string `json:"docPort"`
 	HasWeb           bool   `json:"hasWeb"`
 	HasDoc           bool   `json:"hasDoc"`
+	AssetsDir        string `json:"assetsDir"`
 }
 
 type container struct {
@@ -141,6 +142,36 @@ func addTenant(c *gin.Context) {
 		c.IndentedJSON(http.StatusBadRequest, err.Error())
 		return
 	} else {
+		tenantLower := strings.ToLower(newTenant.Name)
+
+		// Docker compose prepare
+		args := []string{"-p", tenantLower}
+		if newTenant.HasWeb {
+			args = append(args, "--profile")
+			args = append(args, "web")
+			// Create flutter assets folder with .env and logo
+			newTenant.AssetsDir = DOCKER_DIR + "app-deploy/" + tenantLower
+			err = os.MkdirAll(newTenant.AssetsDir, 0644)
+			if err != nil && !strings.Contains(err.Error(), "already") {
+				panic(err)
+			}
+			file, err := os.Create(newTenant.AssetsDir + "/.env")
+			if err != nil {
+				panic(err)
+			}
+			err = apptmplt.Execute(file, newTenant)
+			if err != nil {
+				panic(err)
+			}
+			file.Close()
+		}
+		if newTenant.HasDoc {
+			args = append(args, "--profile")
+			args = append(args, "doc")
+		}
+		args = append(args, "up")
+		args = append(args, "-d")
+
 		// Create .env file
 		file, _ := os.Create(DOCKER_DIR + ".env")
 		err = tmplt.Execute(file, newTenant)
@@ -149,7 +180,7 @@ func addTenant(c *gin.Context) {
 		}
 		file.Close()
 		// Create .env copy
-		file, _ = os.Create(DOCKER_DIR + strings.ToLower(newTenant.Name) + ".env")
+		file, _ = os.Create(DOCKER_DIR + tenantLower + ".env")
 		err = tmplt.Execute(file, newTenant)
 		if err != nil {
 			fmt.Println("Error creating .env copy: " + err.Error())
@@ -158,18 +189,7 @@ func addTenant(c *gin.Context) {
 
 		println("Run docker (may take a long time...)")
 
-		// Docker compose up
-		args := []string{"-p", strings.ToLower(newTenant.Name)}
-		if newTenant.HasWeb {
-			args = append(args, "--profile")
-			args = append(args, "web")
-		}
-		if newTenant.HasDoc {
-			args = append(args, "--profile")
-			args = append(args, "doc")
-		}
-		args = append(args, "up")
-		args = append(args, "-d")
+		// Run docker
 		cmd := exec.Command("docker-compose", args...)
 		cmd.Dir = DOCKER_DIR
 		var stderr bytes.Buffer
@@ -190,9 +210,31 @@ func addTenant(c *gin.Context) {
 
 }
 
-func removeTenant(c *gin.Context) {
-	tenantName := c.Param("name")
+func addTenantLogo(c *gin.Context) {
+	tenantName := strings.ToLower(c.Param("name"))
+	// Load image
+	formFile, err := c.FormFile("file")
+	if err != nil {
+		c.String(http.StatusInternalServerError, err.Error())
+	}
+	// Make sure destination dir is created
+	assetsDir := DOCKER_DIR + "app-deploy/" + tenantName
+	err = os.MkdirAll(assetsDir, 0644)
+	if err != nil && !strings.Contains(err.Error(), "already") {
+		c.String(http.StatusInternalServerError, err.Error())
+	}
+	// Save image
+	err = c.SaveUploadedFile(formFile, assetsDir+"/logo.png")
+	if err != nil {
+		c.String(http.StatusInternalServerError, err.Error())
+	}
+	c.String(http.StatusOK, "")
+}
 
+func removeTenant(c *gin.Context) {
+	tenantName := strings.ToLower(c.Param("name"))
+
+	// Stop and remove containers
 	for _, str := range []string{"_webapp", "_api", "_db", "_doc"} {
 		cmd := exec.Command("docker", "rm", "--force", strings.ToLower(tenantName)+str)
 		cmd.Dir = DOCKER_DIR
@@ -204,6 +246,10 @@ func removeTenant(c *gin.Context) {
 			return
 		}
 	}
+
+	// Remove assets
+	os.RemoveAll(DOCKER_DIR + "app-deploy/" + tenantName)
+	os.Remove(DOCKER_DIR + tenantName + ".env")
 
 	// Update local file
 	data, e := ioutil.ReadFile("tenants.json")

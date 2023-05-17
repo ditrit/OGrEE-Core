@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:typed_data';
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
 import 'package:ogree_app/models/domain.dart';
@@ -275,6 +276,20 @@ Future<String> createTenant(Tenant tenant) async {
     String data = json.decode(response.body);
     return "Error creating tenant $data";
   }
+}
+
+Future<String> uploadImage(PlatformFile image, String tenant) async {
+  print("API upload Tenant logo");
+  Uri url = Uri.parse('$apiUrl/api/tenants/$tenant/logo');
+  var request = http.MultipartRequest("POST", url);
+  request.headers.addAll(getHeader(token));
+  request.files.add(
+      http.MultipartFile.fromBytes("file", image.bytes!, filename: image.name));
+
+  var response = await request.send();
+  print(response.statusCode);
+  var body = await response.stream.bytesToString();
+  return body;
 }
 
 Future<String> createBackendServer(Map<String, String> newBackend) async {

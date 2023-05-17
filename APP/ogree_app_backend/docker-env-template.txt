@@ -7,3 +7,4 @@ WEB_PORT={{.WebPort}}
 CUSTOMER_API_PASSWORD={{.CustomerPassword}}
 API_EXTERNALURL={{.ApiUrl}}
 COMPOSE_PROJECT_NAME={{.Name}}
+APP_ASSETS_DIR={{.AssetsDir}}

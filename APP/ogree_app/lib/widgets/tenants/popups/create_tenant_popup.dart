@@ -1,3 +1,4 @@
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -27,6 +28,7 @@ class _CreateTenantPopupState extends State<CreateTenantPopup> {
   bool _hasWeb = true;
   bool _hasDoc = false;
   bool _isLoading = false;
+  PlatformFile? _loadedImage;
 
   @override
   Widget build(BuildContext context) {
@@ -118,6 +120,41 @@ class _CreateTenantPopupState extends State<CreateTenantPopup> {
                           isUrl: true,
                         )
                       : Container(),
+                  _hasWeb
+                      ? Padding(
+                          padding: const EdgeInsets.only(top: 8.0),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.end,
+                            children: [
+                              _loadedImage != null
+                                  ? Padding(
+                                      padding:
+                                          const EdgeInsets.only(right: 8.0),
+                                      child: Align(
+                                        child: Text(localeMsg
+                                            .fileLoaded(_loadedImage!.name)),
+                                      ),
+                                    )
+                                  : Container(),
+                              ElevatedButton.icon(
+                                  onPressed: () async {
+                                    FilePickerResult? result =
+                                        await FilePicker.platform.pickFiles(
+                                            type: FileType.custom,
+                                            allowedExtensions: ["png"],
+                                            withData: true);
+                                    if (result != null) {
+                                      setState(() {
+                                        _loadedImage = result.files.single;
+                                      });
+                                    }
+                                  },
+                                  icon: const Icon(Icons.download),
+                                  label: Text("Select Logo Image")),
+                            ],
+                          ),
+                        )
+                      : Container(),
                   _hasDoc
                       ? getFormField(
                           save: (newValue) {
@@ -131,7 +168,7 @@ class _CreateTenantPopupState extends State<CreateTenantPopup> {
                           isUrl: true,
                         )
                       : Container(),
-                  const SizedBox(height: 40),
+                  const SizedBox(height: 30),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.end,
                     children: [
@@ -153,7 +190,19 @@ class _CreateTenantPopupState extends State<CreateTenantPopup> {
                               setState(() {
                                 _isLoading = true;
                               });
-                              var response = await createTenant(Tenant(
+                              String response = "not loaded by user";
+                              print(_loadedImage!);
+                              if (_loadedImage != null) {
+                                response = await uploadImage(
+                                    _loadedImage!, _tenantName!);
+                                print(response);
+                              }
+                              if (response != "") {
+                                showSnackBar(context,
+                                    "Failed to upload logo: " + response,
+                                    isError: true);
+                              }
+                              response = await createTenant(Tenant(
                                   _tenantName!,
                                   _tenantPassword!,
                                   _apiUrl!,
