@@ -650,10 +650,11 @@ func (n *updateObjNode) execute() (interface{}, error) {
 	}
 	boolInteractVals := []string{"content", "alpha", "tilesName", "tilesColor", "U", "slots", "localCS"}
 	if AssertInStringValues(n.attr, boolInteractVals) {
-		if !IsBool(values[0]) {
-			return nil, fmt.Errorf("boolean value expected")
+		boolVal, err := valToBool(values[0], n.attr)
+		if err != nil {
+			return nil, err
 		}
-		return nil, cmd.InteractObject(path, n.attr, values[0], n.hasSharpe)
+		return nil, cmd.InteractObject(path, n.attr, boolVal, n.hasSharpe)
 	}
 	switch n.attr {
 	case "areas":

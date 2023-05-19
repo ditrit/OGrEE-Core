@@ -110,11 +110,8 @@ func nodeToInt(n node, name string) (int, error) {
 	return intVal, nil
 }
 
-func nodeToBool(n node, name string) (bool, error) {
-	val, err := n.execute()
-	if err != nil {
-		return false, err
-	}
+func valToBool(val any, name string) (bool, error) {
+	var err error
 	stringVal, isString := val.(string)
 	if isString {
 		val, err = strconv.ParseBool(stringVal)
@@ -127,6 +124,14 @@ func nodeToBool(n node, name string) (bool, error) {
 		return false, fmt.Errorf("%s should be a boolean", name)
 	}
 	return boolVal, nil
+}
+
+func nodeToBool(n node, name string) (bool, error) {
+	val, err := n.execute()
+	if err != nil {
+		return false, err
+	}
+	return valToBool(val, name)
 }
 
 // Open a file and return the JSON in the file
@@ -283,11 +288,6 @@ func IsHexString(s string) bool {
 
 	_, err := hex.DecodeString(s)
 	return err == nil
-}
-
-func IsBool(x interface{}) bool {
-	_, ok := x.(bool)
-	return ok
 }
 
 func IsInt(x interface{}) bool {
