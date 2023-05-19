@@ -33,7 +33,7 @@ func init() {
 	// 	[]byte("password"), bcrypt.DefaultCost)
 	// println(string(hashedPassword))
 	tmplt = template.Must(template.ParseFiles("docker-env-template.txt"))
-	apptmplt = template.Must(template.ParseFiles("flutter-env-template.txt"))
+	apptmplt = template.Must(template.ParseFiles("flutter-assets/flutter-env-template.txt"))
 }
 
 func main() {

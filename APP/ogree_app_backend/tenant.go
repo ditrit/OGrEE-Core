@@ -5,6 +5,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"net/http"
 	"os"
@@ -149,21 +150,9 @@ func addTenant(c *gin.Context) {
 		if newTenant.HasWeb {
 			args = append(args, "--profile")
 			args = append(args, "web")
-			// Create flutter assets folder with .env and logo
+			// Create flutter assets folder
 			newTenant.AssetsDir = DOCKER_DIR + "app-deploy/" + tenantLower
-			err = os.MkdirAll(newTenant.AssetsDir, 0644)
-			if err != nil && !strings.Contains(err.Error(), "already") {
-				panic(err)
-			}
-			file, err := os.Create(newTenant.AssetsDir + "/.env")
-			if err != nil {
-				panic(err)
-			}
-			err = apptmplt.Execute(file, newTenant)
-			if err != nil {
-				panic(err)
-			}
-			file.Close()
+			addAppAssets(newTenant)
 		}
 		if newTenant.HasDoc {
 			args = append(args, "--profile")
@@ -208,6 +197,46 @@ func addTenant(c *gin.Context) {
 		c.IndentedJSON(http.StatusOK, "all good")
 	}
 
+}
+
+func addAppAssets(newTenant tenant) {
+	// Create flutter assets folder with .env
+	err := os.MkdirAll(newTenant.AssetsDir, 0644)
+	if err != nil && !strings.Contains(err.Error(), "already") {
+		println(err.Error())
+	}
+	file, err := os.Create(newTenant.AssetsDir + "/.env")
+	if err != nil {
+		println(err.Error())
+	}
+	err = apptmplt.Execute(file, newTenant)
+	if err != nil {
+		println(err.Error())
+	}
+	file.Close()
+
+	// Add default logo if none already present
+	userLogo := newTenant.AssetsDir + "/logo.png"
+	defaultLogo := "flutter-assets/logo.png"
+	if _, err := os.Stat(userLogo); err == nil {
+		println("Logo already exists")
+	} else {
+		println("Setting logo by default")
+		source, err := os.Open(defaultLogo)
+		if err != nil {
+			println("Error opening default logo")
+		}
+		defer source.Close()
+		destination, err := os.Create(userLogo)
+		if err != nil {
+			println("Error creating tenant logo file")
+		}
+		defer destination.Close()
+		_, err = io.Copy(destination, source)
+		if err != nil {
+			println("Error creating tenant logo")
+		}
+	}
 }
 
 func addTenantLogo(c *gin.Context) {

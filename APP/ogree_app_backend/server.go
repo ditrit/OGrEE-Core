@@ -103,6 +103,7 @@ func createNewBackend(c *gin.Context) {
 
 	SSHCopyFile("ogree_app_backend_linux", newServer.DstPath+"/ogree_app_backend", conn)
 	SSHCopyFile("docker-env-template.txt", newServer.DstPath+"/docker-env-template.txt", conn)
+	SSHCopyFile("flutter-assets/*", newServer.DstPath+"flutter-assets/*", conn)
 	SSHCopyFile(".envcopy", newServer.DstPath+"/.env", conn)
 	SSHCopyFile(DOCKER_DIR+"docker-compose.yml", newServer.DstPath+"/docker/docker-compose.yml", conn)
 	SSHCopyFile(DEPLOY_DIR+"createdb.js", newServer.DstPath+"/createdb.js", conn)

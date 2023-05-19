@@ -3,7 +3,6 @@
 go.work
 *.code-workspace
 *.toml
-*.txt
 *log
 
 # API Ignore

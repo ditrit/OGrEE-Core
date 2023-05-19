@@ -190,18 +190,19 @@ class _CreateTenantPopupState extends State<CreateTenantPopup> {
                               setState(() {
                                 _isLoading = true;
                               });
+                              // Load logo first, if provided
                               String response = "not loaded by user";
-                              print(_loadedImage!);
                               if (_loadedImage != null) {
                                 response = await uploadImage(
                                     _loadedImage!, _tenantName!);
                                 print(response);
+                                if (response != "") {
+                                  showSnackBar(context,
+                                      "Failed to upload logo: " + response,
+                                      isError: true);
+                                }
                               }
-                              if (response != "") {
-                                showSnackBar(context,
-                                    "Failed to upload logo: " + response,
-                                    isError: true);
-                              }
+                              // Create tenant
                               response = await createTenant(Tenant(
                                   _tenantName!,
                                   _tenantPassword!,
