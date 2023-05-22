@@ -10,92 +10,27 @@
   ],
   "swagger": "2.0",
   "info": {
-    "description": "Testing Swagger spec. It's still in progress\n\nThe API may return incorrect response codes and have bugs.\n\nFor a list of endpoints please consult: https://nextcloud.ditrit.io/index.php/apps/files/?dir=/Ogree/1_Core/1_API/Endpoint_List\u0026openfile=20692",
-    "title": "Golang OGREE API",
+    "description": "This the swagger documentation for the API of the OGrEE project developed by DitRit.\nCheck our project here: https://github.com/ditrit/OGrEE-Core",
+    "title": "OGrEE API",
     "contact": {
-      "name": "Ziad Khalaf",
-      "email": "ziad.khalaf@orness.com"
+      "name": "DitRit",
+      "url": "https://ditrit.io",
+      "email": "contact@ditrit.io"
     },
     "version": "1.0"
   },
-  "basePath": "/api/user",
+  "basePath": "/api",
   "paths": {
-    "/api": {
-      "post": {
-        "description": "Create an account with Email credentials, it returns\na JWT key to use with the API. The\nauthorize and 'Try it out' buttons don't work",
-        "produces": [
-          "application/json"
-        ],
-        "tags": [
-          "auth"
-        ],
-        "summary": "Generate credentials for a user.",
-        "operationId": "Create",
-        "parameters": [
-          {
-            "type": "string",
-            "default": "John Doe",
-            "description": "User name",
-            "name": "name",
-            "in": "json"
-          },
-          {
-            "type": "string",
-            "default": "user@email.com",
-            "description": "User Email Address",
-            "name": "email",
-            "in": "json",
-            "required": true
-          },
-          {
-            "format": "password",
-            "default": "secret123",
-            "description": "User password",
-            "name": "password",
-            "in": "json",
-            "required": true
-          }
-        ],
-        "responses": {
-          "201": {
-            "description": "Authenticated and new account created"
-          },
-          "400": {
-            "description": "Bad request"
-          },
-          "403": {
-            "description": "User not authorised to create an account"
-          },
-          "500": {
-            "description": "Internal server error"
-          }
-        }
-      },
-      "options": {
-        "produces": [
-          "application/json"
-        ],
-        "tags": [
-          "auth"
-        ],
-        "summary": "Displays possible operations for the resource in response header.",
-        "operationId": "CreateOptions",
-        "responses": {
-          "200": {
-            "description": "Returns header with possible operations"
-          }
-        }
-      }
-    },
     "/api/hierarchy": {
       "get": {
-        "description": "Returns all objects hierarchyName arranged by relationship (father:[children])\nand category (category:[objects])",
+        "description": "Return is arranged by relationship (father:[children])\nand category (category:[objects])",
         "produces": [
           "application/json"
         ],
         "tags": [
           "objects"
         ],
+        "summary": "Returns all objects hierarchyName.",
         "operationId": "GetCompleteHierarchy"
       }
     },
@@ -161,7 +96,7 @@
           "objects"
         ],
         "summary": "Gets an Object from the system.",
-        "operationId": "GetObject",
+        "operationId": "GetObjectByName",
         "parameters": [
           {
             "description": "hierarchyName of the object",
@@ -281,25 +216,90 @@
     },
     "/api/users": {
       "get": {
-        "description": "Get a list of users that the caller is allowed to see",
         "produces": [
           "application/json"
         ],
         "tags": [
           "auth"
         ],
+        "summary": "Get a list of users that the caller is allowed to see.",
         "operationId": "GetAllAccounts"
+      },
+      "post": {
+        "description": "Create an account with email credentials, it returns\na JWT key to use with the API.",
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "auth"
+        ],
+        "summary": "Generate credentials for a user.",
+        "operationId": "Create",
+        "parameters": [
+          {
+            "type": "string",
+            "default": "John Doe",
+            "description": "User name",
+            "name": "name",
+            "in": "json"
+          },
+          {
+            "type": "string",
+            "default": "user@email.com",
+            "description": "User Email Address",
+            "name": "email",
+            "in": "json",
+            "required": true
+          },
+          {
+            "format": "password",
+            "default": "secret123",
+            "description": "User password",
+            "name": "password",
+            "in": "json",
+            "required": true
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Authenticated and new account created"
+          },
+          "400": {
+            "description": "Bad request"
+          },
+          "403": {
+            "description": "User not authorised to create an account"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      },
+      "options": {
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "auth"
+        ],
+        "summary": "Displays possible operations for the resource in response header.",
+        "operationId": "CreateOptions",
+        "responses": {
+          "200": {
+            "description": "Returns header with possible operations"
+          }
+        }
       }
     },
     "/api/users/bulk": {
       "post": {
-        "description": "Create multiples users with one request",
         "produces": [
           "application/json"
         ],
         "tags": [
           "auth"
         ],
+        "summary": "Create multiples users with one request.",
         "operationId": "CreateBulk",
         "parameters": [
           {
@@ -400,13 +400,13 @@
     },
     "/api/users/{id}": {
       "delete": {
-        "description": "Romeve the specified user account",
         "produces": [
           "application/json"
         ],
         "tags": [
           "auth"
         ],
+        "summary": "Remove the specified user account.",
         "operationId": "RemoveAccount"
       },
       "patch": {
@@ -652,7 +652,7 @@
           "objects"
         ],
         "summary": "Gets an Object from the system.",
-        "operationId": "GetObject",
+        "operationId": "GetObjectById",
         "parameters": [
           {
             "type": "string",
@@ -1034,7 +1034,8 @@
         "tags": [
           "objects"
         ],
-        "operationId": "GetObject",
+        "summary": "Gets an Object using any attribute.",
+        "operationId": "GetObjectQuery",
         "parameters": [
           {
             "type": "string",

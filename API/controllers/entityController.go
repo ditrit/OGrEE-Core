@@ -324,7 +324,7 @@ func getBulkDomainsRecursively(parent string, listDomains []map[string]interface
 	return domainsToCreate, ""
 }
 
-// swagger:operation GET /api/objects/{name} objects GetObject
+// swagger:operation GET /api/objects/{name} objects GetObjectByName
 // Gets an Object from the system.
 // The hierarchyName must be provided in the URL parameter
 // ---
@@ -405,7 +405,7 @@ var GetGenericObject = func(w http.ResponseWriter, r *http.Request) {
 
 }
 
-// swagger:operation GET /api/{objs}/{id} objects GetObject
+// swagger:operation GET /api/{objs}/{id} objects GetObjectById
 // Gets an Object from the system.
 // The ID must be provided in the URL parameter
 // The name can be used instead of ID if the obj is site
@@ -992,7 +992,8 @@ var UpdateEntity = func(w http.ResponseWriter, r *http.Request) {
 	u.Respond(w, v)
 }
 
-// swagger:operation GET /api/{objs}? objects GetObject
+// swagger:operation GET /api/{objs}? objects GetObjectQuery
+// Gets an Object using any attribute.
 // Gets an Object using any attribute (with the exception of description)
 // via query in the system
 // The attributes are in the form {attr}=xyz&{attr1}=abc
@@ -1478,7 +1479,8 @@ var GetEntityHierarchy = func(w http.ResponseWriter, r *http.Request) {
 }
 
 // swagger:operation GET /api/hierarchy objects GetCompleteHierarchy
-// Returns all objects hierarchyName arranged by relationship (father:[children])
+// Returns all objects hierarchyName.
+// Return is arranged by relationship (father:[children])
 // and category (category:[objects])
 // ---
 // produces:
