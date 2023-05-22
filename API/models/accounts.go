@@ -132,8 +132,6 @@ func validatePasswordFormat(password string) string {
 }
 
 func comparePasswordToAccount(account Account, inputPassword string) (string, string) {
-	println(inputPassword)
-	println(account.Password)
 	err := bcrypt.CompareHashAndPassword([]byte(account.Password), []byte(inputPassword))
 	if err == bcrypt.ErrMismatchedHashAndPassword {
 		return "Password is not correct", "validate"
