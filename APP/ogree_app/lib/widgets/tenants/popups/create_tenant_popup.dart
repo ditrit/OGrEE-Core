@@ -66,11 +66,11 @@ class _CreateTenantPopupState extends State<CreateTenantPopup> {
                   const Divider(height: 45),
                   getFormField(
                       save: (newValue) => _tenantName = newValue,
-                      label: "Tenant Name",
+                      label: localeMsg.tenantName,
                       icon: Icons.business_center),
                   getFormField(
                       save: (newValue) => _tenantPassword = newValue,
-                      label: "Tenant Admin Password",
+                      label: localeMsg.tenantPassword,
                       icon: Icons.lock),
                   const SizedBox(height: 8),
                   Wrap(
@@ -102,7 +102,7 @@ class _CreateTenantPopupState extends State<CreateTenantPopup> {
                       _apiUrl = splitted[0];
                       _apiPort = splitted[1];
                     },
-                    label: "New API URL (hostname:port)",
+                    label: "${localeMsg.apiUrl} (hostname:port)",
                     icon: Icons.cloud,
                     prefix: "http://",
                     isUrl: true,
@@ -114,7 +114,7 @@ class _CreateTenantPopupState extends State<CreateTenantPopup> {
                             _webUrl = splitted[0];
                             _webPort = splitted[1];
                           },
-                          label: "New Web URL (hostname:port)",
+                          label: "${localeMsg.webUrl} (hostname:port)",
                           icon: Icons.monitor,
                           prefix: "http://",
                           isUrl: true,
@@ -126,16 +126,18 @@ class _CreateTenantPopupState extends State<CreateTenantPopup> {
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.end,
                             children: [
-                              _loadedImage != null
-                                  ? Padding(
-                                      padding:
-                                          const EdgeInsets.only(right: 8.0),
-                                      child: Align(
-                                        child: Text(localeMsg
-                                            .fileLoaded(_loadedImage!.name)),
+                              Padding(
+                                padding: const EdgeInsets.only(right: 20),
+                                child: _loadedImage == null
+                                    ? Image.asset(
+                                        "assets/custom/logo.png",
+                                        height: 40,
+                                      )
+                                    : Image.memory(
+                                        _loadedImage!.bytes!,
+                                        height: 40,
                                       ),
-                                    )
-                                  : Container(),
+                              ),
                               ElevatedButton.icon(
                                   onPressed: () async {
                                     FilePickerResult? result =
@@ -150,7 +152,7 @@ class _CreateTenantPopupState extends State<CreateTenantPopup> {
                                     }
                                   },
                                   icon: const Icon(Icons.download),
-                                  label: Text("Select Logo Image")),
+                                  label: Text(localeMsg.selectLogo)),
                             ],
                           ),
                         )
@@ -162,7 +164,7 @@ class _CreateTenantPopupState extends State<CreateTenantPopup> {
                             _docUrl = splitted[0];
                             _docPort = splitted[1];
                           },
-                          label: "New Swagger UI URL (hostname:port)",
+                          label: "${localeMsg.docUrl} (hostname:port)",
                           icon: Icons.book,
                           prefix: "http://",
                           isUrl: true,
@@ -191,15 +193,14 @@ class _CreateTenantPopupState extends State<CreateTenantPopup> {
                                 _isLoading = true;
                               });
                               // Load logo first, if provided
-                              String response = "not loaded by user";
+                              String response = localeMsg.notLoaded;
                               if (_loadedImage != null) {
                                 response = await uploadImage(
                                     _loadedImage!, _tenantName!);
                                 print(response);
                                 if (response != "") {
                                   showSnackBar(context,
-                                      "Failed to upload logo: " + response,
-                                      isError: true);
+                                      "${localeMsg.failedToUpload} $response");
                                 }
                               }
                               // Create tenant
@@ -286,10 +287,10 @@ class _CreateTenantPopupState extends State<CreateTenantPopup> {
           if (isUrl) {
             var splitted = text.split(":");
             if (splitted.length != 2) {
-              return "Wrong format for URL: expected host:port";
+              return AppLocalizations.of(context)!.wrongFormatUrl;
             }
             if (int.tryParse(splitted[1]) == null) {
-              return "Wrong format for URL: port should only have digits";
+              return AppLocalizations.of(context)!.wrongFormatPort;
             }
           }
           return null;

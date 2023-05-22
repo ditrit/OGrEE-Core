@@ -121,5 +121,22 @@
   "selectServer": "Choisir serveur",
   "createServer": "Créer backend dans serveur",
   "serverPath": "Chemin d'installation (serveur)",
-  "portServer": "Porte pour le backend (serveur)"
+  "portServer": "Porte pour le backend (serveur)",
+
+  "changePassword": "Modifier mon mot de passe",
+  "currentPassword": "Ancien mot de passe",
+  "newPassword": "Nouveau mot de passe",
+  "confirmPassword": "Confirmation du nouveau mot de passe",
+  "passwordNoMatch": "Confirmation du nouveau mot de passe n'est pas identique",
+
+  "tenantName": "Nom du tenant",
+  "tenantPassword": "Mot de passe (admin)",
+  "apiUrl": "Nouvel URL API",
+  "webUrl": "Nouvel URL Web",
+  "docUrl": "Nouvelle Swagger UI URL",
+  "selectLogo": "Choisir Image Logo",
+  "notLoaded": "pas chargé par l'utilisateur",
+  "failedToUpload": "Logo customisé pas défini :",
+  "wrongFormatUrl": "Mauvais format de l'URL : host:port attendu",
+  "wrongFormatPort": "Mauvais format de l'URL : que des chiffres pour la porte"
 }
