@@ -723,10 +723,10 @@ var DeleteEntity = func(w http.ResponseWriter, r *http.Request) {
 	switch {
 	case e2 && !e: // DELETE by name
 		if strings.Contains(entity, "template") {
-			v, errType = models.DeleteEntityManual(entity, bson.M{"slug": name})
+			v, errType = models.DeleteSingleEntity(entity, bson.M{"slug": name})
 		} else {
 			//use hierarchyName
-			v, errType = models.DeleteEntityByName(entity, name)
+			v, errType = models.DeleteEntityByName(entity, name, user.Roles)
 
 		}
 
@@ -738,14 +738,17 @@ var DeleteEntity = func(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		rnd := bson.M{}
-		models.RequestGen(rnd, user.Roles)
-
-		if entity == "device" {
-			v, _ = models.DeleteDeviceF(objID, rnd)
+		req, ok := models.GetRequestFilterByDomain(user.Roles)
+		if !ok {
+			errType = "permisson"
+			v = u.Message(false, "User does not have permission to delete")
 		} else {
+			if entity == "device" {
+				v, errType = models.DeleteDeviceF(objID, req)
+			} else {
 
-			v, _ = models.DeleteEntity(entity, objID, rnd)
+				v, errType = models.DeleteEntity(entity, objID, req)
+			}
 		}
 
 	default:
@@ -757,6 +760,8 @@ var DeleteEntity = func(w http.ResponseWriter, r *http.Request) {
 	if v["status"] == false {
 		if errType == "domain" {
 			w.WriteHeader(http.StatusBadRequest)
+		} else if errType == "permission" {
+			w.WriteHeader(http.StatusUnauthorized)
 		} else {
 			w.WriteHeader(http.StatusNotFound)
 		}

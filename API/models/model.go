@@ -533,7 +533,7 @@ func GetDBName() string {
 // DeleteEntityByName: delete object of given hierarchyName
 // search for all its children and delete them too, return:
 // - success or fail message map
-func DeleteEntityByName(entity string, name string) (map[string]interface{}, string) {
+func DeleteEntityByName(entity string, name string, userRoles map[string]string) (map[string]interface{}, string) {
 	if entity == "domain" {
 		if name == os.Getenv("db") {
 			return u.Message(false, "Cannot delete tenant's default domain"), "domain"
@@ -543,10 +543,12 @@ func DeleteEntityByName(entity string, name string) (map[string]interface{}, str
 		}
 	}
 
-	var req primitive.M
-	req = bson.M{"hierarchyName": name}
-
-	resp, err := DeleteEntityManual(entity, req)
+	req, ok := GetRequestFilterByDomain(userRoles)
+	if !ok {
+		return u.Message(false, "User does not have permission to delete"), "permission"
+	}
+	req["hierarchyName"] = name
+	resp, err := DeleteSingleEntity(entity, req)
 
 	if err != "" {
 		// Unable to delete given object
@@ -568,7 +570,7 @@ func DeleteEntityByName(entity string, name string) (map[string]interface{}, str
 	return u.Message(true, "success"), ""
 }
 
-func DeleteEntityManual(entity string, req bson.M) (map[string]interface{}, string) {
+func DeleteSingleEntity(entity string, req bson.M) (map[string]interface{}, string) {
 	//Finally delete the Entity
 	ctx, cancel := u.Connect()
 	c, _ := GetDB().Collection(entity).DeleteOne(ctx, req)
@@ -1202,8 +1204,6 @@ func GetEntitiesOfAncestor(id interface{}, req bson.M, ent int, entStr, wantedEn
 //DEV FAMILY FUNCS
 
 func DeleteDeviceF(entityID primitive.ObjectID, req bson.M) (map[string]interface{}, string) {
-	//var deviceType string
-
 	t, e := GetEntityHierarchy(entityID, req, "device", 0, 999, u.RequestFilters{}, nil)
 	if e != "" {
 		return u.Message(false,
@@ -1214,7 +1214,6 @@ func DeleteDeviceF(entityID primitive.ObjectID, req bson.M) (map[string]interfac
 }
 
 func deleteDeviceHelper(t map[string]interface{}) (map[string]interface{}, string) {
-	println("entered ddH")
 	if t != nil {
 
 		if v, ok := t["children"]; ok {

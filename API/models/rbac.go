@@ -32,9 +32,10 @@ func CheckDomainExists(domain string) bool {
 	return e == "" && x != nil
 }
 
-func RequestGen(x map[string]interface{}, userRoles map[string]string) bool {
+func GetRequestFilterByDomain(userRoles map[string]string) (bson.M, bool) {
+	filter := bson.M{}
 	if userRoles[ROOT_DOMAIN] == Manager || userRoles[ROOT_DOMAIN] == User {
-		return true
+		return filter, true
 	}
 	domainPattern := ""
 	for domain, role := range userRoles {
@@ -49,10 +50,10 @@ func RequestGen(x map[string]interface{}, userRoles map[string]string) bool {
 		}
 	}
 	if domainPattern == "" {
-		return false
+		return filter, false
 	} else {
-		x["domain"] = primitive.Regex{Pattern: domainPattern, Options: ""}
-		return true
+		filter["domain"] = primitive.Regex{Pattern: domainPattern, Options: ""}
+		return filter, true
 	}
 }
 
