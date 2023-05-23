@@ -1893,11 +1893,12 @@ var GetEntitiesUsingNamesOfParents = func(w http.ResponseWriter, r *http.Request
 	} else { //We are only retrieving an entity
 		var data map[string]interface{}
 		var e3 string
-		req := bson.M{}
 		if e1 {
-			data, e3 = models.GetEntityUsingSiteAsAncestor(entity, tname, req, ancestry)
+			req := bson.M{"name": tname}
+			data, e3 = models.GetEntityUsingSiteAsAncestor(req, entity, ancestry)
 		} else {
-			data, e3 = models.GetEntityUsingAncestorNames(entity, oID, req, ancestry)
+			req := bson.M{"_id": oID}
+			data, e3 = models.GetEntityUsingAncestorNames(req, entity, ancestry)
 		}
 
 		if len(data) == 0 {

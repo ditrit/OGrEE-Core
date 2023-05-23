@@ -941,15 +941,8 @@ func GetEntitiesUsingAncestorNames(ent string, id primitive.ObjectID, req map[st
 	return nil, ""
 }
 
-func GetEntityUsingAncestorNames(ent string, id primitive.ObjectID, req map[string]interface{}, ancestry []map[string]string) (map[string]interface{}, string) {
-
-	newReq := req
-	if newReq == nil {
-		newReq = bson.M{"_id": id}
-	} else {
-		newReq["_id"] = id
-	}
-	top, e := GetEntity(newReq, ent, u.RequestFilters{}, nil)
+func GetEntityUsingAncestorNames(req map[string]interface{}, ent string, ancestry []map[string]string) (map[string]interface{}, string) {
+	top, e := GetEntity(req, ent, u.RequestFilters{}, nil)
 	if e != "" {
 		return nil, e
 	}
@@ -1115,15 +1108,8 @@ func GetEntitiesUsingSiteAsAncestor(ent, id string, req map[string]interface{}, 
 	return nil, ""
 }
 
-func GetEntityUsingSiteAsAncestor(ent, id string, req map[string]interface{}, ancestry []map[string]string) (map[string]interface{}, string) {
-
-	newReq := req
-	if newReq == nil {
-		newReq = bson.M{"name": id}
-	} else {
-		newReq["name"] = id
-	}
-	top, e := GetEntity(newReq, ent, u.RequestFilters{}, nil)
+func GetEntityUsingSiteAsAncestor(req map[string]interface{}, ent string, ancestry []map[string]string) (map[string]interface{}, string) {
+	top, e := GetEntity(req, ent, u.RequestFilters{}, nil)
 	if e != "" {
 		return nil, e
 	}
