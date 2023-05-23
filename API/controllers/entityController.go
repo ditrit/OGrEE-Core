@@ -2121,7 +2121,7 @@ var ValidateEntity = func(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if entInt != u.BLDGTMPL && entInt != u.ROOMTMPL && entInt != u.OBJTMPL {
-		if ok, _ := models.CheckUserPermissions(user.Roles, entInt, models.WRITE, obj["domain"].(string)); !ok {
+		if permission := models.CheckUserPermissions(user.Roles, entInt, obj["domain"].(string)); permission < models.WRITE {
 			w.WriteHeader(http.StatusMethodNotAllowed)
 			u.Respond(w, u.Message(false, "This user"+
 				" does not have sufficient permissions to create"+

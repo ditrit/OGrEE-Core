@@ -31,7 +31,7 @@ func CreateEntity(entity int, t map[string]interface{}, userRoles map[string]Rol
 		} else {
 			domain = t["domain"].(string)
 		}
-		if ok, _ := CheckUserPermissions(userRoles, entity, WRITE, domain); !ok {
+		if permission := CheckUserPermissions(userRoles, entity, domain); permission < WRITE {
 			return u.Message(false,
 					"User does not have permission to create this object"),
 				"permission"
@@ -142,11 +142,11 @@ func GetEntity(req bson.M, ent string, filters u.RequestFilters, userRoles map[s
 			domain = t["domain"].(string)
 		}
 		if userRoles != nil {
-			if ok, readLevel := CheckUserPermissions(userRoles, u.EntityStrToInt(ent), READ, domain); !ok {
+			if permission := CheckUserPermissions(userRoles, u.EntityStrToInt(ent), domain); permission == NONE {
 				return u.Message(false,
 						"User does not have permission to see this object"),
 					"permission"
-			} else if readLevel == READONLYNAME {
+			} else if permission == READONLYNAME {
 				t = FixReadOnlyName(t)
 			}
 		}
@@ -1248,8 +1248,8 @@ func ExtractCursor(c *mongo.Cursor, ctx context.Context, entity int, userRoles m
 			} else {
 				domain = x["domain"].(string)
 			}
-			if ok, readLevel := CheckUserPermissions(userRoles, entity, READ, domain); ok {
-				if readLevel == READONLYNAME {
+			if permission := CheckUserPermissions(userRoles, entity, domain); permission >= READONLYNAME {
+				if permission == READONLYNAME {
 					x = FixReadOnlyName(x)
 				}
 				ans = append(ans, x)
