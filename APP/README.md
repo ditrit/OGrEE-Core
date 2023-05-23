@@ -10,9 +10,9 @@ With Flutter, we can use the same base code to build applications for different 
 ### Building and running with Docker
 Our dockerfile is multi-stage: the first image install flutter and its dependencies, then compiles the web app; the second image is nginx based and runs the web server for the previously compiled app.
 
-To build the Docker image:
+From the root of OGrEE-Core, run the following to build the Docker image:
 ```console
-docker build . -t ogree-app 
+OGrEE-Core$ docker build -f .\APP\Dockerfile . -t ogree-app
 ```
 
 To run a container with the built image and expose the app in the local port 8080:
