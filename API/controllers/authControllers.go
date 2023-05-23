@@ -445,9 +445,9 @@ var ModifyUserRoles = func(w http.ResponseWriter, r *http.Request) {
 			u.Respond(w, u.Message(false, "Only 'roles' should be provided to patch"))
 			return
 		}
-		rolesConverted := map[string]string{}
+		rolesConverted := map[string]models.Role{}
 		for k := range roles {
-			if v, ok := roles[k].(string); ok {
+			if v, ok := roles[k].(models.Role); ok {
 				rolesConverted[k] = v
 			} else {
 				w.WriteHeader(http.StatusBadRequest)

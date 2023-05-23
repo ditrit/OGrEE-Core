@@ -28,7 +28,7 @@ type Account struct {
 	Name     string             `bson:"name" json:"name"`
 	Email    string             `bson:"email" json:"email"`
 	Password string             `bson:"password" json:"password"`
-	Roles    map[string]string  `bson:"roles" json:"roles"`
+	Roles    map[string]Role    `bson:"roles" json:"roles"`
 	Token    string             `bson:"token,omitempty" json:"token,omitempty"`
 }
 
@@ -66,7 +66,7 @@ func (account *Account) Validate() (map[string]interface{}, bool) {
 	return u.Message(false, "Requirement passed"), true
 }
 
-func validateDomainRoles(roles map[string]string) string {
+func validateDomainRoles(roles map[string]Role) string {
 	// Validate domains and roles
 	if len(roles) <= 0 {
 		return "Object 'roles' with domain names as keys and roles as values is mandatory"
@@ -87,7 +87,7 @@ func validateDomainRoles(roles map[string]string) string {
 	return ""
 }
 
-func (account *Account) Create(callerRoles map[string]string) (map[string]interface{}, string) {
+func (account *Account) Create(callerRoles map[string]Role) (map[string]interface{}, string) {
 	// Check if user is allowed to create new users
 	if !CheckCanManageUser(callerRoles, account.Roles) {
 		return u.Message(false,
@@ -247,7 +247,7 @@ func GetUserByEmail(email string) *Account {
 	return acc
 }
 
-func GetAllUsers(callerRoles map[string]string) ([]Account, string) {
+func GetAllUsers(callerRoles map[string]Role) ([]Account, string) {
 	// Get all users
 	ctx, cancel := u.Connect()
 	c, err := GetDB().Collection("account").Find(ctx, bson.M{})
@@ -285,7 +285,7 @@ func DeleteUser(userId primitive.ObjectID) string {
 	return ""
 }
 
-func ModifyUser(id string, roles map[string]string) (string, string) {
+func ModifyUser(id string, roles map[string]Role) (string, string) {
 	objID, err := primitive.ObjectIDFromHex(id)
 	if err != nil {
 		return "User ID not valid", "validate"

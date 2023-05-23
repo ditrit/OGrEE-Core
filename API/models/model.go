@@ -17,7 +17,7 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
-func CreateEntity(entity int, t map[string]interface{}, userRoles map[string]string) (map[string]interface{}, string) {
+func CreateEntity(entity int, t map[string]interface{}, userRoles map[string]Role) (map[string]interface{}, string) {
 	message := ""
 	if resp, ok := ValidateEntity(entity, t); !ok {
 		return resp, "validate"
@@ -79,7 +79,7 @@ func CreateEntity(entity int, t map[string]interface{}, userRoles map[string]str
 }
 
 // GetObjectByName: search for hierarchyName in all possible collections
-func GetObjectByName(hierarchyName string, filters u.RequestFilters, userRoles map[string]string) (map[string]interface{}, string) {
+func GetObjectByName(hierarchyName string, filters u.RequestFilters, userRoles map[string]Role) (map[string]interface{}, string) {
 	var resp map[string]interface{}
 	// Get possible collections for this name
 	rangeEntities := u.HierachyNameToEntity(hierarchyName)
@@ -102,7 +102,7 @@ func GetObjectByName(hierarchyName string, filters u.RequestFilters, userRoles m
 	}
 }
 
-func GetEntity(req bson.M, ent string, filters u.RequestFilters, userRoles map[string]string) (map[string]interface{}, string) {
+func GetEntity(req bson.M, ent string, filters u.RequestFilters, userRoles map[string]Role) (map[string]interface{}, string) {
 	t := map[string]interface{}{}
 	ctx, cancel := u.Connect()
 	var e error
@@ -183,7 +183,7 @@ func getDateFilters(req bson.M, filters u.RequestFilters) error {
 	return nil
 }
 
-func GetManyEntities(ent string, req bson.M, filters u.RequestFilters, userRoles map[string]string) ([]map[string]interface{}, string) {
+func GetManyEntities(ent string, req bson.M, filters u.RequestFilters, userRoles map[string]Role) ([]map[string]interface{}, string) {
 	ctx, cancel := u.Connect()
 	var err error
 	var c *mongo.Cursor
@@ -234,7 +234,7 @@ func GetManyEntities(ent string, req bson.M, filters u.RequestFilters, userRoles
 //   - categories: map with category name as key and corresponding objects
 //     as an array value
 //     categories: {categoryName:[children]}
-func GetCompleteDomainHierarchy(userRoles map[string]string) (map[string]interface{}, string) {
+func GetCompleteDomainHierarchy(userRoles map[string]Role) (map[string]interface{}, string) {
 	response := make(map[string]interface{})
 	hierarchy := make(map[string][]string)
 
@@ -275,7 +275,7 @@ func GetCompleteDomainHierarchy(userRoles map[string]string) (map[string]interfa
 //   - categories: map with category name as key and corresponding objects
 //     as an array value
 //     categories: {categoryName:[children]}
-func GetCompleteHierarchy(userRoles map[string]string) (map[string]interface{}, string) {
+func GetCompleteHierarchy(userRoles map[string]Role) (map[string]interface{}, string) {
 	response := make(map[string]interface{})
 	categories := make(map[string][]string)
 	hierarchy := make(map[string][]string)
@@ -332,7 +332,7 @@ func fillHierarchyMap(hierarchyName string, data map[string][]string) {
 	}
 }
 
-func GetCompleteHierarchyAttributes(userRoles map[string]string) (map[string]interface{}, string) {
+func GetCompleteHierarchyAttributes(userRoles map[string]Role) (map[string]interface{}, string) {
 	response := make(map[string]interface{})
 	// Get all collections names
 	ctx, cancel := u.Connect()
@@ -533,7 +533,7 @@ func GetDBName() string {
 // DeleteEntityByName: delete object of given hierarchyName
 // search for all its children and delete them too, return:
 // - success or fail message map
-func DeleteEntityByName(entity string, name string, userRoles map[string]string) (map[string]interface{}, string) {
+func DeleteEntityByName(entity string, name string, userRoles map[string]Role) (map[string]interface{}, string) {
 	if entity == "domain" {
 		if name == os.Getenv("db") {
 			return u.Message(false, "Cannot delete tenant's default domain"), "domain"
@@ -689,7 +689,7 @@ func updateOldObjWithPatch(old map[string]interface{}, patch map[string]interfac
 	return ""
 }
 
-func UpdateEntity(ent string, req bson.M, t map[string]interface{}, isPatch bool, userRoles map[string]string) (map[string]interface{}, string) {
+func UpdateEntity(ent string, req bson.M, t map[string]interface{}, isPatch bool, userRoles map[string]Role) (map[string]interface{}, string) {
 	var e *mongo.SingleResult
 	updatedDoc := bson.M{}
 	retDoc := options.ReturnDocument(options.After)
@@ -800,7 +800,7 @@ func propagateParentNameChange(ctx context.Context, oldParentName, newName strin
 	}
 }
 
-func GetEntityHierarchy(ID primitive.ObjectID, req bson.M, ent string, start, end int, filters u.RequestFilters, userRoles map[string]string) (map[string]interface{}, string) {
+func GetEntityHierarchy(ID primitive.ObjectID, req bson.M, ent string, start, end int, filters u.RequestFilters, userRoles map[string]Role) (map[string]interface{}, string) {
 	var childEnt string
 
 	if start < end {
@@ -895,7 +895,7 @@ func GetEntityHierarchy(ID primitive.ObjectID, req bson.M, ent string, start, en
 	return nil, ""
 }
 
-func GetEntitiesUsingAncestorNames(ent string, id primitive.ObjectID, req map[string]interface{}, ancestry []map[string]string, userRoles map[string]string) ([]map[string]interface{}, string) {
+func GetEntitiesUsingAncestorNames(ent string, id primitive.ObjectID, req map[string]interface{}, ancestry []map[string]string, userRoles map[string]Role) ([]map[string]interface{}, string) {
 
 	newReq := req
 	if newReq == nil {
@@ -1071,7 +1071,7 @@ func getChildrenCollections(limit int, parentEntStr string) []int {
 	return rangeEntities
 }
 
-func GetEntitiesUsingSiteAsAncestor(ent, id string, req map[string]interface{}, ancestry []map[string]string, userRoles map[string]string) ([]map[string]interface{}, string) {
+func GetEntitiesUsingSiteAsAncestor(ent, id string, req map[string]interface{}, ancestry []map[string]string, userRoles map[string]Role) ([]map[string]interface{}, string) {
 
 	newReq := req
 	if newReq == nil {
@@ -1242,7 +1242,7 @@ func deleteDeviceHelper(t map[string]interface{}) (map[string]interface{}, strin
 	return nil, ""
 }
 
-func ExtractCursor(c *mongo.Cursor, ctx context.Context, entity int, userRoles map[string]string) ([]map[string]interface{}, string) {
+func ExtractCursor(c *mongo.Cursor, ctx context.Context, entity int, userRoles map[string]Role) ([]map[string]interface{}, string) {
 	ans := []map[string]interface{}{}
 	for c.Next(ctx) {
 		x := map[string]interface{}{}

@@ -2,6 +2,7 @@ package models
 
 import (
 	u "p3/utils"
+	"regexp"
 	"strings"
 
 	"go.mongodb.org/mongo-driver/bson"
@@ -9,17 +10,22 @@ import (
 )
 
 // Roles
+type Role string
+
 const (
-	Manager = "manager"
-	User    = "user"
-	Viewer  = "viewer"
+	Manager Role = "manager"
+	User    Role = "user"
+	Viewer  Role = "viewer"
 )
 
 // Actions
+type Permission int
+
 const (
-	READ = iota
+	READ Permission = iota
 	WRITE
 	READONLYNAME
+	NONE
 )
 
 const ROOT_DOMAIN = "*"
@@ -32,7 +38,7 @@ func CheckDomainExists(domain string) bool {
 	return e == "" && x != nil
 }
 
-func GetRequestFilterByDomain(userRoles map[string]string) (bson.M, bool) {
+func GetRequestFilterByDomain(userRoles map[string]Role) (bson.M, bool) {
 	filter := bson.M{}
 	if userRoles[ROOT_DOMAIN] == Manager || userRoles[ROOT_DOMAIN] == User {
 		return filter, true
@@ -57,29 +63,28 @@ func GetRequestFilterByDomain(userRoles map[string]string) (bson.M, bool) {
 	}
 }
 
-func CheckUserPermissions(userRoles map[string]string, objEntity, requestType int, objDomain string) (bool, int) {
+func CheckUserPermissions(userRoles map[string]Role, objEntity int, requestType Permission, objDomain string) (bool, Permission) {
 	if objEntity == u.DOMAIN {
 		if userRoles[ROOT_DOMAIN] == Manager {
 			return true, WRITE
 		}
 		for userDomain, role := range userRoles {
-			if role == Manager && strings.Contains(objDomain, userDomain) {
+			if match, _ := regexp.MatchString("^"+userDomain, objDomain); match && role == Manager {
 				return true, WRITE
 			}
 		}
-
 	} else {
 		if requestType == READ {
 			if userRoles[ROOT_DOMAIN] != "" {
 				return true, READ
 			}
-			action := -1
+			action := NONE
 			for userDomain := range userRoles {
-				if strings.Contains(objDomain, userDomain) {
+				if match, _ := regexp.MatchString("^"+userDomain, objDomain); match {
 					//objDomain is equal or child of userDomain
 					action = READ
 					break
-				} else if strings.Contains(objDomain, userDomain) {
+				} else if match, _ := regexp.MatchString("^"+objDomain, userDomain); match {
 					// objDomain is father of userDomain
 					action = READONLYNAME
 				}
@@ -93,7 +98,7 @@ func CheckUserPermissions(userRoles map[string]string, objEntity, requestType in
 				return true, WRITE
 			}
 			for userDomain, role := range userRoles {
-				if role != Viewer && strings.Contains(objDomain, userDomain) {
+				if match, _ := regexp.MatchString("^"+userDomain, objDomain); match && role != Viewer {
 					return true, WRITE
 				}
 			}
@@ -102,7 +107,7 @@ func CheckUserPermissions(userRoles map[string]string, objEntity, requestType in
 	return false, -1
 }
 
-func CheckCanManageUser(callerRoles map[string]string, newUserRoles map[string]string) bool {
+func CheckCanManageUser(callerRoles map[string]Role, newUserRoles map[string]Role) bool {
 	if callerRoles[ROOT_DOMAIN] != Manager {
 		for newUserDomain := range newUserRoles {
 			roleValidated := false
