@@ -693,12 +693,16 @@ func UpdateEntity(ent string, req bson.M, t map[string]interface{}, isPatch bool
 	var e *mongo.SingleResult
 	updatedDoc := bson.M{}
 	retDoc := options.ReturnDocument(options.After)
+	entInt := u.EntityStrToInt(ent)
 
 	//Update timestamp requires first obj retrieval
 	//there isn't any way for mongoDB to make a field
 	//immutable in a document
 	oldObj, e1 := GetEntity(req, ent, u.RequestFilters{}, userRoles)
 	if e1 != "" {
+		if e1 == "permission" {
+			return oldObj, e1
+		}
 		return u.Message(false, "Error: "+e1), e1
 	}
 	t["lastUpdated"] = primitive.NewDateTimeFromTime(time.Now())
@@ -727,6 +731,18 @@ func UpdateEntity(ent string, req bson.M, t map[string]interface{}, isPatch bool
 	if !ok {
 		return msg, "invalid"
 	}
+
+	// Check user permissions in case domain is being updated
+	if entInt != u.DOMAIN && entInt != u.BLDGTMPL && entInt != u.ROOMTMPL && entInt != u.OBJTMPL &&
+		(oldObj["domain"] != t["domain"]) {
+		if permission := CheckUserPermissions(userRoles, entInt, t["domain"].(string)); permission < WRITE {
+			return u.Message(false,
+					"User does not have permission to create this object"),
+				"permission"
+		}
+	}
+
+	// Update database
 	e = GetDB().Collection(ent).FindOneAndReplace(ctx,
 		req, t,
 		&options.FindOneAndReplaceOptions{ReturnDocument: &retDoc})
