@@ -1392,6 +1392,12 @@ func (n *createUserNode) execute() (interface{}, error) {
 	return nil, nil
 }
 
+type changePasswordNode struct{}
+
+func (n *changePasswordNode) execute() (interface{}, error) {
+	return nil, cmd.ChangePassword()
+}
+
 type uiDelayNode struct {
 	time float64
 }

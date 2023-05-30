@@ -1680,6 +1680,7 @@ func parseCommand(frame Frame) (node, Frame, *ParserError) {
 			"lsenterprise": &lsenterpriseNode{},
 			"pwd":          &pwdNode{},
 			"exit":         &exitNode{},
+			"changepw":     &changePasswordNode{},
 		}
 	}
 	commands := []node{}

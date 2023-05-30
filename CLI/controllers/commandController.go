@@ -4,6 +4,7 @@ import (
 	"cli/logger"
 	l "cli/logger"
 	"cli/models"
+	"cli/readline"
 	"cli/utils"
 	u "cli/utils"
 	"encoding/hex"
@@ -3598,5 +3599,36 @@ func CreateUser(email string, role string, domain string) error {
 	}
 	println(message)
 	println("password:" + password)
+	return nil
+}
+
+func ChangePassword() error {
+	currentPassword, err := readline.Password("Current password: ")
+	if err != nil {
+		return err
+	}
+	newPassword, err := readline.Password("New password: ")
+	if err != nil {
+		return err
+	}
+	URL := State.APIURL + "/api/users/password/change"
+	data := map[string]any{
+		"currentPassword": string(currentPassword),
+		"newPassword":     string(newPassword),
+	}
+	response, err := models.Send("POST", URL, GetKey(), data)
+	if err != nil {
+		return err
+	}
+	responseBody := ParseResponse(response, err, "change password")
+	status, statusOk := responseBody["status"].(bool)
+	message, messageOk := responseBody["message"].(string)
+	if responseBody == nil || !statusOk || !messageOk {
+		return fmt.Errorf("invalid response")
+	}
+	if response.StatusCode != http.StatusOK || !status {
+		return fmt.Errorf(message)
+	}
+	println(message)
 	return nil
 }
