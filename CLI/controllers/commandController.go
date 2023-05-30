@@ -10,6 +10,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"math/rand"
 	"net/http"
 	"os"
 	"os/exec"
@@ -3560,5 +3561,42 @@ func fetchTemplate(name string, objType int) map[string]interface{} {
 		}
 	}
 
+	return nil
+}
+
+func randPassword(n int) string {
+	const passChars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
+	b := make([]byte, n)
+	for i := range b {
+		b[i] = passChars[rand.Intn(len(passChars))]
+	}
+	return string(b)
+}
+
+func CreateUser(email string, role string, domain string) error {
+	URL := State.APIURL + "/api/users"
+	password := randPassword(14)
+	data := map[string]any{
+		"email":    email,
+		"password": password,
+		"roles": map[string]any{
+			domain: role,
+		},
+	}
+	response, err := models.Send("POST", URL, GetKey(), data)
+	if err != nil {
+		return err
+	}
+	responseBody := ParseResponse(response, err, "create user")
+	status, statusOk := responseBody["status"].(bool)
+	message, messageOk := responseBody["message"].(string)
+	if responseBody == nil || !statusOk || !messageOk {
+		return fmt.Errorf("invalid response")
+	}
+	if response.StatusCode != http.StatusCreated || !status {
+		return fmt.Errorf(message)
+	}
+	println(message)
+	println("password:" + password)
 	return nil
 }

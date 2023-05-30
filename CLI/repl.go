@@ -14,6 +14,7 @@ import (
 	l "cli/logger"
 	"cli/readline"
 	"fmt"
+	"strings"
 )
 
 func InterpretLine(str string) {
@@ -32,7 +33,12 @@ func InterpretLine(str string) {
 			if traceErr, ok := err.(*stackTraceError); ok {
 				fmt.Println(traceErr.Error())
 			} else {
-				fmt.Println("Error : " + err.Error())
+				errMsg := err.Error()
+				if strings.Contains(strings.ToLower(errMsg), "error") {
+					fmt.Println(errMsg)
+				} else {
+					fmt.Println("Error :", errMsg)
+				}
 			}
 		}
 	}
