@@ -27,6 +27,7 @@ class _CreateServerPopupState extends State<CreateServerPopup> {
   String? _port;
   bool _isLoading = false;
   AuthOption? _authOption = AuthOption.pKey;
+  bool _shouldStartup = false;
 
   @override
   Widget build(BuildContext context) {
@@ -131,7 +132,30 @@ class _CreateServerPopupState extends State<CreateServerPopup> {
                       label: localeMsg.portServer,
                       icon: Icons.onetwothree,
                       formatters: [FilteringTextInputFormatter.digitsOnly]),
-                  const SizedBox(height: 40),
+                  const SizedBox(height: 13),
+                  Row(
+                    children: [
+                      const SizedBox(width: 40),
+                      SizedBox(
+                        height: 24,
+                        width: 24,
+                        child: Checkbox(
+                          value: _shouldStartup,
+                          onChanged: (bool? value) =>
+                              setState(() => _shouldStartup = value!),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Text(
+                        "Run at startup",
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: Colors.black,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.end,
                     children: [
@@ -153,23 +177,24 @@ class _CreateServerPopupState extends State<CreateServerPopup> {
                               setState(() {
                                 _isLoading = true;
                               });
-
-                              var response = _authOption == AuthOption.pKey
-                                  ? await createBackendServer(<String, String>{
-                                      'host': _sshHost!,
-                                      'user': _sshUser!,
-                                      'pkey': _sshKey!,
-                                      'pkeypass': _sshKeyPass.toString(),
-                                      'dstpath': _installPath!,
-                                      'runport': _port!,
-                                    })
-                                  : await createBackendServer(<String, String>{
-                                      'host': _sshHost!,
-                                      'user': _sshUser!,
-                                      'password': _sshPassword!,
-                                      'dstpath': _installPath!,
-                                      'runport': _port!,
-                                    });
+                              Map<String, dynamic> serverInfo =
+                                  <String, dynamic>{
+                                'host': _sshHost!,
+                                'user': _sshUser!,
+                                'dstpath': _installPath!,
+                                'runport': _port!,
+                                'startup': _shouldStartup,
+                              };
+                              if (_authOption == AuthOption.pKey) {
+                                serverInfo.addAll({
+                                  'pkey': _sshKey!,
+                                  'pkeypass': _sshKeyPass.toString(),
+                                });
+                              } else {
+                                serverInfo['password'] = _sshPassword!;
+                              }
+                              var response =
+                                  await createBackendServer(serverInfo);
                               if (response == "") {
                                 widget.parentCallback();
                                 showSnackBar(context, localeMsg.createOK,

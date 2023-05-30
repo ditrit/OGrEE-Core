@@ -16,13 +16,14 @@ import (
 )
 
 type backendServer struct {
-	Host     string `json:"host" binding:"required"`
-	User     string `json:"user" binding:"required"`
-	Password string `json:"password"`
-	Pkey     string `json:"pkey"`
-	PkeyPass string `json:"pkeypass"`
-	DstPath  string `json:"dstpath" binding:"required"`
-	RunPort  string `json:"runport" binding:"required"`
+	Host      string `json:"host" binding:"required"`
+	User      string `json:"user" binding:"required"`
+	Password  string `json:"password"`
+	Pkey      string `json:"pkey"`
+	PkeyPass  string `json:"pkeypass"`
+	DstPath   string `json:"dstpath" binding:"required"`
+	RunPort   string `json:"runport" binding:"required"`
+	AtStartup bool   `json:"startup"`
 }
 
 // Add a binary of this same backend in another server
