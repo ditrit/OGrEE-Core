@@ -528,20 +528,20 @@ var GetEntity = func(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if data == nil {
+	if e1 != "" {
 		resp = u.Message(false, "Error while getting "+entityStr+": "+e1)
 		u.ErrLog("Error while getting "+entityStr, "GET "+strings.ToUpper(entityStr), "", r)
 
 		switch e1 {
 		case "record not found":
 			w.WriteHeader(http.StatusNotFound)
-
 		case "mongo: no documents in result":
 			resp = u.Message(false, "Error while getting :"+entityStr+", No Objects Found!")
 			w.WriteHeader(http.StatusNotFound)
-
 		case "invalid request":
 			w.WriteHeader(http.StatusBadRequest)
+		case "permission":
+			w.WriteHeader(http.StatusUnauthorized)
 		default:
 			w.WriteHeader(http.StatusNotFound) //For now
 		}
@@ -2122,7 +2122,7 @@ var ValidateEntity = func(w http.ResponseWriter, r *http.Request) {
 
 	if entInt != u.BLDGTMPL && entInt != u.ROOMTMPL && entInt != u.OBJTMPL {
 		if permission := models.CheckUserPermissions(user.Roles, entInt, obj["domain"].(string)); permission < models.WRITE {
-			w.WriteHeader(http.StatusMethodNotAllowed)
+			w.WriteHeader(http.StatusUnauthorized)
 			u.Respond(w, u.Message(false, "This user"+
 				" does not have sufficient permissions to create"+
 				" this object under this domain "))
