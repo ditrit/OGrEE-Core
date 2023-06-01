@@ -146,7 +146,7 @@ func addTenant(c *gin.Context) {
 		tenantLower := strings.ToLower(newTenant.Name)
 
 		// Docker compose prepare
-		args := []string{"-p", tenantLower}
+		args := []string{"compose", "-p", tenantLower}
 		if newTenant.HasWeb {
 			args = append(args, "--profile")
 			args = append(args, "web")
@@ -179,7 +179,7 @@ func addTenant(c *gin.Context) {
 		println("Run docker (may take a long time...)")
 
 		// Run docker
-		cmd := exec.Command("docker-compose", args...)
+		cmd := exec.Command("docker", args...)
 		cmd.Dir = DOCKER_DIR
 		var stderr bytes.Buffer
 		cmd.Stderr = &stderr
@@ -193,7 +193,7 @@ func addTenant(c *gin.Context) {
 		// Add to local json and respond
 		listTenants = append(listTenants, newTenant)
 		data, _ := json.MarshalIndent(listTenants, "", "  ")
-		_ = ioutil.WriteFile("tenants.json", data, 0644)
+		_ = ioutil.WriteFile("tenants.json", data, 0755)
 		c.IndentedJSON(http.StatusOK, "all good")
 	}
 
@@ -201,7 +201,7 @@ func addTenant(c *gin.Context) {
 
 func addAppAssets(newTenant tenant) {
 	// Create flutter assets folder with .env
-	err := os.MkdirAll(newTenant.AssetsDir, 0644)
+	err := os.MkdirAll(newTenant.AssetsDir, 0755)
 	if err != nil && !strings.Contains(err.Error(), "already") {
 		println(err.Error())
 	}
@@ -248,7 +248,7 @@ func addTenantLogo(c *gin.Context) {
 	}
 	// Make sure destination dir is created
 	assetsDir := DOCKER_DIR + "app-deploy/" + tenantName
-	err = os.MkdirAll(assetsDir, 0644)
+	err = os.MkdirAll(assetsDir, 0755)
 	if err != nil && !strings.Contains(err.Error(), "already") {
 		c.String(http.StatusInternalServerError, err.Error())
 	}
@@ -293,6 +293,6 @@ func removeTenant(c *gin.Context) {
 		}
 	}
 	data, _ = json.MarshalIndent(listTenants, "", "  ")
-	_ = ioutil.WriteFile("tenants.json", data, 0644)
+	_ = ioutil.WriteFile("tenants.json", data, 0755)
 	c.IndentedJSON(http.StatusOK, "all good")
 }
