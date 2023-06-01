@@ -1,3 +1,4 @@
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -27,6 +28,7 @@ class _CreateTenantPopupState extends State<CreateTenantPopup> {
   bool _hasWeb = true;
   bool _hasDoc = false;
   bool _isLoading = false;
+  PlatformFile? _loadedImage;
 
   @override
   Widget build(BuildContext context) {
@@ -64,11 +66,11 @@ class _CreateTenantPopupState extends State<CreateTenantPopup> {
                   const Divider(height: 45),
                   getFormField(
                       save: (newValue) => _tenantName = newValue,
-                      label: "Tenant Name",
+                      label: localeMsg.tenantName,
                       icon: Icons.business_center),
                   getFormField(
                       save: (newValue) => _tenantPassword = newValue,
-                      label: "Tenant Admin Password",
+                      label: localeMsg.tenantPassword,
                       icon: Icons.lock),
                   const SizedBox(height: 8),
                   Wrap(
@@ -100,7 +102,7 @@ class _CreateTenantPopupState extends State<CreateTenantPopup> {
                       _apiUrl = splitted[0];
                       _apiPort = splitted[1];
                     },
-                    label: "New API URL (hostname:port)",
+                    label: "${localeMsg.apiUrl} (hostname:port)",
                     icon: Icons.cloud,
                     prefix: "http://",
                     isUrl: true,
@@ -112,10 +114,47 @@ class _CreateTenantPopupState extends State<CreateTenantPopup> {
                             _webUrl = splitted[0];
                             _webPort = splitted[1];
                           },
-                          label: "New Web URL (hostname:port)",
+                          label: "${localeMsg.webUrl} (hostname:port)",
                           icon: Icons.monitor,
                           prefix: "http://",
                           isUrl: true,
+                        )
+                      : Container(),
+                  _hasWeb
+                      ? Padding(
+                          padding: const EdgeInsets.only(top: 8.0),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.end,
+                            children: [
+                              Padding(
+                                padding: const EdgeInsets.only(right: 20),
+                                child: _loadedImage == null
+                                    ? Image.asset(
+                                        "assets/custom/logo.png",
+                                        height: 40,
+                                      )
+                                    : Image.memory(
+                                        _loadedImage!.bytes!,
+                                        height: 40,
+                                      ),
+                              ),
+                              ElevatedButton.icon(
+                                  onPressed: () async {
+                                    FilePickerResult? result =
+                                        await FilePicker.platform.pickFiles(
+                                            type: FileType.custom,
+                                            allowedExtensions: ["png"],
+                                            withData: true);
+                                    if (result != null) {
+                                      setState(() {
+                                        _loadedImage = result.files.single;
+                                      });
+                                    }
+                                  },
+                                  icon: const Icon(Icons.download),
+                                  label: Text(localeMsg.selectLogo)),
+                            ],
+                          ),
                         )
                       : Container(),
                   _hasDoc
@@ -125,13 +164,13 @@ class _CreateTenantPopupState extends State<CreateTenantPopup> {
                             _docUrl = splitted[0];
                             _docPort = splitted[1];
                           },
-                          label: "New Swagger UI URL (hostname:port)",
+                          label: "${localeMsg.docUrl} (hostname:port)",
                           icon: Icons.book,
                           prefix: "http://",
                           isUrl: true,
                         )
                       : Container(),
-                  const SizedBox(height: 40),
+                  const SizedBox(height: 30),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.end,
                     children: [
@@ -153,7 +192,19 @@ class _CreateTenantPopupState extends State<CreateTenantPopup> {
                               setState(() {
                                 _isLoading = true;
                               });
-                              var response = await createTenant(Tenant(
+                              // Load logo first, if provided
+                              String response = localeMsg.notLoaded;
+                              if (_loadedImage != null) {
+                                response = await uploadImage(
+                                    _loadedImage!, _tenantName!);
+                                print(response);
+                                if (response != "") {
+                                  showSnackBar(context,
+                                      "${localeMsg.failedToUpload} $response");
+                                }
+                              }
+                              // Create tenant
+                              response = await createTenant(Tenant(
                                   _tenantName!,
                                   _tenantPassword!,
                                   _apiUrl!,
@@ -236,10 +287,10 @@ class _CreateTenantPopupState extends State<CreateTenantPopup> {
           if (isUrl) {
             var splitted = text.split(":");
             if (splitted.length != 2) {
-              return "Wrong format for URL: expected host:port";
+              return AppLocalizations.of(context)!.wrongFormatUrl;
             }
             if (int.tryParse(splitted[1]) == null) {
-              return "Wrong format for URL: port should only have digits";
+              return AppLocalizations.of(context)!.wrongFormatPort;
             }
           }
           return null;

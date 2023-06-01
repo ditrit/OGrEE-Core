@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:ogree_app/common/api_backend.dart';
 import 'package:ogree_app/common/snackbar.dart';
@@ -104,16 +105,16 @@ class _LoginPageState extends State<LoginPage> {
                                           .headlineMedium,
                                     ),
                                   ),
-                            forgot ? Container() : const SizedBox(height: 25),
-                            allowBackChoice
+                            forgot ? Container() : const SizedBox(height: 20),
+                            dotenv.env['ALLOW_SET_BACK'] == "true"
                                 ? backendInput()
                                 : Center(
                                     child: Image.asset(
-                                      "assets/edf_logo.png",
-                                      height: 30,
+                                      "assets/custom/logo.png",
+                                      height: 40,
                                     ),
                                   ),
-                            const SizedBox(height: 32),
+                            const SizedBox(height: 30),
                             TextFormField(
                               onSaved: (newValue) => _email = newValue,
                               validator: (text) {
@@ -294,7 +295,10 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   backendInput() {
-    final options = backendUrl.split(",");
+    List<String> options = [];
+    if (dotenv.env['BACK_URLS'] != null) {
+      options = dotenv.env['BACK_URLS']!.split(",");
+    }
     final localeMsg = AppLocalizations.of(context)!;
     return RawAutocomplete<String>(
       optionsBuilder: (TextEditingValue textEditingValue) {
@@ -357,13 +361,3 @@ class _LoginPageState extends State<LoginPage> {
     );
   }
 }
-
-String backendUrl = const String.fromEnvironment(
-  'BACK_URLS',
-  defaultValue: 'http://localhost:3001',
-);
-
-bool allowBackChoice = const bool.fromEnvironment(
-  'ALLOW_SET_BACK',
-  defaultValue: true,
-);

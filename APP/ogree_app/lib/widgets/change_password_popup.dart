@@ -39,7 +39,7 @@ class _ChangePasswordPopupState extends State<ChangePasswordPopup> {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Text(
-                    "Change password",
+                    localeMsg.changePassword,
                     style: GoogleFonts.inter(
                       fontSize: 22,
                       color: Colors.black,
@@ -49,13 +49,13 @@ class _ChangePasswordPopupState extends State<ChangePasswordPopup> {
                   const SizedBox(height: 20),
                   getFormField(
                       save: (newValue) => _oldPassword = newValue,
-                      label: "Current Password"),
+                      label: localeMsg.currentPassword),
                   getFormField(
                       save: (newValue) => _newPassword = newValue,
-                      label: "New Password"),
+                      label: localeMsg.newPassword),
                   getFormField(
                       save: (newValue) => _confirmPass = newValue,
-                      label: "Confirm New Password"),
+                      label: localeMsg.confirmPassword),
                   const SizedBox(height: 30),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.end,
@@ -76,8 +76,7 @@ class _ChangePasswordPopupState extends State<ChangePasswordPopup> {
                             if (_formKey.currentState!.validate()) {
                               _formKey.currentState!.save();
                               if (_newPassword != _confirmPass) {
-                                showSnackBar(
-                                    context, "Password fields do no match",
+                                showSnackBar(context, localeMsg.passwordNoMatch,
                                     isError: true);
                                 return;
                               }
@@ -89,7 +88,6 @@ class _ChangePasswordPopupState extends State<ChangePasswordPopup> {
                                 response = await changeUserPassword(
                                     _oldPassword!, _newPassword!);
                                 if (response == "") {
-                                  // widget.parentCallback();
                                   showSnackBar(context, localeMsg.modifyOK,
                                       isSuccess: true);
                                   Navigator.of(context).pop();

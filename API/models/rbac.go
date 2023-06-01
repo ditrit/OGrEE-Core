@@ -30,6 +30,11 @@ const (
 
 const ROOT_DOMAIN = "*"
 
+func CheckParentDomain(parentDomain, childDomain string) bool {
+	match, _ := regexp.MatchString("^"+parentDomain, childDomain)
+	return match
+}
+
 func CheckDomainExists(domain string) bool {
 	if domain == ROOT_DOMAIN {
 		return true

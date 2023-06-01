@@ -4,12 +4,14 @@ import (
 	"cli/logger"
 	l "cli/logger"
 	"cli/models"
+	"cli/readline"
 	"cli/utils"
 	u "cli/utils"
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
 	"log"
+	"math/rand"
 	"net/http"
 	"os"
 	"os/exec"
@@ -3560,5 +3562,73 @@ func fetchTemplate(name string, objType int) map[string]interface{} {
 		}
 	}
 
+	return nil
+}
+
+func randPassword(n int) string {
+	const passChars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
+	b := make([]byte, n)
+	for i := range b {
+		b[i] = passChars[rand.Intn(len(passChars))]
+	}
+	return string(b)
+}
+
+func CreateUser(email string, role string, domain string) error {
+	URL := State.APIURL + "/api/users"
+	password := randPassword(14)
+	data := map[string]any{
+		"email":    email,
+		"password": password,
+		"roles": map[string]any{
+			domain: role,
+		},
+	}
+	response, err := models.Send("POST", URL, GetKey(), data)
+	if err != nil {
+		return err
+	}
+	responseBody := ParseResponse(response, err, "create user")
+	status, statusOk := responseBody["status"].(bool)
+	message, messageOk := responseBody["message"].(string)
+	if responseBody == nil || !statusOk || !messageOk {
+		return fmt.Errorf("invalid response")
+	}
+	if response.StatusCode != http.StatusCreated || !status {
+		return fmt.Errorf(message)
+	}
+	println(message)
+	println("password:" + password)
+	return nil
+}
+
+func ChangePassword() error {
+	currentPassword, err := readline.Password("Current password: ")
+	if err != nil {
+		return err
+	}
+	newPassword, err := readline.Password("New password: ")
+	if err != nil {
+		return err
+	}
+	URL := State.APIURL + "/api/users/password/change"
+	data := map[string]any{
+		"currentPassword": string(currentPassword),
+		"newPassword":     string(newPassword),
+	}
+	response, err := models.Send("POST", URL, GetKey(), data)
+	if err != nil {
+		return err
+	}
+	responseBody := ParseResponse(response, err, "change password")
+	status, statusOk := responseBody["status"].(bool)
+	message, messageOk := responseBody["message"].(string)
+	if responseBody == nil || !statusOk || !messageOk {
+		return fmt.Errorf("invalid response")
+	}
+	if response.StatusCode != http.StatusOK || !status {
+		return fmt.Errorf(message)
+	}
+	println(message)
 	return nil
 }

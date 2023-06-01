@@ -1,8 +1,5 @@
 # Install OS and dependencies to build frontend
 FROM ubuntu:20.04 AS build
-ARG API_URL
-ARG ALLOW_SET_BACK
-ARG BACK_URLS
 ENV GIN_MODE=release
 ENV TZ=Europe/Paris \
     DEBIAN_FRONTEND=noninteractive
@@ -25,7 +22,7 @@ RUN flutter doctor
 COPY APP/ogree_app/ /app/
 WORKDIR /app/
 RUN flutter pub get
-RUN flutter build web --dart-define=API_URL=$API_URL --dart-define=ALLOW_SET_BACK=$ALLOW_SET_BACK --dart-define=BACK_URLS=$BACK_URLS
+RUN flutter build web 
 
 # Runtime image
 FROM nginx:1.21.1-alpine

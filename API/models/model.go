@@ -27,7 +27,7 @@ func CreateEntity(entity int, t map[string]interface{}, userRoles map[string]Rol
 	if entity != u.BLDGTMPL && entity != u.ROOMTMPL && entity != u.OBJTMPL {
 		var domain string
 		if entity == u.DOMAIN {
-			domain = t["name"].(string)
+			domain = t["hierarchyName"].(string)
 		} else {
 			domain = t["domain"].(string)
 		}
