@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:ogree_app/main.dart';
 
@@ -6,6 +7,7 @@ import 'common.dart';
 
 void main() {
   testWidgets('MyApp loads Login Page', (tester) async {
+    await dotenv.load(fileName: "assets/custom/.env");
     await tester.pumpWidget(const MyApp());
     final msgs = await getFrenchMessages();
     expect(find.textContaining(msgs["welcome"]!), findsOneWidget);
@@ -17,6 +19,7 @@ void main() {
 
   testWidgets('Login Page notifies error if email and/or password empty',
       (tester) async {
+    await dotenv.load(fileName: "assets/custom/.env");
     await tester.pumpWidget(const MyApp());
 
     final loginButton = find.textContaining('Se connecter');
