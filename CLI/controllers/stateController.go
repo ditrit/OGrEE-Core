@@ -17,6 +17,11 @@ var BuildTree string
 var GitCommitDate string
 var State ShellState
 
+type User struct {
+	Email string
+	ID    string
+}
+
 type ShellState struct {
 	Prompt           string
 	BlankPrompt      string
@@ -28,7 +33,7 @@ type ShellState struct {
 	ConfigPath       string //Holds file path of '.env'
 	HistoryFilePath  string //Holds file path of '.history'
 	UnityClientURL   string
-	UserEmail        string
+	User             User
 	APIURL           string
 	APIKEY           string
 	UnityClientAvail bool  //For deciding to message unity or not

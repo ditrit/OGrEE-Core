@@ -28,15 +28,14 @@ func main() {
 
 	var err error
 	var apiKey string
-	conf.User, apiKey, err = c.Login(conf.User)
+	user, apiKey, err := c.Login(conf.User)
 	if err != nil {
 		println(err.Error())
 		return
 	} else {
 		println("Successfully connected")
 	}
-
-	c.InitEmail(conf.User)
+	c.State.User = *user
 	c.InitKey(apiKey)
 	c.InitState(conf)
 	err = InitVars(conf.Variables)
@@ -45,10 +44,10 @@ func main() {
 		return
 	}
 
-	user := strings.Split(conf.User, "@")[0]
+	userShort := strings.Split(c.State.User.Email, "@")[0]
 
 	rl, err := readline.NewEx(&readline.Config{
-		Prompt:          SetPrompt(user),
+		Prompt:          SetPrompt(userShort),
 		HistoryFile:     c.State.HistoryFilePath,
 		AutoComplete:    GetPrefixCompleter(),
 		InterruptPrompt: "^C",
@@ -74,5 +73,5 @@ func main() {
 	}
 	c.InitUnityCom(rl, c.State.UnityClientURL)
 	//Pass control to repl.go
-	Start(rl, user)
+	Start(rl, userShort)
 }
