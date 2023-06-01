@@ -1,0 +1,19 @@
+[Unit]
+Description=ogree_app_backend
+After=network-online.target
+Wants=network-online.target systemd-networkd-wait-online.service
+
+[Service]
+Restart=always
+StartLimitInterval=10
+StartLimitBurst=3
+
+User=root
+Group=root
+
+WorkingDirectory={{.DstPath}}
+ExecStart={{.DstPath}}/ogree_app_backend
+ExecReload=/bin/kill -USR1 $MAINPID
+
+[Install]
+WantedBy=multi-user.target

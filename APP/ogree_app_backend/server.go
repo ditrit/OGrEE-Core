@@ -100,14 +100,24 @@ func createNewBackend(c *gin.Context) {
 		return
 	}
 
+	// Create .env copy
+	file, _ := os.Create("ogree_app_backend.service")
+	err = servertmplt.Execute(file, newServer)
+	if err != nil {
+		fmt.Println("Error creating service file: " + err.Error())
+	}
+	file.Close()
+
 	SSHRunCmd("mkdir -p "+newServer.DstPath+"/docker", conn, true)
 
 	SSHCopyFile("ogree_app_backend_linux", newServer.DstPath+"/ogree_app_backend", conn)
-	SSHCopyFile("docker-env-template.txt", newServer.DstPath+"/docker-env-template.txt", conn)
+	SSHCopyFile("backend-assets/*", newServer.DstPath+"backend-assets/*", conn)
+	SSHCopyFile("flutter-assets/*", newServer.DstPath+"flutter-assets/*", conn)
 	SSHCopyFile(".envcopy", newServer.DstPath+"/.env", conn)
 	SSHCopyFile(DOCKER_DIR+"docker-compose.yml", newServer.DstPath+"/docker/docker-compose.yml", conn)
 	SSHCopyFile(DEPLOY_DIR+"createdb.js", newServer.DstPath+"/createdb.js", conn)
 	SSHCopyFile(DOCKER_DIR+"init.sh", newServer.DstPath+"/docker/init.sh", conn)
+	SSHCopyFile("ogree_app_backend.service", "/etc/systemd/system", conn)
 
 	SSHRunCmd("chmod +x "+newServer.DstPath+"/ogree_app_backend", conn, true)
 	SSHRunCmd("cd "+newServer.DstPath+" && nohup "+newServer.DstPath+"/ogree_app_backend -port "+newServer.RunPort+" > "+newServer.DstPath+"/ogree_backend.out", conn, false)
