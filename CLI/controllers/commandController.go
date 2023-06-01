@@ -3575,30 +3575,64 @@ func randPassword(n int) string {
 }
 
 func CreateUser(email string, role string, domain string) error {
-	URL := State.APIURL + "/api/users"
 	password := randPassword(14)
-	data := map[string]any{
-		"email":    email,
-		"password": password,
-		"roles": map[string]any{
-			domain: role,
+	response, err := RequestAPI(
+		"POST",
+		"/api/users",
+		map[string]any{
+			"email":    email,
+			"password": password,
+			"roles": map[string]any{
+				domain: role,
+			},
 		},
-	}
-	response, err := models.Send("POST", URL, GetKey(), data)
+		http.StatusCreated,
+	)
 	if err != nil {
 		return err
 	}
-	responseBody := ParseResponse(response, err, "create user")
-	status, statusOk := responseBody["status"].(bool)
-	message, messageOk := responseBody["message"].(string)
-	if responseBody == nil || !statusOk || !messageOk {
-		return fmt.Errorf("invalid response")
-	}
-	if response.StatusCode != http.StatusCreated || !status {
-		return fmt.Errorf(message)
-	}
-	println(message)
+	println(response.message)
 	println("password:" + password)
+	return nil
+}
+
+func AddRole(email string, role string, domain string) error {
+	response, err := RequestAPI("GET", "/api/users", nil, http.StatusOK)
+	if err != nil {
+		return err
+	}
+	userList, userListOk := response.body["data"].([]any)
+	if !userListOk {
+		return fmt.Errorf("response contains no user list")
+	}
+	userID := ""
+	for _, user := range userList {
+		userMap, ok := user.(map[string]any)
+		if !ok {
+			continue
+		}
+		userEmail, emailOk := userMap["email"].(string)
+		id, idOk := userMap["_id"].(string)
+		if emailOk && idOk && userEmail == email {
+			userID = id
+			break
+		}
+	}
+	if userID == "" {
+		return fmt.Errorf("user not found")
+	}
+	response, err = RequestAPI("PATCH", fmt.Sprintf("/api/users/%s", userID),
+		map[string]any{
+			"roles": map[string]any{
+				domain: role,
+			},
+		},
+		http.StatusOK,
+	)
+	if err != nil {
+		return err
+	}
+	println(response.message)
 	return nil
 }
 
@@ -3611,24 +3645,16 @@ func ChangePassword() error {
 	if err != nil {
 		return err
 	}
-	URL := State.APIURL + "/api/users/password/change"
-	data := map[string]any{
-		"currentPassword": string(currentPassword),
-		"newPassword":     string(newPassword),
-	}
-	response, err := models.Send("POST", URL, GetKey(), data)
+	response, err := RequestAPI("POST", "/api/users/password/change",
+		map[string]any{
+			"currentPassword": string(currentPassword),
+			"newPassword":     string(newPassword),
+		},
+		http.StatusOK,
+	)
 	if err != nil {
 		return err
 	}
-	responseBody := ParseResponse(response, err, "change password")
-	status, statusOk := responseBody["status"].(bool)
-	message, messageOk := responseBody["message"].(string)
-	if responseBody == nil || !statusOk || !messageOk {
-		return fmt.Errorf("invalid response")
-	}
-	if response.StatusCode != http.StatusOK || !status {
-		return fmt.Errorf(message)
-	}
-	println(message)
+	println(response.message)
 	return nil
 }

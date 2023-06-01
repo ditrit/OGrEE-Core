@@ -13,6 +13,30 @@ import (
 	"os"
 )
 
+type Response struct {
+	status  int
+	message string
+	body    map[string]any
+}
+
+func ParseResponseClean(response *http.Response) (Response, error) {
+	bodyBytes, err := io.ReadAll(response.Body)
+	if err != nil {
+		return Response{}, err
+	}
+	defer response.Body.Close()
+	responseBody := map[string]interface{}{}
+	err = json.Unmarshal(bodyBytes, &responseBody)
+	if err != nil {
+		return Response{}, err
+	}
+	message, messageOk := responseBody["message"].(string)
+	if responseBody == nil || !messageOk {
+		return Response{}, fmt.Errorf("invalid response")
+	}
+	return Response{response.StatusCode, message, responseBody}, nil
+}
+
 func ParseResponse(resp *http.Response, e error, purpose string) map[string]interface{} {
 	ans := map[string]interface{}{}
 
