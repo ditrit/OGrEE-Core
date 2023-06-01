@@ -20,11 +20,8 @@ class AppController with ChangeNotifier {
       {bool isTest = false,
       bool onlyDomain = false,
       bool reload = false}) async {
-    print("INIIIIIIIIIT");
     if (_isInitialized && !reload) return;
-    print("FOR REAL INIIIIIIIIIT");
     final rootNode = TreeNode(id: kRootId);
-    print("Get API data");
     if (onlyDomain) {
       fetchedData = (await fetchObjectsTree(onlyDomain: true)).first;
       print(fetchedData);

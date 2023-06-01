@@ -19,7 +19,6 @@ void main() {
 
   testWidgets('Login Page notifies error if email and/or password empty',
       (tester) async {
-    await dotenv.load(fileName: "assets/custom/.env");
     await tester.pumpWidget(const MyApp());
 
     final loginButton = find.textContaining('Se connecter');
