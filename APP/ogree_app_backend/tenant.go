@@ -153,6 +153,9 @@ func addTenant(c *gin.Context) {
 			// Create flutter assets folder
 			newTenant.AssetsDir = DOCKER_DIR + "app-deploy/" + tenantLower
 			addAppAssets(newTenant)
+		} else {
+			// docker does not accept it empty, even if it wont be created
+			newTenant.AssetsDir = DOCKER_DIR
 		}
 		if newTenant.HasDoc {
 			args = append(args, "--profile")
