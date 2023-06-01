@@ -292,7 +292,7 @@ Future<String> uploadImage(PlatformFile image, String tenant) async {
   return body;
 }
 
-Future<String> createBackendServer(Map<String, String> newBackend) async {
+Future<String> createBackendServer(Map<String, dynamic> newBackend) async {
   print("API create Back Server");
   Uri url = Uri.parse('$apiUrl/api/servers');
   final response = await http.post(url,

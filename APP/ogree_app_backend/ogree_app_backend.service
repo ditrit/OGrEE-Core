@@ -11,8 +11,8 @@ StartLimitBurst=3
 User=root
 Group=root
 
-WorkingDirectory={{.DstPath}}
-ExecStart={{.DstPath}}/ogree_app_backend -port {{.RunPort}}
+WorkingDirectory=/root/helder
+ExecStart=/root/helder/ogree_app_backend -port 8082
 ExecReload=/bin/kill -USR1 $MAINPID
 
 [Install]
