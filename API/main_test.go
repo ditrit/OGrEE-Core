@@ -33,8 +33,8 @@ func getAdminToken() {
 	admin := models.Account{}
 	admin.Email = "admin@admin.com"
 	admin.Password = "admin123"
-	admin.Roles = map[string]string{"*": "manager"}
-	response, _ := admin.Create(map[string]string{"*": "manager"})
+	admin.Roles = map[string]models.Role{"*": "manager"}
+	response, _ := admin.Create(map[string]models.Role{"*": "manager"})
 	if response["account"] != nil {
 		adminId = response["account"].(*models.Account).ID
 		adminToken = response["account"].(*models.Account).Token

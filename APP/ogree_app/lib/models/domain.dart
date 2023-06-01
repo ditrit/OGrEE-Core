@@ -20,10 +20,17 @@ class Domain {
   }
 
   factory Domain.fromMap(Map<String, dynamic> map) {
+    String description = "";
+    if (map['description'] != null) {
+      var list = List<String>.from(map['description']);
+      if (list.isNotEmpty) {
+        description = list.first;
+      }
+    }
     return Domain(
       map['name'].toString(),
       map['attributes']['color'].toString(),
-      map['description'][0].toString(),
+      description,
       map['parentId'] == null ? "" : map['parentId'].toString(),
     );
   }

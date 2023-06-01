@@ -72,6 +72,7 @@ func validateParent(ent string, entNum int, t map[string]interface{}) (map[strin
 		x, _ := GetEntity(req, "rack", u.RequestFilters{}, nil)
 		if x != nil {
 			parent["parent"] = "rack"
+			parent["domain"] = x["domain"]
 			parent["hierarchyName"] = getHierarchyName(x)
 			return parent, true
 		}
@@ -79,6 +80,7 @@ func validateParent(ent string, entNum int, t map[string]interface{}) (map[strin
 		y, _ := GetEntity(req, "device", u.RequestFilters{}, nil)
 		if y != nil {
 			parent["parent"] = "device"
+			parent["domain"] = y["domain"]
 			parent["hierarchyName"] = getHierarchyName(y)
 			return parent, true
 		}
@@ -90,6 +92,7 @@ func validateParent(ent string, entNum int, t map[string]interface{}) (map[strin
 		w, _ := GetEntity(req, "device", u.RequestFilters{}, nil)
 		if w != nil {
 			parent["parent"] = "device"
+			parent["domain"] = w["domain"]
 			parent["hierarchyName"] = getHierarchyName(w)
 			return parent, true
 		}
@@ -97,6 +100,7 @@ func validateParent(ent string, entNum int, t map[string]interface{}) (map[strin
 		x, _ := GetEntity(req, "rack", u.RequestFilters{}, nil)
 		if x != nil {
 			parent["parent"] = "rack"
+			parent["domain"] = x["domain"]
 			parent["hierarchyName"] = getHierarchyName(x)
 			return parent, true
 		}
@@ -104,6 +108,7 @@ func validateParent(ent string, entNum int, t map[string]interface{}) (map[strin
 		y, _ := GetEntity(req, "room", u.RequestFilters{}, nil)
 		if y != nil {
 			parent["parent"] = "room"
+			parent["domain"] = y["domain"]
 			parent["hierarchyName"] = getHierarchyName(y)
 			return parent, true
 		}
@@ -111,6 +116,7 @@ func validateParent(ent string, entNum int, t map[string]interface{}) (map[strin
 		z, _ := GetEntity(req, "building", u.RequestFilters{}, nil)
 		if z != nil {
 			parent["parent"] = "building"
+			parent["domain"] = z["domain"]
 			parent["hierarchyName"] = getHierarchyName(z)
 			return parent, true
 		}
@@ -126,6 +132,7 @@ func validateParent(ent string, entNum int, t map[string]interface{}) (map[strin
 				p, err := GetEntity(bson.M{"_id": ID}, "stray_device", u.RequestFilters{}, nil)
 				if len(p) > 0 {
 					parent["parent"] = "stray_device"
+					parent["domain"] = p["domain"]
 					parent["hierarchyName"] = getHierarchyName(p)
 					return parent, true
 				} else if err != "" {
@@ -145,13 +152,14 @@ func validateParent(ent string, entNum int, t map[string]interface{}) (map[strin
 		p, err := GetEntity(req, parentStr, u.RequestFilters{}, nil)
 		if len(p) > 0 {
 			parent["parent"] = parentStr
+			parent["domain"] = p["domain"]
 			parent["hierarchyName"] = getHierarchyName(p)
 			return parent, true
 		} else if err != "" {
 			println("ENTITY VALUE: ", ent)
 			println("We got Parent: ", parent, " with ID:", t["parentId"].(string))
 			return u.Message(false,
-				"ParentID should correspond to Existing ID"), false
+				"ParentID should correspond to Existing ID: "+err), false
 		}
 	}
 	return nil, true
@@ -240,6 +248,11 @@ func ValidateEntity(entity int, t map[string]interface{}) (map[string]interface{
 		if entity != u.DOMAIN {
 			if !CheckDomainExists(t["domain"].(string)) {
 				return u.Message(false, "Domain not found: "+t["domain"].(string)), false
+			}
+			if parentDomain, ok := parent["domain"].(string); ok {
+				if !CheckParentDomain(parentDomain, t["domain"].(string)) {
+					return u.Message(false, "Object domain is not equal or child of parent's domain"), false
+				}
 			}
 		}
 	}

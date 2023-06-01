@@ -17,11 +17,10 @@ func init() {
 	rand.Seed(time.Now().UnixNano())
 }
 
-// swagger:operation POST /api auth Create
+// swagger:operation POST /api/users auth Create
 // Generate credentials for a user.
-// Create an account with Email credentials, it returns
-// a JWT key to use with the API. The
-// authorize and 'Try it out' buttons don't work
+// Create an account with email credentials, it returns
+// a JWT key to use with the API.
 // ---
 // produces:
 // - application/json
@@ -55,7 +54,7 @@ func init() {
 //     '500':
 //         description: Internal server error
 
-// swagger:operation OPTIONS /api auth CreateOptions
+// swagger:operation OPTIONS /api/users auth CreateOptions
 // Displays possible operations for the resource in response header.
 // ---
 // produces:
@@ -105,7 +104,7 @@ var CreateAccount = func(w http.ResponseWriter, r *http.Request) {
 }
 
 // swagger:operation POST /api/users/bulk auth CreateBulk
-// Create multiples users with one request
+// Create multiples users with one request.
 // ---
 // produces:
 // - application/json
@@ -292,7 +291,7 @@ var Verify = func(w http.ResponseWriter, r *http.Request) {
 }
 
 // swagger:operation GET /api/users auth GetAllAccounts
-// Get a list of users that the caller is allowed to see
+// Get a list of users that the caller is allowed to see.
 // ---
 // produces:
 // - application/json
@@ -334,7 +333,7 @@ var GetAllAccounts = func(w http.ResponseWriter, r *http.Request) {
 }
 
 // swagger:operation DELETE /api/users/{id} auth RemoveAccount
-// Romeve the specified user account
+// Remove the specified user account.
 // ---
 // produces:
 // - application/json
@@ -446,9 +445,9 @@ var ModifyUserRoles = func(w http.ResponseWriter, r *http.Request) {
 			u.Respond(w, u.Message(false, "Only 'roles' should be provided to patch"))
 			return
 		}
-		rolesConverted := map[string]string{}
+		rolesConverted := map[string]models.Role{}
 		for k := range roles {
-			if v, ok := roles[k].(string); ok {
+			if v, ok := roles[k].(models.Role); ok {
 				rolesConverted[k] = v
 			} else {
 				w.WriteHeader(http.StatusBadRequest)

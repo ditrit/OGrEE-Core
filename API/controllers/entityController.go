@@ -324,7 +324,7 @@ func getBulkDomainsRecursively(parent string, listDomains []map[string]interface
 	return domainsToCreate, ""
 }
 
-// swagger:operation GET /api/objects/{name} objects GetObject
+// swagger:operation GET /api/objects/{name} objects GetObjectByName
 // Gets an Object from the system.
 // The hierarchyName must be provided in the URL parameter
 // ---
@@ -405,7 +405,7 @@ var GetGenericObject = func(w http.ResponseWriter, r *http.Request) {
 
 }
 
-// swagger:operation GET /api/{objs}/{id} objects GetObject
+// swagger:operation GET /api/{objs}/{id} objects GetObjectById
 // Gets an Object from the system.
 // The ID must be provided in the URL parameter
 // The name can be used instead of ID if the obj is site
@@ -528,20 +528,20 @@ var GetEntity = func(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if data == nil {
+	if e1 != "" {
 		resp = u.Message(false, "Error while getting "+entityStr+": "+e1)
 		u.ErrLog("Error while getting "+entityStr, "GET "+strings.ToUpper(entityStr), "", r)
 
 		switch e1 {
 		case "record not found":
 			w.WriteHeader(http.StatusNotFound)
-
 		case "mongo: no documents in result":
 			resp = u.Message(false, "Error while getting :"+entityStr+", No Objects Found!")
 			w.WriteHeader(http.StatusNotFound)
-
 		case "invalid request":
 			w.WriteHeader(http.StatusBadRequest)
+		case "permission":
+			w.WriteHeader(http.StatusUnauthorized)
 		default:
 			w.WriteHeader(http.StatusNotFound) //For now
 		}
@@ -723,10 +723,10 @@ var DeleteEntity = func(w http.ResponseWriter, r *http.Request) {
 	switch {
 	case e2 && !e: // DELETE by name
 		if strings.Contains(entity, "template") {
-			v, errType = models.DeleteEntityManual(entity, bson.M{"slug": name})
+			v, errType = models.DeleteSingleEntity(entity, bson.M{"slug": name})
 		} else {
 			//use hierarchyName
-			v, errType = models.DeleteEntityByName(entity, name)
+			v, errType = models.DeleteEntityByName(entity, name, user.Roles)
 
 		}
 
@@ -738,14 +738,17 @@ var DeleteEntity = func(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		rnd := bson.M{}
-		models.RequestGen(rnd, user.Roles)
-
-		if entity == "device" {
-			v, _ = models.DeleteDeviceF(objID, rnd)
+		req, ok := models.GetRequestFilterByDomain(user.Roles)
+		if !ok {
+			errType = "permisson"
+			v = u.Message(false, "User does not have permission to delete")
 		} else {
+			if entity == "device" {
+				v, errType = models.DeleteDeviceF(objID, req)
+			} else {
 
-			v, _ = models.DeleteEntity(entity, objID, rnd)
+				v, errType = models.DeleteEntity(entity, objID, req)
+			}
 		}
 
 	default:
@@ -757,6 +760,8 @@ var DeleteEntity = func(w http.ResponseWriter, r *http.Request) {
 	if v["status"] == false {
 		if errType == "domain" {
 			w.WriteHeader(http.StatusBadRequest)
+		} else if errType == "permission" {
+			w.WriteHeader(http.StatusUnauthorized)
 		} else {
 			w.WriteHeader(http.StatusNotFound)
 		}
@@ -992,7 +997,8 @@ var UpdateEntity = func(w http.ResponseWriter, r *http.Request) {
 	u.Respond(w, v)
 }
 
-// swagger:operation GET /api/{objs}? objects GetObject
+// swagger:operation GET /api/{objs}? objects GetObjectQuery
+// Gets an Object using any attribute.
 // Gets an Object using any attribute (with the exception of description)
 // via query in the system
 // The attributes are in the form {attr}=xyz&{attr1}=abc
@@ -1478,7 +1484,8 @@ var GetEntityHierarchy = func(w http.ResponseWriter, r *http.Request) {
 }
 
 // swagger:operation GET /api/hierarchy objects GetCompleteHierarchy
-// Returns all objects hierarchyName arranged by relationship (father:[children])
+// Returns all objects hierarchyName.
+// Return is arranged by relationship (father:[children])
 // and category (category:[objects])
 // ---
 // produces:
@@ -1886,11 +1893,12 @@ var GetEntitiesUsingNamesOfParents = func(w http.ResponseWriter, r *http.Request
 	} else { //We are only retrieving an entity
 		var data map[string]interface{}
 		var e3 string
-		req := bson.M{}
 		if e1 {
-			data, e3 = models.GetEntityUsingSiteAsAncestor(entity, tname, req, ancestry)
+			req := bson.M{"name": tname}
+			data, e3 = models.GetEntityUsingSiteAsAncestor(req, entity, ancestry)
 		} else {
-			data, e3 = models.GetEntityUsingAncestorNames(entity, oID, req, ancestry)
+			req := bson.M{"_id": oID}
+			data, e3 = models.GetEntityUsingAncestorNames(req, entity, ancestry)
 		}
 
 		if len(data) == 0 {
@@ -2113,8 +2121,8 @@ var ValidateEntity = func(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if entInt != u.BLDGTMPL && entInt != u.ROOMTMPL && entInt != u.OBJTMPL {
-		if ok, _ := models.CheckUserPermissions(user.Roles, entInt, models.WRITE, obj["domain"].(string)); !ok {
-			w.WriteHeader(http.StatusMethodNotAllowed)
+		if permission := models.CheckUserPermissions(user.Roles, entInt, obj["domain"].(string)); permission < models.WRITE {
+			w.WriteHeader(http.StatusUnauthorized)
 			u.Respond(w, u.Message(false, "This user"+
 				" does not have sufficient permissions to create"+
 				" this object under this domain "))

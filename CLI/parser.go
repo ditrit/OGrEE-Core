@@ -1532,6 +1532,15 @@ func parseCreateOrphanAux(frame Frame, sensor bool) (node, Frame, *ParserError) 
 	return &createOrphanNode{path, template, sensor}, frame, nil
 }
 
+func parseCreateUser(frame Frame) (node, Frame, *ParserError) {
+	sig := []objParam{{"email", "stringexpr"}, {"role", "stringexpr"}, {"domain", "stringexpr"}}
+	params, frame, err := parseObjectParams(sig, frame)
+	if err != nil {
+		return nil, frame, err.extend(frame, "user parameters")
+	}
+	return &createUserNode{params["email"], params["role"], params["domain"]}, frame, nil
+}
+
 func parseUpdate(frame Frame) (node, Frame, *ParserError) {
 	path, frame, err := parsePath(frame)
 	if err != nil {
@@ -1661,6 +1670,7 @@ func parseCommand(frame Frame) (node, Frame, *ParserError) {
 			"group":    parseCreateGroup,
 			"gr":       parseCreateGroup,
 			"orphan":   parseCreateOrphan,
+			"user":     parseCreateUser,
 		}
 		noArgsCommands = map[string]node{
 			"selection":    &selectNode{},
@@ -1670,6 +1680,7 @@ func parseCommand(frame Frame) (node, Frame, *ParserError) {
 			"lsenterprise": &lsenterpriseNode{},
 			"pwd":          &pwdNode{},
 			"exit":         &exitNode{},
+			"changepw":     &changePasswordNode{},
 		}
 	}
 	commands := []node{}
