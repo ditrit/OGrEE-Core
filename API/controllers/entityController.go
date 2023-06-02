@@ -982,6 +982,8 @@ var UpdateEntity = func(w http.ResponseWriter, r *http.Request) {
 	}
 
 	switch e3 {
+	case "":
+		w.WriteHeader(http.StatusOK)
 	case "validate", "Invalid ParentID", "Need ParentID", "invalid":
 		w.WriteHeader(http.StatusBadRequest)
 		u.ErrLog("Error while updating "+entity, "UPDATE "+strings.ToUpper(entity), e3, r)
@@ -991,7 +993,11 @@ var UpdateEntity = func(w http.ResponseWriter, r *http.Request) {
 	case "mongo: no documents in result", "parent not found":
 		w.WriteHeader(http.StatusNotFound)
 		u.ErrLog("Error while updating "+entity, "UPDATE "+strings.ToUpper(entity), e3, r)
+	case "permission":
+		w.WriteHeader(http.StatusUnauthorized)
 	default:
+		w.WriteHeader(http.StatusInternalServerError)
+		println("Not handled error while trying to update entity")
 	}
 
 	u.Respond(w, v)

@@ -705,6 +705,16 @@ func UpdateEntity(ent string, req bson.M, t map[string]interface{}, isPatch bool
 		}
 		return u.Message(false, "Error: "+e1), e1
 	}
+
+	//Check if permission is only readonly
+	if entInt != u.BLDGTMPL && entInt != u.ROOMTMPL && entInt != u.OBJTMPL &&
+		(oldObj["description"] == nil) {
+		// Description is always present, unless GetEntity was called with readonly permission
+		return u.Message(false,
+				"User does not have permission to change this object"),
+			"permission"
+	}
+
 	t["lastUpdated"] = primitive.NewDateTimeFromTime(time.Now())
 	t["createdDate"] = oldObj["createdDate"]
 
@@ -737,7 +747,7 @@ func UpdateEntity(ent string, req bson.M, t map[string]interface{}, isPatch bool
 		(oldObj["domain"] != t["domain"]) {
 		if permission := CheckUserPermissions(userRoles, entInt, t["domain"].(string)); permission < WRITE {
 			return u.Message(false,
-					"User does not have permission to create this object"),
+					"User does not have permission to change this object"),
 				"permission"
 		}
 	}
