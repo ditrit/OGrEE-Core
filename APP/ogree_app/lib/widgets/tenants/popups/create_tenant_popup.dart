@@ -99,7 +99,7 @@ class _CreateTenantPopupState extends State<CreateTenantPopup> {
                   ),
                   getFormField(
                       save: (newValue) => _imageTag = newValue!,
-                      label: "Version du déploiement",
+                      label: "Version du déploiement (tag)",
                       icon: Icons.access_time,
                       initial: _imageTag),
                   getFormField(
