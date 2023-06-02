@@ -168,6 +168,7 @@ func addTenant(c *gin.Context) {
 			args = append(args, "doc")
 		}
 		args = append(args, "up")
+		args = append(args, "--build")
 		args = append(args, "-d")
 
 		// Create .env file
