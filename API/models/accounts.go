@@ -92,7 +92,7 @@ func (account *Account) Create(callerRoles map[string]Role) (map[string]interfac
 	if !CheckCanManageUser(callerRoles, account.Roles) {
 		return u.Message(false,
 			"Invalid credentials for creating an account."+
-				"Manager role in requested domains is needed"), "unauthorised"
+				" Manager role in requested domains is needed."), "unauthorised"
 	}
 
 	// Validate new user
