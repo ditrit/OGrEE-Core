@@ -42,6 +42,11 @@ func InitDebugLevel(verbose string) {
 	}
 }
 
+func PingAPI() bool {
+	_, err := models.Send("", State.APIURL, "", nil)
+	return err == nil
+}
+
 // Intialise the ShellState
 func InitState(conf *config.Config) {
 
