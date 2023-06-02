@@ -27,6 +27,7 @@ type tenant struct {
 	HasWeb           bool   `json:"hasWeb"`
 	HasDoc           bool   `json:"hasDoc"`
 	AssetsDir        string `json:"assetsDir"`
+	ImageTag         string `json:"imageTag"`
 }
 
 type container struct {
@@ -145,6 +146,11 @@ func addTenant(c *gin.Context) {
 	} else {
 		tenantLower := strings.ToLower(newTenant.Name)
 
+		// Image tagging
+		if newTenant.ImageTag == "" {
+			newTenant.ImageTag = "latest"
+		}
+
 		// Docker compose prepare
 		args := []string{"compose", "-p", tenantLower}
 		if newTenant.HasWeb {
@@ -171,7 +177,7 @@ func addTenant(c *gin.Context) {
 			panic(err)
 		}
 		file.Close()
-		// Create .env copy
+		// Create tenantName.env as a copy
 		file, _ = os.Create(DOCKER_DIR + tenantLower + ".env")
 		err = tmplt.Execute(file, newTenant)
 		if err != nil {
