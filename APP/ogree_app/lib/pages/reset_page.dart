@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:ogree_app/common/api_backend.dart';
 import 'package:ogree_app/common/snackbar.dart';
@@ -87,7 +88,7 @@ class _ResetPageState extends State<ResetPage> {
                               ],
                             ),
                             const SizedBox(height: 25),
-                            allowBackChoice
+                            dotenv.env['ALLOW_SET_BACK'] == "true"
                                 ? backendInput()
                                 : Center(
                                     child: Image.asset(
@@ -219,7 +220,10 @@ class _ResetPageState extends State<ResetPage> {
   }
 
   backendInput() {
-    final options = backendUrl.split(",");
+    List<String> options = [];
+    if (dotenv.env['BACK_URLS'] != null) {
+      options = dotenv.env['BACK_URLS']!.split(",");
+    }
     final localeMsg = AppLocalizations.of(context)!;
     return RawAutocomplete<String>(
       optionsBuilder: (TextEditingValue textEditingValue) {
@@ -282,13 +286,3 @@ class _ResetPageState extends State<ResetPage> {
     );
   }
 }
-
-String backendUrl = const String.fromEnvironment(
-  'BACK_URLS',
-  defaultValue: 'http://localhost:3001',
-);
-
-bool allowBackChoice = const bool.fromEnvironment(
-  'ALLOW_SET_BACK',
-  defaultValue: true,
-);

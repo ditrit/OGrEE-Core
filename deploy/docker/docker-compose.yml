@@ -4,7 +4,7 @@ services:
     build: 
       context: ${CORE_DIR}
       dockerfile: ${API_BUILD_DIR}/Dockerfile
-    image: ogree/api:latest
+    image: ogree/api:${IMAGE_TAG}
     container_name: ${COMPOSE_PROJECT_NAME}_api
     environment:
       - api_port=3001
@@ -60,11 +60,11 @@ services:
     build: 
       context: ${CORE_DIR}
       dockerfile: ${APP_BUILD_DIR}/Dockerfile
-      args:
-      - API_URL=http://${API_EXTERNALURL}:${API_PORT}
-    image: ogree/webapp:latest
+    image: ogree/webapp:${IMAGE_TAG}
     profiles: ["web"]
     container_name: ${COMPOSE_PROJECT_NAME}_webapp
+    volumes:
+      - ${APP_ASSETS_DIR}:/usr/share/nginx/html/assets/assets/custom
     ports:
       - ${WEB_PORT}:80
     depends_on:

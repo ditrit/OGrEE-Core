@@ -63,7 +63,7 @@ AppBar myAppBar(context, userEmail, {isTenantMode = false}) {
                 ),
                 PopupMenuItem(
                   value: "change",
-                  child: Text("Change password"),
+                  child: Text(AppLocalizations.of(context)!.changePassword),
                 ),
                 PopupMenuItem(
                   value: "logout",
