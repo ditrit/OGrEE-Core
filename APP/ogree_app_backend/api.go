@@ -16,6 +16,7 @@ import (
 
 var tmplt *template.Template
 var apptmplt *template.Template
+var servertmplt *template.Template
 var DEPLOY_DIR string
 var DOCKER_DIR string
 
@@ -32,8 +33,9 @@ func init() {
 	// hashedPassword, _ := bcrypt.GenerateFromPassword(
 	// 	[]byte("password"), bcrypt.DefaultCost)
 	// println(string(hashedPassword))
-	tmplt = template.Must(template.ParseFiles("docker-env-template.txt"))
+	tmplt = template.Must(template.ParseFiles("backend-assets/docker-env-template.txt"))
 	apptmplt = template.Must(template.ParseFiles("flutter-assets/flutter-env-template.txt"))
+	servertmplt = template.Must(template.ParseFiles("backend-assets/template.service"))
 }
 
 func main() {
