@@ -447,8 +447,8 @@ var ModifyUserRoles = func(w http.ResponseWriter, r *http.Request) {
 		}
 		rolesConverted := map[string]models.Role{}
 		for k := range roles {
-			if v, ok := roles[k].(models.Role); ok {
-				rolesConverted[k] = v
+			if v, ok := roles[k].(string); ok {
+				rolesConverted[k] = models.Role(v)
 			} else {
 				w.WriteHeader(http.StatusBadRequest)
 				u.Respond(w, u.Message(false, "Invalid roles format"))

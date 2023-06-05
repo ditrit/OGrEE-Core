@@ -75,7 +75,8 @@ func CheckUserPermissions(userRoles map[string]Role, objEntity int, objDomain st
 			return WRITE
 		}
 		for userDomain, role := range userRoles {
-			if match, _ := regexp.MatchString("^"+userDomain, objDomain); match && role == Manager {
+			if domainIsEqualOrChild(userDomain, objDomain) && role == Manager {
+				//objDomain is equal or child of userDomain
 				return WRITE
 			}
 		}
@@ -87,8 +88,7 @@ func CheckUserPermissions(userRoles map[string]Role, objEntity int, objDomain st
 		}
 
 		for userDomain, role := range userRoles {
-			match, _ := regexp.MatchString("^"+userDomain, objDomain)
-			if match {
+			if domainIsEqualOrChild(userDomain, objDomain) {
 				//objDomain is equal or child of userDomain
 				if role == Viewer {
 					permission = READ
@@ -96,7 +96,7 @@ func CheckUserPermissions(userRoles map[string]Role, objEntity int, objDomain st
 					permission = WRITE
 					break // highest possible
 				}
-			} else if match, _ := regexp.MatchString("^"+objDomain, userDomain); match {
+			} else if domainIsEqualOrChild(objDomain, userDomain) {
 				// objDomain is father of userDomain
 				if permission < READONLYNAME {
 					permission = READONLYNAME
@@ -105,6 +105,11 @@ func CheckUserPermissions(userRoles map[string]Role, objEntity int, objDomain st
 		}
 	}
 	return permission
+}
+
+func domainIsEqualOrChild(refDomain, domainToCheck string) bool {
+	match, _ := regexp.MatchString("^"+refDomain+"\\.", domainToCheck)
+	return match || refDomain == domainToCheck
 }
 
 func CheckCanManageUser(callerRoles map[string]Role, newUserRoles map[string]Role) bool {

@@ -21,7 +21,7 @@ var GetProjects = func(w http.ResponseWriter, r *http.Request) {
 
 	if len(query["user"]) <= 0 {
 		w.WriteHeader(http.StatusBadRequest)
-		resp = u.Message(false, "Error: userid should be sent as query param")
+		resp = u.Message(false, "Error: user should be sent as query param")
 		u.Respond(w, resp)
 		return
 	}
@@ -35,7 +35,7 @@ var GetProjects = func(w http.ResponseWriter, r *http.Request) {
 			w.Header().Add("Content-Type", "application/json")
 			w.Header().Add("Allow", "GET, OPTIONS, HEAD")
 		} else {
-			resp = u.Message(true, "successfully got temperatureUnit from object's parent site")
+			resp = u.Message(true, "successfully got projects")
 			resp["data"] = data
 		}
 	}

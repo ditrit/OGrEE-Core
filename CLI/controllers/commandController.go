@@ -848,7 +848,7 @@ func LSOG() {
 	fmt.Println("OGREE Shell Information")
 	fmt.Println("********************************************")
 
-	fmt.Println("USER EMAIL:", State.UserEmail)
+	fmt.Println("USER EMAIL:", State.User.Email)
 	fmt.Println("API URL:", State.APIURL+"/api/")
 	fmt.Println("UNITY URL:", State.UnityClientURL)
 	fmt.Println("BUILD DATE:", BuildTime)
@@ -1387,7 +1387,6 @@ func GetHierarchy(x string, depth int, silence bool) []map[string]interface{} {
 func GetOCLIAtrributes(Path string, ent int, data map[string]interface{}) error {
 	var attr map[string]interface{}
 	var parent map[string]interface{}
-	var domain string
 
 	ogPath := Path
 	Path = path.Dir(Path)
@@ -1410,11 +1409,18 @@ func GetOCLIAtrributes(Path string, ent int, data map[string]interface{}) error 
 		}
 	}
 
-	// Set default domain
-	if parent != nil {
-		domain = parent["domain"].(string)
-	} else if ent != DOMAIN {
-		domain = State.Customer
+	if ent == DOMAIN {
+		if parent != nil {
+			data["domain"] = parent["name"]
+		} else {
+			data["domain"] = ""
+		}
+	} else {
+		if parent != nil {
+			data["domain"] = parent["domain"]
+		} else {
+			data["domain"] = State.Customer
+		}
 	}
 
 	var err error
@@ -1422,15 +1428,12 @@ func GetOCLIAtrributes(Path string, ent int, data map[string]interface{}) error 
 	case DOMAIN:
 		if parent != nil {
 			data["parentId"] = parent["id"]
-			data["domain"] = parent["name"]
 		} else {
 			data["parentId"] = ""
-			data["domain"] = ""
 		}
 
 	case SITE:
 		//Default values
-		data["domain"] = domain
 		//data["parentId"] = parent["id"]
 		data["attributes"] = map[string]interface{}{}
 
@@ -1496,7 +1499,6 @@ func GetOCLIAtrributes(Path string, ent int, data map[string]interface{}) error 
 		attr["heightUnit"] = "m"
 		//attr["height"] = 0 //Should be set from parser by default
 		data["parentId"] = parent["id"]
-		data["domain"] = domain
 
 	case ROOM:
 		attr = data["attributes"].(map[string]interface{})
@@ -1552,7 +1554,6 @@ func GetOCLIAtrributes(Path string, ent int, data map[string]interface{}) error 
 		}
 
 		data["parentId"] = parent["id"]
-		data["domain"] = domain
 		data["attributes"] = attr
 		if State.DebugLvl >= 3 {
 			println("DEBUG VIEW THE JSON")
@@ -1620,7 +1621,6 @@ func GetOCLIAtrributes(Path string, ent int, data map[string]interface{}) error 
 		}
 
 		data["parentId"] = parent["id"]
-		data["domain"] = domain
 		data["attributes"] = attr
 
 	case DEVICE:
@@ -1663,19 +1663,24 @@ func GetOCLIAtrributes(Path string, ent int, data map[string]interface{}) error 
 		if x, ok := attr["posU/slot"]; ok {
 			delete(attr, "posU/slot")
 			//Convert posU to string if numeric
-			if _, ok := x.(float64); ok {
-				x = strconv.FormatFloat(x.(float64), 'G', -1, 64)
+			switch xval := x.(type) {
+			case float64:
+				xstr := strconv.FormatFloat(xval, 'G', -1, 64)
 				attr["posU"] = x
 				attr["slot"] = ""
-				slot, err = GetSlot(parent, x.(string))
-			} else if _, ok := x.(int); ok {
-				x = strconv.Itoa(x.(int))
+				slot, err = GetSlot(parent, xstr)
+				x = xstr
+			case int:
+				xstr := strconv.Itoa(xval)
 				attr["posU"] = x
 				attr["slot"] = ""
-				slot, err = GetSlot(parent, x.(string))
-			} else {
-				attr["slot"] = x
-				slot, err = GetSlot(parent, x.(string))
+				slot, err = GetSlot(parent, xstr)
+				x = xstr
+			case string:
+				attr["slot"] = xval
+				slot, err = GetSlot(parent, xval)
+			default:
+				return fmt.Errorf("posU/slot should be a string or a number")
 			}
 			if err != nil {
 				return err
@@ -1717,13 +1722,11 @@ func GetOCLIAtrributes(Path string, ent int, data map[string]interface{}) error 
 
 		MergeMaps(attr, baseAttrs, false)
 
-		data["domain"] = domain
 		data["parentId"] = parent["id"]
 		data["attributes"] = attr
 
 	case GROUP:
 		//name, category, domain, pid
-		data["domain"] = domain
 		data["parentId"] = parent["id"]
 		attr := data["attributes"].(map[string]interface{})
 
@@ -1733,7 +1736,6 @@ func GetOCLIAtrributes(Path string, ent int, data map[string]interface{}) error 
 	case CORRIDOR:
 		//name, category, domain, pid
 		attr = data["attributes"].(map[string]interface{})
-		data["domain"] = domain
 		data["parentId"] = parent["id"]
 
 	case STRAYSENSOR:
@@ -1747,7 +1749,6 @@ func GetOCLIAtrributes(Path string, ent int, data map[string]interface{}) error 
 		}
 
 	case STRAY_DEV:
-		data["domain"] = State.Customer
 		attr = data["attributes"].(map[string]interface{})
 		if _, ok := attr["template"]; ok {
 			GetOCLIAtrributesTemplateHelper(attr, data, DEVICE)
@@ -3575,30 +3576,64 @@ func randPassword(n int) string {
 }
 
 func CreateUser(email string, role string, domain string) error {
-	URL := State.APIURL + "/api/users"
 	password := randPassword(14)
-	data := map[string]any{
-		"email":    email,
-		"password": password,
-		"roles": map[string]any{
-			domain: role,
+	response, err := RequestAPI(
+		"POST",
+		"/api/users",
+		map[string]any{
+			"email":    email,
+			"password": password,
+			"roles": map[string]any{
+				domain: role,
+			},
 		},
-	}
-	response, err := models.Send("POST", URL, GetKey(), data)
+		http.StatusCreated,
+	)
 	if err != nil {
 		return err
 	}
-	responseBody := ParseResponse(response, err, "create user")
-	status, statusOk := responseBody["status"].(bool)
-	message, messageOk := responseBody["message"].(string)
-	if responseBody == nil || !statusOk || !messageOk {
-		return fmt.Errorf("invalid response")
-	}
-	if response.StatusCode != http.StatusCreated || !status {
-		return fmt.Errorf(message)
-	}
-	println(message)
+	println(response.message)
 	println("password:" + password)
+	return nil
+}
+
+func AddRole(email string, role string, domain string) error {
+	response, err := RequestAPI("GET", "/api/users", nil, http.StatusOK)
+	if err != nil {
+		return err
+	}
+	userList, userListOk := response.body["data"].([]any)
+	if !userListOk {
+		return fmt.Errorf("response contains no user list")
+	}
+	userID := ""
+	for _, user := range userList {
+		userMap, ok := user.(map[string]any)
+		if !ok {
+			continue
+		}
+		userEmail, emailOk := userMap["email"].(string)
+		id, idOk := userMap["_id"].(string)
+		if emailOk && idOk && userEmail == email {
+			userID = id
+			break
+		}
+	}
+	if userID == "" {
+		return fmt.Errorf("user not found")
+	}
+	response, err = RequestAPI("PATCH", fmt.Sprintf("/api/users/%s", userID),
+		map[string]any{
+			"roles": map[string]any{
+				domain: role,
+			},
+		},
+		http.StatusOK,
+	)
+	if err != nil {
+		return err
+	}
+	println(response.message)
 	return nil
 }
 
@@ -3611,24 +3646,16 @@ func ChangePassword() error {
 	if err != nil {
 		return err
 	}
-	URL := State.APIURL + "/api/users/password/change"
-	data := map[string]any{
-		"currentPassword": string(currentPassword),
-		"newPassword":     string(newPassword),
-	}
-	response, err := models.Send("POST", URL, GetKey(), data)
+	response, err := RequestAPI("POST", "/api/users/password/change",
+		map[string]any{
+			"currentPassword": string(currentPassword),
+			"newPassword":     string(newPassword),
+		},
+		http.StatusOK,
+	)
 	if err != nil {
 		return err
 	}
-	responseBody := ParseResponse(response, err, "change password")
-	status, statusOk := responseBody["status"].(bool)
-	message, messageOk := responseBody["message"].(string)
-	if responseBody == nil || !statusOk || !messageOk {
-		return fmt.Errorf("invalid response")
-	}
-	if response.StatusCode != http.StatusOK || !status {
-		return fmt.Errorf(message)
-	}
-	println(message)
+	println(response.message)
 	return nil
 }
