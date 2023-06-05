@@ -240,19 +240,8 @@ func InitTimeout(duration string) {
 	}
 }
 
-func InitEmail(email string) string {
-	if email != "" {
-		State.UserEmail = email
-		return State.UserEmail
-	}
-	fmt.Println("Error: No User Email Found")
-	if State.DebugLvl > 0 {
-		l.GetErrorLogger().Println(
-			"No User Email provided in env file nor as argument")
-	}
+func InitUser(user User) {
 
-	State.UserEmail = ""
-	return ""
 }
 
 func InitKey(apiKey string) {
@@ -349,45 +338,43 @@ func SetDrawableTemplate(entity string, DrawableJson map[string]string) map[stri
 	return nil
 }
 
-func Login(user string) (string, string, error) {
+func Login(user string) (*User, string, error) {
 	var err error
 	if user == "" {
 		user, err = readline.Line("User: ")
 		if err != nil {
-			return "", "", fmt.Errorf("readline error : %s", err.Error())
+			return nil, "", fmt.Errorf("readline error : %s", err.Error())
 		}
 	}
 	pass, err := readline.Password("Password: ")
 	if err != nil {
-		return "", "", err
+		return nil, "", err
 	}
 	data := map[string]any{"email": user, "password": string(pass)}
 	rawResp, err := models.Send("POST", State.APIURL+"/api/login", "", data)
 	if err != nil {
-		return "", "", fmt.Errorf("error sending login request : %s", err.Error())
+		return nil, "", fmt.Errorf("error sending login request : %s", err.Error())
 	}
 	bodyBytes, err := io.ReadAll(rawResp.Body)
 	if err != nil {
-		return "", "", fmt.Errorf("error reading answer from API : %s", err.Error())
+		return nil, "", fmt.Errorf("error reading answer from API : %s", err.Error())
 	}
 	var resp map[string]any
 	if err = json.Unmarshal(bodyBytes, &resp); err != nil {
-		return "", "", fmt.Errorf("error parsing response : %s", err.Error())
+		return nil, "", fmt.Errorf("error parsing response : %s", err.Error())
 	}
 	status, ok := resp["status"].(bool)
 	if !ok {
-		return "", "", fmt.Errorf("invalid response from API")
+		return nil, "", fmt.Errorf("invalid response from API")
 	}
 	if !status {
-		return "", "", fmt.Errorf(resp["message"].(string))
+		return nil, "", fmt.Errorf(resp["message"].(string))
 	}
-	account, ok := (resp["account"].(map[string]interface{}))
-	if !ok {
-		return "", "", fmt.Errorf("invalid response from API")
+	account, accountOk := (resp["account"].(map[string]interface{}))
+	token, tokenOk := account["token"].(string)
+	userID, userIDOk := account["_id"].(string)
+	if !accountOk || !tokenOk || !userIDOk {
+		return nil, "", fmt.Errorf("invalid response from API")
 	}
-	token, ok := account["token"].(string)
-	if !ok {
-		return "", "", fmt.Errorf("invalid response from API")
-	}
-	return user, token, nil
+	return &User{user, userID}, token, nil
 }

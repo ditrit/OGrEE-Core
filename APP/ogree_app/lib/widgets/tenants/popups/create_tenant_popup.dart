@@ -29,6 +29,7 @@ class _CreateTenantPopupState extends State<CreateTenantPopup> {
   bool _hasDoc = false;
   bool _isLoading = false;
   PlatformFile? _loadedImage;
+  String _imageTag = "latest";
 
   @override
   Widget build(BuildContext context) {
@@ -96,6 +97,11 @@ class _CreateTenantPopupState extends State<CreateTenantPopup> {
                               })),
                     ],
                   ),
+                  getFormField(
+                      save: (newValue) => _imageTag = newValue!,
+                      label: "Version du déploiement (tag)",
+                      icon: Icons.access_time,
+                      initial: _imageTag),
                   getFormField(
                     save: (newValue) {
                       var splitted = newValue!.split(":");
@@ -214,7 +220,8 @@ class _CreateTenantPopupState extends State<CreateTenantPopup> {
                                   _hasWeb,
                                   _hasDoc,
                                   _docUrl,
-                                  _docPort));
+                                  _docPort,
+                                  _imageTag));
                               if (response == "") {
                                 widget.parentCallback();
                                 showSnackBar(
@@ -275,10 +282,12 @@ class _CreateTenantPopupState extends State<CreateTenantPopup> {
       String? prefix,
       String? suffix,
       List<TextInputFormatter>? formatters,
+      String? initial,
       bool isUrl = false}) {
     return Padding(
       padding: const EdgeInsets.only(left: 2, right: 10),
       child: TextFormField(
+        initialValue: initial,
         onSaved: (newValue) => save(newValue),
         validator: (text) {
           if (text == null || text.isEmpty) {

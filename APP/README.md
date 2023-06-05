@@ -49,14 +49,14 @@ cd ogree_app_backend
 This is a backend that connects to a local instance of docker to create new tenants. A new tenant consists of a docker compose deployment of up to 4 containers: API, DB, WebApp and Swagger Doc. Once the frontend connects to this backend, it changes its interface to SuperAdmin mode.  
 
 ### Building and running
-Since the backend connects to docker to launch containers, it has to be run **locally**. To build it, you should have Go installed. We are currently using the 1.19.3 version. To run it, first docker should be up and running.
+Since the backend connects to docker to launch containers, it has to be run **locally**. To build it, you should have Go installed (version >= 1.20). To run it, first docker should be up and running.
 
 In the backend directory, run the following to install dependecies:
 ```console
 go mod download
 ```
 
-It is mandatory to have the `deploy` folder of OGrEE-Core to properly run the backend and also a .env file which should include:
+It is mandatory to have the `deploy` folder of OGrEE-Core to properly run the backend and also a .env file under `ogree_app_backend/` which should include:
 ```
 TOKEN_SECRET=yoursecretstring
 TOKEN_HOUR_LIFESPAN=1

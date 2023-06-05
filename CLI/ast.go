@@ -1392,6 +1392,44 @@ func (n *createUserNode) execute() (interface{}, error) {
 	return nil, nil
 }
 
+type addRoleNode struct {
+	email  node
+	role   node
+	domain node
+}
+
+func (n *addRoleNode) execute() (interface{}, error) {
+	emailVal, err := n.email.execute()
+	if err != nil {
+		return nil, err
+	}
+	email, ok := emailVal.(string)
+	if !ok {
+		return nil, fmt.Errorf("email should be a string")
+	}
+	roleVal, err := n.role.execute()
+	if err != nil {
+		return nil, err
+	}
+	role, ok := roleVal.(string)
+	if !ok {
+		return nil, fmt.Errorf("role should be a string")
+	}
+	domainVal, err := n.domain.execute()
+	if err != nil {
+		return nil, err
+	}
+	domain, ok := domainVal.(string)
+	if !ok {
+		return nil, fmt.Errorf("domain should be a string")
+	}
+	err = cmd.AddRole(email, role, domain)
+	if err != nil {
+		return nil, err
+	}
+	return nil, nil
+}
+
 type changePasswordNode struct{}
 
 func (n *changePasswordNode) execute() (interface{}, error) {

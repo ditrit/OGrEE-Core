@@ -12,6 +12,7 @@ class Tenant {
   bool hasDoc;
   String docUrl;
   String docPort;
+  String imageTag;
 
   Tenant(
       this.name,
@@ -23,7 +24,8 @@ class Tenant {
       this.hasWeb,
       this.hasDoc,
       this.docUrl,
-      this.docPort);
+      this.docPort,
+      this.imageTag);
 
   Map<String, dynamic> toMap() {
     return <String, dynamic>{
@@ -37,6 +39,7 @@ class Tenant {
       'hasDoc': hasDoc,
       'docUrl': docUrl,
       'docPort': docPort,
+      'imageTag': imageTag,
     };
   }
 
@@ -51,7 +54,8 @@ class Tenant {
         map['hasWeb'],
         map['hasDoc'],
         map['docUrl'].toString(),
-        map['docPort'].toString());
+        map['docPort'].toString(),
+        map['imageTag'].toString());
   }
 
   String toJson() => json.encode(toMap());
