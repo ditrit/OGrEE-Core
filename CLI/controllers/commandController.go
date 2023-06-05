@@ -4,12 +4,14 @@ import (
 	"cli/logger"
 	l "cli/logger"
 	"cli/models"
+	"cli/readline"
 	"cli/utils"
 	u "cli/utils"
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
 	"log"
+	"math/rand"
 	"net/http"
 	"os"
 	"os/exec"
@@ -428,7 +430,7 @@ func UpdateObj(Path, id, ent string, data map[string]interface{}, deleteAndPut b
 			//we don't want to update the wrong object
 			objJSON, GETURL = GetObject(Path, true)
 			if objJSON == nil {
-				if State.DebugLvl >= 3 {
+				if State.DebugLvl > INFO {
 					println("DEBUG VIEW PATH:", Path)
 					println("DEBUG VIEW URL:", GETURL)
 				}
@@ -848,7 +850,7 @@ func LSOG() {
 	fmt.Println("OGREE Shell Information")
 	fmt.Println("********************************************")
 
-	fmt.Println("USER EMAIL:", State.UserEmail)
+	fmt.Println("USER EMAIL:", State.User.Email)
 	fmt.Println("API URL:", State.APIURL+"/api/")
 	fmt.Println("UNITY URL:", State.UnityClientURL)
 	fmt.Println("BUILD DATE:", BuildTime)
@@ -1387,7 +1389,6 @@ func GetHierarchy(x string, depth int, silence bool) []map[string]interface{} {
 func GetOCLIAtrributes(Path string, ent int, data map[string]interface{}) error {
 	var attr map[string]interface{}
 	var parent map[string]interface{}
-	var domain string
 
 	ogPath := Path
 	Path = path.Dir(Path)
@@ -1410,11 +1411,18 @@ func GetOCLIAtrributes(Path string, ent int, data map[string]interface{}) error 
 		}
 	}
 
-	// Set default domain
-	if parent != nil {
-		domain = parent["domain"].(string)
-	} else if ent != DOMAIN {
-		domain = State.Customer
+	if ent == DOMAIN {
+		if parent != nil {
+			data["domain"] = parent["name"]
+		} else {
+			data["domain"] = ""
+		}
+	} else {
+		if parent != nil {
+			data["domain"] = parent["domain"]
+		} else {
+			data["domain"] = State.Customer
+		}
 	}
 
 	var err error
@@ -1422,15 +1430,12 @@ func GetOCLIAtrributes(Path string, ent int, data map[string]interface{}) error 
 	case DOMAIN:
 		if parent != nil {
 			data["parentId"] = parent["id"]
-			data["domain"] = parent["name"]
 		} else {
 			data["parentId"] = ""
-			data["domain"] = ""
 		}
 
 	case SITE:
 		//Default values
-		data["domain"] = domain
 		//data["parentId"] = parent["id"]
 		data["attributes"] = map[string]interface{}{}
 
@@ -1496,7 +1501,6 @@ func GetOCLIAtrributes(Path string, ent int, data map[string]interface{}) error 
 		attr["heightUnit"] = "m"
 		//attr["height"] = 0 //Should be set from parser by default
 		data["parentId"] = parent["id"]
-		data["domain"] = domain
 
 	case ROOM:
 		attr = data["attributes"].(map[string]interface{})
@@ -1552,7 +1556,6 @@ func GetOCLIAtrributes(Path string, ent int, data map[string]interface{}) error 
 		}
 
 		data["parentId"] = parent["id"]
-		data["domain"] = domain
 		data["attributes"] = attr
 		if State.DebugLvl >= 3 {
 			println("DEBUG VIEW THE JSON")
@@ -1620,7 +1623,6 @@ func GetOCLIAtrributes(Path string, ent int, data map[string]interface{}) error 
 		}
 
 		data["parentId"] = parent["id"]
-		data["domain"] = domain
 		data["attributes"] = attr
 
 	case DEVICE:
@@ -1709,13 +1711,11 @@ func GetOCLIAtrributes(Path string, ent int, data map[string]interface{}) error 
 
 		MergeMaps(attr, baseAttrs, false)
 
-		data["domain"] = domain
 		data["parentId"] = parent["id"]
 		data["attributes"] = attr
 
 	case GROUP:
 		//name, category, domain, pid
-		data["domain"] = domain
 		data["parentId"] = parent["id"]
 		attr := data["attributes"].(map[string]interface{})
 
@@ -1725,7 +1725,6 @@ func GetOCLIAtrributes(Path string, ent int, data map[string]interface{}) error 
 	case CORRIDOR:
 		//name, category, domain, pid
 		attr = data["attributes"].(map[string]interface{})
-		data["domain"] = domain
 		data["parentId"] = parent["id"]
 
 	case STRAYSENSOR:
@@ -1739,7 +1738,6 @@ func GetOCLIAtrributes(Path string, ent int, data map[string]interface{}) error 
 		}
 
 	case STRAY_DEV:
-		data["domain"] = State.Customer
 		attr = data["attributes"].(map[string]interface{})
 		if _, ok := attr["template"]; ok {
 			GetOCLIAtrributesTemplateHelper(attr, data, DEVICE)
@@ -3543,5 +3541,99 @@ func fetchTemplate(name string, objType int) map[string]interface{} {
 		}
 	}
 
+	return nil
+}
+
+func randPassword(n int) string {
+	const passChars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
+	b := make([]byte, n)
+	for i := range b {
+		b[i] = passChars[rand.Intn(len(passChars))]
+	}
+	return string(b)
+}
+
+func CreateUser(email string, role string, domain string) error {
+	password := randPassword(14)
+	response, err := RequestAPI(
+		"POST",
+		"/api/users",
+		map[string]any{
+			"email":    email,
+			"password": password,
+			"roles": map[string]any{
+				domain: role,
+			},
+		},
+		http.StatusCreated,
+	)
+	if err != nil {
+		return err
+	}
+	println(response.message)
+	println("password:" + password)
+	return nil
+}
+
+func AddRole(email string, role string, domain string) error {
+	response, err := RequestAPI("GET", "/api/users", nil, http.StatusOK)
+	if err != nil {
+		return err
+	}
+	userList, userListOk := response.body["data"].([]any)
+	if !userListOk {
+		return fmt.Errorf("response contains no user list")
+	}
+	userID := ""
+	for _, user := range userList {
+		userMap, ok := user.(map[string]any)
+		if !ok {
+			continue
+		}
+		userEmail, emailOk := userMap["email"].(string)
+		id, idOk := userMap["_id"].(string)
+		if emailOk && idOk && userEmail == email {
+			userID = id
+			break
+		}
+	}
+	if userID == "" {
+		return fmt.Errorf("user not found")
+	}
+	response, err = RequestAPI("PATCH", fmt.Sprintf("/api/users/%s", userID),
+		map[string]any{
+			"roles": map[string]any{
+				domain: role,
+			},
+		},
+		http.StatusOK,
+	)
+	if err != nil {
+		return err
+	}
+	println(response.message)
+	return nil
+}
+
+func ChangePassword() error {
+	currentPassword, err := readline.Password("Current password: ")
+	if err != nil {
+		return err
+	}
+	newPassword, err := readline.Password("New password: ")
+	if err != nil {
+		return err
+	}
+	response, err := RequestAPI("POST", "/api/users/password/change",
+		map[string]any{
+			"currentPassword": string(currentPassword),
+			"newPassword":     string(newPassword),
+		},
+		http.StatusOK,
+	)
+	if err != nil {
+		return err
+	}
+	println(response.message)
 	return nil
 }

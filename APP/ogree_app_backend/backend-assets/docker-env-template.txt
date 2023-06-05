@@ -1,0 +1,11 @@
+CORE_DIR=../..
+API_BUILD_DIR=API
+APP_BUILD_DIR=APP
+API_DOC_UI_PORT={{.DocPort}}
+API_PORT={{.ApiPort}}
+WEB_PORT={{.WebPort}}
+CUSTOMER_API_PASSWORD={{.CustomerPassword}}
+API_EXTERNALURL={{.ApiUrl}}
+COMPOSE_PROJECT_NAME={{.Name}}
+APP_ASSETS_DIR={{.AssetsDir}}
+IMAGE_TAG={{.ImageTag}}

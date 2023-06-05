@@ -16,13 +16,14 @@ import (
 )
 
 type backendServer struct {
-	Host     string `json:"host" binding:"required"`
-	User     string `json:"user" binding:"required"`
-	Password string `json:"password"`
-	Pkey     string `json:"pkey"`
-	PkeyPass string `json:"pkeypass"`
-	DstPath  string `json:"dstpath" binding:"required"`
-	RunPort  string `json:"runport" binding:"required"`
+	Host      string `json:"host" binding:"required"`
+	User      string `json:"user" binding:"required"`
+	Password  string `json:"password"`
+	Pkey      string `json:"pkey"`
+	PkeyPass  string `json:"pkeypass"`
+	DstPath   string `json:"dstpath" binding:"required"`
+	RunPort   string `json:"runport" binding:"required"`
+	AtStartup bool   `json:"startup"`
 }
 
 // Add a binary of this same backend in another server
@@ -100,13 +101,29 @@ func createNewBackend(c *gin.Context) {
 	}
 
 	SSHRunCmd("mkdir -p "+newServer.DstPath+"/docker", conn, true)
+	SSHRunCmd("mkdir -p "+newServer.DstPath+"/backend-assets", conn, true)
+	SSHRunCmd("mkdir -p "+newServer.DstPath+"/flutter-assets", conn, true)
 
 	SSHCopyFile("ogree_app_backend_linux", newServer.DstPath+"/ogree_app_backend", conn)
-	SSHCopyFile("docker-env-template.txt", newServer.DstPath+"/docker-env-template.txt", conn)
+	SSHCopyFile("backend-assets/docker-env-template.txt", newServer.DstPath+"/backend-assets/docker-env-template.txt", conn)
+	SSHCopyFile("backend-assets/template.service", newServer.DstPath+"/backend-assets/template.service", conn)
+	SSHCopyFile("flutter-assets/flutter-env-template.txt", newServer.DstPath+"/flutter-assets/flutter-env-template.txt", conn)
+	SSHCopyFile("flutter-assets/logo.png", newServer.DstPath+"/flutter-assets/logo.png", conn)
 	SSHCopyFile(".envcopy", newServer.DstPath+"/.env", conn)
 	SSHCopyFile(DOCKER_DIR+"docker-compose.yml", newServer.DstPath+"/docker/docker-compose.yml", conn)
 	SSHCopyFile(DEPLOY_DIR+"createdb.js", newServer.DstPath+"/createdb.js", conn)
 	SSHCopyFile(DOCKER_DIR+"init.sh", newServer.DstPath+"/docker/init.sh", conn)
+	if newServer.AtStartup {
+		// Create service file and send it to server
+		file, _ := os.Create("ogree_app_backend.service")
+		err = servertmplt.Execute(file, newServer)
+		if err != nil {
+			fmt.Println("Error creating service file: " + err.Error())
+		}
+		file.Close()
+		SSHCopyFile("ogree_app_backend.service", "/etc/systemd/system/ogree_app_backend.service", conn)
+		SSHRunCmd("systemctl enable ogree_app_backend.service", conn, true)
+	}
 
 	SSHRunCmd("chmod +x "+newServer.DstPath+"/ogree_app_backend", conn, true)
 	SSHRunCmd("cd "+newServer.DstPath+" && nohup "+newServer.DstPath+"/ogree_app_backend -port "+newServer.RunPort+" > "+newServer.DstPath+"/ogree_backend.out", conn, false)
@@ -118,6 +135,7 @@ func SSHCopyFile(srcPath, dstPath string, client *ssh.Client) error {
 	// open an SFTP session over an existing ssh connection.
 	sftp, err := sftp.NewClient(client)
 	if err != nil {
+		println(err.Error())
 		return err
 	}
 	defer sftp.Close()
@@ -125,6 +143,7 @@ func SSHCopyFile(srcPath, dstPath string, client *ssh.Client) error {
 	// Open the source file
 	srcFile, err := os.Open(srcPath)
 	if err != nil {
+		println(err.Error())
 		return err
 	}
 	defer srcFile.Close()
@@ -132,12 +151,14 @@ func SSHCopyFile(srcPath, dstPath string, client *ssh.Client) error {
 	// Create the destination file
 	dstFile, err := sftp.Create(dstPath)
 	if err != nil {
+		println(err.Error())
 		return err
 	}
 	defer dstFile.Close()
 
 	// write to file
 	if _, err := dstFile.ReadFrom(srcFile); err != nil {
+		println(err.Error())
 		return err
 	}
 	return nil

@@ -34,7 +34,6 @@ type Config struct {
 	DrawLimit    int
 	Updates      []string
 	User         string
-	APIKEY       string
 	Variables    []Vardef
 }
 
@@ -45,7 +44,6 @@ type ArgStruct struct {
 	Verbose    string `json:",omitempty"`
 	UnityURL   string `json:",omitempty"`
 	APIURL     string `json:",omitempty"`
-	APIKEY     string `json:",omitempty"`
 	HistPath   string `json:",omitempty"`
 	Script     string `json:",omitempty"`
 }
@@ -64,7 +62,6 @@ func defaultConfig() Config {
 		DrawLimit:    50,
 		Updates:      []string{"all"},
 		User:         "",
-		APIKEY:       "",
 		Variables:    []Vardef{},
 	}
 }
@@ -84,7 +81,6 @@ func ReadConfig() *Config {
 			"{NONE,ERROR,WARNING,INFO,DEBUG}.")
 	flag.StringVarP(&args.UnityURL, "unity_url", "u", conf.UnityURL, "Unity URL")
 	flag.StringVarP(&args.APIURL, "api_url", "a", conf.APIURL, "API URL")
-	flag.StringVarP(&args.APIKEY, "api_key", "k", conf.APIKEY, "Indicate the key of the API")
 	flag.StringVarP(&args.HistPath, "history_path", "h", conf.HistPath,
 		"Indicate the location of the Shell's history file")
 	flag.StringVarP(&args.Script, "file", "f", conf.Script, "Launch the shell as an interpreter "+

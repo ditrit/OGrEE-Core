@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:ogree_app/common/api_backend.dart';
 import 'package:ogree_app/common/snackbar.dart';
 import 'package:ogree_app/pages/projects_page.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:ogree_app/widgets/language_toggle.dart';
+
+import 'reset_page.dart';
 
 class LoginPage extends StatefulWidget {
   static String tag = 'login-page';
@@ -27,6 +30,7 @@ class _LoginPageState extends State<LoginPage> {
   String? _email;
   String? _password;
   String _apiUrl = "";
+  bool forgot = false;
 
   @override
   Widget build(BuildContext context) {
@@ -53,42 +57,64 @@ class _LoginPageState extends State<LoginPage> {
                 ),
                 const SizedBox(height: 5),
                 Card(
-                  // surfaceTintColor: Colors.white,
-                  // elevation: 0,
                   child: Form(
                     key: _formKey,
                     child: Container(
                       constraints:
-                          const BoxConstraints(maxWidth: 550, maxHeight: 500),
+                          const BoxConstraints(maxWidth: 550, maxHeight: 510),
                       padding: const EdgeInsets.only(
                           right: 100, left: 100, top: 50, bottom: 30),
                       child: SingleChildScrollView(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.stretch,
                           children: [
-                            Center(
-                                child: Text(localeMsg.welcome,
-                                    style: Theme.of(context)
-                                        .textTheme
-                                        .headlineLarge)),
+                            forgot
+                                ? Row(
+                                    children: [
+                                      IconButton(
+                                          onPressed: () => Navigator.of(context)
+                                              .push(MaterialPageRoute(
+                                                  builder: (context) =>
+                                                      LoginPage())),
+                                          icon: Icon(
+                                            Icons.arrow_back,
+                                            color: Colors.blue.shade900,
+                                          )),
+                                      const SizedBox(width: 5),
+                                      Text(
+                                        "Request password reset",
+                                        style: Theme.of(context)
+                                            .textTheme
+                                            .headlineLarge,
+                                      ),
+                                    ],
+                                  )
+                                : Center(
+                                    child: Text(localeMsg.welcome,
+                                        style: Theme.of(context)
+                                            .textTheme
+                                            .headlineLarge)),
                             const SizedBox(height: 8),
-                            Center(
-                              child: Text(
-                                localeMsg.welcomeConnect,
-                                style:
-                                    Theme.of(context).textTheme.headlineMedium,
-                              ),
-                            ),
-                            const SizedBox(height: 25),
-                            allowBackChoice
+                            forgot
+                                ? SizedBox(height: 10)
+                                : Center(
+                                    child: Text(
+                                      localeMsg.welcomeConnect,
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .headlineMedium,
+                                    ),
+                                  ),
+                            forgot ? Container() : const SizedBox(height: 20),
+                            dotenv.env['ALLOW_SET_BACK'] == "true"
                                 ? backendInput()
                                 : Center(
                                     child: Image.asset(
-                                      "assets/edf_logo.png",
-                                      height: 30,
+                                      "assets/custom/logo.png",
+                                      height: 40,
                                     ),
                                   ),
-                            const SizedBox(height: 32),
+                            const SizedBox(height: 30),
                             TextFormField(
                               onSaved: (newValue) => _email = newValue,
                               validator: (text) {
@@ -108,67 +134,97 @@ class _LoginPageState extends State<LoginPage> {
                               ),
                             ),
                             const SizedBox(height: 20),
-                            TextFormField(
-                              obscureText: true,
-                              onSaved: (newValue) => _password = newValue,
-                              onEditingComplete: () => tryLogin(),
-                              validator: (text) {
-                                if (text == null || text.isEmpty) {
-                                  return localeMsg.mandatoryField;
-                                }
-                                return null;
-                              },
-                              decoration: InputDecoration(
-                                labelText: localeMsg.password,
-                                hintText: '********',
-                                labelStyle: GoogleFonts.inter(
-                                  fontSize: 11,
-                                  color: Colors.black,
-                                ),
-                                border: inputStyle,
-                              ),
-                            ),
-                            const SizedBox(height: 25),
-                            Wrap(
-                              alignment: WrapAlignment.spaceBetween,
-                              crossAxisAlignment: WrapCrossAlignment.center,
-                              children: [
-                                Wrap(
-                                  crossAxisAlignment: WrapCrossAlignment.center,
-                                  children: [
-                                    SizedBox(
-                                      height: 24,
-                                      width: 24,
-                                      child: Checkbox(
-                                        value: _isChecked,
-                                        onChanged: (bool? value) =>
-                                            setState(() => _isChecked = value!),
-                                      ),
-                                    ),
-                                    const SizedBox(width: 8),
-                                    Text(
-                                      localeMsg.stayLogged,
-                                      style: TextStyle(
-                                        fontSize: 14,
+                            forgot
+                                ? Container()
+                                : TextFormField(
+                                    obscureText: true,
+                                    onSaved: (newValue) => _password = newValue,
+                                    onEditingComplete: () => tryLogin(),
+                                    validator: (text) {
+                                      if (!forgot &&
+                                          (text == null || text.isEmpty)) {
+                                        return localeMsg.mandatoryField;
+                                      }
+                                      return null;
+                                    },
+                                    decoration: InputDecoration(
+                                      labelText: localeMsg.password,
+                                      hintText: '********',
+                                      labelStyle: GoogleFonts.inter(
+                                        fontSize: 11,
                                         color: Colors.black,
                                       ),
+                                      border: inputStyle,
                                     ),
-                                  ],
-                                ),
-                                Text(
-                                  localeMsg.forgotPassword,
-                                  style: TextStyle(
-                                    fontSize: 14,
-                                    color:
-                                        const Color.fromARGB(255, 0, 84, 152),
                                   ),
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: 30),
+                            !forgot ? const SizedBox(height: 25) : Container(),
+                            forgot
+                                ? TextButton(
+                                    onPressed: () => Navigator.of(context).push(
+                                      MaterialPageRoute(
+                                        builder: (context) => ResetPage(
+                                          token: '',
+                                        ),
+                                      ),
+                                    ),
+                                    child: Text(
+                                      "I have a reset token",
+                                      style: TextStyle(
+                                        fontSize: 14,
+                                        color: const Color.fromARGB(
+                                            255, 0, 84, 152),
+                                      ),
+                                    ),
+                                  )
+                                : Wrap(
+                                    alignment: WrapAlignment.spaceBetween,
+                                    crossAxisAlignment:
+                                        WrapCrossAlignment.center,
+                                    children: [
+                                      Wrap(
+                                        crossAxisAlignment:
+                                            WrapCrossAlignment.center,
+                                        children: [
+                                          SizedBox(
+                                            height: 24,
+                                            width: 24,
+                                            child: Checkbox(
+                                              value: _isChecked,
+                                              onChanged: (bool? value) =>
+                                                  setState(() =>
+                                                      _isChecked = value!),
+                                            ),
+                                          ),
+                                          const SizedBox(width: 8),
+                                          Text(
+                                            localeMsg.stayLogged,
+                                            style: TextStyle(
+                                              fontSize: 14,
+                                              color: Colors.black,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                      TextButton(
+                                        onPressed: () => setState(() {
+                                          forgot = !forgot;
+                                        }),
+                                        child: Text(
+                                          localeMsg.forgotPassword,
+                                          style: TextStyle(
+                                            fontSize: 14,
+                                            color: const Color.fromARGB(
+                                                255, 0, 84, 152),
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                            SizedBox(height: forgot ? 20 : 30),
                             Align(
                               child: ElevatedButton(
-                                onPressed: () => tryLogin(),
+                                onPressed: () =>
+                                    forgot ? resetPassword() : tryLogin(),
                                 style: ElevatedButton.styleFrom(
                                   padding: const EdgeInsets.symmetric(
                                     vertical: 20,
@@ -176,7 +232,7 @@ class _LoginPageState extends State<LoginPage> {
                                   ),
                                 ),
                                 child: Text(
-                                  localeMsg.login,
+                                  forgot ? "Request Reset" : localeMsg.login,
                                   style: TextStyle(
                                     fontSize: 14,
                                     fontWeight: FontWeight.w600,
@@ -222,8 +278,27 @@ class _LoginPageState extends State<LoginPage> {
     }
   }
 
+  resetPassword() {
+    if (_formKey.currentState!.validate()) {
+      _formKey.currentState!.save();
+      userForgotPassword(_email!, userUrl: _apiUrl)
+          .then((value) => value == ""
+              ? showSnackBar(context, "Reset request sent", isSuccess: true)
+              : showSnackBar(
+                  context, AppLocalizations.of(context)!.invalidLogin,
+                  isError: true))
+          .onError((error, stackTrace) {
+        print(error);
+        showSnackBar(context, error.toString().trim(), isError: true);
+      });
+    }
+  }
+
   backendInput() {
-    final options = backendUrl.split(",");
+    List<String> options = [];
+    if (dotenv.env['BACK_URLS'] != null) {
+      options = dotenv.env['BACK_URLS']!.split(",");
+    }
     final localeMsg = AppLocalizations.of(context)!;
     return RawAutocomplete<String>(
       optionsBuilder: (TextEditingValue textEditingValue) {
@@ -286,13 +361,3 @@ class _LoginPageState extends State<LoginPage> {
     );
   }
 }
-
-String backendUrl = const String.fromEnvironment(
-  'BACK_URLS',
-  defaultValue: 'http://localhost:8082,https://b.api.ogree.ditrit.io',
-);
-
-bool allowBackChoice = const bool.fromEnvironment(
-  'ALLOW_SET_BACK',
-  defaultValue: true,
-);

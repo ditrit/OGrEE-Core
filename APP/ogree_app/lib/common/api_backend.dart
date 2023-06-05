@@ -1,6 +1,8 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:typed_data';
+import 'package:file_picker/file_picker.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
 import 'package:ogree_app/models/domain.dart';
 import 'package:ogree_app/models/project.dart';
@@ -11,10 +13,6 @@ part 'api_tenant.dart';
 
 String apiUrl = "";
 String tenantUrl = "";
-const String apiUrlEnvSet = String.fromEnvironment(
-  'API_URL',
-  defaultValue: 'http://localhost:3001',
-);
 var token = "";
 var tenantToken = "";
 getHeader(token) => {
@@ -28,7 +26,7 @@ Future<List<String>> loginAPI(String email, String password,
   if (userUrl != "") {
     apiUrl = userUrl;
   } else {
-    apiUrl = apiUrlEnvSet;
+    apiUrl = dotenv.get('API_URL', fallback: 'http://localhost:3001');
   }
   print("API login ogree $apiUrl");
   Uri url = Uri.parse('$apiUrl/api/login');
@@ -42,6 +40,75 @@ Future<List<String>> loginAPI(String email, String password,
     return [data["email"].toString(), data["isTenant"] ?? ""];
   } else {
     return [""];
+  }
+}
+
+Future<String> changeUserPassword(String currentPassword, newPassword) async {
+  print("API change password");
+  Uri url = Uri.parse('$apiUrl/api/users/password/change');
+  final response = await http.post(url,
+      body: json.encode(<String, dynamic>{
+        'currentPassword': currentPassword,
+        'newPassword': newPassword
+      }),
+      headers: getHeader(token));
+  print(response);
+  if (response.statusCode == 200) {
+    Map<String, dynamic> data = json.decode(response.body);
+    token = data["token"]!;
+    print(token);
+    return "";
+  } else {
+    Map<String, dynamic> data = json.decode(response.body);
+    return "Error: ${data["message"]}";
+  }
+}
+
+Future<String> userForgotPassword(String email, {String userUrl = ""}) async {
+  print("API forgot password");
+  if (userUrl != "") {
+    apiUrl = userUrl;
+  } else {
+    apiUrl = dotenv.get('API_URL', fallback: 'http://localhost:3001');
+  }
+  Uri url = Uri.parse('$apiUrl/api/users/password/forgot');
+  final response = await http.post(
+    url,
+    body: json.encode(<String, dynamic>{'email': email}),
+  );
+  print(response.body);
+  if (response.statusCode == 200) {
+    Map<String, dynamic> data = json.decode(response.body);
+    print(data);
+    return "";
+  } else {
+    Map<String, dynamic> data = json.decode(response.body);
+    return "Error: ${data["message"]}";
+  }
+}
+
+Future<String> userResetPassword(String password, String resetToken,
+    {String userUrl = ""}) async {
+  print("API reset password");
+  if (userUrl != "") {
+    apiUrl = userUrl;
+  } else {
+    apiUrl = dotenv.get('API_URL', fallback: 'http://localhost:3001');
+  }
+  Uri url = Uri.parse('$apiUrl/api/users/password/reset');
+  final response = await http.post(
+    url,
+    body: json.encode(<String, dynamic>{'newPassword': password}),
+    headers: getHeader(resetToken),
+  );
+  print(response.body);
+  if (response.statusCode == 200) {
+    Map<String, dynamic> data = json.decode(response.body);
+    print(data);
+    return "";
+  } else {
+    Map<String, dynamic> data = json.decode(response.body);
+    return "Error: ${data["message"]}";
   }
 }
 
@@ -211,7 +278,21 @@ Future<String> createTenant(Tenant tenant) async {
   }
 }
 
-Future<String> createBackendServer(Map<String, String> newBackend) async {
+Future<String> uploadImage(PlatformFile image, String tenant) async {
+  print("API upload Tenant logo");
+  Uri url = Uri.parse('$apiUrl/api/tenants/$tenant/logo');
+  var request = http.MultipartRequest("POST", url);
+  request.headers.addAll(getHeader(token));
+  request.files.add(
+      http.MultipartFile.fromBytes("file", image.bytes!, filename: image.name));
+
+  var response = await request.send();
+  print(response.statusCode);
+  var body = await response.stream.bytesToString();
+  return body;
+}
+
+Future<String> createBackendServer(Map<String, dynamic> newBackend) async {
   print("API create Back Server");
   Uri url = Uri.parse('$apiUrl/api/servers');
   final response = await http.post(url,

@@ -4,6 +4,7 @@ package controllers
 //controller package
 //And const definitions used throughout the controllers package
 import (
+	"cli/models"
 	"encoding/json"
 	"fmt"
 )
@@ -271,4 +272,20 @@ func GetParentOfEntity(ent int) int {
 	default:
 		return -3
 	}
+}
+
+func RequestAPI(method string, endpoint string, body map[string]any, expectedStatus int) (Response, error) {
+	URL := State.APIURL + endpoint
+	httpResponse, err := models.Send(method, URL, GetKey(), body)
+	if err != nil {
+		return Response{}, err
+	}
+	response, err := ParseResponseClean(httpResponse)
+	if err != nil {
+		return Response{}, err
+	}
+	if response.status != expectedStatus {
+		return Response{}, fmt.Errorf(response.message)
+	}
+	return response, nil
 }

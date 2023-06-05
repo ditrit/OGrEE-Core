@@ -1021,6 +1021,26 @@ func (p *parser) parseCreateOrphan() node {
 	return &createOrphanNode{path, template}
 }
 
+func (p *parser) parseCreateUser() node {
+	defer un(trace(p, "create user"))
+	email := p.parseString("email")
+	p.expect("@")
+	role := p.parseString("role")
+	p.expect("@")
+	domain := p.parseString("domain")
+	return &createUserNode{email, role, domain}
+}
+
+func (p *parser) parseAddRole() node {
+	defer un(trace(p, "add role"))
+	email := p.parseString("email")
+	p.expect("@")
+	role := p.parseString("role")
+	p.expect("@")
+	domain := p.parseString("domain")
+	return &addRoleNode{email, role, domain}
+}
+
 func (p *parser) parseUpdate() node {
 	defer un(trace(p, "update"))
 	path := p.parsePath("")
@@ -1138,6 +1158,8 @@ func (p *parser) parseCommand(name string) node {
 		"group":    p.parseCreateGroup,
 		"gr":       p.parseCreateGroup,
 		"orphan":   p.parseCreateOrphan,
+		"user":     p.parseCreateUser,
+		"role":     p.parseAddRole,
 	}
 	noArgsCommands = map[string]node{
 		"selection":    &selectNode{},
@@ -1147,6 +1169,7 @@ func (p *parser) parseCommand(name string) node {
 		"lsenterprise": &lsenterpriseNode{},
 		"pwd":          &pwdNode{},
 		"exit":         &exitNode{},
+		"changepw":     &changePasswordNode{},
 	}
 	commands := []node{}
 	var command node
