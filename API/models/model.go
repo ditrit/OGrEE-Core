@@ -344,30 +344,29 @@ func GetCompleteHierarchyAttributes(userRoles map[string]Role) (map[string]inter
 	}
 
 	for _, collName := range collNames {
-		var projection primitive.D
-		if collName == "site" {
-			projection = bson.D{{Key: "name", Value: 1}, {Key: "attributes", Value: 1}}
-		} else {
-			projection = bson.D{{Key: "hierarchyName", Value: 1}, {Key: "attributes", Value: 1}}
-		}
-		opts := options.Find().SetProjection(projection)
+		if entInt := u.EntityStrToInt(collName); entInt > -1 {
+			projection := bson.D{{Key: "hierarchyName", Value: 1}, {Key: "attributes", Value: 1},
+				{Key: "domain", Value: 1}}
 
-		c, err := db.Collection(collName).Find(ctx, bson.M{}, opts)
-		if err != nil {
-			println(err.Error())
-		}
-		data, error := ExtractCursor(c, ctx, u.EntityStrToInt(collName), userRoles)
-		if error != "" {
-			fmt.Println(error)
-			return nil, error
-		}
+			opts := options.Find().SetProjection(projection)
 
-		for _, obj := range data {
-			if obj["attributes"] != nil {
-				if obj["hierarchyName"] != nil {
-					response[obj["hierarchyName"].(string)] = obj["attributes"]
-				} else if obj["name"] != nil {
-					response[obj["name"].(string)] = obj["attributes"]
+			c, err := db.Collection(collName).Find(ctx, bson.M{}, opts)
+			if err != nil {
+				println(err.Error())
+			}
+			data, error := ExtractCursor(c, ctx, entInt, userRoles)
+			if error != "" {
+				fmt.Println(error)
+				return nil, error
+			}
+
+			for _, obj := range data {
+				if obj["attributes"] != nil {
+					if obj["hierarchyName"] != nil {
+						response[obj["hierarchyName"].(string)] = obj["attributes"]
+					} else if obj["name"] != nil {
+						response[obj["name"].(string)] = obj["attributes"]
+					}
 				}
 			}
 		}
@@ -1269,7 +1268,6 @@ func ExtractCursor(c *mongo.Cursor, ctx context.Context, entity int, userRoles m
 			//Check permissions
 			var domain string
 			if entity == u.DOMAIN {
-				fmt.Println(x)
 				domain = x["hierarchyName"].(string)
 			} else {
 				domain = x["domain"].(string)
