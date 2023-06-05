@@ -45,6 +45,75 @@ Future<List<String>> loginAPI(String email, String password,
   }
 }
 
+Future<String> changeUserPassword(String currentPassword, newPassword) async {
+  print("API change password");
+  Uri url = Uri.parse('$apiUrl/api/users/password/change');
+  final response = await http.post(url,
+      body: json.encode(<String, dynamic>{
+        'currentPassword': currentPassword,
+        'newPassword': newPassword
+      }),
+      headers: getHeader(token));
+  print(response);
+  if (response.statusCode == 200) {
+    Map<String, dynamic> data = json.decode(response.body);
+    token = data["token"]!;
+    print(token);
+    return "";
+  } else {
+    Map<String, dynamic> data = json.decode(response.body);
+    return "Error: ${data["message"]}";
+  }
+}
+
+Future<String> userForgotPassword(String email, {String userUrl = ""}) async {
+  print("API forgot password");
+  if (userUrl != "") {
+    apiUrl = userUrl;
+  } else {
+    apiUrl = apiUrlEnvSet;
+  }
+  Uri url = Uri.parse('$apiUrl/api/users/password/forgot');
+  final response = await http.post(
+    url,
+    body: json.encode(<String, dynamic>{'email': email}),
+  );
+  print(response.body);
+  if (response.statusCode == 200) {
+    Map<String, dynamic> data = json.decode(response.body);
+    print(data);
+    return "";
+  } else {
+    Map<String, dynamic> data = json.decode(response.body);
+    return "Error: ${data["message"]}";
+  }
+}
+
+Future<String> userResetPassword(String password, String resetToken,
+    {String userUrl = ""}) async {
+  print("API reset password");
+  if (userUrl != "") {
+    apiUrl = userUrl;
+  } else {
+    apiUrl = apiUrlEnvSet;
+  }
+  Uri url = Uri.parse('$apiUrl/api/users/password/reset');
+  final response = await http.post(
+    url,
+    body: json.encode(<String, dynamic>{'newPassword': password}),
+    headers: getHeader(resetToken),
+  );
+  print(response.body);
+  if (response.statusCode == 200) {
+    Map<String, dynamic> data = json.decode(response.body);
+    print(data);
+    return "";
+  } else {
+    Map<String, dynamic> data = json.decode(response.body);
+    return "Error: ${data["message"]}";
+  }
+}
+
 Future<List<Map<String, List<String>>>> fetchObjectsTree(
     {onlyDomain = false}) async {
   print("API get tree");

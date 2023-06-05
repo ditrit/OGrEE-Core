@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:ogree_app/common/api_backend.dart';
 import 'package:ogree_app/common/popup_dialog.dart';
 import 'package:ogree_app/pages/login_page.dart';
 import 'package:ogree_app/pages/projects_page.dart';
+import 'package:ogree_app/widgets/change_password_popup.dart';
 import 'package:ogree_app/widgets/language_toggle.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
@@ -49,19 +49,25 @@ AppBar myAppBar(context, userEmail, {isTenantMode = false}) {
           onSelected: (value) {
             if (value == "logout") {
               logout();
-            } else {
+            } else if (value == "new") {
               showCustomPopup(
                   context, CreateServerPopup(parentCallback: () {}));
+            } else {
+              showCustomPopup(context, ChangePasswordPopup());
             }
           },
           itemBuilder: (_) => <PopupMenuEntry<String>>[
                 PopupMenuItem(
-                  value: "logout",
-                  child: Text("Logout"),
-                ),
-                PopupMenuItem(
                   value: "new",
                   child: Text(AppLocalizations.of(context)!.addServer),
+                ),
+                PopupMenuItem(
+                  value: "change",
+                  child: Text("Change password"),
+                ),
+                PopupMenuItem(
+                  value: "logout",
+                  child: Text("Logout"),
                 ),
               ],
           child: Row(

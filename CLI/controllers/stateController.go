@@ -17,6 +17,11 @@ var BuildTree string
 var GitCommitDate string
 var State ShellState
 
+type User struct {
+	Email string
+	ID    string
+}
+
 type ShellState struct {
 	Prompt           string
 	BlankPrompt      string
@@ -28,7 +33,7 @@ type ShellState struct {
 	ConfigPath       string //Holds file path of '.env'
 	HistoryFilePath  string //Holds file path of '.history'
 	UnityClientURL   string
-	UserEmail        string
+	User             User
 	APIURL           string
 	APIKEY           string
 	UnityClientAvail bool  //For deciding to message unity or not
@@ -130,8 +135,7 @@ func getNextInPath(name string, root *Node) *Node {
 // storing objects in a tree and returns string arr
 func FetchNodesAtLevel(Path string) []string {
 	names := []string{}
-	urls := []string{}
-
+	var urls []string
 	paths := strings.Split(path.Clean(Path), "/")
 
 	/*if len(paths) == 1 || len(paths) == 0 {
@@ -139,18 +143,18 @@ func FetchNodesAtLevel(Path string) []string {
 	}*/
 
 	if len(paths) == 2 && paths[1] == "Physical" {
-		names = NodesAtLevel(&State.TreeHierarchy, *StrToStack(Path))
+		names = NodesAtLevel(State.TreeHierarchy, *StrToStack(Path))
 		urls = []string{State.APIURL + "/api/sites"}
 	} else {
 		if len(paths) == 3 && paths[2] == "Stray" {
-			names = NodesAtLevel(&State.TreeHierarchy, *StrToStack(Path))
+			names = NodesAtLevel(State.TreeHierarchy, *StrToStack(Path))
 		}
 
 		if len(paths) < 3 { // /Physical or / or /Logical
 			//println("Should be here")
 			//println("LEN:", len(paths))
 			//println("YO DEBUG", path)
-			return NodesAtLevel(&State.TreeHierarchy, *StrToStack(Path))
+			return NodesAtLevel(State.TreeHierarchy, *StrToStack(Path))
 		}
 
 		// 2: since first idx is useless
@@ -205,16 +209,16 @@ func FetchJsonNodesAtLevel(Path string) []map[string]interface{} {
 	paths := strings.Split(path.Clean(Path), "/")
 
 	if len(paths) == 2 && paths[1] == "Physical" {
-		x := NodesAtLevel(&State.TreeHierarchy, *StrToStack(Path))
+		x := NodesAtLevel(State.TreeHierarchy, *StrToStack(Path))
 		objects = append(objects, strArrToMapStrInfArr(x)...)
 		urls = []string{State.APIURL + "/api/sites"}
 	} else {
 		if len(paths) == 3 && paths[2] == "Stray" || len(paths) < 3 {
-			x := NodesAtLevel(&State.TreeHierarchy, *StrToStack(Path))
+			x := NodesAtLevel(State.TreeHierarchy, *StrToStack(Path))
 			return strArrToMapStrInfArr(x)
 		}
 
-		if len(paths) == 3 && paths[2] == "Domain" {
+		if len(paths) >= 3 && paths[2] == "Domain" {
 			urls = []string{State.APIURL + "/api/domains"}
 
 		}
@@ -272,11 +276,30 @@ func FetchJsonNodesAtLevel(Path string) []map[string]interface{} {
 							objects = append(objects, object)
 						}
 					}
-
 				}
-
 			}
 		}
+	}
+	if len(paths) >= 3 && paths[2] == "Domain" {
+		parentHierarchyName := Path[len("/Organisation/Domain"):]
+		if len(parentHierarchyName) > 0 && parentHierarchyName[0] == '/' {
+			parentHierarchyName = parentHierarchyName[1:]
+		}
+		parentHierarchyName = strings.Replace(parentHierarchyName, "/", ".", -1)
+		filteredObjects := []map[string]any{}
+		for _, obj := range objects {
+			hierarchyName := obj["hierarchyName"].(string)
+			if strings.HasPrefix(hierarchyName, parentHierarchyName) {
+				suffix := hierarchyName[len(parentHierarchyName):]
+				if len(suffix) > 0 && suffix[0] == '.' {
+					suffix = suffix[1:]
+				}
+				if !strings.Contains(suffix, ".") {
+					filteredObjects = append(filteredObjects, obj)
+				}
+			}
+		}
+		return filteredObjects
 	}
 	return objects
 }
@@ -386,10 +409,10 @@ func FindNearestNodeInTree(root **Node, path *Stack, silenced bool) **Node {
 	}
 }
 
-func NodesAtLevel(root **Node, x Stack) []string {
+func NodesAtLevel(root *Node, x Stack) []string {
 	if x.Len() > 0 {
 		name := x.Peek()
-		node := getNextInPath(name.(string), *root)
+		node := getNextInPath(name.(string), root)
 		if node == nil {
 			if State.DebugLvl > 0 {
 				println("Name doesn't exist! ", string(name.(string)))
@@ -399,17 +422,16 @@ func NodesAtLevel(root **Node, x Stack) []string {
 			return nil
 		}
 		x.Pop()
-		return NodesAtLevel(&node, x)
+		return NodesAtLevel(node, x)
 	} else {
 		var items = make([]string, 0)
 		var nm string
 		//println("This is what we got:")
-		for i := (*root).Nodes.Front(); i != nil; i = i.Next() {
+		for i := root.Nodes.Front(); i != nil; i = i.Next() {
 			nm = string(i.Value.(*Node).Name)
 			//println(nm)
 			items = append(items, nm)
 		}
 		return items
 	}
-	return nil
 }

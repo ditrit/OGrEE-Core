@@ -9,6 +9,7 @@ import (
 	"os"
 	"regexp"
 
+	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
 )
 
@@ -27,7 +28,7 @@ var dmatch mux.MatcherFunc = func(request *http.Request, match *mux.RouteMatch) 
 // Obtain object hierarchy
 var hmatch mux.MatcherFunc = func(request *http.Request, match *mux.RouteMatch) bool {
 	println("CHECKING H-MATCH")
-	return regexp.MustCompile(`(^(\/api\/(site|building|room|rack|device|stray-device|domain)\/[a-zA-Z0-9]{24}\/all)(\/(sites|buildings|rooms|racks|devices|stray-(devices|sensors)|domains))*$)|(^(\/api\/(sites|buildings|rooms|racks|devices|stray-devices|domains)\/[a-zA-Z0-9]{24}\/all)(\?limit=[0-9]+)*$)`).
+	return regexp.MustCompile(`(^(\/api\/(site|building|room|rack|device|stray-device|domain)\/[a-zA-Z0-9]{24}\/all)(\/(sites|buildings|rooms|racks|devices|stray-(devices|sensors)|domains))*$)|(^(\/api\/(sites|buildings|rooms|racks|devices|stray-devices|domains)\/[a-zA-Z0-9]{24}\/all)(\?.*)*$)`).
 		MatchString(request.URL.String())
 }
 
@@ -48,27 +49,49 @@ var tmatch mux.MatcherFunc = func(request *http.Request, match *mux.RouteMatch) 
 // For Obtaining hierarchy with hierarchyName
 var hnmatch mux.MatcherFunc = func(request *http.Request, match *mux.RouteMatch) bool {
 	println("CHECKING HN-MATCH")
-	return regexp.MustCompile(`^\/api\/(sites|buildings|rooms|racks|devices|stray-devices|domains)+\/[A-Za-z0-9_.]+\/all(\?limit=[0-9]+)*$`).
+	return regexp.MustCompile(`^\/api\/(sites|buildings|rooms|racks|devices|stray-devices|domains)+\/[A-Za-z0-9_.]+\/all(\?.*)*$`).
 		MatchString(request.URL.String())
 }
 
 func Router(jwt func(next http.Handler) http.Handler) *mux.Router {
 	router := mux.NewRouter()
 
-	router.HandleFunc("/api",
-		controllers.CreateAccount).Methods("POST", "OPTIONS")
-
 	router.HandleFunc("/api/stats",
 		controllers.GetStats).Methods("GET", "OPTIONS", "HEAD")
 
+	router.HandleFunc("/api/version",
+		controllers.Version).Methods("GET", "OPTIONS", "HEAD")
+
+	// User and Authentication
 	router.HandleFunc("/api/login",
 		controllers.Authenticate).Methods("POST", "OPTIONS")
 
 	router.HandleFunc("/api/token/valid",
 		controllers.Verify).Methods("GET", "OPTIONS", "HEAD")
 
-	router.HandleFunc("/api/version",
-		controllers.Version).Methods("GET", "OPTIONS", "HEAD")
+	router.HandleFunc("/api/users",
+		controllers.CreateAccount).Methods("POST", "OPTIONS")
+
+	router.HandleFunc("/api/users/bulk",
+		controllers.CreateBulkAccount).Methods("POST", "OPTIONS")
+
+	router.HandleFunc("/api/users",
+		controllers.GetAllAccounts).Methods("GET", "OPTIONS", "HEAD")
+
+	router.HandleFunc("/api/users/{id}",
+		controllers.RemoveAccount).Methods("DELETE", "OPTIONS")
+
+	router.HandleFunc("/api/users/{id}",
+		controllers.ModifyUserRoles).Methods("PATCH", "OPTIONS")
+
+	router.HandleFunc("/api/users/password/change",
+		controllers.ModifyUserPassword).Methods("POST", "OPTIONS")
+
+	router.HandleFunc("/api/users/password/reset",
+		controllers.ModifyUserPassword).Methods("POST", "OPTIONS")
+
+	router.HandleFunc("/api/users/password/forgot",
+		controllers.UserForgotPassword).Methods("POST", "OPTIONS")
 
 	// For obtaining temperatureUnit from object's site
 	router.HandleFunc("/api/tempunits/{id}",
@@ -77,6 +100,25 @@ func Router(jwt func(next http.Handler) http.Handler) *mux.Router {
 	// For obtaining the complete hierarchy (tree)
 	router.HandleFunc("/api/hierarchy",
 		controllers.GetCompleteHierarchy).Methods("GET", "OPTIONS", "HEAD")
+
+	router.HandleFunc("/api/hierarchy/domains",
+		controllers.GetCompleteDomainHierarchy).Methods("GET", "OPTIONS", "HEAD")
+
+	router.HandleFunc("/api/hierarchy/attributes",
+		controllers.GetCompleteHierarchyAttributes).Methods("GET", "OPTIONS", "HEAD")
+
+	// FLUTTER FRONT
+	router.HandleFunc("/api/projects",
+		controllers.GetProjects).Methods("HEAD", "GET", "OPTIONS")
+
+	router.HandleFunc("/api/projects",
+		controllers.CreateOrUpdateProject).Methods("POST")
+
+	router.HandleFunc("/api/projects/{id:[a-zA-Z0-9]{24}}",
+		controllers.CreateOrUpdateProject).Methods("PUT")
+
+	router.HandleFunc("/api/projects/{id:[a-zA-Z0-9]{24}}",
+		controllers.DeleteProject).Methods("DELETE", "OPTIONS")
 
 	// ------ GET ------ //
 	router.HandleFunc("/api/objects/{name}",
@@ -127,6 +169,9 @@ func Router(jwt func(next http.Handler) http.Handler) *mux.Router {
 	router.HandleFunc("/api/{entity}s",
 		controllers.CreateEntity).Methods("POST")
 
+	router.HandleFunc("/api/domains/bulk",
+		controllers.CreateBulkDomain).Methods("POST")
+
 	//DELETE ENTITY
 	router.HandleFunc("/api/{entity}s/{id:[a-zA-Z0-9]{24}}",
 		controllers.DeleteEntity).Methods("DELETE")
@@ -174,7 +219,10 @@ func main() {
 	fmt.Println(port)
 
 	//Start app, localhost:8000/api
-	err := http.ListenAndServe(":"+port, router)
+	corsObj := handlers.AllowedOrigins([]string{"*"})
+	headersOk := handlers.AllowedHeaders([]string{"X-Requested-With", "Content-Type", "Authorization", "Origin", "Accept"})
+	methodsOk := handlers.AllowedMethods([]string{"GET", "HEAD", "OPTIONS", "POST", "PUT", "DELETE", "PATCH"})
+	err := http.ListenAndServe(":"+port, handlers.CORS(corsObj, headersOk, methodsOk)(router))
 	if err != nil {
 		fmt.Print(err)
 	}
