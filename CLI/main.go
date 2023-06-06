@@ -27,7 +27,7 @@ func main() {
 	c.InitURLs(conf.APIURL, conf.UnityURL)
 
 	if !c.PingAPI() {
-		println("Cannot reach API")
+		println("Cannot reach API at", c.State.APIURL)
 		return
 	}
 
