@@ -77,64 +77,34 @@ func getUserFromToken(w http.ResponseWriter, r *http.Request) *models.Account {
 	return user
 }
 
-// swagger:operation POST /api/{obj} objects CreateObject
-// Creates an object in the system.
+// swagger:operation POST /api/{entity} Objects CreateObject
+// Creates an object of the given entity in the system.
 // ---
+// security:
+// - bearer: []
 // produces:
 // - application/json
 // parameters:
-// - name: objs
-//   in: query
-//   description: 'Indicates the Object. Only values of "sites","domains",
-//   "buildings", "rooms", "racks", "devices", "acs", "panels",
-//   "cabinets", "groups", "corridors",
-//   "room-templates", "obj-templates", "bldg-templates","sensors", "stray-devices",
-//   "stray-sensors" are acceptable'
-//   required: true
-//   type: string
-//   default: "sites"
-// - name: Name
-//   in: query
-//   description: Name of object
-//   required: true
-//   type: string
-//   default: "Object A"
-// - name: Category
-//   in: query
-//   description: Category of Object (ex. Consumer Electronics, Medical)
-//   required: true
-//   type: string
-//   default: "Research"
-// - name: Domain
-//   description: 'Domain of Object'
-//   required: true
-//   type: string
-//   default: 999
-// - name: ParentID
-//   description: 'All objects are linked to a
-//   parent with the exception of Site since it has no parent'
-//   required: true
-//   type: int
-//   default: 999
-// - name: Description
-//   in: query
-//   description: Description of Object
-//   required: false
-//   type: string[]
-//   default: ["Some abandoned object in Grenoble"]
-// - name: Attributes
-//   in: query
-//   description: 'Any other object attributes can be added.
-//   They are required depending on the obj type.'
-//   required: true
-//   type: json
+//   - name: entity
+//     in: path
+//     description: 'Entity (same as category) of the object. Accepted values: sites, domains,
+//     buildings, rooms, racks, devices, acs, panels,
+//     cabinets, groups, corridors,
+//     room-templates, obj-templates, bldg-templates, stray-devices.'
+//     required: true
+//     type: string
+//     default: "sites"
+//   - name: body
+//     in: body
+//     required: true
+//     default: {}
 // responses:
-//     '201':
-//         description: 'Created. A response body will be returned with
-//         a meaningful message.'
-//     '400':
-//         description: 'Bad request. A response body with an error
-//         message will be returned.'
+//	'201':
+//	    description: 'Created. A response body will be returned with
+//	    a meaningful message.'
+//	'400':
+//	    description: 'Bad request. A response body with an error
+//	    message will be returned.'
 
 var CreateEntity = func(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("******************************************************")
@@ -218,6 +188,26 @@ var CreateEntity = func(w http.ResponseWriter, r *http.Request) {
 
 	u.Respond(w, resp)
 }
+
+// swagger:operation POST /api/domains/bulk Organization CreateBulkDomain
+// Create multiple domains in a single request.
+// An array of domains should be provided in the body.
+// ---
+// security:
+// - bearer: []
+// produces:
+// - application/json
+// parameters:
+//   - name: body
+//     in: body
+//     required: true
+//     default: {}
+// responses:
+//	'200':
+//	    description: 'Request processed. Check the response body
+//	      for individual results for each of the sent domains'
+//	'400':
+//	    description: Bad format.
 
 var CreateBulkDomain = func(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("******************************************************")
@@ -324,44 +314,37 @@ func getBulkDomainsRecursively(parent string, listDomains []map[string]interface
 	return domainsToCreate, ""
 }
 
-// swagger:operation GET /api/objects/{name} objects GetObjectByName
-// Gets an Object from the system.
-// The hierarchyName must be provided in the URL parameter
+// swagger:operation GET /api/objects/{hierarchyName} Objects GetGenericObject
+// Gets an object from any of the physical entities with no need to specify it.
+// The hierarchyName must be provided in the URL as a parameter
 // ---
+// security:
+// - bearer: []
 // produces:
 // - application/json
 // parameters:
-//   - name: name
+//   - name: hierarchyName
+//     in: path
+//     description: hierarchyName of the object
+//   - name: fieldOnly
 //     in: query
-//     description: 'hierarchyName of the object'
-//
+//     description: 'specify which object field to show in response.
+//     Multiple fieldOnly can be added. An invalid field is simply ignored.'
+//   - name: startDate
+//     in: query
+//     description: 'filter objects by lastUpdated >= startDate.
+//     Format: yyyy-mm-dd'
+//   - name: endDate
+//     in: query
+//     description: 'filter objects by lastUpdated <= endDate.
+//     Format: yyyy-mm-dd'
 // responses:
-//
-//	'200':
-//	    description: 'Found. A response body will be returned with
-//         a meaningful message.'
-//	'404':
-//	    description: Not Found. An error message will be returned.
+//		'200':
+//		    description: 'Found. A response body will be returned with
+//	        a meaningful message.'
+//		'404':
+//		    description: Not Found. An error message will be returned.
 
-// swagger:operation OPTIONS /api/objects/{name} objects ObjectOptions
-// Displays possible operations for the resource in response header.
-// ---
-// produces:
-// - application/json
-// parameters:
-//   - name: name
-//     in: query
-//     description: 'hierarchyName of the object'
-//
-// responses:
-//
-//	'200':
-//	    description: 'Found. A response header will be returned with
-//	    possible operations.'
-//	'400':
-//	    description: Bad request. An error message will be returned.
-//	'404':
-//	    description: Not Found. An error message will be returned.
 var GetGenericObject = func(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("******************************************************")
 	fmt.Println("FUNCTION CALL: 	 GetGenericObject ")
@@ -405,65 +388,52 @@ var GetGenericObject = func(w http.ResponseWriter, r *http.Request) {
 
 }
 
-// swagger:operation GET /api/{objs}/{id} objects GetObjectById
-// Gets an Object from the system.
-// The ID must be provided in the URL parameter
-// The name can be used instead of ID if the obj is site
+// swagger:operation GET /api/{entity}/{IdOrHierarchyName} Objects GetEntity
+// Gets an Object of the given entity.
+// The ID or hierarchy name must be provided in the URL parameter.
 // ---
+// security:
+// - bearer: []
 // produces:
 // - application/json
 // parameters:
-// - name: objs
-//   in: query
-//   description: 'Indicates the location. Only values of "sites","domains",
-//   "buildings", "rooms", "racks", "devices", "room-templates",
-//   "obj-templates", "bldg-templates","acs", "panels","cabinets", "groups",
-//   "corridors","sensors","stray-devices", "stray-sensors" are acceptable'
-//   required: true
-//   type: string
-//   default: "sites"
-// - name: ID
-//   in: path
-//   description: 'ID of desired object or Name of Site.
-//   For templates the slug is the ID. For stray-devices the name is the ID'
-//   required: true
-//   type: int
-//   default: 999
+//   - name: entity
+//     in: path
+//     description: 'Entity (same as category) of the object. Accepted values: sites, domains,
+//     buildings, rooms, racks, devices, acs, panels,
+//     cabinets, groups, corridors,
+//     room-templates, obj-templates, bldg-templates, stray-devices.'
+//     required: true
+//     type: string
+//     default: "sites"
+//   - name: IdOrHierarchyName
+//     in: path
+//     description: 'ID or hierarchy name of desired object.
+//     For templates the slug is the ID.'
+//     required: true
+//     type: string
+//     default: "siteA"
+//   - name: fieldOnly
+//     in: query
+//     description: 'specify which object field to show in response.
+//     Multiple fieldOnly can be added. An invalid field is simply ignored.'
+//   - name: startDate
+//     in: query
+//     description: 'filter objects by lastUpdated >= startDate.
+//     Format: yyyy-mm-dd'
+//   - name: endDate
+//     in: query
+//     description: 'filter objects by lastUpdated <= endDate.
+//     Format: yyyy-mm-dd'
 // responses:
-//     '200':
-//         description: 'Found. A response body will be returned with
-//         a meaningful message.'
-//     '400':
-//         description: Bad request. An error message will be returned.
-//     '404':
-//         description: Not Found. An error message will be returned.
+// 	'200':
+// 	  description: 'Found. A response body will be returned with
+// 	  a meaningful message.'
+// 	'400':
+// 	  description: Bad request. An error message will be returned.
+// 	'404':
+// 	  description: Not Found. An error message will be returned.
 
-// swagger:operation OPTIONS /api/{objs}/{id} objects ObjectOptions
-// Displays possible operations for the resource in response header.
-// ---
-// produces:
-// - application/json
-// parameters:
-//   - name: objs
-//     in: query
-//     description: 'Only values of "sites","domains",
-//     "buildings", "rooms", "racks", "devices", "room-templates",
-//     "obj-templates", "bldg-templates","acs", "panels","cabinets", "groups",
-//     "corridors","sensors","stray-devices","stray-sensors", are acceptable'
-//   - name: id
-//     in: query
-//     description: 'ID of the object or name of Site.
-//     For templates the slug is the ID. For stray-devices the name is the ID'
-//
-// responses:
-//
-//	'200':
-//	    description: 'Found. A response header will be returned with
-//	    possible operations.'
-//	'400':
-//	    description: Bad request. An error message will be returned.
-//	'404':
-//	    description: Not Found. An error message will be returned.
 var GetEntity = func(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("******************************************************")
 	fmt.Println("FUNCTION CALL: 	 GetEntity ")
@@ -572,19 +542,21 @@ var GetEntity = func(w http.ResponseWriter, r *http.Request) {
 
 }
 
-// swagger:operation GET /api/{objs} objects GetAllObjects
-// Gets all present objects for specified category in the system.
-// Returns JSON body with all specified objects of type and their IDs
+// swagger:operation GET /api/{entity} Objects GetAllEntities
+// Gets all present objects for specified entity (category).
+// Returns JSON body with all specified objects of type.
 // ---
+// security:
+// - bearer: []
 // produces:
 // - application/json
 // parameters:
-//   - name: objs
-//     in: query
-//     description: 'Indicates the location. Only values of "sites","domains",
-//     "buildings", "rooms", "racks", "devices", "room-templates",
-//     "obj-templates","bldg-templates","acs", "panels", "cabinets", "groups",
-//     "corridors", "sensors", "stray-devices", "stray-sensors" are acceptable'
+//   - name: entity
+//     in: path
+//     description: 'Entity (same as category) of the object. Accepted values: sites, domains,
+//     buildings, rooms, racks, devices, acs, panels,
+//     cabinets, groups, corridors,
+//     room-templates, obj-templates, bldg-templates, stray-devices'
 //     required: true
 //     type: string
 //     default: "sites"
@@ -658,29 +630,30 @@ var GetAllEntities = func(w http.ResponseWriter, r *http.Request) {
 	u.Respond(w, resp)
 }
 
-// swagger:operation DELETE /api/{objs}/{id} objects DeleteObject
+// swagger:operation DELETE /api/{entity}/{IdOrHierarchyName} Objects DeleteObject
 // Deletes an Object in the system.
 // ---
+// security:
+// - bearer: []
 // produces:
 // - application/json
 // parameters:
-//   - name: objs
-//     in: query
-//     description: 'Indicates the location. Only values of "sites","domains",
-//     "buildings", "rooms", "racks", "devices", "room-templates",
-//     "obj-templates","bldg-templates","acs", "panels",
-//     "cabinets", "groups", "corridors","sensors", "stray-devices"
-//     "stray-sensors" are acceptable'
+//   - name: entity
+//     in: path
+//     description: 'Entity (same as category) of the object. Accepted values: sites, domains,
+//     buildings, rooms, racks, devices, acs, panels,
+//     cabinets, groups, corridors,
+//     room-templates, obj-templates, bldg-templates, stray-devices.'
 //     required: true
 //     type: string
 //     default: "sites"
-//   - name: ID
+//   - name: IdOrHierarchyName
 //     in: path
-//     description: 'ID of the object or name of Site.
-//     For templates the slug is the ID. For stray-devices the name is the ID'
+//     description: 'ID or hierarchy name of desired object.
+//     For templates the slug is the ID.'
 //     required: true
-//     type: int
-//     default: 999
+//     type: string
+//     default: "siteA"
 //
 // responses:
 //
@@ -773,61 +746,34 @@ var DeleteEntity = func(w http.ResponseWriter, r *http.Request) {
 	u.Respond(w, v)
 }
 
-// swagger:operation PATCH /api/{objs}/{id} objects PartialUpdateObject
-// Partially update data in the system.
+// swagger:operation PATCH /api/{entity}/{IdOrHierarchyName} Objects PartialUpdateObject
+// Partially update object.
 // This is the preferred method for modifying data in the system.
 // If you want to do a full data replace, please use PUT instead.
-// If the operation succeeds, the data result will be returned.
-// If no new or any information is provided
-// an OK will still be returned
+// If no data is effectively changed, an OK will still be returned.
 // ---
+// security:
+// - bearer: []
 // produces:
 // - application/json
 // parameters:
-// - name: objs
-//   in: query
-//   description: 'Indicates the location. Only values of "sites","domains",
-//   "buildings", "rooms", "racks", "devices", "room-templates",
-//   "obj-templates", "bldg-templates","rooms", "acs", "panels", "cabinets", "groups",
-//   "corridors", "sensors", "stray-devices", "stray-sensors" are acceptable'
-//   required: true
-//   type: string
-//   default: "sites"
-// - name: ID
-//   in: path
-//   description: 'ID of the object or name of Site.
-//   For templates the slug is the ID. For stray-devices the name is the ID'
-//   required: true
-//   type: int
-//   default: 999
-// - name: Name
-//   in: query
-//   description: Name of Object
-//   required: false
-//   type: string
-//   default: "INFINITI"
-// - name: Category
-//   in: query
-//   description: Category of Object (ex. Consumer Electronics, Medical)
-//   required: false
-//   type: string
-//   default: "Auto"
-// - name: Description
-//   in: query
-//   description: Description of Object
-//   required: false
-//   type: string[]
-//   default: "High End Worldwide automotive company"
-// - name: Domain
-//   description: 'Domain of the Object'
-//   required: false
-//   type: string
-//   default: "High End Auto"
-// - name: Attributes
-//   in: query
-//   description: Any other object attributes can be updated
-//   required: false
-//   type: json
+//   - name: entity
+//     in: path
+//     description: 'Entity (same as category) of the object. Accepted values: sites, domains,
+//     buildings, rooms, racks, devices, acs, panels,
+//     cabinets, groups, corridors,
+//     room-templates, obj-templates, bldg-templates, stray-devices.'
+//     required: true
+//     type: string
+//     default: "sites"
+//   - name: IdOrHierarchyName
+//     in: path
+//     description: 'ID or hierarchy name of desired object.
+//     For templates the slug is the ID.'
+//     required: true
+//     type: string
+//     default: "siteA"
+//
 // responses:
 //     '200':
 //         description: 'Updated. A response body will be returned with
@@ -837,62 +783,35 @@ var DeleteEntity = func(w http.ResponseWriter, r *http.Request) {
 //     '404':
 //         description: Not Found. An error message will be returned.
 
-// swagger:operation PUT /api/{objs}/{id} objects UpdateObject
-// Changes Object data in the system.
+// swagger:operation PUT /api/{objs}/{IdOrHierarchyName} Objects UpdateObject
+// Completely update object.
 // This method will replace the existing data with the JSON
 // received, thus fully replacing the data. If you do not
 // want to do this, please use PATCH.
-// If the operation succeeds, the data result will be returned.
-// If no new or any information is provided
-// an OK will still be returned
+// If no data is effectively changed, an OK will still be returned.
 // ---
+// security:
+// - bearer: []
 // produces:
 // - application/json
 // parameters:
-// - name: objs
-//   in: query
-//   description: 'Indicates the location. Only values of "sites", "domains",
-//   "buildings", "rooms", "racks", "devices", "room-templates",
-//   "obj-templates", "bldg-templates","rooms","acs", "panels", "cabinets", "groups",
-//   "corridors","sensors", "stray-devices", "stray-sensors" are acceptable'
-//   required: true
-//   type: string
-//   default: "sites"
-// - name: ID
-//   in: path
-//   description: 'ID of the object or name of Site.
-//   For templates the slug is the ID. For stray-devices the name is the ID'
-//   required: true
-//   type: int
-//   default: 999
-// - name: Name
-//   in: query
-//   description: Name of Object
-//   required: false
-//   type: string
-//   default: "INFINITI"
-// - name: Category
-//   in: query
-//   description: Category of Object (ex. Consumer Electronics, Medical)
-//   required: false
-//   type: string
-//   default: "Auto"
-// - name: Description
-//   in: query
-//   description: Description of Object
-//   required: false
-//   type: string[]
-//   default: "High End Worldwide automotive company"
-// - name: Domain
-//   description: 'Domain of the Object'
-//   required: false
-//   type: string
-//   default: "High End Auto"
-// - name: Attributes
-//   in: query
-//   description: Any other object attributes can be updated
-//   required: false
-//   type: json
+//   - name: entity
+//     in: path
+//     description: 'Entity (same as category) of the object. Accepted values: sites, domains,
+//     buildings, rooms, racks, devices, acs, panels,
+//     cabinets, groups, corridors,
+//     room-templates, obj-templates, bldg-templates, stray-devices.'
+//     required: true
+//     type: string
+//     default: "sites"
+//   - name: IdOrHierarchyName
+//     in: path
+//     description: 'ID or hierarchy name of desired object.
+//     For templates the slug is the ID.'
+//     required: true
+//     type: string
+//     default: "siteA"
+//
 // responses:
 //     '200':
 //         description: 'Updated. A response body will be returned with
@@ -1003,55 +922,52 @@ var UpdateEntity = func(w http.ResponseWriter, r *http.Request) {
 	u.Respond(w, v)
 }
 
-// swagger:operation GET /api/{objs}? objects GetObjectQuery
-// Gets an Object using any attribute.
+// swagger:operation GET /api/{entity}? Objects GetEntityByQuery
+// Gets an object filtering by attribute.
 // Gets an Object using any attribute (with the exception of description)
 // via query in the system
 // The attributes are in the form {attr}=xyz&{attr1}=abc
 // And any combination can be used given that at least 1 is provided.
 // ---
+// security:
+// - bearer: []
 // produces:
 // - application/json
 // parameters:
-//   - name: objs
-//     in: query
-//     description: 'Indicates the object. Only values of "domains", "sites",
-//     "buildings", "rooms", "racks", "devices", "room-templates",
-//     "obj-templates","bldg-templates","acs","panels", "groups", "corridors",
-//     "sensors", "stray-devices" and "stray-sensors" are acceptable'
+//   - name: entity
+//     in: path
+//     description: 'Entity (same as category) of the object. Accepted values: sites, domains,
+//     buildings, rooms, racks, devices, acs, panels,
+//     cabinets, groups, corridors,
+//     room-templates, obj-templates, bldg-templates, stray-devices.'
 //     required: true
 //     type: string
 //     default: "sites"
-//   - name: Name
+//   - name: fieldOnly
 //     in: query
-//     description: Name of Site
-//     required: false
-//     type: string
-//     default: "INFINITI"
-//   - name: Category
+//     description: 'specify which object field to show in response.
+//     Multiple fieldOnly can be added. An invalid field is simply ignored.'
+//   - name: startDate
 //     in: query
-//     description: Category of Site (ex. Consumer Electronics, Medical)
-//     required: false
-//     type: string
-//     default: "Auto"
-//   - name: Domain
-//     description: 'Domain of the Site'
-//     required: false
-//     type: string
-//     default: "High End Auto"
-//   - name: Attributes
+//     description: 'filter objects by lastUpdated >= startDate.
+//     Format: yyyy-mm-dd'
+//   - name: endDate
+//     in: query
+//     description: 'filter objects by lastUpdated <= endDate.
+//     Format: yyyy-mm-dd'
+//   - name: attributes
 //     in: query
 //     description: Any other object attributes can be queried
 //     required: false
-//     type: json
+//     type: string
 //
 // responses:
-//
 //	'204':
 //	   description: 'Found. A response body will be returned with
 //	    a meaningful message.'
 //	'404':
 //	   description: Not found. An error message will be returned.
+
 var GetEntityByQuery = func(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("******************************************************")
 	fmt.Println("FUNCTION CALL: 	 GetEntityByQuery ")
@@ -1121,39 +1037,27 @@ var GetEntityByQuery = func(w http.ResponseWriter, r *http.Request) {
 	u.Respond(w, resp)
 }
 
-// swagger:operation GET /api/tempunits/{id} tempunits GetTempUnit
+// swagger:operation GET /api/tempunits/{IdOrHierarchyName} Objects GetTempUnit
 // Gets the temperatureUnit attribute of the parent site of given object.
 // ---
+// security:
+// - bearer: []
 // produces:
 // - application/json
 // parameters:
-//   - name: id
-//     in: query
-//     description: 'ID of any object.'
+//   - name: IdOrHierarchyName
+//     in: path
+//     description: 'ID or hierarchy name of desired object.
+//     For templates the slug is the ID.'
 //     required: true
+//     type: string
+//     default: "siteA"
 // responses:
 //  '200':
 //     description: 'Found. A response body will be returned with
 //     a meaningful message.'
 //  '404':
 //     description: 'Nothing Found. An error message will be returned.'
-
-// swagger:operation OPTIONS /api/tempunits/{id} tempunits GetTempUnit
-// Gets the possible operations of the parent site tempunit of given object.
-// ---
-// produces:
-// - application/json
-// parameters:
-//   - name: id
-//     in: query
-//     description: 'ID or hierarchyName of any object.'
-//     required: true
-// responses:
-//	'200':
-//	   description: 'Found. A response body will be returned with
-//	   a meaningful message.'
-//	'404':
-//	   description: 'Nothing Found. An error message will be returned.'
 
 var GetTempUnit = func(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("******************************************************")
@@ -1178,18 +1082,20 @@ var GetTempUnit = func(w http.ResponseWriter, r *http.Request) {
 	u.Respond(w, resp)
 }
 
-// swagger:operation GET /api/{obj}/{id}/{subent} objects GetFromObject
+// swagger:operation GET /api/{entity}/{id}/{subent} Objects GetEntitiesOfAncestor
 // Obtain all objects 2 levels lower in the system.
 // For Example: /api/sites/{id}/buildings
 // Will return all buildings of a site
 // Returns JSON body with all subobjects under the Object
 // ---
+// security:
+// - bearer: []
 // produces:
 // - application/json
 // parameters:
-// - name: obj
+// - name: entity
 //   in: query
-//   description: 'Indicates the object. Only values of "sites",
+//   description: 'Indicates the entity. Only values of "sites",
 //   "buildings", "rooms" are acceptable'
 //   required: true
 //   type: string
@@ -1213,34 +1119,6 @@ var GetTempUnit = func(w http.ResponseWriter, r *http.Request) {
 //     '404':
 //         description: Nothing Found. An error message will be returned.
 
-// swagger:operation OPTIONS /api/{obj}/{id}/{subent} objects GetFromObjectOptions
-// Displays possible operations for the resource in response header.
-// ---
-// produces:
-// - application/json
-// parameters:
-//   - name: objs
-//     in: query
-//     description: 'Only values of "sites", "domains",
-//     "buildings", "rooms", "racks", "devices", and "stray-devices"
-//     are acceptable'
-//   - name: id
-//     in: query
-//     description: 'ID of the object. For stray-devices and Sites the name
-//     can be used as the ID.'
-//   - name: subent
-//     in: query
-//     description: 'This refers to the sub object under the objs parameter.
-//     Please refer to the OGREE wiki to better understand what objects
-//     can be considered as sub objects.'
-//
-// responses:
-//
-//	'200':
-//	    description: 'Found. A response body will be returned with
-//	    a meaningful message.'
-//	'404':
-//	    description: Nothing Found.
 var GetEntitiesOfAncestor = func(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("******************************************************")
 	fmt.Println("FUNCTION CALL: 	 GetEntitiesOfAncestor ")
@@ -1315,29 +1193,31 @@ var GetEntitiesOfAncestor = func(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// swagger:operation GET /api/{objs}/{id}/all objects GetFromObject
-// Obtain all objects related to specified object in the system.
+// swagger:operation GET /api/{entity}/{IdOrHierarchyName}/all Objects GetEntityHierarchy
+// Get object and all its children.
 // Returns JSON body with all subobjects under the Object.
-// Note that objects returned will also included relevant objects.
-// (ie Room will contain acs, panels etc. Racks and devices will contain sensors)
 // ---
+// security:
+// - bearer: []
 // produces:
 // - application/json
 // parameters:
-// - name: objs
-//   in: query
-//   description: 'Indicates the object. Only values of "sites", "domains"
-//   "buildings", "rooms", "racks", "devices", "stray-devices" are acceptable'
+// - name: entity
+//   in: path
+//   description: 'Entity (same as category) of the object. Accepted values: sites, domains,
+//   buildings, rooms, racks, devices, acs, panels,
+//   cabinets, groups, corridors,
+//   room-templates, obj-templates, bldg-templates, stray-devices.'
 //   required: true
 //   type: string
 //   default: "sites"
-// - name: ID
-//   in: query
-//   description: 'ID of object. For Sites and stray-devices the name
-//   can be used as the ID'
+// - name: IdOrHierarchyName
+//   in: path
+//   description: 'ID or hierarchy name of desired object.
+//   For templates the slug is the ID.'
 //   required: true
-//   type: int
-//   default: 999
+//   type: string
+//   default: "siteA"
 // - name: limit
 //   in: query
 //   description: 'Limits the level of hierarchy for retrieval. if not
@@ -1346,6 +1226,18 @@ var GetEntitiesOfAncestor = func(w http.ResponseWriter, r *http.Request) {
 //   required: false
 //   type: string
 //   default: 1
+// - name: fieldOnly
+//   in: query
+//   description: 'specify which object field to show in response.
+//   Multiple fieldOnly can be added. An invalid field is simply ignored.'
+// - name: startDate
+//   in: query
+//   description: 'filter objects by lastUpdated >= startDate.
+//   Format: yyyy-mm-dd'
+// - name: endDate
+//   in: query
+//   description: 'filter objects by lastUpdated <= endDate.
+//   Format: yyyy-mm-dd'
 // responses:
 //     '200':
 //         description: 'Found. A response body will be returned with
@@ -1353,29 +1245,6 @@ var GetEntitiesOfAncestor = func(w http.ResponseWriter, r *http.Request) {
 //     '404':
 //         description: Nothing Found. An error message will be returned.
 
-// swagger:operation OPTIONS /api/{objs}/{id}/all objects GetFromObjectOptions
-// Displays possible operations for the resource in response header.
-// ---
-// produces:
-// - application/json
-// parameters:
-//   - name: objs
-//     in: query
-//     description: 'Only values of "sites", "domains",
-//     "buildings", "rooms", "racks", "devices", and "stray-devices"
-//     are acceptable'
-//   - name: id
-//     in: query
-//     description: 'ID of the object.For Sites and stray-devices the name
-//     can be used as the ID'
-//
-// responses:
-//
-//	'200':
-//	    description: 'Found. A response header will be returned with
-//	    possible operations.'
-//	'404':
-//	    description: Nothing Found.
 var GetEntityHierarchy = func(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("******************************************************")
 	fmt.Println("FUNCTION CALL: 	 GetEntityHierarchy ")
@@ -1489,146 +1358,6 @@ var GetEntityHierarchy = func(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// swagger:operation GET /api/hierarchy objects GetCompleteHierarchy
-// Returns all objects hierarchyName.
-// Return is arranged by relationship (father:[children])
-// and category (category:[objects])
-// ---
-// produces:
-// - application/json
-// responses:
-//
-//	'200':
-//	    description: 'Request is valid.'
-//	'500':
-//	    description: Server error.
-var GetCompleteHierarchy = func(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("******************************************************")
-	fmt.Println("FUNCTION CALL: 	 GetCompleteHierarchy ")
-	fmt.Println("******************************************************")
-	DispRequestMetaData(r)
-	var resp map[string]interface{}
-
-	// Get user roles for permissions
-	user := getUserFromToken(w, r)
-	if user == nil {
-		return
-	}
-
-	data, err := models.GetCompleteHierarchy(user.Roles)
-	if err != "" {
-		w.WriteHeader(http.StatusInternalServerError)
-		resp = u.Message(false, "Error: "+err)
-	} else {
-		if r.Method == "OPTIONS" {
-			w.Header().Add("Content-Type", "application/json")
-			w.Header().Add("Allow", "GET, OPTIONS, HEAD")
-		} else {
-			resp = u.Message(true, "successfully got hierarchy")
-			resp["data"] = data
-		}
-	}
-
-	u.Respond(w, resp)
-}
-
-var GetCompleteDomainHierarchy = func(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("******************************************************")
-	fmt.Println("FUNCTION CALL: 	 GetCompleteHierarchy ")
-	fmt.Println("******************************************************")
-	DispRequestMetaData(r)
-	var resp map[string]interface{}
-
-	// Get user roles for permissions
-	user := getUserFromToken(w, r)
-	if user == nil {
-		return
-	}
-
-	data, err := models.GetCompleteDomainHierarchy(user.Roles)
-	if err != "" {
-		w.WriteHeader(http.StatusInternalServerError)
-		resp = u.Message(false, "Error: "+err)
-	} else {
-		if r.Method == "OPTIONS" {
-			w.Header().Add("Content-Type", "application/json")
-			w.Header().Add("Allow", "GET, OPTIONS, HEAD")
-		} else {
-			resp = u.Message(true, "successfully got hierarchy")
-			resp["data"] = data
-		}
-	}
-
-	u.Respond(w, resp)
-}
-
-var GetCompleteHierarchyAttributes = func(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("******************************************************")
-	fmt.Println("FUNCTION CALL: 	 GetCompleteHierarchyAttributes ")
-	fmt.Println("******************************************************")
-	DispRequestMetaData(r)
-	var resp map[string]interface{}
-
-	// Get user roles for permissions
-	user := getUserFromToken(w, r)
-	if user == nil {
-		return
-	}
-
-	data, err := models.GetCompleteHierarchyAttributes(user.Roles)
-	if err != "" {
-		w.WriteHeader(http.StatusNotFound)
-		resp = u.Message(false, "Error: "+err)
-	} else {
-		if r.Method == "OPTIONS" {
-			w.Header().Add("Content-Type", "application/json")
-			w.Header().Add("Allow", "GET, OPTIONS, HEAD")
-		} else {
-			resp = u.Message(true, "successfully got hierarchy attributes")
-			resp["data"] = data
-		}
-	}
-
-	u.Respond(w, resp)
-}
-
-// swagger:operation GET /api/{entity}/{name}/all objects GetFromObject
-// Obtain all objects related to Site or stray-device in the system using name.
-// Returns JSON body with all subobjects
-// ---
-// produces:
-// - application/json
-// parameters:
-// - name: name
-//   in: query
-//   description: Name of Site
-//   required: true
-//   type: int
-//   default: 999
-// responses:
-//     '200':
-//         description: 'Found. A response body will be returned with
-//         a meaningful message.'
-//     '404':
-//         description: Nothing Found. An error message will be returned.
-
-// swagger:operation OPTIONS /api/{entity}/{name}/all objects GetFromObjectOptions
-// Displays possible operations for the resource in response header.
-// ---
-// produces:
-// - application/json
-// parameters:
-//   - name: name
-//     in: query
-//     description: 'Name of site.'
-//
-// responses:
-//
-//	'200':
-//	    description: 'Found. A response header will be returned with
-//	    possible operation.'
-//	'404':
-//	    description: Nothing Found.
 var GetHierarchyByName = func(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("******************************************************")
 	fmt.Println("FUNCTION CALL: 	 GetHierarchyByName ")
@@ -1705,16 +1434,152 @@ var GetHierarchyByName = func(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// swagger:operation GET /api/{objs}/{id}/* objects GetFromObject
+// swagger:operation GET /api/hierarchy Objects GetCompleteHierarchy
+// Returns system complete hierarchy.
+// Return is arranged by relationship (father:[children])
+// and category (category:[objects]), starting with "Root":[sites].
+// ---
+// security:
+// - bearer: []
+// produces:
+// - application/json
+// responses:
+//	'200':
+//	    description: 'Request is valid.'
+//	'500':
+//	    description: Server error.
+
+var GetCompleteHierarchy = func(w http.ResponseWriter, r *http.Request) {
+	fmt.Println("******************************************************")
+	fmt.Println("FUNCTION CALL: 	 GetCompleteHierarchy ")
+	fmt.Println("******************************************************")
+	DispRequestMetaData(r)
+	var resp map[string]interface{}
+
+	// Get user roles for permissions
+	user := getUserFromToken(w, r)
+	if user == nil {
+		return
+	}
+
+	data, err := models.GetCompleteHierarchy(user.Roles)
+	if err != "" {
+		w.WriteHeader(http.StatusInternalServerError)
+		resp = u.Message(false, "Error: "+err)
+	} else {
+		if r.Method == "OPTIONS" {
+			w.Header().Add("Content-Type", "application/json")
+			w.Header().Add("Allow", "GET, OPTIONS, HEAD")
+		} else {
+			resp = u.Message(true, "successfully got hierarchy")
+			resp["data"] = data
+		}
+	}
+
+	u.Respond(w, resp)
+}
+
+// swagger:operation GET /api/hierarchy/domains Organization GetCompleteDomainHierarchy
+// Returns domain complete hierarchy.
+// Return is arranged by relationship (father:[children]),
+// starting with "Root":[root domains].
+// ---
+// security:
+// - bearer: []
+// produces:
+// - application/json
+// responses:
+//	'200':
+//	    description: 'Request is valid.'
+//	'500':
+//	    description: Server error.
+
+var GetCompleteDomainHierarchy = func(w http.ResponseWriter, r *http.Request) {
+	fmt.Println("******************************************************")
+	fmt.Println("FUNCTION CALL: 	 GetCompleteHierarchy ")
+	fmt.Println("******************************************************")
+	DispRequestMetaData(r)
+	var resp map[string]interface{}
+
+	// Get user roles for permissions
+	user := getUserFromToken(w, r)
+	if user == nil {
+		return
+	}
+
+	data, err := models.GetCompleteDomainHierarchy(user.Roles)
+	if err != "" {
+		w.WriteHeader(http.StatusInternalServerError)
+		resp = u.Message(false, "Error: "+err)
+	} else {
+		if r.Method == "OPTIONS" {
+			w.Header().Add("Content-Type", "application/json")
+			w.Header().Add("Allow", "GET, OPTIONS, HEAD")
+		} else {
+			resp = u.Message(true, "successfully got hierarchy")
+			resp["data"] = data
+		}
+	}
+
+	u.Respond(w, resp)
+}
+
+// swagger:operation GET /api/hierarchy/attributes Objects GetCompleteHierarchyAttrs
+// Returns attributes of all objects.
+// Return is arranged by hierarchyName (objHierarchyName:{attributes}).
+// ---
+// security:
+// - bearer: []
+// produces:
+// - application/json
+// responses:
+//	'200':
+//	    description: 'Request is valid.'
+//	'500':
+//	    description: Server error.
+
+var GetCompleteHierarchyAttributes = func(w http.ResponseWriter, r *http.Request) {
+	fmt.Println("******************************************************")
+	fmt.Println("FUNCTION CALL: 	 GetCompleteHierarchyAttributes ")
+	fmt.Println("******************************************************")
+	DispRequestMetaData(r)
+	var resp map[string]interface{}
+
+	// Get user roles for permissions
+	user := getUserFromToken(w, r)
+	if user == nil {
+		return
+	}
+
+	data, err := models.GetCompleteHierarchyAttributes(user.Roles)
+	if err != "" {
+		w.WriteHeader(http.StatusNotFound)
+		resp = u.Message(false, "Error: "+err)
+	} else {
+		if r.Method == "OPTIONS" {
+			w.Header().Add("Content-Type", "application/json")
+			w.Header().Add("Allow", "GET, OPTIONS, HEAD")
+		} else {
+			resp = u.Message(true, "successfully got hierarchy attributes")
+			resp["data"] = data
+		}
+	}
+
+	u.Respond(w, resp)
+}
+
+// swagger:operation GET /api/{entity}/{id}/* Objects GetEntitiesUsingNamesOfParents
 // A category of objects of a Parent Object can be retrieved from the system.
 // The path can only contain object type or object names
 // ---
+// security:
+// - bearer: []
 // produces:
 // - application/json
 // parameters:
-// - name: objs
+// - name: entity
 //   in: query
-//   description: 'Indicates the object. Only values of "sites", "domains",
+//   description: 'Indicates the entity. Only values of "sites", "domains",
 //   "buildings", "rooms", "racks", "devices", "stray-devices" are acceptable'
 //   required: true
 //   type: string
@@ -1743,39 +1608,6 @@ var GetHierarchyByName = func(w http.ResponseWriter, r *http.Request) {
 //     '404':
 //         description: Not Found. An error message will be returned.
 
-// swagger:operation OPTIONS /api/{objs}/{id}/* objects GetFromObjectOptions
-// Displays possible operations for the resource in response header.
-// ---
-// produces:
-// - application/json
-// parameters:
-//   - name: objs
-//     in: query
-//     description: 'Only values of "sites", "domains",
-//     "buildings", "rooms", "racks", "devices", and "stray-devices"
-//     are acceptable'
-//   - name: id
-//     in: query
-//     description: 'ID of the object.For Sites and stray-devices the name
-//     can be used as the ID'
-//   - name: '*'
-//     in: path
-//     description: 'Hierarchal path to desired object(s).
-//     For rooms it can additionally have "acs","panels",
-//     "corridors", "sensors" and "cabinets".
-//     For devices it can have "sensors"
-//     For racks it can have "sensors"'
-//     required: true
-//     type: string
-//     default: "/buildings/BuildingB/RoomA"
-//
-// responses:
-//
-//	'200':
-//	    description: 'Found. A response header will be returned with
-//	    possible operations.'
-//	'404':
-//	    description: Not Found.
 var GetEntitiesUsingNamesOfParents = func(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("******************************************************")
 	fmt.Println("FUNCTION CALL: 	 GetEntitiesUsingNamesOfParents ")
@@ -1943,26 +1775,6 @@ var GetEntitiesUsingNamesOfParents = func(w http.ResponseWriter, r *http.Request
 
 }
 
-// swagger:operation OPTIONS /api/{objs}/* objects ObjectOptions
-// Displays possible operations for the resource in response header.
-// ---
-// produces:
-// - application/json
-// parameters:
-//   - name: objs
-//     in: query
-//     description: 'Only values of "sites",
-//     "buildings", "rooms", "racks", "devices", "room-templates",
-//     "obj-templates", "bldg-templates","rooms", "acs", "panels",
-//     "cabinets", "groups", "corridors","sensors","stray-devices"
-//     "stray-sensors" are acceptable'
-//
-// responses:
-//
-//	'200':
-//	    description: 'Request is valid.'
-//	'404':
-//	    description: Not Found. An error message will be returned.
 var BaseOption = func(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("******************************************************")
 	fmt.Println("FUNCTION CALL: 	 BaseOption ")
@@ -1978,17 +1790,19 @@ var BaseOption = func(w http.ResponseWriter, r *http.Request) {
 
 }
 
-// swagger:operation GET /api/stats objects GetStats
+// swagger:operation GET /api/stats About GetStats
 // Displays DB statistics.
 // ---
+// security:
+// - bearer: []
 // produces:
 // - application/json
 // responses:
-//
 //	'200':
 //	    description: 'Request is valid.'
 //	'504':
 //	    description: Server error.
+
 var GetStats = func(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("******************************************************")
 	fmt.Println("FUNCTION CALL: 	 GetStats ")
@@ -2005,57 +1819,27 @@ var GetStats = func(w http.ResponseWriter, r *http.Request) {
 
 }
 
-// swagger:operation POST /api/validate/{obj} objects ValidateObject
+// swagger:operation POST /api/validate/{entity} Objects ValidateObject
 // Checks the received data and verifies if the object can be created in the system.
 // ---
+// security:
+// - bearer: []
 // produces:
 // - application/json
 // parameters:
-// - name: objs
-//   in: query
-//   description: 'Indicates the Object. Only values of "domains", "sites",
-//   "buildings", "rooms", "racks", "devices", "acs", "panels",
-//   "cabinets", "groups", "corridors",
-//   "room-templates", "obj-templates", "bldg-templates","sensors", "stray-devices"
-//   "stray-sensors" are acceptable'
-//   required: true
-//   type: string
-//   default: "sites"
-// - name: Name
-//   in: query
-//   description: Name of object
-//   required: true
-//   type: string
-//   default: "Object A"
-// - name: Category
-//   in: query
-//   description: Category of Object (ex. Consumer Electronics, Medical)
-//   required: true
-//   type: string
-//   default: "Research"
-// - name: Domain
-//   description: 'Domain of Object'
-//   required: true
-//   type: string
-//   default: 999
-// - name: ParentID
-//   description: 'All objects are linked to a
-//   parent with the exception of Site since it has no parent'
-//   required: true
-//   type: int
-//   default: 999
-// - name: Description
-//   in: query
-//   description: Description of Object
-//   required: false
-//   type: string[]
-//   default: ["Some abandoned object in Grenoble"]
-// - name: Attributes
-//   in: query
-//   description: 'Any other object attributes can be added.
-//   They are required depending on the obj type.'
-//   required: true
-//   type: json
+//   - name: entity
+//     in: path
+//     description: 'Entity (same as category) of the object. Accepted values: sites, domains,
+//     buildings, rooms, racks, devices, acs, panels,
+//     cabinets, groups, corridors,
+//     room-templates, obj-templates, bldg-templates, stray-devices.'
+//     required: true
+//     type: string
+//     default: "sites"
+//   - name: body
+//     in: body
+//     required: true
+//     default: {}
 // responses:
 //     '200':
 //         description: 'Createable. A response body will be returned with
@@ -2066,26 +1850,6 @@ var GetStats = func(w http.ResponseWriter, r *http.Request) {
 //     '404':
 //         description: Not Found. An error message will be returned.
 
-// swagger:operation OPTIONS /api/validate/{obj} objects ValidateObjectOptions
-// Displays possible operations for the resource in response header.
-// ---
-// produces:
-// - application/json
-// parameters:
-//   - name: obj
-//     in: query
-//     description: 'Only values of "domains", "sites",
-//     "buildings", "rooms", "racks", "devices", "room-templates",
-//     "obj-templates", "bldg-templates","rooms", "acs", "panels",
-//     "cabinets", "groups", "corridors","sensors","stray-devices"
-//     "stray-sensors" are acceptable'
-//
-// responses:
-//
-//	'200':
-//	    description: 'Request is valid.'
-//	'404':
-//	    description: Not Found. An error message will be returned.
 var ValidateEntity = func(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("******************************************************")
 	fmt.Println("FUNCTION CALL: 	 ValidateEntity ")
@@ -2147,9 +1911,11 @@ var ValidateEntity = func(w http.ResponseWriter, r *http.Request) {
 	u.Respond(w, ans)
 }
 
-// swagger:operation GET /api/version versioning GetAPIVersion
+// swagger:operation GET /api/version About GetAPIVersion
 // Gets the API version.
 // ---
+// security:
+// - bearer: []
 // produces:
 // - application/json
 // responses:
@@ -2157,15 +1923,6 @@ var ValidateEntity = func(w http.ResponseWriter, r *http.Request) {
 //         description: 'OK. A response body will be returned with
 //         version details.'
 
-// swagger:operation OPTIONS /api/version versioning VersionOptions
-// Displays possible operations for version.
-// ---
-// produces:
-// - application/json
-// responses:
-//
-//	'200':
-//	    description: 'Returns the possible request methods.'
 var Version = func(w http.ResponseWriter, r *http.Request) {
 	data := map[string]interface{}{}
 	if r.Method == "OPTIONS" {

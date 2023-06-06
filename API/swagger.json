@@ -19,47 +19,112 @@
     },
     "version": "1.0"
   },
-  "basePath": "/api",
+  "host": "localhost:3001",
+  "basePath": "/",
   "paths": {
-    "/api/hierarchy": {
-      "get": {
-        "description": "Return is arranged by relationship (father:[children])\nand category (category:[objects])",
+    "/api/domains/bulk": {
+      "post": {
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "description": "An array of domains should be provided in the body.",
         "produces": [
           "application/json"
         ],
         "tags": [
-          "objects"
+          "Organization"
         ],
-        "summary": "Returns all objects hierarchyName.",
+        "summary": "Create multiple domains in a single request.",
+        "operationId": "CreateBulkDomain",
+        "parameters": [
+          {
+            "default": {},
+            "name": "body",
+            "in": "body",
+            "required": true
+          }
+        ]
+      }
+    },
+    "/api/hierarchy": {
+      "get": {
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "description": "Return is arranged by relationship (father:[children])\nand category (category:[objects]), starting with \"Root\":[sites].",
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "Objects"
+        ],
+        "summary": "Returns system complete hierarchy.",
         "operationId": "GetCompleteHierarchy"
+      }
+    },
+    "/api/hierarchy/attributes": {
+      "get": {
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "description": "Return is arranged by hierarchyName (objHierarchyName:{attributes}).",
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "Objects"
+        ],
+        "summary": "Returns attributes of all objects.",
+        "operationId": "GetCompleteHierarchyAttrs"
+      }
+    },
+    "/api/hierarchy/domains": {
+      "get": {
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "description": "Return is arranged by relationship (father:[children]),\nstarting with \"Root\":[root domains].",
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "Organization"
+        ],
+        "summary": "Returns domain complete hierarchy.",
+        "operationId": "GetCompleteDomainHierarchy"
       }
     },
     "/api/login": {
       "post": {
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
         "description": "Create a new JWT Key. This can also be used to verify credentials\nThe authorize and 'Try it out' buttons don't work",
         "produces": [
           "application/json"
         ],
         "tags": [
-          "auth"
+          "Authentication"
         ],
         "summary": "Generates a new JWT Key for the client.",
         "operationId": "Authenticate",
         "parameters": [
           {
-            "type": "string",
-            "default": "infiniti@nissan.com",
-            "description": "Your Email Address",
-            "name": "username",
+            "format": "object",
+            "example": "{\"email\": \"user@test.com\", \"password\": \"secret123\"}",
+            "description": "Mandatory: email and password.",
+            "name": "body",
             "in": "body",
-            "required": true
-          },
-          {
-            "format": "password",
-            "default": "secret",
-            "description": "Your password",
-            "name": "password",
-            "in": "json",
             "required": true
           }
         ],
@@ -74,82 +139,210 @@
             "description": "Internal server error"
           }
         }
-      },
-      "options": {
-        "produces": [
-          "application/json"
-        ],
-        "tags": [
-          "auth"
-        ],
-        "summary": "Displays possible operations for the resource in response header.",
-        "operationId": "CreateOptions"
       }
     },
-    "/api/objects/{name}": {
+    "/api/objects/{hierarchyName}": {
       "get": {
-        "description": "The hierarchyName must be provided in the URL parameter",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "description": "The hierarchyName must be provided in the URL as a parameter",
         "produces": [
           "application/json"
         ],
         "tags": [
-          "objects"
+          "Objects"
         ],
-        "summary": "Gets an Object from the system.",
-        "operationId": "GetObjectByName",
+        "summary": "Gets an object from any of the physical entities with no need to specify it.",
+        "operationId": "GetGenericObject",
         "parameters": [
           {
             "description": "hierarchyName of the object",
-            "name": "name",
+            "name": "hierarchyName",
+            "in": "path"
+          },
+          {
+            "description": "specify which object field to show in response. Multiple fieldOnly can be added. An invalid field is simply ignored.",
+            "name": "fieldOnly",
+            "in": "query"
+          },
+          {
+            "description": "filter objects by lastUpdated \u003e= startDate. Format: yyyy-mm-dd",
+            "name": "startDate",
+            "in": "query"
+          },
+          {
+            "description": "filter objects by lastUpdated \u003c= endDate. Format: yyyy-mm-dd",
+            "name": "endDate",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Found. A response body will be returned with a meaningful message."
+          },
+          "404": {
+            "description": "Not Found. An error message will be returned."
+          }
+        }
+      }
+    },
+    "/api/projects": {
+      "get": {
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "FrontApp"
+        ],
+        "summary": "Get a list of projects for the specified user.",
+        "operationId": "GetProjects",
+        "parameters": [
+          {
+            "type": "string",
+            "default": "user@test.com",
+            "description": "Email of the user whose projects are being requested. Example: /api/projects?user=user@test.com",
+            "name": "user",
             "in": "query"
           }
         ]
       },
-      "options": {
+      "post": {
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "description": "Create a new project",
         "produces": [
           "application/json"
         ],
         "tags": [
-          "objects"
+          "FrontApp"
         ],
-        "summary": "Displays possible operations for the resource in response header.",
-        "operationId": "ObjectOptions",
+        "operationId": "CreateProjects"
+      }
+    },
+    "/api/projects/{ProjectID}": {
+      "put": {
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "FrontApp"
+        ],
+        "summary": "Replace the data of an existing project.",
+        "operationId": "UpdateProjects",
         "parameters": [
           {
-            "description": "hierarchyName of the object",
-            "name": "name",
-            "in": "query"
+            "type": "string",
+            "default": "1234",
+            "description": "ID of the project to update.",
+            "name": "ProjectID",
+            "in": "path",
+            "required": true
           }
-        ]
+        ],
+        "responses": {
+          "200": {
+            "description": "Project successfully updated."
+          },
+          "400": {
+            "description": "Bad Request. Invalid project format."
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      },
+      "delete": {
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "FrontApp"
+        ],
+        "summary": "Delete an existing project.",
+        "operationId": "DeleteProjects",
+        "parameters": [
+          {
+            "type": "string",
+            "default": "1234",
+            "description": "ID of the project to delete.",
+            "name": "ProjectID",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Project successfully updated."
+          },
+          "404": {
+            "description": "Not Found. Invalid project IS."
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
       }
     },
     "/api/stats": {
       "get": {
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
         "produces": [
           "application/json"
         ],
         "tags": [
-          "objects"
+          "About"
         ],
         "summary": "Displays DB statistics.",
         "operationId": "GetStats"
       }
     },
-    "/api/tempunits/{id}": {
+    "/api/tempunits/{IdOrHierarchyName}": {
       "get": {
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
         "produces": [
           "application/json"
         ],
         "tags": [
-          "tempunits"
+          "Objects"
         ],
         "summary": "Gets the temperatureUnit attribute of the parent site of given object.",
         "operationId": "GetTempUnit",
         "parameters": [
           {
-            "description": "ID of any object.",
-            "name": "id",
-            "in": "query",
+            "type": "string",
+            "default": "siteA",
+            "description": "ID or hierarchy name of desired object. For templates the slug is the ID.",
+            "name": "IdOrHierarchyName",
+            "in": "path",
             "required": true
           }
         ],
@@ -161,108 +354,80 @@
             "description": "Nothing Found. An error message will be returned."
           }
         }
-      },
-      "options": {
-        "produces": [
-          "application/json"
-        ],
-        "tags": [
-          "tempunits"
-        ],
-        "summary": "Gets the possible operations of the parent site tempunit of given object.",
-        "operationId": "GetTempUnit",
-        "parameters": [
-          {
-            "description": "ID or hierarchyName of any object.",
-            "name": "id",
-            "in": "query",
-            "required": true
-          }
-        ]
       }
     },
     "/api/token/valid": {
       "get": {
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
         "produces": [
           "application/json"
         ],
         "tags": [
-          "auth"
+          "Authentication"
         ],
-        "summary": "A custom client specified URL for verifying if their key is valid.",
+        "summary": "Verify if token sent in the header is valid.",
         "operationId": "VerifyToken",
         "responses": {
           "200": {
-            "description": "Authenticated"
+            "description": "Token is valid."
           },
-          "400": {
-            "description": "Bad request"
+          "403": {
+            "description": "Unauthorized"
           },
           "500": {
             "description": "Internal server error"
           }
         }
-      },
-      "options": {
-        "produces": [
-          "application/json"
-        ],
-        "tags": [
-          "auth"
-        ],
-        "summary": "Displays possible operations for the resource in response header.",
-        "operationId": "VerifyToken"
       }
     },
     "/api/users": {
       "get": {
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
         "produces": [
           "application/json"
         ],
         "tags": [
-          "auth"
+          "Organization"
         ],
         "summary": "Get a list of users that the caller is allowed to see.",
         "operationId": "GetAllAccounts"
       },
       "post": {
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
         "description": "Create an account with email credentials, it returns\na JWT key to use with the API.",
         "produces": [
           "application/json"
         ],
         "tags": [
-          "auth"
+          "Organization"
         ],
         "summary": "Generate credentials for a user.",
-        "operationId": "Create",
+        "operationId": "CreateAccount",
         "parameters": [
           {
-            "type": "string",
-            "default": "John Doe",
-            "description": "User name",
-            "name": "name",
-            "in": "json"
-          },
-          {
-            "type": "string",
-            "default": "user@email.com",
-            "description": "User Email Address",
-            "name": "email",
-            "in": "json",
-            "required": true
-          },
-          {
-            "format": "password",
-            "default": "secret123",
-            "description": "User password",
-            "name": "password",
-            "in": "json",
+            "format": "object",
+            "example": "{\"name\": \"John Doe\", \"roles\": {\"*\": \"manager\"}, \"email\": \"user@test.com\", \"password\": \"secret123\"}",
+            "description": "Mandatory: email, password and roles. Optional: name. Roles is an object with domains as keys and roles as values. Possible roles: manager, user and viewer",
+            "name": "body",
+            "in": "body",
             "required": true
           }
         ],
         "responses": {
           "201": {
-            "description": "Authenticated and new account created"
+            "description": "New account created"
           },
           "400": {
             "description": "Bad request"
@@ -274,55 +439,30 @@
             "description": "Internal server error"
           }
         }
-      },
-      "options": {
-        "produces": [
-          "application/json"
-        ],
-        "tags": [
-          "auth"
-        ],
-        "summary": "Displays possible operations for the resource in response header.",
-        "operationId": "CreateOptions",
-        "responses": {
-          "200": {
-            "description": "Returns header with possible operations"
-          }
-        }
       }
     },
     "/api/users/bulk": {
       "post": {
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
         "produces": [
           "application/json"
         ],
         "tags": [
-          "auth"
+          "Organization"
         ],
         "summary": "Create multiples users with one request.",
         "operationId": "CreateBulk",
         "parameters": [
           {
-            "type": "string",
-            "default": "John Doe",
-            "description": "User name",
-            "name": "name",
-            "in": "json"
-          },
-          {
-            "type": "string",
-            "default": "user@email.com",
-            "description": "User Email Address",
-            "name": "email",
+            "format": "object",
+            "example": "[{\"name\": \"John Doe\", \"roles\": {\"*\": \"manager\"}, \"email\": \"user@test.com\"}]",
+            "description": "An array of users. Same mandatory and optional parameters as user apply, except for password. If not provided, one will be automatically created by the API.",
+            "name": "body",
             "in": "body",
-            "required": true
-          },
-          {
-            "format": "password",
-            "default": "secret123",
-            "description": "User password",
-            "name": "password",
-            "in": "json",
             "required": true
           }
         ]
@@ -330,26 +470,25 @@
     },
     "/api/users/password/change": {
       "post": {
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
         "produces": [
           "application/json"
         ],
         "tags": [
-          "auth"
+          "Authentication"
         ],
-        "summary": "For logged in user to change own password.",
+        "summary": "For logged in user to change its own password.",
         "operationId": "ModifyUserPassword",
         "parameters": [
           {
-            "type": "string",
-            "description": "User current password",
-            "name": "currentPassword",
-            "in": "body",
-            "required": true
-          },
-          {
-            "type": "string",
-            "description": "User new desired password",
-            "name": "newPassword",
+            "type": "json",
+            "example": "{\"currentPassword\": \"myOldPassword\", \"newPassword\": \"myNewPassword\"}",
+            "description": "Mandatory: currentPassword and newPassword.",
+            "name": "body",
             "in": "body",
             "required": true
           }
@@ -358,19 +497,21 @@
     },
     "/api/users/password/forgot": {
       "post": {
+        "description": "Public endpoint to request a reset of a user's password (forgot my password).\nIf the email is valid, an email with a reset token/link will be sent to the user.",
         "produces": [
           "application/json"
         ],
         "tags": [
-          "auth"
+          "Authentication"
         ],
-        "summary": "To request a reset of a user's password (forgot my password).",
+        "summary": "Forgot my password.",
         "operationId": "UserForgotPassword",
         "parameters": [
           {
             "type": "string",
-            "description": "User email",
-            "name": "email",
+            "example": "{\"email\": \"user@test.com\"}",
+            "description": "Mandatory: email.",
+            "name": "body",
             "in": "body",
             "required": true
           }
@@ -379,48 +520,84 @@
     },
     "/api/users/password/reset": {
       "post": {
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "description": "For user that first called forgot enpoint to change its password.\nA reset token generated by the forgot endpoint should be provided as the Authentication header.",
         "produces": [
           "application/json"
         ],
         "tags": [
-          "auth"
+          "Authentication"
         ],
-        "summary": "To change password of user that forgot password and received a reset token by email.",
-        "operationId": "ModifyUserPassword",
+        "summary": "Reset password after forgot.",
+        "operationId": "ResetUserPassword",
         "parameters": [
           {
-            "type": "string",
-            "description": "User new desired password",
-            "name": "newPassword",
+            "type": "json",
+            "example": "\"newPassword\": \"myNewPassword\"}",
+            "description": "Mandatory: currentPassword and newPassword.",
+            "name": "body",
             "in": "body",
             "required": true
           }
         ]
       }
     },
-    "/api/users/{id}": {
+    "/api/users/{userid}": {
       "delete": {
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
         "produces": [
           "application/json"
         ],
         "tags": [
-          "auth"
+          "Organization"
         ],
         "summary": "Remove the specified user account.",
-        "operationId": "RemoveAccount"
+        "operationId": "RemoveAccount",
+        "parameters": [
+          {
+            "type": "string",
+            "example": "someUserId",
+            "description": "The ID of the user to delete",
+            "name": "userid",
+            "in": "path",
+            "required": true
+          }
+        ]
       },
       "patch": {
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
         "produces": [
           "application/json"
         ],
         "tags": [
-          "auth"
+          "Organization"
         ],
         "summary": "Modify user permissions: domain and role.",
         "operationId": "ModifyUserRoles",
         "parameters": [
           {
+            "type": "string",
+            "example": "someUserId",
+            "description": "The ID of the user to modify roles",
+            "name": "userid",
+            "in": "path",
+            "required": true
+          },
+          {
             "type": "json",
+            "example": "{\"roles\": {\"*\": \"manager\"}}",
             "description": "An object with domains as keys and roles as values",
             "name": "roles",
             "in": "body",
@@ -429,13 +606,18 @@
         ]
       }
     },
-    "/api/validate/{obj}": {
+    "/api/validate/{entity}": {
       "post": {
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
         "produces": [
           "application/json"
         ],
         "tags": [
-          "objects"
+          "Objects"
         ],
         "summary": "Checks the received data and verifies if the object can be created in the system.",
         "operationId": "ValidateObject",
@@ -443,55 +625,15 @@
           {
             "type": "string",
             "default": "sites",
-            "description": "Indicates the Object. Only values of \"domains\", \"sites\", \"buildings\", \"rooms\", \"racks\", \"devices\", \"acs\", \"panels\", \"cabinets\", \"groups\", \"corridors\", \"room-templates\", \"obj-templates\", \"bldg-templates\",\"sensors\", \"stray-devices\" \"stray-sensors\" are acceptable",
-            "name": "objs",
-            "in": "query",
+            "description": "Entity (same as category) of the object. Accepted values: sites, domains, buildings, rooms, racks, devices, acs, panels, cabinets, groups, corridors, room-templates, obj-templates, bldg-templates, stray-devices.",
+            "name": "entity",
+            "in": "path",
             "required": true
           },
           {
-            "type": "string",
-            "default": "Object A",
-            "description": "Name of object",
-            "name": "Name",
-            "in": "query",
-            "required": true
-          },
-          {
-            "type": "string",
-            "default": "Research",
-            "description": "Category of Object (ex. Consumer Electronics, Medical)",
-            "name": "Category",
-            "in": "query",
-            "required": true
-          },
-          {
-            "type": "string",
-            "default": 999,
-            "description": "Domain of Object",
-            "name": "Domain",
-            "required": true
-          },
-          {
-            "type": "int",
-            "default": 999,
-            "description": "All objects are linked to a parent with the exception of Site since it has no parent",
-            "name": "ParentID",
-            "required": true
-          },
-          {
-            "type": "string[]",
-            "default": [
-              "Some abandoned object in Grenoble"
-            ],
-            "description": "Description of Object",
-            "name": "Description",
-            "in": "query"
-          },
-          {
-            "type": "json",
-            "description": "Any other object attributes can be added. They are required depending on the obj type.",
-            "name": "Attributes",
-            "in": "query",
+            "default": {},
+            "name": "body",
+            "in": "body",
             "required": true
           }
         ],
@@ -506,32 +648,20 @@
             "description": "Not Found. An error message will be returned."
           }
         }
-      },
-      "options": {
-        "produces": [
-          "application/json"
-        ],
-        "tags": [
-          "objects"
-        ],
-        "summary": "Displays possible operations for the resource in response header.",
-        "operationId": "ValidateObjectOptions",
-        "parameters": [
-          {
-            "description": "Only values of \"domains\", \"sites\", \"buildings\", \"rooms\", \"racks\", \"devices\", \"room-templates\", \"obj-templates\", \"bldg-templates\",\"rooms\", \"acs\", \"panels\", \"cabinets\", \"groups\", \"corridors\",\"sensors\",\"stray-devices\" \"stray-sensors\" are acceptable",
-            "name": "obj",
-            "in": "query"
-          }
-        ]
       }
     },
     "/api/version": {
       "get": {
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
         "produces": [
           "application/json"
         ],
         "tags": [
-          "versioning"
+          "About"
         ],
         "summary": "Gets the API version.",
         "operationId": "GetAPIVersion",
@@ -540,213 +670,119 @@
             "description": "OK. A response body will be returned with version details."
           }
         }
-      },
-      "options": {
-        "produces": [
-          "application/json"
-        ],
-        "tags": [
-          "versioning"
-        ],
-        "summary": "Displays possible operations for version.",
-        "operationId": "VersionOptions"
       }
     },
-    "/api/{entity}/{name}/all": {
+    "/api/{entity}": {
       "get": {
-        "description": "Returns JSON body with all subobjects",
-        "produces": [
-          "application/json"
-        ],
-        "tags": [
-          "objects"
-        ],
-        "summary": "Obtain all objects related to Site or stray-device in the system using name.",
-        "operationId": "GetFromObject",
-        "parameters": [
+        "security": [
           {
-            "type": "int",
-            "default": 999,
-            "description": "Name of Site",
-            "name": "name",
-            "in": "query",
-            "required": true
+            "bearer": []
           }
         ],
-        "responses": {
-          "200": {
-            "description": "Found. A response body will be returned with a meaningful message."
-          },
-          "404": {
-            "description": "Nothing Found. An error message will be returned."
-          }
-        }
-      },
-      "options": {
+        "description": "Returns JSON body with all specified objects of type.",
         "produces": [
           "application/json"
         ],
         "tags": [
-          "objects"
+          "Objects"
         ],
-        "summary": "Displays possible operations for the resource in response header.",
-        "operationId": "GetFromObjectOptions",
-        "parameters": [
-          {
-            "description": "Name of site.",
-            "name": "name",
-            "in": "query"
-          }
-        ]
-      }
-    },
-    "/api/{objs}": {
-      "get": {
-        "description": "Returns JSON body with all specified objects of type and their IDs",
-        "produces": [
-          "application/json"
-        ],
-        "tags": [
-          "objects"
-        ],
-        "summary": "Gets all present objects for specified category in the system.",
-        "operationId": "GetAllObjects",
+        "summary": "Gets all present objects for specified entity (category).",
+        "operationId": "GetAllEntities",
         "parameters": [
           {
             "type": "string",
             "default": "sites",
-            "description": "Indicates the location. Only values of \"sites\",\"domains\", \"buildings\", \"rooms\", \"racks\", \"devices\", \"room-templates\", \"obj-templates\",\"bldg-templates\",\"acs\", \"panels\", \"cabinets\", \"groups\", \"corridors\", \"sensors\", \"stray-devices\", \"stray-sensors\" are acceptable",
-            "name": "objs",
-            "in": "query",
-            "required": true
-          }
-        ]
-      }
-    },
-    "/api/{objs}/*": {
-      "options": {
-        "produces": [
-          "application/json"
-        ],
-        "tags": [
-          "objects"
-        ],
-        "summary": "Displays possible operations for the resource in response header.",
-        "operationId": "ObjectOptions",
-        "parameters": [
-          {
-            "description": "Only values of \"sites\", \"buildings\", \"rooms\", \"racks\", \"devices\", \"room-templates\", \"obj-templates\", \"bldg-templates\",\"rooms\", \"acs\", \"panels\", \"cabinets\", \"groups\", \"corridors\",\"sensors\",\"stray-devices\" \"stray-sensors\" are acceptable",
-            "name": "objs",
-            "in": "query"
-          }
-        ]
-      }
-    },
-    "/api/{objs}/{id}": {
-      "get": {
-        "description": "The ID must be provided in the URL parameter\nThe name can be used instead of ID if the obj is site",
-        "produces": [
-          "application/json"
-        ],
-        "tags": [
-          "objects"
-        ],
-        "summary": "Gets an Object from the system.",
-        "operationId": "GetObjectById",
-        "parameters": [
-          {
-            "type": "string",
-            "default": "sites",
-            "description": "Indicates the location. Only values of \"sites\",\"domains\", \"buildings\", \"rooms\", \"racks\", \"devices\", \"room-templates\", \"obj-templates\", \"bldg-templates\",\"acs\", \"panels\",\"cabinets\", \"groups\", \"corridors\",\"sensors\",\"stray-devices\", \"stray-sensors\" are acceptable",
-            "name": "objs",
-            "in": "query",
-            "required": true
-          },
-          {
-            "type": "int",
-            "default": 999,
-            "description": "ID of desired object or Name of Site. For templates the slug is the ID. For stray-devices the name is the ID",
-            "name": "ID",
+            "description": "Entity (same as category) of the object. Accepted values: sites, domains, buildings, rooms, racks, devices, acs, panels, cabinets, groups, corridors, room-templates, obj-templates, bldg-templates, stray-devices",
+            "name": "entity",
             "in": "path",
             "required": true
           }
-        ],
-        "responses": {
-          "200": {
-            "description": "Found. A response body will be returned with a meaningful message."
-          },
-          "400": {
-            "description": "Bad request. An error message will be returned."
-          },
-          "404": {
-            "description": "Not Found. An error message will be returned."
-          }
-        }
+        ]
       },
-      "put": {
-        "description": "This method will replace the existing data with the JSON\nreceived, thus fully replacing the data. If you do not\nwant to do this, please use PATCH.\nIf the operation succeeds, the data result will be returned.\nIf no new or any information is provided\nan OK will still be returned",
+      "post": {
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
         "produces": [
           "application/json"
         ],
         "tags": [
-          "objects"
+          "Objects"
         ],
-        "summary": "Changes Object data in the system.",
-        "operationId": "UpdateObject",
+        "summary": "Creates an object of the given entity in the system.",
+        "operationId": "CreateObject",
         "parameters": [
           {
             "type": "string",
             "default": "sites",
-            "description": "Indicates the location. Only values of \"sites\", \"domains\", \"buildings\", \"rooms\", \"racks\", \"devices\", \"room-templates\", \"obj-templates\", \"bldg-templates\",\"rooms\",\"acs\", \"panels\", \"cabinets\", \"groups\", \"corridors\",\"sensors\", \"stray-devices\", \"stray-sensors\" are acceptable",
-            "name": "objs",
-            "in": "query",
+            "description": "Entity (same as category) of the object. Accepted values: sites, domains, buildings, rooms, racks, devices, acs, panels, cabinets, groups, corridors, room-templates, obj-templates, bldg-templates, stray-devices.",
+            "name": "entity",
+            "in": "path",
             "required": true
           },
           {
-            "type": "int",
-            "default": 999,
-            "description": "ID of the object or name of Site. For templates the slug is the ID. For stray-devices the name is the ID",
-            "name": "ID",
+            "default": {},
+            "name": "body",
+            "in": "body",
+            "required": true
+          }
+        ]
+      }
+    },
+    "/api/{entity}/{IdOrHierarchyName}": {
+      "get": {
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "description": "The ID or hierarchy name must be provided in the URL parameter.",
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "Objects"
+        ],
+        "summary": "Gets an Object of the given entity.",
+        "operationId": "GetEntity",
+        "parameters": [
+          {
+            "type": "string",
+            "default": "sites",
+            "description": "Entity (same as category) of the object. Accepted values: sites, domains, buildings, rooms, racks, devices, acs, panels, cabinets, groups, corridors, room-templates, obj-templates, bldg-templates, stray-devices.",
+            "name": "entity",
             "in": "path",
             "required": true
           },
           {
             "type": "string",
-            "default": "INFINITI",
-            "description": "Name of Object",
-            "name": "Name",
+            "default": "siteA",
+            "description": "ID or hierarchy name of desired object. For templates the slug is the ID.",
+            "name": "IdOrHierarchyName",
+            "in": "path",
+            "required": true
+          },
+          {
+            "description": "specify which object field to show in response. Multiple fieldOnly can be added. An invalid field is simply ignored.",
+            "name": "fieldOnly",
             "in": "query"
           },
           {
-            "type": "string",
-            "default": "Auto",
-            "description": "Category of Object (ex. Consumer Electronics, Medical)",
-            "name": "Category",
+            "description": "filter objects by lastUpdated \u003e= startDate. Format: yyyy-mm-dd",
+            "name": "startDate",
             "in": "query"
           },
           {
-            "type": "string[]",
-            "default": "High End Worldwide automotive company",
-            "description": "Description of Object",
-            "name": "Description",
-            "in": "query"
-          },
-          {
-            "type": "string",
-            "default": "High End Auto",
-            "description": "Domain of the Object",
-            "name": "Domain"
-          },
-          {
-            "type": "json",
-            "description": "Any other object attributes can be updated",
-            "name": "Attributes",
+            "description": "filter objects by lastUpdated \u003c= endDate. Format: yyyy-mm-dd",
+            "name": "endDate",
             "in": "query"
           }
         ],
         "responses": {
           "200": {
-            "description": "Updated. A response body will be returned with a meaningful message."
+            "description": "Found. A response body will be returned with a meaningful message."
           },
           "400": {
             "description": "Bad request. An error message will be returned."
@@ -757,11 +793,16 @@
         }
       },
       "delete": {
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
         "produces": [
           "application/json"
         ],
         "tags": [
-          "objects"
+          "Objects"
         ],
         "summary": "Deletes an Object in the system.",
         "operationId": "DeleteObject",
@@ -769,102 +810,52 @@
           {
             "type": "string",
             "default": "sites",
-            "description": "Indicates the location. Only values of \"sites\",\"domains\", \"buildings\", \"rooms\", \"racks\", \"devices\", \"room-templates\", \"obj-templates\",\"bldg-templates\",\"acs\", \"panels\", \"cabinets\", \"groups\", \"corridors\",\"sensors\", \"stray-devices\" \"stray-sensors\" are acceptable",
-            "name": "objs",
-            "in": "query",
+            "description": "Entity (same as category) of the object. Accepted values: sites, domains, buildings, rooms, racks, devices, acs, panels, cabinets, groups, corridors, room-templates, obj-templates, bldg-templates, stray-devices.",
+            "name": "entity",
+            "in": "path",
             "required": true
           },
           {
-            "type": "int",
-            "default": 999,
-            "description": "ID of the object or name of Site. For templates the slug is the ID. For stray-devices the name is the ID",
-            "name": "ID",
+            "type": "string",
+            "default": "siteA",
+            "description": "ID or hierarchy name of desired object. For templates the slug is the ID.",
+            "name": "IdOrHierarchyName",
             "in": "path",
             "required": true
           }
         ]
       },
-      "options": {
-        "produces": [
-          "application/json"
-        ],
-        "tags": [
-          "objects"
-        ],
-        "summary": "Displays possible operations for the resource in response header.",
-        "operationId": "ObjectOptions",
-        "parameters": [
-          {
-            "description": "Only values of \"sites\",\"domains\", \"buildings\", \"rooms\", \"racks\", \"devices\", \"room-templates\", \"obj-templates\", \"bldg-templates\",\"acs\", \"panels\",\"cabinets\", \"groups\", \"corridors\",\"sensors\",\"stray-devices\",\"stray-sensors\", are acceptable",
-            "name": "objs",
-            "in": "query"
-          },
-          {
-            "description": "ID of the object or name of Site. For templates the slug is the ID. For stray-devices the name is the ID",
-            "name": "id",
-            "in": "query"
-          }
-        ]
-      },
       "patch": {
-        "description": "This is the preferred method for modifying data in the system.\nIf you want to do a full data replace, please use PUT instead.\nIf the operation succeeds, the data result will be returned.\nIf no new or any information is provided\nan OK will still be returned",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "description": "This is the preferred method for modifying data in the system.\nIf you want to do a full data replace, please use PUT instead.\nIf no data is effectively changed, an OK will still be returned.",
         "produces": [
           "application/json"
         ],
         "tags": [
-          "objects"
+          "Objects"
         ],
-        "summary": "Partially update data in the system.",
+        "summary": "Partially update object.",
         "operationId": "PartialUpdateObject",
         "parameters": [
           {
             "type": "string",
             "default": "sites",
-            "description": "Indicates the location. Only values of \"sites\",\"domains\", \"buildings\", \"rooms\", \"racks\", \"devices\", \"room-templates\", \"obj-templates\", \"bldg-templates\",\"rooms\", \"acs\", \"panels\", \"cabinets\", \"groups\", \"corridors\", \"sensors\", \"stray-devices\", \"stray-sensors\" are acceptable",
-            "name": "objs",
-            "in": "query",
-            "required": true
-          },
-          {
-            "type": "int",
-            "default": 999,
-            "description": "ID of the object or name of Site. For templates the slug is the ID. For stray-devices the name is the ID",
-            "name": "ID",
+            "description": "Entity (same as category) of the object. Accepted values: sites, domains, buildings, rooms, racks, devices, acs, panels, cabinets, groups, corridors, room-templates, obj-templates, bldg-templates, stray-devices.",
+            "name": "entity",
             "in": "path",
             "required": true
           },
           {
             "type": "string",
-            "default": "INFINITI",
-            "description": "Name of Object",
-            "name": "Name",
-            "in": "query"
-          },
-          {
-            "type": "string",
-            "default": "Auto",
-            "description": "Category of Object (ex. Consumer Electronics, Medical)",
-            "name": "Category",
-            "in": "query"
-          },
-          {
-            "type": "string[]",
-            "default": "High End Worldwide automotive company",
-            "description": "Description of Object",
-            "name": "Description",
-            "in": "query"
-          },
-          {
-            "type": "string",
-            "default": "High End Auto",
-            "description": "Domain of the Object",
-            "name": "Domain"
-          },
-          {
-            "type": "json",
-            "description": "Any other object attributes can be updated",
-            "name": "Attributes",
-            "in": "query"
+            "default": "siteA",
+            "description": "ID or hierarchy name of desired object. For templates the slug is the ID.",
+            "name": "IdOrHierarchyName",
+            "in": "path",
+            "required": true
           }
         ],
         "responses": {
@@ -880,23 +871,94 @@
         }
       }
     },
-    "/api/{objs}/{id}/*": {
+    "/api/{entity}/{IdOrHierarchyName}/all": {
       "get": {
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "description": "Returns JSON body with all subobjects under the Object.",
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "Objects"
+        ],
+        "summary": "Get object and all its children.",
+        "operationId": "GetEntityHierarchy",
+        "parameters": [
+          {
+            "type": "string",
+            "default": "sites",
+            "description": "Entity (same as category) of the object. Accepted values: sites, domains, buildings, rooms, racks, devices, acs, panels, cabinets, groups, corridors, room-templates, obj-templates, bldg-templates, stray-devices.",
+            "name": "entity",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "default": "siteA",
+            "description": "ID or hierarchy name of desired object. For templates the slug is the ID.",
+            "name": "IdOrHierarchyName",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "default": 1,
+            "description": "Limits the level of hierarchy for retrieval. if not specified for devices then the default value is maximum. Example: /api/devices/{id}/all?limit=2",
+            "name": "limit",
+            "in": "query"
+          },
+          {
+            "description": "specify which object field to show in response. Multiple fieldOnly can be added. An invalid field is simply ignored.",
+            "name": "fieldOnly",
+            "in": "query"
+          },
+          {
+            "description": "filter objects by lastUpdated \u003e= startDate. Format: yyyy-mm-dd",
+            "name": "startDate",
+            "in": "query"
+          },
+          {
+            "description": "filter objects by lastUpdated \u003c= endDate. Format: yyyy-mm-dd",
+            "name": "endDate",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Found. A response body will be returned with a meaningful message."
+          },
+          "404": {
+            "description": "Nothing Found. An error message will be returned."
+          }
+        }
+      }
+    },
+    "/api/{entity}/{id}/*": {
+      "get": {
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
         "description": "The path can only contain object type or object names",
         "produces": [
           "application/json"
         ],
         "tags": [
-          "objects"
+          "Objects"
         ],
         "summary": "A category of objects of a Parent Object can be retrieved from the system.",
-        "operationId": "GetFromObject",
+        "operationId": "GetEntitiesUsingNamesOfParents",
         "parameters": [
           {
             "type": "string",
             "default": "sites",
-            "description": "Indicates the object. Only values of \"sites\", \"domains\", \"buildings\", \"rooms\", \"racks\", \"devices\", \"stray-devices\" are acceptable",
-            "name": "objs",
+            "description": "Indicates the entity. Only values of \"sites\", \"domains\", \"buildings\", \"rooms\", \"racks\", \"devices\", \"stray-devices\" are acceptable",
+            "name": "entity",
             "in": "query",
             "required": true
           },
@@ -925,248 +987,30 @@
             "description": "Not Found. An error message will be returned."
           }
         }
-      },
-      "options": {
-        "produces": [
-          "application/json"
-        ],
-        "tags": [
-          "objects"
-        ],
-        "summary": "Displays possible operations for the resource in response header.",
-        "operationId": "GetFromObjectOptions",
-        "parameters": [
-          {
-            "description": "Only values of \"sites\", \"domains\", \"buildings\", \"rooms\", \"racks\", \"devices\", and \"stray-devices\" are acceptable",
-            "name": "objs",
-            "in": "query"
-          },
-          {
-            "description": "ID of the object.For Sites and stray-devices the name can be used as the ID",
-            "name": "id",
-            "in": "query"
-          },
-          {
-            "type": "string",
-            "default": "/buildings/BuildingB/RoomA",
-            "description": "Hierarchal path to desired object(s). For rooms it can additionally have \"acs\",\"panels\", \"corridors\", \"sensors\" and \"cabinets\". For devices it can have \"sensors\" For racks it can have \"sensors\"",
-            "name": "*",
-            "in": "path",
-            "required": true
-          }
-        ]
       }
     },
-    "/api/{objs}/{id}/all": {
+    "/api/{entity}/{id}/{subent}": {
       "get": {
-        "description": "Returns JSON body with all subobjects under the Object.\nNote that objects returned will also included relevant objects.\n(ie Room will contain acs, panels etc. Racks and devices will contain sensors)",
-        "produces": [
-          "application/json"
-        ],
-        "tags": [
-          "objects"
-        ],
-        "summary": "Obtain all objects related to specified object in the system.",
-        "operationId": "GetFromObject",
-        "parameters": [
+        "security": [
           {
-            "type": "string",
-            "default": "sites",
-            "description": "Indicates the object. Only values of \"sites\", \"domains\" \"buildings\", \"rooms\", \"racks\", \"devices\", \"stray-devices\" are acceptable",
-            "name": "objs",
-            "in": "query",
-            "required": true
-          },
-          {
-            "type": "int",
-            "default": 999,
-            "description": "ID of object. For Sites and stray-devices the name can be used as the ID",
-            "name": "ID",
-            "in": "query",
-            "required": true
-          },
-          {
-            "type": "string",
-            "default": 1,
-            "description": "Limits the level of hierarchy for retrieval. if not specified for devices then the default value is maximum. Example: /api/devices/{id}/all?limit=2",
-            "name": "limit",
-            "in": "query"
+            "bearer": []
           }
         ],
-        "responses": {
-          "200": {
-            "description": "Found. A response body will be returned with a meaningful message."
-          },
-          "404": {
-            "description": "Nothing Found. An error message will be returned."
-          }
-        }
-      },
-      "options": {
-        "produces": [
-          "application/json"
-        ],
-        "tags": [
-          "objects"
-        ],
-        "summary": "Displays possible operations for the resource in response header.",
-        "operationId": "GetFromObjectOptions",
-        "parameters": [
-          {
-            "description": "Only values of \"sites\", \"domains\", \"buildings\", \"rooms\", \"racks\", \"devices\", and \"stray-devices\" are acceptable",
-            "name": "objs",
-            "in": "query"
-          },
-          {
-            "description": "ID of the object.For Sites and stray-devices the name can be used as the ID",
-            "name": "id",
-            "in": "query"
-          }
-        ]
-      }
-    },
-    "/api/{objs}?": {
-      "get": {
-        "description": "Gets an Object using any attribute (with the exception of description)\nvia query in the system\nThe attributes are in the form {attr}=xyz\u0026{attr1}=abc\nAnd any combination can be used given that at least 1 is provided.",
-        "produces": [
-          "application/json"
-        ],
-        "tags": [
-          "objects"
-        ],
-        "summary": "Gets an Object using any attribute.",
-        "operationId": "GetObjectQuery",
-        "parameters": [
-          {
-            "type": "string",
-            "default": "sites",
-            "description": "Indicates the object. Only values of \"domains\", \"sites\", \"buildings\", \"rooms\", \"racks\", \"devices\", \"room-templates\", \"obj-templates\",\"bldg-templates\",\"acs\",\"panels\", \"groups\", \"corridors\", \"sensors\", \"stray-devices\" and \"stray-sensors\" are acceptable",
-            "name": "objs",
-            "in": "query",
-            "required": true
-          },
-          {
-            "type": "string",
-            "default": "INFINITI",
-            "description": "Name of Site",
-            "name": "Name",
-            "in": "query"
-          },
-          {
-            "type": "string",
-            "default": "Auto",
-            "description": "Category of Site (ex. Consumer Electronics, Medical)",
-            "name": "Category",
-            "in": "query"
-          },
-          {
-            "type": "string",
-            "default": "High End Auto",
-            "description": "Domain of the Site",
-            "name": "Domain"
-          },
-          {
-            "type": "json",
-            "description": "Any other object attributes can be queried",
-            "name": "Attributes",
-            "in": "query"
-          }
-        ]
-      }
-    },
-    "/api/{obj}": {
-      "post": {
-        "produces": [
-          "application/json"
-        ],
-        "tags": [
-          "objects"
-        ],
-        "summary": "Creates an object in the system.",
-        "operationId": "CreateObject",
-        "parameters": [
-          {
-            "type": "string",
-            "default": "sites",
-            "description": "Indicates the Object. Only values of \"sites\",\"domains\", \"buildings\", \"rooms\", \"racks\", \"devices\", \"acs\", \"panels\", \"cabinets\", \"groups\", \"corridors\", \"room-templates\", \"obj-templates\", \"bldg-templates\",\"sensors\", \"stray-devices\", \"stray-sensors\" are acceptable",
-            "name": "objs",
-            "in": "query",
-            "required": true
-          },
-          {
-            "type": "string",
-            "default": "Object A",
-            "description": "Name of object",
-            "name": "Name",
-            "in": "query",
-            "required": true
-          },
-          {
-            "type": "string",
-            "default": "Research",
-            "description": "Category of Object (ex. Consumer Electronics, Medical)",
-            "name": "Category",
-            "in": "query",
-            "required": true
-          },
-          {
-            "type": "string",
-            "default": 999,
-            "description": "Domain of Object",
-            "name": "Domain",
-            "required": true
-          },
-          {
-            "type": "int",
-            "default": 999,
-            "description": "All objects are linked to a parent with the exception of Site since it has no parent",
-            "name": "ParentID",
-            "required": true
-          },
-          {
-            "type": "string[]",
-            "default": [
-              "Some abandoned object in Grenoble"
-            ],
-            "description": "Description of Object",
-            "name": "Description",
-            "in": "query"
-          },
-          {
-            "type": "json",
-            "description": "Any other object attributes can be added. They are required depending on the obj type.",
-            "name": "Attributes",
-            "in": "query",
-            "required": true
-          }
-        ],
-        "responses": {
-          "201": {
-            "description": "Created. A response body will be returned with a meaningful message."
-          },
-          "400": {
-            "description": "Bad request. A response body with an error message will be returned."
-          }
-        }
-      }
-    },
-    "/api/{obj}/{id}/{subent}": {
-      "get": {
         "description": "For Example: /api/sites/{id}/buildings\nWill return all buildings of a site\nReturns JSON body with all subobjects under the Object",
         "produces": [
           "application/json"
         ],
         "tags": [
-          "objects"
+          "Objects"
         ],
         "summary": "Obtain all objects 2 levels lower in the system.",
-        "operationId": "GetFromObject",
+        "operationId": "GetEntitiesOfAncestor",
         "parameters": [
           {
             "type": "string",
             "default": "sites",
-            "description": "Indicates the object. Only values of \"sites\", \"buildings\", \"rooms\" are acceptable",
-            "name": "obj",
+            "description": "Indicates the entity. Only values of \"sites\", \"buildings\", \"rooms\" are acceptable",
+            "name": "entity",
             "in": "query",
             "required": true
           },
@@ -1195,39 +1039,108 @@
             "description": "Nothing Found. An error message will be returned."
           }
         }
-      },
-      "options": {
+      }
+    },
+    "/api/{entity}?": {
+      "get": {
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "description": "Gets an Object using any attribute (with the exception of description)\nvia query in the system\nThe attributes are in the form {attr}=xyz\u0026{attr1}=abc\nAnd any combination can be used given that at least 1 is provided.",
         "produces": [
           "application/json"
         ],
         "tags": [
-          "objects"
+          "Objects"
         ],
-        "summary": "Displays possible operations for the resource in response header.",
-        "operationId": "GetFromObjectOptions",
+        "summary": "Gets an object filtering by attribute.",
+        "operationId": "GetEntityByQuery",
         "parameters": [
           {
-            "description": "Only values of \"sites\", \"domains\", \"buildings\", \"rooms\", \"racks\", \"devices\", and \"stray-devices\" are acceptable",
-            "name": "objs",
+            "type": "string",
+            "default": "sites",
+            "description": "Entity (same as category) of the object. Accepted values: sites, domains, buildings, rooms, racks, devices, acs, panels, cabinets, groups, corridors, room-templates, obj-templates, bldg-templates, stray-devices.",
+            "name": "entity",
+            "in": "path",
+            "required": true
+          },
+          {
+            "description": "specify which object field to show in response. Multiple fieldOnly can be added. An invalid field is simply ignored.",
+            "name": "fieldOnly",
             "in": "query"
           },
           {
-            "description": "ID of the object. For stray-devices and Sites the name can be used as the ID.",
-            "name": "id",
+            "description": "filter objects by lastUpdated \u003e= startDate. Format: yyyy-mm-dd",
+            "name": "startDate",
             "in": "query"
           },
           {
-            "description": "This refers to the sub object under the objs parameter. Please refer to the OGREE wiki to better understand what objects can be considered as sub objects.",
-            "name": "subent",
+            "description": "filter objects by lastUpdated \u003c= endDate. Format: yyyy-mm-dd",
+            "name": "endDate",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "description": "Any other object attributes can be queried",
+            "name": "attributes",
             "in": "query"
           }
         ]
       }
+    },
+    "/api/{objs}/{IdOrHierarchyName}": {
+      "put": {
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "description": "This method will replace the existing data with the JSON\nreceived, thus fully replacing the data. If you do not\nwant to do this, please use PATCH.\nIf no data is effectively changed, an OK will still be returned.",
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "Objects"
+        ],
+        "summary": "Completely update object.",
+        "operationId": "UpdateObject",
+        "parameters": [
+          {
+            "type": "string",
+            "default": "sites",
+            "description": "Entity (same as category) of the object. Accepted values: sites, domains, buildings, rooms, racks, devices, acs, panels, cabinets, groups, corridors, room-templates, obj-templates, bldg-templates, stray-devices.",
+            "name": "entity",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "default": "siteA",
+            "description": "ID or hierarchy name of desired object. For templates the slug is the ID.",
+            "name": "IdOrHierarchyName",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Updated. A response body will be returned with a meaningful message."
+          },
+          "400": {
+            "description": "Bad request. An error message will be returned."
+          },
+          "404": {
+            "description": "Not Found. An error message will be returned."
+          }
+        }
+      }
     }
   },
   "securityDefinitions": {
-    "JWT": {
-      "type": "jwt",
+    "bearer": {
+      "type": "apiKey",
       "name": "Authorization",
       "in": "header"
     }
