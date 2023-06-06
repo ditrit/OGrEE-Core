@@ -15,6 +15,8 @@ import (
 )
 
 var tmplt *template.Template
+var apptmplt *template.Template
+var servertmplt *template.Template
 var DEPLOY_DIR string
 var DOCKER_DIR string
 
@@ -27,11 +29,13 @@ func init() {
 	if DEPLOY_DIR == "" {
 		DEPLOY_DIR = "../../deploy/"
 	}
-	DOCKER_DIR = DOCKER_DIR + "docker/"
+	DOCKER_DIR = DEPLOY_DIR + "docker/"
 	// hashedPassword, _ := bcrypt.GenerateFromPassword(
 	// 	[]byte("password"), bcrypt.DefaultCost)
 	// println(string(hashedPassword))
-	tmplt = template.Must(template.ParseFiles("docker-env-template.txt"))
+	tmplt = template.Must(template.ParseFiles("backend-assets/docker-env-template.txt"))
+	apptmplt = template.Must(template.ParseFiles("flutter-assets/flutter-env-template.txt"))
+	servertmplt = template.Must(template.ParseFiles("backend-assets/template.service"))
 }
 
 func main() {
@@ -50,6 +54,7 @@ func main() {
 	router.GET("/api/tenants/:name", getTenantDockerInfo)
 	router.DELETE("/api/tenants/:name", removeTenant)
 	router.POST("/api/tenants", addTenant)
+	router.POST("/api/tenants/:name/logo", addTenantLogo)
 	router.GET("/api/containers/:name", getContainerLogs)
 	router.POST("/api/servers", createNewBackend)
 

@@ -1,20 +1,15 @@
 # Flutter OGrEE-APP
 
-An application that connects to an OGrEE-API and lets the user visualize and create reports of the complete hierarchy of objects (sites, buildings, rooms, racks, devices, etc.) and all their attributes.
+An application that connects to an OGrEE-API and lets the user visualize and create reports of the complete hierarchy of objects (sites, buildings, rooms, racks, devices, etc.) and all their attributes. The app can also connect to an ogree_app_backend, entering SuperAdmin mode, where it can be used to launch new docker deployments of OGrEE.
 
-Flutter allows us to compile the application to multiple target platforms. This one has been tested Web, Windows and Linux app. Check out the [flutter docs](https://docs.flutter.dev/get-started/install)  to understand how it works and install it.
+Flutter allows us to compile the application to multiple target platforms. This one has been tested Web, Windows and Linux app. Check out the [flutter docs](https://docs.flutter.dev/get-started/install)  to understand how it works and install it. For development, you should install the Flutter SDK and all its dependencies (depending on your OS). We recommed you use VSCode with the Flutter and Dart extensions. 
 ## Build and run the application
 
-Before running it, create a **.env** file in this directory with the URL of the target OGrEE-API:
-```console
-API_URL=[URL of OGrEE-API]
-```
-
-Executing `flutter run` in this directory will compile and run the app in debug mode on the platform locally available. If more than one available, it gives you a list of possible devices to choose from (web or windows, for example).
+Executing `flutter run` in this directory will compile and run the app in debug mode on the platform locally available. If more than one available, it gives you a list of possible devices to choose from (web or windows, for example). Note that only Google Chrome can run a Flutter web app on debug mode
 
 To compile for production, use `flutter build` followed by the target platform (`web`, for example). The result will be under /build.
 
-## Understanding the app and the code
+## Understanding the app and the code (regular mode)
 
 In Flutter, everything is a widget (visual componentes, services, models, all of it!). It all starts with `main` that calls for the creation of a `MaterialApp` widget that has a theme definition applied for the whole app (for example: default font size for titles, default button colors) and calls the home widget `LoginPage`.
 

@@ -142,6 +142,13 @@ pipeline {
             }
         }
 
+        stage('Update Endpoint Doc') {
+            steps {
+                echo 'Updating endpoint doc'
+                sh ''
+            }
+        }
+
         stage('Deploy') {
             steps {
                 echo 'Deploying....'

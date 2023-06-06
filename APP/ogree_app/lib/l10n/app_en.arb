@@ -92,5 +92,22 @@
   "selectServer": "Choose server",
   "createServer": "Create new Backend Server",
   "serverPath": "Install Path on server",
-  "portServer": "Backend Port on server"
+  "portServer": "Backend Port on server",
+
+  "changePassword": "Change password",
+  "currentPassword": "Current password",
+  "newPassword": "New Password",
+  "confirmPassword": "Confirm New Password",
+  "passwordNoMatch": "New password fields do not match",
+
+  "tenantName": "Tenant Name",
+  "tenantPassword": "Tenant Admin Password",
+  "apiUrl": "New API URL",
+  "webUrl": "New Web URL",
+  "docUrl": "New Swagger UI URL",
+  "selectLogo": "Select Logo Image",
+  "notLoaded": "not loaded by user",
+  "failedToUpload": "Custom logo not set:",
+  "wrongFormatUrl": "Wrong format for URL: expected host:port",
+  "wrongFormatPort": "Wrong format for URL: port should only have digits"
 }

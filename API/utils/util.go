@@ -39,7 +39,8 @@ const (
 	STRAYSENSOR
 )
 
-const HN_DELIMETER = "." // hierarchyName path delimiter
+const HN_DELIMETER = "."  // hierarchyName path delimiter
+const RESET_TAG = "RESET" // used as email to identify a reset token
 
 type RequestFilters struct {
 	FieldsToShow []string `schema:"fieldOnly"`

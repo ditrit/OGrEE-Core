@@ -53,14 +53,24 @@ You can modify the port of the API in the .env file. This is the port that the A
  - Navigate in your terminal to the ```init_db``` directory  
  - Execute the bash script ```ogreeBoot.sh```
  - Enter your password when the prompt asks you
- - Execute the bash script ```addTenant.sh``` with the flag --name myCompanyName (specify your company name here)
  - Be sure to enter your user password and the desired the DB access password
  - Update your .env file ```db_user=myCompanyName``` and ```db_pass=dbAccessPassword```
  - Execute the binary ```main```
 
-This .env file is not provided, so you must create it yourself. To view an example of the ```.env``` file: https://ogree.ditrit.io/htmls/apiReference.html   
-
-
+This .env file is not provided, so you must create it yourself. Here is an example of the ```.env``` file:
+```
+api_port = 3001
+db_host = 0.0.0.0
+db_port = 27017
+db_user = ""
+db_pass = ""
+db = "TenantName"
+token_password = thisIsTheJwtSecretPassword
+signing_password = thisIsTheRBACSecretPassword
+email_account = "test@test.com"
+email_password = ""
+reset_url = "http://localhost:8082/#/reset?token="
+``` 
 
 Jenkins
 --------------------------

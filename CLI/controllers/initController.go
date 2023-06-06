@@ -10,11 +10,10 @@ import (
 	"cli/utils"
 	"encoding/json"
 	"fmt"
+	"io"
 	"net/url"
 	"os"
 	"path/filepath"
-	"regexp"
-	"strconv"
 	"strings"
 	"time"
 )
@@ -246,19 +245,8 @@ func InitTimeout(duration string) {
 	}
 }
 
-func InitEmail(email string) string {
-	if email != "" {
-		State.UserEmail = email
-		return State.UserEmail
-	}
-	fmt.Println("Error: No User Email Found")
-	if State.DebugLvl > 0 {
-		l.GetErrorLogger().Println(
-			"No User Email provided in env file nor as argument")
-	}
+func InitUser(user User) {
 
-	State.UserEmail = ""
-	return ""
 }
 
 func InitKey(apiKey string) {
@@ -355,92 +343,43 @@ func SetDrawableTemplate(entity string, DrawableJson map[string]string) map[stri
 	return nil
 }
 
-func CreateCredentials() (string, string) {
-	var tp map[string]interface{}
-
-	user, _ := readline.Line("Please Enter desired user email: ")
-	pass, _ := readline.Password("Please Enter desired password: ")
-	data := map[string]interface{}{"email": user, "password": string(pass)}
-
-	resp, e := models.Send("POST", State.APIURL+"/api", "", data)
-	tp = ParseResponse(resp, e, "Create credentials")
-	if tp == nil {
-		println(e.Error())
-		os.Exit(-1)
-	}
-
-	if tp["status"] != nil {
-		if !tp["status"].(bool) {
-			errMessage := "Error while creating credentials : " + tp["message"].(string)
-			if State.DebugLvl > 0 {
-				println(errMessage)
-			}
-			l.GetErrorLogger().Println(errMessage)
-			os.Exit(-1)
+func Login(user string) (*User, string, error) {
+	var err error
+	if user == "" {
+		user, err = readline.Line("User: ")
+		if err != nil {
+			return nil, "", fmt.Errorf("readline error : %s", err.Error())
 		}
-	} else {
-		if State.DebugLvl > 0 {
-			println("An error occurred while creating credentials")
-			l.GetErrorLogger().Println("Could not read API status on create credential attempt")
-		}
-		os.Exit(-1)
 	}
-
-	token := (tp["account"].(map[string]interface{}))["token"].(string)
-	l.GetInfoLogger().Println("Credentials created")
-	return user, token
-}
-
-func CheckEmailIsValid(email string) bool {
-	emailRegex := "(\\w)+@(\\w)+\\.(\\w)+"
-	return regexp.MustCompile(emailRegex).MatchString(email)
-}
-
-func CheckKeyIsValid(key string) bool {
-	resp, err := models.Send("GET", State.APIURL+"/api/token/valid", key, nil)
+	pass, err := readline.Password("Password: ")
 	if err != nil {
-		if State.DebugLvl > 0 {
-			l.GetErrorLogger().Println("Unable to connect to API: ", State.APIURL)
-			l.GetErrorLogger().Println(err.Error())
-			println(err.Error())
-		}
-		return false
+		return nil, "", err
 	}
-	if resp.StatusCode != 200 {
-		println("HTTP Response Status code : " + strconv.Itoa(resp.StatusCode))
-		if State.DebugLvl > NONE {
-			x := ParseResponse(resp, err, " Read API Response message")
-			if x != nil {
-				if x["message"] != nil && x["message"] != "" {
-					println("[API] " + x["message"].(string))
-				} else {
-					println("Was not able to read API Response message")
-				}
-			} else {
-				println("Was not able to read API Response message")
-			}
-		}
-		return false
+	data := map[string]any{"email": user, "password": string(pass)}
+	rawResp, err := models.Send("POST", State.APIURL+"/api/login", "", data)
+	if err != nil {
+		return nil, "", fmt.Errorf("error sending login request : %s", err.Error())
 	}
-	return true
-}
-
-func Login(user string, key string) (string, string) {
-	if key == "" || !CheckEmailIsValid(user) || !CheckKeyIsValid(key) {
-		l.GetInfoLogger().Println("Credentials not found or invalid, going to generate..")
-		if State.DebugLvl > NONE {
-			println("Credentials not found or invalid, going to generate..")
-		}
-		user, key = CreateCredentials()
-		fmt.Printf("Here is your api key, you can save it to your config.toml file :\n%s\n", key)
+	bodyBytes, err := io.ReadAll(rawResp.Body)
+	if err != nil {
+		return nil, "", fmt.Errorf("error reading answer from API : %s", err.Error())
 	}
-	if !CheckKeyIsValid(key) {
-		if State.DebugLvl > 0 {
-			println("Error while checking key. Now exiting")
-		}
-		l.GetErrorLogger().Println("Error while checking key. Now exiting")
-		os.Exit(-1)
+	var resp map[string]any
+	if err = json.Unmarshal(bodyBytes, &resp); err != nil {
+		return nil, "", fmt.Errorf("error parsing response : %s", err.Error())
 	}
-	l.GetInfoLogger().Println("Successfully Logged In")
-	return user, key
+	status, ok := resp["status"].(bool)
+	if !ok {
+		return nil, "", fmt.Errorf("invalid response from API")
+	}
+	if !status {
+		return nil, "", fmt.Errorf(resp["message"].(string))
+	}
+	account, accountOk := (resp["account"].(map[string]interface{}))
+	token, tokenOk := account["token"].(string)
+	userID, userIDOk := account["_id"].(string)
+	if !accountOk || !tokenOk || !userIDOk {
+		return nil, "", fmt.Errorf("invalid response from API")
+	}
+	return &User{user, userID}, token, nil
 }

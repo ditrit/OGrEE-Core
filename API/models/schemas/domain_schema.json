@@ -43,7 +43,6 @@
     "required": [
       "category",
       "description",
-      "domain",
       "name",
       "attributes"
     ],

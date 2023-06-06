@@ -22,29 +22,37 @@ func main() {
 	l.InitLogs()
 	c.InitConfigFilePath(conf.ConfigPath)
 	c.InitHistoryFilePath(conf.HistPath)
-	c.InitDebugLevel(conf.Verbose)         //Set the Debug level
-	c.InitTimeout(conf.UnityTimeout)       //Set the Unity Timeout
-	c.InitURLs(conf.APIURL, conf.UnityURL) //Set the URLs
+	c.InitDebugLevel(conf.Verbose)
+	c.InitTimeout(conf.UnityTimeout)
+	c.InitURLs(conf.APIURL, conf.UnityURL)
 
 	if !c.PingAPI() {
 		println("Cannot reach API")
 		return
 	}
 
-	conf.User, conf.APIKEY = c.Login(conf.User, conf.APIKEY)
-	c.InitEmail(conf.User) //Set the User email
-	c.InitKey(conf.APIKEY) //Set the API Key
+	var err error
+	var apiKey string
+	user, apiKey, err := c.Login(conf.User)
+	if err != nil {
+		println(err.Error())
+		return
+	} else {
+		println("Successfully connected")
+	}
+	c.State.User = *user
+	c.InitKey(apiKey)
 	c.InitState(conf)
-	err := InitVars(conf.Variables)
+	err = InitVars(conf.Variables)
 	if err != nil {
 		println("Error while initializing variables :", err.Error())
 		return
 	}
 
-	user := strings.Split(conf.User, "@")[0]
+	userShort := strings.Split(c.State.User.Email, "@")[0]
 
 	rl, err := readline.NewEx(&readline.Config{
-		Prompt:          SetPrompt(user),
+		Prompt:          SetPrompt(userShort),
 		HistoryFile:     c.State.HistoryFilePath,
 		AutoComplete:    GetPrefixCompleter(),
 		InterruptPrompt: "^C",
@@ -70,5 +78,5 @@ func main() {
 	}
 	c.InitUnityCom(rl, c.State.UnityClientURL)
 	//Pass control to repl.go
-	Start(rl, user)
+	Start(rl, userShort)
 }
