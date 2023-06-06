@@ -1,6 +1,7 @@
 # Core Ignore
 .vscode/
 go.work
+go.work.sum
 *.code-workspace
 *.toml
 *log
@@ -18,3 +19,5 @@ cli.exe
 cli.mac
 .history
 *.ocli
+log.txt
+unitylog.txt
