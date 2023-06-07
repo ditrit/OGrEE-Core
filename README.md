@@ -10,7 +10,7 @@ Run:
 
 The config can be updated beforehand in ```deploy/docker/.env```
 
-## Config
+## Frontend config
 To use the frontend (CLI, 3D, APP), a ```config.toml``` file must be created at the root of the repo.
 
 Example :
