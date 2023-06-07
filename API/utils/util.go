@@ -49,6 +49,24 @@ type RequestFilters struct {
 	Limit        string   `schema:"limit"`
 }
 
+type ErrType int
+
+const (
+	ErrUnauthorized = iota
+	ErrDuplicate
+	ErrBadFormat
+	ErrInvalidValue
+	ErrDBError
+	ErrInternal
+	ErrNotFound
+)
+
+type Error struct {
+	Type    ErrType
+	Message string
+	Details []string
+}
+
 func GetBuildDate() string {
 	return BuildTime
 }
@@ -73,8 +91,16 @@ func Message(status bool, message string) map[string]interface{} {
 	return map[string]interface{}{"status": status, "message": message}
 }
 
-func Respond(w http.ResponseWriter, data map[string]interface{}) {
-	json.NewEncoder(w).Encode(data)
+func Respond(w http.ResponseWriter, data interface{}) {
+	if err, isError := data.(*Error); isError {
+		errMap := map[string]interface{}{"message": err.Message}
+		if len(err.Details) > 0 {
+			errMap["errors"] = err.Details
+		}
+		json.NewEncoder(w).Encode(errMap)
+	} else {
+		json.NewEncoder(w).Encode(data)
+	}
 	w.Header().Add("Content-Type", "application/json")
 }
 
@@ -124,6 +150,22 @@ func ParamsParse(link *url.URL, objType int) map[string]interface{} {
 		}
 	}
 	return values
+}
+
+func ErrTypeToStatusCode(errType ErrType) int {
+	switch errType {
+	case ErrUnauthorized:
+		return http.StatusUnauthorized
+	case ErrDuplicate:
+	case ErrBadFormat:
+		return http.StatusBadRequest
+	case ErrDBError:
+	case ErrInternal:
+		return http.StatusInternalServerError
+	case ErrNotFound:
+		return http.StatusNotFound
+	}
+	return http.StatusInternalServerError
 }
 
 func EntityToString(entity int) string {

@@ -173,7 +173,7 @@ func getHierarchyName(parent map[string]interface{}) string {
 	}
 }
 
-func validateJsonSchema(entity int, t map[string]interface{}) (map[string]interface{}, bool) {
+func validateJsonSchema(entity int, t map[string]interface{}) (bool, *u.Error) {
 	// Get JSON schema
 	var schemaName string
 	switch entity {
@@ -187,7 +187,7 @@ func validateJsonSchema(entity int, t map[string]interface{}) (map[string]interf
 
 	sch, err := c.Compile(schemaName)
 	if err != nil {
-		return u.Message(false, err.Error()), false
+		return false, &u.Error{Type: u.ErrInternal, Message: err.Error()}
 	}
 
 	// Validate JSON Schema
@@ -196,7 +196,6 @@ func validateJsonSchema(entity int, t map[string]interface{}) (map[string]interf
 		case *jsonschema.ValidationError:
 			fmt.Println(t)
 			println(v.GoString())
-			resp := u.Message(false, "JSON body doesn't validate with the expected JSON schema")
 			// Format errors array
 			errSlice := []string{}
 			for _, schErr := range v.BasicOutput().Errors {
@@ -208,17 +207,18 @@ func validateJsonSchema(entity int, t map[string]interface{}) (map[string]interf
 					}
 				}
 			}
-			resp["errors"] = errSlice
-			return resp, false
+			return false, &u.Error{Type: u.ErrBadFormat,
+				Message: "JSON body doesn't validate with the expected JSON schema",
+				Details: errSlice}
 		}
-		return u.Message(false, err.Error()), false
+		return false, &u.Error{Type: u.ErrBadFormat, Message: err.Error()}
 	} else {
 		println("JSON Schema: all good, validated!")
-		return nil, true
+		return true, nil
 	}
 }
 
-func ValidateEntity(entity int, t map[string]interface{}) (map[string]interface{}, bool) {
+func ValidateEntity(entity int, t map[string]interface{}) (bool, *u.Error) {
 	/*
 		TODO:
 		Need to capture device if it is a parent
@@ -227,8 +227,8 @@ func ValidateEntity(entity int, t map[string]interface{}) (map[string]interface{
 	*/
 
 	// Validate JSON Schema
-	if resp, err := validateJsonSchema(entity, t); !err {
-		return resp, false
+	if ok, err := validateJsonSchema(entity, t); !ok {
+		return false, err
 	}
 
 	// Extra checks
@@ -238,7 +238,8 @@ func ValidateEntity(entity int, t map[string]interface{}) (map[string]interface{
 		var ok bool
 		parent, ok = validateParent(u.EntityToString(entity), entity, t)
 		if !ok {
-			return parent, ok
+			return false, &u.Error{Type: u.ErrInvalidValue,
+				Message: parent["message"].(string)}
 		} else if parent["hierarchyName"] != nil {
 			t["hierarchyName"] = parent["hierarchyName"].(string) + u.HN_DELIMETER + t["name"].(string)
 		} else {
@@ -247,11 +248,13 @@ func ValidateEntity(entity int, t map[string]interface{}) (map[string]interface{
 		//Check domain
 		if entity != u.DOMAIN {
 			if !CheckDomainExists(t["domain"].(string)) {
-				return u.Message(false, "Domain not found: "+t["domain"].(string)), false
+				return false, &u.Error{Type: u.ErrNotFound,
+					Message: "Domain not found: " + t["domain"].(string)}
 			}
 			if parentDomain, ok := parent["domain"].(string); ok {
 				if !CheckParentDomain(parentDomain, t["domain"].(string)) {
-					return u.Message(false, "Object domain is not equal or child of parent's domain"), false
+					return false, &u.Error{Type: u.ErrBadFormat,
+						Message: "Object domain is not equal or child of parent's domain"}
 				}
 			}
 		}

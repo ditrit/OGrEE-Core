@@ -142,8 +142,6 @@ var CreateEntity = func(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("******************************************************")
 	DispRequestMetaData(r)
 
-	var e string
-	var resp map[string]interface{}
 	object := map[string]interface{}{}
 	err := json.NewDecoder(r.Body).Decode(&object)
 
@@ -157,8 +155,6 @@ var CreateEntity = func(w http.ResponseWriter, r *http.Request) {
 
 	println("User Roles:")
 	fmt.Println(user.Roles)
-
-	entUpper := strings.ToUpper(entStr)
 
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
@@ -195,28 +191,15 @@ var CreateEntity = func(w http.ResponseWriter, r *http.Request) {
 	//Clean the data of 'id' attribute if present
 	delete(object, "id")
 
-	resp, e = models.CreateEntity(entInt, object, user.Roles)
-
-	switch e {
-	case "validate", "duplicate":
-		w.WriteHeader(http.StatusBadRequest)
-		u.ErrLog("Error while creating "+entStr, "CREATE "+entUpper, e, r)
-	case "":
+	resp, e := models.CreateEntity(entInt, object, user.Roles)
+	if e != nil {
+		u.ErrLog("Error creating "+entStr, "CREATE", e.Message, r)
+		w.WriteHeader(u.ErrTypeToStatusCode(e.Type))
+		u.Respond(w, e)
+	} else {
 		w.WriteHeader(http.StatusCreated)
-	case "permission":
-		w.WriteHeader(http.StatusUnauthorized)
-	default:
-		if strings.Split(e, " ")[1] == "duplicate" {
-			w.WriteHeader(http.StatusBadRequest)
-			u.ErrLog("Error: Duplicate "+entStr+" is forbidden",
-				"CREATE "+entUpper, e, r)
-		} else {
-			w.WriteHeader(http.StatusInternalServerError)
-			u.ErrLog("Error while creating "+entStr, "CREATE "+entUpper, e, r)
-		}
+		u.Respond(w, resp)
 	}
-
-	u.Respond(w, resp)
 }
 
 var CreateBulkDomain = func(w http.ResponseWriter, r *http.Request) {
@@ -2138,13 +2121,13 @@ var ValidateEntity = func(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	ans, status := models.ValidateEntity(entInt, obj)
-	if status {
+	ok, e := models.ValidateEntity(entInt, obj)
+	if ok {
 		u.Respond(w, map[string]interface{}{"status": true, "message": "This object can be created"})
 		return
 	}
 	w.WriteHeader(http.StatusBadRequest)
-	u.Respond(w, ans)
+	u.Respond(w, e)
 }
 
 // swagger:operation GET /api/version versioning GetAPIVersion

@@ -17,10 +17,10 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
-func CreateEntity(entity int, t map[string]interface{}, userRoles map[string]Role) (map[string]interface{}, string) {
+func CreateEntity(entity int, t map[string]interface{}, userRoles map[string]Role) (map[string]interface{}, *u.Error) {
 	message := ""
-	if resp, ok := ValidateEntity(entity, t); !ok {
-		return resp, "validate"
+	if ok, err := ValidateEntity(entity, t); !ok {
+		return nil, err
 	}
 
 	// Check user permissions
@@ -32,9 +32,8 @@ func CreateEntity(entity int, t map[string]interface{}, userRoles map[string]Rol
 			domain = t["domain"].(string)
 		}
 		if permission := CheckUserPermissions(userRoles, entity, domain); permission < WRITE {
-			return u.Message(false,
-					"User does not have permission to create this object"),
-				"permission"
+			return nil, &u.Error{Type: u.ErrUnauthorized,
+				Message: "User does not have permission to create this object"}
 		}
 	}
 
@@ -50,13 +49,11 @@ func CreateEntity(entity int, t map[string]interface{}, userRoles map[string]Rol
 	res, e := GetDB().Collection(entStr).InsertOne(ctx, t)
 	if e != nil {
 		if strings.Contains(e.Error(), "E11000") {
-			return u.Message(false,
-					"Error while creating "+entStr+": Duplicates not allowed"),
-				"duplicate"
+			return nil, &u.Error{Type: u.ErrDuplicate,
+				Message: "Error while creating " + entStr + ": Duplicates not allowed"}
 		}
-		return u.Message(false,
-				"Internal error while creating "+entStr+": "+e.Error()),
-			e.Error()
+		return nil, &u.Error{Type: u.ErrDBError,
+			Message: "Internal error while creating " + entStr + ": " + e.Error()}
 	}
 	defer cancel()
 
@@ -75,7 +72,7 @@ func CreateEntity(entity int, t map[string]interface{}, userRoles map[string]Rol
 
 	resp := u.Message(true, message)
 	resp["data"] = t
-	return resp, ""
+	return resp, nil
 }
 
 // GetObjectByName: search for hierarchyName in all possible collections
@@ -736,9 +733,9 @@ func UpdateEntity(ent string, req bson.M, t map[string]interface{}, isPatch bool
 
 	// Ensure the update is valid and apply it
 	ctx, cancel := u.Connect()
-	msg, ok := ValidateEntity(u.EntityStrToInt(ent), t)
+	ok, _ := ValidateEntity(u.EntityStrToInt(ent), t)
 	if !ok {
-		return msg, "invalid"
+		return nil, "invalid"
 	}
 
 	// Check user permissions in case domain is being updated
