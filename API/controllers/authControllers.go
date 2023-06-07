@@ -77,7 +77,7 @@ var CreateAccount = func(w http.ResponseWriter, r *http.Request) {
 		err := json.NewDecoder(r.Body).Decode(account)
 		if err != nil {
 			w.WriteHeader(http.StatusBadRequest)
-			u.Respond(w, u.Message(false, "Invalid request"))
+			u.Respond(w, u.Message("Invalid request"))
 			return
 		}
 
@@ -146,7 +146,7 @@ var CreateBulkAccount = func(w http.ResponseWriter, r *http.Request) {
 	err := json.NewDecoder(r.Body).Decode(&accounts)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
-		u.Respond(w, u.Message(false, "Invalid request"))
+		u.Respond(w, u.Message("Invalid request"))
 		return
 	}
 
@@ -236,7 +236,7 @@ var Authenticate = func(w http.ResponseWriter, r *http.Request) {
 		var account models.Account
 		err := json.NewDecoder(r.Body).Decode(&account)
 		if err != nil {
-			u.Respond(w, u.Message(false, "Invalid request"))
+			u.Respond(w, u.Message("Invalid request"))
 			return
 		}
 
@@ -286,7 +286,7 @@ var Verify = func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Add("Content-Type", "application/json")
 		w.Header().Add("Allow", "GET, OPTIONS")
 	} else {
-		u.Respond(w, u.Message(true, "working"))
+		u.Respond(w, u.Message("working"))
 	}
 }
 
@@ -323,9 +323,9 @@ var GetAllAccounts = func(w http.ResponseWriter, r *http.Request) {
 		data, err := models.GetAllUsers(callerUser.Roles)
 		if err != "" {
 			w.WriteHeader(http.StatusInternalServerError)
-			resp = u.Message(false, "Error: "+err)
+			resp = u.Message("Error: " + err)
 		} else {
-			resp = u.Message(true, "successfully got users")
+			resp = u.Message("successfully got users")
 			resp["data"] = data
 		}
 		u.Respond(w, resp)
@@ -370,7 +370,7 @@ var RemoveAccount = func(w http.ResponseWriter, r *http.Request) {
 		objID, err := primitive.ObjectIDFromHex(userId)
 		if err != nil {
 			w.WriteHeader(http.StatusBadRequest)
-			resp = u.Message(false, "User ID is not valid")
+			resp = u.Message("User ID is not valid")
 			u.Respond(w, resp)
 			return
 		}
@@ -379,7 +379,7 @@ var RemoveAccount = func(w http.ResponseWriter, r *http.Request) {
 		// Check permissions
 		if !models.CheckCanManageUser(callerUser.Roles, deleteUser.Roles) {
 			w.WriteHeader(http.StatusUnauthorized)
-			resp = u.Message(false, "Caller does not have permission to delete this user")
+			resp = u.Message("Caller does not have permission to delete this user")
 			u.Respond(w, resp)
 			return
 		}
@@ -388,9 +388,9 @@ var RemoveAccount = func(w http.ResponseWriter, r *http.Request) {
 		e := models.DeleteUser(objID)
 		if e != "" {
 			w.WriteHeader(http.StatusInternalServerError)
-			resp = u.Message(false, "Error: "+e)
+			resp = u.Message("Error: " + e)
 		} else {
-			resp = u.Message(true, "successfully removed user")
+			resp = u.Message("successfully removed user")
 		}
 		u.Respond(w, resp)
 	}
@@ -436,13 +436,13 @@ var ModifyUserRoles = func(w http.ResponseWriter, r *http.Request) {
 		err := json.NewDecoder(r.Body).Decode(&data)
 		if err != nil {
 			w.WriteHeader(http.StatusBadRequest)
-			u.Respond(w, u.Message(false, "Invalid request"))
+			u.Respond(w, u.Message("Invalid request"))
 			return
 		}
 		roles, ok := data["roles"].(map[string]interface{})
 		if len(data) > 1 || !ok {
 			w.WriteHeader(http.StatusBadRequest)
-			u.Respond(w, u.Message(false, "Only 'roles' should be provided to patch"))
+			u.Respond(w, u.Message("Only 'roles' should be provided to patch"))
 			return
 		}
 		rolesConverted := map[string]models.Role{}
@@ -451,7 +451,7 @@ var ModifyUserRoles = func(w http.ResponseWriter, r *http.Request) {
 				rolesConverted[k] = models.Role(v)
 			} else {
 				w.WriteHeader(http.StatusBadRequest)
-				u.Respond(w, u.Message(false, "Invalid roles format"))
+				u.Respond(w, u.Message("Invalid roles format"))
 				return
 			}
 		}
@@ -466,7 +466,7 @@ var ModifyUserRoles = func(w http.ResponseWriter, r *http.Request) {
 		objID, err := primitive.ObjectIDFromHex(userId)
 		if err != nil {
 			w.WriteHeader(http.StatusBadRequest)
-			resp = u.Message(false, "User ID is not valid")
+			resp = u.Message("User ID is not valid")
 			u.Respond(w, resp)
 			return
 		}
@@ -475,7 +475,7 @@ var ModifyUserRoles = func(w http.ResponseWriter, r *http.Request) {
 		// Check permissions
 		if !models.CheckCanManageUser(callerUser.Roles, modifyUser.Roles) {
 			w.WriteHeader(http.StatusUnauthorized)
-			resp = u.Message(false, "Caller does not have permission to modify this user")
+			resp = u.Message("Caller does not have permission to modify this user")
 			u.Respond(w, resp)
 			return
 		}
@@ -491,9 +491,9 @@ var ModifyUserRoles = func(w http.ResponseWriter, r *http.Request) {
 			default:
 				w.WriteHeader(http.StatusInternalServerError)
 			}
-			resp = u.Message(false, "Error: "+e)
+			resp = u.Message("Error: " + e)
 		} else {
-			resp = u.Message(true, "successfully updated user roles")
+			resp = u.Message("successfully updated user roles")
 		}
 		u.Respond(w, resp)
 	}
@@ -561,7 +561,7 @@ var ModifyUserPassword = func(w http.ResponseWriter, r *http.Request) {
 		userData := r.Context().Value("user")
 		if userData == nil {
 			w.WriteHeader(http.StatusBadRequest)
-			u.Respond(w, u.Message(false, "Error while parsing path params"))
+			u.Respond(w, u.Message("Error while parsing path params"))
 			u.ErrLog("Error while parsing path params", "GET GENERIC", "", r)
 			return
 		}
@@ -573,7 +573,7 @@ var ModifyUserPassword = func(w http.ResponseWriter, r *http.Request) {
 		err := json.NewDecoder(r.Body).Decode(&data)
 		if err != nil {
 			w.WriteHeader(http.StatusBadRequest)
-			u.Respond(w, u.Message(false, "Invalid request"))
+			u.Respond(w, u.Message("Invalid request"))
 			return
 		}
 		isReset := false
@@ -587,7 +587,7 @@ var ModifyUserPassword = func(w http.ResponseWriter, r *http.Request) {
 		newPassword, hasNew := data["newPassword"].(string)
 		if !hasCurrent || !hasNew {
 			w.WriteHeader(http.StatusBadRequest)
-			u.Respond(w, u.Message(false, "Invalid request: wrong body format"))
+			u.Respond(w, u.Message("Invalid request: wrong body format"))
 			return
 		}
 
@@ -600,7 +600,7 @@ var ModifyUserPassword = func(w http.ResponseWriter, r *http.Request) {
 		}
 		if user == nil {
 			w.WriteHeader(http.StatusBadRequest)
-			u.Respond(w, u.Message(false, "Invalid token: no valid user found"))
+			u.Respond(w, u.Message("Invalid token: no valid user found"))
 			u.ErrLog("Unable to find user associated to token", "GET GENERIC", "", r)
 			return
 		}
@@ -616,9 +616,9 @@ var ModifyUserPassword = func(w http.ResponseWriter, r *http.Request) {
 			default:
 				w.WriteHeader(http.StatusInternalServerError)
 			}
-			resp = u.Message(false, "Error: "+response)
+			resp = u.Message("Error: " + response)
 		} else {
-			resp = u.Message(true, "successfully updated user password")
+			resp = u.Message("successfully updated user password")
 			if !isReset {
 				resp["token"] = response
 			}
@@ -665,13 +665,13 @@ var UserForgotPassword = func(w http.ResponseWriter, r *http.Request) {
 		err := json.NewDecoder(r.Body).Decode(&data)
 		if err != nil {
 			w.WriteHeader(http.StatusBadRequest)
-			u.Respond(w, u.Message(false, "Invalid request"))
+			u.Respond(w, u.Message("Invalid request"))
 			return
 		}
 		userEmail, hasEmail := data["email"].(string)
 		if !hasEmail {
 			w.WriteHeader(http.StatusBadRequest)
-			u.Respond(w, u.Message(false, "Invalid request: email should be provided"))
+			u.Respond(w, u.Message("Invalid request: email should be provided"))
 			return
 		}
 
@@ -681,12 +681,12 @@ var UserForgotPassword = func(w http.ResponseWriter, r *http.Request) {
 			token := models.GenerateToken(u.RESET_TAG, user.ID, time.Minute*15)
 			if e := u.SendEmail(token, user.Email); e != "" {
 				w.WriteHeader(http.StatusInternalServerError)
-				u.Respond(w, u.Message(false, "Unable to send email: "+e))
+				u.Respond(w, u.Message("Unable to send email: "+e))
 				return
 			}
 		}
 
-		resp = u.Message(true, "request processed")
+		resp = u.Message("request processed")
 		u.Respond(w, resp)
 	}
 }

@@ -40,7 +40,7 @@ func CheckDomainExists(domain string) bool {
 		return true
 	}
 	x, e := GetEntity(bson.M{"hierarchyName": domain}, "domain", u.RequestFilters{}, nil)
-	return e == "" && x != nil
+	return e == nil && x != nil
 }
 
 func GetRequestFilterByDomain(userRoles map[string]Role) (bson.M, bool) {
@@ -61,6 +61,7 @@ func GetRequestFilterByDomain(userRoles map[string]Role) (bson.M, bool) {
 		}
 	}
 	if domainPattern == "" {
+		// the user is only a viewer, return false
 		return filter, false
 	} else {
 		filter["domain"] = primitive.Regex{Pattern: domainPattern, Options: ""}

@@ -8,14 +8,14 @@ func TestMessageToReturnTrueMSI(t *testing.T) {
 
 	//Test Case 1
 	testString := "Hello there"
-	msi := Message(true, testString)
+	msi := Message(testString)
 	if msi["status"] != true || msi["message"] != testString {
 		t.Error("Test Case 1 failed")
 	}
 
 	//Test Case 2
 	testString = ""
-	msi = Message(true, testString)
+	msi = Message(testString)
 	if msi["status"] != true || msi["message"] != testString {
 		t.Error("Test Case 2 failed")
 	}
@@ -25,14 +25,14 @@ func TestMessageToReturnTrueMSI(t *testing.T) {
 func TestMessageToReturnFalseMSI(t *testing.T) {
 	//Test Case 1
 	testString := "Hello there"
-	msi := Message(false, testString)
+	msi := Message(testString)
 	if msi["status"] != false || msi["message"] != testString {
 		t.Error("Test Case 1 failed")
 	}
 
 	//Test Case 2
 	testString = ""
-	msi = Message(false, testString)
+	msi = Message(testString)
 	if msi["status"] != false || msi["message"] != testString {
 		t.Error("Test Case 2 failed")
 	}

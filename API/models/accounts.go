@@ -37,11 +37,11 @@ func (account *Account) Validate() (map[string]interface{}, bool) {
 	valid := regexp.MustCompile("(\\w)+@(\\w)+\\.(\\w)+").MatchString(account.Email)
 
 	if !valid {
-		return u.Message(false, "A valid email address is required"), false
+		return u.Message("A valid email address is required"), false
 	}
 
 	if e := validatePasswordFormat(account.Password); e != "" {
-		return u.Message(false, e), false
+		return u.Message(e), false
 	}
 
 	//Error checking and duplicate emails
@@ -49,21 +49,21 @@ func (account *Account) Validate() (map[string]interface{}, bool) {
 	err := GetDB().Collection("account").FindOne(ctx, bson.M{"email": account.Email}).Err()
 	if err != nil && err != mongo.ErrNoDocuments {
 		println("Error while creating account:", err.Error())
-		return u.Message(false, "Connection error. Please retry"), false
+		return u.Message("Connection error. Please retry"), false
 	}
 
 	//User already exists
 	if err == nil {
-		return u.Message(false, "Error: User already exists"), false
+		return u.Message("Error: User already exists"), false
 	}
 	defer cancel()
 
 	// Validate domains and roles
 	if e := validateDomainRoles(account.Roles); e != "" {
-		return u.Message(false, e), false
+		return u.Message(e), false
 	}
 
-	return u.Message(false, "Requirement passed"), true
+	return u.Message("Requirement passed"), true
 }
 
 func validateDomainRoles(roles map[string]Role) string {
@@ -90,8 +90,8 @@ func validateDomainRoles(roles map[string]Role) string {
 func (account *Account) Create(callerRoles map[string]Role) (map[string]interface{}, string) {
 	// Check if user is allowed to create new users
 	if !CheckCanManageUser(callerRoles, account.Roles) {
-		return u.Message(false,
-			"Invalid credentials for creating an account."+
+		return u.Message(
+			"Invalid credentials for creating an account." +
 				" Manager role in requested domains is needed."), "unauthorised"
 	}
 
@@ -108,8 +108,8 @@ func (account *Account) Create(callerRoles map[string]Role) (map[string]interfac
 	ctx, cancel := u.Connect()
 	res, err := GetDB().Collection("account").InsertOne(ctx, account)
 	if err != nil {
-		return u.Message(false,
-			"DB error when creating user: "+err.Error()), "internal"
+		return u.Message(
+			"DB error when creating user: " + err.Error()), "internal"
 	} else {
 		account.ID = res.InsertedID.(primitive.ObjectID)
 	}
@@ -119,7 +119,7 @@ func (account *Account) Create(callerRoles map[string]Role) (map[string]interfac
 	account.Token = GenerateToken(account.Email, account.ID, token_expiration)
 	account.Password = ""
 
-	response := u.Message(true, "Account has been created")
+	response := u.Message("Account has been created")
 	response["account"] = account
 	return response, ""
 }
@@ -179,15 +179,15 @@ func (account *Account) ChangePassword(password string, newPassword string, isRe
 
 func Login(email, password string) (map[string]interface{}, string) {
 	account := &Account{}
-	resp := u.Message(true, "Logged In")
+	resp := u.Message("Logged In")
 
 	ctx, cancel := u.Connect()
 	err := GetDB().Collection("account").FindOne(ctx, bson.M{"email": email}).Decode(account)
 	if err != nil {
 		if err == mongo.ErrNoDocuments {
-			return u.Message(false, "User does not exist"), "internal"
+			return u.Message("User does not exist"), "internal"
 		}
-		return u.Message(false, "Connection error. Please try again later"),
+		return u.Message("Connection error. Please try again later"),
 			"internal"
 	}
 	defer cancel()
@@ -195,7 +195,7 @@ func Login(email, password string) (map[string]interface{}, string) {
 	//Check password
 	errStr, errType := comparePasswordToAccount(*account, password)
 	if errStr != "" {
-		return u.Message(false,
+		return u.Message(
 			"Invalid login credentials. Please try again"), errType
 	} else if errType != "" {
 		resp["shouldChange"] = true

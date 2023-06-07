@@ -53,6 +53,7 @@ type ErrType int
 
 const (
 	ErrUnauthorized = iota
+	ErrForbidden
 	ErrDuplicate
 	ErrBadFormat
 	ErrInvalidValue
@@ -87,20 +88,26 @@ func Connect() (context.Context, context.CancelFunc) {
 	return context.WithTimeout(context.Background(), 30*time.Second)
 }
 
-func Message(status bool, message string) map[string]interface{} {
-	return map[string]interface{}{"status": status, "message": message}
+func Message(message string) map[string]interface{} {
+	return map[string]interface{}{"message": message}
 }
 
-func Respond(w http.ResponseWriter, data interface{}) {
-	if err, isError := data.(*Error); isError {
-		errMap := map[string]interface{}{"message": err.Message}
-		if len(err.Details) > 0 {
-			errMap["errors"] = err.Details
-		}
-		json.NewEncoder(w).Encode(errMap)
-	} else {
-		json.NewEncoder(w).Encode(data)
+func ResponseData(message string, data map[string]interface{}) map[string]interface{} {
+	return map[string]interface{}{"message": message, "data": data}
+}
+
+func Respond(w http.ResponseWriter, data map[string]interface{}) {
+	json.NewEncoder(w).Encode(data)
+	w.Header().Add("Content-Type", "application/json")
+}
+
+func RespondWithError(w http.ResponseWriter, err *Error) {
+	errMap := map[string]interface{}{"message": err.Message}
+	if len(err.Details) > 0 {
+		errMap["errors"] = err.Details
 	}
+	json.NewEncoder(w).Encode(errMap)
+	w.WriteHeader(ErrTypeToStatusCode(err.Type))
 	w.Header().Add("Content-Type", "application/json")
 }
 
@@ -154,13 +161,13 @@ func ParamsParse(link *url.URL, objType int) map[string]interface{} {
 
 func ErrTypeToStatusCode(errType ErrType) int {
 	switch errType {
+	case ErrForbidden:
+		return http.StatusForbidden
 	case ErrUnauthorized:
 		return http.StatusUnauthorized
-	case ErrDuplicate:
-	case ErrBadFormat:
+	case ErrDuplicate, ErrBadFormat:
 		return http.StatusBadRequest
-	case ErrDBError:
-	case ErrInternal:
+	case ErrDBError, ErrInternal:
 		return http.StatusInternalServerError
 	case ErrNotFound:
 		return http.StatusNotFound

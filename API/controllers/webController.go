@@ -21,7 +21,7 @@ var GetProjects = func(w http.ResponseWriter, r *http.Request) {
 
 	if len(query["user"]) <= 0 {
 		w.WriteHeader(http.StatusBadRequest)
-		resp = u.Message(false, "Error: user should be sent as query param")
+		resp = u.Message("Error: user should be sent as query param")
 		u.Respond(w, resp)
 		return
 	}
@@ -29,13 +29,13 @@ var GetProjects = func(w http.ResponseWriter, r *http.Request) {
 	data, err := models.GetProjectsByUserEmail(query["user"][0])
 	if err != "" {
 		w.WriteHeader(http.StatusNotFound)
-		resp = u.Message(false, "Error: "+err)
+		resp = u.Message("Error: " + err)
 	} else {
 		if r.Method == "OPTIONS" {
 			w.Header().Add("Content-Type", "application/json")
 			w.Header().Add("Allow", "GET, OPTIONS, HEAD")
 		} else {
-			resp = u.Message(true, "successfully got projects")
+			resp = u.Message("successfully got projects")
 			resp["data"] = data
 		}
 	}
@@ -53,7 +53,7 @@ var CreateOrUpdateProject = func(w http.ResponseWriter, r *http.Request) {
 	err := json.NewDecoder(r.Body).Decode(project)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
-		u.Respond(w, u.Message(false, "Invalid request"))
+		u.Respond(w, u.Message("Invalid request"))
 		return
 	}
 
@@ -68,13 +68,13 @@ var CreateOrUpdateProject = func(w http.ResponseWriter, r *http.Request) {
 
 	if errStr != "" {
 		w.WriteHeader(http.StatusNotFound)
-		resp = u.Message(false, "Error: "+errStr)
+		resp = u.Message("Error: " + errStr)
 	} else {
 		if r.Method == "OPTIONS" {
 			w.Header().Add("Content-Type", "application/json")
 			w.Header().Add("Allow", "GET, OPTIONS, HEAD")
 		} else {
-			resp = u.Message(true, "successfully handled project request")
+			resp = u.Message("successfully handled project request")
 			resp["data"] = project
 		}
 	}
@@ -92,13 +92,13 @@ var DeleteProject = func(w http.ResponseWriter, r *http.Request) {
 
 	if errStr != "" {
 		w.WriteHeader(http.StatusNotFound)
-		resp = u.Message(false, "Error: "+errStr)
+		resp = u.Message("Error: " + errStr)
 	} else {
 		if r.Method == "OPTIONS" {
 			w.Header().Add("Content-Type", "application/json")
 			w.Header().Add("Allow", "GET, OPTIONS, HEAD")
 		} else {
-			resp = u.Message(true, "successfully removed project request")
+			resp = u.Message("successfully removed project request")
 		}
 	}
 
