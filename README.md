@@ -1,9 +1,14 @@
 # OGrEE-Core
-## How to quickly deploy the API
+
+## How to deploy the API
+The prefered way to deploy the API is to use the superadmin interface on OGrEE-APP : see https://github.com/ditrit/OGrEE-Core/tree/main/APP.
+
+## How to deploy the API without OGrEE-APP
 
 Run:
+```docker compose --project-name <your-project> -f deploy/docker/docker-compose.yml up```
 
-```docker compose -f deploy/docker/docker-compose.yml up```
+The config can be updated beforehand in ```deploy/docker/.env```
 
 ## Config
 To use the frontend (CLI, 3D, APP), a ```config.toml``` file must be created at the root of the repo.
@@ -21,7 +26,6 @@ Drawable = ["all"]
 DrawLimit = 100
 Updates = ["all"]
 User = ""
-APIKEY = ""
 Variables = [
     {Name = "ROOT", Value = "path_to_root"},
     {Name = "ROOT2", Value = "$ROOT/path_to_root2"},
