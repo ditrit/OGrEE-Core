@@ -106,7 +106,7 @@ func getUserFromToken(w http.ResponseWriter, r *http.Request) *models.Account {
 //         description: 'Bad request. A response body with an error
 //         message will be returned.'
 
-var CreateEntity = func(w http.ResponseWriter, r *http.Request) {
+func CreateEntity(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("******************************************************")
 	fmt.Println("FUNCTION CALL: 	 CreateEntity ")
 	fmt.Println("******************************************************")
@@ -209,7 +209,7 @@ var CreateEntity = func(w http.ResponseWriter, r *http.Request) {
 //     '400':
 //         description: 'Bad format: body is not a valid list of domains.'
 
-var CreateBulkDomain = func(w http.ResponseWriter, r *http.Request) {
+func CreateBulkDomain(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("******************************************************")
 	fmt.Println("FUNCTION CALL: 	 CreateBulkDomain ")
 	fmt.Println("******************************************************")
@@ -347,7 +347,7 @@ func getBulkDomainsRecursively(parent string, listDomains []map[string]interface
 //		'404':
 //		    description: Not Found. An error message will be returned.
 
-var GetGenericObject = func(w http.ResponseWriter, r *http.Request) {
+func GetGenericObject(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("******************************************************")
 	fmt.Println("FUNCTION CALL: 	 GetGenericObject ")
 	fmt.Println("******************************************************")
@@ -436,7 +436,7 @@ var GetGenericObject = func(w http.ResponseWriter, r *http.Request) {
 // 	'404':
 // 	  description: Not Found. An error message will be returned.
 
-var GetEntity = func(w http.ResponseWriter, r *http.Request) {
+func GetEntity(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("******************************************************")
 	fmt.Println("FUNCTION CALL: 	 GetEntity ")
 	fmt.Println("******************************************************")
@@ -570,7 +570,7 @@ var GetEntity = func(w http.ResponseWriter, r *http.Request) {
 //		'404':
 //			description: Nothing Found. An error message will be returned.
 
-var GetAllEntities = func(w http.ResponseWriter, r *http.Request) {
+func GetAllEntities(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("******************************************************")
 	fmt.Println("FUNCTION CALL: 	 GetAllEntities ")
 	fmt.Println("******************************************************")
@@ -664,7 +664,7 @@ var GetAllEntities = func(w http.ResponseWriter, r *http.Request) {
 //		'404':
 //			description: Not found. An error message will be returned
 
-var DeleteEntity = func(w http.ResponseWriter, r *http.Request) {
+func DeleteEntity(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("******************************************************")
 	fmt.Println("FUNCTION CALL: 	 DeleteEntity ")
 	fmt.Println("******************************************************")
@@ -823,7 +823,7 @@ var DeleteEntity = func(w http.ResponseWriter, r *http.Request) {
 //     '404':
 //         description: Not Found. An error message will be returned.
 
-var UpdateEntity = func(w http.ResponseWriter, r *http.Request) {
+func UpdateEntity(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("******************************************************")
 	fmt.Println("FUNCTION CALL: 	 UpdateEntity ")
 	fmt.Println("******************************************************")
@@ -973,7 +973,7 @@ var UpdateEntity = func(w http.ResponseWriter, r *http.Request) {
 //		'404':
 //			description: Not found. An error message will be returned.
 
-var GetEntityByQuery = func(w http.ResponseWriter, r *http.Request) {
+func GetEntityByQuery(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("******************************************************")
 	fmt.Println("FUNCTION CALL: 	 GetEntityByQuery ")
 	fmt.Println("******************************************************")
@@ -1064,7 +1064,7 @@ var GetEntityByQuery = func(w http.ResponseWriter, r *http.Request) {
 //  '404':
 //     description: 'Nothing Found. An error message will be returned.'
 
-var GetTempUnit = func(w http.ResponseWriter, r *http.Request) {
+func GetTempUnit(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("******************************************************")
 	fmt.Println("FUNCTION CALL: 	 GetTempUnit ")
 	fmt.Println("******************************************************")
@@ -1124,7 +1124,7 @@ var GetTempUnit = func(w http.ResponseWriter, r *http.Request) {
 //     '404':
 //         description: Nothing Found. An error message will be returned.
 
-var GetEntitiesOfAncestor = func(w http.ResponseWriter, r *http.Request) {
+func GetEntitiesOfAncestor(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("******************************************************")
 	fmt.Println("FUNCTION CALL: 	 GetEntitiesOfAncestor ")
 	fmt.Println("******************************************************")
@@ -1250,7 +1250,7 @@ var GetEntitiesOfAncestor = func(w http.ResponseWriter, r *http.Request) {
 //     '404':
 //         description: Nothing Found. An error message will be returned.
 
-var GetEntityHierarchy = func(w http.ResponseWriter, r *http.Request) {
+func GetEntityHierarchy(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("******************************************************")
 	fmt.Println("FUNCTION CALL: 	 GetEntityHierarchy ")
 	fmt.Println("******************************************************")
@@ -1363,7 +1363,44 @@ var GetEntityHierarchy = func(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-var GetHierarchyByName = func(w http.ResponseWriter, r *http.Request) {
+// swagger:operation GET /api/{entity}/{name}/all objects GetFromObject
+// Obtain all objects related to Site or stray-device in the system using name.
+// Returns JSON body with all subobjects
+// ---
+// produces:
+// - application/json
+// parameters:
+// - name: name
+//   in: query
+//   description: Name of Site
+//   required: true
+//   type: int
+//   default: 999
+// responses:
+//     '200':
+//         description: 'Found. A response body will be returned with
+//         a meaningful message.'
+//     '404':
+//         description: Nothing Found. An error message will be returned.
+
+// swagger:operation OPTIONS /api/{entity}/{name}/all objects GetFromObjectOptions
+// Displays possible operations for the resource in response header.
+// ---
+// produces:
+// - application/json
+// parameters:
+//   - name: name
+//     in: query
+//     description: 'Name of site.'
+//
+// responses:
+//
+//	'200':
+//	    description: 'Found. A response header will be returned with
+//	    possible operation.'
+//	'404':
+//	    description: Nothing Found.
+func GetHierarchyByName(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("******************************************************")
 	fmt.Println("FUNCTION CALL: 	 GetHierarchyByName ")
 	fmt.Println("******************************************************")
@@ -1500,7 +1537,7 @@ var GetCompleteHierarchy = func(w http.ResponseWriter, r *http.Request) {
 //     '500':
 //          description: Server error.
 
-var GetCompleteDomainHierarchy = func(w http.ResponseWriter, r *http.Request) {
+func GetCompleteDomainHierarchy(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("******************************************************")
 	fmt.Println("FUNCTION CALL: 	 GetCompleteHierarchy ")
 	fmt.Println("******************************************************")
@@ -1545,7 +1582,7 @@ var GetCompleteDomainHierarchy = func(w http.ResponseWriter, r *http.Request) {
 //		'500':
 //			description: Server error.
 
-var GetCompleteHierarchyAttributes = func(w http.ResponseWriter, r *http.Request) {
+func GetCompleteHierarchyAttributes(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("******************************************************")
 	fmt.Println("FUNCTION CALL: 	 GetCompleteHierarchyAttributes ")
 	fmt.Println("******************************************************")
@@ -1633,7 +1670,7 @@ var GetCompleteHierarchyAttributes = func(w http.ResponseWriter, r *http.Request
 //     '404':
 //         description: Not Found. An error message will be returned.
 
-var GetEntitiesUsingNamesOfParents = func(w http.ResponseWriter, r *http.Request) {
+func GetEntitiesUsingNamesOfParents(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("******************************************************")
 	fmt.Println("FUNCTION CALL: 	 GetEntitiesUsingNamesOfParents ")
 	fmt.Println("******************************************************")
@@ -1800,7 +1837,7 @@ var GetEntitiesUsingNamesOfParents = func(w http.ResponseWriter, r *http.Request
 
 }
 
-var BaseOption = func(w http.ResponseWriter, r *http.Request) {
+func BaseOption(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("******************************************************")
 	fmt.Println("FUNCTION CALL: 	 BaseOption ")
 	fmt.Println("******************************************************")
@@ -1828,7 +1865,7 @@ var BaseOption = func(w http.ResponseWriter, r *http.Request) {
 //		'504':
 //			description: Server error.
 
-var GetStats = func(w http.ResponseWriter, r *http.Request) {
+func GetStats(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("******************************************************")
 	fmt.Println("FUNCTION CALL: 	 GetStats ")
 	fmt.Println("******************************************************")
@@ -1875,7 +1912,7 @@ var GetStats = func(w http.ResponseWriter, r *http.Request) {
 //     '404':
 //         description: Not Found. An error message will be returned.
 
-var ValidateEntity = func(w http.ResponseWriter, r *http.Request) {
+func ValidateEntity(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("******************************************************")
 	fmt.Println("FUNCTION CALL: 	 ValidateEntity ")
 	fmt.Println("******************************************************")
@@ -1948,7 +1985,7 @@ var ValidateEntity = func(w http.ResponseWriter, r *http.Request) {
 //         description: 'OK. A response body will be returned with
 //         version details.'
 
-var Version = func(w http.ResponseWriter, r *http.Request) {
+func GetVersion(w http.ResponseWriter, r *http.Request) {
 	data := map[string]interface{}{}
 	if r.Method == "OPTIONS" {
 		w.Header().Add("Content-Type", "application/json")
