@@ -108,8 +108,8 @@ func RespondWithError(w http.ResponseWriter, err *Error) {
 	if len(err.Details) > 0 {
 		errMap["errors"] = err.Details
 	}
-	json.NewEncoder(w).Encode(errMap)
 	w.WriteHeader(ErrTypeToStatusCode(err.Type))
+	json.NewEncoder(w).Encode(errMap)
 	w.Header().Add("Content-Type", "application/json")
 }
 

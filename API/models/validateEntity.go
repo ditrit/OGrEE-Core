@@ -235,9 +235,8 @@ func ValidateEntity(entity int, t map[string]interface{}) (bool, *u.Error) {
 	// Check parent and domain for objects
 	var parent map[string]interface{}
 	if entity != u.BLDGTMPL && entity != u.ROOMTMPL && entity != u.OBJTMPL {
-		var ok bool
 		parent, err := validateParent(u.EntityToString(entity), entity, t)
-		if !ok {
+		if err != nil {
 			return false, err
 		} else if parent["hierarchyName"] != nil {
 			t["hierarchyName"] = parent["hierarchyName"].(string) +

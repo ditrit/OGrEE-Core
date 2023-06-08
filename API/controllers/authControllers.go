@@ -90,6 +90,7 @@ var CreateAccount = func(w http.ResponseWriter, r *http.Request) {
 		if e != nil {
 			u.RespondWithError(w, e)
 		} else {
+			w.WriteHeader(http.StatusCreated)
 			resp := u.Message("Account has been created")
 			resp["account"] = acc
 			u.Respond(w, resp)
