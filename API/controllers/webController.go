@@ -26,17 +26,16 @@ var GetProjects = func(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	data, err := models.GetProjectsByUserEmail(query["user"][0])
-	if err != "" {
-		w.WriteHeader(http.StatusNotFound)
-		resp = u.Message("Error: " + err)
+	projects, err := models.GetProjectsByUserEmail(query["user"][0])
+	if err != nil {
+		u.RespondWithError(w, err)
 	} else {
 		if r.Method == "OPTIONS" {
 			w.Header().Add("Content-Type", "application/json")
 			w.Header().Add("Allow", "GET, OPTIONS, HEAD")
 		} else {
-			resp = u.Message("successfully got projects")
-			resp["data"] = data
+			resp["projects"] = projects
+			u.Respond(w, u.RespDataWrapper("successfully got projects", resp))
 		}
 	}
 
@@ -47,7 +46,6 @@ var CreateOrUpdateProject = func(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("******************************************************")
 	fmt.Println("FUNCTION CALL: 	 CreateOrUpdateProject ")
 	fmt.Println("******************************************************")
-	var resp map[string]interface{}
 
 	project := &models.Project{}
 	err := json.NewDecoder(r.Body).Decode(project)
@@ -57,50 +55,44 @@ var CreateOrUpdateProject = func(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var errStr string
+	var modelErr *u.Error
 	if r.Method == "POST" {
 		// Create project
-		errStr = models.AddProject(*project)
+		modelErr = models.AddProject(*project)
 	} else {
 		// Update project
-		errStr = models.UpdateProject(*project, mux.Vars(r)["id"])
+		modelErr = models.UpdateProject(*project, mux.Vars(r)["id"])
 	}
 
-	if errStr != "" {
-		w.WriteHeader(http.StatusNotFound)
-		resp = u.Message("Error: " + errStr)
+	if modelErr != nil {
+		u.RespondWithError(w, modelErr)
 	} else {
 		if r.Method == "OPTIONS" {
 			w.Header().Add("Content-Type", "application/json")
 			w.Header().Add("Allow", "GET, OPTIONS, HEAD")
 		} else {
-			resp = u.Message("successfully handled project request")
+			resp := u.Message("successfully handled project request")
 			resp["data"] = project
+			u.Respond(w, resp)
 		}
 	}
-
-	u.Respond(w, resp)
 }
 
 var DeleteProject = func(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("******************************************************")
 	fmt.Println("FUNCTION CALL: 	 DeleteProject ")
 	fmt.Println("******************************************************")
-	var resp map[string]interface{}
 
-	errStr := models.DeleteProject(mux.Vars(r)["id"])
+	err := models.DeleteProject(mux.Vars(r)["id"])
 
-	if errStr != "" {
-		w.WriteHeader(http.StatusNotFound)
-		resp = u.Message("Error: " + errStr)
+	if err != nil {
+		u.RespondWithError(w, err)
 	} else {
 		if r.Method == "OPTIONS" {
 			w.Header().Add("Content-Type", "application/json")
 			w.Header().Add("Allow", "GET, OPTIONS, HEAD")
 		} else {
-			resp = u.Message("successfully removed project request")
+			u.Respond(w, u.Message("successfully removed project"))
 		}
 	}
-
-	u.Respond(w, resp)
 }
