@@ -13,6 +13,7 @@ part 'api_tenant.dart';
 
 String apiUrl = "";
 String tenantUrl = "";
+String tenantName = "";
 var token = "";
 var tenantToken = "";
 getHeader(token) => {
@@ -41,6 +42,23 @@ Future<List<String>> loginAPI(String email, String password,
   } else {
     return [""];
   }
+}
+
+Future<bool> fetchApiTenantName({http.Client? client}) async {
+  print("API get  Version");
+  client ??= http.Client();
+  Uri url = Uri.parse('$apiUrl/api/version');
+  final response = await client.get(url, headers: getHeader(token));
+  print(response.statusCode);
+  if (response.statusCode == 200) {
+    print(response.body);
+    Map<String, dynamic> data = json.decode(response.body);
+    data = (Map<String, dynamic>.from(data["data"]));
+    tenantName = data["Customer"];
+    print(tenantName);
+    return true;
+  }
+  return false;
 }
 
 Future<String> changeUserPassword(String currentPassword, newPassword) async {

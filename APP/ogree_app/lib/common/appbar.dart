@@ -68,7 +68,8 @@ AppBar myAppBar(context, userEmail, {isTenantMode = false}) {
     actions: [
       Padding(
         padding: const EdgeInsets.only(right: 20),
-        child: Text(apiUrl, style: const TextStyle(color: Colors.white)),
+        child: Text(isTenantMode ? apiUrl : tenantName,
+            style: const TextStyle(color: Colors.white)),
       ),
       Padding(
         padding: const EdgeInsets.symmetric(vertical: 15),
