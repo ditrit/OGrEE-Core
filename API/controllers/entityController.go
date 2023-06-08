@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"log"
 	"net/http"
@@ -153,9 +154,6 @@ var CreateEntity = func(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	println("User Roles:")
-	fmt.Println(user.Roles)
-
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		u.Respond(w, u.Message("Error while decoding request body"))
@@ -168,7 +166,6 @@ var CreateEntity = func(w http.ResponseWriter, r *http.Request) {
 
 	entInt := u.EntityStrToInt(entStr)
 	println("ENT: ", entStr)
-	println("ENUM VAL: ", entInt)
 
 	//Prevents Mongo from creating a new unidentified collection
 	if entInt < 0 {
@@ -197,7 +194,7 @@ var CreateEntity = func(w http.ResponseWriter, r *http.Request) {
 		u.RespondWithError(w, e)
 	} else {
 		w.WriteHeader(http.StatusCreated)
-		u.Respond(w, resp)
+		u.Respond(w, u.RespDataWrapper("successfully created "+entStr, resp))
 	}
 }
 
@@ -222,10 +219,10 @@ var CreateBulkDomain = func(w http.ResponseWriter, r *http.Request) {
 	}
 
 	domainsToCreate, e := getBulkDomainsRecursively("", listDomains)
-	if e != "" {
+	if e != nil {
 		w.WriteHeader(http.StatusBadRequest)
-		u.Respond(w, u.Message(e))
-		u.ErrLog(e, "CREATE BULK DOMAIN", "", r)
+		u.Respond(w, u.Message(e.Error()))
+		u.ErrLog(e.Error(), "CREATE BULK DOMAIN", "", r)
 		return
 	}
 	fmt.Println(domainsToCreate)
@@ -236,27 +233,31 @@ var CreateBulkDomain = func(w http.ResponseWriter, r *http.Request) {
 		bytes, _ := json.Marshal(domain)
 		json.Unmarshal(bytes, &domain)
 		// Create and save response
-		result, _ := models.CreateEntity(u.DOMAIN, domain, user.Roles)
+		_, err := models.CreateEntity(u.DOMAIN, domain, user.Roles)
 		var name string
 		if v, ok := domain["parentId"].(string); ok && v != "" {
 			name = v + "." + domain["name"].(string)
 		} else {
 			name = domain["name"].(string)
 		}
-		resp[name] = result["message"]
+		if err != nil {
+			resp[name] = err.Message
+		} else {
+			resp[name] = "successfully created domain"
+		}
 	}
 	w.WriteHeader(http.StatusOK)
 	u.Respond(w, resp)
 }
 
-func getBulkDomainsRecursively(parent string, listDomains []map[string]interface{}) ([]map[string]interface{}, string) {
+func getBulkDomainsRecursively(parent string, listDomains []map[string]interface{}) ([]map[string]interface{}, error) {
 	domainsToCreate := []map[string]interface{}{}
 	for _, domain := range listDomains {
 		domainObj := map[string]interface{}{}
 		// Name is the only required attribute
 		name, ok := domain["name"].(string)
 		if !ok {
-			return nil, "Invalid format: Name is required for all domains"
+			return nil, errors.New("Invalid format: Name is required for all domains")
 		}
 		domainObj["name"] = name
 
@@ -296,14 +297,14 @@ func getBulkDomainsRecursively(parent string, listDomains []map[string]interface
 				}
 				// Add children
 				childDomains, e := getBulkDomainsRecursively(parentId, dChildren)
-				if e != "" {
+				if e != nil {
 					return nil, e
 				}
 				domainsToCreate = append(domainsToCreate, childDomains...)
 			}
 		}
 	}
-	return domainsToCreate, ""
+	return domainsToCreate, nil
 }
 
 // swagger:operation GET /api/objects/{name} objects GetObjectByName
@@ -350,8 +351,7 @@ var GetGenericObject = func(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("******************************************************")
 	DispRequestMetaData(r)
 	var data map[string]interface{}
-	var e1 string
-	var resp map[string]interface{}
+	var err *u.Error
 
 	// Get user roles for permissions
 	user := getUserFromToken(w, r)
@@ -362,7 +362,7 @@ var GetGenericObject = func(w http.ResponseWriter, r *http.Request) {
 	name, e := mux.Vars(r)["name"]
 	filters := getFiltersFromQueryParams(r)
 	if e {
-		data, e1 = models.GetObjectByName(name, filters, user.Roles)
+		data, err = models.GetObjectByName(name, filters, user.Roles)
 	} else {
 		u.Respond(w, u.Message("Error while parsing path parameters"))
 		u.ErrLog("Error while parsing path parameters", "GET ENTITY", "", r)
@@ -373,14 +373,12 @@ var GetGenericObject = func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Add("Content-Type", "application/json")
 		w.Header().Add("Allow", "GET, DELETE, OPTIONS, PATCH, PUT")
 	} else {
-		if data == nil {
-			resp = u.Message("Error while getting " + name + ": " + e1)
-			u.ErrLog("Error while getting "+name, "GET GENERIC", "", r)
-			w.WriteHeader(http.StatusNotFound)
+		if err != nil {
+			u.ErrLog("Error while getting "+name, "GET GENERIC", err.Message, r)
+			u.RespondWithError(w, err)
 		} else {
-			resp = u.ResponseData("successfully got object", data)
+			u.Respond(w, u.RespDataWrapper("successfully got object", data))
 		}
-		u.Respond(w, resp)
 	}
 
 }
@@ -451,7 +449,7 @@ var GetEntity = func(w http.ResponseWriter, r *http.Request) {
 	DispRequestMetaData(r)
 	var data map[string]interface{}
 	var id string
-	var parseErr bool
+	var canParse bool
 	var modelErr *u.Error
 
 	// Get user roles for permissions
@@ -468,7 +466,7 @@ var GetEntity = func(w http.ResponseWriter, r *http.Request) {
 	entityStr = strings.Replace(entityStr, "-", "_", 1)
 
 	//GET By ID
-	if id, parseErr = mux.Vars(r)["id"]; parseErr {
+	if id, canParse = mux.Vars(r)["id"]; canParse {
 		objId, e := getObjID(id)
 		if e != nil {
 			u.Respond(w, u.Message("Error while converting ID to ObjectID"))
@@ -487,7 +485,7 @@ var GetEntity = func(w http.ResponseWriter, r *http.Request) {
 		req := bson.M{"_id": objId}
 		data, modelErr = models.GetEntity(req, entityStr, filters, user.Roles)
 
-	} else if id, parseErr = mux.Vars(r)["name"]; parseErr == true { //GET By String
+	} else if id, canParse = mux.Vars(r)["name"]; canParse { //GET By String
 		if strings.Contains(entityStr, "template") { //GET By Slug (template)
 			req := bson.M{"slug": id}
 			data, modelErr = models.GetEntity(req, entityStr, filters, user.Roles)
@@ -498,7 +496,7 @@ var GetEntity = func(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	if !parseErr {
+	if !canParse {
 		w.WriteHeader(http.StatusBadRequest)
 		u.Respond(w, u.Message("Error while parsing path parameters"))
 		u.ErrLog("Error while parsing path parameters", "GET ENTITY", "", r)
@@ -510,22 +508,11 @@ var GetEntity = func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Add("Allow", "GET, DELETE, OPTIONS, PATCH, PUT")
 	} else {
 		if modelErr != nil {
-			u.ErrLog("Error while getting "+entityStr, "GET "+strings.ToUpper(entityStr), "", r)
+			u.ErrLog("Error while getting "+entityStr, "GET "+strings.ToUpper(entityStr),
+				modelErr.Message, r)
 			u.RespondWithError(w, modelErr)
 		} else {
-			message := ""
-			switch u.EntityStrToInt(entityStr) {
-			case u.ROOMTMPL:
-				message = "successfully got room_template"
-			case u.OBJTMPL:
-				message = "successfully got obj_template"
-			case u.BLDGTMPL:
-				message = "successfully got building_template"
-			default:
-				message = "successfully got object"
-			}
-			resp := u.ResponseData(message, data)
-			u.Respond(w, resp)
+			u.Respond(w, u.RespDataWrapper("successfully got "+entityStr, data))
 		}
 	}
 
@@ -577,7 +564,8 @@ var GetAllEntities = func(w http.ResponseWriter, r *http.Request) {
 	//Prevents Mongo from creating a new unidentified collection
 	if i := u.EntityStrToInt(entStr); i < 0 {
 		w.WriteHeader(http.StatusNotFound)
-		u.Respond(w, u.Message("Invalid object in URL: '"+mux.Vars(r)["entity"]+"' Please provide a valid object"))
+		u.Respond(w, u.Message("Invalid object in URL: '"+mux.Vars(r)["entity"]+
+			"' Please provide a valid object"))
 		u.ErrLog("Cannot get invalid object", "GET "+mux.Vars(r)["entity"], "", r)
 		return
 	}
@@ -586,19 +574,12 @@ var GetAllEntities = func(w http.ResponseWriter, r *http.Request) {
 	data, e := models.GetManyEntities(entStr, req, u.RequestFilters{}, user.Roles)
 
 	if e != nil {
-		u.ErrLog("Error while getting "+entStr+"s", "GET ALL "+strings.ToUpper(entStr), e.Message, r)
+		u.ErrLog("Error while getting "+entStr+"s", "GET ALL "+strings.ToUpper(entStr),
+			e.Message, r)
 		u.RespondWithError(w, e)
 	} else {
-		message := ""
-		switch u.EntityStrToInt(entStr) {
-		case u.ROOMTMPL:
-			message = "successfully got all room_templates"
-		case u.OBJTMPL:
-			message = "successfully got all obj_templates"
-		default:
-			message = "successfully got all objects"
-		}
-		u.Respond(w, u.ResponseData(message, map[string]interface{}{"objects": data}))
+		u.Respond(w, u.RespDataWrapper("successfully got "+entStr+"s",
+			map[string]interface{}{"objects": data}))
 	}
 
 }
@@ -657,8 +638,9 @@ var DeleteEntity = func(w http.ResponseWriter, r *http.Request) {
 
 	//Prevents Mongo from creating a new unidentified collection
 	if u.EntityStrToInt(entity) < 0 {
-		w.WriteHeader(http.StatusNotFound)
-		u.Respond(w, u.Message("Invalid object in URL: '"+mux.Vars(r)["entity"]+"' Please provide a valid object"))
+		w.WriteHeader(http.StatusBadRequest)
+		u.Respond(w, u.Message("Invalid object in URL: '"+mux.Vars(r)["entity"]+
+			"' Please provide a valid object"))
 		u.ErrLog("Cannot delete invalid object", "DELETE "+mux.Vars(r)["entity"], "", r)
 		return
 	}
@@ -676,6 +658,7 @@ var DeleteEntity = func(w http.ResponseWriter, r *http.Request) {
 	case e && !e2: // DELETE by id
 		objID, err := primitive.ObjectIDFromHex(id)
 		if err != nil {
+			w.WriteHeader(http.StatusBadRequest)
 			u.Respond(w, u.Message("Error while converting ID to ObjectID"))
 			u.ErrLog("Error while converting ID to ObjectID", "DELETE ENTITY", "", r)
 			return
@@ -683,7 +666,8 @@ var DeleteEntity = func(w http.ResponseWriter, r *http.Request) {
 
 		req, ok := models.GetRequestFilterByDomain(user.Roles)
 		if !ok {
-			modelErr = &u.Error{Type: u.ErrUnauthorized, Message: "User does not have permission to delete"}
+			modelErr = &u.Error{Type: u.ErrUnauthorized,
+				Message: "User does not have permission to delete"}
 		} else {
 			if entity == "device" {
 				_, modelErr = models.DeleteDeviceF(objID, req)
@@ -693,6 +677,7 @@ var DeleteEntity = func(w http.ResponseWriter, r *http.Request) {
 		}
 
 	default:
+		w.WriteHeader(http.StatusBadRequest)
 		u.Respond(w, u.Message("Error while parsing path parameters"))
 		u.ErrLog("Error while parsing path parameters", "DELETE ENTITY", "", r)
 		return
@@ -841,7 +826,7 @@ var UpdateEntity = func(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("FUNCTION CALL: 	 UpdateEntity ")
 	fmt.Println("******************************************************")
 	DispRequestMetaData(r)
-	var v map[string]interface{}
+	var data map[string]interface{}
 	var modelErr *u.Error
 	var entity string
 
@@ -891,7 +876,7 @@ var UpdateEntity = func(w http.ResponseWriter, r *http.Request) {
 			req = bson.M{"hierarchyName": name}
 		}
 
-		v, modelErr = models.UpdateEntity(entity, req, updateData, isPatch, user.Roles)
+		data, modelErr = models.UpdateEntity(entity, req, updateData, isPatch, user.Roles)
 
 	case e: // Update with id
 		objID, err := primitive.ObjectIDFromHex(id)
@@ -902,11 +887,8 @@ var UpdateEntity = func(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		println("OBJID:", objID.Hex())
-		println("Entity;", entity)
-
 		req := bson.M{"_id": objID}
-		v, modelErr = models.UpdateEntity(entity, req, updateData, isPatch, user.Roles)
+		data, modelErr = models.UpdateEntity(entity, req, updateData, isPatch, user.Roles)
 
 	default:
 		w.WriteHeader(http.StatusBadRequest)
@@ -918,7 +900,7 @@ var UpdateEntity = func(w http.ResponseWriter, r *http.Request) {
 	if modelErr != nil {
 		u.RespondWithError(w, modelErr)
 	} else {
-		u.Respond(w, v)
+		u.Respond(w, u.RespDataWrapper("successfully updated "+entity, data))
 	}
 }
 
@@ -1011,16 +993,8 @@ var GetEntityByQuery = func(w http.ResponseWriter, r *http.Request) {
 		u.ErrLog("Error while getting "+entStr, "GET ENTITYQUERY", modelErr.Message, r)
 		u.RespondWithError(w, modelErr)
 	} else {
-		message := ""
-		switch u.EntityStrToInt(entStr) {
-		case u.ROOMTMPL:
-			message = "successfully got query for room_template"
-		case u.OBJTMPL:
-			message = "successfully got query for obj_template"
-		default:
-			message = "successfully got query for object"
-		}
-		u.Respond(w, u.ResponseData(message, map[string]interface{}{"objects": data}))
+		u.Respond(w, u.RespDataWrapper("successfully got query for "+entStr,
+			map[string]interface{}{"objects": data}))
 	}
 }
 
@@ -1062,23 +1036,21 @@ var GetTempUnit = func(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("******************************************************")
 	fmt.Println("FUNCTION CALL: 	 GetTempUnit ")
 	fmt.Println("******************************************************")
-	var resp map[string]interface{}
 
 	data, err := models.GetSiteParentTempUnit(mux.Vars(r)["id"])
-	if err != "" {
-		w.WriteHeader(http.StatusNotFound)
-		resp = u.Message("Error: " + err)
+	if err != nil {
+		u.RespondWithError(w, err)
 	} else {
 		if r.Method == "OPTIONS" {
 			w.Header().Add("Content-Type", "application/json")
 			w.Header().Add("Allow", "GET, OPTIONS, HEAD")
 		} else {
-			resp = u.Message("successfully got temperatureUnit from object's parent site")
-			resp["data"] = map[string]interface{}{"temperatureUnit": data}
+			resp := u.RespDataWrapper(
+				"successfully got temperatureUnit from object's parent site",
+				map[string]interface{}{"temperatureUnit": data})
+			u.Respond(w, resp)
 		}
 	}
-
-	u.Respond(w, resp)
 }
 
 // swagger:operation GET /api/{obj}/{id}/{subent} objects GetFromObject
@@ -1177,6 +1149,7 @@ var GetEntitiesOfAncestor = func(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if !e {
+		w.WriteHeader(http.StatusBadRequest)
 		u.Respond(w, u.Message("Error while parsing path parameters"))
 		u.ErrLog("Error while parsing path parameters", "GET CHILDRENOFPARENT", "", r)
 		return
@@ -1195,7 +1168,7 @@ var GetEntitiesOfAncestor = func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Add("Content-Type", "application/json")
 		w.Header().Add("Allow", "GET, OPTIONS")
 	} else {
-		u.Respond(w, u.ResponseData("successfully got object", map[string]interface{}{"objects": data}))
+		u.Respond(w, u.RespDataWrapper("successfully got object", map[string]interface{}{"objects": data}))
 	}
 }
 
@@ -1304,7 +1277,7 @@ var GetEntityHierarchy = func(w http.ResponseWriter, r *http.Request) {
 				u.ErrLog("Error while getting "+entity, "GET "+entity, modelErr.Message, r)
 				u.RespondWithError(w, modelErr)
 			} else {
-				u.Respond(w, u.ResponseData("successfully got object",
+				u.Respond(w, u.RespDataWrapper("successfully got object",
 					map[string]interface{}{"data": data}))
 			}
 			return
@@ -1338,7 +1311,7 @@ var GetEntityHierarchy = func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Add("Content-Type", "application/json")
 		w.Header().Add("Allow", "GET, OPTIONS")
 	} else {
-		u.Respond(w, u.ResponseData("successfully got object", data))
+		u.Respond(w, u.RespDataWrapper("successfully got object", data))
 	}
 }
 
@@ -1375,7 +1348,7 @@ var GetCompleteHierarchy = func(w http.ResponseWriter, r *http.Request) {
 			w.Header().Add("Content-Type", "application/json")
 			w.Header().Add("Allow", "GET, OPTIONS, HEAD")
 		} else {
-			u.Respond(w, u.ResponseData("successfully got hierarchy", data))
+			u.Respond(w, u.RespDataWrapper("successfully got hierarchy", data))
 		}
 	}
 }
@@ -1400,7 +1373,7 @@ var GetCompleteDomainHierarchy = func(w http.ResponseWriter, r *http.Request) {
 			w.Header().Add("Content-Type", "application/json")
 			w.Header().Add("Allow", "GET, OPTIONS, HEAD")
 		} else {
-			u.Respond(w, u.ResponseData("successfully got domain hierarchy", data))
+			u.Respond(w, u.RespDataWrapper("successfully got domain hierarchy", data))
 		}
 	}
 }
@@ -1425,7 +1398,7 @@ var GetCompleteHierarchyAttributes = func(w http.ResponseWriter, r *http.Request
 			w.Header().Add("Content-Type", "application/json")
 			w.Header().Add("Allow", "GET, OPTIONS, HEAD")
 		} else {
-			u.Respond(w, u.ResponseData("successfully got attrs hierarchy", data))
+			u.Respond(w, u.RespDataWrapper("successfully got attrs hierarchy", data))
 		}
 	}
 }
@@ -1482,6 +1455,7 @@ var GetHierarchyByName = func(w http.ResponseWriter, r *http.Request) {
 
 	name, e := mux.Vars(r)["name"]
 	if !e {
+		w.WriteHeader(http.StatusBadRequest)
 		u.Respond(w, u.Message("Error while parsing name"))
 		u.ErrLog("Error while parsing path parameters", "GetHierarchyByName", "", r)
 		return
@@ -1489,6 +1463,7 @@ var GetHierarchyByName = func(w http.ResponseWriter, r *http.Request) {
 
 	entity, e2 := mux.Vars(r)["entity"]
 	if !e2 {
+		w.WriteHeader(http.StatusBadRequest)
 		u.Respond(w, u.Message("Error while parsing entity"))
 		u.ErrLog("Error while parsing path parameters", "GetHierarchyByName", "", r)
 		return
@@ -1520,7 +1495,7 @@ var GetHierarchyByName = func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Add("Content-Type", "application/json")
 		w.Header().Add("Allow", "GET, OPTIONS")
 	} else {
-		u.Respond(w, u.ResponseData("successfully got object's hierarchy", data))
+		u.Respond(w, u.RespDataWrapper("successfully got object's hierarchy", data))
 	}
 }
 
@@ -1615,6 +1590,7 @@ var GetEntitiesUsingNamesOfParents = func(w http.ResponseWriter, r *http.Request
 	id, e := mux.Vars(r)["id"]
 	tname, e1 := mux.Vars(r)["site_name"]
 	if !e && !e1 {
+		w.WriteHeader(http.StatusBadRequest)
 		u.Respond(w, u.Message("Error while parsing path parameters"))
 		u.ErrLog("Error while parsing path parameters", "GET ENTITIESUSINGANCESTORNAMES", "", r)
 		return
@@ -1673,7 +1649,6 @@ var GetEntitiesUsingNamesOfParents = func(w http.ResponseWriter, r *http.Request
 		var e3 *u.Error
 		req := bson.M{}
 		if e1 {
-			println("we are getting entities here")
 			data, e3 = models.GetEntitiesUsingSiteAsAncestor(entity, tname, req, ancestry, user.Roles)
 
 		} else {
@@ -1689,7 +1664,7 @@ var GetEntitiesUsingNamesOfParents = func(w http.ResponseWriter, r *http.Request
 				w.Header().Add("Allow", "GET, OPTIONS")
 				return
 			}
-			u.Respond(w, u.ResponseData("successfully got object",
+			u.Respond(w, u.RespDataWrapper("successfully got object",
 				map[string]interface{}{"objects": data}))
 		}
 
@@ -1713,7 +1688,7 @@ var GetEntitiesUsingNamesOfParents = func(w http.ResponseWriter, r *http.Request
 			w.Header().Add("Content-Type", "application/json")
 			w.Header().Add("Allow", "GET, OPTIONS")
 		} else {
-			u.Respond(w, u.ResponseData("successfully got object", data))
+			u.Respond(w, u.RespDataWrapper("successfully got object", data))
 		}
 	}
 

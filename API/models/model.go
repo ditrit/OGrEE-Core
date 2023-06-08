@@ -19,7 +19,6 @@ import (
 )
 
 func CreateEntity(entity int, t map[string]interface{}, userRoles map[string]Role) (map[string]interface{}, *u.Error) {
-	message := ""
 	if ok, err := ValidateEntity(entity, t); !ok {
 		return nil, err
 	}
@@ -59,25 +58,11 @@ func CreateEntity(entity int, t map[string]interface{}, userRoles map[string]Rol
 	defer cancel()
 
 	t["id"] = res.InsertedID
-
-	switch entity {
-	case u.ROOMTMPL:
-		message = "successfully created room_template"
-	case u.OBJTMPL:
-		message = "successfully created obj_template"
-	case u.BLDGTMPL:
-		message = "successfully created bldg_template"
-	default:
-		message = "successfully created object"
-	}
-
-	resp := u.Message(message)
-	resp["data"] = t
-	return resp, nil
+	return t, nil
 }
 
 // GetObjectByName: search for hierarchyName in all possible collections
-func GetObjectByName(hierarchyName string, filters u.RequestFilters, userRoles map[string]Role) (map[string]interface{}, string) {
+func GetObjectByName(hierarchyName string, filters u.RequestFilters, userRoles map[string]Role) (map[string]interface{}, *u.Error) {
 	var resp map[string]interface{}
 	// Get possible collections for this name
 	rangeEntities := u.HierachyNameToEntity(hierarchyName)
@@ -94,9 +79,9 @@ func GetObjectByName(hierarchyName string, filters u.RequestFilters, userRoles m
 	}
 
 	if resp != nil {
-		return resp, ""
+		return resp, nil
 	} else {
-		return nil, "Unable to find object"
+		return nil, &u.Error{Type: u.ErrNotFound, Message: "Unable to find object"}
 	}
 }
 
@@ -396,7 +381,7 @@ func domainHasObjects(domain string) bool {
 
 // GetSiteParentTempUnit: search for the object of given ID,
 // then search for is site parent and return its attributes.temperatureUnit
-func GetSiteParentTempUnit(id string) (string, string) {
+func GetSiteParentTempUnit(id string) (string, *u.Error) {
 	data := map[string]interface{}{}
 
 	// Get all collections names
@@ -405,7 +390,7 @@ func GetSiteParentTempUnit(id string) (string, string) {
 	collNames, err := db.ListCollectionNames(ctx, bson.D{})
 	if err != nil {
 		fmt.Println(err.Error())
-		return "", err.Error()
+		return "", &u.Error{Type: u.ErrDBError, Message: err.Error()}
 	}
 	// Find object
 	for _, collName := range collNames {
@@ -428,7 +413,8 @@ func GetSiteParentTempUnit(id string) (string, string) {
 				siteName := nameSlice[0] // CONSIDER SITE AS 0
 				err := db.Collection("site").FindOne(ctx, bson.M{"hierarchyName": siteName}).Decode(&data)
 				if err != nil {
-					return "", "Could not find parent site for given object"
+					return "", &u.Error{Type: u.ErrNotFound,
+						Message: "Could not find parent site for given object"}
 				}
 			}
 		}
@@ -437,11 +423,12 @@ func GetSiteParentTempUnit(id string) (string, string) {
 	defer cancel()
 
 	if len(data) == 0 {
-		return "", "No object found with given id"
+		return "", &u.Error{Type: u.ErrNotFound, Message: "No object found with given id"}
 	} else if tempUnit := data["attributes"].(map[string]interface{})["temperatureUnit"]; tempUnit == nil {
-		return "", "Parent site has no temperatureUnit in attributes"
+		return "", &u.Error{Type: u.ErrNotFound,
+			Message: "Parent site has no temperatureUnit in attributes"}
 	} else {
-		return tempUnit.(string), ""
+		return tempUnit.(string), nil
 	}
 }
 
@@ -764,24 +751,8 @@ func UpdateEntity(ent string, req bson.M, t map[string]interface{}, isPatch bool
 	//Fix the _id / id discrepancy
 	mongoRes.Decode(&updatedDoc)
 	updatedDoc = fixID(updatedDoc)
-
-	//Response Message
-	message := ""
-	switch u.EntityStrToInt(ent) {
-	case u.ROOMTMPL:
-		message = "successfully updated room_template"
-	case u.OBJTMPL:
-		message = "successfully updated obj_template"
-	case u.BLDGTMPL:
-		message = "successfully created bldg_template"
-	default:
-		message = "successfully updated object"
-	}
-
 	defer cancel()
-	resp := u.Message(message)
-	resp["data"] = updatedDoc
-	return resp, nil
+	return updatedDoc, nil
 }
 
 // propagateParentNameChange: search for given parent children and

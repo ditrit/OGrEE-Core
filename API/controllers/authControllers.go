@@ -77,7 +77,7 @@ var CreateAccount = func(w http.ResponseWriter, r *http.Request) {
 		err := json.NewDecoder(r.Body).Decode(account)
 		if err != nil {
 			w.WriteHeader(http.StatusBadRequest)
-			u.Respond(w, u.Message("Invalid request"))
+			u.Respond(w, u.Message("Invalid request: wrong format body"))
 			return
 		}
 
@@ -86,20 +86,14 @@ var CreateAccount = func(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		resp, e := account.Create(callerUser.Roles)
-		switch e {
-		case "internal":
-			w.WriteHeader(http.StatusInternalServerError)
-		case "clientError", "validate":
-			w.WriteHeader(http.StatusBadRequest)
-		case "unauthorised":
-			w.WriteHeader(http.StatusForbidden)
-		case "exists":
-			w.WriteHeader(http.StatusConflict)
-		default:
-			w.WriteHeader(http.StatusCreated)
+		acc, e := account.Create(callerUser.Roles)
+		if e != nil {
+			u.RespondWithError(w, e)
+		} else {
+			resp := u.Message("Account has been created")
+			resp["account"] = acc
+			u.Respond(w, resp)
 		}
-		u.Respond(w, resp)
 	}
 }
 
@@ -163,12 +157,13 @@ var CreateBulkAccount = func(w http.ResponseWriter, r *http.Request) {
 			account.Password = password
 		}
 		resp[account.Email] = map[string]interface{}{}
-		res, _ := account.Create(callerUser.Roles)
-		for key, value := range res {
-			if key == "account" && password != "" {
+		_, e := account.Create(callerUser.Roles)
+		if e != nil {
+			resp[account.Email].(map[string]interface{})["status"] = e.Message
+		} else {
+			resp[account.Email].(map[string]interface{})["status"] = "successfully created"
+			if password != "" {
 				resp[account.Email].(map[string]interface{})["password"] = password
-			} else {
-				resp[account.Email].(map[string]interface{})[key] = value
 			}
 		}
 	}
@@ -236,21 +231,19 @@ var Authenticate = func(w http.ResponseWriter, r *http.Request) {
 		var account models.Account
 		err := json.NewDecoder(r.Body).Decode(&account)
 		if err != nil {
+			w.WriteHeader(http.StatusBadRequest)
 			u.Respond(w, u.Message("Invalid request"))
 			return
 		}
 
-		resp, e := models.Login(account.Email, account.Password)
-		if resp["status"] == false {
-			if e == "validate" {
-				w.WriteHeader(http.StatusUnauthorized)
-			} else if e == "internal" {
-				w.WriteHeader(http.StatusInternalServerError)
-			} else if e == "clientError" {
-				w.WriteHeader(http.StatusBadRequest)
-			}
+		acc, e := models.Login(account.Email, account.Password)
+		if e != nil {
+			u.RespondWithError(w, e)
+		} else {
+			resp := u.Message("Login succesful")
+			resp["account"] = acc
+			u.Respond(w, resp)
 		}
-		u.Respond(w, resp)
 	}
 }
 
@@ -320,15 +313,14 @@ var GetAllAccounts = func(w http.ResponseWriter, r *http.Request) {
 		}
 
 		// Get users
-		data, err := models.GetAllUsers(callerUser.Roles)
-		if err != "" {
-			w.WriteHeader(http.StatusInternalServerError)
-			resp = u.Message("Error: " + err)
+		users, err := models.GetAllUsers(callerUser.Roles)
+		if err != nil {
+			u.RespondWithError(w, err)
 		} else {
 			resp = u.Message("successfully got users")
-			resp["data"] = data
+			resp["data"] = users
+			u.Respond(w, resp)
 		}
-		u.Respond(w, resp)
 	}
 }
 
@@ -357,8 +349,6 @@ var RemoveAccount = func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Add("Content-Type", "application/json")
 		w.Header().Add("Allow", "DELETE, OPTIONS, HEAD")
 	} else {
-		var resp map[string]interface{}
-
 		// Get caller user
 		callerUser := getUserFromToken(w, r)
 		if callerUser == nil {
@@ -370,29 +360,30 @@ var RemoveAccount = func(w http.ResponseWriter, r *http.Request) {
 		objID, err := primitive.ObjectIDFromHex(userId)
 		if err != nil {
 			w.WriteHeader(http.StatusBadRequest)
-			resp = u.Message("User ID is not valid")
-			u.Respond(w, resp)
+			u.Respond(w, u.Message("User ID is not valid"))
 			return
 		}
 		deleteUser := models.GetUser(objID)
+		if deleteUser == nil {
+			w.WriteHeader(http.StatusNotFound)
+			u.Respond(w, u.Message("User not found"))
+			return
+		}
 
 		// Check permissions
 		if !models.CheckCanManageUser(callerUser.Roles, deleteUser.Roles) {
 			w.WriteHeader(http.StatusUnauthorized)
-			resp = u.Message("Caller does not have permission to delete this user")
-			u.Respond(w, resp)
+			u.Respond(w, u.Message("Caller does not have permission to delete this user"))
 			return
 		}
 
 		// Delete it
 		e := models.DeleteUser(objID)
-		if e != "" {
-			w.WriteHeader(http.StatusInternalServerError)
-			resp = u.Message("Error: " + e)
+		if e != nil {
+			u.RespondWithError(w, e)
 		} else {
-			resp = u.Message("successfully removed user")
+			u.Respond(w, u.Message("successfully removed user"))
 		}
-		u.Respond(w, resp)
 	}
 }
 
@@ -481,21 +472,12 @@ var ModifyUserRoles = func(w http.ResponseWriter, r *http.Request) {
 		}
 
 		// Modify it
-		e, eType := models.ModifyUser(userId, rolesConverted)
-		if e != "" {
-			switch eType {
-			case "internal":
-				w.WriteHeader(http.StatusInternalServerError)
-			case "validate":
-				w.WriteHeader(http.StatusBadRequest)
-			default:
-				w.WriteHeader(http.StatusInternalServerError)
-			}
-			resp = u.Message("Error: " + e)
+		e := models.ModifyUser(userId, rolesConverted)
+		if e != nil {
+			u.RespondWithError(w, e)
 		} else {
-			resp = u.Message("successfully updated user roles")
+			u.Respond(w, u.Message("successfully updated user roles"))
 		}
-		u.Respond(w, resp)
 	}
 }
 
@@ -555,8 +537,6 @@ var ModifyUserPassword = func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Add("Content-Type", "application/json")
 		w.Header().Add("Allow", "POST, OPTIONS, HEAD")
 	} else {
-		var resp map[string]interface{}
-
 		// Get user ID and email from token
 		userData := r.Context().Value("user")
 		if userData == nil {
@@ -580,6 +560,7 @@ var ModifyUserPassword = func(w http.ResponseWriter, r *http.Request) {
 		hasCurrent := true
 		currentPassword := ""
 		if userEmail == u.RESET_TAG {
+			// it's not change, it's reset (no need for current password)
 			isReset = true
 		} else {
 			currentPassword, hasCurrent = data["currentPassword"].(string)
@@ -606,25 +587,16 @@ var ModifyUserPassword = func(w http.ResponseWriter, r *http.Request) {
 		}
 
 		// Change user password
-		response, errType := user.ChangePassword(currentPassword, newPassword, isReset)
-		if errType != "" {
-			switch errType {
-			case "internal":
-				w.WriteHeader(http.StatusInternalServerError)
-			case "validate":
-				w.WriteHeader(http.StatusBadRequest)
-			default:
-				w.WriteHeader(http.StatusInternalServerError)
-			}
-			resp = u.Message("Error: " + response)
+		newToken, e := user.ChangePassword(currentPassword, newPassword, isReset)
+		if e != nil {
+			u.RespondWithError(w, e)
 		} else {
-			resp = u.Message("successfully updated user password")
+			resp := u.Message("successfully updated user password")
 			if !isReset {
-				resp["token"] = response
+				resp["token"] = newToken
 			}
+			u.Respond(w, resp)
 		}
-		u.Respond(w, resp)
-
 	}
 }
 
@@ -658,8 +630,6 @@ var UserForgotPassword = func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Add("Content-Type", "application/json")
 		w.Header().Add("Allow", "POST, OPTIONS, HEAD")
 	} else {
-		resp := map[string]interface{}{}
-
 		// Check if POST body is valid
 		var data map[string]interface{}
 		err := json.NewDecoder(r.Body).Decode(&data)
@@ -686,7 +656,6 @@ var UserForgotPassword = func(w http.ResponseWriter, r *http.Request) {
 			}
 		}
 
-		resp = u.Message("request processed")
-		u.Respond(w, resp)
+		u.Respond(w, u.Message("request processed"))
 	}
 }

@@ -1,6 +1,7 @@
 package models
 
 import (
+	"errors"
 	"os"
 	u "p3/utils"
 	"regexp"
@@ -33,15 +34,15 @@ type Account struct {
 }
 
 // Validate incoming user
-func (account *Account) Validate() (map[string]interface{}, bool) {
+func (account *Account) Validate() *u.Error {
 	valid := regexp.MustCompile("(\\w)+@(\\w)+\\.(\\w)+").MatchString(account.Email)
 
 	if !valid {
-		return u.Message("A valid email address is required"), false
+		return &u.Error{Type: u.ErrBadFormat, Message: "A valid email address is required"}
 	}
 
-	if e := validatePasswordFormat(account.Password); e != "" {
-		return u.Message(e), false
+	if e := validatePasswordFormat(account.Password); e != nil {
+		return &u.Error{Type: u.ErrBadFormat, Message: e.Error()}
 	}
 
 	//Error checking and duplicate emails
@@ -49,31 +50,31 @@ func (account *Account) Validate() (map[string]interface{}, bool) {
 	err := GetDB().Collection("account").FindOne(ctx, bson.M{"email": account.Email}).Err()
 	if err != nil && err != mongo.ErrNoDocuments {
 		println("Error while creating account:", err.Error())
-		return u.Message("Connection error. Please retry"), false
+		return &u.Error{Type: u.ErrDBError, Message: err.Error()}
 	}
 
 	//User already exists
 	if err == nil {
-		return u.Message("Error: User already exists"), false
+		return &u.Error{Type: u.ErrDuplicate, Message: "Error: User already exists"}
 	}
 	defer cancel()
 
 	// Validate domains and roles
-	if e := validateDomainRoles(account.Roles); e != "" {
-		return u.Message(e), false
+	if e := validateDomainRoles(account.Roles); e != nil {
+		return &u.Error{Type: u.ErrInvalidValue, Message: e.Error()}
 	}
 
-	return u.Message("Requirement passed"), true
+	return nil
 }
 
-func validateDomainRoles(roles map[string]Role) string {
+func validateDomainRoles(roles map[string]Role) error {
 	// Validate domains and roles
 	if len(roles) <= 0 {
-		return "Object 'roles' with domain names as keys and roles as values is mandatory"
+		return errors.New("Object 'roles' with domain names as keys and roles as values is mandatory")
 	}
 	for domain, role := range roles {
 		if !CheckDomainExists(domain) {
-			return "Domain does not exist: " + domain
+			return errors.New("Domain does not exist: " + domain)
 		}
 		switch role {
 		case Manager:
@@ -81,23 +82,23 @@ func validateDomainRoles(roles map[string]Role) string {
 		case User:
 			break
 		default:
-			return "Role assigned is not valid: "
+			return errors.New("Role assigned is not valid: ")
 		}
 	}
-	return ""
+	return nil
 }
 
-func (account *Account) Create(callerRoles map[string]Role) (map[string]interface{}, string) {
+func (account *Account) Create(callerRoles map[string]Role) (*Account, *u.Error) {
 	// Check if user is allowed to create new users
 	if !CheckCanManageUser(callerRoles, account.Roles) {
-		return u.Message(
-			"Invalid credentials for creating an account." +
-				" Manager role in requested domains is needed."), "unauthorised"
+		return nil, &u.Error{Type: u.ErrUnauthorized,
+			Message: "Invalid credentials for creating an account." +
+				" Manager role in requested domains is needed."}
 	}
 
 	// Validate new user
-	if resp, ok := account.Validate(); !ok {
-		return resp, "validate"
+	if e := account.Validate(); e != nil {
+		return nil, e
 	}
 
 	hashedPassword, _ := bcrypt.GenerateFromPassword(
@@ -108,8 +109,8 @@ func (account *Account) Create(callerRoles map[string]Role) (map[string]interfac
 	ctx, cancel := u.Connect()
 	res, err := GetDB().Collection("account").InsertOne(ctx, account)
 	if err != nil {
-		return u.Message(
-			"DB error when creating user: " + err.Error()), "internal"
+		return nil, &u.Error{Type: u.ErrDBError,
+			Message: "DB error when creating user: " + err.Error()}
 	} else {
 		account.ID = res.InsertedID.(primitive.ObjectID)
 	}
@@ -118,48 +119,45 @@ func (account *Account) Create(callerRoles map[string]Role) (map[string]interfac
 	//Create new JWT token for the newly created account
 	account.Token = GenerateToken(account.Email, account.ID, token_expiration)
 	account.Password = ""
-
-	response := u.Message("Account has been created")
-	response["account"] = account
-	return response, ""
+	return account, nil
 }
 
-func validatePasswordFormat(password string) string {
+func validatePasswordFormat(password string) error {
 	if len(password) < 7 {
-		return "Please provide a password with a length greater than 6"
+		return errors.New("Please provide a password with a length greater than 6")
 	}
-	return ""
+	return nil
 }
 
-func comparePasswordToAccount(account Account, inputPassword string) (string, string) {
+func comparePasswordToAccount(account Account, inputPassword string) *u.Error {
 	err := bcrypt.CompareHashAndPassword([]byte(account.Password), []byte(inputPassword))
 	if err == bcrypt.ErrMismatchedHashAndPassword {
-		return "Password is not correct", "validate"
+		return &u.Error{Type: u.ErrUnauthorized, Message: "Invalid login credentials"}
 	} else if err == bcrypt.ErrHashTooShort {
 		if account.Email == "admin" &&
 			account.Password == inputPassword && account.Password == "admin" {
-			return "", "change"
+			return &u.Error{Type: u.WarnShouldChangePass}
 		} else {
-			return "Password is not correct", "validate"
+			return &u.Error{Type: u.ErrUnauthorized, Message: "Invalid login credentials"}
 		}
 	} else if err != nil {
-		return "Internal error comparing passwords", "internal"
+		return &u.Error{Type: u.ErrInternal, Message: "Internal error comparing passwords"}
 	}
-	return "", ""
+	return nil
 }
 
-func (account *Account) ChangePassword(password string, newPassword string, isReset bool) (string, string) {
+func (account *Account) ChangePassword(password string, newPassword string, isReset bool) (string, *u.Error) {
 	if !isReset {
 		// Check if current password is correct
-		errStr, errType := comparePasswordToAccount(*account, password)
-		if errStr != "" {
-			return errStr, errType
+		err := comparePasswordToAccount(*account, password)
+		if err != nil && err.Type != u.WarnShouldChangePass {
+			return "", err
 		}
 	}
 
 	// Validate new password
-	if e := validatePasswordFormat(newPassword); e != "" {
-		return "New password not valid: " + e, "validate"
+	if e := validatePasswordFormat(newPassword); e != nil {
+		return "", &u.Error{Type: u.ErrBadFormat, Message: "New password not valid: " + e.Error()}
 	}
 
 	// Update user
@@ -171,13 +169,13 @@ func (account *Account) ChangePassword(password string, newPassword string, isRe
 	user["password"] = string(hashedPassword)
 	err := GetDB().Collection("account").FindOneAndUpdate(ctx, bson.M{"_id": account.ID}, bson.M{"$set": user}).Err()
 	if err != nil {
-		return "Internal error while updating user password", "internal"
+		return "", &u.Error{Type: u.ErrDBError, Message: "Error updating user password: " + err.Error()}
 	}
 
-	return GenerateToken(account.Email, account.ID, token_expiration), ""
+	return GenerateToken(account.Email, account.ID, token_expiration), nil
 }
 
-func Login(email, password string) (map[string]interface{}, string) {
+func Login(email, password string) (*Account, *u.Error) {
 	account := &Account{}
 	resp := u.Message("Logged In")
 
@@ -185,20 +183,20 @@ func Login(email, password string) (map[string]interface{}, string) {
 	err := GetDB().Collection("account").FindOne(ctx, bson.M{"email": email}).Decode(account)
 	if err != nil {
 		if err == mongo.ErrNoDocuments {
-			return u.Message("User does not exist"), "internal"
+			return nil, &u.Error{Type: u.ErrNotFound, Message: "User does not exist"}
 		}
-		return u.Message("Connection error. Please try again later"),
-			"internal"
+		return nil, &u.Error{Type: u.ErrDBError, Message: err.Error()}
 	}
 	defer cancel()
 
 	//Check password
-	errStr, errType := comparePasswordToAccount(*account, password)
-	if errStr != "" {
-		return u.Message(
-			"Invalid login credentials. Please try again"), errType
-	} else if errType != "" {
-		resp["shouldChange"] = true
+	e := comparePasswordToAccount(*account, password)
+	if e != nil {
+		if e.Type == u.WarnShouldChangePass {
+			resp["shouldChange"] = true
+		} else {
+			return nil, e
+		}
 	}
 
 	//Success
@@ -207,8 +205,7 @@ func Login(email, password string) (map[string]interface{}, string) {
 	//Create JWT token
 	account.Token = GenerateToken(account.Email, account.ID, token_expiration)
 
-	resp["account"] = account
-	return resp, ""
+	return account, nil
 }
 
 func GenerateToken(email string, id primitive.ObjectID, expire time.Duration) string {
@@ -247,63 +244,62 @@ func GetUserByEmail(email string) *Account {
 	return acc
 }
 
-func GetAllUsers(callerRoles map[string]Role) ([]Account, string) {
+func GetAllUsers(callerRoles map[string]Role) ([]Account, *u.Error) {
 	// Get all users
 	ctx, cancel := u.Connect()
 	c, err := GetDB().Collection("account").Find(ctx, bson.M{})
 	if err != nil {
 		println(err.Error())
-		return nil, err.Error()
+		return nil, &u.Error{Type: u.ErrDBError, Message: err.Error()}
 	}
 	users := []Account{}
 	err = c.All(ctx, &users)
 	if err != nil {
 		println(err.Error())
-		return nil, err.Error()
+		return nil, &u.Error{Type: u.ErrDBError, Message: err.Error()}
 	}
 
 	// Return allowed users according to caller permissions
-	allowedUser := []Account{}
+	allowedUsers := []Account{}
 	for _, user := range users {
 		if CheckCanManageUser(callerRoles, user.Roles) {
-			allowedUser = append(allowedUser, user)
+			allowedUsers = append(allowedUsers, user)
 		}
 	}
 
 	defer cancel()
-	return allowedUser, ""
+	return allowedUsers, nil
 }
 
-func DeleteUser(userId primitive.ObjectID) string {
+func DeleteUser(userId primitive.ObjectID) *u.Error {
 	ctx, cancel := u.Connect()
 	req := bson.M{"_id": userId}
 	c, _ := GetDB().Collection("account").DeleteOne(ctx, req)
 	if c.DeletedCount == 0 {
-		return "Internal error try to delete user"
+		return &u.Error{Type: u.ErrDBError, Message: "Unable to delete user"}
 	}
 	defer cancel()
-	return ""
+	return nil
 }
 
-func ModifyUser(id string, roles map[string]Role) (string, string) {
+func ModifyUser(id string, roles map[string]Role) *u.Error {
 	objID, err := primitive.ObjectIDFromHex(id)
 	if err != nil {
-		return "User ID not valid", "validate"
+		return &u.Error{Type: u.ErrInvalidValue, Message: "User ID not valid"}
 	}
 
-	if e := validateDomainRoles(roles); e != "" {
-		return e, "validate"
+	if err := validateDomainRoles(roles); err != nil {
+		return &u.Error{Type: u.ErrInvalidValue, Message: err.Error()}
 	}
 
-	println("UPDATE!")
 	ctx, cancel := u.Connect()
 	defer cancel()
 	user := map[string]interface{}{}
 	user["roles"] = roles
 	err = GetDB().Collection("account").FindOneAndUpdate(ctx, bson.M{"_id": objID}, bson.M{"$set": user}).Err()
 	if err != nil {
-		return "Internal error while updating user roles", "internal"
+		return &u.Error{Type: u.ErrDBError, Message: err.Error()}
 	}
 
-	return "", ""
+	return nil
 }

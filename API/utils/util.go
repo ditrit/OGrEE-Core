@@ -49,10 +49,11 @@ type RequestFilters struct {
 	Limit        string   `schema:"limit"`
 }
 
+// Error definitions
 type ErrType int
 
 const (
-	ErrUnauthorized = iota
+	ErrUnauthorized ErrType = iota
 	ErrForbidden
 	ErrDuplicate
 	ErrBadFormat
@@ -60,6 +61,7 @@ const (
 	ErrDBError
 	ErrInternal
 	ErrNotFound
+	WarnShouldChangePass
 )
 
 type Error struct {
@@ -92,7 +94,7 @@ func Message(message string) map[string]interface{} {
 	return map[string]interface{}{"message": message}
 }
 
-func ResponseData(message string, data map[string]interface{}) map[string]interface{} {
+func RespDataWrapper(message string, data map[string]interface{}) map[string]interface{} {
 	return map[string]interface{}{"message": message, "data": data}
 }
 
