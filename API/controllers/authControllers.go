@@ -18,8 +18,8 @@ func init() {
 }
 
 // swagger:operation POST /api/users Organization CreateAccount
-// Generate credentials for a user.
-// Create an account with email credentials, it returns
+// Create a new user user.
+// Create an account with email and password credentials, it returns
 // a JWT key to use with the API.
 // ---
 // security:
@@ -103,12 +103,12 @@ var CreateAccount = func(w http.ResponseWriter, r *http.Request) {
 //     example: '[{"name": "John Doe", "roles": {"*": "manager"}, "email": "user@test.com"}]'
 //
 // responses:
-//	'200':
-//	    description: Request processed, check response body for results
-//	'400':
-//	    description: Bad request
-//	'500':
-//	    description: Internal server error
+//		'200':
+//			description: Request processed, check response body for results
+//		'400':
+//			description: Bad request
+//		'500':
+//			description: Internal server error
 
 var CreateBulkAccount = func(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("******************************************************")
@@ -252,10 +252,10 @@ var Verify = func(w http.ResponseWriter, r *http.Request) {
 // produces:
 // - application/json
 // responses:
-//	'200':
-//	    description: Return all possible users
-//	'500':
-//	    description: Internal server error
+//     '200':
+//          description: Return all possible users
+//     '500':
+//          description: Internal server error
 
 var GetAllAccounts = func(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("******************************************************")
@@ -303,14 +303,14 @@ var GetAllAccounts = func(w http.ResponseWriter, r *http.Request) {
 //   type: string
 //   example: "someUserId"
 // responses:
-//	'200':
-//		description: User removed
-//	'400':
-//		description: User ID not valid or not found
-//	'403':
-//		description: Caller not authorised to delete this user
-//	'500':
-//		description: Internal server error
+//		'200':
+//			description: User removed
+//		'400':
+//			description: User ID not valid or not found
+//		'403':
+//			description: Caller not authorised to delete this user
+//		'500':
+//			description: Internal server error
 
 var RemoveAccount = func(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("******************************************************")
@@ -383,14 +383,14 @@ var RemoveAccount = func(w http.ResponseWriter, r *http.Request) {
 //     example: '{"roles": {"*": "manager"}}'
 //
 // responses:
-//	'200':
-//		description: User roles modified
-//	'400':
-//		description: Bad request
-//	'403':
-//		description: Caller not authorised to modify this user
-//	'500':
-//		description: Internal server error
+//		'200':
+//			description: User roles modified
+//		'400':
+//			description: Bad request
+//		'403':
+//			description: Caller not authorised to modify this user
+//		'500':
+//			description: Internal server error
 
 var ModifyUserRoles = func(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("******************************************************")
@@ -489,12 +489,12 @@ var ModifyUserRoles = func(w http.ResponseWriter, r *http.Request) {
 //     example: '{"currentPassword": "myOldPassword", "newPassword": "myNewPassword"}'
 //
 // responses:
-//	'200':
-//		description: Password changed
-//	'400':
-//		description: Bad request
-//	'500':
-//		description: Internal server error
+//		'200':
+//			description: Password changed
+//		'400':
+//			description: Bad request
+//		'500':
+//			description: Internal server error
 
 // swagger:operation POST /api/users/password/reset Authentication ResetUserPassword
 // Reset password after forgot.
@@ -514,12 +514,12 @@ var ModifyUserRoles = func(w http.ResponseWriter, r *http.Request) {
 //     example: '"newPassword": "myNewPassword"}'
 //
 // responses:
-//	'200':
-//		description: Password changed
-//	'400':
-//		description: Bad request
-//	'500':
-//		description: Internal server error
+//		'200':
+//			description: Password changed
+//		'400':
+//			description: Bad request
+//		'500':
+//			description: Internal server error
 
 var ModifyUserPassword = func(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("******************************************************")
@@ -620,12 +620,12 @@ var ModifyUserPassword = func(w http.ResponseWriter, r *http.Request) {
 //     example: '{"email": "user@test.com"}'
 //
 // responses:
-//	'200':
-//		description: request processed. If account exists, an email with a reset token is sent
-//	'400':
-//		description: Bad request
-//	'500':
-//		description: Internal server error
+//		'200':
+//			description: request processed. If account exists, an email with a reset token is sent
+//		'400':
+//			description: Bad request
+//		'500':
+//			description: Internal server error
 
 var UserForgotPassword = func(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("******************************************************")

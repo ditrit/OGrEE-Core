@@ -40,12 +40,22 @@
         "operationId": "CreateBulkDomain",
         "parameters": [
           {
-            "default": {},
+            "default": [
+              {}
+            ],
             "name": "body",
             "in": "body",
             "required": true
           }
-        ]
+        ],
+        "responses": {
+          "200": {
+            "description": "Request processed. Check the response body for individual results for each of the sent domains"
+          },
+          "400": {
+            "description": "Bad format: body is not a valid list of domains."
+          }
+        }
       }
     },
     "/api/hierarchy": {
@@ -55,7 +65,7 @@
             "bearer": []
           }
         ],
-        "description": "Return is arranged by relationship (father:[children])\nand category (category:[objects]), starting with \"Root\":[sites].",
+        "description": "Return is arranged by relationship (father:[children])\nand category (category:[objects]), starting with \"Root\":[sites].\nUser permissions apply.",
         "produces": [
           "application/json"
         ],
@@ -63,7 +73,15 @@
           "Objects"
         ],
         "summary": "Returns system complete hierarchy.",
-        "operationId": "GetCompleteHierarchy"
+        "operationId": "GetCompleteHierarchy",
+        "responses": {
+          "200": {
+            "description": "Request is valid."
+          },
+          "500": {
+            "description": "Server error."
+          }
+        }
       }
     },
     "/api/hierarchy/attributes": {
@@ -73,7 +91,7 @@
             "bearer": []
           }
         ],
-        "description": "Return is arranged by hierarchyName (objHierarchyName:{attributes}).",
+        "description": "Return is arranged by hierarchyName (objHierarchyName:{attributes}).\nUser permissions apply.",
         "produces": [
           "application/json"
         ],
@@ -81,7 +99,15 @@
           "Objects"
         ],
         "summary": "Returns attributes of all objects.",
-        "operationId": "GetCompleteHierarchyAttrs"
+        "operationId": "GetCompleteHierarchyAttrs",
+        "responses": {
+          "200": {
+            "description": "Request is valid."
+          },
+          "500": {
+            "description": "Server error."
+          }
+        }
       }
     },
     "/api/hierarchy/domains": {
@@ -99,7 +125,15 @@
           "Organization"
         ],
         "summary": "Returns domain complete hierarchy.",
-        "operationId": "GetCompleteDomainHierarchy"
+        "operationId": "GetCompleteDomainHierarchy",
+        "responses": {
+          "200": {
+            "description": "Request is valid."
+          },
+          "500": {
+            "description": "Server error."
+          }
+        }
       }
     },
     "/api/login": {
@@ -148,20 +182,21 @@
             "bearer": []
           }
         ],
-        "description": "The hierarchyName must be provided in the URL as a parameter",
+        "description": "Gets an object from any of the physical entities with no need to specify it.\nThe hierarchyName must be provided in the URL as a parameter.",
         "produces": [
           "application/json"
         ],
         "tags": [
           "Objects"
         ],
-        "summary": "Gets an object from any of the physical entities with no need to specify it.",
+        "summary": "Get an object from any entity.",
         "operationId": "GetGenericObject",
         "parameters": [
           {
             "description": "hierarchyName of the object",
             "name": "hierarchyName",
-            "in": "path"
+            "in": "path",
+            "required": true
           },
           {
             "description": "specify which object field to show in response. Multiple fieldOnly can be added. An invalid field is simply ignored.",
@@ -200,7 +235,7 @@
           "application/json"
         ],
         "tags": [
-          "FrontApp"
+          "FlutterApp"
         ],
         "summary": "Get a list of projects for the specified user.",
         "operationId": "GetProjects",
@@ -212,7 +247,18 @@
             "name": "user",
             "in": "query"
           }
-        ]
+        ],
+        "responses": {
+          "200": {
+            "description": "Return all possible projects."
+          },
+          "400": {
+            "description": "Bad Request. Invalid user query param."
+          },
+          "500": {
+            "description": "Internal server error."
+          }
+        }
       },
       "post": {
         "security": [
@@ -225,9 +271,30 @@
           "application/json"
         ],
         "tags": [
-          "FrontApp"
+          "FlutterApp"
         ],
-        "operationId": "CreateProjects"
+        "operationId": "CreateProjects",
+        "parameters": [
+          {
+            "format": "object",
+            "example": "{\"attributes\":[\"domain\"],\"authorLastUpdate\":\"helder\",\"dateRange\":\"01/01/2023-02/02/2023\", \"lastUpdate\":\"02/02/2023\",\"name\":\"test 1\",\"namespace\":\"physical\",\"objects\":[\"siteB\"],\"showAvg\":false, \"showSum\":false,\"permissions\":[\"user@test.com\",\"admin\"]}",
+            "description": "Mandatory: name, dateRange, namespace, attributes, objects, permissions, authorLastUpdate, lastUpdate. Optional: showAvg, showSum, isPublic.",
+            "name": "body",
+            "in": "body",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Project successfully created."
+          },
+          "400": {
+            "description": "Bad Request. Invalid project format."
+          },
+          "500": {
+            "description": "Internal server error."
+          }
+        }
       }
     },
     "/api/projects/{ProjectID}": {
@@ -241,7 +308,7 @@
           "application/json"
         ],
         "tags": [
-          "FrontApp"
+          "FlutterApp"
         ],
         "summary": "Replace the data of an existing project.",
         "operationId": "UpdateProjects",
@@ -252,6 +319,14 @@
             "description": "ID of the project to update.",
             "name": "ProjectID",
             "in": "path",
+            "required": true
+          },
+          {
+            "format": "object",
+            "example": "{\"attributes\":[\"domain\"],\"authorLastUpdate\":\"helder\",\"dateRange\":\"01/01/2023-02/02/2023\", \"lastUpdate\":\"02/02/2023\",\"name\":\"test 1\",\"namespace\":\"physical\",\"objects\":[\"siteB\"],\"showAvg\":false, \"showSum\":false,\"permissions\":[\"user@test.com\",\"admin\"]}",
+            "description": "Mandatory: name, dateRange, namespace, attributes, objects, permissions, authorLastUpdate, lastUpdate. Optional: showAvg, showSum, isPublic.",
+            "name": "body",
+            "in": "body",
             "required": true
           }
         ],
@@ -277,7 +352,7 @@
           "application/json"
         ],
         "tags": [
-          "FrontApp"
+          "FlutterApp"
         ],
         "summary": "Delete an existing project.",
         "operationId": "DeleteProjects",
@@ -296,7 +371,7 @@
             "description": "Project successfully updated."
           },
           "404": {
-            "description": "Not Found. Invalid project IS."
+            "description": "Not Found. Invalid project ID."
           },
           "500": {
             "description": "Internal server error"
@@ -318,7 +393,15 @@
           "About"
         ],
         "summary": "Displays DB statistics.",
-        "operationId": "GetStats"
+        "operationId": "GetStats",
+        "responses": {
+          "200": {
+            "description": "Request is valid."
+          },
+          "504": {
+            "description": "Server error."
+          }
+        }
       }
     },
     "/api/tempunits/{IdOrHierarchyName}": {
@@ -398,7 +481,15 @@
           "Organization"
         ],
         "summary": "Get a list of users that the caller is allowed to see.",
-        "operationId": "GetAllAccounts"
+        "operationId": "GetAllAccounts",
+        "responses": {
+          "200": {
+            "description": "Return all possible users"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
       },
       "post": {
         "security": [
@@ -406,14 +497,14 @@
             "bearer": []
           }
         ],
-        "description": "Create an account with email credentials, it returns\na JWT key to use with the API.",
+        "description": "Create an account with email and password credentials, it returns\na JWT key to use with the API.",
         "produces": [
           "application/json"
         ],
         "tags": [
           "Organization"
         ],
-        "summary": "Generate credentials for a user.",
+        "summary": "Create a new user user.",
         "operationId": "CreateAccount",
         "parameters": [
           {
@@ -465,7 +556,18 @@
             "in": "body",
             "required": true
           }
-        ]
+        ],
+        "responses": {
+          "200": {
+            "description": "Request processed, check response body for results"
+          },
+          "400": {
+            "description": "Bad request"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
       }
     },
     "/api/users/password/change": {
@@ -492,7 +594,18 @@
             "in": "body",
             "required": true
           }
-        ]
+        ],
+        "responses": {
+          "200": {
+            "description": "Password changed"
+          },
+          "400": {
+            "description": "Bad request"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
       }
     },
     "/api/users/password/forgot": {
@@ -515,7 +628,18 @@
             "in": "body",
             "required": true
           }
-        ]
+        ],
+        "responses": {
+          "200": {
+            "description": "request processed. If account exists, an email with a reset token is sent"
+          },
+          "400": {
+            "description": "Bad request"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
       }
     },
     "/api/users/password/reset": {
@@ -543,7 +667,18 @@
             "in": "body",
             "required": true
           }
-        ]
+        ],
+        "responses": {
+          "200": {
+            "description": "Password changed"
+          },
+          "400": {
+            "description": "Bad request"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
       }
     },
     "/api/users/{userid}": {
@@ -570,7 +705,21 @@
             "in": "path",
             "required": true
           }
-        ]
+        ],
+        "responses": {
+          "200": {
+            "description": "User removed"
+          },
+          "400": {
+            "description": "User ID not valid or not found"
+          },
+          "403": {
+            "description": "Caller not authorised to delete this user"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
       },
       "patch": {
         "security": [
@@ -603,7 +752,21 @@
             "in": "body",
             "required": true
           }
-        ]
+        ],
+        "responses": {
+          "200": {
+            "description": "User roles modified"
+          },
+          "400": {
+            "description": "Bad request"
+          },
+          "403": {
+            "description": "Caller not authorised to modify this user"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
       }
     },
     "/api/validate/{entity}": {
@@ -697,7 +860,15 @@
             "in": "path",
             "required": true
           }
-        ]
+        ],
+        "responses": {
+          "200": {
+            "description": "Found. A response body will be returned with a meaningful message."
+          },
+          "404": {
+            "description": "Nothing Found. An error message will be returned."
+          }
+        }
       },
       "post": {
         "security": [
@@ -728,7 +899,15 @@
             "in": "body",
             "required": true
           }
-        ]
+        ],
+        "responses": {
+          "201": {
+            "description": "Created. A response body will be returned with a meaningful message."
+          },
+          "400": {
+            "description": "Bad request. A response body with an error message will be returned."
+          }
+        }
       }
     },
     "/api/{entity}/{IdOrHierarchyName}": {
@@ -823,7 +1002,15 @@
             "in": "path",
             "required": true
           }
-        ]
+        ],
+        "responses": {
+          "204": {
+            "description": "Successfully deleted object. No response body will be returned"
+          },
+          "404": {
+            "description": "Not found. An error message will be returned"
+          }
+        }
       },
       "patch": {
         "security": [
@@ -937,58 +1124,6 @@
         }
       }
     },
-    "/api/{entity}/{id}/*": {
-      "get": {
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
-        "description": "The path can only contain object type or object names",
-        "produces": [
-          "application/json"
-        ],
-        "tags": [
-          "Objects"
-        ],
-        "summary": "A category of objects of a Parent Object can be retrieved from the system.",
-        "operationId": "GetEntitiesUsingNamesOfParents",
-        "parameters": [
-          {
-            "type": "string",
-            "default": "sites",
-            "description": "Indicates the entity. Only values of \"sites\", \"domains\", \"buildings\", \"rooms\", \"racks\", \"devices\", \"stray-devices\" are acceptable",
-            "name": "entity",
-            "in": "query",
-            "required": true
-          },
-          {
-            "type": "string",
-            "default": "INFINITI",
-            "description": "ID of desired object. For Sites and stray-devices the name can be used as the ID",
-            "name": "ID",
-            "in": "path",
-            "required": true
-          },
-          {
-            "type": "string",
-            "default": "/buildings/BuildingB/RoomA",
-            "description": "Hierarchal path to desired object(s). For rooms it can additionally have \"acs\",\"panels\", \"corridors\", \"sensors\" and \"cabinets\". For devices it can have \"sensors\" For racks it can have \"sensors\"",
-            "name": "*",
-            "in": "path",
-            "required": true
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Found. A response body will be returned with a meaningful message."
-          },
-          "404": {
-            "description": "Not Found. An error message will be returned."
-          }
-        }
-      }
-    },
     "/api/{entity}/{id}/{subent}": {
       "get": {
         "security": [
@@ -1083,11 +1218,74 @@
           },
           {
             "type": "string",
-            "description": "Any other object attributes can be queried",
+            "default": "domain=DemoDomain",
+            "example": "vendor=ibm ; name=siteA ; orientation=front",
+            "description": "Any other object attributes can be queried. Replace attributes here by the name of the attribute followed by its value.",
             "name": "attributes",
             "in": "query"
           }
-        ]
+        ],
+        "responses": {
+          "204": {
+            "description": "Found. A response body will be returned with a meaningful message."
+          },
+          "404": {
+            "description": "Not found. An error message will be returned."
+          }
+        }
+      }
+    },
+    "/api/{firstEntity}/{id}/{HierarchalPath}": {
+      "get": {
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "description": "The path should begin with an entity name (firstEntity) and the ID of an object of this entity\nfollowed by a hierarchal path until the desired objet, that is,\na sequence of entity names (category) and object names.",
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "Objects"
+        ],
+        "summary": "Get an object with its full hierarchal path.",
+        "operationId": "GetEntitiesUsingNamesOfParents",
+        "parameters": [
+          {
+            "type": "string",
+            "default": "sites",
+            "description": "Root entity followed by an id. Can be: sites, buildings, rooms, racks or devices",
+            "name": "firstEntity",
+            "in": "query",
+            "required": true
+          },
+          {
+            "type": "string",
+            "default": "123",
+            "description": "id of object of firstEntity",
+            "name": "id",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "default": "/buildings/BuildingB/rooms/RoomA",
+            "example": "/api/sites/{id}/buildings/{building_name} ; /api/sites/{id}/buildings/{building_name}/rooms/{room_name} ; /api/sites/{id}/buildings/{building_name}/rooms/{room_name}/acs/{ac_name} ; /api/sites/{id}/buildings/{building_name}/rooms/{room_name}/corridors/{corridor_name} ; /api/sites/{id}/buildings/{building_name}/rooms/{room_name}/panels/{panel_name} ; /api/sites/{id}/buildings/{building_name}/rooms/{room_name}/groups/{group_name} ; /api/sites/{id}/buildings/{building_name}/rooms/{room_name}/racks/{rack_name}/devices/{device_name} ; /api/sites/{id}/buildings/{building_name}/rooms/{room_name}/racks/{rack_name} ; /api/buildings/{id}/rooms/{room_name} ; /api/buildings/{id}/rooms/{room_name}/acs/{ac_name} ; /api/buildings/{id}/rooms/{room_name}/corridors/{corridor_name} ; /api/buildings/{id}/rooms/{room_name}/panels/{panel_name} ; /api/buildings/{id}/rooms/{room_name}/groups/{group_name} ; /api/buildings/{id}/rooms/{room_name}/rack/{rack_name} ; /api/buildings/{id}/rooms/{room_name}/racks/{rack_name}/devices/{device_name} ; /api/rooms/{id}/acs/{ac_name} ; /api/rooms/{id}/corridors/{corridor_name} ; /api/rooms/{id}/panels/{panel_name} ; /api/rooms/{id}/groups/{group_name} ; /api/rooms/{id}/racks/{rack_name}/devices/{device_name} ; /api/racks/{id}/devices/{device_name} ; /api/devices/{id}/devices/{device_name} ;",
+            "description": "Hierarchal path to desired object.",
+            "name": "HierarchalPath",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Found. A response body will be returned with a meaningful message."
+          },
+          "404": {
+            "description": "Not Found. An error message will be returned."
+          }
+        }
       }
     },
     "/api/{objs}/{IdOrHierarchyName}": {

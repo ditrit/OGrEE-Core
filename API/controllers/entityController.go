@@ -99,12 +99,12 @@ func getUserFromToken(w http.ResponseWriter, r *http.Request) *models.Account {
 //     required: true
 //     default: {}
 // responses:
-//	'201':
-//	    description: 'Created. A response body will be returned with
-//	    a meaningful message.'
-//	'400':
-//	    description: 'Bad request. A response body with an error
-//	    message will be returned.'
+//     '201':
+//         description: 'Created. A response body will be returned with
+//         a meaningful message.'
+//     '400':
+//         description: 'Bad request. A response body with an error
+//         message will be returned.'
 
 var CreateEntity = func(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("******************************************************")
@@ -201,13 +201,13 @@ var CreateEntity = func(w http.ResponseWriter, r *http.Request) {
 //   - name: body
 //     in: body
 //     required: true
-//     default: {}
+//     default: [{}]
 // responses:
-//	'200':
-//	    description: 'Request processed. Check the response body
-//	      for individual results for each of the sent domains'
-//	'400':
-//	    description: Bad format.
+//     '200':
+//         description: 'Request processed. Check the response body
+//         for individual results for each of the sent domains'
+//     '400':
+//         description: 'Bad format: body is not a valid list of domains.'
 
 var CreateBulkDomain = func(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("******************************************************")
@@ -315,8 +315,9 @@ func getBulkDomainsRecursively(parent string, listDomains []map[string]interface
 }
 
 // swagger:operation GET /api/objects/{hierarchyName} Objects GetGenericObject
+// Get an object from any entity.
 // Gets an object from any of the physical entities with no need to specify it.
-// The hierarchyName must be provided in the URL as a parameter
+// The hierarchyName must be provided in the URL as a parameter.
 // ---
 // security:
 // - bearer: []
@@ -326,6 +327,7 @@ func getBulkDomainsRecursively(parent string, listDomains []map[string]interface
 //   - name: hierarchyName
 //     in: path
 //     description: hierarchyName of the object
+//     required: true
 //   - name: fieldOnly
 //     in: query
 //     description: 'specify which object field to show in response.
@@ -562,12 +564,12 @@ var GetEntity = func(w http.ResponseWriter, r *http.Request) {
 //     default: "sites"
 //
 // responses:
-//
-//	'200':
-//	    description: 'Found. A response body will be returned with
-//	    a meaningful message.'
-//	'404':
-//	    description: Nothing Found. An error message will be returned.
+//		'200':
+//			description: 'Found. A response body will be returned with
+//			a meaningful message.'
+//		'404':
+//			description: Nothing Found. An error message will be returned.
+
 var GetAllEntities = func(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("******************************************************")
 	fmt.Println("FUNCTION CALL: 	 GetAllEntities ")
@@ -656,12 +658,12 @@ var GetAllEntities = func(w http.ResponseWriter, r *http.Request) {
 //     default: "siteA"
 //
 // responses:
-//
-//	'204':
-//	   description: 'Successfully deleted object.
-//	   No response body will be returned'
-//	'404':
-//	   description: Not found. An error message will be returned
+//		'204':
+//			description: 'Successfully deleted object.
+//			No response body will be returned'
+//		'404':
+//			description: Not found. An error message will be returned
+
 var DeleteEntity = func(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("******************************************************")
 	fmt.Println("FUNCTION CALL: 	 DeleteEntity ")
@@ -957,16 +959,19 @@ var UpdateEntity = func(w http.ResponseWriter, r *http.Request) {
 //     Format: yyyy-mm-dd'
 //   - name: attributes
 //     in: query
-//     description: Any other object attributes can be queried
+//     description: 'Any other object attributes can be queried.
+//     Replace attributes here by the name of the attribute followed by its value.'
 //     required: false
 //     type: string
+//     default: domain=DemoDomain
+//     example: vendor=ibm ; name=siteA ; orientation=front
 //
 // responses:
-//	'204':
-//	   description: 'Found. A response body will be returned with
-//	    a meaningful message.'
-//	'404':
-//	   description: Not found. An error message will be returned.
+//		'204':
+//			description: 'Found. A response body will be returned with
+//			a meaningful message.'
+//		'404':
+//			description: Not found. An error message will be returned.
 
 var GetEntityByQuery = func(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("******************************************************")
@@ -1438,16 +1443,17 @@ var GetHierarchyByName = func(w http.ResponseWriter, r *http.Request) {
 // Returns system complete hierarchy.
 // Return is arranged by relationship (father:[children])
 // and category (category:[objects]), starting with "Root":[sites].
+// User permissions apply.
 // ---
 // security:
 // - bearer: []
 // produces:
 // - application/json
 // responses:
-//	'200':
-//	    description: 'Request is valid.'
-//	'500':
-//	    description: Server error.
+//		'200':
+//			description: 'Request is valid.'
+//		'500':
+//			description: Server error.
 
 var GetCompleteHierarchy = func(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("******************************************************")
@@ -1489,10 +1495,10 @@ var GetCompleteHierarchy = func(w http.ResponseWriter, r *http.Request) {
 // produces:
 // - application/json
 // responses:
-//	'200':
-//	    description: 'Request is valid.'
-//	'500':
-//	    description: Server error.
+//     '200':
+//          description: 'Request is valid.'
+//     '500':
+//          description: Server error.
 
 var GetCompleteDomainHierarchy = func(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("******************************************************")
@@ -1527,16 +1533,17 @@ var GetCompleteDomainHierarchy = func(w http.ResponseWriter, r *http.Request) {
 // swagger:operation GET /api/hierarchy/attributes Objects GetCompleteHierarchyAttrs
 // Returns attributes of all objects.
 // Return is arranged by hierarchyName (objHierarchyName:{attributes}).
+// User permissions apply.
 // ---
 // security:
 // - bearer: []
 // produces:
 // - application/json
 // responses:
-//	'200':
-//	    description: 'Request is valid.'
-//	'500':
-//	    description: Server error.
+//		'200':
+//			description: 'Request is valid.'
+//		'500':
+//			description: Server error.
 
 var GetCompleteHierarchyAttributes = func(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("******************************************************")
@@ -1568,39 +1575,57 @@ var GetCompleteHierarchyAttributes = func(w http.ResponseWriter, r *http.Request
 	u.Respond(w, resp)
 }
 
-// swagger:operation GET /api/{entity}/{id}/* Objects GetEntitiesUsingNamesOfParents
-// A category of objects of a Parent Object can be retrieved from the system.
-// The path can only contain object type or object names
+// swagger:operation GET /api/{firstEntity}/{id}/{HierarchalPath} Objects GetEntitiesUsingNamesOfParents
+// Get an object with its full hierarchal path.
+// The path should begin with an entity name (firstEntity) and the ID of an object of this entity
+// followed by a hierarchal path until the desired objet, that is,
+// a sequence of entity names (category) and object names.
 // ---
 // security:
 // - bearer: []
 // produces:
 // - application/json
 // parameters:
-// - name: entity
+// - name: firstEntity
 //   in: query
-//   description: 'Indicates the entity. Only values of "sites", "domains",
-//   "buildings", "rooms", "racks", "devices", "stray-devices" are acceptable'
+//   description: 'Root entity followed by an id. Can be: sites, buildings, rooms, racks or devices'
 //   required: true
 //   type: string
 //   default: "sites"
-// - name: ID
+// - name: id
 //   in: path
-//   description: 'ID of desired object. For Sites and stray-devices the name
-//   can be used as the ID'
+//   description: 'id of object of firstEntity'
 //   required: true
 //   type: string
-//   default: "INFINITI"
-// - name: '*'
+//   default: "123"
+// - name: HierarchalPath
 //   in: path
-//   description: 'Hierarchal path to desired object(s).
-//   For rooms it can additionally have "acs","panels",
-//   "corridors", "sensors" and "cabinets".
-//   For devices it can have "sensors"
-//   For racks it can have "sensors"'
+//   description: 'Hierarchal path to desired object.'
 //   required: true
 //   type: string
-//   default: "/buildings/BuildingB/RoomA"
+//   example: '/api/sites/{id}/buildings/{building_name} ;
+//   /api/sites/{id}/buildings/{building_name}/rooms/{room_name} ;
+//   /api/sites/{id}/buildings/{building_name}/rooms/{room_name}/acs/{ac_name} ;
+//   /api/sites/{id}/buildings/{building_name}/rooms/{room_name}/corridors/{corridor_name} ;
+//   /api/sites/{id}/buildings/{building_name}/rooms/{room_name}/panels/{panel_name} ;
+//   /api/sites/{id}/buildings/{building_name}/rooms/{room_name}/groups/{group_name} ;
+//   /api/sites/{id}/buildings/{building_name}/rooms/{room_name}/racks/{rack_name}/devices/{device_name} ;
+//   /api/sites/{id}/buildings/{building_name}/rooms/{room_name}/racks/{rack_name} ;
+//   /api/buildings/{id}/rooms/{room_name} ;
+//   /api/buildings/{id}/rooms/{room_name}/acs/{ac_name} ;
+//   /api/buildings/{id}/rooms/{room_name}/corridors/{corridor_name} ;
+//   /api/buildings/{id}/rooms/{room_name}/panels/{panel_name} ;
+//   /api/buildings/{id}/rooms/{room_name}/groups/{group_name} ;
+//   /api/buildings/{id}/rooms/{room_name}/rack/{rack_name} ;
+//   /api/buildings/{id}/rooms/{room_name}/racks/{rack_name}/devices/{device_name} ;
+//   /api/rooms/{id}/acs/{ac_name} ;
+//   /api/rooms/{id}/corridors/{corridor_name} ;
+//   /api/rooms/{id}/panels/{panel_name} ;
+//   /api/rooms/{id}/groups/{group_name} ;
+//   /api/rooms/{id}/racks/{rack_name}/devices/{device_name} ;
+//   /api/racks/{id}/devices/{device_name} ;
+//   /api/devices/{id}/devices/{device_name} ;'
+//   default: "/buildings/BuildingB/rooms/RoomA"
 // responses:
 //     '200':
 //         description: 'Found. A response body will be returned with
@@ -1798,10 +1823,10 @@ var BaseOption = func(w http.ResponseWriter, r *http.Request) {
 // produces:
 // - application/json
 // responses:
-//	'200':
-//	    description: 'Request is valid.'
-//	'504':
-//	    description: Server error.
+//		'200':
+//			description: 'Request is valid.'
+//		'504':
+//			description: Server error.
 
 var GetStats = func(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("******************************************************")

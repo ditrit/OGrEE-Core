@@ -11,7 +11,7 @@ import (
 	"github.com/gorilla/mux"
 )
 
-// swagger:operation GET /api/projects FrontApp GetProjects
+// swagger:operation GET /api/projects FlutterApp GetProjects
 // Get a list of projects for the specified user.
 // ---
 // security:
@@ -27,12 +27,12 @@ import (
 //   type: string
 //   default: user@test.com
 // responses:
-//	'200':
-//	    description: 'Return all possible projects.'
-//	'400':
-//	    description: 'Bad Request. Invalid user query param.'
-//	'500':
-//	    description: 'Internal server error.'
+//		'200':
+//			description: 'Return all possible projects.'
+//		'400':
+//			description: 'Bad Request. Invalid user query param.'
+//		'500':
+//			description: 'Internal server error.'
 
 var GetProjects = func(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("******************************************************")
@@ -66,22 +66,33 @@ var GetProjects = func(w http.ResponseWriter, r *http.Request) {
 	u.Respond(w, resp)
 }
 
-// swagger:operation POST /api/projects FrontApp CreateProjects
+// swagger:operation POST /api/projects FlutterApp CreateProjects
 // Create a new project
 // ---
 // security:
 // - bearer: []
 // produces:
 // - application/json
+// parameters:
+//   - name: body
+//     in: body
+//     description: 'Mandatory: name, dateRange, namespace, attributes,
+//     objects, permissions, authorLastUpdate, lastUpdate.
+//     Optional: showAvg, showSum, isPublic.'
+//     required: true
+//     format: object
+//     example: '{"attributes":["domain"],"authorLastUpdate":"helder","dateRange":"01/01/2023-02/02/2023",
+//     "lastUpdate":"02/02/2023","name":"test 1","namespace":"physical","objects":["siteB"],"showAvg":false,
+//     "showSum":false,"permissions":["user@test.com","admin"]}'
 // responses:
-//	'200':
-//	    description: 'Project successfully created.'
-//	'400':
-//	    description: 'Bad Request. Invalid project format.'
-//	'500':
-//	    description: 'Internal server error.'
+//		'200':
+//			description: 'Project successfully created.'
+//		'400':
+//			description: 'Bad Request. Invalid project format.'
+//		'500':
+//			description: 'Internal server error.'
 
-// swagger:operation PUT /api/projects/{ProjectID} FrontApp UpdateProjects
+// swagger:operation PUT /api/projects/{ProjectID} FlutterApp UpdateProjects
 // Replace the data of an existing project.
 // ---
 // security:
@@ -89,19 +100,29 @@ var GetProjects = func(w http.ResponseWriter, r *http.Request) {
 // produces:
 // - application/json
 // parameters:
-// - name: ProjectID
-//   in: path
-//   description: 'ID of the project to update.'
-//   required: true
-//   type: string
-//   default: "1234"
+//   - name: ProjectID
+//     in: path
+//     description: 'ID of the project to update.'
+//     required: true
+//     type: string
+//     default: "1234"
+//   - name: body
+//     in: body
+//     description: 'Mandatory: name, dateRange, namespace, attributes,
+//     objects, permissions, authorLastUpdate, lastUpdate.
+//     Optional: showAvg, showSum, isPublic.'
+//     required: true
+//     format: object
+//     example: '{"attributes":["domain"],"authorLastUpdate":"helder","dateRange":"01/01/2023-02/02/2023",
+//     "lastUpdate":"02/02/2023","name":"test 1","namespace":"physical","objects":["siteB"],"showAvg":false,
+//     "showSum":false,"permissions":["user@test.com","admin"]}'
 // responses:
-//  '200':
-//      description: Project successfully updated.
-//  '400':
-//      description: Bad Request. Invalid project format.
-//  '500':
-//      description: Internal server error
+//		'200':
+//			description: Project successfully updated.
+//		'400':
+//			description: Bad Request. Invalid project format.
+//		'500':
+//			description: Internal server error
 
 var CreateOrUpdateProject = func(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("******************************************************")
@@ -142,7 +163,7 @@ var CreateOrUpdateProject = func(w http.ResponseWriter, r *http.Request) {
 	u.Respond(w, resp)
 }
 
-// swagger:operation DELETE /api/projects/{ProjectID} FrontApp DeleteProjects
+// swagger:operation DELETE /api/projects/{ProjectID} FlutterApp DeleteProjects
 // Delete an existing project.
 // ---
 // security:
@@ -160,7 +181,7 @@ var CreateOrUpdateProject = func(w http.ResponseWriter, r *http.Request) {
 //  '200':
 //      description: Project successfully updated.
 //  '404':
-//      description: Not Found. Invalid project IS.
+//      description: Not Found. Invalid project ID.
 //  '500':
 //      description: Internal server error
 
