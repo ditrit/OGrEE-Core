@@ -3,7 +3,6 @@
     "category": "room",
     "axisOrientation": "+x+z",
     "sizeWDHm": [8.25, -4, -0.53452443],
-    "floorUnit": "cm",
     "vertices": [
         [0,    0],
         [8.3,  0],

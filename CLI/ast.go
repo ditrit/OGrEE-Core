@@ -1034,7 +1034,6 @@ type createRoomNode struct {
 	rotation        node
 	size            node
 	axisOrientation node
-	floorUnit       node
 	template        node
 }
 
@@ -1096,17 +1095,6 @@ func (n *createRoomNode) execute() (interface{}, error) {
 		}
 		attributes["axisOrientation"] = axisOrientation
 	}
-	if n.floorUnit != nil {
-		floorUnitAny, err := n.floorUnit.execute()
-		if err != nil {
-			return nil, err
-		}
-		floorUnit, ok := floorUnitAny.(string)
-		if !ok {
-			return nil, fmt.Errorf("floorUnit should be a string")
-		}
-		attributes["floorUnit"] = floorUnit
-	}
 	err = cmd.GetOCLIAtrributes(path, cmd.ROOM, map[string]any{"attributes": attributes})
 	if err != nil {
 		return nil, err
@@ -1117,8 +1105,9 @@ func (n *createRoomNode) execute() (interface{}, error) {
 type createRackNode struct {
 	path           node
 	pos            node
+	unit           node
+	rotation       node
 	sizeOrTemplate node
-	orientation    node
 }
 
 func (n *createRackNode) execute() (interface{}, error) {
@@ -1138,16 +1127,42 @@ func (n *createRackNode) execute() (interface{}, error) {
 	if !ok || (len(pos) != 2 && len(pos) != 3) {
 		return nil, fmt.Errorf("position should be a vector2 or a vector3")
 	}
-	orientationAny, err := n.orientation.execute()
+	unitAny, err := n.unit.execute()
 	if err != nil {
 		return nil, err
 	}
-	orientation, ok := orientationAny.(string)
-	if !ok || (orientation != "front" && orientation != "rear" && orientation != "left" && orientation != "right") {
-		return nil, fmt.Errorf("orientation should be a front, rear, left or right")
+	unit, ok := unitAny.(string)
+	if !ok {
+		return nil, fmt.Errorf("unit should be a string")
 	}
-	attributes := map[string]any{"posXYZ": pos, "orientation": orientation}
-
+	attributes := map[string]any{"posXYZ": pos, "posXYUnit": unit}
+	rotationAny, err := n.rotation.execute()
+	if err != nil {
+		return nil, err
+	}
+	switch rotation := rotationAny.(type) {
+	case []float64:
+		attributes["rotation"] = rotation
+	case string:
+		switch rotation {
+		case "front":
+			attributes["rotation"] = []float64{0, 180, 0}
+		case "rear":
+			attributes["rotation"] = []float64{0, 0, 0}
+		case "left":
+			attributes["rotation"] = []float64{0, 0, 90}
+		case "right":
+			attributes["rotation"] = []float64{0, 0, -90}
+		case "top":
+			attributes["rotation"] = []float64{90, 0, 0}
+		case "bottom":
+			attributes["rotation"] = []float64{-90, 0, 0}
+		default:
+			return nil, fmt.Errorf(
+				`orientation should be a vector3, or one of the following keywords :
+				front, rear, left, right, top, bottom`)
+		}
+	}
 	sizeOrTemplateAny, err := n.sizeOrTemplate.execute()
 	if err != nil {
 		return nil, err

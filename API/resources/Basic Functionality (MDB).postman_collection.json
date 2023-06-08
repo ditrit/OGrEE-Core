@@ -462,7 +462,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"name\": \"R1\",\n    \"id\": null,\n    \"parentId\": \"{{BuildingID}}\",\n    \"category\": \"room\",\n    \"description\": [\n        \"First room\"\n    ],\n    \"domain\": \"DEMO\",\n    \"attributes\": {\n        \"posXY\": \"{\\\"x\\\":0.0,\\\"y\\\":0.0}\",\n        \"posXYUnit\": \"m\",\n        \"posXYU\": \"m\",\n        \"posZ\": \"0\",\n        \"posZUnit\": \"m\",\n        \"floorUnit\":\"f\",\n        \"template\": \"demo.R1\",\n        \"rotation\":\"-99\",\n        \"axisOrientation\": \"+N+W\",\n        \"size\": \"{\\\"x\\\":22.799999237060548,\\\"y\\\":19.799999237060548}\",\n        \"sizeUnit\": \"m\",\n        \"sizeU\": \"m\",\n        \"height\": \"3\",\n        \"heightUnit\": \"m\",\n        \"heightU\": \"m\"\n    }\n}",
+							"raw": "{\n    \"name\": \"R1\",\n    \"id\": null,\n    \"parentId\": \"{{BuildingID}}\",\n    \"category\": \"room\",\n    \"description\": [\n        \"First room\"\n    ],\n    \"domain\": \"DEMO\",\n    \"attributes\": {\n        \"posXY\": \"{\\\"x\\\":0.0,\\\"y\\\":0.0}\",\n        \"posXYUnit\": \"m\",\n        \"posXYU\": \"m\",\n        \"posZ\": \"0\",\n        \"posZUnit\": \"m\",\n        \"template\": \"demo.R1\",\n        \"rotation\":\"-99\",\n        \"axisOrientation\": \"+N+W\",\n        \"size\": \"{\\\"x\\\":22.799999237060548,\\\"y\\\":19.799999237060548}\",\n        \"sizeUnit\": \"m\",\n        \"sizeU\": \"m\",\n        \"height\": \"3\",\n        \"heightUnit\": \"m\",\n        \"heightU\": \"m\"\n    }\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -2724,7 +2724,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"name\": \"Abandoned Room\",\n    \"id\": null,\n    \"parentId\": \"{{BuildingID}}\",\n    \"category\": \"999\",\n    \"description\": [\n        \"999\"\n    ],\n    \"domain\": \"999\",\n    \"attributes\": {\n        \"posXY\": \"999\",\n        \"posXYUnit\": \"m\",\n        \"posZ\": \"999\",\n        \"posZUnit\": \"m\",\n        \"template\": \"999\",\n        \"axisOrientation\": \"-N-W\",\n        \"size\": \"999\",\n        \"floorUnit\":\"t\",\n        \"sizeUnit\": \"m\",\n        \"height\": \"999\",\n        \"heightUnit\": \"m\",\n        \"rotation\":\"60\"\n    }\n}",
+							"raw": "{\n    \"name\": \"Abandoned Room\",\n    \"id\": null,\n    \"parentId\": \"{{BuildingID}}\",\n    \"category\": \"999\",\n    \"description\": [\n        \"999\"\n    ],\n    \"domain\": \"999\",\n    \"attributes\": {\n        \"posXY\": \"999\",\n        \"posXYUnit\": \"m\",\n        \"posZ\": \"999\",\n        \"posZUnit\": \"m\",\n        \"template\": \"999\",\n        \"axisOrientation\": \"-N-W\",\n        \"size\": \"999\",\n        \"sizeUnit\": \"m\",\n        \"height\": \"999\",\n        \"heightUnit\": \"m\",\n        \"rotation\":\"60\"\n    }\n}",
 							"options": {
 								"raw": {
 									"language": "json"

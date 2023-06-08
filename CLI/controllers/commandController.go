@@ -1506,7 +1506,6 @@ func GetOCLIAtrributes(Path string, ent int, data map[string]interface{}) error 
 		attr = data["attributes"].(map[string]interface{})
 
 		baseAttrs := map[string]interface{}{
-			"floorUnit": "t",
 			"posXYUnit": "m", "sizeUnit": "m",
 			"heightUnit": "m"}
 
@@ -1564,15 +1563,13 @@ func GetOCLIAtrributes(Path string, ent int, data map[string]interface{}) error 
 
 	case RACK:
 		attr = data["attributes"].(map[string]interface{})
-		parentAttr := parent["attributes"].(map[string]interface{})
-		//Save orientation because it gets overwritten by
+		//Save rotation because it gets overwritten by
 		//GetOCLIAtrributesTemplateHelper()
-		orientation := attr["orientation"]
+		rotation := attr["rotation"]
 
 		baseAttrs := map[string]interface{}{
 			"sizeUnit":   "cm",
 			"heightUnit": "U",
-			"posXYUnit":  parentAttr["floorUnit"],
 		}
 
 		MergeMaps(attr, baseAttrs, false)
@@ -1581,9 +1578,9 @@ func GetOCLIAtrributes(Path string, ent int, data map[string]interface{}) error 
 		//and parse into templates
 		GetOCLIAtrributesTemplateHelper(attr, data, ent)
 
-		//Restore the orientation overwritten
+		//Restore the rotation overwritten
 		//by the helper func
-		attr["orientation"] = orientation
+		attr["rotation"] = rotation
 
 		if attr["size"] == "" {
 			if State.DebugLvl > 0 {
@@ -1882,13 +1879,6 @@ func GetOCLIAtrributesTemplateHelper(attr, data map[string]interface{}, ent int)
 						if _, ok := attr["pillars"]; ok {
 							tmp, _ = json.Marshal(attr["pillars"])
 							attr["pillars"] = string(tmp)
-						}
-
-						CopyAttr(attr, tmpl, "floorUnit")
-						if _, ok := attr["floorUnit"]; ok {
-							if floorUnit, ok := attr["floorUnit"].(string); ok {
-								attr["floorUnit"] = floorUnit
-							}
 						}
 
 						CopyAttr(attr, tmpl, "tiles")

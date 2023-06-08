@@ -4768,7 +4768,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"name\": \"R1\",\n    \"id\": null,\n    \"parentId\": \"{{BuildingID}}\",\n    \"category\": \"room\",\n    \"description\": [\n        \"First room\"\n    ],\n    \"domain\": \"DEMO\",\n    \"attributes\": {\n        \"posXY\": \"{\\\"x\\\":0.0,\\\"y\\\":0.0}\",\n        \"posXYUnit\": \"m\",\n        \"posXYU\": \"m\",\n        \"posZ\": \"0\",\n        \"posZUnit\": \"m\",\n        \"template\": \"demo.R1\",\n        \"axisOrientation\": \"+N+W\",\n        \"size\": \"{\\\"x\\\":22.799999237060548,\\\"y\\\":19.799999237060548}\",\n        \"sizeUnit\": \"m\",\n        \"sizeU\": \"m\",\n        \"floorUnit\":\"f\",\n        \"height\": \"3\",\n        \"heightUnit\": \"m\",\n        \"heightU\": \"m\",\n        \"rotation\":\"60\"\n    }\n}",
+							"raw": "{\n    \"name\": \"R1\",\n    \"id\": null,\n    \"parentId\": \"{{BuildingID}}\",\n    \"category\": \"room\",\n    \"description\": [\n        \"First room\"\n    ],\n    \"domain\": \"DEMO\",\n    \"attributes\": {\n        \"posXY\": \"{\\\"x\\\":0.0,\\\"y\\\":0.0}\",\n        \"posXYUnit\": \"m\",\n        \"posXYU\": \"m\",\n        \"posZ\": \"0\",\n        \"posZUnit\": \"m\",\n        \"template\": \"demo.R1\",\n        \"axisOrientation\": \"+N+W\",\n        \"size\": \"{\\\"x\\\":22.799999237060548,\\\"y\\\":19.799999237060548}\",\n        \"sizeUnit\": \"m\",\n        \"sizeU\": \"m\",\n        \"height\": \"3\",\n        \"heightUnit\": \"m\",\n        \"heightU\": \"m\",\n        \"rotation\":\"60\"\n    }\n}",
 							"options": {
 								"raw": {
 									"language": "json"

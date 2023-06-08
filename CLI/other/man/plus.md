@@ -40,9 +40,9 @@ Where the ROTATION (rotation attribute) must be a numerical value (ie 45)
 Where TEMPLATE refers to the bldg template name (which must be already existing)
 
 
-+ro:PATH/ROOM_NAME@POSITION@ROTATION@SIZE@AXISORIENTATION@FLOORUNIT   
-+room:PATH/ROOM_NAME@POSITION@ROTATION@SIZE@AXISORIENTATION@FLOORUNIT    
-User must specify the path, ROOM_NAME, ROTATION, POSITION, SIZE, ORIENTATION and FLOORUNIT
++ro:PATH/ROOM_NAME@POSITION@ROTATION@SIZE@AXISORIENTATION   
++room:PATH/ROOM_NAME@POSITION@ROTATION@SIZE@AXISORIENTATION    
+User must specify the path, ROOM_NAME, ROTATION, POSITION, SIZE and ORIENTATION
 
 
 Where POSITION (posXY attribute) must be a 2 element array/vector of coordinates (ie [1,2]) 
@@ -52,8 +52,6 @@ Where SIZE is a 3 numerical element array/vector (ie [1,2,3])
 Where ROTATION must be a numerical value (ie 36) 
 
 Where AXISORIENTATION refers to the cardinal directions and can only be of the following format: {[+/-][N/E/W/S][+/-][N/E/W/S]} (ie +N-E)
-
-Where FLOORUNIT refers to the measurement unit for the floor which can only be: {f,m,t}  
 
 
 +ro:PATH/ROOM_NAME@POSITION@ROTATION@SIZE@AXISORIENTATION   
@@ -82,26 +80,22 @@ Where ROTATION must be a numerical value (ie 36)
 Where TEMPLATE refers to the room template name (which must be already existing)
 
 
-+rk:PATH/RACK_NAME@POSITION@SIZE@ORIENTATION   
-+rack:PATH/RACK_NAME@POSITION@SIZE@ORIENTATION   
-User must specify the path, RACK_NAME, POSITION and SIZE and ORIENTATION 
++rack:PATH@POSITION@UNIT@ROTATION@SIZE
++rack:PATH@POSITION@UNIT@ROTATION@TEMPLATE
++rk:PATH@POSITION@UNIT@ROTATION@SIZE
++rk:PATH@POSITION@UNIT@ROTATION@TEMPLATE
+  
+User must specify the PATH, POSITION, UNIT, ROTATION and SIZE/TEMPLATE 
 
 Where POSITION (posXY attribute) must be a 2 or a 3 element array/vector of coordinates (ie [1,2]) 
+
+Where UNIT must be t, m or f
+
+Where ROTATION is either a string with one of the following values: {front,rear,left,right} or a vector3 of angles in degrees
 
 Where SIZE is a 3 numerical element array/vector (ie [1,2,3])
 
-Where ORIENTATION is a string and can only be of the following values: {front,rear,left,right}
-
-
-+rk:PATH/RACK_NAME@POSITION@TEMPLATE@ORIENTATION   
-+rack:PATH/RACK_NAME@POSITION@TEMPLATE@ORIENTATION   
-User must specify the path, RACK_NAME, POSITION and SIZE and ORIENTATION and TEMPLATE   
-
-Where POSITION (posXY attribute) must be a 2 or a 3 element array/vector of coordinates (ie [1,2]) 
-
-Where TEMPLATE refers to the rack template name (which must be already existing)
-
-Where ORIENTATION is a string and can only be of the following values: {front,rear,left,right}
+Where TEMPLATE is a path to a template file
 
 
 +dv:PATH/DEVICE_NAME@SLOT_OR_POSU@SIZEUNIT   

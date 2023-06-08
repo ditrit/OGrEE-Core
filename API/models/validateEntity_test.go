@@ -98,7 +98,6 @@ func TestErrorValidateJsonSchema(t *testing.T) {
 			"/axisOrientation value must be one of",
 			"/separators/0/type value must be one of",
 			"/vertices/4 minimum 2 items required, but found 1 items",
-			"/floorUnit value must be one of",
 			"property 'tileAngle' is required, if 'vertices' property exists",
 			"property 'center' is required, if 'vertices' property exists",
 		},

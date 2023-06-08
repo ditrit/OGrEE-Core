@@ -950,14 +950,10 @@ func (p *parser) parseCreateRoom() node {
 	p.expect("@")
 	sizeOrTemplate := p.parseStringOrVec("sizeOrTemplate")
 	if !p.parseExact("@") {
-		return &createRoomNode{path, posXY, rotation, nil, nil, nil, sizeOrTemplate}
+		return &createRoomNode{path, posXY, rotation, nil, nil, sizeOrTemplate}
 	}
 	axisOrientation := p.parseString("axisOrientation")
-	if !p.parseExact("@") {
-		return &createRoomNode{path, posXY, rotation, sizeOrTemplate, axisOrientation, nil, nil}
-	}
-	floorUnit := p.parseString("floorUnit")
-	return &createRoomNode{path, posXY, rotation, sizeOrTemplate, axisOrientation, floorUnit, nil}
+	return &createRoomNode{path, posXY, rotation, sizeOrTemplate, axisOrientation, nil}
 }
 
 func (p *parser) parseCreateRack() node {
@@ -966,10 +962,12 @@ func (p *parser) parseCreateRack() node {
 	p.expect("@")
 	pos := p.parseExpr("position")
 	p.expect("@")
-	sizeOrTemplate := p.parseStringOrVec("sizeOrTemplate")
+	unit := p.parseString("unit")
 	p.expect("@")
-	orientation := p.parseString("orientation")
-	return &createRackNode{path, pos, sizeOrTemplate, orientation}
+	rotation := p.parseStringOrVec("rotation")
+	p.expect("@")
+	sizeOrTemplate := p.parseStringOrVec("sizeOrTemplate")
+	return &createRackNode{path, pos, unit, rotation, sizeOrTemplate}
 }
 
 func (p *parser) parseCreateDevice() node {

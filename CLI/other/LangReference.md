@@ -262,17 +262,15 @@ Placeholder values are assigned to the object upon creation so as to satisfy the
 [pos] is a Vector2 [x,y] (m,m)
 [size] is a Vector3 [width,length,height] (m,m,m) [template] is the name of the room template
 [orientation] is more precise than the building's one: you have to specify the direction of the rows/columns: [+/-X][+/-Y]. eg: +E+N or -W+S
-[floorUnit] is optional: by default set to "t" (tiles), can also be m (meters) or f (feet)
 ```
-+room:path/to/roomName@[pos]@[size]@[orientation]@[floorUnit]  
++room:path/to/roomName@[pos]@[size]@[orientation]
 +room:path/to/roomName@[pos]@[template]
-+ro:path/to/roomName@[pos]@[size]@[orientation]@[floorUnit]  
++ro:path/to/roomName@[pos]@[size]@[orientation]
 +ro:path/to/roomName@[pos]@[template]
 +room:path/to/roomName@[pos]
 +ro:path/to/roomName@[pos]
 ```
 Placeholder values are assigned to the object upon creation so as to satisfy the object requirements:
-- floorUnit = "t"
 - orientation = "+N+E"
 - posXYUnit = "m"
 - sizeUnit = "m"
@@ -282,17 +280,15 @@ Placeholder values are assigned to the object upon creation so as to satisfy the
 
 #### Create a Rack
 ```
-+rack:path/to/roomName@[pos]@[size]   
-+rack:path/to/roomName@[pos]@[template]   
-+rk:path/to/roomName@[pos]@[size]   
-+rk:path/to/roomName@[pos]@[template]   
++rack:[path]@[pos]@[unit]@[rotation]@[size]
++rack:[path]@[pos]@[unit]@[rotation]@[template]
++rk:[path]@[pos]@[unit]@[rotation]@[size]
++rk:[path]@[pos]@[unit]@[rotation]@[template] 
 ```
 Placeholder values are assigned to the object upon creation so as to satisfy the object requirements:
 - sizeUnit = "m"
 - height = 0
 - heightUnit = "m"
-- posXYUnit = "t"
-- orientation = "front"
 - domain = Tenant's Name
 
 #### Create a Device
