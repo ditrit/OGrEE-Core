@@ -15,31 +15,61 @@ AppBar myAppBar(context, userEmail, {isTenantMode = false}) {
           builder: (context) => const LoginPage(),
         ),
       );
+
+  List<PopupMenuEntry<String>> entries = <PopupMenuEntry<String>>[
+    PopupMenuItem(
+      value: "change",
+      child: Text(AppLocalizations.of(context)!.changePassword),
+    ),
+    const PopupMenuItem(
+      value: "logout",
+      child: Text("Logout"),
+    ),
+  ];
+  if (isTenantMode) {
+    entries.insert(
+        0,
+        PopupMenuItem(
+          value: "new",
+          child: Text(AppLocalizations.of(context)!.addServer),
+        ));
+  }
+
   return AppBar(
     backgroundColor: Colors.grey.shade900,
     leadingWidth: 150,
-    leading: Center(
-        child: TextButton(
-      child: Text(
-        'OGrEE',
-        style: TextStyle(
-            fontSize: 21, fontWeight: FontWeight.w700, color: Colors.white),
+    leading: Padding(
+      padding: const EdgeInsets.only(left: 20),
+      child: Row(
+        children: [
+          TextButton(
+            child: const Text(
+              'OGrEE',
+              style: TextStyle(
+                  fontSize: 21,
+                  fontWeight: FontWeight.w700,
+                  color: Colors.white),
+            ),
+            onPressed: () => Navigator.of(context).push(
+              MaterialPageRoute(
+                builder: (context) => ProjectsPage(
+                    userEmail: isTenantMode ? "admin" : userEmail,
+                    isTenantMode: isTenantMode),
+              ),
+            ),
+          ),
+          Badge(
+            isLabelVisible: isTenantMode,
+            label: Text("ADMIN"),
+          )
+        ],
       ),
-      onPressed: () => Navigator.of(context).push(
-        MaterialPageRoute(
-          builder: (context) => ProjectsPage(
-              userEmail: isTenantMode ? "admin" : userEmail,
-              isTenantMode: isTenantMode),
-        ),
-      ),
-    )),
+    ),
     actions: [
-      isTenantMode
-          ? Padding(
-              padding: const EdgeInsets.only(right: 20),
-              child: Text(apiUrl, style: TextStyle(color: Colors.white)),
-            )
-          : Container(),
+      Padding(
+        padding: const EdgeInsets.only(right: 20),
+        child: Text(apiUrl, style: const TextStyle(color: Colors.white)),
+      ),
       Padding(
         padding: const EdgeInsets.symmetric(vertical: 15),
         child: LanguageToggle(),
@@ -56,20 +86,7 @@ AppBar myAppBar(context, userEmail, {isTenantMode = false}) {
               showCustomPopup(context, ChangePasswordPopup());
             }
           },
-          itemBuilder: (_) => <PopupMenuEntry<String>>[
-                PopupMenuItem(
-                  value: "new",
-                  child: Text(AppLocalizations.of(context)!.addServer),
-                ),
-                PopupMenuItem(
-                  value: "change",
-                  child: Text(AppLocalizations.of(context)!.changePassword),
-                ),
-                PopupMenuItem(
-                  value: "logout",
-                  child: Text("Logout"),
-                ),
-              ],
+          itemBuilder: (_) => entries,
           child: Row(
             children: [
               const Icon(
@@ -79,7 +96,7 @@ AppBar myAppBar(context, userEmail, {isTenantMode = false}) {
               const SizedBox(width: 10),
               Text(
                 isTenantMode ? "admin" : userEmail,
-                style: TextStyle(color: Colors.white),
+                style: const TextStyle(color: Colors.white),
               ),
             ],
           )),
