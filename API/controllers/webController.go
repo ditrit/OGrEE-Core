@@ -11,7 +11,7 @@ import (
 	"github.com/gorilla/mux"
 )
 
-var GetProjects = func(w http.ResponseWriter, r *http.Request) {
+func GetProjects(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("******************************************************")
 	fmt.Println("FUNCTION CALL: 	 GetProjects ")
 	fmt.Println("******************************************************")
@@ -42,7 +42,7 @@ var GetProjects = func(w http.ResponseWriter, r *http.Request) {
 	u.Respond(w, resp)
 }
 
-var CreateOrUpdateProject = func(w http.ResponseWriter, r *http.Request) {
+func CreateOrUpdateProject(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("******************************************************")
 	fmt.Println("FUNCTION CALL: 	 CreateOrUpdateProject ")
 	fmt.Println("******************************************************")
@@ -78,7 +78,7 @@ var CreateOrUpdateProject = func(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-var DeleteProject = func(w http.ResponseWriter, r *http.Request) {
+func DeleteProject(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("******************************************************")
 	fmt.Println("FUNCTION CALL: 	 DeleteProject ")
 	fmt.Println("******************************************************")

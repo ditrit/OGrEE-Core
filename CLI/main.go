@@ -26,6 +26,11 @@ func main() {
 	c.InitTimeout(conf.UnityTimeout)
 	c.InitURLs(conf.APIURL, conf.UnityURL)
 
+	if !c.PingAPI() {
+		println("Cannot reach API at", c.State.APIURL)
+		return
+	}
+
 	var err error
 	var apiKey string
 	user, apiKey, err := c.Login(conf.User)

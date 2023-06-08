@@ -63,7 +63,7 @@ func init() {
 //     '200':
 //         description: Returns header with possible operations
 
-var CreateAccount = func(w http.ResponseWriter, r *http.Request) {
+func CreateAccount(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("******************************************************")
 	fmt.Println("FUNCTION CALL: 	 CreateAccount ")
 	fmt.Println("******************************************************")
@@ -131,7 +131,7 @@ var CreateAccount = func(w http.ResponseWriter, r *http.Request) {
 //	    description: Bad request
 //	'500':
 //	    description: Internal server error
-var CreateBulkAccount = func(w http.ResponseWriter, r *http.Request) {
+func CreateBulkAccount(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("******************************************************")
 	fmt.Println("FUNCTION CALL: 	 CreateBulkAccount ")
 	fmt.Println("******************************************************")
@@ -219,7 +219,7 @@ func randStringBytes(n int) string {
 //
 //	'200':
 //	    description: Returns header with possible operations
-var Authenticate = func(w http.ResponseWriter, r *http.Request) {
+func Authenticate(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("******************************************************")
 	fmt.Println("FUNCTION CALL: 	 Authenticate ")
 	fmt.Println("******************************************************")
@@ -270,7 +270,7 @@ var Authenticate = func(w http.ResponseWriter, r *http.Request) {
 //
 //	'200':
 //	    description: Returns header with possible operations
-var Verify = func(w http.ResponseWriter, r *http.Request) {
+func VerifyToken(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("******************************************************")
 	fmt.Println("FUNCTION CALL: 	 Verify ")
 	fmt.Println("******************************************************")
@@ -295,7 +295,7 @@ var Verify = func(w http.ResponseWriter, r *http.Request) {
 //	    description: Got all possible users
 //	'500':
 //	    description: Internal server error
-var GetAllAccounts = func(w http.ResponseWriter, r *http.Request) {
+func GetAllAccounts(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("******************************************************")
 	fmt.Println("FUNCTION CALL: 	 GetAllAccount ")
 	fmt.Println("******************************************************")
@@ -340,7 +340,7 @@ var GetAllAccounts = func(w http.ResponseWriter, r *http.Request) {
 //		description: Caller not authorised to delete this user
 //	'500':
 //		description: Internal server error
-var RemoveAccount = func(w http.ResponseWriter, r *http.Request) {
+func RemoveAccount(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("******************************************************")
 	fmt.Println("FUNCTION CALL: 	 RemoveAccount ")
 	fmt.Println("******************************************************")
@@ -410,7 +410,7 @@ var RemoveAccount = func(w http.ResponseWriter, r *http.Request) {
 //		description: Caller not authorised to modify this user
 //	'500':
 //		description: Internal server error
-var ModifyUserRoles = func(w http.ResponseWriter, r *http.Request) {
+func ModifyUserRoles(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("******************************************************")
 	fmt.Println("FUNCTION CALL: 	 ModifyUserRoles ")
 	fmt.Println("******************************************************")
@@ -528,7 +528,7 @@ var ModifyUserRoles = func(w http.ResponseWriter, r *http.Request) {
 //		description: Bad request
 //	'500':
 //		description: Internal server error
-var ModifyUserPassword = func(w http.ResponseWriter, r *http.Request) {
+func ModifyUserPassword(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("******************************************************")
 	fmt.Println("FUNCTION CALL: 	 ModifyUserPassword ")
 	fmt.Println("******************************************************")
@@ -621,7 +621,7 @@ var ModifyUserPassword = func(w http.ResponseWriter, r *http.Request) {
 //		description: Bad request
 //	'500':
 //		description: Internal server error
-var UserForgotPassword = func(w http.ResponseWriter, r *http.Request) {
+func UserForgotPassword(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("******************************************************")
 	fmt.Println("FUNCTION CALL: 	 UserForgotPassword ")
 	fmt.Println("******************************************************")
