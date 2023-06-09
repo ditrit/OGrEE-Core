@@ -1,6 +1,15 @@
 # OGrEE-APP
 A Flutter application for OGrEE. It includes a frontend (ogree_app) mainly compiled as a web app and a backend (ogree_app_backend) only used for Super Admin mode. The flutter app can interact directly with OGrEE-API.
 
+## Quick deploy
+To quickly deploy a frontend and backend in SuperAdmin mode, just execute the launch script appropriate to your OS. This will use docker to compile both components and to run the frontend, the backend will be run locally. 
+```console
+# Windows (use PowerShell)
+.\launch.ps1
+# Linux 
+./launch.sh
+```
+
 ## Frontend
 ```console
 cd ogree_app
