@@ -282,17 +282,15 @@ Placeholder values are assigned to the object upon creation so as to satisfy the
 
 #### Create a Rack
 ```
-+rack:path/to/roomName@[pos]@[size]   
-+rack:path/to/roomName@[pos]@[template]   
-+rk:path/to/roomName@[pos]@[size]   
-+rk:path/to/roomName@[pos]@[template]   
++rack:[path]@[pos]@[unit]@[rotation]@[size]
++rack:[path]@[pos]@[unit]@[rotation]@[template]
++rk:[path]@[pos]@[unit]@[rotation]@[size]
++rk:[path]@[pos]@[unit]@[rotation]@[template] 
 ```
 Placeholder values are assigned to the object upon creation so as to satisfy the object requirements:
 - sizeUnit = "m"
 - height = 0
 - heightUnit = "m"
-- posXYUnit = "t"
-- orientation = "front"
 - domain = Tenant's Name
 
 #### Create a Device
