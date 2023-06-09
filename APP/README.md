@@ -13,6 +13,8 @@ This will launch the webapp on port 8080 and backend on port 8082. To set differ
 ```console
 # Windows (use PowerShell)
 .\launch.ps1 -portWeb XXXX -portBack YYYY
+# Linux 
+./launch.sh -w XXXX -b YYYY
 ```
 
 ## Frontend
