@@ -112,7 +112,7 @@ Since the backend connects to docker to launch containers, it has to be run **lo
 ```
 
 ### Cross compile
-To cross compile, that is, compile to a different OS than the one you are using:
+To cross compile from Linux or Mac (that is, compile to a different OS than the one in use), use the commands bellow. For Windows, user `set` for GOOS and GOARCH before running the go build command.
 ```console
 # Linux 64-bit
 GOOS=linux GOARCH=amd64 go build -o ogree_app_backend_linux
