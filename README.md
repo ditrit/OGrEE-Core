@@ -1,9 +1,16 @@
 # OGrEE-Core
 
-## How to deploy the API
-The prefered way to deploy the API is to use the superadmin interface on OGrEE-APP : see https://github.com/ditrit/OGrEE-Core/tree/main/APP.
+OGrEE-Core assembles 3 essential components of OGrEE, allowing you to create an OGrEE Tenant to store and interact with your datacenter data.
 
-## How to deploy the API without OGrEE-APP
+## Quick Intro
+![ogree-schema](https://github.com/ditrit/OGrEE-Core/assets/37706737/378c6cbe-aea2-4db0-82d6-6c3a18ecc6c5)
+
+An OGrEE Tenant consists of a DB populated with objects of a datacenter (sites, buildings, devices, etc.) that can be accessed through an API. For a user friendly access, a WebAPP can be deployed for each Tenant or a locally installed CLI can be used. Check the [OGrEE-3D](https://github.com/ditrit/OGrEE-3D) repo for the 3D datacenter viewer. To launch and manage a tenant, a WebAPP in "SuperAdmin" version with its backend in Go are available.
+
+## How to deploy an OGrEE Tenant
+The prefered way to deploy the API is to use the superadmin interface. See the [OGrEE-APP documentation](https://github.com/ditrit/OGrEE-Core/tree/main/APP).
+
+## Quickstart to deploy an OGrEE Tenant without OGrEE-APP
 
 Run:
 ```docker compose --project-name <your-project> -f deploy/docker/docker-compose.yml up```
