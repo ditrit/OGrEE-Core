@@ -854,6 +854,21 @@
             "name": "entity",
             "in": "path",
             "required": true
+          },
+          {
+            "description": "specify which object field to show in response. Multiple fieldOnly can be added. An invalid field is simply ignored.",
+            "name": "fieldOnly",
+            "in": "query"
+          },
+          {
+            "description": "filter objects by lastUpdated \u003e= startDate. Format: yyyy-mm-dd",
+            "name": "startDate",
+            "in": "query"
+          },
+          {
+            "description": "filter objects by lastUpdated \u003c= endDate. Format: yyyy-mm-dd",
+            "name": "endDate",
+            "in": "query"
           }
         ],
         "responses": {
@@ -1169,54 +1184,6 @@
             "description": "Nothing Found. An error message will be returned."
           }
         }
-      }
-    },
-    "/api/{entity}/{name}/all": {
-      "get": {
-        "description": "Returns JSON body with all subobjects",
-        "produces": [
-          "application/json"
-        ],
-        "tags": [
-          "objects"
-        ],
-        "summary": "Obtain all objects related to Site or stray-device in the system using name.",
-        "operationId": "GetFromObject",
-        "parameters": [
-          {
-            "type": "int",
-            "default": 999,
-            "description": "Name of Site",
-            "name": "name",
-            "in": "query",
-            "required": true
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Found. A response body will be returned with a meaningful message."
-          },
-          "404": {
-            "description": "Nothing Found. An error message will be returned."
-          }
-        }
-      },
-      "options": {
-        "produces": [
-          "application/json"
-        ],
-        "tags": [
-          "objects"
-        ],
-        "summary": "Displays possible operations for the resource in response header.",
-        "operationId": "GetFromObjectOptions",
-        "parameters": [
-          {
-            "description": "Name of site.",
-            "name": "name",
-            "in": "query"
-          }
-        ]
       }
     },
     "/api/{entity}?": {

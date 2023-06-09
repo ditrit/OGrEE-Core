@@ -562,6 +562,18 @@ func GetEntity(w http.ResponseWriter, r *http.Request) {
 //     required: true
 //     type: string
 //     default: "sites"
+//   - name: fieldOnly
+//     in: query
+//     description: 'specify which object field to show in response.
+//     Multiple fieldOnly can be added. An invalid field is simply ignored.'
+//   - name: startDate
+//     in: query
+//     description: 'filter objects by lastUpdated >= startDate.
+//     Format: yyyy-mm-dd'
+//   - name: endDate
+//     in: query
+//     description: 'filter objects by lastUpdated <= endDate.
+//     Format: yyyy-mm-dd'
 //
 // responses:
 //		'200':
@@ -1363,43 +1375,6 @@ func GetEntityHierarchy(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// swagger:operation GET /api/{entity}/{name}/all objects GetFromObject
-// Obtain all objects related to Site or stray-device in the system using name.
-// Returns JSON body with all subobjects
-// ---
-// produces:
-// - application/json
-// parameters:
-// - name: name
-//   in: query
-//   description: Name of Site
-//   required: true
-//   type: int
-//   default: 999
-// responses:
-//     '200':
-//         description: 'Found. A response body will be returned with
-//         a meaningful message.'
-//     '404':
-//         description: Nothing Found. An error message will be returned.
-
-// swagger:operation OPTIONS /api/{entity}/{name}/all objects GetFromObjectOptions
-// Displays possible operations for the resource in response header.
-// ---
-// produces:
-// - application/json
-// parameters:
-//   - name: name
-//     in: query
-//     description: 'Name of site.'
-//
-// responses:
-//
-//	'200':
-//	    description: 'Found. A response header will be returned with
-//	    possible operation.'
-//	'404':
-//	    description: Nothing Found.
 func GetHierarchyByName(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("******************************************************")
 	fmt.Println("FUNCTION CALL: 	 GetHierarchyByName ")
