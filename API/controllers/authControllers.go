@@ -165,8 +165,6 @@ func randStringBytes(n int) string {
 // Create a new JWT Key. This can also be used to verify credentials
 // The authorize and 'Try it out' buttons don't work
 // ---
-// security:
-// - bearer: []
 // produces:
 // - application/json
 // parameters:
