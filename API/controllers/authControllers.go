@@ -17,51 +17,34 @@ func init() {
 	rand.Seed(time.Now().UnixNano())
 }
 
-// swagger:operation POST /api/users auth Create
-// Generate credentials for a user.
-// Create an account with email credentials, it returns
+// swagger:operation POST /api/users Organization CreateAccount
+// Create a new user user.
+// Create an account with email and password credentials, it returns
 // a JWT key to use with the API.
 // ---
+// security:
+// - bearer: []
 // produces:
 // - application/json
 // parameters:
-//   - name: name
-//     in: json
-//     description: User name
-//     type: string
-//     required: false
-//     default: "John Doe"
-//   - name: email
-//     in: json
-//     description: User Email Address
-//     type: string
+//   - name: body
+//     in: body
+//     description: 'Mandatory: email, password and roles. Optional: name.
+//     Roles is an object with domains as keys and roles as values.
+//     Possible roles: manager, user and viewer'
 //     required: true
-//     default: "user@email.com"
-//   - name: password
-//     in: json
-//     description: User password
-//     required: true
-//     format: password
-//     default: "secret123"
+//     format: object
+//     example: '{"name": "John Doe", "roles": {"*": "manager"}, "email": "user@test.com", "password": "secret123"}'
 //
 // responses:
 //     '201':
-//         description: Authenticated and new account created
+//         description: New account created
 //     '400':
 //         description: Bad request
 //     '403':
 //         description: User not authorised to create an account
 //     '500':
 //         description: Internal server error
-
-// swagger:operation OPTIONS /api/users auth CreateOptions
-// Displays possible operations for the resource in response header.
-// ---
-// produces:
-// - application/json
-// responses:
-//     '200':
-//         description: Returns header with possible operations
 
 func CreateAccount(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("******************************************************")
@@ -98,39 +81,30 @@ func CreateAccount(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// swagger:operation POST /api/users/bulk auth CreateBulk
+// swagger:operation POST /api/users/bulk Organization CreateBulk
 // Create multiples users with one request.
 // ---
+// security:
+// - bearer: []
 // produces:
 // - application/json
 // parameters:
-//   - name: name
-//     in: json
-//     description: User name
-//     type: string
-//     required: false
-//     default: "John Doe"
-//   - name: email
+//   - name: body
 //     in: body
-//     description: User Email Address
-//     type: string
+//     description: 'An array of users. Same mandatory and optional parameters as user apply,
+//     except for password. If not provided, one will be automatically created by the API.'
 //     required: true
-//     default: "user@email.com"
-//   - name: password
-//     in: json
-//     description: User password
-//     required: true
-//     format: password
-//     default: "secret123"
+//     format: object
+//     example: '[{"name": "John Doe", "roles": {"*": "manager"}, "email": "user@test.com"}]'
 //
 // responses:
-//
-//	'200':
-//	    description: Request processed, check response body for results
-//	'400':
-//	    description: Bad request
-//	'500':
-//	    description: Internal server error
+//		'200':
+//			description: Request processed, check response body for results
+//		'400':
+//			description: Bad request
+//		'500':
+//			description: Internal server error
+
 func CreateBulkAccount(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("******************************************************")
 	fmt.Println("FUNCTION CALL: 	 CreateBulkAccount ")
@@ -182,7 +156,7 @@ func randStringBytes(n int) string {
 	return string(b)
 }
 
-// swagger:operation POST /api/login auth Authenticate
+// swagger:operation POST /api/login Authentication Authenticate
 // Generates a new JWT Key for the client.
 // Create a new JWT Key. This can also be used to verify credentials
 // The authorize and 'Try it out' buttons don't work
@@ -190,18 +164,12 @@ func randStringBytes(n int) string {
 // produces:
 // - application/json
 // parameters:
-// - name: username
-//   in: body
-//   description: Your Email Address
-//   type: string
-//   required: true
-//   default: "infiniti@nissan.com"
-// - name: password
-//   in: json
-//   description: Your password
-//   required: true
-//   format: password
-//   default: "secret"
+//   - name: body
+//     in: body
+//     description: 'Mandatory: email and password.'
+//     required: true
+//     format: object
+//     example: '{"email": "user@test.com", "password": "secret123"}'
 // responses:
 //     '200':
 //         description: Authenticated
@@ -210,15 +178,6 @@ func randStringBytes(n int) string {
 //     '500':
 //         description: Internal server error
 
-// swagger:operation OPTIONS /api/login auth CreateOptions
-// Displays possible operations for the resource in response header.
-// ---
-// produces:
-// - application/json
-// responses:
-//
-//	'200':
-//	    description: Returns header with possible operations
 func Authenticate(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("******************************************************")
 	fmt.Println("FUNCTION CALL: 	 Authenticate ")
@@ -248,28 +207,21 @@ func Authenticate(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// swagger:operation GET /api/token/valid auth VerifyToken
-// A custom client specified URL for verifying if their key is valid.
+// swagger:operation GET /api/token/valid Authentication VerifyToken
+// Verify if token sent in the header is valid.
 // ---
+// security:
+// - bearer: []
 // produces:
 // - application/json
 // responses:
 //     '200':
-//         description: Authenticated
-//     '400':
-//         description: Bad request
+//         description: Token is valid.
+//     '403':
+//         description: Unauthorized
 //     '500':
 //         description: Internal server error
 
-// swagger:operation OPTIONS /api/token/valid auth VerifyToken
-// Displays possible operations for the resource in response header.
-// ---
-// produces:
-// - application/json
-// responses:
-//
-//	'200':
-//	    description: Returns header with possible operations
 func VerifyToken(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("******************************************************")
 	fmt.Println("FUNCTION CALL: 	 Verify ")
@@ -284,17 +236,19 @@ func VerifyToken(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// swagger:operation GET /api/users auth GetAllAccounts
+// swagger:operation GET /api/users Organization GetAllAccounts
 // Get a list of users that the caller is allowed to see.
 // ---
+// security:
+// - bearer: []
 // produces:
 // - application/json
 // responses:
-//
-//	'200':
-//	    description: Got all possible users
-//	'500':
-//	    description: Internal server error
+//     '200':
+//          description: Return all possible users
+//     '500':
+//          description: Internal server error
+
 func GetAllAccounts(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("******************************************************")
 	fmt.Println("FUNCTION CALL: 	 GetAllAccount ")
@@ -325,21 +279,30 @@ func GetAllAccounts(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// swagger:operation DELETE /api/users/{id} auth RemoveAccount
+// swagger:operation DELETE /api/users/{userid} Organization RemoveAccount
 // Remove the specified user account.
 // ---
+// security:
+// - bearer: []
 // produces:
 // - application/json
+// parameters:
+// - name: userid
+//   in: path
+//   description: 'The ID of the user to delete'
+//   required: true
+//   type: string
+//   example: "someUserId"
 // responses:
-//
-//	'200':
-//		description: User removed
-//	'400':
-//		description: User ID not valid or not found
-//	'403':
-//		description: Caller not authorised to delete this user
-//	'500':
-//		description: Internal server error
+//		'200':
+//			description: User removed
+//		'400':
+//			description: User ID not valid or not found
+//		'403':
+//			description: Caller not authorised to delete this user
+//		'500':
+//			description: Internal server error
+
 func RemoveAccount(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("******************************************************")
 	fmt.Println("FUNCTION CALL: 	 RemoveAccount ")
@@ -388,28 +351,37 @@ func RemoveAccount(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// swagger:operation PATCH /api/users/{id} auth ModifyUserRoles
+// swagger:operation PATCH /api/users/{userid} Organization ModifyUserRoles
 // Modify user permissions: domain and role.
 // ---
+// security:
+// - bearer: []
 // produces:
 // - application/json
 // parameters:
+//   - name: userid
+//     in: path
+//     description: 'The ID of the user to modify roles'
+//     required: true
+//     type: string
+//     example: "someUserId"
 //   - name: roles
 //     in: body
 //     description: An object with domains as keys and roles as values
 //     type: json
 //     required: true
+//     example: '{"roles": {"*": "manager"}}'
 //
 // responses:
-//
-//	'200':
-//		description: User roles modified
-//	'400':
-//		description: Bad request
-//	'403':
-//		description: Caller not authorised to modify this user
-//	'500':
-//		description: Internal server error
+//		'200':
+//			description: User roles modified
+//		'400':
+//			description: Bad request
+//		'403':
+//			description: Caller not authorised to modify this user
+//		'500':
+//			description: Internal server error
+
 func ModifyUserRoles(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("******************************************************")
 	fmt.Println("FUNCTION CALL: 	 ModifyUserRoles ")
@@ -482,52 +454,54 @@ func ModifyUserRoles(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// swagger:operation POST /api/users/password/change auth ModifyUserPassword
-// For logged in user to change own password.
+// swagger:operation POST /api/users/password/change Authentication ModifyUserPassword
+// For logged in user to change its own password.
 // ---
+// security:
+// - bearer: []
 // produces:
 // - application/json
 // parameters:
-//   - name: currentPassword
+//   - name: body
 //     in: body
-//     description: User current password
-//     type: string
+//     description: 'Mandatory: currentPassword and newPassword.'
+//     type: json
 //     required: true
-//   - name: newPassword
-//     in: body
-//     description: User new desired password
-//     type: string
-//     required: true
+//     example: '{"currentPassword": "myOldPassword", "newPassword": "myNewPassword"}'
 //
 // responses:
-//
-//	'200':
-//		description: Password changed
-//	'400':
-//		description: Bad request
-//	'500':
-//		description: Internal server error
+//		'200':
+//			description: Password changed
+//		'400':
+//			description: Bad request
+//		'500':
+//			description: Internal server error
 
-// swagger:operation POST /api/users/password/reset auth ModifyUserPassword
-// To change password of user that forgot password and received a reset token by email.
+// swagger:operation POST /api/users/password/reset Authentication ResetUserPassword
+// Reset password after forgot.
+// For user that first called forgot enpoint to change its password.
+// A reset token generated by the forgot endpoint should be provided as the Authentication header.
 // ---
+// security:
+// - bearer: []
 // produces:
 // - application/json
 // parameters:
-//   - name: newPassword
+//   - name: body
 //     in: body
-//     description: User new desired password
-//     type: string
+//     description: 'Mandatory: currentPassword and newPassword.'
+//     type: json
 //     required: true
+//     example: '"newPassword": "myNewPassword"}'
 //
 // responses:
-//
-//	'200':
-//		description: Password changed
-//	'400':
-//		description: Bad request
-//	'500':
-//		description: Internal server error
+//		'200':
+//			description: Password changed
+//		'400':
+//			description: Bad request
+//		'500':
+//			description: Internal server error
+
 func ModifyUserPassword(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("******************************************************")
 	fmt.Println("FUNCTION CALL: 	 ModifyUserPassword ")
@@ -601,26 +575,29 @@ func ModifyUserPassword(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// swagger:operation POST /api/users/password/forgot auth UserForgotPassword
-// To request a reset of a user's password (forgot my password).
+// swagger:operation POST /api/users/password/forgot Authentication UserForgotPassword
+// Forgot my password.
+// Public endpoint to request a reset of a user's password (forgot my password).
+// If the email is valid, an email with a reset token/link will be sent to the user.
 // ---
 // produces:
 // - application/json
 // parameters:
-//   - name: email
+//   - name: body
 //     in: body
-//     description: User email
+//     description: 'Mandatory: email.'
 //     type: string
 //     required: true
+//     example: '{"email": "user@test.com"}'
 //
 // responses:
-//
-//	'200':
-//		description: request processed. If account exists, an email with a reset token will be sent to it
-//	'400':
-//		description: Bad request
-//	'500':
-//		description: Internal server error
+//		'200':
+//			description: request processed. If account exists, an email with a reset token is sent
+//		'400':
+//			description: Bad request
+//		'500':
+//			description: Internal server error
+
 func UserForgotPassword(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("******************************************************")
 	fmt.Println("FUNCTION CALL: 	 UserForgotPassword ")

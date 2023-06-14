@@ -252,7 +252,7 @@ func ValidateEntity(entity int, t map[string]interface{}) (bool, *u.Error) {
 					Message: "Domain not found: " + t["domain"].(string)}
 			}
 			if parentDomain, ok := parent["domain"].(string); ok {
-				if !CheckParentDomain(parentDomain, t["domain"].(string)) {
+				if !DomainIsEqualOrChild(parentDomain, t["domain"].(string)) {
 					return false, &u.Error{Type: u.ErrBadFormat,
 						Message: "Object domain is not equal or child of parent's domain"}
 				}
