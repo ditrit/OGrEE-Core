@@ -1,10 +1,36 @@
 package ogreetypes
 
-import "encoding/json"
+import (
+	"encoding/json"
+	"time"
+)
 
 type DeviceOrientation string
 
-type DeviceTemplate = RackTemplate
+type DeviceTemplate struct {
+	Attributes  map[string]string `json:"attributes"`
+	Colors      map[string]Color  `json:"colors,omitempty"`
+	Components  []Component       `json:"components"`
+	CreatedDate *time.Time        `json:"createdDate,omitempty"`
+	LastUpdated *time.Time        `json:"lastUpdated,omitempty"`
+	Description string            `json:"description"`
+	FbxModel    string            `json:"fbxModel"`
+	Id          string            `json:"id,omitempty"`
+	SizeWDHmm   Vector3           `json:"sizeWDHmm"`
+	Slug        Slug              `json:"slug"`
+	Slots       []Component       `json:"slots"`
+}
+
+func (r DeviceTemplate) MarshalJSON() ([]byte, error) {
+	type Alias DeviceTemplate
+	return json.Marshal(struct {
+		category string
+		Alias
+	}{
+		category: "device",
+		Alias:    Alias(r),
+	})
+}
 
 type Device struct {
 	Header
