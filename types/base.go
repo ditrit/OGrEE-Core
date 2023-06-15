@@ -121,11 +121,12 @@ type FloorMetric string
 type Slug string
 
 type Header struct {
-	Description []string   `json:"description"`
-	Domain      string     `json:"domain"`
-	CreatedDate *time.Time `json:"createdDate,omitempty"`
-	LastUpdated *time.Time `json:"lastUpdated,omitempty"`
-	Name        string     `json:"name"`
-	Id          string     `json:"id,omitempty"`
-	ParentId    string     `json:"parentId"`
+	Description   []string   `json:"description"`
+	Domain        string     `json:"domain"`
+	CreatedDate   *time.Time `json:"createdDate,omitempty"`
+	LastUpdated   *time.Time `json:"lastUpdated,omitempty"`
+	Name          string     `json:"name"`
+	HierarchyName string     `json:"hierarchyName"`
+	Id            string     `json:"id,omitempty"`
+	ParentId      string     `json:"parentId"`
 }
