@@ -71,6 +71,10 @@ func (r RoomTemplate) MarshalJSON() ([]byte, error) {
 	})
 }
 
+func (r *RoomTemplate) UnmarshalJSON(data []byte) error {
+	return json.Unmarshal(data, r)
+}
+
 type Room struct {
 	Header
 	FloorUnit   FloorMetric        `json:"floorUnit"`

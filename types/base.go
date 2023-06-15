@@ -1,10 +1,66 @@
 package ogreetypes
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
+	"io"
 	"time"
 )
+
+type Object interface {
+	json.Marshaler
+	json.Unmarshaler
+}
+
+func ParseObject(input io.Reader) (Object, error) {
+	buf := new(bytes.Buffer)
+	buf.ReadFrom(input)
+	inputBytes := buf.Bytes()
+	var genericObj map[string]any
+	err := json.NewDecoder(bytes.NewReader(inputBytes)).Decode(&genericObj)
+	if err != nil {
+		return nil, fmt.Errorf("error during header decoding : %s", err.Error())
+	}
+	category, ok := genericObj["category"].(string)
+	if !ok {
+		return nil, fmt.Errorf("category field is not a string")
+	}
+	var obj Object
+	switch category {
+	case "site":
+		obj = &Site{}
+	case "building":
+		obj = &Building{}
+	case "room":
+		obj = &Room{}
+	case "rack":
+		obj = &Rack{}
+	case "device":
+		obj = &Device{}
+	case "domain":
+		obj = &Domain{}
+	case "stray_device":
+		obj = &Device{}
+	case "room_template":
+		obj = &RoomTemplate{}
+	case "obj_template":
+		obj = &DeviceTemplate{}
+	case "bldg_template":
+		obj = &BuildingTemplate{}
+	case "group":
+		obj = &Group{}
+	case "corridor":
+		obj = &Corridor{}
+	default:
+		return nil, fmt.Errorf("unknown object category")
+	}
+	err = json.NewDecoder(bytes.NewReader(inputBytes)).Decode(obj)
+	if err != nil {
+		return nil, fmt.Errorf("error during object decoding : %s", err.Error())
+	}
+	return obj, nil
+}
 
 type Vector2 struct {
 	X float64

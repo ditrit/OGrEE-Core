@@ -22,6 +22,10 @@ func (b BuildingTemplate) MarshalJSON() ([]byte, error) {
 	})
 }
 
+func (b *BuildingTemplate) UnmarshalJSON(data []byte) error {
+	return json.Unmarshal(data, b)
+}
+
 type Building struct {
 	Header     `json:"-"`
 	Height     float64            `json:"height"`

@@ -32,6 +32,10 @@ func (r DeviceTemplate) MarshalJSON() ([]byte, error) {
 	})
 }
 
+func (d *DeviceTemplate) UnmarshalJSON(data []byte) error {
+	return json.Unmarshal(data, d)
+}
+
 type Device struct {
 	Header
 	FbxModel    string             `json:"fbxModel,omitempty"`
@@ -61,8 +65,14 @@ type DeviceJson struct {
 }
 
 func (d Device) MarshalJSON() ([]byte, error) {
+	var category string
+	if d.Header.ParentId == "" {
+		category = "stray_device"
+	} else {
+		category = "device"
+	}
 	return json.Marshal(DeviceJson{
-		Category: "device",
+		Category: category,
 		Header:   d.Header,
 		Attributes: DeviceJsonAttributes{
 			DeviceAlias: DeviceAlias(d),
