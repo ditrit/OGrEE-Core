@@ -2292,13 +2292,8 @@ func LinkObject(source, destination string, destinationSlot interface{}) {
 				childrenInfArr := x[i]["children"]
 				delete(x[i], "children")
 
-				if x[i]["category"].(string) == "stray-sensor" {
-					ent = "sensor"
-					entInt = SENSOR
-				} else {
-					entInt = DEVICE
-					ent = "device"
-				}
+				entInt = DEVICE
+				ent = "device"
 
 				newObj, _ := PostObj(entInt, ent, x[i])
 
@@ -2999,7 +2994,7 @@ func InformUnity(caller string, entity int, data map[string]interface{}) error {
 	//If unity is available message it
 	//otherwise do nothing
 	if State.UnityClientAvail {
-		if entity > -1 && entity < SENSOR+1 {
+		if entity > -1 && entity <= CORRIDOR {
 			data = GenerateFilteredJson(data)
 		}
 		if State.DebugLvl > INFO {
@@ -3062,11 +3057,11 @@ func LSOBJECTRecursive(x string, entity int) []interface{} {
 	//YouareAt -> obi
 	//want 	   -> entity
 
-	if (entity >= AC && entity <= CORRIDOR) && obi > ROOM {
+	if (entity == CORRIDOR) && obi > ROOM {
 		return nil
 	}
 
-	if entity < AC && obi > entity {
+	if entity < CORRIDOR && obi > entity {
 		return nil
 	}
 
@@ -3088,23 +3083,7 @@ func LSOBJECTRecursive(x string, entity int) []interface{} {
 // Code could be more tidy
 func lsobjHelperRecursive(api, objID string, curr, entity int) []interface{} {
 	var ext, URL string
-	if entity == SENSOR && (curr == BLDG || curr == ROOM || curr == RACK || curr == DEVICE) {
-		ext = EntityToString(curr) + "s/" + objID + "/" + EntityToString(entity) + "s"
-		URL = State.APIURL + "/api/" + ext
-		r, e := models.Send("GET", URL, GetKey(), nil)
-		tmp := ParseResponse(r, e, "getting objects")
-		if tmp == nil {
-			return nil
-		}
-
-		tmpObjs := LoadArrFromResp(tmp, "objects")
-		if tmp == nil {
-			return nil
-		}
-		//res := infArrToMapStrinfArr(tmpObjs)
-		return tmpObjs
-
-	} else if entity-curr >= 2 {
+	if entity-curr >= 2 {
 
 		//println("DEBUG-should be here")
 		ext = EntityToString(curr) + "s/" + objID + "/" + EntityToString(curr+2) + "s"
@@ -3112,7 +3091,7 @@ func lsobjHelperRecursive(api, objID string, curr, entity int) []interface{} {
 		//println("DEBUG-URL:", URL)
 
 		//EDGE CASE, if user is at a BLDG and requests object of room
-		if (curr == BLDG || curr == ROOM) && (entity >= AC && entity <= CORRIDOR) {
+		if (curr == BLDG || curr == ROOM) && (entity == CORRIDOR) {
 			ext = EntityToString(curr) + "s/" + objID + "/" + EntityToString(entity) + "s"
 			r, e := models.Send("GET", State.APIURL+"/api/"+ext, GetKey(), nil)
 			tmp := ParseResponse(r, e, "getting objects")
@@ -3137,7 +3116,7 @@ func lsobjHelperRecursive(api, objID string, curr, entity int) []interface{} {
 		if objs != nil {
 			x := []interface{}{}
 
-			if entity >= AC && entity <= CORRIDOR {
+			if entity == CORRIDOR {
 
 				for q := range objs {
 					id := objs[q].(map[string]interface{})["id"].(string)
@@ -3185,7 +3164,7 @@ func lsobjHelperRecursive(api, objID string, curr, entity int) []interface{} {
 		if objs != nil {
 			ans := []interface{}{}
 			//For associated objects of room
-			if entity >= AC && entity <= CORRIDOR {
+			if entity == CORRIDOR {
 				for i := range objs {
 					ext2 := "/api/" + EntityToString(curr) + "s/" +
 						objs[i].(map[string]interface{})["id"].(string) +

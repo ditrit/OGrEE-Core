@@ -15,11 +15,7 @@ const (
 	ROOM
 	RACK
 	DEVICE
-	AC
-	PWRPNL
-	CABINET
 	CORRIDOR
-	SENSOR
 	ROOMTMPL
 	OBJTMPL
 	BLDGTMPL
@@ -177,23 +173,6 @@ func MapStrayString(x string) string {
 	return "INVALID-MAP"
 }
 
-func MapStrayInt(x int) int {
-	if x == DEVICE {
-		return STRAY_DEV
-	}
-	if x == SENSOR {
-		return STRAYSENSOR
-	}
-
-	if x == STRAY_DEV {
-		return DEVICE
-	}
-	if x == STRAYSENSOR {
-		return SENSOR
-	}
-	return -1
-}
-
 func EntityToString(entity int) string {
 	switch entity {
 	case DOMAIN:
@@ -208,10 +187,6 @@ func EntityToString(entity int) string {
 		return "rack"
 	case DEVICE:
 		return "device"
-	case AC:
-		return "ac"
-	case PWRPNL:
-		return "panel"
 	case STRAY_DEV:
 		return "stray_device"
 	case ROOMTMPL:
@@ -220,14 +195,10 @@ func EntityToString(entity int) string {
 		return "obj_template"
 	case BLDGTMPL:
 		return "bldg_template"
-	case CABINET:
-		return "cabinet"
 	case GROUP:
 		return "group"
 	case CORRIDOR:
 		return "corridor"
-	case SENSOR:
-		return "sensor"
 	default:
 		return "INVALID"
 	}
@@ -247,10 +218,6 @@ func EntityStrToInt(entity string) int {
 		return RACK
 	case "device", "dv":
 		return DEVICE
-	case "ac":
-		return AC
-	case "panel", "pn":
-		return PWRPNL
 	case "stray_device":
 		return STRAY_DEV
 	case "room_template":
@@ -259,14 +226,10 @@ func EntityStrToInt(entity string) int {
 		return OBJTMPL
 	case "bldg_template":
 		return BLDGTMPL
-	case "cabinet", "cb":
-		return CABINET
 	case "group", "gr":
 		return GROUP
 	case "corridor", "co":
 		return CORRIDOR
-	case "sensor", "sr":
-		return SENSOR
 	default:
 		return -1
 	}
@@ -284,24 +247,16 @@ func GetParentOfEntity(ent int) int {
 		return ent - 1
 	case DEVICE:
 		return ent - 1
-	case AC:
-		return ROOM
-	case PWRPNL:
-		return ROOM
 	case ROOMTMPL:
 		return -1
 	case BLDGTMPL:
 		return -1
 	case OBJTMPL:
 		return -1
-	case CABINET:
-		return ROOM
 	case GROUP:
 		return -1
 	case CORRIDOR:
 		return ROOM
-	case SENSOR:
-		return -2
 	default:
 		return -3
 	}
