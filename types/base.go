@@ -4,62 +4,65 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"io"
 	"time"
 )
 
-type Object interface {
-	json.Marshaler
-	json.Unmarshaler
+type Entity struct {
+	Category      string           `json:"category"`
+	Description   []string         `json:"description"`
+	Domain        string           `json:"domain"`
+	CreatedDate   *time.Time       `json:"createdDate,omitempty"`
+	LastUpdated   *time.Time       `json:"lastUpdated,omitempty"`
+	Name          string           `json:"name"`
+	HierarchyName string           `json:"hierarchyName"`
+	Id            string           `json:"id,omitempty"`
+	ParentId      string           `json:"parentId"`
+	Attributes    EntityAttributes `json:"attributes"`
 }
 
-func ParseObject(input io.Reader) (Object, error) {
-	buf := new(bytes.Buffer)
-	buf.ReadFrom(input)
-	inputBytes := buf.Bytes()
-	var genericObj map[string]any
-	err := json.NewDecoder(bytes.NewReader(inputBytes)).Decode(&genericObj)
+type EntityAttributes interface{}
+
+func (entity *Entity) UnmarshalJSON(data []byte) error {
+	type EntityAlias Entity
+	var tempEntity EntityAlias
+	err := json.NewDecoder(bytes.NewReader(data)).Decode(&tempEntity)
 	if err != nil {
-		return nil, fmt.Errorf("error during header decoding : %s", err.Error())
+		return fmt.Errorf("error during header decoding : %s", err.Error())
 	}
-	category, ok := genericObj["category"].(string)
-	if !ok {
-		return nil, fmt.Errorf("category field is not a string")
-	}
-	var obj Object
-	switch category {
+	switch tempEntity.Category {
 	case "site":
-		obj = &Site{}
+		tempEntity.Attributes = &SiteAttributes{}
 	case "building":
-		obj = &Building{}
+		tempEntity.Attributes = &BuildingAttributes{}
 	case "room":
-		obj = &Room{}
+		tempEntity.Attributes = &RoomAttributes{}
 	case "rack":
-		obj = &Rack{}
+		tempEntity.Attributes = &RackAttributes{}
 	case "device":
-		obj = &Device{}
+		tempEntity.Attributes = &DeviceAttributes{}
 	case "domain":
-		obj = &Domain{}
+		tempEntity.Attributes = &DomainAttributes{}
 	case "stray_device":
-		obj = &Device{}
+		tempEntity.Attributes = &DeviceAttributes{}
 	case "room_template":
-		obj = &RoomTemplate{}
+		tempEntity.Attributes = &RoomTemplateAttributes{}
 	case "obj_template":
-		obj = &DeviceTemplate{}
+		tempEntity.Attributes = &DeviceTemplateAttributes{}
 	case "bldg_template":
-		obj = &BuildingTemplate{}
+		tempEntity.Attributes = &BuildingTemplateAttributes{}
 	case "group":
-		obj = &Group{}
+		tempEntity.Attributes = &GroupAttributes{}
 	case "corridor":
-		obj = &Corridor{}
+		tempEntity.Attributes = &CorridorAttributes{}
 	default:
-		return nil, fmt.Errorf("unknown object category")
+		return fmt.Errorf("unknown object category")
 	}
-	err = json.NewDecoder(bytes.NewReader(inputBytes)).Decode(obj)
+	err = json.NewDecoder(bytes.NewReader(data)).Decode(&tempEntity)
 	if err != nil {
-		return nil, fmt.Errorf("error during object decoding : %s", err.Error())
+		return fmt.Errorf("error during object decoding : %s", err.Error())
 	}
-	return obj, nil
+	*entity = Entity(tempEntity)
+	return nil
 }
 
 type Vector2 struct {
@@ -119,14 +122,3 @@ type Color string
 type MetricImperialUnit string
 type FloorMetric string
 type Slug string
-
-type Header struct {
-	Description   []string   `json:"description"`
-	Domain        string     `json:"domain"`
-	CreatedDate   *time.Time `json:"createdDate,omitempty"`
-	LastUpdated   *time.Time `json:"lastUpdated,omitempty"`
-	Name          string     `json:"name"`
-	HierarchyName string     `json:"hierarchyName"`
-	Id            string     `json:"id,omitempty"`
-	ParentId      string     `json:"parentId"`
-}

@@ -7,7 +7,7 @@ import (
 
 type DeviceOrientation string
 
-type DeviceTemplate struct {
+type DeviceTemplateAttributes struct {
 	Attributes  map[string]string `json:"attributes"`
 	Colors      map[string]Color  `json:"colors,omitempty"`
 	Components  []Component       `json:"components"`
@@ -21,23 +21,7 @@ type DeviceTemplate struct {
 	Slots       []Component       `json:"slots"`
 }
 
-func (r DeviceTemplate) MarshalJSON() ([]byte, error) {
-	type Alias DeviceTemplate
-	return json.Marshal(struct {
-		category string
-		Alias
-	}{
-		category: "device",
-		Alias:    Alias(r),
-	})
-}
-
-func (d *DeviceTemplate) UnmarshalJSON(data []byte) error {
-	return json.Unmarshal(data, d)
-}
-
-type Device struct {
-	Header
+type DeviceAttributes struct {
 	FbxModel    string             `json:"fbxModel,omitempty"`
 	Height      float64            `json:"height"`
 	HeightUnit  RackUnit           `json:"heightUnit"`
@@ -51,43 +35,26 @@ type Device struct {
 	SizeU       *int               `json:"sizeU,omitempty"`
 }
 
-type DeviceAlias Device
+type DeviceAttributesAlias DeviceAttributes
 
-type DeviceJsonAttributes struct {
-	DeviceAlias
+type DeviceAttributesJson struct {
+	DeviceAttributesAlias
 	SizeAux Vector2Wrapper `json:"size"`
 }
 
-type DeviceJson struct {
-	Category string `json:"category"`
-	Header
-	Attributes DeviceJsonAttributes `json:"attributes"`
-}
-
-func (d Device) MarshalJSON() ([]byte, error) {
-	var category string
-	if d.Header.ParentId == "" {
-		category = "stray_device"
-	} else {
-		category = "device"
-	}
-	return json.Marshal(DeviceJson{
-		Category: category,
-		Header:   d.Header,
-		Attributes: DeviceJsonAttributes{
-			DeviceAlias: DeviceAlias(d),
-			SizeAux:     Vector2Wrapper{d.Size},
-		},
+func (d DeviceAttributes) MarshalJSON() ([]byte, error) {
+	return json.Marshal(DeviceAttributesJson{
+		DeviceAttributesAlias: DeviceAttributesAlias(d),
+		SizeAux:               Vector2Wrapper{d.Size},
 	})
 }
 
-func (d *Device) UnmarshalJSON(data []byte) error {
-	var djson DeviceJson
+func (d *DeviceAttributes) UnmarshalJSON(data []byte) error {
+	var djson DeviceAttributesJson
 	if err := json.Unmarshal(data, &djson); err != nil {
 		return err
 	}
-	*d = Device(djson.Attributes.DeviceAlias)
-	d.Header = djson.Header
-	d.Size = djson.Attributes.SizeAux.v
+	*d = DeviceAttributes(djson.DeviceAttributesAlias)
+	d.Size = djson.SizeAux.v
 	return nil
 }

@@ -1,22 +1,13 @@
 package ogreetypes
 
 import (
-	"bytes"
 	"encoding/json"
 	"reflect"
 	"testing"
 )
 
 func TestBuilding(t *testing.T) {
-	b := Building{
-		Header: Header{
-			Description: []string{"test"},
-			CreatedDate: nil,
-			LastUpdated: nil,
-			Name:        "test",
-			Id:          "",
-			ParentId:    "test",
-		},
+	b := BuildingAttributes{
 		Height: 0.1,
 		PosXY:  Vector2{X: 0.1, Y: 0.2},
 		Size:   Vector2{X: 0.1, Y: 0.2},
@@ -25,7 +16,7 @@ func TestBuilding(t *testing.T) {
 	if err != nil {
 		t.Errorf(err.Error())
 	}
-	var bback Building
+	var bback BuildingAttributes
 	err = json.Unmarshal(bBytes, &bback)
 	if err != nil {
 		t.Errorf(err.Error())
@@ -36,22 +27,14 @@ func TestBuilding(t *testing.T) {
 }
 
 func TestGroup(t *testing.T) {
-	g := Group{
-		Header: Header{
-			Description: []string{"test"},
-			CreatedDate: nil,
-			LastUpdated: nil,
-			Name:        "test",
-			Id:          "",
-			ParentId:    "test",
-		},
+	g := GroupAttributes{
 		Content: "test",
 	}
 	gBytes, err := json.MarshalIndent(g, "", "  ")
 	if err != nil {
 		t.Errorf(err.Error())
 	}
-	var gback Group
+	var gback GroupAttributes
 	err = json.Unmarshal(gBytes, &gback)
 	if err != nil {
 		t.Errorf(err.Error())
@@ -61,32 +44,31 @@ func TestGroup(t *testing.T) {
 	}
 }
 
-func TestParseObject(t *testing.T) {
-	g := Group{
-		Header: Header{
-			Description: []string{"test"},
-			CreatedDate: nil,
-			LastUpdated: nil,
-			Name:        "test",
-			Id:          "",
-			ParentId:    "test",
+func TestEntity(t *testing.T) {
+	entity := Entity{
+		Category:    "group",
+		Description: []string{"test"},
+		CreatedDate: nil,
+		LastUpdated: nil,
+		Name:        "test",
+		Id:          "",
+		ParentId:    "test",
+		Attributes: &GroupAttributes{
+			Content: "test",
 		},
-		Content: "test",
 	}
-	gBytes, err := json.MarshalIndent(g, "", "  ")
+	entityBytes, err := json.MarshalIndent(&entity, "", "  ")
 	if err != nil {
 		t.Errorf(err.Error())
 	}
-	obj, err := ParseObject(bytes.NewReader(gBytes))
+	var entityBack Entity
+	err = json.Unmarshal(entityBytes, &entityBack)
+
 	if err != nil {
 		t.Errorf(err.Error())
 		return
 	}
-	gback, ok := obj.(*Group)
-	if !ok {
-		t.Errorf("cannot parse marshalled object")
-	}
-	if !reflect.DeepEqual(&g, gback) {
+	if !reflect.DeepEqual(entity, entityBack) {
 		t.Errorf("unmarshalled object does not match original object")
 	}
 }

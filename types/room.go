@@ -41,7 +41,7 @@ type Tile struct {
 	Texture  string `json:"texture"`
 }
 
-type RoomTemplate struct {
+type RoomTemplateAttributes struct {
 	Center          *Vector2         `json:"center,omitempty"`
 	Colors          map[string]Color `json:"colors,omitempty"`
 	CreatedDate     *time.Time       `json:"createdDate,omitempty"`
@@ -60,23 +60,7 @@ type RoomTemplate struct {
 	Vertices        []Vector2        `json:"vertices,omitempty"`
 }
 
-func (r RoomTemplate) MarshalJSON() ([]byte, error) {
-	type Alias RoomTemplate
-	return json.Marshal(struct {
-		category string
-		Alias
-	}{
-		category: "room",
-		Alias:    Alias(r),
-	})
-}
-
-func (r *RoomTemplate) UnmarshalJSON(data []byte) error {
-	return json.Unmarshal(data, r)
-}
-
-type Room struct {
-	Header
+type RoomAttributes struct {
 	FloorUnit   FloorMetric        `json:"floorUnit"`
 	Height      float64            `json:"height"`
 	HeightUnit  MetricImperialUnit `json:"heightUnit"`
@@ -89,40 +73,29 @@ type Room struct {
 	Template    string             `json:"template,omitempty"`
 }
 
-type RoomAlias Room
+type RoomAttributesAlias RoomAttributes
 
-type RoomJsonAttributes struct {
-	RoomAlias
+type RoomAttributesJson struct {
+	RoomAttributesAlias
 	PosXYAux Vector2Wrapper `json:"posXY"`
 	SizeAux  Vector2Wrapper `json:"size"`
 }
 
-type RoomJson struct {
-	Category string `json:"category"`
-	Header
-	Attributes RoomJsonAttributes `json:"attributes"`
-}
-
-func (r Room) MarshalJSON() ([]byte, error) {
-	return json.Marshal(RoomJson{
-		Category: "room",
-		Header:   r.Header,
-		Attributes: RoomJsonAttributes{
-			RoomAlias: RoomAlias(r),
-			PosXYAux:  Vector2Wrapper{r.PosXY},
-			SizeAux:   Vector2Wrapper{r.Size},
-		},
+func (r RoomAttributes) MarshalJSON() ([]byte, error) {
+	return json.Marshal(RoomAttributesJson{
+		RoomAttributesAlias: RoomAttributesAlias(r),
+		PosXYAux:            Vector2Wrapper{r.PosXY},
+		SizeAux:             Vector2Wrapper{r.Size},
 	})
 }
 
-func (r *Room) UnmarshalJSON(data []byte) error {
-	var rjson RoomJson
+func (r *RoomAttributes) UnmarshalJSON(data []byte) error {
+	var rjson RoomAttributesJson
 	if err := json.Unmarshal(data, &rjson); err != nil {
 		return err
 	}
-	*r = Room(rjson.Attributes.RoomAlias)
-	r.Header = rjson.Header
-	r.PosXY = rjson.Attributes.PosXYAux.v
-	r.Size = rjson.Attributes.SizeAux.v
+	*r = RoomAttributes(rjson.RoomAttributesAlias)
+	r.PosXY = rjson.PosXYAux.v
+	r.Size = rjson.SizeAux.v
 	return nil
 }

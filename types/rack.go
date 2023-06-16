@@ -9,7 +9,7 @@ type RackOrientation string
 type RackUnit string
 type LabelPosition string
 
-type RackTemplate struct {
+type RackTemplateAttributes struct {
 	Attributes  map[string]string `json:"attributes"`
 	Colors      map[string]Color  `json:"colors,omitempty"`
 	Components  []Component       `json:"components"`
@@ -23,19 +23,7 @@ type RackTemplate struct {
 	Slots       []Component       `json:"slots"`
 }
 
-func (r RackTemplate) MarshalJSON() ([]byte, error) {
-	type Alias RackTemplate
-	return json.Marshal(struct {
-		category string
-		Alias
-	}{
-		category: "rack",
-		Alias:    Alias(r),
-	})
-}
-
-type Rack struct {
-	Header
+type RackAttributes struct {
 	Height      float64            `json:"height"`
 	HeightUnit  RackUnit           `json:"heightUnit"`
 	Orientation RackOrientation    `json:"orientation"`
@@ -46,40 +34,29 @@ type Rack struct {
 	Template    string             `json:"template"`
 }
 
-type RackAlias Rack
+type RackAttributesAlias RackAttributes
 
-type RackJsonAttributes struct {
-	RackAlias
+type RackAttributesJson struct {
+	RackAttributesAlias
 	PosXYZAux Vector3Wrapper `json:"posXYZ"`
 	SizeAux   Vector2Wrapper `json:"size"`
 }
 
-type RackJson struct {
-	Category string `json:"category"`
-	Header
-	Attributes RackJsonAttributes `json:"attributes"`
-}
-
-func (r Rack) MarshalJSON() ([]byte, error) {
-	return json.Marshal(RackJson{
-		Category: "rack",
-		Header:   r.Header,
-		Attributes: RackJsonAttributes{
-			RackAlias: RackAlias(r),
-			PosXYZAux: Vector3Wrapper{r.PosXYZ},
-			SizeAux:   Vector2Wrapper{r.Size},
-		},
+func (r RackAttributes) MarshalJSON() ([]byte, error) {
+	return json.Marshal(RackAttributesJson{
+		RackAttributesAlias: RackAttributesAlias(r),
+		PosXYZAux:           Vector3Wrapper{r.PosXYZ},
+		SizeAux:             Vector2Wrapper{r.Size},
 	})
 }
 
-func (r *Rack) UnmarshalJSON(data []byte) error {
-	var rjson RackJson
+func (r *RackAttributes) UnmarshalJSON(data []byte) error {
+	var rjson RackAttributesJson
 	if err := json.Unmarshal(data, &rjson); err != nil {
 		return err
 	}
-	*r = Rack(rjson.Attributes.RackAlias)
-	r.Header = rjson.Header
-	r.PosXYZ = rjson.Attributes.PosXYZAux.v
-	r.Size = rjson.Attributes.SizeAux.v
+	*r = RackAttributes(rjson.RackAttributesAlias)
+	r.PosXYZ = rjson.PosXYZAux.v
+	r.Size = rjson.SizeAux.v
 	return nil
 }
