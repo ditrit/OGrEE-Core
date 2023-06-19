@@ -1640,28 +1640,6 @@ func (a *assignNode) execute() (interface{}, error) {
 	return nil, fmt.Errorf("Invalid type to assign variable %s", a.variable)
 }
 
-// Checks the map and sees if it is an object type
-func checkIfObjectNode(x map[string]interface{}) bool {
-	if idInf, ok := x["id"]; ok {
-		if id, ok := idInf.(string); ok {
-			if len(id) == 24 {
-				if catInf, ok := x["category"]; ok {
-					if _, ok := catInf.(string); ok {
-						return true
-					}
-				}
-
-				if slugInf, ok := x["slug"]; ok {
-					if _, ok := slugInf.(string); ok {
-						return true
-					}
-				}
-			}
-		}
-	}
-	return false
-}
-
 // Hack function for the [room]:areas=[r1,r2,r3,r4]@[t1,t2,t3,t4]
 // command
 func parseAreas(areas map[string]interface{}) (map[string]interface{}, error) {
