@@ -11,6 +11,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"net/http"
 	"net/url"
 	"os"
 	"path/filepath"
@@ -368,11 +369,7 @@ func Login(user string) (*User, string, error) {
 	if err = json.Unmarshal(bodyBytes, &resp); err != nil {
 		return nil, "", fmt.Errorf("error parsing response : %s", err.Error())
 	}
-	status, ok := resp["status"].(bool)
-	if !ok {
-		return nil, "", fmt.Errorf("invalid response from API")
-	}
-	if !status {
+	if rawResp.StatusCode != http.StatusOK {
 		return nil, "", fmt.Errorf(resp["message"].(string))
 	}
 	account, accountOk := (resp["account"].(map[string]interface{}))
