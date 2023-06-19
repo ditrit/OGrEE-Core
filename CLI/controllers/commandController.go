@@ -2214,7 +2214,6 @@ func LinkObject(source, destination string, destinationSlot interface{}) {
 
 	var e error
 	sdev["category"] = "device"
-	DeleteAttr(sdev, "hierarchyName")
 	sdev, e = PostObj(DEVICE, "device", sdev)
 	if sdev == nil {
 		println(e.Error())
@@ -2249,7 +2248,6 @@ func LinkObject(source, destination string, destinationSlot interface{}) {
 				//'children' attribute is present.
 				tmpChildren := x[i]["children"]
 				DeleteAttr(x[i], "children")
-				DeleteAttr(x[i], "hierarchyName")
 				res := ValidateObj(x[i], ent, true)
 				if res == false {
 					return false, x[i]
@@ -2381,7 +2379,6 @@ func fn(x []map[string]interface{}, pid interface{}, entity string, ent int) {
 			} else {
 				entStr = entity
 			}
-			DeleteAttr(x[i], "hierarchyName")
 
 			newObj, _ := PostObj(ent, entStr, x[i])
 
@@ -2452,7 +2449,6 @@ func UnlinkObject(source, destination string) {
 	if parent == nil || len(parent) == 0 {
 		DeleteAttr(dev, "parentId")
 	}
-	DeleteAttr(dev, "hierarchyName")
 
 	newDev, _ := PostObj(STRAY_DEV, "stray-device", dev)
 	if newDev == nil {
