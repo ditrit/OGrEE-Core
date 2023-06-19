@@ -1536,9 +1536,6 @@ func GetEntitiesUsingNamesOfParents(w http.ResponseWriter, r *http.Request) {
 			u.Respond(w, u.RespDataWrapper("successfully got object",
 				map[string]interface{}{"objects": data}))
 		}
-
-		resp["data"] = map[string]interface{}{"objects": data}
-		u.Respond(w, resp)
 	} else { //We are only retrieving an entity
 		var data map[string]interface{}
 		var e3 *u.Error
