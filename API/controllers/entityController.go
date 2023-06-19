@@ -1445,7 +1445,6 @@ func GetEntitiesUsingNamesOfParents(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("******************************************************")
 	DispRequestMetaData(r)
 	entity := mux.Vars(r)["entity"]
-	var resp map[string]interface{}
 
 	//If template or stray convert '-' -> '_'
 	entity = strings.Replace(entity, "-", "_", 1)
