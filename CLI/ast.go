@@ -443,50 +443,6 @@ func (n *searchObjectsNode) execute() (interface{}, error) {
 	return v, nil
 }
 
-// TODO: Need to restore recursive updates or to remove it
-// entirely
-type recursiveUpdateObjNode struct {
-	arg0 interface{}
-	arg1 interface{}
-	arg2 interface{}
-}
-
-func (n *recursiveUpdateObjNode) execute() (interface{}, error) {
-	//Old code was removed since
-	//it broke the OCLI syntax easy update
-	if _, ok := n.arg2.(bool); ok {
-		//Weird edge case
-		//to solve issue with:
-		// for i in $(ls) do $i[attr]="string"
-
-		//n.arg0 = referenceToNode
-		//n.arg1 = attributeString, (used as an index)
-		//n.arg2 = someValue (usually a string)
-		nodeVal, err := n.arg0.(node).execute()
-		if err != nil {
-			return nil, err
-		}
-		objMap := nodeVal.(map[string]interface{})
-
-		if checkIfObjectNode(objMap) == true {
-			val, err := n.arg2.(node).execute()
-			if err != nil {
-				return nil, err
-			}
-			updateArgs := map[string]interface{}{n.arg1.(string): val}
-			id := objMap["id"].(string)
-			entity := objMap["category"].(string)
-			cmd.RecursivePatch("", id, entity, updateArgs)
-		}
-
-	} else {
-		if n.arg2.(string) == "recursive" {
-			cmd.RecursivePatch(n.arg0.(string), "", "", n.arg1.(map[string]interface{}))
-		}
-	}
-	return nil, nil
-}
-
 func setRoomAreas(path string, values []any) (map[string]any, error) {
 	if len(values) != 2 {
 		return nil, fmt.Errorf("2 values (reserved, technical) expected to set room areas")
