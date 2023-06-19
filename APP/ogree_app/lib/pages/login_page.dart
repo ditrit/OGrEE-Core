@@ -260,14 +260,14 @@ class _LoginPageState extends State<LoginPage> {
       _formKey.currentState!.save();
       loginAPI(_email!, _password!, userUrl: _apiUrl)
           .then((value) => value.first != ""
-              ? Navigator.of(context).push(
-                  MaterialPageRoute(
-                    builder: (context) => ProjectsPage(
-                      userEmail: value.first,
-                      isTenantMode: value[1] == "true",
+              ? fetchApiTenantName().then((_) => Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (context) => ProjectsPage(
+                        userEmail: value.first,
+                        isTenantMode: value[1] == "true",
+                      ),
                     ),
-                  ),
-                )
+                  ))
               : showSnackBar(
                   context, AppLocalizations.of(context)!.invalidLogin,
                   isError: true))

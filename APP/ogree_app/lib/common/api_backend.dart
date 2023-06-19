@@ -13,6 +13,7 @@ part 'api_tenant.dart';
 
 String apiUrl = "";
 String tenantUrl = "";
+String tenantName = "";
 var token = "";
 var tenantToken = "";
 getHeader(token) => {
@@ -43,6 +44,22 @@ Future<List<String>> loginAPI(String email, String password,
   }
 }
 
+Future<bool> fetchApiTenantName({http.Client? client}) async {
+  print("API get TenantName");
+  client ??= http.Client();
+  Uri url = Uri.parse('$apiUrl/api/version');
+  final response = await client.get(url, headers: getHeader(token));
+  print(response.statusCode);
+  if (response.statusCode == 200) {
+    Map<String, dynamic> data = json.decode(response.body);
+    data = (Map<String, dynamic>.from(data["data"]));
+    tenantName = data["Customer"];
+    print(tenantName);
+    return true;
+  }
+  return false;
+}
+
 Future<String> changeUserPassword(String currentPassword, newPassword) async {
   print("API change password");
   Uri url = Uri.parse('$apiUrl/api/users/password/change');
@@ -52,11 +69,10 @@ Future<String> changeUserPassword(String currentPassword, newPassword) async {
         'newPassword': newPassword
       }),
       headers: getHeader(token));
-  print(response);
+  print(response.statusCode);
   if (response.statusCode == 200) {
     Map<String, dynamic> data = json.decode(response.body);
     token = data["token"]!;
-    print(token);
     return "";
   } else {
     Map<String, dynamic> data = json.decode(response.body);
@@ -76,10 +92,9 @@ Future<String> userForgotPassword(String email, {String userUrl = ""}) async {
     url,
     body: json.encode(<String, dynamic>{'email': email}),
   );
-  print(response.body);
+  print(response.statusCode);
   if (response.statusCode == 200) {
     Map<String, dynamic> data = json.decode(response.body);
-    print(data);
     return "";
   } else {
     Map<String, dynamic> data = json.decode(response.body);
@@ -101,7 +116,6 @@ Future<String> userResetPassword(String password, String resetToken,
     body: json.encode(<String, dynamic>{'newPassword': password}),
     headers: getHeader(resetToken),
   );
-  print(response.body);
   if (response.statusCode == 200) {
     Map<String, dynamic> data = json.decode(response.body);
     print(data);
