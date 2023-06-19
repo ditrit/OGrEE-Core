@@ -49,6 +49,27 @@ type RequestFilters struct {
 	Limit        string   `schema:"limit"`
 }
 
+// Error definitions
+type ErrType int
+
+const (
+	ErrUnauthorized ErrType = iota
+	ErrForbidden
+	ErrDuplicate
+	ErrBadFormat
+	ErrInvalidValue
+	ErrDBError
+	ErrInternal
+	ErrNotFound
+	WarnShouldChangePass
+)
+
+type Error struct {
+	Type    ErrType
+	Message string
+	Details []string
+}
+
 func GetBuildDate() string {
 	return BuildTime
 }
@@ -69,12 +90,26 @@ func Connect() (context.Context, context.CancelFunc) {
 	return context.WithTimeout(context.Background(), 30*time.Second)
 }
 
-func Message(status bool, message string) map[string]interface{} {
-	return map[string]interface{}{"status": status, "message": message}
+func Message(message string) map[string]interface{} {
+	return map[string]interface{}{"message": message}
+}
+
+func RespDataWrapper(message string, data map[string]interface{}) map[string]interface{} {
+	return map[string]interface{}{"message": message, "data": data}
 }
 
 func Respond(w http.ResponseWriter, data map[string]interface{}) {
 	json.NewEncoder(w).Encode(data)
+	w.Header().Add("Content-Type", "application/json")
+}
+
+func RespondWithError(w http.ResponseWriter, err *Error) {
+	errMap := map[string]interface{}{"message": err.Message}
+	if len(err.Details) > 0 {
+		errMap["errors"] = err.Details
+	}
+	w.WriteHeader(ErrTypeToStatusCode(err.Type))
+	json.NewEncoder(w).Encode(errMap)
 	w.Header().Add("Content-Type", "application/json")
 }
 
@@ -124,6 +159,22 @@ func ParamsParse(link *url.URL, objType int) map[string]interface{} {
 		}
 	}
 	return values
+}
+
+func ErrTypeToStatusCode(errType ErrType) int {
+	switch errType {
+	case ErrForbidden:
+		return http.StatusForbidden
+	case ErrUnauthorized:
+		return http.StatusUnauthorized
+	case ErrDuplicate, ErrBadFormat:
+		return http.StatusBadRequest
+	case ErrDBError, ErrInternal:
+		return http.StatusInternalServerError
+	case ErrNotFound:
+		return http.StatusNotFound
+	}
+	return http.StatusInternalServerError
 }
 
 func EntityToString(entity int) string {

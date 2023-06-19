@@ -22,9 +22,9 @@ func TestValidateJsonSchemaExamples(t *testing.T) {
 			t.Error(e.Error())
 		}
 		json.Unmarshal(data, &obj) // only one example per schema
-		resp, ok := validateJsonSchema(entInt, obj["examples"].([]interface{})[0].(map[string]interface{}))
+		ok, err := validateJsonSchema(entInt, obj["examples"].([]interface{})[0].(map[string]interface{}))
 		if !ok {
-			t.Errorf("Error validating json schema: %s", resp)
+			t.Errorf("Error validating json schema: %s", err.Message)
 		}
 	}
 }
@@ -52,9 +52,9 @@ func TestValidateJsonSchema(t *testing.T) {
 		}
 
 		println("*** Testing " + testObjName)
-		resp, ok := validateJsonSchema(entInt, testObj)
+		ok, err := validateJsonSchema(entInt, testObj)
 		if !ok {
-			t.Errorf("Error validating json schema: %s", resp)
+			t.Errorf("Error validating json schema: %s", err.Message)
 		}
 	}
 }
@@ -125,15 +125,15 @@ func TestErrorValidateJsonSchema(t *testing.T) {
 		}
 
 		println("*** Testing " + testObjName)
-		resp, ok := validateJsonSchema(entInt, testObj)
+		ok, err := validateJsonSchema(entInt, testObj)
 		if ok {
 			t.Errorf("Validated json schema that should have these errors: %v", expectedErrors[testObjName])
 		} else {
-			if len(resp["errors"].([]string)) != len(expectedErrors[testObjName]) {
-				t.Errorf("Validation errors do not correspond expected errors:\n%v\nGot:\n%v", expectedErrors[testObjName], resp["errors"].([]string))
+			if len(err.Details) != len(expectedErrors[testObjName]) {
+				t.Errorf("Validation errors do not correspond expected errors:\n%v\nGot:\n%v", expectedErrors[testObjName], err.Details)
 			} else {
 				for _, expected := range expectedErrors[testObjName] {
-					if !contains(resp["errors"].([]string), expected) {
+					if !contains(err.Details, expected) {
 						t.Errorf("Validation errors do not correspond expected errors\n")
 					}
 				}
