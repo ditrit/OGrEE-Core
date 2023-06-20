@@ -7,7 +7,7 @@ WORKDIR /home
 
 RUN apt install git
 
-COPY API/go.mod API/go.mod /home/
+COPY API/go.mod API/go.sum /home/
 RUN go mod download
 
 COPY API/ .git* /home/
