@@ -457,7 +457,7 @@ func GetStats() map[string]interface{} {
 	latestDocArr := []map[string]interface{}{}
 	var latestTime interface{}
 
-	for i := 0; i <= u.STRAYSENSOR; i++ {
+	for i := 0; i <= u.BLDGTMPL; i++ {
 		num := GetEntityCount(i)
 		if num == -1 {
 			num = 0
@@ -539,7 +539,7 @@ func DeleteEntityByName(entity string, name string, userRoles map[string]Role) *
 		return err
 	} else {
 		// Delete possible children
-		rangeEntities := getChildrenCollections(u.STRAYSENSOR, entity)
+		rangeEntities := getChildrenCollections(u.GROUP, entity)
 		for _, childEnt := range rangeEntities {
 			childEntName := u.EntityToString(childEnt)
 			pattern := primitive.Regex{Pattern: name, Options: ""}
@@ -626,7 +626,7 @@ func deleteHelper(t map[string]interface{}, ent int) *u.Error {
 		//Delete hierarchy under stray-device
 		if ent == u.STRAYDEV {
 			ctx, cancel := u.Connect()
-			entity := u.EntityToString(u.STRAYSENSOR)
+			entity := u.EntityToString(u.STRAYDEV)
 			GetDB().Collection(entity).DeleteMany(ctx, bson.M{"parentId": t["id"].(primitive.ObjectID).Hex()})
 			defer cancel()
 		}
@@ -854,13 +854,11 @@ func GetEntityHierarchy(ID primitive.ObjectID, req bson.M, ent string, start, en
 					children = append(children, roomEnts...)
 				}
 			}
-			for i := u.PWRPNL; i < u.SENSOR+1; i++ {
-				roomEnts, _ := GetManyEntities(u.EntityToString(i), bson.M{"parentId": pid}, filters, userRoles)
-				if roomEnts != nil {
-					children = append(children, roomEnts...)
-				}
+			roomEnts, _ := GetManyEntities(u.EntityToString(u.PWRPNL), bson.M{"parentId": pid}, filters, userRoles)
+			if roomEnts != nil {
+				children = append(children, roomEnts...)
 			}
-			roomEnts, _ := GetManyEntities(u.EntityToString(u.CORRIDOR), bson.M{"parentId": pid}, filters, userRoles)
+			roomEnts, _ = GetManyEntities(u.EntityToString(u.CORRIDOR), bson.M{"parentId": pid}, filters, userRoles)
 			if roomEnts != nil {
 				children = append(children, roomEnts...)
 			}

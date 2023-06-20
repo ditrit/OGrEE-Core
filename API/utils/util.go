@@ -20,7 +20,11 @@ var BuildTime string
 var GitCommitDate string
 
 const (
-	SITE = iota
+	DOMAIN = iota
+	// hierarchal root objects
+	STRAYDEV
+	SITE
+	// hierarchal objects with mandatory parent
 	BLDG
 	ROOM
 	RACK
@@ -29,14 +33,11 @@ const (
 	CABINET
 	CORRIDOR
 	PWRPNL
-	SENSOR
 	GROUP
+	// non hierarchal templates
 	ROOMTMPL
 	OBJTMPL
 	BLDGTMPL
-	STRAYDEV
-	DOMAIN
-	STRAYSENSOR
 )
 
 const HN_DELIMETER = "."  // hierarchyName path delimiter
@@ -197,8 +198,6 @@ func EntityToString(entity int) string {
 		return "domain"
 	case STRAYDEV:
 		return "stray_device"
-	case STRAYSENSOR:
-		return "stray_sensor"
 	case ROOMTMPL:
 		return "room_template"
 	case OBJTMPL:
@@ -211,8 +210,6 @@ func EntityToString(entity int) string {
 		return "group"
 	case CORRIDOR:
 		return "corridor"
-	case SENSOR:
-		return "sensor"
 	default:
 		return "INVALID"
 	}
@@ -238,8 +235,6 @@ func EntityStrToInt(entity string) int {
 		return DOMAIN
 	case "stray_device":
 		return STRAYDEV
-	case "stray_sensor":
-		return STRAYSENSOR
 	case "room_template":
 		return ROOMTMPL
 	case "obj_template":
@@ -252,8 +247,6 @@ func EntityStrToInt(entity string) int {
 		return GROUP
 	case "corridor":
 		return CORRIDOR
-	case "sensor":
-		return SENSOR
 	default:
 		return -1
 	}
@@ -286,8 +279,6 @@ func GetParentOfEntityByInt(entity int) int {
 		return DOMAIN
 	case AC, PWRPNL, CABINET, CORRIDOR:
 		return ROOM
-	case SENSOR:
-		return -2
 	case ROOMTMPL, OBJTMPL, BLDGTMPL, GROUP, STRAYDEV:
 		return -1
 	default:

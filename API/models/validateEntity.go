@@ -88,7 +88,7 @@ func validateParent(ent string, entNum int, t map[string]interface{}) (map[strin
 		return nil, &u.Error{Type: u.ErrInvalidValue,
 			Message: "ParentID should correspond to Existing ID"}
 
-	case u.SENSOR, u.GROUP:
+	case u.GROUP:
 		w, _ := GetEntity(req, "device", u.RequestFilters{}, nil)
 		if w != nil {
 			parent["parent"] = "device"
@@ -124,7 +124,7 @@ func validateParent(ent string, entNum int, t map[string]interface{}) (map[strin
 		return nil, &u.Error{Type: u.ErrInvalidValue,
 			Message: "ParentID should correspond to Existing ID"}
 
-	case u.STRAYDEV, u.STRAYSENSOR:
+	case u.STRAYDEV:
 		if t["parentId"] != nil && t["parentId"] != "" {
 			if pid, ok := t["parentId"].(string); ok {
 				ID, _ := primitive.ObjectIDFromHex(pid)
@@ -179,7 +179,7 @@ func validateJsonSchema(entity int, t map[string]interface{}) (bool, *u.Error) {
 	switch entity {
 	case u.AC, u.CABINET, u.PWRPNL:
 		schemaName = "base_schema.json"
-	case u.STRAYDEV, u.STRAYSENSOR:
+	case u.STRAYDEV:
 		schemaName = "stray_schema.json"
 	default:
 		schemaName = u.EntityToString(entity) + "_schema.json"
@@ -240,10 +240,10 @@ func ValidateEntity(entity int, t map[string]interface{}) (bool, *u.Error) {
 		if err != nil {
 			return false, err
 		} else if parent["hierarchyName"] != nil {
-			t["hierarchyName"] = parent["hierarchyName"].(string) +
+			t["_id"] = parent["hierarchyName"].(string) +
 				u.HN_DELIMETER + t["name"].(string)
 		} else {
-			t["hierarchyName"] = t["name"].(string)
+			t["_id"] = t["name"].(string)
 		}
 		//Check domain
 		if entity != u.DOMAIN {
