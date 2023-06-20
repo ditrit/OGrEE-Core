@@ -121,25 +121,15 @@ func Router(jwt func(next http.Handler) http.Handler) *mux.Router {
 		controllers.DeleteProject).Methods("DELETE", "OPTIONS")
 
 	// ------ GET ------ //
-	router.HandleFunc("/api/objects/{name}",
+	router.HandleFunc("/api/objects/{id}",
 		controllers.GetGenericObject).Methods("GET", "HEAD", "OPTIONS")
 
 	//GET ENTITY HIERARCHY
-	//This matches ranged Site Hierarchy
-	router.NewRoute().PathPrefix("/api/{entity}s/{id:[a-zA-Z0-9]{24}}/all").
-		MatcherFunc(hmatch).HandlerFunc(controllers.GetEntityHierarchy).Methods("GET", "HEAD", "OPTIONS")
-
-	router.NewRoute().PathPrefix("/api/{entity}s/{name}/all").
+	router.NewRoute().PathPrefix("/api/{entity}s/{id}/all").
 		MatcherFunc(hnmatch).HandlerFunc(controllers.GetHierarchyByName).Methods("GET", "HEAD", "OPTIONS")
 
-	//GET EXCEPTIONS
-	router.HandleFunc("/api/{ancestor:site}s/{id:[a-zA-Z0-9]{24}}/{sub:room}s",
-		controllers.GetEntitiesOfAncestor).Methods("GET", "HEAD", "OPTIONS")
-
-	router.HandleFunc("/api/{ancestor:building}s/{id:[a-zA-Z0-9]{24}}/{sub:ac|corridor|cabinet|panel|sensor|group|rack}s",
-		controllers.GetEntitiesOfAncestor).Methods("GET", "HEAD", "OPTIONS")
-
-	router.HandleFunc("/api/{ancestor:room}s/{id:[a-zA-Z0-9]{24}}/{sub:device}s",
+	//GET SUBENT
+	router.HandleFunc("/api/{ancestor:site|building|room|rack}s/{id}/{sub:building|room|ac|corridor|cabinet|panel|group|rack|device}s",
 		controllers.GetEntitiesOfAncestor).Methods("GET", "HEAD", "OPTIONS")
 
 	// GET BY QUERY
@@ -147,10 +137,7 @@ func Router(jwt func(next http.Handler) http.Handler) *mux.Router {
 		HandlerFunc(controllers.GetEntityByQuery).Methods("HEAD", "GET")
 
 	//GET ENTITY
-	router.HandleFunc("/api/{entity}s/{id:[a-zA-Z0-9]{24}}",
-		controllers.GetEntity).Methods("GET", "HEAD", "OPTIONS")
-
-	router.HandleFunc("/api/{entity}s/{name}",
+	router.HandleFunc("/api/{entity}s/{id}",
 		controllers.GetEntity).Methods("GET", "HEAD", "OPTIONS")
 
 	//GET BY NAME OF PARENT
@@ -173,10 +160,7 @@ func Router(jwt func(next http.Handler) http.Handler) *mux.Router {
 		controllers.CreateBulkDomain).Methods("POST")
 
 	//DELETE ENTITY
-	router.HandleFunc("/api/{entity}s/{id:[a-zA-Z0-9]{24}}",
-		controllers.DeleteEntity).Methods("DELETE")
-
-	router.HandleFunc("/api/{entity}s/{name}",
+	router.HandleFunc("/api/{entity}s/{id}",
 		controllers.DeleteEntity).Methods("DELETE")
 
 	// UPDATE ENTITY

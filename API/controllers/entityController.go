@@ -113,31 +113,14 @@ func CreateEntity(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("******************************************************")
 	DispRequestMetaData(r)
 
-	object := map[string]interface{}{}
-	err := json.NewDecoder(r.Body).Decode(&object)
-
+	// Get entity
 	entStr, _ := mux.Vars(r)["entity"]
-
-	// Get user roles for permissions
-	user := getUserFromToken(w, r)
-	if user == nil {
-		return
-	}
-
-	if err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		u.Respond(w, u.Message("Error while decoding request body"))
-		u.ErrLog("Error while decoding request body", "CREATE "+entStr, "", r)
-		return
-	}
-
-	//If creating templates, format them
+	// If creating templates, format them
 	entStr = strings.Replace(entStr, "-", "_", 1)
-
 	entInt := u.EntityStrToInt(entStr)
 	println("ENT: ", entStr)
 
-	//Prevents Mongo from creating a new unidentified collection
+	// Prevents Mongo from creating a new unidentified collection
 	if entInt < 0 {
 		w.WriteHeader(http.StatusBadRequest)
 		u.Respond(w, u.Message("Invalid entity in URL: '"+mux.Vars(r)["entity"]+"' Please provide a valid object"))
@@ -145,8 +128,24 @@ func CreateEntity(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Get request body
+	object := map[string]interface{}{}
+	err := json.NewDecoder(r.Body).Decode(&object)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		u.Respond(w, u.Message("Error while decoding request body"))
+		u.ErrLog("Error while decoding request body", "CREATE "+entStr, "", r)
+		return
+	}
+
+	// Get user roles for permissions
+	user := getUserFromToken(w, r)
+	if user == nil {
+		return
+	}
+
 	//Check if category and endpoint match, except for templates and strays
-	if entInt < u.ROOMTMPL {
+	if entInt < u.ROOMTMPL && entInt != u.STRAYDEV {
 		if object["category"] != entStr {
 			w.WriteHeader(http.StatusBadRequest)
 			u.Respond(w, u.Message("Category in request body does not correspond with desired object in endpoint"))
@@ -156,8 +155,9 @@ func CreateEntity(w http.ResponseWriter, r *http.Request) {
 	}
 
 	//Clean the data of 'id' attribute if present
-	delete(object, "id")
+	delete(object, "_id")
 
+	// Try create and respond
 	resp, e := models.CreateEntity(entInt, object, user.Roles)
 	if e != nil {
 		u.ErrLog("Error creating "+entStr, "CREATE", e.Message, r)
@@ -344,22 +344,24 @@ func GetGenericObject(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	name, e := mux.Vars(r)["name"]
+	// Get object
+	hierarchyName, e := mux.Vars(r)["id"]
 	filters := getFiltersFromQueryParams(r)
 	if e {
-		data, err = models.GetObjectByName(name, filters, user.Roles)
+		data, err = models.GetObjectByName(hierarchyName, filters, user.Roles)
 	} else {
 		u.Respond(w, u.Message("Error while parsing path parameters"))
 		u.ErrLog("Error while parsing path parameters", "GET ENTITY", "", r)
 		return
 	}
 
+	// Respond
 	if r.Method == "OPTIONS" && data != nil {
 		w.Header().Add("Content-Type", "application/json")
 		w.Header().Add("Allow", "GET, DELETE, OPTIONS, PATCH, PUT")
 	} else {
 		if err != nil {
-			u.ErrLog("Error while getting "+name, "GET GENERIC", err.Message, r)
+			u.ErrLog("Error while getting "+hierarchyName, "GET GENERIC", err.Message, r)
 			u.RespondWithError(w, err)
 		} else {
 			u.Respond(w, u.RespDataWrapper("successfully got object", data))
@@ -430,51 +432,30 @@ func GetEntity(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	//Get entity type and strip trailing 'entityStr'
+	// Get entity type and filters
 	entityStr := mux.Vars(r)["entity"]
 	filters := getFiltersFromQueryParams(r)
 
-	//If templates, format them
+	// If templates, format them
 	entityStr = strings.Replace(entityStr, "-", "_", 1)
 
-	//GET By ID
+	// Get entity
 	if id, canParse = mux.Vars(r)["id"]; canParse {
-		objId, e := getObjID(id)
-		if e != nil {
-			u.Respond(w, u.Message("Error while converting ID to ObjectID"))
-			u.ErrLog("Error while converting ID to ObjectID", "GET ENTITY", "", r)
-			return
-		}
-
-		//Prevents API from creating a new unidentified collection
-		if i := u.EntityStrToInt(entityStr); i < 0 {
-			w.WriteHeader(http.StatusNotFound)
-			u.Respond(w, u.Message("Invalid object in URL: '"+mux.Vars(r)["entity"]+"' Please provide a valid object"))
-			u.ErrLog("Cannot get invalid object", "GET "+mux.Vars(r)["entity"], "", r)
-			return
-		}
-
-		req := bson.M{"_id": objId}
-		data, modelErr = models.GetEntity(req, entityStr, filters, user.Roles)
-
-	} else if id, canParse = mux.Vars(r)["name"]; canParse { //GET By String
-		if strings.Contains(entityStr, "template") { //GET By Slug (template)
-			req := bson.M{"slug": id}
-			data, modelErr = models.GetEntity(req, entityStr, filters, user.Roles)
+		var req primitive.M
+		if strings.Contains(entityStr, "template") { //Get by slug (template)
+			req = bson.M{"slug": id}
 		} else {
-			println(id)
-			req := bson.M{"hierarchyName": id}
-			data, modelErr = models.GetEntity(req, entityStr, filters, user.Roles) // GET By hierarchyName
+			req = bson.M{"_id": id}
 		}
-	}
-
-	if !canParse {
+		data, modelErr = models.GetEntity(req, entityStr, filters, user.Roles)
+	} else {
 		w.WriteHeader(http.StatusBadRequest)
 		u.Respond(w, u.Message("Error while parsing path parameters"))
 		u.ErrLog("Error while parsing path parameters", "GET ENTITY", "", r)
 		return
 	}
 
+	// Respond
 	if r.Method == "OPTIONS" && data != nil {
 		w.Header().Add("Content-Type", "application/json")
 		w.Header().Add("Allow", "GET, DELETE, OPTIONS, PATCH, PUT")
@@ -487,7 +468,6 @@ func GetEntity(w http.ResponseWriter, r *http.Request) {
 			u.Respond(w, u.RespDataWrapper("successfully got "+entityStr, data))
 		}
 	}
-
 }
 
 // swagger:operation GET /api/{entity} Objects GetAllEntities
@@ -541,24 +521,26 @@ func GetAllEntities(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Get entity
 	entStr = mux.Vars(r)["entity"]
 	println("ENTSTR: ", entStr)
-
-	//If templates, format them
+	// If templates, format them
 	entStr = strings.Replace(entStr, "-", "_", 1)
 
-	//Prevents Mongo from creating a new unidentified collection
+	// Check if entity is valid
 	if i := u.EntityStrToInt(entStr); i < 0 {
 		w.WriteHeader(http.StatusNotFound)
-		u.Respond(w, u.Message("Invalid object in URL: '"+mux.Vars(r)["entity"]+
-			"' Please provide a valid object"))
-		u.ErrLog("Cannot get invalid object", "GET "+mux.Vars(r)["entity"], "", r)
+		u.Respond(w, u.Message("Invalid entity in URL: '"+mux.Vars(r)["entity"]+
+			"' Please provide a valid entity"))
+		u.ErrLog("Cannot get invalid entity", "GET "+mux.Vars(r)["entity"], "", r)
 		return
 	}
 
+	// Get entities
 	req := bson.M{}
 	data, e := models.GetManyEntities(entStr, req, u.RequestFilters{}, user.Roles)
 
+	// Respond
 	if e != nil {
 		u.ErrLog("Error while getting "+entStr+"s", "GET ALL "+strings.ToUpper(entStr),
 			e.Message, r)
@@ -567,7 +549,6 @@ func GetAllEntities(w http.ResponseWriter, r *http.Request) {
 		u.Respond(w, u.RespDataWrapper("successfully got "+entStr+"s",
 			map[string]interface{}{"objects": data}))
 	}
-
 }
 
 // swagger:operation DELETE /api/{entity}/{IdOrHierarchyName} Objects DeleteObject
@@ -608,22 +589,18 @@ func DeleteEntity(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("******************************************************")
 	DispRequestMetaData(r)
 
-	id, e := mux.Vars(r)["id"]
-	name, e2 := mux.Vars(r)["name"]
-
 	// Get user roles for permissions
 	user := getUserFromToken(w, r)
 	if user == nil {
 		return
 	}
 
-	//Get entity from URL
+	// Get entity from URL
 	entity := mux.Vars(r)["entity"]
-
-	//If templates, format them
+	// If templates, format them
 	entity = strings.Replace(entity, "-", "_", 1)
 
-	//Prevents Mongo from creating a new unidentified collection
+	// Check unidentified collection
 	if u.EntityStrToInt(entity) < 0 {
 		w.WriteHeader(http.StatusBadRequest)
 		u.Respond(w, u.Message("Invalid object in URL: '"+mux.Vars(r)["entity"]+
@@ -632,50 +609,27 @@ func DeleteEntity(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var modelErr *u.Error
-	switch {
-	case e2 && !e: // DELETE by name
-		if strings.Contains(entity, "template") {
-			modelErr = models.DeleteSingleEntity(entity, bson.M{"slug": name})
-		} else {
-			//use hierarchyName
-			modelErr = models.DeleteEntityByName(entity, name, user.Roles)
-		}
-
-	case e && !e2: // DELETE by id
-		objID, err := primitive.ObjectIDFromHex(id)
-		if err != nil {
-			w.WriteHeader(http.StatusBadRequest)
-			u.Respond(w, u.Message("Error while converting ID to ObjectID"))
-			u.ErrLog("Error while converting ID to ObjectID", "DELETE ENTITY", "", r)
-			return
-		}
-
-		req, ok := models.GetRequestFilterByDomain(user.Roles)
-		if !ok {
-			modelErr = &u.Error{Type: u.ErrUnauthorized,
-				Message: "User does not have permission to delete"}
-		} else {
-			if entity == "device" {
-				_, modelErr = models.DeleteDeviceF(objID, req)
-			} else {
-				modelErr = models.DeleteEntity(entity, objID, req)
-			}
-		}
-
-	default:
+	// Check id and try delete
+	id := mux.Vars(r)["id"]
+	if id == "" {
 		w.WriteHeader(http.StatusBadRequest)
 		u.Respond(w, u.Message("Error while parsing path parameters"))
 		u.ErrLog("Error while parsing path parameters", "DELETE ENTITY", "", r)
-		return
-	}
-
-	if modelErr != nil {
-		u.ErrLog("Error while deleting entity", "DELETE ENTITY", modelErr.Message, r)
-		u.RespondWithError(w, modelErr)
 	} else {
-		w.WriteHeader(http.StatusNoContent)
-		u.Respond(w, u.Message("successfully deleted"))
+		var modelErr *u.Error
+		if strings.Contains(entity, "template") {
+			modelErr = models.DeleteSingleEntity(entity, bson.M{"slug": id})
+		} else {
+			modelErr = models.DeleteEntity(entity, id, user.Roles)
+		}
+
+		if modelErr != nil {
+			u.ErrLog("Error while deleting entity", "DELETE ENTITY", modelErr.Message, r)
+			u.RespondWithError(w, modelErr)
+		} else {
+			w.WriteHeader(http.StatusNoContent)
+			u.Respond(w, u.Message("successfully deleted"))
+		}
 	}
 }
 
@@ -769,15 +723,15 @@ func UpdateEntity(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	updateData := map[string]interface{}{}
-	id, e := mux.Vars(r)["id"]
-	name, e2 := mux.Vars(r)["name"]
+	// Patch or put
 	isPatch := false
 	if r.Method == "PATCH" {
 		isPatch = true
 	}
 	println(r.Method)
 
+	// Get request body
+	updateData := map[string]interface{}{}
 	err := json.NewDecoder(r.Body).Decode(&updateData)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
@@ -788,11 +742,10 @@ func UpdateEntity(w http.ResponseWriter, r *http.Request) {
 
 	//Get entity from URL
 	entity = mux.Vars(r)["entity"]
-
 	//If templates, format them
 	entity = strings.Replace(entity, "-", "_", 1)
 
-	//Prevents Mongo from creating a new unidentified collection
+	// Check unidentified collection
 	if u.EntityStrToInt(entity) < 0 {
 		w.WriteHeader(http.StatusNotFound)
 		u.Respond(w, u.Message("Invalid object in URL: '"+mux.Vars(r)["entity"]+"' Please provide a valid object"))
@@ -800,40 +753,26 @@ func UpdateEntity(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	switch {
-	case e2: // Update with slug/hierarchyName
-		var req bson.M
-		if strings.Contains(entity, "template") {
-			req = bson.M{"slug": name}
-		} else {
-			req = bson.M{"hierarchyName": name}
-		}
-
-		data, modelErr = models.UpdateEntity(entity, req, updateData, isPatch, user.Roles)
-
-	case e: // Update with id
-		objID, err := primitive.ObjectIDFromHex(id)
-		if err != nil {
-			w.WriteHeader(http.StatusBadRequest)
-			u.Respond(w, u.Message("Error while converting ID to ObjectID"))
-			u.ErrLog("Error while converting ID to ObjectID", "UPDATE ENTITY", "", r)
-			return
-		}
-
-		req := bson.M{"_id": objID}
-		data, modelErr = models.UpdateEntity(entity, req, updateData, isPatch, user.Roles)
-
-	default:
+	// Check id and try update
+	id := mux.Vars(r)["id"]
+	if id == "" {
 		w.WriteHeader(http.StatusBadRequest)
 		u.Respond(w, u.Message("Error while extracting from path parameters"))
 		u.ErrLog("Error while extracting from path parameters", "UPDATE ENTITY", "", r)
-		return
-	}
-
-	if modelErr != nil {
-		u.RespondWithError(w, modelErr)
 	} else {
-		u.Respond(w, u.RespDataWrapper("successfully updated "+entity, data))
+		var req bson.M
+		if strings.Contains(entity, "template") {
+			req = bson.M{"slug": id}
+		} else {
+			req = bson.M{"_id": id}
+		}
+
+		data, modelErr = models.UpdateEntity(entity, req, updateData, isPatch, user.Roles)
+		if modelErr != nil {
+			u.RespondWithError(w, modelErr)
+		} else {
+			u.Respond(w, u.RespDataWrapper("successfully updated "+entity, data))
+		}
 	}
 }
 
@@ -902,17 +841,18 @@ func GetEntityByQuery(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Get entity
 	entStr = r.URL.Path[5 : len(r.URL.Path)-1]
-	filters := getFiltersFromQueryParams(r)
-
 	//If templates, format them
 	entStr = strings.Replace(entStr, "-", "_", 1)
 
+	// Get query params
+	filters := getFiltersFromQueryParams(r)
 	query := u.ParamsParse(r.URL, u.EntityStrToInt(entStr))
 	js, _ := json.Marshal(query)
 	json.Unmarshal(js, &bsonMap)
 
-	//Prevents Mongo from creating a new unidentified collection
+	// Check unidentified collection
 	if u.EntityStrToInt(entStr) < 0 {
 		w.WriteHeader(http.StatusNotFound)
 		u.Respond(w, u.Message("Invalid object in URL: '"+entStr+"' Please provide a valid object"))
@@ -958,7 +898,15 @@ func GetTempUnit(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("FUNCTION CALL: 	 GetTempUnit ")
 	fmt.Println("******************************************************")
 
-	data, err := models.GetSiteParentTempUnit(mux.Vars(r)["id"])
+	// Check id
+	id := mux.Vars(r)["id"]
+	if id == "" {
+		w.WriteHeader(http.StatusBadRequest)
+		u.Respond(w, u.Message("Error while extracting id from URL"))
+	}
+
+	// Try get tempUnit and respond
+	data, err := models.GetSiteParentTempUnit(id)
 	if err != nil {
 		u.RespondWithError(w, err)
 	} else {
@@ -1018,10 +966,6 @@ func GetEntitiesOfAncestor(w http.ResponseWriter, r *http.Request) {
 	DispRequestMetaData(r)
 	var id string
 	var e bool
-	//Extract string between /api and /{id}
-	entStr := mux.Vars(r)["ancestor"]
-	entStr = entStr[:len(entStr)-1] // remove s
-	enum := u.EntityStrToInt(entStr)
 
 	// Get user roles for permissions
 	user := getUserFromToken(w, r)
@@ -1029,20 +973,27 @@ func GetEntitiesOfAncestor(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	//Prevents Mongo from creating a new unidentified collection
-	if enum < 0 {
+	// Get entities
+	entStr := mux.Vars(r)["ancestor"]
+	subEnt := mux.Vars(r)["sub"]
+	entInt := u.EntityStrToInt(entStr)
+	subInt := u.EntityStrToInt(subEnt)
+
+	// Check unidentified collection
+	if entInt < 0 || subInt < 0 {
 		w.WriteHeader(http.StatusNotFound)
 		u.Respond(w, u.Message("Invalid object in URL: '"+entStr+"' Please provide a valid object"))
 		u.ErrLog("Cannot get invalid object", "GET CHILDRENOFPARENT"+entStr, "", r)
 		return
+	} else if entInt >= subInt {
+		w.WriteHeader(http.StatusBadRequest)
+		u.Respond(w, u.Message("Invalid set of entities in URL: first entity should be parent of the second entity"))
+		u.ErrLog("Invalid set of entities", "GET CHILDRENOFPARENT"+entStr, "", r)
+		return
 	}
 
-	if enum == u.SITE {
-		id, e = mux.Vars(r)["site_name"]
-	} else {
-		id, e = mux.Vars(r)["id"]
-	}
-
+	// Get id from URL
+	id, e = mux.Vars(r)["id"]
 	if !e {
 		w.WriteHeader(http.StatusBadRequest)
 		u.Respond(w, u.Message("Error while parsing path parameters"))
@@ -1050,11 +1001,7 @@ func GetEntitiesOfAncestor(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	//Could be: "ac", "panel", "corridor", "cabinet", "sensor"
-	indicator := mux.Vars(r)["sub"]
-
-	req := bson.M{}
-	data, modelErr := models.GetEntitiesOfAncestor(id, req, enum, entStr, indicator)
+	data, modelErr := models.GetEntitiesOfAncestor(id, entStr, subEnt, user.Roles)
 	if modelErr != nil {
 		u.ErrLog("Error while getting children of "+entStr,
 			"GET CHILDRENOFPARENT", modelErr.Message, r)
@@ -1119,88 +1066,6 @@ func GetEntitiesOfAncestor(w http.ResponseWriter, r *http.Request) {
 //     '404':
 //         description: Nothing Found. An error message will be returned.
 
-func GetEntityHierarchy(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("******************************************************")
-	fmt.Println("FUNCTION CALL: 	 GetEntityHierarchy ")
-	fmt.Println("******************************************************")
-	DispRequestMetaData(r)
-	entity := mux.Vars(r)["entity"]
-	var limit int
-	var end int
-	var data map[string]interface{}
-	var modelErr *u.Error
-
-	// Get user roles for permissions
-	user := getUserFromToken(w, r)
-	if user == nil {
-		return
-	}
-
-	req := bson.M{}
-
-	//If template or stray convert '-' -> '_'
-	entity = strings.Replace(entity, "-", "_", 1)
-
-	id, e := mux.Vars(r)["id"]
-	if !e {
-		u.Respond(w, u.Message("Error while parsing path parameters"))
-		u.ErrLog("Error while parsing path parameters", "GET ENTITYHIERARCHY", "", r)
-		return
-	}
-
-	//Check if the request is a ranged hierarchy
-	filters := getFiltersFromQueryParams(r)
-	if len(filters.Limit) > 0 { //limit={number} was provided
-		end, _ = strconv.Atoi(filters.Limit)
-		limit = u.EntityStrToInt(entity) + end
-		if end == 0 {
-			// It's a GetEntity, treat it here
-			objID, _ := primitive.ObjectIDFromHex(id)
-			newReq := req
-			newReq["_id"] = objID
-			data, modelErr := models.GetEntity(newReq, entity, filters, user.Roles)
-			if modelErr != nil {
-				u.ErrLog("Error while getting "+entity, "GET "+entity, modelErr.Message, r)
-				u.RespondWithError(w, modelErr)
-			} else {
-				u.Respond(w, u.RespDataWrapper("successfully got object",
-					map[string]interface{}{"data": data}))
-			}
-			return
-		}
-	} else {
-		//arbitrarily set value to 999
-		limit = 999
-	}
-
-	println("The limit is: ", limit)
-	oID, _ := getObjID(id)
-	entNum := u.EntityStrToInt(entity)
-	println("EntNum:", entNum)
-
-	// Prevents Mongo from creating a new unidentified collection
-	if entNum < 0 {
-		w.WriteHeader(http.StatusNotFound)
-		u.Respond(w, u.Message("Invalid object in URL:"+entity+" Please provide a valid object"))
-		u.ErrLog("Cannot get invalid object", "GET ENTITYHIERARCHY "+entity, "", r)
-		return
-	}
-
-	// Get hierarchy
-	println("Entity: ", entity, " & OID: ", oID.Hex())
-	data, modelErr = models.GetEntityHierarchy(oID, req, entity, entNum, limit, filters, user.Roles)
-
-	if modelErr != nil {
-		u.ErrLog("Error while getting "+entity, "GET "+entity, modelErr.Message, r)
-		u.RespondWithError(w, modelErr)
-	} else if r.Method == "OPTIONS" {
-		w.Header().Add("Content-Type", "application/json")
-		w.Header().Add("Allow", "GET, OPTIONS")
-	} else {
-		u.Respond(w, u.RespDataWrapper("successfully got object", data))
-	}
-}
-
 func GetHierarchyByName(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("******************************************************")
 	fmt.Println("FUNCTION CALL: 	 GetHierarchyByName ")
@@ -1214,18 +1079,12 @@ func GetHierarchyByName(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	name, e := mux.Vars(r)["name"]
-	if !e {
-		w.WriteHeader(http.StatusBadRequest)
-		u.Respond(w, u.Message("Error while parsing name"))
-		u.ErrLog("Error while parsing path parameters", "GetHierarchyByName", "", r)
-		return
-	}
-
+	// Get id and entity
+	id, e := mux.Vars(r)["id"]
 	entity, e2 := mux.Vars(r)["entity"]
-	if !e2 {
+	if !e || !e2 {
 		w.WriteHeader(http.StatusBadRequest)
-		u.Respond(w, u.Message("Error while parsing entity"))
+		u.Respond(w, u.Message("Error while parsing URL"))
 		u.ErrLog("Error while parsing path parameters", "GetHierarchyByName", "", r)
 		return
 	}
@@ -1244,9 +1103,9 @@ func GetHierarchyByName(w http.ResponseWriter, r *http.Request) {
 
 	println("The limit is: ", limit)
 
-	data, e1 := models.GetEntity(bson.M{"hierarchyName": name}, entity, filters, user.Roles)
+	data, e1 := models.GetEntity(bson.M{"_id": id}, entity, filters, user.Roles)
 	if limit >= 1 && e1 == nil {
-		data["children"], e1 = models.GetHierarchyByName(entity, name, limit, filters)
+		data["children"], e1 = models.GetHierarchyByName(entity, id, limit, filters)
 	}
 
 	if data == nil {

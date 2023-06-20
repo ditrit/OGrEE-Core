@@ -56,15 +56,7 @@ func validateParent(ent string, entNum int, t map[string]interface{}) (map[strin
 		}
 		return nil, &u.Error{Type: u.ErrBadFormat, Message: "ParentID is not valid"}
 	}
-	objID, err := primitive.ObjectIDFromHex(t["parentId"].(string))
-	var req primitive.M
-	if err == nil {
-		// parentId given with ID
-		req = bson.M{"_id": objID}
-	} else {
-		// parentId given with hierarchyName
-		req = bson.M{"hierarchyName": t["parentId"].(string)}
-	}
+	req := bson.M{"_id": t["parentId"].(string)}
 
 	parent := map[string]interface{}{"parent": ""}
 	switch entNum {
@@ -73,7 +65,7 @@ func validateParent(ent string, entNum int, t map[string]interface{}) (map[strin
 		if x != nil {
 			parent["parent"] = "rack"
 			parent["domain"] = x["domain"]
-			parent["hierarchyName"] = getHierarchyName(x)
+			parent["id"] = x["id"]
 			return parent, nil
 		}
 
@@ -81,7 +73,7 @@ func validateParent(ent string, entNum int, t map[string]interface{}) (map[strin
 		if y != nil {
 			parent["parent"] = "device"
 			parent["domain"] = y["domain"]
-			parent["hierarchyName"] = getHierarchyName(y)
+			parent["id"] = y["id"]
 			return parent, nil
 		}
 
@@ -93,7 +85,7 @@ func validateParent(ent string, entNum int, t map[string]interface{}) (map[strin
 		if w != nil {
 			parent["parent"] = "device"
 			parent["domain"] = w["domain"]
-			parent["hierarchyName"] = getHierarchyName(w)
+			parent["id"] = w["id"]
 			return parent, nil
 		}
 
@@ -101,7 +93,7 @@ func validateParent(ent string, entNum int, t map[string]interface{}) (map[strin
 		if x != nil {
 			parent["parent"] = "rack"
 			parent["domain"] = x["domain"]
-			parent["hierarchyName"] = getHierarchyName(x)
+			parent["id"] = x["id"]
 			return parent, nil
 		}
 
@@ -109,7 +101,7 @@ func validateParent(ent string, entNum int, t map[string]interface{}) (map[strin
 		if y != nil {
 			parent["parent"] = "room"
 			parent["domain"] = y["domain"]
-			parent["hierarchyName"] = getHierarchyName(y)
+			parent["id"] = y["id"]
 			return parent, nil
 		}
 
@@ -117,7 +109,7 @@ func validateParent(ent string, entNum int, t map[string]interface{}) (map[strin
 		if z != nil {
 			parent["parent"] = "building"
 			parent["domain"] = z["domain"]
-			parent["hierarchyName"] = getHierarchyName(z)
+			parent["id"] = z["id"]
 			return parent, nil
 		}
 
@@ -133,7 +125,7 @@ func validateParent(ent string, entNum int, t map[string]interface{}) (map[strin
 				if len(p) > 0 {
 					parent["parent"] = "stray_device"
 					parent["domain"] = p["domain"]
-					parent["hierarchyName"] = getHierarchyName(p)
+					parent["id"] = p["id"]
 					return parent, nil
 				} else if err != nil {
 					return nil, &u.Error{Type: u.ErrInvalidValue,
@@ -153,7 +145,7 @@ func validateParent(ent string, entNum int, t map[string]interface{}) (map[strin
 		if len(p) > 0 {
 			parent["parent"] = parentStr
 			parent["domain"] = p["domain"]
-			parent["hierarchyName"] = getHierarchyName(p)
+			parent["id"] = p["id"]
 			return parent, nil
 		} else if err != nil {
 			println("ENTITY VALUE: ", ent)
@@ -163,14 +155,6 @@ func validateParent(ent string, entNum int, t map[string]interface{}) (map[strin
 		}
 	}
 	return nil, nil
-}
-
-func getHierarchyName(parent map[string]interface{}) string {
-	if parent["hierarchyName"] != nil {
-		return parent["hierarchyName"].(string)
-	} else {
-		return parent["name"].(string)
-	}
 }
 
 func validateJsonSchema(entity int, t map[string]interface{}) (bool, *u.Error) {
@@ -239,8 +223,8 @@ func ValidateEntity(entity int, t map[string]interface{}) (bool, *u.Error) {
 		parent, err = validateParent(u.EntityToString(entity), entity, t)
 		if err != nil {
 			return false, err
-		} else if parent["hierarchyName"] != nil {
-			t["_id"] = parent["hierarchyName"].(string) +
+		} else if parent["id"] != nil {
+			t["_id"] = parent["id"].(string) +
 				u.HN_DELIMETER + t["name"].(string)
 		} else {
 			t["_id"] = t["name"].(string)
