@@ -140,13 +140,6 @@ func Router(jwt func(next http.Handler) http.Handler) *mux.Router {
 	router.HandleFunc("/api/{entity}s/{id}",
 		controllers.GetEntity).Methods("GET", "HEAD", "OPTIONS")
 
-	//GET BY NAME OF PARENT
-	router.NewRoute().PathPrefix("/api/{entity}s/{site_name}").
-		MatcherFunc(tmatch).HandlerFunc(controllers.GetEntitiesUsingNamesOfParents).Methods("GET", "HEAD", "OPTIONS")
-
-	router.NewRoute().PathPrefix("/api/{entity}s/{id:[a-zA-Z0-9]{24}}").
-		MatcherFunc(pmatch).HandlerFunc(controllers.GetEntitiesUsingNamesOfParents).Methods("GET", "HEAD", "OPTIONS")
-
 	// GET ALL ENTITY
 
 	router.HandleFunc("/api/{entity}s",
