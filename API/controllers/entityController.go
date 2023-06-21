@@ -144,7 +144,7 @@ func CreateEntity(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	//Check if category and endpoint match, except for templates and strays
+	// Check if category and endpoint match, except for templates and strays
 	if entInt < u.ROOMTMPL && entInt != u.STRAYDEV {
 		if object["category"] != entStr {
 			w.WriteHeader(http.StatusBadRequest)
@@ -154,7 +154,7 @@ func CreateEntity(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	//Clean the data of 'id' attribute if present
+	// Clean the data of 'id' attribute if present
 	delete(object, "_id")
 
 	// Try create and respond
@@ -199,6 +199,7 @@ func CreateBulkDomain(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Get domains to create from request body
 	listDomains := []map[string]interface{}{}
 	err := json.NewDecoder(r.Body).Decode(&listDomains)
 	if err != nil || len(listDomains) < 0 {
@@ -207,7 +208,6 @@ func CreateBulkDomain(w http.ResponseWriter, r *http.Request) {
 		u.ErrLog("Error while decoding request body", "CREATE BULK DOMAIN", "", r)
 		return
 	}
-
 	domainsToCreate, e := getBulkDomainsRecursively("", listDomains)
 	if e != nil {
 		w.WriteHeader(http.StatusBadRequest)
@@ -217,6 +217,7 @@ func CreateBulkDomain(w http.ResponseWriter, r *http.Request) {
 	}
 	fmt.Println(domainsToCreate)
 
+	// Try create and repond
 	resp := map[string]interface{}{}
 	for _, domain := range domainsToCreate {
 		// Convert back to json to avoid invalid types in json schema validation

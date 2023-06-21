@@ -18,6 +18,155 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
+// Helper functions
+
+func getDateFilters(req bson.M, filters u.RequestFilters) error {
+	if len(filters.StartDate) > 0 || len(filters.EndDate) > 0 {
+		lastUpdateReq := bson.M{}
+		if len(filters.StartDate) > 0 {
+			startDate, e := time.Parse("2006-01-02", filters.StartDate)
+			if e != nil {
+				return e
+			}
+			lastUpdateReq["$gte"] = primitive.NewDateTimeFromTime(startDate)
+		}
+
+		if len(filters.EndDate) > 0 {
+			endDate, e := time.Parse("2006-01-02", filters.EndDate)
+			endDate = endDate.Add(time.Hour * 24)
+			if e != nil {
+				return e
+			}
+			lastUpdateReq["$lte"] = primitive.NewDateTimeFromTime(endDate)
+		}
+		req["lastUpdated"] = lastUpdateReq
+	}
+	return nil
+}
+
+func domainHasObjects(domain string) bool {
+	data := map[string]interface{}{}
+	// Get all collections names
+	ctx, cancel := u.Connect()
+	db := GetDB()
+	collNames, _ := db.ListCollectionNames(ctx, bson.D{})
+
+	// Check if at least one object belongs to domain
+	for _, collName := range collNames {
+		pattern := primitive.Regex{Pattern: "^" + domain, Options: ""}
+		e := db.Collection(collName).FindOne(ctx, bson.M{"domain": pattern}).Decode(&data)
+		if e == nil {
+			// Found one!
+			return true
+		}
+	}
+
+	defer cancel()
+	return false
+}
+
+// fillHierarchyMap: add obj id (hierarchyName) to the children array of its parent
+func fillHierarchyMap(hierarchyName string, data map[string][]string) {
+	i := strings.LastIndex(hierarchyName, u.HN_DELIMETER)
+	if i > 0 {
+		parent := hierarchyName[:i]
+		data[parent] = append(data[parent], hierarchyName)
+	}
+}
+
+// getChildrenCollections: get a list of entites where children of given parentEntStr
+// may be found, considering limit as the max possible distance of child to parent
+func getChildrenCollections(limit int, parentEntStr string) []int {
+	rangeEntities := []int{}
+	startEnt := u.EntityStrToInt(parentEntStr) + 1
+	endEnt := startEnt + limit
+	if parentEntStr == "domain" {
+		// device special case (devices can have devices)
+		startEnt = u.DOMAIN
+		endEnt = u.DOMAIN
+	} else if parentEntStr == "device" {
+		// device special case (devices can have devices)
+		startEnt = u.DEVICE
+		endEnt = u.DEVICE
+	} else if parentEntStr == "stray_device" {
+		// stray device special case
+		startEnt = u.STRAYDEV
+		endEnt = u.STRAYDEV
+	} else if endEnt >= u.DEVICE {
+		// include AC, CABINET, CORRIDOR, PWRPNL and GROUP
+		// beacause of ROOM and RACK possible children
+		// but no need to search further than group
+		endEnt = u.GROUP
+	}
+
+	for i := startEnt; i <= endEnt; i++ {
+		rangeEntities = append(rangeEntities, i)
+	}
+
+	if startEnt == u.ROOM && endEnt == u.RACK {
+		// ROOM limit=1 special case should include extra
+		// ROOM children but avoiding DEVICE (big collection)
+		rangeEntities = append(rangeEntities, u.CORRIDOR, u.CABINET, u.PWRPNL, u.GROUP)
+	}
+
+	return rangeEntities
+}
+
+// propagateParentNameChange: search for given parent children and
+// update their hierarchyName with new parent name
+func propagateParentNameChange(ctx context.Context, oldParentName, newName string, entityInt int) {
+	// Find all objects containing parent name
+	req := bson.M{"_id": primitive.Regex{Pattern: "^" + oldParentName + u.HN_DELIMETER, Options: ""}}
+	// For each object found, replace old name by new
+	update := bson.D{{
+		Key: "$set", Value: bson.M{
+			"_id": bson.M{
+				"$replaceOne": bson.M{
+					"input":       "$_id",
+					"find":        oldParentName,
+					"replacement": newName}}}}}
+	if entityInt == u.DEVICE {
+		_, e := GetDB().Collection(u.EntityToString(u.DEVICE)).UpdateMany(ctx,
+			req, mongo.Pipeline{update})
+		if e != nil {
+			println(e.Error())
+		}
+	} else if entityInt == u.STRAYDEV {
+		_, e := GetDB().Collection(u.EntityToString(u.STRAYDEV)).UpdateMany(ctx,
+			req, mongo.Pipeline{update})
+		if e != nil {
+			println(e.Error())
+		}
+	} else if entityInt >= u.SITE && entityInt <= u.RACK {
+		for i := entityInt + 1; i <= u.GROUP; i++ {
+			_, e := GetDB().Collection(u.EntityToString(i)).UpdateMany(ctx,
+				req, mongo.Pipeline{update})
+			if e != nil {
+				println(e.Error())
+			}
+		}
+	}
+}
+
+func updateOldObjWithPatch(old map[string]interface{}, patch map[string]interface{}) error {
+	for k, v := range patch {
+		switch child := v.(type) {
+		case map[string]interface{}:
+			switch oldChild := old[k].(type) {
+			case map[string]interface{}:
+				updateOldObjWithPatch(oldChild, child)
+			default:
+				return errors.New("Wrong format for property " + k)
+			}
+		default:
+			old[k] = v
+		}
+	}
+	return nil
+}
+
+// Entity handlers
+
 func CreateEntity(entity int, t map[string]interface{}, userRoles map[string]Role) (map[string]interface{}, *u.Error) {
 	if ok, err := ValidateEntity(entity, t); !ok {
 		return nil, err
@@ -62,7 +211,7 @@ func CreateEntity(entity int, t map[string]interface{}, userRoles map[string]Rol
 	return t, nil
 }
 
-// GetObjectByName: search for hierarchyName in all possible collections
+// GetObjectByName: search for id (hierarchyName) in all possible collections
 func GetObjectByName(hierarchyName string, filters u.RequestFilters, userRoles map[string]Role) (map[string]interface{}, *u.Error) {
 	var resp map[string]interface{}
 	// Get possible collections for this name
@@ -140,30 +289,6 @@ func GetEntity(req bson.M, ent string, filters u.RequestFilters, userRoles map[s
 		FixUnderScore(t)
 	}
 	return t, nil
-}
-
-func getDateFilters(req bson.M, filters u.RequestFilters) error {
-	if len(filters.StartDate) > 0 || len(filters.EndDate) > 0 {
-		lastUpdateReq := bson.M{}
-		if len(filters.StartDate) > 0 {
-			startDate, e := time.Parse("2006-01-02", filters.StartDate)
-			if e != nil {
-				return e
-			}
-			lastUpdateReq["$gte"] = primitive.NewDateTimeFromTime(startDate)
-		}
-
-		if len(filters.EndDate) > 0 {
-			endDate, e := time.Parse("2006-01-02", filters.EndDate)
-			endDate = endDate.Add(time.Hour * 24)
-			if e != nil {
-				return e
-			}
-			lastUpdateReq["$lte"] = primitive.NewDateTimeFromTime(endDate)
-		}
-		req["lastUpdated"] = lastUpdateReq
-	}
-	return nil
 }
 
 func GetManyEntities(ent string, req bson.M, filters u.RequestFilters, userRoles map[string]Role) ([]map[string]interface{}, *u.Error) {
@@ -303,15 +428,6 @@ func GetCompleteHierarchy(userRoles map[string]Role) (map[string]interface{}, *u
 	return response, nil
 }
 
-// fillHierarchyMap: add hierarchyName to the children array of its parent
-func fillHierarchyMap(hierarchyName string, data map[string][]string) {
-	i := strings.LastIndex(hierarchyName, u.HN_DELIMETER)
-	if i > 0 {
-		parent := hierarchyName[:i]
-		data[parent] = append(data[parent], hierarchyName)
-	}
-}
-
 func GetCompleteHierarchyAttributes(userRoles map[string]Role) (map[string]interface{}, *u.Error) {
 	response := make(map[string]interface{})
 	// Get all collections names
@@ -354,27 +470,6 @@ func GetCompleteHierarchyAttributes(userRoles map[string]Role) (map[string]inter
 	}
 	defer cancel()
 	return response, nil
-}
-
-func domainHasObjects(domain string) bool {
-	data := map[string]interface{}{}
-	// Get all collections names
-	ctx, cancel := u.Connect()
-	db := GetDB()
-	collNames, _ := db.ListCollectionNames(ctx, bson.D{})
-
-	// Check if at least one object belongs to domain
-	for _, collName := range collNames {
-		pattern := primitive.Regex{Pattern: "^" + domain, Options: ""}
-		e := db.Collection(collName).FindOne(ctx, bson.M{"domain": pattern}).Decode(&data)
-		if e == nil {
-			// Found one!
-			return true
-		}
-	}
-
-	defer cancel()
-	return false
 }
 
 // GetSiteParentTempUnit: search for the object of given ID,
@@ -557,23 +652,6 @@ func DeleteSingleEntity(entity string, req bson.M) *u.Error {
 	return nil
 }
 
-func updateOldObjWithPatch(old map[string]interface{}, patch map[string]interface{}) error {
-	for k, v := range patch {
-		switch child := v.(type) {
-		case map[string]interface{}:
-			switch oldChild := old[k].(type) {
-			case map[string]interface{}:
-				updateOldObjWithPatch(oldChild, child)
-			default:
-				return errors.New("Wrong format for property " + k)
-			}
-		default:
-			old[k] = v
-		}
-	}
-	return nil
-}
-
 func UpdateEntity(ent string, req bson.M, t map[string]interface{}, isPatch bool, userRoles map[string]Role) (map[string]interface{}, *u.Error) {
 	var mongoRes *mongo.SingleResult
 	updatedDoc := bson.M{}
@@ -654,42 +732,6 @@ func UpdateEntity(ent string, req bson.M, t map[string]interface{}, isPatch bool
 	return updatedDoc, nil
 }
 
-// propagateParentNameChange: search for given parent children and
-// update their hierarchyName with new parent name
-func propagateParentNameChange(ctx context.Context, oldParentName, newName string, entityInt int) {
-	// Find all objects containing parent name
-	req := bson.M{"_id": primitive.Regex{Pattern: "^" + oldParentName + u.HN_DELIMETER, Options: ""}}
-	// For each object found, replace old name by new
-	update := bson.D{{
-		Key: "$set", Value: bson.M{
-			"_id": bson.M{
-				"$replaceOne": bson.M{
-					"input":       "$_id",
-					"find":        oldParentName,
-					"replacement": newName}}}}}
-	if entityInt == u.DEVICE {
-		_, e := GetDB().Collection(u.EntityToString(u.DEVICE)).UpdateMany(ctx,
-			req, mongo.Pipeline{update})
-		if e != nil {
-			println(e.Error())
-		}
-	} else if entityInt == u.STRAYDEV {
-		_, e := GetDB().Collection(u.EntityToString(u.STRAYDEV)).UpdateMany(ctx,
-			req, mongo.Pipeline{update})
-		if e != nil {
-			println(e.Error())
-		}
-	} else if entityInt >= u.SITE && entityInt <= u.RACK {
-		for i := entityInt + 1; i <= u.GROUP; i++ {
-			_, e := GetDB().Collection(u.EntityToString(i)).UpdateMany(ctx,
-				req, mongo.Pipeline{update})
-			if e != nil {
-				println(e.Error())
-			}
-		}
-	}
-}
-
 // GetHierarchyByName: get children objects of given parent.
 // - Param limit: max relationship distance between parent and child, example:
 // limit=1 only direct children, limit=2 includes nested children of children
@@ -736,44 +778,6 @@ func recursivelyGetChildrenFromMaps(parentHierarchyName string, hierarchy map[st
 		children = append(children, child)
 	}
 	return children
-}
-
-// getChildrenCollections: get a list of entites where children of given parentEntStr
-// may be found, considering limit as the max possible distance of child to parent
-func getChildrenCollections(limit int, parentEntStr string) []int {
-	rangeEntities := []int{}
-	startEnt := u.EntityStrToInt(parentEntStr) + 1
-	endEnt := startEnt + limit
-	if parentEntStr == "domain" {
-		// device special case (devices can have devices)
-		startEnt = u.DOMAIN
-		endEnt = u.DOMAIN
-	} else if parentEntStr == "device" {
-		// device special case (devices can have devices)
-		startEnt = u.DEVICE
-		endEnt = u.DEVICE
-	} else if parentEntStr == "stray_device" {
-		// stray device special case
-		startEnt = u.STRAYDEV
-		endEnt = u.STRAYDEV
-	} else if endEnt >= u.DEVICE {
-		// include AC, CABINET, CORRIDOR, PWRPNL and GROUP
-		// beacause of ROOM and RACK possible children
-		// but no need to search further than group
-		endEnt = u.GROUP
-	}
-
-	for i := startEnt; i <= endEnt; i++ {
-		rangeEntities = append(rangeEntities, i)
-	}
-
-	if startEnt == u.ROOM && endEnt == u.RACK {
-		// ROOM limit=1 special case should include extra
-		// ROOM children but avoiding DEVICE (big collection)
-		rangeEntities = append(rangeEntities, u.CORRIDOR, u.CABINET, u.PWRPNL, u.GROUP)
-	}
-
-	return rangeEntities
 }
 
 func GetEntitiesOfAncestor(id string, entStr, wantedEnt string, userRoles map[string]Role) ([]map[string]interface{}, *u.Error) {
