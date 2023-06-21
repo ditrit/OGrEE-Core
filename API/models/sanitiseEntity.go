@@ -42,7 +42,6 @@ func FixReadOnlyName(data map[string]interface{}) map[string]interface{} {
 	cleanData["id"] = data["id"]
 	cleanData["category"] = data["category"]
 	cleanData["name"] = data["name"]
-	cleanData["hierarchyName"] = data["hierarchyName"]
 	if _, ok := data["children"]; ok {
 		cleanData["children"] = data["children"]
 	}

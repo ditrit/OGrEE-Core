@@ -142,7 +142,7 @@ func ParamsParse(link *url.URL, objType int) map[string]interface{} {
 				switch key {
 				case "id", "name", "category", "parentID",
 					"description", "domain", "parentid", "parentId",
-					"hierarchyName", "createdDate", "lastUpdated":
+					"createdDate", "lastUpdated":
 					values[key] = q.Get(key)
 				default:
 					values["attributes."+key] = q.Get(key)
@@ -270,7 +270,6 @@ func HierachyNameToEntity(name string) []int {
 	}
 
 	return resp
-
 }
 
 func GetParentOfEntityByInt(entity int) int {

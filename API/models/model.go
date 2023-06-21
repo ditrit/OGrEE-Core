@@ -112,37 +112,21 @@ func getChildrenCollections(limit int, parentEntStr string) []int {
 	return rangeEntities
 }
 
-// propagateParentNameChange: search for given parent children and
+// propagateParentIdChange: search for given parent children and
 // update their hierarchyName with new parent name
-func propagateParentNameChange(ctx context.Context, oldParentName, newName string, entityInt int) {
-	// Find all objects containing parent name
-	req := bson.M{"_id": primitive.Regex{Pattern: "^" + oldParentName + u.HN_DELIMETER, Options: ""}}
-	// For each object found, replace old name by new
-	update := bson.D{{
-		Key: "$set", Value: bson.M{
-			"_id": bson.M{
-				"$replaceOne": bson.M{
-					"input":       "$_id",
-					"find":        oldParentName,
-					"replacement": newName}}}}}
-	if entityInt == u.DEVICE {
-		_, e := GetDB().Collection(u.EntityToString(u.DEVICE)).UpdateMany(ctx,
-			req, mongo.Pipeline{update})
-		if e != nil {
-			println(e.Error())
-		}
-	} else if entityInt == u.STRAYDEV {
-		_, e := GetDB().Collection(u.EntityToString(u.STRAYDEV)).UpdateMany(ctx,
-			req, mongo.Pipeline{update})
-		if e != nil {
-			println(e.Error())
-		}
-	} else if entityInt >= u.SITE && entityInt <= u.RACK {
-		for i := entityInt + 1; i <= u.GROUP; i++ {
-			_, e := GetDB().Collection(u.EntityToString(i)).UpdateMany(ctx,
-				req, mongo.Pipeline{update})
-			if e != nil {
-				println(e.Error())
+func propagateParentIdChange(oldParentId, newId, entStr string) {
+	filters := u.RequestFilters{}
+	filters.FieldsToShow = []string{"category"}
+	children, _, err := getChildren(entStr, oldParentId, 999, filters)
+	if err != nil {
+		println("Error find children to propagate change: " + err.Message)
+	} else {
+		for childId, childData := range children {
+			child := childData.(map[string]interface{})
+			child["_id"] = strings.Replace(childId, oldParentId, newId, 1)
+			delete(child, "id")
+			if err := updateEntityId(child["category"].(string), child, childId); err != nil {
+				println("Error propagating ID change: " + err.Message)
 			}
 		}
 	}
@@ -654,7 +638,7 @@ func DeleteSingleEntity(entity string, req bson.M) *u.Error {
 
 func UpdateEntity(ent string, req bson.M, t map[string]interface{}, isPatch bool, userRoles map[string]Role) (map[string]interface{}, *u.Error) {
 	var mongoRes *mongo.SingleResult
-	updatedDoc := bson.M{}
+	var updatedDoc map[string]interface{}
 	retDoc := options.ReturnDocument(options.After)
 	entInt := u.EntityStrToInt(ent)
 
@@ -691,51 +675,86 @@ func UpdateEntity(ent string, req bson.M, t map[string]interface{}, isPatch bool
 		t = formattedOldObj
 		// Remove API set fields
 		delete(t, "id")
-		delete(t, "hierarchyName")
 	}
 
-	// Ensure the update is valid and apply it
+	// Ensure the update is valid
 	ctx, cancel := u.Connect()
 	if ok, err := ValidateEntity(u.EntityStrToInt(ent), t); !ok {
 		return nil, err
 	}
 
 	// Check user permissions in case domain is being updated
-	if entInt != u.DOMAIN && entInt != u.BLDGTMPL && entInt != u.ROOMTMPL && entInt != u.OBJTMPL &&
-		(oldObj["domain"] != t["domain"]) {
-		if permission := CheckUserPermissions(userRoles, entInt, t["domain"].(string)); permission < WRITE {
+	if entInt != u.DOMAIN && entInt < u.ROOMTMPL && (oldObj["domain"] != t["domain"]) {
+		if perm := CheckUserPermissions(userRoles, entInt, t["domain"].(string)); perm < WRITE {
 			return nil, &u.Error{Type: u.ErrUnauthorized,
 				Message: "User does not have permission to change this object"}
 		}
 	}
 
-	// Update database
-	mongoRes = GetDB().Collection(ent).FindOneAndReplace(ctx,
-		req, t,
-		&options.FindOneAndReplaceOptions{ReturnDocument: &retDoc})
-	if mongoRes.Err() != nil {
-		return nil, &u.Error{Type: u.ErrUnauthorized,
-			Message: mongoRes.Err().Error()}
+	if oldObj["id"] != t["_id"] {
+		// Changes to id implies create new and delete old
+		if e := updateEntityId(ent, t, oldObj["id"].(string)); e != nil {
+			return nil, e
+		} else {
+			updatedDoc = fixID(t)
+			// Changes to id should be propagated to its children
+			propagateParentIdChange(oldObj["id"].(string),
+				t["_id"].(string), ent)
+		}
+	} else {
+		// Update database
+		mongoRes = GetDB().Collection(ent).FindOneAndReplace(ctx,
+			req, t,
+			&options.FindOneAndReplaceOptions{ReturnDocument: &retDoc})
+		if mongoRes.Err() != nil {
+			return nil, &u.Error{Type: u.ErrUnauthorized,
+				Message: mongoRes.Err().Error()}
+		}
+		//Obtain new document then
+		//Fix the _id / id discrepancy
+		mongoRes.Decode(&updatedDoc)
+		updatedDoc = fixID(updatedDoc)
 	}
 
-	// Changes to hierarchyName should be propagated to its children
-	if oldObj["hierarchyName"] != t["hierarchyName"] {
-		propagateParentNameChange(ctx, oldObj["hierarchyName"].(string),
-			t["hierarchyName"].(string), u.EntityStrToInt(ent))
-	}
-
-	//Obtain new document then
-	//Fix the _id / id discrepancy
-	mongoRes.Decode(&updatedDoc)
-	updatedDoc = fixID(updatedDoc)
 	defer cancel()
 	return updatedDoc, nil
+}
+
+func updateEntityId(entStr string, t map[string]interface{}, oldId string) *u.Error {
+	ctx, cancel := u.Connect()
+	_, e := GetDB().Collection(entStr).InsertOne(ctx, t)
+	if e != nil {
+		if strings.Contains(e.Error(), "E11000") {
+			return &u.Error{Type: u.ErrDuplicate,
+				Message: "Error while creating " + entStr + ": Duplicates not allowed"}
+		}
+		return &u.Error{Type: u.ErrDBError,
+			Message: "Internal error while creating " + entStr + ": " + e.Error()}
+	}
+	defer cancel()
+
+	if e := DeleteSingleEntity(entStr, bson.M{"_id": oldId}); e != nil {
+		return e
+	}
+	return nil
 }
 
 // GetHierarchyByName: get children objects of given parent.
 // - Param limit: max relationship distance between parent and child, example:
 // limit=1 only direct children, limit=2 includes nested children of children
 func GetHierarchyByName(entity, hierarchyName string, limit int, filters u.RequestFilters) ([]map[string]interface{}, *u.Error) {
+	// Get all children and their relations
+	allChildren, hierarchy, err := getChildren(entity, hierarchyName, limit, filters)
+	if err != nil {
+		return nil, err
+	}
+
+	// Organize the family according to relations (nest children)
+	return recursivelyGetChildrenFromMaps(hierarchyName, hierarchy, allChildren), nil
+}
+
+func getChildren(entity, hierarchyName string, limit int, filters u.RequestFilters) (map[string]interface{},
+	map[string][]string, *u.Error) {
 	allChildren := map[string]interface{}{}
 	hierarchy := make(map[string][]string)
 
@@ -752,7 +771,7 @@ func GetHierarchyByName(entity, hierarchyName string, limit int, filters u.Reque
 		if e1 != nil {
 			println("SUBENT: ", checkEntName)
 			println("ERR: ", e1.Message)
-			return nil, e1
+			return nil, nil, e1
 		}
 		for _, child := range children {
 			// store child data
@@ -762,8 +781,7 @@ func GetHierarchyByName(entity, hierarchyName string, limit int, filters u.Reque
 		}
 	}
 
-	// Organize the family
-	return recursivelyGetChildrenFromMaps(hierarchyName, hierarchy, allChildren), nil
+	return allChildren, hierarchy, nil
 }
 
 // recursivelyGetChildrenFromMaps: nest children data as the array value of
@@ -814,7 +832,7 @@ func ExtractCursor(c *mongo.Cursor, ctx context.Context, entity int, userRoles m
 			//Check permissions
 			var domain string
 			if entity == u.DOMAIN {
-				domain = x["hierarchyName"].(string)
+				domain = x["id"].(string)
 			} else {
 				domain = x["domain"].(string)
 			}

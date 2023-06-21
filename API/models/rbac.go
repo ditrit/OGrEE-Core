@@ -34,7 +34,7 @@ func CheckDomainExists(domain string) bool {
 	if domain == ROOT_DOMAIN {
 		return true
 	}
-	x, e := GetEntity(bson.M{"hierarchyName": domain}, "domain", u.RequestFilters{}, nil)
+	x, e := GetEntity(bson.M{"_id": domain}, "domain", u.RequestFilters{}, nil)
 	return e == nil && x != nil
 }
 
