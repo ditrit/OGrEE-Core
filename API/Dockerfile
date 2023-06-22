@@ -11,7 +11,7 @@ COPY API/ .git* /home/
 RUN apt install git && go install .
 
 #Build
-RUN cd /home && make
+RUN cd /home && CGO_ENABLED=0 make
 
 FROM busybox:latest
 USER root
