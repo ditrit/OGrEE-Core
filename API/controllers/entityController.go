@@ -1523,18 +1523,21 @@ func GetEntitiesUsingNamesOfParents(w http.ResponseWriter, r *http.Request) {
 			data, e3 = models.GetEntitiesUsingAncestorNames(entity, oID, req, ancestry, user.Roles)
 		}
 
-		if len(data) == 0 {
+		if e3 != nil {
 			u.ErrLog("Error while getting "+entity, "GET "+entity, e3.Message, r)
 			u.RespondWithError(w, e3)
+		} else if len(data) == 0 {
+			w.WriteHeader(http.StatusNotFound)
+			u.Respond(w, u.Message("No objects found"))
+		} else if r.Method == "OPTIONS" {
+			w.Header().Add("Content-Type", "application/json")
+			w.Header().Add("Allow", "GET, OPTIONS")
+			return
 		} else {
-			if r.Method == "OPTIONS" {
-				w.Header().Add("Content-Type", "application/json")
-				w.Header().Add("Allow", "GET, OPTIONS")
-				return
-			}
 			u.Respond(w, u.RespDataWrapper("successfully got object",
 				map[string]interface{}{"objects": data}))
 		}
+
 	} else { //We are only retrieving an entity
 		var data map[string]interface{}
 		var e3 *u.Error
@@ -1546,10 +1549,13 @@ func GetEntitiesUsingNamesOfParents(w http.ResponseWriter, r *http.Request) {
 			data, e3 = models.GetEntityUsingAncestorNames(req, entity, ancestry)
 		}
 
-		if len(data) == 0 {
+		if e3 != nil {
 			u.ErrLog("Error while getting "+entity, "GET "+entity, e3.Message, r)
 			u.RespondWithError(w, e3)
-		} else if r.Method == "OPTIONS" && data != nil {
+		} else if len(data) == 0 {
+			w.WriteHeader(http.StatusNotFound)
+			u.Respond(w, u.Message("No object found"))
+		} else if r.Method == "OPTIONS" {
 			w.Header().Add("Content-Type", "application/json")
 			w.Header().Add("Allow", "GET, OPTIONS")
 		} else {
