@@ -227,8 +227,11 @@ func GetEntity(req bson.M, ent string, filters u.RequestFilters, userRoles map[s
 	var opts *options.FindOneOptions
 	if len(filters.FieldsToShow) > 0 {
 		var compoundIndex bson.D
+		compoundIndex = append(compoundIndex, bson.E{Key: "domain", Value: 1})
 		for _, field := range filters.FieldsToShow {
-			compoundIndex = append(compoundIndex, bson.E{Key: field, Value: 1})
+			if field != "domain" {
+				compoundIndex = append(compoundIndex, bson.E{Key: field, Value: 1})
+			}
 		}
 		opts = options.FindOne().SetProjection(compoundIndex)
 	}
@@ -243,6 +246,10 @@ func GetEntity(req bson.M, ent string, filters u.RequestFilters, userRoles map[s
 		e = GetDB().Collection(ent).FindOne(ctx, req).Decode(&t)
 	}
 	if e != nil {
+		if e == mongo.ErrNoDocuments {
+			return nil, &u.Error{Type: u.ErrNotFound,
+				Message: "Nothing matches this request"}
+		}
 		return nil, &u.Error{Type: u.ErrBadFormat, Message: e.Error()}
 	}
 	defer cancel()
@@ -254,7 +261,7 @@ func GetEntity(req bson.M, ent string, filters u.RequestFilters, userRoles map[s
 	if !strings.Contains(ent, "template") {
 		var domain string
 		if ent == "domain" {
-			domain = t["id"].(string)
+			domain = t["_id"].(string)
 		} else {
 			domain = t["domain"].(string)
 		}
@@ -283,8 +290,11 @@ func GetManyEntities(ent string, req bson.M, filters u.RequestFilters, userRoles
 	var opts *options.FindOptions
 	if len(filters.FieldsToShow) > 0 {
 		var compoundIndex bson.D
+		compoundIndex = append(compoundIndex, bson.E{Key: "domain", Value: 1})
 		for _, field := range filters.FieldsToShow {
-			compoundIndex = append(compoundIndex, bson.E{Key: field, Value: 1})
+			if field != "domain" {
+				compoundIndex = append(compoundIndex, bson.E{Key: field, Value: 1})
+			}
 		}
 		opts = options.Find().SetProjection(compoundIndex)
 	}
@@ -443,7 +453,7 @@ func GetCompleteHierarchyAttributes(userRoles map[string]Role) (map[string]inter
 
 			for _, obj := range data {
 				if obj["attributes"] != nil {
-					if obj["id"] != nil {
+					if id, isStr := obj["id"].(string); isStr && id != "" {
 						response[obj["id"].(string)] = obj["attributes"]
 					} else if obj["name"] != nil {
 						response[obj["name"].(string)] = obj["attributes"]
@@ -808,7 +818,7 @@ func GetEntitiesOfAncestor(id string, entStr, wantedEnt string, userRoles map[st
 
 	// Get sub entity objects
 	pattern := primitive.Regex{Pattern: "^" + id + u.HN_DELIMETER, Options: ""}
-	req = bson.M{"parentId": pattern}
+	req = bson.M{"_id": pattern}
 	sub, e1 := GetManyEntities(wantedEnt, req, u.RequestFilters{}, userRoles)
 	if e1 != nil {
 		return nil, e1

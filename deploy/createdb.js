@@ -129,7 +129,7 @@ db.group.createIndex({parentId:1, name:1}, { unique: true });
 db.stray_device.createIndex({parentId:1,name:1}, { unique: true });
 
 //Create a default domain and user
-db.domain.insertOne({name: DB_NAME, hierarchyName: DB_NAME, category: "domain", 
+db.domain.insertOne({_id: DB_NAME, name: DB_NAME, category: "domain", 
     attributes:{color:"ffffff"}, description:[], createdData: new Date(), lastUpdated: new Date()})
 db.account.insertOne({email: "admin", password: "admin", roles: {"*": "manager"}})
 

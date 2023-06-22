@@ -5,7 +5,6 @@ import (
 	"strings"
 
 	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 // Mongo returns '_id' instead of id
@@ -29,7 +28,7 @@ func FixUnderScore(x map[string]interface{}) {
 // Perform any neccessary adjustments to objects before insertion into DB
 func FixAttributesBeforeInsert(entity int, data map[string]interface{}) {
 	if entity == u.RACK {
-		pid, _ := primitive.ObjectIDFromHex(data["parentId"].(string))
+		pid, _ := data["parentId"].(string)
 		req := bson.M{"_id": pid}
 		parent, _ := GetEntity(req, "room", u.RequestFilters{}, nil)
 		parentUnit := parent["attributes"].(map[string]interface{})["posXYUnit"]

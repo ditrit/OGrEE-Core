@@ -15,9 +15,6 @@
       "category": {
         "type": "string"
       },
-      "domain": {
-        "type": "string"
-      },
       "createdDate": {
       },
       "lastUpdated": {
