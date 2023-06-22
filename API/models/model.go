@@ -115,15 +115,14 @@ func getChildrenCollections(limit int, parentEntStr string) []int {
 // propagateParentIdChange: search for given parent children and
 // update their hierarchyName with new parent name
 func propagateParentIdChange(oldParentId, newId, entStr string) {
-	filters := u.RequestFilters{}
-	filters.FieldsToShow = []string{"category"}
-	children, _, err := getChildren(entStr, oldParentId, 999, filters)
+	children, _, err := getChildren(entStr, oldParentId, 999, u.RequestFilters{})
 	if err != nil {
 		println("Error find children to propagate change: " + err.Message)
 	} else {
 		for childId, childData := range children {
 			child := childData.(map[string]interface{})
 			child["_id"] = strings.Replace(childId, oldParentId, newId, 1)
+			child["parentId"] = strings.Replace(child["parentId"].(string), oldParentId, newId, 1)
 			delete(child, "id")
 			if err := updateEntityId(child["category"].(string), child, childId); err != nil {
 				println("Error propagating ID change: " + err.Message)
