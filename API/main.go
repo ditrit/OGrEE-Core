@@ -157,10 +157,7 @@ func Router(jwt func(next http.Handler) http.Handler) *mux.Router {
 		controllers.DeleteEntity).Methods("DELETE")
 
 	// UPDATE ENTITY
-	router.HandleFunc("/api/{entity}s/{id:[a-zA-Z0-9]{24}}",
-		controllers.UpdateEntity).Methods("PUT", "PATCH")
-
-	router.HandleFunc("/api/{entity}s/{name}",
+	router.HandleFunc("/api/{entity}s/{id}",
 		controllers.UpdateEntity).Methods("PUT", "PATCH")
 
 	//OPTIONS BLOCK

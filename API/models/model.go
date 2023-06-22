@@ -261,7 +261,7 @@ func GetEntity(req bson.M, ent string, filters u.RequestFilters, userRoles map[s
 	if !strings.Contains(ent, "template") {
 		var domain string
 		if ent == "domain" {
-			domain = t["_id"].(string)
+			domain = t["id"].(string)
 		} else {
 			domain = t["domain"].(string)
 		}
@@ -709,7 +709,7 @@ func UpdateEntity(ent string, req bson.M, t map[string]interface{}, isPatch bool
 			updatedDoc = fixID(t)
 			// Changes to id should be propagated to its children
 			propagateParentIdChange(oldObj["id"].(string),
-				t["_id"].(string), ent)
+				t["id"].(string), ent)
 		}
 	} else {
 		// Update database

@@ -88,7 +88,6 @@ func TestCreateLoginAccount(t *testing.T) {
 func TestObjects(t *testing.T) {
 	var response map[string]interface{}
 	var parentId string
-	var exists bool
 
 	// Create objects from schema examples
 	for _, entInt := range []int{u.DOMAIN, u.SITE, u.BLDG, u.ROOM, u.RACK, u.DEVICE} {
@@ -110,14 +109,11 @@ func TestObjects(t *testing.T) {
 		assert.Equal(t, http.StatusCreated, recorder.Code)
 		json.Unmarshal(recorder.Body.Bytes(), &response)
 		fmt.Println(response)
-		parentId, exists = response["data"].(map[string]interface{})["id"].(string)
+		id, exists := response["data"].(map[string]interface{})["id"].(string)
 		assert.Equal(t, true, exists)
 
 		// Verify create with GET
-		hierarchyName := response["data"].(map[string]interface{})["hierarchyName"].(string)
-		println(hierarchyName)
-		recorder = makeRequest("GET", "/api/"+entStr+"s/"+hierarchyName, nil)
-
+		recorder = makeRequest("GET", "/api/"+entStr+"s/"+id, nil)
 		assert.Equal(t, http.StatusOK, recorder.Code)
 		var responseGET map[string]interface{}
 		json.Unmarshal(recorder.Body.Bytes(), &responseGET)
@@ -129,13 +125,14 @@ func TestObjects(t *testing.T) {
 		oldName := obj["name"].(string)
 		obj["name"] = entStr + "Test"
 		data, _ = json.Marshal(obj)
-		recorder = makeRequest("PUT", "/api/"+entStr+"s/"+hierarchyName, data)
+		recorder = makeRequest("PUT", "/api/"+entStr+"s/"+id, data)
 		assert.Equal(t, http.StatusOK, recorder.Code)
 
 		// Verify it
-		hierarchyName = strings.Replace(hierarchyName, oldName, obj["name"].(string), 1)
-		recorder = makeRequest("GET", "/api/"+entStr+"s/"+hierarchyName, nil)
+		id = strings.Replace(id, oldName, obj["name"].(string), 1)
+		recorder = makeRequest("GET", "/api/"+entStr+"s/"+id, nil)
 		assert.Equal(t, http.StatusOK, recorder.Code)
+		parentId = id
 	}
 
 	// Try to patch site name
@@ -156,7 +153,7 @@ func TestObjects(t *testing.T) {
 		println(entStr)
 		child := response["children"].([]interface{})[0].(map[string]interface{})
 		hierarchyName = hierarchyName + u.HN_DELIMETER + entStr + "Test"
-		assert.Equal(t, hierarchyName, child["hierarchyName"].(string))
+		assert.Equal(t, hierarchyName, child["id"].(string))
 		if entInt != u.DEVICE {
 			response = child
 		}
