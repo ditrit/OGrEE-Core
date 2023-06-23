@@ -1566,7 +1566,7 @@ func GetOCLIAtrributes(Path string, ent int, data map[string]interface{}) error 
 		attr = data["attributes"].(map[string]interface{})
 		//Save rotation because it gets overwritten by
 		//GetOCLIAtrributesTemplateHelper()
-		rotation := attr["rotation"]
+		rotation := attr["rotation"].([]float64)
 
 		baseAttrs := map[string]interface{}{
 			"sizeUnit":   "cm",
@@ -1578,10 +1578,6 @@ func GetOCLIAtrributes(Path string, ent int, data map[string]interface{}) error 
 		//If user provided templates, get the JSON
 		//and parse into templates
 		GetOCLIAtrributesTemplateHelper(attr, data, ent)
-
-		//Restore the rotation overwritten
-		//by the helper func
-		attr["rotation"] = rotation
 
 		if attr["size"] == "" {
 			if State.DebugLvl > 0 {
@@ -1606,6 +1602,10 @@ func GetOCLIAtrributes(Path string, ent int, data map[string]interface{}) error 
 		} else {
 			attr["posXYZ"] = serialiseAttr2(attr, "posXYZ")
 		}
+
+		//Restore the rotation overwritten
+		//by the helper func
+		attr["rotation"] = fmt.Sprintf("{\"x\":%v, \"y\":%v, \"z\":%v}", rotation[0], rotation[1], rotation[2])
 
 		if attr["posXYZ"] == "" {
 			if State.DebugLvl > 0 {
