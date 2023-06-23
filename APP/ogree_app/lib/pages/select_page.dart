@@ -31,7 +31,7 @@ class _SelectPageState extends State<SelectPage> with TickerProviderStateMixin {
   bool _loadObjects = false;
 
   // Shared data used by children in stepper
-  String _selectedDate = DateFormat('dd/MM/yyyy').format(DateTime.now());
+  String _selectedDate = '';
   set selectedDate(String value) => _selectedDate = value;
 
   String _selectedNamespace = '';
@@ -100,7 +100,9 @@ class _SelectPageState extends State<SelectPage> with TickerProviderStateMixin {
           Step(
             title: Text(localeMsg.selectDate,
                 style: const TextStyle(fontSize: 14)),
-            subtitle: Text(_selectedDate),
+            subtitle: _selectedDate != ""
+                ? Text(_selectedDate)
+                : Icon(Icons.all_inclusive, size: 15),
             content: const SelectDate(),
             isActive: _currentStep >= Steps.date.index,
             state: _currentStep >= Steps.date.index
