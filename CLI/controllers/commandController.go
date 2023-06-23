@@ -1664,26 +1664,13 @@ func GetOCLIAtrributes(Path string, ent int, data map[string]interface{}) error 
 		//Process the posU/slot attribute
 		if x, ok := attr["posU/slot"]; ok {
 			delete(attr, "posU/slot")
-			//Convert posU to string if numeric
-			switch xval := x.(type) {
-			case float64:
-				xstr := strconv.FormatFloat(xval, 'G', -1, 64)
+			if _, err := strconv.Atoi(x.(string)); err == nil {
 				attr["posU"] = x
 				attr["slot"] = ""
-				slot, err = GetSlot(parent, xstr)
-				x = xstr
-			case int:
-				xstr := strconv.Itoa(xval)
-				attr["posU"] = x
-				attr["slot"] = ""
-				slot, err = GetSlot(parent, xstr)
-				x = xstr
-			case string:
-				attr["slot"] = xval
-				slot, err = GetSlot(parent, xval)
-			default:
-				return fmt.Errorf("posU/slot should be a string or a number")
+			} else {
+				attr["slot"] = x
 			}
+			slot, err = GetSlot(parent, x.(string))
 			if err != nil {
 				return err
 			}
@@ -2858,17 +2845,6 @@ func SetClipBoard(x []string) ([]string, error) {
 	}
 
 	return *State.ClipBoard, nil
-}
-
-func Print(a []interface{}) string {
-	ans := ""
-
-	for i := range a {
-		ans += fmt.Sprintf("%v", a[i])
-	}
-	fmt.Println(ans)
-
-	return ans
 }
 
 func SetEnv(arg string, val interface{}) {

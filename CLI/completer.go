@@ -173,7 +173,7 @@ func ListForUI(path string) func(string) []string {
 func ListUserVars(path string, appendDeref bool) func(string) []string {
 	return func(line string) []string {
 		ans := []string{}
-		varMap := GetDynamicSymbolTable()
+		varMap := c.State.DynamicSymbolTable
 		for i := range varMap {
 			if appendDeref {
 				ans = append(ans, "$"+i)
@@ -189,7 +189,7 @@ func ListUserVars(path string, appendDeref bool) func(string) []string {
 func ListUserFuncs(path string) func(string) []string {
 	return func(line string) []string {
 		ans := []string{}
-		funcMap := GetFuncTable()
+		funcMap := c.State.FuncTable
 		for i := range funcMap {
 			ans = append(ans, i)
 		}
