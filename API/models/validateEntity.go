@@ -44,17 +44,17 @@ func loadJsonSchemas(schemaPrefix string) {
 	}
 }
 
-func validateParent(ent string, entNum int, t map[string]interface{}) (map[string]interface{}, bool) {
+func validateParent(ent string, entNum int, t map[string]interface{}) (map[string]interface{}, *u.Error) {
 	if entNum == u.SITE {
-		return nil, true
+		return nil, nil
 	}
 
 	//Check ParentID is valid
 	if t["parentId"] == nil || t["parentId"] == "" {
 		if entNum == u.DOMAIN || entNum == u.STRAYDEV {
-			return nil, true
+			return nil, nil
 		}
-		return u.Message(false, "ParentID is not valid"), false
+		return nil, &u.Error{Type: u.ErrBadFormat, Message: "ParentID is not valid"}
 	}
 	objID, err := primitive.ObjectIDFromHex(t["parentId"].(string))
 	var req primitive.M
@@ -74,7 +74,7 @@ func validateParent(ent string, entNum int, t map[string]interface{}) (map[strin
 			parent["parent"] = "rack"
 			parent["domain"] = x["domain"]
 			parent["hierarchyName"] = getHierarchyName(x)
-			return parent, true
+			return parent, nil
 		}
 
 		y, _ := GetEntity(req, "device", u.RequestFilters{}, nil)
@@ -82,11 +82,11 @@ func validateParent(ent string, entNum int, t map[string]interface{}) (map[strin
 			parent["parent"] = "device"
 			parent["domain"] = y["domain"]
 			parent["hierarchyName"] = getHierarchyName(y)
-			return parent, true
+			return parent, nil
 		}
 
-		return u.Message(false,
-			"ParentID should be correspond to Existing ID"), false
+		return nil, &u.Error{Type: u.ErrInvalidValue,
+			Message: "ParentID should correspond to Existing ID"}
 
 	case u.SENSOR, u.GROUP:
 		w, _ := GetEntity(req, "device", u.RequestFilters{}, nil)
@@ -94,7 +94,7 @@ func validateParent(ent string, entNum int, t map[string]interface{}) (map[strin
 			parent["parent"] = "device"
 			parent["domain"] = w["domain"]
 			parent["hierarchyName"] = getHierarchyName(w)
-			return parent, true
+			return parent, nil
 		}
 
 		x, _ := GetEntity(req, "rack", u.RequestFilters{}, nil)
@@ -102,7 +102,7 @@ func validateParent(ent string, entNum int, t map[string]interface{}) (map[strin
 			parent["parent"] = "rack"
 			parent["domain"] = x["domain"]
 			parent["hierarchyName"] = getHierarchyName(x)
-			return parent, true
+			return parent, nil
 		}
 
 		y, _ := GetEntity(req, "room", u.RequestFilters{}, nil)
@@ -110,7 +110,7 @@ func validateParent(ent string, entNum int, t map[string]interface{}) (map[strin
 			parent["parent"] = "room"
 			parent["domain"] = y["domain"]
 			parent["hierarchyName"] = getHierarchyName(y)
-			return parent, true
+			return parent, nil
 		}
 
 		z, _ := GetEntity(req, "building", u.RequestFilters{}, nil)
@@ -118,11 +118,11 @@ func validateParent(ent string, entNum int, t map[string]interface{}) (map[strin
 			parent["parent"] = "building"
 			parent["domain"] = z["domain"]
 			parent["hierarchyName"] = getHierarchyName(z)
-			return parent, true
+			return parent, nil
 		}
 
-		return u.Message(false,
-			"ParentID should be correspond to Existing ID"), false
+		return nil, &u.Error{Type: u.ErrInvalidValue,
+			Message: "ParentID should correspond to Existing ID"}
 
 	case u.STRAYDEV, u.STRAYSENSOR:
 		if t["parentId"] != nil && t["parentId"] != "" {
@@ -134,14 +134,14 @@ func validateParent(ent string, entNum int, t map[string]interface{}) (map[strin
 					parent["parent"] = "stray_device"
 					parent["domain"] = p["domain"]
 					parent["hierarchyName"] = getHierarchyName(p)
-					return parent, true
-				} else if err != "" {
-					return u.Message(false,
-						"ParentID should be an Existing ID or null"), false
+					return parent, nil
+				} else if err != nil {
+					return nil, &u.Error{Type: u.ErrInvalidValue,
+						Message: "ParentID should correspond to Existing ID"}
 				}
 			} else {
-				return u.Message(false,
-					"ParentID should be an Existing ID or null"), false
+				return nil, &u.Error{Type: u.ErrInvalidValue,
+					Message: "ParentID should correspond to Existing ID"}
 			}
 		}
 
@@ -154,15 +154,15 @@ func validateParent(ent string, entNum int, t map[string]interface{}) (map[strin
 			parent["parent"] = parentStr
 			parent["domain"] = p["domain"]
 			parent["hierarchyName"] = getHierarchyName(p)
-			return parent, true
-		} else if err != "" {
+			return parent, nil
+		} else if err != nil {
 			println("ENTITY VALUE: ", ent)
 			println("We got Parent: ", parent, " with ID:", t["parentId"].(string))
-			return u.Message(false,
-				"ParentID should correspond to Existing ID: "+err), false
+			return nil, &u.Error{Type: u.ErrInvalidValue,
+				Message: "ParentID should correspond to Existing ID"}
 		}
 	}
-	return nil, true
+	return nil, nil
 }
 
 func getHierarchyName(parent map[string]interface{}) string {
@@ -173,7 +173,7 @@ func getHierarchyName(parent map[string]interface{}) string {
 	}
 }
 
-func validateJsonSchema(entity int, t map[string]interface{}) (map[string]interface{}, bool) {
+func validateJsonSchema(entity int, t map[string]interface{}) (bool, *u.Error) {
 	// Get JSON schema
 	var schemaName string
 	switch entity {
@@ -187,7 +187,7 @@ func validateJsonSchema(entity int, t map[string]interface{}) (map[string]interf
 
 	sch, err := c.Compile(schemaName)
 	if err != nil {
-		return u.Message(false, err.Error()), false
+		return false, &u.Error{Type: u.ErrInternal, Message: err.Error()}
 	}
 
 	// Validate JSON Schema
@@ -196,7 +196,6 @@ func validateJsonSchema(entity int, t map[string]interface{}) (map[string]interf
 		case *jsonschema.ValidationError:
 			fmt.Println(t)
 			println(v.GoString())
-			resp := u.Message(false, "JSON body doesn't validate with the expected JSON schema")
 			// Format errors array
 			errSlice := []string{}
 			for _, schErr := range v.BasicOutput().Errors {
@@ -208,17 +207,18 @@ func validateJsonSchema(entity int, t map[string]interface{}) (map[string]interf
 					}
 				}
 			}
-			resp["errors"] = errSlice
-			return resp, false
+			return false, &u.Error{Type: u.ErrBadFormat,
+				Message: "JSON body doesn't validate with the expected JSON schema",
+				Details: errSlice}
 		}
-		return u.Message(false, err.Error()), false
+		return false, &u.Error{Type: u.ErrBadFormat, Message: err.Error()}
 	} else {
 		println("JSON Schema: all good, validated!")
-		return nil, true
+		return true, nil
 	}
 }
 
-func ValidateEntity(entity int, t map[string]interface{}) (map[string]interface{}, bool) {
+func ValidateEntity(entity int, t map[string]interface{}) (bool, *u.Error) {
 	/*
 		TODO:
 		Need to capture device if it is a parent
@@ -227,31 +227,34 @@ func ValidateEntity(entity int, t map[string]interface{}) (map[string]interface{
 	*/
 
 	// Validate JSON Schema
-	if resp, err := validateJsonSchema(entity, t); !err {
-		return resp, false
+	if ok, err := validateJsonSchema(entity, t); !ok {
+		return false, err
 	}
 
 	// Extra checks
 	// Check parent and domain for objects
 	var parent map[string]interface{}
 	if entity != u.BLDGTMPL && entity != u.ROOMTMPL && entity != u.OBJTMPL {
-		var ok bool
-		parent, ok = validateParent(u.EntityToString(entity), entity, t)
-		if !ok {
-			return parent, ok
+		var err *u.Error
+		parent, err = validateParent(u.EntityToString(entity), entity, t)
+		if err != nil {
+			return false, err
 		} else if parent["hierarchyName"] != nil {
-			t["hierarchyName"] = parent["hierarchyName"].(string) + u.HN_DELIMETER + t["name"].(string)
+			t["hierarchyName"] = parent["hierarchyName"].(string) +
+				u.HN_DELIMETER + t["name"].(string)
 		} else {
 			t["hierarchyName"] = t["name"].(string)
 		}
 		//Check domain
 		if entity != u.DOMAIN {
 			if !CheckDomainExists(t["domain"].(string)) {
-				return u.Message(false, "Domain not found: "+t["domain"].(string)), false
+				return false, &u.Error{Type: u.ErrNotFound,
+					Message: "Domain not found: " + t["domain"].(string)}
 			}
 			if parentDomain, ok := parent["domain"].(string); ok {
-				if !CheckParentDomain(parentDomain, t["domain"].(string)) {
-					return u.Message(false, "Object domain is not equal or child of parent's domain"), false
+				if !DomainIsEqualOrChild(parentDomain, t["domain"].(string)) {
+					return false, &u.Error{Type: u.ErrBadFormat,
+						Message: "Object domain is not equal or child of parent's domain"}
 				}
 			}
 		}
@@ -260,10 +263,12 @@ func ValidateEntity(entity int, t map[string]interface{}) (map[string]interface{
 	// Check attributes
 	if entity == u.RACK || entity == u.GROUP || entity == u.CORRIDOR {
 		if _, ok := t["attributes"]; !ok {
-			return u.Message(false, "Attributes should be on the payload"), false
+			return false, &u.Error{Type: u.ErrBadFormat,
+				Message: "Attributes should be on the payload"}
 		} else {
 			if v, ok := t["attributes"].(map[string]interface{}); !ok {
-				return u.Message(false, "Attributes should be a JSON Dictionary"), false
+				return false, &u.Error{Type: u.ErrBadFormat,
+					Message: "Attributes should be a JSON Dictionary"}
 			} else {
 				switch entity {
 				case u.RACK:
@@ -273,11 +278,11 @@ func ValidateEntity(entity int, t map[string]interface{}) (map[string]interface{
 					nameCheck, _ := GetManyEntities("corridor", req, u.RequestFilters{}, nil)
 					if nameCheck != nil {
 						if len(nameCheck) != 0 {
-							msg := "Rack name must be unique among corridors and racks"
 							if nameCheck != nil {
 								println(nameCheck[0]["name"].(string))
 							}
-							return u.Message(false, msg), false
+							return false, &u.Error{Type: u.ErrBadFormat,
+								Message: "Rack name must be unique among corridors and racks"}
 						}
 
 					}
@@ -286,8 +291,8 @@ func ValidateEntity(entity int, t map[string]interface{}) (map[string]interface{
 					//Ensure the 2 racks are valid
 					racks := strings.Split(v["content"].(string), ",")
 					if len(racks) != 2 {
-						msg := "2 racks separated by a comma must be on the payload"
-						return u.Message(false, msg), false
+						return false, &u.Error{Type: u.ErrBadFormat,
+							Message: "2 racks separated by a comma must be on the payload"}
 					}
 
 					//Trim Spaces because they mess up
@@ -301,10 +306,9 @@ func ValidateEntity(entity int, t map[string]interface{}) (map[string]interface{
 					nameCheck, _ := GetManyEntities("rack", req, u.RequestFilters{}, nil)
 					if nameCheck != nil {
 						if len(nameCheck) != 0 {
-							msg := "Corridor name must be unique among corridors and racks"
-							return u.Message(false, msg), false
+							return false, &u.Error{Type: u.ErrBadFormat,
+								Message: "Corridor name must be unique among corridors and racks"}
 						}
-
 					}
 
 					//Fetch the 2 racks and ensure they exist
@@ -313,18 +317,17 @@ func ValidateEntity(entity int, t map[string]interface{}) (map[string]interface{
 
 					filter = bson.M{"parentId": t["parentId"], "$or": orReq}
 					ans, e := GetManyEntities("rack", filter, u.RequestFilters{}, nil)
-					if e != "" {
-						msg := "The racks you specified were not found." +
-							" Please verify your input and try again"
-						println(e)
-						return u.Message(false, msg), false
+					if e != nil {
+						println(e.Message)
+						return false, &u.Error{Type: u.ErrBadFormat,
+							Message: "The racks you specified were not found." +
+								" Please verify your input and try again"}
 					}
 
 					if len(ans) != 2 {
 						//Request possibly mentioned same racks
 						//thus giving length of 1
 						if !(len(ans) == 1 && racks[0] == racks[1]) {
-
 							//Figure out the rack name that wasn't found
 							var notFound string
 							if racks[0] != ans[0]["name"].(string) {
@@ -332,12 +335,12 @@ func ValidateEntity(entity int, t map[string]interface{}) (map[string]interface{
 							} else {
 								notFound = racks[1]
 							}
-							msg := "Unable to get the rack: " + notFound + ". Please check your inventory and try again"
 							println("LENGTH OF u.RACK CHECK:", len(ans))
 							println("CORRIDOR PARENTID: ", t["parentId"].(string))
-							return u.Message(false, msg), false
+							return false, &u.Error{Type: u.ErrBadFormat,
+								Message: "Unable to get the rack: " + notFound +
+									". Please check your inventory and try again"}
 						}
-
 					}
 
 					//Set the color manually based on temp. as specified by client
@@ -351,17 +354,16 @@ func ValidateEntity(entity int, t map[string]interface{}) (map[string]interface{
 					objects := strings.Split(v["content"].(string), ",")
 					if len(objects) <= 1 {
 						if objects[0] == "" {
-							msg := "objects separated by a comma must be" +
-								" on the payload"
-							return u.Message(false, msg), false
+							return false, &u.Error{Type: u.ErrBadFormat,
+								Message: "objects separated by a comma must be" +
+									" on the payload"}
 						}
-
 					}
 
 					//Ensure objects are all unique
 					if _, ok := EnsureUnique(objects); !ok {
-						msg := "The group cannot have duplicate objects"
-						return u.Message(false, msg), false
+						return false, &u.Error{Type: u.ErrBadFormat,
+							Message: "The group cannot have duplicate objects"}
 					}
 
 					//Ensure objects all exist
@@ -373,42 +375,40 @@ func ValidateEntity(entity int, t map[string]interface{}) (map[string]interface{
 
 					//If parent is rack, retrieve devices
 					if parent["parent"].(string) == "rack" {
-						ans, ok := GetManyEntities("device", filter, u.RequestFilters{}, nil)
-						if ok != "" {
-							return u.Message(false, ok), false
+						ans, err := GetManyEntities("device", filter, u.RequestFilters{}, nil)
+						if err != nil {
+							return false, err
 						}
 						if len(ans) != len(objects) {
-							msg := "Unable to verify objects in specified group" +
-								" please check and try again"
-							return u.Message(false, msg), false
+							return false, &u.Error{Type: u.ErrBadFormat,
+								Message: "Unable to verify objects in specified group" +
+									" please check and try again"}
 						}
 
 					} else if parent["parent"].(string) == "room" {
-
 						//If parent is room, retrieve corridors and racks
-						corridors, e1 := GetManyEntities("corridor", filter, u.RequestFilters{}, nil)
-						if e1 != "" {
-							return u.Message(false, e1), false
+						corridors, err := GetManyEntities("corridor", filter, u.RequestFilters{}, nil)
+						if err != nil {
+							return false, err
 						}
 
-						racks, e2 := GetManyEntities("rack", filter, u.RequestFilters{}, nil)
-						if e2 != "" {
-							return u.Message(false, e1), false
+						racks, err := GetManyEntities("rack", filter, u.RequestFilters{}, nil)
+						if err != nil {
+							return false, err
 						}
 						if len(racks)+len(corridors) != len(objects) {
-							msg := "Some object(s) could be not be found. " +
-								"Please check and try again"
-							return u.Message(false, msg), false
+							return false, &u.Error{Type: u.ErrBadFormat,
+								Message: "Some object(s) could be not be found. " +
+									"Please check and try again"}
 						}
 					}
-
 				}
 			}
 		}
 	}
 
 	//Successfully validated the Object
-	return u.Message(true, "success"), true
+	return true, nil
 }
 
 // Auxillary Functions

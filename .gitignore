@@ -19,3 +19,5 @@ cli.exe
 cli.mac
 .history
 *.ocli
+log.txt
+unitylog.txt

@@ -39,7 +39,7 @@ func PostObj(ent int, entity string, data map[string]interface{}) (map[string]in
 		return nil, fmt.Errorf("Invalid Response received from API")
 	}
 
-	if resp.StatusCode == http.StatusCreated && respMap["status"].(bool) == true {
+	if resp.StatusCode == http.StatusCreated {
 		//Print success message
 		if State.DebugLvl > NONE {
 			println(string(respMap["message"].(string)))
@@ -71,7 +71,7 @@ func ValidateObj(data map[string]interface{}, ent string, silence bool) bool {
 		return false
 	}
 
-	if resp.StatusCode == http.StatusOK && respMap["status"].(bool) == true {
+	if resp.StatusCode == http.StatusOK {
 		//Print success message
 		if silence == false {
 			println(string(respMap["message"].(string)))

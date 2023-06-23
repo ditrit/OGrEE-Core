@@ -4,7 +4,8 @@
 // Check our project here: https://github.com/ditrit/OGrEE-Core
 //
 //		Schemes: http
-//		BasePath: /api
+//		Host: localhost:3001
+//		BasePath: /
 //		Version: 1.0
 //		Contact: DitRit <contact@ditrit.io> https://ditrit.io
 //
@@ -15,10 +16,10 @@
 //		- application/json
 //
 //	     SecurityDefinitions:
-//	         JWT:
-//	             type: jwt
-//	             name: Authorization
-//	             in: header
+//	         bearer:
+//	          type: apiKey
+//	          name: Authorization
+//	          in: header
 //
 // swagger:meta
 package main

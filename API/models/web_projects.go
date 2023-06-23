@@ -30,13 +30,13 @@ type Project struct {
 
 // PROJECTS
 // GET
-func GetProjectsByUserEmail(userEmail string) (map[string]interface{}, string) {
+func GetProjectsByUserEmail(userEmail string) ([]Project, *u.Error) {
 	response := make(map[string]interface{})
 	response["projects"] = make([]interface{}, 0)
 	println("Get projects for " + userEmail)
 
 	// Get projects with user permitted
-	var results []Project
+	results := []Project{}
 	filter := bson.D{
 		{Key: "$or",
 			Value: bson.A{
@@ -48,36 +48,31 @@ func GetProjectsByUserEmail(userEmail string) (map[string]interface{}, string) {
 	ctx, cancel := u.Connect()
 	cursor, err := GetDB().Collection(WEB_PROJECTS).Find(ctx, filter)
 	if err != nil {
-		fmt.Println(err)
-	} else {
-		if err = cursor.All(ctx, &results); err != nil {
-			fmt.Println(err)
-		} else if len(results) > 0 {
-			response["projects"] = results
-		}
+		return nil, &u.Error{Type: u.ErrDBError, Message: err.Error()}
+	} else if err = cursor.All(ctx, &results); err != nil {
+		return nil, &u.Error{Type: u.ErrInternal, Message: err.Error()}
 	}
 
 	defer cancel()
-
-	return response, ""
+	return results, nil
 }
 
 // POST
-func AddProject(newProject Project) string {
+func AddProject(newProject Project) *u.Error {
 	// Add the new project
 	ctx, cancel := u.Connect()
 	_, err := GetDB().Collection(WEB_PROJECTS).InsertOne(ctx, newProject)
 	if err != nil {
 		println(err.Error())
-		return err.Error()
+		return &u.Error{Type: u.ErrDBError, Message: err.Error()}
 	}
 
 	defer cancel()
-	return ""
+	return nil
 }
 
 // PUT
-func UpdateProject(newProject Project, projectId string) string {
+func UpdateProject(newProject Project, projectId string) *u.Error {
 	// Update existing project, if exists
 	ctx, cancel := u.Connect()
 	objId, _ := primitive.ObjectIDFromHex(projectId)
@@ -86,16 +81,17 @@ func UpdateProject(newProject Project, projectId string) string {
 	defer cancel()
 
 	if err != nil {
-		return err.Error()
+		return &u.Error{Type: u.ErrDBError, Message: err.Error()}
 	}
 	if res.MatchedCount <= 0 {
-		return "No project found with this ID"
+		return &u.Error{Type: u.ErrNotFound,
+			Message: "No project found with this ID"}
 	}
-	return ""
+	return nil
 }
 
 // DELETE
-func DeleteProject(projectId string) string {
+func DeleteProject(projectId string) *u.Error {
 	println(projectId)
 
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
@@ -104,11 +100,12 @@ func DeleteProject(projectId string) string {
 	defer cancel()
 
 	if err != nil {
-		return err.Error()
+		return &u.Error{Type: u.ErrDBError, Message: err.Error()}
 	} else if res.DeletedCount <= 0 {
-		return "Project not found"
+		return &u.Error{Type: u.ErrNotFound,
+			Message: "Project not found"}
 	}
-	return ""
+	return nil
 }
 
 // IF USERS HAVE LIST OF PROJECTS

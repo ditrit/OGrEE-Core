@@ -30,17 +30,12 @@ const (
 
 const ROOT_DOMAIN = "*"
 
-func CheckParentDomain(parentDomain, childDomain string) bool {
-	match, _ := regexp.MatchString("^"+parentDomain, childDomain)
-	return match
-}
-
 func CheckDomainExists(domain string) bool {
 	if domain == ROOT_DOMAIN {
 		return true
 	}
 	x, e := GetEntity(bson.M{"hierarchyName": domain}, "domain", u.RequestFilters{}, nil)
-	return e == "" && x != nil
+	return e == nil && x != nil
 }
 
 func GetRequestFilterByDomain(userRoles map[string]Role) (bson.M, bool) {
@@ -61,6 +56,7 @@ func GetRequestFilterByDomain(userRoles map[string]Role) (bson.M, bool) {
 		}
 	}
 	if domainPattern == "" {
+		// the user is only a viewer, return false
 		return filter, false
 	} else {
 		filter["domain"] = primitive.Regex{Pattern: domainPattern, Options: ""}
@@ -75,7 +71,7 @@ func CheckUserPermissions(userRoles map[string]Role, objEntity int, objDomain st
 			return WRITE
 		}
 		for userDomain, role := range userRoles {
-			if domainIsEqualOrChild(userDomain, objDomain) && role == Manager {
+			if DomainIsEqualOrChild(userDomain, objDomain) && role == Manager {
 				//objDomain is equal or child of userDomain
 				return WRITE
 			}
@@ -88,7 +84,7 @@ func CheckUserPermissions(userRoles map[string]Role, objEntity int, objDomain st
 		}
 
 		for userDomain, role := range userRoles {
-			if domainIsEqualOrChild(userDomain, objDomain) {
+			if DomainIsEqualOrChild(userDomain, objDomain) {
 				//objDomain is equal or child of userDomain
 				if role == Viewer {
 					permission = READ
@@ -96,7 +92,7 @@ func CheckUserPermissions(userRoles map[string]Role, objEntity int, objDomain st
 					permission = WRITE
 					break // highest possible
 				}
-			} else if domainIsEqualOrChild(objDomain, userDomain) {
+			} else if DomainIsEqualOrChild(objDomain, userDomain) {
 				// objDomain is father of userDomain
 				if permission < READONLYNAME {
 					permission = READONLYNAME
@@ -107,7 +103,7 @@ func CheckUserPermissions(userRoles map[string]Role, objEntity int, objDomain st
 	return permission
 }
 
-func domainIsEqualOrChild(refDomain, domainToCheck string) bool {
+func DomainIsEqualOrChild(refDomain, domainToCheck string) bool {
 	match, _ := regexp.MatchString("^"+refDomain+"\\.", domainToCheck)
 	return match || refDomain == domainToCheck
 }

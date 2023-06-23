@@ -3,6 +3,7 @@ package main
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
@@ -34,10 +35,10 @@ func getAdminToken() {
 	admin.Email = "admin@admin.com"
 	admin.Password = "admin123"
 	admin.Roles = map[string]models.Role{"*": "manager"}
-	response, _ := admin.Create(map[string]models.Role{"*": "manager"})
-	if response["account"] != nil {
-		adminId = response["account"].(*models.Account).ID
-		adminToken = response["account"].(*models.Account).Token
+	newAcc, _ := admin.Create(map[string]models.Role{"*": "manager"})
+	if newAcc != nil {
+		adminId = newAcc.ID
+		adminToken = newAcc.Token
 	}
 }
 
@@ -72,6 +73,7 @@ func TestCreateLoginAccount(t *testing.T) {
 
 	// Test recreate existing account
 	recorder = makeRequest("POST", "/api/users", requestBody)
+	println(recorder.Body.String())
 	assert.Equal(t, http.StatusBadRequest, recorder.Code)
 
 	// Test login
@@ -107,6 +109,7 @@ func TestObjects(t *testing.T) {
 
 		assert.Equal(t, http.StatusCreated, recorder.Code)
 		json.Unmarshal(recorder.Body.Bytes(), &response)
+		fmt.Println(response)
 		parentId, exists = response["data"].(map[string]interface{})["id"].(string)
 		assert.Equal(t, true, exists)
 

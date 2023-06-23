@@ -687,6 +687,9 @@ func (p *parser) parseDelete() node {
 	if p.parseExact("selection") {
 		return &deleteSelectionNode{}
 	}
+	if p.commandEnd() {
+		p.error("path expected")
+	}
 	return &deleteObjNode{p.parsePath("")}
 }
 
