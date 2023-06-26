@@ -129,7 +129,9 @@ class _SelectPageState extends State<SelectPage> with TickerProviderStateMixin {
             content: SizedBox(
                 height: MediaQuery.of(context).size.height - 205,
                 child: SelectObjects(
-                    namespace: _selectedNamespace, load: _loadObjects)),
+                    dateRange: _selectedDate,
+                    namespace: _selectedNamespace,
+                    load: _loadObjects)),
             isActive: _currentStep >= Steps.date.index,
             state: _currentStep >= Steps.objects.index
                 ? StepState.complete
@@ -141,6 +143,7 @@ class _SelectPageState extends State<SelectPage> with TickerProviderStateMixin {
                 ? SizedBox(
                     height: MediaQuery.of(context).size.height - 210,
                     child: ResultsPage(
+                      dateRange: _selectedDate,
                       selectedAttrs: _selectedAttrs,
                       selectedObjects: _selectedObjects.keys.toList(),
                       namespace: "Physical",

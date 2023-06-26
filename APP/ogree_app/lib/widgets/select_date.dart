@@ -206,9 +206,11 @@ class _DatePickerState extends State<DatePicker> {
     /// multi range.
     setState(() {
       if (args.value is PickerDateRange) {
-        _range = '${DateFormat('dd/MM/yyyy').format(args.value.startDate)} -'
-            // ignore: lines_longer_than_80_chars
-            ' ${DateFormat('dd/MM/yyyy').format(args.value.endDate ?? args.value.startDate)}';
+        _range = DateFormat('dd/MM/yyyy').format(args.value.startDate);
+        if (args.value.endDate != null) {
+          _range =
+              "$_range - ${DateFormat('dd/MM/yyyy').format(args.value.endDate)}";
+        }
         SelectPage.of(context)!.selectedDate = _range;
       } else if (args.value is DateTime) {
         _selectedDate = args.value.toString();
@@ -235,11 +237,11 @@ class _DatePickerState extends State<DatePicker> {
           enableMultiView: MediaQuery.of(context).size.width > 700,
           headerStyle:
               const DateRangePickerHeaderStyle(textAlign: TextAlign.center),
-          initialSelectedRange: PickerDateRange(
-              // DateTime.now().subtract(const Duration(days: 4)),
-              // DateTime.now().add(const Duration(days: 3))
-              DateTime.now(),
-              DateTime.now()),
+          // initialSelectedRange: PickerDateRange(
+          // DateTime.now().subtract(const Duration(days: 4)),
+          // DateTime.now().add(const Duration(days: 3))
+          // DateTime.now(),
+          // DateTime.now()),
         ),
       ),
     ));

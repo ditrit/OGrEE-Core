@@ -22,6 +22,21 @@ getHeader(token) => {
       'Authorization': 'Bearer $token',
     };
 
+String reformatDate(String date) {
+  // dd/MM/yyyy -> yyyy-MM-dd
+  List<String> dateParts = date.split("/");
+  return "${dateParts[2]}-${dateParts[1]}-${dateParts[0]}";
+}
+
+String urlDateAppend(String dateRange) {
+  var ranges = dateRange.split(" - ");
+  String urlAppend = "?startDate=${reformatDate(ranges[0])}";
+  if (ranges.length > 1) {
+    urlAppend = "$urlAppend&endDate=${reformatDate(ranges[1])}";
+  }
+  return urlAppend;
+}
+
 Future<List<String>> loginAPI(String email, String password,
     {String userUrl = ""}) async {
   if (userUrl != "") {
@@ -127,13 +142,16 @@ Future<String> userResetPassword(String password, String resetToken,
 }
 
 Future<List<Map<String, List<String>>>> fetchObjectsTree(
-    {onlyDomain = false}) async {
+    {String dateRange = "", bool onlyDomain = false}) async {
   print("API get tree");
   String localUrl = '$apiUrl/api/hierarchy';
   String localToken = token;
   if (onlyDomain) {
     localUrl = '$tenantUrl/api/hierarchy/domains';
     localToken = tenantToken;
+  }
+  if (dateRange != "") {
+    localUrl = localUrl + urlDateAppend(dateRange);
   }
   Uri url = Uri.parse(localUrl);
   final response = await http.get(url, headers: getHeader(localToken));

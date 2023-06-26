@@ -9,6 +9,7 @@ void main() {
   testWidgets('SelectObjects expands and collapses tree', (tester) async {
     await tester.pumpWidget(const LocalizationsInjApp(
         child: SelectObjects(
+      dateRange: "",
       load: true,
       namespace: 'TEST',
     )));
@@ -33,6 +34,7 @@ void main() {
   testWidgets('SelectObjects toogles tree selection', (tester) async {
     await tester.pumpWidget(const LocalizationsInjApp(
         child: SelectObjects(
+      dateRange: "",
       load: true,
       namespace: 'TEST',
     )));
@@ -59,6 +61,7 @@ void main() {
   testWidgets('SelectObjects can find an object', (tester) async {
     await tester.pumpWidget(const LocalizationsInjApp(
         child: SelectObjects(
+      dateRange: "",
       load: true,
       namespace: 'TEST',
     )));
@@ -81,6 +84,7 @@ void main() {
   testWidgets('SelectObjects can filter objects', (tester) async {
     await tester.pumpWidget(const LocalizationsInjApp(
         child: SelectObjects(
+      dateRange: "",
       load: true,
       namespace: 'TEST',
     )));
