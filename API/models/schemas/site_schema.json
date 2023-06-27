@@ -15,10 +15,6 @@
     "domain": {
       "type": "string"
     },
-    "createdDate": {
-    },
-    "lastUpdated": {
-    },
     "name": {
       "type": "string",
       "pattern":"^\\w(\\w|\\-)*$"

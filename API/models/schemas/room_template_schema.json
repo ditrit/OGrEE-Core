@@ -46,8 +46,6 @@
                 }
             }
         },
-        "createdDate": {
-        },
         "floorUnit": {
             "type": "string",
             "enum": [
@@ -58,8 +56,6 @@
         },
         "id": {
             "type": "string"
-        },
-        "lastUpdated": {
         },
         "axisOrientation": {
             "type": "string",
