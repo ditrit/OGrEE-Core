@@ -29,7 +29,7 @@ class _CreateTenantPopupState extends State<CreateTenantPopup> {
   bool _hasDoc = false;
   bool _isLoading = false;
   PlatformFile? _loadedImage;
-  String _imageTag = "latest";
+  String _imageTag = "main";
 
   @override
   Widget build(BuildContext context) {
@@ -99,7 +99,7 @@ class _CreateTenantPopupState extends State<CreateTenantPopup> {
                   ),
                   getFormField(
                       save: (newValue) => _imageTag = newValue!,
-                      label: "Version du déploiement (tag)",
+                      label: "Version du déploiement (branch)",
                       icon: Icons.access_time,
                       initial: _imageTag),
                   getFormField(

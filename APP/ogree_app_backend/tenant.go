@@ -148,7 +148,7 @@ func addTenant(c *gin.Context) {
 
 		// Image tagging
 		if newTenant.ImageTag == "" {
-			newTenant.ImageTag = "latest"
+			newTenant.ImageTag = "main"
 		}
 
 		// Docker compose prepare
