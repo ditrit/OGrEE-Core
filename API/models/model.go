@@ -194,8 +194,8 @@ func CreateEntity(entity int, t map[string]interface{}, userRoles map[string]Rol
 	return t, nil
 }
 
-// GetObjectByName: search for id (hierarchyName) in all possible collections
-func GetObjectByName(hierarchyName string, filters u.RequestFilters, userRoles map[string]Role) (map[string]interface{}, *u.Error) {
+// GetObjectById: search for id (hierarchyName) in all possible collections
+func GetObjectById(hierarchyName string, filters u.RequestFilters, userRoles map[string]Role) (map[string]interface{}, *u.Error) {
 	var resp map[string]interface{}
 	// Get possible collections for this name
 	rangeEntities := u.HierachyNameToEntity(hierarchyName)

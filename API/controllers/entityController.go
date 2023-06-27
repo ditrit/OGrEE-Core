@@ -349,7 +349,7 @@ func GetGenericObject(w http.ResponseWriter, r *http.Request) {
 	hierarchyName, e := mux.Vars(r)["id"]
 	filters := getFiltersFromQueryParams(r)
 	if e {
-		data, err = models.GetObjectByName(hierarchyName, filters, user.Roles)
+		data, err = models.GetObjectById(hierarchyName, filters, user.Roles)
 	} else {
 		u.Respond(w, u.Message("Error while parsing path parameters"))
 		u.ErrLog("Error while parsing path parameters", "GET ENTITY", "", r)
@@ -1104,14 +1104,27 @@ func GetHierarchyByName(w http.ResponseWriter, r *http.Request) {
 
 	println("The limit is: ", limit)
 
-	data, e1 := models.GetEntity(bson.M{"_id": id}, entity, filters, user.Roles)
-	if limit >= 1 && e1 == nil {
-		data["children"], e1 = models.GetHierarchyByName(entity, id, limit, filters)
+	// Get object and its family
+	var modelErr *u.Error
+	var data map[string]interface{}
+	if entity == "object" {
+		// Generic endpoint
+		data, modelErr = models.GetObjectById(id, filters, user.Roles)
+		if modelErr == nil {
+			entity = data["category"].(string)
+		}
+	} else {
+		// Entity already known
+		data, modelErr = models.GetEntity(bson.M{"_id": id}, entity, filters, user.Roles)
+	}
+	if limit >= 1 && modelErr == nil {
+		data["children"], modelErr = models.GetHierarchyByName(entity, id, limit, filters)
 	}
 
-	if data == nil {
-		u.ErrLog("Error while getting "+entity, "GET "+entity, e1.Message, r)
-		u.RespondWithError(w, e1)
+	// Respond
+	if modelErr != nil {
+		u.ErrLog("Error while getting "+entity, "GET "+entity, modelErr.Message, r)
+		u.RespondWithError(w, modelErr)
 	} else if r.Method == "OPTIONS" {
 		w.Header().Add("Content-Type", "application/json")
 		w.Header().Add("Allow", "GET, OPTIONS")
