@@ -5,6 +5,7 @@ import 'package:ogree_app/common/popup_dialog.dart';
 import 'package:ogree_app/common/snackbar.dart';
 import 'package:ogree_app/models/tenant.dart';
 import 'package:ogree_app/pages/tenant_page.dart';
+import 'package:ogree_app/widgets/tenants/popups/update_tenant_popup.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class TenantCard extends StatelessWidget {
@@ -40,7 +41,6 @@ class TenantCard extends StatelessWidget {
                             fontWeight: FontWeight.bold, fontSize: 16)),
                   ),
                   CircleAvatar(
-                    backgroundColor: Colors.red.shade100,
                     radius: 13,
                     child: IconButton(
                         splashRadius: 18,
@@ -48,15 +48,12 @@ class TenantCard extends StatelessWidget {
                         padding: const EdgeInsets.all(2),
                         onPressed: () => showCustomPopup(
                             context,
-                            DeleteDialog(
-                              objName: [tenant.name],
+                            UpdateTenantPopup(
                               parentCallback: parentCallback,
-                              objType: "tenants",
-                            ),
-                            isDismissible: true),
-                        icon: Icon(
-                          Icons.delete,
-                          color: Colors.red.shade900,
+                              tenant: tenant,
+                            )),
+                        icon: const Icon(
+                          Icons.update,
                         )),
                   ),
                   const SizedBox(width: 8),
@@ -104,15 +101,37 @@ class TenantCard extends StatelessWidget {
                   ),
                 ],
               ),
-              Align(
-                alignment: Alignment.bottomRight,
-                child: TextButton.icon(
-                    onPressed: () {
-                      launchUrl(Uri.parse(
-                          "http://${tenant.webUrl}:${tenant.webPort}"));
-                    },
-                    icon: const Icon(Icons.play_circle),
-                    label: Text(localeMsg.launch)),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  CircleAvatar(
+                    backgroundColor: Colors.red.shade100,
+                    radius: 13,
+                    child: IconButton(
+                        splashRadius: 18,
+                        iconSize: 14,
+                        padding: const EdgeInsets.all(2),
+                        onPressed: () => showCustomPopup(
+                            context,
+                            DeleteDialog(
+                              objName: [tenant.name],
+                              parentCallback: parentCallback,
+                              objType: "tenants",
+                            ),
+                            isDismissible: true),
+                        icon: Icon(
+                          Icons.delete,
+                          color: Colors.red.shade900,
+                        )),
+                  ),
+                  TextButton.icon(
+                      onPressed: () {
+                        launchUrl(Uri.parse(
+                            "http://${tenant.webUrl}:${tenant.webPort}"));
+                      },
+                      icon: const Icon(Icons.play_circle),
+                      label: Text(localeMsg.launch)),
+                ],
               )
             ],
           ),
