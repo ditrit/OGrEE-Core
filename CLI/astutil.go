@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"reflect"
+	"strconv"
 )
 
 func checkTypesAreSame(x, y interface{}) bool {
@@ -60,6 +61,77 @@ func getFloat(unk interface{}) (float64, error) {
 	}
 	fv := v.Convert(floatType)
 	return fv.Float(), nil
+}
+
+func stringToNum(s string) (any, error) {
+	intVal, err := strconv.Atoi(s)
+	if err == nil {
+		return intVal, nil
+	}
+	floatVal, err := strconv.ParseFloat(s, 64)
+	if err == nil {
+		return floatVal, nil
+	}
+	return nil, fmt.Errorf("the string is not a number")
+}
+
+func nodeToNum(n node, name string) (any, error) {
+	val, err := n.execute()
+	if err != nil {
+		return nil, err
+	}
+	stringVal, isString := val.(string)
+	if isString {
+		val, err = stringToNum(stringVal)
+		if err != nil {
+			return nil, fmt.Errorf("%s should be a number", name)
+		}
+	}
+	return val, nil
+}
+
+func nodeToInt(n node, name string) (int, error) {
+	val, err := n.execute()
+	if err != nil {
+		return 0, err
+	}
+	stringVal, isString := val.(string)
+	if isString {
+		intVal, err := strconv.Atoi(stringVal)
+		if err != nil {
+			return 0, fmt.Errorf("%s should be an integer", name)
+		}
+		return intVal, nil
+	}
+	intVal, ok := val.(int)
+	if !ok {
+		return 0, fmt.Errorf("%s should be an integer", name)
+	}
+	return intVal, nil
+}
+
+func valToBool(val any, name string) (bool, error) {
+	var err error
+	stringVal, isString := val.(string)
+	if isString {
+		val, err = strconv.ParseBool(stringVal)
+		if err != nil {
+			return false, fmt.Errorf("%s should be a boolean", name)
+		}
+	}
+	boolVal, ok := val.(bool)
+	if !ok {
+		return false, fmt.Errorf("%s should be a boolean", name)
+	}
+	return boolVal, nil
+}
+
+func nodeToBool(n node, name string) (bool, error) {
+	val, err := n.execute()
+	if err != nil {
+		return false, err
+	}
+	return valToBool(val, name)
 }
 
 // Open a file and return the JSON in the file
@@ -216,11 +288,6 @@ func IsHexString(s string) bool {
 
 	_, err := hex.DecodeString(s)
 	return err == nil
-}
-
-func IsBool(x interface{}) bool {
-	_, ok := x.(bool)
-	return ok
 }
 
 func IsInt(x interface{}) bool {

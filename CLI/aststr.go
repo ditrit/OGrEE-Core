@@ -1,22 +1,13 @@
 package main
 
 import (
-	cmd "cli/controllers"
+	c "cli/controllers"
 	"fmt"
 	"path"
 	"strings"
 )
 
-type strLeaf struct {
-	val string
-}
 
-func (l strLeaf) getStr() (string, error) {
-	return l.val, nil
-}
-func (l strLeaf) execute() (interface{}, error) {
-	return l.getStr()
-}
 
 type pathNode struct {
 	path node
@@ -38,11 +29,11 @@ func (n pathNode) getStr() (string, error) {
 		return "_", nil
 	}
 	if p == "-" {
-		return cmd.State.PrevPath, nil
+		return c.State.PrevPath, nil
 	}
 	var output_words []string
 	if p[0] != '/' {
-		output_words = strings.Split(cmd.State.CurrPath, "/")[1:]
+		output_words = strings.Split(c.State.CurrPath, "/")[1:]
 		if len(output_words) == 1 && output_words[0] == "" {
 			output_words = output_words[0:0]
 		}
@@ -78,18 +69,18 @@ func (n pathNode) execute() (interface{}, error) {
 }
 
 type formatStringNode struct {
-	str       string
-	varsDeref []symbolReferenceNode
+	str  string
+	vals []node
 }
 
 func (n *formatStringNode) getStr() (string, error) {
 	vals := []any{}
-	for _, varDeref := range n.varsDeref {
-		val, err := varDeref.execute()
+	for _, val := range n.vals {
+		v, err := val.execute()
 		if err != nil {
 			return "", err
 		}
-		vals = append(vals, val)
+		vals = append(vals, v)
 	}
 	return fmt.Sprintf(n.str, vals...), nil
 }

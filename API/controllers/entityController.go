@@ -91,7 +91,7 @@ func getUserFromToken(w http.ResponseWriter, r *http.Request) *models.Account {
 //     description: 'Entity (same as category) of the object. Accepted values: sites, domains,
 //     buildings, rooms, racks, devices, acs, panels,
 //     cabinets, groups, corridors,
-//     room-templates, obj-templates, bldg-templates, stray-devices.'
+//     room-templates, obj-templates, bldg-templates, stray-objects.'
 //     required: true
 //     type: string
 //     default: "sites"
@@ -145,7 +145,7 @@ func CreateEntity(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Check if category and endpoint match, except for templates and strays
-	if entInt < u.ROOMTMPL && entInt != u.STRAYDEV {
+	if entInt < u.ROOMTMPL && entInt != u.STRAYOBJ {
 		if object["category"] != entStr {
 			w.WriteHeader(http.StatusBadRequest)
 			u.Respond(w, u.Message("Category in request body does not correspond with desired object in endpoint"))
@@ -385,7 +385,7 @@ func GetGenericObject(w http.ResponseWriter, r *http.Request) {
 //     description: 'Entity (same as category) of the object. Accepted values: sites, domains,
 //     buildings, rooms, racks, devices, acs, panels,
 //     cabinets, groups, corridors,
-//     room-templates, obj-templates, bldg-templates, stray-devices.'
+//     room-templates, obj-templates, bldg-templates, stray-objects.'
 //     required: true
 //     type: string
 //     default: "sites"
@@ -485,7 +485,7 @@ func GetEntity(w http.ResponseWriter, r *http.Request) {
 //     description: 'Entity (same as category) of the object. Accepted values: sites, domains,
 //     buildings, rooms, racks, devices, acs, panels,
 //     cabinets, groups, corridors,
-//     room-templates, obj-templates, bldg-templates, stray-devices'
+//     room-templates, obj-templates, bldg-templates, stray-objects'
 //     required: true
 //     type: string
 //     default: "sites"
@@ -565,7 +565,7 @@ func GetAllEntities(w http.ResponseWriter, r *http.Request) {
 //     description: 'Entity (same as category) of the object. Accepted values: sites, domains,
 //     buildings, rooms, racks, devices, acs, panels,
 //     cabinets, groups, corridors,
-//     room-templates, obj-templates, bldg-templates, stray-devices.'
+//     room-templates, obj-templates, bldg-templates, stray-objects.'
 //     required: true
 //     type: string
 //     default: "sites"
@@ -650,7 +650,7 @@ func DeleteEntity(w http.ResponseWriter, r *http.Request) {
 //     description: 'Entity (same as category) of the object. Accepted values: sites, domains,
 //     buildings, rooms, racks, devices, acs, panels,
 //     cabinets, groups, corridors,
-//     room-templates, obj-templates, bldg-templates, stray-devices.'
+//     room-templates, obj-templates, bldg-templates, stray-objects.'
 //     required: true
 //     type: string
 //     default: "sites"
@@ -688,7 +688,7 @@ func DeleteEntity(w http.ResponseWriter, r *http.Request) {
 //     description: 'Entity (same as category) of the object. Accepted values: sites, domains,
 //     buildings, rooms, racks, devices, acs, panels,
 //     cabinets, groups, corridors,
-//     room-templates, obj-templates, bldg-templates, stray-devices.'
+//     room-templates, obj-templates, bldg-templates, stray-objects.'
 //     required: true
 //     type: string
 //     default: "sites"
@@ -794,7 +794,7 @@ func UpdateEntity(w http.ResponseWriter, r *http.Request) {
 //     description: 'Entity (same as category) of the object. Accepted values: sites, domains,
 //     buildings, rooms, racks, devices, acs, panels,
 //     cabinets, groups, corridors,
-//     room-templates, obj-templates, bldg-templates, stray-devices.'
+//     room-templates, obj-templates, bldg-templates, stray-objects.'
 //     required: true
 //     type: string
 //     default: "sites"
@@ -1029,7 +1029,7 @@ func GetEntitiesOfAncestor(w http.ResponseWriter, r *http.Request) {
 //   description: 'Entity (same as category) of the object. Accepted values: sites, domains,
 //   buildings, rooms, racks, devices, acs, panels,
 //   cabinets, groups, corridors,
-//   room-templates, obj-templates, bldg-templates, stray-devices.'
+//   room-templates, obj-templates, bldg-templates, stray-objects.'
 //   required: true
 //   type: string
 //   default: "sites"
@@ -1254,6 +1254,99 @@ func GetCompleteHierarchyAttributes(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+func LinkEntity(w http.ResponseWriter, r *http.Request) {
+	fmt.Println("******************************************************")
+	fmt.Println("FUNCTION CALL: 	 LinkEntity ")
+	fmt.Println("******************************************************")
+	DispRequestMetaData(r)
+	var data map[string]interface{}
+	var id string
+	var canParse bool
+	var modelErr *u.Error
+	var body map[string]string
+
+	// Get user roles for permissions
+	user := getUserFromToken(w, r)
+	if user == nil {
+		return
+	}
+	entityStr, isUnlink := mux.Vars(r)["entity"]
+
+	if !isUnlink {
+		// It's link, get parentId from body
+		body = map[string]string{}
+		err := json.NewDecoder(r.Body).Decode(&body)
+		if err != nil || len(body) > 1 || len(body) <= 0 || len(body["parentId"]) < 1 {
+			w.WriteHeader(http.StatusBadRequest)
+			u.Respond(w, u.Message("Error while decoding request body: must contain parentId and only it"))
+			u.ErrLog("Error while decoding request body", "LinkEntity", "", r)
+			return
+		}
+		entityStr = "stray_object"
+	}
+
+	// Get entity
+	if id, canParse = mux.Vars(r)["id"]; canParse {
+		data, modelErr = models.GetEntity(bson.M{"_id": id}, entityStr, u.RequestFilters{}, user.Roles)
+	} else {
+		w.WriteHeader(http.StatusBadRequest)
+		u.Respond(w, u.Message("Error while parsing path parameters"))
+		u.ErrLog("Error while parsing path parameters", "GET ENTITY", "", r)
+		return
+	}
+	if modelErr != nil {
+		u.ErrLog("Error while getting "+entityStr, "GET "+strings.ToUpper(entityStr),
+			modelErr.Message, r)
+		u.RespondWithError(w, modelErr)
+		return
+	}
+
+	// Adjust retrieved object to recreate it
+	if isUnlink {
+		delete(data, "parentId")
+		entityStr = "stray_object"
+	} else {
+		data["parentId"] = body["parentId"]
+		entityStr = data["category"].(string)
+	}
+	// Remove api fields
+	delete(data, "id")
+	delete(data, "createdDate")
+	delete(data, "lastUpdated")
+	// Convert primitive.A and similar types
+	bytes, _ := json.Marshal(data)
+	json.Unmarshal(bytes, &data)
+	// Create
+	data, modelErr = models.CreateEntity(u.EntityStrToInt(entityStr), data, user.Roles)
+	if modelErr != nil {
+		u.ErrLog("Error creating at "+entityStr, "CREATE", modelErr.Message, r)
+		u.RespondWithError(w, modelErr)
+		return
+	}
+
+	//Propagate id change to children
+	models.PropagateParentIdChange(id, data["id"].(string), data["category"].(string))
+
+	// Delete old object
+	if isUnlink {
+		entityStr = data["category"].(string)
+	} else {
+		entityStr = "stray_object"
+	}
+	modelErr = models.DeleteSingleEntity(entityStr, bson.M{"_id": id})
+	if modelErr != nil {
+		u.ErrLog("Error while deleting entity", "DELETE ENTITY", modelErr.Message, r)
+		u.RespondWithError(w, modelErr)
+		return
+	}
+
+	if isUnlink {
+		u.Respond(w, u.Message("successfully unlinked"))
+	} else {
+		u.Respond(w, u.Message("successfully linked"))
+	}
+}
+
 func BaseOption(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("******************************************************")
 	fmt.Println("FUNCTION CALL: 	 BaseOption ")
@@ -1311,7 +1404,7 @@ func GetStats(w http.ResponseWriter, r *http.Request) {
 //     description: 'Entity (same as category) of the object. Accepted values: sites, domains,
 //     buildings, rooms, racks, devices, acs, panels,
 //     cabinets, groups, corridors,
-//     room-templates, obj-templates, bldg-templates, stray-devices.'
+//     room-templates, obj-templates, bldg-templates, stray-objects.'
 //     required: true
 //     type: string
 //     default: "sites"
@@ -1343,7 +1436,7 @@ func ValidateEntity(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	//If templates or stray-devices, format them
+	//If templates or stray-objects, format them
 	if idx := strings.Index(entity, "-"); idx != -1 {
 		//entStr[idx] = '_'
 		entity = entity[:idx] + "_" + entity[idx+1:]

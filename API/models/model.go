@@ -88,10 +88,6 @@ func getChildrenCollections(limit int, parentEntStr string) []int {
 		// device special case (devices can have devices)
 		startEnt = u.DEVICE
 		endEnt = u.DEVICE
-	} else if parentEntStr == "stray_device" {
-		// stray device special case
-		startEnt = u.STRAYDEV
-		endEnt = u.STRAYDEV
 	} else if endEnt >= u.DEVICE {
 		// include AC, CABINET, CORRIDOR, PWRPNL and GROUP
 		// beacause of ROOM and RACK possible children
@@ -112,9 +108,9 @@ func getChildrenCollections(limit int, parentEntStr string) []int {
 	return rangeEntities
 }
 
-// propagateParentIdChange: search for given parent children and
+// PropagateParentIdChange: search for given parent children and
 // update their hierarchyName with new parent name
-func propagateParentIdChange(oldParentId, newId, entStr string) {
+func PropagateParentIdChange(oldParentId, newId, entStr string) {
 	children, _, err := getChildren(entStr, oldParentId, 999, u.RequestFilters{})
 	if err != nil {
 		println("Error find children to propagate change: " + err.Message)
@@ -667,9 +663,6 @@ func UpdateEntity(ent string, req bson.M, t map[string]interface{}, isPatch bool
 			Message: "User does not have permission to change this object"}
 	}
 
-	t["lastUpdated"] = primitive.NewDateTimeFromTime(time.Now())
-	t["createdDate"] = oldObj["createdDate"]
-
 	// Update old object data with patch data
 	if isPatch {
 		var formattedOldObj map[string]interface{}
@@ -684,6 +677,8 @@ func UpdateEntity(ent string, req bson.M, t map[string]interface{}, isPatch bool
 		t = formattedOldObj
 		// Remove API set fields
 		delete(t, "id")
+		delete(t, "lastUpdated")
+		delete(t, "createdDate")
 	}
 
 	// Ensure the update is valid
@@ -691,6 +686,9 @@ func UpdateEntity(ent string, req bson.M, t map[string]interface{}, isPatch bool
 	if ok, err := ValidateEntity(u.EntityStrToInt(ent), t); !ok {
 		return nil, err
 	}
+
+	t["lastUpdated"] = primitive.NewDateTimeFromTime(time.Now())
+	t["createdDate"] = oldObj["createdDate"]
 
 	// Check user permissions in case domain is being updated
 	if entInt != u.DOMAIN && entInt < u.ROOMTMPL && (oldObj["domain"] != t["domain"]) {
@@ -707,7 +705,7 @@ func UpdateEntity(ent string, req bson.M, t map[string]interface{}, isPatch bool
 		} else {
 			updatedDoc = fixID(t)
 			// Changes to id should be propagated to its children
-			propagateParentIdChange(oldObj["id"].(string),
+			PropagateParentIdChange(oldObj["id"].(string),
 				t["id"].(string), ent)
 		}
 	} else {

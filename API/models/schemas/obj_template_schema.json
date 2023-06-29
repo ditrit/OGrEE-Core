@@ -98,9 +98,6 @@
         "fbxModel": {
             "type": "string"
         },
-        "id": {
-            "type": "string"
-        },
         "sizeWDHmm": {
             "type": "array",
             "items": {

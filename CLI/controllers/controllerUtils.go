@@ -87,10 +87,10 @@ func Disp(x map[string]interface{}) {
 	println("JSON: ", string(jx))
 }
 
-func DispWithAttrs(objs *[]interface{}, attrs *[]string) {
-	for _, objInf := range *objs {
+func DispWithAttrs(objs []interface{}, attrs []string) {
+	for _, objInf := range objs {
 		if obj, ok := objInf.(map[string]interface{}); ok {
-			for _, a := range *attrs {
+			for _, a := range attrs {
 				//Check if attr is in object
 				if ok, nested := AttrIsInObj(obj, a); ok {
 					if nested {
@@ -104,39 +104,6 @@ func DispWithAttrs(objs *[]interface{}, attrs *[]string) {
 				}
 			}
 			fmt.Printf("\tName:%s\n", obj["name"].(string))
-		}
-	}
-}
-
-func DispfWithAttrs(formatx string, objs *[]interface{}, attrs *[]string) {
-	//Convert user input format to workable format
-	//input for Printf
-	var format string
-	formatx = `"` + formatx + `"`
-	_, e := fmt.Sscanf(formatx, "%q", &format)
-	if e != nil {
-		println(e.Error())
-		return
-	}
-
-	for _, objInf := range *objs {
-		if obj, ok := objInf.(map[string]interface{}); ok {
-			var argument []interface{}
-			//var printer string
-			for _, a := range *attrs {
-				//Check if attr is in object
-				if ok, nested := AttrIsInObj(obj, a); ok {
-					if nested {
-						argument = append(argument, obj["attributes"].(map[string]interface{})[a])
-					} else {
-						argument = append(argument, obj[a])
-					}
-				} else {
-					argument = append(argument, "NULL")
-				}
-			}
-			fmt.Printf(format, argument...)
-			fmt.Printf("\n")
 		}
 	}
 }

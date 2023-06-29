@@ -34,9 +34,8 @@
             "category": "corridor",
             "description": [],
             "domain": "DEMO",
-            "id": "xxxx5a231ac5f3b6f313xxxx",
             "name": "GCorridor",
-            "parentId": "xxxx5a1f1ac5f3b6f313xxxx"
+            "parentId": "Site.Bldg.Rooom"
         }
     ]
 }

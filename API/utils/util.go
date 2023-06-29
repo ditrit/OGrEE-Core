@@ -22,7 +22,7 @@ var GitCommitDate string
 const (
 	DOMAIN = iota
 	// hierarchal root objects
-	STRAYDEV
+	STRAYOBJ
 	SITE
 	// hierarchal objects with mandatory parent
 	BLDG
@@ -196,8 +196,8 @@ func EntityToString(entity int) string {
 		return "panel"
 	case DOMAIN:
 		return "domain"
-	case STRAYDEV:
-		return "stray_device"
+	case STRAYOBJ:
+		return "stray_object"
 	case ROOMTMPL:
 		return "room_template"
 	case OBJTMPL:
@@ -233,8 +233,8 @@ func EntityStrToInt(entity string) int {
 		return PWRPNL
 	case "domain":
 		return DOMAIN
-	case "stray_device":
-		return STRAYDEV
+	case "stray_object":
+		return STRAYOBJ
 	case "room_template":
 		return ROOMTMPL
 	case "obj_template":
@@ -253,7 +253,7 @@ func EntityStrToInt(entity string) int {
 }
 
 func HierachyNameToEntity(name string) []int {
-	resp := []int{STRAYDEV} // it can always be a stray
+	resp := []int{STRAYOBJ} // it can always be a stray
 	switch strings.Count(name, HN_DELIMETER) {
 	case 0:
 		resp = append(resp, SITE)
@@ -278,7 +278,7 @@ func GetParentOfEntityByInt(entity int) int {
 		return DOMAIN
 	case AC, PWRPNL, CABINET, CORRIDOR:
 		return ROOM
-	case ROOMTMPL, OBJTMPL, BLDGTMPL, GROUP, STRAYDEV:
+	case ROOMTMPL, OBJTMPL, BLDGTMPL, GROUP, STRAYOBJ:
 		return -1
 	default:
 		return entity - 1

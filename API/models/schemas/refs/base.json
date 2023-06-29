@@ -18,9 +18,6 @@
           "type": "string",
           "pattern":"^\\w(\\w|\\-)*$"
         },
-        "id": {
-          "type": "string"
-        },
         "parentId": {
           "type": "string"
         },
