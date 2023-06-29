@@ -326,13 +326,34 @@ func updateTenant(c *gin.Context) {
 	}
 
 	listTenants := getTenantsFromJSON()
-	for _, tenant := range listTenants {
+	for i, tenant := range listTenants {
 		if strings.ToLower(tenant.Name) == tenantName {
+			// Docker compose stop
+			println("Docker stop current tenant")
+			args := []string{"compose", "-p", tenantName, "stop"}
+			cmd := exec.Command("docker", args...)
+			cmd.Dir = DOCKER_DIR
+			var stderr bytes.Buffer
+			cmd.Stderr = &stderr
+			if _, err := cmd.Output(); err != nil {
+				fmt.Println(fmt.Sprint(err) + ": " + stderr.String())
+				c.IndentedJSON(http.StatusInternalServerError, stderr.String())
+				return
+			}
+			println("Finished with docker")
+
+			// Docker compose up
 			if err := dockerCreateTenant(newTenant); err != "" {
 				c.IndentedJSON(http.StatusInternalServerError, err)
+				// Try to recreate previous config
+				err = dockerCreateTenant(tenant)
+				if err != "" {
+					println("Error recovering:" + err)
+				}
 				return
 			}
 
+			listTenants[i] = newTenant
 			println(listTenants)
 			data, _ := json.MarshalIndent(listTenants, "", "  ")
 			_ = ioutil.WriteFile("tenants.json", data, 0755)
