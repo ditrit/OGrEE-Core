@@ -1,6 +1,9 @@
 package main
 
-import "fmt"
+import (
+	c "cli/controllers"
+	"fmt"
+)
 
 type ifNode struct {
 	condition  node
@@ -9,13 +12,9 @@ type ifNode struct {
 }
 
 func (n *ifNode) execute() (interface{}, error) {
-	val, err := n.condition.execute()
+	condition, err := nodeToBool(n.condition, "condition")
 	if err != nil {
 		return nil, err
-	}
-	condition, ok := val.(bool)
-	if !ok {
-		return nil, fmt.Errorf("condition should be a boolean")
 	}
 	if condition {
 		_, err := n.ifBranch.execute()
@@ -40,13 +39,9 @@ type whileNode struct {
 
 func (n *whileNode) execute() (interface{}, error) {
 	for {
-		val, err := n.condition.execute()
+		condition, err := nodeToBool(n.condition, "condition")
 		if err != nil {
 			return nil, err
-		}
-		condition, ok := val.(bool)
-		if !ok {
-			return nil, fmt.Errorf("condition should be a boolean")
 		}
 		if !condition {
 			break
@@ -72,13 +67,9 @@ func (n *forNode) execute() (interface{}, error) {
 		return nil, err
 	}
 	for {
-		val, err := n.condition.execute()
+		condition, err := nodeToBool(n.condition, "condition")
 		if err != nil {
 			return nil, err
-		}
-		condition, ok := val.(bool)
-		if !ok {
-			return nil, fmt.Errorf("condition should be a boolean")
 		}
 		if !condition {
 			break
@@ -131,30 +122,19 @@ type forRangeNode struct {
 }
 
 func (n *forRangeNode) execute() (interface{}, error) {
-	startAny, err := n.start.execute()
+	start, err := nodeToInt(n.start, "start index")
 	if err != nil {
 		return nil, err
 	}
-	start, ok := startAny.(int)
-	if !ok {
-		return nil, fmt.Errorf("start index should be an integer")
-	}
-	endAny, err := n.end.execute()
+	end, err := nodeToInt(n.start, "end index")
 	if err != nil {
 		return nil, err
-	}
-	end, ok := endAny.(int)
-	if !ok {
-		return nil, fmt.Errorf("end index should be an integer")
 	}
 	if start > end {
 		return nil, fmt.Errorf("start index should be lower than end index")
 	}
 	for i := start; i <= end; i++ {
-		_, err := (&assignNode{n.variable, &intLeaf{i}}).execute()
-		if err != nil {
-			return nil, err
-		}
+		c.State.DynamicSymbolTable[n.variable] = i
 		_, err = n.body.execute()
 		if err != nil {
 			return nil, err
