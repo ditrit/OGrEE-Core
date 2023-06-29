@@ -223,7 +223,8 @@ class _SelectPageState extends State<SelectPage> with TickerProviderStateMixin {
           );
   }
 
-  saveProjectCallback(String userInput, Project project, bool isCreate) async {
+  saveProjectCallback(String userInput, Project project, bool isCreate,
+      Function? callback) async {
     String response;
     project.name = userInput;
     if (isCreate) {
