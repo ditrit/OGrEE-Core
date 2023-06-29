@@ -38,13 +38,12 @@ func GetProjects(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("******************************************************")
 	fmt.Println("FUNCTION CALL: 	 GetProjects ")
 	fmt.Println("******************************************************")
-	var resp map[string]interface{}
 
 	query, _ := url.ParseQuery(r.URL.RawQuery)
 
 	if len(query["user"]) <= 0 {
 		w.WriteHeader(http.StatusBadRequest)
-		resp = u.Message("Error: user should be sent as query param")
+		resp := u.Message("Error: user should be sent as query param")
 		u.Respond(w, resp)
 		return
 	}
@@ -57,12 +56,11 @@ func GetProjects(w http.ResponseWriter, r *http.Request) {
 			w.Header().Add("Content-Type", "application/json")
 			w.Header().Add("Allow", "GET, OPTIONS, HEAD")
 		} else {
+			resp := map[string]interface{}{}
 			resp["projects"] = projects
 			u.Respond(w, u.RespDataWrapper("successfully got projects", resp))
 		}
 	}
-
-	u.Respond(w, resp)
 }
 
 // swagger:operation POST /api/projects FlutterApp CreateProjects
