@@ -8,7 +8,6 @@ import (
 
 	"github.com/santhosh-tekuri/jsonschema/v5"
 	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 //go:embed schemas/*.json
@@ -51,7 +50,7 @@ func validateParent(ent string, entNum int, t map[string]interface{}) (map[strin
 
 	//Check ParentID is valid
 	if t["parentId"] == nil || t["parentId"] == "" {
-		if entNum == u.DOMAIN || entNum == u.STRAYDEV {
+		if entNum == u.DOMAIN || entNum == u.STRAYOBJ {
 			return nil, nil
 		}
 		return nil, &u.Error{Type: u.ErrBadFormat, Message: "ParentID is not valid"}
@@ -59,6 +58,15 @@ func validateParent(ent string, entNum int, t map[string]interface{}) (map[strin
 	req := bson.M{"_id": t["parentId"].(string)}
 
 	parent := map[string]interface{}{"parent": ""}
+	// Anyone can have a stray parent
+	stray, _ := GetEntity(req, "stray_object", u.RequestFilters{}, nil)
+	if stray != nil {
+		parent["parent"] = "rack"
+		parent["domain"] = stray["domain"]
+		parent["id"] = stray["id"]
+		return parent, nil
+	}
+	// If not, search specific possibilities
 	switch entNum {
 	case u.DEVICE:
 		x, _ := GetEntity(req, "rack", u.RequestFilters{}, nil)
@@ -116,27 +124,6 @@ func validateParent(ent string, entNum int, t map[string]interface{}) (map[strin
 		return nil, &u.Error{Type: u.ErrInvalidValue,
 			Message: "ParentID should correspond to Existing ID"}
 
-	case u.STRAYDEV:
-		if t["parentId"] != nil && t["parentId"] != "" {
-			if pid, ok := t["parentId"].(string); ok {
-				ID, _ := primitive.ObjectIDFromHex(pid)
-
-				p, err := GetEntity(bson.M{"_id": ID}, "stray_device", u.RequestFilters{}, nil)
-				if len(p) > 0 {
-					parent["parent"] = "stray_device"
-					parent["domain"] = p["domain"]
-					parent["id"] = p["id"]
-					return parent, nil
-				} else if err != nil {
-					return nil, &u.Error{Type: u.ErrInvalidValue,
-						Message: "ParentID should correspond to Existing ID"}
-				}
-			} else {
-				return nil, &u.Error{Type: u.ErrInvalidValue,
-					Message: "ParentID should correspond to Existing ID"}
-			}
-		}
-
 	default:
 		parentInt := u.GetParentOfEntityByInt(entNum)
 		parentStr := u.EntityToString(parentInt)
@@ -163,7 +150,7 @@ func validateJsonSchema(entity int, t map[string]interface{}) (bool, *u.Error) {
 	switch entity {
 	case u.AC, u.CABINET, u.PWRPNL:
 		schemaName = "base_schema.json"
-	case u.STRAYDEV:
+	case u.STRAYOBJ:
 		schemaName = "stray_schema.json"
 	default:
 		schemaName = u.EntityToString(entity) + "_schema.json"

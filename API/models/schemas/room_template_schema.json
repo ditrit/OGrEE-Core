@@ -54,9 +54,6 @@
                 "f"
             ]
         },
-        "id": {
-            "type": "string"
-        },
         "axisOrientation": {
             "type": "string",
             "enum": [

@@ -18,14 +18,11 @@
       "name": {
         "type": "string"
       },
-      "id": {
-        "type": "string"
-      },
       "attributes": {
         "type": "object"
       }
     },
-    "additionalProperties":  true,
+    "additionalProperties":  false,
     "required": [
       "category",
       "description",

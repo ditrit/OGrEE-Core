@@ -19,9 +19,6 @@
       "type": "string",
       "pattern":"^\\w(\\w|\\-)*$"
     },
-    "id": {
-      "type": "string"
-    },
     "attributes": {
       "type": "object",
       "properties": {
