@@ -49,12 +49,10 @@ services:
     image: swaggerapi/swagger-ui:latest
     container_name: ${COMPOSE_PROJECT_NAME}_doc
     profiles: ["doc"]
-    volumes:
-      - ../../${API_BUILD_DIR}/swagger.json:/home/swagger.json
     ports:
       - ${API_DOC_UI_PORT}:8080
     environment:
-      SWAGGER_JSON: /home/swagger.json
+      SWAGGER_JSON_URL: https://raw.githubusercontent.com/ditrit/OGrEE-Core/${IMAGE_TAG}/API/swagger.json
 
   ogree_webapp:
     build: 
