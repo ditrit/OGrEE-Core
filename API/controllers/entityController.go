@@ -1264,6 +1264,7 @@ func LinkEntity(w http.ResponseWriter, r *http.Request) {
 	var canParse bool
 	var modelErr *u.Error
 	var body map[string]string
+	var newName string
 
 	// Get user roles for permissions
 	user := getUserFromToken(w, r)
@@ -1272,14 +1273,24 @@ func LinkEntity(w http.ResponseWriter, r *http.Request) {
 	}
 	entityStr, isUnlink := mux.Vars(r)["entity"]
 
-	if !isUnlink {
+	body = map[string]string{}
+	err := json.NewDecoder(r.Body).Decode(&body)
+	if isUnlink {
+		if err == nil && len(body) > 0 {
+			if newName = body["name"]; newName == "" || len(body) > 1 {
+				w.WriteHeader(http.StatusBadRequest)
+				u.Respond(w, u.Message("Body must be empty or only contain valid name"))
+				return
+			}
+		}
+	} else {
 		// It's link, get parentId from body
-		body = map[string]string{}
-		err := json.NewDecoder(r.Body).Decode(&body)
-		if err != nil || len(body) > 1 || len(body) <= 0 || len(body["parentId"]) < 1 {
+		if err != nil || body["parentId"] == "" {
 			w.WriteHeader(http.StatusBadRequest)
-			u.Respond(w, u.Message("Error while decoding request body: must contain parentId and only it"))
-			u.ErrLog("Error while decoding request body", "LinkEntity", "", r)
+			u.Respond(w, u.Message("Error while decoding request body: must contain parentId"))
+			return
+		} else if newName, canParse = body["name"]; !canParse && len(body) > 1 {
+			u.Respond(w, u.Message("Error while decoding request body: only parentId and name accepted"))
 			return
 		}
 		entityStr = "stray_object"
@@ -1308,6 +1319,9 @@ func LinkEntity(w http.ResponseWriter, r *http.Request) {
 	} else {
 		data["parentId"] = body["parentId"]
 		entityStr = data["category"].(string)
+	}
+	if newName != "" {
+		data["name"] = newName
 	}
 	// Remove api fields
 	delete(data, "id")
