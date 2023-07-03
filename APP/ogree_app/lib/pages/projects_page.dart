@@ -23,15 +23,18 @@ class ProjectsPage extends StatefulWidget {
 class _ProjectsPageState extends State<ProjectsPage> {
   List<Project>? _projects;
   List<Tenant>? _tenants;
+  bool _isSmallDisplay = false;
 
   @override
   Widget build(BuildContext context) {
+    _isSmallDisplay = MediaQuery.of(context).size.width < 600;
     final localeMsg = AppLocalizations.of(context)!;
     return Scaffold(
       appBar: myAppBar(context, widget.userEmail,
           isTenantMode: widget.isTenantMode),
       body: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 80.0, vertical: 20),
+        padding: EdgeInsets.symmetric(
+            horizontal: _isSmallDisplay ? 40 : 80.0, vertical: 20),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
@@ -114,8 +117,11 @@ class _ProjectsPageState extends State<ProjectsPage> {
             padding: EdgeInsets.symmetric(vertical: 10.0),
             child: Icon(Icons.add_to_photos),
           ),
-          Text(
-              widget.isTenantMode ? localeMsg.newTenant : localeMsg.newProject),
+          _isSmallDisplay
+              ? Container()
+              : Text(widget.isTenantMode
+                  ? localeMsg.newTenant
+                  : localeMsg.newProject),
         ],
       ),
     );

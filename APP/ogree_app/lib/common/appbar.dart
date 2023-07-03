@@ -35,6 +35,7 @@ AppBar myAppBar(context, userEmail, {isTenantMode = false}) {
         ));
   }
 
+  bool _isSmallDisplay = MediaQuery.of(context).size.width < 600;
   return AppBar(
     backgroundColor: Colors.grey.shade900,
     leadingWidth: 150,
@@ -66,11 +67,13 @@ AppBar myAppBar(context, userEmail, {isTenantMode = false}) {
       ),
     ),
     actions: [
-      Padding(
-        padding: const EdgeInsets.only(right: 20),
-        child: Text(isTenantMode ? apiUrl : tenantName,
-            style: const TextStyle(color: Colors.white)),
-      ),
+      _isSmallDisplay
+          ? Container()
+          : Padding(
+              padding: const EdgeInsets.only(right: 20),
+              child: Text(isTenantMode ? apiUrl : tenantName,
+                  style: const TextStyle(color: Colors.white)),
+            ),
       Padding(
         padding: const EdgeInsets.symmetric(vertical: 15),
         child: LanguageToggle(),
@@ -95,10 +98,18 @@ AppBar myAppBar(context, userEmail, {isTenantMode = false}) {
                 color: Colors.white,
               ),
               const SizedBox(width: 10),
-              Text(
-                isTenantMode ? "admin" : userEmail,
-                style: const TextStyle(color: Colors.white),
-              ),
+              _isSmallDisplay
+                  ? Tooltip(
+                      message: isTenantMode ? apiUrl : tenantName,
+                      triggerMode: TooltipTriggerMode.tap,
+                      child: const Icon(
+                        Icons.info_outline_rounded,
+                        color: Colors.white,
+                      ))
+                  : Text(
+                      isTenantMode ? "admin" : userEmail,
+                      style: const TextStyle(color: Colors.white),
+                    ),
             ],
           )),
       const SizedBox(width: 40)

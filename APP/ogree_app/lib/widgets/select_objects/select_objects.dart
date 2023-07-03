@@ -23,7 +23,6 @@ class _SelectObjectsState extends State<SelectObjects> {
 
   @override
   Widget build(BuildContext context) {
-    final _isSmallDisplay = MediaQuery.of(context).size.width < 600;
     return AppControllerScope(
       controller: appController,
       child: FutureBuilder<void>(

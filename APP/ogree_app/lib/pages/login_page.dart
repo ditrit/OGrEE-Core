@@ -35,6 +35,7 @@ class _LoginPageState extends State<LoginPage> {
   @override
   Widget build(BuildContext context) {
     final localeMsg = AppLocalizations.of(context)!;
+    bool _isSmallDisplay = MediaQuery.of(context).size.width < 550;
     return Scaffold(
       body: Container(
         // height: MediaQuery.of(context).size.height,
@@ -61,9 +62,12 @@ class _LoginPageState extends State<LoginPage> {
                     key: _formKey,
                     child: Container(
                       constraints:
-                          const BoxConstraints(maxWidth: 550, maxHeight: 510),
-                      padding: const EdgeInsets.only(
-                          right: 100, left: 100, top: 50, bottom: 30),
+                          const BoxConstraints(maxWidth: 550, maxHeight: 515),
+                      padding: EdgeInsets.only(
+                          right: _isSmallDisplay ? 50 : 100,
+                          left: _isSmallDisplay ? 50 : 100,
+                          top: 50,
+                          bottom: 30),
                       child: SingleChildScrollView(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.stretch,
