@@ -5,10 +5,15 @@ import 'settings_view/settings_view.dart';
 import 'tree_view/custom_tree_view.dart';
 
 class SelectObjects extends StatefulWidget {
+  final String dateRange;
   final String namespace;
   final bool load;
 
-  const SelectObjects({super.key, required this.namespace, required this.load});
+  const SelectObjects(
+      {super.key,
+      required this.dateRange,
+      required this.namespace,
+      required this.load});
   @override
   State<SelectObjects> createState() => _SelectObjectsState();
 }
@@ -27,14 +32,32 @@ class _SelectObjectsState extends State<SelectObjects> {
                 widget.namespace == 'TEST'
                     ? {}
                     : SelectPage.of(context)!.selectedObjects,
-                isTest: widget.namespace == 'TEST')
+                dateRange: widget.dateRange,
+                isTest: widget.namespace == 'TEST',
+                reload: widget.load)
             : null,
         builder: (_, __) {
+          print(widget.load);
           if (appController.isInitialized && widget.load) {
-            return const _Unfocus(
+            return _Unfocus(
               child: Card(
                 margin: EdgeInsets.all(0.1),
-                child: _ResponsiveBody(),
+                child: appController.rootNode.children.length <= 0
+                    ? Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(
+                            Icons.warning_rounded,
+                            size: 50,
+                            color: Colors.grey.shade600,
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.only(top: 16),
+                            child: Text("No objects found :("),
+                          ),
+                        ],
+                      )
+                    : _ResponsiveBody(),
                 // endDrawer: Drawer(child: SettingsView()),
               ),
             );

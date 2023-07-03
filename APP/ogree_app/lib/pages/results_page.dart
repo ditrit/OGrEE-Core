@@ -19,12 +19,14 @@ const String avgStr = "Moyenne()";
 class ResultsPage extends StatefulWidget {
   List<String> selectedAttrs;
   List<String> selectedObjects;
+  final String dateRange;
   final String namespace;
 
   ResultsPage(
       {super.key,
       required this.selectedAttrs,
       required this.selectedObjects,
+      required this.dateRange,
       required this.namespace});
 
   @override

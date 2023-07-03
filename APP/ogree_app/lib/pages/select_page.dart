@@ -31,7 +31,7 @@ class _SelectPageState extends State<SelectPage> with TickerProviderStateMixin {
   bool _loadObjects = false;
 
   // Shared data used by children in stepper
-  String _selectedDate = DateFormat('dd/MM/yyyy').format(DateTime.now());
+  String _selectedDate = '';
   set selectedDate(String value) => _selectedDate = value;
 
   String _selectedNamespace = '';
@@ -100,7 +100,9 @@ class _SelectPageState extends State<SelectPage> with TickerProviderStateMixin {
           Step(
             title: Text(localeMsg.selectDate,
                 style: const TextStyle(fontSize: 14)),
-            subtitle: Text(_selectedDate),
+            subtitle: _selectedDate != ""
+                ? Text(_selectedDate)
+                : Icon(Icons.all_inclusive, size: 15),
             content: const SelectDate(),
             isActive: _currentStep >= Steps.date.index,
             state: _currentStep >= Steps.date.index
@@ -127,7 +129,9 @@ class _SelectPageState extends State<SelectPage> with TickerProviderStateMixin {
             content: SizedBox(
                 height: MediaQuery.of(context).size.height - 205,
                 child: SelectObjects(
-                    namespace: _selectedNamespace, load: _loadObjects)),
+                    dateRange: _selectedDate,
+                    namespace: _selectedNamespace,
+                    load: _loadObjects)),
             isActive: _currentStep >= Steps.date.index,
             state: _currentStep >= Steps.objects.index
                 ? StepState.complete
@@ -139,6 +143,7 @@ class _SelectPageState extends State<SelectPage> with TickerProviderStateMixin {
                 ? SizedBox(
                     height: MediaQuery.of(context).size.height - 210,
                     child: ResultsPage(
+                      dateRange: _selectedDate,
                       selectedAttrs: _selectedAttrs,
                       selectedObjects: _selectedObjects.keys.toList(),
                       namespace: "Physical",
@@ -218,7 +223,8 @@ class _SelectPageState extends State<SelectPage> with TickerProviderStateMixin {
           );
   }
 
-  saveProjectCallback(String userInput, Project project, bool isCreate) async {
+  saveProjectCallback(String userInput, Project project, bool isCreate,
+      Function? callback) async {
     String response;
     project.name = userInput;
     if (isCreate) {
