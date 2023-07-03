@@ -310,6 +310,20 @@ Future<String> createTenant(Tenant tenant) async {
   }
 }
 
+Future<String> updateTenant(Tenant tenant) async {
+  print("API update Tenants");
+  Uri url = Uri.parse('$apiUrl/api/tenants/${tenant.name}');
+  final response =
+      await http.put(url, body: tenant.toJson(), headers: getHeader(token));
+  print(response);
+  if (response.statusCode == 200) {
+    return "";
+  } else {
+    String data = json.decode(response.body);
+    return "Error creating tenant $data";
+  }
+}
+
 Future<String> uploadImage(PlatformFile image, String tenant) async {
   print("API upload Tenant logo");
   Uri url = Uri.parse('$apiUrl/api/tenants/$tenant/logo');

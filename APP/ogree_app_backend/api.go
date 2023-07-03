@@ -55,6 +55,7 @@ func main() {
 	router.DELETE("/api/tenants/:name", removeTenant)
 	router.POST("/api/tenants", addTenant)
 	router.POST("/api/tenants/:name/logo", addTenantLogo)
+	router.PUT("/api/tenants/:name", updateTenant)
 	router.GET("/api/containers/:name", getContainerLogs)
 	router.POST("/api/servers", createNewBackend)
 
