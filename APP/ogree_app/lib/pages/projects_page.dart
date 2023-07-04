@@ -113,9 +113,10 @@ class _ProjectsPageState extends State<ProjectsPage> {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const Padding(
-            padding: EdgeInsets.symmetric(vertical: 10.0),
-            child: Icon(Icons.add_to_photos),
+          Padding(
+            padding: EdgeInsets.only(
+                top: 10.0, bottom: 10, right: _isSmallDisplay ? 0 : 10),
+            child: const Icon(Icons.add_to_photos),
           ),
           _isSmallDisplay
               ? Container()

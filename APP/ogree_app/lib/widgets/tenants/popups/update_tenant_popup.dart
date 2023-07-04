@@ -5,6 +5,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:ogree_app/common/api_backend.dart';
 import 'package:ogree_app/common/snackbar.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:ogree_app/common/theme.dart';
 import 'package:ogree_app/models/tenant.dart';
 
 class UpdateTenantPopup extends StatefulWidget {
@@ -20,17 +21,18 @@ class UpdateTenantPopup extends StatefulWidget {
 class _UpdateTenantPopupState extends State<UpdateTenantPopup> {
   final _formKey = GlobalKey<FormState>();
   bool _isLoading = false;
+  bool _isSmallDisplay = false;
 
   @override
   Widget build(BuildContext context) {
     final localeMsg = AppLocalizations.of(context)!;
+    _isSmallDisplay = IsSmallDisplay(MediaQuery.of(context).size.width);
+
     return Center(
       child: Container(
-        // height: 240,
         width: 500,
         margin: const EdgeInsets.symmetric(horizontal: 20),
-        decoration: BoxDecoration(
-            color: Colors.white, borderRadius: BorderRadius.circular(20)),
+        decoration: PopupDecoration,
         child: Padding(
           padding: const EdgeInsets.fromLTRB(40, 20, 40, 15),
           child: Material(
@@ -41,28 +43,17 @@ class _UpdateTenantPopupState extends State<UpdateTenantPopup> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Row(
-                    children: [
-                      const Icon(Icons.add_to_photos),
-                      Text(
-                        "   Update " + widget.tenant.name,
-                        style: GoogleFonts.inter(
-                          fontSize: 22,
-                          color: Colors.black,
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                    ],
+                  Center(
+                    child: Text(
+                      "Update " + widget.tenant.name,
+                      style: Theme.of(context).textTheme.headlineMedium,
+                    ),
                   ),
-                  const Divider(height: 40),
+                  const SizedBox(height: 12),
                   Wrap(
                     alignment: WrapAlignment.start,
                     crossAxisAlignment: WrapCrossAlignment.center,
                     children: [
-                      Padding(
-                        padding: const EdgeInsets.only(right: 12),
-                        child: Text("Services:"),
-                      ),
                       getCheckBox("API", true, (_) {}, enabled: false),
                       getCheckBox(
                           "WEB",
@@ -125,7 +116,7 @@ class _UpdateTenantPopupState extends State<UpdateTenantPopup> {
                               "${widget.tenant.docUrl}:${widget.tenant.docPort}",
                         )
                       : Container(),
-                  const SizedBox(height: 30),
+                  const SizedBox(height: 10),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.end,
                     children: [
@@ -193,6 +184,7 @@ class _UpdateTenantPopupState extends State<UpdateTenantPopup> {
     return SizedBox(
       width: 100,
       child: CheckboxListTile(
+        activeColor: Colors.blue.shade600,
         contentPadding: EdgeInsets.zero,
         controlAffinity: ListTileControlAffinity.leading,
         value: value,
@@ -214,7 +206,7 @@ class _UpdateTenantPopupState extends State<UpdateTenantPopup> {
       String? initial,
       bool isUrl = false}) {
     return Padding(
-      padding: const EdgeInsets.only(left: 2, right: 10),
+      padding: FormInputPadding,
       child: TextFormField(
         initialValue: initial,
         onSaved: (newValue) => save(newValue),
@@ -234,12 +226,10 @@ class _UpdateTenantPopupState extends State<UpdateTenantPopup> {
           return null;
         },
         inputFormatters: formatters,
-        decoration: InputDecoration(
-          icon: Icon(icon, color: Colors.blue.shade900),
-          labelText: label,
-          prefixText: prefix,
-          suffixText: suffix,
-        ),
+        decoration: GetFormInputDecoration(_isSmallDisplay, label,
+            prefixText: prefix, suffixText: suffix, icon: icon),
+        cursorWidth: 1.3,
+        style: const TextStyle(fontSize: 14),
       ),
     );
   }

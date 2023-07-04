@@ -26,7 +26,7 @@
 
   "@myprojects": { "description": "Projects Page" },
   "myprojects": "Mes projets",
-  "newProject": "   Créer un nouveau projet",
+  "newProject": "Créer un nouveau projet",
   "noProjects": "Pas encore de projets crées :(",
   "editProject": "Editer ce projet",
   "author": "Auteur :",

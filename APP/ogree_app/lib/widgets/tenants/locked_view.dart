@@ -4,6 +4,7 @@ import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:ogree_app/common/api_backend.dart';
 import 'package:ogree_app/common/snackbar.dart';
+import 'package:ogree_app/common/theme.dart';
 import 'package:ogree_app/models/tenant.dart';
 
 class LockedView extends StatefulWidget {
@@ -32,6 +33,7 @@ class _LockedViewState extends State<LockedView> {
   Widget build(BuildContext context) {
     final localeMsg = AppLocalizations.of(context)!;
     final formKey = GlobalKey<FormState>();
+    final isSmallDisplay = IsSmallDisplay(MediaQuery.of(context).size.width);
     return Form(
       key: formKey,
       child: Container(
@@ -57,16 +59,18 @@ class _LockedViewState extends State<LockedView> {
                   }
                   return null;
                 },
-                decoration: InputDecoration(
-                  isDense: true,
-                  labelText: 'E-mail',
-                  hintText: 'abc@example.com',
-                  labelStyle: GoogleFonts.inter(
-                    fontSize: 11,
-                    color: Colors.black,
-                  ),
-                  border: inputStyle,
-                ),
+                decoration: GetFormInputDecoration(isSmallDisplay, 'E-mail',
+                    icon: Icons.alternate_email, hint: 'abc@example.com'),
+                // InputDecoration(
+                //   isDense: true,
+                //   labelText: 'E-mail',
+                //   hintText: 'abc@example.com',
+                //   labelStyle: GoogleFonts.inter(
+                //     fontSize: 11,
+                //     color: Colors.black,
+                //   ),
+                //   border: inputStyle,
+                // ),
               ),
             ),
             const SizedBox(height: 20),
@@ -82,16 +86,9 @@ class _LockedViewState extends State<LockedView> {
                   }
                   return null;
                 },
-                decoration: InputDecoration(
-                  isDense: true,
-                  labelText: localeMsg.password,
-                  hintText: '********',
-                  labelStyle: GoogleFonts.inter(
-                    fontSize: 11,
-                    color: Colors.black,
-                  ),
-                  border: inputStyle,
-                ),
+                decoration: GetFormInputDecoration(
+                    isSmallDisplay, localeMsg.password,
+                    icon: Icons.lock_outline_rounded, hint: '********'),
               ),
             ),
             const SizedBox(height: 20),

@@ -3,6 +3,7 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:ogree_app/common/api_backend.dart';
 import 'package:ogree_app/common/snackbar.dart';
+import 'package:ogree_app/common/theme.dart';
 import 'package:ogree_app/pages/projects_page.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:ogree_app/widgets/language_toggle.dart';
@@ -35,7 +36,7 @@ class _LoginPageState extends State<LoginPage> {
   @override
   Widget build(BuildContext context) {
     final localeMsg = AppLocalizations.of(context)!;
-    bool _isSmallDisplay = MediaQuery.of(context).size.width < 550;
+    bool isSmallDisplay = IsSmallDisplay(MediaQuery.of(context).size.width);
     return Scaffold(
       body: Container(
         // height: MediaQuery.of(context).size.height,
@@ -64,8 +65,8 @@ class _LoginPageState extends State<LoginPage> {
                       constraints:
                           const BoxConstraints(maxWidth: 550, maxHeight: 515),
                       padding: EdgeInsets.only(
-                          right: _isSmallDisplay ? 50 : 100,
-                          left: _isSmallDisplay ? 50 : 100,
+                          right: isSmallDisplay ? 50 : 100,
+                          left: isSmallDisplay ? 50 : 100,
                           top: 50,
                           bottom: 30),
                       child: SingleChildScrollView(
@@ -106,7 +107,7 @@ class _LoginPageState extends State<LoginPage> {
                                       localeMsg.welcomeConnect,
                                       style: Theme.of(context)
                                           .textTheme
-                                          .headlineMedium,
+                                          .headlineSmall,
                                     ),
                                   ),
                             forgot ? Container() : const SizedBox(height: 20),

@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:ogree_app/common/snackbar.dart';
 import 'package:ogree_app/models/project.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+
+import '../../common/theme.dart';
 
 void showProjectDialog(
     BuildContext context,
@@ -25,39 +26,35 @@ void showProjectDialog(
     context: context,
     barrierLabel: "Barrier",
     barrierDismissible: true,
-    barrierColor: Colors.black.withOpacity(0.5),
+    barrierColor: Colors.black.withOpacity(0.1),
     transitionDuration: const Duration(milliseconds: 700),
     pageBuilder: (context, _, __) {
       final localeMsg = AppLocalizations.of(context)!;
       return Center(
         child: Container(
-          height: 240,
+          height: 200,
           width: 500,
           margin: const EdgeInsets.symmetric(horizontal: 20),
-          decoration: BoxDecoration(
-              color: Colors.white, borderRadius: BorderRadius.circular(40)),
+          decoration: PopupDecoration,
           child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 10),
+            padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 8),
             child: Material(
               color: Colors.white,
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Text(title, style: Theme.of(context).textTheme.headlineLarge),
+                  Text(title,
+                      style: Theme.of(context).textTheme.headlineMedium),
                   Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 40),
+                    padding: const EdgeInsets.symmetric(vertical: 25),
                     child: TextFormField(
                       initialValue: project.name,
                       onChanged: (value) => editInput = value,
-                      decoration: InputDecoration(
-                        labelText: localeMsg.projectName,
-                        labelStyle: GoogleFonts.inter(
-                          fontSize: 12,
-                          color: Colors.black,
-                        ),
-                        enabledBorder: inputStyle,
-                        focusedBorder: inputStyle,
-                      ),
+                      decoration: GetFormInputDecoration(
+                          false, localeMsg.projectName,
+                          icon: Icons.edit_outlined),
+                      cursorWidth: 1.3,
+                      style: const TextStyle(fontSize: 14),
                     ),
                   ),
                   Row(

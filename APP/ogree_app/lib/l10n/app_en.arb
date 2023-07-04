@@ -24,7 +24,7 @@
   "invalidLogin": "Email and/or password not valid",
 
   "myprojects": "My projects",
-  "newProject": "   Create new project",
+  "newProject": "Create new project",
   "noProjects": "No projects yet :(",
   "editProject": "Edit this project",
   "author": "Author:",
@@ -65,7 +65,7 @@
   "showSum": "Display sum",
   "showAvg": "Display average",
 
-  "newTenant": "   Create new tenant",
+  "newTenant": "Create new tenant",
   "tenantCreated": "Tenant successfully created!",
   "deployment": "Deployment",
   "loginTenant": "Log in to this tenant's API to get access:",

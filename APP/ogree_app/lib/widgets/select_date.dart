@@ -102,6 +102,10 @@ class _SelectDateState extends State<SelectDate> with TickerProviderStateMixin {
                               width: 500.0,
                               height: 70.0,
                               child: OutlinedButton(
+                                style: OutlinedButton.styleFrom(
+                                    side: BorderSide(
+                                        width: 0.3,
+                                        color: Colors.blue.shade900)),
                                 onPressed: () {
                                   SelectPage.of(context)!.selectedDate = "";
                                   myFocusNode.requestFocus();
@@ -124,7 +128,7 @@ class _SelectDateState extends State<SelectDate> with TickerProviderStateMixin {
                         //   children: [
                         //     Text(
                         //       localeMsg.useLastDataSet,
-                        //       style: Theme.of(context).textTheme.headlineMedium,
+                        //       style: Theme.of(context).textTheme.headlineSmall,
                         //     ),
                         //     const SizedBox(height: 32),
                         //     SizedBox(
