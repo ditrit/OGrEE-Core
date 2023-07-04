@@ -78,7 +78,7 @@
   "showSum": "Afficher la somme",
   "showAvg": "Afficher la moyenne",
 
-  "newTenant": "   Créer un nouveau tenant",
+  "newTenant": "Créer un nouveau tenant",
   "tenantCreated": "Tenant créé avec succès !",
   "deployment": "Déploiment",
   "loginTenant": "Connectez-vous à l'API de ce Tenant :",

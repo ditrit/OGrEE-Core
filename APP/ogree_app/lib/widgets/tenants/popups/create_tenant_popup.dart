@@ -66,7 +66,7 @@ class _CreateTenantPopupState extends State<CreateTenantPopup> {
             key: _formKey,
             child: Container(
                 constraints:
-                    const BoxConstraints(maxWidth: 550, maxHeight: 530),
+                    const BoxConstraints(maxWidth: 550, maxHeight: 520),
                 child: ScaffoldMessenger(
                     child: Builder(
                         builder: (context) => Scaffold(
@@ -76,22 +76,18 @@ class _CreateTenantPopupState extends State<CreateTenantPopup> {
                                 // mainAxisAlignment: MainAxisAlignment.center,
                                 // mainAxisSize: MainAxisSize.min,
                                 children: [
-                                  Wrap(
-                                    children: [
-                                      // _isSmallDisplay
-                                      //     ? Container()
-                                      //     : const Icon(Icons.add_to_photos),
-                                      Text(
-                                        localeMsg.newTenant,
-                                        style: GoogleFonts.inter(
-                                          fontSize: 20,
-                                          color: Colors.black,
-                                          fontWeight: FontWeight.w500,
-                                        ),
+                                  Center(
+                                    child: Text(
+                                      localeMsg.newTenant,
+                                      style: GoogleFonts.inter(
+                                        fontSize: 20,
+                                        color: Colors.black,
+                                        fontWeight: FontWeight.w500,
                                       ),
-                                    ],
+                                    ),
                                   ),
-                                  const Divider(height: 35),
+                                  // const Divider(height: 35),
+                                  SizedBox(height: 20),
                                   getFormField(
                                       save: (newValue) =>
                                           _tenantName = newValue,
@@ -131,7 +127,7 @@ class _CreateTenantPopupState extends State<CreateTenantPopup> {
                                               })),
                                     ],
                                   ),
-                                  const SizedBox(height: 6),
+                                  const SizedBox(height: 10),
                                   getFormField(
                                       save: (newValue) => _imageTag = newValue!,
                                       label: "Version du déploiement (branch)",
@@ -165,8 +161,8 @@ class _CreateTenantPopupState extends State<CreateTenantPopup> {
                                       : Container(),
                                   _hasWeb
                                       ? Padding(
-                                          padding:
-                                              const EdgeInsets.only(top: 8.0),
+                                          padding: const EdgeInsets.only(
+                                              top: 8.0, bottom: 8),
                                           child: Wrap(
                                             alignment: WrapAlignment.end,
                                             crossAxisAlignment:
@@ -226,7 +222,7 @@ class _CreateTenantPopupState extends State<CreateTenantPopup> {
                                           isUrl: true,
                                         )
                                       : Container(),
-                                  const SizedBox(height: 30),
+                                  const SizedBox(height: 10),
                                   Row(
                                     mainAxisAlignment: MainAxisAlignment.end,
                                     children: [
@@ -323,6 +319,7 @@ class _CreateTenantPopupState extends State<CreateTenantPopup> {
     return SizedBox(
       width: 100,
       child: CheckboxListTile(
+        activeColor: Colors.blue.shade600,
         contentPadding: EdgeInsets.zero,
         controlAffinity: ListTileControlAffinity.leading,
         value: value,
@@ -369,7 +366,11 @@ class _CreateTenantPopupState extends State<CreateTenantPopup> {
               ? null
               : Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 12.0),
-                  child: Icon(icon, color: Colors.grey.shade400),
+                  child: Icon(
+                    icon,
+                    // color: Colors.grey.shade400,
+                    color: Colors.blue.shade600,
+                  ),
                 ),
           prefixText: prefix,
           suffixText: suffix,
