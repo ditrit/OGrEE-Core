@@ -3,6 +3,7 @@ import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:ogree_app/common/api_backend.dart';
 import 'package:ogree_app/common/popup_dialog.dart';
 import 'package:ogree_app/common/snackbar.dart';
+import 'package:ogree_app/common/theme.dart';
 import 'package:ogree_app/models/tenant.dart';
 import 'package:ogree_app/pages/tenant_page.dart';
 import 'package:ogree_app/widgets/tenants/popups/update_tenant_popup.dart';
@@ -163,22 +164,21 @@ class _DeleteDialogState extends State<DeleteDialog> {
     final localeMsg = AppLocalizations.of(context)!;
     return Center(
       child: Container(
-        height: 230,
+        height: 190,
         width: 480,
         margin: const EdgeInsets.symmetric(horizontal: 20),
-        decoration: BoxDecoration(
-            color: Colors.white, borderRadius: BorderRadius.circular(40)),
+        decoration: PopupDecoration,
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 10),
+          padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 8),
           child: Material(
             color: Colors.white,
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Text(localeMsg.areYouSure,
-                    style: Theme.of(context).textTheme.headlineLarge),
+                    style: Theme.of(context).textTheme.headlineMedium),
                 Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 40),
+                  padding: const EdgeInsets.symmetric(vertical: 35),
                   child: Text(localeMsg.allWillBeLost),
                 ),
                 Row(
