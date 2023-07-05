@@ -220,7 +220,7 @@ class _UserPopupState extends State<UserPopup> with TickerProviderStateMixin {
   }
 
   getDomains() async {
-    var list = await fetchObjectsTree(onlyDomain: true);
+    var list = await fetchObjectsTree(onlyDomain: true, isTenantMode: true);
     domainList =
         list[0].values.reduce((value, element) => List.from(value + element));
     if (!_isEdit) {

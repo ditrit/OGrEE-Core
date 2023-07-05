@@ -5,8 +5,8 @@ import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 const Map<String, String> namespaces = {
   "Physical": "site.building.room",
-  "Logical": "app.cluster.lorem",
-  "Organisational": "service.lorem.ipsum"
+  "Organisational": "domains",
+  "Logical": "not available"
 };
 
 class SelectNamespace extends StatefulWidget {
@@ -55,36 +55,32 @@ class _SelectNamespaceState extends State<SelectNamespace> {
       width: isBigScreen ? 250 : 200,
       height: isBigScreen ? 100 : 70,
       child: OutlinedButton(
-        onPressed: label == "Physical"
-            ? () => setState(() {
+        onPressed: label == "Logical"
+            ? null
+            : () => setState(() {
                   _selection = label;
                   SelectPage.of(context)!.selectedNamespace = _selection;
-                })
-            : null,
+                }),
         style: _selection == label
             ? OutlinedButton.styleFrom(
                 side: const BorderSide(width: 3.0, color: Colors.blue),
               )
             : null,
-        // OutlinedButton.styleFrom(
-        //     side: const BorderSide(width: 0.5, color: Colors.grey),
-        //   ),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Text(
               label,
               style: GoogleFonts.inter(
-                  fontSize: 17, color: _selection == label ? Colors.blue : null
-                  //Colors.black,
-                  ),
+                fontSize: 17,
+                color: _selection == label ? Colors.blue : null,
+              ),
             ),
             Text(
               isBigScreen ? '\n${namespaces[label]}' : namespaces[label]!,
               style: GoogleFonts.inter(
-                  color: _selection == label ? Colors.blue : null
-                  // Colors.black,
-                  ),
+                color: _selection == label ? Colors.blue : null,
+              ),
             ),
           ],
         ),

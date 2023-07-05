@@ -33,14 +33,15 @@ class _SelectObjectsState extends State<SelectObjects> {
                     : SelectPage.of(context)!.selectedObjects,
                 dateRange: widget.dateRange,
                 isTest: widget.namespace == 'TEST',
-                reload: widget.load)
+                reload: widget.load,
+                onlyDomain: widget.namespace == 'Organisational')
             : null,
         builder: (_, __) {
           print(widget.load);
           if (appController.isInitialized && widget.load) {
             return _Unfocus(
               child: Card(
-                margin: EdgeInsets.all(0.1),
+                margin: const EdgeInsets.all(0.1),
                 child: appController.rootNode.children.length <= 0
                     ? Column(
                         mainAxisAlignment: MainAxisAlignment.center,
@@ -50,13 +51,14 @@ class _SelectObjectsState extends State<SelectObjects> {
                             size: 50,
                             color: Colors.grey.shade600,
                           ),
-                          Padding(
-                            padding: const EdgeInsets.only(top: 16),
+                          const Padding(
+                            padding: EdgeInsets.only(top: 16),
                             child: Text("No objects found :("),
                           ),
                         ],
                       )
-                    : _ResponsiveBody(),
+                    : _ResponsiveBody(
+                        onlyDomain: widget.namespace == 'Organisational'),
                 // endDrawer: Drawer(child: SettingsView()),
               ),
             );
@@ -84,7 +86,8 @@ class _Unfocus extends StatelessWidget {
 }
 
 class _ResponsiveBody extends StatelessWidget {
-  const _ResponsiveBody({Key? key}) : super(key: key);
+  final bool onlyDomain;
+  const _ResponsiveBody({Key? key, this.onlyDomain = false}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -95,14 +98,15 @@ class _ResponsiveBody extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.all(8.0),
       child: Row(
-        children: const [
-          Flexible(flex: 2, child: CustomTreeView(isTenantMode: false)),
-          VerticalDivider(
+        children: [
+          const Flexible(flex: 2, child: CustomTreeView(isTenantMode: false)),
+          const VerticalDivider(
             width: 1,
             thickness: 1,
             color: Colors.black26,
           ),
-          Expanded(child: SettingsView(isTenantMode: false)),
+          Expanded(
+              child: SettingsView(isTenantMode: false, noFilters: onlyDomain)),
         ],
       ),
     );

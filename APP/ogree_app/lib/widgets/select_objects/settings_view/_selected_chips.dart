@@ -14,7 +14,8 @@ class _SelectedChipsState extends State<SelectedChips> {
   @override
   Widget build(BuildContext context) {
     final appController = AppController.of(context);
-    if (shouldGroupBy.isEmpty) {
+    if (shouldGroupBy.isEmpty &&
+        appController.fetchedCategories["room"] != null) {
       for (var room in appController.fetchedCategories["room"]!) {
         shouldGroupBy[room] = true;
       }
