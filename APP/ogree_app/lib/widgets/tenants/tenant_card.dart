@@ -164,7 +164,7 @@ class _DeleteDialogState extends State<DeleteDialog> {
     final localeMsg = AppLocalizations.of(context)!;
     return Center(
       child: Container(
-        height: 190,
+        height: 200,
         width: 480,
         margin: const EdgeInsets.symmetric(horizontal: 20),
         decoration: PopupDecoration,

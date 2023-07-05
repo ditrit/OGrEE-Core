@@ -28,24 +28,24 @@ class _LockedViewState extends State<LockedView> {
       width: 1,
     ),
   );
+  final formKey = GlobalKey<FormState>();
 
   @override
   Widget build(BuildContext context) {
     final localeMsg = AppLocalizations.of(context)!;
-    final formKey = GlobalKey<FormState>();
-    final isSmallDisplay = IsSmallDisplay(MediaQuery.of(context).size.width);
+    final bool isSmallDisplay = IsSmallDisplay(MediaQuery.of(context).size.width);
     return Form(
       key: formKey,
       child: Container(
         constraints: const BoxConstraints(maxWidth: 350, maxHeight: 500),
-        padding: const EdgeInsets.only(
-          right: 100,
-          left: 100,
+        padding:  EdgeInsets.only(
+          right: isSmallDisplay ? 32 : 100,
+          left: isSmallDisplay ? 15 : 100,
         ),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(Icons.lock, size: 64),
+            Icon(Icons.lock, size: isSmallDisplay ? 32 : 64),
             const SizedBox(height: 20),
             Text(localeMsg.loginTenant),
             const SizedBox(height: 20),

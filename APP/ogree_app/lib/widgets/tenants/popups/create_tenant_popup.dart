@@ -51,7 +51,8 @@ class _CreateTenantPopupState extends State<CreateTenantPopup> {
                     builder: (context) => Scaffold(
                           backgroundColor: Colors.white,
                           body: ListView(
-                            shrinkWrap: true,
+                            padding: EdgeInsets.zero,
+                            //shrinkWrap: true,
                             children: [
                               Center(
                                   child: Text(
@@ -273,7 +274,7 @@ class _CreateTenantPopupState extends State<CreateTenantPopup> {
   getCheckBox(String title, bool value, Function(bool?) onChange,
       {bool enabled = true}) {
     return SizedBox(
-      width: 100,
+      width: 95,
       child: CheckboxListTile(
         activeColor: Colors.blue.shade600,
         contentPadding: EdgeInsets.zero,

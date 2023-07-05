@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 GetFormInputDecoration(isSmallDisplay, String labelText,
         {IconData? icon,
+        Color? iconColor,
         String? prefixText,
         String? suffixText,
         String? hint}) =>
@@ -12,7 +13,7 @@ GetFormInputDecoration(isSmallDisplay, String labelText,
               padding: const EdgeInsets.symmetric(horizontal: 12.0),
               child: Icon(
                 icon,
-                color: Colors.grey.shade400,
+                color: iconColor ?? Colors.grey.shade400,
                 // color: Colors.blue.shade600,
               ),
             ),

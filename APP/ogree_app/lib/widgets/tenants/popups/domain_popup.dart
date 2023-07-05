@@ -4,6 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:ogree_app/common/api_backend.dart';
 import 'package:ogree_app/common/snackbar.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:ogree_app/common/theme.dart';
 import 'package:ogree_app/models/domain.dart';
 import 'package:file_picker/file_picker.dart';
 
@@ -22,7 +23,7 @@ class _DomainPopupState extends State<DomainPopup>
   String? _domainParent;
   String? _domainName;
   String? _domainColor;
-  Color _localColor = Colors.blue.shade900;
+  Color? _localColor;
   String? _domainDescription;
   bool _isLoading = false;
   bool _isLoadingDelete = false;
@@ -32,6 +33,7 @@ class _DomainPopupState extends State<DomainPopup>
   late TabController _tabController;
   PlatformFile? _loadedFile;
   String? _loadFileResult;
+  bool _isSmallDisplay = false;
 
   @override
   void initState() {
@@ -43,6 +45,8 @@ class _DomainPopupState extends State<DomainPopup>
   @override
   Widget build(BuildContext context) {
     final localeMsg = AppLocalizations.of(context)!;
+    _isSmallDisplay = IsSmallDisplay(MediaQuery.of(context).size.width);
+
     return FutureBuilder(
       future: _isEdit && domain == null ? getDomain() : null,
       builder: (context, _) {
@@ -73,10 +77,9 @@ class _DomainPopupState extends State<DomainPopup>
       child: Container(
         width: 500,
         margin: const EdgeInsets.symmetric(horizontal: 20),
-        decoration: BoxDecoration(
-            color: Colors.white, borderRadius: BorderRadius.circular(20)),
+        decoration: PopupDecoration,
         child: Padding(
-          padding: const EdgeInsets.fromLTRB(40, 20, 40, 15),
+          padding: const EdgeInsets.fromLTRB(40, 12, 40, 15),
           child: Material(
             color: Colors.white,
             child: Form(
@@ -116,7 +119,7 @@ class _DomainPopupState extends State<DomainPopup>
                   Container(
                     height: 270,
                     child: Padding(
-                      padding: const EdgeInsets.only(top: 8.0),
+                      padding: const EdgeInsets.only(top: 16.0),
                       child: TabBarView(
                         physics: NeverScrollableScrollPhysics(),
                         controller: _tabController,
@@ -131,7 +134,7 @@ class _DomainPopupState extends State<DomainPopup>
                       ),
                     ),
                   ),
-                  const SizedBox(height: 20),
+                  const SizedBox(height: 10),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.end,
                     children: [
@@ -145,12 +148,13 @@ class _DomainPopupState extends State<DomainPopup>
                           size: 16,
                         ),
                       ),
-                      const SizedBox(width: 15),
+                      const SizedBox(width: 10),
                       _isEdit
                           ? Padding(
                               padding: const EdgeInsets.only(right: 15),
-                              child: ElevatedButton.icon(
-                                style: ElevatedButton.styleFrom(
+                              child: IconButton(
+                                constraints: BoxConstraints(maxHeight: 31),
+                                style: IconButton.styleFrom(
                                     backgroundColor: Colors.red),
                                 onPressed: () async {
                                   if (_formKey.currentState!.validate()) {
@@ -173,7 +177,6 @@ class _DomainPopupState extends State<DomainPopup>
                                     }
                                   }
                                 },
-                                label: Text(localeMsg.delete),
                                 icon: _isLoadingDelete
                                     ? Container(
                                         width: 24,
@@ -184,7 +187,11 @@ class _DomainPopupState extends State<DomainPopup>
                                           strokeWidth: 3,
                                         ),
                                       )
-                                    : const Icon(Icons.delete, size: 16),
+                                    : const Icon(
+                                        Icons.delete,
+                                        size: 16,
+                                        color: Colors.white,
+                                      ),
                               ),
                             )
                           : Container(),
@@ -354,7 +361,7 @@ class _DomainPopupState extends State<DomainPopup>
       bool noValidation = false}) {
     final localeMsg = AppLocalizations.of(context)!;
     return Padding(
-      padding: const EdgeInsets.only(left: 2, right: 10),
+      padding: FormInputPadding,
       child: TextFormField(
         onChanged: isColor
             ? (value) {
@@ -364,7 +371,7 @@ class _DomainPopupState extends State<DomainPopup>
                   });
                 } else {
                   setState(() {
-                    _localColor = Colors.blue.shade900;
+                    _localColor = null;
                   });
                 }
               }
@@ -385,10 +392,10 @@ class _DomainPopupState extends State<DomainPopup>
         maxLength: isColor ? 6 : null,
         inputFormatters: formatters,
         initialValue: initialValue,
-        decoration: InputDecoration(
-          icon: Icon(icon, color: isColor ? _localColor : Colors.blue.shade900),
-          labelText: label,
-        ),
+        decoration: GetFormInputDecoration(_isSmallDisplay, label,
+            icon: icon, iconColor: isColor ? _localColor : null),
+        cursorWidth: 1.3,
+        style: const TextStyle(fontSize: 14),
       ),
     );
   }

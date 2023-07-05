@@ -5,6 +5,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:ogree_app/common/api_backend.dart';
 import 'package:ogree_app/common/snackbar.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:ogree_app/common/theme.dart';
 import 'package:ogree_app/models/user.dart';
 import 'package:ogree_app/widgets/select_objects/settings_view/tree_filter.dart';
 
@@ -32,6 +33,7 @@ class _UserPopupState extends State<UserPopup> with TickerProviderStateMixin {
   late TabController _tabController;
   PlatformFile? _loadedFile;
   String? _loadFileResult;
+  bool _isSmallDisplay = false;
 
   @override
   void initState() {
@@ -43,6 +45,7 @@ class _UserPopupState extends State<UserPopup> with TickerProviderStateMixin {
   @override
   Widget build(BuildContext context) {
     final localeMsg = AppLocalizations.of(context)!;
+    _isSmallDisplay = IsSmallDisplay(MediaQuery.of(context).size.width);
     return FutureBuilder(
         future: domainList == null ? getDomains() : null,
         builder: (context, _) {
@@ -51,13 +54,11 @@ class _UserPopupState extends State<UserPopup> with TickerProviderStateMixin {
           }
           return Center(
             child: Container(
-              // height: 240,
               width: 500,
               margin: const EdgeInsets.symmetric(horizontal: 10),
-              decoration: BoxDecoration(
-                  color: Colors.white, borderRadius: BorderRadius.circular(20)),
+              decoration: PopupDecoration,
               child: Padding(
-                padding: const EdgeInsets.fromLTRB(40, 20, 40, 15),
+                padding: const EdgeInsets.fromLTRB(40, 10, 40, 15),
                 child: Material(
                   color: Colors.white,
                   child: Form(
@@ -68,9 +69,6 @@ class _UserPopupState extends State<UserPopup> with TickerProviderStateMixin {
                       children: [
                         TabBar(
                           controller: _tabController,
-                          // labelPadding: const EdgeInsets.only(left: 20, right: 20),
-                          // labelColor: Colors.black,
-                          // unselectedLabelColor: Colors.grey,
                           labelStyle: TextStyle(
                               fontSize: 15,
                               fontFamily: GoogleFonts.inter().fontFamily),
@@ -95,9 +93,9 @@ class _UserPopupState extends State<UserPopup> with TickerProviderStateMixin {
                                 ],
                         ),
                         Container(
-                          height: 300,
+                          height: 320,
                           child: Padding(
-                            padding: const EdgeInsets.only(top: 4.0),
+                            padding: const EdgeInsets.only(top: 16.0),
                             child: TabBarView(
                               physics: const NeverScrollableScrollPhysics(),
                               controller: _tabController,
@@ -112,7 +110,7 @@ class _UserPopupState extends State<UserPopup> with TickerProviderStateMixin {
                             ),
                           ),
                         ),
-                        const SizedBox(height: 20),
+                        const SizedBox(height: 15),
                         Row(
                           mainAxisAlignment: MainAxisAlignment.end,
                           children: [
@@ -272,12 +270,15 @@ class _UserPopupState extends State<UserPopup> with TickerProviderStateMixin {
             obscure: true,
             isReadOnly: _isEdit),
         const Padding(
-          padding: EdgeInsets.only(top: 20.0, bottom: 10),
+          padding: EdgeInsets.only(top: 8.0, bottom: 10, left: 12),
           child: Text("Permissions"),
         ),
-        Column(children: domainRoleRows),
         Padding(
-          padding: const EdgeInsets.only(left: 8.0),
+          padding: const EdgeInsets.only(left: 4),
+          child: Column(children: domainRoleRows),
+        ),
+        Padding(
+          padding: const EdgeInsets.only(left: 6),
           child: Align(
             alignment: Alignment.bottomLeft,
             child: TextButton.icon(
@@ -347,7 +348,7 @@ class _UserPopupState extends State<UserPopup> with TickerProviderStateMixin {
       bool isReadOnly = false,
       bool obscure = false}) {
     return Padding(
-      padding: const EdgeInsets.only(left: 2, right: 10),
+      padding: FormInputPadding,
       child: TextFormField(
         obscureText: obscure,
         initialValue: initial,
@@ -360,12 +361,10 @@ class _UserPopupState extends State<UserPopup> with TickerProviderStateMixin {
           return null;
         },
         inputFormatters: formatters,
-        decoration: InputDecoration(
-          icon: Icon(icon, color: _isEdit ? Colors.grey : Colors.blue.shade900),
-          labelText: label,
-          prefixText: prefix,
-          suffixText: suffix,
-        ),
+        decoration: GetFormInputDecoration(_isSmallDisplay, label,
+            prefixText: prefix, suffixText: suffix, icon: icon),
+        cursorWidth: 1.3,
+        style: const TextStyle(fontSize: 14),
       ),
     );
   }
@@ -389,65 +388,94 @@ class _UserPopupState extends State<UserPopup> with TickerProviderStateMixin {
       selectedRole.add(roleList.first);
     }
     return StatefulBuilder(builder: (context, _setState) {
-      return Row(
-        mainAxisAlignment: MainAxisAlignment.start,
-        children: [
-          // SizedBox(width: 20),
-          Flexible(
-            flex: 3,
-            child: DropdownButton<String>(
-              isExpanded: true,
-              value: selectedDomain[rowIdx],
-              items: domainList!.map<DropdownMenuItem<String>>((String value) {
-                return DropdownMenuItem<String>(
-                  value: value,
-                  child: Text(value),
-                );
-              }).toList(),
-              onChanged: (String? value) {
-                _setState(() {
-                  selectedDomain[rowIdx] = value!;
-                });
-              },
+      return Padding(
+        padding: const EdgeInsets.only(top: 4.0),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.start,
+          children: [
+            Flexible(
+              flex: 3,
+              child: DecoratedBox(
+                decoration: BoxDecoration(
+                  color: const Color.fromARGB(255, 248, 247, 247),
+                  borderRadius: BorderRadius.circular(12.0),
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 12.0),
+                  child: DropdownButton<String>(
+                    borderRadius: BorderRadius.circular(12.0),
+                    underline: Container(),
+                    style: const TextStyle(fontSize: 14, color: Colors.black),
+                    isExpanded: true,
+                    value: selectedDomain[rowIdx],
+                    items: domainList!
+                        .map<DropdownMenuItem<String>>((String value) {
+                      return DropdownMenuItem<String>(
+                        value: value,
+                        child: Text(value),
+                      );
+                    }).toList(),
+                    onChanged: (String? value) {
+                      _setState(() {
+                        selectedDomain[rowIdx] = value!;
+                      });
+                    },
+                  ),
+                ),
+              ),
             ),
-          ),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16.0),
-            child: Icon(
-              Icons.arrow_forward,
-              color: Colors.blue.shade900,
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16.0),
+              child: Icon(
+                Icons.arrow_forward,
+                color: Colors.blue.shade600,
+              ),
             ),
-          ),
-          Flexible(
-            flex: 2,
-            child: DropdownButton<String>(
-              isExpanded: true,
-              value: selectedRole[rowIdx],
-              items: roleList.map<DropdownMenuItem<String>>((String value) {
-                return DropdownMenuItem<String>(
-                  value: value,
-                  child: Text(value),
-                );
-              }).toList(),
-              onChanged: (String? value) {
-                _setState(() {
-                  selectedRole[rowIdx] = value!;
-                });
-              },
+            Flexible(
+              flex: 2,
+              child: DecoratedBox(
+                decoration: BoxDecoration(
+                  color: const Color.fromARGB(255, 248, 247, 247),
+                  borderRadius: BorderRadius.circular(12.0),
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 12.0),
+                  child: DropdownButton<String>(
+                    borderRadius: BorderRadius.circular(12.0),
+                    underline: Container(),
+                    style: const TextStyle(fontSize: 14, color: Colors.black),
+                    isExpanded: true,
+                    value: selectedRole[rowIdx],
+                    items:
+                        roleList.map<DropdownMenuItem<String>>((String value) {
+                      return DropdownMenuItem<String>(
+                        value: value,
+                        child: Text(value),
+                      );
+                    }).toList(),
+                    onChanged: (String? value) {
+                      _setState(() {
+                        selectedRole[rowIdx] = value!;
+                      });
+                    },
+                  ),
+                ),
+              ),
             ),
-          ),
-          rowIdx > 0
-              ? IconButton(
-                  padding: const EdgeInsets.all(4),
-                  constraints: const BoxConstraints(),
-                  iconSize: 14,
-                  onPressed: () => setState(() => removeDomainRoleRow(rowIdx)),
-                  icon: Icon(
-                    Icons.delete,
-                    color: Colors.red.shade400,
-                  ))
-              : const SizedBox(width: 22),
-        ],
+            rowIdx > 0
+                ? IconButton(
+                    padding: const EdgeInsets.all(4),
+                    constraints: const BoxConstraints(),
+                    iconSize: 14,
+                    onPressed: () =>
+                        setState(() => removeDomainRoleRow(rowIdx)),
+                    icon: Icon(
+                      Icons.delete,
+                      color: Colors.red.shade400,
+                    ))
+                : const SizedBox(width: 22),
+          ],
+        ),
       );
     });
   }

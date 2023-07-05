@@ -24,13 +24,16 @@ class AppController with ChangeNotifier {
       {bool isTest = false,
       bool onlyDomain = false,
       bool reload = false,
-      String dateRange = ""}) async {
+      String dateRange = "",
+      bool isTenantMode = false}) async {
     if (_isInitialized && !reload) return;
     final rootNode = TreeNode(id: kRootId);
     if (onlyDomain) {
-      fetchedData =
-          (await fetchObjectsTree(dateRange: dateRange, onlyDomain: true))
-              .first;
+      fetchedData = (await fetchObjectsTree(
+              dateRange: dateRange,
+              onlyDomain: true,
+              isTenantMode: isTenantMode))
+          .first;
       print(fetchedData);
     } else if (isTest) {
       fetchedData = kDataSample;

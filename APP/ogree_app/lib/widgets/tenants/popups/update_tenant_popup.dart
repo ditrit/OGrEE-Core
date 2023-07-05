@@ -182,7 +182,7 @@ class _UpdateTenantPopupState extends State<UpdateTenantPopup> {
   getCheckBox(String title, bool value, Function(bool?) onChange,
       {bool enabled = true}) {
     return SizedBox(
-      width: 100,
+      width: 95,
       child: CheckboxListTile(
         activeColor: Colors.blue.shade600,
         contentPadding: EdgeInsets.zero,
