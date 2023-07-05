@@ -19,22 +19,25 @@ class AppController with ChangeNotifier {
   Future<void> init(Map<String, bool> nodes,
       {bool isTest = false,
       bool onlyDomain = false,
-      bool reload = false}) async {
+      bool reload = false,
+      String dateRange = ""}) async {
     if (_isInitialized && !reload) return;
     final rootNode = TreeNode(id: kRootId);
     if (onlyDomain) {
-      fetchedData = (await fetchObjectsTree(onlyDomain: true)).first;
+      fetchedData =
+          (await fetchObjectsTree(dateRange: dateRange, onlyDomain: true))
+              .first;
       print(fetchedData);
     } else if (isTest) {
       fetchedData = kDataSample;
       fetchedCategories = kDataSampleCategories;
     } else {
-      var resp = await fetchObjectsTree();
+      var resp = await fetchObjectsTree(dateRange: dateRange);
       fetchedData = resp[0];
       fetchedCategories = resp[1];
     }
 
-    if (reload) {
+    if (_isInitialized && reload) {
       // Regenerate tree
       treeController.rootNode
           .clearChildren()

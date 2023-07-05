@@ -7,29 +7,19 @@ import 'package:ogree_app/common/snackbar.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:ogree_app/models/tenant.dart';
 
-class CreateTenantPopup extends StatefulWidget {
-  Function() parentCallback;
-  CreateTenantPopup({super.key, required this.parentCallback});
+class UpdateTenantPopup extends StatefulWidget {
+  Function parentCallback;
+  Tenant tenant;
+  UpdateTenantPopup(
+      {super.key, required this.tenant, required this.parentCallback});
 
   @override
-  State<CreateTenantPopup> createState() => _CreateTenantPopupState();
+  State<UpdateTenantPopup> createState() => _UpdateTenantPopupState();
 }
 
-class _CreateTenantPopupState extends State<CreateTenantPopup> {
+class _UpdateTenantPopupState extends State<UpdateTenantPopup> {
   final _formKey = GlobalKey<FormState>();
-  String? _tenantName;
-  String? _tenantPassword;
-  String? _apiUrl;
-  String _webUrl = "";
-  String? _apiPort;
-  String _webPort = "";
-  String _docUrl = "";
-  String _docPort = "";
-  bool _hasWeb = true;
-  bool _hasDoc = false;
   bool _isLoading = false;
-  PlatformFile? _loadedImage;
-  String _imageTag = "main";
 
   @override
   Widget build(BuildContext context) {
@@ -55,7 +45,7 @@ class _CreateTenantPopupState extends State<CreateTenantPopup> {
                     children: [
                       const Icon(Icons.add_to_photos),
                       Text(
-                        localeMsg.newTenant,
+                        "   Update " + widget.tenant.name,
                         style: GoogleFonts.inter(
                           fontSize: 22,
                           color: Colors.black,
@@ -64,16 +54,7 @@ class _CreateTenantPopupState extends State<CreateTenantPopup> {
                       ),
                     ],
                   ),
-                  const Divider(height: 45),
-                  getFormField(
-                      save: (newValue) => _tenantName = newValue,
-                      label: localeMsg.tenantName,
-                      icon: Icons.business_center),
-                  getFormField(
-                      save: (newValue) => _tenantPassword = newValue,
-                      label: localeMsg.tenantPassword,
-                      icon: Icons.lock),
-                  const SizedBox(height: 8),
+                  const Divider(height: 40),
                   Wrap(
                     alignment: WrapAlignment.start,
                     crossAxisAlignment: WrapCrossAlignment.center,
@@ -85,95 +66,63 @@ class _CreateTenantPopupState extends State<CreateTenantPopup> {
                       getCheckBox("API", true, (_) {}, enabled: false),
                       getCheckBox(
                           "WEB",
-                          _hasWeb,
+                          widget.tenant.hasWeb,
                           (value) => setState(() {
-                                _hasWeb = value!;
+                                widget.tenant.hasWeb = value!;
                               })),
                       getCheckBox(
                           "DOC",
-                          _hasDoc,
+                          widget.tenant.hasDoc,
                           (value) => setState(() {
-                                _hasDoc = value!;
+                                widget.tenant.hasDoc = value!;
                               })),
                     ],
                   ),
                   getFormField(
-                      save: (newValue) => _imageTag = newValue!,
+                      save: (newValue) => widget.tenant.imageTag = newValue!,
                       label: "Version du déploiement (branch)",
                       icon: Icons.access_time,
-                      initial: _imageTag),
+                      initial: widget.tenant.imageTag),
                   getFormField(
                     save: (newValue) {
                       var splitted = newValue!.split(":");
-                      _apiUrl = splitted[0];
-                      _apiPort = splitted[1];
+                      widget.tenant.apiUrl = splitted[0];
+                      widget.tenant.apiPort = splitted[1];
                     },
                     label: "${localeMsg.apiUrl} (hostname:port)",
                     icon: Icons.cloud,
                     prefix: "http://",
                     isUrl: true,
+                    initial: "${widget.tenant.apiUrl}:${widget.tenant.apiPort}",
                   ),
-                  _hasWeb
+                  widget.tenant.hasWeb
                       ? getFormField(
                           save: (newValue) {
                             var splitted = newValue!.split(":");
-                            _webUrl = splitted[0];
-                            _webPort = splitted[1];
+                            widget.tenant.webUrl = splitted[0];
+                            widget.tenant.webPort = splitted[1];
                           },
                           label: "${localeMsg.webUrl} (hostname:port)",
                           icon: Icons.monitor,
                           prefix: "http://",
                           isUrl: true,
+                          initial:
+                              "${widget.tenant.webUrl}:${widget.tenant.webPort}",
                         )
                       : Container(),
-                  _hasWeb
-                      ? Padding(
-                          padding: const EdgeInsets.only(top: 8.0),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.end,
-                            children: [
-                              Padding(
-                                padding: const EdgeInsets.only(right: 20),
-                                child: _loadedImage == null
-                                    ? Image.asset(
-                                        "assets/custom/logo.png",
-                                        height: 40,
-                                      )
-                                    : Image.memory(
-                                        _loadedImage!.bytes!,
-                                        height: 40,
-                                      ),
-                              ),
-                              ElevatedButton.icon(
-                                  onPressed: () async {
-                                    FilePickerResult? result =
-                                        await FilePicker.platform.pickFiles(
-                                            type: FileType.custom,
-                                            allowedExtensions: ["png"],
-                                            withData: true);
-                                    if (result != null) {
-                                      setState(() {
-                                        _loadedImage = result.files.single;
-                                      });
-                                    }
-                                  },
-                                  icon: const Icon(Icons.download),
-                                  label: Text(localeMsg.selectLogo)),
-                            ],
-                          ),
-                        )
-                      : Container(),
-                  _hasDoc
+                  widget.tenant.hasDoc
                       ? getFormField(
                           save: (newValue) {
                             var splitted = newValue!.split(":");
-                            _docUrl = splitted[0];
-                            _docPort = splitted[1];
+                            widget.tenant.docUrl = splitted[0];
+                            widget.tenant.docPort = splitted[1];
                           },
                           label: "${localeMsg.docUrl} (hostname:port)",
                           icon: Icons.book,
                           prefix: "http://",
                           isUrl: true,
+                          initial:
+                              "${widget.tenant.docUrl}:${widget.tenant.docPort}",
                         )
                       : Container(),
                   const SizedBox(height: 30),
@@ -200,32 +149,12 @@ class _CreateTenantPopupState extends State<CreateTenantPopup> {
                               });
                               // Load logo first, if provided
                               String response = localeMsg.notLoaded;
-                              if (_loadedImage != null) {
-                                response = await uploadImage(
-                                    _loadedImage!, _tenantName!);
-                                print(response);
-                                if (response != "") {
-                                  showSnackBar(context,
-                                      "${localeMsg.failedToUpload} $response");
-                                }
-                              }
                               // Create tenant
-                              response = await createTenant(Tenant(
-                                  _tenantName!,
-                                  _tenantPassword!,
-                                  _apiUrl!,
-                                  _webUrl,
-                                  _apiPort!,
-                                  _webPort,
-                                  _hasWeb,
-                                  _hasDoc,
-                                  _docUrl,
-                                  _docPort,
-                                  _imageTag));
+                              response = await updateTenant(widget.tenant);
                               if (response == "") {
                                 widget.parentCallback();
                                 showSnackBar(
-                                    context, "${localeMsg.tenantCreated} 🥳",
+                                    context, "Tenant successfully updated 🥳",
                                     isSuccess: true);
                                 Navigator.of(context).pop();
                               } else {
@@ -236,7 +165,7 @@ class _CreateTenantPopupState extends State<CreateTenantPopup> {
                               }
                             }
                           },
-                          label: Text(localeMsg.create),
+                          label: Text("Update"),
                           icon: _isLoading
                               ? Container(
                                   width: 24,
@@ -247,7 +176,7 @@ class _CreateTenantPopupState extends State<CreateTenantPopup> {
                                     strokeWidth: 3,
                                   ),
                                 )
-                              : const Icon(Icons.check_circle, size: 16))
+                              : const Icon(Icons.update_rounded, size: 16))
                     ],
                   )
                 ],

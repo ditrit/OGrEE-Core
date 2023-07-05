@@ -234,7 +234,7 @@ func CheckObject(path string, silenced bool) (string, bool) {
 	paths := OnlinePathResolve(pathSplit)
 
 	for i := range paths {
-		resp, e := models.Send("OPTIONS", paths[i], GetKey(), nil)
+		resp, e := models.Send("GET", paths[i], GetKey(), nil)
 		if e != nil {
 			if !silenced {
 				println(paths[i])

@@ -9,6 +9,7 @@ void main() {
   testWidgets('ResultPage loads objects', (tester) async {
     await tester.pumpWidget(LocalizationsInjApp(
       child: ResultsPage(
+          dateRange: "",
           selectedAttrs: [],
           selectedObjects: kDataSample["sitePI"]!,
           namespace: "TEST"),
@@ -22,6 +23,7 @@ void main() {
   testWidgets('ResultPage adds attributes upon selection', (tester) async {
     await tester.pumpWidget(LocalizationsInjApp(
       child: ResultsPage(
+          dateRange: "",
           selectedAttrs: [],
           selectedObjects: kDataSample["siteNO"]!,
           namespace: "TEST"),
