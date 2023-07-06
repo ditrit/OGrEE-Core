@@ -58,7 +58,7 @@ class _UserPopupState extends State<UserPopup> with TickerProviderStateMixin {
               margin: const EdgeInsets.symmetric(horizontal: 10),
               decoration: PopupDecoration,
               child: Padding(
-                padding: const EdgeInsets.fromLTRB(40, 10, 40, 15),
+                padding: const EdgeInsets.fromLTRB(40, 8, 40, 15),
                 child: Material(
                   color: Colors.white,
                   child: Form(
@@ -110,7 +110,7 @@ class _UserPopupState extends State<UserPopup> with TickerProviderStateMixin {
                             ),
                           ),
                         ),
-                        const SizedBox(height: 15),
+                        const SizedBox(height: 10),
                         Row(
                           mainAxisAlignment: MainAxisAlignment.end,
                           children: [

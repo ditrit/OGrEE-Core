@@ -79,7 +79,7 @@ class _DomainPopupState extends State<DomainPopup>
         margin: const EdgeInsets.symmetric(horizontal: 20),
         decoration: PopupDecoration,
         child: Padding(
-          padding: const EdgeInsets.fromLTRB(40, 12, 40, 15),
+          padding: const EdgeInsets.fromLTRB(40, 8, 40, 15),
           child: Material(
             color: Colors.white,
             child: Form(
@@ -134,7 +134,7 @@ class _DomainPopupState extends State<DomainPopup>
                       ),
                     ),
                   ),
-                  const SizedBox(height: 10),
+                  const SizedBox(height: 5),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.end,
                     children: [

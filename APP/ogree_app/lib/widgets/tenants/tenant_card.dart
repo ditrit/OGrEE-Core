@@ -54,7 +54,7 @@ class TenantCard extends StatelessWidget {
                               tenant: tenant,
                             )),
                         icon: const Icon(
-                          Icons.update,
+                          Icons.edit,
                         )),
                   ),
                   const SizedBox(width: 8),
