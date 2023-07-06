@@ -30,6 +30,7 @@ class _TenantPageState extends State<TenantPage> with TickerProviderStateMixin {
   late final AppController appController = AppController();
   bool _isLocked = true;
   bool _reloadDomains = false;
+  bool _isSmallDisplay = false;
 
   @override
   void initState() {
@@ -41,7 +42,7 @@ class _TenantPageState extends State<TenantPage> with TickerProviderStateMixin {
   @override
   Widget build(BuildContext context) {
     final localeMsg = AppLocalizations.of(context)!;
-    final isSmallDisplay = IsSmallDisplay(MediaQuery.of(context).size.width);
+    _isSmallDisplay = IsSmallDisplay(MediaQuery.of(context).size.width);
     return Scaffold(
         backgroundColor: const Color.fromARGB(255, 238, 238, 241),
         appBar: myAppBar(context, widget.userEmail, isTenantMode: true),
@@ -158,7 +159,7 @@ class _TenantPageState extends State<TenantPage> with TickerProviderStateMixin {
           : UserView(),
     ];
     if (widget.tenant != null) {
-      views.insert(0, DockerView(tenantName: tenantName));
+      views.insert(0, DockerView(tName: widget.tenant!.name));
     }
     return views;
   }
@@ -181,9 +182,9 @@ class _TenantPageState extends State<TenantPage> with TickerProviderStateMixin {
               _reloadDomains = false;
             }
             if (appController.isInitialized) {
-              return Stack(children: const [
-                CustomTreeView(isTenantMode: true),
-                Align(
+              return Stack(children: [
+                const CustomTreeView(isTenantMode: true),
+                _isSmallDisplay ? Container() : const Align(
                   alignment: Alignment.topRight,
                   child: Padding(
                     padding: EdgeInsets.only(right: 16),

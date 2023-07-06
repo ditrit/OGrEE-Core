@@ -58,7 +58,7 @@ class _UserPopupState extends State<UserPopup> with TickerProviderStateMixin {
               margin: const EdgeInsets.symmetric(horizontal: 10),
               decoration: PopupDecoration,
               child: Padding(
-                padding: const EdgeInsets.fromLTRB(40, 8, 40, 15),
+                padding: EdgeInsets.fromLTRB(_isSmallDisplay ? 20 : 40, 8, _isSmallDisplay ? 20 : 40, 15),
                 child: Material(
                   color: Colors.white,
                   child: Form(
@@ -250,6 +250,7 @@ class _UserPopupState extends State<UserPopup> with TickerProviderStateMixin {
 
   getUserView(AppLocalizations localeMsg) {
     return ListView(
+      padding: EdgeInsets.zero,
       children: [
         getFormField(
             save: (newValue) => _userName = newValue,
@@ -425,7 +426,7 @@ class _UserPopupState extends State<UserPopup> with TickerProviderStateMixin {
               ),
             ),
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16.0),
+              padding: EdgeInsets.symmetric(horizontal: _isSmallDisplay ? 0 : 16.0),
               child: Icon(
                 Icons.arrow_forward,
                 color: Colors.blue.shade600,
@@ -439,7 +440,7 @@ class _UserPopupState extends State<UserPopup> with TickerProviderStateMixin {
                   borderRadius: BorderRadius.circular(12.0),
                 ),
                 child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 12.0),
+                  padding:  EdgeInsets.symmetric(horizontal: _isSmallDisplay ? 6 : 12.0),
                   child: DropdownButton<String>(
                     borderRadius: BorderRadius.circular(12.0),
                     underline: Container(),

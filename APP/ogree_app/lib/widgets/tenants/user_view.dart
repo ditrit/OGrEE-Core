@@ -2,6 +2,7 @@
 import 'package:flutter/material.dart';
 import 'package:ogree_app/common/api_backend.dart';
 import 'package:ogree_app/common/popup_dialog.dart';
+import 'package:ogree_app/common/theme.dart';
 import 'package:ogree_app/models/tenant.dart';
 import 'package:ogree_app/models/user.dart';
 import 'package:ogree_app/pages/results_page.dart';
@@ -28,6 +29,7 @@ class _UserViewState extends State<UserView> {
   @override
   Widget build(BuildContext context) {
     final localeMsg = AppLocalizations.of(context)!;
+    final isSmallDisplay = IsSmallDisplay(MediaQuery.of(context).size.width);
     return FutureBuilder(
         future: _loadUsers ? getUsers() : null,
         builder: (context, _) {
@@ -50,10 +52,10 @@ class _UserViewState extends State<UserView> {
                     decoration: InputDecoration(
                   border: InputBorder.none,
                   isDense: true,
-                  label: Text(localeMsg.search),
+                  label: isSmallDisplay ? null : Text(localeMsg.search),
                   prefixIcon: IconButton(
                     onPressed: () => {},
-                    tooltip: "Search",
+                    tooltip:  "Search",
                     icon: const Icon(
                       Icons.search_rounded,
                     ),
@@ -61,9 +63,11 @@ class _UserViewState extends State<UserView> {
                 )),
                 actions: [
                   Padding(
-                    padding: const EdgeInsets.only(right: 4.0),
+                    padding: EdgeInsets.only(right: isSmallDisplay ? 0 : 4),
                     child: IconButton(
-                        splashRadius: 23,
+                        padding: EdgeInsets.zero,
+                        constraints: BoxConstraints(),
+                        splashRadius: isSmallDisplay ? 16 : 23,
                         onPressed: () => selectedUsers.isNotEmpty
                             ? showCustomPopup(
                                 context,
@@ -82,9 +86,9 @@ class _UserViewState extends State<UserView> {
                         )),
                   ),
                   Padding(
-                    padding: const EdgeInsets.only(right: 8.0),
+                    padding: EdgeInsets.only(right: isSmallDisplay ? 0 : 8.0),
                     child: IconButton(
-                        splashRadius: 23,
+                        splashRadius: isSmallDisplay ? 16 : 23,
                         // iconSize: 14,
                         onPressed: () => selectedUsers.length > 0
                             ? showCustomPopup(
@@ -118,7 +122,7 @@ class _UserViewState extends State<UserView> {
                         });
                       })),
                       icon: const Icon(Icons.add, color: Colors.white),
-                      label: Text("${localeMsg.create} ${localeMsg.user}"),
+                      label: Text(isSmallDisplay ? localeMsg.create : "${localeMsg.create} ${localeMsg.user}"),
                     ),
                   ),
                 ],

@@ -277,6 +277,7 @@ class _DomainPopupState extends State<DomainPopup>
   getDomainForm() {
     final localeMsg = AppLocalizations.of(context)!;
     return ListView(
+      padding: EdgeInsets.zero,
       children: [
         getFormField(
             save: (newValue) => _domainParent = newValue,

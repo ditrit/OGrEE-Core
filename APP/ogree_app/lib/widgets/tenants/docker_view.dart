@@ -8,10 +8,10 @@ import 'package:ogree_app/widgets/tenants/popups/container_logs_popup.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class DockerView extends StatelessWidget {
-  final String tenantName;
+  final String tName;
   List<DockerContainer>? _dockerInfo;
 
-  DockerView({super.key, required this.tenantName});
+  DockerView({super.key, required this.tName});
 
   @override
   Widget build(BuildContext context) {
@@ -47,7 +47,7 @@ class DockerView extends StatelessWidget {
   }
 
   getData() async {
-    _dockerInfo = await fetchTenantDockerInfo(tenantName);
+    _dockerInfo = await fetchTenantDockerInfo(tName);
   }
 
   List<DataColumn> getColumns() {
