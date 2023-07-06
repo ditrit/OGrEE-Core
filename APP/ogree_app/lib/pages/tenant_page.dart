@@ -47,104 +47,107 @@ class _TenantPageState extends State<TenantPage> with TickerProviderStateMixin {
           padding: const EdgeInsets.all(20.0),
           child: CustomScrollView(slivers: [
             SliverFillRemaining(
-            hasScrollBody: false,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Padding(
-                  padding: const EdgeInsets.only(top: 2.0, bottom: 14, left: 5),
-                  child: Row(
-                    children: [
-                      IconButton(
-                          onPressed: () =>
-                              Navigator.of(context).push(MaterialPageRoute(
-                                builder: (context) => ProjectsPage(
-                                    userEmail: widget.userEmail,
-                                    isTenantMode: true),
-                              )),
-                          icon: Icon(
-                            Icons.arrow_back,
-                            color: Colors.blue.shade900,
-                          )),
-                      const SizedBox(width: 5),
-                      Text(
-                        "Tenant ${widget.tenant.name}",
-                        style: Theme.of(context).textTheme.headlineLarge,
-                      ),
-                    ],
+              hasScrollBody: false,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 14, left: 5),
+                    child: Row(
+                      children: [
+                        IconButton(
+                            onPressed: () =>
+                                Navigator.of(context).push(MaterialPageRoute(
+                                  builder: (context) => ProjectsPage(
+                                      userEmail: widget.userEmail,
+                                      isTenantMode: true),
+                                )),
+                            icon: Icon(
+                              Icons.arrow_back,
+                              color: Colors.blue.shade900,
+                            )),
+                        const SizedBox(width: 5),
+                        Text(
+                          "Tenant ${widget.tenant.name}",
+                          style: Theme.of(context).textTheme.headlineLarge,
+                        ),
+                      ],
+                    ),
                   ),
-                ),
-                Card(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      TabBar(
-                        controller: _tabController,
-                        dividerColor: Colors.white,
-                        labelPadding: const EdgeInsets.only(left: 20, right: 20),
-                        labelColor: Colors.blue.shade900,
-                        unselectedLabelColor: Colors.grey,
-                        labelStyle: TextStyle(
-                            fontSize: 14,
-                            fontFamily: GoogleFonts.inter().fontFamily),
-                        unselectedLabelStyle: TextStyle(
-                            fontSize: 14,
-                            fontFamily: GoogleFonts.inter().fontFamily),
-                        isScrollable: true,
-                        indicatorSize: TabBarIndicatorSize.label,
-                        tabs: [
-                          Tab(
-                            text: localeMsg.deployment,
-                            icon: const Icon(Icons.dns),
-                          ),
-                          const Tab(
-                            text: "API Stats",
-                            icon: Icon(Icons.info),
-                          ),
-                          Tab(
-                            text: localeMsg.domain + "s",
-                            icon: const Icon(Icons.business),
-                          ),
-                          Tab(
-                            text: localeMsg.user + "s",
-                            icon: const Icon(Icons.person),
-                          ),
-                        ],
-                      ),
-                      const Divider(),
-                      Container(
-                        padding: const EdgeInsets.only(left: 20),
-                        height: MediaQuery.of(context).size.height - (isSmallDisplay ? 310 : 250),
-                        width: double.maxFinite,
-                        child: TabBarView(
-                          physics: const NeverScrollableScrollPhysics(),
+                  Card(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        TabBar(
                           controller: _tabController,
-                          children: [
-                            DockerView(tenantName: widget.tenant.name),
-                            _isLocked
-                                ? LockedView(
-                                    tenant: widget.tenant,
-                                    parentCallback: unlockView)
-                                : ApiStatsView(tenant: widget.tenant),
-                            _isLocked
-                                ? LockedView(
-                                    tenant: widget.tenant,
-                                    parentCallback: unlockView)
-                                : domainView(localeMsg),
-                            _isLocked
-                                ? LockedView(
-                                    tenant: widget.tenant,
-                                    parentCallback: unlockView)
-                                : UserView(tenant: widget.tenant),
+                          dividerColor: Colors.white,
+                          labelPadding:
+                              const EdgeInsets.only(left: 20, right: 20),
+                          labelColor: Colors.blue.shade900,
+                          unselectedLabelColor: Colors.grey,
+                          labelStyle: TextStyle(
+                              fontSize: 14,
+                              fontFamily: GoogleFonts.inter().fontFamily),
+                          unselectedLabelStyle: TextStyle(
+                              fontSize: 14,
+                              fontFamily: GoogleFonts.inter().fontFamily),
+                          isScrollable: true,
+                          indicatorSize: TabBarIndicatorSize.label,
+                          tabs: [
+                            Tab(
+                              text: localeMsg.deployment,
+                              icon: const Icon(Icons.dns),
+                            ),
+                            const Tab(
+                              text: "API Stats",
+                              icon: Icon(Icons.info),
+                            ),
+                            Tab(
+                              text: localeMsg.domain + "s",
+                              icon: const Icon(Icons.business),
+                            ),
+                            Tab(
+                              text: localeMsg.user + "s",
+                              icon: const Icon(Icons.person),
+                            ),
                           ],
                         ),
-                      ),
-                    ],
+                        const Divider(),
+                        Container(
+                          padding: const EdgeInsets.only(left: 20),
+                          height: MediaQuery.of(context).size.height -
+                              (isSmallDisplay ? 310 : 250),
+                          width: double.maxFinite,
+                          child: TabBarView(
+                            physics: const NeverScrollableScrollPhysics(),
+                            controller: _tabController,
+                            children: [
+                              DockerView(tenantName: widget.tenant.name),
+                              _isLocked
+                                  ? LockedView(
+                                      tenant: widget.tenant,
+                                      parentCallback: unlockView)
+                                  : ApiStatsView(tenant: widget.tenant),
+                              _isLocked
+                                  ? LockedView(
+                                      tenant: widget.tenant,
+                                      parentCallback: unlockView)
+                                  : domainView(localeMsg),
+                              _isLocked
+                                  ? LockedView(
+                                      tenant: widget.tenant,
+                                      parentCallback: unlockView)
+                                  : UserView(tenant: widget.tenant),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
-                ),
-              ],
-            ),)]
-          ),
+                ],
+              ),
+            )
+          ]),
         ));
   }
 

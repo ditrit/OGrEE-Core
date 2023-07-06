@@ -4,6 +4,7 @@ import 'dart:typed_data';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
+import 'package:ogree_app/models/container.dart';
 import 'package:ogree_app/models/domain.dart';
 import 'package:ogree_app/models/project.dart';
 import 'package:ogree_app/models/tenant.dart';
@@ -376,7 +377,7 @@ Future<String> deleteTenant(String objName, {http.Client? client}) async {
   }
 }
 
-Future<List<Map<String, String>>> fetchTenantDockerInfo(String tenantName,
+Future<List<DockerContainer>> fetchTenantDockerInfo(String tenantName,
     {http.Client? client}) async {
   print("API get Tenant Docker Info");
   client ??= http.Client();
@@ -384,14 +385,11 @@ Future<List<Map<String, String>>> fetchTenantDockerInfo(String tenantName,
   final response = await client.get(url, headers: getHeader(token));
   print(response.statusCode);
   if (response.statusCode == 200) {
-    print(response.body);
     List<dynamic> data = json.decode(response.body);
-    print("response.body");
-    List<Map<String, String>> converted = [];
+    List<DockerContainer> converted = [];
     for (var item in data) {
-      converted.add(Map<String, String>.from(item));
+      converted.add(DockerContainer.fromMap(item));
     }
-    print(converted);
     return converted;
   } else {
     // If the server did not return a 200 OK response,
