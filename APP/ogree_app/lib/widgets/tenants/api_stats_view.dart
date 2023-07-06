@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:ogree_app/common/api_backend.dart';
 import 'package:ogree_app/models/tenant.dart';
+import 'package:ogree_app/pages/results_page.dart';
 
 // Define a stateful widget that displays API usage statistics for a given tenant
 class ApiStatsView extends StatefulWidget {
@@ -20,14 +21,12 @@ class ApiStatsView extends StatefulWidget {
 
 // Define the state for the ApiStatsView widget
 class _ApiStatsViewState extends State<ApiStatsView> {
-  // Holds the API usage statistics data for the current tenant
   Map<String, dynamic>? _tenantStats;
+  TextStyle titleStyle = const TextStyle(fontWeight: FontWeight.w600);
 
   @override
   Widget build(BuildContext context) {
-    // Localized messages
     final localeMsg = AppLocalizations.of(context)!;
-    print("HELLOOOOOO");
     return FutureBuilder(
         // Async method that fetches the tenant's API usage statistics
         future: getTenantStats(),
@@ -38,32 +37,35 @@ class _ApiStatsViewState extends State<ApiStatsView> {
           }
           // If the statistics data is available and not empty, display it
           else if (_tenantStats!.isNotEmpty) {
-            // Create a list of widgets to hold the statistics
-            List<Widget> stats = [];
-
-            // Iterate over each key-value pair in the statistics data
-            for (var key in _tenantStats!.keys) {
-              // Create a Row widget containing a label and a value for each pair
-              stats.add(Padding(
-                padding: const EdgeInsets.only(left: 2, right: 10),
-                child: Row(
-                  children: [
-                    // Display the key as a bold label
-                    Text(
-                      key,
-                      style: const TextStyle(fontWeight: FontWeight.bold),
-                    ),
-                    // Display the value as text
-                    Text(_tenantStats![key].toString())
-                  ],
+            return Theme(
+                data: ThemeData(
+                  cardTheme: const CardTheme(
+                      elevation: 0,
+                      surfaceTintColor: Colors.white,
+                      color: Colors.white),
                 ),
-              ));
-            }
-
-            // Display the statistics in a column within a scrollable view
-            return Expanded(
-              child: SingleChildScrollView(child: Column(children: stats)),
-            );
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.only(right: 16, top: 0),
+                  child: PaginatedDataTable(
+                    horizontalMargin: 15,
+                    columnSpacing: 30,
+                    showCheckboxColumn: false,
+                    rowsPerPage: _tenantStats!.length,
+                    columns: [
+                      DataColumn(
+                          label: Text(
+                        "Parameter",
+                        style: titleStyle,
+                      )),
+                      DataColumn(
+                          label: Text(
+                        "Value",
+                        style: titleStyle,
+                      ))
+                    ],
+                    source: _DataSource(context, _tenantStats!),
+                  ),
+                ));
           }
           // If the statistics data is empty, display a message
           else {
@@ -72,9 +74,7 @@ class _ApiStatsViewState extends State<ApiStatsView> {
         });
   }
 
-  // Async method that fetches the tenant's API usage statistics
   getTenantStats() async {
-    print("YOOOOO");
     // Fetch the statistics data from the tenant's API backend
     _tenantStats = await fetchTenantStats(
         "http://${widget.tenant.apiUrl}:${widget.tenant.apiPort}");
@@ -83,7 +83,6 @@ class _ApiStatsViewState extends State<ApiStatsView> {
     Map<String, dynamic> versionStats = await fetchTenantApiVersion(
         "http://${widget.tenant.apiUrl}:${widget.tenant.apiPort}");
 
-    // Append the version information to the statistics data
     for (var key in versionStats.keys) {
       if (key.contains("Build")) {
         _tenantStats!["API$key"] = versionStats[key];
@@ -91,5 +90,64 @@ class _ApiStatsViewState extends State<ApiStatsView> {
         _tenantStats![key] = versionStats[key];
       }
     }
+  }
+}
+
+class _DataSource extends DataTableSource {
+  Map<String, dynamic> stats;
+  _DataSource(this.context, this.stats) {
+    _rows = getChildren();
+  }
+  final BuildContext context;
+  late List<CustomRow> _rows;
+
+  int _selectedCount = 0;
+
+  @override
+  DataRow? getRow(int index) {
+    assert(index >= 0);
+    if (index >= _rows.length) return null;
+    final row = _rows[index];
+    return DataRow.byIndex(
+      index: index,
+      selected: row.selected,
+      onSelectChanged: (value) {
+        if (row.selected != value) {
+          _selectedCount += value! ? 1 : -1;
+          assert(_selectedCount >= 0);
+          row.selected = value;
+          // notifyListeners();
+        }
+      },
+      cells: row.cells,
+    );
+  }
+
+  @override
+  int get rowCount => _rows.length;
+
+  @override
+  bool get isRowCountApproximate => false;
+
+  @override
+  int get selectedRowCount => _selectedCount;
+
+  List<CustomRow> getChildren() {
+    List<CustomRow> children = [];
+    for (var key in stats.keys) {
+      List<DataCell> row = [label(key), label(stats[key].toString())];
+      children.add(CustomRow(row));
+    }
+    return children;
+  }
+
+  DataCell label(String label, {FontWeight fontWeight = FontWeight.w400}) {
+    return DataCell(Text(
+      label,
+      style: const TextStyle(
+        fontSize: 14,
+        fontWeight: FontWeight.w400,
+      ),
+    ));
   }
 }

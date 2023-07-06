@@ -95,7 +95,7 @@ class _DataSource extends DataTableSource {
           _selectedCount += value! ? 1 : -1;
           assert(_selectedCount >= 0);
           row.selected = value;
-          notifyListeners();
+          // notifyListeners();
         }
       },
       cells: row.cells,
