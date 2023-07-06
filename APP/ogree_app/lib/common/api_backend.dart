@@ -15,6 +15,7 @@ part 'api_tenant.dart';
 String apiUrl = "";
 String tenantUrl = "";
 String tenantName = "";
+bool isTenantAdmin = false;
 var token = "";
 var tenantToken = "";
 getHeader(token) => {
@@ -40,6 +41,10 @@ String urlDateAppend(String dateRange) {
 
 Future<List<String>> loginAPI(String email, String password,
     {String userUrl = ""}) async {
+  tenantUrl = "";
+  isTenantAdmin = false;
+  token = "";
+  tenantToken = "";
   if (userUrl != "") {
     apiUrl = userUrl;
   } else {
@@ -54,6 +59,12 @@ Future<List<String>> loginAPI(String email, String password,
     Map<String, dynamic> data = json.decode(response.body);
     data = (Map<String, dynamic>.from(data["account"]));
     token = data["token"]!;
+    if (data["isTenant"] == null && data["roles"]["*"] == "manager") {
+      // Not tenant mode, but tenant admin
+      isTenantAdmin = true;
+      tenantUrl = apiUrl;
+      tenantToken = token;
+    }
     return [data["email"].toString(), data["isTenant"] ?? ""];
   } else {
     return [""];

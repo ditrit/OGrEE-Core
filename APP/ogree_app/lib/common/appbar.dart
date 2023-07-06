@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:ogree_app/common/api_backend.dart';
 import 'package:ogree_app/common/popup_dialog.dart';
+import 'package:ogree_app/models/tenant.dart';
 import 'package:ogree_app/pages/login_page.dart';
 import 'package:ogree_app/pages/projects_page.dart';
+import 'package:ogree_app/pages/tenant_page.dart';
 import 'package:ogree_app/widgets/change_password_popup.dart';
 import 'package:ogree_app/widgets/language_toggle.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
@@ -32,6 +34,13 @@ AppBar myAppBar(context, userEmail, {isTenantMode = false}) {
         PopupMenuItem(
           value: "new",
           child: Text(AppLocalizations.of(context)!.addServer),
+        ));
+  } else if (isTenantAdmin) {
+    entries.insert(
+        0,
+        PopupMenuItem(
+          value: "tenant",
+          child: Text("Paramètres du tenant"),
         ));
   }
 
@@ -86,6 +95,10 @@ AppBar myAppBar(context, userEmail, {isTenantMode = false}) {
             } else if (value == "new") {
               showCustomPopup(
                   context, CreateServerPopup(parentCallback: () {}));
+            } else if (value == "tenant") {
+              Navigator.of(context).push(MaterialPageRoute(
+                builder: (context) => TenantPage(userEmail: "admin"),
+              ));
             } else {
               showCustomPopup(context, ChangePasswordPopup());
             }

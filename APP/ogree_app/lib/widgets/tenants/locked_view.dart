@@ -33,12 +33,13 @@ class _LockedViewState extends State<LockedView> {
   @override
   Widget build(BuildContext context) {
     final localeMsg = AppLocalizations.of(context)!;
-    final bool isSmallDisplay = IsSmallDisplay(MediaQuery.of(context).size.width);
+    final bool isSmallDisplay =
+        IsSmallDisplay(MediaQuery.of(context).size.width);
     return Form(
       key: formKey,
       child: Container(
         constraints: const BoxConstraints(maxWidth: 350, maxHeight: 500),
-        padding:  EdgeInsets.only(
+        padding: EdgeInsets.only(
           right: isSmallDisplay ? 32 : 100,
           left: isSmallDisplay ? 15 : 100,
         ),
@@ -61,16 +62,6 @@ class _LockedViewState extends State<LockedView> {
                 },
                 decoration: GetFormInputDecoration(isSmallDisplay, 'E-mail',
                     icon: Icons.alternate_email, hint: 'abc@example.com'),
-                // InputDecoration(
-                //   isDense: true,
-                //   labelText: 'E-mail',
-                //   hintText: 'abc@example.com',
-                //   labelStyle: GoogleFonts.inter(
-                //     fontSize: 11,
-                //     color: Colors.black,
-                //   ),
-                //   border: inputStyle,
-                // ),
               ),
             ),
             const SizedBox(height: 20),

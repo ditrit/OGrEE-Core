@@ -118,6 +118,7 @@ class _SelectDateState extends State<SelectDate> with TickerProviderStateMixin {
                                   style: GoogleFonts.inter(
                                     fontSize: isSmallDisplay ? 14 : 17,
                                   ),
+                                  textAlign: TextAlign.center,
                                 ),
                               ),
                             )

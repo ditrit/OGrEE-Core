@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:ogree_app/common/api_backend.dart';
 import 'package:ogree_app/common/appbar.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:ogree_app/common/popup_dialog.dart';
@@ -17,8 +18,8 @@ import 'package:ogree_app/widgets/tenants/user_view.dart';
 
 class TenantPage extends StatefulWidget {
   final String userEmail;
-  final Tenant tenant;
-  const TenantPage({super.key, required this.userEmail, required this.tenant});
+  final Tenant? tenant;
+  const TenantPage({super.key, required this.userEmail, this.tenant});
 
   @override
   State<TenantPage> createState() => _TenantPageState();
@@ -33,7 +34,8 @@ class _TenantPageState extends State<TenantPage> with TickerProviderStateMixin {
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 4, vsync: this);
+    _tabController =
+        TabController(length: widget.tenant != null ? 4 : 3, vsync: this);
   }
 
   @override
@@ -60,7 +62,7 @@ class _TenantPageState extends State<TenantPage> with TickerProviderStateMixin {
                                 Navigator.of(context).push(MaterialPageRoute(
                                   builder: (context) => ProjectsPage(
                                       userEmail: widget.userEmail,
-                                      isTenantMode: true),
+                                      isTenantMode: widget.tenant != null),
                                 )),
                             icon: Icon(
                               Icons.arrow_back,
@@ -68,7 +70,7 @@ class _TenantPageState extends State<TenantPage> with TickerProviderStateMixin {
                             )),
                         const SizedBox(width: 5),
                         Text(
-                          "Tenant ${widget.tenant.name}",
+                          "Tenant $tenantName",
                           style: Theme.of(context).textTheme.headlineLarge,
                         ),
                       ],
@@ -93,24 +95,7 @@ class _TenantPageState extends State<TenantPage> with TickerProviderStateMixin {
                               fontFamily: GoogleFonts.inter().fontFamily),
                           isScrollable: true,
                           indicatorSize: TabBarIndicatorSize.label,
-                          tabs: [
-                            Tab(
-                              text: localeMsg.deployment,
-                              icon: const Icon(Icons.dns),
-                            ),
-                            const Tab(
-                              text: "API Stats",
-                              icon: Icon(Icons.info),
-                            ),
-                            Tab(
-                              text: localeMsg.domain + "s",
-                              icon: const Icon(Icons.business),
-                            ),
-                            Tab(
-                              text: localeMsg.user + "s",
-                              icon: const Icon(Icons.person),
-                            ),
-                          ],
+                          tabs: getTabs(localeMsg),
                         ),
                         const Divider(),
                         Container(
@@ -121,24 +106,7 @@ class _TenantPageState extends State<TenantPage> with TickerProviderStateMixin {
                           child: TabBarView(
                             physics: const NeverScrollableScrollPhysics(),
                             controller: _tabController,
-                            children: [
-                              DockerView(tenantName: widget.tenant.name),
-                              _isLocked
-                                  ? LockedView(
-                                      tenant: widget.tenant,
-                                      parentCallback: unlockView)
-                                  : ApiStatsView(tenant: widget.tenant),
-                              _isLocked
-                                  ? LockedView(
-                                      tenant: widget.tenant,
-                                      parentCallback: unlockView)
-                                  : domainView(localeMsg),
-                              _isLocked
-                                  ? LockedView(
-                                      tenant: widget.tenant,
-                                      parentCallback: unlockView)
-                                  : UserView(tenant: widget.tenant),
-                            ],
+                            children: getTabViews(localeMsg),
                           ),
                         ),
                       ],
@@ -149,6 +117,50 @@ class _TenantPageState extends State<TenantPage> with TickerProviderStateMixin {
             )
           ]),
         ));
+  }
+
+  List<Tab> getTabs(AppLocalizations localeMsg) {
+    List<Tab> tabs = [
+      const Tab(
+        text: "API Stats",
+        icon: Icon(Icons.info),
+      ),
+      Tab(
+        text: localeMsg.domain + "s",
+        icon: const Icon(Icons.business),
+      ),
+      Tab(
+        text: localeMsg.user + "s",
+        icon: const Icon(Icons.person),
+      ),
+    ];
+    if (widget.tenant != null) {
+      tabs.insert(
+          0,
+          Tab(
+            text: localeMsg.deployment,
+            icon: const Icon(Icons.dns),
+          ));
+    }
+    return tabs;
+  }
+
+  List<Widget> getTabViews(AppLocalizations localeMsg) {
+    List<Widget> views = [
+      _isLocked && widget.tenant != null
+          ? LockedView(tenant: widget.tenant!, parentCallback: unlockView)
+          : ApiStatsView(),
+      _isLocked && widget.tenant != null
+          ? LockedView(tenant: widget.tenant!, parentCallback: unlockView)
+          : domainView(localeMsg),
+      _isLocked && widget.tenant != null
+          ? LockedView(tenant: widget.tenant!, parentCallback: unlockView)
+          : UserView(),
+    ];
+    if (widget.tenant != null) {
+      views.insert(0, DockerView(tenantName: tenantName));
+    }
+    return views;
   }
 
   unlockView() {

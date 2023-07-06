@@ -7,12 +7,8 @@ import 'package:ogree_app/pages/results_page.dart';
 
 // Define a stateful widget that displays API usage statistics for a given tenant
 class ApiStatsView extends StatefulWidget {
-  // The tenant to display stats for
-  Tenant tenant;
-
   ApiStatsView({
     Key? key,
-    required this.tenant,
   }) : super(key: key);
 
   @override
@@ -76,12 +72,10 @@ class _ApiStatsViewState extends State<ApiStatsView> {
 
   getTenantStats() async {
     // Fetch the statistics data from the tenant's API backend
-    _tenantStats = await fetchTenantStats(
-        "http://${widget.tenant.apiUrl}:${widget.tenant.apiPort}");
+    _tenantStats = await fetchTenantStats();
 
     // Fetch additional version information about the tenant's API
-    Map<String, dynamic> versionStats = await fetchTenantApiVersion(
-        "http://${widget.tenant.apiUrl}:${widget.tenant.apiPort}");
+    Map<String, dynamic> versionStats = await fetchTenantApiVersion();
 
     for (var key in versionStats.keys) {
       if (key.contains("Build")) {

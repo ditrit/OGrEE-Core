@@ -107,48 +107,45 @@ class _ResultsPageState extends State<ResultsPage> {
         future: _data == null ? getData() : null,
         builder: (context, _) {
           if (_data != null) {
-            return SizedBox(
-              height: MediaQuery.of(context).size.height - 280,
-              child: SingleChildScrollView(
-                padding: EdgeInsets.zero,
-                child: PaginatedDataTable(
-                  header: Text(
-                    localeMsg.yourReport,
-                    style: const TextStyle(fontWeight: FontWeight.w600),
-                  ),
-                  actions: [
-                    Padding(
-                      padding: const EdgeInsets.only(right: 6.0),
-                      child: IconButton(
-                        icon: const Icon(Icons.file_download_outlined),
-                        onPressed: () => getCSV(),
-                      ),
-                    ),
-                    PopupMenuButton<String>(
-                      tooltip: localeMsg.selectionOptions,
-                      offset: const Offset(0, -32),
-                      itemBuilder: (_) =>
-                          attributesCheckList(widget.selectedAttrs),
-                      onCanceled: () => print('canceled'),
-                      icon: const Icon(Icons.add),
-                    ),
-                    PopupMenuButton<String>(
-                      tooltip: localeMsg.mathFuncTip,
-                      offset: const Offset(0, -32),
-                      itemBuilder: (_) => mathFunctionsPopup(),
-                      onCanceled: () => print('canceled'),
-                      icon: const Icon(Icons.calculate_outlined),
-                    )
-                  ],
-                  rowsPerPage: widget.selectedObjects.length >= 15
-                      ? 15
-                      : widget.selectedObjects.length,
-                  sortColumnIndex: sortColumnIndex > 0 ? sortColumnIndex : null,
-                  sortAscending: sort,
-                  columns: columnLabels,
-                  source: _DataSource(context, widget.selectedAttrs,
-                      widget.selectedObjects, _data),
+            return SingleChildScrollView(
+              padding: EdgeInsets.zero,
+              child: PaginatedDataTable(
+                header: Text(
+                  localeMsg.yourReport,
+                  style: const TextStyle(fontWeight: FontWeight.w600),
                 ),
+                actions: [
+                  Padding(
+                    padding: const EdgeInsets.only(right: 6.0),
+                    child: IconButton(
+                      icon: const Icon(Icons.file_download_outlined),
+                      onPressed: () => getCSV(),
+                    ),
+                  ),
+                  PopupMenuButton<String>(
+                    tooltip: localeMsg.selectionOptions,
+                    offset: const Offset(0, -32),
+                    itemBuilder: (_) =>
+                        attributesCheckList(widget.selectedAttrs),
+                    onCanceled: () => print('canceled'),
+                    icon: const Icon(Icons.add),
+                  ),
+                  PopupMenuButton<String>(
+                    tooltip: localeMsg.mathFuncTip,
+                    offset: const Offset(0, -32),
+                    itemBuilder: (_) => mathFunctionsPopup(),
+                    onCanceled: () => print('canceled'),
+                    icon: const Icon(Icons.calculate_outlined),
+                  )
+                ],
+                rowsPerPage: widget.selectedObjects.length >= 15
+                    ? 15
+                    : widget.selectedObjects.length,
+                sortColumnIndex: sortColumnIndex > 0 ? sortColumnIndex : null,
+                sortAscending: sort,
+                columns: columnLabels,
+                source: _DataSource(context, widget.selectedAttrs,
+                    widget.selectedObjects, _data),
               ),
             );
           } else {

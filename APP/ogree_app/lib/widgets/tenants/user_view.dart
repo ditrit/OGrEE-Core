@@ -12,10 +12,8 @@ import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'popups/user_popup.dart';
 
 class UserView extends StatefulWidget {
-  Tenant tenant;
   UserView({
     Key? key,
-    required this.tenant,
   }) : super(key: key);
   @override
   State<UserView> createState() => _UserViewState();
@@ -150,8 +148,7 @@ class _UserViewState extends State<UserView> {
   }
 
   getUsers() async {
-    _users = await fetchApiUsers(
-        "http://${widget.tenant.apiUrl}:${widget.tenant.apiPort}");
+    _users = await fetchApiUsers();
   }
 
   onUserSelected(int index, bool value) {
