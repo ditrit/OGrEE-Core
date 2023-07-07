@@ -43,7 +43,7 @@ class _CreateTenantPopupState extends State<CreateTenantPopup> {
         margin: const EdgeInsets.symmetric(horizontal: 20),
         decoration: PopupDecoration,
         child: Padding(
-          padding: const EdgeInsets.fromLTRB(40, 20, 40, 15),
+          padding: EdgeInsets.fromLTRB(_isSmallDisplay ? 30 : 40, 20, _isSmallDisplay ? 30 :  40, 15),
           child: Form(
             key: _formKey,
             child: ScaffoldMessenger(
