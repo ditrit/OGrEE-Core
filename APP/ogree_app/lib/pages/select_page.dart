@@ -242,7 +242,7 @@ class _SelectPageState extends State<SelectPage> with TickerProviderStateMixin {
     }
   }
 
-  cancelProjectCallback(String? id) {
+  cancelProjectCallback(String? id, Function? callback) {
     Navigator.pop(context);
   }
 }

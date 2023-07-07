@@ -165,7 +165,7 @@ class _CreateTenantPopupState extends State<CreateTenantPopup> {
                                               },
                                               icon: const Icon(Icons.download),
                                               label:
-                                                  Text(localeMsg.selectLogo)),
+                                                  Text(_isSmallDisplay ? "Web Logo" : localeMsg.selectLogo)),
                                         ],
                                       ),
                                     )

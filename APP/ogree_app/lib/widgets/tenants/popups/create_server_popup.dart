@@ -48,6 +48,7 @@ class _CreateServerPopupState extends State<CreateServerPopup> {
                 builder: (context) => Scaffold(
                   backgroundColor: Colors.white,
                   body: ListView(
+                    padding: EdgeInsets.zero,
                     children: [
                       Center(
                         child: Text(

@@ -178,7 +178,7 @@ class _DeleteDialogState extends State<DeleteDialog> {
                 Text(localeMsg.areYouSure,
                     style: Theme.of(context).textTheme.headlineMedium),
                 Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 35),
+                  padding: const EdgeInsets.symmetric(vertical: 30),
                   child: Text(localeMsg.allWillBeLost),
                 ),
                 Row(

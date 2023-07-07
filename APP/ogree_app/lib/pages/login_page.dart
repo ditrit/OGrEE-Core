@@ -65,8 +65,8 @@ class _LoginPageState extends State<LoginPage> {
                       constraints:
                           const BoxConstraints(maxWidth: 550, maxHeight: 515),
                       padding: EdgeInsets.only(
-                          right: isSmallDisplay ? 50 : 100,
-                          left: isSmallDisplay ? 50 : 100,
+                          right: isSmallDisplay ? 45 : 100,
+                          left: isSmallDisplay ? 45 : 100,
                           top: 50,
                           bottom: 30),
                       child: SingleChildScrollView(
@@ -77,6 +77,8 @@ class _LoginPageState extends State<LoginPage> {
                                 ? Row(
                                     children: [
                                       IconButton(
+                                          padding: const EdgeInsets.all(0),
+                                          constraints: const BoxConstraints(),
                                           onPressed: () => Navigator.of(context)
                                               .push(MaterialPageRoute(
                                                   builder: (context) =>
@@ -85,7 +87,7 @@ class _LoginPageState extends State<LoginPage> {
                                             Icons.arrow_back,
                                             color: Colors.blue.shade900,
                                           )),
-                                      const SizedBox(width: 5),
+                                       SizedBox(width: isSmallDisplay ? 0 : 5),
                                       Text(
                                         "Request password reset",
                                         style: Theme.of(context)
@@ -129,6 +131,7 @@ class _LoginPageState extends State<LoginPage> {
                                 return null;
                               },
                               decoration: InputDecoration(
+                                contentPadding: isSmallDisplay ? EdgeInsets.symmetric(horizontal: 12, vertical: 16) : null,
                                 labelText: 'E-mail',
                                 hintText: 'abc@example.com',
                                 labelStyle: GoogleFonts.inter(
@@ -138,7 +141,7 @@ class _LoginPageState extends State<LoginPage> {
                                 border: inputStyle,
                               ),
                             ),
-                            const SizedBox(height: 20),
+                            SizedBox(height: isSmallDisplay ? 10 : 20),
                             forgot
                                 ? Container()
                                 : TextFormField(
@@ -153,6 +156,7 @@ class _LoginPageState extends State<LoginPage> {
                                       return null;
                                     },
                                     decoration: InputDecoration(
+                                      contentPadding: isSmallDisplay ? EdgeInsets.symmetric(horizontal: 12, vertical: 16) : null,
                                       labelText: localeMsg.password,
                                       hintText: '********',
                                       labelStyle: GoogleFonts.inter(
@@ -162,7 +166,7 @@ class _LoginPageState extends State<LoginPage> {
                                       border: inputStyle,
                                     ),
                                   ),
-                            !forgot ? const SizedBox(height: 25) : Container(),
+                            !forgot ? SizedBox(height: isSmallDisplay ? 15 : 25) : Container(),
                             forgot
                                 ? TextButton(
                                     onPressed: () => Navigator.of(context).push(
@@ -225,7 +229,7 @@ class _LoginPageState extends State<LoginPage> {
                                       ),
                                     ],
                                   ),
-                            SizedBox(height: forgot ? 20 : 30),
+                            SizedBox(height: forgot ? 20 : (isSmallDisplay ? 15 : 30)),
                             Align(
                               child: ElevatedButton(
                                 onPressed: () =>

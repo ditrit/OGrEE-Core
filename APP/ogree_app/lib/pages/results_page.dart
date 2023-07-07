@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:ogree_app/common/snackbar.dart';
+import 'package:ogree_app/common/theme.dart';
 import 'package:universal_html/html.dart' as html;
 import 'dart:math';
 
@@ -103,6 +104,7 @@ class _ResultsPageState extends State<ResultsPage> {
       ),
     ));
 
+    bool isSmallDisplay = IsSmallDisplay(MediaQuery.of(context).size.width);
     return FutureBuilder(
         future: _data == null ? getData() : null,
         builder: (context, _) {
@@ -112,7 +114,7 @@ class _ResultsPageState extends State<ResultsPage> {
               child: PaginatedDataTable(
                 header: Text(
                   localeMsg.yourReport,
-                  style: const TextStyle(fontWeight: FontWeight.w600),
+                  style:  TextStyle(fontWeight: FontWeight.w600, fontSize: isSmallDisplay ? 16 : null),
                 ),
                 actions: [
                   Padding(
