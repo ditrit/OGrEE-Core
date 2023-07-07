@@ -190,7 +190,7 @@ class _LoginPageState extends State<LoginPage> {
                                     crossAxisAlignment:
                                         WrapCrossAlignment.center,
                                     children: [
-                                      Wrap(
+                                      !isSmallDisplay ? Wrap(
                                         crossAxisAlignment:
                                             WrapCrossAlignment.center,
                                         children: [
@@ -213,7 +213,7 @@ class _LoginPageState extends State<LoginPage> {
                                             ),
                                           ),
                                         ],
-                                      ),
+                                      ) : Container(),
                                       TextButton(
                                         onPressed: () => setState(() {
                                           forgot = !forgot;

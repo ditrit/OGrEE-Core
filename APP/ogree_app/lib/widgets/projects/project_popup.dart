@@ -9,12 +9,10 @@ void showProjectDialog(
     BuildContext context,
     Project project,
     String title,
-    String cancelBtnTitle,
-    IconData cancelIcon,
-    Function cancelCallback,
     Function saveCallback,
     {bool isCreate = false,
-    Function? parentCallback}) {
+    Function? parentCallback,
+      Function? deleteCallback,}) {
   String editInput = project.name;
   const inputStyle = OutlineInputBorder(
     borderSide: BorderSide(
@@ -62,16 +60,26 @@ void showProjectDialog(
                     children: [
                       TextButton.icon(
                         style: OutlinedButton.styleFrom(
-                            foregroundColor: Colors.red.shade900),
-                        onPressed: () =>
-                            cancelCallback(project.id, parentCallback),
-                        label: Text(cancelBtnTitle),
-                        icon: Icon(
-                          cancelIcon,
+                            foregroundColor: Colors.blue.shade900),
+                        onPressed: () => Navigator.pop(context),
+                        label: Text(localeMsg.cancel),
+                        icon: const Icon(
+                          Icons.cancel_outlined,
                           size: 16,
                         ),
                       ),
-                      const SizedBox(width: 15),
+                      deleteCallback != null ? TextButton.icon(
+                        style: OutlinedButton.styleFrom(
+                            foregroundColor: Colors.red.shade900),
+                        onPressed: () =>
+                            deleteCallback(project.id, parentCallback),
+                        label: Text(localeMsg.delete),
+                        icon: Icon(
+                          Icons.delete,
+                          size: 16,
+                        ),
+                      ) : Container(),
+                      const SizedBox(width: 10),
                       ElevatedButton(
                         onPressed: () async {
                           print(editInput);

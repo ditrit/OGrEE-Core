@@ -198,9 +198,6 @@ class _SelectPageState extends State<SelectPage> with TickerProviderStateMixin {
           context,
           project,
           localeMsg.nameProject,
-          localeMsg.cancel,
-          Icons.cancel_outlined,
-          cancelProjectCallback,
           saveProjectCallback,
           isCreate: isCreate);
     } else {
@@ -242,7 +239,4 @@ class _SelectPageState extends State<SelectPage> with TickerProviderStateMixin {
     }
   }
 
-  cancelProjectCallback(String? id, Function? callback) {
-    Navigator.pop(context);
-  }
 }

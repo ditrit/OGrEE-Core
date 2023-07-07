@@ -79,7 +79,7 @@ class _DomainPopupState extends State<DomainPopup>
         margin: const EdgeInsets.symmetric(horizontal: 20),
         decoration: PopupDecoration,
         child: Padding(
-          padding: const EdgeInsets.fromLTRB(40, 8, 40, 15),
+          padding: EdgeInsets.fromLTRB(_isSmallDisplay ? 30 : 40, 8, _isSmallDisplay ? 30 : 40, 15),
           child: Material(
             color: Colors.white,
             child: Form(
@@ -148,53 +148,50 @@ class _DomainPopupState extends State<DomainPopup>
                           size: 16,
                         ),
                       ),
-                      const SizedBox(width: 10),
                       _isEdit
-                          ? Padding(
-                              padding: const EdgeInsets.only(right: 15),
-                              child: IconButton(
-                                constraints: BoxConstraints(maxHeight: 31),
-                                style: IconButton.styleFrom(
-                                    backgroundColor: Colors.red),
-                                onPressed: () async {
-                                  if (_formKey.currentState!.validate()) {
-                                    _formKey.currentState!.save();
-                                    setState(() {
-                                      _isLoadingDelete = true;
-                                    });
-                                    var response = await removeObject(
-                                        domainId!, "domains");
-                                    if (response == "") {
-                                      widget.parentCallback();
-                                      showSnackBar(context, localeMsg.deleteOK);
-                                      Navigator.of(context).pop();
-                                    } else {
-                                      setState(() {
-                                        _isLoadingDelete = false;
-                                      });
-                                      showSnackBar(context, response,
-                                          isError: true);
-                                    }
-                                  }
-                                },
-                                icon: _isLoadingDelete
-                                    ? Container(
-                                        width: 24,
-                                        height: 24,
-                                        padding: const EdgeInsets.all(2.0),
-                                        child: const CircularProgressIndicator(
-                                          color: Colors.white,
-                                          strokeWidth: 3,
-                                        ),
-                                      )
-                                    : const Icon(
-                                        Icons.delete,
-                                        size: 16,
-                                        color: Colors.white,
-                                      ),
-                              ),
-                            )
+                          ?
+                      TextButton.icon(
+                        style: OutlinedButton.styleFrom(
+                            foregroundColor: Colors.red.shade900),
+                        onPressed: () async {
+                          if (_formKey.currentState!.validate()) {
+                            _formKey.currentState!.save();
+                            setState(() {
+                              _isLoadingDelete = true;
+                            });
+                            var response = await removeObject(
+                                domainId!, "domains");
+                            if (response == "") {
+                              widget.parentCallback();
+                              showSnackBar(context, localeMsg.deleteOK);
+                              Navigator.of(context).pop();
+                            } else {
+                              setState(() {
+                                _isLoadingDelete = false;
+                              });
+                              showSnackBar(context, response,
+                                  isError: true);
+                            }
+                          }
+                        },
+                        label: Text(_isSmallDisplay ? "" : localeMsg.delete),
+                        icon: _isLoadingDelete
+                            ? Container(
+                          width: 24,
+                          height: 24,
+                          padding: const EdgeInsets.all(2.0),
+                          child:  CircularProgressIndicator(
+                            color: Colors.red.shade900,
+                            strokeWidth: 3,
+                          ),
+                        )
+                            : Icon(
+                          Icons.delete,
+                          size: 16,
+                        ),
+                      )
                           : Container(),
+                      _isSmallDisplay ? Container() : const SizedBox(width: 10),
                       ElevatedButton.icon(
                         onPressed: () async {
                           if (_tabController.index == 1) {
