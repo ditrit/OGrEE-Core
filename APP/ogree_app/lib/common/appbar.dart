@@ -47,7 +47,7 @@ AppBar myAppBar(context, userEmail, {isTenantMode = false}) {
   bool _isSmallDisplay = MediaQuery.of(context).size.width < 600;
   return AppBar(
     backgroundColor: Colors.grey.shade900,
-    leadingWidth: 150,
+    leadingWidth: 160,
     leading: Padding(
       padding: const EdgeInsets.only(left: 20),
       child: Row(
