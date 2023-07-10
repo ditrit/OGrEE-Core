@@ -35,7 +35,9 @@ class _SelectNamespaceState extends State<SelectNamespace> {
         ),
         const SizedBox(height: 25),
         SizedBox(
-          width: MediaQuery.of(context).size.width - 50,
+          width: MediaQuery.of(context).size.width > 50
+              ? MediaQuery.of(context).size.width - 50
+              : MediaQuery.of(context).size.width,
           child: Card(
               child: Wrap(
             alignment: WrapAlignment.spaceEvenly,

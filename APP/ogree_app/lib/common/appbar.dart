@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:ogree_app/common/api_backend.dart';
 import 'package:ogree_app/common/popup_dialog.dart';
-import 'package:ogree_app/models/tenant.dart';
 import 'package:ogree_app/pages/login_page.dart';
 import 'package:ogree_app/pages/projects_page.dart';
 import 'package:ogree_app/pages/tenant_page.dart';

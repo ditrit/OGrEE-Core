@@ -91,8 +91,9 @@ class _ResponsiveBody extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // print("BUILD RespBody");
-    if (MediaQuery.of(context).size.width < 600) {
+    print("BUILD RespBody " + MediaQuery.of(context).size.width.toString());
+    if (MediaQuery.of(context).size.width < 600 &&
+        MediaQuery.of(context).size.width != 0) {
       return const CustomTreeView(isTenantMode: false);
     }
     return Padding(

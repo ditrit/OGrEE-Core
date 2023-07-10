@@ -67,7 +67,7 @@ class _SelectPageState extends State<SelectPage> with TickerProviderStateMixin {
       appBar: myAppBar(context, widget.userEmail),
       body: Center(
           child: Stepper(
-        type: MediaQuery.of(context).size.width > 800
+        type: MediaQuery.of(context).size.width > 650
             ? StepperType.horizontal
             : StepperType.vertical,
         physics: const ScrollPhysics(),
@@ -127,7 +127,9 @@ class _SelectPageState extends State<SelectPage> with TickerProviderStateMixin {
                 ? Text(localeMsg.nObjects(_selectedObjects.keys.length))
                 : null,
             content: SizedBox(
-                height: MediaQuery.of(context).size.height - 205,
+                height: MediaQuery.of(context).size.height > 205
+                    ? MediaQuery.of(context).size.height - 205
+                    : MediaQuery.of(context).size.height,
                 child: SelectObjects(
                     dateRange: _selectedDate,
                     namespace: _selectedNamespace,
@@ -195,10 +197,7 @@ class _SelectPageState extends State<SelectPage> with TickerProviderStateMixin {
       }
 
       showProjectDialog(
-          context,
-          project,
-          localeMsg.nameProject,
-          saveProjectCallback,
+          context, project, localeMsg.nameProject, saveProjectCallback,
           isCreate: isCreate);
     } else {
       _loadObjects = _currentStep == (Steps.objects.index - 1) ? true : false;
@@ -238,5 +237,4 @@ class _SelectPageState extends State<SelectPage> with TickerProviderStateMixin {
       showSnackBar(context, response, isError: true);
     }
   }
-
 }
