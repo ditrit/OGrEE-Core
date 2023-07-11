@@ -24,7 +24,7 @@ class TreeFilter extends StatefulWidget {
 }
 
 class _TreeFilterState extends State<TreeFilter> {
-  final Map<int, List<String>> _filterLevels = {0: [], 1: [], 2: [], 3: []};
+  Map<int, List<String>> _filterLevels = {0: [], 1: [], 2: [], 3: []};
   Map<int, List<String>> get filterLevels => _filterLevels;
 
   Map<String, List<String>> objectsPerCategory = {};
@@ -32,6 +32,9 @@ class _TreeFilterState extends State<TreeFilter> {
 
   @override
   Widget build(BuildContext context) {
+    print("BUILD TREE FILTER");
+    _filterLevels = AppController.of(context).filterLevels;
+    print(_filterLevels);
     // Get which fields to filter and their list of suggestions
     int idx = 0;
     for (String key
@@ -200,7 +203,7 @@ class _AutocompleteFilterState extends State<AutocompleteFilter> {
                     AppController.of(context)
                         .filterTree(value, widget.paramLevel);
                     widget.notifyParent();
-                    _selectedOptions.add(value);
+                    // _selectedOptions.add(value);
                     textEditingController.clear();
                   });
                 }
@@ -261,7 +264,7 @@ class _AutocompleteFilterState extends State<AutocompleteFilter> {
         onPressed: () {
           AppController.of(context).filterTree(value, widget.paramLevel);
           setState(() {
-            _selectedOptions.removeWhere((opt) => opt == value);
+            // _selectedOptions.removeWhere((opt) => opt == value);
             widget.notifyParent();
           });
         },

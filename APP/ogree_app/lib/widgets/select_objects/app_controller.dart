@@ -11,6 +11,7 @@ class AppController with ChangeNotifier {
   Map<String, List<String>> fetchedData = {};
   Map<String, List<String>> fetchedCategories = {};
   final Map<int, List<String>> _filterLevels = {};
+  Map<int, List<String>> get filterLevels => _filterLevels;
   static const lastFilterLevel = 3;
 
   static AppController of(BuildContext context) {

@@ -1,8 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:ogree_app/common/popup_dialog.dart';
+import 'package:ogree_app/common/theme.dart';
 import 'package:ogree_app/pages/select_page.dart';
 import 'package:ogree_app/widgets/select_objects/app_controller.dart';
+import 'package:ogree_app/widgets/tenants/popups/create_tenant_popup.dart';
 import 'settings_view/settings_view.dart';
 import 'tree_view/custom_tree_view.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class SelectObjects extends StatefulWidget {
   final String dateRange;
@@ -58,8 +62,8 @@ class _SelectObjectsState extends State<SelectObjects> {
                         ],
                       )
                     : _ResponsiveBody(
-                        onlyDomain: widget.namespace == 'Organisational'),
-                // endDrawer: Drawer(child: SettingsView()),
+                        onlyDomain: widget.namespace == 'Organisational',
+                        controller: appController),
               ),
             );
           }
@@ -87,14 +91,37 @@ class _Unfocus extends StatelessWidget {
 
 class _ResponsiveBody extends StatelessWidget {
   final bool onlyDomain;
-  const _ResponsiveBody({Key? key, this.onlyDomain = false}) : super(key: key);
+  final AppController controller;
+  const _ResponsiveBody(
+      {Key? key, required this.controller, this.onlyDomain = false})
+      : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    print("BUILD RespBody " + MediaQuery.of(context).size.width.toString());
+    // print("BUILD RespBody " + MediaQuery.of(context).size.width.toString());
     if (MediaQuery.of(context).size.width < 600 &&
         MediaQuery.of(context).size.width != 0) {
-      return const CustomTreeView(isTenantMode: false);
+      return Stack(
+        children: [
+          const CustomTreeView(isTenantMode: false),
+          Align(
+            alignment: Alignment.bottomRight,
+            child: Padding(
+              padding: const EdgeInsets.only(bottom: 20, right: 20),
+              child: ElevatedButton.icon(
+                onPressed: () => showCustomPopup(
+                    context,
+                    SettingsViewPopup(
+                      controller: controller,
+                    ),
+                    isDismissible: true),
+                icon: const Icon(Icons.filter_alt_outlined),
+                label: const Text("Filters"),
+              ),
+            ),
+          ),
+        ],
+      );
     }
     return Padding(
       padding: const EdgeInsets.all(8.0),
@@ -109,6 +136,54 @@ class _ResponsiveBody extends StatelessWidget {
           Expanded(
               child: SettingsView(isTenantMode: false, noFilters: onlyDomain)),
         ],
+      ),
+    );
+  }
+}
+
+class SettingsViewPopup extends StatelessWidget {
+  final AppController controller;
+
+  SettingsViewPopup({super.key, required this.controller});
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: SizedBox(
+        height: 500,
+        child: AppControllerScope(
+            controller: controller,
+            child: Container(
+                width: 500,
+                constraints: const BoxConstraints(maxHeight: 625),
+                margin: const EdgeInsets.symmetric(horizontal: 20),
+                decoration: PopupDecoration,
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(20, 20, 30, 15),
+                  child: Material(
+                      color: Colors.white,
+                      child: ListView(
+                        padding: EdgeInsets.zero,
+                        shrinkWrap: true,
+                        children: [
+                          const SizedBox(
+                            height: 420,
+                            child: SettingsView(isTenantMode: false),
+                          ),
+                          const SizedBox(height: 10),
+                          TextButton.icon(
+                            style: OutlinedButton.styleFrom(
+                                foregroundColor: Colors.blue.shade900),
+                            onPressed: () => Navigator.pop(context),
+                            label: const Text("Fermer"),
+                            icon: const Icon(
+                              Icons.cancel_outlined,
+                              size: 16,
+                            ),
+                          ),
+                        ],
+                      )),
+                ))),
       ),
     );
   }
