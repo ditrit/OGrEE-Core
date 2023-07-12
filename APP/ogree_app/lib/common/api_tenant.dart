@@ -19,8 +19,7 @@ Future<String> loginAPITenant(
   }
 }
 
-Future<Map<String, dynamic>> fetchTenantStats(String tenantUrl,
-    {http.Client? client}) async {
+Future<Map<String, dynamic>> fetchTenantStats({http.Client? client}) async {
   print("API get Tenant Stats $tenantUrl");
   client ??= http.Client();
   Uri url = Uri.parse('$tenantUrl/api/stats');
@@ -35,7 +34,7 @@ Future<Map<String, dynamic>> fetchTenantStats(String tenantUrl,
   }
 }
 
-Future<Map<String, dynamic>> fetchTenantApiVersion(String tenantUrl,
+Future<Map<String, dynamic>> fetchTenantApiVersion(
     {http.Client? client}) async {
   print("API get Tenant Version $tenantUrl");
   client ??= http.Client();
@@ -52,8 +51,7 @@ Future<Map<String, dynamic>> fetchTenantApiVersion(String tenantUrl,
   }
 }
 
-Future<List<User>> fetchApiUsers(String tenantUrl,
-    {http.Client? client}) async {
+Future<List<User>> fetchApiUsers({http.Client? client}) async {
   print("API get users $tenantUrl");
   client ??= http.Client();
   Uri url = Uri.parse('$tenantUrl/api/users');

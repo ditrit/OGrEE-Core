@@ -4,7 +4,6 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:ogree_app/common/api_backend.dart';
 import 'package:ogree_app/common/snackbar.dart';
 import 'package:ogree_app/pages/login_page.dart';
-import 'package:ogree_app/pages/projects_page.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:ogree_app/widgets/language_toggle.dart';
 
@@ -18,7 +17,6 @@ class ResetPage extends StatefulWidget {
 
 class _ResetPageState extends State<ResetPage> {
   final _formKey = GlobalKey<FormState>();
-  bool _isChecked = false;
   static const inputStyle = OutlineInputBorder(
     borderSide: BorderSide(
       color: Colors.grey,
@@ -74,14 +72,15 @@ class _ResetPageState extends State<ResetPage> {
                                 IconButton(
                                     onPressed: () => Navigator.of(context).push(
                                         MaterialPageRoute(
-                                            builder: (context) => LoginPage())),
+                                            builder: (context) =>
+                                                const LoginPage())),
                                     icon: Icon(
                                       Icons.arrow_back,
                                       color: Colors.blue.shade900,
                                     )),
                                 const SizedBox(width: 5),
                                 Text(
-                                  "Reset password",
+                                  localeMsg.resetPassword,
                                   style:
                                       Theme.of(context).textTheme.headlineLarge,
                                 ),
@@ -127,7 +126,7 @@ class _ResetPageState extends State<ResetPage> {
                                 return null;
                               },
                               decoration: InputDecoration(
-                                labelText: 'New password',
+                                labelText: localeMsg.newPassword,
                                 hintText: '********',
                                 labelStyle: GoogleFonts.inter(
                                   fontSize: 11,
@@ -141,7 +140,7 @@ class _ResetPageState extends State<ResetPage> {
                               obscureText: true,
                               onSaved: (newValue) =>
                                   _confirmPassword = newValue,
-                              onEditingComplete: () => resetPassword(),
+                              onEditingComplete: () => resetPassword(localeMsg),
                               validator: (text) {
                                 if (text == null || text.isEmpty) {
                                   return localeMsg.mandatoryField;
@@ -149,7 +148,7 @@ class _ResetPageState extends State<ResetPage> {
                                 return null;
                               },
                               decoration: InputDecoration(
-                                labelText: "Confirm new password",
+                                labelText: localeMsg.confirmPassword,
                                 hintText: '********',
                                 labelStyle: GoogleFonts.inter(
                                   fontSize: 11,
@@ -161,7 +160,7 @@ class _ResetPageState extends State<ResetPage> {
                             const SizedBox(height: 25),
                             Align(
                               child: ElevatedButton(
-                                onPressed: () => resetPassword(),
+                                onPressed: () => resetPassword(localeMsg),
                                 style: ElevatedButton.styleFrom(
                                   padding: const EdgeInsets.symmetric(
                                     vertical: 20,
@@ -169,8 +168,8 @@ class _ResetPageState extends State<ResetPage> {
                                   ),
                                 ),
                                 child: Text(
-                                  "Reset",
-                                  style: TextStyle(
+                                  localeMsg.reset,
+                                  style: const TextStyle(
                                     fontSize: 14,
                                     fontWeight: FontWeight.w600,
                                   ),
@@ -192,16 +191,16 @@ class _ResetPageState extends State<ResetPage> {
     );
   }
 
-  resetPassword() {
+  resetPassword(AppLocalizations localeMsg) {
     if (_formKey.currentState!.validate()) {
       _formKey.currentState!.save();
       if (_password != _confirmPassword) {
-        showSnackBar(context, "Password fields do no match", isError: true);
+        showSnackBar(context, localeMsg.passwordNoMatch, isError: true);
         return;
       }
       userResetPassword(_password!, _token!, userUrl: _apiUrl)
           .then((value) => value == ""
-              ? resetSucces()
+              ? resetSucces(localeMsg)
               : showSnackBar(context, value, isError: true))
           .onError((error, stackTrace) {
         print(error);
@@ -210,11 +209,11 @@ class _ResetPageState extends State<ResetPage> {
     }
   }
 
-  resetSucces() {
-    showSnackBar(context, "Password successfully changed", isSuccess: true);
+  resetSucces(AppLocalizations localeMsg) {
+    showSnackBar(context, localeMsg.modifyOK, isSuccess: true);
     Navigator.of(context).push(
       MaterialPageRoute(
-        builder: (context) => LoginPage(),
+        builder: (context) => const LoginPage(),
       ),
     );
   }
@@ -249,7 +248,7 @@ class _ResetPageState extends State<ResetPage> {
           decoration: InputDecoration(
               isDense: true,
               labelText: localeMsg.selectServer,
-              labelStyle: TextStyle(fontSize: 14)),
+              labelStyle: const TextStyle(fontSize: 14)),
           onTap: () {
             textEditingController.clear();
           },

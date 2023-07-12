@@ -1,9 +1,9 @@
 // ignore_for_file: public_member_api_docs, sort_constructors_first
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:ogree_app/common/api_backend.dart';
 import 'package:ogree_app/common/snackbar.dart';
+import 'package:ogree_app/common/theme.dart';
 import 'package:ogree_app/models/tenant.dart';
 
 class LockedView extends StatefulWidget {
@@ -27,23 +27,25 @@ class _LockedViewState extends State<LockedView> {
       width: 1,
     ),
   );
+  final formKey = GlobalKey<FormState>();
 
   @override
   Widget build(BuildContext context) {
     final localeMsg = AppLocalizations.of(context)!;
-    final formKey = GlobalKey<FormState>();
+    final bool isSmallDisplay =
+        IsSmallDisplay(MediaQuery.of(context).size.width);
     return Form(
       key: formKey,
       child: Container(
         constraints: const BoxConstraints(maxWidth: 350, maxHeight: 500),
-        padding: const EdgeInsets.only(
-          right: 100,
-          left: 100,
+        padding: EdgeInsets.only(
+          right: isSmallDisplay ? 32 : 100,
+          left: isSmallDisplay ? 15 : 100,
         ),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(Icons.lock, size: 64),
+            Icon(Icons.lock, size: isSmallDisplay ? 32 : 64),
             const SizedBox(height: 20),
             Text(localeMsg.loginTenant),
             const SizedBox(height: 20),
@@ -57,16 +59,8 @@ class _LockedViewState extends State<LockedView> {
                   }
                   return null;
                 },
-                decoration: InputDecoration(
-                  isDense: true,
-                  labelText: 'E-mail',
-                  hintText: 'abc@example.com',
-                  labelStyle: GoogleFonts.inter(
-                    fontSize: 11,
-                    color: Colors.black,
-                  ),
-                  border: inputStyle,
-                ),
+                decoration: GetFormInputDecoration(isSmallDisplay, 'E-mail',
+                    icon: Icons.alternate_email, hint: 'abc@example.com'),
               ),
             ),
             const SizedBox(height: 20),
@@ -82,16 +76,9 @@ class _LockedViewState extends State<LockedView> {
                   }
                   return null;
                 },
-                decoration: InputDecoration(
-                  isDense: true,
-                  labelText: localeMsg.password,
-                  hintText: '********',
-                  labelStyle: GoogleFonts.inter(
-                    fontSize: 11,
-                    color: Colors.black,
-                  ),
-                  border: inputStyle,
-                ),
+                decoration: GetFormInputDecoration(
+                    isSmallDisplay, localeMsg.password,
+                    icon: Icons.lock_outline_rounded, hint: '********'),
               ),
             ),
             const SizedBox(height: 20),

@@ -4,6 +4,7 @@ import 'dart:typed_data';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
+import 'package:ogree_app/models/container.dart';
 import 'package:ogree_app/models/domain.dart';
 import 'package:ogree_app/models/project.dart';
 import 'package:ogree_app/models/tenant.dart';
@@ -14,6 +15,7 @@ part 'api_tenant.dart';
 String apiUrl = "";
 String tenantUrl = "";
 String tenantName = "";
+bool isTenantAdmin = false;
 var token = "";
 var tenantToken = "";
 getHeader(token) => {
@@ -39,6 +41,10 @@ String urlDateAppend(String dateRange) {
 
 Future<List<String>> loginAPI(String email, String password,
     {String userUrl = ""}) async {
+  tenantUrl = "";
+  isTenantAdmin = false;
+  token = "";
+  tenantToken = "";
   if (userUrl != "") {
     apiUrl = userUrl;
   } else {
@@ -53,6 +59,12 @@ Future<List<String>> loginAPI(String email, String password,
     Map<String, dynamic> data = json.decode(response.body);
     data = (Map<String, dynamic>.from(data["account"]));
     token = data["token"]!;
+    if (data["isTenant"] == null && data["roles"]["*"] == "manager") {
+      // Not tenant mode, but tenant admin
+      isTenantAdmin = true;
+      tenantUrl = apiUrl;
+      tenantToken = token;
+    }
     return [data["email"].toString(), data["isTenant"] ?? ""];
   } else {
     return [""];
@@ -142,45 +154,57 @@ Future<String> userResetPassword(String password, String resetToken,
 }
 
 Future<List<Map<String, List<String>>>> fetchObjectsTree(
-    {String dateRange = "", bool onlyDomain = false}) async {
-  print("API get tree");
-  String localUrl = '$apiUrl/api/hierarchy';
+    {String dateRange = "",
+    bool onlyDomain = false,
+    bool isTenantMode = false}) async {
+  print("API get tree: onlydomain=$onlyDomain");
+  String localUrl = '/api/hierarchy';
   String localToken = token;
-  if (onlyDomain) {
-    localUrl = '$tenantUrl/api/hierarchy/domains';
+  if (isTenantMode) {
+    localUrl = tenantUrl + localUrl;
     localToken = tenantToken;
+  } else {
+    localUrl = apiUrl + localUrl;
+  }
+  if (onlyDomain) {
+    localUrl = '$localUrl/domains';
   }
   if (dateRange != "") {
     localUrl = localUrl + urlDateAppend(dateRange);
   }
   Uri url = Uri.parse(localUrl);
-  final response = await http.get(url, headers: getHeader(localToken));
-  print(response.statusCode);
-  if (response.statusCode == 200) {
-    // If the server did return a 200 OK response,
-    // then parse the JSON and convert to the right map format.
-    Map<String, dynamic> data = json.decode(response.body);
-    data = (Map<String, dynamic>.from(data["data"]));
-    Map<String, Map<String, dynamic>> converted = {};
-    Map<String, List<String>> tree = {};
-    Map<String, List<String>> categories = {};
-    for (var item in data.keys) {
-      converted[item.toString()] = Map<String, dynamic>.from(data[item]);
-    }
-    for (var item in converted["tree"]!.keys) {
-      tree[item.toString()] = List<String>.from(converted["tree"]![item]);
-    }
-    if (!onlyDomain) {
-      for (var item in converted["categories"]!.keys) {
-        categories[item.toString()] =
-            List<String>.from(converted["categories"]![item]);
+  try {
+    final response = await http.get(url, headers: getHeader(localToken));
+    print(response.statusCode);
+    if (response.statusCode == 200) {
+      // If the server did return a 200 OK response,
+      // then parse the JSON and convert to the right map format.
+      Map<String, dynamic> data = json.decode(response.body);
+      data = (Map<String, dynamic>.from(data["data"]));
+      Map<String, Map<String, dynamic>> converted = {};
+      Map<String, List<String>> tree = {};
+      Map<String, List<String>> categories = {};
+      for (var item in data.keys) {
+        converted[item.toString()] = Map<String, dynamic>.from(data[item]);
       }
+      for (var item in converted["tree"]!.keys) {
+        tree[item.toString()] = List<String>.from(converted["tree"]![item]);
+      }
+      if (!onlyDomain) {
+        for (var item in converted["categories"]!.keys) {
+          categories[item.toString()] =
+              List<String>.from(converted["categories"]![item]);
+        }
+      }
+      return [tree, categories];
+    } else {
+      // If the server did not return a 200 OK response,
+      // then throw an exception.
+      throw Exception('${response.statusCode}: Failed to load objects');
     }
-    return [tree, categories];
-  } else {
-    // If the server did not return a 200 OK response,
-    // then throw an exception.
-    throw Exception('${response.statusCode}: Failed to load objects');
+  } catch (e) {
+    print(e);
+    throw Exception('Failed to load objects');
   }
 }
 
@@ -364,7 +388,7 @@ Future<String> deleteTenant(String objName, {http.Client? client}) async {
   }
 }
 
-Future<List<Map<String, String>>> fetchTenantDockerInfo(String tenantName,
+Future<List<DockerContainer>> fetchTenantDockerInfo(String tenantName,
     {http.Client? client}) async {
   print("API get Tenant Docker Info");
   client ??= http.Client();
@@ -372,14 +396,11 @@ Future<List<Map<String, String>>> fetchTenantDockerInfo(String tenantName,
   final response = await client.get(url, headers: getHeader(token));
   print(response.statusCode);
   if (response.statusCode == 200) {
-    print(response.body);
     List<dynamic> data = json.decode(response.body);
-    print("response.body");
-    List<Map<String, String>> converted = [];
+    List<DockerContainer> converted = [];
     for (var item in data) {
-      converted.add(Map<String, String>.from(item));
+      converted.add(DockerContainer.fromMap(item));
     }
-    print(converted);
     return converted;
   } else {
     // If the server did not return a 200 OK response,

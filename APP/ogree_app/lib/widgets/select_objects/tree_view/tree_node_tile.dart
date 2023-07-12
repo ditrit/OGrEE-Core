@@ -59,8 +59,10 @@ class _TreeNodeTileState extends State<TreeNodeTile> {
                             onPressed: () => showCustomPopup(
                                 context,
                                 DomainPopup(
-                                  parentCallback: () => appController
-                                      .init({}, onlyDomain: true, reload: true),
+                                  parentCallback: () => appController.init({},
+                                      onlyDomain: true,
+                                      reload: true,
+                                      isTenantMode: true),
                                   domainId: nodeScope.node.id,
                                 )),
                             icon: Icon(

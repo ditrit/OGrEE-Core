@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:ogree_app/common/constants.dart';
 import 'package:ogree_app/pages/results_page.dart';
 import 'package:ogree_app/widgets/select_objects/app_controller.dart';
 
@@ -12,7 +13,7 @@ void main() {
           dateRange: "",
           selectedAttrs: [],
           selectedObjects: kDataSample["sitePI"]!,
-          namespace: "TEST"),
+          namespace: Namespace.Test.name),
     ));
     expect(find.text("Objects"), findsOneWidget);
     for (var obj in kDataSample["sitePI"]!) {
@@ -26,7 +27,7 @@ void main() {
           dateRange: "",
           selectedAttrs: [],
           selectedObjects: kDataSample["siteNO"]!,
-          namespace: "TEST"),
+          namespace: Namespace.Test.name),
     ));
 
     await tester.tap(find.byIcon(Icons.add).last);

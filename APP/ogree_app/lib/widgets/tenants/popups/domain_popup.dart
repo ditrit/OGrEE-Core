@@ -4,6 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:ogree_app/common/api_backend.dart';
 import 'package:ogree_app/common/snackbar.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:ogree_app/common/theme.dart';
 import 'package:ogree_app/models/domain.dart';
 import 'package:file_picker/file_picker.dart';
 
@@ -22,7 +23,7 @@ class _DomainPopupState extends State<DomainPopup>
   String? _domainParent;
   String? _domainName;
   String? _domainColor;
-  Color _localColor = Colors.blue.shade900;
+  Color? _localColor;
   String? _domainDescription;
   bool _isLoading = false;
   bool _isLoadingDelete = false;
@@ -32,6 +33,7 @@ class _DomainPopupState extends State<DomainPopup>
   late TabController _tabController;
   PlatformFile? _loadedFile;
   String? _loadFileResult;
+  bool _isSmallDisplay = false;
 
   @override
   void initState() {
@@ -43,8 +45,10 @@ class _DomainPopupState extends State<DomainPopup>
   @override
   Widget build(BuildContext context) {
     final localeMsg = AppLocalizations.of(context)!;
+    _isSmallDisplay = IsSmallDisplay(MediaQuery.of(context).size.width);
+
     return FutureBuilder(
-      future: _isEdit && domain == null ? getDomain() : null,
+      future: _isEdit && domain == null ? getDomain(localeMsg) : null,
       builder: (context, _) {
         if (!_isEdit || (_isEdit && domain != null)) {
           return DomainForm(localeMsg);
@@ -55,10 +59,10 @@ class _DomainPopupState extends State<DomainPopup>
     );
   }
 
-  getDomain() async {
+  getDomain(AppLocalizations localeMsg) async {
     domain = await fetchDomain(widget.domainId!);
     if (domain == null) {
-      showSnackBar(context, "Unable to retrieve domain", isError: true);
+      showSnackBar(context, localeMsg.noDomain, isError: true);
       Navigator.of(context).pop();
       return;
     }
@@ -73,10 +77,10 @@ class _DomainPopupState extends State<DomainPopup>
       child: Container(
         width: 500,
         margin: const EdgeInsets.symmetric(horizontal: 20),
-        decoration: BoxDecoration(
-            color: Colors.white, borderRadius: BorderRadius.circular(20)),
+        decoration: PopupDecoration,
         child: Padding(
-          padding: const EdgeInsets.fromLTRB(40, 20, 40, 15),
+          padding: EdgeInsets.fromLTRB(
+              _isSmallDisplay ? 30 : 40, 8, _isSmallDisplay ? 30 : 40, 15),
           child: Material(
             color: Colors.white,
             child: Form(
@@ -87,9 +91,6 @@ class _DomainPopupState extends State<DomainPopup>
                 children: [
                   TabBar(
                     controller: _tabController,
-                    // labelPadding: const EdgeInsets.only(left: 20, right: 20),
-                    // labelColor: Colors.black,
-                    // unselectedLabelColor: Colors.grey,
                     labelStyle: TextStyle(
                         fontSize: 15,
                         fontFamily: GoogleFonts.inter().fontFamily),
@@ -116,9 +117,9 @@ class _DomainPopupState extends State<DomainPopup>
                   Container(
                     height: 270,
                     child: Padding(
-                      padding: const EdgeInsets.only(top: 8.0),
+                      padding: const EdgeInsets.only(top: 16.0),
                       child: TabBarView(
-                        physics: NeverScrollableScrollPhysics(),
+                        physics: const NeverScrollableScrollPhysics(),
                         controller: _tabController,
                         children: _isEdit
                             ? [
@@ -131,7 +132,7 @@ class _DomainPopupState extends State<DomainPopup>
                       ),
                     ),
                   ),
-                  const SizedBox(height: 20),
+                  const SizedBox(height: 5),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.end,
                     children: [
@@ -145,49 +146,50 @@ class _DomainPopupState extends State<DomainPopup>
                           size: 16,
                         ),
                       ),
-                      const SizedBox(width: 15),
                       _isEdit
-                          ? Padding(
-                              padding: const EdgeInsets.only(right: 15),
-                              child: ElevatedButton.icon(
-                                style: ElevatedButton.styleFrom(
-                                    backgroundColor: Colors.red),
-                                onPressed: () async {
-                                  if (_formKey.currentState!.validate()) {
-                                    _formKey.currentState!.save();
+                          ? TextButton.icon(
+                              style: OutlinedButton.styleFrom(
+                                  foregroundColor: Colors.red.shade900),
+                              onPressed: () async {
+                                if (_formKey.currentState!.validate()) {
+                                  _formKey.currentState!.save();
+                                  setState(() {
+                                    _isLoadingDelete = true;
+                                  });
+                                  var response =
+                                      await removeObject(domainId!, "domains");
+                                  if (response == "") {
+                                    widget.parentCallback();
+                                    showSnackBar(context, localeMsg.deleteOK);
+                                    Navigator.of(context).pop();
+                                  } else {
                                     setState(() {
-                                      _isLoadingDelete = true;
+                                      _isLoadingDelete = false;
                                     });
-                                    var response = await removeObject(
-                                        domainId!, "domains");
-                                    if (response == "") {
-                                      widget.parentCallback();
-                                      showSnackBar(context, localeMsg.deleteOK);
-                                      Navigator.of(context).pop();
-                                    } else {
-                                      setState(() {
-                                        _isLoadingDelete = false;
-                                      });
-                                      showSnackBar(context, response,
-                                          isError: true);
-                                    }
+                                    showSnackBar(context, response,
+                                        isError: true);
                                   }
-                                },
-                                label: Text(localeMsg.delete),
-                                icon: _isLoadingDelete
-                                    ? Container(
-                                        width: 24,
-                                        height: 24,
-                                        padding: const EdgeInsets.all(2.0),
-                                        child: const CircularProgressIndicator(
-                                          color: Colors.white,
-                                          strokeWidth: 3,
-                                        ),
-                                      )
-                                    : const Icon(Icons.delete, size: 16),
-                              ),
+                                }
+                              },
+                              label:
+                                  Text(_isSmallDisplay ? "" : localeMsg.delete),
+                              icon: _isLoadingDelete
+                                  ? Container(
+                                      width: 24,
+                                      height: 24,
+                                      padding: const EdgeInsets.all(2.0),
+                                      child: CircularProgressIndicator(
+                                        color: Colors.red.shade900,
+                                        strokeWidth: 3,
+                                      ),
+                                    )
+                                  : const Icon(
+                                      Icons.delete,
+                                      size: 16,
+                                    ),
                             )
                           : Container(),
+                      _isSmallDisplay ? Container() : const SizedBox(width: 10),
                       ElevatedButton.icon(
                         onPressed: () async {
                           if (_tabController.index == 1) {
@@ -270,6 +272,7 @@ class _DomainPopupState extends State<DomainPopup>
   getDomainForm() {
     final localeMsg = AppLocalizations.of(context)!;
     return ListView(
+      padding: EdgeInsets.zero,
       children: [
         getFormField(
             save: (newValue) => _domainParent = newValue,
@@ -316,7 +319,7 @@ class _DomainPopupState extends State<DomainPopup>
                         });
                       }
                     },
-                    icon: Icon(Icons.download),
+                    icon: const Icon(Icons.download),
                     label: Text(localeMsg.selectJSON)),
               )
             : Container(),
@@ -335,7 +338,7 @@ class _DomainPopupState extends State<DomainPopup>
                   padding: const EdgeInsets.all(8.0),
                   child: Text(
                     'Result:\n $_loadFileResult',
-                    style: TextStyle(color: Colors.white),
+                    style: const TextStyle(color: Colors.white),
                   ),
                 ),
               )
@@ -354,7 +357,7 @@ class _DomainPopupState extends State<DomainPopup>
       bool noValidation = false}) {
     final localeMsg = AppLocalizations.of(context)!;
     return Padding(
-      padding: const EdgeInsets.only(left: 2, right: 10),
+      padding: FormInputPadding,
       child: TextFormField(
         onChanged: isColor
             ? (value) {
@@ -364,7 +367,7 @@ class _DomainPopupState extends State<DomainPopup>
                   });
                 } else {
                   setState(() {
-                    _localColor = Colors.blue.shade900;
+                    _localColor = null;
                   });
                 }
               }
@@ -385,10 +388,10 @@ class _DomainPopupState extends State<DomainPopup>
         maxLength: isColor ? 6 : null,
         inputFormatters: formatters,
         initialValue: initialValue,
-        decoration: InputDecoration(
-          icon: Icon(icon, color: isColor ? _localColor : Colors.blue.shade900),
-          labelText: label,
-        ),
+        decoration: GetFormInputDecoration(_isSmallDisplay, label,
+            icon: icon, iconColor: isColor ? _localColor : null),
+        cursorWidth: 1.3,
+        style: const TextStyle(fontSize: 14),
       ),
     );
   }

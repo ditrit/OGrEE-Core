@@ -6,7 +6,7 @@ void showCustomPopup(BuildContext context, Widget child,
     context: context,
     barrierLabel: "Barrier",
     barrierDismissible: isDismissible,
-    barrierColor: Colors.black.withOpacity(0.5),
+    barrierColor: Colors.black.withOpacity(0.1),
     transitionDuration: const Duration(milliseconds: 700),
     pageBuilder: (context, _, __) {
       return child;

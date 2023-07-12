@@ -78,9 +78,7 @@ class ProjectCard extends StatelessWidget {
                             context,
                             project,
                             localeMsg.editProject,
-                            localeMsg.delete,
-                            Icons.delete,
-                            deleteProjectCallback,
+                            deleteCallback :deleteProjectCallback,
                             modifyProjectCallback,
                             parentCallback: parentCallback),
                         icon: const Icon(

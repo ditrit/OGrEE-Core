@@ -67,7 +67,7 @@ class _SelectPageState extends State<SelectPage> with TickerProviderStateMixin {
       appBar: myAppBar(context, widget.userEmail),
       body: Center(
           child: Stepper(
-        type: MediaQuery.of(context).size.width > 800
+        type: MediaQuery.of(context).size.width > 650
             ? StepperType.horizontal
             : StepperType.vertical,
         physics: const ScrollPhysics(),
@@ -102,7 +102,7 @@ class _SelectPageState extends State<SelectPage> with TickerProviderStateMixin {
                 style: const TextStyle(fontSize: 14)),
             subtitle: _selectedDate != ""
                 ? Text(_selectedDate)
-                : Icon(Icons.all_inclusive, size: 15),
+                : const Icon(Icons.all_inclusive, size: 15),
             content: const SelectDate(),
             isActive: _currentStep >= Steps.date.index,
             state: _currentStep >= Steps.date.index
@@ -127,7 +127,9 @@ class _SelectPageState extends State<SelectPage> with TickerProviderStateMixin {
                 ? Text(localeMsg.nObjects(_selectedObjects.keys.length))
                 : null,
             content: SizedBox(
-                height: MediaQuery.of(context).size.height - 205,
+                height: MediaQuery.of(context).size.height > 205
+                    ? MediaQuery.of(context).size.height - 205
+                    : MediaQuery.of(context).size.height,
                 child: SelectObjects(
                     dateRange: _selectedDate,
                     namespace: _selectedNamespace,
@@ -140,14 +142,12 @@ class _SelectPageState extends State<SelectPage> with TickerProviderStateMixin {
           Step(
             title: Text(localeMsg.result, style: const TextStyle(fontSize: 14)),
             content: _currentStep == Steps.result.index
-                ? SizedBox(
-                    height: MediaQuery.of(context).size.height - 210,
-                    child: ResultsPage(
-                      dateRange: _selectedDate,
-                      selectedAttrs: _selectedAttrs,
-                      selectedObjects: _selectedObjects.keys.toList(),
-                      namespace: "Physical",
-                    ))
+                ? ResultsPage(
+                    dateRange: _selectedDate,
+                    selectedAttrs: _selectedAttrs,
+                    selectedObjects: _selectedObjects.keys.toList(),
+                    namespace: _selectedNamespace,
+                  )
                 : const Center(child: CircularProgressIndicator()),
             isActive: _currentStep >= Steps.date.index,
             state: _currentStep >= Steps.result.index
@@ -197,13 +197,7 @@ class _SelectPageState extends State<SelectPage> with TickerProviderStateMixin {
       }
 
       showProjectDialog(
-          context,
-          project,
-          localeMsg.nameProject,
-          localeMsg.cancel,
-          Icons.cancel_outlined,
-          cancelProjectCallback,
-          saveProjectCallback,
+          context, project, localeMsg.nameProject, saveProjectCallback,
           isCreate: isCreate);
     } else {
       _loadObjects = _currentStep == (Steps.objects.index - 1) ? true : false;
@@ -242,9 +236,5 @@ class _SelectPageState extends State<SelectPage> with TickerProviderStateMixin {
     } else {
       showSnackBar(context, response, isError: true);
     }
-  }
-
-  cancelProjectCallback(String? id) {
-    Navigator.pop(context);
   }
 }

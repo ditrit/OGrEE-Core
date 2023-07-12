@@ -27,7 +27,9 @@ class _CustomTreeViewState extends State<CustomTreeView> {
           child: SingleChildScrollView(
             scrollDirection: Axis.horizontal,
             child: SizedBox(
-              width: MediaQuery.of(context).size.width - 15,
+              width: MediaQuery.of(context).size.width > 15
+                  ? MediaQuery.of(context).size.width - 15
+                  : MediaQuery.of(context).size.width,
               child: TreeView(
                 controller: appController.treeController,
                 theme: treeViewTheme,
