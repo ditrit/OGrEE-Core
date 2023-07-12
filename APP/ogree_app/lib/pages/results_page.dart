@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:ogree_app/common/constants.dart';
 import 'package:ogree_app/common/snackbar.dart';
 import 'package:ogree_app/common/theme.dart';
 import 'package:universal_html/html.dart' as html;
@@ -161,7 +162,7 @@ class _ResultsPageState extends State<ResultsPage> {
 
   getData() async {
     print("GET DATA");
-    if (widget.namespace == "TEST") {
+    if (widget.namespace == Namespace.Test.name) {
       _data = getSampleData();
     } else {
       _data = await fetchAttributes();

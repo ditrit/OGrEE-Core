@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:ogree_app/common/constants.dart';
 import 'package:ogree_app/widgets/select_objects/app_controller.dart';
 import 'package:ogree_app/widgets/select_objects/select_objects.dart';
 
@@ -8,11 +9,11 @@ import 'common.dart';
 void main() {
   testWidgets('SelectObjects expands and collapses tree', (tester) async {
     await tester.binding.setSurfaceSize(const Size(1000, 1000));
-    await tester.pumpWidget(const LocalizationsInjApp(
+    await tester.pumpWidget(LocalizationsInjApp(
         child: SelectObjects(
       dateRange: "",
       load: true,
-      namespace: 'TEST',
+      namespace: Namespace.Test.name,
     )));
 
     final expandButton = find.text("Développer tout");
@@ -33,11 +34,11 @@ void main() {
   });
 
   testWidgets('SelectObjects toogles tree selection', (tester) async {
-    await tester.pumpWidget(const LocalizationsInjApp(
+    await tester.pumpWidget(LocalizationsInjApp(
         child: SelectObjects(
       dateRange: "",
       load: true,
-      namespace: 'TEST',
+      namespace: Namespace.Test.name,
     )));
 
     final expandButton = find.text("Sélectionner tout");
@@ -60,11 +61,11 @@ void main() {
   });
 
   testWidgets('SelectObjects can find an object', (tester) async {
-    await tester.pumpWidget(const LocalizationsInjApp(
+    await tester.pumpWidget(LocalizationsInjApp(
         child: SelectObjects(
       dateRange: "",
       load: true,
-      namespace: 'TEST',
+      namespace: Namespace.Test.name,
     )));
 
     const searchStr = "rack2.devB.devB-2";
@@ -85,11 +86,11 @@ void main() {
   testWidgets('SelectObjects can filter objects', (tester) async {
     return;
     await tester.binding.setSurfaceSize(const Size(1000, 1000));
-    await tester.pumpWidget(const LocalizationsInjApp(
+    await tester.pumpWidget(LocalizationsInjApp(
         child: SelectObjects(
       dateRange: "",
       load: true,
-      namespace: 'TEST',
+      namespace: Namespace.Test.name,
     )));
 
     // all data is there

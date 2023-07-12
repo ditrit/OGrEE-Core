@@ -146,7 +146,7 @@ class _SelectPageState extends State<SelectPage> with TickerProviderStateMixin {
                     dateRange: _selectedDate,
                     selectedAttrs: _selectedAttrs,
                     selectedObjects: _selectedObjects.keys.toList(),
-                    namespace: "Physical",
+                    namespace: _selectedNamespace,
                   )
                 : const Center(child: CircularProgressIndicator()),
             isActive: _currentStep >= Steps.date.index,

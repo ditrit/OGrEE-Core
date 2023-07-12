@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:ogree_app/common/constants.dart';
 import 'package:ogree_app/common/popup_dialog.dart';
 import 'package:ogree_app/common/theme.dart';
 import 'package:ogree_app/pages/select_page.dart';
@@ -31,13 +32,13 @@ class _SelectObjectsState extends State<SelectObjects> {
       child: FutureBuilder<void>(
         future: widget.load
             ? appController.init(
-                widget.namespace == 'TEST'
+                widget.namespace == Namespace.Test.name
                     ? {}
                     : SelectPage.of(context)!.selectedObjects,
                 dateRange: widget.dateRange,
-                isTest: widget.namespace == 'TEST',
+                isTest: widget.namespace == Namespace.Test.name,
                 reload: widget.load,
-                onlyDomain: widget.namespace == 'Organisational')
+                onlyDomain: widget.namespace == Namespace.Organisational.name)
             : null,
         builder: (_, __) {
           print(widget.load);
@@ -63,7 +64,8 @@ class _SelectObjectsState extends State<SelectObjects> {
                         ],
                       )
                     : _ResponsiveBody(
-                        onlyDomain: widget.namespace == 'Organisational',
+                        onlyDomain:
+                            widget.namespace == Namespace.Organisational.name,
                         controller: appController),
               ),
             );

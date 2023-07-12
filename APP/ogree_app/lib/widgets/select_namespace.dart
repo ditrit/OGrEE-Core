@@ -1,13 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:ogree_app/common/constants.dart';
 import 'package:ogree_app/pages/select_page.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
-
-const Map<String, String> namespaces = {
-  "Physical": "site.building.room",
-  "Organisational": "domains",
-  "Logical": "not available"
-};
 
 class SelectNamespace extends StatefulWidget {
   const SelectNamespace({super.key});
@@ -16,7 +11,12 @@ class SelectNamespace extends StatefulWidget {
 }
 
 class _SelectNamespaceState extends State<SelectNamespace> {
-  String _selection = namespaces.keys.first;
+  Map<String, String> namespaces = {
+    Namespace.Physical.name: "site.building.room",
+    Namespace.Organisational.name: "domains",
+    Namespace.Logical.name: "not available"
+  };
+  String _selection = Namespace.Physical.name;
 
   @override
   void initState() {
