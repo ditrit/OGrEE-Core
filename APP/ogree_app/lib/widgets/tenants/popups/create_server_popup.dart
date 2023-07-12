@@ -145,8 +145,8 @@ class _CreateServerPopupState extends State<CreateServerPopup> {
                             ),
                           ),
                           const SizedBox(width: 8),
-                          const Text(
-                            "Run at startup",
+                          Text(
+                            localeMsg.runAtStart,
                             style: TextStyle(
                               fontSize: 14,
                               color: Colors.black,

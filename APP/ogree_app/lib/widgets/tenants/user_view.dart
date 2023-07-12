@@ -1,9 +1,7 @@
-// ignore_for_file: public_member_api_docs, sort_constructors_first
 import 'package:flutter/material.dart';
 import 'package:ogree_app/common/api_backend.dart';
 import 'package:ogree_app/common/popup_dialog.dart';
 import 'package:ogree_app/common/theme.dart';
-import 'package:ogree_app/models/tenant.dart';
 import 'package:ogree_app/models/user.dart';
 import 'package:ogree_app/pages/results_page.dart';
 import 'package:ogree_app/widgets/select_objects/app_controller.dart';
@@ -55,7 +53,7 @@ class _UserViewState extends State<UserView> {
                   label: isSmallDisplay ? null : Text(localeMsg.search),
                   prefixIcon: IconButton(
                     onPressed: () => {},
-                    tooltip:  "Search",
+                    tooltip: "Search",
                     icon: const Icon(
                       Icons.search_rounded,
                     ),
@@ -122,7 +120,9 @@ class _UserViewState extends State<UserView> {
                         });
                       })),
                       icon: const Icon(Icons.add, color: Colors.white),
-                      label: Text(isSmallDisplay ? localeMsg.create : "${localeMsg.create} ${localeMsg.user}"),
+                      label: Text(isSmallDisplay
+                          ? localeMsg.create
+                          : "${localeMsg.create} ${localeMsg.user}"),
                     ),
                   ),
                 ],

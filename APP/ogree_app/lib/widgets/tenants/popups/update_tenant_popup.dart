@@ -1,7 +1,5 @@
-import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:ogree_app/common/api_backend.dart';
 import 'package:ogree_app/common/snackbar.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
@@ -34,7 +32,8 @@ class _UpdateTenantPopupState extends State<UpdateTenantPopup> {
         margin: const EdgeInsets.symmetric(horizontal: 20),
         decoration: PopupDecoration,
         child: Padding(
-          padding: EdgeInsets.fromLTRB(_isSmallDisplay ? 30 : 40, 20, _isSmallDisplay ? 30 : 40, 15),
+          padding: EdgeInsets.fromLTRB(
+              _isSmallDisplay ? 30 : 40, 20, _isSmallDisplay ? 30 : 40, 15),
           child: Material(
             color: Colors.white,
             child: Form(
@@ -45,7 +44,7 @@ class _UpdateTenantPopupState extends State<UpdateTenantPopup> {
                 children: [
                   Center(
                     child: Text(
-                      "Update " + widget.tenant.name,
+                      "Update ${widget.tenant.name}",
                       style: Theme.of(context).textTheme.headlineMedium,
                     ),
                   ),
@@ -71,7 +70,7 @@ class _UpdateTenantPopupState extends State<UpdateTenantPopup> {
                   ),
                   getFormField(
                       save: (newValue) => widget.tenant.imageTag = newValue!,
-                      label: "Version du déploiement (branch)",
+                      label: localeMsg.deployVersion,
                       icon: Icons.access_time,
                       initial: widget.tenant.imageTag),
                   getFormField(
@@ -145,7 +144,7 @@ class _UpdateTenantPopupState extends State<UpdateTenantPopup> {
                               if (response == "") {
                                 widget.parentCallback();
                                 showSnackBar(
-                                    context, "Tenant successfully updated 🥳",
+                                    context, "${localeMsg.modifyOK} 🥳",
                                     isSuccess: true);
                                 Navigator.of(context).pop();
                               } else {
@@ -156,7 +155,7 @@ class _UpdateTenantPopupState extends State<UpdateTenantPopup> {
                               }
                             }
                           },
-                          label: Text("Update"),
+                          label: const Text("Update"),
                           icon: _isLoading
                               ? Container(
                                   width: 24,

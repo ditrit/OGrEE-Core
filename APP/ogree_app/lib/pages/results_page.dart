@@ -55,8 +55,9 @@ class _ResultsPageState extends State<ResultsPage> {
 
   @override
   void initState() {
-    if (!widget.selectedAttrs.contains(extraColumn))
+    if (!widget.selectedAttrs.contains(extraColumn)) {
       widget.selectedAttrs.add(extraColumn);
+    }
     super.initState();
   }
 
@@ -114,7 +115,9 @@ class _ResultsPageState extends State<ResultsPage> {
               child: PaginatedDataTable(
                 header: Text(
                   localeMsg.yourReport,
-                  style:  TextStyle(fontWeight: FontWeight.w600, fontSize: isSmallDisplay ? 16 : null),
+                  style: TextStyle(
+                      fontWeight: FontWeight.w600,
+                      fontSize: isSmallDisplay ? 16 : null),
                 ),
                 actions: [
                   Padding(

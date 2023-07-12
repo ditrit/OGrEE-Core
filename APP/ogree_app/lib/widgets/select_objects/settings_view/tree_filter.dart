@@ -32,7 +32,6 @@ class _TreeFilterState extends State<TreeFilter> {
 
   @override
   Widget build(BuildContext context) {
-    print("BUILD TREE FILTER");
     _filterLevels = AppController.of(context).filterLevels;
     print(_filterLevels);
     // Get which fields to filter and their list of suggestions

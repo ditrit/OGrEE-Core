@@ -102,7 +102,7 @@ class _SelectPageState extends State<SelectPage> with TickerProviderStateMixin {
                 style: const TextStyle(fontSize: 14)),
             subtitle: _selectedDate != ""
                 ? Text(_selectedDate)
-                : Icon(Icons.all_inclusive, size: 15),
+                : const Icon(Icons.all_inclusive, size: 15),
             content: const SelectDate(),
             isActive: _currentStep >= Steps.date.index,
             state: _currentStep >= Steps.date.index

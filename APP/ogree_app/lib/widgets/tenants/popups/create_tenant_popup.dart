@@ -43,7 +43,8 @@ class _CreateTenantPopupState extends State<CreateTenantPopup> {
         margin: const EdgeInsets.symmetric(horizontal: 20),
         decoration: PopupDecoration,
         child: Padding(
-          padding: EdgeInsets.fromLTRB(_isSmallDisplay ? 30 : 40, 20, _isSmallDisplay ? 30 :  40, 15),
+          padding: EdgeInsets.fromLTRB(
+              _isSmallDisplay ? 30 : 40, 20, _isSmallDisplay ? 30 : 40, 15),
           child: Form(
             key: _formKey,
             child: ScaffoldMessenger(
@@ -95,7 +96,7 @@ class _CreateTenantPopupState extends State<CreateTenantPopup> {
                               const SizedBox(height: 10),
                               getFormField(
                                   save: (newValue) => _imageTag = newValue!,
-                                  label: "Version du déploiement (branch)",
+                                  label: localeMsg.deployVersion,
                                   icon: Icons.access_time,
                                   initial: _imageTag),
                               getFormField(
@@ -164,8 +165,9 @@ class _CreateTenantPopupState extends State<CreateTenantPopup> {
                                                 }
                                               },
                                               icon: const Icon(Icons.download),
-                                              label:
-                                                  Text(_isSmallDisplay ? "Web Logo" : localeMsg.selectLogo)),
+                                              label: Text(_isSmallDisplay
+                                                  ? "Web Logo"
+                                                  : localeMsg.selectLogo)),
                                         ],
                                       ),
                                     )

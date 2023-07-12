@@ -3,7 +3,6 @@ import 'package:ogree_app/common/popup_dialog.dart';
 import 'package:ogree_app/common/theme.dart';
 import 'package:ogree_app/pages/select_page.dart';
 import 'package:ogree_app/widgets/select_objects/app_controller.dart';
-import 'package:ogree_app/widgets/tenants/popups/create_tenant_popup.dart';
 import 'settings_view/settings_view.dart';
 import 'tree_view/custom_tree_view.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
@@ -55,9 +54,11 @@ class _SelectObjectsState extends State<SelectObjects> {
                             size: 50,
                             color: Colors.grey.shade600,
                           ),
-                          const Padding(
-                            padding: EdgeInsets.only(top: 16),
-                            child: Text("No objects found :("),
+                          Padding(
+                            padding: const EdgeInsets.only(top: 16),
+                            child: Text(
+                                AppLocalizations.of(context)!.noObjectsFound +
+                                    " :("),
                           ),
                         ],
                       )
@@ -116,7 +117,7 @@ class _ResponsiveBody extends StatelessWidget {
                     ),
                     isDismissible: true),
                 icon: const Icon(Icons.filter_alt_outlined),
-                label: const Text("Filters"),
+                label: Text(AppLocalizations.of(context)!.filters),
               ),
             ),
           ),
@@ -175,7 +176,7 @@ class SettingsViewPopup extends StatelessWidget {
                             style: OutlinedButton.styleFrom(
                                 foregroundColor: Colors.blue.shade900),
                             onPressed: () => Navigator.pop(context),
-                            label: const Text("Fermer"),
+                            label: Text(AppLocalizations.of(context)!.close),
                             icon: const Icon(
                               Icons.cancel_outlined,
                               size: 16,

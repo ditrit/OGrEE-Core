@@ -6,20 +6,15 @@ import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import '../../common/theme.dart';
 
 void showProjectDialog(
-    BuildContext context,
-    Project project,
-    String title,
-    Function saveCallback,
-    {bool isCreate = false,
-    Function? parentCallback,
-      Function? deleteCallback,}) {
+  BuildContext context,
+  Project project,
+  String title,
+  Function saveCallback, {
+  bool isCreate = false,
+  Function? parentCallback,
+  Function? deleteCallback,
+}) {
   String editInput = project.name;
-  const inputStyle = OutlineInputBorder(
-    borderSide: BorderSide(
-      color: Colors.grey,
-      width: 1,
-    ),
-  );
   showGeneralDialog(
     context: context,
     barrierLabel: "Barrier",
@@ -68,21 +63,22 @@ void showProjectDialog(
                           size: 16,
                         ),
                       ),
-                      deleteCallback != null ? TextButton.icon(
-                        style: OutlinedButton.styleFrom(
-                            foregroundColor: Colors.red.shade900),
-                        onPressed: () =>
-                            deleteCallback(project.id, parentCallback),
-                        label: Text(localeMsg.delete),
-                        icon: Icon(
-                          Icons.delete,
-                          size: 16,
-                        ),
-                      ) : Container(),
+                      deleteCallback != null
+                          ? TextButton.icon(
+                              style: OutlinedButton.styleFrom(
+                                  foregroundColor: Colors.red.shade900),
+                              onPressed: () =>
+                                  deleteCallback(project.id, parentCallback),
+                              label: Text(localeMsg.delete),
+                              icon: const Icon(
+                                Icons.delete,
+                                size: 16,
+                              ),
+                            )
+                          : Container(),
                       const SizedBox(width: 10),
                       ElevatedButton(
                         onPressed: () async {
-                          print(editInput);
                           if (editInput == "") {
                             showSnackBar(
                                 context, localeMsg.mandatoryProjectName,

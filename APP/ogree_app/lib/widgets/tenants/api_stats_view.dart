@@ -1,8 +1,6 @@
-// ignore_for_file: public_member_api_docs, sort_constructors_first
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:ogree_app/common/api_backend.dart';
-import 'package:ogree_app/models/tenant.dart';
 import 'package:ogree_app/pages/results_page.dart';
 
 // Define a stateful widget that displays API usage statistics for a given tenant
@@ -50,12 +48,12 @@ class _ApiStatsViewState extends State<ApiStatsView> {
                     columns: [
                       DataColumn(
                           label: Text(
-                        "Parameter",
+                        localeMsg.parameter,
                         style: titleStyle,
                       )),
                       DataColumn(
                           label: Text(
-                        "Value",
+                        localeMsg.value,
                         style: titleStyle,
                       ))
                     ],
