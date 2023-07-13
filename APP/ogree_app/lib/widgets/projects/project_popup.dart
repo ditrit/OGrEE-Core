@@ -23,6 +23,7 @@ void showProjectDialog(
     transitionDuration: const Duration(milliseconds: 700),
     pageBuilder: (context, _, __) {
       final localeMsg = AppLocalizations.of(context)!;
+      final isSmallDisplay = IsSmallDisplay(MediaQuery.of(context).size.width);
       return Center(
         child: Container(
           height: 200,
@@ -55,6 +56,9 @@ void showProjectDialog(
                     children: [
                       TextButton.icon(
                         style: OutlinedButton.styleFrom(
+                            padding: isSmallDisplay
+                                ? EdgeInsets.symmetric(horizontal: 8)
+                                : null,
                             foregroundColor: Colors.blue.shade900),
                         onPressed: () => Navigator.pop(context),
                         label: Text(localeMsg.cancel),
@@ -69,14 +73,15 @@ void showProjectDialog(
                                   foregroundColor: Colors.red.shade900),
                               onPressed: () =>
                                   deleteCallback(project.id, parentCallback),
-                              label: Text(localeMsg.delete),
+                              label:
+                                  Text(isSmallDisplay ? "" : localeMsg.delete),
                               icon: const Icon(
                                 Icons.delete,
                                 size: 16,
                               ),
                             )
                           : Container(),
-                      const SizedBox(width: 10),
+                      SizedBox(width: isSmallDisplay ? 0 : 10),
                       ElevatedButton(
                         onPressed: () async {
                           if (editInput == "") {
@@ -89,6 +94,11 @@ void showProjectDialog(
                           }
                         },
                         child: Text(localeMsg.save),
+                        style: isSmallDisplay
+                            ? ElevatedButton.styleFrom(
+                                padding: EdgeInsets.symmetric(horizontal: 8),
+                              )
+                            : null,
                       )
                     ],
                   )
