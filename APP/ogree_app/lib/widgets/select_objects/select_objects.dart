@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:ogree_app/common/constants.dart';
+import 'package:ogree_app/common/definitions.dart';
 import 'package:ogree_app/common/popup_dialog.dart';
 import 'package:ogree_app/common/theme.dart';
 import 'package:ogree_app/pages/select_page.dart';

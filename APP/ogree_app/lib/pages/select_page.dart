@@ -28,7 +28,7 @@ class SelectPage extends StatefulWidget {
 
 class _SelectPageState extends State<SelectPage> with TickerProviderStateMixin {
   // Flow control
-  int _currentStep = 0;
+  Steps _currentStep = Steps.date;
   bool _loadObjects = false;
 
   // Shared data used by children in stepper
@@ -56,7 +56,7 @@ class _SelectPageState extends State<SelectPage> with TickerProviderStateMixin {
       for (var obj in widget.project!.objects) {
         _selectedObjects[obj] = true;
       }
-      _currentStep = Steps.result.index;
+      _currentStep = Steps.result;
     }
     super.initState();
   }
@@ -72,7 +72,7 @@ class _SelectPageState extends State<SelectPage> with TickerProviderStateMixin {
             ? StepperType.horizontal
             : StepperType.vertical,
         physics: const ScrollPhysics(),
-        currentStep: _currentStep,
+        currentStep: _currentStep.index,
         // onStepTapped: (step) => tapped(step),
         controlsBuilder: (context, _) {
           return Padding(
@@ -83,13 +83,13 @@ class _SelectPageState extends State<SelectPage> with TickerProviderStateMixin {
               children: <Widget>[
                 TextButton(
                   onPressed: cancel,
-                  child: Text(_currentStep == Steps.values.first.index
+                  child: Text(_currentStep == Steps.values.first
                       ? localeMsg.cancel
                       : localeMsg.back),
                 ),
                 ElevatedButton(
                   onPressed: continued,
-                  child: Text(_currentStep == Steps.values.last.index
+                  child: Text(_currentStep == Steps.values.last
                       ? localeMsg.save
                       : localeMsg.next),
                 ),
@@ -105,8 +105,8 @@ class _SelectPageState extends State<SelectPage> with TickerProviderStateMixin {
                 ? Text(_selectedDate)
                 : const Icon(Icons.all_inclusive, size: 15),
             content: const SelectDate(),
-            isActive: _currentStep >= Steps.date.index,
-            state: _currentStep >= Steps.date.index
+            isActive: _currentStep.index >= Steps.date.index,
+            state: _currentStep.index >= Steps.date.index
                 ? StepState.complete
                 : StepState.disabled,
           ),
@@ -116,8 +116,8 @@ class _SelectPageState extends State<SelectPage> with TickerProviderStateMixin {
             subtitle:
                 _selectedNamespace == '' ? null : Text(_selectedNamespace),
             content: const SelectNamespace(),
-            isActive: _currentStep >= Steps.date.index,
-            state: _currentStep >= Steps.namespace.index
+            isActive: _currentStep.index >= Steps.date.index,
+            state: _currentStep.index >= Steps.namespace.index
                 ? StepState.complete
                 : StepState.disabled,
           ),
@@ -135,14 +135,14 @@ class _SelectPageState extends State<SelectPage> with TickerProviderStateMixin {
                     dateRange: _selectedDate,
                     namespace: _selectedNamespace,
                     load: _loadObjects)),
-            isActive: _currentStep >= Steps.date.index,
-            state: _currentStep >= Steps.objects.index
+            isActive: _currentStep.index >= Steps.date.index,
+            state: _currentStep.index >= Steps.objects.index
                 ? StepState.complete
                 : StepState.disabled,
           ),
           Step(
             title: Text(localeMsg.result, style: const TextStyle(fontSize: 14)),
-            content: _currentStep == Steps.result.index
+            content: _currentStep == Steps.result
                 ? ResultsPage(
                     dateRange: _selectedDate,
                     selectedAttrs: _selectedAttrs,
@@ -150,8 +150,8 @@ class _SelectPageState extends State<SelectPage> with TickerProviderStateMixin {
                     namespace: _selectedNamespace,
                   )
                 : const Center(child: CircularProgressIndicator()),
-            isActive: _currentStep >= Steps.date.index,
-            state: _currentStep >= Steps.result.index
+            isActive: _currentStep.index >= Steps.date.index,
+            state: _currentStep.index >= Steps.result.index
                 ? StepState.complete
                 : StepState.disabled,
           ),
@@ -160,62 +160,76 @@ class _SelectPageState extends State<SelectPage> with TickerProviderStateMixin {
     );
   }
 
-  tapped(int step) {
-    setState(() => _currentStep = step);
-  }
-
   continued() {
     final localeMsg = AppLocalizations.of(context)!;
-    if (_currentStep == Steps.objects.index && _selectedObjects.isEmpty) {
-      // Should select at least one OBJECT before continue
-      showSnackBar(context, localeMsg.atLeastOneObject, isError: true);
-    } else if (_currentStep == Steps.result.index) {
-      // Continue of RESULT is actually Save
-      Project project;
-      bool isCreate = true;
-      if (widget.project != null) {
-        // Editing existing project
-        isCreate = false;
-        project = widget.project!;
-        project.dateRange = _selectedDate;
-        project.namespace = _selectedNamespace;
-        project.attributes = _selectedAttrs;
-        project.objects = _selectedObjects.keys.toList();
-      } else {
-        // Saving new project
-        project = Project(
-            "",
-            _selectedDate,
-            _selectedNamespace,
-            widget.userEmail,
-            DateFormat('dd/MM/yyyy').format(DateTime.now()),
-            true,
-            true,
-            false,
-            _selectedAttrs,
-            _selectedObjects.keys.toList(),
-            [widget.userEmail]);
-      }
+    _loadObjects = false;
+    switch (_currentStep) {
+      case (Steps.date):
+        setState(() => _currentStep = Steps.namespace);
+      case (Steps.namespace):
+        _loadObjects = true;
+        _selectedObjects = {};
+        setState(() => _currentStep = Steps.objects);
+      case (Steps.objects):
+        if (_selectedObjects.isEmpty) {
+          // Should select at least one OBJECT before continue
+          showSnackBar(context, localeMsg.atLeastOneObject, isError: true);
+        } else {
+          _selectedAttrs = [];
+          setState(() => _currentStep = Steps.result);
+        }
+      case (Steps.result):
+        // Continue of RESULT is actually Save
+        Project project;
+        bool isCreate = true;
+        if (widget.project != null) {
+          // Editing existing project
+          isCreate = false;
+          project = widget.project!;
+          project.dateRange = _selectedDate;
+          project.namespace = _selectedNamespace;
+          project.attributes = _selectedAttrs;
+          project.objects = _selectedObjects.keys.toList();
+        } else {
+          // Saving new project
+          project = Project(
+              "",
+              _selectedDate,
+              _selectedNamespace,
+              widget.userEmail,
+              DateFormat('dd/MM/yyyy').format(DateTime.now()),
+              true,
+              true,
+              false,
+              _selectedAttrs,
+              _selectedObjects.keys.toList(),
+              [widget.userEmail]);
+        }
 
-      showProjectDialog(
-          context, project, localeMsg.nameProject, saveProjectCallback,
-          isCreate: isCreate);
-    } else {
-      _loadObjects = _currentStep == (Steps.objects.index - 1) ? true : false;
-      setState(() => _currentStep += 1);
+        showProjectDialog(
+            context, project, localeMsg.nameProject, saveProjectCallback,
+            isCreate: isCreate);
     }
   }
 
   cancel() {
-    _loadObjects = _currentStep == (Steps.objects.index + 1) ? true : false;
-    _currentStep > Steps.values.first.index
-        ? setState(() => _currentStep -= 1)
-        : Navigator.of(context).push(
-            MaterialPageRoute(
-              builder: (context) => ProjectsPage(
-                  userEmail: widget.userEmail, isTenantMode: false),
-            ),
-          );
+    _loadObjects = false;
+    switch (_currentStep) {
+      case (Steps.date):
+        Navigator.of(context).push(
+          MaterialPageRoute(
+            builder: (context) =>
+                ProjectsPage(userEmail: widget.userEmail, isTenantMode: false),
+          ),
+        );
+      case (Steps.namespace):
+        setState(() => _currentStep = Steps.date);
+      case (Steps.objects):
+        setState(() => _currentStep = Steps.namespace);
+      case (Steps.result):
+        _loadObjects = true;
+        setState(() => _currentStep = Steps.objects);
+    }
   }
 
   saveProjectCallback(String userInput, Project project, bool isCreate,
