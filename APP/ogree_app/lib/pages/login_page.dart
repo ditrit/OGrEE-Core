@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:ogree_app/common/api_backend.dart';
+import 'package:ogree_app/common/definitions.dart';
 import 'package:ogree_app/common/snackbar.dart';
 import 'package:ogree_app/common/theme.dart';
 import 'package:ogree_app/pages/projects_page.dart';
@@ -87,7 +88,7 @@ class _LoginPageState extends State<LoginPage> {
                                             Icons.arrow_back,
                                             color: Colors.blue.shade900,
                                           )),
-                                       SizedBox(width: isSmallDisplay ? 0 : 5),
+                                      SizedBox(width: isSmallDisplay ? 0 : 5),
                                       Text(
                                         "Request password reset",
                                         style: Theme.of(context)
@@ -131,7 +132,10 @@ class _LoginPageState extends State<LoginPage> {
                                 return null;
                               },
                               decoration: InputDecoration(
-                                contentPadding: isSmallDisplay ? EdgeInsets.symmetric(horizontal: 12, vertical: 16) : null,
+                                contentPadding: isSmallDisplay
+                                    ? EdgeInsets.symmetric(
+                                        horizontal: 12, vertical: 16)
+                                    : null,
                                 labelText: 'E-mail',
                                 hintText: 'abc@example.com',
                                 labelStyle: GoogleFonts.inter(
@@ -156,7 +160,10 @@ class _LoginPageState extends State<LoginPage> {
                                       return null;
                                     },
                                     decoration: InputDecoration(
-                                      contentPadding: isSmallDisplay ? EdgeInsets.symmetric(horizontal: 12, vertical: 16) : null,
+                                      contentPadding: isSmallDisplay
+                                          ? EdgeInsets.symmetric(
+                                              horizontal: 12, vertical: 16)
+                                          : null,
                                       labelText: localeMsg.password,
                                       hintText: '********',
                                       labelStyle: GoogleFonts.inter(
@@ -166,7 +173,9 @@ class _LoginPageState extends State<LoginPage> {
                                       border: inputStyle,
                                     ),
                                   ),
-                            !forgot ? SizedBox(height: isSmallDisplay ? 15 : 25) : Container(),
+                            !forgot
+                                ? SizedBox(height: isSmallDisplay ? 15 : 25)
+                                : Container(),
                             forgot
                                 ? TextButton(
                                     onPressed: () => Navigator.of(context).push(
@@ -190,30 +199,33 @@ class _LoginPageState extends State<LoginPage> {
                                     crossAxisAlignment:
                                         WrapCrossAlignment.center,
                                     children: [
-                                      !isSmallDisplay ? Wrap(
-                                        crossAxisAlignment:
-                                            WrapCrossAlignment.center,
-                                        children: [
-                                          SizedBox(
-                                            height: 24,
-                                            width: 24,
-                                            child: Checkbox(
-                                              value: _isChecked,
-                                              onChanged: (bool? value) =>
-                                                  setState(() =>
-                                                      _isChecked = value!),
-                                            ),
-                                          ),
-                                          const SizedBox(width: 8),
-                                          Text(
-                                            localeMsg.stayLogged,
-                                            style: TextStyle(
-                                              fontSize: 14,
-                                              color: Colors.black,
-                                            ),
-                                          ),
-                                        ],
-                                      ) : Container(),
+                                      !isSmallDisplay
+                                          ? Wrap(
+                                              crossAxisAlignment:
+                                                  WrapCrossAlignment.center,
+                                              children: [
+                                                SizedBox(
+                                                  height: 24,
+                                                  width: 24,
+                                                  child: Checkbox(
+                                                    value: _isChecked,
+                                                    onChanged: (bool? value) =>
+                                                        setState(() =>
+                                                            _isChecked =
+                                                                value!),
+                                                  ),
+                                                ),
+                                                const SizedBox(width: 8),
+                                                Text(
+                                                  localeMsg.stayLogged,
+                                                  style: TextStyle(
+                                                    fontSize: 14,
+                                                    color: Colors.black,
+                                                  ),
+                                                ),
+                                              ],
+                                            )
+                                          : Container(),
                                       TextButton(
                                         onPressed: () => setState(() {
                                           forgot = !forgot;
@@ -229,7 +241,9 @@ class _LoginPageState extends State<LoginPage> {
                                       ),
                                     ],
                                   ),
-                            SizedBox(height: forgot ? 20 : (isSmallDisplay ? 15 : 30)),
+                            SizedBox(
+                                height:
+                                    forgot ? 20 : (isSmallDisplay ? 15 : 30)),
                             Align(
                               child: ElevatedButton(
                                 onPressed: () =>
@@ -264,42 +278,39 @@ class _LoginPageState extends State<LoginPage> {
     );
   }
 
-  tryLogin() {
+  tryLogin() async {
     if (_formKey.currentState!.validate()) {
       _formKey.currentState!.save();
-      loginAPI(_email!, _password!, userUrl: _apiUrl)
-          .then((value) => value.first != ""
-              ? fetchApiTenantName().then((_) => Navigator.of(context).push(
-                    MaterialPageRoute(
-                      builder: (context) => ProjectsPage(
-                        userEmail: value.first,
-                        isTenantMode: value[1] == "true",
-                      ),
-                    ),
-                  ))
-              : showSnackBar(
-                  context, AppLocalizations.of(context)!.invalidLogin,
-                  isError: true))
-          .onError((error, stackTrace) {
-        print(error);
-        showSnackBar(context, error.toString().trim(), isError: true);
-      });
+      final result = await loginAPI(_email!, _password!, userUrl: _apiUrl);
+      switch (result) {
+        case Success(value: final loginData):
+          fetchApiTenantName().then((_) => Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (context) => ProjectsPage(
+                    userEmail: loginData.first,
+                    isTenantMode: loginData[1] == "true",
+                  ),
+                ),
+              ));
+        case Failure(exception: final exception):
+          String errorMsg = exception.toString() == "Exception"
+              ? AppLocalizations.of(context)!.invalidLogin
+              : exception.toString();
+          showSnackBar(context, errorMsg, isError: true);
+      }
     }
   }
 
-  resetPassword() {
+  resetPassword() async {
     if (_formKey.currentState!.validate()) {
       _formKey.currentState!.save();
-      userForgotPassword(_email!, userUrl: _apiUrl)
-          .then((value) => value == ""
-              ? showSnackBar(context, "Reset request sent", isSuccess: true)
-              : showSnackBar(
-                  context, AppLocalizations.of(context)!.invalidLogin,
-                  isError: true))
-          .onError((error, stackTrace) {
-        print(error);
-        showSnackBar(context, error.toString().trim(), isError: true);
-      });
+      final result = await userForgotPassword(_email!, userUrl: _apiUrl);
+      switch (result) {
+        case Success():
+          showSnackBar(context, "Reset request sent", isSuccess: true);
+        case Failure(exception: final exception):
+          showSnackBar(context, exception.toString().trim(), isError: true);
+      }
     }
   }
 

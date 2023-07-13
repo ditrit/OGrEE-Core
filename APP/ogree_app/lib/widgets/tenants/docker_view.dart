@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:ogree_app/common/api_backend.dart';
+import 'package:ogree_app/common/definitions.dart';
 import 'package:ogree_app/common/popup_dialog.dart';
+import 'package:ogree_app/common/snackbar.dart';
 import 'package:ogree_app/models/container.dart';
 import 'package:ogree_app/pages/results_page.dart';
 import 'package:ogree_app/widgets/select_objects/settings_view/tree_filter.dart';
@@ -17,7 +19,7 @@ class DockerView extends StatelessWidget {
   Widget build(BuildContext context) {
     final localeMsg = AppLocalizations.of(context)!;
     return FutureBuilder(
-        future: getData(),
+        future: getData(context),
         builder: (context, _) {
           if (_dockerInfo == null) {
             return const Center(child: CircularProgressIndicator());
@@ -46,8 +48,15 @@ class DockerView extends StatelessWidget {
         });
   }
 
-  getData() async {
-    _dockerInfo = await fetchTenantDockerInfo(tName);
+  getData(BuildContext context) async {
+    final result = await fetchTenantDockerInfo(tName);
+    switch (result) {
+      case Success(value: final value):
+        _dockerInfo = value;
+      case Failure(exception: final exception):
+        showSnackBar(context, exception.toString(), isError: true);
+        _dockerInfo = [];
+    }
   }
 
   List<DataColumn> getColumns() {

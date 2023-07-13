@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:ogree_app/common/api_backend.dart';
+import 'package:ogree_app/common/definitions.dart';
+import 'package:ogree_app/common/snackbar.dart';
 
 class ContainerLogsPopup extends StatefulWidget {
   String containerName;
@@ -81,6 +83,13 @@ class _ContainerLogsPopupState extends State<ContainerLogsPopup> {
   }
 
   getTenantStats() async {
-    logs = await fetchContainerLogs(widget.containerName);
+    final result = await fetchContainerLogs(widget.containerName);
+    switch (result) {
+      case Success(value: final value):
+        logs = value;
+      case Failure(exception: final exception):
+        showSnackBar(context, exception.toString(), isError: true);
+        logs = "";
+    }
   }
 }

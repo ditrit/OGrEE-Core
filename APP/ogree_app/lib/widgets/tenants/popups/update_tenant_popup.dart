@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:ogree_app/common/api_backend.dart';
+import 'package:ogree_app/common/definitions.dart';
 import 'package:ogree_app/common/snackbar.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:ogree_app/common/theme.dart';
@@ -137,21 +138,21 @@ class _UpdateTenantPopupState extends State<UpdateTenantPopup> {
                               setState(() {
                                 _isLoading = true;
                               });
-                              // Load logo first, if provided
-                              String response = localeMsg.notLoaded;
                               // Create tenant
-                              response = await updateTenant(widget.tenant);
-                              if (response == "") {
-                                widget.parentCallback();
-                                showSnackBar(
-                                    context, "${localeMsg.modifyOK} 🥳",
-                                    isSuccess: true);
-                                Navigator.of(context).pop();
-                              } else {
-                                setState(() {
-                                  _isLoading = false;
-                                });
-                                showSnackBar(context, response, isError: true);
+                              final result = await updateTenant(widget.tenant);
+                              switch (result) {
+                                case Success():
+                                  widget.parentCallback();
+                                  showSnackBar(
+                                      context, "${localeMsg.modifyOK} 🥳",
+                                      isSuccess: true);
+                                  Navigator.of(context).pop();
+                                case Failure(exception: final exception):
+                                  setState(() {
+                                    _isLoading = false;
+                                  });
+                                  showSnackBar(context, exception.toString(),
+                                      isError: true);
                               }
                             }
                           },

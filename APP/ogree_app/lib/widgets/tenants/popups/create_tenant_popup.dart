@@ -2,6 +2,7 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:ogree_app/common/api_backend.dart';
+import 'package:ogree_app/common/definitions.dart';
 import 'package:ogree_app/common/snackbar.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:ogree_app/common/theme.dart';
@@ -202,51 +203,8 @@ class _CreateTenantPopupState extends State<CreateTenantPopup> {
                                   ),
                                   const SizedBox(width: 15),
                                   ElevatedButton.icon(
-                                      onPressed: () async {
-                                        if (_formKey.currentState!.validate()) {
-                                          _formKey.currentState!.save();
-                                          setState(() {
-                                            _isLoading = true;
-                                          });
-                                          // Load logo first, if provided
-                                          String response = localeMsg.notLoaded;
-                                          if (_loadedImage != null) {
-                                            response = await uploadImage(
-                                                _loadedImage!, _tenantName!);
-                                            print(response);
-                                            if (response != "") {
-                                              showSnackBar(context,
-                                                  "${localeMsg.failedToUpload} $response");
-                                            }
-                                          }
-                                          // Create tenant
-                                          response = await createTenant(Tenant(
-                                              _tenantName!,
-                                              _tenantPassword!,
-                                              _apiUrl!,
-                                              _webUrl,
-                                              _apiPort!,
-                                              _webPort,
-                                              _hasWeb,
-                                              _hasDoc,
-                                              _docUrl,
-                                              _docPort,
-                                              _imageTag));
-                                          if (response == "") {
-                                            widget.parentCallback();
-                                            showSnackBar(context,
-                                                "${localeMsg.tenantCreated} 🥳",
-                                                isSuccess: true);
-                                            Navigator.of(context).pop();
-                                          } else {
-                                            setState(() {
-                                              _isLoading = false;
-                                            });
-                                            showSnackBar(context, response,
-                                                isError: true);
-                                          }
-                                        }
-                                      },
+                                      onPressed: () =>
+                                          submitCreateTenant(localeMsg),
                                       label: Text(localeMsg.create),
                                       icon: _isLoading
                                           ? Container(
@@ -271,6 +229,50 @@ class _CreateTenantPopupState extends State<CreateTenantPopup> {
         ),
       ),
     );
+  }
+
+  submitCreateTenant(AppLocalizations localeMsg) async {
+    if (_formKey.currentState!.validate()) {
+      _formKey.currentState!.save();
+      setState(() {
+        _isLoading = true;
+      });
+      // Load logo first, if provided
+      if (_loadedImage != null) {
+        var result = await uploadImage(_loadedImage!, _tenantName!);
+        switch (result) {
+          case Success():
+            break;
+          case Failure(exception: final exception):
+            showSnackBar(context, "${localeMsg.failedToUpload} $exception");
+        }
+      }
+      // Create tenant
+      var result = await createTenant(Tenant(
+          _tenantName!,
+          _tenantPassword!,
+          _apiUrl!,
+          _webUrl,
+          _apiPort!,
+          _webPort,
+          _hasWeb,
+          _hasDoc,
+          _docUrl,
+          _docPort,
+          _imageTag));
+      switch (result) {
+        case Success(value: final value):
+          widget.parentCallback();
+          showSnackBar(context, "${localeMsg.tenantCreated} 🥳",
+              isSuccess: true);
+          Navigator.of(context).pop();
+        case Failure(exception: final exception):
+          setState(() {
+            _isLoading = false;
+          });
+          showSnackBar(context, exception.toString(), isError: true);
+      }
+    }
   }
 
   getCheckBox(String title, bool value, Function(bool?) onChange,

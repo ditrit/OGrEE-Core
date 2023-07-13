@@ -35,6 +35,7 @@ class _MyAppState extends State<MyApp> {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+        // debugShowCheckedModeBanner: false,
         title: 'OGrEE App',
         locale: _locale,
         localizationsDelegates: AppLocalizations.localizationsDelegates,

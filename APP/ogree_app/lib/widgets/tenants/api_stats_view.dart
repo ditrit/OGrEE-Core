@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:ogree_app/common/api_backend.dart';
+import 'package:ogree_app/common/definitions.dart';
+import 'package:ogree_app/common/snackbar.dart';
 import 'package:ogree_app/pages/results_page.dart';
 
 // Define a stateful widget that displays API usage statistics for a given tenant
@@ -28,9 +30,25 @@ class _ApiStatsViewState extends State<ApiStatsView> {
           // If the statistics data is still being fetched, show a loading indicator
           if (_tenantStats == null) {
             return const Center(child: CircularProgressIndicator());
+          } else if (_tenantStats!.isEmpty) {
+            return Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(
+                  Icons.warning_rounded,
+                  size: 50,
+                  color: Colors.grey.shade600,
+                ),
+                Padding(
+                  padding: const EdgeInsets.only(top: 16),
+                  child: Text(
+                      AppLocalizations.of(context)!.noObjectsFound + " :("),
+                ),
+              ],
+            );
           }
           // If the statistics data is available and not empty, display it
-          else if (_tenantStats!.isNotEmpty) {
+          else {
             return Theme(
                 data: ThemeData(
                   cardTheme: const CardTheme(
@@ -61,26 +79,34 @@ class _ApiStatsViewState extends State<ApiStatsView> {
                   ),
                 ));
           }
-          // If the statistics data is empty, display a message
-          else {
-            return Text(localeMsg.noProjects);
-          }
         });
   }
 
   getTenantStats() async {
     // Fetch the statistics data from the tenant's API backend
-    _tenantStats = await fetchTenantStats();
+    Result result = await fetchTenantStats();
+    switch (result) {
+      case Success(value: final value):
+        _tenantStats = value;
+      case Failure(exception: final exception):
+        showSnackBar(context, exception.toString(), isError: true);
+        _tenantStats = {};
+    }
 
     // Fetch additional version information about the tenant's API
-    Map<String, dynamic> versionStats = await fetchTenantApiVersion();
-
-    for (var key in versionStats.keys) {
-      if (key.contains("Build")) {
-        _tenantStats!["API$key"] = versionStats[key];
-      } else {
-        _tenantStats![key] = versionStats[key];
-      }
+    result = await fetchTenantApiVersion();
+    switch (result) {
+      case Success(value: final value):
+        Map<String, dynamic> versionStats = value;
+        for (var key in versionStats.keys) {
+          if (key.contains("Build")) {
+            _tenantStats!["API$key"] = versionStats[key];
+          } else {
+            _tenantStats![key] = versionStats[key];
+          }
+        }
+      case Failure(exception: final exception):
+        showSnackBar(context, exception.toString());
     }
   }
 }

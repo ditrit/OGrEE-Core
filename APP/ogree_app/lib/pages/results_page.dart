@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/foundation.dart' show kIsWeb;
-import 'package:ogree_app/common/constants.dart';
+import 'package:ogree_app/common/definitions.dart';
 import 'package:ogree_app/common/snackbar.dart';
 import 'package:ogree_app/common/theme.dart';
 import 'package:universal_html/html.dart' as html;
@@ -111,6 +111,32 @@ class _ResultsPageState extends State<ResultsPage> {
         future: _data == null ? getData() : null,
         builder: (context, _) {
           if (_data != null) {
+            if (_data!.isEmpty) {
+              return SizedBox(
+                height: MediaQuery.of(context).size.height > 205
+                    ? MediaQuery.of(context).size.height - 205
+                    : MediaQuery.of(context).size.height,
+                child: Card(
+                  margin: const EdgeInsets.all(0.1),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(
+                        Icons.warning_rounded,
+                        size: 50,
+                        color: Colors.grey.shade600,
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.only(top: 16),
+                        child: Text(
+                            AppLocalizations.of(context)!.noObjectsFound +
+                                " :("),
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            }
             return SingleChildScrollView(
               padding: EdgeInsets.zero,
               child: PaginatedDataTable(
@@ -165,7 +191,15 @@ class _ResultsPageState extends State<ResultsPage> {
     if (widget.namespace == Namespace.Test.name) {
       _data = getSampleData();
     } else {
-      _data = await fetchAttributes();
+      final result = await fetchAttributes();
+      switch (result) {
+        case Success(value: final value):
+          _data = value;
+        case Failure(exception: final exception):
+          showSnackBar(context, exception.toString(), isError: true);
+          _data = {};
+          return;
+      }
     }
     getAllAttributes(_data!);
     applyMathFunctions(_data!); // Calculate sum and average

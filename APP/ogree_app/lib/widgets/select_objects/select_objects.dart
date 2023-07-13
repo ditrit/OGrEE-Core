@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:ogree_app/common/constants.dart';
+import 'package:ogree_app/common/definitions.dart';
 import 'package:ogree_app/common/popup_dialog.dart';
 import 'package:ogree_app/common/theme.dart';
 import 'package:ogree_app/pages/select_page.dart';
@@ -46,7 +46,7 @@ class _SelectObjectsState extends State<SelectObjects> {
             return _Unfocus(
               child: Card(
                 margin: const EdgeInsets.all(0.1),
-                child: appController.rootNode.children.length <= 0
+                child: appController.rootNode.children.isEmpty
                     ? Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
