@@ -21,7 +21,7 @@ class UserView extends StatefulWidget {
 }
 
 class _UserViewState extends State<UserView> {
-  List<User> _users = [];
+  List<User>? _users;
   late final AppController appController = AppController();
   bool _loadUsers = true;
   List<User> selectedUsers = [];
@@ -33,8 +33,24 @@ class _UserViewState extends State<UserView> {
     return FutureBuilder(
         future: _loadUsers ? getUsers() : null,
         builder: (context, _) {
-          if (_users.isEmpty) {
+          if (_users == null) {
             return const Center(child: CircularProgressIndicator());
+          } else if (_users!.isEmpty) {
+            return Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(
+                  Icons.warning_rounded,
+                  size: 50,
+                  color: Colors.grey.shade600,
+                ),
+                Padding(
+                  padding: const EdgeInsets.only(top: 16),
+                  child: Text(
+                      AppLocalizations.of(context)!.noObjectsFound + " :("),
+                ),
+              ],
+            );
           }
           _loadUsers = false;
           return Theme(
@@ -128,7 +144,7 @@ class _UserViewState extends State<UserView> {
                     ),
                   ),
                 ],
-                rowsPerPage: _users.length >= 6 ? 6 : _users.length,
+                rowsPerPage: _users!.length >= 6 ? 6 : _users!.length,
                 columns: const [
                   DataColumn(
                       label: Text(
@@ -146,7 +162,7 @@ class _UserViewState extends State<UserView> {
                     style: TextStyle(fontWeight: FontWeight.w600),
                   ))
                 ],
-                source: _DataSource(context, _users, onUserSelected),
+                source: _DataSource(context, _users!, onUserSelected),
               ),
             ),
           );
@@ -160,6 +176,7 @@ class _UserViewState extends State<UserView> {
         _users = value;
       case Failure(exception: final exception):
         showSnackBar(context, exception.toString(), isError: true);
+        _users = [];
     }
   }
 
@@ -167,9 +184,9 @@ class _UserViewState extends State<UserView> {
     if (index < 0) {
       selectedUsers = [];
     } else if (value) {
-      selectedUsers.add(_users[index]);
+      selectedUsers.add(_users![index]);
     } else {
-      selectedUsers.remove(_users[index]);
+      selectedUsers.remove(_users![index]);
     }
   }
 }
