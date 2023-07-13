@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:ogree_app/common/api_backend.dart';
 import 'package:ogree_app/common/appbar.dart';
+import 'package:ogree_app/common/definitions.dart';
 import 'package:ogree_app/common/popup_dialog.dart';
+import 'package:ogree_app/common/snackbar.dart';
 import 'package:ogree_app/models/project.dart';
 import 'package:ogree_app/models/tenant.dart';
 import 'package:ogree_app/pages/select_page.dart';
@@ -89,9 +91,23 @@ class _ProjectsPageState extends State<ProjectsPage> {
 
   getProjectData() async {
     if (widget.isTenantMode) {
-      _tenants = await fetchTenants();
+      final result = await fetchTenants();
+      switch (result) {
+        case Success(value: final value):
+          _tenants = value;
+        case Failure(exception: final exception):
+          showSnackBar(context, exception.toString(), isError: true);
+          _tenants = [];
+      }
     } else {
-      _projects = await fetchProjects(widget.userEmail);
+      final result = await fetchProjects(widget.userEmail);
+      switch (result) {
+        case Success(value: final value):
+          _projects = value;
+        case Failure(exception: final exception):
+          showSnackBar(context, exception.toString(), isError: true);
+          _projects = [];
+      }
     }
   }
 

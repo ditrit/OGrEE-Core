@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:ogree_app/common/api_backend.dart';
 import 'package:ogree_app/common/appbar.dart';
+import 'package:ogree_app/common/definitions.dart';
 import 'package:ogree_app/widgets/projects/project_popup.dart';
 import 'package:ogree_app/common/snackbar.dart';
 import 'package:ogree_app/models/project.dart';
@@ -219,22 +220,23 @@ class _SelectPageState extends State<SelectPage> with TickerProviderStateMixin {
 
   saveProjectCallback(String userInput, Project project, bool isCreate,
       Function? callback) async {
-    String response;
+    Result result;
     project.name = userInput;
     if (isCreate) {
-      response = await createProject(project);
+      result = await createProject(project);
     } else {
-      response = await modifyProject(project);
+      result = await modifyProject(project);
     }
-    if (response == "") {
-      Navigator.of(context).push(
-        MaterialPageRoute(
-          builder: (context) =>
-              ProjectsPage(userEmail: widget.userEmail, isTenantMode: false),
-        ),
-      );
-    } else {
-      showSnackBar(context, response, isError: true);
+    switch (result) {
+      case Success():
+        Navigator.of(context).push(
+          MaterialPageRoute(
+            builder: (context) =>
+                ProjectsPage(userEmail: widget.userEmail, isTenantMode: false),
+          ),
+        );
+      case Failure(exception: final exception):
+        showSnackBar(context, exception.toString(), isError: true);
     }
   }
 }

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:ogree_app/common/api_backend.dart';
+import 'package:ogree_app/common/definitions.dart';
 import 'package:ogree_app/common/snackbar.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:ogree_app/common/theme.dart';
@@ -60,16 +61,19 @@ class _DomainPopupState extends State<DomainPopup>
   }
 
   getDomain(AppLocalizations localeMsg) async {
-    domain = await fetchDomain(widget.domainId!);
-    if (domain == null) {
-      showSnackBar(context, localeMsg.noDomain, isError: true);
-      Navigator.of(context).pop();
-      return;
+    final result = await fetchDomain(widget.domainId!);
+    switch (result) {
+      case Success(value: final value):
+        domain = value;
+        domainId = domain!.parent == ""
+            ? domain!.name
+            : "${domain!.parent}.${domain!.name}";
+        _localColor = Color(int.parse("0xFF${domain!.color}"));
+      case Failure():
+        showSnackBar(context, localeMsg.noDomain, isError: true);
+        Navigator.of(context).pop();
+        return;
     }
-    domainId = domain!.parent == ""
-        ? domain!.name
-        : "${domain!.parent}.${domain!.name}";
-    _localColor = Color(int.parse("0xFF${domain!.color}"));
   }
 
   DomainForm(AppLocalizations localeMsg) {
@@ -156,18 +160,20 @@ class _DomainPopupState extends State<DomainPopup>
                                   setState(() {
                                     _isLoadingDelete = true;
                                   });
-                                  var response =
+                                  var result =
                                       await removeObject(domainId!, "domains");
-                                  if (response == "") {
-                                    widget.parentCallback();
-                                    showSnackBar(context, localeMsg.deleteOK);
-                                    Navigator.of(context).pop();
-                                  } else {
-                                    setState(() {
-                                      _isLoadingDelete = false;
-                                    });
-                                    showSnackBar(context, response,
-                                        isError: true);
+                                  switch (result) {
+                                    case Success():
+                                      widget.parentCallback();
+                                      showSnackBar(context, localeMsg.deleteOK);
+                                      Navigator.of(context).pop();
+                                    case Failure(exception: final exception):
+                                      setState(() {
+                                        _isLoadingDelete = false;
+                                      });
+                                      showSnackBar(
+                                          context, exception.toString(),
+                                          isError: true);
                                   }
                                 }
                               },
@@ -199,14 +205,21 @@ class _DomainPopupState extends State<DomainPopup>
                               widget.parentCallback();
                               Navigator.of(context).pop();
                             } else {
-                              var response = await createBulkFile(
+                              var result = await createBulkFile(
                                   _loadedFile!.bytes!, "domains");
-                              setState(() {
-                                _loadFileResult =
-                                    response.replaceAll(",", ",\n");
-                                _loadFileResult = _loadFileResult!
-                                    .substring(1, _loadFileResult!.length - 1);
-                              });
+                              switch (result) {
+                                case Success(value: final value):
+                                  setState(() {
+                                    _loadFileResult =
+                                        value.replaceAll(",", ",\n");
+                                    _loadFileResult = _loadFileResult!
+                                        .substring(
+                                            1, _loadFileResult!.length - 1);
+                                  });
+                                case Failure(exception: final exception):
+                                  showSnackBar(context, exception.toString(),
+                                      isError: true);
+                              }
                             }
                           } else {
                             if (_formKey.currentState!.validate()) {
@@ -219,24 +232,26 @@ class _DomainPopupState extends State<DomainPopup>
                                   _domainColor!,
                                   _domainDescription!,
                                   _domainParent!);
-                              String response;
+                              Result result;
                               if (_isEdit) {
-                                response =
+                                result =
                                     await updateDomain(domainId!, newDomain);
                               } else {
-                                response = await createDomain(newDomain);
+                                result = await createDomain(newDomain);
                               }
-                              if (response == "") {
-                                widget.parentCallback();
-                                showSnackBar(context,
-                                    "${_isEdit ? localeMsg.modifyOK : localeMsg.createOK} 🥳",
-                                    isSuccess: true);
-                                Navigator.of(context).pop();
-                              } else {
-                                setState(() {
-                                  _isLoading = false;
-                                });
-                                showSnackBar(context, response, isError: true);
+                              switch (result) {
+                                case Success():
+                                  widget.parentCallback();
+                                  showSnackBar(context,
+                                      "${_isEdit ? localeMsg.modifyOK : localeMsg.createOK} 🥳",
+                                      isSuccess: true);
+                                  Navigator.of(context).pop();
+                                case Failure(exception: final exception):
+                                  setState(() {
+                                    _isLoading = false;
+                                  });
+                                  showSnackBar(context, exception.toString(),
+                                      isError: true);
                               }
                             }
                           }

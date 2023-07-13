@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:ogree_app/common/api_backend.dart';
+import 'package:ogree_app/common/definitions.dart';
 import 'package:ogree_app/common/snackbar.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:ogree_app/common/theme.dart';
@@ -58,7 +59,8 @@ class _UserPopupState extends State<UserPopup> with TickerProviderStateMixin {
               margin: const EdgeInsets.symmetric(horizontal: 10),
               decoration: PopupDecoration,
               child: Padding(
-                padding: EdgeInsets.fromLTRB(_isSmallDisplay ? 20 : 40, 8, _isSmallDisplay ? 20 : 40, 15),
+                padding: EdgeInsets.fromLTRB(_isSmallDisplay ? 20 : 40, 8,
+                    _isSmallDisplay ? 20 : 40, 15),
                 child: Material(
                   color: Colors.white,
                   child: Form(
@@ -135,13 +137,22 @@ class _UserPopupState extends State<UserPopup> with TickerProviderStateMixin {
                                       widget.parentCallback();
                                       Navigator.of(context).pop();
                                     } else {
-                                      var response = await createBulkFile(
+                                      var result = await createBulkFile(
                                           _loadedFile!.bytes!, "users");
-                                      setState(() {
-                                        _loadFileResult = response
-                                            .replaceAll("},", "},\n> ")
-                                            .replaceFirst("{", ">  ");
-                                      });
+                                      switch (result) {
+                                        case Success(value: final value):
+                                          setState(() {
+                                            _loadFileResult = value
+                                                .replaceAll("},", "},\n> ")
+                                                .replaceFirst("{", ">  ");
+                                          });
+                                        case Failure(
+                                            exception: final exception
+                                          ):
+                                          showSnackBar(
+                                              context, exception.toString(),
+                                              isError: true);
+                                      }
                                     }
                                   } else {
                                     if (_formKey.currentState!.validate()) {
@@ -218,9 +229,17 @@ class _UserPopupState extends State<UserPopup> with TickerProviderStateMixin {
   }
 
   getDomains() async {
-    var list = await fetchObjectsTree(onlyDomain: true, isTenantMode: true);
-    domainList =
-        list[0].values.reduce((value, element) => List.from(value + element));
+    var result = await fetchObjectsTree(onlyDomain: true, isTenantMode: true);
+    switch (result) {
+      case Success(value: final listValue):
+        domainList = listValue[0]
+            .values
+            .reduce((value, element) => List.from(value + element));
+      case Failure(exception: final exception):
+        showSnackBar(context, exception.toString(), isError: true);
+        return;
+    }
+
     if (!_isEdit) {
       if (domainList!.isNotEmpty) {
         domainList!.add("*");
@@ -426,7 +445,8 @@ class _UserPopupState extends State<UserPopup> with TickerProviderStateMixin {
               ),
             ),
             Padding(
-              padding: EdgeInsets.symmetric(horizontal: _isSmallDisplay ? 0 : 16.0),
+              padding:
+                  EdgeInsets.symmetric(horizontal: _isSmallDisplay ? 0 : 16.0),
               child: Icon(
                 Icons.arrow_forward,
                 color: Colors.blue.shade600,
@@ -440,7 +460,8 @@ class _UserPopupState extends State<UserPopup> with TickerProviderStateMixin {
                   borderRadius: BorderRadius.circular(12.0),
                 ),
                 child: Padding(
-                  padding:  EdgeInsets.symmetric(horizontal: _isSmallDisplay ? 6 : 12.0),
+                  padding: EdgeInsets.symmetric(
+                      horizontal: _isSmallDisplay ? 6 : 12.0),
                   child: DropdownButton<String>(
                     borderRadius: BorderRadius.circular(12.0),
                     underline: Container(),

@@ -1,6 +1,7 @@
 import 'package:flutter/widgets.dart';
 import 'package:flutter_fancy_tree_view/flutter_fancy_tree_view.dart';
 import 'package:ogree_app/common/api_backend.dart';
+import 'package:ogree_app/common/definitions.dart';
 import 'package:ogree_app/common/theme.dart';
 
 bool isSmallDisplay = false;
@@ -29,20 +30,25 @@ class AppController with ChangeNotifier {
       bool isTenantMode = false}) async {
     if (_isInitialized && !reload) return;
     final rootNode = TreeNode(id: kRootId);
-    if (onlyDomain) {
-      fetchedData = (await fetchObjectsTree(
-              dateRange: dateRange,
-              onlyDomain: true,
-              isTenantMode: isTenantMode))
-          .first;
-      print(fetchedData);
-    } else if (isTest) {
+
+    if (isTest) {
       fetchedData = kDataSample;
       fetchedCategories = kDataSampleCategories;
     } else {
-      var resp = await fetchObjectsTree(dateRange: dateRange);
-      fetchedData = resp[0];
-      fetchedCategories = resp[1];
+      var result;
+      if (onlyDomain) {
+        result = await fetchObjectsTree(
+            dateRange: dateRange, onlyDomain: true, isTenantMode: isTenantMode);
+      } else {
+        result = await fetchObjectsTree(dateRange: dateRange);
+      }
+      switch (result) {
+        case Success(value: final listValue):
+          fetchedData = listValue[0];
+          fetchedCategories = listValue[1] ?? {};
+        case Failure(exception: final exception):
+          print(exception);
+      }
     }
 
     if (_isInitialized && reload) {

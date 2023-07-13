@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:ogree_app/common/api_backend.dart';
+import 'package:ogree_app/common/definitions.dart';
 import 'package:ogree_app/common/popup_dialog.dart';
+import 'package:ogree_app/common/snackbar.dart';
 import 'package:ogree_app/common/theme.dart';
 import 'package:ogree_app/models/user.dart';
 import 'package:ogree_app/pages/results_page.dart';
@@ -152,7 +154,13 @@ class _UserViewState extends State<UserView> {
   }
 
   getUsers() async {
-    _users = await fetchApiUsers();
+    final result = await fetchApiUsers();
+    switch (result) {
+      case Success(value: final value):
+        _users = value;
+      case Failure(exception: final exception):
+        showSnackBar(context, exception.toString(), isError: true);
+    }
   }
 
   onUserSelected(int index, bool value) {

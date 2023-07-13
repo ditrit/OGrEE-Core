@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:ogree_app/common/api_backend.dart';
+import 'package:ogree_app/common/definitions.dart';
 import 'package:ogree_app/common/snackbar.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:ogree_app/common/theme.dart';
@@ -192,19 +193,21 @@ class _CreateServerPopupState extends State<CreateServerPopup> {
                                   } else {
                                     serverInfo['password'] = _sshPassword!;
                                   }
-                                  var response =
+                                  final result =
                                       await createBackendServer(serverInfo);
-                                  if (response == "") {
-                                    widget.parentCallback();
-                                    showSnackBar(context, localeMsg.createOK,
-                                        isSuccess: true);
-                                    Navigator.of(context).pop();
-                                  } else {
-                                    setState(() {
-                                      _isLoading = false;
-                                    });
-                                    showSnackBar(context, response,
-                                        isError: true);
+                                  switch (result) {
+                                    case Success():
+                                      widget.parentCallback();
+                                      showSnackBar(context, localeMsg.createOK,
+                                          isSuccess: true);
+                                      Navigator.of(context).pop();
+                                    case Failure(exception: final exception):
+                                      setState(() {
+                                        _isLoading = false;
+                                      });
+                                      showSnackBar(
+                                          context, exception.toString(),
+                                          isError: true);
                                   }
                                 }
                               },

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:ogree_app/common/api_backend.dart';
+import 'package:ogree_app/common/definitions.dart';
 import 'package:ogree_app/common/snackbar.dart';
 import 'package:ogree_app/pages/login_page.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
@@ -191,21 +192,22 @@ class _ResetPageState extends State<ResetPage> {
     );
   }
 
-  resetPassword(AppLocalizations localeMsg) {
+  resetPassword(AppLocalizations localeMsg) async {
     if (_formKey.currentState!.validate()) {
       _formKey.currentState!.save();
       if (_password != _confirmPassword) {
         showSnackBar(context, localeMsg.passwordNoMatch, isError: true);
         return;
       }
-      userResetPassword(_password!, _token!, userUrl: _apiUrl)
-          .then((value) => value == ""
-              ? resetSucces(localeMsg)
-              : showSnackBar(context, value, isError: true))
-          .onError((error, stackTrace) {
-        print(error);
-        showSnackBar(context, error.toString().trim(), isError: true);
-      });
+      final result =
+          await userResetPassword(_password!, _token!, userUrl: _apiUrl);
+      switch (result) {
+        case Success():
+          resetSucces(localeMsg);
+        case Failure(exception: final exception):
+          print(exception);
+          showSnackBar(context, exception.toString().trim(), isError: true);
+      }
     }
   }
 

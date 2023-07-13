@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:ogree_app/common/api_backend.dart';
+import 'package:ogree_app/common/definitions.dart';
 import 'package:ogree_app/common/popup_dialog.dart';
 import 'package:ogree_app/common/snackbar.dart';
 import 'package:ogree_app/common/theme.dart';
@@ -190,15 +191,19 @@ class _DeleteDialogState extends State<DeleteDialog> {
                       onPressed: () async {
                         setState(() => _isLoading = true);
                         for (var obj in widget.objName) {
-                          String response;
+                          Result result;
                           if (widget.objType == "tenants") {
-                            response = await deleteTenant(obj);
+                            result = await deleteTenant(obj);
                           } else {
-                            response = await removeObject(obj, widget.objType);
+                            result = await removeObject(obj, widget.objType);
                           }
-                          if (response != "") {
-                            showSnackBar(context, "Error: " + response);
-                            return;
+                          switch (result) {
+                            case Success():
+                              break;
+                            case Failure(exception: final exception):
+                              showSnackBar(context, "Error: $exception");
+                              setState(() => _isLoading = false);
+                              return;
                           }
                         }
                         setState(() => _isLoading = false);

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:ogree_app/common/api_backend.dart';
+import 'package:ogree_app/common/definitions.dart';
 import 'package:ogree_app/common/theme.dart';
 
 import '../common/snackbar.dart';
@@ -84,19 +85,19 @@ class _ChangePasswordPopupState extends State<ChangePasswordPopup> {
                                 setState(() {
                                   _isLoading = true;
                                 });
-                                var response;
-                                response = await changeUserPassword(
+                                final response = await changeUserPassword(
                                     _oldPassword!, _newPassword!);
-                                if (response == "") {
-                                  showSnackBar(context, localeMsg.modifyOK,
-                                      isSuccess: true);
-                                  Navigator.of(context).pop();
-                                } else {
-                                  setState(() {
-                                    _isLoading = false;
-                                  });
-                                  showSnackBar(context, response,
-                                      isError: true);
+                                switch (response) {
+                                  case Success():
+                                    showSnackBar(context, localeMsg.modifyOK,
+                                        isSuccess: true);
+                                    Navigator.of(context).pop();
+                                  case Failure(exception: final exception):
+                                    setState(() {
+                                      _isLoading = false;
+                                    });
+                                    showSnackBar(context, exception.toString(),
+                                        isError: true);
                                 }
                               } catch (e) {
                                 showSnackBar(context, e.toString(),

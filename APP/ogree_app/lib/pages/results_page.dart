@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/foundation.dart' show kIsWeb;
-import 'package:ogree_app/common/constants.dart';
+import 'package:ogree_app/common/definitions.dart';
 import 'package:ogree_app/common/snackbar.dart';
 import 'package:ogree_app/common/theme.dart';
 import 'package:universal_html/html.dart' as html;
@@ -165,7 +165,13 @@ class _ResultsPageState extends State<ResultsPage> {
     if (widget.namespace == Namespace.Test.name) {
       _data = getSampleData();
     } else {
-      _data = await fetchAttributes();
+      final result = await fetchAttributes();
+      switch (result) {
+        case Success(value: final value):
+          _data = value;
+        case Failure(exception: final exception):
+          showSnackBar(context, exception.toString(), isError: true);
+      }
     }
     getAllAttributes(_data!);
     applyMathFunctions(_data!); // Calculate sum and average
