@@ -2,6 +2,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:ogree_app/common/api_backend.dart';
+import 'package:ogree_app/common/definitions.dart';
 import 'package:ogree_app/common/snackbar.dart';
 import 'package:ogree_app/common/theme.dart';
 import 'package:ogree_app/models/tenant.dart';
@@ -106,20 +107,20 @@ class _LockedViewState extends State<LockedView> {
     );
   }
 
-  tryLogin(formKey) {
+  tryLogin(formKey) async {
     if (formKey.currentState!.validate()) {
       formKey.currentState!.save();
-      loginAPITenant(_email!, _password!,
-              "http://${widget.tenant.apiUrl}:${widget.tenant.apiPort}")
-          .then((value) => value != ""
-              ? widget.parentCallback()
-              : showSnackBar(
-                  context, AppLocalizations.of(context)!.invalidLogin,
-                  isError: true))
-          .onError((error, stackTrace) {
-        print(error);
-        showSnackBar(context, error.toString().trim(), isError: true);
-      });
+      final result = await loginAPITenant(_email!, _password!,
+          "http://${widget.tenant.apiUrl}:${widget.tenant.apiPort}");
+      switch (result) {
+        case Success():
+          widget.parentCallback();
+        case Failure(exception: final exception):
+          String errorMsg = exception.toString() == "Exception"
+              ? AppLocalizations.of(context)!.invalidLogin
+              : exception.toString();
+          showSnackBar(context, errorMsg, isError: true);
+      }
     }
   }
 }

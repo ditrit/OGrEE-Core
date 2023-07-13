@@ -46,7 +46,7 @@ class _SelectObjectsState extends State<SelectObjects> {
             return _Unfocus(
               child: Card(
                 margin: const EdgeInsets.all(0.1),
-                child: appController.rootNode.children.length <= 0
+                child: appController.rootNode.children.isEmpty
                     ? Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [

@@ -16,7 +16,7 @@ Future<Result<void, Exception>> loginAPITenant(
       return const Success(null);
     } else {
       print(response.statusCode);
-      return Failure(Exception(""));
+      return Failure(Exception());
     }
   } on Exception catch (e) {
     return Failure(e);

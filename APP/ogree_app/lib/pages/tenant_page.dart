@@ -182,20 +182,38 @@ class _TenantPageState extends State<TenantPage> with TickerProviderStateMixin {
               _reloadDomains = false;
             }
             if (appController.isInitialized) {
+              if (appController.rootNode.children.isEmpty) {
+                return Column(
+                  children: [
+                    Icon(
+                      Icons.warning_rounded,
+                      size: 50,
+                      color: Colors.grey.shade600,
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.only(top: 16),
+                      child: Text(
+                          AppLocalizations.of(context)!.noObjectsFound + " :("),
+                    ),
+                  ],
+                );
+              }
               return Stack(children: [
                 const CustomTreeView(isTenantMode: true),
-                _isSmallDisplay ? Container() : const Align(
-                  alignment: Alignment.topRight,
-                  child: Padding(
-                    padding: EdgeInsets.only(right: 16),
-                    child: SizedBox(
-                        width: 320,
-                        height: 116,
-                        child: Card(
-                            // color: Color.fromARGB(255, 250, 253, 255),
-                            child: SettingsView(isTenantMode: true))),
-                  ),
-                ),
+                _isSmallDisplay
+                    ? Container()
+                    : const Align(
+                        alignment: Alignment.topRight,
+                        child: Padding(
+                          padding: EdgeInsets.only(right: 16),
+                          child: SizedBox(
+                              width: 320,
+                              height: 116,
+                              child: Card(
+                                  // color: Color.fromARGB(255, 250, 253, 255),
+                                  child: SettingsView(isTenantMode: true))),
+                        ),
+                      ),
               ]);
             }
             return const Center(child: CircularProgressIndicator());

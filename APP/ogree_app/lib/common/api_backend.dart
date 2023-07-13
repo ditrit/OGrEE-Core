@@ -79,7 +79,7 @@ Future<Result<List<String>, Exception>> loginAPI(String email, String password,
       }
       return Success([data["email"].toString(), data["isTenant"] ?? ""]);
     } else {
-      return Failure(Exception(""));
+      return Failure(Exception());
     }
   } on Exception catch (e) {
     return Failure(e);

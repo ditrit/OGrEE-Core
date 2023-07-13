@@ -293,7 +293,7 @@ class _LoginPageState extends State<LoginPage> {
                 ),
               ));
         case Failure(exception: final exception):
-          String errorMsg = exception.toString() == ""
+          String errorMsg = exception.toString() == "Exception"
               ? AppLocalizations.of(context)!.invalidLogin
               : exception.toString();
           showSnackBar(context, errorMsg, isError: true);

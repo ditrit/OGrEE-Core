@@ -111,6 +111,32 @@ class _ResultsPageState extends State<ResultsPage> {
         future: _data == null ? getData() : null,
         builder: (context, _) {
           if (_data != null) {
+            if (_data!.isEmpty) {
+              return SizedBox(
+                height: MediaQuery.of(context).size.height > 205
+                    ? MediaQuery.of(context).size.height - 205
+                    : MediaQuery.of(context).size.height,
+                child: Card(
+                  margin: const EdgeInsets.all(0.1),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(
+                        Icons.warning_rounded,
+                        size: 50,
+                        color: Colors.grey.shade600,
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.only(top: 16),
+                        child: Text(
+                            AppLocalizations.of(context)!.noObjectsFound +
+                                " :("),
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            }
             return SingleChildScrollView(
               padding: EdgeInsets.zero,
               child: PaginatedDataTable(
@@ -171,6 +197,8 @@ class _ResultsPageState extends State<ResultsPage> {
           _data = value;
         case Failure(exception: final exception):
           showSnackBar(context, exception.toString(), isError: true);
+          _data = {};
+          return;
       }
     }
     getAllAttributes(_data!);
