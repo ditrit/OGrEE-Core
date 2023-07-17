@@ -344,7 +344,7 @@ func SetDrawableTemplate(entity string, DrawableJson map[string]string) map[stri
 	return nil
 }
 
-func Login(user string) (*User, string, error) {
+func Login(user string, password string) (*User, string, error) {
 	var err error
 	if user == "" {
 		user, err = readline.Line("User: ")
@@ -352,11 +352,14 @@ func Login(user string) (*User, string, error) {
 			return nil, "", fmt.Errorf("readline error : %s", err.Error())
 		}
 	}
-	pass, err := readline.Password("Password: ")
-	if err != nil {
-		return nil, "", err
+	if password == "" {
+		passwordBytes, err := readline.Password("Password: ")
+		if err != nil {
+			return nil, "", err
+		}
+		password = string(passwordBytes)
 	}
-	data := map[string]any{"email": user, "password": string(pass)}
+	data := map[string]any{"email": user, "password": password}
 	rawResp, err := models.Send("POST", State.APIURL+"/api/login", "", data)
 	if err != nil {
 		return nil, "", fmt.Errorf("error sending login request : %s", err.Error())
