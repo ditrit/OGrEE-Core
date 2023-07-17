@@ -25,6 +25,19 @@ class _UserViewState extends State<UserView> {
   late final AppController appController = AppController();
   bool _loadUsers = true;
   List<User> selectedUsers = [];
+  List<User>? _filterUsers;
+  bool sort = true;
+
+  onsortColum(int columnIndex, bool ascending) {
+    print(columnIndex);
+    if (columnIndex == 1) {
+      if (ascending) {
+        _users!.sort((a, b) => a.email.compareTo(b.email));
+      } else {
+        _users!.sort((a, b) => b.email.compareTo(a.email));
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -63,20 +76,29 @@ class _UserViewState extends State<UserView> {
             child: SingleChildScrollView(
               padding: const EdgeInsets.only(right: 16, top: 0),
               child: PaginatedDataTable(
+                sortColumnIndex: 1,
+                sortAscending: sort,
                 checkboxHorizontalMargin: 0,
                 header: TextField(
+                    onChanged: (value) {
+                      setState(() {
+                        _users = _filterUsers!
+                            .where((element) => element.email.contains(value))
+                            .toList();
+                      });
+                    },
                     decoration: InputDecoration(
-                  border: InputBorder.none,
-                  isDense: true,
-                  label: isSmallDisplay ? null : Text(localeMsg.search),
-                  prefixIcon: IconButton(
-                    onPressed: () => {},
-                    tooltip: "Search",
-                    icon: const Icon(
-                      Icons.search_rounded,
-                    ),
-                  ),
-                )),
+                      border: InputBorder.none,
+                      isDense: true,
+                      label: isSmallDisplay ? null : Text(localeMsg.search),
+                      prefixIcon: IconButton(
+                        onPressed: () => {},
+                        tooltip: "Search",
+                        icon: const Icon(
+                          Icons.search_rounded,
+                        ),
+                      ),
+                    )),
                 actions: [
                   Padding(
                     padding: EdgeInsets.only(right: isSmallDisplay ? 0 : 4),
@@ -145,7 +167,7 @@ class _UserViewState extends State<UserView> {
                   ),
                 ],
                 rowsPerPage: _users!.length >= 6 ? 6 : _users!.length,
-                columns: const [
+                columns: [
                   DataColumn(
                       label: Text(
                     "Name",
@@ -153,9 +175,15 @@ class _UserViewState extends State<UserView> {
                   )),
                   DataColumn(
                       label: Text(
-                    "Email",
-                    style: TextStyle(fontWeight: FontWeight.w600),
-                  )),
+                        "Email",
+                        style: TextStyle(fontWeight: FontWeight.w600),
+                      ),
+                      onSort: (columnIndex, ascending) {
+                        setState(() {
+                          sort = !sort;
+                        });
+                        onsortColum(columnIndex, ascending);
+                      }),
                   DataColumn(
                       label: Text(
                     "Domains (roles)",
@@ -174,6 +202,7 @@ class _UserViewState extends State<UserView> {
     switch (result) {
       case Success(value: final value):
         _users = value;
+        _filterUsers = _users;
       case Failure(exception: final exception):
         showSnackBar(context, exception.toString(), isError: true);
         _users = [];
