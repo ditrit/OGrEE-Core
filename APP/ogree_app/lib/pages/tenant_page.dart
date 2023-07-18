@@ -45,7 +45,8 @@ class _TenantPageState extends State<TenantPage> with TickerProviderStateMixin {
     _isSmallDisplay = IsSmallDisplay(MediaQuery.of(context).size.width);
     return Scaffold(
         backgroundColor: const Color.fromARGB(255, 238, 238, 241),
-        appBar: myAppBar(context, widget.userEmail, isTenantMode: true),
+        appBar: myAppBar(context, widget.userEmail,
+            isTenantMode: widget.tenant != null),
         body: Padding(
           padding: const EdgeInsets.all(20.0),
           child: CustomScrollView(slivers: [
