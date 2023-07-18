@@ -236,6 +236,7 @@ class _UserPopupState extends State<UserPopup> with TickerProviderStateMixin {
             .values
             .reduce((value, element) => List.from(value + element));
       case Failure(exception: final exception):
+        Navigator.pop(context);
         showSnackBar(context, exception.toString(), isError: true);
         return;
     }

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-GetFormInputDecoration(isSmallDisplay, String labelText,
+GetFormInputDecoration(isSmallDisplay, String? labelText,
         {IconData? icon,
         Color? iconColor,
         String? prefixText,
