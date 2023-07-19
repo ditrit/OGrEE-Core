@@ -12,10 +12,17 @@ import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 import 'popups/user_popup.dart';
 
+enum UserSearchFields { Name, Email, Domain, Role }
+
 class UserView extends StatefulWidget {
-  UserView({
-    Key? key,
-  }) : super(key: key);
+  UserSearchFields searchField;
+  String? searchText;
+  Function? parentCallback;
+  UserView(
+      {super.key,
+      this.searchField = UserSearchFields.Name,
+      this.searchText,
+      this.parentCallback});
   @override
   State<UserView> createState() => _UserViewState();
 }
@@ -25,6 +32,26 @@ class _UserViewState extends State<UserView> {
   late final AppController appController = AppController();
   bool _loadUsers = true;
   List<User> selectedUsers = [];
+  List<User>? _filterUsers;
+  bool sort = true;
+  UserSearchFields _searchField = UserSearchFields.Name;
+
+  @override
+  void initState() {
+    super.initState();
+    _searchField = widget.searchField;
+    _loadUsers = true;
+  }
+
+  onsortColum(int columnIndex, bool ascending) {
+    if (columnIndex == 1) {
+      if (ascending) {
+        _users!.sort((a, b) => a.email.compareTo(b.email));
+      } else {
+        _users!.sort((a, b) => b.email.compareTo(a.email));
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -35,24 +62,7 @@ class _UserViewState extends State<UserView> {
         builder: (context, _) {
           if (_users == null) {
             return const Center(child: CircularProgressIndicator());
-          } else if (_users!.isEmpty) {
-            return Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(
-                  Icons.warning_rounded,
-                  size: 50,
-                  color: Colors.grey.shade600,
-                ),
-                Padding(
-                  padding: const EdgeInsets.only(top: 16),
-                  child: Text(
-                      AppLocalizations.of(context)!.noObjectsFound + " :("),
-                ),
-              ],
-            );
           }
-          _loadUsers = false;
           return Theme(
             data: ThemeData(
               cardTheme: const CardTheme(
@@ -63,26 +73,82 @@ class _UserViewState extends State<UserView> {
             child: SingleChildScrollView(
               padding: const EdgeInsets.only(right: 16, top: 0),
               child: PaginatedDataTable(
+                sortColumnIndex: 1,
+                sortAscending: sort,
                 checkboxHorizontalMargin: 0,
-                header: TextField(
-                    decoration: InputDecoration(
-                  border: InputBorder.none,
-                  isDense: true,
-                  label: isSmallDisplay ? null : Text(localeMsg.search),
-                  prefixIcon: IconButton(
-                    onPressed: () => {},
-                    tooltip: "Search",
-                    icon: const Icon(
-                      Icons.search_rounded,
+                header: Wrap(
+                  crossAxisAlignment: WrapCrossAlignment.center,
+                  children: [
+                    SizedBox(
+                      height: isSmallDisplay ? 30 : 35,
+                      width: isSmallDisplay ? 115 : 145,
+                      child: DropdownButtonFormField<UserSearchFields>(
+                        decoration: GetFormInputDecoration(
+                          isSmallDisplay,
+                          null,
+                          icon: Icons.search_rounded,
+                          contentPadding: isSmallDisplay
+                              ? const EdgeInsets.only(
+                                  top: 0,
+                                  bottom: 15,
+                                  left: 12,
+                                  right: 5,
+                                )
+                              : const EdgeInsets.only(
+                                  top: 3.0,
+                                  bottom: 12.0,
+                                  left: 20.0,
+                                  right: 14.0,
+                                ),
+                        ),
+                        value: _searchField,
+                        items: UserSearchFields.values
+                            .map<DropdownMenuItem<UserSearchFields>>(
+                                (UserSearchFields value) {
+                          return DropdownMenuItem<UserSearchFields>(
+                            value: value,
+                            child: Text(
+                              value.name,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          );
+                        }).toList(),
+                        onChanged: (UserSearchFields? value) {
+                          setState(() {
+                            _searchField = value!;
+                          });
+                        },
+                      ),
                     ),
-                  ),
-                )),
+                    const SizedBox(width: 8),
+                    SizedBox(
+                      width: 150,
+                      child: TextFormField(
+                          textAlignVertical: TextAlignVertical.center,
+                          initialValue: widget.searchText,
+                          onChanged: (value) {
+                            setState(() {
+                              _users = searchUsers(value);
+                            });
+                          },
+                          decoration: InputDecoration(
+                            border: InputBorder.none,
+                            isDense: true,
+                            label:
+                                isSmallDisplay ? null : Text(localeMsg.search),
+                            prefixIcon: isSmallDisplay
+                                ? Icon(Icons.search_rounded)
+                                : null,
+                          )),
+                    ),
+                  ],
+                ),
                 actions: [
                   Padding(
                     padding: EdgeInsets.only(right: isSmallDisplay ? 0 : 4),
                     child: IconButton(
                         padding: EdgeInsets.zero,
-                        constraints: BoxConstraints(),
+                        constraints: const BoxConstraints(),
                         splashRadius: isSmallDisplay ? 16 : 23,
                         onPressed: () => selectedUsers.isNotEmpty
                             ? showCustomPopup(
@@ -106,7 +172,7 @@ class _UserViewState extends State<UserView> {
                     child: IconButton(
                         splashRadius: isSmallDisplay ? 16 : 23,
                         // iconSize: 14,
-                        onPressed: () => selectedUsers.length > 0
+                        onPressed: () => selectedUsers.isNotEmpty
                             ? showCustomPopup(
                                 context,
                                 DeleteDialog(
@@ -128,35 +194,58 @@ class _UserViewState extends State<UserView> {
                           color: Colors.red.shade900,
                         )),
                   ),
-                  Padding(
-                    padding: const EdgeInsets.only(right: 6.0),
-                    child: ElevatedButton.icon(
-                      onPressed: () => showCustomPopup(context,
-                          UserPopup(parentCallback: () {
-                        setState(() {
-                          _loadUsers = true;
-                        });
-                      })),
-                      icon: const Icon(Icons.add, color: Colors.white),
-                      label: Text(isSmallDisplay
-                          ? localeMsg.create
-                          : "${localeMsg.create} ${localeMsg.user}"),
-                    ),
-                  ),
+                  isSmallDisplay
+                      ? IconButton(
+                          padding: EdgeInsets.zero,
+                          constraints: const BoxConstraints(),
+                          splashRadius: 16,
+                          onPressed: () => showCustomPopup(context,
+                              UserPopup(parentCallback: () {
+                            setState(() {
+                              _loadUsers = true;
+                            });
+                          })),
+                          icon: Icon(
+                            Icons.add,
+                            color: Colors.blue.shade900,
+                          ),
+                        )
+                      : Padding(
+                          padding: const EdgeInsets.only(right: 6.0),
+                          child: ElevatedButton.icon(
+                            onPressed: () => showCustomPopup(context,
+                                UserPopup(parentCallback: () {
+                              setState(() {
+                                _loadUsers = true;
+                              });
+                            })),
+                            icon: const Icon(Icons.add, color: Colors.white),
+                            label:
+                                Text("${localeMsg.create} ${localeMsg.user}"),
+                          ),
+                        ),
                 ],
-                rowsPerPage: _users!.length >= 6 ? 6 : _users!.length,
-                columns: const [
-                  DataColumn(
+                rowsPerPage: _users!.isEmpty
+                    ? 1
+                    : (_users!.length >= 6 ? 6 : _users!.length),
+                columns: [
+                  const DataColumn(
                       label: Text(
                     "Name",
                     style: TextStyle(fontWeight: FontWeight.w600),
                   )),
                   DataColumn(
-                      label: Text(
-                    "Email",
-                    style: TextStyle(fontWeight: FontWeight.w600),
-                  )),
-                  DataColumn(
+                      label: const Text(
+                        "Email",
+                        style: TextStyle(fontWeight: FontWeight.w600),
+                      ),
+                      onSort: (columnIndex, ascending) {
+                        setState(() {
+                          sort = !sort;
+                        });
+                        onsortColum(columnIndex, ascending);
+                      }),
+                  const DataColumn(
                       label: Text(
                     "Domains (roles)",
                     style: TextStyle(fontWeight: FontWeight.w600),
@@ -174,9 +263,51 @@ class _UserViewState extends State<UserView> {
     switch (result) {
       case Success(value: final value):
         _users = value;
+        _filterUsers = _users;
+        if (widget.searchText != null && widget.searchText!.isNotEmpty) {
+          // search filter set by parent widget
+          _users = searchUsers(widget.searchText!);
+          // let him know it has been applied
+          widget.parentCallback!();
+        }
       case Failure(exception: final exception):
         showSnackBar(context, exception.toString(), isError: true);
         _users = [];
+    }
+    _loadUsers = false;
+  }
+
+  searchUsers(String searchText) {
+    if (searchText.trim().isEmpty) {
+      return _filterUsers!.toList();
+    }
+    switch (_searchField) {
+      case UserSearchFields.Name:
+        return _filterUsers!
+            .where((element) => element.name.contains(searchText))
+            .toList();
+      case UserSearchFields.Email:
+        return _filterUsers!
+            .where((element) => element.email.contains(searchText))
+            .toList();
+      case UserSearchFields.Domain:
+        return _filterUsers!.where((element) {
+          for (var domain in element.roles.keys) {
+            if (domain.contains(searchText) || domain == allDomainsConvert) {
+              return true;
+            }
+          }
+          return false;
+        }).toList();
+      case UserSearchFields.Role:
+        return _filterUsers!.where((element) {
+          for (var role in element.roles.values) {
+            if (role.contains(searchText)) {
+              return true;
+            }
+          }
+          return false;
+        }).toList();
     }
   }
 
@@ -241,8 +372,7 @@ class _DataSource extends DataTableSource {
       row.add(label(user.email, fontWeight: FontWeight.w500));
       String domainStr = "";
       for (var domain in user.roles.keys) {
-        domainStr =
-            "$domainStr ${domain == "*" ? "All domains" : domain} (${user.roles[domain]});";
+        domainStr = "$domainStr $domain (${user.roles[domain]});";
       }
       row.add(label(domainStr));
       children.add(CustomRow(row));
