@@ -5,7 +5,13 @@ GetFormInputDecoration(isSmallDisplay, String? labelText,
         Color? iconColor,
         String? prefixText,
         String? suffixText,
-        String? hint}) =>
+        String? hint,
+        EdgeInsets? contentPadding = const EdgeInsets.only(
+          top: 3.0,
+          bottom: 12.0,
+          left: 20.0,
+          right: 14.0,
+        )}) =>
     InputDecoration(
       prefixIcon: isSmallDisplay
           ? null
@@ -26,12 +32,7 @@ GetFormInputDecoration(isSmallDisplay, String? labelText,
       ),
       filled: true,
       fillColor: const Color.fromARGB(255, 248, 247, 247),
-      contentPadding: const EdgeInsets.only(
-        top: 3.0,
-        bottom: 12.0,
-        left: 20.0,
-        right: 14.0,
-      ),
+      contentPadding: contentPadding,
       border: UnderlineInputBorder(
         borderRadius: BorderRadius.circular(12.0),
         borderSide: BorderSide.none,

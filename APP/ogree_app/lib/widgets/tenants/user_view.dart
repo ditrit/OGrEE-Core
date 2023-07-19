@@ -80,13 +80,26 @@ class _UserViewState extends State<UserView> {
                   crossAxisAlignment: WrapCrossAlignment.center,
                   children: [
                     SizedBox(
-                      height: 35,
-                      width: 145,
+                      height: isSmallDisplay ? 30 : 35,
+                      width: isSmallDisplay ? 115 : 145,
                       child: DropdownButtonFormField<UserSearchFields>(
                         decoration: GetFormInputDecoration(
-                          false,
+                          isSmallDisplay,
                           null,
                           icon: Icons.search_rounded,
+                          contentPadding: isSmallDisplay
+                              ? const EdgeInsets.only(
+                                  top: 0,
+                                  bottom: 15,
+                                  left: 12,
+                                  right: 5,
+                                )
+                              : const EdgeInsets.only(
+                                  top: 3.0,
+                                  bottom: 12.0,
+                                  left: 20.0,
+                                  right: 14.0,
+                                ),
                         ),
                         value: _searchField,
                         items: UserSearchFields.values
@@ -94,7 +107,10 @@ class _UserViewState extends State<UserView> {
                                 (UserSearchFields value) {
                           return DropdownMenuItem<UserSearchFields>(
                             value: value,
-                            child: Text(value.name),
+                            child: Text(
+                              value.name,
+                              overflow: TextOverflow.ellipsis,
+                            ),
                           );
                         }).toList(),
                         onChanged: (UserSearchFields? value) {
@@ -108,6 +124,7 @@ class _UserViewState extends State<UserView> {
                     SizedBox(
                       width: 150,
                       child: TextFormField(
+                          textAlignVertical: TextAlignVertical.center,
                           initialValue: widget.searchText,
                           onChanged: (value) {
                             setState(() {
@@ -117,7 +134,11 @@ class _UserViewState extends State<UserView> {
                           decoration: InputDecoration(
                             border: InputBorder.none,
                             isDense: true,
-                            label: Text(localeMsg.search),
+                            label:
+                                isSmallDisplay ? null : Text(localeMsg.search),
+                            prefixIcon: isSmallDisplay
+                                ? Icon(Icons.search_rounded)
+                                : null,
                           )),
                     ),
                   ],
@@ -173,21 +194,36 @@ class _UserViewState extends State<UserView> {
                           color: Colors.red.shade900,
                         )),
                   ),
-                  Padding(
-                    padding: const EdgeInsets.only(right: 6.0),
-                    child: ElevatedButton.icon(
-                      onPressed: () => showCustomPopup(context,
-                          UserPopup(parentCallback: () {
-                        setState(() {
-                          _loadUsers = true;
-                        });
-                      })),
-                      icon: const Icon(Icons.add, color: Colors.white),
-                      label: Text(isSmallDisplay
-                          ? localeMsg.create
-                          : "${localeMsg.create} ${localeMsg.user}"),
-                    ),
-                  ),
+                  isSmallDisplay
+                      ? IconButton(
+                          padding: EdgeInsets.zero,
+                          constraints: const BoxConstraints(),
+                          splashRadius: 16,
+                          onPressed: () => showCustomPopup(context,
+                              UserPopup(parentCallback: () {
+                            setState(() {
+                              _loadUsers = true;
+                            });
+                          })),
+                          icon: Icon(
+                            Icons.add,
+                            color: Colors.blue.shade900,
+                          ),
+                        )
+                      : Padding(
+                          padding: const EdgeInsets.only(right: 6.0),
+                          child: ElevatedButton.icon(
+                            onPressed: () => showCustomPopup(context,
+                                UserPopup(parentCallback: () {
+                              setState(() {
+                                _loadUsers = true;
+                              });
+                            })),
+                            icon: const Icon(Icons.add, color: Colors.white),
+                            label:
+                                Text("${localeMsg.create} ${localeMsg.user}"),
+                          ),
+                        ),
                 ],
                 rowsPerPage: _users!.isEmpty
                     ? 1
