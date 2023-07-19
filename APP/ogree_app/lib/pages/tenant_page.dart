@@ -23,6 +23,9 @@ class TenantPage extends StatefulWidget {
 
   @override
   State<TenantPage> createState() => _TenantPageState();
+
+  static _TenantPageState? of(BuildContext context) =>
+      context.findAncestorStateOfType<_TenantPageState>();
 }
 
 class _TenantPageState extends State<TenantPage> with TickerProviderStateMixin {
@@ -31,6 +34,7 @@ class _TenantPageState extends State<TenantPage> with TickerProviderStateMixin {
   bool _isLocked = true;
   bool _reloadDomains = false;
   bool _isSmallDisplay = false;
+  String _domainSearch = "";
 
   @override
   void initState() {
@@ -128,11 +132,11 @@ class _TenantPageState extends State<TenantPage> with TickerProviderStateMixin {
         icon: Icon(Icons.info),
       ),
       Tab(
-        text: localeMsg.domain + "s",
+        text: "${localeMsg.domain}s",
         icon: const Icon(Icons.business),
       ),
       Tab(
-        text: localeMsg.user + "s",
+        text: "${localeMsg.user}s",
         icon: const Icon(Icons.person),
       ),
     ];
@@ -157,8 +161,22 @@ class _TenantPageState extends State<TenantPage> with TickerProviderStateMixin {
           : domainView(localeMsg),
       _isLocked && widget.tenant != null
           ? LockedView(tenant: widget.tenant!, parentCallback: unlockView)
-          : UserView(),
+          : (_domainSearch.isEmpty
+              ? UserView()
+              : // user view should filter with domain
+              UserView(
+                  searchField: UserSearchFields.Domain,
+                  searchText: _domainSearch,
+                  parentCallback: () => setState(() {
+                    // child calls parent to clean it once applied
+                    _domainSearch = "";
+                  }),
+                )),
     ];
+    if (_domainSearch.isNotEmpty) {
+      // switch to domain page
+      _tabController.animateTo(widget.tenant != null ? 3 : 2);
+    }
     if (widget.tenant != null) {
       views.insert(0, DockerView(tName: widget.tenant!.name));
     }
@@ -194,7 +212,7 @@ class _TenantPageState extends State<TenantPage> with TickerProviderStateMixin {
                     Padding(
                       padding: const EdgeInsets.only(top: 16),
                       child: Text(
-                          AppLocalizations.of(context)!.noObjectsFound + " :("),
+                          "${AppLocalizations.of(context)!.noObjectsFound} :("),
                     ),
                   ],
                 );
@@ -211,7 +229,6 @@ class _TenantPageState extends State<TenantPage> with TickerProviderStateMixin {
                               width: 320,
                               height: 116,
                               child: Card(
-                                  // color: Color.fromARGB(255, 250, 253, 255),
                                   child: SettingsView(isTenantMode: true))),
                         ),
                       ),
@@ -238,5 +255,12 @@ class _TenantPageState extends State<TenantPage> with TickerProviderStateMixin {
         ),
       ),
     ]);
+  }
+
+  changeToUserView(String domain) {
+    // add domain search so rebuild knows to switch to userview tab
+    setState(() {
+      _domainSearch = domain;
+    });
   }
 }

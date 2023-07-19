@@ -164,7 +164,7 @@ class _UserPopupState extends State<UserPopup> with TickerProviderStateMixin {
                                           _isLoading = true;
                                         });
 
-                                        var response;
+                                        Result response;
                                         if (_isEdit) {
                                           response = await modifyUser(
                                               widget.modifyUser!.id!, roles);
@@ -176,21 +176,25 @@ class _UserPopupState extends State<UserPopup> with TickerProviderStateMixin {
                                               roles: roles));
                                         }
 
-                                        if (response == "") {
-                                          widget.parentCallback();
-                                          showSnackBar(
-                                              context,
-                                              _isEdit
-                                                  ? localeMsg.modifyOK
-                                                  : localeMsg.createOK,
-                                              isSuccess: true);
-                                          Navigator.of(context).pop();
-                                        } else {
-                                          setState(() {
-                                            _isLoading = false;
-                                          });
-                                          showSnackBar(context, response,
-                                              isError: true);
+                                        switch (response) {
+                                          case Success():
+                                            widget.parentCallback();
+                                            showSnackBar(
+                                                context,
+                                                _isEdit
+                                                    ? localeMsg.modifyOK
+                                                    : localeMsg.createOK,
+                                                isSuccess: true);
+                                            Navigator.of(context).pop();
+                                          case Failure(
+                                              exception: final exception
+                                            ):
+                                            setState(() {
+                                              _isLoading = false;
+                                            });
+                                            showSnackBar(
+                                                context, exception.toString(),
+                                                isError: true);
                                         }
                                       } catch (e) {
                                         showSnackBar(context, e.toString(),
@@ -243,11 +247,11 @@ class _UserPopupState extends State<UserPopup> with TickerProviderStateMixin {
 
     if (!_isEdit) {
       if (domainList!.isNotEmpty) {
-        domainList!.add("*");
+        domainList!.add(allDomainsConvert);
         domainRoleRows.add(addDomainRoleRow(0));
       }
     } else {
-      domainList!.add("*");
+      domainList!.add(allDomainsConvert);
       var roles = widget.modifyUser!.roles;
       for (var i = 0; i < roles.length; i++) {
         selectedDomain.add(roles.keys.elementAt(i));

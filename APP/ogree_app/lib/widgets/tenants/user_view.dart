@@ -15,9 +15,14 @@ import 'popups/user_popup.dart';
 enum UserSearchFields { Name, Email, Domain, Role }
 
 class UserView extends StatefulWidget {
-  UserView({
-    Key? key,
-  }) : super(key: key);
+  UserSearchFields searchField;
+  String? searchText;
+  Function? parentCallback;
+  UserView(
+      {super.key,
+      this.searchField = UserSearchFields.Name,
+      this.searchText,
+      this.parentCallback});
   @override
   State<UserView> createState() => _UserViewState();
 }
@@ -31,8 +36,14 @@ class _UserViewState extends State<UserView> {
   bool sort = true;
   UserSearchFields _searchField = UserSearchFields.Name;
 
+  @override
+  void initState() {
+    super.initState();
+    _searchField = widget.searchField;
+    _loadUsers = true;
+  }
+
   onsortColum(int columnIndex, bool ascending) {
-    print(columnIndex);
     if (columnIndex == 1) {
       if (ascending) {
         _users!.sort((a, b) => a.email.compareTo(b.email));
@@ -52,7 +63,6 @@ class _UserViewState extends State<UserView> {
           if (_users == null) {
             return const Center(child: CircularProgressIndicator());
           }
-          _loadUsers = false;
           return Theme(
             data: ThemeData(
               cardTheme: const CardTheme(
@@ -97,7 +107,8 @@ class _UserViewState extends State<UserView> {
                     const SizedBox(width: 8),
                     SizedBox(
                       width: 150,
-                      child: TextField(
+                      child: TextFormField(
+                          initialValue: widget.searchText,
                           onChanged: (value) {
                             setState(() {
                               _users = searchUsers(value);
@@ -217,10 +228,17 @@ class _UserViewState extends State<UserView> {
       case Success(value: final value):
         _users = value;
         _filterUsers = _users;
+        if (widget.searchText != null && widget.searchText!.isNotEmpty) {
+          // search filter set by parent widget
+          _users = searchUsers(widget.searchText!);
+          // let him know it has been applied
+          widget.parentCallback!();
+        }
       case Failure(exception: final exception):
         showSnackBar(context, exception.toString(), isError: true);
         _users = [];
     }
+    _loadUsers = false;
   }
 
   searchUsers(String searchText) {
@@ -239,7 +257,7 @@ class _UserViewState extends State<UserView> {
       case UserSearchFields.Domain:
         return _filterUsers!.where((element) {
           for (var domain in element.roles.keys) {
-            if (domain.contains(searchText)) {
+            if (domain.contains(searchText) || domain == allDomainsConvert) {
               return true;
             }
           }
