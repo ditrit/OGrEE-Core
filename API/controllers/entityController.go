@@ -1315,10 +1315,17 @@ func LinkEntity(w http.ResponseWriter, r *http.Request) {
 	// Adjust retrieved object to recreate it
 	if isUnlink {
 		delete(data, "parentId")
+		if entityStr == "device" {
+			delete(data, "slot")
+		}
 		entityStr = "stray_object"
 	} else {
 		data["parentId"] = body["parentId"]
 		entityStr = data["category"].(string)
+		destSlot, bodyHasSlot := body["slot"]
+		if entityStr == "device" && bodyHasSlot {
+			data["slot"] = destSlot
+		}
 	}
 	if newName != "" {
 		data["name"] = newName
