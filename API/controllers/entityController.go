@@ -1317,6 +1317,7 @@ func LinkEntity(w http.ResponseWriter, r *http.Request) {
 		delete(data, "parentId")
 		if entityStr == "device" {
 			delete(data, "slot")
+			delete(data, "posU")
 		}
 		entityStr = "stray_object"
 	} else {
@@ -1324,7 +1325,11 @@ func LinkEntity(w http.ResponseWriter, r *http.Request) {
 		entityStr = data["category"].(string)
 		destSlot, bodyHasSlot := body["slot"]
 		if entityStr == "device" && bodyHasSlot {
-			data["slot"] = destSlot
+			if _, err := strconv.Atoi(destSlot); err == nil {
+				data["posU"] = destSlot
+			} else {
+				data["slot"] = destSlot
+			}
 		}
 	}
 	if newName != "" {
