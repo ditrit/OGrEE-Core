@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"log"
 	"os"
 	u "p3/utils"
 	"strconv"
@@ -110,7 +111,7 @@ func getChildrenCollections(limit int, parentEntStr string) []int {
 
 // PropagateParentIdChange: search for given parent children and
 // update their hierarchyName with new parent name
-func PropagateParentIdChange(oldParentId, newId string, entityInt int) {
+func PropagateParentIdChange(ctx context.Context, oldParentId, newId string, entityInt int) error {
 	// Find all objects containing parent name
 	req := bson.M{"id": primitive.Regex{Pattern: oldParentId + u.HN_DELIMETER, Options: ""}}
 	// For each object found, replace old name by new
@@ -121,18 +122,19 @@ func PropagateParentIdChange(oldParentId, newId string, entityInt int) {
 					"input":       "$id",
 					"find":        oldParentId,
 					"replacement": newId}}}}}
-	ctx, cancel := u.Connect()
 	if entityInt == u.DOMAIN {
 		_, e := GetDB().Collection(u.EntityToString(u.DOMAIN)).UpdateMany(ctx,
 			req, mongo.Pipeline{update})
 		if e != nil {
 			println(e.Error())
+			return e
 		}
 	} else if entityInt == u.DEVICE {
 		_, e := GetDB().Collection(u.EntityToString(u.DEVICE)).UpdateMany(ctx,
 			req, mongo.Pipeline{update})
 		if e != nil {
 			println(e.Error())
+			return e
 		}
 	} else {
 		for i := entityInt + 1; i <= u.GROUP; i++ {
@@ -140,10 +142,11 @@ func PropagateParentIdChange(oldParentId, newId string, entityInt int) {
 				req, mongo.Pipeline{update})
 			if e != nil {
 				println(e.Error())
+				return e
 			}
 		}
 	}
-	defer cancel()
+	return nil
 }
 
 func updateOldObjWithPatch(old map[string]interface{}, patch map[string]interface{}) error {
@@ -166,31 +169,9 @@ func updateOldObjWithPatch(old map[string]interface{}, patch map[string]interfac
 // Entity handlers
 
 func CreateEntity(entity int, t map[string]interface{}, userRoles map[string]Role) (map[string]interface{}, *u.Error) {
-	if ok, err := ValidateEntity(entity, t); !ok {
+	if err := prepareCreateEntity(entity, t, userRoles); err != nil {
 		return nil, err
 	}
-
-	// Check user permissions
-	if entity != u.BLDGTMPL && entity != u.ROOMTMPL && entity != u.OBJTMPL {
-		var domain string
-		if entity == u.DOMAIN {
-			domain = t["id"].(string)
-		} else {
-			domain = t["domain"].(string)
-		}
-		if permission := CheckUserPermissions(userRoles, entity, domain); permission < WRITE {
-			return nil, &u.Error{Type: u.ErrUnauthorized,
-				Message: "User does not have permission to create this object"}
-		}
-	}
-
-	//Set timestamp
-	t["createdDate"] = primitive.NewDateTimeFromTime(time.Now())
-	t["lastUpdated"] = t["createdDate"]
-
-	//Last modifications before insert
-	FixAttributesBeforeInsert(entity, t)
-	delete(t, "parentId")
 
 	ctx, cancel := u.Connect()
 	entStr := u.EntityToString(entity)
@@ -207,6 +188,35 @@ func CreateEntity(entity int, t map[string]interface{}, userRoles map[string]Rol
 
 	fixID(t)
 	return t, nil
+}
+
+func prepareCreateEntity(entity int, t map[string]interface{}, userRoles map[string]Role) *u.Error {
+	if ok, err := ValidateEntity(entity, t); !ok {
+		return err
+	}
+
+	// Check user permissions
+	if entity != u.BLDGTMPL && entity != u.ROOMTMPL && entity != u.OBJTMPL {
+		var domain string
+		if entity == u.DOMAIN {
+			domain = t["id"].(string)
+		} else {
+			domain = t["domain"].(string)
+		}
+		if permission := CheckUserPermissions(userRoles, entity, domain); permission < WRITE {
+			return &u.Error{Type: u.ErrUnauthorized,
+				Message: "User does not have permission to create this object"}
+		}
+	}
+
+	//Set timestamp
+	t["createdDate"] = primitive.NewDateTimeFromTime(time.Now())
+	t["lastUpdated"] = t["createdDate"]
+
+	//Last modifications before insert
+	FixAttributesBeforeInsert(entity, t)
+	delete(t, "parentId")
+	return nil
 }
 
 // GetObjectById: search for id (hierarchyName) in all possible collections
@@ -730,7 +740,7 @@ func UpdateEntity(ent string, req bson.M, t map[string]interface{}, isPatch bool
 	updatedDoc = fixID(updatedDoc)
 	if oldObj["id"] != t["id"] {
 		// Changes to id should be propagated to its children
-		PropagateParentIdChange(oldObj["id"].(string),
+		PropagateParentIdChange(ctx, oldObj["id"].(string),
 			t["id"].(string), entInt)
 	}
 
@@ -814,6 +824,49 @@ func GetEntitiesOfAncestor(id string, entStr, wantedEnt string, userRoles map[st
 	}
 
 	return sub, nil
+}
+
+func SwapEntity(createEnt, deleteEnt, id string, data map[string]interface{}, userRoles map[string]Role) *u.Error {
+	ctx, _ := u.Connect()
+	if e := prepareCreateEntity(u.EntityStrToInt(createEnt), data, userRoles); e != nil {
+		return e
+	}
+
+	// Define the callback that specifies the sequence of operations to perform inside the transaction.
+	callback := func(sessCtx mongo.SessionContext) (interface{}, error) {
+		// Create
+		if _, err := GetDB().Collection(createEnt).InsertOne(ctx, data); err != nil {
+			return nil, err
+		}
+
+		// Propagate
+		if err := PropagateParentIdChange(sessCtx, id, data["id"].(string),
+			u.EntityStrToInt(data["category"].(string))); err != nil {
+			return nil, err
+		}
+
+		// Delete
+		if c, err := GetDB().Collection(deleteEnt).DeleteOne(ctx, bson.M{"id": id}); err != nil {
+			return nil, err
+		} else if c.DeletedCount == 0 {
+			return nil, errors.New("Error deleting object: not found")
+		}
+
+		return nil, nil
+	}
+
+	// Start a session and run the callback using WithTransaction.
+	session, err := GetClient().StartSession()
+	if err != nil {
+		return &u.Error{Type: u.ErrDBError, Message: "Unable to start session: " + err.Error()}
+	}
+	defer session.EndSession(ctx)
+	result, err := session.WithTransaction(ctx, callback)
+	if err != nil {
+		return &u.Error{Type: u.ErrDBError, Message: "Unable to complete transaction: " + err.Error()}
+	}
+	log.Printf("result: %v\n", result)
+	return nil
 }
 
 func ExtractCursor(c *mongo.Cursor, ctx context.Context, entity int, userRoles map[string]Role) ([]map[string]interface{}, error) {

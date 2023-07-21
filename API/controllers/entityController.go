@@ -1342,34 +1342,24 @@ func LinkEntity(w http.ResponseWriter, r *http.Request) {
 	// Convert primitive.A and similar types
 	bytes, _ := json.Marshal(data)
 	json.Unmarshal(bytes, &data)
-	// Create
-	data, modelErr = models.CreateEntity(u.EntityStrToInt(entityStr), data, user.Roles)
-	if modelErr != nil {
-		u.ErrLog("Error creating at "+entityStr, "CREATE", modelErr.Message, r)
+
+	createEnt := entityStr
+	var deleteEnt string
+	if isUnlink {
+		deleteEnt = data["category"].(string)
+	} else {
+		deleteEnt = "stray_object"
+	}
+
+	if modelErr := models.SwapEntity(createEnt, deleteEnt, id, data, user.Roles); modelErr != nil {
 		u.RespondWithError(w, modelErr)
 		return
-	}
-
-	//Propagate id change to children
-	models.PropagateParentIdChange(id, data["id"].(string), u.EntityStrToInt(data["category"].(string)))
-
-	// Delete old object
-	if isUnlink {
-		entityStr = data["category"].(string)
 	} else {
-		entityStr = "stray_object"
-	}
-	modelErr = models.DeleteSingleEntity(entityStr, bson.M{"id": id})
-	if modelErr != nil {
-		u.ErrLog("Error while deleting entity", "DELETE ENTITY", modelErr.Message, r)
-		u.RespondWithError(w, modelErr)
-		return
-	}
-
-	if isUnlink {
-		u.Respond(w, u.Message("successfully unlinked"))
-	} else {
-		u.Respond(w, u.Message("successfully linked"))
+		if isUnlink {
+			u.Respond(w, u.Message("successfully unlinked"))
+		} else {
+			u.Respond(w, u.Message("successfully linked"))
+		}
 	}
 }
 
