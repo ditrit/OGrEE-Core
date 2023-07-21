@@ -726,23 +726,39 @@ func UpdateEntity(ent string, req bson.M, t map[string]interface{}, isPatch bool
 		}
 	}
 
-	// Update database
-	mongoRes = GetDB().Collection(ent).FindOneAndReplace(ctx,
-		req, t,
-		&options.FindOneAndReplaceOptions{ReturnDocument: &retDoc})
-	if mongoRes.Err() != nil {
-		return nil, &u.Error{Type: u.ErrUnauthorized,
-			Message: mongoRes.Err().Error()}
+	// Update database callback
+	callback := func(sessCtx mongo.SessionContext) (interface{}, error) {
+		mongoRes := GetDB().Collection(ent).FindOneAndReplace(ctx,
+			req, t,
+			&options.FindOneAndReplaceOptions{ReturnDocument: &retDoc})
+		if mongoRes.Err() != nil {
+			return nil, mongoRes.Err()
+		}
+		if oldObj["id"] != t["id"] {
+			// Changes to id should be propagated to its children
+			if err := PropagateParentIdChange(ctx, oldObj["id"].(string),
+				t["id"].(string), entInt); err != nil {
+				return nil, err
+			}
+		}
+
+		return mongoRes, nil
 	}
-	//Obtain new document then
-	//Fix the _id
+
+	// Start a session and run the callback to update db
+	session, e := GetClient().StartSession()
+	if e != nil {
+		return nil, &u.Error{Type: u.ErrDBError, Message: "Unable to start session: " + e.Error()}
+	}
+	defer session.EndSession(ctx)
+	result, e := session.WithTransaction(ctx, callback)
+	if e != nil {
+		return nil, &u.Error{Type: u.ErrDBError, Message: "Unable to complete transaction: " + e.Error()}
+	}
+
+	mongoRes = result.(*mongo.SingleResult)
 	mongoRes.Decode(&updatedDoc)
 	updatedDoc = fixID(updatedDoc)
-	if oldObj["id"] != t["id"] {
-		// Changes to id should be propagated to its children
-		PropagateParentIdChange(ctx, oldObj["id"].(string),
-			t["id"].(string), entInt)
-	}
 
 	defer cancel()
 	return updatedDoc, nil
