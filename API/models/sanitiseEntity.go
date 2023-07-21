@@ -7,11 +7,14 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 )
 
-// Mongo returns '_id' instead of id
+// Remove mongos _id and add parentId
 func fixID(data map[string]interface{}) map[string]interface{} {
-	if v, ok := data["_id"]; ok {
-		data["id"] = v
-		delete(data, "_id")
+	delete(data, "_id")
+	if id, ok := data["id"].(string); ok {
+		lastInd := strings.LastIndex(id, u.HN_DELIMETER)
+		if lastInd > 0 {
+			data["parentId"] = id[:lastInd]
+		}
 	}
 	return data
 }
@@ -29,7 +32,7 @@ func FixUnderScore(x map[string]interface{}) {
 func FixAttributesBeforeInsert(entity int, data map[string]interface{}) {
 	if entity == u.RACK {
 		pid, _ := data["parentId"].(string)
-		req := bson.M{"_id": pid}
+		req := bson.M{"id": pid}
 		parent, _ := GetEntity(req, "room", u.RequestFilters{}, nil)
 		parentUnit := parent["attributes"].(map[string]interface{})["posXYUnit"]
 		data["attributes"].(map[string]interface{})["posXYUnit"] = parentUnit

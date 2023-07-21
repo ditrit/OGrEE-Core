@@ -110,21 +110,40 @@ func getChildrenCollections(limit int, parentEntStr string) []int {
 
 // PropagateParentIdChange: search for given parent children and
 // update their hierarchyName with new parent name
-func PropagateParentIdChange(oldParentId, newId, entStr string) {
-	children, _, err := getChildren(entStr, oldParentId, 999, u.RequestFilters{})
-	if err != nil {
-		println("Error find children to propagate change: " + err.Message)
+func PropagateParentIdChange(oldParentId, newId string, entityInt int) {
+	// Find all objects containing parent name
+	req := bson.M{"id": primitive.Regex{Pattern: oldParentId + u.HN_DELIMETER, Options: ""}}
+	// For each object found, replace old name by new
+	update := bson.D{{
+		Key: "$set", Value: bson.M{
+			"id": bson.M{
+				"$replaceOne": bson.M{
+					"input":       "$id",
+					"find":        oldParentId,
+					"replacement": newId}}}}}
+	ctx, cancel := u.Connect()
+	if entityInt == u.DOMAIN {
+		_, e := GetDB().Collection(u.EntityToString(u.DOMAIN)).UpdateMany(ctx,
+			req, mongo.Pipeline{update})
+		if e != nil {
+			println(e.Error())
+		}
+	} else if entityInt == u.DEVICE {
+		_, e := GetDB().Collection(u.EntityToString(u.DEVICE)).UpdateMany(ctx,
+			req, mongo.Pipeline{update})
+		if e != nil {
+			println(e.Error())
+		}
 	} else {
-		for childId, childData := range children {
-			child := childData.(map[string]interface{})
-			child["_id"] = strings.Replace(childId, oldParentId, newId, 1)
-			child["parentId"] = strings.Replace(child["parentId"].(string), oldParentId, newId, 1)
-			delete(child, "id")
-			if err := updateEntityId(child["category"].(string), child, childId); err != nil {
-				println("Error propagating ID change: " + err.Message)
+		for i := entityInt + 1; i <= u.GROUP; i++ {
+			_, e := GetDB().Collection(u.EntityToString(i)).UpdateMany(ctx,
+				req, mongo.Pipeline{update})
+			if e != nil {
+				println(e.Error())
 			}
 		}
 	}
+	defer cancel()
 }
 
 func updateOldObjWithPatch(old map[string]interface{}, patch map[string]interface{}) error {
@@ -155,7 +174,7 @@ func CreateEntity(entity int, t map[string]interface{}, userRoles map[string]Rol
 	if entity != u.BLDGTMPL && entity != u.ROOMTMPL && entity != u.OBJTMPL {
 		var domain string
 		if entity == u.DOMAIN {
-			domain = t["_id"].(string)
+			domain = t["id"].(string)
 		} else {
 			domain = t["domain"].(string)
 		}
@@ -171,10 +190,11 @@ func CreateEntity(entity int, t map[string]interface{}, userRoles map[string]Rol
 
 	//Last modifications before insert
 	FixAttributesBeforeInsert(entity, t)
+	delete(t, "parentId")
 
 	ctx, cancel := u.Connect()
 	entStr := u.EntityToString(entity)
-	res, e := GetDB().Collection(entStr).InsertOne(ctx, t)
+	_, e := GetDB().Collection(entStr).InsertOne(ctx, t)
 	if e != nil {
 		if strings.Contains(e.Error(), "E11000") {
 			return nil, &u.Error{Type: u.ErrDuplicate,
@@ -185,8 +205,7 @@ func CreateEntity(entity int, t map[string]interface{}, userRoles map[string]Rol
 	}
 	defer cancel()
 
-	delete(t, "_id")
-	t["id"] = res.InsertedID
+	fixID(t)
 	return t, nil
 }
 
@@ -198,7 +217,7 @@ func GetObjectById(hierarchyName string, filters u.RequestFilters, userRoles map
 
 	// Search each collection
 	for _, entity := range rangeEntities {
-		req := bson.M{"_id": hierarchyName}
+		req := bson.M{"id": hierarchyName}
 		entityStr := u.EntityToString(entity)
 		data, _ := GetEntity(req, entityStr, filters, userRoles)
 		if data != nil {
@@ -221,10 +240,9 @@ func GetEntity(req bson.M, ent string, filters u.RequestFilters, userRoles map[s
 
 	var opts *options.FindOneOptions
 	if len(filters.FieldsToShow) > 0 {
-		var compoundIndex bson.D
-		compoundIndex = append(compoundIndex, bson.E{Key: "domain", Value: 1})
+		compoundIndex := bson.D{bson.E{Key: "domain", Value: 1}, bson.E{Key: "id", Value: 1}}
 		for _, field := range filters.FieldsToShow {
-			if field != "domain" {
+			if field != "domain" && field != "id" {
 				compoundIndex = append(compoundIndex, bson.E{Key: field, Value: 1})
 			}
 		}
@@ -284,10 +302,9 @@ func GetManyEntities(ent string, req bson.M, filters u.RequestFilters, userRoles
 
 	var opts *options.FindOptions
 	if len(filters.FieldsToShow) > 0 {
-		var compoundIndex bson.D
-		compoundIndex = append(compoundIndex, bson.E{Key: "domain", Value: 1})
+		compoundIndex := bson.D{bson.E{Key: "domain", Value: 1}, bson.E{Key: "id", Value: 1}}
 		for _, field := range filters.FieldsToShow {
-			if field != "domain" {
+			if field != "domain" && field != "id" {
 				compoundIndex = append(compoundIndex, bson.E{Key: field, Value: 1})
 			}
 		}
@@ -386,7 +403,7 @@ func GetCompleteHierarchy(userRoles map[string]Role) (map[string]interface{}, *u
 
 	// Get all objects hierarchyNames for each collection
 	for _, collName := range collNames {
-		opts := options.Find().SetProjection(bson.D{{Key: "domain", Value: 1}})
+		opts := options.Find().SetProjection(bson.D{{Key: "domain", Value: 1}, {Key: "id", Value: 1}})
 
 		c, err := db.Collection(collName).Find(ctx, bson.M{}, opts)
 		if err != nil {
@@ -432,7 +449,7 @@ func GetCompleteHierarchyAttributes(userRoles map[string]Role) (map[string]inter
 	for _, collName := range collNames {
 		if entInt := u.EntityStrToInt(collName); entInt > -1 {
 			projection := bson.D{{Key: "attributes", Value: 1},
-				{Key: "domain", Value: 1}}
+				{Key: "domain", Value: 1}, {Key: "id", Value: 1}}
 
 			opts := options.Find().SetProjection(projection)
 
@@ -476,7 +493,7 @@ func GetSiteParentTempUnit(id string) (string, *u.Error) {
 	}
 	// Find object
 	for _, collName := range collNames {
-		err := db.Collection(collName).FindOne(ctx, bson.M{"_id": id}).Decode(&data)
+		err := db.Collection(collName).FindOne(ctx, bson.M{"id": id}).Decode(&data)
 		if err == nil {
 			// Found object with given id
 			if data["category"].(string) == "site" {
@@ -484,9 +501,9 @@ func GetSiteParentTempUnit(id string) (string, *u.Error) {
 				break
 			} else {
 				// Find its parent site
-				nameSlice := strings.Split(data["_id"].(string), u.HN_DELIMETER)
+				nameSlice := strings.Split(data["id"].(string), u.HN_DELIMETER)
 				siteName := nameSlice[0] // CONSIDER SITE AS 0
-				err := db.Collection("site").FindOne(ctx, bson.M{"_id": siteName}).Decode(&data)
+				err := db.Collection("site").FindOne(ctx, bson.M{"id": siteName}).Decode(&data)
 				if err != nil {
 					return "", &u.Error{Type: u.ErrNotFound,
 						Message: "Could not find parent site for given object"}
@@ -608,7 +625,7 @@ func DeleteEntity(entity string, id string, userRoles map[string]Role) *u.Error 
 	if !ok {
 		return &u.Error{Type: u.ErrUnauthorized, Message: "User does not have permission to delete"}
 	}
-	req["_id"] = id
+	req["id"] = id
 	err := DeleteSingleEntity(entity, req)
 
 	if err != nil {
@@ -623,7 +640,7 @@ func DeleteEntity(entity string, id string, userRoles map[string]Role) *u.Error 
 
 			ctx, cancel := u.Connect()
 			GetDB().Collection(childEntName).DeleteMany(ctx,
-				bson.M{"_id": pattern})
+				bson.M{"id": pattern})
 			defer cancel()
 		}
 	}
@@ -689,6 +706,7 @@ func UpdateEntity(ent string, req bson.M, t map[string]interface{}, isPatch bool
 
 	t["lastUpdated"] = primitive.NewDateTimeFromTime(time.Now())
 	t["createdDate"] = oldObj["createdDate"]
+	delete(t, "parentId")
 
 	// Check user permissions in case domain is being updated
 	if entInt != u.DOMAIN && entInt < u.ROOMTMPL && (oldObj["domain"] != t["domain"]) {
@@ -698,52 +716,26 @@ func UpdateEntity(ent string, req bson.M, t map[string]interface{}, isPatch bool
 		}
 	}
 
-	if oldObj["id"] != t["_id"] {
-		// Changes to id implies create new and delete old
-		if e := updateEntityId(ent, t, oldObj["id"].(string)); e != nil {
-			return nil, e
-		} else {
-			updatedDoc = fixID(t)
-			// Changes to id should be propagated to its children
-			PropagateParentIdChange(oldObj["id"].(string),
-				t["id"].(string), ent)
-		}
-	} else {
-		// Update database
-		mongoRes = GetDB().Collection(ent).FindOneAndReplace(ctx,
-			req, t,
-			&options.FindOneAndReplaceOptions{ReturnDocument: &retDoc})
-		if mongoRes.Err() != nil {
-			return nil, &u.Error{Type: u.ErrUnauthorized,
-				Message: mongoRes.Err().Error()}
-		}
-		//Obtain new document then
-		//Fix the _id / id discrepancy
-		mongoRes.Decode(&updatedDoc)
-		updatedDoc = fixID(updatedDoc)
+	// Update database
+	mongoRes = GetDB().Collection(ent).FindOneAndReplace(ctx,
+		req, t,
+		&options.FindOneAndReplaceOptions{ReturnDocument: &retDoc})
+	if mongoRes.Err() != nil {
+		return nil, &u.Error{Type: u.ErrUnauthorized,
+			Message: mongoRes.Err().Error()}
+	}
+	//Obtain new document then
+	//Fix the _id
+	mongoRes.Decode(&updatedDoc)
+	updatedDoc = fixID(updatedDoc)
+	if oldObj["id"] != t["id"] {
+		// Changes to id should be propagated to its children
+		PropagateParentIdChange(oldObj["id"].(string),
+			t["id"].(string), entInt)
 	}
 
 	defer cancel()
 	return updatedDoc, nil
-}
-
-func updateEntityId(entStr string, t map[string]interface{}, oldId string) *u.Error {
-	ctx, cancel := u.Connect()
-	_, e := GetDB().Collection(entStr).InsertOne(ctx, t)
-	if e != nil {
-		if strings.Contains(e.Error(), "E11000") {
-			return &u.Error{Type: u.ErrDuplicate,
-				Message: "Error while creating " + entStr + ": Duplicates not allowed"}
-		}
-		return &u.Error{Type: u.ErrDBError,
-			Message: "Internal error while creating " + entStr + ": " + e.Error()}
-	}
-	defer cancel()
-
-	if e := DeleteSingleEntity(entStr, bson.M{"_id": oldId}); e != nil {
-		return e
-	}
-	return nil
 }
 
 // GetHierarchyByName: get children objects of given parent.
@@ -774,7 +766,7 @@ func getChildren(entity, hierarchyName string, limit int, filters u.RequestFilte
 		// Obj should include parentName and not surpass limit range
 		pattern := primitive.Regex{Pattern: "^" + hierarchyName +
 			"(.[A-Za-z0-9_\" \"]+){1," + strconv.Itoa(limit) + "}$", Options: ""}
-		children, e1 := GetManyEntities(checkEntName, bson.M{"_id": pattern}, filters, nil)
+		children, e1 := GetManyEntities(checkEntName, bson.M{"id": pattern}, filters, nil)
 		if e1 != nil {
 			println("SUBENT: ", checkEntName)
 			println("ERR: ", e1.Message)
@@ -807,7 +799,7 @@ func recursivelyGetChildrenFromMaps(parentHierarchyName string, hierarchy map[st
 
 func GetEntitiesOfAncestor(id string, entStr, wantedEnt string, userRoles map[string]Role) ([]map[string]interface{}, *u.Error) {
 	// Get parent object
-	req := bson.M{"_id": id}
+	req := bson.M{"id": id}
 	_, e := GetEntity(req, entStr, u.RequestFilters{}, userRoles)
 	if e != nil {
 		return nil, e
@@ -815,7 +807,7 @@ func GetEntitiesOfAncestor(id string, entStr, wantedEnt string, userRoles map[st
 
 	// Get sub entity objects
 	pattern := primitive.Regex{Pattern: "^" + id + u.HN_DELIMETER, Options: ""}
-	req = bson.M{"_id": pattern}
+	req = bson.M{"id": pattern}
 	sub, e1 := GetManyEntities(wantedEnt, req, u.RequestFilters{}, userRoles)
 	if e1 != nil {
 		return nil, e1

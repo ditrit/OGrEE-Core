@@ -446,7 +446,7 @@ func GetEntity(w http.ResponseWriter, r *http.Request) {
 		if strings.Contains(entityStr, "template") { //Get by slug (template)
 			req = bson.M{"slug": id}
 		} else {
-			req = bson.M{"_id": id}
+			req = bson.M{"id": id}
 		}
 		data, modelErr = models.GetEntity(req, entityStr, filters, user.Roles)
 	} else {
@@ -765,7 +765,7 @@ func UpdateEntity(w http.ResponseWriter, r *http.Request) {
 		if strings.Contains(entity, "template") {
 			req = bson.M{"slug": id}
 		} else {
-			req = bson.M{"_id": id}
+			req = bson.M{"id": id}
 		}
 
 		data, modelErr = models.UpdateEntity(entity, req, updateData, isPatch, user.Roles)
@@ -1115,7 +1115,7 @@ func GetHierarchyByName(w http.ResponseWriter, r *http.Request) {
 		}
 	} else {
 		// Entity already known
-		data, modelErr = models.GetEntity(bson.M{"_id": id}, entity, filters, user.Roles)
+		data, modelErr = models.GetEntity(bson.M{"id": id}, entity, filters, user.Roles)
 	}
 	if limit >= 1 && modelErr == nil {
 		data["children"], modelErr = models.GetHierarchyByName(entity, id, limit, filters)
@@ -1298,7 +1298,7 @@ func LinkEntity(w http.ResponseWriter, r *http.Request) {
 
 	// Get entity
 	if id, canParse = mux.Vars(r)["id"]; canParse {
-		data, modelErr = models.GetEntity(bson.M{"_id": id}, entityStr, u.RequestFilters{}, user.Roles)
+		data, modelErr = models.GetEntity(bson.M{"id": id}, entityStr, u.RequestFilters{}, user.Roles)
 	} else {
 		w.WriteHeader(http.StatusBadRequest)
 		u.Respond(w, u.Message("Error while parsing path parameters"))
@@ -1351,7 +1351,7 @@ func LinkEntity(w http.ResponseWriter, r *http.Request) {
 	}
 
 	//Propagate id change to children
-	models.PropagateParentIdChange(id, data["id"].(string), data["category"].(string))
+	models.PropagateParentIdChange(id, data["id"].(string), u.EntityStrToInt(data["category"].(string)))
 
 	// Delete old object
 	if isUnlink {
@@ -1359,7 +1359,7 @@ func LinkEntity(w http.ResponseWriter, r *http.Request) {
 	} else {
 		entityStr = "stray_object"
 	}
-	modelErr = models.DeleteSingleEntity(entityStr, bson.M{"_id": id})
+	modelErr = models.DeleteSingleEntity(entityStr, bson.M{"id": id})
 	if modelErr != nil {
 		u.ErrLog("Error while deleting entity", "DELETE ENTITY", modelErr.Message, r)
 		u.RespondWithError(w, modelErr)

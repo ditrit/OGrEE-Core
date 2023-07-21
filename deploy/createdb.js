@@ -104,12 +104,12 @@ db.createCollection('corridor');
 db.createCollection('stray_device');
 
 //Enforce unique children
-db.domain.createIndex( {parentId:1, name:1}, { unique: true } );
-db.site.createIndex({name:1}, { unique: true });
-db.building.createIndex({parentId:1, name:1}, { unique: true });
-db.room.createIndex({parentId:1, name:1}, { unique: true });
-db.rack.createIndex({parentId:1, name:1}, { unique: true });
-db.device.createIndex({parentId:1, name:1}, { unique: true });
+db.domain.createIndex( {id:1}, { unique: true } );
+db.site.createIndex({id:1}, { unique: true });
+db.building.createIndex({id:1}, { unique: true });
+db.room.createIndex({id:1}, { unique: true });
+db.rack.createIndex({id:1}, { unique: true });
+db.device.createIndex({id:1}, { unique: true });
 
 //Make slugs unique identifiers for templates
 db.room_template.createIndex({slug:1}, { unique: true });
@@ -117,19 +117,19 @@ db.obj_template.createIndex({slug:1}, { unique: true });
 db.bldg_template.createIndex({slug:1}, { unique: true });
 
 //Unique children restriction for nonhierarchal objects and sensors
-db.ac.createIndex({parentId:1, name:1}, { unique: true });
-db.panel.createIndex({parentId:1, name:1}, { unique: true });
-db.cabinet.createIndex({parentId:1, name:1}, { unique: true });
-db.corridor.createIndex({parentId:1, name:1}, { unique: true });
+db.ac.createIndex({id:1}, { unique: true });
+db.panel.createIndex({id:1}, { unique: true });
+db.cabinet.createIndex({id:1}, { unique: true });
+db.corridor.createIndex({id:1}, { unique: true });
 
 //Enforce unique Group names 
-db.group.createIndex({parentId:1, name:1}, { unique: true });
+db.group.createIndex({id:1}, { unique: true });
 
 //Enforce unique stray objects
-db.stray_device.createIndex({parentId:1,name:1}, { unique: true });
+db.stray_device.createIndex({id:1}, { unique: true });
 
 //Create a default domain and user
-db.domain.insertOne({_id: DB_NAME, name: DB_NAME, category: "domain", 
+db.domain.insertOne({id: DB_NAME, name: DB_NAME, category: "domain", 
     attributes:{color:"ffffff"}, description:[], createdData: new Date(), lastUpdated: new Date()})
 db.account.insertOne({email: "admin", password: "admin", roles: {"*": "manager"}})
 

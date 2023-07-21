@@ -55,7 +55,7 @@ func validateParent(ent string, entNum int, t map[string]interface{}) (map[strin
 		}
 		return nil, &u.Error{Type: u.ErrBadFormat, Message: "ParentID is not valid"}
 	}
-	req := bson.M{"_id": t["parentId"].(string)}
+	req := bson.M{"id": t["parentId"].(string)}
 
 	parent := map[string]interface{}{"parent": ""}
 	// Anyone can have a stray parent
@@ -211,10 +211,10 @@ func ValidateEntity(entity int, t map[string]interface{}) (bool, *u.Error) {
 		if err != nil {
 			return false, err
 		} else if parent["id"] != nil {
-			t["_id"] = parent["id"].(string) +
+			t["id"] = parent["id"].(string) +
 				u.HN_DELIMETER + t["name"].(string)
 		} else {
-			t["_id"] = t["name"].(string)
+			t["id"] = t["name"].(string)
 		}
 		//Check domain
 		if entity != u.DOMAIN {
@@ -283,10 +283,9 @@ func ValidateEntity(entity int, t map[string]interface{}) (bool, *u.Error) {
 					}
 
 					//Fetch the 2 racks and ensure they exist
-					filter := bson.M{"_id": t["parentId"], "name": racks[0]}
-					orReq := bson.A{bson.D{{"name", racks[0]}}, bson.D{{"name", racks[1]}}}
-
-					filter = bson.M{"parentId": t["parentId"], "$or": orReq}
+					orReq := bson.A{bson.D{{"id", t["parentId"].(string) + u.HN_DELIMETER + racks[0]}},
+						bson.D{{"id", t["parentId"].(string) + u.HN_DELIMETER + racks[1]}}}
+					filter := bson.M{"$or": orReq}
 					ans, e := GetManyEntities("rack", filter, u.RequestFilters{}, nil)
 					if e != nil {
 						println(e.Message)
@@ -340,9 +339,9 @@ func ValidateEntity(entity int, t map[string]interface{}) (bool, *u.Error) {
 					//Ensure objects all exist
 					orReq := bson.A{}
 					for i := range objects {
-						orReq = append(orReq, bson.D{{"name", objects[i]}})
+						orReq = append(orReq, bson.D{{"id", t["parentId"].(string) + u.HN_DELIMETER + objects[i]}})
 					}
-					filter := bson.M{"parentId": t["parentId"], "$or": orReq}
+					filter := bson.M{"$or": orReq}
 
 					//If parent is rack, retrieve devices
 					if parent["parent"].(string) == "rack" {
