@@ -1,0 +1,61 @@
+name: Flutter Publish
+
+on:
+  push:
+    branches: [ "main" ]
+    paths:
+    - APP/ogree_app/**
+
+jobs:
+  build-web:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./APP/ogree_app
+        
+    steps:
+      - uses: actions/checkout@v3
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.10.5'
+          channel: 'stable'
+          
+      - name: Set up 
+        run: flutter pub get
+      
+      - name: Web build
+        run: flutter build web
+        
+      - name: Send to Nextcloud
+        shell: bash
+        env:
+          NEXT_CREDENTIALS: ${{ secrets.NEXT_CREDENTIALS }}
+          NEXT_ADDR: https://nextcloud.ditrit.io/remote.php/dav/files/herdel.betiol/Ogree/1_Core/3_APP/bin
+        run: | 
+          zip -r ./OGrEE_APP_Web.zip build/web/*
+          curl -u $NEXT_CREDENTIALS -T OGrEE_APP_Web.zip $NEXT_ADDR/OGrEE_APP_Web_$(date +%Y_%m_%d).zip
+
+  build-windows:
+    runs-on: windows-latest
+    defaults:
+      run:
+        working-directory: ./APP/ogree_app
+        
+    steps:
+      - uses: actions/checkout@v3
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.10.5'
+          channel: 'stable'
+          
+      - name: Windows build
+        run: flutter build windows
+        
+      - name: Send to Nextcloud
+        shell: pwsh
+        env:
+          NEXT_CREDENTIALS: ${{ secrets.NEXT_CREDENTIALS }}
+          NEXT_ADDR: https://nextcloud.ditrit.io/remote.php/dav/files/herdel.betiol/Ogree/1_Core/3_APP/bin
+        run: | 
+          Compress-Archive -Path build/windows/runner/Release/* -Destination OGrEE_APP_Win.zip
+          curl -u $env:NEXT_CREDENTIALS -T OGrEE_APP_Win.zip $env:NEXT_ADDR/OGrEE_APP_Win_$(date +%Y_%m_%d).zip

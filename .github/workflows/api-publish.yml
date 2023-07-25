@@ -1,0 +1,36 @@
+name: API Publish
+
+on:
+  push:
+    branches: [ "main" ]
+    paths:
+    - API/**
+
+jobs:
+
+  build:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./API
+        
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Set up Go
+      uses: actions/setup-go@v4
+      with:
+        go-version: '1.20'
+
+    - name: Build
+      run: make allos
+
+    - name: Send to Nextcloud
+      shell: bash
+      env:
+        NEXT_CREDENTIALS: ${{ secrets.NEXT_CREDENTIALS }}
+        NEXT_ADDR: https://nextcloud.ditrit.io/remote.php/dav/files/herdel.betiol/Ogree/1_Core/1_API/bin
+      run: | 
+        curl -u $NEXT_CREDENTIALS -T OGrEE_API_Win_x64 $NEXT_ADDR/OGrEE_API_Win_x64_$(date +%Y_%m_%d)
+        curl -u $NEXT_CREDENTIALS -T OGrEE_API_OSX_x64 $NEXT_ADDR/OGrEE_API_OSX_x64_$(date +%Y_%m_%d)
+        curl -u $NEXT_CREDENTIALS -T OGrEE_API_Linux_x64 $NEXT_ADDR/OGrEE_API_Linux_x64_$(date +%Y_%m_%d)
