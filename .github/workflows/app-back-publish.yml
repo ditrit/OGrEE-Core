@@ -1,0 +1,58 @@
+name: APP Backend Publish
+
+on:
+  push:
+    branches: [ "main" ]
+    paths:
+    - APP/ogree_app_backend/**
+
+jobs:
+  build-linux:
+    runs-on: ubuntu-latest
+        
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: '1.20'
+
+      - name: Build
+        run: cd APP/ogree_app_backend/ && go build
+        
+      - name: Send to Nextcloud
+        shell: bash
+        env:
+          NEXT_CREDENTIALS: ${{ secrets.NEXT_CREDENTIALS }}
+          NEXT_ADDR: https://nextcloud.ditrit.io/remote.php/dav/files/herdel.betiol/Ogree/1_Core/3_APP/bin
+        run: | 
+          zip -r OGrEE_APP_Backend_Linux.zip deploy/ APP/ogree_app_backend/.env APP/ogree_app_backend/ogree_app_backend APP/ogree_app_backend/flutter-assets/ APP/ogree_app_backend/backend-assets/
+          curl -u $NEXT_CREDENTIALS -T OGrEE_APP_Backend_Linux.zip $NEXT_ADDR/OGrEE_APP_Backend_Linux_$(date +%Y_%m_%d).zip
+
+  build-windows:
+    runs-on: windows-latest
+        
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: '1.20'
+
+      - name: Build
+        run: cd APP/ogree_app_backend/ && go build
+        
+      - uses: vimtor/action-zip@v1
+        with:
+          files: deploy APP/ogree_app_backend/.env APP/ogree_app_backend/ogree_app_backend.exe APP/ogree_app_backend/flutter-assets APP/ogree_app_backend/backend-assets
+          dest: OGrEE_APP_Backend_Win.zip
+        
+      - name: Send to Nextcloud
+        shell: bash
+        env:
+          NEXT_CREDENTIALS: ${{ secrets.NEXT_CREDENTIALS }}
+          NEXT_ADDR: https://nextcloud.ditrit.io/remote.php/dav/files/herdel.betiol/Ogree/1_Core/3_APP/bin
+        run: | 
+          curl -u $NEXT_CREDENTIALS -T OGrEE_APP_Backend_Win.zip $NEXT_ADDR/OGrEE_APP_Backend_Win_$(date +%Y_%m_%d).zip
