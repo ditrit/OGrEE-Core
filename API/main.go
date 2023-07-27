@@ -96,7 +96,7 @@ func Router(jwt func(next http.Handler) http.Handler) *mux.Router {
 
 	// GENERIC
 	router.HandleFunc("/api/objects/{id}",
-		controllers.GetGenericObject).Methods("GET", "HEAD", "OPTIONS")
+		controllers.HandleGenericObject).Methods("GET", "HEAD", "OPTIONS", "DELETE")
 
 	//GET ENTITY HIERARCHY
 	router.NewRoute().PathPrefix("/api/{entity}s/{id}/all").

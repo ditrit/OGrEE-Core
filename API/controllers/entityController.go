@@ -331,7 +331,7 @@ func getBulkDomainsRecursively(parent string, listDomains []map[string]interface
 //		'404':
 //		    description: Not Found. An error message will be returned.
 
-func GetGenericObject(w http.ResponseWriter, r *http.Request) {
+func HandleGenericObject(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("******************************************************")
 	fmt.Println("FUNCTION CALL: 	 GetGenericObject ")
 	fmt.Println("******************************************************")
@@ -359,13 +359,24 @@ func GetGenericObject(w http.ResponseWriter, r *http.Request) {
 	// Respond
 	if r.Method == "OPTIONS" && data != nil {
 		w.Header().Add("Content-Type", "application/json")
-		w.Header().Add("Allow", "GET, DELETE, OPTIONS, PATCH, PUT")
+		w.Header().Add("Allow", "GET, DELETE, OPTIONS")
 	} else {
 		if err != nil {
 			u.ErrLog("Error while getting "+hierarchyName, "GET GENERIC", err.Message, r)
 			u.RespondWithError(w, err)
 		} else {
-			u.Respond(w, u.RespDataWrapper("successfully got object", data))
+			if r.Method == "DELETE" {
+				modelErr := models.DeleteEntity(data["category"].(string), data["id"].(string), user.Roles)
+				if modelErr != nil {
+					u.ErrLog("Error while deleting entity", "DELETE ENTITY", modelErr.Message, r)
+					u.RespondWithError(w, modelErr)
+				} else {
+					w.WriteHeader(http.StatusNoContent)
+					u.Respond(w, u.Message("successfully deleted"))
+				}
+			} else {
+				u.Respond(w, u.RespDataWrapper("successfully got object", data))
+			}
 		}
 	}
 
