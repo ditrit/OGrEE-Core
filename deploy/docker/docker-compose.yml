@@ -37,7 +37,7 @@ services:
         -  ./init.sh:/docker-entrypoint-initdb.d/init.sh
         -  ../createdb.js:/home/createdb.js
         -  db:/data/db
-        - ./keyfile:/data/keyfile
+        - ../keyfile:/data/keyfile
         - ./entrypoint.sh:/scripts/entrypoint.sh
     entrypoint: sh /scripts/entrypoint.sh
     restart: on-failure:10
