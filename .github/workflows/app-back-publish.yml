@@ -25,7 +25,7 @@ jobs:
         shell: bash
         env:
           NEXT_CREDENTIALS: ${{ secrets.NEXT_CREDENTIALS }}
-          NEXT_ADDR: https://nextcloud.ditrit.io/remote.php/dav/files/herdel.betiol/Ogree/1_Core/3_APP/bin
+          NEXT_ADDR: https://nextcloud.ditrit.io/remote.php/dav/files/github.actions/Ogree/1_Core/3_APP/bin
         run: | 
           zip -r OGrEE_APP_Backend_Linux.zip deploy/ APP/ogree_app_backend/.env APP/ogree_app_backend/ogree_app_backend APP/ogree_app_backend/flutter-assets/ APP/ogree_app_backend/backend-assets/
           curl -u $NEXT_CREDENTIALS -T OGrEE_APP_Backend_Linux.zip $NEXT_ADDR/OGrEE_APP_Backend_Linux_$(date +%Y_%m_%d).zip
@@ -53,6 +53,6 @@ jobs:
         shell: bash
         env:
           NEXT_CREDENTIALS: ${{ secrets.NEXT_CREDENTIALS }}
-          NEXT_ADDR: https://nextcloud.ditrit.io/remote.php/dav/files/herdel.betiol/Ogree/1_Core/3_APP/bin
+          NEXT_ADDR: https://nextcloud.ditrit.io/remote.php/dav/files/github.actions/Ogree/1_Core/3_APP/bin
         run: | 
           curl -u $NEXT_CREDENTIALS -T OGrEE_APP_Backend_Win.zip $NEXT_ADDR/OGrEE_APP_Backend_Win_$(date +%Y_%m_%d).zip

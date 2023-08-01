@@ -29,7 +29,7 @@ jobs:
       shell: bash
       env:
         NEXT_CREDENTIALS: ${{ secrets.NEXT_CREDENTIALS }}
-        NEXT_ADDR: https://nextcloud.ditrit.io/remote.php/dav/files/herdel.betiol/Ogree/1_Core/1_API/bin
+        NEXT_ADDR: https://nextcloud.ditrit.io/remote.php/dav/files/github.actions/Ogree/1_Core/1_API/bin
       run: | 
         curl -u $NEXT_CREDENTIALS -T OGrEE_API_Win_x64 $NEXT_ADDR/OGrEE_API_Win_x64_$(date +%Y_%m_%d)
         curl -u $NEXT_CREDENTIALS -T OGrEE_API_OSX_x64 $NEXT_ADDR/OGrEE_API_OSX_x64_$(date +%Y_%m_%d)

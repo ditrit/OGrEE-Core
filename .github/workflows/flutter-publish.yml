@@ -30,7 +30,7 @@ jobs:
         shell: bash
         env:
           NEXT_CREDENTIALS: ${{ secrets.NEXT_CREDENTIALS }}
-          NEXT_ADDR: https://nextcloud.ditrit.io/remote.php/dav/files/herdel.betiol/Ogree/1_Core/3_APP/bin
+          NEXT_ADDR: https://nextcloud.ditrit.io/remote.php/dav/files/github.actions/Ogree/1_Core/3_APP/bin
         run: | 
           zip -r ./OGrEE_APP_Web.zip build/web/*
           curl -u $NEXT_CREDENTIALS -T OGrEE_APP_Web.zip $NEXT_ADDR/OGrEE_APP_Web_$(date +%Y_%m_%d).zip
@@ -55,7 +55,7 @@ jobs:
         shell: pwsh
         env:
           NEXT_CREDENTIALS: ${{ secrets.NEXT_CREDENTIALS }}
-          NEXT_ADDR: https://nextcloud.ditrit.io/remote.php/dav/files/herdel.betiol/Ogree/1_Core/3_APP/bin
+          NEXT_ADDR: https://nextcloud.ditrit.io/remote.php/dav/files/github.actions/Ogree/1_Core/3_APP/bin
         run: | 
           Compress-Archive -Path build/windows/runner/Release/* -Destination OGrEE_APP_Win.zip
           curl -u $env:NEXT_CREDENTIALS -T OGrEE_APP_Win.zip $env:NEXT_ADDR/OGrEE_APP_Win_$(date +%Y_%m_%d).zip
