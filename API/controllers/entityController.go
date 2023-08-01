@@ -1301,6 +1301,7 @@ func LinkEntity(w http.ResponseWriter, r *http.Request) {
 			u.Respond(w, u.Message("Error while decoding request body: must contain parentId"))
 			return
 		} else if newName, canParse = body["name"]; !canParse && len(body) > 1 {
+			w.WriteHeader(http.StatusBadRequest)
 			u.Respond(w, u.Message("Error while decoding request body: only parentId and name accepted"))
 			return
 		}
