@@ -167,12 +167,12 @@ func GenerateFilteredJson(x map[string]interface{}) map[string]interface{} {
 				for i := range x {
 					if i == "attributes" {
 						for idx := range x[i].(map[string]interface{}) {
-							if IsAttrDrawable("", idx, x, true) == true {
+							if IsCategoryAttrDrawable(x["category"].(string), idx) {
 								attrs[idx] = x[i].(map[string]interface{})[idx]
 							}
 						}
 					} else {
-						if IsAttrDrawable("", i, x, true) == true {
+						if IsCategoryAttrDrawable(x["category"].(string), i) {
 							ans[i] = x[i]
 						}
 					}

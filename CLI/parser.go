@@ -645,16 +645,6 @@ func (p *parser) parseDrawable() node {
 	return &isAttrDrawableNode{path, attrName}
 }
 
-func (p *parser) parseHc() node {
-	defer un(trace(p, "hc"))
-	path := p.parsePath("")
-	if p.commandEnd() {
-		return &hierarchyNode{path, 1}
-	}
-	depth := p.parseInt("depth")
-	return &hierarchyNode{path, depth}
-}
-
 func (p *parser) parseUnset() node {
 	defer un(trace(p, "unset"))
 	args := p.parseArgs([]string{"f", "v"}, []string{})
@@ -662,6 +652,9 @@ func (p *parser) parseUnset() node {
 		path := p.parsePath("")
 		p.expect(":")
 		attr := p.parseComplexWord("attribute")
+		if p.commandEnd() {
+			return &unsetAttrNode{path, attr, nil}
+		}
 		index := p.parseIndexing()
 		return &unsetAttrNode{path, attr, index}
 	}
@@ -743,11 +736,7 @@ func (p *parser) parseLink() node {
 func (p *parser) parseUnlink() node {
 	defer un(trace(p, "unlink"))
 	sourcePath := p.parsePath("source")
-	if p.parseExact("@") {
-		destPath := p.parsePath("destination")
-		return &unlinkObjectNode{sourcePath, destPath}
-	}
-	return &unlinkObjectNode{sourcePath, nil}
+	return &unlinkObjectNode{sourcePath}
 }
 
 func (p *parser) parsePrint() node {
@@ -1118,7 +1107,6 @@ func (p *parser) parseCommand(name string) node {
 		"undraw":     p.parseUndraw,
 		"draw":       p.parseDraw,
 		"drawable":   p.parseDrawable,
-		"hc":         p.parseHc,
 		"unset":      p.parseUnset,
 		"env":        p.parseEnv,
 		"+":          p.parseCreate,
@@ -1128,7 +1116,7 @@ func (p *parser) parseCommand(name string) node {
 		".cmds:":     p.parseLoad,
 		".template:": p.parseTemplate,
 		"len":        p.parseLen,
-		"link:":      p.parseLink,
+		"link":       p.parseLink,
 		"unlink":     p.parseUnlink,
 		"print":      p.parsePrint,
 		"man":        p.parseMan,
