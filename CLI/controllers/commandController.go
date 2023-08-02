@@ -736,7 +736,7 @@ func CreateObject(path string, ent int, data map[string]interface{}) error {
 		if err != nil {
 			return err
 		}
-		if parent == nil && ent != DOMAIN {
+		if parent == nil && (ent != DOMAIN || path != "/Organisation/Domain") {
 			return fmt.Errorf("parent not found")
 		}
 	}
