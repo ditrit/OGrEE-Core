@@ -691,7 +691,7 @@ func (n *updateObjNode) execute() (interface{}, error) {
 	case "pillar":
 		return addRoomPillar(path, values)
 	}
-	if n.attr[:len("description")] == "description" {
+	if strings.HasPrefix(n.attr, "description") {
 		return updateDescription(path, n.attr, values)
 	}
 	attributes := map[string]any{n.attr: values[0]}
