@@ -42,8 +42,8 @@ func (n *HierarchyNode) String() string {
 	var sb strings.Builder
 	n.StringAux("", &sb)
 	s := sb.String()
-	if s[len(s)-1] == '\n' {
-		return s[:len(s)-1]
+	for len(s) >= 1 && s[len(s)-1] == '\n' {
+		s = s[:len(s)-1]
 	}
 	return s
 }

@@ -764,7 +764,10 @@ func (n *treeNode) execute() (interface{}, error) {
 	if err != nil {
 		return nil, err
 	}
-	fmt.Println(root)
+	s := root.String()
+	if s != "" {
+		fmt.Println(s)
+	}
 	return nil, nil
 }
 

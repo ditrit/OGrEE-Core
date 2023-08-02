@@ -767,11 +767,11 @@ func (p *parser) parseCd() node {
 func (p *parser) parseTree() node {
 	defer un(trace(p, "tree"))
 	if p.commandEnd() {
-		return &treeNode{&pathNode{&valueNode{"."}}, 0}
+		return &treeNode{&pathNode{&valueNode{"."}}, 1}
 	}
 	path := p.parsePath("")
 	if p.commandEnd() {
-		return &treeNode{path, 0}
+		return &treeNode{path, 1}
 	}
 	depth := p.parseInt("depth")
 	return &treeNode{path, depth}
