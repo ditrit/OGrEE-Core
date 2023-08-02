@@ -990,6 +990,7 @@ func CreateObject(path string, ent int, data map[string]interface{}) error {
 			delete(attr, "posU/slot")
 			if _, err := strconv.Atoi(x.(string)); err == nil {
 				attr["posU"] = x
+				attr["slot"] = ""
 			} else {
 				attr["slot"] = x
 			}
