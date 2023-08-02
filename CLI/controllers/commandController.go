@@ -135,7 +135,7 @@ func ObjectId(path string) (string, error) {
 func PollObjectWithChildren(path string, depth int) (map[string]any, error) {
 	url, err := ObjectUrl(path, depth)
 	if err != nil {
-		return nil, err
+		return nil, nil
 	}
 	if depth > 0 {
 		url = fmt.Sprintf("%s/all?limit=%d", url, depth)
@@ -741,13 +741,7 @@ func CreateObject(path string, ent int, data map[string]interface{}) error {
 		}
 	}
 
-	if ent == DOMAIN {
-		if parent != nil {
-			data["domain"] = parent["name"]
-		} else {
-			data["domain"] = ""
-		}
-	} else {
+	if ent != DOMAIN {
 		if parent != nil {
 			data["domain"] = parent["domain"]
 		} else {
