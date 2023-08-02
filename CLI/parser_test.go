@@ -269,7 +269,7 @@ var commandsMatching = map[string]node{
 	"man ui":                         &helpNode{"ui"},
 	"ls":                             &lsNode{&pathNode{&valueNode{""}}},
 	"cd":                             &cdNode{&pathNode{&valueNode{"/"}}},
-	"tree":                           &treeNode{&pathNode{&valueNode{"."}}, 0},
+	"tree":                           &treeNode{&pathNode{&valueNode{"."}}, 1},
 	"get ${toto}/tata":               &getObjectNode{testPath},
 	"getu rackA 42":                  &getUNode{&pathNode{&valueNode{"rackA"}}, &valueNode{42}},
 	"undraw":                         &undrawNode{nil},
@@ -387,7 +387,7 @@ func TestElif(t *testing.T) {
 	condition := &equalityNode{"==", &valueNode{5}, &valueNode{6}}
 	conditionElif := &equalityNode{"==", &valueNode{5}, &valueNode{4}}
 	ifBody := &ast{[]node{&lsNode{&pathNode{&valueNode{""}}}, nil}}
-	elifBody := &ast{[]node{&treeNode{&pathNode{&valueNode{"."}}, 0}, nil}}
+	elifBody := &ast{[]node{&treeNode{&pathNode{&valueNode{"."}}, 1}, nil}}
 	elseBody := &ast{[]node{&pwdNode{}, nil}}
 	elif := &ifNode{conditionElif, elifBody, elseBody}
 	expected := &ifNode{condition, ifBody, elif}
