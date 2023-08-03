@@ -300,7 +300,9 @@ func ValidateEntity(entity int, t map[string]interface{}) (bool, *u.Error) {
 						if !(len(ans) == 1 && racks[0] == racks[1]) {
 							//Figure out the rack name that wasn't found
 							var notFound string
-							if racks[0] != ans[0]["name"].(string) {
+							if len(ans) == 0 {
+								notFound = racks[0] + "," + racks[1]
+							} else if racks[0] != ans[0]["name"].(string) {
 								notFound = racks[0]
 							} else {
 								notFound = racks[1]
