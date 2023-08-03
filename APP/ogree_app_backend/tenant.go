@@ -11,6 +11,7 @@ import (
 	"os"
 	"os/exec"
 	"strings"
+	"time"
 
 	"github.com/gin-gonic/gin"
 )
@@ -43,6 +44,11 @@ type user struct {
 	Email    string `json:"email" binding:"required"`
 	Password string `json:"password" binding:"required"`
 	Token    string `json:"token"`
+}
+
+type backup struct {
+	DBPassword string `json:"password" binding:"required"`
+	IsDownload bool   `json:"shouldDownload"`
 }
 
 func getTenants(c *gin.Context) {
@@ -362,4 +368,45 @@ func updateTenant(c *gin.Context) {
 	}
 
 	c.String(http.StatusOK, "")
+}
+
+func backupTenantDB(c *gin.Context) {
+	tenantName := strings.ToLower(c.Param("name"))
+	t := time.Now()
+
+	// Call BindJSON to bind the received JSON
+	var backupInfo backup
+	if err := c.BindJSON(&backupInfo); err != nil {
+		c.IndentedJSON(http.StatusBadRequest, err.Error())
+		return
+	}
+
+	println("Docker backup current tenant")
+	args := []string{"exec", tenantName + "_db", "sh", "-c",
+		"exec mongodump --username ogree" + tenantName + "Admin --password " + backupInfo.DBPassword + " -d ogree" + tenantName + " --archive"}
+	cmd := exec.Command("docker", args...)
+	cmd.Dir = DOCKER_DIR
+	var stderr bytes.Buffer
+	cmd.Stderr = &stderr
+	outfile, err := os.Create(tenantName + "_db_" + t.Format("2006-01-02T150405") + ".archive")
+	if err != nil {
+		println(err.Error())
+		c.IndentedJSON(http.StatusInternalServerError, err.Error())
+		return
+	}
+	defer outfile.Close()
+	cmd.Stdout = outfile
+	if err := cmd.Run(); err != nil {
+		fmt.Println(fmt.Sprint(err) + ": " + stderr.String())
+		c.IndentedJSON(http.StatusInternalServerError, stderr.String())
+		return
+	}
+
+	dir, _ := os.Getwd()
+	println("Finished with docker")
+	if backupInfo.IsDownload {
+		c.File(outfile.Name())
+	} else {
+		c.String(http.StatusOK, "Backup file created as "+outfile.Name()+" at "+dir)
+	}
 }

@@ -428,6 +428,33 @@ Future<Result<void, Exception>> uploadImage(
   }
 }
 
+Future<Result<dynamic, Exception>> backupTenantDB(
+    String tenantName, String password, bool shouldDownload) async {
+  print("API backup Tenants");
+  try {
+    Uri url = Uri.parse('$apiUrl/api/tenants/$tenantName/backup');
+    final response = await http.post(url,
+        body: json.encode(<String, dynamic>{
+          'password': password,
+          'shouldDownload': shouldDownload,
+        }),
+        headers: getHeader(token));
+    print(response);
+    if (response.statusCode == 200) {
+      if (shouldDownload) {
+        return Success(response.bodyBytes);
+      } else {
+        return Success(response.body.toString());
+      }
+    } else {
+      String data = json.decode(response.body);
+      return Failure(Exception("Error backing up tenant $data"));
+    }
+  } on Exception catch (e) {
+    return Failure(e);
+  }
+}
+
 Future<Result<void, Exception>> createBackendServer(
     Map<String, dynamic> newBackend) async {
   print("API create Back Server");

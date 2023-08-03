@@ -39,7 +39,7 @@ func init() {
 }
 
 func main() {
-	port := flag.Int("port", 8082, "an int")
+	port := flag.Int("port", 8081, "an int")
 	flag.Parse()
 	router := gin.Default()
 	corsConfig := cors.DefaultConfig()
@@ -56,6 +56,7 @@ func main() {
 	router.POST("/api/tenants", addTenant)
 	router.POST("/api/tenants/:name/logo", addTenantLogo)
 	router.PUT("/api/tenants/:name", updateTenant)
+	router.POST("/api/tenants/:name/backup", backupTenantDB)
 	router.GET("/api/containers/:name", getContainerLogs)
 	router.POST("/api/servers", createNewBackend)
 

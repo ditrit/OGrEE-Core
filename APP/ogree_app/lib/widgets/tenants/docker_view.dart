@@ -6,6 +6,7 @@ import 'package:ogree_app/common/snackbar.dart';
 import 'package:ogree_app/models/container.dart';
 import 'package:ogree_app/pages/results_page.dart';
 import 'package:ogree_app/widgets/select_objects/settings_view/tree_filter.dart';
+import 'package:ogree_app/widgets/tenants/popups/backup_popup.dart';
 import 'package:ogree_app/widgets/tenants/popups/container_logs_popup.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
@@ -26,24 +27,43 @@ class DockerView extends StatelessWidget {
           } else if (_dockerInfo!.isEmpty) {
             return Text(localeMsg.noDockerInfo);
           } else {
-            return Theme(
-                data: ThemeData(
-                  cardTheme: const CardTheme(
-                      elevation: 0,
-                      surfaceTintColor: Colors.white,
-                      color: Colors.white),
-                ),
-                child: SingleChildScrollView(
-                  padding: const EdgeInsets.only(right: 16, top: 0),
-                  child: PaginatedDataTable(
-                    horizontalMargin: 15,
-                    columnSpacing: 30,
-                    showCheckboxColumn: false,
-                    rowsPerPage: _dockerInfo!.length,
-                    columns: getColumns(),
-                    source: _DataSource(context, _dockerInfo!),
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Theme(
+                    data: ThemeData(
+                      cardTheme: const CardTheme(
+                          elevation: 0,
+                          surfaceTintColor: Colors.white,
+                          color: Colors.white),
+                    ),
+                    child: SingleChildScrollView(
+                      padding: const EdgeInsets.only(right: 16, top: 0),
+                      child: PaginatedDataTable(
+                        horizontalMargin: 15,
+                        columnSpacing: 30,
+                        showCheckboxColumn: false,
+                        rowsPerPage: _dockerInfo!.length,
+                        columns: getColumns(),
+                        source: _DataSource(context, _dockerInfo!),
+                      ),
+                    )),
+                Align(
+                  alignment: Alignment.bottomRight,
+                  child: Padding(
+                    padding: const EdgeInsets.only(bottom: 20, right: 20),
+                    child: ElevatedButton.icon(
+                      onPressed: () => showCustomPopup(
+                          context, BackupPopup(tenantName: tName),
+                          isDismissible: true),
+                      icon: const Icon(Icons.history),
+                      label: Text("Backup"),
+                    ),
                   ),
-                ));
+                ),
+              ],
+            );
           }
         });
   }
