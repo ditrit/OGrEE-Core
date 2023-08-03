@@ -17,12 +17,7 @@
             "pattern": "^[-]?([0-9]*[.])?[0-9]+$"
         },
         "clearanceVector": {
-            "type": "array",
-            "items": {
-                "type": "number"
-            },
-            "minItems": 5,
-            "maxItems": 5
+            "pattern": "^\\[(?:\\d+(?:\\.\\d*)?|\\.\\d+)(?:,\\s*(?:\\d+(?:\\.\\d*)?|\\.\\d+)){4}\\]$"
         }
     }
 }
