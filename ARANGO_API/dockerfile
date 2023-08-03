@@ -4,13 +4,12 @@ FROM golang:1.18.2-alpine3.16 AS build
 WORKDIR /build
 
 # We want to populate the module cache based on the go.{mod,sum} files.
-COPY go.mod .
-COPY go.sum .
+COPY ARANGO_API/go.mod .
+COPY ARANGO_API/go.sum .
 	
 RUN go mod download
 
-COPY . .
-RUN cp env .env
+COPY ARANGO_API/. .
 
 
 # Build the Go app
@@ -22,7 +21,6 @@ FROM alpine:3.16
 WORKDIR /bin
 
 COPY --from=build /build/go-api .
-COPY --from=build /build/.env .
 COPY --from=build /build/swagger.yaml .
 
 
