@@ -1,0 +1,39 @@
+version: '3.9'
+services:
+  arango_db:
+    image: arangodb/arangodb:3.11.2
+    container_name: arango_db
+    environment:
+        - ARANGO_ROOT_PASSWORD=password
+    volumes:
+      - arangodb-persist:/var/lib/arangodb3
+    ports:
+      - 8529:8529
+    restart: on-failure:10
+    
+
+  arrango_api:
+    build: 
+      dockerfile: Dockerfile
+    image: arango-api:latest
+    restart: always
+    container_name: arango_api
+    environment:
+      - ENV=production
+      - ARRANGO_URL=http://arango_db:8529
+      - ARRANGO_DATABASE=_system
+      - ARRANGO_USER=root
+      - ARRANGO_PASSWORD=password
+    ports:
+      - 8080:8080
+    healthcheck:
+        test: ["CMD", "curl","-f","http://arango_db:5829/_api/version"]
+        timeout: 30s
+        interval: 1m
+        retries: 3
+
+volumes:
+  arangodb-persist:
+    external: true
+
+  
