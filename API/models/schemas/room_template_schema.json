@@ -83,11 +83,15 @@
             "items": {
                 "type": "object",
                 "required": [
+                    "name",
                     "startPosXYm",
                     "endPosXYm",
                     "type"
                 ],
                 "properties": {
+                    "name": {
+                        "type": "string"
+                    },
                     "startPosXYm": {
                         "type": "array",
                         "items": {
