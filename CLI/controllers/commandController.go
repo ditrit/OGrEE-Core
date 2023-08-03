@@ -26,32 +26,16 @@ func PWD() string {
 	return State.CurrPath
 }
 
-func PostObj(ent int, entity string, data map[string]interface{}) (map[string]interface{}, error) {
-	var respMap map[string]interface{}
-	resp, e := models.Send("POST",
-		State.APIURL+"/api/"+entity+"s", GetKey(), data)
-
-	respMap = ParseResponse(resp, e, "POST")
-	if respMap == nil {
-		return nil, fmt.Errorf("Invalid Response received from API")
+func PostObj(ent int, entity string, data map[string]any) error {
+	resp, err := RequestAPI("POST", "/api/"+entity+"s", data, http.StatusCreated)
+	if err != nil {
+		return err
 	}
-
-	if resp.StatusCode == http.StatusCreated {
-		//Print success message
-		if State.DebugLvl > NONE {
-			println(string(respMap["message"].(string)))
-		}
-
-		//If ent is in State.ObjsForUnity then notify Unity
-		if IsInObjForUnity(entity) == true {
-			entInt := EntityStrToInt(entity)
-			InformUnity("PostObj", entInt,
-				map[string]interface{}{"type": "create", "data": respMap["data"]})
-		}
-
-		return respMap["data"].(map[string]interface{}), nil
+	if IsInObjForUnity(entity) {
+		entInt := EntityStrToInt(entity)
+		InformUnity("PostObj", entInt, map[string]any{"type": "create", "data": resp.body["data"]})
 	}
-	return nil, APIError(respMap)
+	return nil
 }
 
 func startsWith(s string, prefix string, suffix *string) bool {
@@ -1053,7 +1037,7 @@ func CreateObject(path string, ent int, data map[string]interface{}) error {
 	//we can do the conversion for templates here
 	data["category"] = strings.Replace(data["category"].(string), "_", "-", 1)
 
-	_, err = PostObj(ent, data["category"].(string), data)
+	err = PostObj(ent, data["category"].(string), data)
 	if err != nil {
 		return err
 	}
@@ -1570,33 +1554,21 @@ func LoadTemplate(data map[string]interface{}, filePath string) error {
 	var URL string
 	if cat := data["category"]; cat == "room" {
 		//Room template
-		URL = State.APIURL + "/api/room-templates"
+		URL = "/api/room-templates"
 	} else if cat == "bldg" || cat == "building" {
 		//Bldg template
-		URL = State.APIURL + "/api/bldg-templates"
+		URL = "/api/bldg-templates"
 	} else if cat == "rack" || cat == "device" {
 		// Obj template
-		URL = State.APIURL + "/api/obj-templates"
+		URL = "/api/obj-templates"
 	} else {
 		return fmt.Errorf("this template does not have a valid category. Please add a category attribute with a value of building or room or rack or device")
 	}
-	r, e := models.Send("POST", URL, GetKey(), data)
-	if e != nil {
-		return fmt.Errorf(e.Error())
+	_, err := RequestAPI("POST", URL, data, http.StatusCreated)
+	if err != nil {
+		return err
 	}
-	//Crashes here if API timeout
-	if r == nil {
-		return fmt.Errorf("unable to recieve response from API")
-	}
-	if r.StatusCode == http.StatusCreated {
-		println("Template Loaded")
-		return nil
-	} else {
-		l.GetWarningLogger().Println("Couldn't load template, Status Code :", r.StatusCode, " filePath :", filePath)
-		parsedResp := ParseResponse(r, e, "sending template")
-		errorMsg := "Error template wasn't loaded\n"
-		return fmt.Errorf(errorMsg + APIErrorMsg(parsedResp))
-	}
+	return nil
 }
 
 func SetClipBoard(x []string) ([]string, error) {

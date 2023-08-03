@@ -136,15 +136,6 @@ func (n *lenNode) execute() (interface{}, error) {
 	return len(arr), nil
 }
 
-type postObjNode struct {
-	entity string
-	data   map[string]interface{}
-}
-
-func (n *postObjNode) execute() (interface{}, error) {
-	return cmd.PostObj(cmd.EntityStrToInt(n.entity), n.entity, n.data)
-}
-
 type helpNode struct {
 	entry string
 }

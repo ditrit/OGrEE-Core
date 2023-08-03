@@ -38,35 +38,7 @@ const (
 	DEBUG
 )
 
-// Error Message Const
-// TODO: Replace Const with Err Msg/Reporting Func
-// that distinguishes API & CLI Errors
 const RACKUNIT = .04445 //meter
-
-func APIErrorMsg(respMap map[string]any) string {
-	respMsgAny, ok := respMap["message"]
-	if !ok {
-		return ""
-	}
-	respMsg, ok := respMsgAny.(string)
-	if !ok {
-		return ""
-	}
-	msg := "[Response From API] " + respMsg
-	errorsAny, ok := respMap["errors"]
-	if !ok {
-		return msg
-	}
-	errorsList := errorsAny.([]any)
-	for _, err := range errorsList {
-		msg += "\n    " + err.(string)
-	}
-	return msg
-}
-
-func APIError(respMap map[string]any) error {
-	return fmt.Errorf(APIErrorMsg(respMap))
-}
 
 // displays contents of maps
 func Disp(x map[string]interface{}) {
@@ -242,11 +214,19 @@ func RequestAPI(method string, endpoint string, body map[string]any, expectedSta
 		}
 	}
 	if response.status != expectedStatus {
+		msg := ""
 		if State.DebugLvl >= DEBUG {
-			return response, fmt.Errorf("%s %s\n[Response From API] %s", method, URL, response.message)
-		} else {
-			return response, fmt.Errorf("[Response From API] %s", response.message)
+			msg += fmt.Sprintf("%s %s\n", method, URL)
 		}
+		msg += fmt.Sprintf("[Response From API] %s", response.message)
+		errorsAny, ok := response.body["errors"]
+		if ok {
+			errorsList := errorsAny.([]any)
+			for _, err := range errorsList {
+				msg += "\n    " + err.(string)
+			}
+		}
+		return response, fmt.Errorf(msg)
 	}
 	return response, nil
 }
