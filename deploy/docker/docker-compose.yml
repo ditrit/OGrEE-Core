@@ -63,5 +63,44 @@ services:
       - ogree_api
     restart: on-failure:10
 
+
+
+  arango_db:
+    image: arangodb/arangodb:3.11.2
+    container_name: ${COMPOSE_PROJECT_NAME}_arango_db
+    environment:
+        - ARANGO_ROOT_PASSWORD=${ARANGO_PASS}
+    volumes:
+      - arangodb-persist:/var/lib/arangodb3
+    ports:
+      - ${ARANGO_PORT}:8529
+    restart: on-failure:10
+    
+
+  arrango_api:
+    build:
+      context: ${CORE_DIR} 
+      dockerfile: ${ARANGO_API_BUILD_DIR}/Dockerfile
+    image: arango-api:${IMAGE_TAG}
+    restart: always
+    container_name: ${COMPOSE_PROJECT_NAME}_arango_api
+    environment:
+      - ENV=production
+      - ARRANGO_URL=http://${COMPOSE_PROJECT_NAME}_arango_db:${ARANGO_PORT}
+      - ARRANGO_DATABASE=${ARANGO_DB}
+      - ARRANGO_USER=${ARANGO_USER}
+      - ARRANGO_PASSWORD=${ARANGO_PASS}
+    ports:
+      - 8080:8080
+    healthcheck:
+        test: ["CMD", "curl","-f","http://${COMPOSE_PROJECT_NAME}_arango_db:5829/_api/version"]
+        timeout: 30s
+        interval: 1m
+        retries: 3
+
 volumes:
   db:
+  arangodb-persist:
+    external: true
+      
+
