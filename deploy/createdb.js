@@ -101,7 +101,7 @@ db.createCollection('cabinet');
 db.createCollection('corridor');
 
 //Stray Objects
-db.createCollection('stray_device');
+db.createCollection('stray_object');
 
 //Enforce unique children
 db.domain.createIndex( {id:1}, { unique: true } );
@@ -126,7 +126,7 @@ db.corridor.createIndex({id:1}, { unique: true });
 db.group.createIndex({id:1}, { unique: true });
 
 //Enforce unique stray objects
-db.stray_device.createIndex({id:1}, { unique: true });
+db.stray_object.createIndex({id:1}, { unique: true });
 
 //Create a default domain and user
 db.domain.insertOne({id: DB_NAME, name: DB_NAME, category: "domain", 
