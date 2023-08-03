@@ -1,0 +1,31 @@
+FROM golang:1.18.2-alpine3.16 AS build
+
+# Set the Current Working Directory inside the container
+WORKDIR /build
+
+# We want to populate the module cache based on the go.{mod,sum} files.
+COPY go.mod .
+COPY go.sum .
+	
+RUN go mod download
+
+COPY . .
+RUN cp env .env
+
+
+# Build the Go app
+RUN CGO_ENABLED=0 GOOS=linux go build -a -o go-api  -ldflags "-X main.version=${VERSION} -X 'main.build=$(date)'" .
+
+# Start fresh from a smaller image
+FROM alpine:3.16
+
+WORKDIR /bin
+
+COPY --from=build /build/go-api .
+COPY --from=build /build/.env .
+COPY --from=build /build/swagger.yaml .
+
+
+# Run the binary program produced by `go install`
+CMD ["./go-api"]
+
