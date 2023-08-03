@@ -54,33 +54,6 @@ func PostObj(ent int, entity string, data map[string]interface{}) (map[string]in
 	return nil, APIError(respMap)
 }
 
-// Calls API's Validation
-func ValidateObj(data map[string]interface{}, ent string, silence bool) bool {
-	var respMap map[string]interface{}
-	resp, e := models.Send("POST",
-		State.APIURL+"/api/validate/"+ent+"s", GetKey(), data)
-
-	respMap = ParseResponse(resp, e, "POST")
-	if respMap == nil {
-		if State.DebugLvl > 1 {
-			println("Received invalid response from API")
-		}
-		return false
-	}
-
-	if resp.StatusCode == http.StatusOK {
-		//Print success message
-		if silence == false {
-			println(string(respMap["message"].(string)))
-		}
-
-		return true
-	}
-	println("Error: ", APIErrorMsg(respMap))
-	println()
-	return false
-}
-
 func startsWith(s string, prefix string, suffix *string) bool {
 	if strings.HasPrefix(s, prefix) {
 		*suffix = s[len(prefix):]
@@ -1589,18 +1562,6 @@ func ShowClipBoard() []string {
 			println(k)
 		}
 		return State.ClipBoard
-	}
-	return nil
-}
-
-func UpdateSelection(data map[string]interface{}) error {
-	if State.ClipBoard != nil {
-		for _, k := range State.ClipBoard {
-			_, err := UpdateObj(k, data)
-			if err != nil {
-				return err
-			}
-		}
 	}
 	return nil
 }

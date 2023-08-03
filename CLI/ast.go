@@ -665,37 +665,46 @@ func (n *updateObjNode) execute() (interface{}, error) {
 		}
 		values = append(values, val)
 	}
+	var paths []string
 	if path == "_" {
-		if len(values) != 1 {
-			return nil, fmt.Errorf("only one value is expected when updating selection")
-		}
-		return nil, cmd.UpdateSelection(map[string]any{n.attr: values[0]})
+		paths = cmd.State.ClipBoard
+	} else {
+		paths = []string{path}
 	}
-	boolInteractVals := []string{"content", "alpha", "tilesName", "tilesColor", "U", "slots", "localCS"}
-	if AssertInStringValues(n.attr, boolInteractVals) {
-		boolVal, err := valToBool(values[0], n.attr)
+	for _, path := range paths {
+		boolInteractVals := []string{"content", "alpha", "tilesName", "tilesColor", "U", "slots", "localCS"}
+		if AssertInStringValues(n.attr, boolInteractVals) {
+			boolVal, err := valToBool(values[0], n.attr)
+			if err != nil {
+				return nil, err
+			}
+			return nil, cmd.InteractObject(path, n.attr, boolVal, n.hasSharpe)
+		}
+		var err error
+		switch n.attr {
+		case "areas":
+			_, err = setRoomAreas(path, values)
+		case "label":
+			_, err = setLabel(path, values, n.hasSharpe)
+		case "labelFont":
+			_, err = setLabelFont(path, values)
+		case "separator":
+			_, err = addRoomSeparator(path, values)
+		case "pillar":
+			_, err = addRoomPillar(path, values)
+		default:
+			if strings.HasPrefix(n.attr, "description") {
+				_, err = updateDescription(path, n.attr, values)
+			} else {
+				attributes := map[string]any{n.attr: values[0]}
+				_, err = cmd.UpdateObj(path, map[string]any{"attributes": attributes})
+			}
+		}
 		if err != nil {
 			return nil, err
 		}
-		return nil, cmd.InteractObject(path, n.attr, boolVal, n.hasSharpe)
 	}
-	switch n.attr {
-	case "areas":
-		return setRoomAreas(path, values)
-	case "label":
-		return setLabel(path, values, n.hasSharpe)
-	case "labelFont":
-		return setLabelFont(path, values)
-	case "separator":
-		return addRoomSeparator(path, values)
-	case "pillar":
-		return addRoomPillar(path, values)
-	}
-	if strings.HasPrefix(n.attr, "description") {
-		return updateDescription(path, n.attr, values)
-	}
-	attributes := map[string]any{n.attr: values[0]}
-	return cmd.UpdateObj(path, map[string]any{"attributes": attributes})
+	return nil, nil
 }
 
 type lsObjNode struct {
