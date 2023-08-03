@@ -134,6 +134,39 @@ func nodeToBool(n node, name string) (bool, error) {
 	return valToBool(val, name)
 }
 
+func valTo3dRotation(val any) ([]float64, error) {
+	switch rotation := val.(type) {
+	case []float64:
+		return rotation, nil
+	case string:
+		switch rotation {
+		case "front":
+			return []float64{0, 180, 0}, nil
+		case "rear":
+			return []float64{0, 0, 0}, nil
+		case "left":
+			return []float64{0, 0, 90}, nil
+		case "right":
+			return []float64{0, 0, -90}, nil
+		case "top":
+			return []float64{90, 0, 0}, nil
+		case "bottom":
+			return []float64{-90, 0, 0}, nil
+		}
+	}
+	return nil, fmt.Errorf(
+		`rotation should be a vector3, or one of the following keywords :
+		front, rear, left, right, top, bottom`)
+}
+
+func nodeTo3dRotation(n node) ([]float64, error) {
+	val, err := n.execute()
+	if err != nil {
+		return nil, err
+	}
+	return valTo3dRotation(val)
+}
+
 // Open a file and return the JSON in the file
 // Used by EasyPost, EasyUpdate and Load Template
 func fileToJSON(path string) map[string]interface{} {

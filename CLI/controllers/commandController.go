@@ -1562,7 +1562,7 @@ func GetOCLIAtrributes(Path string, ent int, data map[string]interface{}) error 
 			Disp(data)
 		}
 
-	case RACK:
+	case RACK, CORRIDOR:
 		attr = data["attributes"].(map[string]interface{})
 		//Save rotation because it gets overwritten by
 		//GetOCLIAtrributesTemplateHelper()
@@ -1719,11 +1719,6 @@ func GetOCLIAtrributes(Path string, ent int, data map[string]interface{}) error 
 
 		groups := strings.Join(attr["content"].([]string), ",")
 		attr["content"] = groups
-
-	case CORRIDOR:
-		//name, category, domain, pid
-		attr = data["attributes"].(map[string]interface{})
-		data["parentId"] = parent["id"]
 
 	case STRAYSENSOR:
 		attr = data["attributes"].(map[string]interface{})

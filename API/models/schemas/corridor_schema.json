@@ -7,12 +7,47 @@
         "attributes": {
             "type": "object",
             "required": [
-                "content",
-                "temperature"
+                "temperature",
+                "height",
+                "heightUnit",
+                "rotation",
+                "posXYUnit",
+                "posXYZ",
+                "size",
+                "sizeUnit"
             ],
             "properties": {
-                "content": {
-                    "type": "string"
+                "height": {
+                    "type": "string",
+                    "$ref": "refs/types.json#/definitions/float"
+                },
+                "heightUnit": {
+                    "type": "string",
+                    "enum": ["mm", "cm", "m", "U", "OU", "f"]
+                },
+                "rotation": {
+                    "type": "string",
+                    "$ref": "refs/types.json#/definitions/vector3"
+                },
+                "posXYZ": {
+                    "type": "string",
+                    "$ref": "refs/types.json#/definitions/vector3"
+                },
+                "posXYUnit": {
+                    "type": "string",
+                    "enum": ["m", "t", "f"]
+                },
+                "size": {
+                    "type": "string",
+                    "$ref": "refs/types.json#/definitions/vector2"
+                },
+                "sizeUnit": {
+                    "type": "string",
+                    "$ref": "refs/types.json#/definitions/metricImperialUnit"
+                },
+                "color": {
+                    "type": "string",
+                    "$ref": "refs/types.json#/definitions/color"
                 },
                 "temperature": {
                     "type": "string",
@@ -29,7 +64,14 @@
             "attributes": {
                 "color": "000099",
                 "content": "B11,C19",
-                "temperature": "cold"
+                "temperature": "cold",
+                "height": "47",
+                "heightUnit": "U",
+                "rotation": "{\"x\":45 ,\"y\":45 ,\"z\":45}",
+                "posXYUnit": "m",
+                "posXYZ": "{\"x\":4.6666666666667 ,\"y\": -2 ,\"z\":0}",
+                "size": "{\"x\":80 ,\"y\":100.532442}",
+                "sizeUnit": "cm"
             },
             "category": "corridor",
             "description": [],

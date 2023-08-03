@@ -1148,33 +1148,11 @@ func (n *createRackNode) execute() (interface{}, error) {
 		return nil, fmt.Errorf("unit should be a string")
 	}
 	attributes := map[string]any{"posXYZ": pos, "posXYUnit": unit}
-	rotationAny, err := n.rotation.execute()
+	rotation, err := nodeTo3dRotation(n.rotation)
 	if err != nil {
 		return nil, err
 	}
-	switch rotation := rotationAny.(type) {
-	case []float64:
-		attributes["rotation"] = rotation
-	case string:
-		switch rotation {
-		case "front":
-			attributes["rotation"] = []float64{0, 180, 0}
-		case "rear":
-			attributes["rotation"] = []float64{0, 0, 0}
-		case "left":
-			attributes["rotation"] = []float64{0, 0, 90}
-		case "right":
-			attributes["rotation"] = []float64{0, 0, -90}
-		case "top":
-			attributes["rotation"] = []float64{90, 0, 0}
-		case "bottom":
-			attributes["rotation"] = []float64{-90, 0, 0}
-		default:
-			return nil, fmt.Errorf(
-				`orientation should be a vector3, or one of the following keywords :
-				front, rear, left, right, top, bottom`)
-		}
-	}
+	attributes["rotation"] = rotation
 	sizeOrTemplateAny, err := n.sizeOrTemplate.execute()
 	if err != nil {
 		return nil, err
@@ -1284,46 +1262,60 @@ func (n *createGroupNode) execute() (interface{}, error) {
 }
 
 type createCorridorNode struct {
-	path      node
-	leftRack  node
-	rightRack node
-	temp      node
+	path     node
+	pos      node
+	unit     node
+	rotation node
+	size     node
+	temp     node
 }
 
 func (n *createCorridorNode) execute() (interface{}, error) {
-	path, err := AssertString(&n.path, "Path for corridor")
+	pathVal, err := n.path.execute()
 	if err != nil {
 		return nil, err
 	}
-
-	leftRack, err2 := AssertString(&n.leftRack, "Path for left rack")
-	if err2 != nil {
-		return nil, err2
+	path, ok := pathVal.(string)
+	if !ok {
+		return nil, fmt.Errorf("path should be a string")
 	}
-
-	rightRack, err3 := AssertString(&n.rightRack, "Path for right rack")
-	if err3 != nil {
-		return nil, err3
+	posAny, err := n.pos.execute()
+	if err != nil {
+		return nil, err
 	}
-
-	temp, err4 := AssertString(&n.temp, "Temperature")
-	if err4 != nil {
-		return nil, err4
+	pos, ok := posAny.([]float64)
+	if !ok || (len(pos) != 2 && len(pos) != 3) {
+		return nil, fmt.Errorf("position should be a vector2 or a vector3")
 	}
-	tempIsValid := AssertInStringValues(temp, []string{"warm", "cold"})
-	if !tempIsValid {
-		return nil,
-			fmt.Errorf("temperature should be either 'warm' or 'cold'")
+	unitAny, err := n.unit.execute()
+	if err != nil {
+		return nil, err
 	}
-	leftRack = filepath.Base(leftRack)
-	rightRack = filepath.Base(rightRack)
-
-	attributes := map[string]interface{}{
-		"content": leftRack + "," + rightRack, "temperature": temp}
-
-	data := map[string]interface{}{"attributes": attributes}
-
-	err = cmd.GetOCLIAtrributes(path, cmd.CORRIDOR, data)
+	unit, ok := unitAny.(string)
+	if !ok {
+		return nil, fmt.Errorf("unit should be a string")
+	}
+	attributes := map[string]any{"posXYZ": pos, "posXYUnit": unit}
+	rotation, err := nodeTo3dRotation(n.rotation)
+	if err != nil {
+		return nil, err
+	}
+	attributes["rotation"] = rotation
+	sizeAny, err := n.size.execute()
+	if err != nil {
+		return nil, err
+	}
+	size, ok := sizeAny.([]float64)
+	if !ok || len(size) != 3 {
+		return nil, fmt.Errorf("vector3 (size) or string (template) expected")
+	}
+	attributes["size"] = size
+	temp, err := AssertString(&n.temp, "Temperature")
+	if err != nil {
+		return nil, err
+	}
+	attributes["temperature"] = temp
+	err = cmd.GetOCLIAtrributes(path, cmd.CORRIDOR, map[string]any{"attributes": attributes})
 	if err != nil {
 		return nil, err
 	}
