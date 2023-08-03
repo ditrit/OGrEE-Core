@@ -118,5 +118,9 @@
   "notLoaded": "not loaded by user",
   "failedToUpload": "Custom logo not set:",
   "wrongFormatUrl": "Wrong format for URL: expected host:port",
-  "wrongFormatPort": "Wrong format for URL: port should only have digits"
+  "wrongFormatPort": "Wrong format for URL: port should only have digits",
+
+  "requestBackup": "Create database backup",
+  "downloadBackup": "Download backup archive",
+  "backupInfoMessage": "A backup archive file will be created in the host machine of the database container.\nIf this option is selected, this file will also be downloaded in your current machine."
 }

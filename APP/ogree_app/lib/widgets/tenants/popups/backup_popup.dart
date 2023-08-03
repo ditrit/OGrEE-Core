@@ -48,15 +48,13 @@ class _BackupPopupState extends State<BackupPopup> {
                           backgroundColor: Colors.white,
                           body: ListView(
                             padding: EdgeInsets.zero,
-                            //shrinkWrap: true,
                             children: [
                               Center(
                                   child: Text(
-                                "Soliciter backup de la base",
+                                localeMsg.requestBackup,
                                 style:
                                     Theme.of(context).textTheme.headlineMedium,
                               )),
-                              // const Divider(height: 35),
                               const SizedBox(height: 20),
                               getFormField(
                                   save: (newValue) =>
@@ -79,11 +77,31 @@ class _BackupPopupState extends State<BackupPopup> {
                                   ),
                                   const SizedBox(width: 8),
                                   Text(
-                                    "Télécharger archive de backup",
-                                    style: TextStyle(
+                                    localeMsg.downloadBackup,
+                                    style: const TextStyle(
                                       fontSize: 14,
                                       color: Colors.black,
                                     ),
+                                  ),
+                                  const SizedBox(width: 8),
+                                  Tooltip(
+                                    message: localeMsg.backupInfoMessage,
+                                    verticalOffset: 13,
+                                    decoration: const BoxDecoration(
+                                      color: Colors.blueAccent,
+                                      borderRadius:
+                                          BorderRadius.all(Radius.circular(12)),
+                                    ),
+                                    textStyle: const TextStyle(
+                                      fontSize: 13,
+                                      color: Colors.white,
+                                      height: 1.5,
+                                    ),
+                                    padding: const EdgeInsets.all(16),
+                                    child: const Icon(
+                                        Icons.info_outline_rounded,
+                                        color: Colors.blueAccent,
+                                        size: 18),
                                   ),
                                 ],
                               ),
