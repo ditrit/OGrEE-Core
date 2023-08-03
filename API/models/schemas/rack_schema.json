@@ -46,6 +46,9 @@
         "color": {
           "type": "string",
           "$ref": "refs/types.json#/definitions/color"
+        },
+        "clearance": {
+          "$ref": "refs/types.json#/definitions/clearanceVector"
         }
       },
       "required": [

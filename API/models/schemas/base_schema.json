@@ -6,7 +6,12 @@
     "$ref": "refs/base.json",
     "properties": {
       "attributes": {
-        "type": "object"
+        "type": "object",
+        "properties": {
+          "clearance": {
+            "$ref": "refs/types.json#/definitions/clearanceVector"
+          }
+        }
       }
     }
   }
