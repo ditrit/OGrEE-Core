@@ -22,7 +22,7 @@ func JwtAuthMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		err := token.TokenValid(c)
 		if err != nil {
-			c.String(http.StatusUnauthorized, "Unauthorized")
+			c.IndentedJSON(http.StatusUnauthorized,gin.H{"message":"Unauthorized"})
 			c.Abort()
 			return
 		}
@@ -53,6 +53,9 @@ func InitRouter(db driver.Database, addr string) *gin.Engine {
 	proteted.POST("/Database", handlers.ConnectBDD)
 
 	router.POST("/api/v1/Login",handlers.Login)
+	router.GET("/api/v1/health",func(c *gin.Context){
+		c.String(http.StatusAccepted,"")
+	})
 
 	swagger := handlers.SwaggerHandler()
 	router.Use(gin.WrapH(swagger))
