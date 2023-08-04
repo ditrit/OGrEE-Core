@@ -21,18 +21,29 @@ import (
 	"arango-api/services"
 	"fmt"
 	"os"
+	e "github.com/joho/godotenv"
 )
 
 func main() {
+
+	env := os.Getenv("ENV")
+	if env != "production" {
+		err := e.Load()
+		if err != nil {
+			fmt.Println("Some error occured. Err: ", err)
+			return
+		}
+	}
+
 	addr := os.Getenv("ARANGO_URL")
 	bdd := os.Getenv("ARANGO_DATABASE")
 	user := os.Getenv("ARANGO_USER")
 	password := os.Getenv("ARANGO_PASSWORD")
 
 	
-	db, err := database.ConnectToArrengo(addr,bdd, user, password)
-	if err != nil {
-		fmt.Println("Error connecting to database: ", err.Message)
+	db, err2 := database.ConnectToArrengo(addr,bdd, user, password)
+	if err2 != nil {
+		fmt.Println("Error connecting to database: ", err2.Message)
 		return
 	}
 

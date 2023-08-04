@@ -13,6 +13,8 @@ import (
 // Get database name
 //
 // ---
+// security:
+//   - Bearer: []
 // responses:
 //   '200':
 //     description: successful
@@ -47,18 +49,19 @@ func GetBDD(c *gin.Context) {
 // Connect to new bdd
 //
 // ---
+// security:
+//   - Bearer: []
 // responses:
-//
-//	'200':
-//	  description: successful
-//	  schema:
-//	    items:
-//	      "$ref": "#/definitions/ErrorResponse"
-//	'500':
-//	  description: Error
-//	  schema:
-//	    items:
-//	      "$ref": "#/definitions/ErrorResponse"
+//   '200':
+//     description: successful
+//     schema:
+//       items:
+//         "$ref": "#/definitions/ErrorResponse"
+//   '500':
+//     description: Error
+//     schema:
+//       items:
+//         "$ref": "#/definitions/ErrorResponse"
 func ConnectBDD(c *gin.Context) {
 	db, err := database.GetDBConn(c)
 	if err != nil && err.StatusCode != 404 {

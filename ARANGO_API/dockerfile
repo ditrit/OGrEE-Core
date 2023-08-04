@@ -9,7 +9,7 @@ COPY ARANGO_API/go.sum .
 	
 RUN go mod download
 
-COPY ARANGO_API/. .
+COPY ARANGO_API .
 
 
 # Build the Go app

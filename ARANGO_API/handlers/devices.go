@@ -33,6 +33,8 @@ import (
 //     description: Serial number of device
 //     required: false
 //     type: string
+// security:
+//   - Bearer: []
 // responses:
 //   '200':
 //     description: successful
@@ -63,18 +65,19 @@ func GetDevices(c *gin.Context) {
 // Create new Devices
 //
 // ---
+// security:
+//   - Bearer: []
 // responses:
-//
-//	'200':
-//	  description: successful
-//	  schema:
-//	    items:
-//	      "$ref": "#/definitions/SuccessResponse"
-//	'500':
-//	  description: Error
-//	  schema:
-//	    items:
-//	      "$ref": "#/definitions/ErrorResponse"
+//   '200':
+//     description: successful
+//     schema:
+//       items:
+//         "$ref": "#/definitions/SuccessResponse"
+//   '500':
+//     description: Error
+//     schema:
+//       items:
+//         "$ref": "#/definitions/ErrorResponse"
 func PostDevices(c *gin.Context) {
 
 	var newDevices map[string]string
@@ -116,19 +119,19 @@ func PostDevices(c *gin.Context) {
 //     description: device looking for
 //     required: true
 //     type: string
-//
+// security:
+//   - Bearer: [] 
 // responses:
-//
-//	'200':
-//	  description: successful
-//	  schema:
-//	    items:
-//	      "$ref": "#/definitions/SuccessResponse"
-//	'500':
-//	  description: Error
-//	  schema:
-//	    items:
-//	      "$ref": "#/definitions/ErrorResponse"
+//   '200':
+//     description: successful
+//     schema:
+//       items:
+//         "$ref": "#/definitions/SuccessResponse"
+//   '500':
+//     description: Error
+//     schema:
+//       items:
+//         "$ref": "#/definitions/ErrorResponse"
 func DeleteDevice(c *gin.Context) {
 	key := c.Param("key")
 

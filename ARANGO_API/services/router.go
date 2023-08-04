@@ -3,7 +3,8 @@ package services
 import (
 	"arango-api/handlers"
 	"os"
-
+	"arango-api/utils/token"
+	"net/http"
 	driver "github.com/arangodb/go-driver"
 	"github.com/gin-gonic/gin"
 )
@@ -17,6 +18,18 @@ func DBMiddleware(db driver.Database, addr string) gin.HandlerFunc {
 	}
 }
 
+func JwtAuthMiddleware() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		err := token.TokenValid(c)
+		if err != nil {
+			c.String(http.StatusUnauthorized, "Unauthorized")
+			c.Abort()
+			return
+		}
+		c.Next()
+	}
+}
+
 func InitRouter(db driver.Database, addr string) *gin.Engine {
 	env := os.Getenv("ENV")
 	if env == "production" {
@@ -26,17 +39,20 @@ func InitRouter(db driver.Database, addr string) *gin.Engine {
 	router := gin.Default()
 
 	router.Use(DBMiddleware(db, addr))
+	proteted := router.Group("/api/v1")
+	proteted.Use(JwtAuthMiddleware())
+	proteted.GET("/Devices", handlers.GetDevices)
+	proteted.POST("/Devices", handlers.PostDevices)
+	proteted.DELETE("/Devices/:key", handlers.DeleteDevice)
 
-	router.GET("/api/v1//Devices", handlers.GetDevices)
-	router.POST("/api/v1//Devices", handlers.PostDevices)
-	router.DELETE("/api/v1//Devices/:key", handlers.DeleteDevice)
+	proteted.GET("/Connections", handlers.GetConnection)
+	proteted.POST("/Connections", handlers.PostConnection)
+	proteted.DELETE("/Connections/:key", handlers.DeleteConnection)
 
-	router.GET("/api/v1//Connections", handlers.GetConnection)
-	router.POST("/api/v1//Connections", handlers.PostConnection)
-	router.DELETE("/api/v1//Connections/:key", handlers.DeleteConnection)
+	proteted.GET("/Database", handlers.GetBDD)
+	proteted.POST("/Database", handlers.ConnectBDD)
 
-	router.GET("/api/v1/Database", handlers.GetBDD)
-	router.POST("/api/v1/Database", handlers.ConnectBDD)
+	router.POST("/api/v1/Login",handlers.Login)
 
 	swagger := handlers.SwaggerHandler()
 	router.Use(gin.WrapH(swagger))
