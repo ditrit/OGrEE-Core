@@ -44,6 +44,7 @@ func InitRouter(db driver.Database, addr string) *gin.Engine {
 	proteted.GET("/Devices", handlers.GetDevices)
 	proteted.POST("/Devices", handlers.PostDevices)
 	proteted.DELETE("/Devices/:key", handlers.DeleteDevice)
+	proteted.GET("/Devices/:key/Connected", handlers.GetDevicesConnectedTo)
 
 	proteted.GET("/Connections", handlers.GetConnection)
 	proteted.POST("/Connections", handlers.PostConnection)

@@ -68,7 +68,7 @@ func GetAll(c *gin.Context, col string) ([]interface{}, *models.ErrorMessage) {
 	querystring := "FOR doc IN " + col
 
 	for key, value := range values {
-		querystring += " FILTER doc." + key + " == \"" + value[0] + "\" "
+		querystring += " FILTER doc." + key + " LIKE \"" + value[0] + "\" "
 	}
 	querystring += " RETURN doc"
 	result, err := ExecQuerry(*db, querystring)
