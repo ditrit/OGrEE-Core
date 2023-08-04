@@ -91,7 +91,7 @@ services:
       - ARRANGO_USER=${ARANGO_USER}
       - ARRANGO_PASSWORD=${ARANGO_PASS}
     ports:
-      - 8080:8080
+      - ${ARANGO_API_PORT}:8080
     healthcheck:
         test: ["CMD", "curl","-f","http://${COMPOSE_PROJECT_NAME}_arango_db:5829/_api/version"]
         timeout: 30s
