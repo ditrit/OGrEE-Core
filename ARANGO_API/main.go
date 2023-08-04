@@ -17,17 +17,17 @@
 package main
 
 import (
+	"arango-api/database"
+	"arango-api/services"
 	"fmt"
 	"os"
-	"go-api/services"
-	"go-api/database"
 )
 
 func main() {
-	addr := os.Getenv("ARRANGO_URL")
-	bdd := os.Getenv("ARRANGO_DATABASE")
-	user := os.Getenv("ARRANGO_USER")
-	password := os.Getenv("ARRANGO_PASSWORD")
+	addr := os.Getenv("ARANGO_URL")
+	bdd := os.Getenv("ARANGO_DATABASE")
+	user := os.Getenv("ARANGO_USER")
+	password := os.Getenv("ARANGO_PASSWORD")
 
 	
 	db, err := database.ConnectToArrengo(addr,bdd, user, password)

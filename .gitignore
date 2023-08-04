@@ -27,5 +27,5 @@ deploy/docker/*.env
 deploy/docker/app-deploy
 
 #ARANGO_API Ignore
-ARANGO_API/go-api
-ARANGO_API/env
+ARANGO_API/arango-api
+ARANGO_API/*env

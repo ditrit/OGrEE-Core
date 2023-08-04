@@ -13,17 +13,17 @@ COPY ARANGO_API/. .
 
 
 # Build the Go app
-RUN CGO_ENABLED=0 GOOS=linux go build -a -o go-api  -ldflags "-X main.version=${VERSION} -X 'main.build=$(date)'" .
+RUN CGO_ENABLED=0 GOOS=linux go build -a -o arango-api  -ldflags "-X main.version=${VERSION} -X 'main.build=$(date)'" .
 
 # Start fresh from a smaller image
 FROM alpine:3.16
 
 WORKDIR /bin
 
-COPY --from=build /build/go-api .
+COPY --from=build /build/arango-api .
 COPY --from=build /build/swagger.yaml .
 
 
 # Run the binary program produced by `go install`
-CMD ["./go-api"]
+CMD ["./arango-api"]
 
