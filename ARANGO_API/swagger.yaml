@@ -422,6 +422,47 @@ paths:
                 - Bearer: []
             tags:
                 - Devices
+    /Devices/{device}/Connected:
+        get:
+            description: Get Devices connected to a device
+            operationId: GetDevicesConnectedTo
+            parameters:
+                - description: Key of device
+                  in: path
+                  name: device
+                  required: true
+                  type: string
+                - description: Filter devices by key
+                  in: query
+                  name: _key
+                  type: string
+                - description: Name of device
+                  in: query
+                  name: _name
+                  type: string
+                - description: Group_name of device
+                  in: query
+                  name: group_name
+                  type: string
+                - description: Serial number of device
+                  in: query
+                  name: serial
+                  type: string
+            responses:
+                "200":
+                    description: successful
+                    schema:
+                        items:
+                            $ref: '#/definitions/SuccessResponse'
+                "500":
+                    description: Error
+                    schema:
+                        items:
+                            $ref: '#/definitions/ErrorResponse'
+            security:
+                - Bearer: []
+            tags:
+                - Devices
     /Login:
         post:
             description: Login to api
