@@ -28,19 +28,19 @@ import (
 //     description: To witch device
 //     required: false
 //     type: string
-//
+// security:
+//   - Bearer: []
 // responses:
-//
-//	'200':
-//	  description: successful
-//	  schema:
-//	    items:
-//	      "$ref": "#/definitions/SuccessConResponse"
-//	'500':
-//	  description: Error
-//	  schema:
-//	    items:
-//	      "$ref": "#/definitions/ErrorResponse"
+//   '200':
+//     description: successful
+//     schema:
+//       items:
+//         "$ref": "#/definitions/SuccessConResponse"
+//   '500':
+//     description: Error
+//     schema:
+//       items:
+//         "$ref": "#/definitions/ErrorResponse"
 func GetConnection(c *gin.Context) {
 
 	conn, err := database.GetAll(c, "links")
@@ -59,18 +59,19 @@ func GetConnection(c *gin.Context) {
 // Create new Connection
 //
 // ---
+// security:
+//   - Bearer: []
 // responses:
-//
-//	'200':
-//	  description: successful
-//	  schema:
-//	    items:
-//	      "$ref": "#/definitions/SuccessConResponse"
-//	'500':
-//	  description: Error
-//	  schema:
-//	    items:
-//	      "$ref": "#/definitions/ErrorResponse"
+//   '200':
+//     description: successful
+//     schema:
+//       items:
+//         "$ref": "#/definitions/SuccessConResponse"
+//   '500':
+//     description: Error
+//     schema:
+//       items:
+//         "$ref": "#/definitions/ErrorResponse"
 func PostConnection(c *gin.Context) {
 
 	var newConn map[string]string
@@ -93,6 +94,8 @@ func PostConnection(c *gin.Context) {
 // Delete Connection by key
 //
 // ---
+// security:
+//   - Bearer: []
 // parameters:
 //   - name: connection
 //     in: path
@@ -101,17 +104,16 @@ func PostConnection(c *gin.Context) {
 //     type: string
 //
 // responses:
-//
-//	'200':
-//	  description: successful
-//	  schema:
-//	    items:
-//	      "$ref": "#/definitions/SuccessResponse"
-//	'500':
-//	  description: Error
-//	  schema:
-//	    items:
-//	      "$ref": "#/definitions/ErrorResponse"
+//   '200':
+//     description: successful
+//     schema:
+//       items:
+//         "$ref": "#/definitions/SuccessResponse"
+//   '500':
+//     description: Error
+//     schema:
+//       items:
+//         "$ref": "#/definitions/ErrorResponse"
 func DeleteConnection(c *gin.Context) {
 	key := c.Param("key")
 

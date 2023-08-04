@@ -90,6 +90,9 @@ services:
       - ARANGO_DATABASE=${ARANGO_DB}
       - ARANGO_USER=${ARANGO_USER}
       - ARANGO_PASSWORD=${ARANGO_PASS}
+      - API_USER=${ARANGO_API_USER}
+      - API_PASSWORD=${ARANGO_API_PASSWORD}
+      - API_SECRET=${ARANGO_API_SECRET}
     ports:
       - ${ARANGO_API_PORT}:8080
     healthcheck:

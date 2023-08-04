@@ -164,6 +164,22 @@ definitions:
                 x-go-name: Message
         type: object
         x-go-package: arango-api/models
+    LoginInput:
+        properties:
+            password:
+                description: |-
+                    username
+                    in: password
+                type: string
+                x-go-name: Password
+            username:
+                description: |-
+                    username
+                    in: username
+                type: string
+                x-go-name: Username
+        type: object
+        x-go-package: arango-api/models
     SuccessConResponse:
         properties:
             Connections:
@@ -173,6 +189,13 @@ definitions:
                 items:
                     $ref: '#/definitions/Connection'
                 type: array
+        type: object
+        x-go-package: arango-api/models
+    SuccessLogin:
+        properties:
+            token:
+                type: string
+                x-go-name: Token
         type: object
         x-go-package: arango-api/models
     SuccessResponse:
@@ -218,6 +241,8 @@ paths:
                     schema:
                         items:
                             $ref: '#/definitions/ErrorResponse'
+            security:
+                - Bearer: []
             tags:
                 - Connections
         post:
@@ -240,6 +265,8 @@ paths:
                     schema:
                         items:
                             $ref: '#/definitions/ErrorResponse'
+            security:
+                - Bearer: []
             tags:
                 - Connections
     /Connections/{connection}:
@@ -263,6 +290,8 @@ paths:
                     schema:
                         items:
                             $ref: '#/definitions/ErrorResponse'
+            security:
+                - Bearer: []
             tags:
                 - Connections
     /Database:
@@ -280,6 +309,8 @@ paths:
                     schema:
                         items:
                             $ref: '#/definitions/ErrorResponse'
+            security:
+                - Bearer: []
             tags:
                 - Database
         post:
@@ -302,6 +333,8 @@ paths:
                     schema:
                         items:
                             $ref: '#/definitions/ErrorResponse'
+            security:
+                - Bearer: []
             tags:
                 - Database
     /Devices:
@@ -336,6 +369,8 @@ paths:
                     schema:
                         items:
                             $ref: '#/definitions/ErrorResponse'
+            security:
+                - Bearer: []
             tags:
                 - Devices
         post:
@@ -358,6 +393,8 @@ paths:
                     schema:
                         items:
                             $ref: '#/definitions/ErrorResponse'
+            security:
+                - Bearer: []
             tags:
                 - Devices
     /Devices/{device}:
@@ -381,8 +418,33 @@ paths:
                     schema:
                         items:
                             $ref: '#/definitions/ErrorResponse'
+            security:
+                - Bearer: []
             tags:
                 - Devices
+    /Login:
+        post:
+            description: Login to api
+            operationId: LoginToApi
+            parameters:
+                - in: body
+                  name: body
+                  schema:
+                    $ref: '#/definitions/LoginInput'
+                  x-go-name: Body
+            responses:
+                "200":
+                    description: successful
+                    schema:
+                        items:
+                            $ref: '#/definitions/SuccessLogin'
+                "500":
+                    description: Error
+                    schema:
+                        items:
+                            $ref: '#/definitions/ErrorResponse'
+            tags:
+                - Login
 produces:
     - application/json
 schemes:
