@@ -1,14 +1,14 @@
 package services
 
 import (
-	"go-api/handlers"
+	"arango-api/handlers"
 	"os"
+
 	driver "github.com/arangodb/go-driver"
 	"github.com/gin-gonic/gin"
 )
 
-
-func DBMiddleware(db driver.Database,addr string) gin.HandlerFunc {
+func DBMiddleware(db driver.Database, addr string) gin.HandlerFunc {
 
 	return func(c *gin.Context) {
 		c.Set("database", &db)
@@ -17,17 +17,15 @@ func DBMiddleware(db driver.Database,addr string) gin.HandlerFunc {
 	}
 }
 
-func InitRouter(db driver.Database,addr string) *gin.Engine {
+func InitRouter(db driver.Database, addr string) *gin.Engine {
 	env := os.Getenv("ENV")
-	if env =="production"{
+	if env == "production" {
 		gin.SetMode(gin.ReleaseMode)
 	}
-	
+
 	router := gin.Default()
 
-	
-
-	router.Use(DBMiddleware(db,addr))
+	router.Use(DBMiddleware(db, addr))
 
 	router.GET("/api/v1//Devices", handlers.GetDevices)
 	router.POST("/api/v1//Devices", handlers.PostDevices)

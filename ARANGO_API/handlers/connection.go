@@ -3,7 +3,8 @@ package handlers
 import (
 	"net/http"
 
-	"go-api/database"
+	"arango-api/database"
+
 	"github.com/gin-gonic/gin"
 )
 
@@ -27,20 +28,22 @@ import (
 //     description: To witch device
 //     required: false
 //     type: string
+//
 // responses:
-//   '200':
-//     description: successful
-//     schema:
-//       items:
-//         "$ref": "#/definitions/SuccessConResponse"
-//   '500':
-//     description: Error
-//     schema:
-//       items:
-//         "$ref": "#/definitions/ErrorResponse"
+//
+//	'200':
+//	  description: successful
+//	  schema:
+//	    items:
+//	      "$ref": "#/definitions/SuccessConResponse"
+//	'500':
+//	  description: Error
+//	  schema:
+//	    items:
+//	      "$ref": "#/definitions/ErrorResponse"
 func GetConnection(c *gin.Context) {
 
-	conn, err := database.GetAll(c,"links")
+	conn, err := database.GetAll(c, "links")
 	if err != nil {
 		c.IndentedJSON(err.StatusCode, gin.H{"message": err.Message})
 		return
@@ -52,24 +55,24 @@ func GetConnection(c *gin.Context) {
 	c.IndentedJSON(http.StatusOK, conn)
 }
 
-
 // swagger:operation POST /Connections Connections CreateConnection
 // Create new Connection
 //
 // ---
 // responses:
-//   '200':
-//     description: successful
-//     schema:
-//       items:
-//         "$ref": "#/definitions/SuccessConResponse"
-//   '500':
-//     description: Error
-//     schema:
-//       items:
-//         "$ref": "#/definitions/ErrorResponse"
+//
+//	'200':
+//	  description: successful
+//	  schema:
+//	    items:
+//	      "$ref": "#/definitions/SuccessConResponse"
+//	'500':
+//	  description: Error
+//	  schema:
+//	    items:
+//	      "$ref": "#/definitions/ErrorResponse"
 func PostConnection(c *gin.Context) {
-	
+
 	var newConn map[string]string
 
 	// Call BindJSON to bind the received JSON to
@@ -78,7 +81,7 @@ func PostConnection(c *gin.Context) {
 		return
 	}
 
-	result,err := database.InsertConnection(c, newConn);
+	result, err := database.InsertConnection(c, newConn)
 	if err != nil {
 		c.IndentedJSON(err.StatusCode, gin.H{"message": err.Message})
 		return
@@ -98,20 +101,21 @@ func PostConnection(c *gin.Context) {
 //     type: string
 //
 // responses:
-//   '200':
-//     description: successful
-//     schema:
-//       items:
-//         "$ref": "#/definitions/SuccessResponse"
-//   '500':
-//     description: Error
-//     schema:
-//       items:
-//         "$ref": "#/definitions/ErrorResponse"
-func DeleteConnection(c *gin.Context){
+//
+//	'200':
+//	  description: successful
+//	  schema:
+//	    items:
+//	      "$ref": "#/definitions/SuccessResponse"
+//	'500':
+//	  description: Error
+//	  schema:
+//	    items:
+//	      "$ref": "#/definitions/ErrorResponse"
+func DeleteConnection(c *gin.Context) {
 	key := c.Param("key")
 
-	conn, err := database.Delete(c,key,"links")
+	conn, err := database.Delete(c, key, "links")
 	if err != nil {
 		c.IndentedJSON(err.StatusCode, gin.H{"message": err.Message})
 		return

@@ -47,7 +47,7 @@ definitions:
                 type: string
                 x-go-name: Type
         type: object
-        x-go-package: go-api/models
+        x-go-package: arango-api/models
     DatabaseInfo:
         properties:
             database:
@@ -79,7 +79,7 @@ definitions:
                 type: string
                 x-go-name: User
         type: object
-        x-go-package: go-api/models
+        x-go-package: arango-api/models
     Devices:
         properties:
             _key:
@@ -153,7 +153,7 @@ definitions:
                 type: string
                 x-go-name: StorageGroupName
         type: object
-        x-go-package: go-api/models
+        x-go-package: arango-api/models
     ErrorResponse:
         properties:
             message:
@@ -163,7 +163,7 @@ definitions:
                 type: string
                 x-go-name: Message
         type: object
-        x-go-package: go-api/models
+        x-go-package: arango-api/models
     SuccessConResponse:
         properties:
             Connections:
@@ -174,7 +174,7 @@ definitions:
                     $ref: '#/definitions/Connection'
                 type: array
         type: object
-        x-go-package: go-api/models
+        x-go-package: arango-api/models
     SuccessResponse:
         properties:
             Devices:
@@ -185,7 +185,7 @@ definitions:
                     $ref: '#/definitions/Devices'
                 type: array
         type: object
-        x-go-package: go-api/models
+        x-go-package: arango-api/models
 info:
     title: 'Arrango API:'
     version: 1.0.0

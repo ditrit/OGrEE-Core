@@ -86,10 +86,10 @@ services:
     container_name: ${COMPOSE_PROJECT_NAME}_arango_api
     environment:
       - ENV=production
-      - ARRANGO_URL=http://${COMPOSE_PROJECT_NAME}_arango_db:${ARANGO_PORT}
-      - ARRANGO_DATABASE=${ARANGO_DB}
-      - ARRANGO_USER=${ARANGO_USER}
-      - ARRANGO_PASSWORD=${ARANGO_PASS}
+      - ARANGO_URL=http://${COMPOSE_PROJECT_NAME}_arango_db:${ARANGO_PORT}
+      - ARANGO_DATABASE=${ARANGO_DB}
+      - ARANGO_USER=${ARANGO_USER}
+      - ARANGO_PASSWORD=${ARANGO_PASS}
     ports:
       - ${ARANGO_API_PORT}:8080
     healthcheck:

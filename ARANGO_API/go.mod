@@ -1,4 +1,4 @@
-module go-api
+module arango-api
 
 go 1.20
 
