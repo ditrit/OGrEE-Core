@@ -597,8 +597,9 @@ func parseDescriptionIdx(desc string) (int, error) {
 	if e != nil {
 		return -1, e
 	}
+	num -= 1
 	if num < 0 {
-		return -1, fmt.Errorf("description index cannot be negative")
+		return -1, fmt.Errorf("description index should be at least 1")
 	}
 	return num, nil
 }
