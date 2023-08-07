@@ -130,7 +130,7 @@ db.stray_device.createIndex({parentId:1,name:1}, { unique: true });
 
 //Create a default domain and user
 db.domain.insertOne({name: DB_NAME, hierarchyName: DB_NAME, category: "domain", 
-    attributes:{color:"ffffff"}, description:[], createdData: new Date(), lastUpdated: new Date()})
+    attributes:{color:"ffffff"}, description:[], createdDate: new Date(), lastUpdated: new Date()})
 db.account.insertOne({email: "admin", password: "admin", roles: {"*": "manager"}})
 
 // Create API User
