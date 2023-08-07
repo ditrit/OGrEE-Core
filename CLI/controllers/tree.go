@@ -19,7 +19,10 @@ func NewNode(name string) *HierarchyNode {
 	return &HierarchyNode{name, map[string]*HierarchyNode{}, nil}
 }
 
-func (n *HierarchyNode) StringAux(prefix string, sb *strings.Builder) {
+func (n *HierarchyNode) StringAux(prefix string, sb *strings.Builder, depth int) {
+	if depth == 0 {
+		return
+	}
 	childs := []*HierarchyNode{}
 	for _, child := range n.Childs {
 		childs = append(childs, child)
@@ -30,17 +33,17 @@ func (n *HierarchyNode) StringAux(prefix string, sb *strings.Builder) {
 	for i, child := range childs {
 		if i == len(childs)-1 {
 			sb.WriteString(prefix + "└── " + child.Name + "\n")
-			child.StringAux(prefix+"    ", sb)
+			child.StringAux(prefix+"    ", sb, depth-1)
 		} else {
 			sb.WriteString(prefix + "├── " + child.Name + "\n")
-			child.StringAux(prefix+"│   ", sb)
+			child.StringAux(prefix+"│   ", sb, depth-1)
 		}
 	}
 }
 
-func (n *HierarchyNode) String() string {
+func (n *HierarchyNode) String(depth int) string {
 	var sb strings.Builder
-	n.StringAux("", &sb)
+	n.StringAux("", &sb, depth)
 	s := sb.String()
 	for len(s) >= 1 && s[len(s)-1] == '\n' {
 		s = s[:len(s)-1]

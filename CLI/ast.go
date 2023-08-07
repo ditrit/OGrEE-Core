@@ -765,7 +765,8 @@ func (n *treeNode) execute() (interface{}, error) {
 	if err != nil {
 		return nil, err
 	}
-	s := root.String()
+	fmt.Println(path)
+	s := root.String(n.depth)
 	if s != "" {
 		fmt.Println(s)
 	}
