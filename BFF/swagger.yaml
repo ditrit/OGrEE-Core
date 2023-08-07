@@ -1,0 +1,85 @@
+basePath: /api/v1
+consumes:
+    - application/json
+definitions:
+    ErrorResponse:
+        properties:
+            message:
+                description: |-
+                    Error Response Message
+                    in: message
+                type: string
+                x-go-name: Message
+        type: object
+        x-go-package: ogree-bff/models
+    LoginInput:
+        properties:
+            password:
+                description: |-
+                    username
+                    in: password
+                type: string
+                x-go-name: Password
+            username:
+                description: |-
+                    username
+                    in: username
+                type: string
+                x-go-name: Username
+        type: object
+        x-go-package: ogree-bff/models
+    SuccessLogin:
+        properties:
+            token:
+                type: string
+                x-go-name: Token
+        type: object
+        x-go-package: ogree-bff/models
+    SuccessResponse:
+        properties:
+            message:
+                description: |-
+                    Error Response Message
+                    in: message
+                type: string
+                x-go-name: Message
+        type: object
+        x-go-package: ogree-bff/models
+info:
+    title: 'Ogree BFF:'
+    version: 1.0.0
+paths:
+    /Login:
+        post:
+            description: Login to api
+            operationId: LoginToApi
+            parameters:
+                - in: body
+                  name: body
+                  schema:
+                    $ref: '#/definitions/LoginInput'
+                  x-go-name: Body
+            responses:
+                "200":
+                    description: successful
+                    schema:
+                        items:
+                            $ref: '#/definitions/SuccessLogin'
+                "500":
+                    description: Error
+                    schema:
+                        items:
+                            $ref: '#/definitions/ErrorResponse'
+            tags:
+                - Login
+produces:
+    - application/json
+schemes:
+    - http
+    - https
+securityDefinitions:
+    Bearer:
+        in: header
+        name: Authorization
+        type: apiKey
+swagger: "2.0"
