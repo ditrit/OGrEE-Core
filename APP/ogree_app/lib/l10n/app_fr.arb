@@ -148,5 +148,9 @@
   "notLoaded": "pas chargé par l'utilisateur",
   "failedToUpload": "Logo customisé pas défini :",
   "wrongFormatUrl": "Mauvais format de l'URL : host:port attendu",
-  "wrongFormatPort": "Mauvais format de l'URL : que des chiffres pour la porte"
+  "wrongFormatPort": "Mauvais format de l'URL : que des chiffres pour la porte",
+
+  "requestBackup": "Créer backup de la base",
+  "downloadBackup": "Télécharger archive de backup",
+  "backupInfoMessage": "Un fichier de backup sera créé dans la machine hôte de ce déploiement Docker.\nSi sélectionné, le fichier sera aussi télécharger dans votre machine."
 }
