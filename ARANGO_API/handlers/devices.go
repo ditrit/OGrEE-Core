@@ -61,7 +61,7 @@ func GetDevices(c *gin.Context) {
 	c.IndentedJSON(http.StatusOK, devices)
 }
 
-// swagger:operation GET /Devices/{device}/Connected Devices GetDevicesConnectedTo
+// swagger:operation GET /Devices/ConnecteTo/{device} Devices GetDevicesConnectedTo
 // Get Devices connected to a device
 //
 // ---

@@ -81,7 +81,7 @@ func ConnectBDD(c *gin.Context) {
 		return
 	}
 
-	newDB, err := database.ConnectToArrengo(DBInfo.Host, DBInfo.Database, DBInfo.User, DBInfo.Password)
+	newDB, err := database.ConnectToArango(DBInfo.Host, DBInfo.Database, DBInfo.User, DBInfo.Password)
 
 	if err != nil {
 		c.IndentedJSON(err.StatusCode, gin.H{"message": err.Message})

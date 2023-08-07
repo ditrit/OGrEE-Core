@@ -114,7 +114,7 @@ func Update(c *gin.Context, doc interface{}, key, col string) ([]interface{}, *m
 	return result, nil
 }
 
-func ConnectToArrengo(addr, database, user, password string) (driver.Database, *models.ErrorMessage) {
+func ConnectToArango(addr, database, user, password string) (driver.Database, *models.ErrorMessage) {
 
 	conn, err := http.NewConnection(http.ConnectionConfig{
 		Endpoints: []string{addr},
@@ -122,7 +122,6 @@ func ConnectToArrengo(addr, database, user, password string) (driver.Database, *
 	if err != nil {
 		return nil, &models.ErrorMessage{StatusCode: h.StatusBadRequest, Message: err.Error()}
 	}
-
 	client, err := driver.NewClient(driver.ClientConfig{
 		Connection:     conn,
 		Authentication: driver.BasicAuthentication(user, password),
@@ -130,7 +129,6 @@ func ConnectToArrengo(addr, database, user, password string) (driver.Database, *
 	if err != nil {
 		return nil, &models.ErrorMessage{StatusCode: h.StatusBadRequest, Message: err.Error()}
 	}
-
 	db, err := client.Database(nil, database)
 	if err != nil {
 		return nil, &models.ErrorMessage{StatusCode: h.StatusBadRequest, Message: err.Error()}

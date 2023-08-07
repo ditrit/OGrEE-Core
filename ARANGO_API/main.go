@@ -28,6 +28,7 @@ func main() {
 
 	env := os.Getenv("ENV")
 	if env != "production" {
+		fmt.Println("Loading environment variables from .env")
 		err := e.Load()
 		if err != nil {
 			fmt.Println("Some error occured. Err: ", err)
@@ -41,7 +42,7 @@ func main() {
 	password := os.Getenv("ARANGO_PASSWORD")
 
 	
-	db, err2 := database.ConnectToArrengo(addr,bdd, user, password)
+	db, err2 := database.ConnectToArango(addr,bdd, user, password)
 	if err2 != nil {
 		fmt.Println("Error connecting to database: ", err2.Message)
 		return

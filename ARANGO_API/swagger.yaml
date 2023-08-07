@@ -422,7 +422,7 @@ paths:
                 - Bearer: []
             tags:
                 - Devices
-    /Devices/{device}/Connected:
+    /Devices/ConnecteTo/{device}:
         get:
             description: Get Devices connected to a device
             operationId: GetDevicesConnectedTo
