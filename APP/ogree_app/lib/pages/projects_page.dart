@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:ogree_app/common/api_backend.dart';
 import 'package:ogree_app/common/appbar.dart';
+import 'package:ogree_app/common/definitions.dart';
 import 'package:ogree_app/common/popup_dialog.dart';
+import 'package:ogree_app/common/snackbar.dart';
 import 'package:ogree_app/models/project.dart';
 import 'package:ogree_app/models/tenant.dart';
 import 'package:ogree_app/pages/select_page.dart';
@@ -23,15 +25,18 @@ class ProjectsPage extends StatefulWidget {
 class _ProjectsPageState extends State<ProjectsPage> {
   List<Project>? _projects;
   List<Tenant>? _tenants;
+  bool _isSmallDisplay = false;
 
   @override
   Widget build(BuildContext context) {
+    _isSmallDisplay = MediaQuery.of(context).size.width < 600;
     final localeMsg = AppLocalizations.of(context)!;
     return Scaffold(
       appBar: myAppBar(context, widget.userEmail,
           isTenantMode: widget.isTenantMode),
       body: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 80.0, vertical: 20),
+        padding: EdgeInsets.symmetric(
+            horizontal: _isSmallDisplay ? 40 : 80.0, vertical: 20),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
@@ -86,9 +91,23 @@ class _ProjectsPageState extends State<ProjectsPage> {
 
   getProjectData() async {
     if (widget.isTenantMode) {
-      _tenants = await fetchTenants();
+      final result = await fetchTenants();
+      switch (result) {
+        case Success(value: final value):
+          _tenants = value;
+        case Failure(exception: final exception):
+          showSnackBar(context, exception.toString(), isError: true);
+          _tenants = [];
+      }
     } else {
-      _projects = await fetchProjects(widget.userEmail);
+      final result = await fetchProjects(widget.userEmail);
+      switch (result) {
+        case Success(value: final value):
+          _projects = value;
+        case Failure(exception: final exception):
+          showSnackBar(context, exception.toString(), isError: true);
+          _projects = [];
+      }
     }
   }
 
@@ -110,12 +129,16 @@ class _ProjectsPageState extends State<ProjectsPage> {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const Padding(
-            padding: EdgeInsets.symmetric(vertical: 10.0),
-            child: Icon(Icons.add_to_photos),
+          Padding(
+            padding: EdgeInsets.only(
+                top: 10.0, bottom: 10, right: _isSmallDisplay ? 0 : 10),
+            child: const Icon(Icons.add_to_photos),
           ),
-          Text(
-              widget.isTenantMode ? localeMsg.newTenant : localeMsg.newProject),
+          _isSmallDisplay
+              ? Container()
+              : Text(widget.isTenantMode
+                  ? localeMsg.newTenant
+                  : localeMsg.newProject),
         ],
       ),
     );

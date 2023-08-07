@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:ogree_app/common/api_backend.dart';
+import 'package:ogree_app/common/definitions.dart';
 import 'package:ogree_app/common/popup_dialog.dart';
 import 'package:ogree_app/common/snackbar.dart';
+import 'package:ogree_app/common/theme.dart';
 import 'package:ogree_app/models/tenant.dart';
 import 'package:ogree_app/pages/tenant_page.dart';
 import 'package:ogree_app/widgets/tenants/popups/update_tenant_popup.dart';
@@ -53,7 +55,7 @@ class TenantCard extends StatelessWidget {
                               tenant: tenant,
                             )),
                         icon: const Icon(
-                          Icons.update,
+                          Icons.edit,
                         )),
                   ),
                   const SizedBox(width: 8),
@@ -163,22 +165,21 @@ class _DeleteDialogState extends State<DeleteDialog> {
     final localeMsg = AppLocalizations.of(context)!;
     return Center(
       child: Container(
-        height: 230,
+        height: 200,
         width: 480,
         margin: const EdgeInsets.symmetric(horizontal: 20),
-        decoration: BoxDecoration(
-            color: Colors.white, borderRadius: BorderRadius.circular(40)),
+        decoration: PopupDecoration,
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 10),
+          padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 8),
           child: Material(
             color: Colors.white,
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Text(localeMsg.areYouSure,
-                    style: Theme.of(context).textTheme.headlineLarge),
+                    style: Theme.of(context).textTheme.headlineMedium),
                 Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 40),
+                  padding: const EdgeInsets.symmetric(vertical: 30),
                   child: Text(localeMsg.allWillBeLost),
                 ),
                 Row(
@@ -190,15 +191,19 @@ class _DeleteDialogState extends State<DeleteDialog> {
                       onPressed: () async {
                         setState(() => _isLoading = true);
                         for (var obj in widget.objName) {
-                          String response;
+                          Result result;
                           if (widget.objType == "tenants") {
-                            response = await deleteTenant(obj);
+                            result = await deleteTenant(obj);
                           } else {
-                            response = await removeObject(obj, widget.objType);
+                            result = await removeObject(obj, widget.objType);
                           }
-                          if (response != "") {
-                            showSnackBar(context, "Error: " + response);
-                            return;
+                          switch (result) {
+                            case Success():
+                              break;
+                            case Failure(exception: final exception):
+                              showSnackBar(context, "Error: $exception");
+                              setState(() => _isLoading = false);
+                              return;
                           }
                         }
                         setState(() => _isLoading = false);

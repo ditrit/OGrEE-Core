@@ -126,7 +126,7 @@ func (n *forRangeNode) execute() (interface{}, error) {
 	if err != nil {
 		return nil, err
 	}
-	end, err := nodeToInt(n.start, "end index")
+	end, err := nodeToInt(n.end, "end index")
 	if err != nil {
 		return nil, err
 	}

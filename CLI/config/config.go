@@ -34,6 +34,7 @@ type Config struct {
 	DrawLimit    int
 	Updates      []string
 	User         string
+	Password     string
 	Variables    []Vardef
 }
 
@@ -46,6 +47,8 @@ type ArgStruct struct {
 	APIURL     string `json:",omitempty"`
 	HistPath   string `json:",omitempty"`
 	Script     string `json:",omitempty"`
+	User       string `json:",omitempty"`
+	Password   string `json:",omitempty"`
 }
 
 func defaultConfig() Config {
@@ -62,6 +65,7 @@ func defaultConfig() Config {
 		DrawLimit:    50,
 		Updates:      []string{"all"},
 		User:         "",
+		Password:     "",
 		Variables:    []Vardef{},
 	}
 }
@@ -85,6 +89,8 @@ func ReadConfig() *Config {
 		"Indicate the location of the Shell's history file")
 	flag.StringVarP(&args.Script, "file", "f", conf.Script, "Launch the shell as an interpreter "+
 		" by only executing an OCLI script file")
+	flag.StringVarP(&args.User, "user", "", conf.User, "User email")
+	flag.StringVarP(&args.Password, "password", "", conf.Password, "Password")
 	flag.Parse()
 
 	configBytes, err := os.ReadFile(args.ConfigPath)
@@ -97,6 +103,7 @@ func ReadConfig() *Config {
 	if err != nil {
 		println("Error reading config :", err.Error())
 	}
+	conf.Password = ""
 
 	argBytes, _ := json.Marshal(args)
 	json.Unmarshal(argBytes, &conf)

@@ -1,7 +1,9 @@
 import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:ogree_app/common/definitions.dart';
 import 'package:ogree_app/common/snackbar.dart';
+import 'package:ogree_app/common/theme.dart';
 import 'package:universal_html/html.dart' as html;
 import 'dart:math';
 
@@ -54,8 +56,9 @@ class _ResultsPageState extends State<ResultsPage> {
 
   @override
   void initState() {
-    if (!widget.selectedAttrs.contains(extraColumn))
+    if (!widget.selectedAttrs.contains(extraColumn)) {
       widget.selectedAttrs.add(extraColumn);
+    }
     super.initState();
   }
 
@@ -103,52 +106,78 @@ class _ResultsPageState extends State<ResultsPage> {
       ),
     ));
 
+    bool isSmallDisplay = IsSmallDisplay(MediaQuery.of(context).size.width);
     return FutureBuilder(
         future: _data == null ? getData() : null,
         builder: (context, _) {
           if (_data != null) {
-            return SizedBox(
-              height: MediaQuery.of(context).size.height - 280,
-              child: SingleChildScrollView(
-                padding: EdgeInsets.zero,
-                child: PaginatedDataTable(
-                  header: Text(
-                    localeMsg.yourReport,
-                    style: const TextStyle(fontWeight: FontWeight.w600),
-                  ),
-                  actions: [
-                    Padding(
-                      padding: const EdgeInsets.only(right: 6.0),
-                      child: IconButton(
-                        icon: const Icon(Icons.file_download_outlined),
-                        onPressed: () => getCSV(),
+            if (_data!.isEmpty) {
+              return SizedBox(
+                height: MediaQuery.of(context).size.height > 205
+                    ? MediaQuery.of(context).size.height - 205
+                    : MediaQuery.of(context).size.height,
+                child: Card(
+                  margin: const EdgeInsets.all(0.1),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(
+                        Icons.warning_rounded,
+                        size: 50,
+                        color: Colors.grey.shade600,
                       ),
-                    ),
-                    PopupMenuButton<String>(
-                      tooltip: localeMsg.selectionOptions,
-                      offset: const Offset(0, -32),
-                      itemBuilder: (_) =>
-                          attributesCheckList(widget.selectedAttrs),
-                      onCanceled: () => print('canceled'),
-                      icon: const Icon(Icons.add),
-                    ),
-                    PopupMenuButton<String>(
-                      tooltip: localeMsg.mathFuncTip,
-                      offset: const Offset(0, -32),
-                      itemBuilder: (_) => mathFunctionsPopup(),
-                      onCanceled: () => print('canceled'),
-                      icon: const Icon(Icons.calculate_outlined),
-                    )
-                  ],
-                  rowsPerPage: widget.selectedObjects.length >= 15
-                      ? 15
-                      : widget.selectedObjects.length,
-                  sortColumnIndex: sortColumnIndex > 0 ? sortColumnIndex : null,
-                  sortAscending: sort,
-                  columns: columnLabels,
-                  source: _DataSource(context, widget.selectedAttrs,
-                      widget.selectedObjects, _data),
+                      Padding(
+                        padding: const EdgeInsets.only(top: 16),
+                        child: Text(
+                            AppLocalizations.of(context)!.noObjectsFound +
+                                " :("),
+                      ),
+                    ],
+                  ),
                 ),
+              );
+            }
+            return SingleChildScrollView(
+              padding: EdgeInsets.zero,
+              child: PaginatedDataTable(
+                header: Text(
+                  localeMsg.yourReport,
+                  style: TextStyle(
+                      fontWeight: FontWeight.w600,
+                      fontSize: isSmallDisplay ? 16 : null),
+                ),
+                actions: [
+                  Padding(
+                    padding: const EdgeInsets.only(right: 6.0),
+                    child: IconButton(
+                      icon: const Icon(Icons.file_download_outlined),
+                      onPressed: () => getCSV(),
+                    ),
+                  ),
+                  PopupMenuButton<String>(
+                    tooltip: localeMsg.selectionOptions,
+                    offset: const Offset(0, -32),
+                    itemBuilder: (_) =>
+                        attributesCheckList(widget.selectedAttrs),
+                    onCanceled: () => print('canceled'),
+                    icon: const Icon(Icons.add),
+                  ),
+                  PopupMenuButton<String>(
+                    tooltip: localeMsg.mathFuncTip,
+                    offset: const Offset(0, -32),
+                    itemBuilder: (_) => mathFunctionsPopup(),
+                    onCanceled: () => print('canceled'),
+                    icon: const Icon(Icons.calculate_outlined),
+                  )
+                ],
+                rowsPerPage: widget.selectedObjects.length >= 15
+                    ? 15
+                    : widget.selectedObjects.length,
+                sortColumnIndex: sortColumnIndex > 0 ? sortColumnIndex : null,
+                sortAscending: sort,
+                columns: columnLabels,
+                source: _DataSource(context, widget.selectedAttrs,
+                    widget.selectedObjects, _data),
               ),
             );
           } else {
@@ -159,10 +188,18 @@ class _ResultsPageState extends State<ResultsPage> {
 
   getData() async {
     print("GET DATA");
-    if (widget.namespace == "TEST") {
+    if (widget.namespace == Namespace.Test.name) {
       _data = getSampleData();
     } else {
-      _data = await fetchAttributes();
+      final result = await fetchAttributes();
+      switch (result) {
+        case Success(value: final value):
+          _data = value;
+        case Failure(exception: final exception):
+          showSnackBar(context, exception.toString(), isError: true);
+          _data = {};
+          return;
+      }
     }
     getAllAttributes(_data!);
     applyMathFunctions(_data!); // Calculate sum and average

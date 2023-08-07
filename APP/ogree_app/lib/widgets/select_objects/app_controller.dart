@@ -1,6 +1,10 @@
 import 'package:flutter/widgets.dart';
 import 'package:flutter_fancy_tree_view/flutter_fancy_tree_view.dart';
 import 'package:ogree_app/common/api_backend.dart';
+import 'package:ogree_app/common/definitions.dart';
+import 'package:ogree_app/common/theme.dart';
+
+bool isSmallDisplay = false;
 
 class AppController with ChangeNotifier {
   bool _isInitialized = false;
@@ -8,9 +12,11 @@ class AppController with ChangeNotifier {
   Map<String, List<String>> fetchedData = {};
   Map<String, List<String>> fetchedCategories = {};
   final Map<int, List<String>> _filterLevels = {};
+  Map<int, List<String>> get filterLevels => _filterLevels;
   static const lastFilterLevel = 3;
 
   static AppController of(BuildContext context) {
+    isSmallDisplay = IsSmallDisplay(MediaQuery.of(context).size.width);
     return context
         .dependOnInheritedWidgetOfExactType<AppControllerScope>()!
         .controller;
@@ -20,21 +26,29 @@ class AppController with ChangeNotifier {
       {bool isTest = false,
       bool onlyDomain = false,
       bool reload = false,
-      String dateRange = ""}) async {
+      String dateRange = "",
+      bool isTenantMode = false}) async {
     if (_isInitialized && !reload) return;
     final rootNode = TreeNode(id: kRootId);
-    if (onlyDomain) {
-      fetchedData =
-          (await fetchObjectsTree(dateRange: dateRange, onlyDomain: true))
-              .first;
-      print(fetchedData);
-    } else if (isTest) {
+
+    if (isTest) {
       fetchedData = kDataSample;
       fetchedCategories = kDataSampleCategories;
     } else {
-      var resp = await fetchObjectsTree(dateRange: dateRange);
-      fetchedData = resp[0];
-      fetchedCategories = resp[1];
+      var result;
+      if (onlyDomain) {
+        result = await fetchObjectsTree(
+            dateRange: dateRange, onlyDomain: true, isTenantMode: isTenantMode);
+      } else {
+        result = await fetchObjectsTree(dateRange: dateRange);
+      }
+      switch (result) {
+        case Success(value: final listValue):
+          fetchedData = listValue[0];
+          fetchedCategories = listValue[1] ?? {};
+        case Failure(exception: final exception):
+          print(exception);
+      }
     }
 
     if (_isInitialized && reload) {
@@ -186,8 +200,8 @@ class AppController with ChangeNotifier {
 
   //* == == == == == General == == == == ==
 
-  final treeViewTheme =
-      ValueNotifier(const TreeViewTheme(roundLineCorners: true, indent: 64));
+  final treeViewTheme = ValueNotifier(
+      TreeViewTheme(roundLineCorners: true, indent: isSmallDisplay ? 15 : 64));
 
   void updateTheme(TreeViewTheme theme) {
     treeViewTheme.value = theme;

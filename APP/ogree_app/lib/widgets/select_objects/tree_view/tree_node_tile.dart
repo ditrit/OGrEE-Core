@@ -4,6 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:ogree_app/common/popup_dialog.dart';
 import 'package:ogree_app/common/snackbar.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:ogree_app/pages/tenant_page.dart';
 import 'package:ogree_app/widgets/tenants/popups/domain_popup.dart';
 
 import '../app_controller.dart';
@@ -59,8 +60,10 @@ class _TreeNodeTileState extends State<TreeNodeTile> {
                             onPressed: () => showCustomPopup(
                                 context,
                                 DomainPopup(
-                                  parentCallback: () => appController
-                                      .init({}, onlyDomain: true, reload: true),
+                                  parentCallback: () => appController.init({},
+                                      onlyDomain: true,
+                                      reload: true,
+                                      isTenantMode: true),
                                   domainId: nodeScope.node.id,
                                 )),
                             icon: Icon(
@@ -75,7 +78,8 @@ class _TreeNodeTileState extends State<TreeNodeTile> {
                           splashRadius: 18,
                           iconSize: 14,
                           padding: EdgeInsets.all(2),
-                          onPressed: null,
+                          onPressed: () => TenantPage.of(context)!
+                              .changeToUserView(nodeScope.node.id),
                           icon: Icon(
                             Icons.people,
                             color: Colors.black,

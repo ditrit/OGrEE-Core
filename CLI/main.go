@@ -33,7 +33,7 @@ func main() {
 
 	var err error
 	var apiKey string
-	user, apiKey, err := c.Login(conf.User)
+	user, apiKey, err := c.Login(conf.User, conf.Password)
 	if err != nil {
 		println(err.Error())
 		return

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
+import 'package:ogree_app/common/theme.dart';
 import 'package:ogree_app/pages/select_page.dart';
 import 'package:syncfusion_flutter_datepicker/datepicker.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
@@ -40,7 +41,7 @@ class _SelectDateState extends State<SelectDate> with TickerProviderStateMixin {
   @override
   Widget build(BuildContext context) {
     final localeMsg = AppLocalizations.of(context)!;
-
+    bool isSmallDisplay = IsSmallDisplay(MediaQuery.of(context).size.width);
     return Column(
       children: [
         Text(
@@ -89,7 +90,7 @@ class _SelectDateState extends State<SelectDate> with TickerProviderStateMixin {
                     ),
                   ),
                   Container(
-                    padding: const EdgeInsets.only(left: 20),
+                    padding: const EdgeInsets.only(left: 20, right: 20),
                     height: 350,
                     width: double.maxFinite,
                     child: TabBarView(
@@ -102,6 +103,10 @@ class _SelectDateState extends State<SelectDate> with TickerProviderStateMixin {
                               width: 500.0,
                               height: 70.0,
                               child: OutlinedButton(
+                                style: OutlinedButton.styleFrom(
+                                    side: BorderSide(
+                                        width: 0.3,
+                                        color: Colors.blue.shade900)),
                                 onPressed: () {
                                   SelectPage.of(context)!.selectedDate = "";
                                   myFocusNode.requestFocus();
@@ -111,8 +116,9 @@ class _SelectDateState extends State<SelectDate> with TickerProviderStateMixin {
                                 child: Text(
                                   'Toutes les données disponibles dans la base',
                                   style: GoogleFonts.inter(
-                                    fontSize: 17,
+                                    fontSize: isSmallDisplay ? 14 : 17,
                                   ),
+                                  textAlign: TextAlign.center,
                                 ),
                               ),
                             )
@@ -124,7 +130,7 @@ class _SelectDateState extends State<SelectDate> with TickerProviderStateMixin {
                         //   children: [
                         //     Text(
                         //       localeMsg.useLastDataSet,
-                        //       style: Theme.of(context).textTheme.headlineMedium,
+                        //       style: Theme.of(context).textTheme.headlineSmall,
                         //     ),
                         //     const SizedBox(height: 32),
                         //     SizedBox(
