@@ -19,6 +19,14 @@
             "type": "string",
             "pattern": "room"
         },
+        "tileOffset": {
+            "type": "array",
+            "items": {
+                "type": "number"
+            },
+            "minItems": 2,
+            "maxItems": 2
+        },
         "center": {
             "type": "array",
             "items": {
