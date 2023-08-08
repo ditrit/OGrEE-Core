@@ -234,7 +234,7 @@ func Tree(path string, depth int) (*HierarchyNode, error) {
 		}
 		return root, nil
 	}
-	obj, err := PollObjectWithChildren(path, depth)
+	obj, err := GetObjectWithChildren(path, depth)
 	if err != nil {
 		return nil, err
 	}
