@@ -39,8 +39,8 @@ func InitRouter(db driver.Database, addr string) *gin.Engine {
 	router := gin.Default()
 
 	router.Use(DBMiddleware(db, addr))
-	proteted := router.Group("/api/v1")
-	proteted.Use(JwtAuthMiddleware())
+	proteted := router.Group("/api")
+	//proteted.Use(JwtAuthMiddleware())
 	proteted.GET("/Devices", handlers.GetDevices)
 	proteted.POST("/Devices", handlers.PostDevices)
 	proteted.DELETE("/Devices/:key", handlers.DeleteDevice)
@@ -53,8 +53,8 @@ func InitRouter(db driver.Database, addr string) *gin.Engine {
 	proteted.GET("/Database", handlers.GetBDD)
 	proteted.POST("/Database", handlers.ConnectBDD)
 
-	router.POST("/api/v1/Login",handlers.Login)
-	router.GET("/api/v1/health",func(c *gin.Context){
+	router.POST("/api/login",handlers.Login)
+	router.GET("/api/health",func(c *gin.Context){
 		c.String(http.StatusAccepted,"")
 	})
 

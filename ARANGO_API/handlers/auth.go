@@ -6,7 +6,7 @@ import (
 	"arango-api/controllers"
   	"github.com/gin-gonic/gin"
 )
-// swagger:operation POST /Login Login LoginToApi
+// swagger:operation POST /login Login LoginToApi
 // Login to api
 // ---
 // responses:

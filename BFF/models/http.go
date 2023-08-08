@@ -18,5 +18,5 @@ type SuccessResponse struct {
 type Message struct {
 
 	StatusCode int `json:"statuscode"`
-	Message string `json:"message"`
+	Message interface{} `json:"message"`
 }
