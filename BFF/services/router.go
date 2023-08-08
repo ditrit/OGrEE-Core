@@ -66,8 +66,8 @@ func initOrganization(protected, unprotected *gin.RouterGroup){
 func initFlutterApp(protected, unprotected *gin.RouterGroup){
 	protected.POST("/projects",handlers.CreateProjects)
 	protected.GET("/projects",handlers.GetProjects)
-	protected.DELETE("/projects/:id",handlers.DeleteProjects)
-	protected.PUT("/projects/:id",handlers.UpdateProjects)
+	protected.DELETE("/projects/*id",handlers.DeleteProjects)
+	protected.PUT("/projects/*id",handlers.UpdateProjects)
 
 }
 func initAbout(protected, unprotected *gin.RouterGroup){
@@ -80,17 +80,17 @@ func initObjects(protected, unprotected *gin.RouterGroup){
 	protected.GET("/:entity",handlers.GetAllEntities)
 	protected.POST("/:entity",handlers.CreateObject)
 
-	protected.GET("/objects/:hierarchyName",handlers.GetGenericObject)
+	protected.GET("/objects/*hierarchyName",handlers.GetGenericObject)
 
-	protected.GET("/:entity/:id",handlers.GetEntity)
-	protected.DELETE("/:entity/:id",handlers.DeleteObject)
-	protected.PATCH("/:entity/:id",handlers.PartialUpdateObject)
-	protected.PUT("/:entity/:id",handlers.UpdateObject)
-	protected.GET("/:entity/:id/all",handlers.GetEntityHierarchy)
+	protected.GET("/:entity/*id",handlers.GetEntity)
+	protected.DELETE("/:entity/*id",handlers.DeleteObject)
+	protected.PATCH("/:entity/*id",handlers.PartialUpdateObject)
+	protected.PUT("/:entity/*id",handlers.UpdateObject)
+	//protected.GET("/:entity/:id/all",handlers.GetEntityHierarchy)
 
-	protected.GET("/tempunits/:id",handlers.GetTempUnit)
+	protected.GET("/tempunits/*id",handlers.GetTempUnit)
 
-	protected.GET("/:entity/:id/:subent",handlers.GetEntitiesOfAncestor)
+	//protected.GET("/:entity/:id/:subent",handlers.GetEntitiesOfAncestor)
 	
 
 	protected.GET("/hierarchy",handlers.GetCompleteHierarchy)
@@ -98,7 +98,7 @@ func initObjects(protected, unprotected *gin.RouterGroup){
 
 	//protected.GET("/:entity/:id/:HierarchalPath",handlers.GetEntitiesUsingNamesOfParents)
 
-	protected.POST("/validate/:entity",handlers.ValidateObject)
+	protected.POST("/validate/*entity",handlers.ValidateObject)
 	
 	
 }

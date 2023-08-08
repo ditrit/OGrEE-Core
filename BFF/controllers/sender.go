@@ -39,7 +39,9 @@ func Send(method, URL, query ,key string, data interface{}) (*http.Response,erro
 	if err != nil {
 		return nil,err
 	}
-	req.Header.Set("Authorization", "Bearer "+key)
+	if(key != ""){
+		req.Header.Set("Authorization", "Bearer "+key)
+	}
 	resp,err := client.Do(req)
 	if err != nil {
 		return nil,err
@@ -95,6 +97,7 @@ func Post(c *gin.Context, api string){
 		c.IndentedJSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
 		return
 	}
+	
 	key := token.ExtractToken(c)
 	path := GetPath(c)
 	resp,err := Send("POST",url+path,"",key,data)
