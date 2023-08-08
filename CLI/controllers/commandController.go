@@ -70,6 +70,18 @@ func ObjectUrl(path string, depth int) (string, error) {
 	return fmt.Sprintf(url + "/" + suffix), nil
 }
 
+func IsTemplate(path string) bool {
+	if strings.HasPrefix(path, "/Logical/ObjectTemplates/") {
+		return true
+	} else if strings.HasPrefix(path, "/Logical/RoomTemplates/") {
+		return true
+	} else if strings.HasPrefix(path, "/Logical/BldgTemplates/") {
+		return true
+	} else {
+		return false
+	}
+}
+
 func ObjectUrlWithEntity(path string, depth int, category string) (string, error) {
 	url, err := ObjectUrl(path, depth)
 	if err != nil {
@@ -161,7 +173,7 @@ func DeleteObj(path string) error {
 	if err != nil {
 		return err
 	}
-	if IsInObjForUnity(obj["category"].(string)) {
+	if !IsTemplate(path) && IsInObjForUnity(obj["category"].(string)) {
 		InformUnity("DeleteObj", -1, map[string]any{"type": "delete", "data": obj["id"].(string)})
 	}
 	if path == State.CurrPath {
@@ -372,8 +384,10 @@ func UnsetInObj(Path, attr string, idx int) (map[string]interface{}, error) {
 
 	//Send to API and update Unity
 	entity := obj["category"].(string)
-	id := obj["id"].(string)
-	URL := State.APIURL + "/api/" + entity + "s/" + id
+	URL, err := ObjectUrlWithEntity(Path, 0, entity)
+	if err != nil {
+		return nil, err
+	}
 
 	resp, e := models.Send("PUT", URL, GetKey(), obj)
 	respJson := ParseResponse(resp, e, "UPDATE")
@@ -385,7 +399,7 @@ func UnsetInObj(Path, attr string, idx int) (map[string]interface{}, error) {
 				"type": "modify", "data": respJson["data"]}
 
 			//Update and inform unity
-			if IsInObjForUnity(entity) == true {
+			if !IsTemplate(Path) && IsInObjForUnity(entity) {
 				entInt := EntityStrToInt(entity)
 				InformUnity("UpdateObj", entInt, message)
 			}
@@ -1355,7 +1369,7 @@ func FocusUI(path string) error {
 			return err
 		}
 		category := EntityStrToInt(obj["category"].(string))
-		if category == SITE || category == BLDG || category == ROOM {
+		if IsTemplate(path) || category == SITE || category == BLDG || category == ROOM {
 			msg := "You cannot focus on this object. Note you cannot" +
 				" focus on Sites, Buildings and Rooms. " +
 				"For more information please refer to the help doc  (man >)"
@@ -1479,7 +1493,11 @@ func Undraw(x string) error {
 		if err != nil {
 			return err
 		}
-		id = obj["id"].(string)
+		var ok bool
+		id, ok = obj["id"].(string)
+		if !ok {
+			return fmt.Errorf("this object has no id")
+		}
 	}
 	data := map[string]interface{}{"type": "delete", "data": id}
 	unityErr := InformUnity("Undraw", 0, data)
@@ -1583,13 +1601,16 @@ func SetClipBoard(x []string) ([]string, error) {
 		}
 	} else {
 		//Verify paths
-		arr := make([]string, len(x))
-		for idx, val := range x {
+		arr := []string{}
+		for _, val := range x {
 			obj, err := GetObject(val)
 			if err != nil {
 				return nil, err
 			}
-			arr[idx] = obj["id"].(string)
+			id, ok := obj["id"].(string)
+			if ok {
+				arr = append(arr, id)
+			}
 		}
 		serialArr := "[\"" + strings.Join(arr, "\",\"") + "\"]"
 		data = map[string]interface{}{"type": "select", "data": serialArr}

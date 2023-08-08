@@ -5,6 +5,7 @@ import (
 	"cli/readline"
 	"fmt"
 	"os"
+	pathutil "path"
 	"strings"
 )
 
@@ -44,7 +45,7 @@ func ListEntities(line string) []string {
 			}
 		}
 	}
-	items, _ := c.Ls(path)
+	items, _ := c.Ls(pathutil.Clean(path))
 	return items
 }
 
@@ -144,7 +145,7 @@ func ListForUI(line string) []string {
 			}
 		}
 	}
-	items, _ := c.Ls(path)
+	items, _ := c.Ls(pathutil.Clean(path))
 	return items
 
 }
