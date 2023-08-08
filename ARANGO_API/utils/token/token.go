@@ -12,13 +12,7 @@ import (
 )
 
 func GenerateToken(user_id uint) (string, error) {
-	/*
-	token_lifespan,err := strconv.Atoi(os.Getenv("TOKEN_HOUR_LIFESPAN"))
 
-	if err != nil {
-		return "",err
-	}
-	*/
 	token_lifespan := 24
 	claims := jwt.MapClaims{}
 	claims["authorized"] = true

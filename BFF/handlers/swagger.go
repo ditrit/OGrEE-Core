@@ -9,8 +9,8 @@ import(
 func SwaggerHandler() *mux.Router{
 	pr := mux.NewRouter()
 
-	pr.Handle("/swagger.yaml", http.FileServer(http.Dir("./")))
-	opts := middleware.SwaggerUIOpts{SpecURL: "swagger.yaml"}
+	pr.Handle("/swagger.json", http.FileServer(http.Dir("./")))
+	opts := middleware.SwaggerUIOpts{SpecURL: "swagger.json"}
 	sh := middleware.SwaggerUI(opts, nil)
 	pr.Handle("/docs", sh)
 

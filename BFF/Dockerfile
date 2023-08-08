@@ -21,7 +21,7 @@ FROM alpine:3.16
 WORKDIR /bin
 
 COPY --from=build /build/ogree-bff .
-COPY --from=build /build/swagger.yaml .
+COPY --from=build /build/swagger.json .
 
 
 # Run the binary program produced by `go install`

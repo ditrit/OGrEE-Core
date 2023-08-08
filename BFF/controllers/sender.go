@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-
 	"io"
 	"net/http"
 	"ogree-bff/models"
@@ -42,12 +41,8 @@ func Send(method, URL, query ,key string, data interface{}) (*http.Response,erro
 	if(key != ""){
 		req.Header.Set("Authorization", "Bearer "+key)
 	}
-	resp,err := client.Do(req)
-	if err != nil {
-		return nil,err
-	}
 
-	return resp, nil
+	return client.Do(req)
 }
 
 func GetJSONBody(resp *http.Response) models.Message {
@@ -58,7 +53,6 @@ func GetJSONBody(resp *http.Response) models.Message {
 	if err != nil {
 		return models.Message{StatusCode: http.StatusInternalServerError,Message: err.Error()}
 	}
-	fmt.Println(string(body))
 	err = json.Unmarshal(body, &responseBody)
   	if err != nil {
     	return models.Message{StatusCode: http.StatusInternalServerError,Message: err.Error()}
@@ -76,7 +70,7 @@ func Get(c *gin.Context, api string){
 	query := GetQueryString(c)
 	path := GetPath(c)
 	resp,err := Send("GET",url+path,query,key,nil)
-	if err != nil {
+	if err != nil && resp == nil{
 		c.IndentedJSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
 		return
 	}
@@ -101,8 +95,10 @@ func Post(c *gin.Context, api string){
 	key := token.ExtractToken(c)
 	path := GetPath(c)
 	resp,err := Send("POST",url+path,"",key,data)
-	if err != nil {
+	fmt.Println(err)
+	if err != nil && resp == nil{
 		c.IndentedJSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
+		return
 	}
 	result := GetJSONBody(resp)
 	c.IndentedJSON(resp.StatusCode, result.Message)
@@ -117,8 +113,9 @@ func Delete(c *gin.Context, api string){
 	key := token.ExtractToken(c)
 	path := GetPath(c)
 	resp,err := Send("DELETE",url+path,"",key,nil)
-	if err != nil {
+	if err != nil && resp == nil{
 		c.IndentedJSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
+		return
 	}
 	result := GetJSONBody(resp)
 	c.IndentedJSON(resp.StatusCode, result.Message)
@@ -139,8 +136,9 @@ func Patch(c *gin.Context, api string){
 	key := token.ExtractToken(c)
 	path := GetPath(c)
 	resp,err := Send("PATCH",url+path,"",key,data)
-	if err != nil {
+	if err != nil && resp == nil{
 		c.IndentedJSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
+		return
 	}
 	result := GetJSONBody(resp)
 	c.IndentedJSON(resp.StatusCode, result.Message)
@@ -161,8 +159,9 @@ func Put(c *gin.Context, api string){
 	key := token.ExtractToken(c)
 	path := GetPath(c)
 	resp,err := Send("PUT",url+path,"",key,data)
-	if err != nil {
+	if err != nil  && resp == nil{
 		c.IndentedJSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
+		return
 	}
 	result := GetJSONBody(resp)
 	c.IndentedJSON(resp.StatusCode, result.Message)

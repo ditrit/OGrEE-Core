@@ -1,0 +1,541 @@
+{
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
+  "schemes": [
+    "http",
+    "https"
+  ],
+  "swagger": "2.0",
+  "info": {
+    "title": "Arrango API:",
+    "version": "1.0.0"
+  },
+  "basePath": "/api",
+  "paths": {
+    "/Connections": {
+      "get": {
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "description": "Get Connection list",
+        "tags": [
+          "Connections"
+        ],
+        "operationId": "Connection",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "Key of connection",
+            "name": "_key",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "description": "From witch device",
+            "name": "_from",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "description": "To witch device",
+            "name": "_to",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful",
+            "schema": {
+              "items": {
+                "$ref": "#/definitions/SuccessConResponse"
+              }
+            }
+          },
+          "500": {
+            "description": "Error",
+            "schema": {
+              "items": {
+                "$ref": "#/definitions/ErrorResponse"
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "description": "Create new Connection",
+        "tags": [
+          "Connections"
+        ],
+        "operationId": "CreateConnection",
+        "parameters": [
+          {
+            "x-go-name": "Body",
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "$ref": "#/definitions/Connection"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful",
+            "schema": {
+              "items": {
+                "$ref": "#/definitions/SuccessConResponse"
+              }
+            }
+          },
+          "500": {
+            "description": "Error",
+            "schema": {
+              "items": {
+                "$ref": "#/definitions/ErrorResponse"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/Connections/{connection}": {
+      "delete": {
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "description": "Delete Connection by key",
+        "tags": [
+          "Connections"
+        ],
+        "operationId": "DeleteConnection",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "connection looking for",
+            "name": "connection",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful",
+            "schema": {
+              "items": {
+                "$ref": "#/definitions/SuccessResponse"
+              }
+            }
+          },
+          "500": {
+            "description": "Error",
+            "schema": {
+              "items": {
+                "$ref": "#/definitions/ErrorResponse"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/Devices": {
+      "get": {
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "description": "Get Devices list",
+        "tags": [
+          "Devices"
+        ],
+        "operationId": "Devices",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "Key of device",
+            "name": "_key",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "description": "Name of device",
+            "name": "_name",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "description": "Group_name of device",
+            "name": "group_name",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "description": "Serial number of device",
+            "name": "serial",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful",
+            "schema": {
+              "items": {
+                "$ref": "#/definitions/SuccessResponse"
+              }
+            }
+          },
+          "500": {
+            "description": "Error",
+            "schema": {
+              "items": {
+                "$ref": "#/definitions/ErrorResponse"
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "description": "Create new Devices",
+        "tags": [
+          "Devices"
+        ],
+        "operationId": "CreateDevices",
+        "parameters": [
+          {
+            "x-go-name": "Body",
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "$ref": "#/definitions/Devices"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful",
+            "schema": {
+              "items": {
+                "$ref": "#/definitions/SuccessResponse"
+              }
+            }
+          },
+          "500": {
+            "description": "Error",
+            "schema": {
+              "items": {
+                "$ref": "#/definitions/ErrorResponse"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/Devices/ConnecteTo/{device}": {
+      "get": {
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "description": "Get Devices connected to a device",
+        "tags": [
+          "Devices"
+        ],
+        "operationId": "GetDevicesConnectedTo",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "Key of device",
+            "name": "device",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "description": "Filter devices by key",
+            "name": "_key",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "description": "Name of device",
+            "name": "_name",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "description": "Group_name of device",
+            "name": "group_name",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "description": "Serial number of device",
+            "name": "serial",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful",
+            "schema": {
+              "items": {
+                "$ref": "#/definitions/SuccessResponse"
+              }
+            }
+          },
+          "500": {
+            "description": "Error",
+            "schema": {
+              "items": {
+                "$ref": "#/definitions/ErrorResponse"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/Devices/{device}": {
+      "delete": {
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "description": "Delete Devices by key",
+        "tags": [
+          "Devices"
+        ],
+        "operationId": "DeleteDevices",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "device looking for",
+            "name": "device",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful",
+            "schema": {
+              "items": {
+                "$ref": "#/definitions/SuccessResponse"
+              }
+            }
+          },
+          "500": {
+            "description": "Error",
+            "schema": {
+              "items": {
+                "$ref": "#/definitions/ErrorResponse"
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "definitions": {
+    "Connection": {
+      "type": "object",
+      "properties": {
+        "_from": {
+          "description": "from Device\nin: _from",
+          "type": "string",
+          "x-go-name": "From",
+          "example": "devices/*"
+        },
+        "_key": {
+          "description": "Primary key of device\nin: _key",
+          "type": "string",
+          "x-go-name": "Key",
+          "readOnly": true
+        },
+        "_to": {
+          "description": "To device\nin: _to",
+          "type": "string",
+          "x-go-name": "To",
+          "example": "devices/*"
+        },
+        "created": {
+          "description": "Date of connection's creation\nin: created",
+          "type": "string",
+          "x-go-name": "Created",
+          "example": "2016-04-22"
+        },
+        "expired": {
+          "description": "Date of connection's expiration\nin: expired",
+          "type": "string",
+          "x-go-name": "Expired",
+          "example": "3000-01-01"
+        },
+        "type": {
+          "description": "Type of connection\nin: type",
+          "type": "string",
+          "x-go-name": "Type",
+          "example": "parent of (between partens)"
+        }
+      },
+      "x-go-package": "arango-api/models"
+    },
+    "DatabaseInfo": {
+      "type": "object",
+      "properties": {
+        "database": {
+          "description": "Database name\nin: database",
+          "type": "string",
+          "x-go-name": "Database",
+          "example": "_system"
+        },
+        "host": {
+          "description": "Host url of database\nin: host",
+          "type": "string",
+          "x-go-name": "Host",
+          "example": "http://localhost:8529"
+        },
+        "password": {
+          "description": "Password of the user\nin: password",
+          "type": "string",
+          "x-go-name": "Password",
+          "example": "password"
+        },
+        "user": {
+          "description": "User of database\nin: user",
+          "type": "string",
+          "x-go-name": "User",
+          "example": "root"
+        }
+      },
+      "x-go-package": "arango-api/models"
+    },
+    "Devices": {
+      "type": "object",
+      "properties": {
+        "_key": {
+          "description": "Primary key of device\nin: _key",
+          "type": "string",
+          "x-go-name": "Key",
+          "readOnly": true
+        },
+        "_name": {
+          "description": "name of Devices\nin: _name",
+          "type": "string",
+          "x-go-name": "Name",
+          "example": "storage_bay"
+        },
+        "category": {
+          "description": "category of Devices\nin: category",
+          "type": "string",
+          "x-go-name": "Category",
+          "example": "port"
+        },
+        "created": {
+          "description": "Date of device's creation\nin: created",
+          "type": "string",
+          "x-go-name": "Created",
+          "example": "2016-04-22"
+        },
+        "expired": {
+          "description": "Date of device's expiration\nin: expired",
+          "type": "string",
+          "x-go-name": "Expired",
+          "example": "3000-01-01"
+        },
+        "group_name": {
+          "description": "group_name of Devices\nin: group_name",
+          "type": "string",
+          "x-go-name": "GroupName",
+          "example": "GS00OPSAN06"
+        },
+        "hba_device_name": {
+          "description": "hba_device_name of Devices\nin: hba_device_name",
+          "type": "string",
+          "x-go-name": "HbaDeviceName",
+          "example": "nsa.*"
+        },
+        "sp_name": {
+          "description": "sp_name of Devices\nin: sp_name",
+          "type": "string",
+          "x-go-name": "SpName",
+          "example": "sp_b"
+        },
+        "sp_port_id": {
+          "description": "sp_port_id of Devices\nin: sp_port_id",
+          "type": "string",
+          "x-go-name": "SpPortId",
+          "example": "0"
+        },
+        "storage_group_name": {
+          "description": "storage_group_name of Devices\nin: storage_group_name",
+          "type": "string",
+          "x-go-name": "StorageGroupName",
+          "example": "storage"
+        }
+      },
+      "x-go-package": "arango-api/models"
+    },
+    "ErrorResponse": {
+      "type": "object",
+      "properties": {
+        "message": {
+          "description": "Error Response Message\nin: message",
+          "type": "string",
+          "x-go-name": "Message"
+        }
+      },
+      "x-go-package": "arango-api/models"
+    },
+    "SuccessConResponse": {
+      "type": "object",
+      "properties": {
+        "Connections": {
+          "description": "Success\nin : array",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Connection"
+          }
+        }
+      },
+      "x-go-package": "arango-api/models"
+    },
+    "SuccessResponse": {
+      "type": "object",
+      "properties": {
+        "Devices": {
+          "description": "Success\nin : array",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Devices"
+          }
+        }
+      },
+      "x-go-package": "arango-api/models"
+    }
+  },
+  "securityDefinitions": {
+    "Bearer": {
+      "type": "apiKey",
+      "name": "Authorization",
+      "in": "header"
+    }
+  }
+}

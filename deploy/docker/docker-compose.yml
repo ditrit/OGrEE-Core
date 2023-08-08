@@ -47,7 +47,7 @@ services:
     ports:
       - ${API_DOC_UI_PORT}:8080
     environment:
-      SWAGGER_JSON_URL: https://raw.githubusercontent.com/ditrit/OGrEE-Core/${IMAGE_TAG}/API/swagger.json
+      SWAGGER_JSON_URL: https://raw.githubusercontent.com/ditrit/OGrEE-Core/${IMAGE_TAG}/BFF/swagger.json
     restart: on-failure:10
     depends_on:
       - ogree_api
@@ -93,9 +93,7 @@ services:
       - ARANGO_DATABASE=${ARANGO_DB}
       - ARANGO_USER=${ARANGO_USER}
       - ARANGO_PASSWORD=${ARANGO_PASS}
-      - API_USER=${ARANGO_API_USER}
-      - API_PASSWORD=${ARANGO_API_PASSWORD}
-      - API_SECRET=${ARANGO_API_SECRET}
+      - API_SECRET=${AUTH_SECRET}
     ports:
       - ${ARANGO_API_PORT}:8080
     healthcheck:
