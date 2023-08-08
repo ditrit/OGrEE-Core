@@ -63,6 +63,18 @@ func initOrganization(protected, unprotected *gin.RouterGroup){
 	protected.GET("/hierarchy/domains",handlers.GetCompleteDomainHierarchy)
 }
 
+func initFlutterApp(protected, unprotected *gin.RouterGroup){
+	protected.POST("/projects",handlers.CreateProjects)
+	protected.GET("/projects",handlers.GetProjects)
+	protected.DELETE("/projects/:id",handlers.DeleteProjects)
+	protected.PUT("/projects/:id",handlers.UpdateProjects)
+
+}
+func initAbout(protected, unprotected *gin.RouterGroup){
+	protected.GET("/stats",handlers.GetStats)
+	protected.POST("/versions",handlers.GetAPIVersion)
+}
+
 func initObjects(protected, unprotected *gin.RouterGroup){
 
 	protected.GET("/:entity",handlers.GetAllEntities)
@@ -111,6 +123,7 @@ func InitRouter(apiList []models.API,env string ) *gin.Engine {
 	initAuth(protected,unprotected)
 	initOrganization(protected,unprotected)
 	initObjects(protected,unprotected)
+	initAbout(protected,unprotected)
 	
 
 	//init healthcheck route
