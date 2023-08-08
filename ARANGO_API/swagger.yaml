@@ -1,4 +1,4 @@
-basePath: /api/v1
+basePath: /api
 consumes:
     - application/json
 definitions:
@@ -463,7 +463,7 @@ paths:
                 - Bearer: []
             tags:
                 - Devices
-    /Login:
+    /login:
         post:
             description: Login to api
             operationId: LoginToApi

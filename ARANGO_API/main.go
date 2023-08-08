@@ -3,7 +3,7 @@
 //	  title: Awsome API
 //	 Schemes: http, https
 //	 Host:
-//	 BasePath: /api/v1
+//	 BasePath: /api
 //		Consumes:
 //		- application/json
 //	 Produces:

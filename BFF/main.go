@@ -3,7 +3,7 @@
 //	  title: Awsome API
 //	 Schemes: http, https
 //	 Host:
-//	 BasePath: /api/v1
+//	 BasePath: /api
 //		Consumes:
 //		- application/json
 //	 Produces:
@@ -36,13 +36,14 @@ func main() {
 			return
 		}
 	}
-
-	ArangoUrl := os.Getenv("ARANGO_URL")
+	BFF_PORT := os.Getenv("BFF_PORT")
+	arangoAPI := os.Getenv("ARANGO_API")
+	mongoAPI := os.Getenv("MONGO_API")
 	apiList := []models.API {
-		{Name: "Arango", URL: ArangoUrl},
+		{Name: "arango", URL: arangoAPI},
+		{Name: "mongo", URL: mongoAPI},
 	}
-
-	
+	fmt.Println(apiList)
 	router := services.InitRouter(apiList,env)
-	router.Run(":8080")
+	router.Run(":"+BFF_PORT)
 }

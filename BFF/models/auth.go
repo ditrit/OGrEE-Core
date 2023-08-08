@@ -3,9 +3,9 @@ package models
 
 // swagger:model LoginInput
 type LoginInput struct {
-	// username
-	// in: username
-	Username string `json:"username" binding:"required"`
+	// email
+	// in: email
+	Email string `json:"email" binding:"required"`
 	// username
 	// in: password
 	Password string `json:"password" binding:"required"`
@@ -13,7 +13,7 @@ type LoginInput struct {
 
 type User struct {
 	ID uint `json:"id"`
-	Username string `json:"username" binding:"required"`
+	Email string `json:"email" binding:"required"`
 	Password string `json:"password" binding:"required"`
 }
 

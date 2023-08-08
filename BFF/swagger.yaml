@@ -1,4 +1,4 @@
-basePath: /api/v1
+basePath: /api
 consumes:
     - application/json
 definitions:
@@ -14,18 +14,18 @@ definitions:
         x-go-package: ogree-bff/models
     LoginInput:
         properties:
+            email:
+                description: |-
+                    email
+                    in: email
+                type: string
+                x-go-name: Email
             password:
                 description: |-
                     username
                     in: password
                 type: string
                 x-go-name: Password
-            username:
-                description: |-
-                    username
-                    in: username
-                type: string
-                x-go-name: Username
         type: object
         x-go-package: ogree-bff/models
     SuccessLogin:
@@ -49,29 +49,838 @@ info:
     title: 'Ogree BFF:'
     version: 1.0.0
 paths:
-    /Login:
-        post:
-            description: Login to api
-            operationId: LoginToApi
+    /{entity}:
+        get:
+            description: Returns JSON body with all specified objects of type.
+            operationId: GetAllEntities
             parameters:
-                - in: body
+                - default: sites
+                  description: 'Entity (same as category) of the object. Accepted values: sites, domains, buildings, rooms, racks, devices, acs, panels, cabinets, groups, corridors, room-templates, obj-templates, bldg-templates, stray-devices'
+                  in: path
+                  name: entity
+                  required: true
+                  type: string
+                - description: specify which object field to show in response. Multiple fieldOnly can be added. An invalid field is simply ignored.
+                  in: query
+                  name: fieldOnly
+                - description: 'filter objects by lastUpdated >= startDate. Format: yyyy-mm-dd'
+                  in: query
+                  name: startDate
+                - description: 'filter objects by lastUpdated <= endDate. Format: yyyy-mm-dd'
+                  in: query
+                  name: endDate
+            produces:
+                - application/json
+            responses:
+                "200":
+                    description: Found. A response body will be returned with a meaningful message.
+                "404":
+                    description: Nothing Found. An error message will be returned.
+            security:
+                - Bearer: []
+            summary: Gets all present objects for specified entity (category).
+            tags:
+                - Objects
+        post:
+            operationId: CreateObject
+            parameters:
+                - default: sites
+                  description: 'Entity (same as category) of the object. Accepted values: sites, domains, buildings, rooms, racks, devices, acs, panels, cabinets, groups, corridors, room-templates, obj-templates, bldg-templates, stray-devices.'
+                  in: path
+                  name: entity
+                  required: true
+                  type: string
+                - default: {}
+                  in: body
                   name: body
-                  schema:
-                    $ref: '#/definitions/LoginInput'
-                  x-go-name: Body
+                  required: true
+            produces:
+                - application/json
+            responses:
+                "201":
+                    description: Created. A response body will be returned with a meaningful message.
+                "400":
+                    description: Bad request. A response body with an error message will be returned.
+            security:
+                - Bearer: []
+            summary: Creates an object of the given entity in the system.
+            tags:
+                - Objects
+    /{entity}/{IdOrHierarchyName}:
+        delete:
+            operationId: DeleteObject
+            parameters:
+                - default: sites
+                  description: 'Entity (same as category) of the object. Accepted values: sites, domains, buildings, rooms, racks, devices, acs, panels, cabinets, groups, corridors, room-templates, obj-templates, bldg-templates, stray-devices.'
+                  in: path
+                  name: entity
+                  required: true
+                  type: string
+                - default: siteA
+                  description: ID or hierarchy name of desired object. For templates the slug is the ID.
+                  in: path
+                  name: IdOrHierarchyName
+                  required: true
+                  type: string
+            produces:
+                - application/json
+            responses:
+                "204":
+                    description: Successfully deleted object. No response body will be returned
+                "404":
+                    description: Not found. An error message will be returned
+            security:
+                - Bearer: []
+            summary: Deletes an Object in the system.
+            tags:
+                - Objects
+        get:
+            description: The ID or hierarchy name must be provided in the URL parameter.
+            operationId: GetEntity
+            parameters:
+                - default: sites
+                  description: 'Entity (same as category) of the object. Accepted values: sites, domains, buildings, rooms, racks, devices, acs, panels, cabinets, groups, corridors, room-templates, obj-templates, bldg-templates, stray-devices.'
+                  in: path
+                  name: entity
+                  required: true
+                  type: string
+                - default: siteA
+                  description: ID or hierarchy name of desired object. For templates the slug is the ID.
+                  in: path
+                  name: IdOrHierarchyName
+                  required: true
+                  type: string
+                - description: specify which object field to show in response. Multiple fieldOnly can be added. An invalid field is simply ignored.
+                  in: query
+                  name: fieldOnly
+                - description: 'filter objects by lastUpdated >= startDate. Format: yyyy-mm-dd'
+                  in: query
+                  name: startDate
+                - description: 'filter objects by lastUpdated <= endDate. Format: yyyy-mm-dd'
+                  in: query
+                  name: endDate
+            produces:
+                - application/json
+            responses:
+                "200":
+                    description: Found. A response body will be returned with a meaningful message.
+                "400":
+                    description: Bad request. An error message will be returned.
+                "404":
+                    description: Not Found. An error message will be returned.
+            security:
+                - Bearer: []
+            summary: Gets an Object of the given entity.
+            tags:
+                - Objects
+        patch:
+            description: |-
+                This is the preferred method for modifying data in the system.
+                If you want to do a full data replace, please use PUT instead.
+                If no data is effectively changed, an OK will still be returned.
+            operationId: PartialUpdateObject
+            parameters:
+                - default: sites
+                  description: 'Entity (same as category) of the object. Accepted values: sites, domains, buildings, rooms, racks, devices, acs, panels, cabinets, groups, corridors, room-templates, obj-templates, bldg-templates, stray-devices.'
+                  in: path
+                  name: entity
+                  required: true
+                  type: string
+                - default: siteA
+                  description: ID or hierarchy name of desired object. For templates the slug is the ID.
+                  in: path
+                  name: IdOrHierarchyName
+                  required: true
+                  type: string
+            produces:
+                - application/json
+            responses:
+                "200":
+                    description: Updated. A response body will be returned with a meaningful message.
+                "400":
+                    description: Bad request. An error message will be returned.
+                "404":
+                    description: Not Found. An error message will be returned.
+            security:
+                - Bearer: []
+            summary: Partially update object.
+            tags:
+                - Objects
+    /{entity}/{IdOrHierarchyName}/all:
+        get:
+            description: Returns JSON body with all subobjects under the Object.
+            operationId: GetEntityHierarchy
+            parameters:
+                - default: sites
+                  description: 'Entity (same as category) of the object. Accepted values: sites, domains, buildings, rooms, racks, devices, acs, panels, cabinets, groups, corridors, room-templates, obj-templates, bldg-templates, stray-devices.'
+                  in: path
+                  name: entity
+                  required: true
+                  type: string
+                - default: siteA
+                  description: ID or hierarchy name of desired object. For templates the slug is the ID.
+                  in: path
+                  name: IdOrHierarchyName
+                  required: true
+                  type: string
+                - default: 1
+                  description: 'Limits the level of hierarchy for retrieval. if not specified for devices then the default value is maximum. Example: /api/devices/{id}/all?limit=2'
+                  in: query
+                  name: limit
+                  type: string
+                - description: specify which object field to show in response. Multiple fieldOnly can be added. An invalid field is simply ignored.
+                  in: query
+                  name: fieldOnly
+                - description: 'filter objects by lastUpdated >= startDate. Format: yyyy-mm-dd'
+                  in: query
+                  name: startDate
+                - description: 'filter objects by lastUpdated <= endDate. Format: yyyy-mm-dd'
+                  in: query
+                  name: endDate
+            produces:
+                - application/json
+            responses:
+                "200":
+                    description: Found. A response body will be returned with a meaningful message.
+                "404":
+                    description: Nothing Found. An error message will be returned.
+            security:
+                - Bearer: []
+            summary: Get object and all its children.
+            tags:
+                - Objects
+    /{entity}/{id}/{subent}:
+        get:
+            description: |-
+                For Example: /api/sites/{id}/buildings
+                Will return all buildings of a site
+                Returns JSON body with all subobjects under the Object
+            operationId: GetEntitiesOfAncestor
+            parameters:
+                - default: sites
+                  description: Indicates the entity. Only values of "sites", "buildings", "rooms" are acceptable
+                  in: query
+                  name: entity
+                  required: true
+                  type: string
+                - default: 999
+                  description: ID of object
+                  in: query
+                  name: ID
+                  required: true
+                  type: int
+                - default: buildings
+                  description: Objects which 2 are levels lower in the hierarchy.
+                  in: query
+                  name: subent
+                  required: true
+                  type: string
+            produces:
+                - application/json
+            responses:
+                "200":
+                    description: Found. A response body will be returned with a meaningful message.
+                "404":
+                    description: Nothing Found. An error message will be returned.
+            security:
+                - Bearer: []
+            summary: Obtain all objects 2 levels lower in the system.
+            tags:
+                - Objects
+    /{entity}?:
+        get:
+            description: |-
+                Gets an Object using any attribute (with the exception of description)
+                via query in the system
+                The attributes are in the form {attr}=xyz&{attr1}=abc
+                And any combination can be used given that at least 1 is provided.
+            operationId: GetEntityByQuery
+            parameters:
+                - default: sites
+                  description: 'Entity (same as category) of the object. Accepted values: sites, domains, buildings, rooms, racks, devices, acs, panels, cabinets, groups, corridors, room-templates, obj-templates, bldg-templates, stray-devices.'
+                  in: path
+                  name: entity
+                  required: true
+                  type: string
+                - description: specify which object field to show in response. Multiple fieldOnly can be added. An invalid field is simply ignored.
+                  in: query
+                  name: fieldOnly
+                - description: 'filter objects by lastUpdated >= startDate. Format: yyyy-mm-dd'
+                  in: query
+                  name: startDate
+                - description: 'filter objects by lastUpdated <= endDate. Format: yyyy-mm-dd'
+                  in: query
+                  name: endDate
+                - default: domain=DemoDomain
+                  description: Any other object attributes can be queried. Replace attributes here by the name of the attribute followed by its value.
+                  example: vendor=ibm ; name=siteA ; orientation=front
+                  in: query
+                  name: attributes
+                  type: string
+            produces:
+                - application/json
+            responses:
+                "204":
+                    description: Found. A response body will be returned with a meaningful message.
+                "404":
+                    description: Not found. An error message will be returned.
+            security:
+                - Bearer: []
+            summary: Gets an object filtering by attribute.
+            tags:
+                - Objects
+    /{firstEntity}/{id}/{HierarchalPath}:
+        get:
+            description: |-
+                The path should begin with an entity name (firstEntity) and the ID of an object of this entity
+                followed by a hierarchal path until the desired objet, that is,
+                a sequence of entity names (category) and object names.
+            operationId: GetEntitiesUsingNamesOfParents
+            parameters:
+                - default: sites
+                  description: 'Root entity followed by an id. Can be: sites, buildings, rooms, racks or devices'
+                  in: query
+                  name: firstEntity
+                  required: true
+                  type: string
+                - default: "123"
+                  description: id of object of firstEntity
+                  in: path
+                  name: id
+                  required: true
+                  type: string
+                - default: /buildings/BuildingB/rooms/RoomA
+                  description: Hierarchal path to desired object.
+                  example: /api/sites/{id}/buildings/{building_name} ; /api/sites/{id}/buildings/{building_name}/rooms/{room_name} ; /api/sites/{id}/buildings/{building_name}/rooms/{room_name}/acs/{ac_name} ; /api/sites/{id}/buildings/{building_name}/rooms/{room_name}/corridors/{corridor_name} ; /api/sites/{id}/buildings/{building_name}/rooms/{room_name}/panels/{panel_name} ; /api/sites/{id}/buildings/{building_name}/rooms/{room_name}/groups/{group_name} ; /api/sites/{id}/buildings/{building_name}/rooms/{room_name}/racks/{rack_name}/devices/{device_name} ; /api/sites/{id}/buildings/{building_name}/rooms/{room_name}/racks/{rack_name} ; /api/buildings/{id}/rooms/{room_name} ; /api/buildings/{id}/rooms/{room_name}/acs/{ac_name} ; /api/buildings/{id}/rooms/{room_name}/corridors/{corridor_name} ; /api/buildings/{id}/rooms/{room_name}/panels/{panel_name} ; /api/buildings/{id}/rooms/{room_name}/groups/{group_name} ; /api/buildings/{id}/rooms/{room_name}/rack/{rack_name} ; /api/buildings/{id}/rooms/{room_name}/racks/{rack_name}/devices/{device_name} ; /api/rooms/{id}/acs/{ac_name} ; /api/rooms/{id}/corridors/{corridor_name} ; /api/rooms/{id}/panels/{panel_name} ; /api/rooms/{id}/groups/{group_name} ; /api/rooms/{id}/racks/{rack_name}/devices/{device_name} ; /api/racks/{id}/devices/{device_name} ; /api/devices/{id}/devices/{device_name} ;
+                  in: path
+                  name: HierarchalPath
+                  required: true
+                  type: string
+            produces:
+                - application/json
+            responses:
+                "200":
+                    description: Found. A response body will be returned with a meaningful message.
+                "404":
+                    description: Not Found. An error message will be returned.
+            security:
+                - Bearer: []
+            summary: Get an object with its full hierarchal path.
+            tags:
+                - Objects
+    /{objs}/{IdOrHierarchyName}:
+        put:
+            description: |-
+                This method will replace the existing data with the JSON
+                received, thus fully replacing the data. If you do not
+                want to do this, please use PATCH.
+                If no data is effectively changed, an OK will still be returned.
+            operationId: UpdateObject
+            parameters:
+                - default: sites
+                  description: 'Entity (same as category) of the object. Accepted values: sites, domains, buildings, rooms, racks, devices, acs, panels, cabinets, groups, corridors, room-templates, obj-templates, bldg-templates, stray-devices.'
+                  in: path
+                  name: entity
+                  required: true
+                  type: string
+                - default: siteA
+                  description: ID or hierarchy name of desired object. For templates the slug is the ID.
+                  in: path
+                  name: IdOrHierarchyName
+                  required: true
+                  type: string
+            produces:
+                - application/json
+            responses:
+                "200":
+                    description: Updated. A response body will be returned with a meaningful message.
+                "400":
+                    description: Bad request. An error message will be returned.
+                "404":
+                    description: Not Found. An error message will be returned.
+            security:
+                - Bearer: []
+            summary: Completely update object.
+            tags:
+                - Objects
+    /Devices:
+        get:
+            description: Get Devices list
+            operationId: Devices
+            parameters:
+                - description: Key of device
+                  in: query
+                  name: _key
+                  type: string
+                - description: Name of device
+                  in: query
+                  name: _name
+                  type: string
+                - description: Group_name of device
+                  in: query
+                  name: group_name
+                  type: string
+                - description: Serial number of device
+                  in: query
+                  name: serial
+                  type: string
             responses:
                 "200":
                     description: successful
                     schema:
                         items:
-                            $ref: '#/definitions/SuccessLogin'
+                            $ref: '#/definitions/SuccessResponse'
                 "500":
                     description: Error
                     schema:
                         items:
                             $ref: '#/definitions/ErrorResponse'
+            security:
+                - Bearer: []
             tags:
-                - Login
+                - Devices
+    /Devices/ConnecteTo/{device}:
+        get:
+            description: Get Devices connected to a device
+            operationId: GetDevicesConnectedTo
+            parameters:
+                - description: Key of device
+                  in: path
+                  name: device
+                  required: true
+                  type: string
+                - description: Filter devices by key
+                  in: query
+                  name: _key
+                  type: string
+                - description: Name of device
+                  in: query
+                  name: _name
+                  type: string
+                - description: Group_name of device
+                  in: query
+                  name: group_name
+                  type: string
+                - description: Serial number of device
+                  in: query
+                  name: serial
+                  type: string
+            responses:
+                "200":
+                    description: successful
+                    schema:
+                        items:
+                            $ref: '#/definitions/SuccessResponse'
+                "500":
+                    description: Error
+                    schema:
+                        items:
+                            $ref: '#/definitions/ErrorResponse'
+            security:
+                - Bearer: []
+            tags:
+                - Devices
+    /domains/bulk:
+        post:
+            description: An array of domains should be provided in the body.
+            operationId: CreateBulkDomain
+            parameters:
+                - default:
+                    - {}
+                  in: body
+                  name: body
+                  required: true
+            produces:
+                - application/json
+            responses:
+                "200":
+                    description: Request processed. Check the response body for individual results for each of the sent domains
+                "400":
+                    description: 'Bad format: body is not a valid list of domains.'
+            security:
+                - Bearer: []
+            summary: Create multiple domains in a single request.
+            tags:
+                - Organization
+    /hierarchy:
+        get:
+            description: |-
+                Return is arranged by relationship (father:[children])
+                and category (category:[objects]), starting with "Root":[sites].
+                User permissions apply.
+            operationId: GetCompleteHierarchy
+            produces:
+                - application/json
+            responses:
+                "200":
+                    description: Request is valid.
+                "500":
+                    description: Server error.
+            security:
+                - Bearer: []
+            summary: Returns system complete hierarchy.
+            tags:
+                - Objects
+    /hierarchy/attributes:
+        get:
+            description: |-
+                Return is arranged by hierarchyName (objHierarchyName:{attributes}).
+                User permissions apply.
+            operationId: GetCompleteHierarchyAttrs
+            produces:
+                - application/json
+            responses:
+                "200":
+                    description: Request is valid.
+                "500":
+                    description: Server error.
+            security:
+                - Bearer: []
+            summary: Returns attributes of all objects.
+            tags:
+                - Objects
+    /hierarchy/domains:
+        get:
+            description: |-
+                Return is arranged by relationship (father:[children]),
+                starting with "Root":[root domains].
+            operationId: GetCompleteDomainHierarchy
+            produces:
+                - application/json
+            responses:
+                "200":
+                    description: Request is valid.
+                "500":
+                    description: Server error.
+            security:
+                - Bearer: []
+            summary: Returns domain complete hierarchy.
+            tags:
+                - Organization
+    /login:
+        post:
+            description: |-
+                Create a new JWT Key. This can also be used to verify credentials
+                The authorize and 'Try it out' buttons don't work
+            operationId: Authenticate
+            parameters:
+                - description: 'Mandatory: email and password.'
+                  example: '{"email": "user@test.com", "password": "secret123"}'
+                  format: object
+                  in: body
+                  name: body
+                  required: true
+            produces:
+                - application/json
+            responses:
+                "200":
+                    description: Authenticated
+                "400":
+                    description: Bad request
+                "500":
+                    description: Internal server error
+            summary: Generates a new JWT Key for the client.
+            tags:
+                - Authentication
+    /objects/{hierarchyName}:
+        get:
+            description: |-
+                Gets an object from any of the physical entities with no need to specify it.
+                The hierarchyName must be provided in the URL as a parameter.
+            operationId: GetGenericObject
+            parameters:
+                - description: hierarchyName of the object
+                  in: path
+                  name: hierarchyName
+                  required: true
+                - description: specify which object field to show in response. Multiple fieldOnly can be added. An invalid field is simply ignored.
+                  in: query
+                  name: fieldOnly
+                - description: 'filter objects by lastUpdated >= startDate. Format: yyyy-mm-dd'
+                  in: query
+                  name: startDate
+                - description: 'filter objects by lastUpdated <= endDate. Format: yyyy-mm-dd'
+                  in: query
+                  name: endDate
+            produces:
+                - application/json
+            responses:
+                "200":
+                    description: Found. A response body will be returned with a meaningful message.
+                "404":
+                    description: Not Found. An error message will be returned.
+            security:
+                - Bearer: []
+            summary: Get an object from any entity.
+            tags:
+                - Objects
+    /tempunits/{IdOrHierarchyName}:
+        get:
+            operationId: GetTempUnit
+            parameters:
+                - default: siteA
+                  description: ID or hierarchy name of desired object. For templates the slug is the ID.
+                  in: path
+                  name: IdOrHierarchyName
+                  required: true
+                  type: string
+            produces:
+                - application/json
+            responses:
+                "200":
+                    description: Found. A response body will be returned with a meaningful message.
+                "404":
+                    description: Nothing Found. An error message will be returned.
+            security:
+                - Bearer: []
+            summary: Gets the temperatureUnit attribute of the parent site of given object.
+            tags:
+                - Objects
+    /token/valid:
+        get:
+            operationId: VerifyToken
+            produces:
+                - application/json
+            responses:
+                "200":
+                    description: Token is valid.
+                "403":
+                    description: Unauthorized
+                "500":
+                    description: Internal server error
+            security:
+                - Bearer: []
+            summary: Verify if token sent in the header is valid.
+            tags:
+                - Authentication
+    /users:
+        get:
+            operationId: GetAllAccounts
+            produces:
+                - application/json
+            responses:
+                "200":
+                    description: Return all possible users
+                "500":
+                    description: Internal server error
+            security:
+                - Bearer: []
+            summary: Get a list of users that the caller is allowed to see.
+            tags:
+                - Organization
+        post:
+            description: |-
+                Create an account with email and password credentials, it returns
+                a JWT key to use with the API.
+            operationId: CreateAccount
+            parameters:
+                - description: 'Mandatory: email, password and roles. Optional: name. Roles is an object with domains as keys and roles as values. Possible roles: manager, user and viewer'
+                  example: '{"name": "John Doe", "roles": {"*": "manager"}, "email": "user@test.com", "password": "secret123"}'
+                  format: object
+                  in: body
+                  name: body
+                  required: true
+            produces:
+                - application/json
+            responses:
+                "201":
+                    description: New account created
+                "400":
+                    description: Bad request
+                "403":
+                    description: User not authorised to create an account
+                "500":
+                    description: Internal server error
+            security:
+                - Bearer: []
+            summary: Create a new user user.
+            tags:
+                - Organization
+    /users/{userid}:
+        delete:
+            operationId: RemoveAccount
+            parameters:
+                - description: The ID of the user to delete
+                  example: someUserId
+                  in: path
+                  name: userid
+                  required: true
+                  type: string
+            produces:
+                - application/json
+            responses:
+                "200":
+                    description: User removed
+                "400":
+                    description: User ID not valid or not found
+                "403":
+                    description: Caller not authorised to delete this user
+                "500":
+                    description: Internal server error
+            security:
+                - Bearer: []
+            summary: Remove the specified user account.
+            tags:
+                - Organization
+        patch:
+            operationId: ModifyUserRoles
+            parameters:
+                - description: The ID of the user to modify roles
+                  example: someUserId
+                  in: path
+                  name: userid
+                  required: true
+                  type: string
+                - description: An object with domains as keys and roles as values
+                  example: '{"roles": {"*": "manager"}}'
+                  in: body
+                  name: roles
+                  required: true
+                  type: json
+            produces:
+                - application/json
+            responses:
+                "200":
+                    description: User roles modified
+                "400":
+                    description: Bad request
+                "403":
+                    description: Caller not authorised to modify this user
+                "500":
+                    description: Internal server error
+            security:
+                - Bearer: []
+            summary: 'Modify user permissions: domain and role.'
+            tags:
+                - Organization
+    /users/bulk:
+        post:
+            operationId: CreateBulk
+            parameters:
+                - description: An array of users. Same mandatory and optional parameters as user apply, except for password. If not provided, one will be automatically created by the API.
+                  example: '[{"name": "John Doe", "roles": {"*": "manager"}, "email": "user@test.com"}]'
+                  format: object
+                  in: body
+                  name: body
+                  required: true
+            produces:
+                - application/json
+            responses:
+                "200":
+                    description: Request processed, check response body for results
+                "400":
+                    description: Bad request
+                "500":
+                    description: Internal server error
+            security:
+                - Bearer: []
+            summary: Create multiples users with one request.
+            tags:
+                - Organization
+    /users/password/change:
+        post:
+            operationId: ModifyUserPassword
+            parameters:
+                - description: 'Mandatory: currentPassword and newPassword.'
+                  example: '{"currentPassword": "myOldPassword", "newPassword": "myNewPassword"}'
+                  in: body
+                  name: body
+                  required: true
+                  type: json
+            produces:
+                - application/json
+            responses:
+                "200":
+                    description: Password changed
+                "400":
+                    description: Bad request
+                "500":
+                    description: Internal server error
+            security:
+                - Bearer: []
+            summary: For logged in user to change its own password.
+            tags:
+                - Authentication
+    /users/password/forgot:
+        post:
+            description: |-
+                Public endpoint to request a reset of a user's password (forgot my password).
+                If the email is valid, an email with a reset token/link will be sent to the user.
+            operationId: UserForgotPassword
+            parameters:
+                - description: 'Mandatory: email.'
+                  example: '{"email": "user@test.com"}'
+                  in: body
+                  name: body
+                  required: true
+                  type: string
+            produces:
+                - application/json
+            responses:
+                "200":
+                    description: request processed. If account exists, an email with a reset token is sent
+                "400":
+                    description: Bad request
+                "500":
+                    description: Internal server error
+            summary: Forgot my password.
+            tags:
+                - Authentication
+    /users/password/reset:
+        post:
+            description: |-
+                For user that first called forgot enpoint to change its password.
+                A reset token generated by the forgot endpoint should be provided as the Authentication header.
+            operationId: ResetUserPassword
+            parameters:
+                - description: 'Mandatory: currentPassword and newPassword.'
+                  example: '{"newPassword": "myNewPassword"}'
+                  in: body
+                  name: body
+                  required: true
+                  type: json
+            produces:
+                - application/json
+            responses:
+                "200":
+                    description: Password changed
+                "400":
+                    description: Bad request
+                "500":
+                    description: Internal server error
+            security:
+                - Bearer: []
+            summary: Reset password after forgot.
+            tags:
+                - Authentication
+    /validate/{entity}:
+        post:
+            operationId: ValidateObject
+            parameters:
+                - default: sites
+                  description: 'Entity (same as category) of the object. Accepted values: sites, domains, buildings, rooms, racks, devices, acs, panels, cabinets, groups, corridors, room-templates, obj-templates, bldg-templates, stray-devices.'
+                  in: path
+                  name: entity
+                  required: true
+                  type: string
+                - default: {}
+                  in: body
+                  name: body
+                  required: true
+            produces:
+                - application/json
+            responses:
+                "200":
+                    description: Createable. A response body will be returned with a meaningful message.
+                "400":
+                    description: Bad request. A response body with an error message will be returned.
+                "404":
+                    description: Not Found. An error message will be returned.
+            security:
+                - Bearer: []
+            summary: Checks the received data and verifies if the object can be created in the system.
+            tags:
+                - Objects
 produces:
     - application/json
 schemes:
