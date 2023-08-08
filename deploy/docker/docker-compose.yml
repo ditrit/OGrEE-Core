@@ -113,7 +113,7 @@ services:
     container_name: ${COMPOSE_PROJECT_NAME}_bff
     environment:
       - ENV=production
-      - ARANGO_API=http://${COMPOSE_PROJECT_NAME}_arango-api:${ARANGO_API_PORT}
+      - ARANGO_API=http://${COMPOSE_PROJECT_NAME}_arango_api:${ARANGO_API_PORT}
       - MONGO_API=http://${COMPOSE_PROJECT_NAME}_api:${API_PORT}
       - BFF_PORT=${BFF_PORT}
       - BFF_SECRET=${AUTH_SECRET}
