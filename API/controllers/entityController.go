@@ -298,19 +298,19 @@ func getBulkDomainsRecursively(parent string, listDomains []map[string]interface
 	return domainsToCreate, nil
 }
 
-// swagger:operation GET /api/objects/{hierarchyName} Objects GetGenericObject
+// swagger:operation GET /api/objects/{id} Objects GetGenericObject
 // Get an object from any entity.
 // Gets an object from any of the physical entities with no need to specify it.
-// The hierarchyName must be provided in the URL as a parameter.
+// The id must be provided in the URL as a parameter.
 // ---
 // security:
 // - bearer: []
 // produces:
 // - application/json
 // parameters:
-//   - name: hierarchyName
+//   - name: id
 //     in: path
-//     description: hierarchyName of the object
+//     description: ID type hierarchyName of the object
 //     required: true
 //   - name: fieldOnly
 //     in: query
@@ -382,7 +382,7 @@ func HandleGenericObject(w http.ResponseWriter, r *http.Request) {
 
 }
 
-// swagger:operation GET /api/{entity}/{IdOrHierarchyName} Objects GetEntity
+// swagger:operation GET /api/{entity}/{id} Objects GetEntity
 // Gets an Object of the given entity.
 // The ID or hierarchy name must be provided in the URL parameter.
 // ---
@@ -400,9 +400,9 @@ func HandleGenericObject(w http.ResponseWriter, r *http.Request) {
 //     required: true
 //     type: string
 //     default: "sites"
-//   - name: IdOrHierarchyName
+//   - name: id
 //     in: path
-//     description: 'ID or hierarchy name of desired object.
+//     description: 'ID of desired object.
 //     For templates the slug is the ID.'
 //     required: true
 //     type: string
@@ -563,7 +563,7 @@ func GetAllEntities(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// swagger:operation DELETE /api/{entity}/{IdOrHierarchyName} Objects DeleteObject
+// swagger:operation DELETE /api/{entity}/{id} Objects DeleteObject
 // Deletes an Object in the system.
 // ---
 // security:
@@ -580,9 +580,9 @@ func GetAllEntities(w http.ResponseWriter, r *http.Request) {
 //     required: true
 //     type: string
 //     default: "sites"
-//   - name: IdOrHierarchyName
+//   - name: id
 //     in: path
-//     description: 'ID or hierarchy name of desired object.
+//     description: 'ID of desired object.
 //     For templates the slug is the ID.'
 //     required: true
 //     type: string
@@ -645,7 +645,7 @@ func DeleteEntity(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// swagger:operation PATCH /api/{entity}/{IdOrHierarchyName} Objects PartialUpdateObject
+// swagger:operation PATCH /api/{entity}/{id} Objects PartialUpdateObject
 // Partially update object.
 // This is the preferred method for modifying data in the system.
 // If you want to do a full data replace, please use PUT instead.
@@ -665,9 +665,9 @@ func DeleteEntity(w http.ResponseWriter, r *http.Request) {
 //     required: true
 //     type: string
 //     default: "sites"
-//   - name: IdOrHierarchyName
+//   - name: id
 //     in: path
-//     description: 'ID or hierarchy name of desired object.
+//     description: 'ID of desired object.
 //     For templates the slug is the ID.'
 //     required: true
 //     type: string
@@ -682,7 +682,7 @@ func DeleteEntity(w http.ResponseWriter, r *http.Request) {
 //     '404':
 //         description: Not Found. An error message will be returned.
 
-// swagger:operation PUT /api/{objs}/{IdOrHierarchyName} Objects UpdateObject
+// swagger:operation PUT /api/{entity}/{id} Objects UpdateObject
 // Completely update object.
 // This method will replace the existing data with the JSON
 // received, thus fully replacing the data. If you do not
@@ -703,9 +703,9 @@ func DeleteEntity(w http.ResponseWriter, r *http.Request) {
 //     required: true
 //     type: string
 //     default: "sites"
-//   - name: IdOrHierarchyName
+//   - name: id
 //     in: path
-//     description: 'ID or hierarchy name of desired object.
+//     description: 'ID of desired object.
 //     For templates the slug is the ID.'
 //     required: true
 //     type: string
@@ -883,7 +883,7 @@ func GetEntityByQuery(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// swagger:operation GET /api/tempunits/{IdOrHierarchyName} Objects GetTempUnit
+// swagger:operation GET /api/tempunits/{id} Objects GetTempUnit
 // Gets the temperatureUnit attribute of the parent site of given object.
 // ---
 // security:
@@ -891,9 +891,9 @@ func GetEntityByQuery(w http.ResponseWriter, r *http.Request) {
 // produces:
 // - application/json
 // parameters:
-//   - name: IdOrHierarchyName
+//   - name: id
 //     in: path
-//     description: 'ID or hierarchy name of desired object.
+//     description: 'ID of desired object.
 //     For templates the slug is the ID.'
 //     required: true
 //     type: string
@@ -935,10 +935,12 @@ func GetTempUnit(w http.ResponseWriter, r *http.Request) {
 }
 
 // swagger:operation GET /api/{entity}/{id}/{subent} Objects GetEntitiesOfAncestor
-// Obtain all objects 2 levels lower in the system.
-// For Example: /api/sites/{id}/buildings
-// Will return all buildings of a site
-// Returns JSON body with all subobjects under the Object
+// Obtain all children object of given id that belong to subent entity.
+// Subent must be lower than entity in the hierarchy.
+// Examples:
+// /api/sites/{id}/rooms will return all rooms of a site
+// /api/room/{id}/devices will return all devices of a room
+// Returns a JSON body with all children objects under the parent object.
 // ---
 // security:
 // - bearer: []
@@ -947,20 +949,19 @@ func GetTempUnit(w http.ResponseWriter, r *http.Request) {
 // parameters:
 // - name: entity
 //   in: query
-//   description: 'Indicates the entity. Only values of "sites",
-//   "buildings", "rooms" are acceptable'
+//   description: 'Indicates the entity.'
 //   required: true
 //   type: string
-//   default: "sites"
+//   default: sites
 // - name: ID
 //   in: query
 //   description: ID of object
 //   required: true
 //   type: int
-//   default: 999
+//   default: siteA
 // - name: subent
 //   in: query
-//   description: Objects which 2 are levels lower in the hierarchy.
+//   description: 'Indicates the subentity to search for children.'
 //   required: true
 //   type: string
 //   default: buildings
@@ -1026,7 +1027,7 @@ func GetEntitiesOfAncestor(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// swagger:operation GET /api/{entity}/{IdOrHierarchyName}/all Objects GetEntityHierarchy
+// swagger:operation GET /api/{entity}/{id}/all Objects GetEntityHierarchy
 // Get object and all its children.
 // Returns JSON body with all subobjects under the Object.
 // ---
@@ -1044,9 +1045,9 @@ func GetEntitiesOfAncestor(w http.ResponseWriter, r *http.Request) {
 //   required: true
 //   type: string
 //   default: "sites"
-// - name: IdOrHierarchyName
+// - name: id
 //   in: path
-//   description: 'ID or hierarchy name of desired object.
+//   description: 'ID of desired object.
 //   For templates the slug is the ID.'
 //   required: true
 //   type: string
@@ -1264,6 +1265,72 @@ func GetCompleteHierarchyAttributes(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 }
+
+// swagger:operation POST /api/{entity}/{id}/unlink Objects UnlinkObject
+// Removes the object from its original entity and hierarchy tree to make it stray.
+// The object will no longer have a parent, its id will change as well as the id of all its children.
+// The object will then belong to the stray-objects entity.
+// ---
+// security:
+// - bearer: []
+// produces:
+// - application/json
+// parameters:
+//   - name: id
+//     in: path
+//     description: 'ID of desired object.'
+//     required: true
+//     type: string
+//     default: "Site.Building.Room.RackB"
+//   - name: entity
+//     in: path
+//     description: 'Entity (same as category) of the object. Accepted values:
+//     buildings, rooms, racks, devices, acs, panels,
+//     cabinets, groups, corridors.'
+//     required: true
+//     type: string
+//     default: "sites"
+//   - name: body
+//     in: body
+//     required: false
+//     description: 'Name is optional to change the name of the object when turning stray.'
+//     default: {"name": "MyNewStrayObjectName"}
+// responses:
+//     '200':
+//         description: 'Unlinked. The object is now a stray.'
+//     '400':
+//         description: 'Bad request. Request has wrong format.'
+//     '500':
+//         description: 'Internal error. Unable to remove object from entity and create it as stray.'
+
+// swagger:operation POST /api/stray-objects/{id}/link Objects LinkObject
+// Removes the object from stray and add it to the entity of its category attribute.
+// The object will again have a parent, its id will change as well as the id of all its children.
+// The object will then belong to the given entity.
+// ---
+// security:
+// - bearer: []
+// produces:
+// - application/json
+// parameters:
+//   - name: id
+//     in: path
+//     description: 'ID of desired object.'
+//     required: true
+//     type: string
+//     default: "StrayRackB"
+//   - name: body
+//     in: body
+//     required: true
+//     description: 'ParentId is mandatory. Name is optional.'
+//     default: {"parentId": "MyNewParent", "name": "MyNewObjectName"}
+// responses:
+//     '200':
+//         description: 'Linked. The object is no longer a stray.'
+//     '400':
+//         description: 'Bad request. Request has wrong format.'
+//     '500':
+//         description: 'Internal error. Unable to remove object from stray and create it in an entity.'
 
 func LinkEntity(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("******************************************************")

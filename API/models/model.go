@@ -842,6 +842,8 @@ func GetEntitiesOfAncestor(id string, entStr, wantedEnt string, userRoles map[st
 	return sub, nil
 }
 
+// SwapEntity: use id to remove object from deleteEnt and then use data to create it in createEnt.
+// Propagates id changes to children objects. For atomicity, all is done in a Mongo transaction.
 func SwapEntity(createEnt, deleteEnt, id string, data map[string]interface{}, userRoles map[string]Role) *u.Error {
 	ctx, _ := u.Connect()
 	if e := prepareCreateEntity(u.EntityStrToInt(createEnt), data, userRoles); e != nil {
