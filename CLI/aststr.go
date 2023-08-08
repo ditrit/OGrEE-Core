@@ -7,13 +7,11 @@ import (
 	"strings"
 )
 
-
-
 type pathNode struct {
 	path node
 }
 
-func (n pathNode) getStr() (string, error) {
+func (n pathNode) execute() (interface{}, error) {
 	val, err := n.path.execute()
 	if err != nil {
 		return "", err
@@ -64,16 +62,16 @@ func (n pathNode) getStr() (string, error) {
 	return path.Clean("/" + strings.Join(output_words, "/")), nil
 }
 
-func (n pathNode) execute() (interface{}, error) {
-	return n.getStr()
-}
-
 type formatStringNode struct {
-	str  string
+	str  node
 	vals []node
 }
 
-func (n *formatStringNode) getStr() (string, error) {
+func (n *formatStringNode) execute() (interface{}, error) {
+	str, err := nodeToString(n.str, "string")
+	if err != nil {
+		return "", err
+	}
 	vals := []any{}
 	for _, val := range n.vals {
 		v, err := val.execute()
@@ -82,9 +80,5 @@ func (n *formatStringNode) getStr() (string, error) {
 		}
 		vals = append(vals, v)
 	}
-	return fmt.Sprintf(n.str, vals...), nil
-}
-
-func (n *formatStringNode) execute() (interface{}, error) {
-	return n.getStr()
+	return fmt.Sprintf(str, vals...), nil
 }
