@@ -54,7 +54,7 @@ func InsertDevices(c *gin.Context, device map[string]string) ([]interface{}, *mo
 		return nil, err
 	}
 	if existed {
-		return nil, &models.ErrorMessage{StatusCode: http.StatusFound, Message: "Device already existed"}
+		return nil, &models.ErrorMessage{StatusCode: http.StatusBadRequest, Message: "Device already existed"}
 	}
 	deviceStr, err := ParseToString(device)
 

@@ -41,6 +41,12 @@ func initDevices(protected, unprotected *gin.RouterGroup){
 	
 	protected.GET("/Devices",handlers.GetDevices)
 	protected.GET("/Devices/ConnecteTo/:key",handlers.GetDevicesConnectedTo)
+	protected.POST("/Devices",handlers.CreateDevices)
+	protected.DELETE("/Devices/:id",handlers.DeleteDevice)
+	
+	protected.GET("/Connections",handlers.GetConnections)
+	protected.POST("/Connections",handlers.CreateConnections)
+	protected.DELETE("/Connections/:id",handlers.DeleteConnections)
 }
 
 func initAuth(protected, unprotected *gin.RouterGroup){

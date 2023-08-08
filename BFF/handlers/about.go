@@ -22,7 +22,7 @@ func GetStats(c *gin.Context){
 	controllers.Get(c,"mongo")
 }
 
-// swagger:operation GET /api/version About GetAPIVersion
+// swagger:operation GET /version About GetAPIVersion
 // Gets the API version.
 // ---
 // security:

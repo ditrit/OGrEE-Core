@@ -50,10 +50,6 @@ func InitRouter(db driver.Database, addr string) *gin.Engine {
 	proteted.POST("/Connections", handlers.PostConnection)
 	proteted.DELETE("/Connections/:key", handlers.DeleteConnection)
 
-	proteted.GET("/Database", handlers.GetBDD)
-	proteted.POST("/Database", handlers.ConnectBDD)
-
-	router.POST("/api/login",handlers.Login)
 	router.GET("/api/health",func(c *gin.Context){
 		c.String(http.StatusAccepted,"")
 	})

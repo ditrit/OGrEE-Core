@@ -1,0 +1,1737 @@
+{
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
+  "schemes": [
+    "http",
+    "https"
+  ],
+  "swagger": "2.0",
+  "info": {
+    "title": "Ogree BFF:",
+    "version": "1.0.0"
+  },
+  "basePath": "/api",
+  "paths": {
+    "/Connections": {
+      "get": {
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "description": "Get Connection list",
+        "tags": [
+          "Devices"
+        ],
+        "operationId": "GetConnections",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "Key of connection",
+            "name": "_key",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "description": "From witch device",
+            "name": "_from",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "description": "To witch device",
+            "name": "_to",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful",
+            "schema": {
+              "items": {
+                "$ref": "#/definitions/SuccessResponse"
+              }
+            }
+          },
+          "500": {
+            "description": "Error",
+            "schema": {
+              "items": {
+                "$ref": "#/definitions/ErrorResponse"
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "description": "Create new Connection",
+        "tags": [
+          "Devices"
+        ],
+        "operationId": "CreateConnection",
+        "parameters": [
+          {
+            "format": "object",
+            "example": "{\"_from\": \"devices/123\", \"_to\": \"devices/111\"}",
+            "description": "Mandatory: _from, _to.",
+            "name": "body",
+            "in": "body",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful",
+            "schema": {
+              "items": {
+                "$ref": "#/definitions/SuccessResponse"
+              }
+            }
+          },
+          "500": {
+            "description": "Error",
+            "schema": {
+              "items": {
+                "$ref": "#/definitions/ErrorResponse"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/Connections/{connection}": {
+      "delete": {
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "description": "Delete Connection by key",
+        "tags": [
+          "Devices"
+        ],
+        "operationId": "DeleteConnection",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "connection looking for",
+            "name": "connection",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful",
+            "schema": {
+              "items": {
+                "$ref": "#/definitions/SuccessResponse"
+              }
+            }
+          },
+          "500": {
+            "description": "Error",
+            "schema": {
+              "items": {
+                "$ref": "#/definitions/ErrorResponse"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/Devices": {
+      "get": {
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "description": "Get Devices list",
+        "tags": [
+          "Devices"
+        ],
+        "operationId": "Devices",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "Key of device",
+            "name": "_key",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "description": "Name of device",
+            "name": "_name",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "description": "Group_name of device",
+            "name": "group_name",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "description": "Serial number of device",
+            "name": "serial",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful",
+            "schema": {
+              "items": {
+                "$ref": "#/definitions/SuccessResponse"
+              }
+            }
+          },
+          "500": {
+            "description": "Error",
+            "schema": {
+              "items": {
+                "$ref": "#/definitions/ErrorResponse"
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "description": "Create new Devices",
+        "tags": [
+          "Devices"
+        ],
+        "operationId": "CreateDevices",
+        "parameters": [
+          {
+            "format": "object",
+            "example": "{\"_name\": \"server\", \"group_name\": \"exwipen22\",\"created\": \"2022-07-18\"}",
+            "description": "Mandatory: _name, group_name,created.",
+            "name": "body",
+            "in": "body",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful",
+            "schema": {
+              "items": {
+                "$ref": "#/definitions/SuccessResponse"
+              }
+            }
+          },
+          "500": {
+            "description": "Error",
+            "schema": {
+              "items": {
+                "$ref": "#/definitions/ErrorResponse"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/Devices/ConnecteTo/{device}": {
+      "get": {
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "description": "Get Devices connected to a device",
+        "tags": [
+          "Devices"
+        ],
+        "operationId": "GetDevicesConnectedTo",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "Key of device",
+            "name": "device",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "description": "Filter devices by key",
+            "name": "_key",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "description": "Name of device",
+            "name": "_name",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "description": "Group_name of device",
+            "name": "group_name",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "description": "Serial number of device",
+            "name": "serial",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful",
+            "schema": {
+              "items": {
+                "$ref": "#/definitions/SuccessResponse"
+              }
+            }
+          },
+          "500": {
+            "description": "Error",
+            "schema": {
+              "items": {
+                "$ref": "#/definitions/ErrorResponse"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/Devices/{device}": {
+      "delete": {
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "description": "Delete Devices by key",
+        "tags": [
+          "Devices"
+        ],
+        "operationId": "DeleteDevices",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "device looking for",
+            "name": "device",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful",
+            "schema": {
+              "items": {
+                "$ref": "#/definitions/SuccessResponse"
+              }
+            }
+          },
+          "500": {
+            "description": "Error",
+            "schema": {
+              "items": {
+                "$ref": "#/definitions/ErrorResponse"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/domains/bulk": {
+      "post": {
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "description": "An array of domains should be provided in the body.",
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "Organization"
+        ],
+        "summary": "Create multiple domains in a single request.",
+        "operationId": "CreateBulkDomain",
+        "parameters": [
+          {
+            "default": [
+              {}
+            ],
+            "name": "body",
+            "in": "body",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Request processed. Check the response body for individual results for each of the sent domains"
+          },
+          "400": {
+            "description": "Bad format: body is not a valid list of domains."
+          }
+        }
+      }
+    },
+    "/hierarchy": {
+      "get": {
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "description": "Return is arranged by relationship (father:[children])\nand category (category:[objects]), starting with \"Root\":[sites].\nUser permissions apply.",
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "Objects"
+        ],
+        "summary": "Returns system complete hierarchy.",
+        "operationId": "GetCompleteHierarchy",
+        "responses": {
+          "200": {
+            "description": "Request is valid."
+          },
+          "500": {
+            "description": "Server error."
+          }
+        }
+      }
+    },
+    "/hierarchy/attributes": {
+      "get": {
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "description": "Return is arranged by hierarchyName (objHierarchyName:{attributes}).\nUser permissions apply.",
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "Objects"
+        ],
+        "summary": "Returns attributes of all objects.",
+        "operationId": "GetCompleteHierarchyAttrs",
+        "responses": {
+          "200": {
+            "description": "Request is valid."
+          },
+          "500": {
+            "description": "Server error."
+          }
+        }
+      }
+    },
+    "/hierarchy/domains": {
+      "get": {
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "description": "Return is arranged by relationship (father:[children]),\nstarting with \"Root\":[root domains].",
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "Organization"
+        ],
+        "summary": "Returns domain complete hierarchy.",
+        "operationId": "GetCompleteDomainHierarchy",
+        "responses": {
+          "200": {
+            "description": "Request is valid."
+          },
+          "500": {
+            "description": "Server error."
+          }
+        }
+      }
+    },
+    "/login": {
+      "post": {
+        "description": "Create a new JWT Key. This can also be used to verify credentials\nThe authorize and 'Try it out' buttons don't work",
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "Authentication"
+        ],
+        "summary": "Generates a new JWT Key for the client.",
+        "operationId": "Authenticate",
+        "parameters": [
+          {
+            "format": "object",
+            "example": "{\"email\": \"user@test.com\", \"password\": \"secret123\"}",
+            "description": "Mandatory: email and password.",
+            "name": "body",
+            "in": "body",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Authenticated"
+          },
+          "400": {
+            "description": "Bad request"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      }
+    },
+    "/objects/{hierarchyName}": {
+      "get": {
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "description": "Gets an object from any of the physical entities with no need to specify it.\nThe hierarchyName must be provided in the URL as a parameter.",
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "Objects"
+        ],
+        "summary": "Get an object from any entity.",
+        "operationId": "GetGenericObject",
+        "parameters": [
+          {
+            "description": "hierarchyName of the object",
+            "name": "hierarchyName",
+            "in": "path",
+            "required": true
+          },
+          {
+            "description": "specify which object field to show in response. Multiple fieldOnly can be added. An invalid field is simply ignored.",
+            "name": "fieldOnly",
+            "in": "query"
+          },
+          {
+            "description": "filter objects by lastUpdated \u003e= startDate. Format: yyyy-mm-dd",
+            "name": "startDate",
+            "in": "query"
+          },
+          {
+            "description": "filter objects by lastUpdated \u003c= endDate. Format: yyyy-mm-dd",
+            "name": "endDate",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Found. A response body will be returned with a meaningful message."
+          },
+          "404": {
+            "description": "Not Found. An error message will be returned."
+          }
+        }
+      }
+    },
+    "/projects": {
+      "get": {
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "FlutterApp"
+        ],
+        "summary": "Get a list of projects for the specified user.",
+        "operationId": "GetProjects",
+        "parameters": [
+          {
+            "type": "string",
+            "default": "user@test.com",
+            "description": "Email of the user whose projects are being requested. Example: /api/projects?user=user@test.com",
+            "name": "user",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Return all possible projects."
+          },
+          "400": {
+            "description": "Bad Request. Invalid user query param."
+          },
+          "500": {
+            "description": "Internal server error."
+          }
+        }
+      },
+      "post": {
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "description": "Create a new project",
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "FlutterApp"
+        ],
+        "operationId": "CreateProjects",
+        "parameters": [
+          {
+            "format": "object",
+            "example": "{\"attributes\":[\"domain\"],\"authorLastUpdate\":\"helder\",\"dateRange\":\"01/01/2023-02/02/2023\", \"lastUpdate\":\"02/02/2023\",\"name\":\"test 1\",\"namespace\":\"physical\",\"objects\":[\"siteB\"],\"showAvg\":false, \"showSum\":false,\"permissions\":[\"user@test.com\",\"admin\"]}",
+            "description": "Mandatory: name, dateRange, namespace, attributes, objects, permissions, authorLastUpdate, lastUpdate. Optional: showAvg, showSum, isPublic.",
+            "name": "body",
+            "in": "body",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Project successfully created."
+          },
+          "400": {
+            "description": "Bad Request. Invalid project format."
+          },
+          "500": {
+            "description": "Internal server error."
+          }
+        }
+      }
+    },
+    "/projects/{ProjectID}": {
+      "put": {
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "FlutterApp"
+        ],
+        "summary": "Replace the data of an existing project.",
+        "operationId": "UpdateProjects",
+        "parameters": [
+          {
+            "type": "string",
+            "default": "1234",
+            "description": "ID of the project to update.",
+            "name": "ProjectID",
+            "in": "path",
+            "required": true
+          },
+          {
+            "format": "object",
+            "example": "{\"attributes\":[\"domain\"],\"authorLastUpdate\":\"helder\",\"dateRange\":\"01/01/2023-02/02/2023\", \"lastUpdate\":\"02/02/2023\",\"name\":\"test 1\",\"namespace\":\"physical\",\"objects\":[\"siteB\"],\"showAvg\":false, \"showSum\":false,\"permissions\":[\"user@test.com\",\"admin\"]}",
+            "description": "Mandatory: name, dateRange, namespace, attributes, objects, permissions, authorLastUpdate, lastUpdate. Optional: showAvg, showSum, isPublic.",
+            "name": "body",
+            "in": "body",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Project successfully updated."
+          },
+          "400": {
+            "description": "Bad Request. Invalid project format."
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      },
+      "delete": {
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "FlutterApp"
+        ],
+        "summary": "Delete an existing project.",
+        "operationId": "DeleteProjects",
+        "parameters": [
+          {
+            "type": "string",
+            "default": "1234",
+            "description": "ID of the project to delete.",
+            "name": "ProjectID",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Project successfully updated."
+          },
+          "404": {
+            "description": "Not Found. Invalid project ID."
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      }
+    },
+    "/stats": {
+      "get": {
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "About"
+        ],
+        "summary": "Displays DB statistics.",
+        "operationId": "GetStats",
+        "responses": {
+          "200": {
+            "description": "Request is valid."
+          },
+          "504": {
+            "description": "Server error."
+          }
+        }
+      }
+    },
+    "/tempunits/{IdOrHierarchyName}": {
+      "get": {
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "Objects"
+        ],
+        "summary": "Gets the temperatureUnit attribute of the parent site of given object.",
+        "operationId": "GetTempUnit",
+        "parameters": [
+          {
+            "type": "string",
+            "default": "siteA",
+            "description": "ID or hierarchy name of desired object. For templates the slug is the ID.",
+            "name": "IdOrHierarchyName",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Found. A response body will be returned with a meaningful message."
+          },
+          "404": {
+            "description": "Nothing Found. An error message will be returned."
+          }
+        }
+      }
+    },
+    "/token/valid": {
+      "get": {
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "Authentication"
+        ],
+        "summary": "Verify if token sent in the header is valid.",
+        "operationId": "VerifyToken",
+        "responses": {
+          "200": {
+            "description": "Token is valid."
+          },
+          "403": {
+            "description": "Unauthorized"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      }
+    },
+    "/users": {
+      "get": {
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "Organization"
+        ],
+        "summary": "Get a list of users that the caller is allowed to see.",
+        "operationId": "GetAllAccounts",
+        "responses": {
+          "200": {
+            "description": "Return all possible users"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      },
+      "post": {
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "description": "Create an account with email and password credentials, it returns\na JWT key to use with the API.",
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "Organization"
+        ],
+        "summary": "Create a new user user.",
+        "operationId": "CreateAccount",
+        "parameters": [
+          {
+            "format": "object",
+            "example": "{\"name\": \"John Doe\", \"roles\": {\"*\": \"manager\"}, \"email\": \"user@test.com\", \"password\": \"secret123\"}",
+            "description": "Mandatory: email, password and roles. Optional: name. Roles is an object with domains as keys and roles as values. Possible roles: manager, user and viewer",
+            "name": "body",
+            "in": "body",
+            "required": true
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "New account created"
+          },
+          "400": {
+            "description": "Bad request"
+          },
+          "403": {
+            "description": "User not authorised to create an account"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      }
+    },
+    "/users/bulk": {
+      "post": {
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "Organization"
+        ],
+        "summary": "Create multiples users with one request.",
+        "operationId": "CreateBulk",
+        "parameters": [
+          {
+            "format": "object",
+            "example": "[{\"name\": \"John Doe\", \"roles\": {\"*\": \"manager\"}, \"email\": \"user@test.com\"}]",
+            "description": "An array of users. Same mandatory and optional parameters as user apply, except for password. If not provided, one will be automatically created by the API.",
+            "name": "body",
+            "in": "body",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Request processed, check response body for results"
+          },
+          "400": {
+            "description": "Bad request"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      }
+    },
+    "/users/password/change": {
+      "post": {
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "Authentication"
+        ],
+        "summary": "For logged in user to change its own password.",
+        "operationId": "ModifyUserPassword",
+        "parameters": [
+          {
+            "type": "json",
+            "example": "{\"currentPassword\": \"myOldPassword\", \"newPassword\": \"myNewPassword\"}",
+            "description": "Mandatory: currentPassword and newPassword.",
+            "name": "body",
+            "in": "body",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Password changed"
+          },
+          "400": {
+            "description": "Bad request"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      }
+    },
+    "/users/password/forgot": {
+      "post": {
+        "description": "Public endpoint to request a reset of a user's password (forgot my password).\nIf the email is valid, an email with a reset token/link will be sent to the user.",
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "Authentication"
+        ],
+        "summary": "Forgot my password.",
+        "operationId": "UserForgotPassword",
+        "parameters": [
+          {
+            "type": "string",
+            "example": "{\"email\": \"user@test.com\"}",
+            "description": "Mandatory: email.",
+            "name": "body",
+            "in": "body",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "request processed. If account exists, an email with a reset token is sent"
+          },
+          "400": {
+            "description": "Bad request"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      }
+    },
+    "/users/password/reset": {
+      "post": {
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "description": "For user that first called forgot enpoint to change its password.\nA reset token generated by the forgot endpoint should be provided as the Authentication header.",
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "Authentication"
+        ],
+        "summary": "Reset password after forgot.",
+        "operationId": "ResetUserPassword",
+        "parameters": [
+          {
+            "type": "json",
+            "example": "{\"newPassword\": \"myNewPassword\"}",
+            "description": "Mandatory: currentPassword and newPassword.",
+            "name": "body",
+            "in": "body",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Password changed"
+          },
+          "400": {
+            "description": "Bad request"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      }
+    },
+    "/users/{userid}": {
+      "delete": {
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "Organization"
+        ],
+        "summary": "Remove the specified user account.",
+        "operationId": "RemoveAccount",
+        "parameters": [
+          {
+            "type": "string",
+            "example": "someUserId",
+            "description": "The ID of the user to delete",
+            "name": "userid",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "User removed"
+          },
+          "400": {
+            "description": "User ID not valid or not found"
+          },
+          "403": {
+            "description": "Caller not authorised to delete this user"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      },
+      "patch": {
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "Organization"
+        ],
+        "summary": "Modify user permissions: domain and role.",
+        "operationId": "ModifyUserRoles",
+        "parameters": [
+          {
+            "type": "string",
+            "example": "someUserId",
+            "description": "The ID of the user to modify roles",
+            "name": "userid",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "json",
+            "example": "{\"roles\": {\"*\": \"manager\"}}",
+            "description": "An object with domains as keys and roles as values",
+            "name": "roles",
+            "in": "body",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "User roles modified"
+          },
+          "400": {
+            "description": "Bad request"
+          },
+          "403": {
+            "description": "Caller not authorised to modify this user"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      }
+    },
+    "/validate/{entity}": {
+      "post": {
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "Objects"
+        ],
+        "summary": "Checks the received data and verifies if the object can be created in the system.",
+        "operationId": "ValidateObject",
+        "parameters": [
+          {
+            "type": "string",
+            "default": "sites",
+            "description": "Entity (same as category) of the object. Accepted values: sites, domains, buildings, rooms, racks, devices, acs, panels, cabinets, groups, corridors, room-templates, obj-templates, bldg-templates, stray-devices.",
+            "name": "entity",
+            "in": "path",
+            "required": true
+          },
+          {
+            "default": {},
+            "name": "body",
+            "in": "body",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Createable. A response body will be returned with a meaningful message."
+          },
+          "400": {
+            "description": "Bad request. A response body with an error message will be returned."
+          },
+          "404": {
+            "description": "Not Found. An error message will be returned."
+          }
+        }
+      }
+    },
+    "/version": {
+      "get": {
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "About"
+        ],
+        "summary": "Gets the API version.",
+        "operationId": "GetAPIVersion",
+        "responses": {
+          "200": {
+            "description": "OK. A response body will be returned with version details."
+          }
+        }
+      }
+    },
+    "/{entity}": {
+      "get": {
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "description": "Returns JSON body with all specified objects of type.",
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "Objects"
+        ],
+        "summary": "Gets all present objects for specified entity (category).",
+        "operationId": "GetAllEntities",
+        "parameters": [
+          {
+            "type": "string",
+            "default": "sites",
+            "description": "Entity (same as category) of the object. Accepted values: sites, domains, buildings, rooms, racks, devices, acs, panels, cabinets, groups, corridors, room-templates, obj-templates, bldg-templates, stray-devices",
+            "name": "entity",
+            "in": "path",
+            "required": true
+          },
+          {
+            "description": "specify which object field to show in response. Multiple fieldOnly can be added. An invalid field is simply ignored.",
+            "name": "fieldOnly",
+            "in": "query"
+          },
+          {
+            "description": "filter objects by lastUpdated \u003e= startDate. Format: yyyy-mm-dd",
+            "name": "startDate",
+            "in": "query"
+          },
+          {
+            "description": "filter objects by lastUpdated \u003c= endDate. Format: yyyy-mm-dd",
+            "name": "endDate",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Found. A response body will be returned with a meaningful message."
+          },
+          "404": {
+            "description": "Nothing Found. An error message will be returned."
+          }
+        }
+      },
+      "post": {
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "Objects"
+        ],
+        "summary": "Creates an object of the given entity in the system.",
+        "operationId": "CreateObject",
+        "parameters": [
+          {
+            "type": "string",
+            "default": "sites",
+            "description": "Entity (same as category) of the object. Accepted values: sites, domains, buildings, rooms, racks, devices, acs, panels, cabinets, groups, corridors, room-templates, obj-templates, bldg-templates, stray-devices.",
+            "name": "entity",
+            "in": "path",
+            "required": true
+          },
+          {
+            "default": {},
+            "name": "body",
+            "in": "body",
+            "required": true
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Created. A response body will be returned with a meaningful message."
+          },
+          "400": {
+            "description": "Bad request. A response body with an error message will be returned."
+          }
+        }
+      }
+    },
+    "/{entity}/{IdOrHierarchyName}": {
+      "get": {
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "description": "The ID or hierarchy name must be provided in the URL parameter.",
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "Objects"
+        ],
+        "summary": "Gets an Object of the given entity.",
+        "operationId": "GetEntity",
+        "parameters": [
+          {
+            "type": "string",
+            "default": "sites",
+            "description": "Entity (same as category) of the object. Accepted values: sites, domains, buildings, rooms, racks, devices, acs, panels, cabinets, groups, corridors, room-templates, obj-templates, bldg-templates, stray-devices.",
+            "name": "entity",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "default": "siteA",
+            "description": "ID or hierarchy name of desired object. For templates the slug is the ID.",
+            "name": "IdOrHierarchyName",
+            "in": "path",
+            "required": true
+          },
+          {
+            "description": "specify which object field to show in response. Multiple fieldOnly can be added. An invalid field is simply ignored.",
+            "name": "fieldOnly",
+            "in": "query"
+          },
+          {
+            "description": "filter objects by lastUpdated \u003e= startDate. Format: yyyy-mm-dd",
+            "name": "startDate",
+            "in": "query"
+          },
+          {
+            "description": "filter objects by lastUpdated \u003c= endDate. Format: yyyy-mm-dd",
+            "name": "endDate",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Found. A response body will be returned with a meaningful message."
+          },
+          "400": {
+            "description": "Bad request. An error message will be returned."
+          },
+          "404": {
+            "description": "Not Found. An error message will be returned."
+          }
+        }
+      },
+      "delete": {
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "Objects"
+        ],
+        "summary": "Deletes an Object in the system.",
+        "operationId": "DeleteObject",
+        "parameters": [
+          {
+            "type": "string",
+            "default": "sites",
+            "description": "Entity (same as category) of the object. Accepted values: sites, domains, buildings, rooms, racks, devices, acs, panels, cabinets, groups, corridors, room-templates, obj-templates, bldg-templates, stray-devices.",
+            "name": "entity",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "default": "siteA",
+            "description": "ID or hierarchy name of desired object. For templates the slug is the ID.",
+            "name": "IdOrHierarchyName",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successfully deleted object. No response body will be returned"
+          },
+          "404": {
+            "description": "Not found. An error message will be returned"
+          }
+        }
+      },
+      "patch": {
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "description": "This is the preferred method for modifying data in the system.\nIf you want to do a full data replace, please use PUT instead.\nIf no data is effectively changed, an OK will still be returned.",
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "Objects"
+        ],
+        "summary": "Partially update object.",
+        "operationId": "PartialUpdateObject",
+        "parameters": [
+          {
+            "type": "string",
+            "default": "sites",
+            "description": "Entity (same as category) of the object. Accepted values: sites, domains, buildings, rooms, racks, devices, acs, panels, cabinets, groups, corridors, room-templates, obj-templates, bldg-templates, stray-devices.",
+            "name": "entity",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "default": "siteA",
+            "description": "ID or hierarchy name of desired object. For templates the slug is the ID.",
+            "name": "IdOrHierarchyName",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Updated. A response body will be returned with a meaningful message."
+          },
+          "400": {
+            "description": "Bad request. An error message will be returned."
+          },
+          "404": {
+            "description": "Not Found. An error message will be returned."
+          }
+        }
+      }
+    },
+    "/{entity}/{IdOrHierarchyName}/all": {
+      "get": {
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "description": "Returns JSON body with all subobjects under the Object.",
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "Objects"
+        ],
+        "summary": "Get object and all its children.",
+        "operationId": "GetEntityHierarchy",
+        "parameters": [
+          {
+            "type": "string",
+            "default": "sites",
+            "description": "Entity (same as category) of the object. Accepted values: sites, domains, buildings, rooms, racks, devices, acs, panels, cabinets, groups, corridors, room-templates, obj-templates, bldg-templates, stray-devices.",
+            "name": "entity",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "default": "siteA",
+            "description": "ID or hierarchy name of desired object. For templates the slug is the ID.",
+            "name": "IdOrHierarchyName",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "default": 1,
+            "description": "Limits the level of hierarchy for retrieval. if not specified for devices then the default value is maximum. Example: /api/devices/{id}/all?limit=2",
+            "name": "limit",
+            "in": "query"
+          },
+          {
+            "description": "specify which object field to show in response. Multiple fieldOnly can be added. An invalid field is simply ignored.",
+            "name": "fieldOnly",
+            "in": "query"
+          },
+          {
+            "description": "filter objects by lastUpdated \u003e= startDate. Format: yyyy-mm-dd",
+            "name": "startDate",
+            "in": "query"
+          },
+          {
+            "description": "filter objects by lastUpdated \u003c= endDate. Format: yyyy-mm-dd",
+            "name": "endDate",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Found. A response body will be returned with a meaningful message."
+          },
+          "404": {
+            "description": "Nothing Found. An error message will be returned."
+          }
+        }
+      }
+    },
+    "/{entity}/{id}/{subent}": {
+      "get": {
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "description": "For Example: /api/sites/{id}/buildings\nWill return all buildings of a site\nReturns JSON body with all subobjects under the Object",
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "Objects"
+        ],
+        "summary": "Obtain all objects 2 levels lower in the system.",
+        "operationId": "GetEntitiesOfAncestor",
+        "parameters": [
+          {
+            "type": "string",
+            "default": "sites",
+            "description": "Indicates the entity. Only values of \"sites\", \"buildings\", \"rooms\" are acceptable",
+            "name": "entity",
+            "in": "query",
+            "required": true
+          },
+          {
+            "type": "int",
+            "default": 999,
+            "description": "ID of object",
+            "name": "ID",
+            "in": "query",
+            "required": true
+          },
+          {
+            "type": "string",
+            "default": "buildings",
+            "description": "Objects which 2 are levels lower in the hierarchy.",
+            "name": "subent",
+            "in": "query",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Found. A response body will be returned with a meaningful message."
+          },
+          "404": {
+            "description": "Nothing Found. An error message will be returned."
+          }
+        }
+      }
+    },
+    "/{entity}?": {
+      "get": {
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "description": "Gets an Object using any attribute (with the exception of description)\nvia query in the system\nThe attributes are in the form {attr}=xyz\u0026{attr1}=abc\nAnd any combination can be used given that at least 1 is provided.",
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "Objects"
+        ],
+        "summary": "Gets an object filtering by attribute.",
+        "operationId": "GetEntityByQuery",
+        "parameters": [
+          {
+            "type": "string",
+            "default": "sites",
+            "description": "Entity (same as category) of the object. Accepted values: sites, domains, buildings, rooms, racks, devices, acs, panels, cabinets, groups, corridors, room-templates, obj-templates, bldg-templates, stray-devices.",
+            "name": "entity",
+            "in": "path",
+            "required": true
+          },
+          {
+            "description": "specify which object field to show in response. Multiple fieldOnly can be added. An invalid field is simply ignored.",
+            "name": "fieldOnly",
+            "in": "query"
+          },
+          {
+            "description": "filter objects by lastUpdated \u003e= startDate. Format: yyyy-mm-dd",
+            "name": "startDate",
+            "in": "query"
+          },
+          {
+            "description": "filter objects by lastUpdated \u003c= endDate. Format: yyyy-mm-dd",
+            "name": "endDate",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "default": "domain=DemoDomain",
+            "example": "vendor=ibm ; name=siteA ; orientation=front",
+            "description": "Any other object attributes can be queried. Replace attributes here by the name of the attribute followed by its value.",
+            "name": "attributes",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Found. A response body will be returned with a meaningful message."
+          },
+          "404": {
+            "description": "Not found. An error message will be returned."
+          }
+        }
+      }
+    },
+    "/{firstEntity}/{id}/{HierarchalPath}": {
+      "get": {
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "description": "The path should begin with an entity name (firstEntity) and the ID of an object of this entity\nfollowed by a hierarchal path until the desired objet, that is,\na sequence of entity names (category) and object names.",
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "Objects"
+        ],
+        "summary": "Get an object with its full hierarchal path.",
+        "operationId": "GetEntitiesUsingNamesOfParents",
+        "parameters": [
+          {
+            "type": "string",
+            "default": "sites",
+            "description": "Root entity followed by an id. Can be: sites, buildings, rooms, racks or devices",
+            "name": "firstEntity",
+            "in": "query",
+            "required": true
+          },
+          {
+            "type": "string",
+            "default": "123",
+            "description": "id of object of firstEntity",
+            "name": "id",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "default": "/buildings/BuildingB/rooms/RoomA",
+            "example": "/api/sites/{id}/buildings/{building_name} ; /api/sites/{id}/buildings/{building_name}/rooms/{room_name} ; /api/sites/{id}/buildings/{building_name}/rooms/{room_name}/acs/{ac_name} ; /api/sites/{id}/buildings/{building_name}/rooms/{room_name}/corridors/{corridor_name} ; /api/sites/{id}/buildings/{building_name}/rooms/{room_name}/panels/{panel_name} ; /api/sites/{id}/buildings/{building_name}/rooms/{room_name}/groups/{group_name} ; /api/sites/{id}/buildings/{building_name}/rooms/{room_name}/racks/{rack_name}/devices/{device_name} ; /api/sites/{id}/buildings/{building_name}/rooms/{room_name}/racks/{rack_name} ; /api/buildings/{id}/rooms/{room_name} ; /api/buildings/{id}/rooms/{room_name}/acs/{ac_name} ; /api/buildings/{id}/rooms/{room_name}/corridors/{corridor_name} ; /api/buildings/{id}/rooms/{room_name}/panels/{panel_name} ; /api/buildings/{id}/rooms/{room_name}/groups/{group_name} ; /api/buildings/{id}/rooms/{room_name}/rack/{rack_name} ; /api/buildings/{id}/rooms/{room_name}/racks/{rack_name}/devices/{device_name} ; /api/rooms/{id}/acs/{ac_name} ; /api/rooms/{id}/corridors/{corridor_name} ; /api/rooms/{id}/panels/{panel_name} ; /api/rooms/{id}/groups/{group_name} ; /api/rooms/{id}/racks/{rack_name}/devices/{device_name} ; /api/racks/{id}/devices/{device_name} ; /api/devices/{id}/devices/{device_name} ;",
+            "description": "Hierarchal path to desired object.",
+            "name": "HierarchalPath",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Found. A response body will be returned with a meaningful message."
+          },
+          "404": {
+            "description": "Not Found. An error message will be returned."
+          }
+        }
+      }
+    },
+    "/{objs}/{IdOrHierarchyName}": {
+      "put": {
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "description": "This method will replace the existing data with the JSON\nreceived, thus fully replacing the data. If you do not\nwant to do this, please use PATCH.\nIf no data is effectively changed, an OK will still be returned.",
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "Objects"
+        ],
+        "summary": "Completely update object.",
+        "operationId": "UpdateObject",
+        "parameters": [
+          {
+            "type": "string",
+            "default": "sites",
+            "description": "Entity (same as category) of the object. Accepted values: sites, domains, buildings, rooms, racks, devices, acs, panels, cabinets, groups, corridors, room-templates, obj-templates, bldg-templates, stray-devices.",
+            "name": "entity",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "default": "siteA",
+            "description": "ID or hierarchy name of desired object. For templates the slug is the ID.",
+            "name": "IdOrHierarchyName",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Updated. A response body will be returned with a meaningful message."
+          },
+          "400": {
+            "description": "Bad request. An error message will be returned."
+          },
+          "404": {
+            "description": "Not Found. An error message will be returned."
+          }
+        }
+      }
+    }
+  },
+  "definitions": {
+    "ErrorResponse": {
+      "type": "object",
+      "properties": {
+        "message": {
+          "description": "Error Response Message\nin: message",
+          "type": "string",
+          "x-go-name": "Message"
+        }
+      },
+      "x-go-package": "ogree-bff/models"
+    },
+    "LoginInput": {
+      "type": "object",
+      "properties": {
+        "email": {
+          "description": "email\nin: email",
+          "type": "string",
+          "x-go-name": "Email"
+        },
+        "password": {
+          "description": "username\nin: password",
+          "type": "string",
+          "x-go-name": "Password"
+        }
+      },
+      "x-go-package": "ogree-bff/models"
+    },
+    "SuccessLogin": {
+      "type": "object",
+      "properties": {
+        "token": {
+          "type": "string",
+          "x-go-name": "Token"
+        }
+      },
+      "x-go-package": "ogree-bff/models"
+    },
+    "SuccessResponse": {
+      "type": "object",
+      "properties": {
+        "message": {
+          "description": "Error Response Message\nin: message",
+          "type": "string",
+          "x-go-name": "Message"
+        }
+      },
+      "x-go-package": "ogree-bff/models"
+    }
+  },
+  "securityDefinitions": {
+    "Bearer": {
+      "type": "apiKey",
+      "name": "Authorization",
+      "in": "header"
+    }
+  }
+}
