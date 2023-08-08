@@ -2,7 +2,6 @@ package main
 
 import (
 	cmd "cli/controllers"
-	u "cli/utils"
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
@@ -10,46 +9,6 @@ import (
 	"reflect"
 	"strconv"
 )
-
-func checkTypesAreSame(x, y interface{}) bool {
-	//println(reflect.TypeOf(x))
-	return reflect.TypeOf(x) == reflect.TypeOf(y)
-}
-
-func checkTypeAreNumeric(x, y interface{}) bool {
-	var xOK, yOK bool
-	switch x.(type) {
-	case int, float64, float32:
-		xOK = true
-	default:
-		xOK = false
-	}
-
-	switch y.(type) {
-	case int, float64, float32:
-		yOK = true
-	default:
-		yOK = false
-	}
-
-	return xOK && yOK
-}
-
-func checkIfOrientation(x string) bool {
-	switch x {
-	case /*"EN", "NW", "WS", "SE", "NE", "SW",*/
-		"-E-N", "-E+N", "+E-N", "+E+N", "+N+E",
-		"+N-E", "-N-E", "-N+E",
-		"-N-W", "-N+W", "+N-W", "+N+W",
-		"-W-S", "-W+S", "+W-S", "+W+S",
-		"-S-E", "-S+E", "+S-E", "+S+E",
-		"+x+y", "+x-y", "-x-y", "-x+y",
-		"+X+Y", "+X-Y", "-X-Y", "-X+Y":
-		return true
-	default:
-		return false
-	}
-}
 
 var floatType = reflect.TypeOf(float64(0))
 
@@ -134,6 +93,26 @@ func nodeToBool(n node, name string) (bool, error) {
 	return valToBool(val, name)
 }
 
+func valToString(val any, name string) (string, error) {
+	intVal, isInt := val.(int)
+	if isInt {
+		return strconv.Itoa(intVal), nil
+	}
+	stringVal, ok := val.(string)
+	if !ok {
+		return "", fmt.Errorf("%s should be a string", name)
+	}
+	return stringVal, nil
+}
+
+func nodeToString(n node, name string) (string, error) {
+	val, err := n.execute()
+	if err != nil {
+		return "", err
+	}
+	return valToString(val, name)
+}
+
 // Open a file and return the JSON in the file
 // Used by EasyPost, EasyUpdate and Load Template
 func fileToJSON(path string) map[string]interface{} {
@@ -147,29 +126,6 @@ func fileToJSON(path string) map[string]interface{} {
 	}
 	json.Unmarshal(x, &data)
 	return data
-}
-
-// Iterates through x and executes the element if the
-// element is a node
-func evalMapNodes(x map[string]interface{}) (map[string]interface{}, error) {
-	result := make(map[string]interface{})
-	for i := range x {
-		switch v := x[i].(type) {
-		case node:
-			val, err := v.execute()
-			if err != nil {
-				return nil, err
-			}
-			result[i] = val
-		case map[string]interface{}:
-			val, err := evalMapNodes(v)
-			if err != nil {
-				return nil, err
-			}
-			result[i] = val
-		}
-	}
-	return result, nil
 }
 
 // Generic function for evaluating []node and returning the desired array
@@ -205,36 +161,10 @@ func checkIfTemplate(x interface{}, ent int) bool {
 		default:
 			location = "/Logical/ObjectTemplates/" + s
 		}
-		_, exists := cmd.CheckObject(location, true)
-		return exists
+		_, err := cmd.Tree(location, 0)
+		return err == nil
 	}
 	return false
-}
-
-func resMap(x map[string]interface{}, ent string, isUpdate bool) (map[string]interface{}, error) {
-	res := make(map[string]interface{})
-	attrs := make(map[string]string)
-
-	for key := range x {
-		val, ok := x[key].(string)
-		if !ok {
-			return nil, fmt.Errorf("Attribute should contain a string")
-		}
-		if isUpdate == true {
-			res[key] = val
-			continue
-		}
-
-		if u.IsNestedAttr(key, ent) {
-			attrs[key] = val
-		} else {
-			res[key] = val
-		}
-	}
-	if len(attrs) > 0 {
-		res["attributes"] = attrs
-	}
-	return res, nil
 }
 
 // errResponder helper func for specialUpdateNode
