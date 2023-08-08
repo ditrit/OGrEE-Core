@@ -480,6 +480,19 @@ paths:
                 - Bearer: []
             tags:
                 - Devices
+    /api/version:
+        get:
+            operationId: GetAPIVersion
+            produces:
+                - application/json
+            responses:
+                "200":
+                    description: OK. A response body will be returned with version details.
+            security:
+                - Bearer: []
+            summary: Gets the API version.
+            tags:
+                - About
     /domains/bulk:
         post:
             description: An array of domains should be provided in the body.
@@ -614,6 +627,120 @@ paths:
             summary: Get an object from any entity.
             tags:
                 - Objects
+    /projects:
+        get:
+            operationId: GetProjects
+            parameters:
+                - default: user@test.com
+                  description: 'Email of the user whose projects are being requested. Example: /api/projects?user=user@test.com'
+                  in: query
+                  name: user
+                  type: string
+            produces:
+                - application/json
+            responses:
+                "200":
+                    description: Return all possible projects.
+                "400":
+                    description: Bad Request. Invalid user query param.
+                "500":
+                    description: Internal server error.
+            security:
+                - Bearer: []
+            summary: Get a list of projects for the specified user.
+            tags:
+                - FlutterApp
+        post:
+            description: Create a new project
+            operationId: CreateProjects
+            parameters:
+                - description: 'Mandatory: name, dateRange, namespace, attributes, objects, permissions, authorLastUpdate, lastUpdate. Optional: showAvg, showSum, isPublic.'
+                  example: '{"attributes":["domain"],"authorLastUpdate":"helder","dateRange":"01/01/2023-02/02/2023", "lastUpdate":"02/02/2023","name":"test 1","namespace":"physical","objects":["siteB"],"showAvg":false, "showSum":false,"permissions":["user@test.com","admin"]}'
+                  format: object
+                  in: body
+                  name: body
+                  required: true
+            produces:
+                - application/json
+            responses:
+                "200":
+                    description: Project successfully created.
+                "400":
+                    description: Bad Request. Invalid project format.
+                "500":
+                    description: Internal server error.
+            security:
+                - Bearer: []
+            tags:
+                - FlutterApp
+    /projects/{ProjectID}:
+        delete:
+            operationId: DeleteProjects
+            parameters:
+                - default: "1234"
+                  description: ID of the project to delete.
+                  in: path
+                  name: ProjectID
+                  required: true
+                  type: string
+            produces:
+                - application/json
+            responses:
+                "200":
+                    description: Project successfully updated.
+                "404":
+                    description: Not Found. Invalid project ID.
+                "500":
+                    description: Internal server error
+            security:
+                - Bearer: []
+            summary: Delete an existing project.
+            tags:
+                - FlutterApp
+        put:
+            operationId: UpdateProjects
+            parameters:
+                - default: "1234"
+                  description: ID of the project to update.
+                  in: path
+                  name: ProjectID
+                  required: true
+                  type: string
+                - description: 'Mandatory: name, dateRange, namespace, attributes, objects, permissions, authorLastUpdate, lastUpdate. Optional: showAvg, showSum, isPublic.'
+                  example: '{"attributes":["domain"],"authorLastUpdate":"helder","dateRange":"01/01/2023-02/02/2023", "lastUpdate":"02/02/2023","name":"test 1","namespace":"physical","objects":["siteB"],"showAvg":false, "showSum":false,"permissions":["user@test.com","admin"]}'
+                  format: object
+                  in: body
+                  name: body
+                  required: true
+            produces:
+                - application/json
+            responses:
+                "200":
+                    description: Project successfully updated.
+                "400":
+                    description: Bad Request. Invalid project format.
+                "500":
+                    description: Internal server error
+            security:
+                - Bearer: []
+            summary: Replace the data of an existing project.
+            tags:
+                - FlutterApp
+    /stats:
+        get:
+            operationId: GetStats
+            produces:
+                - application/json
+            responses:
+                "200":
+                    description: Request is valid.
+                "504":
+                    description: Server error.
+            security:
+                - Bearer: []
+            summary: Displays DB statistics.
+            tags:
+                - About
     /tempunits/{IdOrHierarchyName}:
         get:
             operationId: GetTempUnit
