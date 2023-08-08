@@ -12,7 +12,7 @@ services:
       - db_user=${COMPOSE_PROJECT_NAME}
       - db_pass=${CUSTOMER_API_PASSWORD}
       - db=${COMPOSE_PROJECT_NAME}
-      - token_password=myAwesomeApiSecret
+      - token_password=${AUTH_SECRET}
     ports:
       - ${API_PORT}:3001
     depends_on:
@@ -80,7 +80,7 @@ services:
     restart: on-failure:10
     
 
-  arrango_api:
+  arango_api:
     build:
       context: ${CORE_DIR} 
       dockerfile: ${ARANGO_API_BUILD_DIR}/Dockerfile
@@ -103,6 +103,25 @@ services:
         timeout: 30s
         interval: 1m
         retries: 3
+
+  ogree-bff:
+    build:
+      context: ${CORE_DIR}
+      dockerfile: ${BFF_BUILD_DIR}/Dockerfile
+    image: ogree-bff:${IMAGE_TAG}
+    restart: on-failure:10
+    container_name: ${COMPOSE_PROJECT_NAME}_bff
+    environment:
+      - ENV=production
+      - ARANGO_API=http://${COMPOSE_PROJECT_NAME}_arango-api:${ARANGO_API_PORT}
+      - MONGO_API=http://${COMPOSE_PROJECT_NAME}_api:${API_PORT}
+      - BFF_PORT=${BFF_PORT}
+      - BFF_SECRET=${AUTH_SECRET}
+    depends_on:
+      - ogree_api
+      - arango_api
+    ports:
+      - ${BFF_PORT}:${BFF_PORT}
 
 volumes:
   db:
