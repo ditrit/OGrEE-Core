@@ -40,8 +40,8 @@ func main() {
 	arangoAPI := os.Getenv("ARANGO_API")
 	mongoAPI := os.Getenv("MONGO_API")
 	apiList := []models.API {
-		{Name: "arango", URL: arangoAPI},
-		{Name: "mongo", URL: mongoAPI},
+		{Name: "devices", URL: arangoAPI},
+		{Name: "objects", URL: mongoAPI},
 	}
 	fmt.Println(apiList)
 	router := services.InitRouter(apiList,env)

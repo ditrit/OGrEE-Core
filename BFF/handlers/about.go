@@ -2,7 +2,7 @@ package handlers
 
 import (
 	"ogree-bff/controllers"
-	
+
 	"github.com/gin-gonic/gin"
 )
 
@@ -11,15 +11,18 @@ import (
 // ---
 // security:
 //   - Bearer: []
+//
 // produces:
-// 	 - application/json
+//   - application/json
+//
 // responses:
-//		'200':
-//			description: 'Request is valid.'
-//		'504':
-//			description: Server error.
-func GetStats(c *gin.Context){
-	controllers.Get(c,"mongo")
+//
+//	'200':
+//		description: 'Request is valid.'
+//	'504':
+//		description: Server error.
+func GetStats(c *gin.Context) {
+	controllers.Get(c, "objects")
 }
 
 // swagger:operation GET /version About GetAPIVersion
@@ -27,12 +30,15 @@ func GetStats(c *gin.Context){
 // ---
 // security:
 //   - Bearer: []
+//
 // produces:
-// 	 - application/json
+//   - application/json
+//
 // responses:
-//     '200':
-//         description: 'OK. A response body will be returned with
-//         version details.'
-func GetAPIVersion(c *gin.Context){
-	controllers.Get(c,"mongo")
+//
+//	'200':
+//	    description: 'OK. A response body will be returned with
+//	    version details.'
+func GetAPIVersion(c *gin.Context) {
+	controllers.Get(c, "objects")
 }

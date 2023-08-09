@@ -29,8 +29,8 @@ import (
 //		'500':
 //			description: 'Internal server error.'
 
-func GetProjects(c *gin.Context){
-	controllers.Get(c,"mongo")
+func GetProjects(c *gin.Context) {
+	controllers.Get(c, "objects")
 }
 
 // swagger:operation POST /projects FlutterApp CreateProjects
@@ -38,8 +38,10 @@ func GetProjects(c *gin.Context){
 // ---
 // security:
 //   - Bearer: []
+//
 // produces:
-// 	 - application/json
+//   - application/json
+//
 // parameters:
 //   - name: body
 //     in: body
@@ -51,23 +53,28 @@ func GetProjects(c *gin.Context){
 //     example: '{"attributes":["domain"],"authorLastUpdate":"helder","dateRange":"01/01/2023-02/02/2023",
 //     "lastUpdate":"02/02/2023","name":"test 1","namespace":"physical","objects":["siteB"],"showAvg":false,
 //     "showSum":false,"permissions":["user@test.com","admin"]}'
+//
 // responses:
-//		'200':
-//			description: 'Project successfully created.'
-//		'400':
-//			description: 'Bad Request. Invalid project format.'
-//		'500':
-//			description: 'Internal server error.'
-func CreateProjects(c *gin.Context){
-	controllers.Post(c,"mongo")
+//
+//	'200':
+//		description: 'Project successfully created.'
+//	'400':
+//		description: 'Bad Request. Invalid project format.'
+//	'500':
+//		description: 'Internal server error.'
+func CreateProjects(c *gin.Context) {
+	controllers.Post(c, "objects")
 }
+
 // swagger:operation PUT /projects/{ProjectID} FlutterApp UpdateProjects
 // Replace the data of an existing project.
 // ---
 // security:
 //   - Bearer: []
+//
 // produces:
-// 	 - application/json
+//   - application/json
+//
 // parameters:
 //   - name: ProjectID
 //     in: path
@@ -85,15 +92,17 @@ func CreateProjects(c *gin.Context){
 //     example: '{"attributes":["domain"],"authorLastUpdate":"helder","dateRange":"01/01/2023-02/02/2023",
 //     "lastUpdate":"02/02/2023","name":"test 1","namespace":"physical","objects":["siteB"],"showAvg":false,
 //     "showSum":false,"permissions":["user@test.com","admin"]}'
+//
 // responses:
-//		'200':
-//			description: Project successfully updated.
-//		'400':
-//			description: Bad Request. Invalid project format.
-//		'500':
-//			description: Internal server error
-func UpdateProjects(c *gin.Context){
-	controllers.Put(c,"mongo")
+//
+//	'200':
+//		description: Project successfully updated.
+//	'400':
+//		description: Bad Request. Invalid project format.
+//	'500':
+//		description: Internal server error
+func UpdateProjects(c *gin.Context) {
+	controllers.Put(c, "objects")
 }
 
 // swagger:operation DELETE /projects/{ProjectID} FlutterApp DeleteProjects
@@ -101,22 +110,26 @@ func UpdateProjects(c *gin.Context){
 // ---
 // security:
 //   - Bearer: []
+//
 // produces:
-// 	 - application/json
+//   - application/json
+//
 // parameters:
-// - name: ProjectID
-//   in: path
-//   description: 'ID of the project to delete.'
-//   required: true
-//   type: string
-//   default: "1234"
+//   - name: ProjectID
+//     in: path
+//     description: 'ID of the project to delete.'
+//     required: true
+//     type: string
+//     default: "1234"
+//
 // responses:
-//  '200':
-//      description: Project successfully updated.
-//  '404':
-//      description: Not Found. Invalid project ID.
-//  '500':
-//      description: Internal server error
-func DeleteProjects(c *gin.Context){
-	controllers.Delete(c,"mongo")
+//
+//	'200':
+//	    description: Project successfully updated.
+//	'404':
+//	    description: Not Found. Invalid project ID.
+//	'500':
+//	    description: Internal server error
+func DeleteProjects(c *gin.Context) {
+	controllers.Delete(c, "objects")
 }

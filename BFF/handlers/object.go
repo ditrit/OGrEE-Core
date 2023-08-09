@@ -11,8 +11,10 @@ import (
 // ---
 // security:
 //   - Bearer: []
+//
 // produces:
-// 	 - application/json
+//   - application/json
+//
 // parameters:
 //   - name: entity
 //     in: path
@@ -27,15 +29,17 @@ import (
 //     in: body
 //     required: true
 //     default: {}
+//
 // responses:
-//     '201':
-//         description: 'Created. A response body will be returned with
-//         a meaningful message.'
-//     '400':
-//         description: 'Bad request. A response body with an error
-//         message will be returned.'
-func CreateObject(c *gin.Context){
-	controllers.Post(c,"mongo")
+//
+//	'201':
+//	    description: 'Created. A response body will be returned with
+//	    a meaningful message.'
+//	'400':
+//	    description: 'Bad request. A response body with an error
+//	    message will be returned.'
+func CreateObject(c *gin.Context) {
+	controllers.Post(c, "objects")
 }
 
 // swagger:operation GET /objects/{hierarchyName} Objects GetGenericObject
@@ -45,8 +49,10 @@ func CreateObject(c *gin.Context){
 // ---
 // security:
 //   - Bearer: []
+//
 // produces:
-// 	 - application/json
+//   - application/json
+//
 // parameters:
 //   - name: hierarchyName
 //     in: path
@@ -64,23 +70,28 @@ func CreateObject(c *gin.Context){
 //     in: query
 //     description: 'filter objects by lastUpdated <= endDate.
 //     Format: yyyy-mm-dd'
+//
 // responses:
+//
 //		'200':
 //		    description: 'Found. A response body will be returned with
 //	        a meaningful message.'
 //		'404':
 //		    description: Not Found. An error message will be returned.
-func GetGenericObject(c *gin.Context){
-	controllers.Get(c,"mongo")
+func GetGenericObject(c *gin.Context) {
+	controllers.Get(c, "objects")
 }
+
 // swagger:operation GET /{entity}/{IdOrHierarchyName} Objects GetEntity
 // Gets an Object of the given entity.
 // The ID or hierarchy name must be provided in the URL parameter.
 // ---
 // security:
 //   - Bearer: []
+//
 // produces:
-// 	 - application/json
+//   - application/json
+//
 // parameters:
 //   - name: entity
 //     in: path
@@ -110,16 +121,18 @@ func GetGenericObject(c *gin.Context){
 //     in: query
 //     description: 'filter objects by lastUpdated <= endDate.
 //     Format: yyyy-mm-dd'
+//
 // responses:
-// 	'200':
-// 	  description: 'Found. A response body will be returned with
-// 	  a meaningful message.'
-// 	'400':
-// 	  description: Bad request. An error message will be returned.
-// 	'404':
-// 	  description: Not Found. An error message will be returned.
-func GetEntity(c *gin.Context){
-	controllers.Get(c,"mongo")
+//
+//	'200':
+//	  description: 'Found. A response body will be returned with
+//	  a meaningful message.'
+//	'400':
+//	  description: Bad request. An error message will be returned.
+//	'404':
+//	  description: Not Found. An error message will be returned.
+func GetEntity(c *gin.Context) {
+	controllers.Get(c, "objects")
 }
 
 // swagger:operation GET /{entity} Objects GetAllEntities
@@ -128,8 +141,10 @@ func GetEntity(c *gin.Context){
 // ---
 // security:
 //   - Bearer: []
+//
 // produces:
-// 	 - application/json
+//   - application/json
+//
 // parameters:
 //   - name: entity
 //     in: path
@@ -154,13 +169,14 @@ func GetEntity(c *gin.Context){
 //     Format: yyyy-mm-dd'
 //
 // responses:
-//		'200':
-//			description: 'Found. A response body will be returned with
-//			a meaningful message.'
-//		'404':
-//			description: Nothing Found. An error message will be returned.
-func GetAllEntities(c *gin.Context){
-	controllers.Get(c,"mongo")
+//
+//	'200':
+//		description: 'Found. A response body will be returned with
+//		a meaningful message.'
+//	'404':
+//		description: Nothing Found. An error message will be returned.
+func GetAllEntities(c *gin.Context) {
+	controllers.Get(c, "objects")
 }
 
 // swagger:operation DELETE /{entity}/{IdOrHierarchyName} Objects DeleteObject
@@ -168,8 +184,10 @@ func GetAllEntities(c *gin.Context){
 // ---
 // security:
 //   - Bearer: []
+//
 // produces:
-// 	 - application/json
+//   - application/json
+//
 // parameters:
 //   - name: entity
 //     in: path
@@ -189,13 +207,14 @@ func GetAllEntities(c *gin.Context){
 //     default: "siteA"
 //
 // responses:
-//		'204':
-//			description: 'Successfully deleted object.
-//			No response body will be returned'
-//		'404':
-//			description: Not found. An error message will be returned
-func DeleteObject(c *gin.Context){
-	controllers.Delete(c,"mongo")
+//
+//	'204':
+//		description: 'Successfully deleted object.
+//		No response body will be returned'
+//	'404':
+//		description: Not found. An error message will be returned
+func DeleteObject(c *gin.Context) {
+	controllers.Delete(c, "objects")
 }
 
 // swagger:operation PATCH /{entity}/{IdOrHierarchyName} Objects PartialUpdateObject
@@ -206,8 +225,10 @@ func DeleteObject(c *gin.Context){
 // ---
 // security:
 //   - Bearer: []
+//
 // produces:
-// 	 - application/json
+//   - application/json
+//
 // parameters:
 //   - name: entity
 //     in: path
@@ -227,15 +248,16 @@ func DeleteObject(c *gin.Context){
 //     default: "siteA"
 //
 // responses:
-//     '200':
-//         description: 'Updated. A response body will be returned with
-//         a meaningful message.'
-//     '400':
-//         description: Bad request. An error message will be returned.
-//     '404':
-//         description: Not Found. An error message will be returned.
-func PartialUpdateObject(c *gin.Context){
-	controllers.Patch(c,"mongo")
+//
+//	'200':
+//	    description: 'Updated. A response body will be returned with
+//	    a meaningful message.'
+//	'400':
+//	    description: Bad request. An error message will be returned.
+//	'404':
+//	    description: Not Found. An error message will be returned.
+func PartialUpdateObject(c *gin.Context) {
+	controllers.Patch(c, "objects")
 }
 
 // swagger:operation PUT /{objs}/{IdOrHierarchyName} Objects UpdateObject
@@ -247,8 +269,10 @@ func PartialUpdateObject(c *gin.Context){
 // ---
 // security:
 //   - Bearer: []
+//
 // produces:
-// 	 - application/json
+//   - application/json
+//
 // parameters:
 //   - name: entity
 //     in: path
@@ -268,15 +292,16 @@ func PartialUpdateObject(c *gin.Context){
 //     default: "siteA"
 //
 // responses:
-//     '200':
-//         description: 'Updated. A response body will be returned with
-//         a meaningful message.'
-//     '400':
-//         description: Bad request. An error message will be returned.
-//     '404':
-//         description: Not Found. An error message will be returned.
-func UpdateObject(c *gin.Context){
-	controllers.Put(c,"mongo")
+//
+//	'200':
+//	    description: 'Updated. A response body will be returned with
+//	    a meaningful message.'
+//	'400':
+//	    description: Bad request. An error message will be returned.
+//	'404':
+//	    description: Not Found. An error message will be returned.
+func UpdateObject(c *gin.Context) {
+	controllers.Put(c, "objects")
 }
 
 // swagger:operation GET /{entity}? Objects GetEntityByQuery
@@ -288,8 +313,10 @@ func UpdateObject(c *gin.Context){
 // ---
 // security:
 //   - Bearer: []
+//
 // produces:
-// 	 - application/json
+//   - application/json
+//
 // parameters:
 //   - name: entity
 //     in: path
@@ -322,13 +349,14 @@ func UpdateObject(c *gin.Context){
 //     example: vendor=ibm ; name=siteA ; orientation=front
 //
 // responses:
-//		'204':
-//			description: 'Found. A response body will be returned with
-//			a meaningful message.'
-//		'404':
-//			description: Not found. An error message will be returned.
-func GetEntityByQuery(c *gin.Context){
-	controllers.Get(c,"mongo")
+//
+//	'204':
+//		description: 'Found. A response body will be returned with
+//		a meaningful message.'
+//	'404':
+//		description: Not found. An error message will be returned.
+func GetEntityByQuery(c *gin.Context) {
+	controllers.Get(c, "objects")
 }
 
 // swagger:operation GET /tempunits/{IdOrHierarchyName} Objects GetTempUnit
@@ -336,8 +364,10 @@ func GetEntityByQuery(c *gin.Context){
 // ---
 // security:
 //   - Bearer: []
+//
 // produces:
-// 	 - application/json
+//   - application/json
+//
 // parameters:
 //   - name: IdOrHierarchyName
 //     in: path
@@ -346,14 +376,16 @@ func GetEntityByQuery(c *gin.Context){
 //     required: true
 //     type: string
 //     default: "siteA"
+//
 // responses:
-//  '200':
-//     description: 'Found. A response body will be returned with
-//     a meaningful message.'
-//  '404':
-//     description: 'Nothing Found. An error message will be returned.'
-func GetTempUnit(c *gin.Context){
-	controllers.Get(c,"mongo")
+//
+//	'200':
+//	   description: 'Found. A response body will be returned with
+//	   a meaningful message.'
+//	'404':
+//	   description: 'Nothing Found. An error message will be returned.'
+func GetTempUnit(c *gin.Context) {
+	controllers.Get(c, "objects")
 }
 
 // swagger:operation GET /{entity}/{id}/{subent} Objects GetEntitiesOfAncestor
@@ -364,36 +396,40 @@ func GetTempUnit(c *gin.Context){
 // ---
 // security:
 //   - Bearer: []
+//
 // produces:
-// 	 - application/json
+//   - application/json
+//
 // parameters:
-// - name: entity
-//   in: query
-//   description: 'Indicates the entity. Only values of "sites",
-//   "buildings", "rooms" are acceptable'
-//   required: true
-//   type: string
-//   default: "sites"
-// - name: ID
-//   in: query
-//   description: ID of object
-//   required: true
-//   type: int
-//   default: 999
-// - name: subent
-//   in: query
-//   description: Objects which 2 are levels lower in the hierarchy.
-//   required: true
-//   type: string
-//   default: buildings
+//   - name: entity
+//     in: query
+//     description: 'Indicates the entity. Only values of "sites",
+//     "buildings", "rooms" are acceptable'
+//     required: true
+//     type: string
+//     default: "sites"
+//   - name: ID
+//     in: query
+//     description: ID of object
+//     required: true
+//     type: int
+//     default: 999
+//   - name: subent
+//     in: query
+//     description: Objects which 2 are levels lower in the hierarchy.
+//     required: true
+//     type: string
+//     default: buildings
+//
 // responses:
-//     '200':
-//         description: 'Found. A response body will be returned with
-//         a meaningful message.'
-//     '404':
-//         description: Nothing Found. An error message will be returned.
-func GetEntitiesOfAncestor(c *gin.Context){
-	controllers.Get(c,"mongo")
+//
+//	'200':
+//	    description: 'Found. A response body will be returned with
+//	    a meaningful message.'
+//	'404':
+//	    description: Nothing Found. An error message will be returned.
+func GetEntitiesOfAncestor(c *gin.Context) {
+	controllers.Get(c, "objects")
 }
 
 // swagger:operation GET /{entity}/{IdOrHierarchyName}/all Objects GetEntityHierarchy
@@ -402,53 +438,57 @@ func GetEntitiesOfAncestor(c *gin.Context){
 // ---
 // security:
 //   - Bearer: []
+//
 // produces:
-// 	 - application/json
+//   - application/json
+//
 // parameters:
-// - name: entity
-//   in: path
-//   description: 'Entity (same as category) of the object. Accepted values: sites, domains,
-//   buildings, rooms, racks, devices, acs, panels,
-//   cabinets, groups, corridors,
-//   room-templates, obj-templates, bldg-templates, stray-devices.'
-//   required: true
-//   type: string
-//   default: "sites"
-// - name: IdOrHierarchyName
-//   in: path
-//   description: 'ID or hierarchy name of desired object.
-//   For templates the slug is the ID.'
-//   required: true
-//   type: string
-//   default: "siteA"
-// - name: limit
-//   in: query
-//   description: 'Limits the level of hierarchy for retrieval. if not
-//   specified for devices then the default value is maximum.
-//   Example: /api/devices/{id}/all?limit=2'
-//   required: false
-//   type: string
-//   default: 1
-// - name: fieldOnly
-//   in: query
-//   description: 'specify which object field to show in response.
-//   Multiple fieldOnly can be added. An invalid field is simply ignored.'
-// - name: startDate
-//   in: query
-//   description: 'filter objects by lastUpdated >= startDate.
-//   Format: yyyy-mm-dd'
-// - name: endDate
-//   in: query
-//   description: 'filter objects by lastUpdated <= endDate.
-//   Format: yyyy-mm-dd'
+//   - name: entity
+//     in: path
+//     description: 'Entity (same as category) of the object. Accepted values: sites, domains,
+//     buildings, rooms, racks, devices, acs, panels,
+//     cabinets, groups, corridors,
+//     room-templates, obj-templates, bldg-templates, stray-devices.'
+//     required: true
+//     type: string
+//     default: "sites"
+//   - name: IdOrHierarchyName
+//     in: path
+//     description: 'ID or hierarchy name of desired object.
+//     For templates the slug is the ID.'
+//     required: true
+//     type: string
+//     default: "siteA"
+//   - name: limit
+//     in: query
+//     description: 'Limits the level of hierarchy for retrieval. if not
+//     specified for devices then the default value is maximum.
+//     Example: /api/devices/{id}/all?limit=2'
+//     required: false
+//     type: string
+//     default: 1
+//   - name: fieldOnly
+//     in: query
+//     description: 'specify which object field to show in response.
+//     Multiple fieldOnly can be added. An invalid field is simply ignored.'
+//   - name: startDate
+//     in: query
+//     description: 'filter objects by lastUpdated >= startDate.
+//     Format: yyyy-mm-dd'
+//   - name: endDate
+//     in: query
+//     description: 'filter objects by lastUpdated <= endDate.
+//     Format: yyyy-mm-dd'
+//
 // responses:
-//     '200':
-//         description: 'Found. A response body will be returned with
-//         a meaningful message.'
-//     '404':
-//         description: Nothing Found. An error message will be returned.
-func GetEntityHierarchy(c *gin.Context){
-	controllers.Get(c,"mongo")
+//
+//	'200':
+//	    description: 'Found. A response body will be returned with
+//	    a meaningful message.'
+//	'404':
+//	    description: Nothing Found. An error message will be returned.
+func GetEntityHierarchy(c *gin.Context) {
+	controllers.Get(c, "objects")
 }
 
 // swagger:operation GET /hierarchy Objects GetCompleteHierarchy
@@ -467,8 +507,8 @@ func GetEntityHierarchy(c *gin.Context){
 //		'500':
 //			description: Server error.
 
-func GetCompleteHierarchy(c *gin.Context){
-	controllers.Get(c,"mongo")
+func GetCompleteHierarchy(c *gin.Context) {
+	controllers.Get(c, "objects")
 }
 
 // swagger:operation GET /hierarchy/attributes Objects GetCompleteHierarchyAttrs
@@ -478,15 +518,18 @@ func GetCompleteHierarchy(c *gin.Context){
 // ---
 // security:
 //   - Bearer: []
+//
 // produces:
-// 	 - application/json
+//   - application/json
+//
 // responses:
-//		'200':
-//			description: 'Request is valid.'
-//		'500':
-//			description: Server error.
-func GetCompleteHierarchyAttrs(c *gin.Context){
-	controllers.Get(c,"mongo")
+//
+//	'200':
+//		description: 'Request is valid.'
+//	'500':
+//		description: Server error.
+func GetCompleteHierarchyAttrs(c *gin.Context) {
+	controllers.Get(c, "objects")
 }
 
 // swagger:operation GET /{firstEntity}/{id}/{HierarchalPath} Objects GetEntitiesUsingNamesOfParents
@@ -547,8 +590,8 @@ func GetCompleteHierarchyAttrs(c *gin.Context){
 //     '404':
 //         description: Not Found. An error message will be returned.
 
-func GetEntitiesUsingNamesOfParents(c *gin.Context){
-	controllers.Get(c,"mongo")
+func GetEntitiesUsingNamesOfParents(c *gin.Context) {
+	controllers.Get(c, "objects")
 }
 
 // swagger:operation POST /validate/{entity} Objects ValidateObject
@@ -556,8 +599,10 @@ func GetEntitiesUsingNamesOfParents(c *gin.Context){
 // ---
 // security:
 //   - Bearer: []
+//
 // produces:
-// 	 - application/json
+//   - application/json
+//
 // parameters:
 //   - name: entity
 //     in: path
@@ -572,15 +617,17 @@ func GetEntitiesUsingNamesOfParents(c *gin.Context){
 //     in: body
 //     required: true
 //     default: {}
+//
 // responses:
-//     '200':
-//         description: 'Createable. A response body will be returned with
-//         a meaningful message.'
-//     '400':
-//         description: 'Bad request. A response body with an error
-//         message will be returned.'
-//     '404':
-//         description: Not Found. An error message will be returned.
-func ValidateObject(c *gin.Context){
-	controllers.Post(c,"mongo")
+//
+//	'200':
+//	    description: 'Createable. A response body will be returned with
+//	    a meaningful message.'
+//	'400':
+//	    description: 'Bad request. A response body with an error
+//	    message will be returned.'
+//	'404':
+//	    description: Not Found. An error message will be returned.
+func ValidateObject(c *gin.Context) {
+	controllers.Post(c, "objects")
 }
