@@ -283,7 +283,7 @@ func UpdateObj(path string, data map[string]any) (map[string]any, error) {
 
 	} else {
 		message["type"] = "modify"
-		message["data"] = resp.body
+		message["data"] = resp.body["data"]
 	}
 	if IsInObjForUnity(category) {
 		entInt := EntityStrToInt(category)
