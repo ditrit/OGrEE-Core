@@ -149,7 +149,7 @@
         }
       }
     },
-    "/Devices": {
+    "/devices": {
       "get": {
         "security": [
           {
@@ -247,7 +247,7 @@
         }
       }
     },
-    "/Devices/ConnecteTo/{device}": {
+    "/devices/ConnecteTo/{device}": {
       "get": {
         "security": [
           {
@@ -312,7 +312,7 @@
         }
       }
     },
-    "/Devices/{device}": {
+    "/devices/{device}": {
       "delete": {
         "security": [
           {

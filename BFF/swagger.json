@@ -149,7 +149,7 @@
         }
       }
     },
-    "/Devices": {
+    "/devices": {
       "get": {
         "security": [
           {
@@ -247,7 +247,7 @@
         }
       }
     },
-    "/Devices/ConnecteTo/{device}": {
+    "/devices/ConnecteTo/{device}": {
       "get": {
         "security": [
           {
@@ -312,7 +312,7 @@
         }
       }
     },
-    "/Devices/{device}": {
+    "/devices/{device}": {
       "delete": {
         "security": [
           {
@@ -331,6 +331,85 @@
             "name": "device",
             "in": "path",
             "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful",
+            "schema": {
+              "items": {
+                "$ref": "#/definitions/SuccessResponse"
+              }
+            }
+          },
+          "500": {
+            "description": "Error",
+            "schema": {
+              "items": {
+                "$ref": "#/definitions/ErrorResponse"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/devices/{obj}/objAttr/{objAttr}/deviceAttr/{deviceAttr}": {
+      "get": {
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "description": "Get Devices list",
+        "tags": [
+          "Devices"
+        ],
+        "operationId": "GetDeviceBindingObject",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "object for binding",
+            "name": "obj",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "description": "object attribute for binding",
+            "name": "objAttr",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "description": "devices attribute for binding",
+            "name": "deviceAttr",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "description": "Key of device",
+            "name": "_key",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "description": "Name of device",
+            "name": "_name",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "description": "Group_name of device",
+            "name": "group_name",
+            "in": "query"
+          },
+          {
+            "type": "string",
+            "description": "Serial number of device",
+            "name": "serial",
+            "in": "query"
           }
         ],
         "responses": {
