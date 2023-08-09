@@ -55,9 +55,9 @@ func GetJSONBody(resp *http.Response) models.Message {
 	}
 	err = json.Unmarshal(body, &responseBody)
   	if err != nil {
-    	return models.Message{StatusCode: http.StatusInternalServerError,Message: err.Error()}
+    	return models.Message{StatusCode: resp.StatusCode,Message: gin.H{"message":string(body)}}
   	}
-	return models.Message{StatusCode: http.StatusAccepted,Message: responseBody}
+	return models.Message{StatusCode: resp.StatusCode,Message: responseBody}
 }
 
 func Get(c *gin.Context, api string){
