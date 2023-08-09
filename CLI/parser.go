@@ -621,7 +621,14 @@ func (p *parser) parseLs() node {
 
 func (p *parser) parseGet() node {
 	defer un(trace(p, "get"))
-	return &getObjectNode{p.parsePath("")}
+	path := p.parsePath("")
+	if p.commandEnd() {
+		return &getObjectNode{path}
+	}
+	
+	obj := p.parseString("")
+	return &getPNode{path,obj}
+
 }
 
 func (p *parser) parseGetU() node {
