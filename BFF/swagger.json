@@ -353,7 +353,7 @@
         }
       }
     },
-    "/devices/{obj}/objAttr/{objAttr}/deviceAttr/{deviceAttr}": {
+    "/devices/{entity}/{obj}/{objAttr}/{deviceAttr}": {
       "get": {
         "security": [
           {

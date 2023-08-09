@@ -2,7 +2,7 @@ package handlers
 
 import (
 	"ogree-bff/controllers"
-	
+
 	"github.com/gin-gonic/gin"
 )
 
@@ -13,8 +13,10 @@ import (
 // ---
 // security:
 //   - Bearer: []
+//
 // produces:
-// 	 - application/json
+//   - application/json
+//
 // parameters:
 //   - name: body
 //     in: body
@@ -26,22 +28,25 @@ import (
 //     example: '{"name": "John Doe", "roles": {"*": "manager"}, "email": "user@test.com", "password": "secret123"}'
 //
 // responses:
-//     '201':
-//         description: New account created
-//     '400':
-//         description: Bad request
-//     '403':
-//         description: User not authorised to create an account
-//     '500':
-//         description: Internal server error
-func CreateAccount(c *gin.Context){
-	controllers.Post(c,"mongo")
+//
+//	'201':
+//	    description: New account created
+//	'400':
+//	    description: Bad request
+//	'403':
+//	    description: User not authorised to create an account
+//	'500':
+//	    description: Internal server error
+func CreateAccount(c *gin.Context) {
+	controllers.Post(c, "objects")
 }
+
 // swagger:operation POST /users/bulk Organization CreateBulk
 // Create multiples users with one request.
 // ---
 // security:
 //   - Bearer: []
+//
 // produces:
 // - application/json
 // parameters:
@@ -54,14 +59,15 @@ func CreateAccount(c *gin.Context){
 //     example: '[{"name": "John Doe", "roles": {"*": "manager"}, "email": "user@test.com"}]'
 //
 // responses:
-//		'200':
-//			description: Request processed, check response body for results
-//		'400':
-//			description: Bad request
-//		'500':
-//			description: Internal server error
-func CreateBulk(c *gin.Context){
-	controllers.Post(c,"mongo")
+//
+//	'200':
+//		description: Request processed, check response body for results
+//	'400':
+//		description: Bad request
+//	'500':
+//		description: Internal server error
+func CreateBulk(c *gin.Context) {
+	controllers.Post(c, "objects")
 }
 
 // swagger:operation GET /users Organization GetAllAccounts
@@ -69,15 +75,17 @@ func CreateBulk(c *gin.Context){
 // ---
 // security:
 //   - Bearer: []
+//
 // produces:
 // - application/json
 // responses:
-//     '200':
-//          description: Return all possible users
-//     '500':
-//          description: Internal server error
-func GetAllAccounts(c *gin.Context){
-	controllers.Get(c,"mongo")
+//
+//	'200':
+//	     description: Return all possible users
+//	'500':
+//	     description: Internal server error
+func GetAllAccounts(c *gin.Context) {
+	controllers.Get(c, "objects")
 }
 
 // swagger:operation DELETE /users/{userid} Organization RemoveAccount
@@ -85,26 +93,29 @@ func GetAllAccounts(c *gin.Context){
 // ---
 // security:
 //   - Bearer: []
+//
 // produces:
 // - application/json
 // parameters:
-// - name: userid
-//   in: path
-//   description: 'The ID of the user to delete'
-//   required: true
-//   type: string
-//   example: "someUserId"
+//   - name: userid
+//     in: path
+//     description: 'The ID of the user to delete'
+//     required: true
+//     type: string
+//     example: "someUserId"
+//
 // responses:
-//		'200':
-//			description: User removed
-//		'400':
-//			description: User ID not valid or not found
-//		'403':
-//			description: Caller not authorised to delete this user
-//		'500':
-//			description: Internal server error
-func RemoveAccount(c *gin.Context){
-	controllers.Delete(c,"mongo")
+//
+//	'200':
+//		description: User removed
+//	'400':
+//		description: User ID not valid or not found
+//	'403':
+//		description: Caller not authorised to delete this user
+//	'500':
+//		description: Internal server error
+func RemoveAccount(c *gin.Context) {
+	controllers.Delete(c, "objects")
 }
 
 // swagger:operation PATCH /users/{userid} Organization ModifyUserRoles
@@ -112,8 +123,10 @@ func RemoveAccount(c *gin.Context){
 // ---
 // security:
 //   - Bearer: []
+//
 // produces:
-// 	 - application/json
+//   - application/json
+//
 // parameters:
 //   - name: userid
 //     in: path
@@ -129,16 +142,17 @@ func RemoveAccount(c *gin.Context){
 //     example: '{"roles": {"*": "manager"}}'
 //
 // responses:
-//		'200':
-//			description: User roles modified
-//		'400':
-//			description: Bad request
-//		'403':
-//			description: Caller not authorised to modify this user
-//		'500':
-//			description: Internal server error
-func ModifyUserRoles(c *gin.Context){
-	controllers.Patch(c,"mongo")
+//
+//	'200':
+//		description: User roles modified
+//	'400':
+//		description: Bad request
+//	'403':
+//		description: Caller not authorised to modify this user
+//	'500':
+//		description: Internal server error
+func ModifyUserRoles(c *gin.Context) {
+	controllers.Patch(c, "objects")
 }
 
 // swagger:operation POST /domains/bulk Organization CreateBulkDomain
@@ -147,21 +161,25 @@ func ModifyUserRoles(c *gin.Context){
 // ---
 // security:
 //   - Bearer: []
+//
 // produces:
-// 	 - application/json
+//   - application/json
+//
 // parameters:
 //   - name: body
 //     in: body
 //     required: true
 //     default: [{}]
+//
 // responses:
-//     '200':
-//         description: 'Request processed. Check the response body
-//         for individual results for each of the sent domains'
-//     '400':
-//         description: 'Bad format: body is not a valid list of domains.'
-func CreateBulkDomain(c *gin.Context){
-	controllers.Post(c,"mongo")
+//
+//	'200':
+//	    description: 'Request processed. Check the response body
+//	    for individual results for each of the sent domains'
+//	'400':
+//	    description: 'Bad format: body is not a valid list of domains.'
+func CreateBulkDomain(c *gin.Context) {
+	controllers.Post(c, "objects")
 }
 
 // swagger:operation GET /hierarchy/domains Organization GetCompleteDomainHierarchy
@@ -171,13 +189,16 @@ func CreateBulkDomain(c *gin.Context){
 // ---
 // security:
 //   - Bearer: []
+//
 // produces:
-// 	 - application/json
+//   - application/json
+//
 // responses:
-//     '200':
-//          description: 'Request is valid.'
-//     '500':
-//          description: Server error.
-func GetCompleteDomainHierarchy(c *gin.Context){
-	controllers.Get(c,"mongo")
+//
+//	'200':
+//	     description: 'Request is valid.'
+//	'500':
+//	     description: Server error.
+func GetCompleteDomainHierarchy(c *gin.Context) {
+	controllers.Get(c, "objects")
 }

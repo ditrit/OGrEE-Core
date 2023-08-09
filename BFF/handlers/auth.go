@@ -2,7 +2,7 @@ package handlers
 
 import (
 	"ogree-bff/controllers"
-	
+
 	"github.com/gin-gonic/gin"
 )
 
@@ -20,15 +20,17 @@ import (
 //     required: true
 //     format: object
 //     example: '{"email": "user@test.com", "password": "secret123"}'
+//
 // responses:
-//     '200':
-//         description: Authenticated
-//     '400':
-//         description: Bad request
-//     '500':
-//         description: Internal server error
-func Login(c *gin.Context){
-	controllers.Post(c,"mongo")
+//
+//	'200':
+//	    description: Authenticated
+//	'400':
+//	    description: Bad request
+//	'500':
+//	    description: Internal server error
+func Login(c *gin.Context) {
+	controllers.Post(c, "objects")
 }
 
 // swagger:operation GET /token/valid Authentication VerifyToken
@@ -36,28 +38,32 @@ func Login(c *gin.Context){
 // ---
 // security:
 //   - Bearer: []
+//
 // produces:
-// 	 - application/json
+//   - application/json
+//
 // responses:
-//     '200':
-//         description: Token is valid.
-//     '403':
-//         description: Unauthorized
-//     '500':
-//         description: Internal server error
-func ValidToken(c *gin.Context){
-	controllers.Get(c,"mongo")
+//
+//	'200':
+//	    description: Token is valid.
+//	'403':
+//	    description: Unauthorized
+//	'500':
+//	    description: Internal server error
+func ValidToken(c *gin.Context) {
+	controllers.Get(c, "objects")
 
 }
-
 
 // swagger:operation POST /users/password/change Authentication ModifyUserPassword
 // For logged in user to change its own password.
 // ---
 // security:
 //   - Bearer: []
+//
 // produces:
-// 	 - application/json
+//   - application/json
+//
 // parameters:
 //   - name: body
 //     in: body
@@ -67,15 +73,17 @@ func ValidToken(c *gin.Context){
 //     example: '{"currentPassword": "myOldPassword", "newPassword": "myNewPassword"}'
 //
 // responses:
-//		'200':
-//			description: Password changed
-//		'400':
-//			description: Bad request
-//		'500':
-//			description: Internal server error
-func ModifyUserPassword(c *gin.Context){
-	controllers.Post(c,"mongo")
+//
+//	'200':
+//		description: Password changed
+//	'400':
+//		description: Bad request
+//	'500':
+//		description: Internal server error
+func ModifyUserPassword(c *gin.Context) {
+	controllers.Post(c, "objects")
 }
+
 // swagger:operation POST /users/password/reset Authentication ResetUserPassword
 // Reset password after forgot.
 // For user that first called forgot enpoint to change its password.
@@ -83,8 +91,10 @@ func ModifyUserPassword(c *gin.Context){
 // ---
 // security:
 //   - Bearer: []
+//
 // produces:
-// 	 - application/json
+//   - application/json
+//
 // parameters:
 //   - name: body
 //     in: body
@@ -94,22 +104,25 @@ func ModifyUserPassword(c *gin.Context){
 //     example: '{"newPassword": "myNewPassword"}'
 //
 // responses:
-//		'200':
-//			description: Password changed
-//		'400':
-//			description: Bad request
-//		'500':
-//			description: Internal server error
-func ResetUserPassword(c *gin.Context){
-	controllers.Post(c,"mongo")
+//
+//	'200':
+//		description: Password changed
+//	'400':
+//		description: Bad request
+//	'500':
+//		description: Internal server error
+func ResetUserPassword(c *gin.Context) {
+	controllers.Post(c, "objects")
 }
+
 // swagger:operation POST /users/password/forgot Authentication UserForgotPassword
 // Forgot my password.
 // Public endpoint to request a reset of a user's password (forgot my password).
 // If the email is valid, an email with a reset token/link will be sent to the user.
 // ---
 // produces:
-// 	 - application/json
+//   - application/json
+//
 // parameters:
 //   - name: body
 //     in: body
@@ -119,12 +132,13 @@ func ResetUserPassword(c *gin.Context){
 //     example: '{"email": "user@test.com"}'
 //
 // responses:
-//		'200':
-//			description: request processed. If account exists, an email with a reset token is sent
-//		'400':
-//			description: Bad request
-//		'500':
-//			description: Internal server error
-func UserForgotPassword(c *gin.Context){
-	controllers.Post(c,"mongo")
+//
+//	'200':
+//		description: request processed. If account exists, an email with a reset token is sent
+//	'400':
+//		description: Bad request
+//	'500':
+//		description: Internal server error
+func UserForgotPassword(c *gin.Context) {
+	controllers.Post(c, "objects")
 }

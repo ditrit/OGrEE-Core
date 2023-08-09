@@ -195,7 +195,7 @@ func GetDevicesInfo(path string,filters string) (map[string]any, error) {
 func DevicesUrl(path,objAttr,devAttr,filters string) (string, error){
 	query := GenerateDeviceQuery(filters)
 	device := strings.Split(strings.Split(filters, ".")[0],"%")[0]
-	return "/api/"+device+"/"+path+"/objAttr/"+objAttr+"/deviceAttr/"+devAttr+query,nil
+	return "/api/devices/"+device+"/"+path+"/"+objAttr+"/"+devAttr+query,nil
 
 }
 func GenerateDeviceQuery(filters string) (string) {

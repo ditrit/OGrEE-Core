@@ -46,7 +46,7 @@ import (
 //         "$ref": "#/definitions/ErrorResponse"
 
 func GetDevices(c *gin.Context) {
-	controllers.Get(c,"arango")
+	controllers.Get(c, "devices")
 }
 
 // swagger:operation GET /devices/ConnecteTo/{device} Devices GetDevicesConnectedTo
@@ -79,28 +79,33 @@ func GetDevices(c *gin.Context) {
 //     description: Serial number of device
 //     required: false
 //     type: string
+//
 // security:
 //   - Bearer: []
+//
 // responses:
-//   '200':
-//     description: successful
-//     schema:
-//       items:
-//         "$ref": "#/definitions/SuccessResponse"
-//   '500':
-//     description: Error
-//     schema:
-//       items:
-//         "$ref": "#/definitions/ErrorResponse"
+//
+//	'200':
+//	  description: successful
+//	  schema:
+//	    items:
+//	      "$ref": "#/definitions/SuccessResponse"
+//	'500':
+//	  description: Error
+//	  schema:
+//	    items:
+//	      "$ref": "#/definitions/ErrorResponse"
 func GetDevicesConnectedTo(c *gin.Context) {
-	controllers.Get(c,"arango")
+	controllers.Get(c, "devices")
 }
+
 // swagger:operation POST /devices Devices CreateDevices
 // Create new Devices
 //
 // ---
 // security:
 //   - Bearer: []
+//
 // parameters:
 //   - name: body
 //     in: body
@@ -108,19 +113,21 @@ func GetDevicesConnectedTo(c *gin.Context) {
 //     required: true
 //     format: object
 //     example: '{"_name": "server", "group_name": "exwipen22","created": "2022-07-18"}'
+//
 // responses:
-//   '200':
-//     description: successful
-//     schema:
-//       items:
-//         "$ref": "#/definitions/SuccessResponse"
-//   '500':
-//     description: Error
-//     schema:
-//       items:
-//         "$ref": "#/definitions/ErrorResponse"
+//
+//	'200':
+//	  description: successful
+//	  schema:
+//	    items:
+//	      "$ref": "#/definitions/SuccessResponse"
+//	'500':
+//	  description: Error
+//	  schema:
+//	    items:
+//	      "$ref": "#/definitions/ErrorResponse"
 func CreateDevices(c *gin.Context) {
-	controllers.Post(c,"arango")
+	controllers.Post(c, "devices")
 }
 
 // swagger:operation DELETE /devices/{device} Devices DeleteDevices
@@ -133,21 +140,24 @@ func CreateDevices(c *gin.Context) {
 //     description: device looking for
 //     required: true
 //     type: string
+//
 // security:
-//   - Bearer: [] 
+//   - Bearer: []
+//
 // responses:
-//   '200':
-//     description: successful
-//     schema:
-//       items:
-//         "$ref": "#/definitions/SuccessResponse"
-//   '500':
-//     description: Error
-//     schema:
-//       items:
-//         "$ref": "#/definitions/ErrorResponse"
-func DeleteDevice(c *gin.Context){
-	controllers.Delete(c,"arango")
+//
+//	'200':
+//	  description: successful
+//	  schema:
+//	    items:
+//	      "$ref": "#/definitions/SuccessResponse"
+//	'500':
+//	  description: Error
+//	  schema:
+//	    items:
+//	      "$ref": "#/definitions/ErrorResponse"
+func DeleteDevice(c *gin.Context) {
+	controllers.Delete(c, "devices")
 }
 
 // swagger:operation GET /Connections Devices GetConnections
@@ -170,28 +180,33 @@ func DeleteDevice(c *gin.Context){
 //     description: To witch device
 //     required: false
 //     type: string
+//
 // security:
 //   - Bearer: []
+//
 // responses:
-//   '200':
-//     description: successful
-//     schema:
-//       items:
-//         "$ref": "#/definitions/SuccessResponse"
-//   '500':
-//     description: Error
-//     schema:
-//       items:
-//         "$ref": "#/definitions/ErrorResponse"
-func GetConnections(c *gin.Context){
-	controllers.Get(c,"arango")
+//
+//	'200':
+//	  description: successful
+//	  schema:
+//	    items:
+//	      "$ref": "#/definitions/SuccessResponse"
+//	'500':
+//	  description: Error
+//	  schema:
+//	    items:
+//	      "$ref": "#/definitions/ErrorResponse"
+func GetConnections(c *gin.Context) {
+	controllers.Get(c, "devices")
 }
+
 // swagger:operation POST /Connections Devices CreateConnection
 // Create new Connection
 //
 // ---
 // security:
 //   - Bearer: []
+//
 // parameters:
 //   - name: body
 //     in: body
@@ -199,19 +214,21 @@ func GetConnections(c *gin.Context){
 //     required: true
 //     format: object
 //     example: '{"_from": "devices/123", "_to": "devices/111"}'
+//
 // responses:
-//   '200':
-//     description: successful
-//     schema:
-//       items:
-//         "$ref": "#/definitions/SuccessResponse"
-//   '500':
-//     description: Error
-//     schema:
-//       items:
-//         "$ref": "#/definitions/ErrorResponse"
-func CreateConnections(c *gin.Context){
-	controllers.Post(c,"arango")
+//
+//	'200':
+//	  description: successful
+//	  schema:
+//	    items:
+//	      "$ref": "#/definitions/SuccessResponse"
+//	'500':
+//	  description: Error
+//	  schema:
+//	    items:
+//	      "$ref": "#/definitions/ErrorResponse"
+func CreateConnections(c *gin.Context) {
+	controllers.Post(c, "devices")
 }
 
 // swagger:operation DELETE /Connections/{connection} Devices DeleteConnection
@@ -220,6 +237,7 @@ func CreateConnections(c *gin.Context){
 // ---
 // security:
 //   - Bearer: []
+//
 // parameters:
 //   - name: connection
 //     in: path
@@ -228,23 +246,22 @@ func CreateConnections(c *gin.Context){
 //     type: string
 //
 // responses:
-//   '200':
-//     description: successful
-//     schema:
-//       items:
-//         "$ref": "#/definitions/SuccessResponse"
-//   '500':
-//     description: Error
-//     schema:
-//       items:
-//         "$ref": "#/definitions/ErrorResponse"
-func DeleteConnections(c *gin.Context){
-	controllers.Delete(c,"arango")
+//
+//	'200':
+//	  description: successful
+//	  schema:
+//	    items:
+//	      "$ref": "#/definitions/SuccessResponse"
+//	'500':
+//	  description: Error
+//	  schema:
+//	    items:
+//	      "$ref": "#/definitions/ErrorResponse"
+func DeleteConnections(c *gin.Context) {
+	controllers.Delete(c, "devices")
 }
 
-
-
-// swagger:operation GET /devices/{obj}/objAttr/{objAttr}/deviceAttr/{deviceAttr} Devices GetDeviceBindingObject
+// swagger:operation GET /devices/{entity}/{obj}/{objAttr}/{deviceAttr} Devices GetDeviceBindingObject
 // Get Devices list
 //
 // ---
@@ -284,19 +301,24 @@ func DeleteConnections(c *gin.Context){
 //     description: Serial number of device
 //     required: false
 //     type: string
+//
 // security:
 //   - Bearer: []
+//
 // responses:
-//   '200':
-//     description: successful
-//     schema:
-//       items:
-//         "$ref": "#/definitions/SuccessResponse"
-//   '500':
-//     description: Error
-//     schema:
-//       items:
-//         "$ref": "#/definitions/ErrorResponse"
-func GetDeviceBindingObject(c*gin.Context){
-	controllers.DeviceBindingObject(c,"arango")
+//
+//	'200':
+//	  description: successful
+//	  schema:
+//	    items:
+//	      "$ref": "#/definitions/SuccessResponse"
+//	'500':
+//	  description: Error
+//	  schema:
+//	    items:
+//	      "$ref": "#/definitions/ErrorResponse"
+func GetDeviceBindingObject(c *gin.Context) {
+
+	controllers.DeviceBindingObject(c)
+
 }
