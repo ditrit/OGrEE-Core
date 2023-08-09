@@ -73,7 +73,7 @@ func ObjectUrl(path string, depth int) (string, error) {
 func GetObjectDevice(path string) (string,error) { 
 	object := strings.Split(path,"/")
 	if(len(object) != 7) {
-		return "", fmt.Errorf("Path is not a device");
+		return "", fmt.Errorf(object[len(object)-1] +" is not a device");
 	}
 	return object[6], nil
 }
@@ -162,7 +162,7 @@ func GetDevicesInfo(path string,filters string) (map[string]any, error) {
 	resp, err := RequestAPI("GET", url, nil, http.StatusOK)
 	if err != nil {
 		if resp != nil && resp.status == http.StatusNotFound {
-			return nil, nil
+			return nil, fmt.Errorf("Devices not found")
 		}
 		return nil, err
 	}
