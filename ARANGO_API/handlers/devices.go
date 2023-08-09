@@ -8,7 +8,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-// swagger:operation GET /Devices Devices Devices
+// swagger:operation GET /devices Devices Devices
 // Get Devices list
 //
 // ---
@@ -61,7 +61,7 @@ func GetDevices(c *gin.Context) {
 	c.IndentedJSON(http.StatusOK, devices)
 }
 
-// swagger:operation GET /Devices/ConnecteTo/{device} Devices GetDevicesConnectedTo
+// swagger:operation GET /devices/ConnecteTo/{device} Devices GetDevicesConnectedTo
 // Get Devices connected to a device
 //
 // ---
@@ -120,7 +120,7 @@ func GetDevicesConnectedTo(c *gin.Context) {
 	c.IndentedJSON(http.StatusOK, devices)
 }
 
-// swagger:operation POST /Devices Devices CreateDevices
+// swagger:operation POST /devices Devices CreateDevices
 // Create new Devices
 //
 // ---
@@ -168,7 +168,7 @@ func PostDevices(c *gin.Context) {
 	c.IndentedJSON(http.StatusCreated, result)
 }
 
-// swagger:operation DELETE /Devices/{device} Devices DeleteDevices
+// swagger:operation DELETE /devices/{device} Devices DeleteDevices
 // Delete Devices by key
 //
 // ---

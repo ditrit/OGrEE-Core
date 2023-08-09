@@ -70,14 +70,6 @@ func ObjectUrl(path string, depth int) (string, error) {
 	return fmt.Sprintf(url + "/" + suffix), nil
 }
 
-func GetObjectDevice(path string) (string,error) { 
-	object := strings.Split(path,"/")
-	if(len(object) != 7) {
-		return "", fmt.Errorf(object[len(object)-1] +" is not a device");
-	}
-	return object[6], nil
-}
-
 func IsTemplate(path string) bool {
 	if strings.HasPrefix(path, "/Logical/ObjectTemplates/") {
 		return true
@@ -149,20 +141,48 @@ func PollObject(path string) (map[string]any, error) {
 func GetObject(path string) (map[string]any, error) {
 	return GetObjectWithChildren(path, 0)
 }
-
+func ObjectAttributes(path string)(string, error){
+	attr := strings.Split(path, "%");
+	if(len(attr) !=2 ){
+		return "name",nil
+	}
+	return attr[1],nil
+}
+func DevicesAttrs(devices string)(string, error){
+	attr := strings.Split(strings.Split(devices,".")[0],"%");
+	if(len(attr) !=2 ){
+		return "group_name",nil
+	}
+	return attr[1],nil
+}
+func removeFirstOccurrence(input string, pattern string) string {
+	inputs := strings.Split(input,pattern)
+	if len(inputs) <3 {
+		return input
+	}
+	return strings.Join(inputs[2:],".")
+}
 func GetDevicesInfo(path string,filters string) (map[string]any, error) {
-	device,err := GetObjectDevice(path)
+
+	objAttr ,err:= ObjectAttributes(path)
 	if err != nil {
 		return nil, err
 	}
-	url,err := DevicesUrl(device,filters)
+	devicesAttr ,err:= DevicesAttrs(filters)
+	if err != nil {
+		return nil, err
+	}
+	path = removeFirstOccurrence(path,"/")
+	
+	url,err := DevicesUrl(strings.Split(path,"%")[0],objAttr,devicesAttr,filters)
 	if err != nil {
 		return nil, err
 	}
 	resp, err := RequestAPI("GET", url, nil, http.StatusOK)
 	if err != nil {
 		if resp != nil && resp.status == http.StatusNotFound {
-			return nil, fmt.Errorf("Devices not found")
+			device := strings.Split(strings.Split(filters, ".")[0],"%")[0]
+			return nil, fmt.Errorf(device+" not found")
 		}
 		return nil, err
 	}
@@ -172,21 +192,22 @@ func GetDevicesInfo(path string,filters string) (map[string]any, error) {
 	}
 	return obj, nil
 }
-func DevicesUrl(path,filters string) (string, error){
-	query := GenerateQuery(filters)
-	device := strings.Split(filters, ".")[0]
-	if device == "devices" {
-		return "/api/Devices?group_name="+path+query,nil
-	}
-	return "", fmt.Errorf("invalid object path")
+func DevicesUrl(path,objAttr,devAttr,filters string) (string, error){
+	query := GenerateDeviceQuery(filters)
+	device := strings.Split(strings.Split(filters, ".")[0],"%")[0]
+	return "/api/"+device+"/"+path+"/objAttr/"+objAttr+"/deviceAttr/"+devAttr+query,nil
 
 }
-func GenerateQuery(filters string) (string) {
+func GenerateDeviceQuery(filters string) (string) {
 	queries:= strings.Split(filters,".")
 	result:=""
 	for _,query := range queries {
 		if strings.Contains(query,"="){
-			result+="&"+query
+			if result == "" {
+				result+= "?"+query
+			}else{
+				result+="&"+query
+			}
 		}
 	}
 	return result
@@ -672,7 +693,7 @@ func Help(entry string) {
 	case "ls", "pwd", "print", "cd", "tree", "get", "clear",
 		"lsog", "grep", "for", "while", "if", "env",
 		"cmds", "var", "unset", "selection", "camera", "ui", "hc", "drawable",
-		"link", "unlink", "draw", "getu", "getslot","undraw",
+		"link", "unlink", "draw", "getu", "getslot", "undraw",
 		"lsenterprise":
 		path = "./other/man/" + entry + ".md"
 

@@ -6,7 +6,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-// swagger:operation GET /Devices Devices Devices
+// swagger:operation GET /devices Devices Devices
 // Get Devices list
 //
 // ---
@@ -49,7 +49,7 @@ func GetDevices(c *gin.Context) {
 	controllers.Get(c,"arango")
 }
 
-// swagger:operation GET /Devices/ConnecteTo/{device} Devices GetDevicesConnectedTo
+// swagger:operation GET /devices/ConnecteTo/{device} Devices GetDevicesConnectedTo
 // Get Devices connected to a device
 //
 // ---
@@ -95,7 +95,7 @@ func GetDevices(c *gin.Context) {
 func GetDevicesConnectedTo(c *gin.Context) {
 	controllers.Get(c,"arango")
 }
-// swagger:operation POST /Devices Devices CreateDevices
+// swagger:operation POST /devices Devices CreateDevices
 // Create new Devices
 //
 // ---
@@ -123,7 +123,7 @@ func CreateDevices(c *gin.Context) {
 	controllers.Post(c,"arango")
 }
 
-// swagger:operation DELETE /Devices/{device} Devices DeleteDevices
+// swagger:operation DELETE /devices/{device} Devices DeleteDevices
 // Delete Devices by key
 //
 // ---
@@ -240,4 +240,63 @@ func CreateConnections(c *gin.Context){
 //         "$ref": "#/definitions/ErrorResponse"
 func DeleteConnections(c *gin.Context){
 	controllers.Delete(c,"arango")
+}
+
+
+
+// swagger:operation GET /devices/{obj}/objAttr/{objAttr}/deviceAttr/{deviceAttr} Devices GetDeviceBindingObject
+// Get Devices list
+//
+// ---
+// parameters:
+//   - name: obj
+//     in: path
+//     description: object for binding
+//     required: true
+//     type: string
+//   - name: objAttr
+//     in: path
+//     description: object attribute for binding
+//     required: true
+//     type: string
+//   - name: deviceAttr
+//     in: path
+//     description: devices attribute for binding
+//     required: true
+//     type: string
+//   - name: _key
+//     in: query
+//     description: Key of device
+//     required: false
+//     type: string
+//   - name: _name
+//     in: query
+//     description: Name of device
+//     required: false
+//     type: string
+//   - name: group_name
+//     in: query
+//     description: Group_name of device
+//     required: false
+//     type: string
+//   - name: serial
+//     in: query
+//     description: Serial number of device
+//     required: false
+//     type: string
+// security:
+//   - Bearer: []
+// responses:
+//   '200':
+//     description: successful
+//     schema:
+//       items:
+//         "$ref": "#/definitions/SuccessResponse"
+//   '500':
+//     description: Error
+//     schema:
+//       items:
+//         "$ref": "#/definitions/ErrorResponse"
+func GetDeviceBindingObject(c*gin.Context){
+	controllers.DeviceBindingObject(c,"arango")
 }
