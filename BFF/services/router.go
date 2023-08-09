@@ -92,7 +92,6 @@ func initObjects(protected, unprotected *gin.RouterGroup){
 	protected.DELETE("/:entity/*id",handlers.DeleteObject)
 	protected.PATCH("/:entity/*id",handlers.PartialUpdateObject)
 	protected.PUT("/:entity/*id",handlers.UpdateObject)
-	//protected.GET("/:entity/:id/all",handlers.GetEntityHierarchy)
 
 	protected.GET("/tempunits/*id",handlers.GetTempUnit)
 
