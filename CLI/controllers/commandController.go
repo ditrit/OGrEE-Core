@@ -70,6 +70,14 @@ func ObjectUrl(path string, depth int) (string, error) {
 	return fmt.Sprintf(url + "/" + suffix), nil
 }
 
+func GetObjectDevice(path string) (string,error) { 
+	object := strings.Split(path,"/")
+	if(len(object) != 7) {
+		return "", fmt.Errorf("Path is not a device");
+	}
+	return object[6], nil
+}
+
 func IsTemplate(path string) bool {
 	if strings.HasPrefix(path, "/Logical/ObjectTemplates/") {
 		return true
@@ -140,6 +148,48 @@ func PollObject(path string) (map[string]any, error) {
 
 func GetObject(path string) (map[string]any, error) {
 	return GetObjectWithChildren(path, 0)
+}
+
+func GetDevicesInfo(path string,filters string) (map[string]any, error) {
+	device,err := GetObjectDevice(path)
+	if err != nil {
+		return nil, err
+	}
+	url,err := DevicesUrl(device,filters)
+	if err != nil {
+		return nil, err
+	}
+	resp, err := RequestAPI("GET", url, nil, http.StatusOK)
+	if err != nil {
+		if resp != nil && resp.status == http.StatusNotFound {
+			return nil, nil
+		}
+		return nil, err
+	}
+	obj, ok := resp.body["data"].(map[string]any)
+	if !ok {
+		return nil, fmt.Errorf("invalid response from API on GET %s", url)
+	}
+	return obj, nil
+}
+func DevicesUrl(path,filters string) (string, error){
+	query := GenerateQuery(filters)
+	device := strings.Split(filters, ".")[0]
+	if device == "devices" {
+		return "/api/Devices?group_name="+path+query,nil
+	}
+	return "", fmt.Errorf("invalid object path")
+
+}
+func GenerateQuery(filters string) (string) {
+	queries:= strings.Split(filters,".")
+	result:=""
+	for _,query := range queries {
+		if strings.Contains(query,"="){
+			result+="&"+query
+		}
+	}
+	return result
 }
 
 func Ls(path string) ([]string, error) {
@@ -622,7 +672,7 @@ func Help(entry string) {
 	case "ls", "pwd", "print", "cd", "tree", "get", "clear",
 		"lsog", "grep", "for", "while", "if", "env",
 		"cmds", "var", "unset", "selection", "camera", "ui", "hc", "drawable",
-		"link", "unlink", "draw", "getu", "getslot", "undraw",
+		"link", "unlink", "draw", "getu", "getslot","undraw",
 		"lsenterprise":
 		path = "./other/man/" + entry + ".md"
 
