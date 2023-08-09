@@ -25,7 +25,7 @@ func getFloat(unk interface{}) (float64, error) {
 func valToFloat(val any, name string) (float64, error) {
 	v, err := getFloat(val)
 	if err != nil {
-		return 0, fmt.Errorf("%s should be a number")
+		return 0, fmt.Errorf("%s should be a number", name)
 	}
 	return v, nil
 }
