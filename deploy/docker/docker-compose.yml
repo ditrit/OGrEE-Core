@@ -6,15 +6,13 @@ services:
     image: ogree/api:${IMAGE_TAG}
     container_name: ${COMPOSE_PROJECT_NAME}_api
     environment:
-      - api_port=3001
+      - api_port=${API_PORT}
       - db_host=${COMPOSE_PROJECT_NAME}_db
       - db_port=27017
       - db_user=${COMPOSE_PROJECT_NAME}
       - db_pass=${CUSTOMER_API_PASSWORD}
       - db=${COMPOSE_PROJECT_NAME}
       - token_password=${AUTH_SECRET}
-    ports:
-      - ${API_PORT}:3001
     depends_on:
       - ogree_db
     restart: on-failure:10
@@ -95,8 +93,6 @@ services:
       - ARANGO_PASSWORD=${ARANGO_PASS}
       - API_SECRET=${AUTH_SECRET}
       - API_PORT=${ARANGO_API_PORT}
-    ports:
-      - ${ARANGO_API_PORT}:${ARANGO_API_PORT}
     healthcheck:
         test: ["CMD", "curl","-f","http://${COMPOSE_PROJECT_NAME}_arango_db:5829/_api/version"]
         timeout: 30s
@@ -119,7 +115,6 @@ services:
     depends_on:
       - ogree_api
       - arango_api
-    network_mode: "host"
     ports:
       - ${BFF_PORT}:${BFF_PORT}
 
