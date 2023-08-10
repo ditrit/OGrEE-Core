@@ -17,13 +17,32 @@
 package main
 
 import (
-
+	"encoding/json"
 	"fmt"
-	"os"
-	e "github.com/joho/godotenv"
+	"io/ioutil"
 	"ogree-bff/models"
 	"ogree-bff/services"
+	"os"
+
+	e "github.com/joho/godotenv"
 )
+
+
+func GetAPIInfo() ([]models.API) {
+	jsonFile, err := os.Open("api.json")
+	// if we os.Open returns an error then handle it
+	if err != nil {
+		fmt.Println(err)
+	}
+	fmt.Println("Successfully Opened users.json")
+	// defer the closing of our jsonFile so that we can parse it later on
+	defer jsonFile.Close()
+	byteValue, _ := ioutil.ReadAll(jsonFile)
+	var api []models.API
+	json.Unmarshal(byteValue, &api)
+
+	return api
+}
 
 func main() {
 
@@ -37,12 +56,7 @@ func main() {
 		}
 	}
 	BFF_PORT := os.Getenv("BFF_PORT")
-	arangoAPI := os.Getenv("ARANGO_API")
-	mongoAPI := os.Getenv("MONGO_API")
-	apiList := []models.API {
-		{Name: "devices", URL: arangoAPI},
-		{Name: "objects", URL: mongoAPI},
-	}
+	apiList := GetAPIInfo()
 	fmt.Println(apiList)
 	router := services.InitRouter(apiList,env)
 	router.Run(":"+BFF_PORT)

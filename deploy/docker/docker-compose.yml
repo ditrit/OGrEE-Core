@@ -94,8 +94,9 @@ services:
       - ARANGO_USER=${ARANGO_USER}
       - ARANGO_PASSWORD=${ARANGO_PASS}
       - API_SECRET=${AUTH_SECRET}
+      - API_PORT=${ARANGO_API_PORT}
     ports:
-      - ${ARANGO_API_PORT}:8080
+      - ${ARANGO_API_PORT}:${ARANGO_API_PORT}
     healthcheck:
         test: ["CMD", "curl","-f","http://${COMPOSE_PROJECT_NAME}_arango_db:5829/_api/version"]
         timeout: 30s
@@ -111,13 +112,14 @@ services:
     container_name: ${COMPOSE_PROJECT_NAME}_bff
     environment:
       - ENV=production
-      - ARANGO_API=http://${COMPOSE_PROJECT_NAME}_arango_api:${ARANGO_API_PORT}
-      - MONGO_API=http://${COMPOSE_PROJECT_NAME}_api:${API_PORT}
       - BFF_PORT=${BFF_PORT}
       - BFF_SECRET=${AUTH_SECRET}
+    volumes:
+      - ./bff_api_list.json:/bin/api.json
     depends_on:
       - ogree_api
       - arango_api
+    network_mode: "host"
     ports:
       - ${BFF_PORT}:${BFF_PORT}
 
