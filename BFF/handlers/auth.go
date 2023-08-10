@@ -22,13 +22,12 @@ import (
 //     example: '{"email": "user@test.com", "password": "secret123"}'
 //
 // responses:
-//
-//	'200':
-//	    description: Authenticated
-//	'400':
-//	    description: Bad request
-//	'500':
-//	    description: Internal server error
+//     '200':
+//         description: Authenticated
+//     '400':
+//         description: Bad request
+//     '500':
+//         description: Internal server error
 func Login(c *gin.Context) {
 	controllers.Post(c, "objects")
 }
@@ -43,13 +42,12 @@ func Login(c *gin.Context) {
 //   - application/json
 //
 // responses:
-//
-//	'200':
-//	    description: Token is valid.
-//	'403':
-//	    description: Unauthorized
-//	'500':
-//	    description: Internal server error
+//		'200':
+//	    	description: Token is valid.
+//		'403':
+//	    	description: Unauthorized
+//		'500':
+//	    	description: Internal server error
 func ValidToken(c *gin.Context) {
 	controllers.Get(c, "objects")
 
@@ -74,12 +72,12 @@ func ValidToken(c *gin.Context) {
 //
 // responses:
 //
-//	'200':
-//		description: Password changed
-//	'400':
-//		description: Bad request
-//	'500':
-//		description: Internal server error
+//	 	'200':
+//			description: Password changed
+//	 	'400':
+//			description: Bad request
+//	 	'500':
+//			description: Internal server error
 func ModifyUserPassword(c *gin.Context) {
 	controllers.Post(c, "objects")
 }
@@ -105,11 +103,11 @@ func ModifyUserPassword(c *gin.Context) {
 //
 // responses:
 //
-//	'200':
+//	 '200':
 //		description: Password changed
-//	'400':
+//	 '400':
 //		description: Bad request
-//	'500':
+//	 '500':
 //		description: Internal server error
 func ResetUserPassword(c *gin.Context) {
 	controllers.Post(c, "objects")
@@ -133,11 +131,11 @@ func ResetUserPassword(c *gin.Context) {
 //
 // responses:
 //
-//	'200':
+//	 '200':
 //		description: request processed. If account exists, an email with a reset token is sent
-//	'400':
+//	 '400':
 //		description: Bad request
-//	'500':
+//	 '500':
 //		description: Internal server error
 func UserForgotPassword(c *gin.Context) {
 	controllers.Post(c, "objects")

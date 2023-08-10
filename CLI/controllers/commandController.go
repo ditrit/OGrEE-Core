@@ -10,6 +10,7 @@ import (
 	"log"
 	"math/rand"
 	"net/http"
+	"net/url"
 	"os"
 	"os/exec"
 	pathutil "path"
@@ -203,10 +204,11 @@ func GenerateDeviceQuery(filters string) (string) {
 	result:=""
 	for _,query := range queries {
 		if strings.Contains(query,"="){
+			q := strings.Split(query,"=")
 			if result == "" {
-				result+= "?"+query
+				result+= "?"+q[0]+"="+url.QueryEscape(q[1])
 			}else{
-				result+="&"+query
+				result+="&"+q[0]+"="+url.QueryEscape(q[1])
 			}
 		}
 	}

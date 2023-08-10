@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"fmt"
 	"net/http"
 	"ogree-bff/utils/token"
 
@@ -83,4 +84,45 @@ func DeviceBindingObject(c *gin.Context) {
 	c.IndentedJSON(deviceResp.StatusCode, result.Message)
 	return
 
+}
+
+
+func GetDevice(c *gin.Context,url,methode string){
+
+	key := token.ExtractToken(c)
+	query := GetQueryString(c)
+	fmt.Println(c.Request.URL.Query(),query)
+	deviceResp, err := Send(methode, url, query, key, nil)
+	if err != nil {
+		if deviceResp != nil {
+			result := GetJSONBody(deviceResp)
+			c.IndentedJSON(deviceResp.StatusCode, result.Message)
+			return
+		}
+		c.IndentedJSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
+		return
+	}
+	result := GetJSONBody(deviceResp)
+	c.IndentedJSON(deviceResp.StatusCode, result.Message)
+	return
+}
+
+func PostDevice(c *gin.Context,url, method string){
+
+	var data interface{}
+	// Call BindJSON to bind the received JSON to
+	if err := c.ShouldBindJSON(&data); err != nil {
+		c.IndentedJSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
+		return
+	}
+	
+	key := token.ExtractToken(c)
+	resp,err := Send(method,url,"",key,data)
+	fmt.Println(err)
+	if err != nil && resp == nil{
+		c.IndentedJSON(http.StatusInternalServerError, gin.H{"message": err.Error()})
+		return
+	}
+	result := GetJSONBody(resp)
+	c.IndentedJSON(resp.StatusCode, result.Message)
 }

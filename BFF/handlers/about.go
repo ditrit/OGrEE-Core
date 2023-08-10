@@ -17,10 +17,10 @@ import (
 //
 // responses:
 //
-//	'200':
-//		description: 'Request is valid.'
-//	'504':
-//		description: Server error.
+//		'200':
+//			description: 'Request is valid.'
+//		'504':
+//			description: Server error.
 func GetStats(c *gin.Context) {
 	controllers.Get(c, "objects")
 }
@@ -36,9 +36,9 @@ func GetStats(c *gin.Context) {
 //
 // responses:
 //
-//	'200':
-//	    description: 'OK. A response body will be returned with
-//	    version details.'
+//		'200':
+//	    	description: 'OK. A response body will be returned with
+//	    	version details.'
 func GetAPIVersion(c *gin.Context) {
 	controllers.Get(c, "objects")
 }
