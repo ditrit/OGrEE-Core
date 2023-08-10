@@ -684,6 +684,8 @@ func (n *updateObjNode) execute() (interface{}, error) {
 			_, err = addRoomSeparator(path, values)
 		case "pillar":
 			_, err = addRoomPillar(path, values)
+		case "domain":
+			_, err = cmd.UpdateObj(path, map[string]any{"domain": values[0]})
 		default:
 			if strings.HasPrefix(n.attr, "description") {
 				_, err = updateDescription(path, n.attr, values)
