@@ -437,10 +437,10 @@ func (n *selectObjectNode) execute() (interface{}, error) {
 	}
 	if path != "" {
 		selection = []string{path}
-	}
-	err = cmd.CD(path)
-	if err != nil {
-		return nil, err
+		err = cmd.CD(path)
+		if err != nil {
+			return nil, err
+		}
 	}
 	return cmd.SetClipBoard(selection)
 }
