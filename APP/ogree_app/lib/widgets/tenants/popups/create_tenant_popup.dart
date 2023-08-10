@@ -58,7 +58,7 @@ class _CreateTenantPopupState extends State<CreateTenantPopup> {
                             children: [
                               Center(
                                   child: Text(
-                                localeMsg.newTenant,
+                                "${localeMsg.create} tenant",
                                 style:
                                     Theme.of(context).textTheme.headlineMedium,
                               )),
