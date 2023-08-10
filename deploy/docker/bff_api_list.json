@@ -1,0 +1,5 @@
+[
+    {"name":"server", "url": "http://localhost:8080"},
+    {"name":"bay", "url": "http://localhost:8081"},
+    {"name":"objects", "url": "http://localhost:3001"}
+]

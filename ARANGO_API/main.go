@@ -40,7 +40,7 @@ func main() {
 	bdd := os.Getenv("ARANGO_DATABASE")
 	user := os.Getenv("ARANGO_USER")
 	password := os.Getenv("ARANGO_PASSWORD")
-
+	port := os.Getenv("API_PORT")
 	
 	db, err2 := database.ConnectToArango(addr,bdd, user, password)
 	if err2 != nil {
@@ -51,5 +51,5 @@ func main() {
 	database.CreateCollection(db, "devices")
 	
 	router := services.InitRouter(db,addr)
-	router.Run(":8080")
+	router.Run(":"+port)
 }

@@ -11,6 +11,7 @@ Before you begin, ensure you have an ArangoDB database up and running. Set the f
 - `ARANGO_DATABASE`: The name of the ArangoDB database you'll be using.
 - `ARANGO_USER`: The username for authentication.
 - `ARANGO_PASSWORD`: The password for authentication.
+- `ÀPI_PORT`: The port where API running
 
 
 For example, you can set these environment variables in a `.env` file in the root directory of your project:
@@ -20,6 +21,7 @@ ARANGO_URL=http://localhost:8529
 ARANGO_DATABASE=mydatabase
 ARANGO_USER=user
 ARANGO_PASSWORD=password
+API_PORT="8081"
 ```
 
 ## Installation and Execution
