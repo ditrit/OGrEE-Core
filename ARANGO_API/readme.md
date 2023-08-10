@@ -5,13 +5,13 @@ This GoLang API enables management of "devices" and "connections" elements withi
 
 ## Configuration
 
-Before you begin, ensure you have an ArangoDB database up and running. Set the following environment variables in the API's configuration or as part of your runtime environment:
+Before you begin, ensure you have an ArangoDB database up and running. Set the following environment variables in a .env file or as part of your runtime environment:
 
 - `ARANGO_URL`: The URL of your ArangoDB instance.
 - `ARANGO_DATABASE`: The name of the ArangoDB database you'll be using.
 - `ARANGO_USER`: The username for authentication.
 - `ARANGO_PASSWORD`: The password for authentication.
-- `ÀPI_PORT`: The port where API running
+- `ÀPI_PORT`: The port where API listenning
 
 
 For example, you can set these environment variables in a `.env` file in the root directory of your project:
