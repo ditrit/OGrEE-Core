@@ -142,19 +142,19 @@ func PollObject(path string) (map[string]any, error) {
 func GetObject(path string) (map[string]any, error) {
 	return GetObjectWithChildren(path, 0)
 }
-func ObjectAttributes(path string)(string, error){
+func ObjectAttributes(path string)(string){
 	attr := strings.Split(path, "%");
 	if(len(attr) !=2 ){
-		return "name",nil
+		return "name"
 	}
-	return attr[1],nil
+	return attr[1]
 }
-func DevicesAttrs(devices string)(string, error){
+func DevicesAttrs(devices string)(string){
 	attr := strings.Split(strings.Split(devices,".")[0],"%");
 	if(len(attr) !=2 ){
-		return "group_name",nil
+		return "group_name"
 	}
-	return attr[1],nil
+	return attr[1]
 }
 func removeFirstOccurrence(input string, pattern string) string {
 	inputs := strings.Split(input,pattern)
@@ -165,20 +165,12 @@ func removeFirstOccurrence(input string, pattern string) string {
 }
 func GetDevicesInfo(path string,filters string) (map[string]any, error) {
 
-	objAttr ,err:= ObjectAttributes(path)
-	if err != nil {
-		return nil, err
-	}
-	devicesAttr ,err:= DevicesAttrs(filters)
-	if err != nil {
-		return nil, err
-	}
+	objAttr := ObjectAttributes(path)
+	devicesAttr := DevicesAttrs(filters)
+
 	path = removeFirstOccurrence(path,"/")
 	
-	url,err := DevicesUrl(strings.Split(path,"%")[0],objAttr,devicesAttr,filters)
-	if err != nil {
-		return nil, err
-	}
+	url:= DevicesUrl(strings.Split(path,"%")[0],objAttr,devicesAttr,filters)
 	resp, err := RequestAPI("GET", url, nil, http.StatusOK)
 	if err != nil {
 		if resp != nil && resp.status == http.StatusNotFound {
@@ -193,10 +185,10 @@ func GetDevicesInfo(path string,filters string) (map[string]any, error) {
 	}
 	return obj, nil
 }
-func DevicesUrl(path,objAttr,devAttr,filters string) (string, error){
+func DevicesUrl(path,objAttr,devAttr,filters string) string{
 	query := GenerateDeviceQuery(filters)
 	device := strings.Split(strings.Split(filters, ".")[0],"%")[0]
-	return "/api/devices/"+device+"/"+path+"/"+objAttr+"/"+devAttr+query,nil
+	return "/api/devices/"+device+"/"+path+"/"+objAttr+"/"+devAttr+query
 
 }
 func GenerateDeviceQuery(filters string) (string) {
