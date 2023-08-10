@@ -11,9 +11,9 @@ Before you begin, set the following environment variables in a .env file or as p
 
 You also need a api.json file, that contains an array of `name` and `url` of all API you when to use.
 
-Notice that this minimal configuration you need is an API 'objects':
+Notice that this minimal configuration you need is an API name 'objects':
 
-Exemple of api.json:
+Exemple of api.json with an API for objects and another for server:
 
 ```json
 [
