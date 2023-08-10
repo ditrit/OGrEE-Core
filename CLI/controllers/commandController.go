@@ -106,7 +106,7 @@ func PollObjectWithChildren(path string, depth int) (map[string]any, error) {
 	if err != nil {
 		return nil, nil
 	}
-	if depth > 0 {
+	if depth > 0 && !IsTemplate(path) {
 		url = fmt.Sprintf("%s/all?limit=%d", url, depth)
 	}
 	resp, err := RequestAPI("GET", url, nil, http.StatusOK)
