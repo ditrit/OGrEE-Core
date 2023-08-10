@@ -39,10 +39,10 @@ func APIMiddleware(apiList []models.API) gin.HandlerFunc {
 }
 func initDevices(protected, unprotected *gin.RouterGroup){
 	
-	protected.GET("/devices",handlers.GetDevices)
-	protected.GET("/devices/ConnecteTo/:key",handlers.GetDevicesConnectedTo)
-	protected.POST("/devices",handlers.CreateDevices)
-	protected.DELETE("/devices/:id",handlers.DeleteDevice)
+	protected.GET("/devices/:entity",handlers.GetDevices)
+	protected.GET("/devices/:entity/ConnecteTo/:id",handlers.GetDevicesConnectedTo)
+	protected.POST("/devices/:entity",handlers.CreateDevices)
+	protected.DELETE("/devices/:entity/:id",handlers.DeleteDevice)
 	
 	protected.GET("/Connections",handlers.GetConnections)
 	protected.POST("/Connections",handlers.CreateConnections)

@@ -2,11 +2,11 @@ package handlers
 
 import (
 	"ogree-bff/controllers"
-
+	"net/http"
 	"github.com/gin-gonic/gin"
 )
 
-// swagger:operation GET /devices Devices Devices
+// swagger:operation GET /devices/{entity} Devices Devices
 // Get Devices list
 //
 // ---
@@ -15,6 +15,11 @@ import (
 //     in: query
 //     description: Key of device
 //     required: false
+//     type: string
+//   - name: entity
+//     in: path
+//     description: database to retrieve devices
+//     required: true
 //     type: string
 //   - name: _name
 //     in: query
@@ -46,14 +51,26 @@ import (
 //         "$ref": "#/definitions/ErrorResponse"
 
 func GetDevices(c *gin.Context) {
-	controllers.Get(c, "devices")
+	entity := c.Param("entity")
+
+	deviceURL, ok := c.Value(entity).(string)
+	if !ok {
+		c.IndentedJSON(http.StatusBadRequest, gin.H{"message": entity + " has not database"})
+		return
+	}
+	controllers.GetDevice(c, deviceURL+"/api/devices","GET")
 }
 
-// swagger:operation GET /devices/ConnecteTo/{device} Devices GetDevicesConnectedTo
+// swagger:operation GET /devices/{entity}/ConnecteTo/{device} Devices GetDevicesConnectedTo
 // Get Devices connected to a device
 //
 // ---
 // parameters:
+//   - name: entity
+//     in: path
+//     description: database to retrieve devices
+//     required: true
+//     type: string
 //   - name: device
 //     in: path
 //     description: Key of device
@@ -84,22 +101,29 @@ func GetDevices(c *gin.Context) {
 //   - Bearer: []
 //
 // responses:
-//
-//	'200':
-//	  description: successful
-//	  schema:
-//	    items:
-//	      "$ref": "#/definitions/SuccessResponse"
-//	'500':
-//	  description: Error
-//	  schema:
-//	    items:
-//	      "$ref": "#/definitions/ErrorResponse"
+//   '200':
+//     description: successful
+//     schema:
+//       items:
+//         "$ref": "#/definitions/SuccessResponse"
+//   '500':
+//     description: Error
+//     schema:
+//       items:
+//         "$ref": "#/definitions/ErrorResponse"
 func GetDevicesConnectedTo(c *gin.Context) {
-	controllers.Get(c, "devices")
+
+	entity := c.Param("entity")
+	id := c.Param("id")
+	deviceURL, ok := c.Value(entity).(string)
+	if !ok {
+		c.IndentedJSON(http.StatusBadRequest, gin.H{"message": entity + " has not database"})
+		return
+	}
+	controllers.GetDevice(c, deviceURL+"/api/devices/ConnecteTo/"+id,"GET")
 }
 
-// swagger:operation POST /devices Devices CreateDevices
+// swagger:operation POST /devices/{entity} Devices CreateDevices
 // Create new Devices
 //
 // ---
@@ -107,6 +131,11 @@ func GetDevicesConnectedTo(c *gin.Context) {
 //   - Bearer: []
 //
 // parameters:
+//   - name: entity
+//     in: path
+//     description: database to retrieve devices
+//     required: true
+//     type: string
 //   - name: body
 //     in: body
 //     description: 'Mandatory: _name, group_name,created.'
@@ -115,26 +144,37 @@ func GetDevicesConnectedTo(c *gin.Context) {
 //     example: '{"_name": "server", "group_name": "exwipen22","created": "2022-07-18"}'
 //
 // responses:
-//
-//	'200':
-//	  description: successful
-//	  schema:
-//	    items:
-//	      "$ref": "#/definitions/SuccessResponse"
-//	'500':
-//	  description: Error
-//	  schema:
-//	    items:
-//	      "$ref": "#/definitions/ErrorResponse"
+//   '200':
+//     description: successful
+//     schema:
+//       items:
+//         "$ref": "#/definitions/SuccessResponse"
+//   '500':
+//     description: Error
+//     schema:
+//       items:
+//         "$ref": "#/definitions/ErrorResponse"
 func CreateDevices(c *gin.Context) {
-	controllers.Post(c, "devices")
+	entity := c.Param("entity")
+
+	deviceURL, ok := c.Value(entity).(string)
+	if !ok {
+		c.IndentedJSON(http.StatusBadRequest, gin.H{"message": entity + " has not database"})
+		return
+	}
+	controllers.PostDevice(c, deviceURL+"/api/devices","POST")
 }
 
-// swagger:operation DELETE /devices/{device} Devices DeleteDevices
+// swagger:operation DELETE /devices/{entity}{device} Devices DeleteDevices
 // Delete Devices by key
 //
 // ---
 // parameters:
+//   - name: entity
+//     in: path
+//     description: database to retrieve devices
+//     required: true
+//     type: string
 //   - name: device
 //     in: path
 //     description: device looking for
@@ -145,19 +185,25 @@ func CreateDevices(c *gin.Context) {
 //   - Bearer: []
 //
 // responses:
-//
-//	'200':
-//	  description: successful
-//	  schema:
-//	    items:
-//	      "$ref": "#/definitions/SuccessResponse"
-//	'500':
-//	  description: Error
-//	  schema:
-//	    items:
-//	      "$ref": "#/definitions/ErrorResponse"
+//   '200':
+//     description: successful
+//     schema:
+//       items:
+//         "$ref": "#/definitions/SuccessResponse"
+//   '500':
+//     description: Error
+//     schema:
+//       items:
+//         "$ref": "#/definitions/ErrorResponse"
 func DeleteDevice(c *gin.Context) {
-	controllers.Delete(c, "devices")
+	entity := c.Param("entity")
+	id := c.Param("id")
+	deviceURL, ok := c.Value(entity).(string)
+	if !ok {
+		c.IndentedJSON(http.StatusBadRequest, gin.H{"message": entity + " has not database"})
+		return
+	}
+	controllers.GetDevice(c, deviceURL+"/api/devices/"+id,"DELETE")
 }
 
 // swagger:operation GET /Connections Devices GetConnections
@@ -185,17 +231,16 @@ func DeleteDevice(c *gin.Context) {
 //   - Bearer: []
 //
 // responses:
-//
-//	'200':
-//	  description: successful
-//	  schema:
-//	    items:
-//	      "$ref": "#/definitions/SuccessResponse"
-//	'500':
-//	  description: Error
-//	  schema:
-//	    items:
-//	      "$ref": "#/definitions/ErrorResponse"
+//   '200':
+//     description: successful
+//     schema:
+//       items:
+//         "$ref": "#/definitions/SuccessResponse"
+//   '500':
+//     description: Error
+//     schema:
+//       items:
+//         "$ref": "#/definitions/ErrorResponse"
 func GetConnections(c *gin.Context) {
 	controllers.Get(c, "devices")
 }
@@ -216,17 +261,16 @@ func GetConnections(c *gin.Context) {
 //     example: '{"_from": "devices/123", "_to": "devices/111"}'
 //
 // responses:
-//
-//	'200':
-//	  description: successful
-//	  schema:
-//	    items:
-//	      "$ref": "#/definitions/SuccessResponse"
-//	'500':
-//	  description: Error
-//	  schema:
-//	    items:
-//	      "$ref": "#/definitions/ErrorResponse"
+//   '200':
+//     description: successful
+//     schema:
+//       items:
+//         "$ref": "#/definitions/SuccessResponse"
+//   '500':
+//     description: Error
+//     schema:
+//       items:
+//         "$ref": "#/definitions/ErrorResponse"
 func CreateConnections(c *gin.Context) {
 	controllers.Post(c, "devices")
 }
@@ -246,17 +290,16 @@ func CreateConnections(c *gin.Context) {
 //     type: string
 //
 // responses:
-//
-//	'200':
-//	  description: successful
-//	  schema:
-//	    items:
-//	      "$ref": "#/definitions/SuccessResponse"
-//	'500':
-//	  description: Error
-//	  schema:
-//	    items:
-//	      "$ref": "#/definitions/ErrorResponse"
+//   '200':
+//     description: successful
+//     schema:
+//       items:
+//         "$ref": "#/definitions/SuccessResponse"
+//   '500':
+//     description: Error
+//     schema:
+//       items:
+//         "$ref": "#/definitions/ErrorResponse"
 func DeleteConnections(c *gin.Context) {
 	controllers.Delete(c, "devices")
 }
@@ -306,17 +349,16 @@ func DeleteConnections(c *gin.Context) {
 //   - Bearer: []
 //
 // responses:
-//
-//	'200':
-//	  description: successful
-//	  schema:
-//	    items:
-//	      "$ref": "#/definitions/SuccessResponse"
-//	'500':
-//	  description: Error
-//	  schema:
-//	    items:
-//	      "$ref": "#/definitions/ErrorResponse"
+//   '200':
+//     description: successful
+//     schema:
+//       items:
+//         "$ref": "#/definitions/SuccessResponse"
+//   '500':
+//     description: Error
+//     schema:
+//       items:
+//         "$ref": "#/definitions/ErrorResponse"
 func GetDeviceBindingObject(c *gin.Context) {
 
 	controllers.DeviceBindingObject(c)

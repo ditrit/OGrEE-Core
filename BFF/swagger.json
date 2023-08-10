@@ -149,7 +149,7 @@
         }
       }
     },
-    "/devices": {
+    "/devices/{entity}": {
       "get": {
         "security": [
           {
@@ -167,6 +167,13 @@
             "description": "Key of device",
             "name": "_key",
             "in": "query"
+          },
+          {
+            "type": "string",
+            "description": "database to retrieve devices",
+            "name": "entity",
+            "in": "path",
+            "required": true
           },
           {
             "type": "string",
@@ -219,6 +226,13 @@
         "operationId": "CreateDevices",
         "parameters": [
           {
+            "type": "string",
+            "description": "database to retrieve devices",
+            "name": "entity",
+            "in": "path",
+            "required": true
+          },
+          {
             "format": "object",
             "example": "{\"_name\": \"server\", \"group_name\": \"exwipen22\",\"created\": \"2022-07-18\"}",
             "description": "Mandatory: _name, group_name,created.",
@@ -247,7 +261,7 @@
         }
       }
     },
-    "/devices/ConnecteTo/{device}": {
+    "/devices/{entity}/ConnecteTo/{device}": {
       "get": {
         "security": [
           {
@@ -260,6 +274,13 @@
         ],
         "operationId": "GetDevicesConnectedTo",
         "parameters": [
+          {
+            "type": "string",
+            "description": "database to retrieve devices",
+            "name": "entity",
+            "in": "path",
+            "required": true
+          },
           {
             "type": "string",
             "description": "Key of device",
@@ -290,47 +311,6 @@
             "description": "Serial number of device",
             "name": "serial",
             "in": "query"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "successful",
-            "schema": {
-              "items": {
-                "$ref": "#/definitions/SuccessResponse"
-              }
-            }
-          },
-          "500": {
-            "description": "Error",
-            "schema": {
-              "items": {
-                "$ref": "#/definitions/ErrorResponse"
-              }
-            }
-          }
-        }
-      }
-    },
-    "/devices/{device}": {
-      "delete": {
-        "security": [
-          {
-            "Bearer": []
-          }
-        ],
-        "description": "Delete Devices by key",
-        "tags": [
-          "Devices"
-        ],
-        "operationId": "DeleteDevices",
-        "parameters": [
-          {
-            "type": "string",
-            "description": "device looking for",
-            "name": "device",
-            "in": "path",
-            "required": true
           }
         ],
         "responses": {
@@ -432,6 +412,54 @@
         }
       }
     },
+    "/devices/{entity}{device}": {
+      "delete": {
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "description": "Delete Devices by key",
+        "tags": [
+          "Devices"
+        ],
+        "operationId": "DeleteDevices",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "database to retrieve devices",
+            "name": "entity",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "description": "device looking for",
+            "name": "device",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "successful",
+            "schema": {
+              "items": {
+                "$ref": "#/definitions/SuccessResponse"
+              }
+            }
+          },
+          "500": {
+            "description": "Error",
+            "schema": {
+              "items": {
+                "$ref": "#/definitions/ErrorResponse"
+              }
+            }
+          }
+        }
+      }
+    },
     "/domains/bulk": {
       "post": {
         "security": [
@@ -457,15 +485,7 @@
             "in": "body",
             "required": true
           }
-        ],
-        "responses": {
-          "200": {
-            "description": "Request processed. Check the response body for individual results for each of the sent domains"
-          },
-          "400": {
-            "description": "Bad format: body is not a valid list of domains."
-          }
-        }
+        ]
       }
     },
     "/hierarchy": {
@@ -509,15 +529,7 @@
           "Objects"
         ],
         "summary": "Returns attributes of all objects.",
-        "operationId": "GetCompleteHierarchyAttrs",
-        "responses": {
-          "200": {
-            "description": "Request is valid."
-          },
-          "500": {
-            "description": "Server error."
-          }
-        }
+        "operationId": "GetCompleteHierarchyAttrs"
       }
     },
     "/hierarchy/domains": {
@@ -535,15 +547,7 @@
           "Organization"
         ],
         "summary": "Returns domain complete hierarchy.",
-        "operationId": "GetCompleteDomainHierarchy",
-        "responses": {
-          "200": {
-            "description": "Request is valid."
-          },
-          "500": {
-            "description": "Server error."
-          }
-        }
+        "operationId": "GetCompleteDomainHierarchy"
       }
     },
     "/login": {
@@ -688,18 +692,7 @@
             "in": "body",
             "required": true
           }
-        ],
-        "responses": {
-          "200": {
-            "description": "Project successfully created."
-          },
-          "400": {
-            "description": "Bad Request. Invalid project format."
-          },
-          "500": {
-            "description": "Internal server error."
-          }
-        }
+        ]
       }
     },
     "/projects/{ProjectID}": {
@@ -734,18 +727,7 @@
             "in": "body",
             "required": true
           }
-        ],
-        "responses": {
-          "200": {
-            "description": "Project successfully updated."
-          },
-          "400": {
-            "description": "Bad Request. Invalid project format."
-          },
-          "500": {
-            "description": "Internal server error"
-          }
-        }
+        ]
       },
       "delete": {
         "security": [
@@ -770,18 +752,7 @@
             "in": "path",
             "required": true
           }
-        ],
-        "responses": {
-          "200": {
-            "description": "Project successfully updated."
-          },
-          "404": {
-            "description": "Not Found. Invalid project ID."
-          },
-          "500": {
-            "description": "Internal server error"
-          }
-        }
+        ]
       }
     },
     "/stats": {
@@ -833,15 +804,7 @@
             "in": "path",
             "required": true
           }
-        ],
-        "responses": {
-          "200": {
-            "description": "Found. A response body will be returned with a meaningful message."
-          },
-          "404": {
-            "description": "Nothing Found. An error message will be returned."
-          }
-        }
+        ]
       }
     },
     "/token/valid": {
@@ -886,15 +849,7 @@
           "Organization"
         ],
         "summary": "Get a list of users that the caller is allowed to see.",
-        "operationId": "GetAllAccounts",
-        "responses": {
-          "200": {
-            "description": "Return all possible users"
-          },
-          "500": {
-            "description": "Internal server error"
-          }
-        }
+        "operationId": "GetAllAccounts"
       },
       "post": {
         "security": [
@@ -920,21 +875,7 @@
             "in": "body",
             "required": true
           }
-        ],
-        "responses": {
-          "201": {
-            "description": "New account created"
-          },
-          "400": {
-            "description": "Bad request"
-          },
-          "403": {
-            "description": "User not authorised to create an account"
-          },
-          "500": {
-            "description": "Internal server error"
-          }
-        }
+        ]
       }
     },
     "/users/bulk": {
@@ -961,18 +902,7 @@
             "in": "body",
             "required": true
           }
-        ],
-        "responses": {
-          "200": {
-            "description": "Request processed, check response body for results"
-          },
-          "400": {
-            "description": "Bad request"
-          },
-          "500": {
-            "description": "Internal server error"
-          }
-        }
+        ]
       }
     },
     "/users/password/change": {
@@ -1110,21 +1040,7 @@
             "in": "path",
             "required": true
           }
-        ],
-        "responses": {
-          "200": {
-            "description": "User removed"
-          },
-          "400": {
-            "description": "User ID not valid or not found"
-          },
-          "403": {
-            "description": "Caller not authorised to delete this user"
-          },
-          "500": {
-            "description": "Internal server error"
-          }
-        }
+        ]
       },
       "patch": {
         "security": [
@@ -1157,21 +1073,7 @@
             "in": "body",
             "required": true
           }
-        ],
-        "responses": {
-          "200": {
-            "description": "User roles modified"
-          },
-          "400": {
-            "description": "Bad request"
-          },
-          "403": {
-            "description": "Caller not authorised to modify this user"
-          },
-          "500": {
-            "description": "Internal server error"
-          }
-        }
+        ]
       }
     },
     "/validate/{entity}": {
@@ -1204,18 +1106,7 @@
             "in": "body",
             "required": true
           }
-        ],
-        "responses": {
-          "200": {
-            "description": "Createable. A response body will be returned with a meaningful message."
-          },
-          "400": {
-            "description": "Bad request. A response body with an error message will be returned."
-          },
-          "404": {
-            "description": "Not Found. An error message will be returned."
-          }
-        }
+        ]
       }
     },
     "/version": {
@@ -1280,15 +1171,7 @@
             "name": "endDate",
             "in": "query"
           }
-        ],
-        "responses": {
-          "200": {
-            "description": "Found. A response body will be returned with a meaningful message."
-          },
-          "404": {
-            "description": "Nothing Found. An error message will be returned."
-          }
-        }
+        ]
       },
       "post": {
         "security": [
@@ -1319,15 +1202,7 @@
             "in": "body",
             "required": true
           }
-        ],
-        "responses": {
-          "201": {
-            "description": "Created. A response body will be returned with a meaningful message."
-          },
-          "400": {
-            "description": "Bad request. A response body with an error message will be returned."
-          }
-        }
+        ]
       }
     },
     "/{entity}/{IdOrHierarchyName}": {
@@ -1378,18 +1253,7 @@
             "name": "endDate",
             "in": "query"
           }
-        ],
-        "responses": {
-          "200": {
-            "description": "Found. A response body will be returned with a meaningful message."
-          },
-          "400": {
-            "description": "Bad request. An error message will be returned."
-          },
-          "404": {
-            "description": "Not Found. An error message will be returned."
-          }
-        }
+        ]
       },
       "delete": {
         "security": [
@@ -1422,15 +1286,7 @@
             "in": "path",
             "required": true
           }
-        ],
-        "responses": {
-          "204": {
-            "description": "Successfully deleted object. No response body will be returned"
-          },
-          "404": {
-            "description": "Not found. An error message will be returned"
-          }
-        }
+        ]
       },
       "patch": {
         "security": [
@@ -1464,18 +1320,7 @@
             "in": "path",
             "required": true
           }
-        ],
-        "responses": {
-          "200": {
-            "description": "Updated. A response body will be returned with a meaningful message."
-          },
-          "400": {
-            "description": "Bad request. An error message will be returned."
-          },
-          "404": {
-            "description": "Not Found. An error message will be returned."
-          }
-        }
+        ]
       }
     },
     "/{entity}/{IdOrHierarchyName}/all": {
@@ -1533,15 +1378,7 @@
             "name": "endDate",
             "in": "query"
           }
-        ],
-        "responses": {
-          "200": {
-            "description": "Found. A response body will be returned with a meaningful message."
-          },
-          "404": {
-            "description": "Nothing Found. An error message will be returned."
-          }
-        }
+        ]
       }
     },
     "/{entity}/{id}/{subent}": {
@@ -1585,15 +1422,7 @@
             "in": "query",
             "required": true
           }
-        ],
-        "responses": {
-          "200": {
-            "description": "Found. A response body will be returned with a meaningful message."
-          },
-          "404": {
-            "description": "Nothing Found. An error message will be returned."
-          }
-        }
+        ]
       }
     },
     "/{entity}?": {
@@ -1644,15 +1473,7 @@
             "name": "attributes",
             "in": "query"
           }
-        ],
-        "responses": {
-          "204": {
-            "description": "Found. A response body will be returned with a meaningful message."
-          },
-          "404": {
-            "description": "Not found. An error message will be returned."
-          }
-        }
+        ]
       }
     },
     "/{firstEntity}/{id}/{HierarchalPath}": {
@@ -1741,18 +1562,7 @@
             "in": "path",
             "required": true
           }
-        ],
-        "responses": {
-          "200": {
-            "description": "Updated. A response body will be returned with a meaningful message."
-          },
-          "400": {
-            "description": "Bad request. An error message will be returned."
-          },
-          "404": {
-            "description": "Not Found. An error message will be returned."
-          }
-        }
+        ]
       }
     }
   },

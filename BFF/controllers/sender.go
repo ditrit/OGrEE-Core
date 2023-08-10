@@ -8,7 +8,7 @@ import (
 	"net/http"
 	"ogree-bff/models"
 	"ogree-bff/utils/token"
-
+	"net/url"
 	"github.com/gin-gonic/gin"
 )
 
@@ -16,9 +16,9 @@ func GetQueryString(c *gin.Context) (string) {
 	query := ""
 	for key,value := range c.Request.URL.Query() {
 		if query == ""{
-			query+="?"+key+"="+value[0]
+			query+="?"+key+"="+url.QueryEscape(value[0])
 		}else{
-			query+="&"+key+"="+value[0]
+			query+="&"+key+"="+url.QueryEscape(value[0])
 		}
 	}
 	return query
