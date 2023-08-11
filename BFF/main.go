@@ -19,7 +19,7 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"ogree-bff/models"
 	"ogree-bff/services"
 	"os"
@@ -34,10 +34,9 @@ func GetAPIInfo() ([]models.API) {
 	if err != nil {
 		fmt.Println(err)
 	}
-	fmt.Println("Successfully Opened users.json")
 	// defer the closing of our jsonFile so that we can parse it later on
 	defer jsonFile.Close()
-	byteValue, _ := ioutil.ReadAll(jsonFile)
+	byteValue, _ := io.ReadAll(jsonFile)
 	var api []models.API
 	json.Unmarshal(byteValue, &api)
 
