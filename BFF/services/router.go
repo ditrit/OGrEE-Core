@@ -6,7 +6,6 @@ import (
 	"ogree-bff/models"
 	"ogree-bff/utils/token"
 
-	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 )
 
@@ -33,6 +32,24 @@ func APIMiddleware(apiList []models.API) gin.HandlerFunc {
 	}
 
 }
+
+func CORSMiddleware() gin.HandlerFunc {
+    return func(c *gin.Context) {
+        c.Writer.Header().Set("Access-Control-Allow-Origin", "*")
+        c.Writer.Header().Set("Access-Control-Allow-Credentials", "true")
+        c.Writer.Header().Set("Access-Control-Allow-Headers", "Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization, accept, origin, Cache-Control, X-Requested-With")
+        c.Writer.Header().Set("Access-Control-Allow-Methods", "POST, OPTIONS, GET, PUT,DELETE")
+
+        if c.Request.Method == "OPTIONS" {
+            c.AbortWithStatus(204)
+            return
+        }
+
+        c.Next()
+    }
+}
+
+
 func initDevices(protected, unprotected *gin.RouterGroup) {
 
 	protected.GET("/deviceComp/:entity", handlers.GetDevices)
@@ -110,15 +127,12 @@ func InitRouter(apiList []models.API, env string) *gin.Engine {
 	}
 
 	router := gin.Default()
+	router.Use(CORSMiddleware())
 
-	corsConfig := cors.DefaultConfig()
-	corsConfig.AllowAllOrigins = true
-	router.Use(cors.New(corsConfig))
-
-	
 	protected := router.Group("/api")
 	protected.Use(JwtAuthMiddleware())
 	protected.Use(APIMiddleware(apiList))
+
 
 	unprotected := router.Group("/api")
 	unprotected.Use(APIMiddleware(apiList))
