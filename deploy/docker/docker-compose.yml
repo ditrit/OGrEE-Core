@@ -110,7 +110,7 @@ services:
       - BFF_PORT=${BFF_PORT}
       - BFF_SECRET=${AUTH_SECRET}
     volumes:
-      - ./bff_api_list.json:/bin/api.json
+      - ${BFF_API_LIST}:/bin/api.json
     depends_on:
       - ogree_api
       - arango_api

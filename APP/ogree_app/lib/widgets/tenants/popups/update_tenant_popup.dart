@@ -54,7 +54,7 @@ class _UpdateTenantPopupState extends State<UpdateTenantPopup> {
                     alignment: WrapAlignment.start,
                     crossAxisAlignment: WrapCrossAlignment.center,
                     children: [
-                      getCheckBox("API", true, (_) {}, enabled: false),
+                      // getCheckBox("API", true, (_) {}, enabled: false),
                       getCheckBox(
                           "WEB",
                           widget.tenant.hasWeb,
@@ -67,6 +67,8 @@ class _UpdateTenantPopupState extends State<UpdateTenantPopup> {
                           (value) => setState(() {
                                 widget.tenant.hasDoc = value!;
                               })),
+                      getCheckBox("Arango", widget.tenant.hasBff, (_) {},
+                          enabled: false),
                     ],
                   ),
                   getFormField(
@@ -182,7 +184,7 @@ class _UpdateTenantPopupState extends State<UpdateTenantPopup> {
   getCheckBox(String title, bool value, Function(bool?) onChange,
       {bool enabled = true}) {
     return SizedBox(
-      width: 95,
+      width: 105,
       child: CheckboxListTile(
         activeColor: Colors.blue.shade600,
         contentPadding: EdgeInsets.zero,

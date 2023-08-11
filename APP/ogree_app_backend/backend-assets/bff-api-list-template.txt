@@ -1,0 +1,4 @@
+[
+    {"name":"server", "url": "http://{{.Name}}_arango_api:8080"},
+    {"name":"objects", "url": "http://{{.Name}}_api:{{.ApiPort}}"}
+] 
