@@ -166,7 +166,7 @@ func (p *parser) error(message string) {
 
 func (p *parser) skipWhiteSpaces() {
 	defer un(trace(p, ""))
-	for p.cursor < len(p.buf) && (p.peek() == ' ' || p.peek() == '\t') {
+	for p.cursor < len(p.buf) && (p.peek() == ' ' || p.peek() == '\t' || p.peek() == '\n') {
 		p.forward(1)
 	}
 }
@@ -309,7 +309,7 @@ loop:
 		}
 	}
 	if trim {
-		s = strings.Trim(s, " ")
+		s = strings.Trim(s, " \n")
 	}
 	if len(subExpr) == 0 {
 		return &valueNode{s}
