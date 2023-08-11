@@ -73,6 +73,7 @@ services:
     volumes:
       - arangodb-persist:/var/lib/arangodb3
     restart: on-failure:10
+
     
   arango_api:
     build:
@@ -84,14 +85,14 @@ services:
     container_name: ${COMPOSE_PROJECT_NAME}_arango_api
     environment:
       - ENV=production
-      - ARANGO_URL=http://${COMPOSE_PROJECT_NAME}_arango_db:${ARANGO_PORT}
+      - ARANGO_URL=http://${COMPOSE_PROJECT_NAME}_arango_db:8529
       - ARANGO_DATABASE=${ARANGO_DB}
       - ARANGO_USER=${ARANGO_USER}
       - ARANGO_PASSWORD=${ARANGO_PASS}
       - API_SECRET=${AUTH_SECRET}
       - API_PORT=${ARANGO_API_PORT}
     healthcheck:
-        test: ["CMD", "curl","-f","http://${COMPOSE_PROJECT_NAME}_arango_db:5829/_api/version"]
+        test: ["CMD", "curl","-f","http://${COMPOSE_PROJECT_NAME}_arango_db:8529/_api/version"]
         timeout: 30s
         interval: 1m
         retries: 3

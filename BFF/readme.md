@@ -36,7 +36,7 @@ The server should start and be ready to accept requests.
 
 ### Bindings Data between objects's API and another
 
-- GET /api/devices/:apiName/:objects/:objectAttributes/:devicesAttributes : Retrieve the list of all devices in the database connect to apiName where the specific attributes of the objects match the specific attributes of devices
+- GET /api/deviceComp/:apiName/:objects/:objectAttributes/:devicesAttributes : Retrieve the list of all devices in the database connect to apiName where the specific attributes of the objects match the specific attributes of devices
 
 
 
