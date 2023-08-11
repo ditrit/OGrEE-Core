@@ -47,8 +47,6 @@ services:
     environment:
       SWAGGER_JSON_URL: https://raw.githubusercontent.com/ditrit/OGrEE-Core/${IMAGE_TAG}/BFF/swagger.json
     restart: on-failure:10
-    depends_on:
-      - ogree_api
 
   ogree_webapp:
     build: 
@@ -73,8 +71,6 @@ services:
         - ARANGO_ROOT_PASSWORD=${ARANGO_PASS}
     volumes:
       - arangodb-persist:/var/lib/arangodb3
-    ports:
-      - ${ARANGO_PORT}:8529
     restart: on-failure:10
     
 
@@ -121,6 +117,5 @@ services:
 volumes:
   db:
   arangodb-persist:
-    external: true
       
 
