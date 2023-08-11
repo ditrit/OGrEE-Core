@@ -13,6 +13,8 @@ services:
       - db_pass=${CUSTOMER_API_PASSWORD}
       - db=${COMPOSE_PROJECT_NAME}
       - token_password=${AUTH_SECRET}
+    ports:
+      - ${API_PORT}:${API_PORT}
     depends_on:
       - ogree_db
     restart: on-failure:10
@@ -62,10 +64,9 @@ services:
       - ogree_api
     restart: on-failure:10
 
-
-
   arango_db:
     image: arangodb/arangodb:3.11.2
+    profiles: ["arango"]
     container_name: ${COMPOSE_PROJECT_NAME}_arango_db
     environment:
         - ARANGO_ROOT_PASSWORD=${ARANGO_PASS}
@@ -73,12 +74,12 @@ services:
       - arangodb-persist:/var/lib/arangodb3
     restart: on-failure:10
     
-
   arango_api:
     build:
       context: ${CORE_DIR} 
       dockerfile: ${ARANGO_API_BUILD_DIR}/Dockerfile
     image: arango-api:${IMAGE_TAG}
+    profiles: ["arango"]
     restart: always
     container_name: ${COMPOSE_PROJECT_NAME}_arango_api
     environment:
@@ -100,6 +101,7 @@ services:
       context: ${CORE_DIR}
       dockerfile: ${BFF_BUILD_DIR}/Dockerfile
     image: ogree-bff:${IMAGE_TAG}
+    profiles: ["arango"]
     restart: on-failure:10
     container_name: ${COMPOSE_PROJECT_NAME}_bff
     environment:
