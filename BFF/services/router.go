@@ -6,7 +6,7 @@ import (
 	"ogree-bff/models"
 	"ogree-bff/utils/token"
 
-	//	driver "github.com/arangodb/go-driver"
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 )
 
@@ -111,6 +111,11 @@ func InitRouter(apiList []models.API, env string) *gin.Engine {
 
 	router := gin.Default()
 
+	corsConfig := cors.DefaultConfig()
+	corsConfig.AllowAllOrigins = true
+	router.Use(cors.New(corsConfig))
+
+	
 	protected := router.Group("/api")
 	protected.Use(JwtAuthMiddleware())
 	protected.Use(APIMiddleware(apiList))
