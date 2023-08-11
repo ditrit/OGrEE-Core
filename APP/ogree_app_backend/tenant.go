@@ -215,25 +215,28 @@ func dockerCreateTenant(newTenant tenant) string {
 		args = append(args, "doc")
 	}
 
+	// Default values, empty vars not accepted on docker compose
+	newTenant.BffApiListFile = "./bff_api_list.json"
+	newTenant.BffPort = newTenant.ApiPort
 	if newTenant.HasBff {
 		args = append(args, "--profile")
 		args = append(args, "arango")
 		if newTenant.BffPort == "" {
-			// Set BFF and API ports
-			newTenant.BffPort = newTenant.ApiPort
+			// Set API Port to BFF Port + 1
 			port, _ := strconv.Atoi(newTenant.ApiPort)
 			newTenant.ApiPort = strconv.Itoa(port + 1)
 		}
+		// Create bff api list json file
 		file, _ := os.Create(appDeployDir + tenantLower + "-bff-api-list.json")
 		err := bfftmplt.Execute(file, newTenant)
 		if err != nil {
 			fmt.Println("Error creating bff api list file: " + err.Error())
-			newTenant.BffApiListFile = "./bff_api_list.json"
 		} else {
 			newTenant.BffApiListFile = "./app-deploy/" + tenantLower + "/" + tenantLower + "-bff-api-list.json"
 		}
 		file.Close()
 	}
+
 	args = append(args, "up")
 	args = append(args, "--build")
 	args = append(args, "-d")
