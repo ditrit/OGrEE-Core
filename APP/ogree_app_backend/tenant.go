@@ -4,12 +4,14 @@ import (
 	"bufio"
 	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"io/ioutil"
 	"net/http"
 	"os"
 	"os/exec"
+	"regexp"
 	"strings"
 	"time"
 
@@ -83,14 +85,22 @@ func getTenantsFromJSON() []tenant {
 func getTenantDockerInfo(c *gin.Context) {
 	name := c.Param("name")
 	println(name)
+	if response, err := getDockerInfo(name); err != nil {
+		c.IndentedJSON(http.StatusInternalServerError, err.Error())
+	} else {
+		c.IndentedJSON(http.StatusOK, response)
+	}
+}
+
+func getDockerInfo(name string) ([]container, error) {
+	println(name)
 	cmd := exec.Command("docker", "ps", "--all", "--format", "\"{{json .}}\"")
 	cmd.Dir = DOCKER_DIR
 	var stderr bytes.Buffer
 	cmd.Stderr = &stderr
 	if output, err := cmd.Output(); err != nil {
 		fmt.Println(fmt.Sprint(err) + ": " + stderr.String())
-		c.IndentedJSON(http.StatusInternalServerError, stderr.String())
-		return
+		return nil, errors.New(stderr.String())
 	} else {
 		response := []container{}
 		s := bufio.NewScanner(bytes.NewReader(output))
@@ -105,16 +115,21 @@ func getTenantDockerInfo(c *gin.Context) {
 				fmt.Println(err.Error())
 			}
 			fmt.Println(dc)
-			if strings.Contains(dc.Name, name) {
+			if name == "netbox" {
+				if strings.Contains(dc.Name, "netbox-1") {
+					response = append(response, dc)
+				}
+			} else if match, _ := regexp.MatchString("^"+name+"_", dc.Name); match {
 				response = append(response, dc)
 			}
 		}
 		if s.Err() != nil {
 			// handle scan error
 			fmt.Println(s.Err().Error())
+			return nil, s.Err()
 		}
 
-		c.IndentedJSON(http.StatusOK, response)
+		return response, nil
 	}
 }
 
