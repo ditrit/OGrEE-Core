@@ -1,0 +1,64 @@
+name: Create Release Candidate
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+
+  create-release-candidate:
+    name: 🆕 Create Release Candidate
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v3.2.0
+        with:
+          clean: false
+          fetch-depth: "0"
+
+      - name: ❔ Extract project version and name
+        uses: ./.github/actions/versioning/extract-version
+
+      - name: Set release candidate branch name
+        run: |
+          echo "BRANCH_RELEASE_CANDIDATE=release-candidate/${{ env.VERSION_RAW }}" >> $GITHUB_ENV
+          echo "MAIN_SHA=$(git rev-parse main)" >> $GITHUB_ENV
+
+      - name: Delete branch if exists
+        run: |
+          if [[ `git show-ref "${{ env.BRANCH_RELEASE_CANDIDATE }}" 2>/dev/null` ]]; then
+            echo "[INFO] Branch ${{ env.BRANCH_RELEASE_CANDIDATE }} exists, deleting it"
+
+            git config --global user.email "svc@users.noreply.github.com"
+            git config --global user.name "svc"
+
+            git branch -d ${{ env.BRANCH_RELEASE_CANDIDATE }}
+            git push origin :${{ env.BRANCH_RELEASE_CANDIDATE }}
+          else
+            echo "[INFO] Branch ${{ env.BRANCH_RELEASE_CANDIDATE }} does not exist"
+          fi
+
+      - name: Create Branch release candidate from main
+        uses: peterjgrainger/action-create-branch@v2.4.0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          branch: ${{ env.BRANCH_RELEASE_CANDIDATE }}
+          sha: "${{ env.MAIN_SHA }}"
+
+      - uses: actions/checkout@v3.2.0
+        with:
+          ref: ${{ env.BRANCH_RELEASE_CANDIDATE }}
+          clean: true
+          fetch-depth: "0"
+
+      - name: ⌛ Wait for build to be triggered
+        shell: bash
+        run: sleep 30
+
+      - name: ⌛ Wait for build to complete
+        uses: ./.github/actions/utils/wait-job
+        with:
+          BRANCH: ${{ env.BRANCH_RELEASE_CANDIDATE }}

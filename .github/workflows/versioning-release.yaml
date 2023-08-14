@@ -1,0 +1,77 @@
+name: 📦 Create Release
+
+on:
+  workflow_dispatch:
+
+jobs:
+  create-release:
+      name: 🆕 Create Release
+      runs-on: ubuntu-latest
+      steps:
+        - name: 🌍 Set environment
+          id: set-environment
+          run: |
+            elif [[ "${{ github.ref_name }}" == "release-candidate/"* ]]; then
+              echo "ENVIRONMENT=Release" >> $GITHUB_ENV
+            else 
+              echo "Release needs to be created from release-candidate branches"
+              exit 1
+            fi
+
+        - uses: actions/checkout@v3.2.0
+          with:
+            fetch-depth: "0"
+  
+        - name: ❔ Extract project version and name
+          uses: ./.github/actions/versioning/extract-version
+          with:
+            ENVIRONMENT: "${{ env.ENVIRONMENT }}"
+  
+        - name: 🪣 Init Git
+          shell: bash
+          run: |
+            git config --global user.email "svc@users.noreply.github.com"
+            git config --global user.name "svc"
+  
+        - name: ⚙️ Set release branch parameters
+          id: get-release-branch
+          env:
+            VERSION_RAW_SUBSITUTION: ${{ env.VERSION_RAW }}
+          run: |
+            echo "BRANCH_RELEASE=release/${{ env.VERSION_RAW }}" >> $GITHUB_ENV
+            echo "RELEASE_CANDIDATE_SHA=$(git rev-parse ${{ github.ref_name }})" >> $GITHUB_ENV
+            
+  
+        - name: 🆕 Create Branch release
+          uses: peterjgrainger/action-create-branch@v2.4.0
+          env:
+            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          with:
+            branch: ${{ env.BRANCH_RELEASE }}
+            sha: "${{ env.RELEASE_CANDIDATE_SHA }}"
+  
+        - uses: actions/checkout@v3.2.0
+          with:
+            ref: ${{ env.BRANCH_RELEASE }}
+            clean: true
+            fetch-depth: "0"
+  
+        - name: ⌛ Wait for build to be triggered
+          shell: bash
+          run: sleep 30
+
+        - name: ⌛ Wait for build to complete
+          uses: ./.github/actions/utils/wait-job
+          with:
+            BRANCH: ${{ env.BRANCH_RELEASE }}
+
+        - name: 🗑️ Delete Release Candidate branch
+          continue-on-error: true
+          uses: dawidd6/action-delete-branch@v3.1.0
+          with:
+            github_token: ${{ secrets.GITHUB_TOKEN }}
+            branches: "release-candidate/${{ env.VERSION_RAW }}"
+  
+  
+  
+        

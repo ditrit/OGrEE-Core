@@ -1,0 +1,33 @@
+name: CLI Publish
+description: PUblish CLI into Nextcloud
+
+inputs:
+  VERSION: 
+    description: "Version of the CLI"
+    required: true
+
+runs:
+  using: "composite"
+  steps:
+    - uses: actions/checkout@v3.2.0
+
+    - name: Set up Go
+      uses: actions/setup-go@v4
+      with:
+        go-version: '1.20'
+
+    - name: Build
+      shell: bash
+      run: |
+        cd CLI
+        make main && make mac && make win
+
+    - name: Send to Nextcloud
+      shell: bash
+      env:
+        NEXT_CREDENTIALS: ${{ secrets.NEXT_CREDENTIALS }}
+        NEXT_ADDR: https://nextcloud.ditrit.io/remote.php/dav/files/github.actions/Ogree/1_Core/2_CLI/bin/${{ inputs.VERSION }}
+      run: |
+        curl -u $NEXT_CREDENTIALS -T cli $NEXT_ADDR/OGrEE_CLI_Linux_${{ inputs.VERSION }}
+        curl -u $NEXT_CREDENTIALS -T cli.mac $NEXT_ADDR/OGrEE_CLI_OSX_${{ inputs.VERSION }}
+        curl -u $NEXT_CREDENTIALS -T cli.exe $NEXT_ADDR/OGrEE_CLI_Win_${{ inputs.VERSION }}.exe

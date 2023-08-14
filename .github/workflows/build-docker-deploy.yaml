@@ -1,0 +1,35 @@
+name: ⚙️ Build - Push to Registery
+
+on:
+  push:
+    branches:
+    - "release**"
+  workflow_dispatch:
+  workflow_call:
+
+jobs:
+  build-docker:
+    name: 🏗️📤 Build Docker Image - Push to Registery
+    runs-on: ubuntu-latest
+    steps:
+      - name: 🌍 Set environment
+        id: set-environment
+        run: |
+          elif [[ "${{ github.ref_name }}" == "release-candidate/"* ]]; then
+          echo "ENVIRONMENT=Release Candidate" >> $GITHUB_ENV
+          else 
+          echo "ENVIRONMENT=Release" >> $GITHUB_ENV
+          fi
+
+      - name: 🏗️📤 Build Docker Image - Push to Registery
+        id: build-docker-deploy
+        uses: ./.github/actions/build/multi-docker
+        with:
+          ENVIRONMENT: ${{ env.ENVIRONMENT }}
+  
+  Build-cli:
+    name: Build and Publish CLI
+    needs: build-docker
+    uses: ./.github/workflows/cli-publish.yml
+
+  
