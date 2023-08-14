@@ -48,10 +48,10 @@ runs:
         FOLDER_NAME: "./APP"
         VERSION: ${{ env.VERSION }}
 
-    - name: Publish CLI on Nexcloud
-      uses: ./.github/actions/build/CLI
-      with:
-        VERSION: ${{ env.VERSION }}
+    # - name: Publish CLI on Nexcloud
+    #   uses: ./.github/actions/build/CLI
+    #   with:
+    #     VERSION: ${{ env.VERSION }}
 
     - name: 🪣 Init Git
       if: $ {{ !contains(inputs.ENVIRONMENT, 'Candidate') }}

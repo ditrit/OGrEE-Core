@@ -15,10 +15,10 @@ jobs:
       - name: 🌍 Set environment
         id: set-environment
         run: |
-          elif [[ "${{ github.ref_name }}" == "release-candidate/"* ]]; then
-          echo "ENVIRONMENT=Release Candidate" >> $GITHUB_ENV
-          else 
+          if [[ "${{ github.ref_name }}" == "release/"* ]]; then
           echo "ENVIRONMENT=Release" >> $GITHUB_ENV
+          else 
+          echo "ENVIRONMENT=Release Candidate" >> $GITHUB_ENV
           fi
 
       - name: 🏗️📤 Build Docker Image - Push to Registery
@@ -26,10 +26,5 @@ jobs:
         uses: ./.github/actions/build/multi-docker
         with:
           ENVIRONMENT: ${{ env.ENVIRONMENT }}
-  
-  Build-cli:
-    name: Build and Publish CLI
-    needs: build-docker
-    uses: ./.github/workflows/cli-publish.yml
 
   
