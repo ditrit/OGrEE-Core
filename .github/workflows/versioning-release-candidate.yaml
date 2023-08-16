@@ -1,4 +1,4 @@
-name: Create Release Candidate
+name: 🆕 Create Release Candidate
 
 on:
   push:
@@ -25,7 +25,7 @@ jobs:
       - name: Set release candidate branch name
         run: |
           echo "BRANCH_RELEASE_CANDIDATE=release-candidate/${{ env.VERSION }}" >> $GITHUB_ENV
-          echo "MAIN_SHA=$(git rev-parse main)" >> $GITHUB_ENV
+          echo "MAIN_SHA=$(git rev-parse HEAD)" >> $GITHUB_ENV
 
       - name: Delete branch if exists
         run: |
@@ -41,13 +41,13 @@ jobs:
         if: ${{ env.NEEDS_DELETE == 'true' }}
         uses: dawidd6/action-delete-branch@v3.1.0
         with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
+          github_token: ${{ secrets.SVC_GITHUB_TOKEN }}
           branches: ${{ env.BRANCH_RELEASE_CANDIDATE }}
 
       - name: Create Branch release candidate from main
         uses: peterjgrainger/action-create-branch@v2.4.0
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.SVC_GITHUB_TOKEN }}
         with:
           branch: ${{ env.BRANCH_RELEASE_CANDIDATE }}
           sha: "${{ env.MAIN_SHA }}"
@@ -55,16 +55,18 @@ jobs:
       - uses: actions/checkout@v3.2.0
         with:
           ref: ${{ env.BRANCH_RELEASE_CANDIDATE }}
+          token: ${{ secrets.SVC_GITHUB_TOKEN }}
           clean: true
           fetch-depth: "0"
 
-      - name: run docker workflows
+      - name: Push empty commit to trigger workflow
         shell: bash
         run: |
-          gh workflow run build-docker-deploy.yaml --ref ${{ env.BRANCH_RELEASE_CANDIDATE }}
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
+          git config --global user.email "svc@users.noreply.github.com"
+          git config --global user.name "svc"
+          git commit --allow-empty -m "Create Release Candidate branch"
+          git push origin ${{ env.BRANCH_RELEASE_CANDIDATE }}
+        
       - name: ⌛ Wait for build to be triggered
         shell: bash
         run: sleep 30
@@ -73,4 +75,4 @@ jobs:
         uses: ./.github/actions/utils/wait-job
         with:
           BRANCH: ${{ env.BRANCH_RELEASE_CANDIDATE }}
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.SVC_GITHUB_TOKEN}}
