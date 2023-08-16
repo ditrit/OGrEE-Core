@@ -3,7 +3,8 @@ name: ⚙️ Build - Push to Registery
 on:
   push:
     branches:
-    - "release**"
+      - "release/*"
+      - "release-candidate/*"
   workflow_dispatch:
   workflow_call:
 
@@ -12,6 +13,12 @@ jobs:
     name: 🏗️📤 Build Docker Image - Push to Registery
     runs-on: ubuntu-latest
     steps:
+
+      - uses: actions/checkout@v3.2.0
+        with:
+          clean: false
+          fetch-depth: "0"
+
       - name: 🌍 Set environment
         id: set-environment
         run: |

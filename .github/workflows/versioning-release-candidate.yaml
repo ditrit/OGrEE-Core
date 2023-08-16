@@ -36,7 +36,7 @@ jobs:
             git config --global user.name "svc"
 
             git branch -d ${{ env.BRANCH_RELEASE_CANDIDATE }}
-            git push origin :${{ env.BRANCH_RELEASE_CANDIDATE }}
+            git push origin --delete ${{ env.BRANCH_RELEASE_CANDIDATE }}
           else
             echo "[INFO] Branch ${{ env.BRANCH_RELEASE_CANDIDATE }} does not exist"
           fi
