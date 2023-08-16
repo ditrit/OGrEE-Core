@@ -63,7 +63,7 @@ jobs:
           token: ${{ secrets.SVC_GITHUB_TOKEN }}
           clean: true
           fetch-depth: "0"
-        
+
       - name: ⌛ Wait for build to be triggered
         shell: bash
         run: sleep 30
