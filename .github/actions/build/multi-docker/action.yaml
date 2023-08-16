@@ -52,13 +52,19 @@ runs:
     #     IMAGE_NAME: "arango-api"
     #     FOLDER_NAME: "./ARANGO_API"
     #     VERSION: ${{ env.VERSION }}
-
+    #     TEAM_DOCKER_URL: ${{ inputs.TEAM_DOCKER_URL }}
+    #     TEAM_USERNAME: ${{ inputs.TEAM_USERNAME }}
+    #     TEAM_PASSWORD: ${{ inputs.TEAM_PASSWORD }}
+    
     # - name: 🐋 Build BFF 
     #   uses: ./.github/actions/build/docker
     #   with:
     #     IMAGE_NAME: "ogree-bff"
     #     FOLDER_NAME: "./BFF"
     #     VERSION: ${{ env.VERSION }}
+    #     TEAM_DOCKER_URL: ${{ inputs.TEAM_DOCKER_URL }}
+    #     TEAM_USERNAME: ${{ inputs.TEAM_USERNAME }}
+    #     TEAM_PASSWORD: ${{ inputs.TEAM_PASSWORD }}
 
     - name: 🐋 Build Flutter App 
       uses: ./.github/actions/build/docker
@@ -72,6 +78,12 @@ runs:
 
     - name: Publish CLI on Nexcloud
       uses: ./.github/actions/build/CLI
+      with:
+        VERSION: ${{ env.VERSION }}
+        NEXT_CREDENTIALS: ${{ inputs.NEXT_CREDENTIALS }}
+    
+    - name: Publish Flutter Desktop on Nexcloud
+      uses: ./.github/actions/build/flutter-app
       with:
         VERSION: ${{ env.VERSION }}
         NEXT_CREDENTIALS: ${{ inputs.NEXT_CREDENTIALS }}
