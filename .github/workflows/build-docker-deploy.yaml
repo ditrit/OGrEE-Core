@@ -1,6 +1,10 @@
 name: ⚙️ Build - Push to Registery
 
 on:
+  push:
+    branches:
+      - "release/**"
+      - "release-candidate/**"
   workflow_dispatch:
   workflow_call:
 
@@ -26,6 +30,7 @@ jobs:
 
       - name: 🏗️📤 Build Docker Image - Push to Registery
         id: build-docker-deploy
+        if: contains("release",${{ github.ref_name }})
         uses: ./.github/actions/build/multi-docker
         with:
           ENVIRONMENT: ${{ env.ENVIRONMENT }}
