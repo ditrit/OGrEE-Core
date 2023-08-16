@@ -80,5 +80,11 @@ func (n *formatStringNode) execute() (interface{}, error) {
 		}
 		vals = append(vals, v)
 	}
+	if str == "%v" && len(vals) == 1 {
+		vec, isVec := vals[0].([]float64)
+		if isVec {
+			return vec, nil
+		}
+	}
 	return fmt.Sprintf(str, vals...), nil
 }
