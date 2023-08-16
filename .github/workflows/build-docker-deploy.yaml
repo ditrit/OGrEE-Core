@@ -2,10 +2,10 @@ name: ⚙️ Build - Push to Registery
 
 on:
   push:
-    branches-ignore:
-      - "dependatbot/**"
-      - "main"
-      - "chore/**"
+    branches:
+      - "release/**"
+      - "release-candidate/**"
+
   workflow_dispatch:
   workflow_call:
 
