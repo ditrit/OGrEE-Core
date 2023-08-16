@@ -156,11 +156,6 @@ func Ls(path string) ([]string, error) {
 }
 
 func DeleteObj(path string) error {
-	if path == "" || path == "." {
-		path = State.CurrPath
-	} else if string(path[0]) != "/" {
-		path = State.CurrPath + "/" + path
-	}
 	obj, err := GetObject(path)
 	if err != nil {
 		return err
