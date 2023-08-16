@@ -44,6 +44,11 @@ jobs:
           github_token: ${{ secrets.SVC_GITHUB_TOKEN }}
           branches: ${{ env.BRANCH_RELEASE_CANDIDATE }}
 
+      - name: ⌛ Wait for deleting branch
+        if: ${{ env.NEEDS_DELETE == 'true' }}
+        shell: bash
+        run: sleep 10
+
       - name: Create Branch release candidate from main
         uses: peterjgrainger/action-create-branch@v2.4.0
         env:
@@ -58,14 +63,6 @@ jobs:
           token: ${{ secrets.SVC_GITHUB_TOKEN }}
           clean: true
           fetch-depth: "0"
-
-      - name: Push empty commit to trigger workflow
-        shell: bash
-        run: |
-          git config --global user.email "svc@users.noreply.github.com"
-          git config --global user.name "svc"
-          git commit --allow-empty -m "Create Release Candidate branch"
-          git push origin ${{ env.BRANCH_RELEASE_CANDIDATE }}
         
       - name: ⌛ Wait for build to be triggered
         shell: bash
