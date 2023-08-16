@@ -39,7 +39,7 @@ runs:
         ATTEMPS=0
 
         while [[ $JOB_COMPLETE != "true" ]]; do
-          RESULT=$(curl -s -X GET "https://api.github.com/repos/adeo/${{ github.event.repository.name }}/actions/runs?branch=${{ env.BRANCH }}&event=push&head_sha=${{ env.LAST_COMMIT_SHA }}" \
+          RESULT=$(curl -s -X GET "https://api.github.com/repos/ditrit/${{ github.event.repository.name }}/actions/runs?branch=${{ env.BRANCH }}&event=push&head_sha=${{ env.LAST_COMMIT_SHA }}" \
             -H "Accept: application/vnd.github+json" \
             -H "X-GitHub-Api-Version: 2022-11-28" \
             -H "Authorization: Bearer ${{ inputs.GITHUB_TOKEN }}" | \

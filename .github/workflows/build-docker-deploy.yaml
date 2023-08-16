@@ -2,14 +2,14 @@ name: ⚙️ Build - Push to Registery
 
 on:
   push:
-    branches:
-      - "release/*"
-      - "release-candidate/*"
+    branches-ignore:
+      - "dependatbot/**"
   workflow_dispatch:
   workflow_call:
 
 jobs:
   build-docker:
+    if: ${{ contains('release', github.head_ref) }}
     name: 🏗️📤 Build Docker Image - Push to Registery
     runs-on: ubuntu-latest
     steps:
