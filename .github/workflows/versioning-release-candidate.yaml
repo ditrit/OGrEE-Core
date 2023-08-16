@@ -63,3 +63,4 @@ jobs:
         uses: ./.github/actions/utils/wait-job
         with:
           BRANCH: ${{ env.BRANCH_RELEASE_CANDIDATE }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

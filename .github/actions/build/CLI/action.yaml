@@ -5,6 +5,9 @@ inputs:
   VERSION: 
     description: "Version of the CLI"
     required: true
+  NEXT_CREDENTIALS:
+    description: "NEXT_CREDENTIALS"
+    required: true
 
 runs:
   using: "composite"
@@ -25,7 +28,7 @@ runs:
     - name: Send to Nextcloud
       shell: bash
       env:
-        NEXT_CREDENTIALS: ${{ secrets.NEXT_CREDENTIALS }}
+        NEXT_CREDENTIALS: ${{ inputs.NEXT_CREDENTIALS }}
         NEXT_ADDR: https://nextcloud.ditrit.io/remote.php/dav/files/github.actions/Ogree/1_Core/2_CLI/bin/${{ inputs.VERSION }}
       run: |
         curl -u $NEXT_CREDENTIALS -T cli $NEXT_ADDR/OGrEE_CLI_Linux_${{ inputs.VERSION }}
