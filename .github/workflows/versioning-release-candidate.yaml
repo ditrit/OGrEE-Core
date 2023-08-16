@@ -58,6 +58,13 @@ jobs:
           clean: true
           fetch-depth: "0"
 
+      - name: run docker workflows
+        shell: bash
+        run: |
+          gh workflow run build-docker-deploy.yaml --ref ${{ env.BRANCH_RELEASE_CANDIDATE }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
       - name: ⌛ Wait for build to be triggered
         shell: bash
         run: sleep 30
