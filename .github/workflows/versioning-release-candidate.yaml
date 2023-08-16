@@ -31,15 +31,18 @@ jobs:
         run: |
           if [[ `git show-ref "${{ env.BRANCH_RELEASE_CANDIDATE }}" 2>/dev/null` ]]; then
             echo "[INFO] Branch ${{ env.BRANCH_RELEASE_CANDIDATE }} exists, deleting it"
-
-            git config --global user.email "svc@users.noreply.github.com"
-            git config --global user.name "svc"
-
-            git branch -d ${{ env.BRANCH_RELEASE_CANDIDATE }}
-            git push origin --delete ${{ env.BRANCH_RELEASE_CANDIDATE }}
+            echo "NEEDS_DELETE=true" >> $GITHUB_ENV
           else
             echo "[INFO] Branch ${{ env.BRANCH_RELEASE_CANDIDATE }} does not exist"
+            echo "NEEDS_DELETE=false" >> $GITHUB_ENV
           fi
+          
+      - name: 🗑️ Delete Release Candidate branch
+        if: ${{ env.NEEDS_DELETE == 'true' }}
+        uses: dawidd6/action-delete-branch@v3.1.0
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          branches: ${{ env.BRANCH_RELEASE_CANDIDATE }}
 
       - name: Create Branch release candidate from main
         uses: peterjgrainger/action-create-branch@v2.4.0
@@ -63,3 +66,4 @@ jobs:
         uses: ./.github/actions/utils/wait-job
         with:
           BRANCH: ${{ env.BRANCH_RELEASE_CANDIDATE }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

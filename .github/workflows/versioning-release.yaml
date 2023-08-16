@@ -64,6 +64,7 @@ jobs:
           uses: ./.github/actions/utils/wait-job
           with:
             BRANCH: ${{ env.BRANCH_RELEASE }}
+            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
         - name: 🗑️ Delete Release Candidate branch
           continue-on-error: true
