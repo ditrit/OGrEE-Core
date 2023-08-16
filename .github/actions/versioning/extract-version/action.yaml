@@ -38,15 +38,10 @@ runs:
       id: bump_version
       uses: christian-draeger/increment-semantic-version@1.0.3
       with:
-        current-version: "${{ env.VERSION_RAW }}"
+        current-version: "${{ env.VERSION }}"
         version-fragment: "${{ env.BUMP_LEVEL }}"
 
     - name: 🆕 Update env if bumped
       shell: bash
       run: |
-        if [[ "${{ inputs.ENVIRONMENT }}" == *"Release Candidate"* ]]; then
-          echo "VERSION=${{ steps.bump_version.outputs.next-version }}.rc" >> $GITHUB_ENV
-        else
           echo "VERSION=${{ steps.bump_version.outputs.next-version }}" >> $GITHUB_ENV
-        fi
-        echo "VERSION_RAW=${{ steps.bump_version.outputs.next-version }}" >> $GITHUB_ENV

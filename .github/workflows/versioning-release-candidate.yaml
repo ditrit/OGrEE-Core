@@ -18,12 +18,12 @@ jobs:
           clean: false
           fetch-depth: "0"
 
-      - name: ❔ Extract project version and name
+      - name: ❔ Extract project version
         uses: ./.github/actions/versioning/extract-version
 
       - name: Set release candidate branch name
         run: |
-          echo "BRANCH_RELEASE_CANDIDATE=release-candidate/${{ env.VERSION_RAW }}" >> $GITHUB_ENV
+          echo "BRANCH_RELEASE_CANDIDATE=release-candidate/${{ env.VERSION }}" >> $GITHUB_ENV
           echo "MAIN_SHA=$(git rev-parse main)" >> $GITHUB_ENV
 
       - name: Delete branch if exists

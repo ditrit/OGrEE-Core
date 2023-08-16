@@ -22,10 +22,12 @@ jobs:
           with:
             fetch-depth: "0"
   
-        - name: ❔ Extract project version and name
-          uses: ./.github/actions/versioning/extract-version
-          with:
-            ENVIRONMENT: "${{ env.ENVIRONMENT }}"
+        - name: ❔ Extract project version
+          shell: bash
+          run: |
+            VERSION=$( echo ${{ github.ref_name }} | sed -e "s/release.*\///g")
+            echo "VERSION=$VERSION" >> $GITHUB_ENV
+
   
         - name: 🪣 Init Git
           shell: bash
@@ -35,10 +37,8 @@ jobs:
   
         - name: ⚙️ Set release branch parameters
           id: get-release-branch
-          env:
-            VERSION_RAW_SUBSITUTION: ${{ env.VERSION_RAW }}
           run: |
-            echo "BRANCH_RELEASE=release/${{ env.VERSION_RAW }}" >> $GITHUB_ENV
+            echo "BRANCH_RELEASE=release/${{ env.VERSION }}" >> $GITHUB_ENV
             echo "RELEASE_CANDIDATE_SHA=$(git rev-parse ${{ github.ref_name }})" >> $GITHUB_ENV
             
   
@@ -70,7 +70,7 @@ jobs:
           uses: dawidd6/action-delete-branch@v3.1.0
           with:
             github_token: ${{ secrets.GITHUB_TOKEN }}
-            branches: "release-candidate/${{ env.VERSION_RAW }}"
+            branches: "release-candidate/${{ env.VERSION }}"
   
   
   

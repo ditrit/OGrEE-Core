@@ -15,6 +15,3 @@ runs:
         fi
 
         echo "VERSION=${VERSION}" >> "$GITHUB_ENV"
-
-        VERSION_RAW=$(echo $VERSION | sed -e 's/.rc//I')
-        echo "VERSION_RAW=${VERSION_RAW}" >> "$GITHUB_ENV"

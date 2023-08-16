@@ -1,5 +1,5 @@
-name: Build mutli-Docker and Push to Registery
-description: Build mutli-Docker and Push to Registery
+name: Build multi-Docker and Push to Registery
+description: Build multi-Docker and Push to Registery
 
 inputs:
   ENVIRONMENT:
@@ -15,12 +15,16 @@ runs:
         clean: false
         fetch-depth: "0"
 
-    - name: ❔ Extract version
-      uses: ./.github/actions/versioning/extract-version
-      with:
-        ENVIRONMENT: ${{ inputs.ENVIRONMENT }}
+    - name: ❔ Extract project version
+      shell: bash
+      run: |
+        VERSION=$( echo ${{ github.ref_name }} | sed -e "s/release.*\///g")
+        if [[ ${{ env.ENVIRONMENT }} == "Release Candidate" ]]; then
+          VERSION=${VERSION}.rc
+        fi
+        echo "VERSION=$VERSION" >> $GITHUB_ENV
 
-    - name: 🐋 Build Mongo Api 
+    - name: 🐋 Build Mongo Api
       uses: ./.github/actions/build/docker
       with:
         IMAGE_NAME: "mongo-api"
@@ -48,10 +52,10 @@ runs:
         FOLDER_NAME: "./APP"
         VERSION: ${{ env.VERSION }}
 
-    # - name: Publish CLI on Nexcloud
-    #   uses: ./.github/actions/build/CLI
-    #   with:
-    #     VERSION: ${{ env.VERSION }}
+    - name: Publish CLI on Nexcloud
+      uses: ./.github/actions/build/CLI
+      with:
+        VERSION: ${{ env.VERSION }}
 
     - name: 🪣 Init Git
       if: $ {{ !contains(inputs.ENVIRONMENT, 'Candidate') }}
