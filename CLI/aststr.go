@@ -63,11 +63,15 @@ func (n pathNode) execute() (interface{}, error) {
 }
 
 type formatStringNode struct {
-	str  string
+	str  node
 	vals []node
 }
 
 func (n *formatStringNode) execute() (interface{}, error) {
+	str, err := nodeToString(n.str, "string")
+	if err != nil {
+		return "", err
+	}
 	vals := []any{}
 	for _, val := range n.vals {
 		v, err := val.execute()
@@ -76,11 +80,11 @@ func (n *formatStringNode) execute() (interface{}, error) {
 		}
 		vals = append(vals, v)
 	}
-	if n.str == "%v" && len(vals) == 1 {
+	if str == "%v" && len(vals) == 1 {
 		vec, isVec := vals[0].([]float64)
 		if isVec {
 			return vec, nil
 		}
 	}
-	return fmt.Sprintf(n.str, vals...), nil
+	return fmt.Sprintf(str, vals...), nil
 }
