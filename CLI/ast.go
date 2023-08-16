@@ -290,7 +290,7 @@ func (n *deleteObjNode) execute() (interface{}, error) {
 	if err != nil {
 		return nil, err
 	}
-	return cmd.DeleteObj(path), nil
+	return nil, cmd.DeleteObj(path)
 }
 
 type deleteSelectionNode struct{}
