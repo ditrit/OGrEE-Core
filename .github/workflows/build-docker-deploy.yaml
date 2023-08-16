@@ -3,7 +3,8 @@ name: ⚙️ Build - Push to Registery
 on:
   push:
     branches:
-    - "release**"
+      - "release/**"
+      - "release-candidate/**"
   workflow_dispatch:
   workflow_call:
 
