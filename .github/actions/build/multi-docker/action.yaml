@@ -19,7 +19,7 @@ runs:
       shell: bash
       run: |
         VERSION=$( echo ${{ github.ref_name }} | sed -e "s/release.*\///g")
-        if [[ ${{ env.ENVIRONMENT }} == "Release Candidate" ]]; then
+        if [[ "${{ env.ENVIRONMENT }}" == "Release Candidate" ]]; then
           VERSION=${VERSION}.rc
         fi
         echo "VERSION=$VERSION" >> $GITHUB_ENV
@@ -58,21 +58,21 @@ runs:
         VERSION: ${{ env.VERSION }}
 
     - name: 🪣 Init Git
-      if: $ {{ !contains(inputs.ENVIRONMENT, 'Candidate') }}
+      if: ${{ !contains(inputs.ENVIRONMENT, 'Candidate') }}
       shell: bash
       run: |
         git config --global user.email "svc@users.noreply.github.com"
         git config --global user.name "svc"
 
     - name: 🏷️ Create tag if release
-      if: $ {{ !contains(inputs.ENVIRONMENT, 'Candidate') }}
+      if: ${{ !contains(inputs.ENVIRONMENT, 'Candidate') }}
       shell: bash
       run: |
         TAG_MSG=$(echo ${{ inputs.ENVIRONMENT }} | cut -d'-' -f 2)
         git tag -a ${{ env.VERSION }} -m "${TAG_MSG} ${{ env.VERSION }}" -f
 
     - name: ⬆️ Push changes
-      if: $ {{ !contains(inputs.ENVIRONMENT, 'Candidate') }}
+      if: ${{ !contains(inputs.ENVIRONMENT, 'Candidate') }}
       uses: ad-m/github-push-action@master
       with:
         branch: ${{ github.ref }}
