@@ -13,6 +13,12 @@ jobs:
     name: 🏗️📤 Build Docker Image - Push to Registery
     runs-on: ubuntu-latest
     steps:
+
+      - uses: actions/checkout@v3.2.0
+        with:
+          clean: false
+          fetch-depth: "0"
+
       - name: 🌍 Set environment
         id: set-environment
         run: |
@@ -24,8 +30,13 @@ jobs:
 
       - name: 🏗️📤 Build Docker Image - Push to Registery
         id: build-docker-deploy
+        if: contains("release",${{ github.ref_name }})
         uses: ./.github/actions/build/multi-docker
         with:
           ENVIRONMENT: ${{ env.ENVIRONMENT }}
+          TEAM_DOCKER_URL: ${{ secrets.TEAM_DOCKER_URL }}
+          TEAM_USERNAME: ${{ secrets.TEAM_DOCKER_USERNAME }}
+          TEAM_PASSWORD: ${{ secrets.TEAM_DOCKER_PASSWORD }}
+          NEXT_CREDENTIALS: ${{ secrets.NEXT_CREDENTIALS }}
 
   

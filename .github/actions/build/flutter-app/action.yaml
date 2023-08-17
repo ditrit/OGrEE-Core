@@ -5,6 +5,9 @@ inputs:
   VERSION: 
     description: "Version of the Flutter app"
     required: true
+  NEXT_CREDENTIALS:
+    description: "NEXT_CREDENTIALS"
+    required: true
 
 runs:
     using: "composite"       
@@ -23,21 +26,28 @@ runs:
       
       - name: Web build
         shell: bash
-        run: flutter build web
+        run: |
+          cd ./APP/ogree_app
+          flutter build web
 
-      - name: Windows build
-        shell: bash
-        run: flutter build windows
+      # - name: Windows build
+      #   shell: bash
+      #   run: |
+      #     cd ./APP/ogree_app 
+      #     flutter build windows
         
       - name: Send to Nextcloud
         shell: bash
         env:
-          NEXT_CREDENTIALS: ${{ secrets.NEXT_CREDENTIALS }}
+          NEXT_CREDENTIALS: ${{ inputs.NEXT_CREDENTIALS }}
           NEXT_ADDR: https://nextcloud.ditrit.io/remote.php/dav/files/github.actions/Ogree/1_Core/3_APP/bin/${{ inputs.VERSION }}
-        run: | 
+        run: |
+          cd ./APP/ogree_app 
+          curl -u $NEXT_CREDENTIALS -X MKCOL $NEXT_ADDR
+
           zip -r ./OGrEE_APP_Web.zip build/web/*
           curl -u $NEXT_CREDENTIALS -T OGrEE_APP_Web.zip $NEXT_ADDR/OGrEE_APP_Web_${{ inputs.VERSION }}.zip
 
-          Compress-Archive -Path build/windows/runner/Release/* -Destination OGrEE_APP_Win_${{ inputs.VERSION }}.zip
-          curl -u $env:NEXT_CREDENTIALS -T OGrEE_APP_Win.zip $env:NEXT_ADDR/OGrEE_APP_Win_${{ inputs.VERSION }}.zip
+          # Compress-Archive -Path build/windows/runner/Release/* -Destination OGrEE_APP_Win_${{ inputs.VERSION }}.zip
+          # curl -u $NEXT_CREDENTIALS -T OGrEE_APP_Win.zip $NEXT_ADDR/OGrEE_APP_Win_${{ inputs.VERSION }}.zip
           
