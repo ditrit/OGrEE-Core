@@ -1077,7 +1077,7 @@ func (n *createDeviceNode) execute() (interface{}, error) {
 		return nil, err
 	}
 	sizeU, err := valToInt(sizeUOrTemplate, "sizeU")
-	if err != nil {
+	if err == nil {
 		attr["sizeU"] = sizeU
 	} else {
 		template, ok := sizeUOrTemplate.(string)
