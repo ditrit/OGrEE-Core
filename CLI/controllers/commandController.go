@@ -860,7 +860,10 @@ func CreateObject(path string, ent int, data map[string]interface{}) error {
 
 		baseAttrs := map[string]interface{}{
 			"sizeUnit":   "cm",
-			"heightUnit": "cm",
+			"heightUnit": "U",
+		}
+		if ent == CORRIDOR {
+			baseAttrs["heightUnit"] = "cm"
 		}
 
 		MergeMaps(attr, baseAttrs, false)
