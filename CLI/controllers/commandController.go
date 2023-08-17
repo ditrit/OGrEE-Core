@@ -1278,7 +1278,9 @@ func GetOCLIAtrributesTemplateHelper(attr, data map[string]interface{}, ent int)
 		}
 
 	} else {
-		attr["template"] = ""
+		if ent != CORRIDOR {
+			attr["template"] = ""
+		}
 		//Serialise size and posXY if given
 		if _, ok := attr["size"].(string); ok {
 			attr["size"] = serialiseAttr(attr, "size")
