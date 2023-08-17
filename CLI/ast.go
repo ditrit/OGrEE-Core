@@ -369,33 +369,25 @@ func (n *getObjectNode) execute() (interface{}, error) {
 }
 
 type getPNode struct {
-	path node
+	path   node
 	filter node
 }
 
 func (n *getPNode) execute() (interface{}, error) {
-	val, err := n.path.execute()
+	path, err := nodeToString(n.path, "path")
 	if err != nil {
 		return nil, err
 	}
-	path, ok := val.(string)
-	if !ok {
-		return nil, fmt.Errorf("Object path should be a string")
-	}
-	val ,err = n.filter.execute()
+	filter, err := nodeToString(n.filter, "filter")
 	if err != nil {
 		return nil, err
 	}
-	filter, ok := val.(string)
-	if !ok {
-		return nil, fmt.Errorf("Object filter should be a string")
-	}
-	obj,err := cmd.GetDevicesInfo(path,filter)
+	obj, err := cmd.GetDevicesInfo(path, filter)
 	if err != nil {
 		return nil, err
 	}
 	cmd.DisplayObject(obj)
-	return obj,nil
+	return obj, nil
 }
 
 type selectObjectNode struct {
