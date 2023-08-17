@@ -288,18 +288,6 @@ func ValidateEntity(entity int, t map[string]interface{}) (bool, *u.Error) {
 					}
 
 				case u.CORRIDOR:
-					//Ensure the 2 racks are valid
-					racks := strings.Split(v["content"].(string), ",")
-					if len(racks) != 2 {
-						return false, &u.Error{Type: u.ErrBadFormat,
-							Message: "2 racks separated by a comma must be on the payload"}
-					}
-
-					//Trim Spaces because they mess up
-					//the retrieval of objects from DB
-					racks[0] = strings.TrimSpace(racks[0])
-					racks[1] = strings.TrimSpace(racks[1])
-
 					//Ensure the name is also unique among racks
 					req := bson.M{"name": t["name"].(string)}
 					req["domain"] = t["domain"].(string)
@@ -310,39 +298,6 @@ func ValidateEntity(entity int, t map[string]interface{}) (bool, *u.Error) {
 								Message: "Corridor name must be unique among corridors and racks"}
 						}
 					}
-
-					//Fetch the 2 racks and ensure they exist
-					filter := bson.M{"_id": t["parentId"], "name": racks[0]}
-					orReq := bson.A{bson.D{{"name", racks[0]}}, bson.D{{"name", racks[1]}}}
-
-					filter = bson.M{"parentId": t["parentId"], "$or": orReq}
-					ans, e := GetManyEntities("rack", filter, u.RequestFilters{}, nil)
-					if e != nil {
-						println(e.Message)
-						return false, &u.Error{Type: u.ErrBadFormat,
-							Message: "The racks you specified were not found." +
-								" Please verify your input and try again"}
-					}
-
-					if len(ans) != 2 {
-						//Request possibly mentioned same racks
-						//thus giving length of 1
-						if !(len(ans) == 1 && racks[0] == racks[1]) {
-							//Figure out the rack name that wasn't found
-							var notFound string
-							if racks[0] != ans[0]["name"].(string) {
-								notFound = racks[0]
-							} else {
-								notFound = racks[1]
-							}
-							println("LENGTH OF u.RACK CHECK:", len(ans))
-							println("CORRIDOR PARENTID: ", t["parentId"].(string))
-							return false, &u.Error{Type: u.ErrBadFormat,
-								Message: "Unable to get the rack: " + notFound +
-									". Please check your inventory and try again"}
-						}
-					}
-
 					//Set the color manually based on temp. as specified by client
 					if v["temperature"] == "warm" {
 						v["color"] = "990000"
