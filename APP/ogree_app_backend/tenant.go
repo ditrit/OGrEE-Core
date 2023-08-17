@@ -217,12 +217,13 @@ func dockerCreateTenant(newTenant tenant) string {
 
 	// Default values, empty vars not accepted on docker compose
 	newTenant.BffApiListFile = "./bff_api_list.json"
-	newTenant.BffPort = newTenant.ApiPort
+	
 	if newTenant.HasBff {
 		args = append(args, "--profile")
 		args = append(args, "arango")
 		if newTenant.BffPort == "" {
 			// Set API Port to BFF Port + 1
+			newTenant.BffPort = newTenant.ApiPort
 			port, _ := strconv.Atoi(newTenant.ApiPort)
 			newTenant.ApiPort = strconv.Itoa(port + 1)
 		}
