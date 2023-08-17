@@ -1,0 +1,41 @@
+name: Commit name check
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+jobs:
+  commit:
+    runs-on: ubuntu-latest
+    name: 📍 Check Commit
+    steps:
+      - uses: actions/checkout@v3.2.0
+
+      - name: ✅ Check commit name
+        id: checkcommitname
+        run: |
+          git fetch
+          echo "base ref is main checking commit name..."
+          message=$(git log -1 --format=%s origin/${{ github.head_ref }})
+          ALLOWED_PREFIXES="feat fix docs style refactor test chore ci break breaking hotfix"
+          COMMIT_NAME_VALID=false
+          PREFIXES_ARRAY=$(echo $ALLOWED_PREFIXES | tr " " "\n")
+          for PREFIX in $PREFIXES_ARRAY ; 
+          do 
+          if [[ "$message" == $PREFIX\(*\):\ * ]]; then
+              echo "$message respects prefix $PREFIX"
+              COMMIT_NAME_VALID=true
+          else
+              echo "$message DOES NOT respects prefix $PREFIX"
+          fi
+          if [[ "$message" == Merge* ]]; then
+            echo "$message respects commit convention (merge commit)"
+            COMMIT_NAME_VALID=true
+          fi
+          done
+          if [[ $COMMIT_NAME_VALID == true  ]]; then
+              echo "[SUCCESS] - Your commit respect the naming convention"  
+          else
+              echo "[FAIL] - commit message $message does not respect the naming convention, please rename"  
+              exit 1
+          fi

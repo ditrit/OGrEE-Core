@@ -18,6 +18,7 @@ class _LanguageToggleState extends State<LanguageToggle> {
     }
     return Container(
       padding: EdgeInsets.zero,
+      constraints: const BoxConstraints(maxWidth: 60, maxHeight: 30),
       decoration: const BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.all(Radius.circular(8.0)),

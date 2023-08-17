@@ -13,6 +13,8 @@
   "createOK": "Crée avec succès !",
   "color": "Couleur",
   "optional": "facultatif",
+  "reset": "Réinitialiser",
+  "close": "Fermer",
   
   "@welcome": { "description": "Login Page" },
   "welcome": "Bienvenue sur OGrEE",
@@ -23,10 +25,11 @@
   "forgotPassword": "Mot de passe oublié ?",
   "login": "Se connecter",
   "invalidLogin": "Adresse email et/ou mot de passe non valide",
+  "resetPassword": "Réinitialiser le mot de passe",
 
   "@myprojects": { "description": "Projects Page" },
   "myprojects": "Mes projets",
-  "newProject": "   Créer un nouveau projet",
+  "newProject": "Créer un nouveau projet",
   "noProjects": "Pas encore de projets crées :(",
   "editProject": "Editer ce projet",
   "author": "Auteur :",
@@ -51,6 +54,7 @@
     }
   },
   "atLeastOneObject": "Sélectionnez au moins 1 objet avant d'avancer",
+  "noObjectsFound": "Aucun objet trouvé",
 
   "whatDate": "Quel jeu de données souhaitez-vous utiliser ?",
   "pickDate": "Choisir les dates",
@@ -78,7 +82,7 @@
   "showSum": "Afficher la somme",
   "showAvg": "Afficher la moyenne",
 
-  "newTenant": "   Créer un nouveau tenant",
+  "@tenantCreated": { "description": "SuperAdmin Views" },
   "tenantCreated": "Tenant créé avec succès !",
   "deployment": "Déploiment",
   "loginTenant": "Connectez-vous à l'API de ce Tenant :",
@@ -97,6 +101,7 @@
       }
     }
   },
+  "runAtStart": "Exécuter au démarrage",
   "modifyUser": "Modifier Utilisateur",
   "createUser": "Créer un utilisateur",
   "createBulkFile": "Créer avec fichier JSON",
@@ -114,8 +119,12 @@
       }
     }
   },
+  "noDomain": "Impossible de récupérer ce domain",
   "domain": "Domaine",
   "user": "Utilisateur",
+  "parameter": "Paramètre",
+  "value": "Valeur",
+  "notCreated" : "Pas créé",
 
   "addServer": "Ajouter nouveau serveur",
   "selectServer": "Choisir serveur",
@@ -135,8 +144,19 @@
   "webUrl": "Nouvel URL Web",
   "docUrl": "Nouvelle Swagger UI URL",
   "selectLogo": "Choisir Image Logo",
+  "deployVersion" : "Version du déploiement (branch)",
   "notLoaded": "pas chargé par l'utilisateur",
   "failedToUpload": "Logo customisé pas défini :",
   "wrongFormatUrl": "Mauvais format de l'URL : host:port attendu",
-  "wrongFormatPort": "Mauvais format de l'URL : que des chiffres pour la porte"
+  "wrongFormatPort": "Mauvais format de l'URL : que des chiffres pour la porte",
+
+  "requestBackup": "Créer backup de la base",
+  "downloadBackup": "Télécharger archive de backup",
+  "backupInfoMessage": "Un fichier de backup sera créé dans la machine hôte de ce déploiement Docker.\nSi sélectionné, le fichier sera aussi télécharger dans votre machine.",
+
+  "onlyOneNetbox": "Seul un netbox est possible",
+  "selectSQL": "Choisir fichier SQL",
+  "importNetbox": "Charger la base Netbox",
+  "importNetboxOK": "La base a été chargée !",
+  "mustSelectFile": "Il faut choisir un fichier avant d'avancer"
 }

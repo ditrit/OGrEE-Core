@@ -17,6 +17,7 @@ import (
 var tmplt *template.Template
 var apptmplt *template.Template
 var servertmplt *template.Template
+var netboxtmplt *template.Template
 var DEPLOY_DIR string
 var DOCKER_DIR string
 
@@ -36,10 +37,11 @@ func init() {
 	tmplt = template.Must(template.ParseFiles("backend-assets/docker-env-template.txt"))
 	apptmplt = template.Must(template.ParseFiles("flutter-assets/flutter-env-template.txt"))
 	servertmplt = template.Must(template.ParseFiles("backend-assets/template.service"))
+	netboxtmplt = template.Must(template.ParseFiles("tools-assets/netbox-docker-template.txt"))
 }
 
 func main() {
-	port := flag.Int("port", 8082, "an int")
+	port := flag.Int("port", 8081, "an int")
 	flag.Parse()
 	router := gin.Default()
 	corsConfig := cors.DefaultConfig()
@@ -50,13 +52,20 @@ func main() {
 	router.POST("/api/login", login) // public endpoint
 
 	router.Use(auth.JwtAuthMiddleware()) // protected
+	router.GET("/api/apps", getAllApps)
 	router.GET("/api/tenants", getTenants)
 	router.GET("/api/tenants/:name", getTenantDockerInfo)
 	router.DELETE("/api/tenants/:name", removeTenant)
 	router.POST("/api/tenants", addTenant)
 	router.POST("/api/tenants/:name/logo", addTenantLogo)
+	router.PUT("/api/tenants/:name", updateTenant)
+	router.POST("/api/tenants/:name/backup", backupTenantDB)
 	router.GET("/api/containers/:name", getContainerLogs)
 	router.POST("/api/servers", createNewBackend)
+	router.POST("/api/tools/netbox", createNetbox)
+	router.DELETE("/api/tools/netbox", removeNetbox)
+	router.POST("/api/tools/netbox/dump", addNetboxDump)
+	router.POST("/api/tools/netbox/import", importNetboxDump)
 
 	router.Run(":" + strconv.Itoa(*port))
 
@@ -93,4 +102,15 @@ func login(c *gin.Context) {
 		response["account"]["isTenant"] = "true"
 		c.IndentedJSON(http.StatusOK, response)
 	}
+}
+
+func getAllApps(c *gin.Context) {
+	response := make(map[string]interface{})
+	response["tenants"] = getTenantsFromJSON()
+	if netbox, err := getDockerInfo("netbox"); err != nil {
+		println(err.Error())
+	} else {
+		response["tools"] = netbox
+	}
+	c.IndentedJSON(http.StatusOK, response)
 }

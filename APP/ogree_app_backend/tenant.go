@@ -4,13 +4,16 @@ import (
 	"bufio"
 	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"io/ioutil"
 	"net/http"
 	"os"
 	"os/exec"
+	"regexp"
 	"strings"
+	"time"
 
 	"github.com/gin-gonic/gin"
 )
@@ -45,7 +48,18 @@ type user struct {
 	Token    string `json:"token"`
 }
 
+type backup struct {
+	DBPassword string `json:"password" binding:"required"`
+	IsDownload bool   `json:"shouldDownload"`
+}
+
 func getTenants(c *gin.Context) {
+	response := make(map[string][]tenant)
+	response["tenants"] = getTenantsFromJSON()
+	c.IndentedJSON(http.StatusOK, response)
+}
+
+func getTenantsFromJSON() []tenant {
 	data, e := ioutil.ReadFile("tenants.json")
 	if e != nil {
 		if strings.Contains(e.Error(), "no such file") || strings.Contains(e.Error(), "cannot find") {
@@ -56,10 +70,7 @@ func getTenants(c *gin.Context) {
 				file.WriteString("[]")
 				file.Sync()
 				defer file.Close()
-				response := make(map[string][]tenant)
-				response["tenants"] = []tenant{}
-				c.IndentedJSON(http.StatusOK, response)
-				return
+				return []tenant{}
 			}
 		} else {
 			panic(e.Error())
@@ -68,13 +79,20 @@ func getTenants(c *gin.Context) {
 	var listTenants []tenant
 	json.Unmarshal(data, &listTenants)
 	fmt.Println(listTenants)
-	response := make(map[string][]tenant)
-	response["tenants"] = listTenants
-	c.IndentedJSON(http.StatusOK, response)
+	return listTenants
 }
 
 func getTenantDockerInfo(c *gin.Context) {
 	name := c.Param("name")
+	println(name)
+	if response, err := getDockerInfo(name); err != nil {
+		c.IndentedJSON(http.StatusInternalServerError, err.Error())
+	} else {
+		c.IndentedJSON(http.StatusOK, response)
+	}
+}
+
+func getDockerInfo(name string) ([]container, error) {
 	println(name)
 	cmd := exec.Command("docker", "ps", "--all", "--format", "\"{{json .}}\"")
 	cmd.Dir = DOCKER_DIR
@@ -82,8 +100,7 @@ func getTenantDockerInfo(c *gin.Context) {
 	cmd.Stderr = &stderr
 	if output, err := cmd.Output(); err != nil {
 		fmt.Println(fmt.Sprint(err) + ": " + stderr.String())
-		c.IndentedJSON(http.StatusInternalServerError, stderr.String())
-		return
+		return nil, errors.New(stderr.String())
 	} else {
 		response := []container{}
 		s := bufio.NewScanner(bytes.NewReader(output))
@@ -98,16 +115,21 @@ func getTenantDockerInfo(c *gin.Context) {
 				fmt.Println(err.Error())
 			}
 			fmt.Println(dc)
-			if strings.Contains(dc.Name, name) {
+			if name == "netbox" {
+				if strings.Contains(dc.Name, "netbox-1") {
+					response = append(response, dc)
+				}
+			} else if match, _ := regexp.MatchString("^"+name+"_", dc.Name); match {
 				response = append(response, dc)
 			}
 		}
 		if s.Err() != nil {
 			// handle scan error
 			fmt.Println(s.Err().Error())
+			return nil, s.Err()
 		}
 
-		c.IndentedJSON(http.StatusOK, response)
+		return response, nil
 	}
 }
 
@@ -144,61 +166,10 @@ func addTenant(c *gin.Context) {
 		c.IndentedJSON(http.StatusBadRequest, err.Error())
 		return
 	} else {
-		tenantLower := strings.ToLower(newTenant.Name)
-
-		// Image tagging
-		if newTenant.ImageTag == "" {
-			newTenant.ImageTag = "latest"
-		}
-
-		// Docker compose prepare
-		args := []string{"compose", "-p", tenantLower}
-		if newTenant.HasWeb {
-			args = append(args, "--profile")
-			args = append(args, "web")
-			// Create flutter assets folder
-			newTenant.AssetsDir = DOCKER_DIR + "app-deploy/" + tenantLower
-			addAppAssets(newTenant)
-		} else {
-			// docker does not accept it empty, even if it wont be created
-			newTenant.AssetsDir = DOCKER_DIR
-		}
-		if newTenant.HasDoc {
-			args = append(args, "--profile")
-			args = append(args, "doc")
-		}
-		args = append(args, "up")
-		args = append(args, "--build")
-		args = append(args, "-d")
-
-		// Create .env file
-		file, _ := os.Create(DOCKER_DIR + ".env")
-		err = tmplt.Execute(file, newTenant)
-		if err != nil {
-			panic(err)
-		}
-		file.Close()
-		// Create tenantName.env as a copy
-		file, _ = os.Create(DOCKER_DIR + tenantLower + ".env")
-		err = tmplt.Execute(file, newTenant)
-		if err != nil {
-			fmt.Println("Error creating .env copy: " + err.Error())
-		}
-		file.Close()
-
-		println("Run docker (may take a long time...)")
-
-		// Run docker
-		cmd := exec.Command("docker", args...)
-		cmd.Dir = DOCKER_DIR
-		var stderr bytes.Buffer
-		cmd.Stderr = &stderr
-		if _, err := cmd.Output(); err != nil {
-			fmt.Println(fmt.Sprint(err) + ": " + stderr.String())
-			c.IndentedJSON(http.StatusInternalServerError, stderr.String())
+		if err := dockerCreateTenant(newTenant); err != "" {
+			c.IndentedJSON(http.StatusInternalServerError, err)
 			return
 		}
-		println("Finished with docker")
 
 		// Add to local json and respond
 		listTenants = append(listTenants, newTenant)
@@ -207,6 +178,63 @@ func addTenant(c *gin.Context) {
 		c.IndentedJSON(http.StatusOK, "all good")
 	}
 
+}
+
+func dockerCreateTenant(newTenant tenant) string {
+	tenantLower := strings.ToLower(newTenant.Name)
+	// Image tagging
+	if newTenant.ImageTag == "" {
+		newTenant.ImageTag = "main"
+	}
+
+	// Docker compose prepare
+	args := []string{"compose", "-p", tenantLower}
+	if newTenant.HasWeb {
+		args = append(args, "--profile")
+		args = append(args, "web")
+		// Create flutter assets folder
+		newTenant.AssetsDir = DOCKER_DIR + "app-deploy/" + tenantLower
+		addAppAssets(newTenant)
+	} else {
+		// docker does not accept it empty, even if it wont be created
+		newTenant.AssetsDir = DOCKER_DIR
+	}
+	if newTenant.HasDoc {
+		args = append(args, "--profile")
+		args = append(args, "doc")
+	}
+	args = append(args, "up")
+	args = append(args, "--build")
+	args = append(args, "-d")
+
+	// Create .env file
+	file, _ := os.Create(DOCKER_DIR + ".env")
+	err := tmplt.Execute(file, newTenant)
+	if err != nil {
+		panic(err)
+	}
+	file.Close()
+	// Create tenantName.env as a copy
+	file, _ = os.Create(DOCKER_DIR + tenantLower + ".env")
+	err = tmplt.Execute(file, newTenant)
+	if err != nil {
+		fmt.Println("Error creating .env copy: " + err.Error())
+	}
+	file.Close()
+
+	println("Run docker (may take a long time...)")
+
+	// Run docker
+	cmd := exec.Command("docker", args...)
+	cmd.Dir = DOCKER_DIR
+	var stderr bytes.Buffer
+	cmd.Stderr = &stderr
+	if _, err := cmd.Output(); err != nil {
+		fmt.Println(fmt.Sprint(err) + ": " + stderr.String())
+		return stderr.String()
+	}
+	println("Finished with docker")
+	return ""
 }
 
 func addAppAssets(newTenant tenant) {
@@ -305,4 +333,95 @@ func removeTenant(c *gin.Context) {
 	data, _ = json.MarshalIndent(listTenants, "", "  ")
 	_ = ioutil.WriteFile("tenants.json", data, 0755)
 	c.IndentedJSON(http.StatusOK, "all good")
+}
+
+func updateTenant(c *gin.Context) {
+	tenantName := strings.ToLower(c.Param("name"))
+	println(tenantName)
+
+	// Call BindJSON to bind the received JSON
+	var newTenant tenant
+	if err := c.BindJSON(&newTenant); err != nil {
+		c.IndentedJSON(http.StatusBadRequest, err.Error())
+		return
+	}
+
+	listTenants := getTenantsFromJSON()
+	for i, tenant := range listTenants {
+		if strings.ToLower(tenant.Name) == tenantName {
+			// Docker compose stop
+			println("Docker stop current tenant")
+			args := []string{"compose", "-p", tenantName, "stop"}
+			cmd := exec.Command("docker", args...)
+			cmd.Dir = DOCKER_DIR
+			var stderr bytes.Buffer
+			cmd.Stderr = &stderr
+			if _, err := cmd.Output(); err != nil {
+				fmt.Println(fmt.Sprint(err) + ": " + stderr.String())
+				c.IndentedJSON(http.StatusInternalServerError, stderr.String())
+				return
+			}
+			println("Finished with docker")
+
+			// Docker compose up
+			if err := dockerCreateTenant(newTenant); err != "" {
+				c.IndentedJSON(http.StatusInternalServerError, err)
+				// Try to recreate previous config
+				err = dockerCreateTenant(tenant)
+				if err != "" {
+					println("Error recovering:" + err)
+				}
+				return
+			}
+
+			listTenants[i] = newTenant
+			println(listTenants)
+			data, _ := json.MarshalIndent(listTenants, "", "  ")
+			_ = ioutil.WriteFile("tenants.json", data, 0755)
+			break
+		}
+	}
+
+	c.String(http.StatusOK, "")
+}
+
+func backupTenantDB(c *gin.Context) {
+	tenantName := strings.ToLower(c.Param("name"))
+	t := time.Now()
+
+	// Call BindJSON to bind the received JSON
+	var backupInfo backup
+	if err := c.BindJSON(&backupInfo); err != nil {
+		c.IndentedJSON(http.StatusBadRequest, err.Error())
+		return
+	}
+
+	println("Docker backup current tenant")
+	args := []string{"exec", tenantName + "_db", "sh", "-c",
+		"exec mongodump --username ogree" + tenantName + "Admin --password " + backupInfo.DBPassword + " -d ogree" + tenantName + " --archive"}
+	cmd := exec.Command("docker", args...)
+	cmd.Dir = DOCKER_DIR
+	var stderr bytes.Buffer
+	cmd.Stderr = &stderr
+	outfile, err := os.Create(tenantName + "_db_" + t.Format("2006-01-02T150405") + ".archive")
+	if err != nil {
+		println(err.Error())
+		c.IndentedJSON(http.StatusInternalServerError, err.Error())
+		return
+	}
+	defer outfile.Close()
+	cmd.Stdout = outfile
+	if err := cmd.Run(); err != nil {
+		fmt.Println(fmt.Sprint(err) + ": " + stderr.String())
+		c.IndentedJSON(http.StatusInternalServerError, stderr.String())
+		return
+	}
+
+	dir, _ := os.Getwd()
+	println("Finished with docker")
+	if backupInfo.IsDownload {
+		c.File(outfile.Name())
+	} else {
+		c.String(http.StatusOK, "Backup file created as "+outfile.Name()+" at "+dir)
+	}
 }

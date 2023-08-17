@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:ogree_app/common/api_backend.dart';
+import 'package:ogree_app/common/definitions.dart';
 import 'package:ogree_app/widgets/projects/project_popup.dart';
 import 'package:ogree_app/common/snackbar.dart';
 import 'package:ogree_app/models/project.dart';
@@ -25,23 +26,25 @@ class ProjectCard extends StatelessWidget {
         Navigator.pop(context);
       } else {
         project.name = userInput;
-        var response = await modifyProject(project);
-        if (response == "") {
-          parentCallback!();
-          Navigator.pop(context);
-        } else {
-          showSnackBar(context, response, isError: true);
+        var result = await modifyProject(project);
+        switch (result) {
+          case Success():
+            parentCallback!();
+            Navigator.pop(context);
+          case Failure(exception: final exception):
+            showSnackBar(context, exception.toString(), isError: true);
         }
       }
     }
 
     deleteProjectCallback(String projectId, Function? parentCallback) async {
-      var response = await deleteProject(projectId);
-      if (response == "") {
-        parentCallback!();
-        Navigator.pop(context);
-      } else {
-        showSnackBar(context, response, isError: true);
+      var result = await deleteProject(projectId);
+      switch (result) {
+        case Success():
+          parentCallback!();
+          Navigator.pop(context);
+        case Failure(exception: final exception):
+          showSnackBar(context, exception.toString(), isError: true);
       }
     }
 
@@ -78,9 +81,7 @@ class ProjectCard extends StatelessWidget {
                             context,
                             project,
                             localeMsg.editProject,
-                            localeMsg.delete,
-                            Icons.delete,
-                            deleteProjectCallback,
+                            deleteCallback: deleteProjectCallback,
                             modifyProjectCallback,
                             parentCallback: parentCallback),
                         icon: const Icon(

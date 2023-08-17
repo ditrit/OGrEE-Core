@@ -17,7 +17,10 @@ const Color kDarkBlue = Color(0xff1565c0);
 
 class SettingsView extends StatelessWidget {
   final bool isTenantMode;
-  const SettingsView({Key? key, required this.isTenantMode}) : super(key: key);
+  final bool noFilters;
+  const SettingsView(
+      {Key? key, required this.isTenantMode, this.noFilters = false})
+      : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -53,7 +56,7 @@ class SettingsView extends StatelessWidget {
             SettingsHeader(text: localeMsg.searchById),
             const _FindNodeField(),
             const SizedBox(height: 8),
-            TreeFilter(),
+            noFilters ? Container() : TreeFilter(),
           ],
         ),
       );

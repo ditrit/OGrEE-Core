@@ -92,18 +92,11 @@
                 }
             }
         },
-        "createdDate": {
-        },
         "description": {
             "type": "string"
         },
         "fbxModel": {
             "type": "string"
-        },
-        "id": {
-            "type": "string"
-        },
-        "lastUpdated": {
         },
         "sizeWDHmm": {
             "type": "array",

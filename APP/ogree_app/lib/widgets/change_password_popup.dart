@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:ogree_app/common/api_backend.dart';
+import 'package:ogree_app/common/definitions.dart';
+import 'package:ogree_app/common/theme.dart';
 
 import '../common/snackbar.dart';
 
@@ -17,17 +18,18 @@ class _ChangePasswordPopupState extends State<ChangePasswordPopup> {
   String? _oldPassword;
   String? _newPassword;
   String? _confirmPass;
+  bool _isSmallDisplay = false;
 
   @override
   Widget build(BuildContext context) {
     final localeMsg = AppLocalizations.of(context)!;
+    _isSmallDisplay = IsSmallDisplay(MediaQuery.of(context).size.width);
     return Center(
       child: Container(
         // height: 240,
         width: 500,
         margin: const EdgeInsets.symmetric(horizontal: 10),
-        decoration: BoxDecoration(
-            color: Colors.white, borderRadius: BorderRadius.circular(20)),
+        decoration: PopupDecoration,
         child: Padding(
           padding: const EdgeInsets.fromLTRB(40, 20, 40, 15),
           child: Material(
@@ -40,23 +42,22 @@ class _ChangePasswordPopupState extends State<ChangePasswordPopup> {
                 children: [
                   Text(
                     localeMsg.changePassword,
-                    style: GoogleFonts.inter(
-                      fontSize: 22,
-                      color: Colors.black,
-                      fontWeight: FontWeight.w500,
-                    ),
+                    style: Theme.of(context).textTheme.headlineMedium,
                   ),
                   const SizedBox(height: 20),
                   getFormField(
                       save: (newValue) => _oldPassword = newValue,
-                      label: localeMsg.currentPassword),
+                      label: localeMsg.currentPassword,
+                      icon: Icons.lock_open_rounded),
                   getFormField(
                       save: (newValue) => _newPassword = newValue,
-                      label: localeMsg.newPassword),
+                      label: localeMsg.newPassword,
+                      icon: Icons.lock_outline_rounded),
                   getFormField(
                       save: (newValue) => _confirmPass = newValue,
-                      label: localeMsg.confirmPassword),
-                  const SizedBox(height: 30),
+                      label: localeMsg.confirmPassword,
+                      icon: Icons.lock_outline_rounded),
+                  const SizedBox(height: 10),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.end,
                     children: [
@@ -84,19 +85,19 @@ class _ChangePasswordPopupState extends State<ChangePasswordPopup> {
                                 setState(() {
                                   _isLoading = true;
                                 });
-                                var response;
-                                response = await changeUserPassword(
+                                final response = await changeUserPassword(
                                     _oldPassword!, _newPassword!);
-                                if (response == "") {
-                                  showSnackBar(context, localeMsg.modifyOK,
-                                      isSuccess: true);
-                                  Navigator.of(context).pop();
-                                } else {
-                                  setState(() {
-                                    _isLoading = false;
-                                  });
-                                  showSnackBar(context, response,
-                                      isError: true);
+                                switch (response) {
+                                  case Success():
+                                    showSnackBar(context, localeMsg.modifyOK,
+                                        isSuccess: true);
+                                    Navigator.of(context).pop();
+                                  case Failure(exception: final exception):
+                                    setState(() {
+                                      _isLoading = false;
+                                    });
+                                    showSnackBar(context, exception.toString(),
+                                        isError: true);
                                 }
                               } catch (e) {
                                 showSnackBar(context, e.toString(),
@@ -131,6 +132,7 @@ class _ChangePasswordPopupState extends State<ChangePasswordPopup> {
   getFormField(
       {required Function(String?) save,
       required String label,
+      required IconData icon,
       String? prefix,
       String? suffix,
       List<TextInputFormatter>? formatters,
@@ -138,7 +140,7 @@ class _ChangePasswordPopupState extends State<ChangePasswordPopup> {
       bool isReadOnly = false,
       bool obscure = true}) {
     return Padding(
-      padding: const EdgeInsets.only(left: 2, right: 10),
+      padding: FormInputPadding,
       child: TextFormField(
         obscureText: obscure,
         initialValue: initial,
@@ -151,11 +153,10 @@ class _ChangePasswordPopupState extends State<ChangePasswordPopup> {
           return null;
         },
         inputFormatters: formatters,
-        decoration: InputDecoration(
-          labelText: label,
-          prefixText: prefix,
-          suffixText: suffix,
-        ),
+        decoration: GetFormInputDecoration(_isSmallDisplay, label,
+            prefixText: prefix, suffixText: suffix, icon: icon),
+        cursorWidth: 1.3,
+        style: const TextStyle(fontSize: 14),
       ),
     );
   }

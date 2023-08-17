@@ -1,498 +1,251 @@
 package controllers
 
-//This file describes the 'tree' command
-//since it a has more complex algorithm
-
 import (
-	"cli/models"
 	"fmt"
-	"strconv"
+	"net/http"
+	"sort"
 	"strings"
 )
 
-// New Tree funcs here
-func StrayWalk(root **Node, prefix string, depth int) {
+type FillFunc func(n *HierarchyNode, path string, depth int) error
 
-	if depth > 0 {
-		for i := (*root).Nodes.Front(); i != nil; i = i.Next() {
-			node := i.Value.(*Node)
-
-			if i.Next() == nil {
-				fmt.Println(prefix+"└──", node.Name)
-				StrayWalk(&node, prefix+"    ", depth-1)
-			} else {
-				fmt.Println(prefix+("├──"), node.Name)
-				StrayWalk(&node, prefix+"│   ", depth-1)
-			}
-		}
-
-		if (*root).Nodes.Len() == 0 && depth > 0 {
-			switch (*root).Name {
-			case "Device":
-				//Get Stray Devices and print them
-				StrayAndDomain("stray-devices", prefix, depth)
-			case "Sensor":
-				//Get Stray Sensors and print them
-				r, e := models.Send("GET",
-					State.APIURL+"/api/stray-sensors", GetKey(), nil)
-				resp := ParseResponse(r, e, "fetch objects")
-				if resp != nil {
-					RemoteGetAllWalk(resp["data"].(map[string]interface{}), prefix)
-				}
-			default: //Error, execution should not reach here
-
-			}
-			return
-		}
-	}
-
+type HierarchyNode struct {
+	Name   string
+	Childs map[string]*HierarchyNode
+	FillFn FillFunc
 }
 
-func RootWalk(root **Node, path string, depth int) {
-	org := FindNodeInTree(root, StrToStack("/Organisation"), true)
-	fmt.Println("├──" + "Organisation")
-	OrganisationWalk(org, "│   ", depth-1)
-
-	logical := FindNodeInTree(root, StrToStack("/Logical"), true)
-	fmt.Println("├──" + "Logical")
-	LogicalWalk(logical, "│   ", depth-1)
-
-	phys := FindNodeInTree(root, StrToStack("/Physical"), true)
-	fmt.Println("└──" + "Physical")
-	PhysicalWalk(phys, "    ", path, depth-1)
+func NewNode(name string) *HierarchyNode {
+	return &HierarchyNode{name, map[string]*HierarchyNode{}, nil}
 }
 
-func LogicalWalk(root **Node, prefix string, depth int) {
-
-	if root != nil {
-		if depth >= 0 {
-			if (*root).Nodes.Len() == 0 {
-				switch (*root).Name {
-				case "ObjectTemplates":
-					//Get All Obj Templates and print them
-					r, e := models.Send("GET",
-						State.APIURL+"/api/obj-templates", GetKey(), nil)
-					resp := ParseResponse(r, e, "fetching objects")
-					RemoteGetAllWalk(resp["data"].(map[string]interface{}), prefix)
-				case "RoomTemplates":
-					//Get All Room Templates and print them
-					r, e := models.Send("GET",
-						State.APIURL+"/api/room-templates", GetKey(), nil)
-					resp := ParseResponse(r, e, "fetching objects")
-					RemoteGetAllWalk(resp["data"].(map[string]interface{}), prefix)
-				case "BldgTemplates":
-					//Get All Bldg Templates and print them
-					r, e := models.Send("GET",
-						State.APIURL+"/api/bldg-templates", GetKey(), nil)
-					resp := ParseResponse(r, e, "fetching objects")
-					RemoteGetAllWalk(resp["data"].(map[string]interface{}), prefix)
-				case "Groups":
-					//Get All Groups and print them
-					r, e := models.Send("GET",
-						State.APIURL+"/api/groups", GetKey(), nil)
-					resp := ParseResponse(r, e, "fetching objects")
-					RemoteGetAllWalk(resp["data"].(map[string]interface{}), prefix)
-				default: //Error case, execution should not reach here
-
-				}
-				return
-			}
-
-			for i := (*root).Nodes.Front(); i != nil; i = i.Next() {
-				if i.Next() == nil {
-					fmt.Println(prefix+"└──", (i.Value.(*Node).Name))
-					value := i.Value.(*Node)
-					LogicalWalk(&(value), prefix+"    ", depth-1)
-
-				} else {
-					fmt.Println(prefix+("├──"), (i.Value.(*Node).Name))
-					value := i.Value.(*Node)
-					LogicalWalk(&(value), prefix+"│   ", depth-1)
-
-				}
-			}
-		}
+func (n *HierarchyNode) StringAux(prefix string, sb *strings.Builder, depth int) {
+	if depth == 0 {
+		return
 	}
-
-}
-
-func OrganisationWalk(root **Node, prefix string, depth int) {
-
-	if root != nil {
-		if depth >= 0 {
-			if (*root).Nodes.Len() == 0 {
-				switch (*root).Name {
-				case "Domain":
-					StrayAndDomain("domains", prefix, depth)
-				case "Enterprise":
-					//Most likely same as Domain case
-					//TODO Will have to update this section later on
-				}
-			}
-
-			for i := (*root).Nodes.Front(); i != nil; i = i.Next() {
-				if i.Next() == nil {
-					fmt.Println(prefix+"└──", (i.Value.(*Node).Name))
-					value := i.Value.(*Node)
-					OrganisationWalk(&(value), prefix+"    ", depth-1)
-
-				} else {
-					fmt.Println(prefix+("├──"), (i.Value.(*Node).Name))
-					value := i.Value.(*Node)
-					OrganisationWalk(&(value), prefix+"│   ", depth-1)
-
-				}
-			}
-		}
+	childs := []*HierarchyNode{}
+	for _, child := range n.Childs {
+		childs = append(childs, child)
 	}
-
-}
-
-func PhysicalWalk(root **Node, prefix, path string, depth int) {
-	arr := strings.Split(path, "/")
-	if len(arr) == 3 {
-		//println("DEBUG ENTERED")
-		if arr[2] == "Stray" {
-			fmt.Println(prefix + "├──Device")
-			if depth >= 1 {
-				//Get and Print Stray Devices
-				StrayAndDomain("stray-devices", prefix+"│   ", depth)
-
-				//Get and Print Stray Sensors
-				fmt.Println(prefix + "└──Sensor")
-				r1, e1 := models.Send("GET",
-					State.APIURL+"/api/stray-sensors", GetKey(), nil)
-				resp1 := ParseResponse(r1, e1, "fetch objects")
-
-				if resp1 != nil {
-					RemoteGetAllWalk(resp1["data"].(map[string]interface{}),
-						prefix+"    ")
-				}
-			} else { //Extra else block for correct printing
-				fmt.Println(prefix + "└──Sensor")
-			}
-
-		} else { //Interacting with Sites
-			ObjectAndHierarchWalk(path, prefix, depth)
-
-		}
-	}
-	if len(arr) == 2 { //Means path== "/Physical"
-
-		var resp map[string]interface{}
-		if arr[1] == "Physical" { //Means path== "/Physical"
-
-			//Need to check num sites before passing the prefix
-			//Get and Print Sites Block
-
-			r, e := models.Send("GET",
-				State.APIURL+"/api/sites", GetKey(), nil)
-			resp = ParseResponse(r, e, "fetch objects")
-			strayNode := FindNodeInTree(&State.TreeHierarchy,
-				StrToStack("/Physical/Stray"), true)
-
-			if length, _ := GetRawObjectsLength(resp); length > 0 {
-				fmt.Println(prefix + "├──" + " Stray")
-				StrayWalk(strayNode, prefix+"│   ", depth)
-			} else {
-				fmt.Println(prefix + "└──" + " Stray")
-				StrayWalk(strayNode, prefix+"   ", depth)
-			}
-
-			if resp != nil {
-				if depth == 0 {
-					if _, ok := resp["data"]; ok {
-						RemoteGetAllWalk(resp["data"].(map[string]interface{}),
-							prefix)
-					}
-					return
-				}
-
-			}
-
-			if depth > 0 {
-				if _, ok := resp["data"]; ok {
-					sites := GetRawObjects(resp)
-
-					size := len(sites)
-					for idx, tInf := range sites {
-						site := tInf.(map[string]interface{})
-						ID := site["id"].(string)
-						depthStr := strconv.Itoa(depth)
-
-						var subPrefix string
-						var currPrefix string
-						if idx == size-1 {
-							subPrefix = prefix + "    "
-							currPrefix = prefix + "└──"
-						} else {
-							subPrefix = prefix + "│   "
-							currPrefix = prefix + "├──"
-						}
-
-						fmt.Println(currPrefix + site["name"].(string))
-
-						//Get Hierarchy for each site and walk
-						r, e := models.Send("GET",
-							State.APIURL+"/api/sites/"+ID+"/all?limit="+depthStr, GetKey(), nil)
-						resp := ParseResponse(r, e, "fetch objects")
-						if resp != nil {
-							RemoteHierarchyWalk(resp["data"].(map[string]interface{}),
-								subPrefix, depth)
-						}
-
-					}
-				}
-
-			}
-		} else { //Means path == "/"
-
-			if depth >= 0 {
-
-				strayNode := FindNodeInTree(&State.TreeHierarchy,
-					StrToStack("/Physical/Stray"), true)
-
-				//Get and Print Sites Block
-				r, e := models.Send("GET",
-					State.APIURL+"/api/sites", GetKey(), nil)
-				resp = ParseResponse(r, e, "fetch objects")
-
-				//Need to check num sites before passing the prefix
-				if length, _ := GetRawObjectsLength(resp); length > 0 {
-					fmt.Println(prefix + "├──" + " Stray")
-					StrayWalk(strayNode, prefix+"│   ", depth)
-				} else {
-					fmt.Println(prefix + "└──" + " Stray")
-					StrayWalk(strayNode, prefix+"   ", depth)
-				}
-				if resp != nil {
-					if depth == 0 {
-						if _, ok := resp["data"]; ok {
-							RemoteGetAllWalk(resp["data"].(map[string]interface{}),
-								prefix)
-						}
-						return
-					}
-
-				}
-
-				//If hierarchy happens to be greater than 1
-				if depth > 0 && resp != nil {
-					if sites := GetRawObjects(resp); sites != nil {
-						size := len(sites)
-						for idx, tInf := range sites {
-							site := tInf.(map[string]interface{})
-							ID := site["id"].(string)
-							depthStr := strconv.Itoa(depth)
-
-							//Get Hierarchy for each site and walk
-							r, e := models.Send("GET",
-								State.APIURL+"/api/sites/"+ID+"/all?limit="+depthStr, GetKey(), nil)
-							resp := ParseResponse(r, e, "fetch objects")
-
-							var subPrefix string
-							var currPrefix string
-							if idx == size-1 {
-								subPrefix = prefix + "    "
-								currPrefix = prefix + "└──"
-							} else {
-								subPrefix = prefix + "│   "
-								currPrefix = prefix + "├──"
-							}
-
-							fmt.Println(currPrefix + site["name"].(string))
-							if resp != nil {
-								RemoteHierarchyWalk(resp["data"].(map[string]interface{}),
-									subPrefix, depth)
-							}
-						}
-					}
-				}
-
-			}
-		}
-
-	}
-
-	if len(arr) > 3 { //Could still be Stray not sure yet
-		if arr[2] == "Stray" && len(arr) <= 4 {
-			StrayAndDomain("stray-devices", prefix, depth)
+	sort.SliceStable(childs, func(i, j int) bool {
+		return childs[i].Name < childs[j].Name
+	})
+	for i, child := range childs {
+		if i == len(childs)-1 {
+			sb.WriteString(prefix + "└── " + child.Name + "\n")
+			child.StringAux(prefix+"    ", sb, depth-1)
 		} else {
-			//Get Object hierarchy and walk
-			ObjectAndHierarchWalk(path, prefix, depth)
+			sb.WriteString(prefix + "├── " + child.Name + "\n")
+			child.StringAux(prefix+"│   ", sb, depth-1)
 		}
 	}
 }
 
-// Helper function for TreeWalk commands, this will filter out
-// objects that a have a ParentID
-func Filter(root map[string]interface{}, depth int, ent string) {
-	var arr []interface{}
-	var replacement []interface{}
-	if root == nil {
-		return
+func (n *HierarchyNode) String(depth int) string {
+	var sb strings.Builder
+	n.StringAux("", &sb, depth)
+	s := sb.String()
+	for len(s) >= 1 && s[len(s)-1] == '\n' {
+		s = s[:len(s)-1]
 	}
+	return s
+}
 
-	if _, ok := root["objects"]; !ok {
-		return
+func (n *HierarchyNode) AddChild(child *HierarchyNode) {
+	n.Childs[child.Name] = child
+}
+
+func (n *HierarchyNode) findNodeAux(path []string) (r *HierarchyNode, remainingPath []string) {
+	if len(path) == 0 {
+		return n, []string{}
 	}
-
-	if _, ok := root["objects"].([]interface{}); !ok {
-		return
+	child := n.Childs[path[0]]
+	if child != nil {
+		return child.findNodeAux(path[1:])
 	}
-	arr = root["objects"].([]interface{})
-	//length = len(arr)
+	return n, path
+}
 
-	for _, m := range arr {
-		if object, ok := m.(map[string]interface{}); ok {
-			if object["parentId"] == nil || object["parentId"] == "" {
-				//Change m -> result of hierarchal API call
-				ext := object["id"].(string) + "/all?limit=" + strconv.Itoa(depth)
-				URL := State.APIURL + "/api/" + ent + "/" + ext
-				r, _ := models.Send("GET", URL, GetKey(), nil)
-				parsed := ParseResponse(r, nil, "Fetch "+ent)
-				m = parsed["data"].(map[string]interface{})
-				replacement = append(replacement, m)
-				//Disp(m.(map[string]interface{}))
+func (n *HierarchyNode) FindNode(path string) *HierarchyNode {
+	pathList := strings.Split(path, "/")[1:]
+	if pathList[0] == "" {
+		pathList = pathList[1:]
+	}
+	r, remainingPath := n.findNodeAux(pathList)
+	if len(remainingPath) > 0 {
+		return nil
+	}
+	return r
+}
+
+func (n *HierarchyNode) FindNearestNode(path string) (r *HierarchyNode, remainingPath string) {
+	r, remainingPathList := n.findNodeAux(strings.Split(path, "/")[1:])
+	return r, strings.Join(remainingPathList, "/")
+}
+
+func BuildBaseTree() *HierarchyNode {
+	root := NewNode("")
+	physical := NewNode("Physical")
+	physical.FillFn = FillUrlTreeFn("/api/sites", FillObjectTree)
+	root.AddChild(physical)
+	stray := NewNode("Stray")
+	stray.FillFn = FillUrlTreeFn("/api/stray-objects", FillObjectTree)
+	physical.AddChild(stray)
+	logical := NewNode("Logical")
+	root.AddChild(logical)
+	objectTemplates := NewNode("ObjectTemplates")
+	objectTemplates.FillFn = FillUrlTreeFn("/api/obj-templates", nil)
+	logical.AddChild(objectTemplates)
+	roomTemplates := NewNode("RoomTemplates")
+	roomTemplates.FillFn = FillUrlTreeFn("/api/room-templates", nil)
+	logical.AddChild(roomTemplates)
+	bldgTemplates := NewNode("BldgTemplates")
+	bldgTemplates.FillFn = FillUrlTreeFn("/api/bldg-templates", nil)
+	logical.AddChild(bldgTemplates)
+	groups := NewNode("Groups")
+	groups.FillFn = FillUrlTreeFn("/api/groups", nil)
+	logical.AddChild(groups)
+	organisation := NewNode("Organisation")
+	root.AddChild(organisation)
+	domain := NewNode("Domain")
+	domain.FillFn = FillUrlTreeFn("/api/domains", FillObjectTree)
+	organisation.AddChild(domain)
+	organisation.AddChild(NewNode("Enterprise"))
+	return root
+}
+
+func nameOrSlug(obj map[string]any) (string, error) {
+	name, okName := obj["name"].(string)
+	if !okName {
+		name, okName = obj["slug"].(string)
+	}
+	if !okName {
+		return "", fmt.Errorf("child has no name/slug")
+	}
+	return name, nil
+}
+
+func FillMapTree(n *HierarchyNode, obj map[string]any) error {
+	children, ok := obj["children"].([]any)
+	if !ok {
+		return nil
+	}
+	for _, childAny := range children {
+		childMap, ok := childAny.(map[string]any)
+		if !ok {
+			return fmt.Errorf("invalid child format")
+		}
+		name, err := nameOrSlug(childMap)
+		if err != nil {
+			return err
+		}
+		child := NewNode(name)
+		err = FillMapTree(child, childMap)
+		if err != nil {
+			return err
+		}
+		n.AddChild(child)
+	}
+	return nil
+}
+
+func FillObjectTree(n *HierarchyNode, path string, depth int) error {
+	obj, err := PollObjectWithChildren(path, depth)
+	if err != nil {
+		return err
+	}
+	if obj == nil {
+		return fmt.Errorf("location not found")
+	}
+	return FillMapTree(n, obj)
+}
+
+func FillUrlTree(n *HierarchyNode, path string, depth int, url string, followFillFn FillFunc) error {
+	resp, err := RequestAPI("GET", url, nil, http.StatusOK)
+	if err != nil {
+		return err
+	}
+	invalidRespErr := fmt.Errorf("invalid response from API on GET %s", url)
+	obj, ok := resp.body["data"].(map[string]any)
+	if !ok {
+		return invalidRespErr
+	}
+	objects, hasObjects := obj["objects"].([]any)
+	if !hasObjects {
+		return invalidRespErr
+	}
+	for _, objAny := range objects {
+		obj, ok := objAny.(map[string]any)
+		if !ok {
+			return invalidRespErr
+		}
+		objName, err := nameOrSlug(obj)
+		if err != nil {
+			return invalidRespErr
+		}
+		subTree := NewNode(objName)
+		subTree.FillFn = followFillFn
+		err = FillTree(subTree, path+"/"+objName, depth-1)
+		if err != nil {
+			return err
+		}
+		n.AddChild(subTree)
+	}
+	return nil
+}
+
+func FillUrlTreeFn(url string, followFn FillFunc) FillFunc {
+	return func(n *HierarchyNode, path string, depth int) error {
+		return FillUrlTree(n, path, depth, url, followFn)
+	}
+}
+
+func FillTree(n *HierarchyNode, path string, depth int) error {
+	if depth == 0 {
+		return nil
+	}
+	if len(n.Childs) != 0 {
+		for _, child := range n.Childs {
+			newPath := path
+			if path != "/" {
+				newPath += "/"
+			}
+			newPath += child.Name
+			err := FillTree(child, newPath, depth-1)
+			if err != nil {
+				return err
 			}
 		}
 	}
-
-	root["objects"] = replacement
+	if n.FillFn != nil {
+		return n.FillFn(n, path, depth)
+	}
+	return nil
 }
 
-func ObjectAndHierarchWalk(path, prefix string, depth int) {
-	depthStr := strconv.Itoa(depth + 1)
-
-	//Need to convert path to URL then append /all?limit=depthStr
-	_, urls := CheckPathOnline(path)
-	r, e := models.Send("GET", urls, GetKey(), nil)
-	//WE need to get the Object in order for us to create
-	//the correct GET /all?limit=depthStr URL
-	//we get the object category and ID in the JSON response
-
-	parsed := ParseResponse(r, e, "get object")
-	if parsed != nil {
-
-		obj := parsed["data"].(map[string]interface{})
-		cat := obj["category"].(string)
-		ID := obj["id"].(string)
-		URL := State.APIURL + "/api/" +
-			cat + "s/" + ID + "/all?limit=" + depthStr
-		r1, e1 := models.Send("GET", URL, GetKey(), nil)
-		parsedRoot := ParseResponse(r1, e1, "get object hierarchy")
-		if parsedRoot != nil {
-			if _, ok := parsedRoot["data"]; ok {
-				RemoteHierarchyWalk(
-					parsedRoot["data"].(map[string]interface{}),
-					prefix, depth+1)
-			}
-
+func Tree(path string, depth int) (*HierarchyNode, error) {
+	n := State.Hierarchy.FindNode(path)
+	if n != nil {
+		tempHierarchy := BuildBaseTree()
+		root := tempHierarchy.FindNode(path)
+		err := FillTree(root, path, depth)
+		if err != nil {
+			return nil, err
 		}
+		return root, nil
 	}
-}
-
-// Gets all objects and filters out the objs with PID and adds
-// the respective hierarchies of each object and walks them
-// (meant for walking stray and domain objs)
-func StrayAndDomain(ent, prefix string, depth int) {
-	//Do the call, filter and perform remote
-	//hierarchy walk
-	//Get All Domains OR Stray Devices and print them
-	r, e := models.Send("GET",
-		State.APIURL+"/api/"+ent, GetKey(), nil)
-	resp := ParseResponse(r, e, "fetching objects")
-	if resp != nil {
-		if _, ok := resp["data"]; ok {
-			data := resp["data"].(map[string]interface{})
-			Filter(data, depth, ent)
-
-			if objects, ok := data["objects"]; ok {
-				length := len(objects.([]interface{}))
-				for i, obj := range objects.([]interface{}) {
-					if m, ok := obj.(map[string]interface{}); ok {
-						subname := m["name"].(string)
-
-						if i == length-1 {
-							fmt.Println(prefix+"└──", subname)
-							RemoteHierarchyWalk(m, prefix+"    ", depth-1)
-						} else {
-							fmt.Println(prefix+("├──"), subname)
-							RemoteHierarchyWalk(m, prefix+"│   ", depth-1)
-						}
-					}
-
-				}
-			}
-		}
-
+	obj, err := GetObjectWithChildren(path, depth)
+	if err != nil {
+		return nil, err
 	}
-
-}
-
-func RemoteGetAllWalk(root map[string]interface{}, prefix string) {
-	var arr []interface{}
-	var length int
-	if root == nil {
-		return
+	name, err := nameOrSlug(obj)
+	if err != nil {
+		return nil, err
 	}
-
-	if _, ok := root["objects"]; !ok {
-		return
+	n = NewNode(name)
+	err = FillMapTree(n, obj)
+	if err != nil {
+		return nil, err
 	}
-
-	if _, ok := root["objects"].([]interface{}); !ok {
-		return
-	}
-	arr = root["objects"].([]interface{})
-	length = len(arr)
-
-	for i, m := range arr {
-		var subname string
-		if n, ok := m.(map[string]interface{})["name"].(string); ok {
-			subname = n
-		} else {
-			subname = m.(map[string]interface{})["slug"].(string)
-		}
-
-		if i == length-1 {
-			fmt.Println(prefix+"└──", subname)
-
-		} else {
-			fmt.Println(prefix+("├──"), subname)
-		}
-	}
-}
-
-func RemoteHierarchyWalk(root map[string]interface{}, prefix string, depth int) {
-
-	if depth == 0 || root == nil {
-		return
-	}
-	if infants, ok := root["children"]; !ok || infants == nil {
-		return
-	}
-
-	//name := root["name"].(string)
-	//println(prefix + name)
-
-	//or cast to []interface{}
-	arr := root["children"].([]interface{})
-
-	//or cast to []interface{}
-	length := len(arr)
-
-	//or cast to []interface{}
-	for i, mInf := range arr {
-		m := mInf.(map[string]interface{})
-		subname := m["name"].(string)
-
-		if i == length-1 {
-			fmt.Println(prefix+"└──", subname)
-			RemoteHierarchyWalk(m, prefix+"    ", depth-1)
-		} else {
-			fmt.Println(prefix+("├──"), subname)
-			RemoteHierarchyWalk(m, prefix+"│   ", depth-1)
-		}
-	}
+	return n, nil
 }

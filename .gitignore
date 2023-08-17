@@ -21,3 +21,7 @@ cli.mac
 *.ocli
 log.txt
 unitylog.txt
+
+# APP Ignore
+deploy/docker/*.env
+deploy/docker/app-deploy

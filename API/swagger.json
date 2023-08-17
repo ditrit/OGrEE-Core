@@ -170,14 +170,14 @@
         }
       }
     },
-    "/api/objects/{hierarchyName}": {
+    "/api/objects/{id}": {
       "get": {
         "security": [
           {
             "bearer": []
           }
         ],
-        "description": "Gets an object from any of the physical entities with no need to specify it.\nThe hierarchyName must be provided in the URL as a parameter.",
+        "description": "Gets an object from any of the physical entities with no need to specify it.\nThe id must be provided in the URL as a parameter.",
         "produces": [
           "application/json"
         ],
@@ -188,8 +188,8 @@
         "operationId": "GetGenericObject",
         "parameters": [
           {
-            "description": "hierarchyName of the object",
-            "name": "hierarchyName",
+            "description": "ID type hierarchyName of the object",
+            "name": "id",
             "in": "path",
             "required": true
           },
@@ -399,7 +399,56 @@
         }
       }
     },
-    "/api/tempunits/{IdOrHierarchyName}": {
+    "/api/stray-objects/{id}/link": {
+      "post": {
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "description": "The object will again have a parent, its id will change as well as the id of all its children.\nThe object will then belong to the given entity.",
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "Objects"
+        ],
+        "summary": "Removes the object from stray and add it to the entity of its category attribute.",
+        "operationId": "LinkObject",
+        "parameters": [
+          {
+            "type": "string",
+            "default": "StrayRackB",
+            "description": "ID of desired object.",
+            "name": "id",
+            "in": "path",
+            "required": true
+          },
+          {
+            "default": {
+              "name": "MyNewObjectName",
+              "parentId": "MyNewParent"
+            },
+            "description": "ParentId is mandatory. Name is optional.",
+            "name": "body",
+            "in": "body",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Linked. The object is no longer a stray."
+          },
+          "400": {
+            "description": "Bad request. Request has wrong format."
+          },
+          "500": {
+            "description": "Internal error. Unable to remove object from stray and create it in an entity."
+          }
+        }
+      }
+    },
+    "/api/tempunits/{id}": {
       "get": {
         "security": [
           {
@@ -418,8 +467,8 @@
           {
             "type": "string",
             "default": "siteA",
-            "description": "ID or hierarchy name of desired object. For templates the slug is the ID.",
-            "name": "IdOrHierarchyName",
+            "description": "ID of desired object. For templates the slug is the ID.",
+            "name": "id",
             "in": "path",
             "required": true
           }
@@ -676,7 +725,7 @@
         }
       }
     },
-    "/api/users/{userid}": {
+    "/api/users/{UserId}": {
       "delete": {
         "security": [
           {
@@ -696,7 +745,7 @@
             "type": "string",
             "example": "someUserId",
             "description": "The ID of the user to delete",
-            "name": "userid",
+            "name": "UserId",
             "in": "path",
             "required": true
           }
@@ -735,7 +784,7 @@
             "type": "string",
             "example": "someUserId",
             "description": "The ID of the user to modify roles",
-            "name": "userid",
+            "name": "UserId",
             "in": "path",
             "required": true
           },
@@ -783,7 +832,7 @@
           {
             "type": "string",
             "default": "sites",
-            "description": "Entity (same as category) of the object. Accepted values: sites, domains, buildings, rooms, racks, devices, acs, panels, cabinets, groups, corridors, room-templates, obj-templates, bldg-templates, stray-devices.",
+            "description": "Entity (same as category) of the object. Accepted values: sites, domains, buildings, rooms, racks, devices, acs, panels, cabinets, groups, corridors, room-templates, obj-templates, bldg-templates, stray-objects.",
             "name": "entity",
             "in": "path",
             "required": true
@@ -850,7 +899,7 @@
           {
             "type": "string",
             "default": "sites",
-            "description": "Entity (same as category) of the object. Accepted values: sites, domains, buildings, rooms, racks, devices, acs, panels, cabinets, groups, corridors, room-templates, obj-templates, bldg-templates, stray-devices",
+            "description": "Entity (same as category) of the object. Accepted values: sites, domains, buildings, rooms, racks, devices, acs, panels, cabinets, groups, corridors, room-templates, obj-templates, bldg-templates, stray-objects",
             "name": "entity",
             "in": "path",
             "required": true
@@ -898,7 +947,7 @@
           {
             "type": "string",
             "default": "sites",
-            "description": "Entity (same as category) of the object. Accepted values: sites, domains, buildings, rooms, racks, devices, acs, panels, cabinets, groups, corridors, room-templates, obj-templates, bldg-templates, stray-devices.",
+            "description": "Entity (same as category) of the object. Accepted values: sites, domains, buildings, rooms, racks, devices, acs, panels, cabinets, groups, corridors, room-templates, obj-templates, bldg-templates, stray-objects.",
             "name": "entity",
             "in": "path",
             "required": true
@@ -920,7 +969,7 @@
         }
       }
     },
-    "/api/{entity}/{IdOrHierarchyName}": {
+    "/api/{entity}/{id}": {
       "get": {
         "security": [
           {
@@ -940,7 +989,7 @@
           {
             "type": "string",
             "default": "sites",
-            "description": "Entity (same as category) of the object. Accepted values: sites, domains, buildings, rooms, racks, devices, acs, panels, cabinets, groups, corridors, room-templates, obj-templates, bldg-templates, stray-devices.",
+            "description": "Entity (same as category) of the object. Accepted values: sites, domains, buildings, rooms, racks, devices, acs, panels, cabinets, groups, corridors, room-templates, obj-templates, bldg-templates, stray-objects.",
             "name": "entity",
             "in": "path",
             "required": true
@@ -948,8 +997,8 @@
           {
             "type": "string",
             "default": "siteA",
-            "description": "ID or hierarchy name of desired object. For templates the slug is the ID.",
-            "name": "IdOrHierarchyName",
+            "description": "ID of desired object. For templates the slug is the ID.",
+            "name": "id",
             "in": "path",
             "required": true
           },
@@ -981,6 +1030,51 @@
           }
         }
       },
+      "put": {
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "description": "This method will replace the existing data with the JSON\nreceived, thus fully replacing the data. If you do not\nwant to do this, please use PATCH.\nIf no data is effectively changed, an OK will still be returned.",
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "Objects"
+        ],
+        "summary": "Completely update object.",
+        "operationId": "UpdateObject",
+        "parameters": [
+          {
+            "type": "string",
+            "default": "sites",
+            "description": "Entity (same as category) of the object. Accepted values: sites, domains, buildings, rooms, racks, devices, acs, panels, cabinets, groups, corridors, room-templates, obj-templates, bldg-templates, stray-objects.",
+            "name": "entity",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "default": "siteA",
+            "description": "ID of desired object. For templates the slug is the ID.",
+            "name": "id",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Updated. A response body will be returned with a meaningful message."
+          },
+          "400": {
+            "description": "Bad request. An error message will be returned."
+          },
+          "404": {
+            "description": "Not Found. An error message will be returned."
+          }
+        }
+      },
       "delete": {
         "security": [
           {
@@ -999,7 +1093,7 @@
           {
             "type": "string",
             "default": "sites",
-            "description": "Entity (same as category) of the object. Accepted values: sites, domains, buildings, rooms, racks, devices, acs, panels, cabinets, groups, corridors, room-templates, obj-templates, bldg-templates, stray-devices.",
+            "description": "Entity (same as category) of the object. Accepted values: sites, domains, buildings, rooms, racks, devices, acs, panels, cabinets, groups, corridors, room-templates, obj-templates, bldg-templates, stray-objects.",
             "name": "entity",
             "in": "path",
             "required": true
@@ -1007,8 +1101,8 @@
           {
             "type": "string",
             "default": "siteA",
-            "description": "ID or hierarchy name of desired object. For templates the slug is the ID.",
-            "name": "IdOrHierarchyName",
+            "description": "ID of desired object. For templates the slug is the ID.",
+            "name": "id",
             "in": "path",
             "required": true
           }
@@ -1041,7 +1135,7 @@
           {
             "type": "string",
             "default": "sites",
-            "description": "Entity (same as category) of the object. Accepted values: sites, domains, buildings, rooms, racks, devices, acs, panels, cabinets, groups, corridors, room-templates, obj-templates, bldg-templates, stray-devices.",
+            "description": "Entity (same as category) of the object. Accepted values: sites, domains, buildings, rooms, racks, devices, acs, panels, cabinets, groups, corridors, room-templates, obj-templates, bldg-templates, stray-objects.",
             "name": "entity",
             "in": "path",
             "required": true
@@ -1049,8 +1143,8 @@
           {
             "type": "string",
             "default": "siteA",
-            "description": "ID or hierarchy name of desired object. For templates the slug is the ID.",
-            "name": "IdOrHierarchyName",
+            "description": "ID of desired object. For templates the slug is the ID.",
+            "name": "id",
             "in": "path",
             "required": true
           }
@@ -1068,7 +1162,7 @@
         }
       }
     },
-    "/api/{entity}/{IdOrHierarchyName}/all": {
+    "/api/{entity}/{id}/all": {
       "get": {
         "security": [
           {
@@ -1088,7 +1182,7 @@
           {
             "type": "string",
             "default": "sites",
-            "description": "Entity (same as category) of the object. Accepted values: sites, domains, buildings, rooms, racks, devices, acs, panels, cabinets, groups, corridors, room-templates, obj-templates, bldg-templates, stray-devices.",
+            "description": "Entity (same as category) of the object. Accepted values: sites, domains, buildings, rooms, racks, devices, acs, panels, cabinets, groups, corridors, room-templates, obj-templates, bldg-templates, stray-objects.",
             "name": "entity",
             "in": "path",
             "required": true
@@ -1096,8 +1190,8 @@
           {
             "type": "string",
             "default": "siteA",
-            "description": "ID or hierarchy name of desired object. For templates the slug is the ID.",
-            "name": "IdOrHierarchyName",
+            "description": "ID of desired object. For templates the slug is the ID.",
+            "name": "id",
             "in": "path",
             "required": true
           },
@@ -1134,6 +1228,61 @@
         }
       }
     },
+    "/api/{entity}/{id}/unlink": {
+      "post": {
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "description": "The object will no longer have a parent, its id will change as well as the id of all its children.\nThe object will then belong to the stray-objects entity.",
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "Objects"
+        ],
+        "summary": "Removes the object from its original entity and hierarchy tree to make it stray.",
+        "operationId": "UnlinkObject",
+        "parameters": [
+          {
+            "type": "string",
+            "default": "Site.Building.Room.RackB",
+            "description": "ID of desired object.",
+            "name": "id",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "string",
+            "default": "sites",
+            "description": "Entity (same as category) of the object. Accepted values: buildings, rooms, racks, devices, acs, panels, cabinets, groups, corridors.",
+            "name": "entity",
+            "in": "path",
+            "required": true
+          },
+          {
+            "default": {
+              "name": "MyNewStrayObjectName"
+            },
+            "description": "Name is optional to change the name of the object when turning stray.",
+            "name": "body",
+            "in": "body"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Unlinked. The object is now a stray."
+          },
+          "400": {
+            "description": "Bad request. Request has wrong format."
+          },
+          "500": {
+            "description": "Internal error. Unable to remove object from entity and create it as stray."
+          }
+        }
+      }
+    },
     "/api/{entity}/{id}/{subent}": {
       "get": {
         "security": [
@@ -1141,27 +1290,27 @@
             "bearer": []
           }
         ],
-        "description": "For Example: /api/sites/{id}/buildings\nWill return all buildings of a site\nReturns JSON body with all subobjects under the Object",
+        "description": "Subent must be lower than entity in the hierarchy.\nExamples:\napi/sites/{id}/rooms will return all rooms of a site\napi/room/{id}/devices will return all devices of a room\nReturns a JSON body with all children objects under the parent object.",
         "produces": [
           "application/json"
         ],
         "tags": [
           "Objects"
         ],
-        "summary": "Obtain all objects 2 levels lower in the system.",
+        "summary": "Obtain all children object of given id that belong to subent entity.",
         "operationId": "GetEntitiesOfAncestor",
         "parameters": [
           {
             "type": "string",
             "default": "sites",
-            "description": "Indicates the entity. Only values of \"sites\", \"buildings\", \"rooms\" are acceptable",
+            "description": "Indicates the entity.",
             "name": "entity",
             "in": "query",
             "required": true
           },
           {
             "type": "int",
-            "default": 999,
+            "default": "siteA",
             "description": "ID of object",
             "name": "ID",
             "in": "query",
@@ -1170,7 +1319,7 @@
           {
             "type": "string",
             "default": "buildings",
-            "description": "Objects which 2 are levels lower in the hierarchy.",
+            "description": "Indicates the subentity to search for children.",
             "name": "subent",
             "in": "query",
             "required": true
@@ -1206,7 +1355,7 @@
           {
             "type": "string",
             "default": "sites",
-            "description": "Entity (same as category) of the object. Accepted values: sites, domains, buildings, rooms, racks, devices, acs, panels, cabinets, groups, corridors, room-templates, obj-templates, bldg-templates, stray-devices.",
+            "description": "Entity (same as category) of the object. Accepted values: sites, domains, buildings, rooms, racks, devices, acs, panels, cabinets, groups, corridors, room-templates, obj-templates, bldg-templates, stray-objects.",
             "name": "entity",
             "in": "path",
             "required": true
@@ -1241,106 +1390,6 @@
           },
           "404": {
             "description": "Not found. An error message will be returned."
-          }
-        }
-      }
-    },
-    "/api/{firstEntity}/{id}/{HierarchalPath}": {
-      "get": {
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
-        "description": "The path should begin with an entity name (firstEntity) and the ID of an object of this entity\nfollowed by a hierarchal path until the desired objet, that is,\na sequence of entity names (category) and object names.",
-        "produces": [
-          "application/json"
-        ],
-        "tags": [
-          "Objects"
-        ],
-        "summary": "Get an object with its full hierarchal path.",
-        "operationId": "GetEntitiesUsingNamesOfParents",
-        "parameters": [
-          {
-            "type": "string",
-            "default": "sites",
-            "description": "Root entity followed by an id. Can be: sites, buildings, rooms, racks or devices",
-            "name": "firstEntity",
-            "in": "query",
-            "required": true
-          },
-          {
-            "type": "string",
-            "default": "123",
-            "description": "id of object of firstEntity",
-            "name": "id",
-            "in": "path",
-            "required": true
-          },
-          {
-            "type": "string",
-            "default": "/buildings/BuildingB/rooms/RoomA",
-            "example": "/api/sites/{id}/buildings/{building_name} ; /api/sites/{id}/buildings/{building_name}/rooms/{room_name} ; /api/sites/{id}/buildings/{building_name}/rooms/{room_name}/acs/{ac_name} ; /api/sites/{id}/buildings/{building_name}/rooms/{room_name}/corridors/{corridor_name} ; /api/sites/{id}/buildings/{building_name}/rooms/{room_name}/panels/{panel_name} ; /api/sites/{id}/buildings/{building_name}/rooms/{room_name}/groups/{group_name} ; /api/sites/{id}/buildings/{building_name}/rooms/{room_name}/racks/{rack_name}/devices/{device_name} ; /api/sites/{id}/buildings/{building_name}/rooms/{room_name}/racks/{rack_name} ; /api/buildings/{id}/rooms/{room_name} ; /api/buildings/{id}/rooms/{room_name}/acs/{ac_name} ; /api/buildings/{id}/rooms/{room_name}/corridors/{corridor_name} ; /api/buildings/{id}/rooms/{room_name}/panels/{panel_name} ; /api/buildings/{id}/rooms/{room_name}/groups/{group_name} ; /api/buildings/{id}/rooms/{room_name}/rack/{rack_name} ; /api/buildings/{id}/rooms/{room_name}/racks/{rack_name}/devices/{device_name} ; /api/rooms/{id}/acs/{ac_name} ; /api/rooms/{id}/corridors/{corridor_name} ; /api/rooms/{id}/panels/{panel_name} ; /api/rooms/{id}/groups/{group_name} ; /api/rooms/{id}/racks/{rack_name}/devices/{device_name} ; /api/racks/{id}/devices/{device_name} ; /api/devices/{id}/devices/{device_name} ;",
-            "description": "Hierarchal path to desired object.",
-            "name": "HierarchalPath",
-            "in": "path",
-            "required": true
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Found. A response body will be returned with a meaningful message."
-          },
-          "404": {
-            "description": "Not Found. An error message will be returned."
-          }
-        }
-      }
-    },
-    "/api/{objs}/{IdOrHierarchyName}": {
-      "put": {
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
-        "description": "This method will replace the existing data with the JSON\nreceived, thus fully replacing the data. If you do not\nwant to do this, please use PATCH.\nIf no data is effectively changed, an OK will still be returned.",
-        "produces": [
-          "application/json"
-        ],
-        "tags": [
-          "Objects"
-        ],
-        "summary": "Completely update object.",
-        "operationId": "UpdateObject",
-        "parameters": [
-          {
-            "type": "string",
-            "default": "sites",
-            "description": "Entity (same as category) of the object. Accepted values: sites, domains, buildings, rooms, racks, devices, acs, panels, cabinets, groups, corridors, room-templates, obj-templates, bldg-templates, stray-devices.",
-            "name": "entity",
-            "in": "path",
-            "required": true
-          },
-          {
-            "type": "string",
-            "default": "siteA",
-            "description": "ID or hierarchy name of desired object. For templates the slug is the ID.",
-            "name": "IdOrHierarchyName",
-            "in": "path",
-            "required": true
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Updated. A response body will be returned with a meaningful message."
-          },
-          "400": {
-            "description": "Bad request. An error message will be returned."
-          },
-          "404": {
-            "description": "Not Found. An error message will be returned."
           }
         }
       }

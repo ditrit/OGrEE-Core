@@ -98,7 +98,7 @@ func (s SortableMArr) Print() {
 
 }
 
-func SortObjects(objs *[]interface{}, attr string) *SortableMArr {
+func SortObjects(objs []interface{}, attr string) *SortableMArr {
 	var x SortableMArr
 	var nested bool
 	switch attr {
@@ -109,7 +109,7 @@ func SortObjects(objs *[]interface{}, attr string) *SortableMArr {
 		nested = true
 	}
 
-	x = SortableMArr{*objs, attr, nested}
+	x = SortableMArr{objs, attr, nested}
 	sort.Sort(x)
 	return &x
 }

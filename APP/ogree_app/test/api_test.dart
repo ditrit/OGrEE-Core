@@ -3,6 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mockito/annotations.dart';
 import 'package:mockito/mockito.dart';
 import 'package:ogree_app/common/api_backend.dart';
+import 'package:ogree_app/common/definitions.dart';
 import 'package:ogree_app/models/project.dart';
 
 import 'api_test.mocks.dart';
@@ -24,7 +25,7 @@ void main() {
           .thenAnswer((_) async => http.Response(projectSample, 200));
 
       expect(await fetchProjects("user@email.com", client: mockClient),
-          isA<List<Project>>());
+          isA<Success<List<Project>, Exception>>());
     });
 
     test('throws an exception if the http call completes with an error',
@@ -37,8 +38,8 @@ void main() {
               headers: getHeader(token)))
           .thenAnswer((_) async => http.Response('Not Found', 404));
 
-      expect(
-          fetchProjects("user@email.com", client: mockClient), throwsException);
+      expect(await fetchProjects("user@email.com", client: mockClient),
+          isA<Failure<List<Project>, Exception>>());
     });
   });
 }
