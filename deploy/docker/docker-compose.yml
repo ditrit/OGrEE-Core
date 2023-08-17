@@ -77,8 +77,7 @@ services:
     
   arango_api:
     build:
-      context: ${CORE_DIR} 
-      dockerfile: ${ARANGO_API_BUILD_DIR}/Dockerfile
+      context: ${CORE_DIR}/${ARANGO_API_BUILD_DIR}
     image: arango-api:${IMAGE_TAG}
     profiles: ["arango"]
     restart: always
@@ -99,8 +98,7 @@ services:
 
   ogree-bff:
     build:
-      context: ${CORE_DIR}
-      dockerfile: ${BFF_BUILD_DIR}/Dockerfile
+      context: ${CORE_DIR}/${BFF_BUILD_DIR}
     image: ogree-bff:${IMAGE_TAG}
     profiles: ["arango"]
     restart: on-failure:10
