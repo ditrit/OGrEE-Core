@@ -4,12 +4,12 @@ FROM golang:1.18.2-alpine3.16 AS build
 WORKDIR /build
 
 # We want to populate the module cache based on the go.{mod,sum} files.
-COPY BFF/go.mod .
-COPY BFF/go.sum .
+COPY go.mod .
+COPY go.sum .
 	
 RUN go mod download
 
-COPY BFF .
+COPY . .
 
 
 # Build the Go app
