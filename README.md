@@ -96,3 +96,51 @@ git sparse-checkout set "deploy" "APP"
 # branch you wish to checkout
 git pull origin main 
 ```
+
+
+# 🔁 OGree-Core GitFlow
+
+![Workflows diagram](/assets/images/main.jpg)
+
+## Release candidate
+
+After merging a dev branch on main, workflows will create a new branch name `release-candidate/x.x.x`.
+
+Semver bump are define by the following rules:
+- One commit between last tag and main contains: break/breaking -> Bump major version
+- One commit between last tag and main contains: feat/features -> Bump minor version
+- Any other cases -> Bump patch version
+
+if a branch release-candidate with the same semver already exists, it will be deleted and recreated from the new commit. ( If a new fix is merge after an other how has not been released by example )
+
+## Release
+
+After validate a release candidate, a manual workflow named `📦 Create Release` can be called form github actions panel on the release-candidate branch and will create a `release/x.x.x branch`
+
+![Github Actions panel](/assets/images/github.png)
+
+Note: If release workflow is launch on another branch when a release-candidate, it will fail.
+
+## Build docker images and CLI
+
+### Docker images
+When a branch release-candidate or release are created, Build Docker workflow are trigger.
+
+It will create and push docker image, tags with semver, on private docker registry `registry.ogree.ditrit.io`
+
+Docker iamges created are:
+- mongo-api/x.x.x: image provide by API/Dockerfile
+- ogree-app/x.x.x: image provide by APP/Dockerfile
+
+
+### CLI
+
+CLI will be build and push into ogree nextcloud folder `/bin/x.x.x/`
+
+### Sermver for docker images and CLI
+
+If build workflow is trigger by a release-candidate branch, workflow will add `.rc` after semver
+
+- release-candidate/1.0.0 will made mongo-api/1.0.0.rc by example
+
+If build workflow is trigger by a release bracnh, workflow will tag OGree-Core with semver
