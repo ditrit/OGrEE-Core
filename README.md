@@ -144,3 +144,11 @@ If build workflow is trigger by a release-candidate branch, workflow will add `.
 - release-candidate/1.0.0 will made mongo-api/1.0.0.rc by example
 
 If build workflow is trigger by a release bracnh, workflow will tag OGree-Core with semver
+
+## Secrets needs
+
+- NEXT_CREDENTIALS: nextcloud credentials
+- TEAM_DOCKER_URL: Url of the docker registry
+- TEAM_DOCKER_PASSWORD: password of the docker registry
+- TEAM_DOCKER_USERNAME: username of the docker registry
+- SVC_GITHUB_TOKEN: an admin github token ( required to trigger build workflow since 08/2022 )
