@@ -2,3 +2,5 @@ tenants.json
 ogree_app_backend.service
 *.archive
 netbox-docker/
+ogree_app_backend
+ogree_app_backend.exe

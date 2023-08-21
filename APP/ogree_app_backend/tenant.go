@@ -60,21 +60,21 @@ func getTenants(c *gin.Context) {
 }
 
 func getTenantsFromJSON() []tenant {
+	if _, err := os.Stat("tenants.json"); errors.Is(err, os.ErrNotExist) {
+		// tenants.json does not exist, create it
+		var file, e = os.Create("tenants.json")
+		if e != nil {
+			panic(e.Error())
+		} else {
+			file.WriteString("[]")
+			file.Sync()
+			defer file.Close()
+			return []tenant{}
+		}
+	}
 	data, e := ioutil.ReadFile("tenants.json")
 	if e != nil {
-		if strings.Contains(e.Error(), "no such file") || strings.Contains(e.Error(), "cannot find") {
-			var file, e = os.Create("tenants.json")
-			if e != nil {
-				panic(e.Error())
-			} else {
-				file.WriteString("[]")
-				file.Sync()
-				defer file.Close()
-				return []tenant{}
-			}
-		} else {
-			panic(e.Error())
-		}
+		panic(e.Error())
 	}
 	var listTenants []tenant
 	json.Unmarshal(data, &listTenants)
