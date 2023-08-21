@@ -108,12 +108,18 @@ services:
       - BFF_PORT=${BFF_PORT}
       - BFF_SECRET=${AUTH_SECRET}
     volumes:
-      - ${BFF_API_LIST}:/bin/api.json
+      - ${BFF_API_LIST}:/bin/api0.json
     depends_on:
       - ogree_api
       - arango_api
     ports:
       - ${BFF_PORT}:${BFF_PORT}
+    entrypoint: >
+      sh -c "
+      export COMPOSE_PROJECT_NAME=${COMPOSE_PROJECT_NAME} &&
+      envsubst < /bin/api0.json > /bin/api.json &&
+      /bin/ogree-bff
+      "
 
 volumes:
   db:

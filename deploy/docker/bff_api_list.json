@@ -1,4 +1,4 @@
 [
-    {"name":"server", "url": "http://ogree-core_arango_api:8080"},
-    {"name":"objects", "url": "http://ogree-core_api:3001"}
+    {"name":"server", "url": "http://${COMPOSE_PROJECT_NAME}_arango_api:8080"},
+    {"name":"objects", "url": "http://${COMPOSE_PROJECT_NAME}_api:3001"}
 ]
