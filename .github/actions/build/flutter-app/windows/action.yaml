@@ -17,12 +17,6 @@ runs:
         with:
           flutter-version: '3.10.5'
           channel: 'stable'
-          
-      - name: Set up
-        shell: bash 
-        run: |
-          cd ./APP/ogree_app
-          flutter pub get
 
       - name: Windows build
         shell: bash
@@ -31,7 +25,7 @@ runs:
           flutter build windows
         
       - name: Send to Nextcloud
-        shell: bash
+        shell: pwsh
         env:
           NEXT_CREDENTIALS: ${{ inputs.NEXT_CREDENTIALS }}
           NEXT_ADDR: https://nextcloud.ditrit.io/remote.php/dav/files/github.actions/Ogree/1_Core/3_APP/bin/${{ inputs.VERSION }}

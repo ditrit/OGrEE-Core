@@ -40,7 +40,7 @@ jobs:
           NEXT_CREDENTIALS: ${{ secrets.NEXT_CREDENTIALS }}
   
   build-flutter-window:
-    name: 🏗️📤 Build Flutter Window
+    name: 🏗️📤 Build Flutter for Window
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v3.2.0
@@ -56,7 +56,8 @@ jobs:
           fi
           echo "VERSION=$VERSION" >> $GITHUB_ENV
 
-      - uses: ./.github/actions/build/flutter-app/windows
+      - name: 🏗️📤 Build Flutter
+        uses: ./.github/actions/build/flutter-app/windows
         with:
           VERSION: ${{ env.VERSION }}
           NEXT_CREDENTIALS: ${{ secrets.NEXT_CREDENTIALS }}
