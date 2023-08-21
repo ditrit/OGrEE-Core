@@ -3,7 +3,7 @@ param (
     [string]$portBack = "8081"
  )
 
-docker build APP -t ogree-app
+docker build . -t ogree-app
 $assetsDir = "${PWD}\ogree_app\assets\custom"
 $file = "${assetsDir}\.env"
 (Get-Content $file) -replace '8081', $portBack | Set-Content $file
