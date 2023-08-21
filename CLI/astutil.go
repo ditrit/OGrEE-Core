@@ -23,6 +23,14 @@ func getFloat(unk interface{}) (float64, error) {
 }
 
 func valToFloat(val any, name string) (float64, error) {
+	stringVal, isString := val.(string)
+	if isString {
+		floatVal, err := strconv.ParseFloat(stringVal, 64)
+		if err != nil {
+			return 0, fmt.Errorf("%s should be a number", name)
+		}
+		return floatVal, nil
+	}
 	v, err := getFloat(val)
 	if err != nil {
 		return 0, fmt.Errorf("%s should be a number", name)
@@ -50,19 +58,24 @@ func stringToNum(s string) (any, error) {
 	return nil, fmt.Errorf("the string is not a number")
 }
 
+func valToNum(val any, name string) (any, error) {
+	stringVal, isString := val.(string)
+	if isString {
+		numVal, err := stringToNum(stringVal)
+		if err != nil {
+			return nil, fmt.Errorf("%s should be a number", name)
+		}
+		return numVal, nil
+	}
+	return val, nil
+}
+
 func nodeToNum(n node, name string) (any, error) {
 	val, err := n.execute()
 	if err != nil {
 		return nil, err
 	}
-	stringVal, isString := val.(string)
-	if isString {
-		val, err = stringToNum(stringVal)
-		if err != nil {
-			return nil, fmt.Errorf("%s should be a number", name)
-		}
-	}
-	return val, nil
+	return valToNum(val, name)
 }
 
 func valToInt(val any, name string) (int, error) {
