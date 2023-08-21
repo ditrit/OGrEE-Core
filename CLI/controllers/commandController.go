@@ -172,7 +172,7 @@ func DeleteObj(path string) error {
 		InformUnity("DeleteObj", -1, map[string]any{"type": "delete", "data": obj["id"].(string)})
 	}
 	if path == State.CurrPath {
-		CD("..")
+		CD(TranslatePath(".."))
 	}
 	return nil
 }
