@@ -629,6 +629,9 @@ func (n *updateObjNode) execute() (interface{}, error) {
 			if strings.HasPrefix(n.attr, "description") {
 				_, err = updateDescription(path, n.attr, values)
 			} else {
+				if len(values) > 1 {
+					return nil, fmt.Errorf("attributes can only be assigned a single value")
+				}
 				attributes := map[string]any{n.attr: values[0]}
 				_, err = cmd.UpdateObj(path, map[string]any{"attributes": attributes})
 			}
