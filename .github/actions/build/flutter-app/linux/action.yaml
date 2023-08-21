@@ -30,12 +30,6 @@ runs:
           cd ./APP/ogree_app
           flutter build web
 
-      # - name: Windows build
-      #   shell: bash
-      #   run: |
-      #     cd ./APP/ogree_app 
-      #     flutter build windows
-        
       - name: Send to Nextcloud
         shell: bash
         env:
@@ -47,7 +41,4 @@ runs:
 
           zip -r ./OGrEE_APP_Web.zip build/web/*
           curl -u $NEXT_CREDENTIALS -T OGrEE_APP_Web.zip $NEXT_ADDR/OGrEE_APP_Web_${{ inputs.VERSION }}.zip
-
-          # Compress-Archive -Path build/windows/runner/Release/* -Destination OGrEE_APP_Win_${{ inputs.VERSION }}.zip
-          # curl -u $NEXT_CREDENTIALS -T OGrEE_APP_Win.zip $NEXT_ADDR/OGrEE_APP_Win_${{ inputs.VERSION }}.zip
           
