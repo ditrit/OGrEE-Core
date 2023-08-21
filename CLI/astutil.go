@@ -120,13 +120,13 @@ func valTo3dRotation(val any) ([]float64, error) {
 	case string:
 		switch rotation {
 		case "front":
-			return []float64{0, 180, 0}, nil
+			return []float64{0, 0, 180}, nil
 		case "rear":
 			return []float64{0, 0, 0}, nil
 		case "left":
-			return []float64{0, 0, 90}, nil
+			return []float64{0, 90, 0}, nil
 		case "right":
-			return []float64{0, 0, -90}, nil
+			return []float64{0, -90, 0}, nil
 		case "top":
 			return []float64{90, 0, 0}, nil
 		case "bottom":
