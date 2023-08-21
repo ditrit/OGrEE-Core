@@ -13,7 +13,7 @@ done
 
 assetsDir="$(pwd)/ogree_app/assets/custom"
 file="$assetsDir/.env"
-docker build -f APP -t ogree-app
+docker build . -t ogree-app
 sed -i "s/8081/$portBack/g" $file
 docker run -p $portWeb:80 -v $assetsDir:/usr/share/nginx/html/assets/assets/custom -d ogree-app:latest
 
