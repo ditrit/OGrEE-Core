@@ -1,0 +1,38 @@
+name: Flutter Publish
+description: Publish Flutter app on Nexcloud
+
+inputs:
+  VERSION: 
+    description: "Version of the Flutter app"
+    required: true
+  NEXT_CREDENTIALS:
+    description: "NEXT_CREDENTIALS"
+    required: true
+
+runs:
+    using: "composite"       
+    steps:
+      - uses: actions/checkout@v3.2.0
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.10.5'
+          channel: 'stable'
+
+      - name: Windows build
+        shell: bash
+        run: |
+          cd APP/ogree_app
+          flutter build windows
+        
+      - name: Send to Nextcloud
+        shell: pwsh
+        env:
+          NEXT_CREDENTIALS: ${{ inputs.NEXT_CREDENTIALS }}
+          NEXT_ADDR: https://nextcloud.ditrit.io/remote.php/dav/files/github.actions/Ogree/1_Core/3_APP/bin/${{ inputs.VERSION }}
+        run: |
+          cd APP/ogree_app
+          curl -X MKCOL -u $env:NEXT_CREDENTIALS $env:NEXT_ADDR
+
+          Compress-Archive -Path build/windows/runner/Release/* -Destination OGrEE_APP_Win.zip
+          curl -u $env:NEXT_CREDENTIALS -T OGrEE_APP_Win.zip $env:NEXT_ADDR/OGrEE_APP_Win_${{ inputs.VERSION }}.zip
+          

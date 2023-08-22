@@ -20,6 +20,7 @@ jobs:
           ALLOWED_PREFIXES="feature feat fix hotfix release chore break breaking docs dependabot"
           BRANCH_NAME_VALID=false
           PREFIXES_ARRAY=$(echo $ALLOWED_PREFIXES | tr " " "\n")
+          shopt -s nocasematch
           for PREFIX in $PREFIXES_ARRAY ; 
           do 
           if [[ "${{ github.head_ref }}" == *$PREFIX* ]]; then

@@ -20,9 +20,10 @@ jobs:
           ALLOWED_PREFIXES="feat fix docs style refactor test chore ci break breaking hotfix"
           COMMIT_NAME_VALID=false
           PREFIXES_ARRAY=$(echo $ALLOWED_PREFIXES | tr " " "\n")
+          shopt -s nocasematch
           for PREFIX in $PREFIXES_ARRAY ; 
           do 
-          if [[ "$message" == $PREFIX\(*\):\ * ]]; then
+          if [[ "$message" == $PREFIX\(*\)* ]]; then
               echo "$message respects prefix $PREFIX"
               COMMIT_NAME_VALID=true
           else
