@@ -111,7 +111,9 @@ Semver bump are define by the following rules:
 - One commit between last tag and main contains: feat/features -> Bump minor version
 - Any other cases -> Bump patch version
 
-if a branch release-candidate with the same semver already exists, it will be deleted and recreated from the new commit. ( If a new fix is merge after an other how has not been released by example )
+if a branch release-candidate with the same semver already exists, it will be deleted and recreated from the new commit.
+
+Example: A patch is merged after another, which has not yet been released
 
 ## Release
 
@@ -119,7 +121,7 @@ After validate a release candidate, a manual workflow named `📦 Create Release
 
 ![Github Actions panel](/assets/images/github.png)
 
-Note: If release workflow is launch on another branch when a release-candidate, it will fail.
+Note: If release workflow is launch on another branch other than a release-candidate, it will fail.
 
 ## Build docker images and CLI
 
