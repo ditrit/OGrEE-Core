@@ -603,16 +603,15 @@ func (n *updateObjNode) execute() (interface{}, error) {
 		paths = []string{path}
 	}
 	for _, path := range paths {
+		var err error
 		switch n.attr {
 		case "content", "alpha", "tilesName", "tilesColor", "U", "slots", "localCS":
-			boolVal, err := valToBool(values[0], n.attr)
+			var boolVal bool
+			boolVal, err = valToBool(values[0], n.attr)
 			if err != nil {
 				return nil, err
 			}
-			return nil, cmd.InteractObject(path, n.attr, boolVal, n.hasSharpe)
-		}
-		var err error
-		switch n.attr {
+			err = cmd.InteractObject(path, n.attr, boolVal, n.hasSharpe)
 		case "areas":
 			_, err = setRoomAreas(path, values)
 		case "label":
