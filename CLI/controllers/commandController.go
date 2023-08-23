@@ -863,6 +863,7 @@ func CreateObject(path string, ent int, data map[string]interface{}) error {
 			"sizeUnit":   "cm",
 			"heightUnit": "U",
 			"posXYUnit":  parentAttr["floorUnit"],
+			"clearance":  Stringify([]float64{0., 0., 0., 0., 0.}),
 		}
 
 		MergeMaps(attr, baseAttrs, false)
