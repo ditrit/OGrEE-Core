@@ -25,3 +25,12 @@ unitylog.txt
 # APP Ignore
 deploy/docker/*.env
 deploy/docker/app-deploy
+
+#ARANGO_API Ignore
+ARANGO_API/arango-api
+ARANGO_API/*env
+
+#BFF Ignore
+BFF/*env
+BFF/ogree-bff
+

@@ -28,6 +28,7 @@ class _CreateTenantPopupState extends State<CreateTenantPopup> {
   String _docPort = "";
   bool _hasWeb = true;
   bool _hasDoc = false;
+  bool _hasBff = false;
   bool _isLoading = false;
   PlatformFile? _loadedImage;
   String _imageTag = "main";
@@ -78,8 +79,8 @@ class _CreateTenantPopupState extends State<CreateTenantPopup> {
                                 alignment: WrapAlignment.center,
                                 crossAxisAlignment: WrapCrossAlignment.center,
                                 children: [
-                                  getCheckBox("API", true, (_) {},
-                                      enabled: false),
+                                  // getCheckBox("API", true, (_) {},
+                                  //     enabled: false),
                                   getCheckBox(
                                       "WEB",
                                       _hasWeb,
@@ -91,6 +92,12 @@ class _CreateTenantPopupState extends State<CreateTenantPopup> {
                                       _hasDoc,
                                       (value) => setState(() {
                                             _hasDoc = value!;
+                                          })),
+                                  getCheckBox(
+                                      "Arango",
+                                      _hasBff,
+                                      (value) => setState(() {
+                                            _hasBff = value!;
                                           })),
                                 ],
                               ),
@@ -259,7 +266,8 @@ class _CreateTenantPopupState extends State<CreateTenantPopup> {
           _hasDoc,
           _docUrl,
           _docPort,
-          _imageTag));
+          _imageTag,
+          _hasBff));
       switch (result) {
         case Success(value: final value):
           widget.parentCallback();
@@ -278,7 +286,7 @@ class _CreateTenantPopupState extends State<CreateTenantPopup> {
   getCheckBox(String title, bool value, Function(bool?) onChange,
       {bool enabled = true}) {
     return SizedBox(
-      width: 95,
+      width: 110,
       child: CheckboxListTile(
         activeColor: Colors.blue.shade600,
         contentPadding: EdgeInsets.zero,

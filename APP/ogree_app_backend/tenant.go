@@ -12,6 +12,7 @@ import (
 	"os"
 	"os/exec"
 	"regexp"
+	"strconv"
 	"strings"
 	"time"
 
@@ -27,10 +28,13 @@ type tenant struct {
 	WebPort          string `json:"webPort"`
 	DocUrl           string `json:"docUrl"`
 	DocPort          string `json:"docPort"`
+	BffPort          string `json:"bffPort"`
 	HasWeb           bool   `json:"hasWeb"`
 	HasDoc           bool   `json:"hasDoc"`
+	HasBff           bool   `json:"hasBff"`
 	AssetsDir        string `json:"assetsDir"`
 	ImageTag         string `json:"imageTag"`
+	BffApiListFile   string
 }
 
 type container struct {
@@ -182,6 +186,12 @@ func addTenant(c *gin.Context) {
 
 func dockerCreateTenant(newTenant tenant) string {
 	tenantLower := strings.ToLower(newTenant.Name)
+	appDeployDir := DOCKER_DIR + "app-deploy/" + tenantLower + "/"
+	err := os.MkdirAll(appDeployDir, 0755)
+	if err != nil && !strings.Contains(err.Error(), "already") {
+		println(err.Error())
+	}
+
 	// Image tagging
 	if newTenant.ImageTag == "" {
 		newTenant.ImageTag = "main"
@@ -193,29 +203,54 @@ func dockerCreateTenant(newTenant tenant) string {
 		args = append(args, "--profile")
 		args = append(args, "web")
 		// Create flutter assets folder
-		newTenant.AssetsDir = DOCKER_DIR + "app-deploy/" + tenantLower
+		newTenant.AssetsDir = appDeployDir + "flutter"
 		addAppAssets(newTenant)
 	} else {
 		// docker does not accept it empty, even if it wont be created
 		newTenant.AssetsDir = DOCKER_DIR
 	}
+
 	if newTenant.HasDoc {
 		args = append(args, "--profile")
 		args = append(args, "doc")
 	}
+
+	// Default values, empty vars not accepted on docker compose
+	newTenant.BffApiListFile = "./bff_api_list.json"
+	
+	if newTenant.HasBff {
+		args = append(args, "--profile")
+		args = append(args, "arango")
+		if newTenant.BffPort == "" {
+			// Set API Port to BFF Port + 1
+			newTenant.BffPort = newTenant.ApiPort
+			port, _ := strconv.Atoi(newTenant.ApiPort)
+			newTenant.ApiPort = strconv.Itoa(port + 1)
+		}
+		// Create bff api list json file
+		file, _ := os.Create(appDeployDir + tenantLower + "-bff-api-list.json")
+		err := bfftmplt.Execute(file, newTenant)
+		if err != nil {
+			fmt.Println("Error creating bff api list file: " + err.Error())
+		} else {
+			newTenant.BffApiListFile = "./app-deploy/" + tenantLower + "/" + tenantLower + "-bff-api-list.json"
+		}
+		file.Close()
+	}
+
 	args = append(args, "up")
 	args = append(args, "--build")
 	args = append(args, "-d")
 
 	// Create .env file
 	file, _ := os.Create(DOCKER_DIR + ".env")
-	err := tmplt.Execute(file, newTenant)
+	err = tmplt.Execute(file, newTenant)
 	if err != nil {
 		panic(err)
 	}
 	file.Close()
 	// Create tenantName.env as a copy
-	file, _ = os.Create(DOCKER_DIR + tenantLower + ".env")
+	file, _ = os.Create(appDeployDir + tenantLower + ".env")
 	err = tmplt.Execute(file, newTenant)
 	if err != nil {
 		fmt.Println("Error creating .env copy: " + err.Error())
@@ -285,7 +320,7 @@ func addTenantLogo(c *gin.Context) {
 		c.String(http.StatusInternalServerError, err.Error())
 	}
 	// Make sure destination dir is created
-	assetsDir := DOCKER_DIR + "app-deploy/" + tenantName
+	assetsDir := DOCKER_DIR + "app-deploy/" + tenantName + "/flutter"
 	err = os.MkdirAll(assetsDir, 0755)
 	if err != nil && !strings.Contains(err.Error(), "already") {
 		c.String(http.StatusInternalServerError, err.Error())
@@ -302,7 +337,7 @@ func removeTenant(c *gin.Context) {
 	tenantName := strings.ToLower(c.Param("name"))
 
 	// Stop and remove containers
-	for _, str := range []string{"_webapp", "_api", "_db", "_doc"} {
+	for _, str := range []string{"_webapp", "_api", "_db", "_doc", "_bff", "_arango_api", "_arango_db"} {
 		cmd := exec.Command("docker", "rm", "--force", strings.ToLower(tenantName)+str)
 		cmd.Dir = DOCKER_DIR
 		var stderr bytes.Buffer
@@ -315,7 +350,7 @@ func removeTenant(c *gin.Context) {
 	}
 
 	// Remove assets
-	os.RemoveAll(DOCKER_DIR + "app-deploy/" + tenantName)
+	os.RemoveAll(DOCKER_DIR + "app-deploy/" + tenantName + "/flutter")
 	os.Remove(DOCKER_DIR + tenantName + ".env")
 
 	// Update local file

@@ -368,6 +368,28 @@ func (n *getObjectNode) execute() (interface{}, error) {
 	return obj, nil
 }
 
+type getPNode struct {
+	path   node
+	filter node
+}
+
+func (n *getPNode) execute() (interface{}, error) {
+	path, err := nodeToString(n.path, "path")
+	if err != nil {
+		return nil, err
+	}
+	filter, err := nodeToString(n.filter, "filter")
+	if err != nil {
+		return nil, err
+	}
+	obj, err := cmd.GetDevicesInfo(path, filter)
+	if err != nil {
+		return nil, err
+	}
+	cmd.DisplayObject(obj)
+	return obj, nil
+}
+
 type selectObjectNode struct {
 	path node
 }

@@ -6,15 +6,15 @@ services:
     image: ogree/api:${IMAGE_TAG}
     container_name: ${COMPOSE_PROJECT_NAME}_api
     environment:
-      - api_port=3001
+      - api_port=${API_PORT}
       - db_host=${COMPOSE_PROJECT_NAME}_db
       - db_port=27017
       - db_user=${COMPOSE_PROJECT_NAME}
       - db_pass=${CUSTOMER_API_PASSWORD}
       - db=${COMPOSE_PROJECT_NAME}
-      - token_password=yourSecretPasswordGoesHere
+      - token_password=${AUTH_SECRET}
     ports:
-      - ${API_PORT}:3001
+      - ${API_PORT}:${API_PORT}
     depends_on:
       - ogree_db
     restart: on-failure:10
@@ -47,7 +47,8 @@ services:
     ports:
       - ${API_DOC_UI_PORT}:8080
     environment:
-      SWAGGER_JSON_URL: https://raw.githubusercontent.com/ditrit/OGrEE-Core/${IMAGE_TAG}/API/swagger.json
+      SWAGGER_JSON_URL: https://raw.githubusercontent.com/ditrit/OGrEE-Core/${IMAGE_TAG}/BFF/swagger.json
+    restart: on-failure:10
 
   ogree_webapp:
     build: 
@@ -63,5 +64,65 @@ services:
       - ogree_api
     restart: on-failure:10
 
+  arango_db:
+    image: arangodb/arangodb:3.11.2
+    profiles: ["arango"]
+    container_name: ${COMPOSE_PROJECT_NAME}_arango_db
+    environment:
+        - ARANGO_ROOT_PASSWORD=${ARANGO_PASS}
+    volumes:
+      - arangodb-persist:/var/lib/arangodb3
+    restart: on-failure:10
+
+    
+  arango_api:
+    build:
+      context: ${CORE_DIR}/${ARANGO_API_BUILD_DIR}
+    image: arango-api:${IMAGE_TAG}
+    profiles: ["arango"]
+    restart: always
+    container_name: ${COMPOSE_PROJECT_NAME}_arango_api
+    environment:
+      - ENV=production
+      - ARANGO_URL=http://${COMPOSE_PROJECT_NAME}_arango_db:8529
+      - ARANGO_DATABASE=${ARANGO_DB}
+      - ARANGO_USER=${ARANGO_USER}
+      - ARANGO_PASSWORD=${ARANGO_PASS}
+      - API_SECRET=${AUTH_SECRET}
+      - API_PORT=${ARANGO_API_PORT}
+    healthcheck:
+        test: ["CMD", "curl","-f","http://${COMPOSE_PROJECT_NAME}_arango_db:8529/_api/version"]
+        timeout: 30s
+        interval: 1m
+        retries: 3
+
+  ogree-bff:
+    build:
+      context: ${CORE_DIR}/${BFF_BUILD_DIR}
+    image: ogree-bff:${IMAGE_TAG}
+    profiles: ["arango"]
+    restart: on-failure:10
+    container_name: ${COMPOSE_PROJECT_NAME}_bff
+    environment:
+      - ENV=production
+      - BFF_PORT=${BFF_PORT}
+      - BFF_SECRET=${AUTH_SECRET}
+    volumes:
+      - ${BFF_API_LIST}:/bin/api0.json
+    depends_on:
+      - ogree_api
+      - arango_api
+    ports:
+      - ${BFF_PORT}:${BFF_PORT}
+    entrypoint: >
+      sh -c "
+      export COMPOSE_PROJECT_NAME=${COMPOSE_PROJECT_NAME} &&
+      envsubst < /bin/api0.json > /bin/api.json &&
+      /bin/ogree-bff
+      "
+
 volumes:
   db:
+  arangodb-persist:
+      
+

@@ -15,6 +15,7 @@ import (
 )
 
 var tmplt *template.Template
+var bfftmplt *template.Template
 var apptmplt *template.Template
 var servertmplt *template.Template
 var netboxtmplt *template.Template
@@ -35,6 +36,7 @@ func init() {
 	// 	[]byte("password"), bcrypt.DefaultCost)
 	// println(string(hashedPassword))
 	tmplt = template.Must(template.ParseFiles("backend-assets/docker-env-template.txt"))
+	bfftmplt = template.Must(template.ParseFiles("backend-assets/bff-api-list-template.txt"))
 	apptmplt = template.Must(template.ParseFiles("flutter-assets/flutter-env-template.txt"))
 	servertmplt = template.Must(template.ParseFiles("backend-assets/template.service"))
 	netboxtmplt = template.Must(template.ParseFiles("tools-assets/netbox-docker-template.txt"))

@@ -15,6 +15,7 @@ class Tenant {
   String docUrl;
   String docPort;
   String imageTag;
+  bool hasBff;
   TenantStatus? status;
 
   Tenant(
@@ -29,6 +30,7 @@ class Tenant {
       this.docUrl,
       this.docPort,
       this.imageTag,
+      this.hasBff,
       {this.status});
 
   Map<String, dynamic> toMap() {
@@ -44,22 +46,25 @@ class Tenant {
       'docUrl': docUrl,
       'docPort': docPort,
       'imageTag': imageTag,
+      'hasBff': hasBff,
     };
   }
 
   factory Tenant.fromMap(Map<String, dynamic> map) {
     return Tenant(
-        map['name'].toString(),
-        map['customerPassword'].toString(),
-        map['apiUrl'].toString(),
-        map['webUrl'].toString(),
-        map['apiPort'].toString(),
-        map['webPort'].toString(),
-        map['hasWeb'],
-        map['hasDoc'],
-        map['docUrl'].toString(),
-        map['docPort'].toString(),
-        map['imageTag'].toString());
+      map['name'].toString(),
+      map['customerPassword'].toString(),
+      map['apiUrl'].toString(),
+      map['webUrl'].toString(),
+      map['apiPort'].toString(),
+      map['webPort'].toString(),
+      map['hasWeb'],
+      map['hasDoc'],
+      map['docUrl'].toString(),
+      map['docPort'].toString(),
+      map['imageTag'].toString(),
+      map['hasBff'],
+    );
   }
 
   String toJson() => json.encode(toMap());

@@ -10,6 +10,7 @@ import (
 	"log"
 	"math/rand"
 	"net/http"
+	"net/url"
 	"os"
 	"os/exec"
 	pathutil "path"
@@ -140,6 +141,70 @@ func PollObject(path string) (map[string]any, error) {
 
 func GetObject(path string) (map[string]any, error) {
 	return GetObjectWithChildren(path, 0)
+}
+func ObjectAttributes(path string)(string){
+	attr := strings.Split(path, "%");
+	if(len(attr) !=2 ){
+		return "name"
+	}
+	return attr[1]
+}
+func DevicesAttrs(devices string)(string){
+	attr := strings.Split(strings.Split(devices,".")[0],"%");
+	if(len(attr) !=2 ){
+		return "group_name"
+	}
+	return attr[1]
+}
+func removeFirstOccurrence(input string, pattern string) string {
+	inputs := strings.Split(input,pattern)
+	if len(inputs) <3 {
+		return input
+	}
+	return strings.Join(inputs[2:],".")
+}
+func GetDevicesInfo(path string,filters string) (map[string]any, error) {
+
+	objAttr := ObjectAttributes(path)
+	devicesAttr := DevicesAttrs(filters)
+
+	path = removeFirstOccurrence(path,"/")
+	
+	url:= DevicesUrl(strings.Split(path,"%")[0],objAttr,devicesAttr,filters)
+	resp, err := RequestAPI("GET", url, nil, http.StatusOK)
+	if err != nil {
+		if resp != nil && resp.status == http.StatusNotFound {
+			device := strings.Split(strings.Split(filters, ".")[0],"%")[0]
+			return nil, fmt.Errorf(device+" not found")
+		}
+		return nil, err
+	}
+	obj, ok := resp.body["data"].(map[string]any)
+	if !ok {
+		return nil, fmt.Errorf("invalid response from API on GET %s", url)
+	}
+	return obj, nil
+}
+func DevicesUrl(path,objAttr,devAttr,filters string) string{
+	query := GenerateDeviceQuery(filters)
+	device := strings.Split(strings.Split(filters, ".")[0],"%")[0]
+	return "/api/deviceComp/"+device+"/"+path+"/"+objAttr+"/"+devAttr+query
+
+}
+func GenerateDeviceQuery(filters string) (string) {
+	queries:= strings.Split(filters,".")
+	result:=""
+	for _,query := range queries {
+		if strings.Contains(query,"="){
+			q := strings.Split(query,"=")
+			if result == "" {
+				result+= "?"+q[0]+"="+url.QueryEscape(q[1])
+			}else{
+				result+="&"+q[0]+"="+url.QueryEscape(q[1])
+			}
+		}
+	}
+	return result
 }
 
 func Ls(path string) ([]string, error) {

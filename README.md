@@ -97,7 +97,6 @@ git sparse-checkout set "deploy" "APP"
 git pull origin main 
 ```
 
-
 # 🔁 OGree-Core GitFlow
 
 ![Workflows diagram](/assets/images/main.jpg)
@@ -154,3 +153,20 @@ If build workflow is trigger by a release bracnh, workflow will tag OGree-Core w
 - TEAM_DOCKER_PASSWORD: password of the docker registry
 - TEAM_DOCKER_USERNAME: username of the docker registry
 - SVC_GITHUB_TOKEN: an admin github token ( required to trigger build workflow since 08/2022 )
+
+# Using BFF
+
+If you run docker-compose with bff, by adding : --profile arango, to docker compose command.
+
+You will have to set APIURL with the bff's url to match frontend/CLI and BFF
+
+```bash
+docker compose --project-name <your-project> -f deploy/docker/docker-compose.yml --profile arango up
+```
+Example config:
+```bash
+[OGrEE-CLI]
+Verbose = "ERROR"
+APIURL = "http://127.0.0.1:BFF_PORT"
+...
+```
