@@ -15,7 +15,7 @@ assetsDir="$(pwd)/ogree_app/assets/custom"
 file="$assetsDir/.env"
 docker build . -t ogree-app
 sed -i "s/8081/$portBack/g" $file
-docker run -p $portWeb:80 -v $assetsDir:/usr/share/nginx/html/assets/assets/custom -d ogree-app:latest
+docker run --restart always --name ogree-superadmin -p $portWeb:80 -v $assetsDir:/usr/share/nginx/html/assets/assets/custom -d ogree-app:latest
 
 cd ./ogree_app_backend
 docker run --rm -v $(pwd):/workdir -w /workdir golang go build -o ogree_app_backend

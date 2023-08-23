@@ -203,22 +203,18 @@ func dockerCreateTenant(newTenant tenant) string {
 		args = append(args, "--profile")
 		args = append(args, "doc")
 	}
+	args = append(args, "--env-file")
+	envFilename := DOCKER_DIR + tenantLower + ".env"
+	args = append(args, envFilename)
 	args = append(args, "up")
 	args = append(args, "--build")
 	args = append(args, "-d")
 
-	// Create .env file
-	file, _ := os.Create(DOCKER_DIR + ".env")
+	// Create tenantName.env
+	file, _ := os.Create(envFilename)
 	err := tmplt.Execute(file, newTenant)
 	if err != nil {
-		panic(err)
-	}
-	file.Close()
-	// Create tenantName.env as a copy
-	file, _ = os.Create(DOCKER_DIR + tenantLower + ".env")
-	err = tmplt.Execute(file, newTenant)
-	if err != nil {
-		fmt.Println("Error creating .env copy: " + err.Error())
+		panic("Error creating .env: " + err.Error())
 	}
 	file.Close()
 
