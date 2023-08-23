@@ -15,19 +15,9 @@
       "category": {
         "type": "string"
       },
-      "domain": {
-        "type": "string"
-      },
-      "createdDate": {
-      },
-      "lastUpdated": {
-      },
       "name": {
         "type": "string",
         "pattern":"^\\w(\\w|\\-)*$"
-      },
-      "id": {
-        "type": "string"
       },
       "attributes": {
         "type": "object",
@@ -54,7 +44,6 @@
         "description": [
           "domain"
         ],
-        "domain": "DEMO",
         "name": "DEMO"
       }
     ]

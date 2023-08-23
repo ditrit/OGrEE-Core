@@ -35,21 +35,13 @@ type comparatorNode struct {
 }
 
 func (n *comparatorNode) execute() (any, error) {
-	left, err := n.left.execute()
+	leftNum, err := nodeToFloat(n.left, "left expression")
 	if err != nil {
-		return false, err
+		return nil, err
 	}
-	leftNum, err := getFloat(left)
+	rightNum, err := nodeToFloat(n.right, "right expression")
 	if err != nil {
-		return false, fmt.Errorf("left expression should return a number")
-	}
-	right, err := n.right.execute()
-	if err != nil {
-		return false, err
-	}
-	rightNum, err := getFloat(right)
-	if err != nil {
-		return false, fmt.Errorf("right expression should return a number")
+		return nil, err
 	}
 	switch n.op {
 	case "<":

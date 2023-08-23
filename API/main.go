@@ -15,41 +15,15 @@ import (
 
 // Obtain by query
 var dmatch mux.MatcherFunc = func(request *http.Request, match *mux.RouteMatch) bool {
-
-	//fmt.Println("The URL is: ", request.URL.String())
-	//https://benhoyt.com/writings/go-routing/#regex-table
-	//https://stackoverflow.com/questions/21664489/
-	//golang-mux-routing-wildcard-custom-func-match
 	println("Checking MATCH")
-	return regexp.MustCompile(`^(\/api\/(domains|sites|buildings|rooms|acs|panels|cabinets|groups|corridors|racks|devices|sensors|stray-(devices|sensors)|(room|obj|bldg)-templates)\?.*)$`).
-		MatchString(request.URL.String())
-}
-
-// Obtain object hierarchy
-var hmatch mux.MatcherFunc = func(request *http.Request, match *mux.RouteMatch) bool {
-	println("CHECKING H-MATCH")
-	return regexp.MustCompile(`(^(\/api\/(site|building|room|rack|device|stray-device|domain)\/[a-zA-Z0-9]{24}\/all)(\/(sites|buildings|rooms|racks|devices|stray-(devices|sensors)|domains))*$)|(^(\/api\/(sites|buildings|rooms|racks|devices|stray-devices|domains)\/[a-zA-Z0-9]{24}\/all)(\?.*)*$)`).
-		MatchString(request.URL.String())
-}
-
-// For Obtaining objects using parent
-var pmatch mux.MatcherFunc = func(request *http.Request, match *mux.RouteMatch) bool {
-	println("CHECKING P-MATCH")
-	return regexp.MustCompile(`^(\/api\/(sites|buildings|rooms|racks|devices|stray-devices|domains)\/[a-zA-Z0-9]{24}(\/.*)+)$`).
-		MatchString(request.URL.String())
-}
-
-// For Obtaining Site hierarchy
-var tmatch mux.MatcherFunc = func(request *http.Request, match *mux.RouteMatch) bool {
-	println("CHECKING T-MATCH")
-	return regexp.MustCompile(`^(\/api\/(sites|stray-devices|domains)(\/[A-Za-z0-9_]+)(\/.*)+)$`).
+	return regexp.MustCompile(`^(\/api\/(domains|sites|buildings|rooms|acs|panels|cabinets|groups|corridors|racks|devices|stray-objects|(room|obj|bldg)-templates)\?.*)$`).
 		MatchString(request.URL.String())
 }
 
 // For Obtaining hierarchy with hierarchyName
 var hnmatch mux.MatcherFunc = func(request *http.Request, match *mux.RouteMatch) bool {
 	println("CHECKING HN-MATCH")
-	return regexp.MustCompile(`^\/api\/(sites|buildings|rooms|racks|devices|stray-devices|domains)+\/[A-Za-z0-9_.]+\/all(\?.*)*$`).
+	return regexp.MustCompile(`^\/api\/(sites|buildings|rooms|racks|devices|stray-objects|domains|objects)+\/[A-Za-z0-9_.-]+\/all(\?.*)*$`).
 		MatchString(request.URL.String())
 }
 
@@ -120,26 +94,16 @@ func Router(jwt func(next http.Handler) http.Handler) *mux.Router {
 	router.HandleFunc("/api/projects/{id:[a-zA-Z0-9]{24}}",
 		controllers.DeleteProject).Methods("DELETE", "OPTIONS")
 
-	// ------ GET ------ //
-	router.HandleFunc("/api/objects/{name}",
-		controllers.GetGenericObject).Methods("GET", "HEAD", "OPTIONS")
+	// GENERIC
+	router.HandleFunc("/api/objects/{id}",
+		controllers.HandleGenericObject).Methods("GET", "HEAD", "OPTIONS", "DELETE")
 
 	//GET ENTITY HIERARCHY
-	//This matches ranged Site Hierarchy
-	router.NewRoute().PathPrefix("/api/{entity}s/{id:[a-zA-Z0-9]{24}}/all").
-		MatcherFunc(hmatch).HandlerFunc(controllers.GetEntityHierarchy).Methods("GET", "HEAD", "OPTIONS")
-
-	router.NewRoute().PathPrefix("/api/{entity}s/{name}/all").
+	router.NewRoute().PathPrefix("/api/{entity}s/{id}/all").
 		MatcherFunc(hnmatch).HandlerFunc(controllers.GetHierarchyByName).Methods("GET", "HEAD", "OPTIONS")
 
-	//GET EXCEPTIONS
-	router.HandleFunc("/api/{ancestor:site}s/{id:[a-zA-Z0-9]{24}}/{sub:room}s",
-		controllers.GetEntitiesOfAncestor).Methods("GET", "HEAD", "OPTIONS")
-
-	router.HandleFunc("/api/{ancestor:building}s/{id:[a-zA-Z0-9]{24}}/{sub:ac|corridor|cabinet|panel|sensor|group|rack}s",
-		controllers.GetEntitiesOfAncestor).Methods("GET", "HEAD", "OPTIONS")
-
-	router.HandleFunc("/api/{ancestor:room}s/{id:[a-zA-Z0-9]{24}}/{sub:device}s",
+	//GET SUBENT
+	router.HandleFunc("/api/{ancestor:site|building|room|rack}s/{id}/{sub:building|room|ac|corridor|cabinet|panel|group|rack|device}s",
 		controllers.GetEntitiesOfAncestor).Methods("GET", "HEAD", "OPTIONS")
 
 	// GET BY QUERY
@@ -147,21 +111,10 @@ func Router(jwt func(next http.Handler) http.Handler) *mux.Router {
 		HandlerFunc(controllers.GetEntityByQuery).Methods("HEAD", "GET")
 
 	//GET ENTITY
-	router.HandleFunc("/api/{entity}s/{id:[a-zA-Z0-9]{24}}",
+	router.HandleFunc("/api/{entity}s/{id}",
 		controllers.GetEntity).Methods("GET", "HEAD", "OPTIONS")
-
-	router.HandleFunc("/api/{entity}s/{name}",
-		controllers.GetEntity).Methods("GET", "HEAD", "OPTIONS")
-
-	//GET BY NAME OF PARENT
-	router.NewRoute().PathPrefix("/api/{entity}s/{site_name}").
-		MatcherFunc(tmatch).HandlerFunc(controllers.GetEntitiesUsingNamesOfParents).Methods("GET", "HEAD", "OPTIONS")
-
-	router.NewRoute().PathPrefix("/api/{entity}s/{id:[a-zA-Z0-9]{24}}").
-		MatcherFunc(pmatch).HandlerFunc(controllers.GetEntitiesUsingNamesOfParents).Methods("GET", "HEAD", "OPTIONS")
 
 	// GET ALL ENTITY
-
 	router.HandleFunc("/api/{entity}s",
 		controllers.GetAllEntities).Methods("HEAD", "GET")
 
@@ -173,22 +126,23 @@ func Router(jwt func(next http.Handler) http.Handler) *mux.Router {
 		controllers.CreateBulkDomain).Methods("POST")
 
 	//DELETE ENTITY
-	router.HandleFunc("/api/{entity}s/{id:[a-zA-Z0-9]{24}}",
-		controllers.DeleteEntity).Methods("DELETE")
-
-	router.HandleFunc("/api/{entity}s/{name}",
+	router.HandleFunc("/api/{entity}s/{id}",
 		controllers.DeleteEntity).Methods("DELETE")
 
 	// UPDATE ENTITY
-	router.HandleFunc("/api/{entity}s/{id:[a-zA-Z0-9]{24}}",
-		controllers.UpdateEntity).Methods("PUT", "PATCH")
-
-	router.HandleFunc("/api/{entity}s/{name}",
+	router.HandleFunc("/api/{entity}s/{id}",
 		controllers.UpdateEntity).Methods("PUT", "PATCH")
 
 	//OPTIONS BLOCK
 	router.HandleFunc("/api/{entity}s",
 		controllers.BaseOption).Methods("OPTIONS")
+
+	// LINK AND UNLINK
+	router.HandleFunc("/api/{entity:building|room|ac|corridor|cabinet|panel|group|rack|device}s/{id}/unlink",
+		controllers.LinkEntity).Methods("PATCH")
+
+	router.HandleFunc("/api/stray-objects/{id}/link",
+		controllers.LinkEntity).Methods("PATCH")
 
 	//VALIDATION
 	router.HandleFunc("/api/validate/{entity}s", controllers.ValidateEntity).Methods("POST", "OPTIONS")

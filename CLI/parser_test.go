@@ -102,29 +102,34 @@ func TestParseArgs(t *testing.T) {
 
 func TestParseExpr(t *testing.T) {
 	defer recoverFunc(t)
-	p := newParser("\"plouf\" + (3 - 4.2) * $ab - ${a}  42")
+	s := "\"plouf\" + (3 - 4.2) * $ab - ${a} + format(\"%03d\", 47)  42"
+	p := newParser(s)
 	expr := p.parseExpr("")
 	expectedExpr := &arithNode{
-		op: "-",
+		op: "+",
 		left: &arithNode{
-			op:   "+",
-			left: &valueNode{"plouf"},
-			right: &arithNode{
-				op: "*",
-				left: &arithNode{
-					op:    "-",
-					left:  &valueNode{3},
-					right: &valueNode{4.2},
+			op: "-",
+			left: &arithNode{
+				op:   "+",
+				left: &valueNode{"plouf"},
+				right: &arithNode{
+					op: "*",
+					left: &arithNode{
+						op:    "-",
+						left:  &valueNode{3},
+						right: &valueNode{4.2},
+					},
+					right: &symbolReferenceNode{"ab"},
 				},
-				right: &symbolReferenceNode{"ab"},
 			},
+			right: &symbolReferenceNode{"a"},
 		},
-		right: &symbolReferenceNode{"a"},
+		right: &formatStringNode{&valueNode{"%03d"}, []node{&valueNode{47}}},
 	}
 	if !reflect.DeepEqual(expr, expectedExpr) {
 		t.Errorf("unexpected expression : \n%s", spew.Sdump(expr))
 	}
-	if p.cursor != 34 {
+	if p.cursor != len(s)-2 {
 		t.Errorf("unexpected cursor : %d", p.cursor)
 	}
 	p = newParser("$a+3))")
@@ -166,7 +171,7 @@ func TestParseExprString(t *testing.T) {
 	defer recoverFunc(t)
 	p := newParser("\"${a}test\"")
 	expr := p.parseExpr("")
-	expected := &formatStringNode{"%vtest", []node{&symbolReferenceNode{"a"}}}
+	expected := &formatStringNode{&valueNode{"%vtest"}, []node{&symbolReferenceNode{"a"}}}
 	if !reflect.DeepEqual(expr, expected) {
 		t.Errorf("unexpected expression : \n%s", spew.Sdump(expr))
 		t.Errorf("unexpected parsing : \ntree : %s\nexpected : %s",
@@ -189,7 +194,7 @@ func TestParseRawText(t *testing.T) {
 	defer recoverFunc(t)
 	p := newParser("${a}a")
 	expr := p.parseText(p.parseUnquotedStringToken, false)
-	expected := &formatStringNode{"%va", []node{&symbolReferenceNode{"a"}}}
+	expected := &formatStringNode{&valueNode{"%va"}, []node{&symbolReferenceNode{"a"}}}
 	if !reflect.DeepEqual(expr, expected) {
 		t.Errorf("unexpected expression : \n%s", spew.Sdump(expr))
 	}
@@ -199,7 +204,7 @@ func TestParseString(t *testing.T) {
 	defer recoverFunc(t)
 	p := newParser("${a}a")
 	expr := p.parseString("")
-	expected := &formatStringNode{"%va", []node{&symbolReferenceNode{"a"}}}
+	expected := &formatStringNode{&valueNode{"%va"}, []node{&symbolReferenceNode{"a"}}}
 	if !reflect.DeepEqual(expr, expected) {
 		t.Errorf("unexpected expression : \n%s", spew.Sdump(expr))
 	}
@@ -247,7 +252,7 @@ func TestParseLsObj(t *testing.T) {
 	testCommand(buffer, expected, t)
 }
 
-var testPath = &pathNode{&formatStringNode{"%v/tata", []node{&symbolReferenceNode{"toto"}}}}
+var testPath = &pathNode{&formatStringNode{&valueNode{"%v/tata"}, []node{&symbolReferenceNode{"toto"}}}}
 var testPath2 = &pathNode{&valueNode{"/toto/../tata"}}
 
 func vec2(x float64, y float64) node {
@@ -269,7 +274,7 @@ var commandsMatching = map[string]node{
 	"man ui":                         &helpNode{"ui"},
 	"ls":                             &lsNode{&pathNode{&valueNode{""}}},
 	"cd":                             &cdNode{&pathNode{&valueNode{"/"}}},
-	"tree":                           &treeNode{&pathNode{&valueNode{"."}}, 0},
+	"tree":                           &treeNode{&pathNode{&valueNode{"."}}, 1},
 	"get ${toto}/tata":               &getObjectNode{testPath},
 	"getu rackA 42":                  &getUNode{&pathNode{&valueNode{"rackA"}}, &valueNode{42}},
 	"undraw":                         &undrawNode{nil},
@@ -283,7 +288,7 @@ var commandsMatching = map[string]node{
 	".cmds:../toto/tata.ocli":        &loadNode{&valueNode{"../toto/tata.ocli"}},
 	".template:../toto/tata.ocli":    &loadTemplateNode{&valueNode{"../toto/tata.ocli"}},
 	".var:a=42":                      &assignNode{"a", &valueNode{"42"}},
-	".var:b= $(($a+3))":              &assignNode{"b", &formatStringNode{"%v", []node{&arithNode{"+", &symbolReferenceNode{"a"}, &valueNode{3}}}}},
+	".var:b= $(($a+3))":              &assignNode{"b", &formatStringNode{&valueNode{"%v"}, []node{&arithNode{"+", &symbolReferenceNode{"a"}, &valueNode{3}}}}},
 	"=${toto}/tata":                  &selectObjectNode{testPath},
 	"=..":                            &selectObjectNode{&pathNode{&valueNode{".."}}},
 	"={${toto}/tata}":                &selectChildrenNode{[]node{testPath}},
@@ -329,8 +334,8 @@ var commandsMatching = map[string]node{
 	"camera.wait=15":                         &cameraWaitNode{15.},
 	"camera.wait = 15":                       &cameraWaitNode{15.},
 	"clear":                                  &clrNode{},
-	".cmds:${CUST}/DEMO.PERF.ocli":           &loadNode{&formatStringNode{"%v/DEMO.PERF.ocli", []node{&symbolReferenceNode{"CUST"}}}},
-	".cmds:${a}/${b}.ocli":                   &loadNode{&formatStringNode{"%v/%v.ocli", []node{&symbolReferenceNode{"a"}, &symbolReferenceNode{"b"}}}},
+	".cmds:${CUST}/DEMO.PERF.ocli":           &loadNode{&formatStringNode{&valueNode{"%v/DEMO.PERF.ocli"}, []node{&symbolReferenceNode{"CUST"}}}},
+	".cmds:${a}/${b}.ocli":                   &loadNode{&formatStringNode{&valueNode{"%v/%v.ocli"}, []node{&symbolReferenceNode{"a"}, &symbolReferenceNode{"b"}}}},
 	"while $i<6 {print \"a\"}":               &whileNode{&comparatorNode{"<", &symbolReferenceNode{"i"}, &valueNode{6}}, &printNode{&valueNode{"a"}}},
 }
 
@@ -387,7 +392,7 @@ func TestElif(t *testing.T) {
 	condition := &equalityNode{"==", &valueNode{5}, &valueNode{6}}
 	conditionElif := &equalityNode{"==", &valueNode{5}, &valueNode{4}}
 	ifBody := &ast{[]node{&lsNode{&pathNode{&valueNode{""}}}, nil}}
-	elifBody := &ast{[]node{&treeNode{&pathNode{&valueNode{"."}}, 0}, nil}}
+	elifBody := &ast{[]node{&treeNode{&pathNode{&valueNode{"."}}, 1}, nil}}
 	elseBody := &ast{[]node{&pwdNode{}, nil}}
 	elif := &ifNode{conditionElif, elifBody, elseBody}
 	expected := &ifNode{condition, ifBody, elif}

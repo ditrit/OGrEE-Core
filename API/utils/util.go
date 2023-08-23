@@ -20,7 +20,11 @@ var BuildTime string
 var GitCommitDate string
 
 const (
-	SITE = iota
+	DOMAIN = iota
+	// hierarchal root objects
+	STRAYOBJ
+	SITE
+	// hierarchal objects with mandatory parent
 	BLDG
 	ROOM
 	RACK
@@ -29,14 +33,11 @@ const (
 	CABINET
 	CORRIDOR
 	PWRPNL
-	SENSOR
 	GROUP
+	// non hierarchal templates
 	ROOMTMPL
 	OBJTMPL
 	BLDGTMPL
-	STRAYDEV
-	DOMAIN
-	STRAYSENSOR
 )
 
 const HN_DELIMETER = "."  // hierarchyName path delimiter
@@ -141,7 +142,7 @@ func ParamsParse(link *url.URL, objType int) map[string]interface{} {
 				switch key {
 				case "id", "name", "category", "parentID",
 					"description", "domain", "parentid", "parentId",
-					"hierarchyName", "createdDate", "lastUpdated":
+					"createdDate", "lastUpdated":
 					values[key] = q.Get(key)
 				default:
 					values["attributes."+key] = q.Get(key)
@@ -195,10 +196,8 @@ func EntityToString(entity int) string {
 		return "panel"
 	case DOMAIN:
 		return "domain"
-	case STRAYDEV:
-		return "stray_device"
-	case STRAYSENSOR:
-		return "stray_sensor"
+	case STRAYOBJ:
+		return "stray_object"
 	case ROOMTMPL:
 		return "room_template"
 	case OBJTMPL:
@@ -211,8 +210,6 @@ func EntityToString(entity int) string {
 		return "group"
 	case CORRIDOR:
 		return "corridor"
-	case SENSOR:
-		return "sensor"
 	default:
 		return "INVALID"
 	}
@@ -236,10 +233,8 @@ func EntityStrToInt(entity string) int {
 		return PWRPNL
 	case "domain":
 		return DOMAIN
-	case "stray_device":
-		return STRAYDEV
-	case "stray_sensor":
-		return STRAYSENSOR
+	case "stray_object":
+		return STRAYOBJ
 	case "room_template":
 		return ROOMTMPL
 	case "obj_template":
@@ -252,15 +247,13 @@ func EntityStrToInt(entity string) int {
 		return GROUP
 	case "corridor":
 		return CORRIDOR
-	case "sensor":
-		return SENSOR
 	default:
 		return -1
 	}
 }
 
 func HierachyNameToEntity(name string) []int {
-	resp := []int{STRAYDEV} // it can always be a stray
+	resp := []int{STRAYOBJ} // it can always be a stray
 	switch strings.Count(name, HN_DELIMETER) {
 	case 0:
 		resp = append(resp, SITE)
@@ -277,7 +270,6 @@ func HierachyNameToEntity(name string) []int {
 	}
 
 	return resp
-
 }
 
 func GetParentOfEntityByInt(entity int) int {
@@ -286,9 +278,7 @@ func GetParentOfEntityByInt(entity int) int {
 		return DOMAIN
 	case AC, PWRPNL, CABINET, CORRIDOR:
 		return ROOM
-	case SENSOR:
-		return -2
-	case ROOMTMPL, OBJTMPL, BLDGTMPL, GROUP, STRAYDEV:
+	case ROOMTMPL, OBJTMPL, BLDGTMPL, GROUP, STRAYOBJ:
 		return -1
 	default:
 		return entity - 1

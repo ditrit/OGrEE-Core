@@ -107,15 +107,11 @@ type arrNode struct {
 func (n *arrNode) execute() (interface{}, error) {
 	var r []float64
 	for i := range n.nodes {
-		v, err := n.nodes[i].execute()
+		v, err := nodeToFloat(n.nodes[i], "array element")
 		if err != nil {
 			return nil, err
 		}
-		val, err := getFloat(v)
-		if err != nil {
-			return nil, fmt.Errorf("Array should contain floats")
-		}
-		r = append(r, val)
+		r = append(r, v)
 	}
 	return r, nil
 }
@@ -129,20 +125,11 @@ func (n *lenNode) execute() (interface{}, error) {
 	if !ok {
 		return nil, fmt.Errorf("Undefined variable %s", n.variable)
 	}
-	arr, ok := val.([]float64)
-	if !ok {
-		return nil, fmt.Errorf("Variable %s does not contain an array.", n.variable)
+	arr, err := valToVec(val, -1, "Variable "+n.variable)
+	if err != nil {
+		return nil, err
 	}
 	return len(arr), nil
-}
-
-type postObjNode struct {
-	entity string
-	data   map[string]interface{}
-}
-
-func (n *postObjNode) execute() (interface{}, error) {
-	return cmd.PostObj(cmd.EntityStrToInt(n.entity), n.entity, n.data)
 }
 
 type helpNode struct {
@@ -159,13 +146,9 @@ type focusNode struct {
 }
 
 func (n *focusNode) execute() (interface{}, error) {
-	val, err := n.path.execute()
+	path, err := nodeToString(n.path, "path")
 	if err != nil {
 		return nil, err
-	}
-	path, ok := val.(string)
-	if !ok {
-		return nil, fmt.Errorf("Path should be a string")
 	}
 	cmd.FocusUI(path)
 	return nil, nil
@@ -176,15 +159,11 @@ type cdNode struct {
 }
 
 func (n *cdNode) execute() (interface{}, error) {
-	val, err := n.path.execute()
+	path, err := nodeToString(n.path, "path")
 	if err != nil {
 		return nil, err
 	}
-	path, ok := val.(string)
-	if !ok {
-		return nil, fmt.Errorf("Path should be a string")
-	}
-	return cmd.CD(path), nil
+	return nil, cmd.CD(path)
 }
 
 type lsNode struct {
@@ -192,15 +171,18 @@ type lsNode struct {
 }
 
 func (n *lsNode) execute() (interface{}, error) {
-	val, err := n.path.execute()
+	path, err := nodeToString(n.path, "path")
 	if err != nil {
 		return nil, err
 	}
-	path, ok := val.(string)
-	if !ok {
-		return nil, fmt.Errorf("Path should be a string")
+	items, err := cmd.Ls(path)
+	if err != nil {
+		return nil, err
 	}
-	return cmd.LS(path), nil
+	for _, item := range items {
+		println(item)
+	}
+	return nil, nil
 }
 
 type lsAttrNode struct {
@@ -209,13 +191,9 @@ type lsAttrNode struct {
 }
 
 func (n *lsAttrNode) execute() (interface{}, error) {
-	val, err := n.path.execute()
+	path, err := nodeToString(n.path, "path")
 	if err != nil {
 		return nil, err
-	}
-	path, ok := val.(string)
-	if !ok {
-		return nil, fmt.Errorf("Path should be a string")
 	}
 	cmd.LSATTR(path, n.attr)
 	return nil, nil
@@ -227,13 +205,9 @@ type getUNode struct {
 }
 
 func (n *getUNode) execute() (interface{}, error) {
-	val, err := n.path.execute()
+	path, err := nodeToString(n.path, "path")
 	if err != nil {
 		return nil, err
-	}
-	path, ok := val.(string)
-	if !ok {
-		return nil, fmt.Errorf("path should be a string")
 	}
 	u, err := nodeToInt(n.u, "u")
 	if err != nil {
@@ -252,13 +226,9 @@ type getSlotNode struct {
 }
 
 func (n *getSlotNode) execute() (interface{}, error) {
-	val, err := n.path.execute()
+	path, err := nodeToString(n.path, "path")
 	if err != nil {
 		return nil, err
-	}
-	path, ok := val.(string)
-	if !ok {
-		return nil, fmt.Errorf("Path should be a string")
 	}
 	slot, err := n.slot.execute()
 	if err != nil {
@@ -273,15 +243,10 @@ type loadNode struct {
 }
 
 func (n *loadNode) execute() (interface{}, error) {
-	val, err := n.path.execute()
+	path, err := nodeToString(n.path, "path")
 	if err != nil {
 		return nil, err
 	}
-	path, ok := val.(string)
-	if !ok {
-		return nil, fmt.Errorf("path should be a string")
-	}
-
 	//Usually functions from 'controller' pkg are called
 	//But in this case we are calling a function from 'main' pkg
 	return nil, LoadFile(path)
@@ -292,13 +257,9 @@ type loadTemplateNode struct {
 }
 
 func (n *loadTemplateNode) execute() (interface{}, error) {
-	val, err := n.path.execute()
+	path, err := nodeToString(n.path, "path")
 	if err != nil {
 		return nil, err
-	}
-	path, ok := val.(string)
-	if !ok {
-		return nil, fmt.Errorf("path should be a string")
 	}
 	data := fileToJSON(path)
 	if data == nil {
@@ -325,21 +286,34 @@ type deleteObjNode struct {
 }
 
 func (n *deleteObjNode) execute() (interface{}, error) {
-	val, err := n.path.execute()
+	path, err := nodeToString(n.path, "path")
 	if err != nil {
 		return nil, err
 	}
-	path, ok := val.(string)
-	if !ok {
-		return nil, fmt.Errorf("Path should be a string")
-	}
-	return cmd.DeleteObj(path), nil
+	return nil, cmd.DeleteObj(path)
 }
 
 type deleteSelectionNode struct{}
 
 func (n *deleteSelectionNode) execute() (interface{}, error) {
-	return cmd.DeleteSelection(), nil
+	var errBuilder strings.Builder
+	deleted := 0
+	if c.State.ClipBoard != nil {
+		for _, obj := range c.State.ClipBoard {
+			err := c.DeleteObj(obj)
+			if err != nil {
+				errBuilder.WriteString(fmt.Sprintf("    %s: %s\n", obj, err.Error()))
+			} else {
+				deleted += 1
+			}
+		}
+	}
+	println(fmt.Sprintf("%d objects deleted", deleted))
+	notDeleted := len(c.State.ClipBoard) - deleted
+	if notDeleted > 0 {
+		fmt.Printf("%d objects could not be deleted :\n%s", notDeleted, errBuilder.String())
+	}
+	return nil, nil
 }
 
 type isEntityDrawableNode struct {
@@ -347,15 +321,16 @@ type isEntityDrawableNode struct {
 }
 
 func (n *isEntityDrawableNode) execute() (interface{}, error) {
-	val, err := n.path.execute()
+	path, err := nodeToString(n.path, "path")
 	if err != nil {
 		return nil, err
 	}
-	path, ok := val.(string)
-	if !ok {
-		return nil, fmt.Errorf("Path should be a string")
+	drawable, err := cmd.IsEntityDrawable(path)
+	if err != nil {
+		return nil, err
 	}
-	return cmd.IsEntityDrawable(path), nil
+	println(drawable)
+	return drawable, nil
 }
 
 type isAttrDrawableNode struct {
@@ -364,15 +339,16 @@ type isAttrDrawableNode struct {
 }
 
 func (n *isAttrDrawableNode) execute() (interface{}, error) {
-	val, err := n.path.execute()
+	path, err := nodeToString(n.path, "path")
 	if err != nil {
 		return nil, err
 	}
-	path, ok := val.(string)
-	if !ok {
-		return nil, fmt.Errorf("Object path should be a string")
+	drawable, err := cmd.IsAttrDrawable(path, n.attr)
+	if err != nil {
+		return nil, err
 	}
-	return cmd.IsAttrDrawable(path, n.attr, nil, false), nil
+	println(drawable)
+	return drawable, nil
 }
 
 type getObjectNode struct {
@@ -380,19 +356,16 @@ type getObjectNode struct {
 }
 
 func (n *getObjectNode) execute() (interface{}, error) {
-	val, err := n.path.execute()
+	path, err := nodeToString(n.path, "path")
 	if err != nil {
 		return nil, err
 	}
-	path, ok := val.(string)
-	if !ok {
-		return nil, fmt.Errorf("Object path should be a string")
+	obj, err := cmd.GetObject(path)
+	if err != nil {
+		return nil, err
 	}
-	v, _ := cmd.GetObject(path, false)
-	if v == nil {
-		return nil, fmt.Errorf("Cannot find object at path %s", path)
-	}
-	return v, nil
+	cmd.DisplayObject(obj)
+	return obj, nil
 }
 
 type selectObjectNode struct {
@@ -400,83 +373,19 @@ type selectObjectNode struct {
 }
 
 func (n *selectObjectNode) execute() (interface{}, error) {
-	var selection []string
-	val, err := n.path.execute()
+	path, err := nodeToString(n.path, "path")
 	if err != nil {
 		return nil, err
 	}
-	path, ok := val.(string)
-	if !ok {
-		return nil, fmt.Errorf("Object path should be a string")
-	}
+	var selection []string
 	if path != "" {
 		selection = []string{path}
-	}
-
-	cmd.CD(path)
-	return cmd.SetClipBoard(selection)
-}
-
-type searchObjectsNode struct {
-	objType string
-	nodeMap map[string]interface{}
-}
-
-func (n *searchObjectsNode) execute() (interface{}, error) {
-	valMap, err := evalMapNodes(n.nodeMap)
-	if err != nil {
-		return nil, err
-	}
-	resMap, err := resMap(valMap, n.objType, false)
-	if err != nil {
-		return nil, err
-	}
-	v := cmd.SearchObjects(n.objType, resMap)
-	return v, nil
-}
-
-// TODO: Need to restore recursive updates or to remove it
-// entirely
-type recursiveUpdateObjNode struct {
-	arg0 interface{}
-	arg1 interface{}
-	arg2 interface{}
-}
-
-func (n *recursiveUpdateObjNode) execute() (interface{}, error) {
-	//Old code was removed since
-	//it broke the OCLI syntax easy update
-	if _, ok := n.arg2.(bool); ok {
-		//Weird edge case
-		//to solve issue with:
-		// for i in $(ls) do $i[attr]="string"
-
-		//n.arg0 = referenceToNode
-		//n.arg1 = attributeString, (used as an index)
-		//n.arg2 = someValue (usually a string)
-		nodeVal, err := n.arg0.(node).execute()
+		err = cmd.CD(path)
 		if err != nil {
 			return nil, err
 		}
-		objMap := nodeVal.(map[string]interface{})
-
-		if checkIfObjectNode(objMap) == true {
-			val, err := n.arg2.(node).execute()
-			if err != nil {
-				return nil, err
-			}
-			updateArgs := map[string]interface{}{n.arg1.(string): val}
-			id := objMap["id"].(string)
-			entity := objMap["category"].(string)
-			cmd.RecursivePatch("", id, entity, updateArgs)
-		}
-
-	} else {
-		if n.arg2.(string) == "recursive" {
-			cmd.RecursivePatch(n.arg0.(string), "", "", n.arg1.(map[string]interface{}))
-		}
 	}
-	return nil, nil
+	return cmd.SetClipBoard(selection)
 }
 
 func setRoomAreas(path string, values []any) (map[string]any, error) {
@@ -488,16 +397,16 @@ func setRoomAreas(path string, values []any) (map[string]any, error) {
 	if e != nil {
 		return nil, e
 	}
-	return cmd.UpdateObj(path, "", "", attributes, false)
+	return cmd.UpdateObj(path, map[string]any{"attributes": attributes})
 }
 
 func setLabel(path string, values []any, hasSharpe bool) (map[string]any, error) {
 	if len(values) != 1 {
 		return nil, fmt.Errorf("only 1 value expected")
 	}
-	value, ok := values[0].(string)
-	if !ok {
-		return nil, fmt.Errorf("value should be a string")
+	value, err := valToString(values[0], "value")
+	if err != nil {
+		return nil, err
 	}
 	return nil, cmd.InteractObject(path, "label", value, hasSharpe)
 }
@@ -518,7 +427,7 @@ func setLabelFont(path string, values []any) (map[string]any, error) {
 		if values[0] != "color" {
 			return nil, fmt.Errorf(msg)
 		}
-		c, ok := AssertColor(values[1])
+		c, ok := valToColor(values[1])
 		if !ok {
 			return nil, fmt.Errorf("please provide a valid 6 length hex value for the color")
 		}
@@ -532,26 +441,22 @@ func addRoomSeparator(path string, values []any) (map[string]any, error) {
 	if len(values) != 3 {
 		return nil, fmt.Errorf("3 values (startPos, endPos, type) expected to add a separator")
 	}
-	startPos, ok := values[0].([]float64)
-	if !ok || len(startPos) != 2 {
-		return nil, fmt.Errorf("startPos should be a vector2")
+	startPos, err := valToVec(values[0], 2, "startPos")
+	if err != nil {
+		return nil, err
 	}
-	endPos, ok := values[1].([]float64)
-	if !ok || len(startPos) != 2 {
-		return nil, fmt.Errorf("endPos should be a vector2")
+	endPos, err := valToVec(values[1], 2, "endPos")
+	if err != nil {
+		return nil, err
 	}
-	sepType, ok := values[2].(string)
-	if !ok {
-		return nil, fmt.Errorf("type of separator should \"wireframe\" or \"plain\"")
-	}
-	sepType = strings.ToLower(sepType)
-	if sepType != "wireframe" && sepType != "plain" {
-		return nil, fmt.Errorf("type of separator should \"wireframe\" or \"plain\"")
+	sepType, err := valToString(values[2], "separator type")
+	if err != nil {
+		return nil, err
 	}
 	nextSep := map[string]any{"startPosXYm": startPos, "endPosXYm": endPos, "type": sepType}
-	obj, _ := cmd.GetObject(path, true)
-	if obj == nil {
-		return nil, fmt.Errorf("cannot find object")
+	obj, err := cmd.GetObject(path)
+	if err != nil {
+		return nil, err
 	}
 	attr := obj["attributes"].(map[string]any)
 	var sepArray []any
@@ -573,25 +478,28 @@ func addRoomSeparator(path string, values []any) (map[string]any, error) {
 		}
 		attr["separators"] = sepStr
 	}
-	return cmd.UpdateObj(path, "", "", attr, false)
+	return cmd.UpdateObj(path, map[string]any{"attributes": attr})
 }
 
 func addRoomPillar(path string, values []any) (map[string]any, error) {
-	centerXY, ok := values[0].([]float64)
-	if !ok || len(centerXY) != 2 {
-		return nil, fmt.Errorf("centerXY should be a vector2")
+	if len(values) != 2 {
+		return nil, fmt.Errorf("2 values (centerXY, sizeXY) expected to add a pillar")
 	}
-	sizeXY, ok := values[1].([]float64)
-	if !ok || len(sizeXY) != 2 {
-		return nil, fmt.Errorf("sizeXY should be a vector2")
-	}
-	rotation, err := getFloat(values[2])
+	centerXY, err := valToVec(values[0], 2, "centerXY")
 	if err != nil {
-		return nil, fmt.Errorf("rotation should be a number")
+		return nil, err
 	}
-	obj, _ := cmd.GetObject(path, true)
-	if obj == nil {
-		return nil, fmt.Errorf("cannot find object")
+	sizeXY, err := valToVec(values[0], 2, "sizeXY")
+	if err != nil {
+		return nil, err
+	}
+	rotation, err := valToFloat(values[2], "rotation")
+	if err != nil {
+		return nil, err
+	}
+	obj, err := cmd.GetObject(path)
+	if err != nil {
+		return nil, err
 	}
 	var pillarArray []any
 	attr := obj["attributes"].(map[string]any)
@@ -622,6 +530,52 @@ func addRoomPillar(path string, values []any) (map[string]any, error) {
 	return attr, nil
 }
 
+func parseDescriptionIdx(desc string) (int, error) {
+	numStr := desc[len("description"):]
+	num, e := strconv.Atoi(numStr)
+	if e != nil {
+		return -1, e
+	}
+	num -= 1
+	if num < 0 {
+		return -1, fmt.Errorf("description index should be at least 1")
+	}
+	return num, nil
+}
+
+func updateDescription(path string, attr string, values []any) (map[string]any, error) {
+	if len(values) != 1 {
+		return nil, fmt.Errorf("a single value is expected to update a description")
+	}
+	newDesc, err := valToString(values[0], "description")
+	if err != nil {
+		return nil, err
+	}
+	data := map[string]any{}
+	if attr == "description" {
+		data["description"] = []any{newDesc}
+	} else {
+		obj, err := cmd.GetObject(path)
+		if err != nil {
+			return nil, err
+		}
+		curDesc := obj["description"].([]any)
+		idx, e := parseDescriptionIdx(attr)
+		if e != nil {
+			return nil, e
+		}
+		if idx > len(curDesc) {
+			return nil, fmt.Errorf("description index out of range")
+		} else if idx == len(curDesc) {
+			curDesc = append(curDesc, newDesc)
+		} else {
+			curDesc[idx] = newDesc
+		}
+		data["description"] = curDesc
+	}
+	return cmd.UpdateObj(path, data)
+}
+
 type updateObjNode struct {
 	path      node
 	attr      string
@@ -630,7 +584,7 @@ type updateObjNode struct {
 }
 
 func (n *updateObjNode) execute() (interface{}, error) {
-	path, err := AssertString(&n.path, "Object path")
+	path, err := nodeToString(n.path, "path")
 	if err != nil {
 		return nil, err
 	}
@@ -642,33 +596,50 @@ func (n *updateObjNode) execute() (interface{}, error) {
 		}
 		values = append(values, val)
 	}
+	var paths []string
 	if path == "_" {
-		if len(values) != 1 {
-			return nil, fmt.Errorf("only one value is expected when updating selection")
-		}
-		return nil, cmd.UpdateSelection(map[string]any{n.attr: values[0]})
+		paths = cmd.State.ClipBoard
+	} else {
+		paths = []string{path}
 	}
-	boolInteractVals := []string{"content", "alpha", "tilesName", "tilesColor", "U", "slots", "localCS"}
-	if AssertInStringValues(n.attr, boolInteractVals) {
-		boolVal, err := valToBool(values[0], n.attr)
+	for _, path := range paths {
+		var err error
+		switch n.attr {
+		case "content", "alpha", "tilesName", "tilesColor", "U", "slots", "localCS":
+			var boolVal bool
+			boolVal, err = valToBool(values[0], n.attr)
+			if err != nil {
+				return nil, err
+			}
+			err = cmd.InteractObject(path, n.attr, boolVal, n.hasSharpe)
+		case "areas":
+			_, err = setRoomAreas(path, values)
+		case "label":
+			_, err = setLabel(path, values, n.hasSharpe)
+		case "labelFont":
+			_, err = setLabelFont(path, values)
+		case "separator":
+			_, err = addRoomSeparator(path, values)
+		case "pillar":
+			_, err = addRoomPillar(path, values)
+		case "domain":
+			_, err = cmd.UpdateObj(path, map[string]any{"domain": values[0]})
+		default:
+			if strings.HasPrefix(n.attr, "description") {
+				_, err = updateDescription(path, n.attr, values)
+			} else {
+				if len(values) > 1 {
+					return nil, fmt.Errorf("attributes can only be assigned a single value")
+				}
+				attributes := map[string]any{n.attr: values[0]}
+				_, err = cmd.UpdateObj(path, map[string]any{"attributes": attributes})
+			}
+		}
 		if err != nil {
 			return nil, err
 		}
-		return nil, cmd.InteractObject(path, n.attr, boolVal, n.hasSharpe)
 	}
-	switch n.attr {
-	case "areas":
-		return setRoomAreas(path, values)
-	case "label":
-		return setLabel(path, values, n.hasSharpe)
-	case "labelFont":
-		return setLabelFont(path, values)
-	case "separator":
-		return addRoomSeparator(path, values)
-	case "pillar":
-		return addRoomPillar(path, values)
-	}
-	return cmd.UpdateObj(path, "", "", map[string]any{n.attr: values[0]}, false)
+	return nil, nil
 }
 
 type lsObjNode struct {
@@ -680,22 +651,21 @@ type lsObjNode struct {
 }
 
 func (n *lsObjNode) execute() (interface{}, error) {
-	val, err := n.path.execute()
+	path, err := nodeToString(n.path, "path")
 	if err != nil {
 		return nil, err
 	}
-	path, ok := val.(string)
-	if !ok {
-		return nil, fmt.Errorf("Path should be a string")
-	}
 	var objects []any
 	if n.recursive {
-		objects = cmd.LSOBJECTRecursive(path, n.entity)
+		objects, err = cmd.LSOBJECTRecursive(path, n.entity)
+		if err != nil {
+			return nil, err
+		}
 	} else {
 		objects = cmd.LSOBJECT(path, n.entity)
 	}
 	if n.sort != "" {
-		objects = cmd.SortObjects(&objects, n.sort).GetData()
+		objects = cmd.SortObjects(objects, n.sort).GetData()
 	}
 	if n.attrList != nil {
 		cmd.DispWithAttrs(objects, n.attrList)
@@ -722,15 +692,19 @@ type treeNode struct {
 }
 
 func (n *treeNode) execute() (interface{}, error) {
-	val, err := n.path.execute()
+	path, err := nodeToString(n.path, "path")
 	if err != nil {
 		return nil, err
 	}
-	path, ok := val.(string)
-	if !ok {
-		return nil, fmt.Errorf("Path should be a string")
+	root, err := cmd.Tree(path, n.depth)
+	if err != nil {
+		return nil, err
 	}
-	cmd.Tree(path, n.depth)
+	fmt.Println(path)
+	s := root.String(n.depth)
+	if s != "" {
+		fmt.Println(s)
+	}
 	return nil, nil
 }
 
@@ -741,13 +715,9 @@ type drawNode struct {
 }
 
 func (n *drawNode) execute() (interface{}, error) {
-	val, err := n.path.execute()
+	path, err := nodeToString(n.path, "path")
 	if err != nil {
 		return nil, err
-	}
-	path, ok := val.(string)
-	if !ok {
-		return nil, fmt.Errorf("Path should be a string")
 	}
 	return nil, cmd.Draw(path, n.depth, n.force)
 }
@@ -760,9 +730,9 @@ func (n *undrawNode) execute() (interface{}, error) {
 	if n.path == nil {
 		return nil, cmd.Undraw("")
 	}
-	path, e := AssertString(&(n.path), "Path")
-	if e != nil {
-		return nil, e
+	path, err := nodeToString(n.path, "path")
+	if err != nil {
+		return nil, err
 	}
 	return nil, cmd.Undraw(path)
 }
@@ -840,15 +810,6 @@ func (n *selectChildrenNode) execute() (interface{}, error) {
 	return v, nil
 }
 
-type updateSelectNode struct {
-	data map[string]interface{}
-}
-
-func (n *updateSelectNode) execute() (interface{}, error) {
-	cmd.UpdateSelection(n.data)
-	return nil, nil
-}
-
 type unsetFuncNode struct {
 	funcName string
 }
@@ -874,13 +835,9 @@ type unsetAttrNode struct {
 }
 
 func (n *unsetAttrNode) execute() (interface{}, error) {
-	val, err := n.path.execute()
+	path, err := nodeToString(n.path, "path")
 	if err != nil {
 		return nil, err
-	}
-	path, ok := val.(string)
-	if !ok {
-		return nil, fmt.Errorf("path should be a string")
 	}
 	if n.index != nil {
 		idx, err := nodeToInt(n.index, "index")
@@ -889,7 +846,7 @@ func (n *unsetAttrNode) execute() (interface{}, error) {
 		}
 		return cmd.UnsetInObj(path, n.attr, idx)
 	}
-	return cmd.UpdateObj(path, "", "", map[string]any{n.attr: nil}, true)
+	return nil, cmd.UnsetAttribute(path, n.attr)
 }
 
 type setEnvNode struct {
@@ -906,50 +863,28 @@ func (n *setEnvNode) execute() (interface{}, error) {
 	return nil, nil
 }
 
-type hierarchyNode struct {
-	path  node
-	depth int
-}
-
-func (n *hierarchyNode) execute() (interface{}, error) {
-	val, err := n.path.execute()
-	if err != nil {
-		return nil, err
-	}
-	path, ok := val.(string)
-	if !ok {
-		return nil, fmt.Errorf("Path should be a string")
-	}
-	return cmd.GetHierarchy(path, n.depth, false), nil
-
-}
-
 type createDomainNode struct {
 	path  node
 	color node
 }
 
 func (n *createDomainNode) execute() (interface{}, error) {
-	val, err := n.path.execute()
+	path, err := nodeToString(n.path, "path")
 	if err != nil {
 		return nil, err
-	}
-	path, ok := val.(string)
-	if !ok {
-		return nil, fmt.Errorf("Path should be a string")
 	}
 	colorInf, err := n.color.execute()
 	if err != nil {
 		return nil, err
 	}
-	//Assert the color is valid
 	var color string
-	if color, ok = AssertColor(colorInf); !ok {
+	var ok bool
+	if color, ok = valToColor(colorInf); !ok {
 		return nil, fmt.Errorf("Please provide a valid 6 digit Hex value for the color")
 	}
 
 	attributes := map[string]interface{}{"attributes": map[string]interface{}{"color": color}}
-	err = cmd.GetOCLIAtrributes(path, cmd.DOMAIN, attributes)
+	err = cmd.CreateObject(path, cmd.DOMAIN, attributes)
 	return nil, err
 }
 
@@ -958,15 +893,11 @@ type createSiteNode struct {
 }
 
 func (n *createSiteNode) execute() (interface{}, error) {
-	pathVal, err := n.path.execute()
+	path, err := nodeToString(n.path, "path")
 	if err != nil {
 		return nil, err
 	}
-	path, ok := pathVal.(string)
-	if !ok {
-		return nil, fmt.Errorf("path should be a string")
-	}
-	err = cmd.GetOCLIAtrributes(path, cmd.SITE, map[string]any{})
+	err = cmd.CreateObject(path, cmd.SITE, map[string]any{})
 	if err != nil {
 		return nil, err
 	}
@@ -981,47 +912,37 @@ type createBuildingNode struct {
 }
 
 func (n *createBuildingNode) execute() (interface{}, error) {
-	pathVal, err := n.path.execute()
+	path, err := nodeToString(n.path, "path")
 	if err != nil {
 		return nil, err
 	}
-	path, ok := pathVal.(string)
-	if !ok {
-		return nil, fmt.Errorf("path should be a string")
-	}
-	posXYany, err := n.posXY.execute()
+	posXY, err := nodeToVec(n.posXY, 2, "posXY")
 	if err != nil {
 		return nil, err
 	}
-	posXY, ok := posXYany.([]float64)
-	if !ok || len(posXY) != 2 {
-		return nil, fmt.Errorf("posXY should be a vector2")
-	}
-	rotationAny, err := n.rotation.execute()
+	rotation, err := nodeToFloat(n.rotation, "rotation")
 	if err != nil {
 		return nil, err
-	}
-	rotation, err := getFloat(rotationAny)
-	if err != nil {
-		return nil, fmt.Errorf("rotation should be a number")
 	}
 	attributes := map[string]any{"posXY": posXY, "rotation": rotation}
-
 	sizeOrTemplateAny, err := n.sizeOrTemplate.execute()
 	if err != nil {
 		return nil, err
 	}
-	template, ok := sizeOrTemplateAny.(string)
-	if ok && checkIfTemplate(template, cmd.BLDG) {
-		attributes["template"] = template
+	size, ok := sizeOrTemplateAny.([]float64)
+	if ok {
+		attributes["size"] = size
 	} else {
-		size, ok := sizeOrTemplateAny.([]float64)
-		if !ok || len(size) != 3 {
+		template, ok := sizeOrTemplateAny.(string)
+		if !ok {
 			return nil, fmt.Errorf("vector3 (size) or string (template) expected")
 		}
-		attributes["size"] = size
+		if !checkIfTemplate(template, cmd.BLDG) {
+			return nil, fmt.Errorf("template not found")
+		}
+		attributes["template"] = template
 	}
-	err = cmd.GetOCLIAtrributes(path, cmd.BLDG, map[string]any{"attributes": attributes})
+	err = cmd.CreateObject(path, cmd.BLDG, map[string]any{"attributes": attributes})
 	if err != nil {
 		return nil, err
 	}
@@ -1039,75 +960,48 @@ type createRoomNode struct {
 }
 
 func (n *createRoomNode) execute() (interface{}, error) {
-	pathVal, err := n.path.execute()
+	path, err := nodeToString(n.path, "path")
 	if err != nil {
 		return nil, err
 	}
-	path, ok := pathVal.(string)
-	if !ok {
-		return nil, fmt.Errorf("path should be a string")
-	}
-	posXYany, err := n.posXY.execute()
+	posXY, err := nodeToVec(n.posXY, 2, "posXY")
 	if err != nil {
 		return nil, err
 	}
-	posXY, ok := posXYany.([]float64)
-	if !ok || len(posXY) != 2 {
-		return nil, fmt.Errorf("posXY should be a vector2")
-	}
-	rotationAny, err := n.rotation.execute()
+	rotation, err := nodeToFloat(n.rotation, "rotation")
 	if err != nil {
 		return nil, err
-	}
-	rotation, err := getFloat(rotationAny)
-	if err != nil {
-		return nil, fmt.Errorf("rotation should be a number")
 	}
 	attributes := map[string]any{"posXY": posXY, "rotation": rotation}
-
 	if n.template != nil {
-		templateAny, err := n.template.execute()
+		template, err := nodeToString(n.template, "template")
 		if err != nil {
 			return nil, err
 		}
-		template, ok := templateAny.(string)
-		if !ok || !checkIfTemplate(template, cmd.ROOM) {
-			return nil, fmt.Errorf("invalid template")
+		if !checkIfTemplate(template, cmd.ROOM) {
+			return nil, fmt.Errorf("template not found")
 		}
 		attributes["template"] = template
 	} else {
-		sizeAny, err := n.size.execute()
+		size, err := nodeToVec(n.size, 3, "size")
 		if err != nil {
 			return nil, err
-		}
-		size, ok := sizeAny.([]float64)
-		if !ok || len(size) != 3 {
-			return nil, fmt.Errorf("size should be a vector3")
 		}
 		attributes["size"] = size
-		axisOrientationAny, err := n.axisOrientation.execute()
+		axisOrientation, err := nodeToString(n.axisOrientation, "orientation")
 		if err != nil {
 			return nil, err
-		}
-		axisOrientation, ok := axisOrientationAny.(string)
-		if !ok || (axisOrientation != "+x+y" && axisOrientation != "+x-y" &&
-			axisOrientation != "-x-y" && axisOrientation != "-x+y") {
-			return nil, fmt.Errorf("orientation should be +x+y, +x-y, -x-y or x+y")
 		}
 		attributes["axisOrientation"] = axisOrientation
 	}
 	if n.floorUnit != nil {
-		floorUnitAny, err := n.floorUnit.execute()
+		floorUnit, err := nodeToString(n.floorUnit, "floorUnit")
 		if err != nil {
 			return nil, err
 		}
-		floorUnit, ok := floorUnitAny.(string)
-		if !ok {
-			return nil, fmt.Errorf("floorUnit should be a string")
-		}
 		attributes["floorUnit"] = floorUnit
 	}
-	err = cmd.GetOCLIAtrributes(path, cmd.ROOM, map[string]any{"attributes": attributes})
+	err = cmd.CreateObject(path, cmd.ROOM, map[string]any{"attributes": attributes})
 	if err != nil {
 		return nil, err
 	}
@@ -1122,47 +1016,40 @@ type createRackNode struct {
 }
 
 func (n *createRackNode) execute() (interface{}, error) {
-	pathVal, err := n.path.execute()
+	path, err := nodeToString(n.path, "path")
 	if err != nil {
 		return nil, err
 	}
-	path, ok := pathVal.(string)
-	if !ok {
-		return nil, fmt.Errorf("path should be a string")
-	}
-	posAny, err := n.pos.execute()
+	pos, err := nodeToVec(n.pos, -1, "position")
 	if err != nil {
 		return nil, err
 	}
-	pos, ok := posAny.([]float64)
-	if !ok || (len(pos) != 2 && len(pos) != 3) {
+	if len(pos) != 2 && len(pos) != 3 {
 		return nil, fmt.Errorf("position should be a vector2 or a vector3")
 	}
-	orientationAny, err := n.orientation.execute()
+	orientation, err := nodeToString(n.orientation, "orientation")
 	if err != nil {
 		return nil, err
 	}
-	orientation, ok := orientationAny.(string)
-	if !ok || (orientation != "front" && orientation != "rear" && orientation != "left" && orientation != "right") {
-		return nil, fmt.Errorf("orientation should be a front, rear, left or right")
-	}
 	attributes := map[string]any{"posXYZ": pos, "orientation": orientation}
-
 	sizeOrTemplateAny, err := n.sizeOrTemplate.execute()
 	if err != nil {
 		return nil, err
 	}
-	template, ok := sizeOrTemplateAny.(string)
-	if ok && checkIfTemplate(template, cmd.RACK) {
-		attributes["template"] = template
+	size, ok := sizeOrTemplateAny.([]float64)
+	if ok {
+		attributes["size"] = size
 	} else {
-		size, ok := sizeOrTemplateAny.([]float64)
-		if !ok || len(size) != 3 {
+		template, ok := sizeOrTemplateAny.(string)
+		if !ok {
 			return nil, fmt.Errorf("vector3 (size) or string (template) expected")
 		}
-		attributes["size"] = size
+		if !checkIfTemplate(template, cmd.RACK) {
+			return nil, fmt.Errorf("template not found")
+		}
+		attributes["template"] = template
 	}
-	err = cmd.GetOCLIAtrributes(path, cmd.RACK, map[string]any{"attributes": attributes})
+	err = cmd.CreateObject(path, cmd.RACK, map[string]any{"attributes": attributes})
 	if err != nil {
 		return nil, err
 	}
@@ -1177,15 +1064,11 @@ type createDeviceNode struct {
 }
 
 func (n *createDeviceNode) execute() (interface{}, error) {
-	val, err := n.path.execute()
+	path, err := nodeToString(n.path, "path")
 	if err != nil {
 		return nil, err
 	}
-	path, ok := val.(string)
-	if !ok {
-		return nil, fmt.Errorf("path should be a string")
-	}
-	posUOrSlot, err := n.posUOrSlot.execute()
+	posUOrSlot, err := nodeToString(n.posUOrSlot, "posU/slot")
 	if err != nil {
 		return nil, err
 	}
@@ -1195,13 +1078,17 @@ func (n *createDeviceNode) execute() (interface{}, error) {
 	if err != nil {
 		return nil, err
 	}
-	if !checkIfTemplate(sizeUOrTemplate, cmd.DEVICE) {
-		if sizeU, err := strconv.Atoi(sizeUOrTemplate.(string)); err == nil {
-			attr["sizeU"] = sizeU
-		} else {
-			return nil, fmt.Errorf("please provide a valid device template or sizeU")
-		}
+	sizeU, err := valToInt(sizeUOrTemplate, "sizeU")
+	if err == nil {
+		attr["sizeU"] = sizeU
 	} else {
+		template, ok := sizeUOrTemplate.(string)
+		if !ok {
+			return nil, fmt.Errorf("int (sizeU) or string (template) expected")
+		}
+		if !checkIfTemplate(template, cmd.DEVICE) {
+			return nil, fmt.Errorf("template not found")
+		}
 		attr["template"] = sizeUOrTemplate
 	}
 	if n.side != nil {
@@ -1212,7 +1099,7 @@ func (n *createDeviceNode) execute() (interface{}, error) {
 		attr["orientation"] = side
 	}
 	attributes := map[string]interface{}{"attributes": attr}
-	err = cmd.GetOCLIAtrributes(path, cmd.DEVICE, attributes)
+	err = cmd.CreateObject(path, cmd.DEVICE, attributes)
 	if err != nil {
 		return nil, err
 	}
@@ -1225,31 +1112,22 @@ type createGroupNode struct {
 }
 
 func (n *createGroupNode) execute() (interface{}, error) {
-	val, err := n.path.execute()
+	path, err := nodeToString(n.path, "path")
 	if err != nil {
 		return nil, err
-	}
-	path, ok := val.(string)
-	if !ok {
-		return nil, fmt.Errorf("path should be a string")
 	}
 	var objs []string
 	data := map[string]interface{}{}
 	for i := range n.paths {
-		v, err := n.paths[i].execute()
+		obj, err := nodeToString(n.paths[i], "path")
 		if err != nil {
 			return nil, err
-		}
-		obj, ok := v.(string)
-		if !ok {
-			return nil, fmt.Errorf("")
 		}
 		obj = filepath.Base(obj)
 		objs = append(objs, obj)
 	}
-
 	data["attributes"] = map[string]interface{}{"content": objs}
-	err = cmd.GetOCLIAtrributes(path, cmd.GROUP, data)
+	err = cmd.CreateObject(path, cmd.GROUP, data)
 	if err != nil {
 		return nil, err
 	}
@@ -1264,39 +1142,30 @@ type createCorridorNode struct {
 }
 
 func (n *createCorridorNode) execute() (interface{}, error) {
-	path, err := AssertString(&n.path, "Path for corridor")
+	path, err := nodeToString(n.path, "path for corridor")
 	if err != nil {
 		return nil, err
 	}
-
-	leftRack, err2 := AssertString(&n.leftRack, "Path for left rack")
-	if err2 != nil {
-		return nil, err2
+	leftRack, err := nodeToString(n.leftRack, "path for left rack")
+	if err != nil {
+		return nil, err
 	}
-
-	rightRack, err3 := AssertString(&n.rightRack, "Path for right rack")
-	if err3 != nil {
-		return nil, err3
+	rightRack, err := nodeToString(n.rightRack, "path for right rack")
+	if err != nil {
+		return nil, err
 	}
-
-	temp, err4 := AssertString(&n.temp, "Temperature")
-	if err4 != nil {
-		return nil, err4
-	}
-	tempIsValid := AssertInStringValues(temp, []string{"warm", "cold"})
-	if !tempIsValid {
-		return nil,
-			fmt.Errorf("temperature should be either 'warm' or 'cold'")
+	temp, err := nodeToString(n.temp, "temperature")
+	if err != nil {
+		return nil, err
 	}
 	leftRack = filepath.Base(leftRack)
 	rightRack = filepath.Base(rightRack)
-
-	attributes := map[string]interface{}{
-		"content": leftRack + "," + rightRack, "temperature": temp}
-
+	attributes := map[string]any{
+		"content":     leftRack + "," + rightRack,
+		"temperature": temp,
+	}
 	data := map[string]interface{}{"attributes": attributes}
-
-	err = cmd.GetOCLIAtrributes(path, cmd.CORRIDOR, data)
+	err = cmd.CreateObject(path, cmd.CORRIDOR, data)
 	if err != nil {
 		return nil, err
 	}
@@ -1309,24 +1178,19 @@ type createOrphanNode struct {
 }
 
 func (n *createOrphanNode) execute() (interface{}, error) {
-	pathVal, err := n.path.execute()
+	path, err := nodeToString(n.path, "path")
 	if err != nil {
 		return nil, err
 	}
-	path, ok := pathVal.(string)
-	if !ok {
-		return nil, fmt.Errorf("path should be a string")
-	}
-	templateAny, err := n.template.execute()
+	template, err := nodeToString(n.template, "template")
 	if err != nil {
 		return nil, err
 	}
-	template, ok := templateAny.(string)
-	if !ok || !checkIfTemplate(template, cmd.STRAY_DEV) {
-		return nil, fmt.Errorf("invalid template")
+	if !checkIfTemplate(template, cmd.STRAY_DEV) {
+		return nil, fmt.Errorf("template not found")
 	}
 	attributes := map[string]any{"template": template}
-	err = cmd.GetOCLIAtrributes(path, cmd.STRAY_DEV, map[string]any{"attributes": attributes})
+	err = cmd.CreateObject(path, cmd.STRAY_DEV, map[string]any{"attributes": attributes})
 	if err != nil {
 		return nil, err
 	}
@@ -1340,29 +1204,17 @@ type createUserNode struct {
 }
 
 func (n *createUserNode) execute() (interface{}, error) {
-	emailVal, err := n.email.execute()
+	email, err := nodeToString(n.email, "email")
 	if err != nil {
 		return nil, err
 	}
-	email, ok := emailVal.(string)
-	if !ok {
-		return nil, fmt.Errorf("email should be a string")
-	}
-	roleVal, err := n.role.execute()
+	role, err := nodeToString(n.role, "role")
 	if err != nil {
 		return nil, err
 	}
-	role, ok := roleVal.(string)
-	if !ok {
-		return nil, fmt.Errorf("role should be a string")
-	}
-	domainVal, err := n.domain.execute()
+	domain, err := nodeToString(n.domain, "domain")
 	if err != nil {
 		return nil, err
-	}
-	domain, ok := domainVal.(string)
-	if !ok {
-		return nil, fmt.Errorf("domain should be a string")
 	}
 	err = cmd.CreateUser(email, role, domain)
 	if err != nil {
@@ -1378,29 +1230,17 @@ type addRoleNode struct {
 }
 
 func (n *addRoleNode) execute() (interface{}, error) {
-	emailVal, err := n.email.execute()
+	email, err := nodeToString(n.email, "email")
 	if err != nil {
 		return nil, err
 	}
-	email, ok := emailVal.(string)
-	if !ok {
-		return nil, fmt.Errorf("email should be a string")
-	}
-	roleVal, err := n.role.execute()
+	role, err := nodeToString(n.role, "role")
 	if err != nil {
 		return nil, err
 	}
-	role, ok := roleVal.(string)
-	if !ok {
-		return nil, fmt.Errorf("role should be a string")
-	}
-	domainVal, err := n.domain.execute()
+	domain, err := nodeToString(n.domain, "domain")
 	if err != nil {
 		return nil, err
-	}
-	domain, ok := domainVal.(string)
-	if !ok {
-		return nil, fmt.Errorf("domain should be a string")
 	}
 	err = cmd.AddRole(email, role, domain)
 	if err != nil {
@@ -1439,13 +1279,9 @@ type uiHighlightNode struct {
 }
 
 func (n *uiHighlightNode) execute() (interface{}, error) {
-	val, err := n.path.execute()
+	path, err := nodeToString(n.path, "path")
 	if err != nil {
 		return nil, err
-	}
-	path, ok := val.(string)
-	if !ok {
-		return nil, fmt.Errorf("Path should be a string")
 	}
 	return nil, cmd.UIHighlight(path)
 }
@@ -1464,21 +1300,13 @@ type cameraMoveNode struct {
 }
 
 func (n *cameraMoveNode) execute() (interface{}, error) {
-	posVal, err := n.position.execute()
+	position, err := nodeToVec(n.position, 3, "position")
 	if err != nil {
 		return nil, err
 	}
-	position, ok := posVal.([]float64)
-	if !ok || len(position) != 3 {
-		return nil, fmt.Errorf("position (first argument) is invalid\nPlease provide a vector3")
-	}
-	rotVal, err := n.rotation.execute()
+	rotation, err := nodeToVec(n.rotation, 2, "rotation")
 	if err != nil {
 		return nil, err
-	}
-	rotation, ok := rotVal.([]float64)
-	if !ok || len(rotation) != 2 {
-		return nil, fmt.Errorf("rotation (second argument) is invalid\nPlease provide a vector2")
 	}
 	cmd.CameraMove(n.command, position, rotation)
 	return nil, nil
@@ -1496,56 +1324,38 @@ func (n *cameraWaitNode) execute() (interface{}, error) {
 type linkObjectNode struct {
 	source      node
 	destination node
-	slot        node
+	posUOrSlot  node
 }
 
 func (n *linkObjectNode) execute() (interface{}, error) {
-	var slot interface{}
-	source, err := AssertString(&n.source, "Source Object Path")
+	source, err := nodeToString(n.source, "source object path")
 	if err != nil {
 		return nil, err
 	}
-
-	dest, err1 := AssertString(&n.destination, "Destination Object Path")
-	if err1 != nil {
-		return nil, err1
+	dest, err := nodeToString(n.destination, "destination object path")
+	if err != nil {
+		return nil, err
 	}
-
-	if n.slot != nil {
-		s, e := n.slot.execute()
-		if e != nil {
-			return nil, e
+	var posUOrSlot string
+	if n.posUOrSlot != nil {
+		posUOrSlot, err = nodeToString(n.posUOrSlot, "posU/slot")
+		if err != nil {
+			return nil, err
 		}
-		slot = s
-	} else {
-		slot = nil
 	}
-
-	cmd.LinkObject(source, dest, slot)
-	return nil, nil
+	return nil, cmd.LinkObject(source, dest, posUOrSlot)
 }
 
 type unlinkObjectNode struct {
-	source      node
-	destination node
+	source node
 }
 
 func (n *unlinkObjectNode) execute() (interface{}, error) {
-	destination := ""
-	source, err := AssertString(&n.source, "Source Object Path")
+	source, err := nodeToString(n.source, "source object path")
 	if err != nil {
 		return nil, err
 	}
-
-	if n.destination != nil {
-		var e error
-		destination, e = AssertString(&n.destination, "Destination Object Path")
-		if e != nil {
-			return nil, e
-		}
-	}
-	cmd.UnlinkObject(source, destination)
-	return nil, nil
+	return nil, cmd.UnlinkObject(source)
 }
 
 type symbolReferenceNode struct {
@@ -1555,58 +1365,9 @@ type symbolReferenceNode struct {
 func (s *symbolReferenceNode) execute() (interface{}, error) {
 	val, ok := c.State.DynamicSymbolTable[s.va]
 	if !ok {
-		return nil, fmt.Errorf("Undefined variable %s", s.va)
-	}
-	switch v := val.(type) {
-	case string, int, bool, float64, float32, map[int]interface{}:
-		if cmd.State.DebugLvl >= 3 {
-			println("So You want the value: ", v)
-		}
+		return nil, fmt.Errorf("undefined variable %s", s.va)
 	}
 	return val, nil
-}
-
-type objReferenceNode struct {
-	va    string
-	index node
-}
-
-func (o *objReferenceNode) execute() (interface{}, error) {
-	val, ok := c.State.DynamicSymbolTable[o.va]
-	if !ok {
-		return nil, fmt.Errorf("Undefined variable %s", o.va)
-	}
-	if _, ok := val.(map[string]interface{}); !ok {
-		return nil, fmt.Errorf(o.va + " Is not an indexable object")
-	}
-	object := val.(map[string]interface{})
-
-	idx, e := o.index.execute()
-	if e != nil {
-		return nil, e
-	}
-	if _, ok := idx.(string); !ok {
-		return nil, fmt.Errorf("The index must resolve to a string")
-	}
-	index := idx.(string)
-
-	if mainAttr, ok := object[index]; ok {
-		return mainAttr, nil
-	} else {
-		if attrInf, ok := object["attributes"]; ok {
-			if attrDict, ok := attrInf.(map[string]interface{}); ok {
-				if _, ok := attrDict[index]; ok {
-					return attrDict[index], nil
-				}
-			}
-		}
-	}
-
-	msg := "This object " + o.va + " cannot be indexed with " + index +
-		". Please check the object you are referencing and try again"
-
-	return nil, fmt.Errorf(msg)
-
 }
 
 type arrayReferenceNode struct {
@@ -1657,28 +1418,6 @@ func (a *assignNode) execute() (interface{}, error) {
 		return nil, nil
 	}
 	return nil, fmt.Errorf("Invalid type to assign variable %s", a.variable)
-}
-
-// Checks the map and sees if it is an object type
-func checkIfObjectNode(x map[string]interface{}) bool {
-	if idInf, ok := x["id"]; ok {
-		if id, ok := idInf.(string); ok {
-			if len(id) == 24 {
-				if catInf, ok := x["category"]; ok {
-					if _, ok := catInf.(string); ok {
-						return true
-					}
-				}
-
-				if slugInf, ok := x["slug"]; ok {
-					if _, ok := slugInf.(string); ok {
-						return true
-					}
-				}
-			}
-		}
-	}
-	return false
 }
 
 // Hack function for the [room]:areas=[r1,r2,r3,r4]@[t1,t2,t3,t4]

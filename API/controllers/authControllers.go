@@ -279,7 +279,7 @@ func GetAllAccounts(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// swagger:operation DELETE /api/users/{userid} Organization RemoveAccount
+// swagger:operation DELETE /api/users/{UserId} Organization RemoveAccount
 // Remove the specified user account.
 // ---
 // security:
@@ -287,7 +287,7 @@ func GetAllAccounts(w http.ResponseWriter, r *http.Request) {
 // produces:
 // - application/json
 // parameters:
-// - name: userid
+// - name: UserId
 //   in: path
 //   description: 'The ID of the user to delete'
 //   required: true
@@ -351,7 +351,7 @@ func RemoveAccount(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// swagger:operation PATCH /api/users/{userid} Organization ModifyUserRoles
+// swagger:operation PATCH /api/users/{UserId} Organization ModifyUserRoles
 // Modify user permissions: domain and role.
 // ---
 // security:
@@ -359,7 +359,7 @@ func RemoveAccount(w http.ResponseWriter, r *http.Request) {
 // produces:
 // - application/json
 // parameters:
-//   - name: userid
+//   - name: UserId
 //     in: path
 //     description: 'The ID of the user to modify roles'
 //     required: true
