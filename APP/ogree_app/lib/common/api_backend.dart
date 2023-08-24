@@ -348,7 +348,7 @@ Future<Result<void, Exception>> createProject(Project project) async {
 
 Future<Result<(List<Tenant>, List<DockerContainer>), Exception>>
     fetchApplications({http.Client? client}) async {
-  print("API get Tenants");
+  print("API get Apps");
   client ??= http.Client();
   try {
     Uri url = Uri.parse('$apiUrl/api/apps');
