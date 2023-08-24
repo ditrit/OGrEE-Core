@@ -109,6 +109,7 @@ func getAllApps(c *gin.Context) {
 	response["tenants"] = getTenantsFromJSON()
 	if netbox, err := getDockerInfo("netbox"); err != nil {
 		println(err.Error())
+		response["tools"] = []container{}
 	} else {
 		response["tools"] = netbox
 	}
