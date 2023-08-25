@@ -4,6 +4,10 @@ inputs:
   VERSION: 
     description: "Version of the app"
     required: true
+    
+defaults:
+  run:
+    working-directory: ./APP/
 
 runs:
   using: "composite"
