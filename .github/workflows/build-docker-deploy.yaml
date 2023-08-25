@@ -66,6 +66,6 @@ jobs:
         uses: ./.github/actions/build/back-app/windows
         with:
           VERSION: ${{ env.VERSION }}
-          NEXT_CREDENTIALS: ${{ inputs.NEXT_CREDENTIALS }}
+          NEXT_CREDENTIALS: ${{ secrets.NEXT_CREDENTIALS }}
 
   
