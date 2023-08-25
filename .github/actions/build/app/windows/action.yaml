@@ -7,10 +7,6 @@ inputs:
 
 runs:
   using: "composite"
-  defaults:
-    run:
-      working-directory: ./APP/
-
   steps:
     - uses: actions/checkout@v3
     - uses: subosito/flutter-action@v2
@@ -19,7 +15,8 @@ runs:
         channel: 'stable'
 
     - name: Windows flutter build
-      run: cd ogree_app/ && flutter build windows
+      run: cd ./APP/ogree_app/ && flutter build windows
+      shell: cmd
     
     - name: Set up Go
       uses: actions/setup-go@v4
@@ -27,13 +24,15 @@ runs:
         go-version: '1.20'
 
     - name: Windows backend build
-      run: cd ogree_app_backend/ && go build
+      run: cd ./APP/ogree_app_backend/ && go build
+      shell: cmd
 
     - name: Building the installer
       env:
         VERSION: ${{ inputs.VERSION }}
       run: |
-        "%programfiles(x86)%\Inno Setup 6\iscc.exe" "inno.iss"
+        cd ./APP/
+        "%programfiles(x86)%\Inno Setup 6\iscc.exe" "inno-wininstaller.iss"
       shell: cmd
 
     - name: Send to Nextcloud
@@ -42,4 +41,5 @@ runs:
         NEXT_CREDENTIALS: ${{ inputs.NEXT_CREDENTIALS }}
         NEXT_ADDR: https://nextcloud.ditrit.io/remote.php/dav/files/github.actions/Ogree/1_Core/3_APP/bin/${{ inputs.VERSION }}
       run: | 
+        cd ./APP/
         curl -u $env:NEXT_CREDENTIALS -T Output\ogree-app-installer.exe $env:NEXT_ADDR/OGrEE_APP_Win_Install_$(date +%Y_%m_%d).exe 
