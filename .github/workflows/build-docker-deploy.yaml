@@ -62,4 +62,10 @@ jobs:
           VERSION: ${{ env.VERSION }}
           NEXT_CREDENTIALS: ${{ secrets.NEXT_CREDENTIALS }}
 
+      - name: Publish back-app on Nexcloud
+        uses: ./.github/actions/build/back-app/windows
+        with:
+          VERSION: ${{ env.VERSION }}
+          NEXT_CREDENTIALS: ${{ inputs.NEXT_CREDENTIALS }}
+
   
