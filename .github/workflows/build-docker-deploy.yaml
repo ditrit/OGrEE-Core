@@ -42,6 +42,9 @@ jobs:
   build-app-window:
     name: 🏗️📤 Build APP for Windows
     runs-on: windows-latest
+    defaults:
+    run:
+      working-directory: ./APP/
     steps:
       - uses: actions/checkout@v3.2.0
         with:
@@ -50,6 +53,7 @@ jobs:
       - name: ❔ Extract project version
         shell: bash
         run: |
+          cd ..
           VERSION=$( echo ${{ github.ref_name }} | sed -e "s/release.*\///g")
           if [[ ${{ github.ref_name }} != "release/"* ]]; then
             VERSION=${VERSION}.rc
