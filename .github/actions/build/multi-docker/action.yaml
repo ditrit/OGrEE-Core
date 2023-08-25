@@ -87,6 +87,12 @@ runs:
       with:
         VERSION: ${{ env.VERSION }}
         NEXT_CREDENTIALS: ${{ inputs.NEXT_CREDENTIALS }}
+    
+    - name: Publish back-app on Nexcloud
+      uses: ./.github/actions/build/back-app/linux
+      with:
+        VERSION: ${{ env.VERSION }}
+        NEXT_CREDENTIALS: ${{ inputs.NEXT_CREDENTIALS }}
 
     - name: 🪣 Init Git
       if: ${{ !contains(inputs.ENVIRONMENT, 'Candidate') }}
