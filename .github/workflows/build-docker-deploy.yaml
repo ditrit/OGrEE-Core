@@ -39,8 +39,8 @@ jobs:
           TEAM_PASSWORD: ${{ secrets.TEAM_DOCKER_PASSWORD }}
           NEXT_CREDENTIALS: ${{ secrets.NEXT_CREDENTIALS }}
   
-  build-flutter-window:
-    name: 🏗️📤 Build Flutter for Window
+  build-app-window:
+    name: 🏗️📤 Build APP for Windows
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v3.2.0
@@ -56,14 +56,8 @@ jobs:
           fi
           echo "VERSION=$VERSION" >> $GITHUB_ENV
 
-      - name: 🏗️📤 Build Flutter
-        uses: ./.github/actions/build/flutter-app/windows
-        with:
-          VERSION: ${{ env.VERSION }}
-          NEXT_CREDENTIALS: ${{ secrets.NEXT_CREDENTIALS }}
-
-      - name: Publish back-app on Nexcloud
-        uses: ./.github/actions/build/back-app/windows
+      - name: 🏗️📤 Build app and create installer
+        uses: ./.github/actions/build/app/windows
         with:
           VERSION: ${{ env.VERSION }}
           NEXT_CREDENTIALS: ${{ secrets.NEXT_CREDENTIALS }}
