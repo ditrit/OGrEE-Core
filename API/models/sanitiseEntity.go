@@ -3,8 +3,6 @@ package models
 import (
 	u "p3/utils"
 	"strings"
-
-	"go.mongodb.org/mongo-driver/bson"
 )
 
 // Remove mongos _id and add parentId
@@ -25,17 +23,6 @@ func FixUnderScore(x map[string]interface{}) {
 		if cat, _ := catInf.(string); strings.Contains(cat, "_") {
 			x["category"] = strings.Replace(cat, "_", "-", 1)
 		}
-	}
-}
-
-// Perform any neccessary adjustments to objects before insertion into DB
-func FixAttributesBeforeInsert(entity int, data map[string]interface{}) {
-	if entity == u.RACK {
-		pid, _ := data["parentId"].(string)
-		req := bson.M{"id": pid}
-		parent, _ := GetEntity(req, "room", u.RequestFilters{}, nil)
-		parentUnit := parent["attributes"].(map[string]interface{})["posXYUnit"]
-		data["attributes"].(map[string]interface{})["posXYUnit"] = parentUnit
 	}
 }
 
