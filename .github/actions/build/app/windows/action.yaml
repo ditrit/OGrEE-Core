@@ -4,10 +4,6 @@ inputs:
   VERSION: 
     description: "Version of the app"
     required: true
-    
-defaults:
-  run:
-    working-directory: ./APP/
 
 runs:
   using: "composite"
@@ -19,7 +15,7 @@ runs:
         channel: 'stable'
 
     - name: Windows flutter build
-      run: cd ogree_app/ && flutter build windows
+      run: cd ./APP/ogree_app/ && flutter build windows
       shell: cmd
     
     - name: Set up Go
@@ -28,13 +24,14 @@ runs:
         go-version: '1.20'
 
     - name: Windows backend build
-      run: cd ogree_app_backend/ && go build
+      run: cd ./APP/ogree_app_backend/ && go build
       shell: cmd
 
     - name: Building the installer
       env:
         VERSION: ${{ inputs.VERSION }}
       run: |
+        cd ./APP/
         "%programfiles(x86)%\Inno Setup 6\iscc.exe" "inno.iss"
       shell: cmd
 
@@ -44,4 +41,5 @@ runs:
         NEXT_CREDENTIALS: ${{ inputs.NEXT_CREDENTIALS }}
         NEXT_ADDR: https://nextcloud.ditrit.io/remote.php/dav/files/github.actions/Ogree/1_Core/3_APP/bin/${{ inputs.VERSION }}
       run: | 
+        cd ./APP/
         curl -u $env:NEXT_CREDENTIALS -T Output\ogree-app-installer.exe $env:NEXT_ADDR/OGrEE_APP_Win_Install_$(date +%Y_%m_%d).exe 
