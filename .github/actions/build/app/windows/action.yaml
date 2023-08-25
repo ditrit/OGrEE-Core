@@ -1,0 +1,45 @@
+name: Create APP Windows Installer
+
+inputs:
+  VERSION: 
+    description: "Version of the app"
+    required: true
+
+runs:
+  using: "composite"
+  defaults:
+    run:
+      working-directory: ./APP/
+
+  steps:
+    - uses: actions/checkout@v3
+    - uses: subosito/flutter-action@v2
+      with:
+        flutter-version: '3.10.5'
+        channel: 'stable'
+
+    - name: Windows flutter build
+      run: cd ogree_app/ && flutter build windows
+    
+    - name: Set up Go
+      uses: actions/setup-go@v4
+      with:
+        go-version: '1.20'
+
+    - name: Windows backend build
+      run: cd ogree_app_backend/ && go build
+
+    - name: Building the installer
+      env:
+        VERSION: ${{ inputs.VERSION }}
+      run: |
+        "%programfiles(x86)%\Inno Setup 6\iscc.exe" "inno.iss"
+      shell: cmd
+
+    - name: Send to Nextcloud
+      shell: pwsh
+      env:
+        NEXT_CREDENTIALS: ${{ inputs.NEXT_CREDENTIALS }}
+        NEXT_ADDR: https://nextcloud.ditrit.io/remote.php/dav/files/github.actions/Ogree/1_Core/3_APP/bin/${{ inputs.VERSION }}
+      run: | 
+        curl -u $env:NEXT_CREDENTIALS -T Output\ogree-app-installer.exe $env:NEXT_ADDR/OGrEE_APP_Win_Install_$(date +%Y_%m_%d).exe 
