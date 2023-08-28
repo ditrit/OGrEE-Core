@@ -1011,8 +1011,9 @@ func (n *createRoomNode) execute() (interface{}, error) {
 type createRackNode struct {
 	path           node
 	pos            node
+	unit           node
+	rotation       node
 	sizeOrTemplate node
-	orientation    node
 }
 
 func (n *createRackNode) execute() (interface{}, error) {
@@ -1027,11 +1028,16 @@ func (n *createRackNode) execute() (interface{}, error) {
 	if len(pos) != 2 && len(pos) != 3 {
 		return nil, fmt.Errorf("position should be a vector2 or a vector3")
 	}
-	orientation, err := nodeToString(n.orientation, "orientation")
+	unit, err := nodeToString(n.unit, "unit")
 	if err != nil {
 		return nil, err
 	}
-	attributes := map[string]any{"posXYZ": pos, "orientation": orientation}
+	attributes := map[string]any{"posXYZ": pos, "posXYUnit": unit}
+	rotation, err := nodeTo3dRotation(n.rotation)
+	if err != nil {
+		return nil, err
+	}
+	attributes["rotation"] = rotation
 	sizeOrTemplateAny, err := n.sizeOrTemplate.execute()
 	if err != nil {
 		return nil, err
@@ -1135,37 +1141,48 @@ func (n *createGroupNode) execute() (interface{}, error) {
 }
 
 type createCorridorNode struct {
-	path      node
-	leftRack  node
-	rightRack node
-	temp      node
+	path     node
+	pos      node
+	unit     node
+	rotation node
+	size     node
+	temp     node
 }
 
 func (n *createCorridorNode) execute() (interface{}, error) {
-	path, err := nodeToString(n.path, "path for corridor")
+	path, err := nodeToString(n.path, "path")
 	if err != nil {
 		return nil, err
 	}
-	leftRack, err := nodeToString(n.leftRack, "path for left rack")
+	pos, err := nodeToVec(n.pos, -1, "position")
 	if err != nil {
 		return nil, err
 	}
-	rightRack, err := nodeToString(n.rightRack, "path for right rack")
+	if len(pos) != 2 && len(pos) != 3 {
+		return nil, fmt.Errorf("position should be a vector2 or a vector3")
+	}
+	unit, err := nodeToString(n.unit, "unit")
 	if err != nil {
 		return nil, err
+	}
+	rotation, err := nodeTo3dRotation(n.rotation)
+	if err != nil {
+		return nil, err
+	}
+	sizeAny, err := n.size.execute()
+	if err != nil {
+		return nil, err
+	}
+	size, ok := sizeAny.([]float64)
+	if !ok || len(size) != 3 {
+		return nil, fmt.Errorf("vector3 (size) or string (template) expected")
 	}
 	temp, err := nodeToString(n.temp, "temperature")
 	if err != nil {
 		return nil, err
 	}
-	leftRack = filepath.Base(leftRack)
-	rightRack = filepath.Base(rightRack)
-	attributes := map[string]any{
-		"content":     leftRack + "," + rightRack,
-		"temperature": temp,
-	}
-	data := map[string]interface{}{"attributes": attributes}
-	err = cmd.CreateObject(path, cmd.CORRIDOR, data)
+	attributes := map[string]any{"posXYZ": pos, "posXYUnit": unit, "rotation": rotation, "size": size, "temperature": temp}
+	err = cmd.CreateObject(path, cmd.CORRIDOR, map[string]any{"attributes": attributes})
 	if err != nil {
 		return nil, err
 	}

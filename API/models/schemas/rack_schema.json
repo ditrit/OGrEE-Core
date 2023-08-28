@@ -15,14 +15,9 @@
           "type": "string",
           "enum": ["mm", "cm", "m", "U", "OU", "f"]
         },
-        "orientation": {
+        "rotation": {
           "type": "string",
-          "enum": [
-            "front",
-            "rear",
-            "left",
-            "right"
-          ]
+          "$ref": "refs/types.json#/definitions/vector3"
         },
         "posXYZ": {
           "type": "string",
@@ -55,7 +50,7 @@
       "required": [
         "height",
         "heightUnit",
-        "orientation",
+        "rotation",
         "posXYUnit",
         "posXYZ",
         "size",
@@ -69,7 +64,7 @@
       "attributes": {
         "height": "47",
         "heightUnit": "U",
-        "orientation": "front",
+        "rotation": "{\"x\":45 ,\"y\":45 ,\"z\":45}",
         "posXYUnit": "m",
         "posXYZ": "{\"x\":4.6666666666667 ,\"y\": -2 ,\"z\":0}",
         "size": "{\"x\":80 ,\"y\":100.532442}",

@@ -213,8 +213,6 @@ func prepareCreateEntity(entity int, t map[string]interface{}, userRoles map[str
 	t["createdDate"] = primitive.NewDateTimeFromTime(time.Now())
 	t["lastUpdated"] = t["createdDate"]
 
-	//Last modifications before insert
-	FixAttributesBeforeInsert(entity, t)
 	delete(t, "parentId")
 	return nil
 }

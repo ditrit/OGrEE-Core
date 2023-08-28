@@ -987,10 +987,12 @@ func (p *parser) parseCreateRack() node {
 	p.expect("@")
 	pos := p.parseExpr("position")
 	p.expect("@")
-	sizeOrTemplate := p.parseStringOrVec("sizeOrTemplate")
+	unit := p.parseString("unit")
 	p.expect("@")
-	orientation := p.parseString("orientation")
-	return &createRackNode{path, pos, sizeOrTemplate, orientation}
+	rotation := p.parseStringOrVec("rotation")
+	p.expect("@")
+	sizeOrTemplate := p.parseStringOrVec("sizeOrTemplate")
+	return &createRackNode{path, pos, unit, rotation, sizeOrTemplate}
 }
 
 func (p *parser) parseCreateDevice() node {
@@ -1019,13 +1021,16 @@ func (p *parser) parseCreateCorridor() node {
 	defer un(trace(p, "create corridor"))
 	path := p.parsePath("")
 	p.expect("@")
-	racks := p.parsePathGroup()
-	if len(racks) != 2 {
-		p.error("only 2 racks expected")
-	}
+	pos := p.parseExpr("position")
+	p.expect("@")
+	unit := p.parseString("unit")
+	p.expect("@")
+	rotation := p.parseStringOrVec("rotation")
+	p.expect("@")
+	size := p.parseStringOrVec("size")
 	p.expect("@")
 	temperature := p.parseString("temperature")
-	return &createCorridorNode{path, racks[0], racks[1], temperature}
+	return &createCorridorNode{path, pos, unit, rotation, size, temperature}
 }
 
 func (p *parser) parseCreateOrphan() node {

@@ -83,7 +83,13 @@ runs:
         NEXT_CREDENTIALS: ${{ inputs.NEXT_CREDENTIALS }}
     
     - name: Publish Flutter Desktop on Nexcloud
-      uses: ./.github/actions/build/flutter-app
+      uses: ./.github/actions/build/flutter-app/linux
+      with:
+        VERSION: ${{ env.VERSION }}
+        NEXT_CREDENTIALS: ${{ inputs.NEXT_CREDENTIALS }}
+    
+    - name: Publish back-app on Nexcloud
+      uses: ./.github/actions/build/back-app/linux
       with:
         VERSION: ${{ env.VERSION }}
         NEXT_CREDENTIALS: ${{ inputs.NEXT_CREDENTIALS }}

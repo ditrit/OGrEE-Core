@@ -38,5 +38,28 @@ jobs:
           TEAM_USERNAME: ${{ secrets.TEAM_DOCKER_USERNAME }}
           TEAM_PASSWORD: ${{ secrets.TEAM_DOCKER_PASSWORD }}
           NEXT_CREDENTIALS: ${{ secrets.NEXT_CREDENTIALS }}
+  
+  build-app-window:
+    name: 🏗️📤 Build APP for Windows
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v3.2.0
+        with:
+          clean: false
+          fetch-depth: "0"
+      - name: ❔ Extract project version
+        shell: bash
+        run: |
+          VERSION=$( echo ${{ github.ref_name }} | sed -e "s/release.*\///g")
+          if [[ ${{ github.ref_name }} != "release/"* ]]; then
+            VERSION=${VERSION}.rc
+          fi
+          echo "VERSION=$VERSION" >> $GITHUB_ENV
+
+      - name: 🏗️📤 Build app and create installer
+        uses: ./.github/actions/build/app/windows
+        with:
+          VERSION: ${{ env.VERSION }}
+          NEXT_CREDENTIALS: ${{ secrets.NEXT_CREDENTIALS }}
 
   

@@ -852,18 +852,19 @@ func CreateObject(path string, ent int, data map[string]interface{}) error {
 			Disp(data)
 		}
 
-	case RACK:
+	case RACK, CORRIDOR:
 		attr = data["attributes"].(map[string]interface{})
-		parentAttr := parent["attributes"].(map[string]interface{})
-		//Save orientation because it gets overwritten by
+		//Save rotation because it gets overwritten by
 		//GetOCLIAtrributesTemplateHelper()
-		orientation := attr["orientation"]
+		rotation := attr["rotation"].([]float64)
 
 		baseAttrs := map[string]interface{}{
 			"sizeUnit":   "cm",
 			"heightUnit": "U",
-			"posXYUnit":  parentAttr["floorUnit"],
 			"clearance":  Stringify([]float64{0., 0., 0., 0., 0.}),
+		}
+		if ent == CORRIDOR {
+			baseAttrs["heightUnit"] = "cm"
 		}
 
 		MergeMaps(attr, baseAttrs, false)
@@ -871,10 +872,6 @@ func CreateObject(path string, ent int, data map[string]interface{}) error {
 		//If user provided templates, get the JSON
 		//and parse into templates
 		GetOCLIAtrributesTemplateHelper(attr, data, ent)
-
-		//Restore the orientation overwritten
-		//by the helper func
-		attr["orientation"] = orientation
 
 		if attr["size"] == "" {
 			if State.DebugLvl > 0 {
@@ -899,6 +896,10 @@ func CreateObject(path string, ent int, data map[string]interface{}) error {
 		} else {
 			attr["posXYZ"] = serialiseAttr2(attr, "posXYZ")
 		}
+
+		//Restore the rotation overwritten
+		//by the helper func
+		attr["rotation"] = fmt.Sprintf("{\"x\":%v, \"y\":%v, \"z\":%v}", rotation[0], rotation[1], rotation[2])
 
 		if attr["posXYZ"] == "" {
 			if State.DebugLvl > 0 {
@@ -1005,11 +1006,6 @@ func CreateObject(path string, ent int, data map[string]interface{}) error {
 
 		groups := strings.Join(attr["content"].([]string), ",")
 		attr["content"] = groups
-
-	case CORRIDOR:
-		//name, category, domain, pid
-		attr = data["attributes"].(map[string]interface{})
-		data["parentId"] = parent["id"]
 
 	case STRAYSENSOR:
 		attr = data["attributes"].(map[string]interface{})
@@ -1283,7 +1279,9 @@ func GetOCLIAtrributesTemplateHelper(attr, data map[string]interface{}, ent int)
 		}
 
 	} else {
-		attr["template"] = ""
+		if ent != CORRIDOR {
+			attr["template"] = ""
+		}
 		//Serialise size and posXY if given
 		if _, ok := attr["size"].(string); ok {
 			attr["size"] = serialiseAttr(attr, "size")

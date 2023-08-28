@@ -95,7 +95,8 @@ class _ProjectsPageState extends State<ProjectsPage> {
                         ),
                       ),
                     );
-                  } else if (_tenants != null && _tenants!.isNotEmpty) {
+                  } else if ((_tenants != null && _tenants!.isNotEmpty) ||
+                      (_tools != null && _tools!.isNotEmpty)) {
                     return Expanded(
                       child: SingleChildScrollView(
                         child: Wrap(
@@ -251,11 +252,13 @@ class _ProjectsPageState extends State<ProjectsPage> {
   getCards(context) {
     List<Widget> cards = [];
     if (widget.isTenantMode) {
-      for (var tenant in _tenants!) {
-        cards.add(TenantCard(
-          tenant: tenant,
-          parentCallback: refreshFromChildren,
-        ));
+      if (_tenants != null && _tenants!.isNotEmpty) {
+        for (var tenant in _tenants!) {
+          cards.add(TenantCard(
+            tenant: tenant,
+            parentCallback: refreshFromChildren,
+          ));
+        }
       }
       if (_tools != null && _tools!.isNotEmpty) {
         for (var tool in _tools!) {
