@@ -6,6 +6,7 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
 import 'package:ogree_app/models/container.dart';
 import 'package:ogree_app/models/domain.dart';
+import 'package:ogree_app/models/netbox.dart';
 import 'package:ogree_app/models/project.dart';
 import 'package:ogree_app/models/tenant.dart';
 import 'package:ogree_app/models/user.dart';
@@ -345,12 +346,12 @@ Future<Result<void, Exception>> createProject(Project project) async {
   }
 }
 
-Future<Result<List<Tenant>, Exception>> fetchTenants(
-    {http.Client? client}) async {
-  print("API get Tenants");
+Future<Result<(List<Tenant>, List<DockerContainer>), Exception>>
+    fetchApplications({http.Client? client}) async {
+  print("API get Apps");
   client ??= http.Client();
   try {
-    Uri url = Uri.parse('$apiUrl/api/tenants');
+    Uri url = Uri.parse('$apiUrl/api/apps');
     final response = await client.get(url, headers: getHeader(token));
     print(response.statusCode);
     if (response.statusCode == 200) {
@@ -359,7 +360,17 @@ Future<Result<List<Tenant>, Exception>> fetchTenants(
       for (var project in data["tenants"]) {
         tenants.add(Tenant.fromMap(project));
       }
-      return Success(tenants);
+      List<DockerContainer> containers = [];
+      for (var tool in data["tools"]) {
+        var container = DockerContainer.fromMap(tool);
+        if (container.ports.isNotEmpty) {
+          container.ports = "http://${container.ports.split("-").first}";
+          container.ports =
+              container.ports.replaceFirst("0.0.0.0", "localhost");
+        }
+        containers.add(container);
+      }
+      return Success((tenants, containers));
     } else {
       return Failure(
           Exception('${response.statusCode}: Failed to load objects'));
@@ -529,6 +540,79 @@ Future<Result<String, Exception>> fetchContainerLogs(String name,
       return Success(data["logs"].toString());
     } else {
       return Failure(Exception('${response.statusCode}: failed to load logs'));
+    }
+  } on Exception catch (e) {
+    return Failure(e);
+  }
+}
+
+Future<Result<void, Exception>> createNetbox(Netbox netbox) async {
+  print("API create Netbox");
+  try {
+    Uri url = Uri.parse('$apiUrl/api/tools/netbox');
+    final response =
+        await http.post(url, body: netbox.toJson(), headers: getHeader(token));
+    print(response);
+    if (response.statusCode == 200) {
+      return const Success(null);
+    } else {
+      String data = json.decode(response.body);
+      return Failure(Exception("Error creating netbox $data"));
+    }
+  } on Exception catch (e) {
+    return Failure(e);
+  }
+}
+
+Future<Result<void, Exception>> deleteNetbox() async {
+  print("API delete Netbox");
+  try {
+    Uri url = Uri.parse('$apiUrl/api/tools/netbox');
+    final response = await http.delete(url, headers: getHeader(token));
+    print(response);
+    if (response.statusCode == 200) {
+      return const Success(null);
+    } else {
+      String data = json.decode(response.body);
+      return Failure(Exception("Error deleting netbox $data"));
+    }
+  } on Exception catch (e) {
+    return Failure(e);
+  }
+}
+
+Future<Result<void, Exception>> uploadNetboxDump(PlatformFile file) async {
+  print("API upload netbox dump");
+  try {
+    Uri url = Uri.parse('$apiUrl/api/tools/netbox/dump');
+    var request = http.MultipartRequest("POST", url);
+    request.headers.addAll(getHeader(token));
+    request.files.add(
+        http.MultipartFile.fromBytes("file", file.bytes!, filename: file.name));
+    var response = await request.send();
+    print(response.statusCode);
+    if (response.statusCode == 200) {
+      return const Success(null);
+    } else {
+      String errorMsg = await response.stream.bytesToString();
+      return Failure(Exception(errorMsg));
+    }
+  } on Exception catch (e) {
+    return Failure(e);
+  }
+}
+
+Future<Result<void, Exception>> importNetboxDump() async {
+  print("API import dump Netbox");
+  try {
+    Uri url = Uri.parse('$apiUrl/api/tools/netbox/import');
+    final response = await http.post(url, headers: getHeader(token));
+    print(response);
+    if (response.statusCode == 200) {
+      return const Success(null);
+    } else {
+      String data = json.decode(response.body);
+      return Failure(Exception("Error importing netbox dump: $data"));
     }
   } on Exception catch (e) {
     return Failure(e);

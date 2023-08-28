@@ -1,0 +1,17 @@
+name: Get latest tag of repository
+description: Get latest tag of repository
+
+runs:
+  using: composite
+  steps:
+    - name: 🏷️ Get Last Tag
+      shell: bash
+      run: |
+        git fetch --prune-tags
+        VERSION=$(git describe --tags --abbrev=0 `git rev-list --tags --max-count=1`)
+
+        if [[ $VERSION == "" ]] ; then
+          VERSION="0.0.0"
+        fi
+
+        echo "VERSION=${VERSION}" >> "$GITHUB_ENV"

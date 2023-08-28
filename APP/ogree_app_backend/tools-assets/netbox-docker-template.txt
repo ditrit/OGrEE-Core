@@ -1,0 +1,9 @@
+version: '3.4'
+services:
+  netbox:
+    ports:
+      - "{{.Port}}:8080"
+    environment:
+      SKIP_SUPERUSER: "false"
+      SUPERUSER_NAME: "{{.Username}}"
+      SUPERUSER_PASSWORD: "{{.Password}}"

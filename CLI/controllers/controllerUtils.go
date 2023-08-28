@@ -7,6 +7,8 @@ import (
 	"cli/models"
 	"encoding/json"
 	"fmt"
+	"path"
+	"strings"
 )
 
 const (
@@ -229,4 +231,47 @@ func RequestAPI(method string, endpoint string, body map[string]any, expectedSta
 		return response, fmt.Errorf(msg)
 	}
 	return response, nil
+}
+
+func TranslatePath(p string) string {
+	if p == "" {
+		p = "."
+	}
+	if p == "_" {
+		return "_"
+	}
+	if p == "-" {
+		return State.PrevPath
+	}
+	var output_words []string
+	if p[0] != '/' {
+		output_words = strings.Split(State.CurrPath, "/")[1:]
+		if len(output_words) == 1 && output_words[0] == "" {
+			output_words = output_words[0:0]
+		}
+	} else {
+		p = p[1:]
+	}
+	input_words := strings.Split(p, "/")
+	for _, word := range input_words {
+		if word == "." {
+			continue
+		} else if word == ".." {
+			if len(output_words) > 0 {
+				output_words = output_words[:len(output_words)-1]
+			}
+		} else {
+			output_words = append(output_words, word)
+		}
+	}
+	if len(output_words) > 0 {
+		if output_words[0] == "P" {
+			output_words[0] = "Physical"
+		} else if output_words[0] == "L" {
+			output_words[0] = "Logical"
+		} else if output_words[0] == "O" {
+			output_words[0] = "Organisation"
+		}
+	}
+	return path.Clean("/" + strings.Join(output_words, "/"))
 }

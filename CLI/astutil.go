@@ -22,6 +22,30 @@ func getFloat(unk interface{}) (float64, error) {
 	return fv.Float(), nil
 }
 
+func valToFloat(val any, name string) (float64, error) {
+	stringVal, isString := val.(string)
+	if isString {
+		floatVal, err := strconv.ParseFloat(stringVal, 64)
+		if err != nil {
+			return 0, fmt.Errorf("%s should be a number", name)
+		}
+		return floatVal, nil
+	}
+	v, err := getFloat(val)
+	if err != nil {
+		return 0, fmt.Errorf("%s should be a number", name)
+	}
+	return v, nil
+}
+
+func nodeToFloat(n node, name string) (float64, error) {
+	val, err := n.execute()
+	if err != nil {
+		return 0, err
+	}
+	return valToFloat(val, name)
+}
+
 func stringToNum(s string) (any, error) {
 	intVal, err := strconv.Atoi(s)
 	if err == nil {
@@ -34,26 +58,27 @@ func stringToNum(s string) (any, error) {
 	return nil, fmt.Errorf("the string is not a number")
 }
 
+func valToNum(val any, name string) (any, error) {
+	stringVal, isString := val.(string)
+	if isString {
+		numVal, err := stringToNum(stringVal)
+		if err != nil {
+			return nil, fmt.Errorf("%s should be a number", name)
+		}
+		return numVal, nil
+	}
+	return val, nil
+}
+
 func nodeToNum(n node, name string) (any, error) {
 	val, err := n.execute()
 	if err != nil {
 		return nil, err
 	}
-	stringVal, isString := val.(string)
-	if isString {
-		val, err = stringToNum(stringVal)
-		if err != nil {
-			return nil, fmt.Errorf("%s should be a number", name)
-		}
-	}
-	return val, nil
+	return valToNum(val, name)
 }
 
-func nodeToInt(n node, name string) (int, error) {
-	val, err := n.execute()
-	if err != nil {
-		return 0, err
-	}
+func valToInt(val any, name string) (int, error) {
 	stringVal, isString := val.(string)
 	if isString {
 		intVal, err := strconv.Atoi(stringVal)
@@ -67,6 +92,14 @@ func nodeToInt(n node, name string) (int, error) {
 		return 0, fmt.Errorf("%s should be an integer", name)
 	}
 	return intVal, nil
+}
+
+func nodeToInt(n node, name string) (int, error) {
+	val, err := n.execute()
+	if err != nil {
+		return 0, err
+	}
+	return valToInt(val, name)
 }
 
 func valToBool(val any, name string) (bool, error) {
@@ -93,6 +126,39 @@ func nodeToBool(n node, name string) (bool, error) {
 	return valToBool(val, name)
 }
 
+func valTo3dRotation(val any) ([]float64, error) {
+	switch rotation := val.(type) {
+	case []float64:
+		return rotation, nil
+	case string:
+		switch rotation {
+		case "front":
+			return []float64{0, 0, 180}, nil
+		case "rear":
+			return []float64{0, 0, 0}, nil
+		case "left":
+			return []float64{0, 90, 0}, nil
+		case "right":
+			return []float64{0, -90, 0}, nil
+		case "top":
+			return []float64{90, 0, 0}, nil
+		case "bottom":
+			return []float64{-90, 0, 0}, nil
+		}
+	}
+	return nil, fmt.Errorf(
+		`rotation should be a vector3, or one of the following keywords :
+		front, rear, left, right, top, bottom`)
+}
+
+func nodeTo3dRotation(n node) ([]float64, error) {
+	val, err := n.execute()
+	if err != nil {
+		return nil, err
+	}
+	return valTo3dRotation(val)
+}
+
 func valToString(val any, name string) (string, error) {
 	intVal, isInt := val.(int)
 	if isInt {
@@ -111,6 +177,60 @@ func nodeToString(n node, name string) (string, error) {
 		return "", err
 	}
 	return valToString(val, name)
+}
+
+func valToVec(val any, size int, name string) ([]float64, error) {
+	vecVal, isVec := val.([]float64)
+	if !isVec || (size >= 0 && len(vecVal) != size) {
+		msg := fmt.Sprintf("%s should be a vector", name)
+		if size != -1 {
+			msg += strconv.Itoa(size)
+		}
+		return nil, fmt.Errorf(msg)
+	}
+	return vecVal, nil
+}
+
+func nodeToVec(n node, size int, name string) ([]float64, error) {
+	val, err := n.execute()
+	if err != nil {
+		return nil, err
+	}
+
+	return valToVec(val, size, name)
+}
+
+func valToColor(color interface{}) (string, bool) {
+	var colorStr string
+	if IsString(color) || IsInt(color) || IsFloat(color) {
+		if IsString(color) {
+			colorStr = color.(string)
+		}
+
+		if IsInt(color) {
+			colorStr = strconv.Itoa(color.(int))
+		}
+
+		if IsFloat(color) {
+			colorStr = strconv.FormatFloat(color.(float64), 'f', -1, 64)
+		}
+
+		for len(colorStr) < 6 {
+			colorStr = "0" + colorStr
+		}
+
+		if len(colorStr) != 6 {
+			return "", false
+		}
+
+		if !IsHexString(colorStr) {
+			return "", false
+		}
+
+	} else {
+		return "", false
+	}
+	return colorStr, true
 }
 
 // Open a file and return the JSON in the file
@@ -144,27 +264,18 @@ func evalNodeArr[elt comparable](arr *[]node, x []elt) ([]elt, error) {
 	return x, nil
 }
 
-// This func is for distinguishing template from sizeU
-// for creating devices,
-// distinguishing template from size when creating buildings,
-// and template validity check for rooms,
-// refer to:
-// https://github.com/ditrit/OGrEE-3D/wiki/CLI-langage#Create-a-Device
-func checkIfTemplate(x interface{}, ent int) bool {
+func checkIfTemplate(name string, ent int) bool {
 	var location string
-	if s, ok := x.(string); ok {
-		switch ent {
-		case cmd.BLDG:
-			location = "/Logical/BldgTemplates/" + s
-		case cmd.ROOM:
-			location = "/Logical/RoomTemplates/" + s
-		default:
-			location = "/Logical/ObjectTemplates/" + s
-		}
-		_, err := cmd.Tree(location, 0)
-		return err == nil
+	switch ent {
+	case cmd.BLDG:
+		location = "/Logical/BldgTemplates/" + name
+	case cmd.ROOM:
+		location = "/Logical/RoomTemplates/" + name
+	default:
+		location = "/Logical/ObjectTemplates/" + name
 	}
-	return false
+	_, err := cmd.Tree(location, 0)
+	return err == nil
 }
 
 // errResponder helper func for specialUpdateNode
@@ -186,11 +297,6 @@ func errorResponder(attr, numElts string, multi bool) error {
 	return fmt.Errorf(errorMsg + segment)
 }
 
-func IsMapStrInf(x interface{}) bool {
-	_, ok := x.(map[string]interface{})
-	return ok
-}
-
 func IsInfArr(x interface{}) bool {
 	_, ok := x.([]interface{})
 	return ok
@@ -199,15 +305,6 @@ func IsInfArr(x interface{}) bool {
 func IsString(x interface{}) bool {
 	_, ok := x.(string)
 	return ok
-}
-
-func IsStringArr(x interface{}) bool {
-	_, ok := x.([]string)
-	return ok
-}
-
-func IsStringValue(x interface{}, value string) bool {
-	return x == value
 }
 
 func IsHexString(s string) bool {
@@ -229,13 +326,4 @@ func IsFloat(x interface{}) bool {
 	_, ok := x.(float64)
 	_, ok2 := x.(float32)
 	return ok || ok2
-}
-
-func IsAmongValues(x interface{}, values *[]string) bool {
-	for i := range *values {
-		if x == (*values)[i] {
-			return true
-		}
-	}
-	return false
 }

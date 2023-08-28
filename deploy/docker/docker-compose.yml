@@ -2,8 +2,7 @@ version: '3.9'
 services:
   ogree_api:
     build: 
-      context: ${CORE_DIR}
-      dockerfile: ${API_BUILD_DIR}/Dockerfile
+      context: ${CORE_DIR}/${API_BUILD_DIR}
     image: ogree/api:${IMAGE_TAG}
     container_name: ${COMPOSE_PROJECT_NAME}_api
     environment:
@@ -52,8 +51,7 @@ services:
 
   ogree_webapp:
     build: 
-      context: ${CORE_DIR}
-      dockerfile: ${APP_BUILD_DIR}/Dockerfile
+      context: ${CORE_DIR}/${APP_BUILD_DIR}
     image: ogree/webapp:${IMAGE_TAG}
     profiles: ["web"]
     container_name: ${COMPOSE_PROJECT_NAME}_webapp

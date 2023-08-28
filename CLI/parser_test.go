@@ -102,29 +102,34 @@ func TestParseArgs(t *testing.T) {
 
 func TestParseExpr(t *testing.T) {
 	defer recoverFunc(t)
-	p := newParser("\"plouf\" + (3 - 4.2) * $ab - ${a}  42")
+	s := "\"plouf\" + (3 - 4.2) * $ab - ${a} + format(\"%03d\", 47)  42"
+	p := newParser(s)
 	expr := p.parseExpr("")
 	expectedExpr := &arithNode{
-		op: "-",
+		op: "+",
 		left: &arithNode{
-			op:   "+",
-			left: &valueNode{"plouf"},
-			right: &arithNode{
-				op: "*",
-				left: &arithNode{
-					op:    "-",
-					left:  &valueNode{3},
-					right: &valueNode{4.2},
+			op: "-",
+			left: &arithNode{
+				op:   "+",
+				left: &valueNode{"plouf"},
+				right: &arithNode{
+					op: "*",
+					left: &arithNode{
+						op:    "-",
+						left:  &valueNode{3},
+						right: &valueNode{4.2},
+					},
+					right: &symbolReferenceNode{"ab"},
 				},
-				right: &symbolReferenceNode{"ab"},
 			},
+			right: &symbolReferenceNode{"a"},
 		},
-		right: &symbolReferenceNode{"a"},
+		right: &formatStringNode{&valueNode{"%03d"}, []node{&valueNode{47}}},
 	}
 	if !reflect.DeepEqual(expr, expectedExpr) {
 		t.Errorf("unexpected expression : \n%s", spew.Sdump(expr))
 	}
-	if p.cursor != 34 {
+	if p.cursor != len(s)-2 {
 		t.Errorf("unexpected cursor : %d", p.cursor)
 	}
 	p = newParser("$a+3))")
@@ -166,7 +171,7 @@ func TestParseExprString(t *testing.T) {
 	defer recoverFunc(t)
 	p := newParser("\"${a}test\"")
 	expr := p.parseExpr("")
-	expected := &formatStringNode{"%vtest", []node{&symbolReferenceNode{"a"}}}
+	expected := &formatStringNode{&valueNode{"%vtest"}, []node{&symbolReferenceNode{"a"}}}
 	if !reflect.DeepEqual(expr, expected) {
 		t.Errorf("unexpected expression : \n%s", spew.Sdump(expr))
 		t.Errorf("unexpected parsing : \ntree : %s\nexpected : %s",
@@ -189,7 +194,7 @@ func TestParseRawText(t *testing.T) {
 	defer recoverFunc(t)
 	p := newParser("${a}a")
 	expr := p.parseText(p.parseUnquotedStringToken, false)
-	expected := &formatStringNode{"%va", []node{&symbolReferenceNode{"a"}}}
+	expected := &formatStringNode{&valueNode{"%va"}, []node{&symbolReferenceNode{"a"}}}
 	if !reflect.DeepEqual(expr, expected) {
 		t.Errorf("unexpected expression : \n%s", spew.Sdump(expr))
 	}
@@ -199,7 +204,7 @@ func TestParseString(t *testing.T) {
 	defer recoverFunc(t)
 	p := newParser("${a}a")
 	expr := p.parseString("")
-	expected := &formatStringNode{"%va", []node{&symbolReferenceNode{"a"}}}
+	expected := &formatStringNode{&valueNode{"%va"}, []node{&symbolReferenceNode{"a"}}}
 	if !reflect.DeepEqual(expr, expected) {
 		t.Errorf("unexpected expression : \n%s", spew.Sdump(expr))
 	}
@@ -247,7 +252,7 @@ func TestParseLsObj(t *testing.T) {
 	testCommand(buffer, expected, t)
 }
 
-var testPath = &pathNode{&formatStringNode{"%v/tata", []node{&symbolReferenceNode{"toto"}}}}
+var testPath = &pathNode{&formatStringNode{&valueNode{"%v/tata"}, []node{&symbolReferenceNode{"toto"}}}}
 var testPath2 = &pathNode{&valueNode{"/toto/../tata"}}
 
 func vec2(x float64, y float64) node {
@@ -283,7 +288,7 @@ var commandsMatching = map[string]node{
 	".cmds:../toto/tata.ocli":        &loadNode{&valueNode{"../toto/tata.ocli"}},
 	".template:../toto/tata.ocli":    &loadTemplateNode{&valueNode{"../toto/tata.ocli"}},
 	".var:a=42":                      &assignNode{"a", &valueNode{"42"}},
-	".var:b= $(($a+3))":              &assignNode{"b", &formatStringNode{"%v", []node{&arithNode{"+", &symbolReferenceNode{"a"}, &valueNode{3}}}}},
+	".var:b= $(($a+3))":              &assignNode{"b", &formatStringNode{&valueNode{"%v"}, []node{&arithNode{"+", &symbolReferenceNode{"a"}, &valueNode{3}}}}},
 	"=${toto}/tata":                  &selectObjectNode{testPath},
 	"=..":                            &selectObjectNode{&pathNode{&valueNode{".."}}},
 	"={${toto}/tata}":                &selectChildrenNode{[]node{testPath}},
@@ -292,33 +297,34 @@ var commandsMatching = map[string]node{
 	">${toto}/tata":                  &focusNode{testPath},
 	"+site:${toto}/tata":             &createSiteNode{testPath},
 	"+si:${toto}/tata":               &createSiteNode{testPath},
-	"+building:${toto}/tata@[1., 2.]@3.@[.1, 2., 3.]":      &createBuildingNode{testPath, vec2(1., 2.), &valueNode{3.}, vec3(.1, 2., 3.)},
-	"+room:${toto}/tata@[1., 2.]@3.@[.1, 2., 3.]@+x-y":     &createRoomNode{testPath, vec2(1., 2.), &valueNode{3.}, vec3(.1, 2., 3.), &valueNode{"+x-y"}, nil, nil},
-	"+room:${toto}/tata@[1., 2.]@3.@[.1, 2., 3.]@+x-y@m":   &createRoomNode{testPath, vec2(1., 2.), &valueNode{3.}, vec3(.1, 2., 3.), &valueNode{"+x-y"}, &valueNode{"m"}, nil},
-	"+room:${toto}/tata@[1., 2.]@3.@template":              &createRoomNode{testPath, vec2(1., 2.), &valueNode{3.}, nil, nil, nil, &valueNode{"template"}},
-	"+rack:${toto}/tata@[1., 2.]@[.1, 2., 3.]@front":       &createRackNode{testPath, vec2(1., 2.), vec3(.1, 2., 3.), &valueNode{"front"}},
-	"+rack:${toto}/tata@[1., 2.]@template@front":           &createRackNode{testPath, vec2(1., 2.), &valueNode{"template"}, &valueNode{"front"}},
-	"+device:${toto}/tata@42@42":                           &createDeviceNode{testPath, &valueNode{"42"}, &valueNode{"42"}, nil},
-	"+device:${toto}/tata@42@template":                     &createDeviceNode{testPath, &valueNode{"42"}, &valueNode{"template"}, nil},
-	"+device:${toto}/tata@42@template@frontflipped ":       &createDeviceNode{testPath, &valueNode{"42"}, &valueNode{"template"}, &valueNode{"frontflipped"}},
-	"+device:${toto}/tata@slot42@42":                       &createDeviceNode{testPath, &valueNode{"slot42"}, &valueNode{"42"}, nil},
-	"+device:${toto}/tata@slot42@template":                 &createDeviceNode{testPath, &valueNode{"slot42"}, &valueNode{"template"}, nil},
-	"+device:${toto}/tata@slot42@template@frontflipped ":   &createDeviceNode{testPath, &valueNode{"slot42"}, &valueNode{"template"}, &valueNode{"frontflipped"}},
-	"+group:${toto}/tata@{c1, c2}":                         &createGroupNode{testPath, []node{&pathNode{&valueNode{"c1"}}, &pathNode{&valueNode{"c2"}}}},
-	"+corridor:${toto}/tata@{r1, r2}@cold":                 &createCorridorNode{testPath, &pathNode{&valueNode{"r1"}}, &pathNode{&valueNode{"r2"}}, &valueNode{"cold"}},
-	"${toto}/tata:areas=[1., 2., 3., 4.]@[1., 2., 3., 4.]": &updateObjNode{testPath, "areas", []node{vec4(1., 2., 3., 4.), vec4(1., 2., 3., 4.)}, false},
-	"${toto}/tata:separator=[1., 2.]@[1., 2.]@wireframe":   &updateObjNode{testPath, "separator", []node{vec2(1., 2.), vec2(1., 2.), &valueNode{"wireframe"}}, false},
-	"${toto}/tata:attr=42":                                 &updateObjNode{testPath, "attr", []node{&valueNode{"42"}}, false},
-	"${toto}/tata:label=\"plouf\"":                         &updateObjNode{testPath, "label", []node{&valueNode{"plouf"}}, false},
-	"${toto}/tata:labelFont=bold":                          &updateObjNode{testPath, "labelFont", []node{&valueNode{"bold"}}, false},
-	"${toto}/tata:labelFont=color@42ff42":                  &updateObjNode{testPath, "labelFont", []node{&valueNode{"color"}, &valueNode{"42ff42"}}, false},
-	"${toto}/tata:tilesName=true":                          &updateObjNode{testPath, "tilesName", []node{&valueNode{"true"}}, false},
-	"${toto}/tata:tilesColor=false":                        &updateObjNode{testPath, "tilesColor", []node{&valueNode{"false"}}, false},
-	"${toto}/tata:U=false":                                 &updateObjNode{testPath, "U", []node{&valueNode{"false"}}, false},
-	"${toto}/tata:slots=false":                             &updateObjNode{testPath, "slots", []node{&valueNode{"false"}}, false},
-	"${toto}/tata:localCS=false":                           &updateObjNode{testPath, "localCS", []node{&valueNode{"false"}}, false},
-	"${toto}/tata:content=false":                           &updateObjNode{testPath, "content", []node{&valueNode{"false"}}, false},
-	"${toto}/tata:temperature_01-Inlet-Ambient=7":          &updateObjNode{testPath, "temperature_01-Inlet-Ambient", []node{&valueNode{"7"}}, false},
+	"+building:${toto}/tata@[1., 2.]@3.@[.1, 2., 3.]":           &createBuildingNode{testPath, vec2(1., 2.), &valueNode{3.}, vec3(.1, 2., 3.)},
+	"+room:${toto}/tata@[1., 2.]@3.@[.1, 2., 3.]@+x-y":          &createRoomNode{testPath, vec2(1., 2.), &valueNode{3.}, vec3(.1, 2., 3.), &valueNode{"+x-y"}, nil, nil},
+	"+room:${toto}/tata@[1., 2.]@3.@[.1, 2., 3.]@+x-y@m":        &createRoomNode{testPath, vec2(1., 2.), &valueNode{3.}, vec3(.1, 2., 3.), &valueNode{"+x-y"}, &valueNode{"m"}, nil},
+	"+room:${toto}/tata@[1., 2.]@3.@template":                   &createRoomNode{testPath, vec2(1., 2.), &valueNode{3.}, nil, nil, nil, &valueNode{"template"}},
+	"+rack:${toto}/tata@[1., 2.]@t@front@[.1, 2., 3.]":          &createRackNode{testPath, vec2(1., 2.), &valueNode{"t"}, &valueNode{"front"}, vec3(.1, 2., 3.)},
+	"+rack:${toto}/tata@[1., 2.]@m@front@template":              &createRackNode{testPath, vec2(1., 2.), &valueNode{"m"}, &valueNode{"front"}, &valueNode{"template"}},
+	"+rack:${toto}/tata@[1., 2.]@m@[.1, 2., 3.]@template":       &createRackNode{testPath, vec2(1., 2.), &valueNode{"m"}, vec3(.1, 2., 3.), &valueNode{"template"}},
+	"+device:${toto}/tata@42@42":                                &createDeviceNode{testPath, &valueNode{"42"}, &valueNode{"42"}, nil},
+	"+device:${toto}/tata@42@template":                          &createDeviceNode{testPath, &valueNode{"42"}, &valueNode{"template"}, nil},
+	"+device:${toto}/tata@42@template@frontflipped ":            &createDeviceNode{testPath, &valueNode{"42"}, &valueNode{"template"}, &valueNode{"frontflipped"}},
+	"+device:${toto}/tata@slot42@42":                            &createDeviceNode{testPath, &valueNode{"slot42"}, &valueNode{"42"}, nil},
+	"+device:${toto}/tata@slot42@template":                      &createDeviceNode{testPath, &valueNode{"slot42"}, &valueNode{"template"}, nil},
+	"+device:${toto}/tata@slot42@template@frontflipped ":        &createDeviceNode{testPath, &valueNode{"slot42"}, &valueNode{"template"}, &valueNode{"frontflipped"}},
+	"+group:${toto}/tata@{c1, c2}":                              &createGroupNode{testPath, []node{&pathNode{&valueNode{"c1"}}, &pathNode{&valueNode{"c2"}}}},
+	"+corridor:${toto}/tata@[1., 2.]@t@front@[.1, 2., 3.]@cold": &createCorridorNode{testPath, vec2(1., 2.), &valueNode{"t"}, &valueNode{"front"}, vec3(.1, 2., 3.), &valueNode{"cold"}},
+	"${toto}/tata:areas=[1., 2., 3., 4.]@[1., 2., 3., 4.]":      &updateObjNode{testPath, "areas", []node{vec4(1., 2., 3., 4.), vec4(1., 2., 3., 4.)}, false},
+	"${toto}/tata:separator=[1., 2.]@[1., 2.]@wireframe":        &updateObjNode{testPath, "separator", []node{vec2(1., 2.), vec2(1., 2.), &valueNode{"wireframe"}}, false},
+	"${toto}/tata:attr=42":                                      &updateObjNode{testPath, "attr", []node{&valueNode{"42"}}, false},
+	"${toto}/tata:label=\"plouf\"":                              &updateObjNode{testPath, "label", []node{&valueNode{"plouf"}}, false},
+	"${toto}/tata:labelFont=bold":                               &updateObjNode{testPath, "labelFont", []node{&valueNode{"bold"}}, false},
+	"${toto}/tata:labelFont=color@42ff42":                       &updateObjNode{testPath, "labelFont", []node{&valueNode{"color"}, &valueNode{"42ff42"}}, false},
+	"${toto}/tata:tilesName=true":                               &updateObjNode{testPath, "tilesName", []node{&valueNode{"true"}}, false},
+	"${toto}/tata:tilesColor=false":                             &updateObjNode{testPath, "tilesColor", []node{&valueNode{"false"}}, false},
+	"${toto}/tata:U=false":                                      &updateObjNode{testPath, "U", []node{&valueNode{"false"}}, false},
+	"${toto}/tata:slots=false":                                  &updateObjNode{testPath, "slots", []node{&valueNode{"false"}}, false},
+	"${toto}/tata:localCS=false":                                &updateObjNode{testPath, "localCS", []node{&valueNode{"false"}}, false},
+	"${toto}/tata:content=false":                                &updateObjNode{testPath, "content", []node{&valueNode{"false"}}, false},
+	"${toto}/tata:temperature_01-Inlet-Ambient=7":               &updateObjNode{testPath, "temperature_01-Inlet-Ambient", []node{&valueNode{"7"}}, false},
 	"ui.delay=15":                            &uiDelayNode{15.},
 	"ui.infos=true":                          &uiToggleNode{"infos", true},
 	"ui.debug=false":                         &uiToggleNode{"debug", false},
@@ -329,8 +335,8 @@ var commandsMatching = map[string]node{
 	"camera.wait=15":                         &cameraWaitNode{15.},
 	"camera.wait = 15":                       &cameraWaitNode{15.},
 	"clear":                                  &clrNode{},
-	".cmds:${CUST}/DEMO.PERF.ocli":           &loadNode{&formatStringNode{"%v/DEMO.PERF.ocli", []node{&symbolReferenceNode{"CUST"}}}},
-	".cmds:${a}/${b}.ocli":                   &loadNode{&formatStringNode{"%v/%v.ocli", []node{&symbolReferenceNode{"a"}, &symbolReferenceNode{"b"}}}},
+	".cmds:${CUST}/DEMO.PERF.ocli":           &loadNode{&formatStringNode{&valueNode{"%v/DEMO.PERF.ocli"}, []node{&symbolReferenceNode{"CUST"}}}},
+	".cmds:${a}/${b}.ocli":                   &loadNode{&formatStringNode{&valueNode{"%v/%v.ocli"}, []node{&symbolReferenceNode{"a"}, &symbolReferenceNode{"b"}}}},
 	"while $i<6 {print \"a\"}":               &whileNode{&comparatorNode{"<", &symbolReferenceNode{"i"}, &valueNode{6}}, &printNode{&valueNode{"a"}}},
 }
 
