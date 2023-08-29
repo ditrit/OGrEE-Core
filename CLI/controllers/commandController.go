@@ -861,6 +861,7 @@ func CreateObject(path string, ent int, data map[string]interface{}) error {
 		baseAttrs := map[string]interface{}{
 			"sizeUnit":   "cm",
 			"heightUnit": "U",
+			"clearance":  Stringify([]float64{0., 0., 0., 0., 0.}),
 		}
 		if ent == CORRIDOR {
 			baseAttrs["heightUnit"] = "cm"
