@@ -4,6 +4,7 @@ import 'package:ogree_app/common/api_backend.dart';
 import 'package:ogree_app/common/definitions.dart';
 import 'package:ogree_app/common/snackbar.dart';
 import 'package:ogree_app/common/theme.dart';
+import 'package:ogree_app/models/netbox.dart';
 
 class DeleteDialog extends StatefulWidget {
   final List<String> objName;
@@ -56,8 +57,9 @@ class _DeleteDialogState extends State<DeleteDialog> {
                           Result result;
                           if (widget.objType == "tenants") {
                             result = await deleteTenant(obj);
-                          } else if (widget.objType == "netbox") {
-                            result = await deleteNetbox();
+                          } else if (widget.objType == Tools.netbox.name ||
+                              widget.objType == Tools.opendcim.name) {
+                            result = await deleteTool(widget.objType);
                           } else {
                             result = await removeObject(obj, widget.objType);
                           }
