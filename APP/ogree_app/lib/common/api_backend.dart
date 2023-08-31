@@ -20,6 +20,7 @@ String apiUrl = "";
 String tenantUrl = "";
 String tenantName = "";
 bool isTenantAdmin = false;
+bool isKubernetes = false;
 var token = "";
 var tenantToken = "";
 
@@ -77,6 +78,10 @@ Future<Result<List<String>, Exception>> loginAPI(String email, String password,
         isTenantAdmin = true;
         tenantUrl = apiUrl;
         tenantToken = token;
+      }
+      if (data["isKubernetes"] == true) {
+        // is Kubernetes API
+        isKubernetes = true;
       }
       return Success([data["email"].toString(), data["isTenant"] ?? ""]);
     } else {

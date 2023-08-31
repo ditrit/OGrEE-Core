@@ -25,6 +25,7 @@ class _CreateServerPopupState extends State<CreateServerPopup> {
   String? _sshPassword;
   String? _installPath;
   String? _port;
+  String? _kubeDns;
   bool _isLoading = false;
   AuthOption? _authOption = AuthOption.pKey;
   bool _shouldStartup = false;
@@ -37,7 +38,7 @@ class _CreateServerPopupState extends State<CreateServerPopup> {
     return Center(
       child: Container(
         width: 500,
-        constraints: const BoxConstraints(maxHeight: 560),
+        constraints: BoxConstraints(maxHeight: isKubernetes ? 470 : 560),
         margin: const EdgeInsets.symmetric(horizontal: 20),
         decoration: PopupDecoration,
         child: Padding(
@@ -122,39 +123,53 @@ class _CreateServerPopupState extends State<CreateServerPopup> {
                               save: (newValue) => _sshPassword = newValue,
                               label: localeMsg.password,
                               icon: Icons.lock),
-                      getFormField(
-                          save: (newValue) => _installPath = newValue,
-                          label: localeMsg.serverPath,
-                          icon: Icons.folder),
-                      getFormField(
-                          save: (newValue) => _port = newValue,
-                          label: localeMsg.portServer,
-                          icon: Icons.onetwothree,
-                          formatters: [FilteringTextInputFormatter.digitsOnly]),
-                      const SizedBox(height: 13),
-                      Row(
-                        children: [
-                          const SizedBox(width: 40),
-                          SizedBox(
-                            height: 24,
-                            width: 24,
-                            child: Checkbox(
-                              activeColor: Colors.blue.shade600,
-                              value: _shouldStartup,
-                              onChanged: (bool? value) =>
-                                  setState(() => _shouldStartup = value!),
-                            ),
-                          ),
-                          const SizedBox(width: 8),
-                          Text(
-                            localeMsg.runAtStart,
-                            style: TextStyle(
-                              fontSize: 14,
-                              color: Colors.black,
-                            ),
-                          ),
-                        ],
-                      ),
+                      isKubernetes
+                          ? getFormField(
+                              save: (newValue) => _kubeDns = newValue,
+                              label: "Cluster DNS",
+                              icon: Icons.dns)
+                          : Container(),
+                      !isKubernetes
+                          ? getFormField(
+                              save: (newValue) => _installPath = newValue,
+                              label: localeMsg.serverPath,
+                              icon: Icons.folder)
+                          : Container(),
+                      !isKubernetes
+                          ? getFormField(
+                              save: (newValue) => _port = newValue,
+                              label: localeMsg.portServer,
+                              icon: Icons.onetwothree,
+                              formatters: [
+                                  FilteringTextInputFormatter.digitsOnly
+                                ])
+                          : Container(),
+                      SizedBox(height: isKubernetes ? 0 : 13),
+                      !isKubernetes
+                          ? Row(
+                              children: [
+                                const SizedBox(width: 40),
+                                SizedBox(
+                                  height: 24,
+                                  width: 24,
+                                  child: Checkbox(
+                                    activeColor: Colors.blue.shade600,
+                                    value: _shouldStartup,
+                                    onChanged: (bool? value) =>
+                                        setState(() => _shouldStartup = value!),
+                                  ),
+                                ),
+                                const SizedBox(width: 8),
+                                Text(
+                                  localeMsg.runAtStart,
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    color: Colors.black,
+                                  ),
+                                ),
+                              ],
+                            )
+                          : Container(),
                       const SizedBox(height: 12),
                       Row(
                         mainAxisAlignment: MainAxisAlignment.end,
@@ -171,46 +186,7 @@ class _CreateServerPopupState extends State<CreateServerPopup> {
                           ),
                           const SizedBox(width: 15),
                           ElevatedButton.icon(
-                              onPressed: () async {
-                                if (_formKey.currentState!.validate()) {
-                                  _formKey.currentState!.save();
-                                  setState(() {
-                                    _isLoading = true;
-                                  });
-                                  Map<String, dynamic> serverInfo =
-                                      <String, dynamic>{
-                                    'host': _sshHost!,
-                                    'user': _sshUser!,
-                                    'dstpath': _installPath!,
-                                    'runport': _port!,
-                                    'startup': _shouldStartup,
-                                  };
-                                  if (_authOption == AuthOption.pKey) {
-                                    serverInfo.addAll({
-                                      'pkey': _sshKey!,
-                                      'pkeypass': _sshKeyPass.toString(),
-                                    });
-                                  } else {
-                                    serverInfo['password'] = _sshPassword!;
-                                  }
-                                  final result =
-                                      await createBackendServer(serverInfo);
-                                  switch (result) {
-                                    case Success():
-                                      widget.parentCallback();
-                                      showSnackBar(context, localeMsg.createOK,
-                                          isSuccess: true);
-                                      Navigator.of(context).pop();
-                                    case Failure(exception: final exception):
-                                      setState(() {
-                                        _isLoading = false;
-                                      });
-                                      showSnackBar(
-                                          context, exception.toString(),
-                                          isError: true);
-                                  }
-                                }
-                              },
+                              onPressed: () => submitCreateServer(localeMsg),
                               label: Text(localeMsg.create),
                               icon: _isLoading
                                   ? Container(
@@ -232,6 +208,50 @@ class _CreateServerPopupState extends State<CreateServerPopup> {
         ),
       ),
     );
+  }
+
+  submitCreateServer(AppLocalizations localeMsg) async {
+    if (_formKey.currentState!.validate()) {
+      _formKey.currentState!.save();
+      setState(() {
+        _isLoading = true;
+      });
+
+      Map<String, dynamic> serverInfo = <String, dynamic>{
+        'host': _sshHost!,
+        'user': _sshUser!,
+      };
+      if (isKubernetes) {
+        serverInfo['dns'] = _kubeDns!;
+      } else {
+        serverInfo.addAll({
+          'dstpath': _installPath!,
+          'runport': _port!,
+          'startup': _shouldStartup,
+        });
+      }
+      if (_authOption == AuthOption.pKey) {
+        serverInfo.addAll({
+          'pkey': _sshKey!,
+          'pkeypass': _sshKeyPass.toString(),
+        });
+      } else {
+        serverInfo['password'] = _sshPassword!;
+      }
+
+      final result = await createBackendServer(serverInfo);
+      switch (result) {
+        case Success():
+          widget.parentCallback();
+          showSnackBar(context, localeMsg.createOK, isSuccess: true);
+          Navigator.of(context).pop();
+        case Failure(exception: final exception):
+          setState(() {
+            _isLoading = false;
+          });
+          showSnackBar(context, exception.toString(), isError: true);
+      }
+    }
   }
 
   getFormField(

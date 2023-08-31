@@ -40,7 +40,7 @@ class _CreateTenantPopupState extends State<CreateTenantPopup> {
     return Center(
       child: Container(
         width: 500,
-        constraints: const BoxConstraints(maxHeight: 540),
+        constraints: BoxConstraints(maxHeight: isKubernetes ? 420 : 540),
         margin: const EdgeInsets.symmetric(horizontal: 20),
         decoration: PopupDecoration,
         child: Padding(
@@ -100,18 +100,21 @@ class _CreateTenantPopupState extends State<CreateTenantPopup> {
                                   label: localeMsg.deployVersion,
                                   icon: Icons.access_time,
                                   initial: _imageTag),
-                              getFormField(
-                                save: (newValue) {
-                                  var splitted = newValue!.split(":");
-                                  _apiUrl = splitted[0];
-                                  _apiPort = splitted[1];
-                                },
-                                label: "${localeMsg.apiUrl} (hostname:port)",
-                                icon: Icons.cloud,
-                                prefix: "http://",
-                                isUrl: true,
-                              ),
-                              _hasWeb
+                              !isKubernetes
+                                  ? getFormField(
+                                      save: (newValue) {
+                                        var splitted = newValue!.split(":");
+                                        _apiUrl = splitted[0];
+                                        _apiPort = splitted[1];
+                                      },
+                                      label:
+                                          "${localeMsg.apiUrl} (hostname:port)",
+                                      icon: Icons.cloud,
+                                      prefix: "http://",
+                                      isUrl: true,
+                                    )
+                                  : Container(),
+                              _hasWeb && !isKubernetes
                                   ? getFormField(
                                       save: (newValue) {
                                         var splitted = newValue!.split(":");
@@ -173,7 +176,7 @@ class _CreateTenantPopupState extends State<CreateTenantPopup> {
                                       ),
                                     )
                                   : Container(),
-                              _hasDoc
+                              _hasDoc && !isKubernetes
                                   ? getFormField(
                                       save: (newValue) {
                                         var splitted = newValue!.split(":");
