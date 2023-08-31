@@ -77,12 +77,11 @@ class _UpdateTenantPopupState extends State<UpdateTenantPopup> {
                   getFormField(
                     save: (newValue) {
                       var splitted = newValue!.split(":");
-                      widget.tenant.apiUrl = splitted[0];
-                      widget.tenant.apiPort = splitted[1];
+                      widget.tenant.apiUrl = splitted[0] + splitted[1];
+                      widget.tenant.apiPort = splitted[2];
                     },
                     label: "${localeMsg.apiUrl} (hostname:port)",
                     icon: Icons.cloud,
-                    prefix: "http://",
                     isUrl: true,
                     initial: "${widget.tenant.apiUrl}:${widget.tenant.apiPort}",
                   ),
@@ -90,12 +89,11 @@ class _UpdateTenantPopupState extends State<UpdateTenantPopup> {
                       ? getFormField(
                           save: (newValue) {
                             var splitted = newValue!.split(":");
-                            widget.tenant.webUrl = splitted[0];
-                            widget.tenant.webPort = splitted[1];
+                            widget.tenant.webUrl = splitted[0] + splitted[1];
+                            widget.tenant.webPort = splitted[2];
                           },
                           label: "${localeMsg.webUrl} (hostname:port)",
                           icon: Icons.monitor,
-                          prefix: "http://",
                           isUrl: true,
                           initial:
                               "${widget.tenant.webUrl}:${widget.tenant.webPort}",
@@ -105,12 +103,11 @@ class _UpdateTenantPopupState extends State<UpdateTenantPopup> {
                       ? getFormField(
                           save: (newValue) {
                             var splitted = newValue!.split(":");
-                            widget.tenant.docUrl = splitted[0];
-                            widget.tenant.docPort = splitted[1];
+                            widget.tenant.docUrl = splitted[0] + splitted[1];
+                            widget.tenant.docPort = splitted[2];
                           },
                           label: "${localeMsg.docUrl} (hostname:port)",
                           icon: Icons.book,
-                          prefix: "http://",
                           isUrl: true,
                           initial:
                               "${widget.tenant.docUrl}:${widget.tenant.docPort}",
@@ -215,7 +212,12 @@ class _UpdateTenantPopupState extends State<UpdateTenantPopup> {
             return AppLocalizations.of(context)!.mandatoryField;
           }
           if (isUrl) {
-            var splitted = text.split(":");
+            var splitted = text.split("//");
+            if ((splitted.length != 2) ||
+                (splitted[0] != "http:" && splitted[0] != "https:")) {
+              return AppLocalizations.of(context)!.wrongFormatUrl;
+            }
+            splitted = splitted[1].split(":");
             if (splitted.length != 2) {
               return AppLocalizations.of(context)!.wrongFormatUrl;
             }

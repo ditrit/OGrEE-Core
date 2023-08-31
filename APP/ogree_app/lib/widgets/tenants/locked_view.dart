@@ -111,7 +111,7 @@ class _LockedViewState extends State<LockedView> {
     if (formKey.currentState!.validate()) {
       formKey.currentState!.save();
       final result = await loginAPITenant(_email!, _password!,
-          "http://${widget.tenant.apiUrl}:${widget.tenant.apiPort}");
+          "${widget.tenant.apiUrl}:${widget.tenant.apiPort}");
       switch (result) {
         case Success():
           widget.parentCallback();
