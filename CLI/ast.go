@@ -290,6 +290,9 @@ func (n *deleteObjNode) execute() (interface{}, error) {
 	if err != nil {
 		return nil, err
 	}
+	if strings.Contains(path, "*") {
+		return nil, cmd.DeleteObjectsWildcard(path)
+	}
 	return nil, cmd.DeleteObj(path)
 }
 

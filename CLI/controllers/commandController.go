@@ -210,6 +210,27 @@ func DeleteObj(path string) error {
 	return nil
 }
 
+func DeleteObjectsWildcard(path string) error {
+	objs, _, err := GetObjectsWildcard(path)
+	if err != nil {
+		return err
+	}
+	url, err := WilcardUrl(path)
+	if err != nil {
+		return err
+	}
+	_, err = RequestAPI("DELETE", url, nil, http.StatusNoContent)
+	if err != nil {
+		return err
+	}
+	for _, obj := range objs {
+		if IsInObjForUnity(obj["category"].(string)) {
+			InformUnity("DeleteObj", -1, map[string]any{"type": "delete", "data": obj["id"].(string)})
+		}
+	}
+	return nil
+}
+
 func GetSlot(rack map[string]any, location string) (map[string]any, error) {
 	templateAny, ok := rack["attributes"].(map[string]any)["template"]
 	if !ok {
