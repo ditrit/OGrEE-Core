@@ -424,7 +424,12 @@ func (n *selectObjectNode) execute() (interface{}, error) {
 		return nil, err
 	}
 	var selection []string
-	if path != "" {
+	if strings.Contains(path, "*") {
+		_, selection, err = cmd.GetObjectsWildcard(path)
+		if err != nil {
+			return nil, err
+		}
+	} else if path != "" {
 		selection = []string{path}
 		err = cmd.CD(path)
 		if err != nil {
