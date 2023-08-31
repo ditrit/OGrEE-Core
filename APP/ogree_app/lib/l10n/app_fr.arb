@@ -154,7 +154,15 @@
   "downloadBackup": "Télécharger archive de backup",
   "backupInfoMessage": "Un fichier de backup sera créé dans la machine hôte de ce déploiement Docker.\nSi sélectionné, le fichier sera aussi télécharger dans votre machine.",
 
-  "onlyOneNetbox": "Seul un netbox est possible",
+  "onlyOneTool": "Seul un {tool} est possible",
+  "@onlyOneTool": {
+    "placeholders": {
+      "tool": {
+        "type": "String",
+        "example": "netbox"
+      }
+    }
+  },
   "selectSQL": "Choisir fichier SQL",
   "importNetbox": "Charger la base Netbox",
   "importNetboxOK": "La base a été chargée !",

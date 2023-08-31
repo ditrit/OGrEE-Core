@@ -46,7 +46,7 @@ class _CreateOpenDcimPopupState extends State<CreateOpenDcimPopup> {
                             children: [
                               Center(
                                   child: Text(
-                                "Créer OpenDCIM",
+                                "${localeMsg.create} OpenDCIM",
                                 style:
                                     Theme.of(context).textTheme.headlineMedium,
                               )),

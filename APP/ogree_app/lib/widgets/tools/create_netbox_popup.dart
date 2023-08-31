@@ -48,7 +48,7 @@ class _CreateNetboxPopupState extends State<CreateNetboxPopup> {
                             children: [
                               Center(
                                   child: Text(
-                                "Créer netbox",
+                                "${localeMsg.create} netbox",
                                 style:
                                     Theme.of(context).textTheme.headlineMedium,
                               )),

@@ -215,11 +215,11 @@ class _ProjectsPageState extends State<ProjectsPage> {
     List<PopupMenuEntry<Tools>> entries = <PopupMenuEntry<Tools>>[
       PopupMenuItem(
         value: Tools.netbox,
-        child: Text("Create Netbox"),
+        child: Text("${localeMsg.create} Netbox"),
       ),
-      const PopupMenuItem(
+      PopupMenuItem(
         value: Tools.opendcim,
-        child: Text("Create OpenDCIM"),
+        child: Text("${localeMsg.create} OpenDCIM"),
       ),
     ];
 
@@ -230,12 +230,12 @@ class _ProjectsPageState extends State<ProjectsPage> {
       ),
       onPressed: () {},
       child: PopupMenuButton<Tools>(
-        offset: Offset(20, 40),
+        offset: const Offset(20, 40),
         onSelected: (value) {
           switch (value) {
             case Tools.netbox:
               if (_hasNetbox) {
-                showSnackBar(context, localeMsg.onlyOneNetbox);
+                showSnackBar(context, localeMsg.onlyOneTool("Netbox"));
               } else {
                 showCustomPopup(context,
                     CreateNetboxPopup(parentCallback: refreshFromChildren));
@@ -243,7 +243,7 @@ class _ProjectsPageState extends State<ProjectsPage> {
               break;
             case Tools.opendcim:
               if (_hasOpenDcim) {
-                showSnackBar(context, "Seul un OpenDCIM est possible");
+                showSnackBar(context, localeMsg.onlyOneTool("OpenDCIM"));
               } else {
                 showCustomPopup(context,
                     CreateOpenDcimPopup(parentCallback: refreshFromChildren));
@@ -281,7 +281,7 @@ class _ProjectsPageState extends State<ProjectsPage> {
       if (_tools != null && _tools!.isNotEmpty) {
         for (var tool in _tools!) {
           var type = Tools.netbox;
-          if (tool.name.contains("opendcim")) {
+          if (tool.name.contains(Tools.opendcim.name)) {
             type = Tools.opendcim;
             _hasOpenDcim = true;
           } else {
