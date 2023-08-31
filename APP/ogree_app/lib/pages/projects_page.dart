@@ -279,6 +279,8 @@ class _ProjectsPageState extends State<ProjectsPage> {
         }
       }
       if (_tools != null && _tools!.isNotEmpty) {
+        _hasOpenDcim = false;
+        _hasNetbox = false;
         for (var tool in _tools!) {
           var type = Tools.netbox;
           if (tool.name.contains(Tools.opendcim.name)) {
