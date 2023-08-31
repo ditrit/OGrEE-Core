@@ -395,12 +395,23 @@ func (n *getObjectNode) execute() (interface{}, error) {
 	if err != nil {
 		return nil, err
 	}
-	obj, err := cmd.GetObject(path)
-	if err != nil {
-		return nil, err
+	if strings.Contains(path, "*") {
+		objs, _, err := cmd.GetObjectsWildcard(path)
+		if err != nil {
+			return nil, err
+		}
+		for _, obj := range objs {
+			cmd.DisplayObject(obj)
+		}
+		return objs, nil
+	} else {
+		obj, err := cmd.GetObject(path)
+		if err != nil {
+			return nil, err
+		}
+		cmd.DisplayObject(obj)
+		return obj, nil
 	}
-	cmd.DisplayObject(obj)
-	return obj, nil
 }
 
 type selectObjectNode struct {
