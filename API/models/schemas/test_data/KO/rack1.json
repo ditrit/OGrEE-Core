@@ -2,7 +2,7 @@
     "attributes": {
       "height": "47",
       "heightUnit": "u",
-      "orientation": "rear",
+      "rotation": "{\"x\":0 ,\"y\": 0, \"z\":0}",
       "posXYUnit": "m",
       "posXYZ": "{\"x\":4.6666666666667 ,\"y\": -2}",
       "size": "{\"x\":80 ,\"y\":100.532442}",

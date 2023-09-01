@@ -82,8 +82,7 @@
   "showSum": "Afficher la somme",
   "showAvg": "Afficher la moyenne",
 
-  "@newTenant": { "description": "SuperAdmin Views" },
-  "newTenant": "Créer un nouveau tenant",
+  "@tenantCreated": { "description": "SuperAdmin Views" },
   "tenantCreated": "Tenant créé avec succès !",
   "deployment": "Déploiment",
   "loginTenant": "Connectez-vous à l'API de ce Tenant :",
@@ -125,6 +124,7 @@
   "user": "Utilisateur",
   "parameter": "Paramètre",
   "value": "Valeur",
+  "notCreated" : "Pas créé",
 
   "addServer": "Ajouter nouveau serveur",
   "selectServer": "Choisir serveur",
@@ -148,5 +148,15 @@
   "notLoaded": "pas chargé par l'utilisateur",
   "failedToUpload": "Logo customisé pas défini :",
   "wrongFormatUrl": "Mauvais format de l'URL : host:port attendu",
-  "wrongFormatPort": "Mauvais format de l'URL : que des chiffres pour la porte"
+  "wrongFormatPort": "Mauvais format de l'URL : que des chiffres pour la porte",
+
+  "requestBackup": "Créer backup de la base",
+  "downloadBackup": "Télécharger archive de backup",
+  "backupInfoMessage": "Un fichier de backup sera créé dans la machine hôte de ce déploiement Docker.\nSi sélectionné, le fichier sera aussi télécharger dans votre machine.",
+
+  "onlyOneNetbox": "Seul un netbox est possible",
+  "selectSQL": "Choisir fichier SQL",
+  "importNetbox": "Charger la base Netbox",
+  "importNetboxOK": "La base a été chargée !",
+  "mustSelectFile": "Il faut choisir un fichier avant d'avancer"
 }

@@ -26,7 +26,7 @@ Perform an HTTP POST operation with the appropriate JSON
 /api/obj-templates
 /api/bldg-templates
 /api/stray-sensors
-/api/stray-devices
+/api/stray-objects
 /api/validate/{obj}
 ```
 
@@ -52,7 +52,7 @@ Perform an HTTP DELETE operation without JSON body
 /api/obj-templates/{slug}
 /api/bldg-templates/{slug}
 /api/stray-sensors/{id_or_name}
-/api/stray-devices/{id_or_name}
+/api/stray-objects/{id_or_name}
 ```
 
 
@@ -76,7 +76,7 @@ Perform an HTTP PUT or PATCH operation with desired JSON body
 /api/obj-templates/{slug}
 /api/bldg-templates/{slug}
 /api/stray-sensors/{id_or_name}
-/api/stray-devices/{id_or_name}
+/api/stray-objects/{id_or_name}
 ```
 
 OPTIONS
@@ -98,7 +98,7 @@ Perform an HTTP OPTIONS operation without JSON body
 /api/rooms/{id}/all
 /api/racks/{id}/all
 /api/devices/{id}/all
-/api/stray-devices/{id_or_name}/all
+/api/stray-objects/{id_or_name}/all
 // HIERARCHY - END 
 
 // HIERARCHY RANGE - START
@@ -152,7 +152,7 @@ Perform an HTTP OPTIONS operation without JSON body
 /api/obj-templates/{slug}
 /api/bldg-templates/{slug}
 /api/stray-sensors/{id_or_name}
-/api/stray-devices/{id_or_name}
+/api/stray-objects/{id_or_name}
 
 
 // ENTIT(Y)IES USING NAMES OF PARENTS - START
@@ -389,7 +389,7 @@ Perform an HTTP HEAD operation
 /api/obj-templates?
 /api/bldg-templates?
 /api/stray-sensors?
-/api/stray-devices?
+/api/stray-objects?
 
 
 // ALL ENTITIES 
@@ -409,7 +409,7 @@ Perform an HTTP HEAD operation
 /api/obj-templates
 /api/bldg-templates
 /api/stray-sensors
-/api/stray-devices
+/api/stray-objects
 
 
 // SINGLE ENTITY
@@ -429,7 +429,7 @@ Perform an HTTP HEAD operation
 /api/obj-templates/{slug}
 /api/bldg-templates/{slug}
 /api/stray-sensors/{id_or_name}
-/api/stray-devices/{id_or_name}
+/api/stray-objects/{id_or_name}
 ```
 
 
@@ -475,7 +475,7 @@ This URL is for development purposes only
 /api/obj-templates
 /api/bldg-templates
 /api/stray-sensors
-/api/stray-devices
+/api/stray-objects
 ```
 
 ### Get by ID (non hierarchal)
@@ -497,7 +497,7 @@ ID is a string of length 24
 /api/obj-templates/{slug}
 /api/bldg-templates/{slug}
 /api/stray-sensors/{id_or_name}
-/api/stray-devices/{id_or_name}
+/api/stray-objects/{id_or_name}
 ```
 
 ### Search Objects
@@ -522,7 +522,7 @@ will return silver devices with name 'myValue'
 /api/obj-templates?
 /api/bldg-templates?
 /api/stray-sensors?
-/api/stray-devices?
+/api/stray-objects?
 ```
 
 
@@ -543,7 +543,7 @@ in a nested JSON fashion
 /api/rooms/{id}/all
 /api/racks/{id}/all
 /api/devices/{id}/all
-/api/stray-devices/{id}/all
+/api/stray-objects/{id}/all
 ```
 
 ### Get object's ranged hierarchy 
@@ -562,7 +562,7 @@ URL given.
 /api/rooms/{id}/all/racks/devices
 /api/rooms/{id}/all/racks
 
-/api/stray-devices/{id}/all/devices
+/api/stray-objects/{id}/all/devices
 ```
 
 ### Get an Object's ranged hierarchy (using limit parameter)
@@ -575,7 +575,7 @@ in a nested JSON fashion
 /api/rooms/{id}/all?limit={#}
 /api/racks/{id}/all?limit={#}
 /api/devices/{id}/all?limit={#}
-/api/stray-devices/{id}/all?limit={#}
+/api/stray-objects/{id}/all?limit={#}
 ```
 
 ### Get objects through the hierarchy

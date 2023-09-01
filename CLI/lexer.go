@@ -40,6 +40,7 @@ const (
 	tokColor
 	tokText
 	tokLeftEval // '$(('
+	tokFormat   // 'format'
 )
 
 func (s tokenType) String() string {
@@ -231,6 +232,9 @@ func (p *parser) parseExprToken() token {
 	}
 	if p.parseExact("false") {
 		return p.emit(tokBool, false)
+	}
+	if p.parseExact("format") {
+		return p.emit(tokFormat, nil)
 	}
 	return p.emit(tokEOF, nil)
 }

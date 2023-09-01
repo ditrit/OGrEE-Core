@@ -167,12 +167,12 @@ func GenerateFilteredJson(x map[string]interface{}) map[string]interface{} {
 				for i := range x {
 					if i == "attributes" {
 						for idx := range x[i].(map[string]interface{}) {
-							if IsAttrDrawable("", idx, x, true) == true {
+							if IsCategoryAttrDrawable(x["category"].(string), idx) {
 								attrs[idx] = x[i].(map[string]interface{})[idx]
 							}
 						}
 					} else {
-						if IsAttrDrawable("", i, x, true) == true {
+						if IsCategoryAttrDrawable(x["category"].(string), i) {
 							ans[i] = x[i]
 						}
 					}
@@ -255,7 +255,7 @@ func CopyAttr(dest, source map[string]interface{}, key string) bool {
 // Used for update commands to ensure all data sent to API
 // are in string format
 func Stringify(x interface{}) string {
-	switch x.(type) {
+	switch xArr := x.(type) {
 	case string:
 		return x.(string)
 	case int:
@@ -264,18 +264,20 @@ func Stringify(x interface{}) string {
 		return strconv.FormatFloat(float64(x.(float64)), 'f', -1, 64)
 	case bool:
 		return strconv.FormatBool(x.(bool))
-
 	case []string:
 		return strings.Join(x.([]string), ",")
-
 	case []interface{}:
-		xArr := x.([]interface{})
 		var arrStr []string
 		for i := range xArr {
 			arrStr = append(arrStr, Stringify(xArr[i]))
 		}
 		return "[" + strings.Join(arrStr, ",") + "]"
-
+	case []float64:
+		var arrStr []string
+		for i := range xArr {
+			arrStr = append(arrStr, Stringify(xArr[i]))
+		}
+		return "[" + strings.Join(arrStr, ",") + "]"
 	}
 	return ""
 }

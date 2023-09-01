@@ -1,0 +1,75 @@
+name: 🆕 Create Release Candidate
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+
+  create-release-candidate:
+    name: 🆕 Create Release Candidate
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v3.2.0
+        with:
+          clean: false
+          fetch-depth: "0"
+
+      - name: ❔ Extract project version
+        uses: ./.github/actions/versioning/extract-version
+
+      - name: Set release candidate branch name
+        run: |
+          echo "BRANCH_RELEASE_CANDIDATE=release-candidate/${{ env.VERSION }}" >> $GITHUB_ENV
+          echo "MAIN_SHA=$(git rev-parse HEAD)" >> $GITHUB_ENV
+
+      - name: Delete branch if exists
+        run: |
+          if [[ `git show-ref "${{ env.BRANCH_RELEASE_CANDIDATE }}" 2>/dev/null` ]]; then
+            echo "[INFO] Branch ${{ env.BRANCH_RELEASE_CANDIDATE }} exists, deleting it"
+            echo "NEEDS_DELETE=true" >> $GITHUB_ENV
+          else
+            echo "[INFO] Branch ${{ env.BRANCH_RELEASE_CANDIDATE }} does not exist"
+            echo "NEEDS_DELETE=false" >> $GITHUB_ENV
+          fi
+          
+      - name: 🗑️ Delete Release Candidate branch
+        if: ${{ env.NEEDS_DELETE == 'true' }}
+        uses: dawidd6/action-delete-branch@v3.1.0
+        with:
+          github_token: ${{ secrets.SVC_GITHUB_TOKEN }}
+          branches: ${{ env.BRANCH_RELEASE_CANDIDATE }}
+
+      - name: ⌛ Wait for deleting branch
+        if: ${{ env.NEEDS_DELETE == 'true' }}
+        shell: bash
+        run: sleep 10
+
+      - name: Create Branch release candidate from main
+        uses: peterjgrainger/action-create-branch@v2.4.0
+        env:
+          GITHUB_TOKEN: ${{ secrets.SVC_GITHUB_TOKEN }}
+        with:
+          branch: ${{ env.BRANCH_RELEASE_CANDIDATE }}
+          sha: "${{ env.MAIN_SHA }}"
+
+      - uses: actions/checkout@v3.2.0
+        with:
+          ref: ${{ env.BRANCH_RELEASE_CANDIDATE }}
+          token: ${{ secrets.SVC_GITHUB_TOKEN }}
+          clean: true
+          fetch-depth: "0"
+
+      - name: ⌛ Wait for build to be triggered
+        shell: bash
+        run: sleep 30
+
+      - name: ⌛ Wait for build to complete
+        uses: ./.github/actions/utils/wait-job
+        with:
+          BRANCH: ${{ env.BRANCH_RELEASE_CANDIDATE }}
+          GITHUB_TOKEN: ${{ secrets.SVC_GITHUB_TOKEN}}

@@ -314,7 +314,7 @@ loop:
 	if len(subExpr) == 0 {
 		return &valueNode{s}
 	}
-	return &formatStringNode{s, subExpr}
+	return &formatStringNode{&valueNode{s}, subExpr}
 }
 
 func (p *parser) parsePath(name string) node {
@@ -348,6 +348,40 @@ func (p *parser) parsePathGroup() []node {
 	}
 	p.skipWhiteSpaces()
 	return paths
+}
+
+func (p *parser) parseExprListWithEndToK(endTok tokenType) []node {
+	defer un(trace(p, "expr list"))
+	exprList := []node{}
+	p.parseExprToken()
+	if p.tok.t == endTok {
+		return exprList
+	}
+	p.unlex()
+	for {
+		expr := p.parseExpr("array element")
+		exprList = append(exprList, expr)
+		p.parseExprToken()
+		if p.tok.t == endTok {
+			return exprList
+		}
+		if p.tok.t == tokComma {
+			continue
+		}
+		p.error(endTok.String() + " or comma expected")
+	}
+}
+
+func (p *parser) parseFormatArgs() node {
+	p.parseExprToken()
+	if p.tok.t != tokLeftParen {
+		p.error("'(' expected")
+	}
+	exprList := p.parseExprListWithEndToK(tokRightParen)
+	if len(exprList) < 1 {
+		p.error("format expects at least one argument")
+	}
+	return &formatStringNode{exprList[0], exprList[1:]}
 }
 
 func (p *parser) parsePrimaryExpr() node {
@@ -385,24 +419,10 @@ func (p *parser) parsePrimaryExpr() node {
 		}
 		return expr
 	case tokLeftBrac:
-		exprList := []node{}
-		p.parseExprToken()
-		if p.tok.t == tokRightBrac {
-			return &arrNode{exprList}
-		}
-		p.unlex()
-		for {
-			expr := p.parseExpr("array element")
-			exprList = append(exprList, expr)
-			p.parseExprToken()
-			if p.tok.t == tokRightBrac {
-				return &arrNode{exprList}
-			}
-			if p.tok.t == tokComma {
-				continue
-			}
-			p.error("] or comma expected")
-		}
+		exprList := p.parseExprListWithEndToK(tokRightBrac)
+		return &arrNode{exprList}
+	case tokFormat:
+		return p.parseFormatArgs()
 	}
 	p.error("unexpected token : " + tok.str)
 	return nil
@@ -461,6 +481,10 @@ func (p *parser) parseString(name string) node {
 	p.skipWhiteSpaces()
 	if p.parseExact("\"") {
 		p.backward(1)
+		return p.parseExpr("")
+	}
+	if p.parseExact("format") {
+		p.backward(len("format"))
 		return p.parseExpr("")
 	}
 	n := p.parseText(p.parseUnquotedStringToken, true)
@@ -645,16 +669,6 @@ func (p *parser) parseDrawable() node {
 	return &isAttrDrawableNode{path, attrName}
 }
 
-func (p *parser) parseHc() node {
-	defer un(trace(p, "hc"))
-	path := p.parsePath("")
-	if p.commandEnd() {
-		return &hierarchyNode{path, 1}
-	}
-	depth := p.parseInt("depth")
-	return &hierarchyNode{path, depth}
-}
-
 func (p *parser) parseUnset() node {
 	defer un(trace(p, "unset"))
 	args := p.parseArgs([]string{"f", "v"}, []string{})
@@ -662,6 +676,9 @@ func (p *parser) parseUnset() node {
 		path := p.parsePath("")
 		p.expect(":")
 		attr := p.parseComplexWord("attribute")
+		if p.commandEnd() {
+			return &unsetAttrNode{path, attr, nil}
+		}
 		index := p.parseIndexing()
 		return &unsetAttrNode{path, attr, index}
 	}
@@ -743,16 +760,17 @@ func (p *parser) parseLink() node {
 func (p *parser) parseUnlink() node {
 	defer un(trace(p, "unlink"))
 	sourcePath := p.parsePath("source")
-	if p.parseExact("@") {
-		destPath := p.parsePath("destination")
-		return &unlinkObjectNode{sourcePath, destPath}
-	}
-	return &unlinkObjectNode{sourcePath, nil}
+	return &unlinkObjectNode{sourcePath}
 }
 
 func (p *parser) parsePrint() node {
 	defer un(trace(p, "print"))
 	return &printNode{p.parseValue()}
+}
+
+func (p *parser) parsePrintf() node {
+	defer un(trace(p, "printf"))
+	return &printNode{p.parseFormatArgs()}
 }
 
 func (p *parser) parseMan() node {
@@ -778,11 +796,11 @@ func (p *parser) parseCd() node {
 func (p *parser) parseTree() node {
 	defer un(trace(p, "tree"))
 	if p.commandEnd() {
-		return &treeNode{&pathNode{&valueNode{"."}}, 0}
+		return &treeNode{&pathNode{&valueNode{"."}}, 1}
 	}
 	path := p.parsePath("")
 	if p.commandEnd() {
-		return &treeNode{path, 0}
+		return &treeNode{path, 1}
 	}
 	depth := p.parseInt("depth")
 	return &treeNode{path, depth}
@@ -969,10 +987,12 @@ func (p *parser) parseCreateRack() node {
 	p.expect("@")
 	pos := p.parseExpr("position")
 	p.expect("@")
-	sizeOrTemplate := p.parseStringOrVec("sizeOrTemplate")
+	unit := p.parseString("unit")
 	p.expect("@")
-	orientation := p.parseString("orientation")
-	return &createRackNode{path, pos, sizeOrTemplate, orientation}
+	rotation := p.parseStringOrVec("rotation")
+	p.expect("@")
+	sizeOrTemplate := p.parseStringOrVec("sizeOrTemplate")
+	return &createRackNode{path, pos, unit, rotation, sizeOrTemplate}
 }
 
 func (p *parser) parseCreateDevice() node {
@@ -1001,13 +1021,16 @@ func (p *parser) parseCreateCorridor() node {
 	defer un(trace(p, "create corridor"))
 	path := p.parsePath("")
 	p.expect("@")
-	racks := p.parsePathGroup()
-	if len(racks) != 2 {
-		p.error("only 2 racks expected")
-	}
+	pos := p.parseExpr("position")
+	p.expect("@")
+	unit := p.parseString("unit")
+	p.expect("@")
+	rotation := p.parseStringOrVec("rotation")
+	p.expect("@")
+	size := p.parseStringOrVec("size")
 	p.expect("@")
 	temperature := p.parseString("temperature")
-	return &createCorridorNode{path, racks[0], racks[1], temperature}
+	return &createCorridorNode{path, pos, unit, rotation, size, temperature}
 }
 
 func (p *parser) parseCreateOrphan() node {
@@ -1118,7 +1141,6 @@ func (p *parser) parseCommand(name string) node {
 		"undraw":     p.parseUndraw,
 		"draw":       p.parseDraw,
 		"drawable":   p.parseDrawable,
-		"hc":         p.parseHc,
 		"unset":      p.parseUnset,
 		"env":        p.parseEnv,
 		"+":          p.parseCreate,
@@ -1128,9 +1150,10 @@ func (p *parser) parseCommand(name string) node {
 		".cmds:":     p.parseLoad,
 		".template:": p.parseTemplate,
 		"len":        p.parseLen,
-		"link:":      p.parseLink,
+		"link":       p.parseLink,
 		"unlink":     p.parseUnlink,
 		"print":      p.parsePrint,
+		"printf":     p.parsePrintf,
 		"man":        p.parseMan,
 		"cd":         p.parseCd,
 		"tree":       p.parseTree,

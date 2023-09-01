@@ -69,7 +69,6 @@
   "showSum": "Display sum",
   "showAvg": "Display average",
 
-  "newTenant": "Create new tenant",
   "tenantCreated": "Tenant successfully created!",
   "deployment": "Deployment",
   "loginTenant": "Log in to this tenant's API to get access:",
@@ -95,6 +94,7 @@
   "user": "User",
   "parameter": "Parameter",
   "value": "Value",
+  "notCreated" : "Not created",
 
   "addServer": "Add new server",
   "selectServer": "Choose server",
@@ -118,5 +118,15 @@
   "notLoaded": "not loaded by user",
   "failedToUpload": "Custom logo not set:",
   "wrongFormatUrl": "Wrong format for URL: expected host:port",
-  "wrongFormatPort": "Wrong format for URL: port should only have digits"
+  "wrongFormatPort": "Wrong format for URL: port should only have digits",
+
+  "requestBackup": "Create database backup",
+  "downloadBackup": "Download backup archive",
+  "backupInfoMessage": "A backup archive file will be created in the host machine of the database container.\nIf this option is selected, this file will also be downloaded in your current machine.",
+
+  "onlyOneNetbox": "Only one netbox is allowed",
+  "selectSQL": "Select SQL file",
+  "importNetbox": "Import Netbox Dump",
+  "importNetboxOK": "Netbox dump successfully imported!",
+  "mustSelectFile": "Must select a file first"
 }
