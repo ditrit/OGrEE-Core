@@ -5,6 +5,7 @@ import 'package:ogree_app/common/definitions.dart';
 import 'package:ogree_app/common/popup_dialog.dart';
 import 'package:ogree_app/common/snackbar.dart';
 import 'package:ogree_app/models/container.dart';
+import 'package:ogree_app/models/netbox.dart';
 import 'package:ogree_app/models/project.dart';
 import 'package:ogree_app/models/tenant.dart';
 import 'package:ogree_app/pages/select_page.dart';
@@ -13,6 +14,7 @@ import 'package:ogree_app/widgets/tenants/popups/create_tenant_popup.dart';
 import 'package:ogree_app/widgets/projects/project_card.dart';
 import 'package:ogree_app/widgets/tenants/tenant_card.dart';
 import 'package:ogree_app/widgets/tools/create_netbox_popup.dart';
+import 'package:ogree_app/widgets/tools/create_opendcim_popup.dart';
 import 'package:ogree_app/widgets/tools/tool_card.dart';
 
 class ProjectsPage extends StatefulWidget {
@@ -31,6 +33,7 @@ class _ProjectsPageState extends State<ProjectsPage> {
   List<DockerContainer>? _tools;
   bool _isSmallDisplay = false;
   bool _hasNetbox = false;
+  bool _hasOpenDcim = false;
   bool _gotData = false;
 
   @override
@@ -73,7 +76,7 @@ class _ProjectsPageState extends State<ProjectsPage> {
                         ? Padding(
                             padding:
                                 const EdgeInsets.only(right: 10.0, bottom: 10),
-                            child: createNetboxButton(),
+                            child: createToolsButton(),
                           )
                         : Container(),
                   ],
@@ -153,7 +156,6 @@ class _ProjectsPageState extends State<ProjectsPage> {
           }
           _tools = tools;
           setState(() {
-            _hasNetbox = tools.isNotEmpty;
             _gotData = true;
           });
         case Failure(exception: final exception):
@@ -208,32 +210,48 @@ class _ProjectsPageState extends State<ProjectsPage> {
     );
   }
 
-  createNetboxButton() {
+  createToolsButton() {
     final localeMsg = AppLocalizations.of(context)!;
-    return Tooltip(
-      message: localeMsg.onlyOneNetbox,
-      child: ElevatedButton(
-        style: _hasNetbox
-            ? null
-            : ElevatedButton.styleFrom(
-                backgroundColor: Colors.green.shade600,
-                foregroundColor: Colors.white,
-              ),
-        onPressed: _hasNetbox
-            ? null
-            : () {
-                if (widget.isTenantMode) {
-                  showCustomPopup(context,
-                      CreateNetboxPopup(parentCallback: refreshFromChildren));
-                } else {
-                  Navigator.of(context).push(
-                    MaterialPageRoute(
-                      builder: (context) =>
-                          SelectPage(userEmail: widget.userEmail),
-                    ),
-                  );
-                }
-              },
+    List<PopupMenuEntry<Tools>> entries = <PopupMenuEntry<Tools>>[
+      PopupMenuItem(
+        value: Tools.netbox,
+        child: Text("${localeMsg.create} Netbox"),
+      ),
+      PopupMenuItem(
+        value: Tools.opendcim,
+        child: Text("${localeMsg.create} OpenDCIM"),
+      ),
+    ];
+
+    return ElevatedButton(
+      style: ElevatedButton.styleFrom(
+        backgroundColor: Colors.green.shade600,
+        foregroundColor: Colors.white,
+      ),
+      onPressed: () {},
+      child: PopupMenuButton<Tools>(
+        offset: const Offset(20, 40),
+        onSelected: (value) {
+          switch (value) {
+            case Tools.netbox:
+              if (_hasNetbox) {
+                showSnackBar(context, localeMsg.onlyOneTool("Netbox"));
+              } else {
+                showCustomPopup(context,
+                    CreateNetboxPopup(parentCallback: refreshFromChildren));
+              }
+              break;
+            case Tools.opendcim:
+              if (_hasOpenDcim) {
+                showSnackBar(context, localeMsg.onlyOneTool("OpenDCIM"));
+              } else {
+                showCustomPopup(context,
+                    CreateOpenDcimPopup(parentCallback: refreshFromChildren));
+              }
+              break;
+          }
+        },
+        itemBuilder: (_) => entries,
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -242,7 +260,7 @@ class _ProjectsPageState extends State<ProjectsPage> {
                   top: 8, bottom: 8, right: _isSmallDisplay ? 0 : 10),
               child: const Icon(Icons.timeline),
             ),
-            _isSmallDisplay ? Container() : Text("${localeMsg.create} netbox"),
+            _isSmallDisplay ? Container() : Text("${localeMsg.create} tools"),
           ],
         ),
       ),
@@ -261,8 +279,18 @@ class _ProjectsPageState extends State<ProjectsPage> {
         }
       }
       if (_tools != null && _tools!.isNotEmpty) {
+        _hasOpenDcim = false;
+        _hasNetbox = false;
         for (var tool in _tools!) {
+          var type = Tools.netbox;
+          if (tool.name.contains(Tools.opendcim.name)) {
+            type = Tools.opendcim;
+            _hasOpenDcim = true;
+          } else {
+            _hasNetbox = true;
+          }
           cards.add(ToolCard(
+            type: type,
             container: tool,
             parentCallback: refreshFromChildren,
           ));

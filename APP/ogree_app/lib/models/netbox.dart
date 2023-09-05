@@ -1,5 +1,7 @@
 import 'dart:convert';
 
+enum Tools { netbox, opendcim }
+
 class Netbox {
   String userName;
   String userPassword;

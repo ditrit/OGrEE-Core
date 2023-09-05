@@ -119,6 +119,10 @@ func getDockerInfo(name string) ([]container, error) {
 				if strings.Contains(dc.Name, "netbox-1") {
 					response = append(response, dc)
 				}
+			} else if name == "opendcim" {
+				if strings.Contains(dc.Name, "opendcim-webapp") {
+					response = append(response, dc)
+				}
 			} else if match, _ := regexp.MatchString("^"+name+"_", dc.Name); match {
 				response = append(response, dc)
 			}

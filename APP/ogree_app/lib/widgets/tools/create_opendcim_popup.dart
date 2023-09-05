@@ -5,21 +5,19 @@ import 'package:ogree_app/common/definitions.dart';
 import 'package:ogree_app/common/snackbar.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:ogree_app/common/theme.dart';
-import 'package:ogree_app/models/netbox.dart';
 
-class CreateNetboxPopup extends StatefulWidget {
+class CreateOpenDcimPopup extends StatefulWidget {
   Function() parentCallback;
-  CreateNetboxPopup({super.key, required this.parentCallback});
+  CreateOpenDcimPopup({super.key, required this.parentCallback});
 
   @override
-  State<CreateNetboxPopup> createState() => _CreateNetboxPopupState();
+  State<CreateOpenDcimPopup> createState() => _CreateOpenDcimPopupState();
 }
 
-class _CreateNetboxPopupState extends State<CreateNetboxPopup> {
+class _CreateOpenDcimPopupState extends State<CreateOpenDcimPopup> {
   final _formKey = GlobalKey<FormState>();
-  String? _userName;
-  String? _userPassword;
-  String? _port = "8000";
+  String? _dcimPort = "80";
+  String? _adminerPort = "8080";
   bool _isLoading = false;
   bool _isSmallDisplay = false;
 
@@ -30,7 +28,7 @@ class _CreateNetboxPopupState extends State<CreateNetboxPopup> {
     return Center(
       child: Container(
         width: 500,
-        constraints: const BoxConstraints(maxHeight: 300),
+        constraints: const BoxConstraints(maxHeight: 250),
         margin: const EdgeInsets.symmetric(horizontal: 20),
         decoration: PopupDecoration,
         child: Padding(
@@ -48,24 +46,26 @@ class _CreateNetboxPopupState extends State<CreateNetboxPopup> {
                             children: [
                               Center(
                                   child: Text(
-                                "${localeMsg.create} netbox",
+                                "${localeMsg.create} OpenDCIM",
                                 style:
                                     Theme.of(context).textTheme.headlineMedium,
                               )),
                               // const Divider(height: 35),
                               const SizedBox(height: 20),
                               getFormField(
-                                  save: (newValue) => _userName = newValue,
-                                  label: "Netbox user name",
-                                  icon: Icons.person),
+                                save: (newValue) => _dcimPort = newValue,
+                                label: "OpenDCIM port",
+                                initial: _dcimPort,
+                                icon: Icons.numbers,
+                                formatters: <TextInputFormatter>[
+                                  FilteringTextInputFormatter.digitsOnly,
+                                  LengthLimitingTextInputFormatter(4),
+                                ],
+                              ),
                               getFormField(
-                                  save: (newValue) => _userPassword = newValue,
-                                  label: "Netbox user password",
-                                  icon: Icons.lock),
-                              getFormField(
-                                save: (newValue) => _port = newValue,
-                                label: "Netbox port",
-                                initial: _port,
+                                save: (newValue) => _adminerPort = newValue,
+                                label: "Adminer port",
+                                initial: _adminerPort,
                                 icon: Icons.numbers,
                                 formatters: <TextInputFormatter>[
                                   FilteringTextInputFormatter.digitsOnly,
@@ -89,7 +89,7 @@ class _CreateNetboxPopupState extends State<CreateNetboxPopup> {
                                   const SizedBox(width: 15),
                                   ElevatedButton.icon(
                                       onPressed: () =>
-                                          submitCreateNetbox(localeMsg),
+                                          submitCreateOpenDcim(localeMsg),
                                       label: Text(localeMsg.create),
                                       icon: _isLoading
                                           ? Container(
@@ -116,15 +116,14 @@ class _CreateNetboxPopupState extends State<CreateNetboxPopup> {
     );
   }
 
-  submitCreateNetbox(AppLocalizations localeMsg) async {
+  submitCreateOpenDcim(AppLocalizations localeMsg) async {
     if (_formKey.currentState!.validate()) {
       _formKey.currentState!.save();
       setState(() {
         _isLoading = true;
       });
       // Create tenant
-      var result =
-          await createNetbox(Netbox(_userName!, _userPassword!, _port!));
+      var result = await createOpenDcim(_dcimPort!, _adminerPort!);
       switch (result) {
         case Success():
           widget.parentCallback();

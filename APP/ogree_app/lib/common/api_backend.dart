@@ -564,10 +564,33 @@ Future<Result<void, Exception>> createNetbox(Netbox netbox) async {
   }
 }
 
-Future<Result<void, Exception>> deleteNetbox() async {
+Future<Result<void, Exception>> createOpenDcim(
+    String dcimPort, adminerPort) async {
+  print("API create OpenDCIM");
+  try {
+    Uri url = Uri.parse('$apiUrl/api/tools/opendcim');
+    final response = await http.post(url,
+        body: json.encode(<String, dynamic>{
+          'dcimPort': dcimPort,
+          'adminerPort': adminerPort,
+        }),
+        headers: getHeader(token));
+    print(response);
+    if (response.statusCode == 200) {
+      return const Success(null);
+    } else {
+      String data = json.decode(response.body);
+      return Failure(Exception("Error creating netbox $data"));
+    }
+  } on Exception catch (e) {
+    return Failure(e);
+  }
+}
+
+Future<Result<void, Exception>> deleteTool(String tool) async {
   print("API delete Netbox");
   try {
-    Uri url = Uri.parse('$apiUrl/api/tools/netbox');
+    Uri url = Uri.parse('$apiUrl/api/tools/$tool');
     final response = await http.delete(url, headers: getHeader(token));
     print(response);
     if (response.statusCode == 200) {
