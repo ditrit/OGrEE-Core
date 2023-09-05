@@ -225,14 +225,14 @@
             "floorUnit"     : "t",
             "technicalArea" : [5,0,0,0],
             "reservedArea"  : [3,1,1,3],
-            "separators"    : [
-                { "startPosXYm" : [3,0],  "endPosXYm": [3,12], "type" :  "wireframe" },
-                { "startPosXYm" : [0,12], "endPosXYm": [3,12], "type" : "plain" }
-            ],
-            "pillars"       : [
-                { "centerXY" : [3, 12], "sizeXY" : [0.3, 0.3], "rotation" : 45 },
-                { "centerXY" : [7, 7], "sizeXY" : [0.3, 0.3], "rotation" : 30 }
-            ],
+            "separators"    : {
+                "sep1": { "startPosXYm" : [3,0],  "endPosXYm": [3,12], "type" :  "wireframe" },
+                "sep2": { "startPosXYm" : [0,12], "endPosXYm": [3,12], "type" : "plain" }
+            },
+            "pillars"       : {
+                "pillar1": { "centerXY" : [3, 12], "sizeXY" : [0.3, 0.3], "rotation" : 45 },
+                "pillar2": { "centerXY" : [7, 7], "sizeXY" : [0.3, 0.3], "rotation" : 30 }
+            },
             "colors"        : [],
             "tiles"         : [],
             "rows"          : []

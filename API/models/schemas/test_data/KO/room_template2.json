@@ -12,8 +12,8 @@
         [8.9],
         [0,    4.5]
     ],
-    "separators": [{ "startPosXYm" : [0,12], "endPosXYm": [3,12], "type" : "banana" }],
-    "pillars": [{ "centerXY" : [-7, 7], "sizeXY" : [-10.3, 0.3], "rotation" : -30 }],
+    "separators": {"sep": { "startPosXYm" : [0,12], "endPosXYm": [3,12], "type" : "banana" }},
+    "pillars": {"pillar": { "centerXY" : [-7, 7], "sizeXY" : [-10.3, 0.3], "rotation" : -30 }},
     "colors": [
         {"name": "rampe", "value": "c0c0c0"}
     ],
