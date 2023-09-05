@@ -497,8 +497,8 @@ func removeFromStringMap[T any](stringMap string, key string) (string, bool) {
 }
 
 type Separator struct {
-	StartPos []float64 `json:"startPos"`
-	EndPos   []float64 `json:"endPos"`
+	StartPos []float64 `json:"startPosXYm"`
+	EndPos   []float64 `json:"endPosXYm"`
 	Type     string    `json:"type"`
 }
 
