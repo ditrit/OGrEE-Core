@@ -80,11 +80,10 @@
             "maxItems": 4
         },
         "separators": {
-            "type": "array",
-            "items": {
+            "type": "object",
+            "additionalProperties": {
                 "type": "object",
                 "required": [
-                    "name",
                     "startPosXYm",
                     "endPosXYm",
                     "type"
@@ -120,8 +119,8 @@
             }
         },
         "pillars":{
-            "type": "array",
-            "items": {
+            "type": "object",
+            "additionalProperties": {
                 "type":"object",
                 "required": [
                     "centerXY",
