@@ -54,7 +54,9 @@ class _CreateServerPopupState extends State<CreateServerPopup> {
                     children: [
                       Center(
                         child: Text(
-                          localeMsg.createServer,
+                          isKubernetes
+                              ? localeMsg.createKube
+                              : localeMsg.createServer,
                           style: Theme.of(context).textTheme.headlineMedium,
                         ),
                       ),

@@ -127,8 +127,10 @@
   "notCreated" : "Pas créé",
 
   "addServer": "Ajouter nouveau serveur",
+  "addKube": "Ajouter nouveau cluster",
   "selectServer": "Choisir serveur",
   "createServer": "Créer backend dans serveur",
+  "createKube": "Créer cluster Kubernetes",
   "serverPath": "Chemin d'installation (serveur)",
   "portServer": "Porte pour le backend (serveur)",
 
