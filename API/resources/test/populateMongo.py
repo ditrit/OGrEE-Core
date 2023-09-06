@@ -48,7 +48,7 @@ payloadTable = {
     "rack-sensor":{"name": "SensorA","parentId" : None,"category": "SENSOR-A", "type":"rack", "domain":"DEMO"},
     "device-sensor":{"name": "DeviceSensorA","parentId" : None,"category": "SENSOR-D", "type":"device", "domain":"DEMO"},
 
-    "room-template":{"slug"          : "RT1","orientation"   : "+N+E","sizeWDHm"      : ["width","depth","height"],"technicalArea" : ["width","depth","height"],"reservedArea"  : ["width","depth","height"],"separators"    : [],"colors"        : [],"tiles"         : [],"rows"        : []},
+    "room-template":{"slug"          : "RT1","orientation"   : "+N+E","sizeWDHm"      : ["width","depth","height"],"technicalArea" : ["width","depth","height"],"reservedArea"  : ["width","depth","height"],"separators"    : {},"colors"        : [],"tiles"         : [],"rows"        : []},
     "obj-template":{"slug"        : "RACK1T","description" : "Rack Template 1","category"    : "rack","sizeWDHmm"   : ["width","depth","height"],"fbxModel"    : "1","attributes"  : {  "type" : ""},"colors"      : [],"components"  : [],"slots"       : []}
 
 }
