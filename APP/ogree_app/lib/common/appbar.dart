@@ -32,7 +32,9 @@ AppBar myAppBar(context, userEmail, {isTenantMode = false}) {
         0,
         PopupMenuItem(
           value: "new",
-          child: Text(AppLocalizations.of(context)!.addServer),
+          child: Text(backendType == BackendType.kubernetes
+              ? AppLocalizations.of(context)!.addKube
+              : AppLocalizations.of(context)!.addServer),
         ));
   } else if (isTenantAdmin) {
     entries.insert(
@@ -79,8 +81,27 @@ AppBar myAppBar(context, userEmail, {isTenantMode = false}) {
           ? Container()
           : Padding(
               padding: const EdgeInsets.only(right: 20),
-              child: Text(isTenantMode ? apiUrl : tenantName,
-                  style: const TextStyle(color: Colors.white)),
+              child: Row(
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.only(right: 8),
+                    child: Container(
+                      decoration: BoxDecoration(
+                        borderRadius:
+                            const BorderRadius.all(Radius.circular(8)),
+                        border: Border.all(color: Colors.white),
+                      ),
+                      child: Badge(
+                        backgroundColor: Colors.grey.shade900,
+                        isLabelVisible: backendType == BackendType.kubernetes,
+                        label: Text("KUBE"),
+                      ),
+                    ),
+                  ),
+                  Text(isTenantMode ? apiUrl : tenantName,
+                      style: const TextStyle(color: Colors.white)),
+                ],
+              ),
             ),
       Padding(
         padding: const EdgeInsets.symmetric(vertical: 15),
@@ -112,7 +133,11 @@ AppBar myAppBar(context, userEmail, {isTenantMode = false}) {
               const SizedBox(width: 10),
               _isSmallDisplay
                   ? Tooltip(
-                      message: isTenantMode ? apiUrl : tenantName,
+                      message: isTenantMode
+                          ? (backendType == BackendType.kubernetes
+                              ? "(KUBE) $apiUrl"
+                              : apiUrl)
+                          : tenantName,
                       triggerMode: TooltipTriggerMode.tap,
                       child: const Icon(
                         Icons.info_outline_rounded,

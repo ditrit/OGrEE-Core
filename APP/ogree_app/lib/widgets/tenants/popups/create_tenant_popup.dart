@@ -40,7 +40,8 @@ class _CreateTenantPopupState extends State<CreateTenantPopup> {
     return Center(
       child: Container(
         width: 500,
-        constraints: const BoxConstraints(maxHeight: 540),
+        constraints: BoxConstraints(
+            maxHeight: backendType == BackendType.kubernetes ? 420 : 540),
         margin: const EdgeInsets.symmetric(horizontal: 20),
         decoration: PopupDecoration,
         child: Padding(
@@ -100,28 +101,31 @@ class _CreateTenantPopupState extends State<CreateTenantPopup> {
                                   label: localeMsg.deployVersion,
                                   icon: Icons.access_time,
                                   initial: _imageTag),
-                              getFormField(
-                                save: (newValue) {
-                                  var splitted = newValue!.split(":");
-                                  _apiUrl = splitted[0];
-                                  _apiPort = splitted[1];
-                                },
-                                label: "${localeMsg.apiUrl} (hostname:port)",
-                                icon: Icons.cloud,
-                                prefix: "http://",
-                                isUrl: true,
-                              ),
-                              _hasWeb
+                              backendType != BackendType.kubernetes
                                   ? getFormField(
                                       save: (newValue) {
                                         var splitted = newValue!.split(":");
-                                        _webUrl = splitted[0];
-                                        _webPort = splitted[1];
+                                        _apiUrl = splitted[0] + splitted[1];
+                                        _apiPort = splitted[2];
+                                      },
+                                      label:
+                                          "${localeMsg.apiUrl} (hostname:port)",
+                                      icon: Icons.cloud,
+                                      initial: "http://",
+                                      isUrl: true,
+                                    )
+                                  : Container(),
+                              _hasWeb && backendType != BackendType.kubernetes
+                                  ? getFormField(
+                                      save: (newValue) {
+                                        var splitted = newValue!.split(":");
+                                        _webUrl = splitted[0] + splitted[1];
+                                        _webPort = splitted[2];
                                       },
                                       label:
                                           "${localeMsg.webUrl} (hostname:port)",
                                       icon: Icons.monitor,
-                                      prefix: "http://",
+                                      initial: "http://",
                                       isUrl: true,
                                     )
                                   : Container(),
@@ -173,17 +177,17 @@ class _CreateTenantPopupState extends State<CreateTenantPopup> {
                                       ),
                                     )
                                   : Container(),
-                              _hasDoc
+                              _hasDoc && backendType != BackendType.kubernetes
                                   ? getFormField(
                                       save: (newValue) {
                                         var splitted = newValue!.split(":");
-                                        _docUrl = splitted[0];
-                                        _docPort = splitted[1];
+                                        _docUrl = splitted[0] + splitted[1];
+                                        _docPort = splitted[2];
                                       },
                                       label:
                                           "${localeMsg.docUrl} (hostname:port)",
                                       icon: Icons.book,
-                                      prefix: "http://",
+                                      initial: "http://",
                                       isUrl: true,
                                     )
                                   : Container(),
@@ -311,7 +315,12 @@ class _CreateTenantPopupState extends State<CreateTenantPopup> {
             return AppLocalizations.of(context)!.mandatoryField;
           }
           if (isUrl) {
-            var splitted = text.split(":");
+            var splitted = text.split("//");
+            if ((splitted.length != 2) ||
+                (splitted[0] != "http:" && splitted[0] != "https:")) {
+              return AppLocalizations.of(context)!.wrongFormatUrl;
+            }
+            splitted = splitted[1].split(":");
             if (splitted.length != 2) {
               return AppLocalizations.of(context)!.wrongFormatUrl;
             }

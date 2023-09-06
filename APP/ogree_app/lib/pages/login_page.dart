@@ -32,7 +32,9 @@ class _LoginPageState extends State<LoginPage> {
   String? _email;
   String? _password;
   String _apiUrl = "";
+  BackendType? apiType;
   bool forgot = false;
+  bool _tappedInside = false;
 
   @override
   Widget build(BuildContext context) {
@@ -122,7 +124,21 @@ class _LoginPageState extends State<LoginPage> {
                                       height: 40,
                                     ),
                                   ),
-                            const SizedBox(height: 30),
+                            dotenv.env['ALLOW_SET_BACK'] == "true"
+                                ? Align(
+                                    child: Padding(
+                                      padding: const EdgeInsets.symmetric(
+                                          vertical: 10),
+                                      child: Badge(
+                                        backgroundColor: Colors.white,
+                                        label: Text(
+                                          getBackendTypeText(),
+                                          style: TextStyle(color: Colors.black),
+                                        ),
+                                      ),
+                                    ),
+                                  )
+                                : const SizedBox(height: 30),
                             TextFormField(
                               onSaved: (newValue) => _email = newValue,
                               validator: (text) {
@@ -284,14 +300,17 @@ class _LoginPageState extends State<LoginPage> {
       final result = await loginAPI(_email!, _password!, userUrl: _apiUrl);
       switch (result) {
         case Success(value: final loginData):
-          fetchApiTenantName().then((_) => Navigator.of(context).push(
-                MaterialPageRoute(
-                  builder: (context) => ProjectsPage(
-                    userEmail: loginData.first,
-                    isTenantMode: loginData[1] == "true",
-                  ),
-                ),
-              ));
+          if (apiType == BackendType.tenant) {
+            await fetchApiVersion(_apiUrl);
+          }
+          Navigator.of(context).push(
+            MaterialPageRoute(
+              builder: (context) => ProjectsPage(
+                userEmail: loginData.first,
+                isTenantMode: loginData[1] == "true",
+              ),
+            ),
+          );
         case Failure(exception: final exception):
           String errorMsg = exception.toString() == "Exception"
               ? AppLocalizations.of(context)!.invalidLogin
@@ -330,7 +349,7 @@ class _LoginPageState extends State<LoginPage> {
           TextEditingController textEditingController,
           FocusNode focusNode,
           VoidCallback onFieldSubmitted) {
-        textEditingController.text = options.first;
+        //textEditingController.text = options.first;
         return TextFormField(
           controller: textEditingController,
           focusNode: focusNode,
@@ -346,8 +365,11 @@ class _LoginPageState extends State<LoginPage> {
               labelText: localeMsg.selectServer,
               labelStyle: TextStyle(fontSize: 14)),
           onTap: () {
-            textEditingController.clear();
+            setState(() {
+              apiType = null;
+            });
           },
+          onEditingComplete: () => getBackendType(textEditingController.text),
         );
       },
       optionsViewBuilder: (BuildContext context,
@@ -365,7 +387,8 @@ class _LoginPageState extends State<LoginPage> {
                 itemBuilder: (BuildContext context, int index) {
                   final String option = options.elementAt(index);
                   return GestureDetector(
-                    onTap: () {
+                    onTap: () async {
+                      getBackendType(option);
                       onSelected(option);
                     },
                     child: ListTile(
@@ -379,5 +402,30 @@ class _LoginPageState extends State<LoginPage> {
         );
       },
     );
+  }
+
+  getBackendType(inputUrl) async {
+    final result = await fetchApiVersion(inputUrl);
+    switch (result) {
+      case Success(value: final type):
+        setState(() {
+          apiType = type;
+        });
+      case Failure(exception: final exception):
+        print(exception);
+        setState(() {
+          apiType = BackendType.unavailable;
+        });
+    }
+  }
+
+  getBackendTypeText() {
+    if (apiType == null) {
+      return "";
+    } else if (apiType == BackendType.unavailable) {
+      return apiType!.name.toUpperCase();
+    } else {
+      return apiType!.name.toUpperCase() + " SERVER";
+    }
   }
 }

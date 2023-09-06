@@ -52,6 +52,7 @@ func main() {
 	router.Use(cors.New(corsConfig))
 
 	router.POST("/api/login", login) // public endpoint
+	router.GET("/api/version", getVersion)
 
 	router.Use(auth.JwtAuthMiddleware()) // protected
 	router.GET("/api/apps", getAllApps)
@@ -110,6 +111,11 @@ func login(c *gin.Context) {
 		response["account"]["isTenant"] = "true"
 		c.IndentedJSON(http.StatusOK, response)
 	}
+}
+
+func getVersion(c *gin.Context) {
+	response := map[string]any{"version": "1.0", "isKubernetes": true}
+	c.IndentedJSON(http.StatusOK, response)
 }
 
 func getAllApps(c *gin.Context) {
