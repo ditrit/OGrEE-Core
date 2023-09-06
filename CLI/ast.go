@@ -658,6 +658,11 @@ func (n *updateObjNode) execute() (interface{}, error) {
 	var paths []string
 	if path == "_" {
 		paths = cmd.State.ClipBoard
+	} else if strings.Contains(path, "*") {
+		_, paths, err = cmd.GetObjectsWildcard(path)
+		if err != nil {
+			return nil, err
+		}
 	} else {
 		paths = []string{path}
 	}
@@ -778,7 +783,21 @@ func (n *drawNode) execute() (interface{}, error) {
 	if err != nil {
 		return nil, err
 	}
-	return nil, cmd.Draw(path, n.depth, n.force)
+	if strings.Contains(path, "*") {
+		_, subpaths, err := cmd.GetObjectsWildcard(path)
+		if err != nil {
+			return nil, err
+		}
+		for _, subpath := range subpaths {
+			err = cmd.Draw(subpath, n.depth, n.force)
+			if err != nil {
+				return nil, err
+			}
+		}
+		return nil, nil
+	} else {
+		return nil, cmd.Draw(path, n.depth, n.force)
+	}
 }
 
 type undrawNode struct {
