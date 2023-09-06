@@ -382,6 +382,38 @@ func HandleGenericObject(w http.ResponseWriter, r *http.Request) {
 
 }
 
+// swagger:operation GET /api/objects/{id-wildcard} Objects GetGenericObjectWildcard
+// Get the list of objects whose id matches {id-wildcard}.
+// ---
+// security:
+// - bearer: []
+// produces:
+// - application/json
+// parameters:
+//   - name: id
+//     in: path
+//     description: id (that can contains wildcards) of the objects to retrieve
+//     required: true
+//   - name: fieldOnly
+//     in: query
+//     description: 'specify which object field to show in response.
+//     Multiple fieldOnly can be added. An invalid field is simply ignored.'
+//   - name: startDate
+//     in: query
+//     description: 'filter objects by lastUpdated >= startDate.
+//     Format: yyyy-mm-dd'
+//   - name: endDate
+//     in: query
+//     description: 'filter objects by lastUpdated <= endDate.
+//     Format: yyyy-mm-dd'
+//
+// responses:
+//
+//		'200':
+//		    description: 'Found. A response body will be returned with
+//	        a meaningful message.'
+//		'404':
+//		    description: Not Found. An error message will be returned.
 func HandleGenericObjectWildcard(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("******************************************************")
 	fmt.Println("FUNCTION CALL: 	 GetGenericObjectWildcard ")
