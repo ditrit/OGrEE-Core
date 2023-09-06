@@ -40,7 +40,8 @@ class _CreateTenantPopupState extends State<CreateTenantPopup> {
     return Center(
       child: Container(
         width: 500,
-        constraints: BoxConstraints(maxHeight: isKubernetes ? 420 : 540),
+        constraints: BoxConstraints(
+            maxHeight: backendType == BackendType.kubernetes ? 420 : 540),
         margin: const EdgeInsets.symmetric(horizontal: 20),
         decoration: PopupDecoration,
         child: Padding(
@@ -100,7 +101,7 @@ class _CreateTenantPopupState extends State<CreateTenantPopup> {
                                   label: localeMsg.deployVersion,
                                   icon: Icons.access_time,
                                   initial: _imageTag),
-                              !isKubernetes
+                              backendType != BackendType.kubernetes
                                   ? getFormField(
                                       save: (newValue) {
                                         var splitted = newValue!.split(":");
@@ -114,7 +115,7 @@ class _CreateTenantPopupState extends State<CreateTenantPopup> {
                                       isUrl: true,
                                     )
                                   : Container(),
-                              _hasWeb && !isKubernetes
+                              _hasWeb && backendType != BackendType.kubernetes
                                   ? getFormField(
                                       save: (newValue) {
                                         var splitted = newValue!.split(":");
@@ -176,7 +177,7 @@ class _CreateTenantPopupState extends State<CreateTenantPopup> {
                                       ),
                                     )
                                   : Container(),
-                              _hasDoc && !isKubernetes
+                              _hasDoc && backendType != BackendType.kubernetes
                                   ? getFormField(
                                       save: (newValue) {
                                         var splitted = newValue!.split(":");

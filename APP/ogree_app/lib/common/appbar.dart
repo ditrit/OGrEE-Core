@@ -32,7 +32,7 @@ AppBar myAppBar(context, userEmail, {isTenantMode = false}) {
         0,
         PopupMenuItem(
           value: "new",
-          child: Text(isKubernetes
+          child: Text(backendType == BackendType.kubernetes
               ? AppLocalizations.of(context)!.addKube
               : AppLocalizations.of(context)!.addServer),
         ));
@@ -93,7 +93,7 @@ AppBar myAppBar(context, userEmail, {isTenantMode = false}) {
                       ),
                       child: Badge(
                         backgroundColor: Colors.grey.shade900,
-                        isLabelVisible: isKubernetes,
+                        isLabelVisible: backendType == BackendType.kubernetes,
                         label: Text("KUBE"),
                       ),
                     ),
@@ -134,7 +134,9 @@ AppBar myAppBar(context, userEmail, {isTenantMode = false}) {
               _isSmallDisplay
                   ? Tooltip(
                       message: isTenantMode
-                          ? (isKubernetes ? "(KUBE) $apiUrl" : apiUrl)
+                          ? (backendType == BackendType.kubernetes
+                              ? "(KUBE) $apiUrl"
+                              : apiUrl)
                           : tenantName,
                       triggerMode: TooltipTriggerMode.tap,
                       child: const Icon(

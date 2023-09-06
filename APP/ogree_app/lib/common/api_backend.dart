@@ -20,7 +20,6 @@ String apiUrl = "";
 String tenantUrl = "";
 String tenantName = "";
 bool isTenantAdmin = false;
-bool isKubernetes = true;
 var token = "";
 var tenantToken = "";
 BackendType backendType = BackendType.tenant;
@@ -84,7 +83,7 @@ Future<Result<List<String>, Exception>> loginAPI(String email, String password,
       }
       if (data["isKubernetes"] == true) {
         // is Kubernetes API
-        isKubernetes = true;
+        backendType = BackendType.kubernetes;
       }
       return Success([data["email"].toString(), data["isTenant"] ?? ""]);
     } else {
@@ -121,10 +120,12 @@ Future<Result<BackendType, Exception>> fetchApiVersion(String urlApi,
           print(tenantName);
           return Success(BackendType.tenant);
         } else {
+          backendType = BackendType.unavailable;
           return Success(BackendType.unavailable);
         }
       }
     } else if (response.statusCode == 403) {
+      backendType = BackendType.tenant;
       return Success(BackendType.tenant);
     } else {
       return Failure(Exception("Unable to get version from server"));

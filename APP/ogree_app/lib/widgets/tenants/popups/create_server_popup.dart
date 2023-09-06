@@ -38,7 +38,8 @@ class _CreateServerPopupState extends State<CreateServerPopup> {
     return Center(
       child: Container(
         width: 500,
-        constraints: BoxConstraints(maxHeight: isKubernetes ? 470 : 560),
+        constraints: BoxConstraints(
+            maxHeight: backendType == BackendType.kubernetes ? 470 : 560),
         margin: const EdgeInsets.symmetric(horizontal: 20),
         decoration: PopupDecoration,
         child: Padding(
@@ -54,7 +55,7 @@ class _CreateServerPopupState extends State<CreateServerPopup> {
                     children: [
                       Center(
                         child: Text(
-                          isKubernetes
+                          backendType == BackendType.kubernetes
                               ? localeMsg.createKube
                               : localeMsg.createServer,
                           style: Theme.of(context).textTheme.headlineMedium,
@@ -125,19 +126,19 @@ class _CreateServerPopupState extends State<CreateServerPopup> {
                               save: (newValue) => _sshPassword = newValue,
                               label: localeMsg.password,
                               icon: Icons.lock),
-                      isKubernetes
+                      backendType == BackendType.kubernetes
                           ? getFormField(
                               save: (newValue) => _kubeDns = newValue,
                               label: "Cluster DNS",
                               icon: Icons.dns)
                           : Container(),
-                      !isKubernetes
+                      backendType != BackendType.kubernetes
                           ? getFormField(
                               save: (newValue) => _installPath = newValue,
                               label: localeMsg.serverPath,
                               icon: Icons.folder)
                           : Container(),
-                      !isKubernetes
+                      backendType != BackendType.kubernetes
                           ? getFormField(
                               save: (newValue) => _port = newValue,
                               label: localeMsg.portServer,
@@ -146,8 +147,10 @@ class _CreateServerPopupState extends State<CreateServerPopup> {
                                   FilteringTextInputFormatter.digitsOnly
                                 ])
                           : Container(),
-                      SizedBox(height: isKubernetes ? 0 : 13),
-                      !isKubernetes
+                      SizedBox(
+                          height:
+                              backendType == BackendType.kubernetes ? 0 : 13),
+                      backendType != BackendType.kubernetes
                           ? Row(
                               children: [
                                 const SizedBox(width: 40),
@@ -223,7 +226,7 @@ class _CreateServerPopupState extends State<CreateServerPopup> {
         'host': _sshHost!,
         'user': _sshUser!,
       };
-      if (isKubernetes) {
+      if (backendType == BackendType.kubernetes) {
         serverInfo['dns'] = _kubeDns!;
       } else {
         serverInfo.addAll({
