@@ -423,9 +423,9 @@ class _LoginPageState extends State<LoginPage> {
     if (apiType == null) {
       return "";
     } else if (apiType == BackendType.unavailable) {
-      return apiType!.name.toUpperCase();
+      return AppLocalizations.of(context)!.unavailable;
     } else {
-      return apiType!.name.toUpperCase() + " SERVER";
+      return "${apiType!.name.toUpperCase()} SERVER";
     }
   }
 }
