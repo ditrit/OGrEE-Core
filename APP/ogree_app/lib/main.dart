@@ -35,34 +35,41 @@ class _MyAppState extends State<MyApp> {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+        // debugShowCheckedModeBanner: false,
         title: 'OGrEE App',
         locale: _locale,
         localizationsDelegates: AppLocalizations.localizationsDelegates,
         supportedLocales: AppLocalizations.supportedLocales,
         theme: ThemeData(
-            useMaterial3: true,
-            colorSchemeSeed: Colors.blue,
-            fontFamily: GoogleFonts.inter().fontFamily,
-            elevatedButtonTheme: ElevatedButtonThemeData(
-                style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.blue.shade600,
-              foregroundColor: Colors.white,
-            )),
-            cardTheme: const CardTheme(
-                elevation: 3,
-                surfaceTintColor: Colors.white,
-                color: Colors.white),
-            textTheme: TextTheme(
-              headlineLarge: GoogleFonts.inter(
-                fontSize: 22,
-                color: Colors.black,
-                fontWeight: FontWeight.w700,
-              ),
-              headlineMedium: GoogleFonts.inter(
-                fontSize: 17,
-                color: Colors.black,
-              ),
-            )),
+          useMaterial3: true,
+          colorSchemeSeed: Colors.blue,
+          fontFamily: GoogleFonts.inter().fontFamily,
+          elevatedButtonTheme: ElevatedButtonThemeData(
+              style: ElevatedButton.styleFrom(
+            backgroundColor: Colors.blue.shade600,
+            foregroundColor: Colors.white,
+          )),
+          cardTheme: const CardTheme(
+              elevation: 3,
+              surfaceTintColor: Colors.white,
+              color: Colors.white),
+          textTheme: TextTheme(
+            headlineLarge: GoogleFonts.inter(
+              fontSize: 22,
+              color: Colors.black,
+              fontWeight: FontWeight.w700,
+            ),
+            headlineMedium: GoogleFonts.inter(
+              fontSize: 20,
+              color: Colors.black,
+              fontWeight: FontWeight.w400,
+            ),
+            headlineSmall: GoogleFonts.inter(
+              fontSize: 17,
+              color: Colors.black,
+            ),
+          ),
+        ),
         home: const LoginPage(),
         onGenerateRoute: RouteGenerator.generateRoute);
   }

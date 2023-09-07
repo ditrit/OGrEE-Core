@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:ogree_app/common/api_backend.dart';
+import 'package:ogree_app/common/definitions.dart';
 import 'package:ogree_app/common/snackbar.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
-import 'package:ogree_app/models/tenant.dart';
+import 'package:ogree_app/common/theme.dart';
 
 class CreateServerPopup extends StatefulWidget {
   Function() parentCallback;
@@ -25,210 +25,238 @@ class _CreateServerPopupState extends State<CreateServerPopup> {
   String? _sshPassword;
   String? _installPath;
   String? _port;
+  String? _kubeDns;
   bool _isLoading = false;
   AuthOption? _authOption = AuthOption.pKey;
   bool _shouldStartup = false;
+  bool _isSmallDisplay = false;
 
   @override
   Widget build(BuildContext context) {
     final localeMsg = AppLocalizations.of(context)!;
+    _isSmallDisplay = IsSmallDisplay(MediaQuery.of(context).size.width);
     return Center(
       child: Container(
-        // height: 240,
         width: 500,
+        constraints: BoxConstraints(
+            maxHeight: backendType == BackendType.kubernetes ? 470 : 560),
         margin: const EdgeInsets.symmetric(horizontal: 20),
-        decoration: BoxDecoration(
-            color: Colors.white, borderRadius: BorderRadius.circular(20)),
+        decoration: PopupDecoration,
         child: Padding(
           padding: const EdgeInsets.fromLTRB(40, 20, 40, 15),
-          child: Material(
-            color: Colors.white,
-            child: Form(
+          child: Form(
               key: _formKey,
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Row(
+              child: ScaffoldMessenger(
+                  child: Builder(
+                builder: (context) => Scaffold(
+                  backgroundColor: Colors.white,
+                  body: ListView(
+                    padding: EdgeInsets.zero,
                     children: [
-                      const Icon(Icons.add_to_photos),
-                      Text(
-                        "   ${localeMsg.createServer}",
-                        style: GoogleFonts.inter(
-                          fontSize: 22,
-                          color: Colors.black,
-                          fontWeight: FontWeight.w500,
+                      Center(
+                        child: Text(
+                          backendType == BackendType.kubernetes
+                              ? localeMsg.createKube
+                              : localeMsg.createServer,
+                          style: Theme.of(context).textTheme.headlineMedium,
                         ),
                       ),
-                    ],
-                  ),
-                  const Divider(height: 45),
-                  getFormField(
-                      save: (newValue) => _sshHost = newValue,
-                      label: "SSH Host",
-                      icon: Icons.dns),
-                  getFormField(
-                      save: (newValue) => _sshUser = newValue,
-                      label: "SSH User",
-                      icon: Icons.person),
-                  SizedBox(height: 8),
-                  Wrap(
-                    children: <Widget>[
-                      SizedBox(
-                        width: 200,
-                        child: RadioListTile<AuthOption>(
-                          dense: true,
-                          title: const Text('Private Key'),
-                          value: AuthOption.pKey,
-                          groupValue: _authOption,
-                          onChanged: (AuthOption? value) {
-                            setState(() {
-                              _authOption = value;
-                            });
-                          },
-                        ),
-                      ),
-                      SizedBox(
-                        width: 200,
-                        child: RadioListTile<AuthOption>(
-                          dense: true,
-                          title: Text(localeMsg.password),
-                          value: AuthOption.password,
-                          groupValue: _authOption,
-                          onChanged: (AuthOption? value) {
-                            setState(() {
-                              _authOption = value;
-                            });
-                          },
-                        ),
-                      ),
-                    ],
-                  ),
-                  _authOption == AuthOption.pKey
-                      ? Column(
-                          children: [
-                            getFormField(
-                                save: (newValue) => _sshKey = newValue,
-                                label: "SSH Private Key (/local/path/file)",
-                                icon: Icons.lock),
-                            getFormField(
-                                save: (newValue) => _sshKeyPass = newValue,
-                                label:
-                                    "Private Key Passphrase (${localeMsg.optional})",
-                                icon: Icons.lock,
-                                shouldValidate: false),
-                          ],
-                        )
-                      : getFormField(
-                          save: (newValue) => _sshPassword = newValue,
-                          label: localeMsg.password,
-                          icon: Icons.lock),
-                  getFormField(
-                      save: (newValue) => _installPath = newValue,
-                      label: localeMsg.serverPath,
-                      icon: Icons.folder),
-                  getFormField(
-                      save: (newValue) => _port = newValue,
-                      label: localeMsg.portServer,
-                      icon: Icons.onetwothree,
-                      formatters: [FilteringTextInputFormatter.digitsOnly]),
-                  const SizedBox(height: 13),
-                  Row(
-                    children: [
-                      const SizedBox(width: 40),
-                      SizedBox(
-                        height: 24,
-                        width: 24,
-                        child: Checkbox(
-                          value: _shouldStartup,
-                          onChanged: (bool? value) =>
-                              setState(() => _shouldStartup = value!),
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      Text(
-                        "Run at startup",
-                        style: TextStyle(
-                          fontSize: 14,
-                          color: Colors.black,
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 12),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.end,
-                    children: [
-                      TextButton.icon(
-                        style: OutlinedButton.styleFrom(
-                            foregroundColor: Colors.blue.shade900),
-                        onPressed: () => Navigator.pop(context),
-                        label: Text(localeMsg.cancel),
-                        icon: const Icon(
-                          Icons.cancel_outlined,
-                          size: 16,
-                        ),
-                      ),
-                      const SizedBox(width: 15),
-                      ElevatedButton.icon(
-                          onPressed: () async {
-                            if (_formKey.currentState!.validate()) {
-                              _formKey.currentState!.save();
-                              setState(() {
-                                _isLoading = true;
-                              });
-                              Map<String, dynamic> serverInfo =
-                                  <String, dynamic>{
-                                'host': _sshHost!,
-                                'user': _sshUser!,
-                                'dstpath': _installPath!,
-                                'runport': _port!,
-                                'startup': _shouldStartup,
-                              };
-                              if (_authOption == AuthOption.pKey) {
-                                serverInfo.addAll({
-                                  'pkey': _sshKey!,
-                                  'pkeypass': _sshKeyPass.toString(),
-                                });
-                              } else {
-                                serverInfo['password'] = _sshPassword!;
-                              }
-                              var response =
-                                  await createBackendServer(serverInfo);
-                              if (response == "") {
-                                widget.parentCallback();
-                                showSnackBar(context, localeMsg.createOK,
-                                    isSuccess: true);
-                                Navigator.of(context).pop();
-                              } else {
+                      // const Divider(height: 45),
+                      const SizedBox(height: 20),
+                      getFormField(
+                          save: (newValue) => _sshHost = newValue,
+                          label: "SSH Host",
+                          icon: Icons.dns),
+                      getFormField(
+                          save: (newValue) => _sshUser = newValue,
+                          label: "SSH User",
+                          icon: Icons.person),
+                      const SizedBox(height: 4),
+                      Wrap(
+                        children: <Widget>[
+                          SizedBox(
+                            width: 200,
+                            child: RadioListTile<AuthOption>(
+                              activeColor: Colors.blue.shade600,
+                              dense: true,
+                              title: const Text('Private Key'),
+                              value: AuthOption.pKey,
+                              groupValue: _authOption,
+                              onChanged: (AuthOption? value) {
                                 setState(() {
-                                  _isLoading = false;
+                                  _authOption = value;
                                 });
-                                showSnackBar(context, response, isError: true);
-                              }
-                            }
-                          },
-                          label: Text(localeMsg.create),
-                          icon: _isLoading
-                              ? Container(
-                                  width: 24,
+                              },
+                            ),
+                          ),
+                          SizedBox(
+                            width: 200,
+                            child: RadioListTile<AuthOption>(
+                              activeColor: Colors.blue.shade600,
+                              dense: true,
+                              title: Text(localeMsg.password),
+                              value: AuthOption.password,
+                              groupValue: _authOption,
+                              onChanged: (AuthOption? value) {
+                                setState(() {
+                                  _authOption = value;
+                                });
+                              },
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 4),
+                      _authOption == AuthOption.pKey
+                          ? Column(
+                              children: [
+                                getFormField(
+                                    save: (newValue) => _sshKey = newValue,
+                                    label: "SSH Private Key (/local/path/file)",
+                                    icon: Icons.lock),
+                                getFormField(
+                                    save: (newValue) => _sshKeyPass = newValue,
+                                    label:
+                                        "Private Key Passphrase (${localeMsg.optional})",
+                                    icon: Icons.lock,
+                                    shouldValidate: false),
+                              ],
+                            )
+                          : getFormField(
+                              save: (newValue) => _sshPassword = newValue,
+                              label: localeMsg.password,
+                              icon: Icons.lock),
+                      backendType == BackendType.kubernetes
+                          ? getFormField(
+                              save: (newValue) => _kubeDns = newValue,
+                              label: "Cluster DNS",
+                              icon: Icons.dns)
+                          : Container(),
+                      backendType != BackendType.kubernetes
+                          ? getFormField(
+                              save: (newValue) => _installPath = newValue,
+                              label: localeMsg.serverPath,
+                              icon: Icons.folder)
+                          : Container(),
+                      backendType != BackendType.kubernetes
+                          ? getFormField(
+                              save: (newValue) => _port = newValue,
+                              label: localeMsg.portServer,
+                              icon: Icons.onetwothree,
+                              formatters: [
+                                  FilteringTextInputFormatter.digitsOnly
+                                ])
+                          : Container(),
+                      SizedBox(
+                          height:
+                              backendType == BackendType.kubernetes ? 0 : 13),
+                      backendType != BackendType.kubernetes
+                          ? Row(
+                              children: [
+                                const SizedBox(width: 40),
+                                SizedBox(
                                   height: 24,
-                                  padding: const EdgeInsets.all(2.0),
-                                  child: const CircularProgressIndicator(
-                                    color: Colors.white,
-                                    strokeWidth: 3,
+                                  width: 24,
+                                  child: Checkbox(
+                                    activeColor: Colors.blue.shade600,
+                                    value: _shouldStartup,
+                                    onChanged: (bool? value) =>
+                                        setState(() => _shouldStartup = value!),
                                   ),
-                                )
-                              : const Icon(Icons.check_circle, size: 16))
+                                ),
+                                const SizedBox(width: 8),
+                                Text(
+                                  localeMsg.runAtStart,
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    color: Colors.black,
+                                  ),
+                                ),
+                              ],
+                            )
+                          : Container(),
+                      const SizedBox(height: 12),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.end,
+                        children: [
+                          TextButton.icon(
+                            style: OutlinedButton.styleFrom(
+                                foregroundColor: Colors.blue.shade900),
+                            onPressed: () => Navigator.pop(context),
+                            label: Text(localeMsg.cancel),
+                            icon: const Icon(
+                              Icons.cancel_outlined,
+                              size: 16,
+                            ),
+                          ),
+                          const SizedBox(width: 15),
+                          ElevatedButton.icon(
+                              onPressed: () => submitCreateServer(localeMsg),
+                              label: Text(localeMsg.create),
+                              icon: _isLoading
+                                  ? Container(
+                                      width: 24,
+                                      height: 24,
+                                      padding: const EdgeInsets.all(2.0),
+                                      child: const CircularProgressIndicator(
+                                        color: Colors.white,
+                                        strokeWidth: 3,
+                                      ),
+                                    )
+                                  : const Icon(Icons.check_circle, size: 16))
+                        ],
+                      )
                     ],
-                  )
-                ],
-              ),
-            ),
-          ),
+                  ),
+                ),
+              ))),
         ),
       ),
     );
+  }
+
+  submitCreateServer(AppLocalizations localeMsg) async {
+    if (_formKey.currentState!.validate()) {
+      _formKey.currentState!.save();
+      setState(() {
+        _isLoading = true;
+      });
+
+      Map<String, dynamic> serverInfo = <String, dynamic>{
+        'host': _sshHost!,
+        'user': _sshUser!,
+      };
+      if (backendType == BackendType.kubernetes) {
+        serverInfo['dns'] = _kubeDns!;
+      } else {
+        serverInfo.addAll({
+          'dstpath': _installPath!,
+          'runport': _port!,
+          'startup': _shouldStartup,
+        });
+      }
+      if (_authOption == AuthOption.pKey) {
+        serverInfo.addAll({
+          'pkey': _sshKey!,
+          'pkeypass': _sshKeyPass.toString(),
+        });
+      } else {
+        serverInfo['password'] = _sshPassword!;
+      }
+
+      final result = await createBackendServer(serverInfo);
+      switch (result) {
+        case Success():
+          widget.parentCallback();
+          showSnackBar(context, localeMsg.createOK, isSuccess: true);
+          Navigator.of(context).pop();
+        case Failure(exception: final exception):
+          setState(() {
+            _isLoading = false;
+          });
+          showSnackBar(context, exception.toString(), isError: true);
+      }
+    }
   }
 
   getFormField(
@@ -240,7 +268,7 @@ class _CreateServerPopupState extends State<CreateServerPopup> {
       List<TextInputFormatter>? formatters,
       bool shouldValidate = true}) {
     return Padding(
-      padding: const EdgeInsets.only(left: 2, right: 10),
+      padding: FormInputPadding,
       child: TextFormField(
         onSaved: (newValue) => save(newValue),
         validator: (text) {
@@ -252,12 +280,10 @@ class _CreateServerPopupState extends State<CreateServerPopup> {
           return null;
         },
         inputFormatters: formatters,
-        decoration: InputDecoration(
-          icon: Icon(icon, color: Colors.blue.shade900),
-          labelText: label,
-          prefixText: prefix,
-          suffixText: suffix,
-        ),
+        decoration: GetFormInputDecoration(_isSmallDisplay, label,
+            prefixText: prefix, suffixText: suffix, icon: icon),
+        cursorWidth: 1.3,
+        style: const TextStyle(fontSize: 14),
       ),
     );
   }

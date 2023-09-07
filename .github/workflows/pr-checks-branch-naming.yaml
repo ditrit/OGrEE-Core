@@ -1,0 +1,38 @@
+name: Branch Naming
+
+on: 
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+jobs:
+  branch-naming:
+    runs-on: ubuntu-latest
+    if: ${{ !contains('dependabot', github.head_ref) }}
+    name: 🏷️ Check Branch Naming
+    steps:
+      - uses: actions/checkout@v3.2.0
+
+      - name: ✅ Check branch name respects naming conventions
+        id: branchnamecheck
+        run: |
+          git fetch
+          echo "base ref is main checking branch name..."
+          ALLOWED_PREFIXES="feature feat fix hotfix release chore break breaking docs dependabot"
+          BRANCH_NAME_VALID=false
+          PREFIXES_ARRAY=$(echo $ALLOWED_PREFIXES | tr " " "\n")
+          shopt -s nocasematch
+          for PREFIX in $PREFIXES_ARRAY ; 
+          do 
+          if [[ "${{ github.head_ref }}" == *$PREFIX* ]]; then
+              echo "${{ github.head_ref }} respects prefix $PREFIX"
+              BRANCH_NAME_VALID=true
+          else
+              echo "${{ github.head_ref }} DOES NOT respects prefix $PREFIX"
+          fi
+          done
+          if [[ $BRANCH_NAME_VALID == true ]]; then
+              echo "[SUCCESS] - Your branch name respect the naming convention"  
+          else
+              echo "[FAIL] - Branch ${{ github.head_ref }} does not respect the naming convention, please rename"  
+              exit 1
+          fi

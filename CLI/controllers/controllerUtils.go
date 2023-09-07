@@ -7,6 +7,8 @@ import (
 	"cli/models"
 	"encoding/json"
 	"fmt"
+	"path"
+	"strings"
 )
 
 const (
@@ -34,46 +36,7 @@ const (
 	DEBUG
 )
 
-// Error Message Const
-// TODO: Replace Const with Err Msg/Reporting Func
-// that distinguishes API & CLI Errors
 const RACKUNIT = .04445 //meter
-
-func APIErrorMsg(respMap map[string]any) string {
-	respMsgAny, ok := respMap["message"]
-	if !ok {
-		return ""
-	}
-	respMsg, ok := respMsgAny.(string)
-	if !ok {
-		return ""
-	}
-	msg := "[Response From API] " + respMsg
-	errorsAny, ok := respMap["errors"]
-	if !ok {
-		return msg
-	}
-	errorsList := errorsAny.([]any)
-	for _, err := range errorsList {
-		msg += "\n    " + err.(string)
-	}
-	return msg
-}
-
-func APIError(respMap map[string]any) error {
-	return fmt.Errorf(APIErrorMsg(respMap))
-}
-
-// Display contents of []map[string]inf array
-func DispMapArr(x []map[string]interface{}) {
-	for idx := range x {
-		println()
-		println()
-		println("OBJECT: ", idx)
-		displayObject(x[idx])
-		println()
-	}
-}
 
 // displays contents of maps
 func Disp(x map[string]interface{}) {
@@ -83,10 +46,10 @@ func Disp(x map[string]interface{}) {
 	println("JSON: ", string(jx))
 }
 
-func DispWithAttrs(objs *[]interface{}, attrs *[]string) {
-	for _, objInf := range *objs {
+func DispWithAttrs(objs []interface{}, attrs []string) {
+	for _, objInf := range objs {
 		if obj, ok := objInf.(map[string]interface{}); ok {
-			for _, a := range *attrs {
+			for _, a := range attrs {
 				//Check if attr is in object
 				if ok, nested := AttrIsInObj(obj, a); ok {
 					if nested {
@@ -100,39 +63,6 @@ func DispWithAttrs(objs *[]interface{}, attrs *[]string) {
 				}
 			}
 			fmt.Printf("\tName:%s\n", obj["name"].(string))
-		}
-	}
-}
-
-func DispfWithAttrs(formatx string, objs *[]interface{}, attrs *[]string) {
-	//Convert user input format to workable format
-	//input for Printf
-	var format string
-	formatx = `"` + formatx + `"`
-	_, e := fmt.Sscanf(formatx, "%q", &format)
-	if e != nil {
-		println(e.Error())
-		return
-	}
-
-	for _, objInf := range *objs {
-		if obj, ok := objInf.(map[string]interface{}); ok {
-			var argument []interface{}
-			//var printer string
-			for _, a := range *attrs {
-				//Check if attr is in object
-				if ok, nested := AttrIsInObj(obj, a); ok {
-					if nested {
-						argument = append(argument, obj["attributes"].(map[string]interface{})[a])
-					} else {
-						argument = append(argument, obj[a])
-					}
-				} else {
-					argument = append(argument, "NULL")
-				}
-			}
-			fmt.Printf(format, argument...)
-			fmt.Printf("\n")
 		}
 	}
 }
@@ -152,25 +82,6 @@ func AttrIsInObj(obj map[string]interface{}, attr string) (bool, bool) {
 	}
 
 	return false, false
-}
-
-// Provides a mapping for stray
-// and normal objects
-func MapStrayString(x string) string {
-	if x == "device" {
-		return "stray-device"
-	}
-	if x == "sensor" {
-		return "stray-sensor"
-	}
-
-	if x == "stray-device" {
-		return "device"
-	}
-	if x == "stray-sensor" {
-		return "sensor"
-	}
-	return "INVALID-MAP"
 }
 
 func EntityToString(entity int) string {
@@ -262,18 +173,77 @@ func GetParentOfEntity(ent int) int {
 	}
 }
 
-func RequestAPI(method string, endpoint string, body map[string]any, expectedStatus int) (Response, error) {
+func RequestAPI(method string, endpoint string, body map[string]any, expectedStatus int) (*Response, error) {
 	URL := State.APIURL + endpoint
 	httpResponse, err := models.Send(method, URL, GetKey(), body)
 	if err != nil {
-		return Response{}, err
+		return nil, err
 	}
 	response, err := ParseResponseClean(httpResponse)
 	if err != nil {
-		return Response{}, err
+		if State.DebugLvl >= DEBUG {
+			return nil, fmt.Errorf("%s %s\n%s", method, URL, err.Error())
+		} else {
+			return nil, err
+		}
 	}
 	if response.status != expectedStatus {
-		return Response{}, fmt.Errorf(response.message)
+		msg := ""
+		if State.DebugLvl >= DEBUG {
+			msg += fmt.Sprintf("%s %s\n", method, URL)
+		}
+		msg += fmt.Sprintf("[Response From API] %s", response.message)
+		errorsAny, ok := response.body["errors"]
+		if ok {
+			errorsList := errorsAny.([]any)
+			for _, err := range errorsList {
+				msg += "\n    " + err.(string)
+			}
+		}
+		return response, fmt.Errorf(msg)
 	}
 	return response, nil
+}
+
+func TranslatePath(p string) string {
+	if p == "" {
+		p = "."
+	}
+	if p == "_" {
+		return "_"
+	}
+	if p == "-" {
+		return State.PrevPath
+	}
+	var output_words []string
+	if p[0] != '/' {
+		output_words = strings.Split(State.CurrPath, "/")[1:]
+		if len(output_words) == 1 && output_words[0] == "" {
+			output_words = output_words[0:0]
+		}
+	} else {
+		p = p[1:]
+	}
+	input_words := strings.Split(p, "/")
+	for _, word := range input_words {
+		if word == "." {
+			continue
+		} else if word == ".." {
+			if len(output_words) > 0 {
+				output_words = output_words[:len(output_words)-1]
+			}
+		} else {
+			output_words = append(output_words, word)
+		}
+	}
+	if len(output_words) > 0 {
+		if output_words[0] == "P" {
+			output_words[0] = "Physical"
+		} else if output_words[0] == "L" {
+			output_words[0] = "Logical"
+		} else if output_words[0] == "O" {
+			output_words[0] = "Organisation"
+		}
+	}
+	return path.Clean("/" + strings.Join(output_words, "/"))
 }

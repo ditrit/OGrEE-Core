@@ -2,8 +2,7 @@ version: '3.9'
 services:
   ogree_api:
     build: 
-      context: ${CORE_DIR}
-      dockerfile: ${API_BUILD_DIR}/Dockerfile
+      context: ${CORE_DIR}/${API_BUILD_DIR}
     image: ogree/api:${IMAGE_TAG}
     container_name: ${COMPOSE_PROJECT_NAME}_api
     environment:
@@ -19,10 +18,6 @@ services:
     depends_on:
       - ogree_db
     restart: on-failure:10
-
-    #Specifying the environment variables here is the superior option compared to inserting
-    #the .env file and building an image. Here you can specify all the parameters of the
-    #the API 
 
   ogree_db:
     image: mongo:latest
@@ -41,25 +36,22 @@ services:
         -  ./init.sh:/docker-entrypoint-initdb.d/init.sh
         -  ../createdb.js:/home/createdb.js
         -  db:/data/db
+        - ./entrypoint.sh:/scripts/entrypoint.sh
+    entrypoint: sh /scripts/entrypoint.sh ${COMPOSE_PROJECT_NAME}_db
     restart: on-failure:10
 
-  # You will have to retrieve the swagger.json file from
-  # the api root dir and supply it here 
   api_docs_ui:
     image: swaggerapi/swagger-ui:latest
     container_name: ${COMPOSE_PROJECT_NAME}_doc
     profiles: ["doc"]
-    volumes:
-      - ../../${API_BUILD_DIR}/swagger.json:/home/swagger.json
     ports:
       - ${API_DOC_UI_PORT}:8080
     environment:
-      SWAGGER_JSON: /home/swagger.json
+      SWAGGER_JSON_URL: https://raw.githubusercontent.com/ditrit/OGrEE-Core/${IMAGE_TAG}/API/swagger.json
 
   ogree_webapp:
     build: 
-      context: ${CORE_DIR}
-      dockerfile: ${APP_BUILD_DIR}/Dockerfile
+      context: ${CORE_DIR}/${APP_BUILD_DIR}
     image: ogree/webapp:${IMAGE_TAG}
     profiles: ["web"]
     container_name: ${COMPOSE_PROJECT_NAME}_webapp

@@ -4,176 +4,156 @@ import (
 	c "cli/controllers"
 	"cli/readline"
 	"fmt"
-	"io/ioutil"
+	"os"
+	pathutil "path"
 	"strings"
 )
 
 //Functions for autocompleter
 
-func ListEntities(path string) func(string) []string {
-	return func(line string) []string {
-		var trimmed string
-		//Instead let's trim to the first instance of whitespace
-		idx := strings.Index(line, " ")
-		if idx == -1 {
-			return nil
-		}
-		idx += 1
-		if line[idx:] == "" {
-			path = c.State.CurrPath
-		} else {
-			path = TrimToSlash(line[idx:])
-			trimmed = line[idx:]
-			if len(line) > idx+1 {
-				if len(trimmed) > 2 && trimmed[2:] == ".." || len(trimmed) > 0 && trimmed != "/" {
-					path = c.State.CurrPath + "/" + path
-				}
-			}
-
-			if path == "" {
-				path = c.State.CurrPath
-			}
-
-			//Helps to make autocompletion at the root
-			if trimmed[0] == '/' {
-				if strings.Count(trimmed, "/") > 1 {
-					path = TrimToSlash(trimmed)
-
-				} else {
-					path = "/"
-				}
-			}
-		}
-
-		items := c.FetchNodesAtLevel(path)
-		return items
+func ListEntities(line string) []string {
+	var path string
+	var trimmed string
+	//Instead let's trim to the first instance of whitespace
+	idx := strings.Index(line, " ")
+	if idx == -1 {
+		return nil
 	}
+	idx += 1
+	if line[idx:] == "" {
+		path = c.State.CurrPath
+	} else {
+		path = TrimToSlash(line[idx:])
+		trimmed = line[idx:]
+		if len(line) > idx+1 {
+			if len(trimmed) > 2 && trimmed[2:] == ".." || len(trimmed) > 0 && trimmed != "/" {
+				path = c.State.CurrPath + "/" + path
+			}
+		}
+
+		if path == "" {
+			path = c.State.CurrPath
+		}
+
+		//Helps to make autocompletion at the root
+		if trimmed[0] == '/' {
+			if strings.Count(trimmed, "/") > 1 {
+				path = TrimToSlash(trimmed)
+
+			} else {
+				path = "/"
+			}
+		}
+	}
+	items, _ := c.Ls(pathutil.Clean(path))
+	return items
 }
 
-func ListLocal(path string) func(string) []string {
-	return func(line string) []string {
+func ListLocal(line string) []string {
+	var path string
+	//Algorithm to strip the string from both ends
+	//to extract the file path
+	q := strings.Index(line, ":") + 1
+	if q < 0 {
+		path = "./"
+	} else {
+		path = strings.TrimSpace(TrimToSlash(line[q:]))
+		if len(line) > 4 {
+			check := strings.TrimSpace(line[q+1:])
+			if len(check) > 0 {
+				if string(check[0]) != "/" {
+					path = "./" + path
+				}
+			}
 
-		//Algorithm to strip the string from both ends
-		//to extract the file path
-		q := strings.Index(line, ":") + 1
-		if q < 0 {
+		}
+
+		if path == "" {
 			path = "./"
-		} else {
-			path = strings.TrimSpace(TrimToSlash(line[q:]))
-			if len(line) > 4 {
-				check := strings.TrimSpace(line[q+1:])
-				if len(check) > 0 {
-					if string(check[0]) != "/" {
-						path = "./" + path
-					}
-				}
-
-			}
-
-			if path == "" {
-				path = "./"
-			}
-
 		}
-		//End of Algorithm
-
-		names := make([]string, 0)
-		files, e := ioutil.ReadDir(path)
-		if e != nil {
-			if c.State.DebugLvl > c.NONE {
-				fmt.Println("\n", e.Error())
-			}
-			return []string{}
-		}
-		for _, f := range files {
-			names = append(names, f.Name())
-		}
-		return names
-	}
-}
-
-func UnLinkObjCompleter(path string) func(string) []string {
-	return func(line string) []string {
-		splitted := strings.SplitAfter(line, "link")
-		length := len(splitted)
-		if length < 1 {
-			return nil
-		}
-
-		partTwo := false
-
-		if strings.Contains(splitted[1], "@") {
-			partTwo = true
-		}
-
-		fn := ListEntities("")
-		//if !partTwo {
-
-		entities := fn(splitted[1])
-		if !partTwo {
-			entities = append(entities, " @ ")
-		}
-
-		return entities
-		/*} else {
-			splitPartTwo := strings.SplitAfter(splitted[1], "@")
-			if len(splitPartTwo) < 1 {
-				println("DEBUG RETURNING NIL")
-				return nil
-			}
-			//println("DEBUG PART2")
-			//println("DEBUG: Path to check", splitPartTwo[1])
-			entities := fn(splitPartTwo[1])
-			return entities
-		}*/
 
 	}
+	//End of Algorithm
+
+	names := make([]string, 0)
+	files, e := os.ReadDir(path)
+	if e != nil {
+		if c.State.DebugLvl > c.NONE {
+			fmt.Println("\n", e.Error())
+		}
+		return []string{}
+	}
+	for _, f := range files {
+		names = append(names, f.Name())
+	}
+	return names
+
 }
 
-func ListForUI(path string) func(string) []string {
-	return func(line string) []string {
-		var trimmed string
-		//Instead let's trim to the first instance of '='
-		idx := strings.Index(line, "= ")
-		if idx == -1 {
-			return nil
+func UnLinkObjCompleter(line string) []string {
+	splitted := strings.SplitAfter(line, "link")
+	length := len(splitted)
+	if length < 1 {
+		return nil
+	}
+
+	partTwo := false
+
+	if strings.Contains(splitted[1], "@") {
+		partTwo = true
+	}
+
+	entities := ListEntities(splitted[1])
+	if !partTwo {
+		entities = append(entities, " @ ")
+	}
+
+	return entities
+}
+
+func ListForUI(line string) []string {
+	var path string
+	var trimmed string
+	//Instead let's trim to the first instance of '='
+	idx := strings.Index(line, "= ")
+	if idx == -1 {
+		return nil
+	}
+	idx += 1
+	if line[idx:] == "" {
+		path = c.State.CurrPath
+	} else {
+		path = TrimToSlash(line[idx:])
+		trimmed = line[idx:]
+		if len(line) > idx+1 {
+			if len(trimmed) > 2 && trimmed[2:] == ".." || len(trimmed) > 0 && trimmed != "/" {
+				path = c.State.CurrPath + "/" + strings.TrimSpace(path)
+			}
 		}
-		idx += 1
-		if line[idx:] == "" {
+
+		if path == "" {
 			path = c.State.CurrPath
-		} else {
-			path = TrimToSlash(line[idx:])
-			trimmed = line[idx:]
-			if len(line) > idx+1 {
-				if len(trimmed) > 2 && trimmed[2:] == ".." || len(trimmed) > 0 && trimmed != "/" {
-					path = c.State.CurrPath + "/" + strings.TrimSpace(path)
-				}
-			}
-
-			if path == "" {
-				path = c.State.CurrPath
-			}
-
-			//Helps to make autocompletion at the root
-			if trimmed[0] == '/' {
-				if strings.Count(trimmed, "/") > 1 {
-					path = TrimToSlash(trimmed)
-
-				} else {
-					path = "/"
-				}
-			}
 		}
 
-		items := c.FetchNodesAtLevel(path)
-		return items
+		//Helps to make autocompletion at the root
+		if trimmed[0] == '/' {
+			if strings.Count(trimmed, "/") > 1 {
+				path = TrimToSlash(trimmed)
+
+			} else {
+				path = "/"
+			}
+		}
 	}
+	items, _ := c.Ls(pathutil.Clean(path))
+	return items
+
 }
 
 func ListUserVars(path string, appendDeref bool) func(string) []string {
 	return func(line string) []string {
 		ans := []string{}
-		varMap := GetDynamicSymbolTable()
+		varMap := c.State.DynamicSymbolTable
 		for i := range varMap {
 			if appendDeref {
 				ans = append(ans, "$"+i)
@@ -186,44 +166,34 @@ func ListUserVars(path string, appendDeref bool) func(string) []string {
 	}
 }
 
-func ListUserFuncs(path string) func(string) []string {
-	return func(line string) []string {
-		ans := []string{}
-		funcMap := GetFuncTable()
-		for i := range funcMap {
-			ans = append(ans, i)
-		}
-		return ans
+func ListUserFuncs(line string) []string {
+	ans := []string{}
+	funcMap := c.State.FuncTable
+	for i := range funcMap {
+		ans = append(ans, i)
 	}
+	return ans
 }
 
-func SiteOCLICompleter(path string) func(string) []string {
-	return func(line string) []string {
-
-		//Trim everything up to and including the ':'
-		idx := strings.Index(line, ":")
-		if idx == -1 {
-			return nil
-		}
-
-		fn := ListEntities("")
-		ans := fn(line[idx:])
-
-		return ans
+func SiteOCLICompleter(line string) []string {
+	//Trim everything up to and including the ':'
+	idx := strings.Index(line, ":")
+	if idx == -1 {
+		return nil
 	}
+
+	ans := ListEntities(line[idx:])
+
+	return ans
 }
 
-func BldgOCLICompleter(path string) func(string) []string {
-	return func(line string) []string {
-
-		//Trim everything up to and including the ':'
-		fn := SiteOCLICompleter("")
-		ans := fn(line)
-		if strings.Count(line, "@") == 1 {
-			ans = append(ans, " @ ")
-		}
-		return ans
+func BldgOCLICompleter(line string) []string {
+	//Trim everything up to and including the ':'
+	ans := SiteOCLICompleter(line)
+	if strings.Count(line, "@") == 1 {
+		ans = append(ans, " @ ")
 	}
+	return ans
 }
 
 func TrimToSlash(x string) string {
@@ -235,8 +205,7 @@ func DrawCompleter(path string) func(string) []string {
 	return func(line string) []string {
 		//Trim everything until the "("
 
-		fn := ListEntities("")
-		ans := fn(line)
+		ans := ListEntities(line)
 		if !strings.Contains(line, ")") {
 			ans = append(ans, ")")
 		}
@@ -252,7 +221,7 @@ func DrawCompleter(path string) func(string) []string {
 func GetPrefixCompleter() *readline.PrefixCompleter {
 	return readline.NewPrefixCompleter(false,
 		readline.PcItem("cd", true,
-			readline.PcItemDynamic(ListEntities(""), false)),
+			readline.PcItemDynamic(ListEntities, false)),
 		readline.PcItem("pwd", false),
 		readline.PcItem("clear", false),
 		readline.PcItem("exit", false),
@@ -267,11 +236,11 @@ func GetPrefixCompleter() *readline.PrefixCompleter {
 					readline.PcItem("false", false)))),
 		readline.PcItem("grep", false),
 		readline.PcItem("drawable", true,
-			readline.PcItemDynamic(ListEntities(""), false)),
+			readline.PcItemDynamic(ListEntities, false)),
 		readline.PcItem("draw", true,
-			readline.PcItemDynamic(ListEntities(""), false)),
+			readline.PcItemDynamic(ListEntities, false)),
 		readline.PcItem("ls", true,
-			readline.PcItemDynamic(ListEntities(""), false)),
+			readline.PcItemDynamic(ListEntities, false)),
 		readline.PcItem("man", false,
 			readline.PcItem("pwd", false),
 			readline.PcItem("print", false),
@@ -318,83 +287,83 @@ func GetPrefixCompleter() *readline.PrefixCompleter {
 			readline.PcItem(">", false)),
 		readline.PcItem("+", false,
 			readline.PcItem("domain:", true,
-				readline.PcItemDynamic(SiteOCLICompleter(""), true)),
+				readline.PcItemDynamic(SiteOCLICompleter, true)),
 			readline.PcItem("si:", true,
-				readline.PcItemDynamic(SiteOCLICompleter(""), true)),
+				readline.PcItemDynamic(SiteOCLICompleter, true)),
 			readline.PcItem("bd:", true,
-				readline.PcItemDynamic(BldgOCLICompleter(""), true)),
+				readline.PcItemDynamic(BldgOCLICompleter, true)),
 			readline.PcItem("ro:", true,
-				readline.PcItemDynamic(SiteOCLICompleter(""), true)),
+				readline.PcItemDynamic(SiteOCLICompleter, true)),
 			readline.PcItem("rk:", true,
-				readline.PcItemDynamic(SiteOCLICompleter(""), true)),
+				readline.PcItemDynamic(SiteOCLICompleter, true)),
 			readline.PcItem("dv:", true,
-				readline.PcItemDynamic(SiteOCLICompleter(""), true)),
+				readline.PcItemDynamic(SiteOCLICompleter, true)),
 			readline.PcItem("gr:", true,
-				readline.PcItemDynamic(SiteOCLICompleter(""), true)),
+				readline.PcItemDynamic(SiteOCLICompleter, true)),
 			readline.PcItem("co:", true,
-				readline.PcItemDynamic(SiteOCLICompleter(""), true)),
+				readline.PcItemDynamic(SiteOCLICompleter, true)),
 			readline.PcItem("orphan sensor:", true,
-				readline.PcItemDynamic(SiteOCLICompleter(""), true)),
+				readline.PcItemDynamic(SiteOCLICompleter, true)),
 			readline.PcItem("orphan device:", true,
-				readline.PcItemDynamic(SiteOCLICompleter(""), true))),
+				readline.PcItemDynamic(SiteOCLICompleter, true))),
 
 		readline.PcItem("get", true,
-			readline.PcItemDynamic(ListEntities(""), false)),
+			readline.PcItemDynamic(ListEntities, false)),
 		readline.PcItem("getu", true,
-			readline.PcItemDynamic(ListEntities(""), false)),
+			readline.PcItemDynamic(ListEntities, false)),
 
 		readline.PcItem("getslot", true,
-			readline.PcItemDynamic(ListEntities(""), false)),
+			readline.PcItemDynamic(ListEntities, false)),
 		readline.PcItem("selection", false),
 		readline.PcItem(".cmds:", true,
-			readline.PcItemDynamic(ListLocal(""), false)),
+			readline.PcItemDynamic(ListLocal, false)),
 
 		readline.PcItem(".template:", true,
-			readline.PcItemDynamic(ListLocal(""), false)),
+			readline.PcItemDynamic(ListLocal, false)),
 		readline.PcItem(".var:", false),
 		readline.PcItem("tree", true,
-			readline.PcItemDynamic(ListEntities(""), false)),
+			readline.PcItemDynamic(ListEntities, false)),
 		readline.PcItem("lssite", true,
 			readline.PcItem("-r", false),
-			readline.PcItemDynamic(ListEntities(""), false)),
+			readline.PcItemDynamic(ListEntities, false)),
 		readline.PcItem("lsbldg", true,
 			readline.PcItem("-r", false),
-			readline.PcItemDynamic(ListEntities(""), false)),
+			readline.PcItemDynamic(ListEntities, false)),
 		readline.PcItem("lsroom", true,
 			readline.PcItem("-r", false),
-			readline.PcItemDynamic(ListEntities(""), false)),
+			readline.PcItemDynamic(ListEntities, false)),
 		readline.PcItem("lsrack", true,
 			readline.PcItem("-r", false),
-			readline.PcItemDynamic(ListEntities(""), false)),
+			readline.PcItemDynamic(ListEntities, false)),
 		readline.PcItem("lsdev", true,
 			readline.PcItem("-r", false),
-			readline.PcItemDynamic(ListEntities(""), false)),
+			readline.PcItemDynamic(ListEntities, false)),
 		readline.PcItem("lscabinet", true,
 			readline.PcItem("-r", false),
-			readline.PcItemDynamic(ListEntities(""), false)),
+			readline.PcItemDynamic(ListEntities, false)),
 		readline.PcItem("lscorridor", true,
 			readline.PcItem("-r", false),
-			readline.PcItemDynamic(ListEntities(""), false)),
+			readline.PcItemDynamic(ListEntities, false)),
 		readline.PcItem("lsac", true,
 			readline.PcItem("-r", false),
-			readline.PcItemDynamic(ListEntities(""), false)),
+			readline.PcItemDynamic(ListEntities, false)),
 		readline.PcItem("lspanel", true,
 			readline.PcItem("-r", false),
-			readline.PcItemDynamic(ListEntities(""), false)),
+			readline.PcItemDynamic(ListEntities, false)),
 		readline.PcItem("lssensor", true,
 			readline.PcItem("-r", false),
-			readline.PcItemDynamic(ListEntities(""), false)),
+			readline.PcItemDynamic(ListEntities, false)),
 		readline.PcItem("lsog", false),
 		readline.PcItem("print", false,
 			readline.PcItemDynamic(ListUserVars("", true), false)),
 		readline.PcItem("lsenterprise", false),
 		readline.PcItem("undraw", true,
-			readline.PcItemDynamic(ListEntities(""), false)),
+			readline.PcItemDynamic(ListEntities, false)),
 		readline.PcItem("unset", false,
 			readline.PcItem("-v", false,
 				readline.PcItemDynamic(ListUserVars("", false), false)),
 			readline.PcItem("-f", false,
-				readline.PcItemDynamic(ListUserFuncs(""), false))),
+				readline.PcItemDynamic(ListUserFuncs, false))),
 		readline.PcItem("while", false),
 		readline.PcItem("for", false),
 		readline.PcItem("if", false),
@@ -408,11 +377,11 @@ func GetPrefixCompleter() *readline.PrefixCompleter {
 
 		readline.PcItem("ui.highlight", false,
 			readline.PcItem("=", true,
-				readline.PcItemDynamic(ListForUI(""), false))),
+				readline.PcItemDynamic(ListForUI, false))),
 
 		readline.PcItem("ui.hl", false,
 			readline.PcItem("=", true,
-				readline.PcItemDynamic(ListForUI(""), false))),
+				readline.PcItemDynamic(ListForUI, false))),
 
 		readline.PcItem("ui.debug", false,
 			readline.PcItem("=", false,
@@ -434,9 +403,9 @@ func GetPrefixCompleter() *readline.PrefixCompleter {
 		readline.PcItem("ui.clearcache", false),
 
 		readline.PcItem(">", true,
-			readline.PcItemDynamic(ListEntities(""), false)),
+			readline.PcItemDynamic(ListEntities, false)),
 		readline.PcItem("hc", true,
-			readline.PcItemDynamic(ListEntities(""), false)),
+			readline.PcItemDynamic(ListEntities, false)),
 		/*readline.PcItem("gt", false,
 			readline.PcItem("site", false),
 			readline.PcItem("building", false),
@@ -448,13 +417,13 @@ func GetPrefixCompleter() *readline.PrefixCompleter {
 		),*/
 
 		readline.PcItem("link", true,
-			readline.PcItemDynamic(UnLinkObjCompleter(""), false)),
+			readline.PcItemDynamic(UnLinkObjCompleter, false)),
 		readline.PcItem("unlink", true,
-			readline.PcItemDynamic(UnLinkObjCompleter(""), false)),
+			readline.PcItemDynamic(UnLinkObjCompleter, false)),
 		readline.PcItem("-", true,
 			readline.PcItem("selection", false),
-			readline.PcItemDynamic(ListEntities(""), false),
+			readline.PcItemDynamic(ListEntities, false),
 		),
-		readline.PcItem("=", true, readline.PcItemDynamic(ListEntities(""), false)),
+		readline.PcItem("=", true, readline.PcItemDynamic(ListEntities, false)),
 	)
 }

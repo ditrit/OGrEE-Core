@@ -3,6 +3,7 @@ import 'package:ogree_app/common/api_backend.dart';
 import 'package:ogree_app/common/popup_dialog.dart';
 import 'package:ogree_app/pages/login_page.dart';
 import 'package:ogree_app/pages/projects_page.dart';
+import 'package:ogree_app/pages/tenant_page.dart';
 import 'package:ogree_app/widgets/change_password_popup.dart';
 import 'package:ogree_app/widgets/language_toggle.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
@@ -15,31 +16,93 @@ AppBar myAppBar(context, userEmail, {isTenantMode = false}) {
           builder: (context) => const LoginPage(),
         ),
       );
+
+  List<PopupMenuEntry<String>> entries = <PopupMenuEntry<String>>[
+    PopupMenuItem(
+      value: "change",
+      child: Text(AppLocalizations.of(context)!.changePassword),
+    ),
+    const PopupMenuItem(
+      value: "logout",
+      child: Text("Logout"),
+    ),
+  ];
+  if (isTenantMode) {
+    entries.insert(
+        0,
+        PopupMenuItem(
+          value: "new",
+          child: Text(backendType == BackendType.kubernetes
+              ? AppLocalizations.of(context)!.addKube
+              : AppLocalizations.of(context)!.addServer),
+        ));
+  } else if (isTenantAdmin) {
+    entries.insert(
+        0,
+        PopupMenuItem(
+          value: "tenant",
+          child: Text("Paramètres du tenant"),
+        ));
+  }
+
+  bool _isSmallDisplay = MediaQuery.of(context).size.width < 600;
   return AppBar(
     backgroundColor: Colors.grey.shade900,
-    leadingWidth: 150,
-    leading: Center(
-        child: TextButton(
-      child: Text(
-        'OGrEE',
-        style: TextStyle(
-            fontSize: 21, fontWeight: FontWeight.w700, color: Colors.white),
+    leadingWidth: 160,
+    leading: Padding(
+      padding: const EdgeInsets.only(left: 20),
+      child: Row(
+        children: [
+          TextButton(
+            child: const Text(
+              'OGrEE',
+              style: TextStyle(
+                  fontSize: 21,
+                  fontWeight: FontWeight.w700,
+                  color: Colors.white),
+            ),
+            onPressed: () => Navigator.of(context).push(
+              MaterialPageRoute(
+                builder: (context) => ProjectsPage(
+                    userEmail: isTenantMode ? "admin" : userEmail,
+                    isTenantMode: isTenantMode),
+              ),
+            ),
+          ),
+          Badge(
+            isLabelVisible: isTenantMode,
+            label: Text("ADMIN"),
+          )
+        ],
       ),
-      onPressed: () => Navigator.of(context).push(
-        MaterialPageRoute(
-          builder: (context) => ProjectsPage(
-              userEmail: isTenantMode ? "admin" : userEmail,
-              isTenantMode: isTenantMode),
-        ),
-      ),
-    )),
+    ),
     actions: [
-      isTenantMode
-          ? Padding(
+      _isSmallDisplay
+          ? Container()
+          : Padding(
               padding: const EdgeInsets.only(right: 20),
-              child: Text(apiUrl, style: TextStyle(color: Colors.white)),
-            )
-          : Container(),
+              child: Row(
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.only(right: 8),
+                    child: Container(
+                      decoration: BoxDecoration(
+                        borderRadius:
+                            const BorderRadius.all(Radius.circular(8)),
+                        border: Border.all(color: Colors.white),
+                      ),
+                      child: Badge(
+                        backgroundColor: Colors.grey.shade900,
+                        isLabelVisible: backendType == BackendType.kubernetes,
+                        label: Text("KUBE"),
+                      ),
+                    ),
+                  ),
+                  Text(isTenantMode ? apiUrl : tenantName,
+                      style: const TextStyle(color: Colors.white)),
+                ],
+              ),
+            ),
       Padding(
         padding: const EdgeInsets.symmetric(vertical: 15),
         child: LanguageToggle(),
@@ -52,24 +115,15 @@ AppBar myAppBar(context, userEmail, {isTenantMode = false}) {
             } else if (value == "new") {
               showCustomPopup(
                   context, CreateServerPopup(parentCallback: () {}));
+            } else if (value == "tenant") {
+              Navigator.of(context).push(MaterialPageRoute(
+                builder: (context) => TenantPage(userEmail: "admin"),
+              ));
             } else {
               showCustomPopup(context, ChangePasswordPopup());
             }
           },
-          itemBuilder: (_) => <PopupMenuEntry<String>>[
-                PopupMenuItem(
-                  value: "new",
-                  child: Text(AppLocalizations.of(context)!.addServer),
-                ),
-                PopupMenuItem(
-                  value: "change",
-                  child: Text(AppLocalizations.of(context)!.changePassword),
-                ),
-                PopupMenuItem(
-                  value: "logout",
-                  child: Text("Logout"),
-                ),
-              ],
+          itemBuilder: (_) => entries,
           child: Row(
             children: [
               const Icon(
@@ -77,10 +131,22 @@ AppBar myAppBar(context, userEmail, {isTenantMode = false}) {
                 color: Colors.white,
               ),
               const SizedBox(width: 10),
-              Text(
-                isTenantMode ? "admin" : userEmail,
-                style: TextStyle(color: Colors.white),
-              ),
+              _isSmallDisplay
+                  ? Tooltip(
+                      message: isTenantMode
+                          ? (backendType == BackendType.kubernetes
+                              ? "(KUBE) $apiUrl"
+                              : apiUrl)
+                          : tenantName,
+                      triggerMode: TooltipTriggerMode.tap,
+                      child: const Icon(
+                        Icons.info_outline_rounded,
+                        color: Colors.white,
+                      ))
+                  : Text(
+                      isTenantMode ? "admin" : userEmail,
+                      style: const TextStyle(color: Colors.white),
+                    ),
             ],
           )),
       const SizedBox(width: 40)

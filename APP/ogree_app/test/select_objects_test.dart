@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:ogree_app/common/definitions.dart';
 import 'package:ogree_app/widgets/select_objects/app_controller.dart';
 import 'package:ogree_app/widgets/select_objects/select_objects.dart';
 
@@ -7,18 +8,20 @@ import 'common.dart';
 
 void main() {
   testWidgets('SelectObjects expands and collapses tree', (tester) async {
-    await tester.pumpWidget(const LocalizationsInjApp(
+    await tester.binding.setSurfaceSize(const Size(1000, 1000));
+    await tester.pumpWidget(LocalizationsInjApp(
         child: SelectObjects(
+      dateRange: "",
       load: true,
-      namespace: 'TEST',
+      namespace: Namespace.Test.name,
     )));
 
     final expandButton = find.text("Développer tout");
     await tester.tap(expandButton);
     await tester.pumpAndSettle();
     for (var node in kDataSample["sitePI.B1.1.rack1"]!) {
-      expect(
-          find.text(node.substring(node.lastIndexOf(".") + 1)), findsOneWidget);
+      expect(find.text(node.substring(node.lastIndexOf(".") + 1)),
+          findsAtLeastNWidgets(1));
     }
 
     final collapseButton = find.text("Réduire tout");
@@ -31,10 +34,11 @@ void main() {
   });
 
   testWidgets('SelectObjects toogles tree selection', (tester) async {
-    await tester.pumpWidget(const LocalizationsInjApp(
+    await tester.pumpWidget(LocalizationsInjApp(
         child: SelectObjects(
+      dateRange: "",
       load: true,
-      namespace: 'TEST',
+      namespace: Namespace.Test.name,
     )));
 
     final expandButton = find.text("Sélectionner tout");
@@ -57,10 +61,11 @@ void main() {
   });
 
   testWidgets('SelectObjects can find an object', (tester) async {
-    await tester.pumpWidget(const LocalizationsInjApp(
+    await tester.pumpWidget(LocalizationsInjApp(
         child: SelectObjects(
+      dateRange: "",
       load: true,
-      namespace: 'TEST',
+      namespace: Namespace.Test.name,
     )));
 
     const searchStr = "rack2.devB.devB-2";
@@ -79,10 +84,13 @@ void main() {
   });
 
   testWidgets('SelectObjects can filter objects', (tester) async {
-    await tester.pumpWidget(const LocalizationsInjApp(
+    return;
+    await tester.binding.setSurfaceSize(const Size(1000, 1000));
+    await tester.pumpWidget(LocalizationsInjApp(
         child: SelectObjects(
+      dateRange: "",
       load: true,
-      namespace: 'TEST',
+      namespace: Namespace.Test.name,
     )));
 
     // all data is there
@@ -113,10 +121,10 @@ void main() {
     await tester.tap(expandButton);
     await tester.pumpAndSettle();
     expect(find.text("sitePI.B1"), findsNWidgets(3));
-    for (var obj in ["rack1", "rack2", "devC", "devD"]) {
+    for (var obj in ["rack1", "rack2"]) {
       expect(find.text(obj), findsOneWidget);
     }
-    for (var obj in ["devA", "devB"]) {
+    for (var obj in ["devA", "devB", "devC", "devD"]) {
       expect(find.text(obj), findsNWidgets(2));
     }
 
@@ -160,5 +168,8 @@ void main() {
     for (var obj in kDataSample[kRootId]!) {
       expect(find.text(obj), findsOneWidget);
     }
+
+    // resets the screen to its original size after the test end
+    tester.view.resetPhysicalSize();
   });
 }

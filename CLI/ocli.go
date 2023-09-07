@@ -56,16 +56,24 @@ func parseFile(path string) ([]parsedLine, error) {
 	result := []parsedLine{}
 	var fileErr *fileParseError
 	scanner := bufio.NewScanner(file)
+	line := ""
+	startLineNumber := 1
 	for lineNumber := 1; scanner.Scan(); lineNumber++ {
-		line := scanner.Text()
-		if len(line) > 0 {
+		newLine := strings.TrimRight(scanner.Text(), " ")
+		if len(newLine) >= 1 && newLine[len(newLine)-1] == '\\' {
+			newLine = newLine[:len(newLine)-1]
+			line += newLine + "\n"
+		} else {
+			line += newLine
 			root, err := Parse(line)
 			if err != nil {
-				fileErr = addLineError(fileErr, err, filename, lineNumber, line)
+				fileErr = addLineError(fileErr, err, filename, startLineNumber, line)
 			}
 			if root != nil {
-				result = append(result, parsedLine{line, lineNumber, root})
+				result = append(result, parsedLine{line, startLineNumber, root})
 			}
+			line = ""
+			startLineNumber = lineNumber + 1
 		}
 	}
 	if fileErr != nil {

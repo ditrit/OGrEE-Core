@@ -1,0 +1,53 @@
+name: Build Docker and Push to Registery
+description: Build Docker and Push to Registery
+
+inputs:
+  IMAGE_NAME:
+    description: "Name of the image"
+    required: true
+  FOLDER_NAME:
+    description: "Folder name of the Dockerfile"
+    required: true
+  VERSION: 
+    description: "Version given to docker image"
+    required: true
+  TEAM_DOCKER_URL:
+    description: "docker url"
+    required: true
+  TEAM_USERNAME:
+    description: "docker username"
+    required: true
+  TEAM_PASSWORD:
+    description: "docker password"
+    required: true
+
+runs:
+  using: "composite"
+  steps:
+    - uses: actions/checkout@v3.2.0
+      with:
+        clean: false
+        fetch-depth: "0"
+
+    - name: 🐋🔐 Docker Team  Registry
+      if: ${{ !contains('dependabot', github.ref) }}
+      uses: docker/login-action@v2
+      with:
+        registry: ${{ inputs.TEAM_DOCKER_URL }}
+        username: ${{ inputs.TEAM_USERNAME }}
+        password: ${{ inputs.TEAM_PASSWORD }}
+
+    - name: 🐋🏗️ Build & Tag Docker images
+      if: ${{ !contains('dependabot', github.ref) }}
+      shell: bash
+      run: |
+        docker build -t ${{ inputs.IMAGE_NAME }}:latest ${{ inputs.FOLDER_NAME }}
+        docker tag ${{ inputs.IMAGE_NAME }}:latest ${{ inputs.TEAM_DOCKER_URL }}/${{ inputs.IMAGE_NAME }}:latest
+        docker tag ${{ inputs.IMAGE_NAME }}:latest ${{ inputs.TEAM_DOCKER_URL }}/${{ inputs.IMAGE_NAME }}:${{ inputs.VERSION }}
+
+    - name: 🐋⬆️ Push Docker images
+      if: ${{ !contains('dependabot', github.ref) }}
+      shell: bash
+      run: |
+        docker push ${{ inputs.TEAM_DOCKER_URL }}/${{ inputs.IMAGE_NAME }}:latest
+        docker push ${{ inputs.TEAM_DOCKER_URL }}/${{ inputs.IMAGE_NAME }}:${{ inputs.VERSION }}

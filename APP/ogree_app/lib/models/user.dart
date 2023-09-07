@@ -1,5 +1,7 @@
-// ignore_for_file: public_member_api_docs, sort_constructors_first
 import 'dart:convert';
+
+const allDomainsTag = "*";
+const allDomainsConvert = "All domains";
 
 class User {
   String? id;
@@ -16,6 +18,10 @@ class User {
       this.id});
 
   Map<String, dynamic> toMap() {
+    if (roles[allDomainsConvert] != null) {
+      roles[allDomainsTag] = roles[allDomainsConvert]!;
+      roles.remove(allDomainsConvert);
+    }
     return <String, dynamic>{
       'name': name,
       'email': email,
@@ -25,12 +31,17 @@ class User {
   }
 
   factory User.fromMap(Map<String, dynamic> map) {
+    var roles = Map<String, String>.from(map['roles']);
+    if (roles[allDomainsTag] != null) {
+      roles[allDomainsConvert] = roles[allDomainsTag]!;
+      roles.remove(allDomainsTag);
+    }
     return User(
         name: map['name'].toString(),
         id: map['_id'].toString(),
         email: map['email'].toString(),
         password: map['password'].toString(),
-        roles: Map<String, String>.from(map['roles']));
+        roles: roles);
   }
 
   String toJson() => json.encode(toMap());

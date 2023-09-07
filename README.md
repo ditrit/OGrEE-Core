@@ -1,9 +1,16 @@
 # OGrEE-Core
 
-## How to deploy the API
-The prefered way to deploy the API is to use the superadmin interface on OGrEE-APP : see https://github.com/ditrit/OGrEE-Core/tree/main/APP.
+OGrEE-Core assembles 3 essential components of OGrEE, allowing you to create an OGrEE Tenant to store and interact with your datacenter data.
 
-## How to deploy the API without OGrEE-APP
+## Quick Intro
+![ogree-schema](https://github.com/ditrit/OGrEE-Core/assets/37706737/378c6cbe-aea2-4db0-82d6-6c3a18ecc6c5)
+
+An OGrEE Tenant consists of a DB populated with objects of a datacenter (sites, buildings, devices, etc.) that can be accessed through an API. For a user friendly access, a WebAPP can be deployed for each Tenant or a locally installed CLI can be used. Check the [OGrEE-3D](https://github.com/ditrit/OGrEE-3D) repo for the 3D datacenter viewer. To launch and manage a tenant, a WebAPP in "SuperAdmin" version with its backend in Go are available.
+
+## How to deploy an OGrEE Tenant
+The prefered way to deploy the API is to use the superadmin interface. See the [OGrEE-APP documentation](https://github.com/ditrit/OGrEE-Core/tree/main/APP).
+
+## Quickstart to deploy an OGrEE Tenant without OGrEE-APP
 
 Run:
 ```docker compose --project-name <your-project> -f deploy/docker/docker-compose.yml up```
@@ -89,3 +96,61 @@ git sparse-checkout set "deploy" "APP"
 # branch you wish to checkout
 git pull origin main 
 ```
+
+
+# 🔁 OGree-Core GitFlow
+
+![Workflows diagram](/assets/images/main.jpg)
+
+## Release candidate
+
+After merging a dev branch on main, workflows will create a new branch name `release-candidate/x.x.x`.
+
+Semver bump are define by the following rules:
+- One commit between last tag and main contains: break/breaking -> Bump major version
+- One commit between last tag and main contains: feat/features -> Bump minor version
+- Any other cases -> Bump patch version
+
+if a branch release-candidate with the same semver already exists, it will be deleted and recreated from the new commit.
+
+Example: A patch is merged after another, which has not yet been released
+
+## Release
+
+After validate a release candidate, a manual workflow named `📦 Create Release` can be called form github actions panel on the release-candidate branch and will create a `release/x.x.x branch`
+
+![Github Actions panel](/assets/images/github.png)
+
+Note: If release workflow is launch on another branch other than a release-candidate, it will fail.
+
+## Build docker images and CLI
+
+### Docker images
+When a branch release-candidate or release are created, Build Docker workflow are trigger.
+
+It will create and push docker image, tags with semver, on private docker registry `registry.ogree.ditrit.io`
+
+Docker iamges created are:
+- mongo-api/x.x.x: image provide by API/Dockerfile
+- ogree-app/x.x.x: image provide by APP/Dockerfile
+
+
+### CLI
+
+CLI will be build and push into ogree nextcloud folder `/bin/x.x.x/`
+
+### Sermver for docker images and CLI
+
+If build workflow is trigger by a release-candidate branch, workflow will add `.rc` after semver
+
+- release-candidate/1.0.0 will made mongo-api/1.0.0.rc by example
+
+If build workflow is trigger by a release bracnh, workflow will tag OGree-Core with semver
+
+## Secrets needs
+
+- NEXT_CREDENTIALS: nextcloud credentials
+- TEAM_DOCKER_URL: Url of the docker registry
+- TEAM_DOCKER_PASSWORD: password of the docker registry
+- TEAM_DOCKER_USERNAME: username of the docker registry
+- SVC_GITHUB_TOKEN: an admin github token ( required to trigger build workflow since 08/2022 )

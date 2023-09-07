@@ -479,8 +479,8 @@ payload={
   "sizeWDHm"      : ["width","depth","height"],
   "technicalArea" : ["width","depth","height"],
   "reservedArea"  : ["width","depth","height"],
-  "separators"    : [
-  ],
+  "separators"    : {
+  },
   "colors"        : [
   ],
   "tiles"         : [

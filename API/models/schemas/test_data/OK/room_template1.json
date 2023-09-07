@@ -13,8 +13,8 @@
         [8.9,  4.5],
         [0,    4.5]
     ],
-    "separators": [],
-    "pillars": [],
+    "separators": {},
+    "pillars": {},
     "colors": [
         {"name": "rampe", "value": "c0c0c0"}
     ],

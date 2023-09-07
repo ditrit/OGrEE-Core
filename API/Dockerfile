@@ -5,18 +5,21 @@ FROM golang:latest AS builder
 USER root
 WORKDIR /home
 
-COPY API/ .git* /home/
+RUN apt install git
 
-# Install Dependencies
-RUN apt install git && go install .
+COPY go.mod go.sum /home/
+RUN go mod download
+
+COPY . .git* /home/
 
 #Build
-RUN cd /home && make
+RUN --mount=type=cache,target=/root/.cache/go-build \
+    cd /home && CGO_ENABLED=0 make
 
 FROM busybox:latest
 USER root
 WORKDIR /home
 
-COPY API/resources/test/ /home/resources/test/
+COPY resources/test/ /home/resources/test/
 COPY --from=builder /home/main /home
 ENTRYPOINT [ "/home/main" ]

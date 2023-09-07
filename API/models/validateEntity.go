@@ -8,7 +8,6 @@ import (
 
 	"github.com/santhosh-tekuri/jsonschema/v5"
 	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 //go:embed schemas/*.json
@@ -51,29 +50,30 @@ func validateParent(ent string, entNum int, t map[string]interface{}) (map[strin
 
 	//Check ParentID is valid
 	if t["parentId"] == nil || t["parentId"] == "" {
-		if entNum == u.DOMAIN || entNum == u.STRAYDEV {
+		if entNum == u.DOMAIN || entNum == u.STRAYOBJ {
 			return nil, nil
 		}
 		return nil, &u.Error{Type: u.ErrBadFormat, Message: "ParentID is not valid"}
 	}
-	objID, err := primitive.ObjectIDFromHex(t["parentId"].(string))
-	var req primitive.M
-	if err == nil {
-		// parentId given with ID
-		req = bson.M{"_id": objID}
-	} else {
-		// parentId given with hierarchyName
-		req = bson.M{"hierarchyName": t["parentId"].(string)}
-	}
+	req := bson.M{"id": t["parentId"].(string)}
 
 	parent := map[string]interface{}{"parent": ""}
+	// Anyone can have a stray parent
+	stray, _ := GetEntity(req, "stray_object", u.RequestFilters{}, nil)
+	if stray != nil {
+		parent["parent"] = "rack"
+		parent["domain"] = stray["domain"]
+		parent["id"] = stray["id"]
+		return parent, nil
+	}
+	// If not, search specific possibilities
 	switch entNum {
 	case u.DEVICE:
 		x, _ := GetEntity(req, "rack", u.RequestFilters{}, nil)
 		if x != nil {
 			parent["parent"] = "rack"
 			parent["domain"] = x["domain"]
-			parent["hierarchyName"] = getHierarchyName(x)
+			parent["id"] = x["id"]
 			return parent, nil
 		}
 
@@ -81,19 +81,19 @@ func validateParent(ent string, entNum int, t map[string]interface{}) (map[strin
 		if y != nil {
 			parent["parent"] = "device"
 			parent["domain"] = y["domain"]
-			parent["hierarchyName"] = getHierarchyName(y)
+			parent["id"] = y["id"]
 			return parent, nil
 		}
 
 		return nil, &u.Error{Type: u.ErrInvalidValue,
 			Message: "ParentID should correspond to Existing ID"}
 
-	case u.SENSOR, u.GROUP:
+	case u.GROUP:
 		w, _ := GetEntity(req, "device", u.RequestFilters{}, nil)
 		if w != nil {
 			parent["parent"] = "device"
 			parent["domain"] = w["domain"]
-			parent["hierarchyName"] = getHierarchyName(w)
+			parent["id"] = w["id"]
 			return parent, nil
 		}
 
@@ -101,7 +101,7 @@ func validateParent(ent string, entNum int, t map[string]interface{}) (map[strin
 		if x != nil {
 			parent["parent"] = "rack"
 			parent["domain"] = x["domain"]
-			parent["hierarchyName"] = getHierarchyName(x)
+			parent["id"] = x["id"]
 			return parent, nil
 		}
 
@@ -109,7 +109,7 @@ func validateParent(ent string, entNum int, t map[string]interface{}) (map[strin
 		if y != nil {
 			parent["parent"] = "room"
 			parent["domain"] = y["domain"]
-			parent["hierarchyName"] = getHierarchyName(y)
+			parent["id"] = y["id"]
 			return parent, nil
 		}
 
@@ -117,33 +117,12 @@ func validateParent(ent string, entNum int, t map[string]interface{}) (map[strin
 		if z != nil {
 			parent["parent"] = "building"
 			parent["domain"] = z["domain"]
-			parent["hierarchyName"] = getHierarchyName(z)
+			parent["id"] = z["id"]
 			return parent, nil
 		}
 
 		return nil, &u.Error{Type: u.ErrInvalidValue,
 			Message: "ParentID should correspond to Existing ID"}
-
-	case u.STRAYDEV, u.STRAYSENSOR:
-		if t["parentId"] != nil && t["parentId"] != "" {
-			if pid, ok := t["parentId"].(string); ok {
-				ID, _ := primitive.ObjectIDFromHex(pid)
-
-				p, err := GetEntity(bson.M{"_id": ID}, "stray_device", u.RequestFilters{}, nil)
-				if len(p) > 0 {
-					parent["parent"] = "stray_device"
-					parent["domain"] = p["domain"]
-					parent["hierarchyName"] = getHierarchyName(p)
-					return parent, nil
-				} else if err != nil {
-					return nil, &u.Error{Type: u.ErrInvalidValue,
-						Message: "ParentID should correspond to Existing ID"}
-				}
-			} else {
-				return nil, &u.Error{Type: u.ErrInvalidValue,
-					Message: "ParentID should correspond to Existing ID"}
-			}
-		}
 
 	default:
 		parentInt := u.GetParentOfEntityByInt(entNum)
@@ -153,7 +132,7 @@ func validateParent(ent string, entNum int, t map[string]interface{}) (map[strin
 		if len(p) > 0 {
 			parent["parent"] = parentStr
 			parent["domain"] = p["domain"]
-			parent["hierarchyName"] = getHierarchyName(p)
+			parent["id"] = p["id"]
 			return parent, nil
 		} else if err != nil {
 			println("ENTITY VALUE: ", ent)
@@ -165,21 +144,13 @@ func validateParent(ent string, entNum int, t map[string]interface{}) (map[strin
 	return nil, nil
 }
 
-func getHierarchyName(parent map[string]interface{}) string {
-	if parent["hierarchyName"] != nil {
-		return parent["hierarchyName"].(string)
-	} else {
-		return parent["name"].(string)
-	}
-}
-
 func validateJsonSchema(entity int, t map[string]interface{}) (bool, *u.Error) {
 	// Get JSON schema
 	var schemaName string
 	switch entity {
 	case u.AC, u.CABINET, u.PWRPNL:
 		schemaName = "base_schema.json"
-	case u.STRAYDEV, u.STRAYSENSOR:
+	case u.STRAYOBJ:
 		schemaName = "stray_schema.json"
 	default:
 		schemaName = u.EntityToString(entity) + "_schema.json"
@@ -239,11 +210,11 @@ func ValidateEntity(entity int, t map[string]interface{}) (bool, *u.Error) {
 		parent, err = validateParent(u.EntityToString(entity), entity, t)
 		if err != nil {
 			return false, err
-		} else if parent["hierarchyName"] != nil {
-			t["hierarchyName"] = parent["hierarchyName"].(string) +
+		} else if parent["id"] != nil {
+			t["id"] = parent["id"].(string) +
 				u.HN_DELIMETER + t["name"].(string)
 		} else {
-			t["hierarchyName"] = t["name"].(string)
+			t["id"] = t["name"].(string)
 		}
 		//Check domain
 		if entity != u.DOMAIN {
@@ -288,18 +259,6 @@ func ValidateEntity(entity int, t map[string]interface{}) (bool, *u.Error) {
 					}
 
 				case u.CORRIDOR:
-					//Ensure the 2 racks are valid
-					racks := strings.Split(v["content"].(string), ",")
-					if len(racks) != 2 {
-						return false, &u.Error{Type: u.ErrBadFormat,
-							Message: "2 racks separated by a comma must be on the payload"}
-					}
-
-					//Trim Spaces because they mess up
-					//the retrieval of objects from DB
-					racks[0] = strings.TrimSpace(racks[0])
-					racks[1] = strings.TrimSpace(racks[1])
-
 					//Ensure the name is also unique among racks
 					req := bson.M{"name": t["name"].(string)}
 					req["domain"] = t["domain"].(string)
@@ -310,39 +269,6 @@ func ValidateEntity(entity int, t map[string]interface{}) (bool, *u.Error) {
 								Message: "Corridor name must be unique among corridors and racks"}
 						}
 					}
-
-					//Fetch the 2 racks and ensure they exist
-					filter := bson.M{"_id": t["parentId"], "name": racks[0]}
-					orReq := bson.A{bson.D{{"name", racks[0]}}, bson.D{{"name", racks[1]}}}
-
-					filter = bson.M{"parentId": t["parentId"], "$or": orReq}
-					ans, e := GetManyEntities("rack", filter, u.RequestFilters{}, nil)
-					if e != nil {
-						println(e.Message)
-						return false, &u.Error{Type: u.ErrBadFormat,
-							Message: "The racks you specified were not found." +
-								" Please verify your input and try again"}
-					}
-
-					if len(ans) != 2 {
-						//Request possibly mentioned same racks
-						//thus giving length of 1
-						if !(len(ans) == 1 && racks[0] == racks[1]) {
-							//Figure out the rack name that wasn't found
-							var notFound string
-							if racks[0] != ans[0]["name"].(string) {
-								notFound = racks[0]
-							} else {
-								notFound = racks[1]
-							}
-							println("LENGTH OF u.RACK CHECK:", len(ans))
-							println("CORRIDOR PARENTID: ", t["parentId"].(string))
-							return false, &u.Error{Type: u.ErrBadFormat,
-								Message: "Unable to get the rack: " + notFound +
-									". Please check your inventory and try again"}
-						}
-					}
-
 					//Set the color manually based on temp. as specified by client
 					if v["temperature"] == "warm" {
 						v["color"] = "990000"
@@ -369,9 +295,9 @@ func ValidateEntity(entity int, t map[string]interface{}) (bool, *u.Error) {
 					//Ensure objects all exist
 					orReq := bson.A{}
 					for i := range objects {
-						orReq = append(orReq, bson.D{{"name", objects[i]}})
+						orReq = append(orReq, bson.D{{"id", t["parentId"].(string) + u.HN_DELIMETER + objects[i]}})
 					}
-					filter := bson.M{"parentId": t["parentId"], "$or": orReq}
+					filter := bson.M{"$or": orReq}
 
 					//If parent is rack, retrieve devices
 					if parent["parent"].(string) == "rack" {

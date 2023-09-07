@@ -19,27 +19,30 @@ type Response struct {
 	body    map[string]any
 }
 
-func ParseResponseClean(response *http.Response) (Response, error) {
+func ParseResponseClean(response *http.Response) (*Response, error) {
 	bodyBytes, err := io.ReadAll(response.Body)
 	if err != nil {
-		return Response{}, err
+		return nil, err
 	}
 	defer response.Body.Close()
 	responseBody := map[string]interface{}{}
-	err = json.Unmarshal(bodyBytes, &responseBody)
-	if err != nil {
-		return Response{}, err
+	message := ""
+	if len(bodyBytes) > 0 {
+		err = json.Unmarshal(bodyBytes, &responseBody)
+		if err != nil {
+			return nil, fmt.Errorf("cannot unmarshal json : \n%s", string(bodyBytes))
+		}
+		var messageOk bool
+		message, messageOk = responseBody["message"].(string)
+		if !messageOk {
+			return nil, fmt.Errorf("invalid response")
+		}
 	}
-	message, messageOk := responseBody["message"].(string)
-	if responseBody == nil || !messageOk {
-		return Response{}, fmt.Errorf("invalid response")
-	}
-	return Response{response.StatusCode, message, responseBody}, nil
+	return &Response{response.StatusCode, message, responseBody}, nil
 }
 
 func ParseResponse(resp *http.Response, e error, purpose string) map[string]interface{} {
 	ans := map[string]interface{}{}
-
 	if e != nil {
 		l.GetWarningLogger().Println("Error while sending "+purpose+" to server: ", e)
 		if State.DebugLvl > 0 {
@@ -110,15 +113,6 @@ func infArrToMapStrinfArr(x []interface{}) []map[string]interface{} {
 	ans := []map[string]interface{}{}
 	for i := range x {
 		ans = append(ans, x[i].(map[string]interface{}))
-	}
-	return ans
-}
-
-// Utility function used by FetchJsonNodes
-func strArrToMapStrInfArr(x []string) []map[string]interface{} {
-	ans := []map[string]interface{}{}
-	for i := range x {
-		ans = append(ans, map[string]interface{}{"name": x[i]})
 	}
 	return ans
 }

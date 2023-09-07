@@ -2,12 +2,11 @@ package main
 
 import (
 	c "cli/controllers"
-	"regexp"
-	"strconv"
+	"fmt"
 	"strings"
 )
 
-type parseCommandFunc func(frame Frame) (node, Frame, *ParserError)
+type parseCommandFunc func() node
 
 var commandDispatch map[string]parseCommandFunc
 var createObjDispatch map[string]parseCommandFunc
@@ -48,185 +47,154 @@ func indexOf(arr []string, val string) int {
 	return -1
 }
 
-func regexMatch(regex string, str string) bool {
-	reg, err := regexp.Compile(regex)
-	if err != nil {
-		panic("Regexp compilation error")
-	}
-	reg.Longest()
-	return str == reg.FindString(str)
+type traceItem struct {
+	cursor  int
+	message string
 }
 
-type ParserError struct {
-	frames   []Frame
-	messages []string
+type parser struct {
+	buf         string
+	stackTrace  []traceItem
+	startCursor int
+	cursor      int
+	err         string
+	tok         token
 }
 
-func (err *ParserError) Error() string {
-	errorString := ""
-	errPos := err.frames[0].start
-	for i := 0; i < len([]rune(c.State.BlankPrompt))+errPos; i++ {
-		errorString += " "
-	}
-	errorString += "\033[31m" + "^" + "\033[0m" + "\n"
-	if len(err.messages) > 1 {
-		errorString += "parsing stack : "
-		for i := len(err.messages) - 1; i > 0; i-- {
-			if i < len(err.messages)-1 {
-				errorString += " -> "
-			}
-			errorString += err.messages[i]
+func un(p *parser) {
+	if p.err == "" {
+		p.stackTrace = p.stackTrace[:len(p.stackTrace)-1]
+		if len(p.stackTrace) > 0 {
+			p.startCursor = p.stackTrace[len(p.stackTrace)-1].cursor
+		} else {
+			p.startCursor = 0
 		}
-		errorString += "\n"
 	}
-	errorString += "\033[31m" + "error : " + "\033[0m" + err.messages[0]
-	return errorString
 }
 
-func (err *ParserError) extend(frame Frame, message string) *ParserError {
-	return &ParserError{append(err.frames, frame), append(err.messages, message)}
+func trace(p *parser, name string) *parser {
+	p.stackTrace = append(p.stackTrace, traceItem{p.cursor, name})
+	p.startCursor = p.cursor
+	return p
 }
 
-func newParserError(frame Frame, message string) *ParserError {
-	return &ParserError{[]Frame{frame}, []string{message}}
+func (p *parser) reset() {
+	p.cursor = p.startCursor
+	p.tok = token{}
 }
 
-type Frame struct {
-	buf   string
-	start int
-	end   int
+func (p *parser) unlex() {
+	p.cursor = p.tok.start
+	p.tok = token{}
 }
 
-func newFrame(buffer string) Frame {
-	return Frame{buffer, 0, len(buffer)}
-}
-
-func (frame Frame) new(start int, end int) Frame {
-	if start < frame.start || start > frame.end || end < frame.start || end > frame.end {
-		panic("the subframe is not included in the topframe")
+func (p *parser) item(trim bool) string {
+	var cur int
+	if p.cursor > len(p.buf) {
+		cur = len(p.buf)
+	} else {
+		cur = p.cursor
 	}
-	return Frame{frame.buf, start, end}
-}
-
-func (frame Frame) until(end int) Frame {
-	return frame.new(frame.start, end)
-}
-
-func (frame Frame) from(start int) Frame {
-	return frame.new(start, frame.end)
-}
-
-func (frame Frame) str() string {
-	return frame.buf[frame.start:frame.end]
-}
-
-func (frame Frame) char(i int) byte {
-	if i < frame.start || i >= frame.end {
-		panic("index outside of frame bounds")
+	s := p.buf[p.startCursor:cur]
+	if trim {
+		return strings.Trim(s, " ")
 	}
-	return frame.buf[i]
+	return s
 }
 
-func (frame Frame) forward(offset int) Frame {
-	if frame.start+offset > frame.end {
-		panic("cannot go forward")
+func (p *parser) remaining() string {
+	if p.cursor >= len(p.buf) {
+		return ""
 	}
-	return Frame{frame.buf, frame.start + offset, frame.end}
+	return p.buf[p.cursor:]
 }
 
-func (frame Frame) first() byte {
-	if frame.start >= frame.end {
+func (p *parser) peek() byte {
+	if p.cursor >= len(p.buf) {
 		return eof
 	}
-	return frame.char(frame.start)
+	return p.buf[p.cursor]
 }
 
-func (frame Frame) String() string {
-	result := ""
-	result += frame.buf[0:frame.start]
-	result += "\033[32m"
-	result += "|"
-	result += frame.buf[frame.start:frame.end]
-	result += "\033[0m"
-	result += frame.buf[frame.end:]
-	return result
-}
-
-func lexerFromFrame(frame Frame) *lexer {
-	return newLexer(frame.buf, frame.start, frame.end)
-}
-
-func skipWhiteSpaces(frame Frame) Frame {
-	i := frame.start
-	for i < frame.end && (frame.char(i) == ' ' || frame.char(i) == '\t') {
-		i += 1
+func (p *parser) next() byte {
+	var c byte
+	if p.cursor >= len(p.buf) {
+		c = eof
+	} else {
+		c = p.buf[p.cursor]
 	}
-	return frame.from(i)
+	p.cursor++
+	return c
 }
 
-func findNext(substring string, frame Frame) int {
-	idx := strings.Index(frame.str(), substring)
-	if idx != -1 {
-		return frame.start + idx
+func (p *parser) forward(n int) string {
+	p.cursor += n
+	return p.item(false)
+}
+
+func (p *parser) backward(n int) {
+	if p.cursor-n < p.startCursor {
+		panic("cannot go backward")
 	}
-	return frame.end
+	p.cursor -= n
 }
 
-func findNextQuote(frame Frame) int {
-	return findNext("\"", frame)
-}
-
-func findClosing(frame Frame) int {
-	openToClose := map[byte]byte{'(': ')', '{': '}', '[': ']'}
-	open := frame.first()
-	close, ok := openToClose[open]
-	if !ok {
-		panic("invalid opening character")
+func (p *parser) error(message string) {
+	errorStr := ""
+	for i := 0; i < len([]rune(c.State.BlankPrompt))+p.cursor+1; i++ {
+		errorStr += " "
 	}
-	stackCount := 0
-	inString := false
-	for cursor := frame.start; cursor < frame.end; cursor++ {
-		if inString {
-			if frame.char(cursor) == '"' {
-				inString = false
+	errorStr += "\033[31m" + "^" + "\033[0m" + "\n"
+	if len(p.stackTrace) > 1 {
+		errorStr += "parsing stack : "
+		emptyStack := true
+		for i := range p.stackTrace {
+			if p.stackTrace[i].message != "" {
+				if !emptyStack {
+					errorStr += " -> "
+				}
+				errorStr += p.stackTrace[i].message
+				emptyStack = false
 			}
-			continue
 		}
-		if frame.char(cursor) == '"' {
-			inString = true
-		} else if frame.char(cursor) == open {
-			stackCount++
-		} else if frame.char(cursor) == close {
-			stackCount--
-		}
-		if stackCount == 0 {
-			return cursor
-		}
+		errorStr += "\n"
 	}
-	return frame.end
+	errorStr += "\033[31m" + "Error : " + "\033[0m" + message
+	p.err = message
+	panic(errorStr)
 }
 
-func frameEnd(endChars string, frame Frame) bool {
-	frame = skipWhiteSpaces(frame)
-	return frame.start == frame.end || strings.Contains(endChars, string(frame.first()))
-}
-
-func commandEnd(frame Frame) bool {
-	return frameEnd(";})", frame)
-}
-
-func exprEnd(frame Frame) bool {
-	return frameEnd(";})@", frame)
-}
-
-func parseExact(word string, frame Frame) (bool, Frame) {
-	if frame.start+len(word) <= frame.end && frame.until(frame.start+len(word)).str() == word {
-		return true, frame.forward(len(word))
+func (p *parser) skipWhiteSpaces() {
+	defer un(trace(p, ""))
+	for p.cursor < len(p.buf) && (p.peek() == ' ' || p.peek() == '\t' || p.peek() == '\n') {
+		p.forward(1)
 	}
-	return false, frame
+}
+
+func (p *parser) commandEnd() bool {
+	p.skipWhiteSpaces()
+	return p.cursor == len(p.buf) || strings.Contains(";})", string(p.peek()))
+}
+
+func (p *parser) parseExact(word string) bool {
+	defer un(trace(p, "\""+word+"\""))
+	ok := p.startCursor+len(word) <= len(p.buf) && p.forward(len(word)) == word
+	if !ok {
+		p.reset()
+	}
+	return ok
+}
+
+func (p *parser) expect(word string) {
+	if !p.parseExact(word) {
+		p.error(word + " expected")
+	}
 }
 
 func isPrefix(prefix string, candidates []string) bool {
+	if prefix == "" {
+		return true
+	}
 	for _, candidate := range candidates {
 		if strings.HasPrefix(candidate, prefix) {
 			return true
@@ -235,301 +203,261 @@ func isPrefix(prefix string, candidates []string) bool {
 	return false
 }
 
-func parseKeyWord(candidates []string, frame Frame) (string, Frame) {
-	commandEnd := frame.start
-	for commandEnd < frame.end && isPrefix(frame.until(commandEnd+1).str(), candidates) {
-		commandEnd++
-	}
-	longestPrefix := frame.until(commandEnd).str()
-	if sliceContains(candidates, longestPrefix) {
-		return longestPrefix, frame.from(commandEnd)
-	}
-	return "", frame
-}
-
-func parseWord(frame Frame) (string, Frame, *ParserError) {
-	l := lexerFromFrame(frame)
-	tok := l.nextToken(lexExpr)
-	if tok.t != tokWord {
-		return "", frame, newParserError(frame, "word expected")
-	}
-	return tok.str, frame.from(tok.end), nil
-}
-
-func parseAttribute(frame Frame) (string, Frame, *ParserError) {
-	frame = skipWhiteSpaces(frame)
-	l := lexerFromFrame(frame)
-	tok := l.nextToken(lexAttribute)
-	if tok.t != tokAttribute {
-		return "", frame, newParserError(frame, "attribute expected")
-	}
-	return tok.str, frame.from(tok.end), nil
-}
-
-func parseSeparatedAttributes(sep byte, frame Frame) ([]string, *ParserError) {
-	attrList := []string{}
-	for {
-		var attr string
-		var err *ParserError
-		attr, frame, err = parseAttribute(frame)
-		if err != nil {
-			return nil, err.extend(frame, "list of attributes")
-		}
-		attrList = append(attrList, attr)
-		frame = skipWhiteSpaces(frame)
-		if frame.start == frame.end {
-			return attrList, nil
-		}
-		var ok bool
-		ok, frame = parseExact(string(sep), frame)
-		if !ok {
-			return nil, newParserError(frame, string(sep)+" expected")
-		}
-	}
-}
-
-func charIsNumber(char byte) bool {
-	return char >= 48 && char <= 57
-}
-
-func parseInt(frame Frame) (int, Frame, *ParserError) {
-	frame = skipWhiteSpaces(frame)
-	end := frame.start
-	for end < frame.end && charIsNumber(frame.char(end)) {
-		end++
-	}
-	if end == frame.start {
-		return 0, frame, newParserError(frame, "integer expected")
-	}
-	intString := frame.until(end).str()
-	val, err := strconv.Atoi(intString)
-	if err != nil {
-		panic("cannot convert " + intString + " to integer")
-	}
-	return val, frame.from(end), nil
-}
-
-func parseFloat(frame Frame) (float64, Frame, *ParserError) {
-	frame = skipWhiteSpaces(frame)
-	end := frame.start
-	dotseen := false
-	for end < frame.end {
-		if frame.char(end) == '.' {
-			if dotseen {
-				break
-			}
-			dotseen = true
-		} else if !charIsNumber(frame.char(end)) {
+func (p *parser) parseKeyWord(candidates []string) string {
+	defer un(trace(p, "keyword"))
+	for p.cursor < len(p.buf) {
+		p.forward(1)
+		if !isPrefix(p.item(false), candidates) {
+			p.backward(1)
 			break
 		}
-		end++
 	}
-	if end == frame.start {
-		return 0, frame, newParserError(frame, "float expected")
+	if sliceContains(candidates, p.item(false)) {
+		return p.item(false)
 	}
-	floatString := frame.until(end).str()
-	val, err := strconv.ParseFloat(floatString, 64)
-	if err != nil {
-		panic("cannot convert " + floatString + " to float")
-	}
-	return val, frame.from(end), nil
+	return ""
 }
 
-func parseBool(frame Frame) (bool, Frame, *ParserError) {
-	frame = skipWhiteSpaces(frame)
-	if frame.end-frame.start >= 4 && frame.until(frame.start+4).str() == "true" {
-		return true, frame.forward(4), nil
+func (p *parser) parseSimpleWord(name string) string {
+	defer un(trace(p, name))
+	p.skipWhiteSpaces()
+	for {
+		c := p.next()
+		if isAlphaNumeric(c) {
+			continue
+		}
+		p.backward(1)
+		p.skipWhiteSpaces()
+		return p.item(true)
 	}
-	if frame.end-frame.start >= 5 && frame.until(frame.start+5).str() == "false" {
-		return false, frame.forward(5), nil
-	}
-	return false, frame, newParserError(frame, "bool expected")
 }
 
-func parseRawText(lexFunc stateFn, frame Frame) (node, Frame, *ParserError) {
-	l := lexerFromFrame(frame)
+func (p *parser) parseComplexWord(name string) string {
+	p.skipWhiteSpaces()
+	defer un(trace(p, name))
+	for {
+		c := p.next()
+		if isAlphaNumeric(c) || c == '-' || c == '_' {
+			continue
+		}
+		p.backward(1)
+		p.skipWhiteSpaces()
+		return p.item(true)
+	}
+}
+
+func (p *parser) parseInt(name string) int {
+	defer un(trace(p, name))
+	p.skipWhiteSpaces()
+	tok := p.parseExprToken()
+	if tok.t != tokInt {
+		p.error("integer expected")
+	}
+	p.skipWhiteSpaces()
+	return tok.val.(int)
+}
+
+func (p *parser) parseFloat(name string) float64 {
+	defer un(trace(p, name))
+	p.skipWhiteSpaces()
+	tok := p.parseExprToken()
+	switch tok.t {
+	case tokFloat:
+		p.skipWhiteSpaces()
+		return tok.val.(float64)
+	case tokInt:
+		p.skipWhiteSpaces()
+		return float64(tok.val.(int))
+	default:
+		p.error("float expected")
+		return 0.
+	}
+}
+
+func (p *parser) parseBool() bool {
+	defer un(trace(p, "bool"))
+	p.skipWhiteSpaces()
+	tok := p.parseExprToken()
+	if tok.t != tokBool {
+		p.error("boolean expected")
+	}
+	p.skipWhiteSpaces()
+	return tok.val.(bool)
+}
+
+func (p *parser) parseText(lexFunc func() token, trim bool) node {
+	defer un(trace(p, ""))
 	s := ""
-	vars := []symbolReferenceNode{}
+	subExpr := []node{}
 loop:
 	for {
-		tok := l.nextToken(lexFunc)
+		tok := lexFunc()
 		switch tok.t {
 		case tokText:
 			s += tok.str
 		case tokDeref:
 			s += "%v"
-			vars = append(vars, symbolReferenceNode{tok.val.(string)})
+			subExpr = append(subExpr, &symbolReferenceNode{tok.val.(string)})
+		case tokLeftEval:
+			s += "%v"
+			subExpr = append(subExpr, p.parseExpr(""))
+			p.expect("))")
 		case tokEOF:
 			break loop
 		default:
-			return nil, frame, newParserError(frame, "unexpected token")
+			p.error("unexpected token")
 		}
 	}
-	frame = frame.from(l.tok.end)
-	if len(vars) == 0 {
-		return &strLeaf{s}, frame, nil
+	if trim {
+		s = strings.Trim(s, " \n")
 	}
-	return &formatStringNode{s, vars}, frame, nil
+	if len(subExpr) == 0 {
+		return &valueNode{s}
+	}
+	return &formatStringNode{&valueNode{s}, subExpr}
 }
 
-func parsePath(frame Frame) (node, Frame, *ParserError) {
-	frame = skipWhiteSpaces(frame)
-	path, frame, err := parseRawText(lexPath, frame)
-	if err != nil {
-		return nil, frame, err.extend(frame, "path")
+func (p *parser) parsePath(name string) node {
+	if name != "" {
+		name = name + " path"
+	} else {
+		name = "path"
 	}
-	return &pathNode{path}, skipWhiteSpaces(frame), nil
+	defer un(trace(p, name))
+	p.skipWhiteSpaces()
+	path := p.parseText(p.parsePathToken, true)
+	p.skipWhiteSpaces()
+	return &pathNode{path}
 }
 
-func parsePathGroup(frame Frame) ([]node, Frame, *ParserError) {
-	var err *ParserError
-	var path node
-
-	ok, frame := parseExact("{", frame)
-	if !ok {
-		return nil, frame, newParserError(frame, "{ expected")
-	}
+func (p *parser) parsePathGroup() []node {
+	defer un(trace(p, "path group"))
 	paths := []node{}
+	p.skipWhiteSpaces()
+	p.expect("{")
 	for {
-		frame = skipWhiteSpaces(frame)
-		path, frame, err = parsePath(frame)
-		if err != nil {
-			return nil, frame, err
-		}
-		paths = append(paths, path)
-		frame = skipWhiteSpaces(frame)
-		ok, frame = parseExact("}", frame)
-		if ok {
+		p.skipWhiteSpaces()
+		paths = append(paths, p.parsePath(""))
+		p.skipWhiteSpaces()
+		if p.parseExact("}") {
 			break
 		}
-		ok, frame = parseExact(",", frame)
-		if !ok {
-			return nil, frame, newParserError(frame, "comma expected")
+		if !p.parseExact(",") {
+			p.error(", or } expected")
 		}
 	}
-	return paths, frame, nil
+	p.skipWhiteSpaces()
+	return paths
 }
 
-func exprError(l *lexer, message string) *ParserError {
-	frame := Frame{
-		buf:   l.input,
-		start: l.tok.start,
-		end:   l.tok.end,
+func (p *parser) parseExprListWithEndToK(endTok tokenType) []node {
+	defer un(trace(p, "expr list"))
+	exprList := []node{}
+	p.parseExprToken()
+	if p.tok.t == endTok {
+		return exprList
 	}
-	return newParserError(frame, message)
+	p.unlex()
+	for {
+		expr := p.parseExpr("array element")
+		exprList = append(exprList, expr)
+		p.parseExprToken()
+		if p.tok.t == endTok {
+			return exprList
+		}
+		if p.tok.t == tokComma {
+			continue
+		}
+		p.error(endTok.String() + " or comma expected")
+	}
 }
 
-func parsePrimaryExpr(l *lexer) (node, *ParserError) {
-	tok := l.tok
-	l.nextToken(lexExpr)
+func (p *parser) parseFormatArgs() node {
+	p.parseExprToken()
+	if p.tok.t != tokLeftParen {
+		p.error("'(' expected")
+	}
+	exprList := p.parseExprListWithEndToK(tokRightParen)
+	if len(exprList) < 1 {
+		p.error("format expects at least one argument")
+	}
+	return &formatStringNode{exprList[0], exprList[1:]}
+}
+
+func (p *parser) parsePrimaryExpr() node {
+	defer un(trace(p, ""))
+	tok := p.parseExprToken()
 	switch tok.t {
 	case tokBool:
-		return &boolLeaf{tok.val.(bool)}, nil
+		return &valueNode{tok.val.(bool)}
 	case tokInt:
-		return &intLeaf{tok.val.(int)}, nil
+		return &valueNode{tok.val.(int)}
 	case tokFloat:
-		return &floatLeaf{tok.val.(float64)}, nil
-	case tokString:
-		n, _, err := parseRawText(lexQuotedString, newFrame(tok.val.(string)))
-		if err != nil {
-			return nil, exprError(l, "cannot parse string")
-		}
-		return n, nil
+		return &valueNode{tok.val.(float64)}
+	case tokDoubleQuote:
+		n := p.parseText(p.parseQuotedStringToken, false)
+		p.expect("\"")
+		return n
 	case tokDeref:
-		if l.tok.t != tokLeftBrac {
-			return &symbolReferenceNode{tok.val.(string)}, nil
+		p.parseExprToken()
+		switch p.tok.t {
+		case tokLeftBrac:
+			index := p.parseExpr("index")
+			p.parseExprToken()
+			if p.tok.t != tokRightBrac {
+				p.error("square bracket opened but not closed")
+			}
+			return &arrayReferenceNode{tok.val.(string), index}
 		}
-		l.nextToken(lexExpr)
-		index, err := parseExprFromLex(l)
-		if err != nil {
-			return nil, err
-		}
-		if l.tok.t != tokRightBrac {
-			return nil, exprError(l, "square bracket opened but not closed")
-		}
-		l.nextToken(lexExpr)
-		return &arrayReferenceNode{tok.val.(string), index}, nil
+		p.unlex()
+		return &symbolReferenceNode{tok.val.(string)}
 	case tokLeftParen:
-		expr, err := parseExprFromLex(l)
-		if err != nil {
-			return nil, err
-		}
-		endTok := l.tok
+		expr := p.parseExpr("")
+		endTok := p.parseExprToken()
 		if endTok.t != tokRightParen {
-			return nil, exprError(l, ") expected, got "+endTok.str)
+			p.error(") expected, got " + endTok.str)
 		}
-		l.nextToken(lexExpr)
-		return expr, nil
+		return expr
 	case tokLeftBrac:
-		exprList := []node{}
-		if l.tok.t == tokRightBrac {
-			l.nextToken(lexExpr)
-			return &arrNode{exprList}, nil
-		}
-		for {
-			expr, err := parseExprFromLex(l)
-			if err != nil {
-				return nil, err
-			}
-			exprList = append(exprList, expr)
-			if l.tok.t == tokRightBrac {
-				l.nextToken(lexExpr)
-				return &arrNode{exprList}, nil
-			}
-			if l.tok.t == tokComma {
-				l.nextToken(lexExpr)
-				continue
-			}
-			return nil, exprError(l, "] or comma expected")
-		}
+		exprList := p.parseExprListWithEndToK(tokRightBrac)
+		return &arrNode{exprList}
+	case tokFormat:
+		return p.parseFormatArgs()
 	}
-	return nil, exprError(l, "unexpected token : "+tok.str)
+	p.error("unexpected token : " + tok.str)
+	return nil
 }
 
-func parseUnaryExpr(l *lexer) (node, *ParserError) {
-	switch l.tok.t {
+func (p *parser) parseUnaryExpr() node {
+	defer un(trace(p, ""))
+	tok := p.parseExprToken()
+	switch tok.t {
 	case tokAdd:
-		l.nextToken(lexExpr)
-		return parseUnaryExpr(l)
+		return p.parseUnaryExpr()
 	case tokSub:
-		l.nextToken(lexExpr)
-		x, err := parseUnaryExpr(l)
-		if err != nil {
-			return nil, err
-		}
-		return &negateNode{x}, nil
+		return &negateNode{p.parseUnaryExpr()}
 	case tokNot:
-		l.nextToken(lexExpr)
-		x, err := parseUnaryExpr(l)
-		if err != nil {
-			return nil, err
-		}
-		return &negateBoolNode{x}, nil
+		return &negateBoolNode{p.parseUnaryExpr()}
 	}
-	return parsePrimaryExpr(l)
+	p.unlex()
+	return p.parsePrimaryExpr()
 }
 
-func parseBinaryExpr(l *lexer, leftOperand node, precedence int) (node, *ParserError) {
-	var err *ParserError
+func (p *parser) parseBinaryExpr(leftOperand node, precedence int) node {
+	defer un(trace(p, ""))
 	if leftOperand == nil {
-		leftOperand, err = parseUnaryExpr(l)
-		if err != nil {
-			return nil, err
-		}
+		leftOperand = p.parseUnaryExpr()
 	}
 	for {
-		operator := l.tok
+		operator := p.parseExprToken()
 		operatorPrecedence := operator.precedence()
 		if operatorPrecedence < precedence {
-			return leftOperand, nil
+			p.unlex()
+			return leftOperand
 		}
-		l.nextToken(lexExpr)
-		rightOperand, err := parseBinaryExpr(l, nil, operatorPrecedence+1)
-		if err != nil {
-			return nil, err
-		}
+		rightOperand := p.parseBinaryExpr(nil, operatorPrecedence+1)
 		switch operator.t {
-		case tokAdd, tokSub, tokMul, tokDiv, tokMod:
+		case tokAdd, tokSub, tokMul, tokDiv, tokIntDiv, tokMod:
 			leftOperand = &arithNode{operator.str, leftOperand, rightOperand}
 		case tokOr, tokAnd:
 			leftOperand = &logicalNode{operator.str, leftOperand, rightOperand}
@@ -541,1052 +469,638 @@ func parseBinaryExpr(l *lexer, leftOperand node, precedence int) (node, *ParserE
 	}
 }
 
-func parseExprFromLex(l *lexer) (node, *ParserError) {
-	return parseBinaryExpr(l, nil, 1)
+func (p *parser) parseExpr(name string) node {
+	defer un(trace(p, name))
+	n := p.parseBinaryExpr(nil, 1)
+	p.skipWhiteSpaces()
+	return n
 }
 
-func parseExpr(frame Frame) (node, Frame, *ParserError) {
-	l := lexerFromFrame(frame)
-	l.nextToken(lexExpr)
-	expr, err := parseExprFromLex(l)
-	if err != nil {
-		return nil, frame.from(l.tok.start), err
+func (p *parser) parseString(name string) node {
+	defer un(trace(p, name))
+	p.skipWhiteSpaces()
+	if p.parseExact("\"") {
+		p.backward(1)
+		return p.parseExpr("")
 	}
-	if expr == nil {
-		return nil, frame.from(l.tok.start), newParserError(frame, "expression expected")
+	if p.parseExact("format") {
+		p.backward(len("format"))
+		return p.parseExpr("")
 	}
-	return expr, frame.from(l.tok.start), nil
+	n := p.parseText(p.parseUnquotedStringToken, true)
+	p.skipWhiteSpaces()
+	return n
 }
 
-func parseAssign(frame Frame) (string, Frame, *ParserError) {
-	varName, frame, err := parseWord(frame)
-	if err != nil {
-		return "", frame, err.extend(frame, "word on the left of =")
+func (p *parser) parseValue() node {
+	defer un(trace(p, "value"))
+	p.skipWhiteSpaces()
+	if p.parseExact("eval ") || p.parseExact("[") {
+		p.backward(1)
+		return p.parseExpr("")
 	}
-	frame = skipWhiteSpaces(frame)
-	ok, frame := parseExact("=", frame)
-	if !ok {
-		return "", frame, newParserError(skipWhiteSpaces(frame), "= expected")
+	if !p.parseExact("$((") && p.parseExact("$(") {
+		n := p.parseCommand("")
+		p.expect(")")
+		return n
 	}
-	return varName, frame, nil
+	p.reset()
+	return p.parseString("")
 }
 
-func parseIndexing(frame Frame) (node, Frame, *ParserError) {
-	frame = skipWhiteSpaces(frame)
-	ok, frame := parseExact("[", frame)
-	if !ok {
-		return nil, frame, newParserError(frame, "[ expected")
+func (p *parser) parseStringOrVec(name string) node {
+	defer un(trace(p, name))
+	p.skipWhiteSpaces()
+	if p.parseExact("[") {
+		p.backward(1)
+		return p.parseExpr("")
 	}
-	index, frame, err := parseExpr(frame)
-	if err != nil {
-		return nil, frame, err.extend(frame, "indexing")
-	}
-	ok, frame = parseExact("]", frame)
-	if !ok {
-		return nil, frame, newParserError(frame, "] expected")
-	}
-	return index, frame, nil
+	return p.parseString("")
 }
 
-func parseArgValue(frame Frame) (string, Frame, *ParserError) {
-	if commandEnd(frame) {
-		return "", frame, newParserError(frame, "argument value expected")
-	}
-	if ok, _ := parseExact("(", frame); ok {
-		close := findClosing(frame)
-		if close == frame.end {
-			return "", frame, newParserError(frame, "( opened but never closed")
+func (p *parser) parseArgValue() string {
+	defer un(trace(p, "value"))
+	if p.parseExact("\"") {
+		for {
+			c := p.next()
+			if c == '"' {
+				v := p.item(true)
+				return v[1 : len(v)-1]
+			}
+			if c == eof {
+				p.error("\" opened but not closed")
+			}
 		}
-		return frame.until(close + 1).str(), frame.from(close + 1), nil
-	} else if ok, frame := parseExact("\"", frame); ok {
-		endQuote := findNextQuote(frame)
-		if endQuote == frame.end {
-			return "", frame, newParserError(frame, "\" opened but never closed")
-		}
-		return frame.until(endQuote).str(), frame.from(endQuote + 1), nil
 	}
-	endValue := findNext(" ", frame)
-	return frame.until(endValue).str(), skipWhiteSpaces(frame.from(endValue)), nil
+	p.skipWhiteSpaces()
+	for p.parseComplexWord("") != "" {
+		if !p.parseExact(":") {
+			break
+		}
+	}
+	return p.item(true)
 }
 
-func parseSingleArg(allowedArgs []string, allowedFlags []string, frame Frame) (
-	string, string, Frame, *ParserError,
-) {
-	topFrame := frame
-	frame = skipWhiteSpaces(frame.forward(1))
-	arg, frame, err := parseWord(frame)
-	if err != nil {
-		return "", "", frame, err.extend(frame, "arg name").
-			extend(topFrame, "argument")
-	}
-	frame = skipWhiteSpaces(frame)
+func (p *parser) parseSingleArg(allowedArgs []string, allowedFlags []string) (string, string) {
+	defer un(trace(p, "single argument"))
+	arg := p.parseSimpleWord("name")
 	var value string
 	if sliceContains(allowedArgs, arg) {
-		value, frame, err = parseArgValue(frame)
-		if err != nil {
-			return "", "", frame, err.extend(frame, "pasing arg value").
-				extend(topFrame, "argument")
-		}
+		value = p.parseArgValue()
 	} else if sliceContains(allowedFlags, arg) {
 		value = ""
 	} else {
-		panic("unexpected argument")
+		p.error("unexpected argument : " + arg)
 	}
-	return arg, value, skipWhiteSpaces(frame), nil
+	p.skipWhiteSpaces()
+	return arg, value
 }
 
-func parseArgs(allowedArgs []string, allowedFlags []string, frame Frame) (
-	map[string]string, Frame, *ParserError,
-) {
+func (p *parser) parseArgs(allowedArgs []string, allowedFlags []string) map[string]string {
+	defer un(trace(p, "args"))
 	args := map[string]string{}
-	frame = skipWhiteSpaces(frame)
+	p.skipWhiteSpaces()
 	for {
-		if ok, _ := parseExact("-", frame); !ok {
+		if !p.parseExact("-") {
 			break
 		}
-		arg, value, newFrame, err := parseSingleArg(allowedArgs, allowedFlags, frame)
-		if err != nil {
-			return nil, frame, err
-		}
+		arg, value := p.parseSingleArg(allowedArgs, allowedFlags)
 		args[arg] = value
-		frame = newFrame
 	}
-	return args, frame, nil
+	return args
 }
 
-func parseLsObj(lsIdx int, frame Frame) (node, Frame, *ParserError) {
-	args, frame, err := parseArgs([]string{"s", "f"}, []string{"r"}, frame)
-	if err != nil {
-		return nil, frame, err.extend(frame, "lsobj arguments")
-	}
-	path, frame, err := parsePath(frame)
-	if err != nil {
-		return nil, frame, err.extend(frame, "pasing lsobj path")
-	}
+func (p *parser) parseAssign() string {
+	defer un(trace(p, "assign"))
+	varName := p.parseSimpleWord("var name")
+	p.expect("=")
+	return varName
+}
+
+func (p *parser) parseIndexing() node {
+	defer un(trace(p, "indexing"))
+	p.skipWhiteSpaces()
+	p.expect("[")
+	index := p.parseExpr("index")
+	p.expect("]")
+	return index
+}
+
+func (p *parser) parseLsObjArguments() map[string]string {
+	defer un(trace(p, "lsobj arguments"))
+	return p.parseArgs([]string{"s", "f"}, []string{"r"})
+}
+
+func (p *parser) parseLsObj(lsIdx int) node {
+	defer un(trace(p, ""))
+	args := p.parseLsObjArguments()
+	path := p.parsePath("")
 	_, recursive := args["r"]
 	sort := args["s"]
-
-	//msg := "Please provide a quote enclosed string for '-f' with arguments separated by ':'. Or provide an argument with printf formatting (ie -f (\"%d\",arg1))"
-
 	var attrList []string
-	var format string
 	if formatArg, ok := args["f"]; ok {
-		if regexMatch(`\(\s*".*"\s*,.+\)`, formatArg) {
-			formatFrame := Frame{formatArg, 1, len(formatArg)}
-			startFormat := findNextQuote(formatFrame)
-			endFormat := findNextQuote(formatFrame.from(startFormat + 1))
-			format = formatArg[startFormat+1 : endFormat]
-			cursor := findNext(",", formatFrame.from(endFormat)) + 1
-			attrList, err = parseSeparatedAttributes(',', formatFrame.new(cursor, len(formatArg)-1))
-			if err != nil {
-				return nil, frame, err.extend(frame, "lsobj format")
-			}
-		} else {
-			formatFrame := newFrame(formatArg)
-			attrList, err = parseSeparatedAttributes(':', formatFrame)
-			if err != nil {
-				return nil, frame, err.extend(frame, "lsobj format")
-			}
-		}
+		attrList = strings.Split(formatArg, ":")
 	}
-	return &lsObjNode{path, lsIdx, recursive, sort, attrList, format}, frame, nil
+	return &lsObjNode{path, lsIdx, recursive, sort, attrList}
 }
 
-func parseLs(frame Frame) (node, Frame, *ParserError) {
-	args, frame, err := parseArgs([]string{"s", "f"}, []string{"r"}, frame)
-	if err != nil {
-		return nil, frame, err.extend(frame, "ls arguments")
-	}
-	path, frame, err := parsePath(frame)
-	if err != nil {
-		return nil, frame, err.extend(frame, "ls path")
-	}
+func (p *parser) parseLsArguments() map[string]string {
+	defer un(trace(p, "ls arguments"))
+	return p.parseArgs([]string{"s", "f"}, []string{"r"})
+}
+
+func (p *parser) parseLs() node {
+	defer un(trace(p, "ls"))
+	args := p.parseLsArguments()
+	path := p.parsePath("")
 	if attr, ok := args["s"]; ok {
-		return &lsAttrNode{path, attr}, frame, nil
+		return &lsAttrNode{path, attr}
 	}
-	return &lsNode{path}, frame, nil
+	return &lsNode{path}
 }
 
-func parseGet(frame Frame) (node, Frame, *ParserError) {
-	path, frame, err := parsePath(frame)
-	if err != nil {
-		return nil, frame, err.extend(frame, "get path")
-	}
-	return &getObjectNode{path}, frame, nil
+func (p *parser) parseGet() node {
+	defer un(trace(p, "get"))
+	return &getObjectNode{p.parsePath("")}
 }
 
-func parseGetU(frame Frame) (node, Frame, *ParserError) {
-	path, frame, err := parsePath(frame)
-	if err != nil {
-		return nil, frame, err.extend(frame, "getu path")
-	}
-	u, frame, err := parseExpr(frame)
-	if err != nil {
-		return nil, frame, err.extend(frame, "getu depth")
-	}
-	return &getUNode{path, u}, frame, nil
+func (p *parser) parseGetU() node {
+	defer un(trace(p, "getu"))
+	return &getUNode{p.parsePath(""), p.parseExpr("u")}
 }
 
-func parseGetSlot(frame Frame) (node, Frame, *ParserError) {
-	path, frame, err := parsePath(frame)
-	if err != nil {
-		return nil, frame, err.extend(frame, "getslot path")
-	}
-	slotName, frame, err := parseStringExpr(frame)
-	if err != nil {
-		return nil, frame, err.extend(frame, "getslot slot name")
-	}
-	return &getSlotNode{path, slotName}, frame, nil
+func (p *parser) parseGetSlot() node {
+	defer un(trace(p, "getslot"))
+	return &getSlotNode{p.parsePath(""), p.parseString("slot name")}
 }
 
-func parseUndraw(frame Frame) (node, Frame, *ParserError) {
-	if commandEnd(frame) {
-		return &undrawNode{nil}, frame, nil
+func (p *parser) parseUndraw() node {
+	defer un(trace(p, "undraw"))
+	if p.commandEnd() {
+		return &undrawNode{nil}
 	}
-	path, frame, err := parsePath(frame)
-	if err != nil {
-		return nil, frame, err.extend(frame, "undraw path")
-	}
-	return &undrawNode{path}, frame, nil
+	return &undrawNode{p.parsePath("")}
 }
 
-func parseDraw(frame Frame) (node, Frame, *ParserError) {
-	args, frame, err := parseArgs([]string{}, []string{"f"}, frame)
-	if err != nil {
-		return nil, frame, err.extend(frame, "draw arguments")
-	}
+func (p *parser) parseDrawArgs() map[string]string {
+	defer un(trace(p, "draw args"))
+	return p.parseArgs([]string{}, []string{"f"})
+}
+
+func (p *parser) parseDraw() node {
+	defer un(trace(p, "draw"))
+	args := p.parseDrawArgs()
 	_, force := args["f"]
-	path, frame, err := parsePath(frame)
-	if err != nil {
-		return nil, frame, err.extend(frame, "draw path")
-	}
+	path := p.parsePath("")
 	depth := 0
-	if !commandEnd(frame) {
-		depth, frame, err = parseInt(frame)
-		if err != nil {
-			return nil, frame, err.extend(frame, "draw depth")
-		}
+	if !p.commandEnd() {
+		depth = p.parseInt("depth")
 	}
-	return &drawNode{path, depth, force}, frame, nil
+	return &drawNode{path, depth, force}
 }
 
-func parseDrawable(frame Frame) (node, Frame, *ParserError) {
-	path, frame, err := parsePath(frame)
-	if err != nil {
-		return nil, frame, err.extend(frame, "drawable path")
+func (p *parser) parseDrawable() node {
+	defer un(trace(p, "drawable"))
+	path := p.parsePath("")
+	if p.commandEnd() {
+		return &isEntityDrawableNode{path}
 	}
-	if commandEnd(frame) {
-		return &isEntityDrawableNode{path}, frame, nil
-	}
-	attrName, _, err := parseAttribute(frame)
-	if err != nil {
-		return nil, frame, err.extend(frame, "drawable attribute name")
-	}
-	return &isAttrDrawableNode{path, attrName}, frame, nil
+	attrName := p.parseComplexWord("attribute")
+	return &isAttrDrawableNode{path, attrName}
 }
 
-func parseHc(frame Frame) (node, Frame, *ParserError) {
-	path, frame, err := parsePath(frame)
-	if err != nil {
-		return nil, frame, err.extend(frame, "hc path")
-	}
-	if commandEnd(frame) {
-		return &hierarchyNode{path, 1}, frame, nil
-	}
-	depth, frame, err := parseInt(frame)
-	if err != nil {
-		return nil, frame, err.extend(frame, "hc depth")
-	}
-	return &hierarchyNode{path, depth}, frame, nil
-}
-
-func parseUnset(frame Frame) (node, Frame, *ParserError) {
-	args, frame, err := parseArgs([]string{"f", "v"}, []string{}, frame)
-	if err != nil {
-		return nil, frame, err.extend(frame, "unset arguments")
-	}
+func (p *parser) parseUnset() node {
+	defer un(trace(p, "unset"))
+	args := p.parseArgs([]string{"f", "v"}, []string{})
 	if len(args) == 0 {
-		path, frame, err := parsePath(frame)
-		if err != nil {
-			return nil, frame, err.extend(frame, "unset path")
+		path := p.parsePath("")
+		p.expect(":")
+		attr := p.parseComplexWord("attribute")
+		if p.commandEnd() {
+			return &unsetAttrNode{path, attr, nil}
 		}
-		ok, frame := parseExact(":", frame)
-		if !ok {
-			return nil, frame, newParserError(frame, ": expected")
-		}
-		attr, frame, err := parseAttribute(frame)
-		if err != nil {
-			return nil, frame, err.extend(frame, "attribute name")
-		}
-		index, frame, _ := parseIndexing(frame)
-		return &unsetAttrNode{path, attr, index}, frame, nil
+		index := p.parseIndexing()
+		return &unsetAttrNode{path, attr, index}
 	}
 	if funcName, ok := args["f"]; ok {
-		return &unsetFuncNode{funcName}, frame, nil
+		return &unsetFuncNode{funcName}
 	}
 	if varName, ok := args["v"]; ok {
-		return &unsetVarNode{varName}, frame, nil
+		return &unsetVarNode{varName}
 	}
 	panic("unexpected argument while unset command")
 }
 
-func parseEnv(frame Frame) (node, Frame, *ParserError) {
-	if commandEnd(frame) {
-		return &envNode{}, frame, nil
+func (p *parser) parseEnv() node {
+	defer un(trace(p, "env"))
+	if p.commandEnd() {
+		return &envNode{}
 	}
-	arg, valueFrame, err := parseAssign(frame)
-	if err != nil {
-		return nil, frame, err
-	}
-	value, frame, err := parseStringExpr(valueFrame)
-	if err != nil {
-		return nil, frame, err.extend(frame, "env variable value")
-	}
-	return &setEnvNode{arg, value}, frame, nil
+	return &setEnvNode{p.parseAssign(), p.parseExpr("")}
 }
 
-func parseDelete(frame Frame) (node, Frame, *ParserError) {
-	deleteSelection, frame := parseExact("selection", frame)
-	if deleteSelection {
-		return &deleteSelectionNode{}, frame, nil
+func (p *parser) parseDelete() node {
+	defer un(trace(p, "delete"))
+	if p.parseExact("selection") {
+		return &deleteSelectionNode{}
 	}
-	path, frame, err := parsePath(frame)
-	if err != nil {
-		return nil, frame, err.extend(frame, "deletion path")
+	if p.commandEnd() {
+		p.error("path expected")
 	}
-	return &deleteObjNode{path}, frame, nil
+	path := p.parsePath("")
+	if p.commandEnd() {
+		return &deleteObjNode{path}
+	}
+	p.expect(":")
+	attr := p.parseSimpleWord("attribute")
+	if attr != "separator" && attr != "pillar" {
+		p.error("\"separator\" or \"pillar\" expected")
+	}
+	p.expect("=")
+	sepName := p.parseString("separator name")
+	return &deletePillarOrSeparatorNode{path, attr, sepName}
 }
 
-func parseEqual(frame Frame) (node, Frame, *ParserError) {
-	ok, _ := parseExact("{", frame)
-	if ok {
-		paths, frame, err := parsePathGroup(frame)
-		if err != nil {
-			return nil, frame, err.extend(frame, "selection paths")
-		}
-		return &selectChildrenNode{paths}, frame, nil
+func (p *parser) parseEqual() node {
+	defer un(trace(p, "="))
+	if p.parseExact("{") {
+		p.backward(1)
+		return &selectChildrenNode{p.parsePathGroup()}
 	}
-	if commandEnd(frame) {
-		return &selectObjectNode{&strLeaf{""}}, frame, nil
+	if p.commandEnd() {
+		return &selectObjectNode{&valueNode{""}}
 	}
-	path, frame, err := parsePath(frame)
-	if err != nil {
-		return nil, frame, err.extend(frame, "selection path")
-	}
-	return &selectObjectNode{path}, frame, nil
+	return &selectObjectNode{p.parsePath("")}
 }
 
-func parseVar(frame Frame) (node, Frame, *ParserError) {
-	topFrame := frame
-	varName, frame, err := parseAssign(frame)
-	if err != nil {
-		return nil, frame, err.extend(frame, "variable assignment")
-	}
-	frame = skipWhiteSpaces(frame)
-	commandExpr, frame := parseExact("$(", frame)
-	if commandExpr {
-		value, frame, err := parseCommand(frame)
-		if err != nil {
-			return nil, frame, err.extend(frame, "variable value (command expression)")
-		}
-		closed, frame := parseExact(")", frame)
-		if !closed {
-			return nil, frame, newParserError(frame, "$( opened but never closed").
-				extend(topFrame, "variable assignment")
-		}
-		return &assignNode{varName, value}, frame, nil
-	}
-	value, frame, err := parseStringExpr(frame)
-	if err != nil {
-		return nil, frame, err.extend(frame, "variable value")
-	}
-	return &assignNode{varName, value}, frame, nil
+func (p *parser) parseVar() node {
+	defer un(trace(p, "variable assignment"))
+	varName := p.parseAssign()
+	p.skipWhiteSpaces()
+	value := p.parseValue()
+	return &assignNode{varName, value}
 }
 
-func parseLoad(frame Frame) (node, Frame, *ParserError) {
-	filePath, frame, err := parseStringExpr(frame)
-	if err != nil {
-		return nil, frame, err.extend(frame, "file path")
-	}
-	return &loadNode{filePath}, frame, nil
+func (p *parser) parseLoad() node {
+	defer un(trace(p, "load"))
+	return &loadNode{p.parseString("file path")}
 }
 
-func parseTemplate(frame Frame) (node, Frame, *ParserError) {
-	filePath, frame, err := parseStringExpr(frame)
-	if err != nil {
-		return nil, frame, err.extend(frame, "file path")
-	}
-	return &loadTemplateNode{filePath}, frame, nil
+func (p *parser) parseTemplate() node {
+	defer un(trace(p, "template"))
+	return &loadTemplateNode{p.parseString("template path")}
 }
 
-func parseLen(frame Frame) (node, Frame, *ParserError) {
-	varName, frame, err := parseWord(frame)
-	if err != nil {
-		return nil, frame, err.extend(frame, "variable name")
-	}
-	return &lenNode{varName}, frame, nil
+func (p *parser) parseLen() node {
+	defer un(trace(p, "len"))
+	return &lenNode{p.parseSimpleWord("variable")}
 }
 
-func parseLink(frame Frame) (node, Frame, *ParserError) {
-	sourcePath, frame, err := parsePath(frame)
-	if err != nil {
-		return nil, frame, err.extend(frame, "source path (physical)")
+func (p *parser) parseLink() node {
+	defer un(trace(p, "link"))
+	sourcePath := p.parsePath("source path")
+	p.expect("@")
+	destPath := p.parsePath("destination path")
+	if p.parseExact("@") {
+		slot := p.parseString("slot name")
+		return &linkObjectNode{sourcePath, destPath, slot}
 	}
-	ok, frame := parseExact("@", frame)
-	if !ok {
-		return nil, frame, newParserError(frame, "@ expected")
-	}
-	destPath, frame, err := parsePath(frame)
-	if err != nil {
-		return nil, frame, err.extend(frame, "destination path (physical)")
-	}
-	ok, frame = parseExact("@", frame)
-	if ok {
-		slot, frame, err := parseStringExpr(frame)
-		if err != nil {
-			return nil, frame, err.extend(frame, "slot name")
-		}
-		return &linkObjectNode{sourcePath, destPath, slot}, frame, nil
-	}
-	return &linkObjectNode{sourcePath, destPath, nil}, frame, nil
+	return &linkObjectNode{sourcePath, destPath, nil}
 }
 
-func parseUnlink(frame Frame) (node, Frame, *ParserError) {
-	sourcePath, frame, err := parsePath(frame)
-	if err != nil {
-		return nil, frame, err.extend(frame, "source path (physical)")
-	}
-	ok, frame := parseExact("@", frame)
-	if ok {
-		destPath, frame, err := parsePath(frame)
-		if err != nil {
-			return nil, frame, err.extend(frame, "destination path (physical)")
-		}
-		return &unlinkObjectNode{sourcePath, destPath}, frame, nil
-	}
-	return &unlinkObjectNode{sourcePath, nil}, frame, nil
+func (p *parser) parseUnlink() node {
+	defer un(trace(p, "unlink"))
+	sourcePath := p.parsePath("source")
+	return &unlinkObjectNode{sourcePath}
 }
 
-func parsePrint(frame Frame) (node, Frame, *ParserError) {
-	str, frame, err := parseStringExpr(frame)
-	if err != nil {
-		return nil, frame, err.extend(frame, "message to print")
-	}
-	return &printNode{str}, frame, nil
+func (p *parser) parsePrint() node {
+	defer un(trace(p, "print"))
+	return &printNode{p.parseValue()}
 }
 
-func parseMan(frame Frame) (node, Frame, *ParserError) {
-	if commandEnd(frame) {
-		return &helpNode{""}, frame, nil
+func (p *parser) parsePrintf() node {
+	defer un(trace(p, "printf"))
+	return &printNode{p.parseFormatArgs()}
+}
+
+func (p *parser) parseMan() node {
+	defer un(trace(p, "man"))
+	if p.commandEnd() {
+		return &helpNode{""}
 	}
-	commandName, frame := parseKeyWord(manCommands, frame)
+	commandName := p.parseKeyWord(manCommands)
 	if !sliceContains(manCommands, commandName) {
-		return nil, frame, newParserError(frame, "no manual for this command")
+		p.error("no manual for this command")
 	}
-	return &helpNode{commandName}, frame, nil
+	return &helpNode{commandName}
 }
 
-func parseCd(frame Frame) (node, Frame, *ParserError) {
-	if commandEnd(frame) {
-		return &cdNode{&pathNode{&strLeaf{"/"}}}, frame, nil
+func (p *parser) parseCd() node {
+	defer un(trace(p, "cd"))
+	if p.commandEnd() {
+		return &cdNode{&pathNode{&valueNode{"/"}}}
 	}
-	path, frame, err := parsePath(frame)
-	if err != nil {
-		return nil, frame, err.extend(frame, "path")
-	}
-	return &cdNode{path}, frame, nil
+	return &cdNode{p.parsePath("")}
 }
 
-func parseTree(frame Frame) (node, Frame, *ParserError) {
-	if commandEnd(frame) {
-		return &treeNode{&pathNode{&strLeaf{"."}}, 0}, frame, nil
+func (p *parser) parseTree() node {
+	defer un(trace(p, "tree"))
+	if p.commandEnd() {
+		return &treeNode{&pathNode{&valueNode{"."}}, 1}
 	}
-	path, frame, err := parsePath(frame)
-	if err != nil {
-		return nil, frame, err.extend(frame, "tree path")
+	path := p.parsePath("")
+	if p.commandEnd() {
+		return &treeNode{path, 1}
 	}
-	if commandEnd(frame) {
-		return &treeNode{path, 0}, frame, nil
-	}
-	u, frame, err := parseInt(frame)
-	if err != nil {
-		return nil, frame, err.extend(frame, "tree depth")
-	}
-	return &treeNode{path, u}, frame, nil
+	depth := p.parseInt("depth")
+	return &treeNode{path, depth}
 }
 
-func parseUi(frame Frame) (node, Frame, *ParserError) {
-	clearcache, frame := parseExact("clearcache", frame)
-	if clearcache {
-		return &uiClearCacheNode{}, frame, nil
+func (p *parser) parseUi() node {
+	defer un(trace(p, "ui"))
+	if p.parseExact("clearcache") {
+		return &uiClearCacheNode{}
 	}
-	key, valueFrame, err := parseAssign(frame)
-	if err != nil {
-		return nil, frame, err
-	}
+	key := p.parseAssign()
 	if key == "delay" {
-		delay, frame, err := parseFloat(valueFrame)
-		if err != nil {
-			return nil, frame, err.extend(frame, "ui delay")
-		}
-		return &uiDelayNode{delay}, frame, nil
+		return &uiDelayNode{p.parseFloat("delay")}
 	}
 	if key == "debug" || key == "infos" || key == "wireframe" {
-		val, frame, err := parseBool(valueFrame)
-		if err != nil {
-			return nil, frame, err.extend(frame, "ui toggle "+key)
-		}
-		return &uiToggleNode{key, val}, frame, nil
+		val := p.parseBool()
+		return &uiToggleNode{key, val}
 	}
 	if key == "highlight" || key == "hl" {
-		path, frame, err := parsePath(valueFrame)
-		if err != nil {
-			return nil, frame, err.extend(frame, "ui highlight")
-		}
-		return &uiHighlightNode{path}, frame, nil
+		return &uiHighlightNode{p.parsePath("")}
 	}
-	return nil, frame, newParserError(frame, "unknown ui command")
+	p.error("unknown ui command")
+	return nil
 }
 
-func parseCamera(frame Frame) (node, Frame, *ParserError) {
-	key, frame, err := parseAssign(frame)
-	if err != nil {
-		return nil, frame, err
-	}
+func (p *parser) parseCamera() node {
+	defer un(trace(p, "camera"))
+	key := p.parseAssign()
 	if key == "move" || key == "translate" {
-		position, frame, err := parseExpr(frame)
-		if err != nil {
-			return nil, frame, err.extend(frame, "position vector")
-		}
-		ok, frame := parseExact("@", frame)
-		if !ok {
-			return nil, frame, newParserError(frame, "@ expected")
-		}
-		rotation, frame, err := parseExpr(frame)
-		if err != nil {
-			return nil, frame, err.extend(frame, "rotation vector")
-		}
-		return &cameraMoveNode{key, position, rotation}, frame, nil
+		position := p.parseExpr("position")
+		p.expect("@")
+		rotation := p.parseExpr("rotation")
+		return &cameraMoveNode{key, position, rotation}
 	}
 	if key == "wait" {
-		time, frame, err := parseFloat(frame)
-		if err != nil {
-			return nil, frame, err.extend(frame, "waiting time")
-		}
-		return &cameraWaitNode{time}, frame, nil
+		return &cameraWaitNode{p.parseFloat("waiting time")}
 	}
-	return nil, frame, newParserError(frame, "unknown ui command")
+	p.error("unknown ui command")
+	return nil
 }
 
-func parseFocus(frame Frame) (node, Frame, *ParserError) {
-	if commandEnd(frame) {
-		return &focusNode{&strLeaf{""}}, frame, nil
+func (p *parser) parseFocus() node {
+	defer un(trace(p, "focus"))
+	if p.commandEnd() {
+		return &focusNode{&valueNode{""}}
 	}
-	path, frame, err := parsePath(frame)
-	if err != nil {
-		return nil, frame, err.extend(frame, "path")
-	}
-	return &focusNode{path}, frame, nil
+	return &focusNode{p.parsePath("")}
 }
 
-func parseWhile(frame Frame) (node, Frame, *ParserError) {
-	condition, frame, err := parseExpr(frame)
-	if err != nil {
-		return nil, frame, err.extend(frame, "condition")
-	}
-	ok, frame := parseExact("{", frame)
-	if !ok {
-		return nil, frame, newParserError(frame, "{ expected")
-	}
-	body, frame, err := parseCommand(frame)
-	if err != nil {
-		return nil, frame, err.extend(frame, "while body")
-	}
-	ok, frame = parseExact("}", skipWhiteSpaces(frame))
-	if !ok {
-		return nil, frame, newParserError(frame, "} expected")
-	}
-	return &whileNode{condition, body}, frame, nil
+func (p *parser) parseWhile() node {
+	defer un(trace(p, "while"))
+	condition := p.parseExpr("condition")
+	p.expect("{")
+	body := p.parseCommand("body")
+	p.skipWhiteSpaces()
+	p.expect("}")
+	return &whileNode{condition, body}
 }
 
-func parseFor(frame Frame) (node, Frame, *ParserError) {
-	varName, frame, err := parseWord(frame)
-	if err != nil {
-		return nil, frame, err.extend(frame, "for loop variable")
-	}
-	ok, frame := parseExact("in", skipWhiteSpaces(frame))
-	if !ok {
-		return nil, frame, newParserError(frame, "\"in\" expected")
-	}
-	start, frame, err := parseExpr(frame)
-	if err != nil {
-		return nil, frame, err.extend(frame, "for loop start index")
-	}
-	ok, frame = parseExact("..", frame)
-	if !ok {
-		return nil, frame, newParserError(frame, ".. expected")
-	}
-	end, frame, err := parseExpr(frame)
-	if err != nil {
-		return nil, frame, err.extend(frame, "for loop end index")
-	}
-	ok, frame = parseExact("{", frame)
-	if !ok {
-		return nil, frame, newParserError(frame, "{ expected")
-	}
-	body, frame, err := parseCommand(frame)
-	if err != nil {
-		return nil, frame, err.extend(frame, "for loop body")
-	}
-	ok, frame = parseExact("}", skipWhiteSpaces(frame))
-	if !ok {
-		return nil, frame, newParserError(frame, "} expected")
-	}
-	return &forRangeNode{varName, start, end, body}, frame, nil
+func (p *parser) parseFor() node {
+	defer un(trace(p, "for"))
+	varName := p.parseSimpleWord("variable")
+	p.expect("in")
+	start := p.parseExpr("start index")
+	p.expect("..")
+	end := p.parseExpr("end index")
+	p.expect("{")
+	body := p.parseCommand("body")
+	p.skipWhiteSpaces()
+	p.expect("}")
+	return &forRangeNode{varName, start, end, body}
 }
 
-func parseIf(frame Frame) (node, Frame, *ParserError) {
-	condition, frame, err := parseExpr(frame)
-	if err != nil {
-		return nil, frame, err
-	}
-	ok, frame := parseExact("{", frame)
-	if !ok {
-		return nil, frame, newParserError(frame, "{ expected")
-	}
-	body, frame, err := parseCommand(frame)
-	if err != nil {
-		return nil, frame, err.extend(frame, "if body")
-	}
-	ok, frame = parseExact("}", frame)
-	if !ok {
-		return nil, frame, newParserError(frame, "} expected")
-	}
-	keyword, frame := parseKeyWord([]string{"else", "elif"}, skipWhiteSpaces(frame))
+func (p *parser) parseIf() node {
+	defer un(trace(p, "if"))
+	condition := p.parseExpr("condition")
+	p.expect("{")
+	body := p.parseCommand("if body")
+	p.expect("}")
+	p.skipWhiteSpaces()
+	keyword := p.parseKeyWord([]string{"else", "elif"})
 	switch keyword {
 	case "":
-		return &ifNode{condition, body, nil}, frame, nil
+		return &ifNode{condition, body, nil}
 	case "else":
-		ok, frame := parseExact("{", skipWhiteSpaces(frame))
-		if !ok {
-			return nil, frame, newParserError(frame, "{ expected")
-		}
-		elseBody, frame, err := parseCommand(frame)
-		if err != nil {
-			return nil, frame, err.extend(frame, "else body")
-		}
-		ok, frame = parseExact("}", skipWhiteSpaces(frame))
-		if !ok {
-			return nil, frame, newParserError(frame, "} expected")
-		}
-		return &ifNode{condition, body, elseBody}, frame, nil
+		p.skipWhiteSpaces()
+		p.expect("{")
+		elseBody := p.parseCommand("else body")
+		p.skipWhiteSpaces()
+		p.expect("}")
+		return &ifNode{condition, body, elseBody}
 	case "elif":
-		elseBody, frame, err := parseIf(frame)
-		if err != nil {
-			return nil, frame, err.extend(frame, "elif body")
-		}
-		return &ifNode{condition, body, elseBody}, frame, nil
+		elseBody := p.parseIf()
+		return &ifNode{condition, body, elseBody}
 	default:
 		panic("unexpected return from parseKeyWord : " + keyword)
 	}
 }
 
-func parseAlias(frame Frame) (node, Frame, *ParserError) {
-	name, frame, err := parseWord(frame)
-	if err != nil {
-		return nil, frame, err
-	}
-	frame = skipWhiteSpaces(frame)
-	ok, frame := parseExact("{", frame)
-	if !ok {
-		return nil, frame, newParserError(frame, "{ expected}")
-	}
-	frame = skipWhiteSpaces(frame)
-	command, frame, err := parseCommand(frame)
-	if err != nil {
-		return nil, frame, err.extend(frame, "alias body")
-	}
-	frame = skipWhiteSpaces(frame)
-	ok, frame = parseExact("}", frame)
-	if !ok {
-		return nil, frame, newParserError(frame, "} expected")
-	}
-	return &funcDefNode{name, command}, frame, nil
+func (p *parser) parseAlias() node {
+	defer un(trace(p, "alias"))
+	name := p.parseSimpleWord("name")
+	p.expect("{")
+	p.skipWhiteSpaces()
+	command := p.parseCommand("body")
+	p.skipWhiteSpaces()
+	p.expect("}")
+	return &funcDefNode{name, command}
 }
 
-func parseCallAlias(frame Frame) (node, Frame, *ParserError) {
-	name, frame, err := parseWord(frame)
-	if err != nil {
-		return nil, frame, err.extend(frame, "alias call")
-	}
-	return &funcCallNode{name}, frame, nil
-}
-
-func parseObjType(frame Frame) (string, Frame) {
+func (p *parser) parseObjType() string {
+	defer un(trace(p, "object type"))
 	candidates := []string{}
 	for command := range createObjDispatch {
 		candidates = append(candidates, command)
 	}
-	return parseKeyWord(candidates, frame)
+	return p.parseKeyWord(candidates)
 }
 
-func parseCreate(frame Frame) (node, Frame, *ParserError) {
-	objType, frame := parseObjType(frame)
+func (p *parser) parseCreate() node {
+	defer un(trace(p, "create"))
+	objType := p.parseObjType()
 	if objType == "" {
-		return nil, frame, newParserError(frame, "object type")
+		p.error("unknown object type")
 	}
-	frame = skipWhiteSpaces(frame)
+	p.skipWhiteSpaces()
 	if objType == "orphan" {
-		return parseCreateOrphan(frame)
+		return p.parseCreateOrphan()
 	}
-	ok, frame := parseExact(":", frame)
-	if !ok {
-		return nil, frame, newParserError(frame, ": expected")
-	}
-	frame = skipWhiteSpaces(frame)
-	return createObjDispatch[objType](frame)
+	p.expect(":")
+	p.skipWhiteSpaces()
+	return createObjDispatch[objType]()
 }
 
-func parseColor(frame Frame) (node, Frame, *ParserError) {
-	l := lexerFromFrame(frame)
-	tok := l.nextToken(lexColor)
-	if tok.t == tokColor {
-		return &strLeaf{tok.str}, frame.from(tok.end), nil
-	}
-	color, newFrame, err := parseExpr(frame)
-	if err != nil {
-		return nil, frame, newParserError(frame, "color expected")
-	}
-	return color, newFrame, nil
+func (p *parser) parseCreateDomain() node {
+	defer un(trace(p, "create domain"))
+	path := p.parsePath("")
+	p.expect("@")
+	color := p.parseString("color")
+	return &createDomainNode{path, color}
 }
 
-func parseKeyWordOrExpr(keywords []string, frame Frame) (node, Frame, *ParserError) {
-	keyword, newFrame := parseKeyWord(keywords, frame)
-	if keyword != "" {
-		return &strLeaf{keyword}, newFrame, nil
-	}
-	expr, newFrame, err := parseExpr(frame)
-	if err != nil {
-		return nil, frame, newParserError(frame, "keyword or expr expected")
-	}
-	return expr, newFrame, nil
+func (p *parser) parseCreateSite() node {
+	defer un(trace(p, "create site"))
+	path := p.parsePath("")
+	return &createSiteNode{path}
 }
 
-func parseRackOrientation(frame Frame) (node, Frame, *ParserError) {
-	return parseKeyWordOrExpr([]string{"front", "rear", "left", "right"}, frame)
+func (p *parser) parseCreateBuilding() node {
+	defer un(trace(p, "create building"))
+	path := p.parsePath("")
+	p.expect("@")
+	posXY := p.parseExpr("posXY")
+	p.expect("@")
+	rotation := p.parseExpr("rotation")
+	p.expect("@")
+	sizeOrTemplate := p.parseStringOrVec("sizeOrTemplate")
+	return &createBuildingNode{path, posXY, rotation, sizeOrTemplate}
 }
 
-func parseAxisOrientation(frame Frame) (node, Frame, *ParserError) {
-	return parseKeyWordOrExpr([]string{"+x+y", "+x-y", "-x-y", "-x+y"}, frame)
+func (p *parser) parseCreateRoom() node {
+	defer un(trace(p, "create room"))
+	path := p.parsePath("")
+	p.expect("@")
+	posXY := p.parseExpr("posXY")
+	p.expect("@")
+	rotation := p.parseExpr("rotation")
+	p.expect("@")
+	sizeOrTemplate := p.parseStringOrVec("sizeOrTemplate")
+	if !p.parseExact("@") {
+		return &createRoomNode{path, posXY, rotation, nil, nil, nil, sizeOrTemplate}
+	}
+	axisOrientation := p.parseString("axisOrientation")
+	if !p.parseExact("@") {
+		return &createRoomNode{path, posXY, rotation, sizeOrTemplate, axisOrientation, nil, nil}
+	}
+	floorUnit := p.parseString("floorUnit")
+	return &createRoomNode{path, posXY, rotation, sizeOrTemplate, axisOrientation, floorUnit, nil}
 }
 
-func parseFloorUnit(frame Frame) (node, Frame, *ParserError) {
-	return parseKeyWordOrExpr([]string{"t", "m", "f"}, frame)
+func (p *parser) parseCreateRack() node {
+	defer un(trace(p, "create rack"))
+	path := p.parsePath("")
+	p.expect("@")
+	pos := p.parseExpr("position")
+	p.expect("@")
+	unit := p.parseString("unit")
+	p.expect("@")
+	rotation := p.parseStringOrVec("rotation")
+	p.expect("@")
+	sizeOrTemplate := p.parseStringOrVec("sizeOrTemplate")
+	return &createRackNode{path, pos, unit, rotation, sizeOrTemplate}
 }
 
-func parseSide(frame Frame) (node, Frame, *ParserError) {
-	return parseKeyWordOrExpr([]string{"front", "rear", "frontflipped", "rearflipped"}, frame)
+func (p *parser) parseCreateDevice() node {
+	defer un(trace(p, "create device"))
+	path := p.parsePath("")
+	p.expect("@")
+	posUOrSlot := p.parseString("posUOrSlot")
+	p.expect("@")
+	sizeUOrTemplate := p.parseString("sizeUOrTemplate")
+	if !p.parseExact("@") {
+		return &createDeviceNode{path, posUOrSlot, sizeUOrTemplate, nil}
+	}
+	side := p.parseString("side")
+	return &createDeviceNode{path, posUOrSlot, sizeUOrTemplate, side}
 }
 
-func parseTemperature(frame Frame) (node, Frame, *ParserError) {
-	return parseKeyWordOrExpr([]string{"cold", "warm"}, frame)
+func (p *parser) parseCreateGroup() node {
+	defer un(trace(p, "create group"))
+	path := p.parsePath("")
+	p.expect("@")
+	childs := p.parsePathGroup()
+	return &createGroupNode{path, childs}
 }
 
-func parseStringExpr(frame Frame) (node, Frame, *ParserError) {
-	expr, nextFrame, err := parseExpr(frame)
-	if err == nil && exprEnd(nextFrame) {
-		return expr, nextFrame, nil
-	}
-	frame = skipWhiteSpaces(frame)
-	str, frame, err := parseRawText(lexUnquotedString, frame)
-	if err != nil {
-		return nil, frame, err.extend(frame, "string expression")
-	}
-	return str, skipWhiteSpaces(frame), nil
+func (p *parser) parseCreateCorridor() node {
+	defer un(trace(p, "create corridor"))
+	path := p.parsePath("")
+	p.expect("@")
+	pos := p.parseExpr("position")
+	p.expect("@")
+	unit := p.parseString("unit")
+	p.expect("@")
+	rotation := p.parseStringOrVec("rotation")
+	p.expect("@")
+	size := p.parseStringOrVec("size")
+	p.expect("@")
+	temperature := p.parseString("temperature")
+	return &createCorridorNode{path, pos, unit, rotation, size, temperature}
 }
 
-type objParam struct {
-	name string
-	t    string
+func (p *parser) parseCreateOrphan() node {
+	defer un(trace(p, "create orphan"))
+	if !p.parseExact("device") && !p.parseExact("dv") {
+		p.error("device or dv keyword expected")
+	}
+	p.skipWhiteSpaces()
+	p.expect(":")
+	p.skipWhiteSpaces()
+	path := p.parsePath("")
+	p.expect("@")
+	template := p.parseString("template")
+	return &createOrphanNode{path, template}
 }
 
-func parseObjectParams(sig []objParam, frame Frame) (map[string]node, Frame, *ParserError) {
-	values := map[string]node{}
-	for i, param := range sig {
-		if i != 0 {
-			ok, nextFrame := parseExact("@", frame)
-			if !ok {
-				return nil, frame, newParserError(frame, "@ expected")
-			}
-			frame = nextFrame
-		}
-		frame = skipWhiteSpaces(frame)
-		var value node
-		var err *ParserError
-		switch param.t {
-		case "path":
-			value, frame, err = parsePath(frame)
-		case "expr":
-			value, frame, err = parseExpr(frame)
-		case "stringexpr":
-			value, frame, err = parseStringExpr(frame)
-		case "axisOrientation":
-			value, frame, err = parseAxisOrientation(frame)
-		case "rackOrientation":
-			value, frame, err = parseRackOrientation(frame)
-		case "floorUnit":
-			value, frame, err = parseFloorUnit(frame)
-		case "side":
-			value, frame, err = parseSide(frame)
-		case "color":
-			value, frame, err = parseColor(frame)
-		}
-		if err != nil {
-			return nil, frame, err.extend(frame, param.name)
-		}
-		values[param.name] = value
-		frame = skipWhiteSpaces(frame)
-	}
-	return values, frame, nil
+func (p *parser) parseCreateUser() node {
+	defer un(trace(p, "create user"))
+	email := p.parseString("email")
+	p.expect("@")
+	role := p.parseString("role")
+	p.expect("@")
+	domain := p.parseString("domain")
+	return &createUserNode{email, role, domain}
 }
 
-func parseCreateDomain(frame Frame) (node, Frame, *ParserError) {
-	sig := []objParam{{"path", "path"}, {"color", "color"}}
-	params, frame, err := parseObjectParams(sig, frame)
-	if err != nil {
-		return nil, frame, err.extend(frame, "parsing domain parameters")
-	}
-	return &createDomainNode{params["path"], params["color"]}, frame, nil
+func (p *parser) parseAddRole() node {
+	defer un(trace(p, "add role"))
+	email := p.parseString("email")
+	p.expect("@")
+	role := p.parseString("role")
+	p.expect("@")
+	domain := p.parseString("domain")
+	return &addRoleNode{email, role, domain}
 }
 
-func parseCreateSite(frame Frame) (node, Frame, *ParserError) {
-	sig := []objParam{{"path", "path"}}
-	params, frame, err := parseObjectParams(sig, frame)
-	if err != nil {
-		return nil, frame, err.extend(frame, "site parameters")
-	}
-	return &createSiteNode{params["path"]}, frame, nil
-}
-
-func parseCreateBuilding(frame Frame) (node, Frame, *ParserError) {
-	sig := []objParam{{"path", "path"}, {"posXY", "expr"}, {"rotation", "expr"}, {"sizeOrTemplate", "stringexpr"}}
-	params, frame, err := parseObjectParams(sig, frame)
-	if err != nil {
-		return nil, frame, err.extend(frame, "building parameters")
-	}
-	return &createBuildingNode{params["path"], params["posXY"], params["rotation"], params["sizeOrTemplate"]}, frame, nil
-}
-
-func parseCreateRoom(frame Frame) (node, Frame, *ParserError) {
-	sig := []objParam{{"path", "path"}, {"posXY", "expr"}, {"rotation", "expr"}, {"sizeOrTemplate", "stringexpr"}}
-	params1, frame, err := parseObjectParams(sig, frame)
-	if err != nil {
-		return nil, frame, err.extend(frame, "room parameters")
-	}
-	ok, frame := parseExact("@", frame)
-	if !ok {
-		return &createRoomNode{
-			params1["path"],
-			params1["posXY"],
-			params1["rotation"],
-			nil, nil, nil,
-			params1["sizeOrTemplate"]}, frame, nil
-	}
-	sig = []objParam{{"axisOrientation", "axisOrientation"}}
-	params2, frame, err := parseObjectParams(sig, frame)
-	if err != nil {
-		return nil, frame, err.extend(frame, "room parameters")
-	}
-	ok, frame = parseExact("@", frame)
-	if !ok {
-		return &createRoomNode{
-			params1["path"],
-			params1["posXY"],
-			params1["rotation"],
-			params1["sizeOrTemplate"],
-			params2["axisOrientation"], nil, nil}, frame, nil
-	}
-	sig = []objParam{{"floorUnit", "floorUnit"}}
-	params3, frame, err := parseObjectParams(sig, frame)
-	if err != nil {
-		return nil, frame, err.extend(frame, "room parameters")
-	}
-	return &createRoomNode{
-		params1["path"],
-		params1["posXY"],
-		params1["rotation"],
-		params1["sizeOrTemplate"],
-		params2["axisOrientation"],
-		params3["floorUnit"], nil}, frame, nil
-}
-
-func parseCreateRack(frame Frame) (node, Frame, *ParserError) {
-	sig := []objParam{{"path", "path"}, {"pos", "expr"},
-		{"sizeOrTemplate", "stringexpr"}, {"orientation", "rackOrientation"}}
-	params, frame, err := parseObjectParams(sig, frame)
-	if err != nil {
-		return nil, frame, err.extend(frame, "rack parameters")
-	}
-	return &createRackNode{params["path"], params["pos"], params["sizeOrTemplate"], params["orientation"]}, frame, nil
-}
-
-func parseCreateDevice(frame Frame) (node, Frame, *ParserError) {
-	sig := []objParam{{"path", "path"}, {"posUOrSlot", "stringexpr"}, {"sizeUOrTemplate", "stringexpr"}}
-	params1, frame, err := parseObjectParams(sig, frame)
-	if err != nil {
-		return nil, frame, err.extend(frame, "device parameters")
-	}
-	ok, frame := parseExact("@", frame)
-	if !ok {
-		return &createDeviceNode{params1["path"], params1["posUOrSlot"], params1["sizeUOrTemplate"], nil}, frame, nil
-	}
-	sig = []objParam{{"side", "side"}}
-	params2, frame, err := parseObjectParams(sig, frame)
-	if err != nil {
-		return nil, frame, err.extend(frame, "device parameters")
-	}
-	return &createDeviceNode{params1["path"], params1["posUOrSlot"], params1["sizeUOrTemplate"], params2["side"]}, frame, nil
-}
-
-func parseCreateGroup(frame Frame) (node, Frame, *ParserError) {
-	path, frame, err := parsePath(frame)
-	if err != nil {
-		return nil, frame, err.extend(frame, "group physical path")
-	}
-	ok, frame := parseExact("@", frame)
-	if !ok {
-		return nil, frame, newParserError(frame, "@ expected")
-	}
-	frame = skipWhiteSpaces(frame)
-	childs, frame, err := parsePathGroup(frame)
-	if err != nil {
-		return nil, frame, err.extend(frame, "group childs")
-	}
-	return &createGroupNode{path, childs}, frame, nil
-}
-
-func parseCreateCorridor(frame Frame) (node, Frame, *ParserError) {
-	path, frame, err := parsePath(frame)
-	if err != nil {
-		return nil, frame, err.extend(frame, "group physical path")
-	}
-	ok, frame := parseExact("@", frame)
-	if !ok {
-		return nil, frame, newParserError(frame, "@ expected")
-	}
-	frame = skipWhiteSpaces(frame)
-	racks, frame, err := parsePathGroup(frame)
-	if err != nil {
-		return nil, frame, err.extend(frame, "group childs")
-	}
-	if len(racks) != 2 {
-		return nil, frame, newParserError(frame, "only 2 racks expected")
-	}
-	ok, frame = parseExact("@", frame)
-	if !ok {
-		return nil, frame, newParserError(frame, "@ expected")
-	}
-	frame = skipWhiteSpaces(frame)
-	temperature, frame, err := parseTemperature(frame)
-	if err != nil {
-		return nil, frame, err.extend(frame, "corridor temperature")
-	}
-	return &createCorridorNode{path, racks[0], racks[1], temperature}, frame, nil
-}
-
-func parseCreateOrphan(frame Frame) (node, Frame, *ParserError) {
-	for _, word := range []string{"device", "dv"} {
-		ok, newFrame := parseExact(word, frame)
-		if ok {
-			return parseCreateOrphanAux(skipWhiteSpaces(newFrame), false)
-		}
-	}
-	for _, word := range []string{"sensor", "sr"} {
-		ok, newFrame := parseExact(word, frame)
-		if ok {
-			return parseCreateOrphanAux(skipWhiteSpaces(newFrame), true)
-		}
-	}
-	return nil, frame, newParserError(frame, "device or sensor keyword expected")
-}
-
-func parseCreateOrphanAux(frame Frame, sensor bool) (node, Frame, *ParserError) {
-	ok, frame := parseExact(":", frame)
-	if !ok {
-		return nil, frame, newParserError(frame, ": expected")
-	}
-	frame = skipWhiteSpaces(frame)
-	path, frame, err := parsePath(frame)
-	if err != nil {
-		return nil, frame, err.extend(frame, "orphan physical path")
-	}
-	ok, frame = parseExact("@", frame)
-	if !ok {
-		return nil, frame, newParserError(frame, "@ expected")
-	}
-	frame = skipWhiteSpaces(frame)
-	template, frame, err := parseStringExpr(frame)
-	if err != nil {
-		return nil, frame, err.extend(frame, "orphan template")
-	}
-	return &createOrphanNode{path, template, sensor}, frame, nil
-}
-
-func parseCreateUser(frame Frame) (node, Frame, *ParserError) {
-	sig := []objParam{{"email", "stringexpr"}, {"role", "stringexpr"}, {"domain", "stringexpr"}}
-	params, frame, err := parseObjectParams(sig, frame)
-	if err != nil {
-		return nil, frame, err.extend(frame, "user parameters")
-	}
-	return &createUserNode{params["email"], params["role"], params["domain"]}, frame, nil
-}
-
-func parseAddRole(frame Frame) (node, Frame, *ParserError) {
-	sig := []objParam{{"email", "stringexpr"}, {"role", "stringexpr"}, {"domain", "stringexpr"}}
-	params, frame, err := parseObjectParams(sig, frame)
-	if err != nil {
-		return nil, frame, err.extend(frame, "user parameters")
-	}
-	return &addRoleNode{params["email"], params["role"], params["domain"]}, frame, nil
-}
-
-func parseUpdate(frame Frame) (node, Frame, *ParserError) {
-	path, frame, err := parsePath(frame)
-	if err != nil {
-		return nil, frame, err.extend(frame, "update")
-	}
-	frame = skipWhiteSpaces(frame)
-	ok, frame := parseExact(":", frame)
-	if !ok {
-		return nil, frame, newParserError(frame, ": expected")
-	}
-	frame = skipWhiteSpaces(frame)
-	attr, frame, err := parseAttribute(frame)
-	if err != nil {
-		return nil, frame, err.extend(frame, "attribute")
-	}
-	frame = skipWhiteSpaces(frame)
-	ok, frame = parseExact("=", frame)
-	if !ok {
-		return nil, frame, newParserError(frame, "= expected")
-	}
-	frame = skipWhiteSpaces(frame)
-	sharpe, frame := parseExact("#", frame)
+func (p *parser) parseUpdate() node {
+	defer un(trace(p, "update"))
+	path := p.parsePath("")
+	p.skipWhiteSpaces()
+	p.expect(":")
+	p.skipWhiteSpaces()
+	attr := p.parseComplexWord("attribute")
+	p.skipWhiteSpaces()
+	p.expect("=")
+	p.skipWhiteSpaces()
+	sharpe := p.parseExact("#")
 	values := []node{}
 	moreValues := true
 	for moreValues {
-		var val node
-		val, frame, err = parseStringExpr(frame)
-		if err != nil {
-			return nil, frame, err.extend(frame, "update new value")
-		}
-		values = append(values, val)
-		moreValues, frame = parseExact("@", frame)
+		value := p.parseValue()
+		values = append(values, value)
+		moreValues = p.parseExact("@")
 	}
-	return &updateObjNode{path, attr, values, sharpe}, frame, nil
+	return &updateObjNode{path, attr, values, sharpe}
 }
 
-func parseCommandKeyWord(frame Frame) (string, Frame) {
+func (p *parser) parseCommandKeyWord() string {
+	defer un(trace(p, "command keyword"))
 	candidates := []string{}
 	for command := range commandDispatch {
 		candidates = append(candidates, command)
@@ -1595,138 +1109,143 @@ func parseCommandKeyWord(frame Frame) (string, Frame) {
 		candidates = append(candidates, command)
 	}
 	candidates = append(candidates, lsCommands...)
-	return parseKeyWord(candidates, frame)
+	return p.parseKeyWord(candidates)
 }
 
-func parseSingleCommand(frame Frame) (node, Frame, *ParserError) {
-	frame = skipWhiteSpaces(frame)
-	if commandEnd(frame) {
-		return nil, frame, nil
+func (p *parser) parseSingleCommand() node {
+	defer un(trace(p, ""))
+	p.skipWhiteSpaces()
+	if p.commandEnd() {
+		return nil
 	}
-	startFrame := frame
-	commandKeyWord, frame := parseCommandKeyWord(frame)
+	commandKeyWord := p.parseCommandKeyWord()
 	if commandKeyWord != "" {
 		if lsIdx := indexOf(lsCommands, commandKeyWord); lsIdx != -1 {
-			return parseLsObj(lsIdx, skipWhiteSpaces(frame))
+			p.skipWhiteSpaces()
+			return p.parseLsObj(lsIdx)
 		}
 		parseFunc, ok := commandDispatch[commandKeyWord]
 		if ok {
-			return parseFunc(skipWhiteSpaces(frame))
+			p.skipWhiteSpaces()
+			return parseFunc()
 		}
 		result, ok := noArgsCommands[commandKeyWord]
 		if ok {
-			return result, frame, nil
+			return result
 		}
 	}
-	_, frame, err := parsePath(frame)
-	ok, _ := parseExact(":", frame)
-	if err == nil && ok {
-		return parseUpdate(startFrame)
+	funcName := p.parseSimpleWord("function name")
+	if funcName != "" && p.commandEnd() {
+		return &funcCallNode{funcName}
 	}
-	return parseCallAlias(startFrame)
+	p.reset()
+	return p.parseUpdate()
 }
 
-func parseCommand(frame Frame) (node, Frame, *ParserError) {
-	if commandDispatch == nil {
-		commandDispatch = map[string]parseCommandFunc{
-			"ls":         parseLs,
-			"get":        parseGet,
-			"getu":       parseGetU,
-			"getslot":    parseGetSlot,
-			"undraw":     parseUndraw,
-			"draw":       parseDraw,
-			"drawable":   parseDrawable,
-			"hc":         parseHc,
-			"unset":      parseUnset,
-			"env":        parseEnv,
-			"+":          parseCreate,
-			"-":          parseDelete,
-			"=":          parseEqual,
-			".var:":      parseVar,
-			".cmds:":     parseLoad,
-			".template:": parseTemplate,
-			"len":        parseLen,
-			"link":       parseLink,
-			"unlink":     parseUnlink,
-			"print":      parsePrint,
-			"man":        parseMan,
-			"cd":         parseCd,
-			"tree":       parseTree,
-			"ui.":        parseUi,
-			"camera.":    parseCamera,
-			">":          parseFocus,
-			"while":      parseWhile,
-			"for":        parseFor,
-			"if":         parseIf,
-			"alias":      parseAlias,
-		}
-		createObjDispatch = map[string]parseCommandFunc{
-			"domain":   parseCreateDomain,
-			"dm":       parseCreateDomain,
-			"site":     parseCreateSite,
-			"si":       parseCreateSite,
-			"bldg":     parseCreateBuilding,
-			"building": parseCreateBuilding,
-			"bd":       parseCreateBuilding,
-			"room":     parseCreateRoom,
-			"ro":       parseCreateRoom,
-			"rack":     parseCreateRack,
-			"rk":       parseCreateRack,
-			"device":   parseCreateDevice,
-			"dv":       parseCreateDevice,
-			"corridor": parseCreateCorridor,
-			"co":       parseCreateCorridor,
-			"group":    parseCreateGroup,
-			"gr":       parseCreateGroup,
-			"orphan":   parseCreateOrphan,
-			"user":     parseCreateUser,
-			"role":     parseAddRole,
-		}
-		noArgsCommands = map[string]node{
-			"selection":    &selectNode{},
-			"clear":        &clrNode{},
-			"grep":         &grepNode{},
-			"lsog":         &lsogNode{},
-			"lsenterprise": &lsenterpriseNode{},
-			"pwd":          &pwdNode{},
-			"exit":         &exitNode{},
-			"changepw":     &changePasswordNode{},
-		}
+func (p *parser) parseCommand(name string) node {
+	defer un(trace(p, name))
+	commandDispatch = map[string]parseCommandFunc{
+		"ls":         p.parseLs,
+		"get":        p.parseGet,
+		"getu":       p.parseGetU,
+		"getslot":    p.parseGetSlot,
+		"undraw":     p.parseUndraw,
+		"draw":       p.parseDraw,
+		"drawable":   p.parseDrawable,
+		"unset":      p.parseUnset,
+		"env":        p.parseEnv,
+		"+":          p.parseCreate,
+		"-":          p.parseDelete,
+		"=":          p.parseEqual,
+		".var:":      p.parseVar,
+		".cmds:":     p.parseLoad,
+		".template:": p.parseTemplate,
+		"len":        p.parseLen,
+		"link":       p.parseLink,
+		"unlink":     p.parseUnlink,
+		"print":      p.parsePrint,
+		"printf":     p.parsePrintf,
+		"man":        p.parseMan,
+		"cd":         p.parseCd,
+		"tree":       p.parseTree,
+		"ui.":        p.parseUi,
+		"camera.":    p.parseCamera,
+		">":          p.parseFocus,
+		"while":      p.parseWhile,
+		"for":        p.parseFor,
+		"if":         p.parseIf,
+		"alias":      p.parseAlias,
+	}
+	createObjDispatch = map[string]parseCommandFunc{
+		"domain":   p.parseCreateDomain,
+		"dm":       p.parseCreateDomain,
+		"site":     p.parseCreateSite,
+		"si":       p.parseCreateSite,
+		"bldg":     p.parseCreateBuilding,
+		"building": p.parseCreateBuilding,
+		"bd":       p.parseCreateBuilding,
+		"room":     p.parseCreateRoom,
+		"ro":       p.parseCreateRoom,
+		"rack":     p.parseCreateRack,
+		"rk":       p.parseCreateRack,
+		"device":   p.parseCreateDevice,
+		"dv":       p.parseCreateDevice,
+		"corridor": p.parseCreateCorridor,
+		"co":       p.parseCreateCorridor,
+		"group":    p.parseCreateGroup,
+		"gr":       p.parseCreateGroup,
+		"orphan":   p.parseCreateOrphan,
+		"user":     p.parseCreateUser,
+		"role":     p.parseAddRole,
+	}
+	noArgsCommands = map[string]node{
+		"selection":    &selectNode{},
+		"clear":        &clrNode{},
+		"grep":         &grepNode{},
+		"lsog":         &lsogNode{},
+		"lsenterprise": &lsenterpriseNode{},
+		"pwd":          &pwdNode{},
+		"exit":         &exitNode{},
+		"changepw":     &changePasswordNode{},
 	}
 	commands := []node{}
 	var command node
-	var err *ParserError
-	var ok bool
 	for {
-		command, frame, err = parseSingleCommand(frame)
-		if err != nil {
-			return nil, frame, err.extend(frame, "command")
-		}
+		command = p.parseSingleCommand()
 		commands = append(commands, command)
-		frame = skipWhiteSpaces(frame)
-		ok, frame = parseExact(";", frame)
-		if !ok {
+		p.skipWhiteSpaces()
+		if !p.parseExact(";") {
 			if len(commands) > 1 {
-				return &ast{commands}, frame, nil
+				return &ast{commands}
 			}
-			return command, frame, nil
+			return command
 		}
-		frame = skipWhiteSpaces(frame)
+		p.skipWhiteSpaces()
 	}
 }
 
-func Parse(buffer string) (node, error) {
+func newParser(buffer string) *parser {
+	return &parser{
+		buf:        buffer,
+		stackTrace: []traceItem{},
+	}
+}
+
+func Parse(buffer string) (n node, err error) {
 	commentIdx := strings.Index(buffer, "//")
 	if commentIdx != -1 {
 		buffer = buffer[:commentIdx]
 	}
-	frame := newFrame(buffer)
-	node, frame, err := parseCommand(frame)
-	if err != nil {
-		return nil, err
+	p := newParser(buffer)
+	defer func() {
+		r := recover()
+		if r != nil {
+			err = fmt.Errorf(r.(string))
+		}
+	}()
+	n = p.parseCommand("")
+	if !p.commandEnd() {
+		p.error("unexpected character")
 	}
-	if frame.start != frame.end {
-		return nil, newParserError(frame, "unexpected characters")
-	}
-	return node, nil
+	return n, nil
 }
