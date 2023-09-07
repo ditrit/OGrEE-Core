@@ -335,8 +335,11 @@ func (p *parser) parsePathGroup() []node {
 	paths := []node{}
 	p.skipWhiteSpaces()
 	p.expect("{")
+	p.skipWhiteSpaces()
+	if p.parseExact("}") {
+		return paths
+	}
 	for {
-		p.skipWhiteSpaces()
 		paths = append(paths, p.parsePath(""))
 		p.skipWhiteSpaces()
 		if p.parseExact("}") {
