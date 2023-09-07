@@ -5,6 +5,7 @@ import (
 	c "cli/controllers"
 	l "cli/logger"
 	"cli/readline"
+	"fmt"
 	"os"
 	"strings"
 )
@@ -38,7 +39,7 @@ func main() {
 		println(err.Error())
 		return
 	} else {
-		println("Successfully connected")
+		fmt.Printf("Successfully connected to %s\n", c.State.APIURL)
 	}
 	c.State.User = *user
 	c.InitKey(apiKey)
