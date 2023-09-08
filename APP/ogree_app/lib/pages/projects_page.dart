@@ -137,18 +137,22 @@ class _ProjectsPageState extends State<ProjectsPage> {
             switch (result) {
               case Success(value: final value):
                 List<DockerContainer> dockerInfo = value;
-                int runCount = 0;
-                for (var container in dockerInfo) {
-                  if (container.status.contains("run")) {
-                    runCount++;
-                  }
-                }
-                if (runCount == dockerInfo.length) {
-                  tenant.status = TenantStatus.running;
-                } else if (runCount > 0) {
-                  tenant.status = TenantStatus.partialRun;
+                if (dockerInfo.isEmpty) {
+                  tenant.status = TenantStatus.unavailable;
                 } else {
-                  tenant.status = TenantStatus.notRunning;
+                  int runCount = 0;
+                  for (var container in dockerInfo) {
+                    if (container.status.contains("run")) {
+                      runCount++;
+                    }
+                  }
+                  if (runCount == dockerInfo.length) {
+                    tenant.status = TenantStatus.running;
+                  } else if (runCount > 0) {
+                    tenant.status = TenantStatus.partialRun;
+                  } else {
+                    tenant.status = TenantStatus.notRunning;
+                  }
                 }
               case Failure():
                 tenant.status = TenantStatus.unavailable;
