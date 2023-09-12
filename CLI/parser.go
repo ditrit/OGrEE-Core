@@ -8,12 +8,8 @@ import (
 
 type parseCommandFunc func() node
 
-var commandDispatch map[string]parseCommandFunc
-var createObjDispatch map[string]parseCommandFunc
-
 var lsCommands = []string{"lssite", "lsbldg", "lsroom", "lsrack", "lsdev", "lsac",
 	"lspanel", "lscabinet", "lscorridor", "lssensor"}
-var noArgsCommands map[string]node
 
 var manCommands = []string{
 	"get", "getu", "getslot",
@@ -30,6 +26,9 @@ var manCommands = []string{
 }
 
 func sliceContains(slice []string, s string) bool {
+	if slice == nil {
+		return false
+	}
 	for _, str := range slice {
 		if str == s {
 			return true
@@ -53,12 +52,15 @@ type traceItem struct {
 }
 
 type parser struct {
-	buf         string
-	stackTrace  []traceItem
-	startCursor int
-	cursor      int
-	err         string
-	tok         token
+	buf               string
+	stackTrace        []traceItem
+	startCursor       int
+	cursor            int
+	err               string
+	tok               token
+	commandDispatch   map[string]parseCommandFunc
+	createObjDispatch map[string]parseCommandFunc
+	noArgsCommands    map[string]node
 }
 
 func un(p *parser) {
@@ -100,13 +102,6 @@ func (p *parser) item(trim bool) string {
 		return strings.Trim(s, " ")
 	}
 	return s
-}
-
-func (p *parser) remaining() string {
-	if p.cursor >= len(p.buf) {
-		return ""
-	}
-	return p.buf[p.cursor:]
 }
 
 func (p *parser) peek() byte {
@@ -559,8 +554,8 @@ func (p *parser) parseSingleArg(allowedArgs []string, allowedFlags []string) (st
 	return arg, value
 }
 
-func (p *parser) parseArgs(allowedArgs []string, allowedFlags []string) map[string]string {
-	defer un(trace(p, "args"))
+func (p *parser) parseArgs(allowedArgs []string, allowedFlags []string, name string) map[string]string {
+	defer un(trace(p, name+" arguments"))
 	args := map[string]string{}
 	p.skipWhiteSpaces()
 	for {
@@ -589,14 +584,9 @@ func (p *parser) parseIndexing() node {
 	return index
 }
 
-func (p *parser) parseLsObjArguments() map[string]string {
-	defer un(trace(p, "lsobj arguments"))
-	return p.parseArgs([]string{"s", "f"}, []string{"r"})
-}
-
 func (p *parser) parseLsObj(lsIdx int) node {
 	defer un(trace(p, ""))
-	args := p.parseLsObjArguments()
+	args := p.parseArgs([]string{"s", "f"}, []string{"r"}, "lsobj")
 	path := p.parsePath("")
 	_, recursive := args["r"]
 	sort := args["s"]
@@ -607,14 +597,9 @@ func (p *parser) parseLsObj(lsIdx int) node {
 	return &lsObjNode{path, lsIdx, recursive, sort, attrList}
 }
 
-func (p *parser) parseLsArguments() map[string]string {
-	defer un(trace(p, "ls arguments"))
-	return p.parseArgs([]string{"s", "f"}, []string{"r"})
-}
-
 func (p *parser) parseLs() node {
 	defer un(trace(p, "ls"))
-	args := p.parseLsArguments()
+	args := p.parseArgs([]string{"s"}, nil, "ls")
 	path := p.parsePath("")
 	if attr, ok := args["s"]; ok {
 		return &lsAttrNode{path, attr}
@@ -645,14 +630,9 @@ func (p *parser) parseUndraw() node {
 	return &undrawNode{p.parsePath("")}
 }
 
-func (p *parser) parseDrawArgs() map[string]string {
-	defer un(trace(p, "draw args"))
-	return p.parseArgs([]string{}, []string{"f"})
-}
-
 func (p *parser) parseDraw() node {
 	defer un(trace(p, "draw"))
-	args := p.parseDrawArgs()
+	args := p.parseArgs([]string{}, []string{"f"}, "draw")
 	_, force := args["f"]
 	path := p.parsePath("")
 	depth := 0
@@ -674,7 +654,7 @@ func (p *parser) parseDrawable() node {
 
 func (p *parser) parseUnset() node {
 	defer un(trace(p, "unset"))
-	args := p.parseArgs([]string{"f", "v"}, []string{})
+	args := p.parseArgs([]string{"f", "v"}, []string{}, "unset")
 	if len(args) == 0 {
 		path := p.parsePath("")
 		p.expect(":")
@@ -928,7 +908,7 @@ func (p *parser) parseAlias() node {
 func (p *parser) parseObjType() string {
 	defer un(trace(p, "object type"))
 	candidates := []string{}
-	for command := range createObjDispatch {
+	for command := range p.createObjDispatch {
 		candidates = append(candidates, command)
 	}
 	return p.parseKeyWord(candidates)
@@ -946,7 +926,7 @@ func (p *parser) parseCreate() node {
 	}
 	p.expect(":")
 	p.skipWhiteSpaces()
-	return createObjDispatch[objType]()
+	return p.createObjDispatch[objType]()
 }
 
 func (p *parser) parseCreateDomain() node {
@@ -1105,10 +1085,10 @@ func (p *parser) parseUpdate() node {
 func (p *parser) parseCommandKeyWord() string {
 	defer un(trace(p, "command keyword"))
 	candidates := []string{}
-	for command := range commandDispatch {
+	for command := range p.commandDispatch {
 		candidates = append(candidates, command)
 	}
-	for command := range noArgsCommands {
+	for command := range p.noArgsCommands {
 		candidates = append(candidates, command)
 	}
 	candidates = append(candidates, lsCommands...)
@@ -1127,12 +1107,12 @@ func (p *parser) parseSingleCommand() node {
 			p.skipWhiteSpaces()
 			return p.parseLsObj(lsIdx)
 		}
-		parseFunc, ok := commandDispatch[commandKeyWord]
+		parseFunc, ok := p.commandDispatch[commandKeyWord]
 		if ok {
 			p.skipWhiteSpaces()
 			return parseFunc()
 		}
-		result, ok := noArgsCommands[commandKeyWord]
+		result, ok := p.noArgsCommands[commandKeyWord]
 		if ok {
 			return result
 		}
@@ -1147,7 +1127,28 @@ func (p *parser) parseSingleCommand() node {
 
 func (p *parser) parseCommand(name string) node {
 	defer un(trace(p, name))
-	commandDispatch = map[string]parseCommandFunc{
+	commands := []node{}
+	var command node
+	for {
+		command = p.parseSingleCommand()
+		commands = append(commands, command)
+		p.skipWhiteSpaces()
+		if !p.parseExact(";") {
+			if len(commands) > 1 {
+				return &ast{commands}
+			}
+			return command
+		}
+		p.skipWhiteSpaces()
+	}
+}
+
+func newParser(buffer string) *parser {
+	p := &parser{
+		buf:        buffer,
+		stackTrace: []traceItem{},
+	}
+	p.commandDispatch = map[string]parseCommandFunc{
 		"ls":         p.parseLs,
 		"get":        p.parseGet,
 		"getu":       p.parseGetU,
@@ -1179,7 +1180,7 @@ func (p *parser) parseCommand(name string) node {
 		"if":         p.parseIf,
 		"alias":      p.parseAlias,
 	}
-	createObjDispatch = map[string]parseCommandFunc{
+	p.createObjDispatch = map[string]parseCommandFunc{
 		"domain":   p.parseCreateDomain,
 		"dm":       p.parseCreateDomain,
 		"site":     p.parseCreateSite,
@@ -1201,7 +1202,7 @@ func (p *parser) parseCommand(name string) node {
 		"user":     p.parseCreateUser,
 		"role":     p.parseAddRole,
 	}
-	noArgsCommands = map[string]node{
+	p.noArgsCommands = map[string]node{
 		"selection":    &selectNode{},
 		"clear":        &clrNode{},
 		"grep":         &grepNode{},
@@ -1211,27 +1212,7 @@ func (p *parser) parseCommand(name string) node {
 		"exit":         &exitNode{},
 		"changepw":     &changePasswordNode{},
 	}
-	commands := []node{}
-	var command node
-	for {
-		command = p.parseSingleCommand()
-		commands = append(commands, command)
-		p.skipWhiteSpaces()
-		if !p.parseExact(";") {
-			if len(commands) > 1 {
-				return &ast{commands}
-			}
-			return command
-		}
-		p.skipWhiteSpaces()
-	}
-}
-
-func newParser(buffer string) *parser {
-	return &parser{
-		buf:        buffer,
-		stackTrace: []traceItem{},
-	}
+	return p
 }
 
 func Parse(buffer string) (n node, err error) {

@@ -10,6 +10,13 @@ import (
 	c "cli/controllers"
 )
 
+func (p *parser) remaining() string {
+	if p.cursor >= len(p.buf) {
+		return ""
+	}
+	return p.buf[p.cursor:]
+}
+
 func recoverFunc(t *testing.T) {
 	if r := recover(); r != nil {
 		t.Errorf("Error while parsing : %s\n%s", r, string(debug.Stack()))
@@ -83,7 +90,7 @@ func TestParseWordSingleLetter(t *testing.T) {
 func TestParseArgs(t *testing.T) {
 	defer recoverFunc(t)
 	p := newParser("-a 42 -v -f -s dazd coucou.plouf")
-	args := p.parseArgs([]string{"a", "s"}, []string{"v", "f"})
+	args := p.parseArgs([]string{"a", "s"}, []string{"v", "f"}, "")
 	if p.cursor != 20 {
 		t.Errorf("wrong end position for left arguments : %d", p.cursor)
 		return
@@ -93,7 +100,7 @@ func TestParseArgs(t *testing.T) {
 		return
 	}
 	p = newParser(" -f toto.tata")
-	args = p.parseArgs([]string{}, []string{"f"})
+	args = p.parseArgs([]string{}, []string{"f"}, "")
 	if !reflect.DeepEqual(args, map[string]string{"f": ""}) {
 		t.Errorf("wrong args returned : %v", args)
 		return
