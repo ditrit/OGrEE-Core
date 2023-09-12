@@ -114,7 +114,7 @@ func login(c *gin.Context) {
 }
 
 func getVersion(c *gin.Context) {
-	response := map[string]any{"version": "1.0", "isKubernetes": true}
+	response := map[string]any{"version": "1.0", "isKubernetes": false}
 	c.IndentedJSON(http.StatusOK, response)
 }
 

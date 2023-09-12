@@ -6,6 +6,7 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"net/url"
 	"os"
 	"strings"
 	"time"
@@ -56,7 +57,7 @@ func init() {
 			dbHost, dbPort)
 	} else {
 		dbUri = fmt.Sprintf("mongodb://ogree%sAdmin:%s@%s:%s/%s?readPreference=primary&authSource=%s",
-			user, pass, dbHost, dbPort, dbName, dbName)
+			user, url.QueryEscape(pass), dbHost, dbPort, dbName, dbName)
 	}
 
 	fmt.Println(dbUri)
