@@ -11,6 +11,15 @@ inputs:
   VERSION: 
     description: "Version given to docker image"
     required: true
+  TEAM_DOCKER_URL:
+    description: "docker url"
+    required: true
+  TEAM_USERNAME:
+    description: "docker username"
+    required: true
+  TEAM_PASSWORD:
+    description: "docker password"
+    required: true
 
 runs:
   using: "composite"
@@ -24,21 +33,21 @@ runs:
       if: ${{ !contains('dependabot', github.ref) }}
       uses: docker/login-action@v2
       with:
-        registry: ${{ secrets.TEAM_DOCKER_URL }}
-        username: ${{ secrets.TEAM_USERNAME }}
-        password: ${{ secrets.TEAM_PASSWORD }}
+        registry: ${{ inputs.TEAM_DOCKER_URL }}
+        username: ${{ inputs.TEAM_USERNAME }}
+        password: ${{ inputs.TEAM_PASSWORD }}
 
     - name: 🐋🏗️ Build & Tag Docker images
       if: ${{ !contains('dependabot', github.ref) }}
       shell: bash
       run: |
-        docker build -f Dockerfile -t ${{ inputs.IMAGE_NAME }}:latest ${{ inputs.FOLDER_NAME }}
-        docker tag ${{ inputs.IMAGE_NAME }}:latest ${{ secrets.TEAM_DOCKER_URL }}/${{ inputs.IMAGE_NAME }}:latest
-        docker tag ${{ inputs.IMAGE_NAME }}:latest ${{ secrets.TEAM_DOCKER_URL }}/${{ inputs.IMAGE_NAME }}:${{ inputs.VERSION }}
+        docker build -t ${{ inputs.IMAGE_NAME }}:latest ${{ inputs.FOLDER_NAME }}
+        docker tag ${{ inputs.IMAGE_NAME }}:latest ${{ inputs.TEAM_DOCKER_URL }}/${{ inputs.IMAGE_NAME }}:latest
+        docker tag ${{ inputs.IMAGE_NAME }}:latest ${{ inputs.TEAM_DOCKER_URL }}/${{ inputs.IMAGE_NAME }}:${{ inputs.VERSION }}
 
     - name: 🐋⬆️ Push Docker images
       if: ${{ !contains('dependabot', github.ref) }}
       shell: bash
       run: |
-        docker push ${{ secrets.TEAM_DOCKER_URL }}/${{ inputs.IMAGE_NAME }}:latest
-        docker push ${{ secrets.TEAM_DOCKER_URL }}/${{ inputs.IMAGE_NAME }}:${{ inputs.VERSION }}
+        docker push ${{ inputs.TEAM_DOCKER_URL }}/${{ inputs.IMAGE_NAME }}:latest
+        docker push ${{ inputs.TEAM_DOCKER_URL }}/${{ inputs.IMAGE_NAME }}:${{ inputs.VERSION }}

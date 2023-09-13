@@ -23,6 +23,14 @@ func getFloat(unk interface{}) (float64, error) {
 }
 
 func valToFloat(val any, name string) (float64, error) {
+	stringVal, isString := val.(string)
+	if isString {
+		floatVal, err := strconv.ParseFloat(stringVal, 64)
+		if err != nil {
+			return 0, fmt.Errorf("%s should be a number", name)
+		}
+		return floatVal, nil
+	}
 	v, err := getFloat(val)
 	if err != nil {
 		return 0, fmt.Errorf("%s should be a number", name)
@@ -50,19 +58,24 @@ func stringToNum(s string) (any, error) {
 	return nil, fmt.Errorf("the string is not a number")
 }
 
+func valToNum(val any, name string) (any, error) {
+	stringVal, isString := val.(string)
+	if isString {
+		numVal, err := stringToNum(stringVal)
+		if err != nil {
+			return nil, fmt.Errorf("%s should be a number", name)
+		}
+		return numVal, nil
+	}
+	return val, nil
+}
+
 func nodeToNum(n node, name string) (any, error) {
 	val, err := n.execute()
 	if err != nil {
 		return nil, err
 	}
-	stringVal, isString := val.(string)
-	if isString {
-		val, err = stringToNum(stringVal)
-		if err != nil {
-			return nil, fmt.Errorf("%s should be a number", name)
-		}
-	}
-	return val, nil
+	return valToNum(val, name)
 }
 
 func valToInt(val any, name string) (int, error) {
@@ -113,6 +126,39 @@ func nodeToBool(n node, name string) (bool, error) {
 	return valToBool(val, name)
 }
 
+func valTo3dRotation(val any) ([]float64, error) {
+	switch rotation := val.(type) {
+	case []float64:
+		return rotation, nil
+	case string:
+		switch rotation {
+		case "front":
+			return []float64{0, 0, 180}, nil
+		case "rear":
+			return []float64{0, 0, 0}, nil
+		case "left":
+			return []float64{0, 90, 0}, nil
+		case "right":
+			return []float64{0, -90, 0}, nil
+		case "top":
+			return []float64{90, 0, 0}, nil
+		case "bottom":
+			return []float64{-90, 0, 0}, nil
+		}
+	}
+	return nil, fmt.Errorf(
+		`rotation should be a vector3, or one of the following keywords :
+		front, rear, left, right, top, bottom`)
+}
+
+func nodeTo3dRotation(n node) ([]float64, error) {
+	val, err := n.execute()
+	if err != nil {
+		return nil, err
+	}
+	return valTo3dRotation(val)
+}
+
 func valToString(val any, name string) (string, error) {
 	intVal, isInt := val.(int)
 	if isInt {
@@ -150,6 +196,7 @@ func nodeToVec(n node, size int, name string) ([]float64, error) {
 	if err != nil {
 		return nil, err
 	}
+
 	return valToVec(val, size, name)
 }
 

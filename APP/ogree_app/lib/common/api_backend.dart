@@ -22,6 +22,9 @@ String tenantName = "";
 bool isTenantAdmin = false;
 var token = "";
 var tenantToken = "";
+BackendType backendType = BackendType.tenant;
+
+enum BackendType { docker, kubernetes, tenant, unavailable }
 
 // Helper Functions
 getHeader(token) => {
@@ -78,6 +81,10 @@ Future<Result<List<String>, Exception>> loginAPI(String email, String password,
         tenantUrl = apiUrl;
         tenantToken = token;
       }
+      if (data["isKubernetes"] == true) {
+        // is Kubernetes API
+        backendType = BackendType.kubernetes;
+      }
       return Success([data["email"].toString(), data["isTenant"] ?? ""]);
     } else {
       return Failure(Exception());
@@ -87,24 +94,45 @@ Future<Result<List<String>, Exception>> loginAPI(String email, String password,
   }
 }
 
-Future<bool> fetchApiTenantName({http.Client? client}) async {
+Future<Result<BackendType, Exception>> fetchApiVersion(String urlApi,
+    {http.Client? client}) async {
   print("API get TenantName");
   client ??= http.Client();
   try {
-    Uri url = Uri.parse('$apiUrl/api/version');
+    Uri url = Uri.parse('$urlApi/api/version');
     final response = await client.get(url, headers: getHeader(token));
     print(response.statusCode);
     if (response.statusCode == 200) {
       Map<String, dynamic> data = json.decode(response.body);
-      data = (Map<String, dynamic>.from(data["data"]));
-      tenantName = data["Customer"];
-      print(tenantName);
-      return true;
+      if (data["isKubernetes"] != null) {
+        if (data["isKubernetes"] == true) {
+          backendType = BackendType.kubernetes;
+          return Success(BackendType.kubernetes);
+        } else {
+          backendType = BackendType.docker;
+          return Success(BackendType.docker);
+        }
+      } else {
+        data = (Map<String, dynamic>.from(data["data"]));
+        if (data.isNotEmpty || data["Customer"] != null) {
+          tenantName = data["Customer"];
+          backendType = BackendType.tenant;
+          print(tenantName);
+          return Success(BackendType.tenant);
+        } else {
+          backendType = BackendType.unavailable;
+          return Success(BackendType.unavailable);
+        }
+      }
+    } else if (response.statusCode == 403) {
+      backendType = BackendType.tenant;
+      return Success(BackendType.tenant);
+    } else {
+      return Failure(Exception("Unable to get version from server"));
     }
   } on Exception catch (e) {
-    print(e);
+    return Failure(e);
   }
-  return false;
 }
 
 Future<Result<void, Exception>> changeUserPassword(
@@ -348,7 +376,7 @@ Future<Result<void, Exception>> createProject(Project project) async {
 
 Future<Result<(List<Tenant>, List<DockerContainer>), Exception>>
     fetchApplications({http.Client? client}) async {
-  print("API get Tenants");
+  print("API get Apps");
   client ??= http.Client();
   try {
     Uri url = Uri.parse('$apiUrl/api/apps');
@@ -564,10 +592,33 @@ Future<Result<void, Exception>> createNetbox(Netbox netbox) async {
   }
 }
 
-Future<Result<void, Exception>> deleteNetbox() async {
+Future<Result<void, Exception>> createOpenDcim(
+    String dcimPort, adminerPort) async {
+  print("API create OpenDCIM");
+  try {
+    Uri url = Uri.parse('$apiUrl/api/tools/opendcim');
+    final response = await http.post(url,
+        body: json.encode(<String, dynamic>{
+          'dcimPort': dcimPort,
+          'adminerPort': adminerPort,
+        }),
+        headers: getHeader(token));
+    print(response);
+    if (response.statusCode == 200) {
+      return const Success(null);
+    } else {
+      String data = json.decode(response.body);
+      return Failure(Exception("Error creating netbox $data"));
+    }
+  } on Exception catch (e) {
+    return Failure(e);
+  }
+}
+
+Future<Result<void, Exception>> deleteTool(String tool) async {
   print("API delete Netbox");
   try {
-    Uri url = Uri.parse('$apiUrl/api/tools/netbox');
+    Uri url = Uri.parse('$apiUrl/api/tools/$tool');
     final response = await http.delete(url, headers: getHeader(token));
     print(response);
     if (response.statusCode == 200) {

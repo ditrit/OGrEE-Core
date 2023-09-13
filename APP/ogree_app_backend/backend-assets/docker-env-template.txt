@@ -1,4 +1,4 @@
-CORE_DIR=https://github.com/ditrit/OGrEE-Core.git#{{.ImageTag}}
+CORE_DIR=https://github.com/ditrit/OGrEE-Core.git#{{.ImageTag}}:
 API_BUILD_DIR=API
 APP_BUILD_DIR=APP
 API_DOC_UI_PORT={{.DocPort}}

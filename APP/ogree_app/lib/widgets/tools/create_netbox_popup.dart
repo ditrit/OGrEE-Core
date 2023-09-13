@@ -48,7 +48,7 @@ class _CreateNetboxPopupState extends State<CreateNetboxPopup> {
                             children: [
                               Center(
                                   child: Text(
-                                "Créer netbox",
+                                "${localeMsg.create} netbox",
                                 style:
                                     Theme.of(context).textTheme.headlineMedium,
                               )),
@@ -89,7 +89,7 @@ class _CreateNetboxPopupState extends State<CreateNetboxPopup> {
                                   const SizedBox(width: 15),
                                   ElevatedButton.icon(
                                       onPressed: () =>
-                                          submitCreateTenant(localeMsg),
+                                          submitCreateNetbox(localeMsg),
                                       label: Text(localeMsg.create),
                                       icon: _isLoading
                                           ? Container(
@@ -116,7 +116,7 @@ class _CreateNetboxPopupState extends State<CreateNetboxPopup> {
     );
   }
 
-  submitCreateTenant(AppLocalizations localeMsg) async {
+  submitCreateNetbox(AppLocalizations localeMsg) async {
     if (_formKey.currentState!.validate()) {
       _formKey.currentState!.save();
       setState(() {

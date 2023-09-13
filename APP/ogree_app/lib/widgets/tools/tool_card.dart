@@ -7,15 +7,19 @@ import 'package:ogree_app/common/popup_dialog.dart';
 import 'package:ogree_app/common/snackbar.dart';
 import 'package:ogree_app/common/theme.dart';
 import 'package:ogree_app/models/container.dart';
+import 'package:ogree_app/models/netbox.dart';
 import 'package:ogree_app/widgets/delete_dialog_popup.dart';
-import 'package:ogree_app/widgets/tenants/tenant_card.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class ToolCard extends StatelessWidget {
+  final Tools type;
   final DockerContainer container;
   final Function parentCallback;
   const ToolCard(
-      {Key? key, required this.container, required this.parentCallback});
+      {Key? key,
+      required this.type,
+      required this.container,
+      required this.parentCallback});
 
   @override
   Widget build(BuildContext context) {
@@ -41,21 +45,25 @@ class ToolCard extends StatelessWidget {
                     height: 24,
                     child: Badge(
                       backgroundColor: Colors.green.shade600,
-                      label: const Text(" NETBOX "),
+                      label: this.type == Tools.opendcim
+                          ? Text(" OpenDCIM ")
+                          : Text(" NETBOX "),
                     ),
                   ),
-                  CircleAvatar(
-                    radius: 13,
-                    child: IconButton(
-                        splashRadius: 18,
-                        iconSize: 14,
-                        padding: const EdgeInsets.all(2),
-                        onPressed: () =>
-                            showCustomPopup(context, const ImportNetboxPopup()),
-                        icon: const Icon(
-                          Icons.upload,
-                        )),
-                  ),
+                  this.type == Tools.opendcim
+                      ? Container()
+                      : CircleAvatar(
+                          radius: 13,
+                          child: IconButton(
+                              splashRadius: 18,
+                              iconSize: 14,
+                              padding: const EdgeInsets.all(2),
+                              onPressed: () => showCustomPopup(
+                                  context, const ImportNetboxPopup()),
+                              icon: const Icon(
+                                Icons.upload,
+                              )),
+                        ),
                 ],
               ),
               const SizedBox(height: 1),
@@ -71,7 +79,7 @@ class ToolCard extends StatelessWidget {
                 children: [
                   const Padding(
                     padding: EdgeInsets.only(bottom: 2.0),
-                    child: Text("Ports:"),
+                    child: Text("URL:"),
                   ),
                   Text(
                     container.ports,
@@ -95,7 +103,7 @@ class ToolCard extends StatelessWidget {
                             DeleteDialog(
                               objName: [container.name],
                               parentCallback: parentCallback,
-                              objType: "netbox",
+                              objType: type.name,
                             ),
                             isDismissible: true),
                         icon: Icon(

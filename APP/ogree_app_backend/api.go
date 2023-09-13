@@ -18,6 +18,7 @@ var tmplt *template.Template
 var apptmplt *template.Template
 var servertmplt *template.Template
 var netboxtmplt *template.Template
+var opendcimtmplt *template.Template
 var DEPLOY_DIR string
 var DOCKER_DIR string
 
@@ -38,6 +39,7 @@ func init() {
 	apptmplt = template.Must(template.ParseFiles("flutter-assets/flutter-env-template.txt"))
 	servertmplt = template.Must(template.ParseFiles("backend-assets/template.service"))
 	netboxtmplt = template.Must(template.ParseFiles("tools-assets/netbox-docker-template.txt"))
+	opendcimtmplt = template.Must(template.ParseFiles("tools-assets/opendcim-env-template.txt"))
 }
 
 func main() {
@@ -50,9 +52,11 @@ func main() {
 	router.Use(cors.New(corsConfig))
 
 	router.POST("/api/login", login) // public endpoint
+	router.GET("/api/version", getVersion)
 
 	router.Use(auth.JwtAuthMiddleware()) // protected
 	router.GET("/api/apps", getAllApps)
+	// tenants
 	router.GET("/api/tenants", getTenants)
 	router.GET("/api/tenants/:name", getTenantDockerInfo)
 	router.DELETE("/api/tenants/:name", removeTenant)
@@ -61,11 +65,16 @@ func main() {
 	router.PUT("/api/tenants/:name", updateTenant)
 	router.POST("/api/tenants/:name/backup", backupTenantDB)
 	router.GET("/api/containers/:name", getContainerLogs)
+	// server
 	router.POST("/api/servers", createNewBackend)
+	// netbox
 	router.POST("/api/tools/netbox", createNetbox)
 	router.DELETE("/api/tools/netbox", removeNetbox)
 	router.POST("/api/tools/netbox/dump", addNetboxDump)
 	router.POST("/api/tools/netbox/import", importNetboxDump)
+	// opendcim
+	router.POST("/api/tools/opendcim", createOpenDcim)
+	router.DELETE("/api/tools/opendcim", removeOpenDcim)
 
 	router.Run(":" + strconv.Itoa(*port))
 
@@ -104,13 +113,24 @@ func login(c *gin.Context) {
 	}
 }
 
+func getVersion(c *gin.Context) {
+	response := map[string]any{"version": "1.0", "isKubernetes": false}
+	c.IndentedJSON(http.StatusOK, response)
+}
+
 func getAllApps(c *gin.Context) {
 	response := make(map[string]interface{})
 	response["tenants"] = getTenantsFromJSON()
+	response["tools"] = []container{}
 	if netbox, err := getDockerInfo("netbox"); err != nil {
 		println(err.Error())
 	} else {
 		response["tools"] = netbox
+	}
+	if opendcim, err := getDockerInfo("opendcim"); err != nil {
+		println(err.Error())
+	} else {
+		response["tools"] = append(response["tools"].([]container), opendcim...)
 	}
 	c.IndentedJSON(http.StatusOK, response)
 }

@@ -15,6 +15,7 @@
   "optional": "facultatif",
   "reset": "Réinitialiser",
   "close": "Fermer",
+  "unavailable": "Indisponible",
   
   "@welcome": { "description": "Login Page" },
   "welcome": "Bienvenue sur OGrEE",
@@ -127,8 +128,10 @@
   "notCreated" : "Pas créé",
 
   "addServer": "Ajouter nouveau serveur",
+  "addKube": "Ajouter nouveau cluster",
   "selectServer": "Choisir serveur",
   "createServer": "Créer backend dans serveur",
+  "createKube": "Créer cluster Kubernetes",
   "serverPath": "Chemin d'installation (serveur)",
   "portServer": "Porte pour le backend (serveur)",
 
@@ -154,7 +157,15 @@
   "downloadBackup": "Télécharger archive de backup",
   "backupInfoMessage": "Un fichier de backup sera créé dans la machine hôte de ce déploiement Docker.\nSi sélectionné, le fichier sera aussi télécharger dans votre machine.",
 
-  "onlyOneNetbox": "Seul un netbox est possible",
+  "onlyOneTool": "Seul un {tool} est possible",
+  "@onlyOneTool": {
+    "placeholders": {
+      "tool": {
+        "type": "String",
+        "example": "netbox"
+      }
+    }
+  },
   "selectSQL": "Choisir fichier SQL",
   "importNetbox": "Charger la base Netbox",
   "importNetboxOK": "La base a été chargée !",

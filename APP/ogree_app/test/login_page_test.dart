@@ -17,7 +17,7 @@ void main() {
     expect(find.textContaining(msgs["login"]!), findsOneWidget);
   });
 
-  testWidgets('Login Page notifies error if email and/or password empty',
+  testWidgets('Login Page notifies error if mandatory fields are empty',
       (tester) async {
     await tester.pumpWidget(const MyApp());
 
@@ -26,13 +26,15 @@ void main() {
         of: find.textContaining('mail'), matching: find.byType(TextFormField));
     final passwordInput = find.ancestor(
         of: find.text('Mot de passe'), matching: find.byType(TextFormField));
+    final serverInput = find.ancestor(
+        of: find.text('Choisir serveur'), matching: find.byType(TextFormField));
     await tester.ensureVisible(loginButton);
     await tester.pumpAndSettle();
 
     await tester.tap(loginButton);
     await tester.pumpAndSettle();
 
-    expect(find.textContaining('Champ Obligatoire'), findsNWidgets(2));
+    expect(find.textContaining('Champ Obligatoire'), findsNWidgets(3));
 
     await tester.enterText(emailInput, "user@email.com");
     await tester.ensureVisible(loginButton);
@@ -40,17 +42,23 @@ void main() {
     await tester.tap(loginButton);
     await tester.pumpAndSettle();
 
-    expect(find.textContaining('Champ Obligatoire'), findsOneWidget);
+    expect(find.textContaining('Champ Obligatoire'), findsNWidgets(2));
 
     await tester.enterText(emailInput, "");
     await tester.enterText(passwordInput, "password");
     await tester.tap(loginButton);
     await tester.pumpAndSettle();
 
-    expect(find.textContaining('Champ Obligatoire'), findsOneWidget);
+    expect(find.textContaining('Champ Obligatoire'), findsNWidgets(2));
 
     await tester.enterText(emailInput, "user@email.com");
     await tester.enterText(passwordInput, "password");
+    await tester.tap(loginButton);
+    await tester.pumpAndSettle();
+
+    expect(find.textContaining('Champ Obligatoire'), findsNWidgets(1));
+
+    await tester.enterText(serverInput, "http://localhost:8080");
     await tester.tap(loginButton);
     await tester.pumpAndSettle();
 

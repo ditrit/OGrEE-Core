@@ -290,7 +290,7 @@ func (n *deleteObjNode) execute() (interface{}, error) {
 	if err != nil {
 		return nil, err
 	}
-	return cmd.DeleteObj(path), nil
+	return nil, cmd.DeleteObj(path)
 }
 
 type deleteSelectionNode struct{}
@@ -314,6 +314,41 @@ func (n *deleteSelectionNode) execute() (interface{}, error) {
 		fmt.Printf("%d objects could not be deleted :\n%s", notDeleted, errBuilder.String())
 	}
 	return nil, nil
+}
+
+type deletePillarOrSeparatorNode struct {
+	path      node
+	attribute string
+	name      node
+}
+
+func (n *deletePillarOrSeparatorNode) execute() (interface{}, error) {
+	path, err := nodeToString(n.path, "path")
+	if err != nil {
+		return nil, err
+	}
+	name, err := nodeToString(n.name, "name")
+	if err != nil {
+		return nil, err
+	}
+	obj, err := cmd.GetObject(path)
+	if err != nil {
+		return nil, err
+	}
+	attributes := obj["attributes"].(map[string]any)
+	stringMap, _ := attributes[n.attribute+"s"].(string)
+	var ok bool
+	switch n.attribute {
+	case "pillar":
+		stringMap, ok = removeFromStringMap[Pillar](stringMap, name)
+	case "separator":
+		stringMap, ok = removeFromStringMap[Separator](stringMap, name)
+	}
+	if !ok {
+		return nil, fmt.Errorf("%s %s does not exist", n.attribute, name)
+	}
+	attributes[n.attribute+"s"] = stringMap
+	return cmd.UpdateObj(path, map[string]any{"attributes": attributes})
 }
 
 type isEntityDrawableNode struct {
@@ -385,7 +420,14 @@ func (n *selectObjectNode) execute() (interface{}, error) {
 			return nil, err
 		}
 	}
-	return cmd.SetClipBoard(selection)
+	_, err = cmd.SetClipBoard(selection)
+	if err != nil {
+		return nil, err
+	}
+	if len(selection) == 0 {
+		fmt.Println("Selection is now empty")
+	}
+	return nil, nil
 }
 
 func setRoomAreas(path string, values []any) (map[string]any, error) {
@@ -437,63 +479,90 @@ func setLabelFont(path string, values []any) (map[string]any, error) {
 	}
 }
 
+func addToStringMap[T any](stringMap string, key string, val T) string {
+	m := map[string]T{}
+	if stringMap != "" {
+		json.Unmarshal([]byte(stringMap), &m)
+	}
+	m[key] = val
+	mBytes, _ := json.Marshal(m)
+	return string(mBytes)
+}
+
+func removeFromStringMap[T any](stringMap string, key string) (string, bool) {
+	m := map[string]T{}
+	if stringMap != "" {
+		json.Unmarshal([]byte(stringMap), &m)
+	}
+	_, ok := m[key]
+	if !ok {
+		return stringMap, false
+	}
+	delete(m, key)
+	mBytes, _ := json.Marshal(m)
+	return string(mBytes), true
+}
+
+type Separator struct {
+	StartPos []float64 `json:"startPosXYm"`
+	EndPos   []float64 `json:"endPosXYm"`
+	Type     string    `json:"type"`
+}
+
 func addRoomSeparator(path string, values []any) (map[string]any, error) {
-	if len(values) != 3 {
-		return nil, fmt.Errorf("3 values (startPos, endPos, type) expected to add a separator")
+	if len(values) != 4 {
+		return nil, fmt.Errorf("4 values (name, startPos, endPos, type) expected to add a separator")
 	}
-	startPos, err := valToVec(values[0], 2, "startPos")
+	name, err := valToString(values[0], "name")
 	if err != nil {
 		return nil, err
 	}
-	endPos, err := valToVec(values[1], 2, "endPos")
+	startPos, err := valToVec(values[1], 2, "startPos")
 	if err != nil {
 		return nil, err
 	}
-	sepType, err := valToString(values[2], "separator type")
+	endPos, err := valToVec(values[2], 2, "endPos")
 	if err != nil {
 		return nil, err
 	}
-	nextSep := map[string]any{"startPosXYm": startPos, "endPosXYm": endPos, "type": sepType}
+	sepType, err := valToString(values[3], "separator type")
+	if err != nil {
+		return nil, err
+	}
 	obj, err := cmd.GetObject(path)
 	if err != nil {
 		return nil, err
 	}
 	attr := obj["attributes"].(map[string]any)
-	var sepArray []any
-	separators := attr["separators"]
-	if IsInfArr(separators) {
-		sepArray = separators.([]any)
-		sepArray = append(sepArray, nextSep)
-		sepArrStr, _ := json.Marshal(&sepArray)
-		attr["separators"] = string(sepArrStr)
-	} else {
-		var sepStr string
-		nextSepStr, _ := json.Marshal(nextSep)
-		if IsString(separators) && separators != "" && separators != "[]" {
-			sepStr = separators.(string)
-			size := len(sepStr)
-			sepStr = sepStr[:size-1] + "," + string(nextSepStr) + "]"
-		} else {
-			sepStr = "[" + string(nextSepStr) + "]"
-		}
-		attr["separators"] = sepStr
-	}
+	separators, _ := attr["separators"].(string)
+	newSeparator := Separator{startPos, endPos, sepType}
+	attr["separators"] = addToStringMap[Separator](separators, name, newSeparator)
 	return cmd.UpdateObj(path, map[string]any{"attributes": attr})
 }
 
+type Pillar struct {
+	CenterXY []float64 `json:"centerXY"`
+	SizeXY   []float64 `json:"sizeXY"`
+	Rotation float64   `json:"rotation"`
+}
+
 func addRoomPillar(path string, values []any) (map[string]any, error) {
-	if len(values) != 2 {
-		return nil, fmt.Errorf("2 values (centerXY, sizeXY) expected to add a pillar")
+	if len(values) != 4 {
+		return nil, fmt.Errorf("4 values (name, centerXY, sizeXY, rotation) expected to add a pillar")
 	}
-	centerXY, err := valToVec(values[0], 2, "centerXY")
+	name, err := valToString(values[0], "name")
 	if err != nil {
 		return nil, err
 	}
-	sizeXY, err := valToVec(values[0], 2, "sizeXY")
+	centerXY, err := valToVec(values[1], 2, "centerXY")
 	if err != nil {
 		return nil, err
 	}
-	rotation, err := valToFloat(values[2], "rotation")
+	sizeXY, err := valToVec(values[2], 2, "sizeXY")
+	if err != nil {
+		return nil, err
+	}
+	rotation, err := valToFloat(values[3], "rotation")
 	if err != nil {
 		return nil, err
 	}
@@ -501,33 +570,11 @@ func addRoomPillar(path string, values []any) (map[string]any, error) {
 	if err != nil {
 		return nil, err
 	}
-	var pillarArray []any
 	attr := obj["attributes"].(map[string]any)
-	pillars := attr["pillars"]
-
-	if IsInfArr(pillars) {
-		pillarArray = pillars.([]any)
-		pillarArray = append(pillarArray, map[string]any{
-			"centerXY": centerXY, "sizeXY": sizeXY, "rotation": rotation})
-
-		pillarArrStr, _ := json.Marshal(&pillarArray)
-		attr["pillars"] = string(pillarArrStr)
-	} else {
-		var pillStr string
-		nextPill := map[string]any{
-			"centerXY": centerXY, "sizeXY": sizeXY, "rotation": rotation}
-
-		nextPillStr, _ := json.Marshal(nextPill)
-		if IsString(pillars) && pillars != "" && pillars != "[]" {
-			pillStr = pillars.(string)
-			size := len(pillStr)
-			pillStr = pillStr[:size-1] + "," + string(nextPillStr) + "]"
-		} else {
-			pillStr = "[" + string(nextPillStr) + "]"
-		}
-		attr["pillars"] = pillStr
-	}
-	return attr, nil
+	pillars, _ := attr["pillars"].(string)
+	newPillar := Pillar{centerXY, sizeXY, rotation}
+	attr["pillars"] = addToStringMap[Pillar](pillars, name, newPillar)
+	return cmd.UpdateObj(path, map[string]any{"attributes": attr})
 }
 
 func parseDescriptionIdx(desc string) (int, error) {
@@ -603,16 +650,15 @@ func (n *updateObjNode) execute() (interface{}, error) {
 		paths = []string{path}
 	}
 	for _, path := range paths {
+		var err error
 		switch n.attr {
 		case "content", "alpha", "tilesName", "tilesColor", "U", "slots", "localCS":
-			boolVal, err := valToBool(values[0], n.attr)
+			var boolVal bool
+			boolVal, err = valToBool(values[0], n.attr)
 			if err != nil {
 				return nil, err
 			}
-			return nil, cmd.InteractObject(path, n.attr, boolVal, n.hasSharpe)
-		}
-		var err error
-		switch n.attr {
+			err = cmd.InteractObject(path, n.attr, boolVal, n.hasSharpe)
 		case "areas":
 			_, err = setRoomAreas(path, values)
 		case "label":
@@ -629,6 +675,9 @@ func (n *updateObjNode) execute() (interface{}, error) {
 			if strings.HasPrefix(n.attr, "description") {
 				_, err = updateDescription(path, n.attr, values)
 			} else {
+				if len(values) > 1 {
+					return nil, fmt.Errorf("attributes can only be assigned a single value")
+				}
 				attributes := map[string]any{n.attr: values[0]}
 				_, err = cmd.UpdateObj(path, map[string]any{"attributes": attributes})
 			}
@@ -801,10 +850,12 @@ func (n *selectChildrenNode) execute() (interface{}, error) {
 	if err != nil {
 		return nil, err
 	}
-	if cmd.State.DebugLvl > cmd.NONE {
-		println("Selection made!")
-	}
+	if len(paths) == 0 {
+		fmt.Println("Selection is now empty")
 
+	} else if cmd.State.DebugLvl > cmd.NONE {
+		fmt.Println("Selection made")
+	}
 	return v, nil
 }
 
@@ -1009,8 +1060,9 @@ func (n *createRoomNode) execute() (interface{}, error) {
 type createRackNode struct {
 	path           node
 	pos            node
+	unit           node
+	rotation       node
 	sizeOrTemplate node
-	orientation    node
 }
 
 func (n *createRackNode) execute() (interface{}, error) {
@@ -1025,11 +1077,16 @@ func (n *createRackNode) execute() (interface{}, error) {
 	if len(pos) != 2 && len(pos) != 3 {
 		return nil, fmt.Errorf("position should be a vector2 or a vector3")
 	}
-	orientation, err := nodeToString(n.orientation, "orientation")
+	unit, err := nodeToString(n.unit, "unit")
 	if err != nil {
 		return nil, err
 	}
-	attributes := map[string]any{"posXYZ": pos, "orientation": orientation}
+	attributes := map[string]any{"posXYZ": pos, "posXYUnit": unit}
+	rotation, err := nodeTo3dRotation(n.rotation)
+	if err != nil {
+		return nil, err
+	}
+	attributes["rotation"] = rotation
 	sizeOrTemplateAny, err := n.sizeOrTemplate.execute()
 	if err != nil {
 		return nil, err
@@ -1077,7 +1134,7 @@ func (n *createDeviceNode) execute() (interface{}, error) {
 		return nil, err
 	}
 	sizeU, err := valToInt(sizeUOrTemplate, "sizeU")
-	if err != nil {
+	if err == nil {
 		attr["sizeU"] = sizeU
 	} else {
 		template, ok := sizeUOrTemplate.(string)
@@ -1133,37 +1190,48 @@ func (n *createGroupNode) execute() (interface{}, error) {
 }
 
 type createCorridorNode struct {
-	path      node
-	leftRack  node
-	rightRack node
-	temp      node
+	path     node
+	pos      node
+	unit     node
+	rotation node
+	size     node
+	temp     node
 }
 
 func (n *createCorridorNode) execute() (interface{}, error) {
-	path, err := nodeToString(n.path, "path for corridor")
+	path, err := nodeToString(n.path, "path")
 	if err != nil {
 		return nil, err
 	}
-	leftRack, err := nodeToString(n.leftRack, "path for left rack")
+	pos, err := nodeToVec(n.pos, -1, "position")
 	if err != nil {
 		return nil, err
 	}
-	rightRack, err := nodeToString(n.rightRack, "path for right rack")
+	if len(pos) != 2 && len(pos) != 3 {
+		return nil, fmt.Errorf("position should be a vector2 or a vector3")
+	}
+	unit, err := nodeToString(n.unit, "unit")
 	if err != nil {
 		return nil, err
+	}
+	rotation, err := nodeTo3dRotation(n.rotation)
+	if err != nil {
+		return nil, err
+	}
+	sizeAny, err := n.size.execute()
+	if err != nil {
+		return nil, err
+	}
+	size, ok := sizeAny.([]float64)
+	if !ok || len(size) != 3 {
+		return nil, fmt.Errorf("vector3 (size) or string (template) expected")
 	}
 	temp, err := nodeToString(n.temp, "temperature")
 	if err != nil {
 		return nil, err
 	}
-	leftRack = filepath.Base(leftRack)
-	rightRack = filepath.Base(rightRack)
-	attributes := map[string]any{
-		"content":     leftRack + "," + rightRack,
-		"temperature": temp,
-	}
-	data := map[string]interface{}{"attributes": attributes}
-	err = cmd.CreateObject(path, cmd.CORRIDOR, data)
+	attributes := map[string]any{"posXYZ": pos, "posXYUnit": unit, "rotation": rotation, "size": size, "temperature": temp}
+	err = cmd.CreateObject(path, cmd.CORRIDOR, map[string]any{"attributes": attributes})
 	if err != nil {
 		return nil, err
 	}

@@ -87,7 +87,7 @@ payloadTable = {
     "room-sensor":{"name": "Corridor909","parentId" : PIDS["roomID"],"temperature": "cold", "type":"room", "domain":"DEMO"},
     "rack-sensor":{"name": "Corridor909","parentId" : PIDS["rackID"],"temperature": "cold", "type":"rack", "domain":"DEMO"},
     "device-sensor":{"name": "Corridor909","parentId" : PIDS["deviceID"],"temperature": "cold", "type":"device", "domain":"DEMO"},
-    "room-template":{"slug"          : "HOTTESTDNB","orientation"   : "+N+W","sizeWDHm"      : [],"technicalArea" : [],"reservedArea"  : [],"separators"    : [],"colors"        : [],"tiles"         : [],"rows"        : []},
+    "room-template":{"slug"          : "HOTTESTDNB","orientation"   : "+N+W","sizeWDHm"      : [],"technicalArea" : [],"reservedArea"  : [],"separators"    : {},"colors"        : [],"tiles"         : [],"rows"        : []},
     "obj-template":{"slug"        : "RACK2000","description" : "Rack Template 2000","category"    : "rack","sizeWDHmm"   : [],"fbxModel"    : "1","attributes"  : {  "type" : ""},"colors"      : [],"components"  : [],"slots"       : []}
     }
 

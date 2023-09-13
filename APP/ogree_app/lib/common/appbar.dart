@@ -32,12 +32,14 @@ AppBar myAppBar(context, userEmail, {isTenantMode = false}) {
         0,
         PopupMenuItem(
           value: "new",
-          child: Text(AppLocalizations.of(context)!.addServer),
+          child: Text(backendType == BackendType.kubernetes
+              ? AppLocalizations.of(context)!.addKube
+              : AppLocalizations.of(context)!.addServer),
         ));
   } else if (isTenantAdmin) {
     entries.insert(
         0,
-        PopupMenuItem(
+        const PopupMenuItem(
           value: "tenant",
           child: Text("Paramètres du tenant"),
         ));
@@ -69,7 +71,7 @@ AppBar myAppBar(context, userEmail, {isTenantMode = false}) {
           ),
           Badge(
             isLabelVisible: isTenantMode,
-            label: Text("ADMIN"),
+            label: const Text("ADMIN"),
           )
         ],
       ),
@@ -79,8 +81,28 @@ AppBar myAppBar(context, userEmail, {isTenantMode = false}) {
           ? Container()
           : Padding(
               padding: const EdgeInsets.only(right: 20),
-              child: Text(isTenantMode ? apiUrl : tenantName,
-                  style: const TextStyle(color: Colors.white)),
+              child: Row(
+                children: [
+                  backendType == BackendType.kubernetes
+                      ? Padding(
+                          padding: const EdgeInsets.only(right: 8),
+                          child: Container(
+                            decoration: BoxDecoration(
+                              borderRadius:
+                                  const BorderRadius.all(Radius.circular(8)),
+                              border: Border.all(color: Colors.white),
+                            ),
+                            child: Badge(
+                              backgroundColor: Colors.grey.shade900,
+                              label: const Text("KUBE"),
+                            ),
+                          ),
+                        )
+                      : Container(),
+                  Text(isTenantMode ? apiUrl : tenantName,
+                      style: const TextStyle(color: Colors.white)),
+                ],
+              ),
             ),
       Padding(
         padding: const EdgeInsets.symmetric(vertical: 15),
@@ -96,7 +118,7 @@ AppBar myAppBar(context, userEmail, {isTenantMode = false}) {
                   context, CreateServerPopup(parentCallback: () {}));
             } else if (value == "tenant") {
               Navigator.of(context).push(MaterialPageRoute(
-                builder: (context) => TenantPage(userEmail: "admin"),
+                builder: (context) => const TenantPage(userEmail: "admin"),
               ));
             } else {
               showCustomPopup(context, ChangePasswordPopup());
@@ -112,7 +134,11 @@ AppBar myAppBar(context, userEmail, {isTenantMode = false}) {
               const SizedBox(width: 10),
               _isSmallDisplay
                   ? Tooltip(
-                      message: isTenantMode ? apiUrl : tenantName,
+                      message: isTenantMode
+                          ? (backendType == BackendType.kubernetes
+                              ? "(KUBE) $apiUrl"
+                              : apiUrl)
+                          : tenantName,
                       triggerMode: TooltipTriggerMode.tap,
                       child: const Icon(
                         Icons.info_outline_rounded,
