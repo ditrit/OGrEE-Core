@@ -420,7 +420,14 @@ func (n *selectObjectNode) execute() (interface{}, error) {
 			return nil, err
 		}
 	}
-	return cmd.SetClipBoard(selection)
+	_, err = cmd.SetClipBoard(selection)
+	if err != nil {
+		return nil, err
+	}
+	if len(selection) == 0 {
+		fmt.Println("Selection is now empty")
+	}
+	return nil, nil
 }
 
 func setRoomAreas(path string, values []any) (map[string]any, error) {
@@ -843,10 +850,12 @@ func (n *selectChildrenNode) execute() (interface{}, error) {
 	if err != nil {
 		return nil, err
 	}
-	if cmd.State.DebugLvl > cmd.NONE {
-		println("Selection made!")
-	}
+	if len(paths) == 0 {
+		fmt.Println("Selection is now empty")
 
+	} else if cmd.State.DebugLvl > cmd.NONE {
+		fmt.Println("Selection made")
+	}
 	return v, nil
 }
 

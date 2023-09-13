@@ -20,7 +20,7 @@ services:
     restart: on-failure:10
 
   ogree_db:
-    image: mongo:latest
+    image: mongo:6.0.9
     container_name: ${COMPOSE_PROJECT_NAME}_db
     environment:
         - DB_NAME=${COMPOSE_PROJECT_NAME}

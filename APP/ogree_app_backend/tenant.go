@@ -109,12 +109,12 @@ func getDockerInfo(name string) ([]container, error) {
 			jsonOutput := s.Text()
 			jsonOutput, _ = strings.CutPrefix(jsonOutput, "\"")
 			jsonOutput, _ = strings.CutSuffix(jsonOutput, "\"")
-			fmt.Println(jsonOutput)
+			// fmt.Println(jsonOutput)
 			if err := json.Unmarshal([]byte(jsonOutput), &dc); err != nil {
 				//handle error
 				fmt.Println(err.Error())
 			}
-			fmt.Println(dc)
+			// fmt.Println(dc)
 			if name == "netbox" {
 				if strings.Contains(dc.Name, "netbox-1") {
 					response = append(response, dc)
@@ -133,6 +133,7 @@ func getDockerInfo(name string) ([]container, error) {
 			return nil, s.Err()
 		}
 
+		fmt.Println(response)
 		return response, nil
 	}
 }
@@ -176,6 +177,7 @@ func addTenant(c *gin.Context) {
 		}
 
 		// Add to local json and respond
+		newTenant.CustomerPassword = ""
 		listTenants = append(listTenants, newTenant)
 		data, _ := json.MarshalIndent(listTenants, "", "  ")
 		_ = ioutil.WriteFile("tenants.json", data, 0755)

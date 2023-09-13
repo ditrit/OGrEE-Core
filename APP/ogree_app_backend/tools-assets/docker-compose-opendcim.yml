@@ -6,11 +6,11 @@ services:
     image: opendcim/opendcim:23.03
     build: .
     environment:
-      OPENDCIM_DB_HOST: db
-      OPENDCIM_DB_USER: ${MYSQL_USER}
-      OPENDCIM_DB_PASS: ${MYSQL_PASSWORD}
-      OPENDCIM_DB_NAME: ${MYSQL_DATABASE}
-      OPENDCIM_AUTH: LDAP
+      - OPENDCIM_DB_HOST=db
+      - OPENDCIM_DB_USER=${MYSQL_USER}
+      - OPENDCIM_DB_PASS=${MYSQL_PASSWORD}
+      - OPENDCIM_DB_NAME=${MYSQL_DATABASE}
+      - OPENDCIM_AUTH=LDAP
     volumes:
       - dcim_data:/data
     networks:
