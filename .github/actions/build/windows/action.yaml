@@ -48,9 +48,7 @@ runs:
     - name: Building the installer
       env:
         VERSION: ${{ inputs.VERSION }}
-      run: |
-        cd ./APP/
-        "%programfiles(x86)%\Inno Setup 6\iscc.exe" "inno-wininstaller.iss"
+      run: "%programfiles(x86)%\Inno Setup 6\iscc.exe" "inno-wininstaller.iss"
       shell: cmd
 
     - name: Send to Nextcloud
@@ -59,6 +57,4 @@ runs:
         NEXT_CREDENTIALS: ${{ inputs.NEXT_CREDENTIALS }}
         NEXT_ADDR: https://nextcloud.ditrit.io/remote.php/dav/files/github.actions/Ogree/1_Core/WindowsInstaller
         VERSION: ${{ inputs.VERSION }}
-      run: | 
-        cd ./APP/
-        curl -u $env:NEXT_CREDENTIALS -T Output\ogree-app-installer.exe $env:NEXT_ADDR/OGrEE_Win_Install_$env:VERSION.exe
+      run: curl -u $env:NEXT_CREDENTIALS -T Output\ogree-app-installer.exe $env:NEXT_ADDR/OGrEE_Win_Install_$env:VERSION.exe
