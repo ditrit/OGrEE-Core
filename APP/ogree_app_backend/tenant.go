@@ -177,7 +177,7 @@ func addTenant(c *gin.Context) {
 		}
 
 		// Add to local json and respond
-		newTenant.CustomerPassword = ""
+		// newTenant.CustomerPassword = ""
 		listTenants = append(listTenants, newTenant)
 		data, _ := json.MarshalIndent(listTenants, "", "  ")
 		_ = ioutil.WriteFile("tenants.json", data, 0755)
@@ -199,8 +199,8 @@ func dockerCreateTenant(newTenant tenant) string {
 		args = append(args, "--profile")
 		args = append(args, "web")
 		// Create flutter assets folder
-		newTenant.AssetsDir = DOCKER_DIR + "app-deploy/" + tenantLower
-		addAppAssets(newTenant)
+		newTenant.AssetsDir = "./app-deploy/" + tenantLower
+		addAppAssets(newTenant, DOCKER_DIR+newTenant.AssetsDir)
 	} else {
 		// docker does not accept it empty, even if it wont be created
 		newTenant.AssetsDir = DOCKER_DIR
@@ -239,13 +239,13 @@ func dockerCreateTenant(newTenant tenant) string {
 	return ""
 }
 
-func addAppAssets(newTenant tenant) {
+func addAppAssets(newTenant tenant, assestsDit string) {
 	// Create flutter assets folder with .env
-	err := os.MkdirAll(newTenant.AssetsDir, 0755)
+	err := os.MkdirAll(assestsDit, 0755)
 	if err != nil && !strings.Contains(err.Error(), "already") {
 		println(err.Error())
 	}
-	file, err := os.Create(newTenant.AssetsDir + "/.env")
+	file, err := os.Create(assestsDit + "/.env")
 	if err != nil {
 		println(err.Error())
 	}
@@ -256,7 +256,7 @@ func addAppAssets(newTenant tenant) {
 	file.Close()
 
 	// Add default logo if none already present
-	userLogo := newTenant.AssetsDir + "/logo.png"
+	userLogo := assestsDit + "/logo.png"
 	defaultLogo := "flutter-assets/logo.png"
 	if _, err := os.Stat(userLogo); err == nil {
 		println("Logo already exists")

@@ -105,7 +105,8 @@ class _CreateTenantPopupState extends State<CreateTenantPopup> {
                                   ? getFormField(
                                       save: (newValue) {
                                         var splitted = newValue!.split(":");
-                                        _apiUrl = splitted[0] + splitted[1];
+                                        _apiUrl =
+                                            "${splitted[0]}:${splitted[1]}";
                                         _apiPort = splitted[2];
                                       },
                                       label:
@@ -119,7 +120,8 @@ class _CreateTenantPopupState extends State<CreateTenantPopup> {
                                   ? getFormField(
                                       save: (newValue) {
                                         var splitted = newValue!.split(":");
-                                        _webUrl = splitted[0] + splitted[1];
+                                        _webUrl =
+                                            "${splitted[0]}:${splitted[1]}";
                                         _webPort = splitted[2];
                                       },
                                       label:
