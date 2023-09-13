@@ -48,7 +48,8 @@ runs:
     - name: Building the installer
       env:
         VERSION: ${{ inputs.VERSION }}
-      run: "%programfiles(x86)%\Inno Setup 6\iscc.exe" "inno-wininstaller.iss"
+      run: |
+        "%programfiles(x86)%\Inno Setup 6\iscc.exe" "inno-wininstaller.iss"
       shell: cmd
 
     - name: Send to Nextcloud
