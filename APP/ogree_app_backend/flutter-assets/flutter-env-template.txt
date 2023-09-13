@@ -1,2 +1,2 @@
-API_URL=http://{{.ApiUrl}}:{{.ApiPort}}
+API_URL={{.ApiUrl}}:{{.ApiPort}}
 ALLOW_SET_BACK=false
