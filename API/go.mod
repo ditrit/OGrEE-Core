@@ -11,5 +11,5 @@ require (
 	github.com/joho/godotenv v1.5.1
 	github.com/santhosh-tekuri/jsonschema/v5 v5.3.1
 	go.mongodb.org/mongo-driver v1.7.2
-	golang.org/x/crypto v0.12.0
+	golang.org/x/crypto v0.13.0
 )
