@@ -39,8 +39,9 @@ jobs:
           TEAM_PASSWORD: ${{ secrets.TEAM_DOCKER_PASSWORD }}
           NEXT_CREDENTIALS: ${{ secrets.NEXT_CREDENTIALS }}
   
-  build-app-window:
-    name: 🏗️📤 Build APP for Windows
+  build-app-windows:
+    name: 🏗️📤 Build APP and Installer for Windows
+    needs: build-docker
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v4
@@ -57,7 +58,7 @@ jobs:
           echo "VERSION=$VERSION" >> $GITHUB_ENV
 
       - name: 🏗️📤 Build app and create installer
-        uses: ./.github/actions/build/app/windows
+        uses: ./.github/actions/build/windows
         with:
           VERSION: ${{ env.VERSION }}
           NEXT_CREDENTIALS: ${{ secrets.NEXT_CREDENTIALS }}
