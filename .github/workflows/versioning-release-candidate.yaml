@@ -14,7 +14,7 @@ jobs:
     permissions:
       contents: write
     steps:
-      - uses: actions/checkout@v3.2.0
+      - uses: actions/checkout@v4
         with:
           clean: false
           fetch-depth: "0"
@@ -57,7 +57,7 @@ jobs:
           branch: ${{ env.BRANCH_RELEASE_CANDIDATE }}
           sha: "${{ env.MAIN_SHA }}"
 
-      - uses: actions/checkout@v3.2.0
+      - uses: actions/checkout@v4
         with:
           ref: ${{ env.BRANCH_RELEASE_CANDIDATE }}
           token: ${{ secrets.SVC_GITHUB_TOKEN }}
