@@ -170,6 +170,54 @@
         }
       }
     },
+    "/api/objects/{id-wildcard}": {
+      "get": {
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "Objects"
+        ],
+        "summary": "Get the list of objects whose id matches {id-wildcard}.",
+        "operationId": "GetGenericObjectWildcard",
+        "parameters": [
+          {
+            "description": "id (that can contains wildcards) of the objects to retrieve",
+            "name": "id",
+            "in": "path",
+            "required": true
+          },
+          {
+            "description": "specify which object field to show in response. Multiple fieldOnly can be added. An invalid field is simply ignored.",
+            "name": "fieldOnly",
+            "in": "query"
+          },
+          {
+            "description": "filter objects by lastUpdated \u003e= startDate. Format: yyyy-mm-dd",
+            "name": "startDate",
+            "in": "query"
+          },
+          {
+            "description": "filter objects by lastUpdated \u003c= endDate. Format: yyyy-mm-dd",
+            "name": "endDate",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Found. A response body will be returned with a meaningful message."
+          },
+          "404": {
+            "description": "Not Found. An error message will be returned."
+          }
+        }
+      }
+    },
     "/api/objects/{id}": {
       "get": {
         "security": [

@@ -95,7 +95,7 @@ func Message(message string) map[string]interface{} {
 	return map[string]interface{}{"message": message}
 }
 
-func RespDataWrapper(message string, data map[string]interface{}) map[string]interface{} {
+func RespDataWrapper(message string, data interface{}) map[string]interface{} {
 	return map[string]interface{}{"message": message, "data": data}
 }
 

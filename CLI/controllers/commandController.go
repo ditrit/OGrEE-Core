@@ -67,7 +67,7 @@ func ObjectUrl(path string, depth int) (string, error) {
 		return "", fmt.Errorf("invalid object path")
 	}
 	suffix = strings.Replace(suffix, "/", ".", -1)
-	return fmt.Sprintf(url + "/" + suffix), nil
+	return url + "/" + suffix, nil
 }
 
 func IsTemplate(path string) bool {
@@ -142,6 +142,39 @@ func GetObject(path string) (map[string]any, error) {
 	return GetObjectWithChildren(path, 0)
 }
 
+func WilcardUrl(path string) (string, error) {
+	var suffix string
+	if startsWith(path, "/Physical/Stray/", &suffix) {
+		return "", fmt.Errorf("stray paths cannot contain wildcards")
+	} else if !startsWith(path, "/Physical/", &suffix) {
+		return "", fmt.Errorf("only paths in /Physical can contain wildcards")
+	}
+	suffix = strings.Replace(suffix, "/", ".", -1)
+	return "/api/objects-wildcard/" + suffix, nil
+}
+
+func GetObjectsWildcard(path string) ([]map[string]any, []string, error) {
+	url, err := WilcardUrl(path)
+	if err != nil {
+		return nil, nil, err
+	}
+	resp, err := RequestAPI("GET", url, nil, http.StatusOK)
+	if err != nil {
+		return nil, nil, err
+	}
+	objsAny, ok := resp.body["data"].([]any)
+	if !ok {
+		return nil, nil, fmt.Errorf("invalid response from API on GET %s", url)
+	}
+	objs := infArrToMapStrinfArr(objsAny)
+	paths := []string{}
+	for _, obj := range objs {
+		objPath := "/Physical/" + strings.Replace(obj["id"].(string), ".", "/", -1)
+		paths = append(paths, objPath)
+	}
+	return objs, paths, nil
+}
+
 func Ls(path string) ([]string, error) {
 	n, err := Tree(path, 1)
 	if err != nil {
@@ -173,6 +206,27 @@ func DeleteObj(path string) error {
 	}
 	if path == State.CurrPath {
 		CD(TranslatePath(".."))
+	}
+	return nil
+}
+
+func DeleteObjectsWildcard(path string) error {
+	objs, _, err := GetObjectsWildcard(path)
+	if err != nil {
+		return err
+	}
+	url, err := WilcardUrl(path)
+	if err != nil {
+		return err
+	}
+	_, err = RequestAPI("DELETE", url, nil, http.StatusNoContent)
+	if err != nil {
+		return err
+	}
+	for _, obj := range objs {
+		if IsInObjForUnity(obj["category"].(string)) {
+			InformUnity("DeleteObj", -1, map[string]any{"type": "delete", "data": obj["id"].(string)})
+		}
 	}
 	return nil
 }

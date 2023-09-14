@@ -290,6 +290,9 @@ func (n *deleteObjNode) execute() (interface{}, error) {
 	if err != nil {
 		return nil, err
 	}
+	if strings.Contains(path, "*") {
+		return nil, cmd.DeleteObjectsWildcard(path)
+	}
 	return nil, cmd.DeleteObj(path)
 }
 
@@ -395,12 +398,23 @@ func (n *getObjectNode) execute() (interface{}, error) {
 	if err != nil {
 		return nil, err
 	}
-	obj, err := cmd.GetObject(path)
-	if err != nil {
-		return nil, err
+	if strings.Contains(path, "*") {
+		objs, _, err := cmd.GetObjectsWildcard(path)
+		if err != nil {
+			return nil, err
+		}
+		for _, obj := range objs {
+			cmd.DisplayObject(obj)
+		}
+		return objs, nil
+	} else {
+		obj, err := cmd.GetObject(path)
+		if err != nil {
+			return nil, err
+		}
+		cmd.DisplayObject(obj)
+		return obj, nil
 	}
-	cmd.DisplayObject(obj)
-	return obj, nil
 }
 
 type selectObjectNode struct {
@@ -413,7 +427,12 @@ func (n *selectObjectNode) execute() (interface{}, error) {
 		return nil, err
 	}
 	var selection []string
-	if path != "" {
+	if strings.Contains(path, "*") {
+		_, selection, err = cmd.GetObjectsWildcard(path)
+		if err != nil {
+			return nil, err
+		}
+	} else if path != "" {
 		selection = []string{path}
 		err = cmd.CD(path)
 		if err != nil {
@@ -646,6 +665,11 @@ func (n *updateObjNode) execute() (interface{}, error) {
 	var paths []string
 	if path == "_" {
 		paths = cmd.State.ClipBoard
+	} else if strings.Contains(path, "*") {
+		_, paths, err = cmd.GetObjectsWildcard(path)
+		if err != nil {
+			return nil, err
+		}
 	} else {
 		paths = []string{path}
 	}
@@ -766,7 +790,21 @@ func (n *drawNode) execute() (interface{}, error) {
 	if err != nil {
 		return nil, err
 	}
-	return nil, cmd.Draw(path, n.depth, n.force)
+	if strings.Contains(path, "*") {
+		_, subpaths, err := cmd.GetObjectsWildcard(path)
+		if err != nil {
+			return nil, err
+		}
+		for _, subpath := range subpaths {
+			err = cmd.Draw(subpath, n.depth, n.force)
+			if err != nil {
+				return nil, err
+			}
+		}
+		return nil, nil
+	} else {
+		return nil, cmd.Draw(path, n.depth, n.force)
+	}
 }
 
 type undrawNode struct {

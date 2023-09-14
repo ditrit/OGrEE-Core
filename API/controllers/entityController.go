@@ -382,6 +382,86 @@ func HandleGenericObject(w http.ResponseWriter, r *http.Request) {
 
 }
 
+// swagger:operation GET /api/objects/{id-wildcard} Objects GetGenericObjectWildcard
+// Get the list of objects whose id matches {id-wildcard}.
+// ---
+// security:
+// - bearer: []
+// produces:
+// - application/json
+// parameters:
+//   - name: id
+//     in: path
+//     description: id (that can contains wildcards) of the objects to retrieve
+//     required: true
+//   - name: fieldOnly
+//     in: query
+//     description: 'specify which object field to show in response.
+//     Multiple fieldOnly can be added. An invalid field is simply ignored.'
+//   - name: startDate
+//     in: query
+//     description: 'filter objects by lastUpdated >= startDate.
+//     Format: yyyy-mm-dd'
+//   - name: endDate
+//     in: query
+//     description: 'filter objects by lastUpdated <= endDate.
+//     Format: yyyy-mm-dd'
+//
+// responses:
+//
+//		'200':
+//		    description: 'Found. A response body will be returned with
+//	        a meaningful message.'
+//		'404':
+//		    description: Not Found. An error message will be returned.
+func HandleGenericObjectWildcard(w http.ResponseWriter, r *http.Request) {
+	fmt.Println("******************************************************")
+	fmt.Println("FUNCTION CALL: 	 GetGenericObjectWildcard ")
+	fmt.Println("******************************************************")
+	DispRequestMetaData(r)
+	user := getUserFromToken(w, r)
+	if user == nil {
+		return
+	}
+	hierarchyName, ok := mux.Vars(r)["id"]
+	if !ok {
+		u.Respond(w, u.Message("Error while parsing path"))
+		u.ErrLog("Error while parsing path", "GetGenericObjectWildcard", "", r)
+		return
+	}
+	filters := getFiltersFromQueryParams(r)
+	regex := strings.ReplaceAll(strings.ReplaceAll(hierarchyName, ".", "\\."), "*", "(\\w(\\w|\\-)*)")
+	req := bson.M{"id": bson.M{"$regex": regex}}
+	matchingObjects := []map[string]interface{}{}
+	rangeEntities := u.HierachyNameToEntity(hierarchyName)
+	for _, entity := range rangeEntities {
+		entityStr := u.EntityToString(entity)
+		data, err := models.GetManyEntities(entityStr, req, filters, user.Roles)
+		if err != nil {
+			u.ErrLog("Error while looking for matching "+entityStr+"s", "GetGenericObjectWildcard", err.Message, r)
+			u.RespondWithError(w, err)
+			return
+		}
+		if data != nil {
+			matchingObjects = append(matchingObjects, data...)
+		}
+	}
+	if r.Method == "DELETE" {
+		for _, obj := range matchingObjects {
+			modelErr := models.DeleteEntity(obj["category"].(string), obj["id"].(string), user.Roles)
+			if modelErr != nil {
+				u.ErrLog("Error while deleting entity", "DELETE ENTITY", modelErr.Message, r)
+				u.RespondWithError(w, modelErr)
+			} else {
+				w.WriteHeader(http.StatusNoContent)
+				u.Respond(w, u.Message("successfully deleted"))
+			}
+		}
+	} else {
+		u.Respond(w, u.RespDataWrapper("successfully got objects", matchingObjects))
+	}
+}
+
 // swagger:operation GET /api/{entity}/{id} Objects GetEntity
 // Gets an Object of the given entity.
 // The ID or hierarchy name must be provided in the URL parameter.
