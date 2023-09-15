@@ -80,3 +80,11 @@ Filename: "{app}\{#MyBackAppExeName}"; Description: "{cm:LaunchProgram,{#StringC
 Filename: "{app}\front\{#MyFrontAppExeName}"; Description: "{cm:LaunchProgram,{#StringChange(MyFrontAppName, '&', '&&')}}"; Flags: nowait postinstall skipifsilent; Components: front
 Filename: "{app}\cli\{#MyCliExeName}"; Description: "{cm:LaunchProgram,{#StringChange(MyCliAppName, '&', '&&')}}"; Flags: nowait postinstall skipifsilent; Components: cli
 Filename: "{app}\3d\{#My3DExeName}"; Description: "{cm:LaunchProgram,{#StringChange(My3DAppName, '&', '&&')}}"; Flags: nowait postinstall skipifsilent; Components: unity
+
+[UninstallDelete]
+Type: filesandordirs; Name: "{app}\3d\OGrEE-3D_Data\.ogreeCache"
+Type: dirifempty; Name: "{app}\3d\OGrEE-3D_Data\"
+Type: dirifempty; Name: "{app}\3d"
+Type: filesandordirs; Name: "{app}\cli\log.txt"
+Type: filesandordirs; Name: "{app}\cli\unitylog.txt"
+Type: dirifempty; Name: "{app}\cli"
