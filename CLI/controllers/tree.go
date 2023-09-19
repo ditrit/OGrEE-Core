@@ -86,43 +86,44 @@ func (n *HierarchyNode) FindNearestNode(path string) (r *HierarchyNode, remainin
 func BuildBaseTree() *HierarchyNode {
 	root := NewNode("")
 	physical := NewNode("Physical")
-	physical.FillFn = FillUrlTreeFn("/api/sites", FillObjectTree)
+	physical.FillFn = FillUrlTreeFn("/api/sites", FillObjectTree, false)
 	root.AddChild(physical)
 	stray := NewNode("Stray")
-	stray.FillFn = FillUrlTreeFn("/api/stray-objects", FillObjectTree)
+	stray.FillFn = FillUrlTreeFn("/api/stray-objects", FillObjectTree, false)
 	physical.AddChild(stray)
 	logical := NewNode("Logical")
 	root.AddChild(logical)
 	objectTemplates := NewNode("ObjectTemplates")
-	objectTemplates.FillFn = FillUrlTreeFn("/api/obj-templates", nil)
+	objectTemplates.FillFn = FillUrlTreeFn("/api/obj-templates", nil, false)
 	logical.AddChild(objectTemplates)
 	roomTemplates := NewNode("RoomTemplates")
-	roomTemplates.FillFn = FillUrlTreeFn("/api/room-templates", nil)
+	roomTemplates.FillFn = FillUrlTreeFn("/api/room-templates", nil, false)
 	logical.AddChild(roomTemplates)
 	bldgTemplates := NewNode("BldgTemplates")
-	bldgTemplates.FillFn = FillUrlTreeFn("/api/bldg-templates", nil)
+	bldgTemplates.FillFn = FillUrlTreeFn("/api/bldg-templates", nil, false)
 	logical.AddChild(bldgTemplates)
 	groups := NewNode("Groups")
-	groups.FillFn = FillUrlTreeFn("/api/groups", nil)
+	groups.FillFn = FillUrlTreeFn("/api/groups", nil, true)
 	logical.AddChild(groups)
 	organisation := NewNode("Organisation")
 	root.AddChild(organisation)
 	domain := NewNode("Domain")
-	domain.FillFn = FillUrlTreeFn("/api/domains", FillObjectTree)
+	domain.FillFn = FillUrlTreeFn("/api/domains", FillObjectTree, false)
 	organisation.AddChild(domain)
 	organisation.AddChild(NewNode("Enterprise"))
 	return root
 }
 
-func nameOrSlug(obj map[string]any) (string, error) {
+func nameOrSlug(obj map[string]any) string {
 	name, okName := obj["name"].(string)
-	if !okName {
-		name, okName = obj["slug"].(string)
+	if okName {
+		return name
 	}
-	if !okName {
-		return "", fmt.Errorf("child has no name/slug")
+	name, okName = obj["slug"].(string)
+	if okName {
+		return name
 	}
-	return name, nil
+	panic("child has no name/slug")
 }
 
 func FillMapTree(n *HierarchyNode, obj map[string]any) error {
@@ -135,12 +136,8 @@ func FillMapTree(n *HierarchyNode, obj map[string]any) error {
 		if !ok {
 			return fmt.Errorf("invalid child format")
 		}
-		name, err := nameOrSlug(childMap)
-		if err != nil {
-			return err
-		}
-		child := NewNode(name)
-		err = FillMapTree(child, childMap)
+		child := NewNode(nameOrSlug(childMap))
+		err := FillMapTree(child, childMap)
 		if err != nil {
 			return err
 		}
@@ -160,7 +157,7 @@ func FillObjectTree(n *HierarchyNode, path string, depth int) error {
 	return FillMapTree(n, obj)
 }
 
-func FillUrlTree(n *HierarchyNode, path string, depth int, url string, followFillFn FillFunc) error {
+func FillUrlTree(n *HierarchyNode, path string, depth int, url string, followFillFn FillFunc, fullId bool) error {
 	resp, err := RequestAPI("GET", url, nil, http.StatusOK)
 	if err != nil {
 		return err
@@ -179,9 +176,11 @@ func FillUrlTree(n *HierarchyNode, path string, depth int, url string, followFil
 		if !ok {
 			return invalidRespErr
 		}
-		objName, err := nameOrSlug(obj)
-		if err != nil {
-			return invalidRespErr
+		var objName string
+		if fullId {
+			objName = strings.Replace(obj["id"].(string), ".", "/", -1)
+		} else {
+			objName = nameOrSlug(obj)
 		}
 		subTree := NewNode(objName)
 		subTree.FillFn = followFillFn
@@ -194,9 +193,9 @@ func FillUrlTree(n *HierarchyNode, path string, depth int, url string, followFil
 	return nil
 }
 
-func FillUrlTreeFn(url string, followFn FillFunc) FillFunc {
+func FillUrlTreeFn(url string, followFn FillFunc, fullId bool) FillFunc {
 	return func(n *HierarchyNode, path string, depth int) error {
-		return FillUrlTree(n, path, depth, url, followFn)
+		return FillUrlTree(n, path, depth, url, followFn, fullId)
 	}
 }
 
@@ -238,11 +237,7 @@ func Tree(path string, depth int) (*HierarchyNode, error) {
 	if err != nil {
 		return nil, err
 	}
-	name, err := nameOrSlug(obj)
-	if err != nil {
-		return nil, err
-	}
-	n = NewNode(name)
+	n = NewNode(nameOrSlug(obj))
 	err = FillMapTree(n, obj)
 	if err != nil {
 		return nil, err
