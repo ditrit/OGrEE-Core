@@ -1253,7 +1253,10 @@ func GetCompleteHierarchy(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	data, err := models.GetCompleteHierarchy(user.Roles)
+	var filters u.HierarchyFilters
+	decoder.Decode(&filters, r.URL.Query())
+
+	data, err := models.GetCompleteHierarchy(user.Roles, filters)
 	if err != nil {
 		u.RespondWithError(w, err)
 	} else {
