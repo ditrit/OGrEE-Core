@@ -1269,46 +1269,6 @@ func GetCompleteHierarchy(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// swagger:operation GET /api/hierarchy/domains Organization GetCompleteDomainHierarchy
-// Returns domain complete hierarchy.
-// Return is arranged by relationship (father:[children]),
-// starting with "Root":[root domains].
-// ---
-// security:
-// - bearer: []
-// produces:
-// - application/json
-// responses:
-//     '200':
-//          description: 'Request is valid.'
-//     '500':
-//          description: Server error.
-
-func GetCompleteDomainHierarchy(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("******************************************************")
-	fmt.Println("FUNCTION CALL: 	 GetCompleteHierarchy ")
-	fmt.Println("******************************************************")
-	DispRequestMetaData(r)
-
-	// Get user roles for permissions
-	user := getUserFromToken(w, r)
-	if user == nil {
-		return
-	}
-
-	data, err := models.GetCompleteDomainHierarchy(user.Roles)
-	if err != nil {
-		u.RespondWithError(w, err)
-	} else {
-		if r.Method == "OPTIONS" {
-			w.Header().Add("Content-Type", "application/json")
-			w.Header().Add("Allow", "GET, OPTIONS, HEAD")
-		} else {
-			u.Respond(w, u.RespDataWrapper("successfully got domain hierarchy", data))
-		}
-	}
-}
-
 // swagger:operation GET /api/hierarchy/attributes Objects GetCompleteHierarchyAttrs
 // Returns attributes of all objects.
 // Return is arranged by hierarchyName (objHierarchyName:{attributes}).
