@@ -1227,14 +1227,31 @@ func GetHierarchyByName(w http.ResponseWriter, r *http.Request) {
 
 // swagger:operation GET /api/hierarchy Objects GetCompleteHierarchy
 // Returns system complete hierarchy.
-// Return is arranged by relationship (father:[children])
-// and category (category:[objects]), starting with "Root":[sites].
+// Return is arranged by relationship (father:[children]), starting with "\*":[sites].
+// The "\*" indicates root.
 // User permissions apply.
 // ---
 // security:
 // - bearer: []
 // produces:
 // - application/json
+// parameters:
+//   - name: namespace
+//     in: query
+//     description: 'One of the values: physical, logical or organisational.
+//     If none provided, all namespaces are used by default.'
+//   - name: withcategories
+//     in: query
+//     description: 'besides the hierarchy, returns also an structure with
+//     the objects organized by category.'
+//   - name: startDate
+//     in: query
+//     description: 'filter objects by lastUpdated >= startDate.
+//     Format: yyyy-mm-dd'
+//   - name: endDate
+//     in: query
+//     description: 'filter objects by lastUpdated <= endDate.
+//     Format: yyyy-mm-dd'
 // responses:
 //		'200':
 //			description: 'Request is valid.'
