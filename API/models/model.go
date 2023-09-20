@@ -397,7 +397,7 @@ func getHierarchyWithNamespace(namespace u.Namespace, userRoles map[string]Role,
 	// Depth of hierarchy defined by user
 	if filters.Limit != "" && namespace != u.Logical {
 		if _, e := strconv.Atoi(filters.Limit); e == nil {
-			pattern := primitive.Regex{Pattern: "^[A-Za-z0-9_\" \"]+(.[A-Za-z0-9_\" \"]+){0," +
+			pattern := primitive.Regex{Pattern: "^\\w(\\w|\\-)*(.\\w(\\w|\\-)*){0," +
 				filters.Limit + "}$", Options: ""}
 			dbFilter = bson.M{"id": pattern}
 		}
@@ -808,7 +808,7 @@ func getChildren(entity, hierarchyName string, limit int, filters u.RequestFilte
 		checkEntName := u.EntityToString(checkEnt)
 		// Obj should include parentName and not surpass limit range
 		pattern := primitive.Regex{Pattern: "^" + hierarchyName +
-			"(.[A-Za-z0-9_\" \"]+){1," + strconv.Itoa(limit) + "}$", Options: ""}
+			"(.\\w(\\w|\\-)*){1," + strconv.Itoa(limit) + "}$", Options: ""}
 		children, e1 := GetManyEntities(checkEntName, bson.M{"id": pattern}, filters, nil)
 		if e1 != nil {
 			println("SUBENT: ", checkEntName)
