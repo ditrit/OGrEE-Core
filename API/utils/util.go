@@ -62,6 +62,8 @@ type RequestFilters struct {
 
 type HierarchyFilters struct {
 	Namespace      Namespace `schema:"namespace"`
+	StartDate      string    `schema:"startDate"`
+	EndDate        string    `schema:"endDate"`
 	Limit          string    `schema:"limit"`
 	WithCategories bool      `schema:"withcategories"`
 }

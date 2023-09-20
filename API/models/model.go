@@ -21,24 +21,24 @@ import (
 
 // Helper functions
 
-func getDateFilters(req bson.M, filters u.RequestFilters) error {
-	if len(filters.StartDate) > 0 || len(filters.EndDate) > 0 {
+func getDateFilters(req bson.M, startDate string, endDate string) error {
+	if len(startDate) > 0 || len(endDate) > 0 {
 		lastUpdateReq := bson.M{}
-		if len(filters.StartDate) > 0 {
-			startDate, e := time.Parse("2006-01-02", filters.StartDate)
+		if len(startDate) > 0 {
+			startDate, e := time.Parse("2006-01-02", startDate)
 			if e != nil {
 				return e
 			}
 			lastUpdateReq["$gte"] = primitive.NewDateTimeFromTime(startDate)
 		}
 
-		if len(filters.EndDate) > 0 {
-			endDate, e := time.Parse("2006-01-02", filters.EndDate)
-			endDate = endDate.Add(time.Hour * 24)
+		if len(endDate) > 0 {
+			parsedEndDate, e := time.Parse("2006-01-02", endDate)
+			parsedEndDate = parsedEndDate.Add(time.Hour * 24)
 			if e != nil {
 				return e
 			}
-			lastUpdateReq["$lte"] = primitive.NewDateTimeFromTime(endDate)
+			lastUpdateReq["$lte"] = primitive.NewDateTimeFromTime(parsedEndDate)
 		}
 		req["lastUpdated"] = lastUpdateReq
 	}
@@ -255,7 +255,7 @@ func GetEntity(req bson.M, ent string, filters u.RequestFilters, userRoles map[s
 		}
 		opts = options.FindOne().SetProjection(compoundIndex)
 	}
-	e = getDateFilters(req, filters)
+	e = getDateFilters(req, filters.StartDate, filters.EndDate)
 	if e != nil {
 		return nil, &u.Error{Type: u.ErrBadFormat, Message: e.Error()}
 	}
@@ -317,7 +317,7 @@ func GetManyEntities(ent string, req bson.M, filters u.RequestFilters, userRoles
 		}
 		opts = options.Find().SetProjection(compoundIndex)
 	}
-	err = getDateFilters(req, filters)
+	err = getDateFilters(req, filters.StartDate, filters.EndDate)
 	if err != nil {
 		return nil, &u.Error{Type: u.ErrBadFormat, Message: err.Error()}
 	}
@@ -360,23 +360,16 @@ func GetCompleteHierarchy(userRoles map[string]Role, filters u.HierarchyFilters)
 	categories := make(map[string][]string)
 	hierarchy := make(map[string]interface{})
 
-	limit := -1
-	if filters.Limit != "" {
-		if value, e := strconv.Atoi(filters.Limit); e == nil {
-			limit = value
-		}
-	}
-
 	switch filters.Namespace {
 	case u.Physical, u.Organisational, u.Logical:
-		data, err := fillHierarchyWithNamespace(filters.Namespace, userRoles, limit, categories)
+		data, err := getHierarchyWithNamespace(filters.Namespace, userRoles, filters, categories)
 		if err != nil {
 			return nil, err
 		}
 		hierarchy[u.NamespaceToString(filters.Namespace)] = data
 	default:
 		for _, ns := range []u.Namespace{u.Physical, u.Logical, u.Organisational} {
-			data, err := fillHierarchyWithNamespace(ns, userRoles, limit, categories)
+			data, err := getHierarchyWithNamespace(ns, userRoles, filters, categories)
 			if err != nil {
 				return nil, err
 			}
@@ -392,7 +385,7 @@ func GetCompleteHierarchy(userRoles map[string]Role, filters u.HierarchyFilters)
 	return response, nil
 }
 
-func fillHierarchyWithNamespace(namespace u.Namespace, userRoles map[string]Role, limit int,
+func getHierarchyWithNamespace(namespace u.Namespace, userRoles map[string]Role, filters u.HierarchyFilters,
 	categories map[string][]string) (map[string][]string, *u.Error) {
 	hierarchy := make(map[string][]string)
 	rootIdx := "*"
@@ -402,10 +395,17 @@ func fillHierarchyWithNamespace(namespace u.Namespace, userRoles map[string]Role
 	dbFilter := bson.M{}
 
 	// Depth of hierarchy defined by user
-	if limit > -1 && namespace != u.Logical {
-		pattern := primitive.Regex{Pattern: "^[A-Za-z0-9_\" \"]+(.[A-Za-z0-9_\" \"]+){0," +
-			strconv.Itoa(limit) + "}$", Options: ""}
-		dbFilter = bson.M{"id": pattern}
+	if filters.Limit != "" && namespace != u.Logical {
+		if _, e := strconv.Atoi(filters.Limit); e == nil {
+			pattern := primitive.Regex{Pattern: "^[A-Za-z0-9_\" \"]+(.[A-Za-z0-9_\" \"]+){0," +
+				filters.Limit + "}$", Options: ""}
+			dbFilter = bson.M{"id": pattern}
+		}
+	}
+	// User date filters
+	err := getDateFilters(dbFilter, filters.StartDate, filters.EndDate)
+	if err != nil {
+		return nil, &u.Error{Type: u.ErrBadFormat, Message: err.Error()}
 	}
 
 	// Search collections according to namespace
