@@ -9,11 +9,11 @@ import 'common.dart';
 void main() {
   testWidgets('SelectObjects expands and collapses tree', (tester) async {
     await tester.binding.setSurfaceSize(const Size(1000, 1000));
-    await tester.pumpWidget(LocalizationsInjApp(
+    await tester.pumpWidget(const LocalizationsInjApp(
         child: SelectObjects(
       dateRange: "",
       load: true,
-      namespace: Namespace.Test.name,
+      namespace: Namespace.Test,
     )));
 
     final expandButton = find.text("Développer tout");
@@ -38,7 +38,7 @@ void main() {
         child: SelectObjects(
       dateRange: "",
       load: true,
-      namespace: Namespace.Test.name,
+      namespace: Namespace.Test,
     )));
 
     final expandButton = find.text("Sélectionner tout");
@@ -61,11 +61,11 @@ void main() {
   });
 
   testWidgets('SelectObjects can find an object', (tester) async {
-    await tester.pumpWidget(LocalizationsInjApp(
+    await tester.pumpWidget(const LocalizationsInjApp(
         child: SelectObjects(
       dateRange: "",
       load: true,
-      namespace: Namespace.Test.name,
+      namespace: Namespace.Test,
     )));
 
     const searchStr = "rack2.devB.devB-2";
@@ -90,7 +90,7 @@ void main() {
         child: SelectObjects(
       dateRange: "",
       load: true,
-      namespace: Namespace.Test.name,
+      namespace: Namespace.Test,
     )));
 
     // all data is there

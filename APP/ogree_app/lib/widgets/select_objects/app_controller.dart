@@ -23,25 +23,22 @@ class AppController with ChangeNotifier {
   }
 
   Future<void> init(Map<String, bool> nodes,
-      {bool isTest = false,
-      bool onlyDomain = false,
+      {Namespace namespace = Namespace.Physical,
       bool reload = false,
       String dateRange = "",
       bool isTenantMode = false}) async {
     if (_isInitialized && !reload) return;
     final rootNode = TreeNode(id: kRootId);
 
-    if (isTest) {
+    if (namespace == Namespace.Test) {
       fetchedData = kDataSample;
       fetchedCategories = kDataSampleCategories;
     } else {
-      var result;
-      if (onlyDomain) {
-        result = await fetchObjectsTree(
-            dateRange: dateRange, onlyDomain: true, isTenantMode: isTenantMode);
-      } else {
-        result = await fetchObjectsTree(dateRange: dateRange);
-      }
+      var result = await fetchObjectsTree(
+          dateRange: dateRange,
+          namespace: namespace,
+          isTenantMode: isTenantMode);
+
       switch (result) {
         case Success(value: final listValue):
           fetchedData = listValue[0];
@@ -248,7 +245,7 @@ void generateTree(TreeNode parent, Map<String, List<String>> data) {
   }
 }
 
-const String kRootId = 'Root';
+const String kRootId = '*';
 
 const Map<String, List<String>> kDataSample = {
   kRootId: ['sitePA', 'sitePI', 'siteNO', 'sitePB'],

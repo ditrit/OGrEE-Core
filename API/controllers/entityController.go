@@ -1227,14 +1227,31 @@ func GetHierarchyByName(w http.ResponseWriter, r *http.Request) {
 
 // swagger:operation GET /api/hierarchy Objects GetCompleteHierarchy
 // Returns system complete hierarchy.
-// Return is arranged by relationship (father:[children])
-// and category (category:[objects]), starting with "Root":[sites].
+// Return is arranged by relationship (father:[children]), starting with "\*":[sites].
+// The "\*" indicates root.
 // User permissions apply.
 // ---
 // security:
 // - bearer: []
 // produces:
 // - application/json
+// parameters:
+//   - name: namespace
+//     in: query
+//     description: 'One of the values: physical, logical or organisational.
+//     If none provided, all namespaces are used by default.'
+//   - name: withcategories
+//     in: query
+//     description: 'besides the hierarchy, returns also an structure with
+//     the objects organized by category.'
+//   - name: startDate
+//     in: query
+//     description: 'filter objects by lastUpdated >= startDate.
+//     Format: yyyy-mm-dd'
+//   - name: endDate
+//     in: query
+//     description: 'filter objects by lastUpdated <= endDate.
+//     Format: yyyy-mm-dd'
 // responses:
 //		'200':
 //			description: 'Request is valid.'
@@ -1253,7 +1270,10 @@ func GetCompleteHierarchy(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	data, err := models.GetCompleteHierarchy(user.Roles)
+	var filters u.HierarchyFilters
+	decoder.Decode(&filters, r.URL.Query())
+
+	data, err := models.GetCompleteHierarchy(user.Roles, filters)
 	if err != nil {
 		u.RespondWithError(w, err)
 	} else {
@@ -1262,46 +1282,6 @@ func GetCompleteHierarchy(w http.ResponseWriter, r *http.Request) {
 			w.Header().Add("Allow", "GET, OPTIONS, HEAD")
 		} else {
 			u.Respond(w, u.RespDataWrapper("successfully got hierarchy", data))
-		}
-	}
-}
-
-// swagger:operation GET /api/hierarchy/domains Organization GetCompleteDomainHierarchy
-// Returns domain complete hierarchy.
-// Return is arranged by relationship (father:[children]),
-// starting with "Root":[root domains].
-// ---
-// security:
-// - bearer: []
-// produces:
-// - application/json
-// responses:
-//     '200':
-//          description: 'Request is valid.'
-//     '500':
-//          description: Server error.
-
-func GetCompleteDomainHierarchy(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("******************************************************")
-	fmt.Println("FUNCTION CALL: 	 GetCompleteHierarchy ")
-	fmt.Println("******************************************************")
-	DispRequestMetaData(r)
-
-	// Get user roles for permissions
-	user := getUserFromToken(w, r)
-	if user == nil {
-		return
-	}
-
-	data, err := models.GetCompleteDomainHierarchy(user.Roles)
-	if err != nil {
-		u.RespondWithError(w, err)
-	} else {
-		if r.Method == "OPTIONS" {
-			w.Header().Add("Content-Type", "application/json")
-			w.Header().Add("Allow", "GET, OPTIONS, HEAD")
-		} else {
-			u.Respond(w, u.RespDataWrapper("successfully got domain hierarchy", data))
 		}
 	}
 }

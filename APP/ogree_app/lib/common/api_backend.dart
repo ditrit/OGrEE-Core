@@ -41,7 +41,7 @@ String reformatDate(String date) {
 
 String urlDateAppend(String dateRange) {
   var ranges = dateRange.split(" - ");
-  String urlAppend = "?startDate=${reformatDate(ranges[0])}";
+  String urlAppend = "&startDate=${reformatDate(ranges[0])}";
   if (ranges.length > 1) {
     urlAppend = "$urlAppend&endDate=${reformatDate(ranges[1])}";
   }
@@ -213,10 +213,10 @@ Future<Result<void, Exception>> userResetPassword(
 }
 
 Future<Result<List<Map<String, List<String>>>, Exception>> fetchObjectsTree(
-    {String dateRange = "",
-    bool onlyDomain = false,
+    {Namespace namespace = Namespace.Physical,
+    String dateRange = "",
     bool isTenantMode = false}) async {
-  print("API get tree: onlydomain=$onlyDomain");
+  print("API get tree: NS=$namespace");
 
   // Define URL and token to use
   String localUrl = '/api/hierarchy';
@@ -228,14 +228,17 @@ Future<Result<List<Map<String, List<String>>>, Exception>> fetchObjectsTree(
     localUrl = apiUrl + localUrl;
   }
   // Add filters, if any
-  if (onlyDomain) {
-    localUrl = '$localUrl/domains';
+  String namespaceStr = namespace.name.toLowerCase();
+  if (namespace == Namespace.Physical) {
+    localUrl = '$localUrl?namespace=$namespaceStr&withcategories=true';
+  } else {
+    localUrl = '$localUrl?namespace=$namespaceStr';
   }
   if (dateRange != "") {
     localUrl = localUrl + urlDateAppend(dateRange);
   }
 
-// Request
+  // Request
   try {
     Uri url = Uri.parse(localUrl);
     final response = await http.get(url, headers: getHeader(localToken));
@@ -245,19 +248,29 @@ Future<Result<List<Map<String, List<String>>>, Exception>> fetchObjectsTree(
       Map<String, dynamic> data = json.decode(response.body);
       data = (Map<String, dynamic>.from(data["data"]));
       Map<String, Map<String, dynamic>> converted = {};
+      Map<String, Map<String, dynamic>> converted2 = {};
       Map<String, List<String>> tree = {};
       Map<String, List<String>> categories = {};
       for (var item in data.keys) {
         converted[item.toString()] = Map<String, dynamic>.from(data[item]);
       }
       for (var item in converted["tree"]!.keys) {
-        tree[item.toString()] = List<String>.from(converted["tree"]![item]);
+        converted2[item.toString()] =
+            Map<String, dynamic>.from(converted["tree"]![item]!);
       }
-      if (!onlyDomain) {
+      for (var item in converted2[namespaceStr]!.keys) {
+        tree[item.toString()] =
+            List<String>.from(converted2[namespaceStr]![item]);
+      }
+      // Namespace adaptations
+      if (namespace == Namespace.Physical) {
+        tree["*"]!.addAll(tree["*stray_object"]!);
         for (var item in converted["categories"]!.keys) {
           categories[item.toString()] =
               List<String>.from(converted["categories"]![item]);
         }
+      } else if (namespace == Namespace.Logical) {
+        tree["*"] = tree.keys.toList();
       }
       return Success([tree, categories]);
     } else {
@@ -265,6 +278,7 @@ Future<Result<List<Map<String, List<String>>>, Exception>> fetchObjectsTree(
           Exception('${response.statusCode}: Failed to load objects'));
     }
   } on Exception catch (e) {
+    print(e.toString());
     return Failure(e);
   }
 }

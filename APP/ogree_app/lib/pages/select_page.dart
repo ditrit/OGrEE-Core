@@ -35,8 +35,8 @@ class _SelectPageState extends State<SelectPage> with TickerProviderStateMixin {
   String _selectedDate = '';
   set selectedDate(String value) => _selectedDate = value;
 
-  String _selectedNamespace = '';
-  set selectedNamespace(String value) => _selectedNamespace = value;
+  Namespace _selectedNamespace = Namespace.Test;
+  set selectedNamespace(Namespace value) => _selectedNamespace = value;
 
   Map<String, bool> _selectedObjects = {};
   Map<String, bool> get selectedObjects => _selectedObjects;
@@ -51,7 +51,8 @@ class _SelectPageState extends State<SelectPage> with TickerProviderStateMixin {
   void initState() {
     if (widget.project != null) {
       _selectedDate = widget.project!.dateRange;
-      _selectedNamespace = widget.project!.namespace;
+      _selectedNamespace = Namespace.values.firstWhere(
+          (e) => e.toString() == 'Namespace.${widget.project!.namespace}');
       _selectedAttrs = widget.project!.attributes;
       for (var obj in widget.project!.objects) {
         _selectedObjects[obj] = true;
@@ -113,8 +114,9 @@ class _SelectPageState extends State<SelectPage> with TickerProviderStateMixin {
           Step(
             title: Text(localeMsg.selectNamespace,
                 style: const TextStyle(fontSize: 14)),
-            subtitle:
-                _selectedNamespace == '' ? null : Text(_selectedNamespace),
+            subtitle: _selectedNamespace == Namespace.Test
+                ? null
+                : Text(_selectedNamespace.name),
             content: const SelectNamespace(),
             isActive: _currentStep.index >= Steps.date.index,
             state: _currentStep.index >= Steps.namespace.index
@@ -147,7 +149,7 @@ class _SelectPageState extends State<SelectPage> with TickerProviderStateMixin {
                     dateRange: _selectedDate,
                     selectedAttrs: _selectedAttrs,
                     selectedObjects: _selectedObjects.keys.toList(),
-                    namespace: _selectedNamespace,
+                    namespace: _selectedNamespace.name,
                   )
                 : const Center(child: CircularProgressIndicator()),
             isActive: _currentStep.index >= Steps.date.index,
@@ -187,7 +189,7 @@ class _SelectPageState extends State<SelectPage> with TickerProviderStateMixin {
           isCreate = false;
           project = widget.project!;
           project.dateRange = _selectedDate;
-          project.namespace = _selectedNamespace;
+          project.namespace = _selectedNamespace.name;
           project.attributes = _selectedAttrs;
           project.objects = _selectedObjects.keys.toList();
         } else {
@@ -195,7 +197,7 @@ class _SelectPageState extends State<SelectPage> with TickerProviderStateMixin {
           project = Project(
               "",
               _selectedDate,
-              _selectedNamespace,
+              _selectedNamespace.name,
               widget.userEmail,
               DateFormat('dd/MM/yyyy').format(DateTime.now()),
               true,

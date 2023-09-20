@@ -3,6 +3,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:ogree_app/common/api_backend.dart';
 import 'package:ogree_app/common/appbar.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:ogree_app/common/definitions.dart';
 import 'package:ogree_app/common/popup_dialog.dart';
 import 'package:ogree_app/common/theme.dart';
 import 'package:ogree_app/models/tenant.dart';
@@ -195,7 +196,9 @@ class _TenantPageState extends State<TenantPage> with TickerProviderStateMixin {
         controller: appController,
         child: FutureBuilder<void>(
           future: appController.init({},
-              onlyDomain: true, reload: _reloadDomains, isTenantMode: true),
+              namespace: Namespace.Organisational,
+              reload: _reloadDomains,
+              isTenantMode: true),
           builder: (_, __) {
             if (_reloadDomains) {
               _reloadDomains = false;
