@@ -150,8 +150,7 @@ func (n *focusNode) execute() (interface{}, error) {
 	if err != nil {
 		return nil, err
 	}
-	cmd.FocusUI(path)
-	return nil, nil
+	return nil, cmd.FocusUI(path)
 }
 
 type cdNode struct {
