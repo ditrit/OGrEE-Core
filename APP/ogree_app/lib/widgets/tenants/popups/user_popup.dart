@@ -233,7 +233,8 @@ class _UserPopupState extends State<UserPopup> with TickerProviderStateMixin {
   }
 
   getDomains() async {
-    var result = await fetchObjectsTree(onlyDomain: true, isTenantMode: true);
+    var result = await fetchObjectsTree(
+        namespace: Namespace.Organisational, isTenantMode: true);
     switch (result) {
       case Success(value: final listValue):
         domainList = listValue[0]

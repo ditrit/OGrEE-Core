@@ -14,9 +14,9 @@ class _SelectNamespaceState extends State<SelectNamespace> {
   Map<String, String> namespaces = {
     Namespace.Physical.name: "site.building.room",
     Namespace.Organisational.name: "domains",
-    Namespace.Logical.name: "not available"
+    Namespace.Logical.name: "templates&groups"
   };
-  String _selection = Namespace.Physical.name;
+  Namespace _selection = Namespace.Physical;
 
   @override
   void initState() {
@@ -52,22 +52,24 @@ class _SelectNamespaceState extends State<SelectNamespace> {
 
   Widget nameSpaceButton(String label) {
     var isBigScreen = MediaQuery.of(context).size.width > 800;
+    Namespace thisNamespace =
+        Namespace.values.firstWhere((e) => e.toString() == 'Namespace.$label');
     return Container(
       margin: const EdgeInsets.only(top: 30, bottom: 30),
       width: isBigScreen ? 250 : 200,
       height: isBigScreen ? 100 : 70,
       child: OutlinedButton(
-        onPressed: label == "Logical"
-            ? null
-            : () => setState(() {
-                  _selection = label;
-                  SelectPage.of(context)!.selectedNamespace = _selection;
-                }),
-        style: _selection == label
+        onPressed: () => setState(() {
+          _selection = thisNamespace;
+          SelectPage.of(context)!.selectedNamespace = _selection;
+        }),
+        style: _selection == thisNamespace
             ? OutlinedButton.styleFrom(
                 side: const BorderSide(width: 3.0, color: Colors.blue),
               )
-            : null,
+            : OutlinedButton.styleFrom(
+                side: BorderSide(color: Colors.blue.shade800),
+              ),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
@@ -75,13 +77,13 @@ class _SelectNamespaceState extends State<SelectNamespace> {
               label,
               style: GoogleFonts.inter(
                 fontSize: 17,
-                color: _selection == label ? Colors.blue : null,
+                color: _selection == thisNamespace ? Colors.blue : null,
               ),
             ),
             Text(
               isBigScreen ? '\n${namespaces[label]}' : namespaces[label]!,
               style: GoogleFonts.inter(
-                color: _selection == label ? Colors.blue : null,
+                color: _selection == thisNamespace ? Colors.blue : null,
               ),
             ),
           ],

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_fancy_tree_view/flutter_fancy_tree_view.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:ogree_app/common/definitions.dart';
 import 'package:ogree_app/common/popup_dialog.dart';
 import 'package:ogree_app/common/snackbar.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
@@ -61,7 +62,7 @@ class _TreeNodeTileState extends State<TreeNodeTile> {
                                 context,
                                 DomainPopup(
                                   parentCallback: () => appController.init({},
-                                      onlyDomain: true,
+                                      namespace: Namespace.Organisational,
                                       reload: true,
                                       isTenantMode: true),
                                   domainId: nodeScope.node.id,

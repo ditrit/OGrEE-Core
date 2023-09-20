@@ -10,7 +10,7 @@ import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class SelectObjects extends StatefulWidget {
   final String dateRange;
-  final String namespace;
+  final Namespace namespace;
   final bool load;
 
   const SelectObjects(
@@ -32,13 +32,12 @@ class _SelectObjectsState extends State<SelectObjects> {
       child: FutureBuilder<void>(
         future: widget.load
             ? appController.init(
-                widget.namespace == Namespace.Test.name
+                widget.namespace == Namespace.Test
                     ? {}
                     : SelectPage.of(context)!.selectedObjects,
                 dateRange: widget.dateRange,
-                isTest: widget.namespace == Namespace.Test.name,
                 reload: widget.load,
-                onlyDomain: widget.namespace == Namespace.Organisational.name)
+                namespace: widget.namespace)
             : null,
         builder: (_, __) {
           print(widget.load);
@@ -64,8 +63,7 @@ class _SelectObjectsState extends State<SelectObjects> {
                         ],
                       )
                     : _ResponsiveBody(
-                        onlyDomain:
-                            widget.namespace == Namespace.Organisational.name,
+                        noFilters: widget.namespace != Namespace.Physical,
                         controller: appController),
               ),
             );
@@ -93,10 +91,10 @@ class _Unfocus extends StatelessWidget {
 }
 
 class _ResponsiveBody extends StatelessWidget {
-  final bool onlyDomain;
+  final bool noFilters;
   final AppController controller;
   const _ResponsiveBody(
-      {Key? key, required this.controller, this.onlyDomain = false})
+      {Key? key, required this.controller, this.noFilters = false})
       : super(key: key);
 
   @override
@@ -137,7 +135,7 @@ class _ResponsiveBody extends StatelessWidget {
             color: Colors.black26,
           ),
           Expanded(
-              child: SettingsView(isTenantMode: false, noFilters: onlyDomain)),
+              child: SettingsView(isTenantMode: false, noFilters: noFilters)),
         ],
       ),
     );
