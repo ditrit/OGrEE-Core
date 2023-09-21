@@ -51,14 +51,14 @@ Name: "unity"; Description: {#My3DAppName}; Types: full
 Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}"; Flags: unchecked
 
 [Files]
-Source: "APP\ogree_app_backend\{#MyBackAppExeName}"; DestDir: "{app}"; Flags: ignoreversion; Components: back
-Source: "APP\ogree_app_backend\backend-assets\*"; DestDir: "{app}\backend-assets"; Flags: ignoreversion recursesubdirs createallsubdirs; Components: back
-Source: "APP\ogree_app_backend\flutter-assets\*"; DestDir: "{app}\flutter-assets"; Flags: ignoreversion recursesubdirs createallsubdirs; Components: back
-Source: "APP\ogree_app_backend\tools-assets\*"; DestDir: "{app}\tools-assets"; Flags: ignoreversion recursesubdirs createallsubdirs; Components: back
+Source: "BACK\docker-backend\{#MyBackAppExeName}"; DestDir: "{app}"; Flags: ignoreversion; Components: back
+Source: "BACK\docker-backend\backend-assets\*"; DestDir: "{app}\backend-assets"; Flags: ignoreversion recursesubdirs createallsubdirs; Components: back
+Source: "BACK\docker-backend\flutter-assets\*"; DestDir: "{app}\flutter-assets"; Flags: ignoreversion recursesubdirs createallsubdirs; Components: back
+Source: "BACK\docker-backend\tools-assets\*"; DestDir: "{app}\tools-assets"; Flags: ignoreversion recursesubdirs createallsubdirs; Components: back
 Source: "deploy\*"; DestDir: "{app}\deploy"; Flags: ignoreversion recursesubdirs createallsubdirs; Components: back
-Source: "APP\ogree_app_backend\inno.env"; DestDir: "{app}"; DestName: ".env"; Flags: ignoreversion; Components: back
-Source: "APP\ogree_app\build\windows\runner\Release\*"; DestDir: "{app}\front"; Flags: ignoreversion recursesubdirs createallsubdirs; Components: front
-Source: "APP\ogree-icon.ico"; DestDir: "{app}"; DestName: "ogree-icon.ico"; Flags: ignoreversion; Components: back front
+Source: "APP\docker-backend\inno.env"; DestDir: "{app}"; DestName: ".env"; Flags: ignoreversion; Components: back
+Source: "APP\build\windows\runner\Release\*"; DestDir: "{app}\front"; Flags: ignoreversion recursesubdirs createallsubdirs; Components: front
+Source: "ogree-icon.ico"; DestDir: "{app}"; DestName: "ogree-icon.ico"; Flags: ignoreversion; Components: back front
 Source: "CLI\other\man\*"; DestDir: "{app}\cli\other\man"; Flags: ignoreversion recursesubdirs createallsubdirs; Components: cli
 Source: "{#MyCliExeName}"; DestDir: "{app}\cli"; Flags: ignoreversion; Components: cli
 Source: "OGrEE-3D_win\*"; DestDir: "{app}\3d"; Flags: ignoreversion recursesubdirs createallsubdirs; Components: unity

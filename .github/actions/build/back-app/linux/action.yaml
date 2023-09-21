@@ -22,7 +22,7 @@ runs:
     - name: Build
       shell: bash
       run: |
-        cd APP/ogree_app_backend/
+        cd BACK/docker-backend/
         go build
 
     - name: Send to Nextcloud
@@ -34,9 +34,10 @@ runs:
         curl -u $NEXT_CREDENTIALS -X MKCOL $NEXT_ADDR
 
         zip -r OGrEE_APP_Backend_Linux.zip deploy/ \
-              APP/ogree_app_backend/.env \
-              APP/ogree_app_backend/ogree_app_backend \
-              APP/ogree_app_backend/flutter-assets/ \
-              APP/ogree_app_backend/backend-assets/
+              BACK/docker-backend/.env \
+              BACK/docker-backend/ogree_app_backend \
+              BACK/docker-backend/flutter-assets/ \
+              BACK/docker-backend/tools-assets/ \
+              BACK/docker-backend/backend-assets/
 
         curl -u $NEXT_CREDENTIALS -T OGrEE_APP_Backend_Linux.zip $NEXT_ADDR/OGrEE_APP_Backend_Linux.zip

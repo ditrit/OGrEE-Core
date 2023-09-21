@@ -15,7 +15,7 @@ runs:
         channel: 'stable'
 
     - name: Windows flutter build
-      run: cd ./APP/ogree_app/ && flutter build windows
+      run: cd ./APP/ && flutter build windows
       shell: cmd
     
     - name: Set up Go
@@ -24,7 +24,7 @@ runs:
         go-version: '1.20'
 
     - name: Windows backend build
-      run: cd ./APP/ogree_app_backend/ && go build
+      run: cd ./BACK/docker-backend/ && go build
       shell: cmd
 
     - name: Download CLI from Nextcloud
