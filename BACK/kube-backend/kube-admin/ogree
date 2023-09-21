@@ -1,0 +1,10 @@
+NAME              STATUS   AGE
+default           Active   11d
+ingress-nginx     Active   3d22h
+kube-node-lease   Active   11d
+kube-public       Active   11d
+kube-system       Active   11d
+ogree-admin       Active   3d21h
+test-ogree        Active   5d
+traefik-v2        Active   4d1h
+valentin          Active   11d

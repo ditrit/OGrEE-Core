@@ -1,0 +1,27 @@
+name: Set environment
+
+on:
+  workflow_call:
+    outputs:
+      ENVIRONMENT:
+        description: "Environment name"
+        value: ${{ jobs.set-environment.outputs.ENVIRONMENT }}
+
+jobs:
+  set-environment:
+    name: 🌍 Set environment
+    runs-on: ubuntu-latest
+    outputs:
+      ENVIRONMENT: ${{ steps.set-environment.outputs.ENVIRONMENT }}
+    steps:
+      - name: 🌍 Set environment
+        id: set-environment
+        run: |
+          elif [[ "${{ github.ref_name }}" == "release-candidate/"* ]]; then
+          echo "ENVIRONMENT=Release Candidate" >> $GITHUB_ENV
+          else 
+          echo "ENVIRONMENT=Release" >> $GITHUB_ENV
+          fi
+
+      - name: 🌍 Echo env
+        run: echo "Environment is ${{ steps.set-environment.outputs.ENVIRONMENT }}"
