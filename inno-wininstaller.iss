@@ -56,7 +56,7 @@ Source: "BACK\docker-backend\backend-assets\*"; DestDir: "{app}\backend-assets";
 Source: "BACK\docker-backend\flutter-assets\*"; DestDir: "{app}\flutter-assets"; Flags: ignoreversion recursesubdirs createallsubdirs; Components: back
 Source: "BACK\docker-backend\tools-assets\*"; DestDir: "{app}\tools-assets"; Flags: ignoreversion recursesubdirs createallsubdirs; Components: back
 Source: "deploy\*"; DestDir: "{app}\deploy"; Flags: ignoreversion recursesubdirs createallsubdirs; Components: back
-Source: "APP\docker-backend\inno.env"; DestDir: "{app}"; DestName: ".env"; Flags: ignoreversion; Components: back
+Source: "BACK\docker-backend\inno.env"; DestDir: "{app}"; DestName: ".env"; Flags: ignoreversion; Components: back
 Source: "APP\build\windows\runner\Release\*"; DestDir: "{app}\front"; Flags: ignoreversion recursesubdirs createallsubdirs; Components: front
 Source: "ogree-icon.ico"; DestDir: "{app}"; DestName: "ogree-icon.ico"; Flags: ignoreversion; Components: back front
 Source: "config-example.toml"; DestDir: "{app}"; DestName: "config.toml"; Flags: ignoreversion; Components: cli
