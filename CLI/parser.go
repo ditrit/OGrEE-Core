@@ -61,6 +61,7 @@ type parser struct {
 	commandDispatch   map[string]parseCommandFunc
 	createObjDispatch map[string]parseCommandFunc
 	noArgsCommands    map[string]node
+	commandKeywords   []string
 }
 
 func un(p *parser) {
@@ -157,11 +158,14 @@ func (p *parser) error(message string) {
 	panic(errorStr)
 }
 
-func (p *parser) skipWhiteSpaces() {
+func (p *parser) skipWhiteSpaces() int {
 	defer un(trace(p, ""))
+	n := 0
 	for p.cursor < len(p.buf) && (p.peek() == ' ' || p.peek() == '\t' || p.peek() == '\n') {
+		n += 1
 		p.forward(1)
 	}
+	return n
 }
 
 func (p *parser) commandEnd() bool {
@@ -1079,15 +1083,7 @@ func (p *parser) parseUpdate() node {
 
 func (p *parser) parseCommandKeyWord() string {
 	defer un(trace(p, "command keyword"))
-	candidates := []string{}
-	for command := range p.commandDispatch {
-		candidates = append(candidates, command)
-	}
-	for command := range p.noArgsCommands {
-		candidates = append(candidates, command)
-	}
-	candidates = append(candidates, lsCommands...)
-	return p.parseKeyWord(candidates)
+	return p.parseKeyWord(p.commandKeywords)
 }
 
 func (p *parser) parseSingleCommand() node {
@@ -1098,6 +1094,15 @@ func (p *parser) parseSingleCommand() node {
 	}
 	commandKeyWord := p.parseCommandKeyWord()
 	if commandKeyWord != "" {
+		// enforce spacing before the arguments if the keyword ends with a letter
+		lastChar := commandKeyWord[len(commandKeyWord)-1]
+		if isAlphaNumeric(lastChar) {
+			n := p.skipWhiteSpaces()
+			if n == 0 && !p.commandEnd() {
+				p.reset()
+				p.error("unknown keyword")
+			}
+		}
 		if lsIdx := indexOf(lsCommands, commandKeyWord); lsIdx != -1 {
 			p.skipWhiteSpaces()
 			return p.parseLsObj(lsIdx)
@@ -1140,8 +1145,9 @@ func (p *parser) parseCommand(name string) node {
 
 func newParser(buffer string) *parser {
 	p := &parser{
-		buf:        buffer,
-		stackTrace: []traceItem{},
+		buf:             buffer,
+		stackTrace:      []traceItem{},
+		commandKeywords: []string{},
 	}
 	p.commandDispatch = map[string]parseCommandFunc{
 		"ls":         p.parseLs,
@@ -1207,6 +1213,13 @@ func newParser(buffer string) *parser {
 		"exit":         &exitNode{},
 		"changepw":     &changePasswordNode{},
 	}
+	for command := range p.commandDispatch {
+		p.commandKeywords = append(p.commandKeywords, command)
+	}
+	for command := range p.noArgsCommands {
+		p.commandKeywords = append(p.commandKeywords, command)
+	}
+	p.commandKeywords = append(p.commandKeywords, lsCommands...)
 	return p
 }
 
