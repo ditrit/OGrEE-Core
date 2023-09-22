@@ -452,11 +452,10 @@ func HandleGenericObjectWildcard(w http.ResponseWriter, r *http.Request) {
 			if modelErr != nil {
 				u.ErrLog("Error while deleting entity", "DELETE ENTITY", modelErr.Message, r)
 				u.RespondWithError(w, modelErr)
-			} else {
-				w.WriteHeader(http.StatusNoContent)
-				u.Respond(w, u.Message("successfully deleted"))
 			}
 		}
+		w.WriteHeader(http.StatusNoContent)
+		u.Respond(w, u.Message("successfully deleted"))
 	} else {
 		u.Respond(w, u.RespDataWrapper("successfully got objects", matchingObjects))
 	}
