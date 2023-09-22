@@ -140,19 +140,17 @@ func (p *parser) error(message string) {
 		errorStr += " "
 	}
 	errorStr += "\033[31m" + "^" + "\033[0m" + "\n"
-	if len(p.stackTrace) > 1 {
-		errorStr += "parsing stack : "
-		emptyStack := true
-		for i := range p.stackTrace {
-			if p.stackTrace[i].message != "" {
-				if !emptyStack {
-					errorStr += " -> "
-				}
-				errorStr += p.stackTrace[i].message
-				emptyStack = false
+	parsingStackStr := ""
+	for i := range p.stackTrace {
+		if p.stackTrace[i].message != "" {
+			if parsingStackStr != "" {
+				parsingStackStr += " -> "
 			}
+			parsingStackStr += p.stackTrace[i].message
 		}
-		errorStr += "\n"
+	}
+	if parsingStackStr != "" {
+		errorStr += "parsing stack : " + parsingStackStr + "\n"
 	}
 	errorStr += "\033[31m" + "Error : " + "\033[0m" + message
 	p.err = message
