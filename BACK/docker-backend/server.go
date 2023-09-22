@@ -104,7 +104,7 @@ func createNewBackend(c *gin.Context) {
 	SSHRunCmd("mkdir -p "+newServer.DstPath+"/backend-assets", conn, true)
 	SSHRunCmd("mkdir -p "+newServer.DstPath+"/flutter-assets", conn, true)
 
-	SSHCopyFile("ogree_app_backend_linux", newServer.DstPath+"/ogree_app_backend", conn)
+	SSHCopyFile("ogree_app_backend", newServer.DstPath+"/ogree_app_backend", conn)
 	SSHCopyFile("backend-assets/docker-env-template.txt", newServer.DstPath+"/backend-assets/docker-env-template.txt", conn)
 	SSHCopyFile("backend-assets/template.service", newServer.DstPath+"/backend-assets/template.service", conn)
 	SSHCopyFile("flutter-assets/flutter-env-template.txt", newServer.DstPath+"/flutter-assets/flutter-env-template.txt", conn)
