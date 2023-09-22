@@ -19,7 +19,7 @@ ENV PATH="/usr/local/flutter/bin:/usr/local/flutter/bin/cache/dart-sdk/bin:${PAT
 RUN flutter doctor
 
 # Copy files to container and build
-COPY ogree_app/ /app/
+COPY . /app/
 WORKDIR /app/
 RUN flutter pub get
 RUN flutter build web 
