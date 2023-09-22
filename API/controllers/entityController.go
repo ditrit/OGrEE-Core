@@ -454,8 +454,7 @@ func HandleGenericObjectWildcard(w http.ResponseWriter, r *http.Request) {
 				u.RespondWithError(w, modelErr)
 			}
 		}
-		w.WriteHeader(http.StatusNoContent)
-		u.Respond(w, u.Message("successfully deleted"))
+		u.Respond(w, u.RespDataWrapper("successfully deleted objects", matchingObjects))
 	} else {
 		u.Respond(w, u.RespDataWrapper("successfully got objects", matchingObjects))
 	}

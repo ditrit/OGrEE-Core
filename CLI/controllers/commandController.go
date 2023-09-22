@@ -153,6 +153,20 @@ func WilcardUrl(path string) (string, error) {
 	return "/api/objects-wildcard/" + suffix, nil
 }
 
+func ParseWildcardResponse(resp *Response, route string) ([]map[string]any, []string, error) {
+	objsAny, ok := resp.body["data"].([]any)
+	if !ok {
+		return nil, nil, fmt.Errorf("invalid response from API on %s", route)
+	}
+	objs := infArrToMapStrinfArr(objsAny)
+	paths := []string{}
+	for _, obj := range objs {
+		objPath := "/Physical/" + strings.Replace(obj["id"].(string), ".", "/", -1)
+		paths = append(paths, objPath)
+	}
+	return objs, paths, nil
+}
+
 func GetObjectsWildcard(path string) ([]map[string]any, []string, error) {
 	url, err := WilcardUrl(path)
 	if err != nil {
@@ -162,17 +176,7 @@ func GetObjectsWildcard(path string) ([]map[string]any, []string, error) {
 	if err != nil {
 		return nil, nil, err
 	}
-	objsAny, ok := resp.body["data"].([]any)
-	if !ok {
-		return nil, nil, fmt.Errorf("invalid response from API on GET %s", url)
-	}
-	objs := infArrToMapStrinfArr(objsAny)
-	paths := []string{}
-	for _, obj := range objs {
-		objPath := "/Physical/" + strings.Replace(obj["id"].(string), ".", "/", -1)
-		paths = append(paths, objPath)
-	}
-	return objs, paths, nil
+	return ParseWildcardResponse(resp, "GET "+url)
 }
 
 func Ls(path string) ([]string, error) {
@@ -210,25 +214,25 @@ func DeleteObj(path string) error {
 	return nil
 }
 
-func DeleteObjectsWildcard(path string) error {
-	objs, _, err := GetObjectsWildcard(path)
-	if err != nil {
-		return err
-	}
+func DeleteObjectsWildcard(path string) ([]string, error) {
 	url, err := WilcardUrl(path)
 	if err != nil {
-		return err
+		return nil, err
 	}
-	_, err = RequestAPI("DELETE", url, nil, http.StatusNoContent)
+	resp, err := RequestAPI("DELETE", url, nil, http.StatusOK)
 	if err != nil {
-		return err
+		return nil, err
+	}
+	objs, paths, err := ParseWildcardResponse(resp, "DELETE "+url)
+	if err != nil {
+		return nil, err
 	}
 	for _, obj := range objs {
 		if IsInObjForUnity(obj["category"].(string)) {
 			InformUnity("DeleteObj", -1, map[string]any{"type": "delete", "data": obj["id"].(string)})
 		}
 	}
-	return nil
+	return paths, nil
 }
 
 func GetSlot(rack map[string]any, location string) (map[string]any, error) {
