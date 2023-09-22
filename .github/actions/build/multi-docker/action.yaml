@@ -82,9 +82,9 @@ runs:
         IMAGE_NAME: "kube-admin"
         FOLDER_NAME: "./BACK/kube-backend/kube-admin"
         VERSION: ${{ env.VERSION }}
-        TEAM_DOCKER_URL: ${{ secrets.TEAM_DOCKER_URL }}
-        TEAM_USERNAME: ${{ secrets.TEAM_DOCKER_USERNAME }}
-        TEAM_PASSWORD: ${{ secrets.TEAM_DOCKER_PASSWORD }}
+        TEAM_DOCKER_URL: ${{ inputs.TEAM_DOCKER_URL }}
+        TEAM_USERNAME: ${{ inputs.TEAM_DOCKER_USERNAME }}
+        TEAM_PASSWORD: ${{ inputs.TEAM_DOCKER_PASSWORD }}
 
     - name: Publish CLI on Nexcloud
       uses: ./.github/actions/build/CLI
