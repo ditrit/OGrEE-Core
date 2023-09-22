@@ -181,10 +181,10 @@ func FillUrlTree(n *HierarchyNode, path string, depth int, url string, followFil
 			objName = strings.Replace(obj["id"].(string), ".", "/", -1)
 		} else {
 			objName = nameOrSlug(obj)
-		}
-		objId, okId := obj["id"].(string)
-		if okId && objId != objName {
-			continue
+			objId, okId := obj["id"].(string)
+			if okId && objId != objName {
+				continue
+			}
 		}
 		subTree := NewNode(objName)
 		subTree.FillFn = followFillFn
