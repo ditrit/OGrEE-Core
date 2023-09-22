@@ -21,13 +21,13 @@ runs:
       - name: Set up
         shell: bash 
         run: |
-          cd ./APP/ogree_app
+          cd ./APP
           flutter pub get
       
       - name: Web build
         shell: bash
         run: |
-          cd ./APP/ogree_app
+          cd ./APP
           flutter build web
 
       - name: Send to Nextcloud
@@ -36,7 +36,7 @@ runs:
           NEXT_CREDENTIALS: ${{ inputs.NEXT_CREDENTIALS }}
           NEXT_ADDR: https://nextcloud.ditrit.io/remote.php/dav/files/github.actions/Ogree/1_Core/3_APP/bin/${{ inputs.VERSION }}
         run: |
-          cd ./APP/ogree_app 
+          cd ./APP 
           curl -u $NEXT_CREDENTIALS -X MKCOL $NEXT_ADDR
 
           zip -r ./OGrEE_APP_Web.zip build/web/*

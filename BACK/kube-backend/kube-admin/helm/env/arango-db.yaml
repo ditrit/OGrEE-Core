@@ -1,0 +1,2 @@
+- name: ARANGO_ROOT_PASSWORD
+  value: password

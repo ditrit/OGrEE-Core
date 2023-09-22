@@ -26,3 +26,19 @@ IMAGE_TAG=latest
 
 ## Manually
 You can also manually compile and generate binaries of each component (see each component's readme for information on how). To create a database, you must first have Mongo installed. Then, run the ogreeBoot.sh script located here. 
+
+## Deploy APP+Docker Backend
+To quickly deploy a frontend and docker backend in SuperAdmin mode, just execute the launch script appropriate to your OS from the `app` folder. This will use docker to compile both components and to run the frontend, the backend will be run locally. 
+```console
+# Windows (use PowerShell)
+.\launch.ps1
+# Linux 
+./launch.sh
+```
+This will launch the webapp on port 8080 and backend on port 8082. To set different ports:
+```console
+# Windows (use PowerShell)
+.\launch.ps1 -portWeb XXXX -portBack YYYY
+# Linux 
+./launch.sh -w XXXX -b YYYY
+```

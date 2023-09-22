@@ -2,7 +2,7 @@
 A Flutter application for OGrEE. It includes a frontend (ogree_app) mainly compiled as a web app and a backend (ogree_app_backend) only used for Super Admin mode. The flutter app can interact directly with OGrEE-API.
 
 ## Quick deploy
-To quickly deploy a frontend and backend in SuperAdmin mode, just execute the launch script appropriate to your OS. This will use docker to compile both components and to run the frontend, the backend will be run locally. 
+To quickly deploy a frontend and docker backend in SuperAdmin mode, just execute the launch script appropriate to your OS from the `deploy/app` folder. This will use docker to compile both components and to run the frontend, the backend will be run locally. 
 ```console
 # Windows (use PowerShell)
 .\launch.ps1
@@ -17,13 +17,14 @@ This will launch the webapp on port 8080 and backend on port 8082. To set differ
 ./launch.sh -w XXXX -b YYYY
 ```
 
-## Frontend
-```console
-cd ogree_app
-```
-With Flutter, we can use the same base code to build applications for different platforms (web, Android, iOS, Windows, Linux, MacOS). To understand how it works and set up your environment, check out the [Flutter](https://docs.flutter.dev/get-started/install) documentation.  For docker deployment, we build and run it as a web app.
+## Flutter Frontend
 
-### Building and running with Docker
+An application that connects to an OGrEE-API and lets the user visualize and create reports of the complete hierarchy of objects (sites, buildings, rooms, racks, devices, etc.) and all their attributes. The app can also connect to a backend (Core/BACK), entering SuperAdmin mode, where it can be used to launch new docker deployments of OGrEE.
+
+With Flutter, we can use the same base code to build applications for different platforms (web, Android, iOS, Windows, Linux, MacOS). To understand how it works and set up your environment, check out the [Flutter](https://docs.flutter.dev/get-started/install) documentation.  
+
+## Building and running with Docker
+For docker deployment, we build and run it as a web app.
 Our dockerfile is multi-stage: the first image install flutter and its dependencies, then compiles the web app; the second image is nginx based and runs the web server for the previously compiled app.
 
 From the root of OGrEE-Core, run the following to build the Docker image:
@@ -58,66 +59,22 @@ docker run -p 8080:80 -v [your/custom/folder]:/usr/share/nginx/html/assets/asset
 ### Frontend SuperAdmin mode
 Instead of interacting directly with a OGrEE-API, the App can connect to the backend avaible in this same repository to enter SuperAdmin mode. In this mode, instead of creating projects to consult an OGrEE-API database, you can create new Tenants, that is, to launch new OGrEE deployments (new OGrEE-APIs). All you have to do is connect your App to the URL of an `ogree_app_backend`. 
 
-## Backend
-```console
-cd ogree_app_backend
-```
-This is a backend that connects to a local instance of docker to create new tenants. A new tenant consists of a docker compose deployment of up to 4 containers: API, DB, WebApp and Swagger Doc. Once the frontend connects to this backend, it changes its interface to SuperAdmin mode.  
+## Developing
+For development, you should install the Flutter SDK and all its dependencies (depending on your OS). We recommed you use VSCode with the Flutter and Dart extensions. 
 
-### Building with Docker
-No Go installed? No problem, docker got you covered! Run the following command to build the backend binary, according to your OS:
-```console
-# Windows 
-docker run --rm -v ${PWD}:/workdir -w /workdir -e GOOS=windows golang go build -o ogree_app_backend.exe
-# Linux 
-docker run --rm -v $(pwd):/workdir -w /workdir -e GOOS=linux golang go build -o ogree_app_backend
-# MacOS 
-docker run --rm -v $(pwd):/workdir -w /workdir -e GOOS=darwin golang go build -o ogree_app_backend
-```
+### Language translations
 
-### Building with Go
-To build it, you should have Go installed (version >= 1.20). To run it, first docker should be up and running.
+The app is translated in English and French, following the official flutter [guide](https://docs.flutter.dev/development/accessibility-and-localization/internationalization). Under the *l10n/* folder, one file for each language contains all the phrases used in the app. Those can be called anywhere in the app with `AppLocalizations.of(context).nameOfThePhrase`. To add a new language, a new file must be added in that folder. 
 
-In the backend directory, run the following to install dependecies:
-```console
-go mod download
-```
+### Understanding the app and the code (regular mode)
 
-Then, to compile and run:
-```console
-go build -o ogree_app_backend
-./ogree_app_backend
-```
+In Flutter, everything is a widget (visual componentes, services, models, all of it!). It all starts with `main` that calls for the creation of a `MaterialApp` widget that has a theme definition applied for the whole app (for example: default font size for titles, default button colors) and calls the home widget `LoginPage`.
 
-### Configuring
-It is mandatory to have the `deploy` folder of OGrEE-Core to properly run the backend. A .env file should also be present under `ogree_app_backend/` with the following format:
-```
-TOKEN_SECRET=yoursecretstring
-TOKEN_HOUR_LIFESPAN=1
-ADM_PASSWORD=adminHashedPassword
-DEPLOY_DIR=../../deploy/
-```
+`LoginPage` will call `api.dart` functions to communicate with the backend (OGrEE-API, URL from .env file). It's in that file, located in a common folder accessible by all widgets in the project, that we handle HTTP requests. 
 
-Only one user (admin) can login to the superadmin backend with the password that should be added *hashed* to the .env file. If DEPLOY_DIR is omitted, the default as given in the example will be set. Example of hashed password that translates to `Ogree@148`:
-```
-ADM_PASSWORD="\$2a\$10\$YlOHvFzIBKzfgSxLLQkT0.7PeMsMGv/LhlL0FzDS63XKIZCCDRvim"
-```
+Once successfully logged in, `ProjectsPage` is called. The API is once again called to load projects from the OGrEE-API. A project is a set of previously choosen namespace, dataset date range, objects (site, building, device, etc.) and attributes (height, weight, vendor, etc.).  Our `models/project` converts the API JSON response to valide project objects, easy to manipulate by other widgets.
 
-A default .env is provided in the repo with the password above.
+The create new project button calls `SelectPage`, which creates a stepper with 4 steps that will call each a different widget as its content. The first 3 steps will allow the user to select date (`SelectDate`), namespace (`SelectNamespace`) and objects (`SelectObjects`). The latter will call the API to get the full hierarchy of objects available and display it in an expandable tree view with a settings view with filtering options to its right. 
 
-### Running
-Since the backend connects to docker to launch containers, it has to be run **locally**. To choose in what port the backend should run (default port is 8082):
-```
-./ogree_app_backend -port 8083
-```
+The final step will call `ResultsPage` that displays a table with the selected objects in the first column. The next columns can be added by the user with a button that opens a popup menu with attribute options. For each selected attributes, a column is added. Math functions can be added by the user to create rows that sum or average the values in each column, if numerical. The save button will communicate with the API to save the project.
 
-### Cross compile
-To cross compile from Linux or Mac (that is, compile to a different OS than the one in use), use the commands bellow. For Windows, user `set` for GOOS and GOARCH before running the go build command.
-```console
-# Linux 64-bit
-GOOS=linux GOARCH=amd64 go build -o ogree_app_backend_linux
-# Windows 64-bit
-GOOS=windows GOARCH=amd64 go build -o ogree_app_backend_win
-# MacOS 64-bit
-GOOS=darwin GOARCH=amd64 go build -o ogree_app_backend_mac
-```

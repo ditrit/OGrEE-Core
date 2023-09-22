@@ -1,0 +1,3 @@
+- name: mongo-db
+  storage: 1Gi
+  mountPath: /data/db

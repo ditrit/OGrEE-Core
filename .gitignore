@@ -3,7 +3,7 @@
 go.work
 go.work.sum
 *.code-workspace
-*.toml
+config.toml
 *log
 
 # API Ignore
