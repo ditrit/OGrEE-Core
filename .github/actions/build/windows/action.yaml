@@ -35,15 +35,17 @@ runs:
         FILE: OGrEE_CLI_Win_${{ inputs.VERSION }}.exe
       run: curl -u $env:NEXT_CREDENTIALS $env:NEXT_ADDR/$env:FILE -o cli.exe
 
-    - name: Download 3D from Nextcloud
+    - name : Get 3D package from repo
+      uses: dsaltares/fetch-gh-release-asset@master
+      with:
+        repo: 'ditrit/OGrEE-3D'
+        file: 'OGrEE-3D_win.zip'
+
+    - name: Unzip 3D package
       shell: pwsh
       env:
-        NEXT_CREDENTIALS: ${{ inputs.NEXT_CREDENTIALS }}
-        NEXT_ADDR: https://nextcloud.ditrit.io/remote.php/dav/files/github.actions/Ogree/3_Unity/3.1_Desktop
-        FILE: latest_OGrEE-3D_win.zip
-      run: | 
-        curl -u $env:NEXT_CREDENTIALS $env:NEXT_ADDR/$env:FILE -O
-        7z x $env:FILE
+        FILE: OGrEE-3D_win.zip
+      run: 7z x $env:FILE
 
     - name: Building the installer
       env:

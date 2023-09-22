@@ -59,6 +59,7 @@ Source: "deploy\*"; DestDir: "{app}\deploy"; Flags: ignoreversion recursesubdirs
 Source: "APP\docker-backend\inno.env"; DestDir: "{app}"; DestName: ".env"; Flags: ignoreversion; Components: back
 Source: "APP\build\windows\runner\Release\*"; DestDir: "{app}\front"; Flags: ignoreversion recursesubdirs createallsubdirs; Components: front
 Source: "ogree-icon.ico"; DestDir: "{app}"; DestName: "ogree-icon.ico"; Flags: ignoreversion; Components: back front
+Source: "config-example.toml"; DestDir: "{app}"; DestName: "config.toml"; Flags: ignoreversion; Components: cli
 Source: "CLI\other\man\*"; DestDir: "{app}\cli\other\man"; Flags: ignoreversion recursesubdirs createallsubdirs; Components: cli
 Source: "{#MyCliExeName}"; DestDir: "{app}\cli"; Flags: ignoreversion; Components: cli
 Source: "OGrEE-3D_win\*"; DestDir: "{app}\3d"; Flags: ignoreversion recursesubdirs createallsubdirs; Components: unity
