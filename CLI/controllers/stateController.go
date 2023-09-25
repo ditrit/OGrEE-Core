@@ -30,7 +30,6 @@ type ShellState struct {
 	User               User
 	APIURL             string
 	APIKEY             string
-	UnityClientAvail   bool  //For deciding to message unity or not
 	FilterDisplay      bool  //Set whether or not to send attributes to unity
 	ObjsForUnity       []int //Deciding what objects should be sent to unity
 	DrawThreshold      int   //Number of objects to be sent at a time to unity

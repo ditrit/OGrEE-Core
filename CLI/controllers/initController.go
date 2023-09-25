@@ -53,8 +53,6 @@ func InitState(conf *config.Config) {
 	State.CurrPath = "/Physical"
 	State.PrevPath = "/Physical"
 
-	State.UnityClientAvail = false
-
 	//Set the filter attributes setting
 	State.FilterDisplay = false
 
@@ -99,25 +97,24 @@ func SetStateReadline(rl *readline.Instance) {
 }
 
 // Startup the go routine for listening
-func InitUnityCom(rl *readline.Instance, addr string) {
-	errConnect := models.ConnectToUnity(addr, State.Timeout)
+func InitOGrEE3DCommunication(rl *readline.Instance, addr string) {
+	errConnect := models.Ogree3D.Connect(addr, State.Timeout)
 	if errConnect != nil {
 		if State.DebugLvl > ERROR {
 			println(errConnect.Error())
 		}
 		return
 	}
-	State.UnityClientAvail = true
 
-	data := map[string]interface{}{"api_url": State.APIURL, "api_token": GetKey()}
-	req := map[string]interface{}{"type": "login", "data": data}
-	errLogin := models.ContactUnity(req, State.DebugLvl)
+	errLogin := models.Ogree3D.Login(State.APIURL, GetKey(), State.DebugLvl)
 	if errLogin != nil {
 		println(errLogin.Error())
 		return
 	}
-	fmt.Println("Unity Client is Reachable!")
-	go models.ReceiveLoop(rl, addr, &State.UnityClientAvail)
+
+	fmt.Println("OGrEE-3D is Reachable!")
+
+	go models.Ogree3D.ReceiveLoop(rl)
 }
 
 func InitTimeout(duration string) {

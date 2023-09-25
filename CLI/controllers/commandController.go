@@ -531,7 +531,6 @@ func LSEnterprise() {
 // Displays environment variable values
 // and user defined variables and funcs
 func Env(userVars, userFuncs map[string]interface{}) {
-	fmt.Println("Unity: ", State.UnityClientAvail)
 	fmt.Println("Filter: ", State.FilterDisplay)
 	fmt.Println()
 	fmt.Println("Objects Unity shall be informed of upon update:")
@@ -1500,10 +1499,12 @@ func Draw(path string, depth int, force bool) error {
 	if err != nil {
 		return err
 	}
-	count := objectCounter(obj)
-	if !State.UnityClientAvail {
+
+	if !models.Ogree3D.IsConnected() {
 		return nil
 	}
+
+	count := objectCounter(obj)
 	okToGo := true
 	if count > State.DrawThreshold && !force {
 		msg := "You are about to send " + strconv.Itoa(count) +
@@ -1671,18 +1672,15 @@ func SetClipBoard(x []string) ([]string, error) {
 
 func SetEnv(arg string, val interface{}) {
 	switch arg {
-	case "Filter", "Unity":
+	case "Filter":
 		if _, ok := val.(bool); !ok {
 			msg := "Can only assign bool values for " + arg + " Env Var"
 			l.GetWarningLogger().Println(msg)
 			if State.DebugLvl > 0 {
 				println(msg)
 			}
-
 		} else {
-			if arg == "Unity" {
-				State.UnityClientAvail = val.(bool)
-			} else if arg == "Filter" {
+			if arg == "Filter" {
 				State.FilterDisplay = val.(bool)
 			}
 
@@ -1793,7 +1791,7 @@ func InteractObject(path string, keyword string, val interface{}, fromAttr bool)
 func InformUnity(caller string, entity int, data map[string]interface{}) error {
 	//If unity is available message it
 	//otherwise do nothing
-	if State.UnityClientAvail {
+	if models.Ogree3D.IsConnected() {
 		if entity > -1 && entity < SENSOR+1 {
 			data = GenerateFilteredJson(data)
 		}
@@ -1802,7 +1800,7 @@ func InformUnity(caller string, entity int, data map[string]interface{}) error {
 			Disp(data)
 		}
 
-		e := models.ContactUnity(data, State.DebugLvl)
+		e := models.Ogree3D.Send(data, State.DebugLvl)
 		if e != nil {
 			l.GetWarningLogger().Println("Unable to contact Unity Client @" + caller)
 			if State.DebugLvl > 1 {
