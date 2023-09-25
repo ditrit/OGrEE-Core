@@ -151,10 +151,6 @@ func InitTimeout(duration string) {
 	}
 }
 
-func InitUser(user User) {
-
-}
-
 func InitKey(apiKey string) {
 	if apiKey != "" {
 		State.APIKEY = apiKey
