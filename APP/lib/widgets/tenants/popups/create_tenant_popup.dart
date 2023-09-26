@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -18,6 +20,7 @@ class CreateTenantPopup extends StatefulWidget {
 
 class _CreateTenantPopupState extends State<CreateTenantPopup> {
   final _formKey = GlobalKey<FormState>();
+  final ScrollController _outputController = ScrollController();
   String? _tenantName;
   String? _tenantPassword;
   String? _apiUrl;
@@ -32,6 +35,7 @@ class _CreateTenantPopupState extends State<CreateTenantPopup> {
   PlatformFile? _loadedImage;
   String _imageTag = "main";
   bool _isSmallDisplay = false;
+  String _createResult = "";
 
   @override
   Widget build(BuildContext context) {
@@ -41,7 +45,9 @@ class _CreateTenantPopupState extends State<CreateTenantPopup> {
       child: Container(
         width: 500,
         constraints: BoxConstraints(
-            maxHeight: backendType == BackendType.kubernetes ? 420 : 540),
+            maxHeight: backendType == BackendType.kubernetes
+                ? 420
+                : (_createResult == "" || !_hasWeb ? 540 : 660)),
         margin: const EdgeInsets.symmetric(horizontal: 20),
         decoration: PopupDecoration,
         child: Padding(
@@ -227,7 +233,33 @@ class _CreateTenantPopupState extends State<CreateTenantPopup> {
                                           : const Icon(Icons.check_circle,
                                               size: 16))
                                 ],
-                              )
+                              ),
+                              _createResult != ""
+                                  ? Padding(
+                                      padding: const EdgeInsets.only(top: 12),
+                                      child: Container(
+                                        height: 110,
+                                        decoration: BoxDecoration(
+                                          borderRadius:
+                                              BorderRadius.circular(12),
+                                          color: Colors.black,
+                                        ),
+                                        child: Padding(
+                                          padding: const EdgeInsets.all(8.0),
+                                          child: ListView(
+                                            controller: _outputController,
+                                            children: [
+                                              Text(
+                                                "Output:$_createResult",
+                                                style: const TextStyle(
+                                                    color: Colors.white),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                      ),
+                                    )
+                                  : Container()
                             ],
                           ),
                         ))),
@@ -268,10 +300,36 @@ class _CreateTenantPopupState extends State<CreateTenantPopup> {
           _imageTag));
       switch (result) {
         case Success(value: final value):
-          widget.parentCallback();
-          showSnackBar(context, "${localeMsg.tenantCreated} 🥳",
-              isSuccess: true);
-          Navigator.of(context).pop();
+          String finalMsg = "";
+          await for (var chunk in value.stream.transform(utf8.decoder)) {
+            // Process each chunk as it is received
+            print(chunk);
+            var newLine = chunk.split("data:").last.trim();
+            if (newLine.isNotEmpty) {
+              setState(() {
+                _createResult = "$_createResult\n$newLine";
+                if (_outputController.hasClients) {
+                  _outputController
+                      .jumpTo(_outputController.position.maxScrollExtent + 20);
+                }
+              });
+            }
+            if (!chunk.contains("data:")) {
+              // not from the stream of events
+              finalMsg = chunk;
+            }
+          }
+          if (finalMsg.contains("Error")) {
+            setState(() {
+              _isLoading = false;
+            });
+            showSnackBar(context, finalMsg, isError: true);
+          } else {
+            widget.parentCallback();
+            showSnackBar(context, "${localeMsg.tenantCreated} 🥳",
+                isSuccess: true);
+            Navigator.of(context).pop();
+          }
         case Failure(exception: final exception):
           setState(() {
             _isLoading = false;
