@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"cli/commands"
 	l "cli/logger"
 	"cli/models"
 	"cli/readline"
@@ -477,7 +478,8 @@ func LSOG() {
 
 	fmt.Println("USER EMAIL:", State.User.Email)
 	fmt.Println("API URL:", State.APIURL+"/api/")
-	fmt.Println("UNITY URL:", State.UnityClientURL)
+	fmt.Println("OGrEE-3D URL:", State.Ogree3DURL)
+	fmt.Println("OGrEE-3D connected: ", models.Ogree3D.IsConnected())
 	fmt.Println("BUILD DATE:", BuildTime)
 	fmt.Println("BUILD TREE:", BuildTree)
 	fmt.Println("BUILD HASH:", BuildHash)
@@ -674,7 +676,7 @@ func Help(entry string) {
 	switch entry {
 	case "ls", "pwd", "print", "cd", "tree", "get", "clear",
 		"lsog", "grep", "for", "while", "if", "env",
-		"cmds", "var", "unset", "selection", "camera", "ui", "hc", "drawable",
+		"cmds", "var", "unset", "selection", commands.Connect3D, "camera", "ui", "hc", "drawable",
 		"link", "unlink", "draw", "getu", "getslot", "undraw",
 		"lsenterprise":
 		path = "./other/man/" + entry + ".md"
@@ -1341,6 +1343,29 @@ func GetOCLIAtrributesTemplateHelper(attr, data map[string]interface{}, ent int)
 			attr["size"] = serialiseAttr2(attr, "size")
 		}
 	}
+}
+
+func Connect3D(url string) error {
+	if models.Ogree3D.IsConnected() {
+		if url == "" || url == State.Ogree3DURL {
+			return fmt.Errorf("already connected to OGrEE-3D url: %s", State.Ogree3DURL)
+		} else {
+			models.Ogree3D.Disconnect()
+		}
+	}
+
+	if url == "" {
+		fmt.Printf("Using OGrEE-3D url: %s\n", State.Ogree3DURL)
+	} else {
+		err := State.SetOgree3DURL(url)
+		if err != nil {
+			return err
+		}
+	}
+
+	InitOGrEE3DCommunication(*State.Terminal)
+
+	return nil
 }
 
 func UIDelay(time float64) {

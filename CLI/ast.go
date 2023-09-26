@@ -1358,6 +1358,14 @@ func (n *changePasswordNode) execute() (interface{}, error) {
 	return nil, cmd.ChangePassword()
 }
 
+type connect3DNode struct {
+	url string
+}
+
+func (n *connect3DNode) execute() (interface{}, error) {
+	return nil, cmd.Connect3D(n.url)
+}
+
 type uiDelayNode struct {
 	time float64
 }

@@ -97,9 +97,10 @@ func SetStateReadline(rl *readline.Instance) {
 }
 
 // Startup the go routine for listening
-func InitOGrEE3DCommunication(rl *readline.Instance, addr string) {
-	errConnect := models.Ogree3D.Connect(addr, State.Timeout)
+func InitOGrEE3DCommunication(rl *readline.Instance) {
+	errConnect := models.Ogree3D.Connect(State.Ogree3DURL, State.Timeout)
 	if errConnect != nil {
+		fmt.Println("OGrEE-3D is not reachable")
 		if State.DebugLvl > ERROR {
 			println(errConnect.Error())
 		}
@@ -160,7 +161,7 @@ func InitKey(apiKey string) {
 	}
 }
 
-func InitURLs(apiURL string, unityURL string) {
+func InitURLs(apiURL string, ogree3DURL string) {
 	apiURL = strings.TrimRight(apiURL, "/")
 	_, err := url.ParseRequestURI(apiURL)
 	if err != nil {
@@ -172,12 +173,11 @@ func InitURLs(apiURL string, unityURL string) {
 	} else {
 		State.APIURL = apiURL
 	}
-	State.UnityClientURL = unityURL
-	if State.UnityClientURL == "" {
-		msg := "Falling back to defaul Unity URL: localhost:5500"
-		fmt.Println(msg)
-		l.GetInfoLogger().Println(msg)
-		State.UnityClientURL = "localhost:5500"
+
+	err = State.SetOgree3DURL(ogree3DURL)
+	if err != nil {
+		fmt.Println(err.Error())
+		State.SetDefaultOgree3DURL()
 	}
 }
 
