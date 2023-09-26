@@ -422,17 +422,20 @@ Future<Result<(List<Tenant>, List<DockerContainer>), Exception>>
   }
 }
 
-Future<Result<void, Exception>> createTenant(Tenant tenant) async {
+Future<Result<http.StreamedResponse, Exception>> createTenant(
+    Tenant tenant) async {
   print("API create Tenants");
   try {
     Uri url = Uri.parse('$apiUrl/api/tenants');
-    final response =
-        await http.post(url, body: tenant.toJson(), headers: getHeader(token));
-    print(response);
+    final client = http.Client();
+    var request = http.Request('POST', url)..headers.addAll(getHeader(token));
+    request.body = tenant.toJson();
+    final response = await client.send(request);
     if (response.statusCode == 200) {
-      return const Success(null);
+      return Success(response);
     } else {
-      String data = json.decode(response.body);
+      String data = " ";
+      //json.decode(response.body);
       return Failure(Exception("Error creating tenant $data"));
     }
   } on Exception catch (e) {
