@@ -43,7 +43,13 @@ func main() {
 	}
 	c.State.User = *user
 	c.InitKey(apiKey)
-	c.InitState(conf)
+
+	err = c.InitState(conf)
+	if err != nil {
+		println(err.Error())
+		return
+	}
+
 	err = InitVars(conf.Variables)
 	if err != nil {
 		println("Error while initializing variables :", err.Error())

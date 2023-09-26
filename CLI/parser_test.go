@@ -247,15 +247,14 @@ func testCommand(buffer string, expected node, t *testing.T) bool {
 }
 
 func TestParseLsObj(t *testing.T) {
-	buffer := "lsbldg -s height - f attr1:attr2 -r plouf.plaf "
+	buffer := "lsbldg -s height - f attr1:attr2 plouf.plaf "
 	path := &pathNode{&valueNode{"plouf.plaf"}}
 	entity := c.EntityStrToInt("building")
-	recursive := true
 	sort := "height"
 	attrList := []string{"attr1", "attr2"}
-	expected := &lsObjNode{path, entity, recursive, sort, attrList}
+	expected := &lsObjNode{path, entity, sort, attrList}
 	testCommand(buffer, expected, t)
-	buffer = "lsbldg -s height - f \"attr1:attr2\" -r plouf.plaf "
+	buffer = "lsbldg -s height - f \"attr1:attr2\" plouf.plaf "
 	testCommand(buffer, expected, t)
 }
 

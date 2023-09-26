@@ -690,11 +690,10 @@ func (n *updateObjNode) execute() (interface{}, error) {
 }
 
 type lsObjNode struct {
-	path      node
-	entity    int
-	recursive bool
-	sort      string
-	attrList  []string
+	path     node
+	entity   int
+	sort     string
+	attrList []string
 }
 
 func (n *lsObjNode) execute() (interface{}, error) {
@@ -702,14 +701,9 @@ func (n *lsObjNode) execute() (interface{}, error) {
 	if err != nil {
 		return nil, err
 	}
-	var objects []any
-	if n.recursive {
-		objects, err = cmd.LSOBJECTRecursive(path, n.entity)
-		if err != nil {
-			return nil, err
-		}
-	} else {
-		objects = cmd.LSOBJECT(path, n.entity)
+	objects, err := cmd.LSOBJECT(path, n.entity)
+	if err != nil {
+		return nil, err
 	}
 	if n.sort != "" {
 		objects = cmd.SortObjects(objects, n.sort).GetData()
@@ -787,15 +781,13 @@ func (n *undrawNode) execute() (interface{}, error) {
 type lsogNode struct{}
 
 func (n *lsogNode) execute() (interface{}, error) {
-	cmd.LSOG()
-	return nil, nil
+	return nil, cmd.LSOG()
 }
 
 type lsenterpriseNode struct{}
 
 func (n *lsenterpriseNode) execute() (interface{}, error) {
-	cmd.LSEnterprise()
-	return nil, nil
+	return nil, cmd.LSEnterprise()
 }
 
 type exitNode struct{}

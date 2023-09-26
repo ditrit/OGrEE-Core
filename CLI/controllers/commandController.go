@@ -186,16 +186,11 @@ func GetSlot(rack map[string]any, location string) (map[string]any, error) {
 	if template == "" {
 		return nil, nil
 	}
-	URL := State.APIURL + "/api/obj-templates/" + template
-	resp, err := models.Send("GET", URL, GetKey(), nil)
+	resp, err := RequestAPI("GET", "/api/obj-templates/"+template, nil, http.StatusOK)
 	if err != nil {
 		return nil, err
 	}
-	if resp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("cannot get template %s", template)
-	}
-	parsedResp := ParseResponse(resp, err, "GET")
-	slots, ok := parsedResp["data"].(map[string]any)["slots"]
+	slots, ok := resp.body["data"].(map[string]any)["slots"]
 	if !ok {
 		return nil, nil
 	}
@@ -384,21 +379,18 @@ func UnsetInObj(Path, attr string, idx int) (map[string]interface{}, error) {
 		return nil, err
 	}
 
-	resp, e := models.Send("PUT", URL, GetKey(), obj)
-	respJson := ParseResponse(resp, e, "UPDATE")
-	if respJson != nil {
-		if resp.StatusCode == 200 {
-			println("Success")
+	resp, err := RequestAPI("PUT", URL, obj, http.StatusOK)
+	if err != nil {
+		return nil, err
+	}
 
-			message := map[string]interface{}{
-				"type": "modify", "data": respJson["data"]}
+	message := map[string]interface{}{
+		"type": "modify", "data": resp.body["data"]}
 
-			//Update and inform unity
-			if !IsTemplate(Path) && IsInObjForUnity(entity) {
-				entInt := EntityStrToInt(entity)
-				InformUnity("UpdateObj", entInt, message)
-			}
-		}
+	//Update and inform unity
+	if !IsTemplate(Path) && IsInObjForUnity(entity) {
+		entInt := EntityStrToInt(entity)
+		InformUnity("UpdateObj", entInt, message)
 	}
 
 	return nil, nil
@@ -415,8 +407,7 @@ func Clear() {
 	}
 }
 
-func LSOG() {
-
+func LSOG() error {
 	fmt.Println("********************************************")
 	fmt.Println("OGREE Shell Information")
 	fmt.Println("********************************************")
@@ -439,39 +430,29 @@ func LSOG() {
 	fmt.Println("********************************************")
 
 	//Get API Information here
-	r, e := models.Send("GET", State.APIURL+"/api/version", GetKey(), nil)
-	parsedResp := ParseResponse(r, e, "get API information request")
-
-	if parsedResp != nil {
-		if apiInfo, ok := LoadObjectFromInf(parsedResp["data"]); ok {
-			fmt.Println("BUILD DATE:", apiInfo["BuildDate"])
-			fmt.Println("BUILD TREE:", apiInfo["BuildTree"])
-			fmt.Println("BUILD HASH:", apiInfo["BuildHash"])
-			fmt.Println("COMMIT DATE: ", apiInfo["CommitDate"])
-			fmt.Println("CUSTOMER: ", apiInfo["Customer"])
-
-		} else if State.DebugLvl > 1 {
-			msg := "Received invalid response for API on GET /api/version"
-			l.GetWarningLogger().Println(msg)
-			fmt.Println("NOTE: Received invalid response from API on information request")
-		}
-
-	} else {
-		if State.DebugLvl > 1 {
-			msg := "Could not get API information"
-			l.GetWarningLogger().Println(msg)
-			fmt.Println("NOTE: " + msg)
-		}
+	resp, err := RequestAPI("GET", "/api/version", nil, http.StatusOK)
+	if err != nil {
+		return err
 	}
+	apiInfo, ok := resp.body["data"].(map[string]any)
+	if !ok {
+		return fmt.Errorf("invalid response from API on GET /api/version")
+	}
+	fmt.Println("BUILD DATE:", apiInfo["BuildDate"])
+	fmt.Println("BUILD TREE:", apiInfo["BuildTree"])
+	fmt.Println("BUILD HASH:", apiInfo["BuildHash"])
+	fmt.Println("COMMIT DATE: ", apiInfo["CommitDate"])
+	fmt.Println("CUSTOMER: ", apiInfo["Customer"])
+	return nil
 }
 
-func LSEnterprise() {
-	r, e := models.Send("GET", State.APIURL+"/api/stats",
-		GetKey(), nil)
-	resp := ParseResponse(r, e, "lsenterprise")
-	if resp != nil {
-		DisplayObject(resp)
+func LSEnterprise() error {
+	resp, err := RequestAPI("GET", "/api/stats", nil, http.StatusOK)
+	if err != nil {
+		return err
 	}
+	DisplayObject(resp.body)
+	return nil
 }
 
 // Displays environment variable values
@@ -506,36 +487,44 @@ func Env(userVars, userFuncs map[string]interface{}) {
 	}
 }
 
-func LSOBJECT(path string, entity int) []interface{} {
-	var Path string
-
-	if entity == SITE { //Special for sites case
+func LSOBJECT(path string, entity int) ([]interface{}, error) {
+	var url string
+	var err error
+	if entity == SITE {
 		if path == "/Physical" {
-			Path = State.APIURL + "/api"
+			url = "/api/sites"
 		} else {
-			//Return nothing
-			return nil
+			return []any{}, nil
 		}
 	} else {
-		var err error
-		Path, err = ObjectUrl(path, 0)
+		obj, err := GetObject(path)
 		if err != nil {
-			if State.DebugLvl > 0 {
-				println("Error finding Object from given path!")
-			}
-			l.GetWarningLogger().Println("Object to Get not found")
-			return nil
+			return nil, err
+		}
+		url, err = ObjectUrl(path, 0)
+		if err != nil {
+			return nil, err
+		}
+		var suffix string
+		if startsWith(url, "/api/objects", &suffix) {
+			url = fmt.Sprintf("/api/%ss%s/%ss", obj["category"].(string), suffix, EntityToString(entity))
+		} else {
+			return nil, fmt.Errorf("unexpected CLI error")
 		}
 	}
-
-	//Retrieve the desired objects under the working path
-	entStr := EntityToString(entity) + "s"
-	r, e := models.Send("GET", Path+"/"+entStr, GetKey(), nil)
-	parsed := ParseResponse(r, e, "list objects")
-	if parsed == nil {
-		return nil
+	resp, err := RequestAPI("GET", url, nil, http.StatusOK)
+	if err != nil {
+		return nil, err
 	}
-	return GetRawObjects(parsed)
+	data, ok := resp.body["data"].(map[string]any)
+	if !ok {
+		return nil, fmt.Errorf("invalid response from API on GET %s", url)
+	}
+	objects, ok := data["objects"].([]any)
+	if !ok {
+		return nil, fmt.Errorf("invalid response from API on GET %s", url)
+	}
+	return objects, nil
 }
 
 func GetByAttr(path string, u interface{}) error {
@@ -734,8 +723,10 @@ func CreateObject(path string, ent int, data map[string]interface{}) error {
 
 		//Check for template
 		if _, ok := attr["template"]; ok {
-			GetOCLIAtrributesTemplateHelper(attr, data, BLDG)
-
+			err := GetOCLIAtrributesTemplateHelper(attr, data, BLDG)
+			if err != nil {
+				return err
+			}
 		} else {
 			//Serialise size and posXY manually instead
 			if _, ok := attr["size"].(string); ok {
@@ -805,7 +796,10 @@ func CreateObject(path string, ent int, data map[string]interface{}) error {
 		//If user provided templates, get the JSON
 		//and parse into templates
 		//NOTE this function also assigns value for "size" attribute
-		GetOCLIAtrributesTemplateHelper(attr, data, ent)
+		err := GetOCLIAtrributesTemplateHelper(attr, data, ent)
+		if err != nil {
+			return err
+		}
 
 		if _, ok := attr["posXY"].(string); ok {
 			attr["posXY"] = serialiseAttr(attr, "posXY")
@@ -871,7 +865,10 @@ func CreateObject(path string, ent int, data map[string]interface{}) error {
 
 		//If user provided templates, get the JSON
 		//and parse into templates
-		GetOCLIAtrributesTemplateHelper(attr, data, ent)
+		err := GetOCLIAtrributesTemplateHelper(attr, data, ent)
+		if err != nil {
+			return err
+		}
 
 		if attr["size"] == "" {
 			if State.DebugLvl > 0 {
@@ -971,7 +968,10 @@ func CreateObject(path string, ent int, data map[string]interface{}) error {
 		//If user provided templates, get the JSON
 		//and parse into templates
 		if _, ok := attr["template"]; ok {
-			GetOCLIAtrributesTemplateHelper(attr, data, DEVICE)
+			err := GetOCLIAtrributesTemplateHelper(attr, data, DEVICE)
+			if err != nil {
+				return err
+			}
 		} else {
 			attr["template"] = ""
 			if slot != nil {
@@ -1011,7 +1011,10 @@ func CreateObject(path string, ent int, data map[string]interface{}) error {
 		attr = data["attributes"].(map[string]interface{})
 		if _, ok := attr["template"]; ok {
 			//GetOCLIAtrributesTemplateHelper(attr, data, DEVICE)
-			tmpl := fetchTemplate(attr["template"].(string), STRAYSENSOR)
+			tmpl, err := fetchTemplate(attr["template"].(string), STRAYSENSOR)
+			if err != nil {
+				return err
+			}
 			MergeMaps(attr, tmpl, true)
 		} else {
 			attr["template"] = ""
@@ -1020,7 +1023,10 @@ func CreateObject(path string, ent int, data map[string]interface{}) error {
 	case STRAY_DEV:
 		attr = data["attributes"].(map[string]interface{})
 		if _, ok := attr["template"]; ok {
-			GetOCLIAtrributesTemplateHelper(attr, data, DEVICE)
+			err := GetOCLIAtrributesTemplateHelper(attr, data, DEVICE)
+			if err != nil {
+				return err
+			}
 		} else {
 			attr["template"] = ""
 		}
@@ -1052,7 +1058,7 @@ func CreateObject(path string, ent int, data map[string]interface{}) error {
 
 // If user provided templates, get the JSON
 // and parse into templates
-func GetOCLIAtrributesTemplateHelper(attr, data map[string]interface{}, ent int) {
+func GetOCLIAtrributesTemplateHelper(attr, data map[string]interface{}, ent int) error {
 	//Inner func declaration used for importing
 	//data from templates
 	attrSerialiser := func(someVal interface{}, idx string, ent int) string {
@@ -1086,185 +1092,179 @@ func GetOCLIAtrributesTemplateHelper(attr, data map[string]interface{}, ent int)
 			} else {
 				tInt = OBJTMPL
 			} //End of determine block
+			tmpl, err := fetchTemplate(qS, tInt)
+			if err != nil {
+				return err
+			}
 
-			if tmpl := fetchTemplate(qS, tInt); tmpl != nil {
-				//MergeMaps(attr, tmpl, true)
-				key := determineStrKey(tmpl, []string{"sizeWDHmm", "sizeWDHm"})
+			//MergeMaps(attr, tmpl, true)
+			key := determineStrKey(tmpl, []string{"sizeWDHmm", "sizeWDHm"})
 
-				if sizeInf, ok := tmpl[key].([]interface{}); ok && len(sizeInf) == 3 {
-					var xS, yS, zS string
-					xS = attrSerialiser(sizeInf[0], "x", ent)
-					yS = attrSerialiser(sizeInf[1], "y", ent)
-					zS = attrSerialiser(sizeInf[2], "height", ent)
+			if sizeInf, ok := tmpl[key].([]interface{}); ok && len(sizeInf) == 3 {
+				var xS, yS, zS string
+				xS = attrSerialiser(sizeInf[0], "x", ent)
+				yS = attrSerialiser(sizeInf[1], "y", ent)
+				zS = attrSerialiser(sizeInf[2], "height", ent)
 
-					attr["size"] = "{\"x\":" + xS + ", \"y\":" + yS + "}"
-					attr["height"] = zS
+				attr["size"] = "{\"x\":" + xS + ", \"y\":" + yS + "}"
+				attr["height"] = zS
 
-					if ent == DEVICE {
-						attr["sizeUnit"] = "mm"
-						attr["heightUnit"] = "mm"
-						if tmpx, ok := tmpl["attributes"]; ok {
-							if x, ok := tmpx.(map[string]interface{}); ok {
-								if tmp, ok := x["type"]; ok {
-									if t, ok := tmp.(string); ok {
-										if t == "chassis" || t == "server" {
-											res := 0
-											if val, ok := sizeInf[2].(float64); ok {
-												res = int((val / 1000) / RACKUNIT)
-											} else if val, ok := sizeInf[2].(int); ok {
-												res = int((float64(val) / 1000) / RACKUNIT)
-											} else {
-												//Resort to default value
-												msg := "Warning, invalid value provided for" +
-													" sizeU. Defaulting to 5"
-												println(msg)
-												res = int((5 / 1000) / RACKUNIT)
-											}
-											attr["sizeU"] = strconv.Itoa(res)
-
+				if ent == DEVICE {
+					attr["sizeUnit"] = "mm"
+					attr["heightUnit"] = "mm"
+					if tmpx, ok := tmpl["attributes"]; ok {
+						if x, ok := tmpx.(map[string]interface{}); ok {
+							if tmp, ok := x["type"]; ok {
+								if t, ok := tmp.(string); ok {
+									if t == "chassis" || t == "server" {
+										res := 0
+										if val, ok := sizeInf[2].(float64); ok {
+											res = int((val / 1000) / RACKUNIT)
+										} else if val, ok := sizeInf[2].(int); ok {
+											res = int((float64(val) / 1000) / RACKUNIT)
+										} else {
+											//Resort to default value
+											msg := "Warning, invalid value provided for" +
+												" sizeU. Defaulting to 5"
+											println(msg)
+											res = int((5 / 1000) / RACKUNIT)
 										}
+										attr["sizeU"] = strconv.Itoa(res)
+
 									}
 								}
 							}
 						}
+					}
 
-					} else if ent == ROOM {
-						attr["sizeUnit"] = "m"
-						attr["heightUnit"] = "m"
+				} else if ent == ROOM {
+					attr["sizeUnit"] = "m"
+					attr["heightUnit"] = "m"
 
-						//Copy additional Room specific attributes
-						var tmp []byte
-						CopyAttr(attr, tmpl, "technicalArea")
-						if _, ok := attr["technicalArea"]; ok {
-							//tmp, _ := json.Marshal(attr["technicalArea"])
-							attr["technical"] = attr["technicalArea"]
-							delete(attr, "technicalArea")
+					//Copy additional Room specific attributes
+					var tmp []byte
+					CopyAttr(attr, tmpl, "technicalArea")
+					if _, ok := attr["technicalArea"]; ok {
+						//tmp, _ := json.Marshal(attr["technicalArea"])
+						attr["technical"] = attr["technicalArea"]
+						delete(attr, "technicalArea")
+					}
+
+					CopyAttr(attr, tmpl, "axisOrientation")
+
+					CopyAttr(attr, tmpl, "reservedArea")
+					if _, ok := attr["reservedArea"]; ok {
+						//tmp, _ = json.Marshal(attr["reservedArea"])
+						attr["reserved"] = attr["reservedArea"]
+						delete(attr, "reservedArea")
+					}
+
+					parseReservedTech(attr)
+
+					CopyAttr(attr, tmpl, "separators")
+					if _, ok := attr["separators"]; ok {
+						tmp, _ = json.Marshal(attr["separators"])
+						attr["separators"] = string(tmp)
+					}
+
+					CopyAttr(attr, tmpl, "pillars")
+					if _, ok := attr["pillars"]; ok {
+						tmp, _ = json.Marshal(attr["pillars"])
+						attr["pillars"] = string(tmp)
+					}
+
+					CopyAttr(attr, tmpl, "floorUnit")
+					if _, ok := attr["floorUnit"]; ok {
+						if floorUnit, ok := attr["floorUnit"].(string); ok {
+							attr["floorUnit"] = floorUnit
+						}
+					}
+
+					CopyAttr(attr, tmpl, "tiles")
+					if _, ok := attr["tiles"]; ok {
+						tmp, _ = json.Marshal(attr["tiles"])
+						attr["tiles"] = string(tmp)
+					}
+
+					CopyAttr(attr, tmpl, "rows")
+					if _, ok := attr["rows"]; ok {
+						tmp, _ = json.Marshal(attr["rows"])
+						attr["rows"] = string(tmp)
+					}
+
+					CopyAttr(attr, tmpl, "aisles")
+					if _, ok := attr["aisles"]; ok {
+						tmp, _ = json.Marshal(attr["aisles"])
+						attr["aisles"] = string(tmp)
+					}
+
+					CopyAttr(attr, tmpl, "vertices")
+					if _, ok := attr["vertices"]; ok {
+						tmp, _ = json.Marshal(attr["vertices"])
+						attr["vertices"] = string(tmp)
+					}
+
+					CopyAttr(attr, tmpl, "colors")
+					if _, ok := attr["colors"]; ok {
+						tmp, _ = json.Marshal(attr["colors"])
+						attr["colors"] = string(tmp)
+					}
+
+					CopyAttr(attr, tmpl, "tileAngle")
+					if _, ok := attr["tileAngle"]; ok {
+						if tileAngle, ok := attr["tileAngle"].(int); ok {
+							attr["tileAngle"] = strconv.Itoa(tileAngle)
 						}
 
-						CopyAttr(attr, tmpl, "axisOrientation")
-
-						CopyAttr(attr, tmpl, "reservedArea")
-						if _, ok := attr["reservedArea"]; ok {
-							//tmp, _ = json.Marshal(attr["reservedArea"])
-							attr["reserved"] = attr["reservedArea"]
-							delete(attr, "reservedArea")
+						if tileAngleF, ok := attr["tileAngle"].(float64); ok {
+							tileAngleStr := strconv.FormatFloat(tileAngleF, 'f', -1, 64)
+							attr["tileAngle"] = tileAngleStr
 						}
+					}
 
-						parseReservedTech(attr)
+				} else if ent == BLDG {
+					attr["sizeUnit"] = "m"
+					attr["heightUnit"] = "m"
 
-						CopyAttr(attr, tmpl, "separators")
-						if _, ok := attr["separators"]; ok {
-							tmp, _ = json.Marshal(attr["separators"])
-							attr["separators"] = string(tmp)
-						}
+				} else {
+					attr["sizeUnit"] = "cm"
+					attr["heightUnit"] = "cm"
+				}
 
-						CopyAttr(attr, tmpl, "pillars")
-						if _, ok := attr["pillars"]; ok {
-							tmp, _ = json.Marshal(attr["pillars"])
-							attr["pillars"] = string(tmp)
-						}
-
-						CopyAttr(attr, tmpl, "floorUnit")
-						if _, ok := attr["floorUnit"]; ok {
-							if floorUnit, ok := attr["floorUnit"].(string); ok {
-								attr["floorUnit"] = floorUnit
-							}
-						}
-
-						CopyAttr(attr, tmpl, "tiles")
-						if _, ok := attr["tiles"]; ok {
-							tmp, _ = json.Marshal(attr["tiles"])
-							attr["tiles"] = string(tmp)
-						}
-
-						CopyAttr(attr, tmpl, "rows")
-						if _, ok := attr["rows"]; ok {
-							tmp, _ = json.Marshal(attr["rows"])
-							attr["rows"] = string(tmp)
-						}
-
-						CopyAttr(attr, tmpl, "aisles")
-						if _, ok := attr["aisles"]; ok {
-							tmp, _ = json.Marshal(attr["aisles"])
-							attr["aisles"] = string(tmp)
-						}
-
-						CopyAttr(attr, tmpl, "vertices")
-						if _, ok := attr["vertices"]; ok {
-							tmp, _ = json.Marshal(attr["vertices"])
-							attr["vertices"] = string(tmp)
-						}
-
-						CopyAttr(attr, tmpl, "colors")
-						if _, ok := attr["colors"]; ok {
-							tmp, _ = json.Marshal(attr["colors"])
-							attr["colors"] = string(tmp)
-						}
-
-						CopyAttr(attr, tmpl, "tileAngle")
-						if _, ok := attr["tileAngle"]; ok {
-							if tileAngle, ok := attr["tileAngle"].(int); ok {
-								attr["tileAngle"] = strconv.Itoa(tileAngle)
-							}
-
-							if tileAngleF, ok := attr["tileAngle"].(float64); ok {
-								tileAngleStr := strconv.FormatFloat(tileAngleF, 'f', -1, 64)
-								attr["tileAngle"] = tileAngleStr
-							}
-						}
-
-					} else if ent == BLDG {
-						attr["sizeUnit"] = "m"
-						attr["heightUnit"] = "m"
-
+				//Copy Description
+				if _, ok := tmpl["description"]; ok {
+					if descTable, ok := tmpl["description"].([]interface{}); ok {
+						data["description"] = descTable
 					} else {
-						attr["sizeUnit"] = "cm"
-						attr["heightUnit"] = "cm"
-					}
-
-					//Copy Description
-					if _, ok := tmpl["description"]; ok {
-						if descTable, ok := tmpl["description"].([]interface{}); ok {
-							data["description"] = descTable
-						} else {
-							data["description"] = []interface{}{tmpl["description"]}
-						}
-					} else {
-						data["description"] = []string{}
-					}
-
-					//fbxModel section
-					if check := CopyAttr(attr, tmpl, "fbxModel"); !check {
-						if ent != BLDG {
-							attr["fbxModel"] = ""
-						}
-
-					}
-
-					//Copy orientation if available
-					CopyAttr(attr, tmpl, "orientation")
-
-					//Merge attributes if available
-					if tmplAttrsInf, ok := tmpl["attributes"]; ok {
-						if tmplAttrs, ok := tmplAttrsInf.(map[string]interface{}); ok {
-							MergeMaps(attr, tmplAttrs, false)
-						}
+						data["description"] = []interface{}{tmpl["description"]}
 					}
 				} else {
-					if State.DebugLvl > 1 {
-						println("Warning, invalid size value in template.",
-							"Default values will be assigned")
+					data["description"] = []string{}
+				}
+
+				//fbxModel section
+				if check := CopyAttr(attr, tmpl, "fbxModel"); !check {
+					if ent != BLDG {
+						attr["fbxModel"] = ""
 					}
 
 				}
+
+				//Copy orientation if available
+				CopyAttr(attr, tmpl, "orientation")
+
+				//Merge attributes if available
+				if tmplAttrsInf, ok := tmpl["attributes"]; ok {
+					if tmplAttrs, ok := tmplAttrsInf.(map[string]interface{}); ok {
+						MergeMaps(attr, tmplAttrs, false)
+					}
+				}
 			} else {
-				attr["template"] = ""
 				if State.DebugLvl > 1 {
-					println("Warning: template was not found.",
-						"it will not be used")
+					println("Warning, invalid size value in template.",
+						"Default values will be assigned")
 				}
 
-				l.GetWarningLogger().Println("Invalid data type or incorrect name used to invoke template")
 			}
 
 		} else {
@@ -1289,6 +1289,7 @@ func GetOCLIAtrributesTemplateHelper(attr, data map[string]interface{}, ent int)
 			attr["size"] = serialiseAttr2(attr, "size")
 		}
 	}
+	return nil
 }
 
 func UIDelay(time float64) {
@@ -1761,240 +1762,32 @@ func InformUnity(caller string, entity int, data map[string]interface{}) error {
 	return nil
 }
 
-// x is path
-func LSOBJECTRecursive(path string, entity int) ([]interface{}, error) {
-	var obj map[string]interface{}
-	var err error
-
-	if entity == SITE { //Edge case
-		if path == "/Physical" {
-			r, e := models.Send("GET",
-				State.APIURL+"/api/sites", GetKey(), nil)
-			obj = ParseResponse(r, e, "Get Sites")
-			return LoadArrFromResp(obj, "objects"), nil
-		} else {
-			//Return nothing
-			return nil, nil
-		}
-	} else {
-		obj, err = GetObject(path)
-		if err != nil {
-			return nil, err
-		}
-	}
-
-	objEnt := obj["category"].(string)
-	obi := EntityStrToInt(objEnt)
-
-	//YouareAt -> obi
-	//want 	   -> entity
-
-	if (entity >= AC && entity <= CORRIDOR) && obi > ROOM {
-		return nil, nil
-	}
-
-	if entity < AC && obi > entity {
-		return nil, nil
-	}
-
-	//println(entities)
-	var idToSend string
-	if obi == SITE {
-		idToSend = obj["name"].(string)
-	} else {
-		idToSend = obj["id"].(string)
-	}
-	//println(entities)
-	//println(obi)
-	//println("WANT:", EntityToString(entity))
-	return lsobjHelperRecursive(State.APIURL, idToSend, obi, entity), nil
-	//return nil
-}
-
-// NOTE: LSDEV is recursive while LSSENSOR is not
-// Code could be more tidy
-func lsobjHelperRecursive(api, objID string, curr, entity int) []interface{} {
-	var ext, URL string
-	if entity == SENSOR && (curr == BLDG || curr == ROOM || curr == RACK || curr == DEVICE) {
-		ext = EntityToString(curr) + "s/" + objID + "/" + EntityToString(entity) + "s"
-		URL = State.APIURL + "/api/" + ext
-		r, e := models.Send("GET", URL, GetKey(), nil)
-		tmp := ParseResponse(r, e, "getting objects")
-		if tmp == nil {
-			return nil
-		}
-
-		tmpObjs := LoadArrFromResp(tmp, "objects")
-		if tmp == nil {
-			return nil
-		}
-		//res := infArrToMapStrinfArr(tmpObjs)
-		return tmpObjs
-
-	} else if entity-curr >= 2 {
-
-		//println("DEBUG-should be here")
-		ext = EntityToString(curr) + "s/" + objID + "/" + EntityToString(curr+2) + "s"
-		URL = State.APIURL + "/api/" + ext
-		//println("DEBUG-URL:", URL)
-
-		//EDGE CASE, if user is at a BLDG and requests object of room
-		if (curr == BLDG || curr == ROOM) && (entity >= AC && entity <= CORRIDOR) {
-			ext = EntityToString(curr) + "s/" + objID + "/" + EntityToString(entity) + "s"
-			r, e := models.Send("GET", State.APIURL+"/api/"+ext, GetKey(), nil)
-			tmp := ParseResponse(r, e, "getting objects")
-			if tmp == nil {
-				return nil
-			}
-
-			return GetRawObjects(tmp)
-
-		}
-		//END OF EDGE CASE BLOCK
-
-		r, e := models.Send("GET", URL, GetKey(), nil)
-		resp := ParseResponse(r, e, "getting objects")
-		if resp == nil {
-			println("return nil1")
-			return nil
-		}
-
-		//objs -> resp["data"]["objects"]
-		objs := LoadArrFromResp(resp, "objects")
-		if objs != nil {
-			x := []interface{}{}
-
-			if entity >= AC && entity <= CORRIDOR {
-
-				for q := range objs {
-					id := objs[q].(map[string]interface{})["id"].(string)
-					ext2 := "/api/" + EntityToString(curr+2) + "s/" + id + "/" + EntityToString(entity) + "s"
-
-					tmp, e := models.Send("GET", State.APIURL+ext2, GetKey(), nil)
-					tmp2 := ParseResponse(tmp, e, "get objects")
-					if tmp2 != nil {
-						x = GetRawObjects(tmp2)
-					}
-				}
-			} else {
-				if entity == DEVICE && curr == ROOM {
-					x = append(x, objs...)
-				}
-				for i := range objs {
-					rest := lsobjHelperRecursive(api, objs[i].(map[string]interface{})["id"].(string), curr+2, entity)
-					if rest != nil && len(rest) > 0 {
-						x = append(x, rest...)
-					}
-
-				}
-			}
-
-			if State.DebugLvl > 3 {
-				println(len(x))
-			}
-
-			return x
-		}
-
-	} else if entity-curr >= 1 {
-		//println("DEBUG-must be here")
-		ext := EntityToString(curr) + "s/" + objID + "/" + EntityToString(curr+1) + "s"
-		URL := State.APIURL + "/api/" + ext
-		r, e := models.Send("GET", URL, GetKey(), nil)
-		//println("DEBUG-URL SENT:", URL)
-		resp := ParseResponse(r, e, "getting objects")
-		if resp == nil {
-			println("return nil")
-			return nil
-		}
-		//objs := resp["data"]["objects"]
-		objs := LoadArrFromResp(resp, "objects")
-		if objs != nil {
-			ans := []interface{}{}
-			//For associated objects of room
-			if entity >= AC && entity <= CORRIDOR {
-				for i := range objs {
-					ext2 := "/api/" + EntityToString(curr) + "s/" +
-						objs[i].(map[string]interface{})["id"].(string) +
-						"/" + EntityToString(entity) + "s"
-
-					tmp, e := models.Send("GET", State.APIURL+ext2, GetKey(), nil)
-					x := ParseResponse(tmp, e, "get objects")
-					if x != nil {
-						ans = append(ans, x)
-					}
-				}
-			} else {
-
-				ans = objs
-				if curr == RACK && entity == DEVICE {
-					for idx := range ans {
-						ext2 := "/api/" + EntityToString(entity) +
-							"s/" +
-							ans[idx].(map[string]interface{})["id"].(string) +
-							"/" + EntityToString(entity) + "s"
-
-						subURL := State.APIURL + ext2
-						r1, e1 := models.Send("GET", subURL, GetKey(), nil)
-						tmp1 := ParseResponse(r1, e1, "getting objects")
-
-						tmp2 := LoadArrFromResp(tmp1, "objects")
-						if tmp2 != nil {
-							//Swap ans and objs to keep order
-							ans = append(ans, tmp2...)
-						}
-
-					}
-
-				}
-			}
-
-			return ans
-		}
-
-	} else if entity-curr == 0 { //Base Case
-
-		//For devices we have to make hierarchal call
-		if entity == DEVICE {
-			URL = State.APIURL + "/api/" + EntityToString(curr) + "s/" + objID + "/devices"
-		} else {
-			URL = State.APIURL + "/api/" + EntityToString(curr) + "s/" + objID
-		}
-
-		resp, e := models.Send("GET", URL, GetKey(), nil)
-		x := ParseResponse(resp, e, "get object")
-		if entity == DEVICE {
-			return GetRawObjects(x)
-
-		}
-		return []interface{}{x["data"]}
-	}
-	return nil
-}
-
 // Helper function for GetOCLIAttr which retrieves
 // template from server if available, this func mainly helps
 // to keep code organised
-func fetchTemplate(name string, objType int) map[string]interface{} {
-	var URL string
+func fetchTemplate(name string, objType int) (map[string]interface{}, error) {
+	var url string
 	if objType == ROOMTMPL {
-		URL = State.APIURL + "/api/room_templates/" + name
+		url = "/api/room_templates/"
 	} else if objType == BLDGTMPL {
-		URL = State.APIURL + "/api/bldg_templates/" + name
+		url = "/api/bldg_templates/"
 	} else {
-		URL = State.APIURL + "/api/obj_templates/" + name
+		url = "/api/obj_templates/"
 	}
-	r, e := models.Send("GET", URL, GetKey(), nil)
-	res := ParseResponse(r, e, "fetch template")
-	if res != nil {
-		if tmplInf, ok := res["data"]; ok {
-			if tmpl, ok := tmplInf.(map[string]interface{}); ok {
-				return tmpl
-			}
-		}
+	url += name
+	resp, err := RequestAPI("GET", url, nil, http.StatusOK)
+	if err != nil {
+		return nil, err
 	}
-
-	return nil
+	tmplInf, ok := resp.body["data"]
+	if !ok {
+		return nil, fmt.Errorf("invalid response on GET %s", url)
+	}
+	tmpl, ok := tmplInf.(map[string]interface{})
+	if !ok {
+		return nil, fmt.Errorf("invalid response on GET %s", url)
+	}
+	return tmpl, nil
 }
 
 func randPassword(n int) string {
