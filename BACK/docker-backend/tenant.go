@@ -171,8 +171,8 @@ func addTenant(c *gin.Context) {
 		c.IndentedJSON(http.StatusBadRequest, err.Error())
 		return
 	} else {
-		if err := dockerCreateTenant(newTenant); err != "" {
-			c.IndentedJSON(http.StatusInternalServerError, err)
+		if err := dockerCreateTenant(newTenant, c); err != "" {
+			c.String(http.StatusInternalServerError, err)
 			return
 		}
 
@@ -181,12 +181,12 @@ func addTenant(c *gin.Context) {
 		listTenants = append(listTenants, newTenant)
 		data, _ := json.MarshalIndent(listTenants, "", "  ")
 		_ = ioutil.WriteFile("tenants.json", data, 0755)
-		c.IndentedJSON(http.StatusOK, "all good")
+		c.String(http.StatusOK, "Tenant created!")
 	}
 
 }
 
-func dockerCreateTenant(newTenant tenant) string {
+func dockerCreateTenant(newTenant tenant, c *gin.Context) string {
 	tenantLower := strings.ToLower(newTenant.Name)
 	// Image tagging
 	if newTenant.ImageTag == "" {
@@ -226,17 +226,58 @@ func dockerCreateTenant(newTenant tenant) string {
 
 	println("Run docker (may take a long time...)")
 
-	// Run docker
 	cmd := exec.Command("docker", args...)
 	cmd.Dir = DOCKER_DIR
-	var stderr bytes.Buffer
-	cmd.Stderr = &stderr
-	if _, err := cmd.Output(); err != nil {
-		fmt.Println(fmt.Sprint(err) + ": " + stderr.String())
-		return stderr.String()
+	output := make(chan []byte)
+	errStr := ""
+	go execute(cmd, output, &errStr)
+	c.Stream(func(w io.Writer) bool {
+		if msg, ok := <-output; ok {
+			c.SSEvent("msg", string(msg))
+			return true
+		}
+		return false
+	})
+
+	print("Finished with docker")
+	return errStr
+}
+
+func execute(cmd *exec.Cmd, output chan []byte, errStr *string) {
+	defer close(output)
+	stdout, err := cmd.StdoutPipe()
+	if err != nil {
+		fmt.Println(err)
+		*errStr = fmt.Sprintf("Error executing: %v", err)
+		//output <- []byte(*errStr)
+		return
 	}
-	println("Finished with docker")
-	return ""
+	cmd.Stderr = cmd.Stdout
+	scanner := bufio.NewScanner(stdout)
+
+	done := make(chan bool)
+	err = cmd.Start()
+	if err != nil {
+		*errStr = fmt.Sprintf("Error executing: %v", err)
+		//output <- []byte(*errStr)
+		return
+	}
+
+	go func() {
+		for scanner.Scan() {
+			output <- scanner.Bytes()
+		}
+		done <- true
+	}()
+
+	<-done
+
+	err = cmd.Wait()
+	if err != nil {
+		fmt.Println(err)
+		*errStr = fmt.Sprintf("Error completing docker command: %v", err)
+		//output <- []byte(*errStr)
+	}
 }
 
 func addAppAssets(newTenant tenant, assestsDit string) {
@@ -366,10 +407,10 @@ func updateTenant(c *gin.Context) {
 			println("Finished with docker")
 
 			// Docker compose up
-			if err := dockerCreateTenant(newTenant); err != "" {
+			if err := dockerCreateTenant(newTenant, c); err != "" {
 				c.IndentedJSON(http.StatusInternalServerError, err)
 				// Try to recreate previous config
-				err = dockerCreateTenant(tenant)
+				err = dockerCreateTenant(tenant, c)
 				if err != "" {
 					println("Error recovering:" + err)
 				}
