@@ -434,8 +434,7 @@ Future<Result<http.StreamedResponse, Exception>> createTenant(
     if (response.statusCode == 200) {
       return Success(response);
     } else {
-      String data = " ";
-      //json.decode(response.body);
+      String data = json.decode(response.stream.toString());
       return Failure(Exception("Error creating tenant $data"));
     }
   } on Exception catch (e) {
