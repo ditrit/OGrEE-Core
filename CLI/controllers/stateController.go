@@ -1,7 +1,10 @@
 package controllers
 
 import (
+	"cli/logger"
 	"cli/readline"
+	"fmt"
+	"net"
 	"time"
 )
 
@@ -16,6 +19,8 @@ type User struct {
 	ID    string
 }
 
+const defaultOgree3DURL = "localhost:5500"
+
 type ShellState struct {
 	Prompt             string
 	BlankPrompt        string
@@ -26,7 +31,7 @@ type ShellState struct {
 	Hierarchy          *HierarchyNode
 	ConfigPath         string //Holds file path of '.env'
 	HistoryFilePath    string //Holds file path of '.history'
-	UnityClientURL     string
+	Ogree3DURL         string
 	User               User
 	APIURL             string
 	APIKEY             string
@@ -40,6 +45,31 @@ type ShellState struct {
 	Timeout            time.Duration
 	DynamicSymbolTable map[string]interface{}
 	FuncTable          map[string]interface{}
+}
+
+func (state ShellState) SetOgree3DURL(ogree3DURL string) error {
+	if ogree3DURL == "" {
+		state.SetDefaultOgree3DURL()
+		return nil
+	}
+
+	_, _, err := net.SplitHostPort(ogree3DURL)
+	if err != nil {
+		return fmt.Errorf("OGrEE-3D URL is not valid: %s", ogree3DURL)
+	}
+
+	State.Ogree3DURL = ogree3DURL
+
+	return nil
+}
+
+func (state ShellState) SetDefaultOgree3DURL() {
+	if State.Ogree3DURL != defaultOgree3DURL {
+		msg := fmt.Sprintf("Falling back to default OGrEE-3D URL: %s", defaultOgree3DURL)
+		fmt.Println(msg)
+		logger.GetInfoLogger().Println(msg)
+		State.Ogree3DURL = defaultOgree3DURL
+	}
 }
 
 func IsInObjForUnity(x string) bool {

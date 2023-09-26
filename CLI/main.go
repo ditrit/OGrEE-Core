@@ -77,7 +77,7 @@ func main() {
 			os.Exit(0)
 		}
 	}
-	c.InitOGrEE3DCommunication(rl, c.State.UnityClientURL)
+	c.InitOGrEE3DCommunication(rl)
 	//Pass control to repl.go
 	Start(rl, userShort)
 }
