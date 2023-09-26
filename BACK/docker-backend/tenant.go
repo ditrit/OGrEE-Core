@@ -255,7 +255,6 @@ func execute(cmd *exec.Cmd, output chan []byte, errStr *string) {
 	cmd.Stderr = cmd.Stdout
 	scanner := bufio.NewScanner(stdout)
 
-	done := make(chan bool)
 	err = cmd.Start()
 	if err != nil {
 		*errStr = fmt.Sprintf("Error executing: %v", err)
@@ -263,14 +262,9 @@ func execute(cmd *exec.Cmd, output chan []byte, errStr *string) {
 		return
 	}
 
-	go func() {
-		for scanner.Scan() {
-			output <- scanner.Bytes()
-		}
-		done <- true
-	}()
-
-	<-done
+	for scanner.Scan() {
+		output <- scanner.Bytes()
+	}
 
 	err = cmd.Wait()
 	if err != nil {
