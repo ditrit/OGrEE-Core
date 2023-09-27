@@ -34,7 +34,7 @@ services:
         - GUARD_PASS=adminpassword
     volumes:
         -  ./init.sh:/docker-entrypoint-initdb.d/init.sh
-        -  ../createdb.js:/home/createdb.js
+        -  ../db/createdb.js:/home/createdb.js
         -  db:/data/db
         - ./entrypoint.sh:/scripts/entrypoint.sh
     entrypoint: sh /scripts/entrypoint.sh ${COMPOSE_PROJECT_NAME}_db
