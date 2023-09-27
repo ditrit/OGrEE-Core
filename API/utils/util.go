@@ -50,8 +50,9 @@ const (
 	Logical        Namespace = "logical"
 )
 
-const HN_DELIMETER = "."  // hierarchyName path delimiter
-const RESET_TAG = "RESET" // used as email to identify a reset token
+const HN_DELIMETER = "."           // hierarchyName path delimiter
+const NAME_REGEX = "\\w(\\w|\\-)*" // accepted regex for names that compose ids
+const RESET_TAG = "RESET"          // used as email to identify a reset token
 
 type RequestFilters struct {
 	FieldsToShow []string `schema:"fieldOnly"`
@@ -154,7 +155,7 @@ func ParamsParse(link *url.URL, objType int) map[string]interface{} {
 	//Building Attribute query varies based on
 	//object type
 	for key, _ := range q {
-		if key != "fieldOnly" && key != "startDate" && key != "endDate" {
+		if key != "fieldOnly" && key != "startDate" && key != "endDate" && key != "limit" {
 			if objType != ROOMTMPL && objType != OBJTMPL &&
 				objType != BLDGTMPL { //Non template objects
 				switch key {

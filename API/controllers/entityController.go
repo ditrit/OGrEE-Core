@@ -430,7 +430,7 @@ func HandleGenericObjectWildcard(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	filters := getFiltersFromQueryParams(r)
-	regex := strings.ReplaceAll(strings.ReplaceAll(hierarchyName, ".", "\\."), "*", "(\\w(\\w|\\-)*)")
+	regex := strings.ReplaceAll(strings.ReplaceAll(hierarchyName, ".", "\\."), "*", "("+u.NAME_REGEX+")")
 	req := bson.M{"id": bson.M{"$regex": regex}}
 	matchingObjects := []map[string]interface{}{}
 	rangeEntities := u.HierachyNameToEntity(hierarchyName)
@@ -937,18 +937,34 @@ func GetEntityByQuery(w http.ResponseWriter, r *http.Request) {
 	//If templates, format them
 	entStr = strings.Replace(entStr, "-", "_", 1)
 
+	// Check unidentified collection
+	entInt := u.EntityStrToInt(entStr)
+	if entInt < 0 {
+		w.WriteHeader(http.StatusNotFound)
+		u.Respond(w, u.Message("Invalid object in URL: '"+entStr+"' Please provide a valid object"))
+		u.ErrLog("Cannot get invalid object", "GET ENTITYQUERY"+entStr, "", r)
+		return
+	}
+
 	// Get query params
 	filters := getFiltersFromQueryParams(r)
 	query := u.ParamsParse(r.URL, u.EntityStrToInt(entStr))
 	js, _ := json.Marshal(query)
 	json.Unmarshal(js, &bsonMap)
-
-	// Check unidentified collection
-	if u.EntityStrToInt(entStr) < 0 {
-		w.WriteHeader(http.StatusNotFound)
-		u.Respond(w, u.Message("Invalid object in URL: '"+entStr+"' Please provide a valid object"))
-		u.ErrLog("Cannot get invalid object", "GET ENTITYQUERY"+entStr, "", r)
-		return
+	// Limit filter
+	if entInt == u.DOMAIN || entInt == u.DEVICE || entInt == u.STRAYOBJ {
+		if nLimit, e := strconv.Atoi(filters.Limit); e == nil {
+			startLimit := "0"
+			endLimit := filters.Limit
+			if entInt == u.DEVICE {
+				// always at least 4 levels (site.bldg.room.rack.dev)
+				startLimit = "4"
+				endLimit = strconv.Itoa(nLimit + 4)
+			}
+			pattern := primitive.Regex{Pattern: "^" + u.NAME_REGEX + "(." + u.NAME_REGEX +
+				"){" + startLimit + "," + endLimit + "}$", Options: ""}
+			bsonMap = bson.M{"id": pattern}
+		}
 	}
 
 	data, modelErr = models.GetManyEntities(entStr, bsonMap, filters, user.Roles)
