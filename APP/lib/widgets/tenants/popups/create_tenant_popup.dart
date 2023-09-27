@@ -215,8 +215,8 @@ class _CreateTenantPopupState extends State<CreateTenantPopup> {
                                   ),
                                   const SizedBox(width: 15),
                                   ElevatedButton.icon(
-                                      onPressed: () =>
-                                          submitCreateTenant(localeMsg),
+                                      onPressed: () => submitCreateTenant(
+                                          localeMsg, context),
                                       label: Text(localeMsg.create),
                                       icon: _isLoading
                                           ? Container(
@@ -269,7 +269,8 @@ class _CreateTenantPopupState extends State<CreateTenantPopup> {
     );
   }
 
-  submitCreateTenant(AppLocalizations localeMsg) async {
+  submitCreateTenant(
+      AppLocalizations localeMsg, BuildContext popupContext) async {
     if (_formKey.currentState!.validate()) {
       _formKey.currentState!.save();
       setState(() {
@@ -282,7 +283,8 @@ class _CreateTenantPopupState extends State<CreateTenantPopup> {
           case Success():
             break;
           case Failure(exception: final exception):
-            showSnackBar(context, "${localeMsg.failedToUpload} $exception");
+            showSnackBar(
+                popupContext, "${localeMsg.failedToUpload} $exception");
         }
       }
       // Create tenant
@@ -323,18 +325,19 @@ class _CreateTenantPopupState extends State<CreateTenantPopup> {
             setState(() {
               _isLoading = false;
             });
-            showSnackBar(context, finalMsg, isError: true);
+            showSnackBar(popupContext, "$finalMsg. Check output log below.",
+                isError: true);
           } else {
             widget.parentCallback();
             showSnackBar(context, "${localeMsg.tenantCreated} 🥳",
                 isSuccess: true);
-            Navigator.of(context).pop();
+            Navigator.of(popupContext).pop();
           }
         case Failure(exception: final exception):
           setState(() {
             _isLoading = false;
           });
-          showSnackBar(context, exception.toString(), isError: true);
+          showSnackBar(popupContext, exception.toString(), isError: true);
       }
     }
   }
