@@ -303,6 +303,9 @@ class _CreateTenantPopupState extends State<CreateTenantPopup> {
       switch (result) {
         case Success(value: final value):
           String finalMsg = "";
+          if (_createResult.isNotEmpty) {
+            _createResult = _createResult + "\nOutput:";
+          }
           await for (var chunk in value.stream.transform(utf8.decoder)) {
             // Process each chunk as it is received
             print(chunk);

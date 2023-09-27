@@ -228,50 +228,43 @@ func dockerCreateTenant(newTenant tenant, c *gin.Context) string {
 
 	cmd := exec.Command("docker", args...)
 	cmd.Dir = DOCKER_DIR
-	output := make(chan []byte)
 	errStr := ""
-	go execute(cmd, output, &errStr)
-	c.Stream(func(w io.Writer) bool {
-		if msg, ok := <-output; ok {
-			c.SSEvent("msg", string(msg))
-			return true
-		}
-		return false
-	})
+	if err := streamExecuteCmd(cmd, c); err != nil {
+		errStr = "Error running docker: " + err.Error()
+	}
 
 	print("Finished with docker")
 	return errStr
 }
 
-func execute(cmd *exec.Cmd, output chan []byte, errStr *string) {
-	defer close(output)
+func streamExecuteCmd(cmd *exec.Cmd, c *gin.Context) error {
 	stdout, err := cmd.StdoutPipe()
 	if err != nil {
-		fmt.Println(err)
-		*errStr = fmt.Sprintf("Error executing: %v", err)
-		//output <- []byte(*errStr)
-		return
+		return err
 	}
 	cmd.Stderr = cmd.Stdout
 	scanner := bufio.NewScanner(stdout)
 
 	err = cmd.Start()
 	if err != nil {
-		*errStr = fmt.Sprintf("Error executing: %v", err)
-		//output <- []byte(*errStr)
-		return
+		return err
 	}
 
-	for scanner.Scan() {
-		output <- scanner.Bytes()
-	}
+	c.Stream(func(w io.Writer) bool {
+		if scanner.Scan() {
+			msg := string(scanner.Bytes())
+			println(msg)
+			c.SSEvent("msg", msg)
+			return true
+		}
+		return false
+	})
 
 	err = cmd.Wait()
 	if err != nil {
-		fmt.Println(err)
-		*errStr = fmt.Sprintf("Error completing docker command: %v", err)
-		//output <- []byte(*errStr)
+		return err
 	}
+	return nil
 }
 
 func addAppAssets(newTenant tenant, assestsDit string) {
