@@ -39,8 +39,10 @@ func (connection *Ogree3DConnection) Connect(addr string, timeOut time.Duration)
 }
 
 func (connection *Ogree3DConnection) Disconnect() {
-	connection.isConnected.Store(false)
-	connection.conn.Close()
+	if connection.conn != nil {
+		connection.isConnected.Store(false)
+		connection.conn.Close()
+	}
 }
 
 // Transfer login apiKey for the OGrEE-3D to communicate with the API
@@ -56,6 +58,10 @@ func (connection *Ogree3DConnection) Login(apiURL, apiToken string, debugLevel i
 // and prints these messages to the Readline terminal
 // This is meant for OGrEE-3D interactivity
 func (connection *Ogree3DConnection) ReceiveLoop(terminal *readline.Instance) {
+	if !connection.IsConnected() {
+		return
+	}
+
 	reader := bufio.NewReader(connection.conn)
 	var err error
 	for {
@@ -104,13 +110,11 @@ func (connection *Ogree3DConnection) Send(data map[string]interface{}, debug int
 
 	_, writeSizeErr := connection.conn.Write(sizeBytesBuff.Bytes())
 	if writeSizeErr != nil {
-		connection.Disconnect()
 		return fmt.Errorf("error contacting OGrEE-3D: %s", writeSizeErr.Error())
 	}
 
 	_, writeJsonErr := connection.conn.Write(dataJSON)
 	if writeJsonErr != nil {
-		connection.Disconnect()
 		return fmt.Errorf("error contacting OGrEE-3D: %s", writeJsonErr.Error())
 	}
 
