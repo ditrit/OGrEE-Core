@@ -77,7 +77,12 @@ func main() {
 			os.Exit(0)
 		}
 	}
-	c.InitOGrEE3DCommunication(rl)
+
+	err = c.InitOGrEE3DCommunication(rl)
+	if err != nil {
+		manageError(err, false)
+	}
+
 	//Pass control to repl.go
 	Start(rl, userShort)
 }
