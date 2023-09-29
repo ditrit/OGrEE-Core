@@ -1363,9 +1363,7 @@ func Connect3D(url string) error {
 		}
 	}
 
-	InitOGrEE3DCommunication(*State.Terminal)
-
-	return nil
+	return InitOGrEE3DCommunication(*State.Terminal)
 }
 
 func UIDelay(time float64) {
