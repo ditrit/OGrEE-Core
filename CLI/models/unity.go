@@ -83,7 +83,7 @@ func (connection *Ogree3DConnection) ReceiveLoop(terminal *readline.Instance) {
 	// for loop has been exited, there is an error in the connection.
 	connection.Disconnect()
 
-	println("Disconnected from OGrEE-3D")
+	terminal.Write([]byte("Disconnected from OGrEE-3D\n"))
 }
 
 // Function to communicate with OGrEE-3D
