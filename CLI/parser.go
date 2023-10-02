@@ -865,6 +865,9 @@ func (p *parser) parseCamera() node {
 
 func (p *parser) parseFocus() node {
 	defer un(trace(p, "focus"))
+	if p.commandEnd() {
+		return &focusNode{&valueNode{""}}
+	}
 	return &focusNode{p.parsePath("")}
 }
 
