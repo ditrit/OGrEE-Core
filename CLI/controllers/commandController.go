@@ -1454,6 +1454,8 @@ func FocusUI(path string) error {
 	InformUnity("FocusUI", -1, data)
 	if path != "" {
 		CD(path)
+	} else {
+		fmt.Println("Focus is now empty")
 	}
 	return nil
 }
