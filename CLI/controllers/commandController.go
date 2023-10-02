@@ -1452,7 +1452,9 @@ func FocusUI(path string) error {
 	}
 	data := map[string]interface{}{"type": "focus", "data": id}
 	InformUnity("FocusUI", -1, data)
-	CD(path)
+	if path != "" {
+		CD(path)
+	}
 	return nil
 }
 
