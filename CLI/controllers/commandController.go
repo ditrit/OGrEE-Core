@@ -225,7 +225,7 @@ func lsObjectsWithoutFilters(path string) ([]map[string]any, error) {
 		return nil, err
 	}
 	objects := []map[string]any{}
-	for _, child := range n.Childs {
+	for _, child := range n.Children {
 		if child.Obj != nil {
 			if strings.HasPrefix(path, "/Logical/Groups") {
 				child.Obj["name"] = strings.ReplaceAll(child.Obj["id"].(string), ".", "/")
