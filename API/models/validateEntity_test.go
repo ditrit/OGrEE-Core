@@ -2,7 +2,6 @@ package models
 
 import (
 	"encoding/json"
-	"io/ioutil"
 	"os"
 	u "p3/utils"
 	"regexp"
@@ -17,7 +16,7 @@ func TestValidateJsonSchemaExamples(t *testing.T) {
 		entStr := u.EntityToString(entInt)
 		println("*** Testing " + entStr)
 		var obj map[string]interface{}
-		data, e := ioutil.ReadFile("schemas/" + entStr + "_schema.json")
+		data, e := os.ReadFile("schemas/" + entStr + "_schema.json")
 		if e != nil {
 			t.Error(e.Error())
 		}
@@ -156,7 +155,7 @@ func contains(slice []string, elem string) bool {
 
 func getMapFromJsonFile(file string) map[string]interface{} {
 	var obj map[string]interface{}
-	data, e := ioutil.ReadFile(file)
+	data, e := os.ReadFile(file)
 	if e != nil {
 		return nil
 	}
