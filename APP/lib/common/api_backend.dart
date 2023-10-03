@@ -427,66 +427,62 @@ Future<Result<(List<Tenant>, List<DockerContainer>), Exception>>
 Future<Result<Stream<String>, Exception>> createTenant(Tenant tenant) async {
   print("API create Tenants");
   try {
-    final urlStr = '$apiUrl/api/tenants';
-    if (kIsWeb) {
-      // Special SSE handling for web
-      int progress = 0;
-      final httpRequest = HttpRequest();
-      final streamController = StreamController<String>();
-      httpRequest.open('POST', urlStr);
-      getHeader(token).forEach((key, value) {
-        httpRequest.setRequestHeader(key, value);
-      });
-      httpRequest.onProgress.listen((event) {
-        final data = httpRequest.responseText!.substring(progress);
-        progress += data.length;
-        streamController.add(data);
-      });
-      httpRequest.addEventListener('loadend', (event) {
-        httpRequest.abort();
-        streamController.close();
-      });
-      httpRequest.addEventListener('error', (event) {
-        streamController.add(
-          'Error in backend connection',
-        );
-      });
-      httpRequest.send(tenant.toJson());
-      return Success(streamController.stream);
-    } else {
-      // SSE handle for other builds
-      Uri url = Uri.parse(urlStr);
-      final client = http.Client();
-      var request = http.Request('POST', url)..headers.addAll(getHeader(token));
-      request.body = tenant.toJson();
-      final response = await client.send(request);
-      if (response.statusCode == 200) {
-        return Success(response.stream.toStringStream());
-      } else {
-        String data = json.decode(response.stream.toString());
-        return Failure(Exception("Error creating tenant $data"));
-      }
-    }
+    return connectStream('POST', '$apiUrl/api/tenants', tenant.toJson());
   } on Exception catch (e) {
     return Failure(e);
   }
 }
 
-Future<Result<void, Exception>> updateTenant(Tenant tenant) async {
+Future<Result<Stream<String>, Exception>> updateTenant(Tenant tenant) async {
   print("API update Tenants");
   try {
-    Uri url = Uri.parse('$apiUrl/api/tenants/${tenant.name}');
-    final response =
-        await http.put(url, body: tenant.toJson(), headers: getHeader(token));
-    print(response);
-    if (response.statusCode == 200) {
-      return const Success(null);
-    } else {
-      String data = json.decode(response.body);
-      return Failure(Exception("Error updating tenant $data"));
-    }
+    return connectStream(
+        'PUT', '$apiUrl/api/tenants/${tenant.name}', tenant.toJson());
   } on Exception catch (e) {
     return Failure(e);
+  }
+}
+
+Future<Result<Stream<String>, Exception>> connectStream(
+    String method, String urlStr, String body) async {
+  if (kIsWeb) {
+    // Special SSE handling for web
+    int progress = 0;
+    final httpRequest = HttpRequest();
+    final streamController = StreamController<String>();
+    httpRequest.open(method, urlStr);
+    getHeader(token).forEach((key, value) {
+      httpRequest.setRequestHeader(key, value);
+    });
+    httpRequest.onProgress.listen((event) {
+      final data = httpRequest.responseText!.substring(progress);
+      progress += data.length;
+      streamController.add(data);
+    });
+    httpRequest.addEventListener('loadend', (event) {
+      httpRequest.abort();
+      streamController.close();
+    });
+    httpRequest.addEventListener('error', (event) {
+      streamController.add(
+        'Error in backend connection',
+      );
+    });
+    httpRequest.send(body);
+    return Success(streamController.stream);
+  } else {
+    // SSE handle for other builds
+    Uri url = Uri.parse(urlStr);
+    final client = http.Client();
+    var request = http.Request(method, url)..headers.addAll(getHeader(token));
+    request.body = body;
+    final response = await client.send(request);
+    if (response.statusCode == 200) {
+      return Success(response.stream.toStringStream());
+    } else {
+      return Failure(
+          Exception("Error processing tenant ${response.statusCode}"));
+    }
   }
 }
 
