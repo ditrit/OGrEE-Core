@@ -80,6 +80,8 @@ func ObjectUrl(path string, depth int) (string, error) {
 		baseUrl = "/api/bldg-templates"
 	case "/Logical/Groups/":
 		baseUrl = "/api/groups"
+	case "/Logical/Tags/":
+		baseUrl = "/api/tags"
 	case "/Organisation/Domain/":
 		baseUrl = "/api/domains"
 	default:
@@ -118,6 +120,9 @@ func ObjectUrlGeneric(path string, depth int, filters map[string]string) (string
 	case "/Logical/BldgTemplates/":
 		params.Add("namespace", "logical.bldgtemplate")
 		params.Add("slug", id)
+	case "/Logical/Tags/":
+		params.Add("namespace", "logical.tag")
+		params.Add("slug", id)
 	case "/Logical/Groups/":
 		params.Add("namespace", "logical")
 		params.Add("category", "group")
@@ -139,16 +144,15 @@ func ObjectUrlGeneric(path string, depth int, filters map[string]string) (string
 	return strings.ReplaceAll(url.String(), "%2A", "*"), nil
 }
 
-func IsTemplate(path string) bool {
-	if strings.HasPrefix(path, "/Logical/ObjectTemplates/") {
-		return true
-	} else if strings.HasPrefix(path, "/Logical/RoomTemplates/") {
-		return true
-	} else if strings.HasPrefix(path, "/Logical/BldgTemplates/") {
-		return true
-	} else {
-		return false
-	}
+func IsHierarchical(path string) bool {
+	return !IsNonHierarchical(path)
+}
+
+func IsNonHierarchical(path string) bool {
+	return strings.HasPrefix(path, "/Logical/ObjectTemplates/") ||
+		strings.HasPrefix(path, "/Logical/RoomTemplates/") ||
+		strings.HasPrefix(path, "/Logical/BldgTemplates/") ||
+		strings.HasPrefix(path, "/Logical/Tags/")
 }
 
 func PollObjectWithChildren(path string, depth int) (map[string]any, error) {
@@ -163,10 +167,12 @@ func PollObjectWithChildren(path string, depth int) (map[string]any, error) {
 		}
 		return nil, err
 	}
+
 	obj, ok := resp.body["data"].(map[string]any)
 	if !ok {
 		return nil, fmt.Errorf("invalid response from API on GET %s", url)
 	}
+
 	return obj, nil
 }
 
@@ -175,9 +181,11 @@ func GetObjectWithChildren(path string, depth int) (map[string]any, error) {
 	if err != nil {
 		return nil, err
 	}
+
 	if obj == nil {
 		return nil, fmt.Errorf("object not found")
 	}
+
 	return obj, nil
 }
 
@@ -548,7 +556,7 @@ func UnsetInObj(Path, attr string, idx int) (map[string]interface{}, error) {
 		"type": "modify", "data": resp.body["data"]}
 
 	//Update and inform unity
-	if !IsTemplate(Path) && IsInObjForUnity(entity) {
+	if IsHierarchical(Path) && IsInObjForUnity(entity) {
 		entInt := EntityStrToInt(entity)
 		InformOgree3DOptional("UpdateObj", entInt, message)
 	}
@@ -1486,7 +1494,7 @@ func FocusUI(path string) error {
 			return err
 		}
 		category := EntityStrToInt(obj["category"].(string))
-		if IsTemplate(path) || category == SITE || category == BLDG || category == ROOM {
+		if IsNonHierarchical(path) || category == SITE || category == BLDG || category == ROOM {
 			msg := "You cannot focus on this object. Note you cannot" +
 				" focus on Sites, Buildings and Rooms. " +
 				"For more information please refer to the help doc  (man >)"

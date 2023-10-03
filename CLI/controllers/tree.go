@@ -104,6 +104,9 @@ func BuildBaseTree() *HierarchyNode {
 	bldgTemplates := NewNode("BldgTemplates")
 	bldgTemplates.FillFn = FillUrlTreeFn("/api/bldg-templates", nil, false)
 	logical.AddChild(bldgTemplates)
+	tags := NewNode("Tags")
+	tags.FillFn = FillUrlTreeFn("/api/tags", nil, false)
+	logical.AddChild(tags)
 	groups := NewNode("Groups")
 	groups.FillFn = FillUrlTreeFn("/api/groups", nil, true)
 	logical.AddChild(groups)
@@ -231,6 +234,7 @@ func Tree(path string, depth int) (*HierarchyNode, error) {
 		}
 		return root, nil
 	}
+
 	obj, err := GetObjectWithChildren(path, depth)
 	if err != nil {
 		return nil, err
@@ -240,5 +244,6 @@ func Tree(path string, depth int) (*HierarchyNode, error) {
 	if err != nil {
 		return nil, err
 	}
+
 	return n, nil
 }

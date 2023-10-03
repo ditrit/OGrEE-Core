@@ -229,14 +229,16 @@ func CompareVals(val1 any, val2 any) (bool, bool) {
 }
 
 func NameOrSlug(obj map[string]any) string {
+	slug, okSlug := obj["slug"].(string)
+	if okSlug {
+		return slug
+	}
+
 	name, okName := obj["name"].(string)
 	if okName {
 		return name
 	}
-	name, okName = obj["slug"].(string)
-	if okName {
-		return name
-	}
+
 	panic("child has no name/slug")
 }
 
