@@ -182,7 +182,7 @@ func Ls(path string) ([]string, error) {
 		return nil, err
 	}
 	res := []string{}
-	for _, child := range n.Childs {
+	for _, child := range n.Children {
 		res = append(res, child.Name)
 	}
 	sort.Strings(res)

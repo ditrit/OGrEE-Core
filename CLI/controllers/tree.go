@@ -10,9 +10,9 @@ import (
 type FillFunc func(n *HierarchyNode, path string, depth int) error
 
 type HierarchyNode struct {
-	Name   string
-	Childs map[string]*HierarchyNode
-	FillFn FillFunc
+	Name     string
+	Children map[string]*HierarchyNode
+	FillFn   FillFunc
 }
 
 func NewNode(name string) *HierarchyNode {
@@ -23,15 +23,15 @@ func (n *HierarchyNode) StringAux(prefix string, sb *strings.Builder, depth int)
 	if depth == 0 {
 		return
 	}
-	childs := []*HierarchyNode{}
-	for _, child := range n.Childs {
-		childs = append(childs, child)
+	children := []*HierarchyNode{}
+	for _, child := range n.Children {
+		children = append(children, child)
 	}
-	sort.SliceStable(childs, func(i, j int) bool {
-		return childs[i].Name < childs[j].Name
+	sort.SliceStable(children, func(i, j int) bool {
+		return children[i].Name < children[j].Name
 	})
-	for i, child := range childs {
-		if i == len(childs)-1 {
+	for i, child := range children {
+		if i == len(children)-1 {
 			sb.WriteString(prefix + "└── " + child.Name + "\n")
 			child.StringAux(prefix+"    ", sb, depth-1)
 		} else {
@@ -52,14 +52,14 @@ func (n *HierarchyNode) String(depth int) string {
 }
 
 func (n *HierarchyNode) AddChild(child *HierarchyNode) {
-	n.Childs[child.Name] = child
+	n.Children[child.Name] = child
 }
 
 func (n *HierarchyNode) findNodeAux(path []string) (r *HierarchyNode, remainingPath []string) {
 	if len(path) == 0 {
 		return n, []string{}
 	}
-	child := n.Childs[path[0]]
+	child := n.Children[path[0]]
 	if child != nil {
 		return child.findNodeAux(path[1:])
 	}
@@ -207,8 +207,8 @@ func FillTree(n *HierarchyNode, path string, depth int) error {
 	if depth == 0 {
 		return nil
 	}
-	if len(n.Childs) != 0 {
-		for _, child := range n.Childs {
+	if len(n.Children) != 0 {
+		for _, child := range n.Children {
 			newPath := path
 			if path != "/" {
 				newPath += "/"
