@@ -220,7 +220,7 @@ func dockerCreateTenant(newTenant tenant, c *gin.Context) string {
 	file, _ := os.Create(DOCKER_DIR + envFilename)
 	err := tmplt.Execute(file, newTenant)
 	if err != nil {
-		panic("Error creating .env: " + err.Error())
+		return "Error creating .env: " + err.Error()
 	}
 	file.Close()
 
@@ -254,7 +254,7 @@ func streamExecuteCmd(cmd *exec.Cmd, c *gin.Context) error {
 		if scanner.Scan() {
 			msg := string(scanner.Bytes())
 			println(msg)
-			c.SSEvent("msg", msg)
+			c.SSEvent("progress", msg)
 			return true
 		}
 		return false

@@ -4,12 +4,14 @@ import 'dart:typed_data';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:ogree_app/models/container.dart';
 import 'package:ogree_app/models/domain.dart';
 import 'package:ogree_app/models/netbox.dart';
 import 'package:ogree_app/models/project.dart';
 import 'package:ogree_app/models/tenant.dart';
 import 'package:ogree_app/models/user.dart';
+import 'package:universal_html/html.dart';
 
 import 'definitions.dart';
 
@@ -422,20 +424,48 @@ Future<Result<(List<Tenant>, List<DockerContainer>), Exception>>
   }
 }
 
-Future<Result<http.StreamedResponse, Exception>> createTenant(
-    Tenant tenant) async {
+Future<Result<Stream<String>, Exception>> createTenant(Tenant tenant) async {
   print("API create Tenants");
   try {
-    Uri url = Uri.parse('$apiUrl/api/tenants');
-    final client = http.Client();
-    var request = http.Request('POST', url)..headers.addAll(getHeader(token));
-    request.body = tenant.toJson();
-    final response = await client.send(request);
-    if (response.statusCode == 200) {
-      return Success(response);
+    final urlStr = '$apiUrl/api/tenants';
+    if (kIsWeb) {
+      // Special SSE handling for web
+      int progress = 0;
+      final httpRequest = HttpRequest();
+      final streamController = StreamController<String>();
+      httpRequest.open('POST', urlStr);
+      getHeader(token).forEach((key, value) {
+        httpRequest.setRequestHeader(key, value);
+      });
+      httpRequest.onProgress.listen((event) {
+        final data = httpRequest.responseText!.substring(progress);
+        progress += data.length;
+        streamController.add(data);
+      });
+      httpRequest.addEventListener('loadend', (event) {
+        httpRequest.abort();
+        streamController.close();
+      });
+      httpRequest.addEventListener('error', (event) {
+        streamController.add(
+          'Error in backend connection',
+        );
+      });
+      httpRequest.send(tenant.toJson());
+      return Success(streamController.stream);
     } else {
-      String data = json.decode(response.stream.toString());
-      return Failure(Exception("Error creating tenant $data"));
+      // SSE handle for other builds
+      Uri url = Uri.parse(urlStr);
+      final client = http.Client();
+      var request = http.Request('POST', url)..headers.addAll(getHeader(token));
+      request.body = tenant.toJson();
+      final response = await client.send(request);
+      if (response.statusCode == 200) {
+        return Success(response.stream.toStringStream());
+      } else {
+        String data = json.decode(response.stream.toString());
+        return Failure(Exception("Error creating tenant $data"));
+      }
     }
   } on Exception catch (e) {
     return Failure(e);

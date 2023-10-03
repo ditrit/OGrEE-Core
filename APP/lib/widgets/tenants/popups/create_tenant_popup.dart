@@ -1,5 +1,3 @@
-import 'dart:convert';
-
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -306,7 +304,7 @@ class _CreateTenantPopupState extends State<CreateTenantPopup> {
           if (_createResult.isNotEmpty) {
             _createResult = _createResult + "\nOutput:";
           }
-          await for (var chunk in value.stream.transform(utf8.decoder)) {
+          await for (var chunk in value) {
             // Process each chunk as it is received
             print(chunk);
             var newLine = chunk.split("data:").last.trim();
