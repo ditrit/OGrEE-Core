@@ -23,3 +23,5 @@
 //
 // swagger:meta
 package main
+
+//go:generate swagger generate spec -o ./swagger.json

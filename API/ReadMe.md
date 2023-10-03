@@ -126,11 +126,21 @@ Running a MongoDB container
 --------------------------
 docker run --name mdb -v /home/ziad/mongoDir:/docker-entrypoint-initdb.d/ -p 27017:27017 -d mongo:latest
 
-Swaggerio Docs
+Swagger Docs
 --------------------------
+
+Swagger API spec is generated from comments in the code, specifically in the controllers. For details of the format of these comments visit <https://goswagger.io/use/spec.html>.
+
+The generation is performed with the `swagger` command, which can be installed by following the instructions at <https://goswagger.io/install.html>.
+
+To generate a new version of the spec use the command:
+
+```bash
+go generate
 ```
-swagger generate spec -o ./swagger.json
-```
-```
+
+To run locally an http server with the generated spec use:
+
+```bash
 swagger serve -p 3003 --no-open ./swagger.json
 ```
