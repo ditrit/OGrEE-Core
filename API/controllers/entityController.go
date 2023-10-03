@@ -91,7 +91,8 @@ func getUserFromToken(w http.ResponseWriter, r *http.Request) *models.Account {
 //     description: 'Entity (same as category) of the object. Accepted values: sites, domains,
 //     buildings, rooms, racks, devices, acs, panels,
 //     cabinets, groups, corridors,
-//     room-templates, obj-templates, bldg-templates, stray-objects, hierarchy-objects.'
+//     room-templates, obj-templates, bldg-templates, tags,
+//     stray-objects, hierarchy-objects.'
 //     required: true
 //     type: string
 //     default: "sites"
@@ -154,8 +155,8 @@ func CreateEntity(w http.ResponseWriter, r *http.Request) {
 			return
 
 		}
-	} else if entInt < u.ROOMTMPL && entInt != u.STRAYOBJ {
-		// Check if category and endpoint match, except for templates and strays
+	} else if u.IsEntityHierarchical(entInt) && entInt != u.STRAYOBJ {
+		// Check if category and endpoint match, except for non hierarchal entities and strays
 		if object["category"] != entStr {
 			w.WriteHeader(http.StatusBadRequest)
 			u.Respond(w, u.Message("Category in request body does not correspond with desired object in endpoint"))
@@ -320,7 +321,7 @@ func getBulkDomainsRecursively(parent string, listDomains []map[string]interface
 //   - name: namespace
 //     in: query
 //     description: 'One of the values: physical, physical.stray, physical.hierarchy,
-//     logical, logical.objtemplate, logical.bldgtemplate, logical.roomtemplate,
+//     logical, logical.objtemplate, logical.bldgtemplate, logical.roomtemplate, logical.tag,
 //     organisational.
 //     If none provided, all namespaces are used by default.'
 //   - name: fieldOnly
@@ -386,7 +387,7 @@ func getBulkDomainsRecursively(parent string, listDomains []map[string]interface
 //   - name: namespace
 //     in: query
 //     description: 'One of the values: physical, physical.stray, physical.hierarchy,
-//     logical, logical.objtemplate, logical.bldgtemplate, logical.roomtemplate,
+//     logical, logical.objtemplate, logical.bldgtemplate, logical.roomtemplate, logical.tag,
 //     organisational. If none provided, all namespaces are used by default.'
 // responses:
 //		'204':
@@ -445,7 +446,7 @@ func HandleGenericObjects(w http.ResponseWriter, r *http.Request) {
 			var objStr string
 			var modelErr *u.Error
 
-			if u.EntityStrToInt(entStr) >= u.ROOMTMPL {
+			if u.IsEntityNonHierarchical(u.EntityStrToInt(entStr)) {
 				objStr = obj["slug"].(string)
 				modelErr = models.DeleteSingleEntity(entStr, bson.M{"slug": objStr})
 			} else {
@@ -466,7 +467,6 @@ func HandleGenericObjects(w http.ResponseWriter, r *http.Request) {
 	} else {
 		u.Respond(w, u.RespDataWrapper("successfully processed request", matchingObjects))
 	}
-
 }
 
 // swagger:operation GET /api/{entity}/{id} Objects GetEntity
@@ -483,14 +483,15 @@ func HandleGenericObjects(w http.ResponseWriter, r *http.Request) {
 //     description: 'Entity (same as category) of the object. Accepted values: sites, domains,
 //     buildings, rooms, racks, devices, acs, panels,
 //     cabinets, groups, corridors,
-//     room-templates, obj-templates, bldg-templates, stray-objects, hierarchy-objects.'
+//     room-templates, obj-templates, bldg-templates, tags,
+//     stray-objects, hierarchy-objects.'
 //     required: true
 //     type: string
 //     default: "sites"
 //   - name: id
 //     in: path
 //     description: 'ID of desired object.
-//     For templates the slug is the ID.'
+//     For templates and tags the slug is the ID.'
 //     required: true
 //     type: string
 //     default: "siteA"
@@ -544,7 +545,8 @@ func GetEntity(w http.ResponseWriter, r *http.Request) {
 		if entityStr == u.HIERARCHYOBJS_ENT {
 			data, modelErr = models.GetHierarchyObjectById(id, filters, user.Roles)
 		} else {
-			if strings.Contains(entityStr, "template") { //Get by slug (template)
+			if u.IsEntityNonHierarchical(u.EntityStrToInt(entityStr)) {
+				// Get by slug
 				req = bson.M{"slug": id}
 			} else {
 				req = bson.M{"id": id}
@@ -587,7 +589,7 @@ func GetEntity(w http.ResponseWriter, r *http.Request) {
 //     description: 'Entity (same as category) of the object. Accepted values: sites, domains,
 //     buildings, rooms, racks, devices, acs, panels,
 //     cabinets, groups, corridors,
-//     room-templates, obj-templates, bldg-templates, stray-objects'
+//     room-templates, obj-templates, bldg-templates, stray-objects, tags'
 //     required: true
 //     type: string
 //     default: "sites"
@@ -667,14 +669,15 @@ func GetAllEntities(w http.ResponseWriter, r *http.Request) {
 //     description: 'Entity (same as category) of the object. Accepted values: sites, domains,
 //     buildings, rooms, racks, devices, acs, panels,
 //     cabinets, groups, corridors,
-//     room-templates, obj-templates, bldg-templates, stray-objects, hierarchy-objects.'
+//     room-templates, obj-templates, bldg-templates, tags,
+//     stray-objects, hierarchy-objects.'
 //     required: true
 //     type: string
 //     default: "sites"
 //   - name: id
 //     in: path
 //     description: 'ID of desired object.
-//     For templates the slug is the ID.'
+//     For templates and tags the slug is the ID.'
 //     required: true
 //     type: string
 //     default: "siteA"
@@ -731,7 +734,7 @@ func DeleteEntity(w http.ResponseWriter, r *http.Request) {
 		}
 
 		var modelErr *u.Error
-		if strings.Contains(entity, "template") {
+		if u.IsEntityNonHierarchical(u.EntityStrToInt(entity)) {
 			modelErr = models.DeleteSingleEntity(entity, bson.M{"slug": id})
 		} else {
 			modelErr = models.DeleteEntity(entity, id, user.Roles)
@@ -763,14 +766,14 @@ func DeleteEntity(w http.ResponseWriter, r *http.Request) {
 //     description: 'Entity (same as category) of the object. Accepted values: sites, domains,
 //     buildings, rooms, racks, devices, acs, panels,
 //     cabinets, groups, corridors,
-//     room-templates, obj-templates, bldg-templates, stray-objects.'
+//     room-templates, obj-templates, bldg-templates, stray-objects, tags.'
 //     required: true
 //     type: string
 //     default: "sites"
 //   - name: id
 //     in: path
 //     description: 'ID of desired object.
-//     For templates the slug is the ID.'
+//     For templates and tags the slug is the ID.'
 //     required: true
 //     type: string
 //     default: "siteA"
@@ -801,14 +804,15 @@ func DeleteEntity(w http.ResponseWriter, r *http.Request) {
 //     description: 'Entity (same as category) of the object. Accepted values: sites, domains,
 //     buildings, rooms, racks, devices, acs, panels,
 //     cabinets, groups, corridors,
-//     room-templates, obj-templates, bldg-templates, stray-objects, hierarchy-objects.'
+//     room-templates, obj-templates, bldg-templates, tags,
+//     stray-objects, hierarchy-objects.'
 //     required: true
 //     type: string
 //     default: "sites"
 //   - name: id
 //     in: path
 //     description: 'ID of desired object.
-//     For templates the slug is the ID.'
+//     For templates and tags the slug is the ID.'
 //     required: true
 //     type: string
 //     default: "siteA"
@@ -875,7 +879,7 @@ func UpdateEntity(w http.ResponseWriter, r *http.Request) {
 		u.ErrLog("Error while extracting from path parameters", "UPDATE ENTITY", "", r)
 	} else {
 		var req bson.M
-		if strings.Contains(entity, "template") {
+		if u.IsEntityNonHierarchical(u.EntityStrToInt(entity)) {
 			req = bson.M{"slug": id}
 		} else {
 			req = bson.M{"id": id}
@@ -907,7 +911,7 @@ func UpdateEntity(w http.ResponseWriter, r *http.Request) {
 //     description: 'Entity (same as category) of the object. Accepted values: sites, domains,
 //     buildings, rooms, racks, devices, acs, panels,
 //     cabinets, groups, corridors,
-//     room-templates, obj-templates, bldg-templates, stray-objects.'
+//     room-templates, obj-templates, bldg-templates, stray-objects, tags.'
 //     required: true
 //     type: string
 //     default: "sites"
@@ -933,11 +937,11 @@ func UpdateEntity(w http.ResponseWriter, r *http.Request) {
 //     example: vendor=ibm ; name=siteA ; orientation=front
 //
 // responses:
-//		'204':
-//			description: 'Found. A response body will be returned with
-//			a meaningful message.'
-//		'404':
-//			description: Not found. An error message will be returned.
+//     '204':
+//         description: 'Found. A response body will be returned with
+//         a meaningful message.'
+//     '404':
+//         description: Not found. An error message will be returned.
 
 func GetEntityByQuery(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("******************************************************")
@@ -1156,14 +1160,13 @@ func GetEntitiesOfAncestor(w http.ResponseWriter, r *http.Request) {
 //   description: 'Entity (same as category) of the object. Accepted values: sites, domains,
 //   buildings, rooms, racks, devices, acs, panels,
 //   cabinets, groups, corridors,
-//   room-templates, obj-templates, bldg-templates, stray-objects, hierarchy-objects.'
+//   stray-objects, hierarchy-objects.'
 //   required: true
 //   type: string
 //   default: "sites"
 // - name: id
 //   in: path
-//   description: 'ID of desired object.
-//   For templates the slug is the ID.'
+//   description: 'ID of desired object.'
 //   required: true
 //   type: string
 //   default: "siteA"
@@ -1602,7 +1605,7 @@ func GetStats(w http.ResponseWriter, r *http.Request) {
 //     description: 'Entity (same as category) of the object. Accepted values: sites, domains,
 //     buildings, rooms, racks, devices, acs, panels,
 //     cabinets, groups, corridors,
-//     room-templates, obj-templates, bldg-templates, stray-objects.'
+//     room-templates, obj-templates, bldg-templates, stray-objects, tags.'
 //     required: true
 //     type: string
 //     default: "sites"
@@ -1660,7 +1663,7 @@ func ValidateEntity(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if entInt != u.BLDGTMPL && entInt != u.ROOMTMPL && entInt != u.OBJTMPL {
+	if u.IsEntityHierarchical(entInt) {
 		if permission := models.CheckUserPermissions(user.Roles, entInt, obj["domain"].(string)); permission < models.WRITE {
 			w.WriteHeader(http.StatusUnauthorized)
 			u.Respond(w, u.Message("This user"+
