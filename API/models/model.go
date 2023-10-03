@@ -195,7 +195,7 @@ func prepareCreateEntity(entity int, t map[string]interface{}, userRoles map[str
 	}
 
 	// Check user permissions
-	if entity != u.BLDGTMPL && entity != u.ROOMTMPL && entity != u.OBJTMPL {
+	if u.IsEntityHierarchical(entity) {
 		var domain string
 		if entity == u.DOMAIN {
 			domain = t["id"].(string)
@@ -270,7 +270,7 @@ func GetEntity(req bson.M, ent string, filters u.RequestFilters, userRoles map[s
 	t = fixID(t)
 
 	// Check permissions
-	if !strings.Contains(ent, "template") {
+	if u.IsEntityHierarchical(u.EntityStrToInt(ent)) {
 		var domain string
 		if ent == "domain" {
 			domain = t["id"].(string)
@@ -403,21 +403,23 @@ func getHierarchyWithNamespace(namespace u.Namespace, userRoles map[string]Role,
 	}
 
 	// Search collections according to namespace
-	collNames := u.GetEntitiesByNamespace(namespace, "")
+	entities := u.GetEntitiesByNamespace(namespace, "")
 
-	for _, collName := range collNames {
+	for _, entityName := range entities {
 		// Get data
 		opts := options.Find().SetProjection(bson.D{{Key: "domain", Value: 1}, {Key: "id", Value: 1}})
-		if strings.Contains(collName, "template") {
+
+		if u.IsEntityNonHierarchical(u.EntityStrToInt(entityName)) {
 			opts = options.Find().SetProjection(bson.D{{Key: "slug", Value: 1}})
 		}
 
-		c, err := db.Collection(collName).Find(ctx, dbFilter, opts)
+		c, err := db.Collection(entityName).Find(ctx, dbFilter, opts)
 		if err != nil {
 			println(err.Error())
 			return nil, &u.Error{Type: u.ErrDBError, Message: err.Error()}
 		}
-		data, e := ExtractCursor(c, ctx, u.EntityStrToInt(collName), userRoles)
+
+		data, e := ExtractCursor(c, ctx, u.EntityStrToInt(entityName), userRoles)
 		if e != nil {
 			return nil, &u.Error{Type: u.ErrInternal, Message: e.Error()}
 		}
@@ -427,23 +429,22 @@ func getHierarchyWithNamespace(namespace u.Namespace, userRoles map[string]Role,
 			if strings.Contains(u.NamespaceToString(namespace), string(u.Logical)) {
 				// Logical
 				var objId string
-				if strings.Contains(collName, "template") {
+				if u.IsEntityNonHierarchical(u.EntityStrToInt(entityName)) {
 					objId = obj["slug"].(string)
 				} else {
 					objId = obj["id"].(string)
 				}
-				hierarchy[rootIdx+collName] = append(hierarchy[rootIdx+collName], objId)
+				hierarchy[rootIdx+entityName] = append(hierarchy[rootIdx+entityName], objId)
 			} else if strings.Contains(obj["id"].(string), ".") {
 				// Physical or Org Children
-				categories[collName] = append(categories[collName], obj["id"].(string))
+				categories[entityName] = append(categories[entityName], obj["id"].(string))
 				fillHierarchyMap(obj["id"].(string), hierarchy)
 			} else {
 				// Physical or Org Roots
 				objId := obj["id"].(string)
-				categories[collName] = append(categories[collName], objId)
-				if collName == u.EntityToString(u.STRAYOBJ) {
-					hierarchy[rootIdx+u.EntityToString(u.STRAYOBJ)] =
-						append(hierarchy[rootIdx+u.EntityToString(u.STRAYOBJ)], objId)
+				categories[entityName] = append(categories[entityName], objId)
+				if u.EntityStrToInt(entityName) == u.STRAYOBJ {
+					hierarchy[rootIdx+entityName] = append(hierarchy[rootIdx+entityName], objId)
 				} else {
 					hierarchy[rootIdx] = append(hierarchy[rootIdx], objId)
 				}
@@ -570,13 +571,13 @@ func GetStats() map[string]interface{} {
 	latestDocArr := []map[string]interface{}{}
 	var latestTime interface{}
 
-	for i := 0; i <= u.BLDGTMPL; i++ {
-		num := GetEntityCount(i)
+	for entity := range u.Entities {
+		num := GetEntityCount(entity)
 		if num == -1 {
 			num = 0
 		}
 
-		ans["Number of "+u.EntityToString(i)+"s:"] = num
+		ans["Number of "+u.EntityToString(entity)+"s:"] = num
 
 		//Retrieve the latest updated document in each collection
 		//and store into the latestDocArr array
@@ -584,7 +585,7 @@ func GetStats() map[string]interface{} {
 		filter := options.FindOne().SetSort(bson.M{"lastUpdated": -1})
 		ctx, cancel := u.Connect()
 
-		e := GetDB().Collection(u.EntityToString(i)).FindOne(ctx, bson.M{}, filter).Decode(&obj)
+		e := GetDB().Collection(u.EntityToString(entity)).FindOne(ctx, bson.M{}, filter).Decode(&obj)
 		if e == nil {
 			latestDocArr = append(latestDocArr, obj)
 		}
@@ -705,8 +706,7 @@ func UpdateEntity(ent string, req bson.M, t map[string]interface{}, isPatch bool
 
 	entInt := u.EntityStrToInt(ent)
 	//Check if permission is only readonly
-	if entInt != u.BLDGTMPL && entInt != u.ROOMTMPL && entInt != u.OBJTMPL &&
-		(oldObj["description"] == nil) {
+	if u.IsEntityHierarchical(entInt) && oldObj["description"] == nil {
 		// Description is always present, unless GetEntity was called with readonly permission
 		return nil, &u.Error{Type: u.ErrUnauthorized,
 			Message: "User does not have permission to change this object"}
@@ -741,7 +741,7 @@ func UpdateEntity(ent string, req bson.M, t map[string]interface{}, isPatch bool
 	delete(t, "parentId")
 
 	// Check user permissions in case domain is being updated
-	if entInt != u.DOMAIN && entInt < u.ROOMTMPL && (oldObj["domain"] != t["domain"]) {
+	if entInt != u.DOMAIN && u.IsEntityHierarchical(entInt) && (oldObj["domain"] != t["domain"]) {
 		if perm := CheckUserPermissions(userRoles, entInt, t["domain"].(string)); perm < WRITE {
 			return nil, &u.Error{Type: u.ErrUnauthorized,
 				Message: "User does not have permission to change this object"}
@@ -920,7 +920,7 @@ func ExtractCursor(c *mongo.Cursor, ctx context.Context, entity int, userRoles m
 		}
 		//Remove _id
 		x = fixID(x)
-		if entity != u.BLDGTMPL && entity != u.ROOMTMPL && entity != u.OBJTMPL && userRoles != nil {
+		if u.IsEntityHierarchical(entity) && userRoles != nil {
 			//Check permissions
 			var domain string
 			if entity == u.DOMAIN {

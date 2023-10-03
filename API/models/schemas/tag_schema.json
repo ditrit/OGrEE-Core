@@ -1,0 +1,31 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "OGrEE Tag Schema",
+  "type": "object",
+  "properties": {
+    "slug": {
+      "type": "string",
+      "$ref": "refs/types.json#/definitions/slug"
+    },
+    "name": {
+      "type": "string"
+    },
+    "color": {
+      "type": "string",
+      "$ref": "refs/types.json#/definitions/color"
+    }
+  },
+  "additionalProperties": false,
+  "required": [
+    "slug",
+    "name",
+    "color"
+  ],
+  "examples": [
+    {
+      "slug": "example",
+      "name": "An example",
+      "color": "D0FF78"
+    }
+  ]
+}
