@@ -6,6 +6,7 @@ import (
 	"log"
 	"net/url"
 	"os"
+	u "p3/utils"
 	"strings"
 	"time"
 
@@ -102,6 +103,21 @@ func init() {
 			println("Successfully connected to DB")
 		}
 		globalClient = client
+	}
+
+	// indexes creation
+	indexCtx, indexCancel := u.Connect()
+	defer indexCancel()
+
+	_, err = db.Collection(u.EntityToString(u.TAG)).Indexes().CreateOne(
+		indexCtx,
+		mongo.IndexModel{
+			Keys:    bson.M{"slug": 1},
+			Options: options.Index().SetUnique(true),
+		},
+	)
+	if err != nil {
+		log.Fatal(err)
 	}
 }
 

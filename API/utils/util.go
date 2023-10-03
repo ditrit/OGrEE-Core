@@ -22,10 +22,10 @@ var GitCommitDate string
 
 const (
 	DOMAIN = iota
-	// hierarchal root objects
+	// hierarchical root entities
 	STRAYOBJ
 	SITE
-	// hierarchal objects with mandatory parent
+	// hierarchical entities with mandatory parent
 	BLDG
 	ROOM
 	RACK
@@ -35,10 +35,11 @@ const (
 	CORRIDOR
 	PWRPNL
 	GROUP
-	// non hierarchal templates
+	// logical non hierarchical entities
 	ROOMTMPL
 	OBJTMPL
 	BLDGTMPL
+	TAG
 )
 
 type Namespace string
@@ -148,32 +149,30 @@ func ErrLog(message, funcname, details string, r *http.Request) {
 	log.Println(details)
 }
 
-func ParamsParse(link *url.URL, objType int) map[string]interface{} {
+func ParamsParse(link *url.URL, entityType int) map[string]interface{} {
 	q, _ := url.ParseQuery(link.RawQuery)
 	values := make(map[string]interface{})
 
-	//Building Attribute query varies based on
-	//object type
-	for key, _ := range q {
+	// Building Attribute query varies based on entityType
+	for key, value := range q {
 		if key != "fieldOnly" && key != "startDate" && key != "endDate" && key != "limit" {
-			if objType != ROOMTMPL && objType != OBJTMPL &&
-				objType != BLDGTMPL { //Non template objects
+			if IsEntityHierarchical(entityType) {
 				switch key {
 				case "id", "name", "category", "parentID",
 					"description", "domain", "parentid", "parentId",
 					"createdDate", "lastUpdated":
-					values[key] = q.Get(key)
+					values[key] = value
 				default:
-					values["attributes."+key] = q.Get(key)
+					values["attributes."+key] = value
 				}
-			} else { //Template objects
+			} else {
 				//Not sure how to search FBX TEMPLATES
 				//For now it is disabled
 				switch key {
 				case "description", "slug", "category", "sizeWDHmm", "fbxModel":
-					values[key] = q.Get(key)
+					values[key] = value
 				default:
-					values["attributes."+key] = q.Get(key)
+					values["attributes."+key] = value
 				}
 			}
 		}
@@ -195,6 +194,21 @@ func ErrTypeToStatusCode(errType ErrType) int {
 		return http.StatusNotFound
 	}
 	return http.StatusInternalServerError
+}
+
+var EntityTypeList = []int{
+	DOMAIN,
+	STRAYOBJ, SITE,
+	BLDG, ROOM, RACK, DEVICE, AC, CABINET, CORRIDOR, PWRPNL, GROUP,
+	ROOMTMPL, OBJTMPL, BLDGTMPL, TAG,
+}
+
+func IsEntityHierarchical(entity int) bool {
+	return !IsEntityNonHierarchical(entity)
+}
+
+func IsEntityNonHierarchical(entity int) bool {
+	return entity == BLDGTMPL || entity == ROOMTMPL || entity == OBJTMPL || entity == TAG
 }
 
 func EntityToString(entity int) string {
@@ -229,6 +243,8 @@ func EntityToString(entity int) string {
 		return "group"
 	case CORRIDOR:
 		return "corridor"
+	case TAG:
+		return "tag"
 	default:
 		return "INVALID"
 	}
@@ -266,12 +282,14 @@ func EntityStrToInt(entity string) int {
 		return GROUP
 	case "corridor":
 		return CORRIDOR
+	case "tag":
+		return TAG
 	default:
 		return -1
 	}
 }
 
-func HierachyNameToEntity(name string) []int {
+func HierarchyNameToEntity(name string) []int {
 	resp := []int{STRAYOBJ} // it can always be a stray
 	switch strings.Count(name, HN_DELIMETER) {
 	case 0:
@@ -305,26 +323,25 @@ func NamespaceToString(namespace Namespace) string {
 	return ref.String()
 }
 
-func GetEntitesByNamespace(namespace Namespace) []string {
-	var collNames []string
+func GetEntitiesByNamespace(namespace Namespace) []int {
+	var entities []int
 	switch namespace {
 	case Physical:
-		for i := STRAYOBJ; i <= GROUP; i++ {
-			collNames = append(collNames, EntityToString(i))
+		for entity := STRAYOBJ; entity <= GROUP; entity++ {
+			entities = append(entities, entity)
 		}
 	case Organisational:
-		collNames = append(collNames, EntityToString(DOMAIN))
+		entities = append(entities, DOMAIN)
 	case Logical:
-		for i := GROUP; i <= BLDGTMPL; i++ {
-			collNames = append(collNames, EntityToString(i))
+		for entity := GROUP; entity <= TAG; entity++ {
+			entities = append(entities, entity)
 		}
 	default:
 		// All collections
-		for i := DOMAIN; i <= BLDGTMPL; i++ {
-			collNames = append(collNames, EntityToString(i))
-		}
+		return EntityTypeList
 	}
-	return collNames
+
+	return entities
 }
 
 func GetParentOfEntityByInt(entity int) int {
@@ -333,7 +350,7 @@ func GetParentOfEntityByInt(entity int) int {
 		return DOMAIN
 	case AC, PWRPNL, CABINET, CORRIDOR:
 		return ROOM
-	case ROOMTMPL, OBJTMPL, BLDGTMPL, GROUP, STRAYOBJ:
+	case ROOMTMPL, OBJTMPL, BLDGTMPL, TAG, GROUP, STRAYOBJ:
 		return -1
 	default:
 		return entity - 1
