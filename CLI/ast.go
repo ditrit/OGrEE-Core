@@ -938,19 +938,15 @@ func (n *createDomainNode) execute() (interface{}, error) {
 	if err != nil {
 		return nil, err
 	}
-	colorInf, err := n.color.execute()
+
+	color, err := nodeToColorString(n.color)
 	if err != nil {
 		return nil, err
 	}
-	var color string
-	var ok bool
-	if color, ok = utils.ValToColor(colorInf); !ok {
-		return nil, fmt.Errorf("Please provide a valid 6 digit Hex value for the color")
-	}
 
 	attributes := map[string]interface{}{"attributes": map[string]interface{}{"color": color}}
-	err = cmd.CreateObject(path, cmd.DOMAIN, attributes)
-	return nil, err
+
+	return nil, cmd.CreateObject(path, cmd.DOMAIN, attributes)
 }
 
 type createSiteNode struct {
@@ -1203,6 +1199,25 @@ func (n *createGroupNode) execute() (interface{}, error) {
 		return nil, err
 	}
 	return nil, nil
+}
+
+type createTagNode struct {
+	slug  node
+	color node
+}
+
+func (n *createTagNode) execute() (interface{}, error) {
+	slug, err := nodeToSlug(n.slug, "slug")
+	if err != nil {
+		return nil, err
+	}
+
+	color, err := nodeToColorString(n.color)
+	if err != nil {
+		return nil, err
+	}
+
+	return nil, cmd.CreateTag(slug, color)
 }
 
 type createCorridorNode struct {
