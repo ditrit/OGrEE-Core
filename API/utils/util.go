@@ -13,6 +13,8 @@ import (
 	"reflect"
 	"strings"
 	"time"
+
+	"go.mongodb.org/mongo-driver/bson"
 )
 
 var BuildHash string
@@ -148,37 +150,33 @@ func ErrLog(message, funcname, details string, r *http.Request) {
 	log.Println(details)
 }
 
-func ParamsParse(link *url.URL, objType int) map[string]interface{} {
+func FilteredReqFromQueryParams(link *url.URL) bson.M {
 	q, _ := url.ParseQuery(link.RawQuery)
-	values := make(map[string]interface{})
+	bsonMap := bson.M{}
 
-	//Building Attribute query varies based on
-	//object type
-	for key, _ := range q {
+	for key := range q {
 		if key != "fieldOnly" && key != "startDate" && key != "endDate" && key != "limit" {
-			if objType != ROOMTMPL && objType != OBJTMPL &&
-				objType != BLDGTMPL { //Non template objects
-				switch key {
-				case "id", "name", "category", "parentID",
-					"description", "domain", "parentid", "parentId",
-					"createdDate", "lastUpdated":
-					values[key] = q.Get(key)
-				default:
-					values["attributes."+key] = q.Get(key)
-				}
-			} else { //Template objects
-				//Not sure how to search FBX TEMPLATES
-				//For now it is disabled
-				switch key {
-				case "description", "slug", "category", "sizeWDHmm", "fbxModel":
-					values[key] = q.Get(key)
-				default:
-					values["attributes."+key] = q.Get(key)
-				}
+			var keyValue interface{}
+			keyValue = q.Get(key)
+			if strings.Contains(keyValue.(string), "*") {
+				regex := strings.ReplaceAll(strings.ReplaceAll(keyValue.(string), ".", "\\."), "*", "("+NAME_REGEX+")")
+				keyValue = bson.M{"$regex": regex}
+			} else if key == "parentId" {
+				regex := strings.ReplaceAll(keyValue.(string), ".", "\\.") + "\\.(" + NAME_REGEX + ")"
+				bsonMap["id"] = bson.M{"$regex": regex}
+				continue
+			}
+			switch key {
+			case "id", "name", "category",
+				"description", "domain",
+				"createdDate", "lastUpdated", "slug":
+				bsonMap[key] = keyValue
+			default:
+				bsonMap["attributes."+key] = keyValue
 			}
 		}
 	}
-	return values
+	return bsonMap
 }
 
 func ErrTypeToStatusCode(errType ErrType) int {
