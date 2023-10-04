@@ -213,6 +213,7 @@ func (p *parser) parseKeyWord(candidates []string) string {
 	if sliceContains(candidates, p.item(false)) {
 		return p.item(false)
 	}
+	p.reset()
 	return ""
 }
 
