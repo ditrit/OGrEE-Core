@@ -4,10 +4,13 @@ import (
 	cmd "cli/controllers"
 	"encoding/hex"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"reflect"
+	"regexp"
 	"strconv"
+	"strings"
 )
 
 var floatType = reflect.TypeOf(float64(0))
@@ -171,6 +174,34 @@ func valToString(val any, name string) (string, error) {
 	return stringVal, nil
 }
 
+// Transforms a node into a slug:
+//  1. Transform into a string
+//  2. Transform into lower cases only
+//  3. Validate the format of a slug using regex (lowercase letters, numbers and hyphens only)
+func nodeToSlug(n node, name string) (string, error) {
+	nodeString, err := nodeToString(n, name)
+	if err != nil {
+		return "", err
+	}
+
+	return stringToSlug(nodeString)
+}
+
+func stringToSlug(slug string) (string, error) {
+	slug = strings.ToLower(slug)
+
+	match, err := regexp.MatchString("^[a-z0-9-_]+$", slug)
+	if err != nil {
+		return "", err
+	}
+
+	if !match {
+		return "", errors.New("slugs must have letters, numbers and hyphens only")
+	}
+
+	return slug, nil
+}
+
 func nodeToString(n node, name string) (string, error) {
 	val, err := n.execute()
 	if err != nil {
@@ -198,6 +229,20 @@ func nodeToVec(n node, size int, name string) ([]float64, error) {
 	}
 
 	return valToVec(val, size, name)
+}
+
+func nodeToColorString(color node) (string, error) {
+	colorVal, err := color.execute()
+	if err != nil {
+		return "", err
+	}
+
+	colorString, ok := valToColor(colorVal)
+	if !ok {
+		return "", fmt.Errorf("Please provide a valid 6 digit Hex value for the color")
+	}
+
+	return colorString, nil
 }
 
 func valToColor(color interface{}) (string, bool) {

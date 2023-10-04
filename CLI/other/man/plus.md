@@ -162,6 +162,10 @@ User must specify the path, and TEMPLATE
 
 Where TEMPLATE refers to the device template name (which must be already existing)
 
++tag:slug@color
+
+Where color should be a 6 digit HEX Value (ie 00000A)
+
 
 EXAMPLES   
 
