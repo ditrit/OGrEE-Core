@@ -39,6 +39,7 @@ A .env file is present in the docker folder to configure the port the API, Web A
 There is also a development version with the following features:
 
 * The MongoDB database is accessible on the `DB_PORT` (27017 by default) port. This will allow you to connect to the database using mongosh or mongodb-compass using the following url: `mongodb://ogreemytenantAdmin:pass123@localhost:27017/ogreemytenant?authSource=ogreemytenant&directConnection=true`.
+* HotReload for the api: each time a change is made to the code, the api is recompiled and relaunched.
 
 This version can be launched by running:
 

@@ -5,7 +5,7 @@ api:
 	docker compose -p mytenant up -d
 
 dev_api:
-	docker compose -p mytenant -f docker-compose.yml -f docker-compose.dev.yml up -d
+	docker compose -p mytenant -f docker-compose.yml -f docker-compose.dev.yml up -d --build
 
 
 
