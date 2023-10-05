@@ -47,6 +47,7 @@ var pathPrefixes = []string{
 	"/Logical/RoomTemplates/",
 	"/Logical/BldgTemplates/",
 	"/Logical/Groups/",
+	"/Logical/Tags/",
 	"/Organisation/Domain/",
 }
 
@@ -59,6 +60,10 @@ func SplitPath(path string) (string, string, error) {
 		}
 	}
 	return "", "", fmt.Errorf("invalid object path")
+}
+
+func IsTag(path string) bool {
+	return strings.HasPrefix(path, "/Logical/Tags/")
 }
 
 func ObjectUrl(path string, depth int) (string, error) {
