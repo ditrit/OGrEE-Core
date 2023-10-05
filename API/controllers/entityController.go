@@ -843,10 +843,9 @@ func UpdateEntity(w http.ResponseWriter, r *http.Request) {
 
 	// Patch or put
 	isPatch := false
-	if r.Method == "PATCH" {
+	if r.Method == http.MethodPatch {
 		isPatch = true
 	}
-	println(r.Method)
 
 	// Get request body
 	updateData := map[string]interface{}{}
