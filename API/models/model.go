@@ -150,11 +150,14 @@ func PropagateParentIdChange(ctx context.Context, oldParentId, newId string, ent
 
 func updateOldObjWithPatch(old map[string]interface{}, patch map[string]interface{}) error {
 	for k, v := range patch {
-		switch child := v.(type) {
+		switch patchValueCasted := v.(type) {
 		case map[string]interface{}:
-			switch oldChild := old[k].(type) {
+			switch oldValueCasted := old[k].(type) {
 			case map[string]interface{}:
-				updateOldObjWithPatch(oldChild, child)
+				err := updateOldObjWithPatch(oldValueCasted, patchValueCasted)
+				if err != nil {
+					return err
+				}
 			default:
 				return errors.New("Wrong format for property " + k)
 			}
@@ -162,6 +165,7 @@ func updateOldObjWithPatch(old map[string]interface{}, patch map[string]interfac
 			old[k] = v
 		}
 	}
+
 	return nil
 }
 
