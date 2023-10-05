@@ -348,8 +348,9 @@ func HandleGenericAnyObject(w http.ResponseWriter, r *http.Request) {
 	filters := getFiltersFromQueryParams(r)
 	req := u.FilteredReqFromQueryParams(r.URL)
 	fmt.Println(req)
-	for entInt := 0; entInt <= u.BLDGTMPL; entInt++ {
-		entData, _ := models.GetManyEntities(u.EntityToString(entInt), req, filters, user.Roles)
+	collNames := u.GetEntitesByNamespace(filters.Namespace)
+	for _, collName := range collNames {
+		entData, _ := models.GetManyEntities(collName, req, filters, user.Roles)
 		data = append(data, entData...)
 	}
 
@@ -401,7 +402,7 @@ func HandleGenericObject(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("FUNCTION CALL: 	 GetGenericObject ")
 	fmt.Println("******************************************************")
 	DispRequestMetaData(r)
-	var data map[string]interface{}
+	var data []map[string]interface{}
 	var err *u.Error
 
 	// Get user roles for permissions
@@ -414,7 +415,7 @@ func HandleGenericObject(w http.ResponseWriter, r *http.Request) {
 	hierarchyName, e := mux.Vars(r)["id"]
 	filters := getFiltersFromQueryParams(r)
 	if e {
-		data, err = models.GetObjectById(hierarchyName, filters, user.Roles)
+		data, err = models.GetObjectsById(hierarchyName, filters, user.Roles, r.Method == "DELETE")
 	} else {
 		u.Respond(w, u.Message("Error while parsing path parameters"))
 		u.ErrLog("Error while parsing path parameters", "GET ENTITY", "", r)
@@ -431,14 +432,16 @@ func HandleGenericObject(w http.ResponseWriter, r *http.Request) {
 			u.RespondWithError(w, err)
 		} else {
 			if r.Method == "DELETE" {
-				modelErr := models.DeleteEntity(data["category"].(string), data["id"].(string), user.Roles)
-				if modelErr != nil {
-					u.ErrLog("Error while deleting entity", "DELETE ENTITY", modelErr.Message, r)
-					u.RespondWithError(w, modelErr)
-				} else {
-					w.WriteHeader(http.StatusNoContent)
-					u.Respond(w, u.Message("successfully deleted"))
+				for _, obj := range data {
+					modelErr := models.DeleteEntity(obj["entity"].(string), obj["id"].(string), user.Roles)
+					if modelErr != nil {
+						u.ErrLog("Error while deleting object: "+obj["id"].(string), "DELETE ENTITY", modelErr.Message, r)
+						u.RespondWithError(w, modelErr)
+						return
+					}
 				}
+				w.WriteHeader(http.StatusNoContent)
+				u.Respond(w, u.Message("successfully deleted"))
 			} else {
 				u.Respond(w, u.RespDataWrapper("successfully got object", data))
 			}
@@ -498,7 +501,7 @@ func HandleGenericObjectWildcard(w http.ResponseWriter, r *http.Request) {
 	regex := strings.ReplaceAll(strings.ReplaceAll(hierarchyName, ".", "\\."), "*", "("+u.NAME_REGEX+")")
 	req := bson.M{"id": bson.M{"$regex": regex}}
 	matchingObjects := []map[string]interface{}{}
-	rangeEntities := u.HierachyNameToEntity(hierarchyName)
+	rangeEntities := u.HierachyNameToEntity(hierarchyName, filters.Namespace)
 	for _, entity := range rangeEntities {
 		entityStr := u.EntityToString(entity)
 		data, err := models.GetManyEntities(entityStr, req, filters, user.Roles)
@@ -1277,9 +1280,11 @@ func GetHierarchyByName(w http.ResponseWriter, r *http.Request) {
 	var modelErr *u.Error
 	var data map[string]interface{}
 	if entity == "object" {
-		// Generic endpoint
-		data, modelErr = models.GetObjectById(id, filters, user.Roles)
+		// Generic endpoint only for physical objs
+		filters.Namespace = u.Physical
+		objs, modelErr := models.GetObjectsById(id, filters, user.Roles, false)
 		if modelErr == nil {
+			data = objs[0]
 			entity = data["category"].(string)
 		}
 	} else {
