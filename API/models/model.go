@@ -216,11 +216,11 @@ func prepareCreateEntity(entity int, t map[string]interface{}, userRoles map[str
 	return nil
 }
 
-// GetObjectById: search for id (hierarchyName) in all possible collections
-func GetObjectById(hierarchyName string, filters u.RequestFilters, userRoles map[string]Role) (map[string]interface{}, *u.Error) {
-	var resp map[string]interface{}
+// GetObjectsById: search for id (hierarchyName) in all possible collections
+func GetObjectsById(hierarchyName string, filters u.RequestFilters, userRoles map[string]Role, withEntity bool) ([]map[string]interface{}, *u.Error) {
+	resp := []map[string]interface{}{}
 	// Get possible collections for this name
-	rangeEntities := u.HierachyNameToEntity(hierarchyName)
+	rangeEntities := u.HierachyNameToEntity(hierarchyName, filters.Namespace)
 
 	// Search each collection
 	for _, entity := range rangeEntities {
@@ -228,12 +228,14 @@ func GetObjectById(hierarchyName string, filters u.RequestFilters, userRoles map
 		entityStr := u.EntityToString(entity)
 		data, _ := GetEntity(req, entityStr, filters, userRoles)
 		if data != nil {
-			resp = data
-			break
+			if withEntity {
+				data["entity"] = entityStr
+			}
+			resp = append(resp, data)
 		}
 	}
 
-	if resp != nil {
+	if len(resp) > 0 {
 		return resp, nil
 	} else {
 		return nil, &u.Error{Type: u.ErrNotFound, Message: "Unable to find object"}

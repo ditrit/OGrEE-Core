@@ -57,10 +57,11 @@ const NAME_REGEX = "\\w(\\w|\\-)*" // accepted regex for names that compose ids
 const RESET_TAG = "RESET"          // used as email to identify a reset token
 
 type RequestFilters struct {
-	FieldsToShow []string `schema:"fieldOnly"`
-	StartDate    string   `schema:"startDate"`
-	EndDate      string   `schema:"endDate"`
-	Limit        string   `schema:"limit"`
+	FieldsToShow []string  `schema:"fieldOnly"`
+	StartDate    string    `schema:"startDate"`
+	EndDate      string    `schema:"endDate"`
+	Limit        string    `schema:"limit"`
+	Namespace    Namespace `schema:"namespace"`
 }
 
 type HierarchyFilters struct {
@@ -155,7 +156,8 @@ func FilteredReqFromQueryParams(link *url.URL) bson.M {
 	bsonMap := bson.M{}
 
 	for key := range q {
-		if key != "fieldOnly" && key != "startDate" && key != "endDate" && key != "limit" {
+		if key != "fieldOnly" && key != "startDate" && key != "endDate" &&
+			key != "limit" && key != "namespace" {
 			var keyValue interface{}
 			keyValue = q.Get(key)
 			if strings.Contains(keyValue.(string), "*") {
@@ -269,36 +271,43 @@ func EntityStrToInt(entity string) int {
 	}
 }
 
-func HierachyNameToEntity(name string) []int {
-	resp := []int{STRAYOBJ} // it can always be a stray
-	switch strings.Count(name, HN_DELIMETER) {
-	case 0:
-		resp = append(resp, SITE)
-	case 1:
-		resp = append(resp, BLDG)
-	case 2:
-		resp = append(resp, ROOM)
-	case 3:
-		resp = append(resp, RACK, GROUP, AC, CORRIDOR, PWRPNL, CABINET)
-	case 4:
-		resp = append(resp, DEVICE, GROUP)
-	default:
-		resp = append(resp, DEVICE)
+func HierachyNameToEntity(name string, namespace Namespace) []int {
+	resp := []int{}
+	if namespace == Organisational {
+		resp = append(resp, DOMAIN)
+	} else if namespace == Logical {
+		resp = append(resp, OBJTMPL, ROOMTMPL, BLDGTMPL, GROUP)
+	} else {
+		resp = append(resp, STRAYOBJ) // it can always be a stray
+		switch strings.Count(name, HN_DELIMETER) {
+		case 0:
+			resp = append(resp, SITE)
+			if namespace == Any {
+				resp = append(resp, OBJTMPL, ROOMTMPL, BLDGTMPL)
+			}
+		case 1:
+			resp = append(resp, BLDG)
+		case 2:
+			resp = append(resp, ROOM)
+		case 3:
+			resp = append(resp, RACK, GROUP, AC, CORRIDOR, PWRPNL, CABINET)
+			if namespace == Any {
+				resp = append(resp, GROUP)
+			}
+		case 4:
+			resp = append(resp, DEVICE, GROUP)
+			if namespace == Any {
+				resp = append(resp, GROUP)
+			}
+		default:
+			resp = append(resp, DEVICE)
+		}
 	}
 
 	return resp
 }
 
 func NamespaceToString(namespace Namespace) string {
-	// switch namespace {
-	// case Physical:
-	// 	return "Physical"
-	// case Organisational:
-	// 	return "Organisational"
-	// case Logical:
-	// 	return "Logical"
-	// }
-	// return ""
 	ref := reflect.ValueOf(namespace)
 	return ref.String()
 }
