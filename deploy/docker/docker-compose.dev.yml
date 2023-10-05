@@ -1,0 +1,6 @@
+# docker compose configs that apply only for dev env
+
+services:
+  ogree_db:
+    ports:
+      - ${DB_PORT}:27017
