@@ -670,6 +670,7 @@ func (n *updateObjNode) execute() (interface{}, error) {
 	if err != nil {
 		return nil, err
 	}
+
 	values := []any{}
 	for _, valueNode := range n.values {
 		val, err := valueNode.execute()
@@ -678,6 +679,7 @@ func (n *updateObjNode) execute() (interface{}, error) {
 		}
 		values = append(values, val)
 	}
+
 	var paths []string
 	if path == "_" {
 		paths = cmd.State.ClipBoard
@@ -709,8 +711,8 @@ func (n *updateObjNode) execute() (interface{}, error) {
 			_, err = addRoomSeparator(path, values)
 		case "pillar":
 			_, err = addRoomPillar(path, values)
-		case "domain":
-			_, err = cmd.UpdateObj(path, map[string]any{"domain": values[0]})
+		case "domain", "tags+", "tags-":
+			_, err = cmd.UpdateObj(path, map[string]any{n.attr: values[0]})
 		default:
 			if strings.HasPrefix(n.attr, "description") {
 				_, err = updateDescription(path, n.attr, values)

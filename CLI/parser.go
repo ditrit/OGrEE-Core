@@ -236,7 +236,7 @@ func (p *parser) parseComplexWord(name string) string {
 	defer un(trace(p, name))
 	for {
 		c := p.next()
-		if isAlphaNumeric(c) || c == '-' || c == '_' {
+		if isAlphaNumeric(c) || c == '-' || c == '+' || c == '_' {
 			continue
 		}
 		p.backward(1)
