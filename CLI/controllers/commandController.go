@@ -380,19 +380,27 @@ func UpdateObj(path string, data map[string]any) (map[string]any, error) {
 			attributes[key] = Stringify(val)
 		}
 	}
+
 	obj, err := GetObject(path)
 	if err != nil {
 		return nil, err
 	}
-	category := obj["category"].(string)
+
+	category := ""
+	if obj["category"] != nil {
+		category = obj["category"].(string)
+	}
+
 	url, err := ObjectUrl(path, 0)
 	if err != nil {
 		return nil, err
 	}
-	resp, err := RequestAPI("PATCH", url, data, http.StatusOK)
+
+	resp, err := RequestAPI(http.MethodPatch, url, data, http.StatusOK)
 	if err != nil {
 		return nil, err
 	}
+
 	//Determine if Unity requires the message as
 	//Interact or Modify
 	message := map[string]any{}
