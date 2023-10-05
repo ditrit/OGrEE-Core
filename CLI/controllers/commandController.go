@@ -41,10 +41,18 @@ func PostObj(ent int, entity string, data map[string]any) error {
 
 func startsWith(s string, prefix string, suffix *string) bool {
 	if strings.HasPrefix(s, prefix) {
-		*suffix = s[len(prefix):]
+		if suffix != nil {
+			*suffix = s[len(prefix):]
+		}
+
 		return true
 	}
+
 	return false
+}
+
+func IsTag(path string, suffix *string) bool {
+	return startsWith(path, "/Logical/Tags/", suffix)
 }
 
 func ObjectUrl(path string, depth int) (string, error) {
@@ -62,7 +70,7 @@ func ObjectUrl(path string, depth int) (string, error) {
 		url = "/api/bldg-templates"
 	} else if startsWith(path, "/Logical/Groups/", &suffix) {
 		url = "/api/groups"
-	} else if startsWith(path, "/Logical/Tags/", &suffix) {
+	} else if IsTag(path, &suffix) {
 		url = "/api/tags"
 	} else if startsWith(path, "/Organisation/Domain/", &suffix) {
 		url = "/api/domains"
