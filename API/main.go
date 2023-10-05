@@ -92,6 +92,9 @@ func Router(jwt func(next http.Handler) http.Handler) *mux.Router {
 		controllers.DeleteProject).Methods("DELETE", "OPTIONS")
 
 	// GENERIC
+	router.HandleFunc("/api/objects",
+		controllers.HandleGenericAnyObject).Methods("GET", "HEAD", "OPTIONS")
+
 	router.HandleFunc("/api/objects/{id}",
 		controllers.HandleGenericObject).Methods("GET", "HEAD", "OPTIONS", "DELETE")
 

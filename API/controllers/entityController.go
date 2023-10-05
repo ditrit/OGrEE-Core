@@ -331,6 +331,71 @@ func getBulkDomainsRecursively(parent string, listDomains []map[string]interface
 //		'404':
 //		    description: Not Found. An error message will be returned.
 
+func HandleGenericAnyObject(w http.ResponseWriter, r *http.Request) {
+	fmt.Println("******************************************************")
+	fmt.Println("FUNCTION CALL: 	 GetGenericAnyObject ")
+	fmt.Println("******************************************************")
+	DispRequestMetaData(r)
+	data := []map[string]interface{}{}
+
+	// Get user roles for permissions
+	user := getUserFromToken(w, r)
+	if user == nil {
+		return
+	}
+
+	// Get objects
+	filters := getFiltersFromQueryParams(r)
+	req := u.FilteredReqFromQueryParams(r.URL)
+	fmt.Println(req)
+	for entInt := 0; entInt <= u.BLDGTMPL; entInt++ {
+		entData, _ := models.GetManyEntities(u.EntityToString(entInt), req, filters, user.Roles)
+		data = append(data, entData...)
+	}
+
+	// Respond
+	if r.Method == "OPTIONS" && data != nil {
+		w.Header().Add("Content-Type", "application/json")
+		w.Header().Add("Allow", "GET, OPTIONS")
+	} else {
+		u.Respond(w, u.RespDataWrapper("successfully got object", data))
+	}
+
+}
+
+// swagger:operation GET /api/objects/{id} Objects GetGenericObject
+// Get an object from any entity.
+// Gets an object from any of the physical entities with no need to specify it.
+// The id must be provided in the URL as a parameter.
+// ---
+// security:
+// - bearer: []
+// produces:
+// - application/json
+// parameters:
+//   - name: id
+//     in: path
+//     description: ID type hierarchyName of the object
+//     required: true
+//   - name: fieldOnly
+//     in: query
+//     description: 'specify which object field to show in response.
+//     Multiple fieldOnly can be added. An invalid field is simply ignored.'
+//   - name: startDate
+//     in: query
+//     description: 'filter objects by lastUpdated >= startDate.
+//     Format: yyyy-mm-dd'
+//   - name: endDate
+//     in: query
+//     description: 'filter objects by lastUpdated <= endDate.
+//     Format: yyyy-mm-dd'
+// responses:
+//		'200':
+//		    description: 'Found. A response body will be returned with
+//	        a meaningful message.'
+//		'404':
+//		    description: Not Found. An error message will be returned.
+
 func HandleGenericObject(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("******************************************************")
 	fmt.Println("FUNCTION CALL: 	 GetGenericObject ")
@@ -922,7 +987,6 @@ func GetEntityByQuery(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("******************************************************")
 	DispRequestMetaData(r)
 	var data []map[string]interface{}
-	var bsonMap bson.M
 	var entStr string
 	var modelErr *u.Error
 
@@ -948,9 +1012,7 @@ func GetEntityByQuery(w http.ResponseWriter, r *http.Request) {
 
 	// Get query params
 	filters := getFiltersFromQueryParams(r)
-	query := u.ParamsParse(r.URL, u.EntityStrToInt(entStr))
-	js, _ := json.Marshal(query)
-	json.Unmarshal(js, &bsonMap)
+	bsonMap := u.FilteredReqFromQueryParams(r.URL)
 	// Limit filter
 	if entInt == u.DOMAIN || entInt == u.DEVICE || entInt == u.STRAYOBJ {
 		if nLimit, e := strconv.Atoi(filters.Limit); e == nil {
