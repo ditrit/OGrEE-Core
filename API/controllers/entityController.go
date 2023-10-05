@@ -877,14 +877,7 @@ func UpdateEntity(w http.ResponseWriter, r *http.Request) {
 		u.Respond(w, u.Message("Error while extracting from path parameters"))
 		u.ErrLog("Error while extracting from path parameters", "UPDATE ENTITY", "", r)
 	} else {
-		var req bson.M
-		if u.IsEntityNonHierarchical(u.EntityStrToInt(entity)) {
-			req = bson.M{"slug": id}
-		} else {
-			req = bson.M{"id": id}
-		}
-
-		data, modelErr = models.UpdateEntity(entity, req, updateData, isPatch, user.Roles)
+		data, modelErr = models.UpdateEntity(entity, id, updateData, isPatch, user.Roles)
 		if modelErr != nil {
 			u.RespondWithError(w, modelErr)
 		} else {
