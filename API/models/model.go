@@ -692,7 +692,14 @@ func DeleteSingleEntity(entity string, req bson.M) *u.Error {
 	return nil
 }
 
-func UpdateEntity(ent string, req bson.M, t map[string]interface{}, isPatch bool, userRoles map[string]Role) (map[string]interface{}, *u.Error) {
+func UpdateEntity(ent string, id string, t map[string]interface{}, isPatch bool, userRoles map[string]Role) (map[string]interface{}, *u.Error) {
+	var idFilter bson.M
+	if u.IsEntityNonHierarchical(u.EntityStrToInt(ent)) {
+		idFilter = bson.M{"slug": id}
+	} else {
+		idFilter = bson.M{"id": id}
+	}
+
 	var mongoRes *mongo.SingleResult
 	var updatedDoc map[string]interface{}
 	retDoc := options.ReturnDocument(options.After)
