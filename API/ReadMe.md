@@ -59,7 +59,7 @@ You can modify the port of the API in the .env file. This is the port that the A
 
 This .env file is not provided, so you must create it yourself. Here is an example of the ```.env``` file:
 ```
-api_port = 3001
+PORT = 3001
 db_host = 0.0.0.0
 db_port = 27017
 db_user = ""

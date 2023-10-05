@@ -1,12 +1,12 @@
 version: '3.9'
 services:
   ogree_api:
-    build: 
+    build:
       context: ${CORE_DIR}/${API_BUILD_DIR}
     image: ogree/api:${IMAGE_TAG}
     container_name: ${COMPOSE_PROJECT_NAME}_api
     environment:
-      - api_port=3001
+      - PORT=3001
       - db_host=${COMPOSE_PROJECT_NAME}_db
       - db_port=27017
       - db_user=${COMPOSE_PROJECT_NAME}
@@ -33,9 +33,9 @@ services:
         - GUARD_USER=guard
         - GUARD_PASS=adminpassword
     volumes:
-        -  ./init.sh:/docker-entrypoint-initdb.d/init.sh
-        -  ../db/createdb.js:/home/createdb.js
-        -  db:/data/db
+        - ./init.sh:/docker-entrypoint-initdb.d/init.sh
+        - ../db/createdb.js:/home/createdb.js
+        - db:/data/db
         - ./entrypoint.sh:/scripts/entrypoint.sh
     entrypoint: sh /scripts/entrypoint.sh ${COMPOSE_PROJECT_NAME}_db
     restart: on-failure:10
@@ -50,7 +50,7 @@ services:
       SWAGGER_JSON_URL: https://raw.githubusercontent.com/ditrit/OGrEE-Core/${IMAGE_TAG}/API/swagger.json
 
   ogree_webapp:
-    build: 
+    build:
       context: ${CORE_DIR}/${APP_BUILD_DIR}
     image: ogree/webapp:${IMAGE_TAG}
     profiles: ["web"]

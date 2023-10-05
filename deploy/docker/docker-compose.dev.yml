@@ -1,6 +1,15 @@
 # docker compose configs that apply only for dev env
 
 services:
+  ogree_api:
+    build:
+      context: ${CORE_DIR}/${API_BUILD_DIR}
+      dockerfile: Dockerfile.dev
+    image: ogree/dev_api:${IMAGE_TAG}
+    command: ["gin", "--appPort", "3000", "--port", "3001", "-i", "run", "main.go"]
+    volumes:
+      - ${CORE_DIR}/${API_BUILD_DIR}:/ogree
+
   ogree_db:
     ports:
       - ${DB_PORT}:27017
