@@ -180,10 +180,11 @@ func CreateEntity(entity int, t map[string]interface{}, userRoles map[string]Rol
 	entStr := u.EntityToString(entity)
 	_, e := GetDB().Collection(entStr).InsertOne(ctx, t)
 	if e != nil {
-		if strings.Contains(e.Error(), "E11000") {
+		if mongo.IsDuplicateKeyError(e) {
 			return nil, &u.Error{Type: u.ErrDuplicate,
 				Message: "Error while creating " + entStr + ": Duplicates not allowed"}
 		}
+
 		return nil, &u.Error{Type: u.ErrDBError,
 			Message: "Internal error while creating " + entStr + ": " + e.Error()}
 	}
