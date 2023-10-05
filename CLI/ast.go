@@ -702,44 +702,65 @@ func (n *updateObjNode) execute() (interface{}, error) {
 	}
 	for _, path := range paths {
 		var err error
-		switch n.attr {
-		case "content", "alpha", "tilesName", "tilesColor", "U", "slots", "localCS":
-			var boolVal bool
-			boolVal, err = utils.ValToBool(values[0], n.attr)
-			if err != nil {
-				return nil, err
-			}
-			err = cmd.InteractObject(path, n.attr, boolVal, n.hasSharpe)
-		case "areas":
-			_, err = setRoomAreas(path, values)
-		case "label":
-			_, err = setLabel(path, values, n.hasSharpe)
-		case "labelFont":
-			_, err = setLabelFont(path, values)
-		case "separator":
-			_, err = addRoomSeparator(path, values)
-		case "pillar":
-			_, err = addRoomPillar(path, values)
-		case "domain", "tags+", "tags-":
-			_, err = cmd.UpdateObj(path, map[string]any{n.attr: values[0]})
-		case "tags":
-			err = errors.New("Object's tags can not be updated directly, please use tags+= and tags-=")
-		default:
-			if strings.HasPrefix(n.attr, "description") {
-				_, err = updateDescription(path, n.attr, values)
-			} else {
-				if len(values) > 1 {
-					return nil, fmt.Errorf("attributes can only be assigned a single value")
+		if cmd.IsTag(path) {
+			if n.attr == "slug" {
+				var newSlug string
+				newSlug, err = stringToSlug(values[0].(string))
+				if err != nil {
+					return nil, err
 				}
-				attributes := map[string]any{n.attr: values[0]}
-				_, err = cmd.UpdateObj(path, map[string]any{"attributes": attributes})
+
+				_, err = cmd.UpdateObj(path, map[string]any{n.attr: newSlug})
+			} else if n.attr == "color" || n.attr == "description" {
+				_, err = cmd.UpdateObj(path, map[string]any{n.attr: values[0]})
+			}
+		} else {
+			switch n.attr {
+			case "content", "alpha", "tilesName", "tilesColor", "U", "slots", "localCS":
+				var boolVal bool
+				boolVal, err = utils.ValToBool(values[0], n.attr)
+				if err != nil {
+					return nil, err
+				}
+				err = cmd.InteractObject(path, n.attr, boolVal, n.hasSharpe)
+			case "areas":
+				_, err = setRoomAreas(path, values)
+			case "label":
+				_, err = setLabel(path, values, n.hasSharpe)
+			case "labelFont":
+				_, err = setLabelFont(path, values)
+			case "separator":
+				_, err = addRoomSeparator(path, values)
+			case "pillar":
+				_, err = addRoomPillar(path, values)
+			case "domain", "tags+", "tags-":
+				_, err = cmd.UpdateObj(path, map[string]any{n.attr: values[0]})
+			case "tags":
+				err = errors.New("Object's tags can not be updated directly, please use tags+= and tags-=")
+			default:
+				if strings.HasPrefix(n.attr, "description") {
+					_, err = updateDescription(path, n.attr, values)
+				} else {
+					_, err = updateAttributes(path, n.attr, values)
+				}
 			}
 		}
+
 		if err != nil {
 			return nil, err
 		}
 	}
 	return nil, nil
+}
+
+func updateAttributes(path, attributeName string, values []any) (map[string]any, error) {
+	if len(values) > 1 {
+		return nil, fmt.Errorf("attributes can only be assigned a single value")
+	}
+
+	attributes := map[string]any{attributeName: values[0]}
+
+	return cmd.UpdateObj(path, map[string]any{"attributes": attributes})
 }
 
 type treeNode struct {
