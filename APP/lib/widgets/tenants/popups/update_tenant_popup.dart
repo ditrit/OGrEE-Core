@@ -21,6 +21,8 @@ class _UpdateTenantPopupState extends State<UpdateTenantPopup> {
   final _formKey = GlobalKey<FormState>();
   bool _isLoading = false;
   bool _isSmallDisplay = false;
+  String _updateResult = "";
+  final ScrollController _outputController = ScrollController();
 
   @override
   Widget build(BuildContext context) {
@@ -77,40 +79,46 @@ class _UpdateTenantPopupState extends State<UpdateTenantPopup> {
                   getFormField(
                     save: (newValue) {
                       var splitted = newValue!.split(":");
-                      widget.tenant.apiUrl = splitted[0] + splitted[1];
+                      widget.tenant.apiUrl = "${splitted[0]}:${splitted[1]}";
                       widget.tenant.apiPort = splitted[2];
                     },
                     label: "${localeMsg.apiUrl} (hostname:port)",
                     icon: Icons.cloud,
                     isUrl: true,
-                    initial: "${widget.tenant.apiUrl}:${widget.tenant.apiPort}",
+                    initial: widget.tenant.apiUrl != ""
+                        ? "${widget.tenant.apiUrl}:${widget.tenant.apiPort}"
+                        : "http://",
                   ),
                   widget.tenant.hasWeb
                       ? getFormField(
                           save: (newValue) {
                             var splitted = newValue!.split(":");
-                            widget.tenant.webUrl = splitted[0] + splitted[1];
+                            widget.tenant.webUrl =
+                                "${splitted[0]}:${splitted[1]}";
                             widget.tenant.webPort = splitted[2];
                           },
                           label: "${localeMsg.webUrl} (hostname:port)",
                           icon: Icons.monitor,
                           isUrl: true,
-                          initial:
-                              "${widget.tenant.webUrl}:${widget.tenant.webPort}",
+                          initial: widget.tenant.webUrl != ""
+                              ? "${widget.tenant.webUrl}:${widget.tenant.webPort}"
+                              : "http://",
                         )
                       : Container(),
                   widget.tenant.hasDoc
                       ? getFormField(
                           save: (newValue) {
                             var splitted = newValue!.split(":");
-                            widget.tenant.docUrl = splitted[0] + splitted[1];
+                            widget.tenant.docUrl =
+                                "${splitted[0]}:${splitted[1]}";
                             widget.tenant.docPort = splitted[2];
                           },
                           label: "${localeMsg.docUrl} (hostname:port)",
                           icon: Icons.book,
                           isUrl: true,
-                          initial:
-                              "${widget.tenant.docUrl}:${widget.tenant.docPort}",
+                          initial: widget.tenant.docUrl != ""
+                              ? "${widget.tenant.docUrl}:${widget.tenant.docPort}"
+                              : "http://",
                         )
                       : Container(),
                   const SizedBox(height: 10),
@@ -135,22 +143,7 @@ class _UpdateTenantPopupState extends State<UpdateTenantPopup> {
                               setState(() {
                                 _isLoading = true;
                               });
-                              // Create tenant
-                              final result = await updateTenant(widget.tenant);
-                              switch (result) {
-                                case Success():
-                                  widget.parentCallback();
-                                  showSnackBar(
-                                      context, "${localeMsg.modifyOK} 🥳",
-                                      isSuccess: true);
-                                  Navigator.of(context).pop();
-                                case Failure(exception: final exception):
-                                  setState(() {
-                                    _isLoading = false;
-                                  });
-                                  showSnackBar(context, exception.toString(),
-                                      isError: true);
-                              }
+                              submitUpdateTenant(localeMsg, context);
                             }
                           },
                           label: const Text("Update"),
@@ -166,7 +159,31 @@ class _UpdateTenantPopupState extends State<UpdateTenantPopup> {
                                 )
                               : const Icon(Icons.update_rounded, size: 16))
                     ],
-                  )
+                  ),
+                  _updateResult != ""
+                      ? Padding(
+                          padding: const EdgeInsets.only(top: 12),
+                          child: Container(
+                            height: 110,
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(12),
+                              color: Colors.black,
+                            ),
+                            child: Padding(
+                              padding: const EdgeInsets.all(8.0),
+                              child: ListView(
+                                controller: _outputController,
+                                children: [
+                                  Text(
+                                    "Output:$_updateResult",
+                                    style: const TextStyle(color: Colors.white),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        )
+                      : Container()
                 ],
               ),
             ),
@@ -174,6 +191,52 @@ class _UpdateTenantPopupState extends State<UpdateTenantPopup> {
         ),
       ),
     );
+  }
+
+  submitUpdateTenant(
+      AppLocalizations localeMsg, BuildContext popupContext) async {
+    final result = await updateTenant(widget.tenant);
+    switch (result) {
+      case Success(value: final value):
+        String finalMsg = "";
+        if (_updateResult.isNotEmpty) {
+          _updateResult = "$_updateResult\nOutput:";
+        }
+        await for (var chunk in value) {
+          // Process each chunk as it is received
+          print(chunk);
+          var newLine = chunk.split("data:").last.trim();
+          if (newLine.isNotEmpty) {
+            setState(() {
+              _updateResult = "$_updateResult\n$newLine";
+              if (_outputController.hasClients) {
+                _outputController
+                    .jumpTo(_outputController.position.maxScrollExtent + 20);
+              }
+            });
+          }
+          if (!chunk.contains("data:")) {
+            // not from the stream of events
+            finalMsg = chunk;
+          }
+        }
+        if (finalMsg.contains("Error")) {
+          setState(() {
+            _isLoading = false;
+          });
+          showSnackBar(popupContext, "$finalMsg. Check output log below.",
+              isError: true);
+        } else {
+          widget.parentCallback();
+          showSnackBar(context, "${localeMsg.modifyOK} 🥳", isSuccess: true);
+          Navigator.of(popupContext).pop();
+        }
+      case Failure(exception: final exception):
+        setState(() {
+          _isLoading = false;
+        });
+        showSnackBar(context, exception.toString(), isError: true);
+    }
   }
 
   getCheckBox(String title, bool value, Function(bool?) onChange,
