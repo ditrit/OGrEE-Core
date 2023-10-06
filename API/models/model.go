@@ -411,7 +411,7 @@ func getHierarchyWithNamespace(namespace u.Namespace, userRoles map[string]Role,
 	}
 
 	// Search collections according to namespace
-	collNames := u.GetEntitesByNamespace(namespace)
+	collNames := u.GetEntitiesByNamespace(namespace)
 
 	for _, collName := range collNames {
 		// Get data

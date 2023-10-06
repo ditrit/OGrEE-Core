@@ -312,7 +312,7 @@ func NamespaceToString(namespace Namespace) string {
 	return ref.String()
 }
 
-func GetEntitesByNamespace(namespace Namespace) []string {
+func GetEntitiesByNamespace(namespace Namespace) []string {
 	var collNames []string
 	switch namespace {
 	case Physical:

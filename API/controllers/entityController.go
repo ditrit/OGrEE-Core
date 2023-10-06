@@ -298,20 +298,19 @@ func getBulkDomainsRecursively(parent string, listDomains []map[string]interface
 	return domainsToCreate, nil
 }
 
-// swagger:operation GET /api/objects/{id} Objects GetGenericObject
-// Get an object from any entity.
-// Gets an object from any of the physical entities with no need to specify it.
-// The id must be provided in the URL as a parameter.
+// swagger:operation GET /api/objects Objects GetGenericObject
+// Get all objects from any entity. Return as a list.
+// Filters can be applied as query params and a wildcard (*) can be used.
 // ---
 // security:
 // - bearer: []
 // produces:
 // - application/json
 // parameters:
-//   - name: id
-//     in: path
-//     description: ID type hierarchyName of the object
-//     required: true
+//   - name: namespace
+//     in: query
+//     description: 'One of the values: physical, logical or organisational.
+//     If none provided, all namespaces are used by default.'
 //   - name: fieldOnly
 //     in: query
 //     description: 'specify which object field to show in response.
@@ -324,16 +323,24 @@ func getBulkDomainsRecursively(parent string, listDomains []map[string]interface
 //     in: query
 //     description: 'filter objects by lastUpdated <= endDate.
 //     Format: yyyy-mm-dd'
+//   - name: attributes
+//     in: query
+//     description: 'Any other object attributes can be queried.
+//     Replace attributes here by the name of the attribute followed by its value.'
+//     required: false
+//     type: string
+//     default: domain=DemoDomain
+//     example: vendor=ibm ; name=siteA ; orientation=front
 // responses:
 //		'200':
 //		    description: 'Found. A response body will be returned with
 //	        a meaningful message.'
-//		'404':
-//		    description: Not Found. An error message will be returned.
+//		'500':
+//		    description: Internal Error. A system error stopped the request.
 
-func HandleGenericAnyObject(w http.ResponseWriter, r *http.Request) {
+func HandleGenericObjects(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("******************************************************")
-	fmt.Println("FUNCTION CALL: 	 GetGenericAnyObject ")
+	fmt.Println("FUNCTION CALL: 	 HandleGenericObjects ")
 	fmt.Println("******************************************************")
 	DispRequestMetaData(r)
 	data := []map[string]interface{}{}
@@ -347,26 +354,30 @@ func HandleGenericAnyObject(w http.ResponseWriter, r *http.Request) {
 	// Get objects
 	filters := getFiltersFromQueryParams(r)
 	req := u.FilteredReqFromQueryParams(r.URL)
-	fmt.Println(req)
-	collNames := u.GetEntitesByNamespace(filters.Namespace)
-	for _, collName := range collNames {
-		entData, _ := models.GetManyEntities(collName, req, filters, user.Roles)
+	entities := u.GetEntitiesByNamespace(filters.Namespace)
+	for _, entStr := range entities {
+		entData, err := models.GetManyEntities(entStr, req, filters, user.Roles)
+		if err != nil {
+			u.ErrLog("Error while looking for objects at  "+entStr, "HandleGenericObjects", err.Message, r)
+			u.RespondWithError(w, err)
+			return
+		}
 		data = append(data, entData...)
 	}
 
 	// Respond
-	if r.Method == "OPTIONS" && data != nil {
+	if r.Method == "OPTIONS" {
 		w.Header().Add("Content-Type", "application/json")
 		w.Header().Add("Allow", "GET, OPTIONS")
 	} else {
-		u.Respond(w, u.RespDataWrapper("successfully got object", data))
+		u.Respond(w, u.RespDataWrapper("successfully processed request", data))
 	}
 
 }
 
-// swagger:operation GET /api/objects/{id} Objects GetGenericObject
+// swagger:operation GET /api/objects/{id} Objects GetGenericObjectById
 // Get an object from any entity.
-// Gets an object from any of the physical entities with no need to specify it.
+// Gets an object from any of the entities with no need to specify it.
 // The id must be provided in the URL as a parameter.
 // ---
 // security:
@@ -390,6 +401,10 @@ func HandleGenericAnyObject(w http.ResponseWriter, r *http.Request) {
 //     in: query
 //     description: 'filter objects by lastUpdated <= endDate.
 //     Format: yyyy-mm-dd'
+//   - name: namespace
+//     in: query
+//     description: 'One of the values: physical, logical or organisational.
+//     If none provided, all namespaces are used by default.'
 // responses:
 //		'200':
 //		    description: 'Found. A response body will be returned with
@@ -397,9 +412,32 @@ func HandleGenericAnyObject(w http.ResponseWriter, r *http.Request) {
 //		'404':
 //		    description: Not Found. An error message will be returned.
 
-func HandleGenericObject(w http.ResponseWriter, r *http.Request) {
+// swagger:operation DELETE /api/objects/{id} Objects DeleteGenericObject
+// Deletes an object in the system from any of the entities with no need to specify it..
+// ---
+// security:
+// - bearer: []
+// produces:
+// - application/json
+// parameters:
+//   - name: id
+//     in: path
+//     description: 'ID of desired object.
+//     For templates the slug is the ID.'
+//     required: true
+//     type: string
+//     default: "siteA"
+//
+// responses:
+//		'204':
+//			description: 'Successfully deleted object.
+//			No response body will be returned'
+//		'404':
+//			description: Not found. An error message will be returned
+
+func HandleGenericObjectById(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("******************************************************")
-	fmt.Println("FUNCTION CALL: 	 GetGenericObject ")
+	fmt.Println("FUNCTION CALL: 	 GetGenericObjectById ")
 	fmt.Println("******************************************************")
 	DispRequestMetaData(r)
 	var data []map[string]interface{}
@@ -418,7 +456,7 @@ func HandleGenericObject(w http.ResponseWriter, r *http.Request) {
 		data, err = models.GetObjectsById(hierarchyName, filters, user.Roles, r.Method == "DELETE")
 	} else {
 		u.Respond(w, u.Message("Error while parsing path parameters"))
-		u.ErrLog("Error while parsing path parameters", "GET ENTITY", "", r)
+		u.ErrLog("Error while parsing path parameters", "GetGenericObjectById", "", r)
 		return
 	}
 
@@ -428,14 +466,14 @@ func HandleGenericObject(w http.ResponseWriter, r *http.Request) {
 		w.Header().Add("Allow", "GET, DELETE, OPTIONS")
 	} else {
 		if err != nil {
-			u.ErrLog("Error while getting "+hierarchyName, "GET GENERIC", err.Message, r)
+			u.ErrLog("Error while getting "+hierarchyName, "GetGenericObjectById", err.Message, r)
 			u.RespondWithError(w, err)
 		} else {
 			if r.Method == "DELETE" {
 				for _, obj := range data {
 					modelErr := models.DeleteEntity(obj["entity"].(string), obj["id"].(string), user.Roles)
 					if modelErr != nil {
-						u.ErrLog("Error while deleting object: "+obj["id"].(string), "DELETE ENTITY", modelErr.Message, r)
+						u.ErrLog("Error while deleting object: "+obj["id"].(string), "DELETE GetGenericObjectById", modelErr.Message, r)
 						u.RespondWithError(w, modelErr)
 						return
 					}
