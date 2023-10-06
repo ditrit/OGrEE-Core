@@ -34,7 +34,7 @@ func PostObj(ent int, entity string, data map[string]any) error {
 	}
 	if IsInObjForUnity(entity) {
 		entInt := EntityStrToInt(entity)
-		InformUnity("PostObj", entInt, map[string]any{"type": "create", "data": resp.body["data"]})
+		InformOgree3DOptional("PostObj", entInt, map[string]any{"type": "create", "data": resp.body["data"]})
 	}
 	return nil
 }
@@ -203,7 +203,7 @@ func DeleteObj(path string) error {
 		return err
 	}
 	if !IsTemplate(path) && IsInObjForUnity(obj["category"].(string)) {
-		InformUnity("DeleteObj", -1, map[string]any{"type": "delete", "data": obj["id"].(string)})
+		InformOgree3DOptional("DeleteObj", -1, map[string]any{"type": "delete", "data": obj["id"].(string)})
 	}
 	if path == State.CurrPath {
 		CD(TranslatePath(".."))
@@ -226,7 +226,7 @@ func DeleteObjectsWildcard(path string) error {
 	}
 	for _, obj := range objs {
 		if IsInObjForUnity(obj["category"].(string)) {
-			InformUnity("DeleteObj", -1, map[string]any{"type": "delete", "data": obj["id"].(string)})
+			InformOgree3DOptional("DeleteObj", -1, map[string]any{"type": "delete", "data": obj["id"].(string)})
 		}
 	}
 	return nil
@@ -337,7 +337,7 @@ func UpdateObj(path string, data map[string]any) (map[string]any, error) {
 	}
 	if IsInObjForUnity(category) {
 		entInt := EntityStrToInt(category)
-		InformUnity("UpdateObj", entInt, message)
+		InformOgree3DOptional("UpdateObj", entInt, message)
 	}
 	return resp.body, nil
 }
@@ -451,7 +451,7 @@ func UnsetInObj(Path, attr string, idx int) (map[string]interface{}, error) {
 			//Update and inform unity
 			if !IsTemplate(Path) && IsInObjForUnity(entity) {
 				entInt := EntityStrToInt(entity)
-				InformUnity("UpdateObj", entInt, message)
+				InformOgree3DOptional("UpdateObj", entInt, message)
 			}
 		}
 	}
@@ -1363,27 +1363,27 @@ func Connect3D(url string) error {
 		}
 	}
 
-	InitOGrEE3DCommunication(*State.Terminal)
-
-	return nil
+	return InitOGrEE3DCommunication(*State.Terminal)
 }
 
-func UIDelay(time float64) {
+func UIDelay(time float64) error {
 	subdata := map[string]interface{}{"command": "delay", "data": time}
 	data := map[string]interface{}{"type": "ui", "data": subdata}
 	if State.DebugLvl > WARNING {
 		Disp(data)
 	}
-	InformUnity("HandleUI", -1, data)
+
+	return InformOgree3D("HandleUI", -1, data)
 }
 
-func UIToggle(feature string, enable bool) {
+func UIToggle(feature string, enable bool) error {
 	subdata := map[string]interface{}{"command": feature, "data": enable}
 	data := map[string]interface{}{"type": "ui", "data": subdata}
 	if State.DebugLvl > WARNING {
 		Disp(data)
 	}
-	InformUnity("HandleUI", -1, data)
+
+	return InformOgree3D("HandleUI", -1, data)
 }
 
 func UIHighlight(path string) error {
@@ -1391,13 +1391,14 @@ func UIHighlight(path string) error {
 	if err != nil {
 		return err
 	}
+
 	subdata := map[string]interface{}{"command": "highlight", "data": obj["id"]}
 	data := map[string]interface{}{"type": "ui", "data": subdata}
 	if State.DebugLvl > WARNING {
 		Disp(data)
 	}
-	InformUnity("HandleUI", -1, data)
-	return nil
+
+	return InformOgree3D("HandleUI", -1, data)
 }
 
 func UIClearCache() error {
@@ -1406,11 +1407,11 @@ func UIClearCache() error {
 	if State.DebugLvl > WARNING {
 		Disp(data)
 	}
-	InformUnity("HandleUI", -1, data)
-	return nil
+
+	return InformOgree3D("HandleUI", -1, data)
 }
 
-func CameraMove(command string, position []float64, rotation []float64) {
+func CameraMove(command string, position []float64, rotation []float64) error {
 	subdata := map[string]interface{}{"command": command}
 	subdata["position"] = map[string]interface{}{"x": position[0], "y": position[1], "z": position[2]}
 	subdata["rotation"] = map[string]interface{}{"x": rotation[0], "y": rotation[1]}
@@ -1418,10 +1419,11 @@ func CameraMove(command string, position []float64, rotation []float64) {
 	if State.DebugLvl > WARNING {
 		Disp(data)
 	}
-	InformUnity("HandleUI", -1, data)
+
+	return InformOgree3D("HandleUI", -1, data)
 }
 
-func CameraWait(time float64) {
+func CameraWait(time float64) error {
 	subdata := map[string]interface{}{"command": "wait"}
 	subdata["position"] = map[string]interface{}{"x": 0, "y": 0, "z": 0}
 	subdata["rotation"] = map[string]interface{}{"x": 999, "y": time}
@@ -1429,7 +1431,8 @@ func CameraWait(time float64) {
 	if State.DebugLvl > WARNING {
 		Disp(data)
 	}
-	InformUnity("HandleUI", -1, data)
+
+	return InformOgree3D("HandleUI", -1, data)
 }
 
 func FocusUI(path string) error {
@@ -1450,9 +1453,19 @@ func FocusUI(path string) error {
 	} else {
 		id = ""
 	}
+
 	data := map[string]interface{}{"type": "focus", "data": id}
-	InformUnity("FocusUI", -1, data)
-	CD(path)
+	err := InformOgree3D("FocusUI", -1, data)
+	if err != nil {
+		return err
+	}
+
+	if path != "" {
+		return CD(path)
+	} else {
+		fmt.Println("Focus is now empty")
+	}
+
 	return nil
 }
 
@@ -1525,10 +1538,6 @@ func Draw(path string, depth int, force bool) error {
 		return err
 	}
 
-	if !models.Ogree3D.IsConnected() {
-		return nil
-	}
-
 	count := objectCounter(obj)
 	okToGo := true
 	if count > State.DrawThreshold && !force {
@@ -1549,7 +1558,7 @@ func Draw(path string, depth int, force bool) error {
 	if okToGo {
 		data := map[string]interface{}{"type": "create", "data": obj}
 		//0 to include the JSON filtration
-		unityErr := InformUnity("Draw", 0, data)
+		unityErr := InformOgree3D("Draw", 0, data)
 		if unityErr != nil {
 			return unityErr
 		}
@@ -1572,13 +1581,10 @@ func Undraw(x string) error {
 			return fmt.Errorf("this object has no id")
 		}
 	}
-	data := map[string]interface{}{"type": "delete", "data": id}
-	unityErr := InformUnity("Undraw", 0, data)
-	if unityErr != nil {
-		return unityErr
-	}
 
-	return nil
+	data := map[string]interface{}{"type": "delete", "data": id}
+
+	return InformOgree3D("Undraw", 0, data)
 }
 
 func IsEntityDrawable(path string) (bool, error) {
@@ -1668,7 +1674,7 @@ func SetClipBoard(x []string) ([]string, error) {
 
 	if len(x) == 0 { //This means deselect
 		data = map[string]interface{}{"type": "select", "data": "[]"}
-		err := InformUnity("SetClipBoard", -1, data)
+		err := InformOgree3DOptional("SetClipBoard", -1, data)
 		if err != nil {
 			return nil, fmt.Errorf("cannot reset clipboard : %s", err.Error())
 		}
@@ -1687,7 +1693,7 @@ func SetClipBoard(x []string) ([]string, error) {
 		}
 		serialArr := "[\"" + strings.Join(arr, "\",\"") + "\"]"
 		data = map[string]interface{}{"type": "select", "data": serialArr}
-		err := InformUnity("SetClipBoard", -1, data)
+		err := InformOgree3DOptional("SetClipBoard", -1, data)
 		if err != nil {
 			return nil, fmt.Errorf("cannot set clipboard : %s", err.Error())
 		}
@@ -1809,13 +1815,27 @@ func InteractObject(path string, keyword string, val interface{}, fromAttr bool)
 	ans := map[string]interface{}{"type": "interact", "data": data}
 
 	//-1 since its not neccessary to check for filtering
-	return InformUnity("Interact", -1, ans)
+	return InformOgree3DOptional("Interact", -1, ans)
 }
 
-// Messages Unity Client
-func InformUnity(caller string, entity int, data map[string]interface{}) error {
-	//If unity is available message it
-	//otherwise do nothing
+// Sends a message to OGrEE-3D
+//
+// If there isn't a connection established, tries to establish the connection first
+func InformOgree3D(caller string, entity int, data map[string]interface{}) error {
+	if !models.Ogree3D.IsConnected() {
+		fmt.Println("Connecting to OGrEE-3D")
+		err := Connect3D("")
+		if err != nil {
+			return err
+		}
+	}
+
+	return InformOgree3DOptional(caller, entity, data)
+}
+
+// Sends a message to OGrEE-3D if there is a connection established,
+// otherwise does nothing
+func InformOgree3DOptional(caller string, entity int, data map[string]interface{}) error {
 	if models.Ogree3D.IsConnected() {
 		if entity > -1 && entity < SENSOR+1 {
 			data = GenerateFilteredJson(data)

@@ -220,7 +220,7 @@ func dockerCreateTenant(newTenant tenant, c *gin.Context) string {
 	file, _ := os.Create(DOCKER_DIR + envFilename)
 	err := tmplt.Execute(file, newTenant)
 	if err != nil {
-		panic("Error creating .env: " + err.Error())
+		return "Error creating .env: " + err.Error()
 	}
 	file.Close()
 
@@ -254,7 +254,7 @@ func streamExecuteCmd(cmd *exec.Cmd, c *gin.Context) error {
 		if scanner.Scan() {
 			msg := string(scanner.Bytes())
 			println(msg)
-			c.SSEvent("msg", msg)
+			c.SSEvent("progress", msg)
 			return true
 		}
 		return false
@@ -384,11 +384,10 @@ func updateTenant(c *gin.Context) {
 			args := []string{"compose", "-p", tenantName, "stop"}
 			cmd := exec.Command("docker", args...)
 			cmd.Dir = DOCKER_DIR
-			var stderr bytes.Buffer
-			cmd.Stderr = &stderr
-			if _, err := cmd.Output(); err != nil {
-				fmt.Println(fmt.Sprint(err) + ": " + stderr.String())
-				c.IndentedJSON(http.StatusInternalServerError, stderr.String())
+			if err := streamExecuteCmd(cmd, c); err != nil {
+				errStr := "Error running docker: " + err.Error()
+				println(errStr)
+				c.IndentedJSON(http.StatusInternalServerError, errStr)
 				return
 			}
 			println("Finished with docker")

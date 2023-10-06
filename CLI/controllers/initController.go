@@ -9,6 +9,7 @@ import (
 	"cli/readline"
 	"cli/utils"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -96,26 +97,30 @@ func SetStateReadline(rl *readline.Instance) {
 	State.Terminal = &rl
 }
 
-// Startup the go routine for listening
-func InitOGrEE3DCommunication(rl *readline.Instance) {
+// Tries to establish a connection with OGrEE-3D and, if possible,
+// starts a go routine for receiving messages from it
+func InitOGrEE3DCommunication(rl *readline.Instance) error {
 	errConnect := models.Ogree3D.Connect(State.Ogree3DURL, State.Timeout)
 	if errConnect != nil {
-		fmt.Println("OGrEE-3D is not reachable")
-		if State.DebugLvl > ERROR {
-			println(errConnect.Error())
+		return ErrorWithInternalError{
+			UserError:     errors.New("OGrEE-3D is not reachable"),
+			InternalError: errConnect,
 		}
-		return
 	}
 
 	errLogin := models.Ogree3D.Login(State.APIURL, GetKey(), State.DebugLvl)
 	if errLogin != nil {
-		println(errLogin.Error())
-		return
+		return ErrorWithInternalError{
+			UserError:     errors.New("OGrEE-3D login not possible"),
+			InternalError: errLogin,
+		}
 	}
 
-	fmt.Println("OGrEE-3D is Reachable!")
+	fmt.Println("Established connection with OGrEE-3D!")
 
 	go models.Ogree3D.ReceiveLoop(rl)
+
+	return nil
 }
 
 func InitTimeout(duration string) {

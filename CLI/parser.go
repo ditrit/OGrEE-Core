@@ -213,6 +213,7 @@ func (p *parser) parseKeyWord(candidates []string) string {
 	if sliceContains(candidates, p.item(false)) {
 		return p.item(false)
 	}
+	p.reset()
 	return ""
 }
 
@@ -865,6 +866,9 @@ func (p *parser) parseCamera() node {
 
 func (p *parser) parseFocus() node {
 	defer un(trace(p, "focus"))
+	if p.commandEnd() {
+		return &focusNode{&valueNode{""}}
+	}
 	return &focusNode{p.parsePath("")}
 }
 
