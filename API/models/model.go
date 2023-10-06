@@ -226,9 +226,9 @@ func GetObjectsById(hierarchyName string, filters u.RequestFilters, userRoles ma
 	var hasWildcard bool
 	if strings.Contains(hierarchyName, "*") {
 		hasWildcard = true
-		regex := strings.ReplaceAll(strings.ReplaceAll(hierarchyName, ".", "\\."), "*", u.NAME_REGEX+"$")
+		regex := strings.ReplaceAll(strings.ReplaceAll(hierarchyName, ".", "\\."), "*", u.NAME_REGEX)
 		println(regex)
-		req = bson.M{"id": bson.M{"$regex": regex}}
+		req = bson.M{"id": bson.M{"$regex": "^" + regex + "$"}}
 	} else {
 		hasWildcard = false
 		req = bson.M{"id": hierarchyName}
