@@ -221,17 +221,40 @@ func GetObjectsById(hierarchyName string, filters u.RequestFilters, userRoles ma
 	resp := []map[string]interface{}{}
 	// Get possible collections for this name
 	rangeEntities := u.HierachyNameToEntity(hierarchyName, filters.Namespace)
+	// Handle wildcard on id
+	var req primitive.M
+	var hasWildcard bool
+	if strings.Contains(hierarchyName, "*") {
+		hasWildcard = true
+		regex := strings.ReplaceAll(strings.ReplaceAll(hierarchyName, ".", "\\."), "*", u.NAME_REGEX)
+		println(regex)
+		req = bson.M{"id": bson.M{"$regex": "^" + regex + "$"}}
+	} else {
+		hasWildcard = false
+		req = bson.M{"id": hierarchyName}
+	}
 
 	// Search each collection
 	for _, entity := range rangeEntities {
-		req := bson.M{"id": hierarchyName}
 		entityStr := u.EntityToString(entity)
-		data, _ := GetEntity(req, entityStr, filters, userRoles)
-		if data != nil {
-			if withEntity {
-				data["entity"] = entityStr
+		if hasWildcard {
+			data, _ := GetManyEntities(entityStr, req, filters, userRoles)
+			if data != nil {
+				if withEntity {
+					for _, obj := range data {
+						obj["entity"] = entityStr
+					}
+				}
+				resp = append(resp, data...)
 			}
-			resp = append(resp, data)
+		} else {
+			data, _ := GetEntity(req, entityStr, filters, userRoles)
+			if data != nil {
+				if withEntity {
+					data["entity"] = entityStr
+				}
+				resp = append(resp, data)
+			}
 		}
 	}
 
@@ -411,7 +434,7 @@ func getHierarchyWithNamespace(namespace u.Namespace, userRoles map[string]Role,
 	}
 
 	// Search collections according to namespace
-	collNames := u.GetEntitesByNamespace(namespace)
+	collNames := u.GetEntitiesByNamespace(namespace)
 
 	for _, collName := range collNames {
 		// Get data

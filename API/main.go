@@ -93,13 +93,10 @@ func Router(jwt func(next http.Handler) http.Handler) *mux.Router {
 
 	// GENERIC
 	router.HandleFunc("/api/objects",
-		controllers.HandleGenericAnyObject).Methods("GET", "HEAD", "OPTIONS")
+		controllers.HandleGenericObjects).Methods("GET", "HEAD", "OPTIONS")
 
 	router.HandleFunc("/api/objects/{id}",
-		controllers.HandleGenericObject).Methods("GET", "HEAD", "OPTIONS", "DELETE")
-
-	router.HandleFunc("/api/objects-wildcard/{id}",
-		controllers.HandleGenericObjectWildcard).Methods("GET", "HEAD", "OPTIONS", "DELETE")
+		controllers.HandleGenericObjectById).Methods("GET", "HEAD", "OPTIONS", "DELETE")
 
 	//GET ENTITY HIERARCHY
 	router.NewRoute().PathPrefix("/api/{entity}s/{id}/all").

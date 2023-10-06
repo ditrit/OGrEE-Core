@@ -161,8 +161,8 @@ func FilteredReqFromQueryParams(link *url.URL) bson.M {
 			var keyValue interface{}
 			keyValue = q.Get(key)
 			if strings.Contains(keyValue.(string), "*") {
-				regex := strings.ReplaceAll(strings.ReplaceAll(keyValue.(string), ".", "\\."), "*", "("+NAME_REGEX+")")
-				keyValue = bson.M{"$regex": regex}
+				regex := strings.ReplaceAll(strings.ReplaceAll(keyValue.(string), ".", "\\."), "*", NAME_REGEX)
+				keyValue = bson.M{"$regex": "^" + regex + "$"}
 			} else if key == "parentId" {
 				regex := strings.ReplaceAll(keyValue.(string), ".", "\\.") + "\\.(" + NAME_REGEX + ")"
 				bsonMap["id"] = bson.M{"$regex": regex}
@@ -290,12 +290,12 @@ func HierachyNameToEntity(name string, namespace Namespace) []int {
 		case 2:
 			resp = append(resp, ROOM)
 		case 3:
-			resp = append(resp, RACK, GROUP, AC, CORRIDOR, PWRPNL, CABINET)
+			resp = append(resp, RACK, AC, CORRIDOR, PWRPNL, CABINET)
 			if namespace == Any {
 				resp = append(resp, GROUP)
 			}
 		case 4:
-			resp = append(resp, DEVICE, GROUP)
+			resp = append(resp, DEVICE)
 			if namespace == Any {
 				resp = append(resp, GROUP)
 			}
@@ -312,7 +312,7 @@ func NamespaceToString(namespace Namespace) string {
 	return ref.String()
 }
 
-func GetEntitesByNamespace(namespace Namespace) []string {
+func GetEntitiesByNamespace(namespace Namespace) []string {
 	var collNames []string
 	switch namespace {
 	case Physical:
