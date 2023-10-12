@@ -19,11 +19,11 @@ part 'api_tenant.dart';
 
 // Globals
 String apiUrl = "";
-String tenantUrl = "";
-String tenantName = "";
-bool isTenantAdmin = false;
 var token = "";
-var tenantToken = "";
+String tenantName = "";
+bool isTenantAdmin = false; // a tenant admin can access its config page
+String tenantUrl = ""; // used by SuperAdmin to connect between tenant APIs
+var tenantToken = ""; // used by SuperAdmin to connect between tenant APIs
 BackendType backendType = BackendType.tenant;
 
 enum BackendType { docker, kubernetes, tenant, unavailable }
