@@ -10,6 +10,7 @@ import (
 	"os"
 	"p3/app"
 	"p3/models"
+	"p3/repository"
 	u "p3/utils"
 	"reflect"
 	"strings"
@@ -44,7 +45,7 @@ func getAdminToken() {
 
 func teardown() {
 	ctx, _ := u.Connect()
-	models.GetDB().Drop(ctx)
+	repository.GetDB().Drop(ctx)
 }
 
 func makeRequest(method, url string, requestBody []byte) *httptest.ResponseRecorder {

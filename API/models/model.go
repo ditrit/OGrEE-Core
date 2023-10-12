@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"p3/repository"
 	u "p3/utils"
 	"strconv"
 	"strings"
@@ -21,35 +22,11 @@ import (
 
 // Helper functions
 
-func getDateFilters(req bson.M, startDate string, endDate string) error {
-	if len(startDate) > 0 || len(endDate) > 0 {
-		lastUpdateReq := bson.M{}
-		if len(startDate) > 0 {
-			startDate, e := time.Parse("2006-01-02", startDate)
-			if e != nil {
-				return e
-			}
-			lastUpdateReq["$gte"] = primitive.NewDateTimeFromTime(startDate)
-		}
-
-		if len(endDate) > 0 {
-			parsedEndDate, e := time.Parse("2006-01-02", endDate)
-			parsedEndDate = parsedEndDate.Add(time.Hour * 24)
-			if e != nil {
-				return e
-			}
-			lastUpdateReq["$lte"] = primitive.NewDateTimeFromTime(parsedEndDate)
-		}
-		req["lastUpdated"] = lastUpdateReq
-	}
-	return nil
-}
-
 func domainHasObjects(domain string) bool {
 	data := map[string]interface{}{}
 	// Get all collections names
 	ctx, cancel := u.Connect()
-	db := GetDB()
+	db := repository.GetDB()
 	collNames, _ := db.ListCollectionNames(ctx, bson.D{})
 
 	// Check if at least one object belongs to domain
@@ -122,14 +99,14 @@ func PropagateParentIdChange(ctx context.Context, oldParentId, newId string, ent
 					"find":        oldParentId,
 					"replacement": newId}}}}}
 	if entityInt == u.DOMAIN {
-		_, e := GetDB().Collection(u.EntityToString(u.DOMAIN)).UpdateMany(ctx,
+		_, e := repository.GetDB().Collection(u.EntityToString(u.DOMAIN)).UpdateMany(ctx,
 			req, mongo.Pipeline{update})
 		if e != nil {
 			println(e.Error())
 			return e
 		}
 	} else if entityInt == u.DEVICE {
-		_, e := GetDB().Collection(u.EntityToString(u.DEVICE)).UpdateMany(ctx,
+		_, e := repository.GetDB().Collection(u.EntityToString(u.DEVICE)).UpdateMany(ctx,
 			req, mongo.Pipeline{update})
 		if e != nil {
 			println(e.Error())
@@ -137,7 +114,7 @@ func PropagateParentIdChange(ctx context.Context, oldParentId, newId string, ent
 		}
 	} else {
 		for i := entityInt + 1; i <= u.GROUP; i++ {
-			_, e := GetDB().Collection(u.EntityToString(i)).UpdateMany(ctx,
+			_, e := repository.GetDB().Collection(u.EntityToString(i)).UpdateMany(ctx,
 				req, mongo.Pipeline{update})
 			if e != nil {
 				println(e.Error())
@@ -178,7 +155,7 @@ func CreateEntity(entity int, t map[string]interface{}, userRoles map[string]Rol
 
 	ctx, cancel := u.Connect()
 	entStr := u.EntityToString(entity)
-	_, e := GetDB().Collection(entStr).InsertOne(ctx, t)
+	_, e := repository.GetDB().Collection(entStr).InsertOne(ctx, t)
 	if e != nil {
 		if mongo.IsDuplicateKeyError(e) {
 			return nil, &u.Error{Type: u.ErrDuplicate,
@@ -314,15 +291,15 @@ func GetManyEntities(ent string, req bson.M, filters u.RequestFilters, userRoles
 		}
 		opts = options.Find().SetProjection(compoundIndex)
 	}
-	err = getDateFilters(req, filters.StartDate, filters.EndDate)
+	err = repository.GetDateFilters(req, filters.StartDate, filters.EndDate)
 	if err != nil {
 		return nil, &u.Error{Type: u.ErrBadFormat, Message: err.Error()}
 	}
 
 	if opts != nil {
-		c, err = GetDB().Collection(ent).Find(ctx, req, opts)
+		c, err = repository.GetDB().Collection(ent).Find(ctx, req, opts)
 	} else {
-		c, err = GetDB().Collection(ent).Find(ctx, req)
+		c, err = repository.GetDB().Collection(ent).Find(ctx, req)
 	}
 	if err != nil {
 		fmt.Println(err)
@@ -389,7 +366,7 @@ func getHierarchyWithNamespace(namespace u.Namespace, userRoles map[string]Role,
 	rootIdx := "*"
 
 	ctx, cancel := u.Connect()
-	db := GetDB()
+	db := repository.GetDB()
 	dbFilter := bson.M{}
 
 	// Depth of hierarchy defined by user
@@ -402,7 +379,7 @@ func getHierarchyWithNamespace(namespace u.Namespace, userRoles map[string]Role,
 		}
 	}
 	// User date filters
-	err := getDateFilters(dbFilter, filters.StartDate, filters.EndDate)
+	err := repository.GetDateFilters(dbFilter, filters.StartDate, filters.EndDate)
 	if err != nil {
 		return nil, &u.Error{Type: u.ErrBadFormat, Message: err.Error()}
 	}
@@ -465,7 +442,7 @@ func GetCompleteHierarchyAttributes(userRoles map[string]Role) (map[string]inter
 	response := make(map[string]interface{})
 	// Get all collections names
 	ctx, cancel := u.Connect()
-	db := GetDB()
+	db := repository.GetDB()
 	collNames, err := db.ListCollectionNames(ctx, bson.D{})
 	if err != nil {
 		fmt.Println(err.Error())
@@ -512,7 +489,7 @@ func GetSiteParentTempUnit(id string) (string, *u.Error) {
 
 	// Get all collections names
 	ctx, cancel := u.Connect()
-	db := GetDB()
+	db := repository.GetDB()
 	collNames, err := db.ListCollectionNames(ctx, bson.D{})
 	if err != nil {
 		fmt.Println(err.Error())
@@ -554,7 +531,7 @@ func GetSiteParentTempUnit(id string) (string, *u.Error) {
 func GetEntityCount(entity int) int64 {
 	ent := u.EntityToString(entity)
 	ctx, cancel := u.Connect()
-	ans, e := GetDB().Collection(ent).CountDocuments(ctx, bson.M{}, nil)
+	ans, e := repository.GetDB().Collection(ent).CountDocuments(ctx, bson.M{}, nil)
 	if e != nil {
 		println(e.Error())
 		return -1
@@ -565,7 +542,7 @@ func GetEntityCount(entity int) int64 {
 
 func CommandRunner(cmd interface{}) *mongo.SingleResult {
 	ctx, cancel := u.Connect()
-	result := GetDB().RunCommand(ctx, cmd, nil)
+	result := repository.GetDB().RunCommand(ctx, cmd, nil)
 	defer cancel()
 	return result
 }
@@ -590,7 +567,7 @@ func GetStats() map[string]interface{} {
 		filter := options.FindOne().SetSort(bson.M{"lastUpdated": -1})
 		ctx, cancel := u.Connect()
 
-		e := GetDB().Collection(u.EntityToString(entity)).FindOne(ctx, bson.M{}, filter).Decode(&obj)
+		e := repository.GetDB().Collection(u.EntityToString(entity)).FindOne(ctx, bson.M{}, filter).Decode(&obj)
 		if e == nil {
 			latestDocArr = append(latestDocArr, obj)
 		}
@@ -624,7 +601,7 @@ func GetStats() map[string]interface{} {
 }
 
 func GetDBName() string {
-	name := GetDB().Name()
+	name := repository.GetDB().Name()
 
 	//Remove the preceding 'ogree' at beginning of name
 	if strings.Index(name, "ogree") == 0 {
@@ -668,7 +645,7 @@ func DeleteEntity(entity string, id string, userRoles map[string]Role) *u.Error 
 			pattern := primitive.Regex{Pattern: "^" + id + u.HN_DELIMETER, Options: ""}
 
 			ctx, cancel := u.Connect()
-			GetDB().Collection(childEntName).DeleteMany(ctx,
+			repository.GetDB().Collection(childEntName).DeleteMany(ctx,
 				bson.M{"id": pattern})
 			defer cancel()
 		}
@@ -887,7 +864,7 @@ func SwapEntity(createEnt, deleteEnt, id string, data map[string]interface{}, us
 	// Define the callback that specifies the sequence of operations to perform inside the transaction.
 	callback := func(sessCtx mongo.SessionContext) (interface{}, error) {
 		// Create
-		if _, err := GetDB().Collection(createEnt).InsertOne(ctx, data); err != nil {
+		if _, err := repository.GetDB().Collection(createEnt).InsertOne(ctx, data); err != nil {
 			return nil, err
 		}
 
@@ -898,7 +875,7 @@ func SwapEntity(createEnt, deleteEnt, id string, data map[string]interface{}, us
 		}
 
 		// Delete
-		if c, err := GetDB().Collection(deleteEnt).DeleteOne(ctx, bson.M{"id": id}); err != nil {
+		if c, err := repository.GetDB().Collection(deleteEnt).DeleteOne(ctx, bson.M{"id": id}); err != nil {
 			return nil, err
 		} else if c.DeletedCount == 0 {
 			return nil, errors.New("Error deleting object: not found")
@@ -908,7 +885,7 @@ func SwapEntity(createEnt, deleteEnt, id string, data map[string]interface{}, us
 	}
 
 	// Start a session and run the callback using WithTransaction.
-	session, err := GetClient().StartSession()
+	session, err := repository.GetClient().StartSession()
 	if err != nil {
 		return &u.Error{Type: u.ErrDBError, Message: "Unable to start session: " + err.Error()}
 	}
