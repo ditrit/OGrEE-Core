@@ -717,6 +717,14 @@ func UpdateEntity(ent string, id string, updateData map[string]interface{}, isPa
 		updateData["createdDate"] = oldObj["createdDate"]
 		delete(updateData, "parentId")
 
+		// tag slug edition support
+		if entInt == u.TAG && updateData["slug"].(string) != oldObj["slug"].(string) {
+			err := repository.UpdateTagSlugInEntities(ctx, oldObj["slug"].(string), updateData["slug"].(string))
+			if err != nil {
+				return nil, err
+			}
+		}
+
 		// Check user permissions in case domain is being updated
 		if entInt != u.DOMAIN && u.IsEntityHierarchical(entInt) && (oldObj["domain"] != updateData["domain"]) {
 			if perm := CheckUserPermissions(userRoles, entInt, updateData["domain"].(string)); perm < WRITE {

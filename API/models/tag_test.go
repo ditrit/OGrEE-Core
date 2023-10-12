@@ -174,6 +174,58 @@ func TestRemoveThatIsInMultipleEntities(t *testing.T) {
 	assert.Contains(t, tag["entities"].(primitive.A), "remove-tag-4-2-site")
 }
 
+func TestUpdateTagNoExistentReturnsError(t *testing.T) {
+	_, err := models.UpdateEntity(u.EntityToString(u.TAG), "update-tag", nil, false, nil)
+	assert.NotNil(t, err)
+	assert.Equal(t, "Nothing matches this request", err.Message)
+}
+
+func TestUpdateTagNotPresentInAnyEntityWorks(t *testing.T) {
+	err := createTag("update-tag-1")
+	require.Nil(t, err)
+
+	updatedTag, err := models.UpdateEntity(
+		u.EntityToString(u.TAG),
+		"update-tag-1",
+		map[string]any{
+			"slug": "update-tag-1-1",
+		},
+		true,
+		nil,
+	)
+	assert.Nil(t, err)
+	assert.Equal(t, "update-tag-1-1", updatedTag["slug"])
+}
+
+func TestUpdateTagPresentInEntityUpdatesItInList(t *testing.T) {
+	err := createTag("update-tag-2")
+	require.Nil(t, err)
+
+	err = createTag("update-tag-3")
+	require.Nil(t, err)
+
+	err = createSite("update-tag-2-site", []string{"update-tag-2", "update-tag-3"})
+	require.Nil(t, err)
+
+	updatedTag, err := models.UpdateEntity(
+		u.EntityToString(u.TAG),
+		"update-tag-2",
+		map[string]any{
+			"slug": "update-tag-2-2",
+		},
+		true,
+		nil,
+	)
+	assert.Nil(t, err)
+	assert.Equal(t, "update-tag-2-2", updatedTag["slug"])
+
+	site, err := getSite("update-tag-2-site")
+	assert.Nil(t, err)
+	assert.Len(t, site["tags"], 2)
+	assert.Contains(t, site["tags"].(primitive.A), "update-tag-3")
+	assert.Contains(t, site["tags"].(primitive.A), "update-tag-2-2")
+}
+
 func TestDeleteTagNoExistentReturnsError(t *testing.T) {
 	err := models.DeleteTag("delete-tag")
 	assert.NotNil(t, err)
