@@ -19,6 +19,7 @@ void main() {
 
   testWidgets('Login Page notifies error if mandatory fields are empty',
       (tester) async {
+    await dotenv.load(fileName: "assets/custom/.env");
     await tester.pumpWidget(const MyApp());
 
     final loginButton = find.textContaining('Se connecter');
@@ -34,7 +35,7 @@ void main() {
     await tester.tap(loginButton);
     await tester.pumpAndSettle();
 
-    expect(find.textContaining('Champ Obligatoire'), findsNWidgets(3));
+    expect(find.textContaining('Champ Obligatoire'), findsNWidgets(2));
 
     await tester.enterText(emailInput, "user@email.com");
     await tester.ensureVisible(loginButton);
@@ -42,21 +43,21 @@ void main() {
     await tester.tap(loginButton);
     await tester.pumpAndSettle();
 
-    expect(find.textContaining('Champ Obligatoire'), findsNWidgets(2));
+    expect(find.textContaining('Champ Obligatoire'), findsNWidgets(1));
 
     await tester.enterText(emailInput, "");
     await tester.enterText(passwordInput, "password");
     await tester.tap(loginButton);
     await tester.pumpAndSettle();
 
-    expect(find.textContaining('Champ Obligatoire'), findsNWidgets(2));
+    expect(find.textContaining('Champ Obligatoire'), findsNWidgets(1));
 
     await tester.enterText(emailInput, "user@email.com");
     await tester.enterText(passwordInput, "password");
     await tester.tap(loginButton);
     await tester.pumpAndSettle();
 
-    expect(find.textContaining('Champ Obligatoire'), findsNWidgets(1));
+    expect(find.textContaining('Champ Obligatoire'), findsNothing);
 
     await tester.enterText(serverInput, "http://localhost:8080");
     await tester.tap(loginButton);
