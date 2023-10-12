@@ -11,8 +11,10 @@ bool isSmallDisplay = false;
 class TreeAppController with ChangeNotifier {
   bool _isInitialized = false;
   bool get isInitialized => _isInitialized;
+
   Map<String, List<String>> fetchedData = {};
   Map<String, List<String>> fetchedCategories = {};
+
   final Map<int, List<String>> _filterLevels = {};
   Map<int, List<String>> get filterLevels => _filterLevels;
   static const lastFilterLevel = 3;
@@ -22,7 +24,7 @@ class TreeAppController with ChangeNotifier {
   static TreeAppController of(BuildContext context) {
     isSmallDisplay = IsSmallDisplay(MediaQuery.of(context).size.width);
     return context
-        .dependOnInheritedWidgetOfExactType<AppControllerScope>()!
+        .dependOnInheritedWidgetOfExactType<TreeAppControllerScope>()!
         .controller;
   }
 
@@ -94,7 +96,6 @@ class TreeAppController with ChangeNotifier {
 
   // Tree Node Selection Functionality
   late Map<String, bool> selectedNodes;
-
   bool isSelected(String id) => selectedNodes[id] ?? false;
 
   void toggleSelection(String id,
@@ -106,19 +107,20 @@ class TreeAppController with ChangeNotifier {
   }
 
   void _select(String id) => selectedNodes[id] = true;
-
   void _deselect(String id) => selectedNodes.remove(id);
 
   void selectAll([bool select = true]) {
-    treeController.expandAll();
+    //treeController.expandAll();
     if (select) {
       treeController.roots.forEach((root) {
+        selectedNodes[root.id] = true;
         root.descendants.forEach(
           (descendant) => selectedNodes[descendant.id] = true,
         );
       });
     } else {
       treeController.roots.forEach((root) {
+        selectedNodes.remove(root.id);
         root.descendants.forEach(
           (descendant) => selectedNodes.remove(descendant.id),
         );
@@ -214,8 +216,8 @@ class TreeAppController with ChangeNotifier {
   }
 }
 
-class AppControllerScope extends InheritedWidget {
-  const AppControllerScope({
+class TreeAppControllerScope extends InheritedWidget {
+  const TreeAppControllerScope({
     Key? key,
     required this.controller,
     required Widget child,
@@ -224,7 +226,7 @@ class AppControllerScope extends InheritedWidget {
   final TreeAppController controller;
 
   @override
-  bool updateShouldNotify(AppControllerScope oldWidget) => false;
+  bool updateShouldNotify(TreeAppControllerScope oldWidget) => false;
 }
 
 const String kRootId = '*';

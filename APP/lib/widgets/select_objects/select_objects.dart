@@ -27,7 +27,7 @@ class _SelectObjectsState extends State<SelectObjects> {
 
   @override
   Widget build(BuildContext context) {
-    return AppControllerScope(
+    return TreeAppControllerScope(
       controller: appController,
       child: FutureBuilder<void>(
         future: widget.load
@@ -151,7 +151,7 @@ class SettingsViewPopup extends StatelessWidget {
     return Center(
       child: SizedBox(
         height: 500,
-        child: AppControllerScope(
+        child: TreeAppControllerScope(
             controller: controller,
             child: Container(
                 width: 500,

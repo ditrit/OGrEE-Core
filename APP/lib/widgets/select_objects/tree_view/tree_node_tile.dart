@@ -11,8 +11,8 @@ import 'package:ogree_app/widgets/tenants/popups/domain_popup.dart';
 import '../treeapp_controller.dart';
 import 'tree_node.dart';
 
-part '_actions_chip.dart';
-part '_selector.dart';
+part '_node_chip.dart';
+part '_node_selector.dart';
 
 const Color _kDarkBlue = Color(0xFF1565C0);
 
@@ -41,7 +41,9 @@ class _TreeNodeTileState extends State<TreeNodeTile> {
     final appController = TreeAppController.of(context);
 
     return InkWell(
+      hoverColor: Colors.white,
       onTap: widget.onTap,
+      onDoubleTap: () => _describeAncestors(widget.entry.node),
       child: TreeIndentation(
         entry: widget.entry,
         guide: const IndentGuide.connectingLines(indent: 48),

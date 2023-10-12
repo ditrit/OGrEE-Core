@@ -19,7 +19,17 @@ class _NodeActionsChipState extends State<_NodeActionsChip> {
       key: _popupMenuKey,
       tooltip: AppLocalizations.of(context)!.selectionOptions,
       offset: const Offset(0, 32),
-      itemBuilder: (_) => kPopupMenuItems,
+      itemBuilder: (_) => <PopupMenuEntry<int>>[
+        PopupMenuItem(
+          value: 1,
+          child: ListTile(
+            dense: true,
+            title: Text(AppLocalizations.of(context)!.toggleSelection),
+            contentPadding: EdgeInsets.symmetric(horizontal: 4),
+            leading: Icon(Icons.account_tree_rounded, color: _kDarkBlue),
+          ),
+        ),
+      ],
       onSelected: (int selected) {
         TreeAppController.of(context).toggleAllFrom(widget.node);
       },
@@ -40,29 +50,3 @@ class _NodeActionsChipState extends State<_NodeActionsChip> {
     );
   }
 }
-
-const kPopupMenuItems = <PopupMenuEntry<int>>[
-  // PopupMenuItem(
-  //   value: 0,
-  //   // height: 28,
-  //   child: ListTile(
-  //     dense: true,
-  //     title: Text('Inverser ce noeud uniquement'),
-  //     // subtitle: Text('Opens dialog to add a child'),
-  //     contentPadding: EdgeInsets.symmetric(horizontal: 4),
-  //     leading: Icon(Icons.add_box_rounded, color: _kDarkBlue),
-  //   ),
-  // ),
-  // PopupMenuDivider(height: 1),
-  PopupMenuItem(
-    value: 1,
-    // height: 28,
-    child: ListTile(
-      dense: true,
-      title: Text('Inverser sélection du noeud et de tous ses enfants'),
-      // subtitle: Text('Moves children one level up'),
-      contentPadding: EdgeInsets.symmetric(horizontal: 4),
-      leading: Icon(Icons.account_tree_rounded, color: _kDarkBlue),
-    ),
-  ),
-];

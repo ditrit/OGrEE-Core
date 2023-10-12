@@ -58,11 +58,13 @@
   "filters": "Filters",
   "clearAllFilters": "Clear all",
   "noNodeFound": "No node found with ID:",
+  "nodeFound": "Node found:",
   "expandAll" : "Expand All",
   "collapseAll": "Collapse All",
   "selectAll": "Select All",
   "deselectAll": "Deselect All",
   "nodePath": "Node path:",
+  "toggleSelection": "Toggle selection for this node and all its children",
 
   "addColumnTip":  "Add a column",
   "yourReport": "Your report",

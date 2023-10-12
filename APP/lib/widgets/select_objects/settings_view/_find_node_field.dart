@@ -24,20 +24,10 @@ class __FindNodeFieldState extends State<_FindNodeField> {
       controller: controller,
       cursorColor: Colors.blueGrey,
       autofocus: false,
-      decoration: InputDecoration(
-        isDense: true,
-        hintText: '${localeMsg.search}...',
-        hintStyle: const TextStyle(
-          fontStyle: FontStyle.italic,
-          fontSize: 14,
-        ),
-        suffixIcon: IconButton(
-          onPressed: _submitted,
-          tooltip: localeMsg.search,
-          icon: const Icon(
-            Icons.search_rounded,
-          ),
-        ),
+      decoration: GetFormInputDecoration(
+        false,
+        '${localeMsg.search}...',
+        icon: Icons.search_rounded,
       ),
       onSubmitted: (_) => _submitted(),
     );
@@ -74,7 +64,7 @@ class __FindNodeFieldState extends State<_FindNodeField> {
     } else {
       showSnackBar(
         context,
-        'Node found: ${node.id}',
+        '${localeMsg.nodeFound} ${node.id}',
         isSuccess: true,
       );
       // Expand only until found node and scroll to it

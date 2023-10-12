@@ -11,7 +11,8 @@ GetFormInputDecoration(isSmallDisplay, String? labelText,
           bottom: 12.0,
           left: 20.0,
           right: 14.0,
-        )}) =>
+        ),
+        bool isEnabled = true}) =>
     InputDecoration(
       prefixIcon: isSmallDisplay
           ? null
@@ -27,6 +28,7 @@ GetFormInputDecoration(isSmallDisplay, String? labelText,
       suffixText: suffixText,
       labelText: labelText,
       hintText: hint,
+      enabled: isEnabled,
       labelStyle: const TextStyle(
         fontSize: 14.0,
       ),
