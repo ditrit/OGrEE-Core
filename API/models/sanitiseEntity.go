@@ -5,6 +5,18 @@ import (
 	"strings"
 )
 
+// Adds empty list of tags if not present
+func fillTags(entityType int, data map[string]any) map[string]any {
+	if u.EntityHasTags(entityType) {
+		_, tagsPresent := data["tags"]
+		if !tagsPresent {
+			data["tags"] = []any{}
+		}
+	}
+
+	return data
+}
+
 // Remove mongos _id and add parentId
 func fixID(data map[string]interface{}) map[string]interface{} {
 	delete(data, "_id")

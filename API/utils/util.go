@@ -13,6 +13,8 @@ import (
 	"reflect"
 	"strings"
 	"time"
+
+	"github.com/elliotchance/pie/v2"
 )
 
 var BuildHash string
@@ -89,6 +91,10 @@ type Error struct {
 	Type    ErrType
 	Message string
 	Details []string
+}
+
+func (err Error) Error() string {
+	return err.Message
 }
 
 func GetBuildDate() string {
@@ -201,6 +207,14 @@ var EntityTypeList = []int{
 	STRAYOBJ, SITE,
 	BLDG, ROOM, RACK, DEVICE, AC, CABINET, CORRIDOR, PWRPNL, GROUP,
 	ROOMTMPL, OBJTMPL, BLDGTMPL, TAG,
+}
+
+var EntitiesWithTags = []int{
+	STRAYOBJ, SITE, BLDG, ROOM, RACK, DEVICE, AC, CABINET, CORRIDOR, PWRPNL, GROUP,
+}
+
+func EntityHasTags(entityType int) bool {
+	return pie.Contains(EntitiesWithTags, entityType)
 }
 
 func IsEntityHierarchical(entity int) bool {

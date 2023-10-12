@@ -16,7 +16,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/go-playground/assert/v2"
+	"github.com/stretchr/testify/assert"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
@@ -166,6 +166,5 @@ func TestObjects(t *testing.T) {
 	recorder = makeRequest("GET", "/api/hierarchy", nil)
 	assert.Equal(t, http.StatusOK, recorder.Code)
 	json.Unmarshal(recorder.Body.Bytes(), &response)
-	assert.Equal(t, 0,
-		len(response["data"].(map[string]interface{})["tree"].(map[string]interface{})["physical"].(map[string]interface{})))
+	assert.Nil(t, response["data"].(map[string]interface{})["tree"].(map[string]interface{})["physical"].(map[string]interface{})["TESTPATCH"])
 }

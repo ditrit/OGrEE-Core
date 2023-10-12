@@ -196,6 +196,15 @@ func ValidateEntity(entity int, t map[string]interface{}) (bool, *u.Error) {
 		and check that the device parent has a slot
 		attribute
 	*/
+	t = fillTags(entity, t)
+
+	// Add empty list of entities if not present
+	if entity == u.TAG {
+		entities, entitiesPresent := t["entities"].([]any)
+		if !entitiesPresent || entities == nil {
+			t["entities"] = []any{}
+		}
+	}
 
 	// Validate JSON Schema
 	if ok, err := validateJsonSchema(entity, t); !ok {

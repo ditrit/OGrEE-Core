@@ -709,7 +709,10 @@ func DeleteEntity(w http.ResponseWriter, r *http.Request) {
 		u.ErrLog("Error while parsing path parameters", "DELETE ENTITY", "", r)
 	} else {
 		var modelErr *u.Error
-		if u.IsEntityNonHierarchical(u.EntityStrToInt(entity)) {
+		entityType := u.EntityStrToInt(entity)
+		if entityType == u.TAG {
+			modelErr = models.DeleteTag(id)
+		} else if u.IsEntityNonHierarchical(entityType) {
 			modelErr = models.DeleteSingleEntity(entity, bson.M{"slug": id})
 		} else {
 			modelErr = models.DeleteEntity(entity, id, user.Roles)

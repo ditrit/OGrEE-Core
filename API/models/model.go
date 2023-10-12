@@ -222,66 +222,46 @@ func GetObjectById(hierarchyName string, filters u.RequestFilters, userRoles map
 	}
 }
 
-func GetEntity(req bson.M, ent string, filters u.RequestFilters, userRoles map[string]Role) (map[string]interface{}, *u.Error) {
-	t := map[string]interface{}{}
-	ctx, cancel := u.Connect()
-	var e error
-
-	var opts *options.FindOneOptions
-	if len(filters.FieldsToShow) > 0 {
-		compoundIndex := bson.D{bson.E{Key: "domain", Value: 1}, bson.E{Key: "id", Value: 1}}
-		for _, field := range filters.FieldsToShow {
-			if field != "domain" && field != "id" {
-				compoundIndex = append(compoundIndex, bson.E{Key: field, Value: 1})
-			}
-		}
-		opts = options.FindOne().SetProjection(compoundIndex)
-	}
-	e = getDateFilters(req, filters.StartDate, filters.EndDate)
-	if e != nil {
-		return nil, &u.Error{Type: u.ErrBadFormat, Message: e.Error()}
+func GetEntity(req bson.M, entityTypeStr string, filters u.RequestFilters, userRoles map[string]Role) (map[string]interface{}, *u.Error) {
+	entityAny, err := WithTransaction(func(ctx mongo.SessionContext) (any, error) {
+		return repository.GetEntity(ctx, req, entityTypeStr, filters)
+	})
+	if err != nil {
+		return nil, err
 	}
 
-	if opts != nil {
-		e = GetDB().Collection(ent).FindOne(ctx, req, opts).Decode(&t)
-	} else {
-		e = GetDB().Collection(ent).FindOne(ctx, req).Decode(&t)
-	}
-	if e != nil {
-		if e == mongo.ErrNoDocuments {
-			return nil, &u.Error{Type: u.ErrNotFound,
-				Message: "Nothing matches this request"}
-		}
-		return nil, &u.Error{Type: u.ErrBadFormat, Message: e.Error()}
-	}
-	defer cancel()
+	entity := entityAny.(map[string]any)
 
 	//Remove _id
-	t = fixID(t)
+	entity = fixID(entity)
+
+	entityType := u.EntityStrToInt(entityTypeStr)
+	entity = fillTags(entityType, entity)
 
 	// Check permissions
-	if u.IsEntityHierarchical(u.EntityStrToInt(ent)) {
+	if u.IsEntityHierarchical(entityType) {
 		var domain string
-		if ent == "domain" {
-			domain = t["id"].(string)
+		if entityType == u.DOMAIN {
+			domain = entity["id"].(string)
 		} else {
-			domain = t["domain"].(string)
+			domain = entity["domain"].(string)
 		}
 		if userRoles != nil {
-			if permission := CheckUserPermissions(userRoles, u.EntityStrToInt(ent), domain); permission == NONE {
+			if permission := CheckUserPermissions(userRoles, u.EntityStrToInt(entityTypeStr), domain); permission == NONE {
 				return nil, &u.Error{Type: u.ErrUnauthorized,
 					Message: "User does not have permission to see this object"}
 			} else if permission == READONLYNAME {
-				t = FixReadOnlyName(t)
+				entity = FixReadOnlyName(entity)
 			}
 		}
 	}
 
 	//If entity has '_' remove it
-	if strings.Contains(ent, "_") {
-		FixUnderScore(t)
+	if strings.Contains(entityTypeStr, "_") {
+		FixUnderScore(entity)
 	}
-	return t, nil
+
+	return entity, nil
 }
 
 func GetManyEntities(ent string, req bson.M, filters u.RequestFilters, userRoles map[string]Role) ([]map[string]interface{}, *u.Error) {
@@ -315,7 +295,8 @@ func GetManyEntities(ent string, req bson.M, filters u.RequestFilters, userRoles
 	}
 	defer cancel()
 
-	data, e1 := ExtractCursor(c, ctx, u.EntityStrToInt(ent), userRoles)
+	entityType := u.EntityStrToInt(ent)
+	data, e1 := ExtractCursor(c, ctx, entityType, userRoles)
 	if e1 != nil {
 		fmt.Println(e1)
 		return nil, &u.Error{Type: u.ErrInternal, Message: e1.Error()}
@@ -325,6 +306,12 @@ func GetManyEntities(ent string, req bson.M, filters u.RequestFilters, userRoles
 	if strings.Contains(ent, "_") {
 		for i := range data {
 			FixUnderScore(data[i])
+		}
+	}
+
+	if u.EntityHasTags(entityType) {
+		for i := range data {
+			fillTags(entityType, data[i])
 		}
 	}
 
@@ -636,40 +623,41 @@ func DeleteEntity(entity string, id string, userRoles map[string]Role) *u.Error 
 	if !ok {
 		return &u.Error{Type: u.ErrUnauthorized, Message: "User does not have permission to delete"}
 	}
-	req["id"] = id
-	err := DeleteSingleEntity(entity, req)
 
-	if err != nil {
-		// Unable to delete given id
-		return err
-	} else {
+	req["id"] = id
+
+	_, err := WithTransaction(func(ctx mongo.SessionContext) (any, error) {
+		err := repository.DeleteEntity(ctx, entity, req)
+		if err != nil {
+			// Unable to delete given id
+			return nil, err
+		}
+
 		// Delete possible children
 		rangeEntities := getChildrenCollections(u.GROUP, entity)
 		for _, childEnt := range rangeEntities {
 			childEntName := u.EntityToString(childEnt)
 			pattern := primitive.Regex{Pattern: "^" + id + u.HN_DELIMETER, Options: ""}
 
-			ctx, cancel := u.Connect()
 			repository.GetDB().Collection(childEntName).DeleteMany(ctx,
 				bson.M{"id": pattern})
-			defer cancel()
 		}
-	}
 
-	return nil
+		return nil, nil
+	})
+
+	return err
 }
 
 func DeleteSingleEntity(entity string, req bson.M) *u.Error {
-	ctx, cancel := u.Connect()
-	c, _ := GetDB().Collection(entity).DeleteOne(ctx, req)
-	if c.DeletedCount == 0 {
-		return &u.Error{Type: u.ErrNotFound, Message: "Error deleting object: not found"}
-	}
-	defer cancel()
-	return nil
+	_, err := WithTransaction(func(ctx mongo.SessionContext) (any, error) {
+		return nil, repository.DeleteEntity(ctx, entity, req)
+	})
+
+	return err
 }
 
-func UpdateEntity(ent string, id string, t map[string]interface{}, isPatch bool, userRoles map[string]Role) (map[string]interface{}, *u.Error) {
+func UpdateEntity(ent string, id string, updateData map[string]interface{}, isPatch bool, userRoles map[string]Role) (map[string]interface{}, *u.Error) {
 	var idFilter bson.M
 	if u.IsEntityNonHierarchical(u.EntityStrToInt(ent)) {
 		idFilter = bson.M{"slug": id}
@@ -677,98 +665,98 @@ func UpdateEntity(ent string, id string, t map[string]interface{}, isPatch bool,
 		idFilter = bson.M{"id": id}
 	}
 
-	var mongoRes *mongo.SingleResult
-	var updatedDoc map[string]interface{}
-	retDoc := options.ReturnDocument(options.After)
 	entInt := u.EntityStrToInt(ent)
 
-	//Update timestamp requires first obj retrieval
-	//there isn't any way for mongoDB to make a field
-	//immutable in a document
-	oldObj, err := GetEntity(req, ent, u.RequestFilters{}, userRoles)
-	if err != nil {
-		return nil, err
-	}
-
-	//Check if permission is only readonly
-	if u.IsEntityHierarchical(entInt) && oldObj["description"] == nil {
-		// Description is always present, unless GetEntity was called with readonly permission
-		return nil, &u.Error{Type: u.ErrUnauthorized,
-			Message: "User does not have permission to change this object"}
-	}
-
-	// Update old object data with patch data
-	if isPatch {
-		var formattedOldObj map[string]interface{}
-		// Convert primitive.A and similar types
-		bytes, _ := json.Marshal(oldObj)
-		json.Unmarshal(bytes, &formattedOldObj)
-		// Update old with new
-		err := updateOldObjWithPatch(formattedOldObj, t)
+	result, err := WithTransaction(func(ctx mongo.SessionContext) (interface{}, error) {
+		// Update timestamp requires first obj retrieval
+		// there isn't any way for mongoDB to make a field
+		// immutable in a document
+		oldObj, err := GetEntity(idFilter, ent, u.RequestFilters{}, userRoles)
 		if err != nil {
-			return nil, &u.Error{Type: u.ErrBadFormat, Message: err.Error()}
+			return nil, err
 		}
-		t = formattedOldObj
-		// Remove API set fields
-		delete(t, "id")
-		delete(t, "lastUpdated")
-		delete(t, "createdDate")
-	}
 
-	// Ensure the update is valid
-	ctx, cancel := u.Connect()
-	if ok, err := ValidateEntity(u.EntityStrToInt(ent), t); !ok {
-		return nil, err
-	}
-
-	t["lastUpdated"] = primitive.NewDateTimeFromTime(time.Now())
-	t["createdDate"] = oldObj["createdDate"]
-	delete(t, "parentId")
-
-	// Check user permissions in case domain is being updated
-	if entInt != u.DOMAIN && u.IsEntityHierarchical(entInt) && (oldObj["domain"] != t["domain"]) {
-		if perm := CheckUserPermissions(userRoles, entInt, t["domain"].(string)); perm < WRITE {
+		// Check if permission is only readonly
+		if u.IsEntityHierarchical(entInt) && oldObj["description"] == nil {
+			// Description is always present, unless GetEntity was called with readonly permission
 			return nil, &u.Error{Type: u.ErrUnauthorized,
 				Message: "User does not have permission to change this object"}
 		}
-	}
 
-	// Update database callback
-	callback := func(sessCtx mongo.SessionContext) (interface{}, error) {
-		mongoRes := GetDB().Collection(ent).FindOneAndReplace(ctx,
-			req, t,
-			&options.FindOneAndReplaceOptions{ReturnDocument: &retDoc})
+		// Update old object data with patch data
+		if isPatch {
+			var formattedOldObj map[string]interface{}
+			// Convert primitive.A and similar types
+			bytes, _ := json.Marshal(oldObj)
+			json.Unmarshal(bytes, &formattedOldObj)
+			// Update old with new
+			err := updateOldObjWithPatch(formattedOldObj, updateData)
+			if err != nil {
+				return nil, &u.Error{Type: u.ErrBadFormat, Message: err.Error()}
+			}
+
+			updateData = formattedOldObj
+			// Remove API set fields
+			delete(updateData, "id")
+			delete(updateData, "lastUpdated")
+			delete(updateData, "createdDate")
+		}
+
+		// tag list edition support
+		err = addAndRemoveFromTags(ctx, entInt, id, updateData)
+		if err != nil {
+			return nil, err
+		}
+
+		// Ensure the update is valid
+		if ok, err := ValidateEntity(u.EntityStrToInt(ent), updateData); !ok {
+			return nil, err
+		}
+
+		updateData["lastUpdated"] = primitive.NewDateTimeFromTime(time.Now())
+		updateData["createdDate"] = oldObj["createdDate"]
+		delete(updateData, "parentId")
+
+		// Check user permissions in case domain is being updated
+		if entInt != u.DOMAIN && u.IsEntityHierarchical(entInt) && (oldObj["domain"] != updateData["domain"]) {
+			if perm := CheckUserPermissions(userRoles, entInt, updateData["domain"].(string)); perm < WRITE {
+				return nil, &u.Error{Type: u.ErrUnauthorized,
+					Message: "User does not have permission to change this object"}
+			}
+		}
+
+		mongoRes := repository.GetDB().Collection(ent).FindOneAndReplace(
+			ctx,
+			idFilter, updateData,
+			options.FindOneAndReplace().SetReturnDocument(options.After),
+		)
 		if mongoRes.Err() != nil {
 			return nil, mongoRes.Err()
 		}
-		if oldObj["id"] != t["id"] {
+
+		if oldObj["id"] != updateData["id"] {
 			// Changes to id should be propagated to its children
-			if err := PropagateParentIdChange(ctx, oldObj["id"].(string),
-				t["id"].(string), entInt); err != nil {
+			err := PropagateParentIdChange(
+				ctx,
+				oldObj["id"].(string),
+				updateData["id"].(string),
+				entInt,
+			)
+			if err != nil {
 				return nil, err
 			}
 		}
 
 		return mongoRes, nil
+	})
+	if err != nil {
+		return nil, err
 	}
 
-	// Start a session and run the callback to update db
-	session, e := GetClient().StartSession()
-	if e != nil {
-		return nil, &u.Error{Type: u.ErrDBError, Message: "Unable to start session: " + e.Error()}
-	}
-	defer session.EndSession(ctx)
-	result, e := session.WithTransaction(ctx, callback)
-	if e != nil {
-		return nil, &u.Error{Type: u.ErrDBError, Message: "Unable to complete transaction: " + e.Error()}
-	}
+	var updatedDoc map[string]interface{}
+	result.(*mongo.SingleResult).Decode(&updatedDoc)
 
-	mongoRes = result.(*mongo.SingleResult)
-	mongoRes.Decode(&updatedDoc)
-	updatedDoc = fixID(updatedDoc)
-
-	defer cancel()
-	return updatedDoc, nil
+	return fixID(updatedDoc), nil
 }
 
 // GetHierarchyByName: get children objects of given parent.
