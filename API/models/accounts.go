@@ -3,6 +3,7 @@ package models
 import (
 	"errors"
 	"os"
+	"p3/repository"
 	u "p3/utils"
 	"regexp"
 	"time"
@@ -47,7 +48,7 @@ func (account *Account) Validate() *u.Error {
 
 	//Error checking and duplicate emails
 	ctx, cancel := u.Connect()
-	err := GetDB().Collection("account").FindOne(ctx, bson.M{"email": account.Email}).Err()
+	err := repository.GetDB().Collection("account").FindOne(ctx, bson.M{"email": account.Email}).Err()
 	if err != nil && err != mongo.ErrNoDocuments {
 		println("Error while creating account:", err.Error())
 		return &u.Error{Type: u.ErrDBError, Message: err.Error()}
@@ -107,7 +108,7 @@ func (account *Account) Create(callerRoles map[string]Role) (*Account, *u.Error)
 	account.Password = string(hashedPassword)
 
 	ctx, cancel := u.Connect()
-	res, err := GetDB().Collection("account").InsertOne(ctx, account)
+	res, err := repository.GetDB().Collection("account").InsertOne(ctx, account)
 	if err != nil {
 		return nil, &u.Error{Type: u.ErrDBError,
 			Message: "DB error when creating user: " + err.Error()}
@@ -167,7 +168,7 @@ func (account *Account) ChangePassword(password string, newPassword string, isRe
 	hashedPassword, _ := bcrypt.GenerateFromPassword(
 		[]byte(newPassword), bcrypt.DefaultCost)
 	user["password"] = string(hashedPassword)
-	err := GetDB().Collection("account").FindOneAndUpdate(ctx, bson.M{"_id": account.ID}, bson.M{"$set": user}).Err()
+	err := repository.GetDB().Collection("account").FindOneAndUpdate(ctx, bson.M{"_id": account.ID}, bson.M{"$set": user}).Err()
 	if err != nil {
 		return "", &u.Error{Type: u.ErrDBError, Message: "Error updating user password: " + err.Error()}
 	}
@@ -180,7 +181,7 @@ func Login(email, password string) (*Account, *u.Error) {
 	resp := u.Message("Logged In")
 
 	ctx, cancel := u.Connect()
-	err := GetDB().Collection("account").FindOne(ctx, bson.M{"email": email}).Decode(account)
+	err := repository.GetDB().Collection("account").FindOne(ctx, bson.M{"email": email}).Decode(account)
 	if err != nil {
 		if err == mongo.ErrNoDocuments {
 			return nil, &u.Error{Type: u.ErrNotFound, Message: "User does not exist"}
@@ -221,7 +222,7 @@ func GenerateToken(email string, id primitive.ObjectID, expire time.Duration) st
 func GetUser(userId primitive.ObjectID) *Account {
 	acc := &Account{}
 	ctx, cancel := u.Connect()
-	err := GetDB().Collection("account").FindOne(ctx, bson.M{"_id": userId}).Decode(acc)
+	err := repository.GetDB().Collection("account").FindOne(ctx, bson.M{"_id": userId}).Decode(acc)
 	if err != nil || acc.Email == "" {
 		return nil
 	}
@@ -235,7 +236,7 @@ func GetUser(userId primitive.ObjectID) *Account {
 func GetUserByEmail(email string) *Account {
 	acc := &Account{}
 	ctx, cancel := u.Connect()
-	err := GetDB().Collection("account").FindOne(ctx, bson.M{"email": email}).Decode(acc)
+	err := repository.GetDB().Collection("account").FindOne(ctx, bson.M{"email": email}).Decode(acc)
 	if err != nil || acc.Email == "" {
 		return nil
 	}
@@ -247,7 +248,7 @@ func GetUserByEmail(email string) *Account {
 func GetAllUsers(callerRoles map[string]Role) ([]Account, *u.Error) {
 	// Get all users
 	ctx, cancel := u.Connect()
-	c, err := GetDB().Collection("account").Find(ctx, bson.M{})
+	c, err := repository.GetDB().Collection("account").Find(ctx, bson.M{})
 	if err != nil {
 		println(err.Error())
 		return nil, &u.Error{Type: u.ErrDBError, Message: err.Error()}
@@ -274,7 +275,7 @@ func GetAllUsers(callerRoles map[string]Role) ([]Account, *u.Error) {
 func DeleteUser(userId primitive.ObjectID) *u.Error {
 	ctx, cancel := u.Connect()
 	req := bson.M{"_id": userId}
-	c, _ := GetDB().Collection("account").DeleteOne(ctx, req)
+	c, _ := repository.GetDB().Collection("account").DeleteOne(ctx, req)
 	if c.DeletedCount == 0 {
 		return &u.Error{Type: u.ErrDBError, Message: "Unable to delete user"}
 	}
@@ -296,7 +297,7 @@ func ModifyUser(id string, roles map[string]Role) *u.Error {
 	defer cancel()
 	user := map[string]interface{}{}
 	user["roles"] = roles
-	err = GetDB().Collection("account").FindOneAndUpdate(ctx, bson.M{"_id": objID}, bson.M{"$set": user}).Err()
+	err = repository.GetDB().Collection("account").FindOneAndUpdate(ctx, bson.M{"_id": objID}, bson.M{"$set": user}).Err()
 	if err != nil {
 		return &u.Error{Type: u.ErrDBError, Message: err.Error()}
 	}
