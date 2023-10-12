@@ -23,3 +23,30 @@ func DeleteTagFromEntity(ctx mongo.SessionContext, slug string, entity int) *uti
 
 	return nil
 }
+
+func UpdateTagSlugInEntities(ctx mongo.SessionContext, slug, newSlug string) *utils.Error {
+	for _, entity := range utils.EntitiesWithTags {
+		err := updateTagSlugInEntity(ctx, slug, newSlug, entity)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func updateTagSlugInEntity(ctx mongo.SessionContext, slug, newSlug string, entity int) *utils.Error {
+	_, err := GetDB().Collection(utils.EntityToString(entity)).UpdateMany(
+		ctx,
+		bson.M{"tags": bson.M{"$eq": slug}},
+		bson.M{"$set": bson.M{"tags.$": newSlug}},
+	)
+	if err != nil {
+		return &utils.Error{
+			Type:    utils.ErrDBError,
+			Message: fmt.Sprintf("Could not edit tag slug in %s", utils.EntityToString(entity)),
+		}
+	}
+
+	return nil
+}
