@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:ogree_app/widgets/select_objects/app_controller.dart';
+import 'package:ogree_app/widgets/select_objects/treeapp_controller.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 import 'settings_view.dart';
@@ -32,14 +32,14 @@ class _TreeFilterState extends State<TreeFilter> {
 
   @override
   Widget build(BuildContext context) {
-    _filterLevels = AppController.of(context).filterLevels;
+    _filterLevels = TreeAppController.of(context).filterLevels;
     print(_filterLevels);
     // Get which fields to filter and their list of suggestions
     int idx = 0;
     for (String key
-        in AppController.of(context).fetchedCategories["KeysOrder"]!) {
+        in TreeAppController.of(context).fetchedCategories["KeysOrder"]!) {
       objectsPerCategory[key.capitalize()] =
-          AppController.of(context).fetchedCategories[key]!; // field name
+          TreeAppController.of(context).fetchedCategories[key]!; // field name
       enumParams[key.capitalize()] = idx; // field name -> id
       idx++;
     }
@@ -88,7 +88,7 @@ class _TreeFilterState extends State<TreeFilter> {
       for (var level in _filterLevels.keys) {
         _filterLevels[level] = [];
       }
-      AppController.of(context).filterTree("", -1);
+      TreeAppController.of(context).filterTree("", -1);
     }
     setState(() {});
   }
@@ -199,7 +199,7 @@ class _AutocompleteFilterState extends State<AutocompleteFilter> {
               onFieldSubmitted: (String value) {
                 if (widget.options.contains(value)) {
                   setState(() {
-                    AppController.of(context)
+                    TreeAppController.of(context)
                         .filterTree(value, widget.paramLevel);
                     widget.notifyParent();
                     // _selectedOptions.add(value);
@@ -261,7 +261,7 @@ class _AutocompleteFilterState extends State<AutocompleteFilter> {
     nodes.forEach((value) {
       chips.add(RawChip(
         onPressed: () {
-          AppController.of(context).filterTree(value, widget.paramLevel);
+          TreeAppController.of(context).filterTree(value, widget.paramLevel);
           setState(() {
             // _selectedOptions.removeWhere((opt) => opt == value);
             widget.notifyParent();

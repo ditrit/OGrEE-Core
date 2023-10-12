@@ -8,7 +8,8 @@ import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:ogree_app/pages/tenant_page.dart';
 import 'package:ogree_app/widgets/tenants/popups/domain_popup.dart';
 
-import '../app_controller.dart';
+import '../treeapp_controller.dart';
+import 'tree_node.dart';
 
 part '_actions_chip.dart';
 part '_selector.dart';
@@ -21,7 +22,14 @@ const RoundedRectangleBorder kRoundedRectangleBorder = RoundedRectangleBorder(
 
 class TreeNodeTile extends StatefulWidget {
   final bool isTenantMode;
-  const TreeNodeTile({Key? key, required this.isTenantMode}) : super(key: key);
+  final TreeEntry<TreeNode> entry;
+  final Function() onTap;
+  const TreeNodeTile(
+      {Key? key,
+      required this.isTenantMode,
+      required this.entry,
+      required this.onTap})
+      : super(key: key);
 
   @override
   _TreeNodeTileState createState() => _TreeNodeTileState();
@@ -30,66 +38,76 @@ class TreeNodeTile extends StatefulWidget {
 class _TreeNodeTileState extends State<TreeNodeTile> {
   @override
   Widget build(BuildContext context) {
-    final appController = AppController.of(context);
-    final nodeScope = TreeNodeScope.of(context);
+    final appController = TreeAppController.of(context);
 
     return InkWell(
-        hoverColor: Colors.white,
-        onTap: () => _describeAncestors(nodeScope.node),
-        onLongPress: () => appController.toggleSelection(nodeScope.node.id),
-        child: Row(children: [
-          const LinesWidget(),
-          NodeWidgetLeadingIcon(
-            expandIcon: const Icon(Icons.auto_awesome_mosaic),
-            collapseIcon: const Icon(Icons.auto_awesome_mosaic_outlined),
-            leafIcon: widget.isTenantMode
-                ? const Icon(Icons.dns)
-                : const Icon(Icons.auto_awesome_mosaic),
-          ),
-          const _NodeActionsChip(),
-          widget.isTenantMode
-              ? Row(
-                  children: [
-                    Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 8.0),
-                      child: CircleAvatar(
-                        radius: 13,
-                        child: IconButton(
-                            splashRadius: 18,
-                            iconSize: 14,
-                            padding: EdgeInsets.all(2),
-                            onPressed: () => showCustomPopup(
-                                context,
-                                DomainPopup(
-                                  parentCallback: () => appController.init({},
-                                      namespace: Namespace.Organisational,
-                                      reload: true,
-                                      isTenantMode: true),
-                                  domainId: nodeScope.node.id,
+      onTap: widget.onTap,
+      child: TreeIndentation(
+        entry: widget.entry,
+        guide: const IndentGuide.connectingLines(indent: 48),
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(4, 8, 8, 8),
+          child: Row(
+            children: [
+              FolderButton(
+                closedIcon: const Icon(Icons.auto_awesome_mosaic),
+                openedIcon: const Icon(Icons.auto_awesome_mosaic_outlined),
+                icon: widget.isTenantMode
+                    ? const Icon(Icons.dns)
+                    : const Icon(Icons.auto_awesome_mosaic),
+                isOpen:
+                    widget.entry.hasChildren ? widget.entry.isExpanded : null,
+                onPressed: widget.entry.hasChildren ? widget.onTap : null,
+              ),
+              _NodeActionsChip(node: widget.entry.node),
+              widget.isTenantMode
+                  ? Row(
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                          child: CircleAvatar(
+                            radius: 13,
+                            child: IconButton(
+                                splashRadius: 18,
+                                iconSize: 14,
+                                padding: const EdgeInsets.all(2),
+                                onPressed: () => showCustomPopup(
+                                    context,
+                                    DomainPopup(
+                                      parentCallback: () => appController.init(
+                                          {},
+                                          namespace: Namespace.Organisational,
+                                          reload: true,
+                                          isTenantMode: true),
+                                      domainId: widget.entry.node.id,
+                                    )),
+                                icon: const Icon(
+                                  Icons.edit,
+                                  color: Colors.black,
                                 )),
-                            icon: Icon(
-                              Icons.edit,
-                              color: Colors.black,
-                            )),
-                      ),
-                    ),
-                    CircleAvatar(
-                      radius: 13,
-                      child: IconButton(
-                          splashRadius: 18,
-                          iconSize: 14,
-                          padding: EdgeInsets.all(2),
-                          onPressed: () => TenantPage.of(context)!
-                              .changeToUserView(nodeScope.node.id),
-                          icon: Icon(
-                            Icons.people,
-                            color: Colors.black,
-                          )),
-                    ),
-                  ],
-                )
-              : const _NodeSelector(),
-        ]));
+                          ),
+                        ),
+                        CircleAvatar(
+                          radius: 13,
+                          child: IconButton(
+                              splashRadius: 18,
+                              iconSize: 14,
+                              padding: const EdgeInsets.all(2),
+                              onPressed: () => TenantPage.of(context)!
+                                  .changeToUserView(widget.entry.node.id),
+                              icon: const Icon(
+                                Icons.people,
+                                color: Colors.black,
+                              )),
+                        ),
+                      ],
+                    )
+                  : _NodeSelector(id: widget.entry.node.id),
+            ],
+          ),
+        ),
+      ),
+    );
   }
 
   void _describeAncestors(TreeNode node) {

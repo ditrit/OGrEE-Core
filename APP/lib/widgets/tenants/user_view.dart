@@ -7,7 +7,7 @@ import 'package:ogree_app/common/theme.dart';
 import 'package:ogree_app/models/user.dart';
 import 'package:ogree_app/pages/results_page.dart';
 import 'package:ogree_app/widgets/delete_dialog_popup.dart';
-import 'package:ogree_app/widgets/select_objects/app_controller.dart';
+import 'package:ogree_app/widgets/select_objects/treeapp_controller.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 import 'popups/user_popup.dart';
@@ -29,7 +29,7 @@ class UserView extends StatefulWidget {
 
 class _UserViewState extends State<UserView> {
   List<User>? _users;
-  late final AppController appController = AppController();
+  late final TreeAppController appController = TreeAppController();
   bool _loadUsers = true;
   List<User> selectedUsers = [];
   List<User>? _filterUsers;

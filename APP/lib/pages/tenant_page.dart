@@ -12,7 +12,7 @@ import 'package:ogree_app/widgets/tenants/api_stats_view.dart';
 import 'package:ogree_app/widgets/tenants/locked_view.dart';
 import 'package:ogree_app/widgets/tenants/popups/domain_popup.dart';
 import 'package:ogree_app/widgets/tenants/docker_view.dart';
-import 'package:ogree_app/widgets/select_objects/app_controller.dart';
+import 'package:ogree_app/widgets/select_objects/treeapp_controller.dart';
 import 'package:ogree_app/widgets/select_objects/settings_view/settings_view.dart';
 import 'package:ogree_app/widgets/select_objects/tree_view/custom_tree_view.dart';
 import 'package:ogree_app/widgets/tenants/user_view.dart';
@@ -31,7 +31,7 @@ class TenantPage extends StatefulWidget {
 
 class _TenantPageState extends State<TenantPage> with TickerProviderStateMixin {
   late TabController _tabController;
-  late final AppController appController = AppController();
+  late final TreeAppController appController = TreeAppController();
   bool _isLocked = true;
   bool _reloadDomains = false;
   bool _isSmallDisplay = false;
@@ -204,7 +204,7 @@ class _TenantPageState extends State<TenantPage> with TickerProviderStateMixin {
               _reloadDomains = false;
             }
             if (appController.isInitialized) {
-              if (appController.rootNode.children.isEmpty) {
+              if (appController.treeController.roots.isEmpty) {
                 return Column(
                   children: [
                     Icon(

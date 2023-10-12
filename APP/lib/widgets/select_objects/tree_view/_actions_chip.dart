@@ -1,7 +1,8 @@
 part of 'tree_node_tile.dart';
 
 class _NodeActionsChip extends StatefulWidget {
-  const _NodeActionsChip({Key? key}) : super(key: key);
+  final TreeNode node;
+  const _NodeActionsChip({Key? key, required this.node}) : super(key: key);
 
   @override
   State<_NodeActionsChip> createState() => _NodeActionsChipState();
@@ -14,25 +15,20 @@ class _NodeActionsChipState extends State<_NodeActionsChip> {
 
   @override
   Widget build(BuildContext context) {
-    final nodeScope = TreeNodeScope.of(context);
-
     return PopupMenuButton<int>(
       key: _popupMenuKey,
       tooltip: AppLocalizations.of(context)!.selectionOptions,
       offset: const Offset(0, 32),
       itemBuilder: (_) => kPopupMenuItems,
       onSelected: (int selected) {
-        // if (selected == 0) {
-        //   AppController.of(context).toggleSelection(nodeScope.node.id);
-        // } else
-        AppController.of(context).toggleAllFrom(nodeScope.node);
+        TreeAppController.of(context).toggleAllFrom(widget.node);
       },
       child: RawChip(
         onPressed: () => _menu?.showButtonMenu(),
         backgroundColor: const Color(0x331565c0),
         side: const BorderSide(style: BorderStyle.none),
         label: Text(
-          nodeScope.node.label,
+          widget.node.label,
           style: TextStyle(
             fontSize: 14,
             fontFamily: GoogleFonts.inter().fontFamily,

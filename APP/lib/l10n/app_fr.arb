@@ -85,7 +85,7 @@
 
   "@tenantCreated": { "description": "SuperAdmin Views" },
   "tenantCreated": "Tenant créé avec succès !",
-  "deployment": "Déploiment",
+  "deployment": "Déploiement",
   "loginTenant": "Connectez-vous à l'API de ce Tenant :",
   "areYouSure": "Êtes-vous sûr ?",
   "allWillBeLost": "Toutes les données seront définitivement perdues !",
