@@ -1629,9 +1629,10 @@ func IsCategoryAttrDrawable(category string, attr string) bool {
 	if templateJson == nil {
 		return true
 	}
+
 	switch attr {
 	case "id", "name", "category", "parentID",
-		"description", "domain", "parentid", "parentId":
+		"description", "domain", "parentid", "parentId", "tags":
 		if val, ok := templateJson[attr]; ok {
 			if valBool, ok := val.(bool); ok {
 				return valBool
