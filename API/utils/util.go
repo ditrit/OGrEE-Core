@@ -14,6 +14,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/elliotchance/pie/v2"
 	"go.mongodb.org/mongo-driver/bson"
 )
 
@@ -100,6 +101,10 @@ type Error struct {
 	Type    ErrType
 	Message string
 	Details []string
+}
+
+func (err Error) Error() string {
+	return err.Message
 }
 
 func GetBuildDate() string {
@@ -211,6 +216,14 @@ var Entities = []int{
 	STRAYOBJ, SITE,
 	BLDG, ROOM, RACK, DEVICE, AC, CABINET, CORRIDOR, PWRPNL, GROUP,
 	ROOMTMPL, OBJTMPL, BLDGTMPL, TAG,
+}
+
+var EntitiesWithTags = []int{
+	STRAYOBJ, SITE, BLDG, ROOM, RACK, DEVICE, AC, CABINET, CORRIDOR, PWRPNL, GROUP,
+}
+
+func EntityHasTags(entity int) bool {
+	return pie.Contains(EntitiesWithTags, entity)
 }
 
 func IsEntityHierarchical(entity int) bool {
