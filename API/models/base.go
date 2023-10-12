@@ -1,7 +1,5 @@
 package models
 
-//https://www.cockroachlabs.com/blog/upperdb-cockroachdb/
-//https://www.cockroachlabs.com/docs/stable/build-a-go-app-with-cockroachdb-gorm.html
 import (
 	"context"
 	"fmt"
@@ -24,7 +22,6 @@ var globalClient *mongo.Client
 
 func init() {
 	e := godotenv.Load()
-
 	if e != nil {
 		fmt.Println(e)
 	}
@@ -36,10 +33,13 @@ func init() {
 	user := os.Getenv("db_user")
 	pass := os.Getenv("db_pass")
 	dbName := "ogree" + os.Getenv("db")
+	params := "readPreference=primary"
 	if strings.HasSuffix(os.Args[0], ".test") {
 		dbName = "ogreeAutoTest"
 		user = "AutoTest"
 		pass = "123"
+		dbPort = "27018"
+		params = params + "&directConnection=true"
 	}
 
 	println("USER:", user)
@@ -53,11 +53,16 @@ func init() {
 	}
 
 	if user == "" || pass == "" {
-		dbUri = fmt.Sprintf("mongodb://%s:%s/?readPreference=primary&ssl=false",
-			dbHost, dbPort)
+		params = params + "&ssl=false"
+		dbUri = fmt.Sprintf(
+			"mongodb://%s:%s/?%s",
+			dbHost, dbPort,
+			params,
+		)
 	} else {
-		dbUri = fmt.Sprintf("mongodb://ogree%sAdmin:%s@%s:%s/%s?readPreference=primary&authSource=%s",
-			user, url.QueryEscape(pass), dbHost, dbPort, dbName, dbName)
+		params = params + fmt.Sprintf("&authSource=%s", dbName)
+		dbUri = fmt.Sprintf("mongodb://ogree%sAdmin:%s@%s:%s/%s?%s",
+			user, url.QueryEscape(pass), dbHost, dbPort, dbName, params)
 	}
 
 	fmt.Println(dbUri)
