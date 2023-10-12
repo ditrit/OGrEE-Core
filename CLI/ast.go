@@ -497,14 +497,15 @@ func setLabelFont(path string, values []any) (map[string]any, error) {
 	}
 }
 
-func addToStringMap[T any](stringMap string, key string, val T) string {
+func addToStringMap[T any](stringMap string, key string, val T) (string, bool) {
 	m := map[string]T{}
 	if stringMap != "" {
 		json.Unmarshal([]byte(stringMap), &m)
 	}
+	_, keyExist := m[key]
 	m[key] = val
 	mBytes, _ := json.Marshal(m)
-	return string(mBytes)
+	return string(mBytes), keyExist
 }
 
 func removeFromStringMap[T any](stringMap string, key string) (string, bool) {
@@ -554,8 +555,16 @@ func addRoomSeparator(path string, values []any) (map[string]any, error) {
 	attr := obj["attributes"].(map[string]any)
 	separators, _ := attr["separators"].(string)
 	newSeparator := Separator{startPos, endPos, sepType}
-	attr["separators"] = addToStringMap[Separator](separators, name, newSeparator)
-	return cmd.UpdateObj(path, map[string]any{"attributes": attr})
+	var keyExist bool
+	attr["separators"], keyExist = addToStringMap[Separator](separators, name, newSeparator)
+	obj, err = cmd.UpdateObj(path, map[string]any{"attributes": attr})
+	if err != nil {
+		return nil, err
+	}
+	if keyExist {
+		fmt.Printf("Separator %s replaced\n", name)
+	}
+	return obj, nil
 }
 
 type Pillar struct {
@@ -591,8 +600,16 @@ func addRoomPillar(path string, values []any) (map[string]any, error) {
 	attr := obj["attributes"].(map[string]any)
 	pillars, _ := attr["pillars"].(string)
 	newPillar := Pillar{centerXY, sizeXY, rotation}
-	attr["pillars"] = addToStringMap[Pillar](pillars, name, newPillar)
-	return cmd.UpdateObj(path, map[string]any{"attributes": attr})
+	var keyExist bool
+	attr["pillars"], keyExist = addToStringMap[Pillar](pillars, name, newPillar)
+	obj, err = cmd.UpdateObj(path, map[string]any{"attributes": attr})
+	if err != nil {
+		return nil, err
+	}
+	if keyExist {
+		fmt.Printf("Pillar %s replaced\n", name)
+	}
+	return obj, nil
 }
 
 func parseDescriptionIdx(desc string) (int, error) {
