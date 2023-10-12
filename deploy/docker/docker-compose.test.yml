@@ -1,0 +1,24 @@
+# docker compose configs that apply only for test env
+
+services:
+  ogree_test_db:
+    image: mongo:6.0.9
+    container_name: ogree_test_db
+    environment:
+        - DB_NAME=AutoTest
+        - CUSTOMER_API_PASSWORD=123
+        - ADMIN_DB=admin
+        - SUPER_USER=super
+        - SUPER_PASS=superpassword
+        - MONGO_INITDB_ROOT_USERNAME=admin
+        - MONGO_INITDB_ROOT_PASSWORD=adminpassword
+        - GUARD_USER=guard
+        - GUARD_PASS=adminpassword
+    ports:
+        - 27018:27017
+    volumes:
+        - ./init.sh:/docker-entrypoint-initdb.d/init.sh
+        - ../db/createdb.js:/home/createdb.js
+        - ./entrypoint.sh:/scripts/entrypoint.sh
+    entrypoint: sh /scripts/entrypoint.sh ogree_test_db
+    restart: on-failure:10

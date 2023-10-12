@@ -23,26 +23,9 @@ jobs:
       uses: actions/setup-go@v4
       with:
         go-version: 1.19
-      
-    - name: Pull MongoDB
-      run: docker pull mongo
 
     - name: Create MongoDB Container
-      run: |
-        docker run -d --name mongo \
-          -e DB_NAME=AutoTest \
-          -e MONGO_INITDB_ROOT_USERNAME=admin \
-          -e MONGO_INITDB_ROOT_PASSWORD=password \
-          -e CUSTOMER_API_PASSWORD=123 \
-          -e ADMIN_DB=admin \
-          -e SUPER_USER=super \
-          -e SUPER_PASS=password \
-          -e GUARD_USER=guard \
-          -e GUARD_PASS=password \
-          -p 27017:27017 \
-          --mount type=bind,source=$(pwd)/../deploy/docker/init.sh,target=/docker-entrypoint-initdb.d/init.sh \
-          --mount type=bind,source=$(pwd)/../deploy/db/createdb.js,target=/home/createdb.js \
-          mongo:latest
+      run: cd ../deploy/docker && make test_api
 
     - name: Build
       run: make
