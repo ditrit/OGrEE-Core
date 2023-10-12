@@ -67,15 +67,15 @@ func init() {
 
 	fmt.Println(dbUri)
 
-	client, err := mongo.NewClient(options.Client().ApplyURI(dbUri))
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	client, err := mongo.Connect(
+		ctx,
+		options.Client().ApplyURI(dbUri),
+	)
 	if err != nil {
 		println("Error while generating client")
-		log.Fatal(err)
-	}
-	ctx, _ := context.WithTimeout(context.Background(), 10*time.Second)
-	err = client.Connect(ctx)
-	if err != nil {
-		println("Error while connecting")
 		log.Fatal(err)
 	}
 
@@ -90,7 +90,6 @@ func init() {
 		log.Fatal("Target DB not found. Please check that you are authorized")
 	}
 
-	//defer client.Disconnect(ctx)
 	db = client.Database(dbName)
 
 	if db == nil {
@@ -112,10 +111,6 @@ func GetDB() *mongo.Database {
 
 func GetClient() *mongo.Client {
 	return globalClient
-}
-
-func GetDBByName(name string) *mongo.Database {
-	return GetClient().Database(name)
 }
 
 func CheckIfDBExists(name string, client *mongo.Client) (bool, error) {
