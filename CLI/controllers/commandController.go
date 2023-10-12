@@ -409,59 +409,57 @@ func UpdateObj(path string, data map[string]any) (map[string]any, error) {
 	//Determine if Unity requires the message as
 	//Interact or Modify
 	message := map[string]any{}
-	interactData := map[string]any{}
 	var key string
 
 	if category == "room" && (data["tilesName"] != nil || data["tilesColor"] != nil) {
 		println("Room modifier detected")
 		Disp(data)
-		message["type"] = "interact"
 
 		//Get the interactive key
 		key = determineStrKey(data, []string{"tilesName", "tilesColor"})
 
-		interactData["id"] = obj["id"]
-		interactData["param"] = key
-		interactData["value"] = data[key]
-		message["data"] = interactData
-
+		message["type"] = "interact"
+		message["data"] = map[string]any{
+			"id":    obj["id"],
+			"param": key,
+			"value": data[key],
+		}
 	} else if category == "rack" && data["U"] != nil {
 		message["type"] = "interact"
-		interactData["id"] = obj["id"]
-		interactData["param"] = "U"
-		interactData["value"] = data["U"]
-		message["data"] = interactData
-
+		message["data"] = map[string]any{
+			"id":    obj["id"],
+			"param": "U",
+			"value": data["U"],
+		}
 	} else if (category == "device" || category == "rack") &&
 		(data["alpha"] != nil || data["slots"] != nil || data["localCS"] != nil) {
-
-		message["type"] = "interact"
 
 		//Get interactive key
 		key = determineStrKey(data, []string{"alpha", "U", "slots", "localCS"})
 
-		interactData["id"] = obj["id"]
-		interactData["param"] = key
-		interactData["value"] = data[key]
-
-		message["data"] = interactData
-
+		message["type"] = "interact"
+		message["data"] = map[string]any{
+			"id":    obj["id"],
+			"param": key,
+			"value": data[key],
+		}
 	} else if category == "group" && data["content"] != nil {
 		message["type"] = "interact"
-		interactData["id"] = obj["id"]
-		interactData["param"] = "content"
-		interactData["value"] = data["content"]
-
-		message["data"] = interactData
-
+		message["data"] = map[string]any{
+			"id":    obj["id"],
+			"param": "content",
+			"value": data["content"],
+		}
 	} else {
 		message["type"] = "modify"
 		message["data"] = resp.body["data"]
 	}
+
 	if IsInObjForUnity(category) {
 		entInt := EntityStrToInt(category)
 		InformOgree3DOptional("UpdateObj", entInt, message)
 	}
+
 	return resp.body, nil
 }
 
