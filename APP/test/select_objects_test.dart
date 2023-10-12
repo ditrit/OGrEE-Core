@@ -62,10 +62,12 @@ void main() {
 
   testWidgets('SelectObjects can find an object', (tester) async {
     await tester.pumpWidget(const LocalizationsInjApp(
-        child: SelectObjects(
-      dateRange: "",
-      load: true,
-      namespace: Namespace.Test,
+        child: Scaffold(
+      body: SelectObjects(
+        dateRange: "",
+        load: true,
+        namespace: Namespace.Test,
+      ),
     )));
 
     const searchStr = "rack2.devB.devB-2";
