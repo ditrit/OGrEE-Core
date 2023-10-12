@@ -27,6 +27,8 @@
   "login": "Se connecter",
   "invalidLogin": "Adresse email et/ou mot de passe non valide",
   "resetPassword": "Réinitialiser le mot de passe",
+  "haveResetToken": "J'ai un reset token",
+  "resetSent": "Demande de réinitialisation envoyée",
 
   "@myprojects": { "description": "Projects Page" },
   "myprojects": "Mes projets",

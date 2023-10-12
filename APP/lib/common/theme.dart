@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 GetFormInputDecoration(isSmallDisplay, String? labelText,
         {IconData? icon,
@@ -64,3 +65,23 @@ final PopupDecoration = BoxDecoration(
     ]);
 
 IsSmallDisplay(width) => width < 550;
+
+LoginInputDecoration(
+        {required String label, String? hint, bool isSmallDisplay = false}) =>
+    InputDecoration(
+      contentPadding: isSmallDisplay
+          ? const EdgeInsets.symmetric(horizontal: 12, vertical: 16)
+          : null,
+      labelText: label,
+      hintText: hint,
+      labelStyle: GoogleFonts.inter(
+        fontSize: 11,
+        color: Colors.black,
+      ),
+      border: const OutlineInputBorder(
+        borderSide: BorderSide(
+          color: Colors.grey,
+          width: 1,
+        ),
+      ),
+    );

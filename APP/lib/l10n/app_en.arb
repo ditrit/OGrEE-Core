@@ -26,6 +26,8 @@
   "login": "Login",
   "invalidLogin": "Email and/or password not valid",
   "resetPassword": "Reset password",
+  "haveResetToken": "I have a reset token",
+  "resetSent": "Reset request sent",
 
   "myprojects": "My projects",
   "newProject": "Create new project",
