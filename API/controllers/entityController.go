@@ -414,7 +414,7 @@ func HandleGenericObjects(w http.ResponseWriter, r *http.Request) {
 	entities := u.GetEntitiesByNamespace(filters.Namespace, filters.Id)
 	for _, entStr := range entities {
 		// Get objects
-		entData, err := models.GetManyEntities(entStr, req, filters, user.Roles)
+		entData, err := models.GetManyObjects(entStr, req, filters, user.Roles)
 		if err != nil {
 			u.ErrLog("Error while looking for objects at  "+entStr, "HandleGenericObjects", err.Message, r)
 			u.RespondWithError(w, err)
@@ -444,16 +444,14 @@ func HandleGenericObjects(w http.ResponseWriter, r *http.Request) {
 			entStr := obj["entity"].(string)
 
 			var objStr string
-			var modelErr *u.Error
 
 			if u.IsEntityNonHierarchical(u.EntityStrToInt(entStr)) {
 				objStr = obj["slug"].(string)
-				modelErr = models.DeleteSingleEntity(entStr, bson.M{"slug": objStr})
 			} else {
 				objStr = obj["id"].(string)
-				modelErr = models.DeleteEntity(entStr, objStr, user.Roles)
 			}
 
+			modelErr := deleteObject(entStr, objStr, user.Roles)
 			if modelErr != nil {
 				u.ErrLog("Error while deleting object: "+objStr, "DELETE GetGenericObjectById", modelErr.Message, r)
 				u.RespondWithError(w, modelErr)
@@ -551,7 +549,7 @@ func GetEntity(w http.ResponseWriter, r *http.Request) {
 			} else {
 				req = bson.M{"id": id}
 			}
-			data, modelErr = models.GetEntity(req, entityStr, filters, user.Roles)
+			data, modelErr = models.GetObject(req, entityStr, filters, user.Roles)
 		}
 	} else {
 		w.WriteHeader(http.StatusBadRequest)
@@ -643,7 +641,7 @@ func GetAllEntities(w http.ResponseWriter, r *http.Request) {
 
 	// Get entities
 	req := bson.M{}
-	data, e := models.GetManyEntities(entStr, req, u.RequestFilters{}, user.Roles)
+	data, e := models.GetManyObjects(entStr, req, u.RequestFilters{}, user.Roles)
 
 	// Respond
 	if e != nil {
@@ -701,13 +699,13 @@ func DeleteEntity(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Get entity from URL
-	entity := mux.Vars(r)["entity"]
+	// Get entityStr from URL
+	entityStr := mux.Vars(r)["entity"]
 	// If templates, format them
-	entity = strings.Replace(entity, "-", "_", 1)
+	entityStr = strings.Replace(entityStr, "-", "_", 1)
 
 	// Check unidentified collection
-	if u.EntityStrToInt(entity) < 0 && entity != u.HIERARCHYOBJS_ENT {
+	if u.EntityStrToInt(entityStr) < 0 && entityStr != u.HIERARCHYOBJS_ENT {
 		w.WriteHeader(http.StatusBadRequest)
 		u.Respond(w, u.Message("Invalid object in URL: '"+mux.Vars(r)["entity"]+
 			"' Please provide a valid object"))
@@ -722,24 +720,18 @@ func DeleteEntity(w http.ResponseWriter, r *http.Request) {
 		u.Respond(w, u.Message("Error while parsing path parameters"))
 		u.ErrLog("Error while parsing path parameters", "DELETE ENTITY", "", r)
 	} else {
-		if entity == u.HIERARCHYOBJS_ENT {
+		if entityStr == u.HIERARCHYOBJS_ENT {
 			obj, err := models.GetHierarchyObjectById(id, u.RequestFilters{}, user.Roles)
 			if err != nil {
 				u.ErrLog("Error finding hierarchyobj to delete", "DELETE ENTITY", err.Message, r)
 				u.RespondWithError(w, err)
 				return
 			} else {
-				entity = obj["category"].(string)
+				entityStr = obj["category"].(string)
 			}
 		}
 
-		var modelErr *u.Error
-		if u.IsEntityNonHierarchical(u.EntityStrToInt(entity)) {
-			modelErr = models.DeleteSingleEntity(entity, bson.M{"slug": id})
-		} else {
-			modelErr = models.DeleteEntity(entity, id, user.Roles)
-		}
-
+		modelErr := deleteObject(entityStr, id, user.Roles)
 		if modelErr != nil {
 			u.ErrLog("Error while deleting entity", "DELETE ENTITY", modelErr.Message, r)
 			u.RespondWithError(w, modelErr)
@@ -877,7 +869,7 @@ func UpdateEntity(w http.ResponseWriter, r *http.Request) {
 		u.Respond(w, u.Message("Error while extracting from path parameters"))
 		u.ErrLog("Error while extracting from path parameters", "UPDATE ENTITY", "", r)
 	} else {
-		data, modelErr = models.UpdateEntity(entity, id, updateData, isPatch, user.Roles)
+		data, modelErr = models.UpdateObject(entity, id, updateData, isPatch, user.Roles)
 		if modelErr != nil {
 			u.RespondWithError(w, modelErr)
 		} else {
@@ -983,7 +975,7 @@ func GetEntityByQuery(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	data, modelErr = models.GetManyEntities(entStr, bsonMap, filters, user.Roles)
+	data, modelErr = models.GetManyObjects(entStr, bsonMap, filters, user.Roles)
 
 	if modelErr != nil {
 		u.ErrLog("Error while getting "+entStr, "GET ENTITYQUERY", modelErr.Message, r)
@@ -1237,7 +1229,7 @@ func GetHierarchyByName(w http.ResponseWriter, r *http.Request) {
 		}
 	} else {
 		// Entity already known
-		data, modelErr = models.GetEntity(bson.M{"id": id}, entity, filters, user.Roles)
+		data, modelErr = models.GetObject(bson.M{"id": id}, entity, filters, user.Roles)
 	}
 	if limit >= 1 && modelErr == nil {
 		if entity == u.EntityToString(u.STRAYOBJ) {
@@ -1474,7 +1466,7 @@ func LinkEntity(w http.ResponseWriter, r *http.Request) {
 		if strings.Replace(entityStr, "-", "_", 1) == u.HIERARCHYOBJS_ENT {
 			data, modelErr = models.GetHierarchyObjectById(id, u.RequestFilters{}, user.Roles)
 		} else {
-			data, modelErr = models.GetEntity(bson.M{"id": id}, entityStr, u.RequestFilters{}, user.Roles)
+			data, modelErr = models.GetObject(bson.M{"id": id}, entityStr, u.RequestFilters{}, user.Roles)
 		}
 	} else {
 		w.WriteHeader(http.StatusBadRequest)
