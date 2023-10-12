@@ -21,24 +21,24 @@ import (
 
 // Helper functions
 
-func getDateFilters(req bson.M, filters u.RequestFilters) error {
-	if len(filters.StartDate) > 0 || len(filters.EndDate) > 0 {
+func getDateFilters(req bson.M, startDate string, endDate string) error {
+	if len(startDate) > 0 || len(endDate) > 0 {
 		lastUpdateReq := bson.M{}
-		if len(filters.StartDate) > 0 {
-			startDate, e := time.Parse("2006-01-02", filters.StartDate)
+		if len(startDate) > 0 {
+			startDate, e := time.Parse("2006-01-02", startDate)
 			if e != nil {
 				return e
 			}
 			lastUpdateReq["$gte"] = primitive.NewDateTimeFromTime(startDate)
 		}
 
-		if len(filters.EndDate) > 0 {
-			endDate, e := time.Parse("2006-01-02", filters.EndDate)
-			endDate = endDate.Add(time.Hour * 24)
+		if len(endDate) > 0 {
+			parsedEndDate, e := time.Parse("2006-01-02", endDate)
+			parsedEndDate = parsedEndDate.Add(time.Hour * 24)
 			if e != nil {
 				return e
 			}
-			lastUpdateReq["$lte"] = primitive.NewDateTimeFromTime(endDate)
+			lastUpdateReq["$lte"] = primitive.NewDateTimeFromTime(parsedEndDate)
 		}
 		req["lastUpdated"] = lastUpdateReq
 	}
@@ -82,7 +82,6 @@ func getChildrenCollections(limit int, parentEntStr string) []int {
 	startEnt := u.EntityStrToInt(parentEntStr) + 1
 	endEnt := startEnt + limit
 	if parentEntStr == "domain" {
-		// device special case (devices can have devices)
 		startEnt = u.DOMAIN
 		endEnt = u.DOMAIN
 	} else if parentEntStr == "device" {
@@ -256,7 +255,7 @@ func GetEntity(req bson.M, ent string, filters u.RequestFilters, userRoles map[s
 		}
 		opts = options.FindOne().SetProjection(compoundIndex)
 	}
-	e = getDateFilters(req, filters)
+	e = getDateFilters(req, filters.StartDate, filters.EndDate)
 	if e != nil {
 		return nil, &u.Error{Type: u.ErrBadFormat, Message: e.Error()}
 	}
@@ -318,7 +317,7 @@ func GetManyEntities(ent string, req bson.M, filters u.RequestFilters, userRoles
 		}
 		opts = options.Find().SetProjection(compoundIndex)
 	}
-	err = getDateFilters(req, filters)
+	err = getDateFilters(req, filters.StartDate, filters.EndDate)
 	if err != nil {
 		return nil, &u.Error{Type: u.ErrBadFormat, Message: err.Error()}
 	}
@@ -356,64 +355,70 @@ func GetManyEntities(ent string, req bson.M, filters u.RequestFilters, userRoles
 //   - categories: map with category name as key and corresponding objects
 //     as an array value
 //     categories: {categoryName:[children]}
-func GetCompleteDomainHierarchy(userRoles map[string]Role) (map[string]interface{}, *u.Error) {
+func GetCompleteHierarchy(userRoles map[string]Role, filters u.HierarchyFilters) (map[string]interface{}, *u.Error) {
 	response := make(map[string]interface{})
-	hierarchy := make(map[string][]string)
+	categories := make(map[string][]string)
+	hierarchy := make(map[string]interface{})
 
-	// Get all collections names
-	ctx, cancel := u.Connect()
-	db := GetDB()
-	collName := "domain"
-
-	c, err := db.Collection(collName).Find(ctx, bson.M{})
-	if err != nil {
-		println(err.Error())
-		return nil, &u.Error{Type: u.ErrDBError, Message: err.Error()}
-	}
-	data, e := ExtractCursor(c, ctx, u.EntityStrToInt(collName), userRoles)
-	if e != nil {
-		return nil, &u.Error{Type: u.ErrInternal, Message: e.Error()}
-	}
-
-	for _, obj := range data {
-		if strings.Contains(obj["id"].(string), ".") {
-			fillHierarchyMap(obj["id"].(string), hierarchy)
-		} else {
-			hierarchy["Root"] = append(hierarchy["Root"], obj["id"].(string))
+	switch filters.Namespace {
+	case u.Physical, u.Organisational, u.Logical:
+		data, err := getHierarchyWithNamespace(filters.Namespace, userRoles, filters, categories)
+		if err != nil {
+			return nil, err
+		}
+		hierarchy[u.NamespaceToString(filters.Namespace)] = data
+	default:
+		for _, ns := range []u.Namespace{u.Physical, u.Logical, u.Organisational} {
+			data, err := getHierarchyWithNamespace(ns, userRoles, filters, categories)
+			if err != nil {
+				return nil, err
+			}
+			hierarchy[u.NamespaceToString(ns)] = data
 		}
 	}
 
 	response["tree"] = hierarchy
-	defer cancel()
+	if filters.WithCategories {
+		categories["KeysOrder"] = []string{"site", "building", "room", "rack"}
+		response["categories"] = categories
+	}
 	return response, nil
 }
 
-// GetCompleteHierarchy: gets all objects in db using hierachyName and returns:
-//   - tree: map with parents as key and their children as an array value
-//     tree: {parent:[children]}
-//   - categories: map with category name as key and corresponding objects
-//     as an array value
-//     categories: {categoryName:[children]}
-func GetCompleteHierarchy(userRoles map[string]Role) (map[string]interface{}, *u.Error) {
-	response := make(map[string]interface{})
-	categories := make(map[string][]string)
+func getHierarchyWithNamespace(namespace u.Namespace, userRoles map[string]Role, filters u.HierarchyFilters,
+	categories map[string][]string) (map[string][]string, *u.Error) {
 	hierarchy := make(map[string][]string)
-	rootCollectionName := "site"
-
-	// Get all collections names
-	var collNames []string
-	for i := u.SITE; i <= u.GROUP; i++ {
-		collNames = append(collNames, u.EntityToString(i))
-	}
+	rootIdx := "*"
 
 	ctx, cancel := u.Connect()
 	db := GetDB()
+	dbFilter := bson.M{}
 
-	// Get all objects hierarchyNames for each collection
+	// Depth of hierarchy defined by user
+	if filters.Limit != "" && namespace != u.Logical {
+		if _, e := strconv.Atoi(filters.Limit); e == nil {
+			pattern := primitive.Regex{Pattern: "^" + u.NAME_REGEX + "(." + u.NAME_REGEX + "){0," +
+				filters.Limit + "}$", Options: ""}
+			dbFilter = bson.M{"id": pattern}
+		}
+	}
+	// User date filters
+	err := getDateFilters(dbFilter, filters.StartDate, filters.EndDate)
+	if err != nil {
+		return nil, &u.Error{Type: u.ErrBadFormat, Message: err.Error()}
+	}
+
+	// Search collections according to namespace
+	collNames := u.GetEntitesByNamespace(namespace)
+
 	for _, collName := range collNames {
+		// Get data
 		opts := options.Find().SetProjection(bson.D{{Key: "domain", Value: 1}, {Key: "id", Value: 1}})
+		if strings.Contains(collName, "template") {
+			opts = options.Find().SetProjection(bson.D{{Key: "slug", Value: 1}})
+		}
 
-		c, err := db.Collection(collName).Find(ctx, bson.M{}, opts)
+		c, err := db.Collection(collName).Find(ctx, dbFilter, opts)
 		if err != nil {
 			println(err.Error())
 			return nil, &u.Error{Type: u.ErrDBError, Message: err.Error()}
@@ -423,23 +428,37 @@ func GetCompleteHierarchy(userRoles map[string]Role) (map[string]interface{}, *u
 			return nil, &u.Error{Type: u.ErrInternal, Message: e.Error()}
 		}
 
+		// Format data
 		for _, obj := range data {
-			if collName == rootCollectionName {
-				categories[rootCollectionName] = append(categories[rootCollectionName], obj["id"].(string))
-				hierarchy["Root"] = append(hierarchy["Root"], obj["id"].(string))
-
-			} else if obj["id"] != nil {
+			if namespace == u.Logical {
+				// Logical
+				var objId string
+				if strings.Contains(collName, "template") {
+					objId = obj["slug"].(string)
+				} else {
+					objId = obj["id"].(string)
+				}
+				hierarchy[rootIdx+collName] = append(hierarchy[rootIdx+collName], objId)
+			} else if strings.Contains(obj["id"].(string), ".") {
+				// Physical or Org Children
 				categories[collName] = append(categories[collName], obj["id"].(string))
 				fillHierarchyMap(obj["id"].(string), hierarchy)
+			} else {
+				// Physical or Org Roots
+				objId := obj["id"].(string)
+				categories[collName] = append(categories[collName], objId)
+				if collName == u.EntityToString(u.STRAYOBJ) {
+					hierarchy[rootIdx+u.EntityToString(u.STRAYOBJ)] =
+						append(hierarchy[rootIdx+u.EntityToString(u.STRAYOBJ)], objId)
+				} else {
+					hierarchy[rootIdx] = append(hierarchy[rootIdx], objId)
+				}
 			}
 		}
 	}
 
-	categories["KeysOrder"] = []string{"site", "building", "room", "rack"}
-	response["tree"] = hierarchy
-	response["categories"] = categories
 	defer cancel()
-	return response, nil
+	return hierarchy, nil
 }
 
 func GetCompleteHierarchyAttributes(userRoles map[string]Role) (map[string]interface{}, *u.Error) {
@@ -789,7 +808,7 @@ func getChildren(entity, hierarchyName string, limit int, filters u.RequestFilte
 		checkEntName := u.EntityToString(checkEnt)
 		// Obj should include parentName and not surpass limit range
 		pattern := primitive.Regex{Pattern: "^" + hierarchyName +
-			"(.[A-Za-z0-9_\" \"]+){1," + strconv.Itoa(limit) + "}$", Options: ""}
+			"(." + u.NAME_REGEX + "){1," + strconv.Itoa(limit) + "}$", Options: ""}
 		children, e1 := GetManyEntities(checkEntName, bson.M{"id": pattern}, filters, nil)
 		if e1 != nil {
 			println("SUBENT: ", checkEntName)

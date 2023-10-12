@@ -1,0 +1,28 @@
+replicaCount: 1
+fullnameOverride: app
+imagePullSecrets:
+    - name: regcred
+image:
+    repository: registry.ogree.ditrit.io/ogree-app
+    pullPolicy: Always
+    tag: 1.1.0.rc
+
+service:
+    type: NodePort
+    port: 80
+ingress:
+    enabled: true
+    entryPoints:
+        - web
+    hosts:
+        - host: app.admin.localhost
+configmap:
+    - name: webapp-env
+      data:
+        - mountPath: /usr/share/nginx/html/assets/assets/custom/.env
+          name: env
+          value: |-
+            API_URL=http://api.admin.localhost
+            ALLOW_SET_BACK=true
+            BACK_URLS=http://api.admin.localhost
+securityContext: null

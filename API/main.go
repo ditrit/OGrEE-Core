@@ -75,9 +75,6 @@ func Router(jwt func(next http.Handler) http.Handler) *mux.Router {
 	router.HandleFunc("/api/hierarchy",
 		controllers.GetCompleteHierarchy).Methods("GET", "OPTIONS", "HEAD")
 
-	router.HandleFunc("/api/hierarchy/domains",
-		controllers.GetCompleteDomainHierarchy).Methods("GET", "OPTIONS", "HEAD")
-
 	router.HandleFunc("/api/hierarchy/attributes",
 		controllers.GetCompleteHierarchyAttributes).Methods("GET", "OPTIONS", "HEAD")
 
@@ -97,6 +94,9 @@ func Router(jwt func(next http.Handler) http.Handler) *mux.Router {
 	// GENERIC
 	router.HandleFunc("/api/objects/{id}",
 		controllers.HandleGenericObject).Methods("GET", "HEAD", "OPTIONS", "DELETE")
+
+	router.HandleFunc("/api/objects-wildcard/{id}",
+		controllers.HandleGenericObjectWildcard).Methods("GET", "HEAD", "OPTIONS", "DELETE")
 
 	//GET ENTITY HIERARCHY
 	router.NewRoute().PathPrefix("/api/{entity}s/{id}/all").

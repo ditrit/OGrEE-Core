@@ -271,3 +271,12 @@ func TranslatePath(p string) string {
 	}
 	return path.Clean("/" + strings.Join(output_words, "/"))
 }
+
+type ErrorWithInternalError struct {
+	UserError     error
+	InternalError error
+}
+
+func (err ErrorWithInternalError) Error() string {
+	return err.UserError.Error() + " caused by " + err.InternalError.Error()
+}

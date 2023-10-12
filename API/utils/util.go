@@ -10,6 +10,7 @@ import (
 	"net/http"
 	"net/url"
 	"os"
+	"reflect"
 	"strings"
 	"time"
 )
@@ -40,14 +41,32 @@ const (
 	BLDGTMPL
 )
 
-const HN_DELIMETER = "."  // hierarchyName path delimiter
-const RESET_TAG = "RESET" // used as email to identify a reset token
+type Namespace string
+
+const (
+	Any            Namespace = ""
+	Physical       Namespace = "physical"
+	Organisational Namespace = "organisational"
+	Logical        Namespace = "logical"
+)
+
+const HN_DELIMETER = "."           // hierarchyName path delimiter
+const NAME_REGEX = "\\w(\\w|\\-)*" // accepted regex for names that compose ids
+const RESET_TAG = "RESET"          // used as email to identify a reset token
 
 type RequestFilters struct {
 	FieldsToShow []string `schema:"fieldOnly"`
 	StartDate    string   `schema:"startDate"`
 	EndDate      string   `schema:"endDate"`
 	Limit        string   `schema:"limit"`
+}
+
+type HierarchyFilters struct {
+	Namespace      Namespace `schema:"namespace"`
+	StartDate      string    `schema:"startDate"`
+	EndDate        string    `schema:"endDate"`
+	Limit          string    `schema:"limit"`
+	WithCategories bool      `schema:"withcategories"`
 }
 
 // Error definitions
@@ -95,7 +114,7 @@ func Message(message string) map[string]interface{} {
 	return map[string]interface{}{"message": message}
 }
 
-func RespDataWrapper(message string, data map[string]interface{}) map[string]interface{} {
+func RespDataWrapper(message string, data interface{}) map[string]interface{} {
 	return map[string]interface{}{"message": message, "data": data}
 }
 
@@ -136,7 +155,7 @@ func ParamsParse(link *url.URL, objType int) map[string]interface{} {
 	//Building Attribute query varies based on
 	//object type
 	for key, _ := range q {
-		if key != "fieldOnly" && key != "startDate" && key != "endDate" {
+		if key != "fieldOnly" && key != "startDate" && key != "endDate" && key != "limit" {
 			if objType != ROOMTMPL && objType != OBJTMPL &&
 				objType != BLDGTMPL { //Non template objects
 				switch key {
@@ -270,6 +289,42 @@ func HierachyNameToEntity(name string) []int {
 	}
 
 	return resp
+}
+
+func NamespaceToString(namespace Namespace) string {
+	// switch namespace {
+	// case Physical:
+	// 	return "Physical"
+	// case Organisational:
+	// 	return "Organisational"
+	// case Logical:
+	// 	return "Logical"
+	// }
+	// return ""
+	ref := reflect.ValueOf(namespace)
+	return ref.String()
+}
+
+func GetEntitesByNamespace(namespace Namespace) []string {
+	var collNames []string
+	switch namespace {
+	case Physical:
+		for i := STRAYOBJ; i <= GROUP; i++ {
+			collNames = append(collNames, EntityToString(i))
+		}
+	case Organisational:
+		collNames = append(collNames, EntityToString(DOMAIN))
+	case Logical:
+		for i := GROUP; i <= BLDGTMPL; i++ {
+			collNames = append(collNames, EntityToString(i))
+		}
+	default:
+		// All collections
+		for i := DOMAIN; i <= BLDGTMPL; i++ {
+			collNames = append(collNames, EntityToString(i))
+		}
+	}
+	return collNames
 }
 
 func GetParentOfEntityByInt(entity int) int {

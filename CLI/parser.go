@@ -1,6 +1,7 @@
 package main
 
 import (
+	"cli/commands"
 	c "cli/controllers"
 	"fmt"
 	"strings"
@@ -15,7 +16,7 @@ var manCommands = []string{
 	"get", "getu", "getslot",
 	"+", "-", "=", ">",
 	".cmds", ".template", ".var",
-	"ui", "camera",
+	commands.Connect3D, "ui", "camera",
 	"link", "unlink",
 	"lssite", "lsbldg", "lsroom", "lsrack", "lsdev", "lsac",
 	"lspanel", "lscabinet", "lscorridor", "lssensor", "lsenterprise",
@@ -141,19 +142,17 @@ func (p *parser) error(message string) {
 		errorStr += " "
 	}
 	errorStr += "\033[31m" + "^" + "\033[0m" + "\n"
-	if len(p.stackTrace) > 1 {
-		errorStr += "parsing stack : "
-		emptyStack := true
-		for i := range p.stackTrace {
-			if p.stackTrace[i].message != "" {
-				if !emptyStack {
-					errorStr += " -> "
-				}
-				errorStr += p.stackTrace[i].message
-				emptyStack = false
+	parsingStackStr := ""
+	for i := range p.stackTrace {
+		if p.stackTrace[i].message != "" {
+			if parsingStackStr != "" {
+				parsingStackStr += " -> "
 			}
+			parsingStackStr += p.stackTrace[i].message
 		}
-		errorStr += "\n"
+	}
+	if parsingStackStr != "" {
+		errorStr += "parsing stack : " + parsingStackStr + "\n"
 	}
 	errorStr += "\033[31m" + "Error : " + "\033[0m" + message
 	p.err = message
@@ -214,6 +213,7 @@ func (p *parser) parseKeyWord(candidates []string) string {
 	if sliceContains(candidates, p.item(false)) {
 		return p.item(false)
 	}
+	p.reset()
 	return ""
 }
 
@@ -237,6 +237,20 @@ func (p *parser) parseComplexWord(name string) string {
 	for {
 		c := p.next()
 		if isAlphaNumeric(c) || c == '-' || c == '_' {
+			continue
+		}
+		p.backward(1)
+		p.skipWhiteSpaces()
+		return p.item(true)
+	}
+}
+
+func (p *parser) parseUrl(name string) string {
+	p.skipWhiteSpaces()
+	defer un(trace(p, name))
+	for {
+		c := p.next()
+		if isAlphaNumeric(c) || c == '.' || c == ':' || c == '/' {
 			continue
 		}
 		p.backward(1)
@@ -803,6 +817,16 @@ func (p *parser) parseTree() node {
 	return &treeNode{path, depth}
 }
 
+func (p *parser) parseConnect3D() node {
+	defer un(trace(p, commands.Connect3D))
+	if p.commandEnd() {
+		return &connect3DNode{url: ""}
+	}
+
+	url := p.parseUrl("")
+	return &connect3DNode{url: url}
+}
+
 func (p *parser) parseUi() node {
 	defer un(trace(p, "ui"))
 	if p.parseExact("clearcache") {
@@ -1154,36 +1178,37 @@ func newParser(buffer string) *parser {
 		commandKeywords: []string{},
 	}
 	p.commandDispatch = map[string]parseCommandFunc{
-		"ls":         p.parseLs,
-		"get":        p.parseGet,
-		"getu":       p.parseGetU,
-		"getslot":    p.parseGetSlot,
-		"undraw":     p.parseUndraw,
-		"draw":       p.parseDraw,
-		"drawable":   p.parseDrawable,
-		"unset":      p.parseUnset,
-		"env":        p.parseEnv,
-		"+":          p.parseCreate,
-		"-":          p.parseDelete,
-		"=":          p.parseEqual,
-		".var:":      p.parseVar,
-		".cmds:":     p.parseLoad,
-		".template:": p.parseTemplate,
-		"len":        p.parseLen,
-		"link":       p.parseLink,
-		"unlink":     p.parseUnlink,
-		"print":      p.parsePrint,
-		"printf":     p.parsePrintf,
-		"man":        p.parseMan,
-		"cd":         p.parseCd,
-		"tree":       p.parseTree,
-		"ui.":        p.parseUi,
-		"camera.":    p.parseCamera,
-		">":          p.parseFocus,
-		"while":      p.parseWhile,
-		"for":        p.parseFor,
-		"if":         p.parseIf,
-		"alias":      p.parseAlias,
+		"ls":               p.parseLs,
+		"get":              p.parseGet,
+		"getu":             p.parseGetU,
+		"getslot":          p.parseGetSlot,
+		"undraw":           p.parseUndraw,
+		"draw":             p.parseDraw,
+		"drawable":         p.parseDrawable,
+		"unset":            p.parseUnset,
+		"env":              p.parseEnv,
+		"+":                p.parseCreate,
+		"-":                p.parseDelete,
+		"=":                p.parseEqual,
+		".var:":            p.parseVar,
+		".cmds:":           p.parseLoad,
+		".template:":       p.parseTemplate,
+		"len":              p.parseLen,
+		"link":             p.parseLink,
+		"unlink":           p.parseUnlink,
+		"print":            p.parsePrint,
+		"printf":           p.parsePrintf,
+		"man":              p.parseMan,
+		"cd":               p.parseCd,
+		"tree":             p.parseTree,
+		commands.Connect3D: p.parseConnect3D,
+		"ui.":              p.parseUi,
+		"camera.":          p.parseCamera,
+		">":                p.parseFocus,
+		"while":            p.parseWhile,
+		"for":              p.parseFor,
+		"if":               p.parseIf,
+		"alias":            p.parseAlias,
 	}
 	p.createObjDispatch = map[string]parseCommandFunc{
 		"domain":   p.parseCreateDomain,

@@ -166,5 +166,5 @@ func TestObjects(t *testing.T) {
 	assert.Equal(t, http.StatusOK, recorder.Code)
 	json.Unmarshal(recorder.Body.Bytes(), &response)
 	assert.Equal(t, 0,
-		len(response["data"].(map[string]interface{})["tree"].(map[string]interface{})))
+		len(response["data"].(map[string]interface{})["tree"].(map[string]interface{})["physical"].(map[string]interface{})))
 }

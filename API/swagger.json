@@ -65,7 +65,7 @@
             "bearer": []
           }
         ],
-        "description": "Return is arranged by relationship (father:[children])\nand category (category:[objects]), starting with \"Root\":[sites].\nUser permissions apply.",
+        "description": "Return is arranged by relationship (father:[children]), starting with \"\\*\":[sites].\nThe \"\\*\" indicates root.\nUser permissions apply.",
         "produces": [
           "application/json"
         ],
@@ -74,6 +74,28 @@
         ],
         "summary": "Returns system complete hierarchy.",
         "operationId": "GetCompleteHierarchy",
+        "parameters": [
+          {
+            "description": "One of the values: physical, logical or organisational. If none provided, all namespaces are used by default.",
+            "name": "namespace",
+            "in": "query"
+          },
+          {
+            "description": "besides the hierarchy, returns also an structure with the objects organized by category.",
+            "name": "withcategories",
+            "in": "query"
+          },
+          {
+            "description": "filter objects by lastUpdated \u003e= startDate. Format: yyyy-mm-dd",
+            "name": "startDate",
+            "in": "query"
+          },
+          {
+            "description": "filter objects by lastUpdated \u003c= endDate. Format: yyyy-mm-dd",
+            "name": "endDate",
+            "in": "query"
+          }
+        ],
         "responses": {
           "200": {
             "description": "Request is valid."
@@ -100,32 +122,6 @@
         ],
         "summary": "Returns attributes of all objects.",
         "operationId": "GetCompleteHierarchyAttrs",
-        "responses": {
-          "200": {
-            "description": "Request is valid."
-          },
-          "500": {
-            "description": "Server error."
-          }
-        }
-      }
-    },
-    "/api/hierarchy/domains": {
-      "get": {
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
-        "description": "Return is arranged by relationship (father:[children]),\nstarting with \"Root\":[root domains].",
-        "produces": [
-          "application/json"
-        ],
-        "tags": [
-          "Organization"
-        ],
-        "summary": "Returns domain complete hierarchy.",
-        "operationId": "GetCompleteDomainHierarchy",
         "responses": {
           "200": {
             "description": "Request is valid."
@@ -166,6 +162,54 @@
           },
           "500": {
             "description": "Internal server error"
+          }
+        }
+      }
+    },
+    "/api/objects/{id-wildcard}": {
+      "get": {
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "Objects"
+        ],
+        "summary": "Get the list of objects whose id matches {id-wildcard}.",
+        "operationId": "GetGenericObjectWildcard",
+        "parameters": [
+          {
+            "description": "id (that can contains wildcards) of the objects to retrieve",
+            "name": "id",
+            "in": "path",
+            "required": true
+          },
+          {
+            "description": "specify which object field to show in response. Multiple fieldOnly can be added. An invalid field is simply ignored.",
+            "name": "fieldOnly",
+            "in": "query"
+          },
+          {
+            "description": "filter objects by lastUpdated \u003e= startDate. Format: yyyy-mm-dd",
+            "name": "startDate",
+            "in": "query"
+          },
+          {
+            "description": "filter objects by lastUpdated \u003c= endDate. Format: yyyy-mm-dd",
+            "name": "endDate",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Found. A response body will be returned with a meaningful message."
+          },
+          "404": {
+            "description": "Not Found. An error message will be returned."
           }
         }
       }

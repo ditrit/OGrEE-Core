@@ -83,7 +83,12 @@ func main() {
 			os.Exit(0)
 		}
 	}
-	c.InitUnityCom(rl, c.State.UnityClientURL)
+
+	err = c.InitOGrEE3DCommunication(rl)
+	if err != nil {
+		manageError(err, false)
+	}
+
 	//Pass control to repl.go
 	Start(rl, userShort)
 }

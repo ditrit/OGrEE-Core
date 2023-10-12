@@ -28,19 +28,32 @@ func InterpretLine(str string) {
 	}
 	_, err := root.execute()
 	if err != nil {
-		l.GetErrorLogger().Println(err.Error())
-		if c.State.DebugLvl > c.NONE {
-			if traceErr, ok := err.(*stackTraceError); ok {
-				fmt.Println(traceErr.Error())
-			} else {
-				errMsg := err.Error()
-				if strings.Contains(strings.ToLower(errMsg), "error") {
-					fmt.Println(errMsg)
-				} else {
-					fmt.Println("Error :", errMsg)
-				}
+		manageError(err, true)
+	}
+}
+
+func manageError(err error, addErrorPrefix bool) {
+	l.GetErrorLogger().Println(err.Error())
+	if c.State.DebugLvl > c.NONE {
+		if traceErr, ok := err.(*stackTraceError); ok {
+			fmt.Println(traceErr.Error())
+		} else if errWithInternalErr, ok := err.(c.ErrorWithInternalError); ok {
+			printError(errWithInternalErr.UserError, addErrorPrefix)
+			if c.State.DebugLvl > c.ERROR {
+				println(errWithInternalErr.InternalError.Error())
 			}
+		} else {
+			printError(err, addErrorPrefix)
 		}
+	}
+}
+
+func printError(err error, addErrorPrefix bool) {
+	errMsg := err.Error()
+	if !addErrorPrefix || strings.Contains(strings.ToLower(errMsg), "error") {
+		fmt.Println(errMsg)
+	} else {
+		fmt.Println("Error:", errMsg)
 	}
 }
 

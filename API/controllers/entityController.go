@@ -382,6 +382,85 @@ func HandleGenericObject(w http.ResponseWriter, r *http.Request) {
 
 }
 
+// swagger:operation GET /api/objects/{id-wildcard} Objects GetGenericObjectWildcard
+// Get the list of objects whose id matches {id-wildcard}.
+// ---
+// security:
+// - bearer: []
+// produces:
+// - application/json
+// parameters:
+//   - name: id
+//     in: path
+//     description: id (that can contains wildcards) of the objects to retrieve
+//     required: true
+//   - name: fieldOnly
+//     in: query
+//     description: 'specify which object field to show in response.
+//     Multiple fieldOnly can be added. An invalid field is simply ignored.'
+//   - name: startDate
+//     in: query
+//     description: 'filter objects by lastUpdated >= startDate.
+//     Format: yyyy-mm-dd'
+//   - name: endDate
+//     in: query
+//     description: 'filter objects by lastUpdated <= endDate.
+//     Format: yyyy-mm-dd'
+//
+// responses:
+//
+//		'200':
+//		    description: 'Found. A response body will be returned with
+//	        a meaningful message.'
+//		'404':
+//		    description: Not Found. An error message will be returned.
+func HandleGenericObjectWildcard(w http.ResponseWriter, r *http.Request) {
+	fmt.Println("******************************************************")
+	fmt.Println("FUNCTION CALL: 	 GetGenericObjectWildcard ")
+	fmt.Println("******************************************************")
+	DispRequestMetaData(r)
+	user := getUserFromToken(w, r)
+	if user == nil {
+		return
+	}
+	hierarchyName, ok := mux.Vars(r)["id"]
+	if !ok {
+		u.Respond(w, u.Message("Error while parsing path"))
+		u.ErrLog("Error while parsing path", "GetGenericObjectWildcard", "", r)
+		return
+	}
+	filters := getFiltersFromQueryParams(r)
+	regex := strings.ReplaceAll(strings.ReplaceAll(hierarchyName, ".", "\\."), "*", "("+u.NAME_REGEX+")")
+	req := bson.M{"id": bson.M{"$regex": regex}}
+	matchingObjects := []map[string]interface{}{}
+	rangeEntities := u.HierachyNameToEntity(hierarchyName)
+	for _, entity := range rangeEntities {
+		entityStr := u.EntityToString(entity)
+		data, err := models.GetManyEntities(entityStr, req, filters, user.Roles)
+		if err != nil {
+			u.ErrLog("Error while looking for matching "+entityStr+"s", "GetGenericObjectWildcard", err.Message, r)
+			u.RespondWithError(w, err)
+			return
+		}
+		if data != nil {
+			matchingObjects = append(matchingObjects, data...)
+		}
+	}
+	if r.Method == "DELETE" {
+		for _, obj := range matchingObjects {
+			modelErr := models.DeleteEntity(obj["category"].(string), obj["id"].(string), user.Roles)
+			if modelErr != nil {
+				u.ErrLog("Error while deleting entity", "DELETE ENTITY", modelErr.Message, r)
+				u.RespondWithError(w, modelErr)
+			}
+		}
+		w.WriteHeader(http.StatusNoContent)
+		u.Respond(w, u.Message("successfully deleted"))
+	} else {
+		u.Respond(w, u.RespDataWrapper("successfully got objects", matchingObjects))
+	}
+}
+
 // swagger:operation GET /api/{entity}/{id} Objects GetEntity
 // Gets an Object of the given entity.
 // The ID or hierarchy name must be provided in the URL parameter.
@@ -858,18 +937,34 @@ func GetEntityByQuery(w http.ResponseWriter, r *http.Request) {
 	//If templates, format them
 	entStr = strings.Replace(entStr, "-", "_", 1)
 
+	// Check unidentified collection
+	entInt := u.EntityStrToInt(entStr)
+	if entInt < 0 {
+		w.WriteHeader(http.StatusNotFound)
+		u.Respond(w, u.Message("Invalid object in URL: '"+entStr+"' Please provide a valid object"))
+		u.ErrLog("Cannot get invalid object", "GET ENTITYQUERY"+entStr, "", r)
+		return
+	}
+
 	// Get query params
 	filters := getFiltersFromQueryParams(r)
 	query := u.ParamsParse(r.URL, u.EntityStrToInt(entStr))
 	js, _ := json.Marshal(query)
 	json.Unmarshal(js, &bsonMap)
-
-	// Check unidentified collection
-	if u.EntityStrToInt(entStr) < 0 {
-		w.WriteHeader(http.StatusNotFound)
-		u.Respond(w, u.Message("Invalid object in URL: '"+entStr+"' Please provide a valid object"))
-		u.ErrLog("Cannot get invalid object", "GET ENTITYQUERY"+entStr, "", r)
-		return
+	// Limit filter
+	if entInt == u.DOMAIN || entInt == u.DEVICE || entInt == u.STRAYOBJ {
+		if nLimit, e := strconv.Atoi(filters.Limit); e == nil {
+			startLimit := "0"
+			endLimit := filters.Limit
+			if entInt == u.DEVICE {
+				// always at least 4 levels (site.bldg.room.rack.dev)
+				startLimit = "4"
+				endLimit = strconv.Itoa(nLimit + 4)
+			}
+			pattern := primitive.Regex{Pattern: "^" + u.NAME_REGEX + "(." + u.NAME_REGEX +
+				"){" + startLimit + "," + endLimit + "}$", Options: ""}
+			bsonMap = bson.M{"id": pattern}
+		}
 	}
 
 	data, modelErr = models.GetManyEntities(entStr, bsonMap, filters, user.Roles)
@@ -1147,14 +1242,31 @@ func GetHierarchyByName(w http.ResponseWriter, r *http.Request) {
 
 // swagger:operation GET /api/hierarchy Objects GetCompleteHierarchy
 // Returns system complete hierarchy.
-// Return is arranged by relationship (father:[children])
-// and category (category:[objects]), starting with "Root":[sites].
+// Return is arranged by relationship (father:[children]), starting with "\*":[sites].
+// The "\*" indicates root.
 // User permissions apply.
 // ---
 // security:
 // - bearer: []
 // produces:
 // - application/json
+// parameters:
+//   - name: namespace
+//     in: query
+//     description: 'One of the values: physical, logical or organisational.
+//     If none provided, all namespaces are used by default.'
+//   - name: withcategories
+//     in: query
+//     description: 'besides the hierarchy, returns also an structure with
+//     the objects organized by category.'
+//   - name: startDate
+//     in: query
+//     description: 'filter objects by lastUpdated >= startDate.
+//     Format: yyyy-mm-dd'
+//   - name: endDate
+//     in: query
+//     description: 'filter objects by lastUpdated <= endDate.
+//     Format: yyyy-mm-dd'
 // responses:
 //		'200':
 //			description: 'Request is valid.'
@@ -1173,7 +1285,10 @@ func GetCompleteHierarchy(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	data, err := models.GetCompleteHierarchy(user.Roles)
+	var filters u.HierarchyFilters
+	decoder.Decode(&filters, r.URL.Query())
+
+	data, err := models.GetCompleteHierarchy(user.Roles, filters)
 	if err != nil {
 		u.RespondWithError(w, err)
 	} else {
@@ -1182,46 +1297,6 @@ func GetCompleteHierarchy(w http.ResponseWriter, r *http.Request) {
 			w.Header().Add("Allow", "GET, OPTIONS, HEAD")
 		} else {
 			u.Respond(w, u.RespDataWrapper("successfully got hierarchy", data))
-		}
-	}
-}
-
-// swagger:operation GET /api/hierarchy/domains Organization GetCompleteDomainHierarchy
-// Returns domain complete hierarchy.
-// Return is arranged by relationship (father:[children]),
-// starting with "Root":[root domains].
-// ---
-// security:
-// - bearer: []
-// produces:
-// - application/json
-// responses:
-//     '200':
-//          description: 'Request is valid.'
-//     '500':
-//          description: Server error.
-
-func GetCompleteDomainHierarchy(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("******************************************************")
-	fmt.Println("FUNCTION CALL: 	 GetCompleteHierarchy ")
-	fmt.Println("******************************************************")
-	DispRequestMetaData(r)
-
-	// Get user roles for permissions
-	user := getUserFromToken(w, r)
-	if user == nil {
-		return
-	}
-
-	data, err := models.GetCompleteDomainHierarchy(user.Roles)
-	if err != nil {
-		u.RespondWithError(w, err)
-	} else {
-		if r.Method == "OPTIONS" {
-			w.Header().Add("Content-Type", "application/json")
-			w.Header().Add("Allow", "GET, OPTIONS, HEAD")
-		} else {
-			u.Respond(w, u.RespDataWrapper("successfully got domain hierarchy", data))
 		}
 	}
 }

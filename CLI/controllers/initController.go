@@ -9,6 +9,7 @@ import (
 	"cli/readline"
 	"cli/utils"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
 	"net/url"
@@ -51,8 +52,6 @@ func InitState(conf *config.Config) error {
 	State.Hierarchy = BuildBaseTree()
 	State.CurrPath = "/Physical"
 	State.PrevPath = "/Physical"
-
-	State.UnityClientAvail = false
 
 	//Set the filter attributes setting
 	State.FilterDisplay = false
@@ -98,26 +97,30 @@ func SetStateReadline(rl *readline.Instance) {
 	State.Terminal = &rl
 }
 
-// Startup the go routine for listening
-func InitUnityCom(rl *readline.Instance, addr string) {
-	errConnect := models.ConnectToUnity(addr, State.Timeout)
+// Tries to establish a connection with OGrEE-3D and, if possible,
+// starts a go routine for receiving messages from it
+func InitOGrEE3DCommunication(rl *readline.Instance) error {
+	errConnect := models.Ogree3D.Connect(State.Ogree3DURL, State.Timeout)
 	if errConnect != nil {
-		if State.DebugLvl > ERROR {
-			println(errConnect.Error())
+		return ErrorWithInternalError{
+			UserError:     errors.New("OGrEE-3D is not reachable"),
+			InternalError: errConnect,
 		}
-		return
 	}
-	State.UnityClientAvail = true
 
-	data := map[string]interface{}{"api_url": State.APIURL, "api_token": GetKey()}
-	req := map[string]interface{}{"type": "login", "data": data}
-	errLogin := models.ContactUnity(req, State.DebugLvl)
+	errLogin := models.Ogree3D.Login(State.APIURL, GetKey(), State.DebugLvl)
 	if errLogin != nil {
-		println(errLogin.Error())
-		return
+		return ErrorWithInternalError{
+			UserError:     errors.New("OGrEE-3D login not possible"),
+			InternalError: errLogin,
+		}
 	}
-	fmt.Println("Unity Client is Reachable!")
-	go models.ReceiveLoop(rl, addr, &State.UnityClientAvail)
+
+	fmt.Println("Established connection with OGrEE-3D!")
+
+	go models.Ogree3D.ReceiveLoop(rl)
+
+	return nil
 }
 
 func InitTimeout(duration string) {
@@ -151,10 +154,6 @@ func InitTimeout(duration string) {
 	}
 }
 
-func InitUser(user User) {
-
-}
-
 func InitKey(apiKey string) {
 	if apiKey != "" {
 		State.APIKEY = apiKey
@@ -167,7 +166,7 @@ func InitKey(apiKey string) {
 	}
 }
 
-func InitURLs(apiURL string, unityURL string) {
+func InitURLs(apiURL string, ogree3DURL string) {
 	apiURL = strings.TrimRight(apiURL, "/")
 	_, err := url.ParseRequestURI(apiURL)
 	if err != nil {
@@ -179,12 +178,11 @@ func InitURLs(apiURL string, unityURL string) {
 	} else {
 		State.APIURL = apiURL
 	}
-	State.UnityClientURL = unityURL
-	if State.UnityClientURL == "" {
-		msg := "Falling back to defaul Unity URL: localhost:5500"
-		fmt.Println(msg)
-		l.GetInfoLogger().Println(msg)
-		State.UnityClientURL = "localhost:5500"
+
+	err = State.SetOgree3DURL(ogree3DURL)
+	if err != nil {
+		fmt.Println(err.Error())
+		State.SetDefaultOgree3DURL()
 	}
 }
 
