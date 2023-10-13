@@ -16,7 +16,7 @@ import (
 type Response struct {
 	status  int
 	message string
-	body    map[string]any
+	Body    map[string]any
 }
 
 func ParseResponseClean(response *http.Response) (*Response, error) {

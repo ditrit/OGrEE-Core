@@ -4,7 +4,6 @@ package controllers
 //controller package
 //And const definitions used throughout the controllers package
 import (
-	"cli/models"
 	"encoding/json"
 	"fmt"
 	"path"
@@ -204,34 +203,6 @@ func GetParentOfEntity(ent int) int {
 	default:
 		return -3
 	}
-}
-
-func RequestAPI(method string, endpoint string, body map[string]any, expectedStatus int) (*Response, error) {
-	URL := State.APIURL + endpoint
-	httpResponse, err := models.Send(method, URL, GetKey(), body)
-	if err != nil {
-		return nil, err
-	}
-	response, err := ParseResponseClean(httpResponse)
-	if err != nil {
-		return nil, fmt.Errorf("on %s %s : %s", method, endpoint, err.Error())
-	}
-	if response.status != expectedStatus {
-		msg := ""
-		if State.DebugLvl >= DEBUG {
-			msg += fmt.Sprintf("%s %s\n", method, URL)
-		}
-		msg += fmt.Sprintf("[Response From API] %s", response.message)
-		errorsAny, ok := response.body["errors"]
-		if ok {
-			errorsList := errorsAny.([]any)
-			for _, err := range errorsList {
-				msg += "\n    " + err.(string)
-			}
-		}
-		return response, fmt.Errorf(msg)
-	}
-	return response, nil
 }
 
 func TranslatePath(p string) string {
