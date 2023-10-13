@@ -81,6 +81,11 @@ Filename: "{app}\{#MyBackAppExeName}"; Description: "{cm:LaunchProgram,{#StringC
 Filename: "{app}\front\{#MyFrontAppExeName}"; Description: "{cm:LaunchProgram,{#StringChange(MyFrontAppName, '&', '&&')}}"; Flags: nowait postinstall skipifsilent; Components: front
 Filename: "{app}\cli\{#MyCliExeName}"; Description: "{cm:LaunchProgram,{#StringChange(MyCliAppName, '&', '&&')}}"; Flags: nowait postinstall skipifsilent; Components: cli
 Filename: "{app}\3d\{#My3DExeName}"; Description: "{cm:LaunchProgram,{#StringChange(My3DAppName, '&', '&&')}}"; Flags: nowait postinstall skipifsilent; Components: unity
+Filename: "{sys}\sc.exe"; Parameters: "create ogree-backend-svc start=auto binPath=""{app}\{#MyBackAppExeName}""" ; Flags: runhidden
+
+[UninstallRun]
+Filename: "{sys}\sc.exe"; Parameters: "stop ogree-backend-svc" ; RunOnceId: "DelService" ; Flags: runhidden
+Filename: "{sys}\sc.exe"; Parameters: "delete ogree-backend-svc" ; RunOnceId: "DelService" ; Flags: runhidden
 
 [UninstallDelete]
 Type: filesandordirs; Name: "{app}\3d\OGrEE-3D_Data\.ogreeCache"

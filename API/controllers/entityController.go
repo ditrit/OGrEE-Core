@@ -323,6 +323,15 @@ func getBulkDomainsRecursively(parent string, listDomains []map[string]interface
 //     in: query
 //     description: 'filter objects by lastUpdated <= endDate.
 //     Format: yyyy-mm-dd'
+//   - name: limit
+//     in: query
+//     description: 'Get limit level of hierarchy for objects in the response.
+//     It must be specified alongside id.
+//     Example: ?limit=1&id=siteA.B.R1 will return the object R1 with its children nested.
+//     ?limit=2&id=siteA.B.R1.* will return all objects one level above R1 with
+//     its up to two levels children nested.'
+//     required: false
+//     type: string
 //   - name: attributes
 //     in: query
 //     description: 'Any other object attributes can be queried.
@@ -361,6 +370,15 @@ func HandleGenericObjects(w http.ResponseWriter, r *http.Request) {
 			u.ErrLog("Error while looking for objects at  "+entStr, "HandleGenericObjects", err.Message, r)
 			u.RespondWithError(w, err)
 			return
+		}
+		if nLimit, e := strconv.Atoi(filters.Limit); e == nil && nLimit > 0 && req["id"] != nil {
+			for _, obj := range entData {
+				obj["children"], err = models.GetHierarchyByName(entStr, obj["id"].(string), nLimit, filters)
+				if err != nil {
+					u.ErrLog("Error while getting "+entStr, "GET "+entStr, err.Message, r)
+					u.RespondWithError(w, err)
+				}
+			}
 		}
 		data = append(data, entData...)
 	}
@@ -405,6 +423,12 @@ func HandleGenericObjects(w http.ResponseWriter, r *http.Request) {
 //     in: query
 //     description: 'One of the values: physical, logical or organisational.
 //     If none provided, all namespaces are used by default.'
+//   - name: limit
+//     in: query
+//     description: 'Get limit level of hierarchy for objects in the response.
+//     Example: /api/objects/siteA.B.R1?limit=1 will return the object R1 with its first children nested.'
+//     required: false
+//     type: string
 // responses:
 //		'200':
 //		    description: 'Found. A response body will be returned with
@@ -440,7 +464,7 @@ func HandleGenericObjectById(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("FUNCTION CALL: 	 GetGenericObjectById ")
 	fmt.Println("******************************************************")
 	DispRequestMetaData(r)
-	var data []map[string]interface{}
+	var matchingObjects []map[string]interface{}
 	var err *u.Error
 
 	// Get user roles for permissions
@@ -453,15 +477,27 @@ func HandleGenericObjectById(w http.ResponseWriter, r *http.Request) {
 	hierarchyName, e := mux.Vars(r)["id"]
 	filters := getFiltersFromQueryParams(r)
 	if e {
-		data, err = models.GetObjectsById(hierarchyName, filters, user.Roles, r.Method == "DELETE")
+		matchingObjects, err = models.GetObjectsById(hierarchyName, filters, user.Roles, r.Method == "DELETE")
 	} else {
 		u.Respond(w, u.Message("Error while parsing path parameters"))
 		u.ErrLog("Error while parsing path parameters", "GetGenericObjectById", "", r)
 		return
 	}
 
+	// Get children if requested
+	if nLimit, e := strconv.Atoi(filters.Limit); e == nil && nLimit > 0 && r.Method == "GET" {
+		for _, obj := range matchingObjects {
+			entStr := obj["category"].(string)
+			obj["children"], err = models.GetHierarchyByName(entStr, obj["id"].(string), nLimit, filters)
+			if err != nil {
+				u.ErrLog("Error while getting "+entStr, "GET "+entStr, err.Message, r)
+				u.RespondWithError(w, err)
+			}
+		}
+	}
+
 	// Respond
-	if r.Method == "OPTIONS" && data != nil {
+	if r.Method == "OPTIONS" && matchingObjects != nil {
 		w.Header().Add("Content-Type", "application/json")
 		w.Header().Add("Allow", "GET, DELETE, OPTIONS")
 	} else {
@@ -470,7 +506,7 @@ func HandleGenericObjectById(w http.ResponseWriter, r *http.Request) {
 			u.RespondWithError(w, err)
 		} else {
 			if r.Method == "DELETE" {
-				for _, obj := range data {
+				for _, obj := range matchingObjects {
 					modelErr := models.DeleteEntity(obj["entity"].(string), obj["id"].(string), user.Roles)
 					if modelErr != nil {
 						u.ErrLog("Error while deleting object: "+obj["id"].(string), "DELETE GetGenericObjectById", modelErr.Message, r)
@@ -478,10 +514,9 @@ func HandleGenericObjectById(w http.ResponseWriter, r *http.Request) {
 						return
 					}
 				}
-				w.WriteHeader(http.StatusNoContent)
-				u.Respond(w, u.Message("successfully deleted"))
+				u.Respond(w, u.RespDataWrapper("successfully deleted objects", matchingObjects))
 			} else {
-				u.Respond(w, u.RespDataWrapper("successfully got object", data))
+				u.Respond(w, u.RespDataWrapper("successfully got object", matchingObjects))
 			}
 		}
 	}

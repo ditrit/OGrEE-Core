@@ -1346,8 +1346,7 @@ type uiDelayNode struct {
 }
 
 func (n *uiDelayNode) execute() (interface{}, error) {
-	cmd.UIDelay(n.time)
-	return nil, nil
+	return nil, cmd.UIDelay(n.time)
 }
 
 type uiToggleNode struct {
@@ -1356,8 +1355,7 @@ type uiToggleNode struct {
 }
 
 func (n *uiToggleNode) execute() (interface{}, error) {
-	cmd.UIToggle(n.feature, n.enable)
-	return nil, nil
+	return nil, cmd.UIToggle(n.feature, n.enable)
 }
 
 type uiHighlightNode struct {
@@ -1394,8 +1392,8 @@ func (n *cameraMoveNode) execute() (interface{}, error) {
 	if err != nil {
 		return nil, err
 	}
-	cmd.CameraMove(n.command, position, rotation)
-	return nil, nil
+
+	return nil, cmd.CameraMove(n.command, position, rotation)
 }
 
 type cameraWaitNode struct {
@@ -1403,8 +1401,7 @@ type cameraWaitNode struct {
 }
 
 func (n *cameraWaitNode) execute() (interface{}, error) {
-	cmd.CameraWait(n.time)
-	return nil, nil
+	return nil, cmd.CameraWait(n.time)
 }
 
 type linkObjectNode struct {
