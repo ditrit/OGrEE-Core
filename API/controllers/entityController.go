@@ -464,7 +464,7 @@ func HandleGenericObjectById(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("FUNCTION CALL: 	 GetGenericObjectById ")
 	fmt.Println("******************************************************")
 	DispRequestMetaData(r)
-	var data []map[string]interface{}
+	var matchingObjects []map[string]interface{}
 	var err *u.Error
 
 	// Get user roles for permissions
@@ -477,7 +477,7 @@ func HandleGenericObjectById(w http.ResponseWriter, r *http.Request) {
 	hierarchyName, e := mux.Vars(r)["id"]
 	filters := getFiltersFromQueryParams(r)
 	if e {
-		data, err = models.GetObjectsById(hierarchyName, filters, user.Roles, r.Method == "DELETE")
+		matchingObjects, err = models.GetObjectsById(hierarchyName, filters, user.Roles, r.Method == "DELETE")
 	} else {
 		u.Respond(w, u.Message("Error while parsing path parameters"))
 		u.ErrLog("Error while parsing path parameters", "GetGenericObjectById", "", r)
@@ -486,7 +486,7 @@ func HandleGenericObjectById(w http.ResponseWriter, r *http.Request) {
 
 	// Get children if requested
 	if nLimit, e := strconv.Atoi(filters.Limit); e == nil && nLimit > 0 && r.Method == "GET" {
-		for _, obj := range data {
+		for _, obj := range matchingObjects {
 			entStr := obj["category"].(string)
 			obj["children"], err = models.GetHierarchyByName(entStr, obj["id"].(string), nLimit, filters)
 			if err != nil {
@@ -497,7 +497,7 @@ func HandleGenericObjectById(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Respond
-	if r.Method == "OPTIONS" && data != nil {
+	if r.Method == "OPTIONS" && matchingObjects != nil {
 		w.Header().Add("Content-Type", "application/json")
 		w.Header().Add("Allow", "GET, DELETE, OPTIONS")
 	} else {
@@ -506,7 +506,7 @@ func HandleGenericObjectById(w http.ResponseWriter, r *http.Request) {
 			u.RespondWithError(w, err)
 		} else {
 			if r.Method == "DELETE" {
-				for _, obj := range data {
+				for _, obj := range matchingObjects {
 					modelErr := models.DeleteEntity(obj["entity"].(string), obj["id"].(string), user.Roles)
 					if modelErr != nil {
 						u.ErrLog("Error while deleting object: "+obj["id"].(string), "DELETE GetGenericObjectById", modelErr.Message, r)
@@ -514,10 +514,9 @@ func HandleGenericObjectById(w http.ResponseWriter, r *http.Request) {
 						return
 					}
 				}
-				w.WriteHeader(http.StatusNoContent)
-				u.Respond(w, u.Message("successfully deleted"))
+				u.Respond(w, u.RespDataWrapper("successfully deleted objects", matchingObjects))
 			} else {
-				u.Respond(w, u.RespDataWrapper("successfully got object", data))
+				u.Respond(w, u.RespDataWrapper("successfully got object", matchingObjects))
 			}
 		}
 	}
