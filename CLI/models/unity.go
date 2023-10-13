@@ -13,8 +13,6 @@ import (
 	"time"
 )
 
-var Ogree3D = &Ogree3DConnection{}
-
 type Ogree3DConnection struct {
 	conn        net.Conn
 	isConnected atomic.Bool
@@ -43,14 +41,6 @@ func (connection *Ogree3DConnection) Disconnect() {
 		connection.isConnected.Store(false)
 		connection.conn.Close()
 	}
-}
-
-// Transfer login apiKey for the OGrEE-3D to communicate with the API
-func (connection *Ogree3DConnection) Login(apiURL, apiToken string, debugLevel int) error {
-	data := map[string]interface{}{"api_url": apiURL, "api_token": apiToken}
-	req := map[string]interface{}{"type": "login", "data": data}
-
-	return connection.Send(req, debugLevel)
 }
 
 // This section under a separate goroutine constantly

@@ -26,7 +26,7 @@ func TestDisconnectInReceiveLoop(t *testing.T) {
 	assert.ErrorContains(t, err, "not connected to OGrEE-3D")
 }
 
-func TestDisconnectInSend(t *testing.T) {
+func TestErrorInSendAndDisconnectInReceiveLoop(t *testing.T) {
 	serverFinishedWG := acceptAndCloseServer(t)
 
 	connection := &Ogree3DConnection{}
@@ -38,7 +38,6 @@ func TestDisconnectInSend(t *testing.T) {
 
 	err = connection.Send(nil, 0)
 	require.ErrorContains(t, err, "error contacting OGrEE-3D")
-	require.False(t, connection.IsConnected())
 
 	waitReceiveLoop(connection)
 	assert.False(t, connection.IsConnected())

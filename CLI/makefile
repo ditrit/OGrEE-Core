@@ -39,3 +39,9 @@ dockercross:
 
 clean:
 	rm cli
+
+install_dependencies:
+	go install github.com/vektra/mockery/v2@v2.20.0
+
+generate_mocks: install_dependencies
+	mockery --all --keeptree

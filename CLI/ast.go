@@ -311,7 +311,7 @@ func (n *deleteObjNode) execute() (interface{}, error) {
 	if err != nil {
 		return nil, err
 	}
-	return nil, cmd.DeleteObj(path)
+	return nil, cmd.C.DeleteObj(path)
 }
 
 type deleteSelectionNode struct{}
@@ -319,9 +319,9 @@ type deleteSelectionNode struct{}
 func (n *deleteSelectionNode) execute() (interface{}, error) {
 	var errBuilder strings.Builder
 	deleted := 0
-	if c.State.ClipBoard != nil {
-		for _, obj := range c.State.ClipBoard {
-			err := c.DeleteObj(obj)
+	if cmd.State.ClipBoard != nil {
+		for _, obj := range cmd.State.ClipBoard {
+			err := cmd.C.DeleteObj(obj)
 			if err != nil {
 				errBuilder.WriteString(fmt.Sprintf("    %s: %s\n", obj, err.Error()))
 			} else {
@@ -352,7 +352,7 @@ func (n *deletePillarOrSeparatorNode) execute() (interface{}, error) {
 	if err != nil {
 		return nil, err
 	}
-	obj, err := cmd.GetObject(path)
+	obj, err := cmd.C.GetObject(path)
 	if err != nil {
 		return nil, err
 	}
@@ -369,7 +369,7 @@ func (n *deletePillarOrSeparatorNode) execute() (interface{}, error) {
 		return nil, fmt.Errorf("%s %s does not exist", n.attribute, name)
 	}
 	attributes[n.attribute+"s"] = stringMap
-	return cmd.UpdateObj(path, map[string]any{"attributes": attributes})
+	return cmd.C.UpdateObj(path, map[string]any{"attributes": attributes})
 }
 
 type isEntityDrawableNode struct {
@@ -416,7 +416,7 @@ func (n *getObjectNode) execute() (interface{}, error) {
 	if err != nil {
 		return nil, err
 	}
-	objs, _, err := cmd.GetObjectsWildcard(path)
+	objs, _, err := cmd.C.GetObjectsWildcard(path)
 	if err != nil {
 		return nil, err
 	}
@@ -437,7 +437,7 @@ func (n *selectObjectNode) execute() (interface{}, error) {
 	}
 	var selection []string
 	if strings.Contains(path, "*") {
-		_, selection, err = cmd.GetObjectsWildcard(path)
+		_, selection, err = cmd.C.GetObjectsWildcard(path)
 		if err != nil {
 			return nil, err
 		}
@@ -467,7 +467,7 @@ func setRoomAreas(path string, values []any) (map[string]any, error) {
 	if e != nil {
 		return nil, e
 	}
-	return cmd.UpdateObj(path, map[string]any{"attributes": attributes})
+	return cmd.C.UpdateObj(path, map[string]any{"attributes": attributes})
 }
 
 func setLabel(path string, values []any, hasSharpe bool) (map[string]any, error) {
@@ -558,7 +558,7 @@ func addRoomSeparator(path string, values []any) (map[string]any, error) {
 	if err != nil {
 		return nil, err
 	}
-	obj, err := cmd.GetObject(path)
+	obj, err := cmd.C.GetObject(path)
 	if err != nil {
 		return nil, err
 	}
@@ -567,7 +567,7 @@ func addRoomSeparator(path string, values []any) (map[string]any, error) {
 	newSeparator := Separator{startPos, endPos, sepType}
 	var keyExist bool
 	attr["separators"], keyExist = addToStringMap[Separator](separators, name, newSeparator)
-	obj, err = cmd.UpdateObj(path, map[string]any{"attributes": attr})
+	obj, err = cmd.C.UpdateObj(path, map[string]any{"attributes": attr})
 	if err != nil {
 		return nil, err
 	}
@@ -603,7 +603,7 @@ func addRoomPillar(path string, values []any) (map[string]any, error) {
 	if err != nil {
 		return nil, err
 	}
-	obj, err := cmd.GetObject(path)
+	obj, err := cmd.C.GetObject(path)
 	if err != nil {
 		return nil, err
 	}
@@ -612,7 +612,7 @@ func addRoomPillar(path string, values []any) (map[string]any, error) {
 	newPillar := Pillar{centerXY, sizeXY, rotation}
 	var keyExist bool
 	attr["pillars"], keyExist = addToStringMap[Pillar](pillars, name, newPillar)
-	obj, err = cmd.UpdateObj(path, map[string]any{"attributes": attr})
+	obj, err = cmd.C.UpdateObj(path, map[string]any{"attributes": attr})
 	if err != nil {
 		return nil, err
 	}
@@ -647,7 +647,7 @@ func updateDescription(path string, attr string, values []any) (map[string]any, 
 	if attr == "description" {
 		data["description"] = []any{newDesc}
 	} else {
-		obj, err := cmd.GetObject(path)
+		obj, err := cmd.C.GetObject(path)
 		if err != nil {
 			return nil, err
 		}
@@ -665,7 +665,7 @@ func updateDescription(path string, attr string, values []any) (map[string]any, 
 		}
 		data["description"] = curDesc
 	}
-	return cmd.UpdateObj(path, data)
+	return cmd.C.UpdateObj(path, data)
 }
 
 type updateObjNode struct {
@@ -694,7 +694,7 @@ func (n *updateObjNode) execute() (interface{}, error) {
 	if path == "_" {
 		paths = cmd.State.ClipBoard
 	} else if strings.Contains(path, "*") {
-		_, paths, err = cmd.GetObjectsWildcard(path)
+		_, paths, err = cmd.C.GetObjectsWildcard(path)
 		if err != nil {
 			return nil, err
 		}
@@ -711,9 +711,9 @@ func (n *updateObjNode) execute() (interface{}, error) {
 					return nil, err
 				}
 
-				_, err = cmd.UpdateObj(path, map[string]any{n.attr: newSlug})
+				_, err = cmd.C.UpdateObj(path, map[string]any{n.attr: newSlug})
 			} else if n.attr == "color" || n.attr == "description" {
-				_, err = cmd.UpdateObj(path, map[string]any{n.attr: values[0]})
+				_, err = cmd.C.UpdateObj(path, map[string]any{n.attr: values[0]})
 			}
 		} else {
 			switch n.attr {
@@ -735,7 +735,7 @@ func (n *updateObjNode) execute() (interface{}, error) {
 			case "pillar":
 				_, err = addRoomPillar(path, values)
 			case "domain", "tags+", "tags-":
-				_, err = cmd.UpdateObj(path, map[string]any{n.attr: values[0]})
+				_, err = cmd.C.UpdateObj(path, map[string]any{n.attr: values[0]})
 			case "tags":
 				err = errors.New("Object's tags can not be updated directly, please use tags+= and tags-=")
 			default:
@@ -761,7 +761,7 @@ func updateAttributes(path, attributeName string, values []any) (map[string]any,
 
 	attributes := map[string]any{attributeName: values[0]}
 
-	return cmd.UpdateObj(path, map[string]any{"attributes": attributes})
+	return cmd.C.UpdateObj(path, map[string]any{"attributes": attributes})
 }
 
 type treeNode struct {
@@ -798,7 +798,7 @@ func (n *drawNode) execute() (interface{}, error) {
 		return nil, err
 	}
 	if strings.Contains(path, "*") {
-		_, subpaths, err := cmd.GetObjectsWildcard(path)
+		_, subpaths, err := cmd.C.GetObjectsWildcard(path)
 		if err != nil {
 			return nil, err
 		}

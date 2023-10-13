@@ -142,7 +142,7 @@ func FillMapTree(n *HierarchyNode, obj map[string]any) error {
 }
 
 func FillObjectTree(n *HierarchyNode, path string, depth int) error {
-	obj, err := PollObjectWithChildren(path, depth)
+	obj, err := C.PollObjectWithChildren(path, depth)
 	if err != nil {
 		return err
 	}
@@ -153,12 +153,12 @@ func FillObjectTree(n *HierarchyNode, path string, depth int) error {
 }
 
 func FillUrlTree(n *HierarchyNode, path string, depth int, url string, followFillFn FillFunc, fullId bool) error {
-	resp, err := RequestAPI("GET", url, nil, http.StatusOK)
+	resp, err := API.Request("GET", url, nil, http.StatusOK)
 	if err != nil {
 		return err
 	}
 	invalidRespErr := fmt.Errorf("invalid response from API on GET %s", url)
-	obj, ok := resp.body["data"].(map[string]any)
+	obj, ok := resp.Body["data"].(map[string]any)
 	if !ok {
 		return invalidRespErr
 	}
@@ -235,7 +235,7 @@ func Tree(path string, depth int) (*HierarchyNode, error) {
 		return root, nil
 	}
 
-	obj, err := GetObjectWithChildren(path, depth)
+	obj, err := C.GetObjectWithChildren(path, depth)
 	if err != nil {
 		return nil, err
 	}

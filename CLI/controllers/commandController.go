@@ -29,14 +29,14 @@ func PWD() string {
 }
 
 func PostObj(ent int, entity string, data map[string]any) error {
-	resp, err := RequestAPI("POST", "/api/"+entity+"s", data, http.StatusCreated)
+	resp, err := API.Request("POST", "/api/"+entity+"s", data, http.StatusCreated)
 	if err != nil {
 		return err
 	}
 
 	if ent != TAG && IsInObjForUnity(entity) {
 		entInt := EntityStrToInt(entity)
-		InformOgree3DOptional("PostObj", entInt, map[string]any{"type": "create", "data": resp.body["data"]})
+		Ogree3D.InformOptional("PostObj", entInt, map[string]any{"type": "create", "data": resp.Body["data"]})
 	}
 
 	return nil
@@ -125,76 +125,8 @@ func ObjectUrlGeneric(path string, depth int, filters map[string]string) (string
 	return strings.ReplaceAll(url.String(), "%2A", "*"), nil
 }
 
-func PollObjectWithChildren(path string, depth int) (map[string]any, error) {
-	url, err := ObjectUrl(path, depth)
-	if err != nil {
-		return nil, nil
-	}
-	resp, err := RequestAPI("GET", url, nil, http.StatusOK)
-	if err != nil {
-		if resp != nil && resp.status == http.StatusNotFound {
-			return nil, nil
-		}
-		return nil, err
-	}
-
-	obj, ok := resp.body["data"].(map[string]any)
-	if !ok {
-		return nil, fmt.Errorf("invalid response from API on GET %s", url)
-	}
-
-	return obj, nil
-}
-
-func GetObjectWithChildren(path string, depth int) (map[string]any, error) {
-	obj, err := PollObjectWithChildren(path, depth)
-	if err != nil {
-		return nil, err
-	}
-
-	if obj == nil {
-		return nil, fmt.Errorf("object not found")
-	}
-
-	return obj, nil
-}
-
 func PollObject(path string) (map[string]any, error) {
-	return PollObjectWithChildren(path, 0)
-}
-
-func GetObject(path string) (map[string]any, error) {
-	return GetObjectWithChildren(path, 0)
-}
-
-func GetObjectsWildcard(path string) ([]map[string]any, []string, error) {
-	url, err := ObjectUrlGeneric(path, 0, nil)
-	if err != nil {
-		return nil, nil, err
-	}
-	resp, err := RequestAPI("GET", url, nil, http.StatusOK)
-	if err != nil {
-		return nil, nil, err
-	}
-	objsAny, ok := resp.body["data"].([]any)
-	if !ok {
-		return nil, nil, fmt.Errorf("invalid response from API on GET %s", url)
-	}
-	prefix, _, _ := models.SplitPath(path)
-	objs := infArrToMapStrinfArr(objsAny)
-	paths := []string{}
-	for _, obj := range objs {
-		var suffix string
-		objId, hasId := obj["id"].(string)
-		if hasId {
-			suffix = strings.Replace(objId, ".", "/", -1)
-		} else {
-			suffix = utils.NameOrSlug(obj)
-		}
-		objPath := prefix + suffix
-		paths = append(paths, objPath)
-	}
-	return objs, paths, nil
+	return C.PollObjectWithChildren(path, 0)
 }
 
 func lsObjectsWithoutFilters(path string) ([]map[string]any, error) {
@@ -221,11 +153,11 @@ func lsObjectsWithFilters(path string, filters map[string]string) ([]map[string]
 	if err != nil {
 		return nil, fmt.Errorf("cannot use filters at this location")
 	}
-	resp, err := RequestAPI("GET", url, nil, http.StatusOK)
+	resp, err := API.Request("GET", url, nil, http.StatusOK)
 	if err != nil {
 		return nil, err
 	}
-	objectsAny := resp.body["data"].([]any)
+	objectsAny := resp.Body["data"].([]any)
 	objects := []map[string]any{}
 	for _, objAny := range objectsAny {
 		obj, ok := objAny.(map[string]any)
@@ -293,30 +225,6 @@ func Ls(path string, filters map[string]string, sortAttr string) ([]map[string]a
 	return objects, nil
 }
 
-func DeleteObj(path string) error {
-	objs, _, err := GetObjectsWildcard(path)
-	if err != nil {
-		return err
-	}
-	url, err := ObjectUrlGeneric(path, 0, nil)
-	if err != nil {
-		return err
-	}
-	_, err = RequestAPI("DELETE", url, nil, http.StatusOK)
-	if err != nil {
-		return err
-	}
-	for _, obj := range objs {
-		if IsInObjForUnity(obj["category"].(string)) {
-			InformOgree3DOptional("DeleteObj", -1, map[string]any{"type": "delete", "data": obj["id"].(string)})
-		}
-	}
-	if path == State.CurrPath {
-		CD(TranslatePath(".."))
-	}
-	return nil
-}
-
 func GetSlot(rack map[string]any, location string) (map[string]any, error) {
 	templateAny, ok := rack["attributes"].(map[string]any)["template"]
 	if !ok {
@@ -326,11 +234,11 @@ func GetSlot(rack map[string]any, location string) (map[string]any, error) {
 	if template == "" {
 		return nil, nil
 	}
-	resp, err := RequestAPI("GET", "/api/obj-templates/"+template, nil, http.StatusOK)
+	resp, err := API.Request("GET", "/api/obj-templates/"+template, nil, http.StatusOK)
 	if err != nil {
 		return nil, err
 	}
-	slots, ok := resp.body["data"].(map[string]any)["slots"]
+	slots, ok := resp.Body["data"].(map[string]any)["slots"]
 	if !ok {
 		return nil, nil
 	}
@@ -343,108 +251,8 @@ func GetSlot(rack map[string]any, location string) (map[string]any, error) {
 	return nil, fmt.Errorf("the slot %s does not exist", location)
 }
 
-func UpdateObj(path string, data map[string]any) (map[string]any, error) {
-	attributes, hasAttributes := data["attributes"].(map[string]any)
-	if hasAttributes {
-		for key, val := range attributes {
-			attributes[key] = Stringify(val)
-		}
-	}
-
-	obj, err := GetObject(path)
-	if err != nil {
-		return nil, err
-	}
-
-	category := ""
-	if obj["category"] != nil {
-		category = obj["category"].(string)
-	}
-
-	url, err := ObjectUrl(path, 0)
-	if err != nil {
-		return nil, err
-	}
-
-	resp, err := RequestAPI(http.MethodPatch, url, data, http.StatusOK)
-	if err != nil {
-		return nil, err
-	}
-
-	//Determine if Unity requires the message as
-	//Interact or Modify
-	entityType := EntityStrToInt(category)
-	if models.IsTag(path) {
-		entityType = TAG
-	}
-
-	message := map[string]any{}
-	var key string
-
-	if entityType == ROOM && (data["tilesName"] != nil || data["tilesColor"] != nil) {
-		println("Room modifier detected")
-		Disp(data)
-
-		//Get the interactive key
-		key = determineStrKey(data, []string{"tilesName", "tilesColor"})
-
-		message["type"] = "interact"
-		message["data"] = map[string]any{
-			"id":    obj["id"],
-			"param": key,
-			"value": data[key],
-		}
-	} else if entityType == RACK && data["U"] != nil {
-		message["type"] = "interact"
-		message["data"] = map[string]any{
-			"id":    obj["id"],
-			"param": "U",
-			"value": data["U"],
-		}
-	} else if (entityType == DEVICE || entityType == RACK) &&
-		(data["alpha"] != nil || data["slots"] != nil || data["localCS"] != nil) {
-
-		//Get interactive key
-		key = determineStrKey(data, []string{"alpha", "U", "slots", "localCS"})
-
-		message["type"] = "interact"
-		message["data"] = map[string]any{
-			"id":    obj["id"],
-			"param": key,
-			"value": data[key],
-		}
-	} else if entityType == GROUP && data["content"] != nil {
-		message["type"] = "interact"
-		message["data"] = map[string]any{
-			"id":    obj["id"],
-			"param": "content",
-			"value": data["content"],
-		}
-	} else if entityType == TAG {
-		_, oldSlug, err := models.SplitPath(path)
-		if err != nil {
-			return nil, err
-		}
-
-		message["type"] = "modify-tag"
-		message["data"] = map[string]any{
-			"old-slug": oldSlug,
-			"tag":      resp.body["data"],
-		}
-	} else {
-		message["type"] = "modify"
-		message["data"] = resp.body["data"]
-	}
-
-	if IsEntityTypeForOGrEE3D(entityType) {
-		InformOgree3DOptional("UpdateObj", entityType, message)
-	}
-
-	return resp.body, nil
-}
-
 func UnsetAttribute(path string, attr string) error {
-	obj, err := GetObject(path)
+	obj, err := C.GetObject(path)
 	if err != nil {
 		return err
 	}
@@ -460,7 +268,7 @@ func UnsetAttribute(path string, attr string) error {
 	if err != nil {
 		return err
 	}
-	_, err = RequestAPI("PUT", url, obj, http.StatusOK)
+	_, err = API.Request("PUT", url, obj, http.StatusOK)
 	return err
 }
 
@@ -475,7 +283,7 @@ func UnsetInObj(Path, attr string, idx int) (map[string]interface{}, error) {
 	}
 
 	//Get the object
-	obj, err := GetObject(Path)
+	obj, err := C.GetObject(Path)
 	if err != nil {
 		return nil, err
 	}
@@ -538,18 +346,18 @@ func UnsetInObj(Path, attr string, idx int) (map[string]interface{}, error) {
 		return nil, err
 	}
 
-	resp, err := RequestAPI("PUT", URL, obj, http.StatusOK)
+	resp, err := API.Request("PUT", URL, obj, http.StatusOK)
 	if err != nil {
 		return nil, err
 	}
 
 	message := map[string]interface{}{
-		"type": "modify", "data": resp.body["data"]}
+		"type": "modify", "data": resp.Body["data"]}
 
 	//Update and inform unity
 	if models.IsHierarchical(Path) && IsInObjForUnity(entity) {
 		entInt := EntityStrToInt(entity)
-		InformOgree3DOptional("UpdateObj", entInt, message)
+		Ogree3D.InformOptional("UpdateObj", entInt, message)
 	}
 
 	return nil, nil
@@ -573,8 +381,8 @@ func LSOG() error {
 
 	fmt.Println("USER EMAIL:", State.User.Email)
 	fmt.Println("API URL:", State.APIURL+"/api/")
-	fmt.Println("OGrEE-3D URL:", State.Ogree3DURL)
-	fmt.Println("OGrEE-3D connected: ", models.Ogree3D.IsConnected())
+	fmt.Println("OGrEE-3D URL:", Ogree3D.URL())
+	fmt.Println("OGrEE-3D connected: ", Ogree3D.IsConnected())
 	fmt.Println("BUILD DATE:", BuildTime)
 	fmt.Println("BUILD TREE:", BuildTree)
 	fmt.Println("BUILD HASH:", BuildHash)
@@ -590,11 +398,11 @@ func LSOG() error {
 	fmt.Println("********************************************")
 
 	//Get API Information here
-	resp, err := RequestAPI("GET", "/api/version", nil, http.StatusOK)
+	resp, err := API.Request("GET", "/api/version", nil, http.StatusOK)
 	if err != nil {
 		return err
 	}
-	apiInfo, ok := resp.body["data"].(map[string]any)
+	apiInfo, ok := resp.Body["data"].(map[string]any)
 	if !ok {
 		return fmt.Errorf("invalid response from API on GET /api/version")
 	}
@@ -607,11 +415,11 @@ func LSOG() error {
 }
 
 func LSEnterprise() error {
-	resp, err := RequestAPI("GET", "/api/stats", nil, http.StatusOK)
+	resp, err := API.Request("GET", "/api/stats", nil, http.StatusOK)
 	if err != nil {
 		return err
 	}
-	DisplayObject(resp.body)
+	DisplayObject(resp.Body)
 	return nil
 }
 
@@ -647,7 +455,7 @@ func Env(userVars, userFuncs map[string]interface{}) {
 }
 
 func GetByAttr(path string, u interface{}) error {
-	obj, err := GetObjectWithChildren(path, 1)
+	obj, err := C.GetObjectWithChildren(path, 1)
 	if err != nil {
 		return err
 	}
@@ -1388,24 +1196,7 @@ func GetOCLIAtrributesTemplateHelper(attr, data map[string]interface{}, ent int)
 }
 
 func Connect3D(url string) error {
-	if models.Ogree3D.IsConnected() {
-		if url == "" || url == State.Ogree3DURL {
-			return fmt.Errorf("already connected to OGrEE-3D url: %s", State.Ogree3DURL)
-		} else {
-			models.Ogree3D.Disconnect()
-		}
-	}
-
-	if url == "" {
-		fmt.Printf("Using OGrEE-3D url: %s\n", State.Ogree3DURL)
-	} else {
-		err := State.SetOgree3DURL(url)
-		if err != nil {
-			return err
-		}
-	}
-
-	return InitOGrEE3DCommunication(*State.Terminal)
+	return Ogree3D.Connect(url, *State.Terminal)
 }
 
 func UIDelay(time float64) error {
@@ -1415,7 +1206,7 @@ func UIDelay(time float64) error {
 		Disp(data)
 	}
 
-	return InformOgree3D("HandleUI", -1, data)
+	return Ogree3D.Inform("HandleUI", -1, data)
 }
 
 func UIToggle(feature string, enable bool) error {
@@ -1425,11 +1216,11 @@ func UIToggle(feature string, enable bool) error {
 		Disp(data)
 	}
 
-	return InformOgree3D("HandleUI", -1, data)
+	return Ogree3D.Inform("HandleUI", -1, data)
 }
 
 func UIHighlight(path string) error {
-	obj, err := GetObject(path)
+	obj, err := C.GetObject(path)
 	if err != nil {
 		return err
 	}
@@ -1440,7 +1231,7 @@ func UIHighlight(path string) error {
 		Disp(data)
 	}
 
-	return InformOgree3D("HandleUI", -1, data)
+	return Ogree3D.Inform("HandleUI", -1, data)
 }
 
 func UIClearCache() error {
@@ -1450,7 +1241,7 @@ func UIClearCache() error {
 		Disp(data)
 	}
 
-	return InformOgree3D("HandleUI", -1, data)
+	return Ogree3D.Inform("HandleUI", -1, data)
 }
 
 func CameraMove(command string, position []float64, rotation []float64) error {
@@ -1462,7 +1253,7 @@ func CameraMove(command string, position []float64, rotation []float64) error {
 		Disp(data)
 	}
 
-	return InformOgree3D("HandleUI", -1, data)
+	return Ogree3D.Inform("HandleUI", -1, data)
 }
 
 func CameraWait(time float64) error {
@@ -1474,13 +1265,13 @@ func CameraWait(time float64) error {
 		Disp(data)
 	}
 
-	return InformOgree3D("HandleUI", -1, data)
+	return Ogree3D.Inform("HandleUI", -1, data)
 }
 
 func FocusUI(path string) error {
 	var id string
 	if path != "" {
-		obj, err := GetObject(path)
+		obj, err := C.GetObject(path)
 		if err != nil {
 			return err
 		}
@@ -1497,7 +1288,7 @@ func FocusUI(path string) error {
 	}
 
 	data := map[string]interface{}{"type": "focus", "data": id}
-	err := InformOgree3D("FocusUI", -1, data)
+	err := Ogree3D.Inform("FocusUI", -1, data)
 	if err != nil {
 		return err
 	}
@@ -1527,7 +1318,7 @@ func LinkObject(source string, destination string, posUOrSlot string) error {
 	if posUOrSlot != "" {
 		payload["slot"] = posUOrSlot
 	}
-	_, err = RequestAPI("PATCH", sourceUrl+"/link", payload, http.StatusOK)
+	_, err = API.Request("PATCH", sourceUrl+"/link", payload, http.StatusOK)
 	if err != nil {
 		return err
 	}
@@ -1539,7 +1330,7 @@ func UnlinkObject(path string) error {
 	if err != nil {
 		return err
 	}
-	_, err = RequestAPI("PATCH", sourceUrl+"/unlink", nil, http.StatusOK)
+	_, err = API.Request("PATCH", sourceUrl+"/unlink", nil, http.StatusOK)
 	return err
 }
 
@@ -1570,7 +1361,7 @@ func objectCounter(parent map[string]interface{}) int {
 // for scripting where the user can 'force' input if
 // the num objects to draw surpasses threshold
 func Draw(path string, depth int, force bool) error {
-	obj, err := GetObjectWithChildren(path, depth)
+	obj, err := C.GetObjectWithChildren(path, depth)
 	if err != nil {
 		return err
 	}
@@ -1595,7 +1386,7 @@ func Draw(path string, depth int, force bool) error {
 	if okToGo {
 		data := map[string]interface{}{"type": "create", "data": obj}
 		//0 to include the JSON filtration
-		unityErr := InformOgree3D("Draw", 0, data)
+		unityErr := Ogree3D.Inform("Draw", 0, data)
 		if unityErr != nil {
 			return unityErr
 		}
@@ -1608,7 +1399,7 @@ func Undraw(x string) error {
 	if x == "" {
 		id = ""
 	} else {
-		obj, err := GetObject(x)
+		obj, err := C.GetObject(x)
 		if err != nil {
 			return err
 		}
@@ -1621,11 +1412,11 @@ func Undraw(x string) error {
 
 	data := map[string]interface{}{"type": "delete", "data": id}
 
-	return InformOgree3D("Undraw", 0, data)
+	return Ogree3D.Inform("Undraw", 0, data)
 }
 
 func IsEntityDrawable(path string) (bool, error) {
-	obj, err := GetObject(path)
+	obj, err := C.GetObject(path)
 	if err != nil {
 		return false, err
 	}
@@ -1667,7 +1458,7 @@ func IsCategoryAttrDrawable(category string, attr string) bool {
 }
 
 func IsAttrDrawable(path string, attr string) (bool, error) {
-	obj, err := GetObject(path)
+	obj, err := C.GetObject(path)
 	if err != nil {
 		return false, err
 	}
@@ -1699,7 +1490,7 @@ func LoadTemplate(data map[string]interface{}, filePath string) error {
 	} else {
 		return fmt.Errorf("this template does not have a valid category. Please add a category attribute with a value of building or room or rack or device")
 	}
-	_, err := RequestAPI("POST", URL, data, http.StatusCreated)
+	_, err := API.Request("POST", URL, data, http.StatusCreated)
 	if err != nil {
 		return err
 	}
@@ -1713,7 +1504,7 @@ func CreateTag(slug, color string) error {
 		"color":       color,
 	}
 
-	_, err := RequestAPI("POST", "/api/tags", jsonData, http.StatusCreated)
+	_, err := API.Request("POST", "/api/tags", jsonData, http.StatusCreated)
 	if err != nil {
 		return err
 	}
@@ -1727,7 +1518,7 @@ func SetClipBoard(x []string) ([]string, error) {
 
 	if len(x) == 0 { //This means deselect
 		data = map[string]interface{}{"type": "select", "data": "[]"}
-		err := InformOgree3DOptional("SetClipBoard", -1, data)
+		err := Ogree3D.InformOptional("SetClipBoard", -1, data)
 		if err != nil {
 			return nil, fmt.Errorf("cannot reset clipboard : %s", err.Error())
 		}
@@ -1735,7 +1526,7 @@ func SetClipBoard(x []string) ([]string, error) {
 		//Verify paths
 		arr := []string{}
 		for _, val := range x {
-			obj, err := GetObject(val)
+			obj, err := C.GetObject(val)
 			if err != nil {
 				return nil, err
 			}
@@ -1746,7 +1537,7 @@ func SetClipBoard(x []string) ([]string, error) {
 		}
 		serialArr := "[\"" + strings.Join(arr, "\",\"") + "\"]"
 		data = map[string]interface{}{"type": "select", "data": serialArr}
-		err := InformOgree3DOptional("SetClipBoard", -1, data)
+		err := Ogree3D.InformOptional("SetClipBoard", -1, data)
 		if err != nil {
 			return nil, fmt.Errorf("cannot set clipboard : %s", err.Error())
 		}
@@ -1789,7 +1580,7 @@ func determineStrKey(x map[string]interface{}, possible []string) string {
 // Function called by update node for interact commands (ie label, labelFont)
 func InteractObject(path string, keyword string, val interface{}, fromAttr bool) error {
 	//First retrieve the object
-	obj, err := GetObject(path)
+	obj, err := C.GetObject(path)
 	if err != nil {
 		return err
 	}
@@ -1868,46 +1659,7 @@ func InteractObject(path string, keyword string, val interface{}, fromAttr bool)
 	ans := map[string]interface{}{"type": "interact", "data": data}
 
 	//-1 since its not neccessary to check for filtering
-	return InformOgree3DOptional("Interact", -1, ans)
-}
-
-// Sends a message to OGrEE-3D
-//
-// If there isn't a connection established, tries to establish the connection first
-func InformOgree3D(caller string, entity int, data map[string]interface{}) error {
-	if !models.Ogree3D.IsConnected() {
-		fmt.Println("Connecting to OGrEE-3D")
-		err := Connect3D("")
-		if err != nil {
-			return err
-		}
-	}
-
-	return InformOgree3DOptional(caller, entity, data)
-}
-
-// Sends a message to OGrEE-3D if there is a connection established,
-// otherwise does nothing
-func InformOgree3DOptional(caller string, entity int, data map[string]interface{}) error {
-	if models.Ogree3D.IsConnected() {
-		if entity > -1 && entity < SENSOR+1 {
-			data = GenerateFilteredJson(data)
-		}
-		if State.DebugLvl > INFO {
-			println("DEBUG VIEW THE JSON")
-			Disp(data)
-		}
-
-		e := models.Ogree3D.Send(data, State.DebugLvl)
-		if e != nil {
-			l.GetWarningLogger().Println("Unable to contact Unity Client @" + caller)
-			if State.DebugLvl > 1 {
-				fmt.Println("Error while updating Unity: ", e.Error())
-			}
-			return fmt.Errorf("error while contacting unity : %s", e.Error())
-		}
-	}
-	return nil
+	return Ogree3D.InformOptional("Interact", -1, ans)
 }
 
 // Helper function for GetOCLIAttr which retrieves
@@ -1923,11 +1675,11 @@ func fetchTemplate(name string, objType int) (map[string]interface{}, error) {
 		url = "/api/obj_templates/"
 	}
 	url += name
-	resp, err := RequestAPI("GET", url, nil, http.StatusOK)
+	resp, err := API.Request("GET", url, nil, http.StatusOK)
 	if err != nil {
 		return nil, err
 	}
-	tmplInf, ok := resp.body["data"]
+	tmplInf, ok := resp.Body["data"]
 	if !ok {
 		return nil, fmt.Errorf("invalid response on GET %s", url)
 	}
@@ -1949,7 +1701,7 @@ func randPassword(n int) string {
 
 func CreateUser(email string, role string, domain string) error {
 	password := randPassword(14)
-	response, err := RequestAPI(
+	response, err := API.Request(
 		"POST",
 		"/api/users",
 		map[string]any{
@@ -1970,11 +1722,11 @@ func CreateUser(email string, role string, domain string) error {
 }
 
 func AddRole(email string, role string, domain string) error {
-	response, err := RequestAPI("GET", "/api/users", nil, http.StatusOK)
+	response, err := API.Request("GET", "/api/users", nil, http.StatusOK)
 	if err != nil {
 		return err
 	}
-	userList, userListOk := response.body["data"].([]any)
+	userList, userListOk := response.Body["data"].([]any)
 	if !userListOk {
 		return fmt.Errorf("response contains no user list")
 	}
@@ -1994,7 +1746,7 @@ func AddRole(email string, role string, domain string) error {
 	if userID == "" {
 		return fmt.Errorf("user not found")
 	}
-	response, err = RequestAPI("PATCH", fmt.Sprintf("/api/users/%s", userID),
+	response, err = API.Request("PATCH", fmt.Sprintf("/api/users/%s", userID),
 		map[string]any{
 			"roles": map[string]any{
 				domain: role,
@@ -2018,7 +1770,7 @@ func ChangePassword() error {
 	if err != nil {
 		return err
 	}
-	response, err := RequestAPI("POST", "/api/users/password/change",
+	response, err := API.Request("POST", "/api/users/password/change",
 		map[string]any{
 			"currentPassword": string(currentPassword),
 			"newPassword":     string(newPassword),
