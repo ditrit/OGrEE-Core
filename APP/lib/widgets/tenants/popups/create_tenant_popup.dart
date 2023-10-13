@@ -275,14 +275,14 @@ class _CreateTenantPopupState extends State<CreateTenantPopup> {
         _isLoading = true;
       });
       // Load logo first, if provided
+      final messenger = ScaffoldMessenger.of(popupContext);
       if (_loadedImage != null) {
         var result = await uploadImage(_loadedImage!, _tenantName!);
         switch (result) {
           case Success():
             break;
           case Failure(exception: final exception):
-            showSnackBar(
-                popupContext, "${localeMsg.failedToUpload} $exception");
+            showSnackBar(messenger, "${localeMsg.failedToUpload} $exception");
         }
       }
       // Create tenant
@@ -326,19 +326,22 @@ class _CreateTenantPopupState extends State<CreateTenantPopup> {
             setState(() {
               _isLoading = false;
             });
-            showSnackBar(popupContext, "$finalMsg. Check output log below.",
+            showSnackBar(messenger, "$finalMsg. Check output log below.",
                 isError: true);
           } else {
             widget.parentCallback();
-            showSnackBar(context, "${localeMsg.tenantCreated} 🥳",
-                isSuccess: true);
-            Navigator.of(popupContext).pop();
+            if (context.mounted) {
+              showSnackBar(ScaffoldMessenger.of(context),
+                  "${localeMsg.tenantCreated} 🥳",
+                  isSuccess: true);
+            }
+            if (popupContext.mounted) Navigator.of(popupContext).pop();
           }
         case Failure(exception: final exception):
           setState(() {
             _isLoading = false;
           });
-          showSnackBar(popupContext, exception.toString(), isError: true);
+          showSnackBar(messenger, exception.toString(), isError: true);
       }
     }
   }

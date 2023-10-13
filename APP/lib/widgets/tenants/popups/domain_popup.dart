@@ -61,6 +61,7 @@ class _DomainPopupState extends State<DomainPopup>
   }
 
   getDomain(AppLocalizations localeMsg) async {
+    final messenger = ScaffoldMessenger.of(context);
     final result = await fetchDomain(widget.domainId!);
     switch (result) {
       case Success(value: final value):
@@ -70,8 +71,8 @@ class _DomainPopupState extends State<DomainPopup>
             : "${domain!.parent}.${domain!.name}";
         _localColor = Color(int.parse("0xFF${domain!.color}"));
       case Failure():
-        showSnackBar(context, localeMsg.noDomain, isError: true);
-        Navigator.of(context).pop();
+        showSnackBar(messenger, localeMsg.noDomain, isError: true);
+        if (context.mounted) Navigator.of(context).pop();
         return;
     }
   }
@@ -118,7 +119,7 @@ class _DomainPopupState extends State<DomainPopup>
                             ),
                           ],
                   ),
-                  Container(
+                  SizedBox(
                     height: 270,
                     child: Padding(
                       padding: const EdgeInsets.only(top: 16.0),
@@ -160,19 +161,23 @@ class _DomainPopupState extends State<DomainPopup>
                                   setState(() {
                                     _isLoadingDelete = true;
                                   });
+                                  final messenger =
+                                      ScaffoldMessenger.of(context);
                                   var result =
                                       await removeObject(domainId!, "domains");
                                   switch (result) {
                                     case Success():
                                       widget.parentCallback();
-                                      showSnackBar(context, localeMsg.deleteOK);
-                                      Navigator.of(context).pop();
+                                      showSnackBar(
+                                          messenger, localeMsg.deleteOK);
+                                      if (context.mounted)
+                                        Navigator.of(context).pop();
                                     case Failure(exception: final exception):
                                       setState(() {
                                         _isLoadingDelete = false;
                                       });
                                       showSnackBar(
-                                          context, exception.toString(),
+                                          messenger, exception.toString(),
                                           isError: true);
                                   }
                                 }
@@ -198,9 +203,11 @@ class _DomainPopupState extends State<DomainPopup>
                       _isSmallDisplay ? Container() : const SizedBox(width: 10),
                       ElevatedButton.icon(
                         onPressed: () async {
+                          final messenger = ScaffoldMessenger.of(context);
                           if (_tabController.index == 1) {
                             if (_loadedFile == null) {
-                              showSnackBar(context, localeMsg.mustSelectJSON);
+                              showSnackBar(ScaffoldMessenger.of(context),
+                                  localeMsg.mustSelectJSON);
                             } else if (_loadFileResult != null) {
                               widget.parentCallback();
                               Navigator.of(context).pop();
@@ -217,7 +224,7 @@ class _DomainPopupState extends State<DomainPopup>
                                             1, _loadFileResult!.length - 1);
                                   });
                                 case Failure(exception: final exception):
-                                  showSnackBar(context, exception.toString(),
+                                  showSnackBar(messenger, exception.toString(),
                                       isError: true);
                               }
                             }
@@ -242,15 +249,16 @@ class _DomainPopupState extends State<DomainPopup>
                               switch (result) {
                                 case Success():
                                   widget.parentCallback();
-                                  showSnackBar(context,
+                                  showSnackBar(messenger,
                                       "${_isEdit ? localeMsg.modifyOK : localeMsg.createOK} 🥳",
                                       isSuccess: true);
-                                  Navigator.of(context).pop();
+                                  if (context.mounted)
+                                    Navigator.of(context).pop();
                                 case Failure(exception: final exception):
                                   setState(() {
                                     _isLoading = false;
                                   });
-                                  showSnackBar(context, exception.toString(),
+                                  showSnackBar(messenger, exception.toString(),
                                       isError: true);
                               }
                             }

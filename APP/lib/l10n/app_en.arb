@@ -26,6 +26,8 @@
   "login": "Login",
   "invalidLogin": "Email and/or password not valid",
   "resetPassword": "Reset password",
+  "haveResetToken": "I have a reset token",
+  "resetSent": "Reset request sent",
 
   "myprojects": "My projects",
   "newProject": "Create new project",
@@ -51,6 +53,8 @@
   "openLastDataset": "Last saved dataset",
   "openSavedDataser": "Pick a dataset",
   "useLastDataSet": "Use the last dataset saved:",
+  "allData": "All datasets",
+  "allDataBase": "Use all data avaiable in the database",
 
   "whatNamespace": "Select a namespace:",
 
@@ -58,11 +62,13 @@
   "filters": "Filters",
   "clearAllFilters": "Clear all",
   "noNodeFound": "No node found with ID:",
+  "nodeFound": "Node found:",
   "expandAll" : "Expand All",
   "collapseAll": "Collapse All",
   "selectAll": "Select All",
   "deselectAll": "Deselect All",
   "nodePath": "Node path:",
+  "toggleSelection": "Toggle selection for this node and all its children",
 
   "addColumnTip":  "Add a column",
   "yourReport": "Your report",

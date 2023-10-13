@@ -7,7 +7,7 @@ import 'package:ogree_app/common/theme.dart';
 import 'package:ogree_app/models/user.dart';
 import 'package:ogree_app/pages/results_page.dart';
 import 'package:ogree_app/widgets/delete_dialog_popup.dart';
-import 'package:ogree_app/widgets/select_objects/app_controller.dart';
+import 'package:ogree_app/widgets/select_objects/treeapp_controller.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 import 'popups/user_popup.dart';
@@ -29,7 +29,7 @@ class UserView extends StatefulWidget {
 
 class _UserViewState extends State<UserView> {
   List<User>? _users;
-  late final AppController appController = AppController();
+  late final TreeAppController appController = TreeAppController();
   bool _loadUsers = true;
   List<User> selectedUsers = [];
   List<User>? _filterUsers;
@@ -137,7 +137,7 @@ class _UserViewState extends State<UserView> {
                             label:
                                 isSmallDisplay ? null : Text(localeMsg.search),
                             prefixIcon: isSmallDisplay
-                                ? Icon(Icons.search_rounded)
+                                ? const Icon(Icons.search_rounded)
                                 : null,
                           )),
                     ),
@@ -259,6 +259,7 @@ class _UserViewState extends State<UserView> {
   }
 
   getUsers() async {
+    final messenger = ScaffoldMessenger.of(context);
     final result = await fetchApiUsers();
     switch (result) {
       case Success(value: final value):
@@ -271,7 +272,7 @@ class _UserViewState extends State<UserView> {
           widget.parentCallback!();
         }
       case Failure(exception: final exception):
-        showSnackBar(context, exception.toString(), isError: true);
+        showSnackBar(messenger, exception.toString(), isError: true);
         _users = [];
     }
     _loadUsers = false;

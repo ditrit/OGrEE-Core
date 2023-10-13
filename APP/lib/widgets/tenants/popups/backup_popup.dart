@@ -189,6 +189,7 @@ class _BackupPopupState extends State<BackupPopup> {
   requestBackup() async {
     if (_formKey.currentState!.validate()) {
       _formKey.currentState!.save();
+      final messenger = ScaffoldMessenger.of(context);
       final result = await backupTenantDB(
           widget.tenantName, _tenantPassword!, _shouldDownload);
       switch (result) {
@@ -210,16 +211,16 @@ class _BackupPopupState extends State<BackupPopup> {
               var file = File(fileName);
               file.writeAsBytes(value, flush: true).then((value) =>
                   showSnackBar(
-                      context, "File succesfully saved to: $fileName"));
+                      messenger, "File succesfully saved to: $fileName"));
             }
           } else {
-            showSnackBar(context, value, isSuccess: true);
+            showSnackBar(messenger, value, isSuccess: true);
           }
         case Failure(exception: final exception):
           setState(() {
             _isLoading = false;
           });
-          showSnackBar(context, exception.toString(), isError: true);
+          showSnackBar(messenger, exception.toString(), isError: true);
       }
     }
   }

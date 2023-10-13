@@ -83,12 +83,13 @@ class _ContainerLogsPopupState extends State<ContainerLogsPopup> {
   }
 
   getTenantStats() async {
+    final messenger = ScaffoldMessenger.of(context);
     final result = await fetchContainerLogs(widget.containerName);
     switch (result) {
       case Success(value: final value):
         logs = value;
       case Failure(exception: final exception):
-        showSnackBar(context, exception.toString(), isError: true);
+        showSnackBar(messenger, exception.toString(), isError: true);
         logs = "";
     }
   }

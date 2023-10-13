@@ -22,12 +22,6 @@ class LockedView extends StatefulWidget {
 class _LockedViewState extends State<LockedView> {
   String? _email;
   String? _password;
-  static const inputStyle = OutlineInputBorder(
-    borderSide: BorderSide(
-      color: Colors.grey,
-      width: 1,
-    ),
-  );
   final formKey = GlobalKey<FormState>();
 
   @override
@@ -110,6 +104,8 @@ class _LockedViewState extends State<LockedView> {
   tryLogin(formKey) async {
     if (formKey.currentState!.validate()) {
       formKey.currentState!.save();
+      final messenger = ScaffoldMessenger.of(context);
+      final localeMsg = AppLocalizations.of(context)!;
       final result = await loginAPITenant(_email!, _password!,
           "${widget.tenant.apiUrl}:${widget.tenant.apiPort}");
       switch (result) {
@@ -117,9 +113,9 @@ class _LockedViewState extends State<LockedView> {
           widget.parentCallback();
         case Failure(exception: final exception):
           String errorMsg = exception.toString() == "Exception"
-              ? AppLocalizations.of(context)!.invalidLogin
+              ? localeMsg.invalidLogin
               : exception.toString();
-          showSnackBar(context, errorMsg, isError: true);
+          showSnackBar(messenger, errorMsg, isError: true);
       }
     }
   }

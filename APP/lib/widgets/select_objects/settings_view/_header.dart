@@ -36,12 +36,12 @@ class _ActionsHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      children: const [
+    return const Row(
+      children: [
         SettingsHeader(text: 'Actions'),
         Spacer(),
         Tooltip(
-          message: 'Something?',
+          message: 'Quick shortcuts',
           verticalOffset: 13,
           decoration: BoxDecoration(
             color: Colors.blueAccent,

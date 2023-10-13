@@ -122,19 +122,20 @@ class _CreateNetboxPopupState extends State<CreateNetboxPopup> {
       setState(() {
         _isLoading = true;
       });
+      final messenger = ScaffoldMessenger.of(context);
       // Create tenant
       var result =
           await createNetbox(Netbox(_userName!, _userPassword!, _port!));
       switch (result) {
         case Success():
           widget.parentCallback();
-          showSnackBar(context, "${localeMsg.createOK} 🥳", isSuccess: true);
-          Navigator.of(context).pop();
+          showSnackBar(messenger, "${localeMsg.createOK} 🥳", isSuccess: true);
+          if (context.mounted) Navigator.of(context).pop();
         case Failure(exception: final exception):
           setState(() {
             _isLoading = false;
           });
-          showSnackBar(context, exception.toString(), isError: true);
+          showSnackBar(messenger, exception.toString(), isError: true);
       }
     }
   }

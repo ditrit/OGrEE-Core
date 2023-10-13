@@ -27,6 +27,8 @@
   "login": "Se connecter",
   "invalidLogin": "Adresse email et/ou mot de passe non valide",
   "resetPassword": "Réinitialiser le mot de passe",
+  "haveResetToken": "J'ai un reset token",
+  "resetSent": "Demande de réinitialisation envoyée",
 
   "@myprojects": { "description": "Projects Page" },
   "myprojects": "Mes projets",
@@ -62,18 +64,22 @@
   "openLastDataset": "Ouvrir le dernier jeu de données",
   "openSavedDataser": "Ouvrir un jeu de données enregistré",
   "useLastDataSet": "Utiliser le dernier jeu de données :",
+  "allData": "Toutes les données",
+  "allDataBase": "Toutes les données disponibles dans la base",
 
   "whatNamespace": "Sélectionnez le type de namespace :",
 
   "searchById": "Rechercher par ID",
   "filters": "Filtres",
   "clearAllFilters": "Effacer tout",
-  "noNodeFound": "Pas de node trouvé avec l'ID :",
+  "noNodeFound": "Pas de noeud trouvé avec l'ID :",
+  "nodeFound": "Noeud trouvé :",
   "expandAll" : "Développer tout",
   "collapseAll": "Réduire tout",
   "selectAll": "Sélectionner tout",
   "deselectAll": "Désélectionner tout",
   "nodePath": "Chemin du noeud :",
+  "toggleSelection": "Inverser sélection du noeud et de tous ses enfants",
 
   "@result": { "description": "Result Page" },
   "result": "Résultat",
@@ -85,7 +91,7 @@
 
   "@tenantCreated": { "description": "SuperAdmin Views" },
   "tenantCreated": "Tenant créé avec succès !",
-  "deployment": "Déploiment",
+  "deployment": "Déploiement",
   "loginTenant": "Connectez-vous à l'API de ce Tenant :",
   "areYouSure": "Êtes-vous sûr ?",
   "allWillBeLost": "Toutes les données seront définitivement perdues !",

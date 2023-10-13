@@ -1,5 +1,7 @@
 part of 'api_backend.dart';
 
+// This API is used by SuperAdmin mode to connect to multiple tenant APIs
+// still being connected to the SuperAdmin backend
 Future<Result<void, Exception>> loginAPITenant(
     String email, String password, String userUrl) async {
   print("API login to ogree-api $userUrl");

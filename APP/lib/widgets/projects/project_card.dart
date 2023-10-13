@@ -26,25 +26,27 @@ class ProjectCard extends StatelessWidget {
         Navigator.pop(context);
       } else {
         project.name = userInput;
+        final messenger = ScaffoldMessenger.of(context);
         var result = await modifyProject(project);
         switch (result) {
           case Success():
             parentCallback!();
-            Navigator.pop(context);
+            if (context.mounted) Navigator.pop(context);
           case Failure(exception: final exception):
-            showSnackBar(context, exception.toString(), isError: true);
+            showSnackBar(messenger, exception.toString(), isError: true);
         }
       }
     }
 
     deleteProjectCallback(String projectId, Function? parentCallback) async {
+      final messenger = ScaffoldMessenger.of(context);
       var result = await deleteProject(projectId);
       switch (result) {
         case Success():
           parentCallback!();
-          Navigator.pop(context);
+          if (context.mounted) Navigator.pop(context);
         case Failure(exception: final exception):
-          showSnackBar(context, exception.toString(), isError: true);
+          showSnackBar(messenger, exception.toString(), isError: true);
       }
     }
 
@@ -64,7 +66,7 @@ class ProjectCard extends StatelessWidget {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Container(
+                  SizedBox(
                     width: 170,
                     child: Text(project.name,
                         overflow: TextOverflow.clip,

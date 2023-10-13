@@ -3,7 +3,6 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:ogree_app/pages/login_page.dart';
-import 'package:ogree_app/pages/reset_page.dart';
 
 Future<void> main() async {
   await dotenv.load(fileName: "assets/custom/.env");
@@ -14,13 +13,13 @@ class MyApp extends StatefulWidget {
   const MyApp({super.key});
 
   @override
-  State<MyApp> createState() => _MyAppState();
+  State<MyApp> createState() => MyAppState();
 
-  static _MyAppState? of(BuildContext context) =>
-      context.findAncestorStateOfType<_MyAppState>();
+  static MyAppState? of(BuildContext context) =>
+      context.findAncestorStateOfType<MyAppState>();
 }
 
-class _MyAppState extends State<MyApp> {
+class MyAppState extends State<MyApp> {
   // App language control
   Locale _locale = const Locale('fr', 'FR');
   void setLocale(Locale value) {
@@ -89,7 +88,9 @@ class RouteGenerator {
     print(message);
     return MaterialPageRoute(
       builder: (context) {
-        return ResetPage(token: queryParameters!["token"].toString());
+        return LoginPage(
+            isPasswordReset: true,
+            resetToken: queryParameters!["token"].toString());
       },
       settings: settings,
     );

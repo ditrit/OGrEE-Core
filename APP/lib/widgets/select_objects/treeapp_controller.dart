@@ -4,21 +4,27 @@ import 'package:ogree_app/common/api_backend.dart';
 import 'package:ogree_app/common/definitions.dart';
 import 'package:ogree_app/common/theme.dart';
 
+import 'tree_view/tree_node.dart';
+
 bool isSmallDisplay = false;
 
-class AppController with ChangeNotifier {
+class TreeAppController with ChangeNotifier {
   bool _isInitialized = false;
   bool get isInitialized => _isInitialized;
+
   Map<String, List<String>> fetchedData = {};
   Map<String, List<String>> fetchedCategories = {};
+
   final Map<int, List<String>> _filterLevels = {};
   Map<int, List<String>> get filterLevels => _filterLevels;
   static const lastFilterLevel = 3;
 
-  static AppController of(BuildContext context) {
+  late final TreeController<TreeNode> treeController;
+
+  static TreeAppController of(BuildContext context) {
     isSmallDisplay = IsSmallDisplay(MediaQuery.of(context).size.width);
     return context
-        .dependOnInheritedWidgetOfExactType<AppControllerScope>()!
+        .dependOnInheritedWidgetOfExactType<TreeAppControllerScope>()!
         .controller;
   }
 
@@ -30,6 +36,7 @@ class AppController with ChangeNotifier {
     if (_isInitialized && !reload) return;
     final rootNode = TreeNode(id: kRootId);
 
+    // Fetch data for the tree
     if (namespace == Namespace.Test) {
       fetchedData = kDataSample;
       fetchedCategories = kDataSampleCategories;
@@ -48,20 +55,18 @@ class AppController with ChangeNotifier {
       }
     }
 
-    if (_isInitialized && reload) {
-      // Regenerate tree
-      treeController.rootNode
-          .clearChildren()
-          .forEach((child) => child.delete(recursive: true));
-      generateTree(treeController.rootNode, fetchedData);
-      // Force redraw tree view
-      treeController.refreshNode(treeController.rootNode);
-      treeController.reset();
-    } else {
-      generateTree(rootNode, fetchedData);
+    generateTree(rootNode, fetchedData);
 
-      treeController = TreeViewController(
-        rootNode: rootNode,
+    if (_isInitialized && reload) {
+      // Rebuild tree
+      treeController.roots = rootNode.children;
+      treeController.rebuild();
+    } else {
+      // Build tree
+      treeController = TreeController<TreeNode>(
+        roots: rootNode.children,
+        childrenProvider: (TreeNode node) => node.children,
+        parentProvider: (TreeNode node) => node.parent,
       );
       _isInitialized = true;
       selectedNodes = nodes;
@@ -71,10 +76,26 @@ class AppController with ChangeNotifier {
     }
   }
 
-  //* == == == == == TreeView == == == == ==
+  void generateTree(TreeNode parent, Map<String, List<String>> data) {
+    final childrenIds = data[parent.id];
+    if (childrenIds == null) return;
 
+    parent.addChildren(
+      childrenIds.map(
+        (String childId) => TreeNode(
+            id: childId,
+            label: parent.id == kRootId
+                ? childId
+                : childId.substring(childId.lastIndexOf(".") + 1)),
+      ),
+    );
+    for (var node in parent.children) {
+      generateTree(node, data);
+    }
+  }
+
+  // Tree Node Selection Functionality
   late Map<String, bool> selectedNodes;
-
   bool isSelected(String id) => selectedNodes[id] ?? false;
 
   void toggleSelection(String id,
@@ -86,18 +107,24 @@ class AppController with ChangeNotifier {
   }
 
   void _select(String id) => selectedNodes[id] = true;
-
   void _deselect(String id) => selectedNodes.remove(id);
 
   void selectAll([bool select = true]) {
+    //treeController.expandAll();
     if (select) {
-      rootNode.descendants.forEach(
-        (descendant) => selectedNodes[descendant.id] = true,
-      );
+      treeController.roots.forEach((root) {
+        selectedNodes[root.id] = true;
+        root.descendants.forEach(
+          (descendant) => selectedNodes[descendant.id] = true,
+        );
+      });
     } else {
-      rootNode.descendants.forEach(
-        (descendant) => selectedNodes.remove(descendant.id),
-      );
+      treeController.roots.forEach((root) {
+        selectedNodes.remove(root.id);
+        root.descendants.forEach(
+          (descendant) => selectedNodes.remove(descendant.id),
+        );
+      });
     }
     notifyListeners();
   }
@@ -110,6 +137,7 @@ class AppController with ChangeNotifier {
     notifyListeners();
   }
 
+  // Filter Tree Functionality
   void filterTree(String id, int level) {
     // Deep copy original data
     Map<String, List<String>> filteredData = {};
@@ -139,9 +167,6 @@ class AppController with ChangeNotifier {
       }
     }
 
-    print("FILTERS");
-    print(_filterLevels);
-
     // Find root filter level
     var testLevel = lastFilterLevel;
     List<String> filters = List<String>.from(_filterLevels[testLevel]!);
@@ -165,29 +190,17 @@ class AppController with ChangeNotifier {
     }
 
     // Regenerate tree
-    treeController.rootNode
-        .clearChildren()
-        .forEach((child) => child.delete(recursive: true));
-    generateTree(treeController.rootNode, filteredData);
-    // Force redraw tree view
-    treeController.refreshNode(treeController.rootNode);
-    treeController.reset();
+    final rootNode = TreeNode(id: kRootId);
+    generateTree(rootNode, filteredData);
+    treeController.roots = rootNode.children;
+    treeController.rebuild();
   }
 
-  TreeNode get rootNode => treeController.rootNode;
-
-  late final TreeViewController treeController;
-
-  //* == == == == == Scroll == == == == ==
-
+  // Tree Scroll Functionality
   final nodeHeight = 50.0;
-
   late final scrollController = ScrollController();
-
   void scrollTo(TreeNode node) {
-    final nodeToScroll = node.parent == rootNode ? node : node.parent ?? node;
-    final offset = treeController.indexOf(nodeToScroll) * nodeHeight;
-
+    final offset = node.depth * nodeHeight;
     scrollController.animateTo(
       offset,
       duration: const Duration(milliseconds: 500),
@@ -195,58 +208,30 @@ class AppController with ChangeNotifier {
     );
   }
 
-  //* == == == == == General == == == == ==
-
-  final treeViewTheme = ValueNotifier(
-      TreeViewTheme(roundLineCorners: true, indent: isSmallDisplay ? 15 : 64));
-
-  void updateTheme(TreeViewTheme theme) {
-    treeViewTheme.value = theme;
-  }
-
   @override
   void dispose() {
     treeController.dispose();
     scrollController.dispose();
-
-    treeViewTheme.dispose();
     super.dispose();
   }
 }
 
-class AppControllerScope extends InheritedWidget {
-  const AppControllerScope({
+class TreeAppControllerScope extends InheritedWidget {
+  const TreeAppControllerScope({
     Key? key,
     required this.controller,
     required Widget child,
   }) : super(key: key, child: child);
 
-  final AppController controller;
+  final TreeAppController controller;
 
   @override
-  bool updateShouldNotify(AppControllerScope oldWidget) => false;
-}
-
-void generateTree(TreeNode parent, Map<String, List<String>> data) {
-  final childrenIds = data[parent.id];
-  if (childrenIds == null) return;
-
-  parent.addChildren(
-    childrenIds.map(
-      (String childId) => TreeNode(
-          id: childId,
-          label: parent.id == kRootId
-              ? childId
-              : childId.substring(childId.lastIndexOf(".") + 1)),
-    ),
-  );
-  for (var node in parent.children) {
-    generateTree(node, data);
-  }
+  bool updateShouldNotify(TreeAppControllerScope oldWidget) => false;
 }
 
 const String kRootId = '*';
 
+// Sample and test data
 const Map<String, List<String>> kDataSample = {
   kRootId: ['sitePA', 'sitePI', 'siteNO', 'sitePB'],
   'sitePA': ['sitePA.A1', 'sitePA.A2'],
