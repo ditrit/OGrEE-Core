@@ -72,16 +72,20 @@ func (state ShellState) SetDefaultOgree3DURL() {
 	}
 }
 
-func IsInObjForUnity(x string) bool {
-	entInt := EntityStrToInt(x)
-	if entInt != -1 {
+func IsInObjForUnity(entityStr string) bool {
+	entInt := EntityStrToInt(entityStr)
+	return IsEntityTypeForOGrEE3D(entInt)
+}
 
+func IsEntityTypeForOGrEE3D(entityType int) bool {
+	if entityType != -1 {
 		for idx := range State.ObjsForUnity {
-			if State.ObjsForUnity[idx] == entInt {
+			if State.ObjsForUnity[idx] == entityType {
 				return true
 			}
 		}
 	}
+
 	return false
 }
 

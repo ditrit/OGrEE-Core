@@ -29,6 +29,7 @@ const (
 	STRAY_DEV
 	STRAYSENSOR
 	DOMAIN
+	TAG
 )
 
 // Debug Level Declaration
@@ -122,6 +123,8 @@ func EntityToString(entity int) string {
 		return "corridor"
 	case SENSOR:
 		return "sensor"
+	case TAG:
+		return "tag"
 	default:
 		return "INVALID"
 	}
@@ -161,6 +164,8 @@ func EntityStrToInt(entity string) int {
 		return CORRIDOR
 	case "sensor", "sr":
 		return SENSOR
+	case "tag":
+		return TAG
 	default:
 		return -1
 	}
