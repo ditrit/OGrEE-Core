@@ -9,7 +9,6 @@ import (
 	"cli/readline"
 	"cli/utils"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"net/http"
 	"net/url"
@@ -69,11 +68,11 @@ func InitState(conf *config.Config) error {
 	//Set Draw Threshold
 	SetDrawThreshold(conf.DrawLimit)
 
-	resp, err := RequestAPI("GET", "/api/version", nil, http.StatusOK)
+	resp, err := API.Request("GET", "/api/version", nil, http.StatusOK)
 	if err != nil {
 		return err
 	}
-	info, ok := resp.body["data"].(map[string]any)
+	info, ok := resp.Body["data"].(map[string]any)
 	if !ok {
 		return fmt.Errorf("invalid response from API on GET /api/version")
 	}
@@ -95,32 +94,6 @@ func InitState(conf *config.Config) error {
 // a pointer to our readline terminal
 func SetStateReadline(rl *readline.Instance) {
 	State.Terminal = &rl
-}
-
-// Tries to establish a connection with OGrEE-3D and, if possible,
-// starts a go routine for receiving messages from it
-func InitOGrEE3DCommunication(rl *readline.Instance) error {
-	errConnect := models.Ogree3D.Connect(State.Ogree3DURL, State.Timeout)
-	if errConnect != nil {
-		return ErrorWithInternalError{
-			UserError:     errors.New("OGrEE-3D is not reachable"),
-			InternalError: errConnect,
-		}
-	}
-
-	errLogin := models.Ogree3D.Login(State.APIURL, GetKey(), State.DebugLvl)
-	if errLogin != nil {
-		return ErrorWithInternalError{
-			UserError:     errors.New("OGrEE-3D login not possible"),
-			InternalError: errLogin,
-		}
-	}
-
-	fmt.Println("Established connection with OGrEE-3D!")
-
-	go models.Ogree3D.ReceiveLoop(rl)
-
-	return nil
 }
 
 func InitTimeout(duration string) {
@@ -179,10 +152,10 @@ func InitURLs(apiURL string, ogree3DURL string) {
 		State.APIURL = apiURL
 	}
 
-	err = State.SetOgree3DURL(ogree3DURL)
+	err = Ogree3D.SetURL(ogree3DURL)
 	if err != nil {
 		fmt.Println(err.Error())
-		State.SetDefaultOgree3DURL()
+		Ogree3D.SetDefaultURL()
 	}
 }
 
@@ -264,11 +237,11 @@ func Login(user string, password string) (*User, string, error) {
 		password = string(passwordBytes)
 	}
 	data := map[string]any{"email": user, "password": password}
-	resp, err := RequestAPI("POST", "/api/login", data, http.StatusOK)
+	resp, err := API.Request("POST", "/api/login", data, http.StatusOK)
 	if err != nil {
 		return nil, "", err
 	}
-	account, accountOk := (resp.body["account"].(map[string]interface{}))
+	account, accountOk := (resp.Body["account"].(map[string]interface{}))
 	token, tokenOk := account["token"].(string)
 	userID, userIDOk := account["_id"].(string)
 	if !accountOk || !tokenOk || !userIDOk {

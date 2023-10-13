@@ -84,7 +84,7 @@ func main() {
 		}
 	}
 
-	err = c.InitOGrEE3DCommunication(rl)
+	err = c.Ogree3D.Connect("", rl)
 	if err != nil {
 		manageError(err, false)
 	}
