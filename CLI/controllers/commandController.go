@@ -32,64 +32,39 @@ func PostObj(ent int, entity string, data map[string]any) error {
 	if err != nil {
 		return err
 	}
-	if IsInObjForUnity(entity) {
+
+	if ent != TAG && IsInObjForUnity(entity) {
 		entInt := EntityStrToInt(entity)
 		InformOgree3DOptional("PostObj", entInt, map[string]any{"type": "create", "data": resp.body["data"]})
 	}
+
 	return nil
-}
-
-func startsWith(s string, prefix string, suffix *string) bool {
-	if strings.HasPrefix(s, prefix) {
-		if suffix != nil {
-			*suffix = s[len(prefix):]
-		}
-
-		return true
-	}
-
-	return false
-}
-
-func IsTag(path string, suffix *string) bool {
-	return startsWith(path, "/Logical/Tags/", suffix)
 }
 
 func ObjectUrl(path string, depth int) (string, error) {
 	var suffix string
 	var url string
-	if startsWith(path, "/Physical/Stray/", &suffix) {
+	if models.IsStray(path, &suffix) {
 		url = "/api/stray-objects"
-	} else if startsWith(path, "/Physical/", &suffix) {
+	} else if models.IsPhysical(path, &suffix) {
 		url = "/api/objects"
-	} else if startsWith(path, "/Logical/ObjectTemplates/", &suffix) {
+	} else if models.IsObjectTemplate(path, &suffix) {
 		url = "/api/obj-templates"
-	} else if startsWith(path, "/Logical/RoomTemplates/", &suffix) {
+	} else if models.IsRoomTemplate(path, &suffix) {
 		url = "/api/room-templates"
-	} else if startsWith(path, "/Logical/BldgTemplates/", &suffix) {
+	} else if models.IsBuildingTemplate(path, &suffix) {
 		url = "/api/bldg-templates"
-	} else if startsWith(path, "/Logical/Groups/", &suffix) {
+	} else if models.IsGroup(path, &suffix) {
 		url = "/api/groups"
-	} else if IsTag(path, &suffix) {
+	} else if models.IsTag(path, &suffix) {
 		url = "/api/tags"
-	} else if startsWith(path, "/Organisation/Domain/", &suffix) {
+	} else if models.IsDomain(path, &suffix) {
 		url = "/api/domains"
 	} else {
 		return "", fmt.Errorf("invalid object path")
 	}
 	suffix = strings.Replace(suffix, "/", ".", -1)
 	return url + "/" + suffix, nil
-}
-
-func IsHierarchical(path string) bool {
-	return !IsNonHierarchical(path)
-}
-
-func IsNonHierarchical(path string) bool {
-	return strings.HasPrefix(path, "/Logical/ObjectTemplates/") ||
-		strings.HasPrefix(path, "/Logical/RoomTemplates/") ||
-		strings.HasPrefix(path, "/Logical/BldgTemplates/") ||
-		strings.HasPrefix(path, "/Logical/Tags/")
 }
 
 func ObjectUrlWithEntity(path string, depth int, category string) (string, error) {
@@ -105,21 +80,13 @@ func ObjectUrlWithEntity(path string, depth int, category string) (string, error
 	return url, nil
 }
 
-func ObjectId(path string) (string, error) {
-	var suffix string
-	if startsWith(path, "/Physical/", &suffix) {
-		return suffix, nil
-	}
-	return "", fmt.Errorf("path does not point to a physical object")
-}
-
 func PollObjectWithChildren(path string, depth int) (map[string]any, error) {
 	url, err := ObjectUrl(path, depth)
 	if err != nil {
 		return nil, nil
 	}
 
-	if depth > 0 && IsHierarchical(path) {
+	if depth > 0 && models.IsHierarchical(path) {
 		url = fmt.Sprintf("%s/all?limit=%d", url, depth)
 	}
 
@@ -162,9 +129,9 @@ func GetObject(path string) (map[string]any, error) {
 
 func WilcardUrl(path string) (string, error) {
 	var suffix string
-	if startsWith(path, "/Physical/Stray/", &suffix) {
+	if models.IsStray(path, &suffix) {
 		return "", fmt.Errorf("stray paths cannot contain wildcards")
-	} else if !startsWith(path, "/Physical/", &suffix) {
+	} else if !models.IsPhysical(path, &suffix) {
 		return "", fmt.Errorf("only paths in /Physical can contain wildcards")
 	}
 	suffix = strings.Replace(suffix, "/", ".", -1)
@@ -219,12 +186,17 @@ func DeleteObj(path string) error {
 	if err != nil {
 		return err
 	}
-	if IsHierarchical(path) && IsInObjForUnity(obj["category"].(string)) {
+
+	if models.IsHierarchical(path) && IsInObjForUnity(obj["category"].(string)) {
 		InformOgree3DOptional("DeleteObj", -1, map[string]any{"type": "delete", "data": obj["id"].(string)})
+	} else if models.IsTag(path, nil) && IsEntityTypeForOGrEE3D(TAG) {
+		InformOgree3DOptional("DeleteObj", -1, map[string]any{"type": "delete-tag", "data": obj["slug"].(string)})
 	}
+
 	if path == State.CurrPath {
 		CD(TranslatePath(".."))
 	}
+
 	return nil
 }
 
@@ -305,10 +277,15 @@ func UpdateObj(path string, data map[string]any) (map[string]any, error) {
 
 	//Determine if Unity requires the message as
 	//Interact or Modify
+	entityType := EntityStrToInt(category)
+	if models.IsTag(path, nil) {
+		entityType = TAG
+	}
+
 	message := map[string]any{}
 	var key string
 
-	if category == "room" && (data["tilesName"] != nil || data["tilesColor"] != nil) {
+	if entityType == ROOM && (data["tilesName"] != nil || data["tilesColor"] != nil) {
 		println("Room modifier detected")
 		Disp(data)
 
@@ -321,14 +298,14 @@ func UpdateObj(path string, data map[string]any) (map[string]any, error) {
 			"param": key,
 			"value": data[key],
 		}
-	} else if category == "rack" && data["U"] != nil {
+	} else if entityType == RACK && data["U"] != nil {
 		message["type"] = "interact"
 		message["data"] = map[string]any{
 			"id":    obj["id"],
 			"param": "U",
 			"value": data["U"],
 		}
-	} else if (category == "device" || category == "rack") &&
+	} else if (entityType == DEVICE || entityType == RACK) &&
 		(data["alpha"] != nil || data["slots"] != nil || data["localCS"] != nil) {
 
 		//Get interactive key
@@ -340,21 +317,31 @@ func UpdateObj(path string, data map[string]any) (map[string]any, error) {
 			"param": key,
 			"value": data[key],
 		}
-	} else if category == "group" && data["content"] != nil {
+	} else if entityType == GROUP && data["content"] != nil {
 		message["type"] = "interact"
 		message["data"] = map[string]any{
 			"id":    obj["id"],
 			"param": "content",
 			"value": data["content"],
 		}
+	} else if entityType == TAG {
+		oldSlug, err := models.ObjectSlug(path)
+		if err != nil {
+			return nil, err
+		}
+
+		message["type"] = "modify-tag"
+		message["data"] = map[string]any{
+			"old-slug": oldSlug,
+			"tag":      resp.body["data"],
+		}
 	} else {
 		message["type"] = "modify"
 		message["data"] = resp.body["data"]
 	}
 
-	if IsInObjForUnity(category) {
-		entInt := EntityStrToInt(category)
-		InformOgree3DOptional("UpdateObj", entInt, message)
+	if IsEntityTypeForOGrEE3D(entityType) {
+		InformOgree3DOptional("UpdateObj", entityType, message)
 	}
 
 	return resp.body, nil
@@ -466,7 +453,7 @@ func UnsetInObj(Path, attr string, idx int) (map[string]interface{}, error) {
 		"type": "modify", "data": resp.body["data"]}
 
 	//Update and inform unity
-	if IsHierarchical(Path) && IsInObjForUnity(entity) {
+	if models.IsHierarchical(Path) && IsInObjForUnity(entity) {
 		entInt := EntityStrToInt(entity)
 		InformOgree3DOptional("UpdateObj", entInt, message)
 	}
@@ -584,7 +571,7 @@ func LSOBJECT(path string, entity int) ([]interface{}, error) {
 			return nil, err
 		}
 		var suffix string
-		if startsWith(url, "/api/objects", &suffix) {
+		if utils.StartsWith(url, "/api/objects", &suffix) {
 			url = fmt.Sprintf("/api/%ss%s/%ss", obj["category"].(string), suffix, EntityToString(entity))
 		} else {
 			return nil, fmt.Errorf("unexpected CLI error")
@@ -1467,7 +1454,7 @@ func FocusUI(path string) error {
 			return err
 		}
 		category := EntityStrToInt(obj["category"].(string))
-		if IsNonHierarchical(path) || category == SITE || category == BLDG || category == ROOM {
+		if models.IsNonHierarchical(path) || category == SITE || category == BLDG || category == ROOM {
 			msg := "You cannot focus on this object. Note you cannot" +
 				" focus on Sites, Buildings and Rooms. " +
 				"For more information please refer to the help doc  (man >)"
@@ -1501,7 +1488,7 @@ func LinkObject(source string, destination string, posUOrSlot string) error {
 	if !strings.HasPrefix(sourceUrl, "/api/stray-objects/") {
 		return fmt.Errorf("only stray objects can be linked")
 	}
-	destId, err := ObjectId(destination)
+	destId, err := models.ObjectId(destination)
 	if err != nil {
 		return err
 	}

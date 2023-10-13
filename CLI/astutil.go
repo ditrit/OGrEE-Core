@@ -2,6 +2,7 @@ package main
 
 import (
 	cmd "cli/controllers"
+	"cli/models"
 	"encoding/hex"
 	"encoding/json"
 	"errors"
@@ -313,11 +314,11 @@ func checkIfTemplate(name string, ent int) bool {
 	var location string
 	switch ent {
 	case cmd.BLDG:
-		location = "/Logical/BldgTemplates/" + name
+		location = models.BuildingTemplatesPath + name
 	case cmd.ROOM:
-		location = "/Logical/RoomTemplates/" + name
+		location = models.RoomTemplatesPath + name
 	default:
-		location = "/Logical/ObjectTemplates/" + name
+		location = models.ObjectTemplatesPath + name
 	}
 	_, err := cmd.Tree(location, 0)
 	return err == nil

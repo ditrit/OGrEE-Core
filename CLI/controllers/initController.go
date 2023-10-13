@@ -209,6 +209,7 @@ func SetObjsForUnity(objs []string) []int {
 			res = append(res, idx)
 		}
 		res = append(res, DOMAIN)
+		res = append(res, TAG)
 	}
 	return res
 }

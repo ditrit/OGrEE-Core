@@ -5,6 +5,7 @@ import (
 	"cli/config"
 	c "cli/controllers"
 	cmd "cli/controllers"
+	"cli/models"
 	"encoding/json"
 	"fmt"
 	"path/filepath"
@@ -693,7 +694,7 @@ func (n *updateObjNode) execute() (interface{}, error) {
 	}
 	for _, path := range paths {
 		var err error
-		if cmd.IsTag(path, nil) {
+		if models.IsTag(path, nil) {
 			if n.attr == "slug" {
 				var newSlug string
 				newSlug, err = stringToSlug(values[0].(string))
