@@ -11,6 +11,7 @@ import (
 	"log"
 	"math/rand"
 	"net/http"
+	"net/url"
 	"os"
 	"os/exec"
 	pathutil "path"
@@ -47,28 +48,88 @@ func startsWith(s string, prefix string, suffix *string) bool {
 	return false
 }
 
-func ObjectUrl(path string, depth int) (string, error) {
+func buildObjectUrl(baseUrl string, pathSuffix string, depth int) string {
+	pathSuffix = strings.Replace(pathSuffix, "/", ".", -1)
+	baseUrl += "/" + pathSuffix
+	params := url.Values{}
+	if depth > 0 {
+		baseUrl += "/all"
+		params.Add("limit", strconv.Itoa(depth))
+	}
+	url, _ := url.Parse(baseUrl)
+	url.RawQuery = params.Encode()
+	return url.String()
+}
+
+func ObjectUrlNonPhysical(path string, depth int) (string, error) {
 	var suffix string
-	var url string
+	var baseUrl string
 	if startsWith(path, "/Physical/Stray/", &suffix) {
-		url = "/api/stray-objects"
-	} else if startsWith(path, "/Physical/", &suffix) {
-		url = "/api/objects"
+		baseUrl = "/api/stray-objects"
 	} else if startsWith(path, "/Logical/ObjectTemplates/", &suffix) {
-		url = "/api/obj-templates"
+		baseUrl = "/api/obj-templates"
 	} else if startsWith(path, "/Logical/RoomTemplates/", &suffix) {
-		url = "/api/room-templates"
+		baseUrl = "/api/room-templates"
 	} else if startsWith(path, "/Logical/BldgTemplates/", &suffix) {
-		url = "/api/bldg-templates"
+		baseUrl = "/api/bldg-templates"
 	} else if startsWith(path, "/Logical/Groups/", &suffix) {
-		url = "/api/groups"
+		baseUrl = "/api/groups"
 	} else if startsWith(path, "/Organisation/Domain/", &suffix) {
-		url = "/api/domains"
+		baseUrl = "/api/domains"
+	} else {
+		return "", fmt.Errorf("invalid object path")
+	}
+	return buildObjectUrl(baseUrl, suffix, depth), nil
+}
+
+func ObjectUrl(path string, category string, depth int) (string, error) {
+	var suffix string
+	var baseUrl string
+	if !startsWith(path, "/Physical/", &suffix) ||
+		startsWith(path, "/Physical/Stray/", &suffix) {
+		return ObjectUrlNonPhysical(path, depth)
+	}
+	return buildObjectUrl(baseUrl, suffix, depth), nil
+}
+
+func ObjectUrlGeneric(path string, depth int, filters map[string]string) (string, error) {
+	params := url.Values{}
+	var suffix string
+	if startsWith(path, "/Physical/Stray/", &suffix) {
+		params.Add("namespace", "physical")
+		params.Add("parentId", "")
+	} else if startsWith(path, "/Physical/", &suffix) {
+		params.Add("namespace", "physical")
+		params.Add("parentId", "*")
+	} else if startsWith(path, "/Logical/ObjectTemplates/", &suffix) {
+		params.Add("namespace", "logical")
+	} else if startsWith(path, "/Logical/RoomTemplates/", &suffix) {
+		params.Add("namespace", "logical")
+		params.Add("category", "room")
+	} else if startsWith(path, "/Logical/BldgTemplates/", &suffix) {
+		params.Add("namespace", "logical")
+		params.Add("category", "building")
+	} else if startsWith(path, "/Logical/Groups/", &suffix) {
+		params.Add("namespace", "logical")
+		params.Add("category", "group")
+	} else if startsWith(path, "/Organisation/Domain/", &suffix) {
+		params.Add("namespace", "organisational")
 	} else {
 		return "", fmt.Errorf("invalid object path")
 	}
 	suffix = strings.Replace(suffix, "/", ".", -1)
-	return url + "/" + suffix, nil
+	params.Add("id", suffix)
+	if depth > 0 {
+		params.Add("depth", strconv.Itoa(depth))
+	}
+	if filters != nil {
+		for key, value := range filters {
+			params.Add(key, value)
+		}
+	}
+	url, _ := url.Parse("/api/objects")
+	url.RawQuery = params.Encode()
+	return url.String(), nil
 }
 
 func IsTemplate(path string) bool {
@@ -83,17 +144,6 @@ func IsTemplate(path string) bool {
 	}
 }
 
-func ObjectUrlWithEntity(path string, depth int, category string) (string, error) {
-	url, err := ObjectUrl(path, depth)
-	if err != nil {
-		return "", err
-	}
-	if strings.HasPrefix(url, "/api/objects/") {
-		url = fmt.Sprintf("/api/%ss/%s", category, url[len("/api/objects/"):])
-	}
-	return url, nil
-}
-
 func ObjectId(path string) (string, error) {
 	var suffix string
 	if startsWith(path, "/Physical/", &suffix) {
@@ -103,12 +153,9 @@ func ObjectId(path string) (string, error) {
 }
 
 func PollObjectWithChildren(path string, depth int) (map[string]any, error) {
-	url, err := ObjectUrl(path, depth)
+	url, err := ObjectUrlGeneric(path, depth, nil)
 	if err != nil {
 		return nil, nil
-	}
-	if depth > 0 && !IsTemplate(path) {
-		url = fmt.Sprintf("%s/all?limit=%d", url, depth)
 	}
 	resp, err := RequestAPI("GET", url, nil, http.StatusOK)
 	if err != nil {
@@ -117,7 +164,17 @@ func PollObjectWithChildren(path string, depth int) (map[string]any, error) {
 		}
 		return nil, err
 	}
-	obj, ok := resp.body["data"].(map[string]any)
+	objs, ok := resp.body["data"].([]any)
+	if !ok {
+		return nil, fmt.Errorf("invalid response from API on GET %s", url)
+	}
+	if len(objs) == 0 {
+		return nil, nil
+	}
+	if len(objs) > 1 {
+		return nil, fmt.Errorf("a single object was expected on GET %s, but got several", url)
+	}
+	obj, ok := objs[0].(map[string]any)
 	if !ok {
 		return nil, fmt.Errorf("invalid response from API on GET %s", url)
 	}
@@ -176,17 +233,98 @@ func GetObjectsWildcard(path string) ([]map[string]any, []string, error) {
 	return objs, paths, nil
 }
 
-func Ls(path string) ([]string, error) {
+func lsObjectsWithoutFilters(path string) ([]map[string]any, error) {
 	n, err := Tree(path, 1)
 	if err != nil {
 		return nil, err
 	}
-	res := []string{}
+	objects := []map[string]any{}
 	for _, child := range n.Childs {
-		res = append(res, child.Name)
+
+		if child.Obj != nil {
+			objects = append(objects, child.Obj)
+		} else {
+			objects = append(objects, map[string]any{"name": child.Name})
+		}
 	}
-	sort.Strings(res)
-	return res, nil
+	return objects, nil
+}
+
+func lsObjectsWithFilters(path string, filters map[string]string) ([]map[string]any, error) {
+	url, err := ObjectUrlGeneric(path, 1, filters)
+	if err != nil {
+		return nil, fmt.Errorf("cannot use filters at this location")
+	}
+	resp, err := RequestAPI("GET", url, nil, http.StatusOK)
+	if err != nil {
+		return nil, err
+	}
+	objectsAny := resp.body["data"].([]any)
+	objects := []map[string]any{}
+	for _, objAny := range objectsAny {
+		obj, ok := objAny.(map[string]any)
+		if !ok {
+			return nil, fmt.Errorf("invalid response from API on GET %s", url)
+		}
+		objects = append(objects, obj)
+	}
+	return objects, nil
+}
+
+func filterObjectsWithoutAttr(objects []map[string]any, attr string) []map[string]any {
+	remainingObjects := []map[string]any{}
+	for _, obj := range objects {
+		_, hasAttr := utils.ObjectAttr(obj, attr)
+		if hasAttr {
+			remainingObjects = append(remainingObjects, obj)
+		}
+	}
+	return remainingObjects
+}
+
+func objectsAreSortable(objects []map[string]any, attr string) bool {
+	for i := 1; i < len(objects); i++ {
+		val0, _ := utils.ObjectAttr(objects[0], attr)
+		vali, _ := utils.ObjectAttr(objects[i], attr)
+		_, comparable := utils.CompareVals(val0, vali)
+		if !comparable {
+			return false
+		}
+	}
+	return true
+}
+
+func Ls(path string, filters map[string]string, sortAttr string) ([]map[string]any, error) {
+	var objects []map[string]any
+	var err error
+	if len(filters) == 0 {
+		objects, err = lsObjectsWithoutFilters(path)
+		if err != nil {
+			return nil, err
+		}
+	} else {
+		objects, err = lsObjectsWithFilters(path, filters)
+		if err != nil {
+			return nil, err
+		}
+	}
+	if sortAttr != "" {
+		objects = filterObjectsWithoutAttr(objects, sortAttr)
+		if !objectsAreSortable(objects, sortAttr) {
+			return nil, fmt.Errorf("objects cannot be sorted according to this attribute")
+		}
+	}
+	less := func(i, j int) bool {
+		if sortAttr != "" {
+			vali, _ := utils.ObjectAttr(objects[i], sortAttr)
+			valj, _ := utils.ObjectAttr(objects[j], sortAttr)
+			res, _ := utils.CompareVals(vali, valj)
+			return res
+		}
+		return utils.NameOrSlug(objects[i]) < utils.NameOrSlug(objects[j])
+	}
+	sort.Slice(objects, less)
+	return objects, nil
 }
 
 func DeleteObj(path string) error {
@@ -194,7 +332,7 @@ func DeleteObj(path string) error {
 	if err != nil {
 		return err
 	}
-	url, err := ObjectUrl(path, 0)
+	url, err := ObjectUrlGeneric(path, 0, nil)
 	if err != nil {
 		return err
 	}
@@ -275,7 +413,7 @@ func UpdateObj(path string, data map[string]any) (map[string]any, error) {
 		return nil, err
 	}
 	category := obj["category"].(string)
-	url, err := ObjectUrlWithEntity(path, 0, category)
+	url, err := ObjectUrl(path, category, 0)
 	if err != nil {
 		return nil, err
 	}
@@ -356,7 +494,7 @@ func UnsetAttribute(path string, attr string) error {
 	}
 	delete(attributes, attr)
 	category := obj["category"].(string)
-	url, err := ObjectUrlWithEntity(path, 0, category)
+	url, err := ObjectUrl(path, category, 0)
 	if err != nil {
 		return err
 	}
@@ -434,7 +572,7 @@ func UnsetInObj(Path, attr string, idx int) (map[string]interface{}, error) {
 
 	//Send to API and update Unity
 	entity := obj["category"].(string)
-	URL, err := ObjectUrlWithEntity(Path, 0, entity)
+	URL, err := ObjectUrl(Path, entity, 0)
 	if err != nil {
 		return nil, err
 	}
@@ -559,38 +697,6 @@ func Env(userVars, userFuncs map[string]interface{}) {
 	for name, _ := range userFuncs {
 		fmt.Println("Name:", name)
 	}
-}
-
-func LSOBJECT(path string, entity int) []interface{} {
-	var Path string
-
-	if entity == SITE { //Special for sites case
-		if path == "/Physical" {
-			Path = State.APIURL + "/api"
-		} else {
-			//Return nothing
-			return nil
-		}
-	} else {
-		var err error
-		Path, err = ObjectUrl(path, 0)
-		if err != nil {
-			if State.DebugLvl > 0 {
-				println("Error finding Object from given path!")
-			}
-			l.GetWarningLogger().Println("Object to Get not found")
-			return nil
-		}
-	}
-
-	//Retrieve the desired objects under the working path
-	entStr := EntityToString(entity) + "s"
-	r, e := models.Send("GET", Path+"/"+entStr, GetKey(), nil)
-	parsed := ParseResponse(r, e, "list objects")
-	if parsed == nil {
-		return nil
-	}
-	return GetRawObjects(parsed)
 }
 
 func GetByAttr(path string, u interface{}) error {
@@ -1461,7 +1567,7 @@ func FocusUI(path string) error {
 }
 
 func LinkObject(source string, destination string, posUOrSlot string) error {
-	sourceUrl, err := ObjectUrl(source, 0)
+	sourceUrl, err := ObjectUrlNonPhysical(source, 0)
 	if err != nil {
 		return err
 	}
@@ -1489,7 +1595,7 @@ func UnlinkObject(path string) error {
 		return err
 	}
 	category := obj["category"].(string)
-	sourceUrl, err := ObjectUrlWithEntity(path, 0, category)
+	sourceUrl, err := ObjectUrl(path, category, 0)
 	if err != nil {
 		return err
 	}
@@ -1837,217 +1943,6 @@ func InformUnity(caller string, entity int, data map[string]interface{}) error {
 			}
 			return fmt.Errorf("error while contacting unity : %s", e.Error())
 		}
-	}
-	return nil
-}
-
-// x is path
-func LSOBJECTRecursive(path string, entity int) ([]interface{}, error) {
-	var obj map[string]interface{}
-	var err error
-
-	if entity == SITE { //Edge case
-		if path == "/Physical" {
-			r, e := models.Send("GET",
-				State.APIURL+"/api/sites", GetKey(), nil)
-			obj = ParseResponse(r, e, "Get Sites")
-			return LoadArrFromResp(obj, "objects"), nil
-		} else {
-			//Return nothing
-			return nil, nil
-		}
-	} else {
-		obj, err = GetObject(path)
-		if err != nil {
-			return nil, err
-		}
-	}
-
-	objEnt := obj["category"].(string)
-	obi := EntityStrToInt(objEnt)
-
-	//YouareAt -> obi
-	//want 	   -> entity
-
-	if (entity >= AC && entity <= CORRIDOR) && obi > ROOM {
-		return nil, nil
-	}
-
-	if entity < AC && obi > entity {
-		return nil, nil
-	}
-
-	//println(entities)
-	var idToSend string
-	if obi == SITE {
-		idToSend = obj["name"].(string)
-	} else {
-		idToSend = obj["id"].(string)
-	}
-	//println(entities)
-	//println(obi)
-	//println("WANT:", EntityToString(entity))
-	return lsobjHelperRecursive(State.APIURL, idToSend, obi, entity), nil
-	//return nil
-}
-
-// NOTE: LSDEV is recursive while LSSENSOR is not
-// Code could be more tidy
-func lsobjHelperRecursive(api, objID string, curr, entity int) []interface{} {
-	var ext, URL string
-	if entity == SENSOR && (curr == BLDG || curr == ROOM || curr == RACK || curr == DEVICE) {
-		ext = EntityToString(curr) + "s/" + objID + "/" + EntityToString(entity) + "s"
-		URL = State.APIURL + "/api/" + ext
-		r, e := models.Send("GET", URL, GetKey(), nil)
-		tmp := ParseResponse(r, e, "getting objects")
-		if tmp == nil {
-			return nil
-		}
-
-		tmpObjs := LoadArrFromResp(tmp, "objects")
-		if tmp == nil {
-			return nil
-		}
-		//res := infArrToMapStrinfArr(tmpObjs)
-		return tmpObjs
-
-	} else if entity-curr >= 2 {
-
-		//println("DEBUG-should be here")
-		ext = EntityToString(curr) + "s/" + objID + "/" + EntityToString(curr+2) + "s"
-		URL = State.APIURL + "/api/" + ext
-		//println("DEBUG-URL:", URL)
-
-		//EDGE CASE, if user is at a BLDG and requests object of room
-		if (curr == BLDG || curr == ROOM) && (entity >= AC && entity <= CORRIDOR) {
-			ext = EntityToString(curr) + "s/" + objID + "/" + EntityToString(entity) + "s"
-			r, e := models.Send("GET", State.APIURL+"/api/"+ext, GetKey(), nil)
-			tmp := ParseResponse(r, e, "getting objects")
-			if tmp == nil {
-				return nil
-			}
-
-			return GetRawObjects(tmp)
-
-		}
-		//END OF EDGE CASE BLOCK
-
-		r, e := models.Send("GET", URL, GetKey(), nil)
-		resp := ParseResponse(r, e, "getting objects")
-		if resp == nil {
-			println("return nil1")
-			return nil
-		}
-
-		//objs -> resp["data"]["objects"]
-		objs := LoadArrFromResp(resp, "objects")
-		if objs != nil {
-			x := []interface{}{}
-
-			if entity >= AC && entity <= CORRIDOR {
-
-				for q := range objs {
-					id := objs[q].(map[string]interface{})["id"].(string)
-					ext2 := "/api/" + EntityToString(curr+2) + "s/" + id + "/" + EntityToString(entity) + "s"
-
-					tmp, e := models.Send("GET", State.APIURL+ext2, GetKey(), nil)
-					tmp2 := ParseResponse(tmp, e, "get objects")
-					if tmp2 != nil {
-						x = GetRawObjects(tmp2)
-					}
-				}
-			} else {
-				if entity == DEVICE && curr == ROOM {
-					x = append(x, objs...)
-				}
-				for i := range objs {
-					rest := lsobjHelperRecursive(api, objs[i].(map[string]interface{})["id"].(string), curr+2, entity)
-					if rest != nil && len(rest) > 0 {
-						x = append(x, rest...)
-					}
-
-				}
-			}
-
-			if State.DebugLvl > 3 {
-				println(len(x))
-			}
-
-			return x
-		}
-
-	} else if entity-curr >= 1 {
-		//println("DEBUG-must be here")
-		ext := EntityToString(curr) + "s/" + objID + "/" + EntityToString(curr+1) + "s"
-		URL := State.APIURL + "/api/" + ext
-		r, e := models.Send("GET", URL, GetKey(), nil)
-		//println("DEBUG-URL SENT:", URL)
-		resp := ParseResponse(r, e, "getting objects")
-		if resp == nil {
-			println("return nil")
-			return nil
-		}
-		//objs := resp["data"]["objects"]
-		objs := LoadArrFromResp(resp, "objects")
-		if objs != nil {
-			ans := []interface{}{}
-			//For associated objects of room
-			if entity >= AC && entity <= CORRIDOR {
-				for i := range objs {
-					ext2 := "/api/" + EntityToString(curr) + "s/" +
-						objs[i].(map[string]interface{})["id"].(string) +
-						"/" + EntityToString(entity) + "s"
-
-					tmp, e := models.Send("GET", State.APIURL+ext2, GetKey(), nil)
-					x := ParseResponse(tmp, e, "get objects")
-					if x != nil {
-						ans = append(ans, x)
-					}
-				}
-			} else {
-
-				ans = objs
-				if curr == RACK && entity == DEVICE {
-					for idx := range ans {
-						ext2 := "/api/" + EntityToString(entity) +
-							"s/" +
-							ans[idx].(map[string]interface{})["id"].(string) +
-							"/" + EntityToString(entity) + "s"
-
-						subURL := State.APIURL + ext2
-						r1, e1 := models.Send("GET", subURL, GetKey(), nil)
-						tmp1 := ParseResponse(r1, e1, "getting objects")
-
-						tmp2 := LoadArrFromResp(tmp1, "objects")
-						if tmp2 != nil {
-							//Swap ans and objs to keep order
-							ans = append(ans, tmp2...)
-						}
-
-					}
-
-				}
-			}
-
-			return ans
-		}
-
-	} else if entity-curr == 0 { //Base Case
-
-		//For devices we have to make hierarchal call
-		if entity == DEVICE {
-			URL = State.APIURL + "/api/" + EntityToString(curr) + "s/" + objID + "/devices"
-		} else {
-			URL = State.APIURL + "/api/" + EntityToString(curr) + "s/" + objID
-		}
-
-		resp, e := models.Send("GET", URL, GetKey(), nil)
-		x := ParseResponse(resp, e, "get object")
-		if entity == DEVICE {
-			return GetRawObjects(x)
-
-		}
-		return []interface{}{x["data"]}
 	}
 	return nil
 }

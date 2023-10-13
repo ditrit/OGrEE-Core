@@ -70,29 +70,6 @@ func ParseResponse(resp *http.Response, e error, purpose string) map[string]inte
 	return ans
 }
 
-// Checks the map as x["data"].(map[string]interface{})["objects"]
-func GetRawObjectsLength(x map[string]interface{}) (int, error) {
-	if objs := GetRawObjects(x); objs != nil {
-		return len(objs), nil
-	}
-	return -1, fmt.Errorf("Response did not meet schema spec")
-}
-
-func GetRawObjects(x map[string]interface{}) []interface{} {
-	if x != nil {
-		if dataInf, ok := x["data"]; ok {
-			if data, ok := dataInf.(map[string]interface{}); ok {
-				if objInf, ok := data["objects"]; ok {
-					if objects, ok := objInf.([]interface{}); ok {
-						return objects
-					}
-				}
-			}
-		}
-	}
-	return nil
-}
-
 func LoadArrFromResp(resp map[string]interface{}, idx string) []interface{} {
 	if data, ok := resp["data"].(map[string]interface{}); ok {
 		if objs, ok1 := data[idx].([]interface{}); ok1 {
