@@ -33,11 +33,11 @@ class TenantCard extends StatelessWidget {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Container(
+                  SizedBox(
                     height: 24,
                     child: Badge(
                       backgroundColor: Colors.blue.shade600,
-                      label: Text(" TENANT "),
+                      label: const Text(" TENANT "),
                     ),
                   ),
                   Row(
@@ -84,8 +84,8 @@ class TenantCard extends StatelessWidget {
                 children: [
                   Icon(Icons.circle,
                       color: getTenantStatusColor(tenant.status), size: 10),
-                  SizedBox(width: 6),
-                  Container(
+                  const SizedBox(width: 6),
+                  SizedBox(
                     width: 160,
                     child: Text(tenant.name,
                         overflow: TextOverflow.clip,

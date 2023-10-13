@@ -20,7 +20,7 @@ class _DomainViewState extends State<DomainView> {
   @override
   Widget build(BuildContext context) {
     final localeMsg = AppLocalizations.of(context)!;
-    final _isSmallDisplay = IsSmallDisplay(MediaQuery.of(context).size.width);
+    final isSmallDisplay = IsSmallDisplay(MediaQuery.of(context).size.width);
     return Stack(children: [
       TreeAppControllerScope(
         controller: appController,
@@ -51,7 +51,7 @@ class _DomainViewState extends State<DomainView> {
               }
               return Stack(children: [
                 const CustomTreeView(isTenantMode: true),
-                _isSmallDisplay
+                isSmallDisplay
                     ? Container()
                     : const Align(
                         alignment: Alignment.topRight,

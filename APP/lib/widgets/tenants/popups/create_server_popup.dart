@@ -167,7 +167,7 @@ class _CreateServerPopupState extends State<CreateServerPopup> {
                                 const SizedBox(width: 8),
                                 Text(
                                   localeMsg.runAtStart,
-                                  style: TextStyle(
+                                  style: const TextStyle(
                                     fontSize: 14,
                                     color: Colors.black,
                                   ),
@@ -244,17 +244,18 @@ class _CreateServerPopupState extends State<CreateServerPopup> {
         serverInfo['password'] = _sshPassword!;
       }
 
+      final messenger = ScaffoldMessenger.of(context);
       final result = await createBackendServer(serverInfo);
       switch (result) {
         case Success():
           widget.parentCallback();
-          showSnackBar(context, localeMsg.createOK, isSuccess: true);
-          Navigator.of(context).pop();
+          showSnackBar(messenger, localeMsg.createOK, isSuccess: true);
+          if (context.mounted) Navigator.of(context).pop();
         case Failure(exception: final exception):
           setState(() {
             _isLoading = false;
           });
-          showSnackBar(context, exception.toString(), isError: true);
+          showSnackBar(messenger, exception.toString(), isError: true);
       }
     }
   }

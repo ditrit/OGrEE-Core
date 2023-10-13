@@ -5,7 +5,7 @@ import 'common.dart';
 
 void main() {
   testWidgets('SelectDate can toogle between tabs', (tester) async {
-    await tester.pumpWidget(LocalizationsInjApp(child: SelectDate()));
+    await tester.pumpWidget(const LocalizationsInjApp(child: SelectDate()));
     expect(find.text('Choisir les dates'), findsOneWidget);
     expect(find.textContaining('disponibles'), findsWidgets);
 

@@ -74,7 +74,8 @@ class DockerView extends StatelessWidget {
       case Success(value: final value):
         _dockerInfo = value;
       case Failure(exception: final exception):
-        showSnackBar(context, exception.toString(), isError: true);
+        showSnackBar(ScaffoldMessenger.of(context), exception.toString(),
+            isError: true);
         _dockerInfo = [];
     }
   }

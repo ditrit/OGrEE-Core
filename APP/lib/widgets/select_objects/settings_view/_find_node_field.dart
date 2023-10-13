@@ -57,13 +57,13 @@ class __FindNodeFieldState extends State<_FindNodeField> {
 
     if (node == null) {
       showSnackBar(
-        context,
+        ScaffoldMessenger.of(context),
         '${localeMsg.noNodeFound} $id',
         duration: const Duration(seconds: 3),
       );
     } else {
       showSnackBar(
-        context,
+        ScaffoldMessenger.of(context),
         '${localeMsg.nodeFound} ${node.id}',
         isSuccess: true,
       );

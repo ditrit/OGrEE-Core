@@ -34,7 +34,7 @@ void main() {
   });
 
   testWidgets('SelectObjects toogles tree selection', (tester) async {
-    await tester.pumpWidget(LocalizationsInjApp(
+    await tester.pumpWidget(const LocalizationsInjApp(
         child: SelectObjects(
       dateRange: "",
       load: true,
@@ -88,7 +88,7 @@ void main() {
   testWidgets('SelectObjects can filter objects', (tester) async {
     return;
     await tester.binding.setSurfaceSize(const Size(1000, 1000));
-    await tester.pumpWidget(LocalizationsInjApp(
+    await tester.pumpWidget(const LocalizationsInjApp(
         child: SelectObjects(
       dateRange: "",
       load: true,

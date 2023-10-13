@@ -25,8 +25,8 @@ class _NodeActionsChipState extends State<_NodeActionsChip> {
           child: ListTile(
             dense: true,
             title: Text(AppLocalizations.of(context)!.toggleSelection),
-            contentPadding: EdgeInsets.symmetric(horizontal: 4),
-            leading: Icon(Icons.account_tree_rounded, color: _kDarkBlue),
+            contentPadding: const EdgeInsets.symmetric(horizontal: 4),
+            leading: const Icon(Icons.account_tree_rounded, color: _kDarkBlue),
           ),
         ),
       ],

@@ -53,6 +53,8 @@
   "openLastDataset": "Last saved dataset",
   "openSavedDataser": "Pick a dataset",
   "useLastDataSet": "Use the last dataset saved:",
+  "allData": "All datasets",
+  "allDataBase": "Use all data avaiable in the database",
 
   "whatNamespace": "Select a namespace:",
 

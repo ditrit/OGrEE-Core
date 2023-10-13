@@ -137,7 +137,7 @@ class _UserViewState extends State<UserView> {
                             label:
                                 isSmallDisplay ? null : Text(localeMsg.search),
                             prefixIcon: isSmallDisplay
-                                ? Icon(Icons.search_rounded)
+                                ? const Icon(Icons.search_rounded)
                                 : null,
                           )),
                     ),
@@ -259,6 +259,7 @@ class _UserViewState extends State<UserView> {
   }
 
   getUsers() async {
+    final messenger = ScaffoldMessenger.of(context);
     final result = await fetchApiUsers();
     switch (result) {
       case Success(value: final value):
@@ -271,7 +272,7 @@ class _UserViewState extends State<UserView> {
           widget.parentCallback!();
         }
       case Failure(exception: final exception):
-        showSnackBar(context, exception.toString(), isError: true);
+        showSnackBar(messenger, exception.toString(), isError: true);
         _users = [];
     }
     _loadUsers = false;

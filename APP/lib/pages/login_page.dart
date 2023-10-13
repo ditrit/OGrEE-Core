@@ -13,12 +13,6 @@ class LoginPage extends StatefulWidget {
 }
 
 class _LoginPageState extends State<LoginPage> {
-  static const inputStyle = OutlineInputBorder(
-    borderSide: BorderSide(
-      color: Colors.grey,
-      width: 1,
-    ),
-  );
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -45,7 +39,7 @@ class _LoginPageState extends State<LoginPage> {
                     ? ResetCard(
                         token: widget.resetToken,
                       )
-                    : LoginCard(),
+                    : const LoginCard(),
               ],
             ),
           )

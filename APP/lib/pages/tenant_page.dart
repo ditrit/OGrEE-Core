@@ -18,13 +18,13 @@ class TenantPage extends StatefulWidget {
   const TenantPage({super.key, required this.userEmail, this.tenant});
 
   @override
-  State<TenantPage> createState() => _TenantPageState();
+  State<TenantPage> createState() => TenantPageState();
 
-  static _TenantPageState? of(BuildContext context) =>
-      context.findAncestorStateOfType<_TenantPageState>();
+  static TenantPageState? of(BuildContext context) =>
+      context.findAncestorStateOfType<TenantPageState>();
 }
 
-class _TenantPageState extends State<TenantPage> with TickerProviderStateMixin {
+class TenantPageState extends State<TenantPage> with TickerProviderStateMixin {
   late TabController _tabController;
   late final TreeAppController appController = TreeAppController();
   bool _isLocked = true;
@@ -148,7 +148,7 @@ class _TenantPageState extends State<TenantPage> with TickerProviderStateMixin {
     List<Widget> views = [
       _isLocked && widget.tenant != null
           ? LockedView(tenant: widget.tenant!, parentCallback: unlockView)
-          : ApiStatsView(),
+          : const ApiStatsView(),
       _isLocked && widget.tenant != null
           ? LockedView(tenant: widget.tenant!, parentCallback: unlockView)
           : DomainView(),

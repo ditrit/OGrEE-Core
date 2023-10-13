@@ -109,10 +109,10 @@ Future<Result<BackendType, Exception>> fetchApiVersion(String urlApi,
       if (data["isKubernetes"] != null) {
         if (data["isKubernetes"] == true) {
           backendType = BackendType.kubernetes;
-          return Success(BackendType.kubernetes);
+          return const Success(BackendType.kubernetes);
         } else {
           backendType = BackendType.docker;
-          return Success(BackendType.docker);
+          return const Success(BackendType.docker);
         }
       } else {
         data = (Map<String, dynamic>.from(data["data"]));
@@ -120,15 +120,15 @@ Future<Result<BackendType, Exception>> fetchApiVersion(String urlApi,
           tenantName = data["Customer"];
           backendType = BackendType.tenant;
           print(tenantName);
-          return Success(BackendType.tenant);
+          return const Success(BackendType.tenant);
         } else {
           backendType = BackendType.unavailable;
-          return Success(BackendType.unavailable);
+          return const Success(BackendType.unavailable);
         }
       }
     } else if (response.statusCode == 403) {
       backendType = BackendType.tenant;
-      return Success(BackendType.tenant);
+      return const Success(BackendType.tenant);
     } else {
       return Failure(Exception("Unable to get version from server"));
     }

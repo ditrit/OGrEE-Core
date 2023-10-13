@@ -138,9 +138,11 @@ class ResetCard extends StatelessWidget {
     if (_formKey.currentState!.validate()) {
       _formKey.currentState!.save();
       if (_password != _confirmPassword) {
-        showSnackBar(context, localeMsg.passwordNoMatch, isError: true);
+        showSnackBar(ScaffoldMessenger.of(context), localeMsg.passwordNoMatch,
+            isError: true);
         return;
       }
+      final messenger = ScaffoldMessenger.of(context);
       final result =
           await userResetPassword(_password!, _token!, userUrl: _apiUrl);
       switch (result) {
@@ -148,13 +150,14 @@ class ResetCard extends StatelessWidget {
           resetSucces(localeMsg, context);
         case Failure(exception: final exception):
           print(exception);
-          showSnackBar(context, exception.toString().trim(), isError: true);
+          showSnackBar(messenger, exception.toString().trim(), isError: true);
       }
     }
   }
 
   resetSucces(AppLocalizations localeMsg, BuildContext context) {
-    showSnackBar(context, localeMsg.modifyOK, isSuccess: true);
+    showSnackBar(ScaffoldMessenger.of(context), localeMsg.modifyOK,
+        isSuccess: true);
     Navigator.of(context).push(
       MaterialPageRoute(
         builder: (context) => const LoginPage(),

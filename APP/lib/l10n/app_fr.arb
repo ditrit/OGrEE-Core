@@ -64,6 +64,8 @@
   "openLastDataset": "Ouvrir le dernier jeu de données",
   "openSavedDataser": "Ouvrir un jeu de données enregistré",
   "useLastDataSet": "Utiliser le dernier jeu de données :",
+  "allData": "Toutes les données",
+  "allDataBase": "Toutes les données disponibles dans la base",
 
   "whatNamespace": "Sélectionnez le type de namespace :",
 

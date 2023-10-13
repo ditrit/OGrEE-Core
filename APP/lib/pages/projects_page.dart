@@ -20,7 +20,7 @@ import 'package:ogree_app/widgets/tools/tool_card.dart';
 class ProjectsPage extends StatefulWidget {
   final String userEmail;
   final bool isTenantMode;
-  ProjectsPage(
+  const ProjectsPage(
       {super.key, required this.userEmail, required this.isTenantMode});
 
   @override
@@ -126,6 +126,7 @@ class _ProjectsPageState extends State<ProjectsPage> {
   }
 
   getProjectData() async {
+    final messenger = ScaffoldMessenger.of(context);
     if (widget.isTenantMode) {
       final result = await fetchApplications();
       switch (result) {
@@ -163,7 +164,7 @@ class _ProjectsPageState extends State<ProjectsPage> {
             _gotData = true;
           });
         case Failure(exception: final exception):
-          showSnackBar(context, exception.toString(), isError: true);
+          showSnackBar(messenger, exception.toString(), isError: true);
           _tenants = [];
       }
     } else {
@@ -175,7 +176,7 @@ class _ProjectsPageState extends State<ProjectsPage> {
             _gotData = true;
           });
         case Failure(exception: final exception):
-          showSnackBar(context, exception.toString(), isError: true);
+          showSnackBar(messenger, exception.toString(), isError: true);
           _projects = [];
       }
     }
@@ -239,7 +240,8 @@ class _ProjectsPageState extends State<ProjectsPage> {
           switch (value) {
             case Tools.netbox:
               if (_hasNetbox) {
-                showSnackBar(context, localeMsg.onlyOneTool("Netbox"));
+                showSnackBar(ScaffoldMessenger.of(context),
+                    localeMsg.onlyOneTool("Netbox"));
               } else {
                 showCustomPopup(context,
                     CreateNetboxPopup(parentCallback: refreshFromChildren));
@@ -247,7 +249,8 @@ class _ProjectsPageState extends State<ProjectsPage> {
               break;
             case Tools.opendcim:
               if (_hasOpenDcim) {
-                showSnackBar(context, localeMsg.onlyOneTool("OpenDCIM"));
+                showSnackBar(ScaffoldMessenger.of(context),
+                    localeMsg.onlyOneTool("OpenDCIM"));
               } else {
                 showCustomPopup(context,
                     CreateOpenDcimPopup(parentCallback: refreshFromChildren));

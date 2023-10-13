@@ -16,7 +16,7 @@ class ToolCard extends StatelessWidget {
   final DockerContainer container;
   final Function parentCallback;
   const ToolCard(
-      {Key? key,
+      {super.key,
       required this.type,
       required this.container,
       required this.parentCallback});
@@ -41,16 +41,16 @@ class ToolCard extends StatelessWidget {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Container(
+                  SizedBox(
                     height: 24,
                     child: Badge(
                       backgroundColor: Colors.green.shade600,
-                      label: this.type == Tools.opendcim
-                          ? Text(" OpenDCIM ")
-                          : Text(" NETBOX "),
+                      label: type == Tools.opendcim
+                          ? const Text(" OpenDCIM ")
+                          : const Text(" NETBOX "),
                     ),
                   ),
-                  this.type == Tools.opendcim
+                  type == Tools.opendcim
                       ? Container()
                       : CircleAvatar(
                           radius: 13,
@@ -67,7 +67,7 @@ class ToolCard extends StatelessWidget {
                 ],
               ),
               const SizedBox(height: 1),
-              Container(
+              SizedBox(
                 width: 145,
                 child: Text(container.name,
                     overflow: TextOverflow.clip,
@@ -232,6 +232,7 @@ class _ImportNetboxPopupState extends State<ImportNetboxPopup> {
 
   submitNetboxDump(AppLocalizations localeMsg) async {
     if (_loadedFile != null) {
+      final messenger = ScaffoldMessenger.of(context);
       setState(() {
         _isLoading = true;
       });
@@ -241,23 +242,24 @@ class _ImportNetboxPopupState extends State<ImportNetboxPopup> {
         case Success():
           break;
         case Failure(exception: final exception):
-          showSnackBar(context, "${localeMsg.failedToUpload} $exception");
+          showSnackBar(messenger, "${localeMsg.failedToUpload} $exception");
       }
 
       // Import dump
       result = await importNetboxDump();
       switch (result) {
         case Success():
-          showSnackBar(context, localeMsg.importNetboxOK, isSuccess: true);
-          Navigator.of(context).pop();
+          showSnackBar(messenger, localeMsg.importNetboxOK, isSuccess: true);
+          if (context.mounted) Navigator.of(context).pop();
         case Failure(exception: final exception):
           setState(() {
             _isLoading = false;
           });
-          showSnackBar(context, exception.toString(), isError: true);
+          showSnackBar(messenger, exception.toString(), isError: true);
       }
     } else {
-      showSnackBar(context, localeMsg.mustSelectFile, isError: true);
+      showSnackBar(ScaffoldMessenger.of(context), localeMsg.mustSelectFile,
+          isError: true);
     }
   }
 }

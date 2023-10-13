@@ -103,13 +103,13 @@ class TreeNode {
   // Removes all children from this node and sets their parent to null.
   // Returns the old children to easily move nodes to another parent.
   List<TreeNode> clearChildren() {
-    final _removedChildren = _children.map((child) {
+    final removedChildren = _children.map((child) {
       child._parent = null;
       return child;
     }).toList(growable: false);
 
     _children.clear();
-    return _removedChildren;
+    return removedChildren;
   }
 
   // If `null`, this node is the root of the tree
@@ -145,7 +145,6 @@ class TreeNode {
         orElse: () => null,
       );
 
-  @override
   int compareTo(TreeNode other) => id.compareTo(other.id);
 
   @override

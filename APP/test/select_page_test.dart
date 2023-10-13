@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:intl/intl.dart';
 import 'package:ogree_app/pages/select_page.dart';
 
 import 'common.dart';

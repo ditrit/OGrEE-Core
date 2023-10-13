@@ -114,7 +114,7 @@ class _TreeNodeTileState extends State<TreeNodeTile> {
 
   void _describeAncestors(TreeNode node) {
     showSnackBar(
-      context,
+      ScaffoldMessenger.of(context),
       '${AppLocalizations.of(context)!.nodePath} ${node.id}',
       duration: const Duration(seconds: 3),
     );

@@ -51,7 +51,7 @@ class _LoginCardState extends State<LoginCard> {
                               constraints: const BoxConstraints(),
                               onPressed: () => Navigator.of(context).push(
                                   MaterialPageRoute(
-                                      builder: (context) => LoginPage())),
+                                      builder: (context) => const LoginPage())),
                               icon: Icon(
                                 Icons.arrow_back,
                                 color: Colors.blue.shade900,
@@ -68,7 +68,7 @@ class _LoginCardState extends State<LoginCard> {
                             style: Theme.of(context).textTheme.headlineLarge)),
                 const SizedBox(height: 8),
                 showForgotView
-                    ? SizedBox(height: 10)
+                    ? const SizedBox(height: 10)
                     : Center(
                         child: Text(
                           localeMsg.welcomeConnect,
@@ -94,7 +94,7 @@ class _LoginCardState extends State<LoginCard> {
                             backgroundColor: Colors.white,
                             label: Text(
                               getBackendTypeText(),
-                              style: TextStyle(color: Colors.black),
+                              style: const TextStyle(color: Colors.black),
                             ),
                           ),
                         ),
@@ -119,7 +119,8 @@ class _LoginCardState extends State<LoginCard> {
                     : TextFormField(
                         obscureText: true,
                         onSaved: (newValue) => _password = newValue,
-                        onEditingComplete: () => tryLogin(),
+                        onEditingComplete: () =>
+                            tryLogin(localeMsg, ScaffoldMessenger.of(context)),
                         validator: (text) {
                           if (!showForgotView &&
                               (text == null || text.isEmpty)) {
@@ -139,7 +140,7 @@ class _LoginCardState extends State<LoginCard> {
                     ? TextButton(
                         onPressed: () => Navigator.of(context).push(
                           MaterialPageRoute(
-                            builder: (context) => LoginPage(
+                            builder: (context) => const LoginPage(
                               isPasswordReset: true,
                               resetToken: '',
                             ),
@@ -147,9 +148,9 @@ class _LoginCardState extends State<LoginCard> {
                         ),
                         child: Text(
                           localeMsg.haveResetToken,
-                          style: TextStyle(
+                          style: const TextStyle(
                             fontSize: 14,
-                            color: const Color.fromARGB(255, 0, 84, 152),
+                            color: Color.fromARGB(255, 0, 84, 152),
                           ),
                         ),
                       )
@@ -173,7 +174,7 @@ class _LoginCardState extends State<LoginCard> {
                                     const SizedBox(width: 8),
                                     Text(
                                       localeMsg.stayLogged,
-                                      style: TextStyle(
+                                      style: const TextStyle(
                                         fontSize: 14,
                                         color: Colors.black,
                                       ),
@@ -187,9 +188,9 @@ class _LoginCardState extends State<LoginCard> {
                             }),
                             child: Text(
                               localeMsg.forgotPassword,
-                              style: TextStyle(
+                              style: const TextStyle(
                                 fontSize: 14,
-                                color: const Color.fromARGB(255, 0, 84, 152),
+                                color: Color.fromARGB(255, 0, 84, 152),
                               ),
                             ),
                           ),
@@ -199,8 +200,10 @@ class _LoginCardState extends State<LoginCard> {
                     height: showForgotView ? 20 : (isSmallDisplay ? 15 : 30)),
                 Align(
                   child: ElevatedButton(
-                    onPressed: () =>
-                        showForgotView ? resetPassword() : tryLogin(),
+                    onPressed: () => showForgotView
+                        ? resetPassword(
+                            localeMsg, ScaffoldMessenger.of(context))
+                        : tryLogin(localeMsg, ScaffoldMessenger.of(context)),
                     style: ElevatedButton.styleFrom(
                       padding: const EdgeInsets.symmetric(
                         vertical: 20,
@@ -209,7 +212,7 @@ class _LoginCardState extends State<LoginCard> {
                     ),
                     child: Text(
                       showForgotView ? localeMsg.reset : localeMsg.login,
-                      style: TextStyle(
+                      style: const TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.w600,
                       ),
@@ -225,21 +228,21 @@ class _LoginCardState extends State<LoginCard> {
     );
   }
 
-  resetPassword() async {
+  resetPassword(
+      AppLocalizations localeMsg, ScaffoldMessengerState messenger) async {
     if (_formKey.currentState!.validate()) {
       _formKey.currentState!.save();
       final result = await userForgotPassword(_email!, userUrl: _apiUrl);
       switch (result) {
         case Success():
-          showSnackBar(context, AppLocalizations.of(context)!.resetSent,
-              isSuccess: true);
+          showSnackBar(messenger, localeMsg.resetSent, isSuccess: true);
         case Failure(exception: final exception):
-          showSnackBar(context, exception.toString().trim(), isError: true);
+          showSnackBar(messenger, exception.toString().trim(), isError: true);
       }
     }
   }
 
-  tryLogin() async {
+  tryLogin(AppLocalizations localeMsg, ScaffoldMessengerState messenger) async {
     if (_formKey.currentState!.validate()) {
       _formKey.currentState!.save();
       final result = await loginAPI(_email!, _password!, userUrl: _apiUrl);
@@ -248,19 +251,21 @@ class _LoginCardState extends State<LoginCard> {
           if (apiType == BackendType.tenant) {
             await fetchApiVersion(_apiUrl);
           }
-          Navigator.of(context).push(
-            MaterialPageRoute(
-              builder: (context) => ProjectsPage(
-                userEmail: loginData.first,
-                isTenantMode: loginData[1] == "true",
+          if (context.mounted) {
+            Navigator.of(context).push(
+              MaterialPageRoute(
+                builder: (context) => ProjectsPage(
+                  userEmail: loginData.first,
+                  isTenantMode: loginData[1] == "true",
+                ),
               ),
-            ),
-          );
+            );
+          }
         case Failure(exception: final exception):
           String errorMsg = exception.toString() == "Exception"
-              ? AppLocalizations.of(context)!.invalidLogin
+              ? localeMsg.invalidLogin
               : exception.toString();
-          showSnackBar(context, errorMsg, isError: true);
+          showSnackBar(messenger, errorMsg, isError: true);
       }
     }
   }

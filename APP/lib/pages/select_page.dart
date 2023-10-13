@@ -20,13 +20,13 @@ class SelectPage extends StatefulWidget {
   Project? project;
   SelectPage({super.key, this.project, required this.userEmail});
   @override
-  State<SelectPage> createState() => _SelectPageState();
+  State<SelectPage> createState() => SelectPageState();
 
-  static _SelectPageState? of(BuildContext context) =>
-      context.findAncestorStateOfType<_SelectPageState>();
+  static SelectPageState? of(BuildContext context) =>
+      context.findAncestorStateOfType<SelectPageState>();
 }
 
-class _SelectPageState extends State<SelectPage> with TickerProviderStateMixin {
+class SelectPageState extends State<SelectPage> with TickerProviderStateMixin {
   // Flow control
   Steps _currentStep = Steps.date;
   bool _loadObjects = false;
@@ -175,7 +175,9 @@ class _SelectPageState extends State<SelectPage> with TickerProviderStateMixin {
       case (Steps.objects):
         if (_selectedObjects.isEmpty) {
           // Should select at least one OBJECT before continue
-          showSnackBar(context, localeMsg.atLeastOneObject, isError: true);
+          showSnackBar(
+              ScaffoldMessenger.of(context), localeMsg.atLeastOneObject,
+              isError: true);
         } else {
           _selectedAttrs = [];
           setState(() => _currentStep = Steps.result);
@@ -238,6 +240,7 @@ class _SelectPageState extends State<SelectPage> with TickerProviderStateMixin {
       Function? callback) async {
     Result result;
     project.name = userInput;
+    final messenger = ScaffoldMessenger.of(context);
     if (isCreate) {
       result = await createProject(project);
     } else {
@@ -252,7 +255,7 @@ class _SelectPageState extends State<SelectPage> with TickerProviderStateMixin {
           ),
         );
       case Failure(exception: final exception):
-        showSnackBar(context, exception.toString(), isError: true);
+        showSnackBar(messenger, exception.toString(), isError: true);
     }
   }
 }

@@ -122,18 +122,19 @@ class _CreateOpenDcimPopupState extends State<CreateOpenDcimPopup> {
       setState(() {
         _isLoading = true;
       });
-      // Create tenant
+      final messenger = ScaffoldMessenger.of(context);
+      // Create dcim
       var result = await createOpenDcim(_dcimPort!, _adminerPort!);
       switch (result) {
         case Success():
           widget.parentCallback();
-          showSnackBar(context, "${localeMsg.createOK} 🥳", isSuccess: true);
-          Navigator.of(context).pop();
+          showSnackBar(messenger, "${localeMsg.createOK} 🥳", isSuccess: true);
+          if (context.mounted) Navigator.of(context).pop();
         case Failure(exception: final exception):
           setState(() {
             _isLoading = false;
           });
-          showSnackBar(context, exception.toString(), isError: true);
+          showSnackBar(messenger, exception.toString(), isError: true);
       }
     }
   }
