@@ -12,7 +12,7 @@ import (
 
 //go:embed schemas/*.json
 //go:embed schemas/refs/*.json
-var embeddfs embed.FS
+var embedFS embed.FS
 var c *jsonschema.Compiler
 
 func init() {
@@ -27,14 +27,14 @@ func init() {
 func loadJsonSchemas(schemaPrefix string) {
 	var schemaPath = "schemas/"
 	dir := strings.Trim(schemaPath+schemaPrefix, "/") // without trailing '/'
-	entries, err := embeddfs.ReadDir((dir))
+	entries, err := embedFS.ReadDir((dir))
 	if err != nil {
 		println(err.Error())
 	}
 
 	for _, e := range entries {
 		if strings.HasSuffix(e.Name(), ".json") {
-			file, err := embeddfs.Open(schemaPath + schemaPrefix + e.Name())
+			file, err := embedFS.Open(schemaPath + schemaPrefix + e.Name())
 			if err == nil {
 				print(schemaPrefix + e.Name() + " ")
 				c.AddResource(schemaPrefix+e.Name(), file)
