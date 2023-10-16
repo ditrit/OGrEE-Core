@@ -160,13 +160,13 @@ func FilteredReqFromQueryParams(link *url.URL) bson.M {
 			key != "limit" && key != "namespace" {
 			var keyValue interface{}
 			keyValue = q.Get(key)
-			if strings.Contains(keyValue.(string), "*") {
+			if key == "parentId" {
+				regex := strings.ReplaceAll(strings.ReplaceAll(keyValue.(string), ".", "\\."), "*", NAME_REGEX) + "\\.(" + NAME_REGEX + ")"
+				bsonMap["id"] = bson.M{"$regex": "^" + regex + "$"}
+				continue
+			} else if strings.Contains(keyValue.(string), "*") {
 				regex := strings.ReplaceAll(strings.ReplaceAll(keyValue.(string), ".", "\\."), "*", NAME_REGEX)
 				keyValue = bson.M{"$regex": "^" + regex + "$"}
-			} else if key == "parentId" {
-				regex := strings.ReplaceAll(keyValue.(string), ".", "\\.") + "\\.(" + NAME_REGEX + ")"
-				bsonMap["id"] = bson.M{"$regex": regex}
-				continue
 			}
 			switch key {
 			case "id", "name", "category",
