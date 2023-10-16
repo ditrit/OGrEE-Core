@@ -172,7 +172,7 @@ func CreateEntity(entity int, t map[string]interface{}, userRoles map[string]Rol
 }
 
 func prepareCreateEntity(entity int, t map[string]interface{}, userRoles map[string]Role) *u.Error {
-	if ok, err := ValidateEntity(entity, t); !ok {
+	if err := ValidateEntity(entity, t); err != nil {
 		return err
 	}
 
@@ -652,6 +652,41 @@ func DeleteNonHierarchicalObject(entity, slug string) *u.Error {
 	return err
 }
 
+func prepareUpdateObject(ctx mongo.SessionContext, entity int, id string, updateData, oldObject map[string]any, userRoles map[string]Role) *u.Error {
+	// Check user permissions in case domain is being updated
+	if entity != u.DOMAIN && u.IsEntityHierarchical(entity) && (oldObject["domain"] != updateData["domain"]) {
+		if perm := CheckUserPermissions(userRoles, entity, updateData["domain"].(string)); perm < WRITE {
+			return &u.Error{Type: u.ErrUnauthorized, Message: "User does not have permission to change this object"}
+		}
+	}
+
+	// tag list edition support
+	err := addAndRemoveFromTags(ctx, entity, id, updateData)
+	if err != nil {
+		return err
+	}
+
+	// Ensure the update is valid
+	err = ValidateEntity(entity, updateData)
+	if err != nil {
+		return err
+	}
+
+	updateData["lastUpdated"] = primitive.NewDateTimeFromTime(time.Now())
+	updateData["createdDate"] = oldObject["createdDate"]
+	delete(updateData, "parentId")
+
+	// tag slug edition support
+	if entity == u.TAG && updateData["slug"].(string) != oldObject["slug"].(string) {
+		err := repository.UpdateTagSlugInEntities(ctx, oldObject["slug"].(string), updateData["slug"].(string))
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
 func UpdateObject(entityStr string, id string, updateData map[string]interface{}, isPatch bool, userRoles map[string]Role) (map[string]interface{}, *u.Error) {
 	var idFilter bson.M
 	if u.IsEntityNonHierarchical(u.EntityStrToInt(entityStr)) {
@@ -706,35 +741,9 @@ func UpdateObject(entityStr string, id string, updateData map[string]interface{}
 			delete(updateData, "createdDate")
 		}
 
-		// tag list edition support
-		err = addAndRemoveFromTags(ctx, entity, id, updateData)
+		err = prepareUpdateObject(ctx, entity, id, updateData, oldObj, userRoles)
 		if err != nil {
 			return nil, err
-		}
-
-		// Ensure the update is valid
-		if ok, err := ValidateEntity(entity, updateData); !ok {
-			return nil, err
-		}
-
-		updateData["lastUpdated"] = primitive.NewDateTimeFromTime(time.Now())
-		updateData["createdDate"] = oldObj["createdDate"]
-		delete(updateData, "parentId")
-
-		// tag slug edition support
-		if entity == u.TAG && updateData["slug"].(string) != oldObj["slug"].(string) {
-			err := repository.UpdateTagSlugInEntities(ctx, oldObj["slug"].(string), updateData["slug"].(string))
-			if err != nil {
-				return nil, err
-			}
-		}
-
-		// Check user permissions in case domain is being updated
-		if entity != u.DOMAIN && u.IsEntityHierarchical(entity) && (oldObj["domain"] != updateData["domain"]) {
-			if perm := CheckUserPermissions(userRoles, entity, updateData["domain"].(string)); perm < WRITE {
-				return nil, &u.Error{Type: u.ErrUnauthorized,
-					Message: "User does not have permission to change this object"}
-			}
 		}
 
 		mongoRes := repository.GetDB().Collection(entityStr).FindOneAndReplace(

@@ -1659,12 +1659,12 @@ func ValidateEntity(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	ok, e := models.ValidateEntity(entInt, obj)
-	if ok {
+	uErr := models.ValidateEntity(entInt, obj)
+	if uErr == nil {
 		u.Respond(w, u.Message("This object can be created"))
 		return
 	} else {
-		u.RespondWithError(w, e)
+		u.RespondWithError(w, uErr)
 	}
 }
 
