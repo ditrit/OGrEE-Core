@@ -216,53 +216,20 @@ func prepareCreateEntity(entity int, t map[string]interface{}, userRoles map[str
 	return nil
 }
 
-// GetObjectsById: search for id (hierarchyName) in all possible collections
-func GetObjectsById(hierarchyName string, filters u.RequestFilters, userRoles map[string]Role, withEntity bool) ([]map[string]interface{}, *u.Error) {
-	resp := []map[string]interface{}{}
+func GetObjectById(hierarchyName string, filters u.RequestFilters, userRoles map[string]Role) (map[string]interface{}, *u.Error) {
 	// Get possible collections for this name
-	rangeEntities := u.HierachyNameToEntity(hierarchyName, filters.Namespace)
-	// Handle wildcard on id
-	var req primitive.M
-	var hasWildcard bool
-	if strings.Contains(hierarchyName, "*") {
-		hasWildcard = true
-		regex := strings.ReplaceAll(strings.ReplaceAll(hierarchyName, ".", "\\."), "*", u.NAME_REGEX)
-		println(regex)
-		req = bson.M{"id": bson.M{"$regex": "^" + regex + "$"}}
-	} else {
-		hasWildcard = false
-		req = bson.M{"id": hierarchyName}
-	}
+	rangeEntities := u.GetEntitiesByNamespace(filters.Namespace, hierarchyName)
+	req := bson.M{"id": hierarchyName}
 
 	// Search each collection
-	for _, entity := range rangeEntities {
-		entityStr := u.EntityToString(entity)
-		if hasWildcard {
-			data, _ := GetManyEntities(entityStr, req, filters, userRoles)
-			if data != nil {
-				if withEntity {
-					for _, obj := range data {
-						obj["entity"] = entityStr
-					}
-				}
-				resp = append(resp, data...)
-			}
-		} else {
-			data, _ := GetEntity(req, entityStr, filters, userRoles)
-			if data != nil {
-				if withEntity {
-					data["entity"] = entityStr
-				}
-				resp = append(resp, data)
-			}
+	for _, entityStr := range rangeEntities {
+		data, _ := GetEntity(req, entityStr, filters, userRoles)
+		if data != nil {
+			return data, nil
 		}
 	}
 
-	if len(resp) > 0 {
-		return resp, nil
-	} else {
-		return nil, &u.Error{Type: u.ErrNotFound, Message: "Unable to find object"}
-	}
+	return nil, &u.Error{Type: u.ErrNotFound, Message: "Unable to find object"}
 }
 
 func GetEntity(req bson.M, ent string, filters u.RequestFilters, userRoles map[string]Role) (map[string]interface{}, *u.Error) {
@@ -386,13 +353,7 @@ func GetCompleteHierarchy(userRoles map[string]Role, filters u.HierarchyFilters)
 	hierarchy := make(map[string]interface{})
 
 	switch filters.Namespace {
-	case u.Physical, u.Organisational, u.Logical:
-		data, err := getHierarchyWithNamespace(filters.Namespace, userRoles, filters, categories)
-		if err != nil {
-			return nil, err
-		}
-		hierarchy[u.NamespaceToString(filters.Namespace)] = data
-	default:
+	case u.Any:
 		for _, ns := range []u.Namespace{u.Physical, u.Logical, u.Organisational} {
 			data, err := getHierarchyWithNamespace(ns, userRoles, filters, categories)
 			if err != nil {
@@ -400,6 +361,13 @@ func GetCompleteHierarchy(userRoles map[string]Role, filters u.HierarchyFilters)
 			}
 			hierarchy[u.NamespaceToString(ns)] = data
 		}
+	default:
+		data, err := getHierarchyWithNamespace(filters.Namespace, userRoles, filters, categories)
+		if err != nil {
+			return nil, err
+		}
+		hierarchy[u.NamespaceToString(filters.Namespace)] = data
+
 	}
 
 	response["tree"] = hierarchy
@@ -420,7 +388,8 @@ func getHierarchyWithNamespace(namespace u.Namespace, userRoles map[string]Role,
 	dbFilter := bson.M{}
 
 	// Depth of hierarchy defined by user
-	if filters.Limit != "" && namespace != u.Logical {
+	if filters.Limit != "" && namespace != u.PStray &&
+		!strings.Contains(u.NamespaceToString(namespace), string(u.Logical)) {
 		if _, e := strconv.Atoi(filters.Limit); e == nil {
 			pattern := primitive.Regex{Pattern: "^" + u.NAME_REGEX + "(." + u.NAME_REGEX + "){0," +
 				filters.Limit + "}$", Options: ""}
@@ -434,7 +403,7 @@ func getHierarchyWithNamespace(namespace u.Namespace, userRoles map[string]Role,
 	}
 
 	// Search collections according to namespace
-	collNames := u.GetEntitiesByNamespace(namespace)
+	collNames := u.GetEntitiesByNamespace(namespace, "")
 
 	for _, collName := range collNames {
 		// Get data
@@ -455,7 +424,7 @@ func getHierarchyWithNamespace(namespace u.Namespace, userRoles map[string]Role,
 
 		// Format data
 		for _, obj := range data {
-			if namespace == u.Logical {
+			if strings.Contains(u.NamespaceToString(namespace), string(u.Logical)) {
 				// Logical
 				var objId string
 				if strings.Contains(collName, "template") {
