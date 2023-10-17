@@ -1,6 +1,7 @@
 package models
 
 import (
+	"context"
 	"p3/repository"
 	u "p3/utils"
 
@@ -79,4 +80,32 @@ func DeleteTag(slug string) *u.Error {
 	})
 
 	return err
+}
+
+// Creates an image if data has one
+// and updates data with the id of the new image
+func createTagImage(ctx context.Context, data map[string]any) *u.Error {
+	encodedImage, hasImage := data["image"].(string)
+	if hasImage && encodedImage != "" {
+		imageID, err := createImageFromBase64(ctx, encodedImage)
+		if err != nil {
+			return err
+		}
+
+		data["image"] = imageID
+	}
+
+	return nil
+}
+
+// Creates an image if updateData has one and different to oldEntity
+// and updates updateData with the id of the new image
+func updateTagImage(ctx context.Context, oldEntity, updateData map[string]any) *u.Error {
+	newImage, hasImage := updateData["image"].(string)
+	oldImage, hasOldImage := oldEntity["image"].(string)
+	if hasImage && (!hasOldImage || newImage != oldImage) {
+		return createTagImage(ctx, updateData)
+	}
+
+	return nil
 }
