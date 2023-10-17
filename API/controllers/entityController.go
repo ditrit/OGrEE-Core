@@ -309,7 +309,9 @@ func getBulkDomainsRecursively(parent string, listDomains []map[string]interface
 // parameters:
 //   - name: namespace
 //     in: query
-//     description: 'One of the values: physical, logical or organisational.
+//     description: 'One of the values: physical, physical.stray, physical.structured,
+//     logical, logical.objtemplate, logical.bldgtemplate, logical.roomtemplate,
+//     organisational.
 //     If none provided, all namespaces are used by default.'
 //   - name: fieldOnly
 //     in: query
@@ -346,6 +348,43 @@ func getBulkDomainsRecursively(parent string, listDomains []map[string]interface
 //	        a meaningful message.'
 //		'500':
 //		    description: Internal Error. A system error stopped the request.
+
+// swagger:operation DELETE /api/objects Objects DeleteGenericObject
+// Deletes an object in the system from any of the entities with no need to specify it..
+// ---
+// security:
+// - bearer: []
+// produces:
+// - application/json
+// parameters:
+//   - name: id
+//     in: path
+//     description: ID type hierarchyName of the object
+//     required: true
+//   - name: fieldOnly
+//     in: query
+//     description: 'specify which object field to show in response.
+//     Multiple fieldOnly can be added. An invalid field is simply ignored.'
+//   - name: startDate
+//     in: query
+//     description: 'filter objects by lastUpdated >= startDate.
+//     Format: yyyy-mm-dd'
+//   - name: endDate
+//     in: query
+//     description: 'filter objects by lastUpdated <= endDate.
+//     Format: yyyy-mm-dd'
+//   - name: namespace
+//     in: query
+//     description: 'One of the values: physical, physical.stray, physical.structured,
+//     logical, logical.objtemplate, logical.bldgtemplate, logical.roomtemplate,
+//     organisational.
+//
+// responses:
+//		'204':
+//			description: 'Successfully deleted object.
+//			No response body will be returned'
+//		'404':
+//			description: Not found. An error message will be returned
 
 func HandleGenericObjects(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("******************************************************")
@@ -416,72 +455,6 @@ func HandleGenericObjects(w http.ResponseWriter, r *http.Request) {
 	}
 
 }
-
-// swagger:operation GET /api/objects/{id} Objects GetGenericObjectById
-// Get an object from any entity.
-// Gets an object from any of the entities with no need to specify it.
-// The id must be provided in the URL as a parameter.
-// ---
-// security:
-// - bearer: []
-// produces:
-// - application/json
-// parameters:
-//   - name: id
-//     in: path
-//     description: ID type hierarchyName of the object
-//     required: true
-//   - name: fieldOnly
-//     in: query
-//     description: 'specify which object field to show in response.
-//     Multiple fieldOnly can be added. An invalid field is simply ignored.'
-//   - name: startDate
-//     in: query
-//     description: 'filter objects by lastUpdated >= startDate.
-//     Format: yyyy-mm-dd'
-//   - name: endDate
-//     in: query
-//     description: 'filter objects by lastUpdated <= endDate.
-//     Format: yyyy-mm-dd'
-//   - name: namespace
-//     in: query
-//     description: 'One of the values: physical, logical or organisational.
-//     If none provided, all namespaces are used by default.'
-//   - name: limit
-//     in: query
-//     description: 'Get limit level of hierarchy for objects in the response.
-//     Example: /api/objects/siteA.B.R1?limit=1 will return the object R1 with its first children nested.'
-//     required: false
-//     type: string
-// responses:
-//		'200':
-//		    description: 'Found. A response body will be returned with
-//	        a meaningful message.'
-//		'404':
-//		    description: Not Found. An error message will be returned.
-
-// swagger:operation DELETE /api/objects/{id} Objects DeleteGenericObject
-// Deletes an object in the system from any of the entities with no need to specify it..
-// ---
-// security:
-// - bearer: []
-// produces:
-// - application/json
-// parameters:
-//   - name: id
-//     in: path
-//     description: 'ID of desired object.
-//     For templates the slug is the ID.'
-//     required: true
-//     type: string
-//     default: "siteA"
-//
-// responses:
-//		'204':
-//			description: 'Successfully deleted object.
-//			No response body will be returned'
-//		'404':
-//			description: Not found. An error message will be returned
 
 // swagger:operation GET /api/{entity}/{id} Objects GetEntity
 // Gets an Object of the given entity.
