@@ -1,7 +1,10 @@
 package repository
 
 import (
+	"context"
+
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 
@@ -41,6 +44,21 @@ func GetObject(ctx mongo.SessionContext, req bson.M, ent string, filters u.Reque
 	}
 
 	return t, nil
+}
+
+func CreateObject(ctx context.Context, collection string, data map[string]any) (primitive.ObjectID, *u.Error) {
+	result, err := GetDB().Collection(collection).InsertOne(ctx, data)
+	if err != nil {
+		if mongo.IsDuplicateKeyError(err) {
+			return primitive.NilObjectID, &u.Error{Type: u.ErrDuplicate,
+				Message: "Error while creating " + collection + ": Duplicates not allowed"}
+		}
+
+		return primitive.NilObjectID, &u.Error{Type: u.ErrDBError,
+			Message: "Internal error while creating " + collection + ": " + err.Error()}
+	}
+
+	return result.InsertedID.(primitive.ObjectID), nil
 }
 
 func DeleteObject(ctx mongo.SessionContext, entity string, filter bson.M) *u.Error {
