@@ -682,17 +682,26 @@ func DeleteSingleEntity(entity string, req bson.M) *u.Error {
 func UpdateEntity(ent string, req bson.M, t map[string]interface{}, isPatch bool, userRoles map[string]Role) (map[string]interface{}, *u.Error) {
 	var mongoRes *mongo.SingleResult
 	var updatedDoc map[string]interface{}
+	var oldObj map[string]interface{}
+	var err *u.Error
 	retDoc := options.ReturnDocument(options.After)
-	entInt := u.EntityStrToInt(ent)
 
 	//Update timestamp requires first obj retrieval
 	//there isn't any way for mongoDB to make a field
 	//immutable in a document
-	oldObj, err := GetEntity(req, ent, u.RequestFilters{}, userRoles)
+	if ent == u.STRUCTURED_ENT {
+		oldObj, err = GetObjectById(req["id"].(string), u.RequestFilters{}, userRoles)
+		if err == nil {
+			ent = oldObj["category"].(string)
+		}
+	} else {
+		oldObj, err = GetEntity(req, ent, u.RequestFilters{}, userRoles)
+	}
 	if err != nil {
 		return nil, err
 	}
 
+	entInt := u.EntityStrToInt(ent)
 	//Check if permission is only readonly
 	if entInt != u.BLDGTMPL && entInt != u.ROOMTMPL && entInt != u.OBJTMPL &&
 		(oldObj["description"] == nil) {

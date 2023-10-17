@@ -836,7 +836,7 @@ func UpdateEntity(w http.ResponseWriter, r *http.Request) {
 	entity = strings.Replace(entity, "-", "_", 1)
 
 	// Check unidentified collection
-	if u.EntityStrToInt(entity) < 0 {
+	if u.EntityStrToInt(entity) < 0 && entity != u.STRUCTURED_ENT {
 		w.WriteHeader(http.StatusNotFound)
 		u.Respond(w, u.Message("Invalid object in URL: '"+mux.Vars(r)["entity"]+"' Please provide a valid object"))
 		u.ErrLog("Cannot update invalid object", "UPDATE "+mux.Vars(r)["entity"], "", r)
