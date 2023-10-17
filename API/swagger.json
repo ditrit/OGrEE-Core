@@ -132,6 +132,42 @@
         }
       }
     },
+    "/api/image/{id}": {
+      "get": {
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "description": "Returns a HTTP response with the binary of the image.\nThe format of the image will correspond to the content type of the response.",
+        "produces": [
+          "image/*",
+          "application/json"
+        ],
+        "tags": [
+          "Objects"
+        ],
+        "summary": "Gets an image by its id.",
+        "operationId": "GetImage",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "ID of image",
+            "name": "id",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Found. A response body will be returned with the image binary."
+          },
+          "404": {
+            "description": "Not Found. An error message will be returned."
+          }
+        }
+      }
+    },
     "/api/login": {
       "post": {
         "description": "Create a new JWT Key. This can also be used to verify credentials\nThe authorize and 'Try it out' buttons don't work",
