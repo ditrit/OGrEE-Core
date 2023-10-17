@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"log"
 	"os"
 	"p3/repository"
 	u "p3/utils"
@@ -153,22 +152,17 @@ func CreateEntity(entity int, t map[string]interface{}, userRoles map[string]Rol
 		return nil, err
 	}
 
-	ctx, cancel := u.Connect()
-	entStr := u.EntityToString(entity)
-	_, e := repository.GetDB().Collection(entStr).InsertOne(ctx, t)
-	if e != nil {
-		if mongo.IsDuplicateKeyError(e) {
-			return nil, &u.Error{Type: u.ErrDuplicate,
-				Message: "Error while creating " + entStr + ": Duplicates not allowed"}
+	return WithTransaction(func(ctx mongo.SessionContext) (map[string]any, error) {
+		entStr := u.EntityToString(entity)
+
+		_, err := repository.CreateObject(ctx, entStr, t)
+		if err != nil {
+			return nil, err
 		}
 
-		return nil, &u.Error{Type: u.ErrDBError,
-			Message: "Internal error while creating " + entStr + ": " + e.Error()}
-	}
-	defer cancel()
-
-	fixID(t)
-	return t, nil
+		fixID(t)
+		return t, nil
+	})
 }
 
 func prepareCreateEntity(entity int, t map[string]interface{}, userRoles map[string]Role) *u.Error {
@@ -195,6 +189,7 @@ func prepareCreateEntity(entity int, t map[string]interface{}, userRoles map[str
 	t["lastUpdated"] = t["createdDate"]
 
 	delete(t, "parentId")
+
 	return nil
 }
 
@@ -861,20 +856,18 @@ func GetEntitiesOfAncestor(id string, entStr, wantedEnt string, userRoles map[st
 // SwapEntity: use id to remove object from deleteEnt and then use data to create it in createEnt.
 // Propagates id changes to children objects. For atomicity, all is done in a Mongo transaction.
 func SwapEntity(createEnt, deleteEnt, id string, data map[string]interface{}, userRoles map[string]Role) *u.Error {
-	ctx, _ := u.Connect()
-	if e := prepareCreateEntity(u.EntityStrToInt(createEnt), data, userRoles); e != nil {
-		return e
+	if err := prepareCreateEntity(u.EntityStrToInt(createEnt), data, userRoles); err != nil {
+		return err
 	}
 
-	// Define the callback that specifies the sequence of operations to perform inside the transaction.
-	callback := func(sessCtx mongo.SessionContext) (interface{}, error) {
+	_, err := WithTransaction(func(ctx mongo.SessionContext) (any, error) {
 		// Create
-		if _, err := repository.GetDB().Collection(createEnt).InsertOne(ctx, data); err != nil {
+		if _, err := repository.CreateObject(ctx, createEnt, data); err != nil {
 			return nil, err
 		}
 
 		// Propagate
-		if err := PropagateParentIdChange(sessCtx, id, data["id"].(string),
+		if err := PropagateParentIdChange(ctx, id, data["id"].(string),
 			u.EntityStrToInt(data["category"].(string))); err != nil {
 			return nil, err
 		}
@@ -887,20 +880,9 @@ func SwapEntity(createEnt, deleteEnt, id string, data map[string]interface{}, us
 		}
 
 		return nil, nil
-	}
+	})
 
-	// Start a session and run the callback using WithTransaction.
-	session, err := repository.GetClient().StartSession()
-	if err != nil {
-		return &u.Error{Type: u.ErrDBError, Message: "Unable to start session: " + err.Error()}
-	}
-	defer session.EndSession(ctx)
-	result, err := session.WithTransaction(ctx, callback)
-	if err != nil {
-		return &u.Error{Type: u.ErrDBError, Message: "Unable to complete transaction: " + err.Error()}
-	}
-	log.Printf("result: %v\n", result)
-	return nil
+	return err
 }
 
 func ExtractCursor(c *mongo.Cursor, ctx context.Context, entity int, userRoles map[string]Role) ([]map[string]interface{}, error) {
