@@ -528,12 +528,16 @@ func GetEntity(w http.ResponseWriter, r *http.Request) {
 	// Get entity
 	if id, canParse = mux.Vars(r)["id"]; canParse {
 		var req primitive.M
-		if strings.Contains(entityStr, "template") { //Get by slug (template)
-			req = bson.M{"slug": id}
+		if entityStr == u.STRUCTURED_ENT {
+			data, modelErr = models.GetObjectById(id, filters, user.Roles)
 		} else {
-			req = bson.M{"id": id}
+			if strings.Contains(entityStr, "template") { //Get by slug (template)
+				req = bson.M{"slug": id}
+			} else {
+				req = bson.M{"id": id}
+			}
+			data, modelErr = models.GetEntity(req, entityStr, filters, user.Roles)
 		}
-		data, modelErr = models.GetEntity(req, entityStr, filters, user.Roles)
 	} else {
 		w.WriteHeader(http.StatusBadRequest)
 		u.Respond(w, u.Message("Error while parsing path parameters"))
@@ -1206,9 +1210,8 @@ func GetHierarchyByName(w http.ResponseWriter, r *http.Request) {
 	// Get object and its family
 	var modelErr *u.Error
 	var data map[string]interface{}
-	if entity == "structured-object" {
+	if entity == u.STRUCTURED_ENT {
 		// Generic endpoint only for physical objs
-		filters.Namespace = u.Physical
 		data, modelErr = models.GetObjectById(id, filters, user.Roles)
 	} else {
 		// Entity already known

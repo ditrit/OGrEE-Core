@@ -60,6 +60,7 @@ const (
 const HN_DELIMETER = "."           // hierarchyName path delimiter
 const NAME_REGEX = "\\w(\\w|\\-)*" // accepted regex for names that compose ids
 const RESET_TAG = "RESET"          // used as email to identify a reset token
+const STRUCTURED_ENT = "structured_object"
 
 type RequestFilters struct {
 	FieldsToShow []string  `schema:"fieldOnly"`

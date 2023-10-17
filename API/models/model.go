@@ -218,7 +218,7 @@ func prepareCreateEntity(entity int, t map[string]interface{}, userRoles map[str
 
 func GetObjectById(hierarchyName string, filters u.RequestFilters, userRoles map[string]Role) (map[string]interface{}, *u.Error) {
 	// Get possible collections for this name
-	rangeEntities := u.GetEntitiesByNamespace(filters.Namespace, hierarchyName)
+	rangeEntities := u.GetEntitiesByNamespace(u.PStructured, hierarchyName)
 	req := bson.M{"id": hierarchyName}
 
 	// Search each collection
