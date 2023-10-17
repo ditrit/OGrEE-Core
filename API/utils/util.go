@@ -48,8 +48,13 @@ type Namespace string
 const (
 	Any            Namespace = ""
 	Physical       Namespace = "physical"
+	PStray         Namespace = "physical.stray"
+	PStructured    Namespace = "physical.structured"
 	Organisational Namespace = "organisational"
 	Logical        Namespace = "logical"
+	LObjTemplate   Namespace = "logical.objtemplate"
+	LBldgTemplate  Namespace = "logical.bldgtemplate"
+	LRoomTemplate  Namespace = "logical.roomtemplate"
 )
 
 const HN_DELIMETER = "."           // hierarchyName path delimiter
@@ -62,6 +67,7 @@ type RequestFilters struct {
 	EndDate      string    `schema:"endDate"`
 	Limit        string    `schema:"limit"`
 	Namespace    Namespace `schema:"namespace"`
+	Id           string    `schema:"id"`
 }
 
 type HierarchyFilters struct {
@@ -271,67 +277,85 @@ func EntityStrToInt(entity string) int {
 	}
 }
 
-func HierachyNameToEntity(name string, namespace Namespace) []int {
-	resp := []int{}
-	if namespace == Organisational {
-		resp = append(resp, DOMAIN)
-	} else if namespace == Logical {
-		resp = append(resp, OBJTMPL, ROOMTMPL, BLDGTMPL, GROUP)
-	} else {
-		resp = append(resp, STRAYOBJ) // it can always be a stray
-		switch strings.Count(name, HN_DELIMETER) {
-		case 0:
-			resp = append(resp, SITE)
-			if namespace == Any {
-				resp = append(resp, OBJTMPL, ROOMTMPL, BLDGTMPL)
-			}
-		case 1:
-			resp = append(resp, BLDG)
-		case 2:
-			resp = append(resp, ROOM)
-		case 3:
-			resp = append(resp, RACK, AC, CORRIDOR, PWRPNL, CABINET)
-			if namespace == Any {
-				resp = append(resp, GROUP)
-			}
-		case 4:
-			resp = append(resp, DEVICE)
-			if namespace == Any {
-				resp = append(resp, GROUP)
-			}
-		default:
-			resp = append(resp, DEVICE)
-		}
-	}
-
-	return resp
-}
-
 func NamespaceToString(namespace Namespace) string {
 	ref := reflect.ValueOf(namespace)
 	return ref.String()
 }
 
-func GetEntitiesByNamespace(namespace Namespace) []string {
-	var collNames []string
+func GetEntitiesByNamespace(namespace Namespace, hierarchyName string) []string {
+	var entNames []string
 	switch namespace {
-	case Physical:
-		for i := STRAYOBJ; i <= GROUP; i++ {
-			collNames = append(collNames, EntityToString(i))
-		}
 	case Organisational:
-		collNames = append(collNames, EntityToString(DOMAIN))
+		entNames = append(entNames, EntityToString(DOMAIN))
 	case Logical:
 		for i := GROUP; i <= BLDGTMPL; i++ {
-			collNames = append(collNames, EntityToString(i))
+			entNames = append(entNames, EntityToString(i))
 		}
-	default:
-		// All collections
-		for i := DOMAIN; i <= BLDGTMPL; i++ {
-			collNames = append(collNames, EntityToString(i))
+	case LObjTemplate:
+		entNames = append(entNames, EntityToString(OBJTMPL))
+	case LBldgTemplate:
+		entNames = append(entNames, EntityToString(BLDGTMPL))
+	case LRoomTemplate:
+		entNames = append(entNames, EntityToString(ROOMTMPL))
+	case PStray:
+		entNames = append(entNames, EntityToString(STRAYOBJ))
+	case Physical, PStructured, Any:
+		if hierarchyName == "" {
+			// All entities of each namespace
+			switch namespace {
+			case Physical:
+				for i := STRAYOBJ; i <= GROUP; i++ {
+					entNames = append(entNames, EntityToString(i))
+				}
+			case PStructured:
+				for i := SITE; i < GROUP; i++ {
+					entNames = append(entNames, EntityToString(i))
+				}
+			case Any:
+				// All collections
+				for i := DOMAIN; i <= BLDGTMPL; i++ {
+					entNames = append(entNames, EntityToString(i))
+				}
+			}
+		} else {
+			// Add entities according to hierarchyName possibilities
+			resp := []int{}
+			if namespace == Any {
+				resp = append(resp, DOMAIN)
+			}
+			switch strings.Count(hierarchyName, HN_DELIMETER) {
+			case 0:
+				resp = append(resp, SITE)
+				if namespace == Any {
+					resp = append(resp, OBJTMPL, ROOMTMPL, BLDGTMPL)
+				}
+				if namespace == Any || namespace == Physical {
+					resp = append(resp, STRAYOBJ)
+				}
+			case 1:
+				resp = append(resp, BLDG)
+			case 2:
+				resp = append(resp, ROOM)
+			case 3:
+				resp = append(resp, RACK, AC, CORRIDOR, PWRPNL, CABINET)
+				if namespace == Any {
+					resp = append(resp, GROUP)
+				}
+			case 4:
+				resp = append(resp, DEVICE)
+				if namespace == Any {
+					resp = append(resp, GROUP)
+				}
+			default:
+				resp = append(resp, DEVICE)
+			}
+			// Convert entities to string
+			for _, entInt := range resp {
+				entNames = append(entNames, EntityToString(entInt))
+			}
 		}
 	}
-	return collNames
+	return entNames
 }
 
 func GetParentOfEntityByInt(entity int) int {

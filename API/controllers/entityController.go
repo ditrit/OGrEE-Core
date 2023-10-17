@@ -352,7 +352,7 @@ func HandleGenericObjects(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("FUNCTION CALL: 	 HandleGenericObjects ")
 	fmt.Println("******************************************************")
 	DispRequestMetaData(r)
-	data := []map[string]interface{}{}
+	matchingObjects := []map[string]interface{}{}
 
 	// Get user roles for permissions
 	user := getUserFromToken(w, r)
@@ -363,15 +363,22 @@ func HandleGenericObjects(w http.ResponseWriter, r *http.Request) {
 	// Get objects
 	filters := getFiltersFromQueryParams(r)
 	req := u.FilteredReqFromQueryParams(r.URL)
-	entities := u.GetEntitiesByNamespace(filters.Namespace)
+	entities := u.GetEntitiesByNamespace(filters.Namespace, filters.Id)
 	for _, entStr := range entities {
+		// Get objects
 		entData, err := models.GetManyEntities(entStr, req, filters, user.Roles)
 		if err != nil {
 			u.ErrLog("Error while looking for objects at  "+entStr, "HandleGenericObjects", err.Message, r)
 			u.RespondWithError(w, err)
 			return
 		}
-		if nLimit, e := strconv.Atoi(filters.Limit); e == nil && nLimit > 0 && req["id"] != nil {
+		if r.Method == "DELETE" {
+			// Save entity to help delete
+			for _, obj := range entData {
+				obj["entity"] = entStr
+			}
+		} else if nLimit, e := strconv.Atoi(filters.Limit); e == nil && nLimit > 0 && req["id"] != nil {
+			// Get children until limit level (only for GET)
 			for _, obj := range entData {
 				obj["children"], err = models.GetHierarchyByName(entStr, obj["id"].(string), nLimit, filters)
 				if err != nil {
@@ -380,15 +387,32 @@ func HandleGenericObjects(w http.ResponseWriter, r *http.Request) {
 				}
 			}
 		}
-		data = append(data, entData...)
+		matchingObjects = append(matchingObjects, entData...)
 	}
 
 	// Respond
-	if r.Method == "OPTIONS" {
+	if r.Method == "DELETE" {
+		for _, obj := range matchingObjects {
+			var objStr string
+			entStr := obj["entity"].(string)
+			if u.EntityStrToInt(entStr) >= u.ROOMTMPL {
+				objStr = obj["slug"].(string)
+			} else {
+				objStr = obj["id"].(string)
+			}
+			modelErr := models.DeleteEntity(obj["entity"].(string), objStr, user.Roles)
+			if modelErr != nil {
+				u.ErrLog("Error while deleting object: "+objStr, "DELETE GetGenericObjectById", modelErr.Message, r)
+				u.RespondWithError(w, modelErr)
+				return
+			}
+		}
+		u.Respond(w, u.RespDataWrapper("successfully deleted objects", matchingObjects))
+	} else if r.Method == "OPTIONS" {
 		w.Header().Add("Content-Type", "application/json")
 		w.Header().Add("Allow", "GET, OPTIONS")
 	} else {
-		u.Respond(w, u.RespDataWrapper("successfully processed request", data))
+		u.Respond(w, u.RespDataWrapper("successfully processed request", matchingObjects))
 	}
 
 }
@@ -458,70 +482,6 @@ func HandleGenericObjects(w http.ResponseWriter, r *http.Request) {
 //			No response body will be returned'
 //		'404':
 //			description: Not found. An error message will be returned
-
-func HandleGenericObjectById(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("******************************************************")
-	fmt.Println("FUNCTION CALL: 	 GetGenericObjectById ")
-	fmt.Println("******************************************************")
-	DispRequestMetaData(r)
-	var matchingObjects []map[string]interface{}
-	var err *u.Error
-
-	// Get user roles for permissions
-	user := getUserFromToken(w, r)
-	if user == nil {
-		return
-	}
-
-	// Get object
-	hierarchyName, e := mux.Vars(r)["id"]
-	filters := getFiltersFromQueryParams(r)
-	if e {
-		matchingObjects, err = models.GetObjectsById(hierarchyName, filters, user.Roles, r.Method == "DELETE")
-	} else {
-		u.Respond(w, u.Message("Error while parsing path parameters"))
-		u.ErrLog("Error while parsing path parameters", "GetGenericObjectById", "", r)
-		return
-	}
-
-	// Get children if requested
-	if nLimit, e := strconv.Atoi(filters.Limit); e == nil && nLimit > 0 && r.Method == "GET" {
-		for _, obj := range matchingObjects {
-			entStr := obj["category"].(string)
-			obj["children"], err = models.GetHierarchyByName(entStr, obj["id"].(string), nLimit, filters)
-			if err != nil {
-				u.ErrLog("Error while getting "+entStr, "GET "+entStr, err.Message, r)
-				u.RespondWithError(w, err)
-			}
-		}
-	}
-
-	// Respond
-	if r.Method == "OPTIONS" && matchingObjects != nil {
-		w.Header().Add("Content-Type", "application/json")
-		w.Header().Add("Allow", "GET, DELETE, OPTIONS")
-	} else {
-		if err != nil {
-			u.ErrLog("Error while getting "+hierarchyName, "GetGenericObjectById", err.Message, r)
-			u.RespondWithError(w, err)
-		} else {
-			if r.Method == "DELETE" {
-				for _, obj := range matchingObjects {
-					modelErr := models.DeleteEntity(obj["entity"].(string), obj["id"].(string), user.Roles)
-					if modelErr != nil {
-						u.ErrLog("Error while deleting object: "+obj["id"].(string), "DELETE GetGenericObjectById", modelErr.Message, r)
-						u.RespondWithError(w, modelErr)
-						return
-					}
-				}
-				u.Respond(w, u.RespDataWrapper("successfully deleted objects", matchingObjects))
-			} else {
-				u.Respond(w, u.RespDataWrapper("successfully got object", matchingObjects))
-			}
-		}
-	}
-
-}
 
 // swagger:operation GET /api/{entity}/{id} Objects GetEntity
 // Gets an Object of the given entity.
@@ -1273,14 +1233,10 @@ func GetHierarchyByName(w http.ResponseWriter, r *http.Request) {
 	// Get object and its family
 	var modelErr *u.Error
 	var data map[string]interface{}
-	if entity == "object" {
+	if entity == "structured-object" {
 		// Generic endpoint only for physical objs
 		filters.Namespace = u.Physical
-		objs, modelErr := models.GetObjectsById(id, filters, user.Roles, false)
-		if modelErr == nil {
-			data = objs[0]
-			entity = data["category"].(string)
-		}
+		data, modelErr = models.GetObjectById(id, filters, user.Roles)
 	} else {
 		// Entity already known
 		data, modelErr = models.GetEntity(bson.M{"id": id}, entity, filters, user.Roles)
