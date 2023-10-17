@@ -71,6 +71,10 @@ func Router(jwt func(next http.Handler) http.Handler) *mux.Router {
 	router.HandleFunc("/api/tempunits/{id}",
 		controllers.GetTempUnit).Methods("GET", "OPTIONS", "HEAD")
 
+	// IMAGES
+	router.HandleFunc(controllers.GetImagePath+"{id}",
+		controllers.GetImage).Methods("GET", "HEAD", "OPTIONS")
+
 	// For obtaining the complete hierarchy (tree)
 	router.HandleFunc("/api/hierarchy",
 		controllers.GetCompleteHierarchy).Methods("GET", "OPTIONS", "HEAD")

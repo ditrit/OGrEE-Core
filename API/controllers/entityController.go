@@ -13,6 +13,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/elliotchance/pie/v2"
 	"github.com/gorilla/mux"
 	"github.com/gorilla/schema"
 	"go.mongodb.org/mongo-driver/bson"
@@ -420,12 +421,13 @@ func HandleGenericObjects(w http.ResponseWriter, r *http.Request) {
 			u.RespondWithError(w, err)
 			return
 		}
-		if r.Method == "DELETE" {
-			// Save entity to help delete
-			for _, obj := range entData {
-				obj["entity"] = entStr
-			}
-		} else if nLimit, e := strconv.Atoi(filters.Limit); e == nil && nLimit > 0 && req["id"] != nil {
+
+		// Save entity to help delete and respond
+		for _, obj := range entData {
+			obj["entity"] = entStr
+		}
+
+		if nLimit, e := strconv.Atoi(filters.Limit); e == nil && nLimit > 0 && req["id"] != nil {
 			// Get children until limit level (only for GET)
 			for _, obj := range entData {
 				obj["children"], err = models.GetHierarchyByName(entStr, obj["id"].(string), nLimit, filters)
@@ -463,6 +465,13 @@ func HandleGenericObjects(w http.ResponseWriter, r *http.Request) {
 		w.Header().Add("Content-Type", "application/json")
 		w.Header().Add("Allow", "GET, OPTIONS")
 	} else {
+		matchingObjects = pie.Map(matchingObjects, func(object map[string]any) map[string]any {
+			entityStr := object["entity"].(string)
+			delete(object, "entity")
+
+			return imageIDToUrl(u.EntityStrToInt(entityStr), object)
+		})
+
 		u.Respond(w, u.RespDataWrapper("successfully processed request", matchingObjects))
 	}
 }
@@ -568,6 +577,8 @@ func GetEntity(w http.ResponseWriter, r *http.Request) {
 				modelErr.Message, r)
 			u.RespondWithError(w, modelErr)
 		} else {
+			imageIDToUrl(u.EntityStrToInt(entityStr), data)
+
 			u.Respond(w, u.RespDataWrapper("successfully got "+entityStr, data))
 		}
 	}
@@ -631,7 +642,8 @@ func GetAllEntities(w http.ResponseWriter, r *http.Request) {
 	entStr = strings.Replace(entStr, "-", "_", 1)
 
 	// Check if entity is valid
-	if i := u.EntityStrToInt(entStr); i < 0 {
+	entity := u.EntityStrToInt(entStr)
+	if entity < 0 {
 		w.WriteHeader(http.StatusNotFound)
 		u.Respond(w, u.Message("Invalid entity in URL: '"+mux.Vars(r)["entity"]+
 			"' Please provide a valid entity"))
@@ -649,6 +661,12 @@ func GetAllEntities(w http.ResponseWriter, r *http.Request) {
 			e.Message, r)
 		u.RespondWithError(w, e)
 	} else {
+		if entity == u.TAG {
+			data = pie.Map(data, func(tagData map[string]any) map[string]any {
+				return imageIDToUrl(entity, tagData)
+			})
+		}
+
 		u.Respond(w, u.RespDataWrapper("successfully got "+entStr+"s",
 			map[string]interface{}{"objects": data}))
 	}

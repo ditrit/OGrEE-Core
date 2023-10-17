@@ -1,11 +1,13 @@
 package models
 
 import (
+	"context"
 	"p3/repository"
 	u "p3/utils"
 
 	"github.com/elliotchance/pie/v2"
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
@@ -61,10 +63,23 @@ func addAndRemoveFromTags(ctx mongo.SessionContext, entity int, objectID string,
 // Deletes tag with slug "slug"
 func DeleteTag(slug string) *u.Error {
 	_, err := WithTransaction(func(ctx mongo.SessionContext) (interface{}, error) {
-		err := repository.DeleteObject(ctx, u.EntityToString(u.TAG), bson.M{"slug": slug})
+		tag, err := repository.GetTagBySlug(ctx, slug)
+		if err != nil {
+			return nil, err
+		}
+
+		err = repository.DeleteObject(ctx, u.EntityToString(u.TAG), bson.M{"slug": slug})
 		if err != nil {
 			// Unable to delete given id
 			return nil, err
+		}
+
+		tagImageID, hasImage := tag["image"].(primitive.ObjectID)
+		if hasImage {
+			err = repository.DeleteImage(ctx, tagImageID)
+			if err != nil {
+				return nil, err
+			}
 		}
 
 		// Delete tag from all tags lists
@@ -79,4 +94,46 @@ func DeleteTag(slug string) *u.Error {
 	})
 
 	return err
+}
+
+// Creates an image if data has one
+// and updates data with the id of the new image
+func createTagImage(ctx context.Context, data map[string]any) *u.Error {
+	encodedImage, hasImage := data["image"].(string)
+	if hasImage && encodedImage != "" {
+		imageID, err := createImageFromDataURI(ctx, encodedImage)
+		if err != nil {
+			return err
+		}
+
+		data["image"] = imageID
+	}
+
+	return nil
+}
+
+// Creates an image if updateData has one and different to oldEntity
+// and updates updateData with the id of the new image
+func updateTagImage(ctx context.Context, oldObject, updateData map[string]any) *u.Error {
+	newImage, hasNewImage := updateData["image"].(string)
+	oldImage, hasOldImage := oldObject["image"].(primitive.ObjectID)
+
+	if !hasNewImage {
+		return nil
+	}
+
+	if hasOldImage && newImage != oldImage.Hex() {
+		err := repository.DeleteImage(ctx, oldImage)
+		if err != nil {
+			return err
+		}
+
+		return createTagImage(ctx, updateData)
+	}
+
+	if !hasOldImage {
+		return createTagImage(ctx, updateData)
+	}
+
+	return nil
 }

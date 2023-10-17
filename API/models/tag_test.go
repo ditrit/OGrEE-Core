@@ -166,7 +166,7 @@ func TestUpdateTagPresentInOneObjectUpdatesItInList(t *testing.T) {
 func TestDeleteTagNoExistentReturnsError(t *testing.T) {
 	err := models.DeleteTag("delete-tag")
 	assert.NotNil(t, err)
-	assert.Equal(t, "Error deleting object: not found", err.Message)
+	assert.Equal(t, "Nothing matches this request", err.Message)
 }
 
 func TestDeleteTagNotPresentInAnyObjectWorks(t *testing.T) {

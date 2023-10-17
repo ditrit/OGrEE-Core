@@ -153,6 +153,13 @@ func CreateEntity(entity int, t map[string]interface{}, userRoles map[string]Rol
 	}
 
 	return WithTransaction(func(ctx mongo.SessionContext) (map[string]any, error) {
+		if entity == u.TAG {
+			err := createTagImage(ctx, t)
+			if err != nil {
+				return nil, err
+			}
+		}
+
 		entStr := u.EntityToString(entity)
 
 		_, err := repository.CreateObject(ctx, entStr, t)
@@ -671,9 +678,16 @@ func prepareUpdateObject(ctx mongo.SessionContext, entity int, id string, update
 	updateData["createdDate"] = oldObject["createdDate"]
 	delete(updateData, "parentId")
 
-	// tag slug edition support
-	if entity == u.TAG && updateData["slug"].(string) != oldObject["slug"].(string) {
-		err := repository.UpdateTagSlugInEntities(ctx, oldObject["slug"].(string), updateData["slug"].(string))
+	if entity == u.TAG {
+		// tag slug edition support
+		if updateData["slug"].(string) != oldObject["slug"].(string) {
+			err := repository.UpdateTagSlugInEntities(ctx, oldObject["slug"].(string), updateData["slug"].(string))
+			if err != nil {
+				return err
+			}
+		}
+
+		err := updateTagImage(ctx, oldObject, updateData)
 		if err != nil {
 			return err
 		}
