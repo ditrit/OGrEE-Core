@@ -1232,6 +1232,9 @@ func GetHierarchyByName(w http.ResponseWriter, r *http.Request) {
 	if entity == u.HIERARCHYOBJS_ENT {
 		// Generic endpoint only for physical objs
 		data, modelErr = models.GetHierarchyObjectById(id, filters, user.Roles)
+		if modelErr == nil {
+			entity = data["category"].(string)
+		}
 	} else {
 		// Entity already known
 		data, modelErr = models.GetEntity(bson.M{"id": id}, entity, filters, user.Roles)
