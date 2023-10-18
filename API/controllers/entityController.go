@@ -309,7 +309,7 @@ func getBulkDomainsRecursively(parent string, listDomains []map[string]interface
 // parameters:
 //   - name: namespace
 //     in: query
-//     description: 'One of the values: physical, physical.stray, physical.structured,
+//     description: 'One of the values: physical, physical.stray, physical.hierarchy,
 //     logical, logical.objtemplate, logical.bldgtemplate, logical.roomtemplate,
 //     organisational.
 //     If none provided, all namespaces are used by default.'
@@ -375,7 +375,7 @@ func getBulkDomainsRecursively(parent string, listDomains []map[string]interface
 //     Format: yyyy-mm-dd'
 //   - name: namespace
 //     in: query
-//     description: 'One of the values: physical, physical.stray, physical.structured,
+//     description: 'One of the values: physical, physical.stray, physical.hierarchy,
 //     logical, logical.objtemplate, logical.bldgtemplate, logical.roomtemplate,
 //     organisational.
 //
@@ -528,7 +528,7 @@ func GetEntity(w http.ResponseWriter, r *http.Request) {
 	// Get entity
 	if id, canParse = mux.Vars(r)["id"]; canParse {
 		var req primitive.M
-		if entityStr == u.STRUCTURED_ENT {
+		if entityStr == u.HIERARCHYOBJS_ENT {
 			data, modelErr = models.GetObjectById(id, filters, user.Roles)
 		} else {
 			if strings.Contains(entityStr, "template") { //Get by slug (template)
@@ -836,7 +836,7 @@ func UpdateEntity(w http.ResponseWriter, r *http.Request) {
 	entity = strings.Replace(entity, "-", "_", 1)
 
 	// Check unidentified collection
-	if u.EntityStrToInt(entity) < 0 && entity != u.STRUCTURED_ENT {
+	if u.EntityStrToInt(entity) < 0 && entity != u.HIERARCHYOBJS_ENT {
 		w.WriteHeader(http.StatusNotFound)
 		u.Respond(w, u.Message("Invalid object in URL: '"+mux.Vars(r)["entity"]+"' Please provide a valid object"))
 		u.ErrLog("Cannot update invalid object", "UPDATE "+mux.Vars(r)["entity"], "", r)
@@ -1210,7 +1210,7 @@ func GetHierarchyByName(w http.ResponseWriter, r *http.Request) {
 	// Get object and its family
 	var modelErr *u.Error
 	var data map[string]interface{}
-	if entity == u.STRUCTURED_ENT {
+	if entity == u.HIERARCHYOBJS_ENT {
 		// Generic endpoint only for physical objs
 		data, modelErr = models.GetObjectById(id, filters, user.Roles)
 	} else {

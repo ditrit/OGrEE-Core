@@ -23,7 +23,7 @@ var dmatch mux.MatcherFunc = func(request *http.Request, match *mux.RouteMatch) 
 // For Obtaining hierarchy with hierarchyName
 var hnmatch mux.MatcherFunc = func(request *http.Request, match *mux.RouteMatch) bool {
 	println("CHECKING HN-MATCH")
-	return regexp.MustCompile(`^\/api\/(sites|buildings|rooms|racks|devices|stray-objects|domains|structured-objects)+\/[A-Za-z0-9_.-]+\/all(\?.*)*$`).
+	return regexp.MustCompile(`^\/api\/(sites|buildings|rooms|racks|devices|stray-objects|domains|hierarchy-objects)+\/[A-Za-z0-9_.-]+\/all(\?.*)*$`).
 		MatchString(request.URL.String())
 }
 
