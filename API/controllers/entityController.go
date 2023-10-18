@@ -91,7 +91,7 @@ func getUserFromToken(w http.ResponseWriter, r *http.Request) *models.Account {
 //     description: 'Entity (same as category) of the object. Accepted values: sites, domains,
 //     buildings, rooms, racks, devices, acs, panels,
 //     cabinets, groups, corridors,
-//     room-templates, obj-templates, bldg-templates, stray-objects.'
+//     room-templates, obj-templates, bldg-templates, stray-objects, hierarchy-objects.'
 //     required: true
 //     type: string
 //     default: "sites"
@@ -112,16 +112,15 @@ func CreateEntity(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("FUNCTION CALL: 	 CreateEntity ")
 	fmt.Println("******************************************************")
 	DispRequestMetaData(r)
-
 	// Get entity
-	entStr, _ := mux.Vars(r)["entity"]
+	entStr := mux.Vars(r)["entity"]
 	// If creating templates, format them
 	entStr = strings.Replace(entStr, "-", "_", 1)
 	entInt := u.EntityStrToInt(entStr)
 	println("ENT: ", entStr)
 
 	// Prevents Mongo from creating a new unidentified collection
-	if entInt < 0 {
+	if entInt < 0 && entStr != u.HIERARCHYOBJS_ENT {
 		w.WriteHeader(http.StatusBadRequest)
 		u.Respond(w, u.Message("Invalid entity in URL: '"+mux.Vars(r)["entity"]+"' Please provide a valid object"))
 		u.ErrLog("Cannot create invalid object", "CREATE "+mux.Vars(r)["entity"], "", r)
@@ -144,8 +143,19 @@ func CreateEntity(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Check if category and endpoint match, except for templates and strays
-	if entInt < u.ROOMTMPL && entInt != u.STRAYOBJ {
+	if entStr == u.HIERARCHYOBJS_ENT {
+		// Get entity from object's category
+		entStr = object["category"].(string)
+		entInt = u.EntityStrToInt(entStr)
+		if entInt < u.SITE || entInt > u.GROUP {
+			w.WriteHeader(http.StatusBadRequest)
+			u.Respond(w, u.Message("Invalid category for a hierarchy object"))
+			u.ErrLog("Cannot create invalid hierarchy object", "CREATE "+mux.Vars(r)["entity"], "", r)
+			return
+
+		}
+	} else if entInt < u.ROOMTMPL && entInt != u.STRAYOBJ {
+		// Check if category and endpoint match, except for templates and strays
 		if object["category"] != entStr {
 			w.WriteHeader(http.StatusBadRequest)
 			u.Respond(w, u.Message("Category in request body does not correspond with desired object in endpoint"))
@@ -309,7 +319,7 @@ func getBulkDomainsRecursively(parent string, listDomains []map[string]interface
 // parameters:
 //   - name: namespace
 //     in: query
-//     description: 'One of the values: physical, physical.stray, physical.structured,
+//     description: 'One of the values: physical, physical.stray, physical.hierarchy,
 //     logical, logical.objtemplate, logical.bldgtemplate, logical.roomtemplate,
 //     organisational.
 //     If none provided, all namespaces are used by default.'
@@ -375,14 +385,12 @@ func getBulkDomainsRecursively(parent string, listDomains []map[string]interface
 //     Format: yyyy-mm-dd'
 //   - name: namespace
 //     in: query
-//     description: 'One of the values: physical, physical.stray, physical.structured,
+//     description: 'One of the values: physical, physical.stray, physical.hierarchy,
 //     logical, logical.objtemplate, logical.bldgtemplate, logical.roomtemplate,
-//     organisational.
-//
+//     organisational. If none provided, all namespaces are used by default.'
 // responses:
 //		'204':
-//			description: 'Successfully deleted object.
-//			No response body will be returned'
+//			description: Successfully deleted object
 //		'404':
 //			description: Not found. An error message will be returned
 
@@ -470,7 +478,7 @@ func HandleGenericObjects(w http.ResponseWriter, r *http.Request) {
 //     description: 'Entity (same as category) of the object. Accepted values: sites, domains,
 //     buildings, rooms, racks, devices, acs, panels,
 //     cabinets, groups, corridors,
-//     room-templates, obj-templates, bldg-templates, stray-objects.'
+//     room-templates, obj-templates, bldg-templates, stray-objects, hierarchy-objects.'
 //     required: true
 //     type: string
 //     default: "sites"
@@ -528,8 +536,8 @@ func GetEntity(w http.ResponseWriter, r *http.Request) {
 	// Get entity
 	if id, canParse = mux.Vars(r)["id"]; canParse {
 		var req primitive.M
-		if entityStr == u.STRUCTURED_ENT {
-			data, modelErr = models.GetObjectById(id, filters, user.Roles)
+		if entityStr == u.HIERARCHYOBJS_ENT {
+			data, modelErr = models.GetHierarchyObjectById(id, filters, user.Roles)
 		} else {
 			if strings.Contains(entityStr, "template") { //Get by slug (template)
 				req = bson.M{"slug": id}
@@ -654,7 +662,7 @@ func GetAllEntities(w http.ResponseWriter, r *http.Request) {
 //     description: 'Entity (same as category) of the object. Accepted values: sites, domains,
 //     buildings, rooms, racks, devices, acs, panels,
 //     cabinets, groups, corridors,
-//     room-templates, obj-templates, bldg-templates, stray-objects.'
+//     room-templates, obj-templates, bldg-templates, stray-objects, hierarchy-objects.'
 //     required: true
 //     type: string
 //     default: "sites"
@@ -691,7 +699,7 @@ func DeleteEntity(w http.ResponseWriter, r *http.Request) {
 	entity = strings.Replace(entity, "-", "_", 1)
 
 	// Check unidentified collection
-	if u.EntityStrToInt(entity) < 0 {
+	if u.EntityStrToInt(entity) < 0 && entity != u.HIERARCHYOBJS_ENT {
 		w.WriteHeader(http.StatusBadRequest)
 		u.Respond(w, u.Message("Invalid object in URL: '"+mux.Vars(r)["entity"]+
 			"' Please provide a valid object"))
@@ -706,6 +714,17 @@ func DeleteEntity(w http.ResponseWriter, r *http.Request) {
 		u.Respond(w, u.Message("Error while parsing path parameters"))
 		u.ErrLog("Error while parsing path parameters", "DELETE ENTITY", "", r)
 	} else {
+		if entity == u.HIERARCHYOBJS_ENT {
+			obj, err := models.GetHierarchyObjectById(id, u.RequestFilters{}, user.Roles)
+			if err != nil {
+				u.ErrLog("Error finding hierarchyobj to delete", "DELETE ENTITY", err.Message, r)
+				u.RespondWithError(w, err)
+				return
+			} else {
+				entity = obj["category"].(string)
+			}
+		}
+
 		var modelErr *u.Error
 		if strings.Contains(entity, "template") {
 			modelErr = models.DeleteSingleEntity(entity, bson.M{"slug": id})
@@ -777,7 +796,7 @@ func DeleteEntity(w http.ResponseWriter, r *http.Request) {
 //     description: 'Entity (same as category) of the object. Accepted values: sites, domains,
 //     buildings, rooms, racks, devices, acs, panels,
 //     cabinets, groups, corridors,
-//     room-templates, obj-templates, bldg-templates, stray-objects.'
+//     room-templates, obj-templates, bldg-templates, stray-objects, hierarchy-objects.'
 //     required: true
 //     type: string
 //     default: "sites"
@@ -836,7 +855,7 @@ func UpdateEntity(w http.ResponseWriter, r *http.Request) {
 	entity = strings.Replace(entity, "-", "_", 1)
 
 	// Check unidentified collection
-	if u.EntityStrToInt(entity) < 0 && entity != u.STRUCTURED_ENT {
+	if u.EntityStrToInt(entity) < 0 && entity != u.HIERARCHYOBJS_ENT {
 		w.WriteHeader(http.StatusNotFound)
 		u.Respond(w, u.Message("Invalid object in URL: '"+mux.Vars(r)["entity"]+"' Please provide a valid object"))
 		u.ErrLog("Cannot update invalid object", "UPDATE "+mux.Vars(r)["entity"], "", r)
@@ -1132,7 +1151,7 @@ func GetEntitiesOfAncestor(w http.ResponseWriter, r *http.Request) {
 //   description: 'Entity (same as category) of the object. Accepted values: sites, domains,
 //   buildings, rooms, racks, devices, acs, panels,
 //   cabinets, groups, corridors,
-//   room-templates, obj-templates, bldg-templates, stray-objects.'
+//   room-templates, obj-templates, bldg-templates, stray-objects, hierarchy-objects.'
 //   required: true
 //   type: string
 //   default: "sites"
@@ -1210,9 +1229,12 @@ func GetHierarchyByName(w http.ResponseWriter, r *http.Request) {
 	// Get object and its family
 	var modelErr *u.Error
 	var data map[string]interface{}
-	if entity == u.STRUCTURED_ENT {
+	if entity == u.HIERARCHYOBJS_ENT {
 		// Generic endpoint only for physical objs
-		data, modelErr = models.GetObjectById(id, filters, user.Roles)
+		data, modelErr = models.GetHierarchyObjectById(id, filters, user.Roles)
+		if modelErr == nil {
+			entity = data["category"].(string)
+		}
 	} else {
 		// Entity already known
 		data, modelErr = models.GetEntity(bson.M{"id": id}, entity, filters, user.Roles)

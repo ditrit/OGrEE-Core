@@ -49,7 +49,7 @@ const (
 	Any            Namespace = ""
 	Physical       Namespace = "physical"
 	PStray         Namespace = "physical.stray"
-	PStructured    Namespace = "physical.structured"
+	PHierarchy     Namespace = "physical.hierarchy"
 	Organisational Namespace = "organisational"
 	Logical        Namespace = "logical"
 	LObjTemplate   Namespace = "logical.objtemplate"
@@ -60,7 +60,7 @@ const (
 const HN_DELIMETER = "."           // hierarchyName path delimiter
 const NAME_REGEX = "\\w(\\w|\\-)*" // accepted regex for names that compose ids
 const RESET_TAG = "RESET"          // used as email to identify a reset token
-const STRUCTURED_ENT = "structured_object"
+const HIERARCHYOBJS_ENT = "hierarchy_object"
 
 type RequestFilters struct {
 	FieldsToShow []string  `schema:"fieldOnly"`
@@ -300,7 +300,7 @@ func GetEntitiesByNamespace(namespace Namespace, hierarchyName string) []string 
 		entNames = append(entNames, EntityToString(ROOMTMPL))
 	case PStray:
 		entNames = append(entNames, EntityToString(STRAYOBJ))
-	case Physical, PStructured, Any:
+	case Physical, PHierarchy, Any:
 		if hierarchyName == "" {
 			// All entities of each namespace
 			switch namespace {
@@ -308,7 +308,7 @@ func GetEntitiesByNamespace(namespace Namespace, hierarchyName string) []string 
 				for i := STRAYOBJ; i <= GROUP; i++ {
 					entNames = append(entNames, EntityToString(i))
 				}
-			case PStructured:
+			case PHierarchy:
 				for i := SITE; i < GROUP; i++ {
 					entNames = append(entNames, EntityToString(i))
 				}
