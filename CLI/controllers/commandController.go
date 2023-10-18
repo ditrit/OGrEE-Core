@@ -40,96 +40,103 @@ func PostObj(ent int, entity string, data map[string]any) error {
 	return nil
 }
 
-func startsWith(s string, prefix string, suffix *string) bool {
-	if strings.HasPrefix(s, prefix) {
-		*suffix = s[len(prefix):]
-		return true
-	}
-	return false
+var pathPrefixes = []string{
+	"/Physical/Stray/",
+	"/Physical/",
+	"/Logical/ObjectTemplates/",
+	"/Logical/RoomTemplates/",
+	"/Logical/BldgTemplates/",
+	"/Logical/Groups/",
+	"/Organisation/Domain/",
 }
 
-func buildObjectUrl(baseUrl string, pathSuffix string, depth int) string {
-	pathSuffix = strings.Replace(pathSuffix, "/", ".", -1)
-	baseUrl += "/" + pathSuffix
+func SplitPath(path string) (string, string, error) {
+	for _, prefix := range pathPrefixes {
+		if strings.HasPrefix(path, prefix) {
+			id := path[len(prefix):]
+			id = strings.ReplaceAll(id, "/", ".")
+			return prefix, id, nil
+		}
+	}
+	return "", "", fmt.Errorf("invalid object path")
+}
+
+func ObjectUrl(path string, depth int) (string, error) {
+	prefix, id, err := SplitPath(path)
+	if err != nil {
+		return "", err
+	}
+	var baseUrl string
+	switch prefix {
+	case "/Physical/Stray/":
+		baseUrl = "/api/stray-objects"
+	case "/Physical/":
+		baseUrl = "/api/hierarchy-objects"
+	case "/Logical/ObjectTemplates/":
+		baseUrl = "/api/obj-templates"
+	case "/Logical/RoomTemplates/":
+		baseUrl = "/api/room-templates"
+	case "/Logical/BldgTemplates/":
+		baseUrl = "/api/bldg-templates"
+	case "/Logical/Groups/":
+		baseUrl = "/api/groups"
+	case "/Organisation/Domain/":
+		baseUrl = "/api/domains"
+	default:
+		return "", fmt.Errorf("invalid object path")
+	}
+	baseUrl += "/" + id
 	params := url.Values{}
 	if depth > 0 {
 		baseUrl += "/all"
 		params.Add("limit", strconv.Itoa(depth))
 	}
-	url, _ := url.Parse(baseUrl)
-	url.RawQuery = params.Encode()
-	return url.String()
-}
-
-func ObjectUrlNonPhysical(path string, depth int) (string, error) {
-	var suffix string
-	var baseUrl string
-	if startsWith(path, "/Physical/Stray/", &suffix) {
-		baseUrl = "/api/stray-objects"
-	} else if startsWith(path, "/Logical/ObjectTemplates/", &suffix) {
-		baseUrl = "/api/obj-templates"
-	} else if startsWith(path, "/Logical/RoomTemplates/", &suffix) {
-		baseUrl = "/api/room-templates"
-	} else if startsWith(path, "/Logical/BldgTemplates/", &suffix) {
-		baseUrl = "/api/bldg-templates"
-	} else if startsWith(path, "/Logical/Groups/", &suffix) {
-		baseUrl = "/api/groups"
-	} else if startsWith(path, "/Organisation/Domain/", &suffix) {
-		baseUrl = "/api/domains"
-	} else {
-		return "", fmt.Errorf("invalid object path")
-	}
-	return buildObjectUrl(baseUrl, suffix, depth), nil
-}
-
-func ObjectUrl(path string, category string, depth int) (string, error) {
-	var suffix string
-	var baseUrl string
-	if !startsWith(path, "/Physical/", &suffix) ||
-		startsWith(path, "/Physical/Stray/", &suffix) {
-		return ObjectUrlNonPhysical(path, depth)
-	}
-	return buildObjectUrl(baseUrl, suffix, depth), nil
+	parsedUrl, _ := url.Parse(baseUrl)
+	parsedUrl.RawQuery = params.Encode()
+	return parsedUrl.String(), nil
 }
 
 func ObjectUrlGeneric(path string, depth int, filters map[string]string) (string, error) {
 	params := url.Values{}
-	var suffix string
-	if startsWith(path, "/Physical/Stray/", &suffix) {
-		params.Add("namespace", "physical")
-		params.Add("parentId", "")
-	} else if startsWith(path, "/Physical/", &suffix) {
-		params.Add("namespace", "physical")
-		params.Add("parentId", "*")
-	} else if startsWith(path, "/Logical/ObjectTemplates/", &suffix) {
-		params.Add("namespace", "logical")
-	} else if startsWith(path, "/Logical/RoomTemplates/", &suffix) {
-		params.Add("namespace", "logical")
-		params.Add("category", "room")
-	} else if startsWith(path, "/Logical/BldgTemplates/", &suffix) {
-		params.Add("namespace", "logical")
-		params.Add("category", "building")
-	} else if startsWith(path, "/Logical/Groups/", &suffix) {
+	prefix, id, err := SplitPath(path)
+	if err != nil {
+		return "", err
+	}
+	switch prefix {
+	case "/Physical/Stray/":
+		params.Add("namespace", "physical.stray")
+		params.Add("id", id)
+	case "/Physical/":
+		params.Add("namespace", "physical.hierarchy")
+		params.Add("id", id)
+	case "/Logical/ObjectTemplates/":
+		params.Add("namespace", "logical.objtemplate")
+		params.Add("slug", id)
+	case "/Logical/RoomTemplates/":
+		params.Add("namespace", "logical.roomtemplate")
+		params.Add("slug", id)
+	case "/Logical/BldgTemplates/":
+		params.Add("namespace", "logical.bldgtemplate")
+		params.Add("slug", id)
+	case "/Logical/Groups/":
 		params.Add("namespace", "logical")
 		params.Add("category", "group")
-	} else if startsWith(path, "/Organisation/Domain/", &suffix) {
+		params.Add("id", id)
+	case "/Organisation/Domain/":
 		params.Add("namespace", "organisational")
-	} else {
+		params.Add("id", id)
+	default:
 		return "", fmt.Errorf("invalid object path")
 	}
-	suffix = strings.Replace(suffix, "/", ".", -1)
-	params.Add("id", suffix)
 	if depth > 0 {
-		params.Add("depth", strconv.Itoa(depth))
+		params.Add("limit", strconv.Itoa(depth))
 	}
-	if filters != nil {
-		for key, value := range filters {
-			params.Add(key, value)
-		}
+	for key, value := range filters {
+		params.Add(key, value)
 	}
 	url, _ := url.Parse("/api/objects")
 	url.RawQuery = params.Encode()
-	return url.String(), nil
+	return strings.ReplaceAll(url.String(), "%2A", "*"), nil
 }
 
 func IsTemplate(path string) bool {
@@ -144,16 +151,8 @@ func IsTemplate(path string) bool {
 	}
 }
 
-func ObjectId(path string) (string, error) {
-	var suffix string
-	if startsWith(path, "/Physical/", &suffix) {
-		return suffix, nil
-	}
-	return "", fmt.Errorf("path does not point to a physical object")
-}
-
 func PollObjectWithChildren(path string, depth int) (map[string]any, error) {
-	url, err := ObjectUrlGeneric(path, depth, nil)
+	url, err := ObjectUrl(path, depth)
 	if err != nil {
 		return nil, nil
 	}
@@ -164,17 +163,7 @@ func PollObjectWithChildren(path string, depth int) (map[string]any, error) {
 		}
 		return nil, err
 	}
-	objs, ok := resp.body["data"].([]any)
-	if !ok {
-		return nil, fmt.Errorf("invalid response from API on GET %s", url)
-	}
-	if len(objs) == 0 {
-		return nil, nil
-	}
-	if len(objs) > 1 {
-		return nil, fmt.Errorf("a single object was expected on GET %s, but got several", url)
-	}
-	obj, ok := objs[0].(map[string]any)
+	obj, ok := resp.body["data"].(map[string]any)
 	if !ok {
 		return nil, fmt.Errorf("invalid response from API on GET %s", url)
 	}
@@ -200,19 +189,8 @@ func GetObject(path string) (map[string]any, error) {
 	return GetObjectWithChildren(path, 0)
 }
 
-func WilcardUrl(path string) (string, error) {
-	var suffix string
-	if startsWith(path, "/Physical/Stray/", &suffix) {
-		return "", fmt.Errorf("stray paths cannot contain wildcards")
-	} else if !startsWith(path, "/Physical/", &suffix) {
-		return "", fmt.Errorf("only paths in /Physical can contain wildcards")
-	}
-	suffix = strings.Replace(suffix, "/", ".", -1)
-	return "/api/objects-wildcard/" + suffix, nil
-}
-
 func GetObjectsWildcard(path string) ([]map[string]any, []string, error) {
-	url, err := WilcardUrl(path)
+	url, err := ObjectUrlGeneric(path, 0, nil)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -224,10 +202,18 @@ func GetObjectsWildcard(path string) ([]map[string]any, []string, error) {
 	if !ok {
 		return nil, nil, fmt.Errorf("invalid response from API on GET %s", url)
 	}
+	prefix, _, _ := SplitPath(path)
 	objs := infArrToMapStrinfArr(objsAny)
 	paths := []string{}
 	for _, obj := range objs {
-		objPath := "/Physical/" + strings.Replace(obj["id"].(string), ".", "/", -1)
+		var suffix string
+		objId, hasId := obj["id"].(string)
+		if hasId {
+			suffix = strings.Replace(objId, ".", "/", -1)
+		} else {
+			suffix = utils.NameOrSlug(obj)
+		}
+		objPath := prefix + suffix
 		paths = append(paths, objPath)
 	}
 	return objs, paths, nil
@@ -240,8 +226,10 @@ func lsObjectsWithoutFilters(path string) ([]map[string]any, error) {
 	}
 	objects := []map[string]any{}
 	for _, child := range n.Childs {
-
 		if child.Obj != nil {
+			if strings.HasPrefix(path, "/Logical/Groups") {
+				child.Obj["name"] = strings.ReplaceAll(child.Obj["id"].(string), ".", "/")
+			}
 			objects = append(objects, child.Obj)
 		} else {
 			objects = append(objects, map[string]any{"name": child.Name})
@@ -251,7 +239,7 @@ func lsObjectsWithoutFilters(path string) ([]map[string]any, error) {
 }
 
 func lsObjectsWithFilters(path string, filters map[string]string) ([]map[string]any, error) {
-	url, err := ObjectUrlGeneric(path, 1, filters)
+	url, err := ObjectUrlGeneric(path+"/*", 0, filters)
 	if err != nil {
 		return nil, fmt.Errorf("cannot use filters at this location")
 	}
@@ -328,7 +316,7 @@ func Ls(path string, filters map[string]string, sortAttr string) ([]map[string]a
 }
 
 func DeleteObj(path string) error {
-	obj, err := GetObject(path)
+	objs, _, err := GetObjectsWildcard(path)
 	if err != nil {
 		return err
 	}
@@ -336,29 +324,7 @@ func DeleteObj(path string) error {
 	if err != nil {
 		return err
 	}
-	_, err = RequestAPI("DELETE", url, nil, http.StatusNoContent)
-	if err != nil {
-		return err
-	}
-	if !IsTemplate(path) && IsInObjForUnity(obj["category"].(string)) {
-		InformOgree3DOptional("DeleteObj", -1, map[string]any{"type": "delete", "data": obj["id"].(string)})
-	}
-	if path == State.CurrPath {
-		CD(TranslatePath(".."))
-	}
-	return nil
-}
-
-func DeleteObjectsWildcard(path string) error {
-	objs, _, err := GetObjectsWildcard(path)
-	if err != nil {
-		return err
-	}
-	url, err := WilcardUrl(path)
-	if err != nil {
-		return err
-	}
-	_, err = RequestAPI("DELETE", url, nil, http.StatusNoContent)
+	_, err = RequestAPI("DELETE", url, nil, http.StatusOK)
 	if err != nil {
 		return err
 	}
@@ -366,6 +332,9 @@ func DeleteObjectsWildcard(path string) error {
 		if IsInObjForUnity(obj["category"].(string)) {
 			InformOgree3DOptional("DeleteObj", -1, map[string]any{"type": "delete", "data": obj["id"].(string)})
 		}
+	}
+	if path == State.CurrPath {
+		CD(TranslatePath(".."))
 	}
 	return nil
 }
@@ -413,7 +382,7 @@ func UpdateObj(path string, data map[string]any) (map[string]any, error) {
 		return nil, err
 	}
 	category := obj["category"].(string)
-	url, err := ObjectUrl(path, category, 0)
+	url, err := ObjectUrl(path, 0)
 	if err != nil {
 		return nil, err
 	}
@@ -493,8 +462,7 @@ func UnsetAttribute(path string, attr string) error {
 		return fmt.Errorf("object has no attributes")
 	}
 	delete(attributes, attr)
-	category := obj["category"].(string)
-	url, err := ObjectUrl(path, category, 0)
+	url, err := ObjectUrl(path, 0)
 	if err != nil {
 		return err
 	}
@@ -570,9 +538,8 @@ func UnsetInObj(Path, attr string, idx int) (map[string]interface{}, error) {
 		obj[attr] = arr
 	}
 
-	//Send to API and update Unity
 	entity := obj["category"].(string)
-	URL, err := ObjectUrl(Path, entity, 0)
+	URL, err := ObjectUrl(Path, 0)
 	if err != nil {
 		return nil, err
 	}
@@ -736,29 +703,6 @@ func GetByAttr(path string, u interface{}) error {
 		if State.DebugLvl > NONE {
 			println("The slot you provided does not correspond to any device in this rack")
 		}
-	}
-	return nil
-}
-
-// This function display devices in a sorted order according
-// to the attribute specified
-func LSATTR(path string, attr string) error {
-	obj, err := GetObjectWithChildren(path, 1)
-	if err != nil {
-		return err
-	}
-	cat := obj["category"].(string)
-	if cat != "rack" {
-		return fmt.Errorf("command may only be performed on rack objects")
-	}
-	children := obj["children"].([]any)
-	sortedDevices := SortObjects(children, attr)
-
-	//Print the objects received
-	if len(sortedDevices.GetData()) > 0 {
-		println("Devices")
-		println()
-		sortedDevices.Print()
 	}
 	return nil
 }
@@ -1576,16 +1520,16 @@ func FocusUI(path string) error {
 }
 
 func LinkObject(source string, destination string, posUOrSlot string) error {
-	sourceUrl, err := ObjectUrlNonPhysical(source, 0)
+	sourceUrl, err := ObjectUrl(source, 0)
+	if err != nil {
+		return err
+	}
+	_, destId, err := SplitPath(destination)
 	if err != nil {
 		return err
 	}
 	if !strings.HasPrefix(sourceUrl, "/api/stray-objects/") {
 		return fmt.Errorf("only stray objects can be linked")
-	}
-	destId, err := ObjectId(destination)
-	if err != nil {
-		return err
 	}
 	payload := map[string]any{"parentId": destId}
 	if posUOrSlot != "" {
@@ -1599,12 +1543,7 @@ func LinkObject(source string, destination string, posUOrSlot string) error {
 }
 
 func UnlinkObject(path string) error {
-	obj, err := GetObject(path)
-	if err != nil {
-		return err
-	}
-	category := obj["category"].(string)
-	sourceUrl, err := ObjectUrl(path, category, 0)
+	sourceUrl, err := ObjectUrl(path, 0)
 	if err != nil {
 		return err
 	}

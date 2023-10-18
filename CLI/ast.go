@@ -179,7 +179,7 @@ func (n *lsNode) execute() (interface{}, error) {
 		return nil, err
 	}
 	filters := map[string]string{}
-	for key := range filters {
+	for key := range n.filters {
 		filterVal, err := n.filters[key].execute()
 		if err != nil {
 			return nil, err
@@ -308,9 +308,6 @@ func (n *deleteObjNode) execute() (interface{}, error) {
 	if err != nil {
 		return nil, err
 	}
-	if strings.Contains(path, "*") {
-		return nil, cmd.DeleteObjectsWildcard(path)
-	}
 	return nil, cmd.DeleteObj(path)
 }
 
@@ -416,23 +413,14 @@ func (n *getObjectNode) execute() (interface{}, error) {
 	if err != nil {
 		return nil, err
 	}
-	if strings.Contains(path, "*") {
-		objs, _, err := cmd.GetObjectsWildcard(path)
-		if err != nil {
-			return nil, err
-		}
-		for _, obj := range objs {
-			cmd.DisplayObject(obj)
-		}
-		return objs, nil
-	} else {
-		obj, err := cmd.GetObject(path)
-		if err != nil {
-			return nil, err
-		}
-		cmd.DisplayObject(obj)
-		return obj, nil
+	objs, _, err := cmd.GetObjectsWildcard(path)
+	if err != nil {
+		return nil, err
 	}
+	for _, obj := range objs {
+		cmd.DisplayObject(obj)
+	}
+	return objs, nil
 }
 
 type selectObjectNode struct {
