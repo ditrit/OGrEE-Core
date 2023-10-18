@@ -604,15 +604,14 @@ func (p *parser) parseIndexing() node {
 
 func (p *parser) parseLsObj(lsIdx int) node {
 	defer un(trace(p, ""))
-	args := p.parseArgs([]string{"s", "f"}, []string{"r"}, "lsobj")
+	args := p.parseArgs([]string{"s", "f"}, []string{}, "lsobj")
 	path := p.parsePath("")
-	_, recursive := args["r"]
 	sort := args["s"]
 	var attrList []string
 	if formatArg, ok := args["f"]; ok {
 		attrList = strings.Split(formatArg, ":")
 	}
-	return &lsObjNode{path, lsIdx, recursive, sort, attrList}
+	return &lsObjNode{path, lsIdx, sort, attrList}
 }
 
 func (p *parser) parseLs() node {

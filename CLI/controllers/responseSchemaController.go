@@ -32,11 +32,7 @@ func ParseResponseClean(response *http.Response) (*Response, error) {
 		if err != nil {
 			return nil, fmt.Errorf("cannot unmarshal json : \n%s", string(bodyBytes))
 		}
-		var messageOk bool
-		message, messageOk = responseBody["message"].(string)
-		if !messageOk {
-			return nil, fmt.Errorf("invalid response")
-		}
+		message, _ = responseBody["message"].(string)
 	}
 	return &Response{response.StatusCode, message, responseBody}, nil
 }
@@ -68,14 +64,6 @@ func ParseResponse(resp *http.Response, e error, purpose string) map[string]inte
 	}
 	json.Unmarshal(bodyBytes, &ans)
 	return ans
-}
-
-// Checks the map as x["data"].(map[string]interface{})["objects"]
-func GetRawObjectsLength(x map[string]interface{}) (int, error) {
-	if objs := GetRawObjects(x); objs != nil {
-		return len(objs), nil
-	}
-	return -1, fmt.Errorf("Response did not meet schema spec")
 }
 
 func GetRawObjects(x map[string]interface{}) []interface{} {

@@ -11,7 +11,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"io"
 	"net/http"
 	"net/url"
 	"os"
@@ -49,7 +48,7 @@ func PingAPI() bool {
 }
 
 // Intialise the ShellState
-func InitState(conf *config.Config) {
+func InitState(conf *config.Config) error {
 	State.Hierarchy = BuildBaseTree()
 	State.CurrPath = "/Physical"
 	State.PrevPath = "/Physical"
@@ -70,25 +69,26 @@ func InitState(conf *config.Config) {
 	//Set Draw Threshold
 	SetDrawThreshold(conf.DrawLimit)
 
-	//Set customer / tenant name
-	resp, e := models.Send("GET", State.APIURL+"/api/version", GetKey(), nil)
-	parsed := ParseResponse(resp, e, "Get API Information request")
-	if parsed != nil {
-		if info, ok := LoadObjectFromInf(parsed["data"]); ok {
-			if cInf, ok := info["Customer"]; ok {
-				if customer, ok := cInf.(string); ok {
-					State.Customer = customer
-				}
-			}
+	resp, err := RequestAPI("GET", "/api/version", nil, http.StatusOK)
+	if err != nil {
+		return err
+	}
+	info, ok := resp.body["data"].(map[string]any)
+	if !ok {
+		return fmt.Errorf("invalid response from API on GET /api/version")
+	}
+	if cInf, ok := info["Customer"]; ok {
+		if customer, ok := cInf.(string); ok {
+			State.Customer = customer
 		}
 	}
-
 	if State.Customer == "" {
 		if State.DebugLvl > NONE {
 			println("Tenant Information not found!")
 		}
 		State.Customer = "UNKNOWN"
 	}
+	return nil
 }
 
 // It is useful to have the state to hold
@@ -263,22 +263,11 @@ func Login(user string, password string) (*User, string, error) {
 		password = string(passwordBytes)
 	}
 	data := map[string]any{"email": user, "password": password}
-	rawResp, err := models.Send("POST", State.APIURL+"/api/login", "", data)
+	resp, err := RequestAPI("POST", "/api/login", data, http.StatusOK)
 	if err != nil {
-		return nil, "", fmt.Errorf("error sending login request : %s", err.Error())
+		return nil, "", err
 	}
-	bodyBytes, err := io.ReadAll(rawResp.Body)
-	if err != nil {
-		return nil, "", fmt.Errorf("error reading answer from API : %s", err.Error())
-	}
-	var resp map[string]any
-	if err = json.Unmarshal(bodyBytes, &resp); err != nil {
-		return nil, "", fmt.Errorf("error parsing response : %s", err.Error())
-	}
-	if rawResp.StatusCode != http.StatusOK {
-		return nil, "", fmt.Errorf(resp["message"].(string))
-	}
-	account, accountOk := (resp["account"].(map[string]interface{}))
+	account, accountOk := (resp.body["account"].(map[string]interface{}))
 	token, tokenOk := account["token"].(string)
 	userID, userIDOk := account["_id"].(string)
 	if !accountOk || !tokenOk || !userIDOk {
