@@ -135,7 +135,7 @@ func Router(jwt func(next http.Handler) http.Handler) *mux.Router {
 		controllers.BaseOption).Methods("OPTIONS")
 
 	// LINK AND UNLINK
-	router.HandleFunc("/api/{entity:building|room|ac|corridor|cabinet|panel|group|rack|device}s/{id}/unlink",
+	router.HandleFunc("/api/{entity:building|room|ac|corridor|cabinet|panel|group|rack|device|hierarchy-object}s/{id}/unlink",
 		controllers.LinkEntity).Methods("PATCH")
 
 	router.HandleFunc("/api/stray-objects/{id}/link",

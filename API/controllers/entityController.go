@@ -1467,7 +1467,11 @@ func LinkEntity(w http.ResponseWriter, r *http.Request) {
 
 	// Get entity
 	if id, canParse = mux.Vars(r)["id"]; canParse {
-		data, modelErr = models.GetEntity(bson.M{"id": id}, entityStr, u.RequestFilters{}, user.Roles)
+		if strings.Replace(entityStr, "-", "_", 1) == u.HIERARCHYOBJS_ENT {
+			data, modelErr = models.GetHierarchyObjectById(id, u.RequestFilters{}, user.Roles)
+		} else {
+			data, modelErr = models.GetEntity(bson.M{"id": id}, entityStr, u.RequestFilters{}, user.Roles)
+		}
 	} else {
 		w.WriteHeader(http.StatusBadRequest)
 		u.Respond(w, u.Message("Error while parsing path parameters"))
