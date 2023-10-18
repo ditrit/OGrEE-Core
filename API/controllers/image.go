@@ -65,12 +65,10 @@ func GetImage(w http.ResponseWriter, r *http.Request) {
 			"GET GetImage", err.Message, r)
 		u.RespondWithError(w, err)
 	} else if r.Method == "OPTIONS" {
-		// TODO check this content type
-		w.Header().Add("Content-Type", "application/json")
+		w.Header().Add("Content-Type", image.MIMEType)
 		w.Header().Add("Allow", "GET, OPTIONS")
 	} else {
-		// TODO manually set content type?
-		// w.Header().Add("Content-Type", "application/json")
-		w.Write(image)
+		w.Header().Add("Content-Type", image.MIMEType)
+		w.Write(image.Data)
 	}
 }

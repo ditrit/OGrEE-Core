@@ -87,7 +87,7 @@ func DeleteTag(slug string) *u.Error {
 func createTagImage(ctx context.Context, data map[string]any) *u.Error {
 	encodedImage, hasImage := data["image"].(string)
 	if hasImage && encodedImage != "" {
-		imageID, err := createImageFromBase64(ctx, encodedImage)
+		imageID, err := createImageFromDataURI(ctx, encodedImage)
 		if err != nil {
 			return err
 		}
