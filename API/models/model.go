@@ -216,7 +216,7 @@ func prepareCreateEntity(entity int, t map[string]interface{}, userRoles map[str
 	return nil
 }
 
-func GetObjectById(hierarchyName string, filters u.RequestFilters, userRoles map[string]Role) (map[string]interface{}, *u.Error) {
+func GetHierarchyObjectById(hierarchyName string, filters u.RequestFilters, userRoles map[string]Role) (map[string]interface{}, *u.Error) {
 	// Get possible collections for this name
 	rangeEntities := u.GetEntitiesByNamespace(u.PHierarchy, hierarchyName)
 	req := bson.M{"id": hierarchyName}
@@ -690,7 +690,7 @@ func UpdateEntity(ent string, req bson.M, t map[string]interface{}, isPatch bool
 	//there isn't any way for mongoDB to make a field
 	//immutable in a document
 	if ent == u.HIERARCHYOBJS_ENT {
-		oldObj, err = GetObjectById(req["id"].(string), u.RequestFilters{}, userRoles)
+		oldObj, err = GetHierarchyObjectById(req["id"].(string), u.RequestFilters{}, userRoles)
 		if err == nil {
 			ent = oldObj["category"].(string)
 		}
