@@ -2,8 +2,10 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"p3/app"
 	"p3/controllers"
+	"p3/repository"
 
 	"net/http"
 	"os"
@@ -11,6 +13,7 @@ import (
 
 	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
+	"github.com/joho/godotenv"
 )
 
 // Obtain by query
@@ -155,7 +158,28 @@ func Router(jwt func(next http.Handler) http.Handler) *mux.Router {
 	return router
 }
 
+func connectToDB() {
+	err := godotenv.Load()
+	if err != nil {
+		log.Println(err)
+	}
+
+	err = repository.ConnectToDB(
+		os.Getenv("db_host"),
+		os.Getenv("db_port"),
+		"ogree"+os.Getenv("db_user")+"Admin",
+		os.Getenv("db_pass"),
+		"ogree"+os.Getenv("db"),
+	)
+	if err != nil {
+		log.Fatalln(err.Error())
+	}
+
+	log.Println("Successfully connected to DB")
+}
+
 func main() {
+	connectToDB()
 	//TODO:
 	//Use the URL below to help make the router functions more
 	//flexible and thus implement the http OPTIONS method

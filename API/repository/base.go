@@ -2,15 +2,12 @@ package repository
 
 import (
 	"context"
+	"errors"
 	"fmt"
-	"log"
 	"net/url"
-	"os"
 	u "p3/utils"
-	"strings"
 	"time"
 
-	"github.com/joho/godotenv"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
@@ -18,55 +15,155 @@ import (
 )
 
 // Database
-var db *mongo.Database
+var globalDB *mongo.Database
 var globalClient *mongo.Client
 
-func init() {
-	e := godotenv.Load()
-	if e != nil {
-		fmt.Println(e)
+func ConnectToDB(host, port, user, pass, dbName string) error {
+	client, err := ConnectToMongo(host, port, user, pass, dbName)
+	if err != nil {
+		return err
 	}
 
-	var dbUri string
+	globalClient = client
 
-	dbHost := os.Getenv("db_host")
-	dbPort := os.Getenv("db_port")
-	user := os.Getenv("db_user")
-	pass := os.Getenv("db_pass")
-	dbName := "ogree" + os.Getenv("db")
+	db, err := GetDatabase(client, dbName)
+	if err != nil {
+		return err
+	}
+
+	globalDB = db
+
+	err = SetupDB(db)
+	if err != nil {
+		return err
+	}
+
+	err = createInitialData(db, dbName)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func SetupDB(db *mongo.Database) error {
+	// Indexes creation
+	// Enforce unique children
+	for _, entity := range []int{u.DOMAIN, u.SITE, u.BLDG, u.ROOM, u.RACK, u.DEVICE, u.AC, u.PWRPNL, u.CABINET, u.CORRIDOR, u.GROUP, u.STRAYOBJ} {
+		if err := createUniqueIndex(db, entity, bson.M{"id": 1}); err != nil {
+			return err
+		}
+	}
+
+	// Make slugs unique identifiers for templates
+	for _, entity := range []int{u.ROOMTMPL, u.OBJTMPL, u.BLDGTMPL, u.TAG} {
+		if err := createUniqueIndex(db, entity, bson.M{"slug": 1}); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+// Initial data creation
+func createInitialData(db *mongo.Database, dbName string) error {
+	// Create a default domain
+	ctx, cancel := u.Connect()
+	defer cancel()
+
+	_, err := CreateObject(ctx, u.EntityToString(u.DOMAIN), map[string]any{
+		"id":       dbName,
+		"name":     dbName,
+		"category": "domain",
+		"attributes": map[string]any{
+			"color":       "ffffff",
+			"description": []any{},
+		},
+	})
+	if err != nil && err.Type != u.ErrDuplicate {
+		return err
+	}
+
+	return nil
+}
+
+func createUniqueIndex(db *mongo.Database, entity int, on bson.M) error {
+	indexCtx, indexCancel := u.Connect()
+	defer indexCancel()
+
+	_, err := db.Collection(u.EntityToString(entity)).Indexes().CreateOne(
+		indexCtx,
+		mongo.IndexModel{
+			Keys:    on,
+			Options: options.Index().SetUnique(true),
+		},
+	)
+
+	return err
+}
+
+func GetDatabase(client *mongo.Client, name string) (*mongo.Database, error) {
+	if name == "admin" || name == "config" || name == "local" {
+		return nil, errors.New("database not accessible")
+	}
+
+	// Check if API is authenticated
+	if exists := databaseExists(client, name); !exists {
+		return nil, errors.New("database not found, check that you are authorized")
+	}
+
+	db := client.Database(name)
+	if db == nil {
+		return nil, errors.New("error while getting database")
+	}
+
+	return db, nil
+}
+
+func databaseExists(client *mongo.Client, name string) bool {
+	databaseList, err := client.ListDatabaseNames(context.Background(), bson.D{})
+	if err != nil {
+		return false
+	}
+
+	for _, databaseName := range databaseList {
+		if databaseName == name {
+			return true
+		}
+	}
+
+	return false
+}
+
+func ConnectToMongo(host, port, user, pass, authDB string) (*mongo.Client, error) {
 	params := "readPreference=primary"
-	if strings.HasSuffix(os.Args[0], ".test") {
-		dbName = "ogreeAutoTest"
-		user = "AutoTest"
-		pass = "123"
-		dbPort = "27018"
+
+	if host == "" {
+		host = "localhost"
 		params = params + "&directConnection=true"
 	}
 
-	println("USER:", user)
-	println("DB:", dbName)
+	if port == "" {
+		port = "27017"
+	}
 
-	if dbHost == "" {
-		dbHost = "localhost"
-	}
-	if dbPort == "" {
-		dbPort = "27017"
-	}
+	var dbUri string
 
 	if user == "" || pass == "" {
 		params = params + "&ssl=false"
 		dbUri = fmt.Sprintf(
 			"mongodb://%s:%s/?%s",
-			dbHost, dbPort,
+			host, port,
 			params,
 		)
 	} else {
-		params = params + fmt.Sprintf("&authSource=%s", dbName)
-		dbUri = fmt.Sprintf("mongodb://ogree%sAdmin:%s@%s:%s/%s?%s",
-			user, url.QueryEscape(pass), dbHost, dbPort, dbName, params)
+		dbUri = fmt.Sprintf(
+			"mongodb://%s:%s@%s:%s/%s?%s",
+			user, url.QueryEscape(pass),
+			host, port, authDB,
+			params,
+		)
 	}
-
-	fmt.Println(dbUri)
 
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
@@ -76,73 +173,21 @@ func init() {
 		options.Client().ApplyURI(dbUri),
 	)
 	if err != nil {
-		println("Error while generating client")
-		log.Fatal(err)
+		return nil, err
 	}
 
-	//Check if API is authenticated
-	if found, err1 := CheckIfDBExists(dbName, client); !found || err1 != nil {
-		if err1 != nil {
-			if strings.Contains(err1.Error(), "listDatabases requires authentication") {
-				log.Fatal("Error! Authentication failed")
-			}
-			log.Fatal(err1.Error())
-		}
-		log.Fatal("Target DB not found. Please check that you are authorized")
-	}
-
-	db = client.Database(dbName)
-
-	if db == nil {
-		println("Error while connecting")
-	} else {
-		err = client.Ping(ctx, readpref.Primary())
-		if err != nil {
-			log.Fatal(err)
-		} else {
-			println("Successfully connected to DB")
-		}
-		globalClient = client
-	}
-
-	// indexes creation
-	indexCtx, indexCancel := u.Connect()
-	defer indexCancel()
-
-	_, err = db.Collection(u.EntityToString(u.TAG)).Indexes().CreateOne(
-		indexCtx,
-		mongo.IndexModel{
-			Keys:    bson.M{"slug": 1},
-			Options: options.Index().SetUnique(true),
-		},
-	)
+	err = client.Ping(ctx, readpref.Primary())
 	if err != nil {
-		log.Fatal(err)
+		return nil, err
 	}
+
+	return client, nil
 }
 
 func GetDB() *mongo.Database {
-	return db
+	return globalDB
 }
 
 func GetClient() *mongo.Client {
 	return globalClient
-}
-
-func CheckIfDBExists(name string, client *mongo.Client) (bool, error) {
-	//options.ListDatabasesOptions{}
-	if name == "admin" || name == "config" || name == "local" {
-		return false, nil
-	}
-
-	ldr, e := client.ListDatabaseNames(context.TODO(), bson.D{{}})
-	if e == nil {
-		for i := range ldr {
-			if ldr[i] == name {
-				return true, nil
-			}
-		}
-	}
-
-	return false, e
 }

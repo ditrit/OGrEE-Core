@@ -78,59 +78,9 @@ authDB.auth(ADMIN_USER, ADMIN_PASS);
 
 // Create a new Database
 var db = m.getDB("ogree"+DB_NAME)
+
+//Create a default user
 db.createCollection('account');
-db.createCollection('domain');
-db.createCollection('site');
-db.createCollection('building');
-db.createCollection('room');
-db.createCollection('rack');
-db.createCollection('device');
-
-//Template Collections
-db.createCollection('room_template');
-db.createCollection('obj_template');
-db.createCollection('bldg_template');
-
-//Group Collections
-db.createCollection('group');
-
-//Nonhierarchal objects
-db.createCollection('ac');
-db.createCollection('panel');
-db.createCollection('cabinet');
-db.createCollection('corridor');
-
-//Stray Objects
-db.createCollection('stray_object');
-
-//Enforce unique children
-db.domain.createIndex( {id:1}, { unique: true } );
-db.site.createIndex({id:1}, { unique: true });
-db.building.createIndex({id:1}, { unique: true });
-db.room.createIndex({id:1}, { unique: true });
-db.rack.createIndex({id:1}, { unique: true });
-db.device.createIndex({id:1}, { unique: true });
-
-//Make slugs unique identifiers for templates
-db.room_template.createIndex({slug:1}, { unique: true });
-db.obj_template.createIndex({slug:1}, { unique: true });
-db.bldg_template.createIndex({slug:1}, { unique: true });
-
-//Unique children restriction for nonhierarchal objects and sensors
-db.ac.createIndex({id:1}, { unique: true });
-db.panel.createIndex({id:1}, { unique: true });
-db.cabinet.createIndex({id:1}, { unique: true });
-db.corridor.createIndex({id:1}, { unique: true });
-
-//Enforce unique Group names 
-db.group.createIndex({id:1}, { unique: true });
-
-//Enforce unique stray objects
-db.stray_object.createIndex({id:1}, { unique: true });
-
-//Create a default domain and user
-db.domain.insertOne({id: DB_NAME, name: DB_NAME, category: "domain", 
-    attributes:{color:"ffffff"}, description:[], createdDate: new Date(), lastUpdated: new Date()})
 db.account.insertOne({email: "admin", password: "admin", roles: {"*": "manager"}})
 
 // Create API User
