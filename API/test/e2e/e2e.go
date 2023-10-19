@@ -1,19 +1,27 @@
 package e2e
 
 import (
+	"bytes"
 	"log"
+	"net/http"
+	"net/http/httptest"
+	"p3/app"
 	"p3/models"
+	"p3/router"
 	_ "p3/test/integration"
 
+	"github.com/gorilla/mux"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
-func init() {
-	createAdminAccount()
-}
-
+var appRouter *mux.Router
 var AdminId primitive.ObjectID
 var AdminToken string
+
+func init() {
+	appRouter = router.Router(app.JwtAuthentication)
+	createAdminAccount()
+}
 
 func createAdminAccount() {
 	// Create admin account
@@ -31,4 +39,13 @@ func createAdminAccount() {
 		AdminId = newAcc.ID
 		AdminToken = newAcc.Token
 	}
+}
+
+func MakeRequest(method, url string, requestBody []byte) *httptest.ResponseRecorder {
+	recorder := httptest.NewRecorder()
+	request, _ := http.NewRequest(method, url, bytes.NewBuffer(requestBody))
+	request.Header.Set("Authorization", "Bearer "+AdminToken)
+	appRouter.ServeHTTP(recorder, request)
+
+	return recorder
 }
