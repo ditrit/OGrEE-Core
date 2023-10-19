@@ -1,0 +1,14 @@
+# Dockerfile for the API in dev enviroment
+
+FROM golang:latest AS builder
+WORKDIR /ogree
+
+# RUN apt install git
+
+# download dependencies
+COPY go.mod .
+COPY go.sum .
+RUN go mod download
+
+RUN go install github.com/codegangsta/gin@latest
+ENV CGO_ENABLED=0

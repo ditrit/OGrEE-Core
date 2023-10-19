@@ -10,21 +10,21 @@ class _Actions extends StatelessWidget {
     final actionsRow = [
       _Action(
         label: Text(localeMsg.expandAll),
-        onPressed: AppController.of(context).treeController.expandAll,
+        onPressed: TreeAppController.of(context).treeController.expandAll,
       ),
       _Action(
         label: Text(localeMsg.collapseAll),
-        onPressed: AppController.of(context).treeController.collapseAll,
+        onPressed: TreeAppController.of(context).treeController.collapseAll,
       ),
     ];
     if (!isTenantMode) {
       actionsRow.add(_Action(
         label: Text(localeMsg.selectAll),
-        onPressed: AppController.of(context).selectAll,
+        onPressed: TreeAppController.of(context).selectAll,
       ));
       actionsRow.add(_Action(
         label: Text(localeMsg.deselectAll),
-        onPressed: () => AppController.of(context).selectAll(false),
+        onPressed: () => TreeAppController.of(context).selectAll(false),
       ));
     }
     return Wrap(

@@ -9,12 +9,10 @@ class _FindNodeField extends StatefulWidget {
 
 class __FindNodeFieldState extends State<_FindNodeField> {
   late final controller = TextEditingController();
-  late final focusNode = FocusNode();
 
   @override
   void dispose() {
     controller.dispose();
-    focusNode.dispose();
     super.dispose();
   }
 
@@ -26,21 +24,10 @@ class __FindNodeFieldState extends State<_FindNodeField> {
       controller: controller,
       cursorColor: Colors.blueGrey,
       autofocus: false,
-      focusNode: focusNode,
-      decoration: InputDecoration(
-        isDense: true,
-        hintText: '${localeMsg.search}...',
-        hintStyle: const TextStyle(
-          fontStyle: FontStyle.italic,
-          fontSize: 14,
-        ),
-        suffixIcon: IconButton(
-          onPressed: _submitted,
-          tooltip: localeMsg.search,
-          icon: const Icon(
-            Icons.search_rounded,
-          ),
-        ),
+      decoration: GetFormInputDecoration(
+        false,
+        '${localeMsg.search}...',
+        icon: Icons.search_rounded,
       ),
       onSubmitted: (_) => _submitted(),
     );
@@ -48,29 +35,44 @@ class __FindNodeFieldState extends State<_FindNodeField> {
 
   void _submitted() {
     final id = controller.text.trim();
-    final appController = AppController.of(context);
+    final appController = TreeAppController.of(context);
     final localeMsg = AppLocalizations.of(context)!;
 
-    final node = appController.rootNode.nullableDescendants.firstWhere(
-      (descendant) => descendant == null
-          ? false
-          : descendant.id.toLowerCase().contains(id.toLowerCase()),
-      orElse: () => null,
-    );
+    TreeNode? node;
+    for (var root in appController.treeController.roots) {
+      if (root.id.toLowerCase().contains(id.toLowerCase())) {
+        node = root;
+        break;
+      }
+      node = root.nullableDescendants.firstWhere(
+        (descendant) => descendant == null
+            ? false
+            : descendant.id.toLowerCase().contains(id.toLowerCase()),
+        orElse: () => null,
+      );
+      if (node != null) {
+        break;
+      }
+    }
 
     if (node == null) {
       showSnackBar(
-        context,
+        ScaffoldMessenger.of(context),
         '${localeMsg.noNodeFound} $id',
         duration: const Duration(seconds: 3),
       );
     } else {
-      if (!appController.treeController.isExpanded(id)) {
-        appController.treeController.expandUntil(node);
+      showSnackBar(
+        ScaffoldMessenger.of(context),
+        '${localeMsg.nodeFound} ${node.id}',
+        isSuccess: true,
+      );
+      // Expand only until found node and scroll to it
+      if (!appController.treeController.areAllRootsCollapsed) {
+        appController.treeController.collapseAll();
       }
+      appController.treeController.expandAncestors(node);
       appController.scrollTo(node);
     }
-    controller.clear();
-    focusNode.unfocus();
   }
 }

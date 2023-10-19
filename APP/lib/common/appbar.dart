@@ -45,7 +45,7 @@ AppBar myAppBar(context, userEmail, {isTenantMode = false}) {
         ));
   }
 
-  bool _isSmallDisplay = MediaQuery.of(context).size.width < 600;
+  bool isSmallDisplay = MediaQuery.of(context).size.width < 600;
   return AppBar(
     backgroundColor: Colors.grey.shade900,
     leadingWidth: 160,
@@ -77,7 +77,7 @@ AppBar myAppBar(context, userEmail, {isTenantMode = false}) {
       ),
     ),
     actions: [
-      _isSmallDisplay
+      isSmallDisplay
           ? Container()
           : Padding(
               padding: const EdgeInsets.only(right: 20),
@@ -132,7 +132,7 @@ AppBar myAppBar(context, userEmail, {isTenantMode = false}) {
                 color: Colors.white,
               ),
               const SizedBox(width: 10),
-              _isSmallDisplay
+              isSmallDisplay
                   ? Tooltip(
                       message: isTenantMode
                           ? (backendType == BackendType.kubernetes

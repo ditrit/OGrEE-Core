@@ -71,12 +71,12 @@ class _SelectDateState extends State<SelectDate> with TickerProviderStateMixin {
                       indicatorSize: TabBarIndicatorSize.label,
                       tabs: [
                         Tab(
-                          text: "Toutes les données",
-                          icon: Icon(Icons.all_inclusive),
+                          text: localeMsg.allData,
+                          icon: const Icon(Icons.all_inclusive),
                         ),
                         Tab(
                           text: localeMsg.pickDate,
-                          icon: Icon(Icons.calendar_month),
+                          icon: const Icon(Icons.calendar_month),
                         ),
                         // Tab(
                         //   text: localeMsg.openLastDataset,
@@ -114,7 +114,7 @@ class _SelectDateState extends State<SelectDate> with TickerProviderStateMixin {
                                 autofocus: true,
                                 focusNode: myFocusNode,
                                 child: Text(
-                                  'Toutes les données disponibles dans la base',
+                                  localeMsg.allDataBase,
                                   style: GoogleFonts.inter(
                                     fontSize: isSmallDisplay ? 14 : 17,
                                   ),
@@ -243,11 +243,6 @@ class _DatePickerState extends State<DatePicker> {
           enableMultiView: MediaQuery.of(context).size.width > 700,
           headerStyle:
               const DateRangePickerHeaderStyle(textAlign: TextAlign.center),
-          // initialSelectedRange: PickerDateRange(
-          // DateTime.now().subtract(const Duration(days: 4)),
-          // DateTime.now().add(const Duration(days: 3))
-          // DateTime.now(),
-          // DateTime.now()),
         ),
       ),
     ));

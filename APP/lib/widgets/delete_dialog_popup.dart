@@ -53,6 +53,7 @@ class _DeleteDialogState extends State<DeleteDialog> {
                           foregroundColor: Colors.red.shade900),
                       onPressed: () async {
                         setState(() => _isLoading = true);
+                        final messenger = ScaffoldMessenger.of(context);
                         for (var obj in widget.objName) {
                           Result result;
                           if (widget.objType == "tenants") {
@@ -67,15 +68,15 @@ class _DeleteDialogState extends State<DeleteDialog> {
                             case Success():
                               break;
                             case Failure(exception: final exception):
-                              showSnackBar(context, "Error: $exception");
+                              showSnackBar(messenger, "Error: $exception");
                               setState(() => _isLoading = false);
                               return;
                           }
                         }
                         setState(() => _isLoading = false);
                         widget.parentCallback();
-                        Navigator.of(context).pop();
-                        showSnackBar(context, localeMsg.deleteOK);
+                        showSnackBar(messenger, localeMsg.deleteOK);
+                        if (context.mounted) Navigator.of(context).pop();
                       },
                       label: Text(localeMsg.delete),
                       icon: _isLoading

@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:ogree_app/common/definitions.dart';
 import 'package:ogree_app/pages/results_page.dart';
-import 'package:ogree_app/widgets/select_objects/app_controller.dart';
+import 'package:ogree_app/widgets/select_objects/treeapp_controller.dart';
 
 import 'common.dart';
 

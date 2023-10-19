@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 void showSnackBar(
-  BuildContext context,
+  ScaffoldMessengerState messenger,
   String message, {
   Duration duration = const Duration(seconds: 6),
   bool isError = false,
@@ -10,7 +10,7 @@ void showSnackBar(
   var color = Colors.blueGrey.shade900;
   if (isError) color = Colors.red.shade900;
   if (isSuccess) color = Colors.green;
-  ScaffoldMessenger.of(context)
+  messenger
     ..hideCurrentSnackBar()
     ..showSnackBar(
       SnackBar(

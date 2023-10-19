@@ -3,7 +3,7 @@ import 'package:ogree_app/common/definitions.dart';
 import 'package:ogree_app/common/popup_dialog.dart';
 import 'package:ogree_app/common/theme.dart';
 import 'package:ogree_app/pages/select_page.dart';
-import 'package:ogree_app/widgets/select_objects/app_controller.dart';
+import 'package:ogree_app/widgets/select_objects/treeapp_controller.dart';
 import 'settings_view/settings_view.dart';
 import 'tree_view/custom_tree_view.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
@@ -23,11 +23,11 @@ class SelectObjects extends StatefulWidget {
 }
 
 class _SelectObjectsState extends State<SelectObjects> {
-  late final AppController appController = AppController();
+  late final TreeAppController appController = TreeAppController();
 
   @override
   Widget build(BuildContext context) {
-    return AppControllerScope(
+    return TreeAppControllerScope(
       controller: appController,
       child: FutureBuilder<void>(
         future: widget.load
@@ -45,7 +45,7 @@ class _SelectObjectsState extends State<SelectObjects> {
             return _Unfocus(
               child: Card(
                 margin: const EdgeInsets.all(0.1),
-                child: appController.rootNode.children.isEmpty
+                child: appController.treeController.roots.isEmpty
                     ? Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
@@ -57,8 +57,7 @@ class _SelectObjectsState extends State<SelectObjects> {
                           Padding(
                             padding: const EdgeInsets.only(top: 16),
                             child: Text(
-                                AppLocalizations.of(context)!.noObjectsFound +
-                                    " :("),
+                                "${AppLocalizations.of(context)!.noObjectsFound} :("),
                           ),
                         ],
                       )
@@ -92,7 +91,7 @@ class _Unfocus extends StatelessWidget {
 
 class _ResponsiveBody extends StatelessWidget {
   final bool noFilters;
-  final AppController controller;
+  final TreeAppController controller;
   const _ResponsiveBody(
       {Key? key, required this.controller, this.noFilters = false})
       : super(key: key);
@@ -143,7 +142,7 @@ class _ResponsiveBody extends StatelessWidget {
 }
 
 class SettingsViewPopup extends StatelessWidget {
-  final AppController controller;
+  final TreeAppController controller;
 
   SettingsViewPopup({super.key, required this.controller});
 
@@ -152,7 +151,7 @@ class SettingsViewPopup extends StatelessWidget {
     return Center(
       child: SizedBox(
         height: 500,
-        child: AppControllerScope(
+        child: TreeAppControllerScope(
             controller: controller,
             child: Container(
                 width: 500,

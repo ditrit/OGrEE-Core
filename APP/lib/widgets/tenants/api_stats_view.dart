@@ -7,7 +7,7 @@ import 'package:ogree_app/pages/results_page.dart';
 
 // Define a stateful widget that displays API usage statistics for a given tenant
 class ApiStatsView extends StatefulWidget {
-  ApiStatsView({
+  const ApiStatsView({
     Key? key,
   }) : super(key: key);
 
@@ -42,7 +42,7 @@ class _ApiStatsViewState extends State<ApiStatsView> {
                 Padding(
                   padding: const EdgeInsets.only(top: 16),
                   child: Text(
-                      AppLocalizations.of(context)!.noObjectsFound + " :("),
+                      "${AppLocalizations.of(context)!.noObjectsFound} :("),
                 ),
               ],
             );
@@ -83,13 +83,14 @@ class _ApiStatsViewState extends State<ApiStatsView> {
   }
 
   getTenantStats() async {
+    final messenger = ScaffoldMessenger.of(context);
     // Fetch the statistics data from the tenant's API backend
     Result result = await fetchTenantStats();
     switch (result) {
       case Success(value: final value):
         _tenantStats = value;
       case Failure(exception: final exception):
-        showSnackBar(context, exception.toString(), isError: true);
+        showSnackBar(messenger, exception.toString(), isError: true);
         _tenantStats = {};
     }
 
@@ -106,7 +107,7 @@ class _ApiStatsViewState extends State<ApiStatsView> {
           }
         }
       case Failure(exception: final exception):
-        showSnackBar(context, exception.toString());
+        showSnackBar(messenger, exception.toString());
     }
   }
 }

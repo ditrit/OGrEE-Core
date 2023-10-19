@@ -94,7 +94,7 @@ class _UserPopupState extends State<UserPopup> with TickerProviderStateMixin {
                                   ),
                                 ],
                         ),
-                        Container(
+                        SizedBox(
                           height: 320,
                           child: Padding(
                             padding: const EdgeInsets.only(top: 16.0),
@@ -129,10 +129,12 @@ class _UserPopupState extends State<UserPopup> with TickerProviderStateMixin {
                             const SizedBox(width: 15),
                             ElevatedButton.icon(
                                 onPressed: () async {
+                                  final messenger =
+                                      ScaffoldMessenger.of(context);
                                   if (_tabController.index == 1) {
                                     if (_loadedFile == null) {
                                       showSnackBar(
-                                          context, localeMsg.mustSelectJSON);
+                                          messenger, localeMsg.mustSelectJSON);
                                     } else if (_loadFileResult != null) {
                                       widget.parentCallback();
                                       Navigator.of(context).pop();
@@ -150,7 +152,7 @@ class _UserPopupState extends State<UserPopup> with TickerProviderStateMixin {
                                             exception: final exception
                                           ):
                                           showSnackBar(
-                                              context, exception.toString(),
+                                              messenger, exception.toString(),
                                               isError: true);
                                       }
                                     }
@@ -180,12 +182,13 @@ class _UserPopupState extends State<UserPopup> with TickerProviderStateMixin {
                                           case Success():
                                             widget.parentCallback();
                                             showSnackBar(
-                                                context,
+                                                messenger,
                                                 _isEdit
                                                     ? localeMsg.modifyOK
                                                     : localeMsg.createOK,
                                                 isSuccess: true);
-                                            Navigator.of(context).pop();
+                                            if (context.mounted)
+                                              Navigator.of(context).pop();
                                           case Failure(
                                               exception: final exception
                                             ):
@@ -193,11 +196,11 @@ class _UserPopupState extends State<UserPopup> with TickerProviderStateMixin {
                                               _isLoading = false;
                                             });
                                             showSnackBar(
-                                                context, exception.toString(),
+                                                messenger, exception.toString(),
                                                 isError: true);
                                         }
                                       } catch (e) {
-                                        showSnackBar(context, e.toString(),
+                                        showSnackBar(messenger, e.toString(),
                                             isError: true);
                                         return;
                                       }
@@ -233,6 +236,7 @@ class _UserPopupState extends State<UserPopup> with TickerProviderStateMixin {
   }
 
   getDomains() async {
+    final messenger = ScaffoldMessenger.of(context);
     var result = await fetchObjectsTree(
         namespace: Namespace.Organisational, isTenantMode: true);
     switch (result) {
@@ -241,8 +245,8 @@ class _UserPopupState extends State<UserPopup> with TickerProviderStateMixin {
             .values
             .reduce((value, element) => List.from(value + element));
       case Failure(exception: final exception):
-        Navigator.pop(context);
-        showSnackBar(context, exception.toString(), isError: true);
+        showSnackBar(messenger, exception.toString(), isError: true);
+        if (context.mounted) Navigator.pop(context);
         return;
     }
 
@@ -413,7 +417,7 @@ class _UserPopupState extends State<UserPopup> with TickerProviderStateMixin {
       selectedDomain.add(domainList!.first);
       selectedRole.add(roleList.first);
     }
-    return StatefulBuilder(builder: (context, _setState) {
+    return StatefulBuilder(builder: (context, localSetState) {
       return Padding(
         padding: const EdgeInsets.only(top: 4.0),
         child: Row(
@@ -442,7 +446,7 @@ class _UserPopupState extends State<UserPopup> with TickerProviderStateMixin {
                       );
                     }).toList(),
                     onChanged: (String? value) {
-                      _setState(() {
+                      localSetState(() {
                         selectedDomain[rowIdx] = value!;
                       });
                     },
@@ -482,7 +486,7 @@ class _UserPopupState extends State<UserPopup> with TickerProviderStateMixin {
                       );
                     }).toList(),
                     onChanged: (String? value) {
-                      _setState(() {
+                      localSetState(() {
                         selectedRole[rowIdx] = value!;
                       });
                     },

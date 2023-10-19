@@ -348,16 +348,11 @@ func GetSlot(rack map[string]any, location string) (map[string]any, error) {
 	if template == "" {
 		return nil, nil
 	}
-	URL := State.APIURL + "/api/obj-templates/" + template
-	resp, err := models.Send("GET", URL, GetKey(), nil)
+	resp, err := RequestAPI("GET", "/api/obj-templates/"+template, nil, http.StatusOK)
 	if err != nil {
 		return nil, err
 	}
-	if resp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("cannot get template %s", template)
-	}
-	parsedResp := ParseResponse(resp, err, "GET")
-	slots, ok := parsedResp["data"].(map[string]any)["slots"]
+	slots, ok := resp.body["data"].(map[string]any)["slots"]
 	if !ok {
 		return nil, nil
 	}
@@ -544,21 +539,18 @@ func UnsetInObj(Path, attr string, idx int) (map[string]interface{}, error) {
 		return nil, err
 	}
 
-	resp, e := models.Send("PUT", URL, GetKey(), obj)
-	respJson := ParseResponse(resp, e, "UPDATE")
-	if respJson != nil {
-		if resp.StatusCode == 200 {
-			println("Success")
+	resp, err := RequestAPI("PUT", URL, obj, http.StatusOK)
+	if err != nil {
+		return nil, err
+	}
 
-			message := map[string]interface{}{
-				"type": "modify", "data": respJson["data"]}
+	message := map[string]interface{}{
+		"type": "modify", "data": resp.body["data"]}
 
-			//Update and inform unity
-			if !IsTemplate(Path) && IsInObjForUnity(entity) {
-				entInt := EntityStrToInt(entity)
-				InformOgree3DOptional("UpdateObj", entInt, message)
-			}
-		}
+	//Update and inform unity
+	if !IsTemplate(Path) && IsInObjForUnity(entity) {
+		entInt := EntityStrToInt(entity)
+		InformOgree3DOptional("UpdateObj", entInt, message)
 	}
 
 	return nil, nil
@@ -575,8 +567,7 @@ func Clear() {
 	}
 }
 
-func LSOG() {
-
+func LSOG() error {
 	fmt.Println("********************************************")
 	fmt.Println("OGREE Shell Information")
 	fmt.Println("********************************************")
@@ -600,39 +591,29 @@ func LSOG() {
 	fmt.Println("********************************************")
 
 	//Get API Information here
-	r, e := models.Send("GET", State.APIURL+"/api/version", GetKey(), nil)
-	parsedResp := ParseResponse(r, e, "get API information request")
-
-	if parsedResp != nil {
-		if apiInfo, ok := LoadObjectFromInf(parsedResp["data"]); ok {
-			fmt.Println("BUILD DATE:", apiInfo["BuildDate"])
-			fmt.Println("BUILD TREE:", apiInfo["BuildTree"])
-			fmt.Println("BUILD HASH:", apiInfo["BuildHash"])
-			fmt.Println("COMMIT DATE: ", apiInfo["CommitDate"])
-			fmt.Println("CUSTOMER: ", apiInfo["Customer"])
-
-		} else if State.DebugLvl > 1 {
-			msg := "Received invalid response for API on GET /api/version"
-			l.GetWarningLogger().Println(msg)
-			fmt.Println("NOTE: Received invalid response from API on information request")
-		}
-
-	} else {
-		if State.DebugLvl > 1 {
-			msg := "Could not get API information"
-			l.GetWarningLogger().Println(msg)
-			fmt.Println("NOTE: " + msg)
-		}
+	resp, err := RequestAPI("GET", "/api/version", nil, http.StatusOK)
+	if err != nil {
+		return err
 	}
+	apiInfo, ok := resp.body["data"].(map[string]any)
+	if !ok {
+		return fmt.Errorf("invalid response from API on GET /api/version")
+	}
+	fmt.Println("BUILD DATE:", apiInfo["BuildDate"])
+	fmt.Println("BUILD TREE:", apiInfo["BuildTree"])
+	fmt.Println("BUILD HASH:", apiInfo["BuildHash"])
+	fmt.Println("COMMIT DATE: ", apiInfo["CommitDate"])
+	fmt.Println("CUSTOMER: ", apiInfo["Customer"])
+	return nil
 }
 
-func LSEnterprise() {
-	r, e := models.Send("GET", State.APIURL+"/api/stats",
-		GetKey(), nil)
-	resp := ParseResponse(r, e, "lsenterprise")
-	if resp != nil {
-		DisplayObject(resp)
+func LSEnterprise() error {
+	resp, err := RequestAPI("GET", "/api/stats", nil, http.StatusOK)
+	if err != nil {
+		return err
 	}
+	DisplayObject(resp.body)
+	return nil
 }
 
 // Displays environment variable values
@@ -839,8 +820,10 @@ func CreateObject(path string, ent int, data map[string]interface{}) error {
 
 		//Check for template
 		if _, ok := attr["template"]; ok {
-			GetOCLIAtrributesTemplateHelper(attr, data, BLDG)
-
+			err := GetOCLIAtrributesTemplateHelper(attr, data, BLDG)
+			if err != nil {
+				return err
+			}
 		} else {
 			//Serialise size and posXY manually instead
 			if _, ok := attr["size"].(string); ok {
@@ -910,7 +893,10 @@ func CreateObject(path string, ent int, data map[string]interface{}) error {
 		//If user provided templates, get the JSON
 		//and parse into templates
 		//NOTE this function also assigns value for "size" attribute
-		GetOCLIAtrributesTemplateHelper(attr, data, ent)
+		err := GetOCLIAtrributesTemplateHelper(attr, data, ent)
+		if err != nil {
+			return err
+		}
 
 		if _, ok := attr["posXY"].(string); ok {
 			attr["posXY"] = serialiseAttr(attr, "posXY")
@@ -975,7 +961,10 @@ func CreateObject(path string, ent int, data map[string]interface{}) error {
 
 		//If user provided templates, get the JSON
 		//and parse into templates
-		GetOCLIAtrributesTemplateHelper(attr, data, ent)
+		err := GetOCLIAtrributesTemplateHelper(attr, data, ent)
+		if err != nil {
+			return err
+		}
 
 		if attr["size"] == "" {
 			if State.DebugLvl > 0 {
@@ -1075,7 +1064,10 @@ func CreateObject(path string, ent int, data map[string]interface{}) error {
 		//If user provided templates, get the JSON
 		//and parse into templates
 		if _, ok := attr["template"]; ok {
-			GetOCLIAtrributesTemplateHelper(attr, data, DEVICE)
+			err := GetOCLIAtrributesTemplateHelper(attr, data, DEVICE)
+			if err != nil {
+				return err
+			}
 		} else {
 			attr["template"] = ""
 			if slot != nil {
@@ -1115,7 +1107,10 @@ func CreateObject(path string, ent int, data map[string]interface{}) error {
 		attr = data["attributes"].(map[string]interface{})
 		if _, ok := attr["template"]; ok {
 			//GetOCLIAtrributesTemplateHelper(attr, data, DEVICE)
-			tmpl := fetchTemplate(attr["template"].(string), STRAYSENSOR)
+			tmpl, err := fetchTemplate(attr["template"].(string), STRAYSENSOR)
+			if err != nil {
+				return err
+			}
 			MergeMaps(attr, tmpl, true)
 		} else {
 			attr["template"] = ""
@@ -1124,7 +1119,10 @@ func CreateObject(path string, ent int, data map[string]interface{}) error {
 	case STRAY_DEV:
 		attr = data["attributes"].(map[string]interface{})
 		if _, ok := attr["template"]; ok {
-			GetOCLIAtrributesTemplateHelper(attr, data, DEVICE)
+			err := GetOCLIAtrributesTemplateHelper(attr, data, DEVICE)
+			if err != nil {
+				return err
+			}
 		} else {
 			attr["template"] = ""
 		}
@@ -1156,7 +1154,7 @@ func CreateObject(path string, ent int, data map[string]interface{}) error {
 
 // If user provided templates, get the JSON
 // and parse into templates
-func GetOCLIAtrributesTemplateHelper(attr, data map[string]interface{}, ent int) {
+func GetOCLIAtrributesTemplateHelper(attr, data map[string]interface{}, ent int) error {
 	//Inner func declaration used for importing
 	//data from templates
 	attrSerialiser := func(someVal interface{}, idx string, ent int) string {
@@ -1190,185 +1188,179 @@ func GetOCLIAtrributesTemplateHelper(attr, data map[string]interface{}, ent int)
 			} else {
 				tInt = OBJTMPL
 			} //End of determine block
+			tmpl, err := fetchTemplate(qS, tInt)
+			if err != nil {
+				return err
+			}
 
-			if tmpl := fetchTemplate(qS, tInt); tmpl != nil {
-				//MergeMaps(attr, tmpl, true)
-				key := determineStrKey(tmpl, []string{"sizeWDHmm", "sizeWDHm"})
+			//MergeMaps(attr, tmpl, true)
+			key := determineStrKey(tmpl, []string{"sizeWDHmm", "sizeWDHm"})
 
-				if sizeInf, ok := tmpl[key].([]interface{}); ok && len(sizeInf) == 3 {
-					var xS, yS, zS string
-					xS = attrSerialiser(sizeInf[0], "x", ent)
-					yS = attrSerialiser(sizeInf[1], "y", ent)
-					zS = attrSerialiser(sizeInf[2], "height", ent)
+			if sizeInf, ok := tmpl[key].([]interface{}); ok && len(sizeInf) == 3 {
+				var xS, yS, zS string
+				xS = attrSerialiser(sizeInf[0], "x", ent)
+				yS = attrSerialiser(sizeInf[1], "y", ent)
+				zS = attrSerialiser(sizeInf[2], "height", ent)
 
-					attr["size"] = "{\"x\":" + xS + ", \"y\":" + yS + "}"
-					attr["height"] = zS
+				attr["size"] = "{\"x\":" + xS + ", \"y\":" + yS + "}"
+				attr["height"] = zS
 
-					if ent == DEVICE {
-						attr["sizeUnit"] = "mm"
-						attr["heightUnit"] = "mm"
-						if tmpx, ok := tmpl["attributes"]; ok {
-							if x, ok := tmpx.(map[string]interface{}); ok {
-								if tmp, ok := x["type"]; ok {
-									if t, ok := tmp.(string); ok {
-										if t == "chassis" || t == "server" {
-											res := 0
-											if val, ok := sizeInf[2].(float64); ok {
-												res = int((val / 1000) / RACKUNIT)
-											} else if val, ok := sizeInf[2].(int); ok {
-												res = int((float64(val) / 1000) / RACKUNIT)
-											} else {
-												//Resort to default value
-												msg := "Warning, invalid value provided for" +
-													" sizeU. Defaulting to 5"
-												println(msg)
-												res = int((5 / 1000) / RACKUNIT)
-											}
-											attr["sizeU"] = strconv.Itoa(res)
-
+				if ent == DEVICE {
+					attr["sizeUnit"] = "mm"
+					attr["heightUnit"] = "mm"
+					if tmpx, ok := tmpl["attributes"]; ok {
+						if x, ok := tmpx.(map[string]interface{}); ok {
+							if tmp, ok := x["type"]; ok {
+								if t, ok := tmp.(string); ok {
+									if t == "chassis" || t == "server" {
+										res := 0
+										if val, ok := sizeInf[2].(float64); ok {
+											res = int((val / 1000) / RACKUNIT)
+										} else if val, ok := sizeInf[2].(int); ok {
+											res = int((float64(val) / 1000) / RACKUNIT)
+										} else {
+											//Resort to default value
+											msg := "Warning, invalid value provided for" +
+												" sizeU. Defaulting to 5"
+											println(msg)
+											res = int((5 / 1000) / RACKUNIT)
 										}
+										attr["sizeU"] = strconv.Itoa(res)
+
 									}
 								}
 							}
 						}
+					}
 
-					} else if ent == ROOM {
-						attr["sizeUnit"] = "m"
-						attr["heightUnit"] = "m"
+				} else if ent == ROOM {
+					attr["sizeUnit"] = "m"
+					attr["heightUnit"] = "m"
 
-						//Copy additional Room specific attributes
-						var tmp []byte
-						CopyAttr(attr, tmpl, "technicalArea")
-						if _, ok := attr["technicalArea"]; ok {
-							//tmp, _ := json.Marshal(attr["technicalArea"])
-							attr["technical"] = attr["technicalArea"]
-							delete(attr, "technicalArea")
+					//Copy additional Room specific attributes
+					var tmp []byte
+					CopyAttr(attr, tmpl, "technicalArea")
+					if _, ok := attr["technicalArea"]; ok {
+						//tmp, _ := json.Marshal(attr["technicalArea"])
+						attr["technical"] = attr["technicalArea"]
+						delete(attr, "technicalArea")
+					}
+
+					CopyAttr(attr, tmpl, "axisOrientation")
+
+					CopyAttr(attr, tmpl, "reservedArea")
+					if _, ok := attr["reservedArea"]; ok {
+						//tmp, _ = json.Marshal(attr["reservedArea"])
+						attr["reserved"] = attr["reservedArea"]
+						delete(attr, "reservedArea")
+					}
+
+					parseReservedTech(attr)
+
+					CopyAttr(attr, tmpl, "separators")
+					if _, ok := attr["separators"]; ok {
+						tmp, _ = json.Marshal(attr["separators"])
+						attr["separators"] = string(tmp)
+					}
+
+					CopyAttr(attr, tmpl, "pillars")
+					if _, ok := attr["pillars"]; ok {
+						tmp, _ = json.Marshal(attr["pillars"])
+						attr["pillars"] = string(tmp)
+					}
+
+					CopyAttr(attr, tmpl, "floorUnit")
+					if _, ok := attr["floorUnit"]; ok {
+						if floorUnit, ok := attr["floorUnit"].(string); ok {
+							attr["floorUnit"] = floorUnit
+						}
+					}
+
+					CopyAttr(attr, tmpl, "tiles")
+					if _, ok := attr["tiles"]; ok {
+						tmp, _ = json.Marshal(attr["tiles"])
+						attr["tiles"] = string(tmp)
+					}
+
+					CopyAttr(attr, tmpl, "rows")
+					if _, ok := attr["rows"]; ok {
+						tmp, _ = json.Marshal(attr["rows"])
+						attr["rows"] = string(tmp)
+					}
+
+					CopyAttr(attr, tmpl, "aisles")
+					if _, ok := attr["aisles"]; ok {
+						tmp, _ = json.Marshal(attr["aisles"])
+						attr["aisles"] = string(tmp)
+					}
+
+					CopyAttr(attr, tmpl, "vertices")
+					if _, ok := attr["vertices"]; ok {
+						tmp, _ = json.Marshal(attr["vertices"])
+						attr["vertices"] = string(tmp)
+					}
+
+					CopyAttr(attr, tmpl, "colors")
+					if _, ok := attr["colors"]; ok {
+						tmp, _ = json.Marshal(attr["colors"])
+						attr["colors"] = string(tmp)
+					}
+
+					CopyAttr(attr, tmpl, "tileAngle")
+					if _, ok := attr["tileAngle"]; ok {
+						if tileAngle, ok := attr["tileAngle"].(int); ok {
+							attr["tileAngle"] = strconv.Itoa(tileAngle)
 						}
 
-						CopyAttr(attr, tmpl, "axisOrientation")
-
-						CopyAttr(attr, tmpl, "reservedArea")
-						if _, ok := attr["reservedArea"]; ok {
-							//tmp, _ = json.Marshal(attr["reservedArea"])
-							attr["reserved"] = attr["reservedArea"]
-							delete(attr, "reservedArea")
+						if tileAngleF, ok := attr["tileAngle"].(float64); ok {
+							tileAngleStr := strconv.FormatFloat(tileAngleF, 'f', -1, 64)
+							attr["tileAngle"] = tileAngleStr
 						}
+					}
 
-						parseReservedTech(attr)
+				} else if ent == BLDG {
+					attr["sizeUnit"] = "m"
+					attr["heightUnit"] = "m"
 
-						CopyAttr(attr, tmpl, "separators")
-						if _, ok := attr["separators"]; ok {
-							tmp, _ = json.Marshal(attr["separators"])
-							attr["separators"] = string(tmp)
-						}
+				} else {
+					attr["sizeUnit"] = "cm"
+					attr["heightUnit"] = "cm"
+				}
 
-						CopyAttr(attr, tmpl, "pillars")
-						if _, ok := attr["pillars"]; ok {
-							tmp, _ = json.Marshal(attr["pillars"])
-							attr["pillars"] = string(tmp)
-						}
-
-						CopyAttr(attr, tmpl, "floorUnit")
-						if _, ok := attr["floorUnit"]; ok {
-							if floorUnit, ok := attr["floorUnit"].(string); ok {
-								attr["floorUnit"] = floorUnit
-							}
-						}
-
-						CopyAttr(attr, tmpl, "tiles")
-						if _, ok := attr["tiles"]; ok {
-							tmp, _ = json.Marshal(attr["tiles"])
-							attr["tiles"] = string(tmp)
-						}
-
-						CopyAttr(attr, tmpl, "rows")
-						if _, ok := attr["rows"]; ok {
-							tmp, _ = json.Marshal(attr["rows"])
-							attr["rows"] = string(tmp)
-						}
-
-						CopyAttr(attr, tmpl, "aisles")
-						if _, ok := attr["aisles"]; ok {
-							tmp, _ = json.Marshal(attr["aisles"])
-							attr["aisles"] = string(tmp)
-						}
-
-						CopyAttr(attr, tmpl, "vertices")
-						if _, ok := attr["vertices"]; ok {
-							tmp, _ = json.Marshal(attr["vertices"])
-							attr["vertices"] = string(tmp)
-						}
-
-						CopyAttr(attr, tmpl, "colors")
-						if _, ok := attr["colors"]; ok {
-							tmp, _ = json.Marshal(attr["colors"])
-							attr["colors"] = string(tmp)
-						}
-
-						CopyAttr(attr, tmpl, "tileAngle")
-						if _, ok := attr["tileAngle"]; ok {
-							if tileAngle, ok := attr["tileAngle"].(int); ok {
-								attr["tileAngle"] = strconv.Itoa(tileAngle)
-							}
-
-							if tileAngleF, ok := attr["tileAngle"].(float64); ok {
-								tileAngleStr := strconv.FormatFloat(tileAngleF, 'f', -1, 64)
-								attr["tileAngle"] = tileAngleStr
-							}
-						}
-
-					} else if ent == BLDG {
-						attr["sizeUnit"] = "m"
-						attr["heightUnit"] = "m"
-
+				//Copy Description
+				if _, ok := tmpl["description"]; ok {
+					if descTable, ok := tmpl["description"].([]interface{}); ok {
+						data["description"] = descTable
 					} else {
-						attr["sizeUnit"] = "cm"
-						attr["heightUnit"] = "cm"
-					}
-
-					//Copy Description
-					if _, ok := tmpl["description"]; ok {
-						if descTable, ok := tmpl["description"].([]interface{}); ok {
-							data["description"] = descTable
-						} else {
-							data["description"] = []interface{}{tmpl["description"]}
-						}
-					} else {
-						data["description"] = []string{}
-					}
-
-					//fbxModel section
-					if check := CopyAttr(attr, tmpl, "fbxModel"); !check {
-						if ent != BLDG {
-							attr["fbxModel"] = ""
-						}
-
-					}
-
-					//Copy orientation if available
-					CopyAttr(attr, tmpl, "orientation")
-
-					//Merge attributes if available
-					if tmplAttrsInf, ok := tmpl["attributes"]; ok {
-						if tmplAttrs, ok := tmplAttrsInf.(map[string]interface{}); ok {
-							MergeMaps(attr, tmplAttrs, false)
-						}
+						data["description"] = []interface{}{tmpl["description"]}
 					}
 				} else {
-					if State.DebugLvl > 1 {
-						println("Warning, invalid size value in template.",
-							"Default values will be assigned")
+					data["description"] = []string{}
+				}
+
+				//fbxModel section
+				if check := CopyAttr(attr, tmpl, "fbxModel"); !check {
+					if ent != BLDG {
+						attr["fbxModel"] = ""
 					}
 
 				}
+
+				//Copy orientation if available
+				CopyAttr(attr, tmpl, "orientation")
+
+				//Merge attributes if available
+				if tmplAttrsInf, ok := tmpl["attributes"]; ok {
+					if tmplAttrs, ok := tmplAttrsInf.(map[string]interface{}); ok {
+						MergeMaps(attr, tmplAttrs, false)
+					}
+				}
 			} else {
-				attr["template"] = ""
 				if State.DebugLvl > 1 {
-					println("Warning: template was not found.",
-						"it will not be used")
+					println("Warning, invalid size value in template.",
+						"Default values will be assigned")
 				}
 
-				l.GetWarningLogger().Println("Invalid data type or incorrect name used to invoke template")
 			}
 
 		} else {
@@ -1393,6 +1385,7 @@ func GetOCLIAtrributesTemplateHelper(attr, data map[string]interface{}, ent int)
 			attr["size"] = serialiseAttr2(attr, "size")
 		}
 	}
+	return nil
 }
 
 func Connect3D(url string) error {
@@ -1905,26 +1898,29 @@ func InformOgree3DOptional(caller string, entity int, data map[string]interface{
 // Helper function for GetOCLIAttr which retrieves
 // template from server if available, this func mainly helps
 // to keep code organised
-func fetchTemplate(name string, objType int) map[string]interface{} {
-	var URL string
+func fetchTemplate(name string, objType int) (map[string]interface{}, error) {
+	var url string
 	if objType == ROOMTMPL {
-		URL = State.APIURL + "/api/room_templates/" + name
+		url = "/api/room_templates/"
 	} else if objType == BLDGTMPL {
-		URL = State.APIURL + "/api/bldg_templates/" + name
+		url = "/api/bldg_templates/"
 	} else {
-		URL = State.APIURL + "/api/obj_templates/" + name
+		url = "/api/obj_templates/"
 	}
-	r, e := models.Send("GET", URL, GetKey(), nil)
-	res := ParseResponse(r, e, "fetch template")
-	if res != nil {
-		if tmplInf, ok := res["data"]; ok {
-			if tmpl, ok := tmplInf.(map[string]interface{}); ok {
-				return tmpl
-			}
-		}
+	url += name
+	resp, err := RequestAPI("GET", url, nil, http.StatusOK)
+	if err != nil {
+		return nil, err
 	}
-
-	return nil
+	tmplInf, ok := resp.body["data"]
+	if !ok {
+		return nil, fmt.Errorf("invalid response on GET %s", url)
+	}
+	tmpl, ok := tmplInf.(map[string]interface{})
+	if !ok {
+		return nil, fmt.Errorf("invalid response on GET %s", url)
+	}
+	return tmpl, nil
 }
 
 func randPassword(n int) string {

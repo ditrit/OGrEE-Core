@@ -10,7 +10,7 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:ogree_app/common/api_backend.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
-import 'package:ogree_app/widgets/select_objects/app_controller.dart';
+import 'package:ogree_app/widgets/select_objects/treeapp_controller.dart';
 import 'package:csv/csv.dart';
 import 'package:path_provider/path_provider.dart';
 
@@ -36,7 +36,7 @@ class ResultsPage extends StatefulWidget {
 }
 
 class _ResultsPageState extends State<ResultsPage> {
-  Set<String> _allAttributes = {};
+  final Set<String> _allAttributes = {};
   Map<String, Map<String, String>>? _data;
   List<DataColumn> columnLabels = [];
 
@@ -129,8 +129,7 @@ class _ResultsPageState extends State<ResultsPage> {
                       Padding(
                         padding: const EdgeInsets.only(top: 16),
                         child: Text(
-                            AppLocalizations.of(context)!.noObjectsFound +
-                                " :("),
+                            "${AppLocalizations.of(context)!.noObjectsFound} :("),
                       ),
                     ],
                   ),
@@ -191,12 +190,13 @@ class _ResultsPageState extends State<ResultsPage> {
     if (widget.namespace == Namespace.Test.name) {
       _data = getSampleData();
     } else {
+      final messenger = ScaffoldMessenger.of(context);
       final result = await fetchAttributes();
       switch (result) {
         case Success(value: final value):
           _data = value;
         case Failure(exception: final exception):
-          showSnackBar(context, exception.toString(), isError: true);
+          showSnackBar(messenger, exception.toString(), isError: true);
           _data = {};
           return;
       }
@@ -244,10 +244,11 @@ class _ResultsPageState extends State<ResultsPage> {
             double? value = double.tryParse(data[obj]![attr]!);
             if (value != null) {
               count++;
-              if (sum == null)
+              if (sum == null) {
                 sum = value;
-              else
+              } else {
                 sum += value;
+              }
             }
           }
         }
@@ -267,7 +268,7 @@ class _ResultsPageState extends State<ResultsPage> {
         padding: EdgeInsets.zero,
         height: 0,
         value: key,
-        child: StatefulBuilder(builder: (context, _setState) {
+        child: StatefulBuilder(builder: (context, localSetState) {
           return CheckboxListTile(
             controlAffinity: ListTileControlAffinity.leading,
             title: Text(key),
@@ -281,7 +282,7 @@ class _ResultsPageState extends State<ResultsPage> {
                   selectedAttrs.remove(key);
                 }
               });
-              _setState(() {});
+              localSetState(() {});
             },
           );
         }),
@@ -358,12 +359,12 @@ class _ResultsPageState extends State<ResultsPage> {
       var fileName = '$path/report.csv';
       var file = File(fileName);
       for (var i = 1; await file.exists(); i++) {
-        print("FOR");
         fileName = '$path/report ($i).csv';
         file = File(fileName);
       }
-      file.writeAsBytes(bytes, flush: true).then((value) =>
-          showSnackBar(context, "File succesfully saved to: $fileName"));
+      file.writeAsBytes(bytes, flush: true).then((value) => showSnackBar(
+          ScaffoldMessenger.of(context),
+          "File succesfully saved to: $fileName"));
     }
   }
 }

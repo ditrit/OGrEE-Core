@@ -32,11 +32,7 @@ func ParseResponseClean(response *http.Response) (*Response, error) {
 		if err != nil {
 			return nil, fmt.Errorf("cannot unmarshal json : \n%s", string(bodyBytes))
 		}
-		var messageOk bool
-		message, messageOk = responseBody["message"].(string)
-		if !messageOk {
-			return nil, fmt.Errorf("invalid response")
-		}
+		message, _ = responseBody["message"].(string)
 	}
 	return &Response{response.StatusCode, message, responseBody}, nil
 }

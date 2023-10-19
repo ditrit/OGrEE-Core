@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:ogree_app/common/definitions.dart';
-import 'package:ogree_app/widgets/select_objects/app_controller.dart';
+import 'package:ogree_app/widgets/select_objects/treeapp_controller.dart';
 import 'package:ogree_app/widgets/select_objects/select_objects.dart';
 
 import 'common.dart';
@@ -34,7 +34,7 @@ void main() {
   });
 
   testWidgets('SelectObjects toogles tree selection', (tester) async {
-    await tester.pumpWidget(LocalizationsInjApp(
+    await tester.pumpWidget(const LocalizationsInjApp(
         child: SelectObjects(
       dateRange: "",
       load: true,
@@ -62,10 +62,12 @@ void main() {
 
   testWidgets('SelectObjects can find an object', (tester) async {
     await tester.pumpWidget(const LocalizationsInjApp(
-        child: SelectObjects(
-      dateRange: "",
-      load: true,
-      namespace: Namespace.Test,
+        child: Scaffold(
+      body: SelectObjects(
+        dateRange: "",
+        load: true,
+        namespace: Namespace.Test,
+      ),
     )));
 
     const searchStr = "rack2.devB.devB-2";
@@ -86,7 +88,7 @@ void main() {
   testWidgets('SelectObjects can filter objects', (tester) async {
     return;
     await tester.binding.setSurfaceSize(const Size(1000, 1000));
-    await tester.pumpWidget(LocalizationsInjApp(
+    await tester.pumpWidget(const LocalizationsInjApp(
         child: SelectObjects(
       dateRange: "",
       load: true,

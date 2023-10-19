@@ -77,10 +77,12 @@ class _ChangePasswordPopupState extends State<ChangePasswordPopup> {
                             if (_formKey.currentState!.validate()) {
                               _formKey.currentState!.save();
                               if (_newPassword != _confirmPass) {
-                                showSnackBar(context, localeMsg.passwordNoMatch,
+                                showSnackBar(ScaffoldMessenger.of(context),
+                                    localeMsg.passwordNoMatch,
                                     isError: true);
                                 return;
                               }
+                              final messenger = ScaffoldMessenger.of(context);
                               try {
                                 setState(() {
                                   _isLoading = true;
@@ -89,18 +91,20 @@ class _ChangePasswordPopupState extends State<ChangePasswordPopup> {
                                     _oldPassword!, _newPassword!);
                                 switch (response) {
                                   case Success():
-                                    showSnackBar(context, localeMsg.modifyOK,
+                                    showSnackBar(messenger, localeMsg.modifyOK,
                                         isSuccess: true);
-                                    Navigator.of(context).pop();
+                                    if (context.mounted)
+                                      Navigator.of(context).pop();
                                   case Failure(exception: final exception):
                                     setState(() {
                                       _isLoading = false;
                                     });
-                                    showSnackBar(context, exception.toString(),
+                                    showSnackBar(
+                                        messenger, exception.toString(),
                                         isError: true);
                                 }
                               } catch (e) {
-                                showSnackBar(context, e.toString(),
+                                showSnackBar(messenger, e.toString(),
                                     isError: true);
                                 return;
                               }

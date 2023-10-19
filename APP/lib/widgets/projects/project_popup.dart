@@ -57,7 +57,7 @@ void showProjectDialog(
                       TextButton.icon(
                         style: OutlinedButton.styleFrom(
                             padding: isSmallDisplay
-                                ? EdgeInsets.symmetric(horizontal: 8)
+                                ? const EdgeInsets.symmetric(horizontal: 8)
                                 : null,
                             foregroundColor: Colors.blue.shade900),
                         onPressed: () => Navigator.pop(context),
@@ -85,20 +85,21 @@ void showProjectDialog(
                       ElevatedButton(
                         onPressed: () async {
                           if (editInput == "") {
-                            showSnackBar(
-                                context, localeMsg.mandatoryProjectName,
+                            showSnackBar(ScaffoldMessenger.of(context),
+                                localeMsg.mandatoryProjectName,
                                 isError: true);
                           } else {
                             saveCallback(
                                 editInput, project, isCreate, parentCallback);
                           }
                         },
-                        child: Text(localeMsg.save),
                         style: isSmallDisplay
                             ? ElevatedButton.styleFrom(
-                                padding: EdgeInsets.symmetric(horizontal: 8),
+                                padding:
+                                    const EdgeInsets.symmetric(horizontal: 8),
                               )
                             : null,
+                        child: Text(localeMsg.save),
                       )
                     ],
                   )

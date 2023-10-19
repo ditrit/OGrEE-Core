@@ -195,6 +195,7 @@ class _UpdateTenantPopupState extends State<UpdateTenantPopup> {
 
   submitUpdateTenant(
       AppLocalizations localeMsg, BuildContext popupContext) async {
+    final messenger = ScaffoldMessenger.of(popupContext);
     final result = await updateTenant(widget.tenant);
     switch (result) {
       case Success(value: final value):
@@ -224,18 +225,22 @@ class _UpdateTenantPopupState extends State<UpdateTenantPopup> {
           setState(() {
             _isLoading = false;
           });
-          showSnackBar(popupContext, "$finalMsg. Check output log below.",
+          showSnackBar(messenger, "$finalMsg. Check output log below.",
               isError: true);
         } else {
           widget.parentCallback();
-          showSnackBar(context, "${localeMsg.modifyOK} 🥳", isSuccess: true);
-          Navigator.of(popupContext).pop();
+          if (context.mounted) {
+            showSnackBar(
+                ScaffoldMessenger.of(context), "${localeMsg.modifyOK} 🥳",
+                isSuccess: true);
+          }
+          if (popupContext.mounted) Navigator.of(popupContext).pop();
         }
       case Failure(exception: final exception):
         setState(() {
           _isLoading = false;
         });
-        showSnackBar(context, exception.toString(), isError: true);
+        showSnackBar(messenger, exception.toString(), isError: true);
     }
   }
 
