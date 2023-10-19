@@ -208,6 +208,7 @@ func (n *lsNode) execute() (interface{}, error) {
 			if !hasAttr {
 				attrVal = "-"
 			}
+			attrVals = append(attrVals, attr)
 			attrVals = append(attrVals, attrVal)
 			printStr += "    %v : %v"
 		}
