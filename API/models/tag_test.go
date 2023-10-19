@@ -2,6 +2,7 @@ package models_test
 
 import (
 	"p3/models"
+	"p3/test/integration"
 	u "p3/utils"
 	"testing"
 
@@ -233,7 +234,7 @@ func createSite(name string, tags []string) *u.Error {
 			},
 			"category":    "site",
 			"description": []any{"site"},
-			"domain":      "AutoTest",
+			"domain":      integration.TestDBName,
 			"name":        name,
 		},
 		userRoles,

@@ -4,55 +4,24 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
 	"os"
 	"p3/app"
-	"p3/models"
-	"p3/repository"
+	"p3/test/e2e"
 	u "p3/utils"
 	"reflect"
 	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-	"go.mongodb.org/mongo-driver/bson/primitive"
 )
-
-func TestMain(m *testing.M) {
-	// teardown()
-	getAdminToken()
-	exitCode := m.Run()
-	os.Exit(exitCode)
-}
-
-var adminId primitive.ObjectID
-var adminToken string
-
-func getAdminToken() {
-	// Create admin account
-	admin := models.Account{}
-	admin.Email = "admin@admin.com"
-	admin.Password = "admin123"
-	admin.Roles = map[string]models.Role{"*": "manager"}
-	newAcc, _ := admin.Create(map[string]models.Role{"*": "manager"})
-	if newAcc != nil {
-		adminId = newAcc.ID
-		adminToken = newAcc.Token
-	}
-}
-
-func teardown() {
-	ctx, _ := u.Connect()
-	repository.GetDB().Drop(ctx)
-}
 
 func makeRequest(method, url string, requestBody []byte) *httptest.ResponseRecorder {
 	router := Router(app.JwtAuthentication)
 	recorder := httptest.NewRecorder()
 	request, _ := http.NewRequest(method, url, bytes.NewBuffer(requestBody))
-	request.Header.Set("Authorization", "Bearer "+adminToken)
+	request.Header.Set("Authorization", "Bearer "+e2e.AdminToken)
 	router.ServeHTTP(recorder, request)
 	return recorder
 }
@@ -61,7 +30,7 @@ func TestCreateLoginAccount(t *testing.T) {
 	// Test create new account
 	requestBody := []byte(`{
 		"email": "test@test.com",
-    	"password": "pass123secret",
+		"password": "pass123secret",
 		"roles":{"*":"manager"}
 	}`)
 	recorder := makeRequest("POST", "/api/users", requestBody)
@@ -94,7 +63,7 @@ func TestObjects(t *testing.T) {
 	for _, entInt := range []int{u.DOMAIN, u.SITE, u.BLDG, u.ROOM, u.RACK, u.DEVICE} {
 		// Get object from schema
 		entStr := u.EntityToString(entInt)
-		data, _ := ioutil.ReadFile("models/schemas/" + entStr + "_schema.json")
+		data, _ := os.ReadFile("models/schemas/" + entStr + "_schema.json")
 		var obj map[string]interface{}
 		json.Unmarshal(data, &obj)
 		obj = obj["examples"].([]interface{})[0].(map[string]interface{})
