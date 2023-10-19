@@ -1240,6 +1240,10 @@ func GetHierarchyByName(w http.ResponseWriter, r *http.Request) {
 		data, modelErr = models.GetEntity(bson.M{"id": id}, entity, filters, user.Roles)
 	}
 	if limit >= 1 && modelErr == nil {
+		if entity == u.EntityToString(u.STRAYOBJ) {
+			// use stray's category as entity
+			entity = data["category"].(string)
+		}
 		data["children"], modelErr = models.GetHierarchyByName(entity, id, limit, filters)
 	}
 
