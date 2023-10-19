@@ -191,10 +191,6 @@ func prepareCreateEntity(entity int, t map[string]interface{}, userRoles map[str
 		}
 	}
 
-	//Set timestamp
-	t["createdDate"] = primitive.NewDateTimeFromTime(time.Now())
-	t["lastUpdated"] = t["createdDate"]
-
 	delete(t, "parentId")
 
 	return nil
