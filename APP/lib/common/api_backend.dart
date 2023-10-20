@@ -53,7 +53,7 @@ String urlDateAppend(String dateRange) {
 
 String wrapResponseMsg(Response response, {String? message}) {
   if (response.statusCode == 401) {
-    return "Votre authentification a expirée, veuillez vous reconnecter pour exécuter cet action";
+    return "Votre session a expiré, veuillez vous reconnecter pour exécuter cette action";
   }
   return '${response.statusCode}: ${message ?? response.reasonPhrase}';
 }
