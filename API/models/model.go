@@ -646,7 +646,9 @@ func DeleteEntity(entity string, id string, userRoles map[string]Role) *u.Error 
 	if !ok {
 		return &u.Error{Type: u.ErrUnauthorized, Message: "User does not have permission to delete"}
 	}
+
 	req["id"] = id
+
 	err := DeleteSingleEntity(entity, req)
 
 	if err != nil {

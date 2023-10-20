@@ -440,14 +440,19 @@ func HandleGenericObjects(w http.ResponseWriter, r *http.Request) {
 	// Respond
 	if r.Method == "DELETE" {
 		for _, obj := range matchingObjects {
-			var objStr string
 			entStr := obj["entity"].(string)
+
+			var objStr string
+			var modelErr *u.Error
+
 			if u.EntityStrToInt(entStr) >= u.ROOMTMPL {
 				objStr = obj["slug"].(string)
+				modelErr = models.DeleteSingleEntity(entStr, bson.M{"slug": objStr})
 			} else {
 				objStr = obj["id"].(string)
+				modelErr = models.DeleteEntity(entStr, objStr, user.Roles)
 			}
-			modelErr := models.DeleteEntity(obj["entity"].(string), objStr, user.Roles)
+
 			if modelErr != nil {
 				u.ErrLog("Error while deleting object: "+objStr, "DELETE GetGenericObjectById", modelErr.Message, r)
 				u.RespondWithError(w, modelErr)
