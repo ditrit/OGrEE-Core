@@ -5,7 +5,6 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter/foundation.dart' show kIsWeb;
-import 'package:http/http.dart';
 import 'package:ogree_app/models/container.dart';
 import 'package:ogree_app/models/domain.dart';
 import 'package:ogree_app/models/netbox.dart';
@@ -51,7 +50,7 @@ String urlDateAppend(String dateRange) {
   return urlAppend;
 }
 
-String wrapResponseMsg(Response response, {String? message}) {
+String wrapResponseMsg(http.Response response, {String? message}) {
   if (response.statusCode == 401) {
     return "Votre session a expiré, veuillez vous reconnecter pour exécuter cette action";
   }
