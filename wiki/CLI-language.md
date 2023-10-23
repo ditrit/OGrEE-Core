@@ -75,6 +75,18 @@ You can put comments in an .ocli file with the `//` indicator.
 ```
 .cmds:[path]  
 ```
+By convention, these files carry the extension .ocli.
+
+## Commands over multiple lines
+In .ocli script files, commands are usually separated by line breaks, however it is possible to have commands over multiple lines by using the \ character at the end of one or more consecutive lines, as shown below :
+```
+for i in 0..5 {                                                \
+    .var:r=eval 10+$i;                                         \
+    .var:x=eval (36+$i*4)/3;                                   \
+    +rk:/P/NSQSI/NSQBD/NSQRO/J${r}@[ $x, 52]@[80,120,42]@rear; \
+    +rk:/P/NSQSI/NSQBD/NSQRO/K${r}@[ $x, 55]@[80,120,42]@front \
+}
+```
 
 ## Load template from JSON
 *`[path]` path of the json file*  
