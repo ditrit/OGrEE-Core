@@ -45,6 +45,7 @@
     - [Move camera](#move-camera)
     - [Translate camera](#translate-camera)
     - [Wait between two translations](#wait-between-two-translations)
+- [Control flow](#control-flow)
 - [Examples](#examples)
 
 
@@ -448,7 +449,30 @@ You can define a delay between two camera translations.
 *`[time]` is the time to wait in seconds*  
 ```
 camera.wait=[time]
-```   
+```
+
+# Control flow
+## Conditions
+```
+>if 42 > 43 { print toto } elif 42 == 43 { print tata } else { print titi }
+titi
+```
+
+## Loops
+```
+>for i in 0..3 { .var: i2 = $(($i * $i)) ; print $i^2 = $i2 }
+0^2 = 0
+1^2 = 1
+2^2 = 4
+3^2 = 9
+```
+```
+>.var: i = 0; while $i<4 {print $i^2 = $(($i * $i)); .var: i = eval $i+1 }
+0^2 = 0
+1^2 = 1
+2^2 = 4
+3^2 = 9
+```
 
 # Examples
 ```
