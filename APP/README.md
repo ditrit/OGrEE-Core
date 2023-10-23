@@ -9,13 +9,7 @@ To quickly deploy a frontend and docker backend in SuperAdmin mode, just execute
 # Linux 
 ./launch.sh
 ```
-This will launch the webapp on port 8080 and backend on port 8082. To set different ports:
-```console
-# Windows (use PowerShell)
-.\launch.ps1 -portWeb XXXX -portBack YYYY
-# Linux 
-./launch.sh -w XXXX -b YYYY
-```
+For more options, check the documentation under `deploy/`.
 
 ## Flutter Frontend
 

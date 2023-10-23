@@ -26,6 +26,7 @@ index=1
 while [[ $(docker ps --all --format "{{json .}}" | grep $containername) ]]; do
     echo "Container $containername already exists"
     if $forceStop; then
+        echo "Stopping it if running"
         docker stop $containername
     fi
     containername="$basename-$index"

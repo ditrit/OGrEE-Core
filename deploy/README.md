@@ -62,7 +62,15 @@ To quickly deploy a frontend and docker backend in SuperAdmin mode, just execute
 ./launch.sh
 ```
 
-This will launch the webapp on port 8080 and backend on port 8082. To set different ports:
+If a frontend was already created with a previous run of this script and has allocated the default port, add `-f` option to force run the new container, stopping the old one without removing it:
+```console
+# Windows (use PowerShell)
+.\launch.ps1 -f
+# Linux 
+./launch.sh -f
+```
+
+The default is to launch the webapp on port 8080 and backend on port 8082. To set different ports:
 
 ```console
 # Windows (use PowerShell)
