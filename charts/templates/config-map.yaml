@@ -1,0 +1,13 @@
+{{- if .Values.configmap }}
+{{- range $maps := .Values.configmap }}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .name }}
+data:
+    {{- range .data }}
+    {{ .name }}: {{ .value | toYaml | indent 3 }}
+    {{- end }}
+{{- end }}
+{{- end }}
