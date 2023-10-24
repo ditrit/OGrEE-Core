@@ -166,17 +166,21 @@ func ErrLog(message, funcname, details string, r *http.Request) {
 }
 
 func FilteredReqFromQueryParams(link *url.URL) bson.M {
-	q, _ := url.ParseQuery(link.RawQuery)
+	queryValues, _ := url.ParseQuery(link.RawQuery)
 	bsonMap := bson.M{}
 
-	for key := range q {
+	for key := range queryValues {
 		if key != "fieldOnly" && key != "startDate" && key != "endDate" &&
 			key != "limit" && key != "namespace" {
 			var keyValue interface{}
-			keyValue = q.Get(key)
+			keyValue = queryValues.Get(key)
 			if key == "parentId" {
 				regex := strings.ReplaceAll(strings.ReplaceAll(keyValue.(string), ".", "\\."), "*", NAME_REGEX) + "\\.(" + NAME_REGEX + ")"
 				bsonMap["id"] = bson.M{"$regex": "^" + regex + "$"}
+				continue
+			} else if key == "tag" {
+				// tag is in tags list
+				bsonMap["tags"] = bson.M{"$eq": keyValue}
 				continue
 			} else if strings.Contains(keyValue.(string), "*") {
 				regex := strings.ReplaceAll(strings.ReplaceAll(keyValue.(string), ".", "\\."), "*", NAME_REGEX)
