@@ -7,6 +7,7 @@ import (
 	cmd "cli/controllers"
 	"cli/models"
 	"cli/utils"
+	"cli/views"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -198,25 +199,13 @@ func (n *lsNode) execute() (interface{}, error) {
 	if n.sortAttr != "" {
 		n.attrList = append([]string{n.sortAttr}, n.attrList...)
 	}
-	for _, obj := range objects {
-		if n.sortAttr == "" {
-			fmt.Println(utils.NameOrSlug(obj))
-			continue
-		}
-		printStr := "Name : %s"
-		attrVals := []any{utils.NameOrSlug(obj)}
-		for _, attr := range n.attrList {
-			attrVal, hasAttr := utils.ObjectAttr(obj, attr)
-			if !hasAttr {
-				attrVal = "-"
-			}
-			attrVals = append(attrVals, attr)
-			attrVals = append(attrVals, attrVal)
-			printStr += "    %v : %v"
-		}
-		printStr += "\n"
-		fmt.Printf(printStr, attrVals...)
+
+	if n.sortAttr == "" {
+		views.Objects(objects)
+	} else {
+		views.SortedObjects(objects, n.attrList)
 	}
+
 	return nil, nil
 }
 
