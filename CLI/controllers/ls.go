@@ -1,21 +1,28 @@
 package controllers
 
 import (
+	"cli/models"
 	"cli/utils"
+	"errors"
 	"fmt"
 	"net/http"
 	"sort"
 	"strings"
+
+	"github.com/elliotchance/pie/v2"
+	"golang.org/x/exp/maps"
 )
 
-func Ls(path string, filters map[string]string, sortAttr string) ([]map[string]any, error) {
+var errLayerNotFound = errors.New("the layer used does not exist")
+
+func (controller Controller) Ls(path string, filters map[string]string, sortAttr string) ([]map[string]any, error) {
 	var objects []map[string]any
 	var err error
 
-	if len(filters) == 0 {
-		objects, err = lsObjectsWithoutFilters(path)
+	if len(filters) == 0 && !models.PathIsLayer(path) {
+		objects, err = controller.lsObjectsWithoutFilters(path)
 	} else {
-		objects, err = lsObjectsWithFilters(path, filters)
+		objects, err = controller.lsObjectsWithFilters(path, filters)
 	}
 
 	if err != nil {
@@ -23,51 +30,83 @@ func Ls(path string, filters map[string]string, sortAttr string) ([]map[string]a
 	}
 
 	if sortAttr != "" {
-		objects = filterObjectsWithoutAttr(objects, sortAttr)
+		objects = pie.Filter(objects, func(object map[string]any) bool {
+			_, hasAttr := utils.ObjectAttr(object, sortAttr)
+			return hasAttr
+		})
+
 		if !objectsAreSortable(objects, sortAttr) {
 			return nil, fmt.Errorf("objects cannot be sorted according to this attribute")
 		}
-	}
 
-	less := func(i, j int) bool {
-		if sortAttr != "" {
+		sort.Slice(objects, func(i, j int) bool {
 			vali, _ := utils.ObjectAttr(objects[i], sortAttr)
 			valj, _ := utils.ObjectAttr(objects[j], sortAttr)
 			res, _ := utils.CompareVals(vali, valj)
 			return res
-		}
-		return utils.NameOrSlug(objects[i]) < utils.NameOrSlug(objects[j])
+		})
+	} else {
+		sort.Slice(objects, func(i, j int) bool {
+			if isObjectLayer(objects[i]) {
+				if !isObjectLayer(objects[j]) {
+					return false
+				}
+			} else if isObjectLayer(objects[j]) {
+				return true
+			}
+
+			return utils.NameOrSlug(objects[i]) < utils.NameOrSlug(objects[j])
+		})
 	}
 
-	sort.Slice(objects, less)
 	return objects, nil
 }
 
-func lsObjectsWithoutFilters(path string) ([]map[string]any, error) {
-	n, err := Tree(path, 1)
+func isObjectLayer(object map[string]any) bool {
+	name, hasName := object["name"].(string)
+	if !hasName {
+		return false
+	}
+
+	return models.IsObjectIDLayer(name)
+}
+
+func (controller Controller) lsObjectsWithoutFilters(path string) ([]map[string]any, error) {
+	n, err := controller.lsNode(path)
 	if err != nil {
 		return nil, err
 	}
+
 	objects := []map[string]any{}
 	for _, child := range n.Children {
 		if child.Obj != nil {
-			if strings.HasPrefix(path, "/Logical/Groups") {
-				child.Obj["name"] = strings.ReplaceAll(child.Obj["id"].(string), ".", "/")
+			childObj, isMap := child.Obj.(map[string]any)
+			if isMap {
+				if models.IsGroup(path) {
+					childObj["name"] = strings.ReplaceAll(childObj["id"].(string), ".", "/")
+				}
+				objects = append(objects, childObj)
+				continue
 			}
-			objects = append(objects, child.Obj)
-		} else {
-			objects = append(objects, map[string]any{"name": child.Name})
 		}
+
+		objects = append(objects, map[string]any{"name": child.Name})
 	}
+
 	return objects, nil
 }
 
-func lsObjectsWithFilters(path string, filters map[string]string) ([]map[string]any, error) {
-	url, err := ObjectUrlGeneric(path+"/*", 0, filters)
+func (controller Controller) lsObjectsWithFilters(path string, filters map[string]string) ([]map[string]any, error) {
+	url, err := controller.ObjectUrlGeneric(path+"/*", 0, filters)
 	if err != nil {
+		if errors.Is(err, errLayerNotFound) {
+			return nil, err
+		}
+
 		return nil, fmt.Errorf("cannot use filters at this location")
 	}
-	resp, err := API.Request("GET", url, nil, http.StatusOK)
+
+	resp, err := controller.API.Request("GET", url, nil, http.StatusOK)
 	if err != nil {
 		return nil, err
 	}
@@ -83,17 +122,6 @@ func lsObjectsWithFilters(path string, filters map[string]string) ([]map[string]
 	return objects, nil
 }
 
-func filterObjectsWithoutAttr(objects []map[string]any, attr string) []map[string]any {
-	remainingObjects := []map[string]any{}
-	for _, obj := range objects {
-		_, hasAttr := utils.ObjectAttr(obj, attr)
-		if hasAttr {
-			remainingObjects = append(remainingObjects, obj)
-		}
-	}
-	return remainingObjects
-}
-
 func objectsAreSortable(objects []map[string]any, attr string) bool {
 	for i := 1; i < len(objects); i++ {
 		val0, _ := utils.ObjectAttr(objects[0], attr)
@@ -104,4 +132,41 @@ func objectsAreSortable(objects []map[string]any, attr string) bool {
 		}
 	}
 	return true
+}
+
+// Obtains a HierarchyNode using Tree and adds the layers
+func (controller Controller) lsNode(path string) (*HierarchyNode, error) {
+	n, err := controller.Tree(path, 1)
+	if err != nil {
+		return nil, err
+	}
+
+	addAutomaticLayers(n)
+
+	return n, nil
+}
+
+// Adds to the children the automatic layers, depending of the category of the rootObject
+// and if any of the children is part of that layer (to avoid displaying empty layers)
+func addAutomaticLayers(rootNode *HierarchyNode) {
+	rootObject, objIsMap := rootNode.Obj.(map[string]any)
+	if !objIsMap {
+		return
+	}
+
+	children := pie.Map(maps.Values(rootNode.Children), func(node *HierarchyNode) any {
+		return node.Obj
+	})
+
+	category, categoryPresent := rootObject["category"].(string)
+	if categoryPresent {
+		entity := models.EntityStrToInt(category)
+		layerFactories := models.LayersByEntity[entity]
+
+		for _, factory := range layerFactories {
+			for _, layer := range factory.FromObjects(children) {
+				rootNode.AddChild(NewLayerNode(layer.Name, layer))
+			}
+		}
+	}
 }

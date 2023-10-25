@@ -6,7 +6,7 @@ import (
 )
 
 func (controller Controller) DeleteObj(path string) ([]string, error) {
-	url, err := ObjectUrlGeneric(path, 0, nil)
+	url, err := controller.ObjectUrlGeneric(path, 0, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -14,7 +14,7 @@ func (controller Controller) DeleteObj(path string) ([]string, error) {
 	if err != nil {
 		return nil, err
 	}
-	objs, paths, err := ParseWildcardResponse(resp, path, "DELETE "+url)
+	objs, paths, err := controller.ParseWildcardResponse(resp, path, "DELETE "+url)
 	if err != nil {
 		return nil, err
 	}
@@ -26,7 +26,7 @@ func (controller Controller) DeleteObj(path string) ([]string, error) {
 		}
 	}
 	if path == State.CurrPath {
-		CD(TranslatePath(".."))
+		controller.CD(TranslatePath(".."))
 	}
 	return paths, nil
 }

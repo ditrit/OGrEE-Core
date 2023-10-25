@@ -52,13 +52,14 @@ func PostObj(ent int, entity string, data map[string]any) error {
 	return nil
 }
 
-func ObjectUrl(path string, depth int) (string, error) {
-	prefix, id, err := models.SplitPath(path)
+func (controller Controller) ObjectUrl(pathStr string, depth int) (string, error) {
+	path, err := controller.SplitPath(pathStr)
 	if err != nil {
 		return "", err
 	}
+
 	var baseUrl string
-	switch prefix {
+	switch path.Prefix {
 	case models.StayPath:
 		baseUrl = "/api/stray-objects"
 	case models.PhysicalPath:
@@ -78,7 +79,7 @@ func ObjectUrl(path string, depth int) (string, error) {
 	default:
 		return "", fmt.Errorf("invalid object path")
 	}
-	baseUrl += "/" + id
+	baseUrl += "/" + path.ObjectID
 	params := url.Values{}
 	if depth > 0 {
 		baseUrl += "/all"
@@ -89,47 +90,58 @@ func ObjectUrl(path string, depth int) (string, error) {
 	return parsedUrl.String(), nil
 }
 
-func ObjectUrlGeneric(path string, depth int, filters map[string]string) (string, error) {
+func (controller Controller) ObjectUrlGeneric(pathStr string, depth int, filters map[string]string) (string, error) {
 	params := url.Values{}
-	prefix, id, err := models.SplitPath(path)
+	path, err := controller.SplitPath(pathStr)
 	if err != nil {
 		return "", err
 	}
-	switch prefix {
+
+	if filters == nil {
+		filters = map[string]string{}
+	}
+
+	if path.Layer != nil {
+		path.Layer.ApplyFilters(filters)
+	}
+
+	switch path.Prefix {
 	case models.StayPath:
 		params.Add("namespace", "physical.stray")
-		params.Add("id", id)
+		params.Add("id", path.ObjectID)
 	case models.PhysicalPath:
 		params.Add("namespace", "physical.hierarchy")
-		params.Add("id", id)
+		params.Add("id", path.ObjectID)
 	case models.ObjectTemplatesPath:
 		params.Add("namespace", "logical.objtemplate")
-		params.Add("slug", id)
+		params.Add("slug", path.ObjectID)
 	case models.RoomTemplatesPath:
 		params.Add("namespace", "logical.roomtemplate")
-		params.Add("slug", id)
+		params.Add("slug", path.ObjectID)
 	case models.BuildingTemplatesPath:
 		params.Add("namespace", "logical.bldgtemplate")
-		params.Add("slug", id)
+		params.Add("slug", path.ObjectID)
 	case models.TagsPath:
 		params.Add("namespace", "logical.tag")
-		params.Add("slug", id)
+		params.Add("slug", path.ObjectID)
 	case models.GroupsPath:
 		params.Add("namespace", "logical")
 		params.Add("category", "group")
-		params.Add("id", id)
+		params.Add("id", path.ObjectID)
 	case models.DomainsPath:
 		params.Add("namespace", "organisational")
-		params.Add("id", id)
+		params.Add("id", path.ObjectID)
 	default:
 		return "", fmt.Errorf("invalid object path")
 	}
 	if depth > 0 {
 		params.Add("limit", strconv.Itoa(depth))
 	}
+
 	for key, value := range filters {
-		params.Add(key, value)
+		params.Set(key, value)
 	}
+
 	url, _ := url.Parse("/api/objects")
 	url.RawQuery = params.Encode()
 	return strings.ReplaceAll(url.String(), "%2A", "*"), nil
@@ -178,7 +190,7 @@ func UnsetAttribute(path string, attr string) error {
 		return fmt.Errorf("object has no attributes")
 	}
 	delete(attributes, attr)
-	url, err := ObjectUrl(path, 0)
+	url, err := C.ObjectUrl(path, 0)
 	if err != nil {
 		return err
 	}
@@ -255,7 +267,7 @@ func UnsetInObj(Path, attr string, idx int) (map[string]interface{}, error) {
 	}
 
 	entity := obj["category"].(string)
-	URL, err := ObjectUrl(Path, 0)
+	URL, err := C.ObjectUrl(Path, 0)
 	if err != nil {
 		return nil, err
 	}
@@ -406,19 +418,6 @@ func GetByAttr(path string, u interface{}) error {
 			println("The slot you provided does not correspond to any device in this rack")
 		}
 	}
-	return nil
-}
-
-func CD(path string) error {
-	if State.DebugLvl >= 3 {
-		println("THE PATH: ", path)
-	}
-	_, err := Tree(path, 0)
-	if err != nil {
-		return err
-	}
-	State.PrevPath = State.CurrPath
-	State.CurrPath = path
 	return nil
 }
 
@@ -1208,7 +1207,7 @@ func FocusUI(path string) error {
 	}
 
 	if path != "" {
-		return CD(path)
+		return C.CD(path)
 	} else {
 		fmt.Println("Focus is now empty")
 	}
@@ -1217,18 +1216,18 @@ func FocusUI(path string) error {
 }
 
 func LinkObject(source string, destination string, posUOrSlot string) error {
-	sourceUrl, err := ObjectUrl(source, 0)
+	sourceUrl, err := C.ObjectUrl(source, 0)
 	if err != nil {
 		return err
 	}
-	_, destId, err := models.SplitPath(destination)
+	destPath, err := C.SplitPath(destination)
 	if err != nil {
 		return err
 	}
 	if !strings.HasPrefix(sourceUrl, "/api/stray-objects/") {
 		return fmt.Errorf("only stray objects can be linked")
 	}
-	payload := map[string]any{"parentId": destId}
+	payload := map[string]any{"parentId": destPath.ObjectID}
 	if posUOrSlot != "" {
 		payload["slot"] = posUOrSlot
 	}
@@ -1240,7 +1239,7 @@ func LinkObject(source string, destination string, posUOrSlot string) error {
 }
 
 func UnlinkObject(path string) error {
-	sourceUrl, err := ObjectUrl(path, 0)
+	sourceUrl, err := C.ObjectUrl(path, 0)
 	if err != nil {
 		return err
 	}
@@ -1417,39 +1416,6 @@ func CreateTag(slug, color string) error {
 		"description": slug, // the description is initially set with the value of the slug
 		"color":       color,
 	})
-}
-
-func SetClipBoard(x []string) ([]string, error) {
-	State.ClipBoard = x
-	var data map[string]interface{}
-
-	if len(x) == 0 { //This means deselect
-		data = map[string]interface{}{"type": "select", "data": "[]"}
-		err := Ogree3D.InformOptional("SetClipBoard", -1, data)
-		if err != nil {
-			return nil, fmt.Errorf("cannot reset clipboard : %s", err.Error())
-		}
-	} else {
-		//Verify paths
-		arr := []string{}
-		for _, val := range x {
-			obj, err := C.GetObject(val)
-			if err != nil {
-				return nil, err
-			}
-			id, ok := obj["id"].(string)
-			if ok {
-				arr = append(arr, id)
-			}
-		}
-		serialArr := "[\"" + strings.Join(arr, "\",\"") + "\"]"
-		data = map[string]interface{}{"type": "select", "data": serialArr}
-		err := Ogree3D.InformOptional("SetClipBoard", -1, data)
-		if err != nil {
-			return nil, fmt.Errorf("cannot set clipboard : %s", err.Error())
-		}
-	}
-	return State.ClipBoard, nil
 }
 
 func SetEnv(arg string, val interface{}) {
@@ -1689,4 +1655,29 @@ func ChangePassword() error {
 	}
 	println(response.message)
 	return nil
+}
+
+func (controller Controller) SplitPath(pathStr string) (models.Path, error) {
+	for _, prefix := range models.PathPrefixes {
+		if strings.HasPrefix(pathStr, string(prefix)) {
+			id := pathStr[len(prefix):]
+			id = strings.ReplaceAll(id, "/", ".")
+
+			var layer *models.Layer
+			var err error
+
+			id, layer, err = controller.GetLayer(id)
+			if err != nil {
+				return models.Path{}, err
+			}
+
+			return models.Path{
+				Prefix:   prefix,
+				ObjectID: id,
+				Layer:    layer,
+			}, nil
+		}
+	}
+
+	return models.Path{}, fmt.Errorf("invalid object path")
 }

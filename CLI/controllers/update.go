@@ -5,7 +5,7 @@ import (
 	"net/http"
 )
 
-func (controller Controller) UpdateObj(path string, data map[string]any) (map[string]any, error) {
+func (controller Controller) UpdateObj(pathStr string, data map[string]any) (map[string]any, error) {
 	attributes, hasAttributes := data["attributes"].(map[string]any)
 	if hasAttributes {
 		for key, val := range attributes {
@@ -13,7 +13,7 @@ func (controller Controller) UpdateObj(path string, data map[string]any) (map[st
 		}
 	}
 
-	obj, err := controller.GetObject(path)
+	obj, err := controller.GetObject(pathStr)
 	if err != nil {
 		return nil, err
 	}
@@ -23,7 +23,7 @@ func (controller Controller) UpdateObj(path string, data map[string]any) (map[st
 		category = obj["category"].(string)
 	}
 
-	url, err := ObjectUrl(path, 0)
+	url, err := controller.ObjectUrl(pathStr, 0)
 	if err != nil {
 		return nil, err
 	}
@@ -36,7 +36,7 @@ func (controller Controller) UpdateObj(path string, data map[string]any) (map[st
 	//Determine if Unity requires the message as
 	//Interact or Modify
 	entityType := models.EntityStrToInt(category)
-	if models.IsTag(path) {
+	if models.IsTag(pathStr) {
 		entityType = models.TAG
 	}
 
@@ -83,14 +83,14 @@ func (controller Controller) UpdateObj(path string, data map[string]any) (map[st
 			"value": data["content"],
 		}
 	} else if entityType == models.TAG {
-		_, oldSlug, err := models.SplitPath(path)
+		path, err := controller.SplitPath(pathStr)
 		if err != nil {
 			return nil, err
 		}
 
 		message["type"] = "modify-tag"
 		message["data"] = map[string]any{
-			"old-slug": oldSlug,
+			"old-slug": path.ObjectID,
 			"tag":      resp.Body["data"],
 		}
 	} else {

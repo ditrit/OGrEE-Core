@@ -165,7 +165,7 @@ func (n *cdNode) execute() (interface{}, error) {
 	if err != nil {
 		return nil, err
 	}
-	return nil, cmd.CD(path)
+	return nil, cmd.C.CD(path)
 }
 
 type lsNode struct {
@@ -188,7 +188,7 @@ func (n *lsNode) execute() (interface{}, error) {
 		}
 		filters[key] = filterVal.(string)
 	}
-	objects, err := cmd.Ls(path, filters, n.sortAttr)
+	objects, err := cmd.C.Ls(path, filters, n.sortAttr)
 	if err != nil {
 		return nil, err
 	}
@@ -441,23 +441,12 @@ func (n *selectObjectNode) execute() (interface{}, error) {
 	if err != nil {
 		return nil, err
 	}
-	var selection []string
-	if strings.Contains(path, "*") {
-		_, selection, err = cmd.C.GetObjectsWildcard(path)
-		if err != nil {
-			return nil, err
-		}
-	} else if path != "" {
-		selection = []string{path}
-		err = cmd.CD(path)
-		if err != nil {
-			return nil, err
-		}
-	}
-	_, err = cmd.SetClipBoard(selection)
+
+	selection, err := cmd.C.Select(path)
 	if err != nil {
 		return nil, err
 	}
+
 	if len(selection) == 0 {
 		fmt.Println("Selection is now empty")
 	}
@@ -764,11 +753,13 @@ func (n *treeNode) execute() (interface{}, error) {
 	if err != nil {
 		return nil, err
 	}
-	root, err := cmd.Tree(path, n.depth)
+	root, err := cmd.C.Tree(path, n.depth)
 	if err != nil {
 		return nil, err
 	}
+
 	fmt.Println(path)
+
 	s := root.String(n.depth)
 	if s != "" {
 		fmt.Println(s)
@@ -885,7 +876,7 @@ func (n *selectChildrenNode) execute() (interface{}, error) {
 	if err != nil {
 		return nil, err
 	}
-	v, err := cmd.SetClipBoard(paths)
+	v, err := cmd.C.SetClipBoard(paths)
 	if err != nil {
 		return nil, err
 	}

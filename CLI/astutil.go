@@ -121,7 +121,7 @@ func checkIfTemplate(name string, ent int) bool {
 	default:
 		location = models.ObjectTemplatesPath + name
 	}
-	_, err := cmd.Tree(location, 0)
+	_, err := cmd.C.Tree(location, 0)
 	return err == nil
 }
 
