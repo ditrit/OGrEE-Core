@@ -7,6 +7,7 @@ import (
 
 	"github.com/elliotchance/pie/v2"
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
@@ -100,10 +101,10 @@ func createTagImage(ctx context.Context, data map[string]any) *u.Error {
 
 // Creates an image if updateData has one and different to oldEntity
 // and updates updateData with the id of the new image
-func updateTagImage(ctx context.Context, oldEntity, updateData map[string]any) *u.Error {
-	newImage, hasImage := updateData["image"].(string)
-	oldImage, hasOldImage := oldEntity["image"].(string)
-	if hasImage && (!hasOldImage || newImage != oldImage) {
+func updateTagImage(ctx context.Context, oldObject, updateData map[string]any) *u.Error {
+	newImage, hasNewImage := updateData["image"].(string)
+	oldImage, hasOldImage := oldObject["image"].(primitive.ObjectID)
+	if hasNewImage && (!hasOldImage || newImage != oldImage.Hex()) {
 		return createTagImage(ctx, updateData)
 	}
 
