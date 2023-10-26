@@ -1,6 +1,7 @@
 package repository
 
 import (
+	"context"
 	"fmt"
 
 	"p3/utils"
@@ -8,6 +9,10 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 )
+
+func GetTagBySlug(ctx context.Context, slug string) (map[string]any, *utils.Error) {
+	return GetObject(ctx, bson.M{"slug": slug}, utils.EntityToString(utils.TAG), utils.RequestFilters{})
+}
 
 func DeleteTagFromEntity(ctx mongo.SessionContext, slug string, entity int) *utils.Error {
 	_, err := GetDB().Collection(utils.EntityToString(entity)).UpdateMany(

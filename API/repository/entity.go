@@ -92,7 +92,7 @@ func CreateObject(ctx context.Context, collection string, data any) (primitive.O
 	return result.InsertedID.(primitive.ObjectID), nil
 }
 
-func DeleteObject(ctx mongo.SessionContext, entity string, filter bson.M) *u.Error {
+func DeleteObject(ctx context.Context, entity string, filter bson.M) *u.Error {
 	result, err := GetDB().Collection(entity).DeleteOne(ctx, filter)
 	if err != nil {
 		return &u.Error{Type: u.ErrDBError, Message: err.Error()}

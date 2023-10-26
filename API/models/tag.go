@@ -63,10 +63,23 @@ func addAndRemoveFromTags(ctx mongo.SessionContext, entity int, objectID string,
 // Deletes tag with slug "slug"
 func DeleteTag(slug string) *u.Error {
 	_, err := WithTransaction(func(ctx mongo.SessionContext) (interface{}, error) {
-		err := repository.DeleteObject(ctx, u.EntityToString(u.TAG), bson.M{"slug": slug})
+		tag, err := repository.GetTagBySlug(ctx, slug)
+		if err != nil {
+			return nil, err
+		}
+
+		err = repository.DeleteObject(ctx, u.EntityToString(u.TAG), bson.M{"slug": slug})
 		if err != nil {
 			// Unable to delete given id
 			return nil, err
+		}
+
+		tagImageID, hasImage := tag["image"].(primitive.ObjectID)
+		if hasImage {
+			err = repository.DeleteImage(ctx, tagImageID)
+			if err != nil {
+				return nil, err
+			}
 		}
 
 		// Delete tag from all tags lists
@@ -104,7 +117,21 @@ func createTagImage(ctx context.Context, data map[string]any) *u.Error {
 func updateTagImage(ctx context.Context, oldObject, updateData map[string]any) *u.Error {
 	newImage, hasNewImage := updateData["image"].(string)
 	oldImage, hasOldImage := oldObject["image"].(primitive.ObjectID)
-	if hasNewImage && (!hasOldImage || newImage != oldImage.Hex()) {
+
+	if !hasNewImage {
+		return nil
+	}
+
+	if hasOldImage && newImage != oldImage.Hex() {
+		err := repository.DeleteImage(ctx, oldImage)
+		if err != nil {
+			return err
+		}
+
+		return createTagImage(ctx, updateData)
+	}
+
+	if !hasOldImage {
 		return createTagImage(ctx, updateData)
 	}
 
