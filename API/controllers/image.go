@@ -15,9 +15,9 @@ const GetImagePath = "/api/images/"
 // Transforms image inside data from an ID to a URL
 func imageIDToUrl(entity int, object map[string]any) map[string]any {
 	if entity == u.TAG {
-		if imageID, hasImage := object["image"].(primitive.ObjectID); hasImage {
+		if imageID, hasImage := object["image"].(primitive.ObjectID); hasImage && imageID != primitive.NilObjectID {
 			object["image"] = GetImagePath + imageID.Hex()
-		} else if imageID, hasImage := object["image"].(string); hasImage {
+		} else if imageID, hasImage := object["image"].(string); hasImage && imageID != "" {
 			object["image"] = GetImagePath + imageID
 		} else {
 			object["image"] = ""
