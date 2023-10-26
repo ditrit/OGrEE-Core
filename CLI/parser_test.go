@@ -344,6 +344,7 @@ var commandsMatching = map[string]node{
 	".cmds:${CUST}/DEMO.PERF.ocli":           &loadNode{&formatStringNode{&valueNode{"%v/DEMO.PERF.ocli"}, []node{&symbolReferenceNode{"CUST"}}}},
 	".cmds:${a}/${b}.ocli":                   &loadNode{&formatStringNode{&valueNode{"%v/%v.ocli"}, []node{&symbolReferenceNode{"a"}, &symbolReferenceNode{"b"}}}},
 	"while $i<6 {print \"a\"}":               &whileNode{&comparatorNode{"<", &symbolReferenceNode{"i"}, &valueNode{6}}, &printNode{&valueNode{"a"}}},
+	"printf \"coucou %d\", 12":               &printNode{&formatStringNode{&valueNode{"coucou %d"}, []node{&valueNode{12}}}},
 }
 
 func TestSimpleCommands(t *testing.T) {
