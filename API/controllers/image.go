@@ -17,6 +17,8 @@ func imageIDToUrl(entity int, object map[string]any) map[string]any {
 	if entity == u.TAG {
 		if imageID, hasImage := object["image"].(primitive.ObjectID); hasImage {
 			object["image"] = GetImagePath + imageID.Hex()
+		} else if imageID, hasImage := object["image"].(string); hasImage {
+			object["image"] = GetImagePath + imageID
 		} else {
 			object["image"] = ""
 		}
