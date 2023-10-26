@@ -34,7 +34,7 @@ var JwtAuthentication = func(next http.Handler) http.Handler {
 		//check if request needs auth
 		//serve the request if not needed
 		for _, value := range notAuth {
-			if value == requestPath {
+			if value == requestPath || strings.Contains(requestPath, "/api/images/") {
 				next.ServeHTTP(w, r)
 				return
 			}

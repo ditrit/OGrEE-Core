@@ -55,12 +55,6 @@ func GetImage(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("******************************************************")
 	DispRequestMetaData(r)
 
-	// Get user roles for permissions
-	user := getUserFromToken(w, r)
-	if user == nil {
-		return
-	}
-
 	image, err := models.GetImage(mux.Vars(r)["id"])
 	if err != nil {
 		u.ErrLog("Error while getting image",
