@@ -172,7 +172,7 @@ func TestUpdateTagPresentInOneObjectUpdatesItInList(t *testing.T) {
 func TestDeleteTagNoExistentReturnsError(t *testing.T) {
 	err := models.DeleteTag("delete-tag")
 	assert.NotNil(t, err)
-	assert.Equal(t, "Error deleting object: not found", err.Message)
+	assert.Equal(t, "Nothing matches this request", err.Message)
 }
 
 func TestDeleteTagNotPresentInAnyObjectWorks(t *testing.T) {
@@ -312,6 +312,16 @@ func TestUpdateSetEmptyImageRemovesOldImage(t *testing.T) {
 	_, err = repository.GetImage(context.Background(), tagImage.(primitive.ObjectID).Hex())
 	assert.NotNil(t, err)
 	assert.ErrorContains(t, err, "Nothing matches this request")
+
+	response := e2e.MakeRequest(http.MethodGet, "/api/tags/update-tag-5", nil)
+	assert.Equal(t, http.StatusOK, response.Code)
+
+	var responseBody map[string]interface{}
+	json.Unmarshal(response.Body.Bytes(), &responseBody)
+	object := responseBody["data"].(map[string]any)
+	imagePath, imagePresent := object["image"].(string)
+	assert.True(t, imagePresent)
+	assert.Equal(t, "", imagePath)
 }
 
 func TestUpdateWithNewImageRemovesOldImage(t *testing.T) {

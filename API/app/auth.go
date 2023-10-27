@@ -2,6 +2,7 @@ package app
 
 import (
 	"net/http"
+	"p3/controllers"
 	u "p3/utils"
 	"strings"
 
@@ -10,6 +11,7 @@ import (
 	"p3/models"
 
 	jwt "github.com/dgrijalva/jwt-go"
+	"github.com/elliotchance/pie/v2"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
@@ -33,11 +35,9 @@ var JwtAuthentication = func(next http.Handler) http.Handler {
 
 		//check if request needs auth
 		//serve the request if not needed
-		for _, value := range notAuth {
-			if value == requestPath || strings.Contains(requestPath, "/api/images/") {
-				next.ServeHTTP(w, r)
-				return
-			}
+		if strings.Contains(requestPath, controllers.GetImagePath) || pie.Contains(notAuth, requestPath) {
+			next.ServeHTTP(w, r)
+			return
 		}
 
 		//Grab the token from the header
