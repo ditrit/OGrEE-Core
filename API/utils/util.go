@@ -309,7 +309,7 @@ func GetEntitiesByNamespace(namespace Namespace, hierarchyName string) []string 
 					entNames = append(entNames, EntityToString(i))
 				}
 			case PHierarchy:
-				for i := SITE; i < GROUP; i++ {
+				for i := SITE; i <= GROUP; i++ {
 					entNames = append(entNames, EntityToString(i))
 				}
 			case Any:
@@ -338,15 +338,9 @@ func GetEntitiesByNamespace(namespace Namespace, hierarchyName string) []string 
 			case 2:
 				resp = append(resp, ROOM)
 			case 3:
-				resp = append(resp, RACK, AC, CORRIDOR, PWRPNL, CABINET)
-				if namespace == Any {
-					resp = append(resp, GROUP)
-				}
+				resp = append(resp, RACK, AC, CORRIDOR, PWRPNL, CABINET, GROUP)
 			case 4:
-				resp = append(resp, DEVICE)
-				if namespace == Any {
-					resp = append(resp, GROUP)
-				}
+				resp = append(resp, DEVICE, GROUP)
 			default:
 				resp = append(resp, DEVICE)
 			}
