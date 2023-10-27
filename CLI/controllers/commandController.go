@@ -692,9 +692,15 @@ func CD(path string) error {
 	if State.DebugLvl >= 3 {
 		println("THE PATH: ", path)
 	}
-	_, err := Tree(path, 0)
+	n, err := Tree(path, 0)
 	if err != nil {
 		return err
+	}
+	if n.Obj != nil {
+		newDomain, _ := n.Obj["domain"].(string)
+		State.CurrDomain = newDomain
+	} else {
+		State.CurrDomain = ""
 	}
 	State.PrevPath = State.CurrPath
 	State.CurrPath = path
