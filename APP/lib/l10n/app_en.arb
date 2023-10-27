@@ -16,6 +16,7 @@
   "reset": "Reset",
   "close": "Close",
   "unavailable": "Unavailable",
+  "select": "Select",
 
   "welcome": "Welcome to OGrEE",
   "welcomeConnect": "Login to your personal space:",

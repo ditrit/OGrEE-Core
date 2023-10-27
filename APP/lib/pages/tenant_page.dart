@@ -10,6 +10,7 @@ import 'package:ogree_app/widgets/tenants/domain_view.dart';
 import 'package:ogree_app/widgets/tenants/locked_view.dart';
 import 'package:ogree_app/widgets/tenants/docker_view.dart';
 import 'package:ogree_app/widgets/select_objects/treeapp_controller.dart';
+import 'package:ogree_app/widgets/tenants/tags_view.dart';
 import 'package:ogree_app/widgets/tenants/user_view.dart';
 
 class TenantPage extends StatefulWidget {
@@ -34,7 +35,7 @@ class TenantPageState extends State<TenantPage> with TickerProviderStateMixin {
   void initState() {
     super.initState();
     _tabController =
-        TabController(length: widget.tenant != null ? 4 : 3, vsync: this);
+        TabController(length: widget.tenant != null ? 5 : 4, vsync: this);
   }
 
   @override
@@ -132,6 +133,10 @@ class TenantPageState extends State<TenantPage> with TickerProviderStateMixin {
         text: "${localeMsg.user}s",
         icon: const Icon(Icons.person),
       ),
+      Tab(
+        text: "Tags",
+        icon: const Icon(Icons.turned_in),
+      ),
     ];
     if (widget.tenant != null) {
       tabs.insert(
@@ -165,6 +170,9 @@ class TenantPageState extends State<TenantPage> with TickerProviderStateMixin {
                     _domainSearch = "";
                   }),
                 )),
+      _isLocked && widget.tenant != null
+          ? LockedView(tenant: widget.tenant!, parentCallback: unlockView)
+          : TagsView(),
     ];
     if (_domainSearch.isNotEmpty) {
       // switch to domain page

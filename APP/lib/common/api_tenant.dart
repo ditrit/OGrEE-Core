@@ -247,3 +247,85 @@ Future<Result<void, Exception>> updateUser(User user) async {
     return Failure(e);
   }
 }
+
+Future<Result<List<Tag>, Exception>> fetchTags({http.Client? client}) async {
+  print("API get tags $tenantUrl");
+  client ??= http.Client();
+  try {
+    Uri url = Uri.parse('$tenantUrl/api/tags');
+    final response = await client.get(url, headers: getHeader(tenantToken));
+    print(response.statusCode);
+    if (response.statusCode == 200) {
+      Map<String, dynamic> data = json.decode(response.body);
+      List<Tag> tags = [];
+      for (var tag
+          in List<Map<String, dynamic>>.from(data["data"]["objects"])) {
+        tags.add(Tag.fromMap(tag));
+      }
+      return Success(tags);
+    } else {
+      return Failure(Exception('${response.statusCode}: Failed to load tags'));
+    }
+  } on Exception catch (e) {
+    return Failure(e);
+  }
+}
+
+Future<Result<Tag, Exception>> fetchTag(String tagId,
+    {http.Client? client}) async {
+  print("API get tag $tenantUrl");
+  client ??= http.Client();
+  try {
+    Uri url = Uri.parse('$tenantUrl/api/tags/$tagId');
+    final response = await client.get(url, headers: getHeader(tenantToken));
+    print(response.statusCode);
+    if (response.statusCode == 200) {
+      print(response.body);
+      Map<String, dynamic> data = json.decode(response.body);
+      Tag tag = Tag.fromMap(data["data"]);
+      return Success(tag);
+    } else {
+      return Failure(Exception('${response.statusCode}: Failed to load users'));
+    }
+  } on Exception catch (e) {
+    return Failure(e);
+  }
+}
+
+Future<Result<void, Exception>> createTag(Tag tag) async {
+  print("API create Tag");
+  try {
+    Uri url = Uri.parse('$tenantUrl/api/tags');
+    final response = await http.post(url,
+        body: tag.toJson(), headers: getHeader(tenantToken));
+    print(response.statusCode);
+    if (response.statusCode == 201) {
+      return const Success(null);
+    } else {
+      var data = json.decode(response.body);
+      return Failure(Exception("Error: ${data["message"]}"));
+    }
+  } on Exception catch (e) {
+    return Failure(e);
+  }
+}
+
+Future<Result<void, Exception>> updateTag(
+    String currentId, Map<String, String> tagMap) async {
+  print("API update Tag $currentId");
+  print(tagMap);
+  try {
+    Uri url = Uri.parse('$tenantUrl/api/tags/$currentId');
+    final response = await http.patch(url,
+        body: json.encode(tagMap), headers: getHeader(tenantToken));
+    print(response.statusCode);
+    if (response.statusCode == 200) {
+      return const Success(null);
+    } else {
+      var data = json.decode(response.body);
+      return Failure(Exception("Error: ${data["message"]}"));
+    }
+  } on Exception catch (e) {
+    return Failure(e);
+  }
+}

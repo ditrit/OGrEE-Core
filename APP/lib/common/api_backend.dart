@@ -9,6 +9,7 @@ import 'package:ogree_app/models/container.dart';
 import 'package:ogree_app/models/domain.dart';
 import 'package:ogree_app/models/netbox.dart';
 import 'package:ogree_app/models/project.dart';
+import 'package:ogree_app/models/tag.dart';
 import 'package:ogree_app/models/tenant.dart';
 import 'package:ogree_app/models/user.dart';
 import 'package:universal_html/html.dart';

@@ -4,49 +4,34 @@ import 'package:ogree_app/common/definitions.dart';
 import 'package:ogree_app/common/popup_dialog.dart';
 import 'package:ogree_app/common/snackbar.dart';
 import 'package:ogree_app/common/theme.dart';
-import 'package:ogree_app/models/user.dart';
+import 'package:ogree_app/models/tag.dart';
 import 'package:ogree_app/pages/results_page.dart';
 import 'package:ogree_app/widgets/delete_dialog_popup.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:ogree_app/widgets/tenants/popups/tags_popup.dart';
 
-import 'popups/user_popup.dart';
+enum TagSearchFields { Description, Slug, Color }
 
-enum UserSearchFields { Name, Email, Domain, Role }
-
-class UserView extends StatefulWidget {
-  UserSearchFields searchField;
-  String? searchText;
-  Function? parentCallback;
-  UserView(
-      {super.key,
-      this.searchField = UserSearchFields.Name,
-      this.searchText,
-      this.parentCallback});
+class TagsView extends StatefulWidget {
+  TagsView({super.key});
   @override
-  State<UserView> createState() => _UserViewState();
+  State<TagsView> createState() => _TagsViewState();
 }
 
-class _UserViewState extends State<UserView> {
-  List<User>? _users;
-  bool _loadUsers = true;
-  List<User> selectedUsers = [];
-  List<User>? _filterUsers;
+class _TagsViewState extends State<TagsView> {
+  List<Tag>? _tags;
+  bool _loadTags = true;
+  List<Tag> selectedTags = [];
+  List<Tag>? _filterTags;
   bool sort = true;
-  UserSearchFields _searchField = UserSearchFields.Name;
-
-  @override
-  void initState() {
-    super.initState();
-    _searchField = widget.searchField;
-    _loadUsers = true;
-  }
+  TagSearchFields _searchField = TagSearchFields.Slug;
 
   onsortColum(int columnIndex, bool ascending) {
     if (columnIndex == 1) {
       if (ascending) {
-        _users!.sort((a, b) => a.email.compareTo(b.email));
+        _tags!.sort((a, b) => a.slug.compareTo(b.slug));
       } else {
-        _users!.sort((a, b) => b.email.compareTo(a.email));
+        _tags!.sort((a, b) => b.slug.compareTo(a.slug));
       }
     }
   }
@@ -56,9 +41,9 @@ class _UserViewState extends State<UserView> {
     final localeMsg = AppLocalizations.of(context)!;
     final isSmallDisplay = IsSmallDisplay(MediaQuery.of(context).size.width);
     return FutureBuilder(
-        future: _loadUsers ? getUsers() : null,
+        future: _loadTags ? getUsers() : null,
         builder: (context, _) {
-          if (_users == null) {
+          if (_tags == null) {
             return const Center(child: CircularProgressIndicator());
           }
           return Theme(
@@ -80,7 +65,8 @@ class _UserViewState extends State<UserView> {
                     SizedBox(
                       height: isSmallDisplay ? 30 : 35,
                       width: isSmallDisplay ? 115 : 145,
-                      child: DropdownButtonFormField<UserSearchFields>(
+                      child: DropdownButtonFormField<TagSearchFields>(
+                        isExpanded: true,
                         decoration: GetFormInputDecoration(
                           isSmallDisplay,
                           null,
@@ -100,10 +86,10 @@ class _UserViewState extends State<UserView> {
                                 ),
                         ),
                         value: _searchField,
-                        items: UserSearchFields.values
-                            .map<DropdownMenuItem<UserSearchFields>>(
-                                (UserSearchFields value) {
-                          return DropdownMenuItem<UserSearchFields>(
+                        items: TagSearchFields.values
+                            .map<DropdownMenuItem<TagSearchFields>>(
+                                (TagSearchFields value) {
+                          return DropdownMenuItem<TagSearchFields>(
                             value: value,
                             child: Text(
                               value.name,
@@ -111,7 +97,7 @@ class _UserViewState extends State<UserView> {
                             ),
                           );
                         }).toList(),
-                        onChanged: (UserSearchFields? value) {
+                        onChanged: (TagSearchFields? value) {
                           setState(() {
                             _searchField = value!;
                           });
@@ -123,10 +109,9 @@ class _UserViewState extends State<UserView> {
                       width: 150,
                       child: TextFormField(
                           textAlignVertical: TextAlignVertical.center,
-                          initialValue: widget.searchText,
                           onChanged: (value) {
                             setState(() {
-                              _users = searchUsers(value);
+                              _tags = searchUsers(value);
                             });
                           },
                           decoration: InputDecoration(
@@ -148,16 +133,16 @@ class _UserViewState extends State<UserView> {
                         padding: EdgeInsets.zero,
                         constraints: const BoxConstraints(),
                         splashRadius: isSmallDisplay ? 16 : 23,
-                        onPressed: () => selectedUsers.isNotEmpty
+                        onPressed: () => selectedTags.isNotEmpty
                             ? showCustomPopup(
                                 context,
-                                UserPopup(
+                                TagsPopup(
                                   parentCallback: () {
                                     setState(() {
-                                      _loadUsers = true;
+                                      _loadTags = true;
                                     });
                                   },
-                                  modifyUser: selectedUsers.first,
+                                  tagId: selectedTags.first.slug,
                                 ),
                                 isDismissible: true)
                             : null,
@@ -170,18 +155,18 @@ class _UserViewState extends State<UserView> {
                     child: IconButton(
                         splashRadius: isSmallDisplay ? 16 : 23,
                         // iconSize: 14,
-                        onPressed: () => selectedUsers.isNotEmpty
+                        onPressed: () => selectedTags.isNotEmpty
                             ? showCustomPopup(
                                 context,
                                 DeleteDialog(
-                                  objName: selectedUsers.map((e) {
+                                  objName: selectedTags.map((e) {
                                     print(e);
-                                    return e.id!;
+                                    return e.slug;
                                   }).toList(),
-                                  objType: "users",
+                                  objType: "tags",
                                   parentCallback: () {
                                     setState(() {
-                                      _loadUsers = true;
+                                      _loadTags = true;
                                     });
                                   },
                                 ),
@@ -198,9 +183,9 @@ class _UserViewState extends State<UserView> {
                           constraints: const BoxConstraints(),
                           splashRadius: 16,
                           onPressed: () => showCustomPopup(context,
-                              UserPopup(parentCallback: () {
+                              TagsPopup(parentCallback: () {
                             setState(() {
-                              _loadUsers = true;
+                              _loadTags = true;
                             });
                           })),
                           icon: Icon(
@@ -212,29 +197,28 @@ class _UserViewState extends State<UserView> {
                           padding: const EdgeInsets.only(right: 6.0),
                           child: ElevatedButton.icon(
                             onPressed: () => showCustomPopup(context,
-                                UserPopup(parentCallback: () {
+                                TagsPopup(parentCallback: () {
                               setState(() {
-                                _loadUsers = true;
+                                _loadTags = true;
                               });
                             })),
                             icon: const Icon(Icons.add, color: Colors.white),
-                            label:
-                                Text("${localeMsg.create} ${localeMsg.user}"),
+                            label: Text("${localeMsg.create} Tag"),
                           ),
                         ),
                 ],
-                rowsPerPage: _users!.isEmpty
+                rowsPerPage: _tags!.isEmpty
                     ? 1
-                    : (_users!.length >= 6 ? 6 : _users!.length),
+                    : (_tags!.length >= 6 ? 6 : _tags!.length),
                 columns: [
-                  const DataColumn(
+                  DataColumn(
                       label: Text(
-                    "Name",
+                    localeMsg.color,
                     style: TextStyle(fontWeight: FontWeight.w600),
                   )),
                   DataColumn(
                       label: const Text(
-                        "Email",
+                        "Slug",
                         style: TextStyle(fontWeight: FontWeight.w600),
                       ),
                       onSort: (columnIndex, ascending) {
@@ -245,11 +229,16 @@ class _UserViewState extends State<UserView> {
                       }),
                   const DataColumn(
                       label: Text(
-                    "Domains (roles)",
+                    "Description",
+                    style: TextStyle(fontWeight: FontWeight.w600),
+                  )),
+                  const DataColumn(
+                      label: Text(
+                    "Image",
                     style: TextStyle(fontWeight: FontWeight.w600),
                   ))
                 ],
-                source: _DataSource(context, _users!, onUserSelected),
+                source: _DataSource(context, _tags!, onUserSelected),
               ),
             ),
           );
@@ -258,73 +247,54 @@ class _UserViewState extends State<UserView> {
 
   getUsers() async {
     final messenger = ScaffoldMessenger.of(context);
-    final result = await fetchApiUsers();
+    final result = await fetchTags();
     switch (result) {
       case Success(value: final value):
-        _users = value;
-        _filterUsers = _users;
-        if (widget.searchText != null && widget.searchText!.isNotEmpty) {
-          // search filter set by parent widget
-          _users = searchUsers(widget.searchText!);
-          // let him know it has been applied
-          widget.parentCallback!();
-        }
+        _tags = value;
+        _filterTags = _tags;
       case Failure(exception: final exception):
         showSnackBar(messenger, exception.toString(), isError: true);
-        _users = [];
+        _tags = [];
     }
-    _loadUsers = false;
+    _loadTags = false;
   }
 
   searchUsers(String searchText) {
     if (searchText.trim().isEmpty) {
-      return _filterUsers!.toList();
+      return _filterTags!.toList();
     }
     switch (_searchField) {
-      case UserSearchFields.Name:
-        return _filterUsers!
-            .where((element) => element.name.contains(searchText))
+      case TagSearchFields.Description:
+        return _filterTags!
+            .where((element) => element.description.contains(searchText))
             .toList();
-      case UserSearchFields.Email:
-        return _filterUsers!
-            .where((element) => element.email.contains(searchText))
+      case TagSearchFields.Slug:
+        return _filterTags!
+            .where((element) => element.slug.contains(searchText))
             .toList();
-      case UserSearchFields.Domain:
-        return _filterUsers!.where((element) {
-          for (var domain in element.roles.keys) {
-            if (domain.contains(searchText) || domain == allDomainsConvert) {
-              return true;
-            }
-          }
-          return false;
-        }).toList();
-      case UserSearchFields.Role:
-        return _filterUsers!.where((element) {
-          for (var role in element.roles.values) {
-            if (role.contains(searchText)) {
-              return true;
-            }
-          }
-          return false;
-        }).toList();
+      case TagSearchFields.Color:
+        return _filterTags!
+            .where((element) =>
+                element.color.toLowerCase().contains(searchText.toLowerCase()))
+            .toList();
     }
   }
 
   onUserSelected(int index, bool value) {
     if (index < 0) {
-      selectedUsers = [];
+      selectedTags = [];
     } else if (value) {
-      selectedUsers.add(_users![index]);
+      selectedTags.add(_tags![index]);
     } else {
-      selectedUsers.remove(_users![index]);
+      selectedTags.remove(_tags![index]);
     }
   }
 }
 
 class _DataSource extends DataTableSource {
-  List<User> users;
+  List<Tag> tags;
   final Function onRowSelected;
-  _DataSource(this.context, this.users, this.onRowSelected) {
+  _DataSource(this.context, this.tags, this.onRowSelected) {
     _rows = getChildren();
     onRowSelected(-1, false);
   }
@@ -365,18 +335,35 @@ class _DataSource extends DataTableSource {
 
   List<CustomRow> getChildren() {
     List<CustomRow> children = [];
-    for (var user in users) {
+    for (var tag in tags) {
       List<DataCell> row = [];
-      row.add(label(user.name == "null" ? "-" : user.name));
-      row.add(label(user.email, fontWeight: FontWeight.w500));
-      String domainStr = "";
-      for (var domain in user.roles.keys) {
-        domainStr = "$domainStr $domain (${user.roles[domain]});";
-      }
-      row.add(label(domainStr));
+      row.add(colorLabel(tag.color));
+      row.add(label(tag.slug, fontWeight: FontWeight.w500));
+      row.add(label(tag.description));
+      row.add(tag.image.isNotEmpty ? imageLabel(tag.image) : label("-"));
       children.add(CustomRow(row));
     }
     return children;
+  }
+
+  DataCell colorLabel(String color) {
+    return DataCell(
+      Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: Tooltip(
+            message: color,
+            child: Icon(Icons.circle, color: Color(int.parse("0xFF$color")))),
+      ),
+    );
+  }
+
+  DataCell imageLabel(String imagePath) {
+    return DataCell(
+      Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: Image.network(tenantUrl + imagePath),
+      ),
+    );
   }
 
   DataCell label(String label, {FontWeight fontWeight = FontWeight.w400}) {

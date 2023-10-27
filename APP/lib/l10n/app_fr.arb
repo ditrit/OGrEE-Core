@@ -16,6 +16,7 @@
   "reset": "Réinitialiser",
   "close": "Fermer",
   "unavailable": "Indisponible",
+  "select": "Choisir",
   
   "@welcome": { "description": "Login Page" },
   "welcome": "Bienvenue sur OGrEE",
