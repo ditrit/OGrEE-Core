@@ -39,7 +39,7 @@ func TestUpdateTagColorSendsTagTo3DWithSameOldSlugAsSlug(t *testing.T) {
 		}, nil,
 	)
 
-	mockOgree3D.On("InformOptional", "UpdateObj", controllers.TAG, map[string]any{
+	mockOgree3D.On("InformOptional", "UpdateObj", models.TAG, map[string]any{
 		"type": "modify-tag",
 		"data": map[string]any{
 			"old-slug": oldSlug,
@@ -84,7 +84,7 @@ func TestUpdateTagSlugSendsTagTo3DWithNewSlug(t *testing.T) {
 		}, nil,
 	)
 
-	mockOgree3D.On("InformOptional", "UpdateObj", controllers.TAG, map[string]any{
+	mockOgree3D.On("InformOptional", "UpdateObj", models.TAG, map[string]any{
 		"type": "modify-tag",
 		"data": map[string]any{
 			"old-slug": oldSlug,

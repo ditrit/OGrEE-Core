@@ -114,9 +114,9 @@ func evalNodeArr[elt comparable](arr *[]node, x []elt) ([]elt, error) {
 func checkIfTemplate(name string, ent int) bool {
 	var location string
 	switch ent {
-	case cmd.BLDG:
+	case models.BLDG:
 		location = models.BuildingTemplatesPath + name
-	case cmd.ROOM:
+	case models.ROOM:
 		location = models.RoomTemplatesPath + name
 	default:
 		location = models.ObjectTemplatesPath + name

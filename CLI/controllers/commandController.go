@@ -44,8 +44,8 @@ func PostObj(ent int, entity string, data map[string]any) error {
 		return err
 	}
 
-	if ent != TAG && IsInObjForUnity(entity) {
-		entInt := EntityStrToInt(entity)
+	if ent != models.TAG && IsInObjForUnity(entity) {
+		entInt := models.EntityStrToInt(entity)
 		Ogree3D.InformOptional("PostObj", entInt, map[string]any{"type": "create", "data": resp.Body["data"]})
 	}
 
@@ -270,7 +270,7 @@ func UnsetInObj(Path, attr string, idx int) (map[string]interface{}, error) {
 
 	//Update and inform unity
 	if models.IsHierarchical(Path) && IsInObjForUnity(entity) {
-		entInt := EntityStrToInt(entity)
+		entInt := models.EntityStrToInt(entity)
 		Ogree3D.InformOptional("UpdateObj", entInt, message)
 	}
 
@@ -349,7 +349,7 @@ func Env(userVars, userFuncs map[string]interface{}) {
 	fmt.Println()
 	fmt.Println("Objects Unity shall draw:")
 	for _, k := range State.DrawableObjs {
-		fmt.Println(EntityToString(k))
+		fmt.Println(models.EntityToString(k))
 	}
 
 	fmt.Println()
@@ -499,22 +499,22 @@ func CreateObject(path string, ent int, data map[string]interface{}) error {
 	}
 
 	data["name"] = name
-	data["category"] = EntityToString(ent)
+	data["category"] = models.EntityToString(ent)
 	data["description"] = []interface{}{}
 
 	//Retrieve Parent
-	if ent != SITE && ent != STRAY_DEV && ent != STRAYSENSOR {
+	if ent != models.SITE && ent != models.STRAY_DEV && ent != models.STRAYSENSOR {
 		var err error
 		parent, err = PollObject(path)
 		if err != nil {
 			return err
 		}
-		if parent == nil && (ent != DOMAIN || path != "/Organisation/Domain") {
+		if parent == nil && (ent != models.DOMAIN || path != "/Organisation/Domain") {
 			return fmt.Errorf("parent not found")
 		}
 	}
 
-	if ent != DOMAIN {
+	if ent != models.DOMAIN {
 		if parent != nil {
 			data["domain"] = parent["domain"]
 		} else {
@@ -524,24 +524,24 @@ func CreateObject(path string, ent int, data map[string]interface{}) error {
 
 	var err error
 	switch ent {
-	case DOMAIN:
+	case models.DOMAIN:
 		if parent != nil {
 			data["parentId"] = parent["id"]
 		} else {
 			data["parentId"] = ""
 		}
 
-	case SITE:
+	case models.SITE:
 		//Default values
 		//data["parentId"] = parent["id"]
 		data["attributes"] = map[string]interface{}{}
 
-	case BLDG:
+	case models.BLDG:
 		attr = data["attributes"].(map[string]interface{})
 
 		//Check for template
 		if _, ok := attr["template"]; ok {
-			err := GetOCLIAtrributesTemplateHelper(attr, data, BLDG)
+			err := GetOCLIAtrributesTemplateHelper(attr, data, models.BLDG)
 			if err != nil {
 				return err
 			}
@@ -601,7 +601,7 @@ func CreateObject(path string, ent int, data map[string]interface{}) error {
 		//attr["height"] = 0 //Should be set from parser by default
 		data["parentId"] = parent["id"]
 
-	case ROOM:
+	case models.ROOM:
 		attr = data["attributes"].(map[string]interface{})
 
 		baseAttrs := map[string]interface{}{
@@ -664,7 +664,7 @@ func CreateObject(path string, ent int, data map[string]interface{}) error {
 			Disp(data)
 		}
 
-	case RACK, CORRIDOR:
+	case models.RACK, models.CORRIDOR:
 		attr = data["attributes"].(map[string]interface{})
 		//Save rotation because it gets overwritten by
 		//GetOCLIAtrributesTemplateHelper()
@@ -674,7 +674,7 @@ func CreateObject(path string, ent int, data map[string]interface{}) error {
 			"sizeUnit":   "cm",
 			"heightUnit": "U",
 		}
-		if ent == CORRIDOR {
+		if ent == models.CORRIDOR {
 			baseAttrs["heightUnit"] = "cm"
 		}
 
@@ -731,7 +731,7 @@ func CreateObject(path string, ent int, data map[string]interface{}) error {
 		data["parentId"] = parent["id"]
 		data["attributes"] = attr
 
-	case DEVICE:
+	case models.DEVICE:
 		attr = data["attributes"].(map[string]interface{})
 
 		//Special routine to perform on device
@@ -785,7 +785,7 @@ func CreateObject(path string, ent int, data map[string]interface{}) error {
 		//If user provided templates, get the JSON
 		//and parse into templates
 		if _, ok := attr["template"]; ok {
-			err := GetOCLIAtrributesTemplateHelper(attr, data, DEVICE)
+			err := GetOCLIAtrributesTemplateHelper(attr, data, models.DEVICE)
 			if err != nil {
 				return err
 			}
@@ -816,7 +816,7 @@ func CreateObject(path string, ent int, data map[string]interface{}) error {
 		data["parentId"] = parent["id"]
 		data["attributes"] = attr
 
-	case GROUP:
+	case models.GROUP:
 		//name, category, domain, pid
 		data["parentId"] = parent["id"]
 		attr := data["attributes"].(map[string]interface{})
@@ -824,11 +824,11 @@ func CreateObject(path string, ent int, data map[string]interface{}) error {
 		groups := strings.Join(attr["content"].([]string), ",")
 		attr["content"] = groups
 
-	case STRAYSENSOR:
+	case models.STRAYSENSOR:
 		attr = data["attributes"].(map[string]interface{})
 		if _, ok := attr["template"]; ok {
 			//GetOCLIAtrributesTemplateHelper(attr, data, DEVICE)
-			tmpl, err := fetchTemplate(attr["template"].(string), STRAYSENSOR)
+			tmpl, err := fetchTemplate(attr["template"].(string), models.STRAYSENSOR)
 			if err != nil {
 				return err
 			}
@@ -837,10 +837,10 @@ func CreateObject(path string, ent int, data map[string]interface{}) error {
 			attr["template"] = ""
 		}
 
-	case STRAY_DEV:
+	case models.STRAY_DEV:
 		attr = data["attributes"].(map[string]interface{})
 		if _, ok := attr["template"]; ok {
-			err := GetOCLIAtrributesTemplateHelper(attr, data, DEVICE)
+			err := GetOCLIAtrributesTemplateHelper(attr, data, models.DEVICE)
 			if err != nil {
 				return err
 			}
@@ -880,12 +880,12 @@ func GetOCLIAtrributesTemplateHelper(attr, data map[string]interface{}, ent int)
 	//data from templates
 	attrSerialiser := func(someVal interface{}, idx string, ent int) string {
 		if x, ok := someVal.(int); ok {
-			if ent == DEVICE || ent == ROOM || ent == BLDG {
+			if ent == models.DEVICE || ent == models.ROOM || ent == models.BLDG {
 				return strconv.Itoa(x)
 			}
 			return strconv.Itoa(x / 10)
 		} else if x, ok := someVal.(float64); ok {
-			if ent == DEVICE || ent == ROOM || ent == BLDG {
+			if ent == models.DEVICE || ent == models.ROOM || ent == models.BLDG {
 				return strconv.FormatFloat(x, 'G', -1, 64)
 			}
 			return strconv.FormatFloat(x/10.0, 'G', -1, 64)
@@ -902,12 +902,12 @@ func GetOCLIAtrributesTemplateHelper(attr, data map[string]interface{}, ent int)
 		if qS, ok := q.(string); ok {
 			//Determine the type of template
 			tInt := 0
-			if ent == ROOM {
-				tInt = ROOMTMPL
-			} else if ent == BLDG {
-				tInt = BLDGTMPL
+			if ent == models.ROOM {
+				tInt = models.ROOMTMPL
+			} else if ent == models.BLDG {
+				tInt = models.BLDGTMPL
 			} else {
-				tInt = OBJTMPL
+				tInt = models.OBJTMPL
 			} //End of determine block
 			tmpl, err := fetchTemplate(qS, tInt)
 			if err != nil {
@@ -926,7 +926,7 @@ func GetOCLIAtrributesTemplateHelper(attr, data map[string]interface{}, ent int)
 				attr["size"] = "{\"x\":" + xS + ", \"y\":" + yS + "}"
 				attr["height"] = zS
 
-				if ent == DEVICE {
+				if ent == models.DEVICE {
 					attr["sizeUnit"] = "mm"
 					attr["heightUnit"] = "mm"
 					if tmpx, ok := tmpl["attributes"]; ok {
@@ -954,7 +954,7 @@ func GetOCLIAtrributesTemplateHelper(attr, data map[string]interface{}, ent int)
 						}
 					}
 
-				} else if ent == ROOM {
+				} else if ent == models.ROOM {
 					attr["sizeUnit"] = "m"
 					attr["heightUnit"] = "m"
 
@@ -1039,7 +1039,7 @@ func GetOCLIAtrributesTemplateHelper(attr, data map[string]interface{}, ent int)
 						}
 					}
 
-				} else if ent == BLDG {
+				} else if ent == models.BLDG {
 					attr["sizeUnit"] = "m"
 					attr["heightUnit"] = "m"
 
@@ -1061,7 +1061,7 @@ func GetOCLIAtrributesTemplateHelper(attr, data map[string]interface{}, ent int)
 
 				//fbxModel section
 				if check := CopyAttr(attr, tmpl, "fbxModel"); !check {
-					if ent != BLDG {
+					if ent != models.BLDG {
 						attr["fbxModel"] = ""
 					}
 
@@ -1096,7 +1096,7 @@ func GetOCLIAtrributesTemplateHelper(attr, data map[string]interface{}, ent int)
 		}
 
 	} else {
-		if ent != CORRIDOR {
+		if ent != models.CORRIDOR {
 			attr["template"] = ""
 		}
 		//Serialise size and posXY if given
@@ -1189,8 +1189,8 @@ func FocusUI(path string) error {
 		if err != nil {
 			return err
 		}
-		category := EntityStrToInt(obj["category"].(string))
-		if models.IsNonHierarchical(path) || category == SITE || category == BLDG || category == ROOM {
+		category := models.EntityStrToInt(obj["category"].(string))
+		if models.IsNonHierarchical(path) || category == models.SITE || category == models.BLDG || category == models.ROOM {
 			msg := "You cannot focus on this object. Note you cannot" +
 				" focus on Sites, Buildings and Rooms. " +
 				"For more information please refer to the help doc  (man >)"
@@ -1412,7 +1412,7 @@ func LoadTemplate(data map[string]interface{}, filePath string) error {
 }
 
 func CreateTag(slug, color string) error {
-	return PostObj(TAG, EntityToString(TAG), map[string]any{
+	return PostObj(models.TAG, models.EntityToString(models.TAG), map[string]any{
 		"slug":        slug,
 		"description": slug, // the description is initially set with the value of the slug
 		"color":       color,
@@ -1574,9 +1574,9 @@ func InteractObject(path string, keyword string, val interface{}, fromAttr bool)
 // to keep code organised
 func fetchTemplate(name string, objType int) (map[string]interface{}, error) {
 	var url string
-	if objType == ROOMTMPL {
+	if objType == models.ROOMTMPL {
 		url = "/api/room_templates/"
-	} else if objType == BLDGTMPL {
+	} else if objType == models.BLDGTMPL {
 		url = "/api/bldg_templates/"
 	} else {
 		url = "/api/obj_templates/"

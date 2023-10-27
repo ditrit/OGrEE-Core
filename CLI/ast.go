@@ -970,7 +970,7 @@ func (n *createDomainNode) execute() (interface{}, error) {
 
 	attributes := map[string]interface{}{"attributes": map[string]interface{}{"color": color}}
 
-	return nil, cmd.CreateObject(path, cmd.DOMAIN, attributes)
+	return nil, cmd.CreateObject(path, models.DOMAIN, attributes)
 }
 
 type createSiteNode struct {
@@ -982,7 +982,7 @@ func (n *createSiteNode) execute() (interface{}, error) {
 	if err != nil {
 		return nil, err
 	}
-	err = cmd.CreateObject(path, cmd.SITE, map[string]any{})
+	err = cmd.CreateObject(path, models.SITE, map[string]any{})
 	if err != nil {
 		return nil, err
 	}
@@ -1022,12 +1022,12 @@ func (n *createBuildingNode) execute() (interface{}, error) {
 		if !ok {
 			return nil, fmt.Errorf("vector3 (size) or string (template) expected")
 		}
-		if !checkIfTemplate(template, cmd.BLDG) {
+		if !checkIfTemplate(template, models.BLDG) {
 			return nil, fmt.Errorf("template not found")
 		}
 		attributes["template"] = template
 	}
-	err = cmd.CreateObject(path, cmd.BLDG, map[string]any{"attributes": attributes})
+	err = cmd.CreateObject(path, models.BLDG, map[string]any{"attributes": attributes})
 	if err != nil {
 		return nil, err
 	}
@@ -1063,7 +1063,7 @@ func (n *createRoomNode) execute() (interface{}, error) {
 		if err != nil {
 			return nil, err
 		}
-		if !checkIfTemplate(template, cmd.ROOM) {
+		if !checkIfTemplate(template, models.ROOM) {
 			return nil, fmt.Errorf("template not found")
 		}
 		attributes["template"] = template
@@ -1086,7 +1086,7 @@ func (n *createRoomNode) execute() (interface{}, error) {
 		}
 		attributes["floorUnit"] = floorUnit
 	}
-	err = cmd.CreateObject(path, cmd.ROOM, map[string]any{"attributes": attributes})
+	err = cmd.CreateObject(path, models.ROOM, map[string]any{"attributes": attributes})
 	if err != nil {
 		return nil, err
 	}
@@ -1135,12 +1135,12 @@ func (n *createRackNode) execute() (interface{}, error) {
 		if !ok {
 			return nil, fmt.Errorf("vector3 (size) or string (template) expected")
 		}
-		if !checkIfTemplate(template, cmd.RACK) {
+		if !checkIfTemplate(template, models.RACK) {
 			return nil, fmt.Errorf("template not found")
 		}
 		attributes["template"] = template
 	}
-	err = cmd.CreateObject(path, cmd.RACK, map[string]any{"attributes": attributes})
+	err = cmd.CreateObject(path, models.RACK, map[string]any{"attributes": attributes})
 	if err != nil {
 		return nil, err
 	}
@@ -1177,7 +1177,7 @@ func (n *createDeviceNode) execute() (interface{}, error) {
 		if !ok {
 			return nil, fmt.Errorf("int (sizeU) or string (template) expected")
 		}
-		if !checkIfTemplate(template, cmd.DEVICE) {
+		if !checkIfTemplate(template, models.DEVICE) {
 			return nil, fmt.Errorf("template not found")
 		}
 		attr["template"] = sizeUOrTemplate
@@ -1190,7 +1190,7 @@ func (n *createDeviceNode) execute() (interface{}, error) {
 		attr["orientation"] = side
 	}
 	attributes := map[string]interface{}{"attributes": attr}
-	err = cmd.CreateObject(path, cmd.DEVICE, attributes)
+	err = cmd.CreateObject(path, models.DEVICE, attributes)
 	if err != nil {
 		return nil, err
 	}
@@ -1218,7 +1218,7 @@ func (n *createGroupNode) execute() (interface{}, error) {
 		objs = append(objs, obj)
 	}
 	data["attributes"] = map[string]interface{}{"content": objs}
-	err = cmd.CreateObject(path, cmd.GROUP, data)
+	err = cmd.CreateObject(path, models.GROUP, data)
 	if err != nil {
 		return nil, err
 	}
@@ -1286,7 +1286,7 @@ func (n *createCorridorNode) execute() (interface{}, error) {
 		return nil, err
 	}
 	attributes := map[string]any{"posXYZ": pos, "posXYUnit": unit, "rotation": rotation, "size": size, "temperature": temp}
-	err = cmd.CreateObject(path, cmd.CORRIDOR, map[string]any{"attributes": attributes})
+	err = cmd.CreateObject(path, models.CORRIDOR, map[string]any{"attributes": attributes})
 	if err != nil {
 		return nil, err
 	}
@@ -1307,11 +1307,11 @@ func (n *createOrphanNode) execute() (interface{}, error) {
 	if err != nil {
 		return nil, err
 	}
-	if !checkIfTemplate(template, cmd.STRAY_DEV) {
+	if !checkIfTemplate(template, models.STRAY_DEV) {
 		return nil, fmt.Errorf("template not found")
 	}
 	attributes := map[string]any{"template": template}
-	err = cmd.CreateObject(path, cmd.STRAY_DEV, map[string]any{"attributes": attributes})
+	err = cmd.CreateObject(path, models.STRAY_DEV, map[string]any{"attributes": attributes})
 	if err != nil {
 		return nil, err
 	}

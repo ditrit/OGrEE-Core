@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"cli/models"
 	"cli/readline"
 	"time"
 )
@@ -42,7 +43,7 @@ type ShellState struct {
 }
 
 func IsInObjForUnity(entityStr string) bool {
-	entInt := EntityStrToInt(entityStr)
+	entInt := models.EntityStrToInt(entityStr)
 	return IsEntityTypeForOGrEE3D(entInt)
 }
 
@@ -59,7 +60,7 @@ func IsEntityTypeForOGrEE3D(entityType int) bool {
 }
 
 func IsDrawableEntity(x string) bool {
-	entInt := EntityStrToInt(x)
+	entInt := models.EntityStrToInt(x)
 
 	for idx := range State.DrawableObjs {
 		if State.DrawableObjs[idx] == entInt {

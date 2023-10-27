@@ -60,8 +60,8 @@ func InitState(conf *config.Config) error {
 	State.DrawableObjs = SetObjsForUnity(conf.Drawable)
 	State.DrawableJsons = make(map[string]map[string]interface{}, 16)
 
-	for i := SITE; i < GROUP+1; i++ {
-		ent := EntityToString(i)
+	for i := models.SITE; i < models.GROUP+1; i++ {
+		ent := models.EntityToString(i)
 		State.DrawableJsons[ent] = SetDrawableTemplate(ent, conf.DrawableJson)
 	}
 
@@ -166,7 +166,7 @@ func SetObjsForUnity(objs []string) []int {
 	allDetected := false
 	for _, obj := range objs {
 		obj = strings.ToLower(obj)
-		if val := EntityStrToInt(obj); val != -1 {
+		if val := models.EntityStrToInt(obj); val != -1 {
 			res = append(res, val)
 		} else if obj == "all" {
 			//Exit the loop and use default code @ end of function
@@ -178,11 +178,11 @@ func SetObjsForUnity(objs []string) []int {
 	//GROUP is the greatest value int enum type
 	//So we use that for the cond guard
 	if allDetected {
-		for idx := 0; idx < GROUP+1; idx++ {
+		for idx := 0; idx < models.GROUP+1; idx++ {
 			res = append(res, idx)
 		}
-		res = append(res, DOMAIN)
-		res = append(res, TAG)
+		res = append(res, models.DOMAIN)
+		res = append(res, models.TAG)
 	}
 	return res
 }
