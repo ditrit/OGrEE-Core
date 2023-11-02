@@ -3,7 +3,6 @@ package main
 import (
 	"bytes"
 	"cli/config"
-	c "cli/controllers"
 	cmd "cli/controllers"
 	"cli/models"
 	"cli/utils"
@@ -22,8 +21,8 @@ func InitVars(variables []config.Vardef) (err error) {
 			err = fmt.Errorf("cannot parse config variables")
 		}
 	}()
-	c.State.DynamicSymbolTable = make(map[string]interface{})
-	c.State.FuncTable = make(map[string]interface{})
+	cmd.State.DynamicSymbolTable = make(map[string]interface{})
+	cmd.State.FuncTable = make(map[string]interface{})
 	for _, v := range variables {
 		var varNode node
 		switch val := v.Value.(type) {
@@ -80,7 +79,7 @@ type funcDefNode struct {
 }
 
 func (n *funcDefNode) execute() (interface{}, error) {
-	c.State.FuncTable[n.name] = n.body
+	cmd.State.FuncTable[n.name] = n.body
 	if cmd.State.DebugLvl >= 3 {
 		println("New function ", n.name)
 	}
@@ -92,7 +91,7 @@ type funcCallNode struct {
 }
 
 func (n *funcCallNode) execute() (interface{}, error) {
-	val, ok := c.State.FuncTable[n.name]
+	val, ok := cmd.State.FuncTable[n.name]
 	if !ok {
 		return nil, fmt.Errorf("undefined function %s", n.name)
 	}
@@ -125,7 +124,7 @@ type lenNode struct {
 }
 
 func (n *lenNode) execute() (interface{}, error) {
-	val, ok := c.State.DynamicSymbolTable[n.variable]
+	val, ok := cmd.State.DynamicSymbolTable[n.variable]
 	if !ok {
 		return nil, fmt.Errorf("Undefined variable %s", n.variable)
 	}
@@ -331,7 +330,7 @@ func (n *deleteSelectionNode) execute() (interface{}, error) {
 		}
 	}
 	println(fmt.Sprintf("%d objects deleted", deleted))
-	notDeleted := len(c.State.ClipBoard) - deleted
+	notDeleted := len(cmd.State.ClipBoard) - deleted
 	if notDeleted > 0 {
 		fmt.Printf("%d objects could not be deleted :\n%s", notDeleted, errBuilder.String())
 	}
@@ -696,7 +695,7 @@ func (n *updateObjNode) execute() (interface{}, error) {
 		}
 		values = append(values, val)
 	}
-	paths, err := c.UnfoldPath(path)
+	paths, err := cmd.UnfoldPath(path)
 	if err != nil {
 		return nil, err
 	}
@@ -788,7 +787,7 @@ func (n *drawNode) execute() (interface{}, error) {
 	if err != nil {
 		return nil, err
 	}
-	paths, err := c.UnfoldPath(path)
+	paths, err := cmd.UnfoldPath(path)
 	if err != nil {
 		return nil, err
 	}
@@ -813,7 +812,7 @@ func (n *undrawNode) execute() (interface{}, error) {
 	if err != nil {
 		return nil, err
 	}
-	paths, err := c.UnfoldPath(path)
+	paths, err := cmd.UnfoldPath(path)
 	if err != nil {
 		return nil, err
 	}
@@ -855,7 +854,7 @@ func (n *clrNode) execute() (interface{}, error) {
 type envNode struct{}
 
 func (n *envNode) execute() (interface{}, error) {
-	cmd.Env(c.State.DynamicSymbolTable, c.State.FuncTable)
+	cmd.Env(cmd.State.DynamicSymbolTable, cmd.State.FuncTable)
 	return nil, nil
 }
 
@@ -904,7 +903,7 @@ type unsetFuncNode struct {
 }
 
 func (n *unsetFuncNode) execute() (interface{}, error) {
-	delete(c.State.FuncTable, n.funcName)
+	delete(cmd.State.FuncTable, n.funcName)
 	return nil, nil
 }
 
@@ -913,7 +912,7 @@ type unsetVarNode struct {
 }
 
 func (n *unsetVarNode) execute() (interface{}, error) {
-	delete(c.State.DynamicSymbolTable, n.varName)
+	delete(cmd.State.DynamicSymbolTable, n.varName)
 	return nil, nil
 }
 
@@ -1489,7 +1488,7 @@ type symbolReferenceNode struct {
 }
 
 func (s *symbolReferenceNode) execute() (interface{}, error) {
-	val, ok := c.State.DynamicSymbolTable[s.va]
+	val, ok := cmd.State.DynamicSymbolTable[s.va]
 	if !ok {
 		return nil, fmt.Errorf("undefined variable %s", s.va)
 	}
@@ -1502,7 +1501,7 @@ type arrayReferenceNode struct {
 }
 
 func (n *arrayReferenceNode) execute() (interface{}, error) {
-	v, ok := c.State.DynamicSymbolTable[n.variable]
+	v, ok := cmd.State.DynamicSymbolTable[n.variable]
 	if !ok {
 		return nil, fmt.Errorf("Undefined variable %s", n.variable)
 	}
@@ -1537,7 +1536,7 @@ func (a *assignNode) execute() (interface{}, error) {
 	}
 	switch v := val.(type) {
 	case bool, int, float64, string, []float64, map[string]interface{}:
-		c.State.DynamicSymbolTable[a.variable] = v
+		cmd.State.DynamicSymbolTable[a.variable] = v
 		if cmd.State.DebugLvl >= 3 {
 			println("You want to assign", a.variable, "with value of", v)
 		}
