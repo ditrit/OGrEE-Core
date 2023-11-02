@@ -4,7 +4,10 @@ import (
 	"strings"
 
 	"github.com/elliotchance/pie/v2"
+	"github.com/gertd/go-pluralize"
 )
+
+var pluralizeClient = pluralize.NewClient()
 
 type Layer struct {
 	Name       string
@@ -48,6 +51,45 @@ func (factory LayerByCategory) FromObjects(objects []any) []Layer {
 	return []Layer{}
 }
 
+type LayerByAttribute struct {
+	category  string // category to which the objects belong
+	attribute string // attribute on which to create layers
+}
+
+// FromObjects returns one layer for each distinct layer.attribute value found in the list of objects.
+func (factory LayerByAttribute) FromObjects(objects []any) []Layer {
+	attributes := []string{}
+
+	for _, object := range objects {
+		objectMap, isMap := object.(map[string]any)
+		if isMap {
+			objectAttributes, hasAttributes := objectMap["attributes"].(map[string]any)
+			if hasAttributes {
+				objectAttribute, hasAttribute := objectAttributes[factory.attribute].(string)
+				if hasAttribute {
+					attributes = append(attributes, objectAttribute)
+				}
+			}
+		}
+	}
+
+	attributes = pie.Unique(attributes)
+	layers := []Layer{}
+
+	for _, attribute := range attributes {
+		layerName := "#" + pluralizeClient.Plural(attribute)
+		layers = append(layers, Layer{
+			Name: layerName,
+			apiFilters: map[string]string{
+				"category":        factory.category,
+				factory.attribute: attribute,
+			},
+		})
+	}
+
+	return layers
+}
+
 var (
 	RacksLayer = Layer{
 		Name:       "#racks",
@@ -68,6 +110,10 @@ var (
 		layer:    GroupsLayer,
 		category: "group",
 	}
+	DeviceTypeLayers = LayerByAttribute{
+		category:  "device",
+		attribute: "type",
+	}
 )
 
 // LayerFactory to be executed for each entity
@@ -85,6 +131,10 @@ var LayersByEntity = map[int][]LayersFactory{
 	},
 	RACK: {
 		GroupsLayerFactory,
+		DeviceTypeLayers,
+	},
+	DEVICE: {
+		DeviceTypeLayers,
 	},
 }
 

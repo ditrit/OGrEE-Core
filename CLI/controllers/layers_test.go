@@ -184,6 +184,22 @@ func TestLsOnARackShowsGroupsIfAnyObjectIsGroup(t *testing.T) {
 	assert.Equal(t, models.GroupsLayer.Name, objects[1]["name"])
 }
 
+func TestLsOnARackShowsOneLayerForEachTypeOfDevice(t *testing.T) {
+	controller, mockAPI, _ := layersSetup(t)
+
+	mockGetObjectHierarchy(mockAPI, rack1)
+
+	objects, err := controller.Ls("/Physical/BASIC/A/R1/A01", nil, "")
+	assert.Nil(t, err)
+	assert.Len(t, objects, 6)
+	assert.Equal(t, "GRrack", objects[0]["name"])
+	assert.Equal(t, "chT", objects[1]["name"])
+	assert.Equal(t, "pdu", objects[2]["name"])
+	assert.Equal(t, "#chassis", objects[3]["name"])
+	assert.Equal(t, models.GroupsLayer.Name, objects[4]["name"])
+	assert.Equal(t, "#pdus", objects[5]["name"])
+}
+
 func TestLsOnRacksLayerShowsRacks(t *testing.T) {
 	controller, mockAPI, _ := layersSetup(t)
 
@@ -221,6 +237,18 @@ func TestLsOnCorridorsLayerShowsCorridors(t *testing.T) {
 	assert.Equal(t, "CO1", objects[0]["name"])
 }
 
+func TestLsOnTypeLayerShowsDevicesOfThatType(t *testing.T) {
+	controller, mockAPI, _ := layersSetup(t)
+
+	mockGetObjectHierarchy(mockAPI, rack1)
+	mockGetObjects(mockAPI, "category=device&id=BASIC.A.R1.A01.*&namespace=physical.hierarchy&type=chassis", []any{chassis})
+
+	objects, err := controller.Ls("/Physical/BASIC/A/R1/A01/#chassis", nil, "")
+	assert.Nil(t, err)
+	assert.Len(t, objects, 1)
+	assert.Equal(t, "chT", objects[0]["name"])
+}
+
 func TestLsOnLayerChildWorks(t *testing.T) {
 	controller, mockAPI, _ := layersSetup(t)
 
@@ -229,11 +257,13 @@ func TestLsOnLayerChildWorks(t *testing.T) {
 
 	objects, err := controller.Ls("/Physical/BASIC/A/R1/#racks/A01", nil, "")
 	assert.Nil(t, err)
-	assert.Len(t, objects, 4)
+	assert.Len(t, objects, 6)
 	assert.Equal(t, "GRrack", objects[0]["name"])
 	assert.Equal(t, "chT", objects[1]["name"])
 	assert.Equal(t, "pdu", objects[2]["name"])
-	assert.Equal(t, models.GroupsLayer.Name, objects[3]["name"])
+	assert.Equal(t, "#chassis", objects[3]["name"])
+	assert.Equal(t, models.GroupsLayer.Name, objects[4]["name"])
+	assert.Equal(t, "#pdus", objects[5]["name"])
 }
 
 func TestLsOnNestedLayerWorks(t *testing.T) {
