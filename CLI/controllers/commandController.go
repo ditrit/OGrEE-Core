@@ -1498,18 +1498,11 @@ func LoadTemplate(data map[string]interface{}, filePath string) error {
 }
 
 func CreateTag(slug, color string) error {
-	jsonData := map[string]any{
+	return PostObj(TAG, EntityToString(TAG), map[string]any{
 		"slug":        slug,
 		"description": slug, // the description is initially set with the value of the slug
 		"color":       color,
-	}
-
-	_, err := API.Request("POST", "/api/tags", jsonData, http.StatusCreated)
-	if err != nil {
-		return err
-	}
-
-	return nil
+	})
 }
 
 func SetClipBoard(x []string) ([]string, error) {
