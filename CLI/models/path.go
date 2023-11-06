@@ -33,7 +33,7 @@ var PathPrefixes = []string{
 type Path struct {
 	Prefix   string // The prefix indicating to which entity class it belongs (physical, template, group, etc.)
 	ObjectID string
-	Layer    *Layer // If the path is inside a layer
+	Layer    Layer // If the path is inside a layer
 }
 
 func IsPhysical(path string) bool {

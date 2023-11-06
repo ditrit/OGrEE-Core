@@ -10,13 +10,15 @@ import (
 	"github.com/stretchr/testify/mock"
 )
 
-func newControllerWithMocks(t *testing.T) (controllers.Controller, *mocks.APIPort, *mocks.Ogree3DPort) {
+func newControllerWithMocks(t *testing.T) (controllers.Controller, *mocks.APIPort, *mocks.Ogree3DPort, *mocks.ClockPort) {
 	mockAPI := mocks.NewAPIPort(t)
 	mockOgree3D := mocks.NewOgree3DPort(t)
+	mockClock := mocks.NewClockPort(t)
 	return controllers.Controller{
 		API:     mockAPI,
 		Ogree3D: mockOgree3D,
-	}, mockAPI, mockOgree3D
+		Clock:   mockClock,
+	}, mockAPI, mockOgree3D, mockClock
 }
 
 func mockGetObjectHierarchy(mockAPI *mocks.APIPort, object map[string]any) {
@@ -55,6 +57,13 @@ func mockGetObject(mockAPI *mocks.APIPort, object map[string]any) {
 			},
 		}, nil,
 	).Once()
+}
+
+func emptyChildren(object map[string]any) map[string]any {
+	objectCopy := copyMap(object)
+	objectCopy["children"] = []any{}
+
+	return objectCopy
 }
 
 func removeChildren(object map[string]any) map[string]any {
@@ -128,4 +137,44 @@ func mockDeleteObjects(mockAPI *mocks.APIPort, queryParams string, result []any)
 			},
 		}, nil,
 	).Once()
+}
+
+func mockGetObjectsByEntity(mockAPI *mocks.APIPort, entity string, objects []any) {
+	mockAPI.On(
+		"Request", http.MethodGet,
+		"/api/"+entity,
+		mock.Anything, http.StatusOK,
+	).Return(
+		&controllers.Response{
+			Body: map[string]any{
+				"data": map[string]any{
+					"objects": removeChildrenFromList(objects),
+				},
+			},
+		}, nil,
+	).Once()
+}
+
+func mockCreateObject(mockAPI *mocks.APIPort, entity string, data map[string]any) {
+	mockAPI.On(
+		"Request", http.MethodPost,
+		"/api/"+entity+"s",
+		data, http.StatusCreated,
+	).Return(
+		&controllers.Response{
+			Body: map[string]any{
+				"data": data,
+			},
+		}, nil,
+	).Once()
+}
+
+func mockUpdateObject(mockAPI *mocks.APIPort, dataUpdate map[string]any, dataUpdated map[string]any) {
+	mockAPI.On("Request", http.MethodPatch, mock.Anything, dataUpdate, http.StatusOK).Return(
+		&controllers.Response{
+			Body: map[string]any{
+				"data": dataUpdated,
+			},
+		}, nil,
+	)
 }

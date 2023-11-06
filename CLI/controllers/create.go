@@ -21,6 +21,14 @@ func (controller Controller) PostObj(ent int, entity string, data map[string]any
 		Ogree3D.InformOptional("PostObj", entInt, map[string]any{"type": "create", "data": resp.Body["data"]})
 	}
 
+	if models.IsLayer(path) {
+		// For layers, add the object to the hierarchy in order to be cached
+		_, err = State.Hierarchy.AddObjectInPath(data, path)
+		if err != nil {
+			return err
+		}
+	}
+
 	return nil
 }
 

@@ -48,7 +48,7 @@ func PingAPI() bool {
 
 // Intialise the ShellState
 func InitState(conf *config.Config) error {
-	State.Hierarchy = BuildBaseTree()
+	State.Hierarchy = BuildBaseTree(C)
 	State.CurrPath = "/Physical"
 	State.PrevPath = "/Physical"
 

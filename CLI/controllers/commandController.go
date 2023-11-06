@@ -1258,7 +1258,7 @@ func (controller Controller) SplitPath(pathStr string) (models.Path, error) {
 			id := pathStr[len(prefix):]
 			id = strings.ReplaceAll(id, "/", ".")
 
-			var layer *models.Layer
+			var layer models.Layer
 			var err error
 
 			id, layer, err = controller.GetLayer(id)

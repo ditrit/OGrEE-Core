@@ -14,7 +14,7 @@ import (
 //  3. errLayerNotFound, in case a found layer does not exist
 //
 // If the path or id has more than one layer, all are remove but only the name of the last one is returned
-func (controller Controller) splitLayer(pathOrID, separator string) (string, *models.Layer, error) {
+func (controller Controller) splitLayer(pathOrID, separator string) (string, models.Layer, error) {
 	idSplit := strings.Split(pathOrID, separator)
 
 	return controller.splitLayerRecursive("", idSplit, separator)
@@ -23,13 +23,13 @@ func (controller Controller) splitLayer(pathOrID, separator string) (string, *mo
 // Recursive function to make splitLayer able to support nested layers.
 // previousRealID is the real id obtained until this function is called.
 // idSplit is the list of id elements that remain to be determined if they are a layer.
-func (controller Controller) splitLayerRecursive(previousRealID string, idSplit []string, separator string) (string, *models.Layer, error) {
+func (controller Controller) splitLayerRecursive(previousRealID string, idSplit []string, separator string) (string, models.Layer, error) {
 	layerIndex := pie.FindFirstUsing(idSplit, func(idElement string) bool {
 		return models.IsIDElementLayer(idElement)
 	})
 
 	var realID string
-	var layer *models.Layer
+	var layer models.Layer
 
 	if layerIndex == -1 {
 		realID = strings.Join(idSplit, separator)
@@ -52,7 +52,7 @@ func (controller Controller) splitLayerRecursive(previousRealID string, idSplit 
 		}
 
 		if layerIndex != len(idSplit)-1 {
-			var newLayer *models.Layer
+			var newLayer models.Layer
 
 			realID, newLayer, err = controller.splitLayerRecursive(realID, idSplit[layerIndex+1:], separator)
 			if err != nil {
@@ -74,7 +74,7 @@ func (controller Controller) splitLayerRecursive(previousRealID string, idSplit 
 // If the layer is not present, Tree is executed on the parent to try to find the layer in its children.
 //
 // If the layer is not present, errLayerNotFound is returned.
-func (controller Controller) getLayerFromHierarchy(parent, layerName, separator string) (*models.Layer, error) {
+func (controller Controller) getLayerFromHierarchy(parent, layerName, separator string) (models.Layer, error) {
 	if separator != "/" {
 		parent = models.PhysicalIDToPath(parent)
 	}
@@ -94,9 +94,12 @@ func (controller Controller) getLayerFromHierarchy(parent, layerName, separator 
 		}
 	}
 
-	layer := layerNode.Obj.(models.Layer)
+	layerPointer, isPointer := layerNode.Obj.(*any)
+	if isPointer {
+		return (*layerPointer).(models.Layer), nil
+	}
 
-	return &layer, nil
+	return layerNode.Obj.(models.Layer), nil
 }
 
 // Obtains the layer from an object ID to obtain:
@@ -107,7 +110,7 @@ func (controller Controller) getLayerFromHierarchy(parent, layerName, separator 
 //  1. The real object ID, without the layer (room1.rack1 for room1.#racks.rack1).
 //  2. If the object is a layer (e.g. room1.#racks, room1.#racks.*), the layer object.
 //  3. errLayerNotFound, in case a found layer does not exist
-func (controller Controller) GetLayer(id string) (string, *models.Layer, error) {
+func (controller Controller) GetLayer(id string) (string, models.Layer, error) {
 	realID, layer, err := controller.splitLayer(id, ".")
 	if err != nil {
 		return "", nil, err
@@ -119,7 +122,7 @@ func (controller Controller) GetLayer(id string) (string, *models.Layer, error) 
 
 	idSplit := strings.Split(id, ".")
 	layerIndex := pie.FindFirstUsing(idSplit, func(idElement string) bool {
-		return idElement == layer.Name
+		return idElement == layer.Name()
 	})
 
 	// only in case the layer is the second to last or laster position of the id the filter is applied (e.g. get room1/#racks, get room1/#racks/*)
