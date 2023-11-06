@@ -7,6 +7,12 @@ import (
 	"github.com/gertd/go-pluralize"
 )
 
+const (
+	LayerApplicability = "applicability"
+	LayerFilters       = "filters"
+	LayerFiltersRemove = LayerFilters + "-"
+)
+
 var pluralizeClient = pluralize.NewClient()
 
 type Layer struct {

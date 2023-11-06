@@ -13,6 +13,7 @@ const (
 	BuildingTemplatesPath = LogicalPath + "BldgTemplates/"
 	GroupsPath            = LogicalPath + "Groups/"
 	TagsPath              = LogicalPath + "Tags/"
+	LayersPath            = LogicalPath + "Layers/"
 	OrganisationPath      = "/Organisation/"
 	DomainsPath           = OrganisationPath + "Domain/"
 )
@@ -25,6 +26,7 @@ var PathPrefixes = []string{
 	BuildingTemplatesPath,
 	GroupsPath,
 	TagsPath,
+	LayersPath,
 	DomainsPath,
 }
 
@@ -34,13 +36,12 @@ type Path struct {
 	Layer    *Layer // If the path is inside a layer
 }
 
-func IsHierarchical(path string) bool {
-	return !IsNonHierarchical(path)
+func IsPhysical(path string) bool {
+	return pathIs(path, PhysicalPath)
 }
 
-func IsNonHierarchical(path string) bool {
-	return IsObjectTemplate(path) || IsRoomTemplate(path) ||
-		IsBuildingTemplate(path) || IsTag(path)
+func IsStray(path string) bool {
+	return pathIs(path, StayPath)
 }
 
 func IsObjectTemplate(path string) bool {
@@ -57,6 +58,10 @@ func IsBuildingTemplate(path string) bool {
 
 func IsTag(path string) bool {
 	return pathIs(path, TagsPath)
+}
+
+func IsLayer(path string) bool {
+	return pathIs(path, LayersPath)
 }
 
 func IsGroup(path string) bool {

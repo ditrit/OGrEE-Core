@@ -593,3 +593,161 @@ func TestRemoveLayerRemovesAllObjectsOfTheLayer(t *testing.T) {
 	_, err := controller.DeleteObj("/Physical/BASIC/A/R1/#racks")
 	assert.Nil(t, err)
 }
+
+func TestTranslateApplicabilityReturnsErrorIfPathIsNotHierarchical(t *testing.T) {
+	_, err := controllers.TranslateApplicability("/")
+	assert.ErrorContains(t, err, "applicability must be an hierarchical path, found: /")
+}
+
+func TestTranslateApplicabilityReturnsSamePathIfItIsHierarchical(t *testing.T) {
+	applicability, err := controllers.TranslateApplicability("/Physical")
+	assert.Nil(t, err)
+	assert.Equal(t, "/Physical", applicability)
+}
+
+func TestTranslateApplicabilityCleansPathOfLastSlash(t *testing.T) {
+	applicability, err := controllers.TranslateApplicability("/Physical/")
+	assert.Nil(t, err)
+	assert.Equal(t, "/Physical", applicability)
+}
+
+func TestTranslateApplicabilityCleansPathOfSlashPointAtEnd(t *testing.T) {
+	applicability, err := controllers.TranslateApplicability("/Physical/.")
+	assert.Nil(t, err)
+	assert.Equal(t, "/Physical", applicability)
+}
+
+func TestTranslateApplicabilityCleansPathOfSlashPoint(t *testing.T) {
+	applicability, err := controllers.TranslateApplicability("/Physical/./BASIC")
+	assert.Nil(t, err)
+	assert.Equal(t, "/Physical/BASIC", applicability)
+}
+
+func TestTranslateApplicabilitySupportsPointPointAtTheEnd(t *testing.T) {
+	applicability, err := controllers.TranslateApplicability("/Physical/BASIC/..")
+	assert.Nil(t, err)
+	assert.Equal(t, "/Physical", applicability)
+}
+
+func TestTranslateApplicabilitySupportsPointPoint(t *testing.T) {
+	applicability, err := controllers.TranslateApplicability("/Physical/BASIC/../COMPLEX/R1")
+	assert.Nil(t, err)
+	assert.Equal(t, "/Physical/COMPLEX/R1", applicability)
+}
+
+func TestTranslateApplicabilitySupportsStarAtTheEnd(t *testing.T) {
+	applicability, err := controllers.TranslateApplicability("/Physical/*")
+	assert.Nil(t, err)
+	assert.Equal(t, "/Physical/*", applicability)
+}
+
+func TestTranslateApplicabilitySupportsStarStarAtTheEnd(t *testing.T) {
+	applicability, err := controllers.TranslateApplicability("/Physical/**")
+	assert.Nil(t, err)
+	assert.Equal(t, "/Physical/**", applicability)
+}
+
+func TestTranslateApplicabilitySupportsStar(t *testing.T) {
+	applicability, err := controllers.TranslateApplicability("/Physical/*/chT")
+	assert.Nil(t, err)
+	assert.Equal(t, "/Physical/*/chT", applicability)
+}
+
+func TestTranslateApplicabilitySupportsStarStar(t *testing.T) {
+	applicability, err := controllers.TranslateApplicability("/Physical/**/chT")
+	assert.Nil(t, err)
+	assert.Equal(t, "/Physical/**/chT", applicability)
+}
+
+func TestTranslateApplicabilityEmptyReturnsCurrPath(t *testing.T) {
+	controllers.State.CurrPath = "/Physical"
+	applicability, err := controllers.TranslateApplicability("")
+	assert.Nil(t, err)
+	assert.Equal(t, "/Physical", applicability)
+}
+
+func TestTranslateApplicabilityPointReturnsCurrPath(t *testing.T) {
+	controllers.State.CurrPath = "/Physical"
+	applicability, err := controllers.TranslateApplicability(".")
+	assert.Nil(t, err)
+	assert.Equal(t, "/Physical", applicability)
+}
+
+func TestTranslateApplicabilityPointReturnsErrorIfCurrPathIsNotHierarchical(t *testing.T) {
+	controllers.State.CurrPath = "/"
+	_, err := controllers.TranslateApplicability(".")
+	assert.ErrorContains(t, err, "applicability must be an hierarchical path, found: /")
+}
+
+func TestTranslateApplicabilityPointPointReturnsBeforeCurrPath(t *testing.T) {
+	controllers.State.CurrPath = "/Physical/BASIC"
+	applicability, err := controllers.TranslateApplicability("..")
+	assert.Nil(t, err)
+	assert.Equal(t, "/Physical", applicability)
+}
+
+func TestTranslateApplicabilityPointPointReturnsErrorIfBeforeCurrPathIsNotHierarchical(t *testing.T) {
+	controllers.State.CurrPath = "/Physical"
+	_, err := controllers.TranslateApplicability("..")
+	assert.ErrorContains(t, err, "applicability must be an hierarchical path, found: /")
+}
+
+func TestTranslateApplicabilityPointPointReturnsErrorIfCurrPathIsRoot(t *testing.T) {
+	controllers.State.CurrPath = "/"
+	_, err := controllers.TranslateApplicability("..")
+	assert.ErrorContains(t, err, "applicability must be an hierarchical path, found: /")
+}
+
+func TestTranslateApplicabilityPointPathReturnsCurrPathPlusPath(t *testing.T) {
+	controllers.State.CurrPath = "/Physical"
+	applicability, err := controllers.TranslateApplicability("./BASIC")
+	assert.Nil(t, err)
+	assert.Equal(t, "/Physical/BASIC", applicability)
+}
+
+func TestTranslateApplicabilityRelativePathReturnsCurrPathPlusPath(t *testing.T) {
+	controllers.State.CurrPath = "/Physical"
+	applicability, err := controllers.TranslateApplicability("BASIC")
+	assert.Nil(t, err)
+	assert.Equal(t, "/Physical/BASIC", applicability)
+}
+
+func TestTranslateApplicabilityPointPointPathReturnsCurrPathPlusPath(t *testing.T) {
+	controllers.State.CurrPath = "/Physical/BASIC"
+	applicability, err := controllers.TranslateApplicability("../COMPLEX")
+	assert.Nil(t, err)
+	assert.Equal(t, "/Physical/COMPLEX", applicability)
+}
+
+func TestTranslateApplicabilityPointPointTwoTimes(t *testing.T) {
+	controllers.State.CurrPath = "/Physical/BASIC/R1"
+	applicability, err := controllers.TranslateApplicability("../../COMPLEX")
+	assert.Nil(t, err)
+	assert.Equal(t, "/Physical/COMPLEX", applicability)
+}
+
+func TestTranslateApplicabilityMinusReturnsPrevPath(t *testing.T) {
+	controllers.State.PrevPath = "/Physical"
+	applicability, err := controllers.TranslateApplicability("-")
+	assert.Nil(t, err)
+	assert.Equal(t, "/Physical", applicability)
+}
+
+func TestTranslateApplicabilityMinusPathReturnsPrevPathPlusPath(t *testing.T) {
+	controllers.State.PrevPath = "/Physical"
+	applicability, err := controllers.TranslateApplicability("-/BASIC")
+	assert.Nil(t, err)
+	assert.Equal(t, "/Physical/BASIC", applicability)
+}
+
+func TestTranslateApplicabilityCanStartWithStar(t *testing.T) {
+	applicability, err := controllers.TranslateApplicability("/*/BASIC")
+	assert.Nil(t, err)
+	assert.Equal(t, "/*/BASIC", applicability)
+}
+
+func TestTranslateApplicabilityCanStartWithDoubleStar(t *testing.T) {
+	applicability, err := controllers.TranslateApplicability("/**/BASIC")
+	assert.Nil(t, err)
+	assert.Equal(t, "/**/BASIC", applicability)
+}

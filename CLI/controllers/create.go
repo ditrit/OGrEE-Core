@@ -10,13 +10,13 @@ import (
 	"strings"
 )
 
-func PostObj(ent int, entity string, data map[string]any) error {
-	resp, err := API.Request("POST", "/api/"+entity+"s", data, http.StatusCreated)
+func (controller Controller) PostObj(ent int, entity string, data map[string]any, path string) error {
+	resp, err := controller.API.Request(http.MethodPost, "/api/"+entity+"s", data, http.StatusCreated)
 	if err != nil {
 		return err
 	}
 
-	if ent != models.TAG && IsInObjForUnity(entity) {
+	if models.EntityCreationMustBeInformed(ent) && IsInObjForUnity(entity) {
 		entInt := models.EntityStrToInt(entity)
 		Ogree3D.InformOptional("PostObj", entInt, map[string]any{"type": "create", "data": resp.Body["data"]})
 	}
@@ -403,7 +403,7 @@ func CreateObject(path string, ent int, data map[string]interface{}) error {
 	//we can do the conversion for templates here
 	data["category"] = strings.Replace(data["category"].(string), "_", "-", 1)
 
-	err = PostObj(ent, data["category"].(string), data)
+	err = C.PostObj(ent, data["category"].(string), data, path)
 	if err != nil {
 		return err
 	}
@@ -411,9 +411,9 @@ func CreateObject(path string, ent int, data map[string]interface{}) error {
 }
 
 func CreateTag(slug, color string) error {
-	return PostObj(models.TAG, models.EntityToString(models.TAG), map[string]any{
+	return C.PostObj(models.TAG, models.EntityToString(models.TAG), map[string]any{
 		"slug":        slug,
 		"description": slug, // the description is initially set with the value of the slug
 		"color":       color,
-	})
+	}, models.TagsPath+slug)
 }

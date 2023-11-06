@@ -3,6 +3,7 @@ package main
 import (
 	"cli/commands"
 	c "cli/controllers"
+	"cli/models"
 	"fmt"
 	"strings"
 )
@@ -1061,6 +1062,15 @@ func (p *parser) parseCreateTag() node {
 	return &createTagNode{slug, color}
 }
 
+func (p *parser) parseCreateLayer() node {
+	defer un(trace(p, "create layer"))
+	slug := p.parseString("slug")
+	p.expect("@")
+	applicability := p.parsePath(models.LayerApplicability)
+
+	return &createLayerNode{slug, applicability}
+}
+
 func (p *parser) parseCreateCorridor() node {
 	defer un(trace(p, "create corridor"))
 	path := p.parsePath("")
@@ -1254,6 +1264,7 @@ func newParser(buffer string) *parser {
 		"group":    p.parseCreateGroup,
 		"gr":       p.parseCreateGroup,
 		"tag":      p.parseCreateTag,
+		"layer":    p.parseCreateLayer,
 		"orphan":   p.parseCreateOrphan,
 		"user":     p.parseCreateUser,
 		"role":     p.parseAddRole,

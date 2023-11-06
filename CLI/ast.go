@@ -694,6 +694,8 @@ func (n *updateObjNode) execute() (interface{}, error) {
 			if n.attr == "slug" || n.attr == "color" || n.attr == "description" {
 				_, err = cmd.C.UpdateObj(path, map[string]any{n.attr: values[0]})
 			}
+		} else if models.IsLayer(path) {
+			err = cmd.C.UpdateLayer(path, n.attr, values[0])
 		} else {
 			switch n.attr {
 			case "content", "alpha", "tilesName", "tilesColor", "U", "slots", "localCS":
@@ -1232,6 +1234,25 @@ func (n *createTagNode) execute() (interface{}, error) {
 	}
 
 	return nil, cmd.CreateTag(slug, color)
+}
+
+type createLayerNode struct {
+	slug          node
+	applicability node
+}
+
+func (n *createLayerNode) execute() (interface{}, error) {
+	slug, err := nodeToString(n.slug, "slug")
+	if err != nil {
+		return nil, err
+	}
+
+	applicability, err := nodeToString(n.applicability, models.LayerApplicability)
+	if err != nil {
+		return nil, err
+	}
+
+	return nil, cmd.C.CreateLayer(slug, applicability)
 }
 
 type createCorridorNode struct {

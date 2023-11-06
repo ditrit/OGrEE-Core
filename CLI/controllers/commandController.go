@@ -59,6 +59,8 @@ func (controller Controller) ObjectUrl(pathStr string, depth int) (string, error
 		baseUrl = "/api/groups"
 	case models.TagsPath:
 		baseUrl = "/api/tags"
+	case models.LayersPath:
+		baseUrl = LayersURL
 	case models.DomainsPath:
 		baseUrl = "/api/domains"
 	default:
@@ -108,6 +110,9 @@ func (controller Controller) ObjectUrlGeneric(pathStr string, depth int, filters
 		params.Add("slug", path.ObjectID)
 	case models.TagsPath:
 		params.Add("namespace", "logical.tag")
+		params.Add("slug", path.ObjectID)
+	case models.LayersPath:
+		params.Add("namespace", "logical.layer")
 		params.Add("slug", path.ObjectID)
 	case models.GroupsPath:
 		params.Add("namespace", "logical")
@@ -266,7 +271,7 @@ func UnsetInObj(Path, attr string, idx int) (map[string]interface{}, error) {
 		"type": "modify", "data": resp.Body["data"]}
 
 	//Update and inform unity
-	if models.IsHierarchical(Path) && IsInObjForUnity(entity) {
+	if models.IsPhysical(Path) && IsInObjForUnity(entity) {
 		entInt := models.EntityStrToInt(entity)
 		Ogree3D.InformOptional("UpdateObj", entInt, message)
 	}
@@ -787,7 +792,7 @@ func FocusUI(path string) error {
 			return err
 		}
 		category := models.EntityStrToInt(obj["category"].(string))
-		if models.IsNonHierarchical(path) || category == models.SITE || category == models.BLDG || category == models.ROOM {
+		if !models.IsPhysical(path) || category == models.SITE || category == models.BLDG || category == models.ROOM {
 			msg := "You cannot focus on this object. Note you cannot" +
 				" focus on Sites, Buildings and Rooms. " +
 				"For more information please refer to the help doc  (man >)"

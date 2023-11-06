@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"cli/models"
+	"fmt"
 	"strings"
 
 	"github.com/elliotchance/pie/v2"
@@ -133,4 +134,49 @@ func (controller Controller) GetLayer(id string) (string, *models.Layer, error) 
 	}
 
 	return realID, layer, nil
+}
+
+func (controller Controller) CreateLayer(slug, applicability string) error {
+	applicability, err := TranslateApplicability(applicability)
+	if err != nil {
+		return err
+	}
+
+	return controller.PostObj(models.LAYER, models.EntityToString(models.LAYER), map[string]any{
+		"slug":                    slug,
+		models.LayerFilters:       map[string]any{},
+		models.LayerApplicability: applicability,
+	}, models.LayersPath+slug)
+}
+
+func (controller Controller) UpdateLayer(path string, attributeName string, value any) error {
+	var err error
+	switch attributeName {
+	case models.LayerApplicability:
+		var applicability string
+		applicability, err = TranslateApplicability(value.(string))
+		if err != nil {
+			return err
+		}
+
+		_, err = controller.UpdateObj(path, map[string]any{attributeName: applicability})
+	case models.LayerFiltersRemove:
+		_, err = controller.UpdateObj(path, map[string]any{attributeName: value})
+	default:
+		filters := map[string]any{attributeName: value}
+
+		_, err = controller.UpdateObj(path, map[string]any{models.LayerFilters: filters})
+	}
+
+	return err
+}
+
+func TranslateApplicability(applicability string) (string, error) {
+	applicability = TranslatePath(applicability)
+
+	if !models.IsPhysical(applicability) && !strings.HasPrefix(applicability, "/*") && !strings.HasPrefix(applicability, "/**") {
+		return "", fmt.Errorf("applicability must be an hierarchical path, found: %s", applicability)
+	}
+
+	return applicability, nil
 }
