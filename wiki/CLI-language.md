@@ -42,6 +42,7 @@
   - [Create a Group](#create-a-group)
   - [Create a Corridor](#create-a-corridor)
   - [Create a Tag](#create-a-tag)
+  - [Create a Layer](#create-a-layer)
 - [Set commands](#set-commands)
   - [Set colors for zones of all rooms in a datacenter](#set-colors-for-zones-of-all-rooms-in-a-datacenter)
   - [Set reserved and technical zones of a room](#set-reserved-and-technical-zones-of-a-room)
@@ -221,6 +222,8 @@ ls can also be used without [path] to do ls on the current path.
 When ls is performed on an object, the corresponding layers are added. These make navigation easier since they group the children of the object according to their characteristics.
 
 The automatic layers are those that are added automatically depending on the entity of the object on which the ls is performed. They will appear only if at least one of the children of the object meets the conditions of the layer. The list of automatic layers added to each entity is described in the following sections.
+
+In addition, custom layers can be created. For this, see [Create a Layer](#create-a-layer).
 
 #### Room's automatic layers
 
@@ -406,6 +409,36 @@ Tags are identified by a slug. In addition, they have a color, a description and
 The description will initially be defined the same as the slug, but can be modified (see [Modify object's attribute](#modify-objects-attribute)). Image can only be modified from the web version.
 
 After the tag is created, it can be seen in /Logical/Tags. The command `get /Logical/Tags/[slug]` can be used to get the tag information. In doing so, the tag image will be the route in which the image can be obtained via an http request.
+
+## Create a Layer
+
+Layers are identified by a slug. In addition, they have an applicability and the filters they apply. To create a layer, use:
+
+```
++layer:[slug]@[applicability]
+```
+
+The applicability is the path in which the layer should be added when doing ls.
+
+`*` and `**` can be used in the definition of the applicability so that the layer will be added in multiple paths. `*` represents any child, e.g. an applicability of /Physical/BASIC/* implies that the layer will be added to all the children of /Physical/BASIC.  `**` represents any child recursively, e.g. an applicability of /Physical/BASIC/** implies that the layer will be added to all children of /Physical/BASIC, to the children of the children and so on.
+
+Filters are automatically created as empty. To add filters, edit the layer using the object modification syntax (see [Modify object's attribute](#modify-objects-attribute)). Example:
+
+```
+[layer_slug]:category=device
+```
+
+For the layer to filter the children whose category is device. When adding filters on different attributes, all must be fulfilled for a child to be part of the layer.
+
+Layers are not applied until their filters are defined.
+
+A filter can also be removed, using the syntax:
+
+```
+[layer_slug]:filters-=[filter_name]
+```
+
+After the layer is created, it can be seen in /Logical/Layers. The command `get /Logical/Layers/[slug]` can be used to get the layer information.
 
 # Set commands
 ## Set colors for zones of all rooms in a datacenter
