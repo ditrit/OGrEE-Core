@@ -25,5 +25,5 @@ RUN flutter pub get
 RUN flutter build web 
 
 # Runtime image
-FROM nginx:1.21.1-alpine
+FROM nginx:1.24.0-alpine
 COPY --from=build /app/build/web /usr/share/nginx/html

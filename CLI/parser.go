@@ -22,7 +22,7 @@ var manCommands = []string{
 	"lspanel", "lscabinet", "lscorridor", "lssensor", "lsenterprise",
 	"drawable", "draw", "undraw",
 	"tree", "lsog", "env", "cd", "pwd", "clear", "grep", "ls", "exit", "len", "man", "hc",
-	"print", "unset", "selection",
+	"print", "printf", "unset", "selection",
 	"for", "while", "if",
 }
 
@@ -171,7 +171,7 @@ func (p *parser) skipWhiteSpaces() int {
 
 func (p *parser) commandEnd() bool {
 	p.skipWhiteSpaces()
-	return p.cursor == len(p.buf) || strings.Contains(";})", string(p.peek()))
+	return p.cursor == len(p.buf) || strings.Contains(";})]", string(p.peek()))
 }
 
 func (p *parser) parseExact(word string) bool {
@@ -366,34 +366,30 @@ func (p *parser) parsePathGroup() []node {
 	return paths
 }
 
-func (p *parser) parseExprListWithEndToK(endTok tokenType) []node {
+func (p *parser) parseExprList() []node {
 	defer un(trace(p, "expr list"))
 	exprList := []node{}
 	p.parseExprToken()
-	if p.tok.t == endTok {
+	if p.commandEnd() {
 		return exprList
 	}
 	p.unlex()
 	for {
 		expr := p.parseExpr("array element")
 		exprList = append(exprList, expr)
-		p.parseExprToken()
-		if p.tok.t == endTok {
+		if p.commandEnd() {
 			return exprList
 		}
+		p.parseExprToken()
 		if p.tok.t == tokComma {
 			continue
 		}
-		p.error(endTok.String() + " or comma expected")
+		p.error("comma or end of command expected")
 	}
 }
 
 func (p *parser) parseFormatArgs() node {
-	p.parseExprToken()
-	if p.tok.t != tokLeftParen {
-		p.error("'(' expected")
-	}
-	exprList := p.parseExprListWithEndToK(tokRightParen)
+	exprList := p.parseExprList()
 	if len(exprList) < 1 {
 		p.error("format expects at least one argument")
 	}
@@ -435,10 +431,23 @@ func (p *parser) parsePrimaryExpr() node {
 		}
 		return expr
 	case tokLeftBrac:
-		exprList := p.parseExprListWithEndToK(tokRightBrac)
+		exprList := p.parseExprList()
+		p.parseExprToken()
+		if p.tok.t != tokRightBrac {
+			p.error("']' expected")
+		}
 		return &arrNode{exprList}
 	case tokFormat:
-		return p.parseFormatArgs()
+		p.parseExprToken()
+		if p.tok.t != tokLeftParen {
+			p.error("'(' expected")
+		}
+		n := p.parseFormatArgs()
+		p.parseExprToken()
+		if p.tok.t != tokRightParen {
+			p.error("')' expected")
+		}
+		return n
 	}
 	p.error("unexpected token : " + tok.str)
 	return nil

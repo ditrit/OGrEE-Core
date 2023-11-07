@@ -51,6 +51,13 @@ String urlDateAppend(String dateRange) {
   return urlAppend;
 }
 
+String wrapResponseMsg(http.Response response, {String? message}) {
+  if (response.statusCode == 401) {
+    return "Votre session a expiré, veuillez vous reconnecter pour exécuter cette action";
+  }
+  return '${response.statusCode}: ${message ?? response.reasonPhrase}';
+}
+
 // API calls
 Future<Result<List<String>, Exception>> loginAPI(String email, String password,
     {String userUrl = ""}) async {
@@ -155,7 +162,7 @@ Future<Result<void, Exception>> changeUserPassword(
       token = data["token"]!;
       return const Success(null);
     } else {
-      return Failure(Exception("Error: ${data["message"]}"));
+      return Failure(Exception(("Error: ${data["message"]}")));
     }
   } on Exception catch (e) {
     return Failure(e);
@@ -331,8 +338,8 @@ Future<Result<List<Project>, Exception>> fetchProjects(String userEmail,
       }
       return Success(projects);
     } else {
-      return Failure(
-          Exception('${response.statusCode}: Failed to load objects'));
+      return Failure(Exception(
+          wrapResponseMsg(response, message: 'Failed to load objects')));
     }
   } on Exception catch (e) {
     return Failure(e);
@@ -417,8 +424,8 @@ Future<Result<(List<Tenant>, List<DockerContainer>), Exception>>
       }
       return Success((tenants, containers));
     } else {
-      return Failure(
-          Exception('${response.statusCode}: Failed to load objects'));
+      return Failure(Exception(
+          wrapResponseMsg(response, message: 'Failed to load objects')));
     }
   } on Exception catch (e) {
     return Failure(e);
@@ -481,8 +488,9 @@ Future<Result<Stream<String>, Exception>> connectStream(
     if (response.statusCode == 200) {
       return Success(response.stream.toStringStream());
     } else {
-      return Failure(
-          Exception("Error processing tenant ${response.statusCode}"));
+      return Failure(Exception(wrapResponseMsg(
+          http.Response("", response.statusCode),
+          message: 'Error processing tenant')));
     }
   }
 }
@@ -530,7 +538,8 @@ Future<Result<dynamic, Exception>> backupTenantDB(
       }
     } else {
       String data = json.decode(response.body);
-      return Failure(Exception("Error backing up tenant $data"));
+      return Failure(Exception(
+          wrapResponseMsg(response, message: "Error backing up tenant $data")));
     }
   } on Exception catch (e) {
     return Failure(e);
@@ -548,7 +557,8 @@ Future<Result<void, Exception>> createBackendServer(
     if (response.statusCode == 200) {
       return const Success(null);
     } else {
-      return Failure(Exception("Error creating backend: ${response.body}"));
+      return Failure(Exception(wrapResponseMsg(response,
+          message: "Error creating backend: ${response.body}")));
     }
   } on Exception catch (e) {
     return Failure(e);
@@ -566,7 +576,8 @@ Future<Result<void, Exception>> deleteTenant(String objName,
     if (response.statusCode == 200) {
       return const Success(null);
     } else {
-      return Failure(Exception("Error deleting tenant: ${response.body}"));
+      return Failure(Exception(wrapResponseMsg(response,
+          message: "Error deleting tenant: ${response.body}")));
     }
   } on Exception catch (e) {
     return Failure(e);
@@ -591,7 +602,8 @@ Future<Result<List<DockerContainer>, Exception>> fetchTenantDockerInfo(
       return Success(converted);
     } else {
       print('${response.statusCode}: ${response.body}');
-      return Failure(Exception('${response.statusCode}: ${response.body}'));
+      return Failure(Exception(wrapResponseMsg(response,
+          message: "Error backing up tenant ${response.body}")));
     }
   } on Exception catch (e) {
     return Failure(e);
@@ -610,7 +622,8 @@ Future<Result<String, Exception>> fetchContainerLogs(String name,
       Map<String, dynamic> data = json.decode(response.body);
       return Success(data["logs"].toString());
     } else {
-      return Failure(Exception('${response.statusCode}: failed to load logs'));
+      return Failure(
+          Exception(wrapResponseMsg(response, message: "Failed to load logs")));
     }
   } on Exception catch (e) {
     return Failure(e);
@@ -628,7 +641,8 @@ Future<Result<void, Exception>> createNetbox(Netbox netbox) async {
       return const Success(null);
     } else {
       String data = json.decode(response.body);
-      return Failure(Exception("Error creating netbox $data"));
+      return Failure(Exception(
+          wrapResponseMsg(response, message: "Error creating netbox $data")));
     }
   } on Exception catch (e) {
     return Failure(e);
@@ -651,7 +665,8 @@ Future<Result<void, Exception>> createOpenDcim(
       return const Success(null);
     } else {
       String data = json.decode(response.body);
-      return Failure(Exception("Error creating netbox $data"));
+      return Failure(Exception(
+          wrapResponseMsg(response, message: "Error creating netbox $data")));
     }
   } on Exception catch (e) {
     return Failure(e);
@@ -668,7 +683,8 @@ Future<Result<void, Exception>> deleteTool(String tool) async {
       return const Success(null);
     } else {
       String data = json.decode(response.body);
-      return Failure(Exception("Error deleting netbox $data"));
+      return Failure(Exception(wrapResponseMsg(response,
+          message: "Error creating application $data")));
     }
   } on Exception catch (e) {
     return Failure(e);
@@ -689,7 +705,9 @@ Future<Result<void, Exception>> uploadNetboxDump(PlatformFile file) async {
       return const Success(null);
     } else {
       String errorMsg = await response.stream.bytesToString();
-      return Failure(Exception(errorMsg));
+      return Failure(Exception(wrapResponseMsg(
+          http.Response(errorMsg, response.statusCode),
+          message: errorMsg)));
     }
   } on Exception catch (e) {
     return Failure(e);
@@ -706,7 +724,8 @@ Future<Result<void, Exception>> importNetboxDump() async {
       return const Success(null);
     } else {
       String data = json.decode(response.body);
-      return Failure(Exception("Error importing netbox dump: $data"));
+      return Failure(Exception(wrapResponseMsg(response,
+          message: "Error importing netbox dump: $data")));
     }
   } on Exception catch (e) {
     return Failure(e);
