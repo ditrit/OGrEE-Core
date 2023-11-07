@@ -71,6 +71,10 @@ func (n *HierarchyNode) String(depth int) string {
 	return s
 }
 
+func (n *HierarchyNode) CanBeFilled() bool {
+	return n.FillFn != nil
+}
+
 func (n *HierarchyNode) AddChild(child *HierarchyNode) {
 	n.Children[child.Name] = child
 }
@@ -124,11 +128,24 @@ func (n *HierarchyNode) FindNearestNode(path string) (r *HierarchyNode, remainin
 	return r, strings.Join(remainingPathList, "/")
 }
 
+func (n *HierarchyNode) Fill(path string, depth int) error {
+	if depth == 0 {
+		return nil
+	}
+
+	if n.FillFn != nil {
+		return n.FillFn(n, path, depth)
+	}
+
+	return nil
+}
+
 func BuildBaseTree() *HierarchyNode {
 	root := NewNode("")
+	root.FillFn = FillChildren
 
 	physical := NewNode("Physical")
-	physical.FillFn = FillUrlTreeFn("/api/sites", FillObjectTree, false)
+	physical.FillFn = FillUrlTreeFnAndFillChildren("/api/sites", FillObjectTree, false)
 	root.AddChild(physical)
 
 	stray := NewNode("Stray")
@@ -136,6 +153,7 @@ func BuildBaseTree() *HierarchyNode {
 	physical.AddChild(stray)
 
 	logical := NewNode("Logical")
+	logical.FillFn = FillChildren
 	root.AddChild(logical)
 
 	objectTemplates := NewNode("ObjectTemplates")
@@ -159,6 +177,7 @@ func BuildBaseTree() *HierarchyNode {
 	logical.AddChild(groups)
 
 	organisation := NewNode("Organisation")
+	organisation.FillFn = FillChildren
 	root.AddChild(organisation)
 
 	domain := NewNode("Domain")
@@ -205,6 +224,22 @@ func FillMapTree(n *HierarchyNode, obj map[string]any) error {
 	return nil
 }
 
+func FillChildren(n *HierarchyNode, path string, depth int) error {
+	for _, child := range n.Children {
+		newPath := path
+		if path != "/" {
+			newPath += "/"
+		}
+		newPath += child.Name
+		err := child.Fill(newPath, depth-1)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
 func FillObjectTree(n *HierarchyNode, path string, depth int) error {
 	obj, err := C.PollObjectWithChildren(path, depth)
 	if err != nil {
@@ -246,10 +281,11 @@ func FillUrlTree(n *HierarchyNode, path string, depth int, url string, followFil
 			}
 		}
 		subTree := NewNode(objName)
-		subTree.FillFn = followFillFn
-		err = FillTree(subTree, path+"/"+objName, depth-1)
 		delete(obj, "children")
 		subTree.Obj = obj
+		subTree.FillFn = followFillFn
+
+		err = subTree.Fill(path+"/"+objName, depth-1)
 		if err != nil {
 			return err
 		}
@@ -258,34 +294,21 @@ func FillUrlTree(n *HierarchyNode, path string, depth int, url string, followFil
 	return nil
 }
 
+func FillUrlTreeFnAndFillChildren(url string, followFn FillFunc, fullId bool) FillFunc {
+	return func(n *HierarchyNode, path string, depth int) error {
+		err := FillUrlTree(n, path, depth, url, followFn, fullId)
+		if err != nil {
+			return err
+		}
+
+		return FillChildren(n, path, depth)
+	}
+}
+
 func FillUrlTreeFn(url string, followFn FillFunc, fullId bool) FillFunc {
 	return func(n *HierarchyNode, path string, depth int) error {
 		return FillUrlTree(n, path, depth, url, followFn, fullId)
 	}
-}
-
-func FillTree(n *HierarchyNode, path string, depth int) error {
-	if depth == 0 {
-		return nil
-	}
-	if len(n.Children) != 0 {
-		for _, child := range n.Children {
-			newPath := path
-			if path != "/" {
-				newPath += "/"
-			}
-			newPath += child.Name
-			err := FillTree(child, newPath, depth-1)
-			if err != nil {
-				return err
-			}
-		}
-	}
-	if n.FillFn != nil {
-		return n.FillFn(n, path, depth)
-	}
-
-	return nil
 }
 
 func (controller Controller) Tree(path string, depth int) (*HierarchyNode, error) {
@@ -294,8 +317,8 @@ func (controller Controller) Tree(path string, depth int) (*HierarchyNode, error
 	}
 
 	n := State.Hierarchy.FindNode(path)
-	if n != nil {
-		err := FillTree(n, path, depth)
+	if n != nil && n.CanBeFilled() {
+		err := n.Fill(path, depth)
 		if err != nil {
 			return nil, err
 		}
