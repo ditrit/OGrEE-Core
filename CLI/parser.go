@@ -331,7 +331,14 @@ loop:
 	return &formatStringNode{&valueNode{s}, subExpr}
 }
 
-func (p *parser) parsePath(name string) node {
+func (p *parser) parsePathOrSelection(name string) node {
+	pathNode := p.parsePath(name)
+	pathNode.acceptSelection = true
+
+	return pathNode
+}
+
+func (p *parser) parsePath(name string) *pathNode {
 	if name != "" {
 		name = name + " path"
 	} else {
@@ -341,7 +348,7 @@ func (p *parser) parsePath(name string) node {
 	p.skipWhiteSpaces()
 	path := p.parseText(p.parsePathToken, true)
 	p.skipWhiteSpaces()
-	return &pathNode{path}
+	return &pathNode{path: path}
 }
 
 func (p *parser) parsePathGroup() []node {
@@ -814,7 +821,7 @@ func (p *parser) parseMan() node {
 func (p *parser) parseCd() node {
 	defer un(trace(p, "cd"))
 	if p.commandEnd() {
-		return &cdNode{&pathNode{&valueNode{"/"}}}
+		return &cdNode{&pathNode{path: &valueNode{"/"}}}
 	}
 	return &cdNode{p.parsePath("")}
 }
@@ -822,7 +829,7 @@ func (p *parser) parseCd() node {
 func (p *parser) parseTree() node {
 	defer un(trace(p, "tree"))
 	if p.commandEnd() {
-		return &treeNode{&pathNode{&valueNode{"."}}, 1}
+		return &treeNode{&pathNode{path: &valueNode{"."}}, 1}
 	}
 	path := p.parsePath("")
 	if p.commandEnd() {
@@ -1123,7 +1130,7 @@ func (p *parser) parseAddRole() node {
 
 func (p *parser) parseUpdate() node {
 	defer un(trace(p, "update"))
-	path := p.parsePath("")
+	path := p.parsePathOrSelection("")
 	p.skipWhiteSpaces()
 	p.expect(":")
 	p.skipWhiteSpaces()

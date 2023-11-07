@@ -175,7 +175,7 @@ func (controller Controller) UpdateLayer(path string, attributeName string, valu
 }
 
 func TranslateApplicability(applicability string) (string, error) {
-	applicability = TranslatePath(applicability)
+	applicability = TranslatePath(applicability, false)
 
 	if !models.IsPhysical(applicability) && !strings.HasPrefix(applicability, "/*") && !strings.HasPrefix(applicability, "/**") {
 		return "", fmt.Errorf("applicability must be an hierarchical path, found: %s", applicability)

@@ -26,7 +26,7 @@ func (controller Controller) DeleteObj(path string) ([]string, error) {
 		}
 	}
 	if path == State.CurrPath {
-		controller.CD(TranslatePath(".."))
+		controller.CD(TranslatePath("..", false))
 	}
 	return paths, nil
 }

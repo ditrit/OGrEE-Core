@@ -63,8 +63,8 @@ func TestParsePathGroup(t *testing.T) {
 	s := "{ test.plouf.plaf , test.plaf.plouf } a"
 	p := newParser(s)
 	paths := p.parsePathGroup()
-	firstNode := &pathNode{&valueNode{"test.plouf.plaf"}}
-	secondNode := &pathNode{&valueNode{"test.plaf.plouf"}}
+	firstNode := &pathNode{path: &valueNode{"test.plouf.plaf"}}
+	secondNode := &pathNode{path: &valueNode{"test.plaf.plouf"}}
 	if !reflect.DeepEqual(paths, []node{firstNode, secondNode}) {
 		t.Errorf("wrong path group parsed : %s", spew.Sdump(paths))
 	}
@@ -246,7 +246,7 @@ func testCommand(buffer string, expected node, t *testing.T) bool {
 
 func TestParseLs(t *testing.T) {
 	buffer := "lsbuilding -s height - f attr1:attr2 plouf.plaf attr1=a, attr2=b"
-	path := &pathNode{&valueNode{"plouf.plaf"}}
+	path := &pathNode{path: &valueNode{"plouf.plaf"}}
 	sort := "height"
 	attrList := []string{"attr1", "attr2"}
 	filters := map[string]node{
@@ -260,8 +260,9 @@ func TestParseLs(t *testing.T) {
 	testCommand(buffer, expected, t)
 }
 
-var testPath = &pathNode{&formatStringNode{&valueNode{"%v/tata"}, []node{&symbolReferenceNode{"toto"}}}}
-var testPath2 = &pathNode{&valueNode{"/toto/../tata"}}
+var testPath = &pathNode{path: &formatStringNode{&valueNode{"%v/tata"}, []node{&symbolReferenceNode{"toto"}}}}
+var testPathUpdate = &pathNode{path: &formatStringNode{&valueNode{"%v/tata"}, []node{&symbolReferenceNode{"toto"}}}, acceptSelection: true}
+var testPath2 = &pathNode{path: &valueNode{"/toto/../tata"}}
 
 func vec2(x float64, y float64) node {
 	return &arrNode{[]node{&valueNode{x}, &valueNode{y}}}
@@ -280,17 +281,17 @@ var commandsMatching = map[string]node{
 	"man draw":                       &helpNode{"draw"},
 	"man camera":                     &helpNode{"camera"},
 	"man ui":                         &helpNode{"ui"},
-	"ls":                             &lsNode{&pathNode{&valueNode{""}}, map[string]node{}, "", nil},
-	"cd":                             &cdNode{&pathNode{&valueNode{"/"}}},
-	"tree":                           &treeNode{&pathNode{&valueNode{"."}}, 1},
+	"ls":                             &lsNode{&pathNode{path: &valueNode{""}}, map[string]node{}, "", nil},
+	"cd":                             &cdNode{&pathNode{path: &valueNode{"/"}}},
+	"tree":                           &treeNode{&pathNode{path: &valueNode{"."}}, 1},
 	"get ${toto}/tata":               &getObjectNode{testPath},
-	"getu rackA 42":                  &getUNode{&pathNode{&valueNode{"rackA"}}, &valueNode{42}},
+	"getu rackA 42":                  &getUNode{&pathNode{path: &valueNode{"rackA"}}, &valueNode{42}},
 	"undraw":                         &undrawNode{nil},
 	"undraw ${toto}/tata":            &undrawNode{testPath},
-	"draw":                           &drawNode{&pathNode{&valueNode{""}}, 0, false},
+	"draw":                           &drawNode{&pathNode{path: &valueNode{""}}, 0, false},
 	"draw ${toto}/tata":              &drawNode{testPath, 0, false},
 	"draw ${toto}/tata 4":            &drawNode{testPath, 4, false},
-	"draw -f":                        &drawNode{&pathNode{&valueNode{""}}, 0, true},
+	"draw -f":                        &drawNode{&pathNode{path: &valueNode{""}}, 0, true},
 	"draw -f ${toto}/tata":           &drawNode{testPath, 0, true},
 	"draw -f ${toto}/tata 4 ":        &drawNode{testPath, 4, true},
 	".cmds:../toto/tata.ocli":        &loadNode{&valueNode{"../toto/tata.ocli"}},
@@ -298,7 +299,7 @@ var commandsMatching = map[string]node{
 	".var:a=42":                      &assignNode{"a", &valueNode{"42"}},
 	".var:b= $(($a+3))":              &assignNode{"b", &formatStringNode{&valueNode{"%v"}, []node{&arithNode{"+", &symbolReferenceNode{"a"}, &valueNode{3}}}}},
 	"=${toto}/tata":                  &selectObjectNode{testPath},
-	"=..":                            &selectObjectNode{&pathNode{&valueNode{".."}}},
+	"=..":                            &selectObjectNode{&pathNode{path: &valueNode{".."}}},
 	"={${toto}/tata}":                &selectChildrenNode{[]node{testPath}},
 	"={${toto}/tata, /toto/../tata}": &selectChildrenNode{[]node{testPath, testPath2}},
 	"-${toto}/tata":                  &deleteObjNode{testPath},
@@ -318,21 +319,21 @@ var commandsMatching = map[string]node{
 	"+device:${toto}/tata@slot42@42":                            &createDeviceNode{testPath, &valueNode{"slot42"}, &valueNode{"42"}, nil},
 	"+device:${toto}/tata@slot42@template":                      &createDeviceNode{testPath, &valueNode{"slot42"}, &valueNode{"template"}, nil},
 	"+device:${toto}/tata@slot42@template@frontflipped ":        &createDeviceNode{testPath, &valueNode{"slot42"}, &valueNode{"template"}, &valueNode{"frontflipped"}},
-	"+group:${toto}/tata@{c1, c2}":                              &createGroupNode{testPath, []node{&pathNode{&valueNode{"c1"}}, &pathNode{&valueNode{"c2"}}}},
+	"+group:${toto}/tata@{c1, c2}":                              &createGroupNode{testPath, []node{&pathNode{path: &valueNode{"c1"}}, &pathNode{path: &valueNode{"c2"}}}},
 	"+corridor:${toto}/tata@[1., 2.]@t@front@[.1, 2., 3.]@cold": &createCorridorNode{testPath, vec2(1., 2.), &valueNode{"t"}, &valueNode{"front"}, vec3(.1, 2., 3.), &valueNode{"cold"}},
-	"${toto}/tata:areas=[1., 2., 3., 4.]@[1., 2., 3., 4.]":      &updateObjNode{testPath, "areas", []node{vec4(1., 2., 3., 4.), vec4(1., 2., 3., 4.)}, false},
-	"${toto}/tata:separator=[1., 2.]@[1., 2.]@wireframe":        &updateObjNode{testPath, "separator", []node{vec2(1., 2.), vec2(1., 2.), &valueNode{"wireframe"}}, false},
-	"${toto}/tata:attr=42":                                      &updateObjNode{testPath, "attr", []node{&valueNode{"42"}}, false},
-	"${toto}/tata:label=\"plouf\"":                              &updateObjNode{testPath, "label", []node{&valueNode{"plouf"}}, false},
-	"${toto}/tata:labelFont=bold":                               &updateObjNode{testPath, "labelFont", []node{&valueNode{"bold"}}, false},
-	"${toto}/tata:labelFont=color@42ff42":                       &updateObjNode{testPath, "labelFont", []node{&valueNode{"color"}, &valueNode{"42ff42"}}, false},
-	"${toto}/tata:tilesName=true":                               &updateObjNode{testPath, "tilesName", []node{&valueNode{"true"}}, false},
-	"${toto}/tata:tilesColor=false":                             &updateObjNode{testPath, "tilesColor", []node{&valueNode{"false"}}, false},
-	"${toto}/tata:U=false":                                      &updateObjNode{testPath, "U", []node{&valueNode{"false"}}, false},
-	"${toto}/tata:slots=false":                                  &updateObjNode{testPath, "slots", []node{&valueNode{"false"}}, false},
-	"${toto}/tata:localCS=false":                                &updateObjNode{testPath, "localCS", []node{&valueNode{"false"}}, false},
-	"${toto}/tata:content=false":                                &updateObjNode{testPath, "content", []node{&valueNode{"false"}}, false},
-	"${toto}/tata:temperature_01-Inlet-Ambient=7":               &updateObjNode{testPath, "temperature_01-Inlet-Ambient", []node{&valueNode{"7"}}, false},
+	"${toto}/tata:areas=[1., 2., 3., 4.]@[1., 2., 3., 4.]":      &updateObjNode{testPathUpdate, "areas", []node{vec4(1., 2., 3., 4.), vec4(1., 2., 3., 4.)}, false},
+	"${toto}/tata:separator=[1., 2.]@[1., 2.]@wireframe":        &updateObjNode{testPathUpdate, "separator", []node{vec2(1., 2.), vec2(1., 2.), &valueNode{"wireframe"}}, false},
+	"${toto}/tata:attr=42":                                      &updateObjNode{testPathUpdate, "attr", []node{&valueNode{"42"}}, false},
+	"${toto}/tata:label=\"plouf\"":                              &updateObjNode{testPathUpdate, "label", []node{&valueNode{"plouf"}}, false},
+	"${toto}/tata:labelFont=bold":                               &updateObjNode{testPathUpdate, "labelFont", []node{&valueNode{"bold"}}, false},
+	"${toto}/tata:labelFont=color@42ff42":                       &updateObjNode{testPathUpdate, "labelFont", []node{&valueNode{"color"}, &valueNode{"42ff42"}}, false},
+	"${toto}/tata:tilesName=true":                               &updateObjNode{testPathUpdate, "tilesName", []node{&valueNode{"true"}}, false},
+	"${toto}/tata:tilesColor=false":                             &updateObjNode{testPathUpdate, "tilesColor", []node{&valueNode{"false"}}, false},
+	"${toto}/tata:U=false":                                      &updateObjNode{testPathUpdate, "U", []node{&valueNode{"false"}}, false},
+	"${toto}/tata:slots=false":                                  &updateObjNode{testPathUpdate, "slots", []node{&valueNode{"false"}}, false},
+	"${toto}/tata:localCS=false":                                &updateObjNode{testPathUpdate, "localCS", []node{&valueNode{"false"}}, false},
+	"${toto}/tata:content=false":                                &updateObjNode{testPathUpdate, "content", []node{&valueNode{"false"}}, false},
+	"${toto}/tata:temperature_01-Inlet-Ambient=7":               &updateObjNode{testPathUpdate, "temperature_01-Inlet-Ambient", []node{&valueNode{"7"}}, false},
 	"ui.delay=15":                            &uiDelayNode{15.},
 	"ui.infos=true":                          &uiToggleNode{"infos", true},
 	"ui.debug=false":                         &uiToggleNode{"debug", false},
@@ -360,7 +361,7 @@ func TestSimpleCommands(t *testing.T) {
 func TestParseUpdate(t *testing.T) {
 	buffer := "coucou.plouf : attr = #val1 @ val2"
 	expected := &updateObjNode{
-		&pathNode{&valueNode{"coucou.plouf"}},
+		&pathNode{path: &valueNode{"coucou.plouf"}, acceptSelection: true},
 		"attr",
 		[]node{&valueNode{"val1"}, &valueNode{"val2"}},
 		true,
@@ -401,8 +402,8 @@ func TestElif(t *testing.T) {
 	command := "if 5 == 6  {ls;} elif 5 == 4 {tree;} else {pwd;}"
 	condition := &equalityNode{"==", &valueNode{5}, &valueNode{6}}
 	conditionElif := &equalityNode{"==", &valueNode{5}, &valueNode{4}}
-	ifBody := &ast{[]node{&lsNode{&pathNode{&valueNode{""}}, map[string]node{}, "", nil}, nil}}
-	elifBody := &ast{[]node{&treeNode{&pathNode{&valueNode{"."}}, 1}, nil}}
+	ifBody := &ast{[]node{&lsNode{&pathNode{path: &valueNode{""}}, map[string]node{}, "", nil}, nil}}
+	elifBody := &ast{[]node{&treeNode{&pathNode{path: &valueNode{"."}}, 1}, nil}}
 	elseBody := &ast{[]node{&pwdNode{}, nil}}
 	elif := &ifNode{conditionElif, elifBody, elseBody}
 	expected := &ifNode{condition, ifBody, elif}

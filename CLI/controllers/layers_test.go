@@ -784,6 +784,13 @@ func TestTranslateApplicabilityMinusPathReturnsPrevPathPlusPath(t *testing.T) {
 	assert.Equal(t, "/Physical/BASIC", applicability)
 }
 
+func TestTranslateApplicabilityUnderscorePathReturnsCurrPathPlusUnderscore(t *testing.T) {
+	controllers.State.CurrPath = "/Physical"
+	applicability, err := controllers.TranslateApplicability("_")
+	assert.Nil(t, err)
+	assert.Equal(t, "/Physical/_", applicability)
+}
+
 func TestTranslateApplicabilityCanStartWithStar(t *testing.T) {
 	applicability, err := controllers.TranslateApplicability("/*/BASIC")
 	assert.Nil(t, err)

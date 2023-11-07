@@ -67,11 +67,11 @@ func AttrIsInObj(obj map[string]interface{}, attr string) (bool, bool) {
 	return false, false
 }
 
-func TranslatePath(p string) string {
+func TranslatePath(p string, acceptSelection bool) string {
 	if p == "" {
 		p = "."
 	}
-	if p == "_" {
+	if p == "_" && acceptSelection {
 		return "_"
 	}
 	if p == "-" {
