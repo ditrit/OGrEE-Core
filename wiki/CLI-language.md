@@ -1,56 +1,69 @@
 # Contents
+
+- [Contents](#contents)
 - [Glossary](#glossary)
 - [Comments](#comments)
 - [Variables](#variables)
-    - [Set a variable](#set-a-variable)
-    - [Use a variable](#use-a-variable)
+  - [Set a variable:](#set-a-variable)
+  - [Use a variable:](#use-a-variable)
 - [Expressions](#expressions)
-    - [Primary Expressions](#primary-expressions)
-    - [Operators](#operators)
+  - [Primary expressions :](#primary-expressions-)
+  - [Operators](#operators)
+    - [Compute operators :](#compute-operators-)
+    - [Boolean operators :](#boolean-operators-)
 - [Print](#print)
 - [String formatting](#string-formatting)
 - [Loading commands](#loading-commands)
-    - [Load commands from a text file](#load-commands-from-a-text-file)
-    - [Load template from JSON](#load-template-from-json)
+  - [Load commands from a text file](#load-commands-from-a-text-file)
+  - [Commands over multiple lines](#commands-over-multiple-lines)
+  - [Load template from JSON](#load-template-from-json)
 - [Hierarchy commands](#hierarchy-commands)
-    - [Select an object](#select-an-object)
-    - [Select child / children object](#select-child--children-object)
-    - [Select parent object](#select-parent-object)
-    - [Delete object](#delete-object)
-    - [Focus an object](#focus-an-object)
+  - [Select an object](#select-an-object)
+  - [Select child / children object](#select-child--children-object)
+  - [Select parent object](#select-parent-object)
+  - [Get object/s](#get-objects)
+  - [Ls object](#ls-object)
+    - [Filter by tag](#filter-by-tag)
+  - [Delete object](#delete-object)
+  - [Focus an object](#focus-an-object)
 - [Create commands](#create-commands)
-    - [Create a Tenant](#create-a-tenant)
-    - [Create a Site](#create-a-site)
-    - [Create a Building](#create-a-building)
-    - [Create a Room](#create-a-room)
-    - [Create a Rack](#create-a-rack)
-    - [Create a Device](#create-a-device)
-    - [Create a Group](#create-a-group)
-    - [Create a Corridor](#create-a-corridor)
+  - [Create a Tenant](#create-a-tenant)
+  - [Create a Site](#create-a-site)
+  - [Create a Building](#create-a-building)
+  - [Create a Room](#create-a-room)
+  - [Create a Rack](#create-a-rack)
+  - [Create a Device](#create-a-device)
+  - [Create a Group](#create-a-group)
+  - [Create a Corridor](#create-a-corridor)
+  - [Create a Tag](#create-a-tag)
 - [Set commands](#set-commands)
-    - [Set colors for zones of all rooms in a datacenter](#set-colors-for-zones-of-all-rooms-in-a-datacenter)
-    - [Set reserved and technical zones of a room](#set-reserved-and-technical-zones-of-a-room)
-    - [Add a separator to a room](#add-a-separator-to-a-room)
-    - [Add a pillar to a room](#add-a-pillar-to-a-room)
-    - [Modify object’s attribute](#modify-objects-attribute)
-    - [Labels](#labels)
-        - [Choose Label](#choose-label)
-        - [Modify label's font](#modify-labels-font)
-    - [Interact with objects](#interact-with-objects)
-        - [Room](#room)
-        - [Rack](#rack)
-        - [Device](#device)
-        - [Group](#group)
+  - [Set colors for zones of all rooms in a datacenter](#set-colors-for-zones-of-all-rooms-in-a-datacenter)
+  - [Set reserved and technical zones of a room](#set-reserved-and-technical-zones-of-a-room)
+  - [Add a separator to a room](#add-a-separator-to-a-room)
+  - [Add a pillar to a room](#add-a-pillar-to-a-room)
+  - [Modify object's attribute](#modify-objects-attribute)
+  - [Tags](#tags)
+  - [Labels](#labels)
+    - [Choose Label](#choose-label)
+    - [Modify label's font](#modify-labels-font)
+    - [Modify label's background color](#modify-labels-background-color)
+  - [Interact with objects](#interact-with-objects)
+    - [Room](#room)
+    - [Rack](#rack)
+    - [Device](#device)
+    - [Group](#group)
 - [Manipulate UI](#manipulate-ui)
-    - [Delay commands](#delay-commands)
-    - [Display infos panel](#display-infos-panel)
-    - [Display debug panel](#display-debug-panel)
-    - [Highlight object](#highlight-object)
+  - [Delay commands](#delay-commands)
+  - [Display infos panel](#display-infos-panel)
+  - [Display debug panel](#display-debug-panel)
+  - [Highlight object](#highlight-object)
 - [Manipulate camera](#manipulate-camera)
-    - [Move camera](#move-camera)
-    - [Translate camera](#translate-camera)
-    - [Wait between two translations](#wait-between-two-translations)
+  - [Move camera](#move-camera)
+  - [Translate camera](#translate-camera)
+  - [Wait between two translations](#wait-between-two-translations)
 - [Control flow](#control-flow)
+  - [Conditions](#conditions)
+  - [Loops](#loops)
 - [Examples](#examples)
 
 
@@ -174,6 +187,36 @@ Select one or several children of current selected object.
 ## Select parent object
 ```
 ..
+```
+
+## Get object/s
+
+The information of an object or a list of objects can be obtained using the get command:
+
+```
+get [path]
+```
+
+where `[path]` can be either the path of a single object (get rack1) or a list of objects using wildcards (get rack1/*).
+
+## Ls object
+
+To obtain the children of an object and facilitate navigation over the hierarchy, the ls command can be used:
+
+```
+ls [path]
+```
+
+ls can also be used without [path] to do ls on the current path.
+
+Filters can be added to the ls command to get only the children that meet a certain characteristic.
+
+### Filter by tag
+
+By adding the filter tag=[tag_slug] to the ls, we can obtain the children that have among their tag list the tag [tag_slug].
+
+```
+ls [path] tag=[tag_slug]
 ```
 
 ## Delete object
@@ -312,6 +355,18 @@ A corridor is a cold or warm corridor.
 +co:[name]@[pos]@[unit]@[rotation]@[size]@[temperature]
 ```
 
+## Create a Tag
+
+Tags are identified by a slug. In addition, they have a color, a description and an image (optional). To create a tag, use:
+
+```
++tag:[slug]@[color]
+```
+
+The description will initially be defined the same as the slug, but can be modified (see [Modify object's attribute](#modify-objects-attribute)). Image can only be modified from the web version.
+
+After the tag is created, it can be seen in /Logical/Tags. The command `get /Logical/Tags/[slug]` can be used to get the tag information. In doing so, the tag image will be the route in which the image can be obtained via an http request.
+
 # Set commands
 ## Set colors for zones of all rooms in a datacenter
 ```
@@ -378,6 +433,35 @@ _:[attribute]=[value]
 - Object's clearance are vector6, they define how much gap (in mm) has to be left on each side of the object :
 ```
 [name]:clearance=[front, rear, left, right, top, bottom]
+```
+
+## Tags
+
+Any object can be taged. When getting an object, it will contain a list of tags, example:
+
+```
+$ get /Physical/BASIC
+{
+    "id": "BASIC",
+    ...
+    "tags": [
+        "demo"
+    ]
+}
+```
+
+To add a tag to an object use:
+
+```
+[name]:tags+=[tag_slug]
+```
+
+Where tag_slug is the slug of an existing tag, which can be found in /Logical/Tags.
+
+To remove a tag from an object use:
+
+```
+[name]:tags-=[tag_slug]
 ```
 
 ## Labels
