@@ -6,6 +6,8 @@ import (
 	"cli/models"
 	"fmt"
 	"strings"
+
+	"github.com/elliotchance/pie/v2"
 )
 
 type parseCommandFunc func() node
@@ -25,27 +27,6 @@ var manCommands = []string{
 	"tree", "lsog", "env", "cd", "pwd", "clear", "grep", "ls", "exit", "len", "man", "hc",
 	"print", "printf", "unset", "selection",
 	"for", "while", "if",
-}
-
-func sliceContains(slice []string, s string) bool {
-	if slice == nil {
-		return false
-	}
-	for _, str := range slice {
-		if str == s {
-			return true
-		}
-	}
-	return false
-}
-
-func indexOf(arr []string, val string) int {
-	for pos, v := range arr {
-		if v == val {
-			return pos
-		}
-	}
-	return -1
 }
 
 type traceItem struct {
@@ -211,7 +192,7 @@ func (p *parser) parseKeyWord(candidates []string) string {
 			break
 		}
 	}
-	if sliceContains(candidates, p.item(false)) {
+	if pie.Contains(candidates, p.item(false)) {
 		return p.item(false)
 	}
 	p.reset()
@@ -578,9 +559,9 @@ func (p *parser) parseSingleArg(allowedArgs []string, allowedFlags []string) (st
 	defer un(trace(p, "single argument"))
 	arg := p.parseSimpleWord("name")
 	var value string
-	if sliceContains(allowedArgs, arg) {
+	if pie.Contains(allowedArgs, arg) {
 		value = p.parseArgValue()
-	} else if sliceContains(allowedFlags, arg) {
+	} else if pie.Contains(allowedFlags, arg) {
 		value = ""
 	} else {
 		p.error("unexpected argument : " + arg)
@@ -812,7 +793,7 @@ func (p *parser) parseMan() node {
 		return &helpNode{""}
 	}
 	commandName := p.parseKeyWord(manCommands)
-	if !sliceContains(manCommands, commandName) {
+	if !pie.Contains(manCommands, commandName) {
 		p.error("no manual for this command")
 	}
 	return &helpNode{commandName}
