@@ -27,6 +27,7 @@ var manCommands = []string{
 	"tree", "lsog", "env", "cd", "pwd", "clear", "grep", "ls", "exit", "len", "man", "hc",
 	"print", "printf", "unset", "selection",
 	"for", "while", "if",
+	commands.Cp,
 }
 
 type traceItem struct {
@@ -1130,6 +1131,17 @@ func (p *parser) parseUpdate() node {
 	return &updateObjNode{path, attr, values, sharpe}
 }
 
+func (p *parser) parseCp() node {
+	defer un(trace(p, "cp"))
+	source := p.parsePath("source")
+
+	p.skipWhiteSpaces()
+
+	dest := p.parseString("dest")
+
+	return &cpNode{source: source, dest: dest}
+}
+
 func (p *parser) parseCommandKeyWord() string {
 	defer un(trace(p, "command keyword"))
 	return p.parseKeyWord(p.commandKeywords)
@@ -1232,6 +1244,7 @@ func newParser(buffer string) *parser {
 		"for":              p.parseFor,
 		"if":               p.parseIf,
 		"alias":            p.parseAlias,
+		commands.Cp:        p.parseCp,
 	}
 	p.createObjDispatch = map[string]parseCommandFunc{
 		"domain":   p.parseCreateDomain,

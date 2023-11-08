@@ -419,7 +419,7 @@ func Help(entry string) {
 		"lsog", "grep", "for", "while", "if", "env",
 		"cmds", "var", "unset", "selection", commands.Connect3D, "camera", "ui", "hc", "drawable",
 		"link", "unlink", "draw", "getu", "getslot", "undraw",
-		"lsenterprise":
+		"lsenterprise", commands.Cp:
 		path = "./other/man/" + entry + ".md"
 
 	case ">":

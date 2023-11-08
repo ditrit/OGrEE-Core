@@ -1595,3 +1595,22 @@ func parseAreas(areas map[string]interface{}) (map[string]interface{}, error) {
 	}
 	return areas, nil
 }
+
+type cpNode struct {
+	source node
+	dest   node
+}
+
+func (n *cpNode) execute() (interface{}, error) {
+	source, err := nodeToString(n.source, "source")
+	if err != nil {
+		return nil, err
+	}
+
+	dest, err := nodeToString(n.dest, "dest")
+	if err != nil {
+		return nil, err
+	}
+
+	return nil, cmd.C.Cp(source, dest)
+}
