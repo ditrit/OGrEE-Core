@@ -32,6 +32,7 @@
   - [Tree](#tree)
   - [Delete object](#delete-object)
   - [Focus an object](#focus-an-object)
+  - [Copy object](#copy-object)
 - [Create commands](#create-commands)
   - [Create a Tenant](#create-a-tenant)
   - [Create a Site](#create-a-site)
@@ -274,6 +275,16 @@ Works with single or multi selection.
 ```
 >[name]
 ```
+
+## Copy object
+
+Currently it is only possible to copy layers. To copy an object use:
+
+```
+cp [source] [dest]
+```
+
+where `[source]` is the path of the object to be copied (currently only objects in /Logical/Layers are accepted) and `[dest]` is the destination path or slug of the destination layer.
 
 # Create commands
 ## Create a Tenant
