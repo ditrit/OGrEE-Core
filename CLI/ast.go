@@ -309,7 +309,19 @@ func (n *deleteObjNode) execute() (interface{}, error) {
 	if err != nil {
 		return nil, err
 	}
-	return nil, cmd.DeleteObj(path)
+	paths, err := cmd.DeleteObj(path)
+	if err != nil {
+		return nil, err
+	}
+	if len(paths) > 0 {
+		fmt.Println("Objects deleted :")
+		for _, path := range paths {
+			fmt.Println(path)
+		}
+	} else {
+		fmt.Println("Nothing got deleted")
+	}
+	return nil, nil
 }
 
 type deleteSelectionNode struct{}
@@ -319,7 +331,7 @@ func (n *deleteSelectionNode) execute() (interface{}, error) {
 	deleted := 0
 	if c.State.ClipBoard != nil {
 		for _, obj := range c.State.ClipBoard {
-			err := c.DeleteObj(obj)
+			_, err := c.DeleteObj(obj)
 			if err != nil {
 				errBuilder.WriteString(fmt.Sprintf("    %s: %s\n", obj, err.Error()))
 			} else {

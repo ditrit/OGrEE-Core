@@ -189,18 +189,10 @@ func GetObject(path string) (map[string]any, error) {
 	return GetObjectWithChildren(path, 0)
 }
 
-func GetObjectsWildcard(path string) ([]map[string]any, []string, error) {
-	url, err := ObjectUrlGeneric(path, 0, nil)
-	if err != nil {
-		return nil, nil, err
-	}
-	resp, err := RequestAPI("GET", url, nil, http.StatusOK)
-	if err != nil {
-		return nil, nil, err
-	}
+func ParseWildcardResponse(resp *Response, path string, route string) ([]map[string]any, []string, error) {
 	objsAny, ok := resp.body["data"].([]any)
 	if !ok {
-		return nil, nil, fmt.Errorf("invalid response from API on GET %s", url)
+		return nil, nil, fmt.Errorf("invalid response from API on %s", route)
 	}
 	prefix, _, _ := SplitPath(path)
 	objs := infArrToMapStrinfArr(objsAny)
@@ -217,6 +209,18 @@ func GetObjectsWildcard(path string) ([]map[string]any, []string, error) {
 		paths = append(paths, objPath)
 	}
 	return objs, paths, nil
+}
+
+func GetObjectsWildcard(path string) ([]map[string]any, []string, error) {
+	url, err := ObjectUrlGeneric(path, 0, nil)
+	if err != nil {
+		return nil, nil, err
+	}
+	resp, err := RequestAPI("GET", url, nil, http.StatusOK)
+	if err != nil {
+		return nil, nil, err
+	}
+	return ParseWildcardResponse(resp, path, "GET "+url)
 }
 
 func lsObjectsWithoutFilters(path string) ([]map[string]any, error) {
@@ -315,18 +319,18 @@ func Ls(path string, filters map[string]string, sortAttr string) ([]map[string]a
 	return objects, nil
 }
 
-func DeleteObj(path string) error {
-	objs, _, err := GetObjectsWildcard(path)
-	if err != nil {
-		return err
-	}
+func DeleteObj(path string) ([]string, error) {
 	url, err := ObjectUrlGeneric(path, 0, nil)
 	if err != nil {
-		return err
+		return nil, err
 	}
-	_, err = RequestAPI("DELETE", url, nil, http.StatusOK)
+	resp, err := RequestAPI("DELETE", url, nil, http.StatusOK)
 	if err != nil {
-		return err
+		return nil, err
+	}
+	objs, paths, err := ParseWildcardResponse(resp, path, "DELETE "+url)
+	if err != nil {
+		return nil, err
 	}
 	for _, obj := range objs {
 		if IsInObjForUnity(obj["category"].(string)) {
@@ -336,7 +340,7 @@ func DeleteObj(path string) error {
 	if path == State.CurrPath {
 		CD(TranslatePath(".."))
 	}
-	return nil
+	return paths, nil
 }
 
 func GetSlot(rack map[string]any, location string) (map[string]any, error) {
@@ -642,7 +646,7 @@ func Env(userVars, userFuncs map[string]interface{}) {
 
 	fmt.Println()
 	fmt.Println("Currently defined user functions:")
-	for name, _ := range userFuncs {
+	for name := range userFuncs {
 		fmt.Println("Name:", name)
 	}
 }
