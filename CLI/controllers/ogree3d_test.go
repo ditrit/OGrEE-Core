@@ -25,7 +25,8 @@ func TestConnect3DReturnsErrorIfProvidedURLIsInvalid(t *testing.T) {
 
 func TestConnect3DDoesNotConnectIfOgree3DIsUnreachable(t *testing.T) {
 	err := Connect3D("localhost:3000")
-	assert.ErrorContains(t, err, "OGrEE-3D is not reachable caused by OGrEE-3D (localhost:3000) unreachable\ndial tcp 127.0.0.1:3000: connect: connection refused")
+	assert.ErrorContains(t, err, "OGrEE-3D is not reachable caused by OGrEE-3D (localhost:3000) unreachable\ndial tcp")
+	assert.ErrorContains(t, err, "connect: connection refused")
 	assert.False(t, Ogree3D.IsConnected())
 	assert.Equal(t, Ogree3D.URL(), "localhost:3000")
 }
@@ -81,7 +82,8 @@ func TestConnect3DTriesToConnectIfAlreadyConnectedAndDifferentUrlProvided(t *tes
 	require.True(t, Ogree3D.IsConnected())
 
 	err = Connect3D("localhost:5000")
-	assert.ErrorContains(t, err, "OGrEE-3D is not reachable caused by OGrEE-3D (localhost:5000) unreachable\ndial tcp 127.0.0.1:5000: connect: connection refused")
+	assert.ErrorContains(t, err, "OGrEE-3D is not reachable caused by OGrEE-3D (localhost:5000) unreachable\ndial tcp")
+	assert.ErrorContains(t, err, "connect: connection refused")
 	assert.False(t, Ogree3D.IsConnected())
 	assert.Equal(t, Ogree3D.URL(), "localhost:5000")
 
