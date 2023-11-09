@@ -33,9 +33,15 @@ func recreateTestDB() {
 
 	err = db.Drop(ctx)
 	if err != nil {
-		log.Fatalln(err.Error())
+		log.Fatalln("Error while doing drop:", err.Error())
 	}
 
 	db = client.Database(TestDBName)
-	repository.SetupDB(db)
+
+	err = repository.SetupDB(db)
+	for err != nil {
+		// An error can occur if the database was not dropped yet (not synchronic)
+		log.Println("Error while doing setup:", err.Error())
+		err = repository.SetupDB(db)
+	}
 }
