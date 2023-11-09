@@ -126,7 +126,8 @@ func TestInformOgree3DFailsIfOgree3DNotReachable(t *testing.T) {
 	require.False(t, Ogree3D.IsConnected())
 	Ogree3D.SetURL("localhost:3000")
 	err := Ogree3D.Inform("Interact", -1, map[string]any{})
-	assert.ErrorContains(t, err, "OGrEE-3D is not reachable caused by OGrEE-3D (localhost:3000) unreachable\ndial tcp 127.0.0.1:3000: connect: connection refused")
+	assert.ErrorContains(t, err, "OGrEE-3D is not reachable caused by OGrEE-3D (localhost:3000) unreachable\ndial tcp")
+	assert.ErrorContains(t, err, "connect: connection refused")
 }
 
 func TestInformOgree3DEstablishConnectionIfOgree3DIsReachable(t *testing.T) {
