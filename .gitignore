@@ -3,14 +3,15 @@
 go.work
 go.work.sum
 *.code-workspace
-*.toml
+config.toml
 *log
 
 # API Ignore
-main
+API/main
 deploy/mdb/*
 *.DS_Store
 API/.env
+gin-bin
 
 # CLI Ignore
 .idea/

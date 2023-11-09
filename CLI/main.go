@@ -43,7 +43,13 @@ func main() {
 	}
 	c.State.User = *user
 	c.InitKey(apiKey)
-	c.InitState(conf)
+
+	err = c.InitState(conf)
+	if err != nil {
+		println(err.Error())
+		return
+	}
+
 	err = InitVars(conf.Variables)
 	if err != nil {
 		println("Error while initializing variables :", err.Error())
@@ -77,7 +83,12 @@ func main() {
 			os.Exit(0)
 		}
 	}
-	c.InitUnityCom(rl, c.State.UnityClientURL)
+
+	err = c.InitOGrEE3DCommunication(rl)
+	if err != nil {
+		manageError(err, false)
+	}
+
 	//Pass control to repl.go
 	Start(rl, userShort)
 }

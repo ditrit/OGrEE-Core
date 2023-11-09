@@ -216,28 +216,20 @@ func prepareCreateEntity(entity int, t map[string]interface{}, userRoles map[str
 	return nil
 }
 
-// GetObjectById: search for id (hierarchyName) in all possible collections
-func GetObjectById(hierarchyName string, filters u.RequestFilters, userRoles map[string]Role) (map[string]interface{}, *u.Error) {
-	var resp map[string]interface{}
+func GetHierarchyObjectById(hierarchyName string, filters u.RequestFilters, userRoles map[string]Role) (map[string]interface{}, *u.Error) {
 	// Get possible collections for this name
-	rangeEntities := u.HierachyNameToEntity(hierarchyName)
+	rangeEntities := u.GetEntitiesByNamespace(u.PHierarchy, hierarchyName)
+	req := bson.M{"id": hierarchyName}
 
 	// Search each collection
-	for _, entity := range rangeEntities {
-		req := bson.M{"id": hierarchyName}
-		entityStr := u.EntityToString(entity)
+	for _, entityStr := range rangeEntities {
 		data, _ := GetEntity(req, entityStr, filters, userRoles)
 		if data != nil {
-			resp = data
-			break
+			return data, nil
 		}
 	}
 
-	if resp != nil {
-		return resp, nil
-	} else {
-		return nil, &u.Error{Type: u.ErrNotFound, Message: "Unable to find object"}
-	}
+	return nil, &u.Error{Type: u.ErrNotFound, Message: "Unable to find object"}
 }
 
 func GetEntity(req bson.M, ent string, filters u.RequestFilters, userRoles map[string]Role) (map[string]interface{}, *u.Error) {
@@ -361,13 +353,7 @@ func GetCompleteHierarchy(userRoles map[string]Role, filters u.HierarchyFilters)
 	hierarchy := make(map[string]interface{})
 
 	switch filters.Namespace {
-	case u.Physical, u.Organisational, u.Logical:
-		data, err := getHierarchyWithNamespace(filters.Namespace, userRoles, filters, categories)
-		if err != nil {
-			return nil, err
-		}
-		hierarchy[u.NamespaceToString(filters.Namespace)] = data
-	default:
+	case u.Any:
 		for _, ns := range []u.Namespace{u.Physical, u.Logical, u.Organisational} {
 			data, err := getHierarchyWithNamespace(ns, userRoles, filters, categories)
 			if err != nil {
@@ -375,6 +361,13 @@ func GetCompleteHierarchy(userRoles map[string]Role, filters u.HierarchyFilters)
 			}
 			hierarchy[u.NamespaceToString(ns)] = data
 		}
+	default:
+		data, err := getHierarchyWithNamespace(filters.Namespace, userRoles, filters, categories)
+		if err != nil {
+			return nil, err
+		}
+		hierarchy[u.NamespaceToString(filters.Namespace)] = data
+
 	}
 
 	response["tree"] = hierarchy
@@ -395,9 +388,10 @@ func getHierarchyWithNamespace(namespace u.Namespace, userRoles map[string]Role,
 	dbFilter := bson.M{}
 
 	// Depth of hierarchy defined by user
-	if filters.Limit != "" && namespace != u.Logical {
+	if filters.Limit != "" && namespace != u.PStray &&
+		!strings.Contains(u.NamespaceToString(namespace), string(u.Logical)) {
 		if _, e := strconv.Atoi(filters.Limit); e == nil {
-			pattern := primitive.Regex{Pattern: "^\\w(\\w|\\-)*(.\\w(\\w|\\-)*){0," +
+			pattern := primitive.Regex{Pattern: "^" + u.NAME_REGEX + "(." + u.NAME_REGEX + "){0," +
 				filters.Limit + "}$", Options: ""}
 			dbFilter = bson.M{"id": pattern}
 		}
@@ -409,7 +403,7 @@ func getHierarchyWithNamespace(namespace u.Namespace, userRoles map[string]Role,
 	}
 
 	// Search collections according to namespace
-	collNames := u.GetEntitesByNamespace(namespace)
+	collNames := u.GetEntitiesByNamespace(namespace, "")
 
 	for _, collName := range collNames {
 		// Get data
@@ -430,7 +424,7 @@ func getHierarchyWithNamespace(namespace u.Namespace, userRoles map[string]Role,
 
 		// Format data
 		for _, obj := range data {
-			if namespace == u.Logical {
+			if strings.Contains(u.NamespaceToString(namespace), string(u.Logical)) {
 				// Logical
 				var objId string
 				if strings.Contains(collName, "template") {
@@ -652,7 +646,9 @@ func DeleteEntity(entity string, id string, userRoles map[string]Role) *u.Error 
 	if !ok {
 		return &u.Error{Type: u.ErrUnauthorized, Message: "User does not have permission to delete"}
 	}
+
 	req["id"] = id
+
 	err := DeleteSingleEntity(entity, req)
 
 	if err != nil {
@@ -688,17 +684,26 @@ func DeleteSingleEntity(entity string, req bson.M) *u.Error {
 func UpdateEntity(ent string, req bson.M, t map[string]interface{}, isPatch bool, userRoles map[string]Role) (map[string]interface{}, *u.Error) {
 	var mongoRes *mongo.SingleResult
 	var updatedDoc map[string]interface{}
+	var oldObj map[string]interface{}
+	var err *u.Error
 	retDoc := options.ReturnDocument(options.After)
-	entInt := u.EntityStrToInt(ent)
 
 	//Update timestamp requires first obj retrieval
 	//there isn't any way for mongoDB to make a field
 	//immutable in a document
-	oldObj, err := GetEntity(req, ent, u.RequestFilters{}, userRoles)
+	if ent == u.HIERARCHYOBJS_ENT {
+		oldObj, err = GetHierarchyObjectById(req["id"].(string), u.RequestFilters{}, userRoles)
+		if err == nil {
+			ent = oldObj["category"].(string)
+		}
+	} else {
+		oldObj, err = GetEntity(req, ent, u.RequestFilters{}, userRoles)
+	}
 	if err != nil {
 		return nil, err
 	}
 
+	entInt := u.EntityStrToInt(ent)
 	//Check if permission is only readonly
 	if entInt != u.BLDGTMPL && entInt != u.ROOMTMPL && entInt != u.OBJTMPL &&
 		(oldObj["description"] == nil) {
@@ -808,7 +813,7 @@ func getChildren(entity, hierarchyName string, limit int, filters u.RequestFilte
 		checkEntName := u.EntityToString(checkEnt)
 		// Obj should include parentName and not surpass limit range
 		pattern := primitive.Regex{Pattern: "^" + hierarchyName +
-			"(.\\w(\\w|\\-)*){1," + strconv.Itoa(limit) + "}$", Options: ""}
+			"(." + u.NAME_REGEX + "){1," + strconv.Itoa(limit) + "}$", Options: ""}
 		children, e1 := GetManyEntities(checkEntName, bson.M{"id": pattern}, filters, nil)
 		if e1 != nil {
 			println("SUBENT: ", checkEntName)

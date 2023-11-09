@@ -51,14 +51,15 @@ Name: "unity"; Description: {#My3DAppName}; Types: full
 Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}"; Flags: unchecked
 
 [Files]
-Source: "APP\ogree_app_backend\{#MyBackAppExeName}"; DestDir: "{app}"; Flags: ignoreversion; Components: back
-Source: "APP\ogree_app_backend\backend-assets\*"; DestDir: "{app}\backend-assets"; Flags: ignoreversion recursesubdirs createallsubdirs; Components: back
-Source: "APP\ogree_app_backend\flutter-assets\*"; DestDir: "{app}\flutter-assets"; Flags: ignoreversion recursesubdirs createallsubdirs; Components: back
-Source: "APP\ogree_app_backend\tools-assets\*"; DestDir: "{app}\tools-assets"; Flags: ignoreversion recursesubdirs createallsubdirs; Components: back
+Source: "BACK\docker-backend\{#MyBackAppExeName}"; DestDir: "{app}"; Flags: ignoreversion; Components: back
+Source: "BACK\docker-backend\backend-assets\*"; DestDir: "{app}\backend-assets"; Flags: ignoreversion recursesubdirs createallsubdirs; Components: back
+Source: "BACK\docker-backend\flutter-assets\*"; DestDir: "{app}\flutter-assets"; Flags: ignoreversion recursesubdirs createallsubdirs; Components: back
+Source: "BACK\docker-backend\tools-assets\*"; DestDir: "{app}\tools-assets"; Flags: ignoreversion recursesubdirs createallsubdirs; Components: back
 Source: "deploy\*"; DestDir: "{app}\deploy"; Flags: ignoreversion recursesubdirs createallsubdirs; Components: back
-Source: "APP\ogree_app_backend\inno.env"; DestDir: "{app}"; DestName: ".env"; Flags: ignoreversion; Components: back
-Source: "APP\ogree_app\build\windows\runner\Release\*"; DestDir: "{app}\front"; Flags: ignoreversion recursesubdirs createallsubdirs; Components: front
-Source: "APP\ogree-icon.ico"; DestDir: "{app}"; DestName: "ogree-icon.ico"; Flags: ignoreversion; Components: back front
+Source: "BACK\docker-backend\inno.env"; DestDir: "{app}"; DestName: ".env"; Flags: ignoreversion; Components: back
+Source: "APP\build\windows\runner\Release\*"; DestDir: "{app}\front"; Flags: ignoreversion recursesubdirs createallsubdirs; Components: front
+Source: "ogree-icon.ico"; DestDir: "{app}"; DestName: "ogree-icon.ico"; Flags: ignoreversion; Components: back front
+Source: "config-example.toml"; DestDir: "{app}"; DestName: "config.toml"; Flags: ignoreversion; Components: cli
 Source: "CLI\other\man\*"; DestDir: "{app}\cli\other\man"; Flags: ignoreversion recursesubdirs createallsubdirs; Components: cli
 Source: "{#MyCliExeName}"; DestDir: "{app}\cli"; Flags: ignoreversion; Components: cli
 Source: "OGrEE-3D_win\*"; DestDir: "{app}\3d"; Flags: ignoreversion recursesubdirs createallsubdirs; Components: unity
@@ -80,6 +81,11 @@ Filename: "{app}\{#MyBackAppExeName}"; Description: "{cm:LaunchProgram,{#StringC
 Filename: "{app}\front\{#MyFrontAppExeName}"; Description: "{cm:LaunchProgram,{#StringChange(MyFrontAppName, '&', '&&')}}"; Flags: nowait postinstall skipifsilent; Components: front
 Filename: "{app}\cli\{#MyCliExeName}"; Description: "{cm:LaunchProgram,{#StringChange(MyCliAppName, '&', '&&')}}"; Flags: nowait postinstall skipifsilent; Components: cli
 Filename: "{app}\3d\{#My3DExeName}"; Description: "{cm:LaunchProgram,{#StringChange(My3DAppName, '&', '&&')}}"; Flags: nowait postinstall skipifsilent; Components: unity
+Filename: "{sys}\sc.exe"; Parameters: "create ogree-backend-svc start=auto binPath=""{app}\{#MyBackAppExeName}""" ; Flags: runhidden
+
+[UninstallRun]
+Filename: "{sys}\sc.exe"; Parameters: "stop ogree-backend-svc" ; RunOnceId: "DelService" ; Flags: runhidden
+Filename: "{sys}\sc.exe"; Parameters: "delete ogree-backend-svc" ; RunOnceId: "DelService" ; Flags: runhidden
 
 [UninstallDelete]
 Type: filesandordirs; Name: "{app}\3d\OGrEE-3D_Data\.ogreeCache"

@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"cli/commands"
 	l "cli/logger"
 	"cli/models"
 	"cli/readline"
@@ -10,6 +11,7 @@ import (
 	"log"
 	"math/rand"
 	"net/http"
+	"net/url"
 	"os"
 	"os/exec"
 	pathutil "path"
@@ -33,41 +35,108 @@ func PostObj(ent int, entity string, data map[string]any) error {
 	}
 	if IsInObjForUnity(entity) {
 		entInt := EntityStrToInt(entity)
-		InformUnity("PostObj", entInt, map[string]any{"type": "create", "data": resp.body["data"]})
+		InformOgree3DOptional("PostObj", entInt, map[string]any{"type": "create", "data": resp.body["data"]})
 	}
 	return nil
 }
 
-func startsWith(s string, prefix string, suffix *string) bool {
-	if strings.HasPrefix(s, prefix) {
-		*suffix = s[len(prefix):]
-		return true
+var pathPrefixes = []string{
+	"/Physical/Stray/",
+	"/Physical/",
+	"/Logical/ObjectTemplates/",
+	"/Logical/RoomTemplates/",
+	"/Logical/BldgTemplates/",
+	"/Logical/Groups/",
+	"/Organisation/Domain/",
+}
+
+func SplitPath(path string) (string, string, error) {
+	for _, prefix := range pathPrefixes {
+		if strings.HasPrefix(path, prefix) {
+			id := path[len(prefix):]
+			id = strings.ReplaceAll(id, "/", ".")
+			return prefix, id, nil
+		}
 	}
-	return false
+	return "", "", fmt.Errorf("invalid object path")
 }
 
 func ObjectUrl(path string, depth int) (string, error) {
-	var suffix string
-	var url string
-	if startsWith(path, "/Physical/Stray/", &suffix) {
-		url = "/api/stray-objects"
-	} else if startsWith(path, "/Physical/", &suffix) {
-		url = "/api/objects"
-	} else if startsWith(path, "/Logical/ObjectTemplates/", &suffix) {
-		url = "/api/obj-templates"
-	} else if startsWith(path, "/Logical/RoomTemplates/", &suffix) {
-		url = "/api/room-templates"
-	} else if startsWith(path, "/Logical/BldgTemplates/", &suffix) {
-		url = "/api/bldg-templates"
-	} else if startsWith(path, "/Logical/Groups/", &suffix) {
-		url = "/api/groups"
-	} else if startsWith(path, "/Organisation/Domain/", &suffix) {
-		url = "/api/domains"
-	} else {
+	prefix, id, err := SplitPath(path)
+	if err != nil {
+		return "", err
+	}
+	var baseUrl string
+	switch prefix {
+	case "/Physical/Stray/":
+		baseUrl = "/api/stray-objects"
+	case "/Physical/":
+		baseUrl = "/api/hierarchy-objects"
+	case "/Logical/ObjectTemplates/":
+		baseUrl = "/api/obj-templates"
+	case "/Logical/RoomTemplates/":
+		baseUrl = "/api/room-templates"
+	case "/Logical/BldgTemplates/":
+		baseUrl = "/api/bldg-templates"
+	case "/Logical/Groups/":
+		baseUrl = "/api/groups"
+	case "/Organisation/Domain/":
+		baseUrl = "/api/domains"
+	default:
 		return "", fmt.Errorf("invalid object path")
 	}
-	suffix = strings.Replace(suffix, "/", ".", -1)
-	return url + "/" + suffix, nil
+	baseUrl += "/" + id
+	params := url.Values{}
+	if depth > 0 {
+		baseUrl += "/all"
+		params.Add("limit", strconv.Itoa(depth))
+	}
+	parsedUrl, _ := url.Parse(baseUrl)
+	parsedUrl.RawQuery = params.Encode()
+	return parsedUrl.String(), nil
+}
+
+func ObjectUrlGeneric(path string, depth int, filters map[string]string) (string, error) {
+	params := url.Values{}
+	prefix, id, err := SplitPath(path)
+	if err != nil {
+		return "", err
+	}
+	switch prefix {
+	case "/Physical/Stray/":
+		params.Add("namespace", "physical.stray")
+		params.Add("id", id)
+	case "/Physical/":
+		params.Add("namespace", "physical.hierarchy")
+		params.Add("id", id)
+	case "/Logical/ObjectTemplates/":
+		params.Add("namespace", "logical.objtemplate")
+		params.Add("slug", id)
+	case "/Logical/RoomTemplates/":
+		params.Add("namespace", "logical.roomtemplate")
+		params.Add("slug", id)
+	case "/Logical/BldgTemplates/":
+		params.Add("namespace", "logical.bldgtemplate")
+		params.Add("slug", id)
+	case "/Logical/Groups/":
+		params.Add("namespace", "logical")
+		params.Add("category", "group")
+		params.Add("id", id)
+	case "/Organisation/Domain/":
+		params.Add("namespace", "organisational")
+		params.Add("id", id)
+	default:
+		return "", fmt.Errorf("invalid object path")
+	}
+	if depth > 0 {
+		params.Add("limit", strconv.Itoa(depth))
+	}
+	for key, value := range filters {
+		params.Add(key, value)
+	}
+	url, _ := url.Parse("/api/objects")
+	url.RawQuery = params.Encode()
+	return strings.ReplaceAll(url.String(), "%2A", "*"), nil
 }
 
 func IsTemplate(path string) bool {
@@ -82,32 +151,10 @@ func IsTemplate(path string) bool {
 	}
 }
 
-func ObjectUrlWithEntity(path string, depth int, category string) (string, error) {
-	url, err := ObjectUrl(path, depth)
-	if err != nil {
-		return "", err
-	}
-	if strings.HasPrefix(url, "/api/objects/") {
-		url = fmt.Sprintf("/api/%ss/%s", category, url[len("/api/objects/"):])
-	}
-	return url, nil
-}
-
-func ObjectId(path string) (string, error) {
-	var suffix string
-	if startsWith(path, "/Physical/", &suffix) {
-		return suffix, nil
-	}
-	return "", fmt.Errorf("path does not point to a physical object")
-}
-
 func PollObjectWithChildren(path string, depth int) (map[string]any, error) {
 	url, err := ObjectUrl(path, depth)
 	if err != nil {
 		return nil, nil
-	}
-	if depth > 0 && !IsTemplate(path) {
-		url = fmt.Sprintf("%s/all?limit=%d", url, depth)
 	}
 	resp, err := RequestAPI("GET", url, nil, http.StatusOK)
 	if err != nil {
@@ -142,33 +189,30 @@ func GetObject(path string) (map[string]any, error) {
 	return GetObjectWithChildren(path, 0)
 }
 
-func WilcardUrl(path string) (string, error) {
-	var suffix string
-	if startsWith(path, "/Physical/Stray/", &suffix) {
-		return "", fmt.Errorf("stray paths cannot contain wildcards")
-	} else if !startsWith(path, "/Physical/", &suffix) {
-		return "", fmt.Errorf("only paths in /Physical can contain wildcards")
-	}
-	suffix = strings.Replace(suffix, "/", ".", -1)
-	return "/api/objects-wildcard/" + suffix, nil
-}
-
-func ParseWildcardResponse(resp *Response, route string) ([]map[string]any, []string, error) {
+func ParseWildcardResponse(resp *Response, path string, route string) ([]map[string]any, []string, error) {
 	objsAny, ok := resp.body["data"].([]any)
 	if !ok {
 		return nil, nil, fmt.Errorf("invalid response from API on %s", route)
 	}
+	prefix, _, _ := SplitPath(path)
 	objs := infArrToMapStrinfArr(objsAny)
 	paths := []string{}
 	for _, obj := range objs {
-		objPath := "/Physical/" + strings.Replace(obj["id"].(string), ".", "/", -1)
+		var suffix string
+		objId, hasId := obj["id"].(string)
+		if hasId {
+			suffix = strings.Replace(objId, ".", "/", -1)
+		} else {
+			suffix = utils.NameOrSlug(obj)
+		}
+		objPath := prefix + suffix
 		paths = append(paths, objPath)
 	}
 	return objs, paths, nil
 }
 
 func GetObjectsWildcard(path string) ([]map[string]any, []string, error) {
-	url, err := WilcardUrl(path)
+	url, err := ObjectUrlGeneric(path, 0, nil)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -176,46 +220,107 @@ func GetObjectsWildcard(path string) ([]map[string]any, []string, error) {
 	if err != nil {
 		return nil, nil, err
 	}
-	return ParseWildcardResponse(resp, "GET "+url)
+	return ParseWildcardResponse(resp, path, "GET "+url)
 }
 
-func Ls(path string) ([]string, error) {
+func lsObjectsWithoutFilters(path string) ([]map[string]any, error) {
 	n, err := Tree(path, 1)
 	if err != nil {
 		return nil, err
 	}
-	res := []string{}
+	objects := []map[string]any{}
 	for _, child := range n.Childs {
-		res = append(res, child.Name)
+		if child.Obj != nil {
+			if strings.HasPrefix(path, "/Logical/Groups") {
+				child.Obj["name"] = strings.ReplaceAll(child.Obj["id"].(string), ".", "/")
+			}
+			objects = append(objects, child.Obj)
+		} else {
+			objects = append(objects, map[string]any{"name": child.Name})
+		}
 	}
-	sort.Strings(res)
-	return res, nil
+	return objects, nil
 }
 
-func DeleteObj(path string) error {
-	obj, err := GetObject(path)
+func lsObjectsWithFilters(path string, filters map[string]string) ([]map[string]any, error) {
+	url, err := ObjectUrlGeneric(path+"/*", 0, filters)
 	if err != nil {
-		return err
+		return nil, fmt.Errorf("cannot use filters at this location")
 	}
-	url, err := ObjectUrl(path, 0)
+	resp, err := RequestAPI("GET", url, nil, http.StatusOK)
 	if err != nil {
-		return err
+		return nil, err
 	}
-	_, err = RequestAPI("DELETE", url, nil, http.StatusNoContent)
-	if err != nil {
-		return err
+	objectsAny := resp.body["data"].([]any)
+	objects := []map[string]any{}
+	for _, objAny := range objectsAny {
+		obj, ok := objAny.(map[string]any)
+		if !ok {
+			return nil, fmt.Errorf("invalid response from API on GET %s", url)
+		}
+		objects = append(objects, obj)
 	}
-	if !IsTemplate(path) && IsInObjForUnity(obj["category"].(string)) {
-		InformUnity("DeleteObj", -1, map[string]any{"type": "delete", "data": obj["id"].(string)})
-	}
-	if path == State.CurrPath {
-		CD(TranslatePath(".."))
-	}
-	return nil
+	return objects, nil
 }
 
-func DeleteObjectsWildcard(path string) ([]string, error) {
-	url, err := WilcardUrl(path)
+func filterObjectsWithoutAttr(objects []map[string]any, attr string) []map[string]any {
+	remainingObjects := []map[string]any{}
+	for _, obj := range objects {
+		_, hasAttr := utils.ObjectAttr(obj, attr)
+		if hasAttr {
+			remainingObjects = append(remainingObjects, obj)
+		}
+	}
+	return remainingObjects
+}
+
+func objectsAreSortable(objects []map[string]any, attr string) bool {
+	for i := 1; i < len(objects); i++ {
+		val0, _ := utils.ObjectAttr(objects[0], attr)
+		vali, _ := utils.ObjectAttr(objects[i], attr)
+		_, comparable := utils.CompareVals(val0, vali)
+		if !comparable {
+			return false
+		}
+	}
+	return true
+}
+
+func Ls(path string, filters map[string]string, sortAttr string) ([]map[string]any, error) {
+	var objects []map[string]any
+	var err error
+	if len(filters) == 0 {
+		objects, err = lsObjectsWithoutFilters(path)
+		if err != nil {
+			return nil, err
+		}
+	} else {
+		objects, err = lsObjectsWithFilters(path, filters)
+		if err != nil {
+			return nil, err
+		}
+	}
+	if sortAttr != "" {
+		objects = filterObjectsWithoutAttr(objects, sortAttr)
+		if !objectsAreSortable(objects, sortAttr) {
+			return nil, fmt.Errorf("objects cannot be sorted according to this attribute")
+		}
+	}
+	less := func(i, j int) bool {
+		if sortAttr != "" {
+			vali, _ := utils.ObjectAttr(objects[i], sortAttr)
+			valj, _ := utils.ObjectAttr(objects[j], sortAttr)
+			res, _ := utils.CompareVals(vali, valj)
+			return res
+		}
+		return utils.NameOrSlug(objects[i]) < utils.NameOrSlug(objects[j])
+	}
+	sort.Slice(objects, less)
+	return objects, nil
+}
+
+func DeleteObj(path string) ([]string, error) {
+	url, err := ObjectUrlGeneric(path, 0, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -223,14 +328,17 @@ func DeleteObjectsWildcard(path string) ([]string, error) {
 	if err != nil {
 		return nil, err
 	}
-	objs, paths, err := ParseWildcardResponse(resp, "DELETE "+url)
+	objs, paths, err := ParseWildcardResponse(resp, path, "DELETE "+url)
 	if err != nil {
 		return nil, err
 	}
 	for _, obj := range objs {
 		if IsInObjForUnity(obj["category"].(string)) {
-			InformUnity("DeleteObj", -1, map[string]any{"type": "delete", "data": obj["id"].(string)})
+			InformOgree3DOptional("DeleteObj", -1, map[string]any{"type": "delete", "data": obj["id"].(string)})
 		}
+	}
+	if path == State.CurrPath {
+		CD(TranslatePath(".."))
 	}
 	return paths, nil
 }
@@ -244,16 +352,11 @@ func GetSlot(rack map[string]any, location string) (map[string]any, error) {
 	if template == "" {
 		return nil, nil
 	}
-	URL := State.APIURL + "/api/obj-templates/" + template
-	resp, err := models.Send("GET", URL, GetKey(), nil)
+	resp, err := RequestAPI("GET", "/api/obj-templates/"+template, nil, http.StatusOK)
 	if err != nil {
 		return nil, err
 	}
-	if resp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("cannot get template %s", template)
-	}
-	parsedResp := ParseResponse(resp, err, "GET")
-	slots, ok := parsedResp["data"].(map[string]any)["slots"]
+	slots, ok := resp.body["data"].(map[string]any)["slots"]
 	if !ok {
 		return nil, nil
 	}
@@ -278,7 +381,7 @@ func UpdateObj(path string, data map[string]any) (map[string]any, error) {
 		return nil, err
 	}
 	category := obj["category"].(string)
-	url, err := ObjectUrlWithEntity(path, 0, category)
+	url, err := ObjectUrl(path, 0)
 	if err != nil {
 		return nil, err
 	}
@@ -340,7 +443,7 @@ func UpdateObj(path string, data map[string]any) (map[string]any, error) {
 	}
 	if IsInObjForUnity(category) {
 		entInt := EntityStrToInt(category)
-		InformUnity("UpdateObj", entInt, message)
+		InformOgree3DOptional("UpdateObj", entInt, message)
 	}
 	return resp.body, nil
 }
@@ -358,8 +461,7 @@ func UnsetAttribute(path string, attr string) error {
 		return fmt.Errorf("object has no attributes")
 	}
 	delete(attributes, attr)
-	category := obj["category"].(string)
-	url, err := ObjectUrlWithEntity(path, 0, category)
+	url, err := ObjectUrl(path, 0)
 	if err != nil {
 		return err
 	}
@@ -435,28 +537,24 @@ func UnsetInObj(Path, attr string, idx int) (map[string]interface{}, error) {
 		obj[attr] = arr
 	}
 
-	//Send to API and update Unity
 	entity := obj["category"].(string)
-	URL, err := ObjectUrlWithEntity(Path, 0, entity)
+	URL, err := ObjectUrl(Path, 0)
 	if err != nil {
 		return nil, err
 	}
 
-	resp, e := models.Send("PUT", URL, GetKey(), obj)
-	respJson := ParseResponse(resp, e, "UPDATE")
-	if respJson != nil {
-		if resp.StatusCode == 200 {
-			println("Success")
+	resp, err := RequestAPI("PUT", URL, obj, http.StatusOK)
+	if err != nil {
+		return nil, err
+	}
 
-			message := map[string]interface{}{
-				"type": "modify", "data": respJson["data"]}
+	message := map[string]interface{}{
+		"type": "modify", "data": resp.body["data"]}
 
-			//Update and inform unity
-			if !IsTemplate(Path) && IsInObjForUnity(entity) {
-				entInt := EntityStrToInt(entity)
-				InformUnity("UpdateObj", entInt, message)
-			}
-		}
+	//Update and inform unity
+	if !IsTemplate(Path) && IsInObjForUnity(entity) {
+		entInt := EntityStrToInt(entity)
+		InformOgree3DOptional("UpdateObj", entInt, message)
 	}
 
 	return nil, nil
@@ -473,15 +571,15 @@ func Clear() {
 	}
 }
 
-func LSOG() {
-
+func LSOG() error {
 	fmt.Println("********************************************")
 	fmt.Println("OGREE Shell Information")
 	fmt.Println("********************************************")
 
 	fmt.Println("USER EMAIL:", State.User.Email)
 	fmt.Println("API URL:", State.APIURL+"/api/")
-	fmt.Println("UNITY URL:", State.UnityClientURL)
+	fmt.Println("OGrEE-3D URL:", State.Ogree3DURL)
+	fmt.Println("OGrEE-3D connected: ", models.Ogree3D.IsConnected())
 	fmt.Println("BUILD DATE:", BuildTime)
 	fmt.Println("BUILD TREE:", BuildTree)
 	fmt.Println("BUILD HASH:", BuildHash)
@@ -497,45 +595,34 @@ func LSOG() {
 	fmt.Println("********************************************")
 
 	//Get API Information here
-	r, e := models.Send("GET", State.APIURL+"/api/version", GetKey(), nil)
-	parsedResp := ParseResponse(r, e, "get API information request")
-
-	if parsedResp != nil {
-		if apiInfo, ok := LoadObjectFromInf(parsedResp["data"]); ok {
-			fmt.Println("BUILD DATE:", apiInfo["BuildDate"])
-			fmt.Println("BUILD TREE:", apiInfo["BuildTree"])
-			fmt.Println("BUILD HASH:", apiInfo["BuildHash"])
-			fmt.Println("COMMIT DATE: ", apiInfo["CommitDate"])
-			fmt.Println("CUSTOMER: ", apiInfo["Customer"])
-
-		} else if State.DebugLvl > 1 {
-			msg := "Received invalid response for API on GET /api/version"
-			l.GetWarningLogger().Println(msg)
-			fmt.Println("NOTE: Received invalid response from API on information request")
-		}
-
-	} else {
-		if State.DebugLvl > 1 {
-			msg := "Could not get API information"
-			l.GetWarningLogger().Println(msg)
-			fmt.Println("NOTE: " + msg)
-		}
+	resp, err := RequestAPI("GET", "/api/version", nil, http.StatusOK)
+	if err != nil {
+		return err
 	}
+	apiInfo, ok := resp.body["data"].(map[string]any)
+	if !ok {
+		return fmt.Errorf("invalid response from API on GET /api/version")
+	}
+	fmt.Println("BUILD DATE:", apiInfo["BuildDate"])
+	fmt.Println("BUILD TREE:", apiInfo["BuildTree"])
+	fmt.Println("BUILD HASH:", apiInfo["BuildHash"])
+	fmt.Println("COMMIT DATE: ", apiInfo["CommitDate"])
+	fmt.Println("CUSTOMER: ", apiInfo["Customer"])
+	return nil
 }
 
-func LSEnterprise() {
-	r, e := models.Send("GET", State.APIURL+"/api/stats",
-		GetKey(), nil)
-	resp := ParseResponse(r, e, "lsenterprise")
-	if resp != nil {
-		DisplayObject(resp)
+func LSEnterprise() error {
+	resp, err := RequestAPI("GET", "/api/stats", nil, http.StatusOK)
+	if err != nil {
+		return err
 	}
+	DisplayObject(resp.body)
+	return nil
 }
 
 // Displays environment variable values
 // and user defined variables and funcs
 func Env(userVars, userFuncs map[string]interface{}) {
-	fmt.Println("Unity: ", State.UnityClientAvail)
 	fmt.Println("Filter: ", State.FilterDisplay)
 	fmt.Println()
 	fmt.Println("Objects Unity shall be informed of upon update:")
@@ -559,41 +646,9 @@ func Env(userVars, userFuncs map[string]interface{}) {
 
 	fmt.Println()
 	fmt.Println("Currently defined user functions:")
-	for name, _ := range userFuncs {
+	for name := range userFuncs {
 		fmt.Println("Name:", name)
 	}
-}
-
-func LSOBJECT(path string, entity int) []interface{} {
-	var Path string
-
-	if entity == SITE { //Special for sites case
-		if path == "/Physical" {
-			Path = State.APIURL + "/api"
-		} else {
-			//Return nothing
-			return nil
-		}
-	} else {
-		var err error
-		Path, err = ObjectUrl(path, 0)
-		if err != nil {
-			if State.DebugLvl > 0 {
-				println("Error finding Object from given path!")
-			}
-			l.GetWarningLogger().Println("Object to Get not found")
-			return nil
-		}
-	}
-
-	//Retrieve the desired objects under the working path
-	entStr := EntityToString(entity) + "s"
-	r, e := models.Send("GET", Path+"/"+entStr, GetKey(), nil)
-	parsed := ParseResponse(r, e, "list objects")
-	if parsed == nil {
-		return nil
-	}
-	return GetRawObjects(parsed)
 }
 
 func GetByAttr(path string, u interface{}) error {
@@ -637,29 +692,6 @@ func GetByAttr(path string, u interface{}) error {
 	return nil
 }
 
-// This function display devices in a sorted order according
-// to the attribute specified
-func LSATTR(path string, attr string) error {
-	obj, err := GetObjectWithChildren(path, 1)
-	if err != nil {
-		return err
-	}
-	cat := obj["category"].(string)
-	if cat != "rack" {
-		return fmt.Errorf("command may only be performed on rack objects")
-	}
-	children := obj["children"].([]any)
-	sortedDevices := SortObjects(children, attr)
-
-	//Print the objects received
-	if len(sortedDevices.GetData()) > 0 {
-		println("Devices")
-		println()
-		sortedDevices.Print()
-	}
-	return nil
-}
-
 func CD(path string) error {
 	if State.DebugLvl >= 3 {
 		println("THE PATH: ", path)
@@ -677,9 +709,9 @@ func Help(entry string) {
 	var path string
 	entry = strings.TrimSpace(entry)
 	switch entry {
-	case "ls", "pwd", "print", "cd", "tree", "get", "clear",
+	case "ls", "pwd", "print", "printf", "cd", "tree", "get", "clear",
 		"lsog", "grep", "for", "while", "if", "env",
-		"cmds", "var", "unset", "selection", "camera", "ui", "hc", "drawable",
+		"cmds", "var", "unset", "selection", commands.Connect3D, "camera", "ui", "hc", "drawable",
 		"link", "unlink", "draw", "getu", "getslot", "undraw",
 		"lsenterprise":
 		path = "./other/man/" + entry + ".md"
@@ -792,8 +824,10 @@ func CreateObject(path string, ent int, data map[string]interface{}) error {
 
 		//Check for template
 		if _, ok := attr["template"]; ok {
-			GetOCLIAtrributesTemplateHelper(attr, data, BLDG)
-
+			err := GetOCLIAtrributesTemplateHelper(attr, data, BLDG)
+			if err != nil {
+				return err
+			}
 		} else {
 			//Serialise size and posXY manually instead
 			if _, ok := attr["size"].(string); ok {
@@ -863,7 +897,10 @@ func CreateObject(path string, ent int, data map[string]interface{}) error {
 		//If user provided templates, get the JSON
 		//and parse into templates
 		//NOTE this function also assigns value for "size" attribute
-		GetOCLIAtrributesTemplateHelper(attr, data, ent)
+		err := GetOCLIAtrributesTemplateHelper(attr, data, ent)
+		if err != nil {
+			return err
+		}
 
 		if _, ok := attr["posXY"].(string); ok {
 			attr["posXY"] = serialiseAttr(attr, "posXY")
@@ -928,7 +965,10 @@ func CreateObject(path string, ent int, data map[string]interface{}) error {
 
 		//If user provided templates, get the JSON
 		//and parse into templates
-		GetOCLIAtrributesTemplateHelper(attr, data, ent)
+		err := GetOCLIAtrributesTemplateHelper(attr, data, ent)
+		if err != nil {
+			return err
+		}
 
 		if attr["size"] == "" {
 			if State.DebugLvl > 0 {
@@ -1028,7 +1068,10 @@ func CreateObject(path string, ent int, data map[string]interface{}) error {
 		//If user provided templates, get the JSON
 		//and parse into templates
 		if _, ok := attr["template"]; ok {
-			GetOCLIAtrributesTemplateHelper(attr, data, DEVICE)
+			err := GetOCLIAtrributesTemplateHelper(attr, data, DEVICE)
+			if err != nil {
+				return err
+			}
 		} else {
 			attr["template"] = ""
 			if slot != nil {
@@ -1068,7 +1111,10 @@ func CreateObject(path string, ent int, data map[string]interface{}) error {
 		attr = data["attributes"].(map[string]interface{})
 		if _, ok := attr["template"]; ok {
 			//GetOCLIAtrributesTemplateHelper(attr, data, DEVICE)
-			tmpl := fetchTemplate(attr["template"].(string), STRAYSENSOR)
+			tmpl, err := fetchTemplate(attr["template"].(string), STRAYSENSOR)
+			if err != nil {
+				return err
+			}
 			MergeMaps(attr, tmpl, true)
 		} else {
 			attr["template"] = ""
@@ -1077,7 +1123,10 @@ func CreateObject(path string, ent int, data map[string]interface{}) error {
 	case STRAY_DEV:
 		attr = data["attributes"].(map[string]interface{})
 		if _, ok := attr["template"]; ok {
-			GetOCLIAtrributesTemplateHelper(attr, data, DEVICE)
+			err := GetOCLIAtrributesTemplateHelper(attr, data, DEVICE)
+			if err != nil {
+				return err
+			}
 		} else {
 			attr["template"] = ""
 		}
@@ -1109,7 +1158,7 @@ func CreateObject(path string, ent int, data map[string]interface{}) error {
 
 // If user provided templates, get the JSON
 // and parse into templates
-func GetOCLIAtrributesTemplateHelper(attr, data map[string]interface{}, ent int) {
+func GetOCLIAtrributesTemplateHelper(attr, data map[string]interface{}, ent int) error {
 	//Inner func declaration used for importing
 	//data from templates
 	attrSerialiser := func(someVal interface{}, idx string, ent int) string {
@@ -1143,185 +1192,179 @@ func GetOCLIAtrributesTemplateHelper(attr, data map[string]interface{}, ent int)
 			} else {
 				tInt = OBJTMPL
 			} //End of determine block
+			tmpl, err := fetchTemplate(qS, tInt)
+			if err != nil {
+				return err
+			}
 
-			if tmpl := fetchTemplate(qS, tInt); tmpl != nil {
-				//MergeMaps(attr, tmpl, true)
-				key := determineStrKey(tmpl, []string{"sizeWDHmm", "sizeWDHm"})
+			//MergeMaps(attr, tmpl, true)
+			key := determineStrKey(tmpl, []string{"sizeWDHmm", "sizeWDHm"})
 
-				if sizeInf, ok := tmpl[key].([]interface{}); ok && len(sizeInf) == 3 {
-					var xS, yS, zS string
-					xS = attrSerialiser(sizeInf[0], "x", ent)
-					yS = attrSerialiser(sizeInf[1], "y", ent)
-					zS = attrSerialiser(sizeInf[2], "height", ent)
+			if sizeInf, ok := tmpl[key].([]interface{}); ok && len(sizeInf) == 3 {
+				var xS, yS, zS string
+				xS = attrSerialiser(sizeInf[0], "x", ent)
+				yS = attrSerialiser(sizeInf[1], "y", ent)
+				zS = attrSerialiser(sizeInf[2], "height", ent)
 
-					attr["size"] = "{\"x\":" + xS + ", \"y\":" + yS + "}"
-					attr["height"] = zS
+				attr["size"] = "{\"x\":" + xS + ", \"y\":" + yS + "}"
+				attr["height"] = zS
 
-					if ent == DEVICE {
-						attr["sizeUnit"] = "mm"
-						attr["heightUnit"] = "mm"
-						if tmpx, ok := tmpl["attributes"]; ok {
-							if x, ok := tmpx.(map[string]interface{}); ok {
-								if tmp, ok := x["type"]; ok {
-									if t, ok := tmp.(string); ok {
-										if t == "chassis" || t == "server" {
-											res := 0
-											if val, ok := sizeInf[2].(float64); ok {
-												res = int((val / 1000) / RACKUNIT)
-											} else if val, ok := sizeInf[2].(int); ok {
-												res = int((float64(val) / 1000) / RACKUNIT)
-											} else {
-												//Resort to default value
-												msg := "Warning, invalid value provided for" +
-													" sizeU. Defaulting to 5"
-												println(msg)
-												res = int((5 / 1000) / RACKUNIT)
-											}
-											attr["sizeU"] = strconv.Itoa(res)
-
+				if ent == DEVICE {
+					attr["sizeUnit"] = "mm"
+					attr["heightUnit"] = "mm"
+					if tmpx, ok := tmpl["attributes"]; ok {
+						if x, ok := tmpx.(map[string]interface{}); ok {
+							if tmp, ok := x["type"]; ok {
+								if t, ok := tmp.(string); ok {
+									if t == "chassis" || t == "server" {
+										res := 0
+										if val, ok := sizeInf[2].(float64); ok {
+											res = int((val / 1000) / RACKUNIT)
+										} else if val, ok := sizeInf[2].(int); ok {
+											res = int((float64(val) / 1000) / RACKUNIT)
+										} else {
+											//Resort to default value
+											msg := "Warning, invalid value provided for" +
+												" sizeU. Defaulting to 5"
+											println(msg)
+											res = int((5 / 1000) / RACKUNIT)
 										}
+										attr["sizeU"] = strconv.Itoa(res)
+
 									}
 								}
 							}
 						}
+					}
 
-					} else if ent == ROOM {
-						attr["sizeUnit"] = "m"
-						attr["heightUnit"] = "m"
+				} else if ent == ROOM {
+					attr["sizeUnit"] = "m"
+					attr["heightUnit"] = "m"
 
-						//Copy additional Room specific attributes
-						var tmp []byte
-						CopyAttr(attr, tmpl, "technicalArea")
-						if _, ok := attr["technicalArea"]; ok {
-							//tmp, _ := json.Marshal(attr["technicalArea"])
-							attr["technical"] = attr["technicalArea"]
-							delete(attr, "technicalArea")
+					//Copy additional Room specific attributes
+					var tmp []byte
+					CopyAttr(attr, tmpl, "technicalArea")
+					if _, ok := attr["technicalArea"]; ok {
+						//tmp, _ := json.Marshal(attr["technicalArea"])
+						attr["technical"] = attr["technicalArea"]
+						delete(attr, "technicalArea")
+					}
+
+					CopyAttr(attr, tmpl, "axisOrientation")
+
+					CopyAttr(attr, tmpl, "reservedArea")
+					if _, ok := attr["reservedArea"]; ok {
+						//tmp, _ = json.Marshal(attr["reservedArea"])
+						attr["reserved"] = attr["reservedArea"]
+						delete(attr, "reservedArea")
+					}
+
+					parseReservedTech(attr)
+
+					CopyAttr(attr, tmpl, "separators")
+					if _, ok := attr["separators"]; ok {
+						tmp, _ = json.Marshal(attr["separators"])
+						attr["separators"] = string(tmp)
+					}
+
+					CopyAttr(attr, tmpl, "pillars")
+					if _, ok := attr["pillars"]; ok {
+						tmp, _ = json.Marshal(attr["pillars"])
+						attr["pillars"] = string(tmp)
+					}
+
+					CopyAttr(attr, tmpl, "floorUnit")
+					if _, ok := attr["floorUnit"]; ok {
+						if floorUnit, ok := attr["floorUnit"].(string); ok {
+							attr["floorUnit"] = floorUnit
+						}
+					}
+
+					CopyAttr(attr, tmpl, "tiles")
+					if _, ok := attr["tiles"]; ok {
+						tmp, _ = json.Marshal(attr["tiles"])
+						attr["tiles"] = string(tmp)
+					}
+
+					CopyAttr(attr, tmpl, "rows")
+					if _, ok := attr["rows"]; ok {
+						tmp, _ = json.Marshal(attr["rows"])
+						attr["rows"] = string(tmp)
+					}
+
+					CopyAttr(attr, tmpl, "aisles")
+					if _, ok := attr["aisles"]; ok {
+						tmp, _ = json.Marshal(attr["aisles"])
+						attr["aisles"] = string(tmp)
+					}
+
+					CopyAttr(attr, tmpl, "vertices")
+					if _, ok := attr["vertices"]; ok {
+						tmp, _ = json.Marshal(attr["vertices"])
+						attr["vertices"] = string(tmp)
+					}
+
+					CopyAttr(attr, tmpl, "colors")
+					if _, ok := attr["colors"]; ok {
+						tmp, _ = json.Marshal(attr["colors"])
+						attr["colors"] = string(tmp)
+					}
+
+					CopyAttr(attr, tmpl, "tileAngle")
+					if _, ok := attr["tileAngle"]; ok {
+						if tileAngle, ok := attr["tileAngle"].(int); ok {
+							attr["tileAngle"] = strconv.Itoa(tileAngle)
 						}
 
-						CopyAttr(attr, tmpl, "axisOrientation")
-
-						CopyAttr(attr, tmpl, "reservedArea")
-						if _, ok := attr["reservedArea"]; ok {
-							//tmp, _ = json.Marshal(attr["reservedArea"])
-							attr["reserved"] = attr["reservedArea"]
-							delete(attr, "reservedArea")
+						if tileAngleF, ok := attr["tileAngle"].(float64); ok {
+							tileAngleStr := strconv.FormatFloat(tileAngleF, 'f', -1, 64)
+							attr["tileAngle"] = tileAngleStr
 						}
+					}
 
-						parseReservedTech(attr)
+				} else if ent == BLDG {
+					attr["sizeUnit"] = "m"
+					attr["heightUnit"] = "m"
 
-						CopyAttr(attr, tmpl, "separators")
-						if _, ok := attr["separators"]; ok {
-							tmp, _ = json.Marshal(attr["separators"])
-							attr["separators"] = string(tmp)
-						}
+				} else {
+					attr["sizeUnit"] = "cm"
+					attr["heightUnit"] = "cm"
+				}
 
-						CopyAttr(attr, tmpl, "pillars")
-						if _, ok := attr["pillars"]; ok {
-							tmp, _ = json.Marshal(attr["pillars"])
-							attr["pillars"] = string(tmp)
-						}
-
-						CopyAttr(attr, tmpl, "floorUnit")
-						if _, ok := attr["floorUnit"]; ok {
-							if floorUnit, ok := attr["floorUnit"].(string); ok {
-								attr["floorUnit"] = floorUnit
-							}
-						}
-
-						CopyAttr(attr, tmpl, "tiles")
-						if _, ok := attr["tiles"]; ok {
-							tmp, _ = json.Marshal(attr["tiles"])
-							attr["tiles"] = string(tmp)
-						}
-
-						CopyAttr(attr, tmpl, "rows")
-						if _, ok := attr["rows"]; ok {
-							tmp, _ = json.Marshal(attr["rows"])
-							attr["rows"] = string(tmp)
-						}
-
-						CopyAttr(attr, tmpl, "aisles")
-						if _, ok := attr["aisles"]; ok {
-							tmp, _ = json.Marshal(attr["aisles"])
-							attr["aisles"] = string(tmp)
-						}
-
-						CopyAttr(attr, tmpl, "vertices")
-						if _, ok := attr["vertices"]; ok {
-							tmp, _ = json.Marshal(attr["vertices"])
-							attr["vertices"] = string(tmp)
-						}
-
-						CopyAttr(attr, tmpl, "colors")
-						if _, ok := attr["colors"]; ok {
-							tmp, _ = json.Marshal(attr["colors"])
-							attr["colors"] = string(tmp)
-						}
-
-						CopyAttr(attr, tmpl, "tileAngle")
-						if _, ok := attr["tileAngle"]; ok {
-							if tileAngle, ok := attr["tileAngle"].(int); ok {
-								attr["tileAngle"] = strconv.Itoa(tileAngle)
-							}
-
-							if tileAngleF, ok := attr["tileAngle"].(float64); ok {
-								tileAngleStr := strconv.FormatFloat(tileAngleF, 'f', -1, 64)
-								attr["tileAngle"] = tileAngleStr
-							}
-						}
-
-					} else if ent == BLDG {
-						attr["sizeUnit"] = "m"
-						attr["heightUnit"] = "m"
-
+				//Copy Description
+				if _, ok := tmpl["description"]; ok {
+					if descTable, ok := tmpl["description"].([]interface{}); ok {
+						data["description"] = descTable
 					} else {
-						attr["sizeUnit"] = "cm"
-						attr["heightUnit"] = "cm"
-					}
-
-					//Copy Description
-					if _, ok := tmpl["description"]; ok {
-						if descTable, ok := tmpl["description"].([]interface{}); ok {
-							data["description"] = descTable
-						} else {
-							data["description"] = []interface{}{tmpl["description"]}
-						}
-					} else {
-						data["description"] = []string{}
-					}
-
-					//fbxModel section
-					if check := CopyAttr(attr, tmpl, "fbxModel"); !check {
-						if ent != BLDG {
-							attr["fbxModel"] = ""
-						}
-
-					}
-
-					//Copy orientation if available
-					CopyAttr(attr, tmpl, "orientation")
-
-					//Merge attributes if available
-					if tmplAttrsInf, ok := tmpl["attributes"]; ok {
-						if tmplAttrs, ok := tmplAttrsInf.(map[string]interface{}); ok {
-							MergeMaps(attr, tmplAttrs, false)
-						}
+						data["description"] = []interface{}{tmpl["description"]}
 					}
 				} else {
-					if State.DebugLvl > 1 {
-						println("Warning, invalid size value in template.",
-							"Default values will be assigned")
+					data["description"] = []string{}
+				}
+
+				//fbxModel section
+				if check := CopyAttr(attr, tmpl, "fbxModel"); !check {
+					if ent != BLDG {
+						attr["fbxModel"] = ""
 					}
 
 				}
+
+				//Copy orientation if available
+				CopyAttr(attr, tmpl, "orientation")
+
+				//Merge attributes if available
+				if tmplAttrsInf, ok := tmpl["attributes"]; ok {
+					if tmplAttrs, ok := tmplAttrsInf.(map[string]interface{}); ok {
+						MergeMaps(attr, tmplAttrs, false)
+					}
+				}
 			} else {
-				attr["template"] = ""
 				if State.DebugLvl > 1 {
-					println("Warning: template was not found.",
-						"it will not be used")
+					println("Warning, invalid size value in template.",
+						"Default values will be assigned")
 				}
 
-				l.GetWarningLogger().Println("Invalid data type or incorrect name used to invoke template")
 			}
 
 		} else {
@@ -1346,24 +1389,48 @@ func GetOCLIAtrributesTemplateHelper(attr, data map[string]interface{}, ent int)
 			attr["size"] = serialiseAttr2(attr, "size")
 		}
 	}
+	return nil
 }
 
-func UIDelay(time float64) {
+func Connect3D(url string) error {
+	if models.Ogree3D.IsConnected() {
+		if url == "" || url == State.Ogree3DURL {
+			return fmt.Errorf("already connected to OGrEE-3D url: %s", State.Ogree3DURL)
+		} else {
+			models.Ogree3D.Disconnect()
+		}
+	}
+
+	if url == "" {
+		fmt.Printf("Using OGrEE-3D url: %s\n", State.Ogree3DURL)
+	} else {
+		err := State.SetOgree3DURL(url)
+		if err != nil {
+			return err
+		}
+	}
+
+	return InitOGrEE3DCommunication(*State.Terminal)
+}
+
+func UIDelay(time float64) error {
 	subdata := map[string]interface{}{"command": "delay", "data": time}
 	data := map[string]interface{}{"type": "ui", "data": subdata}
 	if State.DebugLvl > WARNING {
 		Disp(data)
 	}
-	InformUnity("HandleUI", -1, data)
+
+	return InformOgree3D("HandleUI", -1, data)
 }
 
-func UIToggle(feature string, enable bool) {
+func UIToggle(feature string, enable bool) error {
 	subdata := map[string]interface{}{"command": feature, "data": enable}
 	data := map[string]interface{}{"type": "ui", "data": subdata}
 	if State.DebugLvl > WARNING {
 		Disp(data)
 	}
-	InformUnity("HandleUI", -1, data)
+
+	return InformOgree3D("HandleUI", -1, data)
 }
 
 func UIHighlight(path string) error {
@@ -1371,13 +1438,14 @@ func UIHighlight(path string) error {
 	if err != nil {
 		return err
 	}
+
 	subdata := map[string]interface{}{"command": "highlight", "data": obj["id"]}
 	data := map[string]interface{}{"type": "ui", "data": subdata}
 	if State.DebugLvl > WARNING {
 		Disp(data)
 	}
-	InformUnity("HandleUI", -1, data)
-	return nil
+
+	return InformOgree3D("HandleUI", -1, data)
 }
 
 func UIClearCache() error {
@@ -1386,11 +1454,11 @@ func UIClearCache() error {
 	if State.DebugLvl > WARNING {
 		Disp(data)
 	}
-	InformUnity("HandleUI", -1, data)
-	return nil
+
+	return InformOgree3D("HandleUI", -1, data)
 }
 
-func CameraMove(command string, position []float64, rotation []float64) {
+func CameraMove(command string, position []float64, rotation []float64) error {
 	subdata := map[string]interface{}{"command": command}
 	subdata["position"] = map[string]interface{}{"x": position[0], "y": position[1], "z": position[2]}
 	subdata["rotation"] = map[string]interface{}{"x": rotation[0], "y": rotation[1]}
@@ -1398,10 +1466,11 @@ func CameraMove(command string, position []float64, rotation []float64) {
 	if State.DebugLvl > WARNING {
 		Disp(data)
 	}
-	InformUnity("HandleUI", -1, data)
+
+	return InformOgree3D("HandleUI", -1, data)
 }
 
-func CameraWait(time float64) {
+func CameraWait(time float64) error {
 	subdata := map[string]interface{}{"command": "wait"}
 	subdata["position"] = map[string]interface{}{"x": 0, "y": 0, "z": 0}
 	subdata["rotation"] = map[string]interface{}{"x": 999, "y": time}
@@ -1409,7 +1478,8 @@ func CameraWait(time float64) {
 	if State.DebugLvl > WARNING {
 		Disp(data)
 	}
-	InformUnity("HandleUI", -1, data)
+
+	return InformOgree3D("HandleUI", -1, data)
 }
 
 func FocusUI(path string) error {
@@ -1430,9 +1500,19 @@ func FocusUI(path string) error {
 	} else {
 		id = ""
 	}
+
 	data := map[string]interface{}{"type": "focus", "data": id}
-	InformUnity("FocusUI", -1, data)
-	CD(path)
+	err := InformOgree3D("FocusUI", -1, data)
+	if err != nil {
+		return err
+	}
+
+	if path != "" {
+		return CD(path)
+	} else {
+		fmt.Println("Focus is now empty")
+	}
+
 	return nil
 }
 
@@ -1441,12 +1521,12 @@ func LinkObject(source string, destination string, posUOrSlot string) error {
 	if err != nil {
 		return err
 	}
-	if !strings.HasPrefix(sourceUrl, "/api/stray-objects/") {
-		return fmt.Errorf("only stray objects can be linked")
-	}
-	destId, err := ObjectId(destination)
+	_, destId, err := SplitPath(destination)
 	if err != nil {
 		return err
+	}
+	if !strings.HasPrefix(sourceUrl, "/api/stray-objects/") {
+		return fmt.Errorf("only stray objects can be linked")
 	}
 	payload := map[string]any{"parentId": destId}
 	if posUOrSlot != "" {
@@ -1460,12 +1540,7 @@ func LinkObject(source string, destination string, posUOrSlot string) error {
 }
 
 func UnlinkObject(path string) error {
-	obj, err := GetObject(path)
-	if err != nil {
-		return err
-	}
-	category := obj["category"].(string)
-	sourceUrl, err := ObjectUrlWithEntity(path, 0, category)
+	sourceUrl, err := ObjectUrl(path, 0)
 	if err != nil {
 		return err
 	}
@@ -1504,10 +1579,8 @@ func Draw(path string, depth int, force bool) error {
 	if err != nil {
 		return err
 	}
+
 	count := objectCounter(obj)
-	if !State.UnityClientAvail {
-		return nil
-	}
 	okToGo := true
 	if count > State.DrawThreshold && !force {
 		msg := "You are about to send " + strconv.Itoa(count) +
@@ -1527,7 +1600,7 @@ func Draw(path string, depth int, force bool) error {
 	if okToGo {
 		data := map[string]interface{}{"type": "create", "data": obj}
 		//0 to include the JSON filtration
-		unityErr := InformUnity("Draw", 0, data)
+		unityErr := InformOgree3D("Draw", 0, data)
 		if unityErr != nil {
 			return unityErr
 		}
@@ -1550,13 +1623,10 @@ func Undraw(x string) error {
 			return fmt.Errorf("this object has no id")
 		}
 	}
-	data := map[string]interface{}{"type": "delete", "data": id}
-	unityErr := InformUnity("Undraw", 0, data)
-	if unityErr != nil {
-		return unityErr
-	}
 
-	return nil
+	data := map[string]interface{}{"type": "delete", "data": id}
+
+	return InformOgree3D("Undraw", 0, data)
 }
 
 func IsEntityDrawable(path string) (bool, error) {
@@ -1646,7 +1716,7 @@ func SetClipBoard(x []string) ([]string, error) {
 
 	if len(x) == 0 { //This means deselect
 		data = map[string]interface{}{"type": "select", "data": "[]"}
-		err := InformUnity("SetClipBoard", -1, data)
+		err := InformOgree3DOptional("SetClipBoard", -1, data)
 		if err != nil {
 			return nil, fmt.Errorf("cannot reset clipboard : %s", err.Error())
 		}
@@ -1665,7 +1735,7 @@ func SetClipBoard(x []string) ([]string, error) {
 		}
 		serialArr := "[\"" + strings.Join(arr, "\",\"") + "\"]"
 		data = map[string]interface{}{"type": "select", "data": serialArr}
-		err := InformUnity("SetClipBoard", -1, data)
+		err := InformOgree3DOptional("SetClipBoard", -1, data)
 		if err != nil {
 			return nil, fmt.Errorf("cannot set clipboard : %s", err.Error())
 		}
@@ -1675,18 +1745,15 @@ func SetClipBoard(x []string) ([]string, error) {
 
 func SetEnv(arg string, val interface{}) {
 	switch arg {
-	case "Filter", "Unity":
+	case "Filter":
 		if _, ok := val.(bool); !ok {
 			msg := "Can only assign bool values for " + arg + " Env Var"
 			l.GetWarningLogger().Println(msg)
 			if State.DebugLvl > 0 {
 				println(msg)
 			}
-
 		} else {
-			if arg == "Unity" {
-				State.UnityClientAvail = val.(bool)
-			} else if arg == "Filter" {
+			if arg == "Filter" {
 				State.FilterDisplay = val.(bool)
 			}
 
@@ -1790,14 +1857,28 @@ func InteractObject(path string, keyword string, val interface{}, fromAttr bool)
 	ans := map[string]interface{}{"type": "interact", "data": data}
 
 	//-1 since its not neccessary to check for filtering
-	return InformUnity("Interact", -1, ans)
+	return InformOgree3DOptional("Interact", -1, ans)
 }
 
-// Messages Unity Client
-func InformUnity(caller string, entity int, data map[string]interface{}) error {
-	//If unity is available message it
-	//otherwise do nothing
-	if State.UnityClientAvail {
+// Sends a message to OGrEE-3D
+//
+// If there isn't a connection established, tries to establish the connection first
+func InformOgree3D(caller string, entity int, data map[string]interface{}) error {
+	if !models.Ogree3D.IsConnected() {
+		fmt.Println("Connecting to OGrEE-3D")
+		err := Connect3D("")
+		if err != nil {
+			return err
+		}
+	}
+
+	return InformOgree3DOptional(caller, entity, data)
+}
+
+// Sends a message to OGrEE-3D if there is a connection established,
+// otherwise does nothing
+func InformOgree3DOptional(caller string, entity int, data map[string]interface{}) error {
+	if models.Ogree3D.IsConnected() {
 		if entity > -1 && entity < SENSOR+1 {
 			data = GenerateFilteredJson(data)
 		}
@@ -1806,7 +1887,7 @@ func InformUnity(caller string, entity int, data map[string]interface{}) error {
 			Disp(data)
 		}
 
-		e := models.ContactUnity(data, State.DebugLvl)
+		e := models.Ogree3D.Send(data, State.DebugLvl)
 		if e != nil {
 			l.GetWarningLogger().Println("Unable to contact Unity Client @" + caller)
 			if State.DebugLvl > 1 {
@@ -1818,240 +1899,32 @@ func InformUnity(caller string, entity int, data map[string]interface{}) error {
 	return nil
 }
 
-// x is path
-func LSOBJECTRecursive(path string, entity int) ([]interface{}, error) {
-	var obj map[string]interface{}
-	var err error
-
-	if entity == SITE { //Edge case
-		if path == "/Physical" {
-			r, e := models.Send("GET",
-				State.APIURL+"/api/sites", GetKey(), nil)
-			obj = ParseResponse(r, e, "Get Sites")
-			return LoadArrFromResp(obj, "objects"), nil
-		} else {
-			//Return nothing
-			return nil, nil
-		}
-	} else {
-		obj, err = GetObject(path)
-		if err != nil {
-			return nil, err
-		}
-	}
-
-	objEnt := obj["category"].(string)
-	obi := EntityStrToInt(objEnt)
-
-	//YouareAt -> obi
-	//want 	   -> entity
-
-	if (entity >= AC && entity <= CORRIDOR) && obi > ROOM {
-		return nil, nil
-	}
-
-	if entity < AC && obi > entity {
-		return nil, nil
-	}
-
-	//println(entities)
-	var idToSend string
-	if obi == SITE {
-		idToSend = obj["name"].(string)
-	} else {
-		idToSend = obj["id"].(string)
-	}
-	//println(entities)
-	//println(obi)
-	//println("WANT:", EntityToString(entity))
-	return lsobjHelperRecursive(State.APIURL, idToSend, obi, entity), nil
-	//return nil
-}
-
-// NOTE: LSDEV is recursive while LSSENSOR is not
-// Code could be more tidy
-func lsobjHelperRecursive(api, objID string, curr, entity int) []interface{} {
-	var ext, URL string
-	if entity == SENSOR && (curr == BLDG || curr == ROOM || curr == RACK || curr == DEVICE) {
-		ext = EntityToString(curr) + "s/" + objID + "/" + EntityToString(entity) + "s"
-		URL = State.APIURL + "/api/" + ext
-		r, e := models.Send("GET", URL, GetKey(), nil)
-		tmp := ParseResponse(r, e, "getting objects")
-		if tmp == nil {
-			return nil
-		}
-
-		tmpObjs := LoadArrFromResp(tmp, "objects")
-		if tmp == nil {
-			return nil
-		}
-		//res := infArrToMapStrinfArr(tmpObjs)
-		return tmpObjs
-
-	} else if entity-curr >= 2 {
-
-		//println("DEBUG-should be here")
-		ext = EntityToString(curr) + "s/" + objID + "/" + EntityToString(curr+2) + "s"
-		URL = State.APIURL + "/api/" + ext
-		//println("DEBUG-URL:", URL)
-
-		//EDGE CASE, if user is at a BLDG and requests object of room
-		if (curr == BLDG || curr == ROOM) && (entity >= AC && entity <= CORRIDOR) {
-			ext = EntityToString(curr) + "s/" + objID + "/" + EntityToString(entity) + "s"
-			r, e := models.Send("GET", State.APIURL+"/api/"+ext, GetKey(), nil)
-			tmp := ParseResponse(r, e, "getting objects")
-			if tmp == nil {
-				return nil
-			}
-
-			return GetRawObjects(tmp)
-
-		}
-		//END OF EDGE CASE BLOCK
-
-		r, e := models.Send("GET", URL, GetKey(), nil)
-		resp := ParseResponse(r, e, "getting objects")
-		if resp == nil {
-			println("return nil1")
-			return nil
-		}
-
-		//objs -> resp["data"]["objects"]
-		objs := LoadArrFromResp(resp, "objects")
-		if objs != nil {
-			x := []interface{}{}
-
-			if entity >= AC && entity <= CORRIDOR {
-
-				for q := range objs {
-					id := objs[q].(map[string]interface{})["id"].(string)
-					ext2 := "/api/" + EntityToString(curr+2) + "s/" + id + "/" + EntityToString(entity) + "s"
-
-					tmp, e := models.Send("GET", State.APIURL+ext2, GetKey(), nil)
-					tmp2 := ParseResponse(tmp, e, "get objects")
-					if tmp2 != nil {
-						x = GetRawObjects(tmp2)
-					}
-				}
-			} else {
-				if entity == DEVICE && curr == ROOM {
-					x = append(x, objs...)
-				}
-				for i := range objs {
-					rest := lsobjHelperRecursive(api, objs[i].(map[string]interface{})["id"].(string), curr+2, entity)
-					if rest != nil && len(rest) > 0 {
-						x = append(x, rest...)
-					}
-
-				}
-			}
-
-			if State.DebugLvl > 3 {
-				println(len(x))
-			}
-
-			return x
-		}
-
-	} else if entity-curr >= 1 {
-		//println("DEBUG-must be here")
-		ext := EntityToString(curr) + "s/" + objID + "/" + EntityToString(curr+1) + "s"
-		URL := State.APIURL + "/api/" + ext
-		r, e := models.Send("GET", URL, GetKey(), nil)
-		//println("DEBUG-URL SENT:", URL)
-		resp := ParseResponse(r, e, "getting objects")
-		if resp == nil {
-			println("return nil")
-			return nil
-		}
-		//objs := resp["data"]["objects"]
-		objs := LoadArrFromResp(resp, "objects")
-		if objs != nil {
-			ans := []interface{}{}
-			//For associated objects of room
-			if entity >= AC && entity <= CORRIDOR {
-				for i := range objs {
-					ext2 := "/api/" + EntityToString(curr) + "s/" +
-						objs[i].(map[string]interface{})["id"].(string) +
-						"/" + EntityToString(entity) + "s"
-
-					tmp, e := models.Send("GET", State.APIURL+ext2, GetKey(), nil)
-					x := ParseResponse(tmp, e, "get objects")
-					if x != nil {
-						ans = append(ans, x)
-					}
-				}
-			} else {
-
-				ans = objs
-				if curr == RACK && entity == DEVICE {
-					for idx := range ans {
-						ext2 := "/api/" + EntityToString(entity) +
-							"s/" +
-							ans[idx].(map[string]interface{})["id"].(string) +
-							"/" + EntityToString(entity) + "s"
-
-						subURL := State.APIURL + ext2
-						r1, e1 := models.Send("GET", subURL, GetKey(), nil)
-						tmp1 := ParseResponse(r1, e1, "getting objects")
-
-						tmp2 := LoadArrFromResp(tmp1, "objects")
-						if tmp2 != nil {
-							//Swap ans and objs to keep order
-							ans = append(ans, tmp2...)
-						}
-
-					}
-
-				}
-			}
-
-			return ans
-		}
-
-	} else if entity-curr == 0 { //Base Case
-
-		//For devices we have to make hierarchal call
-		if entity == DEVICE {
-			URL = State.APIURL + "/api/" + EntityToString(curr) + "s/" + objID + "/devices"
-		} else {
-			URL = State.APIURL + "/api/" + EntityToString(curr) + "s/" + objID
-		}
-
-		resp, e := models.Send("GET", URL, GetKey(), nil)
-		x := ParseResponse(resp, e, "get object")
-		if entity == DEVICE {
-			return GetRawObjects(x)
-
-		}
-		return []interface{}{x["data"]}
-	}
-	return nil
-}
-
 // Helper function for GetOCLIAttr which retrieves
 // template from server if available, this func mainly helps
 // to keep code organised
-func fetchTemplate(name string, objType int) map[string]interface{} {
-	var URL string
+func fetchTemplate(name string, objType int) (map[string]interface{}, error) {
+	var url string
 	if objType == ROOMTMPL {
-		URL = State.APIURL + "/api/room_templates/" + name
+		url = "/api/room_templates/"
 	} else if objType == BLDGTMPL {
-		URL = State.APIURL + "/api/bldg_templates/" + name
+		url = "/api/bldg_templates/"
 	} else {
-		URL = State.APIURL + "/api/obj_templates/" + name
+		url = "/api/obj_templates/"
 	}
-	r, e := models.Send("GET", URL, GetKey(), nil)
-	res := ParseResponse(r, e, "fetch template")
-	if res != nil {
-		if tmplInf, ok := res["data"]; ok {
-			if tmpl, ok := tmplInf.(map[string]interface{}); ok {
-				return tmpl
-			}
-		}
+	url += name
+	resp, err := RequestAPI("GET", url, nil, http.StatusOK)
+	if err != nil {
+		return nil, err
 	}
-
-	return nil
+	tmplInf, ok := resp.body["data"]
+	if !ok {
+		return nil, fmt.Errorf("invalid response on GET %s", url)
+	}
+	tmpl, ok := tmplInf.(map[string]interface{})
+	if !ok {
+		return nil, fmt.Errorf("invalid response on GET %s", url)
+	}
+	return tmpl, nil
 }
 
 func randPassword(n int) string {

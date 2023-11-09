@@ -6,8 +6,6 @@ import (
 	"testing"
 
 	"github.com/davecgh/go-spew/spew"
-
-	c "cli/controllers"
 )
 
 func (p *parser) remaining() string {
@@ -220,7 +218,7 @@ func TestParseString(t *testing.T) {
 func TestParseAssign(t *testing.T) {
 	defer recoverFunc(t)
 	p := newParser("test= plouf")
-	va := p.parseAssign()
+	va := p.parseAssign("")
 	if va != "test" {
 		t.Errorf("wrong variable parserd : %s", va)
 	}
@@ -246,16 +244,19 @@ func testCommand(buffer string, expected node, t *testing.T) bool {
 	return true
 }
 
-func TestParseLsObj(t *testing.T) {
-	buffer := "lsbldg -s height - f attr1:attr2 -r plouf.plaf "
+func TestParseLs(t *testing.T) {
+	buffer := "lsbuilding -s height - f attr1:attr2 plouf.plaf attr1=a, attr2=b"
 	path := &pathNode{&valueNode{"plouf.plaf"}}
-	entity := c.EntityStrToInt("building")
-	recursive := true
 	sort := "height"
 	attrList := []string{"attr1", "attr2"}
-	expected := &lsObjNode{path, entity, recursive, sort, attrList}
+	filters := map[string]node{
+		"category": &valueNode{"building"},
+		"attr1":    &valueNode{"a"},
+		"attr2":    &valueNode{"b"},
+	}
+	expected := &lsNode{path, filters, sort, attrList}
 	testCommand(buffer, expected, t)
-	buffer = "lsbldg -s height - f \"attr1:attr2\" -r plouf.plaf "
+	buffer = "lsbuilding -s height - f \"attr1:attr2\" plouf.plaf attr1=a, attr2=b"
 	testCommand(buffer, expected, t)
 }
 
@@ -279,7 +280,7 @@ var commandsMatching = map[string]node{
 	"man draw":                       &helpNode{"draw"},
 	"man camera":                     &helpNode{"camera"},
 	"man ui":                         &helpNode{"ui"},
-	"ls":                             &lsNode{&pathNode{&valueNode{""}}},
+	"ls":                             &lsNode{&pathNode{&valueNode{""}}, map[string]node{}, "", nil},
 	"cd":                             &cdNode{&pathNode{&valueNode{"/"}}},
 	"tree":                           &treeNode{&pathNode{&valueNode{"."}}, 1},
 	"get ${toto}/tata":               &getObjectNode{testPath},
@@ -345,6 +346,7 @@ var commandsMatching = map[string]node{
 	".cmds:${CUST}/DEMO.PERF.ocli":           &loadNode{&formatStringNode{&valueNode{"%v/DEMO.PERF.ocli"}, []node{&symbolReferenceNode{"CUST"}}}},
 	".cmds:${a}/${b}.ocli":                   &loadNode{&formatStringNode{&valueNode{"%v/%v.ocli"}, []node{&symbolReferenceNode{"a"}, &symbolReferenceNode{"b"}}}},
 	"while $i<6 {print \"a\"}":               &whileNode{&comparatorNode{"<", &symbolReferenceNode{"i"}, &valueNode{6}}, &printNode{&valueNode{"a"}}},
+	"printf \"coucou %d\", 12":               &printNode{&formatStringNode{&valueNode{"coucou %d"}, []node{&valueNode{12}}}},
 }
 
 func TestSimpleCommands(t *testing.T) {
@@ -399,7 +401,7 @@ func TestElif(t *testing.T) {
 	command := "if 5 == 6  {ls;} elif 5 == 4 {tree;} else {pwd;}"
 	condition := &equalityNode{"==", &valueNode{5}, &valueNode{6}}
 	conditionElif := &equalityNode{"==", &valueNode{5}, &valueNode{4}}
-	ifBody := &ast{[]node{&lsNode{&pathNode{&valueNode{""}}}, nil}}
+	ifBody := &ast{[]node{&lsNode{&pathNode{&valueNode{""}}, map[string]node{}, "", nil}, nil}}
 	elifBody := &ast{[]node{&treeNode{&pathNode{&valueNode{"."}}, 1}, nil}}
 	elseBody := &ast{[]node{&pwdNode{}, nil}}
 	elif := &ifNode{conditionElif, elifBody, elseBody}

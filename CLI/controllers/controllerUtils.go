@@ -209,11 +209,7 @@ func RequestAPI(method string, endpoint string, body map[string]any, expectedSta
 	}
 	response, err := ParseResponseClean(httpResponse)
 	if err != nil {
-		if State.DebugLvl >= DEBUG {
-			return nil, fmt.Errorf("%s %s\n%s", method, URL, err.Error())
-		} else {
-			return nil, err
-		}
+		return nil, fmt.Errorf("on %s %s : %s", method, endpoint, err.Error())
 	}
 	if response.status != expectedStatus {
 		msg := ""
@@ -274,4 +270,13 @@ func TranslatePath(p string) string {
 		}
 	}
 	return path.Clean("/" + strings.Join(output_words, "/"))
+}
+
+type ErrorWithInternalError struct {
+	UserError     error
+	InternalError error
+}
+
+func (err ErrorWithInternalError) Error() string {
+	return err.UserError.Error() + " caused by " + err.InternalError.Error()
 }

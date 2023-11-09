@@ -1,6 +1,7 @@
 package main
 
 import (
+	"cli/commands"
 	c "cli/controllers"
 	"fmt"
 	"strings"
@@ -8,20 +9,20 @@ import (
 
 type parseCommandFunc func() node
 
-var lsCommands = []string{"lssite", "lsbldg", "lsroom", "lsrack", "lsdev", "lsac",
+var lsCommands = []string{"ls", "lssite", "lsbuilding", "lsroom", "lsrack", "lsdev", "lsac",
 	"lspanel", "lscabinet", "lscorridor", "lssensor"}
 
 var manCommands = []string{
 	"get", "getu", "getslot",
 	"+", "-", "=", ">",
 	".cmds", ".template", ".var",
-	"ui", "camera",
+	commands.Connect3D, "ui", "camera",
 	"link", "unlink",
 	"lssite", "lsbldg", "lsroom", "lsrack", "lsdev", "lsac",
 	"lspanel", "lscabinet", "lscorridor", "lssensor", "lsenterprise",
 	"drawable", "draw", "undraw",
 	"tree", "lsog", "env", "cd", "pwd", "clear", "grep", "ls", "exit", "len", "man", "hc",
-	"print", "unset", "selection",
+	"print", "printf", "unset", "selection",
 	"for", "while", "if",
 }
 
@@ -61,6 +62,7 @@ type parser struct {
 	commandDispatch   map[string]parseCommandFunc
 	createObjDispatch map[string]parseCommandFunc
 	noArgsCommands    map[string]node
+	commandKeywords   []string
 }
 
 func un(p *parser) {
@@ -140,35 +142,36 @@ func (p *parser) error(message string) {
 		errorStr += " "
 	}
 	errorStr += "\033[31m" + "^" + "\033[0m" + "\n"
-	if len(p.stackTrace) > 1 {
-		errorStr += "parsing stack : "
-		emptyStack := true
-		for i := range p.stackTrace {
-			if p.stackTrace[i].message != "" {
-				if !emptyStack {
-					errorStr += " -> "
-				}
-				errorStr += p.stackTrace[i].message
-				emptyStack = false
+	parsingStackStr := ""
+	for i := range p.stackTrace {
+		if p.stackTrace[i].message != "" {
+			if parsingStackStr != "" {
+				parsingStackStr += " -> "
 			}
+			parsingStackStr += p.stackTrace[i].message
 		}
-		errorStr += "\n"
+	}
+	if parsingStackStr != "" {
+		errorStr += "parsing stack : " + parsingStackStr + "\n"
 	}
 	errorStr += "\033[31m" + "Error : " + "\033[0m" + message
 	p.err = message
 	panic(errorStr)
 }
 
-func (p *parser) skipWhiteSpaces() {
+func (p *parser) skipWhiteSpaces() int {
 	defer un(trace(p, ""))
+	n := 0
 	for p.cursor < len(p.buf) && (p.peek() == ' ' || p.peek() == '\t' || p.peek() == '\n') {
+		n += 1
 		p.forward(1)
 	}
+	return n
 }
 
 func (p *parser) commandEnd() bool {
 	p.skipWhiteSpaces()
-	return p.cursor == len(p.buf) || strings.Contains(";})", string(p.peek()))
+	return p.cursor == len(p.buf) || strings.Contains(";})]", string(p.peek()))
 }
 
 func (p *parser) parseExact(word string) bool {
@@ -210,6 +213,7 @@ func (p *parser) parseKeyWord(candidates []string) string {
 	if sliceContains(candidates, p.item(false)) {
 		return p.item(false)
 	}
+	p.reset()
 	return ""
 }
 
@@ -233,6 +237,20 @@ func (p *parser) parseComplexWord(name string) string {
 	for {
 		c := p.next()
 		if isAlphaNumeric(c) || c == '-' || c == '_' {
+			continue
+		}
+		p.backward(1)
+		p.skipWhiteSpaces()
+		return p.item(true)
+	}
+}
+
+func (p *parser) parseUrl(name string) string {
+	p.skipWhiteSpaces()
+	defer un(trace(p, name))
+	for {
+		c := p.next()
+		if isAlphaNumeric(c) || c == '.' || c == ':' || c == '/' {
 			continue
 		}
 		p.backward(1)
@@ -348,34 +366,30 @@ func (p *parser) parsePathGroup() []node {
 	return paths
 }
 
-func (p *parser) parseExprListWithEndToK(endTok tokenType) []node {
+func (p *parser) parseExprList() []node {
 	defer un(trace(p, "expr list"))
 	exprList := []node{}
 	p.parseExprToken()
-	if p.tok.t == endTok {
+	if p.commandEnd() {
 		return exprList
 	}
 	p.unlex()
 	for {
 		expr := p.parseExpr("array element")
 		exprList = append(exprList, expr)
-		p.parseExprToken()
-		if p.tok.t == endTok {
+		if p.commandEnd() {
 			return exprList
 		}
+		p.parseExprToken()
 		if p.tok.t == tokComma {
 			continue
 		}
-		p.error(endTok.String() + " or comma expected")
+		p.error("comma or end of command expected")
 	}
 }
 
 func (p *parser) parseFormatArgs() node {
-	p.parseExprToken()
-	if p.tok.t != tokLeftParen {
-		p.error("'(' expected")
-	}
-	exprList := p.parseExprListWithEndToK(tokRightParen)
+	exprList := p.parseExprList()
 	if len(exprList) < 1 {
 		p.error("format expects at least one argument")
 	}
@@ -417,10 +431,23 @@ func (p *parser) parsePrimaryExpr() node {
 		}
 		return expr
 	case tokLeftBrac:
-		exprList := p.parseExprListWithEndToK(tokRightBrac)
+		exprList := p.parseExprList()
+		p.parseExprToken()
+		if p.tok.t != tokRightBrac {
+			p.error("']' expected")
+		}
 		return &arrNode{exprList}
 	case tokFormat:
-		return p.parseFormatArgs()
+		p.parseExprToken()
+		if p.tok.t != tokLeftParen {
+			p.error("'(' expected")
+		}
+		n := p.parseFormatArgs()
+		p.parseExprToken()
+		if p.tok.t != tokRightParen {
+			p.error("')' expected")
+		}
+		return n
 	}
 	p.error("unexpected token : " + tok.str)
 	return nil
@@ -568,9 +595,9 @@ func (p *parser) parseArgs(allowedArgs []string, allowedFlags []string, name str
 	return args
 }
 
-func (p *parser) parseAssign() string {
+func (p *parser) parseAssign(leftName string) string {
 	defer un(trace(p, "assign"))
-	varName := p.parseSimpleWord("var name")
+	varName := p.parseSimpleWord(leftName)
 	p.expect("=")
 	return varName
 }
@@ -584,27 +611,31 @@ func (p *parser) parseIndexing() node {
 	return index
 }
 
-func (p *parser) parseLsObj(lsIdx int) node {
-	defer un(trace(p, ""))
-	args := p.parseArgs([]string{"s", "f"}, []string{"r"}, "lsobj")
+func (p *parser) parseLs(category string) node {
+	defer un(trace(p, "ls"))
+	args := p.parseArgs([]string{"s", "f"}, nil, "ls")
 	path := p.parsePath("")
-	_, recursive := args["r"]
-	sort := args["s"]
 	var attrList []string
 	if formatArg, ok := args["f"]; ok {
 		attrList = strings.Split(formatArg, ":")
 	}
-	return &lsObjNode{path, lsIdx, recursive, sort, attrList}
-}
-
-func (p *parser) parseLs() node {
-	defer un(trace(p, "ls"))
-	args := p.parseArgs([]string{"s"}, nil, "ls")
-	path := p.parsePath("")
-	if attr, ok := args["s"]; ok {
-		return &lsAttrNode{path, attr}
+	filters := map[string]node{}
+	if category != "" {
+		filters["category"] = &valueNode{category}
 	}
-	return &lsNode{path}
+	first := true
+	for !p.commandEnd() {
+		p.skipWhiteSpaces()
+		if !first {
+			p.expect(",")
+		}
+		first = false
+		p.skipWhiteSpaces()
+		attrName := p.parseAssign("attribute name")
+		attrVal := p.parseValue()
+		filters[attrName] = attrVal
+	}
+	return &lsNode{path, filters, args["s"], attrList}
 }
 
 func (p *parser) parseGet() node {
@@ -679,7 +710,7 @@ func (p *parser) parseEnv() node {
 	if p.commandEnd() {
 		return &envNode{}
 	}
-	return &setEnvNode{p.parseAssign(), p.parseExpr("")}
+	return &setEnvNode{p.parseAssign("env var name"), p.parseExpr("")}
 }
 
 func (p *parser) parseDelete() node {
@@ -718,7 +749,7 @@ func (p *parser) parseEqual() node {
 
 func (p *parser) parseVar() node {
 	defer un(trace(p, "variable assignment"))
-	varName := p.parseAssign()
+	varName := p.parseAssign("var name")
 	p.skipWhiteSpaces()
 	value := p.parseValue()
 	return &assignNode{varName, value}
@@ -800,12 +831,22 @@ func (p *parser) parseTree() node {
 	return &treeNode{path, depth}
 }
 
+func (p *parser) parseConnect3D() node {
+	defer un(trace(p, commands.Connect3D))
+	if p.commandEnd() {
+		return &connect3DNode{url: ""}
+	}
+
+	url := p.parseUrl("")
+	return &connect3DNode{url: url}
+}
+
 func (p *parser) parseUi() node {
 	defer un(trace(p, "ui"))
 	if p.parseExact("clearcache") {
 		return &uiClearCacheNode{}
 	}
-	key := p.parseAssign()
+	key := p.parseAssign("")
 	if key == "delay" {
 		return &uiDelayNode{p.parseFloat("delay")}
 	}
@@ -822,7 +863,7 @@ func (p *parser) parseUi() node {
 
 func (p *parser) parseCamera() node {
 	defer un(trace(p, "camera"))
-	key := p.parseAssign()
+	key := p.parseAssign("")
 	if key == "move" || key == "translate" {
 		position := p.parseExpr("position")
 		p.expect("@")
@@ -838,6 +879,9 @@ func (p *parser) parseCamera() node {
 
 func (p *parser) parseFocus() node {
 	defer un(trace(p, "focus"))
+	if p.commandEnd() {
+		return &focusNode{&valueNode{""}}
+	}
 	return &focusNode{p.parsePath("")}
 }
 
@@ -1081,15 +1125,7 @@ func (p *parser) parseUpdate() node {
 
 func (p *parser) parseCommandKeyWord() string {
 	defer un(trace(p, "command keyword"))
-	candidates := []string{}
-	for command := range p.commandDispatch {
-		candidates = append(candidates, command)
-	}
-	for command := range p.noArgsCommands {
-		candidates = append(candidates, command)
-	}
-	candidates = append(candidates, lsCommands...)
-	return p.parseKeyWord(candidates)
+	return p.parseKeyWord(p.commandKeywords)
 }
 
 func (p *parser) parseSingleCommand() node {
@@ -1100,9 +1136,21 @@ func (p *parser) parseSingleCommand() node {
 	}
 	commandKeyWord := p.parseCommandKeyWord()
 	if commandKeyWord != "" {
-		if lsIdx := indexOf(lsCommands, commandKeyWord); lsIdx != -1 {
-			p.skipWhiteSpaces()
-			return p.parseLsObj(lsIdx)
+		// enforce spacing before the arguments if the keyword ends with a letter
+		lastChar := commandKeyWord[len(commandKeyWord)-1]
+		if isAlphaNumeric(lastChar) {
+			n := p.skipWhiteSpaces()
+			if n == 0 && !p.commandEnd() {
+				p.reset()
+				p.error("unknown keyword")
+			}
+		}
+		for _, lsCommand := range lsCommands {
+			if commandKeyWord == lsCommand {
+				p.skipWhiteSpaces()
+				category := commandKeyWord[2:]
+				return p.parseLs(category)
+			}
 		}
 		parseFunc, ok := p.commandDispatch[commandKeyWord]
 		if ok {
@@ -1142,40 +1190,41 @@ func (p *parser) parseCommand(name string) node {
 
 func newParser(buffer string) *parser {
 	p := &parser{
-		buf:        buffer,
-		stackTrace: []traceItem{},
+		buf:             buffer,
+		stackTrace:      []traceItem{},
+		commandKeywords: []string{},
 	}
 	p.commandDispatch = map[string]parseCommandFunc{
-		"ls":         p.parseLs,
-		"get":        p.parseGet,
-		"getu":       p.parseGetU,
-		"getslot":    p.parseGetSlot,
-		"undraw":     p.parseUndraw,
-		"draw":       p.parseDraw,
-		"drawable":   p.parseDrawable,
-		"unset":      p.parseUnset,
-		"env":        p.parseEnv,
-		"+":          p.parseCreate,
-		"-":          p.parseDelete,
-		"=":          p.parseEqual,
-		".var:":      p.parseVar,
-		".cmds:":     p.parseLoad,
-		".template:": p.parseTemplate,
-		"len":        p.parseLen,
-		"link":       p.parseLink,
-		"unlink":     p.parseUnlink,
-		"print":      p.parsePrint,
-		"printf":     p.parsePrintf,
-		"man":        p.parseMan,
-		"cd":         p.parseCd,
-		"tree":       p.parseTree,
-		"ui.":        p.parseUi,
-		"camera.":    p.parseCamera,
-		">":          p.parseFocus,
-		"while":      p.parseWhile,
-		"for":        p.parseFor,
-		"if":         p.parseIf,
-		"alias":      p.parseAlias,
+		"get":              p.parseGet,
+		"getu":             p.parseGetU,
+		"getslot":          p.parseGetSlot,
+		"undraw":           p.parseUndraw,
+		"draw":             p.parseDraw,
+		"drawable":         p.parseDrawable,
+		"unset":            p.parseUnset,
+		"env":              p.parseEnv,
+		"+":                p.parseCreate,
+		"-":                p.parseDelete,
+		"=":                p.parseEqual,
+		".var:":            p.parseVar,
+		".cmds:":           p.parseLoad,
+		".template:":       p.parseTemplate,
+		"len":              p.parseLen,
+		"link":             p.parseLink,
+		"unlink":           p.parseUnlink,
+		"print":            p.parsePrint,
+		"printf":           p.parsePrintf,
+		"man":              p.parseMan,
+		"cd":               p.parseCd,
+		"tree":             p.parseTree,
+		commands.Connect3D: p.parseConnect3D,
+		"ui.":              p.parseUi,
+		"camera.":          p.parseCamera,
+		">":                p.parseFocus,
+		"while":            p.parseWhile,
+		"for":              p.parseFor,
+		"if":               p.parseIf,
+		"alias":            p.parseAlias,
 	}
 	p.createObjDispatch = map[string]parseCommandFunc{
 		"domain":   p.parseCreateDomain,
@@ -1209,6 +1258,13 @@ func newParser(buffer string) *parser {
 		"exit":         &exitNode{},
 		"changepw":     &changePasswordNode{},
 	}
+	for command := range p.commandDispatch {
+		p.commandKeywords = append(p.commandKeywords, command)
+	}
+	for command := range p.noArgsCommands {
+		p.commandKeywords = append(p.commandKeywords, command)
+	}
+	p.commandKeywords = append(p.commandKeywords, lsCommands...)
 	return p
 }
 

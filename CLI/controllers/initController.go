@@ -9,8 +9,8 @@ import (
 	"cli/readline"
 	"cli/utils"
 	"encoding/json"
+	"errors"
 	"fmt"
-	"io"
 	"net/http"
 	"net/url"
 	"os"
@@ -48,12 +48,10 @@ func PingAPI() bool {
 }
 
 // Intialise the ShellState
-func InitState(conf *config.Config) {
+func InitState(conf *config.Config) error {
 	State.Hierarchy = BuildBaseTree()
 	State.CurrPath = "/Physical"
 	State.PrevPath = "/Physical"
-
-	State.UnityClientAvail = false
 
 	//Set the filter attributes setting
 	State.FilterDisplay = false
@@ -71,25 +69,26 @@ func InitState(conf *config.Config) {
 	//Set Draw Threshold
 	SetDrawThreshold(conf.DrawLimit)
 
-	//Set customer / tenant name
-	resp, e := models.Send("GET", State.APIURL+"/api/version", GetKey(), nil)
-	parsed := ParseResponse(resp, e, "Get API Information request")
-	if parsed != nil {
-		if info, ok := LoadObjectFromInf(parsed["data"]); ok {
-			if cInf, ok := info["Customer"]; ok {
-				if customer, ok := cInf.(string); ok {
-					State.Customer = customer
-				}
-			}
+	resp, err := RequestAPI("GET", "/api/version", nil, http.StatusOK)
+	if err != nil {
+		return err
+	}
+	info, ok := resp.body["data"].(map[string]any)
+	if !ok {
+		return fmt.Errorf("invalid response from API on GET /api/version")
+	}
+	if cInf, ok := info["Customer"]; ok {
+		if customer, ok := cInf.(string); ok {
+			State.Customer = customer
 		}
 	}
-
 	if State.Customer == "" {
 		if State.DebugLvl > NONE {
 			println("Tenant Information not found!")
 		}
 		State.Customer = "UNKNOWN"
 	}
+	return nil
 }
 
 // It is useful to have the state to hold
@@ -98,26 +97,30 @@ func SetStateReadline(rl *readline.Instance) {
 	State.Terminal = &rl
 }
 
-// Startup the go routine for listening
-func InitUnityCom(rl *readline.Instance, addr string) {
-	errConnect := models.ConnectToUnity(addr, State.Timeout)
+// Tries to establish a connection with OGrEE-3D and, if possible,
+// starts a go routine for receiving messages from it
+func InitOGrEE3DCommunication(rl *readline.Instance) error {
+	errConnect := models.Ogree3D.Connect(State.Ogree3DURL, State.Timeout)
 	if errConnect != nil {
-		if State.DebugLvl > ERROR {
-			println(errConnect.Error())
+		return ErrorWithInternalError{
+			UserError:     errors.New("OGrEE-3D is not reachable"),
+			InternalError: errConnect,
 		}
-		return
 	}
-	State.UnityClientAvail = true
 
-	data := map[string]interface{}{"api_url": State.APIURL, "api_token": GetKey()}
-	req := map[string]interface{}{"type": "login", "data": data}
-	errLogin := models.ContactUnity(req, State.DebugLvl)
+	errLogin := models.Ogree3D.Login(State.APIURL, GetKey(), State.DebugLvl)
 	if errLogin != nil {
-		println(errLogin.Error())
-		return
+		return ErrorWithInternalError{
+			UserError:     errors.New("OGrEE-3D login not possible"),
+			InternalError: errLogin,
+		}
 	}
-	fmt.Println("Unity Client is Reachable!")
-	go models.ReceiveLoop(rl, addr, &State.UnityClientAvail)
+
+	fmt.Println("Established connection with OGrEE-3D!")
+
+	go models.Ogree3D.ReceiveLoop(rl)
+
+	return nil
 }
 
 func InitTimeout(duration string) {
@@ -151,10 +154,6 @@ func InitTimeout(duration string) {
 	}
 }
 
-func InitUser(user User) {
-
-}
-
 func InitKey(apiKey string) {
 	if apiKey != "" {
 		State.APIKEY = apiKey
@@ -167,7 +166,7 @@ func InitKey(apiKey string) {
 	}
 }
 
-func InitURLs(apiURL string, unityURL string) {
+func InitURLs(apiURL string, ogree3DURL string) {
 	apiURL = strings.TrimRight(apiURL, "/")
 	_, err := url.ParseRequestURI(apiURL)
 	if err != nil {
@@ -179,12 +178,11 @@ func InitURLs(apiURL string, unityURL string) {
 	} else {
 		State.APIURL = apiURL
 	}
-	State.UnityClientURL = unityURL
-	if State.UnityClientURL == "" {
-		msg := "Falling back to defaul Unity URL: localhost:5500"
-		fmt.Println(msg)
-		l.GetInfoLogger().Println(msg)
-		State.UnityClientURL = "localhost:5500"
+
+	err = State.SetOgree3DURL(ogree3DURL)
+	if err != nil {
+		fmt.Println(err.Error())
+		State.SetDefaultOgree3DURL()
 	}
 }
 
@@ -265,22 +263,11 @@ func Login(user string, password string) (*User, string, error) {
 		password = string(passwordBytes)
 	}
 	data := map[string]any{"email": user, "password": password}
-	rawResp, err := models.Send("POST", State.APIURL+"/api/login", "", data)
+	resp, err := RequestAPI("POST", "/api/login", data, http.StatusOK)
 	if err != nil {
-		return nil, "", fmt.Errorf("error sending login request : %s", err.Error())
+		return nil, "", err
 	}
-	bodyBytes, err := io.ReadAll(rawResp.Body)
-	if err != nil {
-		return nil, "", fmt.Errorf("error reading answer from API : %s", err.Error())
-	}
-	var resp map[string]any
-	if err = json.Unmarshal(bodyBytes, &resp); err != nil {
-		return nil, "", fmt.Errorf("error parsing response : %s", err.Error())
-	}
-	if rawResp.StatusCode != http.StatusOK {
-		return nil, "", fmt.Errorf(resp["message"].(string))
-	}
-	account, accountOk := (resp["account"].(map[string]interface{}))
+	account, accountOk := (resp.body["account"].(map[string]interface{}))
 	token, tokenOk := account["token"].(string)
 	userID, userIDOk := account["_id"].(string)
 	if !accountOk || !tokenOk || !userIDOk {

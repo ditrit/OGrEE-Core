@@ -13,6 +13,8 @@ import (
 	"reflect"
 	"strings"
 	"time"
+
+	"go.mongodb.org/mongo-driver/bson"
 )
 
 var BuildHash string
@@ -46,18 +48,27 @@ type Namespace string
 const (
 	Any            Namespace = ""
 	Physical       Namespace = "physical"
+	PStray         Namespace = "physical.stray"
+	PHierarchy     Namespace = "physical.hierarchy"
 	Organisational Namespace = "organisational"
 	Logical        Namespace = "logical"
+	LObjTemplate   Namespace = "logical.objtemplate"
+	LBldgTemplate  Namespace = "logical.bldgtemplate"
+	LRoomTemplate  Namespace = "logical.roomtemplate"
 )
 
-const HN_DELIMETER = "."  // hierarchyName path delimiter
-const RESET_TAG = "RESET" // used as email to identify a reset token
+const HN_DELIMETER = "."           // hierarchyName path delimiter
+const NAME_REGEX = "\\w(\\w|\\-)*" // accepted regex for names that compose ids
+const RESET_TAG = "RESET"          // used as email to identify a reset token
+const HIERARCHYOBJS_ENT = "hierarchy_object"
 
 type RequestFilters struct {
-	FieldsToShow []string `schema:"fieldOnly"`
-	StartDate    string   `schema:"startDate"`
-	EndDate      string   `schema:"endDate"`
-	Limit        string   `schema:"limit"`
+	FieldsToShow []string  `schema:"fieldOnly"`
+	StartDate    string    `schema:"startDate"`
+	EndDate      string    `schema:"endDate"`
+	Limit        string    `schema:"limit"`
+	Namespace    Namespace `schema:"namespace"`
+	Id           string    `schema:"id"`
 }
 
 type HierarchyFilters struct {
@@ -147,37 +158,34 @@ func ErrLog(message, funcname, details string, r *http.Request) {
 	log.Println(details)
 }
 
-func ParamsParse(link *url.URL, objType int) map[string]interface{} {
+func FilteredReqFromQueryParams(link *url.URL) bson.M {
 	q, _ := url.ParseQuery(link.RawQuery)
-	values := make(map[string]interface{})
+	bsonMap := bson.M{}
 
-	//Building Attribute query varies based on
-	//object type
-	for key, _ := range q {
-		if key != "fieldOnly" && key != "startDate" && key != "endDate" {
-			if objType != ROOMTMPL && objType != OBJTMPL &&
-				objType != BLDGTMPL { //Non template objects
-				switch key {
-				case "id", "name", "category", "parentID",
-					"description", "domain", "parentid", "parentId",
-					"createdDate", "lastUpdated":
-					values[key] = q.Get(key)
-				default:
-					values["attributes."+key] = q.Get(key)
-				}
-			} else { //Template objects
-				//Not sure how to search FBX TEMPLATES
-				//For now it is disabled
-				switch key {
-				case "description", "slug", "category", "sizeWDHmm", "fbxModel":
-					values[key] = q.Get(key)
-				default:
-					values["attributes."+key] = q.Get(key)
-				}
+	for key := range q {
+		if key != "fieldOnly" && key != "startDate" && key != "endDate" &&
+			key != "limit" && key != "namespace" {
+			var keyValue interface{}
+			keyValue = q.Get(key)
+			if key == "parentId" {
+				regex := strings.ReplaceAll(strings.ReplaceAll(keyValue.(string), ".", "\\."), "*", NAME_REGEX) + "\\.(" + NAME_REGEX + ")"
+				bsonMap["id"] = bson.M{"$regex": "^" + regex + "$"}
+				continue
+			} else if strings.Contains(keyValue.(string), "*") {
+				regex := strings.ReplaceAll(strings.ReplaceAll(keyValue.(string), ".", "\\."), "*", NAME_REGEX)
+				keyValue = bson.M{"$regex": "^" + regex + "$"}
+			}
+			switch key {
+			case "id", "name", "category",
+				"description", "domain",
+				"createdDate", "lastUpdated", "slug":
+				bsonMap[key] = keyValue
+			default:
+				bsonMap["attributes."+key] = keyValue
 			}
 		}
 	}
-	return values
+	return bsonMap
 }
 
 func ErrTypeToStatusCode(errType ErrType) int {
@@ -270,60 +278,79 @@ func EntityStrToInt(entity string) int {
 	}
 }
 
-func HierachyNameToEntity(name string) []int {
-	resp := []int{STRAYOBJ} // it can always be a stray
-	switch strings.Count(name, HN_DELIMETER) {
-	case 0:
-		resp = append(resp, SITE)
-	case 1:
-		resp = append(resp, BLDG)
-	case 2:
-		resp = append(resp, ROOM)
-	case 3:
-		resp = append(resp, RACK, GROUP, AC, CORRIDOR, PWRPNL, CABINET)
-	case 4:
-		resp = append(resp, DEVICE, GROUP)
-	default:
-		resp = append(resp, DEVICE)
-	}
-
-	return resp
-}
-
 func NamespaceToString(namespace Namespace) string {
-	// switch namespace {
-	// case Physical:
-	// 	return "Physical"
-	// case Organisational:
-	// 	return "Organisational"
-	// case Logical:
-	// 	return "Logical"
-	// }
-	// return ""
 	ref := reflect.ValueOf(namespace)
 	return ref.String()
 }
 
-func GetEntitesByNamespace(namespace Namespace) []string {
-	var collNames []string
+func GetEntitiesByNamespace(namespace Namespace, hierarchyName string) []string {
+	var entNames []string
 	switch namespace {
-	case Physical:
-		for i := STRAYOBJ; i <= GROUP; i++ {
-			collNames = append(collNames, EntityToString(i))
-		}
 	case Organisational:
-		collNames = append(collNames, EntityToString(DOMAIN))
+		entNames = append(entNames, EntityToString(DOMAIN))
 	case Logical:
 		for i := GROUP; i <= BLDGTMPL; i++ {
-			collNames = append(collNames, EntityToString(i))
+			entNames = append(entNames, EntityToString(i))
 		}
-	default:
-		// All collections
-		for i := DOMAIN; i <= BLDGTMPL; i++ {
-			collNames = append(collNames, EntityToString(i))
+	case LObjTemplate:
+		entNames = append(entNames, EntityToString(OBJTMPL))
+	case LBldgTemplate:
+		entNames = append(entNames, EntityToString(BLDGTMPL))
+	case LRoomTemplate:
+		entNames = append(entNames, EntityToString(ROOMTMPL))
+	case PStray:
+		entNames = append(entNames, EntityToString(STRAYOBJ))
+	case Physical, PHierarchy, Any:
+		if hierarchyName == "" {
+			// All entities of each namespace
+			switch namespace {
+			case Physical:
+				for i := STRAYOBJ; i <= GROUP; i++ {
+					entNames = append(entNames, EntityToString(i))
+				}
+			case PHierarchy:
+				for i := SITE; i <= GROUP; i++ {
+					entNames = append(entNames, EntityToString(i))
+				}
+			case Any:
+				// All collections
+				for i := DOMAIN; i <= BLDGTMPL; i++ {
+					entNames = append(entNames, EntityToString(i))
+				}
+			}
+		} else {
+			// Add entities according to hierarchyName possibilities
+			resp := []int{}
+			if namespace == Any {
+				resp = append(resp, DOMAIN)
+			}
+			switch strings.Count(hierarchyName, HN_DELIMETER) {
+			case 0:
+				resp = append(resp, SITE)
+				if namespace == Any {
+					resp = append(resp, OBJTMPL, ROOMTMPL, BLDGTMPL)
+				}
+				if namespace == Any || namespace == Physical {
+					resp = append(resp, STRAYOBJ)
+				}
+			case 1:
+				resp = append(resp, BLDG)
+			case 2:
+				resp = append(resp, ROOM)
+			case 3:
+				resp = append(resp, RACK, AC, CORRIDOR, PWRPNL, CABINET, GROUP)
+			case 4:
+				resp = append(resp, DEVICE, GROUP)
+			default:
+				resp = append(resp, DEVICE)
+			}
+			// Convert entities to string
+			for _, entInt := range resp {
+				entNames = append(entNames, EntityToString(entInt))
+			}
 		}
 	}
-	return collNames
+	return entNames
 }
 
 func GetParentOfEntityByInt(entity int) int {

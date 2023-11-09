@@ -23,7 +23,7 @@ var dmatch mux.MatcherFunc = func(request *http.Request, match *mux.RouteMatch) 
 // For Obtaining hierarchy with hierarchyName
 var hnmatch mux.MatcherFunc = func(request *http.Request, match *mux.RouteMatch) bool {
 	println("CHECKING HN-MATCH")
-	return regexp.MustCompile(`^\/api\/(sites|buildings|rooms|racks|devices|stray-objects|domains|objects)+\/[A-Za-z0-9_.-]+\/all(\?.*)*$`).
+	return regexp.MustCompile(`^\/api\/(sites|buildings|rooms|racks|devices|stray-objects|domains|hierarchy-objects)+\/[A-Za-z0-9_.-]+\/all(\?.*)*$`).
 		MatchString(request.URL.String())
 }
 
@@ -92,11 +92,8 @@ func Router(jwt func(next http.Handler) http.Handler) *mux.Router {
 		controllers.DeleteProject).Methods("DELETE", "OPTIONS")
 
 	// GENERIC
-	router.HandleFunc("/api/objects/{id}",
-		controllers.HandleGenericObject).Methods("GET", "HEAD", "OPTIONS", "DELETE")
-
-	router.HandleFunc("/api/objects-wildcard/{id}",
-		controllers.HandleGenericObjectWildcard).Methods("GET", "HEAD", "OPTIONS", "DELETE")
+	router.HandleFunc("/api/objects",
+		controllers.HandleGenericObjects).Methods("GET", "HEAD", "OPTIONS", "DELETE")
 
 	//GET ENTITY HIERARCHY
 	router.NewRoute().PathPrefix("/api/{entity}s/{id}/all").
@@ -138,7 +135,7 @@ func Router(jwt func(next http.Handler) http.Handler) *mux.Router {
 		controllers.BaseOption).Methods("OPTIONS")
 
 	// LINK AND UNLINK
-	router.HandleFunc("/api/{entity:building|room|ac|corridor|cabinet|panel|group|rack|device}s/{id}/unlink",
+	router.HandleFunc("/api/{entity:building|room|ac|corridor|cabinet|panel|group|rack|device|hierarchy-object}s/{id}/unlink",
 		controllers.LinkEntity).Methods("PATCH")
 
 	router.HandleFunc("/api/stray-objects/{id}/link",
@@ -165,7 +162,7 @@ func main() {
 	//Get port from .env file, no port was specified
 	//So this should return an empty string when
 	//tested locally
-	port := os.Getenv("api_port")
+	port := os.Getenv("PORT")
 	if port == "" {
 		port = "3001" //localhost
 	}

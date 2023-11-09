@@ -5,6 +5,7 @@ import (
 	"cli/config"
 	c "cli/controllers"
 	cmd "cli/controllers"
+	"cli/utils"
 	"encoding/json"
 	"fmt"
 	"path/filepath"
@@ -125,7 +126,7 @@ func (n *lenNode) execute() (interface{}, error) {
 	if !ok {
 		return nil, fmt.Errorf("Undefined variable %s", n.variable)
 	}
-	arr, err := valToVec(val, -1, "Variable "+n.variable)
+	arr, err := utils.ValToVec(val, -1, "Variable "+n.variable)
 	if err != nil {
 		return nil, err
 	}
@@ -166,7 +167,10 @@ func (n *cdNode) execute() (interface{}, error) {
 }
 
 type lsNode struct {
-	path node
+	path     node
+	filters  map[string]node
+	sortAttr string
+	attrList []string
 }
 
 func (n *lsNode) execute() (interface{}, error) {
@@ -174,27 +178,43 @@ func (n *lsNode) execute() (interface{}, error) {
 	if err != nil {
 		return nil, err
 	}
-	items, err := cmd.Ls(path)
+	filters := map[string]string{}
+	for key := range n.filters {
+		filterVal, err := n.filters[key].execute()
+		if err != nil {
+			return nil, err
+		}
+		filters[key] = filterVal.(string)
+	}
+	objects, err := cmd.Ls(path, filters, n.sortAttr)
 	if err != nil {
 		return nil, err
 	}
-	for _, item := range items {
-		println(item)
+	if n.attrList == nil {
+		n.attrList = []string{}
 	}
-	return nil, nil
-}
-
-type lsAttrNode struct {
-	path node
-	attr string
-}
-
-func (n *lsAttrNode) execute() (interface{}, error) {
-	path, err := nodeToString(n.path, "path")
-	if err != nil {
-		return nil, err
+	if n.sortAttr != "" {
+		n.attrList = append([]string{n.sortAttr}, n.attrList...)
 	}
-	cmd.LSATTR(path, n.attr)
+	for _, obj := range objects {
+		if n.sortAttr == "" {
+			fmt.Println(utils.NameOrSlug(obj))
+			continue
+		}
+		printStr := "Name : %s"
+		attrVals := []any{utils.NameOrSlug(obj)}
+		for _, attr := range n.attrList {
+			attrVal, hasAttr := utils.ObjectAttr(obj, attr)
+			if !hasAttr {
+				attrVal = "-"
+			}
+			attrVals = append(attrVals, attr)
+			attrVals = append(attrVals, attrVal)
+			printStr += "    %v : %v"
+		}
+		printStr += "\n"
+		fmt.Printf(printStr, attrVals...)
+	}
 	return nil, nil
 }
 
@@ -289,22 +309,19 @@ func (n *deleteObjNode) execute() (interface{}, error) {
 	if err != nil {
 		return nil, err
 	}
-	if strings.Contains(path, "*") {
-		paths, err := cmd.DeleteObjectsWildcard(path)
-		if err != nil {
-			return nil, err
-		}
-		if len(paths) > 0 {
-			fmt.Println("Objects deleted :")
-			for _, path := range paths {
-				fmt.Println(path)
-			}
-		} else {
-			fmt.Println("Nothing got deleted")
-		}
-		return nil, nil
+	paths, err := cmd.DeleteObj(path)
+	if err != nil {
+		return nil, err
 	}
-	return nil, cmd.DeleteObj(path)
+	if len(paths) > 0 {
+		fmt.Println("Objects deleted :")
+		for _, path := range paths {
+			fmt.Println(path)
+		}
+	} else {
+		fmt.Println("Nothing got deleted")
+	}
+	return nil, nil
 }
 
 type deleteSelectionNode struct{}
@@ -314,7 +331,7 @@ func (n *deleteSelectionNode) execute() (interface{}, error) {
 	deleted := 0
 	if c.State.ClipBoard != nil {
 		for _, obj := range c.State.ClipBoard {
-			err := c.DeleteObj(obj)
+			_, err := c.DeleteObj(obj)
 			if err != nil {
 				errBuilder.WriteString(fmt.Sprintf("    %s: %s\n", obj, err.Error()))
 			} else {
@@ -409,23 +426,14 @@ func (n *getObjectNode) execute() (interface{}, error) {
 	if err != nil {
 		return nil, err
 	}
-	if strings.Contains(path, "*") {
-		objs, _, err := cmd.GetObjectsWildcard(path)
-		if err != nil {
-			return nil, err
-		}
-		for _, obj := range objs {
-			cmd.DisplayObject(obj)
-		}
-		return objs, nil
-	} else {
-		obj, err := cmd.GetObject(path)
-		if err != nil {
-			return nil, err
-		}
-		cmd.DisplayObject(obj)
-		return obj, nil
+	objs, _, err := cmd.GetObjectsWildcard(path)
+	if err != nil {
+		return nil, err
 	}
+	for _, obj := range objs {
+		cmd.DisplayObject(obj)
+	}
+	return objs, nil
 }
 
 type selectObjectNode struct {
@@ -476,7 +484,7 @@ func setLabel(path string, values []any, hasSharpe bool) (map[string]any, error)
 	if len(values) != 1 {
 		return nil, fmt.Errorf("only 1 value expected")
 	}
-	value, err := valToString(values[0], "value")
+	value, err := utils.ValToString(values[0], "value")
 	if err != nil {
 		return nil, err
 	}
@@ -499,7 +507,7 @@ func setLabelFont(path string, values []any) (map[string]any, error) {
 		if values[0] != "color" {
 			return nil, fmt.Errorf(msg)
 		}
-		c, ok := valToColor(values[1])
+		c, ok := utils.ValToColor(values[1])
 		if !ok {
 			return nil, fmt.Errorf("please provide a valid 6 length hex value for the color")
 		}
@@ -509,14 +517,15 @@ func setLabelFont(path string, values []any) (map[string]any, error) {
 	}
 }
 
-func addToStringMap[T any](stringMap string, key string, val T) string {
+func addToStringMap[T any](stringMap string, key string, val T) (string, bool) {
 	m := map[string]T{}
 	if stringMap != "" {
 		json.Unmarshal([]byte(stringMap), &m)
 	}
+	_, keyExist := m[key]
 	m[key] = val
 	mBytes, _ := json.Marshal(m)
-	return string(mBytes)
+	return string(mBytes), keyExist
 }
 
 func removeFromStringMap[T any](stringMap string, key string) (string, bool) {
@@ -543,19 +552,19 @@ func addRoomSeparator(path string, values []any) (map[string]any, error) {
 	if len(values) != 4 {
 		return nil, fmt.Errorf("4 values (name, startPos, endPos, type) expected to add a separator")
 	}
-	name, err := valToString(values[0], "name")
+	name, err := utils.ValToString(values[0], "name")
 	if err != nil {
 		return nil, err
 	}
-	startPos, err := valToVec(values[1], 2, "startPos")
+	startPos, err := utils.ValToVec(values[1], 2, "startPos")
 	if err != nil {
 		return nil, err
 	}
-	endPos, err := valToVec(values[2], 2, "endPos")
+	endPos, err := utils.ValToVec(values[2], 2, "endPos")
 	if err != nil {
 		return nil, err
 	}
-	sepType, err := valToString(values[3], "separator type")
+	sepType, err := utils.ValToString(values[3], "separator type")
 	if err != nil {
 		return nil, err
 	}
@@ -566,8 +575,16 @@ func addRoomSeparator(path string, values []any) (map[string]any, error) {
 	attr := obj["attributes"].(map[string]any)
 	separators, _ := attr["separators"].(string)
 	newSeparator := Separator{startPos, endPos, sepType}
-	attr["separators"] = addToStringMap[Separator](separators, name, newSeparator)
-	return cmd.UpdateObj(path, map[string]any{"attributes": attr})
+	var keyExist bool
+	attr["separators"], keyExist = addToStringMap[Separator](separators, name, newSeparator)
+	obj, err = cmd.UpdateObj(path, map[string]any{"attributes": attr})
+	if err != nil {
+		return nil, err
+	}
+	if keyExist {
+		fmt.Printf("Separator %s replaced\n", name)
+	}
+	return obj, nil
 }
 
 type Pillar struct {
@@ -580,19 +597,19 @@ func addRoomPillar(path string, values []any) (map[string]any, error) {
 	if len(values) != 4 {
 		return nil, fmt.Errorf("4 values (name, centerXY, sizeXY, rotation) expected to add a pillar")
 	}
-	name, err := valToString(values[0], "name")
+	name, err := utils.ValToString(values[0], "name")
 	if err != nil {
 		return nil, err
 	}
-	centerXY, err := valToVec(values[1], 2, "centerXY")
+	centerXY, err := utils.ValToVec(values[1], 2, "centerXY")
 	if err != nil {
 		return nil, err
 	}
-	sizeXY, err := valToVec(values[2], 2, "sizeXY")
+	sizeXY, err := utils.ValToVec(values[2], 2, "sizeXY")
 	if err != nil {
 		return nil, err
 	}
-	rotation, err := valToFloat(values[3], "rotation")
+	rotation, err := utils.ValToFloat(values[3], "rotation")
 	if err != nil {
 		return nil, err
 	}
@@ -603,8 +620,16 @@ func addRoomPillar(path string, values []any) (map[string]any, error) {
 	attr := obj["attributes"].(map[string]any)
 	pillars, _ := attr["pillars"].(string)
 	newPillar := Pillar{centerXY, sizeXY, rotation}
-	attr["pillars"] = addToStringMap[Pillar](pillars, name, newPillar)
-	return cmd.UpdateObj(path, map[string]any{"attributes": attr})
+	var keyExist bool
+	attr["pillars"], keyExist = addToStringMap[Pillar](pillars, name, newPillar)
+	obj, err = cmd.UpdateObj(path, map[string]any{"attributes": attr})
+	if err != nil {
+		return nil, err
+	}
+	if keyExist {
+		fmt.Printf("Pillar %s replaced\n", name)
+	}
+	return obj, nil
 }
 
 func parseDescriptionIdx(desc string) (int, error) {
@@ -624,7 +649,7 @@ func updateDescription(path string, attr string, values []any) (map[string]any, 
 	if len(values) != 1 {
 		return nil, fmt.Errorf("a single value is expected to update a description")
 	}
-	newDesc, err := valToString(values[0], "description")
+	newDesc, err := utils.ValToString(values[0], "description")
 	if err != nil {
 		return nil, err
 	}
@@ -689,7 +714,7 @@ func (n *updateObjNode) execute() (interface{}, error) {
 		switch n.attr {
 		case "content", "alpha", "tilesName", "tilesColor", "U", "slots", "localCS":
 			var boolVal bool
-			boolVal, err = valToBool(values[0], n.attr)
+			boolVal, err = utils.ValToBool(values[0], n.attr)
 			if err != nil {
 				return nil, err
 			}
@@ -722,50 +747,6 @@ func (n *updateObjNode) execute() (interface{}, error) {
 		}
 	}
 	return nil, nil
-}
-
-type lsObjNode struct {
-	path      node
-	entity    int
-	recursive bool
-	sort      string
-	attrList  []string
-}
-
-func (n *lsObjNode) execute() (interface{}, error) {
-	path, err := nodeToString(n.path, "path")
-	if err != nil {
-		return nil, err
-	}
-	var objects []any
-	if n.recursive {
-		objects, err = cmd.LSOBJECTRecursive(path, n.entity)
-		if err != nil {
-			return nil, err
-		}
-	} else {
-		objects = cmd.LSOBJECT(path, n.entity)
-	}
-	if n.sort != "" {
-		objects = cmd.SortObjects(objects, n.sort).GetData()
-	}
-	if n.attrList != nil {
-		cmd.DispWithAttrs(objects, n.attrList)
-	} else {
-		if n.sort != "" {
-			//We want to display the attribute used for sorting
-			attrList := append(n.attrList, n.sort)
-			cmd.DispWithAttrs(objects, attrList)
-		} else {
-			for i := range objects {
-				object, ok := objects[i].(map[string]interface{})
-				if ok && object != nil && object["name"] != nil {
-					println(object["name"].(string))
-				}
-			}
-		}
-	}
-	return objects, nil
 }
 
 type treeNode struct {
@@ -836,15 +817,13 @@ func (n *undrawNode) execute() (interface{}, error) {
 type lsogNode struct{}
 
 func (n *lsogNode) execute() (interface{}, error) {
-	cmd.LSOG()
-	return nil, nil
+	return nil, cmd.LSOG()
 }
 
 type lsenterpriseNode struct{}
 
 func (n *lsenterpriseNode) execute() (interface{}, error) {
-	cmd.LSEnterprise()
-	return nil, nil
+	return nil, cmd.LSEnterprise()
 }
 
 type exitNode struct{}
@@ -977,7 +956,7 @@ func (n *createDomainNode) execute() (interface{}, error) {
 	}
 	var color string
 	var ok bool
-	if color, ok = valToColor(colorInf); !ok {
+	if color, ok = utils.ValToColor(colorInf); !ok {
 		return nil, fmt.Errorf("Please provide a valid 6 digit Hex value for the color")
 	}
 
@@ -1182,7 +1161,7 @@ func (n *createDeviceNode) execute() (interface{}, error) {
 	if err != nil {
 		return nil, err
 	}
-	sizeU, err := valToInt(sizeUOrTemplate, "sizeU")
+	sizeU, err := utils.ValToInt(sizeUOrTemplate, "sizeU")
 	if err == nil {
 		attr["sizeU"] = sizeU
 	} else {
@@ -1370,13 +1349,20 @@ func (n *changePasswordNode) execute() (interface{}, error) {
 	return nil, cmd.ChangePassword()
 }
 
+type connect3DNode struct {
+	url string
+}
+
+func (n *connect3DNode) execute() (interface{}, error) {
+	return nil, cmd.Connect3D(n.url)
+}
+
 type uiDelayNode struct {
 	time float64
 }
 
 func (n *uiDelayNode) execute() (interface{}, error) {
-	cmd.UIDelay(n.time)
-	return nil, nil
+	return nil, cmd.UIDelay(n.time)
 }
 
 type uiToggleNode struct {
@@ -1385,8 +1371,7 @@ type uiToggleNode struct {
 }
 
 func (n *uiToggleNode) execute() (interface{}, error) {
-	cmd.UIToggle(n.feature, n.enable)
-	return nil, nil
+	return nil, cmd.UIToggle(n.feature, n.enable)
 }
 
 type uiHighlightNode struct {
@@ -1423,8 +1408,8 @@ func (n *cameraMoveNode) execute() (interface{}, error) {
 	if err != nil {
 		return nil, err
 	}
-	cmd.CameraMove(n.command, position, rotation)
-	return nil, nil
+
+	return nil, cmd.CameraMove(n.command, position, rotation)
 }
 
 type cameraWaitNode struct {
@@ -1432,8 +1417,7 @@ type cameraWaitNode struct {
 }
 
 func (n *cameraWaitNode) execute() (interface{}, error) {
-	cmd.CameraWait(n.time)
-	return nil, nil
+	return nil, cmd.CameraWait(n.time)
 }
 
 type linkObjectNode struct {
