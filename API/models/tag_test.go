@@ -8,10 +8,10 @@ import (
 	"p3/repository"
 	"p3/test/e2e"
 	"p3/test/integration"
+	"p3/test/unit"
 	u "p3/utils"
 	"testing"
 
-	"github.com/elliotchance/pie/v2"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"go.mongodb.org/mongo-driver/bson"
@@ -204,14 +204,10 @@ func TestTagWithImageReturnsImagePathOnGetGeneric(t *testing.T) {
 	assert.True(t, imagePresent)
 	assert.NotEmpty(t, tagImage)
 
-	response := e2e.MakeRequest(http.MethodGet, "/api/objects?namespace=logical.tag&slug=create-tag-1", nil)
+	response, objects := e2e.GetObjects("namespace=logical.tag&slug=create-tag-1")
 	assert.Equal(t, http.StatusOK, response.Code)
-
-	var responseBody map[string]interface{}
-	json.Unmarshal(response.Body.Bytes(), &responseBody)
-	objects := responseBody["data"].([]any)
 	assert.Len(t, objects, 1)
-	imagePath, imagePresent := objects[0].(map[string]any)["image"].(string)
+	imagePath, imagePresent := objects[0]["image"].(string)
 	assert.True(t, imagePresent)
 	assert.Equal(t, "/api/images/"+tagImage.(primitive.ObjectID).Hex(), imagePath)
 
@@ -362,14 +358,10 @@ func TestFilterByTagObjectThatHasOnlyThatTag(t *testing.T) {
 	err = createSite("filter-tag-1-site-2", []any{"filter-tag-2"})
 	require.Nil(t, err)
 
-	response := e2e.MakeRequest(http.MethodGet, "/api/objects?id=*&namespace=physical.hierarchy&tag=filter-tag-1", nil)
+	response, objects := e2e.GetObjects("id=*&namespace=physical.hierarchy&tag=filter-tag-1")
 	assert.Equal(t, http.StatusOK, response.Code)
-
-	var responseBody map[string]interface{}
-	json.Unmarshal(response.Body.Bytes(), &responseBody)
-	objects := responseBody["data"].([]any)
 	assert.Len(t, objects, 1)
-	assert.Equal(t, "filter-tag-1-site-1", objects[0].(map[string]any)["id"].(string))
+	assert.Equal(t, "filter-tag-1-site-1", objects[0]["id"].(string))
 }
 
 func TestFilterByTagObjectThatHasMultipleTags(t *testing.T) {
@@ -385,14 +377,10 @@ func TestFilterByTagObjectThatHasMultipleTags(t *testing.T) {
 	err = createSite("filter-tag-2-site-2", []any{"filter-tag-4"})
 	require.Nil(t, err)
 
-	response := e2e.MakeRequest(http.MethodGet, "/api/objects?id=*&namespace=physical.hierarchy&tag=filter-tag-3", nil)
+	response, objects := e2e.GetObjects("id=*&namespace=physical.hierarchy&tag=filter-tag-3")
 	assert.Equal(t, http.StatusOK, response.Code)
-
-	var responseBody map[string]interface{}
-	json.Unmarshal(response.Body.Bytes(), &responseBody)
-	objects := responseBody["data"].([]any)
 	assert.Len(t, objects, 1)
-	assert.Equal(t, "filter-tag-2-site-1", objects[0].(map[string]any)["id"].(string))
+	assert.Equal(t, "filter-tag-2-site-1", objects[0]["id"].(string))
 }
 
 func TestFilterByTagMultipleMatches(t *testing.T) {
@@ -411,18 +399,11 @@ func TestFilterByTagMultipleMatches(t *testing.T) {
 	err = createSite("filter-tag-3-site-3", []any{"filter-tag-6"})
 	require.Nil(t, err)
 
-	response := e2e.MakeRequest(http.MethodGet, "/api/objects?id=*&namespace=physical.hierarchy&tag=filter-tag-5", nil)
+	response, objects := e2e.GetObjects("id=*&namespace=physical.hierarchy&tag=filter-tag-5")
 	assert.Equal(t, http.StatusOK, response.Code)
-
-	var responseBody map[string]interface{}
-	json.Unmarshal(response.Body.Bytes(), &responseBody)
-	objects := responseBody["data"].([]any)
 	assert.Len(t, objects, 2)
-	objectIDS := pie.Map(objects, func(object any) string {
-		return object.(map[string]any)["id"].(string)
-	})
-	assert.Contains(t, objectIDS, "filter-tag-3-site-1")
-	assert.Contains(t, objectIDS, "filter-tag-3-site-2")
+	unit.ContainsObject(t, objects, "filter-tag-3-site-1")
+	unit.ContainsObject(t, objects, "filter-tag-3-site-2")
 }
 
 func TestCreateObjectWithTagsThatNotExistsReturnsError(t *testing.T) {
