@@ -196,7 +196,9 @@ func ValidateEntity(entity int, t map[string]interface{}) *u.Error {
 		and check that the device parent has a slot
 		attribute
 	*/
-	t = fillTags(entity, t)
+	if shouldFillTags(entity, u.RequestFilters{}) {
+		t = fillTags(t)
+	}
 
 	// Validate JSON Schema
 	if ok, err := validateJsonSchema(entity, t); !ok {
