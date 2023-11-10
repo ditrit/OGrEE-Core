@@ -453,7 +453,7 @@ func HandleGenericObjects(w http.ResponseWriter, r *http.Request) {
 				objStr = obj["id"].(string)
 			}
 
-			modelErr := deleteObject(entStr, objStr, user.Roles)
+			modelErr := models.DeleteObject(entStr, objStr, user.Roles)
 			if modelErr != nil {
 				u.ErrLog("Error while deleting object: "+objStr, "DELETE GetGenericObjectById", modelErr.Message, r)
 				u.RespondWithError(w, modelErr)
@@ -749,7 +749,7 @@ func DeleteEntity(w http.ResponseWriter, r *http.Request) {
 			}
 		}
 
-		modelErr := deleteObject(entityStr, id, user.Roles)
+		modelErr := models.DeleteObject(entityStr, id, user.Roles)
 		if modelErr != nil {
 			u.ErrLog("Error while deleting entity", "DELETE ENTITY", modelErr.Message, r)
 			u.RespondWithError(w, modelErr)
