@@ -21,17 +21,27 @@ func WithTransaction[T any](callback func(mongo.SessionContext) (T, error)) (T, 
 	defer session.EndSession(ctx)
 
 	callbackWrapper := func(ctx mongo.SessionContext) (any, error) {
-		return callback(ctx)
+		result, err := callback(ctx)
+		if err != nil {
+			// support returning u.Error even if nil
+			if errCasted, ok := err.(*u.Error); ok {
+				if errCasted != nil {
+					return nilT, errCasted // u.Error not nil -> return u.Error not nil
+				}
+
+				return result, nil // u.Error nil -> return error nil
+			}
+
+			return result, err // error not nil -> return error not nil
+		}
+
+		return result, nil // error nil -> return error nil
 	}
 
 	result, err := session.WithTransaction(ctx, callbackWrapper)
 	if err != nil {
 		if errCasted, ok := err.(*u.Error); ok {
-			if errCasted != nil {
-				return nilT, errCasted
-			}
-
-			return castResult[T](result), nil
+			return nilT, errCasted
 		}
 
 		return nilT, &u.Error{Type: u.ErrDBError, Message: "Unable to complete transaction: " + err.Error()}
