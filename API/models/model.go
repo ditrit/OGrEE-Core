@@ -226,7 +226,10 @@ func GetObject(req bson.M, entityStr string, filters u.RequestFilters, userRoles
 	object = fixID(object)
 
 	entity := u.EntityStrToInt(entityStr)
-	object = fillTags(entity, object)
+
+	if shouldFillTags(entity, filters) {
+		object = fillTags(object)
+	}
 
 	// Check permissions
 	if u.IsEntityHierarchical(entity) {
@@ -299,9 +302,9 @@ func GetManyObjects(entityStr string, req bson.M, filters u.RequestFilters, user
 		}
 	}
 
-	if u.EntityHasTags(entity) {
+	if shouldFillTags(entity, filters) {
 		for i := range data {
-			fillTags(entity, data[i])
+			fillTags(data[i])
 		}
 	}
 

@@ -3,15 +3,19 @@ package models
 import (
 	u "p3/utils"
 	"strings"
+
+	"github.com/elliotchance/pie/v2"
 )
 
+func shouldFillTags(entity int, filters u.RequestFilters) bool {
+	return u.EntityHasTags(entity) && (len(filters.FieldsToShow) == 0 || pie.Contains(filters.FieldsToShow, "tags"))
+}
+
 // Adds empty list of tags if not present
-func fillTags(entity int, object map[string]any) map[string]any {
-	if u.EntityHasTags(entity) {
-		_, tagsPresent := object["tags"]
-		if !tagsPresent {
-			object["tags"] = []any{}
-		}
+func fillTags(object map[string]any) map[string]any {
+	_, tagsPresent := object["tags"]
+	if !tagsPresent {
+		object["tags"] = []any{}
 	}
 
 	return object
