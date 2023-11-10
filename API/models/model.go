@@ -160,6 +160,14 @@ func CreateEntity(entity int, t map[string]interface{}, userRoles map[string]Rol
 			}
 		}
 
+		tags, tagsPresent := getTags(t)
+		if tagsPresent {
+			err := verifyTagsExist(ctx, tags)
+			if err != nil {
+				return nil, err
+			}
+		}
+
 		entStr := u.EntityToString(entity)
 
 		_, err := repository.CreateObject(ctx, entStr, t)
@@ -730,8 +738,17 @@ func UpdateObject(entityStr string, id string, updateData map[string]interface{}
 				Message: "User does not have permission to change this object"}
 		}
 
+		tags, tagsPresent := getTags(updateData)
+
 		// Update old object data with patch data
 		if isPatch {
+			if tagsPresent {
+				return nil, &u.Error{
+					Type:    u.ErrBadFormat,
+					Message: "Tags cannot be modified in this way, use tags+ and tags-",
+				}
+			}
+
 			var formattedOldObj map[string]interface{}
 			// Convert primitive.A and similar types
 			bytes, _ := json.Marshal(oldObj)
@@ -747,6 +764,11 @@ func UpdateObject(entityStr string, id string, updateData map[string]interface{}
 			delete(updateData, "id")
 			delete(updateData, "lastUpdated")
 			delete(updateData, "createdDate")
+		} else if tagsPresent {
+			err := verifyTagsExist(ctx, tags)
+			if err != nil {
+				return nil, err
+			}
 		}
 
 		err = prepareUpdateObject(ctx, entity, id, updateData, oldObj, userRoles)

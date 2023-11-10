@@ -13,8 +13,9 @@ func shouldFillTags(entity int, filters u.RequestFilters) bool {
 
 // Adds empty list of tags if not present
 func fillTags(object map[string]any) map[string]any {
-	_, tagsPresent := object["tags"]
-	if !tagsPresent {
+	tags, tagsPresent := getTags(object)
+
+	if !tagsPresent || tags == nil {
 		object["tags"] = []any{}
 	}
 

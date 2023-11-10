@@ -28,7 +28,7 @@ func TestAddTagThatNotExistReturnsError(t *testing.T) {
 
 	_, err = addTagToObject("add-tag-1-site", "not-exists")
 	assert.NotNil(t, err)
-	assert.Equal(t, "Tag to add not found", err.Message)
+	assert.Equal(t, "Tag not found", err.Message)
 }
 
 func TestAddTagToObjectAddsItToList(t *testing.T) {
@@ -41,35 +41,27 @@ func TestAddTagToObjectAddsItToList(t *testing.T) {
 	site, err := addTagToObject("add-tag-2-site", "add-tag-2")
 	assert.Nil(t, err)
 	assert.Len(t, site["tags"], 1)
-	assert.Contains(t, site["tags"].(primitive.A), "add-tag-2")
+	assert.Contains(t, site["tags"], "add-tag-2")
 }
 
 func TestAddDuplicatedTagDoesNothing(t *testing.T) {
 	err := createTag("add-tag-3")
 	require.Nil(t, err)
 
-	err = createSite("add-tag-3-site", []string{"add-tag-3"})
+	err = createSite("add-tag-3-site", []any{"add-tag-3"})
 	require.Nil(t, err)
 
 	site, err := addTagToObject("add-tag-3-site", "add-tag-3")
 	assert.Nil(t, err)
 	assert.Len(t, site["tags"], 1)
-	assert.Contains(t, site["tags"].(primitive.A), "add-tag-3")
+	assert.Contains(t, site["tags"], "add-tag-3")
 }
 
 func TestRemoveTagThatIsNotInListDoesNothing(t *testing.T) {
 	err := createSite("remove-tag-1-site", nil)
 	require.Nil(t, err)
 
-	site, err := models.UpdateObject(
-		u.EntityToString(u.SITE),
-		"remove-tag-1-site",
-		map[string]any{
-			"tags-": "not-present",
-		},
-		true,
-		userRoles,
-	)
+	site, err := removeTagFromObject("remove-tag-1-site", "not-present")
 	assert.Nil(t, err)
 	assert.Len(t, site["tags"], 0)
 }
@@ -78,18 +70,10 @@ func TestRemoveTagFromObjectThatHasOneTag(t *testing.T) {
 	err := createTag("remove-tag-2")
 	require.Nil(t, err)
 
-	err = createSite("remove-tag-2-site", []string{"remove-tag-2"})
+	err = createSite("remove-tag-2-site", []any{"remove-tag-2"})
 	require.Nil(t, err)
 
-	site, err := models.UpdateObject(
-		u.EntityToString(u.SITE),
-		"remove-tag-2-site",
-		map[string]any{
-			"tags-": "remove-tag-2",
-		},
-		true,
-		userRoles,
-	)
+	site, err := removeTagFromObject("remove-tag-2-site", "remove-tag-2")
 	assert.Nil(t, err)
 	assert.Len(t, site["tags"], 0)
 }
@@ -101,18 +85,10 @@ func TestRemoveTagFromObjectThatHasMultipleTags(t *testing.T) {
 	err = createTag("remove-tag-3-2")
 	require.Nil(t, err)
 
-	err = createSite("remove-tag-3-site", []string{"remove-tag-3-1", "remove-tag-3-2"})
+	err = createSite("remove-tag-3-site", []any{"remove-tag-3-1", "remove-tag-3-2"})
 	require.Nil(t, err)
 
-	site, err := models.UpdateObject(
-		u.EntityToString(u.SITE),
-		"remove-tag-3-site",
-		map[string]any{
-			"tags-": "remove-tag-3-1",
-		},
-		true,
-		userRoles,
-	)
+	site, err := removeTagFromObject("remove-tag-3-site", "remove-tag-3-1")
 	assert.Nil(t, err)
 	assert.Len(t, site["tags"], 1)
 	assert.Contains(t, site["tags"].(primitive.A), "remove-tag-3-2")
@@ -148,7 +124,7 @@ func TestUpdateTagPresentInOneObjectUpdatesItInList(t *testing.T) {
 	err = createTag("update-tag-3")
 	require.Nil(t, err)
 
-	err = createSite("update-tag-2-site", []string{"update-tag-2", "update-tag-3"})
+	err = createSite("update-tag-2-site", []any{"update-tag-2", "update-tag-3"})
 	require.Nil(t, err)
 
 	updatedTag, err := models.UpdateObject(
@@ -166,8 +142,8 @@ func TestUpdateTagPresentInOneObjectUpdatesItInList(t *testing.T) {
 	site, err := getSite("update-tag-2-site")
 	assert.Nil(t, err)
 	assert.Len(t, site["tags"], 2)
-	assert.Contains(t, site["tags"].(primitive.A), "update-tag-3")
-	assert.Contains(t, site["tags"].(primitive.A), "update-tag-2-2")
+	assert.Contains(t, site["tags"], "update-tag-3")
+	assert.Contains(t, site["tags"], "update-tag-2-2")
 }
 
 func TestDeleteTagNoExistentReturnsError(t *testing.T) {
@@ -195,7 +171,7 @@ func TestDeleteTagPresentInOneObjectRemovesItFromList(t *testing.T) {
 	err = createTag("delete-tag-3")
 	require.Nil(t, err)
 
-	err = createSite("delete-tag-2-site", []string{"delete-tag-2", "delete-tag-3"})
+	err = createSite("delete-tag-2-site", []any{"delete-tag-2", "delete-tag-3"})
 	require.Nil(t, err)
 
 	site, err := getSite("delete-tag-2-site")
@@ -212,7 +188,7 @@ func TestDeleteTagPresentInOneObjectRemovesItFromList(t *testing.T) {
 	site, err = getSite("delete-tag-2-site")
 	assert.Nil(t, err)
 	assert.Len(t, site["tags"], 1)
-	assert.Equal(t, "delete-tag-3", site["tags"].(primitive.A)[0])
+	assert.Contains(t, site["tags"], "delete-tag-3")
 }
 
 var image = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAABHNCSVQICAgIfAhkiAAAAAlwSFlzAAAApgAAAKYB3X3/OAAAABl0RVh0U29mdHdhcmUAd3d3Lmlua3NjYXBlLm9yZ5vuPBoAAANCSURBVEiJtZZPbBtFFMZ/M7ubXdtdb1xSFyeilBapySVU8h8OoFaooFSqiihIVIpQBKci6KEg9Q6H9kovIHoCIVQJJCKE1ENFjnAgcaSGC6rEnxBwA04Tx43t2FnvDAfjkNibxgHxnWb2e/u992bee7tCa00YFsffekFY+nUzFtjW0LrvjRXrCDIAaPLlW0nHL0SsZtVoaF98mLrx3pdhOqLtYPHChahZcYYO7KvPFxvRl5XPp1sN3adWiD1ZAqD6XYK1b/dvE5IWryTt2udLFedwc1+9kLp+vbbpoDh+6TklxBeAi9TL0taeWpdmZzQDry0AcO+jQ12RyohqqoYoo8RDwJrU+qXkjWtfi8Xxt58BdQuwQs9qC/afLwCw8tnQbqYAPsgxE1S6F3EAIXux2oQFKm0ihMsOF71dHYx+f3NND68ghCu1YIoePPQN1pGRABkJ6Bus96CutRZMydTl+TvuiRW1m3n0eDl0vRPcEysqdXn+jsQPsrHMquGeXEaY4Yk4wxWcY5V/9scqOMOVUFthatyTy8QyqwZ+kDURKoMWxNKr2EeqVKcTNOajqKoBgOE28U4tdQl5p5bwCw7BWquaZSzAPlwjlithJtp3pTImSqQRrb2Z8PHGigD4RZuNX6JYj6wj7O4TFLbCO/Mn/m8R+h6rYSUb3ekokRY6f/YukArN979jcW+V/S8g0eT/N3VN3kTqWbQ428m9/8k0P/1aIhF36PccEl6EhOcAUCrXKZXXWS3XKd2vc/TRBG9O5ELC17MmWubD2nKhUKZa26Ba2+D3P+4/MNCFwg59oWVeYhkzgN/JDR8deKBoD7Y+ljEjGZ0sosXVTvbc6RHirr2reNy1OXd6pJsQ+gqjk8VWFYmHrwBzW/n+uMPFiRwHB2I7ih8ciHFxIkd/3Omk5tCDV1t+2nNu5sxxpDFNx+huNhVT3/zMDz8usXC3ddaHBj1GHj/As08fwTS7Kt1HBTmyN29vdwAw+/wbwLVOJ3uAD1wi/dUH7Qei66PfyuRj4Ik9is+hglfbkbfR3cnZm7chlUWLdwmprtCohX4HUtlOcQjLYCu+fzGJH2QRKvP3UNz8bWk1qMxjGTOMThZ3kvgLI5AzFfo379UAAAAASUVORK5CYII="
@@ -380,10 +356,10 @@ func TestFilterByTagObjectThatHasOnlyThatTag(t *testing.T) {
 	err = createTag("filter-tag-2")
 	require.Nil(t, err)
 
-	err = createSite("filter-tag-1-site-1", []string{"filter-tag-1"})
+	err = createSite("filter-tag-1-site-1", []any{"filter-tag-1"})
 	require.Nil(t, err)
 
-	err = createSite("filter-tag-1-site-2", []string{"filter-tag-2"})
+	err = createSite("filter-tag-1-site-2", []any{"filter-tag-2"})
 	require.Nil(t, err)
 
 	response := e2e.MakeRequest(http.MethodGet, "/api/objects?id=*&namespace=physical.hierarchy&tag=filter-tag-1", nil)
@@ -403,10 +379,10 @@ func TestFilterByTagObjectThatHasMultipleTags(t *testing.T) {
 	err = createTag("filter-tag-4")
 	require.Nil(t, err)
 
-	err = createSite("filter-tag-2-site-1", []string{"filter-tag-3", "filter-tag-4"})
+	err = createSite("filter-tag-2-site-1", []any{"filter-tag-3", "filter-tag-4"})
 	require.Nil(t, err)
 
-	err = createSite("filter-tag-2-site-2", []string{"filter-tag-4"})
+	err = createSite("filter-tag-2-site-2", []any{"filter-tag-4"})
 	require.Nil(t, err)
 
 	response := e2e.MakeRequest(http.MethodGet, "/api/objects?id=*&namespace=physical.hierarchy&tag=filter-tag-3", nil)
@@ -426,13 +402,13 @@ func TestFilterByTagMultipleMatches(t *testing.T) {
 	err = createTag("filter-tag-6")
 	require.Nil(t, err)
 
-	err = createSite("filter-tag-3-site-1", []string{"filter-tag-5"})
+	err = createSite("filter-tag-3-site-1", []any{"filter-tag-5"})
 	require.Nil(t, err)
 
-	err = createSite("filter-tag-3-site-2", []string{"filter-tag-5"})
+	err = createSite("filter-tag-3-site-2", []any{"filter-tag-5"})
 	require.Nil(t, err)
 
-	err = createSite("filter-tag-3-site-3", []string{"filter-tag-6"})
+	err = createSite("filter-tag-3-site-3", []any{"filter-tag-6"})
 	require.Nil(t, err)
 
 	response := e2e.MakeRequest(http.MethodGet, "/api/objects?id=*&namespace=physical.hierarchy&tag=filter-tag-5", nil)
@@ -447,6 +423,52 @@ func TestFilterByTagMultipleMatches(t *testing.T) {
 	})
 	assert.Contains(t, objectIDS, "filter-tag-3-site-1")
 	assert.Contains(t, objectIDS, "filter-tag-3-site-2")
+}
+
+func TestCreateObjectWithTagsThatNotExistsReturnsError(t *testing.T) {
+	_, err := models.CreateEntity(
+		u.SITE,
+		map[string]any{
+			"attributes": map[string]any{
+				"reservedColor":  "AAAAAA",
+				"technicalColor": "D0FF78",
+				"usableColor":    "5BDCFF",
+			},
+			"category":    "site",
+			"description": []any{"site"},
+			"domain":      integration.TestDBName,
+			"name":        "create-object-tags-1",
+			"tags":        []any{"not-exists"},
+		},
+		userRoles,
+	)
+	assert.NotNil(t, err)
+	assert.Equal(t, u.ErrBadFormat, err.Type)
+	assert.Equal(t, "Tag not found", err.Message)
+}
+
+func TestUpdateObjectWithTagsThatNotExistsReturnsError(t *testing.T) {
+	err := createSite("update-object-tags-1", []any{})
+	require.Nil(t, err)
+
+	_, err = models.UpdateObject(u.EntityToString(u.SITE), "update-object-tags-1", map[string]any{
+		"tags": []any{"not-exists"},
+	}, false, userRoles)
+	assert.NotNil(t, err)
+	assert.Equal(t, u.ErrBadFormat, err.Type)
+	assert.Equal(t, "Tag not found", err.Message)
+}
+
+func TestPatchObjectWithTagsReturnsError(t *testing.T) {
+	err := createSite("update-object-tags-2", []any{})
+	require.Nil(t, err)
+
+	_, err = models.UpdateObject(u.EntityToString(u.SITE), "update-object-tags-2", map[string]any{
+		"tags": []any{"not-exists"},
+	}, true, userRoles)
+	assert.NotNil(t, err)
+	assert.Equal(t, u.ErrBadFormat, err.Type)
+	assert.Equal(t, "Tags cannot be modified in this way, use tags+ and tags-", err.Message)
 }
 
 func createTag(slug string) *u.Error {
@@ -478,7 +500,7 @@ func createTagWithImage(slug, image string) *u.Error {
 	return err
 }
 
-func createSite(name string, tags []string) *u.Error {
+func createSite(name string, tags []any) *u.Error {
 	_, err := models.CreateEntity(
 		u.SITE,
 		map[string]any{
@@ -491,18 +513,12 @@ func createSite(name string, tags []string) *u.Error {
 			"description": []any{"site"},
 			"domain":      integration.TestDBName,
 			"name":        name,
+			"tags":        tags,
 		},
 		userRoles,
 	)
 	if err != nil {
 		return err
-	}
-
-	for _, tag := range tags {
-		_, err = addTagToObject(name, tag)
-		if err != nil {
-			return err
-		}
 	}
 
 	return nil
@@ -514,6 +530,18 @@ func addTagToObject(objectID string, tagSlug string) (map[string]any, *u.Error) 
 		objectID,
 		map[string]any{
 			"tags+": tagSlug,
+		},
+		true,
+		userRoles,
+	)
+}
+
+func removeTagFromObject(objectID string, tagSlug string) (map[string]any, *u.Error) {
+	return models.UpdateObject(
+		u.HIERARCHYOBJS_ENT,
+		objectID,
+		map[string]any{
+			"tags-": tagSlug,
 		},
 		true,
 		userRoles,

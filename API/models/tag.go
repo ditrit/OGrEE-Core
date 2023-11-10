@@ -11,29 +11,48 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
+// Obtains the list of tags present in a object
+func getTags(object map[string]any) ([]any, bool) {
+	tags, tagsPresent := object["tags"].([]any)
+
+	if !tagsPresent {
+		// when retrieving from database, it has the primitive.A type
+		tags, tagsPresent = object["tags"].(primitive.A)
+	}
+
+	return tags, tagsPresent
+}
+
+// Verifies that a list of tags exist
+func verifyTagsExist(ctx mongo.SessionContext, tags []any) *u.Error {
+	for _, tagSlug := range tags {
+		_, err := repository.GetTagBySlug(ctx, tagSlug.(string))
+		if err != nil {
+			if err.Type == u.ErrNotFound {
+				return &u.Error{Type: u.ErrBadFormat, Message: "Tag not found"}
+			}
+
+			return err
+		}
+	}
+
+	return nil
+}
+
 // Edits object's "tags" list by:
 //  1. adding tags in "tags+"
 //  2. removing tags in "tags-"
 func addAndRemoveFromTags(ctx mongo.SessionContext, entity int, objectID string, object map[string]interface{}) *u.Error {
 	if u.EntityHasTags(entity) {
-		tags, tagsPresent := object["tags"].([]any)
+		tags, tagsPresent := getTags(object)
 		if !tagsPresent || tags == nil {
 			tags = []any{}
 		}
 
 		plusTag, plusTagPresent := object["tags+"]
 		if plusTagPresent {
-			_, err := GetObject(
-				bson.M{"slug": plusTag.(string)},
-				u.EntityToString(u.TAG),
-				u.RequestFilters{},
-				nil,
-			)
+			err := verifyTagsExist(ctx, []any{plusTag})
 			if err != nil {
-				if err.Type == u.ErrNotFound {
-					return &u.Error{Type: u.ErrNotFound, Message: "Tag to add not found"}
-				}
-
 				return err
 			}
 
