@@ -36,6 +36,14 @@ type Path struct {
 	Layer    Layer // If the path is inside a layer
 }
 
+// Transforms the path into a recursive path, transforming the * wildcard into **
+func (path *Path) MakeRecursive() {
+	index := strings.LastIndex(path.ObjectID, ".*")
+	if index != -1 {
+		path.ObjectID = path.ObjectID[:index] + strings.Replace(path.ObjectID[index:], ".*", ".**", 1)
+	}
+}
+
 func IsPhysical(path string) bool {
 	return pathIs(path, PhysicalPath)
 }

@@ -605,7 +605,7 @@ func (p *parser) parseIndexing() node {
 
 func (p *parser) parseLs(category string) node {
 	defer un(trace(p, "ls"))
-	args := p.parseArgs([]string{"s", "f"}, nil, "ls")
+	args := p.parseArgs([]string{"s", "f"}, []string{"r"}, "ls")
 	path := p.parsePath("")
 	var attrList []string
 	if formatArg, ok := args["f"]; ok {
@@ -627,12 +627,18 @@ func (p *parser) parseLs(category string) node {
 		attrVal := p.parseValue()
 		filters[attrName] = attrVal
 	}
-	return &lsNode{path, filters, args["s"], attrList}
+
+	_, recursive := args["r"]
+
+	return &lsNode{path, filters, args["s"], recursive, attrList}
 }
 
 func (p *parser) parseGet() node {
 	defer un(trace(p, "get"))
-	return &getObjectNode{p.parsePath("")}
+	args := p.parseArgs([]string{}, []string{"r"}, "get")
+	_, recursive := args["r"]
+
+	return &getObjectNode{path: p.parsePath(""), recursive: recursive}
 }
 
 func (p *parser) parseGetU() node {

@@ -28,7 +28,7 @@ func PWD() string {
 
 func (controller Controller) UnfoldPath(path string) ([]string, error) {
 	if strings.Contains(path, "*") || models.PathHasLayer(path) {
-		_, subpaths, err := controller.GetObjectsWildcard(path)
+		_, subpaths, err := controller.GetObjectsWildcard(path, false)
 		return subpaths, err
 	}
 
@@ -79,11 +79,15 @@ func (controller Controller) ObjectUrl(pathStr string, depth int) (string, error
 	return parsedUrl.String(), nil
 }
 
-func (controller Controller) ObjectUrlGeneric(pathStr string, depth int, filters map[string]string) (string, error) {
+func (controller Controller) ObjectUrlGeneric(pathStr string, depth int, filters map[string]string, recursive bool) (string, error) {
 	params := url.Values{}
 	path, err := controller.SplitPath(pathStr)
 	if err != nil {
 		return "", err
+	}
+
+	if recursive {
+		path.MakeRecursive()
 	}
 
 	if filters == nil {

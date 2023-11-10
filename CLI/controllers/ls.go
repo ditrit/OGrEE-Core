@@ -15,14 +15,18 @@ import (
 
 var errLayerNotFound = errors.New("the layer used does not exist")
 
-func (controller Controller) Ls(path string, filters map[string]string, sortAttr string) ([]map[string]any, error) {
+func (controller Controller) Ls(path string, filters map[string]string, sortAttr string, recursive bool) ([]map[string]any, error) {
+	if recursive && !models.PathIsLayer(path) {
+		return nil, errRecursiveOnlyToLayers
+	}
+
 	var objects []map[string]any
 	var err error
 
 	if len(filters) == 0 && !models.PathIsLayer(path) {
 		objects, err = controller.lsObjectsWithoutFilters(path)
 	} else {
-		objects, err = controller.lsObjectsWithFilters(path, filters)
+		objects, err = controller.lsObjectsWithFilters(path, filters, recursive)
 	}
 
 	if err != nil {
@@ -96,8 +100,8 @@ func (controller Controller) lsObjectsWithoutFilters(path string) ([]map[string]
 	return objects, nil
 }
 
-func (controller Controller) lsObjectsWithFilters(path string, filters map[string]string) ([]map[string]any, error) {
-	url, err := controller.ObjectUrlGeneric(path+"/*", 0, filters)
+func (controller Controller) lsObjectsWithFilters(path string, filters map[string]string, recursive bool) ([]map[string]any, error) {
+	url, err := controller.ObjectUrlGeneric(path+"/*", 0, filters, recursive)
 	if err != nil {
 		if errors.Is(err, errLayerNotFound) {
 			return nil, err

@@ -46,7 +46,7 @@ func ListEntities(line string) []string {
 			}
 		}
 	}
-	objects, _ := c.C.Ls(pathutil.Clean(path), nil, "")
+	objects, _ := c.C.Ls(pathutil.Clean(path), nil, "", false)
 	return utils.ObjectsToNames(objects)
 }
 
@@ -146,7 +146,7 @@ func ListForUI(line string) []string {
 			}
 		}
 	}
-	objects, _ := c.C.Ls(pathutil.Clean(path), nil, "")
+	objects, _ := c.C.Ls(pathutil.Clean(path), nil, "", false)
 	return utils.ObjectsToNames(objects)
 
 }

@@ -169,10 +169,11 @@ func (n *cdNode) execute() (interface{}, error) {
 }
 
 type lsNode struct {
-	path     node
-	filters  map[string]node
-	sortAttr string
-	attrList []string
+	path      node
+	filters   map[string]node
+	sortAttr  string
+	recursive bool
+	attrList  []string
 }
 
 func (n *lsNode) execute() (interface{}, error) {
@@ -188,7 +189,7 @@ func (n *lsNode) execute() (interface{}, error) {
 		}
 		filters[key] = filterVal.(string)
 	}
-	objects, err := cmd.C.Ls(path, filters, n.sortAttr)
+	objects, err := cmd.C.Ls(path, filters, n.sortAttr, n.recursive)
 	if err != nil {
 		return nil, err
 	}
@@ -408,7 +409,8 @@ func (n *isAttrDrawableNode) execute() (interface{}, error) {
 }
 
 type getObjectNode struct {
-	path node
+	path      node
+	recursive bool
 }
 
 func (n *getObjectNode) execute() (interface{}, error) {
@@ -416,8 +418,7 @@ func (n *getObjectNode) execute() (interface{}, error) {
 	if err != nil {
 		return nil, err
 	}
-
-	objs, _, err := cmd.C.GetObjectsWildcard(path)
+	objs, _, err := cmd.C.GetObjectsWildcard(path, n.recursive)
 	if err != nil {
 		return nil, err
 	}

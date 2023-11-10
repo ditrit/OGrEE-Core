@@ -29,7 +29,7 @@ func TestLsOnElementAsksForLayersIfTheyHaveNeverBeenLoaded(t *testing.T) {
 		"parentId": "BASIC.A",
 	})
 
-	objects, err := controller.Ls("/Physical/BASIC/A/R1", nil, "")
+	objects, err := controller.Ls("/Physical/BASIC/A/R1", nil, "", false)
 	assert.Nil(t, err)
 	assert.Len(t, objects, 0)
 }
@@ -41,7 +41,7 @@ func TestLsOnElementNotAsksForLayersIfTheyAreUpdated(t *testing.T) {
 	mockClock.On("Now").Return(now).Once()
 	mockGetObjectsByEntity(mockAPI, "layers", []any{})
 
-	objects, err := controller.Ls("/Logical/Layers", nil, "")
+	objects, err := controller.Ls("/Logical/Layers", nil, "", false)
 	assert.Nil(t, err)
 	assert.Len(t, objects, 0)
 
@@ -54,7 +54,7 @@ func TestLsOnElementNotAsksForLayersIfTheyAreUpdated(t *testing.T) {
 		"parentId": "BASIC.A",
 	})
 
-	objects, err = controller.Ls("/Physical/BASIC/A/R1", nil, "")
+	objects, err = controller.Ls("/Physical/BASIC/A/R1", nil, "", false)
 	assert.Nil(t, err)
 	assert.Len(t, objects, 0)
 }
@@ -66,7 +66,7 @@ func TestLsOnElementAsksForLayersIfTheyAreNotUpdated(t *testing.T) {
 	mockClock.On("Now").Return(now).Once()
 	mockGetObjectsByEntity(mockAPI, "layers", []any{})
 
-	objects, err := controller.Ls("/Logical/Layers", nil, "")
+	objects, err := controller.Ls("/Logical/Layers", nil, "", false)
 	assert.Nil(t, err)
 	assert.Len(t, objects, 0)
 
@@ -80,7 +80,7 @@ func TestLsOnElementAsksForLayersIfTheyAreNotUpdated(t *testing.T) {
 		"parentId": "BASIC.A",
 	})
 
-	objects, err = controller.Ls("/Physical/BASIC/A/R1", nil, "")
+	objects, err = controller.Ls("/Physical/BASIC/A/R1", nil, "", false)
 	assert.Nil(t, err)
 	assert.Len(t, objects, 0)
 }

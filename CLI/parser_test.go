@@ -254,9 +254,14 @@ func TestParseLs(t *testing.T) {
 		"attr1":    &valueNode{"a"},
 		"attr2":    &valueNode{"b"},
 	}
-	expected := &lsNode{path, filters, sort, attrList}
+	expected := &lsNode{path, filters, sort, false, attrList}
 	testCommand(buffer, expected, t)
 	buffer = "lsbuilding -s height - f \"attr1:attr2\" plouf.plaf attr1=a, attr2=b"
+	testCommand(buffer, expected, t)
+
+	// recursive layer
+	expected = &lsNode{&pathNode{path: &valueNode{"#test"}}, map[string]node{}, sort, true, nil}
+	buffer = "ls -r -s height #test"
 	testCommand(buffer, expected, t)
 }
 
@@ -281,10 +286,11 @@ var commandsMatching = map[string]node{
 	"man draw":                       &helpNode{"draw"},
 	"man camera":                     &helpNode{"camera"},
 	"man ui":                         &helpNode{"ui"},
-	"ls":                             &lsNode{&pathNode{path: &valueNode{""}}, map[string]node{}, "", nil},
+	"ls":                             &lsNode{&pathNode{path: &valueNode{""}}, map[string]node{}, "", false, nil},
 	"cd":                             &cdNode{&pathNode{path: &valueNode{"/"}}},
 	"tree":                           &treeNode{&pathNode{path: &valueNode{"."}}, 1},
-	"get ${toto}/tata":               &getObjectNode{testPath},
+	"get ${toto}/tata":               &getObjectNode{path: testPath},
+	"get -r ${toto}/tata":            &getObjectNode{path: testPath, recursive: true},
 	"getu rackA 42":                  &getUNode{&pathNode{path: &valueNode{"rackA"}}, &valueNode{42}},
 	"undraw":                         &undrawNode{nil},
 	"undraw ${toto}/tata":            &undrawNode{testPath},
@@ -402,7 +408,7 @@ func TestElif(t *testing.T) {
 	command := "if 5 == 6  {ls;} elif 5 == 4 {tree;} else {pwd;}"
 	condition := &equalityNode{"==", &valueNode{5}, &valueNode{6}}
 	conditionElif := &equalityNode{"==", &valueNode{5}, &valueNode{4}}
-	ifBody := &ast{[]node{&lsNode{&pathNode{path: &valueNode{""}}, map[string]node{}, "", nil}, nil}}
+	ifBody := &ast{[]node{&lsNode{&pathNode{path: &valueNode{""}}, map[string]node{}, "", false, nil}, nil}}
 	elifBody := &ast{[]node{&treeNode{&pathNode{path: &valueNode{"."}}, 1}, nil}}
 	elseBody := &ast{[]node{&pwdNode{}, nil}}
 	elif := &ifNode{conditionElif, elifBody, elseBody}

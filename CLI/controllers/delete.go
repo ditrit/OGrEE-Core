@@ -6,7 +6,7 @@ import (
 )
 
 func (controller Controller) DeleteObj(path string) ([]string, error) {
-	url, err := controller.ObjectUrlGeneric(path, 0, nil)
+	url, err := controller.ObjectUrlGeneric(path, 0, nil, false)
 	if err != nil {
 		return nil, err
 	}
