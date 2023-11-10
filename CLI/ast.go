@@ -7,6 +7,7 @@ import (
 	cmd "cli/controllers"
 	"cli/utils"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"path/filepath"
 	"strconv"
@@ -430,6 +431,11 @@ func (n *getObjectNode) execute() (interface{}, error) {
 	if err != nil {
 		return nil, err
 	}
+
+	if !strings.Contains(path, "*") && len(objs) == 0 {
+		return nil, errors.New("object not found")
+	}
+
 	for _, obj := range objs {
 		cmd.DisplayObject(obj)
 	}
