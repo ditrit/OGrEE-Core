@@ -8,7 +8,7 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
-const imagesCollection = "images"
+const imagesCollection = "image"
 
 func CreateImage(ctx context.Context, image u.Image) (primitive.ObjectID, *u.Error) {
 	return CreateObject(ctx, imagesCollection, image)
