@@ -18,7 +18,7 @@ import (
 var globalDB *mongo.Database
 var globalClient *mongo.Client
 
-func ConnectToDB(host, port, user, pass, dbName string) error {
+func ConnectToDB(host, port, user, pass, dbName, tenantName string) error {
 	client, err := ConnectToMongo(host, port, user, pass, dbName)
 	if err != nil {
 		return err
@@ -38,7 +38,7 @@ func ConnectToDB(host, port, user, pass, dbName string) error {
 		return err
 	}
 
-	err = createInitialData(db, dbName)
+	err = createInitialData(db, tenantName)
 	if err != nil {
 		return err
 	}
@@ -66,14 +66,14 @@ func SetupDB(db *mongo.Database) error {
 }
 
 // Initial data creation
-func createInitialData(db *mongo.Database, dbName string) error {
+func createInitialData(db *mongo.Database, tenantName string) error {
 	// Create a default domain
 	ctx, cancel := u.Connect()
 	defer cancel()
 
 	_, err := CreateObject(ctx, u.EntityToString(u.DOMAIN), map[string]any{
-		"id":       dbName,
-		"name":     dbName,
+		"id":       tenantName,
+		"name":     tenantName,
 		"category": "domain",
 		"attributes": map[string]any{
 			"color":       "ffffff",

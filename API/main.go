@@ -26,6 +26,7 @@ func connectToDB() {
 		"ogree"+os.Getenv("db_user")+"Admin",
 		os.Getenv("db_pass"),
 		"ogree"+os.Getenv("db"),
+		os.Getenv("db"),
 	)
 	if err != nil {
 		log.Fatalln(err.Error())

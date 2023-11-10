@@ -15,7 +15,7 @@ func init() {
 
 	log.Println("database recreated")
 
-	err := repository.ConnectToDB("", testDBPort, testDBUser, "123", TestDBName)
+	err := repository.ConnectToDB("", testDBPort, testDBUser, "123", TestDBName, TestDBName)
 	if err != nil {
 		log.Fatalln(err)
 	}
