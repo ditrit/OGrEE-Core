@@ -449,7 +449,7 @@ func Env(userVars, userFuncs map[string]interface{}) {
 
 	fmt.Println()
 	fmt.Println("Currently defined user functions:")
-	for name, _ := range userFuncs {
+	for name := range userFuncs {
 		fmt.Println("Name:", name)
 	}
 }

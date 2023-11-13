@@ -238,7 +238,6 @@ func NameOrSlug(obj map[string]any) string {
 	if okName {
 		return name
 	}
-
 	panic("child has no name/slug")
 }
 

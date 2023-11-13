@@ -5,18 +5,18 @@ import (
 	"net/http"
 )
 
-func (controller Controller) DeleteObj(path string) error {
-	objs, _, err := controller.GetObjectsWildcard(path)
-	if err != nil {
-		return err
-	}
+func (controller Controller) DeleteObj(path string) ([]string, error) {
 	url, err := ObjectUrlGeneric(path, 0, nil)
 	if err != nil {
-		return err
+		return nil, err
 	}
-	_, err = controller.API.Request(http.MethodDelete, url, nil, http.StatusOK)
+	resp, err := controller.API.Request(http.MethodDelete, url, nil, http.StatusOK)
 	if err != nil {
-		return err
+		return nil, err
+	}
+	objs, paths, err := ParseWildcardResponse(resp, path, "DELETE "+url)
+	if err != nil {
+		return nil, err
 	}
 	for _, obj := range objs {
 		if models.IsHierarchical(path) && IsInObjForUnity(obj["category"].(string)) {
@@ -28,5 +28,5 @@ func (controller Controller) DeleteObj(path string) error {
 	if path == State.CurrPath {
 		CD(TranslatePath(".."))
 	}
-	return nil
+	return paths, nil
 }

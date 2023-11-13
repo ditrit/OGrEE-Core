@@ -77,3 +77,17 @@ func mockGetObjectByEntity(mockAPI *mocks.APIPort, entity string, object map[str
 		}, nil,
 	).Once()
 }
+
+func mockDeleteObjects(mockAPI *mocks.APIPort, queryParams string, result []any) {
+	mockAPI.On(
+		"Request", http.MethodDelete,
+		"/api/objects?"+queryParams,
+		mock.Anything, http.StatusOK,
+	).Return(
+		&controllers.Response{
+			Body: map[string]any{
+				"data": removeChildrenFromList(result),
+			},
+		}, nil,
+	).Once()
+}

@@ -311,7 +311,19 @@ func (n *deleteObjNode) execute() (interface{}, error) {
 	if err != nil {
 		return nil, err
 	}
-	return nil, cmd.C.DeleteObj(path)
+	paths, err := cmd.C.DeleteObj(path)
+	if err != nil {
+		return nil, err
+	}
+	if len(paths) > 0 {
+		fmt.Println("Objects deleted :")
+		for _, path := range paths {
+			fmt.Println(path)
+		}
+	} else {
+		fmt.Println("Nothing got deleted")
+	}
+	return nil, nil
 }
 
 type deleteSelectionNode struct{}
@@ -321,7 +333,7 @@ func (n *deleteSelectionNode) execute() (interface{}, error) {
 	deleted := 0
 	if cmd.State.ClipBoard != nil {
 		for _, obj := range cmd.State.ClipBoard {
-			err := cmd.C.DeleteObj(obj)
+			_, err := cmd.C.DeleteObj(obj)
 			if err != nil {
 				errBuilder.WriteString(fmt.Sprintf("    %s: %s\n", obj, err.Error()))
 			} else {
@@ -416,10 +428,16 @@ func (n *getObjectNode) execute() (interface{}, error) {
 	if err != nil {
 		return nil, err
 	}
+
 	objs, _, err := cmd.C.GetObjectsWildcard(path)
 	if err != nil {
 		return nil, err
 	}
+
+	if !strings.Contains(path, "*") && len(objs) == 0 {
+		return nil, errors.New("object not found")
+	}
+
 	for _, obj := range objs {
 		cmd.DisplayObject(obj)
 	}
