@@ -256,11 +256,3 @@ func ObjectAttr(obj map[string]any, attr string) (any, bool) {
 	}
 	return val, true
 }
-
-func ObjectsToNames(objects []map[string]any) []string {
-	names := []string{}
-	for _, obj := range objects {
-		names = append(names, NameOrSlug(obj))
-	}
-	return names
-}

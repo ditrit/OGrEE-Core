@@ -3,7 +3,7 @@ package main
 import (
 	c "cli/controllers"
 	"cli/readline"
-	"cli/utils"
+	"cli/views"
 	"fmt"
 	"os"
 	pathutil "path"
@@ -46,8 +46,10 @@ func ListEntities(line string) []string {
 			}
 		}
 	}
-	objects, _ := c.C.Ls(pathutil.Clean(path), nil, "", false)
-	return utils.ObjectsToNames(objects)
+
+	objects, _ := c.C.Ls(pathutil.Clean(path), nil, false)
+
+	return views.ListObjects(objects, false, "")
 }
 
 func ListLocal(line string) []string {
@@ -146,9 +148,10 @@ func ListForUI(line string) []string {
 			}
 		}
 	}
-	objects, _ := c.C.Ls(pathutil.Clean(path), nil, "", false)
-	return utils.ObjectsToNames(objects)
 
+	objects, _ := c.C.Ls(pathutil.Clean(path), nil, false)
+
+	return views.ListObjects(objects, false, "")
 }
 
 func ListUserVars(path string, appendDeref bool) func(string) []string {

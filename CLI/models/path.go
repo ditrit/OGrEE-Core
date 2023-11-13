@@ -2,6 +2,8 @@ package models
 
 import (
 	"strings"
+
+	"github.com/elliotchance/pie/v2"
 )
 
 const (
@@ -92,6 +94,10 @@ func SplitPath(path string) []string {
 	return strings.Split(path, "/")
 }
 
+func JoinPath(path []string) string {
+	return strings.Join(path, "/")
+}
+
 func PhysicalPathToObjectID(path string) string {
 	return strings.TrimSuffix(
 		strings.ReplaceAll(
@@ -108,4 +114,26 @@ func PhysicalPathToObjectID(path string) string {
 // Transforms the id of a physical object to its path
 func PhysicalIDToPath(id string) string {
 	return PhysicalPath + strings.ReplaceAll(id, ".", "/")
+}
+
+// Removes last "amount" elements from the "path"
+func PathRemoveLast(path string, amount int) string {
+	pathSplit := SplitPath(path)
+
+	return JoinPath(pathSplit[:len(pathSplit)-amount])
+}
+
+// Transform an object id into a relative path from the path "fromPath"
+// Example: BASIC.A.R1 is A/R1 from /Physical/BASIC
+func ObjectIDToRelativePath(objectID, fromPath string) string {
+	objectIDElements := strings.Split(objectID, ".")
+	fromPathLast := pie.Last(SplitPath(fromPath))
+
+	index := pie.FindFirstUsing(objectIDElements, func(element string) bool {
+		return element == fromPathLast
+	})
+
+	remainingElements := objectIDElements[index+1:]
+
+	return JoinPath(remainingElements)
 }

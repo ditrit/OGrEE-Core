@@ -4,6 +4,7 @@ import (
 	"cli/controllers"
 	mocks "cli/mocks/controllers"
 	"cli/models"
+	"cli/utils"
 	"testing"
 	"time"
 
@@ -116,11 +117,11 @@ func TestLsOnASiteShowsRacksIfAnyObjectIsRack(t *testing.T) {
 		"parentId": "BASIC.A",
 	})
 
-	objects, err := controller.Ls("/Physical/BASIC/A/R1", nil, "", false)
+	objects, err := controller.Ls("/Physical/BASIC/A/R1", nil, false)
 	assert.Nil(t, err)
 	assert.Len(t, objects, 2)
-	assert.Equal(t, "A01", objects[0]["name"])
-	assert.Equal(t, models.RacksLayer.Name(), objects[1]["name"])
+	utils.ContainsObjectNamed(t, objects, "A01")
+	utils.ContainsObjectNamed(t, objects, models.RacksLayer.Name())
 }
 
 func TestLsOnASiteShowsCorridorsIfAnyObjectIsCorridor(t *testing.T) {
@@ -137,11 +138,11 @@ func TestLsOnASiteShowsCorridorsIfAnyObjectIsCorridor(t *testing.T) {
 		"parentId": "BASIC.A",
 	})
 
-	objects, err := controller.Ls("/Physical/BASIC/A/R1", nil, "", false)
+	objects, err := controller.Ls("/Physical/BASIC/A/R1", nil, false)
 	assert.Nil(t, err)
 	assert.Len(t, objects, 2)
-	assert.Equal(t, "CO1", objects[0]["name"])
-	assert.Equal(t, models.CorridorsLayer.Name(), objects[1]["name"])
+	utils.ContainsObjectNamed(t, objects, "CO1")
+	utils.ContainsObjectNamed(t, objects, models.CorridorsLayer.Name())
 }
 
 func TestLsOnASiteShowsGroupsIfAnyObjectIsGroup(t *testing.T) {
@@ -158,11 +159,11 @@ func TestLsOnASiteShowsGroupsIfAnyObjectIsGroup(t *testing.T) {
 		"parentId": "BASIC.A",
 	})
 
-	objects, err := controller.Ls("/Physical/BASIC/A/R1", nil, "", false)
+	objects, err := controller.Ls("/Physical/BASIC/A/R1", nil, false)
 	assert.Nil(t, err)
 	assert.Len(t, objects, 2)
-	assert.Equal(t, "GRT", objects[0]["name"])
-	assert.Equal(t, models.GroupsLayer.Name(), objects[1]["name"])
+	utils.ContainsObjectNamed(t, objects, "GRT")
+	utils.ContainsObjectNamed(t, objects, models.GroupsLayer.Name())
 }
 
 func TestLsOnASiteWithAllChildrenShowsAllLayers(t *testing.T) {
@@ -171,16 +172,16 @@ func TestLsOnASiteWithAllChildrenShowsAllLayers(t *testing.T) {
 	mockGetObjectsByEntity(mockAPI, "layers", []any{})
 	mockGetObjectHierarchy(mockAPI, roomWithChildren)
 
-	objects, err := controller.Ls("/Physical/BASIC/A/R1", nil, "", false)
+	objects, err := controller.Ls("/Physical/BASIC/A/R1", nil, false)
 	assert.Nil(t, err)
 	assert.Len(t, objects, 7)
-	assert.Equal(t, "A01", objects[0]["name"])
-	assert.Equal(t, "B01", objects[1]["name"])
-	assert.Equal(t, "CO1", objects[2]["name"])
-	assert.Equal(t, "GRT", objects[3]["name"])
-	assert.Equal(t, models.CorridorsLayer.Name(), objects[4]["name"])
-	assert.Equal(t, models.GroupsLayer.Name(), objects[5]["name"])
-	assert.Equal(t, models.RacksLayer.Name(), objects[6]["name"])
+	utils.ContainsObjectNamed(t, objects, "A01")
+	utils.ContainsObjectNamed(t, objects, "B01")
+	utils.ContainsObjectNamed(t, objects, "CO1")
+	utils.ContainsObjectNamed(t, objects, "GRT")
+	utils.ContainsObjectNamed(t, objects, models.CorridorsLayer.Name())
+	utils.ContainsObjectNamed(t, objects, models.GroupsLayer.Name())
+	utils.ContainsObjectNamed(t, objects, models.RacksLayer.Name())
 }
 
 func TestLsOnARackShowsGroupsIfAnyObjectIsGroup(t *testing.T) {
@@ -195,11 +196,11 @@ func TestLsOnARackShowsGroupsIfAnyObjectIsGroup(t *testing.T) {
 		"parentId": "BASIC.A.R1",
 	})
 
-	objects, err := controller.Ls("/Physical/BASIC/A/R1/A01", nil, "", false)
+	objects, err := controller.Ls("/Physical/BASIC/A/R1/A01", nil, false)
 	assert.Nil(t, err)
 	assert.Len(t, objects, 2)
-	assert.Equal(t, "GRrack", objects[0]["name"])
-	assert.Equal(t, models.GroupsLayer.Name(), objects[1]["name"])
+	utils.ContainsObjectNamed(t, objects, "GRrack")
+	utils.ContainsObjectNamed(t, objects, models.GroupsLayer.Name())
 }
 
 func TestLsOnARackShowsOneLayerForEachTypeOfDevice(t *testing.T) {
@@ -208,15 +209,15 @@ func TestLsOnARackShowsOneLayerForEachTypeOfDevice(t *testing.T) {
 	mockGetObjectsByEntity(mockAPI, "layers", []any{})
 	mockGetObjectHierarchy(mockAPI, rack1)
 
-	objects, err := controller.Ls("/Physical/BASIC/A/R1/A01", nil, "", false)
+	objects, err := controller.Ls("/Physical/BASIC/A/R1/A01", nil, false)
 	assert.Nil(t, err)
 	assert.Len(t, objects, 6)
-	assert.Equal(t, "GRrack", objects[0]["name"])
-	assert.Equal(t, "chT", objects[1]["name"])
-	assert.Equal(t, "pdu", objects[2]["name"])
-	assert.Equal(t, "#chassis", objects[3]["name"])
-	assert.Equal(t, models.GroupsLayer.Name(), objects[4]["name"])
-	assert.Equal(t, "#pdus", objects[5]["name"])
+	utils.ContainsObjectNamed(t, objects, "GRrack")
+	utils.ContainsObjectNamed(t, objects, "chT")
+	utils.ContainsObjectNamed(t, objects, "pdu")
+	utils.ContainsObjectNamed(t, objects, "#chassis")
+	utils.ContainsObjectNamed(t, objects, models.GroupsLayer.Name())
+	utils.ContainsObjectNamed(t, objects, "#pdus")
 }
 
 func TestLsOnRacksLayerShowsRacks(t *testing.T) {
@@ -226,11 +227,11 @@ func TestLsOnRacksLayerShowsRacks(t *testing.T) {
 	mockGetObjectHierarchy(mockAPI, roomWithChildren)
 	mockGetObjects(mockAPI, "category=rack&id=BASIC.A.R1.*&namespace=physical.hierarchy", []any{rack1, rack2})
 
-	objects, err := controller.Ls("/Physical/BASIC/A/R1/#racks", nil, "", false)
+	objects, err := controller.Ls("/Physical/BASIC/A/R1/#racks", nil, false)
 	assert.Nil(t, err)
 	assert.Len(t, objects, 2)
-	assert.Equal(t, "A01", objects[0]["name"])
-	assert.Equal(t, "B01", objects[1]["name"])
+	utils.ContainsObjectNamed(t, objects, "A01")
+	utils.ContainsObjectNamed(t, objects, "B01")
 }
 
 func TestLsOnGroupLayerShowsGroups(t *testing.T) {
@@ -240,10 +241,10 @@ func TestLsOnGroupLayerShowsGroups(t *testing.T) {
 	mockGetObjectHierarchy(mockAPI, roomWithChildren)
 	mockGetObjects(mockAPI, "category=group&id=BASIC.A.R1.*&namespace=logical", []any{roomGroup})
 
-	objects, err := controller.Ls("/Physical/BASIC/A/R1/#groups", nil, "", false)
+	objects, err := controller.Ls("/Physical/BASIC/A/R1/#groups", nil, false)
 	assert.Nil(t, err)
 	assert.Len(t, objects, 1)
-	assert.Equal(t, "GRT", objects[0]["name"])
+	utils.ContainsObjectNamed(t, objects, "GRT")
 }
 
 func TestLsOnCorridorsLayerShowsCorridors(t *testing.T) {
@@ -253,10 +254,10 @@ func TestLsOnCorridorsLayerShowsCorridors(t *testing.T) {
 	mockGetObjectHierarchy(mockAPI, roomWithChildren)
 	mockGetObjects(mockAPI, "category=corridor&id=BASIC.A.R1.*&namespace=physical.hierarchy", []any{corridor})
 
-	objects, err := controller.Ls("/Physical/BASIC/A/R1/#corridors", nil, "", false)
+	objects, err := controller.Ls("/Physical/BASIC/A/R1/#corridors", nil, false)
 	assert.Nil(t, err)
 	assert.Len(t, objects, 1)
-	assert.Equal(t, "CO1", objects[0]["name"])
+	utils.ContainsObjectNamed(t, objects, "CO1")
 }
 
 func TestLsOnTypeLayerShowsDevicesOfThatType(t *testing.T) {
@@ -266,10 +267,10 @@ func TestLsOnTypeLayerShowsDevicesOfThatType(t *testing.T) {
 	mockGetObjectHierarchy(mockAPI, rack1)
 	mockGetObjects(mockAPI, "category=device&id=BASIC.A.R1.A01.*&namespace=physical.hierarchy&type=chassis", []any{chassis})
 
-	objects, err := controller.Ls("/Physical/BASIC/A/R1/A01/#chassis", nil, "", false)
+	objects, err := controller.Ls("/Physical/BASIC/A/R1/A01/#chassis", nil, false)
 	assert.Nil(t, err)
 	assert.Len(t, objects, 1)
-	assert.Equal(t, "chT", objects[0]["name"])
+	utils.ContainsObjectNamed(t, objects, "chT")
 }
 
 func TestLsOnLayerChildWorks(t *testing.T) {
@@ -279,15 +280,15 @@ func TestLsOnLayerChildWorks(t *testing.T) {
 	mockGetObjectHierarchy(mockAPI, roomWithChildren)
 	mockGetObjectHierarchy(mockAPI, rack1)
 
-	objects, err := controller.Ls("/Physical/BASIC/A/R1/#racks/A01", nil, "", false)
+	objects, err := controller.Ls("/Physical/BASIC/A/R1/#racks/A01", nil, false)
 	assert.Nil(t, err)
 	assert.Len(t, objects, 6)
-	assert.Equal(t, "GRrack", objects[0]["name"])
-	assert.Equal(t, "chT", objects[1]["name"])
-	assert.Equal(t, "pdu", objects[2]["name"])
-	assert.Equal(t, "#chassis", objects[3]["name"])
-	assert.Equal(t, models.GroupsLayer.Name(), objects[4]["name"])
-	assert.Equal(t, "#pdus", objects[5]["name"])
+	utils.ContainsObjectNamed(t, objects, "GRrack")
+	utils.ContainsObjectNamed(t, objects, "chT")
+	utils.ContainsObjectNamed(t, objects, "pdu")
+	utils.ContainsObjectNamed(t, objects, "#chassis")
+	utils.ContainsObjectNamed(t, objects, models.GroupsLayer.Name())
+	utils.ContainsObjectNamed(t, objects, "#pdus")
 }
 
 func TestLsOnNestedLayerWorks(t *testing.T) {
@@ -298,10 +299,10 @@ func TestLsOnNestedLayerWorks(t *testing.T) {
 	mockGetObjectHierarchy(mockAPI, rack1)
 	mockGetObjects(mockAPI, "category=group&id=BASIC.A.R1.A01.*&namespace=logical", []any{rackGroup})
 
-	objects, err := controller.Ls("/Physical/BASIC/A/R1/#racks/A01/#groups", nil, "", false)
+	objects, err := controller.Ls("/Physical/BASIC/A/R1/#racks/A01/#groups", nil, false)
 	assert.Nil(t, err)
 	assert.Len(t, objects, 1)
-	assert.Equal(t, "GRrack", objects[0]["name"])
+	utils.ContainsObjectNamed(t, objects, "GRrack")
 }
 
 func TestGetOnRacksLayerGetsRacksAttributes(t *testing.T) {
@@ -314,8 +315,8 @@ func TestGetOnRacksLayerGetsRacksAttributes(t *testing.T) {
 	objects, _, err := controller.GetObjectsWildcard("/Physical/BASIC/A/R1/#racks", false)
 	assert.Nil(t, err)
 	assert.Len(t, objects, 2)
-	assert.Equal(t, removeChildren(rack1), objects[0])
-	assert.Equal(t, removeChildren(rack2), objects[1])
+	assert.Contains(t, objects, removeChildren(rack1))
+	assert.Contains(t, objects, removeChildren(rack2))
 }
 
 func TestGetOnCorridorsLayerGetsCorridorsAttributes(t *testing.T) {
@@ -328,7 +329,7 @@ func TestGetOnCorridorsLayerGetsCorridorsAttributes(t *testing.T) {
 	objects, _, err := controller.GetObjectsWildcard("/Physical/BASIC/A/R1/#corridors", false)
 	assert.Nil(t, err)
 	assert.Len(t, objects, 1)
-	assert.Equal(t, removeChildren(corridor), objects[0])
+	assert.Contains(t, objects, removeChildren(corridor))
 }
 
 func TestGetOnGroupLayerGetsGroupsAttributes(t *testing.T) {
@@ -341,7 +342,7 @@ func TestGetOnGroupLayerGetsGroupsAttributes(t *testing.T) {
 	objects, _, err := controller.GetObjectsWildcard("/Physical/BASIC/A/R1/#groups", false)
 	assert.Nil(t, err)
 	assert.Len(t, objects, 1)
-	assert.Equal(t, removeChildren(roomGroup), objects[0])
+	assert.Contains(t, objects, removeChildren(roomGroup))
 }
 
 func TestGetOnAllLayerGetsAllAttributes(t *testing.T) {
@@ -354,8 +355,8 @@ func TestGetOnAllLayerGetsAllAttributes(t *testing.T) {
 	objects, _, err := controller.GetObjectsWildcard("/Physical/BASIC/A/R1/#racks/*", false)
 	assert.Nil(t, err)
 	assert.Len(t, objects, 2)
-	assert.Equal(t, removeChildren(rack1), objects[0])
-	assert.Equal(t, removeChildren(rack2), objects[1])
+	assert.Contains(t, objects, removeChildren(rack1))
+	assert.Contains(t, objects, removeChildren(rack2))
 }
 
 func TestGetOnWildcardLayerGetsAttributes(t *testing.T) {
@@ -368,7 +369,7 @@ func TestGetOnWildcardLayerGetsAttributes(t *testing.T) {
 	objects, _, err := controller.GetObjectsWildcard("/Physical/BASIC/A/R1/#racks/A*", false)
 	assert.Nil(t, err)
 	assert.Len(t, objects, 1)
-	assert.Equal(t, removeChildren(rack1), objects[0])
+	assert.Contains(t, objects, removeChildren(rack1))
 }
 
 func TestGetOnLayerChildGetsAttributes(t *testing.T) {
@@ -381,7 +382,7 @@ func TestGetOnLayerChildGetsAttributes(t *testing.T) {
 	objects, _, err := controller.GetObjectsWildcard("/Physical/BASIC/A/R1/#racks/A01", false)
 	assert.Nil(t, err)
 	assert.Len(t, objects, 1)
-	assert.Equal(t, removeChildren(rack1), objects[0])
+	assert.Contains(t, objects, removeChildren(rack1))
 }
 
 func TestGetOnNestedLayerGetsAttributes(t *testing.T) {
@@ -395,7 +396,7 @@ func TestGetOnNestedLayerGetsAttributes(t *testing.T) {
 	objects, _, err := controller.GetObjectsWildcard("/Physical/BASIC/A/R1/#racks/A01/#groups", false)
 	assert.Nil(t, err)
 	assert.Len(t, objects, 1)
-	assert.Equal(t, removeChildren(rackGroup), objects[0])
+	assert.Contains(t, objects, removeChildren(rackGroup))
 }
 
 func TestTreeOnLayerFails(t *testing.T) {
@@ -514,8 +515,8 @@ func TestSelectLayerSelectsAll(t *testing.T) {
 	selection, err := controller.Select("/Physical/BASIC/A/R1/#racks")
 	assert.Nil(t, err)
 	assert.Len(t, selection, 2)
-	assert.Equal(t, "/Physical/BASIC/A/R1/A01", selection[0])
-	assert.Equal(t, "/Physical/BASIC/A/R1/B01", selection[1])
+	assert.Contains(t, selection, "/Physical/BASIC/A/R1/A01")
+	assert.Contains(t, selection, "/Physical/BASIC/A/R1/B01")
 }
 
 func TestSelectGroupsLayerSelectsAll(t *testing.T) {
@@ -534,7 +535,7 @@ func TestSelectGroupsLayerSelectsAll(t *testing.T) {
 	selection, err := controller.Select("/Physical/BASIC/A/R1/#groups")
 	assert.Nil(t, err)
 	assert.Len(t, selection, 1)
-	assert.Equal(t, "/Physical/BASIC/A/R1/GRT", selection[0])
+	assert.Contains(t, selection, "/Physical/BASIC/A/R1/GRT")
 }
 
 func TestSelectLayerAllSelectsAll(t *testing.T) {
@@ -554,8 +555,8 @@ func TestSelectLayerAllSelectsAll(t *testing.T) {
 	selection, err := controller.Select("/Physical/BASIC/A/R1/#racks/*")
 	assert.Nil(t, err)
 	assert.Len(t, selection, 2)
-	assert.Equal(t, "/Physical/BASIC/A/R1/A01", selection[0])
-	assert.Equal(t, "/Physical/BASIC/A/R1/B01", selection[1])
+	assert.Contains(t, selection, "/Physical/BASIC/A/R1/A01")
+	assert.Contains(t, selection, "/Physical/BASIC/A/R1/B01")
 }
 
 func TestSelectLayerWildcardSelectsWildcard(t *testing.T) {
@@ -574,7 +575,7 @@ func TestSelectLayerWildcardSelectsWildcard(t *testing.T) {
 	selection, err := controller.Select("/Physical/BASIC/A/R1/#racks/A*")
 	assert.Nil(t, err)
 	assert.Len(t, selection, 1)
-	assert.Equal(t, "/Physical/BASIC/A/R1/A01", selection[0])
+	assert.Contains(t, selection, "/Physical/BASIC/A/R1/A01")
 }
 
 func TestSelectLayerChildSelectsChild(t *testing.T) {
@@ -593,7 +594,7 @@ func TestSelectLayerChildSelectsChild(t *testing.T) {
 	selection, err := controller.Select("/Physical/BASIC/A/R1/#racks/A01")
 	assert.Nil(t, err)
 	assert.Len(t, selection, 1)
-	assert.Equal(t, "/Physical/BASIC/A/R1/A01", selection[0])
+	assert.Contains(t, selection, "/Physical/BASIC/A/R1/A01")
 }
 
 func TestSelectNestedLayerSelectsAll(t *testing.T) {
@@ -613,7 +614,7 @@ func TestSelectNestedLayerSelectsAll(t *testing.T) {
 	selection, err := controller.Select("/Physical/BASIC/A/R1/#racks/A01/#groups")
 	assert.Nil(t, err)
 	assert.Len(t, selection, 1)
-	assert.Equal(t, "/Physical/BASIC/A/R1/A01/GRrack", selection[0])
+	assert.Contains(t, selection, "/Physical/BASIC/A/R1/A01/GRrack")
 }
 
 func TestRemoveLayerRemovesAllObjectsOfTheLayer(t *testing.T) {
@@ -916,7 +917,7 @@ func TestLsNowShowLayerIfNotMatch(t *testing.T) {
 	})
 	mockGetObjectHierarchy(mockAPI, roomWithoutChildren)
 
-	objects, err := controller.Ls("/Physical/BASIC/A/R1", nil, "", false)
+	objects, err := controller.Ls("/Physical/BASIC/A/R1", nil, false)
 	assert.Nil(t, err)
 	assert.Len(t, objects, 0)
 }
@@ -933,10 +934,10 @@ func TestLsShowLayerIfPerfectMatch(t *testing.T) {
 	})
 	mockGetObjectHierarchy(mockAPI, roomWithoutChildren)
 
-	objects, err := controller.Ls("/Physical/BASIC/A/R1", nil, "", false)
+	objects, err := controller.Ls("/Physical/BASIC/A/R1", nil, false)
 	assert.Nil(t, err)
 	assert.Len(t, objects, 1)
-	assert.Equal(t, "#test", objects[0]["name"])
+	utils.ContainsObjectNamed(t, objects, "#test")
 }
 
 func TestLsShowLayerIfPerfectMatchOnPhysical(t *testing.T) {
@@ -951,11 +952,11 @@ func TestLsShowLayerIfPerfectMatchOnPhysical(t *testing.T) {
 	})
 	mockGetObjectsByEntity(mockAPI, "sites", []any{})
 
-	objects, err := controller.Ls("/Physical", nil, "", false)
+	objects, err := controller.Ls("/Physical", nil, false)
 	assert.Nil(t, err)
 	assert.Len(t, objects, 2)
-	assert.Equal(t, "Stray", objects[0]["name"])
-	assert.Equal(t, "#test", objects[1]["name"])
+	utils.ContainsObjectNamed(t, objects, "Stray")
+	utils.ContainsObjectNamed(t, objects, "#test")
 }
 
 func TestLsShowLayerIfPerfectMatchOnPhysicalChild(t *testing.T) {
@@ -976,10 +977,10 @@ func TestLsShowLayerIfPerfectMatchOnPhysicalChild(t *testing.T) {
 		"parentId": "",
 	})
 
-	objects, err := controller.Ls("/Physical/BASIC", nil, "", false)
+	objects, err := controller.Ls("/Physical/BASIC", nil, false)
 	assert.Nil(t, err)
 	assert.Len(t, objects, 1)
-	assert.Equal(t, "#test", objects[0]["name"])
+	utils.ContainsObjectNamed(t, objects, "#test")
 }
 
 func TestLsShowLayerIfPerfectMatchOnPhysicalChildWhenItsCached(t *testing.T) {
@@ -1006,10 +1007,10 @@ func TestLsShowLayerIfPerfectMatchOnPhysicalChildWhenItsCached(t *testing.T) {
 	})
 	mockGetObjectHierarchy(mockAPI, site)
 
-	objects, err := controller.Ls("/Physical/BASIC", nil, "", false)
+	objects, err := controller.Ls("/Physical/BASIC", nil, false)
 	assert.Nil(t, err)
 	assert.Len(t, objects, 1)
-	assert.Equal(t, "#test", objects[0]["name"])
+	utils.ContainsObjectNamed(t, objects, "#test")
 }
 
 func TestLsShowLayerIfMatchWithStar(t *testing.T) {
@@ -1024,10 +1025,10 @@ func TestLsShowLayerIfMatchWithStar(t *testing.T) {
 	})
 	mockGetObjectHierarchy(mockAPI, roomWithoutChildren)
 
-	objects, err := controller.Ls("/Physical/BASIC/A/R1", nil, "", false)
+	objects, err := controller.Ls("/Physical/BASIC/A/R1", nil, false)
 	assert.Nil(t, err)
 	assert.Len(t, objects, 1)
-	assert.Equal(t, "#test", objects[0]["name"])
+	utils.ContainsObjectNamed(t, objects, "#test")
 }
 
 func TestLsShowLayerIfMatchWithSomethingStar(t *testing.T) {
@@ -1042,7 +1043,7 @@ func TestLsShowLayerIfMatchWithSomethingStar(t *testing.T) {
 	})
 	mockGetObjectHierarchy(mockAPI, roomWithoutChildren)
 
-	objects, err := controller.Ls("/Physical/BASIC/A/R1", nil, "")
+	objects, err := controller.Ls("/Physical/BASIC/A/R1", nil, false)
 	assert.Nil(t, err)
 	assert.Len(t, objects, 1)
 	assert.Equal(t, "#test", objects[0]["name"])
@@ -1060,7 +1061,7 @@ func TestLsNotShowLayerIfNotMatchWithStar(t *testing.T) {
 	})
 	mockGetObjectHierarchy(mockAPI, roomWithoutChildren)
 
-	objects, err := controller.Ls("/Physical/BASIC/A/R1", nil, "", false)
+	objects, err := controller.Ls("/Physical/BASIC/A/R1", nil, false)
 	assert.Nil(t, err)
 	assert.Len(t, objects, 0)
 }
@@ -1077,10 +1078,10 @@ func TestLsShowLayerIfMatchWithDoubleStar(t *testing.T) {
 	})
 	mockGetObjectHierarchy(mockAPI, roomWithoutChildren)
 
-	objects, err := controller.Ls("/Physical/BASIC/A/R1", nil, "", false)
+	objects, err := controller.Ls("/Physical/BASIC/A/R1", nil, false)
 	assert.Nil(t, err)
 	assert.Len(t, objects, 1)
-	assert.Equal(t, "#test", objects[0]["name"])
+	utils.ContainsObjectNamed(t, objects, "#test")
 }
 
 func TestLsShowLayerIfMatchWithDoubleStarAndMore(t *testing.T) {
@@ -1095,10 +1096,10 @@ func TestLsShowLayerIfMatchWithDoubleStarAndMore(t *testing.T) {
 	})
 	mockGetObjectHierarchy(mockAPI, emptyChildren(rack1))
 
-	objects, err := controller.Ls("/Physical/BASIC/A/R1/A01", nil, "", false)
+	objects, err := controller.Ls("/Physical/BASIC/A/R1/A01", nil, false)
 	assert.Nil(t, err)
 	assert.Len(t, objects, 1)
-	assert.Equal(t, "#test", objects[0]["name"])
+	utils.ContainsObjectNamed(t, objects, "#test")
 }
 
 func TestLsNotShowLayerIfNotMatchWithDoubleStar(t *testing.T) {
@@ -1113,7 +1114,7 @@ func TestLsNotShowLayerIfNotMatchWithDoubleStar(t *testing.T) {
 	})
 	mockGetObjectHierarchy(mockAPI, roomWithoutChildren)
 
-	objects, err := controller.Ls("/Physical/BASIC/A/R1", nil, "", false)
+	objects, err := controller.Ls("/Physical/BASIC/A/R1", nil, false)
 	assert.Nil(t, err)
 	assert.Len(t, objects, 0)
 }
@@ -1147,7 +1148,7 @@ func TestLsNotShowLayerIfNotMatchWithDoubleStarAndMore(t *testing.T) {
 	})
 	mockGetObjectHierarchy(mockAPI, roomWithoutChildren)
 
-	objects, err := controller.Ls("/Physical/BASIC/A/R1", nil, "", false)
+	objects, err := controller.Ls("/Physical/BASIC/A/R1", nil, false)
 	assert.Nil(t, err)
 	assert.Len(t, objects, 0)
 }
@@ -1157,7 +1158,7 @@ func TestLsReturnsLayerCreatedAfterLastUpdate(t *testing.T) {
 
 	mockGetObjectsByEntity(mockAPI, "layers", []any{})
 
-	objects, err := controller.Ls("/Logical/Layers", nil, "", false)
+	objects, err := controller.Ls("/Logical/Layers", nil, false)
 	assert.Nil(t, err)
 	assert.Len(t, objects, 0)
 
@@ -1169,7 +1170,7 @@ func TestLsReturnsLayerCreatedAfterLastUpdate(t *testing.T) {
 	err = controller.CreateLayer("test", "/Physical/BASIC/A/R1")
 	assert.Nil(t, err)
 
-	objects, err = controller.Ls("/Logical/Layers", nil, "", false)
+	objects, err = controller.Ls("/Logical/Layers", nil, false)
 	assert.Nil(t, err)
 	assert.Len(t, objects, 1)
 	assert.Equal(t, "test", objects[0]["name"])
@@ -1180,7 +1181,7 @@ func TestLsReturnsLayerCreatedAndUpdatedAfterLastUpdate(t *testing.T) {
 
 	mockGetObjectsByEntity(mockAPI, "layers", []any{})
 
-	objects, err := controller.Ls("/Logical/Layers", nil, "", false)
+	objects, err := controller.Ls("/Logical/Layers", nil, false)
 	assert.Nil(t, err)
 	assert.Len(t, objects, 0)
 
@@ -1205,17 +1206,17 @@ func TestLsReturnsLayerCreatedAndUpdatedAfterLastUpdate(t *testing.T) {
 	err = controller.UpdateLayer("/Logical/Layers/test", "category", "device")
 	assert.Nil(t, err)
 
-	objects, err = controller.Ls("/Logical/Layers", nil, "", false)
+	objects, err = controller.Ls("/Logical/Layers", nil, false)
 	assert.Nil(t, err)
 	assert.Len(t, objects, 1)
 	assert.Equal(t, "test", objects[0]["name"])
 
 	mockGetObjectHierarchy(mockAPI, roomWithoutChildren)
 
-	objects, err = controller.Ls("/Physical/BASIC/A/R1", nil, "", false)
+	objects, err = controller.Ls("/Physical/BASIC/A/R1", nil, false)
 	assert.Nil(t, err)
 	assert.Len(t, objects, 1)
-	assert.Equal(t, "#test", objects[0]["name"])
+	utils.ContainsObjectNamed(t, objects, "#test")
 }
 
 func TestLsOnLayerUpdatedAfterLastUpdateDoesUpdatedFilter(t *testing.T) {
@@ -1233,7 +1234,7 @@ func TestLsOnLayerUpdatedAfterLastUpdateDoesUpdatedFilter(t *testing.T) {
 	mockGetObjectHierarchy(mockAPI, roomWithoutChildren)
 	mockGetObjects(mockAPI, "category=rack&id=BASIC.A.R1.*&namespace=physical.hierarchy", []any{})
 
-	objects, err := controller.Ls("/Physical/BASIC/A/R1/#test", nil, "")
+	objects, err := controller.Ls("/Physical/BASIC/A/R1/#test", nil, false)
 	assert.Nil(t, err)
 	assert.Len(t, objects, 0)
 
@@ -1250,7 +1251,7 @@ func TestLsOnLayerUpdatedAfterLastUpdateDoesUpdatedFilter(t *testing.T) {
 
 	mockGetObjects(mockAPI, "category=device&id=BASIC.A.R1.*&namespace=physical.hierarchy", []any{})
 
-	objects, err = controller.Ls("/Physical/BASIC/A/R1/#test", nil, "")
+	objects, err = controller.Ls("/Physical/BASIC/A/R1/#test", nil, false)
 	assert.Nil(t, err)
 	assert.Len(t, objects, 0)
 }
@@ -1270,11 +1271,11 @@ func TestLsOnUserDefinedLayerAppliesFilters(t *testing.T) {
 	mockGetObjectHierarchy(mockAPI, roomWithChildren)
 	mockGetObjects(mockAPI, "category=rack&id=BASIC.A.R1.*&namespace=physical.hierarchy", []any{rack1, rack2})
 
-	objects, err := controller.Ls("/Physical/BASIC/A/R1/#test", nil, "")
+	objects, err := controller.Ls("/Physical/BASIC/A/R1/#test", nil, false)
 	assert.Nil(t, err)
 	assert.Len(t, objects, 2)
-	assert.Equal(t, "A01", objects[0]["name"])
-	assert.Equal(t, "B01", objects[1]["name"])
+	utils.ContainsObjectNamed(t, objects, "A01")
+	utils.ContainsObjectNamed(t, objects, "B01")
 }
 
 func TestLsRecursiveOnDevicesLayerReturnsAllDevicesRecursive(t *testing.T) {

@@ -181,6 +181,7 @@ func (n *lsNode) execute() (interface{}, error) {
 	if err != nil {
 		return nil, err
 	}
+
 	filters := map[string]string{}
 	for key := range n.filters {
 		filterVal, err := n.filters[key].execute()
@@ -189,24 +190,28 @@ func (n *lsNode) execute() (interface{}, error) {
 		}
 		filters[key] = filterVal.(string)
 	}
-	objects, err := cmd.C.Ls(path, filters, n.sortAttr, n.recursive)
+
+	objects, err := cmd.C.Ls(path, filters, n.recursive)
 	if err != nil {
 		return nil, err
 	}
+
+	if n.sortAttr == "" {
+		fmt.Print(views.Objects(objects, n.recursive, path))
+		return nil, nil
+	}
+
 	if n.attrList == nil {
 		n.attrList = []string{}
 	}
-	if n.sortAttr != "" {
-		n.attrList = append([]string{n.sortAttr}, n.attrList...)
+
+	toPrint, err := views.SortedObjects(objects, n.sortAttr, n.attrList, n.recursive, path)
+	if err == nil {
+		fmt.Print(toPrint)
 	}
 
-	if n.sortAttr == "" {
-		views.Objects(objects)
-	} else {
-		views.SortedObjects(objects, n.attrList)
-	}
+	return nil, err
 
-	return nil, nil
 }
 
 type getUNode struct {
