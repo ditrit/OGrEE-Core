@@ -423,6 +423,7 @@ func (n *getObjectNode) execute() (interface{}, error) {
 	if err != nil {
 		return nil, err
 	}
+
 	objs, _, err := cmd.C.GetObjectsWildcard(path, n.recursive)
 	if err != nil {
 		return nil, err
@@ -432,9 +433,12 @@ func (n *getObjectNode) execute() (interface{}, error) {
 		return nil, errors.New("object not found")
 	}
 
+	views.OrderObjects(objs, n.recursive)
+
 	for _, obj := range objs {
 		views.Object(path, obj)
 	}
+
 	return objs, nil
 }
 
