@@ -32,8 +32,9 @@ func recreateTestDB() {
 	ctx, _ := utils.Connect()
 
 	err = db.Drop(ctx)
-	if err != nil {
-		log.Fatalln("Error while doing drop:", err.Error())
+	for err != nil {
+		log.Println("Error while doing drop:", err.Error())
+		err = db.Drop(ctx)
 	}
 
 	db = client.Database(TestDBName)
