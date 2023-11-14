@@ -228,6 +228,18 @@ The automatic layers are those that are added automatically depending on the ent
 
 In addition, custom layers can be created. For this, see [Create a Layer](#create-a-layer).
 
+Layers can be used with the `ls` and `get` commands to list and to get the information of all the objects that meet the conditions of the layer. By default, only direct children of the object to which the layer belongs will be part of the response of these commands. To get results in the object hierarchy use the -r flag:
+
+```
+ls -r [layer_name]
+```
+
+or
+
+```
+get -r [layer_name]
+```
+
 #### Room's automatic layers
 
 - \#corridors: children whose category is corridor
