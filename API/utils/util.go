@@ -62,10 +62,8 @@ const (
 	LLayers        Namespace = "logical.layer"
 )
 
-const HN_DELIMETER = "."                                                              // hierarchyName path delimiter
-const NAME_REGEX = `\w(\w|\-)*`                                                       // accepted regex for names that compose ids
-const NAME_RECURSIVE_REGEX = "(" + NAME_REGEX + `\.` + ")*" + "(" + NAME_REGEX + ")?" // accepted regex for names that compose ids in recursive way
-const RESET_TAG = "RESET"                                                             // used as email to identify a reset token
+const HN_DELIMETER = "."  // hierarchyName path delimiter
+const RESET_TAG = "RESET" // used as email to identify a reset token
 const HIERARCHYOBJS_ENT = "hierarchy_object"
 
 type RequestFilters struct {
@@ -202,24 +200,6 @@ func FilteredReqFromQueryParams(link *url.URL) bson.M {
 		}
 	}
 	return bsonMap
-}
-
-func applyWildcards(value string) string {
-	value = strings.ReplaceAll(value, ".", `\.`)
-
-	value = replaceRegex(value, "**", "NAME_RECURSIVE_REGEX") // initially replace for something that not has *
-	value = replaceRegex(value, "*", NAME_REGEX)
-	value = replaceRegex(value, "NAME_RECURSIVE_REGEX", NAME_RECURSIVE_REGEX) // real replace of NAME_RECURSIVE_REGEX
-
-	return value
-}
-
-func replaceRegex(value, toReplace, regex string) string {
-	return strings.ReplaceAll(value, toReplace, regex)
-}
-
-func regexToMongoFilter(regex string) bson.M {
-	return bson.M{"$regex": "^" + regex + "$"}
 }
 
 func ErrTypeToStatusCode(errType ErrType) int {

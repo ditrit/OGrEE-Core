@@ -137,3 +137,36 @@ func TestWildcardStarStarPointStarSomething(t *testing.T) {
 	unit.ContainsObject(t, objects, "wildcard-site-1.wildcard-building-1.wildcard-1.wildcard-1.wildcard-device-1")
 	unit.ContainsObject(t, objects, "wildcard-site-1.wildcard-building-2.wildcard-1")
 }
+
+func TestWildcardStarStarWithLimit(t *testing.T) {
+	response, objects := e2e.GetObjects("id=wildcard-site-1.**{0,2}&namespace=physical.hierarchy")
+	assert.Equal(t, http.StatusOK, response.Code)
+
+	assert.Len(t, objects, 6)
+	unit.ContainsObject(t, objects, "wildcard-site-1.wildcard-building-1")
+	unit.ContainsObject(t, objects, "wildcard-site-1.wildcard-building-1.wildcard-1")
+	unit.ContainsObject(t, objects, "wildcard-site-1.wildcard-building-1.wildcard-1.wildcard-1")
+	unit.ContainsObject(t, objects, "wildcard-site-1.wildcard-building-2")
+	unit.ContainsObject(t, objects, "wildcard-site-1.wildcard-building-2.wildcard-1")
+	unit.ContainsObject(t, objects, "wildcard-site-1.wildcard-building-2.wildcard-1.wildcard-2")
+}
+
+func TestWildcardStarStarWithLimitSomethingStar(t *testing.T) {
+	response, objects := e2e.GetObjects("id=wildcard-site-1.**{0,2}wildcard-building*&namespace=physical.hierarchy")
+	assert.Equal(t, http.StatusOK, response.Code)
+
+	assert.Len(t, objects, 2)
+	unit.ContainsObject(t, objects, "wildcard-site-1.wildcard-building-1")
+	unit.ContainsObject(t, objects, "wildcard-site-1.wildcard-building-2")
+}
+
+func TestWildcardStarStarWithLimitStarSomething(t *testing.T) {
+	response, objects := e2e.GetObjects("id=wildcard-site-1.**{0,2}*1&namespace=physical.hierarchy")
+	assert.Equal(t, http.StatusOK, response.Code)
+
+	assert.Len(t, objects, 4)
+	unit.ContainsObject(t, objects, "wildcard-site-1.wildcard-building-1")
+	unit.ContainsObject(t, objects, "wildcard-site-1.wildcard-building-1.wildcard-1")
+	unit.ContainsObject(t, objects, "wildcard-site-1.wildcard-building-1.wildcard-1.wildcard-1")
+	unit.ContainsObject(t, objects, "wildcard-site-1.wildcard-building-2.wildcard-1")
+}
