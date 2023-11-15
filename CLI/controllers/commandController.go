@@ -28,7 +28,7 @@ func PWD() string {
 
 func (controller Controller) UnfoldPath(path string) ([]string, error) {
 	if strings.Contains(path, "*") || models.PathHasLayer(path) {
-		_, subpaths, err := controller.GetObjectsWildcard(path, false)
+		_, subpaths, err := controller.GetObjectsWildcard(path, nil, false)
 		return subpaths, err
 	}
 

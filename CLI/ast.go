@@ -182,13 +182,9 @@ func (n *lsNode) execute() (interface{}, error) {
 		return nil, err
 	}
 
-	filters := map[string]string{}
-	for key := range n.filters {
-		filterVal, err := n.filters[key].execute()
-		if err != nil {
-			return nil, err
-		}
-		filters[key] = filterVal.(string)
+	filters, err := filtersToMapString(n.filters)
+	if err != nil {
+		return nil, err
 	}
 
 	objects, err := cmd.C.Ls(path, filters, n.recursive)
@@ -415,6 +411,7 @@ func (n *isAttrDrawableNode) execute() (interface{}, error) {
 
 type getObjectNode struct {
 	path      node
+	filters   map[string]node
 	recursive bool
 }
 
@@ -424,7 +421,12 @@ func (n *getObjectNode) execute() (interface{}, error) {
 		return nil, err
 	}
 
-	objs, _, err := cmd.C.GetObjectsWildcard(path, n.recursive)
+	filters, err := filtersToMapString(n.filters)
+	if err != nil {
+		return nil, err
+	}
+
+	objs, _, err := cmd.C.GetObjectsWildcard(path, filters, n.recursive)
 	if err != nil {
 		return nil, err
 	}

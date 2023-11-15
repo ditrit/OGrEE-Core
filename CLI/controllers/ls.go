@@ -12,13 +12,13 @@ import (
 )
 
 var errLayerNotFound = errors.New("the layer used does not exist")
+var ErrRecursiveOnlyFiltersLayers = errors.New("-r can only be applied to ls with filters or layers")
 
 func (controller Controller) Ls(path string, filters map[string]string, recursive bool) ([]map[string]any, error) {
-	if recursive && !models.PathIsLayer(path) {
-		return nil, errRecursiveOnlyToLayers
-	}
-
 	if len(filters) == 0 && !models.PathIsLayer(path) {
+		if recursive {
+			return nil, ErrRecursiveOnlyFiltersLayers
+		}
 		return controller.lsObjectsWithoutFilters(path)
 	}
 

@@ -42,8 +42,16 @@ type Path struct {
 func (path *Path) MakeRecursive() {
 	index := strings.LastIndex(path.ObjectID, ".*")
 	if index != -1 {
+		// finishes in .*, meaning all the children
 		path.ObjectID = path.ObjectID[:index] + strings.Replace(path.ObjectID[index:], ".*", ".**", 1)
+		return
 	}
+
+	// all the children that are called as the last element of the id
+	idElements := strings.Split(path.ObjectID, ".")
+
+	idElements[len(idElements)-1] = "**" + idElements[len(idElements)-1]
+	path.ObjectID = strings.Join(idElements, ".")
 }
 
 func IsPhysical(path string) bool {

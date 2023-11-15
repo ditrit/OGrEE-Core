@@ -312,7 +312,7 @@ func TestGetOnRacksLayerGetsRacksAttributes(t *testing.T) {
 	mockGetObjectHierarchy(mockAPI, roomWithChildren)
 	mockGetObjects(mockAPI, "category=rack&id=BASIC.A.R1.*&namespace=physical.hierarchy", []any{rack1, rack2})
 
-	objects, _, err := controller.GetObjectsWildcard("/Physical/BASIC/A/R1/#racks", false)
+	objects, _, err := controller.GetObjectsWildcard("/Physical/BASIC/A/R1/#racks", nil, false)
 	assert.Nil(t, err)
 	assert.Len(t, objects, 2)
 	assert.Contains(t, objects, removeChildren(rack1))
@@ -326,7 +326,7 @@ func TestGetOnCorridorsLayerGetsCorridorsAttributes(t *testing.T) {
 	mockGetObjectHierarchy(mockAPI, roomWithChildren)
 	mockGetObjects(mockAPI, "category=corridor&id=BASIC.A.R1.*&namespace=physical.hierarchy", []any{corridor})
 
-	objects, _, err := controller.GetObjectsWildcard("/Physical/BASIC/A/R1/#corridors", false)
+	objects, _, err := controller.GetObjectsWildcard("/Physical/BASIC/A/R1/#corridors", nil, false)
 	assert.Nil(t, err)
 	assert.Len(t, objects, 1)
 	assert.Contains(t, objects, removeChildren(corridor))
@@ -339,7 +339,7 @@ func TestGetOnGroupLayerGetsGroupsAttributes(t *testing.T) {
 	mockGetObjectHierarchy(mockAPI, roomWithChildren)
 	mockGetObjects(mockAPI, "category=group&id=BASIC.A.R1.*&namespace=logical", []any{roomGroup})
 
-	objects, _, err := controller.GetObjectsWildcard("/Physical/BASIC/A/R1/#groups", false)
+	objects, _, err := controller.GetObjectsWildcard("/Physical/BASIC/A/R1/#groups", nil, false)
 	assert.Nil(t, err)
 	assert.Len(t, objects, 1)
 	assert.Contains(t, objects, removeChildren(roomGroup))
@@ -352,7 +352,7 @@ func TestGetOnAllLayerGetsAllAttributes(t *testing.T) {
 	mockGetObjectHierarchy(mockAPI, roomWithChildren)
 	mockGetObjects(mockAPI, "category=rack&id=BASIC.A.R1.*&namespace=physical.hierarchy", []any{rack1, rack2})
 
-	objects, _, err := controller.GetObjectsWildcard("/Physical/BASIC/A/R1/#racks/*", false)
+	objects, _, err := controller.GetObjectsWildcard("/Physical/BASIC/A/R1/#racks/*", nil, false)
 	assert.Nil(t, err)
 	assert.Len(t, objects, 2)
 	assert.Contains(t, objects, removeChildren(rack1))
@@ -366,7 +366,7 @@ func TestGetOnWildcardLayerGetsAttributes(t *testing.T) {
 	mockGetObjectHierarchy(mockAPI, roomWithChildren)
 	mockGetObjects(mockAPI, "category=rack&id=BASIC.A.R1.A*&namespace=physical.hierarchy", []any{rack1})
 
-	objects, _, err := controller.GetObjectsWildcard("/Physical/BASIC/A/R1/#racks/A*", false)
+	objects, _, err := controller.GetObjectsWildcard("/Physical/BASIC/A/R1/#racks/A*", nil, false)
 	assert.Nil(t, err)
 	assert.Len(t, objects, 1)
 	assert.Contains(t, objects, removeChildren(rack1))
@@ -379,7 +379,7 @@ func TestGetOnLayerChildGetsAttributes(t *testing.T) {
 	mockGetObjectHierarchy(mockAPI, roomWithChildren)
 	mockGetObjects(mockAPI, "category=rack&id=BASIC.A.R1.A01&namespace=physical.hierarchy", []any{rack1})
 
-	objects, _, err := controller.GetObjectsWildcard("/Physical/BASIC/A/R1/#racks/A01", false)
+	objects, _, err := controller.GetObjectsWildcard("/Physical/BASIC/A/R1/#racks/A01", nil, false)
 	assert.Nil(t, err)
 	assert.Len(t, objects, 1)
 	assert.Contains(t, objects, removeChildren(rack1))
@@ -393,7 +393,7 @@ func TestGetOnNestedLayerGetsAttributes(t *testing.T) {
 	mockGetObjectHierarchy(mockAPI, rack1)
 	mockGetObjects(mockAPI, "category=group&id=BASIC.A.R1.A01.*&namespace=logical", []any{rackGroup})
 
-	objects, _, err := controller.GetObjectsWildcard("/Physical/BASIC/A/R1/#racks/A01/#groups", false)
+	objects, _, err := controller.GetObjectsWildcard("/Physical/BASIC/A/R1/#racks/A01/#groups", nil, false)
 	assert.Nil(t, err)
 	assert.Len(t, objects, 1)
 	assert.Contains(t, objects, removeChildren(rackGroup))
@@ -1278,7 +1278,7 @@ func TestLsOnUserDefinedLayerAppliesFilters(t *testing.T) {
 	utils.ContainsObjectNamed(t, objects, "B01")
 }
 
-func TestLsRecursiveOnDevicesLayerReturnsAllDevicesRecursive(t *testing.T) {
+func TestLsRecursiveOnLayerListLayerRecursive(t *testing.T) {
 	controller, mockAPI, _ := layersSetup(t)
 
 	devices := map[string]any{
@@ -1300,7 +1300,7 @@ func TestLsRecursiveOnDevicesLayerReturnsAllDevicesRecursive(t *testing.T) {
 	utils.ContainsObjectNamed(t, objects, "pdu")
 }
 
-func TestGetRecursiveOnDevicesLayerReturnsAllDevicesRecursive(t *testing.T) {
+func TestGetRecursiveOnLayerReturnsLayerRecursive(t *testing.T) {
 	controller, mockAPI, _ := layersSetup(t)
 
 	devices := map[string]any{
@@ -1315,7 +1315,7 @@ func TestGetRecursiveOnDevicesLayerReturnsAllDevicesRecursive(t *testing.T) {
 	mockGetObjectHierarchy(mockAPI, roomWithChildren)
 	mockGetObjects(mockAPI, "category=device&id=BASIC.A.R1.**&namespace=physical.hierarchy", []any{chassis, pdu})
 
-	objects, _, err := controller.GetObjectsWildcard("/Physical/BASIC/A/R1/#devices", true)
+	objects, _, err := controller.GetObjectsWildcard("/Physical/BASIC/A/R1/#devices", nil, true)
 	assert.Nil(t, err)
 	assert.Len(t, objects, 2)
 	assert.Contains(t, objects, removeChildren(chassis))

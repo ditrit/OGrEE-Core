@@ -1,7 +1,6 @@
 package controllers
 
 import (
-	"cli/models"
 	"cli/utils"
 	"errors"
 	"fmt"
@@ -9,18 +8,12 @@ import (
 	"strings"
 )
 
-var errRecursiveOnlyToLayers = errors.New("recursive (-r) is only applicable to layers")
-
 func (controller Controller) GetObject(path string) (map[string]any, error) {
 	return controller.GetObjectWithChildren(path, 0)
 }
 
-func (controller Controller) GetObjectsWildcard(pathStr string, recursive bool) ([]map[string]any, []string, error) {
-	if recursive && !models.PathIsLayer(pathStr) {
-		return nil, nil, errRecursiveOnlyToLayers
-	}
-
-	url, err := controller.ObjectUrlGeneric(pathStr, 0, nil, recursive)
+func (controller Controller) GetObjectsWildcard(pathStr string, filters map[string]string, recursive bool) ([]map[string]any, []string, error) {
+	url, err := controller.ObjectUrlGeneric(pathStr, 0, filters, recursive)
 	if err != nil {
 		return nil, nil, err
 	}

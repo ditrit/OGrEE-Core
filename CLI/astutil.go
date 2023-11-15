@@ -143,3 +143,17 @@ func errorResponder(attr, numElts string, multi bool) error {
 
 	return fmt.Errorf(errorMsg + segment)
 }
+
+func filtersToMapString(filters map[string]node) (map[string]string, error) {
+	filtersString := map[string]string{}
+
+	for key := range filters {
+		filterVal, err := filters[key].execute()
+		if err != nil {
+			return nil, err
+		}
+		filtersString[key] = filterVal.(string)
+	}
+
+	return filtersString, nil
+}

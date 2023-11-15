@@ -611,10 +611,20 @@ func (p *parser) parseLs(category string) node {
 	if formatArg, ok := args["f"]; ok {
 		attrList = strings.Split(formatArg, ":")
 	}
-	filters := map[string]node{}
+
+	filters := p.parseFilters()
 	if category != "" {
 		filters["category"] = &valueNode{category}
 	}
+
+	_, recursive := args["r"]
+
+	return &lsNode{path, filters, args["s"], recursive, attrList}
+}
+
+func (p *parser) parseFilters() map[string]node {
+	filters := map[string]node{}
+
 	first := true
 	for !p.commandEnd() {
 		p.skipWhiteSpaces()
@@ -628,9 +638,7 @@ func (p *parser) parseLs(category string) node {
 		filters[attrName] = attrVal
 	}
 
-	_, recursive := args["r"]
-
-	return &lsNode{path, filters, args["s"], recursive, attrList}
+	return filters
 }
 
 func (p *parser) parseGet() node {
@@ -638,7 +646,11 @@ func (p *parser) parseGet() node {
 	args := p.parseArgs([]string{}, []string{"r"}, "get")
 	_, recursive := args["r"]
 
-	return &getObjectNode{path: p.parsePath(""), recursive: recursive}
+	path := p.parsePath("")
+
+	filters := p.parseFilters()
+
+	return &getObjectNode{path: path, filters: filters, recursive: recursive}
 }
 
 func (p *parser) parseGetU() node {
