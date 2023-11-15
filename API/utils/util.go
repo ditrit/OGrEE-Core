@@ -62,10 +62,10 @@ const (
 	LLayers        Namespace = "logical.layer"
 )
 
-const HN_DELIMETER = "."                                            // hierarchyName path delimiter
-const NAME_REGEX = `\w(\w|\-)*`                                     // accepted regex for names that compose ids
-const NAME_RECURSIVE_REGEX = NAME_REGEX + `(\.` + NAME_REGEX + ")*" // accepted regex for names that compose ids in recursive way
-const RESET_TAG = "RESET"                                           // used as email to identify a reset token
+const HN_DELIMETER = "."                                                              // hierarchyName path delimiter
+const NAME_REGEX = `\w(\w|\-)*`                                                       // accepted regex for names that compose ids
+const NAME_RECURSIVE_REGEX = "(" + NAME_REGEX + `\.` + ")*" + "(" + NAME_REGEX + ")?" // accepted regex for names that compose ids in recursive way
+const RESET_TAG = "RESET"                                                             // used as email to identify a reset token
 const HIERARCHYOBJS_ENT = "hierarchy_object"
 
 type RequestFilters struct {
@@ -392,11 +392,13 @@ func GetEntitiesByNamespace(namespace Namespace, hierarchyName string) []string 
 			}
 
 			// Add entities according to hierarchyName possibilities
-			if strings.Contains(hierarchyName, ".**") {
+			if strings.Contains(hierarchyName, "**") {
 				var initialEntity int
 				finalEntity := GROUP
 
 				switch strings.Count(hierarchyName, HN_DELIMETER) {
+				case 0:
+					initialEntity = SITE
 				case 1:
 					initialEntity = BLDG
 				case 2:

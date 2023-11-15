@@ -91,7 +91,7 @@ func TestWildcardPointStarStarPointReturnsAllChildrenRecursive(t *testing.T) {
 	unit.ContainsObject(t, objects, "wildcard-site-1.wildcard-building-1.wildcard-1.wildcard-1")
 }
 
-func TestWildcardStarStarAndStar(t *testing.T) {
+func TestWildcardStarStarAndStarInDifferentElements(t *testing.T) {
 	response, objects := e2e.GetObjects("id=wildcard-site-1.*.wildcard-1.**&namespace=physical.hierarchy")
 	assert.Equal(t, http.StatusOK, response.Code)
 
@@ -99,4 +99,41 @@ func TestWildcardStarStarAndStar(t *testing.T) {
 	unit.ContainsObject(t, objects, "wildcard-site-1.wildcard-building-1.wildcard-1.wildcard-1")
 	unit.ContainsObject(t, objects, "wildcard-site-1.wildcard-building-1.wildcard-1.wildcard-1.wildcard-device-1")
 	unit.ContainsObject(t, objects, "wildcard-site-1.wildcard-building-2.wildcard-1.wildcard-2")
+}
+
+func TestWildcardStarStarSomethingStar(t *testing.T) {
+	response, objects := e2e.GetObjects("id=wildcard-site-1.**wildcard-*&namespace=physical.hierarchy")
+	assert.Equal(t, http.StatusOK, response.Code)
+
+	assert.Len(t, objects, 7)
+	unit.ContainsObject(t, objects, "wildcard-site-1.wildcard-building-1")
+	unit.ContainsObject(t, objects, "wildcard-site-1.wildcard-building-1.wildcard-1")
+	unit.ContainsObject(t, objects, "wildcard-site-1.wildcard-building-1.wildcard-1.wildcard-1")
+	unit.ContainsObject(t, objects, "wildcard-site-1.wildcard-building-1.wildcard-1.wildcard-1.wildcard-device-1")
+	unit.ContainsObject(t, objects, "wildcard-site-1.wildcard-building-2")
+	unit.ContainsObject(t, objects, "wildcard-site-1.wildcard-building-2.wildcard-1")
+	unit.ContainsObject(t, objects, "wildcard-site-1.wildcard-building-2.wildcard-1.wildcard-2")
+}
+
+func TestWildcardStarStarStarSomething(t *testing.T) {
+	response, objects := e2e.GetObjects("id=wildcard-site-1.***1&namespace=physical.hierarchy")
+	assert.Equal(t, http.StatusOK, response.Code)
+
+	assert.Len(t, objects, 5)
+	unit.ContainsObject(t, objects, "wildcard-site-1.wildcard-building-1")
+	unit.ContainsObject(t, objects, "wildcard-site-1.wildcard-building-1.wildcard-1")
+	unit.ContainsObject(t, objects, "wildcard-site-1.wildcard-building-1.wildcard-1.wildcard-1")
+	unit.ContainsObject(t, objects, "wildcard-site-1.wildcard-building-1.wildcard-1.wildcard-1.wildcard-device-1")
+	unit.ContainsObject(t, objects, "wildcard-site-1.wildcard-building-2.wildcard-1")
+}
+
+func TestWildcardStarStarPointStarSomething(t *testing.T) {
+	response, objects := e2e.GetObjects("id=wildcard-site-1.**.*1&namespace=physical.hierarchy")
+	assert.Equal(t, http.StatusOK, response.Code)
+
+	assert.Len(t, objects, 4)
+	unit.ContainsObject(t, objects, "wildcard-site-1.wildcard-building-1.wildcard-1")
+	unit.ContainsObject(t, objects, "wildcard-site-1.wildcard-building-1.wildcard-1.wildcard-1")
+	unit.ContainsObject(t, objects, "wildcard-site-1.wildcard-building-1.wildcard-1.wildcard-1.wildcard-device-1")
+	unit.ContainsObject(t, objects, "wildcard-site-1.wildcard-building-2.wildcard-1")
 }
