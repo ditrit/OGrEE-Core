@@ -254,14 +254,28 @@ func TestParseLs(t *testing.T) {
 		"attr1":    &valueNode{"a"},
 		"attr2":    &valueNode{"b"},
 	}
-	expected := &lsNode{path, filters, sort, false, attrList}
+	expected := &lsNode{path: path, filters: filters, sortAttr: sort, attrList: attrList}
 	testCommand(buffer, expected, t)
 	buffer = "lsbuilding -s height - f \"attr1:attr2\" plouf.plaf attr1=a, attr2=b"
 	testCommand(buffer, expected, t)
+}
 
-	// recursive layer
-	expected = &lsNode{&pathNode{path: &valueNode{"#test"}}, map[string]node{}, sort, true, nil}
-	buffer = "ls -r -s height #test"
+func TestParseLsRecursive(t *testing.T) {
+	path := &pathNode{path: &valueNode{"#test"}}
+	expected := &lsNode{path: path, filters: map[string]node{}, recursive: recursiveArgs{isRecursive: true}}
+	buffer := "ls -r #test"
+	testCommand(buffer, expected, t)
+
+	expected = &lsNode{path: path, filters: map[string]node{}, recursive: recursiveArgs{isRecursive: true, minDepth: "1"}}
+	buffer = "ls -r -m 1 #test"
+	testCommand(buffer, expected, t)
+
+	expected = &lsNode{path: path, filters: map[string]node{}, recursive: recursiveArgs{isRecursive: true, minDepth: "1", maxDepth: "2"}}
+	buffer = "ls -r -m 1 -M 2 #test"
+	testCommand(buffer, expected, t)
+
+	expected = &lsNode{path: path, filters: map[string]node{}, recursive: recursiveArgs{isRecursive: false, minDepth: "1", maxDepth: "2"}}
+	buffer = "ls -m 1 -M 2 #test"
 	testCommand(buffer, expected, t)
 }
 
@@ -286,12 +300,12 @@ var commandsMatching = map[string]node{
 	"man draw":                          &helpNode{"draw"},
 	"man camera":                        &helpNode{"camera"},
 	"man ui":                            &helpNode{"ui"},
-	"ls":                                &lsNode{&pathNode{path: &valueNode{""}}, map[string]node{}, "", false, nil},
+	"ls":                                &lsNode{path: &pathNode{path: &valueNode{""}}, filters: map[string]node{}},
 	"cd":                                &cdNode{&pathNode{path: &valueNode{"/"}}},
 	"tree":                              &treeNode{&pathNode{path: &valueNode{"."}}, 1},
 	"get ${toto}/tata":                  &getObjectNode{path: testPath, filters: map[string]node{}},
-	"get -r ${toto}/tata":               &getObjectNode{path: testPath, filters: map[string]node{}, recursive: true},
-	"get -r ${toto}/tata category=room": &getObjectNode{path: testPath, filters: map[string]node{"category": &valueNode{"room"}}, recursive: true},
+	"get -r ${toto}/tata":               &getObjectNode{path: testPath, filters: map[string]node{}, recursive: recursiveArgs{isRecursive: true}},
+	"get -r ${toto}/tata category=room": &getObjectNode{path: testPath, filters: map[string]node{"category": &valueNode{"room"}}, recursive: recursiveArgs{isRecursive: true}},
 	"getu rackA 42":                     &getUNode{&pathNode{path: &valueNode{"rackA"}}, &valueNode{42}},
 	"undraw":                            &undrawNode{nil},
 	"undraw ${toto}/tata":               &undrawNode{testPath},
@@ -409,7 +423,7 @@ func TestElif(t *testing.T) {
 	command := "if 5 == 6  {ls;} elif 5 == 4 {tree;} else {pwd;}"
 	condition := &equalityNode{"==", &valueNode{5}, &valueNode{6}}
 	conditionElif := &equalityNode{"==", &valueNode{5}, &valueNode{4}}
-	ifBody := &ast{[]node{&lsNode{&pathNode{path: &valueNode{""}}, map[string]node{}, "", false, nil}, nil}}
+	ifBody := &ast{[]node{&lsNode{path: &pathNode{path: &valueNode{""}}, filters: map[string]node{}}, nil}}
 	elifBody := &ast{[]node{&treeNode{&pathNode{path: &valueNode{"."}}, 1}, nil}}
 	elseBody := &ast{[]node{&pwdNode{}, nil}}
 	elif := &ifNode{conditionElif, elifBody, elseBody}

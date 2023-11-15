@@ -172,7 +172,7 @@ type lsNode struct {
 	path      node
 	filters   map[string]node
 	sortAttr  string
-	recursive bool
+	recursive recursiveArgs
 	attrList  []string
 }
 
@@ -187,13 +187,18 @@ func (n *lsNode) execute() (interface{}, error) {
 		return nil, err
 	}
 
-	objects, err := cmd.C.Ls(path, filters, n.recursive)
+	recursive, err := n.recursive.toParams()
+	if err != nil {
+		return nil, err
+	}
+
+	objects, err := cmd.C.Ls(path, filters, recursive)
 	if err != nil {
 		return nil, err
 	}
 
 	if n.sortAttr == "" {
-		fmt.Print(views.Objects(objects, n.recursive, path))
+		fmt.Print(views.Objects(objects, n.recursive.isRecursive, path))
 		return nil, nil
 	}
 
@@ -201,7 +206,7 @@ func (n *lsNode) execute() (interface{}, error) {
 		n.attrList = []string{}
 	}
 
-	toPrint, err := views.SortedObjects(objects, n.sortAttr, n.attrList, n.recursive, path)
+	toPrint, err := views.SortedObjects(objects, n.sortAttr, n.attrList, n.recursive.isRecursive, path)
 	if err == nil {
 		fmt.Print(toPrint)
 	}
@@ -412,7 +417,7 @@ func (n *isAttrDrawableNode) execute() (interface{}, error) {
 type getObjectNode struct {
 	path      node
 	filters   map[string]node
-	recursive bool
+	recursive recursiveArgs
 }
 
 func (n *getObjectNode) execute() (interface{}, error) {
@@ -426,7 +431,12 @@ func (n *getObjectNode) execute() (interface{}, error) {
 		return nil, err
 	}
 
-	objs, _, err := cmd.C.GetObjectsWildcard(path, filters, n.recursive)
+	recursive, err := n.recursive.toParams()
+	if err != nil {
+		return nil, err
+	}
+
+	objs, _, err := cmd.C.GetObjectsWildcard(path, filters, recursive)
 	if err != nil {
 		return nil, err
 	}
@@ -435,7 +445,7 @@ func (n *getObjectNode) execute() (interface{}, error) {
 		return nil, errors.New("object not found")
 	}
 
-	views.OrderObjects(objs, n.recursive)
+	views.OrderObjects(objs, n.recursive.isRecursive)
 
 	for _, obj := range objs {
 		views.Object(path, obj)

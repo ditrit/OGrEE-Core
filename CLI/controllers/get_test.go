@@ -1,6 +1,8 @@
 package controllers_test
 
 import (
+	"cli/controllers"
+	"cli/models"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -13,7 +15,7 @@ func TestGetWithFilters(t *testing.T) {
 
 	objects, _, err := controller.GetObjectsWildcard("/Physical/BASIC/A/R1", map[string]string{
 		"category": "room",
-	}, false)
+	}, nil)
 	assert.Nil(t, err)
 	assert.Len(t, objects, 1)
 	assert.Contains(t, objects, removeChildren(roomWithChildren))
@@ -26,7 +28,7 @@ func TestGetStarWithFilters(t *testing.T) {
 
 	objects, _, err := controller.GetObjectsWildcard("/Physical/BASIC/A/R1/*", map[string]string{
 		"category": "rack",
-	}, false)
+	}, nil)
 	assert.Nil(t, err)
 	assert.Len(t, objects, 2)
 	assert.Contains(t, objects, removeChildren(rack1))
@@ -40,7 +42,7 @@ func TestGetSomethingStarWithFilters(t *testing.T) {
 
 	objects, _, err := controller.GetObjectsWildcard("/Physical/BASIC/A/R1/A*", map[string]string{
 		"category": "rack",
-	}, false)
+	}, nil)
 	assert.Nil(t, err)
 	assert.Len(t, objects, 1)
 	assert.Contains(t, objects, removeChildren(rack1))
@@ -51,7 +53,7 @@ func TestGetRecursiveSearchAllChildrenCalledInThatWay(t *testing.T) {
 
 	mockGetObjects(mockAPI, "id=BASIC.A.**R1&namespace=physical.hierarchy", []any{roomWithChildren})
 
-	objects, _, err := controller.GetObjectsWildcard("/Physical/BASIC/A/R1", nil, true)
+	objects, _, err := controller.GetObjectsWildcard("/Physical/BASIC/A/R1", nil, &controllers.RecursiveParams{MaxDepth: models.UnlimitedDepth})
 	assert.Nil(t, err)
 	assert.Len(t, objects, 1)
 	assert.Contains(t, objects, removeChildren(roomWithChildren))
@@ -64,7 +66,7 @@ func TestGetRecursiveWithFilters(t *testing.T) {
 
 	objects, _, err := controller.GetObjectsWildcard("/Physical/BASIC/A/R1", map[string]string{
 		"category": "room",
-	}, true)
+	}, &controllers.RecursiveParams{MaxDepth: models.UnlimitedDepth})
 	assert.Nil(t, err)
 	assert.Len(t, objects, 1)
 	assert.Contains(t, objects, removeChildren(roomWithChildren))
@@ -77,7 +79,7 @@ func TestGetStarRecursiveWithFilters(t *testing.T) {
 
 	objects, _, err := controller.GetObjectsWildcard("/Physical/BASIC/A/R1/*", map[string]string{
 		"category": "device",
-	}, true)
+	}, &controllers.RecursiveParams{MaxDepth: models.UnlimitedDepth})
 	assert.Nil(t, err)
 	assert.Len(t, objects, 2)
 	assert.Contains(t, objects, removeChildren(chassis))
@@ -91,7 +93,7 @@ func TestGetSomethingStarRecursiveWithFilters(t *testing.T) {
 
 	objects, _, err := controller.GetObjectsWildcard("/Physical/BASIC/A/R1/ch*", map[string]string{
 		"category": "device",
-	}, true)
+	}, &controllers.RecursiveParams{MaxDepth: models.UnlimitedDepth})
 	assert.Nil(t, err)
 	assert.Len(t, objects, 1)
 	assert.Contains(t, objects, removeChildren(chassis))

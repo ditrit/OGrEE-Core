@@ -12,7 +12,7 @@ func (controller Controller) GetObject(path string) (map[string]any, error) {
 	return controller.GetObjectWithChildren(path, 0)
 }
 
-func (controller Controller) GetObjectsWildcard(pathStr string, filters map[string]string, recursive bool) ([]map[string]any, []string, error) {
+func (controller Controller) GetObjectsWildcard(pathStr string, filters map[string]string, recursive *RecursiveParams) ([]map[string]any, []string, error) {
 	url, err := controller.ObjectUrlGeneric(pathStr, 0, filters, recursive)
 	if err != nil {
 		return nil, nil, err

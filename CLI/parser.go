@@ -605,7 +605,7 @@ func (p *parser) parseIndexing() node {
 
 func (p *parser) parseLs(category string) node {
 	defer un(trace(p, "ls"))
-	args := p.parseArgs([]string{"s", "f"}, []string{"r"}, "ls")
+	args := p.parseArgs([]string{"s", "f", "M", "m"}, []string{"r"}, "ls")
 	path := p.parsePath("")
 	var attrList []string
 	if formatArg, ok := args["f"]; ok {
@@ -617,9 +617,19 @@ func (p *parser) parseLs(category string) node {
 		filters["category"] = &valueNode{category}
 	}
 
-	_, recursive := args["r"]
+	_, isRecursive := args["r"]
 
-	return &lsNode{path, filters, args["s"], recursive, attrList}
+	return &lsNode{
+		path:     path,
+		filters:  filters,
+		sortAttr: args["s"],
+		recursive: recursiveArgs{
+			isRecursive: isRecursive,
+			minDepth:    args["m"],
+			maxDepth:    args["M"],
+		},
+		attrList: attrList,
+	}
 }
 
 func (p *parser) parseFilters() map[string]node {
@@ -643,14 +653,18 @@ func (p *parser) parseFilters() map[string]node {
 
 func (p *parser) parseGet() node {
 	defer un(trace(p, "get"))
-	args := p.parseArgs([]string{}, []string{"r"}, "get")
-	_, recursive := args["r"]
+	args := p.parseArgs([]string{"m", "M"}, []string{"r"}, "get")
+	_, isRecursive := args["r"]
 
 	path := p.parsePath("")
 
 	filters := p.parseFilters()
 
-	return &getObjectNode{path: path, filters: filters, recursive: recursive}
+	return &getObjectNode{path: path, filters: filters, recursive: recursiveArgs{
+		isRecursive: isRecursive,
+		minDepth:    args["m"],
+		maxDepth:    args["M"],
+	}}
 }
 
 func (p *parser) parseGetU() node {

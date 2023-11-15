@@ -14,9 +14,14 @@ import (
 var errLayerNotFound = errors.New("the layer used does not exist")
 var ErrRecursiveOnlyFiltersLayers = errors.New("-r can only be applied to ls with filters or layers")
 
-func (controller Controller) Ls(path string, filters map[string]string, recursive bool) ([]map[string]any, error) {
+type RecursiveParams struct {
+	MinDepth int
+	MaxDepth int
+}
+
+func (controller Controller) Ls(path string, filters map[string]string, recursive *RecursiveParams) ([]map[string]any, error) {
 	if len(filters) == 0 && !models.PathIsLayer(path) {
-		if recursive {
+		if recursive != nil {
 			return nil, ErrRecursiveOnlyFiltersLayers
 		}
 		return controller.lsObjectsWithoutFilters(path)
@@ -50,10 +55,10 @@ func (controller Controller) lsObjectsWithoutFilters(path string) ([]map[string]
 	return objects, nil
 }
 
-func (controller Controller) lsObjectsWithFilters(path string, filters map[string]string, recursive bool) ([]map[string]any, error) {
+func (controller Controller) lsObjectsWithFilters(path string, filters map[string]string, recursive *RecursiveParams) ([]map[string]any, error) {
 	url, err := controller.ObjectUrlGeneric(path+"/*", 0, filters, recursive)
 	if err != nil {
-		if errors.Is(err, errLayerNotFound) {
+		if errors.Is(err, errLayerNotFound) || errors.Is(err, models.ErrMaxLessMin) {
 			return nil, err
 		}
 

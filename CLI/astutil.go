@@ -7,6 +7,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"strconv"
 )
 
 func nodeToFloat(n node, name string) (float64, error) {
@@ -156,4 +157,39 @@ func filtersToMapString(filters map[string]node) (map[string]string, error) {
 	}
 
 	return filtersString, nil
+}
+
+type recursiveArgs struct {
+	isRecursive bool
+	minDepth    string
+	maxDepth    string
+}
+
+func (args *recursiveArgs) toParams() (*cmd.RecursiveParams, error) {
+	if !args.isRecursive {
+		return nil, nil
+	}
+
+	minDepth, err := stringToIntOr(args.minDepth, 0)
+	if err != nil {
+		return nil, err
+	}
+
+	maxDepth, err := stringToIntOr(args.maxDepth, models.UnlimitedDepth)
+	if err != nil {
+		return nil, err
+	}
+
+	return &cmd.RecursiveParams{
+		MinDepth: minDepth,
+		MaxDepth: maxDepth,
+	}, nil
+}
+
+func stringToIntOr(value string, defaultValue int) (int, error) {
+	if value != "" {
+		return strconv.Atoi(value)
+	}
+
+	return defaultValue, nil
 }

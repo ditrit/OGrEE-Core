@@ -1,6 +1,8 @@
 package models
 
 import (
+	"errors"
+	"fmt"
 	"strings"
 
 	"github.com/elliotchance/pie/v2"
@@ -38,20 +40,40 @@ type Path struct {
 	Layer    Layer // If the path is inside a layer
 }
 
-// Transforms the path into a recursive path, transforming the * wildcard into **
-func (path *Path) MakeRecursive() {
+const UnlimitedDepth = -1
+
+var ErrMaxLessMin = errors.New("max depth cannot be less than the min depth")
+
+// Transforms the path into a recursive path, transforming the * wildcard into **.
+// minDepth and mexDepth are use to set the minimum and maximum amount of children between the path and the results
+func (path *Path) MakeRecursive(minDepth, maxDepth int) error {
+	depth := ""
+	if maxDepth > UnlimitedDepth {
+		if minDepth > maxDepth {
+			return ErrMaxLessMin
+		}
+
+		depth = fmt.Sprintf("{%v,%v}", minDepth, maxDepth)
+	} else if minDepth > 0 {
+		depth = fmt.Sprintf("{%v,}", minDepth)
+	}
+
+	recursiveWildcard := "**" + depth
+
 	index := strings.LastIndex(path.ObjectID, ".*")
 	if index != -1 {
 		// finishes in .*, meaning all the children
-		path.ObjectID = path.ObjectID[:index] + strings.Replace(path.ObjectID[index:], ".*", ".**", 1)
-		return
+		path.ObjectID = path.ObjectID[:index] + strings.Replace(path.ObjectID[index:], ".*", "."+recursiveWildcard, 1)
+		return nil
 	}
 
 	// all the children that are called as the last element of the id
 	idElements := strings.Split(path.ObjectID, ".")
 
-	idElements[len(idElements)-1] = "**" + idElements[len(idElements)-1]
+	idElements[len(idElements)-1] = recursiveWildcard + idElements[len(idElements)-1]
 	path.ObjectID = strings.Join(idElements, ".")
+
+	return nil
 }
 
 func IsPhysical(path string) bool {

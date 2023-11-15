@@ -28,7 +28,7 @@ func PWD() string {
 
 func (controller Controller) UnfoldPath(path string) ([]string, error) {
 	if strings.Contains(path, "*") || models.PathHasLayer(path) {
-		_, subpaths, err := controller.GetObjectsWildcard(path, nil, false)
+		_, subpaths, err := controller.GetObjectsWildcard(path, nil, nil)
 		return subpaths, err
 	}
 
@@ -79,15 +79,18 @@ func (controller Controller) ObjectUrl(pathStr string, depth int) (string, error
 	return parsedUrl.String(), nil
 }
 
-func (controller Controller) ObjectUrlGeneric(pathStr string, depth int, filters map[string]string, recursive bool) (string, error) {
+func (controller Controller) ObjectUrlGeneric(pathStr string, depth int, filters map[string]string, recursive *RecursiveParams) (string, error) {
 	params := url.Values{}
 	path, err := controller.SplitPath(pathStr)
 	if err != nil {
 		return "", err
 	}
 
-	if recursive {
-		path.MakeRecursive()
+	if recursive != nil {
+		err = path.MakeRecursive(recursive.MinDepth, recursive.MaxDepth)
+		if err != nil {
+			return "", err
+		}
 	}
 
 	if filters == nil {
@@ -140,7 +143,8 @@ func (controller Controller) ObjectUrlGeneric(pathStr string, depth int, filters
 
 	url, _ := url.Parse("/api/objects")
 	url.RawQuery = params.Encode()
-	return strings.ReplaceAll(url.String(), "%2A", "*"), nil
+
+	return url.String(), nil
 }
 
 func PollObject(path string) (map[string]any, error) {

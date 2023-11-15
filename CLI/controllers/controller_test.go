@@ -4,7 +4,9 @@ import (
 	"cli/controllers"
 	mocks "cli/mocks/controllers"
 	"encoding/json"
+	"log"
 	"net/http"
+	"net/url"
 	"testing"
 
 	"github.com/stretchr/testify/mock"
@@ -74,9 +76,14 @@ func removeChildren(object map[string]any) map[string]any {
 }
 
 func mockGetObjects(mockAPI *mocks.APIPort, queryParams string, result []any) {
+	params, err := url.ParseQuery(queryParams)
+	if err != nil {
+		log.Fatalln(err.Error())
+	}
+
 	mockAPI.On(
 		"Request", http.MethodGet,
-		"/api/objects?"+queryParams,
+		"/api/objects?"+params.Encode(),
 		mock.Anything, http.StatusOK,
 	).Return(
 		&controllers.Response{
@@ -126,9 +133,14 @@ func mockGetObjectByEntity(mockAPI *mocks.APIPort, entity string, object map[str
 }
 
 func mockDeleteObjects(mockAPI *mocks.APIPort, queryParams string, result []any) {
+	params, err := url.ParseQuery(queryParams)
+	if err != nil {
+		log.Fatalln(err.Error())
+	}
+
 	mockAPI.On(
 		"Request", http.MethodDelete,
-		"/api/objects?"+queryParams,
+		"/api/objects?"+params.Encode(),
 		mock.Anything, http.StatusOK,
 	).Return(
 		&controllers.Response{

@@ -74,7 +74,7 @@ func TestCpLayerWhenSourceIsCachedCopiesSource(t *testing.T) {
 	mockClock.On("Now").Return(now).Once()
 	mockGetObjectsByEntity(mockAPI, "layers", []any{layer1})
 
-	objects, err := controller.Ls("/Logical/Layers", nil, false)
+	objects, err := controller.Ls("/Logical/Layers", nil, nil)
 	assert.Nil(t, err)
 	assert.Len(t, objects, 1)
 	utils.ContainsObjectNamed(t, objects, "layer1")
@@ -90,7 +90,7 @@ func TestCpLayerWhenSourceIsCachedCopiesSource(t *testing.T) {
 	assert.Nil(t, err)
 
 	mockClock.On("Now").Return(now.Add(5 * time.Second)).Once()
-	objects, err = controller.Ls("/Logical/Layers", nil, false)
+	objects, err = controller.Ls("/Logical/Layers", nil, nil)
 	assert.Nil(t, err)
 	assert.Len(t, objects, 2)
 	utils.ContainsObjectNamed(t, objects, "layer1")
@@ -99,7 +99,7 @@ func TestCpLayerWhenSourceIsCachedCopiesSource(t *testing.T) {
 	mockGetObjectHierarchy(mockAPI, roomWithoutChildren)
 	mockClock.On("Now").Return(now.Add(6 * time.Second)).Once()
 
-	objects, err = controller.Ls("/Physical/BASIC/A/R1", nil, false)
+	objects, err = controller.Ls("/Physical/BASIC/A/R1", nil, nil)
 	assert.Nil(t, err)
 	assert.Len(t, objects, 2)
 	utils.ContainsObjectNamed(t, objects, "#layer1")
