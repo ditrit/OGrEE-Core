@@ -16,6 +16,7 @@
   "reset": "Réinitialiser",
   "close": "Fermer",
   "unavailable": "Indisponible",
+  "download": "Télécharger",
   
   "@welcome": { "description": "Login Page" },
   "welcome": "Bienvenue sur OGrEE",
@@ -163,6 +164,12 @@
   "downloadBackup": "Télécharger archive de backup",
   "backupInfoMessage": "Un fichier de backup sera créé dans la machine hôte de ce déploiement Docker.\nSi sélectionné, le fichier sera aussi télécharger dans votre machine.",
 
+  "tools": "Outils",
+  "downloadCli": "Télécharger la CLI",
+  "downloadCliTitle": "Télécharger la CLI la plus récente",
+  "selectOS": "Choisir SO :" ,
+  "fileSavedTo": "Téléchargé dans :",
+  "unableDownload": "Impossible de télécharger le fichier",
   "onlyOneTool": "Seul un {tool} est possible",
   "@onlyOneTool": {
     "placeholders": {
