@@ -118,10 +118,8 @@ runs:
         TAG_MSG=$(echo ${{ inputs.ENVIRONMENT }} | cut -d'-' -f 2)
         git tag -a ${{ env.VERSION }} -m "${TAG_MSG} ${{ env.VERSION }}" -f
 
-    - name: Download a single artifact
+    - name: Download all artifacts
       uses: actions/download-artifact@v3
-      with:
-        name: cli
     
     - name: 🏷️ Create release if release
       if: ${{ !contains(inputs.ENVIRONMENT, 'Candidate') }}
@@ -131,6 +129,9 @@ runs:
           files: |
             CLI/cli
             cli
+            cli.mac
+            ogree-app-installer.exe
+            app-win-installer
             CLI/cli.mac
             CLI/LICENSE
 

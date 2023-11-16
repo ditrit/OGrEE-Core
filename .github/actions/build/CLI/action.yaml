@@ -29,7 +29,10 @@ runs:
       uses: actions/upload-artifact@v3
       with:
         name: cli
-        path: CLI/cli
+        path: |
+          CLI/cli
+          CLI/cli.mac
+          CLI/cli.exe
 
     - name: Send to Nextcloud
       shell: bash

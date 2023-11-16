@@ -54,6 +54,12 @@ runs:
         "%programfiles(x86)%\Inno Setup 6\iscc.exe" "inno-wininstaller.iss"
       shell: cmd
 
+    - name: Upload result for job
+      uses: actions/upload-artifact@v3
+      with:
+        name: app-win-installer
+        path: Output/ogree-app-installer.exe
+
     - name: Send to Nextcloud
       shell: pwsh
       env:
