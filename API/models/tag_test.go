@@ -471,6 +471,27 @@ func TestPatchObjectWithTagsReturnsError(t *testing.T) {
 	assert.Equal(t, "Tags cannot be modified in this way, use tags+ and tags-", err.Message)
 }
 
+func TestCreateObjectWithTagsAsStringReturnsError(t *testing.T) {
+	_, err := models.CreateEntity(
+		u.SITE,
+		map[string]any{
+			"attributes": map[string]any{
+				"reservedColor":  "AAAAAA",
+				"technicalColor": "D0FF78",
+				"usableColor":    "5BDCFF",
+			},
+			"category":    "site",
+			"description": []any{"site"},
+			"domain":      integration.TestDBName,
+			"name":        "create-objects-tags-string",
+			"tags":        "a string that is not an array",
+		},
+		userRoles,
+	)
+	assert.NotNil(t, err)
+	assert.ErrorContains(t, err, "JSON body doesn't validate with the expected JSON schema")
+}
+
 func createTag(slug string) *u.Error {
 	_, err := models.CreateEntity(
 		u.TAG,
@@ -500,7 +521,7 @@ func createTagWithImage(slug, image string) *u.Error {
 	return err
 }
 
-func createSite(name string, tags []any) *u.Error {
+func createSite(name string, tags any) *u.Error {
 	_, err := models.CreateEntity(
 		u.SITE,
 		map[string]any{
