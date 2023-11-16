@@ -11,14 +11,139 @@ import (
 	"github.com/elliotchance/pie/v2"
 )
 
-func OrderObjects(objects []map[string]any, byID bool) {
-	if byID {
-		orderObjectsBy(objects, func(object map[string]any) string {
-			return object["id"].(string)
-		})
-	} else {
-		orderObjectsBy(objects, utils.NameOrSlug)
+type RelativePathArgs struct {
+	FromPath             string
+	fromPathWithoutLayer string
+}
+
+func (args RelativePathArgs) getFromPath() string {
+	if args.fromPathWithoutLayer == "" {
+		args.fromPathWithoutLayer = models.PathRemoveLast(args.FromPath, 1) // remove layer
 	}
+
+	return args.fromPathWithoutLayer
+}
+
+func (args RelativePathArgs) Get(object map[string]any) string {
+	id, idPresent := object["id"].(string)
+	if !idPresent {
+		return utils.NameOrSlug(object)
+	}
+
+	return models.ObjectIDToRelativePath(id, args.getFromPath())
+}
+
+func ListObjects(objects []map[string]any, sortAttr string, relativePath *RelativePathArgs) ([]string, error) {
+	var stringList []string
+
+	objects, err := SortObjects(objects, sortAttr)
+	if err != nil {
+		return nil, err
+	}
+
+	stringList = []string{}
+
+	for _, object := range objects {
+		stringList = append(stringList, getObjectNameOrPath(object, relativePath))
+	}
+
+	return stringList, nil
+}
+
+func getObjectNameOrPath(object map[string]any, relativePath *RelativePathArgs) string {
+	if relativePath == nil {
+		return utils.NameOrSlug(object)
+	}
+
+	return relativePath.Get(object)
+}
+
+func Ls(objects []map[string]any, sortAttr string, relativePath *RelativePathArgs) (string, error) {
+	stringList, err := ListObjects(objects, sortAttr, relativePath)
+	if err != nil {
+		return "", err
+	}
+
+	toPrint := strings.Join(stringList, "\n")
+	if len(toPrint) > 0 {
+		toPrint = toPrint + "\n"
+	}
+
+	return toPrint, nil
+}
+
+func LsWithFormat(objects []map[string]any, sortAttr string, relativePath *RelativePathArgs, attributes []string) (string, error) {
+	if sortAttr != "" {
+		attributes = append([]string{sortAttr}, attributes...)
+	}
+
+	attributes = pie.Unique(attributes)
+
+	objects, err := SortObjects(objects, sortAttr)
+	if err != nil {
+		return "", err
+	}
+
+	printAll := ""
+
+	for _, obj := range objects {
+		objectName, hasName := obj["name"].(string)
+		if !hasName || !models.IsIDElementLayer(objectName) {
+			printObject := "%s"
+			attrVals := []any{getObjectNameOrPath(obj, relativePath)}
+
+			for _, attr := range attributes {
+				attrVal, hasAttr := utils.ObjectAttr(obj, attr)
+				if !hasAttr {
+					attrVal = "-"
+				}
+				attrVals = append(attrVals, attr, attrVal)
+				printObject += "    %v: %v"
+			}
+
+			printObject += "\n"
+			printAll = printAll + fmt.Sprintf(printObject, attrVals...)
+		}
+	}
+
+	return printAll, nil
+}
+
+func idOrName(object map[string]any) string {
+	id, okId := object["id"].(string)
+	if okId {
+		return id
+	}
+
+	return utils.NameOrSlug(object)
+}
+
+func SortObjects(objects []map[string]any, sortAttr string) ([]map[string]any, error) {
+	if sortAttr == "" {
+		sortAttr = "id"
+	}
+
+	if sortAttr == "id" {
+		orderObjectsBy(objects, idOrName)
+	} else {
+		objects = pie.Filter(objects, func(object map[string]any) bool {
+			_, hasAttr := utils.ObjectAttr(object, sortAttr)
+			return hasAttr
+		})
+
+		if !objectsAreSortable(objects, sortAttr) {
+			return nil, errors.New("objects cannot be sorted according to this attribute")
+		}
+
+		sort.Slice(objects, func(i, j int) bool {
+			vali, _ := utils.ObjectAttr(objects[i], sortAttr)
+			valj, _ := utils.ObjectAttr(objects[j], sortAttr)
+			res, _ := utils.CompareVals(vali, valj)
+			return res
+		})
+	}
+
+	return objects, nil
 }
 
 func orderObjectsBy(objects []map[string]any, attributeGetter func(map[string]any) string) {
@@ -43,83 +168,6 @@ func isObjectLayer(object map[string]any) bool {
 	}
 
 	return models.IsObjectIDLayer(name)
-}
-
-func ListObjects(objects []map[string]any, showRelativePath bool, fromPath string) []string {
-	var stringsToShow []string
-
-	fromPath = models.PathRemoveLast(fromPath, 1) // remove layer
-
-	OrderObjects(objects, showRelativePath)
-
-	stringsToShow = pie.Map(objects, func(object map[string]any) string {
-		if !showRelativePath {
-			return utils.NameOrSlug(object)
-		}
-
-		return models.ObjectIDToRelativePath(object["id"].(string), fromPath)
-	})
-
-	return stringsToShow
-}
-
-func getObjectNameOrPath(object map[string]any, showRelativePath bool, fromPath string) string {
-	if !showRelativePath {
-		return utils.NameOrSlug(object)
-	}
-
-	return models.ObjectIDToRelativePath(object["id"].(string), fromPath)
-}
-
-func Objects(objects []map[string]any, showRelativePath bool, fromPath string) string {
-	toPrint := strings.Join(ListObjects(objects, showRelativePath, fromPath), "\n")
-	if len(toPrint) > 0 {
-		toPrint = toPrint + "\n"
-	}
-
-	return toPrint
-}
-
-func SortedObjects(objects []map[string]any, sortAttr string, attributes []string, showRelativePath bool, fromPath string) (string, error) {
-	attributes = append([]string{sortAttr}, attributes...)
-
-	fromPath = models.PathRemoveLast(fromPath, 1) // remove layer
-
-	objects = pie.Filter(objects, func(object map[string]any) bool {
-		_, hasAttr := utils.ObjectAttr(object, sortAttr)
-		return hasAttr
-	})
-
-	if !objectsAreSortable(objects, sortAttr) {
-		return "", errors.New("objects cannot be sorted according to this attribute")
-	}
-
-	sort.Slice(objects, func(i, j int) bool {
-		vali, _ := utils.ObjectAttr(objects[i], sortAttr)
-		valj, _ := utils.ObjectAttr(objects[j], sortAttr)
-		res, _ := utils.CompareVals(vali, valj)
-		return res
-	})
-
-	printAll := ""
-
-	for _, obj := range objects {
-		printObject := "%s"
-		attrVals := []any{getObjectNameOrPath(obj, showRelativePath, fromPath)}
-
-		for _, attr := range attributes {
-			attrVal, hasAttr := utils.ObjectAttr(obj, attr)
-			if !hasAttr {
-				attrVal = "-"
-			}
-			attrVals = append(attrVals, attr, attrVal)
-			printObject += "    %v: %v"
-		}
-		printObject += "\n"
-		printAll = printAll + fmt.Sprintf(printObject, attrVals...)
-	}
-
-	return printAll, nil
 }
 
 func objectsAreSortable(objects []map[string]any, attr string) bool {

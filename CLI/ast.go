@@ -197,16 +197,24 @@ func (n *lsNode) execute() (interface{}, error) {
 		return nil, err
 	}
 
-	if n.sortAttr == "" {
-		fmt.Print(views.Objects(objects, n.recursive.isRecursive, path))
-		return nil, nil
+	var relativePath *views.RelativePathArgs
+	if n.recursive.isRecursive {
+		relativePath = &views.RelativePathArgs{
+			FromPath: path,
+		}
 	}
 
 	if n.attrList == nil {
 		n.attrList = []string{}
 	}
 
-	toPrint, err := views.SortedObjects(objects, n.sortAttr, n.attrList, n.recursive.isRecursive, path)
+	var toPrint string
+	if len(n.attrList) == 0 {
+		toPrint, err = views.Ls(objects, n.sortAttr, relativePath)
+	} else {
+		toPrint, err = views.LsWithFormat(objects, n.sortAttr, relativePath, n.attrList)
+	}
+
 	if err == nil {
 		fmt.Print(toPrint)
 	}
@@ -445,7 +453,10 @@ func (n *getObjectNode) execute() (interface{}, error) {
 		return nil, errors.New("object not found")
 	}
 
-	views.OrderObjects(objs, n.recursive.isRecursive)
+	objs, err = views.SortObjects(objs, "")
+	if err != nil {
+		return nil, err
+	}
 
 	for _, obj := range objs {
 		views.Object(path, obj)

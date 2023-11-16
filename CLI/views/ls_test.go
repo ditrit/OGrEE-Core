@@ -7,60 +7,113 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestObjectsShowsLayersAtTheEnd(t *testing.T) {
+func TestLsShowsLayersAtTheEnd(t *testing.T) {
+	printed, err := views.Ls([]map[string]any{
+		{
+			"name": "#racks",
+		},
+		{
+			"id":   "BASIC.A.R1.A01",
+			"name": "A01",
+		},
+	}, "", nil)
+	assert.Nil(t, err)
 	assert.Equal(t,
 		`A01
 #racks
-`,
-		views.Objects([]map[string]any{
-			{
-				"name": "#racks",
-			},
-			{
-				"name": "A01",
-			},
-		}, false, ""),
+`, printed,
 	)
 }
 
-func TestObjectsWithRelativePathOrdersByThePath(t *testing.T) {
+func TestLsWithRelativePathOrdersByThePath(t *testing.T) {
+	printed, err := views.Ls([]map[string]any{
+		{
+			"id":   "BASIC.A.R1.A01",
+			"name": "A01",
+		},
+		{
+			"id":   "BASIC.A.R2.A01",
+			"name": "A01",
+		},
+		{
+			"id":   "BASIC.A.R1.B01",
+			"name": "B01",
+		},
+		{
+			"id":   "BASIC.B.R1.A01",
+			"name": "A01",
+		},
+	}, "", &views.RelativePathArgs{FromPath: "/Physical/BASIC/#racks"})
+	assert.Nil(t, err)
 	assert.Equal(t,
 		`A/R1/A01
 A/R1/B01
 A/R2/A01
 B/R1/A01
 `,
-		views.Objects([]map[string]any{
-			{
-				"id": "BASIC.A.R1.A01",
-			},
-			{
-				"id": "BASIC.A.R2.A01",
-			},
-			{
-				"id": "BASIC.A.R1.B01",
-			},
-			{
-				"id": "BASIC.B.R1.A01",
-			},
-		}, true, "/Physical/BASIC/#racks"),
+		printed,
 	)
 }
 
-func TestSortedObjectsOrdersByAttributeAndRemoveLayers(t *testing.T) {
-	printed, err := views.SortedObjects([]map[string]any{
+func TestLsWithRelativePathOnObjectsWithSlugsOrdersBySlug(t *testing.T) {
+	printed, err := views.Ls([]map[string]any{
+		{
+			"slug": "tag2",
+		},
+		{
+			"slug": "tag1",
+		},
+	}, "", &views.RelativePathArgs{FromPath: "/Physical/BASIC/#racks"})
+	assert.Nil(t, err)
+	assert.Equal(t,
+		`tag1
+tag2
+`,
+		printed,
+	)
+}
+
+func TestLsWithFormatRemoveLayers(t *testing.T) {
+	printed, err := views.LsWithFormat([]map[string]any{
 		{
 			"name": "#racks",
 		},
 		{
+			"id":        "BASIC.A.R1.A01",
 			"name":      "A01",
 			"attribute": "2",
 		},
 		{
+			"id":        "BASIC.A.R1.B01",
 			"name":      "B01",
 			"attribute": "1",
 		},
-	}, "attribute", []string{}, false, "")
+	}, "", nil, []string{"attribute"})
+	assert.Nil(t, err)
+	assert.Equal(t,
+		`A01    attribute: 2
+B01    attribute: 1
+`,
+		printed,
+	)
+}
+
+func TestLsWithFormatOrdersByAttributeAndRemoveLayers(t *testing.T) {
+	printed, err := views.LsWithFormat([]map[string]any{
+		{
+			"name": "#racks",
+		},
+		{
+			"id":        "BASIC.A.R1.A01",
+			"name":      "A01",
+			"attribute": "2",
+		},
+		{
+			"id":        "BASIC.A.R1.B01",
+			"name":      "B01",
+			"attribute": "1",
+		},
+	}, "attribute", nil, []string{})
 	assert.Nil(t, err)
 	assert.Equal(t,
 		`B01    attribute: 1
@@ -70,21 +123,67 @@ A01    attribute: 2
 	)
 }
 
-func TestSortedObjectsWithRelativePathOrdersByAttribute(t *testing.T) {
-	printed, err := views.SortedObjects([]map[string]any{
+func TestLsWithFormatWithRelativePathOrdersByAttribute(t *testing.T) {
+	printed, err := views.LsWithFormat([]map[string]any{
 		{
 			"id":        "BASIC.A.R1.A01",
+			"name":      "A01",
 			"attribute": "2",
 		},
 		{
 			"id":        "BASIC.A.R1.B01",
+			"name":      "B01",
 			"attribute": "1",
 		},
-	}, "attribute", []string{}, true, "/Physical/BASIC/#racks")
+	}, "attribute", &views.RelativePathArgs{FromPath: "/Physical/BASIC/#racks"}, []string{})
 	assert.Nil(t, err)
 	assert.Equal(t,
 		`A/R1/B01    attribute: 1
 A/R1/A01    attribute: 2
+`,
+		printed,
+	)
+}
+
+func TestLsWithFormatWithoutSortAttrOrdersByName(t *testing.T) {
+	printed, err := views.LsWithFormat([]map[string]any{
+		{
+			"id":        "BASIC.A.R1.A01",
+			"name":      "A01",
+			"attribute": "2",
+		},
+		{
+			"id":        "BASIC.A.R1.B01",
+			"name":      "B01",
+			"attribute": "1",
+		},
+	}, "", nil, []string{"attribute"})
+	assert.Nil(t, err)
+	assert.Equal(t,
+		`A01    attribute: 2
+B01    attribute: 1
+`,
+		printed,
+	)
+}
+
+func TestLsWithFormatWithRelativePathWithoutSortAttrOrdersById(t *testing.T) {
+	printed, err := views.LsWithFormat([]map[string]any{
+		{
+			"id":        "BASIC.A.R1.A01",
+			"name":      "A01",
+			"attribute": "2",
+		},
+		{
+			"id":        "BASIC.A.R1.B01",
+			"name":      "B01",
+			"attribute": "1",
+		},
+	}, "", &views.RelativePathArgs{FromPath: "/Physical/BASIC/#racks"}, []string{"attribute"})
+	assert.Nil(t, err)
+	assert.Equal(t,
+		`A/R1/A01    attribute: 2
+A/R1/B01    attribute: 1
 `,
 		printed,
 	)

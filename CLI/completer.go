@@ -49,7 +49,8 @@ func ListEntities(line string) []string {
 
 	objects, _ := c.C.Ls(pathutil.Clean(path), nil, nil)
 
-	return views.ListObjects(objects, false, "")
+	stringList, _ := views.ListObjects(objects, "", nil)
+	return stringList
 }
 
 func ListLocal(line string) []string {
@@ -151,7 +152,8 @@ func ListForUI(line string) []string {
 
 	objects, _ := c.C.Ls(pathutil.Clean(path), nil, nil)
 
-	return views.ListObjects(objects, false, "")
+	stringList, _ := views.ListObjects(objects, "", nil)
+	return stringList
 }
 
 func ListUserVars(path string, appendDeref bool) func(string) []string {
