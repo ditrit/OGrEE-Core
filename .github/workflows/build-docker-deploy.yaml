@@ -11,6 +11,7 @@ on:
 jobs:
   build-docker:
     name: 🏗️📤 Build Docker Image - Push to Registery
+    permissions: write-all
     runs-on: ubuntu-latest
     steps:
 

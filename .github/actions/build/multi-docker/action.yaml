@@ -119,7 +119,6 @@ runs:
         git tag -a ${{ env.VERSION }} -m "${TAG_MSG} ${{ env.VERSION }}" -f
     
     - name: 🏷️ Create release if release
-      permissions: write-all
       if: ${{ !contains(inputs.ENVIRONMENT, 'Candidate') }}
       uses: softprops/action-gh-release@v1
       with:
