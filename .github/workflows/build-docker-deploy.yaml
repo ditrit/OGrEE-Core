@@ -64,4 +64,21 @@ jobs:
           VERSION: ${{ env.VERSION }}
           NEXT_CREDENTIALS: ${{ secrets.NEXT_CREDENTIALS }}
 
+      - name: Download all artifacts
+        uses: actions/download-artifact@v3
+
+      - name: Display structure of downloaded files
+        run: ls -R
+
+      - name: 🏷️ Create release if release
+        if: ${{ !contains(env.ENVIRONMENT, 'Candidate') }}
+        uses: softprops/action-gh-release@v1
+        with:
+            tag_name: ${{ env.VERSION }}
+            files: |
+              cli/cli.exe
+              cli/cli
+              cli/cli.mac
+              CLI/LICENSE
+
   
