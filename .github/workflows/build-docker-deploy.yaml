@@ -42,6 +42,7 @@ jobs:
   
   build-app-windows:
     name: 🏗️📤 Build APP and Installer for Windows
+    permissions: write-all
     needs: build-docker
     runs-on: windows-latest
     steps:
@@ -76,9 +77,13 @@ jobs:
         with:
             tag_name: ${{ env.VERSION }}
             files: |
-              cli/cli.exe
-              cli/cli
-              cli/cli.mac
-              CLI/LICENSE
+              cli-build/cli.exe
+              cli-build/cli
+              cli-build/cli.mac
+              api-build/OGrEE_API_Linux_x64
+              api-build/OGrEE_API_OSX_x64
+              api-build/OGrEE_API_Win_x64
+              app-web-build/OGrEE_APP_Web.zip
+              app-win-build/OGrEE_Win_Install.exe
 
   

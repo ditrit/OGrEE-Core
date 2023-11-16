@@ -45,6 +45,6 @@ runs:
       - name: Upload result for job
         uses: actions/upload-artifact@v3
         with:
-          name: app-web
+          name: app-web-build
           path: APP/OGrEE_APP_Web.zip
           

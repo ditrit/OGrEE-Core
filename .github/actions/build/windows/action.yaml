@@ -57,7 +57,7 @@ runs:
     - name: Upload result for job
       uses: actions/upload-artifact@v3
       with:
-        name: app-win-installer
+        name: app-win-build
         path: Output/ogree-app-installer.exe
 
     - name: Send to Nextcloud

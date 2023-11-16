@@ -28,7 +28,7 @@ runs:
     - name: Upload result for job
       uses: actions/upload-artifact@v3
       with:
-        name: cli
+        name: cli-build
         path: |
           CLI/cli
           CLI/cli.mac
