@@ -1,16 +1,49 @@
-USAGE: ls [FLAG] (optional) [ARGUMENT] (optional) [PATH] (optional)    
-Displays objects in a given directory. If no argument is given, then the current path will be used.   
+NAME
+    ls - list children
 
-ARGUMENTS   
+SYNOPSIS
+    ls [OPTION]... [PATH] [FILTERS]
 
-    -s attr
-    This specifies that you would like to display and sort the objects according to the attribute 'attr'
+DESCRIPTION
+    Lists the children of the specified path.
 
-    
-EXAMPLE   
+    If no PATH is given, then the current path will be used (equivalent to "ls .").
 
-    ls   
+    [FILTERS] is an optional list of filters that can be used to only list the children that meet certain conditions.
+    In order to use FILTERS, PATH must be present.
+    The format to use is attribute1=expected_value,attribute2=expected_value,....
+
+OPTIONS
+    -s attribute_name
+        Specifies the attribute of the objects to be used to sort the results.
+        By default, the results are listed in alphabetical order according to their name.
+
+    -f attributes
+        The results are listed with the attributes present in format.
+        The format of attributes is a list separated by : (attribute1:attribute2:...)
+
+    -r
+        Specifies that you want to do a recursive ls, i.e., not only list the direct children but the entire descendant hierarchy.
+        This option can only be used when there are FILTERS or the PATH is a layer.
+
+    -m min_depth
+        Only affects when used in conjunction with -r.
+        Specifies the minimum number of children between the PATH and the listed results.
+        Default is 0.
+
+    -M max_depth
+        Only affects when used in conjunction with -r.
+        Specifies the maximum number of children between the PATH and the listed results.
+        Default is no limit.
+
+EXAMPLES
+    ls
     ls DEMO_RACK/DeviceA
     ls /Physical/SiteA
     ls $x
-    ls -s slot
+    ls -s height
+    ls -f height:size
+    ls -s height -f size
+    ls . height=12
+    ls -r #racks
+    ls -r -m 1 -M 2 #racks

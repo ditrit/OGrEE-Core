@@ -1,36 +1,59 @@
-Usage: ls[OBJ] [PATH] [FLAG](optional)   
-Displays specified object type from given path.
+NAME
+    lsOBJ - list children of a type
 
-Where OBJ can be:      
-site   
-bldg   
-room   
-rack   
-dev   
-ac   
-cabinet   
-corridor   
-panel   
+SYNOPSIS
+    lsOBJ [OPTION]... [PATH] [FILTERS]
 
-The possible flags that can be supplied at this time are '-r' option for recursive ls, '-s' option for sorting results and '-f' for displaying results with their attributes. By default the ls{obj} commands will not be recursive and does no sorting etc. 
+DESCRIPTION
+    Lists the children of type OBJ of the specified path (equivalent to ls with filter: category=[type]).
+    Where OBJ can be:
+        site
+        bldg
+        room
+        rack
+        dev
+        ac
+        cabinet
+        corridor
+        panel
 
-NOTE   
-    '-r' flag takes no arguments
-    '-s' flag takes a single word argument
-    '-f' flag can 2 types of arguments. First type is a single quote enclosed string argument with attributes separated by ':' and the second type is of the form ("Format String",Attribute0,...,AttributeN) like a printf    
+    If no PATH is given, then the current path will be used (equivalent to "ls .").
 
-    The first type is a simpler version of the second type. The first type will take all the arguments separated by ':' and display them automatically (while inferring the data type for you)   
+    [FILTERS] is an optional list of filters that can be used to only list the children that meet certain conditions.
+    In order to use FILTERS, PATH must be present.
+    The format to use is attribute1=expected_value,attribute2=expected_value,....
 
-    The second type is more manual and allows you to precisely specify the formatting just like how a 'printf' function works.    
+OPTIONS
+    -s attribute_name
+        Specifies the attribute of the objects to be used to sort the results.
+        By default, the results are listed in alphabetical order according to their name.
 
-EXAMPLE   
+    -f attributes
+        The results are listed with the attributes present in format.
+        The format of attributes is a list separated by : (attribute1:attribute2:...)
 
-    lssite .  
-    lssite ../../Physical/SiteB
-    lscabinet
-    lspanel
-    lsac -r ../../DEMO  
-    lsdev  -s heightUnit -r
-    lsrack -r -s heightUnit -f ("Value1:%s\tValue2:%s",attr1,attr2)
-    lsdev  -f ("HeightUnit:%d\t\tColor:%x",heightUnit,color)
-    lssite ../../DEMO -f "zipcode:orientation"
+    -r
+        Specifies that you want to do a recursive ls, i.e., not only list the direct children but the entire descendant hierarchy.
+        This option can only be used when there are FILTERS or the PATH is a layer.
+
+    -m min_depth
+        Only affects when used in conjunction with -r.
+        Specifies the minimum number of children between the PATH and the listed results.
+        Default is 0.
+
+    -M max_depth
+        Only affects when used in conjunction with -r.
+        Specifies the maximum number of children between the PATH and the listed results.
+        Default is no limit.
+
+EXAMPLES
+    lssite
+    lsbldg DEMO_RACK/DeviceA
+    lsroom /Physical/SiteA
+    lsrack $x
+    lsdev -s height
+    lsac -f height:size
+    lscabinet -s height -f size
+    lscorridor . height=12
+    lspanel -r .
+    lssite -r -m 1 -M 2 .

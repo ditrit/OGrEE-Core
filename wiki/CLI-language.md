@@ -29,6 +29,7 @@
       - [Device's automatic layers](#devices-automatic-layers)
     - [Filters](#filters)
       - [Filter by tag](#filter-by-tag)
+      - [Filter by category](#filter-by-category)
   - [Tree](#tree)
   - [Delete object](#delete-object)
   - [Focus an object](#focus-an-object)
@@ -210,6 +211,12 @@ get [path]
 
 where `[path]` can be either the path of a single object (get rack1) or a list of objects using wildcards (get rack1/*).
 
+To see all possible options run:
+
+```
+man get
+```
+
 ## Ls object
 
 To obtain the children of an object and facilitate navigation over the hierarchy, the ls command can be used:
@@ -219,6 +226,12 @@ ls [path]
 ```
 
 ls can also be used without [path] to do ls on the current path.
+
+To see all possible options run:
+
+```
+man ls
+```
 
 ### Layers
 
@@ -266,6 +279,12 @@ By adding the filter tag=[tag_slug] to the ls, we can obtain the children that h
 ```
 ls [path] tag=[tag_slug]
 ```
+
+#### Filter by category
+
+Several commands are provided for running ls with category filter without typing them by hand: `lssite`, `lsbldg`, `lsroom`, `lsrack`, `lsdev`, `lsac`, `lspanel`, `lscabinet`, `lscorridor`, `lssensor`.
+
+In addition, each of these commands accepts all the options of the ls command and the addition of more filters.
 
 ## Tree
 
