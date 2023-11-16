@@ -1,5 +1,5 @@
 name: API Publish
-description: PUblish API into Nextcloud
+description: Publish API into Nextcloud
 
 inputs:
   VERSION: 

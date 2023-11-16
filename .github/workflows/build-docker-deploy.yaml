@@ -84,6 +84,6 @@ jobs:
               api-build/OGrEE_API_OSX_x64
               api-build/OGrEE_API_Win_x64
               app-web-build/OGrEE_APP_Web.zip
-              app-win-build/OGrEE_Win_Install.exe
+              app-win-build/ogree-app-installer.exe
 
   

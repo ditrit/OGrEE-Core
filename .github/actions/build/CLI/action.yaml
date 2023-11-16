@@ -1,5 +1,5 @@
 name: CLI Publish
-description: PUblish CLI into Nextcloud
+description: Publish CLI into Nextcloud
 
 inputs:
   VERSION: 
