@@ -614,7 +614,9 @@ func (p *parser) parseLs(category string) node {
 
 	filters := p.parseFilters()
 	if category != "" {
-		filters["category"] = &valueNode{category}
+		filters["category"] = &valueNode{
+			models.EntityToString(models.EntityStrToInt(category)),
+		}
 	}
 
 	_, isRecursive := args["r"]

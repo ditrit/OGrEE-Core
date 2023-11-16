@@ -73,7 +73,7 @@ func EntityStrToInt(entity string) int {
 		return ROOM
 	case "rack", "rk":
 		return RACK
-	case "device", "dv":
+	case "device", "dv", "dev":
 		return DEVICE
 	case "ac":
 		return AC
