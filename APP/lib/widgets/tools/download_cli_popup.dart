@@ -130,16 +130,15 @@ class _DownloadCliPopupState extends State<DownloadCliPopup> {
   submitCreateOpenDcim(AppLocalizations localeMsg) async {
     const urlPath =
         'https://github.com/ditrit/OGrEE-Core/releases/latest/download/';
-    String cliName = "OGrEE_CLI";
+    String cliName = "cli";
     switch (_selectedOS) {
       case CliOS.windows:
-        cliName = "${cliName}_Win.exe";
+        cliName = "$cliName.exe";
         break;
       case CliOS.linux:
-        cliName = "${cliName}_Linux";
         break;
       case CliOS.macOS:
-        cliName = "${cliName}_OSX";
+        cliName = "$cliName.mac";
         break;
     }
     if (kIsWeb) {
