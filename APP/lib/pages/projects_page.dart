@@ -15,6 +15,7 @@ import 'package:ogree_app/widgets/projects/project_card.dart';
 import 'package:ogree_app/widgets/tenants/tenant_card.dart';
 import 'package:ogree_app/widgets/tools/create_netbox_popup.dart';
 import 'package:ogree_app/widgets/tools/create_opendcim_popup.dart';
+import 'package:ogree_app/widgets/tools/download_cli_popup.dart';
 import 'package:ogree_app/widgets/tools/tool_card.dart';
 
 class ProjectsPage extends StatefulWidget {
@@ -226,6 +227,10 @@ class _ProjectsPageState extends State<ProjectsPage> {
         value: Tools.opendcim,
         child: Text("${localeMsg.create} OpenDCIM"),
       ),
+      PopupMenuItem(
+        value: Tools.cli,
+        child: Text(localeMsg.downloadCli),
+      ),
     ];
 
     return ElevatedButton(
@@ -256,6 +261,9 @@ class _ProjectsPageState extends State<ProjectsPage> {
                     CreateOpenDcimPopup(parentCallback: refreshFromChildren));
               }
               break;
+            case Tools.cli:
+              showCustomPopup(context, DownloadCliPopup());
+              break;
           }
         },
         itemBuilder: (_) => entries,
@@ -267,7 +275,7 @@ class _ProjectsPageState extends State<ProjectsPage> {
                   top: 8, bottom: 8, right: _isSmallDisplay ? 0 : 10),
               child: const Icon(Icons.timeline),
             ),
-            _isSmallDisplay ? Container() : Text("${localeMsg.create} tools"),
+            _isSmallDisplay ? Container() : Text(localeMsg.tools),
           ],
         ),
       ),
