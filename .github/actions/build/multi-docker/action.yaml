@@ -117,6 +117,11 @@ runs:
       run: |
         TAG_MSG=$(echo ${{ inputs.ENVIRONMENT }} | cut -d'-' -f 2)
         git tag -a ${{ env.VERSION }} -m "${TAG_MSG} ${{ env.VERSION }}" -f
+
+    - name: Download a single artifact
+      uses: actions/download-artifact@v3
+      with:
+        name: cli
     
     - name: 🏷️ Create release if release
       if: ${{ !contains(inputs.ENVIRONMENT, 'Candidate') }}
@@ -125,6 +130,7 @@ runs:
           tag_name: ${{ env.VERSION }}
           files: |
             CLI/cli
+            cli
             CLI/cli.mac
             CLI/LICENSE
 

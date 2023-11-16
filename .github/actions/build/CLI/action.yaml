@@ -25,6 +25,12 @@ runs:
         cd CLI
         make main && make mac && make win
 
+    - name: Upload result for job
+      uses: actions/upload-artifact@v3
+      with:
+        name: cli
+        path: CLI/cli
+
     - name: Send to Nextcloud
       shell: bash
       env:
