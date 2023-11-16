@@ -72,12 +72,12 @@ func createInitialData(db *mongo.Database, tenantName string) error {
 	defer cancel()
 
 	_, err := CreateObject(ctx, u.EntityToString(u.DOMAIN), map[string]any{
-		"id":       tenantName,
-		"name":     tenantName,
-		"category": "domain",
+		"id":          tenantName,
+		"name":        tenantName,
+		"category":    "domain",
+		"description": []any{},
 		"attributes": map[string]any{
-			"color":       "ffffff",
-			"description": []any{},
+			"color": "ffffff",
 		},
 	})
 	if err != nil && err.Type != u.ErrDuplicate {
