@@ -1,9 +1,14 @@
 # Contents
 - [Glossary](#glossary)
+- [Comments](#comments)
 - [Variables](#variables)
     - [Set a variable](#set-a-variable)
     - [Use a variable](#use-a-variable)
-- [Comments](#comments)
+- [Expressions](#expressions)
+    - [Primary Expressions](#primary-expressions)
+    - [Operators](#operators)
+- [Print](#print)
+- [String formatting](#string-formatting)
 - [Loading commands](#loading-commands)
     - [Load commands from a text file](#load-commands-from-a-text-file)
     - [Load template from JSON](#load-template-from-json)
@@ -45,22 +50,13 @@
     - [Move camera](#move-camera)
     - [Translate camera](#translate-camera)
     - [Wait between two translations](#wait-between-two-translations)
+- [Control flow](#control-flow)
 - [Examples](#examples)
 
 
 # Glossary
 `[name]` is case sensitive. It include the whole path of the object (for example: `tn/si/bd/ro/rk`)  
 `[color]` is a hexadecimal code (*ffffff*)  
-
-# Variables
-## Set a variable:  
-```
-.var:[name]=[value]
-```  
-## Use a variable:  
-```
-${[name]} or $[name] (in that case the longest identifier is used as [name])
-```  
 
 # Comments
 You can put comments in an .ocli file with the `//` indicator.
@@ -69,11 +65,89 @@ You can put comments in an .ocli file with the `//` indicator.
 +tn:example@ffffff // This is another comment
 ```
 
+# Variables
+## Set a variable:  
+```
+.var:[name]=[value]
+```
+where ```[value]``` can be either 
+* a vector ```[val1, ..., valn]```
+* the result of a command via ```$(([command]))```
+* a string (that can be [formatted](#string-formatting))
+* the evaluation of an expression via ```eval [expr]```
+```
+.var: myvector = [1, 2, 3]
+.var: mystring = hello world
+.var: mystring = 41 + 1 // mystring will contain the string "41 + 1"
+.var: mynumber = eval 41 + 1 // mynumber will contain the number 42
+.var: mynumber = 42 // my number will contain the string "42"
+                    // even though it can be used as a number in expressions
+```
+
+## Use a variable:  
+```${[name]}``` or ```$[name]```  
+in the second case, the longest identifier is used as ```[name]```
+
+# Expressions
+
+## Primary expressions :    
+* booleans true / false
+* integers
+* floats
+* string between double quotes
+* vectors
+* variable dereferencing
+
+They can be used to build more complex expressions through operators.  
+
+## Operators
+### Compute operators : 
+these will only work if both side return a number  
++, -, *, /, // (integer division), % (modulo)
+### Boolean operators : 
+<, >, <=, >=, ==, !=, || (or), && (and) 
+
+# Print
+The ```print``` command prints the given string. The argument can take the same values as for variable assignments.
+
+The ```printf``` command is equivalent to a ```print format```, see next section for details about ```format```.
+
+# String formatting
+You can dereference variables inside strings with ```${[name]}``` or ```$[name]```.
+```
+.var: result = eval 2+3
+print 2+3 equals $result // prints "2+3 equals 5"
+```
+
+You can evaluate expressions inside strings with ```$(([expr]))```.
+```
+print 2+3 equals $((2+3)) // prints "2+3 equals 5"
+```
+
+For a sprintf-like formatting, you can use the format function, it uses the go fmt.Sprintf function under the hood (see https://pkg.go.dev/fmt for the specific syntax). 
+
+```
+print format("2+3 equals %02d", 2+3) // prints "2+3 equals 05"
+```
+
+
 # Loading commands
 ## Load commands from a text file
 *`[path]` path of the file*  
 ```
 .cmds:[path]  
+```
+By convention, these files carry the extension .ocli.
+
+## Commands over multiple lines
+In .ocli script files, commands are usually separated by line breaks, however it is possible to have commands over multiple lines by using the \ character at the end of one or more consecutive lines, as shown below :
+```
+for i in 0..5 {                                                \
+    .var:r=eval 10+$i;                                         \
+    .var:x=eval (36+$i*4)/3;                                   \
+    +rk:/P/NSQSI/NSQBD/NSQRO/J${r}@[ $x, 52]@[80,120,42]@rear; \
+    +rk:/P/NSQSI/NSQBD/NSQRO/K${r}@[ $x, 55]@[80,120,42]@front \
+}
 ```
 
 ## Load template from JSON
@@ -436,7 +510,30 @@ You can define a delay between two camera translations.
 *`[time]` is the time to wait in seconds*  
 ```
 camera.wait=[time]
-```   
+```
+
+# Control flow
+## Conditions
+```
+>if 42 > 43 { print toto } elif 42 == 43 { print tata } else { print titi }
+titi
+```
+
+## Loops
+```
+>for i in 0..3 { .var: i2 = $(($i * $i)) ; print $i^2 = $i2 }
+0^2 = 0
+1^2 = 1
+2^2 = 4
+3^2 = 9
+```
+```
+>.var: i = 0; while $i<4 {print $i^2 = $(($i * $i)); .var: i = eval $i+1 }
+0^2 = 0
+1^2 = 1
+2^2 = 4
+3^2 = 9
+```
 
 # Examples
 ```

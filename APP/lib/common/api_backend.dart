@@ -273,7 +273,9 @@ Future<Result<List<Map<String, List<String>>>, Exception>> fetchObjectsTree(
       }
       // Namespace adaptations
       if (namespace == Namespace.Physical) {
-        tree["*"]!.addAll(tree["*stray_object"]!);
+        if (tree["*stray_object"] != null) {
+          tree["*"]!.addAll(tree["*stray_object"]!);
+        }
         for (var item in converted["categories"]!.keys) {
           categories[item.toString()] =
               List<String>.from(converted["categories"]![item]);

@@ -49,7 +49,7 @@ class TreeAppController with ChangeNotifier {
       switch (result) {
         case Success(value: final listValue):
           fetchedData = listValue[0];
-          fetchedCategories = listValue[1] ?? {};
+          fetchedCategories = listValue[1];
         case Failure(exception: final exception):
           print(exception);
       }
