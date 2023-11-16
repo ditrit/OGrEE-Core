@@ -122,6 +122,7 @@ runs:
       if: ${{ !contains(inputs.ENVIRONMENT, 'Candidate') }}
       uses: softprops/action-gh-release@v1
       with:
+          tag_name: ${{ env.VERSION }}
           files: |
             CLI/cli
             CLI/cli.mac
