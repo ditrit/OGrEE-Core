@@ -153,4 +153,4 @@ If build workflow is trigger by a release bracnh, workflow will tag OGree-Core w
 - TEAM_DOCKER_URL: Url of the docker registry
 - TEAM_DOCKER_PASSWORD: password of the docker registry
 - TEAM_DOCKER_USERNAME: username of the docker registry
-- SVC_GITHUB_TOKEN: an admin github token ( required to trigger build workflow since 08/2022 )
+- GITHUB_TOKEN: an admin github token ( required to trigger build workflow since 08/2022 )
