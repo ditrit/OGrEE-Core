@@ -704,16 +704,9 @@ func (n *updateObjNode) execute() (interface{}, error) {
 		}
 		values = append(values, val)
 	}
-	var paths []string
-	if path == "_" {
-		paths = cmd.State.ClipBoard
-	} else if strings.Contains(path, "*") {
-		_, paths, err = cmd.GetObjectsWildcard(path)
-		if err != nil {
-			return nil, err
-		}
-	} else {
-		paths = []string{path}
+	paths, err := c.UnfoldPath(path)
+	if err != nil {
+		return nil, err
 	}
 	for _, path := range paths {
 		var err error
@@ -788,21 +781,17 @@ func (n *drawNode) execute() (interface{}, error) {
 	if err != nil {
 		return nil, err
 	}
-	if strings.Contains(path, "*") {
-		_, subpaths, err := cmd.GetObjectsWildcard(path)
+	paths, err := c.UnfoldPath(path)
+	if err != nil {
+		return nil, err
+	}
+	for _, subpath := range paths {
+		err = cmd.Draw(subpath, n.depth, n.force)
 		if err != nil {
 			return nil, err
 		}
-		for _, subpath := range subpaths {
-			err = cmd.Draw(subpath, n.depth, n.force)
-			if err != nil {
-				return nil, err
-			}
-		}
-		return nil, nil
-	} else {
-		return nil, cmd.Draw(path, n.depth, n.force)
 	}
+	return nil, nil
 }
 
 type undrawNode struct {
@@ -817,7 +806,17 @@ func (n *undrawNode) execute() (interface{}, error) {
 	if err != nil {
 		return nil, err
 	}
-	return nil, cmd.Undraw(path)
+	paths, err := c.UnfoldPath(path)
+	if err != nil {
+		return nil, err
+	}
+	for _, subpath := range paths {
+		err = cmd.Undraw(subpath)
+		if err != nil {
+			return nil, err
+		}
+	}
+	return nil, nil
 }
 
 type lsogNode struct{}

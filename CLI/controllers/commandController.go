@@ -28,6 +28,17 @@ func PWD() string {
 	return State.CurrPath
 }
 
+func UnfoldPath(path string) ([]string, error) {
+	if strings.Contains(path, "*") {
+		_, subpaths, err := GetObjectsWildcard(path)
+		return subpaths, err
+	}
+	if path == "_" {
+		return State.ClipBoard, nil
+	}
+	return []string{path}, nil
+}
+
 func PostObj(ent int, entity string, data map[string]any) error {
 	resp, err := RequestAPI("POST", "/api/"+entity+"s", data, http.StatusCreated)
 	if err != nil {
