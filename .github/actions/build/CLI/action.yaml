@@ -1,5 +1,5 @@
 name: CLI Publish
-description: PUblish CLI into Nextcloud
+description: Publish CLI into Nextcloud
 
 inputs:
   VERSION: 
@@ -24,6 +24,15 @@ runs:
       run: |
         cd CLI
         make main && make mac && make win
+
+    - name: Upload result for job
+      uses: actions/upload-artifact@v3
+      with:
+        name: cli-build
+        path: |
+          CLI/cli
+          CLI/cli.mac
+          CLI/cli.exe
 
     - name: Send to Nextcloud
       shell: bash

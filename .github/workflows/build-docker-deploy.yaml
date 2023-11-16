@@ -41,6 +41,7 @@ jobs:
   
   build-app-windows:
     name: 🏗️📤 Build APP and Installer for Windows
+    permissions: write-all
     needs: build-docker
     runs-on: windows-latest
     steps:
@@ -62,5 +63,23 @@ jobs:
         with:
           VERSION: ${{ env.VERSION }}
           NEXT_CREDENTIALS: ${{ secrets.NEXT_CREDENTIALS }}
+
+      - name: Download all artifacts
+        uses: actions/download-artifact@v3
+
+      - name: 🏷️ Create release if release
+        if: ${{ !contains(env.ENVIRONMENT, 'Candidate') }}
+        uses: softprops/action-gh-release@v1
+        with:
+            tag_name: ${{ env.VERSION }}
+            files: |
+              cli-build/cli.exe
+              cli-build/cli
+              cli-build/cli.mac
+              api-build/OGrEE_API_Linux_x64
+              api-build/OGrEE_API_OSX_x64
+              api-build/OGrEE_API_Win_x64
+              app-web-build/OGrEE_APP_Web.zip
+              app-win-build/ogree-app-installer.exe
 
   
