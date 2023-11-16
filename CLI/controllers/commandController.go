@@ -430,35 +430,35 @@ func Help(entry string) {
 		"cmds", "var", "unset", "selection", commands.Connect3D, "camera", "ui", "hc", "drawable",
 		"link", "unlink", "draw", "getu", "getslot", "undraw",
 		"lsenterprise", commands.Cp:
-		path = "./other/man/" + entry + ".md"
+		path = "./other/man/" + entry + ".txt"
 
 	case ">":
-		path = "./other/man/focus.md"
+		path = "./other/man/focus.txt"
 
 	case "+":
-		path = "./other/man/plus.md"
+		path = "./other/man/plus.txt"
 
 	case "=":
-		path = "./other/man/equal.md"
+		path = "./other/man/equal.txt"
 
 	case "-":
-		path = "./other/man/minus.md"
+		path = "./other/man/minus.txt"
 
 	case ".template":
-		path = "./other/man/template.md"
+		path = "./other/man/template.txt"
 
 	case ".cmds":
-		path = "./other/man/cmds.md"
+		path = "./other/man/cmds.txt"
 
 	case ".var":
-		path = "./other/man/var.md"
+		path = "./other/man/var.txt"
 
 	case "lsobj", "lsten", "lssite", "lsbldg", "lsroom", "lsrack",
 		"lsdev", "lsac", "lscorridor", "lspanel", "lscabinet":
-		path = "./other/man/lsobj.md"
+		path = "./other/man/lsobj.txt"
 
 	default:
-		path = "./other/man/default.md"
+		path = "./other/man/default.txt"
 	}
 	text, e := os.ReadFile(utils.ExeDir() + "/" + path)
 	if e != nil {
