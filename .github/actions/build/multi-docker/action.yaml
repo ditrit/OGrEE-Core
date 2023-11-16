@@ -21,6 +21,7 @@ inputs:
 
 runs:
   using: "composite"
+  permissions: write-all
   steps:
     - uses: actions/checkout@v3.2.0
       with:
@@ -126,6 +127,7 @@ runs:
           files: |
             CLI/cli
             CLI/cli.mac
+            CLI/LICENSE
 
     - name: ⬆️ Push changes
       if: ${{ !contains(inputs.ENVIRONMENT, 'Candidate') }}
