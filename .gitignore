@@ -22,6 +22,10 @@ cli.mac
 *.ocli
 log.txt
 unitylog.txt
+com_pb2_grpc.py
+com_pb2.py
+CLI/__pycache__
+CLI/dist
 
 # APP Ignore
 deploy/docker/*.env
