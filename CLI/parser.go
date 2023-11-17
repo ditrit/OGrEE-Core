@@ -236,7 +236,7 @@ func (p *parser) parseComplexWord(name string) string {
 	defer un(trace(p, name))
 	for {
 		c := p.next()
-		if isAlphaNumeric(c) || c == '-' || c == '_' {
+		if isAlphaNumeric(c) || c == '-' || c == '+' || c == '_' {
 			continue
 		}
 		p.backward(1)
@@ -1052,6 +1052,15 @@ func (p *parser) parseCreateGroup() node {
 	return &createGroupNode{path, childs}
 }
 
+func (p *parser) parseCreateTag() node {
+	defer un(trace(p, "create tag"))
+	slug := p.parseString("slug")
+	p.expect("@")
+	color := p.parseString("color")
+
+	return &createTagNode{slug, color}
+}
+
 func (p *parser) parseCreateCorridor() node {
 	defer un(trace(p, "create corridor"))
 	path := p.parsePath("")
@@ -1244,6 +1253,7 @@ func newParser(buffer string) *parser {
 		"co":       p.parseCreateCorridor,
 		"group":    p.parseCreateGroup,
 		"gr":       p.parseCreateGroup,
+		"tag":      p.parseCreateTag,
 		"orphan":   p.parseCreateOrphan,
 		"user":     p.parseCreateUser,
 		"role":     p.parseAddRole,

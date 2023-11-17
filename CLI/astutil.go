@@ -2,6 +2,7 @@ package main
 
 import (
 	cmd "cli/controllers"
+	"cli/models"
 	"cli/utils"
 	"encoding/json"
 	"fmt"
@@ -65,6 +66,20 @@ func nodeToVec(n node, size int, name string) ([]float64, error) {
 	return utils.ValToVec(val, size, name)
 }
 
+func nodeToColorString(colorNode node) (string, error) {
+	colorInf, err := colorNode.execute()
+	if err != nil {
+		return "", err
+	}
+
+	color, ok := utils.ValToColor(colorInf)
+	if !ok {
+		return "", fmt.Errorf("Please provide a valid 6 digit Hex value for the color")
+	}
+
+	return color, nil
+}
+
 // Open a file and return the JSON in the file
 // Used by EasyPost, EasyUpdate and Load Template
 func fileToJSON(path string) map[string]interface{} {
@@ -100,11 +115,11 @@ func checkIfTemplate(name string, ent int) bool {
 	var location string
 	switch ent {
 	case cmd.BLDG:
-		location = "/Logical/BldgTemplates/" + name
+		location = models.BuildingTemplatesPath + name
 	case cmd.ROOM:
-		location = "/Logical/RoomTemplates/" + name
+		location = models.RoomTemplatesPath + name
 	default:
-		location = "/Logical/ObjectTemplates/" + name
+		location = models.ObjectTemplatesPath + name
 	}
 	_, err := cmd.Tree(location, 0)
 	return err == nil

@@ -5,6 +5,7 @@ import (
 	"cli/config"
 	c "cli/controllers"
 	cmd "cli/controllers"
+	"cli/models"
 	"cli/utils"
 	"encoding/json"
 	"errors"
@@ -310,7 +311,7 @@ func (n *deleteObjNode) execute() (interface{}, error) {
 	if err != nil {
 		return nil, err
 	}
-	paths, err := cmd.DeleteObj(path)
+	paths, err := cmd.C.DeleteObj(path)
 	if err != nil {
 		return nil, err
 	}
@@ -330,9 +331,9 @@ type deleteSelectionNode struct{}
 func (n *deleteSelectionNode) execute() (interface{}, error) {
 	var errBuilder strings.Builder
 	deleted := 0
-	if c.State.ClipBoard != nil {
-		for _, obj := range c.State.ClipBoard {
-			_, err := c.DeleteObj(obj)
+	if cmd.State.ClipBoard != nil {
+		for _, obj := range cmd.State.ClipBoard {
+			_, err := cmd.C.DeleteObj(obj)
 			if err != nil {
 				errBuilder.WriteString(fmt.Sprintf("    %s: %s\n", obj, err.Error()))
 			} else {
@@ -363,7 +364,7 @@ func (n *deletePillarOrSeparatorNode) execute() (interface{}, error) {
 	if err != nil {
 		return nil, err
 	}
-	obj, err := cmd.GetObject(path)
+	obj, err := cmd.C.GetObject(path)
 	if err != nil {
 		return nil, err
 	}
@@ -380,7 +381,7 @@ func (n *deletePillarOrSeparatorNode) execute() (interface{}, error) {
 		return nil, fmt.Errorf("%s %s does not exist", n.attribute, name)
 	}
 	attributes[n.attribute+"s"] = stringMap
-	return cmd.UpdateObj(path, map[string]any{"attributes": attributes})
+	return cmd.C.UpdateObj(path, map[string]any{"attributes": attributes})
 }
 
 type isEntityDrawableNode struct {
@@ -427,7 +428,8 @@ func (n *getObjectNode) execute() (interface{}, error) {
 	if err != nil {
 		return nil, err
 	}
-	objs, _, err := cmd.GetObjectsWildcard(path)
+
+	objs, _, err := cmd.C.GetObjectsWildcard(path)
 	if err != nil {
 		return nil, err
 	}
@@ -453,7 +455,7 @@ func (n *selectObjectNode) execute() (interface{}, error) {
 	}
 	var selection []string
 	if strings.Contains(path, "*") {
-		_, selection, err = cmd.GetObjectsWildcard(path)
+		_, selection, err = cmd.C.GetObjectsWildcard(path)
 		if err != nil {
 			return nil, err
 		}
@@ -483,7 +485,7 @@ func setRoomAreas(path string, values []any) (map[string]any, error) {
 	if e != nil {
 		return nil, e
 	}
-	return cmd.UpdateObj(path, map[string]any{"attributes": attributes})
+	return cmd.C.UpdateObj(path, map[string]any{"attributes": attributes})
 }
 
 func setLabel(path string, values []any, hasSharpe bool) (map[string]any, error) {
@@ -574,7 +576,7 @@ func addRoomSeparator(path string, values []any) (map[string]any, error) {
 	if err != nil {
 		return nil, err
 	}
-	obj, err := cmd.GetObject(path)
+	obj, err := cmd.C.GetObject(path)
 	if err != nil {
 		return nil, err
 	}
@@ -583,7 +585,7 @@ func addRoomSeparator(path string, values []any) (map[string]any, error) {
 	newSeparator := Separator{startPos, endPos, sepType}
 	var keyExist bool
 	attr["separators"], keyExist = addToStringMap[Separator](separators, name, newSeparator)
-	obj, err = cmd.UpdateObj(path, map[string]any{"attributes": attr})
+	obj, err = cmd.C.UpdateObj(path, map[string]any{"attributes": attr})
 	if err != nil {
 		return nil, err
 	}
@@ -619,7 +621,7 @@ func addRoomPillar(path string, values []any) (map[string]any, error) {
 	if err != nil {
 		return nil, err
 	}
-	obj, err := cmd.GetObject(path)
+	obj, err := cmd.C.GetObject(path)
 	if err != nil {
 		return nil, err
 	}
@@ -628,7 +630,7 @@ func addRoomPillar(path string, values []any) (map[string]any, error) {
 	newPillar := Pillar{centerXY, sizeXY, rotation}
 	var keyExist bool
 	attr["pillars"], keyExist = addToStringMap[Pillar](pillars, name, newPillar)
-	obj, err = cmd.UpdateObj(path, map[string]any{"attributes": attr})
+	obj, err = cmd.C.UpdateObj(path, map[string]any{"attributes": attr})
 	if err != nil {
 		return nil, err
 	}
@@ -663,7 +665,7 @@ func updateDescription(path string, attr string, values []any) (map[string]any, 
 	if attr == "description" {
 		data["description"] = []any{newDesc}
 	} else {
-		obj, err := cmd.GetObject(path)
+		obj, err := cmd.C.GetObject(path)
 		if err != nil {
 			return nil, err
 		}
@@ -681,7 +683,7 @@ func updateDescription(path string, attr string, values []any) (map[string]any, 
 		}
 		data["description"] = curDesc
 	}
-	return cmd.UpdateObj(path, data)
+	return cmd.C.UpdateObj(path, data)
 }
 
 type updateObjNode struct {
@@ -696,6 +698,7 @@ func (n *updateObjNode) execute() (interface{}, error) {
 	if err != nil {
 		return nil, err
 	}
+
 	values := []any{}
 	for _, valueNode := range n.values {
 		val, err := valueNode.execute()
@@ -710,42 +713,57 @@ func (n *updateObjNode) execute() (interface{}, error) {
 	}
 	for _, path := range paths {
 		var err error
-		switch n.attr {
-		case "content", "alpha", "tilesName", "tilesColor", "U", "slots", "localCS":
-			var boolVal bool
-			boolVal, err = utils.ValToBool(values[0], n.attr)
-			if err != nil {
-				return nil, err
+		if models.IsTag(path) {
+			if n.attr == "slug" || n.attr == "color" || n.attr == "description" {
+				_, err = cmd.C.UpdateObj(path, map[string]any{n.attr: values[0]})
 			}
-			err = cmd.InteractObject(path, n.attr, boolVal, n.hasSharpe)
-		case "areas":
-			_, err = setRoomAreas(path, values)
-		case "label":
-			_, err = setLabel(path, values, n.hasSharpe)
-		case "labelFont":
-			_, err = setLabelFont(path, values)
-		case "separator":
-			_, err = addRoomSeparator(path, values)
-		case "pillar":
-			_, err = addRoomPillar(path, values)
-		case "domain":
-			_, err = cmd.UpdateObj(path, map[string]any{"domain": values[0]})
-		default:
-			if strings.HasPrefix(n.attr, "description") {
-				_, err = updateDescription(path, n.attr, values)
-			} else {
-				if len(values) > 1 {
-					return nil, fmt.Errorf("attributes can only be assigned a single value")
+		} else {
+			switch n.attr {
+			case "content", "alpha", "tilesName", "tilesColor", "U", "slots", "localCS":
+				var boolVal bool
+				boolVal, err = utils.ValToBool(values[0], n.attr)
+				if err != nil {
+					return nil, err
 				}
-				attributes := map[string]any{n.attr: values[0]}
-				_, err = cmd.UpdateObj(path, map[string]any{"attributes": attributes})
+				err = cmd.InteractObject(path, n.attr, boolVal, n.hasSharpe)
+			case "areas":
+				_, err = setRoomAreas(path, values)
+			case "label":
+				_, err = setLabel(path, values, n.hasSharpe)
+			case "labelFont":
+				_, err = setLabelFont(path, values)
+			case "separator":
+				_, err = addRoomSeparator(path, values)
+			case "pillar":
+				_, err = addRoomPillar(path, values)
+			case "domain", "tags+", "tags-":
+				_, err = cmd.C.UpdateObj(path, map[string]any{n.attr: values[0]})
+			case "tags":
+				err = errors.New("Object's tags can not be updated directly, please use tags+= and tags-=")
+			default:
+				if strings.HasPrefix(n.attr, "description") {
+					_, err = updateDescription(path, n.attr, values)
+				} else {
+					_, err = updateAttributes(path, n.attr, values)
+				}
 			}
 		}
+
 		if err != nil {
 			return nil, err
 		}
 	}
 	return nil, nil
+}
+
+func updateAttributes(path, attributeName string, values []any) (map[string]any, error) {
+	if len(values) > 1 {
+		return nil, fmt.Errorf("attributes can only be assigned a single value")
+	}
+
+	attributes := map[string]any{attributeName: values[0]}
+
+	return cmd.C.UpdateObj(path, map[string]any{"attributes": attributes})
 }
 
 type treeNode struct {
@@ -955,19 +973,15 @@ func (n *createDomainNode) execute() (interface{}, error) {
 	if err != nil {
 		return nil, err
 	}
-	colorInf, err := n.color.execute()
+
+	color, err := nodeToColorString(n.color)
 	if err != nil {
 		return nil, err
 	}
-	var color string
-	var ok bool
-	if color, ok = utils.ValToColor(colorInf); !ok {
-		return nil, fmt.Errorf("Please provide a valid 6 digit Hex value for the color")
-	}
 
 	attributes := map[string]interface{}{"attributes": map[string]interface{}{"color": color}}
-	err = cmd.CreateObject(path, cmd.DOMAIN, attributes)
-	return nil, err
+
+	return nil, cmd.CreateObject(path, cmd.DOMAIN, attributes)
 }
 
 type createSiteNode struct {
@@ -1220,6 +1234,25 @@ func (n *createGroupNode) execute() (interface{}, error) {
 		return nil, err
 	}
 	return nil, nil
+}
+
+type createTagNode struct {
+	slug  node
+	color node
+}
+
+func (n *createTagNode) execute() (interface{}, error) {
+	slug, err := nodeToString(n.slug, "slug")
+	if err != nil {
+		return nil, err
+	}
+
+	color, err := nodeToColorString(n.color)
+	if err != nil {
+		return nil, err
+	}
+
+	return nil, cmd.CreateTag(slug, color)
 }
 
 type createCorridorNode struct {

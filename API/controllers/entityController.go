@@ -13,6 +13,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/elliotchance/pie/v2"
 	"github.com/gorilla/mux"
 	"github.com/gorilla/schema"
 	"go.mongodb.org/mongo-driver/bson"
@@ -91,7 +92,8 @@ func getUserFromToken(w http.ResponseWriter, r *http.Request) *models.Account {
 //     description: 'Entity (same as category) of the object. Accepted values: sites, domains,
 //     buildings, rooms, racks, devices, acs, panels,
 //     cabinets, groups, corridors,
-//     room-templates, obj-templates, bldg-templates, stray-objects, hierarchy-objects.'
+//     room-templates, obj-templates, bldg-templates, tags,
+//     stray-objects, hierarchy-objects.'
 //     required: true
 //     type: string
 //     default: "sites"
@@ -154,8 +156,8 @@ func CreateEntity(w http.ResponseWriter, r *http.Request) {
 			return
 
 		}
-	} else if entInt < u.ROOMTMPL && entInt != u.STRAYOBJ {
-		// Check if category and endpoint match, except for templates and strays
+	} else if u.IsEntityHierarchical(entInt) && entInt != u.STRAYOBJ {
+		// Check if category and endpoint match, except for non hierarchal entities and strays
 		if object["category"] != entStr {
 			w.WriteHeader(http.StatusBadRequest)
 			u.Respond(w, u.Message("Category in request body does not correspond with desired object in endpoint"))
@@ -320,7 +322,7 @@ func getBulkDomainsRecursively(parent string, listDomains []map[string]interface
 //   - name: namespace
 //     in: query
 //     description: 'One of the values: physical, physical.stray, physical.hierarchy,
-//     logical, logical.objtemplate, logical.bldgtemplate, logical.roomtemplate,
+//     logical, logical.objtemplate, logical.bldgtemplate, logical.roomtemplate, logical.tag,
 //     organisational.
 //     If none provided, all namespaces are used by default.'
 //   - name: fieldOnly
@@ -386,7 +388,7 @@ func getBulkDomainsRecursively(parent string, listDomains []map[string]interface
 //   - name: namespace
 //     in: query
 //     description: 'One of the values: physical, physical.stray, physical.hierarchy,
-//     logical, logical.objtemplate, logical.bldgtemplate, logical.roomtemplate,
+//     logical, logical.objtemplate, logical.bldgtemplate, logical.roomtemplate, logical.tag,
 //     organisational. If none provided, all namespaces are used by default.'
 // responses:
 //		'204':
@@ -413,18 +415,19 @@ func HandleGenericObjects(w http.ResponseWriter, r *http.Request) {
 	entities := u.GetEntitiesByNamespace(filters.Namespace, filters.Id)
 	for _, entStr := range entities {
 		// Get objects
-		entData, err := models.GetManyEntities(entStr, req, filters, user.Roles)
+		entData, err := models.GetManyObjects(entStr, req, filters, user.Roles)
 		if err != nil {
 			u.ErrLog("Error while looking for objects at  "+entStr, "HandleGenericObjects", err.Message, r)
 			u.RespondWithError(w, err)
 			return
 		}
-		if r.Method == "DELETE" {
-			// Save entity to help delete
-			for _, obj := range entData {
-				obj["entity"] = entStr
-			}
-		} else if nLimit, e := strconv.Atoi(filters.Limit); e == nil && nLimit > 0 && req["id"] != nil {
+
+		// Save entity to help delete and respond
+		for _, obj := range entData {
+			obj["entity"] = entStr
+		}
+
+		if nLimit, e := strconv.Atoi(filters.Limit); e == nil && nLimit > 0 && req["id"] != nil {
 			// Get children until limit level (only for GET)
 			for _, obj := range entData {
 				obj["children"], err = models.GetHierarchyByName(entStr, obj["id"].(string), nLimit, filters)
@@ -443,16 +446,14 @@ func HandleGenericObjects(w http.ResponseWriter, r *http.Request) {
 			entStr := obj["entity"].(string)
 
 			var objStr string
-			var modelErr *u.Error
 
-			if u.EntityStrToInt(entStr) >= u.ROOMTMPL {
+			if u.IsEntityNonHierarchical(u.EntityStrToInt(entStr)) {
 				objStr = obj["slug"].(string)
-				modelErr = models.DeleteSingleEntity(entStr, bson.M{"slug": objStr})
 			} else {
 				objStr = obj["id"].(string)
-				modelErr = models.DeleteEntity(entStr, objStr, user.Roles)
 			}
 
+			modelErr := models.DeleteObject(entStr, objStr, user.Roles)
 			if modelErr != nil {
 				u.ErrLog("Error while deleting object: "+objStr, "DELETE GetGenericObjectById", modelErr.Message, r)
 				u.RespondWithError(w, modelErr)
@@ -464,9 +465,15 @@ func HandleGenericObjects(w http.ResponseWriter, r *http.Request) {
 		w.Header().Add("Content-Type", "application/json")
 		w.Header().Add("Allow", "GET, OPTIONS")
 	} else {
+		matchingObjects = pie.Map(matchingObjects, func(object map[string]any) map[string]any {
+			entityStr := object["entity"].(string)
+			delete(object, "entity")
+
+			return imageIDToUrl(u.EntityStrToInt(entityStr), object)
+		})
+
 		u.Respond(w, u.RespDataWrapper("successfully processed request", matchingObjects))
 	}
-
 }
 
 // swagger:operation GET /api/{entity}/{id} Objects GetEntity
@@ -483,14 +490,15 @@ func HandleGenericObjects(w http.ResponseWriter, r *http.Request) {
 //     description: 'Entity (same as category) of the object. Accepted values: sites, domains,
 //     buildings, rooms, racks, devices, acs, panels,
 //     cabinets, groups, corridors,
-//     room-templates, obj-templates, bldg-templates, stray-objects, hierarchy-objects.'
+//     room-templates, obj-templates, bldg-templates, tags,
+//     stray-objects, hierarchy-objects.'
 //     required: true
 //     type: string
 //     default: "sites"
 //   - name: id
 //     in: path
 //     description: 'ID of desired object.
-//     For templates the slug is the ID.'
+//     For templates and tags the slug is the ID.'
 //     required: true
 //     type: string
 //     default: "siteA"
@@ -544,12 +552,13 @@ func GetEntity(w http.ResponseWriter, r *http.Request) {
 		if entityStr == u.HIERARCHYOBJS_ENT {
 			data, modelErr = models.GetHierarchyObjectById(id, filters, user.Roles)
 		} else {
-			if strings.Contains(entityStr, "template") { //Get by slug (template)
+			if u.IsEntityNonHierarchical(u.EntityStrToInt(entityStr)) {
+				// Get by slug
 				req = bson.M{"slug": id}
 			} else {
 				req = bson.M{"id": id}
 			}
-			data, modelErr = models.GetEntity(req, entityStr, filters, user.Roles)
+			data, modelErr = models.GetObject(req, entityStr, filters, user.Roles)
 		}
 	} else {
 		w.WriteHeader(http.StatusBadRequest)
@@ -568,6 +577,8 @@ func GetEntity(w http.ResponseWriter, r *http.Request) {
 				modelErr.Message, r)
 			u.RespondWithError(w, modelErr)
 		} else {
+			imageIDToUrl(u.EntityStrToInt(entityStr), data)
+
 			u.Respond(w, u.RespDataWrapper("successfully got "+entityStr, data))
 		}
 	}
@@ -587,7 +598,7 @@ func GetEntity(w http.ResponseWriter, r *http.Request) {
 //     description: 'Entity (same as category) of the object. Accepted values: sites, domains,
 //     buildings, rooms, racks, devices, acs, panels,
 //     cabinets, groups, corridors,
-//     room-templates, obj-templates, bldg-templates, stray-objects'
+//     room-templates, obj-templates, bldg-templates, stray-objects, tags'
 //     required: true
 //     type: string
 //     default: "sites"
@@ -631,7 +642,8 @@ func GetAllEntities(w http.ResponseWriter, r *http.Request) {
 	entStr = strings.Replace(entStr, "-", "_", 1)
 
 	// Check if entity is valid
-	if i := u.EntityStrToInt(entStr); i < 0 {
+	entity := u.EntityStrToInt(entStr)
+	if entity < 0 {
 		w.WriteHeader(http.StatusNotFound)
 		u.Respond(w, u.Message("Invalid entity in URL: '"+mux.Vars(r)["entity"]+
 			"' Please provide a valid entity"))
@@ -641,7 +653,7 @@ func GetAllEntities(w http.ResponseWriter, r *http.Request) {
 
 	// Get entities
 	req := bson.M{}
-	data, e := models.GetManyEntities(entStr, req, u.RequestFilters{}, user.Roles)
+	data, e := models.GetManyObjects(entStr, req, u.RequestFilters{}, user.Roles)
 
 	// Respond
 	if e != nil {
@@ -649,6 +661,12 @@ func GetAllEntities(w http.ResponseWriter, r *http.Request) {
 			e.Message, r)
 		u.RespondWithError(w, e)
 	} else {
+		if entity == u.TAG {
+			data = pie.Map(data, func(tagData map[string]any) map[string]any {
+				return imageIDToUrl(entity, tagData)
+			})
+		}
+
 		u.Respond(w, u.RespDataWrapper("successfully got "+entStr+"s",
 			map[string]interface{}{"objects": data}))
 	}
@@ -667,14 +685,15 @@ func GetAllEntities(w http.ResponseWriter, r *http.Request) {
 //     description: 'Entity (same as category) of the object. Accepted values: sites, domains,
 //     buildings, rooms, racks, devices, acs, panels,
 //     cabinets, groups, corridors,
-//     room-templates, obj-templates, bldg-templates, stray-objects, hierarchy-objects.'
+//     room-templates, obj-templates, bldg-templates, tags,
+//     stray-objects, hierarchy-objects.'
 //     required: true
 //     type: string
 //     default: "sites"
 //   - name: id
 //     in: path
 //     description: 'ID of desired object.
-//     For templates the slug is the ID.'
+//     For templates and tags the slug is the ID.'
 //     required: true
 //     type: string
 //     default: "siteA"
@@ -698,13 +717,13 @@ func DeleteEntity(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Get entity from URL
-	entity := mux.Vars(r)["entity"]
+	// Get entityStr from URL
+	entityStr := mux.Vars(r)["entity"]
 	// If templates, format them
-	entity = strings.Replace(entity, "-", "_", 1)
+	entityStr = strings.Replace(entityStr, "-", "_", 1)
 
 	// Check unidentified collection
-	if u.EntityStrToInt(entity) < 0 && entity != u.HIERARCHYOBJS_ENT {
+	if u.EntityStrToInt(entityStr) < 0 && entityStr != u.HIERARCHYOBJS_ENT {
 		w.WriteHeader(http.StatusBadRequest)
 		u.Respond(w, u.Message("Invalid object in URL: '"+mux.Vars(r)["entity"]+
 			"' Please provide a valid object"))
@@ -719,24 +738,18 @@ func DeleteEntity(w http.ResponseWriter, r *http.Request) {
 		u.Respond(w, u.Message("Error while parsing path parameters"))
 		u.ErrLog("Error while parsing path parameters", "DELETE ENTITY", "", r)
 	} else {
-		if entity == u.HIERARCHYOBJS_ENT {
+		if entityStr == u.HIERARCHYOBJS_ENT {
 			obj, err := models.GetHierarchyObjectById(id, u.RequestFilters{}, user.Roles)
 			if err != nil {
 				u.ErrLog("Error finding hierarchyobj to delete", "DELETE ENTITY", err.Message, r)
 				u.RespondWithError(w, err)
 				return
 			} else {
-				entity = obj["category"].(string)
+				entityStr = obj["category"].(string)
 			}
 		}
 
-		var modelErr *u.Error
-		if strings.Contains(entity, "template") {
-			modelErr = models.DeleteSingleEntity(entity, bson.M{"slug": id})
-		} else {
-			modelErr = models.DeleteEntity(entity, id, user.Roles)
-		}
-
+		modelErr := models.DeleteObject(entityStr, id, user.Roles)
 		if modelErr != nil {
 			u.ErrLog("Error while deleting entity", "DELETE ENTITY", modelErr.Message, r)
 			u.RespondWithError(w, modelErr)
@@ -763,14 +776,14 @@ func DeleteEntity(w http.ResponseWriter, r *http.Request) {
 //     description: 'Entity (same as category) of the object. Accepted values: sites, domains,
 //     buildings, rooms, racks, devices, acs, panels,
 //     cabinets, groups, corridors,
-//     room-templates, obj-templates, bldg-templates, stray-objects.'
+//     room-templates, obj-templates, bldg-templates, stray-objects, tags.'
 //     required: true
 //     type: string
 //     default: "sites"
 //   - name: id
 //     in: path
 //     description: 'ID of desired object.
-//     For templates the slug is the ID.'
+//     For templates and tags the slug is the ID.'
 //     required: true
 //     type: string
 //     default: "siteA"
@@ -801,14 +814,15 @@ func DeleteEntity(w http.ResponseWriter, r *http.Request) {
 //     description: 'Entity (same as category) of the object. Accepted values: sites, domains,
 //     buildings, rooms, racks, devices, acs, panels,
 //     cabinets, groups, corridors,
-//     room-templates, obj-templates, bldg-templates, stray-objects, hierarchy-objects.'
+//     room-templates, obj-templates, bldg-templates, tags,
+//     stray-objects, hierarchy-objects.'
 //     required: true
 //     type: string
 //     default: "sites"
 //   - name: id
 //     in: path
 //     description: 'ID of desired object.
-//     For templates the slug is the ID.'
+//     For templates and tags the slug is the ID.'
 //     required: true
 //     type: string
 //     default: "siteA"
@@ -839,10 +853,9 @@ func UpdateEntity(w http.ResponseWriter, r *http.Request) {
 
 	// Patch or put
 	isPatch := false
-	if r.Method == "PATCH" {
+	if r.Method == http.MethodPatch {
 		isPatch = true
 	}
-	println(r.Method)
 
 	// Get request body
 	updateData := map[string]interface{}{}
@@ -874,14 +887,7 @@ func UpdateEntity(w http.ResponseWriter, r *http.Request) {
 		u.Respond(w, u.Message("Error while extracting from path parameters"))
 		u.ErrLog("Error while extracting from path parameters", "UPDATE ENTITY", "", r)
 	} else {
-		var req bson.M
-		if strings.Contains(entity, "template") {
-			req = bson.M{"slug": id}
-		} else {
-			req = bson.M{"id": id}
-		}
-
-		data, modelErr = models.UpdateEntity(entity, req, updateData, isPatch, user.Roles)
+		data, modelErr = models.UpdateObject(entity, id, updateData, isPatch, user.Roles)
 		if modelErr != nil {
 			u.RespondWithError(w, modelErr)
 		} else {
@@ -907,7 +913,7 @@ func UpdateEntity(w http.ResponseWriter, r *http.Request) {
 //     description: 'Entity (same as category) of the object. Accepted values: sites, domains,
 //     buildings, rooms, racks, devices, acs, panels,
 //     cabinets, groups, corridors,
-//     room-templates, obj-templates, bldg-templates, stray-objects.'
+//     room-templates, obj-templates, bldg-templates, stray-objects, tags.'
 //     required: true
 //     type: string
 //     default: "sites"
@@ -933,11 +939,11 @@ func UpdateEntity(w http.ResponseWriter, r *http.Request) {
 //     example: vendor=ibm ; name=siteA ; orientation=front
 //
 // responses:
-//		'204':
-//			description: 'Found. A response body will be returned with
-//			a meaningful message.'
-//		'404':
-//			description: Not found. An error message will be returned.
+//     '204':
+//         description: 'Found. A response body will be returned with
+//         a meaningful message.'
+//     '404':
+//         description: Not found. An error message will be returned.
 
 func GetEntityByQuery(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("******************************************************")
@@ -987,7 +993,7 @@ func GetEntityByQuery(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	data, modelErr = models.GetManyEntities(entStr, bsonMap, filters, user.Roles)
+	data, modelErr = models.GetManyObjects(entStr, bsonMap, filters, user.Roles)
 
 	if modelErr != nil {
 		u.ErrLog("Error while getting "+entStr, "GET ENTITYQUERY", modelErr.Message, r)
@@ -1156,14 +1162,13 @@ func GetEntitiesOfAncestor(w http.ResponseWriter, r *http.Request) {
 //   description: 'Entity (same as category) of the object. Accepted values: sites, domains,
 //   buildings, rooms, racks, devices, acs, panels,
 //   cabinets, groups, corridors,
-//   room-templates, obj-templates, bldg-templates, stray-objects, hierarchy-objects.'
+//   stray-objects, hierarchy-objects.'
 //   required: true
 //   type: string
 //   default: "sites"
 // - name: id
 //   in: path
-//   description: 'ID of desired object.
-//   For templates the slug is the ID.'
+//   description: 'ID of desired object.'
 //   required: true
 //   type: string
 //   default: "siteA"
@@ -1242,7 +1247,7 @@ func GetHierarchyByName(w http.ResponseWriter, r *http.Request) {
 		}
 	} else {
 		// Entity already known
-		data, modelErr = models.GetEntity(bson.M{"id": id}, entity, filters, user.Roles)
+		data, modelErr = models.GetObject(bson.M{"id": id}, entity, filters, user.Roles)
 	}
 	if limit >= 1 && modelErr == nil {
 		if entity == u.EntityToString(u.STRAYOBJ) {
@@ -1479,7 +1484,7 @@ func LinkEntity(w http.ResponseWriter, r *http.Request) {
 		if strings.Replace(entityStr, "-", "_", 1) == u.HIERARCHYOBJS_ENT {
 			data, modelErr = models.GetHierarchyObjectById(id, u.RequestFilters{}, user.Roles)
 		} else {
-			data, modelErr = models.GetEntity(bson.M{"id": id}, entityStr, u.RequestFilters{}, user.Roles)
+			data, modelErr = models.GetObject(bson.M{"id": id}, entityStr, u.RequestFilters{}, user.Roles)
 		}
 	} else {
 		w.WriteHeader(http.StatusBadRequest)
@@ -1602,7 +1607,7 @@ func GetStats(w http.ResponseWriter, r *http.Request) {
 //     description: 'Entity (same as category) of the object. Accepted values: sites, domains,
 //     buildings, rooms, racks, devices, acs, panels,
 //     cabinets, groups, corridors,
-//     room-templates, obj-templates, bldg-templates, stray-objects.'
+//     room-templates, obj-templates, bldg-templates, stray-objects, tags.'
 //     required: true
 //     type: string
 //     default: "sites"
@@ -1660,7 +1665,7 @@ func ValidateEntity(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if entInt != u.BLDGTMPL && entInt != u.ROOMTMPL && entInt != u.OBJTMPL {
+	if u.IsEntityHierarchical(entInt) {
 		if permission := models.CheckUserPermissions(user.Roles, entInt, obj["domain"].(string)); permission < models.WRITE {
 			w.WriteHeader(http.StatusUnauthorized)
 			u.Respond(w, u.Message("This user"+
@@ -1672,12 +1677,12 @@ func ValidateEntity(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	ok, e := models.ValidateEntity(entInt, obj)
-	if ok {
+	uErr := models.ValidateEntity(entInt, obj)
+	if uErr == nil {
 		u.Respond(w, u.Message("This object can be created"))
 		return
 	} else {
-		u.RespondWithError(w, e)
+		u.RespondWithError(w, uErr)
 	}
 }
 

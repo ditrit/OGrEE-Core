@@ -18,6 +18,12 @@
       "name": {
         "type": "string"
       },
+      "tags": {
+        "type": "array",
+        "items": {
+          "type": "string"
+        }
+      },
       "attributes": {
         "type": "object"
       }

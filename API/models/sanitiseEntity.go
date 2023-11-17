@@ -3,7 +3,24 @@ package models
 import (
 	u "p3/utils"
 	"strings"
+
+	"github.com/elliotchance/pie/v2"
 )
+
+func shouldFillTags(entity int, filters u.RequestFilters) bool {
+	return u.EntityHasTags(entity) && (len(filters.FieldsToShow) == 0 || pie.Contains(filters.FieldsToShow, "tags"))
+}
+
+// Adds empty list of tags if not present
+func fillTags(object map[string]any) map[string]any {
+	tags, tagsPresent := object["tags"]
+
+	if !tagsPresent || tags == nil {
+		object["tags"] = []any{}
+	}
+
+	return object
+}
 
 // Remove mongos _id and add parentId
 func fixID(data map[string]interface{}) map[string]interface{} {

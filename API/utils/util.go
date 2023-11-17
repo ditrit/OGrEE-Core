@@ -14,6 +14,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/elliotchance/pie/v2"
 	"go.mongodb.org/mongo-driver/bson"
 )
 
@@ -24,10 +25,10 @@ var GitCommitDate string
 
 const (
 	DOMAIN = iota
-	// hierarchal root objects
+	// hierarchical root entities
 	STRAYOBJ
 	SITE
-	// hierarchal objects with mandatory parent
+	// hierarchical entities with mandatory parent
 	BLDG
 	ROOM
 	RACK
@@ -37,10 +38,11 @@ const (
 	CORRIDOR
 	PWRPNL
 	GROUP
-	// non hierarchal templates
+	// logical non hierarchical entities
 	ROOMTMPL
 	OBJTMPL
 	BLDGTMPL
+	TAG
 )
 
 type Namespace string
@@ -55,6 +57,7 @@ const (
 	LObjTemplate   Namespace = "logical.objtemplate"
 	LBldgTemplate  Namespace = "logical.bldgtemplate"
 	LRoomTemplate  Namespace = "logical.roomtemplate"
+	LTags          Namespace = "logical.tag"
 )
 
 const HN_DELIMETER = "."           // hierarchyName path delimiter
@@ -98,6 +101,10 @@ type Error struct {
 	Type    ErrType
 	Message string
 	Details []string
+}
+
+func (err Error) Error() string {
+	return err.Message
 }
 
 func GetBuildDate() string {
@@ -159,17 +166,21 @@ func ErrLog(message, funcname, details string, r *http.Request) {
 }
 
 func FilteredReqFromQueryParams(link *url.URL) bson.M {
-	q, _ := url.ParseQuery(link.RawQuery)
+	queryValues, _ := url.ParseQuery(link.RawQuery)
 	bsonMap := bson.M{}
 
-	for key := range q {
+	for key := range queryValues {
 		if key != "fieldOnly" && key != "startDate" && key != "endDate" &&
 			key != "limit" && key != "namespace" {
 			var keyValue interface{}
-			keyValue = q.Get(key)
+			keyValue = queryValues.Get(key)
 			if key == "parentId" {
 				regex := strings.ReplaceAll(strings.ReplaceAll(keyValue.(string), ".", "\\."), "*", NAME_REGEX) + "\\.(" + NAME_REGEX + ")"
 				bsonMap["id"] = bson.M{"$regex": "^" + regex + "$"}
+				continue
+			} else if key == "tag" {
+				// tag is in tags list
+				bsonMap["tags"] = bson.M{"$eq": keyValue}
 				continue
 			} else if strings.Contains(keyValue.(string), "*") {
 				regex := strings.ReplaceAll(strings.ReplaceAll(keyValue.(string), ".", "\\."), "*", NAME_REGEX)
@@ -204,6 +215,29 @@ func ErrTypeToStatusCode(errType ErrType) int {
 	return http.StatusInternalServerError
 }
 
+var Entities = []int{
+	DOMAIN,
+	STRAYOBJ, SITE,
+	BLDG, ROOM, RACK, DEVICE, AC, CABINET, CORRIDOR, PWRPNL, GROUP,
+	ROOMTMPL, OBJTMPL, BLDGTMPL, TAG,
+}
+
+var EntitiesWithTags = []int{
+	STRAYOBJ, SITE, BLDG, ROOM, RACK, DEVICE, AC, CABINET, CORRIDOR, PWRPNL, GROUP,
+}
+
+func EntityHasTags(entity int) bool {
+	return pie.Contains(EntitiesWithTags, entity)
+}
+
+func IsEntityHierarchical(entity int) bool {
+	return !IsEntityNonHierarchical(entity)
+}
+
+func IsEntityNonHierarchical(entity int) bool {
+	return entity == BLDGTMPL || entity == ROOMTMPL || entity == OBJTMPL || entity == TAG
+}
+
 func EntityToString(entity int) string {
 	switch entity {
 	case SITE:
@@ -236,6 +270,8 @@ func EntityToString(entity int) string {
 		return "group"
 	case CORRIDOR:
 		return "corridor"
+	case TAG:
+		return "tag"
 	default:
 		return "INVALID"
 	}
@@ -273,6 +309,8 @@ func EntityStrToInt(entity string) int {
 		return GROUP
 	case "corridor":
 		return CORRIDOR
+	case "tag":
+		return TAG
 	default:
 		return -1
 	}
@@ -289,8 +327,8 @@ func GetEntitiesByNamespace(namespace Namespace, hierarchyName string) []string 
 	case Organisational:
 		entNames = append(entNames, EntityToString(DOMAIN))
 	case Logical:
-		for i := GROUP; i <= BLDGTMPL; i++ {
-			entNames = append(entNames, EntityToString(i))
+		for entity := GROUP; entity <= TAG; entity++ {
+			entNames = append(entNames, EntityToString(entity))
 		}
 	case LObjTemplate:
 		entNames = append(entNames, EntityToString(OBJTMPL))
@@ -298,6 +336,8 @@ func GetEntitiesByNamespace(namespace Namespace, hierarchyName string) []string 
 		entNames = append(entNames, EntityToString(BLDGTMPL))
 	case LRoomTemplate:
 		entNames = append(entNames, EntityToString(ROOMTMPL))
+	case LTags:
+		entNames = append(entNames, EntityToString(TAG))
 	case PStray:
 		entNames = append(entNames, EntityToString(STRAYOBJ))
 	case Physical, PHierarchy, Any:
@@ -314,8 +354,8 @@ func GetEntitiesByNamespace(namespace Namespace, hierarchyName string) []string 
 				}
 			case Any:
 				// All collections
-				for i := DOMAIN; i <= BLDGTMPL; i++ {
-					entNames = append(entNames, EntityToString(i))
+				for _, entity := range Entities {
+					entNames = append(entNames, EntityToString(entity))
 				}
 			}
 		} else {
@@ -328,7 +368,7 @@ func GetEntitiesByNamespace(namespace Namespace, hierarchyName string) []string 
 			case 0:
 				resp = append(resp, SITE)
 				if namespace == Any {
-					resp = append(resp, OBJTMPL, ROOMTMPL, BLDGTMPL)
+					resp = append(resp, OBJTMPL, ROOMTMPL, BLDGTMPL, TAG)
 				}
 				if namespace == Any || namespace == Physical {
 					resp = append(resp, STRAYOBJ)
@@ -359,7 +399,7 @@ func GetParentOfEntityByInt(entity int) int {
 		return DOMAIN
 	case AC, PWRPNL, CABINET, CORRIDOR:
 		return ROOM
-	case ROOMTMPL, OBJTMPL, BLDGTMPL, GROUP, STRAYOBJ:
+	case ROOMTMPL, OBJTMPL, BLDGTMPL, TAG, GROUP, STRAYOBJ:
 		return -1
 	default:
 		return entity - 1

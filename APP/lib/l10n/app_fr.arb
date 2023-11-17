@@ -16,6 +16,7 @@
   "reset": "Réinitialiser",
   "close": "Fermer",
   "unavailable": "Indisponible",
+  "select": "Choisir",
   "download": "Télécharger",
   
   "@welcome": { "description": "Login Page" },

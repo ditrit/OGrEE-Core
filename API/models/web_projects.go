@@ -3,6 +3,7 @@ package models
 import (
 	"context"
 	"fmt"
+	"p3/repository"
 	u "p3/utils"
 	"time"
 
@@ -46,7 +47,7 @@ func GetProjectsByUserEmail(userEmail string) ([]Project, *u.Error) {
 		},
 	}
 	ctx, cancel := u.Connect()
-	cursor, err := GetDB().Collection(WEB_PROJECTS).Find(ctx, filter)
+	cursor, err := repository.GetDB().Collection(WEB_PROJECTS).Find(ctx, filter)
 	if err != nil {
 		return nil, &u.Error{Type: u.ErrDBError, Message: err.Error()}
 	} else if err = cursor.All(ctx, &results); err != nil {
@@ -61,7 +62,7 @@ func GetProjectsByUserEmail(userEmail string) ([]Project, *u.Error) {
 func AddProject(newProject Project) *u.Error {
 	// Add the new project
 	ctx, cancel := u.Connect()
-	_, err := GetDB().Collection(WEB_PROJECTS).InsertOne(ctx, newProject)
+	_, err := repository.GetDB().Collection(WEB_PROJECTS).InsertOne(ctx, newProject)
 	if err != nil {
 		println(err.Error())
 		return &u.Error{Type: u.ErrDBError, Message: err.Error()}
@@ -76,7 +77,7 @@ func UpdateProject(newProject Project, projectId string) *u.Error {
 	// Update existing project, if exists
 	ctx, cancel := u.Connect()
 	objId, _ := primitive.ObjectIDFromHex(projectId)
-	res, err := GetDB().Collection(WEB_PROJECTS).UpdateOne(ctx,
+	res, err := repository.GetDB().Collection(WEB_PROJECTS).UpdateOne(ctx,
 		bson.M{"_id": objId}, bson.M{"$set": newProject})
 	defer cancel()
 
@@ -96,7 +97,7 @@ func DeleteProject(projectId string) *u.Error {
 
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	objId, _ := primitive.ObjectIDFromHex(projectId)
-	res, err := GetDB().Collection(WEB_PROJECTS).DeleteOne(ctx, bson.M{"_id": objId})
+	res, err := repository.GetDB().Collection(WEB_PROJECTS).DeleteOne(ctx, bson.M{"_id": objId})
 	defer cancel()
 
 	if err != nil {
@@ -125,7 +126,7 @@ func getProjectsFromUser() {
 		return
 	}
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
-	err = GetDB().Collection("account").FindOne(ctx, bson.M{"_id": objId}).Decode(&data)
+	err = repository.GetDB().Collection("account").FindOne(ctx, bson.M{"_id": objId}).Decode(&data)
 	if err != nil {
 		// c.JSON(http.StatusBadRequest, "Unable to find user: "+err.Error())
 	} else {
@@ -147,7 +148,7 @@ func getProjectsFromUser() {
 			// Get projects
 			println(objIds)
 			var results []Project
-			cursor, err := GetDB().Collection("web_project").Find(ctx, bson.M{"_id": bson.M{"$in": objIds}})
+			cursor, err := repository.GetDB().Collection("web_project").Find(ctx, bson.M{"_id": bson.M{"$in": objIds}})
 			if err != nil {
 				fmt.Println(err)
 			} else {
@@ -169,7 +170,7 @@ func getProjectsFromUser() {
 	// addedPermissions := []string{}
 	// for _, userEmail := range newProject.Permissions {
 	// 	println(userEmail)
-	// 	res, err := m.GetDB().Collection("account").UpdateOne(ctx,
+	// 	res, err := m.repository.GetDB().Collection("account").UpdateOne(ctx,
 	// 		bson.M{"email": userEmail}, bson.M{"$push": bson.M{"web_projects": result.InsertedID.(primitive.ObjectID).Hex()}})
 	// 	if err == nil && res.MatchedCount > 0 {
 	// 		addedPermissions = append(addedPermissions, userEmail)

@@ -132,6 +132,42 @@
         }
       }
     },
+    "/api/image/{id}": {
+      "get": {
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "description": "Returns a HTTP response with the binary of the image.\nThe format of the image will correspond to the content type of the response.",
+        "produces": [
+          "image/*",
+          "application/json"
+        ],
+        "tags": [
+          "Objects"
+        ],
+        "summary": "Gets an image by its id.",
+        "operationId": "GetImage",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "ID of image",
+            "name": "id",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Found. A response body will be returned with the image binary."
+          },
+          "404": {
+            "description": "Not Found. An error message will be returned."
+          }
+        }
+      }
+    },
     "/api/login": {
       "post": {
         "description": "Create a new JWT Key. This can also be used to verify credentials\nThe authorize and 'Try it out' buttons don't work",
@@ -892,7 +928,7 @@
           {
             "type": "string",
             "default": "sites",
-            "description": "Entity (same as category) of the object. Accepted values: sites, domains, buildings, rooms, racks, devices, acs, panels, cabinets, groups, corridors, room-templates, obj-templates, bldg-templates, stray-objects.",
+            "description": "Entity (same as category) of the object. Accepted values: sites, domains, buildings, rooms, racks, devices, acs, panels, cabinets, groups, corridors, room-templates, obj-templates, bldg-templates, stray-objects, tags.",
             "name": "entity",
             "in": "path",
             "required": true
@@ -959,7 +995,7 @@
           {
             "type": "string",
             "default": "sites",
-            "description": "Entity (same as category) of the object. Accepted values: sites, domains, buildings, rooms, racks, devices, acs, panels, cabinets, groups, corridors, room-templates, obj-templates, bldg-templates, stray-objects",
+            "description": "Entity (same as category) of the object. Accepted values: sites, domains, buildings, rooms, racks, devices, acs, panels, cabinets, groups, corridors, room-templates, obj-templates, bldg-templates, stray-objects, tags",
             "name": "entity",
             "in": "path",
             "required": true
@@ -1007,7 +1043,7 @@
           {
             "type": "string",
             "default": "sites",
-            "description": "Entity (same as category) of the object. Accepted values: sites, domains, buildings, rooms, racks, devices, acs, panels, cabinets, groups, corridors, room-templates, obj-templates, bldg-templates, stray-objects, hierarchy-objects.",
+            "description": "Entity (same as category) of the object. Accepted values: sites, domains, buildings, rooms, racks, devices, acs, panels, cabinets, groups, corridors, room-templates, obj-templates, bldg-templates, tags, stray-objects, hierarchy-objects.",
             "name": "entity",
             "in": "path",
             "required": true
@@ -1049,7 +1085,7 @@
           {
             "type": "string",
             "default": "sites",
-            "description": "Entity (same as category) of the object. Accepted values: sites, domains, buildings, rooms, racks, devices, acs, panels, cabinets, groups, corridors, room-templates, obj-templates, bldg-templates, stray-objects, hierarchy-objects.",
+            "description": "Entity (same as category) of the object. Accepted values: sites, domains, buildings, rooms, racks, devices, acs, panels, cabinets, groups, corridors, room-templates, obj-templates, bldg-templates, tags, stray-objects, hierarchy-objects.",
             "name": "entity",
             "in": "path",
             "required": true
@@ -1057,7 +1093,7 @@
           {
             "type": "string",
             "default": "siteA",
-            "description": "ID of desired object. For templates the slug is the ID.",
+            "description": "ID of desired object. For templates and tags the slug is the ID.",
             "name": "id",
             "in": "path",
             "required": true
@@ -1109,7 +1145,7 @@
           {
             "type": "string",
             "default": "sites",
-            "description": "Entity (same as category) of the object. Accepted values: sites, domains, buildings, rooms, racks, devices, acs, panels, cabinets, groups, corridors, room-templates, obj-templates, bldg-templates, stray-objects, hierarchy-objects.",
+            "description": "Entity (same as category) of the object. Accepted values: sites, domains, buildings, rooms, racks, devices, acs, panels, cabinets, groups, corridors, room-templates, obj-templates, bldg-templates, tags, stray-objects, hierarchy-objects.",
             "name": "entity",
             "in": "path",
             "required": true
@@ -1117,7 +1153,7 @@
           {
             "type": "string",
             "default": "siteA",
-            "description": "ID of desired object. For templates the slug is the ID.",
+            "description": "ID of desired object. For templates and tags the slug is the ID.",
             "name": "id",
             "in": "path",
             "required": true
@@ -1153,7 +1189,7 @@
           {
             "type": "string",
             "default": "sites",
-            "description": "Entity (same as category) of the object. Accepted values: sites, domains, buildings, rooms, racks, devices, acs, panels, cabinets, groups, corridors, room-templates, obj-templates, bldg-templates, stray-objects, hierarchy-objects.",
+            "description": "Entity (same as category) of the object. Accepted values: sites, domains, buildings, rooms, racks, devices, acs, panels, cabinets, groups, corridors, room-templates, obj-templates, bldg-templates, tags, stray-objects, hierarchy-objects.",
             "name": "entity",
             "in": "path",
             "required": true
@@ -1161,7 +1197,7 @@
           {
             "type": "string",
             "default": "siteA",
-            "description": "ID of desired object. For templates the slug is the ID.",
+            "description": "ID of desired object. For templates and tags the slug is the ID.",
             "name": "id",
             "in": "path",
             "required": true
@@ -1195,7 +1231,7 @@
           {
             "type": "string",
             "default": "sites",
-            "description": "Entity (same as category) of the object. Accepted values: sites, domains, buildings, rooms, racks, devices, acs, panels, cabinets, groups, corridors, room-templates, obj-templates, bldg-templates, stray-objects.",
+            "description": "Entity (same as category) of the object. Accepted values: sites, domains, buildings, rooms, racks, devices, acs, panels, cabinets, groups, corridors, room-templates, obj-templates, bldg-templates, stray-objects, tags.",
             "name": "entity",
             "in": "path",
             "required": true
@@ -1203,7 +1239,7 @@
           {
             "type": "string",
             "default": "siteA",
-            "description": "ID of desired object. For templates the slug is the ID.",
+            "description": "ID of desired object. For templates and tags the slug is the ID.",
             "name": "id",
             "in": "path",
             "required": true
@@ -1242,7 +1278,7 @@
           {
             "type": "string",
             "default": "sites",
-            "description": "Entity (same as category) of the object. Accepted values: sites, domains, buildings, rooms, racks, devices, acs, panels, cabinets, groups, corridors, room-templates, obj-templates, bldg-templates, stray-objects, hierarchy-objects.",
+            "description": "Entity (same as category) of the object. Accepted values: sites, domains, buildings, rooms, racks, devices, acs, panels, cabinets, groups, corridors, stray-objects, hierarchy-objects.",
             "name": "entity",
             "in": "path",
             "required": true
@@ -1250,7 +1286,7 @@
           {
             "type": "string",
             "default": "siteA",
-            "description": "ID of desired object. For templates the slug is the ID.",
+            "description": "ID of desired object.",
             "name": "id",
             "in": "path",
             "required": true
@@ -1415,7 +1451,7 @@
           {
             "type": "string",
             "default": "sites",
-            "description": "Entity (same as category) of the object. Accepted values: sites, domains, buildings, rooms, racks, devices, acs, panels, cabinets, groups, corridors, room-templates, obj-templates, bldg-templates, stray-objects.",
+            "description": "Entity (same as category) of the object. Accepted values: sites, domains, buildings, rooms, racks, devices, acs, panels, cabinets, groups, corridors, room-templates, obj-templates, bldg-templates, stray-objects, tags.",
             "name": "entity",
             "in": "path",
             "required": true

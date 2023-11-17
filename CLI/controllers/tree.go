@@ -11,10 +11,10 @@ import (
 type FillFunc func(n *HierarchyNode, path string, depth int) error
 
 type HierarchyNode struct {
-	Name   string
-	Childs map[string]*HierarchyNode
-	FillFn FillFunc
-	Obj    map[string]any
+	Name     string
+	Children map[string]*HierarchyNode
+	FillFn   FillFunc
+	Obj      map[string]any
 }
 
 func NewNode(name string) *HierarchyNode {
@@ -25,15 +25,15 @@ func (n *HierarchyNode) StringAux(prefix string, sb *strings.Builder, depth int)
 	if depth == 0 {
 		return
 	}
-	childs := []*HierarchyNode{}
-	for _, child := range n.Childs {
-		childs = append(childs, child)
+	children := []*HierarchyNode{}
+	for _, child := range n.Children {
+		children = append(children, child)
 	}
-	sort.SliceStable(childs, func(i, j int) bool {
-		return childs[i].Name < childs[j].Name
+	sort.SliceStable(children, func(i, j int) bool {
+		return children[i].Name < children[j].Name
 	})
-	for i, child := range childs {
-		if i == len(childs)-1 {
+	for i, child := range children {
+		if i == len(children)-1 {
 			sb.WriteString(prefix + "└── " + child.Name + "\n")
 			child.StringAux(prefix+"    ", sb, depth-1)
 		} else {
@@ -54,14 +54,14 @@ func (n *HierarchyNode) String(depth int) string {
 }
 
 func (n *HierarchyNode) AddChild(child *HierarchyNode) {
-	n.Childs[child.Name] = child
+	n.Children[child.Name] = child
 }
 
 func (n *HierarchyNode) findNodeAux(path []string) (r *HierarchyNode, remainingPath []string) {
 	if len(path) == 0 {
 		return n, []string{}
 	}
-	child := n.Childs[path[0]]
+	child := n.Children[path[0]]
 	if child != nil {
 		return child.findNodeAux(path[1:])
 	}
@@ -104,6 +104,9 @@ func BuildBaseTree() *HierarchyNode {
 	bldgTemplates := NewNode("BldgTemplates")
 	bldgTemplates.FillFn = FillUrlTreeFn("/api/bldg-templates", nil, false)
 	logical.AddChild(bldgTemplates)
+	tags := NewNode("Tags")
+	tags.FillFn = FillUrlTreeFn("/api/tags", nil, false)
+	logical.AddChild(tags)
 	groups := NewNode("Groups")
 	groups.FillFn = FillUrlTreeFn("/api/groups", nil, true)
 	logical.AddChild(groups)
@@ -139,7 +142,7 @@ func FillMapTree(n *HierarchyNode, obj map[string]any) error {
 }
 
 func FillObjectTree(n *HierarchyNode, path string, depth int) error {
-	obj, err := PollObjectWithChildren(path, depth)
+	obj, err := C.PollObjectWithChildren(path, depth)
 	if err != nil {
 		return err
 	}
@@ -150,12 +153,12 @@ func FillObjectTree(n *HierarchyNode, path string, depth int) error {
 }
 
 func FillUrlTree(n *HierarchyNode, path string, depth int, url string, followFillFn FillFunc, fullId bool) error {
-	resp, err := RequestAPI("GET", url, nil, http.StatusOK)
+	resp, err := API.Request("GET", url, nil, http.StatusOK)
 	if err != nil {
 		return err
 	}
 	invalidRespErr := fmt.Errorf("invalid response from API on GET %s", url)
-	obj, ok := resp.body["data"].(map[string]any)
+	obj, ok := resp.Body["data"].(map[string]any)
 	if !ok {
 		return invalidRespErr
 	}
@@ -201,8 +204,8 @@ func FillTree(n *HierarchyNode, path string, depth int) error {
 	if depth == 0 {
 		return nil
 	}
-	if len(n.Childs) != 0 {
-		for _, child := range n.Childs {
+	if len(n.Children) != 0 {
+		for _, child := range n.Children {
 			newPath := path
 			if path != "/" {
 				newPath += "/"
@@ -231,7 +234,8 @@ func Tree(path string, depth int) (*HierarchyNode, error) {
 		}
 		return root, nil
 	}
-	obj, err := GetObjectWithChildren(path, depth)
+
+	obj, err := C.GetObjectWithChildren(path, depth)
 	if err != nil {
 		return nil, err
 	}
@@ -240,5 +244,6 @@ func Tree(path string, depth int) (*HierarchyNode, error) {
 	if err != nil {
 		return nil, err
 	}
+
 	return n, nil
 }

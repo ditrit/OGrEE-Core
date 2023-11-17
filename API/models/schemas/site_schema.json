@@ -19,6 +19,12 @@
       "type": "string",
       "pattern":"^\\w(\\w|\\-)*$"
     },
+    "tags": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
     "attributes": {
       "type": "object",
       "properties": {

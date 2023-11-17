@@ -7,5 +7,8 @@ api:
 dev_api:
 	docker compose -p mytenant -f docker-compose.yml -f docker-compose.dev.yml up -d --build
 
+test_api:
+	docker compose -f docker-compose.test.yml up -d
+
 
 

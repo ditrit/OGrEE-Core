@@ -59,7 +59,7 @@ func validateParent(ent string, entNum int, t map[string]interface{}) (map[strin
 
 	parent := map[string]interface{}{"parent": ""}
 	// Anyone can have a stray parent
-	stray, _ := GetEntity(req, "stray_object", u.RequestFilters{}, nil)
+	stray, _ := GetObject(req, "stray_object", u.RequestFilters{}, nil)
 	if stray != nil {
 		parent["parent"] = "rack"
 		parent["domain"] = stray["domain"]
@@ -69,7 +69,7 @@ func validateParent(ent string, entNum int, t map[string]interface{}) (map[strin
 	// If not, search specific possibilities
 	switch entNum {
 	case u.DEVICE:
-		x, _ := GetEntity(req, "rack", u.RequestFilters{}, nil)
+		x, _ := GetObject(req, "rack", u.RequestFilters{}, nil)
 		if x != nil {
 			parent["parent"] = "rack"
 			parent["domain"] = x["domain"]
@@ -77,7 +77,7 @@ func validateParent(ent string, entNum int, t map[string]interface{}) (map[strin
 			return parent, nil
 		}
 
-		y, _ := GetEntity(req, "device", u.RequestFilters{}, nil)
+		y, _ := GetObject(req, "device", u.RequestFilters{}, nil)
 		if y != nil {
 			parent["parent"] = "device"
 			parent["domain"] = y["domain"]
@@ -89,7 +89,7 @@ func validateParent(ent string, entNum int, t map[string]interface{}) (map[strin
 			Message: "ParentID should correspond to Existing ID"}
 
 	case u.GROUP:
-		w, _ := GetEntity(req, "device", u.RequestFilters{}, nil)
+		w, _ := GetObject(req, "device", u.RequestFilters{}, nil)
 		if w != nil {
 			parent["parent"] = "device"
 			parent["domain"] = w["domain"]
@@ -97,7 +97,7 @@ func validateParent(ent string, entNum int, t map[string]interface{}) (map[strin
 			return parent, nil
 		}
 
-		x, _ := GetEntity(req, "rack", u.RequestFilters{}, nil)
+		x, _ := GetObject(req, "rack", u.RequestFilters{}, nil)
 		if x != nil {
 			parent["parent"] = "rack"
 			parent["domain"] = x["domain"]
@@ -105,7 +105,7 @@ func validateParent(ent string, entNum int, t map[string]interface{}) (map[strin
 			return parent, nil
 		}
 
-		y, _ := GetEntity(req, "room", u.RequestFilters{}, nil)
+		y, _ := GetObject(req, "room", u.RequestFilters{}, nil)
 		if y != nil {
 			parent["parent"] = "room"
 			parent["domain"] = y["domain"]
@@ -113,7 +113,7 @@ func validateParent(ent string, entNum int, t map[string]interface{}) (map[strin
 			return parent, nil
 		}
 
-		z, _ := GetEntity(req, "building", u.RequestFilters{}, nil)
+		z, _ := GetObject(req, "building", u.RequestFilters{}, nil)
 		if z != nil {
 			parent["parent"] = "building"
 			parent["domain"] = z["domain"]
@@ -128,7 +128,7 @@ func validateParent(ent string, entNum int, t map[string]interface{}) (map[strin
 		parentInt := u.GetParentOfEntityByInt(entNum)
 		parentStr := u.EntityToString(parentInt)
 
-		p, err := GetEntity(req, parentStr, u.RequestFilters{}, nil)
+		p, err := GetObject(req, parentStr, u.RequestFilters{}, nil)
 		if len(p) > 0 {
 			parent["parent"] = parentStr
 			parent["domain"] = p["domain"]
@@ -189,27 +189,30 @@ func validateJsonSchema(entity int, t map[string]interface{}) (bool, *u.Error) {
 	}
 }
 
-func ValidateEntity(entity int, t map[string]interface{}) (bool, *u.Error) {
+func ValidateEntity(entity int, t map[string]interface{}) *u.Error {
 	/*
 		TODO:
 		Need to capture device if it is a parent
 		and check that the device parent has a slot
 		attribute
 	*/
+	if shouldFillTags(entity, u.RequestFilters{}) {
+		t = fillTags(t)
+	}
 
 	// Validate JSON Schema
 	if ok, err := validateJsonSchema(entity, t); !ok {
-		return false, err
+		return err
 	}
 
 	// Extra checks
 	// Check parent and domain for objects
 	var parent map[string]interface{}
-	if entity != u.BLDGTMPL && entity != u.ROOMTMPL && entity != u.OBJTMPL {
+	if u.IsEntityHierarchical(entity) {
 		var err *u.Error
 		parent, err = validateParent(u.EntityToString(entity), entity, t)
 		if err != nil {
-			return false, err
+			return err
 		} else if parent["id"] != nil {
 			t["id"] = parent["id"].(string) +
 				u.HN_DELIMETER + t["name"].(string)
@@ -219,12 +222,12 @@ func ValidateEntity(entity int, t map[string]interface{}) (bool, *u.Error) {
 		//Check domain
 		if entity != u.DOMAIN {
 			if !CheckDomainExists(t["domain"].(string)) {
-				return false, &u.Error{Type: u.ErrNotFound,
+				return &u.Error{Type: u.ErrNotFound,
 					Message: "Domain not found: " + t["domain"].(string)}
 			}
 			if parentDomain, ok := parent["domain"].(string); ok {
 				if !DomainIsEqualOrChild(parentDomain, t["domain"].(string)) {
-					return false, &u.Error{Type: u.ErrBadFormat,
+					return &u.Error{Type: u.ErrBadFormat,
 						Message: "Object domain is not equal or child of parent's domain"}
 				}
 			}
@@ -234,11 +237,11 @@ func ValidateEntity(entity int, t map[string]interface{}) (bool, *u.Error) {
 	// Check attributes
 	if entity == u.RACK || entity == u.GROUP || entity == u.CORRIDOR {
 		if _, ok := t["attributes"]; !ok {
-			return false, &u.Error{Type: u.ErrBadFormat,
+			return &u.Error{Type: u.ErrBadFormat,
 				Message: "Attributes should be on the payload"}
 		} else {
 			if v, ok := t["attributes"].(map[string]interface{}); !ok {
-				return false, &u.Error{Type: u.ErrBadFormat,
+				return &u.Error{Type: u.ErrBadFormat,
 					Message: "Attributes should be a JSON Dictionary"}
 			} else {
 				switch entity {
@@ -246,13 +249,13 @@ func ValidateEntity(entity int, t map[string]interface{}) (bool, *u.Error) {
 					//Ensure the name is also unique among corridors
 					req := bson.M{"name": t["name"].(string)}
 					req["domain"] = t["domain"].(string)
-					nameCheck, _ := GetManyEntities("corridor", req, u.RequestFilters{}, nil)
+					nameCheck, _ := GetManyObjects("corridor", req, u.RequestFilters{}, nil)
 					if nameCheck != nil {
 						if len(nameCheck) != 0 {
 							if nameCheck != nil {
 								println(nameCheck[0]["name"].(string))
 							}
-							return false, &u.Error{Type: u.ErrBadFormat,
+							return &u.Error{Type: u.ErrBadFormat,
 								Message: "Rack name must be unique among corridors and racks"}
 						}
 
@@ -262,10 +265,10 @@ func ValidateEntity(entity int, t map[string]interface{}) (bool, *u.Error) {
 					//Ensure the name is also unique among racks
 					req := bson.M{"name": t["name"].(string)}
 					req["domain"] = t["domain"].(string)
-					nameCheck, _ := GetManyEntities("rack", req, u.RequestFilters{}, nil)
+					nameCheck, _ := GetManyObjects("rack", req, u.RequestFilters{}, nil)
 					if nameCheck != nil {
 						if len(nameCheck) != 0 {
-							return false, &u.Error{Type: u.ErrBadFormat,
+							return &u.Error{Type: u.ErrBadFormat,
 								Message: "Corridor name must be unique among corridors and racks"}
 						}
 					}
@@ -280,7 +283,7 @@ func ValidateEntity(entity int, t map[string]interface{}) (bool, *u.Error) {
 					objects := strings.Split(v["content"].(string), ",")
 					if len(objects) <= 1 {
 						if objects[0] == "" {
-							return false, &u.Error{Type: u.ErrBadFormat,
+							return &u.Error{Type: u.ErrBadFormat,
 								Message: "objects separated by a comma must be" +
 									" on the payload"}
 						}
@@ -288,7 +291,7 @@ func ValidateEntity(entity int, t map[string]interface{}) (bool, *u.Error) {
 
 					//Ensure objects are all unique
 					if _, ok := EnsureUnique(objects); !ok {
-						return false, &u.Error{Type: u.ErrBadFormat,
+						return &u.Error{Type: u.ErrBadFormat,
 							Message: "The group cannot have duplicate objects"}
 					}
 
@@ -301,29 +304,29 @@ func ValidateEntity(entity int, t map[string]interface{}) (bool, *u.Error) {
 
 					//If parent is rack, retrieve devices
 					if parent["parent"].(string) == "rack" {
-						ans, err := GetManyEntities("device", filter, u.RequestFilters{}, nil)
+						ans, err := GetManyObjects("device", filter, u.RequestFilters{}, nil)
 						if err != nil {
-							return false, err
+							return err
 						}
 						if len(ans) != len(objects) {
-							return false, &u.Error{Type: u.ErrBadFormat,
+							return &u.Error{Type: u.ErrBadFormat,
 								Message: "Unable to verify objects in specified group" +
 									" please check and try again"}
 						}
 
 					} else if parent["parent"].(string) == "room" {
 						//If parent is room, retrieve corridors and racks
-						corridors, err := GetManyEntities("corridor", filter, u.RequestFilters{}, nil)
+						corridors, err := GetManyObjects("corridor", filter, u.RequestFilters{}, nil)
 						if err != nil {
-							return false, err
+							return err
 						}
 
-						racks, err := GetManyEntities("rack", filter, u.RequestFilters{}, nil)
+						racks, err := GetManyObjects("rack", filter, u.RequestFilters{}, nil)
 						if err != nil {
-							return false, err
+							return err
 						}
 						if len(racks)+len(corridors) != len(objects) {
-							return false, &u.Error{Type: u.ErrBadFormat,
+							return &u.Error{Type: u.ErrBadFormat,
 								Message: "Some object(s) could be not be found. " +
 									"Please check and try again"}
 						}
@@ -334,7 +337,7 @@ func ValidateEntity(entity int, t map[string]interface{}) (bool, *u.Error) {
 	}
 
 	//Successfully validated the Object
-	return true, nil
+	return nil
 }
 
 // Auxillary Functions
