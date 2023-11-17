@@ -2,6 +2,7 @@ package config
 
 import (
 	"encoding/json"
+	"fmt"
 	"os"
 	"path/filepath"
 
@@ -69,7 +70,7 @@ func defaultConfig() Config {
 	}
 }
 
-func ReadConfig() *Config {
+func ReadConfig() (*Config, error) {
 	globalConf := globalConfig{
 		Conf: defaultConfig(),
 	}
@@ -94,13 +95,15 @@ func ReadConfig() *Config {
 
 	configBytes, err := os.ReadFile(args.ConfigPath)
 	if err != nil {
-		Println("Cannot read config file", args.ConfigPath, ":", err.Error())
-		Println("Please ensure that you have a properly formatted config file saved as 'config.toml' in the parent directory")
-		Println("For more details please refer to: https://github.com/ditrit/OGrEE-Core/blob/main/README.md")
+		return nil, fmt.Errorf(
+			`cannot read config file %s : %s\n
+			Please ensure that you have a properly formatted config file saved as 'config.toml' in the parent directory
+			For more details please refer to: https://github.com/ditrit/OGrEE-Core/blob/main/README.md`,
+			args.ConfigPath, err.Error())
 	}
 	_, err = toml.Decode(string(configBytes), &globalConf)
 	if err != nil {
-		Println("Error reading config :", err.Error())
+		return nil, fmt.Errorf("error reading config : %s", err.Error())
 	}
 	conf.Password = ""
 
@@ -109,5 +112,5 @@ func ReadConfig() *Config {
 
 	conf.ConfigPath, _ = filepath.Abs(conf.ConfigPath)
 	conf.HistPath, _ = filepath.Abs(conf.HistPath)
-	return conf
+	return conf, nil
 }

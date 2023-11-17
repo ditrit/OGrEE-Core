@@ -1873,7 +1873,7 @@ func InteractObject(path string, keyword string, val interface{}, fromAttr bool)
 // If there isn't a connection established, tries to establish the connection first
 func InformOgree3D(caller string, entity int, data map[string]interface{}) error {
 	if !models.Ogree3D.IsConnected() {
-		fmt.Println("Connecting to OGrEE-3D")
+		Println("Connecting to OGrEE-3D")
 		err := Connect3D("")
 		if err != nil {
 			return err

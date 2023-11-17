@@ -30,7 +30,7 @@ win: protobuf
 
 protobuf: 
 	poetry run python -W ignore:pkg_resources -m grpc_tools.protoc --proto_path=. ./com.proto --python_out=. --grpc_python_out=.
-	protoc --go_out=./server --go_opt=paths=source_relative --go-grpc_out=./server --go-grpc_opt=paths=source_relative ./com.proto
+	protoc --go_out=. --go_opt=paths=source_relative --go-grpc_out=. --go-grpc_opt=paths=source_relative ./com.proto
 
 docker:
 	$(DOCKER_PREFIX) "$(LINUX_COMMAND)"

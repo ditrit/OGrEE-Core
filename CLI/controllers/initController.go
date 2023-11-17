@@ -109,7 +109,7 @@ func InitOGrEE3DCommunication() error {
 		}
 	}
 
-	fmt.Println("Established connection with OGrEE-3D!")
+	Println("Established connection with OGrEE-3D!")
 
 	go models.Ogree3D.ReceiveLoop()
 

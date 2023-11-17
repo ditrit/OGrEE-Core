@@ -198,7 +198,7 @@ func (n *lsNode) execute() (interface{}, error) {
 	}
 	for _, obj := range objects {
 		if n.sortAttr == "" {
-			fmt.Println(utils.NameOrSlug(obj))
+			Println(utils.NameOrSlug(obj))
 			continue
 		}
 		printStr := "Name : %s"
@@ -314,12 +314,12 @@ func (n *deleteObjNode) execute() (interface{}, error) {
 		return nil, err
 	}
 	if len(paths) > 0 {
-		fmt.Println("Objects deleted :")
+		Println("Objects deleted :")
 		for _, path := range paths {
-			fmt.Println(path)
+			Println(path)
 		}
 	} else {
-		fmt.Println("Nothing got deleted")
+		Println("Nothing got deleted")
 	}
 	return nil, nil
 }

@@ -3,28 +3,16 @@ import time
 start = time.time()
 from typing import Iterable
 from termcolor import colored
-
-end = time.time()
-print(end-start)
-
 from prompt_toolkit.completion import Completer, Completion
 from prompt_toolkit.completion.base import Completion
 from prompt_toolkit.formatted_text import ANSI
 from prompt_toolkit import PromptSession
 from prompt_toolkit.history import FileHistory
 from prompt_toolkit.patch_stdout import patch_stdout
-
-end = time.time()
-print(end-start)
 import grpc
-end = time.time()
-print(end-start)
 import com_pb2_grpc as pb2_grpc
 import com_pb2 as pb2
 from google.protobuf.empty_pb2 import Empty
-
-
-
 import asyncio
 import sys
 import nest_asyncio
@@ -81,10 +69,8 @@ async def run():
             stub = pb2_grpc.CLIStub(channel)
             completer = CustomCompleter(stub, loop)
             loop.create_task(unity_loop(stub))
-            response = await stub.ProcessLine(pb2.Request(line=""))
+            response = await stub.Init(Empty())
             prompt = response.prompt
-            end = time.time()
-            print(end-start)
             while True:
                 prompt = await prompt_iter(session, stub, completer, prompt)
     except (EOFError, grpc.aio._call.AioRpcError):

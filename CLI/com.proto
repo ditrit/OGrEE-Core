@@ -4,7 +4,7 @@ import "google/protobuf/empty.proto";
 
 package CLI;
 
-option go_package = "./server";
+option go_package = "./main";
 
 service CLI {
     rpc Init(google.protobuf.Empty) returns (ProcessResponse){};

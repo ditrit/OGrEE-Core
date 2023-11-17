@@ -5,6 +5,7 @@ import (
 	"cli/config"
 	cmd "cli/controllers"
 	l "cli/logger"
+	"cli/models"
 	"context"
 	"fmt"
 	"net"
@@ -47,52 +48,11 @@ func SetPrompt(user string) string {
 	return cmd.State.Prompt
 }
 
-func InterpretLine(str string) {
-	root, parseErr := Parse(str)
-	if parseErr != nil {
-		Println(parseErr.Error())
-		return
-	}
-	if root == nil {
-		return
-	}
-	_, err := root.execute()
+func initCli() {
+	conf, err := config.ReadConfig()
 	if err != nil {
-		manageError(err, true)
+		Println(err.Error())
 	}
-}
-
-func manageError(err error, addErrorPrefix bool) {
-	l.GetErrorLogger().Println(err.Error())
-	if cmd.State.DebugLvl > cmd.NONE {
-		if traceErr, ok := err.(*stackTraceError); ok {
-			Println(traceErr.Error())
-		} else if errWithInternalErr, ok := err.(cmd.ErrorWithInternalError); ok {
-			printError(errWithInternalErr.UserError, addErrorPrefix)
-			if cmd.State.DebugLvl > cmd.ERROR {
-				Println(errWithInternalErr.InternalError.Error())
-			}
-		} else {
-			printError(err, addErrorPrefix)
-		}
-	}
-}
-
-func printError(err error, addErrorPrefix bool) {
-	errMsg := err.Error()
-	if !addErrorPrefix || strings.Contains(strings.ToLower(errMsg), "error") {
-		Println(errMsg)
-	} else {
-		Println("Error:", errMsg)
-	}
-}
-
-type cliServer struct{}
-
-func (s *cliServer) Init(ctx context.Context, e *empty.Empty) (*ProcessResponse, error) {
-	Output.Reset()
-	conf := config.ReadConfig()
-
 	l.InitLogs()
 	cmd.InitConfigFilePath(conf.ConfigPath)
 	cmd.InitHistoryFilePath(conf.HistPath)
@@ -127,6 +87,38 @@ func (s *cliServer) Init(ctx context.Context, e *empty.Empty) (*ProcessResponse,
 			os.Exit(0)
 		}
 	}
+}
+
+type cliServer struct {
+	cliInitialized bool
+}
+
+func (s *cliServer) Init(ctx context.Context, e *empty.Empty) (*ProcessResponse, error) {
+	Output.Reset()
+	if !s.cliInitialized {
+		initCli()
+	}
+	userShort := strings.Split(cmd.State.User.Email, "@")[0]
+	response := &ProcessResponse{
+		Message: Output.String(),
+		Prompt:  SetPrompt(userShort),
+	}
+	s.cliInitialized = true
+	return response, nil
+}
+
+func (s *cliServer) ProcessLine(ctx context.Context, r *Request) (*ProcessResponse, error) {
+	Output.Reset()
+	root, parseErr := Parse(r.Line)
+	if parseErr != nil {
+		Println(parseErr.Error())
+	}
+	if root != nil {
+		_, err := root.execute()
+		if err != nil {
+			manageError(err, true)
+		}
+	}
 	userShort := strings.Split(cmd.State.User.Email, "@")[0]
 	response := &ProcessResponse{
 		Message: Output.String(),
@@ -135,15 +127,29 @@ func (s *cliServer) Init(ctx context.Context, e *empty.Empty) (*ProcessResponse,
 	return response, nil
 }
 
-func (s *cliServer) ProcessLine(ctx context.Context, r *Request) (*ProcessResponse, error) {
-	Output.Reset()
-	InterpretLine(r.Line)
-	userShort := strings.Split(cmd.State.User.Email, "@")[0]
-	response := &ProcessResponse{
-		Message: Output.String(),
-		Prompt:  SetPrompt(userShort),
+func manageError(err error, addErrorPrefix bool) {
+	l.GetErrorLogger().Println(err.Error())
+	if cmd.State.DebugLvl > cmd.NONE {
+		if traceErr, ok := err.(*stackTraceError); ok {
+			Println(traceErr.Error())
+		} else if errWithInternalErr, ok := err.(cmd.ErrorWithInternalError); ok {
+			printError(errWithInternalErr.UserError, addErrorPrefix)
+			if cmd.State.DebugLvl > cmd.ERROR {
+				Println(errWithInternalErr.InternalError.Error())
+			}
+		} else {
+			printError(err, addErrorPrefix)
+		}
 	}
-	return response, nil
+}
+
+func printError(err error, addErrorPrefix bool) {
+	errMsg := err.Error()
+	if !addErrorPrefix || strings.Contains(strings.ToLower(errMsg), "error") {
+		Println(errMsg)
+	} else {
+		Println("Error:", errMsg)
+	}
 }
 
 func (s *cliServer) Completion(ctx context.Context, r *Request) (*CompletionResponse, error) {
