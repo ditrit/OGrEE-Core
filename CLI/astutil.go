@@ -5,11 +5,8 @@ import (
 	"cli/models"
 	"cli/utils"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"io/ioutil"
-	"regexp"
-	"strings"
 )
 
 func nodeToFloat(n node, name string) (float64, error) {
@@ -50,34 +47,6 @@ func nodeTo3dRotation(n node) ([]float64, error) {
 		return nil, err
 	}
 	return utils.ValTo3dRotation(val)
-}
-
-// Transforms a node into a slug:
-//  1. Transform into a string
-//  2. Transform into lower cases only
-//  3. Validate the format of a slug using regex (lowercase letters, numbers and hyphens only)
-func nodeToSlug(n node, name string) (string, error) {
-	nodeString, err := nodeToString(n, name)
-	if err != nil {
-		return "", err
-	}
-
-	return stringToSlug(nodeString)
-}
-
-func stringToSlug(slug string) (string, error) {
-	slug = strings.ToLower(slug)
-
-	match, err := regexp.MatchString("^[a-z0-9-_]+$", slug)
-	if err != nil {
-		return "", err
-	}
-
-	if !match {
-		return "", errors.New("slugs must have letters, numbers and hyphens only")
-	}
-
-	return slug, nil
 }
 
 func nodeToString(n node, name string) (string, error) {

@@ -722,15 +722,7 @@ func (n *updateObjNode) execute() (interface{}, error) {
 	for _, path := range paths {
 		var err error
 		if models.IsTag(path) {
-			if n.attr == "slug" {
-				var newSlug string
-				newSlug, err = stringToSlug(values[0].(string))
-				if err != nil {
-					return nil, err
-				}
-
-				_, err = cmd.C.UpdateObj(path, map[string]any{n.attr: newSlug})
-			} else if n.attr == "color" || n.attr == "description" {
+			if n.attr == "slug" || n.attr == "color" || n.attr == "description" {
 				_, err = cmd.C.UpdateObj(path, map[string]any{n.attr: values[0]})
 			}
 		} else {
@@ -1252,7 +1244,7 @@ type createTagNode struct {
 }
 
 func (n *createTagNode) execute() (interface{}, error) {
-	slug, err := nodeToSlug(n.slug, "slug")
+	slug, err := nodeToString(n.slug, "slug")
 	if err != nil {
 		return nil, err
 	}
