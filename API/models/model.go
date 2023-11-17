@@ -162,7 +162,7 @@ func CreateEntity(entity int, t map[string]interface{}, userRoles map[string]Rol
 
 		tags, tagsPresent := getTags(t)
 		if tagsPresent {
-			err := verifyTagsExist(ctx, tags)
+			err := verifyTagList(ctx, tags)
 			if err != nil {
 				return nil, err
 			}
@@ -765,7 +765,7 @@ func UpdateObject(entityStr string, id string, updateData map[string]interface{}
 			delete(updateData, "lastUpdated")
 			delete(updateData, "createdDate")
 		} else if tagsPresent {
-			err := verifyTagsExist(ctx, tags)
+			err := verifyTagList(ctx, tags)
 			if err != nil {
 				return nil, err
 			}

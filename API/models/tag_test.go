@@ -447,6 +447,28 @@ func TestCreateObjectWithTagsThatNotExistsReturnsError(t *testing.T) {
 	assert.Equal(t, "Tag \"not-exists\" not found", err.Message)
 }
 
+func TestCreateObjectWithDuplicatedTagsReturnsError(t *testing.T) {
+	_, err := models.CreateEntity(
+		u.SITE,
+		map[string]any{
+			"attributes": map[string]any{
+				"reservedColor":  "AAAAAA",
+				"technicalColor": "D0FF78",
+				"usableColor":    "5BDCFF",
+			},
+			"category":    "site",
+			"description": []any{"site"},
+			"domain":      integration.TestDBName,
+			"name":        "create-object-tags-1",
+			"tags":        []any{"tag1", "tag1"},
+		},
+		userRoles,
+	)
+	assert.NotNil(t, err)
+	assert.Equal(t, u.ErrBadFormat, err.Type)
+	assert.Equal(t, "Tags has duplicated values", err.Message)
+}
+
 func TestUpdateObjectWithTagsThatNotExistsReturnsError(t *testing.T) {
 	err := createSite("update-object-tags-1", []any{})
 	require.Nil(t, err)

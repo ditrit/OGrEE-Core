@@ -24,8 +24,15 @@ func getTags(object map[string]any) ([]any, bool) {
 	return tags, tagsPresent
 }
 
-// Verifies that a list of tags exist
-func verifyTagsExist(ctx mongo.SessionContext, tags []any) *u.Error {
+// Verifies that a list of tags has not duplicated values and that all the elements exist
+func verifyTagList(ctx mongo.SessionContext, tags []any) *u.Error {
+	if !pie.AreUnique(tags) {
+		return &u.Error{
+			Type:    u.ErrBadFormat,
+			Message: "Tags has duplicated values",
+		}
+	}
+
 	for _, tagSlugAny := range tags {
 		tagSlug := tagSlugAny.(string)
 
@@ -57,7 +64,7 @@ func addAndRemoveFromTags(ctx mongo.SessionContext, entity int, objectID string,
 
 		plusTag, plusTagPresent := object["tags+"]
 		if plusTagPresent {
-			err := verifyTagsExist(ctx, []any{plusTag})
+			err := verifyTagList(ctx, []any{plusTag})
 			if err != nil {
 				return err
 			}
