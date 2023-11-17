@@ -17,6 +17,7 @@
   "close": "Close",
   "unavailable": "Unavailable",
   "select": "Select",
+  "download": "Download",
 
   "welcome": "Welcome to OGrEE",
   "welcomeConnect": "Login to your personal space:",
@@ -134,6 +135,12 @@
   "downloadBackup": "Download backup archive",
   "backupInfoMessage": "A backup archive file will be created in the host machine of the database container.\nIf this option is selected, this file will also be downloaded in your current machine.",
 
+  "tools": "Tools",
+  "downloadCli": "Download latest CLI",
+  "downloadCliTitle": "Download latest CLI",
+  "selectOS": "Select OS:",
+  "fileSavedTo": "File succesfully saved to:",
+  "unableDownload": "Unable to download file",
   "onlyOneTool": "Only one {tool} is allowed",
   "selectSQL": "Select SQL file",
   "importNetbox": "Import Netbox Dump",

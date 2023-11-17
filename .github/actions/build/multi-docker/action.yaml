@@ -86,6 +86,12 @@ runs:
         TEAM_USERNAME: ${{ inputs.TEAM_USERNAME }}
         TEAM_PASSWORD: ${{ inputs.TEAM_PASSWORD }}
 
+    - name: Publish API on Nexcloud
+      uses: ./.github/actions/build/API
+      with:
+        VERSION: ${{ env.VERSION }}
+        NEXT_CREDENTIALS: ${{ inputs.NEXT_CREDENTIALS }}
+
     - name: Publish CLI on Nexcloud
       uses: ./.github/actions/build/CLI
       with:

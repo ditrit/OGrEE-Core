@@ -364,7 +364,7 @@ class _ResultsPageState extends State<ResultsPage> {
       }
       file.writeAsBytes(bytes, flush: true).then((value) => showSnackBar(
           ScaffoldMessenger.of(context),
-          "File succesfully saved to: $fileName"));
+          "${AppLocalizations.of(context)!.fileSavedTo} $fileName"));
     }
   }
 }
