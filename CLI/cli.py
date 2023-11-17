@@ -72,7 +72,7 @@ async def prompt_iter(session, stub, completer, prompt):
 
 
 async def run():
-    our_history = FileHistory(".example-history-file")
+    our_history = FileHistory(".history")
     session = PromptSession(history=our_history)
     loop = asyncio.get_event_loop()
     try:
