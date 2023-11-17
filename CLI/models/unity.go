@@ -12,11 +12,7 @@ import (
 	"time"
 )
 
-func NewOgree3DConnection() *Ogree3DConnection {
-	return &Ogree3DConnection{
-		messageChan: make(chan string),
-	}
-}
+var Ogree3D = &Ogree3DConnection{}
 
 type Ogree3DConnection struct {
 	conn        net.Conn
