@@ -3,7 +3,6 @@ package main
 import (
 	"bytes"
 	"cli/config"
-	c "cli/controllers"
 	cmd "cli/controllers"
 	"encoding/json"
 	"fmt"
@@ -18,8 +17,8 @@ func InitVars(variables []config.Vardef) (err error) {
 			err = fmt.Errorf("cannot parse config variables")
 		}
 	}()
-	c.State.DynamicSymbolTable = make(map[string]interface{})
-	c.State.FuncTable = make(map[string]interface{})
+	cmd.State.DynamicSymbolTable = make(map[string]interface{})
+	cmd.State.FuncTable = make(map[string]interface{})
 	for _, v := range variables {
 		var varNode node
 		switch val := v.Value.(type) {
@@ -76,9 +75,9 @@ type funcDefNode struct {
 }
 
 func (n *funcDefNode) execute() (interface{}, error) {
-	c.State.FuncTable[n.name] = n.body
+	cmd.State.FuncTable[n.name] = n.body
 	if cmd.State.DebugLvl >= 3 {
-		println("New function ", n.name)
+		Println("New function ", n.name)
 	}
 	return nil, nil
 }
@@ -88,7 +87,7 @@ type funcCallNode struct {
 }
 
 func (n *funcCallNode) execute() (interface{}, error) {
-	val, ok := c.State.FuncTable[n.name]
+	val, ok := cmd.State.FuncTable[n.name]
 	if !ok {
 		return nil, fmt.Errorf("undefined function %s", n.name)
 	}
@@ -121,7 +120,7 @@ type lenNode struct {
 }
 
 func (n *lenNode) execute() (interface{}, error) {
-	val, ok := c.State.DynamicSymbolTable[n.variable]
+	val, ok := cmd.State.DynamicSymbolTable[n.variable]
 	if !ok {
 		return nil, fmt.Errorf("Undefined variable %s", n.variable)
 	}
@@ -179,7 +178,7 @@ func (n *lsNode) execute() (interface{}, error) {
 		return nil, err
 	}
 	for _, item := range items {
-		println(item)
+		Println(item)
 	}
 	return nil, nil
 }
@@ -276,7 +275,7 @@ func (n *printNode) execute() (interface{}, error) {
 	if err != nil {
 		return nil, err
 	}
-	fmt.Printf("%v\n", val)
+	Printf("%v\n", val)
 	return nil, nil
 }
 
@@ -300,9 +299,9 @@ type deleteSelectionNode struct{}
 func (n *deleteSelectionNode) execute() (interface{}, error) {
 	var errBuilder strings.Builder
 	deleted := 0
-	if c.State.ClipBoard != nil {
-		for _, obj := range c.State.ClipBoard {
-			err := c.DeleteObj(obj)
+	if cmd.State.ClipBoard != nil {
+		for _, obj := range cmd.State.ClipBoard {
+			err := cmd.DeleteObj(obj)
 			if err != nil {
 				errBuilder.WriteString(fmt.Sprintf("    %s: %s\n", obj, err.Error()))
 			} else {
@@ -310,10 +309,10 @@ func (n *deleteSelectionNode) execute() (interface{}, error) {
 			}
 		}
 	}
-	println(fmt.Sprintf("%d objects deleted", deleted))
-	notDeleted := len(c.State.ClipBoard) - deleted
+	Println(fmt.Sprintf("%d objects deleted", deleted))
+	notDeleted := len(cmd.State.ClipBoard) - deleted
 	if notDeleted > 0 {
-		fmt.Printf("%d objects could not be deleted :\n%s", notDeleted, errBuilder.String())
+		Printf("%d objects could not be deleted :\n%s", notDeleted, errBuilder.String())
 	}
 	return nil, nil
 }
@@ -366,7 +365,7 @@ func (n *isEntityDrawableNode) execute() (interface{}, error) {
 	if err != nil {
 		return nil, err
 	}
-	println(drawable)
+	Println(drawable)
 	return drawable, nil
 }
 
@@ -384,7 +383,7 @@ func (n *isAttrDrawableNode) execute() (interface{}, error) {
 	if err != nil {
 		return nil, err
 	}
-	println(drawable)
+	Println(drawable)
 	return drawable, nil
 }
 
@@ -443,7 +442,7 @@ func (n *selectObjectNode) execute() (interface{}, error) {
 		return nil, err
 	}
 	if len(selection) == 0 {
-		fmt.Println("Selection is now empty")
+		Println("Selection is now empty")
 	}
 	return nil, nil
 }
@@ -562,7 +561,7 @@ func addRoomSeparator(path string, values []any) (map[string]any, error) {
 		return nil, err
 	}
 	if keyExist {
-		fmt.Printf("Separator %s replaced\n", name)
+		Printf("Separator %s replaced\n", name)
 	}
 	return obj, nil
 }
@@ -607,7 +606,7 @@ func addRoomPillar(path string, values []any) (map[string]any, error) {
 		return nil, err
 	}
 	if keyExist {
-		fmt.Printf("Pillar %s replaced\n", name)
+		Printf("Pillar %s replaced\n", name)
 	}
 	return obj, nil
 }
@@ -759,7 +758,7 @@ func (n *lsObjNode) execute() (interface{}, error) {
 			for i := range objects {
 				object, ok := objects[i].(map[string]interface{})
 				if ok && object != nil && object["name"] != nil {
-					println(object["name"].(string))
+					Println(object["name"].(string))
 				}
 			}
 		}
@@ -781,10 +780,10 @@ func (n *treeNode) execute() (interface{}, error) {
 	if err != nil {
 		return nil, err
 	}
-	fmt.Println(path)
+	Println(path)
 	s := root.String(n.depth)
 	if s != "" {
-		fmt.Println(s)
+		Println(s)
 	}
 	return nil, nil
 }
@@ -861,7 +860,7 @@ func (n *clrNode) execute() (interface{}, error) {
 type envNode struct{}
 
 func (n *envNode) execute() (interface{}, error) {
-	cmd.Env(c.State.DynamicSymbolTable, c.State.FuncTable)
+	cmd.Env(cmd.State.DynamicSymbolTable, cmd.State.FuncTable)
 	return nil, nil
 }
 
@@ -897,10 +896,10 @@ func (n *selectChildrenNode) execute() (interface{}, error) {
 		return nil, err
 	}
 	if len(paths) == 0 {
-		fmt.Println("Selection is now empty")
+		Println("Selection is now empty")
 
 	} else if cmd.State.DebugLvl > cmd.NONE {
-		fmt.Println("Selection made")
+		Println("Selection made")
 	}
 	return v, nil
 }
@@ -910,7 +909,7 @@ type unsetFuncNode struct {
 }
 
 func (n *unsetFuncNode) execute() (interface{}, error) {
-	delete(c.State.FuncTable, n.funcName)
+	delete(cmd.State.FuncTable, n.funcName)
 	return nil, nil
 }
 
@@ -919,7 +918,7 @@ type unsetVarNode struct {
 }
 
 func (n *unsetVarNode) execute() (interface{}, error) {
-	delete(c.State.DynamicSymbolTable, n.varName)
+	delete(cmd.State.DynamicSymbolTable, n.varName)
 	return nil, nil
 }
 
@@ -1480,7 +1479,7 @@ type symbolReferenceNode struct {
 }
 
 func (s *symbolReferenceNode) execute() (interface{}, error) {
-	val, ok := c.State.DynamicSymbolTable[s.va]
+	val, ok := cmd.State.DynamicSymbolTable[s.va]
 	if !ok {
 		return nil, fmt.Errorf("undefined variable %s", s.va)
 	}
@@ -1493,7 +1492,7 @@ type arrayReferenceNode struct {
 }
 
 func (n *arrayReferenceNode) execute() (interface{}, error) {
-	v, ok := c.State.DynamicSymbolTable[n.variable]
+	v, ok := cmd.State.DynamicSymbolTable[n.variable]
 	if !ok {
 		return nil, fmt.Errorf("Undefined variable %s", n.variable)
 	}
@@ -1528,9 +1527,9 @@ func (a *assignNode) execute() (interface{}, error) {
 	}
 	switch v := val.(type) {
 	case bool, int, float64, string, []float64, map[string]interface{}:
-		c.State.DynamicSymbolTable[a.variable] = v
+		cmd.State.DynamicSymbolTable[a.variable] = v
 		if cmd.State.DebugLvl >= 3 {
-			println("You want to assign", a.variable, "with value of", v)
+			Println("You want to assign", a.variable, "with value of", v)
 		}
 		return nil, nil
 	}

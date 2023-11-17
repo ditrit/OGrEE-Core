@@ -4,7 +4,6 @@ import (
 	"cli/commands"
 	l "cli/logger"
 	"cli/models"
-	"cli/readline"
 	"cli/utils"
 	"encoding/json"
 	"fmt"
@@ -23,7 +22,7 @@ import (
 )
 
 func PWD() string {
-	println(State.CurrPath)
+	Println(State.CurrPath)
 	return State.CurrPath
 }
 
@@ -285,7 +284,7 @@ func UpdateObj(path string, data map[string]any) (map[string]any, error) {
 	var key string
 
 	if category == "room" && (data["tilesName"] != nil || data["tilesColor"] != nil) {
-		println("Room modifier detected")
+		Println("Room modifier detected")
 		Disp(data)
 		message["type"] = "interact"
 
@@ -389,7 +388,7 @@ func UnsetInObj(Path, attr string, idx int) (map[string]interface{}, error) {
 		objAttributes := obj["attributes"].(map[string]interface{})
 		if _, ok := objAttributes[attr].([]interface{}); !ok {
 			if State.DebugLvl > ERROR {
-				println("Attribute is not an array")
+				Println("Attribute is not an array")
 			}
 			return nil, fmt.Errorf("Attribute is not an array")
 
@@ -409,7 +408,7 @@ func UnsetInObj(Path, attr string, idx int) (map[string]interface{}, error) {
 	//Ensure that we can delete elt in array
 	if len(arr) == 0 {
 		if State.DebugLvl > ERROR {
-			println("Cannot delete anymore elements")
+			Println("Cannot delete anymore elements")
 		}
 		return nil, fmt.Errorf("Cannot delete anymore elements")
 	}
@@ -458,32 +457,30 @@ func Clear() {
 		cmd.Stdout = os.Stdout
 		cmd.Run()
 	default:
-		fmt.Printf("\033[2J\033[H")
+		Printf("\033[2J\033[H")
 	}
 }
 
 func LSOG() error {
-	fmt.Println("********************************************")
-	fmt.Println("OGREE Shell Information")
-	fmt.Println("********************************************")
-
-	fmt.Println("USER EMAIL:", State.User.Email)
-	fmt.Println("API URL:", State.APIURL+"/api/")
-	fmt.Println("OGrEE-3D URL:", State.Ogree3DURL)
-	fmt.Println("OGrEE-3D connected: ", models.Ogree3D.IsConnected())
-	fmt.Println("BUILD DATE:", BuildTime)
-	fmt.Println("BUILD TREE:", BuildTree)
-	fmt.Println("BUILD HASH:", BuildHash)
-	fmt.Println("COMMIT DATE: ", GitCommitDate)
-	fmt.Println("CONFIG FILE PATH: ", State.ConfigPath)
-	fmt.Println("LOG PATH:", "./log.txt")
-	fmt.Println("HISTORY FILE PATH:", State.HistoryFilePath)
-	fmt.Println("DEBUG LEVEL: ", State.DebugLvl)
-
-	fmt.Printf("\n\n")
-	fmt.Println("********************************************")
-	fmt.Println("API Information")
-	fmt.Println("********************************************")
+	Println("********************************************")
+	Println("OGREE Shell Information")
+	Println("********************************************")
+	Println("USER EMAIL:", State.User.Email)
+	Println("API URL:", State.APIURL+"/api/")
+	Println("OGrEE-3D URL:", State.Ogree3DURL)
+	Println("OGrEE-3D connected: ", State.Ogree3D.IsConnected())
+	Println("BUILD DATE:", BuildTime)
+	Println("BUILD TREE:", BuildTree)
+	Println("BUILD HASH:", BuildHash)
+	Println("COMMIT DATE: ", GitCommitDate)
+	Println("CONFIG FILE PATH: ", State.ConfigPath)
+	Println("LOG PATH:", "./log.txt")
+	Println("HISTORY FILE PATH:", State.HistoryFilePath)
+	Println("DEBUG LEVEL: ", State.DebugLvl)
+	Println("")
+	Println("********************************************")
+	Println("API Information")
+	Println("********************************************")
 
 	//Get API Information here
 	resp, err := RequestAPI("GET", "/api/version", nil, http.StatusOK)
@@ -494,11 +491,11 @@ func LSOG() error {
 	if !ok {
 		return fmt.Errorf("invalid response from API on GET /api/version")
 	}
-	fmt.Println("BUILD DATE:", apiInfo["BuildDate"])
-	fmt.Println("BUILD TREE:", apiInfo["BuildTree"])
-	fmt.Println("BUILD HASH:", apiInfo["BuildHash"])
-	fmt.Println("COMMIT DATE: ", apiInfo["CommitDate"])
-	fmt.Println("CUSTOMER: ", apiInfo["Customer"])
+	Println("BUILD DATE:", apiInfo["BuildDate"])
+	Println("BUILD TREE:", apiInfo["BuildTree"])
+	Println("BUILD HASH:", apiInfo["BuildHash"])
+	Println("COMMIT DATE: ", apiInfo["CommitDate"])
+	Println("CUSTOMER: ", apiInfo["Customer"])
 	return nil
 }
 
@@ -514,31 +511,31 @@ func LSEnterprise() error {
 // Displays environment variable values
 // and user defined variables and funcs
 func Env(userVars, userFuncs map[string]interface{}) {
-	fmt.Println("Filter: ", State.FilterDisplay)
-	fmt.Println()
-	fmt.Println("Objects Unity shall be informed of upon update:")
+	Println("Filter: ", State.FilterDisplay)
+	Println()
+	Println("Objects Unity shall be informed of upon update:")
 	for _, k := range State.ObjsForUnity {
-		fmt.Println(k)
+		Println(k)
 	}
-	fmt.Println()
-	fmt.Println("Objects Unity shall draw:")
+	Println()
+	Println("Objects Unity shall draw:")
 	for _, k := range State.DrawableObjs {
-		fmt.Println(EntityToString(k))
+		Println(EntityToString(k))
 	}
 
-	fmt.Println()
-	fmt.Println("Currently defined user variables:")
+	Println()
+	Println("Currently defined user variables:")
 	for name, k := range userVars {
 		if k != nil {
-			fmt.Println("Name:", name, "  Value: ", k)
+			Println("Name:", name, "  Value: ", k)
 		}
 
 	}
 
-	fmt.Println()
-	fmt.Println("Currently defined user functions:")
+	Println()
+	Println("Currently defined user functions:")
 	for name, _ := range userFuncs {
-		fmt.Println("Name:", name)
+		Println("Name:", name)
 	}
 }
 
@@ -605,7 +602,7 @@ func GetByAttr(path string, u interface{}) error {
 			}
 		}
 		if State.DebugLvl > NONE {
-			println("The 'U' you provided does not correspond to any device in this rack")
+			Println("The 'U' you provided does not correspond to any device in this rack")
 		}
 	default: //String
 		for i := range devices {
@@ -617,7 +614,7 @@ func GetByAttr(path string, u interface{}) error {
 			}
 		}
 		if State.DebugLvl > NONE {
-			println("The slot you provided does not correspond to any device in this rack")
+			Println("The slot you provided does not correspond to any device in this rack")
 		}
 	}
 	return nil
@@ -639,8 +636,8 @@ func LSATTR(path string, attr string) error {
 
 	//Print the objects received
 	if len(sortedDevices.GetData()) > 0 {
-		println("Devices")
-		println()
+		Println("Devices")
+		Println()
 		sortedDevices.Print()
 	}
 	return nil
@@ -648,7 +645,7 @@ func LSATTR(path string, attr string) error {
 
 func CD(path string) error {
 	if State.DebugLvl >= 3 {
-		println("THE PATH: ", path)
+		Println("THE PATH: ", path)
 	}
 	_, err := Tree(path, 0)
 	if err != nil {
@@ -700,9 +697,9 @@ func Help(entry string) {
 	}
 	text, e := os.ReadFile(utils.ExeDir() + "/" + path)
 	if e != nil {
-		println("Manual Page not found!")
+		Println("Manual Page not found!")
 	} else {
-		println(string(text))
+		Println(string(text))
 	}
 
 }
@@ -897,7 +894,7 @@ func CreateObject(path string, ent int, data map[string]interface{}) error {
 		data["parentId"] = parent["id"]
 		data["attributes"] = attr
 		if State.DebugLvl >= 3 {
-			println("DEBUG VIEW THE JSON")
+			Println("DEBUG VIEW THE JSON")
 			Disp(data)
 		}
 
@@ -1130,7 +1127,7 @@ func GetOCLIAtrributesTemplateHelper(attr, data map[string]interface{}, ent int)
 			msg := "Warning: Invalid " + idx +
 				" value detected in size." +
 				" Resorting to default"
-			println(msg)
+			Println(msg)
 			return "5"
 		}
 	}
@@ -1180,7 +1177,7 @@ func GetOCLIAtrributesTemplateHelper(attr, data map[string]interface{}, ent int)
 											//Resort to default value
 											msg := "Warning, invalid value provided for" +
 												" sizeU. Defaulting to 5"
-											println(msg)
+											Println(msg)
 											res = int((5 / 1000) / RACKUNIT)
 										}
 										attr["sizeU"] = strconv.Itoa(res)
@@ -1315,7 +1312,7 @@ func GetOCLIAtrributesTemplateHelper(attr, data map[string]interface{}, ent int)
 				}
 			} else {
 				if State.DebugLvl > 1 {
-					println("Warning, invalid size value in template.",
+					Println("Warning, invalid size value in template.",
 						"Default values will be assigned")
 				}
 
@@ -1324,7 +1321,7 @@ func GetOCLIAtrributesTemplateHelper(attr, data map[string]interface{}, ent int)
 		} else {
 			attr["template"] = ""
 			if State.DebugLvl > 1 {
-				println("Warning: template must be a string that",
+				Println("Warning: template must be a string that",
 					" refers to an existing imported template.",
 					q, " will not be used")
 			}
@@ -1356,7 +1353,7 @@ func Connect3D(url string) error {
 	}
 
 	if url == "" {
-		fmt.Printf("Using OGrEE-3D url: %s\n", State.Ogree3DURL)
+		Printf("Using OGrEE-3D url: %s\n", State.Ogree3DURL)
 	} else {
 		err := State.SetOgree3DURL(url)
 		if err != nil {
@@ -1464,7 +1461,7 @@ func FocusUI(path string) error {
 	if path != "" {
 		return CD(path)
 	} else {
-		fmt.Println("Focus is now empty")
+		Println("Focus is now empty")
 	}
 
 	return nil
@@ -1534,36 +1531,36 @@ func objectCounter(parent map[string]interface{}) int {
 // for scripting where the user can 'force' input if
 // the num objects to draw surpasses threshold
 func Draw(path string, depth int, force bool) error {
-	obj, err := GetObjectWithChildren(path, depth)
-	if err != nil {
-		return err
-	}
+	// obj, err := GetObjectWithChildren(path, depth)
+	// if err != nil {
+	// 	return err
+	// }
 
-	count := objectCounter(obj)
-	okToGo := true
-	if count > State.DrawThreshold && !force {
-		msg := "You are about to send " + strconv.Itoa(count) +
-			" objects to the Unity 3D client. " +
-			"Do you want to continue ? (y/n)\n"
-		(*State.Terminal).Write([]byte(msg))
-		(*State.Terminal).SetPrompt(">")
-		ans, _ := (*State.Terminal).Readline()
-		if ans != "y" && ans != "Y" {
-			okToGo = false
-		}
-	} else if force {
-		okToGo = true
-	} else if !force && count > State.DrawThreshold {
-		okToGo = false
-	}
-	if okToGo {
-		data := map[string]interface{}{"type": "create", "data": obj}
-		//0 to include the JSON filtration
-		unityErr := InformOgree3D("Draw", 0, data)
-		if unityErr != nil {
-			return unityErr
-		}
-	}
+	// count := objectCounter(obj)
+	// okToGo := true
+	// if count > State.DrawThreshold && !force {
+	// 	msg := "You are about to send " + strconv.Itoa(count) +
+	// 		" objects to the Unity 3D client. " +
+	// 		"Do you want to continue ? (y/n)\n"
+	// 	(*State.Terminal).Write([]byte(msg))
+	// 	(*State.Terminal).SetPrompt(">")
+	// 	ans, _ := (*State.Terminal).Readline()
+	// 	if ans != "y" && ans != "Y" {
+	// 		okToGo = false
+	// 	}
+	// } else if force {
+	// 	okToGo = true
+	// } else if !force && count > State.DrawThreshold {
+	// 	okToGo = false
+	// }
+	// if okToGo {
+	// 	data := map[string]interface{}{"type": "create", "data": obj}
+	// 	//0 to include the JSON filtration
+	// 	unityErr := InformOgree3D("Draw", 0, data)
+	// 	if unityErr != nil {
+	// 		return unityErr
+	// 	}
+	// }
 	return nil
 }
 
@@ -1641,7 +1638,7 @@ func IsAttrDrawable(path string, attr string) (bool, error) {
 func ShowClipBoard() []string {
 	if State.ClipBoard != nil {
 		for _, k := range State.ClipBoard {
-			println(k)
+			Println(k)
 		}
 		return State.ClipBoard
 	}
@@ -1709,18 +1706,18 @@ func SetEnv(arg string, val interface{}) {
 			msg := "Can only assign bool values for " + arg + " Env Var"
 			l.GetWarningLogger().Println(msg)
 			if State.DebugLvl > 0 {
-				println(msg)
+				Println(msg)
 			}
 		} else {
 			if arg == "Filter" {
 				State.FilterDisplay = val.(bool)
 			}
 
-			println(arg + " Display Environment variable set")
+			Println(arg + " Display Environment variable set")
 		}
 
 	default:
-		println(arg + " is not an environment variable")
+		Println(arg + " is not an environment variable")
 	}
 }
 
@@ -1850,7 +1847,7 @@ func InformOgree3DOptional(caller string, entity int, data map[string]interface{
 		if e != nil {
 			l.GetWarningLogger().Println("Unable to contact Unity Client @" + caller)
 			if State.DebugLvl > 1 {
-				fmt.Println("Error while updating Unity: ", e.Error())
+				Println("Error while updating Unity: ", e.Error())
 			}
 			return fmt.Errorf("error while contacting unity : %s", e.Error())
 		}
@@ -1912,8 +1909,8 @@ func CreateUser(email string, role string, domain string) error {
 	if err != nil {
 		return err
 	}
-	println(response.message)
-	println("password:" + password)
+	Println(response.message)
+	Println("password:" + password)
 	return nil
 }
 
@@ -1953,29 +1950,29 @@ func AddRole(email string, role string, domain string) error {
 	if err != nil {
 		return err
 	}
-	println(response.message)
+	Println(response.message)
 	return nil
 }
 
 func ChangePassword() error {
-	currentPassword, err := readline.Password("Current password: ")
-	if err != nil {
-		return err
-	}
-	newPassword, err := readline.Password("New password: ")
-	if err != nil {
-		return err
-	}
-	response, err := RequestAPI("POST", "/api/users/password/change",
-		map[string]any{
-			"currentPassword": string(currentPassword),
-			"newPassword":     string(newPassword),
-		},
-		http.StatusOK,
-	)
-	if err != nil {
-		return err
-	}
-	println(response.message)
+	// 	currentPassword, err := readline.Password("Current password: ")
+	// 	if err != nil {
+	// 		return err
+	// 	}
+	// 	newPassword, err := readline.Password("New password: ")
+	// 	if err != nil {
+	// 		return err
+	// 	}
+	// 	response, err := RequestAPI("POST", "/api/users/password/change",
+	// 		map[string]any{
+	// 			"currentPassword": string(currentPassword),
+	// 			"newPassword":     string(newPassword),
+	// 		},
+	// 		http.StatusOK,
+	// 	)
+	// 	if err != nil {
+	// 		return err
+	// 	}
+	// 	Println(response.message)
 	return nil
 }

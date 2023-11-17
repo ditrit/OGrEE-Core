@@ -47,7 +47,7 @@ func Disp(x map[string]interface{}) {
 
 	jx, _ := json.Marshal(x)
 
-	println("JSON: ", string(jx))
+	Println("JSON: ", string(jx))
 }
 
 func DispWithAttrs(objs []interface{}, attrs []string) {
@@ -57,16 +57,16 @@ func DispWithAttrs(objs []interface{}, attrs []string) {
 				//Check if attr is in object
 				if ok, nested := AttrIsInObj(obj, a); ok {
 					if nested {
-						fmt.Print("\t"+a+":",
+						Printf("\t"+a+":",
 							obj["attributes"].(map[string]interface{})[a])
 					} else {
-						fmt.Print("\t"+a+":", obj[a])
+						Printf("\t"+a+":", obj[a])
 					}
 				} else {
-					fmt.Print("\t" + a + ": NULL")
+					Printf("\t" + a + ": NULL")
 				}
 			}
-			fmt.Printf("\tName:%s\n", obj["name"].(string))
+			Printf("\tName:%s\n", obj["name"].(string))
 		}
 	}
 }

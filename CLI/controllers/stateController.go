@@ -2,7 +2,6 @@ package controllers
 
 import (
 	"cli/logger"
-	"cli/readline"
 	"fmt"
 	"net"
 	"time"
@@ -13,6 +12,9 @@ var BuildHash string
 var BuildTree string
 var GitCommitDate string
 var State ShellState
+
+var Printf func(format string, a ...any)
+var Println func(a ...any)
 
 type User struct {
 	Email string
@@ -41,7 +43,6 @@ type ShellState struct {
 	DrawableObjs       []int //Indicate which objs drawable in unity
 	DrawableJsons      map[string]map[string]interface{}
 	DebugLvl           int
-	Terminal           **readline.Instance
 	Timeout            time.Duration
 	DynamicSymbolTable map[string]interface{}
 	FuncTable          map[string]interface{}
@@ -66,7 +67,7 @@ func (state ShellState) SetOgree3DURL(ogree3DURL string) error {
 func (state ShellState) SetDefaultOgree3DURL() {
 	if State.Ogree3DURL != defaultOgree3DURL {
 		msg := fmt.Sprintf("Falling back to default OGrEE-3D URL: %s", defaultOgree3DURL)
-		fmt.Println(msg)
+		Println(msg)
 		logger.GetInfoLogger().Println(msg)
 		State.Ogree3DURL = defaultOgree3DURL
 	}

@@ -1,0 +1,32 @@
+
+syntax = "proto3";
+import "google/protobuf/empty.proto";
+
+package CLI;
+
+option go_package = "./server";
+
+service CLI {
+    rpc Init(google.protobuf.Empty) returns (ProcessResponse){};
+    rpc ProcessLine(Request) returns (ProcessResponse){};
+    rpc Completion(Request) returns (CompletionResponse){};
+    rpc UnityStream(google.protobuf.Empty) returns (stream UnityMessage){};
+}
+
+message UnityMessage {
+    bool newConnection = 1;
+    string message = 2;
+}
+
+message Request {
+    string line = 1;
+}
+
+message ProcessResponse {
+    string message = 1;
+    string prompt = 2;
+}
+
+message CompletionResponse {
+    repeated string completions = 1;
+}

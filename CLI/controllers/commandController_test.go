@@ -2,7 +2,6 @@ package controllers
 
 import (
 	"cli/models"
-	"cli/readline"
 	"fmt"
 	"net"
 	"sync"
@@ -11,11 +10,6 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
-
-func init() {
-	rl, _ := readline.New("")
-	State.Terminal = &rl
-}
 
 func TestConnect3DReturnsErrorIfProvidedURLIsInvalid(t *testing.T) {
 	err := Connect3D("not.valid")

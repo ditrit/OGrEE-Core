@@ -85,13 +85,13 @@ func (s SortableMArr) Print() {
 			if attr == nil {
 				attr = "NULL"
 			}
-			println(s.attr, ":",
+			Println(s.attr, ":",
 				attr.(string),
 				"  Name: ", objs[i].(map[string]interface{})["name"].(string))
 		}
 	} else {
 		for i := range objs {
-			println(s.attr, ":", objs[i].(map[string]interface{})[s.attr],
+			Println(s.attr, ":", objs[i].(map[string]interface{})[s.attr],
 				"  Name: ", objs[i].(map[string]interface{})["name"].(string))
 		}
 	}

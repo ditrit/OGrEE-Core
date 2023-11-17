@@ -111,14 +111,14 @@ func LoadFile(path string) error {
 		return err
 	}
 	for i := range file {
-		fmt.Println(file[i].line)
+		Println(file[i].line)
 		_, err := file[i].root.execute()
 		if err != nil {
 			errMsg := err.Error()
 			if strings.Contains(errMsg, "Duplicate") || strings.Contains(errMsg, "duplicate") {
 				l.GetWarningLogger().Println(errMsg)
 				if c.State.DebugLvl > c.NONE {
-					fmt.Println(errMsg)
+					Println(errMsg)
 				}
 				continue
 			}

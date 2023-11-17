@@ -21,12 +21,16 @@ DOCKER_PREFIX=docker run --rm -v $(shell pwd):/workdir -w /workdir golang:1.19.6
 
 .PHONY: main mac win
 
-main:
+main: protobuf
 	eval $(LINUX_COMMAND)
-mac: 
+mac: protobuf
 	eval $(MAC_COMMAND)
-win: 
+win: protobuf
 	eval $(WIN_COMMAND)
+
+protobuf: 
+	poetry run python -W ignore:pkg_resources -m grpc_tools.protoc --proto_path=. ./com.proto --python_out=. --grpc_python_out=.
+	protoc --go_out=./server --go_opt=paths=source_relative --go-grpc_out=./server --go-grpc_opt=paths=source_relative ./com.proto
 
 docker:
 	$(DOCKER_PREFIX) "$(LINUX_COMMAND)"

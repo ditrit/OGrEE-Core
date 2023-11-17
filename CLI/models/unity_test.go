@@ -1,7 +1,6 @@
 package models
 
 import (
-	"cli/readline"
 	"net"
 	"sync"
 	"testing"
@@ -66,13 +65,11 @@ func acceptAndClose(ln net.Listener) {
 }
 
 func waitReceiveLoop(connection *Ogree3DConnection) {
-	rl, _ := readline.New("")
-
 	var wg sync.WaitGroup
 	wg.Add(1)
 	go func() {
 		defer wg.Done()
-		connection.ReceiveLoop(rl)
+		connection.ReceiveLoop()
 	}()
 	wg.Wait()
 }

@@ -240,7 +240,7 @@ func fileToJSON(path string) map[string]interface{} {
 	x, e := ioutil.ReadFile(path)
 	if e != nil {
 		if cmd.State.DebugLvl > cmd.NONE {
-			println("Error while opening file! " + e.Error())
+			Println("Error while opening file! " + e.Error())
 		}
 		return nil
 	}

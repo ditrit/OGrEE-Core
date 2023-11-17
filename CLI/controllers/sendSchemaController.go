@@ -142,7 +142,7 @@ func MergeMaps(x, y map[string]interface{}, overwrite bool) {
 			if overwrite {
 				l.GetWarningLogger().Println("Conflict while merging maps")
 				if State.DebugLvl > 1 {
-					println("Conflict while merging data, resorting to overwriting!")
+					Println("Conflict while merging data, resorting to overwriting!")
 				}
 
 				x[i] = y[i]

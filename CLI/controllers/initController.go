@@ -6,7 +6,6 @@ import (
 	"cli/config"
 	l "cli/logger"
 	"cli/models"
-	"cli/readline"
 	"cli/utils"
 	"encoding/json"
 	"errors"
@@ -37,7 +36,7 @@ func InitDebugLevel(verbose string) {
 		"DEBUG":   DEBUG,
 	}[verbose]
 	if !ok {
-		println("Invalid Logging Mode detected. Resorting to default: ERROR")
+		Println("Invalid Logging Mode detected. Resorting to default: ERROR")
 		State.DebugLvl = 1
 	}
 }
@@ -84,22 +83,16 @@ func InitState(conf *config.Config) error {
 	}
 	if State.Customer == "" {
 		if State.DebugLvl > NONE {
-			println("Tenant Information not found!")
+			Println("Tenant Information not found!")
 		}
 		State.Customer = "UNKNOWN"
 	}
 	return nil
 }
 
-// It is useful to have the state to hold
-// a pointer to our readline terminal
-func SetStateReadline(rl *readline.Instance) {
-	State.Terminal = &rl
-}
-
 // Tries to establish a connection with OGrEE-3D and, if possible,
 // starts a go routine for receiving messages from it
-func InitOGrEE3DCommunication(rl *readline.Instance) error {
+func InitOGrEE3DCommunication() error {
 	errConnect := models.Ogree3D.Connect(State.Ogree3DURL, State.Timeout)
 	if errConnect != nil {
 		return ErrorWithInternalError{
@@ -118,7 +111,7 @@ func InitOGrEE3DCommunication(rl *readline.Instance) error {
 
 	fmt.Println("Established connection with OGrEE-3D!")
 
-	go models.Ogree3D.ReceiveLoop(rl)
+	go models.Ogree3D.ReceiveLoop()
 
 	return nil
 }
@@ -131,7 +124,7 @@ func InitTimeout(duration string) {
 		msg := "Invalid unity timeout format. Resorting to default of 10ms"
 		l.GetWarningLogger().Println(msg)
 		if State.DebugLvl > 1 {
-			println(msg)
+			Println(msg)
 		}
 		State.Timeout = time.Millisecond * time.Duration(10)
 	}
@@ -148,7 +141,7 @@ func InitTimeout(duration string) {
 		msg := "Invalid duration unit found. Resorting to default of ms"
 		l.GetWarningLogger().Println(msg)
 		if State.DebugLvl > 1 {
-			println(msg)
+			Println(msg)
 		}
 		State.Timeout = time.Millisecond * time.Duration(timeLen)
 	}
@@ -158,7 +151,7 @@ func InitKey(apiKey string) {
 	if apiKey != "" {
 		State.APIKEY = apiKey
 	} else {
-		fmt.Println("Error: No API Key Found")
+		Println("Error: No API Key Found")
 		if State.DebugLvl > 0 {
 			l.GetErrorLogger().Println(
 				"No API Key provided in env file nor as argument")
@@ -172,7 +165,7 @@ func InitURLs(apiURL string, ogree3DURL string) {
 	if err != nil {
 		msg := "apiURL is not valid!\n"
 		msg += "Falling back to default API URL: http://localhost:3001"
-		fmt.Println(msg)
+		Println(msg)
 		l.GetInfoLogger().Println(msg)
 		State.APIURL = "http://localhost:3001"
 	} else {
@@ -181,7 +174,7 @@ func InitURLs(apiURL string, ogree3DURL string) {
 
 	err = State.SetOgree3DURL(ogree3DURL)
 	if err != nil {
-		fmt.Println(err.Error())
+		Println(err.Error())
 		State.SetDefaultOgree3DURL()
 	}
 }
@@ -217,7 +210,7 @@ func SetDrawThreshold(limit int) {
 	//Set Draw Threshold
 	if limit < 0 {
 		if State.DebugLvl > 0 {
-			println("Setting Draw Limit to default")
+			Println("Setting Draw Limit to default")
 		}
 		State.DrawThreshold = 50 //50 is default value
 	} else {
@@ -241,7 +234,7 @@ func SetDrawableTemplate(entity string, DrawableJson map[string]string) map[stri
 	}
 	l.GetWarningLogger().Println("Specified template for " + entity + " not found")
 	if State.DebugLvl > 1 {
-		println("Specified template for " + entity +
+		Println("Specified template for " + entity +
 			" not found, resorting to defaults")
 	}
 	return nil
@@ -249,19 +242,21 @@ func SetDrawableTemplate(entity string, DrawableJson map[string]string) map[stri
 
 func Login(user string, password string) (*User, string, error) {
 	var err error
-	if user == "" {
-		user, err = readline.Line("User: ")
-		if err != nil {
-			return nil, "", fmt.Errorf("readline error : %s", err.Error())
-		}
-	}
-	if password == "" {
-		passwordBytes, err := readline.Password("Password: ")
-		if err != nil {
-			return nil, "", err
-		}
-		password = string(passwordBytes)
-	}
+	// if user == "" {
+	// 	user, err = readline.Line("User: ")
+	// 	if err != nil {
+	// 		return nil, "", fmt.Errorf("readline error : %s", err.Error())
+	// 	}
+	// }
+	// if password == "" {
+	// 	passwordBytes, err := readline.Password("Password: ")
+	// 	if err != nil {
+	// 		return nil, "", err
+	// 	}
+	// 	password = string(passwordBytes)
+	// }
+	user = "admin"
+	password = "admin"
 	data := map[string]any{"email": user, "password": password}
 	resp, err := RequestAPI("POST", "/api/login", data, http.StatusOK)
 	if err != nil {

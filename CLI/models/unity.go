@@ -3,7 +3,6 @@ package models
 import (
 	"bufio"
 	"bytes"
-	"cli/readline"
 	"encoding/binary"
 	"encoding/json"
 	"fmt"
@@ -13,11 +12,20 @@ import (
 	"time"
 )
 
-var Ogree3D = &Ogree3DConnection{}
+func NewOgree3DConnection() *Ogree3DConnection {
+	return &Ogree3DConnection{
+		messageChan: make(chan string),
+	}
+}
 
 type Ogree3DConnection struct {
 	conn        net.Conn
 	isConnected atomic.Bool
+	messageChan chan string
+}
+
+func (connection *Ogree3DConnection) MessageChan() chan string {
+	return connection.messageChan
 }
 
 func (connection *Ogree3DConnection) IsConnected() bool {
@@ -34,6 +42,7 @@ func (connection *Ogree3DConnection) Connect(addr string, timeOut time.Duration)
 	}
 
 	connection.isConnected.Store(true)
+	connection.messageChan = make(chan string)
 
 	return nil
 }
@@ -57,7 +66,7 @@ func (connection *Ogree3DConnection) Login(apiURL, apiToken string, debugLevel i
 // monitors for messages on a port specified by the .env file
 // and prints these messages to the Readline terminal
 // This is meant for OGrEE-3D interactivity
-func (connection *Ogree3DConnection) ReceiveLoop(terminal *readline.Instance) {
+func (connection *Ogree3DConnection) ReceiveLoop() {
 	if !connection.IsConnected() {
 		return
 	}
@@ -76,14 +85,12 @@ func (connection *Ogree3DConnection) ReceiveLoop(terminal *readline.Instance) {
 			break
 		}
 		msg := string(msgBuffer)
-		toPrint := "Received from OGrEE-3D: " + msg + "\n"
-		terminal.Write([]byte(toPrint))
+		connection.messageChan <- msg
 	}
 
 	// for loop has been exited, there is an error in the connection.
 	connection.Disconnect()
-
-	terminal.Write([]byte("Disconnected from OGrEE-3D\n"))
+	connection.messageChan <- "Disconnected from OGrEE-3D"
 }
 
 // Function to communicate with OGrEE-3D
@@ -95,11 +102,6 @@ func (connection *Ogree3DConnection) Send(data map[string]interface{}, debug int
 	dataJSON, err := json.Marshal(data)
 	if err != nil {
 		return fmt.Errorf("error marshalling data : %s", err.Error())
-	}
-
-	if debug >= 4 {
-		println("DEBUG OUTGOING JSON")
-		println("JSON: ", string(dataJSON))
 	}
 
 	sizeBytesBuff := new(bytes.Buffer)
