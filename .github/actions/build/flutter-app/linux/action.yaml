@@ -41,4 +41,10 @@ runs:
 
           zip -r ./OGrEE_APP_Web.zip build/web/*
           curl -u $NEXT_CREDENTIALS -T OGrEE_APP_Web.zip $NEXT_ADDR/OGrEE_APP_Web_${{ inputs.VERSION }}.zip
+      
+      - name: Upload result for job
+        uses: actions/upload-artifact@v3
+        with:
+          name: app-web-build
+          path: APP/OGrEE_APP_Web.zip
           

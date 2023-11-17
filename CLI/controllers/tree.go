@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"cli/utils"
 	"fmt"
 	"net/http"
 	"sort"
@@ -13,10 +14,11 @@ type HierarchyNode struct {
 	Name   string
 	Childs map[string]*HierarchyNode
 	FillFn FillFunc
+	Obj    map[string]any
 }
 
 func NewNode(name string) *HierarchyNode {
-	return &HierarchyNode{name, map[string]*HierarchyNode{}, nil}
+	return &HierarchyNode{name, map[string]*HierarchyNode{}, nil, nil}
 }
 
 func (n *HierarchyNode) StringAux(prefix string, sb *strings.Builder, depth int) {
@@ -114,18 +116,6 @@ func BuildBaseTree() *HierarchyNode {
 	return root
 }
 
-func nameOrSlug(obj map[string]any) string {
-	name, okName := obj["name"].(string)
-	if okName {
-		return name
-	}
-	name, okName = obj["slug"].(string)
-	if okName {
-		return name
-	}
-	panic("child has no name/slug")
-}
-
 func FillMapTree(n *HierarchyNode, obj map[string]any) error {
 	children, ok := obj["children"].([]any)
 	if !ok {
@@ -136,8 +126,10 @@ func FillMapTree(n *HierarchyNode, obj map[string]any) error {
 		if !ok {
 			return fmt.Errorf("invalid child format")
 		}
-		child := NewNode(nameOrSlug(childMap))
+		child := NewNode(utils.NameOrSlug(childMap))
 		err := FillMapTree(child, childMap)
+		delete(childMap, "children")
+		child.Obj = childMap
 		if err != nil {
 			return err
 		}
@@ -180,7 +172,7 @@ func FillUrlTree(n *HierarchyNode, path string, depth int, url string, followFil
 		if fullId {
 			objName = strings.Replace(obj["id"].(string), ".", "/", -1)
 		} else {
-			objName = nameOrSlug(obj)
+			objName = utils.NameOrSlug(obj)
 			objId, okId := obj["id"].(string)
 			if okId && objId != objName {
 				continue
@@ -189,6 +181,8 @@ func FillUrlTree(n *HierarchyNode, path string, depth int, url string, followFil
 		subTree := NewNode(objName)
 		subTree.FillFn = followFillFn
 		err = FillTree(subTree, path+"/"+objName, depth-1)
+		delete(obj, "children")
+		subTree.Obj = obj
 		if err != nil {
 			return err
 		}
@@ -241,7 +235,7 @@ func Tree(path string, depth int) (*HierarchyNode, error) {
 	if err != nil {
 		return nil, err
 	}
-	n = NewNode(nameOrSlug(obj))
+	n = NewNode(utils.NameOrSlug(obj))
 	err = FillMapTree(n, obj)
 	if err != nil {
 		return nil, err

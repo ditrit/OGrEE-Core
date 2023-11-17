@@ -34,13 +34,13 @@ class _TreeFilterState extends State<TreeFilter> {
   @override
   Widget build(BuildContext context) {
     _filterLevels = TreeAppController.of(context).filterLevels;
-    print(_filterLevels);
     // Get which fields to filter and their list of suggestions
     int idx = 0;
     for (String key
         in TreeAppController.of(context).fetchedCategories["KeysOrder"]!) {
       objectsPerCategory[key.capitalize()] =
-          TreeAppController.of(context).fetchedCategories[key]!; // field name
+          TreeAppController.of(context).fetchedCategories[key] ??
+              []; // field name
       enumParams[key.capitalize()] = idx; // field name -> id
       idx++;
     }

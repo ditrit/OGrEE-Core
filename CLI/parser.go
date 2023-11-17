@@ -9,7 +9,7 @@ import (
 
 type parseCommandFunc func() node
 
-var lsCommands = []string{"lssite", "lsbldg", "lsroom", "lsrack", "lsdev", "lsac",
+var lsCommands = []string{"ls", "lssite", "lsbuilding", "lsroom", "lsrack", "lsdev", "lsac",
 	"lspanel", "lscabinet", "lscorridor", "lssensor"}
 
 var manCommands = []string{
@@ -595,9 +595,9 @@ func (p *parser) parseArgs(allowedArgs []string, allowedFlags []string, name str
 	return args
 }
 
-func (p *parser) parseAssign() string {
+func (p *parser) parseAssign(leftName string) string {
 	defer un(trace(p, "assign"))
-	varName := p.parseSimpleWord("var name")
+	varName := p.parseSimpleWord(leftName)
 	p.expect("=")
 	return varName
 }
@@ -611,26 +611,31 @@ func (p *parser) parseIndexing() node {
 	return index
 }
 
-func (p *parser) parseLsObj(lsIdx int) node {
-	defer un(trace(p, ""))
-	args := p.parseArgs([]string{"s", "f"}, []string{}, "lsobj")
+func (p *parser) parseLs(category string) node {
+	defer un(trace(p, "ls"))
+	args := p.parseArgs([]string{"s", "f"}, nil, "ls")
 	path := p.parsePath("")
-	sort := args["s"]
 	var attrList []string
 	if formatArg, ok := args["f"]; ok {
 		attrList = strings.Split(formatArg, ":")
 	}
-	return &lsObjNode{path, lsIdx, sort, attrList}
-}
-
-func (p *parser) parseLs() node {
-	defer un(trace(p, "ls"))
-	args := p.parseArgs([]string{"s"}, nil, "ls")
-	path := p.parsePath("")
-	if attr, ok := args["s"]; ok {
-		return &lsAttrNode{path, attr}
+	filters := map[string]node{}
+	if category != "" {
+		filters["category"] = &valueNode{category}
 	}
-	return &lsNode{path}
+	first := true
+	for !p.commandEnd() {
+		p.skipWhiteSpaces()
+		if !first {
+			p.expect(",")
+		}
+		first = false
+		p.skipWhiteSpaces()
+		attrName := p.parseAssign("attribute name")
+		attrVal := p.parseValue()
+		filters[attrName] = attrVal
+	}
+	return &lsNode{path, filters, args["s"], attrList}
 }
 
 func (p *parser) parseGet() node {
@@ -705,7 +710,7 @@ func (p *parser) parseEnv() node {
 	if p.commandEnd() {
 		return &envNode{}
 	}
-	return &setEnvNode{p.parseAssign(), p.parseExpr("")}
+	return &setEnvNode{p.parseAssign("env var name"), p.parseExpr("")}
 }
 
 func (p *parser) parseDelete() node {
@@ -744,7 +749,7 @@ func (p *parser) parseEqual() node {
 
 func (p *parser) parseVar() node {
 	defer un(trace(p, "variable assignment"))
-	varName := p.parseAssign()
+	varName := p.parseAssign("var name")
 	p.skipWhiteSpaces()
 	value := p.parseValue()
 	return &assignNode{varName, value}
@@ -841,7 +846,7 @@ func (p *parser) parseUi() node {
 	if p.parseExact("clearcache") {
 		return &uiClearCacheNode{}
 	}
-	key := p.parseAssign()
+	key := p.parseAssign("")
 	if key == "delay" {
 		return &uiDelayNode{p.parseFloat("delay")}
 	}
@@ -858,7 +863,7 @@ func (p *parser) parseUi() node {
 
 func (p *parser) parseCamera() node {
 	defer un(trace(p, "camera"))
-	key := p.parseAssign()
+	key := p.parseAssign("")
 	if key == "move" || key == "translate" {
 		position := p.parseExpr("position")
 		p.expect("@")
@@ -1140,9 +1145,12 @@ func (p *parser) parseSingleCommand() node {
 				p.error("unknown keyword")
 			}
 		}
-		if lsIdx := indexOf(lsCommands, commandKeyWord); lsIdx != -1 {
-			p.skipWhiteSpaces()
-			return p.parseLsObj(lsIdx)
+		for _, lsCommand := range lsCommands {
+			if commandKeyWord == lsCommand {
+				p.skipWhiteSpaces()
+				category := commandKeyWord[2:]
+				return p.parseLs(category)
+			}
 		}
 		parseFunc, ok := p.commandDispatch[commandKeyWord]
 		if ok {
@@ -1187,7 +1195,6 @@ func newParser(buffer string) *parser {
 		commandKeywords: []string{},
 	}
 	p.commandDispatch = map[string]parseCommandFunc{
-		"ls":               p.parseLs,
 		"get":              p.parseGet,
 		"getu":             p.parseGetU,
 		"getslot":          p.parseGetSlot,
