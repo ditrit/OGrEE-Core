@@ -28,7 +28,7 @@ func TestAddTagThatNotExistReturnsError(t *testing.T) {
 
 	_, err = addTagToObject("add-tag-1-site", "not-exists")
 	assert.NotNil(t, err)
-	assert.Equal(t, "Tag not found", err.Message)
+	assert.Equal(t, "Tag \"not-exists\" not found", err.Message)
 }
 
 func TestAddTagToObjectAddsItToList(t *testing.T) {
@@ -444,7 +444,7 @@ func TestCreateObjectWithTagsThatNotExistsReturnsError(t *testing.T) {
 	)
 	assert.NotNil(t, err)
 	assert.Equal(t, u.ErrBadFormat, err.Type)
-	assert.Equal(t, "Tag not found", err.Message)
+	assert.Equal(t, "Tag \"not-exists\" not found", err.Message)
 }
 
 func TestUpdateObjectWithTagsThatNotExistsReturnsError(t *testing.T) {
@@ -456,7 +456,7 @@ func TestUpdateObjectWithTagsThatNotExistsReturnsError(t *testing.T) {
 	}, false, userRoles)
 	assert.NotNil(t, err)
 	assert.Equal(t, u.ErrBadFormat, err.Type)
-	assert.Equal(t, "Tag not found", err.Message)
+	assert.Equal(t, "Tag \"not-exists\" not found", err.Message)
 }
 
 func TestPatchObjectWithTagsReturnsError(t *testing.T) {

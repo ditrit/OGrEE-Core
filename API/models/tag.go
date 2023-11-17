@@ -2,6 +2,7 @@ package models
 
 import (
 	"context"
+	"fmt"
 	"p3/repository"
 	u "p3/utils"
 
@@ -25,11 +26,16 @@ func getTags(object map[string]any) ([]any, bool) {
 
 // Verifies that a list of tags exist
 func verifyTagsExist(ctx mongo.SessionContext, tags []any) *u.Error {
-	for _, tagSlug := range tags {
-		_, err := repository.GetTagBySlug(ctx, tagSlug.(string))
+	for _, tagSlugAny := range tags {
+		tagSlug := tagSlugAny.(string)
+
+		_, err := repository.GetTagBySlug(ctx, tagSlug)
 		if err != nil {
 			if err.Type == u.ErrNotFound {
-				return &u.Error{Type: u.ErrBadFormat, Message: "Tag not found"}
+				return &u.Error{
+					Type:    u.ErrBadFormat,
+					Message: fmt.Sprintf("Tag %q not found", tagSlug),
+				}
 			}
 
 			return err
