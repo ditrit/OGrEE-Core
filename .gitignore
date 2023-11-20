@@ -24,6 +24,8 @@ log.txt
 unitylog.txt
 com_pb2_grpc.py
 com_pb2.py
+com_grpc.pb.go
+com.pb.go
 CLI/__pycache__
 CLI/dist
 
