@@ -11,9 +11,19 @@ import (
 )
 
 func SetPrompt(user string) string {
-	c.State.Prompt = "\u001b[1m\u001b[32m" + user + "@" + c.State.Customer + ":" +
-		"\u001b[37;1m" + c.State.CurrPath + "\u001b[1m\u001b[32m>\u001b[0m "
-	c.State.BlankPrompt = user + "@" + c.State.Customer + c.State.CurrPath + "> "
+	c.State.Prompt = "\u001b[1m\u001b[32m" + user + "@" + c.State.Customer + ":"
+	c.State.BlankPrompt = user + "@" + c.State.Customer + ":"
+
+	c.State.Prompt += "\u001b[37;1m" + c.State.CurrPath
+	c.State.BlankPrompt += c.State.CurrPath
+
+	if c.State.CurrDomain != "" {
+		c.State.Prompt += "\u001b[36m" + " [" + c.State.CurrDomain + "]"
+		c.State.BlankPrompt += " [" + c.State.CurrDomain + "]"
+	}
+
+	c.State.Prompt += "\u001b[32m>\u001b[0m "
+	c.State.BlankPrompt += "> "
 	return c.State.Prompt
 }
 
