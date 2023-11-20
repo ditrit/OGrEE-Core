@@ -244,6 +244,6 @@ func Tree(path string, depth int) (*HierarchyNode, error) {
 	if err != nil {
 		return nil, err
 	}
-
+	n.Obj = obj
 	return n, nil
 }

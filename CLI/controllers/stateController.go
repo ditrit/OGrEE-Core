@@ -21,6 +21,7 @@ type ShellState struct {
 	BlankPrompt        string
 	Customer           string //Tenant name
 	CurrPath           string
+	CurrDomain         string
 	PrevPath           string
 	ClipBoard          []string
 	Hierarchy          *HierarchyNode
