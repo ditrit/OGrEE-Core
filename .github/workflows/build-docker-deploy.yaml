@@ -68,7 +68,7 @@ jobs:
         uses: actions/download-artifact@v3
 
       - name: 🏷️ Create release if release
-        if: ${{ !contains(env.ENVIRONMENT, 'Candidate') }}
+        if: ${{ !contains(env.VERSION, 'rc') }}
         uses: softprops/action-gh-release@v1
         with:
             tag_name: ${{ env.VERSION }}
