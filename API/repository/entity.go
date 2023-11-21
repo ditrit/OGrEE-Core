@@ -166,3 +166,26 @@ func PropagateDomainChange(ctx context.Context, oldDomainId, newDomainId string)
 	}
 	return nil
 }
+
+func CountObjects(ctx context.Context, entity int, req bson.M) (int, *u.Error) {
+	count, err := GetDB().Collection(u.EntityToString(entity)).CountDocuments(ctx, req)
+	if err != nil {
+		return 0, &u.Error{Type: u.ErrDBError, Message: err.Error()}
+	}
+
+	return int(count), nil
+}
+
+func CountObjectsManyEntities(ctx context.Context, entities []int, req bson.M) (int, *u.Error) {
+	count := 0
+	for _, entity := range entities {
+		countEntity, err := CountObjects(ctx, entity, req)
+		if err != nil {
+			return 0, err
+		}
+
+		count = count + int(countEntity)
+	}
+
+	return count, nil
+}

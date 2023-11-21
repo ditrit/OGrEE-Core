@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -1677,7 +1678,7 @@ func ValidateEntity(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	uErr := models.ValidateEntity(entInt, obj)
+	uErr := models.ValidateEntity(context.Background(), entInt, obj)
 	if uErr == nil {
 		u.Respond(w, u.Message("This object can be created"))
 		return

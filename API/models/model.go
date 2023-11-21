@@ -108,11 +108,11 @@ func updateOldObjWithPatch(old map[string]interface{}, patch map[string]interfac
 // Entity handlers
 
 func CreateEntity(entity int, t map[string]interface{}, userRoles map[string]Role) (map[string]interface{}, *u.Error) {
-	if err := prepareCreateEntity(entity, t, userRoles); err != nil {
-		return nil, err
-	}
-
 	return WithTransaction(func(ctx mongo.SessionContext) (map[string]any, error) {
+		if err := prepareCreateEntity(ctx, entity, t, userRoles); err != nil {
+			return nil, err
+		}
+
 		if entity == u.TAG {
 			err := createTagImage(ctx, t)
 			if err != nil {
@@ -140,8 +140,8 @@ func CreateEntity(entity int, t map[string]interface{}, userRoles map[string]Rol
 	})
 }
 
-func prepareCreateEntity(entity int, t map[string]interface{}, userRoles map[string]Role) *u.Error {
-	if err := ValidateEntity(entity, t); err != nil {
+func prepareCreateEntity(ctx context.Context, entity int, t map[string]interface{}, userRoles map[string]Role) *u.Error {
+	if err := ValidateEntity(ctx, entity, t); err != nil {
 		return err
 	}
 
@@ -639,7 +639,7 @@ func prepareUpdateObject(ctx mongo.SessionContext, entity int, id string, update
 	removeFromFilters(updateData)
 
 	// Ensure the update is valid
-	err = ValidateEntity(entity, updateData)
+	err = ValidateEntity(ctx, entity, updateData)
 	if err != nil {
 		return err
 	}
@@ -860,11 +860,11 @@ func GetEntitiesOfAncestor(id string, entStr, wantedEnt string, userRoles map[st
 // SwapEntity: use id to remove object from deleteEnt and then use data to create it in createEnt.
 // Propagates id changes to children objects. For atomicity, all is done in a Mongo transaction.
 func SwapEntity(createEnt, deleteEnt, id string, data map[string]interface{}, userRoles map[string]Role) *u.Error {
-	if err := prepareCreateEntity(u.EntityStrToInt(createEnt), data, userRoles); err != nil {
-		return err
-	}
-
 	_, err := WithTransaction(func(ctx mongo.SessionContext) (any, error) {
+		if err := prepareCreateEntity(ctx, u.EntityStrToInt(createEnt), data, userRoles); err != nil {
+			return nil, err
+		}
+
 		// Create
 		if _, err := repository.CreateObject(ctx, createEnt, data); err != nil {
 			return nil, err

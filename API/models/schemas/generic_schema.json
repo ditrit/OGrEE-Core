@@ -1,19 +1,22 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "title": "OGrEE Rack Schema",
-  "type": "object",
+  "title": "OGrEE Generic object Schema",
   "$ref": "refs/base.json",
+  "type": "object",
   "properties": {
     "attributes": {
       "type": "object",
       "properties": {
+        "fbxModel": {
+          "type": "string"
+        },
         "height": {
           "type": "string",
           "$ref": "refs/types.json#/definitions/float"
         },
         "heightUnit": {
           "type": "string",
-          "enum": ["mm", "cm", "m", "U", "OU", "f"]
+          "$ref": "refs/types.json#/definitions/metricImperialUnit"
         },
         "rotation": {
           "type": "string",
@@ -25,7 +28,7 @@
         },
         "posXYUnit": {
           "type": "string",
-          "enum": ["m", "t", "f"]
+          "$ref": "refs/types.json#/definitions/metricImperialTilesUnit"
         },
         "posZUnit": {
           "type": "string",
@@ -33,13 +36,13 @@
         },
         "size": {
           "type": "string",
-          "$ref": "refs/types.json#/definitions/vector2"
+          "format": "vector2"
         },
         "sizeUnit": {
           "type": "string",
           "$ref": "refs/types.json#/definitions/metricImperialUnit"
         },
-        "template": {
+        "type": {
           "type": "string"
         },
         "color": {
@@ -58,8 +61,7 @@
         "posXYZ",
         "posXYUnit",
         "size",
-        "sizeUnit",
-        "template"
+        "sizeUnit"
       ]
     }
   },
@@ -67,19 +69,18 @@
     {
       "attributes": {
         "height": "47",
-        "heightUnit": "U",
+        "heightUnit": "cm",
         "rotation": "{\"x\":45 ,\"y\":45 ,\"z\":45}",
         "posXYZ": "{\"x\":4.6666666666667 ,\"y\": -2 ,\"z\":0}",
         "posXYUnit": "m",
         "size": "{\"x\":80 ,\"y\":100.532442}",
-        "sizeUnit": "cm",
-        "template": ""
+        "sizeUnit": "cm"
       },
-      "category": "rack",
-      "description": [],
+      "category": "generic",
+      "description": ["A table"],
       "domain": "domainTest",
-      "name": "RackA",
-      "parentId": "xxxx5a101ac5f3b6f313xxxx"
+      "name": "GeneticA",
+      "parentId": "xxxx5a111ac5f3b6f313xxxx"
     }
   ]
 }

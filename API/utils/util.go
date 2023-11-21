@@ -36,6 +36,7 @@ const (
 	AC
 	CABINET
 	CORRIDOR
+	GENERIC
 	PWRPNL
 	GROUP
 	// logical non hierarchical entities
@@ -221,13 +222,15 @@ func ErrTypeToStatusCode(errType ErrType) int {
 var Entities = []int{
 	DOMAIN,
 	STRAYOBJ, SITE,
-	BLDG, ROOM, RACK, DEVICE, AC, CABINET, CORRIDOR, PWRPNL, GROUP,
+	BLDG, ROOM, RACK, DEVICE, AC, CABINET, CORRIDOR, GENERIC, PWRPNL, GROUP,
 	ROOMTMPL, OBJTMPL, BLDGTMPL, TAG, LAYER,
 }
 
 var EntitiesWithTags = []int{
-	STRAYOBJ, SITE, BLDG, ROOM, RACK, DEVICE, AC, CABINET, CORRIDOR, PWRPNL, GROUP,
+	STRAYOBJ, SITE, BLDG, ROOM, RACK, DEVICE, AC, CABINET, CORRIDOR, GENERIC, PWRPNL, GROUP,
 }
+
+var RoomChildren = []int{RACK, CORRIDOR, GENERIC}
 
 func EntityHasTags(entity int) bool {
 	return pie.Contains(EntitiesWithTags, entity)
@@ -273,6 +276,8 @@ func EntityToString(entity int) string {
 		return "group"
 	case CORRIDOR:
 		return "corridor"
+	case GENERIC:
+		return "generic"
 	case TAG:
 		return "tag"
 	case LAYER:
@@ -314,6 +319,8 @@ func EntityStrToInt(entity string) int {
 		return GROUP
 	case "corridor":
 		return CORRIDOR
+	case "generic":
+		return GENERIC
 	case "tag":
 		return TAG
 	case "layer":
@@ -411,7 +418,7 @@ func GetEntitiesByNamespace(namespace Namespace, hierarchyName string) []string 
 				case 2:
 					entities = append(entities, ROOM)
 				case 3:
-					entities = append(entities, RACK, AC, CORRIDOR, PWRPNL, CABINET, GROUP)
+					entities = append(entities, RACK, AC, CORRIDOR, PWRPNL, CABINET, GROUP, GENERIC)
 				case 4:
 					entities = append(entities, DEVICE, GROUP)
 				default:
@@ -433,7 +440,7 @@ func GetParentOfEntityByInt(entity int) int {
 	switch entity {
 	case DOMAIN:
 		return DOMAIN
-	case AC, PWRPNL, CABINET, CORRIDOR:
+	case AC, PWRPNL, CABINET, CORRIDOR, GENERIC:
 		return ROOM
 	case ROOMTMPL, OBJTMPL, BLDGTMPL, TAG, GROUP, STRAYOBJ, LAYER:
 		return -1
