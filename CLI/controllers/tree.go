@@ -192,8 +192,13 @@ func BuildBaseTree() *HierarchyNode {
 func FillMapTree(n *HierarchyNode, obj map[string]any) error {
 	children, ok := obj["children"].([]any)
 	if !ok {
+		n.Obj = obj
+
 		return nil
 	}
+
+	delete(obj, "children")
+	n.Obj = obj
 
 	for _, childAny := range children {
 		var childNode *HierarchyNode
@@ -217,9 +222,6 @@ func FillMapTree(n *HierarchyNode, obj map[string]any) error {
 		childNode.Obj = childAny
 		n.AddChild(childNode)
 	}
-
-	delete(obj, "children")
-	n.Obj = obj
 
 	return nil
 }
