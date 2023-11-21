@@ -26,7 +26,7 @@ var manCommands = []string{
 	"lssite", "lsbldg", "lsroom", "lsrack", "lsdev", "lsac",
 	"lspanel", "lscabinet", "lscorridor", "lsenterprise",
 	"drawable", "draw", "undraw",
-	"tree", "lsog", "env", "cd", "pwd", "clear", "grep", "ls", "exit", "len", "man", "hc",
+	"tree", "lsog", "env", "cd", "pwd", "clear", "ls", "exit", "len", "man", "hc",
 	"print", "printf", "unset", "selection",
 	"for", "while", "if",
 	commands.Cp,
@@ -1300,7 +1300,6 @@ func newParser(buffer string) *parser {
 	p.noArgsCommands = map[string]node{
 		"selection":    &selectNode{},
 		"clear":        &clrNode{},
-		"grep":         &grepNode{},
 		"lsog":         &lsogNode{},
 		"lsenterprise": &lsenterpriseNode{},
 		"pwd":          &pwdNode{},

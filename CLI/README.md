@@ -55,7 +55,6 @@ Sometimes the shell can crash with a 'stream error'. This is assumed to be a pro
  - ls       : Display contents of directory
  - clear    : Clear the terminal screen
  - exit     : Quit program
- - grep     : Make a search on stream (NOT YET IMPLEMENTED)
  - man      : Quick introduction to the program
  - create   : Create objects
  - gt       : Get Object details

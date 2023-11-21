@@ -426,7 +426,7 @@ func Help(entry string) {
 	entry = strings.TrimSpace(entry)
 	switch entry {
 	case "ls", "pwd", "print", "printf", "cd", "tree", "get", "clear",
-		"lsog", "grep", "for", "while", "if", "env",
+		"lsog", "for", "while", "if", "env",
 		"cmds", "var", "unset", "selection", commands.Connect3D, "camera", "ui", "hc", "drawable",
 		"link", "unlink", "draw", "getu", "getslot", "undraw",
 		"lsenterprise", commands.Cp:

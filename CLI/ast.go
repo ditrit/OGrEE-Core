@@ -886,12 +886,6 @@ func (n *pwdNode) execute() (interface{}, error) {
 	return cmd.PWD(), nil
 }
 
-type grepNode struct{}
-
-func (n *grepNode) execute() (interface{}, error) {
-	return nil, nil
-}
-
 type selectChildrenNode struct {
 	paths []node
 }
