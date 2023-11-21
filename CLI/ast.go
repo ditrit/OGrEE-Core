@@ -245,8 +245,8 @@ func (n *getUNode) execute() (interface{}, error) {
 	if u < 0 {
 		return nil, fmt.Errorf("The U value must be positive")
 	}
-	cmd.GetByAttr(path, u)
-	return nil, nil
+
+	return nil, cmd.GetByAttr(path, u)
 }
 
 type getSlotNode struct {
@@ -263,8 +263,8 @@ func (n *getSlotNode) execute() (interface{}, error) {
 	if err != nil {
 		return nil, err
 	}
-	cmd.GetByAttr(path, slot)
-	return nil, nil
+
+	return nil, cmd.GetByAttr(path, slot)
 }
 
 type loadNode struct {
@@ -991,11 +991,8 @@ func (n *createSiteNode) execute() (interface{}, error) {
 	if err != nil {
 		return nil, err
 	}
-	err = cmd.CreateObject(path, models.SITE, map[string]any{})
-	if err != nil {
-		return nil, err
-	}
-	return nil, nil
+
+	return nil, cmd.CreateObject(path, models.SITE, map[string]any{})
 }
 
 type createBuildingNode struct {
@@ -1036,11 +1033,8 @@ func (n *createBuildingNode) execute() (interface{}, error) {
 		}
 		attributes["template"] = template
 	}
-	err = cmd.CreateObject(path, models.BLDG, map[string]any{"attributes": attributes})
-	if err != nil {
-		return nil, err
-	}
-	return nil, nil
+
+	return nil, cmd.CreateObject(path, models.BLDG, map[string]any{"attributes": attributes})
 }
 
 type createRoomNode struct {
@@ -1095,11 +1089,8 @@ func (n *createRoomNode) execute() (interface{}, error) {
 		}
 		attributes["floorUnit"] = floorUnit
 	}
-	err = cmd.CreateObject(path, models.ROOM, map[string]any{"attributes": attributes})
-	if err != nil {
-		return nil, err
-	}
-	return nil, nil
+
+	return nil, cmd.CreateObject(path, models.ROOM, map[string]any{"attributes": attributes})
 }
 
 type createRackNode struct {
@@ -1149,11 +1140,8 @@ func (n *createRackNode) execute() (interface{}, error) {
 		}
 		attributes["template"] = template
 	}
-	err = cmd.CreateObject(path, models.RACK, map[string]any{"attributes": attributes})
-	if err != nil {
-		return nil, err
-	}
-	return nil, nil
+
+	return nil, cmd.CreateObject(path, models.RACK, map[string]any{"attributes": attributes})
 }
 
 type createDeviceNode struct {
@@ -1199,11 +1187,8 @@ func (n *createDeviceNode) execute() (interface{}, error) {
 		attr["orientation"] = side
 	}
 	attributes := map[string]interface{}{"attributes": attr}
-	err = cmd.CreateObject(path, models.DEVICE, attributes)
-	if err != nil {
-		return nil, err
-	}
-	return nil, nil
+
+	return nil, cmd.CreateObject(path, models.DEVICE, attributes)
 }
 
 type createGroupNode struct {
@@ -1227,11 +1212,8 @@ func (n *createGroupNode) execute() (interface{}, error) {
 		objs = append(objs, obj)
 	}
 	data["attributes"] = map[string]interface{}{"content": objs}
-	err = cmd.CreateObject(path, models.GROUP, data)
-	if err != nil {
-		return nil, err
-	}
-	return nil, nil
+
+	return nil, cmd.CreateObject(path, models.GROUP, data)
 }
 
 type createTagNode struct {
@@ -1314,11 +1296,8 @@ func (n *createCorridorNode) execute() (interface{}, error) {
 		return nil, err
 	}
 	attributes := map[string]any{"posXYZ": pos, "posXYUnit": unit, "rotation": rotation, "size": size, "temperature": temp}
-	err = cmd.CreateObject(path, models.CORRIDOR, map[string]any{"attributes": attributes})
-	if err != nil {
-		return nil, err
-	}
-	return nil, nil
+
+	return nil, cmd.CreateObject(path, models.CORRIDOR, map[string]any{"attributes": attributes})
 }
 
 type createOrphanNode struct {
@@ -1339,11 +1318,8 @@ func (n *createOrphanNode) execute() (interface{}, error) {
 		return nil, fmt.Errorf("template not found")
 	}
 	attributes := map[string]any{"template": template}
-	err = cmd.CreateObject(path, models.STRAY_DEV, map[string]any{"attributes": attributes})
-	if err != nil {
-		return nil, err
-	}
-	return nil, nil
+
+	return nil, cmd.CreateObject(path, models.STRAY_DEV, map[string]any{"attributes": attributes})
 }
 
 type createUserNode struct {
@@ -1365,11 +1341,8 @@ func (n *createUserNode) execute() (interface{}, error) {
 	if err != nil {
 		return nil, err
 	}
-	err = cmd.CreateUser(email, role, domain)
-	if err != nil {
-		return nil, err
-	}
-	return nil, nil
+
+	return nil, cmd.CreateUser(email, role, domain)
 }
 
 type addRoleNode struct {
@@ -1391,11 +1364,8 @@ func (n *addRoleNode) execute() (interface{}, error) {
 	if err != nil {
 		return nil, err
 	}
-	err = cmd.AddRole(email, role, domain)
-	if err != nil {
-		return nil, err
-	}
-	return nil, nil
+
+	return nil, cmd.AddRole(email, role, domain)
 }
 
 type changePasswordNode struct{}

@@ -398,11 +398,7 @@ func CreateObject(path string, ent int, data map[string]interface{}) error {
 	//we can do the conversion for templates here
 	data["category"] = strings.Replace(data["category"].(string), "_", "-", 1)
 
-	err = C.PostObj(ent, data["category"].(string), data, path)
-	if err != nil {
-		return err
-	}
-	return nil
+	return C.PostObj(ent, data["category"].(string), data, path)
 }
 
 func CreateTag(slug, color string) error {
