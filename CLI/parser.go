@@ -9,8 +9,10 @@ import (
 
 type parseCommandFunc func() node
 
-var lsCommands = []string{"ls", "lssite", "lsbuilding", "lsroom", "lsrack", "lsdev", "lsac",
-	"lspanel", "lscabinet", "lscorridor", "lssensor"}
+var lsCommands = []string{
+	"ls", "lssite", "lsbuilding", "lsroom",
+	"lsrack", "lsdev", "lsac",
+	"lspanel", "lscabinet", "lscorridor"}
 
 var manCommands = []string{
 	"get", "getu", "getslot",
@@ -19,7 +21,7 @@ var manCommands = []string{
 	commands.Connect3D, "ui", "camera",
 	"link", "unlink",
 	"lssite", "lsbldg", "lsroom", "lsrack", "lsdev", "lsac",
-	"lspanel", "lscabinet", "lscorridor", "lssensor", "lsenterprise",
+	"lspanel", "lscabinet", "lscorridor", "lsenterprise",
 	"drawable", "draw", "undraw",
 	"tree", "lsog", "env", "cd", "pwd", "clear", "grep", "ls", "exit", "len", "man", "hc",
 	"print", "printf", "unset", "selection",
