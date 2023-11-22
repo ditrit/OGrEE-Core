@@ -24,6 +24,7 @@
   - [Get object/s](#get-objects)
   - [Ls object](#ls-object)
     - [Filter by tag](#filter-by-tag)
+  - [Tree](#tree)
   - [Delete object](#delete-object)
   - [Focus an object](#focus-an-object)
 - [Create commands](#create-commands)
@@ -64,6 +65,7 @@
 - [Control flow](#control-flow)
   - [Conditions](#conditions)
   - [Loops](#loops)
+  - [Aliases](#aliases)
 - [Examples](#examples)
 
 
@@ -217,6 +219,16 @@ By adding the filter tag=[tag_slug] to the ls, we can obtain the children that h
 
 ```
 ls [path] tag=[tag_slug]
+```
+
+## Tree
+
+To print the hierarchy below a path, at a certain depth :
+
+```
+tree // default path will be the current path (.)
+tree [path] // default depth will be 1
+tree [path] [depth]
 ```
 
 ## Delete object
@@ -613,6 +625,16 @@ titi
 ```
 ```
 >.var: i = 0; while $i<4 {print $i^2 = $(($i * $i)); .var: i = eval $i+1 }
+0^2 = 0
+1^2 = 1
+2^2 = 4
+3^2 = 9
+```
+
+## Aliases
+```
+>alias pi2 { .var: i2 = $(($i * $i)) ; print $i^2 = $i2 }
+>for i in 0..3 { pi2 }
 0^2 = 0
 1^2 = 1
 2^2 = 4
