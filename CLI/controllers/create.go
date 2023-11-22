@@ -83,7 +83,7 @@ func CreateObject(path string, ent int, data map[string]any) error {
 	case models.BLDG:
 		//Check for template
 		if _, ok := attr["template"]; ok {
-			err := GetOCLIAtributesTemplateHelper(attr, data, models.BLDG)
+			err := ApplyTemplate(attr, data, models.BLDG)
 			if err != nil {
 				return err
 			}
@@ -148,7 +148,7 @@ func CreateObject(path string, ent int, data map[string]any) error {
 		//If user provided templates, get the JSON
 		//and parse into templates
 		//NOTE this function also assigns value for "size" attribute
-		err := GetOCLIAtributesTemplateHelper(attr, data, ent)
+		err := ApplyTemplate(attr, data, ent)
 		if err != nil {
 			return err
 		}
@@ -209,7 +209,7 @@ func CreateObject(path string, ent int, data map[string]any) error {
 
 		//If user provided templates, get the JSON
 		//and parse into templates
-		err := GetOCLIAtributesTemplateHelper(attr, data, ent)
+		err := ApplyTemplate(attr, data, ent)
 		if err != nil {
 			return err
 		}
@@ -292,7 +292,7 @@ func CreateObject(path string, ent int, data map[string]any) error {
 		//If user provided templates, get the JSON
 		//and parse into templates
 		if _, ok := attr["template"]; ok {
-			err := GetOCLIAtributesTemplateHelper(attr, data, models.DEVICE)
+			err := ApplyTemplate(attr, data, models.DEVICE)
 			if err != nil {
 				return err
 			}
@@ -328,7 +328,7 @@ func CreateObject(path string, ent int, data map[string]any) error {
 
 	case models.STRAY_DEV:
 		if _, ok := attr["template"]; ok {
-			err := GetOCLIAtributesTemplateHelper(attr, data, models.DEVICE)
+			err := ApplyTemplate(attr, data, models.DEVICE)
 			if err != nil {
 				return err
 			}
