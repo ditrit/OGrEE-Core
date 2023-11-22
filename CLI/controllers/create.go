@@ -32,7 +32,7 @@ func (controller Controller) PostObj(ent int, entity string, data map[string]any
 	return nil
 }
 
-func CreateObject(path string, ent int, data map[string]any) error {
+func (controller Controller) CreateObject(path string, ent int, data map[string]any) error {
 	var parent map[string]any
 
 	name := pathutil.Base(path)
@@ -49,7 +49,7 @@ func CreateObject(path string, ent int, data map[string]any) error {
 	//Retrieve Parent
 	if ent != models.SITE && ent != models.STRAY_DEV {
 		var err error
-		parent, err = PollObject(path)
+		parent, err = controller.PollObject(path)
 		if err != nil {
 			return err
 		}
@@ -83,7 +83,7 @@ func CreateObject(path string, ent int, data map[string]any) error {
 	case models.BLDG:
 		//Check for template
 		if _, ok := attr["template"]; ok {
-			err := ApplyTemplate(attr, data, models.BLDG)
+			err := controller.ApplyTemplate(attr, data, models.BLDG)
 			if err != nil {
 				return err
 			}
@@ -148,7 +148,7 @@ func CreateObject(path string, ent int, data map[string]any) error {
 		//If user provided templates, get the JSON
 		//and parse into templates
 		//NOTE this function also assigns value for "size" attribute
-		err := ApplyTemplate(attr, data, ent)
+		err := controller.ApplyTemplate(attr, data, ent)
 		if err != nil {
 			return err
 		}
@@ -209,7 +209,7 @@ func CreateObject(path string, ent int, data map[string]any) error {
 
 		//If user provided templates, get the JSON
 		//and parse into templates
-		err := ApplyTemplate(attr, data, ent)
+		err := controller.ApplyTemplate(attr, data, ent)
 		if err != nil {
 			return err
 		}
@@ -292,7 +292,7 @@ func CreateObject(path string, ent int, data map[string]any) error {
 		//If user provided templates, get the JSON
 		//and parse into templates
 		if _, ok := attr["template"]; ok {
-			err := ApplyTemplate(attr, data, models.DEVICE)
+			err := controller.ApplyTemplate(attr, data, models.DEVICE)
 			if err != nil {
 				return err
 			}
@@ -328,7 +328,7 @@ func CreateObject(path string, ent int, data map[string]any) error {
 
 	case models.STRAY_DEV:
 		if _, ok := attr["template"]; ok {
-			err := ApplyTemplate(attr, data, models.DEVICE)
+			err := controller.ApplyTemplate(attr, data, models.DEVICE)
 			if err != nil {
 				return err
 			}

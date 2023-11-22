@@ -979,7 +979,7 @@ func (n *createDomainNode) execute() (interface{}, error) {
 
 	attributes := map[string]interface{}{"attributes": map[string]interface{}{"color": color}}
 
-	return nil, cmd.CreateObject(path, models.DOMAIN, attributes)
+	return nil, cmd.C.CreateObject(path, models.DOMAIN, attributes)
 }
 
 type createSiteNode struct {
@@ -992,7 +992,7 @@ func (n *createSiteNode) execute() (interface{}, error) {
 		return nil, err
 	}
 
-	return nil, cmd.CreateObject(path, models.SITE, map[string]any{})
+	return nil, cmd.C.CreateObject(path, models.SITE, map[string]any{})
 }
 
 type createBuildingNode struct {
@@ -1020,7 +1020,7 @@ func (n *createBuildingNode) execute() (interface{}, error) {
 
 	addSizeOrTemplate(n.sizeOrTemplate, attributes, models.BLDG)
 
-	return nil, cmd.CreateObject(path, models.BLDG, map[string]any{"attributes": attributes})
+	return nil, cmd.C.CreateObject(path, models.BLDG, map[string]any{"attributes": attributes})
 }
 
 type createRoomNode struct {
@@ -1050,7 +1050,7 @@ func (n *createRoomNode) execute() (interface{}, error) {
 	attributes := map[string]any{"posXY": posXY, "rotation": rotation}
 
 	if n.template != nil {
-		template, err := nodeToTemplate(n.template, models.ROOM)
+		template, err := nodeToString(n.template, "template")
 		if err != nil {
 			return nil, err
 		}
@@ -1078,7 +1078,7 @@ func (n *createRoomNode) execute() (interface{}, error) {
 		}
 	}
 
-	return nil, cmd.CreateObject(path, models.ROOM, map[string]any{"attributes": attributes})
+	return nil, cmd.C.CreateObject(path, models.ROOM, map[string]any{"attributes": attributes})
 }
 
 type createRackNode struct {
@@ -1114,7 +1114,7 @@ func (n *createRackNode) execute() (interface{}, error) {
 
 	addSizeOrTemplate(n.sizeOrTemplate, attributes, models.RACK)
 
-	return nil, cmd.CreateObject(path, models.RACK, map[string]any{"attributes": attributes})
+	return nil, cmd.C.CreateObject(path, models.RACK, map[string]any{"attributes": attributes})
 }
 
 type createDeviceNode struct {
@@ -1140,7 +1140,7 @@ func (n *createDeviceNode) execute() (interface{}, error) {
 	if err == nil {
 		attributes["sizeU"] = sizeU
 	} else {
-		template, err := nodeToTemplate(n.sizeUOrTemplate, models.DEVICE)
+		template, err := nodeToString(n.sizeUOrTemplate, "template")
 		if err != nil {
 			if errors.Is(err, utils.ErrShouldBeAString) {
 				return nil, errors.New("int (sizeU) or string (template) expected")
@@ -1160,7 +1160,7 @@ func (n *createDeviceNode) execute() (interface{}, error) {
 		attributes["orientation"] = side
 	}
 
-	return nil, cmd.CreateObject(path, models.DEVICE, map[string]any{"attributes": attributes})
+	return nil, cmd.C.CreateObject(path, models.DEVICE, map[string]any{"attributes": attributes})
 }
 
 type createGroupNode struct {
@@ -1185,7 +1185,7 @@ func (n *createGroupNode) execute() (interface{}, error) {
 	}
 	data["attributes"] = map[string]interface{}{"content": objs}
 
-	return nil, cmd.CreateObject(path, models.GROUP, data)
+	return nil, cmd.C.CreateObject(path, models.GROUP, data)
 }
 
 type createTagNode struct {
@@ -1267,7 +1267,7 @@ func (n *createCorridorNode) execute() (interface{}, error) {
 	}
 	attributes := map[string]any{"posXYZ": pos, "posXYUnit": unit, "rotation": rotation, "size": size, "temperature": temp}
 
-	return nil, cmd.CreateObject(path, models.CORRIDOR, map[string]any{"attributes": attributes})
+	return nil, cmd.C.CreateObject(path, models.CORRIDOR, map[string]any{"attributes": attributes})
 }
 
 type createOrphanNode struct {
@@ -1281,14 +1281,14 @@ func (n *createOrphanNode) execute() (interface{}, error) {
 		return nil, err
 	}
 
-	template, err := nodeToTemplate(n.template, models.STRAY_DEV)
+	template, err := nodeToString(n.template, "template")
 	if err != nil {
 		return nil, err
 	}
 
 	attributes := map[string]any{"template": template}
 
-	return nil, cmd.CreateObject(path, models.STRAY_DEV, map[string]any{"attributes": attributes})
+	return nil, cmd.C.CreateObject(path, models.STRAY_DEV, map[string]any{"attributes": attributes})
 }
 
 type createUserNode struct {

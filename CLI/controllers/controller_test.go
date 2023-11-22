@@ -4,6 +4,7 @@ import (
 	"cli/controllers"
 	mocks "cli/mocks/controllers"
 	"encoding/json"
+	"errors"
 	"log"
 	"net/http"
 	"net/url"
@@ -189,4 +190,30 @@ func mockUpdateObject(mockAPI *mocks.APIPort, dataUpdate map[string]any, dataUpd
 			},
 		}, nil,
 	)
+}
+
+func mockObjectNotFound(mockAPI *mocks.APIPort, path string) {
+	mockAPI.On(
+		"Request", http.MethodGet,
+		path,
+		mock.Anything, http.StatusOK,
+	).Return(
+		&controllers.Response{
+			Status: http.StatusNotFound,
+		}, errors.New("not found"),
+	).Once()
+}
+
+func mockGetObjTemplate(mockAPI *mocks.APIPort, template map[string]any) {
+	mockAPI.On(
+		"Request", http.MethodGet,
+		"/api/obj-templates/"+template["slug"].(string),
+		mock.Anything, http.StatusOK,
+	).Return(
+		&controllers.Response{
+			Body: map[string]any{
+				"data": template,
+			},
+		}, nil,
+	).Once()
 }

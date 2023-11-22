@@ -113,20 +113,6 @@ func evalNodeArr[elt comparable](arr *[]node, x []elt) ([]elt, error) {
 	return x, nil
 }
 
-func checkIfTemplate(name string, ent int) bool {
-	var location string
-	switch ent {
-	case models.BLDG:
-		location = models.BuildingTemplatesPath + name
-	case models.ROOM:
-		location = models.RoomTemplatesPath + name
-	default:
-		location = models.ObjectTemplatesPath + name
-	}
-	_, err := cmd.C.Tree(location, 0)
-	return err == nil
-}
-
 // errResponder helper func for specialUpdateNode
 // used for separator, pillar err msgs and parseAreas()
 func errorResponder(attr, numElts string, multi bool) error {
@@ -203,7 +189,7 @@ func addSizeOrTemplate(sizeOrTemplate node, attributes map[string]any, entity in
 		return nil
 	}
 
-	template, err := nodeToTemplate(sizeOrTemplate, entity)
+	template, err := nodeToString(sizeOrTemplate, "template")
 	if err != nil {
 		if errors.Is(err, utils.ErrShouldBeAString) {
 			return errors.New("vector3 (size) or string (template) expected")
@@ -219,19 +205,6 @@ func addSizeOrTemplate(sizeOrTemplate node, attributes map[string]any, entity in
 
 func nodeToSize(sizeNode node) ([]float64, error) {
 	return nodeToVec(sizeNode, 3, "size")
-}
-
-func nodeToTemplate(templateNode node, entity int) (string, error) {
-	template, err := nodeToString(templateNode, "template")
-	if err != nil {
-		return "", err
-	}
-
-	if !checkIfTemplate(template, entity) {
-		return "", errors.New("template not found")
-	}
-
-	return template, nil
 }
 
 func nodeToPosXYZ(positionNode node) ([]float64, error) {
