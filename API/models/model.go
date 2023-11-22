@@ -124,6 +124,29 @@ func PropagateParentIdChange(ctx context.Context, oldParentId, newId string, ent
 	return nil
 }
 
+// PropagateDomainChange: search for all objects with reference to the modified domain
+func PropagateDomainChange(ctx context.Context, oldDomainId, newDomainId string) error {
+	// Find all objects containing this domain
+	req := bson.M{"domain": primitive.Regex{Pattern: "^" + oldDomainId + "(\\" + u.HN_DELIMETER + "|$)", Options: ""}}
+	// For each object found, replace old domain by new
+	update := bson.D{{
+		Key: "$set", Value: bson.M{
+			"domain": bson.M{
+				"$replaceOne": bson.M{
+					"input":       "$domain",
+					"find":        oldDomainId,
+					"replacement": newDomainId}}}}}
+	for i := u.STRAYOBJ + 1; i <= u.GROUP; i++ {
+		_, e := repository.GetDB().Collection(u.EntityToString(i)).UpdateMany(ctx,
+			req, mongo.Pipeline{update})
+		if e != nil {
+			println(e.Error())
+			return e
+		}
+	}
+	return nil
+}
+
 func updateOldObjWithPatch(old map[string]interface{}, patch map[string]interface{}) error {
 	for k, v := range patch {
 		switch patchValueCasted := v.(type) {
@@ -786,15 +809,21 @@ func UpdateObject(entityStr string, id string, updateData map[string]interface{}
 		}
 
 		if oldObj["id"] != updateData["id"] {
-			// Changes to id should be propagated to its children
-			err := PropagateParentIdChange(
+			// Changes to id should be propagated
+			if err := PropagateParentIdChange(
 				ctx,
 				oldObj["id"].(string),
 				updateData["id"].(string),
 				entity,
-			)
-			if err != nil {
+			); err != nil {
 				return nil, err
+			} else if entity == u.DOMAIN {
+				if err := PropagateDomainChange(ctx,
+					oldObj["id"].(string),
+					updateData["id"].(string),
+				); err != nil {
+					return nil, err
+				}
 			}
 		}
 
