@@ -32,9 +32,8 @@ func (controller Controller) PostObj(ent int, entity string, data map[string]any
 	return nil
 }
 
-func CreateObject(path string, ent int, data map[string]interface{}) error {
-	var attr map[string]interface{}
-	var parent map[string]interface{}
+func CreateObject(path string, ent int, data map[string]any) error {
+	var parent map[string]any
 
 	name := pathutil.Base(path)
 	path = pathutil.Dir(path)
@@ -45,7 +44,7 @@ func CreateObject(path string, ent int, data map[string]interface{}) error {
 
 	data["name"] = name
 	data["category"] = models.EntityToString(ent)
-	data["description"] = []interface{}{}
+	data["description"] = []any{}
 
 	//Retrieve Parent
 	if ent != models.SITE && ent != models.STRAY_DEV {
@@ -67,6 +66,11 @@ func CreateObject(path string, ent int, data map[string]interface{}) error {
 		}
 	}
 
+	attr, hasAttributes := data["attributes"].(map[string]any)
+	if !hasAttributes {
+		attr = map[string]any{}
+	}
+
 	var err error
 	switch ent {
 	case models.DOMAIN:
@@ -76,14 +80,7 @@ func CreateObject(path string, ent int, data map[string]interface{}) error {
 			data["parentId"] = ""
 		}
 
-	case models.SITE:
-		//Default values
-		//data["parentId"] = parent["id"]
-		data["attributes"] = map[string]interface{}{}
-
 	case models.BLDG:
-		attr = data["attributes"].(map[string]interface{})
-
 		//Check for template
 		if _, ok := attr["template"]; ok {
 			err := GetOCLIAtributesTemplateHelper(attr, data, models.BLDG)
@@ -139,12 +136,12 @@ func CreateObject(path string, ent int, data map[string]interface{}) error {
 		data["parentId"] = parent["id"]
 
 	case models.ROOM:
-		attr = data["attributes"].(map[string]interface{})
-
-		baseAttrs := map[string]interface{}{
-			"floorUnit": "t",
-			"posXYUnit": "m", "sizeUnit": "m",
-			"heightUnit": "m"}
+		baseAttrs := map[string]any{
+			"floorUnit":  "t",
+			"posXYUnit":  "m",
+			"sizeUnit":   "m",
+			"heightUnit": "m",
+		}
 
 		MergeMaps(attr, baseAttrs, false)
 
@@ -191,19 +188,16 @@ func CreateObject(path string, ent int, data map[string]interface{}) error {
 		}
 
 		data["parentId"] = parent["id"]
-		data["attributes"] = attr
 		if State.DebugLvl >= 3 {
 			println("DEBUG VIEW THE JSON")
 			Disp(data)
 		}
 
 	case models.RACK, models.CORRIDOR:
-		attr = data["attributes"].(map[string]interface{})
-		//Save rotation because it gets overwritten by
-		//GetOCLIAtrributesTemplateHelper()
+		// Save rotation because it gets overwritten by GetOCLIAtributesTemplateHelper()
 		rotation := attr["rotation"].([]float64)
 
-		baseAttrs := map[string]interface{}{
+		baseAttrs := map[string]any{
 			"sizeUnit":   "cm",
 			"heightUnit": "U",
 		}
@@ -244,25 +238,9 @@ func CreateObject(path string, ent int, data map[string]interface{}) error {
 		//by the helper func
 		attr["rotation"] = fmt.Sprintf("{\"x\":%v, \"y\":%v, \"z\":%v}", rotation[0], rotation[1], rotation[2])
 
-		if attr["posXYZ"] == "" {
-			if State.DebugLvl > 0 {
-				l.GetErrorLogger().Println(
-					"User gave invalid posXYZ value for creating rack")
-				return fmt.Errorf("Invalid posXYZ attribute provided." +
-					" \nIt must be an array/list/vector with 2 or 3 elements." +
-					" Please refer to the wiki or manual reference" +
-					" for more details on how to create objects " +
-					"using this syntax")
-			}
-			return nil
-		}
-
 		data["parentId"] = parent["id"]
-		data["attributes"] = attr
 
 	case models.DEVICE:
-		attr = data["attributes"].(map[string]interface{})
-
 		//Special routine to perform on device
 		//based on if the parent has a "slot" attribute
 
@@ -272,7 +250,7 @@ func CreateObject(path string, ent int, data map[string]interface{}) error {
 		if sizeU, ok := attr["sizeU"]; ok {
 			sizeUValid := checkNumeric(attr["sizeU"])
 
-			if _, ok := attr["template"]; !ok && sizeUValid == false {
+			if _, ok := attr["template"]; !ok && !sizeUValid {
 				l.GetWarningLogger().Println("Invalid template / sizeU parameter provided for device ")
 				return fmt.Errorf("Please provide a valid device template or sizeU")
 			}
@@ -343,18 +321,12 @@ func CreateObject(path string, ent int, data map[string]interface{}) error {
 		MergeMaps(attr, baseAttrs, false)
 
 		data["parentId"] = parent["id"]
-		data["attributes"] = attr
 
 	case models.GROUP:
-		//name, category, domain, pid
 		data["parentId"] = parent["id"]
-		attr := data["attributes"].(map[string]interface{})
-
-		groups := strings.Join(attr["content"].([]string), ",")
-		attr["content"] = groups
+		attr["content"] = strings.Join(attr["content"].([]string), ",")
 
 	case models.STRAY_DEV:
-		attr = data["attributes"].(map[string]interface{})
 		if _, ok := attr["template"]; ok {
 			err := GetOCLIAtributesTemplateHelper(attr, data, models.DEVICE)
 			if err != nil {
@@ -370,13 +342,11 @@ func CreateObject(path string, ent int, data map[string]interface{}) error {
 	}
 
 	//Stringify the attributes if not already
-	if _, ok := data["attributes"]; ok {
-		if attributes, ok := data["attributes"].(map[string]interface{}); ok {
-			for i := range attributes {
-				attributes[i] = Stringify(attributes[i])
-			}
-		}
+	for i := range attr {
+		attr[i] = Stringify(attr[i])
 	}
+
+	data["attributes"] = attr
 
 	//Because we already stored the string conversion in category
 	//we can do the conversion for templates here
