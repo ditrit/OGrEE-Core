@@ -703,11 +703,7 @@ func GetOCLIAtributesTemplateHelper(attr, data map[string]interface{}, ent int) 
 			attr["template"] = ""
 		}
 		//Serialise size and posXY if given
-		if _, ok := attr["size"].(string); ok {
-			attr["size"] = serialiseAttr(attr, "size")
-		} else {
-			attr["size"] = serialiseAttr2(attr, "size")
-		}
+		serialiseVector(attr, "size")
 	}
 	return nil
 }

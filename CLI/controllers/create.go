@@ -92,11 +92,7 @@ func CreateObject(path string, ent int, data map[string]interface{}) error {
 			}
 		} else {
 			//Serialise size and posXY manually instead
-			if _, ok := attr["size"].(string); ok {
-				attr["size"] = serialiseAttr(attr, "size")
-			} else {
-				attr["size"] = serialiseAttr2(attr, "size")
-			}
+			serialiseVector(attr, "size")
 
 			//Since template was not provided, set it empty
 			attr["template"] = ""
@@ -115,11 +111,7 @@ func CreateObject(path string, ent int, data map[string]interface{}) error {
 			return nil
 		}
 
-		if _, ok := attr["posXY"].(string); ok {
-			attr["posXY"] = serialiseAttr(attr, "posXY")
-		} else {
-			attr["posXY"] = serialiseAttr2(attr, "posXY")
-		}
+		serialiseVector(attr, "posXY")
 
 		if attr["posXY"] == "" {
 			if State.DebugLvl > 0 {
@@ -164,11 +156,7 @@ func CreateObject(path string, ent int, data map[string]interface{}) error {
 			return err
 		}
 
-		if _, ok := attr["posXY"].(string); ok {
-			attr["posXY"] = serialiseAttr(attr, "posXY")
-		} else {
-			attr["posXY"] = serialiseAttr2(attr, "posXY")
-		}
+		serialiseVector(attr, "posXY")
 
 		if attr["posXY"] == "" {
 			if State.DebugLvl > 0 {
@@ -250,11 +238,7 @@ func CreateObject(path string, ent int, data map[string]interface{}) error {
 		}
 
 		//Serialise posXY if given
-		if _, ok := attr["posXYZ"].(string); ok {
-			attr["posXYZ"] = serialiseAttr(attr, "posXYZ")
-		} else {
-			attr["posXYZ"] = serialiseAttr2(attr, "posXYZ")
-		}
+		serialiseVector(attr, "posXYZ")
 
 		//Restore the rotation overwritten
 		//by the helper func
