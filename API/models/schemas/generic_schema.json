@@ -45,6 +45,9 @@
         "type": {
           "type": "string"
         },
+        "template": {
+          "type": "string"
+        },
         "color": {
           "type": "string",
           "$ref": "refs/types.json#/definitions/color"
@@ -61,7 +64,8 @@
         "posXYZ",
         "posXYUnit",
         "size",
-        "sizeUnit"
+        "sizeUnit",
+        "template"
       ]
     }
   },
@@ -74,7 +78,8 @@
         "posXYZ": "{\"x\":4.6666666666667 ,\"y\": -2 ,\"z\":0}",
         "posXYUnit": "m",
         "size": "{\"x\":80 ,\"y\":100.532442}",
-        "sizeUnit": "cm"
+        "sizeUnit": "cm",
+        "template": ""
       },
       "category": "generic",
       "description": ["A table"],

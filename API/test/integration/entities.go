@@ -224,6 +224,7 @@ func internalCreateGeneric(roomID, name string, require bool) (map[string]any, *
 				"posXYUnit":  "m",
 				"size":       "{\"x\":80 ,\"y\":100.532442}",
 				"sizeUnit":   "cm",
+				"template":   "",
 			},
 			"category":    "generic",
 			"description": []any{name},

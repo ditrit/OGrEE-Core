@@ -4,13 +4,13 @@
     "type": "object",
     "required": [
         "attributes",
-        "components",
         "description",
         "fbxModel",
         "sizeWDHmm",
-        "slots",
         "slug",
-        "category"
+        "category",
+        "components",
+        "slots"
     ],
     "properties": {
         "attributes": {
@@ -26,7 +26,8 @@
             "type": "string",
             "enum": [
                 "rack",
-                "device"
+                "device",
+                "generic"
             ]
         },
         "colors": {
@@ -109,113 +110,128 @@
         "slug": {
             "type": "string",
             "pattern": "^[a-zA-Z0-9-]+$"
+        },
+        "clearance": {
+            "type": "string",
+            "$ref": "refs/types.json#/definitions/clearanceVector"
         }
     },
-    "if": {
-        "properties": {
-            "category": {
-                "const": "rack"
+    "allOf": [
+        {
+            "if": {
+                "properties": {
+                    "category": {
+                        "const": "rack"
+                    }
+                }
+            },
+            "then": {
+                "properties": {
+                    "slots": {
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "required": [
+                                "elemOrient",
+                                "elemPos",
+                                "elemSize",
+                                "labelPos",
+                                "location",
+                                "type"
+                            ],
+                            "properties": {
+                                "elemOrient": {
+                                    "type": "string",
+                                    "enum": [
+                                        "horizontal",
+                                        "vertical"
+                                    ]
+                                },
+                                "attributes": {
+                                    "$ref": "#/$defs/attributes"
+                                },
+                                "color": {
+                                    "$ref": "#/$defs/color"
+                                },
+                                "elemPos": {
+                                    "$ref": "#/$defs/elemPos"
+                                },
+                                "elemSize": {
+                                    "$ref": "#/$defs/elemSize"
+                                },
+                                "labelPos": {
+                                    "$ref": "#/$defs/labelPos"
+                                },
+                                "location": {
+                                    "type": "string"
+                                },
+                                "type": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    }
+                }
             }
-        }
-    },
-    "then": {
-        "properties": {
-            "slots": {
-                "type": "array",
-                "items": {
-                    "type": "object",
-                    "required": [
-                        "elemOrient",
-                        "elemPos",
-                        "elemSize",
-                        "labelPos",
-                        "location",
-                        "type"
-                    ],
-                    "properties": {
-                        "elemOrient": {
-                            "type": "string",
-                            "enum": [
-                                "horizontal",
-                                "vertical"
-                            ]
-                        },
-                        "attributes": {
-                            "$ref": "#/$defs/attributes"
-                        },
-                        "color": {
-                            "$ref": "#/$defs/color"
-                        },
-                        
-                        "elemPos": {
-                            "$ref": "#/$defs/elemPos"
-                        },
-                        "elemSize": {
-                            "$ref": "#/$defs/elemSize"
-                        },
-                        "labelPos": {
-                            "$ref": "#/$defs/labelPos"
-                        },
-                        "location": {
-                            "type": "string"
-                        },
-                        "type": {
-                            "type": "string"
+        },
+        {
+            "if": {
+                "properties": {
+                    "category": {
+                        "const": "device"
+                    }
+                }
+            },
+            "then": {
+                "properties": {
+                    "slots": {
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "required": [
+                                "elemPos",
+                                "elemSize",
+                                "labelPos",
+                                "location",
+                                "type"
+                            ],
+                            "properties": {
+                                "elemOrient": {
+                                    "type": "string",
+                                    "enum": [
+                                        "horizontal",
+                                        "vertical",
+                                        ""
+                                    ]
+                                },
+                                "attributes": {
+                                    "$ref": "#/$defs/attributes"
+                                },
+                                "color": {
+                                    "$ref": "#/$defs/color"
+                                },
+                                "elemPos": {
+                                    "$ref": "#/$defs/elemPos"
+                                },
+                                "elemSize": {
+                                    "$ref": "#/$defs/elemSize"
+                                },
+                                "labelPos": {
+                                    "$ref": "#/$defs/labelPos"
+                                },
+                                "location": {
+                                    "type": "string"
+                                },
+                                "type": {
+                                    "type": "string"
+                                }
+                            }
                         }
                     }
                 }
             }
         }
-    },
-    "else": {
-        "properties": {
-            "slots": {
-                "type": "array",
-                "items": {
-                    "type": "object",
-                    "required": [
-                        "elemPos",
-                        "elemSize",
-                        "labelPos",
-                        "location",
-                        "type"
-                    ],
-                    "properties": {
-                        "elemOrient": {
-                            "type": "string",
-                            "enum": [
-                                "horizontal",
-                                "vertical",
-                                ""
-                            ]
-                        },
-                        "attributes": {
-                            "$ref": "#/$defs/attributes"
-                        },
-                        "color": {
-                            "$ref": "#/$defs/color"
-                        },
-                        
-                        "elemPos": {
-                            "$ref": "#/$defs/elemPos"
-                        },
-                        "elemSize": {
-                            "$ref": "#/$defs/elemSize"
-                        },
-                        "labelPos": {
-                            "$ref": "#/$defs/labelPos"
-                        },
-                        "location": {
-                            "type": "string"
-                        },
-                        "type": {
-                            "type": "string"
-                        }
-                    }
-                }
-            }
-        }
-    },
+    ],
     "$defs": {
         "attributes": {
             "type": "object",
@@ -260,7 +276,7 @@
     },
     "examples": [
         {
-            "slug": "ibm-example",
+            "slug": "device-example",
             "description": "example",
             "category": "device",
             "sizeWDHmm": [216, 659, 41],
@@ -277,7 +293,7 @@
                     "location": "eth2",
                     "type": "port",
                     "elemOrient": "",
-                    "elemPos": [ 104, 649, 0],
+                    "elemPos": [104, 649, 0],
                     "elemSize": [14, 11, 11],
                     "mandatory": "yes",
                     "labelPos": "front",
@@ -302,6 +318,51 @@
                     }
                 }
             ]
+        },
+        {
+            "slug": "rack-example",
+            "description": "example",
+            "category": "rack",
+            "sizeWDHmm": [605, 1200, 2003],
+            "fbxModel": "",
+            "attributes": {
+                "vendor": "IBM",
+                "model": "9360-4PX"
+            },
+            "colors": [],
+            "components": [],
+            "slots": [
+                {
+                    "location": "u01",
+                    "type": "u",
+                    "elemOrient": "horizontal",
+                    "elemPos": [58, 51, 44.45],
+                    "elemSize": [482.6, 1138, 44.45],
+                    "mandatory": "no",
+                    "labelPos": "frontrear",
+                    "color": "@color1"
+                }
+            ],
+            "sensors": [
+                {
+                    "location": "se1",
+                    "elemPos": ["right", "rear", "upper"],
+                    "elemSize": [50, 20, 20]
+                }
+            ]
+        },
+        {
+            "slug"        : "generic-example",
+            "description" : "a table",
+            "category"    : "generic",
+            "sizeWDHmm"   : [447, 914.5, 263.3],
+            "fbxModel"    : "",
+            "attributes"  : {
+                "type"    : "table"
+            },
+            "colors"      : [],
+            "components"  : [],
+            "slots"       : []
         }
     ]
 }

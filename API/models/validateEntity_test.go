@@ -70,6 +70,7 @@ func TestErrorValidateJsonSchema(t *testing.T) {
 		"obj_template5": {
 			"/slug does not match pattern",
 			"/attributes/vendor expected string, but got number",
+			"allOf failed",
 			"if-then failed",
 			"/slots/0/elemOrient value must be one of ",
 			"/slots/1/elemPos maximum 3 items required, but found 4 items",
@@ -80,12 +81,13 @@ func TestErrorValidateJsonSchema(t *testing.T) {
 			"/slots/3/color does not match pattern",
 		},
 		"obj_template4": {
+			"allOf failed",
+			"if-then failed",
 			"/components/0/elemPos minimum 3 items required, but found 0 items",
-			"/components/1/elemOrient value must be one of",
+			`/components/1/elemOrient value must be one of "horizontal", "vertical", ""`,
 			"/components/1/color does not match pattern",
-			"/components/3/labelPos value must be one of",
-			"if-else failed",
-			"/slots/0/elemOrient value must be one of",
+			`/components/3/labelPos value must be one of "front", "rear", "frontrear", "top", "right", "left", "none"`,
+			`/slots/0/elemOrient value must be one of "horizontal", "vertical", ""`,
 		},
 		"bldg_template2": {
 			"/sizeWDHm minimum 3 items required, but found 2 items",
@@ -108,37 +110,39 @@ func TestErrorValidateJsonSchema(t *testing.T) {
 	if err != nil {
 		t.Error(err.Error())
 	}
+
 	for _, e := range entries {
 		if !strings.HasSuffix(e.Name(), ".json") {
 			t.Error("Not a JSON file")
 		}
 		testObjName := e.Name()[:len(e.Name())-5] // remove .json
 		entStr := regexp.MustCompile(`[0-9]+`).ReplaceAllString(testObjName, "")
-		entInt := u.EntityStrToInt(entStr)
-		if entInt < 0 {
-			t.Error("Unable to get entity from file name")
-		}
-		testObj := getMapFromJsonFile(testDataDir + e.Name())
-		if testObj == nil {
-			t.Error("Unable to convert json test file")
-		}
 
-		println("*** Testing " + testObjName)
-		ok, err := validateJsonSchema(entInt, testObj)
-		if ok {
-			t.Errorf("Validated json schema that should have these errors: %v", expectedErrors[testObjName])
-		} else {
-			if len(err.Details) != len(expectedErrors[testObjName]) {
-				t.Errorf("Validation errors do not correspond expected errors:\n%v\nGot:\n%v", expectedErrors[testObjName], err.Details)
+		t.Run("TestErrorValidateJsonSchema_"+testObjName, func(t *testing.T) {
+			entInt := u.EntityStrToInt(entStr)
+			if entInt < 0 {
+				t.Error("Unable to get entity from file name")
+			}
+			testObj := getMapFromJsonFile(testDataDir + e.Name())
+			if testObj == nil {
+				t.Error("Unable to convert json test file")
+			}
+
+			ok, err := validateJsonSchema(entInt, testObj)
+			if ok {
+				t.Errorf("Validated json schema that should have these errors: %v", expectedErrors[testObjName])
 			} else {
-				for _, expected := range expectedErrors[testObjName] {
-					if !contains(err.Details, expected) {
-						t.Errorf("Validation errors do not correspond expected errors\n")
+				if len(err.Details) != len(expectedErrors[testObjName]) {
+					t.Errorf("Validation errors do not correspond expected errors:\n%v\nGot:\n%v", expectedErrors[testObjName], err.Details)
+				} else {
+					for _, expected := range expectedErrors[testObjName] {
+						if !contains(err.Details, expected) {
+							t.Errorf("Expected error %v not contained in %v", expected, err.Details)
+						}
 					}
 				}
 			}
-		}
-
+		})
 	}
 }
 
@@ -149,7 +153,7 @@ func contains(slice []string, elem string) bool {
 			return true
 		}
 	}
-	println("Expected error NOT FOUND: " + elem)
+
 	return false
 }
 
