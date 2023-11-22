@@ -478,7 +478,7 @@ func Exit() {
 
 // If user provided templates, get the JSON
 // and parse into templates
-func GetOCLIAtrributesTemplateHelper(attr, data map[string]interface{}, ent int) error {
+func GetOCLIAtributesTemplateHelper(attr, data map[string]interface{}, ent int) error {
 	//Inner func declaration used for importing
 	//data from templates
 	attrSerialiser := func(someVal interface{}, idx string, ent int) string {

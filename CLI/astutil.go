@@ -5,6 +5,7 @@ import (
 	"cli/models"
 	"cli/utils"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"strconv"
@@ -193,4 +194,55 @@ func stringToIntOr(value string, defaultValue int) (int, error) {
 	}
 
 	return defaultValue, nil
+}
+
+func addSizeOrTemplate(sizeOrTemplate node, attributes map[string]any, entity int) error {
+	size, err := nodeToSize(sizeOrTemplate)
+	if err == nil {
+		attributes["size"] = size
+		return nil
+	}
+
+	template, err := nodeToTemplate(sizeOrTemplate, entity)
+	if err != nil {
+		if errors.Is(err, utils.ErrShouldBeAString) {
+			return errors.New("vector3 (size) or string (template) expected")
+		}
+
+		return err
+	}
+
+	attributes["template"] = template
+
+	return nil
+}
+
+func nodeToSize(sizeNode node) ([]float64, error) {
+	return nodeToVec(sizeNode, 3, "size")
+}
+
+func nodeToTemplate(templateNode node, entity int) (string, error) {
+	template, err := nodeToString(templateNode, "template")
+	if err != nil {
+		return "", err
+	}
+
+	if !checkIfTemplate(template, entity) {
+		return "", errors.New("template not found")
+	}
+
+	return template, nil
+}
+
+func nodeToPosXYZ(positionNode node) ([]float64, error) {
+	position, err := nodeToVec(positionNode, -1, "position")
+	if err != nil {
+		return nil, err
+	}
+
+	if len(position) != 2 && len(position) != 3 {
+		return nil, fmt.Errorf("position should be a vector2 or a vector3")
+	}
+
+	return position, nil
 }

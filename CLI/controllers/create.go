@@ -86,7 +86,7 @@ func CreateObject(path string, ent int, data map[string]interface{}) error {
 
 		//Check for template
 		if _, ok := attr["template"]; ok {
-			err := GetOCLIAtrributesTemplateHelper(attr, data, models.BLDG)
+			err := GetOCLIAtributesTemplateHelper(attr, data, models.BLDG)
 			if err != nil {
 				return err
 			}
@@ -159,7 +159,7 @@ func CreateObject(path string, ent int, data map[string]interface{}) error {
 		//If user provided templates, get the JSON
 		//and parse into templates
 		//NOTE this function also assigns value for "size" attribute
-		err := GetOCLIAtrributesTemplateHelper(attr, data, ent)
+		err := GetOCLIAtributesTemplateHelper(attr, data, ent)
 		if err != nil {
 			return err
 		}
@@ -227,7 +227,7 @@ func CreateObject(path string, ent int, data map[string]interface{}) error {
 
 		//If user provided templates, get the JSON
 		//and parse into templates
-		err := GetOCLIAtrributesTemplateHelper(attr, data, ent)
+		err := GetOCLIAtributesTemplateHelper(attr, data, ent)
 		if err != nil {
 			return err
 		}
@@ -330,7 +330,7 @@ func CreateObject(path string, ent int, data map[string]interface{}) error {
 		//If user provided templates, get the JSON
 		//and parse into templates
 		if _, ok := attr["template"]; ok {
-			err := GetOCLIAtrributesTemplateHelper(attr, data, models.DEVICE)
+			err := GetOCLIAtributesTemplateHelper(attr, data, models.DEVICE)
 			if err != nil {
 				return err
 			}
@@ -372,7 +372,7 @@ func CreateObject(path string, ent int, data map[string]interface{}) error {
 	case models.STRAY_DEV:
 		attr = data["attributes"].(map[string]interface{})
 		if _, ok := attr["template"]; ok {
-			err := GetOCLIAtrributesTemplateHelper(attr, data, models.DEVICE)
+			err := GetOCLIAtributesTemplateHelper(attr, data, models.DEVICE)
 			if err != nil {
 				return err
 			}
