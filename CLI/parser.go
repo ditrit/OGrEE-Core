@@ -1035,6 +1035,15 @@ func (p *parser) parseCreateRoom() node {
 
 func (p *parser) parseCreateRack() node {
 	defer un(trace(p, "create rack"))
+	return p.parseCreateRackOrGeneric(models.RACK)
+}
+
+func (p *parser) parseCreateGeneric() node {
+	defer un(trace(p, "create generic"))
+	return p.parseCreateRackOrGeneric(models.GENERIC)
+}
+
+func (p *parser) parseCreateRackOrGeneric(entity int) node {
 	path := p.parsePath("")
 	p.expect("@")
 	pos := p.parseExpr("position")
@@ -1044,7 +1053,7 @@ func (p *parser) parseCreateRack() node {
 	rotation := p.parseStringOrVec("rotation")
 	p.expect("@")
 	sizeOrTemplate := p.parseStringOrVec("sizeOrTemplate")
-	return &createRackNode{path, pos, unit, rotation, sizeOrTemplate}
+	return &createRackOrGenericNode{path, pos, unit, rotation, sizeOrTemplate, entity}
 }
 
 func (p *parser) parseCreateDevice() node {
@@ -1296,6 +1305,8 @@ func newParser(buffer string) *parser {
 		"orphan":   p.parseCreateOrphan,
 		"user":     p.parseCreateUser,
 		"role":     p.parseAddRole,
+		"generic":  p.parseCreateGeneric,
+		"ge":       p.parseCreateGeneric,
 	}
 	p.noArgsCommands = map[string]node{
 		"selection":    &selectNode{},

@@ -193,7 +193,7 @@ func (controller Controller) CreateObject(path string, ent int, data map[string]
 			Disp(data)
 		}
 
-	case models.RACK, models.CORRIDOR:
+	case models.RACK, models.CORRIDOR, models.GENERIC:
 		// Save rotation because it gets overwritten by GetOCLIAtributesTemplateHelper()
 		rotation := attr["rotation"].([]float64)
 
@@ -201,7 +201,7 @@ func (controller Controller) CreateObject(path string, ent int, data map[string]
 			"sizeUnit":   "cm",
 			"heightUnit": "U",
 		}
-		if ent == models.CORRIDOR {
+		if ent == models.CORRIDOR || ent == models.GENERIC {
 			baseAttrs["heightUnit"] = "cm"
 		}
 
@@ -352,7 +352,7 @@ func (controller Controller) CreateObject(path string, ent int, data map[string]
 	//we can do the conversion for templates here
 	data["category"] = strings.Replace(data["category"].(string), "_", "-", 1)
 
-	return C.PostObj(ent, data["category"].(string), data, path)
+	return controller.PostObj(ent, data["category"].(string), data, path)
 }
 
 func CreateTag(slug, color string) error {

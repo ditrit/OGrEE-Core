@@ -20,7 +20,7 @@ func (controller Controller) GetTemplate(name string, entity int) (map[string]an
 		location = models.BuildingTemplatesPath + name
 	case models.ROOM:
 		location = models.RoomTemplatesPath + name
-	case models.RACK, models.DEVICE:
+	case models.RACK, models.DEVICE, models.GENERIC:
 		location = models.ObjectTemplatesPath + name
 	default:
 		return nil, fmt.Errorf("templates are not applicable to %s", models.EntityToString(entity))
@@ -56,12 +56,12 @@ func attrSerialiser(someVal interface{}, idx string, ent int) string {
 		if ent == models.DEVICE || ent == models.ROOM || ent == models.BLDG {
 			return strconv.Itoa(x)
 		}
-		return strconv.Itoa(x / 10)
+		return strconv.FormatFloat(float64(x)/10, 'G', -1, 64)
 	} else if x, ok := someVal.(float64); ok {
 		if ent == models.DEVICE || ent == models.ROOM || ent == models.BLDG {
 			return strconv.FormatFloat(x, 'G', -1, 64)
 		}
-		return strconv.FormatFloat(x/10.0, 'G', -1, 64)
+		return strconv.FormatFloat(x/10, 'G', -1, 64)
 	} else {
 		msg := "Warning: Invalid " + idx +
 			" value detected in size." +
@@ -83,7 +83,7 @@ func (controller Controller) ApplyTemplate(attr, data map[string]interface{}, en
 		//MergeMaps(attr, tmpl, true)
 		key := determineStrKey(tmpl, []string{"sizeWDHmm", "sizeWDHm"})
 
-		if sizeInf, ok := tmpl[key].([]interface{}); ok && len(sizeInf) == 3 {
+		if sizeInf, hasSize := tmpl[key].([]interface{}); hasSize && len(sizeInf) == 3 {
 			var xS, yS, zS string
 			xS = attrSerialiser(sizeInf[0], "x", ent)
 			yS = attrSerialiser(sizeInf[1], "y", ent)

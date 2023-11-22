@@ -1081,15 +1081,16 @@ func (n *createRoomNode) execute() (interface{}, error) {
 	return nil, cmd.C.CreateObject(path, models.ROOM, map[string]any{"attributes": attributes})
 }
 
-type createRackNode struct {
+type createRackOrGenericNode struct {
 	path           node
 	pos            node
 	unit           node
 	rotation       node
 	sizeOrTemplate node
+	entity         int
 }
 
-func (n *createRackNode) execute() (interface{}, error) {
+func (n *createRackOrGenericNode) execute() (interface{}, error) {
 	path, err := nodeToString(n.path, "path")
 	if err != nil {
 		return nil, err
@@ -1112,9 +1113,9 @@ func (n *createRackNode) execute() (interface{}, error) {
 
 	attributes := map[string]any{"posXYZ": pos, "posXYUnit": unit, "rotation": rotation}
 
-	addSizeOrTemplate(n.sizeOrTemplate, attributes, models.RACK)
+	addSizeOrTemplate(n.sizeOrTemplate, attributes, n.entity)
 
-	return nil, cmd.C.CreateObject(path, models.RACK, map[string]any{"attributes": attributes})
+	return nil, cmd.C.CreateObject(path, n.entity, map[string]any{"attributes": attributes})
 }
 
 type createDeviceNode struct {

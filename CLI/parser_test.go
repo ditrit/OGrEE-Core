@@ -1,6 +1,7 @@
 package main
 
 import (
+	"cli/models"
 	"reflect"
 	"runtime/debug"
 	"testing"
@@ -331,9 +332,12 @@ var commandsMatching = map[string]node{
 	"+room:${toto}/tata@[1., 2.]@3.@[.1, 2., 3.]@+x-y":          &createRoomNode{testPath, vec2(1., 2.), &valueNode{3.}, vec3(.1, 2., 3.), &valueNode{"+x-y"}, nil, nil},
 	"+room:${toto}/tata@[1., 2.]@3.@[.1, 2., 3.]@+x-y@m":        &createRoomNode{testPath, vec2(1., 2.), &valueNode{3.}, vec3(.1, 2., 3.), &valueNode{"+x-y"}, &valueNode{"m"}, nil},
 	"+room:${toto}/tata@[1., 2.]@3.@template":                   &createRoomNode{testPath, vec2(1., 2.), &valueNode{3.}, nil, nil, nil, &valueNode{"template"}},
-	"+rack:${toto}/tata@[1., 2.]@t@front@[.1, 2., 3.]":          &createRackNode{testPath, vec2(1., 2.), &valueNode{"t"}, &valueNode{"front"}, vec3(.1, 2., 3.)},
-	"+rack:${toto}/tata@[1., 2.]@m@front@template":              &createRackNode{testPath, vec2(1., 2.), &valueNode{"m"}, &valueNode{"front"}, &valueNode{"template"}},
-	"+rack:${toto}/tata@[1., 2.]@m@[.1, 2., 3.]@template":       &createRackNode{testPath, vec2(1., 2.), &valueNode{"m"}, vec3(.1, 2., 3.), &valueNode{"template"}},
+	"+rack:${toto}/tata@[1., 2.]@t@front@[.1, 2., 3.]":          &createRackOrGenericNode{testPath, vec2(1., 2.), &valueNode{"t"}, &valueNode{"front"}, vec3(.1, 2., 3.), models.RACK},
+	"+rack:${toto}/tata@[1., 2.]@m@front@template":              &createRackOrGenericNode{testPath, vec2(1., 2.), &valueNode{"m"}, &valueNode{"front"}, &valueNode{"template"}, models.RACK},
+	"+rack:${toto}/tata@[1., 2.]@m@[.1, 2., 3.]@template":       &createRackOrGenericNode{testPath, vec2(1., 2.), &valueNode{"m"}, vec3(.1, 2., 3.), &valueNode{"template"}, models.RACK},
+	"+generic:${toto}/tata@[1., 2.]@t@front@[.1, 2., 3.]":       &createRackOrGenericNode{testPath, vec2(1., 2.), &valueNode{"t"}, &valueNode{"front"}, vec3(.1, 2., 3.), models.GENERIC},
+	"+generic:${toto}/tata@[1., 2.]@m@front@template":           &createRackOrGenericNode{testPath, vec2(1., 2.), &valueNode{"m"}, &valueNode{"front"}, &valueNode{"template"}, models.GENERIC},
+	"+generic:${toto}/tata@[1., 2.]@m@[.1, 2., 3.]@template":    &createRackOrGenericNode{testPath, vec2(1., 2.), &valueNode{"m"}, vec3(.1, 2., 3.), &valueNode{"template"}, models.GENERIC},
 	"+device:${toto}/tata@42@42":                                &createDeviceNode{testPath, &valueNode{"42"}, &valueNode{"42"}, nil},
 	"+device:${toto}/tata@42@template":                          &createDeviceNode{testPath, &valueNode{"42"}, &valueNode{"template"}, nil},
 	"+device:${toto}/tata@42@template@frontflipped ":            &createDeviceNode{testPath, &valueNode{"42"}, &valueNode{"template"}, &valueNode{"frontflipped"}},
