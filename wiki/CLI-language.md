@@ -46,6 +46,85 @@
   - [Create a Layer](#create-a-layer)
     - [Applicability Patterns](#applicability-patterns)
       - [Character Classes](#character-classes)
+  - [Create a Generic Object](#create-a-generic-object)
+- [Set commands](#set-commands)
+  - [Set colors for zones of all rooms in a datacenter](#set-colors-for-zones-of-all-rooms-in-a-datacenter)
+  - [Set reserved and technical zones of a room](#set-reserved-and-technical-zones-of-a-room)
+  - [Room separators](#room-separators)
+  - [Room pillars](#room-pillars)
+  - [Modify object's attribute](#modify-objects-attribute)
+  - [Tags](#tags)
+  - [Labels](#labels)
+    - [Choose Label](#choose-label)
+    - [Modify label's font](#modify-labels-font)
+    - [Modify label's background color](#modify-labels-background-color)
+  - [Interact with objects](#interact-with-objects)
+    - [Room](#room)
+    - [Rack](#rack)
+    - [Device](#device)
+    - [Group](#group)
+- [Manipulate UI](#manipulate-ui)
+  - [Delay commands](#delay-commands)
+  - [Display infos panel](#display-infos-panel)
+  - [Display debug panel](#display-debug-panel)
+  - [Highlight object](#highlight-object)
+- [Manipulate camera](#manipulate-camera)
+  - [Move camera](#move-camera)
+  - [Translate camera](#translate-camera)
+  - [Wait between two translations](#wait-between-two-translations)
+- [Control flow](#control-flow)
+  - [Conditions](#conditions)
+  - [Loops](#loops)
+  - [Aliases](#aliases)
+- [Examples](#examples)
+>>>>>>> b24e621b (docs(cli): create generic and generic template)
+- [Glossary](#glossary)
+- [Comments](#comments)
+- [Variables](#variables)
+  - [Set a variable](#set-a-variable)
+  - [Use a variable](#use-a-variable)
+- [Expressions](#expressions)
+  - [Primary expressions](#primary-expressions)
+  - [Operators](#operators)
+    - [Compute operators](#compute-operators)
+    - [Boolean operators](#boolean-operators)
+- [Print](#print)
+- [String formatting](#string-formatting)
+- [Loading commands](#loading-commands)
+  - [Load commands from a text file](#load-commands-from-a-text-file)
+  - [Commands over multiple lines](#commands-over-multiple-lines)
+  - [Load template from JSON](#load-template-from-json)
+- [Hierarchy commands](#hierarchy-commands)
+  - [Select an object](#select-an-object)
+  - [Select child / children object](#select-child--children-object)
+  - [Select parent object](#select-parent-object)
+  - [Get object/s](#get-objects)
+  - [Ls object](#ls-object)
+    - [Layers](#layers)
+      - [Room's automatic layers](#rooms-automatic-layers)
+      - [Rack's automatic layers](#racks-automatic-layers)
+      - [Device's automatic layers](#devices-automatic-layers)
+    - [Filters](#filters)
+      - [Filter by tag](#filter-by-tag)
+      - [Filter by category](#filter-by-category)
+  - [Tree](#tree)
+  - [Delete object](#delete-object)
+  - [Focus an object](#focus-an-object)
+  - [Copy object](#copy-object)
+- [Create commands](#create-commands)
+  - [Create a Tenant](#create-a-tenant)
+  - [Create a Site](#create-a-site)
+  - [Create a Building](#create-a-building)
+  - [Create a Room](#create-a-room)
+  - [Create a Rack](#create-a-rack)
+  - [Create a Device](#create-a-device)
+  - [Create a Group](#create-a-group)
+  - [Create a Corridor](#create-a-corridor)
+  - [Create a Tag](#create-a-tag)
+  - [Create a Layer](#create-a-layer)
+    - [Applicability Patterns](#applicability-patterns)
+      - [Character Classes](#character-classes)
+  - [Create a Generic Object](#create-a-generic-object)
 - [Set commands](#set-commands)
   - [Set colors for zones of all rooms in a datacenter](#set-colors-for-zones-of-all-rooms-in-a-datacenter)
   - [Set reserved and technical zones of a room](#set-reserved-and-technical-zones-of-a-room)
@@ -565,6 +644,45 @@ Class      | Meaning
 `[a-z]`    | matches any single character in the range
 `[^class]` | matches any single character which does *not* match the class
 `[!class]` | same as `^`: negates the class
+
+## Create a Generic Object
+
+Generic objects allow you to model any type of object that is not of the previous classes (tables, cabinets, doors, etc).
+
+They must be child of a room.
+
+To create them, use one of the following options:
+
+```
++generic:[name]@[pos]@[unit]@[rotation]@[size]
+```
+
+```
++generic:[name]@[pos]@[unit]@[rotation]@[template]
+```
+
+```
++ge:[name]@[pos]@[unit]@[rotation]@[size]
+```
+
+```
++ge:[name]@[pos]@[unit]@[rotation]@[template]
+```
+
+Where:
+
+- `[pos]` is a Vector3 [x,y,z] or a Vector2 [x,y] if z is 0. Each value can be decimal (1, 1.2, etc.) or fraction (1/2, 2/3, etc.). Can also be negative (-1, -1.2, -1/2).
+- `[unit]` is the unit of the position [pos]. It can be: `t` (tiles), `m` (meters) or `f` (feet)  
+- `[rotation]` is a Vector3 of angles or one of following keywords:
+
+  "front":  [0, 0, 180]  
+  "rear":   [0, 0, 0]  
+  "left":   [0, 90, 0]  
+  "right":  [0, -90, 0]  
+  "top":    [90, 0, 0]  
+  "bottom": [-90, 0, 0]  
+- `[size]` is a Vector3 [width,length,height] (cm,cm,cm)  
+- `[template]` is the name of the rack template
 
 # Set commands
 
