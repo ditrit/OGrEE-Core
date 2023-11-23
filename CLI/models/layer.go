@@ -156,6 +156,10 @@ var (
 		name:       "#corridors",
 		apiFilters: map[string]string{"category": "corridor"},
 	}
+	GenericsLayer = AutomaticLayer{
+		name:       "#generics",
+		apiFilters: map[string]string{"category": "generic"},
+	}
 )
 
 var (
@@ -180,6 +184,14 @@ var LayersByEntity = map[int][]LayersFactory{
 		LayerByCategory{
 			layer:    RacksLayer,
 			category: "rack",
+		},
+		LayerByCategory{
+			layer:    GenericsLayer,
+			category: "generic",
+		},
+		LayerByAttribute{
+			category:  "generic",
+			attribute: "type",
 		},
 	},
 	RACK: {
