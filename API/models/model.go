@@ -98,26 +98,26 @@ func PropagateParentIdChange(ctx context.Context, oldParentId, newId string, ent
 					"find":        oldParentId,
 					"replacement": newId}}}}}
 	if entityInt == u.DOMAIN {
-		_, e := repository.GetDB().Collection(u.EntityToString(u.DOMAIN)).UpdateMany(ctx,
+		_, err := repository.GetDB().Collection(u.EntityToString(u.DOMAIN)).UpdateMany(ctx,
 			req, mongo.Pipeline{update})
-		if e != nil {
-			println(e.Error())
-			return e
+		if err != nil {
+			println(err.Error())
+			return err
 		}
 	} else if entityInt == u.DEVICE {
-		_, e := repository.GetDB().Collection(u.EntityToString(u.DEVICE)).UpdateMany(ctx,
+		_, err := repository.GetDB().Collection(u.EntityToString(u.DEVICE)).UpdateMany(ctx,
 			req, mongo.Pipeline{update})
-		if e != nil {
-			println(e.Error())
-			return e
+		if err != nil {
+			println(err.Error())
+			return err
 		}
 	} else {
 		for i := entityInt + 1; i <= u.GROUP; i++ {
-			_, e := repository.GetDB().Collection(u.EntityToString(i)).UpdateMany(ctx,
+			_, err := repository.GetDB().Collection(u.EntityToString(i)).UpdateMany(ctx,
 				req, mongo.Pipeline{update})
-			if e != nil {
-				println(e.Error())
-				return e
+			if err != nil {
+				println(err.Error())
+				return err
 			}
 		}
 	}
@@ -137,11 +137,10 @@ func PropagateDomainChange(ctx context.Context, oldDomainId, newDomainId string)
 					"find":        oldDomainId,
 					"replacement": newDomainId}}}}}
 	for i := u.STRAYOBJ; i <= u.GROUP; i++ {
-		_, e := repository.GetDB().Collection(u.EntityToString(i)).UpdateMany(ctx,
+		_, err := repository.GetDB().Collection(u.EntityToString(i)).UpdateMany(ctx,
 			req, mongo.Pipeline{update})
-		if e != nil {
-			println(e.Error())
-			return e
+		if err != nil {
+			return err
 		}
 	}
 	return nil
