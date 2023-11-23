@@ -84,68 +84,6 @@ func getChildrenCollections(limit int, parentEntStr string) []int {
 	return rangeEntities
 }
 
-// PropagateParentIdChange: search for given parent children and
-// update their hierarchyName with new parent name
-func PropagateParentIdChange(ctx context.Context, oldParentId, newId string, entityInt int) error {
-	// Find all objects containing parent name
-	req := bson.M{"id": primitive.Regex{Pattern: oldParentId + u.HN_DELIMETER, Options: ""}}
-	// For each object found, replace old name by new
-	update := bson.D{{
-		Key: "$set", Value: bson.M{
-			"id": bson.M{
-				"$replaceOne": bson.M{
-					"input":       "$id",
-					"find":        oldParentId,
-					"replacement": newId}}}}}
-	if entityInt == u.DOMAIN {
-		_, err := repository.GetDB().Collection(u.EntityToString(u.DOMAIN)).UpdateMany(ctx,
-			req, mongo.Pipeline{update})
-		if err != nil {
-			println(err.Error())
-			return err
-		}
-	} else if entityInt == u.DEVICE {
-		_, err := repository.GetDB().Collection(u.EntityToString(u.DEVICE)).UpdateMany(ctx,
-			req, mongo.Pipeline{update})
-		if err != nil {
-			println(err.Error())
-			return err
-		}
-	} else {
-		for i := entityInt + 1; i <= u.GROUP; i++ {
-			_, err := repository.GetDB().Collection(u.EntityToString(i)).UpdateMany(ctx,
-				req, mongo.Pipeline{update})
-			if err != nil {
-				println(err.Error())
-				return err
-			}
-		}
-	}
-	return nil
-}
-
-// PropagateDomainChange: search for all objects with reference to the modified domain
-func PropagateDomainChange(ctx context.Context, oldDomainId, newDomainId string) error {
-	// Find all objects containing this domain
-	req := bson.M{"domain": primitive.Regex{Pattern: "^" + oldDomainId + "(\\" + u.HN_DELIMETER + "|$)", Options: ""}}
-	// For each object found, replace old domain by new
-	update := bson.D{{
-		Key: "$set", Value: bson.M{
-			"domain": bson.M{
-				"$replaceOne": bson.M{
-					"input":       "$domain",
-					"find":        oldDomainId,
-					"replacement": newDomainId}}}}}
-	for i := u.STRAYOBJ; i <= u.GROUP; i++ {
-		_, err := repository.GetDB().Collection(u.EntityToString(i)).UpdateMany(ctx,
-			req, mongo.Pipeline{update})
-		if err != nil {
-			return err
-		}
-	}
-	return nil
-}
-
 func updateOldObjWithPatch(old map[string]interface{}, patch map[string]interface{}) error {
 	for k, v := range patch {
 		switch patchValueCasted := v.(type) {
@@ -809,7 +747,7 @@ func UpdateObject(entityStr string, id string, updateData map[string]interface{}
 
 		if oldObj["id"] != updateData["id"] {
 			// Changes to id should be propagated
-			if err := PropagateParentIdChange(
+			if err := repository.PropagateParentIdChange(
 				ctx,
 				oldObj["id"].(string),
 				updateData["id"].(string),
@@ -817,7 +755,7 @@ func UpdateObject(entityStr string, id string, updateData map[string]interface{}
 			); err != nil {
 				return nil, err
 			} else if entity == u.DOMAIN {
-				if err := PropagateDomainChange(ctx,
+				if err := repository.PropagateDomainChange(ctx,
 					oldObj["id"].(string),
 					updateData["id"].(string),
 				); err != nil {
@@ -930,7 +868,7 @@ func SwapEntity(createEnt, deleteEnt, id string, data map[string]interface{}, us
 		}
 
 		// Propagate
-		if err := PropagateParentIdChange(ctx, id, data["id"].(string),
+		if err := repository.PropagateParentIdChange(ctx, id, data["id"].(string),
 			u.EntityStrToInt(data["category"].(string))); err != nil {
 			return nil, err
 		}
