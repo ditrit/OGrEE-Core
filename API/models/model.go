@@ -136,7 +136,7 @@ func PropagateDomainChange(ctx context.Context, oldDomainId, newDomainId string)
 					"input":       "$domain",
 					"find":        oldDomainId,
 					"replacement": newDomainId}}}}}
-	for i := u.STRAYOBJ + 1; i <= u.GROUP; i++ {
+	for i := u.STRAYOBJ; i <= u.GROUP; i++ {
 		_, e := repository.GetDB().Collection(u.EntityToString(i)).UpdateMany(ctx,
 			req, mongo.Pipeline{update})
 		if e != nil {
