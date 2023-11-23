@@ -1,8 +1,8 @@
 package controllers
 
 import (
-	"cli/models"
 	"cli/utils"
+	"errors"
 	"fmt"
 	"net/http"
 	"strings"
@@ -12,8 +12,8 @@ func (controller Controller) GetObject(path string) (map[string]any, error) {
 	return controller.GetObjectWithChildren(path, 0)
 }
 
-func (controller Controller) GetObjectsWildcard(path string) ([]map[string]any, []string, error) {
-	url, err := ObjectUrlGeneric(path, 0, nil)
+func (controller Controller) GetObjectsWildcard(pathStr string) ([]map[string]any, []string, error) {
+	url, err := controller.ObjectUrlGeneric(pathStr, 0, nil)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -21,15 +21,20 @@ func (controller Controller) GetObjectsWildcard(path string) ([]map[string]any, 
 	if err != nil {
 		return nil, nil, err
 	}
-	return ParseWildcardResponse(resp, path, "GET "+url)
+	return controller.ParseWildcardResponse(resp, pathStr, "GET "+url)
 }
 
-func ParseWildcardResponse(resp *Response, path string, route string) ([]map[string]any, []string, error) {
+func (controller Controller) ParseWildcardResponse(resp *Response, pathStr string, route string) ([]map[string]any, []string, error) {
 	objsAny, ok := resp.Body["data"].([]any)
 	if !ok {
 		return nil, nil, fmt.Errorf("invalid response from API on %s", route)
 	}
-	prefix, _, _ := models.SplitPath(path)
+
+	path, err := controller.SplitPath(pathStr)
+	if err != nil {
+		return nil, nil, err
+	}
+
 	objs := infArrToMapStrinfArr(objsAny)
 	paths := []string{}
 	for _, obj := range objs {
@@ -40,7 +45,7 @@ func ParseWildcardResponse(resp *Response, path string, route string) ([]map[str
 		} else {
 			suffix = utils.NameOrSlug(obj)
 		}
-		objPath := prefix + suffix
+		objPath := path.Prefix + suffix
 		paths = append(paths, objPath)
 	}
 	return objs, paths, nil
@@ -60,8 +65,12 @@ func (controller Controller) GetObjectWithChildren(path string, depth int) (map[
 }
 
 func (controller Controller) PollObjectWithChildren(path string, depth int) (map[string]any, error) {
-	url, err := ObjectUrl(path, depth)
+	url, err := controller.ObjectUrl(path, depth)
 	if err != nil {
+		if errors.Is(err, errLayerNotFound) {
+			return nil, err
+		}
+
 		return nil, nil
 	}
 	resp, err := controller.API.Request(http.MethodGet, url, nil, http.StatusOK)

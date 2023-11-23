@@ -5,7 +5,7 @@ import (
 	"net/http"
 )
 
-func (controller Controller) UpdateObj(path string, data map[string]any) (map[string]any, error) {
+func (controller Controller) UpdateObj(pathStr string, data map[string]any) (map[string]any, error) {
 	attributes, hasAttributes := data["attributes"].(map[string]any)
 	if hasAttributes {
 		for key, val := range attributes {
@@ -13,7 +13,7 @@ func (controller Controller) UpdateObj(path string, data map[string]any) (map[st
 		}
 	}
 
-	obj, err := controller.GetObject(path)
+	obj, err := controller.GetObject(pathStr)
 	if err != nil {
 		return nil, err
 	}
@@ -23,7 +23,7 @@ func (controller Controller) UpdateObj(path string, data map[string]any) (map[st
 		category = obj["category"].(string)
 	}
 
-	url, err := ObjectUrl(path, 0)
+	url, err := controller.ObjectUrl(pathStr, 0)
 	if err != nil {
 		return nil, err
 	}
@@ -35,15 +35,15 @@ func (controller Controller) UpdateObj(path string, data map[string]any) (map[st
 
 	//Determine if Unity requires the message as
 	//Interact or Modify
-	entityType := EntityStrToInt(category)
-	if models.IsTag(path) {
-		entityType = TAG
+	entityType := models.EntityStrToInt(category)
+	if models.IsTag(pathStr) {
+		entityType = models.TAG
 	}
 
 	message := map[string]any{}
 	var key string
 
-	if entityType == ROOM && (data["tilesName"] != nil || data["tilesColor"] != nil) {
+	if entityType == models.ROOM && (data["tilesName"] != nil || data["tilesColor"] != nil) {
 		println("Room modifier detected")
 		Disp(data)
 
@@ -56,14 +56,14 @@ func (controller Controller) UpdateObj(path string, data map[string]any) (map[st
 			"param": key,
 			"value": data[key],
 		}
-	} else if entityType == RACK && data["U"] != nil {
+	} else if entityType == models.RACK && data["U"] != nil {
 		message["type"] = "interact"
 		message["data"] = map[string]any{
 			"id":    obj["id"],
 			"param": "U",
 			"value": data["U"],
 		}
-	} else if (entityType == DEVICE || entityType == RACK) &&
+	} else if (entityType == models.DEVICE || entityType == models.RACK) &&
 		(data["alpha"] != nil || data["slots"] != nil || data["localCS"] != nil) {
 
 		//Get interactive key
@@ -75,22 +75,22 @@ func (controller Controller) UpdateObj(path string, data map[string]any) (map[st
 			"param": key,
 			"value": data[key],
 		}
-	} else if entityType == GROUP && data["content"] != nil {
+	} else if entityType == models.GROUP && data["content"] != nil {
 		message["type"] = "interact"
 		message["data"] = map[string]any{
 			"id":    obj["id"],
 			"param": "content",
 			"value": data["content"],
 		}
-	} else if entityType == TAG {
-		_, oldSlug, err := models.SplitPath(path)
+	} else if entityType == models.TAG {
+		path, err := controller.SplitPath(pathStr)
 		if err != nil {
 			return nil, err
 		}
 
 		message["type"] = "modify-tag"
 		message["data"] = map[string]any{
-			"old-slug": oldSlug,
+			"old-slug": path.ObjectID,
 			"tag":      resp.Body["data"],
 		}
 	} else {

@@ -149,7 +149,7 @@ func (ogree3D *ogree3DPortImpl) Inform(caller string, entity int, data map[strin
 // otherwise does nothing
 func (ogree3D *ogree3DPortImpl) InformOptional(caller string, entity int, data map[string]interface{}) error {
 	if ogree3D.connection.IsConnected() {
-		if entity > -1 && entity <= CORRIDOR {
+		if entity > -1 && entity <= models.CORRIDOR {
 			data = GenerateFilteredJson(data)
 		}
 		if State.DebugLvl > INFO {

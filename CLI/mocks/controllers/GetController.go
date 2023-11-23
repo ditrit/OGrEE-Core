@@ -35,6 +35,32 @@ func (_m *GetController) GetObject(path string) (map[string]interface{}, error) 
 	return r0, r1
 }
 
+// GetObjectWithChildren provides a mock function with given fields: path, depth
+func (_m *GetController) GetObjectWithChildren(path string, depth int) (map[string]interface{}, error) {
+	ret := _m.Called(path, depth)
+
+	var r0 map[string]interface{}
+	var r1 error
+	if rf, ok := ret.Get(0).(func(string, int) (map[string]interface{}, error)); ok {
+		return rf(path, depth)
+	}
+	if rf, ok := ret.Get(0).(func(string, int) map[string]interface{}); ok {
+		r0 = rf(path, depth)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(map[string]interface{})
+		}
+	}
+
+	if rf, ok := ret.Get(1).(func(string, int) error); ok {
+		r1 = rf(path, depth)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // GetObjectsWildcard provides a mock function with given fields: path
 func (_m *GetController) GetObjectsWildcard(path string) ([]map[string]interface{}, []string, error) {
 	ret := _m.Called(path)
@@ -68,6 +94,32 @@ func (_m *GetController) GetObjectsWildcard(path string) ([]map[string]interface
 	}
 
 	return r0, r1, r2
+}
+
+// PollObjectWithChildren provides a mock function with given fields: path, depth
+func (_m *GetController) PollObjectWithChildren(path string, depth int) (map[string]interface{}, error) {
+	ret := _m.Called(path, depth)
+
+	var r0 map[string]interface{}
+	var r1 error
+	if rf, ok := ret.Get(0).(func(string, int) (map[string]interface{}, error)); ok {
+		return rf(path, depth)
+	}
+	if rf, ok := ret.Get(0).(func(string, int) map[string]interface{}); ok {
+		r0 = rf(path, depth)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(map[string]interface{})
+		}
+	}
+
+	if rf, ok := ret.Get(1).(func(string, int) error); ok {
+		r1 = rf(path, depth)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
 }
 
 type mockConstructorTestingTNewGetController interface {
