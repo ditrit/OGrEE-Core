@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"net/http"
 	"strconv"
 )
 
@@ -257,4 +258,24 @@ func (controller Controller) ApplyTemplate(attr, data map[string]interface{}, en
 	}
 
 	return nil
+}
+
+func (controller Controller) LoadTemplate(data map[string]interface{}) error {
+	var URL string
+	if cat := data["category"]; cat == "room" {
+		//Room template
+		URL = "/api/room-templates"
+	} else if cat == "bldg" || cat == "building" {
+		//Bldg template
+		URL = "/api/bldg-templates"
+	} else if cat == "rack" || cat == "device" || cat == "generic" {
+		// Obj template
+		URL = "/api/obj-templates"
+	} else {
+		return fmt.Errorf("this template does not have a valid category. Please add a category attribute with a value of building, room, rack, device or generic")
+	}
+
+	_, err := controller.API.Request(http.MethodPost, URL, data, http.StatusCreated)
+
+	return err
 }

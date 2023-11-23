@@ -672,27 +672,6 @@ func ShowClipBoard() []string {
 	return nil
 }
 
-func LoadTemplate(data map[string]interface{}, filePath string) error {
-	var URL string
-	if cat := data["category"]; cat == "room" {
-		//Room template
-		URL = "/api/room-templates"
-	} else if cat == "bldg" || cat == "building" {
-		//Bldg template
-		URL = "/api/bldg-templates"
-	} else if cat == "rack" || cat == "device" {
-		// Obj template
-		URL = "/api/obj-templates"
-	} else {
-		return fmt.Errorf("this template does not have a valid category. Please add a category attribute with a value of building or room or rack or device")
-	}
-	_, err := API.Request("POST", URL, data, http.StatusCreated)
-	if err != nil {
-		return err
-	}
-	return nil
-}
-
 func SetEnv(arg string, val interface{}) {
 	switch arg {
 	case "Filter":

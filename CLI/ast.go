@@ -294,7 +294,7 @@ func (n *loadTemplateNode) execute() (interface{}, error) {
 	if data == nil {
 		return nil, fmt.Errorf("cannot read json file : %s", path)
 	}
-	return path, cmd.LoadTemplate(data, path)
+	return path, cmd.C.LoadTemplate(data)
 }
 
 type printNode struct {
