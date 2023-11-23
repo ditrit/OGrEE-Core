@@ -84,46 +84,6 @@ func getChildrenCollections(limit int, parentEntStr string) []int {
 	return rangeEntities
 }
 
-// PropagateParentIdChange: search for given parent children and
-// update their hierarchyName with new parent name
-func PropagateParentIdChange(ctx context.Context, oldParentId, newId string, entityInt int) error {
-	// Find all objects containing parent name
-	req := bson.M{"id": primitive.Regex{Pattern: oldParentId + u.HN_DELIMETER, Options: ""}}
-	// For each object found, replace old name by new
-	update := bson.D{{
-		Key: "$set", Value: bson.M{
-			"id": bson.M{
-				"$replaceOne": bson.M{
-					"input":       "$id",
-					"find":        oldParentId,
-					"replacement": newId}}}}}
-	if entityInt == u.DOMAIN {
-		_, e := repository.GetDB().Collection(u.EntityToString(u.DOMAIN)).UpdateMany(ctx,
-			req, mongo.Pipeline{update})
-		if e != nil {
-			println(e.Error())
-			return e
-		}
-	} else if entityInt == u.DEVICE {
-		_, e := repository.GetDB().Collection(u.EntityToString(u.DEVICE)).UpdateMany(ctx,
-			req, mongo.Pipeline{update})
-		if e != nil {
-			println(e.Error())
-			return e
-		}
-	} else {
-		for i := entityInt + 1; i <= u.GROUP; i++ {
-			_, e := repository.GetDB().Collection(u.EntityToString(i)).UpdateMany(ctx,
-				req, mongo.Pipeline{update})
-			if e != nil {
-				println(e.Error())
-				return e
-			}
-		}
-	}
-	return nil
-}
-
 func updateOldObjWithPatch(old map[string]interface{}, patch map[string]interface{}) error {
 	for k, v := range patch {
 		switch patchValueCasted := v.(type) {
@@ -786,15 +746,21 @@ func UpdateObject(entityStr string, id string, updateData map[string]interface{}
 		}
 
 		if oldObj["id"] != updateData["id"] {
-			// Changes to id should be propagated to its children
-			err := PropagateParentIdChange(
+			// Changes to id should be propagated
+			if err := repository.PropagateParentIdChange(
 				ctx,
 				oldObj["id"].(string),
 				updateData["id"].(string),
 				entity,
-			)
-			if err != nil {
+			); err != nil {
 				return nil, err
+			} else if entity == u.DOMAIN {
+				if err := repository.PropagateDomainChange(ctx,
+					oldObj["id"].(string),
+					updateData["id"].(string),
+				); err != nil {
+					return nil, err
+				}
 			}
 		}
 
@@ -902,7 +868,7 @@ func SwapEntity(createEnt, deleteEnt, id string, data map[string]interface{}, us
 		}
 
 		// Propagate
-		if err := PropagateParentIdChange(ctx, id, data["id"].(string),
+		if err := repository.PropagateParentIdChange(ctx, id, data["id"].(string),
 			u.EntityStrToInt(data["category"].(string))); err != nil {
 			return nil, err
 		}
