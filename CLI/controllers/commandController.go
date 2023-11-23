@@ -454,7 +454,7 @@ func Help(entry string) {
 		path = "./other/man/var.md"
 
 	case "lsobj", "lsten", "lssite", "lsbldg", "lsroom", "lsrack",
-		"lsdev", "lsac", "lscorridor", "lspanel", "lssensor", "lscabinet":
+		"lsdev", "lsac", "lscorridor", "lspanel", "lscabinet":
 		path = "./other/man/lsobj.md"
 
 	default:
@@ -502,7 +502,7 @@ func CreateObject(path string, ent int, data map[string]interface{}) error {
 	data["description"] = []interface{}{}
 
 	//Retrieve Parent
-	if ent != models.SITE && ent != models.STRAY_DEV && ent != models.STRAYSENSOR {
+	if ent != models.SITE && ent != models.STRAY_DEV {
 		var err error
 		parent, err = PollObject(path)
 		if err != nil {
@@ -822,19 +822,6 @@ func CreateObject(path string, ent int, data map[string]interface{}) error {
 
 		groups := strings.Join(attr["content"].([]string), ",")
 		attr["content"] = groups
-
-	case models.STRAYSENSOR:
-		attr = data["attributes"].(map[string]interface{})
-		if _, ok := attr["template"]; ok {
-			//GetOCLIAtrributesTemplateHelper(attr, data, DEVICE)
-			tmpl, err := fetchTemplate(attr["template"].(string), models.STRAYSENSOR)
-			if err != nil {
-				return err
-			}
-			MergeMaps(attr, tmpl, true)
-		} else {
-			attr["template"] = ""
-		}
 
 	case models.STRAY_DEV:
 		attr = data["attributes"].(map[string]interface{})

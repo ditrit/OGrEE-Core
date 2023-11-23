@@ -151,12 +151,6 @@ Where ... is any number of racks (which must be already existing) that you would
 Where RACKN is the last rack (which must be already existing) that you would like to add 
 
 
-+ orphan sensor: NAME/OF/SENSOR @ TEMPLATE
-User must specify the path, and TEMPLATE  
-
-Where TEMPLATE refers to the sensor template name (which must be already existing)
-
-
 + orphan device: NAME/OF/DEVICE @ TEMPLATE
 User must specify the path, and TEMPLATE 
 
@@ -203,7 +197,5 @@ EXAMPLES
 +co:BETA.A.R1.CorridorD@{A01,A09}@warm 
 
 +gr:BETA.A.R1.GroupG@{A01,A02,A03,A04}
-
-+ orphan sensor: StraySensorDEMO @ SensorTemplateA
 
 + orphan device: StrayDevDEMO @ DEVICE1T

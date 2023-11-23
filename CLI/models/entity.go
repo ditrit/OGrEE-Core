@@ -10,13 +10,11 @@ const (
 	PWRPNL
 	CABINET
 	CORRIDOR
-	SENSOR
 	ROOMTMPL
 	OBJTMPL
 	BLDGTMPL
 	GROUP
 	STRAY_DEV
-	STRAYSENSOR
 	DOMAIN
 	TAG
 )
@@ -53,8 +51,6 @@ func EntityToString(entity int) string {
 		return "group"
 	case CORRIDOR:
 		return "corridor"
-	case SENSOR:
-		return "sensor"
 	case TAG:
 		return "tag"
 	default:
@@ -94,8 +90,6 @@ func EntityStrToInt(entity string) int {
 		return GROUP
 	case "corridor", "co":
 		return CORRIDOR
-	case "sensor", "sr":
-		return SENSOR
 	case "tag":
 		return TAG
 	default:
@@ -131,8 +125,6 @@ func GetParentOfEntity(ent int) int {
 		return -1
 	case CORRIDOR:
 		return ROOM
-	case SENSOR:
-		return -2
 	default:
 		return -3
 	}
