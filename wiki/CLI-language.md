@@ -23,7 +23,12 @@
   - [Select parent object](#select-parent-object)
   - [Get object/s](#get-objects)
   - [Ls object](#ls-object)
-    - [Filter by tag](#filter-by-tag)
+    - [Layers](#layers)
+      - [Room's automatic layers](#rooms-automatic-layers)
+      - [Rack's automatic layers](#racks-automatic-layers)
+      - [Device's automatic layers](#devices-automatic-layers)
+    - [Filters](#filters)
+      - [Filter by tag](#filter-by-tag)
   - [Tree](#tree)
   - [Delete object](#delete-object)
   - [Focus an object](#focus-an-object)
@@ -211,9 +216,32 @@ ls [path]
 
 ls can also be used without [path] to do ls on the current path.
 
+### Layers
+
+When ls is performed on an object, the corresponding layers are added. These make navigation easier since they group the children of the object according to their characteristics.
+
+The automatic layers are those that are added automatically depending on the entity of the object on which the ls is performed. They will appear only if at least one of the children of the object meets the conditions of the layer. The list of automatic layers added to each entity is described in the following sections.
+
+#### Room's automatic layers
+
+- \#corridors: children whose category is corridor
+- \#groups: children whose category is group
+- \#racks: children whose category is rack
+
+#### Rack's automatic layers
+
+- \#groups: children whose category is group
+- \#[type]: for each type that the children of the device category have a layer will be created (example: #chassis)
+
+#### Device's automatic layers
+
+- \#[type]: for each type that the children of the device category have a layer will be created (example: #blades)
+
+### Filters
+
 Filters can be added to the ls command to get only the children that meet a certain characteristic.
 
-### Filter by tag
+#### Filter by tag
 
 By adding the filter tag=[tag_slug] to the ls, we can obtain the children that have among their tag list the tag [tag_slug].
 

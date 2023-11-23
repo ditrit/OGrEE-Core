@@ -16,7 +16,6 @@ import (
 	"os/exec"
 	pathutil "path"
 	"runtime"
-	"sort"
 	"strconv"
 	"strings"
 
@@ -45,21 +44,22 @@ func PostObj(ent int, entity string, data map[string]any) error {
 		return err
 	}
 
-	if ent != TAG && IsInObjForUnity(entity) {
-		entInt := EntityStrToInt(entity)
+	if ent != models.TAG && IsInObjForUnity(entity) {
+		entInt := models.EntityStrToInt(entity)
 		Ogree3D.InformOptional("PostObj", entInt, map[string]any{"type": "create", "data": resp.Body["data"]})
 	}
 
 	return nil
 }
 
-func ObjectUrl(path string, depth int) (string, error) {
-	prefix, id, err := models.SplitPath(path)
+func (controller Controller) ObjectUrl(pathStr string, depth int) (string, error) {
+	path, err := controller.SplitPath(pathStr)
 	if err != nil {
 		return "", err
 	}
+
 	var baseUrl string
-	switch prefix {
+	switch path.Prefix {
 	case models.StayPath:
 		baseUrl = "/api/stray-objects"
 	case models.PhysicalPath:
@@ -79,7 +79,7 @@ func ObjectUrl(path string, depth int) (string, error) {
 	default:
 		return "", fmt.Errorf("invalid object path")
 	}
-	baseUrl += "/" + id
+	baseUrl += "/" + path.ObjectID
 	params := url.Values{}
 	if depth > 0 {
 		baseUrl += "/all"
@@ -90,47 +90,58 @@ func ObjectUrl(path string, depth int) (string, error) {
 	return parsedUrl.String(), nil
 }
 
-func ObjectUrlGeneric(path string, depth int, filters map[string]string) (string, error) {
+func (controller Controller) ObjectUrlGeneric(pathStr string, depth int, filters map[string]string) (string, error) {
 	params := url.Values{}
-	prefix, id, err := models.SplitPath(path)
+	path, err := controller.SplitPath(pathStr)
 	if err != nil {
 		return "", err
 	}
-	switch prefix {
+
+	if filters == nil {
+		filters = map[string]string{}
+	}
+
+	if path.Layer != nil {
+		path.Layer.ApplyFilters(filters)
+	}
+
+	switch path.Prefix {
 	case models.StayPath:
 		params.Add("namespace", "physical.stray")
-		params.Add("id", id)
+		params.Add("id", path.ObjectID)
 	case models.PhysicalPath:
 		params.Add("namespace", "physical.hierarchy")
-		params.Add("id", id)
+		params.Add("id", path.ObjectID)
 	case models.ObjectTemplatesPath:
 		params.Add("namespace", "logical.objtemplate")
-		params.Add("slug", id)
+		params.Add("slug", path.ObjectID)
 	case models.RoomTemplatesPath:
 		params.Add("namespace", "logical.roomtemplate")
-		params.Add("slug", id)
+		params.Add("slug", path.ObjectID)
 	case models.BuildingTemplatesPath:
 		params.Add("namespace", "logical.bldgtemplate")
-		params.Add("slug", id)
+		params.Add("slug", path.ObjectID)
 	case models.TagsPath:
 		params.Add("namespace", "logical.tag")
-		params.Add("slug", id)
+		params.Add("slug", path.ObjectID)
 	case models.GroupsPath:
 		params.Add("namespace", "logical")
 		params.Add("category", "group")
-		params.Add("id", id)
+		params.Add("id", path.ObjectID)
 	case models.DomainsPath:
 		params.Add("namespace", "organisational")
-		params.Add("id", id)
+		params.Add("id", path.ObjectID)
 	default:
 		return "", fmt.Errorf("invalid object path")
 	}
 	if depth > 0 {
 		params.Add("limit", strconv.Itoa(depth))
 	}
+
 	for key, value := range filters {
-		params.Add(key, value)
+		params.Set(key, value)
 	}
+
 	url, _ := url.Parse("/api/objects")
 	url.RawQuery = params.Encode()
 	return strings.ReplaceAll(url.String(), "%2A", "*"), nil
@@ -138,102 +149,6 @@ func ObjectUrlGeneric(path string, depth int, filters map[string]string) (string
 
 func PollObject(path string) (map[string]any, error) {
 	return C.PollObjectWithChildren(path, 0)
-}
-
-func lsObjectsWithoutFilters(path string) ([]map[string]any, error) {
-	n, err := Tree(path, 1)
-	if err != nil {
-		return nil, err
-	}
-	objects := []map[string]any{}
-	for _, child := range n.Children {
-		if child.Obj != nil {
-			if strings.HasPrefix(path, "/Logical/Groups") {
-				child.Obj["name"] = strings.ReplaceAll(child.Obj["id"].(string), ".", "/")
-			}
-			objects = append(objects, child.Obj)
-		} else {
-			objects = append(objects, map[string]any{"name": child.Name})
-		}
-	}
-	return objects, nil
-}
-
-func lsObjectsWithFilters(path string, filters map[string]string) ([]map[string]any, error) {
-	url, err := ObjectUrlGeneric(path+"/*", 0, filters)
-	if err != nil {
-		return nil, fmt.Errorf("cannot use filters at this location")
-	}
-	resp, err := API.Request("GET", url, nil, http.StatusOK)
-	if err != nil {
-		return nil, err
-	}
-	objectsAny := resp.Body["data"].([]any)
-	objects := []map[string]any{}
-	for _, objAny := range objectsAny {
-		obj, ok := objAny.(map[string]any)
-		if !ok {
-			return nil, fmt.Errorf("invalid response from API on GET %s", url)
-		}
-		objects = append(objects, obj)
-	}
-	return objects, nil
-}
-
-func filterObjectsWithoutAttr(objects []map[string]any, attr string) []map[string]any {
-	remainingObjects := []map[string]any{}
-	for _, obj := range objects {
-		_, hasAttr := utils.ObjectAttr(obj, attr)
-		if hasAttr {
-			remainingObjects = append(remainingObjects, obj)
-		}
-	}
-	return remainingObjects
-}
-
-func objectsAreSortable(objects []map[string]any, attr string) bool {
-	for i := 1; i < len(objects); i++ {
-		val0, _ := utils.ObjectAttr(objects[0], attr)
-		vali, _ := utils.ObjectAttr(objects[i], attr)
-		_, comparable := utils.CompareVals(val0, vali)
-		if !comparable {
-			return false
-		}
-	}
-	return true
-}
-
-func Ls(path string, filters map[string]string, sortAttr string) ([]map[string]any, error) {
-	var objects []map[string]any
-	var err error
-	if len(filters) == 0 {
-		objects, err = lsObjectsWithoutFilters(path)
-		if err != nil {
-			return nil, err
-		}
-	} else {
-		objects, err = lsObjectsWithFilters(path, filters)
-		if err != nil {
-			return nil, err
-		}
-	}
-	if sortAttr != "" {
-		objects = filterObjectsWithoutAttr(objects, sortAttr)
-		if !objectsAreSortable(objects, sortAttr) {
-			return nil, fmt.Errorf("objects cannot be sorted according to this attribute")
-		}
-	}
-	less := func(i, j int) bool {
-		if sortAttr != "" {
-			vali, _ := utils.ObjectAttr(objects[i], sortAttr)
-			valj, _ := utils.ObjectAttr(objects[j], sortAttr)
-			res, _ := utils.CompareVals(vali, valj)
-			return res
-		}
-		return utils.NameOrSlug(objects[i]) < utils.NameOrSlug(objects[j])
-	}
-	sort.Slice(objects, less)
-	return objects, nil
 }
 
 func GetSlot(rack map[string]any, location string) (map[string]any, error) {
@@ -275,7 +190,7 @@ func UnsetAttribute(path string, attr string) error {
 		return fmt.Errorf("object has no attributes")
 	}
 	delete(attributes, attr)
-	url, err := ObjectUrl(path, 0)
+	url, err := C.ObjectUrl(path, 0)
 	if err != nil {
 		return err
 	}
@@ -352,7 +267,7 @@ func UnsetInObj(Path, attr string, idx int) (map[string]interface{}, error) {
 	}
 
 	entity := obj["category"].(string)
-	URL, err := ObjectUrl(Path, 0)
+	URL, err := C.ObjectUrl(Path, 0)
 	if err != nil {
 		return nil, err
 	}
@@ -367,7 +282,7 @@ func UnsetInObj(Path, attr string, idx int) (map[string]interface{}, error) {
 
 	//Update and inform unity
 	if models.IsHierarchical(Path) && IsInObjForUnity(entity) {
-		entInt := EntityStrToInt(entity)
+		entInt := models.EntityStrToInt(entity)
 		Ogree3D.InformOptional("UpdateObj", entInt, message)
 	}
 
@@ -446,7 +361,7 @@ func Env(userVars, userFuncs map[string]interface{}) {
 	fmt.Println()
 	fmt.Println("Objects Unity shall draw:")
 	for _, k := range State.DrawableObjs {
-		fmt.Println(EntityToString(k))
+		fmt.Println(models.EntityToString(k))
 	}
 
 	fmt.Println()
@@ -503,25 +418,6 @@ func GetByAttr(path string, u interface{}) error {
 			println("The slot you provided does not correspond to any device in this rack")
 		}
 	}
-	return nil
-}
-
-func CD(path string) error {
-	if State.DebugLvl >= 3 {
-		println("THE PATH: ", path)
-	}
-	n, err := Tree(path, 0)
-	if err != nil {
-		return err
-	}
-	if n.Obj != nil {
-		newDomain, _ := n.Obj["domain"].(string)
-		State.CurrDomain = newDomain
-	} else {
-		State.CurrDomain = ""
-	}
-	State.PrevPath = State.CurrPath
-	State.CurrPath = path
 	return nil
 }
 
@@ -602,22 +498,22 @@ func CreateObject(path string, ent int, data map[string]interface{}) error {
 	}
 
 	data["name"] = name
-	data["category"] = EntityToString(ent)
+	data["category"] = models.EntityToString(ent)
 	data["description"] = []interface{}{}
 
 	//Retrieve Parent
-	if ent != SITE && ent != STRAY_DEV && ent != STRAYSENSOR {
+	if ent != models.SITE && ent != models.STRAY_DEV && ent != models.STRAYSENSOR {
 		var err error
 		parent, err = PollObject(path)
 		if err != nil {
 			return err
 		}
-		if parent == nil && (ent != DOMAIN || path != "/Organisation/Domain") {
+		if parent == nil && (ent != models.DOMAIN || path != "/Organisation/Domain") {
 			return fmt.Errorf("parent not found")
 		}
 	}
 
-	if ent != DOMAIN {
+	if ent != models.DOMAIN {
 		if parent != nil {
 			data["domain"] = parent["domain"]
 		} else {
@@ -627,24 +523,24 @@ func CreateObject(path string, ent int, data map[string]interface{}) error {
 
 	var err error
 	switch ent {
-	case DOMAIN:
+	case models.DOMAIN:
 		if parent != nil {
 			data["parentId"] = parent["id"]
 		} else {
 			data["parentId"] = ""
 		}
 
-	case SITE:
+	case models.SITE:
 		//Default values
 		//data["parentId"] = parent["id"]
 		data["attributes"] = map[string]interface{}{}
 
-	case BLDG:
+	case models.BLDG:
 		attr = data["attributes"].(map[string]interface{})
 
 		//Check for template
 		if _, ok := attr["template"]; ok {
-			err := GetOCLIAtrributesTemplateHelper(attr, data, BLDG)
+			err := GetOCLIAtrributesTemplateHelper(attr, data, models.BLDG)
 			if err != nil {
 				return err
 			}
@@ -704,7 +600,7 @@ func CreateObject(path string, ent int, data map[string]interface{}) error {
 		//attr["height"] = 0 //Should be set from parser by default
 		data["parentId"] = parent["id"]
 
-	case ROOM:
+	case models.ROOM:
 		attr = data["attributes"].(map[string]interface{})
 
 		baseAttrs := map[string]interface{}{
@@ -767,7 +663,7 @@ func CreateObject(path string, ent int, data map[string]interface{}) error {
 			Disp(data)
 		}
 
-	case RACK, CORRIDOR:
+	case models.RACK, models.CORRIDOR:
 		attr = data["attributes"].(map[string]interface{})
 		//Save rotation because it gets overwritten by
 		//GetOCLIAtrributesTemplateHelper()
@@ -777,7 +673,7 @@ func CreateObject(path string, ent int, data map[string]interface{}) error {
 			"sizeUnit":   "cm",
 			"heightUnit": "U",
 		}
-		if ent == CORRIDOR {
+		if ent == models.CORRIDOR {
 			baseAttrs["heightUnit"] = "cm"
 		}
 
@@ -834,7 +730,7 @@ func CreateObject(path string, ent int, data map[string]interface{}) error {
 		data["parentId"] = parent["id"]
 		data["attributes"] = attr
 
-	case DEVICE:
+	case models.DEVICE:
 		attr = data["attributes"].(map[string]interface{})
 
 		//Special routine to perform on device
@@ -888,7 +784,7 @@ func CreateObject(path string, ent int, data map[string]interface{}) error {
 		//If user provided templates, get the JSON
 		//and parse into templates
 		if _, ok := attr["template"]; ok {
-			err := GetOCLIAtrributesTemplateHelper(attr, data, DEVICE)
+			err := GetOCLIAtrributesTemplateHelper(attr, data, models.DEVICE)
 			if err != nil {
 				return err
 			}
@@ -919,7 +815,7 @@ func CreateObject(path string, ent int, data map[string]interface{}) error {
 		data["parentId"] = parent["id"]
 		data["attributes"] = attr
 
-	case GROUP:
+	case models.GROUP:
 		//name, category, domain, pid
 		data["parentId"] = parent["id"]
 		attr := data["attributes"].(map[string]interface{})
@@ -927,11 +823,11 @@ func CreateObject(path string, ent int, data map[string]interface{}) error {
 		groups := strings.Join(attr["content"].([]string), ",")
 		attr["content"] = groups
 
-	case STRAYSENSOR:
+	case models.STRAYSENSOR:
 		attr = data["attributes"].(map[string]interface{})
 		if _, ok := attr["template"]; ok {
 			//GetOCLIAtrributesTemplateHelper(attr, data, DEVICE)
-			tmpl, err := fetchTemplate(attr["template"].(string), STRAYSENSOR)
+			tmpl, err := fetchTemplate(attr["template"].(string), models.STRAYSENSOR)
 			if err != nil {
 				return err
 			}
@@ -940,10 +836,10 @@ func CreateObject(path string, ent int, data map[string]interface{}) error {
 			attr["template"] = ""
 		}
 
-	case STRAY_DEV:
+	case models.STRAY_DEV:
 		attr = data["attributes"].(map[string]interface{})
 		if _, ok := attr["template"]; ok {
-			err := GetOCLIAtrributesTemplateHelper(attr, data, DEVICE)
+			err := GetOCLIAtrributesTemplateHelper(attr, data, models.DEVICE)
 			if err != nil {
 				return err
 			}
@@ -983,12 +879,12 @@ func GetOCLIAtrributesTemplateHelper(attr, data map[string]interface{}, ent int)
 	//data from templates
 	attrSerialiser := func(someVal interface{}, idx string, ent int) string {
 		if x, ok := someVal.(int); ok {
-			if ent == DEVICE || ent == ROOM || ent == BLDG {
+			if ent == models.DEVICE || ent == models.ROOM || ent == models.BLDG {
 				return strconv.Itoa(x)
 			}
 			return strconv.Itoa(x / 10)
 		} else if x, ok := someVal.(float64); ok {
-			if ent == DEVICE || ent == ROOM || ent == BLDG {
+			if ent == models.DEVICE || ent == models.ROOM || ent == models.BLDG {
 				return strconv.FormatFloat(x, 'G', -1, 64)
 			}
 			return strconv.FormatFloat(x/10.0, 'G', -1, 64)
@@ -1005,12 +901,12 @@ func GetOCLIAtrributesTemplateHelper(attr, data map[string]interface{}, ent int)
 		if qS, ok := q.(string); ok {
 			//Determine the type of template
 			tInt := 0
-			if ent == ROOM {
-				tInt = ROOMTMPL
-			} else if ent == BLDG {
-				tInt = BLDGTMPL
+			if ent == models.ROOM {
+				tInt = models.ROOMTMPL
+			} else if ent == models.BLDG {
+				tInt = models.BLDGTMPL
 			} else {
-				tInt = OBJTMPL
+				tInt = models.OBJTMPL
 			} //End of determine block
 			tmpl, err := fetchTemplate(qS, tInt)
 			if err != nil {
@@ -1029,7 +925,7 @@ func GetOCLIAtrributesTemplateHelper(attr, data map[string]interface{}, ent int)
 				attr["size"] = "{\"x\":" + xS + ", \"y\":" + yS + "}"
 				attr["height"] = zS
 
-				if ent == DEVICE {
+				if ent == models.DEVICE {
 					attr["sizeUnit"] = "mm"
 					attr["heightUnit"] = "mm"
 					if tmpx, ok := tmpl["attributes"]; ok {
@@ -1057,7 +953,7 @@ func GetOCLIAtrributesTemplateHelper(attr, data map[string]interface{}, ent int)
 						}
 					}
 
-				} else if ent == ROOM {
+				} else if ent == models.ROOM {
 					attr["sizeUnit"] = "m"
 					attr["heightUnit"] = "m"
 
@@ -1142,7 +1038,7 @@ func GetOCLIAtrributesTemplateHelper(attr, data map[string]interface{}, ent int)
 						}
 					}
 
-				} else if ent == BLDG {
+				} else if ent == models.BLDG {
 					attr["sizeUnit"] = "m"
 					attr["heightUnit"] = "m"
 
@@ -1164,7 +1060,7 @@ func GetOCLIAtrributesTemplateHelper(attr, data map[string]interface{}, ent int)
 
 				//fbxModel section
 				if check := CopyAttr(attr, tmpl, "fbxModel"); !check {
-					if ent != BLDG {
+					if ent != models.BLDG {
 						attr["fbxModel"] = ""
 					}
 
@@ -1199,7 +1095,7 @@ func GetOCLIAtrributesTemplateHelper(attr, data map[string]interface{}, ent int)
 		}
 
 	} else {
-		if ent != CORRIDOR {
+		if ent != models.CORRIDOR {
 			attr["template"] = ""
 		}
 		//Serialise size and posXY if given
@@ -1292,8 +1188,8 @@ func FocusUI(path string) error {
 		if err != nil {
 			return err
 		}
-		category := EntityStrToInt(obj["category"].(string))
-		if models.IsNonHierarchical(path) || category == SITE || category == BLDG || category == ROOM {
+		category := models.EntityStrToInt(obj["category"].(string))
+		if models.IsNonHierarchical(path) || category == models.SITE || category == models.BLDG || category == models.ROOM {
 			msg := "You cannot focus on this object. Note you cannot" +
 				" focus on Sites, Buildings and Rooms. " +
 				"For more information please refer to the help doc  (man >)"
@@ -1311,7 +1207,7 @@ func FocusUI(path string) error {
 	}
 
 	if path != "" {
-		return CD(path)
+		return C.CD(path)
 	} else {
 		fmt.Println("Focus is now empty")
 	}
@@ -1320,18 +1216,18 @@ func FocusUI(path string) error {
 }
 
 func LinkObject(source string, destination string, posUOrSlot string) error {
-	sourceUrl, err := ObjectUrl(source, 0)
+	sourceUrl, err := C.ObjectUrl(source, 0)
 	if err != nil {
 		return err
 	}
-	_, destId, err := models.SplitPath(destination)
+	destPath, err := C.SplitPath(destination)
 	if err != nil {
 		return err
 	}
 	if !strings.HasPrefix(sourceUrl, "/api/stray-objects/") {
 		return fmt.Errorf("only stray objects can be linked")
 	}
-	payload := map[string]any{"parentId": destId}
+	payload := map[string]any{"parentId": destPath.ObjectID}
 	if posUOrSlot != "" {
 		payload["slot"] = posUOrSlot
 	}
@@ -1343,7 +1239,7 @@ func LinkObject(source string, destination string, posUOrSlot string) error {
 }
 
 func UnlinkObject(path string) error {
-	sourceUrl, err := ObjectUrl(path, 0)
+	sourceUrl, err := C.ObjectUrl(path, 0)
 	if err != nil {
 		return err
 	}
@@ -1515,44 +1411,11 @@ func LoadTemplate(data map[string]interface{}, filePath string) error {
 }
 
 func CreateTag(slug, color string) error {
-	return PostObj(TAG, EntityToString(TAG), map[string]any{
+	return PostObj(models.TAG, models.EntityToString(models.TAG), map[string]any{
 		"slug":        slug,
 		"description": slug, // the description is initially set with the value of the slug
 		"color":       color,
 	})
-}
-
-func SetClipBoard(x []string) ([]string, error) {
-	State.ClipBoard = x
-	var data map[string]interface{}
-
-	if len(x) == 0 { //This means deselect
-		data = map[string]interface{}{"type": "select", "data": "[]"}
-		err := Ogree3D.InformOptional("SetClipBoard", -1, data)
-		if err != nil {
-			return nil, fmt.Errorf("cannot reset clipboard : %s", err.Error())
-		}
-	} else {
-		//Verify paths
-		arr := []string{}
-		for _, val := range x {
-			obj, err := C.GetObject(val)
-			if err != nil {
-				return nil, err
-			}
-			id, ok := obj["id"].(string)
-			if ok {
-				arr = append(arr, id)
-			}
-		}
-		serialArr := "[\"" + strings.Join(arr, "\",\"") + "\"]"
-		data = map[string]interface{}{"type": "select", "data": serialArr}
-		err := Ogree3D.InformOptional("SetClipBoard", -1, data)
-		if err != nil {
-			return nil, fmt.Errorf("cannot set clipboard : %s", err.Error())
-		}
-	}
-	return State.ClipBoard, nil
 }
 
 func SetEnv(arg string, val interface{}) {
@@ -1677,9 +1540,9 @@ func InteractObject(path string, keyword string, val interface{}, fromAttr bool)
 // to keep code organised
 func fetchTemplate(name string, objType int) (map[string]interface{}, error) {
 	var url string
-	if objType == ROOMTMPL {
+	if objType == models.ROOMTMPL {
 		url = "/api/room_templates/"
-	} else if objType == BLDGTMPL {
+	} else if objType == models.BLDGTMPL {
 		url = "/api/bldg_templates/"
 	} else {
 		url = "/api/obj_templates/"
@@ -1792,4 +1655,29 @@ func ChangePassword() error {
 	}
 	println(response.message)
 	return nil
+}
+
+func (controller Controller) SplitPath(pathStr string) (models.Path, error) {
+	for _, prefix := range models.PathPrefixes {
+		if strings.HasPrefix(pathStr, string(prefix)) {
+			id := pathStr[len(prefix):]
+			id = strings.ReplaceAll(id, "/", ".")
+
+			var layer *models.Layer
+			var err error
+
+			id, layer, err = controller.GetLayer(id)
+			if err != nil {
+				return models.Path{}, err
+			}
+
+			return models.Path{
+				Prefix:   prefix,
+				ObjectID: id,
+				Layer:    layer,
+			}, nil
+		}
+	}
+
+	return models.Path{}, fmt.Errorf("invalid object path")
 }
