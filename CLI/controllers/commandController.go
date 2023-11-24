@@ -7,7 +7,6 @@ import (
 	"cli/readline"
 	"cli/utils"
 	"cli/views"
-	"encoding/json"
 	"fmt"
 	"math/rand"
 	"net/http"
