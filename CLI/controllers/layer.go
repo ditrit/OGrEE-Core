@@ -76,7 +76,7 @@ func (controller Controller) splitLayerRecursive(previousRealID string, idSplit 
 // If the layer is not present, errLayerNotFound is returned.
 func (controller Controller) getLayerFromHierarchy(parent, layerName, separator string) (models.Layer, error) {
 	if separator != "/" {
-		parent = models.PhysicalIDToPath(parent)
+		parent = strings.ReplaceAll(models.PhysicalIDToPath(parent), "/*", "")
 	}
 
 	layerNode := State.Hierarchy.FindNode(parent + "/" + layerName)
@@ -177,9 +177,9 @@ func (controller Controller) UpdateLayer(path string, attributeName string, valu
 func TranslateApplicability(applicability string) (string, error) {
 	applicability = TranslatePath(applicability, false)
 
-	if !models.IsPhysical(applicability) && !strings.HasPrefix(applicability, "/*") && !strings.HasPrefix(applicability, "/**") {
+	if !models.IsPhysical(applicability) {
 		return "", fmt.Errorf("applicability must be an hierarchical path, found: %s", applicability)
 	}
 
-	return applicability, nil
+	return models.PhysicalPathToObjectID(applicability), nil
 }

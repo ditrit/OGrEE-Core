@@ -25,14 +25,14 @@ func TestCpLayerWithDestPathCopiesSource(t *testing.T) {
 
 	layer1 := map[string]any{
 		"slug":                    "layer1",
-		models.LayerApplicability: "/Physical/BASIC/A/R1",
+		models.LayerApplicability: "BASIC.A.R1",
 		models.LayerFilters:       map[string]any{"category": "device"},
 	}
 
 	mockGetObjectByEntity(mockAPI, "layers", layer1)
 	mockCreateObject(mockAPI, "layer", map[string]any{
 		"slug":                    "layer2",
-		models.LayerApplicability: "/Physical/BASIC/A/R1",
+		models.LayerApplicability: "BASIC.A.R1",
 		models.LayerFilters:       map[string]any{"category": "device"},
 	})
 
@@ -45,14 +45,14 @@ func TestCpLayerWithDestSlugCopiesSource(t *testing.T) {
 
 	layer1 := map[string]any{
 		"slug":                    "layer1",
-		models.LayerApplicability: "/Physical/BASIC/A/R1",
+		models.LayerApplicability: "BASIC.A.R1",
 		models.LayerFilters:       map[string]any{"category": "device"},
 	}
 
 	mockGetObjectByEntity(mockAPI, "layers", layer1)
 	mockCreateObject(mockAPI, "layer", map[string]any{
 		"slug":                    "layer2",
-		models.LayerApplicability: "/Physical/BASIC/A/R1",
+		models.LayerApplicability: "BASIC.A.R1",
 		models.LayerFilters:       map[string]any{"category": "device"},
 	})
 
@@ -65,7 +65,7 @@ func TestCpLayerWhenSourceIsCachedCopiesSource(t *testing.T) {
 
 	layer1 := map[string]any{
 		"slug":                    "layer1",
-		models.LayerApplicability: "/Physical/BASIC/A/R1",
+		models.LayerApplicability: "BASIC.A.R1",
 		models.LayerFilters:       map[string]any{"category": "device"},
 	}
 
@@ -81,7 +81,7 @@ func TestCpLayerWhenSourceIsCachedCopiesSource(t *testing.T) {
 	mockGetObjectByEntity(mockAPI, "layers", layer1)
 	mockCreateObject(mockAPI, "layer", map[string]any{
 		"slug":                    "layer2",
-		models.LayerApplicability: "/Physical/BASIC/A/R1",
+		models.LayerApplicability: "BASIC.A.R1",
 		models.LayerFilters:       map[string]any{"category": "device"},
 	})
 

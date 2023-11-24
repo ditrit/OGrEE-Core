@@ -427,7 +427,7 @@ func (n *getObjectNode) execute() (interface{}, error) {
 	}
 
 	for _, obj := range objs {
-		cmd.DisplayObject(obj)
+		views.Object(path, obj)
 	}
 	return objs, nil
 }

@@ -84,7 +84,20 @@ func SplitPath(path string) []string {
 	return strings.Split(path, "/")
 }
 
+func PhysicalPathToObjectID(path string) string {
+	return strings.TrimSuffix(
+		strings.ReplaceAll(
+			strings.TrimPrefix(
+				addLastSlash(path),
+				PhysicalPath,
+			),
+			"/", ".",
+		),
+		".",
+	)
+}
+
 // Transforms the id of a physical object to its path
 func PhysicalIDToPath(id string) string {
-	return PhysicalPath + strings.ReplaceAll(strings.ReplaceAll(id, ".", "/"), "/*", "")
+	return PhysicalPath + strings.ReplaceAll(id, ".", "/")
 }

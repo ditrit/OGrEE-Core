@@ -6,9 +6,9 @@ import (
 	"cli/models"
 	"cli/readline"
 	"cli/utils"
+	"cli/views"
 	"encoding/json"
 	"fmt"
-	"log"
 	"math/rand"
 	"net/http"
 	"net/url"
@@ -337,7 +337,7 @@ func LSEnterprise() error {
 	if err != nil {
 		return err
 	}
-	DisplayObject(resp.Body)
+	views.DisplayJson(resp.Body)
 	return nil
 }
 
@@ -389,7 +389,7 @@ func GetByAttr(path string, u interface{}) error {
 			if attr, ok := devices[i]["attributes"].(map[string]interface{}); ok {
 				uStr := strconv.Itoa(u.(int))
 				if attr["height"] == uStr {
-					DisplayObject(devices[i])
+					views.DisplayJson(devices[i])
 					return nil //What if the user placed multiple devices at same height?
 				}
 			}
@@ -401,7 +401,7 @@ func GetByAttr(path string, u interface{}) error {
 		for i := range devices {
 			if attr, ok := devices[i]["attributes"].(map[string]interface{}); ok {
 				if attr["slot"] == u.(string) {
-					DisplayObject(devices[i])
+					views.DisplayJson(devices[i])
 					return nil //What if the user placed multiple devices at same slot?
 				}
 			}
@@ -459,15 +459,6 @@ func Help(entry string) {
 		println(string(text))
 	}
 
-}
-
-func DisplayObject(obj map[string]interface{}) {
-	enc := json.NewEncoder(os.Stdout)
-	enc.SetIndent("", "    ")
-
-	if err := enc.Encode(obj); err != nil {
-		log.Fatal(err)
-	}
 }
 
 // Function is an abstraction of a normal exit

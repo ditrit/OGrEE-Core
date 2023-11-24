@@ -61,6 +61,12 @@ func (layer UserDefinedLayer) Matches(path string) bool {
 
 func applicabilityToRegex(applicability string) (*regexp.Regexp, error) {
 	finalApplicabilityList := []string{}
+
+	applicability = strings.TrimSuffix(
+		PhysicalIDToPath(applicability),
+		"/",
+	)
+
 	for _, word := range strings.Split(applicability, "/") {
 		if word == "**" {
 			finalApplicabilityList = append(finalApplicabilityList, `(?:[^\/]+\/?)*`)

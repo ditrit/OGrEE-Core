@@ -642,6 +642,7 @@ func TestDrawLayerDrawsAllObjectsOfTheLayer(t *testing.T) {
 	controller, mockAPI, mockOgree3D := layersSetup(t)
 
 	mockGetObjectHierarchy(mockAPI, roomWithChildren)
+	mockGetObjectsByEntity(mockAPI, "layers", []any{})
 	mockGetObjects(mockAPI, "category=rack&id=BASIC.A.R1.*&namespace=physical.hierarchy", []any{rack1, rack2})
 	mockGetObject(mockAPI, rack1)
 	mockGetObject(mockAPI, rack2)
@@ -665,6 +666,7 @@ func TestDrawLayerWithDepthDrawsAllObjectsOfTheLayerAndChildren(t *testing.T) {
 	controller, mockAPI, mockOgree3D := layersSetup(t)
 
 	mockGetObjectHierarchy(mockAPI, roomWithChildren)
+	mockGetObjectsByEntity(mockAPI, "layers", []any{})
 	mockGetObjects(mockAPI, "category=rack&id=BASIC.A.R1.*&namespace=physical.hierarchy", []any{rack1, rack2})
 	mockGetObjectHierarchy(mockAPI, rack1)
 	mockGetObjectHierarchy(mockAPI, rack2)
@@ -688,6 +690,7 @@ func TestUndrawLayerUndrawAllObjectsOfTheLayer(t *testing.T) {
 	controller, mockAPI, mockOgree3D := layersSetup(t)
 
 	mockGetObjectHierarchy(mockAPI, roomWithChildren)
+	mockGetObjectsByEntity(mockAPI, "layers", []any{})
 	mockGetObjects(mockAPI, "category=rack&id=BASIC.A.R1.*&namespace=physical.hierarchy", []any{rack1, rack2})
 	mockGetObject(mockAPI, rack1)
 	mockGetObject(mockAPI, rack2)
@@ -707,169 +710,192 @@ func TestUndrawLayerUndrawAllObjectsOfTheLayer(t *testing.T) {
 	assert.Nil(t, err)
 }
 
-func TestTranslateApplicabilityReturnsErrorIfPathIsNotHierarchical(t *testing.T) {
+func TestTranslateApplicabilityReturnsErrorIfPathIsRoot(t *testing.T) {
 	_, err := controllers.TranslateApplicability("/")
 	assert.ErrorContains(t, err, "applicability must be an hierarchical path, found: /")
 }
 
-func TestTranslateApplicabilityReturnsSamePathIfItIsHierarchical(t *testing.T) {
+func TestTranslateApplicabilityReturnsErrorIfPathIsNotHierarchical(t *testing.T) {
+	_, err := controllers.TranslateApplicability("/Logical/Tags")
+	assert.ErrorContains(t, err, "applicability must be an hierarchical path, found: /Logical/Tags")
+}
+
+func TestTranslateApplicabilityTransformsPhysicalSlashIntoEmpty(t *testing.T) {
 	applicability, err := controllers.TranslateApplicability("/Physical")
 	assert.Nil(t, err)
-	assert.Equal(t, "/Physical", applicability)
+	assert.Equal(t, "", applicability)
 }
 
 func TestTranslateApplicabilityCleansPathOfLastSlash(t *testing.T) {
 	applicability, err := controllers.TranslateApplicability("/Physical/")
 	assert.Nil(t, err)
-	assert.Equal(t, "/Physical", applicability)
+	assert.Equal(t, "", applicability)
 }
 
 func TestTranslateApplicabilityCleansPathOfSlashPointAtEnd(t *testing.T) {
 	applicability, err := controllers.TranslateApplicability("/Physical/.")
 	assert.Nil(t, err)
-	assert.Equal(t, "/Physical", applicability)
+	assert.Equal(t, "", applicability)
 }
 
 func TestTranslateApplicabilityCleansPathOfSlashPoint(t *testing.T) {
 	applicability, err := controllers.TranslateApplicability("/Physical/./BASIC")
 	assert.Nil(t, err)
-	assert.Equal(t, "/Physical/BASIC", applicability)
+	assert.Equal(t, "BASIC", applicability)
+}
+
+func TestTranslateApplicabilityTransformsPhysicalPathIntoID(t *testing.T) {
+	applicability, err := controllers.TranslateApplicability("/Physical/BASIC/A")
+	assert.Nil(t, err)
+	assert.Equal(t, "BASIC.A", applicability)
 }
 
 func TestTranslateApplicabilitySupportsPointPointAtTheEnd(t *testing.T) {
 	applicability, err := controllers.TranslateApplicability("/Physical/BASIC/..")
 	assert.Nil(t, err)
-	assert.Equal(t, "/Physical", applicability)
+	assert.Equal(t, "", applicability)
 }
 
 func TestTranslateApplicabilitySupportsPointPoint(t *testing.T) {
 	applicability, err := controllers.TranslateApplicability("/Physical/BASIC/../COMPLEX/R1")
 	assert.Nil(t, err)
-	assert.Equal(t, "/Physical/COMPLEX/R1", applicability)
+	assert.Equal(t, "COMPLEX.R1", applicability)
 }
 
 func TestTranslateApplicabilitySupportsStarAtTheEnd(t *testing.T) {
 	applicability, err := controllers.TranslateApplicability("/Physical/*")
 	assert.Nil(t, err)
-	assert.Equal(t, "/Physical/*", applicability)
+	assert.Equal(t, "*", applicability)
 }
 
 func TestTranslateApplicabilitySupportsStarStarAtTheEnd(t *testing.T) {
 	applicability, err := controllers.TranslateApplicability("/Physical/**")
 	assert.Nil(t, err)
-	assert.Equal(t, "/Physical/**", applicability)
+	assert.Equal(t, "**", applicability)
 }
 
 func TestTranslateApplicabilitySupportsStar(t *testing.T) {
 	applicability, err := controllers.TranslateApplicability("/Physical/*/chT")
 	assert.Nil(t, err)
-	assert.Equal(t, "/Physical/*/chT", applicability)
+	assert.Equal(t, "*.chT", applicability)
 }
 
 func TestTranslateApplicabilitySupportsStarStar(t *testing.T) {
 	applicability, err := controllers.TranslateApplicability("/Physical/**/chT")
 	assert.Nil(t, err)
-	assert.Equal(t, "/Physical/**/chT", applicability)
+	assert.Equal(t, "**.chT", applicability)
 }
 
 func TestTranslateApplicabilityEmptyReturnsCurrPath(t *testing.T) {
-	controllers.State.CurrPath = "/Physical"
+	controllers.State.CurrPath = "/Physical/BASIC/A"
 	applicability, err := controllers.TranslateApplicability("")
 	assert.Nil(t, err)
-	assert.Equal(t, "/Physical", applicability)
+	assert.Equal(t, "BASIC.A", applicability)
 }
 
 func TestTranslateApplicabilityPointReturnsCurrPath(t *testing.T) {
-	controllers.State.CurrPath = "/Physical"
+	controllers.State.CurrPath = "/Physical/BASIC/A"
 	applicability, err := controllers.TranslateApplicability(".")
 	assert.Nil(t, err)
-	assert.Equal(t, "/Physical", applicability)
+	assert.Equal(t, "BASIC.A", applicability)
 }
 
 func TestTranslateApplicabilityPointReturnsErrorIfCurrPathIsNotHierarchical(t *testing.T) {
-	controllers.State.CurrPath = "/"
+	controllers.State.CurrPath = "/Logical/Tags"
 	_, err := controllers.TranslateApplicability(".")
-	assert.ErrorContains(t, err, "applicability must be an hierarchical path, found: /")
+	assert.NotNil(t, err)
+	assert.ErrorContains(t, err, "applicability must be an hierarchical path, found: /Logical/Tags")
+}
+
+func TestTranslateApplicabilityPointReturnsEmptyIfCurrPathIsSlashPhysical(t *testing.T) {
+	controllers.State.CurrPath = "/Physical"
+	applicability, err := controllers.TranslateApplicability(".")
+	assert.Nil(t, err)
+	assert.Equal(t, "", applicability)
+}
+
+func TestTranslateApplicabilityPointPathReturnsCurrPathPlusPath(t *testing.T) {
+	controllers.State.CurrPath = "/Physical/BASIC"
+	applicability, err := controllers.TranslateApplicability("./A")
+	assert.Nil(t, err)
+	assert.Equal(t, "BASIC.A", applicability)
+}
+
+func TestTranslateApplicabilityRelativePathReturnsCurrPathPlusPath(t *testing.T) {
+	controllers.State.CurrPath = "/Physical/BASIC"
+	applicability, err := controllers.TranslateApplicability("A")
+	assert.Nil(t, err)
+	assert.Equal(t, "BASIC.A", applicability)
+}
+
+func TestTranslateApplicabilityRelativePathStarReturnsCurrPathPlusPath(t *testing.T) {
+	controllers.State.CurrPath = "/Physical/BASIC"
+	applicability, err := controllers.TranslateApplicability("*")
+	assert.Nil(t, err)
+	assert.Equal(t, "BASIC.*", applicability)
+}
+
+func TestTranslateApplicabilityRelativePathReturnsErrorIfCurrPathIsNotHierarchical(t *testing.T) {
+	controllers.State.CurrPath = "/Logical/Tags"
+	_, err := controllers.TranslateApplicability("A")
+	assert.NotNil(t, err)
+	assert.ErrorContains(t, err, "applicability must be an hierarchical path, found: /Logical/Tags/A")
 }
 
 func TestTranslateApplicabilityPointPointReturnsBeforeCurrPath(t *testing.T) {
+	controllers.State.CurrPath = "/Physical/BASIC/A"
+	applicability, err := controllers.TranslateApplicability("..")
+	assert.Nil(t, err)
+	assert.Equal(t, "BASIC", applicability)
+}
+
+func TestTranslateApplicabilityPointPointReturnsEmptyIfBeforeCurrPathIsPhysical(t *testing.T) {
 	controllers.State.CurrPath = "/Physical/BASIC"
 	applicability, err := controllers.TranslateApplicability("..")
 	assert.Nil(t, err)
-	assert.Equal(t, "/Physical", applicability)
+	assert.Equal(t, "", applicability)
 }
 
 func TestTranslateApplicabilityPointPointReturnsErrorIfBeforeCurrPathIsNotHierarchical(t *testing.T) {
 	controllers.State.CurrPath = "/Physical"
 	_, err := controllers.TranslateApplicability("..")
+	assert.NotNil(t, err)
 	assert.ErrorContains(t, err, "applicability must be an hierarchical path, found: /")
-}
-
-func TestTranslateApplicabilityPointPointReturnsErrorIfCurrPathIsRoot(t *testing.T) {
-	controllers.State.CurrPath = "/"
-	_, err := controllers.TranslateApplicability("..")
-	assert.ErrorContains(t, err, "applicability must be an hierarchical path, found: /")
-}
-
-func TestTranslateApplicabilityPointPathReturnsCurrPathPlusPath(t *testing.T) {
-	controllers.State.CurrPath = "/Physical"
-	applicability, err := controllers.TranslateApplicability("./BASIC")
-	assert.Nil(t, err)
-	assert.Equal(t, "/Physical/BASIC", applicability)
-}
-
-func TestTranslateApplicabilityRelativePathReturnsCurrPathPlusPath(t *testing.T) {
-	controllers.State.CurrPath = "/Physical"
-	applicability, err := controllers.TranslateApplicability("BASIC")
-	assert.Nil(t, err)
-	assert.Equal(t, "/Physical/BASIC", applicability)
 }
 
 func TestTranslateApplicabilityPointPointPathReturnsCurrPathPlusPath(t *testing.T) {
 	controllers.State.CurrPath = "/Physical/BASIC"
 	applicability, err := controllers.TranslateApplicability("../COMPLEX")
 	assert.Nil(t, err)
-	assert.Equal(t, "/Physical/COMPLEX", applicability)
+	assert.Equal(t, "COMPLEX", applicability)
 }
 
 func TestTranslateApplicabilityPointPointTwoTimes(t *testing.T) {
 	controllers.State.CurrPath = "/Physical/BASIC/R1"
 	applicability, err := controllers.TranslateApplicability("../../COMPLEX")
 	assert.Nil(t, err)
-	assert.Equal(t, "/Physical/COMPLEX", applicability)
+	assert.Equal(t, "COMPLEX", applicability)
 }
 
 func TestTranslateApplicabilityMinusReturnsPrevPath(t *testing.T) {
-	controllers.State.PrevPath = "/Physical"
+	controllers.State.PrevPath = "/Physical/BASIC"
 	applicability, err := controllers.TranslateApplicability("-")
 	assert.Nil(t, err)
-	assert.Equal(t, "/Physical", applicability)
+	assert.Equal(t, "BASIC", applicability)
 }
 
 func TestTranslateApplicabilityMinusPathReturnsPrevPathPlusPath(t *testing.T) {
 	controllers.State.PrevPath = "/Physical"
 	applicability, err := controllers.TranslateApplicability("-/BASIC")
 	assert.Nil(t, err)
-	assert.Equal(t, "/Physical/BASIC", applicability)
+	assert.Equal(t, "BASIC", applicability)
 }
 
 func TestTranslateApplicabilityUnderscorePathReturnsCurrPathPlusUnderscore(t *testing.T) {
 	controllers.State.CurrPath = "/Physical"
 	applicability, err := controllers.TranslateApplicability("_")
 	assert.Nil(t, err)
-	assert.Equal(t, "/Physical/_", applicability)
-}
-
-func TestTranslateApplicabilityCanStartWithStar(t *testing.T) {
-	applicability, err := controllers.TranslateApplicability("/*/BASIC")
-	assert.Nil(t, err)
-	assert.Equal(t, "/*/BASIC", applicability)
-}
-
-func TestTranslateApplicabilityCanStartWithDoubleStar(t *testing.T) {
-	applicability, err := controllers.TranslateApplicability("/**/BASIC")
-	assert.Nil(t, err)
-	assert.Equal(t, "/**/BASIC", applicability)
+	assert.Equal(t, "_", applicability)
 }
 
 func TestLsNowShowLayerIfNotMatch(t *testing.T) {
@@ -878,7 +904,7 @@ func TestLsNowShowLayerIfNotMatch(t *testing.T) {
 	mockGetObjectsByEntity(mockAPI, "layers", []any{
 		map[string]any{
 			"slug":                    "test",
-			models.LayerApplicability: "/Physical/BASIC/A/R2",
+			models.LayerApplicability: "BASIC.A.R2",
 			models.LayerFilters:       map[string]any{"any": "yes"},
 		},
 	})
@@ -895,7 +921,7 @@ func TestLsShowLayerIfPerfectMatch(t *testing.T) {
 	mockGetObjectsByEntity(mockAPI, "layers", []any{
 		map[string]any{
 			"slug":                    "test",
-			models.LayerApplicability: "/Physical/BASIC/A/R1",
+			models.LayerApplicability: "BASIC.A.R1",
 			models.LayerFilters:       map[string]any{"any": "yes"},
 		},
 	})
@@ -913,7 +939,7 @@ func TestLsShowLayerIfPerfectMatchOnPhysical(t *testing.T) {
 	mockGetObjectsByEntity(mockAPI, "layers", []any{
 		map[string]any{
 			"slug":                    "test",
-			models.LayerApplicability: "/Physical",
+			models.LayerApplicability: "",
 			models.LayerFilters:       map[string]any{"any": "yes"},
 		},
 	})
@@ -932,7 +958,7 @@ func TestLsShowLayerIfPerfectMatchOnPhysicalChild(t *testing.T) {
 	mockGetObjectsByEntity(mockAPI, "layers", []any{
 		map[string]any{
 			"slug":                    "test",
-			models.LayerApplicability: "/Physical/BASIC",
+			models.LayerApplicability: "BASIC",
 			models.LayerFilters:       map[string]any{"any": "yes"},
 		},
 	})
@@ -968,7 +994,7 @@ func TestLsShowLayerIfPerfectMatchOnPhysicalChildWhenItsCached(t *testing.T) {
 	mockGetObjectsByEntity(mockAPI, "layers", []any{
 		map[string]any{
 			"slug":                    "test",
-			models.LayerApplicability: "/Physical/BASIC",
+			models.LayerApplicability: "BASIC",
 			models.LayerFilters:       map[string]any{"any": "yes"},
 		},
 	})
@@ -986,7 +1012,7 @@ func TestLsShowLayerIfMatchWithStar(t *testing.T) {
 	mockGetObjectsByEntity(mockAPI, "layers", []any{
 		map[string]any{
 			"slug":                    "test",
-			models.LayerApplicability: "/Physical/BASIC/A/*",
+			models.LayerApplicability: "BASIC.A.*",
 			models.LayerFilters:       map[string]any{"any": "yes"},
 		},
 	})
@@ -1004,7 +1030,7 @@ func TestLsShowLayerIfMatchWithSomethingStar(t *testing.T) {
 	mockGetObjectsByEntity(mockAPI, "layers", []any{
 		map[string]any{
 			"slug":                    "test",
-			models.LayerApplicability: "/Physical/BASIC/A/R*",
+			models.LayerApplicability: "BASIC.A.R*",
 			models.LayerFilters:       map[string]any{"any": "yes"},
 		},
 	})
@@ -1022,7 +1048,7 @@ func TestLsNotShowLayerIfNotMatchWithStar(t *testing.T) {
 	mockGetObjectsByEntity(mockAPI, "layers", []any{
 		map[string]any{
 			"slug":                    "test",
-			models.LayerApplicability: "/Physical/BASIC/*",
+			models.LayerApplicability: "BASIC.*",
 			models.LayerFilters:       map[string]any{"any": "yes"},
 		},
 	})
@@ -1039,7 +1065,7 @@ func TestLsShowLayerIfMatchWithDoubleStar(t *testing.T) {
 	mockGetObjectsByEntity(mockAPI, "layers", []any{
 		map[string]any{
 			"slug":                    "test",
-			models.LayerApplicability: "/Physical/BASIC/**",
+			models.LayerApplicability: "BASIC.**",
 			models.LayerFilters:       map[string]any{"any": "yes"},
 		},
 	})
@@ -1057,7 +1083,7 @@ func TestLsShowLayerIfMatchWithDoubleStarAndMore(t *testing.T) {
 	mockGetObjectsByEntity(mockAPI, "layers", []any{
 		map[string]any{
 			"slug":                    "test",
-			models.LayerApplicability: "/Physical/BASIC/**/A01",
+			models.LayerApplicability: "BASIC.**.A01",
 			models.LayerFilters:       map[string]any{"any": "yes"},
 		},
 	})
@@ -1075,7 +1101,7 @@ func TestLsNotShowLayerIfNotMatchWithDoubleStar(t *testing.T) {
 	mockGetObjectsByEntity(mockAPI, "layers", []any{
 		map[string]any{
 			"slug":                    "test",
-			models.LayerApplicability: "/Physical/BASIC/B/**",
+			models.LayerApplicability: "BASIC.B.**",
 			models.LayerFilters:       map[string]any{"any": "yes"},
 		},
 	})
@@ -1092,7 +1118,7 @@ func TestLsNotShowLayerIfNotMatchWithDoubleStarAndMore(t *testing.T) {
 	mockGetObjectsByEntity(mockAPI, "layers", []any{
 		map[string]any{
 			"slug":                    "test",
-			models.LayerApplicability: "/Physical/BASIC/**/chT",
+			models.LayerApplicability: "BASIC.**.chT",
 			models.LayerFilters:       map[string]any{"any": "yes"},
 		},
 	})
@@ -1115,7 +1141,7 @@ func TestLsReturnsLayerCreatedAfterLastUpdate(t *testing.T) {
 	mockCreateObject(mockAPI, "layer", map[string]any{
 		"slug":                    "test",
 		models.LayerFilters:       map[string]any{},
-		models.LayerApplicability: "/Physical/BASIC/A/R1",
+		models.LayerApplicability: "BASIC.A.R1",
 	})
 	err = controller.CreateLayer("test", "/Physical/BASIC/A/R1")
 	assert.Nil(t, err)
@@ -1138,7 +1164,7 @@ func TestLsReturnsLayerCreatedAndUpdatedAfterLastUpdate(t *testing.T) {
 	testLayer := map[string]any{
 		"slug":                    "test",
 		models.LayerFilters:       map[string]any{},
-		models.LayerApplicability: "/Physical/BASIC/A/R1",
+		models.LayerApplicability: "BASIC.A.R1",
 	}
 
 	mockCreateObject(mockAPI, "layer", testLayer)
@@ -1151,7 +1177,7 @@ func TestLsReturnsLayerCreatedAndUpdatedAfterLastUpdate(t *testing.T) {
 	}, map[string]any{
 		"slug":                    "test",
 		models.LayerFilters:       map[string]any{"category": "device"},
-		models.LayerApplicability: "/Physical/BASIC/A/R1",
+		models.LayerApplicability: "BASIC.A.R1",
 	})
 	err = controller.UpdateLayer("/Logical/Layers/test", "category", "device")
 	assert.Nil(t, err)
@@ -1177,7 +1203,7 @@ func TestLsOnLayerUpdatedAfterLastUpdateDoesUpdatedFilter(t *testing.T) {
 		models.LayerFilters: map[string]any{
 			"category": "rack",
 		},
-		models.LayerApplicability: "/Physical/BASIC/A/R1",
+		models.LayerApplicability: "BASIC.A.R1",
 	}
 
 	mockGetObjectsByEntity(mockAPI, "layers", []any{testLayer})
@@ -1194,7 +1220,7 @@ func TestLsOnLayerUpdatedAfterLastUpdateDoesUpdatedFilter(t *testing.T) {
 	}, map[string]any{
 		"slug":                    "test",
 		models.LayerFilters:       map[string]any{"category": "device"},
-		models.LayerApplicability: "/Physical/BASIC/A/R1",
+		models.LayerApplicability: "BASIC.A.R1",
 	})
 	err = controller.UpdateLayer("/Logical/Layers/test", "category", "device")
 	assert.Nil(t, err)
@@ -1214,7 +1240,7 @@ func TestLsOnUserDefinedLayerAppliesFilters(t *testing.T) {
 		models.LayerFilters: map[string]any{
 			"category": "rack",
 		},
-		models.LayerApplicability: "/Physical/BASIC/A/R1",
+		models.LayerApplicability: "BASIC.A.R1",
 	}
 
 	mockGetObjectsByEntity(mockAPI, "layers", []any{testLayer})
