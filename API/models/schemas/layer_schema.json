@@ -11,7 +11,8 @@
       "type": "object"
     },
     "applicability": {
-      "type": "string"
+      "type": "string",
+      "$ref": "refs/types.json#/definitions/optionalIDWithWildcards"
     }
   },
   "additionalProperties": false,
@@ -24,7 +25,32 @@
     {
       "slug": "racks",
       "filters": {"category": "rack"},
-      "applicability": "/Physical/BASIC/A/R1/*"
+      "applicability": ""
+    },
+    {
+      "slug": "racks",
+      "filters": {"category": "rack"},
+      "applicability": "BASIC.A.R1"
+    },
+    {
+      "slug": "racks",
+      "filters": {"category": "rack"},
+      "applicability": "BASIC.A.R1.*"
+    },
+    {
+      "slug": "racks",
+      "filters": {"category": "rack"},
+      "applicability": "*"
+    },
+    {
+      "slug": "racks",
+      "filters": {"category": "rack"},
+      "applicability": "BASIC.A.R*"
+    },
+    {
+      "slug": "racks",
+      "filters": {"category": "rack"},
+      "applicability": "BASIC.A.**"
     }
   ]
 }
